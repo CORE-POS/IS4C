@@ -1,0 +1,11 @@
+use is4c_op;
+
+DROP TABLE IF EXISTS `batchList`;
+CREATE TABLE `batchList` (
+  `listID` int(6) NOT NULL auto_increment,
+  `upc` varchar(13) default NULL,
+  `batchID` int(5) default NULL,
+  `salePrice` decimal(10,2) default NULL,
+  `active` bit(1) default NULL,
+  PRIMARY KEY  (`listID`)
+) ENGINE=MyISAM AUTO_INCREMENT=3 DEFAULT CHARSET=latin1;

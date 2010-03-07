@@ -1,0 +1,6 @@
+use is4c_log;
+DROP VIEW IF EXISTS `suspendedtoday`;
+
+create view suspendedtoday as
+select * from suspended 
+where date_format(datetime,'%Y-%m-%d') = date_format(now(), '%Y-%m-%d'); 
