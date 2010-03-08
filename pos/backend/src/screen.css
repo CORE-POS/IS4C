@@ -29,8 +29,9 @@ UL {
 
 #page_nav {
  float: left;
- padding-right: 8px;
  border-right: 1px solid #999;
+ padding-right: 8px;
+ width: 118px;
 }
 
 #page_panel {
@@ -38,7 +39,7 @@ UL {
  padding-left: 8px;
  padding-top: 8px;
  padding-bottom: 8px;
- width: 877px;
+ width: 865px;
 }
 
 #page_foot {

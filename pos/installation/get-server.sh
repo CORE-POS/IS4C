@@ -5,6 +5,8 @@
 cd /tmp
 wget http://is4c.coop/download/IS4C.tgz
 tar -xzf /tmp/IS4C.tgz
-mv /tmp/pos /
+cp -r /tmp/IS4C/pos /
 
 /pos/installation/ubuntu/install-server.sh
+
+cat /tmp/IS4C/README
