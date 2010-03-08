@@ -19,7 +19,7 @@ FIELDSET {
 }
 
 .edit_column {
- width: 436px;
+ width: 430px;
  display: inline-block;
  margin: 0px;
  padding: 0px;
@@ -35,7 +35,7 @@ LABEL[for="edit_description"],
 LABEL[for="edit_department"],
 LABEL[for="edit_subdepartment"] {
  display: inline-block;
- width: 90px;
+ width: 100px;
 }
 
 INPUT[name="edit_description"] {
@@ -44,7 +44,7 @@ INPUT[name="edit_description"] {
 
 LABEL[for="edit_price"] {
  display: inline-block;
- width: 90px;
+ width: 100px;
 }
 
 INPUT[name="edit_price"] {

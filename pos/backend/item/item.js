@@ -19,8 +19,14 @@ function set_boxes() {
 		// TODO - Only add the 26 margin when the offsetHeight is positive?
 	var f=document.getElementById('page_panel_statuses').offsetHeight+26;
 	
-
-		document.getElementById('results_similar_products_wrap').style.height=(a-b-c-d-e-f-24)+'px';
+	var g=a-b-c-d-e-f-24;
+	
+	// If the similar results box will fit and display at least 76px then resize it, if not, set a decent size and force a vertical scroll
+	if (g>76) {
+		document.getElementById('results_similar_products_wrap').style.height=g+'px';
+	} else {
+		document.getElementById('results_similar_products_wrap').style.height='300px';
+	}
 }
 
 function valid_description(e) {
