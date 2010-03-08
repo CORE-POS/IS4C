@@ -1,23 +1,11 @@
 #!/bin/sh
 
-echo -n "MySQL user account [default root]: "
-read MYUSR
-if [ "${MYUSR}" = "" ]; then
-  MYUSR=root
-fi
-
-echo -n "MySQL password for ${MYUSR}@localhost [default (none)]: "
-STTY_ECHO=`stty -g`
-stty -echo
-read MYPWD
-stty ${STTY_ECHO}
-
-CMD="mysql --user=${MYUSR} --password=${MYPWD}"
+# TODO - Better warning about needing to be root
+CMD="mysql --defaults-file=/etc/mysql/debian.cnf"
 
 cd /pos/installation/mysql/script
 
 ${CMD} < create_server_db.sql
-
 
 cd /pos/installation/mysql/is4c_log/tables/
 
