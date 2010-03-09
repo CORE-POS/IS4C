@@ -1,0 +1,15 @@
+<SCRIPT type="text/javascript">
+
+
+	if (navigator.appName.indexOf('Microsoft') != -1) {
+		function keyDown(e)
+		{
+			var ieKey=event.keyCode;
+			alert(ieKey);
+		}
+		document.onkeydown = keyDown;
+	}
+	else {
+		alert("Not IE");
+	}
+</SCRIPT>

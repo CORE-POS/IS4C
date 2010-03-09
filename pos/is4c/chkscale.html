@@ -1,0 +1,63 @@
+<html>
+
+<head></head>
+
+<body>
+<script type="text/javascript">
+
+var xmlHttp;
+var xmlmessage = "ok";
+
+function createXMLHttpRequest() {
+	
+	if (window.ActiveXObject) {
+
+		xmlHttp = new ActiveXObject("Microsft.XMLHTTP");
+	}
+	else if (window.XMLHttpRequest) {
+
+		xmlHttp = new XMLHttpRequest();
+	}
+}
+
+function startRequest() {
+	createXMLHttpRequest();
+	
+	xmlHttp.onreadystatechange = handleStateChange;
+	var myRandom=parseInt(Math.random()*99999999);
+	xmlHttp.open("GET", "rs232/scale?rand=" + myRandom, true);
+	// xmlHttp.open("GET", "scale.xml", true);
+	xmlHttp.send(null);
+}
+
+function handleStateChange() {
+	if (xmlHttp.readyState == 4) {
+		
+		if (xmlHttp.status == 200) {
+
+			var xmldata = xmlHttp.responseText;
+			if (xmlmessage != xmldata) {
+		
+				// alert(xmldata);
+	
+			
+				window.top.scale.document.form.reginput.value = xmldata;
+				window.top.scale.document.form.submit();
+				xmlmessage = xmldata;
+			}
+		}
+	}
+}
+
+function listen() {
+	startRequest();
+	setTimeout("listen();", 100);
+
+}
+
+listen();
+
+
+</script>
+</body>
+</html>
