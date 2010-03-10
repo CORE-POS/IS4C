@@ -129,7 +129,9 @@ $strcharflag
 
 
 	$intregisterno = $_SESSION["laneno"];
-	$intempno = $_SESSION["CashierNo"];
+	# TODO - URGENT FIX 
+	# $intempno = $_SESSION["CashierNo"];
+	$intempno=56;
 	$inttransno = $_SESSION["transno"];
 	$strCardNo = $_SESSION["memberID"];
 	$memType = $_SESSION["memType"];
@@ -148,13 +150,18 @@ $strcharflag
 	
 	$trans_id = $_SESSION["LastID"];
 	
-	$strqinsert = "INSERT into localtemptrans (datetime, register_no, emp_no, trans_no, upc, description, trans_type, "
+/*	$strqinsert = "INSERT into localtemptrans (datetime, register_no, emp_no, trans_no, upc, description, trans_type, "
 	            ."trans_subtype, trans_status, department, cost, quantity, unitPrice, total, regPrice, scale, tax, "
 		      ."foodstamp, discount, memDiscount, discountable, discounttype, ItemQtty, volDiscType, volume, "
 		      ."VolSpecial, mixMatch, matched, voided, memType, staff, numflag, charflag, card_no) "
+		      ."values (" */ # TODO - Wait until localtemptrans has numflag, charflag, & cost 
+
+	$strqinsert = "INSERT into localtemptrans (datetime, register_no, emp_no, trans_no, upc, description, trans_type, "
+	            ."trans_subtype, trans_status, department, quantity, unitPrice, total, regPrice, scale, tax, "
+		      ."foodstamp, discount, memDiscount, discountable, discounttype, ItemQtty, volDiscType, volume, "
+		      ."VolSpecial, mixMatch, matched, voided, memType, staff, card_no) "
 		      ."values (" 
-
-
+		      
 		      ."'".$datetimestamp."', "
 		      .$intregisterno.", "
 		      .$intempno.", "
@@ -165,7 +172,7 @@ $strcharflag
 		      ."'".nullwrap($strtranssubType)."', "
 		      ."'".nullwrap($strtransstatus)."', "
 		      .nullwrap($intdepartment).", "
-			.nullwrap($dblcost).", "
+#			  .nullwrap($dblcost).", "
 		      .nullwrap($dblquantity).", "
 		      .nullwrap($dblunitPrice).", "
 		      .nullwrap($dbltotal).", "
@@ -186,13 +193,13 @@ $strcharflag
 		      .nullwrap($intvoided).", "
 			.nullwrap($memType).", "
 			.nullwrap($staff).", "
-			.nullwrap($intnumflag).", "
-			."'".nullwrap($strcharflag)."', "
+#			.nullwrap($intnumflag).", "
+#			."'".nullwrap($strcharflag)."', "
 			."'".(string) $strCardNo."') ";
 			// .$trans_id.") ";
 
 
-        //	echo $strqinsert;
+#        echo $strqinsert;
 
 	sql_query($strqinsert, $db);
 	sql_close($db);

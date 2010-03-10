@@ -1,7 +1,7 @@
 <?php
 /*******************************************************************************
 
-    Copyright 2001, 2004 Wedge Community Co-op
+    Copyright 2001, 2004, 2008 Wedge Community Co-op
 
     This file is part of IS4C.
 
@@ -46,21 +46,21 @@ function upcscanned($entered) {
 		$p6 = substr($entered, -1);
 
 		if ($p6 == 0) $entered = substr($entered, 0, 3)."00000".substr($entered, 3, 3);
-		elseif ($p6 == 1) $entered = substr($entered, 0, 3)."10000".substr($entered, 4, 3);
-		elseif ($p6 == 2) $entered = substr($entered, 0, 3)."20000".substr($entered, 4, 3);
+		elseif ($p6 == 1) $entered = substr($entered, 0, 3)."10000".substr($entered, 3, 3);
+		elseif ($p6 == 2) $entered = substr($entered, 0, 3)."20000".substr($entered, 3, 3);
 		elseif ($p6 == 3) $entered = substr($entered, 0, 4)."00000".substr($entered, 4, 2);
-		elseif ($p6 == 4) $entered = substr($entered, 0, 5)."00000".substr($entered, 6, 1);
+		elseif ($p6 == 4) $entered = substr($entered, 0, 5)."00000".substr($entered, 5, 1);
 		else $entered = substr($entered, 0, 6)."0000".$p6;
 	}
 
 	if (strlen($entered) == 13 && substr($entered, 0, 1) != 0) $upc = "0".substr($entered, 0, 12);
 	else $upc = substr("0000000000000".$entered, -13);
-/*
+
 	if (substr($upc, 0, 3) == "002") {
 		$scaleprice = truncate2(substr($upc, -4)/100);
 		$upc = substr($upc, 0, 8)."00000";
 	}
-*/
+
 
 
 	$query = "select * from products where upc = '".$upc."' AND inUse = 1";
@@ -72,10 +72,49 @@ function upcscanned($entered) {
 
 	$normal_price = $row["normal_price"];
 	$special_price = $row["special_price"];
+	// $cost = $row["cost"]; cost not implemented yet
+	$cost=0;
 	$deposit = $row["deposit"];
 
-	if ($num_rows == 0 && substr($upc, 0, 3) != "005") boxMsg($upc."<BR><B>is not a valid item</B>");
+	$dept = $row["department"];
+
+	if ($num_rows == 0 && substr($upc, 0, 3) != "005") { 
+
+		$fconn = tDataconnect();
+            $datetimestamp = strftime("%Y-%m-%d %H:%M:%S %p", time());
+		$inserterror = "insert into failedscans select "
+			.$upc." as upc, "
+			.$_SESSION["laneno"]." as lane_no, "
+			.$_SESSION["CashierNo"]." as emp_no, "
+			.$_SESSION["transno"]." as trans_no, "
+			."'".$datetimestamp."' as fdate";
+
+		mysql_query($inserterror, $fconn);
+
+		boxMsg($upc."<BR><B>is not a valid item</B>");
+	}
 	elseif ($num_rows == 0 && substr($upc, 0, 3) == "005") couponcode($upc);
+
+        // RVM Hardcode for checking whether the customer is 21 or over in case item is alcoholic
+       
+        elseif (($dept == 19 || $dept == 20) && $_SESSION["store"] == "rvm" && $_SESSION["msgrepeat"] == 0 && $_SESSION["carded"] == 0) {
+
+	//	echo $_SESSION["bdaystatus"];
+
+		if ($_SESSION["bdaystatus"] == 99) {
+                	$boxMsg  = "<b>Enter date of birth from valid ID</b><br>in the form mmddyyyy<p><font size=-1>[Clear] to cancel</font>";
+		}
+		if ($_SESSION["bdaystatus"] == -1) {
+                        $boxMsg  = "<b>Invalid date of birth</b><br>re-enter in the form mmddyyyy<p><font size=-1>[Clear] to cancel</font>";
+		}
+		if ($_SESSION["bdaystatus"] == 0) {
+			$boxMsg  = "<b>Sales of item declined</b><p><font size=-1>[Clear] to cancel</font>";
+		}
+		$_SESSION["boxMsg"] = $boxMsg;
+                bdBoxMsgScreen();
+
+        }
+        
 	elseif ($row["scale"] != 0 && $_SESSION["weight"] == 0 && $_SESSION["quantity"] == 0) {
 
 		if ($_SESSION["wgtRequested"] == 0) {
@@ -158,12 +197,12 @@ function upcscanned($entered) {
 			else $scale = 0;
 
 			if ($row["tax"] <> 0 && $_SESSION["toggletax"] == 0) $tax = $row["tax"];
-			elseif ($row["tax"] <> 0 && $_SESSION["toggletax"] == 1) {
+			elseif ($row["tax"] <> 0 && $_SESSION["toggletax"] <> 0) {
 				$tax = 0;
 				$_SESSION["toggletax"] = 0;
 			}
-			elseif ($row["tax"] == 0 && $_SESSION["toggletax"] == 1) {
-				$tax = 1;
+			elseif ($row["tax"] == 0 && $_SESSION["toggletax"] <> 0) {
+				$tax = $_SESSION["toggletax"];
 				$_SESSION["toggletax"] = 0;
 			}
 			else $tax = 0;
@@ -304,13 +343,13 @@ function upcscanned($entered) {
 
 
 				if ($newmm >= 1) {
-					addItem($upc, $description, "I", "", "", $department, $newmm, truncate2($VolSpecial), truncate2($newmm * $VolSpecial), truncate2($VolSpecial), $scale, $tax, $foodstamp, $discount, $memDiscount, $discountable, $discounttype, $volume * $newmm, $volDiscType, $volume, $VolSpecial, $mixMatch, $volume * $newmm, 0);
+					addItem($upc, $description, "I", "", "", $department, $cost, $newmm, truncate2($VolSpecial), truncate2($newmm * $VolSpecial), truncate2($VolSpecial), $scale, $tax, $foodstamp, $discount, $memDiscount, $discountable, $discounttype, $volume * $newmm, $volDiscType, $volume, $VolSpecial, $mixMatch, $volume * $newmm, 0, 0, '');
 					$newmm = 0;
 					$_SESSION["qttyvalid"] = 0;
 				}
 
 				if ($newmmtotal >= $volume) {
-					addItem($upc, $description, "I", "", "", $department, 1, $voladj, $voladj, $voladj, $scale, $tax, $foodstamp, $discount, $memDiscount, $discountable, $discounttype, 1, $volDiscType, $volume, $VolSpecial, $mixMatch, $volume, 0);
+					addItem($upc, $description, "I", "", "", $department, $cost, 1, $voladj, $voladj, $voladj, $scale, $tax, $foodstamp, $discount, $memDiscount, $discountable, $discounttype, 1, $volDiscType, $volume, $VolSpecial, $mixMatch, $volume, 0, 0, '');
 					$quantity = $quantity - 1;
 					$newmmtotal = 0;
 					$_SESSION["qttyvalid"] = 0;
@@ -392,7 +431,7 @@ function upcscanned($entered) {
 
 
 
-					addItem($upc, $description, "I", " ", " ", $department, $quantity, $unitPrice, $total, $regPrice, $scale, $tax, $foodstamp, $discount, $memDiscount, $discountable, $discounttype, $qtty, $volDiscType, $volume, $VolSpecial, $mixMatch, $matched, $intvoided);
+					addItem($upc, $description, "I", " ", " ", $department, $cost, $quantity, $unitPrice, $total, $regPrice, $scale, $tax, $foodstamp, $discount, $memDiscount, $discountable, $discounttype, $qtty, $volDiscType, $volume, $VolSpecial, $mixMatch, $matched, $intvoided, 0, '');
 					$_SESSION["msgrepeat"] = 0;
 					$_SESSION["qttyvalid"] = 0;
 
@@ -417,7 +456,9 @@ function upcscanned($entered) {
 			elseif ($discounttype == 2 && $_SESSION["isMember"] == 1) {
 				$_SESSION["ondiscount"] = 1;
 				$_SESSION["voided"] = 2;
-				adddiscount($memDiscount);
+				// adddiscount($memDiscount);
+                                addmemspecialmsg();
+
 			}
 			elseif ($discounttype == 4 && $_SESSION["isStaff"] != 0) {
 				$_SESSION["ondiscount"] = 1;
