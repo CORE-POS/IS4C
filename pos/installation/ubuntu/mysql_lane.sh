@@ -60,15 +60,15 @@ ${CMD} < products.table
 ${CMD} < promomsgs.table
 ${CMD} < tenders.table
 
-#cd ../data
+cd /pos/installation/mysql/opdata/data
 
-#${CMD} < couponcodes.insert
-#${CMD} < custdata.insert
-#${CMD} < departments.insert
-#${CMD} < employees.insert
-#${CMD} < globalvalues.insert
-#${CMD} < products.insert
-#${CMD} < tenders.insert
+${CMD} < couponcodes.insert
+${CMD} < custdata.insert
+${CMD} < departments.insert
+${CMD} < employees.insert
+${CMD} < globalvalues.insert
+${CMD} < products.insert
+${CMD} < tenders.insert
 
 cd /pos/installation/mysql/opdata/views
 
