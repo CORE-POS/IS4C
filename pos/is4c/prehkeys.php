@@ -333,7 +333,7 @@ function tender($right, $strl) {
 //					boxMsgscreen();
 //				}
 				else {
-					addItem($tender_upc, $tender_desc, "T", $tender_code, "", 0, 0, $unit_price, $tendered, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, '');
+					addItem($tender_upc, $tender_desc, "T", $tender_code, "", 0, 0, 0, $unit_price, $tendered, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, '');
 					$_SESSION["msgrepeat"] = 0;
 					$_SESSION["TenderType"] = $tender_code;			/***added by apbw 2/1/05 SCR ***/
 
