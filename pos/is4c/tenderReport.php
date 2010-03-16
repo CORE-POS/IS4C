@@ -31,10 +31,15 @@ function tenderReport() {
 	
 	$eosQ = "select max(tdate) from dlog where register_no = " .$_SESSION["laneno"]. " and upc = 'ENDOFSHIFT'";
 	$eosR = mysql_query($eosQ);
-	$row = mysql_fetch_row($eosR);
-	$EOS = $row[0];
-//	$EOS = '2007-08-01 12:00:00';
-	
+	$num_rows = mysql_num_rows($eosR);
+	if ($num_rows > 0) {
+		$row = mysql_fetch_row($eosR);
+		$EOS = $row[0];
+	}
+	else {
+		$EOS = '2007-08-01 12:00:00'; // probably could change...
+	}
+
 	$query_ckq = "select * from cktenders where tdate > '" .$EOS. "' and register_no = ".$_SESSION["laneno"]." order by emp_no, tdate";
 	$query_ccq = "select * from cctenders where tdate > '" .$EOS. "' and register_no = ".$_SESSION["laneno"]." order by emp_no, tdate";
 	$query_dcq = "select * from dctenders where tdate > '" .$EOS. "' and register_no = ".$_SESSION["laneno"]." order by emp_no, tdate";

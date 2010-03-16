@@ -225,7 +225,9 @@ function tender($right, $strl) {
 		if ($_SESSION["ttlflag"] == 1 && ($right == "CX" || $right == "MI")) {			// added ttlflag on 2/28/05 apbw 
 
 			$charge_ok = chargeOk();
-			if ($right == "CX" && $charge_ok == 1 && strlen($_SESSION["memberID"]) == 5 && substr($_SESSION["memberID"], 0, 1) == "5") $charge_ok = 1;
+			// WEDGE Hardcode if ($right == "CX" && $charge_ok == 1 && strlen($_SESSION["memberID"]) == 5 && substr($_SESSION["memberID"], 0, 1) == "5") $charge_ok = 1;
+
+			if ($right == "CX" && $charge_ok == 1) $charge_ok = 1;
 
 			elseif ($right == "MI" && $charge_ok == 1) $charge_ok = 1;
 		
@@ -331,7 +333,7 @@ function tender($right, $strl) {
 //					boxMsgscreen();
 //				}
 				else {
-					addItem($tender_upc, $tender_desc, "T", $tender_code, "", 0, 0, $unit_price, $tendered, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+					addItem($tender_upc, $tender_desc, "T", $tender_code, "", 0, 0, $unit_price, $tendered, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, '');
 					$_SESSION["msgrepeat"] = 0;
 					$_SESSION["TenderType"] = $tender_code;			/***added by apbw 2/1/05 SCR ***/
 
@@ -445,7 +447,7 @@ function deptkey($price, $dept) {
 					boxMsg("coupon amount greater than department total");
 				}
 				else {
-					addItem("", $row["dept_name"]." Coupon", "I", "CP", "C", $dept, 1, -1 * $price, -1 * $price, -1 * $price, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, $intvoided);
+					addItem("", $row["dept_name"]." Coupon", "I", "CP", "C", $dept, 0, 1, -1 * $price, -1 * $price, -1 * $price, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, $intvoided, 0, '');
 					$_SESSION["ttlflag"] = 0;
 					$_SESSION["ttlrequested"] = 0;
 					goodBeep();
@@ -534,11 +536,13 @@ function deptkey($price, $dept) {
 			
 				if ($_SESSION["toggletax"] == 1) {
 					$tax = ($tax + 1) % 2;
+					// Or this? I'm not sure which is correct!
+					// $tax = ($tax > 0) ? 0 : 1;
 					$_SESSION["toggletax"] = 0;
 				}
 
 
-				addItem($price."DP".$dept, $row["dept_name"], "D", " ", " ", $dept, $_SESSION["quantity"], $price, $total, $price, 0 ,$tax, $foodstamp, 0, 0, $deptDiscount, 0, $_SESSION["quantity"], 0, 0, 0, 0, 0, $intvoided);
+				addItem($price."DP".$dept, $row["dept_name"], "D", " ", " ", $dept, 0, $_SESSION["quantity"], $price, $total, $price, 0 ,$tax, $foodstamp, 0, 0, $deptDiscount, 0, $_SESSION["quantity"], 0, 0, 0, 0, 0, $intvoided, 0, '');
 				$_SESSION["ttlflag"] = 0;
 				$_SESSION["ttlrequested"] = 0;
 				goodBeep();
@@ -595,14 +599,14 @@ function ttl() {
 		if ($_SESSION["percentDiscount"] > 0) {
 //			sql_query("update localtemptrans set trans_status = 'X' where voided IN(5)", $mconn);   // voided IN(5) for stackable discounts (needbased & MAD coupon)
 			
-			addItem("", $_SESSION["percentDiscount"]."% Discount", "C", "", "D", 0, 0, truncate2(-1 * $_SESSION["transDiscount"]), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5);
+			addItem("", $_SESSION["percentDiscount"]."% Discount", "C", "", "D", 0, 0, 0, truncate2(-1 * $_SESSION["transDiscount"]), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, '');
 		}
 		$amtDue = str_replace(",", "", $_SESSION["amtdue"]);
 
-		addItem("", "Subtotal ".truncate2($_SESSION["subtotal"]).", Tax ".truncate2($_SESSION["taxTotal"]), "C", "", "D", 0, 0, $amtDue, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3);
+		addItem("", "Subtotal ".truncate2($_SESSION["subtotal"]).", Tax ".truncate2($_SESSION["taxTotal"]), "C", "", "D", 0, 0, 0, $amtDue, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, '');
 	
 		if ($_SESSION["fntlflag"] == 1) {
-			addItem("", "Foodstamps Eligible", "", "", "D", 0, 0, truncate2($_SESSION["fsEligible"]), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7);
+			addItem("", "Foodstamps Eligible", "", "", "D", 0, 0, 0, truncate2($_SESSION["fsEligible"]), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, '');
 		}
 
 	}
@@ -614,17 +618,17 @@ function ttl() {
 
 function finalttl() {
 	if ($_SESSION["percentDiscount"] > 0) {
-		addItem("", "Discount", "C", "", "D", 0, 0, truncate2(-1 * $_SESSION["transDiscount"]), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5);
+		addItem("", "Discount", "C", "", "D", 0, 0, 0, truncate2(-1 * $_SESSION["transDiscount"]), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, '');
 	}
 
-	addItem("Subtotal", "Subtotal", "C", "", "D", 0, 0, truncate2($_SESSION["taxTotal"] - $_SESSION["fsTaxExempt"]), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 11);
+	addItem("Subtotal", "Subtotal", "C", "", "D", 0, 0, 0, truncate2($_SESSION["taxTotal"] - $_SESSION["fsTaxExempt"]), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 11, 0, '');
 
 
 	if ($_SESSION["fsTaxExempt"]  != 0) {
-		addItem("Tax", truncate2($_SESSION["fstaxable"])." Taxable", "C", "", "D", 0, 0, truncate2($_SESSION["fsTaxExempt"]), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7);
+		addItem("Tax", truncate2($_SESSION["fstaxable"])." Taxable", "C", "", "D", 0, 0, 0, truncate2($_SESSION["fsTaxExempt"]), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, '');
 	}
 
-	addItem("Total", "Total", "C", "", "D", 0, 0, truncate2($_SESSION["amtdue"]), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 11);
+	addItem("Total", "Total", "C", "", "D", 0, 0, 0, truncate2($_SESSION["amtdue"]), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 11, 0, '');
 
 }
 
@@ -641,7 +645,7 @@ function fsEligible() {
 		$_SESSION["fntlflag"] = 1;
 		setglobalvalue("fntlflag", 1);
 		if ($_SESSION["ttlflag"] != 1) ttl();
-		else addItem("", "Foodstamps Eligible", "" , "", "D", 0, 0, truncate2($_SESSION["fsEligible"]), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7);
+		else addItem("", "Foodstamps Eligible", "" , "", "D", 0, 0, 0, truncate2($_SESSION["fsEligible"]), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, '');
 
 		lastpage();
 	}
@@ -727,15 +731,15 @@ function MADdiscount($strl) {
 
 				if ($strl > 0) {
 					$discAmt = truncate2(-1 * ($_SESSION["discountableTotal"] * ($_SESSION["MADdiscount"] / 100)));
-					addItem($_SESSION["MADdiscount"]."MA", $_SESSION["MADdiscount"]."% Member Appreciation Discount", "I", "", "C", 0, 1, $discAmt, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 9);
+					addItem($_SESSION["MADdiscount"]."MA", $_SESSION["MADdiscount"]."% Member Appreciation Discount", "I", "", "C", 0, 0, 1, $discAmt, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 9, 0, '');
 				}
 				$amtDue = str_replace(",", "", $_SESSION["amtdue"]);
 
-				addItem("", "Discount Amt: ".$discAmt.", Tax ".truncate2($_SESSION["taxTotal"]), "C", "", "D", 0, 0, $amtDue, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3);
-//				addItem("", "Subtotal ".truncate2($_SESSION["subtotal"]).", Tax ".truncate2($_SESSION["taxTotal"]), "C", "", "D", 0, 0, $amtDue, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3);
+				addItem("", "Discount Amt: ".$discAmt.", Tax ".truncate2($_SESSION["taxTotal"]), "C", "", "D", 0, 0, 0, $amtDue, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, '');
+//				addItem("", "Subtotal ".truncate2($_SESSION["subtotal"]).", Tax ".truncate2($_SESSION["taxTotal"]), "C", "", "D", 0, 0, 0, $amtDue, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, '');
 	
 				if ($_SESSION["fntlflag"] == 1) {
-					addItem("", "Foodstamps Eligible", "", "", "D", 0, 0, truncate2($_SESSION["fsEligible"]), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7);
+					addItem("", "Foodstamps Eligible", "", "", "D", 0, 0, 0, truncate2($_SESSION["fsEligible"]), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, '');
 				}
 
 			}
@@ -800,16 +804,16 @@ function needBasedDisc($strl) {
 					if ($strl > 0) {
 //						$discountAmt = truncate2(-1 * $_SESSION["transDiscount"]);
 						$discountAmt = truncate2(-1 * ($_SESSION["discountableTotal"] * ($_SESSION["needBasedDisc"] / 100)));
-						addItem($_SESSION["needBasedDisc"]."FF", $_SESSION["needBasedDisc"]."% Food For All Discount", "I", "", "C", 0, 1, $discountAmt, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 10);					
+						addItem($_SESSION["needBasedDisc"]."FF", $_SESSION["needBasedDisc"]."% Food For All Discount", "I", "", "C", 0, 0, 1, $discountAmt, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 10, 0, '');					
 					}
 					$amtDue = str_replace(",", "", $_SESSION["amtdue"]);
 
-					addItem("", "Discount Amt: ".$discountAmt.", Tax ".truncate2($_SESSION["taxTotal"]), "C", "", "D", 0, 0, $amtDue, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3);
-//					addItem("", "Subtotal ".truncate2($_SESSION["subtotal"]).", Tax ".truncate2($_SESSION["taxTotal"]), "C", "", "D", 0, 0, $amtDue, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3);
+					addItem("", "Discount Amt: ".$discountAmt.", Tax ".truncate2($_SESSION["taxTotal"]), "C", "", "D", 0, 0, 0, $amtDue, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, '');
+//					addItem("", "Subtotal ".truncate2($_SESSION["subtotal"]).", Tax ".truncate2($_SESSION["taxTotal"]), "C", "", "D", 0, 0, 0, $amtDue, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, '');
 
 
 					if ($_SESSION["fntlflag"] == 1) {
-						addItem("", "Foodstamps Eligible", "", "", "D", 0, 0, truncate2($_SESSION["fsEligible"]), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7);
+						addItem("", "Foodstamps Eligible", "", "", "D", 0, 0, 0, truncate2($_SESSION["fsEligible"]), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, '');
 					}
 				}
 	//	------------ end NBDs special ttl() function ------------------

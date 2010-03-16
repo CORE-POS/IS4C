@@ -61,6 +61,7 @@ else {
 }
 
 echo "<FONT face='arial' size='+1'><B>".$time."</B></FONT>\n";
+//echo "<script language='javascript' src='liveclock.js'></script>";
 echo "</TD></TR></TABLE>\n";
 
 ?>

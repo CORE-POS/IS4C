@@ -2,7 +2,7 @@
 
 /*******************************************************************************
 
-    Copyright 2001, 2004 Wedge Community Co-op
+    Copyright 2001, 2004, 2008 Wedge Community Co-op
 
     This file is part of IS4C.
 
@@ -69,7 +69,7 @@ function clubCard($intItemNum)
 	else {
 
 		// --- added partial item desc to club card description - apbw 2/15/05 --- 
-		addItem($strUPC, "Club Card: " . substr($strDescription, 0, 19), "I", "", "J", $row["department"], $dblquantity, $dblUnitPrice, $dblTotal, 0.5 * $row["regPrice"], $intScale, $row["tax"], $intFoodStamp, $dblDiscount, $dblmemDiscount, $intDiscountable, $intdiscounttype, $dblquantity, $row["volDiscType"], $row["volume"], $dblVolSpecial, 0, 0, 0);
+		addItem($strUPC, "Club Card: " . substr($strDescription, 0, 19), "I", "", "J", $row["department"], 0, $dblquantity, $dblUnitPrice, $dblTotal, 0.5 * $row["regPrice"], $intScale, $row["tax"], $intFoodStamp, $dblDiscount, $dblmemDiscount, $intDiscountable, $intdiscounttype, $dblquantity, $row["volDiscType"], $row["volume"], $dblVolSpecial, 0, 0, 0, 0, '');
 
 		$update = "update localtemptrans set voided = 20 where trans_id = " . $intItemNum;
 		$connection = tDataConnect();

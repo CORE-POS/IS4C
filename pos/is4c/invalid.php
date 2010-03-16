@@ -21,13 +21,13 @@ opyright 2001, 2004 Wedge Community Co-op
 *********************************************************************************/
 ?>
 <BODY onLoad='document.form.reginput.focus();'>
-<TABLE background='graphics/acg_login.gif' border='0' cellpadding='0' cellspacing='0'>
+<TABLE border='0' cellpadding='0' cellspacing='0'>
 <TR><TD height='40' width='100' valign='center' bgcolor='#81366c' align='center'>
 <FONT face='arial' size='-1' color='white'><B>I S 4 C</B></FONT>
 </TD>
 <TD height='40' width='540' valign='bottom' align='right'>
 <FONT face='arial' size='-2'>
-&nbsp; A C G &nbsp; D E V E L O P M E N T &nbsp; V E R S I O N &nbsp; 0.113a</B></FONT>
+&nbsp; I S 4 C &nbsp; D E V E L O P M E N T &nbsp; V E R S I O N &nbsp; 2.0</B></FONT>
 </TD>
 </TR>
 
@@ -56,7 +56,22 @@ opyright 2001, 2004 Wedge Community Co-op
 	</TABLE>
 </TD></TR>
 <TR><TD width='640' colspan='2' align='right'>
+<FONT size='-2' face='arial'>E X I T</FONT>
 
+<?
+
+if ($_SESSION["laneno"] >= 9) {
+	echo "<A href='javascript:window.top.close();' ";
+}
+else {
+	echo "<A href='bye.html' ";
+}
+?>
+
+	onMouseOver=document.exit.src='/graphics/switchred2.gif'
+	onMouseOut=document.exit.src='/graphics/switchblue2.gif'>
+
+	<IMG name='exit' border='0' src='/graphics/switchblue2.gif'></A>
 </TD></TR>
 </TABLE>
 <FORM name='hidden'>
@@ -64,3 +79,4 @@ opyright 2001, 2004 Wedge Community Co-op
 </FORM>
 
 </BODY>
+</HTML>

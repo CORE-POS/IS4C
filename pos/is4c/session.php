@@ -123,6 +123,8 @@ function transReset() {
 	$_SESSION["troutd"] = "";
 	$_SESSION["ouxWait"] = 0;
 	$_SESSION["unlocked"] = 0;
+	$_SESSION["bdaystatus"] = 99;    // 99 = not requested, -1 = invalid, 0 = younger than 21, 1 = 21 and over
+	$_SESSION["carded"] = 0;
 
 
 

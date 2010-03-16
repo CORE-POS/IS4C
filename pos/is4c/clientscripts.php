@@ -75,7 +75,11 @@ function boxMsgscreen() {
 	echo "</SCRIPT>";
 }
 
-
+function bdBoxMsgscreen() {
+        echo "<SCRIPT type=\"text/javascript\">";
+        echo "window.location = '/bdBoxMsg2.php';";
+        echo "</SCRIPT>";
+}
 function ccboxMsgscreen(){
 
 	echo "<SCRIPT type=\"text/javascript\">";

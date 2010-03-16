@@ -92,6 +92,12 @@ if ($_SESSION["msgrepeat"] == 1 && $entered != "CL") {
 
 if (substr($entered, 0, 4) == "SO8A") $entered = substr($entered, 4);
 
+if (is_numeric($entered) && substr($entered, 0, 2) == "55" && strlen($entered) == 11) {
+        $entered = (int) substr($entered, 3);
+	$entered = (string) $entered;
+        $entered = $entered."ID";
+}
+
 if ($entered == "TNPR") {           // patronage tracking module    ~joel 2006-12-26
 	$_SESSION["togglePatronage"] = 1;
 	trackPatronage();
@@ -552,6 +558,28 @@ else {
 		$strr = substr($entered, 2);
 
 		switch ($right) {
+                        case "BD":
+                                if (!is_numeric($strl)) {
+                                        inputUnknown();
+                                }
+                                else {
+                                        $deposit = $strl/100;
+                                        addDeposit(1, $deposit, 0);
+                                        lastpage();
+                                }
+                                break;
+
+                        case "BR":
+                                if (!is_numeric($strl)) {
+                                        inputUnknown();
+                                }
+                                else {
+                                        $deposit = $strl/100;
+                                        addBottleReturn(1, $deposit, 0);
+                                        lastpage();
+                                }
+                                break;
+
 			case "TW":
 				if (is_numeric($strl)) {
 					if (strlen($strl) > 4) {

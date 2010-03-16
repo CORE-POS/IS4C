@@ -399,5 +399,19 @@ echo "press [enter] to cancel";
 echo "</FONT></CENTER></TD></TR></TABLE></TD></TR>";
 
 }
+//--------------------------------------------------------------------//
 
+function loanenter($strmsg) {
+
+echo "<TR><TD height='295' width='640' align='center' valign='center'>";
+echo "<TABLE border='0' cellpadding='0' cellspacing='0'>";
+echo "<TR><TD bgcolor='#004080' height='150' width='260' valign='center' align='center'></CENTER>";
+echo "<FONT face='arial' size='-1' color='white'>";
+echo $strmsg;
+echo "<FORM action='loanadd.php' method='post' autocomplete='off' name='loanamt'>";
+echo "<INPUT Type='text' name='loan' size='15' onblur='document.loanamt.loan.focus()'></FORM>";
+echo "press [enter] to cancel";
+echo "</FONT></CENTER></TD></TR></TABLE></TD></TR>";
+
+}
 ?>
