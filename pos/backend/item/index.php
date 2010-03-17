@@ -4,6 +4,7 @@
 	$backoffice=array();
 	$backoffice['status']=array();
 	$backoffice['similar_products']=array();
+	
 	/*
 	 * Use $_POST to delete/insert/update product
 	 * Set status message
@@ -32,11 +33,34 @@
 	
 	if (isset($_REQUEST['a']) && $_REQUEST['a']=='delete') {
 	} else if (isset($_REQUEST['a']) && $_REQUEST['a']=='insert') {
+		// TODO - Check against UPC constraints
+		$backoffice['product_detail']['upc']=$_REQUEST['q'];
+		// TODO - A set of sensible defaults
+		$backoffice['product_detail']['upc']=$_REQUEST['q'];
+		$backoffice['product_detail']['advertised']=1; 
+		$backoffice['product_detail']['department']=1; 
+		$backoffice['product_detail']['deposit']=0;
+		$backoffice['product_detail']['description']='New Product';
+		$backoffice['product_detail']['discount']=1;
+		$backoffice['product_detail']['foodstamp']=1; 
+		$backoffice['product_detail']['id']='NEW'; // TODO - This may not work
+		$backoffice['product_detail']['modified']=strftime("%F"); 
+		$backoffice['product_detail']['normal_price']=0;
+		$backoffice['product_detail']['scale']=0; 
+		$backoffice['product_detail']['size']=''; 
+		$backoffice['product_detail']['subdept']=1;
+		$backoffice['product_detail']['tareweight']=0;
+		$backoffice['product_detail']['tax']=0; 
+		$backoffice['product_detail']['unitofmeasure']=''; 
+		$backoffice['product_detail']['wicable']=1;
+		$backoffice['product_detail']['inUse']=1;
+		
 	} else if (isset($_REQUEST['a']) && $_REQUEST['a']=='search') {
 		search(&$backoffice);		
 	} else if (isset($_REQUEST['a']) && $_REQUEST['a']=='update') {
 		update(&$backoffice);
 		// after updating, display the same product
+		$_REQUEST['t']='upc';
 		$_REQUEST['q']=$_REQUEST['edit_upc'];
 		search(&$backoffice);
 	} else  {
