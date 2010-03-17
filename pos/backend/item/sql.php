@@ -2,6 +2,37 @@
 	require_once($_SERVER["DOCUMENT_ROOT"].'/src/htmlparts.php');
 
 	function search($backoffice) {
+		// $_REQUEST['q'] == Query string, or group value
+		// $_REQUEST['t'] == Query type
+		
+		switch ($_REQUEST['t']) {
+			// TODO - Further check data
+			case 'upc_description_sku':
+				// TODO - Update when sku/item_number's are added
+				$query_where='(`products`.`upc`='.$_REQUEST['q'].' OR `products`.`description` LIKE \'%'.$_REQUEST['q'].'%\')';
+			break;
+			case 'upc': 
+				$query_where='`products`.`upc`='.$_REQUEST['q'];
+			break;
+			case 'description':
+				// TODO - Add soundex or something slick
+				$query_where='`products`.`description` LIKE \'%'.$_REQUEST['q'].'%\'';
+			break;
+			case 'item number':
+			case 'brand':
+			case 'vendor':
+				// TODO - Can you believe that these aren't included!
+				$query_where='';
+			break;
+			case 'section':
+				$query_where='`products`.`subdept`='.$_REQUEST['q'];
+			break;
+			case 'ask':
+				// TODO - Some type of breakout
+				$query_where='';
+			break;
+		}
+		
 		$link=mysql_connect($_SESSION["mServer"], $_SESSION["mUser"], $_SESSION["mPass"]);
 		if ($link) {
 			$query='SELECT
@@ -23,7 +54,7 @@
 			`products`.`upc`,
 			`products`.`wicable`,
 			`products`.`inUse` 
-			FROM `is4c_op`.`products` WHERE `products`.`upc`='.$_REQUEST['q'];
+			FROM `is4c_op`.`products` WHERE 1=1 AND '.$query_where;
 			$result=mysql_query($query, $link);
 			if ($result) {
 				if (mysql_num_rows($result)==1) {
@@ -32,7 +63,10 @@
 					array_push($backoffice['status'], 'No search results found for '.$_REQUEST['q']);
 					// TODO - At the Wedge, this leads to a new product being added
 				} else {
-					$backoffice['multiple_results']=mysql_fetch_array($result);
+					$backoffice['multiple_results']=array();
+					while ($row=mysql_fetch_array($result)) {
+						array_push($backoffice['multiple_results'],$row);
+					}
 				}
 			} else {
 				array_push($backoffice['status'], 'Error with MySQL query: '.mysql_error($link));

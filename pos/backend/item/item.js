@@ -14,7 +14,10 @@ function set_boxes() {
 	var b=document.getElementById('page_top').offsetHeight;
 	var c=document.getElementById('page_foot').offsetHeight;
 	var d=document.search.offsetHeight;
-	var e=document.edit.offsetHeight;
+	var e=0;
+		if (document.edit) {
+			e=document.edit.offsetHeight;
+		}
 	
 		// TODO - Only add the 26 margin when the offsetHeight is positive?
 	var f=document.getElementById('page_panel_statuses').offsetHeight+26;

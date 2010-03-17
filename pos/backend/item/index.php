@@ -63,12 +63,12 @@
 				<input name="a" type="hidden" value="search"/> 
 				<input name="q" type="text" value=""/>
 				<select name="t" size=1>
-					<option disabled value="upc_description_sku">UPC/Description/Item Number</option>
+					<option value="upc_description_sku">UPC/Description/Item Number</option>
 					<option selected value="upc">UPC</option>
-					<option disabled value="description">Description</option>
+					<option value="description">Description</option>
 					<option disabled value="item number">Item Number</option>
 					<option disabled value="brand">Brand</option>
-					<option disabled value="section">Section</option>
+					<option value="section">Section</option>
 					<option disabled value="vendor">Vendor</option>
 					<option disabled value="ask">You can ask for more</option>
 				</select>
