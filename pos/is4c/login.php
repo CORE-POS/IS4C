@@ -29,8 +29,7 @@ if (!function_exists("initiate_session")) include("session.php");
 initiate_session();
 ?>
 
-<FRAMESET cols='675,*' frameborder='0' scrolling='no'>
-<FRAME src='/login2.php' border='0' scrolling='no'>
-<FRAME src='/right.php' border='0' scrolling='no'>
-
-</FRAMESET>
+<frameset cols='675,*' frameborder='0' scrolling='no'>
+    <frame src='/login2.php' border='0' scrolling='no' />
+    <frame src='/right.php' border='0' scrolling='no' />
+</frameset>
