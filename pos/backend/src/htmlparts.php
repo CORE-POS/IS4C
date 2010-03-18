@@ -14,7 +14,7 @@
 				<li>Reports</li>
 				<li>Dayend Balancing</li>
 				<li><a href="/sync">Synchronization</a></li>
-				<li>Admin</li>
+				<li><a href="/admin">Admin</a></li>
 			</ul>
 		</div>';
 	}
