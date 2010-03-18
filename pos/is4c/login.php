@@ -21,15 +21,21 @@
 
 *********************************************************************************/
 
-if (!function_exists("pDataConnect")) include("connect.php");
-if (!function_exists("tDataConnect")) include("connect.php");
-if (!function_exists("initiate_session")) include("session.php");
+    if (!function_exists("pDataConnect")) include("connect.php");
+    if (!function_exists("tDataConnect")) include("connect.php");
+    if (!function_exists("initiate_session")) include("session.php");
 
-
-initiate_session();
+    initiate_session();
 ?>
 
-<frameset cols='675,*' frameborder='0' scrolling='no'>
-    <frame src='/login2.php' border='0' scrolling='no' />
-    <frame src='/right.php' border='0' scrolling='no' />
-</frameset>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <title></title>
+    </head>
+    <body>
+        <frameset cols='675,*' frameborder='0' scrolling='no'>
+            <frame src='/login2.php' border='0' scrolling='no' />
+            <frame src='/right.php' border='0' scrolling='no' />
+        </frameset>    </body>
+</html>
