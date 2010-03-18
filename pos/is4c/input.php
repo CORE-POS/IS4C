@@ -68,7 +68,7 @@
                             <?php
                         }
                     ?>
-                <font face='arial' size='+1'><b>".$time."</b></font>
+                <font face='arial' size='+1'><b><?=$time?></b></font>
                 </td>
             </tr>
         </table>
