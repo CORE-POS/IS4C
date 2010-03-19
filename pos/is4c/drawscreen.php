@@ -25,9 +25,7 @@ include_once("lib.php");
 
 function printfooter() {
 
-//	if ($_SESSION["msgrepeat"] != 1) {
-		$_SESSION["runningTotal"] = $_SESSION["amtdue"];
-//	}
+	$_SESSION["runningTotal"] = $_SESSION["amtdue"];
 
 	if ($_SESSION["End"] == 1) {
 		$_SESSION["runningTotal"] = -1 * $_SESSION["change"];
@@ -66,35 +64,28 @@ function printfooter() {
 		$strpercentdisclabel = $_SESSION["percentDiscount"]."% Discount";
 	}
 
-// -----------------------------------------------------------------------------------------------
-
 	echo "</table></td></tr></table>";
-	echo "<table border=0 cellspacing=0 cellpadding=0>";
-	echo "<tr><td width=119 bgcolor=white align=left><font face=arial color=black size=-1><b>".$labelyousaved."</b></font></td>";
-	echo "<td width=117 bgcolor=white align=center><font face=arial color=#004080 size=-1><b>".$strpercentdisclabel."</b></font></td>";
-	echo "<td width=117 bgcolor=white align=center><font face=arial color=#004080 size=-1><b>Mbr Special</b></font></td>";
-
-// -----------------------------------------------------------------------------------------------
-
+	echo "<table border='0' cellspacing='0' cellpadding='0'>";
+	echo "<tr><td width='119' bgcolor='white' align='left'><font face='arial' color='black' size='-1'><b>" . $labelyousaved . "</b></font></td>";
+	echo "<td width='117' bgcolor='white' align='center'><font face='arial' color='#004080' size='-1'><b>" . $strpercentdisclabel . "</b></font></td>";
+	echo "<td width='117' bgcolor='white' align='center'><font face='arial' color='#004080' size='-1'><b>Mbr Special</b></font></td>";
 
 	$strdiscountlabel = "Special";
 
-
-// ----------------------First Row Labels ---------------------------------------------------------
-
-	echo "<td width=117 bgcolor=white align=center><font face=arial color=#004080 size=-1><b>";
+    // ----------------------First Row Labels ---------------------------------------------------------
+	echo "<td width='117' bgcolor='white' align='center'><font face='arial' color='#004080' size='-1'><b>";
 	echo $strdiscountlabel."</b></font></td>";
 
-	if ( $_SESSION["ttlflag"] == 1  and $_SESSION["End"] != 1 ) {
+	if ($_SESSION["ttlflag"] == 1  and $_SESSION["End"] != 1 ) {
 		if ($_SESSION["fntlflag"] == 1) {
-			echo "<td width=170 bgcolor=#800080 align=right><font face=arial color=white size=-1><b>fs Amount Due</b></font></td></tr>";
-			// $_SESSION["ttlflag"] = 0;
-		} else {
-			echo "<td width=170 bgcolor=#800000 align=right><font face=arial color=white size=-1><b>Amount Due</b></font></td></tr>";
+			echo "<td width='170' bgcolor='#800080' align='right'><font face='arial' color='white' size='-1'><b>fs Amount Due</b></font></td></tr>";
+		}
+		else {
+			echo "<td width='170' bgcolor=#800000 align=right><font face=arial color=white size=-1><b>Amount Due</b></font></td></tr>";
 		}
 	}
 	elseif ($_SESSION["ttlflag"] == 1  and $_SESSION["End"] == 1 ) {
-		echo "<td width=170 bgcolor=#004080 align=right><font face=arial color=white size=-1><b>Change</b></font></td></tr>";
+		echo "<td width='170' bgcolor='#004080' align='right'><font face='arial' color='white' size='-1'><b>Change</b></font></td></tr>";
 	}	
 	else {
 		echo "<td width=170 bgcolor=black align=right><font face=arial color=white size=-1><b>Total</b></font></td></tr>";
