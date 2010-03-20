@@ -59,15 +59,12 @@ elseif ($admin_task == "RESUME") {
 	}
 }
 elseif ($admin_task == "TR") {
-
         getsubtotals();
         if ($_SESSION["LastID"] != 0) {
                 msgscreen("transaction in progress");
         }
 	else {
-
 		tenderReport();
-//		gohome();
 	}
 }
 
@@ -76,4 +73,3 @@ elseif ($admin_task == "" || !$admin_task || strlen($admin_task) < 1) {
 	gohome();
 }
 
-?>

@@ -22,11 +22,11 @@
 *********************************************************************************/
 
 
-if (!function_exists("drawerKick")) include_once("printLib.php");
-
+if (!function_exists("drawerKick")) {
+    include_once("printLib.php");
+}
 
 drawerKick();
 header("location:pos2.php");
-
 
 ?>

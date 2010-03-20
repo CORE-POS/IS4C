@@ -22,47 +22,48 @@
 *********************************************************************************/
 ?>
  
-<html>
-<body>
-<FORM name='Form1' method='post' action='/pos2.php'>
-    <INPUT Type='hidden' name='input' value=''>
-</FORM>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <title></title>
+    </head>
+    <body>
+        <form name='Form1' method='post' action='/pos2.php'>
+            <input type='hidden' name='input' value=''>
+        </form>
 
-<?php
-if (!function_exists("endorseType")) include_once("clientscripts.php");		// apbw 03/24/05 Wedge Printer Swap Patch
+        <?php
+            if (!function_exists("endorseType")) {
+                include_once("clientscripts.php");		// apbw 03/24/05 Wedge Printer Swap Patch
+            }
 
-$decision = strtoupper(trim($_POST["input"]));
+            $decision = strtoupper(trim($_POST["input"]));
 
-if ($decision == "CL") {
-	$_SESSION["msgrepeat"] = 0;
-	$_SESSION["toggletax"] = 0;
-	$_SESSION["chargetender"] = 0;
-	$_SESSION["togglefoodstamp"] = 0;
-	$_SESSION["endorseType"] = "";
-/*	header("Location:/pos2.php");*/
-	echo "<script language='javascript'>";
-	echo "window.location = '/pos2.php';";
-	echo "</script>";
-}
+            if ($decision == "CL") {
+	            $_SESSION["msgrepeat"] = 0;
+	            $_SESSION["toggletax"] = 0;
+	            $_SESSION["chargetender"] = 0;
+	            $_SESSION["togglefoodstamp"] = 0;
+	            $_SESSION["endorseType"] = "";
+	            echo "<script language='javascript'>";
+	            echo "window.location = '/pos2.php';";
+	            echo "</script>";
+            }
 
-elseif (strlen($decision) > 0) {
-
-	$_SESSION["msgrepeat"] = 0;
-
-	echo "<SCRIPT language=\"javascript\">"
-		."document.Form1.input.value=\"".$_SESSION["strEntered"]."\";"
-		."document.Form1.submit();"
-		."</SCRIPT>";
-} else {
-
-	endorseType();
-
-	echo "<SCRIPT language=\"javascript\">"
-		."document.Form1.input.value=\"".$_SESSION["strEntered"]."\";"
-		."document.Form1.submit();"
-		."</SCRIPT>";
-}
-
-?>
-</body>
+            elseif (strlen($decision) > 0) {
+	            $_SESSION["msgrepeat"] = 0;
+	            echo "<script language=\"javascript\">"
+		            . "document.Form1.input.value=\"" . $_SESSION["strEntered"] . "\";"
+		            . "document.Form1.submit();"
+		            . "</script>";
+            }
+            else {
+	            endorseType();
+	            echo "<script language=\"javascript\">"
+		            ."document.Form1.input.value=\"" . $_SESSION["strEntered"] . "\";"
+		            ."document.Form1.submit();"
+		            ."</script>";
+            }
+        ?>
+    </body>
 </html>

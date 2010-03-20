@@ -87,20 +87,16 @@ else {
 			setglobalvalue("CashierNo", 9999);
 			setglobalvalue("cashier", "Training Mode");
 			setglobalvalue("LoggedIn", 1);
-			// loadconfigdefault();
 			loadglobalvalues();
 			$_SESSION["training"] = 1;
 			loginscreen();
 		}
-		else header("Location:invalid.php");
-
-		// sql_close($db_g);
+		else {
+		    header("Location:invalid.php");
+        }
 	}
 	else {
-
 		if ($password == $row_g["CashierNo"]) {
-
-			// loadconfigdefault();
 			loadglobalvalues();
 			testremote();
 
@@ -119,27 +115,21 @@ else {
 			$num_rows_a = sql_num_rows($result_a);
 
 			if ($num_rows_a > 0) {
-
-				// loadconfigdefault();
 				loadglobalvalues();
-
 				testremote();
-
 				loginscreen();
 			}
-			else header("Location:invalid.php");
+			else {
+			    header("Location:invalid.php");
+			}
 
 			sql_close($db_a);
 		}
-
 	}
-
-
 }
 
 getsubtotals();
 datareload();
-
 
 if ($_SESSION["LastID"] != 0 && $_SESSION["memberID"] != "0" and $_SESSION["memberID"]) {
 	$_SESSION["unlock"] = 1;
@@ -165,12 +155,9 @@ function datareload() {
 
 
 function auth_dataError($Type, $msg, $file, $line, $context) {
-
-
 	$_SESSION["errorMsg"] = $Type." ".$msg." ".$file." ".$line." ".$context;
 	if ($Type != 8) {
 		$_SESSION["standalone"] = 1;
 	}
 }
 
-?>
