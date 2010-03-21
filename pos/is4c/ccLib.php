@@ -447,7 +447,7 @@ function ccXML() {
     $dbinx = tDataconnect();
     $inxQ = "INSERT INTO INX"
         . "VALUES('$user','$command','$proc','$TID','$CC','$expDate','$manual','$trackII',"
-        , "'$transno',1,$amount,'','$now','$trans_id','$trans_no','$lane')";
+        . "'$transno',1,$amount,'','$now','$trans_id','$trans_no','$lane')";
     if (sql_query($inxQ,$dbinx)) {
         // changed all filename functions (remote_oux(), local_inx(), etc) to variables, cached up top --atf 5/24/07
         delete_file($local_inx);        // ***** changed local_inx function to variable abpw 3/05/07 *****
