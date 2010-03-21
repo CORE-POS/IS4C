@@ -26,7 +26,8 @@
 	            if ($_SESSION["End"] == 1 || $_SESSION["msg"] == 2) {
 		            if ($_SESSION["msg"] == 2) {
 			            $returnHome = 1;
-		            } else {
+		            }
+		            else {
 			            $returnHome = 0;
 		            }
 
@@ -56,7 +57,8 @@
 
 	            if ($_SESSION["DBMS"] == "mssql") {
 		            sql_query("exec clearTempTables", $db);
-	            } else {
+	            }
+	            else {
 		            moveTempData();
 		            truncateTempTables();
 	            }

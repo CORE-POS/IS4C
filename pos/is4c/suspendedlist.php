@@ -28,10 +28,16 @@
 <SCRIPT type="text/javascript">
 	document.onkeydown = keyDown;
 	function keyDown(e) {
-		if ( !e ) { e = event; };
+		if ( !e ) {
+		    e = event;
+		};
 		var ieKey=e.keyCode;
-		if (ieKey==13) { document.selectform.submit();}
-		else if (ieKey != 0 && ieKey != 38 && ieKey != 40) { window.top.location = 'pos.php';};
+		if (ieKey==13) {
+		    document.selectform.submit();
+		}
+		else if (ieKey != 0 && ieKey != 38 && ieKey != 40) {
+		    window.top.location = 'pos.php';
+		};
 	}
 </SCRIPT>
 
@@ -81,7 +87,7 @@ if ($num_rows > 0) {
 
 	echo "</SELECT>\n</FORM>\n</TD>\n"
 		."<TD width='240'>\n"
-		."<FONT face='arial' size='+1' color='#004080'>use arrow keys to navigate<BR>[c] to cancel</FONT>\n"
+		."<FONT face='arial' size='+1' color='#004080'>use arrow keys to navigate<br />[c] to cancel</FONT>\n"
 		."</TD></TR>\n</TABLE>\n";
 }
 else {

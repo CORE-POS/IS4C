@@ -78,7 +78,7 @@ function upcscanned($entered) {
 
 	$dept = $row["department"];
 
-	if ($num_rows == 0 && substr($upc, 0, 3) != "005") { 
+	if ($num_rows == 0 && substr($upc, 0, 3) != "005") {
 
 		$fconn = tDataconnect();
             $datetimestamp = strftime("%Y-%m-%d %H:%M:%S %p", time());
@@ -91,7 +91,7 @@ function upcscanned($entered) {
 
 		mysql_query($inserterror, $fconn);
 
-		boxMsg($upc."<BR><B>is not a valid item</B>");
+		boxMsg($upc."<br /><B>is not a valid item</B>");
 	}
 	elseif ($num_rows == 0 && substr($upc, 0, 3) == "005") couponcode($upc);
 
@@ -102,10 +102,10 @@ function upcscanned($entered) {
 	//	echo $_SESSION["bdaystatus"];
 
 		if ($_SESSION["bdaystatus"] == 99) {
-                	$boxMsg  = "<b>Enter date of birth from valid ID</b><br>in the form mmddyyyy<p><font size=-1>[Clear] to cancel</font>";
+                	$boxMsg  = "<b>Enter date of birth from valid ID</b><br />in the form mmddyyyy<p><font size=-1>[Clear] to cancel</font>";
 		}
 		if ($_SESSION["bdaystatus"] == -1) {
-                        $boxMsg  = "<b>Invalid date of birth</b><br>re-enter in the form mmddyyyy<p><font size=-1>[Clear] to cancel</font>";
+                        $boxMsg  = "<b>Invalid date of birth</b><br />re-enter in the form mmddyyyy<p><font size=-1>[Clear] to cancel</font>";
 		}
 		if ($_SESSION["bdaystatus"] == 0) {
 			$boxMsg  = "<b>Sales of item declined</b><p><font size=-1>[Clear] to cancel</font>";
@@ -144,7 +144,7 @@ function upcscanned($entered) {
 		boxMsg("fractional quantity cannot be accepted for this item");
 	}
 	elseif ($_SESSION["itemDiscount"] < 0 || $_SESSION["itemDiscount"] > 65) {
-		xboxMsg("item cannot be<br>discounted at ".$_SESSION["itemDiscount"]."%");
+		xboxMsg("item cannot be<br />discounted at ".$_SESSION["itemDiscount"]."%");
 		$_SESSION["itemDiscount"] = 0;
 	}
 /*
@@ -153,7 +153,7 @@ function upcscanned($entered) {
 	}
 	elseif (($upc == "0000000008005") && ($_SESSION["isMember"] == 0)) {
 
-		boxMsg("<BR>member discount not applicable</B>");
+		boxMsg("<br />member discount not applicable</B>");
 	}
 	elseif ($upc == "0000000008005" && ($quantity + couponsused()) > 3) {
 		xboxMsg("number of coupons exceeds maximum allowable");
@@ -237,7 +237,8 @@ function upcscanned($entered) {
 				$discountable = 1;
 				$special_price = number_format(($sale_price * (100 - $_SESSION["itemDiscount"]) / 100), 2);
 				$_SESSION["itemDiscount"] = 0;
-			} elseif ($_SESSION["itemDiscount"] > 0 && $_SESSION["itemDiscount"] < 65) {
+			}
+			elseif ($_SESSION["itemDiscount"] > 0 && $_SESSION["itemDiscount"] < 65) {
 				$discountable = 1;
 				$discounttype = 1;
 				$special_price = number_format(($normal_price * (100 - $_SESSION["itemDiscount"]) / 100), 2);
@@ -248,7 +249,8 @@ function upcscanned($entered) {
 				$_SESSION["toggleDiscountable"] = 0;
 				if  ($discountable != 0) {
 					$discountable = 0;
-				} else {
+				}
+				else {
 					$discountable = 1;
 				}
 			}
@@ -378,19 +380,19 @@ function upcscanned($entered) {
 			if ($upc == "0000000008010" && $_SESSION["msgrepeat"] == 0) {
 				$_SESSION["endorseType"] = "giftcert";
 				$_SESSION["tenderamt"] = $total;
-				$_SESSION["boxMsg"] = "<B>".$total." gift certificate</B><BR>insert document<BR>press [enter] to endorse<P><FONT size='-1'>[clear] to cancel</FONT>";
+				$_SESSION["boxMsg"] = "<B>".$total." gift certificate</B><br />insert document<br />press [enter] to endorse<P><FONT size='-1'>[clear] to cancel</FONT>";
 				boxMsgscreen();
 			}
 			elseif ($upc == "0000000008006" && $_SESSION["msgrepeat"] == 0) {
 				$_SESSION["endorseType"] = "stock";
 				$_SESSION["tenderamt"] = $total;
-				$_SESSION["boxMsg"] = "<B>".$total." stock payment</B><BR>insert form<BR>press [enter] to endorse<P><FONT size='-1'>[clear] to cancel</FONT>";
+				$_SESSION["boxMsg"] = "<B>".$total." stock payment</B><br />insert form<br />press [enter] to endorse<P><FONT size='-1'>[clear] to cancel</FONT>";
 				boxMsgscreen();
 			}
 			elseif ($upc == "0000000008011" && $_SESSION["msgrepeat"] == 0) {
 				$_SESSION["endorseType"] = "classreg";
 				$_SESSION["tenderamt"] = $total;
-				$_SESSION["boxMsg"] = "<B>".$total." class registration</B><BR>insert form<BR>press [enter] to endorse<P><FONT size='-1'>[clear] to cancel</FONT>";
+				$_SESSION["boxMsg"] = "<B>".$total." class registration</B><br />insert form<br />press [enter] to endorse<P><FONT size='-1'>[clear] to cancel</FONT>";
 				boxMsgscreen();
 			}
 

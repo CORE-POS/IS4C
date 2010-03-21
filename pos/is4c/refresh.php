@@ -2,7 +2,8 @@
 	//$foo = 	
 	if(file_exists("foo.out")){
 		echo "File foo.out exists";
-	}else{
+	}
+	else{
 ?>
 
       <HTML>

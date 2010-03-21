@@ -21,19 +21,22 @@
 
 *********************************************************************************/
 ?>
-<BODY onLoad='document.forms[0].elements[0].focus();'>
-<?
-if (!function_exists("printfooter")) include("drawscreen.php");
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <title></title>
+    </head>
+    <body onLoad='document.forms[0].elements[0].focus();'>
+        <?
+            if (!function_exists("printfooter")) include("drawscreen.php");
 
-$_SESSION["away"] = 1;
+            $_SESSION["away"] = 1;
 
-printheaderb();
-deptsearchbox("dept search<BR>by description or number");
-$_SESSION["scan"] = "noScan";
-$_SESSION["beep"] = "noBeep";
-printfooter();
-
-?>
-
-</BODY>
-</HTML>
+            printheaderb();
+            deptsearchbox("dept search<br />by description or number");
+            $_SESSION["scan"] = "noScan";
+            $_SESSION["beep"] = "noBeep";
+            printfooter();
+        ?>
+    </body>
+</html>

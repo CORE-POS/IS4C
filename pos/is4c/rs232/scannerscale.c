@@ -42,7 +42,8 @@
    fd = open("/dev/ttyS0", O_RDWR | O_NOCTTY | O_NDELAY);
 
    if (fd == -1)
-   {                                              /* Could not open the port */
+   {
+     /* Could not open the port */
      fprintf(stderr, "open_port: Unable to open /dev/ttyS0 - %s\n",
              strerror(errno));
    }
@@ -113,9 +114,10 @@ num = 0;
   
  
 
-   if (in_buffer != -1) {    /* if data is present in the serial port buffer */
+   if (in_buffer != -1) {
+     /* if data is present in the serial port buffer */
 
-     if (chout[0] == 'S') {  
+     if (chout[0] == 'S') {
        num = 0;
      }
      

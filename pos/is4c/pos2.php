@@ -93,7 +93,8 @@ if (!function_exists("drawerKick")) include_once("printLib.php");
         $entered = $entered."ID";
     }
 
-    if ($entered == "TNPR") {           // patronage tracking module    ~joel 2006-12-26
+    if ($entered == "TNPR") {
+        // patronage tracking module    ~joel 2006-12-26
 	    $_SESSION["togglePatronage"] = 1;
 	    trackPatronage();
 	    $entered = "TL";
@@ -140,7 +141,8 @@ if (!function_exists("drawerKick")) include_once("printLib.php");
 	    $_SESSION["togglefoodstamp"] = 1;
     }
 
-    elseif (substr($entered, 0, 2) == "DN") {  // toggle discountable flag
+    elseif (substr($entered, 0, 2) == "DN") {
+        // toggle discountable flag
 	    $entered = substr($entered, 2);
 	    $_SESSION["toggleDiscountable"] = 1;
     }
@@ -169,21 +171,26 @@ if (!function_exists("drawerKick")) include_once("printLib.php");
 		    $_SESSION["refund"] = 1;
 	    }
     }
-    if ($entered == "0MI" || $entered == "0.00MI") { // Misc Pay-In. Used at the Wedge to tender employee charges
+    if ($entered == "0MI" || $entered == "0.00MI") {
+        // Misc Pay-In. Used at the Wedge to tender employee charges
 	    $entered = "MI";
     }
 
-    if (substr($entered, 0, 2) == "MC") { // Manufacturer's coupon
+    if (substr($entered, 0, 2) == "MC") {
+        // Manufacturer's coupon
 	    $_SESSION["mfcoupon"] = 1;
 	    $entered = substr($entered, 2);
     }
-    elseif ($entered == "ED") { // meant to be Employee Discount. The key does not exist as yet
+    elseif ($entered == "ED") {
+        // meant to be Employee Discount. The key does not exist as yet
 	    $entered = "15DA";
     }
-    elseif ($entered == "MD") { // meant to be Member Discount. The key does not exist as yet
+    elseif ($entered == "MD") {
+        // meant to be Member Discount. The key does not exist as yet
 	    $entered = "10DA";
     }
-    elseif (strstr($entered, "DT")) { // Case discount
+    elseif (strstr($entered, "DT")) {
+        // Case discount
 	    $dt = explode("DT", $entered);
 	    if (is_numeric($dt["0"]) && strlen($dt["0"]) > 0 && strlen($dt["1"]) > 0) {
 		    if ($dt["0"] != 5 && $dt["0"] != 10) {

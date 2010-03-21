@@ -50,74 +50,6 @@ else {
 
 	resumesuspended($register_no, $emp_no, $trans_no);
 
-/*	
-
-	if ( $_SESSION["standalone"] == 0 && $_SESSION["remoteDBMS"] == "mssql" ) {
-
-		$suspendedtoday = $_SESSION["remoteDB"]."suspendedtoday";
-		$suspended = $_SESSION["remoteDB"]."suspended";
-	} 
-
-
-	if ($_SESSION["standalone"] == 0 && $_SESSION["remoteDBMS"] != "mssql" ) {
-		
-		$m_conn = mDataConnect();
-		$db_a = tDataConnect();
-
-		$downloadfile = $_SESSION["downloadPath"]."resume.out";
-		if (file_exists($downloadfile)) exec("rm ".$downloadfile);
-		$out = "select * into outfile '".$downloadfile."' from suspendedtoday "
-			."where register_no = ".$resume_spec[0]
-			." and emp_no = ".$resume_spec[1]
-			." and trans_no = ".$resume_spec[2];
-		if (mysql_query($out, $m_conn)) {
-			if (file_exists($downloadfile)) {
-				$resume = "load data infile '".$downloadfile."' into table resume";
-				if (mysql_query($resume, $db_a)) $suspendedtody = "resume";
-			}
-		}
-	}
-	$query = "insert localtemptrans "
-
-
-		."datetime, register_no, emp_no, trans_no, upc, "
-		."description, trans_type, trans_subtype, trans_status, department, quantity, scale, "
-		."unitPrice, total, regPrice, tax, foodstamp, discount, memDiscount, discountable, "
-		."discounttype, voided, percentDiscount, ItemQtty, volDiscType, volume, VolSpecial, mixMatch, "
-		."matched, card_no "
-		."from ".$suspendedtoday." where register_no = ".$resume_spec["0"]
-		." and emp_no = ".$resume_spec["1"]." and trans_no = ".$resume_spec["2"];
-
-
-	$query_del = "delete from ".$suspended." where register_no = ".$resume_spec["0"]." and emp_no = "
-		.$resume_spec["1"]." and trans_no = ".$resume_spec["2"];
-
-	$db_a = tDataConnect();
-	$m_conn = mDataConnect();
-
-	$query_a = "select * from localtemptrans";
-	$result_a = sql_query($query_a, $db_a);
-	$num_rows_a = sql_num_rows($result_a);
-
-	if ($num_rows_a == 0) {
-
-
-		if ($_SESSION["remoteDBMS"] == "mssql") {
-			mssql_query($query, $db_a);
-			mssql_query($query_del, $db_a);
-
-		}
-		else {
-			$loadresume = "load data infile '".$downloadfile."' into table localtemptrans";
-			mysql_query($loadresume, $db_a);
-			mysql_query($query_del, $db_a);
-			if ($_SESSION["standalone"] == 0) { mysql_query($query_del, $m_conn); }
-		}
-
-	}
-
-*/
-
 	$query_update = "update localtemptrans set register_no = ".$_SESSION["laneno"].", emp_no = ".$_SESSION["CashierNo"]
 		.", trans_no = ".$_SESSION["transno"];
 
@@ -148,7 +80,8 @@ function resumesuspended($register_no, $emp_no, $trans_no) {
 			trimsuspended($register_no, $emp_no, $trans_no);
 			return 1;
 		}
-	} else {
+	}
+	else {
 		syslog(LOG_WARNING, "resumesuspended() failed; rc: '$return_code', output: '$output'");
 		return 0;
 	}

@@ -43,7 +43,8 @@ function displayon (){
 if (!pinghost($_SESSION["memServer"])){
 	echo "The membership server is currently unavailable.";
 	exit;
-}else{
+}
+else{
 
 	$memNum=$_SESSION["memberID"];
 
@@ -66,13 +67,15 @@ if (!pinghost($_SESSION["memServer"])){
 	
 			if ($row[23]==0){
 				$sign="Extra Name:";
-			}else{
+			}
+			else{
 				$sign="Signer:";
 			}
 			echo "<caption style='background-color: #004080; color: #ffffff; font-weight: bold; text-align: left;'>".$sign." ".$row['2']." ".$row['1']." (".$memNum.")</caption>";
 			if ($row['13']==0){
 				echo "<tr><td style='font-weight: bold;'>Extra Name:</td>";
-			}else{
+			}
+			else{
 				echo "<tr><td style='font-weight: bold;'>Signer:</td>";
 			}
 			echo "<td>".$row['4']." ".$row['3']."&nbsp;</td></tr>";
@@ -92,17 +95,20 @@ if (!pinghost($_SESSION["memServer"])){
 			echo "<td>".$row['21']."</td></tr>";
 			if ($row['17']==1){
 				$mailing="Yes";
-			}else{
+			}
+			else{
 				$mailing="No";
 			}
 			if ($row['18']==1){
 				$newsletter="Yes";
-			}else{
+			}
+			else{
 				$newsletter="No";
 			}
 			if ($row['19']==1){
 				$mixed="Yes";
-			}else{
+			}
+			else{
 				$mixed="No";
 			}
 			$status=$row['14'];
@@ -123,8 +129,12 @@ if (!pinghost($_SESSION["memServer"])){
 				echo "<td>Refund requested on: ".$refReqOn."</td>";
 			break;
 			default:
-				if ($row['14'] == "INACTIVE") { echo "<td colspan=2 style=''>".$row[21]."</td>"; }
-				else { echo "<td colspan=2 style''>".$row['14']."</td>"; }
+				if ($row['14'] == "INACTIVE") {
+				    echo "<td colspan=2 style=''>".$row[21]."</td>";
+				}
+				else {
+				    echo "<td colspan=2 style''>".$row['14']."</td>";
+				}
 			break;
 		}
 	
@@ -133,7 +143,7 @@ if (!pinghost($_SESSION["memServer"])){
 		echo "<table cellspacing=0 cellpadding=1 style='width: 680px;'>";
 		//echo "<tr><td class=header colspan=100%>Mailing</td></tr>";
 		echo "<tr><td style='width: 170px; font-weight: bold;'>Mailing:</td><td style='width: 99px;'>".$mailing."</td><td style='width: 145px; font-weight: bold;'>Newsletter:</td><td style='width: 80px;'>".$newsletter."</td><td style='width: 145px; font-weight: bold;'>Mixed:</td><td>".$mixed."</td></tr>";
-		echo "</table><br>";
+		echo "</table><br />";
 	
 		//--------------------------------------coupon info-----------------------------------------------------//
 	
@@ -158,7 +168,8 @@ if (!pinghost($_SESSION["memServer"])){
 				echo "<tr><td style='font-weight: bold; width: 170px;'>Coupons Used: </td>";
 				echo "<td>0</td>";
 				echo "</table>";
-			}else{
+			}
+			else{
 				echo "<table cellspacing=0 cellpadding=1 style='width: 680px;'>";
 				echo "<tr><td class=header colspan=100%>Coupons</td></tr>";
 				echo "<tr><td style='font-weight: bold; width: 170'>Date:</td>";
@@ -204,11 +215,13 @@ if (!pinghost($_SESSION["memServer"])){
 			$owed=0;
 			$a=0;
 			$b=0;
-		}elseif ($status=='INACTIVE'){
+		}
+		elseif ($status=='INACTIVE'){
 			$a=0;
 			$b=$paid;
 			$owed=80-$paid;
-		}else{
+		}
+		else{
 			$a=10;
 			$b=$paid-10;
 			$owed=80-$paid;
@@ -247,7 +260,8 @@ if (!pinghost($_SESSION["memServer"])){
 				$row = sql_fetch_array($result);
 				echo "<tr><td>&nbsp;".$row[1]."</td><td align=right>$".number_format($row[2],2)."&nbsp;</td></tr>";
 			}
-		}else{
+		}
+		else{
 			echo "<tr><td>&nbsp;</td><td align=right>&nbsp;</td></tr>";
 		}
 		$query="Select Member, FY, FYPurchases From ".$_SESSION["memSalesDatabase"].".dbo.MemberPurchasesFY_All Where Member = '".$memNum."' order by FY desc";
@@ -287,7 +301,8 @@ if (!pinghost($_SESSION["memServer"])){
 		echo "</table>";
 		echo "</div>";
 	
-	}else{
+	}
+	else{
 		echo "No details available.";
 		echo "<form method=post action=pos.php>";
 		echo "<input type=submit value=Back style='width: 100px;'>";

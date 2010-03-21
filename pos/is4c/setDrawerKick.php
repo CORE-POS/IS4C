@@ -33,7 +33,8 @@ function setDrawerKick()
 
 	if ($_SESSION["chargeTotal"] == $_SESSION["tenderTotal"] && $_SESSION["chargeTotal"] != 0 && $_SESSION["tenderTotal"] != 0 ) {	
 		$_SESSION["kick"] = 0; 						
-	} else {						
+	}
+	else {						
 		$_SESSION["kick"] = 1;	
 	}							
 }
@@ -56,7 +57,8 @@ function setDrawerKickLater()
 
 	if ($num_rows != 0) {
 	 $_SESSION["kick"] = 1;
-	} else {
+	}
+	else {
 	$_SESSION["kick"] = 0;
 	}
 

@@ -48,7 +48,7 @@ function suspendorder() {
 			}				
 		}		
 	}
-	else { 
+	else {
 		$query = "insert suspended select * from localtemptrans";
 		$result = sql_query($query, $db_a);
 	}
@@ -78,7 +78,8 @@ function checksuspended() {
 		if ($_SESSION["remoteDBMS"] == "mssql") $result = mssql_query($query_local, $db_a);
 		else $result = mysql_query($query, $db_a);
 
-	} else {
+	}
+	else {
 		if ($_SESSION["remoteDBMS"] == "mssql") $result = sql_query($query_remote, $db_a);
 		else $result = mysql_query($query, $m_conn);
 	}

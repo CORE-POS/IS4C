@@ -30,9 +30,10 @@ include_once("prehkeys.php");
 
 
 if (isset($_POST["loan"])) {
-	$entered = strtoupper(trim($_POST["loan"]));
-} else {
-	$entered = "";
+    $entered = strtoupper(trim($_POST["loan"]));
+}
+else {
+    $entered = "";
 }
 
 $_SESSION["away"] = 1;
@@ -40,43 +41,34 @@ $_SESSION["away"] = 1;
 if (!$entered || strlen($entered) < 1) gohome();
 
 if (!is_numeric($entered) || (strpbrk($entered,".") == true)) {
-	echo "<BODY onLoad='document.forms[0].elements[0].focus();'>\n";
-	printheaderb();
-	loanenter("Invalid entry<br>Try again (hint: 15000 = $150)");
+    echo "<body onLoad='document.forms[0].elements[0].focus();'>\n";
+    printheaderb();
+    loanenter("Invalid entry<br />Try again (hint: 15000 = $150)");
 }
 else {
 ?>
-	<html>
-	<body onload="window.top.input.location = 'input.php';document.form.submit();" >
-	<?php
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <title></title>
+    </head>
+    <body onload="window.top.input.location = 'input.php'; document.form.submit();" >
+        <?php
+            $_SESSION["loanTime"] = 'time(Y-m-d H:i:s)';
 
-	$_SESSION["loanTime"] = 'time(Y-m-d H:i:s)';
+            $db = pDataConnect();
+            $query = "SELECT id FROM custdata WHERE CardNo = 99999";
+            $result = sql_query($query,$db);
+            $nonmemID = mysql_result($result,0);
 
-	$db = pDataConnect();
-	$query = "SELECT id FROM custdata WHERE CardNo = 99999";
-	$result = sql_query($query,$db);
-	$nonmemID = mysql_result($result,0);
-
-	setMember($nonmemID);
-	ttl();
-
-
-	echo "<FORM name='form' method='post' autocomplete='off' action='pos2.php'>";
-	echo "<INPUT name='input' type='hidden' value='".$entered."LN'>";
-	echo "</FORM>";
-	echo "</body></html>";
+            setMember($nonmemID);
+            ttl();
 
 
-//	$loanamt = $entered / 100;
-//	addloan($loanamt);
-//	setMember(99999,1);
-//	ttl();
-//	$_SESSION["runningTotal"] = $_SESSION["amtdue"];
-//	tender("LN", $_SESSION["runningTotal"] * 100);
-//	$_SESSION["away"] = 0;
-//	receipt("loan");
-//	drawerKick();
-//	gohome();
+            echo "<form name='form' method='post' autocomplete='off' action='pos2.php'>";
+            echo "<input name='input' type='hidden' value='" . $entered . "LN'>";
+            echo "</form>";
+            echo "</body></html>";
 }
 
 $_SESSION["scan"] = "noScan";

@@ -80,4 +80,3 @@ function nexttransno() {
 	sql_close($db);
 }
 
-?>

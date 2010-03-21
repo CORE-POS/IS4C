@@ -98,7 +98,8 @@ function setMember($id) {
 
     if (($_SESSION["Type"] == "PC") || ($_SESSION['Type'] == "pc")) {
 		$_SESSION["isMember"] = 1;
-	} else {
+	}
+	else {
 		$_SESSION["isMember"] = 0;
 	}
 
@@ -202,7 +203,7 @@ function tender($right, $strl) {
 
 	if ($_SESSION["LastID"] == 0) boxMsg("transaction in progress");
 
-	elseif ($strl > 999999) xboxMsg("tender amount of ".truncate2($strl/100)."<BR>exceeds allowable limit");
+	elseif ($strl > 999999) xboxMsg("tender amount of ".truncate2($strl/100)."<br />exceeds allowable limit");
 
 	elseif ($right == "WT") xboxMsg("WIC tender not applicable");
 
@@ -246,35 +247,35 @@ function tender($right, $strl) {
 			xboxMsg("Foodstamp tender cannot exceed elible amount by over $10.00");
 		}
 		elseif ($right == "CX" && $charge_ok == 0) {
-			xboxMsg("member ".$_SESSION["memberID"]."<BR>is not authorized<BR>to make corporate charges");
+			xboxMsg("member ".$_SESSION["memberID"]."<br />is not authorized<br />to make corporate charges");
 		}
 
 		// added by apbw on 2/15/05 -- prevents biz charge accts from tendering staff charges
 		elseif ($right == "MI" && $_SESSION["isStaff"] == 0) {	// apbw 2/15/05 SCR
-			xboxMsg("member ".$_SESSION["memberID"]."<BR>is not authorized<BR>to make employee charges");	// apbw 2/15/05 SCR
+			xboxMsg("member ".$_SESSION["memberID"]."<br />is not authorized<br />to make employee charges");	// apbw 2/15/05 SCR
 		}	// apbw 2/15/05 SCR
 	
 		//alert customer that charge exceeds avail balance
 		elseif ($right == "MI" && $charge_ok == 0 && $_SESSION["availBal"] < 0) {
-			xboxMsg("member ".$_SESSION["memberID"]."<BR> has $" . $_SESSION["availBal"] . " available.");
+			xboxMsg("member ".$_SESSION["memberID"]."<br /> has $" . $_SESSION["availBal"] . " available.");
 		}
 
 		elseif ($right == "MI" && $charge_ok == 1 && $_SESSION["availBal"] < 0) {
-			xboxMsg("member ".$_SESSION["memberID"]."<BR>is over limit");
+			xboxMsg("member ".$_SESSION["memberID"]."<br />is over limit");
 		}
 	
 		elseif ($right == "MI" && $charge_ok == 0) {
-			xboxMsg("member ".$_SESSION["memberID"]."<BR>is not authorized to make employee charges");
+			xboxMsg("member ".$_SESSION["memberID"]."<br />is not authorized to make employee charges");
 		}
 
 	      elseif ($right == "MI" && $charge_ok == 1 && ($_SESSION["availBal"] + $_SESSION["memChargeTotal"] - $strl) <= 0) {
-			xboxMsg("member ".$_SESSION["memberID"]."<br> has exceeded charge limit");
+			xboxMsg("member ".$_SESSION["memberID"]."<br /> has exceeded charge limit");
 
 		}
 		elseif ($right == "MI" && $charge_ok == 1 && (ABS($_SESSION["memChargeTotal"])+ $strl) >= ($_SESSION["availBal"] + 0.005) && $_SESSION["store"]=="WFC") {
 			$memChargeRemain = $_SESSION["availBal"];
 			$memChargeCommitted = $memChargeRemain + $_SESSION["memChargeTotal"];
-			xboxMsg("available balance for charge <br>is only $" .$memChargeCommitted. ".<br><b><font size = 5>$" . number_format($memChargeRemain,2) . "</font></b><br>may still be used on this purchase.");
+			xboxMsg("available balance for charge <br />is only $" .$memChargeCommitted. ".<br /><b><font size = 5>$" . number_format($memChargeRemain,2) . "</font></b><br />may still be used on this purchase.");
 		}
 
 		elseif(($right == "MI" || $right == "CX") && truncate2($_SESSION["amtdue"]) < truncate2($strl)) {
@@ -322,13 +323,13 @@ function tender($right, $strl) {
 				}
 
 				if ($right == "CK" && $_SESSION["msgrepeat"] == 0) {
-					$_SESSION["boxMsg"] = "<BR>insert check</B><BR>press [enter] to endorse<P><FONT size='-1'>[clear] to cancel</FONT>";
+					$_SESSION["boxMsg"] = "<br />insert check</B><br />press [enter] to endorse<P><FONT size='-1'>[clear] to cancel</FONT>";
 					$_SESSION["endorseType"] = "check";
 					boxMsgscreen();
 
 				}
 //				elseif ($right == "TC" && $_SESSION["msgrepeat"] == 0) {		//	commented out to prevent gift cert franking
-//					$_SESSION["boxMsg"] = "<B> insert gift certificate<B><BR>press [enter] to endorse<P><FONT size='-1'>[clear] to cancel</FONT>";
+//					$_SESSION["boxMsg"] = "<B> insert gift certificate<B><br />press [enter] to endorse<P><FONT size='-1'>[clear] to cancel</FONT>";
 //					$_SESSION["endorseType"] = "check";
 //					boxMsgscreen();
 //				}
@@ -339,7 +340,8 @@ function tender($right, $strl) {
 
 					/*** session tender type set by apbw 2/28/05 ***/
 
-					if ($_SESSION["TenderType"] == "MI" || $_SESSION["TenderType"] == "CX") { 	// apbw 2/28/05 SCR
+					if ($_SESSION["TenderType"] == "MI" || $_SESSION["TenderType"] == "CX") {
+					    // apbw 2/28/05 SCR
 						$_SESSION["chargetender"] = 1;							// apbw 2/28/05 SCR
 					}													// apbw 2/28/05 SCR
 
@@ -439,7 +441,7 @@ function deptkey($price, $dept) {
 
 			$num_rows2 = sql_num_rows($result2);
 			if ($num_rows2 == 0) {
-				boxMsg("no item found in<BR>".$row["dept_name"]);
+				boxMsg("no item found in<br />".$row["dept_name"]);
 			}
 			else {
 				$row2 = sql_fetch_array($result2);
@@ -474,7 +476,8 @@ function deptkey($price, $dept) {
 				$_SESSION["toggleDiscountable"] = 0;
 				if  ($deptDiscount == 0) {
 					$deptDiscount = 1;
-				} else {
+				}
+				else {
 					$deptDiscount = 0;
 				}
 			}
@@ -493,7 +496,7 @@ function deptkey($price, $dept) {
 
 			// Hard coding ends
 
-			if ($_SESSION["ddNotify"] != 0 &&  $_SESSION["itemPD"] == 10) {  
+			if ($_SESSION["ddNotify"] != 0 &&  $_SESSION["itemPD"] == 10) {
 
 			
 					$_SESSION["itemPD"] = 0;
@@ -576,13 +579,15 @@ function ttl() {
 
 		if ($_SESSION["isMember"] == 1) {
 			$query = "INSERT into localtemptrans (datetime, register_no, emp_no, trans_no, upc, description, trans_type, trans_subtype, trans_status, department, quantity, scale, unitPrice, total, regPrice, tax, foodstamp, discount, memDiscount, discountable, discounttype, voided, percentDiscount, ItemQtty, volDiscType, volume, VolSpecial, mixMatch, matched, card_no) select datetime, register_no, emp_no, trans_no, upc, description, trans_type, trans_subtype, trans_status, department, quantity, scale, unitPrice, total, regPrice, tax, foodstamp, discount, memDiscount, discountable, discounttype, voided, percentDiscount, ItemQtty, volDiscType, volume, VolSpecial, mixMatch, matched, card_no from memdiscountadd";
-		} else {
+		}
+		else {
 			$query = "INSERT into localtemptrans (datetime, register_no, emp_no, trans_no, upc, description, trans_type, trans_subtype, trans_status, department, quantity, scale, unitPrice, total, regPrice, tax, foodstamp, discount, memDiscount, discountable, discounttype, voided, percentDiscount, ItemQtty, volDiscType, volume, VolSpecial, mixMatch, matched, card_no) select datetime, register_no, emp_no, trans_no, upc, description, trans_type, trans_subtype, trans_status, department, quantity, scale, unitPrice, total, regPrice, tax, foodstamp, discount, memDiscount, discountable, discounttype, voided, percentDiscount, ItemQtty, volDiscType, volume, VolSpecial, mixMatch, matched, card_no from memdiscountremove";
 		}
 
 		if ($_SESSION["isStaff"] != 0) {
 			$query2 = "INSERT into localtemptrans (datetime, register_no, emp_no, trans_no, upc, description, trans_type, trans_subtype, trans_status, department, quantity, scale, unitPrice, total, regPrice, tax, foodstamp, discount, memDiscount, discountable, discounttype, voided, percentDiscount, ItemQtty, volDiscType, volume, VolSpecial, mixMatch, matched, card_no) select datetime, register_no, emp_no, trans_no, upc, description, trans_type, trans_subtype, trans_status, department, quantity, scale, unitPrice, total, regPrice, tax, foodstamp, discount, memDiscount, discountable, discounttype, voided, percentDiscount, ItemQtty, volDiscType, volume, VolSpecial, mixMatch, matched, card_no from staffdiscountadd";
-		} else {
+		}
+		else {
 			$query2 = "INSERT into localtemptrans (datetime, register_no, emp_no, trans_no, upc, description, trans_type, trans_subtype, trans_status, department, quantity, scale, unitPrice, total, regPrice, tax, foodstamp, discount, memDiscount, discountable, discounttype, voided, percentDiscount, ItemQtty, volDiscType, volume, VolSpecial, mixMatch, matched, card_no) select datetime, register_no, emp_no, trans_no, upc, description, trans_type, trans_subtype, trans_status, department, quantity, scale, unitPrice, total, regPrice, tax, foodstamp, discount, memDiscount, discountable, discounttype, voided, percentDiscount, ItemQtty, volDiscType, volume, VolSpecial, mixMatch, matched, card_no from staffdiscountremove";
 		}
 

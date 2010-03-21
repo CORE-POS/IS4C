@@ -20,30 +20,26 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
- // session_start();
 
 if (!function_exists("ccXML")) include_once("ccLib.php");
 if (!function_exists("boxMsgscreen")) include_once("clientscripts.php");
 
-
-
 $decision = strtoupper(trim($_POST["input"]));
 
 if ($decision != "CL") {
-
 	header("Location:/pos2.php");
 }
 
 else {
-
 	$inxUploaded = vdXML();
 
 	if ($inxUploaded == 1) {
 		header("Location:/ccauthorize.php");
-	} else {
-		$_SESSION["boxMsg"] = "Communication error<p><font size=-1>Unable to complete transaction<br>Please process card manually</font>";
+	}
+	else {
+		$_SESSION["boxMsg"] = "Communication error<p><font size=-1>Unable to complete transaction<br />Please process card manually</font></p>";
 		boxMsgScreen();
 	}
 		
 }
-?>
+

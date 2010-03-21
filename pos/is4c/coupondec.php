@@ -56,7 +56,3 @@ else {
 	header("Location:coupondeptinvalid.php");
 }
 
-
-
-
-?>

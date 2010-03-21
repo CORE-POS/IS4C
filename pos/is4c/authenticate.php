@@ -83,7 +83,8 @@ else {
 
 			loginscreen();
 			
-		} elseif ($password == 9999) {
+		}
+		elseif ($password == 9999) {
 			setglobalvalue("CashierNo", 9999);
 			setglobalvalue("cashier", "Training Mode");
 			setglobalvalue("LoggedIn", 1);

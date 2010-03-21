@@ -12,13 +12,14 @@ function pinghost($host)
 	if ($_SESSION["OS"] == "win32") {
 		$pingReturn = exec("ping -n 1 $host", $aPingReturn);
 		$packetLoss = "(0% loss";
-	} else {
+	}
+	else {
 		$pingReturn = exec("ping -c 1 -r $host", $aPingReturn);
 		$packetLoss = "1 received, 0% packet loss";
 	}
 	foreach($aPingReturn as $returnLine) {
 
-	echo $returnLine."<br>";
+	echo $returnLine."<br />";
 	}
 	$pos = strpos($returnLine, $packetLoss);
 	if  ($pos) $intConnected = 1; 

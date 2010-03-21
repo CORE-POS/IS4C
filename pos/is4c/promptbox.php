@@ -41,7 +41,7 @@ function promptbox($msg) {
 <IMG src='graphics/prompt.gif'>
 </TD>
 <TD bgcolor='white' height='118' width='190' valign='center' align='left'>
-<BR>
+<br />
 <FORM name='form' method='post' action='promptreturn.php'>
 <INPUT name='reginput' Type='text' size='20'></FORM>
 <FONT face='arial' color='black'>

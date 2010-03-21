@@ -26,7 +26,8 @@
 <?php
 if (isset($_POST["selectlist"])) {
 	$product = trim($_POST["selectlist"]);
-} else {
+}
+else {
 	$product = "";
 }
 $_SESSION["strEntered"] = $product;

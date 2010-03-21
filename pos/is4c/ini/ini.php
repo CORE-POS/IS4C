@@ -62,9 +62,8 @@ $_SESSION["print"] = 0;
 
 if ($_SESSION["OS"] == "win32") {
 	$_SESSION["printerPort"] = "lpt1:";
-} else {
-//	$_SESSION["printerPort"] = "/dev/lp0";
-//	$_SESSION["printerPort"] = "/dev/ttyS1";
+}
+else {
 	$_SESSION["printerPort"] = "/dev/null";
 }
 

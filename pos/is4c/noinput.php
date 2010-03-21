@@ -20,32 +20,36 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
- // session_start(); ?>
-
-<TABLE border='0' cellpadding='0' cellspacing='0'>
-<TR><TD width='200'>
-
-</TD>
-<TD align='right' valign='top' width='440'>
-<?
-
-$time = strftime("%m/%d/%y  %I:%M %p", time());
-
-if ($_SESSION["training"] == 1) {
-	echo "<FONT size='-1' face='arial' color='#004080'>training </FONT>"
-	     ."<IMG src='graphics/BLUEDOT.GIF'>&nbsp;&nbsp:&nbsp;";
-}
-elseif ($_SESSION["standalone"] == 0) {
-	echo "<IMG src='graphics/GREENDOT.GIF'>&nbsp;&nbsp;&nbsp;";
-}
-else {
-	echo "<FONT size='-1' face='arial' color='#800000'>stand alone</FONT>"
-	     ."<IMG src='graphics/REDDOT.GIF'>&nbsp;&nbsp;&nbsp;";
-}
-
 ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <title></title>
+    </head>
+    <body>
+        <table border='0' cellpadding='0' cellspacing='0'>
+            <tr>
+                <td width='200'>
+                </td>
+                <td align='right' valign='top' width='440'>
+                    <?php
+                        $time = strftime("%m/%d/%y  %I:%M %p", time());
 
-<FONT face='arial' size='+1'><B><? echo $time; ?></B></FONT>
-</TD></TR></TABLE>
+                        if ($_SESSION["training"] == 1) {
+	                        echo "<font size='-1' face='arial' color='#004080'>training</font>"
+	                            . "<img src='graphics/BLUEDOT.GIF' alt='Blue dot' />&nbsp;&nbsp:&nbsp;";
+                        }
+                        elseif ($_SESSION["standalone"] == 0) {
+	                        echo "<img src='graphics/GREENDOT.GIF' alt='Green dot' />&nbsp;&nbsp;&nbsp;";
+                        }
+                        else {
+	                        echo "<font size='-1' face='arial' color='#800000'>stand alone</font>"
+	                            . "<img src='graphics/REDDOT.GIF' alt='Red dot' />&nbsp;&nbsp;&nbsp;";
+                        }
+                    ?>
+                    <font face='arial' size='+1'><b><?=$time;?></b></font>
+                </td>
+            </tr>
+        </table>
+    </body></html>
 
-</BODY>

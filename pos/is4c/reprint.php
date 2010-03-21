@@ -68,10 +68,11 @@ if ($reprnt && strlen($reprnt) >= 1) {
 	$_SESSION["transDiscount"] = $headerRow["transDiscount"];
 	$_SESSION["chargeTotal"] =  -1*$headerRow["chargeTotal"];
 
-	if ($_SESSION["chargeTotal"] != 0) { 
+	if ($_SESSION["chargeTotal"] != 0) {
 		
 		$_SESSION["chargetender"] = 1;
-	} else {
+	}
+	else {
 		$_SESSION["chargetender"] = 0;
 	}
 

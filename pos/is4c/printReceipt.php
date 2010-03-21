@@ -171,7 +171,8 @@ if ($_SESSION["noreceipt"] != 1) 		// moved by apbw 2/15/05 SCR
 if ($_SESSION["chargetender"] == 1) {
 	if ($_SESSION["noreceipt"] == 1) {	
 		$receipt = printChargeFooterStore($dateTimeStamp, $ref);
-	} else {	
+	}
+	else {	
 		$receipt = $receipt.printChargeFooterStore($dateTimeStamp, $ref);	
 	}	
 }		

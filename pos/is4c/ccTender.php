@@ -24,7 +24,7 @@
 $amountIn = $_SESSION["ccAmt"];
 $_SESSION["ccAmt"] = 0;
 $_SESSION["msgrepeat"] = 1;
-$_SESSION["strRemembered"] = ($amountIn * 100)."CC";
+$_SESSION["strRemembered"] = ($amountIn * 100) . "CC";
 
 header("Location: /pos2.php");
 

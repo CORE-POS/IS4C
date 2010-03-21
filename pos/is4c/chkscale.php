@@ -15,7 +15,7 @@
                 }
             }
 
-            function createAnotherXMLHttpRequest() {                                        
+            function createAnotherXMLHttpRequest() {
                 if (window.ActiveXObject) {
                     anotherXmlHttp = new ActiveXObject("Microsft.XMLHTTP");
                 }
@@ -43,7 +43,7 @@
             function handleStateChange() {
                 if (xmlHttp.readyState == 4) {
                     if (xmlHttp.status == 200) {
-                        if (xmlmessage != xmldata) {            
+                        if (xmlmessage != xmldata) {
                             var xmldata = xmlHttp.responseText;
                             // alert(xmldata);
                             startAnotherRequest("scale.php?reginput="+xmldata);

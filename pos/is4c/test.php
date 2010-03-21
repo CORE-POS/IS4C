@@ -11,20 +11,20 @@ $newTotal = number_format($runningTotal - $c,2);
 
 
 echo "<html><body><h1>";
-echo "\$total = " .$total. "<br>";
-echo "\$a = " .$a. "<br>";
-echo "\$b = " .$b. "<br>";
-echo "\$c = " .$c. "<br>";
+echo "\$total = " .$total. "<br />";
+echo "\$a = " .$a. "<br />";
+echo "\$b = " .$b. "<br />";
+echo "\$c = " .$c. "<br />";
 
-echo "runningtotal:    " .$runningTotal. "<br>";
+echo "runningtotal:    " .$runningTotal. "<br />";
 
-echo "discount: " .$discount. "%<br>";
+echo "discount: " .$discount. "%<br />";
 echo "grand final ultimate total: " .$newTotal;
-echo "<br><br><br>";
+echo "<br /><br /><br />";
 
 
  
-echo $_SESSION["memID"] ."<br>";
+echo $_SESSION["memID"] ."<br />";
 echo $_SESSION["volunteerDiscount"];
 echo "</h1></body></html>";
 

@@ -27,7 +27,8 @@ if (!function_exists("gohome")) include("maindisplay.php");
 
 if (isset($_POST["search"])) {
 	$entered = strtoupper(trim($_POST["search"]));
-} else {
+}
+else {
 	$entered = "";
 }
 
@@ -85,7 +86,7 @@ else {
 	if ($num_rows == 0) {
 		echo "<BODY onLoad='document.forms[0].elements[0].focus();'>\n";
 		printheaderb();
-		productsearchbox("no match found<BR>next search or enter upc");
+		productsearchbox("no match found<br />next search or enter upc");
 	}
 	else {
 		echo "<HTML>\n"

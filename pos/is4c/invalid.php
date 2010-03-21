@@ -20,63 +20,71 @@ opyright 2001, 2004 Wedge Community Co-op
 
 *********************************************************************************/
 ?>
-<BODY onLoad='document.form.reginput.focus();'>
-<TABLE border='0' cellpadding='0' cellspacing='0'>
-<TR><TD height='40' width='100' valign='center' bgcolor='#81366c' align='center'>
-<FONT face='arial' size='-1' color='white'><B>I S 4 C</B></FONT>
-</TD>
-<TD height='40' width='540' valign='bottom' align='right'>
-<FONT face='arial' size='-2'>
-&nbsp; I S 4 C &nbsp; D E V E L O P M E N T &nbsp; V E R S I O N &nbsp; 2.0</B></FONT>
-</TD>
-</TR>
-
-<TR><TD height='0' width='640' colspan='2' bgcolor='black'></TD></TR>
-<TR>
-<TD height='20' width='100' align='center' bgcolor='#FFFFFF'>
-<FONT face='arial' size='-1' color='black'><B>W E L C O M E</B></FONT>
-</TD>
-<TD></TD>
-</TR>
-<TR>
-<TD height='265' width='640' align='center' valign='bottom' colspan='2' valign='center'>
-	<TABLE border='0' cellpadding='0' cellspacing='0'>
-		<TR></TR>
-		<TD bgcolor='' height='80' width='260' valign='top' align='center'>
-			<CENTER>
-			<BR><FONT face='arial' color='red'>
-			<FORM name='form' method='post' autocomplete='off' action='authenticate.php'>
-			<INPUT Type='password' name='reginput' size='20' onBlur='document.form.reginput.focus();'>
-			</FORM>
-			<h3>PASSWORD INVALID</h3>
-			</FONT></CENTER>
-
-		</TD>
-		</TR>
-	</TABLE>
-</TD></TR>
-<TR><TD width='640' colspan='2' align='right'>
-<FONT size='-2' face='arial'>E X I T</FONT>
-
-<?
-
-if ($_SESSION["laneno"] >= 9) {
-	echo "<A href='javascript:window.top.close();' ";
-}
-else {
-	echo "<A href='bye.html' ";
-}
-?>
-
-	onMouseOver=document.exit.src='/graphics/switchred2.gif'
-	onMouseOut=document.exit.src='/graphics/switchblue2.gif'>
-
-	<IMG name='exit' border='0' src='/graphics/switchblue2.gif'></A>
-</TD></TR>
-</TABLE>
-<FORM name='hidden'>
-<INPUT Type='hidden' name='alert' value='noScan'>
-</FORM>
-
-</BODY>
-</HTML>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN" "http://www.w3.org/tr/xhtml1/DTD/xhtml1-frameset.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <title></title>
+    </head>
+    <body onLoad='document.form.reginput.focus();'>
+        <table border='0' cellpadding='0' cellspacing='0'>
+            <tr>
+                <td height='40' width='100' valign='center' bgcolor='#81366c' align='center'>
+                    <font face='arial' size='-1' color='white'><b>I S 4 C</b></font>
+                </td>
+                <td height='40' width='540' valign='bottom' align='right'>
+                    <font face='arial' size='-2'>
+                        &nbsp; I S 4 C &nbsp; D E V E L O P M E N T &nbsp; V E R S I O N &nbsp; 2.0
+                    </font>
+                </td>
+            </tr>
+            <tr>
+                <td height='0' width='640' colspan='2' bgcolor='black'></td>
+            </tr>
+            <tr>
+                <td height='20' width='100' align='center' bgcolor='#FFFFFF'>
+                    <font face='arial' size='-1' color='black'><b>W E L C O M E</b></font>
+                </td>
+                <td></td>
+            </tr>
+            <tr>
+                <td height='265' width='640' align='center' valign='bottom' colspan='2' valign='center'>
+                    <table border='0' cellpadding='0' cellspacing='0'>
+                        <tr></tr>
+                        <tr>
+                            <td bgcolor='' height='80' width='260' valign='top' align='center'>
+                                <center>
+                                    <br />
+                                    <font face='arial' color='red'>
+                                        <form name='form' method='post' autocomplete='off' action='authenticate.php'>
+                                            <input Type='password' name='reginput' size='20' onBlur='document.form.reginput.focus();' />
+                                        </form>
+                                        <h3>PASSWORD INVALID</h3>
+                                    </font>
+                                </center>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+            <tr>
+                <td width='640' colspan='2' align='right'>
+                    <font size='-2' face='arial'>E X I T</font>
+                        <?
+                            if ($_SESSION["laneno"] >= 9) {
+                                echo "<a href='#' onclick='javascript:window.top.close(); return false;' ";
+                            }
+                            else {
+                                echo "<a href='bye.html' ";
+                            }
+                        ?>
+                        onMouseOver=document.exit.src='/graphics/switchred2.gif' onMouseOut=document.exit.src='/graphics/switchblue2.gif'>
+                        <img name='exit' border='0' src='/graphics/switchblue2.gif' alt='Blue switch' /></a>
+                    </font>
+                </td>
+            </tr>
+        </table>
+        <form name='hidden'>
+            <input Type='hidden' name='alert' value='noScan' />
+        </form>
+    </body>
+</html>

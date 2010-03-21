@@ -45,21 +45,21 @@
 	            $_SESSION["chargetender"] = 0;
 	            $_SESSION["togglefoodstamp"] = 0;
 	            $_SESSION["endorseType"] = "";
-	            echo "<script language='javascript'>";
+	            echo "<script type=\"text/javascript\">";
 	            echo "window.location = '/pos2.php';";
 	            echo "</script>";
             }
 
             elseif (strlen($decision) > 0) {
 	            $_SESSION["msgrepeat"] = 0;
-	            echo "<script language=\"javascript\">"
+	            echo "<script type=\"text/javascript\">"
 		            . "document.Form1.input.value=\"" . $_SESSION["strEntered"] . "\";"
 		            . "document.Form1.submit();"
 		            . "</script>";
             }
             else {
 	            endorseType();
-	            echo "<script language=\"javascript\">"
+	            echo "<script type=\"text/javascript\">"
 		            ."document.Form1.input.value=\"" . $_SESSION["strEntered"] . "\";"
 		            ."document.Form1.submit();"
 		            ."</script>";

@@ -31,119 +31,116 @@ $_SESSION["away"] = 1;
 $away = 0;
 
 if ($_SESSION["idSearch"] && strlen($_SESSION["idSearch"]) > 0) {
-	
-	$entered = $_SESSION["idSearch"];
-	$_SESSION["idSearch"] = "";
-
+    $entered = $_SESSION["idSearch"];
+    $_SESSION["idSearch"] = "";
 }
 else {
-
-   	$entered = strtoupper(trim($_POST["search"]));
-   	$entered = str_replace("'", "''", $entered);
-
+    $entered = strtoupper(trim($_POST["search"]));
+    $entered = str_replace("'", "''", $entered);
 }
 
-if (substr($entered, -2) == "ID") $entered = substr($entered, 0, strlen($entered) - 2);
+if (substr($entered, -2) == "ID") {
+    $entered = substr($entered, 0, strlen($entered) - 2);
+}
 
 if (!$entered || strlen($entered) < 1) {
-   	$_SESSION["mirequested"] = 0;
-   	$away = 1;
-   	gohome();
+    $_SESSION["mirequested"] = 0;
+    $away = 1;
+    gohome();
 }
 else {
-   	$memberID = $entered;
-   	$db_a = pDataConnect();
+    $memberID = $entered;
+    $db_a = pDataConnect();
 
-	if (!is_numeric($entered)) {
-		$query = "select * from custdata where LastName like '".$entered."%' order by LastName, FirstName";
-   	} else {
-   	 	$query = "select * from custdata where CardNo = '".$entered."' order by personNum";
-   	}
+    if (!is_numeric($entered)) {
+        $query = "select * from custdata where LastName like '" . $entered . "%' order by LastName, FirstName";
+    }
+    else {
+        $query = "select * from custdata where CardNo = '" . $entered . "' order by personNum";
+    }
 
-   	$result = sql_query($query, $db_a);
-   	$num_rows = sql_num_rows($result);
+    $result = sql_query($query, $db_a);
+    $num_rows = sql_num_rows($result);
 
-      if ($num_rows < 1) {
-           	echo "<BODY onLoad='document.searchform.search.focus();'>";
-           	printheaderb();
-           	membersearchbox("no match found<BR>next search or member number");
-
-	} elseif ($num_rows > 1 || !is_numeric($entered)) {
-	
-           	
-		echo "<HTMT><HEAD>\n";
-
-		echo ""
-			."<SCRIPT type=\"text/javascript\">\n"
-			."document.onkeydown = keyDown;\n"
-			."function keyDown(e) {\n"
-			."if ( !e ) { e = event; };\n"
-			."var ieKey=e.keyCode;\n"
-			."if (ieKey==13) { document.selectform.submit();};\n"
-			."if (ieKey==27) { window.top.location = 'pos.php';};\n"
-			."}\n"
-			."</SCRIPT>\n";
-
-            echo "</HEAD>\n"
-            ."<BODY onLoad='document.selectform.selectlist.focus();'>";
-            
-           	printheaderb();
-          	echo "<TABLE>\n"
-               ."<TR><TD height='295' align='center' valign='center'>\n"
-               ."<FORM name='selectform' method='post' action='memid.php'>\n"
-               ."<SELECT  name='selectlist' size='15' onBlur='document.selectform.selectlist.focus();'>\n";
-
-		if (!is_numeric($entered) && $_SESSION["memlistNonMember"] == 1) {
-//             	echo "<OPTION value='3::1' selected> 3 "
-//        		."&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Customer\n";
-			$selectFlag = 1;
-		} else {
-			$selectFlag = 0;
-		}
-
-           	for ($i = 0; $i < $num_rows; $i++) {
-               	$row = sql_fetch_array($result);
-			if( $i == 0 && $selectFlag == 0) {
-				$selected = "selected";
-			} else {
-				$selected = "";
-			}
-               	echo "<OPTION value='".$row["CardNo"]."::".$row["personNum"]."::".$row["id"]."' ".$selected.">"
-				.$row["CardNo"]." ".$row["LastName"].", ".$row["FirstName"]."\n";
-           	}
-
-           	echo "</SELECT>\n</FORM>\n</TD>\n"
-               ."<TD height='295' width='40'></TD>\n"
-               ."<TD height='295' valign='center'>\n"
-               ."<FONT face='arial' size='+1' color='#004080'>use arrow keys to navigate<p>[esc] to cancel</FONT>\n"
-               ."</TD></TR></TABLE>\n";
-
-       } else {
-			$row = sql_fetch_array($result);
-//			setMember($row["CardNo"], $row["personNum"]);
-			setMember($row["id"]);
-			gohome();
-       }
+    if ($num_rows < 1) {
+        echo "<body onLoad='document.searchform.search.focus();'>";
+        printheaderb();
+        membersearchbox("no match found<br />next search or member number");
+    }
+    elseif ($num_rows > 1 || !is_numeric($entered)) {
+        ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <title></title>
+        <script type="text/javascript">
+            function keyDown(e) {
+                if ( !e ) {
+                    e = event;
+                }
+                var ieKey=e.keyCode;
+                if (ieKey==13) {
+                    document.selectform.submit();
+                }
+                if (ieKey==27) {
+                    window.top.location = 'pos.php';
+                }
+            }
+            document.onkeydown = keyDown;
+        </script>
+    </head>
+    <body onLoad='document.selectform.selectlist.focus();'>
+        <?php printheaderb(); ?>
+        <table>
+            <tr>
+                <td height='295' align='center' valign='center'>
+                    <form name='selectform' method='post' action='memid.php'>
+                        <select name='selectlist' size='15' onBlur='document.selectform.selectlist.focus();'>
+                            <?php
+                                if (!is_numeric($entered) && $_SESSION["memlistNonMember"] == 1) {
+                                    $selectFlag = 1;
+                                }
+                                else {
+                                    $selectFlag = 0;
+                                }
+                                for ($i = 0; $i < $num_rows; $i++) {
+                                    $row = sql_fetch_array($result);
+                                    if ($i == 0 && $selectFlag == 0) {
+                                        $selected = "selected";
+                                    }
+                                    else {
+                                        $selected = "";
+                                    }
+                                    echo "<option value='" . $row["CardNo"] . "::" . $row["personNum"] . "::" . $row["id"] . "' " . $selected . " />"
+                                        . $row["CardNo"] . " " . $row["LastName"] . ", " . $row["FirstName"] . "\n";
+                                }
+                            ?>
+                        </select>
+                    </form>
+                </td>
+                <td height='295' width='40'></td>
+                <td height='295' valign='center'>
+                    <font face='arial' size='+1' color='#004080'>use arrow keys to navigate<p>[esc] to cancel</p></font>
+                </tr>
+            </tr>
+        </table>
+        <?php
+    }
+    else {
+        $row = sql_fetch_array($result);
+        setMember($row["id"]);
+        gohome();
+    }
 }
-
-
-
 
 if ($away == 1) {
    $away = 0;
    printfooterb();
 }
-else { printfooter();
+else {
+    printfooter();
 }
 ?>
-
-
-
-
-</BODY>
-</HTML>
-
-
-
-
+    </body>
+</html>
 

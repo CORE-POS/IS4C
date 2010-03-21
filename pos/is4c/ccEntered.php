@@ -24,31 +24,29 @@
 include_once("ccLib.php");
 include_once("lib.php");
 
-
-
 function ccEntered($entered) {
 
 	if ($_SESSION["ttlflag"] != 1) {
 		boxMsg("transaction must be totaled before tender can be accepted");		
 	}
 	elseif ($_SESSION["CCintegrate"] != 1) {
-		xBoxMsg("<img src='graphics/redsquare.gif'> System not initiated<P><font size=-1>Please process card<br>in standalone</font>");
+		xBoxMsg("<img src='graphics/redsquare.gif' alt='Red square'>System not initiated<p><font size=-1>Please process card<br />in standalone</font></p>");
 	}
 	elseif (pinghost($_SESSION["ccServer"]) != 1) {
-		xBoxMsg("<img src='graphics/redsquare.gif'> Local system offline<P><font size=-1>Please process card<br>in standalone</font>");
+		xBoxMsg("<img src='graphics/redsquare.gif' alt='Red square'>Local system offline<P><font size=-1>Please process card<br />in standalone</font></p>");
 	}
 	elseif (sys_pcc() == 1) {
-		xBoxMsg("<img src='graphics/redsquare.gif'> Remote system offline<P><font size=-1>Please process card<br>in standalone</font>");
+		xBoxMsg("<img src='graphics/redsquare.gif' alt='Red square'>Remote system offline<P><font size=-1>Please process card<br />in standalone</font></p>");
 	}
 	else {
 		$ccValid = ccValid($entered);
 
 		if ($ccValid == 0 && $_SESSION["ccSwipe"] == "invalid") {
 			// changed the error message since this usually just means a misread, not necessarily an invalid card --atf 5/16/07
-			xBoxMsg("Card data invalid; scan again or type in manually<p><font size=-1>[clear] to cancel</font>");
+			xBoxMsg("Card data invalid; scan again or type in manually<p><font size=-1>[clear] to cancel</font></p>");
 		}
 		elseif ($ccValid == 0 && $_SESSION["ccType"] = "Unsupported") {
-			xBoxMsg("Card type not supported<p><font size=-1>[clear] to cancel</font>");
+			xBoxMsg("Card type not supported<p><font size=-1>[clear] to cancel</font></p>");
 		}
 		else {
 		
@@ -57,24 +55,24 @@ function ccEntered($entered) {
 			} 
 			$ccAmt = $_SESSION["ccAmt"];
 
-			if(substr($_SESSION['strEntered'],0,1) == 'V'|| substr($_SESSION['strEntered'],0,1) == 'v'){ // added 04/01/05 by CvR process void....not fully implemented
-				$_SESSION["boxMsg"] = "<b>Voiding credit card amount<p><FONT size='-1'>[enter] to continue<br>or [clear] to cancel</FONT>";	
-			}/*elseif($_SESSION["ccTotal"] != 0){ // added 04/01/05 CvR
-				$_SESSION["boxMsg"] = "<b>Only one credit card charge per transaction</b><p><FONT size='-1'>press [clear] to cancel</FONT>";  // added 04/01/05 CvR
-				$_SESSION["ccAmtInvalid"] = 1; // added 04/01/05 CvR
-			}*/elseif((substr($_SESSION["strEntered"],0,1) == 'f' || substr($_SESSION["strEntered"],0,1) == 'F') && ($ccAmt <= $_SESSION["amtdue"])){
-				$_SESSION["boxMsg"] = "<b>Forcing $".truncate2($ccAmt)."?</b><p><FONT size='-1'>[enter] to continue <br>or [clear] to cancel</FONT>";
+			if(substr($_SESSION['strEntered'],0,1) == 'V'|| substr($_SESSION['strEntered'],0,1) == 'v'){
+			    // added 04/01/05 by CvR process void....not fully implemented
+				$_SESSION["boxMsg"] = "<b>Voiding credit card amount</b><p><font size='-1'>[enter] to continue<br />or [clear] to cancel</font></p>";	
+			}
+			elseif((substr($_SESSION["strEntered"],0,1) == 'f' || substr($_SESSION["strEntered"],0,1) == 'F') && ($ccAmt <= $_SESSION["amtdue"])){
+				$_SESSION["boxMsg"] = "<b>Forcing $" . truncate2($ccAmt) . "?</b><p><font size='-1'>[enter] to continue <br />or [clear] to cancel</font></b>";
 				$_SESSION["ccAmtInvalid"] = 0;		
-			}elseif(is_numeric($ccAmt) && ($ccAmt <= $_SESSION["amtdue"])) {
-				$_SESSION["boxMsg"] = "<b>Tendering $".truncate2($ccAmt)."?</b><p><FONT size='-1'>[enter] to continue if correct<br>Enter a different amount if incorrect<br>or [clear] to cancel</FONT>";
+			}
+			elseif(is_numeric($ccAmt) && ($ccAmt <= $_SESSION["amtdue"])) {
+				$_SESSION["boxMsg"] = "<b>Tendering $" . truncate2($ccAmt) . "?</b><p><font size='-1'>[enter] to continue if correct<br />Enter a different amount if incorrect<br />or [clear] to cancel</font></p>";
 				$_SESSION["ccAmtInvalid"] = 0;
-			} else {
-
-				$_SESSION["boxMsg"] = "<b>Invalid entry</b><p><FONT size='-1'>Enter a different amount<br>or [clear] to cancel</FONT>";
+			}
+			else {
+				$_SESSION["boxMsg"] = "<b>Invalid entry</b><p><font size='-1'>Enter a different amount<br />or [clear] to cancel</font></p>";
 				$_SESSION["ccAmtInvalid"] = 1;
 			}
 			ccboxMsgscreen();
 		}
 	}
 }
-?>
+

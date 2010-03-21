@@ -162,9 +162,11 @@ function blueLine($row) {
 	$status = array('Non-Owner', 'Shareholder', 'Subscriber', 'Inactive', 'Refund', 'On Hold', 'Sister Org.', 'Other Co-ops');
 	if ($row["blueLine"]) {			// custom blueLine as defined by db
 		return $row["blueLine"];
-	} elseif (isset($row["blueLine"])) {	// 0 - default blueLine with out name
+	}
+	elseif (isset($row["blueLine"])) {	// 0 - default blueLine with out name
 		return '#'.$row['CardNo'].' - '.$row['Discount'].'% - '.$status[$row['memType']];
-	} else {				// NULL - default blueLine including name
+	}
+	else {				// NULL - default blueLine including name
 		return '#'.$row['CardNo'].' - '.$status[$row['memType']].': '.$row['FirstName'].' '.$row['LastName'];
 	}
 }

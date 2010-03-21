@@ -34,7 +34,8 @@
                     <?php
                         if ($_SESSION["inputMasked"] != 0) {
                             $inputType = "password";
-                        } else {
+                        }
+                        else {
                             $inputType = "text";
                         }
                         echo "<input name='reginput' type=" . $inputType . " style='font-size:22px' value='' onBlur='document.form.reginput.focus();'>"
@@ -45,7 +46,8 @@
                     <?php
                         if (isset($_POST["reginput"])) {
                             $input = strtoupper(trim($_POST["reginput"]));
-                        } else {
+                        }
+                        else {
                             $input = "";
                         }
 

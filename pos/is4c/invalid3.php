@@ -20,50 +20,48 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
- // session_start(); ?>
-<BODY>
-<HEAD></HEAD>
-
-<FORM name='form1' method='post' autocomplete='off' action='authenticate3.php'>
-<INPUT Type='hidden' name='input' size='20' tabindex='0'>
-</FORM>
-
-<?
-if (!function_exists("printheaderb")) include("drawscreen.php");
-
-printheaderb();
 ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <title></title>
+    </head>
+    <body>
+        <form name='form1' method='post' autocomplete='off' action='authenticate3.php'>
+            <input type='hidden' name='input' size='20' tabindex='0'>
+        </form>
 
-<TR>
-<TD height='300' width='640' align='center' valign='center'>
-	<TABLE border='0' cellpadding='0' cellspacing='0'>
-		<TR>
-		<TD bgcolor='#800000' height='150' width='260' valign='center' align='center'>
-			<CENTER>
-
-			<IMG src='graphics/redkey4.gif'>
-
-			<P><FONT face='arial' color='white'>
-			password invalid, please re-enter</FONT>
-
-
-			</FONT></CENTER>
-		</TD>
-		</TR>
-	</TABLE>
-</TD></TR>
-<TR><TD width='640' colspan='2' align='right'>
-
-</TD></TR>
-<!--
-</TABLE>
-<FORM name='hidden'>
-<INPUT Type='hidden' name='alert' value='noScan'>
-</FORM></BODY>
--->
-<?
-$_SESSION["runningTotal"] = $_SESSION["amtdue"];
-errorBeep();
-$_SESSION["scan"] = "noScan";
-printfooter();
-?>
+        <?php
+            if (!function_exists("printheaderb")) include("drawscreen.php");
+            printheaderb();
+        ?>
+        <tr>
+            <td height='300' width='640' align='center' valign='center'>
+                <table border='0' cellpadding='0' cellspacing='0'>
+		            <tr>
+		                <td bgcolor='#800000' height='150' width='260' valign='center' align='center'>
+			                <center>
+			                    <img src='graphics/redkey4.gif' alt='Red key' />
+			                    <p>
+			                        <font face='arial' color='white'>
+			                            password invalid, please re-enter
+                                    </font>
+                                </p>
+                            </center>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+        <tr>
+            <td width='640' colspan='2' align='right'>
+            </td>
+        </tr>
+        <?php
+            $_SESSION["runningTotal"] = $_SESSION["amtdue"];
+            errorBeep();
+            $_SESSION["scan"] = "noScan";
+            printfooter();
+        ?>
+    </body>
+</html>

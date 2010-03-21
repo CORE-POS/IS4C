@@ -91,17 +91,20 @@ function tenderReport() {
 	while($row = mysql_fetch_row($results_ttq))	{
 		if(!isset($row[0]))	{
 			$receipt .= "NULL";
-		}else{
+		}
+		else{
 			$receipt .= "  ".substr($row[0].$blank.$blank,0,20);
 		}
-		if(!isset($row[1])) { 
+		if(!isset($row[1])) {
 			$receipt .= "    0.00";
-		}else{
+		}
+		else{
 			$receipt .= substr($blank.number_format($row[1],2),-8);
 		}
-		if(!isset($row[2])) { 
+		if(!isset($row[2])) {
 			$receipt .= "NULL";
-		}else{
+		}
+		else{
 			if(!isset($row[1])) {
 				$row[2] = 0;
 			}

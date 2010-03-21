@@ -28,7 +28,7 @@ if (!function_exists("printfooter")) include("drawscreen.php");
 $_SESSION["away"] = 1;
 
 printheaderb();
-productsearchbox("product search<BR>by description or upc");
+productsearchbox("product search<br />by description or upc");
 $_SESSION["scan"] = "noScan";
 $_SESSION["beep"] = "noBeep";
 printfooter();

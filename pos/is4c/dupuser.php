@@ -21,67 +21,75 @@
 
 *********************************************************************************/
 $lane = $_GET['lane'];
-
 ?>
-<BODY onLoad='document.form.reginput.focus();'>
-<TABLE border='0' cellpadding='0' cellspacing='0'>
-<TR><TD height='40' width='100' valign='center' bgcolor='#FFCC00' align='center'>
-<FONT face='arial' size='-1'><B>I S 4 C</B></FONT>
-</TD>
-<TD height='40' width='540' valign='bottom' align='right'>
-<FONT face='arial' size='-2'>
-&nbsp; P H P &nbsp; D E V E L O P M E N T &nbsp; V E R S I O N &nbsp; 1.0.0</B></FONT>
-</TD>
-</TR>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <title></title>
+    </head>
+    <body onLoad='document.form.reginput.focus();'>
+        <table border='0' cellpadding='0' cellspacing='0'>
+            <tr>
+                <td height='40' width='100' valign='center' bgcolor='#FFCC00' align='center'>
+                    <font face='arial' size='-1'><b>I S 4 C</b></font>
+                </td>
+                <td height='40' width='540' valign='bottom' align='right'>
+                    <font face='arial' size='-2'>
+                        &nbsp; P H P &nbsp; D E V E L O P M E N T &nbsp; V E R S I O N &nbsp; 1.0.0
+                    </font>
+                </td>
+            </tr>
+            <tr>
+                <Ttd height='1' width='640' colspan='2' bgcolor='black'></td>
+            </tr>
+            <tr>
+                <td height='20' width='100' align='center' bgcolor='#004080'>
+                    <font face='arial' size='-1' color='white'><b>W E L C O M E</b></font>
+                </td>
+                <td></td>
+            </tr>
+            <tr>
+                <td height='300' width='640' align='center' colspan='2' valign='center'>
+                    <table border='0' cellpadding='0' cellspacing='0'>
+                        <tr>
+                            <td bgcolor='#800000' height='150' width='260' valign='center' align='center'>
+                                <center>
+                                    <br />
+                                    <font face='arial' color='white'>
+                                        <b>log in</b>
+                                        <form name='form' method='post' autocomplete='off' action='authenticate.php'>
+                                            <input type='password' name='reginput' size='20' onBlur='document.form.reginput.focus();' />
+                                            <p>
+                                                <font face='arial' color='white'>
+                                                    user already logged onto till <?=$lane;?>
+                                                </font>
+                                            </p>
+                                        </form>
+                                    </font>
+                                </center>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+            <tr>
+                <td width='640' colspan='2' align='right'>
+                    <font size='-2' face='arial'>E X I T</font>
+                    <?
+                        if ($_SESSION["laneno"] >= 9) {
+                            echo "<a href='#' onclick='window.top.close(); return false;' ";
+                        }
+                        else {
+                            echo "<a href='bye.html' ";
+                        }
+                    ?>
+                    onMouseOver=document.exit.src='/graphics/switchred2.gif' onMouseOut=document.exit.src='/graphics/switchblue2.gif'>
+                    <img name='exit' border='0' src='/graphics/switchblue2.gif' alt='Blue switch' /></a>
+                </td>
+            </tr>
+        </table>
+        <form name='hidden'>
+            <input Type='hidden' name='alert' value='noScan'>
+        </form>
+    </body></html>
 
-<TR><TD height='1' width='640' colspan='2' bgcolor='black'></TD></TR>
-<TR>
-<TD height='20' width='100' align='center' bgcolor='#004080'>
-<FONT face='aria;' size='-1' color='white'><B>W E L C O M E</B></FONT>
-</TD>
-<TD></TD>
-</TR>
-<TR>
-<TD height='300' width='640' align='center' colspan='2' valign='center'>
-	<TABLE border='0' cellpadding='0' cellspacing='0'>
-		<TR>
-		<TD bgcolor='#800000' height='150' width='260' valign='center' align='center'>
-			<CENTER>
-			<BR><FONT face='arial' color='white'>
-			<B>log in</B>
-			<FORM name='form' method='post' autocomplete='off' action='authenticate.php'>
-			<INPUT Type='password' name='reginput' size='20' onBlur='document.form.reginput.focus();'>
-			<P><FONT face='arial' color='white'>
-			user already logged onto till <? echo $lane; ?></FONT>
-			</FORM>
-			</FONT></CENTER>
-
-		</TD>
-		</TR>
-	</TABLE>
-</TD></TR>
-<TR><TD width='640' colspan='2' align='right'>
-<FONT size='-2' face='arial'>E X I T</FONT>
-
-<?
-
-if ($_SESSION["laneno"] >= 9) {
-	echo "<A href='javascript:window.top.close();' ";
-}
-else {
-	echo "<A href='bye.html' ";
-}
-?>
-
-	onMouseOver=document.exit.src='/graphics/switchred2.gif'
-	onMouseOut=document.exit.src='/graphics/switchblue2.gif'>
-
-	<IMG name='exit' border='0' src='/graphics/switchblue2.gif'></A>
-
-</TD></TR>
-</TABLE>
-<FORM name='hidden'>
-<INPUT Type='hidden' name='alert' value='noScan'>
-</FORM>
-
-</BODY>

@@ -25,7 +25,7 @@
 
 function getChgName() {
      
-	$query = "select LastName, FirstName from custdata where CardNo = '" .$_SESSION["memberID"] ."'";
+	$query = "select LastName, FirstName from custdata where CardNo = '" . $_SESSION["memberID"] . "'";
 	$connection = pDataConnect();
 	$result = sql_query($query, $connection);
 	$row = sql_fetch_array($result);
@@ -35,7 +35,7 @@ function getChgName() {
 		if (strlen($_SESSION["memberID"])!= 4) {
 				$_SESSION["ChgName"] = $row["LastName"];
 		} 
-		elseif (strlen($_SESSION["memberID"]) == 4) { 
+		elseif (strlen($_SESSION["memberID"]) == 4) {
 				$LastInit = substr($row["LastName"], 0, 1).".";
 				$_SESSION["ChgName"] = trim($row["FirstName"]) ." ". $LastInit;
 		}
@@ -47,5 +47,3 @@ sql_close($connection);
 
 }
 
-
-?>

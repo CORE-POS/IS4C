@@ -25,7 +25,8 @@ $delayed = 0;
 
 if (isset($_GET["reginput"])) {
    	$reginput = strtoupper(trim($_GET["reginput"]));
-} else {
+}
+else {
 	$reginput = "";
 }
 

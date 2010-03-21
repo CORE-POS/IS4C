@@ -218,12 +218,12 @@ function voidupc($upc) {
 			elseif ($voidable == 0 && $quantity > 1) boxMsg("Items already voided");
 			elseif ($scale == 1 && $quantity < 0) boxMsg("tare weight cannot be greater than item weight");
 			elseif ($voidable < $quantity && $row["scale"] == 1) {
-				$message = "Void request exceeds<BR>weight of item rung in<P><B>You can void up to "
+				$message = "Void request exceeds<br />weight of item rung in<P><B>You can void up to "
 					.$row["voidable"]." lb</B>";
 				boxMsg($message);
 			}
 			elseif ($voidable < $quantity) {
-				$message = "Void request exceeds<BR>number of items rung in<P><B>You can void up to "
+				$message = "Void request exceeds<br />number of items rung in<P><B>You can void up to "
 					.$row["voidable"]."</B>";
 				boxMsg($message);
 			}

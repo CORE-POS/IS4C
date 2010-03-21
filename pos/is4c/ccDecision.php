@@ -69,8 +69,9 @@ else {
 
 	if ($inxUploaded == 1) {
 		header("Location:/ccauthorize.php");
-	} else {
-		$_SESSION["boxMsg"] = "Communication error<p><font size=-1>Unable to complete transaction<br>Please process card manually</font>";
+	}
+	else {
+		$_SESSION["boxMsg"] = "Communication error<p><font size=-1>Unable to complete transaction<br />Please process card manually</font>";
 		boxMsgScreen();
 	}
 		

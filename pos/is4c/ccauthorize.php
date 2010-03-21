@@ -90,7 +90,8 @@ if (file_exists($remote_oux)){
         else {
             if (strlen($Reference) > 0) {
                 $errorInfo = "Ref: ".$Reference;
-            } else {
+            }
+            else {
                 $errorInfo = "Auth: ".$Auth;
             }
             $_SESSION["boxMsg"] = "Error<br />".$errorInfo."<p>[clear]</p>";
@@ -100,7 +101,8 @@ if (file_exists($remote_oux)){
         $_SESSION["ccTender"]=0;
         boxMsgScreen();
     //-------added 04/02/05 by CvR---to void cc input...    
-    } elseif($Result == "VOIDED") {
+    }
+    elseif($Result == "VOIDED") {
         $_SESSION["msgrepeat"] = 0;
         $_SESSION["ccTender"] = 1;
 
@@ -152,7 +154,7 @@ else {
     else {
         $_SESSION["ouxWait"] = 0;
         $_SESSION["ccTender"] = 0;
-        $_SESSION["boxMsg"] = "Communication error<p><font size=-1>Unable to complete transaction<br>Please process card manually</font></p>";
+        $_SESSION["boxMsg"] = "Communication error<p><font size=-1>Unable to complete transaction<br />Please process card manually</font></p>";
         boxMsgScreen();
     }
 }

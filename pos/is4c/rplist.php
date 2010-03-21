@@ -29,10 +29,16 @@
 <SCRIPT type="text/javascript">
 	document.onkeydown = keyDown;
 	function keyDown(e) {
-		if ( !e ) { e = event; };
+		if ( !e ) {
+		    e = event;
+		};
 		var ieKey=e.keyCode;
-		if (ieKey==13) { document.selectform.submit();}
-		else if (ieKey != 0 && ieKey != 38 && ieKey != 40) { window.top.location = 'pos.php';};
+		if (ieKey==13) {
+		    document.selectform.submit();
+		}
+		else if (ieKey != 0 && ieKey != 38 && ieKey != 40) {
+		    window.top.location = 'pos.php';
+		};
 	}
 </SCRIPT>
 
@@ -47,7 +53,8 @@ if ($_SESSION["DBMS"] == "mssql") {
 $query = "select register_no, emp_no, trans_no, sum((case when trans_type = 'T' then -1 * total else 0 end)) as total "
 	."from localtranstoday where register_no = ".$_SESSION["laneno"]." and emp_no = ".$_SESSION["CashierNo"]
 	." group by register_no, emp_no, trans_no order by trans_no desc";
-} else {
+}
+else {
 
 $query = "select * from rp_list where register_no = ".$_SESSION["laneno"].
 " and emp_no = ".$_SESSION["CashierNo"]." order by trans_no desc";
@@ -85,7 +92,7 @@ for ($i = 0; $i < $num_rows; $i++) {
 </FORM>
 </TD>
 <TD width='240'>
-<FONT face='arial' size='+1' color='#004080'>use arrow keys to navigate<BR>[enter] to reprint receipt<BR>[c] to cancel</FONT>
+<FONT face='arial' size='+1' color='#004080'>use arrow keys to navigate<br />[enter] to reprint receipt<br />[c] to cancel</FONT>
 </TD>
 </TR>
 </TABLE>
