@@ -20,21 +20,21 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
- // session_start(); ?>
-<BODY onLoad='document.searchform.search.focus();'>
-
-<?
-if (!function_exists("printheaderb")) include("drawscreen.php");
-
-
-$_SESSION["away"] = 1;
-
-printheaderb();
-membersearchbox("enter member number or search string");
-$_SESSION["scan"] = "noScan";
-printfooter();
-
 ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <title></title>
+    </head>
+    <body onLoad='document.searchform.search.focus();'>
+        <?
+            if (!function_exists("printheaderb")) include("drawscreen.php");
 
-</BODY>
-</HTML>
+            $_SESSION["away"] = 1;
+            printheaderb();
+            membersearchbox("enter member number or search string");
+            $_SESSION["scan"] = "noScan";
+            printfooter();
+        ?>
+    </body>
+</html>

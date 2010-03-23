@@ -1,4 +1,4 @@
-<?php
+x<?php
 /*******************************************************************************
 
     Copyright 2001, 2004 Wedge Community Co-op
@@ -27,7 +27,7 @@ function couponcode($upc) {
     $val = substr($upc, -2);
 
     $db = pDataConnect();
-    $query = "select * from couponcodes where code = '".$val."'";
+    $query = "select * from couponcodes where code = '" . $val . "'";
     $result = sql_query($query, $db);
     $num_rows = sql_num_rows($result);
 

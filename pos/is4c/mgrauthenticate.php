@@ -20,7 +20,6 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
- // session_start(); 
 
 include_once("connect.php");
 if (!function_exists("returnHome")) include("maindisplay.php");
@@ -31,45 +30,34 @@ $_SESSION["away"] = 1;
 $password = strtoupper(trim($_POST["reginput"]));
 
 if (!isset($password) || strlen($password) < 1 || $password == "CL") {
-	gohome();
+    gohome();
 }
 elseif (!is_numeric($password)) {
-	header("Location:mgrinvalid.php");
+    header("Location:mgrinvalid.php");
 }
 elseif ($password > 9999 || $password < 1) {
-	header("Location:mgrinvalid.php");
+    header("Location:mgrinvalid.php");
 }
 else {
+    $query = "select emp_no, FirstName, LastName from employees where empactive = 1 and frontendsecurity >= 11 "
+        . "and (cashierpassword = " . $password . " or adminpassword = " . $password . ")";
 
+    $db = pDataConnect();
+    $result = sql_query($query, $db);
+    $num_rows = sql_num_rows($result);
 
-
-	$query = "select emp_no, FirstName, LastName from employees where empactive = 1 and frontendsecurity >= 11 "
-		."and (cashierpassword = ".$password." or adminpassword = ".$password.")";
-
-
-	$db = pDataConnect();
-	$result = sql_query($query, $db);
-	$num_rows = sql_num_rows($result);
-
-
-	if ($num_rows != 0) {
-		cancelorder();
-	
-	}
-	else {
-		header("Location:mgrinvalid.php");
-	}
-
-	// sql_close($db);
+    if ($num_rows != 0) {
+        cancelorder();    
+    }
+    else {
+        header("Location:mgrinvalid.php");
+    }
 }
 
 function cancelorder() {
-	$_SESSION["msg"] = 2;
-	$_SESSION["plainmsg"] = "transaction cancelled";
-	rePoll();
-	receipt("cancelled");
-
-	// returnHome();
+    $_SESSION["msg"] = 2;
+    $_SESSION["plainmsg"] = "transaction cancelled";
+    rePoll();
+    receipt("cancelled");
 }
 
-?>

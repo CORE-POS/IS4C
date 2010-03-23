@@ -20,42 +20,46 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
- // session_start(); ?>
-
-<BODY onLoad='document.forms[0].elements[0].focus();'>
-
-<TABLE border='0' cellpadding='0' cellspacing='0'>
-
-<?
-if (!function_exists("printheaderb")) include("drawscreen.php");
-printheaderb();
 ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <title></title>
+    </head>
+    <body onLoad='document.forms[0].elements[0].focus();'>
+        <TABLE border='0' cellpadding='0' cellspacing='0'>
+            <?
+                if (!function_exists("printheaderb")) include("drawscreen.php");
+                printheaderb();
+            ?>
+            <tr>
+                <td height='300' width='640' align='center' colspan='2' valign='center'>
+                    <table border='0' cellpadding='0' cellspacing='0'>
+                        <tr>
+                            <td bgcolor='#800000' height='150' width='260' valign='center' align='center'>
+                                <center>
+                                    <font face='arial' color='white'>
+                                        <b>password invalid</b>
+                                        <form name='form' method='post' autocomplete='off' action='nsauthenticate.php'>
+                                            <input type='password' name='reginput' tabindex='0' onBlur='document.form.reginput.focus();'>
+                                        </form>
+                                        <p>
+                                            <font face='arial' color='white'>
+                                                re-enter manager password
+                                            </font>
+                                        </p>
+                                    </font>
+                                </center>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+        </table>
+        <?php
+            $_SESSION["scan"] = "noScan";
+            errorBeep();
+            printfooter();
+        ?>
+    </body></html>
 
-<TR>
-<TD height='300' width='640' align='center' colspan='2' valign='center'>
-	<TABLE border='0' cellpadding='0' cellspacing='0'>
-		<TR>
-		<TD bgcolor='#800000' height='150' width='260' valign='center' align='center'>
-			<CENTER>
-			<FONT face='arial' color='white'>
-			<B>password invalid</B>
-			<FORM name='form' method='post' autocomplete='off' action='nsauthenticate.php'>
-			<INPUT Type='password' name='reginput' tabindex'0' onBlur='document.form.reginput.focus();'>
-			</FORM>
-			<P><FONT face='arial' color='white'>
-			re-enter manager password</FONT>
-
-			</B></FONT></CENTER>
-		</TD>
-		</TR>
-	</TABLE>
-</TD></TR>
-</TABLE>
-
-<?
-$_SESSION["scan"] = "noScan";
-errorBeep();
-printfooter();
-?>
-
-</BODY>

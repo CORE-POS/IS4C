@@ -21,19 +21,23 @@
 
 *********************************************************************************/
 ?>
-<html>
-<body onload="window.top.input.location = 'input.php';document.form.submit();" >
-<?php
-if (isset($_POST["selectlist"])) {
-	$product = trim($_POST["selectlist"]);
-}
-else {
-	$product = "";
-}
-$_SESSION["strEntered"] = $product;
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <title></title>
+    </head>
+    <body onload="window.top.input.location = 'input.php';document.form.submit();" >
+        <?php
+            if (isset($_POST["selectlist"])) {
+	            $product = trim($_POST["selectlist"]);
+            }
+            else {
+	            $product = "";
+            }
+            $_SESSION["strEntered"] = $product;
 
-echo "<FORM name='form' method='post' autocomplete='off' action='pos2.php'>";
-echo "<INPUT name='input' type='hidden' value='".$product."'>";
-echo "</FORM>";
-echo "</body></html>";
-?>
+            echo "<form name='form' method='post' autocomplete='off' action='pos2.php'>";
+            echo "<input name='input' type='hidden' value='" . $product . "'>";
+            echo "</form>";
+            echo "</body></html>";
+

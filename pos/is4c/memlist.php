@@ -20,7 +20,7 @@
    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
-// session_start();
+
 if (!function_exists("pDataConnect")) include("connect.php");
 if (!function_exists("tDataConnect")) include("connect.php");
 if (!function_exists("printheaderb")) include("drawscreen.php");
@@ -68,7 +68,7 @@ else {
         membersearchbox("no match found<br />next search or member number");
     }
     elseif ($num_rows > 1 || !is_numeric($entered)) {
-        ?>
+    ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
     <head>

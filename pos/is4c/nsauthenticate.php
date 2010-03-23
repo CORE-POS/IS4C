@@ -55,8 +55,8 @@ else {
 	else {
 		sql_close($db);
 		$query2 = "select emp_no, FirstName, LastName from employees where empactive = 1 and "
-			."frontendsecurity >= 11 and (cashierpassword = ".$password." or adminpassword = "
-			.$password.")";
+			. "frontendsecurity >= 11 and (cashierpassword = " . $password . " or adminpassword = "
+			. $password . ")";
 		$db2 = pDataConnect();
 		$result2 = sql_query($query2, $db2);
 		$num_row2 = sql_num_rows($result2);
@@ -72,4 +72,3 @@ else {
 	sql_close($db);
 }
 
-?>

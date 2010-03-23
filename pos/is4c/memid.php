@@ -20,7 +20,6 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
-// session_start(); 
 
 if (!function_exists("setMember")) include("prehkeys.php");
 if (!function_exists("gohome")) include("maindisplay.php");
@@ -43,5 +42,3 @@ if ($mem_info[0] && strlen($mem_info[0]) >= 1) {
 
 gohome();
 
-
-?>

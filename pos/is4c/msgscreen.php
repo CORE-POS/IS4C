@@ -22,19 +22,15 @@
  --bwl test for chris
 *********************************************************************************/
 ?>
-<frameset cols="675,120,*" frameborder=0>
-
-    	<frameset rows="40,440,*" frameborder=0 scrolling=no>
-	<frame src="input.php" name='input' border=0 scrolling=no>
-	<frame src="boxMsg2.php" name='main_frame' border=0 scrolling=no>
-
-</frameset>
-
-<frameset rows="345,50,50,1,*" frameborder=0 scrolling=no>
-	<frame src="chkscale.php" name="scale" border=0 scrolling=no>
-	<frame src="endorse.php" name="endorse" border=0 scrolling=no>
-	<frame src="end.php" name="end" border=0 scrolling=no>
-	<frame src="chkscanner.php" name="chkserial" border=0 scrolling=no>
-	</frameset>
-
+<frameset cols='675,120,*' frameborder='0'>
+    <frameset rows='40,440,*' frameborder='0' scrolling='no'>
+        <frame src='input.php' name='input' border='0' scrolling='no'>
+        <frame src='boxMsg2.php' name='main_frame' border='0' scrolling='no'>
+    </frameset>
+    <frameset rows='345,50,50,1,*' frameborder='0' scrolling='no'>
+        <frame src='chkscale.php' name='scale' border='0' scrolling='no'>
+        <frame src='endorse.php' name='endorse' border='0' scrolling='no'>
+        <frame src='end.php' name='end' border='0' scrolling='no'>
+        <frame src='chkscanner.php' name='chkserial' border='0' scrolling='no'>
+    </frameset>
 </frameset>

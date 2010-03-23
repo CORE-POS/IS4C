@@ -21,7 +21,6 @@
 
 *********************************************************************************/
 
-
 function gohome() {
     $_SESSION["scan"] = "scan";
     echo "<script type=\"text/javascript\">";
@@ -63,4 +62,3 @@ function returnHome() {
     echo "</script>\n";
 }
 
-?>

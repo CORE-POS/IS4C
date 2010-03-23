@@ -21,44 +21,44 @@
 
 *********************************************************************************/
 ?>
-<BODY onLoad='document.form.reginput.focus();'>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <title></title>
+    </head>
+    <body onLoad='document.form.reginput.focus();'>
+        <table border='0' cellpadding='0' cellspacing='0'>
+            <?php
+                if (!function_exists("printheaderb")) include("drawscreen.php");
+                printheaderb();
+            ?>
+            <tr>
+                <td height='300' width='640' align='center' colspan='2' valign='center'>
+	                <table border='0' cellpadding='0' cellspacing='0'>
+		                <tr>
+		                    <td bgcolor='#004080' height='150' width='260' valign='center' align='center'>
+			                    <center>
+			                        <font face='arial' color='white'>
+			                            <b>confirm cancellation</b>
+			                            <form name='form' method='post' autocomplete='off' action='mgrauthenticate.php'>
+            			                    <input Type='password' name='reginput' tabindex='0' onBlur='document.form.reginput.focus();'>
+			                            </form>
+			                            <p>
+			                                <font face='arial' color='white'>
+            			                        please enter manager password
+			                                </font>
+			                            </p>
+			                        </font>
+			                    </center>
+		                    </td>
+		                </tr>
+	                </table>
+                </td>
+            </tr>
+        </table>
+        <?php
+            $_SESSION["beep"] = "noScan";
+            printfooter();
+        ?>
+    </body></html>
 
-<TABLE border='0' cellpadding='0' cellspacing='0'>
-
-<?
-if (!function_exists("printheaderb")) include("drawscreen.php");
-printheaderb();
-
-?>
-
-<TR>
-<TD height='300' width='640' align='center' colspan='2' valign='center'>
-	<TABLE border='0' cellpadding='0' cellspacing='0'>
-		<TR>
-		<TD bgcolor='#004080' height='150' width='260' valign='center' align='center'>
-			<CENTER>
-			<FONT face='arial' color='white'>
-			<B>confirm cancellation</B>
-			<FORM name='form' method='post' autocomplete='off' action='mgrauthenticate.php'>
-			<INPUT Type='password' name='reginput' tabindex='0' onBlur='document.form.reginput.focus();'>
-			</FORM>
-
-			<P><FONT face='arial' color='white'>
-			please enter manager password</FONT>
-
-			</B></FONT></CENTER>
-		</TD>
-		</TR>
-	</TABLE>
-</TD></TR>
-
-</TABLE>
-
-<?
-
-$_SESSION["beep"] = "noScan";
-printfooter();
-
-?>
-
-</BODY>
