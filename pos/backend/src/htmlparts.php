@@ -10,7 +10,7 @@
 		<div id="page_nav">
 			<ul>
 				<li><a href="/item">Item Maintenance</a></li>
-				<li>Sale Batches</li>
+				<li><a href="/batch">Sale Batches</a></li>
 				<li>Reports</li>
 				<li>Dayend Balancing</li>
 				<li><a href="/sync">Synchronization</a></li>
