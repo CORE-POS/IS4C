@@ -61,10 +61,10 @@ Receipt & Printer Settings
 $_SESSION["print"] = 0;
 
 if ($_SESSION["OS"] == "win32") {
-	$_SESSION["printerPort"] = "lpt1:";
+    $_SESSION["printerPort"] = "lpt1:";
 }
 else {
-	$_SESSION["printerPort"] = "/dev/null";
+    $_SESSION["printerPort"] = "/dev/null";
 }
 
 $_SESSION["receiptHeader1"] = "R O C H D A L E  F O O D  C O - O P";
@@ -115,8 +115,8 @@ $_SESSION["ccSharePath"] = "\\\\".$_SESSION["ccServer"]."\\".$_SESSION["ccShare"
 /***********************************************************************************
 Other Settings
 ************************************************************************************/
-$_SESSION["MADdiscount"] = 0;		//	Enter as percentage.
-$_SESSION["needBasedDisc"] = 0;		//	Enter as percentage.  Set to 0 to turn off.
+$_SESSION["MADdiscount"] = 0;        //    Enter as percentage.
+$_SESSION["needBasedDisc"] = 0;        //    Enter as percentage.  Set to 0 to turn off.
 $_SESSION["discountEnforced"] = 1;
 $_SESSION["lockScreen"] = 1;
 $_SESSION["timedlogout"] = 180000;
@@ -128,7 +128,7 @@ $_SESSION["cashOverLimit"] = 1;
 
 $_SESSION["inputMasked"] = 0;
 
-$_SESSION["SCReceipt"] = 1;			/***staff charge receipt - print default for each lane--apbw 1/31/05***/
+$_SESSION["SCReceipt"] = 1;            /***staff charge receipt - print default for each lane--apbw 1/31/05***/
 
 $_SESSION["CCintegrate"] = 1;
 

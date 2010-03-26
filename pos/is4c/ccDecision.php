@@ -30,50 +30,50 @@ if (!function_exists("boxMsgscreen")) include_once("clientscripts.php");
 $decision = strtoupper(trim($_POST["input"]));
 
 if ($decision == "CL") {
-	$_SESSION["msgrepeat"] = 0;
-	$_SESSION["toggletax"] = 0;
-	$_SESSION["chargetender"] = 0;
-	$_SESSION["endorseType"] = 0;
-	$_SESSION["togglefoodstamp"] = 0;
-	$_SESSION["ccAmtEntered"] = 0;
-	$_SESSION["ccAmt"] = 0;
+    $_SESSION["msgrepeat"] = 0;
+    $_SESSION["toggletax"] = 0;
+    $_SESSION["chargetender"] = 0;
+    $_SESSION["endorseType"] = 0;
+    $_SESSION["togglefoodstamp"] = 0;
+    $_SESSION["ccAmtEntered"] = 0;
+    $_SESSION["ccAmt"] = 0;
 
-	header("Location:/pos2.php");
+    header("Location:/pos2.php");
 }
 
 elseif (strlen($decision) > 0) {
 
-	$_SESSION["ccAmt"] = $decision;
+    $_SESSION["ccAmt"] = $decision;
 
-	if (is_numeric($decision)) $_SESSION["ccAmt"] = $decision/100;
+    if (is_numeric($decision)) $_SESSION["ccAmt"] = $decision/100;
 
-	$_SESSION["ccAmtEntered"] = 1;
-	$_SESSION["strRemembered"] = $_SESSION["strEntered"];
-	$_SESSION["msgrepeat"] = 1;	
-	header("Location:/pos2.php");
+    $_SESSION["ccAmtEntered"] = 1;
+    $_SESSION["strRemembered"] = $_SESSION["strEntered"];
+    $_SESSION["msgrepeat"] = 1;    
+    header("Location:/pos2.php");
 }
 
 elseif (strlen($decision) == 0 && $_SESSION["ccAmtInvalid"] == 1) {
 
-	$_SESSION["ccAmt"] = "invalid";
-	$_SESSION["ccAmtInvalid"] = 0;
-	$_SESSION["ccAmtEntered"] = 1;	
-	$_SESSION["strRemembered"] = $_SESSION["strEntered"];
-	$_SESSION["msgrepeat"] = 1;	
-	header("Location:/pos2.php");
+    $_SESSION["ccAmt"] = "invalid";
+    $_SESSION["ccAmtInvalid"] = 0;
+    $_SESSION["ccAmtEntered"] = 1;    
+    $_SESSION["strRemembered"] = $_SESSION["strEntered"];
+    $_SESSION["msgrepeat"] = 1;    
+    header("Location:/pos2.php");
 
 }
 else {
 
-	$inxUploaded = ccXML();
+    $inxUploaded = ccXML();
 
-	if ($inxUploaded == 1) {
-		header("Location:/ccauthorize.php");
-	}
-	else {
-		$_SESSION["boxMsg"] = "Communication error<p><font size=-1>Unable to complete transaction<br />Please process card manually</font>";
-		boxMsgScreen();
-	}
-		
+    if ($inxUploaded == 1) {
+        header("Location:/ccauthorize.php");
+    }
+    else {
+        $_SESSION["boxMsg"] = "Communication error<p><font size=-1>Unable to complete transaction<br />Please process card manually</font>";
+        boxMsgScreen();
+    }
+        
 }
 ?>

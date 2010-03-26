@@ -40,21 +40,21 @@
             fclose($scanHandle);
 
             if (strlen($scanData) > 9) {
-	            $clearScanner = exec("echo '' > /pos/is4c/rs232/scanner", $aClearScanner);
-	
-	            echo "<script type=\"text/javascript\">\n";
-	            echo "var inputVal = window.top.input.document.form.reginput.value;";
-	            echo "window.top.input.document.form.reginput.value =inputVal+'" . $scanData . "';\n";
-	            echo "window.top.input.document.form.submit();\n";
-	            echo "</script>";
+                $clearScanner = exec("echo '' > /pos/is4c/rs232/scanner", $aClearScanner);
+    
+                echo "<script type=\"text/javascript\">\n";
+                echo "var inputVal = window.top.input.document.form.reginput.value;";
+                echo "window.top.input.document.form.reginput.value =inputVal+'" . $scanData . "';\n";
+                echo "window.top.input.document.form.submit();\n";
+                echo "</script>";
             }
 
             if ($scaleData != $_SESSION["lastscale"]) {
-	            $_SESSION["lastscale"] = $scaleData;
-	            echo "<script type=\"text/javascript\">\n";
-	            echo "window.top.scale.document.form.reginput.value = '".$scaleData."';\n";
-	            echo "window.top.scale.document.form.submit();\n";
-	            echo "</script>";
+                $_SESSION["lastscale"] = $scaleData;
+                echo "<script type=\"text/javascript\">\n";
+                echo "window.top.scale.document.form.reginput.value = '".$scaleData."';\n";
+                echo "window.top.scale.document.form.submit();\n";
+                echo "</script>";
             }
         ?>
     </body>

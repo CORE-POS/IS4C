@@ -40,18 +40,18 @@ if (!function_exists("printheaderb")) include("drawscreen.php");
         ?>
         <tr>
             <td height='300' width='640' align='center' valign='center'>
-	            <table border='0' cellspacing='0' cellpadding='0'>
+                <table border='0' cellspacing='0' cellpadding='0'>
                     <tr>
-		                <td bgcolor='#004080' height='150' width='260' valign='center' align='center'>
-			            <center>
-        			        <img src='graphics/bluekey4.gif' alt='Blue key' />
+                        <td bgcolor='#004080' height='150' width='260' valign='center' align='center'>
+                        <center>
+                            <img src='graphics/bluekey4.gif' alt='Blue key' />
                             <p>
                                 <font face='arial' color='white'>
-                			        please enter password
-                			    </font>
+                                    please enter password
+                                </font>
                             </p>
                         </center>
-		                </td>
+                        </td>
                     </tr>
                 </table>
             </td>

@@ -51,7 +51,7 @@
                         printfooter();
                     ?>
         <script type="text/javascript">
-	        var msgrepeat=2;
+            var msgrepeat=2;
         </script>
     </BODY>
 </html>

@@ -50,34 +50,34 @@ else {
             $p6 = substr($entered, -1);
 
             if ($p6 == 0) {
-                $entered = substr($entered, 0, 3)."00000".substr($entered, 3, 3);
+                $entered = substr($entered, 0, 3) . "00000" . substr($entered, 3, 3);
             }
             elseif ($p6 == 1) {
-                $entered = substr($entered, 0, 3)."10000".substr($entered, 4, 3);
+                $entered = substr($entered, 0, 3) . "10000" . substr($entered, 4, 3);
             }
             elseif ($p6 == 2) {
-                $entered = substr($entered, 0, 3)."20000".substr($entered, 4, 3);
+                $entered = substr($entered, 0, 3) . "20000" . substr($entered, 4, 3);
             }
             elseif ($p6 == 3) {
-                $entered = substr($entered, 0, 4)."00000".substr($entered, 4, 2);
+                $entered = substr($entered, 0, 4) . "00000" . substr($entered, 4, 2);
             }
             elseif ($p6 == 4) {
-                $entered = substr($entered, 0, 5)."00000".substr($entered, 6, 1);
+                $entered = substr($entered, 0, 5) . "00000" . substr($entered, 6, 1);
             }
             else {
-                $entered = substr($entered, 0, 6)."0000".$p6;
+                $entered = substr($entered, 0, 6) . "0000" . $p6;
             }
         }
 
         if (strlen($entered) == 13 && substr($entered, 0, 1) != 0) {
-            $entered = "0".substr($entered, 0, 12);
+            $entered = "0" . substr($entered, 0, 12);
         }
         else {
-            $entered = substr("0000000000000".$entered, -13);
+            $entered = substr("0000000000000" . $entered, -13);
         }
 
         if (substr($entered, 0, 3) == "002") {
-            $entered = substr($entered, 0, 8)."00000";
+            $entered = substr($entered, 0, 8) . "00000";
         }
     }
 
@@ -103,7 +103,7 @@ else {
         echo "    <head>";
         echo "        <title></title>";
         echo "    </head>";
-        echo "<body> onLoad='document.forms[0].elements[0].focus();'>"
+        echo "<body onLoad='document.forms[0].elements[0].focus();'>"
         printheaderb();
         productsearchbox("no match found<br />next search or enter upc");
     }

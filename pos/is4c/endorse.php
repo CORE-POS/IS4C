@@ -13,28 +13,28 @@
             $endorseType = $_SESSION["endorseType"];
 
             if (strlen($endorseType) > 0) {
-	            $_SESSION["endorseType"] = "";
+                $_SESSION["endorseType"] = "";
 
-	            switch ($endorseType) {
-		            case "check":
-			            frank();
-			            break;
+                switch ($endorseType) {
+                    case "check":
+                        frank();
+                        break;
 
-		            case "giftcert":
-			            frankgiftcert();
-			            break;
+                    case "giftcert":
+                        frankgiftcert();
+                        break;
 
-		            case "stock":
-			            frankstock();
-			            break;
+                    case "stock":
+                        frankstock();
+                        break;
 
-		            case "classreg":
-			            frankclassreg();
-			            break;
+                    case "classreg":
+                        frankclassreg();
+                        break;
 
-		            default:
-			            break;
-	            }
+                    default:
+                        break;
+                }
             }
         ?>
     </body>

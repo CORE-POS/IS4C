@@ -115,43 +115,43 @@ $array = array
 
                 <?php
                     foreach($_POST AS $key => $value){
-                        $$key = $value;	
+                        $$key = $value;    
                     }
 
                     if(isset($_POST['submit'])){
                         if($printer <> 1){
-	                        $printer=0;
+                            $printer=0;
                         }
                         if($discountEnforced <> 1){
-	                        $discountEnforce=0;
+                            $discountEnforce=0;
                         }
                         if($lockScreen <> 1){
-	                        $lockScreen = 0;
+                            $lockScreen = 0;
                         }
                         if($ddNotify <> 1){
-	                        $ddNotify = 0;
+                            $ddNotify = 0;
                         }
                         if($promoMsg <> 1){
-	                        $promoMsg = 0;
+                            $promoMsg = 0;
                         }
                         if($memlistNonMember<>1){
-	                        $memlistNonMember = 0;
+                            $memlistNonMember = 0;
                         }
                         if($cashOverLimit<>1){
-	                        $cashOverLimit=0;
+                            $cashOverLimit=0;
                         }
                         if($inputMasked<>1){
-	                        $inputMasked=0;
+                            $inputMasked=0;
                         }
                         if($CCintegrate<>1){
-	                        $CCintegrated=0;
+                            $CCintegrated=0;
                         }
 
                         if($password==" "){
-	                        $db = sql_connect("$localhost", "$username");
+                            $db = sql_connect("$localhost", "$username");
                         }
-                        else{	
-	                        $db = sql_connect("$localhost", "$username", "$password");
+                        else{    
+                            $db = sql_connect("$localhost", "$username", "$password");
                         }
 
                         sql_select_db("$pDatabase",$db);
@@ -160,46 +160,46 @@ $array = array
                         $trunResult = sql_query($trunQuery,$db);
 
                         $insQuery = "INSERT INTO configure VALUES('$username',
-	                        '$password',
-	                        '$os',
-	                        '$store',
-	                        '$mServer',
-	                        '$mDatabase',
-	                        '$tDatabase',
-	                        '$pDatabase',
-	                        '$laneNo',
-	                        '$localhost',
-	                        $printer,
-	                        '$receiptHeader1',
-	                        '$receiptHeader2',
-	                        '$receiptHeader3',
-	                        '$receiptFooter1',
-	                        '$receiptFooter2',
-	                        '$receiptFooter3',
-	                        '$receiptFooter4',
-	                        '$ckEndorse1',
-	                        '$ckEndorse2',
-	                        '$ckEndorse3',
-	                        '$ckEndorse4',
-	                        '$chargeSlip1',
-	                        '$chargeSlip2',
-	                        '$welcomeMsg1',
-	                        '$welcomeMsg2',
-	                        '$welcomeMsg3',
-	                        '$trainingMsg1',
-	                        '$trainingMsg2',
-	                        '$farewellMsg1',
-	                        '$farewellMsg2',
-	                        '$farewellMsg3',
-	                        '$alertBar',
-	                        '$discountEnforced',
-	                        '$lockScreen',
-	                        '$ddNotify',
-	                        '$promoMsg',
-	                        '$memlistNonMember',
-	                        '$cashOverLimit',
-	                        '$inputMasked',
-	                        '$CCintegrate')";	
+                            '$password',
+                            '$os',
+                            '$store',
+                            '$mServer',
+                            '$mDatabase',
+                            '$tDatabase',
+                            '$pDatabase',
+                            '$laneNo',
+                            '$localhost',
+                            $printer,
+                            '$receiptHeader1',
+                            '$receiptHeader2',
+                            '$receiptHeader3',
+                            '$receiptFooter1',
+                            '$receiptFooter2',
+                            '$receiptFooter3',
+                            '$receiptFooter4',
+                            '$ckEndorse1',
+                            '$ckEndorse2',
+                            '$ckEndorse3',
+                            '$ckEndorse4',
+                            '$chargeSlip1',
+                            '$chargeSlip2',
+                            '$welcomeMsg1',
+                            '$welcomeMsg2',
+                            '$welcomeMsg3',
+                            '$trainingMsg1',
+                            '$trainingMsg2',
+                            '$farewellMsg1',
+                            '$farewellMsg2',
+                            '$farewellMsg3',
+                            '$alertBar',
+                            '$discountEnforced',
+                            '$lockScreen',
+                            '$ddNotify',
+                            '$promoMsg',
+                            '$memlistNonMember',
+                            '$cashOverLimit',
+                            '$inputMasked',
+                            '$CCintegrate')";    
 
                         $insResult = sql_query($insQuery,$db);
 
@@ -208,20 +208,20 @@ $array = array
                         $row = sql_fetch_array($result);
 
                         foreach( $array as $key => $value ) {
-	                        $num = $value[3];
-	                        if($value[1] == "text"){
-		                        echo "<tr><td>&nbsp;</td><td align='right'><font face='arial'>$value[0]:</font></td>
-		                        <td><input type='$value[1]' value='" . $row[$num]."' size='$value[2]' name='$value[3]'></td></tr>"; 
-	                        }
-	                        elseif($row[$num]==1){
-		                        echo "<tr><td>&nbsp;</td><td align='right'><font face='arial'>$value[0]:</font></td>
-		                        <td><input type='$value[1]' value='1' checked='$value[2]' name='$value[3]'></td></tr>";
-	                        }
-	                        else{
-		                        echo "<tr><td>&nbsp;</td><td align='right'><font face='arial'>$value[0]:</font></td>
-		                        <td><input type='$value[1]' value='1' name='$value[3]'></td></tr>";
-	                        }
-                        }	
+                            $num = $value[3];
+                            if($value[1] == "text"){
+                                echo "<tr><td>&nbsp;</td><td align='right'><font face='arial'>$value[0]:</font></td>
+                                <td><input type='$value[1]' value='" . $row[$num]."' size='$value[2]' name='$value[3]'></td></tr>"; 
+                            }
+                            elseif($row[$num]==1){
+                                echo "<tr><td>&nbsp;</td><td align='right'><font face='arial'>$value[0]:</font></td>
+                                <td><input type='$value[1]' value='1' checked='$value[2]' name='$value[3]'></td></tr>";
+                            }
+                            else{
+                                echo "<tr><td>&nbsp;</td><td align='right'><font face='arial'>$value[0]:</font></td>
+                                <td><input type='$value[1]' value='1' name='$value[3]'></td></tr>";
+                            }
+                        }    
                     }
                     else{
                         $db = pDataconnect(); 
@@ -233,37 +233,37 @@ $array = array
                         $numRow = sql_num_rows($result);
 
                         if($numRow != 0){
-	                        foreach( $array as $key => $value ) {
-	                            $num = $value[3];
-	                            if($value[1] == "text"){
-		                            echo "<tr><td>&nbsp;</td><td align='right'><font face='arial'>$value[0]:</font></td>
-		                                <td><input type='$value[1]' value='" . $row[$num] . "' size='$value[2]' name='$value[3]'></td></tr>"; 
-	                            }
-	                            elseif($row[$num]==1){
-		                            echo "<tr><td>&nbsp;</td><td align='right'><font face='arial'>$value[0]:</font></td>
-		                            <td><input type='$value[1]' value='1' checked='$value[2]' name='$value[3]'></td></tr>";
-	                            }
-	                            else{
-		                            echo "<tr><td>&nbsp;</td><td align='right'><font face='arial'>$value[0]:</font></td>
-		                            <td><input type='$value[1]' value='1' name='$value[3]'></td></tr>";
-	                            }
+                            foreach( $array as $key => $value ) {
+                                $num = $value[3];
+                                if($value[1] == "text"){
+                                    echo "<tr><td>&nbsp;</td><td align='right'><font face='arial'>$value[0]:</font></td>
+                                        <td><input type='$value[1]' value='" . $row[$num] . "' size='$value[2]' name='$value[3]'></td></tr>"; 
+                                }
+                                elseif($row[$num]==1){
+                                    echo "<tr><td>&nbsp;</td><td align='right'><font face='arial'>$value[0]:</font></td>
+                                    <td><input type='$value[1]' value='1' checked='$value[2]' name='$value[3]'></td></tr>";
+                                }
+                                else{
+                                    echo "<tr><td>&nbsp;</td><td align='right'><font face='arial'>$value[0]:</font></td>
+                                    <td><input type='$value[1]' value='1' name='$value[3]'></td></tr>";
+                                }
                             }
                         }
                         else{
-	                        foreach( $array as $key => $value ) {
-	                            if($value[1] == "text"){
-		                           echo "<tr><td>&nbsp;</td><td align='right'><font face='arial'>$value[0]:</font></td>
-		                            <td><input type='$value[1]' size='$value[2]' name='$value[3]'></td></tr>"; 
-	                            }
-	                            elseif($value[2]=="checked"){
-	                                echo "<tr><td>&nbsp;</td><td align='right'><font face='arial'>$value[0]:</font></td>
-	                                <td><input type='$value[1]' value='1' checked='$value[2]' name='$value[3]'></td></tr>";
-	                            }
-	                            else{
-	                                echo "<tr><td>&nbsp;</td><td align='right'><font face='arial'>$value[0]:</font></td>
-	                                <td><input type='$value[1]' value='1' name='$value[3]'></td></tr>";
-	                            }
-	                        }
+                            foreach( $array as $key => $value ) {
+                                if($value[1] == "text"){
+                                   echo "<tr><td>&nbsp;</td><td align='right'><font face='arial'>$value[0]:</font></td>
+                                    <td><input type='$value[1]' size='$value[2]' name='$value[3]'></td></tr>"; 
+                                }
+                                elseif($value[2]=="checked"){
+                                    echo "<tr><td>&nbsp;</td><td align='right'><font face='arial'>$value[0]:</font></td>
+                                    <td><input type='$value[1]' value='1' checked='$value[2]' name='$value[3]'></td></tr>";
+                                }
+                                else{
+                                    echo "<tr><td>&nbsp;</td><td align='right'><font face='arial'>$value[0]:</font></td>
+                                    <td><input type='$value[1]' value='1' name='$value[3]'></td></tr>";
+                                }
+                            }
                         }
                     }
                 ?>

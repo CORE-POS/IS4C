@@ -25,43 +25,36 @@
 
 
 function setDrawerKick()
-
 {
+    //    this, the simplest version, kicks the drawer for every tender *except* staff charge & business charge (MI, CX)
+    //     apbw 05/03/05 KickFix added !=0 criteria
 
-//	this, the simplest version, kicks the drawer for every tender *except* staff charge & business charge (MI, CX)
-// 	apbw 05/03/05 KickFix added !=0 criteria
-
-	if ($_SESSION["chargeTotal"] == $_SESSION["tenderTotal"] && $_SESSION["chargeTotal"] != 0 && $_SESSION["tenderTotal"] != 0 ) {	
-		$_SESSION["kick"] = 0; 						
-	}
-	else {						
-		$_SESSION["kick"] = 1;	
-	}							
+    if ($_SESSION["chargeTotal"] == $_SESSION["tenderTotal"] && $_SESSION["chargeTotal"] != 0 && $_SESSION["tenderTotal"] != 0 ) {    
+        $_SESSION["kick"] = 0;                         
+    }
+    else {                        
+        $_SESSION["kick"] = 1;    
+    }                            
 }
 
 function setDrawerKickLater()
-
 {
-
-// 	this more complex version can be modified to kick the drawer under whatever circumstances the FE Mgr sees fit
-//	it currently kicks the drawer *only* for cash in & out
+    //     this more complex version can be modified to kick the drawer under whatever circumstances the FE Mgr sees fit
+    //    it currently kicks the drawer *only* for cash in & out
  
+    $db = tDataConnect();
 
-	$db = tDataConnect();
+    $query = "select * from localtemptrans where trans_subtype = 'CA' and total <> 0";
 
-	$query = "select * from localtemptrans where trans_subtype = 'CA' and total <> 0";
+    $result = sql_query($query, $db);
+    $num_rows = sql_num_rows($result);
+    $row = sql_fetch_array($result);
 
-	$result = sql_query($query, $db);
-	$num_rows = sql_num_rows($result);
-	$row = sql_fetch_array($result);
-
-	if ($num_rows != 0) {
-	 $_SESSION["kick"] = 1;
-	}
-	else {
-	$_SESSION["kick"] = 0;
-	}
-
+    if ($num_rows != 0) {
+     $_SESSION["kick"] = 1;
+    }
+    else {
+    $_SESSION["kick"] = 0;
+    }
 }
 
-?>

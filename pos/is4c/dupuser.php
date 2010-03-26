@@ -40,7 +40,7 @@ $lane = $_GET['lane'];
                 </td>
             </tr>
             <tr>
-                <Ttd height='1' width='640' colspan='2' bgcolor='black'></td>
+                <td height='1' width='640' colspan='2' bgcolor='black'></td>
             </tr>
             <tr>
                 <td height='20' width='100' align='center' bgcolor='#004080'>

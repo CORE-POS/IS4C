@@ -22,37 +22,37 @@
 *********************************************************************************/
  // session_start(); 
 
-if (!function_exists("gohome")) include_once ("maindisplay.php");		// apbw 5/3/05 BlueSkyFix	
-if (!function_exists("pdataconnect")) include_once ("connect.php");	// apbw 5/3/05 BlueSkyFix	
-if (!function_exists("addcoupon")) include_once ("additem.php");		// apbw 5/3/05 BlueSkyFix
+if (!function_exists("gohome")) include_once ("maindisplay.php");        // apbw 5/3/05 BlueSkyFix    
+if (!function_exists("pdataconnect")) include_once ("connect.php");    // apbw 5/3/05 BlueSkyFix    
+if (!function_exists("addcoupon")) include_once ("additem.php");        // apbw 5/3/05 BlueSkyFix
 
 $dept = strtoupper(trim($_POST["dept"]));
 $dept = str_replace(".", "", $dept);
 
 if ($dept == "CL") {
-	gohome();
+    gohome();
 }
-elseif (is_numeric(substr($dept, 2))) {	// apbw 5/3/05 BlueSkyFix
-	$dept = substr($dept, 2);		// apbw 5/3/05 BlueSkyFix	
-	$upc = $_SESSION["couponupc"];
-	$val = $_SESSION["couponamt"];
+elseif (is_numeric(substr($dept, 2))) {    // apbw 5/3/05 BlueSkyFix
+    $dept = substr($dept, 2);        // apbw 5/3/05 BlueSkyFix    
+    $upc = $_SESSION["couponupc"];
+    $val = $_SESSION["couponamt"];
 
-	$query = "select * from departments where dept_no = '".$dept."'";
-	$db = pDataConnect();
-	$result = sql_query($query, $db);
-	$num_rows = sql_num_rows($result);
+    $query = "select * from departments where dept_no = '".$dept."'";
+    $db = pDataConnect();
+    $result = sql_query($query, $db);
+    $num_rows = sql_num_rows($result);
 
-	if ($num_rows != 0) {
-		addcoupon($upc, $dept, $val);
-		gohome();
-	}
-	else {
-		header("Location:coupondeptinvalid.php");
-	}
+    if ($num_rows != 0) {
+        addcoupon($upc, $dept, $val);
+        gohome();
+    }
+    else {
+        header("Location:coupondeptinvalid.php");
+    }
 
-	sql_close($db);
+    sql_close($db);
 }
 else {
-	header("Location:coupondeptinvalid.php");
+    header("Location:coupondeptinvalid.php");
 }
 

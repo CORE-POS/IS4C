@@ -24,39 +24,39 @@
 additem.php is called by the following files:
 
 as include:
-	login3.php
-	authenticate3.php
-	prehkeys.php
-	upcscanned.php
-	authenticate.php
+    login3.php
+    authenticate3.php
+    prehkeys.php
+    upcscanned.php
+    authenticate.php
 
 additem.php is the bread and butter of IS4C. addItem inserts the information
 stream for each item scanned, entered or transaction occurence into localtemptrans.
 Each of the above follows the following structure for entry into localtemptrans:
-	$strupc, 
-	$strdescription, 
-	$strtransType, 
-	$strtranssubType, 
-	$strtransstatus, 
-	$intdepartment, 
-	$dblquantity, 
-	$dblunitPrice, 
-	$dbltotal, 
-	$dblregPrice, 
-	$intscale, 
-	$inttax, 
-	$intfoodstamp, 
-	$dbldiscount, 
-	$dblmemDiscount, 
-	$intdiscountable, 
-	$intdiscounttype, 
-	$dblItemQtty, 
-	$intvolDiscType, 
-	$intvolume, 
-	$dblVolSpecial, 
-	$intmixMatch, 
-	$intmatched, 
-	$intvoided
+    $strupc, 
+    $strdescription, 
+    $strtransType, 
+    $strtranssubType, 
+    $strtransstatus, 
+    $intdepartment, 
+    $dblquantity, 
+    $dblunitPrice, 
+    $dbltotal, 
+    $dblregPrice, 
+    $intscale, 
+    $inttax, 
+    $intfoodstamp, 
+    $dbldiscount, 
+    $dblmemDiscount, 
+    $intdiscountable, 
+    $intdiscounttype, 
+    $dblItemQtty, 
+    $intvolDiscType, 
+    $intvolume, 
+    $dblVolSpecial, 
+    $intmixMatch, 
+    $intmatched, 
+    $intvoided
 
 Additionally, additem.php inserts entries into the activity log when a cashier 
 signs in
@@ -76,161 +76,161 @@ function addItem($strupc,$strdescription, $strtransType, $strtranssubType, $strt
     $dblItemQtty, $intvolDiscType, $intvolume, $dblVolSpecial, $intmixMatch, $intmatched,
     $intvoided, $intnumflag, $strcharflag){
 
-	$dbltotal = str_replace(",", "", $dbltotal);		
-	$dbltotal = number_format($dbltotal, 2, '.', '');
-	$dblunitPrice = str_replace(",", "", $dblunitPrice);
-	$dblunitPrice = number_format($dblunitPrice, 2, '.', '');
+    $dbltotal = str_replace(",", "", $dbltotal);        
+    $dbltotal = number_format($dbltotal, 2, '.', '');
+    $dblunitPrice = str_replace(",", "", $dblunitPrice);
+    $dblunitPrice = number_format($dblunitPrice, 2, '.', '');
 
-	if ($_SESSION["refund"] == 1) {
-		$dblquantity = (-1 * $dblquantity);
-		$dbltotal = (-1 * $dbltotal);
-		$dbldiscount = (-1 * $dbldiscount);
-		$dblmemDiscount = (-1 * $dblmemDiscount);
+    if ($_SESSION["refund"] == 1) {
+        $dblquantity = (-1 * $dblquantity);
+        $dbltotal = (-1 * $dbltotal);
+        $dbldiscount = (-1 * $dbldiscount);
+        $dblmemDiscount = (-1 * $dblmemDiscount);
 
-		if ($strtransstatus != "V" && $strtransstatus != "D") {
-		    $strtransstatus = "R" ;
-		}
-		$_SESSION["refund"] = 0;
-	}
-	elseif ($_SESSION["void"] == 1) {
-		$dblquantity = (-1 * $dblquantity);
-		$dbltotal = (-1 * $dbltotal);
-		$strtransstatus = "V";
-		$_SESSION["void"] = 0;
-	}
+        if ($strtransstatus != "V" && $strtransstatus != "D") {
+            $strtransstatus = "R" ;
+        }
+        $_SESSION["refund"] = 0;
+    }
+    elseif ($_SESSION["void"] == 1) {
+        $dblquantity = (-1 * $dblquantity);
+        $dbltotal = (-1 * $dbltotal);
+        $strtransstatus = "V";
+        $_SESSION["void"] = 0;
+    }
 
-	$intregisterno = $_SESSION["laneno"];
-	$intempno=56;
-	$inttransno = $_SESSION["transno"];
-	$strCardNo = $_SESSION["memberID"];
-	$memType = $_SESSION["memType"];
-	$staff = $_SESSION["isStaff"];
+    $intregisterno = $_SESSION["laneno"];
+    $intempno=56;
+    $inttransno = $_SESSION["transno"];
+    $strCardNo = $_SESSION["memberID"];
+    $memType = $_SESSION["memType"];
+    $staff = $_SESSION["isStaff"];
 
-	$db = tDataConnect();
+    $db = tDataConnect();
 
-	if ($_SESSION["DBMS"] == "mssql") {
-		$datetimestamp = strftime("%m/%d/%y %H:%M:%S %p", time());
-	}
-	else {
-		$datetimestamp = strftime("%Y-%m-%d %H:%M:%S %p", time());
-	}
+    if ($_SESSION["DBMS"] == "mssql") {
+        $datetimestamp = strftime("%m/%d/%y %H:%M:%S %p", time());
+    }
+    else {
+        $datetimestamp = strftime("%Y-%m-%d %H:%M:%S %p", time());
+    }
 
-	$_SESSION["datetimestamp"] = $datetimestamp;
-	$_SESSION["LastID"] = $_SESSION["LastID"] + 1;
-	
-	$trans_id = $_SESSION["LastID"];
+    $_SESSION["datetimestamp"] = $datetimestamp;
+    $_SESSION["LastID"] = $_SESSION["LastID"] + 1;
+    
+    $trans_id = $_SESSION["LastID"];
 
-	$strqinsert = "INSERT into localtemptrans (datetime, register_no, emp_no, trans_no, upc, description, trans_type, "
-	            ."trans_subtype, trans_status, department, quantity, unitPrice, total, regPrice, scale, tax, "
-		      ."foodstamp, discount, memDiscount, discountable, discounttype, ItemQtty, volDiscType, volume, "
-		      ."VolSpecial, mixMatch, matched, voided, memType, staff, card_no) "
-		      ."values (" 
-		      
-		      ."'".$datetimestamp."', "
-		      .$intregisterno.", "
-		      .$intempno.", "
-		      .nullwrap($inttransno).", "
-		      ."'".nullwrap($strupc)."', "
-		      ."'".$strdescription."', "
-		      ."'".nullwrap($strtransType)."', "
-		      ."'".nullwrap($strtranssubType)."', "
-		      ."'".nullwrap($strtransstatus)."', "
-		      .nullwrap($intdepartment).", "
-		      .nullwrap($dblquantity).", "
-		      .nullwrap($dblunitPrice).", "
-		      .nullwrap($dbltotal).", "
-		      .nullwrap($dblregPrice).", "
-		      .nullwrap($intscale).", "
-		      .nullwrap($inttax).", "
-		      .nullwrap($intfoodstamp).", "
-		      .nullwrap($dbldiscount).", "
-		      .nullwrap($dblmemDiscount).", "
-		      .nullwrap($intdiscountable).", "
-		      .nullwrap($intdiscounttype).", "
-		      .nullwrap($dblItemQtty).", "
-		      .nullwrap($intvolDiscType).", "
-		      .nullwrap($intvolume).", "
-		      .nullwrap($dblVolSpecial).", "
-		      .nullwrap($intmixMatch).", "
-		      .nullwrap($intmatched).", "
-		      .nullwrap($intvoided).", "
-			.nullwrap($memType).", "
-			.nullwrap($staff).", "
-			."'".(string) $strCardNo."') ";
+    $strqinsert = "INSERT into localtemptrans (datetime, register_no, emp_no, trans_no, upc, description, trans_type, "
+                ."trans_subtype, trans_status, department, quantity, unitPrice, total, regPrice, scale, tax, "
+              ."foodstamp, discount, memDiscount, discountable, discounttype, ItemQtty, volDiscType, volume, "
+              ."VolSpecial, mixMatch, matched, voided, memType, staff, card_no) "
+              ."values (" 
+              
+              ."'".$datetimestamp."', "
+              .$intregisterno.", "
+              .$intempno.", "
+              .nullwrap($inttransno).", "
+              ."'".nullwrap($strupc)."', "
+              ."'".$strdescription."', "
+              ."'".nullwrap($strtransType)."', "
+              ."'".nullwrap($strtranssubType)."', "
+              ."'".nullwrap($strtransstatus)."', "
+              .nullwrap($intdepartment).", "
+              .nullwrap($dblquantity).", "
+              .nullwrap($dblunitPrice).", "
+              .nullwrap($dbltotal).", "
+              .nullwrap($dblregPrice).", "
+              .nullwrap($intscale).", "
+              .nullwrap($inttax).", "
+              .nullwrap($intfoodstamp).", "
+              .nullwrap($dbldiscount).", "
+              .nullwrap($dblmemDiscount).", "
+              .nullwrap($intdiscountable).", "
+              .nullwrap($intdiscounttype).", "
+              .nullwrap($dblItemQtty).", "
+              .nullwrap($intvolDiscType).", "
+              .nullwrap($intvolume).", "
+              .nullwrap($dblVolSpecial).", "
+              .nullwrap($intmixMatch).", "
+              .nullwrap($intmatched).", "
+              .nullwrap($intvoided).", "
+            .nullwrap($memType).", "
+            .nullwrap($staff).", "
+            ."'".(string) $strCardNo."') ";
 
-	sql_query($strqinsert, $db);
-	sql_close($db);
+    sql_query($strqinsert, $db);
+    sql_close($db);
 
-	if ($strtransType == "I" || $strtransType == "D") {
-		goodBeep();
-		if ($intscale == 1) {
-			$_SESSION["screset"] = "rePoll";
-		}
-		elseif ($_SESSION["weight"] != 0) {
-			$_SESSION["screset"] = "rePoll";
-		}
-		$_SESSION["repeatable"] = 1;
-	}
+    if ($strtransType == "I" || $strtransType == "D") {
+        goodBeep();
+        if ($intscale == 1) {
+            $_SESSION["screset"] = "rePoll";
+        }
+        elseif ($_SESSION["weight"] != 0) {
+            $_SESSION["screset"] = "rePoll";
+        }
+        $_SESSION["repeatable"] = 1;
+    }
 
-	$_SESSION["msgrepeat"] = 0;
-	$_SESSION["toggletax"] = 0;
-	$_SESSION["togglefoodstamp"] = 0;
-	$_SESSION["SNR"] = 0;
-	$_SESSION["wgtRequested"] = 0;
-	$_SESSION["nd"] = 0;
-	$_SESSION["bdaystatus"] = 99;
-	$_SESSION["ccAmtEntered"] = 0;
-	$_SESSION["ccAmt"] = 0;
+    $_SESSION["msgrepeat"] = 0;
+    $_SESSION["toggletax"] = 0;
+    $_SESSION["togglefoodstamp"] = 0;
+    $_SESSION["SNR"] = 0;
+    $_SESSION["wgtRequested"] = 0;
+    $_SESSION["nd"] = 0;
+    $_SESSION["bdaystatus"] = 99;
+    $_SESSION["ccAmtEntered"] = 0;
+    $_SESSION["ccAmt"] = 0;
 }
 
 //---------------------------------- insert tax line item --------------------------------------
 function addtax() {
-	addItem("TAX", "Tax", "A", "", "", 0, 0, 0, 0, $_SESSION["taxTotal"], 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, '');
+    addItem("TAX", "Tax", "A", "", "", 0, 0, 0, 0, $_SESSION["taxTotal"], 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, '');
 }
 
 //---------------------------------- insert tender line item -----------------------------------
 function addtender($strtenderdesc, $strtendercode, $dbltendered) {
-	addItem("", $strtenderdesc, "T", $strtendercode, "", 0, 0, 0, 0, $dbltendered, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, '');
+    addItem("", $strtenderdesc, "T", $strtendercode, "", 0, 0, 0, 0, $dbltendered, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, '');
 }
 
 //---------------------------------- insert foodstamps line item ------------------------------
 function addfstender($strtenderdesc, $strtendercode, $dbltendered) {
-	addItem("", $strtenderdesc, "T", $strtendercode, "", 0, 0, 0, truncate2($_SESSION["fsEligible"]), $dbltendered, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, '');
+    addItem("", $strtenderdesc, "T", $strtendercode, "", 0, 0, 0, truncate2($_SESSION["fsEligible"]), $dbltendered, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, '');
 }
 
 //--------------------------------- insert change line item ------------------------------------
 function addchange($dblcashreturn) {
-	addItem("", "Change", "T", "CA", "", 0, 0, 0, 0, $dblcashreturn, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 0, '');
+    addItem("", "Change", "T", "CA", "", 0, 0, 0, 0, $dblcashreturn, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 0, '');
 }
 
 //-------------------------------- insert foods stamp change item ------------------------------
 function addfsones($intfsones) {
-	addItem("", "FS Change", "T", "FS", "", 0, 0, 0, 0, $intfsones, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 0, '');
+    addItem("", "FS Change", "T", "FS", "", 0, 0, 0, 0, $intfsones, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 0, '');
 }
 
 //---------------------------------- insert End of Shift  --------------------------$
 function addEndofShift() {
-	addItem("ENDOFSHIFT", "End of Shift", "S", "", "", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, '');
+    addItem("ENDOFSHIFT", "End of Shift", "S", "", "", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, '');
 }
 
 //-------------------------------- insert deli discount (Wedge specific) -----------------------
 function addscDiscount() {
 
-	if ($_SESSION["scDiscount"] != 0) {
-		addItem("DISCOUNT", "** 10% Deli Discount **", "I", "", "", 0, 0, 1, truncate2(-1 * $_SESSION["scDiscount"]), truncate2(-1 * $_SESSION["scDiscount"]), 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 2, 0, '');
-	}
+    if ($_SESSION["scDiscount"] != 0) {
+        addItem("DISCOUNT", "** 10% Deli Discount **", "I", "", "", 0, 0, 1, truncate2(-1 * $_SESSION["scDiscount"]), truncate2(-1 * $_SESSION["scDiscount"]), 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 2, 0, '');
+    }
 }
 
 function addStaffCoffeeDiscount() {
-	if ($_SESSION["staffCoffeeDiscount"] != 0) {
-		addItem("DISCOUNT", "** Coffee Discount **", "I", "", "", 0, 0, 1, truncate2(-1 * $_SESSION["staffCoffeeDiscount"]), truncate2(-1 * $_SESSION["staffCoffeeDiscount"]), 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 2, 0, '');
-	}
+    if ($_SESSION["staffCoffeeDiscount"] != 0) {
+        addItem("DISCOUNT", "** Coffee Discount **", "I", "", "", 0, 0, 1, truncate2(-1 * $_SESSION["staffCoffeeDiscount"]), truncate2(-1 * $_SESSION["staffCoffeeDiscount"]), 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 2, 0, '');
+    }
 }
 
 //------------------------------- insert discount line -----------------------------------------
 function adddiscount($dbldiscount) {
-	$strsaved = "** YOU SAVED $".truncate2($dbldiscount)." **";
-	addItem("", $strsaved, "I", "", "D", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, '');
+    $strsaved = "** YOU SAVED $".truncate2($dbldiscount)." **";
+    addItem("", $strsaved, "I", "", "D", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, '');
 }
 
 function addmemspecialmsg() {
@@ -240,58 +240,58 @@ function addmemspecialmsg() {
 
 //------------------------------ insert Food Stamp Tax Exempt line -----------------------------
 function addfsTaxExempt() {
-	getsubtotals();
-	addItem("FS Tax Exempt", " Fs Tax Exempt ", "C", "", "D", 0, 0, 0, $_SESSION["fsTaxExempt"], 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 17, 0, '');
+    getsubtotals();
+    addItem("FS Tax Exempt", " Fs Tax Exempt ", "C", "", "D", 0, 0, 0, $_SESSION["fsTaxExempt"], 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 17, 0, '');
 }
 
 //------------------------------ insert 'discount applied' line --------------------------------
 
 function discountnotify($strl) {
-	if ($strl == 10.01) {
-		$strL = 10;
-	}
-	addItem("", "** ".$strl."% Discount Applied **", "", "", "D", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, '');
+    if ($strl == 10.01) {
+        $strL = 10;
+    }
+    addItem("", "** ".$strl."% Discount Applied **", "", "", "D", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, '');
 }
 
 //------------------------------- insert discount line -----------------------------------------
 function addpercentDiscount() {
-	addtender($_SESSION["percentDiscount"]."% Discount", "PD", truncate2($_SESSION["transDiscount"]));
+    addtender($_SESSION["percentDiscount"]."% Discount", "PD", truncate2($_SESSION["transDiscount"]));
 }
 
 //------------------------------- insert tax exempt statement line -----------------------------
 function addTaxExempt() {
-	addItem("", "** Order is Tax Exempt **", "", "", "D", 0, 0, 0, 0, 0, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 0, '');
-	$_SESSION["TaxExempt"] = 1;
-	setglobalvalue("TaxExempt", 1);
+    addItem("", "** Order is Tax Exempt **", "", "", "D", 0, 0, 0, 0, 0, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 0, '');
+    $_SESSION["TaxExempt"] = 1;
+    setglobalvalue("TaxExempt", 1);
 }
 
 //------------------------------ insert reverse tax exempt statement ---------------------------
 function reverseTaxExempt() {
-	addItem("", "** Tax Exemption Reversed **", "", "", "D", 0, 0, 0, 0, 0, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 0, '');
-	$_SESSION["TaxExempt"] = 0;
-	setglobalvalue("TaxExempt", 0);
+    addItem("", "** Tax Exemption Reversed **", "", "", "D", 0, 0, 0, 0, 0, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 0, '');
+    $_SESSION["TaxExempt"] = 0;
+    setglobalvalue("TaxExempt", 0);
 }
 
 //------------------------------ insert case discount statement --------------------------------
 function addcdnotify() {
-	addItem("", "** ".$_SESSION["casediscount"]."% Case Discount Applied", "", "", "D", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 0, '');
+    addItem("", "** ".$_SESSION["casediscount"]."% Case Discount Applied", "", "", "D", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 0, '');
 }
 
 //------------------------------ insert manufacturer coupon statement --------------------------
 function addCoupon($strupc, $intdepartment, $dbltotal) {
-	addItem($strupc, " * Manufacturers Coupon", "I", "MC", "C", $intdepartment, 0, 1, $dbltotal, $dbltotal, $dbltotal, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, '');	
+    addItem($strupc, " * Manufacturers Coupon", "I", "MC", "C", $intdepartment, 0, 1, $dbltotal, $dbltotal, $dbltotal, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, '');    
 }
 
 //------------------------------ insert tare statement -----------------------------------------
 function addTare($dbltare) {
-	$_SESSION["tare"] = $dbltare/100;
-	addItem("", "** Tare Weight ".$_SESSION["tare"]." **", "", "", "D", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 0, '');
+    $_SESSION["tare"] = $dbltare/100;
+    addItem("", "** Tare Weight ".$_SESSION["tare"]." **", "", "", "D", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 0, '');
 }
 
 //------------------------------- insert MAD coupon statement (WFC specific) -------------------
 function addMadCoup() {
-		$madCoup = -1 * $_SESSION["madCoup"];
-		addItem("MAD Coupon", "Member Appreciation Coupon", "I", "CP", "C", 0, 0, 1, $madCoup, $madCoup, $madCoup, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 17, 0, '');
+        $madCoup = -1 * $_SESSION["madCoup"];
+        addItem("MAD Coupon", "Member Appreciation Coupon", "I", "CP", "C", 0, 0, 1, $madCoup, $madCoup, $madCoup, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 17, 0, '');
 }
 
 //-------------------------------- insert deposit record --------------------------------------
@@ -313,57 +313,57 @@ function addBottleReturn($quantity, $deposit, $foodstamp) {
 
 // ----------------------------- insert transaction discount -----------------------------------
 function addtransDiscount() {
-	addItem("DISCOUNT", "Discount", "I", "", "", 0, 0, 1, truncate2(-1 * $_SESSION["transDiscount"]), truncate2(-1 * $_SESSION["transDiscount"]), 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, '');
+    addItem("DISCOUNT", "Discount", "I", "", "", 0, 0, 1, truncate2(-1 * $_SESSION["transDiscount"]), truncate2(-1 * $_SESSION["transDiscount"]), 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, '');
 }
 
 function addactivity($activity) {
-	$timeNow = time();
+    $timeNow = time();
 
-	if ($_SESSION["CashierNo"] > 0 && $_SESSION["CashierNo"] < 256) {
-		$intcashier = $_SESSION["CashierNo"];
-	}
-	else {
-		$intcashier = 0;
-	}
+    if ($_SESSION["CashierNo"] > 0 && $_SESSION["CashierNo"] < 256) {
+        $intcashier = $_SESSION["CashierNo"];
+    }
+    else {
+        $intcashier = 0;
+    }
 
-	if ($_SESSION["DBMS"] == "mssql") {
-		$strqtime = "select max(datetime) as maxDateTime, getdate() as rightNow from activitytemplog";
-	}
-	else {
-		$strqtime = "select max(datetime) as maxDateTime, now() as rightNow from activitytemplog";
-	}
+    if ($_SESSION["DBMS"] == "mssql") {
+        $strqtime = "select max(datetime) as maxDateTime, getdate() as rightNow from activitytemplog";
+    }
+    else {
+        $strqtime = "select max(datetime) as maxDateTime, now() as rightNow from activitytemplog";
+    }
 
-	$db = tDataConnect();
-	$result = sql_query($strqtime, $db);
+    $db = tDataConnect();
+    $result = sql_query($strqtime, $db);
 
-	$row = sql_fetch_array($result);
+    $row = sql_fetch_array($result);
 
-	if (!$row || !$row[0]) {
-		$interval = 0;
-	}
-	else {
-		$interval = strtotime($row["rightNow"]) - strtotime($row["maxDateTime"]);
-	}
-		
-	$_SESSION["datetimestamp"] = strftime("%Y-%m-%d %H:%M:%S", $timeNow);
+    if (!$row || !$row[0]) {
+        $interval = 0;
+    }
+    else {
+        $interval = strtotime($row["rightNow"]) - strtotime($row["maxDateTime"]);
+    }
+        
+    $_SESSION["datetimestamp"] = strftime("%Y-%m-%d %H:%M:%S", $timeNow);
 
-	$strq = "insert into activitytemplog values ("
-		."'".nullwrap($_SESSION["datetimestamp"])."', "
-		.nullwrap($_SESSION["laneno"]).", "
-		.nullwrap($intcashier).", "
-		.nullwrap($_SESSION["transno"]).", "
-		.nullwrap($activity).", "
-		.nullwrap($interval).")";
+    $strq = "insert into activitytemplog values ("
+        ."'".nullwrap($_SESSION["datetimestamp"])."', "
+        .nullwrap($_SESSION["laneno"]).", "
+        .nullwrap($intcashier).", "
+        .nullwrap($_SESSION["transno"]).", "
+        .nullwrap($activity).", "
+        .nullwrap($interval).")";
 
-	$result = sql_query($strq, $db);
-	
-	sql_close($db);
+    $result = sql_query($strq, $db);
+    
+    sql_close($db);
 }
 
 
 // THESE MUST BE TIMESTAMPS !!
 function timeinterval($date1, $date2) {
-	$interval = $date2 - $date1;
-	return $interval;
+    $interval = $date2 - $date1;
+    return $interval;
 }
 

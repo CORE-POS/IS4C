@@ -29,46 +29,46 @@ $_SESSION["away"] = 1;
 $password = strtoupper(trim($_POST["reginput"]));
 
 if ($password == "TRAINING") {
-	$password = 9999;
+    $password = 9999;
 }
 
 if ($password == "CL") {
-	gohome();
+    gohome();
 }
 
 elseif (!is_numeric($password)) {
-	header("Location:nsinvalid.php");
+    header("Location:nsinvalid.php");
 }
 elseif ($password > "9999" || $password < "1") {
-	header("Location:nsinvalid.php");
+    header("Location:nsinvalid.php");
 }
 else {
-	$query_global = "select * from globalvalues";
-	$db = pDataConnect();
-	$result = sql_query($query_global, $db);
-	$row = sql_fetch_array($result);
+    $query_global = "select * from globalvalues";
+    $db = pDataConnect();
+    $result = sql_query($query_global, $db);
+    $row = sql_fetch_array($result);
 
-	if ($password == $row["CashierNo"]) {
-		drawerKick();
-		gohome();
-	}
-	else {
-		sql_close($db);
-		$query2 = "select emp_no, FirstName, LastName from employees where empactive = 1 and "
-			. "frontendsecurity >= 11 and (cashierpassword = " . $password . " or adminpassword = "
-			. $password . ")";
-		$db2 = pDataConnect();
-		$result2 = sql_query($query2, $db2);
-		$num_row2 = sql_num_rows($result2);
+    if ($password == $row["CashierNo"]) {
+        drawerKick();
+        gohome();
+    }
+    else {
+        sql_close($db);
+        $query2 = "select emp_no, FirstName, LastName from employees where empactive = 1 and "
+            . "frontendsecurity >= 11 and (cashierpassword = " . $password . " or adminpassword = "
+            . $password . ")";
+        $db2 = pDataConnect();
+        $result2 = sql_query($query2, $db2);
+        $num_row2 = sql_num_rows($result2);
 
-		if ($num_row2 > 0) {
-			drawerKick();
-			gohome();
-		}
-		else {
-			header("Location:nsinvalid.php");
-		}
-	}
-	sql_close($db);
+        if ($num_row2 > 0) {
+            drawerKick();
+            gohome();
+        }
+        else {
+            header("Location:nsinvalid.php");
+        }
+    }
+    sql_close($db);
 }
 

@@ -251,12 +251,22 @@ function printheaderb() {
         $mode = 'normal';
     }
     echo "\n<table border='0' cellspacing='0' cellpadding='0'>";
-    echo "\n<tr><Ttd width='400' height='20' bgcolor='#EEEEEE'><font face='arial' size='-2'><b>M E M B E R &nbsp;&nbsp;</b></font><font face='arial' size='-1'><b>" . $strmemberID . "</b></font></td>";
-    echo "\n<td width='240' align='right'><font face='arial' size='-2'>C A S H I E R &nbsp;&nbsp;</font><font face='arial' size='-1'><b>" . $_SESSION["cashier"] . "</b></font><td></tr></table>";
+    echo "\n    <tr>";
+    echo "\n        <td width='400' height='20' bgcolor='#EEEEEE'>";
+    echo "\n            <font face='arial' size='-2'><b>M E M B E R &nbsp;&nbsp;</b></font><font face='arial' size='-1'><b>" . $strmemberID . "</b></font>";
+    echo "\n        </td>";
+    echo "\n        <td width='240' align='right'>";
+    echo "\n            <font face='arial' size='-2'>C A S H I E R &nbsp;&nbsp;</font><font face='arial' size='-1'><b>" . $_SESSION["cashier"] . "</b></font>";
+    echo "\n        </td>";
+    echo "\n    </tr>";
+    echo "\n</table>";
     echo "\n<table border='0' cellspacing='0' cellpadding='0' class='$mode'>";
-    echo "\n<tr><td width='640' bgcolor='black' height='1' colspan='2'></td></tr>";
-    echo "\n<tr><td width='640' height='295' valign='top'>";
-    echo "\n<table border='0' cellpadding='0' cellspacing='0' class='$mode'>";
+    echo "\n    <tr>";
+    echo "\n        <td width='640' bgcolor='black' height='1' colspan='2'></td>";
+    echo "\n    </tr>";
+    echo "\n    <tr>";
+    echo "\n        <td width='640' height='295' valign='top'>";
+    echo "\n            <table border='0' cellpadding='0' cellspacing='0' class='$mode'>";
 }
 
 function printitem($field2, $field3, $total, $field5) {
@@ -347,7 +357,7 @@ function productsearchbox($strmsg) {
 function loanenter($strmsg) {
     echo "<tr><td height='295' width='640' align='center' valign='center'>";
     echo "<table border='0' cellpadding='0' cellspacing='0'>";
-    echo "<tr><Ttd bgcolor='#004080' height='150' width='260' valign='center' align='center'></center>";
+    echo "<tr><td bgcolor='#004080' height='150' width='260' valign='center' align='center'></center>";
     echo "<font face='arial' size='-1' color='white'>";
     echo $strmsg;
     echo "<form action='loanadd.php' method='post' autocomplete='off' name='loanamt'>";

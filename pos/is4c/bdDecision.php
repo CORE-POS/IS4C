@@ -34,35 +34,35 @@
 
         <?php
             if (!function_exists("endorseType")) {
-                include_once("clientscripts.php");		// apbw 03/24/05 Wedge Printer Swap Patch
+                include_once("clientscripts.php");        // apbw 03/24/05 Wedge Printer Swap Patch
             }
 
             $decision = strtoupper(trim($_POST["input"]));
 
             if ($decision == "CL") {
-	            $_SESSION["msgrepeat"] = 0;
-	            $_SESSION["toggletax"] = 0;
-	            $_SESSION["chargetender"] = 0;
-	            $_SESSION["togglefoodstamp"] = 0;
-	            $_SESSION["endorseType"] = "";
-	            echo "<script type=\"text/javascript\">";
-	            echo "window.location = '/pos2.php';";
-	            echo "</script>";
+                $_SESSION["msgrepeat"] = 0;
+                $_SESSION["toggletax"] = 0;
+                $_SESSION["chargetender"] = 0;
+                $_SESSION["togglefoodstamp"] = 0;
+                $_SESSION["endorseType"] = "";
+                echo "<script type=\"text/javascript\">";
+                echo "window.location = '/pos2.php';";
+                echo "</script>";
             }
 
             elseif (strlen($decision) > 0) {
-	            $_SESSION["msgrepeat"] = 0;
-	            echo "<script type=\"text/javascript\">"
-		            . "document.Form1.input.value=\"" . $_SESSION["strEntered"] . "\";"
-		            . "document.Form1.submit();"
-		            . "</script>";
+                $_SESSION["msgrepeat"] = 0;
+                echo "<script type=\"text/javascript\">"
+                    . "document.Form1.input.value=\"" . $_SESSION["strEntered"] . "\";"
+                    . "document.Form1.submit();"
+                    . "</script>";
             }
             else {
-	            endorseType();
-	            echo "<script type=\"text/javascript\">"
-		            ."document.Form1.input.value=\"" . $_SESSION["strEntered"] . "\";"
-		            ."document.Form1.submit();"
-		            ."</script>";
+                endorseType();
+                echo "<script type=\"text/javascript\">"
+                    ."document.Form1.input.value=\"" . $_SESSION["strEntered"] . "\";"
+                    ."document.Form1.submit();"
+                    ."</script>";
             }
         ?>
     </body>

@@ -59,19 +59,19 @@
             </tr>
             <tr>
                 <td height='300' width='640' align='center' colspan='2' valign='center'>
-	                <table border='0' cellpadding='0' cellspacing='0'>
-		                <tr>
-		                    <td bgcolor='#004080' height='150' width='260' valign='center' align='center'>
-			                    <center>
-			                        <br />
-			                        <font face='arial' color='white'>
-			                            <b>log in</b>
-			                            <form name='form' method='post' autocomplete='off' action='authenticate.php'>
+                    <table border='0' cellpadding='0' cellspacing='0'>
+                        <tr>
+                            <td bgcolor='#004080' height='150' width='260' valign='center' align='center'>
+                                <center>
+                                    <br />
+                                    <font face='arial' color='white'>
+                                        <b>log in</b>
+                                        <form name='form' method='post' autocomplete='off' action='authenticate.php'>
                                             <input Type='password' name='reginput' size='20' tabindex='0' onblur='document.form.reginput.focus();' />
                                             <p>
                                                 <font face='arial' color='white'>Please enter your password</font>
                                             </p>
-			                            </form>
+                                        </form>
                                     </font>
                                 </center>
                             </td>
@@ -84,13 +84,13 @@
                     <font size='-2' face='arial'>EXIT</font>
                     <?php
                         if ($_SESSION["browserOnly"] == 1) {
-	                        echo "<a href='#' onclick='window.top.close(); return false;' ";
+                            echo "<a href='#' onclick='window.top.close(); return false;' ";
                         }
                         else {
-	                        echo "<a href='bye.html' ";
+                            echo "<a href='bye.html' ";
                         }
                     ?> onMouseOver="document.exit.src='/graphics/switchred2.gif';" onMouseOut="document.exit.src='/graphics/switchblue2.gif';">
-	                <img name='exit' border='0' src='/graphics/switchblue2.gif' alt='Exit' /></a>
+                    <img name='exit' border='0' src='/graphics/switchblue2.gif' alt='Exit' /></a>
                 </td>
             </tr>
         </table>
@@ -104,17 +104,17 @@
     getsubtotals();
 
     function load() {
-	    $query_member = "SELECT * FROM custdata WHERE CardNo = '205203'";
-	    $query_product = "SELECT * FROM products WHERE upc = '0000000000090'";
-	    $query_localtemptrans = "SELECT * FROM localtemptrans";
+        $query_member = "SELECT * FROM custdata WHERE CardNo = '205203'";
+        $query_product = "SELECT * FROM products WHERE upc = '0000000000090'";
+        $query_localtemptrans = "SELECT * FROM localtemptrans";
 
-	    $bdat = pDataConnect();
-	    $result = sql_query($query_product, $bdat);
-	    $result_2 = sql_query($query_member, $bdat);
-	    sql_close($bdat);
+        $bdat = pDataConnect();
+        $result = sql_query($query_product, $bdat);
+        $result_2 = sql_query($query_member, $bdat);
+        sql_close($bdat);
 
-	    $trans = tDataConnect();
-	    $result_3 = sql_query($query_localtemptrans, $trans);
-	    sql_close($trans);
+        $trans = tDataConnect();
+        $result_3 = sql_query($query_localtemptrans, $trans);
+        sql_close($trans);
     }
 ?>

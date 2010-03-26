@@ -25,23 +25,23 @@
 
 function getChgName() {
      
-	$query = "select LastName, FirstName from custdata where CardNo = '" . $_SESSION["memberID"] . "'";
-	$connection = pDataConnect();
-	$result = sql_query($query, $connection);
-	$row = sql_fetch_array($result);
-	$num_rows = sql_num_rows($result);
+    $query = "select LastName, FirstName from custdata where CardNo = '" . $_SESSION["memberID"] . "'";
+    $connection = pDataConnect();
+    $result = sql_query($query, $connection);
+    $row = sql_fetch_array($result);
+    $num_rows = sql_num_rows($result);
 
-	if ($num_rows > 0) {
-		if (strlen($_SESSION["memberID"])!= 4) {
-				$_SESSION["ChgName"] = $row["LastName"];
-		} 
-		elseif (strlen($_SESSION["memberID"]) == 4) {
-				$LastInit = substr($row["LastName"], 0, 1).".";
-				$_SESSION["ChgName"] = trim($row["FirstName"]) ." ". $LastInit;
-		}
-	else
-		$_SESSION["ChgName"] = $_SESSION["memMsg"];
-	}
+    if ($num_rows > 0) {
+        if (strlen($_SESSION["memberID"])!= 4) {
+                $_SESSION["ChgName"] = $row["LastName"];
+        } 
+        elseif (strlen($_SESSION["memberID"]) == 4) {
+                $LastInit = substr($row["LastName"], 0, 1).".";
+                $_SESSION["ChgName"] = trim($row["FirstName"]) ." ". $LastInit;
+        }
+    else
+        $_SESSION["ChgName"] = $_SESSION["memMsg"];
+    }
 
 sql_close($connection);
 

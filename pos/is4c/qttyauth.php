@@ -23,23 +23,28 @@
 
 $qtty = strtoupper(trim($_POST["input"]));
 
-if (!$qtty || strlen($qtty) < 1) header("Location:/qttyinvalid.php");
+if (!$qtty || strlen($qtty) < 1) {
+    header("Location:/qttyinvalid.php");
+}
 
 elseif ($qtty == "CL") {
-	$_SESSION["qttyvalid"] = 0;
-	$_SESSION["quantity"] = 0;
-	$_SESSION["msgrepeat"] = 0;
-	header("Location:/pos2.php");
+    $_SESSION["qttyvalid"] = 0;
+    $_SESSION["quantity"] = 0;
+    $_SESSION["msgrepeat"] = 0;
+    header("Location:/pos2.php");
 }
 elseif (is_numeric($qtty)) {
-	if ($qtty > 9999 || $qtty <= 0) header("Location:/qttyinvalid.php");
-	else {
-		$_SESSION["qttyvalid"] = 1;
-		$_SESSION["msgrepeat"] = 1;
-		$_SESSION["strRemembered"] = $qtty."*".$_SESSION["strEntered"];
-		header("Location:/pos2.php");
-	}
+    if ($qtty > 9999 || $qtty <= 0) {
+        header("Location:/qttyinvalid.php");
+    }
+    else {
+        $_SESSION["qttyvalid"] = 1;
+        $_SESSION["msgrepeat"] = 1;
+        $_SESSION["strRemembered"] = $qtty . "*" . $_SESSION["strEntered"];
+        header("Location:/pos2.php");
+    }
 }
-else header("Location:/qttyinvalid.php");
+else {
+    header("Location:/qttyinvalid.php");
+}
 
-?>

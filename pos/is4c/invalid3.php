@@ -38,13 +38,13 @@
         <tr>
             <td height='300' width='640' align='center' valign='center'>
                 <table border='0' cellpadding='0' cellspacing='0'>
-		            <tr>
-		                <td bgcolor='#800000' height='150' width='260' valign='center' align='center'>
-			                <center>
-			                    <img src='graphics/redkey4.gif' alt='Red key' />
-			                    <p>
-			                        <font face='arial' color='white'>
-			                            password invalid, please re-enter
+                    <tr>
+                        <td bgcolor='#800000' height='150' width='260' valign='center' align='center'>
+                            <center>
+                                <img src='graphics/redkey4.gif' alt='Red key' />
+                                <p>
+                                    <font face='arial' color='white'>
+                                        password invalid, please re-enter
                                     </font>
                                 </p>
                             </center>

@@ -34,24 +34,24 @@
         <table>
             <tr>
                 <td height='300' width='640' align='center' valign='center'>
-	                <table border='0' cellpadding='0' cellsacing='0'>
-		                <tr>
-		                    <td bgcolor='#004080' height='150' width='260' valign='center' align='center'>
-			                    <center>
-			                        <font face='arial' color='white'>
-			                            <b>
-			                                confirm no sales
-			                             </b>
+                    <table border='0' cellpadding='0' cellsacing='0'>
+                        <tr>
+                            <td bgcolor='#004080' height='150' width='260' valign='center' align='center'>
+                                <center>
+                                    <font face='arial' color='white'>
+                                        <b>
+                                            confirm no sales
+                                         </b>
                                     </font>
-			                        <form name='form' method='post' autocomplete='off' action='nsauthenticate.php'>
-        			                    <input type='password' name='reginput' tabindex='0' onBlur='document.form.reginput.focus();'>
-			                        </form>
-                			        <p>
-                			            <font face='arial' color='white'>
-			                                please enter manager password
-			                             </font>
-			                        </p>
-			                     </center>
+                                    <form name='form' method='post' autocomplete='off' action='nsauthenticate.php'>
+                                        <input type='password' name='reginput' tabindex='0' onBlur='document.form.reginput.focus();'>
+                                    </form>
+                                    <p>
+                                        <font face='arial' color='white'>
+                                            please enter manager password
+                                         </font>
+                                    </p>
+                                 </center>
                             </td>
                         </tr>
                     </table>

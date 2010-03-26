@@ -26,57 +26,57 @@ if (!function_exists("tDataConnect")) include("connect.php");
 
 function loadglobalvalues() {
 
-	$query = "select * from globalvalues";
-	$db = pDataConnect();
-	$result = sql_query($query, $db);
-	$row = sql_fetch_array($result);
+    $query = "select * from globalvalues";
+    $db = pDataConnect();
+    $result = sql_query($query, $db);
+    $row = sql_fetch_array($result);
 
-	$_SESSION["CashierNo"] = $row["CashierNo"];
-	$_SESSION["cashier"] = $row["Cashier"];
-	$_SESSION["LoggedIn"] = $row["LoggedIn"];
-	$_SESSION["transno"] = $row["TransNo"];
-	$_SESSION["ttlflag"] = $row["TTLFlag"];
-	$_SESSION["fntlflag"] = $row["FntlFlag"];
-	$_SESSION["TaxExempt"] = $row["TaxExempt"];
+    $_SESSION["CashierNo"] = $row["CashierNo"];
+    $_SESSION["cashier"] = $row["Cashier"];
+    $_SESSION["LoggedIn"] = $row["LoggedIn"];
+    $_SESSION["transno"] = $row["TransNo"];
+    $_SESSION["ttlflag"] = $row["TTLFlag"];
+    $_SESSION["fntlflag"] = $row["FntlFlag"];
+    $_SESSION["TaxExempt"] = $row["TaxExempt"];
 
-	sql_close($db);
+    sql_close($db);
 }
 
 function setglobalvalue($param, $value) {
 
-	$db = pDataConnect();
+    $db = pDataConnect();
 
-	if (!is_numeric($value)) {
-		$value = "'".$value."'";
-	}
-	
-	$strUpdate = "update globalvalues set ".$param." = ".$value;
-		
-	sql_query($strUpdate, $db);
-	sql_close($db);
+    if (!is_numeric($value)) {
+        $value = "'".$value."'";
+    }
+    
+    $strUpdate = "update globalvalues set ".$param." = ".$value;
+        
+    sql_query($strUpdate, $db);
+    sql_close($db);
 }
 
 function setglobalflags($value) {
-	$db = pDataConnect();
+    $db = pDataConnect();
 
-	sql_query("update globalvalues set ttlflag = ".$value.", fntlflag = ".$value, $db);
-	sql_close($db);
+    sql_query("update globalvalues set ttlflag = ".$value.", fntlflag = ".$value, $db);
+    sql_close($db);
 }
 
 function nexttransno() {
-	$next_trans_no = 1;
-	
-	$db = pDataConnect();
+    $next_trans_no = 1;
+    
+    $db = pDataConnect();
 
-	sql_query("update globalvalues set transno = transno + 1", $db);
-	$result = sql_query("select transno from globalvalues", $db);
-	$num_rows = sql_num_rows($result);
+    sql_query("update globalvalues set transno = transno + 1", $db);
+    $result = sql_query("select transno from globalvalues", $db);
+    $num_rows = sql_num_rows($result);
 
-	if ($num_rows != 0) {
-		$row = sql_fetch_array($result);
-		$next_trans_no = $row["transno"];
-	}
+    if ($num_rows != 0) {
+        $row = sql_fetch_array($result);
+        $next_trans_no = $row["transno"];
+    }
 
-	sql_close($db);
+    sql_close($db);
 }
 

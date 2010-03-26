@@ -27,19 +27,19 @@ if (!function_exists("boxMsgscreen")) include_once("clientscripts.php");
 $decision = strtoupper(trim($_POST["input"]));
 
 if ($decision != "CL") {
-	header("Location:/pos2.php");
+    header("Location:/pos2.php");
 }
 
 else {
-	$inxUploaded = vdXML();
+    $inxUploaded = vdXML();
 
-	if ($inxUploaded == 1) {
-		header("Location:/ccauthorize.php");
-	}
-	else {
-		$_SESSION["boxMsg"] = "Communication error<p><font size=-1>Unable to complete transaction<br />Please process card manually</font></p>";
-		boxMsgScreen();
-	}
-		
+    if ($inxUploaded == 1) {
+        header("Location:/ccauthorize.php");
+    }
+    else {
+        $_SESSION["boxMsg"] = "Communication error<p><font size=-1>Unable to complete transaction<br />Please process card manually</font></p>";
+        boxMsgScreen();
+    }
+        
 }
 

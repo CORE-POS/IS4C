@@ -27,17 +27,17 @@ if (!function_exists("gohome")) include("maindisplay.php");
 
 $_SESSION["repeat"] = 0;
 if (isset($_POST["selectlist"])) {
-	$member_number = trim($_POST["selectlist"]);
+    $member_number = trim($_POST["selectlist"]);
 }
 else {
-	$member_number = "";
+    $member_number = "";
 }
 $mem_info = explode("::", $member_number);
 
 
 
 if ($mem_info[0] && strlen($mem_info[0]) >= 1) {
-	setMember($mem_info[2]);
+    setMember($mem_info[2]);
 }
 
 gohome();

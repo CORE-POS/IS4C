@@ -24,10 +24,10 @@
 loadglobalvalues();
 
 if ($_SESSION["LoggedIn"] == 0) {
-	header("Location:/login.php");
+    header("Location:/login.php");
 }
 else {
-	header("Location:/loginb.php");
+    header("Location:/loginb.php");
 }
 
 ?>

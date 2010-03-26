@@ -20,47 +20,51 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
-?>
-<HTML><BODY>
-<FORM name='form1' method='post' action='qttyauth.php'>
-<INPUT Type='hidden' name='input' size='20' tabindex='0'>
-</FORM>
-
-<TABLE border='0' cellspacing='0' cellpadding='0'><TR>
-
-</TD>
-
-<?
 if (!function_exists("printheaderb")) include("drawscreen.php");
-
-printheaderb();
-
 ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <title></title>
+    </head>
+    <body>
+        <form name='form1' method='post' action='qttyauth.php'>
+            <input Type='hidden' name='input' size='20' tabindex='0' />
+        </form>
+        <table border='0' cellspacing='0' cellpadding='0'>
+            <tr>
+                <td>
+                    <?php printheaderb();?>
+                        <tr>
+                            <td height='300' width='640' align='center' colspan='2' valign='center'>
+                                <table border='0' cellpadding='0' cellspacing='0'>
+                                    <tr>
+                                        <td bgcolor='#004080' height='150' width='260' valign='center' align='center'>
+                                            <center>
+                                                <font face='arial' color='white'>
+                                                    <b>quantity required</b>
+                                                    <p>
+                                                        <font face='arial' color='white' size='-1'>
+                                                            enter number or [clear] to cancel
+                                                        </font>
+                                                    </p>
+                                                </font>
+                                            </center>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                </td>
+            </tr>
+        </table>
 
-<TR>
-<TD height='300' width='640' align='center' colspan='2' valign='center'>
-	<TABLE border='0' cellpadding='0' cellspacing='0'>
-		<TR>
-		<TD bgcolor='#004080' height='150' width='260' valign='center' align='center'>
-			<CENTER>
-			<FONT face='arial' color='white'>
-			<B>quantity required</B>
+        <?php
+            $_SESSION["msgrepeat"] = 2;
+            $_SESSION["item"] = $_SESSION["strEntered"];
+            errorBeep();
+            $_SESSION["scan"] = "noScan";
+            printfooter();
+        ?>
+    </body></html>
 
-			<P><FONT face='arial' color='white' size='-1'>
-			enter number or [clear] to cancel</FONT>
-
-			</B</FONT></CENTER>
-		</TD>
-		</TR>
-	</TABLE>
-</TD></TR>
-</TABLE>
-
-<?
-$_SESSION["msgrepeat"] = 2;
-$_SESSION["item"] = $_SESSION["strEntered"];
-errorBeep();
-$_SESSION["scan"] = "noScan";
-printfooter();
-?>
-</BODY>

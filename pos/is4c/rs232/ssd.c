@@ -139,7 +139,7 @@ int main(void) {
     
                                    /* Enable the receiver and set local mode */
  options.c_cflag |= (CLOCAL | CREAD);
-				/* 7 bits, odd parity */
+                /* 7 bits, odd parity */
      options.c_cflag |= PARENB;
      options.c_cflag |= PARODD;  /* odd parity */
      options.c_cflag &= ~CSTOPB;
@@ -191,67 +191,67 @@ while (1)
     
      if (chout[0] == '\n' && num > 2) {
 
-	serialBuffer[num] = '\0';
+    serialBuffer[num] = '\0';
 
-	/**************** process scanned data ****************/
+    /**************** process scanned data ****************/
 
-	if (serialBuffer[1] == '0') {
+    if (serialBuffer[1] == '0') {
 
-	  for (i=0; i<17; i++) {
-	    scannerInput[i] = serialBuffer[i+4];
-	}
-	fp_scanner = fopen("/pos/is4c/rs232/scanner", "w");
-	fprintf(fp_scanner, "%s\n", scannerInput);
-	fclose(fp_scanner);
+      for (i=0; i<17; i++) {
+        scannerInput[i] = serialBuffer[i+4];
+    }
+    fp_scanner = fopen("/pos/is4c/rs232/scanner", "w");
+    fprintf(fp_scanner, "%s\n", scannerInput);
+    fclose(fp_scanner);
 
-	}  
-	/**************** process weight data ******************/
+    }  
+    /**************** process weight data ******************/
 
-	if (serialBuffer[1] == '1') {
+    if (serialBuffer[1] == '1') {
 
-	  
-	 
+      
+     
  
-	  if (serialBuffer[2] == '1') {
+      if (serialBuffer[2] == '1') {
 
-	    write(mainfd, "S14\r", 5);
-	   
-	  
-	  } 
+        write(mainfd, "S14\r", 5);
+       
+      
+      } 
 
-	  else if (serialBuffer[2] == '4' && serialBuffer[3] == '3') {
+      else if (serialBuffer[2] == '4' && serialBuffer[3] == '3') {
 
-	    write(mainfd, "S11\r", 5);
+        write(mainfd, "S11\r", 5);
 
-	    if (strcmp(scaleBuffer, serialBuffer) != 0) {
+        if (strcmp(scaleBuffer, serialBuffer) != 0) {
 
-		fp_scale = fopen("/pos/is4c/rs232/scale", "w");
-		fprintf(fp_scale, "%s\n", serialBuffer);
-		fclose(fp_scale);
-	     
-	    }
-	   
-	  }
+        fp_scale = fopen("/pos/is4c/rs232/scale", "w");
+        fprintf(fp_scale, "%s\n", serialBuffer);
+        fclose(fp_scale);
+         
+        }
+       
+      }
 
-	  else if (serialBuffer[2] == '4') {
+      else if (serialBuffer[2] == '4') {
 
-	    write(mainfd, "S14\r", 5);
+        write(mainfd, "S14\r", 5);
 
-	    if (strcmp(scaleBuffer, serialBuffer) != 0) {
+        if (strcmp(scaleBuffer, serialBuffer) != 0) {
 
-		fp_scale = fopen("/pos/is4c/rs232/scale", "w");
-		fprintf(fp_scale, "%s\n", serialBuffer);
-		fclose(fp_scale);
-	    }  
-	  }
+        fp_scale = fopen("/pos/is4c/rs232/scale", "w");
+        fprintf(fp_scale, "%s\n", serialBuffer);
+        fclose(fp_scale);
+        }  
+      }
 
-	  
+      
 
-	  for (i=0; i<10; i++) {
-	    scaleBuffer[i] = serialBuffer[i];
-	  }
+      for (i=0; i<10; i++) {
+        scaleBuffer[i] = serialBuffer[i];
+      }
 
-	}  /* weight data processing ends */
+    }  /* weight data processing ends */
 
      }     /* end of line data processing ends */
  

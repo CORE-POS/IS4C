@@ -36,15 +36,15 @@
                         $time = strftime("%m/%d/%y  %I:%M %p", time());
 
                         if ($_SESSION["training"] == 1) {
-	                        echo "<font size='-1' face='arial' color='#004080'>training</font>"
-	                            . "<img src='graphics/BLUEDOT.GIF' alt='Blue dot' />&nbsp;&nbsp:&nbsp;";
+                            echo "<font size='-1' face='arial' color='#004080'>training</font>"
+                                . "<img src='graphics/BLUEDOT.GIF' alt='Blue dot' />&nbsp;&nbsp:&nbsp;";
                         }
                         elseif ($_SESSION["standalone"] == 0) {
-	                        echo "<img src='graphics/GREENDOT.GIF' alt='Green dot' />&nbsp;&nbsp;&nbsp;";
+                            echo "<img src='graphics/GREENDOT.GIF' alt='Green dot' />&nbsp;&nbsp;&nbsp;";
                         }
                         else {
-	                        echo "<font size='-1' face='arial' color='#800000'>stand alone</font>"
-	                            . "<img src='graphics/REDDOT.GIF' alt='Red dot' />&nbsp;&nbsp;&nbsp;";
+                            echo "<font size='-1' face='arial' color='#800000'>stand alone</font>"
+                                . "<img src='graphics/REDDOT.GIF' alt='Red dot' />&nbsp;&nbsp;&nbsp;";
                         }
                     ?>
                     <font face='arial' size='+1'><b><?=$time;?></b></font>

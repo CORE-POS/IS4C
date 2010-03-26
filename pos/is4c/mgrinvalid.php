@@ -34,26 +34,26 @@
             ?>
             <tr>
                 <td height='300' width='640' align='center' colspan='2' valign='center'>
-	                <table border='0' cellpadding='0' cellspacing='0'>
-		                <tr>
-		                    <td bgcolor='#800000' height='150' width='260' valign='center' align='center'>
-			                    <center>
-        			                <font face='arial' color='white'>
-			                            <b>password invalid</b>
-			                                <form name='form' method='post' autocomplete='off' action='mgrauthenticate.php'>
-			                                    <input type='password' name='reginput' tabindex='0' onBlur='document.form.reginput.focus();' />
-			                                </form>
-			                                <p>
-			                                    <font face='arial' color='white'>
-			                                        re-enter manager password
-			                                     </font>
-			                                 </p>
-			                            </b>
-			                         </font>
-			                     </center>
-		                    </td>
-		                </tr>
-	                </table>
+                    <table border='0' cellpadding='0' cellspacing='0'>
+                        <tr>
+                            <td bgcolor='#800000' height='150' width='260' valign='center' align='center'>
+                                <center>
+                                    <font face='arial' color='white'>
+                                        <b>password invalid</b>
+                                            <form name='form' method='post' autocomplete='off' action='mgrauthenticate.php'>
+                                                <input type='password' name='reginput' tabindex='0' onBlur='document.form.reginput.focus();' />
+                                            </form>
+                                            <p>
+                                                <font face='arial' color='white'>
+                                                    re-enter manager password
+                                                 </font>
+                                             </p>
+                                        </b>
+                                     </font>
+                                 </center>
+                            </td>
+                        </tr>
+                    </table>
                 </td>
             </Ttr>
         </table>

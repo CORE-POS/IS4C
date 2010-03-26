@@ -27,49 +27,49 @@ if (!function_exists("checksuspended")) include("special.php");
 if (!function_exists("tenderReport")) include("tenderReport.php");
 
 if (isset($_POST["selectlist"])) {
-	$admin_task = strtoupper(trim($_POST["selectlist"]));
+    $admin_task = strtoupper(trim($_POST["selectlist"]));
 }
 else {
-	$admin_task = "";
+    $admin_task = "";
 }
 
 if ($admin_task == "SUSPEND") {
-	getsubtotals();
-	if ($_SESSION["LastID"] == 0) {
-		msgscreen("no transaction in progress");
-	}
-	else {
-		suspendorder();
-	}
+    getsubtotals();
+    if ($_SESSION["LastID"] == 0) {
+        msgscreen("no transaction in progress");
+    }
+    else {
+        suspendorder();
+    }
 }
 elseif ($admin_task == "RESUME") {
-	getsubtotals();
-	if ($_SESSION["LastID"] != 0) {
-		msgscreen("transaction in progress");
-	}
-	elseif (checksuspended() == 0) {
+    getsubtotals();
+    if ($_SESSION["LastID"] != 0) {
+        msgscreen("transaction in progress");
+    }
+    elseif (checksuspended() == 0) {
 
 
-		msgscreen("no suspended transaction");
-	}
-	else {
-		echo "<SCRIPT type=\"text/javascript\">\n"
-			."window.location='/suspendedlist.php'"
-			."</SCRIPT>";
-	}
+        msgscreen("no suspended transaction");
+    }
+    else {
+        echo "<SCRIPT type=\"text/javascript\">\n"
+            ."window.location='/suspendedlist.php'"
+            ."</SCRIPT>";
+    }
 }
 elseif ($admin_task == "TR") {
         getsubtotals();
         if ($_SESSION["LastID"] != 0) {
                 msgscreen("transaction in progress");
         }
-	else {
-		tenderReport();
-	}
+    else {
+        tenderReport();
+    }
 }
 
 elseif ($admin_task == "" || !$admin_task || strlen($admin_task) < 1) {
-	$_SESSION["msgrepeat"] = 0;
-	gohome();
+    $_SESSION["msgrepeat"] = 0;
+    gohome();
 }
 

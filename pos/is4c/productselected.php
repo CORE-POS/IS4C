@@ -29,10 +29,10 @@
     <body onload="window.top.input.location = 'input.php';document.form.submit();" >
         <?php
             if (isset($_POST["selectlist"])) {
-	            $product = trim($_POST["selectlist"]);
+                $product = trim($_POST["selectlist"]);
             }
             else {
-	            $product = "";
+                $product = "";
             }
             $_SESSION["strEntered"] = $product;
 

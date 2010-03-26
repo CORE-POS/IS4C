@@ -23,14 +23,14 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ?>
 <frameset cols='675,118,*' frameborder='0'>
      <frameset rows='40,440,*' frameborder='0' scrolling='no'>
-    	<frame src='noinput.php' name='input' border='0' scrolling='no' />
-	    <frame src='<?php echo $_SESSION["display"]; ?>' name='main_frame' border='0' scrolling='no' />
+        <frame src='noinput.php' name='input' border='0' scrolling='no' />
+        <frame src='<?php echo $_SESSION["display"]; ?>' name='main_frame' border='0' scrolling='no' />
     </frameset>
-	    <frameset rows='345,50,50,1,*' frameborder='0' scrolling='no'>
-	        <frame src='chkscale.php' name='scale' border='0' scrolling='no'>
-	        <frame src='endorse.php' name='endorse' border='0' scrolling='no'>
-	        <frame src='end.php' name='end' border='0' scrolling='no'>
-	        <frame src='chkscanner.php' name='chkserial' border='0' scrolling='no'>
+        <frameset rows='345,50,50,1,*' frameborder='0' scrolling='no'>
+            <frame src='chkscale.php' name='scale' border='0' scrolling='no'>
+            <frame src='endorse.php' name='endorse' border='0' scrolling='no'>
+            <frame src='end.php' name='end' border='0' scrolling='no'>
+            <frame src='chkscanner.php' name='chkserial' border='0' scrolling='no'>
         </frameset>
 </frameset>
 
