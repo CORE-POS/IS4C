@@ -184,7 +184,7 @@ function tender($right, $strl) {
     elseif ($strl > 999999) {
         xboxMsg("tender amount of " . truncate2($strl/100) . "<br />exceeds allowable limit");
     }
-    elseif ($right == "WT") }
+    elseif ($right == "WT") {
         xboxMsg("WIC tender not applicable");
     }
     elseif ($right == "CK" && $_SESSION["ttlflag"] == 1 && ($_SESSION["isMember"] != 0 || $_SESSION["isStaff"] != 0) && (($strl/100 - $_SESSION["amtdue"] - 0.005) > $dollar) && ($_SESSION["cashOverLimit"] == 1)) {

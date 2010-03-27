@@ -1,0 +1,49 @@
+#login
+{
+	border: 0px;
+	padding: 0;
+	border-spacing: 0;
+}
+
+#is4c_header
+{
+    height: 40px;
+    width: 100px;
+    vertical-align: center;
+    background-color: #FFCC00;
+    text-align: center;
+    font-family: 'arial', serif;
+    font-size: medium;
+    font-weight: bold;
+}
+
+#full_header
+{
+    height: 40px;
+    width: 540px;
+    vertical-align: bottom;
+    text-align: right;
+    font-family: 'arial', serif;
+    font-size: xx-small;
+    font-weight: bold;
+}
+
+#line
+{
+    height: 1px;
+    width: 640px;
+    background-color: black;
+}
+
+#welcome
+{
+    height: 20px;
+    width: 110px;
+    text-align: center;
+    background-color: #004080;
+    font-family: 'arial', serif;
+    font-size: small;
+    font-weight: bold;
+    color: white;
+}
+

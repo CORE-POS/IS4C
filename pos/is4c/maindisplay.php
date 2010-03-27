@@ -24,41 +24,41 @@
 function gohome() {
     $_SESSION["scan"] = "scan";
     echo "<script type=\"text/javascript\">";
-    echo "window.top.location = 'pos.php'";
+    echo "window.top.location = '/pos.php'";
     echo "</script>\n";
 }
 
 function maindisplay($location) {
     $_SESSION["display"] = $location;
     echo "<script  type=\"text/javascript\">";
-    echo "window.top.location = 'display.php'";
+    echo "window.top.location = '/display.php'";
     echo "</script>";
 }
 
 function msgscreen($msg) {
     $_SESSION["boxMsg"] = $msg;
     echo "<script  type=\"text/javascript\">";
-    echo "window.top.location = 'msgscreen.php'";
+    echo "window.top.location = '/msgscreen.php'";
     echo "</script>";
 }
 
 function inputBox() {
     echo "<script  type=\"text/javascript\">";
-    echo "window.top.frames[0].location = 'input.php'";
+    echo "window.top.frames[0].location = '/input.php'";
     echo "</script>";
 }
 
 function noinputBox() {
     echo "<script type=\"text/javascript\">";
-    echo "window.top.frames[0].location = 'noinput.php'";
+    echo "window.top.frames[0].location = '/noinput.php'";
     echo "</script>";
 }
 
 function returnHome() {
     $_SESSION["scan"] = "scan";
     echo "<script type=\"text/javascript\">";
-    echo "window.top.frames[1].location = 'pos2.php';\n";
-    echo "window.top.frames[0].location = 'input.php';\n";
+    echo "window.top.frames[1].location = '/pos2.php';\n";
+    echo "window.top.frames[0].location = '/input.php';\n";
     echo "</script>\n";
 }
 
