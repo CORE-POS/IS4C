@@ -35,8 +35,9 @@ ${CMD} < suspendedtoday.viw
 
 cd /pos/installation/mysql/is4c_op/tables/
 
-${CMD} < batches.table
-${CMD} < batchList.table
+${CMD} < batchHeaders.table
+${CMD} < batchProducts.table
+${CMD} < batchTypes.table
 ${CMD} < chargecode.table
 ${CMD} < couponcodes.table
 ${CMD} < custdata.table
