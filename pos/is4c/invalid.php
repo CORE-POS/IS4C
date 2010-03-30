@@ -55,7 +55,7 @@ opyright 2001, 2004 Wedge Community Co-op
                                 <center>
                                     <br />
                                     <font face='arial' color='red'>
-                                        <form name='form' method='post' autocomplete='off' action='authenticate.php'>
+                                        <form name='form' method='post' autocomplete='off' action='lib/authenticate.php'>
                                             <input Type='password' name='reginput' size='20' onBlur='document.form.reginput.focus();' />
                                         </form>
                                         <h3>PASSWORD INVALID</h3>

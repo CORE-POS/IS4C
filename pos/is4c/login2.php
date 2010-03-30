@@ -66,7 +66,7 @@
                                     <br />
                                     <font face='arial' color='white'>
                                         <b>log in</b>
-                                        <form name='form' method='post' autocomplete='off' action='authenticate.php'>
+                                        <form name='form' method='post' autocomplete='off' action='lib/authenticate.php'>
                                             <input Type='password' name='reginput' size='20' tabindex='0' onblur='document.form.reginput.focus();' />
                                             <p>
                                                 <font face='arial' color='white'>Please enter your password</font>

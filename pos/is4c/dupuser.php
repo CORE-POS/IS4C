@@ -57,7 +57,7 @@ $lane = $_GET['lane'];
                                     <br />
                                     <font face='arial' color='white'>
                                         <b>log in</b>
-                                        <form name='form' method='post' autocomplete='off' action='authenticate.php'>
+                                        <form name='form' method='post' autocomplete='off' action='lib/authenticate.php'>
                                             <input type='password' name='reginput' size='20' onBlur='document.form.reginput.focus();' />
                                             <p>
                                                 <font face='arial' color='white'>

@@ -31,7 +31,7 @@ if (!function_exists("printheaderb")) include("drawscreen.php");
     </head>
     <body>
 
-        <form name='form1' method='post' autocomplete='off' action='authenticate3.php'>
+        <form name='form1' method='post' autocomplete='off' action='lib/authenticate3.php'>
             <input type='hidden' name='input' value = '99999' size='20' tabindex='0' />
         </form>
         <?php
