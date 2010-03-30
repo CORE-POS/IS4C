@@ -35,37 +35,26 @@ Data Connection Settings
 ************************************************************************************/
 
 $_SESSION["mServer"] = "127.0.0.1";
-
-
 $_SESSION["mDatabase"] = "is4c_log";
-
-$_SESSION["DBMS"] = "mysql";
 $_SESSION["remoteDBMS"] = "mysql";
+$_SESSION["mUser"] = "is4cserver";
+$_SESSION["mPass"] = "";
 
+$_SESSION["localhost"] = "127.0.0.1";
 $_SESSION["tDatabase"] = "translog";
 $_SESSION["pDatabase"] = "opdata";
-$_SESSION["laneno"] = "01";
-$_SESSION["localhost"] = "127.0.0.1";
-
-$_SESSION["mUser"] = "is4cserver";
-$_SESSION["mPass"] = "is4cserver";
-
+$_SESSION["DBMS"] = "mysql";
 $_SESSION["localUser"] = "is4clane";
-$_SESSION["localPass"] = "is4clane";
+$_SESSION["localPass"] = "";
 
+$_SESSION["laneno"] = "01";
 
 /***********************************************************************************
 Receipt & Printer Settings
 ************************************************************************************/
 
 $_SESSION["print"] = 0;
-
-if ($_SESSION["OS"] == "win32") {
-    $_SESSION["printerPort"] = "lpt1:";
-}
-else {
-    $_SESSION["printerPort"] = "/dev/null";
-}
+$_SESSION["printerPort"] = "/dev/null";
 
 $_SESSION["receiptHeader1"] = "R O C H D A L E  F O O D  C O - O P";
 $_SESSION["receiptHeader2"] = "104 NE Elm Street";
@@ -81,10 +70,8 @@ $_SESSION["ckEndorse2"] = "TO CO-OP BANK";
 $_SESSION["ckEndorse3"] = "ACCOUNT _______";
 $_SESSION["ckEndorse4"] = "ROCHDALE FOOD CO-OP";
 
-
 $_SESSION["chargeSlip1"] = "ROCHDATE FOOD CO-OP"; // Store name on charge slips
 $_SESSION["chargeSlip2"] = "S T O R E   C O P Y";  // Alternative to "Merchant Copy"
-
 
 /***********************************************************************************
 Screen Message Settings
