@@ -1,0 +1,11 @@
+LABEL[for="addBatch_name"],
+LABEL[for="searchBatch_upc"] {
+ display: inline-block;
+ width: 3em;
+}
+
+INPUT[name="addBatch_start"],
+INPUT[name="addBatch_end"] {
+ text-align: right;
+ width: 6em;
+}

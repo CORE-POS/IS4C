@@ -66,8 +66,7 @@ ${CMD} < volunteerDiscounts.viw
 
 cd /pos/installation/mysql/is4c_op/data/
 
-${CMD} < batches.insert
-${CMD} < batchList.insert
+${CMD} < batchTypes.insert
 ${CMD} < custdata.insert
 ${CMD} < departments.insert
 ${CMD} < employees.insert
