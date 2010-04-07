@@ -10,6 +10,7 @@ ${CMD} < create_server_db.sql
 cd /pos/installation/mysql/is4c_log/tables/
 
 ${CMD} < activitylog.table
+${CMD} < batchMerges.table
 ${CMD} < dtransactions.table
 ${CMD} < productsLog.table
 ${CMD} < suspended.table

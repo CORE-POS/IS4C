@@ -1,4 +1,6 @@
 <?php
+	require_once($_SERVER["DOCUMENT_ROOT"]."/define.conf");
+
 	$backoffice=array();
 	$backoffice['status']=array();
 
@@ -17,15 +19,27 @@
 				<li>GET - Edit item in batch</li>
 				<li>POST - Add item to batch</li>
 				<li>Other actions?</li>
+				<li>Add reasonable defaults to forms</li>
 			</ul>
 		<hr>
 	 */
 
 	require_once($_SERVER["DOCUMENT_ROOT"].'/src/htmlparts.php');
 	
-	require_once($_SERVER["DOCUMENT_ROOT"]."/lib/table_batchTypes.php");
+	require_once($_SERVER["DOCUMENT_ROOT"].'/lib/table_batchTypes.php');
 		$batchTypes_result=get_batchTypes(&$backoffice);
+	
+	require_once('sql.php');		
 		
+	if (isset($_REQUEST['a']) && $_REQUEST['a']=='addBatch') {
+		addBatch(&$backoffice);
+	}
+
+	// This needs to happen after any addBatch, deleteBatch, or editBatch request
+	require_once($_SERVER["DOCUMENT_ROOT"].'/lib/materialized_batch.php');
+		$batchList_result=get_batchList(&$backoffice);
+		
+	
 	$html='<!DOCTYPE HTML>
 <html>
 	<head>';
@@ -79,50 +93,48 @@
 				</form>
 			</div>
 			<div>
-				<p>List of active batches</p>
-				<table>
-					<thead>
-						<tr>
-							<th>Name</th>
-							<th>Merge Status</th>
-							<th>Type</th>
-							<th>Start</th>
-							<th>End</th>
-							<th>Merge</th>
-							<th>Delete</th>
-						</tr>
-					</thead>
-					<tfoot/>
-					<tbody>
-						<tr>
-							<td>Some sale</td>
-							<td>Not merged</td>
-							<td>Calendar</td>
-							<td>2010-04-01</td>
-							<td>2010-04-30</td>
-							<td><input type="checkbox"/></td>
-							<td><input type="checkbox"/></td>
-						</tr>
-						<tr>
-							<td>Some WSL batch</td>
-							<td>2010-03-20</td>
-							<td>WSL</td>
-							<td>2010-03-22</td>
-							<td>--</td>
-							<td><input type="checkbox"/></td>
-							<td><input type="checkbox"/></td>
-						</tr>
-						<tr>
-							<td>Some price change</td>
-							<td>Not merged</td>
-							<td>Price Change</td>
-							<td>--</td>
-							<td>--</td>
-							<td><input type="checkbox"/></td>
-							<td><input type="checkbox"/></td>
-						</tr>
-					</tbody>
-				</table>
+				<form action="./" method="post" name="listBatch">
+					<fieldset>
+						<legend>List of Active Batches</legend>
+						<table>
+							<thead>
+								<tr>
+									<th>Name</th>
+									<th>Merge Status</th>
+									<th>Type</th>
+									<th>Start</th>
+									<th>End</th>
+									<th>Merge</th>
+									<th>Delete</th>
+								</tr>
+							</thead>
+							<tfoot/>
+							<tbody>';
+	while ($row=mysql_fetch_array($batchList_result)) {
+		$html.='
+								<tr>
+									<td>'.$row['batchHeaders name'].'</td>
+									<td>'.$row['batchMerges modified'].'</td>
+									<td>'.$row['batchTypes name'].'</td>
+									<td>'.$row['start'].'</td>
+									<td>'.$row['end'].'</td>
+									<td><input type="checkbox"/></td>
+									<td><input type="checkbox"/></td>
+								</tr>';
+	}
+	$html.='
+							</tbody>
+						</table>
+					</fieldset>
+				</form>
+			</div>
+			<div id="page_panel_statuses">';
+	foreach ($backoffice['status'] as $msg) {
+		$html.='
+				<p class="status">'.$msg.'</p>';
+	}
+	
+	$html.='
 			</div>
 		</div>';
 	
