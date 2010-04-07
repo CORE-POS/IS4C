@@ -4,6 +4,7 @@
     <body>
         <script type="text/javascript">
             var xmlHttp;
+            var anotherXmlHttp;
             var xmlmessage = "ok";
 
             function createXMLHttpRequest() {
