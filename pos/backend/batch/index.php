@@ -11,7 +11,7 @@
 				<li>Code this page. Simple, right?</li>
 				<li>GET - Search by UPC<li>
 				<li>GET - Search by batch (also, link from table displaying all batches</li>
-				<li>POST - Add new batch</li>
+			#	<li>POST - Add new batch</li>
 				<li>POST - Merge batch(es)</li>
 				<li>POST - Delete batch</li>
 				<li>GET - Search by UPC to add to batch</li>
@@ -38,7 +38,6 @@
 	// This needs to happen after any addBatch, deleteBatch, or editBatch request
 	require_once($_SERVER["DOCUMENT_ROOT"].'/lib/materialized_batch.php');
 		$batchList_result=get_batchList(&$backoffice);
-		
 	
 	$html='<!DOCTYPE HTML>
 <html>
@@ -113,11 +112,11 @@
 	while ($row=mysql_fetch_array($batchList_result)) {
 		$html.='
 								<tr>
-									<td>'.$row['batchHeaders name'].'</td>
+									<td><a href="./edit.php?id='.$row['id'].'">'.$row['batchHeaders name'].'</a></td>
 									<td>'.$row['batchMerges modified'].'</td>
 									<td>'.$row['batchTypes name'].'</td>
-									<td>'.$row['start'].'</td>
-									<td>'.$row['end'].'</td>
+									<td>'.strftime("%F", strtotime($row['start'])).'</td>
+									<td>'.strftime("%F", strtotime($row['end'])).'</td>
 									<td><input type="checkbox"/></td>
 									<td><input type="checkbox"/></td>
 								</tr>';
