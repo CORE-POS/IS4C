@@ -367,6 +367,15 @@ function sql_fetch_array($result) {
     return $row;
 }
 
+
+function sql_fetch_assoc_array($result) {
+  if ($_SESSION['DBMS'] == 'mssql') {
+    return mssql_fetch_assoc($result);
+  }
+  return mysql_fetch_assoc($result);
+}
+
+
 function sql_fetch_row($result) {
     if ($_SESSION["DBMS"] == "mssql") {
         $row = mssql_fetch_row($result);
