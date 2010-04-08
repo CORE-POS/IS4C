@@ -5,7 +5,7 @@
         <script type="text/javascript">
             var xmlHttp;
             var anotherXmlHttp;
-            var xmlmessage = "ok";
+	    var xmldata = '';
 
             function createXMLHttpRequest() {
                 if (window.ActiveXObject) {
@@ -44,9 +44,8 @@
             function handleStateChange() {
                 if (xmlHttp.readyState == 4) {
                     if (xmlHttp.status == 200) {
-                        if (xmlmessage != xmldata) {
-                            var xmldata = xmlHttp.responseText;
-                            // alert(xmldata);
+			if (xmldata != 'ok') {
+                            xmldata = xmlHttp.responseText;
                             startAnotherRequest("scale.php?reginput="+xmldata);
                             xmldata = "";
                         }
@@ -75,7 +74,9 @@
                 startRequest("rs232/scale");
                 setTimeout("listen();", 70);
             }
-            listen();
+    <?php if ($_SESSION['OS'] == 'linux'): ?>
+    listen();
+    <?php endif; ?>
         </script>
         <table border=0 cellspacing=0 cellpadding=0>
             <tr>
