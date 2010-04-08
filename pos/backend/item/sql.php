@@ -1,6 +1,4 @@
 <?php
-	require_once($_SERVER["DOCUMENT_ROOT"].'/src/htmlparts.php');
-
 	function search($backoffice) {
 		// $_REQUEST['q'] == Query string, or group value
 		// $_REQUEST['t'] == Query type
@@ -9,7 +7,7 @@
 			// TODO - Further check data
 			case 'upc_description_sku':
 				// TODO - Update when sku/item_number's are added
-				$query_where='(`products`.`upc`='.$_REQUEST['q'].' OR `products`.`description` LIKE \'%'.$_REQUEST['q'].'%\')';
+				$query_where='(`products`.`upc`=\''.$_REQUEST['q'].'\' OR `products`.`description` LIKE \'%'.$_REQUEST['q'].'%\')';
 			break;
 			case 'upc': 
 				$query_where='`products`.`upc`='.$_REQUEST['q'];
