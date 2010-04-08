@@ -45,7 +45,7 @@ $_SESSION["tDatabase"] = "translog";
 $_SESSION["pDatabase"] = "opdata";
 $_SESSION["DBMS"] = "mysql";
 $_SESSION["localUser"] = "is4clane";
-$_SESSION["localPass"] = "";
+$_SESSION["localPass"] = "is4clane";
 
 $_SESSION["laneno"] = "01";
 
