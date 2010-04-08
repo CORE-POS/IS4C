@@ -8,6 +8,8 @@
 	 * This page is enough of a beast to break out of index.php
 	 * Per batch, view info, actions, add/search/modified products, list products
 	 */
+	
+	// Test line!!
 
 	require_once($_SERVER["DOCUMENT_ROOT"].'/src/htmlparts.php');
 	
