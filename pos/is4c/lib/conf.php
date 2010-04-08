@@ -1,6 +1,6 @@
 <?php
     
-    $handle = fopen("ini/ini.php", "r");
+    $handle = fopen("/pos/is4c/ini/ini.php", "r");
     $contents = '';
     if ($handle) {
         while (!feof($handle)) {
@@ -150,9 +150,9 @@
     }
 
     function get_charge_slip_2($contents) {
-        preg_match("/SESSION\[\"chargeSlip2\"\]\s=\s\".*\";/", $contents, $val);
         return str_replace('";', "", substr($val[0], 26));
     }
+        preg_match("/SESSION\[\"chargeSlip2\"\]\s=\s\".*\";/", $contents, $val);
 
     function get_welcome_message_1($contents) {
         preg_match("/SESSION\[\"welcomeMsg1\"\]\s=\s\".*\";/", $contents, $val);
@@ -170,7 +170,7 @@
     }
 
     function get_training_message_1($contents) {
-        preg_match("/SESSION\[\"trainingMsg1\"\]\s=\s\"[a-zA-Z0-9._'\/\- ]*\";/", $contents, $val);
+        preg_match("/SESSION\[\"trainingMsg1\"\]\s=\s\".*\";/", $contents, $val);
         return str_replace('";', "", substr($val[0], 27));
     }
 
