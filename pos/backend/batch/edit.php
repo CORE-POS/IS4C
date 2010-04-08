@@ -9,7 +9,7 @@
 	 * Per batch, view info, actions, add/search/modified products, list products
 	 */
 	
-	// Test line
+	// Test line!!
 
 	require_once($_SERVER["DOCUMENT_ROOT"].'/src/htmlparts.php');
 	
