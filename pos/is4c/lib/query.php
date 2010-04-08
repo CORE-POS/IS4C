@@ -61,7 +61,7 @@
             . '    FROM employees'
             . '    WHERE empactive = 1'
             . '        AND frontendsecurity >= 11'
-            . '        (CashierPassword = \'' . $password . '\''
+            . '        AND (CashierPassword = \'' . $password . '\''
             . '            OR AdminPassword = \'' . $password . '\');';
         $rows = sql_fetch_assoc_array(sql_query($query, pDataConnect()));
         if ($rows)
