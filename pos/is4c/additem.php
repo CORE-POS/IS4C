@@ -112,7 +112,7 @@ function addItem($strupc,$strdescription, $strtransType, $strtranssubType, $strt
         $datetimestamp = strftime("%m/%d/%y %H:%M:%S %p", time());
     }
     else {
-        $datetimestamp = strftime("%Y-%m-%d %H:%M:%S %p", time());
+        $datetimestamp = strftime("%Y-%m-%d %H:%M:%S", time());
     }
 
     $_SESSION["datetimestamp"] = $datetimestamp;
