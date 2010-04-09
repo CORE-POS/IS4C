@@ -220,7 +220,7 @@
     }
 
     function get_logout_time($contents) {
-        preg_match("/SESSION\[\"timedlogout\"\]\s=\s.*/", $contents, $val);
-        return str_replace('";', "", substr($val[0], 25));
+        preg_match("/SESSION\[\"timedlogout\"\]\s=\s.*;/", $contents, $val);
+        return str_replace(';', "", substr($val[0], 25));
     }
 
