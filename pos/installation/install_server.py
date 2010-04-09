@@ -15,10 +15,10 @@ def install_server_db(username, password, sample_data=False):
     warnings.filterwarnings("ignore", "^Unknown table '.*'$")
 
     exec_scripts(connection, 'is4c_log/tables/*.table')
-    exec_scripts(connection, 'is4c_log/views/*.viw', (
+    exec_scripts(connection, 'is4c_log/views/*.viw', first_paths=[
             'is4c_log/views/dlog.viw',
             'is4c_log/views/tendertape.viw',
-            ))
+            ])
 
     exec_scripts(connection, 'is4c_op/tables/*.table')
     exec_scripts(connection, 'is4c_op/views/*.viw')
