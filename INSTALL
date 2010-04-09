@@ -1,0 +1,21 @@
+
+
+Installing the software
+----------------------------------------
+
+TODO:  Someone else should really write this section...
+
+
+
+Installing the database
+----------------------------------------
+
+(Note that the following instructions only work with MySQL.)
+
+To install the server databases and account:
+
+    $ python pos/installation/install_server.py
+
+To install the lane databases and account:
+
+    $ python pos/installation/install_lane.py
