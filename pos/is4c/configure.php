@@ -11,6 +11,7 @@
         <title>Lane Configuration</title>
         <link rel="stylesheet" type="text/css" href="css/is4c.css" />
     </head>
+    <script type="text/javascript" src="/js/jquery-1.4.2.min.js"></script>
     <body>
         <table id='login'>
             <tr>
@@ -39,7 +40,7 @@
                             <fieldset>
                                 <legend>General:</legend>
                                 <label for='general_os'>Operating System:</label>
-                                <input type='text' value="<?=get_os($contents)?>" name='general_os' id='general_os' size='6' /><br />
+                                <input type='text' value="<?=get_os($contents)?>" name='general_os' id='general_os' size='6' /> <input type='button' value='Auto' onclick="$('#general_os').attr('value', '<?=strtolower(PHP_OS)?>'); return false" /><br />
                                 <label for='general_store'>Store Name:</label>
                                 <input type='text' value="<?=get_store_name($contents)?>" name='general_store' id='general_store' size='20' /><br />
                                 <label for='general_lane'>Lane Number:</label>
@@ -61,7 +62,7 @@
                             <fieldset>
                                 <legend>Local Database:</legend>
                                 <label for='local_ip'>IP Address:</label>
-                                <input type='text' value="<?=get_local_ip($contents)?>" name='local_ip' id='local_ip' size='10' /><br />
+                                <input type='text' value="<?=get_local_ip($contents)?>" name='local_ip' id='local_ip' size='10' /> <input type='button' value='Auto' onclick="$('#local_ip').attr('value', '<?=$_SERVER['SERVER_ADDR']?>'); return false" /><br />
                                 <label for='local_type'>Database Type:</label>
                                 <input type='text' value="<?=get_local_database_type($contents)?>" name='local_type' id='local_type' size='6' /><br />
                                 <label for='local_ops'>Operations Database:</label>
