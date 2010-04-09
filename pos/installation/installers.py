@@ -26,16 +26,18 @@ def exec_script(connection, script_path, absolute=False):
     cursor.close()
 
 
-def exec_scripts(connection, script_pattern, first_paths=[]):
-    first_abspaths = []
+def exec_scripts(connection, script_pattern, first_paths=[], ignore_paths=[]):
+    for i in range(len(ignore_paths)):
+        ignore_paths[i] = abspath(ignore_paths[i])
+        
     for script_path in first_paths:
         script_path = abspath(script_path)
         exec_script(connection, script_path)
-        first_abspaths.append(script_path)
+        ignore_paths.append(script_path)
 
     script_pattern = abspath(script_pattern)
     for script_path in glob(script_pattern):
-        if script_path not in first_abspaths:
+        if script_path not in ignore_paths:
             exec_script(connection, script_path, absolute=True)
 
 
