@@ -35,6 +35,8 @@ def install_server_db(username, password, sample_data=False):
 
     exec_script(connection, "is4c_op/tables/chargecode.table")
     exec_script(connection, "is4c_op/tables/couponcodes.table")
+    exec_script(connection, "is4c_op/tables/configuration.table")
+    exec_script(connection, "is4c_op/tables/configurationGroups.table")
     exec_script(connection, "is4c_op/tables/custdata.table")
     exec_script(connection, "is4c_op/tables/departments.table")
     exec_script(connection, "is4c_op/tables/employees.table")
