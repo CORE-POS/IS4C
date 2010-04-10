@@ -36,7 +36,7 @@ def exec_scripts(connection, script_pattern, first_paths=[], ignore_paths=[]):
         ignore_paths.append(script_path)
 
     script_pattern = abspath(script_pattern)
-    for script_path in glob(script_pattern):
+    for script_path in sorted(glob(script_pattern)):
         if script_path not in ignore_paths:
             exec_script(connection, script_path, absolute=True)
 
