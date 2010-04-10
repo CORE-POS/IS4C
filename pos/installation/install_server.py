@@ -24,7 +24,7 @@ def install_server_db(username, password, sample_data=False):
     exec_scripts(connection, 'is4c_op/views/*.viw')
 
     if sample_data:
-        warnings.filterwarnings("ignore", "^Data too long for column '(?:description|subdept_name)' at row \d+$")
+        warnings.filterwarnings("ignore", "^Data (?:too long|truncated) for column '(?:description|subdept_name)' at row \d+$")
         exec_scripts(connection, 'is4c_op/data/*.insert')
 
     warnings.resetwarnings()
