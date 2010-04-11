@@ -85,12 +85,12 @@
 {
     height: 31px;
     width: 21px;
-    background-image: url('/graphics/switchblue.gif');
+    background-image: url('/graphics/switchblue2.gif');
 }
 
 #exit_switch:hover
 {
     height: 31px;
     width: 21px;
-    background-image: url('/graphics/switchred.gif');
+    background-image: url('/graphics/switchred2.gif');
 }
