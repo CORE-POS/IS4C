@@ -22,7 +22,7 @@ def install_lane_db(username, password, sample_data=False):
     exec_scripts(connection, 'opdata/tables/*.table')
     
     if sample_data:
-        warnings.filterwarnings("ignore", "^Data too long for column 'description' at row \d+$")
+        warnings.filterwarnings("ignore", "^Data (?:too long|truncated) for column 'description' at row \d+$")
         exec_scripts(connection, 'opdata/data/*.insert', ignore_paths=[
                 'opdata/data/subdepts.insert',
                 ])
