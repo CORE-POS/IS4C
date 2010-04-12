@@ -38,14 +38,14 @@ $_SESSION["mServer"] = "127.0.0.1";
 $_SESSION["mDatabase"] = "is4c_log";
 $_SESSION["remoteDBMS"] = "mysql";
 $_SESSION["mUser"] = "is4cserver";
-$_SESSION["mPass"] = "";
+$_SESSION["mPass"] = "is4cserver";
 
 $_SESSION["localhost"] = "127.0.0.1";
 $_SESSION["tDatabase"] = "translog";
 $_SESSION["pDatabase"] = "opdata";
 $_SESSION["DBMS"] = "mysql";
 $_SESSION["localUser"] = "is4clane";
-$_SESSION["localPass"] = "";
+$_SESSION["localPass"] = "is4clane";
 
 $_SESSION["laneno"] = "01";
 
