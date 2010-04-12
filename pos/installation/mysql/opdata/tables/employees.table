@@ -9,7 +9,7 @@ CREATE TABLE `employees` (
   `LastName` varchar(255) default NULL,
   `JobTitle` varchar(255) default NULL,
   `EmpActive` tinyint(4) default NULL COMMENT '1 if the employee is active.  0 if they are inactive.',
-  `frontendsecurity` smallint(6) default COMMENT 'Defines the front-end security available to the user.',
-  `backendsecurity` smallint(6) default COMMENT 'Defines the front-end security available to the user.',
+  `frontendsecurity` smallint(6) default NULL COMMENT 'Defines the front-end security available to the user.',
+  `backendsecurity` smallint(6) default NULL COMMENT 'Defines the front-end security available to the user.',
   KEY `emp_no` (`emp_no`)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
