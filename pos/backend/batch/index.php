@@ -109,6 +109,7 @@
 							</thead>
 							<tfoot/>
 							<tbody>';
+	// TODO - This throws a E_WARNING when there are no batches...
 	while ($row=mysql_fetch_array($batchList_result)) {
 		$html.='
 								<tr>

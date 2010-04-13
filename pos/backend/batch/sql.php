@@ -16,4 +16,75 @@
 		}
 	}
 	
+	function editBatch($backoffice) {
+		$link=mysql_connect($_SESSION["mServer"], $_SESSION["mUser"], $_SESSION["mPass"]);
+		if ($link) {
+			$query='UPDATE `is4c_op`.`batchHeaders` SET 
+			`name`=\''.$_REQUEST['editBatch_name'].'\', 
+			`start`=\''.$_REQUEST['editBatch_start'].'\', 
+			`end`=\''.$_REQUEST['editBatch_end'].'\', 
+			`batchType_id`='.$_REQUEST['editBatch_type'].',
+			`modified`=NOW(),
+			`whomodified`=\''.$_SERVER['REMOTE_ADDR'].'\'
+			WHERE `batchHeaders`.`id`='.$_REQUEST['id'].' LIMIT 1';
+
+			$result=mysql_query($query, $link);
+			if ($result) {
+				array_push($backoffice['status'], 'Updated batch information');
+			} else {
+				array_push($backoffice['status'], 'Error with MySQL query: '.mysql_error($link));
+			}
+		} else {
+			array_push($backoffice['status'], 'Error connecting to MySQL');
+		}
+	}
+	
+	function search_batchProducts($backoffice, $id, $upc) {
+		$link=mysql_connect($_SESSION["mServer"], $_SESSION["mUser"], $_SESSION["mPass"]);
+		if ($link) {
+			$query='SELECT
+			`batchProducts`.`upc`,
+			`batchProducts`.`price`,
+			`products`.`description`,
+			`products`.`normal_price`
+			FROM `is4c_op`.`batchProducts`
+			JOIN `is4c_op`.`products` ON `batchProducts`.`upc`=`products`.`upc`
+			WHERE 1=1
+				AND `batchProducts`.`batchHeader_id`='.$id.'
+				AND `batchProducts`.`upc` LIKE \'%'.$upc.'%\'
+			ORDER BY `batchProducts`.`upc`';
+			
+			$result=mysql_query($query, $link);
+			if ($result) {
+				return $result; 
+			} else {
+				array_push($backoffice['status'], 'Error with MySQL query: '.mysql_error($link));
+			}
+		} else {
+			array_push($backoffice['status'], 'Error connecting to MySQL');
+		}
+	}
+
+	function search_allProducts($backoffice, $upc) {
+		$link=mysql_connect($_SESSION["mServer"], $_SESSION["mUser"], $_SESSION["mPass"]);
+		if ($link) {
+			$query='SELECT
+			`products`.`upc`,
+			`products`.`description`,
+			`products`.`normal_price`
+			FROM `is4c_op`.`products`
+			WHERE 1=1
+				AND `products`.`upc` LIKE \'%'.$upc.'%\'
+			ORDER BY `products`.`upc`';
+			
+			$result=mysql_query($query, $link);
+			if ($result) {
+				return $result; 
+			} else {
+				array_push($backoffice['status'], 'Error with MySQL query: '.mysql_error($link));
+			}
+		} else {
+			array_push($backoffice['status'], 'Error connecting to MySQL');
+		}
+	}
 ?>

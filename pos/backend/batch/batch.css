@@ -1,6 +1,8 @@
 LABEL[for="addBatch_name"],
 LABEL[for="editBatch_name"], 
-LABEL[for="searchBatch_upc"] {
+LABEL[for="searchBatch_upc"],
+LABEL[for="searchProduct_upc"],
+LABEL[for="addProduct_upc"] {
  display: inline-block;
  width: 3em;
 }
@@ -8,7 +10,15 @@ LABEL[for="searchBatch_upc"] {
 INPUT[name="addBatch_start"],
 INPUT[name="addBatch_end"], 
 INPUT[name="editBatch_start"],
-INPUT[name="editBatch_end"] {
+INPUT[name="editBatch_end"],
+INPUT[name="addProduct_normal_price"],
+INPUT[name="addProduct_price"] {
  text-align: right;
  width: 6em;
+}
+
+.edit_row {
+ height: 2em;
+ line-height: 2em;
+ vertical-align: baseline;
 }
