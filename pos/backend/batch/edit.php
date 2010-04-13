@@ -8,6 +8,8 @@
 		 * All in all, some things to do 
 		 */
 
+	// Test update
+
 	// Back to the main batch page if no id set
 	if (!isset($_REQUEST['id'])) {
 		header ("Location: /batch");
