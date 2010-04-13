@@ -8,7 +8,7 @@
 		 * All in all, some things to do 
 		 */
 
-	// Test update
+	// Test update, #2
 
 	// Back to the main batch page if no id set
 	if (!isset($_REQUEST['id'])) {
