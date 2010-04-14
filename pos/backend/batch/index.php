@@ -129,7 +129,7 @@
 									<td>'.$row['batchTypes name'].'</td>
 									<td>'.strftime("%F", strtotime($row['start'])).'</td>
 									<td>'.strftime("%F", strtotime($row['end'])).'</td>
-									<td class="textAlignCenter"><input disabled name="listBatch_mergeFlag[]" type="checkbox" value="'.$row['id'].'" /></td>
+									<td class="textAlignCenter"><input name="listBatch_mergeFlag[]" type="checkbox" value="'.$row['id'].'" /></td>
 									<td class="textAlignCenter"><input name="listBatch_deleteFlag[]" type="checkbox"value="'.$row['id'].'" /></td>
 								</tr>';
 		}

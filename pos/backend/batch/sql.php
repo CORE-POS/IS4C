@@ -108,13 +108,38 @@
 		// For now, just mark a batchHeader as active=0 to delete it
 		$link=mysql_connect($_SESSION["mServer"], $_SESSION["mUser"], $_SESSION["mPass"]);
 		if ($link) {
-			foreach ($_REQUEST['listBatch_deleteFlag'] as $key=>$id) {
-				$query='UPDATE `is4c_op`.`batchHeaders` SET `active`=0 WHERE `id`='.$id.' LIMIT 1;';
-				$result=mysql_query($query, $link);
-				if ($result) {
-					array_push($backoffice['status'], 'Deleted batchHeader #'.$id);
-				} else {
-					array_push($backoffice['status'], 'Error with MySQL query: '.mysql_error($link));
+			if (isset($_REQUEST['listBatch_deleteFlag'])) {
+				foreach ($_REQUEST['listBatch_deleteFlag'] as $key=>$id) {
+					$query='UPDATE `is4c_op`.`batchHeaders` SET `active`=0 WHERE `id`='.$id.' LIMIT 1;';
+					$result=mysql_query($query, $link);
+					if ($result) {
+						array_push($backoffice['status'], 'Deleted batchHeader #'.$id);
+					} else {
+						array_push($backoffice['status'], 'Error with MySQL query: '.mysql_error($link));
+					}
+				}
+			}
+			
+			if (isset($_REQUEST['listBatch_mergeFlag'])) {
+				foreach ($_REQUEST['listBatch_mergeFlag'] as $key=>$id) {
+					$query='UPDATE `is4c_op`.`products`, `is4c_op`.`batchProducts`, `is4c_op`.`batchHeaders` SET
+					`products`.`special_price`=`batchProducts`.`price`,
+					`products`.`specialpricemethod`=`batchProducts`.`pricemethod`,
+					/* `products`.`specialgroupprice`=`batchProducts`.`groupprice`,
+					`products`.`specialquantity`=`batchProducts`.`quantity`, */
+					`products`.`start_date`=`batchHeaders`.`start`,
+					`products`.`end_date`=`batchHeaders`.`end`,
+					`products`.`modified`=NOW()
+					WHERE 1=1 
+						AND `products`.`upc`=`batchProducts`.`upc` 
+						AND `batchProducts`.`batchHeader_id`=`batchHeaders`.`id`
+						AND `batchHeaders`.`id`='.$id.'';
+					$result=mysql_query($query, $link);
+					if ($result) {
+						array_push($backoffice['status'], 'Merged batch #'.$id.', updated '.mysql_affected_rows($link).' products');
+					} else {
+						array_push($backoffice['status'], 'Error with MySQL query: '.mysql_error($link));						
+					}
 				}
 			}
 		} else {
