@@ -103,4 +103,22 @@
 			array_push($backoffice['status'], 'Error connecting to MySQL');
 		}
 	}	
+	
+	function listBatch($backoffice) {
+		// For now, just mark a batchHeader as active=0 to delete it
+		$link=mysql_connect($_SESSION["mServer"], $_SESSION["mUser"], $_SESSION["mPass"]);
+		if ($link) {
+			foreach ($_REQUEST['listBatch_deleteFlag'] as $key=>$id) {
+				$query='UPDATE `is4c_op`.`batchHeaders` SET `active`=0 WHERE `id`='.$id.' LIMIT 1;';
+				$result=mysql_query($query, $link);
+				if ($result) {
+					array_push($backoffice['status'], 'Deleted batchHeader #'.$id);
+				} else {
+					array_push($backoffice['status'], 'Error with MySQL query: '.mysql_error($link));
+				}
+			}
+		} else {
+			array_push($backoffice['status'], 'Error connecting to MySQL');
+		}
+	}
 ?>

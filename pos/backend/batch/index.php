@@ -33,6 +33,8 @@
 		
 	if (isset($_REQUEST['a']) && $_REQUEST['a']=='addBatch') {
 		addBatch(&$backoffice);
+	} else if (isset($_REQUEST['a']) && $_REQUEST['a']=='listBatch') {
+		listBatch(&$backoffice);
 	}
 
 	// This needs to happen after any addBatch, deleteBatch, or editBatch request
@@ -97,8 +99,9 @@
 			<div>
 				<form action="./" method="post" name="listBatch">
 					<fieldset>
-						<legend>List of Active Batches</legend>';
-	if (mysql_num_rows($batchList_result)>0) {
+						<legend>List of Active Batches</legend>
+						<input name="a" type="hidden" value="listBatch"/>';
+	if ($batchList_result && mysql_num_rows($batchList_result)>0) {
 		$html.='
 						<table>
 							<thead>
@@ -112,7 +115,11 @@
 									<th>Delete</th>
 								</tr>
 							</thead>
-							<tfoot/>
+							<tfoot>
+								<tr>
+									<td class="textAlignRight" colspan=7"><input type="submit"/></td>
+								</tr>
+							</tfoot>
 							<tbody>';
 		while ($row=mysql_fetch_array($batchList_result)) {
 			$html.='
@@ -122,8 +129,8 @@
 									<td>'.$row['batchTypes name'].'</td>
 									<td>'.strftime("%F", strtotime($row['start'])).'</td>
 									<td>'.strftime("%F", strtotime($row['end'])).'</td>
-									<td class="textAlignCenter"><input type="checkbox"/></td>
-									<td class="textAlignCenter"><input type="checkbox"/></td>
+									<td class="textAlignCenter"><input disabled name="listBatch_mergeFlag[]" type="checkbox" value="'.$row['id'].'" /></td>
+									<td class="textAlignCenter"><input name="listBatch_deleteFlag[]" type="checkbox"value="'.$row['id'].'" /></td>
 								</tr>';
 		}
 		$html.='
