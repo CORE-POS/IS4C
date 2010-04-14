@@ -3,7 +3,7 @@
 		// TODO - Check name, start, end, type against expected values
 		$link=mysql_connect($_SESSION["mServer"], $_SESSION["mUser"], $_SESSION["mPass"]);
 		if ($link) {
-			$query='INSERT INTO `is4c_op`.`batchHeaders` (`name`,`start`,`end`,`batchType_id`,`modified`,`whomodified`) VALUES (\''.$_REQUEST['addBatch_name'].'\', \''.$_REQUEST['addBatch_start'].'\', \''.$_REQUEST['addBatch_end'].'\', '.$_REQUEST['addBatch_type'].', NOW(), \''.$_SERVER['REMOTE_ADDR'].'\')';
+			$query='INSERT INTO `is4c_op`.`batchHeaders` (`name`,`start`,`end`,`batchType_id`,`modified`,`whomodified`,`active`) VALUES (\''.$_REQUEST['addBatch_name'].'\', \''.$_REQUEST['addBatch_start'].'\', \''.$_REQUEST['addBatch_end'].'\', '.$_REQUEST['addBatch_type'].', NOW(), \''.$_SERVER['REMOTE_ADDR'].'\', 1)';
 			$result=mysql_query($query, $link);
 			if ($result) {
 				$batchHeader_id=mysql_insert_id($link);
