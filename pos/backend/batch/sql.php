@@ -87,4 +87,20 @@
 			array_push($backoffice['status'], 'Error connecting to MySQL');
 		}
 	}
+	
+	function addProduct($backoffice) {
+		// TODO - Validate data
+		$link=mysql_connect($_SESSION["mServer"], $_SESSION["mUser"], $_SESSION["mPass"]);
+		if ($link) {
+			$query='INSERT INTO `is4c_op`.`batchProducts` (`batchHeader_id`,`upc`,`price`,`modified`,`whomodified`) VALUES ('.$_REQUEST['id'].', \''.$_REQUEST['addProduct_upc'].'\', '.$_REQUEST['addProduct_price'].', NOW(), \''.$_SERVER['REMOTE_ADDR'].'\')';
+			$result=mysql_query($query, $link);
+			if ($result) {
+				array_push($backoffice['status'], 'Added product');
+			} else {
+				array_push($backoffice['status'], 'Error with MySQL query: '.mysql_error($link));
+			}
+		} else {
+			array_push($backoffice['status'], 'Error connecting to MySQL');
+		}
+	}	
 ?>

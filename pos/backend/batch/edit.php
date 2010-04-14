@@ -8,8 +8,6 @@
 		 * All in all, some things to do 
 		 */
 
-	// Test update, #2
-
 	// Back to the main batch page if no id set
 	if (!isset($_REQUEST['id'])) {
 		header ("Location: /batch");
@@ -38,32 +36,30 @@
 		$search_batchProducts_result=search_batchProducts(&$backoffice, $_REQUEST['id'], $_REQUEST['searchProduct_upc']);
 		if ($search_batchProducts_result) {
 			if (mysql_num_rows($search_batchProducts_result)==1) {
-				print_r('one result');
-				// Populate Add/Modify/Remove form
+				$search_resultMatched=$search_batchProducts_result;
 			} else if (mysql_num_rows($search_batchProducts_result)>1) {
-				print_r('more than one result');
-				// Display a list of matches
+				$search_result=$search_batchProducts_result;
 			} else {
-				print_r('no results');
 				// Search products table for UPC
 				$search_allProducts_result=search_allProducts(&$backoffice, $_REQUEST['searchProduct_upc']);
 				if ($search_allProducts_result) {
 					if (mysql_num_rows($search_allProducts_result)==1) {
-						print_r('one new result');
-						// Populate Add/Modify/Remove form
+						$search_resultMatched=$search_allProducts_result;
 					} else if (mysql_num_rows($search_allProducts_result)>1) {
-						print_r('more than new one result');
-						// Display a list of matches
+						$search_result=$search_allProducts_result;
 					} else {
-						print_r('no new results');
+						array_push($backoffice['status'], 'No results found for '.$_REQUEST['searchProduct_upc']);
 					}
 				} else {
-					// Already covered
+					array_push($backoffice['status'], 'batchProducts_result==0, allProducts_result error ('.mysql_error($link).')');
 				} 
 			}
 		} else {
-			// Already covered
+			// TODO - Maybe still try to search products table?
+			array_push($backoffice['status'], 'batchProducts_result error('.mysql_error($link).')');
 		}
+	} else if (isset($_REQUEST['a']) && $_REQUEST['a']=='addProduct') {
+		addProduct(&$backoffice);
 	}
 	
 	require_once($_SERVER["DOCUMENT_ROOT"].'/lib/materialized_batch.php');
@@ -116,7 +112,7 @@
 				</form>
 			</div>
 			<div>
-				<form action="./edit.php" method="post" name="searchProduct">
+				<form action="./edit.php" method="get" name="searchProduct">
 					<fieldset>
 						<legend>Search</legend>
 						<input name="a" type="hidden" value="searchProduct"/>
@@ -126,7 +122,43 @@
 						<input type="submit" value="Search"/>
 					</fieldset>
 				</form>
-			</div>
+			</div>';
+	if (isset($search_result)) {
+		$html.='
+			<div>
+				<table>
+					<thead>
+						<tr>
+							<th>UPC</th>
+							<th>Description</th>
+							<th>Normal Price</th>
+							<th>Sale Price</th>
+						</tr>
+					</thead>
+					<tfoot>
+						<tr>
+							<td colspan=4>Add some commands here...</td>
+						</tr>
+					</tfoot>
+					<tbody>';
+		while ($row=mysql_fetch_array($search_result)) {
+			$html.='
+						<tr>
+							<td><a href="edit.php?a=searchProduct&id='.$_REQUEST['id'].'&searchProduct_upc='.$row['upc'].'">'.$row['upc'].'</a></td>
+							<td>'.$row['description'].'</td>
+							<td>'.$row['normal_price'].'</td>
+							<td/>
+						</tr>';
+		}
+		$html.='
+					</tbody>
+				</table>
+			</div>';
+	}
+
+	if (isset($search_resultMatched)) {
+		$row=mysql_fetch_array($search_resultMatched);
+		$html.='
 			<div>
 				<form action="./edit.php" method="post" name="addProduct">
 					<fieldset>
@@ -135,21 +167,24 @@
 							<input name="a" type="hidden" value="addProduct"/>
 							<input name="id" type="hidden" value="'.$_REQUEST['id'].'"/>
 							<label for="addProduct_upc">UPC</label>
-							<input id="addProduct_upc" name="addProduct_upc" readonly type="text"/>
+							<input id="addProduct_upc" name="addProduct_upc" readonly type="text" value="'.$row['upc'].'"/>
 							<label for="addProduct_description">Description</label>
-							<input id="addProduct_description" name="addProduct_description" readonly type="text"/>
+							<input id="addProduct_description" name="addProduct_description" readonly type="text" value="'.$row['description'].'"/>
 							<label for="addProduct_normal_price">Normal Price</label>
-							<input id="addProduct_normal_price" name="addProduct_normal_price" readonly type="text"/>
+							<input id="addProduct_normal_price" name="addProduct_normal_price" readonly type="text" value="'.$row['normal_price'].'"/>
 							<label for="addProduct_price"><span class="accesskey">P</span>rice</label>
-							<input accesskey="p" id="addProduct_price" name="addProduct_price" type="number"/>
+							<input accesskey="p" id="addProduct_price" name="addProduct_price" type="number" value="'.(isset($row['price'])?$row['price']:$row['normal_price']).'"/>
 						</div>
 						<div class="edit_row">
 							<input type="submit" value="Update"/>
-							<input type="button" value="Remove"/>
+							<input disabled type="button" value="Remove"/>
 						</div>
 					</fieldset>
 				</form>
-			</div>
+			</div>';
+	}
+	
+	$html.='
 			<div>
 				<form action="./edit.php" method="post" name="listProduct">
 					<fieldset>
@@ -163,7 +198,6 @@
 									<th>Description</th>
 									<th>Retail</th>
 									<th>Sales Retail</th>
-									<th>Action</th>
 								</tr>
 							</thead>
 							<tfoot>
@@ -176,11 +210,10 @@
 		while ($row=mysql_fetch_array($batchProducts_result)) {
 			$html.='
 								<tr>
-									<td>'.$row['upc'].'</td>
+									<td><a href="edit.php?a=searchProduct&id='.$_REQUEST['id'].'&searchProduct_upc='.$row['upc'].'">'.$row['upc'].'</a></td>
 									<td>'.$row['description'].'</td>
 									<td>'.$row['normal_price'].'</td>
 									<td>'.$row['price'].'</td>
-									<td>X</td>
 								</tr>';
 		}
 		$html.='

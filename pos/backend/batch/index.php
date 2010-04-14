@@ -79,7 +79,9 @@
 						<input type="submit" value="Add"/>
 					</fieldset>
 				</form>
-			</div>
+			</div>';
+	/*
+	 * Going to leave searching all batches for the future
 			<div>
 				<form action="./" method="get" name="searchBatch">
 					<fieldset>
@@ -90,11 +92,14 @@
 						<input type="submit" value="Search"/>
 					</fieldset>
 				</form>
-			</div>
+			</div> */
+	$html.='
 			<div>
 				<form action="./" method="post" name="listBatch">
 					<fieldset>
-						<legend>List of Active Batches</legend>
+						<legend>List of Active Batches</legend>';
+	if (mysql_num_rows($batchList_result)>0) {
+		$html.='
 						<table>
 							<thead>
 								<tr>
@@ -109,9 +114,8 @@
 							</thead>
 							<tfoot/>
 							<tbody>';
-	// TODO - This throws a E_WARNING when there are no batches...
-	while ($row=mysql_fetch_array($batchList_result)) {
-		$html.='
+		while ($row=mysql_fetch_array($batchList_result)) {
+			$html.='
 								<tr>
 									<td><a href="./edit.php?id='.$row['id'].'">'.$row['batchHeaders name'].'</a></td>
 									<td>'.$row['batchMerges modified'].'</td>
@@ -121,11 +125,16 @@
 									<td><input type="checkbox"/></td>
 									<td><input type="checkbox"/></td>
 								</tr>';
+		}
+		$html.='
+							</tbody>
+						</table>';
+	} else {
+		$html.='
+						<h2>No batches found</h2>';
 	}
 	$html.='
-							</tbody>
-						</table>
-					</fieldset>
+						</fieldset>
 				</form>
 			</div>
 			<div id="page_panel_statuses">';
