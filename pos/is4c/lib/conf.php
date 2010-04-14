@@ -9,6 +9,11 @@
     }
     fclose($handle);
 
+    function get_configuration_groups(){
+        $conf_groups = get_configuration_groups_query();
+        return $conf_groups;
+    }
+
     function get_os($contents) {
         preg_match("/SESSION\[\"OS\"\]\s=\s\".*\";/", $contents, $val);
         return str_replace('";', "", substr($val[0], 17));

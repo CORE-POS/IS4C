@@ -116,3 +116,12 @@
             return false;
         }
     }
+
+    function get_configuration_groups_query() {
+        $query =
+            'SELECT group_id,
+                group_name
+                FROM configurationGroups;';
+        $row = sql_fetch_array(sql_query($query, pDataConnect()));
+        return $row;
+    }
