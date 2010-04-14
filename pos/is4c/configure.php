@@ -37,6 +37,16 @@
                     <div class='config_forms'>
                         <form action='/lib/apply_configurations.php' method='post'>
                             <input type='submit' value='Save Changes' />
+                            <?php
+                                $groups = get_configuration_groups;
+                                foreach ($groups as $group)
+                                {?>
+                            <fieldset>
+                                <legend><?=$group->group_name?></legend>
+                            </fieldset>
+                                <?php
+                                }
+                            ?>
                             <fieldset>
                                 <legend>General:</legend>
                                 <label for='general_os'>Operating System:</label>
