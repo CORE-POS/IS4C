@@ -122,8 +122,8 @@
 									<td>'.$row['batchTypes name'].'</td>
 									<td>'.strftime("%F", strtotime($row['start'])).'</td>
 									<td>'.strftime("%F", strtotime($row['end'])).'</td>
-									<td><input type="checkbox"/></td>
-									<td><input type="checkbox"/></td>
+									<td class="textAlignCenter"><input type="checkbox"/></td>
+									<td class="textAlignCenter"><input type="checkbox"/></td>
 								</tr>';
 		}
 		$html.='

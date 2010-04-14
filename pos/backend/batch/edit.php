@@ -126,33 +126,34 @@
 	if (isset($search_result)) {
 		$html.='
 			<div>
-				<table>
-					<thead>
-						<tr>
-							<th>UPC</th>
-							<th>Description</th>
-							<th>Normal Price</th>
-							<th>Sale Price</th>
-						</tr>
-					</thead>
-					<tfoot>
-						<tr>
-							<td colspan=4>Add some commands here...</td>
-						</tr>
-					</tfoot>
-					<tbody>';
+				<form action="./edit.php" method="post" name="searchResults" onsubmit="return false;">
+					<fieldset>
+						<legend>Search Results</legend>
+						<table>
+							<thead>
+								<tr>
+									<th>UPC</th>
+									<th>Description</th>
+									<th>Normal Price</th>
+									<th>Sale Price</th>
+								</tr>
+							</thead>
+							<tfoot/>
+							<tbody>';
 		while ($row=mysql_fetch_array($search_result)) {
 			$html.='
-						<tr>
-							<td><a href="edit.php?a=searchProduct&id='.$_REQUEST['id'].'&searchProduct_upc='.$row['upc'].'">'.$row['upc'].'</a></td>
-							<td>'.$row['description'].'</td>
-							<td>'.$row['normal_price'].'</td>
-							<td/>
-						</tr>';
+								<tr>
+									<td><a href="edit.php?a=searchProduct&id='.$_REQUEST['id'].'&searchProduct_upc='.$row['upc'].'">'.$row['upc'].'</a></td>
+									<td>'.$row['description'].'</td>
+									<td class="textAlignRight">'.$row['normal_price'].'</td>
+									<td class="textAlignRight">'.(isset($row['price'])?$row['price']:'').'</td>
+								</tr>';
 		}
 		$html.='
-					</tbody>
-				</table>
+							</tbody>
+						</table>
+					</fieldset>
+				</form>
 			</div>';
 	}
 
@@ -196,13 +197,13 @@
 								<tr>
 									<th>UPC</th>
 									<th>Description</th>
-									<th>Retail</th>
-									<th>Sales Retail</th>
+									<th>Normal Price</th>
+									<th>Sale Price</th>
 								</tr>
 							</thead>
 							<tfoot>
 								<tr>
-									<td colspan=5><input type="button" value="print"/></td>
+									<td class="textAlignRight" colspan=5><input disabled type="button" value="print"/></td>
 								</tr>
 							</tfoot>
 							<tbody>';
@@ -212,8 +213,8 @@
 								<tr>
 									<td><a href="edit.php?a=searchProduct&id='.$_REQUEST['id'].'&searchProduct_upc='.$row['upc'].'">'.$row['upc'].'</a></td>
 									<td>'.$row['description'].'</td>
-									<td>'.$row['normal_price'].'</td>
-									<td>'.$row['price'].'</td>
+									<td class="textAlignRight">'.$row['normal_price'].'</td>
+									<td class="textAlignRight">'.$row['price'].'</td>
 								</tr>';
 		}
 		$html.='
