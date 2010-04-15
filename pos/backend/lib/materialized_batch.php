@@ -14,7 +14,8 @@
 			`batchMerges`.`modified` AS \'batchMerges modified\' 
 			FROM `is4c_op`.`batchHeaders`
 			JOIN `is4c_op`.`batchTypes` ON `batchHeaders`.`batchType_id`=`batchTypes`.`id`
-			LEFT JOIN `is4c_log`.`batchMerges` ON `batchHeaders`.`id`=`batchMerges`.`batchHeader_id` 
+			LEFT JOIN `is4c_log`.`batchMerges` ON `batchHeaders`.`id`=`batchMerges`.`batchHeader_id`
+			WHERE `batchHeaders`.`active`=1 
 			ORDER BY `id` DESC';
 			$result=mysql_query($query, $link);
 			if ($result) {
@@ -45,7 +46,7 @@
 			FROM `is4c_op`.`batchHeaders`
 			JOIN `is4c_op`.`batchTypes` ON `batchHeaders`.`batchType_id`=`batchTypes`.`id`
 			LEFT JOIN `is4c_log`.`batchMerges` ON `batchHeaders`.`id`=`batchMerges`.`batchHeader_id`
-			WHERE `batchHeaders`.`id`='.$id.'
+			WHERE `batchHeaders`.`id`='.$id.' AND `batchHeaders`.`active`=1
 			LIMIT 1';
 			$result=mysql_query($query, $link);
 			if ($result) {

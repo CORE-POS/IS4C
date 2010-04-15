@@ -1,3 +1,7 @@
+H1 {
+ margin-left: 2px;
+}
+
 LABEL[for="addBatch_name"],
 LABEL[for="editBatch_name"], 
 LABEL[for="searchBatch_upc"],
@@ -21,4 +25,17 @@ INPUT[name="addProduct_price"] {
  height: 2em;
  line-height: 2em;
  vertical-align: baseline;
+}
+
+FORM[name="listBatch"] TABLE,
+FORM[name="searchResults"] TABLE,
+FORM[name="listProduct"] TABLE {
+ margin-left: auto;
+ margin-right: auto;
+}
+
+FORM[name="listBatch"] TD,
+FORM[name="searchResults"] TD,
+FORM[name="listProduct"] TD {
+ padding: 0px 3px 0px 3px;
 }
