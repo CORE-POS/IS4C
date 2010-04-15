@@ -94,7 +94,7 @@
 					<fieldset>
 						<legend>Actions</legend>
 						<input disabled type="button" value="Clone"/>
-						<input type="button" value="Delete"/>
+						<input disabled type="button" value="Delete"/>
 						<input disabled type="button" value="Reset"/>
 						<input type="submit" value="Save"/>
 					</fieldset>

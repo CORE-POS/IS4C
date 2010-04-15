@@ -136,6 +136,7 @@
 						AND `batchHeaders`.`id`='.$id.'';
 					$result=mysql_query($query, $link);
 					if ($result) {
+						// TODO - Add information to merge log!!!
 						array_push($backoffice['status'], 'Merged batch #'.$id.', updated '.mysql_affected_rows($link).' products');
 					} else {
 						array_push($backoffice['status'], 'Error with MySQL query: '.mysql_error($link));						
