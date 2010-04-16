@@ -121,7 +121,40 @@
         $query =
             'SELECT group_id,
                 group_name
-                FROM configurationGroups;';
-        $row = sql_fetch_array(sql_query($query, pDataConnect()));
-        return $row;
+                FROM configurationGroups
+                WHERE group_id > 0;';
+        $result = sql_query($query, pDataConnect());
+        for ($i = 0; $i < sql_num_rows($result); $i++) {
+            $row = sql_fetch_assoc_array($result);
+            $conf_groups[$i] = $row;
+        }
+        return $conf_groups;
+    }
+
+    function get_configuration_group_settings_query($configuration_group) {
+        $configuration_group = mysql_real_escape_string($configuration_group);
+        $query =
+            'SELECT `key`,
+                value,
+                type
+                FROM configuration
+                WHERE group_id = ' . $configuration_group;
+        $result = sql_query($query, pDataConnect());
+        for ($i = 0; $i < sql_num_rows($result); $i++) {
+            $row = sql_fetch_assoc_array($result);
+            $conf_settings[$i] = $row;
+        }
+        return $conf_settings;
+    }
+
+    function save_configurations($configurations) {
+        foreach($configurations as $key => $value) {
+            echo $key . ': ' . $value . '<br />';
+            $query =
+            'UPDATE configuration
+                SET value = "' . $value . '"
+                WHERE `key` = "' . $key . '";';
+            echo $query . '<br />';
+            $result = sql_query($query, pDataConnect());
+        }
     }

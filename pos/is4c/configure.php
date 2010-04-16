@@ -38,16 +38,24 @@
                         <form action='/lib/apply_configurations.php' method='post'>
                             <input type='submit' value='Save Changes' />
                             <?php
-                                $groups = get_configuration_groups;
-                                foreach ($groups as $group)
-                                {?>
+                                $groups = get_configuration_groups();
+                                foreach ($groups as $group) {
+                            ?>
                             <fieldset>
-                                <legend><?=$group->group_name?></legend>
+                                <legend><?=$group["group_name"]?></legend>
+                                <?php
+                                    $configs = get_configuration_settings($group["group_id"]);
+                                    foreach ($configs as $config) {
+                                ?>
+                                <label for='<?=$config["key"]?>'><?=$config["key"]?>:</label>
+                                <input type='<?=$config["type"]=="flag"?'checkbox':'text'?>' <?=$config["type"]=="flag"&&$config["value"]==1?'checked=\'checked\'':''?> value='<?=$config["value"]?>' name='<?=$config["key"]?>' id='<?=$config["key"]?>' /> <?=get_config_auto($config["key"])?> <br />
+                                <?php } ?>
+                                    
                             </fieldset>
                                 <?php
                                 }
                             ?>
-                            <fieldset>
+<!--                            <fieldset>
                                 <legend>General:</legend>
                                 <label for='general_os'>Operating System:</label>
                                 <input type='text' value="<?=get_os($contents)?>" name='general_os' id='general_os' size='6' /> <input type='button' value='Auto' onclick="$('#general_os').attr('value', '<?=strtolower(PHP_OS)?>'); return false" /><br />
@@ -158,6 +166,7 @@
                                 <input type='text' value="<?=get_logout_time($contents)?>" name='logout_time' id='logout_time' />
                             </fieldset>
                             <input type='submit' value='Save Changes' />
+                            -->
                         </form>
                     </div>
                 </td>
