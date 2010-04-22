@@ -1,6 +1,7 @@
 #!/bin/sh
 
-/pos/installation/ubuntu/mysql_lane.sh
+python /pos/installation/install_lane.py
+# /pos/installation/ubuntu/mysql_lane.sh
 
 /pos/installation/ubuntu/ssd_server.sh
 

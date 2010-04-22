@@ -7,7 +7,6 @@ wget http://is4c.coop/download/IS4C.tgz
 tar -xzf /tmp/IS4C.tgz
 cp -r /tmp/IS4C/pos /
 
-# /pos/installation/ubuntu/install-lane.sh
-python /pos/installation/install_lane.py
+/pos/installation/ubuntu/install-lane.sh
 
 cat /tmp/IS4C/README
