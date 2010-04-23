@@ -31,6 +31,8 @@ def install_server_db(username, password, sample_data=False):
 
     exec_script(connection, "script/create_server_acct.sql")
 
+    remove_bind_restriction_prompt()
+
 
 if __name__ == "__main__":
     user_input = get_user_input()
