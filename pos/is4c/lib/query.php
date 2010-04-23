@@ -148,13 +148,27 @@
     }
 
     function save_configurations($configurations) {
+        // Set all flag fields to NULL.
+        // Those that have been checked will beset back to 1.
+        $query =
+            'SELECT conf_id
+                FROM configuration
+                WHERE type = "flag";';
+        $result = sql_query($query, pDataConnect());
+        for ($i = 0; $i < sql_num_rows($result); $i++) {
+            $row = sql_fetch_assoc_array($result);
+            $query =
+                'UPDATE configuration
+                    SET value = NULL
+                    WHERE conf_id = "' . $row["conf_id"]  . '";';
+            $execture = sql_query($query, pDataConnect());
+        }
+        // Save the configurations to the database.
         foreach($configurations as $key => $value) {
-            echo $key . ': ' . $value . '<br />';
             $query =
             'UPDATE configuration
                 SET value = "' . $value . '"
                 WHERE `key` = "' . $key . '";';
-            echo $query . '<br />';
             $result = sql_query($query, pDataConnect());
         }
     }
