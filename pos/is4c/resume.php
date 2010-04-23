@@ -27,7 +27,6 @@ if (!function_exists("receipt")) include("clientscripts.php");
 if (!function_exists("gohome")) include("maindisplay.php");
 
 // lines 40-45 edited by apbw 7/12/05 to resolve "undefined index" error message
-
 if (isset($_POST["selectlist"])) {
     $resume_trans = strtoupper(trim($_POST["selectlist"]));
 }
@@ -74,12 +73,14 @@ function resumesuspended($register_no, $emp_no, $trans_no) {
     mysql_query("truncate table is4c_log.suspended");
     $output = "";
     openlog("is4c_connect", LOG_PID | LOG_PERROR, LOG_LOCAL0);
-    exec('mysqldump -u ' . $_SESSION['mUser'] . ' -h ' . $_SESSION["mServer"] . ' -t ' . $_SESSION['mDatabase'] . ' ' . 'suspended' . ' | mysql -u ' . $_SESSION["localUser"] . ' ' . 'is4c_log' . " 2>&1", $result, $return_code);
+    exec('mysqldump -u ' . $_SESSION["mUser"] . " -p".$_SESSION["mPass"].' -h ' . $_SESSION["mServer"] . ' -t ' . $_SESSION['mDatabase'] . ' ' . 'suspended' . ' | mysql -u ' . $_SESSION["localUser"] . ' ' . "-p".$_SESSION["localPass"] . ' translog' . " 2>&1", $result, $return_code);
     foreach ($result as $v) {$output .= "$v\n";}
     if ($return_code == 0) {
         if (insertltt($register_no, $emp_no, $trans_no) == 1) {
             trimsuspended($register_no, $emp_no, $trans_no);
             return 1;
+        } else {
+        	syslog(LOG_WARNING, "IS4C debug ".mysql_error());
         }
     }
     else {
@@ -103,7 +104,7 @@ function insertltt($register_no, $emp_no, $trans_no) {
         . "trans_status, department, quantity, scale, unitPrice, total, regPrice, tax, foodstamp, "
         . "discount, memDiscount, discountable, discounttype, voided, percentDiscount, ItemQtty, "
         . "volDiscType, volume, VolSpecial, mixMatch, matched, card_no, memType, staff "
-        . "from is4c_log.suspended where register_no = " . $register_no
+        . "from translog.suspended where register_no = " . $register_no
         . " and emp_no = " . $emp_no." and trans_no = " . $trans_no;
 
     if (mysql_query($query, $conn)) {
@@ -114,7 +115,7 @@ function insertltt($register_no, $emp_no, $trans_no) {
 
 function trimsuspended($register_no, $emp_no, $trans_no) {
     $conn = mDataConnect();
-    $query = "delete from suspended "
+    $query = "delete from is4c_log.suspended "
         . " where register_no = " . $register_no
         . " and emp_no = " . $emp_no . " and trans_no = " . $trans_no; 
     mysql_query($query, $conn);

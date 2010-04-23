@@ -3,6 +3,11 @@
 from getpass import getpass
 import os
 from glob import glob
+import sys
+import re
+
+
+bind_pattern = re.compile(r'^\s*bind-address\s*=\s*(\S+)\s*$')
 
 
 def abspath(path):
@@ -43,6 +48,15 @@ def exec_scripts(connection, script_pattern, first_paths=[], ignore_paths=[]):
 
 def get_user_input():
     try:
+        import MySQLdb
+    except ImportError:
+        print "Unable to import MySQLdb.  You might try installing it with the command:"
+        print ""
+        print "  sudo easy_install MySQL-Python"
+        print ""
+        return None
+
+    try:
         username = raw_input("MySQL user account [default root]: ")
     except KeyboardInterrupt:
         return None
@@ -63,9 +77,70 @@ def get_user_input():
     return username, password, sample_data
 
 
+def remove_bind_restriction_prompt():
+    if not sys.platform.startswith('linux'):
+        return
+
+    conf_path = '/etc/mysql/my.cnf'
+    if not os.path.exists(conf_path):
+        return
+
+    bound_to = None
+    conf_file = open(conf_path)
+    for line in conf_file:
+        match = bind_pattern.match(line)
+        if match:
+            # Don't break here, since MySQL uses the last occurrence of
+            # bind-address when determining its own configuration...
+            bound_to = match.group(1)
+    conf_file.close()
+    if bound_to is None:
+        return
+
+    print ""
+    print "According to the config file at: %s" % conf_path
+    print "your MySQL server is currently bound to: %s." % bound_to
+    print ""
+    try:
+        remove_bind = raw_input("Would you like me to unbind it (Y/N)? [default N]: ")
+    except KeyboardInterrupt:
+        return
+    if not remove_bind.strip().upper().startswith("Y"):
+        return
+
+    remove_bind_restriction(conf_path)
+
+
+def remove_bind_restriction(conf_path):
+    conf_path_old = conf_path + '.is4c_backup'
+    try:
+        os.rename(conf_path, conf_path_old)
+    except OSError, error:
+        print error
+        return
+
+    conf_file_old = open(conf_path_old)
+    conf_file = open(conf_path, 'w')
+    for line in conf_file_old:
+        line = line.strip()
+        if bind_pattern.match(line):
+            line = '# ' + line
+        print >> conf_file, line
+    conf_file.close()
+    conf_file_old.close()
+
+    import subprocess
+    try:
+        subprocess.call(['/etc/init.d/mysql', 'restart'])
+    except OSError, error:
+        print "I modified the config file, but couldn't restart the MySQL server:"
+        print error
+
+
 __all__ = [
     'abspath',
     'exec_script',
     'exec_scripts',
     'get_user_input',
+    'remove_bind_restriction_prompt',
     ]
