@@ -43,6 +43,15 @@ def exec_scripts(connection, script_pattern, first_paths=[], ignore_paths=[]):
 
 def get_user_input():
     try:
+        import MySQLdb
+    except ImportError:
+        print "Unable to import MySQLdb.  You might try installing it with the command:"
+        print ""
+        print "  sudo easy_install MySQL-Python"
+        print ""
+        return None
+
+    try:
         username = raw_input("MySQL user account [default root]: ")
     except KeyboardInterrupt:
         return None

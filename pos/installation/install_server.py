@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 
 
-import MySQLdb
 import warnings
 
 from installers import *
 
 
 def install_server_db(username, password, sample_data=False):
+    import MySQLdb
     connection = MySQLdb.connect("localhost", username, password)
 
     exec_script(connection, "script/create_server_db.sql")
