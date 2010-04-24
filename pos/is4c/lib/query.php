@@ -1,4 +1,4 @@
-<?php
+                                                                        <?php
     if (!function_exists("pDataConnect")) {
         include("../connect.php");
     }
@@ -147,9 +147,51 @@
         return $conf_settings;
     }
 
+    function get_configurations() {
+        $query =
+            'SELECT `key`,
+                value
+                FROM configuration
+                WHERE groupd_id > 0;';
+        $result = sql_query($query, pDataConnect());
+        for ($i = 0; $i < sql_num_rows($result); $i++) {
+            $row = sql_fetch_assoc_array($result);
+            $conf_settings[$i] = $row;
+        }
+        return $conf_settings;
+    }
+
+    // Checks for a list of configuration values that must be set for IS4C to operate.
+    // If any of these configurations are not set, then it returen false.
+    function configs_set() {
+        $query =
+            'SELECT value
+                FROM configuration
+                WHERE `key` IN
+                (
+                    "OS",
+                    "store",
+                    "localhost",
+                    "tDatabase",
+                    "pDatabase",
+                    "DBMS",
+                    "localUser",
+                    "laneno"
+                );';
+        $result = sql_query($query, pDataConnect());
+        for ($i = 0; $i < sql_num_rows($result); $i++) {
+            $row = sql_fetch_assoc_array($result);
+            if ($row["value"] == NULL)
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
     function save_configurations($configurations) {
-        // Set all flag fields to NULL.
-        // Those that have been checked will beset back to 1.
+        // Set all flag fields to 0.
+        // Those that have been checked will be reset back to 1.
         $query =
             'SELECT conf_id
                 FROM configuration
@@ -159,16 +201,16 @@
             $row = sql_fetch_assoc_array($result);
             $query =
                 'UPDATE configuration
-                    SET value = NULL
+                    SET value = 0
                     WHERE conf_id = "' . $row["conf_id"]  . '";';
-            $execture = sql_query($query, pDataConnect());
+            $execute = sql_query($query, pDataConnect());
         }
         // Save the configurations to the database.
         foreach($configurations as $key => $value) {
             $query =
-            'UPDATE configuration
-                SET value = "' . $value . '"
-                WHERE `key` = "' . $key . '";';
+                'UPDATE configuration
+                    SET value = "' . $value . '"
+                    WHERE `key` = "' . $key . '";';
             $result = sql_query($query, pDataConnect());
         }
     }

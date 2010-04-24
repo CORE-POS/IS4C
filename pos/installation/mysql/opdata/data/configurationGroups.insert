@@ -3,10 +3,6 @@ use opdata;
 INSERT INTO configurationGroups
     VALUES
     (
-        0,
-        'setup'
-    ),
-    (
         1,
         'General'
     ),
