@@ -1,6 +1,6 @@
-                                                                        <?php
+<?php
     if (!function_exists("pDataConnect")) {
-        include("../connect.php");
+        include("/pos/is4c/connect.php");
     }
 
     /*Returns an associative array of active employees.*/
@@ -152,7 +152,7 @@
             'SELECT `key`,
                 value
                 FROM configuration
-                WHERE groupd_id > 0;';
+                WHERE group_id > 0;';
         $result = sql_query($query, pDataConnect());
         for ($i = 0; $i < sql_num_rows($result); $i++) {
             $row = sql_fetch_assoc_array($result);

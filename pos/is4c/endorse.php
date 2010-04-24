@@ -3,7 +3,6 @@
     <head></head>
     <body bgcolor='#ffffff'>
         <?php
-            include_once("ini/ini.php");
             include_once("session.php");
             include_once("printLib.php");
             include_once("printReceipt.php");
