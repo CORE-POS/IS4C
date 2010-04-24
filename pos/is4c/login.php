@@ -21,6 +21,11 @@
 
 *********************************************************************************/
 
+    if (!function_exists("get_config_auto")) {
+        include_once("lib/conf.php");
+        apply_configurations();
+    }
+
     if (!function_exists("pDataConnect") || !function_exists("tDataConnect")) {
     	include("connect.php");
     }

@@ -20,8 +20,11 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
-    include("../ini/ini.php");
-    include("query.php");
+    if (!function_exists("get_config_auto")) {
+        include_once("/pos/is4c/lib/conf.php");
+        apply_configurations();
+    }
+
     if (!function_exists("pDataConnect")) {
         include("../connect.php");
     }
@@ -46,7 +49,6 @@
 
     $global_values = get_global_values();
 
-    //Check if someone is already logged in.
     if (!$global_values["LoggedIn"]) {
 
         $employee_number = user_pass($password);
@@ -85,7 +87,7 @@
         }
     }
     else {
-        if ($password == $global_values["CashierNo"]) {
+        if (get_user_info(user_pass($password)) == $global_values["CashierNo"]) {
             loadglobalvalues();
             testremote();
             loginscreen();
