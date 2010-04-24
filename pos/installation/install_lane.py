@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 
 
-import MySQLdb
 import warnings
 
 from installers import *
 
 
 def install_lane_db(username, password, sample_data=False):
+    import MySQLdb
     connection = MySQLdb.connect("localhost", username, password)
 
     exec_script(connection, "script/create_lane_db.sql")
@@ -22,7 +22,7 @@ def install_lane_db(username, password, sample_data=False):
     exec_scripts(connection, 'opdata/tables/*.table')
     
     if sample_data:
-        warnings.filterwarnings("ignore", "^Data too long for column 'description' at row \d+$")
+        warnings.filterwarnings("ignore", "^Data (?:too long|truncated) for column 'description' at row \d+$")
         exec_scripts(connection, 'opdata/data/*.insert', ignore_paths=[
                 'opdata/data/subdepts.insert',
                 ])
@@ -32,6 +32,8 @@ def install_lane_db(username, password, sample_data=False):
     warnings.resetwarnings()
 
     exec_script(connection, "script/create_lane_acct.sql")
+
+    remove_bind_restriction_prompt()
 
 
 if __name__ == "__main__":

@@ -269,7 +269,7 @@ function uploadtoServer()
         $uploaded = uploadtable("dtransactions");
         if ($uploaded == 1) {
             uploadtable("suspended");
-            uploadtable("alog");
+            uploadtable("activitylog");
             $_SESSION["standalone"] = 0;
         }
         else {

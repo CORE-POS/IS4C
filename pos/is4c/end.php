@@ -112,7 +112,7 @@
                 sql_query("insert into localtrans select * from localtemptrans", $connection);
                 sql_query("insert into dtransactions select * from localtemptrans", $connection);
                 sql_query("insert into activitylog select * from activitytemplog", $connection);
-                sql_query("insert into alog select * from activitytemplog", $connection);
+                sql_query("insert into activitylog select * from activitytemplog", $connection);
 
                 sql_close($connection);
             }
