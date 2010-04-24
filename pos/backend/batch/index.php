@@ -33,6 +33,8 @@
 		
 	if (isset($_REQUEST['a']) && $_REQUEST['a']=='addBatch') {
 		addBatch(&$backoffice);
+	} else if (isset($_REQUEST['a']) && $_REQUEST['a']=='listBatch') {
+		listBatch(&$backoffice);
 	}
 
 	// This needs to happen after any addBatch, deleteBatch, or editBatch request
@@ -79,7 +81,9 @@
 						<input type="submit" value="Add"/>
 					</fieldset>
 				</form>
-			</div>
+			</div>';
+	/*
+	 * Going to leave searching all batches for the future
 			<div>
 				<form action="./" method="get" name="searchBatch">
 					<fieldset>
@@ -90,11 +94,15 @@
 						<input type="submit" value="Search"/>
 					</fieldset>
 				</form>
-			</div>
+			</div> */
+	$html.='
 			<div>
 				<form action="./" method="post" name="listBatch">
 					<fieldset>
 						<legend>List of Active Batches</legend>
+						<input name="a" type="hidden" value="listBatch"/>';
+	if ($batchList_result && mysql_num_rows($batchList_result)>0) {
+		$html.='
 						<table>
 							<thead>
 								<tr>
@@ -107,25 +115,33 @@
 									<th>Delete</th>
 								</tr>
 							</thead>
-							<tfoot/>
+							<tfoot>
+								<tr>
+									<td class="textAlignRight" colspan=7"><input type="submit"/></td>
+								</tr>
+							</tfoot>
 							<tbody>';
-	// TODO - This throws a E_WARNING when there are no batches...
-	while ($row=mysql_fetch_array($batchList_result)) {
-		$html.='
+		while ($row=mysql_fetch_array($batchList_result)) {
+			$html.='
 								<tr>
 									<td><a href="./edit.php?id='.$row['id'].'">'.$row['batchHeaders name'].'</a></td>
 									<td>'.$row['batchMerges modified'].'</td>
 									<td>'.$row['batchTypes name'].'</td>
 									<td>'.strftime("%F", strtotime($row['start'])).'</td>
 									<td>'.strftime("%F", strtotime($row['end'])).'</td>
-									<td><input type="checkbox"/></td>
-									<td><input type="checkbox"/></td>
+									<td class="textAlignCenter"><input name="listBatch_mergeFlag[]" type="checkbox" value="'.$row['id'].'" /></td>
+									<td class="textAlignCenter"><input name="listBatch_deleteFlag[]" type="checkbox"value="'.$row['id'].'" /></td>
 								</tr>';
+		}
+		$html.='
+							</tbody>
+						</table>';
+	} else {
+		$html.='
+						<h2>No batches found</h2>';
 	}
 	$html.='
-							</tbody>
-						</table>
-					</fieldset>
+						</fieldset>
 				</form>
 			</div>
 			<div id="page_panel_statuses">';

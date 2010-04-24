@@ -8,5 +8,7 @@ CREATE TABLE `is4c_op`.`batchHeaders` (
 	`batchType_id` SMALLINT UNSIGNED NOT NULL ,
 	`modified` DATETIME NOT NULL ,
 	`whomodified` VARCHAR( 50 ) NULL ,
-	PRIMARY KEY ( `id` )
+	 `active` TINYINT UNSIGNED NOT NULL ,
+	PRIMARY KEY ( `id` ) ,
+	INDEX ( `active` )
 ) ENGINE = MYISAM ;

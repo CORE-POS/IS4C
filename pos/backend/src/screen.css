@@ -76,6 +76,9 @@ UL {
  color: #00297A;
 }
 
+.textAlignCenter {
+ text-align: center;
+}
 .textAlignRight {
  text-align: right;
 }

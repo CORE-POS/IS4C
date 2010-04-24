@@ -6,6 +6,7 @@
 		if ($link) {
 			$query='SELECT `synchronizationLog`.`datetime` FROM `is4c_log`.`synchronizationLog` WHERE `synchronizationLog`.`name`=\'products\' AND `synchronizationLog`.`status`=1 ORDER BY `synchronizationLog`.`datetime` DESC LIMIT 1';
 			$result=mysql_query($query, $link);
+
 			if ($result && mysql_num_rows($result)==1) {
 				$row=mysql_fetch_array($result);
 		
@@ -14,7 +15,7 @@
 				$result=mysql_query($query, $link);
 				if ($result) {
 					if (mysql_num_rows($result)>0) {
-						$query='INSERT INTO `is4c_op`.`products` (`upc`, `description`, `normal_price`, `pricemethod`, `groupprice`, `quantity`, `special_price`, `specialpricemethod`, `specialgroupprice`, `specialquantity`, `start_date`, `end_date`, `department`, `size`, `tax`, `foodstamp`, `scale`, `mixmatchcode`, `modified`, `advertised`, `tareweight`, `discount`, `discounttype`, `unitofmeasure`, `wicable`, `qttyEnforced`, `inUse`, `subdept`, `deposit`, `id`) VALUES ';
+						$query='INSERT INTO `opdata`.`products` (`upc`, `description`, `normal_price`, `pricemethod`, `groupprice`, `quantity`, `special_price`, `specialpricemethod`, `specialgroupprice`, `specialquantity`, `start_date`, `end_date`, `department`, `size`, `tax`, `foodstamp`, `scale`, `mixmatchcode`, `modified`, `advertised`, `tareweight`, `discount`, `discounttype`, `unitofmeasure`, `wicable`, `qttyEnforced`, `inUse`, `subdept`, `deposit`, `id`) VALUES ';
 						while ($row=mysql_fetch_array($result)) {
 							$query.=' ( '.$row['upc'].', \''.$row['description'].'\', '.$row['normal_price'].', '.$row['pricemethod'].', '.$row['groupprice'].', '.$row['quantity'].', '.$row['special_price'].', '.$row['specialpricemethod'].', '.$row['specialgroupprice'].', '.$row['specialquantity'].', \''.$row['start_date'].'\', \''.$row['end_date'].'\', '.$row['department'].', \''.$row['size'].'\', '.$row['tax'].', '.$row['foodstamp'].', '.$row['scale'].', \''.$row['mixmatchcode'].'\', \''.$row['modified'].'\', '.$row['advertised'].', '.$row['tareweight'].', '.$row['discount'].', '.$row['discounttype'].', \''.$row['unitofmeasure'].'\', '.$row['wicable'].', '.$row['qttyEnforced'].', '.$row['inUse'].', '.$row['subdept'].', '.$row['deposit'].', '.$row['id'].' ),';
 						}
