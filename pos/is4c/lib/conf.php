@@ -1,249 +1,216 @@
-<?php
-    
-    $handle = fopen("/pos/is4c/ini/ini.php", "r");
-    $contents = '';
-    if ($handle) {
-        while (!feof($handle)) {
-          $contents .= fread($handle, 8192);
-        }
-    }
-    fclose($handle);
-
-    function get_config_auto($config_item){
-        switch ($config_item){
-            case "OS":
-                return ("<input type='button' value='Auto' onclick=\"$('#OS').attr('value', '" . strtolower(PHP_OS) . "'); return false\" />");
-                break;
-            case "localhost":
-                return ("<input type='button' value='Auto' onclick=\"$('#localhost').attr('value', '" . $_SERVER['SERVER_ADDR'] . "'); return false\" />");
-                break;
-            default:
-                return "";
-        }
+                                                                        <?php
+    if (!function_exists("pDataConnect")) {
+        include("../connect.php");
     }
 
-    function get_configuration_groups(){
-        $conf_groups = get_configuration_groups_query();
+    /*Returns an associative array of active employees.*/
+    function get_users() {
+        $query =
+            'SELECT emp_no,'
+            . '    FirstName,'
+            . '    LastName'
+            . '    FROM employees'
+            . '    WHERE empactive = 1;';
+        $rows = sql_fetch_assoc_array(sql_query($query, pDataConnect()));
+        return $rows;
+    }
+
+    /*Takes an employee number and returns information about the employee*/
+    function get_user_info($emp_no) {
+        $emp_no = mysql_real_escape_string($emp_no);
+        $query =
+            'SELECT FirstName,'
+            . '    LastName'
+            . '    FROM employees'
+            . '    WHERE emp_no = \'' . $emp_no . '\''
+            . '        AND empactive = 1;';
+        $row = sql_fetch_array(sql_query($query, pDataConnect()));
+
+        if ($row) {
+            $employee["EmpNo"] = $emp_no;
+            $employee["FirstName"] = $row["FirstName"];
+            $employee["LastName"] = $row["LastName"];
+            return $employee;
+        }
+        return false;
+    }
+
+    /*Takes a password and returns the employee number*/
+    function user_pass($password) {
+        $password = mysql_real_escape_string($password);
+        $query =
+            'SELECT emp_no'
+            . '    FROM employees'
+            . '    WHERE CashierPassword = \'' . $password . '\''
+            . '        OR AdminPassword = \'' . $password . '\';';
+        $rows = sql_fetch_assoc_array(sql_query($query, pDataConnect()));
+        if ($rows)
+        {
+            return $rows['emp_no'];
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    function user_pass_priv($password){
+        $password = mysql_real_escape_string($password);
+        $query =
+            'SELECT emp_no'
+            . '    FROM employees'
+            . '    WHERE empactive = 1'
+            . '        AND frontendsecurity >= 11'
+            . '        AND (CashierPassword = \'' . $password . '\''
+            . '            OR AdminPassword = \'' . $password . '\');';
+        $rows = sql_fetch_assoc_array(sql_query($query, pDataConnect()));
+        if ($rows)
+        {
+            return $rows['emp_no'];
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    /*Takes an employee ID number, and return $true if that user is currently logged in*/
+    function user_logged_in($emp_no) {
+        $emp_no = mysql_real_escape_string($emp_no);
+        $query =
+            'SELECT LoggedIn'
+            . '    FROM globalvalues'
+            . '    WHERE CashierNo = \'' . $emp_no . '\''
+            . '        AND LoggedIn = 0;';
+        $num_rows = sql_num_rows(sql_query($query, pDataConnect()));
+
+        if ($num_rows)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    //Returns the global values from opdata.globalvalues.
+    function get_global_values() {
+        $query =
+            'SELECT *'
+                . '    FROM globalvalues;';
+        $row = sql_fetch_array(sql_query($query, pDataConnect()));
+        if ($row)
+        {
+            $global_values["CashierNo"] = $row["CashierNo"];
+            $global_values["CashierName"] = $row["Cashier"];
+            $global_values["LoggedIn"] = $row["LoggedIn"];
+            $global_values["TransNo"] = $row["TransNo"];
+            $global_values["TTLFlag"] = $row["TTLFlag"];
+            $global_values["FntlFlag"] = $row["FntlFlag"];
+            $global_values["TaxExempt"] = $row["TaxExempt"];
+            return $global_values;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    function get_configuration_groups_query() {
+        $query =
+            'SELECT group_id,
+                group_name
+                FROM configurationGroups
+                WHERE group_id > 0;';
+        $result = sql_query($query, pDataConnect());
+        for ($i = 0; $i < sql_num_rows($result); $i++) {
+            $row = sql_fetch_assoc_array($result);
+            $conf_groups[$i] = $row;
+        }
         return $conf_groups;
     }
 
-    function get_configuration_settings($configuration_group){
-        $conf_settings = get_configuration_group_settings_query($configuration_group);
+    function get_configuration_group_settings_query($configuration_group) {
+        $configuration_group = mysql_real_escape_string($configuration_group);
+        $query =
+            'SELECT `key`,
+                value,
+                type
+                FROM configuration
+                WHERE group_id = ' . $configuration_group;
+        $result = sql_query($query, pDataConnect());
+        for ($i = 0; $i < sql_num_rows($result); $i++) {
+            $row = sql_fetch_assoc_array($result);
+            $conf_settings[$i] = $row;
+        }
         return $conf_settings;
     }
 
-    function get_os($contents) {
-        preg_match("/SESSION\[\"OS\"\]\s=\s\".*\";/", $contents, $val);
-        return str_replace('";', "", substr($val[0], 17));
+    function get_configurations() {
+        $query =
+            'SELECT `key`,
+                value
+                FROM configuration
+                WHERE groupd_id > 0;';
+        $result = sql_query($query, pDataConnect());
+        for ($i = 0; $i < sql_num_rows($result); $i++) {
+            $row = sql_fetch_assoc_array($result);
+            $conf_settings[$i] = $row;
+        }
+        return $conf_settings;
     }
 
-    function get_store_name($contents) {
-        preg_match("/SESSION\[\"store\"\]\s=\s\".*\";/", $contents, $val);
-        return str_replace('";', "", substr($val[0], 20));
+    // Checks for a list of configuration values that must be set for IS4C to operate.
+    // If any of these configurations are not set, then it returen false.
+    function configs_set() {
+        $query =
+            'SELECT value
+                FROM configuration
+                WHERE `key` IN
+                (
+                    "OS",
+                    "store",
+                    "localhost",
+                    "tDatabase",
+                    "pDatabase",
+                    "DBMS",
+                    "localUser",
+                    "laneno"
+                );';
+        $result = sql_query($query, pDataConnect());
+        for ($i = 0; $i < sql_num_rows($result); $i++) {
+            $row = sql_fetch_assoc_array($result);
+            if ($row["value"] == NULL)
+            {
+                return false;
+            }
+        }
+        return true;
     }
 
-    function get_server_ip($contents) {
-        preg_match("/SESSION\[\"mServer\"\]\s=\s\".*\";/", $contents, $val);
-        return str_replace('";', "", substr($val[0], 22));
+    function save_configurations($configurations) {
+        // Set all flag fields to 0.
+        // Those that have been checked will be reset back to 1.
+        $query =
+            'SELECT conf_id
+                FROM configuration
+                WHERE type = "flag";';
+        $result = sql_query($query, pDataConnect());
+        for ($i = 0; $i < sql_num_rows($result); $i++) {
+            $row = sql_fetch_assoc_array($result);
+            $query =
+                'UPDATE configuration
+                    SET value = 0
+                    WHERE conf_id = "' . $row["conf_id"]  . '";';
+            $execute = sql_query($query, pDataConnect());
+        }
+        // Save the configurations to the database.
+        foreach($configurations as $key => $value) {
+            $query =
+                'UPDATE configuration
+                    SET value = "' . $value . '"
+                    WHERE `key` = "' . $key . '";';
+            $result = sql_query($query, pDataConnect());
+        }
     }
-
-    function get_server_database($contents) {
-        preg_match("/SESSION\[\"mDatabase\"\]\s=\s\".*\";/", $contents, $val);
-        return str_replace('";', "", substr($val[0], 24));
-    }
-
-    function get_server_database_type($contents) {
-        preg_match("/SESSION\[\"remoteDBMS\"\]\s=\s\".*\";/", $contents, $val);
-        return str_replace('";', "", substr($val[0], 25));
-    }
-
-    function get_server_username($contents) {
-        preg_match("/SESSION\[\"mUser\"\]\s=\s\".*\";/", $contents, $val);
-        return str_replace('";', "", substr($val[0], 20));
-    }
-
-    function get_server_password($contents) {
-        preg_match("/SESSION\[\"mPass\"\]\s=\s\".*\";/", $contents, $val);
-        return str_replace('";', "", substr($val[0], 20));
-    }
-
-    function get_local_ip($contents) {
-        preg_match("/SESSION\[\"localhost\"\]\s=\s\".*\";/", $contents, $val);
-        return str_replace('";', "", substr($val[0], 24));
-    }
-
-    function get_local_op_database($contents) {
-        preg_match("/SESSION\[\"pDatabase\"\]\s=\s\".*\";/", $contents, $val);
-        return str_replace('";', "", substr($val[0], 24));
-    }
-
-    function get_local_trans_database($contents) {
-        preg_match("/SESSION\[\"tDatabase\"\]\s=\s\".*\";/", $contents, $val);
-        return str_replace('";', "", substr($val[0], 24));
-    }
-
-    function get_local_database_type($contents) {
-        preg_match("/SESSION\[\"DBMS\"\]\s=\s\".*\";/", $contents, $val);
-        return str_replace('";', "", substr($val[0], 19));
-    }
-
-    function get_local_username($contents) {
-        preg_match("/SESSION\[\"localUser\"\]\s=\s\".*\";/", $contents, $val);
-        return str_replace('";', "", substr($val[0], 24));
-    }
-
-    function get_local_password($contents) {
-        preg_match("/SESSION\[\"localPass\"\]\s=\s\".*\";/", $contents, $val);
-        return str_replace('";', "", substr($val[0], 24));
-    }
-
-    function get_lane_number($contents) {
-        preg_match("/SESSION\[\"laneno\"\]\s=\s\".*\";/", $contents, $val);
-        return str_replace('";', "", substr($val[0], 21));
-    }
-
-    function get_print_flag($contents) {
-        preg_match("/SESSION\[\"print\"\]\s=\s.*/", $contents, $val);
-        return str_replace('";', "", substr($val[0], 19));
-    }
-
-    function get_printer_port($contents) {
-        preg_match("/SESSION\[\"printerPort\"\]\s=\s\".*\";/", $contents, $val);
-        return str_replace('";', "", substr($val[0], 26));
-    }
-
-    function get_receipt_header_1($contents) {
-        preg_match("/SESSION\[\"receiptHeader1\"\]\s=\s\".*\";/", $contents, $val);
-        return str_replace('";', "", substr($val[0], 29));
-    }
-
-    function get_receipt_header_2($contents) {
-        preg_match("/SESSION\[\"receiptHeader2\"\]\s=\s\".*\";/", $contents, $val);
-        return str_replace('";', "", substr($val[0], 29));
-    }
-
-    function get_receipt_header_3($contents) {
-        preg_match("/SESSION\[\"receiptHeader3\"\]\s=\s\".*\";/", $contents, $val);
-        return str_replace('";', "", substr($val[0], 29));
-    }
-
-    function get_receipt_footer_1($contents) {
-        preg_match("/SESSION\[\"receiptFooter1\"\]\s=\s\".*\";/", $contents, $val);
-        return str_replace('";', "", substr($val[0], 29));
-    }
-
-    function get_receipt_footer_2($contents) {
-        preg_match("/SESSION\[\"receiptFooter2\"\]\s=\s\".*\";/", $contents, $val);
-        return str_replace('";', "", substr($val[0], 29));
-    }
-
-    function get_receipt_footer_3($contents) {
-        preg_match("/SESSION\[\"receiptFooter3\"\]\s=\s\".*\";/", $contents, $val);
-        return str_replace('";', "", substr($val[0], 29));
-    }
-
-    function get_receipt_footer_4($contents) {
-        preg_match("/SESSION\[\"receiptFooter4\"\]\s=\s\".*\";/", $contents, $val);
-        return str_replace('";', "", substr($val[0], 29));
-    }
-
-    function get_check_endorse_1($contents) {
-        preg_match("/SESSION\[\"ckEndorse1\"\]\s=\s\".*\";/", $contents, $val);
-        return str_replace('";', "", substr($val[0], 25));
-    }
-
-    function get_check_endorse_2($contents) {
-        preg_match("/SESSION\[\"ckEndorse2\"\]\s=\s\".*\";/", $contents, $val);
-        return str_replace('";', "", substr($val[0], 25));
-    }
-
-    function get_check_endorse_3($contents) {
-        preg_match("/SESSION\[\"ckEndorse3\"\]\s=\s\".*\";/", $contents, $val);
-        return str_replace('";', "", substr($val[0], 25));
-    }
-
-    function get_check_endorse_4($contents) {
-        preg_match("/SESSION\[\"ckEndorse4\"\]\s=\s\".*\";/", $contents, $val);
-        return str_replace('";', "", substr($val[0], 25));
-    }
-
-    function get_charge_slip_1($contents) {
-        preg_match("/SESSION\[\"chargeSlip1\"\]\s=\s\".*\";/", $contents, $val);
-        return str_replace('";', "", substr($val[0], 26));
-    }
-
-    function get_charge_slip_2($contents) {
-        return str_replace('";', "", substr($val[0], 26));
-    }
-        preg_match("/SESSION\[\"chargeSlip2\"\]\s=\s\".*\";/", $contents, $val);
-
-    function get_welcome_message_1($contents) {
-        preg_match("/SESSION\[\"welcomeMsg1\"\]\s=\s\".*\";/", $contents, $val);
-        return str_replace('";', "", substr($val[0], 26));
-    }
-
-    function get_welcome_message_2($contents) {
-        preg_match("/SESSION\[\"welcomeMsg2\"\]\s=\s\".*\";/", $contents, $val);
-        return str_replace('";', "", substr($val[0], 26));
-    }
-
-    function get_welcome_message_3($contents) {
-        preg_match("/SESSION\[\"welcomeMsg3\"\]\s=\s\".*\";/", $contents, $val);
-        return str_replace('";', "", substr($val[0], 26));
-    }
-
-    function get_training_message_1($contents) {
-        preg_match("/SESSION\[\"trainingMsg1\"\]\s=\s\".*\";/", $contents, $val);
-        return str_replace('";', "", substr($val[0], 27));
-    }
-
-    function get_training_message_2($contents) {
-        preg_match("/SESSION\[\"trainingMsg2\"\]\s=\s\".*\";/", $contents, $val);
-        return str_replace('";', "", substr($val[0], 27));
-    }
-
-    function get_farewell_message_1($contents) {
-        preg_match("/SESSION\[\"farewellMsg1\"\]\s=\s\".*\";/", $contents, $val);
-        return str_replace('";', "", substr($val[0], 27));
-    }
-
-    function get_farewell_message_2($contents) {
-        preg_match("/SESSION\[\"farewellMsg2\"\]\s=\s\".*\";/", $contents, $val);
-        return str_replace('";', "", substr($val[0], 27));
-    }
-
-    function get_farewell_message_3($contents) {
-        preg_match("/SESSION\[\"farewellMsg3\"\]\s=\s\".*\";/", $contents, $val);
-        return str_replace('";', "", substr($val[0], 27));
-    }
-
-    function get_alert_bar($contents) {
-        preg_match("/SESSION\[\"alertBar\"\]\s=\s\".*\";/", $contents, $val);
-        return str_replace('";', "", substr($val[0], 23));
-    }
-
-    function get_credit_card_active($contents) {
-        preg_match("/SESSION\[\"ccLive\"\]\s=\s.*/", $contents, $val);
-        return str_replace('";', "", substr($val[0], 20));
-    }
-
-    function get_credit_card_server($contents) {
-        preg_match("/SESSION\[\"ccServer\"\]\s=\s\".*\";/", $contents, $val);
-        return str_replace('";', "", substr($val[0], 23));
-    }
-
-    function get_credit_card_share($contents) {
-        preg_match("/SESSION\[\"ccShare\"\]\s=\s\".*\";/", $contents, $val);
-        return str_replace('";', "", substr($val[0], 22));
-    }
-
-    function get_screen_lock($contents) {
-        preg_match("/SESSION\[\"lockScreen\"\]\s=\s.*/", $contents, $val);
-        return str_replace('";', "", substr($val[0], 24));
-    }
-
-    function get_logout_time($contents) {
-        preg_match("/SESSION\[\"timedlogout\"\]\s=\s.*;/", $contents, $val);
-        return str_replace(';', "", substr($val[0], 25));
-    }
-

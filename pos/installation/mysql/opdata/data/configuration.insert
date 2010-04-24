@@ -4,13 +4,6 @@ INSERT INTO configuration
     VALUES
     (
         NULL,
-        'firstRun',
-        '',
-        'flag',
-        0
-    ),
-    (
-        NULL,
         'OS',
         '',
         'text',
