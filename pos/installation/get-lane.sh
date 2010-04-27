@@ -4,7 +4,7 @@
 
 cd /tmp
 wget http://is4c.coop/download/IS4C.2.2_dev.tgz
-tar -xzf /tmp/IS4C.tgz
+tar -xzf /tmp/IS4C.2.2_dev.tgz
 cp -r /tmp/IS4C/pos /
 
 /pos/installation/ubuntu/install-lane.sh
