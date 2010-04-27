@@ -136,7 +136,16 @@ function voidupc($upc) {
     }
 
     if (is_numeric($upc)) {
-        $upc = substr("0000000000000" . $upc, -13);
+        $upc = substr("0000000000000".$upc, -13);
+        if (substr($upc, 0, 3) == "002" && substr($upc, -5) != "00000") {
+            $scaleprice = substr($upc, 10, 4)/100;
+            $upc = substr($upc, 0, 8)."0000";
+            $deliflag = 1;
+        }
+        elseif (substr($upc, 0, 3) == "002" && substr($upc, -5) == "00000") {
+            $scaleprice = $_SESSION["scaleprice"];
+            $deliflag = 1;
+	}
     }
 
     if ($upc == "stop") {

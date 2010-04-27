@@ -71,6 +71,11 @@ function upcscanned($entered) {
         $upc = substr("0000000000000".$entered, -13);
     }
 
+    if (substr($upc, 0, 3) == "002") {
+	$scaleprice = truncate2(substr($upc, -4)/100);
+	$upc = substr($upc, 0, 8) . "00000";
+    }
+
     $query = "select * from products where upc = '" . $upc . "' AND inUse = 1";
     
     $db = pDataConnect();
@@ -352,6 +357,12 @@ function upcscanned($entered) {
             }
 
             $total = $unitPrice * $quantity;
+
+	    if (substr($upc, 0, 3) == "002" and $discounttype != 2) {
+                $unitPrice = truncate2($scaleprice);
+                $regPrice = $total;
+                $total = $unitPrice * $quantity;
+            }
 
             $total = truncate2($total);
             $unitPrice = truncate2($unitPrice);
