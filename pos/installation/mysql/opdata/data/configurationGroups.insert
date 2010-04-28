@@ -1,11 +1,7 @@
-use is4c_op;
+use opdata;
 
 INSERT INTO configurationGroups
     VALUES
-    (
-        0,
-        'setup'
-    ),
     (
         1,
         'General'
@@ -38,5 +34,9 @@ INSERT INTO configurationGroups
         8,
         'Miscellaneous Settings'
     );
+
+UPDATE configurationGroups
+    SET group_id = 0
+    WHERE group_name = 'setup';
 
 UNLOCK TABLES;

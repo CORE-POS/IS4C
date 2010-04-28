@@ -20,9 +20,11 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
- 
 
-include("ini/ini.php");
+if (!function_exists("get_config_auto")) {
+    include_once("/pos/is4c/lib/conf.php");
+    apply_configurations();
+}
 if(!function_exists("pconnect")) include("connect.php");
 if(!function_exists("addactivity")) include("additem.php");
 

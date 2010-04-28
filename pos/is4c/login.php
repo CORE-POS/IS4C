@@ -21,6 +21,11 @@
 
 *********************************************************************************/
 
+    if (!function_exists("get_config_auto")) {
+        include_once("lib/conf.php");
+        apply_configurations();
+    }
+
     if (!function_exists("pDataConnect") || !function_exists("tDataConnect")) {
     	include("connect.php");
     }
@@ -30,8 +35,20 @@
     if (!function_exists("setglobalflags")) {
     	include("loadconfig.php");
     }
+    if (!function_exists("is_config_set")) {
+        include("lib/conf.php");
+    }
 
     initiate_session();
+
+    if (!is_config_set()) {
+    ?>
+        <script type='text/javascript'>
+            window.top.location = '/configure.php';
+        </script>
+    <?php
+    }
+
 ?>
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
@@ -74,7 +91,13 @@
                                     <input type='password' name='reginput' size='20' tabindex='0' onblur='document.form.reginput.focus();' />
                                 </form>
                                 <br />
-                                <?=isset($_SESSION["auth_fail"])?"<h3>PASSWORD INVALID</h3>":""?>
+                                <?php
+                                    if (isset($_SESSION["auth_fail"])) {?>
+                                        <h3>PASSWORD INVALID</h3>
+                                        <?php
+                                        unset($_SESSION["auth_fail"]);
+                                    }
+                                ?>
                                 Please enter your password
                             </td>
                         </tr>

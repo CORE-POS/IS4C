@@ -20,10 +20,20 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
+if (!function_exists("get_config_auto")) {
+    include_once("lib/conf.php");
+    apply_configurations();
+}
 
-if (!function_exists("setglobalflags")) include("loadconfig.php");
-if (!function_exists("pinghost")) include("lib.php");
-if (!function_exists("wmdiscount")) include("prehkeys.php");
+if (!function_exists("setglobalflags")) {
+    include("loadconfig.php");
+}
+if (!function_exists("pinghost")) {
+    include("lib.php");
+}
+if (!function_exists("wmdiscount")) {
+    include("prehkeys.php");
+}
 
 /***********************************************************************************************
 
@@ -367,14 +377,15 @@ function sql_fetch_array($result) {
     return $row;
 }
 
-
 function sql_fetch_assoc_array($result) {
-  if ($_SESSION['DBMS'] == 'mssql') {
-    return mssql_fetch_assoc($result);
-  }
-  return mysql_fetch_assoc($result);
+    if ($_SESSION["DBMS"] == "mssql") {
+        $row = mssql_fetch_assoc($result);
+    }
+    else {
+        $row = mysql_fetch_assoc($result);
+    }
+    return $row;
 }
-
 
 function sql_fetch_row($result) {
     if ($_SESSION["DBMS"] == "mssql") {

@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 
 
-import MySQLdb
 import warnings
 
 from installers import *
 
 
 def install_server_db(username, password, sample_data=False):
+    import MySQLdb
     connection = MySQLdb.connect("localhost", username, password)
 
     exec_script(connection, "script/create_server_db.sql")
@@ -30,6 +30,8 @@ def install_server_db(username, password, sample_data=False):
     warnings.resetwarnings()
 
     exec_script(connection, "script/create_server_acct.sql")
+
+    remove_bind_restriction_prompt()
 
 
 if __name__ == "__main__":

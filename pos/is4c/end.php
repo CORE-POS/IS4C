@@ -2,7 +2,10 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
     <body bgcolor='#ffffff'>
         <?
-            include_once("ini/ini.php");
+            if (!function_exists("get_config_auto")) {
+                include_once("/pos/is4c/lib/conf.php");
+                apply_configurations();
+            }
             include_once("session.php");
             include_once("printLib.php");
             include_once("printReceipt.php");
