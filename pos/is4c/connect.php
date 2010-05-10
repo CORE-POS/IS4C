@@ -22,7 +22,7 @@
 *********************************************************************************/
 if (!function_exists("get_config_auto")) {
     include_once("lib/conf.php");
-    apply_configurations();
+    # apply_configurations();
 }
 
 if (!function_exists("setglobalflags")) {
@@ -326,7 +326,7 @@ function sql_connect($server, $user, $pass) {
         $connection = mssql_connect($server, $user, $pass);
     }
     else {
-        $connection = mysql_connect($server, $user, $pass) or die(mysql_error());
+        $connection = mysql_connect($server, $user, $pass);
     }
     return $connection;
 }
