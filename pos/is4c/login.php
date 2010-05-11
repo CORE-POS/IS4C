@@ -23,7 +23,6 @@
 
     if (!function_exists("get_config_auto")) {
         include_once("lib/conf.php");
-        apply_configurations();
     }
 
     if (!function_exists("pDataConnect") || !function_exists("tDataConnect")) {
@@ -39,8 +38,6 @@
         include("lib/conf.php");
     }
 
-    initiate_session();
-
     if (!is_config_set()) {
     ?>
         <script type='text/javascript'>
@@ -49,6 +46,8 @@
     <?php
     }
 
+    apply_configurations();
+    initiate_session();
 ?>
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">

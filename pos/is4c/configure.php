@@ -1,7 +1,7 @@
 <?php
-    include_once("connect.php");
-    include_once("lib/query.php");
     include_once("lib/conf.php");
+	include_once("connect.php");
+    include_once("lib/query.php");
 ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
@@ -42,15 +42,16 @@
                                 $_SESSION["config_saved"] = FALSE;
                             }
                         ?>
-                    </p
+                    </p>
                     <div class='config_forms'>
                         <form action='/lib/apply_configurations.php' method='post'>
-                            <input type='submit' value='Save Changes' />
+                        	<input type='submit' value='Save Changes'/>
                             <?php
                                 $groups = get_configuration_groups();
                                 foreach ($groups as $group) {
                             ?>
                             <fieldset>
+	                        	
                                 <legend><?=$group["group_name"]?></legend>
                                 <?php
                                     $configs = get_configuration_settings($group["group_id"]);

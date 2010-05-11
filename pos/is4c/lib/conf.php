@@ -1,5 +1,4 @@
 <?php
-
     include_once("/pos/is4c/lib/initialize.php");
     if (!function_exists("get_users")) {
         include_once("/pos/is4c/lib/query.php");
