@@ -59,10 +59,17 @@ elseif ($admin_task == "RESUME") {
     }
 }
 elseif ($admin_task == "TR") {
-        getsubtotals();
-        if ($_SESSION["LastID"] != 0) {
-                msgscreen("transaction in progress");
-        }
+    getsubtotals();
+    if ($_SESSION["LastID"] != 0) {
+            msgscreen("transaction in progress");
+    }
+    elseif ($_SESSION["standalone"] != 0) {?>
+        <script type="text/javascript">
+            alert('Unable to contact server.  Please make sure both the lane and server are connected to the network and the server is powered on.  You can check connectivity to the server by looking for the gren connection icon next to the date and time field.');
+        </script>
+    <?php
+        gohome();
+    }
     else {
         tenderReport();
     }

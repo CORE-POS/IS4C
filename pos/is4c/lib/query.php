@@ -1,6 +1,6 @@
 <?php
     if (!function_exists("pDataConnect")) {
-        include("../connect.php");
+        include_once("/pos/is4c/connect.php");
     }
 
     /*Returns an associative array of active employees.*/
@@ -114,5 +114,107 @@
         else
         {
             return false;
+        }
+    }
+
+    function get_configuration_groups_query() {
+        $query =
+            'SELECT group_id,
+                group_name
+                FROM `opdata`.`configurationGroups`
+                WHERE group_id > 0;';
+        $result = sql_query($query, pDataConnect());
+        for ($i = 0; $i < sql_num_rows($result); $i++) {
+            $row = sql_fetch_assoc_array($result);
+            $conf_groups[$i] = $row;
+        }
+        return $conf_groups;
+    }
+
+    function get_configuration_group_settings_query($configuration_group) {
+        $configuration_group = mysql_real_escape_string($configuration_group);
+        $query =
+            'SELECT `key`,
+                value,
+                type
+                FROM `opdata`.`configuration`
+                WHERE group_id = ' . $configuration_group;
+        $result = sql_query($query, pDataConnect());
+        for ($i = 0; $i < sql_num_rows($result); $i++) {
+            $row = sql_fetch_assoc_array($result);
+            $conf_settings[$i] = $row;
+        }
+        return $conf_settings;
+    }
+
+    function get_configurations() {
+        $query =
+            'SELECT `key`,
+                value
+                FROM `opdata`.`configuration`
+                WHERE group_id > 0;';
+        $result = sql_query($query, pDataConnect());
+        for ($i = 0; $i < sql_num_rows($result); $i++) {
+            $row = sql_fetch_assoc_array($result);
+            $conf_settings[$i] = $row;
+        }
+        return $conf_settings;
+    }
+
+    // Checks for a list of configuration values that must be set for IS4C to operate.
+    // If any of these configurations are not set, then it returen false.
+    function configs_set() {
+       	$query =
+            'SELECT value
+                FROM `opdata`.`configuration`
+                WHERE `key` IN
+                (
+                    "OS",
+                    "store",
+                    "localhost",
+                    "tDatabase",
+                    "pDatabase",
+                    "DBMS",
+                    "localUser",
+                    "laneno"
+                );';
+       	$result = sql_query($query, pDataConnect());
+       	if ($result) {
+        	for ($i = 0; $i < sql_num_rows($result); $i++) {
+            	$row = sql_fetch_assoc_array($result);
+            	if ($row["value"] == NULL)
+            	{
+                	return false;
+            	}
+        	}
+        	return true;
+       	} else {
+			return false;
+		}
+    }
+
+    function save_configurations($configurations) {
+        // Set all flag fields to 0.
+        // Those that have been checked will be reset back to 1.
+        $query =
+            'SELECT conf_id
+                FROM `opdata`.`configuration`
+                WHERE type = "flag";';
+        $result = sql_query($query, pDataConnect());
+        for ($i = 0; $i < sql_num_rows($result); $i++) {
+            $row = sql_fetch_assoc_array($result);
+            $query =
+                'UPDATE `opdata`.`configuration`
+                    SET value = 0
+                    WHERE conf_id = "' . $row["conf_id"]  . '";';
+            $execute = sql_query($query, pDataConnect());
+        }
+        // Save the configurations to the database.
+        foreach($configurations as $key => $value) {
+            $query =
+                'UPDATE `opdata`.`configuration`
+                    SET value = "' . $value . '"
+                    WHERE `key` = "' . $key . '";';
+            $result = sql_query($query, pDataConnect());
         }
     }

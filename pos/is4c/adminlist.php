@@ -54,7 +54,7 @@ if (!function_exists("printheaderb()")) include("drawscreen.php");
                         <tr>
                             <td bgcolor='#004080' height='150' width='260' valign='center' align='center'>
                                 <font face='arial' color='white'><b>administrative tasks</b></font>
-                                <from name='selectform' method='post' action='admintasks.php'>
+                                <form name='selectform' method='post' action='admintasks.php'>
                                     <select name='selectlist' onblur='document.selectform.selectlist.focus();' >
                                         <option value=''></option>
                                         <option value='SUSPEND'>1. Suspend Transaction</option>

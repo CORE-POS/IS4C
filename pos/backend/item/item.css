@@ -86,6 +86,11 @@ LABEL[for="edit_inuse"] {
  overflow-y: scroll;
 }
 
+#results_similar_products {
+ margin-left: auto;
+ margin-right: auto;
+}
+
 INPUT[name="edit_upc"] {
  border: 0px;
 }

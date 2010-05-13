@@ -1,4 +1,4 @@
-use is4c_op;
+use opdata;
 
 DROP TABLE IF EXISTS `configurationGroups`;
 CREATE TABLE `configurationGroups` (
