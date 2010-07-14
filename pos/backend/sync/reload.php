@@ -57,7 +57,7 @@
 	
 // TODO - Auto generate lanes from define.conf, for now, hardcode
 	$lanes=array(
-		array('Name'=>'Lane 01', 'IP'=>'10.10.10.115')
+		array('Name'=>'Lane 01', 'IP'=>'10.10.10.53')
 	);
 	
 	foreach ($lanes as $lane) {

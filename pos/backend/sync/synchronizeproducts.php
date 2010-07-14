@@ -7,6 +7,7 @@
 			$query='SELECT `synchronizationLog`.`datetime` FROM `is4c_log`.`synchronizationLog` WHERE `synchronizationLog`.`name`=\'products\' AND `synchronizationLog`.`status`=1 ORDER BY `synchronizationLog`.`datetime` DESC LIMIT 1';
 			$result=mysql_query($query, $link);
 
+			// TODO, if unable to find last sync datetime, sync whole table?
 			if ($result && mysql_num_rows($result)==1) {
 				$row=mysql_fetch_array($result);
 		
