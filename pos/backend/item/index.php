@@ -64,6 +64,7 @@
 		$_REQUEST['q']=$_REQUEST['edit_upc'];
 		search(&$backoffice);
 	} else  {
+		// No action needed?
 	}
 	
 	$html='<!DOCTYPE HTML>

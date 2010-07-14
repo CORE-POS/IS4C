@@ -75,7 +75,7 @@
                 setTimeout("listen();", 70);
             }
         <?php
-            if ($_SESSION['OS'] == 'linux')
+            if ($_SESSION['OS'] == 'linux' && !$_SESSION["browserOnly"])
             {
                 echo 'listen();';
             }
