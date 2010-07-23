@@ -103,7 +103,7 @@ else {
         echo "    <head>";
         echo "        <title></title>";
         echo "    </head>";
-        echo "<body onLoad='document.forms[0].elements[0].focus();'>"
+        echo "<body onLoad='document.forms[0].elements[0].focus();'>";
         printheaderb();
         productsearchbox("no match found<br />next search or enter upc");
     }
