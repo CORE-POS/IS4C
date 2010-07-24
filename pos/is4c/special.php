@@ -69,7 +69,7 @@ function checksuspended() {
     $m_conn = mDataConnect();
 
     $query_local = "select * from suspendedtoday";
-    $query_remote = "select * from " . trim($_SESSION["mServer"]) . "." . trim($_SESSION["mDatabase"]) . ".dbo.suspendedtoday";
+    $query_remote = "select * from suspendedtoday";
     $query = "select * from suspendedlist";
 
     if ($_SESSION["standalone"] == 1) {
@@ -85,11 +85,15 @@ function checksuspended() {
             $result = sql_query($query_remote, $db_a);
         }
         else {
-            $result = mysql_query($query, $m_conn);
+            $result = mysql_query($query_remote, $m_conn);
         }
     }
 
-    $num_rows = sql_fetch_array($result);
+# That's just not right, fix it later?
+#    $num_rows = sql_fetch_array($result);
+
+    $num_rows=mysql_num_rows($result);
+
 
     if ($num_rows == 0) {
         return 0;

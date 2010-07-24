@@ -46,8 +46,7 @@ if (!function_exists("printheaderb")) include("drawscreen.php");
         <?php
             $query_local = "select register_no, emp_no, trans_no, sum(total) as total from suspendedtoday "
                 . "group by register_no, emp_no, trans_no";
-            $query_remote = "select register_no, emp_no, trans_no, sum(total) as total from "
-                . trim($_SESSION["mServer"]) . "." . trim($_SESSION["mDatabase"]) . ".dbo.suspendedtoday "
+            $query_remote = "select register_no, emp_no, trans_no, sum(total) as total from suspendedtoday "
                 . "group by register_no, emp_no, trans_no";
 
             $query = "select * from suspendedlist";
@@ -68,7 +67,7 @@ if (!function_exists("printheaderb")) include("drawscreen.php");
                     $result = mssql_query($query_remote, $db_a);
                 }
                 else {
-                    $result = mysql_query($query, $m_conn);
+                    $result = mysql_query($query_remote, $m_conn);
                 }
             }
 
