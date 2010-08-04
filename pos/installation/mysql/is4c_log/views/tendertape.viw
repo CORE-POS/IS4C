@@ -1,19 +1,15 @@
-use is4c_log;
-
+USE `is4c_log`;
 DROP VIEW IF EXISTS `tendertape`;
-CREATE VIEW `tendertape` AS 
-
-select 
-
-`dlog`.`tdate` AS `tdate`,
-`dlog`.`emp_no` AS `emp_no`,
-`dlog`.`register_no` AS `register_no`,
-`dlog`.`trans_no` AS `trans_no`,
-(case when (`dlog`.`trans_subtype` = 'mi') then (-(1) * `dlog`.`total`) else 0 end) AS `miTender`,
-(case when ((`dlog`.`trans_subtype` = 'cc') or (`dlog`.`trans_subtype` = 'tb')) then (-(1) * `dlog`.`total`) else 0 end) AS `ccTender`,
-(case when (`dlog`.`trans_subtype` = 'ck') then (-(1) * `dlog`.`total`) else 0 end) AS `ckTender`,
-(case when (`dlog`.`trans_subtype` = 'dc') then (-(1) * `dlog`.`total`) else 0 end) AS `dcTender`,
-(case when ((`dlog`.`trans_subtype` = _latin1'ca') and (`dlog`.`total` >= 0)) then `dlog`.`total` else 0 end) AS `changeGiven` 
-
-from `dlog` 
-where (cast(`dlog`.`tdate` as date) = curdate())
+CREATE VIEW `tendertape` AS SELECT
+	`dlog`.`tdate` AS `tdate`,
+	`dlog`.`emp_no` AS `emp_no`,
+	`dlog`.`register_no` AS `register_no`,
+	`dlog`.`trans_no` AS `trans_no`,
+	(CASE WHEN (`dlog`.`trans_subtype`='mi') THEN (-1*`dlog`.`total`) ELSE 0 END) AS `miTender`,
+	(CASE WHEN ((`dlog`.`trans_subtype`='cc') OR (`dlog`.`trans_subtype`='tb')) THEN (-1*`dlog`.`total`) ELSE 0 END) AS `ccTender`,
+	(CASE WHEN (`dlog`.`trans_subtype`='ck') THEN (-1*`dlog`.`total`) ELSE 0 END) AS `ckTender`,
+	(CASE WHEN (`dlog`.`trans_subtype`='dc') THEN (-1*`dlog`.`total`) ELSE 0 END) AS `dcTender`,
+	(CASE WHEN (`dlog`.`trans_subtype`='fs') THEN (-1*`dlog`.`total`) ELSE 0 END) AS `fsTender`,
+	(CASE WHEN ((`dlog`.`trans_subtype`='ca') AND (`dlog`.`total`>=0)) THEN `dlog`.`total` ELSE 0 END) AS `changeGiven` 
+	FROM `is4c_log`.`dlog` 
+	WHERE (CAST(`dlog`.`tdate` AS DATE)=CURDATE())
