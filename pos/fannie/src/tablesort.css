@@ -1,0 +1,229 @@
+/*
+   Add the following to your CSS file should you wish the cursor to
+   "wait" while the script is processing the sort
+*/
+body.sort-active *
+        {
+        cursor:wait;
+        }
+
+
+body
+        {
+        padding:0;
+        border:0;
+        margin:0;
+        text-align:center;
+        font-size:12px;
+        font-family: verdana,arial,sans-serif;
+        color:#545454;
+/*        min-width: 800px;*/
+        }
+h2 span
+        {
+        font-variant:small-caps;
+        }
+p a
+        {
+        font-weight:normal;
+        outline:none;
+        }
+p a:link,
+p a:visited
+        {
+        color:#333;
+        text-decoration:underline;
+        }
+p a:hover
+        {
+        color:#fff;
+        text-decoration:none;
+        background:#000;
+        }
+p a:active
+        {
+        color:#000;
+        text-decoration:underline;
+        }
+code
+        {
+        font-family:'andale mono','lucida console','courier new',monospace;
+        font-size:1em;
+        }
+p
+        {
+        line-height:1.6em;
+        margin:0 0 1em 0;
+        }
+h1
+        {
+        font-weight:lighter;
+        font-family:georgia, times new roman, times, georgia, palatino, serif;
+        text-align:center;
+        margin-top:0.6em;
+        color:#000;
+        font-size:2em;
+        }
+h2
+        {
+        font-weight:lighter;
+        font-family:verdana,arial,sans-serif;
+        text-align:center;
+        margin-top:1em;
+        color:#333;
+        text-transform:uppercase;
+        letter-spacing:1px;
+        font-size:1.2em;
+        }
+h2 span
+        {
+        font-variant:small-caps;
+        text-transform:none;
+        }
+table
+        {
+        width: auto;
+        padding: 0;
+        margin: 0 auto 1.5em auto;
+        border-left: 1px solid #C1DAD7;
+        border-collapse:collapse;
+        }
+.cs1
+        {
+        width:30em;
+        }
+.cs2
+        {
+        width:20em;
+        }
+.cs1 td,
+.cs2 td,
+#scientificNotation
+        {
+        text-align:right;
+        }
+caption
+        {
+        padding: 0 0 5px 0;
+        margin:0 auto;
+        width:auto;
+        font: italic 11px Verdana, Arial, Helvetica, sans-serif;
+        text-align: right;
+        }
+th
+        {
+        font: bold 0.5em Monaco, monospace;
+/*        font: bold 0.5em Verdana, Arial, Helvetica, sans-serif;*/
+        color: #000000;
+        border-right: 1px solid #C1DAD7;
+        border-bottom: 1px solid #C1DAD7;
+        border-top: 1px solid #C1DAD7;
+        letter-spacing: 0px;
+        text-transform: uppercase;
+        text-align: left;
+        padding: 4px 12px 4px 8px;
+        background: #CAE8EA;
+        vertical-align:middle;
+        }
+td.total
+        {
+        border-top: 0;
+        border-left: 0;
+        border-right: 1px solid #C1DAD7;
+        background: none;
+        text-align:right;
+        font-weight:bold;
+        text-transform:uppercase;
+        letter-spacing:1px;
+        }
+th.sortable,
+th.sortable-text,
+th.sortable-date,
+th.sortable-keep,
+th.sortable-date-dmy,
+th.sortable-numeric,
+th.sortable-currency,
+th.sortable-sortByTwelveHourTimestamp,
+th.sortable-sortIPAddress,
+th.sortable-sortEnglishLonghandDateFormat,
+th.sortable-sortScientificNotation,
+th.sortable-sortImage,
+th.sortable-sortFileSize,
+th.sortable-sortAlphaNumeric,
+th.sortable-sortEnglishDateTime
+
+        {
+        cursor:pointer;
+        background: #EEEEEE;
+        padding: 6px 12px 4px 8px;
+        }
+th.forwardSort
+        {
+        background:#CCCCCC;
+        }
+th.reverseSort
+        {
+        background:#CCCCCC;
+        }
+table thead th.forwardSort a,
+table thead th.reverseSort a
+        {
+        color:#000;
+        text-decoration:none;
+        }
+
+/*These styles should be added when very long tables are expected*/
+th.sort-active
+        {
+        background:#CAE8EA url(../media/bg_header_sorting.jpg) no-repeat 0 0;
+        cursor:wait;
+        }
+th.sort-active a
+        {
+        color:#a80000 !important;
+        cursor:wait;
+        }
+
+th a
+        {
+        text-decoration:none;
+        color: #330066;
+        background:transparent;
+        }
+
+td a
+        {
+		font-size:1em;
+        text-decoration:none;
+        color:#330066;
+        background:transparent;
+        }
+td img
+        {
+        margin:0 auto;
+        border:3px solid #ddd;
+        }
+td a:hover
+        {
+        color:#330066;
+        border-bottom:1px dotted #a80000;
+        background:transparent;
+        }
+td
+        {
+        font: normal 0.8em Monaco, monospace;
+/*        font: normal 0.8em Verdana, Arial, Helvetica, sans-serif;*/
+        border-right: 1px solid #C1DAD7;
+        border-bottom: 1px solid #C1DAD7;
+        padding: 6px 8px 6px 8px;
+        color: #4f6b72;
+        }
+td.lft
+        {
+        text-align:left;
+        }
+tr.alt
+        {
+        background: #eeeeee;
+        color: #797268;
+        }

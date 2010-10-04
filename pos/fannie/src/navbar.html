@@ -1,0 +1,139 @@
+<link rel="stylesheet" href="<?php echo $path; ?>src/style.css" type="text/css" media="screen" title="no title" charset="utf-8">
+
+<div class="" style="width:140px;z-index:999999;position:relative;">
+<ul id="css_menu_root">
+
+<li style="width:100%;" class="menu0">
+	<a href="<?php echo $path; ?>item/itemMaint.php">Item Maintenance</a>
+	<div class="menuwrapper">
+	<div class="submenu level0" style="width:155px;top:-28px;left:135px;">
+		<ul style="">
+			<li><a href="<?php echo $path; ?>item/itemMaint.php">Add/change Products</a></li>
+			<li><a href="<?php echo $path; ?>item/departments/">Manage Departments</a></li>
+			<li><a href="<?php echo $path; ?>item/likecodes/">Manage Likecodes</a></li>
+			<li><a href="<?php echo $path; ?>item/vendors/">Manage Vendors</a></li>
+		</ul>
+	</div>
+	</div>
+</li>
+<div class="sub">
+	Manage our product DB
+</div>
+
+<li style="width:100%;" class="menu0">
+	<a href="<?php echo $path; ?>batches/newbatch/">Sales Batches</a>
+	<div class="menuwrapper">
+	<div class="submenu level0" style="width:155px;top:-28px;left:135px;">
+		<ul style="">
+			<li><a href="<?php echo $path; ?>batches/newbatch/">Sales Batches</a></li>
+			<li><a href="<?php echo $path; ?>batches/CAP/">CAP Sales</a></li>
+			<li><a href="<?php echo $path; ?>batches/UNFI/">Vendor Pricing</a></li>
+		</ul>
+	</div>
+	</div>
+</li>
+<div class="sub">
+	Create automated sales &amp; price changes
+</div>
+
+<li style="width:100%;" class="menu0">
+	<a href="<?php echo $path; ?>reports/index.php">Reports</a>
+	<div class="menuwrapper">
+	<div class="submenu level0" style="width:155px;top:-28px;left:135px;">
+		<ul style="">
+			<li><a href=""><span class="imea imeam">Movement &gt;&gt;</a>
+				<div class="menuwrapper">
+				<div class="submenu level1" style="width:155px;top:-28px;left:135px;">
+				<ul style="">
+				<li><a href="<?php echo $path; ?>reports/DepartmentMovement">Department Movement</a></li>
+				<li><a href="<?php echo $path; ?>reports/ManufacturerMovement/">Manufacturer Movement</a></li>
+				<li><a href="<?php echo $path; ?>reports/ProductMovement/">Item Movement</a></li>
+				<li><a href="<?php echo $path; ?>reports/Correlated/">Correlated Movement</a></li>
+				<li><a href="<?php echo $path; ?>reports/NonMovement/">Non-Movement</a></li>
+				<li><a href="<?php echo $path; ?>reports/Trends/">Trends</a></li>
+				<li><a href="<?php echo $path; ?>reports/MonthOverMonth/">Monthly Movement</a></li>
+				<li><a href="<?php echo $path; ?>reports/MovementPrice/">Movement by Price</a></li>
+				</ul>
+				</div>
+				</div>
+			<li><a href="">Sales &gt;&gt;</a>
+				<div class="menuwrapper">
+				<div class="submenu level1" style="width:155px;top:-28px;left:135px;">
+				<ul style="">
+				<li><a href="<?php echo $path; ?>reports/GeneralSales/">General Sales Report</a></li>
+				<li><a href="<?php echo $path; ?>reports/SalesToday/">Today's Sales</a></li>
+				<li><a href="<?php echo $path; ?>reports/HourlySales/">Store Hourly Sales Report</a></li>
+				<li><a href="<?php echo $path; ?>reports/HourlySales/hourlySalesDept.php">Department Hourly Sales Report</a></li>
+				</ul>
+				</div>
+				</div>
+			<li><a href="<?php echo $path; ?>item/productList.php">Product List</a></li>
+			<li><a href="<?php echo $path; ?>reports/PriceHistory/">Price History Report</a></li>
+			<li><a href="<?php echo $path; ?>reports/DepartmentSettings/">Department Settings</a></li>
+			</ul>
+	</div>
+	</div>
+</li>
+<div class="sub">
+	Custom reporting tools
+</div>
+
+<li  style="width:100%;"><a href="<?php echo $path; ?>reports/reportDate.php" target=_blank>Dayend Report</a>
+	<div class="menuwrapper">
+	<div class="submenu level0" style="width:155px;top:-28;left:135px;">
+		<ul style="">
+			<li><a href="<?php echo $path; ?>reports/reportDate.php" target=_blank>Todays Dayend Report</a></li>
+			<li><a href="<?php echo $path; ?>reports/reportDateEnter.php">Pick Another Date</a></li>
+		</ul>
+	</div>
+	</div>
+</li>
+<div class="sub">
+	Generate dayend sales report
+</div>
+
+<li  style="width:100%;"><a href="<?php echo $path; ?>sync/index.php">Synchronize</a>
+	<div class="menuwrapper">
+	<div class="submenu level0" style="width:145px;top:-28px;left:135px;">
+		<ul style="">
+			<li><a href="<?php echo $path; ?>sync/tablesync.php?tablename=products">Products</a></li>
+			<li><a href="<?php echo $path; ?>sync/tablesync.php?tablename=custdata">Membership</a></li>
+			<li><a href="<?php echo $path; ?>sync/tablesync.php?tablename=employees">Employees</a></li>
+			<li><a href="<?php echo $path; ?>sync/tablesync.php?tablename=departments">Departments</a></li>
+			<li><a href="<?php echo $path; ?>sync/tablesync.php?tablename=subdepts">Sub-Departments</a></li>
+<!--			<li><a href="<?php echo $path; ?>sync/reloadsubdepts.php">Sub-Departments</a></li>		-->
+<!--			<li><a href="<?php echo $path; ?>sync/reloadtenders.php">Tenders</a></li>				-->
+		</ul>
+	</div>
+	</div>
+</li>
+<div class="sub">
+	Update cash registers
+</div>
+
+<li style="width:100%;"><a href="<?php echo $path; ?>admin/index.php">Admin</a>
+	<div class="menuwrapper">
+	<div class="submenu level0" style="width:155px;top:-28;left:135px;">
+		<ul style="">
+			<li><a href="<?php echo $path; ?>admin/Cashiers/">Cashier Management</a></li>
+			<li><a href="<?php echo $path; ?>mem/search.php">Member Management</a></li>
+			<li><a href="<?php echo $path; ?>mem/statements/">E-mail Statements</a></li>
+			<li><a href="<?php echo $path; ?>ordering/">Special Orders</a></li>
+	<!--	<li><a href="<?php echo $path; ?>admin/charges.php">Staff Charges</a></li>
+				<li><a href="<?php echo $path; ?>admin/volunteers.php">Volunteer Hours</a></li>-->	
+			<li><a href="<?php echo $path; ?>admin/labels/">Print Shelftags</a></li>
+	   <!-- <li><a href="<?php echo $path; ?>admin/patronage.php">Patronage Tool</a></li> -->
+			<li><a href="<?php echo $path; ?>admin/LookupReceipt/">Transaction Lookup</a></li>
+		</ul>
+	</div>
+	</div>
+</li>
+<div class="sub">
+	Administrative functions, etc.
+</div>
+
+</ul>
+</div>
+
+<!--  *Note: This script is required for scripted add on support and IE 6 sub menu functionality.
+      *Note: This menu will fully function in all CSS2 browsers with the script removed.-->

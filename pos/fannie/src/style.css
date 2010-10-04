@@ -1,0 +1,322 @@
+/*#body { 
+	color:444444;
+
+}*/
+
+#box { border: 2px;
+	border-style: solid;
+	padding: 2em;
+	margin: 0.75em;
+}
+
+p {
+	font-family: "Arial,Lucida";
+	color:330066;
+	font-size: 1em;
+	line-height: 1.4em;
+}
+
+h2 {
+	font-family: "Arial,Lucida";
+	font-size: 1.6em;
+	line-height: 1.8em;
+	color:330066;
+}
+
+h3 {
+	font-family: "Arial,Lucia";
+	font-size: 1.2em;
+	font-weight: bolder;
+	line-height: 0.8em;
+	color: 330066;
+}
+h4 {
+	font-family: "Arial,Lucia";
+	font-size: 1.4em;
+	line-height: 1.4em;
+	letter-spacing: 0.2em;
+	color:330066;
+}
+
+#alert {
+	display: block;
+	background-color: #FFFFCC;
+	padding: 3px;
+	margin: 3px;
+	font-family: "Arial,Lucida";
+	font-size: 1em;
+	font-weight: bolder;
+}
+
+/*								*/
+/*	---	Autonomous Style	---	*/
+/*								*/
+
+body {
+	font-family:arial;
+	font-size:12px;
+	cursor:default;
+	color:999999;
+}
+
+td {
+	font-family:arial;
+	font-size:12px;
+	cursor:default;
+	color:444444;
+}
+
+th {
+	font-family:arial;
+	font-size:12px;
+	font-weight:bold;
+	color:444444;
+}
+
+a {
+	color:330066;
+	text-decoration:none;
+	font-size:13px
+}
+
+a:hover {
+	color:330066;
+	text-decoration:underline;
+}
+
+input {
+	font-family:monaco;
+	font-size:12px;
+	padding:0px;
+	height:21px;
+/*	background-color:F9F9F9; */
+	color:000000;
+	/* make button more visually obvious...
+	border-color:CCCCCC;
+	border-style:solid;
+	border-width:1;
+	background-color:EEEEEE;
+	*/
+}
+
+#loading {
+	font:bold 12px Verdana;
+	color:red;
+}
+
+/*									*/
+/*	---	phpMyEdit Styles		---	*/
+/*									*/
+									
+hr.pme-hr		     { border: 0px solid; padding: 0px; margin: 0px; border-top-width: 1px; height: 1px; }
+table.pme-main 	     { border: #004d9c 1px solid; border-collapse: collapse; border-spacing: 0px; width: 100%; }
+table.pme-navigation { border: #004d9c 0px solid; border-collapse: collapse; border-spacing: 0px; width: 100%; }
+th.pme-header	     { border: #004d9c 1px solid; padding: 4px; background: #add8e6; }
+td.pme-key-0, td.pme-value-0, td.pme-help-0, td.pme-navigation-0, td.pme-cell-0,
+td.pme-key-1, td.pme-value-1, td.pme-help-0, td.pme-navigation-1, td.pme-cell-1,
+td.pme-sortinfo, td.pme-filter { border: #004d9c 1px solid; padding: 3px; }
+td.pme-buttons { text-align: left;   }
+td.pme-message { text-align: center; }
+td.pme-stats   { text-align: right;  }
+
+/* 									*/
+/*	---	CalendarControl Styles	---	*/
+/*									*/
+
+#CalendarControlIFrame {
+  display: none;
+  left: 0px;
+  position: absolute;
+  top: 0px;
+  height: 250px;
+  width: 250px;
+  z-index: 99;
+}
+
+#CalendarControl {
+  position:absolute;
+  background-color:#FFF;
+  margin:0;
+  padding:0;
+  display:none;
+  z-index: 100;
+}
+
+#CalendarControl table {
+  font-family: arial, verdana, helvetica, sans-serif;
+  font-size: 8pt;
+  border-left: 1px solid #336;
+  border-right: 1px solid #336;
+}
+
+#CalendarControl th {
+  font-weight: normal;
+}
+
+#CalendarControl th a {
+  font-weight: normal;
+  text-decoration: none;
+  color: #FFF;
+  padding: 1px;
+}
+
+#CalendarControl td {
+  text-align: center;
+}
+
+#CalendarControl .header {
+  background-color: #330066;
+}
+
+#CalendarControl .weekday {
+  background-color: #DDD;
+  color: #000;
+}
+
+#CalendarControl .weekend {
+  background-color: #FFC;
+  color: #000;
+}
+
+#CalendarControl .current {
+  border: 1px solid #339;
+  background-color: #336;
+  color: #FFF;
+}
+
+#CalendarControl .weekday,
+#CalendarControl .weekend,
+#CalendarControl .current {
+  display: block;
+  text-decoration: none;
+  border: 1px solid #FFF;
+  width: 2em;
+}
+
+#CalendarControl .weekday:hover,
+#CalendarControl .weekend:hover,
+#CalendarControl .current:hover {
+  color: #FFF;
+  background-color: #336;
+  border: 1px solid #999;
+}
+
+#CalendarControl .previous {
+  text-align: left;
+}
+
+#CalendarControl .next {
+  text-align: right;
+}
+
+#CalendarControl .previous,
+#CalendarControl .next {
+  padding: 1px 3px 1px 3px;
+  font-size: 1.4em;
+}
+
+#CalendarControl .previous a,
+#CalendarControl .next a {
+  color: #FFF;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+#CalendarControl .title {
+  text-align: center;
+  font-weight: bold;
+  color: #FFF;
+}
+
+#CalendarControl .empty {
+  background-color: #CCC;
+  border: 1px solid #FFF;
+}
+
+/* NEW MENUS */
+ul#css_menu_root {
+	padding: 0;
+	text-align: left;
+}
+
+ul#css_menu_root div.sub {
+	margin-bottom: 5px;
+	padding-bottom: 5px;
+	border-bottom: solid 1px black;
+}
+
+ul#css_menu_root a {
+	font-size: 16px;
+	font-family:Arial;
+	text-decoration: none;
+}
+
+ul#css_menu_root li {
+	list-style-type: none;
+	padding-bottom: 0;
+}
+
+ul#css_menu_root li div.submenu {
+	z-index: 1;
+	margin-top: 10px;
+	position: absolute;
+	line-height: 1.8em;
+}
+
+ul#css_menu_root li div.submenu ul {
+	background: #ffffff;
+	border: solid 1px black;
+	padding: 2px;
+	padding-left: 3px;
+}
+
+ul#css_menu_root li div.submenu a {
+	font-size: 13px;
+}
+
+ul#css_menu_root li div.menuwrapper {
+	position: relative;
+	margin-left: -5px;
+}
+
+
+ul#css_menu_root li:hover {
+	background: #bbbbbb;
+}
+
+/* I couldn't figure out how to change
+ * the link color without changing ALL
+ * the links, so I resorted to light enough
+ * highlighting that I could leave the
+ * foreground color alone
+ul#css_menu_root li:hover a {
+	color: #ffffff;
+}
+*/
+
+ul#css_menu_root li div.level0 {
+	display: none;
+}
+
+ul#css_menu_root li:hover div.level0{
+	display: block;
+}
+
+/* menu are no longer infinite
+ * each new layer needs a pair
+ * of show/hide settings like 
+ * these */
+div.level0 li div.level1 {
+	display: none;
+}
+
+div.level0 li:hover div.level1 {
+	display: block;
+}
+
+.MemFormTable th {
+	text-align: right;
+	background: #330066;
+	color: #fff;
+	padding: 0 5px 0 2px;
+}

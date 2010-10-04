@@ -1,0 +1,7 @@
+use translog;
+
+INSERT INTO localtransarchive SELECT * FROM localtrans;
+
+TRUNCATE localtrans;
+
+TRUNCATE suspended;

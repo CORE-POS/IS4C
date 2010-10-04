@@ -1,0 +1,7 @@
+<Files *>
+AuthUserFile /usr/local/apache/passwd/passwords
+AuthName "Restricted Area"
+AuthType Basic
+Require valid-user
+</Files>
+

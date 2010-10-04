@@ -1,0 +1,11 @@
+--2010-04-26 14:47:11--  http://localhost/git/fannie/install.php
+Resolving localhost... 127.0.0.1
+Connecting to localhost|127.0.0.1|:80... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 2389 (2.3K) [text/html]
+Saving to: `install.php.2'
+
+     0K ..                                                    100%  149M=0s
+
+2010-04-26 14:47:11 (149 MB/s) - `install.php.2' saved [2389/2389]
+

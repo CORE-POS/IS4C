@@ -1,0 +1,103 @@
+body {
+	font: 12px "Lucida Sans Unicode", Verdana, sans-serif;
+	color: #333333;
+	background: #FFF;
+	margin: 0;
+	padding: 0;
+}
+#wrapper {
+	margin: 0 auto;
+}
+#content {
+	margin: 0 25px 0 25px;
+	padding: 1px;
+}
+#content p {
+	margin: 0 130px 6px 0;
+	text-align: justify;
+}
+#nav {
+	position: static;
+	float: right;
+	width: 100px;
+}
+div#navbar1 {
+	height: 30px;
+	width: 100%;
+	border: solid #000 1px;
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: small;
+	text-align: center;
+	padding: 0px;
+	margin: 0px;
+	white-space: nowrap;
+	line-height: 30px;
+}
+
+#navbar1 a {
+	padding: 0.5em;
+	text-decoration: none;
+	font-weight:bolder;
+}
+
+#navbar1 a:hover {
+	background-color: #FFFFCC;
+	text-decoration: none;
+
+}
+
+#nav ul {
+	margin: 15px 0 15px 0;
+	padding: 0;
+	list-style: none;
+	border: 0;
+}
+#nav li {
+	text-align: center;
+	border-bottom: 1px solid #000;
+	width: 100px;
+	margin: 0;
+	padding: 0;
+	font: 10px/15px "Lucida Sans Unicode", Verdana, sans-serif;
+	color: #000;
+	background: #FFF;
+}
+.navtop {
+	border-top: 1px solid #000;
+}
+#nav li a {
+	display: block;
+	font-weight: normal;
+	font-size: 1.2em;
+	padding: 0;
+	border-left: 1px solid #000;
+	border-right: 1px solid #000;
+	background: #FFF;
+	color: #000;
+	text-decoration: none;
+	width: 100px;
+	voice-family: "\"}\"";
+	voice-family: inherit;
+	width: 98px;
+}
+html>#nav li a {
+	width: 98px;
+}
+#nav li a:hover {
+	font-weight: normal;
+	background: #999;
+	color: #000;
+	text-decoration: none;
+}
+#nav h3 {
+	font-size: 120%;
+	background-image: none;
+	text-align: center;
+	padding: 0;
+}
+#footer {
+	border-bottom: 1px solid #000;
+	border-top: 1px solid #000;
+	margin: 0 25px 0 25px;
+	padding: 10px;
+}

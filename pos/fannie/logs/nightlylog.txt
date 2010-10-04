@@ -1,0 +1,1504 @@
+2008-04-14 - Archival failed. Backed up transaction tables.
+2008-04-14 - Sync to lane01 successful.
+2008-04-14 - Sync to lane02 successful.
+2008-04-14 - Sync to lane03 successful.
+2008-04-14 - Archival failed. Backed up transaction tables.
+2008-04-14 - Sync to lane01 successful.
+2008-04-14 - Sync to lane02 successful.
+2008-04-14 - Sync to lane03 successful.
+2008-04-14 - Archival failed. Backed up transaction tables.
+2008-04-14 - Sync to lane01 successful.
+ - Archival failed. Backed up transaction tables.
+ - Archival failed. Backed up transaction tables.
+2008-04-14 - Archival failed. Backed up transaction tables.
+ - dtransactions archived and truncated.
+ - Sync to lane01 successful.
+ - Sync to lane02 successful.
+ - Sync to lane03 successful.
+2008-04-14 - dtransactions archived and truncated.
+2008-04-14 - Sync to lane01 successful.
+2008-04-14 - Sync to lane02 successful.
+2008-04-14 - Sync to lane03 successful.
+2008-04-15 - dtransactions archived and truncated.
+2008-04-15 - Sync to lane01 successful.
+2008-04-15 - Sync to lane02 successful.
+2008-04-15 - Sync to lane03 successful.
+2008-04-16 - dtransactions archived and truncated.
+2008-04-16 - Sync to lane01 successful.
+2008-04-16 - Sync to lane02 successful.
+2008-04-16 - Sync to lane03 successful.
+2008-04-17 - dtransactions archived and truncated.
+2008-04-17 - Sync to lane01 successful.
+2008-04-17 - Sync to lane02 successful.
+2008-04-17 - Sync to lane03 successful.
+2008-04-18 - dtransactions archived and truncated.
+2008-04-18 - Sync to lane01 successful.
+2008-04-18 - Sync to lane02 successful.
+2008-04-18 - Sync to lane03 successful.
+2008-04-19 - dtransactions archived and truncated.
+2008-04-19 - Sync to lane01 successful.
+2008-04-19 - Sync to lane02 successful.
+2008-04-19 - Sync to lane03 successful.
+2008-04-20 - dtransactions archived and truncated.
+2008-04-20 - Sync to lane01 successful.
+2008-04-20 - Sync to lane02 successful.
+2008-04-20 - Sync to lane03 successful.
+2008-04-21 - dtransactions archived and truncated.
+2008-04-21 - Sync to lane01 successful.
+2008-04-21 - Sync to lane02 successful.
+2008-04-21 - Sync to lane03 successful.
+2008-04-22 - dtransactions archived and truncated.
+2008-04-22 - Sync to lane01 successful.
+2008-04-22 - Sync to lane02 successful.
+2008-04-22 - Sync to lane03 successful.
+2008-04-23 - dtransactions archived and truncated.
+2008-04-23 - Sync to lane01 successful.
+2008-04-23 - Sync to lane02 successful.
+2008-04-23 - Sync to lane03 successful.
+2008-04-24 - dtransactions archived and truncated.
+2008-04-24 - Sync to lane01 successful.
+2008-04-24 - Sync to lane02 successful.
+2008-04-24 - Sync to lane03 successful.
+2008-04-25 - dtransactions archived and truncated.
+2008-04-25 - Sync to lane01 successful.
+2008-04-25 - Sync to lane02 successful.
+2008-04-25 - Sync to lane03 successful.
+2008-04-26 - dtransactions archived and truncated.
+2008-04-26 - Sync to lane01 successful.
+2008-04-26 - Sync to lane02 successful.
+2008-04-26 - Sync to lane03 successful.
+2008-04-27 - dtransactions archived and truncated.
+2008-04-27 - Sync to lane01 successful.
+2008-04-27 - Sync to lane02 successful.
+2008-04-27 - Sync to lane03 successful.
+2008-04-28 - dtransactions archived and truncated.
+2008-04-28 - Sync to lane01 successful.
+2008-04-28 - Sync to lane02 successful.
+2008-04-28 - Sync to lane03 successful.
+2008-04-29 - dtransactions archived and truncated.
+2008-04-29 - Sync to lane01 successful.
+2008-04-29 - Sync to lane02 successful.
+2008-04-29 - Sync to lane03 successful.
+2008-04-30 - dtransactions archived and truncated.
+2008-04-30 - Sync to lane01 successful.
+2008-04-30 - Sync to lane02 successful.
+2008-04-30 - Sync to lane03 successful.
+2008-05-01 - dtransactions archived and truncated.
+2008-05-01 - Sync to lane01 successful.
+2008-05-01 - Sync to lane02 successful.
+2008-05-01 - Sync to lane03 successful.
+2008-05-01 - Update products table with new sales batch data.
+2008-05-01 - dtransactions archived and truncated.
+2008-05-01 - Sync to lane01 successful.
+2008-05-01 - Sync to lane02 successful.
+2008-05-01 - Sync to lane03 successful.
+2008-05-02 - Update products table with new sales batch data.
+2008-05-02 - dtransactions archived and truncated.
+2008-05-02 - Sync to lane01 successful.
+2008-05-02 - Sync to lane02 successful.
+2008-05-02 - Sync to lane03 successful.
+2008-05-03 - Update products table with new sales batch data.
+2008-05-03 - dtransactions archived and truncated.
+2008-05-03 - Sync to lane01 successful.
+2008-05-03 - Sync to lane02 successful.
+2008-05-03 - Sync to lane03 successful.
+2008-05-04 - Update products table with new sales batch data.
+2008-05-04 - dtransactions archived and truncated.
+2008-05-04 - Sync to lane01 successful.
+2008-05-04 - Sync to lane02 successful.
+2008-05-04 - Sync to lane03 successful.
+2008-05-05 - Update products table with new sales batch data.
+2008-05-05 - dtransactions archived and truncated.
+2008-05-05 - Sync to lane01 successful.
+2008-05-05 - Sync to lane02 successful.
+2008-05-05 - Sync to lane03 successful.
+2008-05-06 - Update products table with new sales batch data.
+2008-05-06 - dtransactions archived and truncated.
+2008-05-06 - Sync to lane01 successful.
+2008-05-06 - Sync to lane02 successful.
+2008-05-06 - Sync to lane03 successful.
+2008-05-07 - Update products table with new sales batch data.
+2008-05-07 - dtransactions archived and truncated.
+2008-05-07 - Sync to lane01 successful.
+2008-05-07 - Sync to lane02 successful.
+2008-05-07 - Sync to lane03 successful.
+2008-05-08 - Update products table with new sales batch data.
+2008-05-08 - dtransactions archived and truncated.
+2008-05-08 - Sync to lane01 successful.
+2008-05-08 - Sync to lane02 successful.
+2008-05-08 - Sync to lane03 successful.
+2008-05-09 - Update products table with new sales batch data.
+2008-05-09 - dtransactions archived and truncated.
+2008-05-09 - Sync to lane01 successful.
+2008-05-09 - Sync to lane02 successful.
+2008-05-09 - Sync to lane03 successful.
+2008-05-10 - Update products table with new sales batch data.
+2008-05-10 - dtransactions archived and truncated.
+2008-05-10 - Sync to lane01 successful.
+2008-05-10 - ERROR - Sync to lane02 failed.
+2008-05-10 - Sync to lane03 successful.
+2008-05-11 - Update products table with new sales batch data.
+2008-05-11 - dtransactions archived and truncated.
+2008-05-11 - Sync to lane01 successful.
+2008-05-11 - Sync to lane02 successful.
+2008-05-11 - Sync to lane03 successful.
+2008-05-12 - Update products table with new sales batch data.
+2008-05-12 - dtransactions archived and truncated.
+2008-05-12 - Sync to lane01 successful.
+2008-05-12 - Sync to lane02 successful.
+2008-05-12 - Sync to lane03 successful.
+2008-05-13 - Update products table with new sales batch data.
+2008-05-13 - dtransactions archived and truncated.
+2008-05-13 - Sync to lane01 successful.
+2008-05-13 - Sync to lane02 successful.
+2008-05-13 - Sync to lane03 successful.
+2008-05-14 - Update products table with new sales batch data.
+2008-05-14 - dtransactions archived and truncated.
+2008-05-14 - Sync to lane01 successful.
+2008-05-14 - Sync to lane02 successful.
+2008-05-14 - Sync to lane03 successful.
+2008-05-15 - Update products table with new sales batch data.
+2008-05-15 - dtransactions archived and truncated.
+2008-05-15 - Sync to lane01 successful.
+2008-05-15 - Sync to lane02 successful.
+2008-05-15 - Sync to lane03 successful.
+2008-05-16 - Update products table with new sales batch data.
+2008-05-16 - dtransactions archived and truncated.
+2008-05-16 - Sync to lane01 successful.
+2008-05-16 - Sync to lane02 successful.
+2008-05-16 - Sync to lane03 successful.
+2008-05-17 - Update products table with new sales batch data.
+2008-05-17 - dtransactions archived and truncated.
+2008-05-17 - Sync to lane01 successful.
+2008-05-17 - Sync to lane02 successful.
+2008-05-17 - Sync to lane03 successful.
+2008-05-18 - Update products table with new sales batch data.
+2008-05-18 - dtransactions archived and truncated.
+2008-05-18 - Sync to lane01 successful.
+2008-05-18 - Sync to lane02 successful.
+2008-05-18 - Sync to lane03 successful.
+2008-05-19 - Update products table with new sales batch data.
+2008-05-19 - dtransactions archived and truncated.
+2008-05-19 - Sync to lane01 successful.
+2008-05-19 - Sync to lane02 successful.
+2008-05-19 - Sync to lane03 successful.
+2008-05-20 - Update products table with new sales batch data.
+2008-05-20 - dtransactions archived and truncated.
+2008-05-20 - Sync to lane01 successful.
+2008-05-20 - Sync to lane02 successful.
+2008-05-20 - Sync to lane03 successful.
+2008-05-21 - Update products table with new sales batch data.
+2008-05-21 - dtransactions archived and truncated.
+2008-05-21 - Sync to lane01 successful.
+2008-05-21 - Sync to lane02 successful.
+2008-05-21 - Sync to lane03 successful.
+2008-05-22 - Update products table with new sales batch data.
+2008-05-22 - dtransactions archived and truncated.
+2008-05-22 - Sync to lane01 successful.
+2008-05-22 - Sync to lane02 successful.
+2008-05-22 - Sync to lane03 successful.
+2008-05-23 - Update products table with new sales batch data.
+2008-05-23 - dtransactions archived and truncated.
+2008-05-23 - Sync to lane01 successful.
+2008-05-23 - Sync to lane02 successful.
+2008-05-23 - Sync to lane03 successful.
+2008-05-24 - Update products table with new sales batch data.
+2008-05-24 - dtransactions archived and truncated.
+2008-05-24 - Sync to lane01 successful.
+2008-05-24 - Sync to lane02 successful.
+2008-05-24 - Sync to lane03 successful.
+2008-05-25 - Update products table with new sales batch data.
+2008-05-25 - dtransactions archived and truncated.
+2008-05-25 - Sync to lane01 successful.
+2008-05-25 - Sync to lane02 successful.
+2008-05-25 - Sync to lane03 successful.
+2008-05-26 - Update products table with new sales batch data.
+2008-05-26 - dtransactions archived and truncated.
+2008-05-26 - Sync to lane01 successful.
+2008-05-26 - Sync to lane02 successful.
+2008-05-26 - Sync to lane03 successful.
+2008-05-27 - Update products table with new sales batch data.
+2008-05-27 - dtransactions archived and truncated.
+2008-05-27 - Sync to lane01 successful.
+2008-05-27 - Sync to lane02 successful.
+2008-05-27 - Sync to lane03 successful.
+2008-05-28 - Update products table with new sales batch data.
+2008-05-28 - dtransactions archived and truncated.
+2008-05-28 - Sync to lane01 successful.
+2008-05-28 - Sync to lane02 successful.
+2008-05-28 - Sync to lane03 successful.
+2008-05-29 - Update products table with new sales batch data.
+2008-05-29 - dtransactions archived and truncated.
+2008-05-29 - Sync to lane01 successful.
+2008-05-29 - Sync to lane02 successful.
+2008-05-29 - Sync to lane03 successful.
+2008-05-30 - Update products table with new sales batch data.
+2008-05-30 - dtransactions archived and truncated.
+2008-05-30 - Sync to lane01 successful.
+2008-05-30 - Sync to lane02 successful.
+2008-05-30 - Sync to lane03 successful.
+2008-05-31 - Update products table with new sales batch data.
+2008-05-31 - dtransactions archived and truncated.
+2008-05-31 - Sync to lane01 successful.
+2008-05-31 - Sync to lane02 successful.
+2008-05-31 - Sync to lane03 successful.
+2008-06-01 - Update products table with new sales batch data.
+2008-06-01 - dtransactions archived and truncated.
+2008-06-01 - Sync to lane01 successful.
+2008-06-01 - Sync to lane02 successful.
+2008-06-01 - Sync to lane03 successful.
+2008-06-02 - Update products table with new sales batch data.
+2008-06-02 - dtransactions archived and truncated.
+2008-06-02 - Sync to lane01 successful.
+2008-06-02 - Sync to lane02 successful.
+2008-06-02 - Sync to lane03 successful.
+2008-06-03 - Update products table with new sales batch data.
+2008-06-03 - dtransactions archived and truncated.
+2008-06-03 - Sync to lane01 successful.
+2008-06-03 - Sync to lane02 successful.
+2008-06-03 - Sync to lane03 successful.
+2008-06-04 - Update products table with new sales batch data.
+2008-06-04 - dtransactions archived and truncated.
+2008-06-04 - Sync to lane01 successful.
+2008-06-04 - Sync to lane02 successful.
+2008-06-04 - Sync to lane03 successful.
+2008-06-05 - Update products table with new sales batch data.
+2008-06-05 - dtransactions archived and truncated.
+2008-06-05 - Sync to lane01 successful.
+2008-06-05 - Sync to lane02 successful.
+2008-06-05 - Sync to lane03 successful.
+2008-06-06 - Update products table with new sales batch data.
+2008-06-06 - dtransactions archived and truncated.
+2008-06-06 - Sync to lane01 successful.
+2008-06-06 - Sync to lane02 successful.
+2008-06-06 - Sync to lane03 successful.
+2008-06-07 - Update products table with new sales batch data.
+2008-06-07 - dtransactions archived and truncated.
+2008-06-07 - Sync to lane01 successful.
+2008-06-07 - Sync to lane02 successful.
+2008-06-07 - Sync to lane03 successful.
+2008-06-08 - Update products table with new sales batch data.
+2008-06-08 - dtransactions archived and truncated.
+2008-06-08 - Sync to lane01 successful.
+2008-06-08 - Sync to lane02 successful.
+2008-06-08 - Sync to lane03 successful.
+2008-06-09 - Update products table with new sales batch data.
+2008-06-09 - dtransactions archived and truncated.
+2008-06-09 - Sync to lane01 successful.
+2008-06-09 - Sync to lane02 successful.
+2008-06-09 - Sync to lane03 successful.
+2008-06-10 - Update products table with new sales batch data.
+2008-06-10 - dtransactions archived and truncated.
+2008-06-10 - Sync to lane01 successful.
+2008-06-10 - Sync to lane02 successful.
+2008-06-10 - Sync to lane03 successful.
+2008-06-11 - Update products table with new sales batch data.
+2008-06-11 - dtransactions archived and truncated.
+2008-06-11 - Sync to lane01 successful.
+2008-06-11 - Sync to lane02 successful.
+2008-06-11 - Sync to lane03 successful.
+2008-06-12 - Update products table with new sales batch data.
+2008-06-12 - dtransactions archived and truncated.
+2008-06-12 - Sync to lane01 successful.
+2008-06-12 - Sync to lane02 successful.
+2008-06-12 - Sync to lane03 successful.
+2008-06-13 - Update products table with new sales batch data.
+2008-06-13 - dtransactions archived and truncated.
+2008-06-13 - Sync to lane01 successful.
+2008-06-13 - Sync to lane02 successful.
+2008-06-13 - Sync to lane03 successful.
+2008-06-14 - Update products table with new sales batch data.
+2008-06-14 - dtransactions archived and truncated.
+2008-06-14 - Sync to lane01 successful.
+2008-06-14 - Sync to lane02 successful.
+2008-06-14 - Sync to lane03 successful.
+2008-06-15 - Update products table with new sales batch data.
+2008-06-15 - dtransactions archived and truncated.
+2008-06-15 - Sync to lane01 successful.
+2008-06-15 - Sync to lane02 successful.
+2008-06-15 - Sync to lane03 successful.
+2008-06-16 - Update products table with new sales batch data.
+2008-06-16 - dtransactions archived and truncated.
+2008-06-16 - Sync to lane01 successful.
+2008-06-16 - Sync to lane02 successful.
+2008-06-16 - Sync to lane03 successful.
+2008-06-17 - Update products table with new sales batch data.
+2008-06-17 - dtransactions archived and truncated.
+2008-06-17 - Sync to lane01 successful.
+2008-06-17 - Sync to lane02 successful.
+2008-06-17 - Sync to lane03 successful.
+2008-06-18 - Update products table with new sales batch data.
+2008-06-18 - dtransactions archived and truncated.
+2008-06-18 - Sync to lane01 successful.
+2008-06-18 - Sync to lane02 successful.
+2008-06-18 - Sync to lane03 successful.
+2008-06-19 - Update products table with new sales batch data.
+2008-06-19 - dtransactions archived and truncated.
+2008-06-19 - Sync to lane01 successful.
+2008-06-19 - Sync to lane02 successful.
+2008-06-19 - Sync to lane03 successful.
+2008-06-20 - Update products table with new sales batch data.
+2008-06-20 - dtransactions archived and truncated.
+2008-06-20 - Sync to lane01 successful.
+2008-06-20 - Sync to lane02 successful.
+2008-06-20 - Sync to lane03 successful.
+2008-06-21 - Update products table with new sales batch data.
+2008-06-21 - dtransactions archived and truncated.
+2008-06-21 - Sync to lane01 successful.
+2008-06-21 - Sync to lane02 successful.
+2008-06-21 - Sync to lane03 successful.
+2008-06-22 - Update products table with new sales batch data.
+2008-06-22 - dtransactions archived and truncated.
+2008-06-22 - Sync to lane01 successful.
+2008-06-22 - Sync to lane02 successful.
+2008-06-22 - Sync to lane03 successful.
+2008-06-23 - Update products table with new sales batch data.
+2008-06-23 - dtransactions archived and truncated.
+2008-06-23 - Sync to lane01 successful.
+2008-06-23 - Sync to lane02 successful.
+2008-06-23 - Sync to lane03 successful.
+2008-06-24 - Update products table with new sales batch data.
+2008-06-24 - dtransactions archived and truncated.
+2008-06-24 - Sync to lane01 successful.
+2008-06-24 - Sync to lane02 successful.
+2008-06-24 - Sync to lane03 successful.
+2008-06-25 - Update products table with new sales batch data.
+2008-06-25 - dtransactions archived and truncated.
+2008-06-25 - Sync to lane01 successful.
+2008-06-25 - Sync to lane02 successful.
+2008-06-25 - Sync to lane03 successful.
+2008-06-26 - Update products table with new sales batch data.
+2008-06-26 - dtransactions archived and truncated.
+2008-06-26 - Sync to lane01 successful.
+2008-06-26 - Sync to lane02 successful.
+2008-06-26 - Sync to lane03 successful.
+2008-06-27 - Update products table with new sales batch data.
+2008-06-27 - dtransactions archived and truncated.
+2008-06-27 - Sync to lane01 successful.
+2008-06-27 - Sync to lane02 successful.
+2008-06-27 - Sync to lane03 successful.
+2008-06-28 - Update products table with new sales batch data.
+2008-06-28 - dtransactions archived and truncated.
+2008-06-28 - Sync to lane01 successful.
+2008-06-28 - Sync to lane02 successful.
+2008-06-28 - Sync to lane03 successful.
+2008-06-29 - Update products table with new sales batch data.
+2008-06-29 - dtransactions archived and truncated.
+2008-06-29 - Sync to lane01 successful.
+2008-06-29 - Sync to lane02 successful.
+2008-06-29 - Sync to lane03 successful.
+2008-06-30 - Update products table with new sales batch data.
+2008-06-30 - dtransactions archived and truncated.
+2008-06-30 - Sync to lane01 successful.
+2008-06-30 - Sync to lane02 successful.
+2008-06-30 - Sync to lane03 successful.
+2008-07-01 - Update products table with new sales batch data.
+2008-07-01 - dtransactions archived and truncated.
+2008-07-01 - Sync to lane01 successful.
+2008-07-01 - Sync to lane02 successful.
+2008-07-01 - Sync to lane03 successful.
+2008-07-02 - Update products table with new sales batch data.
+2008-07-02 - dtransactions archived and truncated.
+2008-07-02 - Sync to lane01 successful.
+2008-07-02 - Sync to lane02 successful.
+2008-07-02 - Sync to lane03 successful.
+2008-07-03 - Update products table with new sales batch data.
+2008-07-03 - dtransactions archived and truncated.
+2008-07-03 - Sync to lane01 successful.
+2008-07-03 - Sync to lane02 successful.
+2008-07-03 - Sync to lane03 successful.
+2008-07-04 - Update products table with new sales batch data.
+2008-07-04 - dtransactions archived and truncated.
+2008-07-04 - Sync to lane01 successful.
+2008-07-04 - Sync to lane02 successful.
+2008-07-04 - Sync to lane03 successful.
+2008-07-05 - Update products table with new sales batch data.
+2008-07-05 - dtransactions archived and truncated.
+2008-07-05 - Sync to lane01 successful.
+2008-07-05 - Sync to lane02 successful.
+2008-07-05 - Sync to lane03 successful.
+2008-07-06 - Update products table with new sales batch data.
+2008-07-06 - dtransactions archived and truncated.
+2008-07-06 - Sync to lane01 successful.
+2008-07-06 - Sync to lane02 successful.
+2008-07-06 - Sync to lane03 successful.
+2008-07-07 - Update products table with new sales batch data.
+2008-07-07 - dtransactions archived and truncated.
+2008-07-07 - Sync to lane01 successful.
+2008-07-07 - Sync to lane02 successful.
+2008-07-07 - Sync to lane03 successful.
+2008-07-08 - Update products table with new sales batch data.
+2008-07-08 - dtransactions archived and truncated.
+2008-07-08 - Sync to lane01 successful.
+2008-07-08 - Sync to lane02 successful.
+2008-07-08 - Sync to lane03 successful.
+2008-07-09 - Update products table with new sales batch data.
+2008-07-09 - dtransactions archived and truncated.
+2008-07-09 - Sync to lane01 successful.
+2008-07-09 - Sync to lane02 successful.
+2008-07-09 - Sync to lane03 successful.
+2008-07-10 - Update products table with new sales batch data.
+2008-07-10 - dtransactions archived and truncated.
+2008-07-10 - Sync to lane01 successful.
+2008-07-10 - Sync to lane02 successful.
+2008-07-10 - Sync to lane03 successful.
+2008-07-11 - Update products table with new sales batch data.
+2008-07-11 - dtransactions archived and truncated.
+2008-07-11 - Sync to lane01 successful.
+2008-07-11 - Sync to lane02 successful.
+2008-07-11 - Sync to lane03 successful.
+2008-07-12 - Update products table with new sales batch data.
+2008-07-12 - dtransactions archived and truncated.
+2008-07-12 - Sync to lane01 successful.
+2008-07-12 - Sync to lane02 successful.
+2008-07-12 - Sync to lane03 successful.
+2008-07-13 - Update products table with new sales batch data.
+2008-07-13 - dtransactions archived and truncated.
+2008-07-13 - Sync to lane01 successful.
+2008-07-13 - Sync to lane02 successful.
+2008-07-13 - Sync to lane03 successful.
+2008-07-14 - Update products table with new sales batch data.
+2008-07-14 - dtransactions archived and truncated.
+2008-07-14 - Sync to lane01 successful.
+2008-07-14 - Sync to lane02 successful.
+2008-07-14 - Sync to lane03 successful.
+2008-07-15 - Update products table with new sales batch data.
+2008-07-15 - dtransactions archived and truncated.
+2008-07-15 - Sync to lane01 successful.
+2008-07-15 - Sync to lane02 successful.
+2008-07-15 - Sync to lane03 successful.
+2008-07-16 - Update products table with new sales batch data.
+2008-07-16 - dtransactions archived and truncated.
+2008-07-16 - Sync to lane01 successful.
+2008-07-16 - Sync to lane02 successful.
+2008-07-16 - Sync to lane03 successful.
+2008-07-17 - Update products table with new sales batch data.
+2008-07-17 - dtransactions archived and truncated.
+2008-07-17 - Sync to lane01 successful.
+2008-07-17 - Sync to lane02 successful.
+2008-07-17 - Sync to lane03 successful.
+2008-07-18 - Update products table with new sales batch data.
+2008-07-18 - dtransactions archived and truncated.
+2008-07-18 - Sync to lane01 successful.
+2008-07-18 - Sync to lane02 successful.
+2008-07-18 - Sync to lane03 successful.
+2008-07-19 - Update products table with new sales batch data.
+2008-07-19 - dtransactions archived and truncated.
+2008-07-19 - Sync to lane01 successful.
+2008-07-19 - Sync to lane02 successful.
+2008-07-19 - Sync to lane03 successful.
+2008-07-20 - Update products table with new sales batch data.
+2008-07-20 - dtransactions archived and truncated.
+2008-07-20 - Sync to lane01 successful.
+2008-07-20 - Sync to lane02 successful.
+2008-07-20 - Sync to lane03 successful.
+2008-07-21 - Update products table with new sales batch data.
+2008-07-21 - dtransactions archived and truncated.
+2008-07-21 - Sync to lane01 successful.
+2008-07-21 - Sync to lane02 successful.
+2008-07-21 - Sync to lane03 successful.
+2008-07-22 - Update products table with new sales batch data.
+2008-07-22 - dtransactions archived and truncated.
+2008-07-22 - Sync to lane01 successful.
+2008-07-22 - Sync to lane02 successful.
+2008-07-22 - Sync to lane03 successful.
+2008-07-23 - Update products table with new sales batch data.
+2008-07-23 - dtransactions archived and truncated.
+2008-07-23 - Sync to lane01 successful.
+2008-07-23 - Sync to lane02 successful.
+2008-07-23 - Sync to lane03 successful.
+2008-07-24 - Update products table with new sales batch data.
+2008-07-24 - dtransactions archived and truncated.
+2008-07-24 - Sync to lane01 successful.
+2008-07-24 - Sync to lane02 successful.
+2008-07-24 - Sync to lane03 successful.
+2008-07-25 - Update products table with new sales batch data.
+2008-07-25 - dtransactions archived and truncated.
+2008-07-25 - Sync to lane01 successful.
+2008-07-25 - Sync to lane02 successful.
+2008-07-25 - Sync to lane03 successful.
+2008-07-26 - Update products table with new sales batch data.
+2008-07-26 - dtransactions archived and truncated.
+2008-07-26 - Sync to lane01 successful.
+2008-07-26 - Sync to lane02 successful.
+2008-07-26 - Sync to lane03 successful.
+2008-07-27 - Update products table with new sales batch data.
+2008-07-27 - dtransactions archived and truncated.
+2008-07-27 - Sync to lane01 successful.
+2008-07-27 - Sync to lane02 successful.
+2008-07-27 - Sync to lane03 successful.
+2008-07-28 - Update products table with new sales batch data.
+2008-07-28 - dtransactions archived and truncated.
+2008-07-28 - Sync to lane01 successful.
+2008-07-28 - Sync to lane02 successful.
+2008-07-28 - Sync to lane03 successful.
+2008-07-29 - Update products table with new sales batch data.
+2008-07-29 - dtransactions archived and truncated.
+2008-07-29 - Sync to lane01 successful.
+2008-07-29 - Sync to lane02 successful.
+2008-07-29 - Sync to lane03 successful.
+2008-07-30 - Update products table with new sales batch data.
+2008-07-30 - dtransactions archived and truncated.
+2008-07-30 - Sync to lane01 successful.
+2008-07-30 - Sync to lane02 successful.
+2008-07-30 - Sync to lane03 successful.
+2008-07-31 - Update products table with new sales batch data.
+2008-07-31 - dtransactions archived and truncated.
+2008-07-31 - Sync to lane01 successful.
+2008-07-31 - Sync to lane02 successful.
+2008-07-31 - Sync to lane03 successful.
+2008-08-01 - Update products table with new sales batch data.
+2008-08-01 - dtransactions archived and truncated.
+2008-08-01 - Sync to lane01 successful.
+2008-08-01 - Sync to lane02 successful.
+2008-08-01 - Sync to lane03 successful.
+2008-08-02 - Update products table with new sales batch data.
+2008-08-02 - dtransactions archived and truncated.
+2008-08-02 - ERROR - Sync to lane01 failed.
+2008-08-02 - Sync to lane02 successful.
+2008-08-02 - Sync to lane03 successful.
+2008-08-03 - Update products table with new sales batch data.
+2008-08-03 - dtransactions archived and truncated.
+2008-08-03 - Sync to lane01 successful.
+2008-08-03 - Sync to lane02 successful.
+2008-08-03 - Sync to lane03 successful.
+2008-08-04 - Update products table with new sales batch data.
+2008-08-04 - dtransactions archived and truncated.
+2008-08-04 - Sync to lane01 successful.
+2008-08-04 - Sync to lane02 successful.
+2008-08-04 - Sync to lane03 successful.
+2008-08-05 - Update products table with new sales batch data.
+2008-08-05 - dtransactions archived and truncated.
+2008-08-05 - Sync to lane01 successful.
+2008-08-05 - Sync to lane02 successful.
+2008-08-05 - Sync to lane03 successful.
+2008-08-06 - Update products table with new sales batch data.
+2008-08-06 - dtransactions archived and truncated.
+2008-08-06 - Sync to lane01 successful.
+2008-08-06 - Sync to lane02 successful.
+2008-08-06 - Sync to lane03 successful.
+2008-08-07 - Update products table with new sales batch data.
+2008-08-07 - dtransactions archived and truncated.
+2008-08-07 - Sync to lane01 successful.
+2008-08-07 - Sync to lane02 successful.
+2008-08-07 - Sync to lane03 successful.
+2008-08-08 - Update products table with new sales batch data.
+2008-08-08 - dtransactions archived and truncated.
+2008-08-08 - Sync to lane01 successful.
+2008-08-08 - Sync to lane02 successful.
+2008-08-08 - Sync to lane03 successful.
+2008-08-09 - Update products table with new sales batch data.
+2008-08-09 - dtransactions archived and truncated.
+2008-08-09 - Sync to lane01 successful.
+2008-08-09 - Sync to lane02 successful.
+2008-08-09 - Sync to lane03 successful.
+2008-08-10 - Update products table with new sales batch data.
+2008-08-10 - dtransactions archived and truncated.
+2008-08-10 - Sync to lane01 successful.
+2008-08-10 - Sync to lane02 successful.
+2008-08-10 - Sync to lane03 successful.
+2008-08-11 - Update products table with new sales batch data.
+2008-08-11 - dtransactions archived and truncated.
+2008-08-11 - Sync to lane01 successful.
+2008-08-11 - Sync to lane02 successful.
+2008-08-11 - Sync to lane03 successful.
+2008-08-12 - Update products table with new sales batch data.
+2008-08-12 - dtransactions archived and truncated.
+2008-08-12 - Sync to lane01 successful.
+2008-08-12 - Sync to lane02 successful.
+2008-08-12 - Sync to lane03 successful.
+2008-08-13 - Update products table with new sales batch data.
+2008-08-13 - dtransactions archived and truncated.
+2008-08-13 - Sync to lane01 successful.
+2008-08-13 - Sync to lane02 successful.
+2008-08-13 - Sync to lane03 successful.
+2008-08-14 - Update products table with new sales batch data.
+2008-08-14 - dtransactions archived and truncated.
+2008-08-14 - Sync to lane01 successful.
+2008-08-14 - Sync to lane02 successful.
+2008-08-14 - Sync to lane03 successful.
+2008-08-15 - Update products table with new sales batch data.
+2008-08-15 - dtransactions archived and truncated.
+2008-08-15 - Sync to lane01 successful.
+2008-08-15 - Sync to lane02 successful.
+2008-08-15 - Sync to lane03 successful.
+2008-08-16 - Update products table with new sales batch data.
+2008-08-16 - dtransactions archived and truncated.
+2008-08-16 - Sync to lane01 successful.
+2008-08-16 - Sync to lane02 successful.
+2008-08-16 - Sync to lane03 successful.
+2008-08-17 - Update products table with new sales batch data.
+2008-08-17 - dtransactions archived and truncated.
+2008-08-17 - Sync to lane01 successful.
+2008-08-17 - Sync to lane02 successful.
+2008-08-17 - Sync to lane03 successful.
+2008-08-18 - Update products table with new sales batch data.
+2008-08-18 - dtransactions archived and truncated.
+2008-08-18 - Sync to lane01 successful.
+2008-08-18 - Sync to lane02 successful.
+2008-08-18 - Sync to lane03 successful.
+2008-08-19 - Update products table with new sales batch data.
+2008-08-19 - dtransactions archived and truncated.
+2008-08-19 - Sync to lane01 successful.
+2008-08-19 - Sync to lane02 successful.
+2008-08-19 - Sync to lane03 successful.
+2008-08-20 - Update products table with new sales batch data.
+2008-08-20 - dtransactions archived and truncated.
+2008-08-20 - Sync to lane01 successful.
+2008-08-20 - Sync to lane02 successful.
+2008-08-20 - Sync to lane03 successful.
+2008-08-21 - Update products table with new sales batch data.
+2008-08-21 - dtransactions archived and truncated.
+2008-08-21 - Sync to lane01 successful.
+2008-08-21 - Sync to lane02 successful.
+2008-08-21 - Sync to lane03 successful.
+2008-08-22 - Update products table with new sales batch data.
+2008-08-22 - dtransactions archived and truncated.
+2008-08-22 - Sync to lane01 successful.
+2008-08-22 - Sync to lane02 successful.
+2008-08-22 - Sync to lane03 successful.
+2008-08-23 - Update products table with new sales batch data.
+2008-08-23 - dtransactions archived and truncated.
+2008-08-23 - Sync to lane01 successful.
+2008-08-23 - Sync to lane02 successful.
+2008-08-23 - Sync to lane03 successful.
+2008-08-24 - Update products table with new sales batch data.
+2008-08-24 - dtransactions archived and truncated.
+2008-08-24 - Sync to lane01 successful.
+2008-08-24 - Sync to lane02 successful.
+2008-08-24 - Sync to lane03 successful.
+2008-08-25 - Update products table with new sales batch data.
+2008-08-25 - dtransactions archived and truncated.
+2008-08-25 - Sync to lane01 successful.
+2008-08-25 - Sync to lane02 successful.
+2008-08-25 - Sync to lane03 successful.
+2008-08-26 - Update products table with new sales batch data.
+2008-08-26 - dtransactions archived and truncated.
+2008-08-26 - Sync to lane01 successful.
+2008-08-26 - Sync to lane02 successful.
+2008-08-26 - Sync to lane03 successful.
+2008-08-27 - Update products table with new sales batch data.
+2008-08-27 - dtransactions archived and truncated.
+2008-08-27 - Sync to lane01 successful.
+2008-08-27 - Sync to lane02 successful.
+2008-08-27 - Sync to lane03 successful.
+2008-08-28 - Update products table with new sales batch data.
+2008-08-28 - dtransactions archived and truncated.
+2008-08-28 - Sync to lane01 successful.
+2008-08-28 - Sync to lane02 successful.
+2008-08-28 - Sync to lane03 successful.
+2008-08-29 - Update products table with new sales batch data.
+2008-08-29 - dtransactions archived and truncated.
+2008-08-29 - Sync to lane01 successful.
+2008-08-29 - Sync to lane02 successful.
+2008-08-29 - Sync to lane03 successful.
+2008-08-30 - Update products table with new sales batch data.
+2008-08-30 - dtransactions archived and truncated.
+2008-08-30 - Sync to lane01 successful.
+2008-08-30 - Sync to lane02 successful.
+2008-08-30 - Sync to lane03 successful.
+2008-08-31 - Update products table with new sales batch data.
+2008-08-31 - dtransactions archived and truncated.
+2008-08-31 - Sync to lane01 successful.
+2008-08-31 - Sync to lane02 successful.
+2008-08-31 - Sync to lane03 successful.
+2008-09-01 - Update products table with new sales batch data.
+2008-09-01 - dtransactions archived and truncated.
+2008-09-01 - Sync to lane01 successful.
+2008-09-01 - Sync to lane02 successful.
+2008-09-01 - Sync to lane03 successful.
+2008-09-02 - Update products table with new sales batch data.
+2008-09-02 - dtransactions archived and truncated.
+2008-09-02 - Sync to lane01 successful.
+2008-09-02 - Sync to lane02 successful.
+2008-09-02 - Sync to lane03 successful.
+2008-09-03 - Update products table with new sales batch data.
+2008-09-03 - dtransactions archived and truncated.
+2008-09-03 - Sync to lane01 successful.
+2008-09-03 - Sync to lane02 successful.
+2008-09-03 - Sync to lane03 successful.
+2008-09-04 - Update products table with new sales batch data.
+2008-09-04 - dtransactions archived and truncated.
+2008-09-04 - Sync to lane01 successful.
+2008-09-04 - Sync to lane02 successful.
+2008-09-04 - Sync to lane03 successful.
+2008-09-05 - Update products table with new sales batch data.
+2008-09-05 - dtransactions archived and truncated.
+2008-09-05 - Sync to lane01 successful.
+2008-09-05 - Sync to lane02 successful.
+2008-09-05 - Sync to lane03 successful.
+2008-09-06 - Update products table with new sales batch data.
+2008-09-06 - dtransactions archived and truncated.
+2008-09-06 - Sync to lane01 successful.
+2008-09-06 - Sync to lane02 successful.
+2008-09-06 - Sync to lane03 successful.
+2008-09-07 - Update products table with new sales batch data.
+2008-09-07 - dtransactions archived and truncated.
+2008-09-07 - Sync to lane01 successful.
+2008-09-07 - Sync to lane02 successful.
+2008-09-07 - Sync to lane03 successful.
+2008-09-08 - Update products table with new sales batch data.
+2008-09-08 - dtransactions archived and truncated.
+2008-09-08 - Sync to lane01 successful.
+2008-09-08 - Sync to lane02 successful.
+2008-09-08 - Sync to lane03 successful.
+2008-09-09 - Update products table with new sales batch data.
+2008-09-09 - dtransactions archived and truncated.
+2008-09-09 - Sync to lane01 successful.
+2008-09-09 - Sync to lane02 successful.
+2008-09-09 - Sync to lane03 successful.
+2008-09-10 - Update products table with new sales batch data.
+2008-09-10 - dtransactions archived and truncated.
+2008-09-10 - Sync to lane01 successful.
+2008-09-10 - Sync to lane02 successful.
+2008-09-10 - Sync to lane03 successful.
+2008-09-11 - Update products table with new sales batch data.
+2008-09-11 - dtransactions archived and truncated.
+2008-09-11 - Sync to lane01 successful.
+2008-09-11 - Sync to lane02 successful.
+2008-09-11 - Sync to lane03 successful.
+2008-09-12 - Update products table with new sales batch data.
+2008-09-12 - dtransactions archived and truncated.
+2008-09-12 - Sync to lane01 successful.
+2008-09-12 - Sync to lane02 successful.
+2008-09-12 - Sync to lane03 successful.
+2008-09-13 - Update products table with new sales batch data.
+2008-09-13 - dtransactions archived and truncated.
+2008-09-13 - Sync to lane01 successful.
+2008-09-13 - Sync to lane02 successful.
+2008-09-13 - Sync to lane03 successful.
+2008-09-14 - Update products table with new sales batch data.
+2008-09-14 - dtransactions archived and truncated.
+2008-09-14 - Sync to lane01 successful.
+2008-09-14 - Sync to lane02 successful.
+2008-09-14 - Sync to lane03 successful.
+2008-09-15 - Update products table with new sales batch data.
+2008-09-15 - dtransactions archived and truncated.
+2008-09-15 - Sync to lane01 successful.
+2008-09-15 - Sync to lane02 successful.
+2008-09-15 - Sync to lane03 successful.
+2008-09-16 - Update products table with new sales batch data.
+2008-09-16 - dtransactions archived and truncated.
+2008-09-16 - Sync to lane01 successful.
+2008-09-16 - Sync to lane02 successful.
+2008-09-16 - Sync to lane03 successful.
+2008-09-17 - Update products table with new sales batch data.
+2008-09-17 - dtransactions archived and truncated.
+2008-09-17 - Sync to lane01 successful.
+2008-09-17 - Sync to lane02 successful.
+2008-09-17 - Sync to lane03 successful.
+2008-09-18 - Update products table with new sales batch data.
+2008-09-18 - dtransactions archived and truncated.
+2008-09-18 - Sync to lane01 successful.
+2008-09-18 - Sync to lane02 successful.
+2008-09-18 - Sync to lane03 successful.
+2008-09-19 - Update products table with new sales batch data.
+2008-09-19 - dtransactions archived and truncated.
+2008-09-19 - Sync to lane01 successful.
+2008-09-19 - Sync to lane02 successful.
+2008-09-19 - Sync to lane03 successful.
+2008-09-20 - Update products table with new sales batch data.
+2008-09-20 - dtransactions archived and truncated.
+2008-09-20 - Sync to lane01 successful.
+2008-09-20 - Sync to lane02 successful.
+2008-09-20 - Sync to lane03 successful.
+2008-09-21 - Update products table with new sales batch data.
+2008-09-21 - dtransactions archived and truncated.
+2008-09-21 - Sync to lane01 successful.
+2008-09-21 - Sync to lane02 successful.
+2008-09-21 - Sync to lane03 successful.
+2008-09-22 - Update products table with new sales batch data.
+2008-09-22 - dtransactions archived and truncated.
+2008-09-22 - Sync to lane01 successful.
+2008-09-22 - Sync to lane02 successful.
+2008-09-22 - Sync to lane03 successful.
+2008-09-23 - Update products table with new sales batch data.
+2008-09-23 - dtransactions archived and truncated.
+2008-09-23 - Sync to lane01 successful.
+2008-09-23 - Sync to lane02 successful.
+2008-09-23 - Sync to lane03 successful.
+2008-09-24 - Update products table with new sales batch data.
+2008-09-24 - dtransactions archived and truncated.
+2008-09-24 - Sync to lane01 successful.
+2008-09-24 - Sync to lane02 successful.
+2008-09-24 - Sync to lane03 successful.
+2008-09-25 - Update products table with new sales batch data.
+2008-09-25 - dtransactions archived and truncated.
+2008-09-25 - Sync to lane01 successful.
+2008-09-25 - Sync to lane02 successful.
+2008-09-25 - Sync to lane03 successful.
+2008-09-26 - Update products table with new sales batch data.
+2008-09-26 - dtransactions archived and truncated.
+2008-09-26 - Sync to lane01 successful.
+2008-09-26 - Sync to lane02 successful.
+2008-09-26 - Sync to lane03 successful.
+2008-09-27 - Update products table with new sales batch data.
+2008-09-27 - dtransactions archived and truncated.
+2008-09-27 - Sync to lane01 successful.
+2008-09-27 - Sync to lane02 successful.
+2008-09-27 - Sync to lane03 successful.
+2008-09-28 - Update products table with new sales batch data.
+2008-09-28 - dtransactions archived and truncated.
+2008-09-28 - Sync to lane01 successful.
+2008-09-28 - Sync to lane02 successful.
+2008-09-28 - Sync to lane03 successful.
+2008-09-29 - Update products table with new sales batch data.
+2008-09-29 - dtransactions archived and truncated.
+2008-09-29 - Sync to lane01 successful.
+2008-09-29 - Sync to lane02 successful.
+2008-09-29 - Sync to lane03 successful.
+2008-09-30 - Update products table with new sales batch data.
+2008-09-30 - dtransactions archived and truncated.
+2008-09-30 - Sync to lane01 successful.
+2008-09-30 - Sync to lane02 successful.
+2008-09-30 - Sync to lane03 successful.
+2008-10-01 - Update products table with new sales batch data.
+2008-10-01 - dtransactions archived and truncated.
+2008-10-01 - Sync to lane01 successful.
+2008-10-01 - Sync to lane02 successful.
+2008-10-01 - Sync to lane03 successful.
+2008-10-02 - Update products table with new sales batch data.
+2008-10-02 - dtransactions archived and truncated.
+2008-10-02 - Sync to lane01 successful.
+2008-10-02 - Sync to lane02 successful.
+2008-10-02 - Sync to lane03 successful.
+2008-10-03 - Update products table with new sales batch data.
+2008-10-03 - dtransactions archived and truncated.
+2008-10-03 - Sync to lane01 successful.
+2008-10-03 - Sync to lane02 successful.
+2008-10-03 - Sync to lane03 successful.
+2008-10-04 - Update products table with new sales batch data.
+2008-10-04 - dtransactions archived and truncated.
+2008-10-04 - Sync to lane01 successful.
+2008-10-04 - Sync to lane02 successful.
+2008-10-04 - Sync to lane03 successful.
+2008-10-05 - Update products table with new sales batch data.
+2008-10-05 - dtransactions archived and truncated.
+2008-10-05 - Sync to lane01 successful.
+2008-10-05 - Sync to lane02 successful.
+2008-10-05 - Sync to lane03 successful.
+2008-10-06 - Update products table with new sales batch data.
+2008-10-06 - dtransactions archived and truncated.
+2008-10-06 - Sync to lane01 successful.
+2008-10-06 - Sync to lane02 successful.
+2008-10-06 - Sync to lane03 successful.
+2008-10-07 - Update products table with new sales batch data.
+2008-10-07 - dtransactions archived and truncated.
+2008-10-07 - Sync to lane01 successful.
+2008-10-07 - Sync to lane02 successful.
+2008-10-07 - Sync to lane03 successful.
+2008-10-08 - Update products table with new sales batch data.
+2008-10-08 - dtransactions archived and truncated.
+2008-10-08 - Sync to lane01 successful.
+2008-10-08 - Sync to lane02 successful.
+2008-10-08 - ERROR - Sync to lane03 failed.
+2008-10-09 - Update products table with new sales batch data.
+2008-10-09 - dtransactions archived and truncated.
+2008-10-09 - Sync to lane01 successful.
+2008-10-09 - Sync to lane02 successful.
+2008-10-09 - Sync to lane03 successful.
+2008-10-10 - Update products table with new sales batch data.
+2008-10-10 - dtransactions archived and truncated.
+2008-10-10 - Sync to lane01 successful.
+2008-10-10 - Sync to lane02 successful.
+2008-10-10 - Sync to lane03 successful.
+2008-10-11 - Update products table with new sales batch data.
+2008-10-11 - dtransactions archived and truncated.
+2008-10-11 - Sync to lane01 successful.
+2008-10-11 - Sync to lane02 successful.
+2008-10-11 - Sync to lane03 successful.
+2008-10-12 - Update products table with new sales batch data.
+2008-10-12 - dtransactions archived and truncated.
+2008-10-12 - Sync to lane01 successful.
+2008-10-12 - Sync to lane02 successful.
+2008-10-12 - Sync to lane03 successful.
+2008-10-13 - Update products table with new sales batch data.
+2008-10-13 - dtransactions archived and truncated.
+2008-10-13 - Sync to lane01 successful.
+2008-10-13 - Sync to lane02 successful.
+2008-10-13 - Sync to lane03 successful.
+2008-10-14 - Update products table with new sales batch data.
+2008-10-14 - dtransactions archived and truncated.
+2008-10-14 - Sync to lane01 successful.
+2008-10-14 - Sync to lane02 successful.
+2008-10-14 - Sync to lane03 successful.
+2008-10-15 - Update products table with new sales batch data.
+2008-10-15 - dtransactions archived and truncated.
+2008-10-15 - Sync to lane01 successful.
+2008-10-15 - Sync to lane02 successful.
+2008-10-15 - Sync to lane03 successful.
+2008-10-16 - Update products table with new sales batch data.
+2008-10-16 - dtransactions archived and truncated.
+2008-10-16 - Sync to lane01 successful.
+2008-10-16 - Sync to lane02 successful.
+2008-10-16 - Sync to lane03 successful.
+2008-10-17 - Update products table with new sales batch data.
+2008-10-17 - dtransactions archived and truncated.
+2008-10-17 - Sync to lane01 successful.
+2008-10-17 - Sync to lane02 successful.
+2008-10-17 - Sync to lane03 successful.
+2008-10-18 - Update products table with new sales batch data.
+2008-10-18 - dtransactions archived and truncated.
+2008-10-18 - Sync to lane01 successful.
+2008-10-18 - Sync to lane02 successful.
+2008-10-18 - Sync to lane03 successful.
+2008-10-19 - Update products table with new sales batch data.
+2008-10-19 - dtransactions archived and truncated.
+2008-10-19 - Sync to lane01 successful.
+2008-10-19 - Sync to lane02 successful.
+2008-10-19 - Sync to lane03 successful.
+2008-10-20 - Update products table with new sales batch data.
+2008-10-20 - dtransactions archived and truncated.
+2008-10-20 - Sync to lane01 successful.
+2008-10-20 - Sync to lane02 successful.
+2008-10-20 - Sync to lane03 successful.
+2008-10-21 - Update products table with new sales batch data.
+2008-10-21 - dtransactions archived and truncated.
+2008-10-21 - Sync to lane01 successful.
+2008-10-21 - Sync to lane02 successful.
+2008-10-21 - Sync to lane03 successful.
+2008-10-22 - Update products table with new sales batch data.
+2008-10-22 - dtransactions archived and truncated.
+2008-10-22 - Sync to lane01 successful.
+2008-10-22 - ERROR - Sync to lane02 failed.
+2008-10-22 - Sync to lane03 successful.
+2008-10-23 - Update products table with new sales batch data.
+2008-10-23 - dtransactions archived and truncated.
+2008-10-23 - Sync to lane01 successful.
+2008-10-23 - Sync to lane02 successful.
+2008-10-23 - Sync to lane03 successful.
+2008-10-24 - Update products table with new sales batch data.
+2008-10-24 - dtransactions archived and truncated.
+2008-10-24 - Sync to lane01 successful.
+2008-10-24 - Sync to lane02 successful.
+2008-10-24 - Sync to lane03 successful.
+2008-10-25 - Update products table with new sales batch data.
+2008-10-25 - dtransactions archived and truncated.
+2008-10-25 - Sync to lane01 successful.
+2008-10-25 - Sync to lane02 successful.
+2008-10-25 - Sync to lane03 successful.
+2008-10-26 - Update products table with new sales batch data.
+2008-10-26 - dtransactions archived and truncated.
+2008-10-26 - Sync to lane01 successful.
+2008-10-26 - Sync to lane02 successful.
+2008-10-26 - Sync to lane03 successful.
+2008-10-27 - Update products table with new sales batch data.
+2008-10-27 - dtransactions archived and truncated.
+2008-10-27 - Sync to lane01 successful.
+2008-10-27 - Sync to lane02 successful.
+2008-10-27 - Sync to lane03 successful.
+2008-10-28 - Update products table with new sales batch data.
+2008-10-28 - dtransactions archived and truncated.
+2008-10-28 - Sync to lane01 successful.
+2008-10-28 - Sync to lane02 successful.
+2008-10-28 - Sync to lane03 successful.
+2008-10-29 - Update products table with new sales batch data.
+2008-10-29 - dtransactions archived and truncated.
+2008-10-29 - Sync to lane01 successful.
+2008-10-29 - Sync to lane02 successful.
+2008-10-29 - Sync to lane03 successful.
+2008-10-30 - Update products table with new sales batch data.
+2008-10-30 - dtransactions archived and truncated.
+2008-10-30 - Sync to lane01 successful.
+2008-10-30 - Sync to lane02 successful.
+2008-10-30 - Sync to lane03 successful.
+2008-10-31 - Update products table with new sales batch data.
+2008-10-31 - dtransactions archived and truncated.
+2008-10-31 - Sync to lane01 successful.
+2008-10-31 - Sync to lane02 successful.
+2008-10-31 - Sync to lane03 successful.
+2008-11-01 - Update products table with new sales batch data.
+2008-11-01 - dtransactions archived and truncated.
+2008-11-01 - Sync to lane01 successful.
+2008-11-01 - Sync to lane02 successful.
+2008-11-01 - Sync to lane03 successful.
+2008-11-02 - Update products table with new sales batch data.
+2008-11-02 - dtransactions archived and truncated.
+2008-11-02 - Sync to lane01 successful.
+2008-11-02 - Sync to lane02 successful.
+2008-11-02 - Sync to lane03 successful.
+2008-11-03 - Update products table with new sales batch data.
+2008-11-03 - dtransactions archived and truncated.
+2008-11-03 - Sync to lane01 successful.
+2008-11-03 - Sync to lane02 successful.
+2008-11-03 - Sync to lane03 successful.
+2008-11-04 - Update products table with new sales batch data.
+2008-11-04 - dtransactions archived and truncated.
+2008-11-04 - Sync to lane01 successful.
+2008-11-04 - Sync to lane02 successful.
+2008-11-04 - Sync to lane03 successful.
+2008-11-05 - Update products table with new sales batch data.
+2008-11-05 - dtransactions archived and truncated.
+2008-11-05 - Sync to lane01 successful.
+2008-11-05 - Sync to lane02 successful.
+2008-11-05 - Sync to lane03 successful.
+2008-11-06 - Update products table with new sales batch data.
+2008-11-06 - dtransactions archived and truncated.
+2008-11-06 - Sync to lane01 successful.
+2008-11-06 - Sync to lane02 successful.
+2008-11-06 - Sync to lane03 successful.
+2008-11-07 - Update products table with new sales batch data.
+2008-11-07 - dtransactions archived and truncated.
+2008-11-07 - Sync to lane01 successful.
+2008-11-07 - Sync to lane02 successful.
+2008-11-07 - Sync to lane03 successful.
+2008-11-08 - Update products table with new sales batch data.
+2008-11-08 - dtransactions archived and truncated.
+2008-11-08 - Sync to lane01 successful.
+2008-11-08 - Sync to lane02 successful.
+2008-11-08 - Sync to lane03 successful.
+2008-11-09 - Update products table with new sales batch data.
+2008-11-09 - dtransactions archived and truncated.
+2008-11-09 - Sync to lane01 successful.
+2008-11-09 - Sync to lane02 successful.
+2008-11-09 - Sync to lane03 successful.
+2008-11-10 - Update products table with new sales batch data.
+2008-11-10 - dtransactions archived and truncated.
+2008-11-10 - Sync to lane01 successful.
+2008-11-10 - Sync to lane02 successful.
+2008-11-10 - Sync to lane03 successful.
+2008-11-11 - Update products table with new sales batch data.
+2008-11-11 - ERROR - Archival failed. Backed up transaction tables.
+2008-11-11 - Sync to lane01 successful.
+2008-11-11 - Sync to lane02 successful.
+2008-11-11 - Sync to lane03 successful.
+2008-11-12 - Update products table with new sales batch data.
+2008-11-12 - dtransactions archived and truncated.
+2008-11-12 - Sync to lane01 successful.
+2008-11-12 - Sync to lane02 successful.
+2008-11-12 - Sync to lane03 successful.
+2008-11-13 - Update products table with new sales batch data.
+2008-11-13 - dtransactions archived and truncated.
+2008-11-13 - Sync to lane01 successful.
+2008-11-13 - Sync to lane02 successful.
+2008-11-13 - Sync to lane03 successful.
+2008-11-14 - Update products table with new sales batch data.
+2008-11-14 - dtransactions archived and truncated.
+2008-11-14 - Sync to lane01 successful.
+2008-11-14 - Sync to lane02 successful.
+2008-11-14 - Sync to lane03 successful.
+2008-11-15 - Update products table with new sales batch data.
+2008-11-15 - dtransactions archived and truncated.
+2008-11-15 - Sync to lane01 successful.
+2008-11-15 - Sync to lane02 successful.
+2008-11-15 - Sync to lane03 successful.
+2008-11-16 - Update products table with new sales batch data.
+2008-11-16 - dtransactions archived and truncated.
+2008-11-16 - Sync to lane01 successful.
+2008-11-16 - Sync to lane02 successful.
+2008-11-16 - Sync to lane03 successful.
+2008-11-17 - Update products table with new sales batch data.
+2008-11-17 - dtransactions archived and truncated.
+2008-11-17 - Sync to lane01 successful.
+2008-11-17 - Sync to lane02 successful.
+2008-11-17 - Sync to lane03 successful.
+2008-11-18 - Update products table with new sales batch data.
+2008-11-18 - dtransactions archived and truncated.
+2008-11-18 - Sync to lane01 successful.
+2008-11-18 - Sync to lane02 successful.
+2008-11-18 - Sync to lane03 successful.
+2008-11-19 - Update products table with new sales batch data.
+2008-11-19 - dtransactions archived and truncated.
+2008-11-19 - Sync to lane01 successful.
+2008-11-19 - Sync to lane02 successful.
+2008-11-19 - Sync to lane03 successful.
+2008-11-20 - Update products table with new sales batch data.
+2008-11-20 - dtransactions archived and truncated.
+2008-11-20 - Sync to lane01 successful.
+2008-11-20 - Sync to lane02 successful.
+2008-11-20 - Sync to lane03 successful.
+2008-11-21 - Update products table with new sales batch data.
+2008-11-21 - dtransactions archived and truncated.
+2008-11-21 - Sync to lane01 successful.
+2008-11-21 - Sync to lane02 successful.
+2008-11-21 - Sync to lane03 successful.
+2008-11-22 - Update products table with new sales batch data.
+2008-11-22 - dtransactions archived and truncated.
+2008-11-22 - Sync to lane01 successful.
+2008-11-22 - Sync to lane02 successful.
+2008-11-22 - Sync to lane03 successful.
+2008-11-23 - Update products table with new sales batch data.
+2008-11-23 - dtransactions archived and truncated.
+2008-11-23 - Sync to lane01 successful.
+2008-11-23 - Sync to lane02 successful.
+2008-11-23 - Sync to lane03 successful.
+2008-11-24 - Update products table with new sales batch data.
+2008-11-24 - dtransactions archived and truncated.
+2008-11-24 - Sync to lane01 successful.
+2008-11-24 - Sync to lane02 successful.
+2008-11-24 - Sync to lane03 successful.
+2008-11-25 - Update products table with new sales batch data.
+2008-11-25 - dtransactions archived and truncated.
+2008-11-25 - Sync to lane01 successful.
+2008-11-25 - Sync to lane02 successful.
+2008-11-25 - Sync to lane03 successful.
+2008-11-26 - Update products table with new sales batch data.
+2008-11-26 - dtransactions archived and truncated.
+2008-11-26 - Sync to lane01 successful.
+2008-11-26 - Sync to lane02 successful.
+2008-11-26 - Sync to lane03 successful.
+2008-11-27 - Update products table with new sales batch data.
+2008-11-27 - dtransactions archived and truncated.
+2008-11-27 - Sync to lane01 successful.
+2008-11-27 - Sync to lane02 successful.
+2008-11-27 - Sync to lane03 successful.
+2008-11-28 - Update products table with new sales batch data.
+2008-11-28 - dtransactions archived and truncated.
+2008-11-28 - Sync to lane01 successful.
+2008-11-28 - Sync to lane02 successful.
+2008-11-28 - Sync to lane03 successful.
+2008-11-29 - Update products table with new sales batch data.
+2008-11-29 - dtransactions archived and truncated.
+2008-11-29 - Sync to lane01 successful.
+2008-11-29 - Sync to lane02 successful.
+2008-11-29 - Sync to lane03 successful.
+2008-11-30 - Update products table with new sales batch data.
+2008-11-30 - dtransactions archived and truncated.
+2008-11-30 - Sync to lane01 successful.
+2008-11-30 - Sync to lane02 successful.
+2008-11-30 - Sync to lane03 successful.
+2008-12-01 - Update products table with new sales batch data.
+2008-12-01 - dtransactions archived and truncated.
+2008-12-01 - Sync to lane01 successful.
+2008-12-01 - Sync to lane02 successful.
+2008-12-01 - Sync to lane03 successful.
+2008-12-02 - Update products table with new sales batch data.
+2008-12-02 - dtransactions archived and truncated.
+2008-12-02 - Sync to lane01 successful.
+2008-12-02 - Sync to lane02 successful.
+2008-12-02 - Sync to lane03 successful.
+2008-12-03 - Update products table with new sales batch data.
+2008-12-03 - dtransactions archived and truncated.
+2008-12-03 - Sync to lane01 successful.
+2008-12-03 - Sync to lane02 successful.
+2008-12-03 - Sync to lane03 successful.
+2008-12-04 - Update products table with new sales batch data.
+2008-12-04 - dtransactions archived and truncated.
+2008-12-04 - Sync to lane01 successful.
+2008-12-04 - Sync to lane02 successful.
+2008-12-04 - Sync to lane03 successful.
+2008-12-05 - Update products table with new sales batch data.
+2008-12-05 - dtransactions archived and truncated.
+2008-12-05 - Sync to lane01 successful.
+2008-12-05 - Sync to lane02 successful.
+2008-12-05 - Sync to lane03 successful.
+2008-12-06 - Update products table with new sales batch data.
+2008-12-06 - dtransactions archived and truncated.
+2008-12-06 - Sync to lane01 successful.
+2008-12-06 - Sync to lane02 successful.
+2008-12-06 - Sync to lane03 successful.
+2008-12-07 - Update products table with new sales batch data.
+2008-12-07 - dtransactions archived and truncated.
+2008-12-07 - Sync to lane01 successful.
+2008-12-07 - Sync to lane02 successful.
+2008-12-07 - Sync to lane03 successful.
+2008-12-08 - Update products table with new sales batch data.
+2008-12-08 - dtransactions archived and truncated.
+2008-12-08 - Sync to lane01 successful.
+2008-12-08 - Sync to lane02 successful.
+2008-12-08 - Sync to lane03 successful.
+2008-12-09 - Update products table with new sales batch data.
+2008-12-09 - dtransactions archived and truncated.
+2008-12-09 - Sync to lane01 successful.
+2008-12-09 - Sync to lane02 successful.
+2008-12-09 - Sync to lane03 successful.
+2008-12-10 - Update products table with new sales batch data.
+2008-12-10 - dtransactions archived and truncated.
+2008-12-10 - Sync to lane01 successful.
+2008-12-10 - Sync to lane02 successful.
+2008-12-10 - Sync to lane03 successful.
+2008-12-11 - Update products table with new sales batch data.
+2008-12-11 - dtransactions archived and truncated.
+2008-12-11 - Sync to lane01 successful.
+2008-12-11 - Sync to lane02 successful.
+2008-12-11 - Sync to lane03 successful.
+2008-12-12 - Update products table with new sales batch data.
+2008-12-12 - dtransactions archived and truncated.
+2008-12-12 - Sync to lane01 successful.
+2008-12-12 - Sync to lane02 successful.
+2008-12-12 - Sync to lane03 successful.
+2008-12-13 - Update products table with new sales batch data.
+2008-12-13 - dtransactions archived and truncated.
+2008-12-13 - Sync to lane01 successful.
+2008-12-13 - Sync to lane02 successful.
+2008-12-13 - Sync to lane03 successful.
+2008-12-14 - Update products table with new sales batch data.
+2008-12-14 - dtransactions archived and truncated.
+2008-12-14 - Sync to lane01 successful.
+2008-12-14 - Sync to lane02 successful.
+2008-12-14 - Sync to lane03 successful.
+2008-12-15 - Update products table with new sales batch data.
+2008-12-15 - dtransactions archived and truncated.
+2008-12-15 - Sync to lane01 successful.
+2008-12-15 - Sync to lane02 successful.
+2008-12-15 - Sync to lane03 successful.
+2008-12-16 - Update products table with new sales batch data.
+2008-12-16 - dtransactions archived and truncated.
+2008-12-16 - Sync to lane01 successful.
+2008-12-16 - Sync to lane02 successful.
+2008-12-16 - Sync to lane03 successful.
+2008-12-17 - Update products table with new sales batch data.
+2008-12-17 - dtransactions archived and truncated.
+2008-12-17 - Sync to lane01 successful.
+2008-12-17 - Sync to lane02 successful.
+2008-12-17 - Sync to lane03 successful.
+2008-12-18 - Update products table with new sales batch data.
+2008-12-18 - dtransactions archived and truncated.
+2008-12-18 - Sync to lane01 successful.
+2008-12-18 - Sync to lane02 successful.
+2008-12-18 - Sync to lane03 successful.
+2008-12-19 - Update products table with new sales batch data.
+2008-12-19 - dtransactions archived and truncated.
+2008-12-19 - Sync to lane01 successful.
+2008-12-19 - Sync to lane02 successful.
+2008-12-19 - Sync to lane03 successful.
+2008-12-20 - Update products table with new sales batch data.
+2008-12-20 - dtransactions archived and truncated.
+2008-12-20 - Sync to lane01 successful.
+2008-12-20 - Sync to lane02 successful.
+2008-12-20 - Sync to lane03 successful.
+2008-12-21 - Update products table with new sales batch data.
+2008-12-21 - dtransactions archived and truncated.
+2008-12-21 - Sync to lane01 successful.
+2008-12-21 - Sync to lane02 successful.
+2008-12-21 - Sync to lane03 successful.
+2008-12-22 - Update products table with new sales batch data.
+2008-12-22 - dtransactions archived and truncated.
+2008-12-22 - Sync to lane01 successful.
+2008-12-22 - Sync to lane02 successful.
+2008-12-22 - Sync to lane03 successful.
+2008-12-23 - Update products table with new sales batch data.
+2008-12-23 - dtransactions archived and truncated.
+2008-12-23 - Sync to lane01 successful.
+2008-12-23 - Sync to lane02 successful.
+2008-12-23 - Sync to lane03 successful.
+2008-12-24 - Update products table with new sales batch data.
+2008-12-24 - dtransactions archived and truncated.
+2008-12-24 - Sync to lane01 successful.
+2008-12-24 - Sync to lane02 successful.
+2008-12-24 - Sync to lane03 successful.
+2008-12-25 - Update products table with new sales batch data.
+2008-12-25 - dtransactions archived and truncated.
+2008-12-25 - Sync to lane01 successful.
+2008-12-25 - Sync to lane02 successful.
+2008-12-25 - Sync to lane03 successful.
+2008-12-26 - Update products table with new sales batch data.
+2008-12-26 - dtransactions archived and truncated.
+2008-12-26 - Sync to lane01 successful.
+2008-12-26 - Sync to lane02 successful.
+2008-12-26 - Sync to lane03 successful.
+2008-12-27 - Update products table with new sales batch data.
+2008-12-27 - dtransactions archived and truncated.
+2008-12-27 - Sync to lane01 successful.
+2008-12-27 - Sync to lane02 successful.
+2008-12-27 - Sync to lane03 successful.
+2008-12-28 - Update products table with new sales batch data.
+2008-12-28 - dtransactions archived and truncated.
+2008-12-28 - Sync to lane01 successful.
+2008-12-28 - Sync to lane02 successful.
+2008-12-28 - Sync to lane03 successful.
+2008-12-29 - Update products table with new sales batch data.
+2008-12-29 - dtransactions archived and truncated.
+2008-12-29 - Sync to lane01 successful.
+2008-12-29 - Sync to lane02 successful.
+2008-12-29 - Sync to lane03 successful.
+2008-12-30 - Update products table with new sales batch data.
+2008-12-30 - dtransactions archived and truncated.
+2008-12-30 - Sync to lane01 successful.
+2008-12-30 - Sync to lane02 successful.
+2008-12-30 - Sync to lane03 successful.
+2008-12-31 - Update products table with new sales batch data.
+2008-12-31 - dtransactions archived and truncated.
+2008-12-31 - Sync to lane01 successful.
+2008-12-31 - Sync to lane02 successful.
+2008-12-31 - Sync to lane03 successful.
+2009-01-01 - Update products table with new sales batch data.
+2009-01-01 - dtransactions archived and truncated.
+2009-01-01 - Sync to lane01 successful.
+2009-01-01 - Sync to lane02 successful.
+2009-01-01 - Sync to lane03 successful.
+2009-01-02 - Update products table with new sales batch data.
+2009-01-02 - dtransactions archived and truncated.
+2009-01-02 - Sync to lane01 successful.
+2009-01-02 - Sync to lane02 successful.
+2009-01-02 - Sync to lane03 successful.
+2009-01-03 - Update products table with new sales batch data.
+2009-01-03 - dtransactions archived and truncated.
+2009-01-03 - Sync to lane01 successful.
+2009-01-03 - Sync to lane02 successful.
+2009-01-03 - Sync to lane03 successful.
+2009-01-04 - Update products table with new sales batch data.
+2009-01-04 - dtransactions archived and truncated.
+2009-01-04 - Sync to lane01 successful.
+2009-01-04 - Sync to lane02 successful.
+2009-01-04 - Sync to lane03 successful.
+2009-01-05 - Update products table with new sales batch data.
+2009-01-05 - dtransactions archived and truncated.
+2009-01-05 - Sync to lane01 successful.
+2009-01-05 - ERROR - Sync to lane02 failed.
+2009-01-05 - Sync to lane03 successful.
+2009-01-06 - Update products table with new sales batch data.
+2009-01-06 - dtransactions archived and truncated.
+2009-01-06 - Sync to lane01 successful.
+2009-01-06 - Sync to lane02 successful.
+2009-01-06 - Sync to lane03 successful.
+2009-01-07 - Update products table with new sales batch data.
+2009-01-07 - dtransactions archived and truncated.
+2009-01-07 - Sync to lane01 successful.
+2009-01-07 - Sync to lane02 successful.
+2009-01-07 - Sync to lane03 successful.
+2009-01-08 - Update products table with new sales batch data.
+2009-01-08 - dtransactions archived and truncated.
+2009-01-08 - Sync to lane01 successful.
+2009-01-08 - Sync to lane02 successful.
+2009-01-08 - Sync to lane03 successful.
+2009-01-09 - Update products table with new sales batch data.
+2009-01-09 - dtransactions archived and truncated.
+2009-01-09 - Sync to lane01 successful.
+2009-01-09 - Sync to lane02 successful.
+2009-01-09 - Sync to lane03 successful.
+2009-01-10 - Update products table with new sales batch data.
+2009-01-10 - dtransactions archived and truncated.
+2009-01-10 - Sync to lane01 successful.
+2009-01-10 - Sync to lane02 successful.
+2009-01-10 - Sync to lane03 successful.
+2009-01-11 - Update products table with new sales batch data.
+2009-01-11 - dtransactions archived and truncated.
+2009-01-11 - Sync to lane01 successful.
+2009-01-11 - Sync to lane02 successful.
+2009-01-11 - Sync to lane03 successful.
+2009-01-12 - Update products table with new sales batch data.
+2009-01-12 - dtransactions archived and truncated.
+2009-01-12 - Sync to lane01 successful.
+2009-01-12 - Sync to lane02 successful.
+2009-01-12 - Sync to lane03 successful.
+2009-01-13 - Update products table with new sales batch data.
+2009-01-13 - dtransactions archived and truncated.
+2009-01-13 - Sync to lane01 successful.
+2009-01-13 - Sync to lane02 successful.
+2009-01-13 - Sync to lane03 successful.
+2009-01-14 - Update products table with new sales batch data.
+2009-01-14 - dtransactions archived and truncated.
+2009-01-14 - Sync to lane01 successful.
+2009-01-14 - Sync to lane02 successful.
+2009-01-14 - Sync to lane03 successful.
+2009-01-15 - Update products table with new sales batch data.
+2009-01-15 - dtransactions archived and truncated.
+2009-01-15 - Sync to lane01 successful.
+2009-01-15 - Sync to lane02 successful.
+2009-01-15 - Sync to lane03 successful.
+2009-01-16 - Update products table with new sales batch data.
+2009-01-16 - dtransactions archived and truncated.
+2009-01-16 - Sync to lane01 successful.
+2009-01-16 - Sync to lane02 successful.
+2009-01-16 - Sync to lane03 successful.
+2009-01-17 - Update products table with new sales batch data.
+2009-01-17 - dtransactions archived and truncated.
+2009-01-17 - Sync to lane01 successful.
+2009-01-17 - Sync to lane02 successful.
+2009-01-17 - Sync to lane03 successful.
+2009-01-18 - Update products table with new sales batch data.
+2009-01-18 - dtransactions archived and truncated.
+2009-01-18 - Sync to lane01 successful.
+2009-01-18 - Sync to lane02 successful.
+2009-01-18 - Sync to lane03 successful.
+2009-01-19 - Update products table with new sales batch data.
+2009-01-19 - dtransactions archived and truncated.
+2009-01-19 - Sync to lane01 successful.
+2009-01-19 - Sync to lane02 successful.
+2009-01-19 - Sync to lane03 successful.
+2009-01-20 - Update products table with new sales batch data.
+2009-01-20 - dtransactions archived and truncated.
+2009-01-20 - Sync to lane01 successful.
+2009-01-20 - Sync to lane02 successful.
+2009-01-20 - Sync to lane03 successful.
+2009-01-21 - Update products table with new sales batch data.
+2009-01-21 - dtransactions archived and truncated.
+2009-01-21 - Sync to lane01 successful.
+2009-01-21 - Sync to lane02 successful.
+2009-01-21 - Sync to lane03 successful.
+2009-01-22 - Update products table with new sales batch data.
+2009-01-22 - dtransactions archived and truncated.
+2009-01-22 - Sync to lane01 successful.
+2009-01-22 - Sync to lane02 successful.
+2009-01-22 - Sync to lane03 successful.
+2009-01-23 - Update products table with new sales batch data.
+2009-01-23 - dtransactions archived and truncated.
+2009-01-23 - Sync to lane01 successful.
+2009-01-23 - Sync to lane02 successful.
+2009-01-23 - Sync to lane03 successful.
+2009-01-24 - Update products table with new sales batch data.
+2009-01-24 - dtransactions archived and truncated.
+2009-01-24 - Sync to lane01 successful.
+2009-01-24 - Sync to lane02 successful.
+2009-01-24 - Sync to lane03 successful.
+2009-01-25 - Update products table with new sales batch data.
+2009-01-25 - dtransactions archived and truncated.
+2009-01-25 - Sync to lane01 successful.
+2009-01-25 - Sync to lane02 successful.
+2009-01-25 - Sync to lane03 successful.
+2009-01-26 - Update products table with new sales batch data.
+2009-01-26 - dtransactions archived and truncated.
+2009-01-26 - Sync to lane01 successful.
+2009-01-26 - Sync to lane02 successful.
+2009-01-26 - Sync to lane03 successful.
+2009-01-27 - Update products table with new sales batch data.
+2009-01-27 - dtransactions archived and truncated.
+2009-01-27 - Sync to lane01 successful.
+2009-01-27 - Sync to lane02 successful.
+2009-01-27 - Sync to lane03 successful.
+2009-01-28 - Update products table with new sales batch data.
+2009-01-28 - dtransactions archived and truncated.
+2009-01-28 - Sync to lane01 successful.
+2009-01-28 - Sync to lane02 successful.
+2009-01-28 - Sync to lane03 successful.
+2009-01-29 - Update products table with new sales batch data.
+2009-01-29 - dtransactions archived and truncated.
+2009-01-29 - Sync to lane01 successful.
+2009-01-29 - Sync to lane02 successful.
+2009-01-29 - Sync to lane03 successful.
+2009-01-30 - Update products table with new sales batch data.
+2009-01-30 - dtransactions archived and truncated.
+2009-01-30 - Sync to lane01 successful.
+2009-01-30 - Sync to lane02 successful.
+2009-01-30 - Sync to lane03 successful.
+2009-01-31 - Update products table with new sales batch data.
+2009-01-31 - dtransactions archived and truncated.
+2009-01-31 - Sync to lane01 successful.
+2009-01-31 - Sync to lane02 successful.
+2009-01-31 - Sync to lane03 successful.
+2009-02-01 - Update products table with new sales batch data.
+2009-02-01 - dtransactions archived and truncated.
+2009-02-01 - Sync to lane01 successful.
+2009-02-01 - Sync to lane02 successful.
+2009-02-01 - Sync to lane03 successful.
+2009-02-02 - Update products table with new sales batch data.
+2009-02-02 - dtransactions archived and truncated.
+2009-02-02 - Sync to lane01 successful.
+2009-02-02 - Sync to lane02 successful.
+2009-02-02 - Sync to lane03 successful.
+2009-02-03 - Update products table with new sales batch data.
+2009-02-03 - dtransactions archived and truncated.
+2009-02-03 - Sync to lane01 successful.
+2009-02-03 - Sync to lane02 successful.
+2009-02-03 - Sync to lane03 successful.
+2009-02-04 - Update products table with new sales batch data.
+2009-02-04 - dtransactions archived and truncated.
+2009-02-04 - Sync to lane01 successful.
+2009-02-04 - Sync to lane02 successful.
+2009-02-04 - Sync to lane03 successful.
+2009-02-05 - Update products table with new sales batch data.
+2009-02-05 - dtransactions archived and truncated.
+2009-02-05 - Sync to lane01 successful.
+2009-02-05 - Sync to lane02 successful.
+2009-02-05 - Sync to lane03 successful.
+2009-02-06 - Update products table with new sales batch data.
+2009-02-06 - dtransactions archived and truncated.
+2009-02-06 - Sync to lane01 successful.
+2009-02-06 - Sync to lane02 successful.
+2009-02-06 - Sync to lane03 successful.
+2009-02-07 - Update products table with new sales batch data.
+2009-02-07 - dtransactions archived and truncated.
+2009-02-07 - Sync to lane01 successful.
+2009-02-07 - Sync to lane02 successful.
+2009-02-07 - Sync to lane03 successful.

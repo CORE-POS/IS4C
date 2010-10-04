@@ -1,0 +1,3 @@
+USE is4c_op;
+
+UPDATE custdata SET Discount = (Discount - 4) WHERE staff = 3;

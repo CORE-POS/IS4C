@@ -1,0 +1,3 @@
+use is4c_log;
+INSERT INTO dlog_2009 SELECT * FROM dtransactions;
+TRUNCATE dtransctions;
