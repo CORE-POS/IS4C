@@ -1,0 +1,35 @@
+This branch of IS4C is a fairly large overhaul from
+the original code base. These DEV_README files provide some
+insight into why I made certain changes.
+
+The directory structure has been added to provide a bit
+more organization.
+
+DIRECTORIES:
+ajax-driver	a python wrapper for connecting serial
+		port data to the web browser
+
+graphics	image files used in IS4C
+
+gui-class-lib	a set of classes for writing pages to the screen
+
+gui-modules	all the php scripts that are "top level" pages
+		that is pages that are loaded in the main frame set
+
+lib		php scripts containing nothing but functions
+
+Magellan	a VB wrapper for connecting serial port data
+		to the web browser	
+
+parser-class-lib	a set of classes for processing input
+
+./		php files that have yet to be categorized :)
+
+The graphics / display system has been altered a great deal
+so that everything is displayed through a single top-level 
+frameset script, ./gui-base.php. GUI changes are discussed
+in greater depth in gui-class-lib and gui-modules.
+
+--------------------
+andy@wholefoods.coop
+--------------------

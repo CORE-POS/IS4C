@@ -1,0 +1,17 @@
+gui-modules
+---------------------------------------------
+
+These scripts are "top-level" display scripts.
+They are contained directly in the main frame set,
+gui-base.php. These are the pages that will actually
+be "visisted" as IS4C runs.
+
+All gui-modules are subclasses of a gui-class-lib class.
+This gets rid of some redundant code sections and scripts.
+
+In an ideal world, it also makes adding new gui-modules
+easier.
+
+pos2.php is the script for the "main" display. This is
+the most complicated gui-module. It relies on the parser
+classes in parser-class-lib.

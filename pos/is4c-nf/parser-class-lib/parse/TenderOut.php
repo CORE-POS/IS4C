@@ -1,0 +1,91 @@
+<?php
+/*******************************************************************************
+
+    Copyright 2007 Whole Foods Co-op
+
+    This file is part of IS4C.
+
+    IS4C is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    IS4C is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    in the file license.txt along with IS4C; if not, write to the Free Software
+    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+*********************************************************************************/
+
+if (!class_exists("Parser")) include_once($_SERVER["DOCUMENT_ROOT"]."/parser-class-lib/Parser.php");
+if (!function_exists("boxMsg")) include_once($_SERVER["DOCUMENT_ROOT"]."/lib/drawscreen.php");
+if (!function_exists("addchange")) include_once($_SERVER["DOCUMENT_ROOT"]."/lib/additem.php");
+if (!function_exists("getsubtotals")) include_once($_SERVER["DOCUMENT_ROOT"]."/lib/connect.php");
+if (!function_exists("printReceiptfooter")) include_once($_SERVER["DOCUMENT_ROOT"]."/lib/listitems.php");
+if (!function_exists("ttl")) include_once($_SERVER["DOCUMENT_ROOT"]."/lib/prehkeys.php");
+if (!isset($IS4C_LOCAL)) include($_SERVER["DOCUMENT_ROOT"]."/lib/LocalStorage/conf.php");
+
+class TenderOut extends Parser {
+	function check($str){
+		if ($str == "TO")
+			return True;
+		return False;
+	}
+
+	function parse($str){
+		global $IS4C_LOCAL;
+		if ($IS4C_LOCAL->get("LastID") == 0){
+			$ret = $this->default_json();
+			$ret['output'] = boxMsg("no transaction in progress");
+			return $ret;
+		}
+		else {
+			return $this->tender_out("");
+		}
+	}
+
+	function tender_out($asTender){
+		global $IS4C_LOCAL;
+		$ret = $this->default_json();
+		getsubtotals();
+		if ($IS4C_LOCAL->get("amtdue") <= 0.005) {
+			$IS4C_LOCAL->set("change",-1 * $IS4C_LOCAL->get("amtdue"));
+			$cash_return = $IS4C_LOCAL->get("change");
+			if ($asTender != "FS") {
+				addchange($cash_return);
+			}
+			if ($asTender == "CK" && $cash_return > 0) {
+				$IS4C_LOCAL->set("cashOverAmt",1); // apbw/cvr 3/5/05 cash back beep
+			}
+			$IS4C_LOCAL->set("End",1);
+			$ret['output'] = printReceiptfooter();
+			$ret['redraw_footer'] = true;
+			$ret['receipt'] = 'full';
+		} else {
+			$IS4C_LOCAL->set("change",0);
+			$IS4C_LOCAL->set("fntlflag",0);
+			ttl();
+			$ret['output'] = lastpage();
+		}
+		return $ret;
+	}
+
+	function doc(){
+		return "<table cellspacing=0 cellpadding=3 border=1>
+			<tr>
+				<th>Input</th><th>Result</th>
+			</tr>
+			<tr>
+				<td>TO</td>
+				<td>Tender out. Not a WFC function; just
+				reproduced for compatibility</td>
+			</tr>
+			</table>";
+	}
+}
+
+?>

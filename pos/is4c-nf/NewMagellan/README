@@ -1,0 +1,13 @@
+COMPILATION
+
+1. Windows
+	Compilation on Windows requires
+	* .NET 2.0 Runtime
+	* .NET 2.0 SDK
+	The latter provides a special command line
+	with all the appropriate environment variables
+	set. Use that (or set them yourself) then
+	run make.bat
+2. Non-windows
+	Requires mono.
+	Use the makefile.
