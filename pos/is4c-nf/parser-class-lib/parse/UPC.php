@@ -591,7 +591,7 @@ class UPC extends Parser {
 		$val = substr($upc, -2);
 
 		$db = pDataConnect();
-		$query = "select * from CouponCodes where code = '".$val."'";
+		$query = "select Value,Qty from couponcodes where Code = '".$val."'";
 		$result = $db->query($query);
 		$num_rows = $db->num_rows($result);
 
@@ -715,11 +715,11 @@ class UPC extends Parser {
 							return lastpage();
 						}
 						else 
-							return boxMsg("coupon requires ".$qty."items<BR>there are only ".$act_qty." item(s)<BR>in this transaction");
+							return boxMsg("coupon requires ".$qty."items<br />there are only ".$act_qty." item(s)<br />in this transaction");
 					}
 				}
 				else 
-					return boxMsg("product not found<BR>in transaction");
+					return boxMsg("product not found<br />in transaction");
 			}
 		}
 	}
