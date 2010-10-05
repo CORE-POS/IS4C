@@ -366,7 +366,9 @@ function tender($right, $strl) {
 	}
 
 	$db = pDataConnect();
-	$query = "select * from tenders where tendercode = '".$right."'";
+	$query = "select TenderID,TenderCode,TenderName,TenderType,
+		ChangeMessage,MinAmount,MaxAmount,MaxRefund from 
+		tenders where tendercode = '".$right."'";
 	$result = $db->query($query);
 
 	$num_rows = $db->num_rows($result);
