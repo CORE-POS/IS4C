@@ -20,10 +20,12 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
+$IS4C_PATH = isset($IS4C_PATH)?$IS4C_PATH:"";
+if (empty($IS4C_PATH)){ while(!file_exists($IS4C_PATH."is4c.css")) $IS4C_PATH .= "../"; }
 
-if (!class_exists("NoInputPage")) include_once($_SERVER["DOCUMENT_ROOT"]."/gui-class-lib/NoInputPage.php");
-if (!function_exists("nsauthenticate")) include($_SERVER['DOCUMENT_ROOT']."/lib/authenticate.php");
-if (!isset($IS4C_LOCAL)) include($_SERVER["DOCUMENT_ROOT"]."/lib/LocalStorage/conf.php");
+if (!class_exists("NoInputPage")) include_once($IS4C_PATH."gui-class-lib/NoInputPage.php");
+if (!function_exists("nsauthenticate")) include($IS4C_PATH."lib/authenticate.php");
+if (!isset($IS4C_LOCAL)) include($IS4C_PATH."lib/LocalStorage/conf.php");
 
 class nslogin extends NoInputPage {
 
@@ -32,17 +34,18 @@ class nslogin extends NoInputPage {
 	var $msg;
 
 	function preprocess(){
+		global $IS4C_PATH;
 		$this->color ="#004080";
 		$this->heading = "enter manager password";
 		$this->msg = "confirm no sales";
 
 		if (isset($_REQUEST['reginput'])){
 			if (strtoupper($_REQUEST['reginput']) == "CL"){
-				header("Location: /gui-modules/pos2.php");
+				header("Location: {$IS4C_PATH}gui-modules/pos2.php");
 				return False;
 			}
 			elseif (nsauthenticate($_REQUEST['reginput'])){
-				header("Location: /gui-modules/pos2.php");
+				header("Location: {$IS4C_PATH}gui-modules/pos2.php");
 				return False;
 			}
 			else {

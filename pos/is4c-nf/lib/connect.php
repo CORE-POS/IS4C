@@ -21,12 +21,15 @@
 
 *********************************************************************************/
 
-if (!class_exists("SQLManager")) include($_SERVER["DOCUMENT_ROOT"]."/lib/SQLManager.php");
+$IS4C_PATH = isset($IS4C_PATH)?$IS4C_PATH:"";
+if (empty($IS4C_PATH)){ while(!file_exists($IS4C_PATH."is4c.css")) $IS4C_PATH .= "../"; }
 
-if (!function_exists("setglobalflags")) include($_SERVER["DOCUMENT_ROOT"]."/lib/loadconfig.php");
-if (!function_exists("pinghost")) include($_SERVER["DOCUMENT_ROOT"]."/lib/lib.php");
-if (!function_exists("wmdiscount")) include($_SERVER["DOCUMENT_ROOT"]."/lib/prehkeys.php");
-if (!isset($IS4C_LOCAL)) include($_SERVER["DOCUMENT_ROOT"]."/lib/LocalStorage/conf.php");
+if (!class_exists("SQLManager")) include($IS4C_PATH."lib/SQLManager.php");
+
+if (!function_exists("setglobalflags")) include($IS4C_PATH."lib/loadconfig.php");
+if (!function_exists("pinghost")) include($IS4C_PATH."lib/lib.php");
+if (!function_exists("wmdiscount")) include($IS4C_PATH."lib/prehkeys.php");
+if (!isset($IS4C_LOCAL)) include($IS4C_PATH."lib/LocalStorage/conf.php");
 
 
 /***********************************************************************************************

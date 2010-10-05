@@ -21,12 +21,15 @@
 
 *********************************************************************************/
 
-if (!class_exists("Parser")) include_once($_SERVER["DOCUMENT_ROOT"]."/parser-class-lib/Parser.php");
-if (!function_exists("boxMsg")) include_once($_SERVER["DOCUMENT_ROOT"]."/lib/drawscreen.php");
-if (!function_exists("tDataConnect")) include_once($_SERVER["DOCUMENT_ROOT"]."/lib/connect.php");
-if (!function_exists("drawerKick")) include_once($_SERVER["DOCUMENT_ROOT"]."/lib/printLib.php");
-if (!function_exists("setglobalvalue")) include_once($_SERVER["DOCUMENT_ROOT"]."/lib/loadconfig.php");
-if (!isset($IS4C_LOCAL)) include($_SERVER["DOCUMENT_ROOT"]."/lib/LocalStorage/conf.php");
+$IS4C_PATH = isset($IS4C_PATH)?$IS4C_PATH:"";
+if (empty($IS4C_PATH)){ while(!file_exists($IS4C_PATH."is4c.css")) $IS4C_PATH .= "../"; }
+
+if (!class_exists("Parser")) include_once($IS4C_PATH."parser-class-lib/Parser.php");
+if (!function_exists("boxMsg")) include_once($IS4C_PATH."lib/drawscreen.php");
+if (!function_exists("tDataConnect")) include_once($IS4C_PATH."lib/connect.php");
+if (!function_exists("drawerKick")) include_once($IS4C_PATH."lib/printLib.php");
+if (!function_exists("setglobalvalue")) include_once($IS4C_PATH."lib/loadconfig.php");
+if (!isset($IS4C_LOCAL)) include($IS4C_PATH."lib/LocalStorage/conf.php");
 
 /* 
  * This class is for any input designed to set processing
@@ -40,7 +43,7 @@ class Steering extends Parser {
 	var $ret;
 
 	function check($str){
-		global $IS4C_LOCAL;
+		global $IS4C_LOCAL,$IS4C_PATH;
 		
 		$this->dest_input_page = "";
 		$this->dest_main_page = "";
@@ -53,13 +56,13 @@ class Steering extends Parser {
 			if ($IS4C_LOCAL->get("LastID") != "0")
 				$this->ret['output'] = boxMsg("transaction in progress");
 			else {
-				$this->ret['main_frame'] = "/gui-modules/cablist.php";
+				$this->ret['main_frame'] = $IS4C_PATH."gui-modules/cablist.php";
 			}
 			return True;
 		case "PV":
 			$IS4C_LOCAL->set("pvsearch","");
 			$IS4C_LOCAL->set("away",1);
-			$this->ret['main_frame'] = "/gui-modules/productlist.php";
+			$this->ret['main_frame'] = $IS4C_PATH."gui-modules/productlist.php";
 			return True;
 		/*
 		case "PV2":
@@ -77,11 +80,11 @@ class Steering extends Parser {
 			if ($IS4C_LOCAL->get("LastID") != "0")
 				$this->ret['output'] = boxMsg("transaction in progress");
 			else {
-				$IS4C_LOCAL->set("adminRequest","/gui-modules/undo.php");
+				$IS4C_LOCAL->set("adminRequest",$IS4C_PATH."gui-modules/undo.php");
 				$IS4C_LOCAL->set("adminRequestLevel","30");
 				$IS4C_LOCAL->set("adminLoginMsg","Login to void transactions");
 				$IS4C_LOCAL->set("away",1);
-				$this->ret['main_frame'] = "/gui-modules/adminlogin.php";
+				$this->ret['main_frame'] = $IS4C_PATH."gui-modules/adminlogin.php";
 			}
 			return True;
 		case "DDD":
@@ -89,11 +92,11 @@ class Steering extends Parser {
 			$IS4C_LOCAL->set("adminLoginMsg","DDD these items?");
 			$IS4C_LOCAL->set("adminRequestLevel","10");
 			$IS4C_LOCAL->set("away",1);
-			$this->ret['main_frame'] = "/gui-modules/adminlogin.php";
+			$this->ret['main_frame'] = $IS4C_PATH."gui-modules/adminlogin.php";
 			return True;
 		case 'MG':
 			$IS4C_LOCAL->set("away",1);
-			$this->ret['main_frame'] = "/gui-modules/adminlist.php";
+			$this->ret['main_frame'] = $IS4C_PATH."gui-modules/adminlist.php";
 			return True;
 		case 'RP':
 			if ($IS4C_LOCAL->get("LastID") != "0")
@@ -112,14 +115,14 @@ class Steering extends Parser {
 				if ($num_rows == 0) 
 					$this->ret['output'] = boxMsg("no receipt found");
 				else {
-					$this->ret['main_frame'] = "/gui-modules/rplist.php";
+					$this->ret['main_frame'] = $IS4C_PATH."gui-modules/rplist.php";
 				}
 			}				
 			return True;
 		case 'ID':
 			$IS4C_LOCAL->set("away",1);
 			$IS4C_LOCAL->set("search_or_list",1);
-			$this->ret['main_frame'] = "/gui-modules/memlist.php";
+			$this->ret['main_frame'] = $IS4C_PATH."gui-modules/memlist.php";
 			return True;
 		case 'SO':
 			if ($IS4C_LOCAL->get("LastID") != 0) 
@@ -131,7 +134,7 @@ class Steering extends Parser {
 				$IS4C_LOCAL->set("training",0);
 				$IS4C_LOCAL->set("gui-scale","no");
 				$IS4C_LOCAL->set("away",1);
-				$this->ret['main_frame'] = "/gui-modules/login2.php";
+				$this->ret['main_frame'] = $IS4C_PATH."gui-modules/login2.php";
 			}
 			return True;
 		case 'NS':
@@ -139,12 +142,12 @@ class Steering extends Parser {
 				$this->ret['output'] = boxMsg("Transaction in Progress");
 			else {
 				$IS4C_LOCAL->set("away",1);
-				$this->ret['main_frame'] = "/gui-modules/nslogin.php";
+				$this->ret['main_frame'] = $IS4C_PATH."gui-modules/nslogin.php";
 			}
 			return True;
 		case 'GD':
 			$IS4C_LOCAL->set("msgrepeat",0);
-			$this->ret['main_frame'] = "/gui-modules/giftcardlist.php";
+			$this->ret['main_frame'] = $IS4C_PATH."gui-modules/giftcardlist.php";
 			return True;
 		/*
 		case 'CCM':
@@ -162,7 +165,7 @@ class Steering extends Parser {
 			}
 			else {
 				$IS4C_LOCAL->set("away",1);
-				$this->ret['main_frame'] = "/gui-modules/mgrlogin.php";
+				$this->ret['main_frame'] = $IS4C_PATH."gui-modules/mgrlogin.php";
 			}
 			return True;
 		}

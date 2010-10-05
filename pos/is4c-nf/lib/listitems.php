@@ -21,10 +21,12 @@
 
 *********************************************************************************/
  // session_start(); 
+$IS4C_PATH = isset($IS4C_PATH)?$IS4C_PATH:"";
+if (empty($IS4C_PATH)){ while(!file_exists($IS4C_PATH."is4c.css")) $IS4C_PATH .= "../"; }
 
-if (!function_exists("getsubtotals")) include($_SERVER["DOCUMENT_ROOT"]."/lib/connect.php");
-if (!function_exists("printheaderb")) include($_SERVER["DOCUMENT_ROOT"]."/lib/drawscreen.php");
-if (!isset($IS4C_LOCAL)) include($_SERVER["DOCUMENT_ROOT"]."/lib/LocalStorage/conf.php");
+if (!function_exists("getsubtotals")) include($IS4C_PATH."lib/connect.php");
+if (!function_exists("printheaderb")) include($IS4C_PATH."lib/drawscreen.php");
+if (!isset($IS4C_LOCAL)) include($IS4C_PATH."lib/LocalStorage/conf.php");
 
 function listitems($top_item, $highlight) {
 	global $IS4C_LOCAL;

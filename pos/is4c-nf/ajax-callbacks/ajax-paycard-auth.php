@@ -1,7 +1,7 @@
 <?php
 /*******************************************************************************
 
-    Copyright 2001, 2004 Wedge Community Co-op
+    Copyright 2010 Whole Foods Co-op
 
     This file is part of IS4C.
 
@@ -21,19 +21,22 @@
 
 *********************************************************************************/
 
-if (!function_exists("addcomment")) include_once($_SERVER["DOCUMENT_ROOT"]."/lib/additem.php");
-if (!function_exists("array_to_json")) include_once($_SERVER["DOCUMENT_ROOT"]."/lib/array_to_json.php");
-if (!function_exists("paycard_reset")) include_once($_SERVER["DOCUMENT_ROOT"]."/lib/paycardLib.php");
-if (!isset($IS4C_LOCAL)) include($_SERVER["DOCUMENT_ROOT"]."/lib/LocalStorage/conf.php");
+$IS4C_PATH = isset($IS4C_PATH)?$IS4C_PATH:"";
+if (empty($IS4C_PATH)){ while(!file_exists($IS4C_PATH."is4c.css")) $IS4C_PATH .= "../"; }
+
+if (!function_exists("addcomment")) include_once($IS4C_PATH."lib/additem.php");
+if (!function_exists("array_to_json")) include_once($IS4C_PATH."lib/array_to_json.php");
+if (!function_exists("paycard_reset")) include_once($IS4C_PATH."lib/paycardLib.php");
+if (!isset($IS4C_LOCAL)) include($IS4C_PATH."lib/LocalStorage/conf.php");
 
 // send the request
 $result = 0; // 0 is never returned, so we use it to make sure it changes
 $myObj = 0;
 $json = array();
-$json['main_frame'] = '/gui-modules/paycardSuccess.php';
+$json['main_frame'] = $IS4C_PATH.'gui-modules/paycardSuccess.php';
 $json['receipt'] = false;
 foreach($IS4C_LOCAL->get("RegisteredPaycardClasses") as $rpc){
-	if (!class_exists($rpc)) include_once($_SERVER["DOCUMENT_ROOT"]."/cc-modules/$rpc.php");
+	if (!class_exists($rpc)) include_once($IS4C_PATH."cc-modules/$rpc.php");
 	$myObj = new $rpc();
 	if ($myObj->handlesType($IS4C_LOCAL->get("paycard_type"))){
 		break;
@@ -50,7 +53,7 @@ if ($result == PAYCARD_ERR_OK){
 else {
 	paycard_reset();
 	$IS4C_LOCAL->set("msgrepeat",0);
-	$json['main_frame'] = '/gui-modules/boxMsg2.php';
+	$json['main_frame'] = $IS4C_PATH.'gui-modules/boxMsg2.php';
 }
 
 echo array_to_json($json);

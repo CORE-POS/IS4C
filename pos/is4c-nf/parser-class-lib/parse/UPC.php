@@ -20,16 +20,18 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
+$IS4C_PATH = isset($IS4C_PATH)?$IS4C_PATH:"";
+if (empty($IS4C_PATH)){ while(!file_exists($IS4C_PATH."is4c.css")) $IS4C_PATH .= "../"; }
 
-if (!class_exists("Parser")) include_once($_SERVER["DOCUMENT_ROOT"]."/parser-class-lib/Parser.php");
-if (!function_exists("addItem")) include($_SERVER["DOCUMENT_ROOT"]."/lib/additem.php");
-if (!function_exists("boxMsg")) include($_SERVER["DOCUMENT_ROOT"]."/lib/drawscreen.php");
-if (!function_exists("nullwrap")) include($_SERVER["DOCUMENT_ROOT"]."/lib/lib.php");
-if (!function_exists("setglobalvalue")) include_once($_SERVER["DOCUMENT_ROOT"]."/lib/loadconfig.php");
-if (!function_exists("boxMsgscreen")) include_once($_SERVER["DOCUMENT_ROOT"]."/lib/clientscripts.php");
-if (!function_exists("list_items")) include_once($_SERVER["DOCUMENT_ROOT"]."/lib/listitems.php");
-if (!function_exists("memberID")) include_once($_SERVER["DOCUMENT_ROOT"]."/lib/prehkeys.php");
-if (!isset($IS4C_LOCAL)) include($_SERVER["DOCUMENT_ROOT"]."/lib/LocalStorage/conf.php");
+if (!class_exists("Parser")) include_once($IS4C_PATH."parser-class-lib/Parser.php");
+if (!function_exists("addItem")) include($IS4C_PATH."lib/additem.php");
+if (!function_exists("boxMsg")) include($IS4C_PATH."lib/drawscreen.php");
+if (!function_exists("nullwrap")) include($IS4C_PATH."lib/lib.php");
+if (!function_exists("setglobalvalue")) include_once($IS4C_PATH."lib/loadconfig.php");
+if (!function_exists("boxMsgscreen")) include_once($IS4C_PATH."lib/clientscripts.php");
+if (!function_exists("list_items")) include_once($IS4C_PATH."lib/listitems.php");
+if (!function_exists("memberID")) include_once($IS4C_PATH."lib/prehkeys.php");
+if (!isset($IS4C_LOCAL)) include($IS4C_PATH."lib/LocalStorage/conf.php");
 
 class UPC extends Parser {
 	function check($str){
@@ -43,7 +45,7 @@ class UPC extends Parser {
 	}
 
 	function upcscanned($entered) {
-		global $IS4C_LOCAL;
+		global $IS4C_LOCAL,$IS4C_PATH;
 		$ret = $this->default_json();
 
 		$hitareflag = 0;
@@ -96,7 +98,7 @@ class UPC extends Parser {
 				$IS4C_LOCAL->set("boxMsg","<b>".$row["upc"]." - ".$row["description"]."</b>
 					<br>Item not for sale
 					<br><font size=-1>[enter] to continue sale, [clear] to cancel</font>");
-				$ret['main_frame'] = "/gui-modules/boxMsg2.php";
+				$ret['main_frame'] = $IS4C_PATH."gui-modules/boxMsg2.php";
 				return $ret;
 			}
 		}
@@ -130,7 +132,7 @@ class UPC extends Parser {
 			$ret['output'] = boxMsg("fractional quantity cannot be accepted for this item");
 		elseif (($upc == "0000000008005" || $upc == "0000000008006") && ($IS4C_LOCAL->get("memberID") == "0")){
 			$IS4C_LOCAL->set("search_or_list",1);
-			$ret['main_frame'] = "/gui-modules/memlist.php";
+			$ret['main_frame'] = $IS4C_PATH."gui-modules/memlist.php";
 		}
 		elseif (($upc == "0000000008005") && ($IS4C_LOCAL->get("isMember") == 0))
 			$ret['output'] = boxMsg("<BR>member discount not applicable</B>");
@@ -146,7 +148,7 @@ class UPC extends Parser {
 			$qttyEnforced = $row["qttyEnforced"];
 
 			if (($qttyEnforced == 1) && ($IS4C_LOCAL->get("multiple") == 0) && ($IS4C_LOCAL->get("msgrepeat") == 0)) 
-				$ret['main_frame'] = "/gui-modules/qtty2.php";
+				$ret['main_frame'] = $IS4C_PATH."gui-modules/qtty2.php";
 			else $IS4C_LOCAL->set("qttyvalid",1);
 
 			if ($IS4C_LOCAL->get("qttyvalid") != 1) $db->close(); 
@@ -484,19 +486,19 @@ class UPC extends Parser {
 					$IS4C_LOCAL->set("endorseType","giftcert");
 					$IS4C_LOCAL->set("tenderamt",$total);
 					$IS4C_LOCAL->set("boxMsg","<B>".$total." gift certificate</B><BR>insert document<BR>press [enter] to endorse<P><FONT size='-1'>[clear] to cancel</FONT>");
-					$ret["main_frame"] = "/gui-modules/boxMsg2.php";
+					$ret["main_frame"] = $IS4C_PATH."gui-modules/boxMsg2.php";
 				}
 				elseif ($upc == "0000000008006" && $IS4C_LOCAL->get("msgrepeat") == 0) {
 					$IS4C_LOCAL->set("endorseType","stock");
 					$IS4C_LOCAL->set("tenderamt",$total);
 					$IS4C_LOCAL->set("boxMsg","<B>".$total." stock payment</B><BR>insert form<BR>press [enter] to endorse<P><FONT size='-1'>[clear] to cancel</FONT>");
-					$ret["main_frame"] = "/gui-modules/boxMsg2.php";
+					$ret["main_frame"] = $IS4C_PATH."gui-modules/boxMsg2.php";
 				}
 				elseif ($upc == "0000000008011" && $IS4C_LOCAL->get("msgrepeat") == 0) {
 					$IS4C_LOCAL->set("endorseType","classreg");
 					$IS4C_LOCAL->set("tenderamt",$total);
 					$IS4C_LOCAL->set("boxMsg","<B>".$total." class registration</B><BR>insert form<BR>press [enter] to endorse<P><FONT size='-1'>[clear] to cancel</FONT>");
-					$ret["main_frame"] = "/gui-modules/boxMsg2.php";
+					$ret["main_frame"] = $IS4C_PATH."gui-modules/boxMsg2.php";
 				}
 				elseif ($hitareflag == 1) 
 					$ret['output'] = boxMsg("item weight must be greater than tare weight");

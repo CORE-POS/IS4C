@@ -20,15 +20,17 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
+$IS4C_PATH = isset($IS4C_PATH)?$IS4C_PATH:"";
+if (empty($IS4C_PATH)){ while(!file_exists($IS4C_PATH."is4c.css")) $IS4C_PATH .= "../"; }
 
 if (!isset($IS4C_LOCAL))
-	include($_SERVER['DOCUMENT_ROOT'].'/lib/LocalStorage/conf.php');
+	include($IS4C_PATH.'lib/LocalStorage/conf.php');
 if (!function_exists('scaledisplaymsg'))
-	include($_SERVER['DOCUMENT_ROOT'].'/lib/drawscreen.php');
+	include($IS4C_PATH.'lib/drawscreen.php');
 if (!function_exists('array_to_json'))
-	include($_SERVER['DOCUMENT_ROOT'].'/lib/array_to_json.php');
+	include($IS4C_PATH.'lib/array_to_json.php');
 
-$readfile = $_SERVER['DOCUMENT_ROOT'].'/NewMagellan/scanner-scale';
+$readfile = $IS4C_PATH.'NewMagellan/scanner-scale';
 $i = 0;
 
 $scale_display = "";

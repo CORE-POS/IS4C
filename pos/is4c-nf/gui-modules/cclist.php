@@ -1,9 +1,9 @@
 <?php
 
-if (!class_exists("MainFramePage")) include_once($_SERVER["DOCUMENT_ROOT"]."/gui-class-lib/MainFramePage.php");
-if (!function_exists("paycard_reset")) include_once($_SERVER["DOCUMENT_ROOT"]."/lib/paycardLib.php");
-if (!function_exists("changeBothPages")) include_once($_SERVER["DOCUMENT_ROOT"]."/gui-base.php");
-if (!isset($IS4C_LOCAL)) include($_SERVER["DOCUMENT_ROOT"]."/lib/LocalStorage/conf.php");
+if (!class_exists("MainFramePage")) include_once($_SESSION["INCLUDE_PATH"]."/gui-class-lib/MainFramePage.php");
+if (!function_exists("paycard_reset")) include_once($_SESSION["INCLUDE_PATH"]."/lib/paycardLib.php");
+if (!function_exists("changeBothPages")) include_once($_SESSION["INCLUDE_PATH"]."/gui-base.php");
+if (!isset($IS4C_LOCAL)) include($_SESSION["INCLUDE_PATH"]."/lib/LocalStorage/conf.php");
 
 class giftcardlist extends MainFramePage {
 

@@ -20,10 +20,10 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
-if (!class_exists("MainFramePage")) include_once($_SERVER["DOCUMENT_ROOT"]."/gui-class-lib/MainFramePage.php");
-if (!function_exists("tDataConnect")) include($_SERVER["DOCUMENT_ROOT"]."/lib/connect.php");
-if (!function_exists("changeBothPages")) include($_SERVER["DOCUMENT_ROOT"]."/gui-base.php");
-if (!isset($IS4C_LOCAL)) include($_SERVER["DOCUMENT_ROOT"]."/lib/LocalStorage/conf.php");
+if (!class_exists("MainFramePage")) include_once($_SESSION["INCLUDE_PATH"]."/gui-class-lib/MainFramePage.php");
+if (!function_exists("tDataConnect")) include($_SESSION["INCLUDE_PATH"]."/lib/connect.php");
+if (!function_exists("changeBothPages")) include($_SESSION["INCLUDE_PATH"]."/gui-base.php");
+if (!isset($IS4C_LOCAL)) include($_SESSION["INCLUDE_PATH"]."/lib/LocalStorage/conf.php");
 
 class QKDisplay extends MainFramePage {
 
@@ -126,7 +126,7 @@ class QKDisplay extends MainFramePage {
 		echo "<div class=\"baseHeight\" style=\"border: solid 1px black;\">";
 		echo "<form action=\"".$_SERVER["PHP_SELF"]."\" method=\"post\">";
 
-		include($_SERVER["DOCUMENT_ROOT"]."/quickkeys/keys/"
+		include($_SESSION["INCLUDE_PATH"]."/quickkeys/keys/"
 			.$IS4C_LOCAL->get("qkNumber").".php");
 
 		$num_pages = ceil(count($my_keys)/9.0);

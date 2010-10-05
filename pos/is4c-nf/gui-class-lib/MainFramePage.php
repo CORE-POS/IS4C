@@ -31,8 +31,8 @@
  * printheaderb() and printfooter
  */
 
-if (!class_exists("BasicPage")) include_once($_SERVER["DOCUMENT_ROOT"]."/gui-class-lib/BasicPage.php");
-if (!function_exists("printheaderb")) include_once($_SERVER["DOCUMENT_ROOT"]."/lib/drawscreen.php");
+if (!class_exists("BasicPage")) include_once($_SESSION["INCLUDE_PATH"]."/gui-class-lib/BasicPage.php");
+if (!function_exists("printheaderb")) include_once($_SESSION["INCLUDE_PATH"]."/lib/drawscreen.php");
 
 class MainFramePage extends BasicPage {
 	var $header;

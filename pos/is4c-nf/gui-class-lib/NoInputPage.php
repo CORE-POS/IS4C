@@ -26,21 +26,25 @@
  * Automatically add the header w/o input box
  */
 
-if (!class_exists('BasicPage')) include($_SERVER['DOCUMENT_ROOT'].'/gui-class-lib/BasicPage.php');
-if (!function_exists('printfooter')) include($_SERVER['DOCUMENT_ROOT'].'/lib/drawscreen.php');
+$IS4C_PATH = isset($IS4C_PATH)?$IS4C_PATH:"";
+if (empty($IS4C_PATH)){ while(!file_exists($IS4C_PATH."is4c.css")) $IS4C_PATH .= "../"; }
+
+if (!class_exists('BasicPage')) include($IS4C_PATH.'gui-class-lib/BasicPage.php');
+if (!function_exists('printfooter')) include($IS4C_PATH.'lib/drawscreen.php');
 
 class NoInputPage extends BasicPage {
 
 	function print_page(){
+		global $IS4C_PATH;
 		?>
 		<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 		<html>
 		<?php
 		echo "<head>";
 		echo "<link rel=\"stylesheet\" type=\"text/css\"
-		    href=\"/is4c.css\">";
+		    href=\"{$IS4C_PATH}is4c.css\">";
 		echo "<script type=\"text/javascript\"
-			src=\"/js/jquery.js\"></script>";
+			src=\"{$IS4C_PATH}js/jquery.js\"></script>";
 		$this->head_content();
 		echo "</head>";
 		echo "<body>";

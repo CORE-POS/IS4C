@@ -21,14 +21,18 @@
 
 *********************************************************************************/
 
-if (!class_exists("NoInputPage")) include_once($_SERVER["DOCUMENT_ROOT"]."/gui-class-lib/NoInputPage.php");
-if (!function_exists("tDataConnect")) include($_SERVER["DOCUMENT_ROOT"]."/lib/connect.php");
-if (!function_exists("receipt")) include($_SERVER["DOCUMENT_ROOT"]."/lib/clientscripts.php");
-if (!isset($IS4C_LOCAL)) include($_SERVER["DOCUMENT_ROOT"]."/lib/LocalStorage/conf.php");
+$IS4C_PATH = isset($IS4C_PATH)?$IS4C_PATH:"";
+if (empty($IS4C_PATH)){ while(!file_exists($IS4C_PATH."is4c.css")) $IS4C_PATH .= "../"; }
+
+if (!class_exists("NoInputPage")) include_once($IS4C_PATH."gui-class-lib/NoInputPage.php");
+if (!function_exists("tDataConnect")) include($IS4C_PATH."lib/connect.php");
+if (!function_exists("receipt")) include($IS4C_PATH."lib/clientscripts.php");
+if (!isset($IS4C_LOCAL)) include($IS4C_PATH."lib/LocalStorage/conf.php");
 
 class cablist extends NoInputPage {
 
 	function head_content(){
+		global $IS4C_PATH;
 		?>
 		<script type="text/javascript" >
 		var prevKey = -1;
@@ -53,17 +57,17 @@ class cablist extends NoInputPage {
 			var ref = $('#selectlist').val();
 			if (ref != ""){
 				$.ajax({
-					url: '/ajax-callbacks/ajax-cabreceipt.php',
+					url: '<?php echo $IS4C_PATH; ?>ajax-callbacks/ajax-cabreceipt.php',
 					type: 'get',
 					cache: false,
 					data: 'input='+ref,
 					success: function(){
-						location='/gui-modules/pos2.php';
+						location='<?php echo $IS4C_PATH; ?>gui-modules/pos2.php';
 					}
 				});
 			}
 			else {
-				location='/gui-modules/pos2.php';
+				location='<?php echo $IS4C_PATH; ?>gui-modules/pos2.php';
 			}
 
 			return false;

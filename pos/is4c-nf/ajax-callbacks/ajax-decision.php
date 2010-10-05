@@ -20,16 +20,19 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
+
+$IS4C_PATH = isset($IS4C_PATH)?$IS4C_PATH:"";
+if (empty($IS4C_PATH)){ while(!file_exists($IS4C_PATH."is4c.css")) $IS4C_PATH .= "../"; }
  
-if (!isset($IS4C_LOCAL)) include($_SERVER["DOCUMENT_ROOT"]."/lib/LocalStorage/conf.php");
-if (!function_exists('array_to_json')) include($_SERVER['DOCUMENT_ROOT'].'/lib/array_to_json.php');
+if (!isset($IS4C_LOCAL)) include($IS4C_PATH."lib/LocalStorage/conf.php");
+if (!function_exists('array_to_json')) include($IS4C_PATH.'lib/array_to_json.php');
 
 $decision = isset($_REQUEST['input'])?strtoupper(trim($_REQUEST["input"])):'CL';
 
 if ($IS4C_LOCAL->get("requestType") != "" && strlen($decision) <= 0)
 	$decision = "CL";
 
-$ret = array('dest_page'=>'/gui-modules/pos2.php',
+$ret = array('dest_page'=>$IS4C_PATH.'gui-modules/pos2.php',
 		'endorse'=>false);
 
 if ($decision == "CL") {

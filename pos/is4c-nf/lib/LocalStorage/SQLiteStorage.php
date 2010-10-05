@@ -1,6 +1,6 @@
 <?php
 
-if (!class_exists("LocalStorage")) include_once($_SERVER["DOCUMENT_ROOT"]."/lib/LocalStorage/LocalStorage.php");
+if (!class_exists("LocalStorage")) include_once($_SESSION["INCLUDE_PATH"]."/lib/LocalStorage/LocalStorage.php");
 
 class SQLiteStorage extends LocalStorage {
 	var $db;
@@ -42,7 +42,7 @@ class SQLiteStorage extends LocalStorage {
 	}
 
 	function conn(){
-		return sqlite_open($_SERVER["DOCUMENT_ROOT"].
+		return sqlite_open($_SESSION["INCLUDE_PATH"].
 			"/lib/LocalStorage/SQLiteDB/db",
 			0666);
 

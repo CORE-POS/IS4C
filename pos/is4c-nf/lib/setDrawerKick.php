@@ -22,7 +22,10 @@
 *********************************************************************************/
 
 // Sets the $_SESSION["kick"] variable to control when the drawer opens ----- apbw 03/29/05 Drawer Kick Patch
-if (!isset($IS4C_LOCAL)) include($_SERVER["DOCUMENT_ROOT"]."/lib/LocalStorage/conf.php");
+$IS4C_PATH = isset($IS4C_PATH)?$IS4C_PATH:"";
+if (empty($IS4C_PATH)){ while(!file_exists($IS4C_PATH."is4c.css")) $IS4C_PATH .= "../"; }
+
+if (!isset($IS4C_LOCAL)) include($IS4C_PATH."lib/LocalStorage/conf.php");
 
 
 function setDrawerKick()

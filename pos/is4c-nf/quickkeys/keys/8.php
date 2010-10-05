@@ -1,6 +1,6 @@
 <?php
 
-include_once($_SERVER["DOCUMENT_ROOT"]."/quickkeys/quickkey.php");
+include_once($_SESSION["INCLUDE_PATH"]."/quickkeys/quickkey.php");
 
 $my_keys = array(
 	new quickkey("Milk\nReturn","9999904"),

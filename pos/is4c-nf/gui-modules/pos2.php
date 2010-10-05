@@ -1,7 +1,7 @@
 <?php
 /*******************************************************************************
 
-    Copyright 2001, 2004 Wedge Community Co-op
+    Copyright 2010 Whole Foods Co-op
 
     This file is part of IS4C.
 
@@ -20,39 +20,43 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
+
+$IS4C_PATH = isset($IS4C_PATH)?$IS4C_PATH:"";
+if (empty($IS4C_PATH)){ while(!file_exists($IS4C_PATH."is4c.css")) $IS4C_PATH .= "../"; }
+
+ini_set('display_errors','1');
  
 session_cache_limiter('nocache');
 
-if (!class_exists("BasicPage")) include_once($_SERVER["DOCUMENT_ROOT"]."/gui-class-lib/BasicPage.php");
+if (!class_exists("BasicPage")) include_once($IS4C_PATH."gui-class-lib/BasicPage.php");
 
-if (!function_exists("lastpage")) include($_SERVER["DOCUMENT_ROOT"]."/lib/listitems.php");
-if (!function_exists("printheaderb")) include($_SERVER["DOCUMENT_ROOT"]."/lib/drawscreen.php");
-if (!function_exists("tender")) include($_SERVER["DOCUMENT_ROOT"]."/lib/prehkeys.php");
-//if (!function_exists("ccEntered")) include("ccEntered.php");
-if (!function_exists("drawerKick")) include_once($_SERVER["DOCUMENT_ROOT"]."/lib/printLib.php");
-if (!function_exists("get_preparse_chain")) include_once($_SERVER["DOCUMENT_ROOT"]."/parser-class-lib/Parser.php");
-if (!isset($IS4C_LOCAL)) include($_SERVER["DOCUMENT_ROOT"]."/lib/LocalStorage/conf.php");
+if (!function_exists("lastpage")) include($IS4C_PATH."lib/listitems.php");
+if (!function_exists("printheaderb")) include($IS4C_PATH."lib/drawscreen.php");
+if (!function_exists("tender")) include($IS4C_PATH."lib/prehkeys.php");
+if (!function_exists("drawerKick")) include_once($IS4C_PATH."lib/printLib.php");
+if (!function_exists("get_preparse_chain")) include_once($IS4C_PATH."parser-class-lib/Parser.php");
+if (!isset($IS4C_LOCAL)) include($IS4C_PATH."lib/LocalStorage/conf.php");
 
 class pos2 extends BasicPage {
 
 	function head_content(){
-		global $IS4C_LOCAL;
+		global $IS4C_LOCAL,$IS4C_PATH;
 		?>
-		<script type="text/javascript" src="/js/ajax-parser.js"></script>
+		<script type="text/javascript" src="<?php echo $IS4C_PATH; ?>js/ajax-parser.js"></script>
 		<script type="text/javascript">
 		function submitWrapper(){
 			var str = $('#reginput').val();
 			$('#reginput').val('');
-			runParser(str);
+			runParser(str,'<?php echo $IS4C_PATH; ?>');
 			return false;
 		}
 		function lockScreen(){
 			$.ajax({
-				'url': '/ajax-callbacks/ajax-lock.php',
+				'url': '<?php echo $IS4C_PATH; ?>ajax-callbacks/ajax-lock.php',
 				'type': 'get',
 				'cache': false,
 				'success': function(){
-					location = '/gui-modules/login3.php';
+					location = '<?php echo $IS4C_PATH; ?>gui-modules/login3.php';
 				}
 			});
 		}

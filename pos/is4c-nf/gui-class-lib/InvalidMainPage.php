@@ -36,7 +36,7 @@
  * unless you know what you're doing
  */
 
-if (!class_exists("MainFramePage.php")) include_once($_SERVER["DOCUMENT_ROOT"]."/gui-class-lib/MainFramePage.php");
+if (!class_exists("MainFramePage.php")) include_once($_SESSION["INCLUDE_PATH"]."/gui-class-lib/MainFramePage.php");
 
 class InvalidMainPage extends MainFramePage {
 	var $INVALID;

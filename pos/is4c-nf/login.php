@@ -1,7 +1,7 @@
 <?php
 /*******************************************************************************
 
-    Copyright 2001, 2004 Wedge Community Co-op
+    Copyright 2010 Whole Foods Co-op
 
     This file is part of IS4C.
 
@@ -21,21 +21,18 @@
 
 *********************************************************************************/
 
-if (!function_exists("pDataConnect")) include($_SERVER["DOCUMENT_ROOT"]."/lib/connect.php");
-if (!function_exists("initiate_session")) include($_SERVER["DOCUMENT_ROOT"]."/lib/session.php");
-if (!isset($IS4C_LOCAL)) include($_SERVER["DOCUMENT_ROOT"]."/lib/LocalStorage/conf.php");
+$IS4C_PATH = isset($IS4C_PATH)?$IS4C_PATH:"";
+if (empty($IS4C_PATH)){ while(!file_exists($IS4C_PATH."is4c.css")) $IS4C_PATH .= "../"; }
+
+if (!function_exists("pDataConnect")) include($IS4C_PATH."lib/connect.php");
+if (!function_exists("initiate_session")) include($IS4C_PATH."lib/session.php");
+if (!isset($IS4C_LOCAL)) include($IS4C_PATH."lib/LocalStorage/conf.php");
 
 initiate_session();
 
 if ($IS4C_LOCAL->get("SessionFirstRun") == "")
 	$IS4C_LOCAL->set("SessionFirstRun",1);
 
-/*
-$IS4C_LOCAL->set("gui-input","/gui-modules/blank.html");
-$IS4C_LOCAL->set("gui-main","/gui-modules/login2.php");
-$IS4C_LOCAL->set("gui-scale","no");
- */
-
-header("Location: /gui-modules/login2.php");
+header("Location: {$_SESSION['URL_PATH']}/gui-modules/login2.php");
 ?>
 

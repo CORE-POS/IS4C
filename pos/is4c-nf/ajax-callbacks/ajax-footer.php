@@ -20,11 +20,15 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
+$IS4C_PATH = isset($IS4C_PATH)?$IS4C_PATH:"";
+if (empty($IS4C_PATH)){ while(!file_exists($IS4C_PATH."is4c.css")) $IS4C_PATH .= "../"; }
+
+ini_set('display_errors','1');
 
 if (!isset($IS4C_LOCAL))
-	include($_SERVER['DOCUMENT_ROOT'].'/lib/LocalStorage/conf.php');
+	include($IS4C_PATH.'lib/LocalStorage/conf.php');
 if (!function_exists('printfooter'))
-	include($_SERVER['DOCUMENT_ROOT'].'/lib/drawscreen.php');
+	include($IS4C_PATH.'lib/drawscreen.php');
 
 if ($IS4C_LOCAL->get("away") == 1)
 	echo printfooterb();

@@ -21,16 +21,19 @@
 
 *********************************************************************************/
 
-if (!class_exists("BasicPage")) include_once($_SERVER["DOCUMENT_ROOT"]."/gui-class-lib/BasicPage.php");
-if(!function_exists("boxMsg")) include($_SERVER["DOCUMENT_ROOT"]."/lib/drawscreen.php");
-if (!function_exists("deptkey")) include($_SERVER["DOCUMENT_ROOT"]."/lib/prehkeys.php");
-if (!isset($IS4C_LOCAL)) include($_SERVER["DOCUMENT_ROOT"]."/lib/LocalStorage/conf.php");
+$IS4C_PATH = isset($IS4C_PATH)?$IS4C_PATH:"";
+if (empty($IS4C_PATH)){ while(!file_exists($IS4C_PATH."is4c.css")) $IS4C_PATH .= "../"; }
+
+if (!class_exists("BasicPage")) include_once($IS4C_PATH."gui-class-lib/BasicPage.php");
+if(!function_exists("boxMsg")) include($IS4C_PATH."lib/drawscreen.php");
+if (!function_exists("deptkey")) include($IS4C_PATH."lib/prehkeys.php");
+if (!isset($IS4C_LOCAL)) include($IS4C_PATH."lib/LocalStorage/conf.php");
 
 
 class UnpaidAR extends BasicPage {
 
 	function preprocess(){
-		global $IS4C_LOCAL;
+		global $IS4C_LOCAL,$IS4C_PATH;
 		if (isset($_REQUEST['reginput'])){
 			$dec = $_REQUEST['reginput'];
 			$amt = $IS4C_LOCAL->get("old_ar_balance");
@@ -42,7 +45,7 @@ class UnpaidAR extends BasicPage {
 				if ($IS4C_LOCAL->get('inactMem') == 1){
 					setMember($IS4C_LOCAL->get("defaultNonMem"),1);
 				}
-				header("Location: /gui-modules/pos2.php");
+				header("Location: {$IS4C_PATH}gui-modules/pos2.php");
 				return False;
 			}
 			elseif ($dec == "" || strtoupper($dec) == "BQ"){
@@ -57,7 +60,7 @@ class UnpaidAR extends BasicPage {
 					$IS4C_LOCAL->set("isMember",1);
 					ttl();
 				}
-				header("Location: /gui-modules/pos2.php");
+				header("Location: {$IS4C_PATH}gui-modules/pos2.php");
 				return False;
 			}
 		}

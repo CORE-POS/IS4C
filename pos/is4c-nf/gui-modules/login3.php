@@ -21,9 +21,14 @@
 
 *********************************************************************************/
 
-if (!class_exists("BasicPage")) include_once($_SERVER["DOCUMENT_ROOT"]."/gui-class-lib/BasicPage.php");
-if (!function_exists("authenticate")) include($_SERVER["DOCUMENT_ROOT"]."/lib/authenticate.php");
-if (!isset($IS4C_LOCAL)) include($_SERVER["DOCUMENT_ROOT"]."/lib/LocalStorage/conf.php");
+$IS4C_PATH = isset($IS4C_PATH)?$IS4C_PATH:"";
+if (empty($IS4C_PATH)){ while(!file_exists($IS4C_PATH."is4c.css")) $IS4C_PATH .= "../"; }
+
+ini_set('display_errors','1');
+
+if (!class_exists("BasicPage")) include_once($IS4C_PATH."gui-class-lib/BasicPage.php");
+if (!function_exists("authenticate")) include($IS4C_PATH."lib/authenticate.php");
+if (!isset($IS4C_LOCAL)) include($IS4C_PATH."lib/LocalStorage/conf.php");
 
 class login3 extends BasicPage {
 
@@ -32,17 +37,18 @@ class login3 extends BasicPage {
 	var $msg;
 
 	function preprocess(){
+		global $IS4C_PATH;
 		$this->color = "#004080";
-		$this->img = "/graphics/bluekey4.gif";
+		$this->img = $IS4C_PATH."graphics/bluekey4.gif";
 		$this->msg = "please enter password";
 		if (isset($_REQUEST['reginput'])){
 			if (authenticate($_REQUEST['reginput'],4)){
-				header("Location: /gui-modules/pos2.php");
+				header("Location: {$IS4C_PATH}gui-modules/pos2.php");
 				return False;
 			}
 			else {
 				$this->color = "#800000";
-				$this->img = "/graphics/redkey4.gif";
+				$this->img = $IS4C_PATH."graphics/redkey4.gif";
 				$this->msg = "password invalid, please re-enter";
 			}
 		}

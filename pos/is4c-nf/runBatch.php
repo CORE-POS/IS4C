@@ -22,10 +22,10 @@
 *********************************************************************************/
 // session_start(); 
 
-if (!function_exists("changeBothPages")) include($_SERVER["DOCUMENT_ROOT"]."/gui-base.php");
-if (!function_exists("mDataConnect")) include($_SERVER["DOCUMENT_ROOT"]."/lib/connect.php");
-if (!class_exists("UPC")) include($_SERVER["DOCUMENT_ROOT"]."/parser-class-lib/UPC.php");
-if (!isset($IS4C_LOCAL)) include($_SERVER["DOCUMENT_ROOT"]."/lib/LocalStorage/conf.php");
+if (!function_exists("changeBothPages")) include($_SESSION["INCLUDE_PATH"]."/gui-base.php");
+if (!function_exists("mDataConnect")) include($_SESSION["INCLUDE_PATH"]."/lib/connect.php");
+if (!class_exists("UPC")) include($_SESSION["INCLUDE_PATH"]."/parser-class-lib/UPC.php");
+if (!isset($IS4C_LOCAL)) include($_SESSION["INCLUDE_PATH"]."/lib/LocalStorage/conf.php");
 
 $batchID = "";
 if (isset($_POST["selectlist"])) 

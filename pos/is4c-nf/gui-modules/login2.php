@@ -21,9 +21,14 @@
 
 *********************************************************************************/
 
-if (!class_exists("BasicPage")) include($_SERVER["DOCUMENT_ROOT"]."/gui-class-lib/BasicPage.php");
-if (!function_exists("authenticate")) include($_SERVER["DOCUMENT_ROOT"]."/lib/authenticate.php");
-if (!isset($IS4C_LOCAL)) include($_SERVER["DOCUMENT_ROOT"]."/lib/LocalStorage/conf.php");
+$IS4C_PATH = isset($IS4C_PATH)?$IS4C_PATH:"";
+if (empty($IS4C_PATH)){ while(!file_exists($IS4C_PATH."is4c.css")) $IS4C_PATH .= "../"; }
+
+ini_set('display_errors','1');
+
+if (!class_exists("BasicPage")) include($IS4C_PATH."gui-class-lib/BasicPage.php");
+if (!function_exists("authenticate")) include($IS4C_PATH."lib/authenticate.php");
+if (!isset($IS4C_LOCAL)) include($IS4C_PATH."lib/LocalStorage/conf.php");
 
 class login2 extends BasicPage {
 
@@ -36,7 +41,7 @@ class login2 extends BasicPage {
 
 		if (isset($_REQUEST['reginput'])){
 			if (authenticate($_REQUEST['reginput'])){
-				header("Location: /gui-modules/pos2.php");
+				header("Location: {$_SESSION["URL_PATH"]}/gui-modules/pos2.php");
 				return False;
 			}
 			else {
@@ -59,7 +64,7 @@ class login2 extends BasicPage {
 	}
 
 	function body_content(){
-		global $IS4C_LOCAL;
+		global $IS4C_LOCAL, $IS4C_PATH;
 		$this->add_onload_command("\$('#reginput').focus();\n
 					   \$('#scalebox').css('display','none');\n
 					   \$('body').css('background-image','none');\n");
@@ -91,10 +96,10 @@ class login2 extends BasicPage {
 			else {
 				echo "<a href='/bye.html' onclick=\"var cw=window.open('','Customer_Display'); cw.close()\" ";
 			}
-			echo "onmouseover=\"document.exit.src='/graphics/switchred2.gif';\" ";
-			echo "onmouseout=\"document.exit.src='/graphics/switchblue2.gif';\">";
+			echo "onmouseover=\"document.exit.src='{$IS4C_PATH}graphics/switchred2.gif';\" ";
+			echo "onmouseout=\"document.exit.src='{$IS4C_PATH}graphics/switchblue2.gif';\">";
 			?>
-			<img name="exit" border="0" src="/graphics/switchblue2.gif" /></a>
+			<img name="exit" border="0" src="<?php echo $IS4C_PATH; ?>graphics/switchblue2.gif" /></a>
 	
 		</div>
 		<form name="hidden">

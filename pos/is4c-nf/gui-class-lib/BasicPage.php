@@ -36,7 +36,10 @@
  * Any of these functions may be overriden by subclasses
  */
 
-if (!function_exists('scaledisplaymsg')) include($_SERVER['DOCUMENT_ROOT'].'/lib/drawscreen.php');
+$IS4C_PATH = isset($IS4C_PATH)?$IS4C_PATH:"";
+if (empty($IS4C_PATH)){ while(!file_exists($IS4C_PATH."is4c.css")) $IS4C_PATH .= "../"; }
+
+if (!function_exists('scaledisplaymsg')) include($IS4C_PATH.'lib/drawscreen.php');
 
 class BasicPage {
 
@@ -65,15 +68,16 @@ class BasicPage {
 	}
 
 	function print_page(){
+		global $IS4C_PATH;
 		?>
 		<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 		<html>
 		<?php
 		echo "<head>";
 		echo "<link rel=\"stylesheet\" type=\"text/css\"
-		    href=\"/is4c.css\">";
+		    href=\"{$IS4C_PATH}/is4c.css\">";
 		echo "<script type=\"text/javascript\"
-			src=\"/js/jquery.js\"></script>";
+			src=\"{$IS4C_PATH}/js/jquery.js\"></script>";
 		$this->head_content();
 		echo "</head>";
 		echo "<body>";
@@ -98,7 +102,7 @@ class BasicPage {
 	}
 
 	function input_header($action=""){
-		global $IS4C_LOCAL;
+		global $IS4C_LOCAL,$IS4C_PATH;
 		if (empty($action))
 			$action = "action=\"".$_SERVER['PHP_SELF']."\"";
 
@@ -149,21 +153,21 @@ class BasicPage {
 			<?php
 			if ($IS4C_LOCAL->get("training") == 1) {
 				echo "<span class=\"text\">training </span>"
-				     ."<img src='/graphics/BLUEDOT.GIF'>&nbsp;&nbsp;&nbsp;";
+				     ."<img src='{$IS4C_PATH}graphics/BLUEDOT.GIF'>&nbsp;&nbsp;&nbsp;";
 			}
 			elseif ($IS4C_LOCAL->get("standalone") == 0) {
-				echo "<img src='/graphics/GREENDOT.GIF'>&nbsp;&nbsp;&nbsp;";
+				echo "<img src='{$IS4C_PATH}graphics/GREENDOT.GIF'>&nbsp;&nbsp;&nbsp;";
 			}
 			else {
 				echo "<span class=\"text\">stand alone</span>"
-				     ."<img src='/graphics/REDDOT.GIF'>&nbsp;&nbsp;&nbsp;";
+				     ."<img src='{$IS4C_PATH}graphics/REDDOT.GIF'>&nbsp;&nbsp;&nbsp;";
 			}
 			if($IS4C_LOCAL->get("CCintegrate") == 1 && 
 				$IS4C_LOCAL->get("ccLive") == 1 && $IS4C_LOCAL->get("training") == 0){
-			   echo "<img src='/graphics/ccIn.gif'>&nbsp;";
+			   echo "<img src='{$IS4C_PATH}graphics/ccIn.gif'>&nbsp;";
 			}elseif($IS4C_LOCAL->get("CCintegrate") == 1 && 
 				($IS4C_LOCAL->get("training") == 1 || $IS4C_LOCAL->get("ccLive") == 0)){
-			   echo "<img src='/graphics/ccTest.gif'>&nbsp;";
+			   echo "<img src='{$IS4C_PATH}graphics/ccTest.gif'>&nbsp;";
 			}
 
 			echo "<span id=\"timeSpan\" class=\"time\">".$time."</span>\n";
@@ -262,9 +266,10 @@ class BasicPage {
 	}
 
 	function scanner_scale_polling($include_scans=True){
+		global $IS4C_PATH;
 		?>
 		<script type="text/javascript"
-			src="/js/poll-scale.js">
+			src="<?php echo $IS4C_PATH; ?>js/poll-scale.js">
 		</script>
 		<?php
 		if ($include_scans)

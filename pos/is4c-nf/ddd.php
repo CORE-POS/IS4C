@@ -22,8 +22,8 @@
 *********************************************************************************/
  // session_start(); 
 
-if (!function_exists("tDataConnect")) include($_SERVER["DOCUMENT_ROOT"]."/lib/connect.php");
-if (!isset($IS4C_LOCAL)) include($_SERVER["DOCUMENT_ROOT"]."/lib/LocalStorage/conf.php");
+if (!function_exists("tDataConnect")) include($_SESSION["INCLUDE_PATH"]."/lib/connect.php");
+if (!isset($IS4C_LOCAL)) include($_SESSION["INCLUDE_PATH"]."/lib/LocalStorage/conf.php");
 
 $IS4C_LOCAL->set("away",1);
 

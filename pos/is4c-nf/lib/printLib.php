@@ -21,13 +21,17 @@
 
 *********************************************************************************/
 
-if (!function_exists("truncate2")) include_once($_SERVER["DOCUMENT_ROOT"]."/lib/lib.php");
-if (!function_exists("chargeOK")) include_once($_SERVER["DOCUMENT_ROOT"]."/lib/prehkeys.php");
+$IS4C_PATH = isset($IS4C_PATH)?$IS4C_PATH:"";
+if (empty($IS4C_PATH)){ while(!file_exists($IS4C_PATH."is4c.css")) $IS4C_PATH .= "../"; }
 
-if (!class_exists("ESCPOSPrintHandler")) include_once($_SERVER["DOCUMENT_ROOT"]."/lib/PrintHandlers/ESCPOSPrintHandler.class.php");
-if (!class_exists("Bitmap")) include_once($_SERVER["DOCUMENT_ROOT"]."/lib/Bitmap4.class.php");
+if (!function_exists("truncate2")) include_once($IS4C_PATH."lib/lib.php");
+if (!function_exists("chargeOK")) include_once($IS4C_PATH."lib/prehkeys.php");
 
-if (!isset($IS4C_LOCAL)) include_once($_SERVER["DOCUMENT_ROOT"]."/lib/LocalStorage/conf.php");
+if (!class_exists("ESCPOSPrintHandler")) include_once($IS4C_PATH."lib/PrintHandlers/ESCPOSPrintHandler.class.php");
+if (!class_exists("Bitmap")) include_once($IS4C_PATH."lib/Bitmap4.class.php");
+
+if (!isset($IS4C_LOCAL)) include_once($IS4C_PATH."lib/LocalStorage/conf.php");
+
 // --------------------------------------------------------------
 function build_time($timestamp) {
 
@@ -44,9 +48,11 @@ function writeLine($text) {
 
 	if ($IS4C_LOCAL->get("print") != 0) {
 
-	$fp = fopen($IS4C_LOCAL->get("printerPort"), "w");
-	fwrite($fp, $text);
-	fclose($fp);
+		if (is_writable($IS4C_LOCAL->get("printerPort"))){
+			$fp = fopen($IS4C_LOCAL->get("printerPort"), "w");
+			fwrite($fp, $text);
+			fclose($fp);
+		}
 	}
 }
 // --------------------------------------------------------------
@@ -567,7 +573,7 @@ function printCCSigSlip($dateTimeStamp,$ref,$storeCopy=True,$rp=0){
 	}
 
 	if ($IS4C_LOCAL->get("SigCapture") != "" && $IS4C_LOCAL->get("SigSlipType") == "ccSlip"){
-		$sig_file = $_SERVER["DOCUMENT_ROOT"]."/graphics/SigImages/"
+		$sig_file = $_SESSION["INCLUDE_PATH"]."/graphics/SigImages/"
 			.$IS4C_LOCAL->get("CapturedSigFile");
 
 		$bmp = new Bitmap();

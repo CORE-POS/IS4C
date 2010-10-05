@@ -21,8 +21,8 @@
 
 *********************************************************************************/
 
-if (!class_exists("Parser")) include_once($_SERVER["DOCUMENT_ROOT"]."/parser-class-lib/Parser.php");
-if (!function_exists("staffCharge")) include_once($_SERVER["DOCUMENT_ROOT"]."/lib/prehkeys.php");
+if (!class_exists("Parser")) include_once($_SESSION["INCLUDE_PATH"]."/parser-class-lib/Parser.php");
+if (!function_exists("staffCharge")) include_once($_SESSION["INCLUDE_PATH"]."/lib/prehkeys.php");
 
 class StaffCharge extends Parser {
 	var $left;

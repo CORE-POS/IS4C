@@ -32,7 +32,7 @@ class quickkey {
 				src=\"%s\" />
 				<input type=\"hidden\" name=\"%s\"
 				value=\"%s\" />",$id,$this->title,
-				$_SERVER["DOCUMENT_ROOT"].
+				$_SESSION["INCLUDE_PATH"].
 				"/quickkeys/imgs/".$this->img,
 				md5($this->title),
 				$this->output_text);

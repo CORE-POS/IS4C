@@ -21,11 +21,11 @@
 
     *********************************************************************************/
 
-if (!function_exists("tDataConnect")) include_once($_SERVER["DOCUMENT_ROOT"]."/lib/connect.php");
-if (!function_exists("addItem")) include_once($_SERVER["DOCUMENT_ROOT"]."/lib/additem.php");
-if (!function_exists("changeBothPages")) include_once($_SERVER["DOCUMENT_ROOT"]."/gui-base.php");
-if (!function_exists("setMember")) include_once($_SERVER["DOCUMENT_ROOT"]."/lib/prehkeys.php");
-if (!isset($IS4C_LOCAL)) include($_SERVER["DOCUMENT_ROOT"]."/lib/LocalStorage/conf.php");
+if (!function_exists("tDataConnect")) include_once($_SESSION["INCLUDE_PATH"]."/lib/connect.php");
+if (!function_exists("addItem")) include_once($_SESSION["INCLUDE_PATH"]."/lib/additem.php");
+if (!function_exists("changeBothPages")) include_once($_SESSION["INCLUDE_PATH"]."/gui-base.php");
+if (!function_exists("setMember")) include_once($_SESSION["INCLUDE_PATH"]."/lib/prehkeys.php");
+if (!isset($IS4C_LOCAL)) include($_SESSION["INCLUDE_PATH"]."/lib/LocalStorage/conf.php");
 
 $trans_num = "";
 if (isset($_POST["reginput"]))

@@ -23,11 +23,11 @@
  
 session_cache_limiter('nocache');
 
-if (!class_exists("BasicPage")) include_once($_SERVER["DOCUMENT_ROOT"]."/gui-class-lib/BasicPage.php");
+if (!class_exists("BasicPage")) include_once($_SESSION["INCLUDE_PATH"]."/gui-class-lib/BasicPage.php");
 
-if (!function_exists("lastpage")) include($_SERVER["DOCUMENT_ROOT"]."/lib/listitems.php");
-if (!function_exists("printheaderb")) include($_SERVER["DOCUMENT_ROOT"]."/lib/drawscreen.php");
-if (!isset($IS4C_LOCAL)) include($_SERVER["DOCUMENT_ROOT"]."/lib/LocalStorage/conf.php");
+if (!function_exists("lastpage")) include($_SESSION["INCLUDE_PATH"]."/lib/listitems.php");
+if (!function_exists("printheaderb")) include($_SESSION["INCLUDE_PATH"]."/lib/drawscreen.php");
+if (!isset($IS4C_LOCAL)) include($_SESSION["INCLUDE_PATH"]."/lib/LocalStorage/conf.php");
 
 class posCustDisplay extends BasicPage {
 

@@ -38,7 +38,7 @@
  * what you're doing)
  */
 
-if (!class_exists("BasicPage")) include_once($_SERVER["DOCUMENT_ROOT"]."/gui-class-lib/BasicPage.php");
+if (!class_exists("BasicPage")) include_once($_SESSION["INCLUDE_PATH"]."/gui-class-lib/BasicPage.php");
 
 class InvalidPage extends BasicPage {
 	

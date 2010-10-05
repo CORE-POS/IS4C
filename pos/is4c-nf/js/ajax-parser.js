@@ -1,12 +1,16 @@
-function runParser(input_str){
+var IS4C_JS_PREFIX = "";
+
+function runParser(input_str,rel_prefix){
+	IS4C_JS_PREFIX = rel_prefix;
 	$.ajax({
-		url: '/ajax-callbacks/ajax-parser.php',
+		url: IS4C_JS_PREFIX+'ajax-callbacks/ajax-parser.php',
 		type: 'GET',
 		data: "input="+input_str,
 		dataType: "json",
 		cache: false,
 		error: function(xml_ro,st,err){
 			alert(st); alert(xml_ro.status);
+			alert(xml_ro);
 		},
 		success: parserHandler
 		});
@@ -23,7 +27,7 @@ function parserHandler(data,status_str,xml_ro){
 
 	if (data.redraw_footer){
 		$.ajax({
-			url: '/ajax-callbacks/ajax-footer.php',
+			url: IS4C_JS_PREFIX+'ajax-callbacks/ajax-footer.php',
 			type: 'GET',
 			cache: false,
 			success: function(data){
@@ -34,7 +38,7 @@ function parserHandler(data,status_str,xml_ro){
 
 	if (data.receipt){
 		$.ajax({
-			url: '/ajax-callbacks/ajax-end.php',
+			url: IS4C_JS_PREFIX+'ajax-callbacks/ajax-end.php',
 			type: 'GET',
 			data: 'receiptType='+data.receipt,
 			cache: false,
@@ -45,7 +49,7 @@ function parserHandler(data,status_str,xml_ro){
 
 	if (data.scale){
 		$.ajax({
-			url: '/ajax-callbacks/ajax-scale.php',
+			url: IS4C_JS_PREFIX+'ajax-callbacks/ajax-scale.php',
 			type: 'get',
 			data: 'input='+data.scale,
 			cache: false,
@@ -56,6 +60,6 @@ function parserHandler(data,status_str,xml_ro){
 	}
 
 	if (data.retry){
-		setTimeout("runParser('"+data.retry+"');",700);
+		setTimeout("runParser('"+data.retry+"','"+IS4C_JS_PREFIX+"');",700);
 	}
 }

@@ -20,10 +20,13 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
-if (!class_exists("BasicPage")) include_once($_SERVER["DOCUMENT_ROOT"]."/gui-class-lib/BasicPage.php");
-if (!function_exists("udpSend")) include_once($_SERVER["DOCUMENT_ROOT"]."/lib/udpSend.php");
-if (!function_exists("printfooter")) include_once($_SERVER["DOCUMENT_ROOT"]."/lib/drawscreen.php");
-if (!isset($IS4C_LOCAL)) include($_SERVER["DOCUMENT_ROOT"]."/lib/LocalStorage/conf.php");
+$IS4C_PATH = isset($IS4C_PATH)?$IS4C_PATH:"";
+if (empty($IS4C_PATH)){ while(!file_exists($IS4C_PATH."is4c.css")) $IS4C_PATH .= "../"; }
+
+if (!class_exists("BasicPage")) include_once($IS4C_PATH."gui-class-lib/BasicPage.php");
+if (!function_exists("udpSend")) include_once($IS4C_PATH."lib/udpSend.php");
+if (!function_exists("printfooter")) include_once($IS4C_PATH."lib/drawscreen.php");
+if (!isset($IS4C_LOCAL)) include($IS4C_PATH."lib/LocalStorage/conf.php");
 
 class qtty2 extends BasicPage {
 
@@ -31,6 +34,8 @@ class qtty2 extends BasicPage {
 	var $msg;
 
 	function preprocess(){
+		global $IS4C_PATH;
+
 		$this->box_color="#004080";
 		$this->msg = "quantity required";
 
@@ -41,14 +46,14 @@ class qtty2 extends BasicPage {
 			$IS4C_LOCAL->set("qttyvalid",0);
 			$IS4C_LOCAL->set("quantity",0);
 			$IS4C_LOCAL->set("msgrepeat",0);
-			header("Location: /gui-modules/pos2.php");
+			header("Location: {$IS4C_PATH}gui-modules/pos2.php");
 			return False;
 		}
 		elseif (is_numeric($qtty) && $qtty < 9999 && $qtty >= 0) {
 			$IS4C_LOCAL->set("qttyvalid",1);
 			$IS4C_LOCAL->set("strRemembered",$qtty."*".$IS4C_LOCAL->get("item"));
 			$IS4C_LOCAL->set("msgrepeat",2);
-			header("Location: /gui-modules/pos2.php");
+			header("Location: {$IS4C_PATH}gui-modules/pos2.php");
 			return False;
 		}
 

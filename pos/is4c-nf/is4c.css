@@ -5,7 +5,7 @@ div#boundingBox { width: 675px; }
 /*********************************************
  * main display
 *********************************************/
-div.baseHeight { height: 305px; width: 100%; text-align: center; }
+div.baseHeight { height: 325px; width: 100%; text-align: center; }
 div.training { background-color: #aa0000; }
 div.centerOffset { padding-top: 80px; }
 div.centeredDisplay { margin-left: auto; margin-right: auto; width: 40%;

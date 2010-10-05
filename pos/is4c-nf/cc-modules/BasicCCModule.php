@@ -29,8 +29,8 @@
  *
  */
 
-if (!function_exists("paycard_errorText")) include_once($_SERVER["DOCUMENT_ROOT"]."/lib/paycardLib.php");
-if (!isset($IS4C_LOCAL)) include($_SERVER["DOCUMENT_ROOT"]."/lib/LocalStorage/conf.php");
+if (!function_exists("paycard_errorText")) include_once($_SESSION["INCLUDE_PATH"]."/lib/paycardLib.php");
+if (!isset($IS4C_LOCAL)) include($_SESSION["INCLUDE_PATH"]."/lib/LocalStorage/conf.php");
 
 class BasicCCModule {
 	/* constructor
@@ -133,7 +133,7 @@ class BasicCCModule {
 		curl_setopt($curl_handle, CURLOPT_TIMEOUT,30);
 		//curl_setopt($curl_handle, CURLOPT_SSL_VERIFYPEER, 0);
 		curl_setopt($curl_handle, CURLOPT_CAINFO, 
-			$_SERVER["DOCUMENT_ROOT"]."/cc-modules/cacert.pem");
+			$_SESSION["INCLUDE_PATH"]."/cc-modules/cacert.pem");
 		if ($type == 'SOAP'){
 			curl_setopt($curl_handle, CURLOPT_HTTPHEADER,
 				array("SOAPAction: ".$this->SOAPACTION,

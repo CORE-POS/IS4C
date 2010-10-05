@@ -28,18 +28,22 @@
  * variable
  */
 
-if (!class_exists("NoInputPage")) include_once($_SERVER["DOCUMENT_ROOT"]."/gui-class-lib/NoInputPage.php");
-if (!isset($IS4C_LOCAL)) include($_SERVER["DOCUMENT_ROOT"]."/lib/LocalStorage/conf.php");
+$IS4C_PATH = isset($IS4C_PATH)?$IS4C_PATH:"";
+if (empty($IS4C_PATH)){ while(!file_exists($IS4C_PATH."is4c.css")) $IS4C_PATH .= "../"; }
+
+if (!class_exists("NoInputPage")) include_once($IS4C_PATH."gui-class-lib/NoInputPage.php");
+if (!isset($IS4C_LOCAL)) include($IS4C_PATH."lib/LocalStorage/conf.php");
 
 class requestInfo extends NoInputPage {
 
 	function head_content(){
+		global $IS4C_PATH;
 		?>
 		<script type="text/javascript">
 		function submitWrapper(){
 			var str = $('#reginput').val();
 			$.ajax({
-				url: '/ajax-callbacks/ajax-decision.php',
+				url: '<?php echo $IS4C_PATH; ?>ajax-callbacks/ajax-decision.php',
 				type: 'get',
 				data: 'input='+str,
 				dataType: 'json',
@@ -47,7 +51,7 @@ class requestInfo extends NoInputPage {
 				success: function(data){
 					if (data.endorse){
 						$.ajax({
-							url: '/ajax-callbacks/ajax-endorse.php',
+							url: '<?php echo $IS4C_PATH; ?>ajax-callbacks/ajax-endorse.php',
 							type: 'get',
 							cache: false,
 							success: function(){}

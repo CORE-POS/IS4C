@@ -21,13 +21,13 @@
 
 *********************************************************************************/
 
-if (!class_exists("BasicPage")) include_once($_SERVER["DOCUMENT_ROOT"]."/gui-class-lib/BasicPage.php");
-if (!function_exists("paycard_reset")) include_once($_SERVER["DOCUMENT_ROOT"]."/lib/paycardLib.php");
-if (!function_exists("ttl")) include_once($_SERVER["DOCUMENT_ROOT"]."/lib/prehkeys.php");
-if (!function_exists("printfooterb")) include_once($_SERVER["DOCUMENT_ROOT"]."/lib/drawscreen.php");
-if (!function_exists("tDataConnect")) include_once($_SERVER["DOCUMENT_ROOT"]."/lib/connect.php");
-if (!function_exists("udpSend")) include_once($_SERVER["DOCUMENT_ROOT"]."/lib/udpSend.php");
-if (!isset($IS4C_LOCAL)) include($_SERVER["DOCUMENT_ROOT"]."/lib/LocalStorage/conf.php");
+if (!class_exists("BasicPage")) include_once($_SESSION["INCLUDE_PATH"]."/gui-class-lib/BasicPage.php");
+if (!function_exists("paycard_reset")) include_once($_SESSION["INCLUDE_PATH"]."/lib/paycardLib.php");
+if (!function_exists("ttl")) include_once($_SESSION["INCLUDE_PATH"]."/lib/prehkeys.php");
+if (!function_exists("printfooterb")) include_once($_SESSION["INCLUDE_PATH"]."/lib/drawscreen.php");
+if (!function_exists("tDataConnect")) include_once($_SESSION["INCLUDE_PATH"]."/lib/connect.php");
+if (!function_exists("udpSend")) include_once($_SESSION["INCLUDE_PATH"]."/lib/udpSend.php");
+if (!isset($IS4C_LOCAL)) include($_SESSION["INCLUDE_PATH"]."/lib/LocalStorage/conf.php");
 
 class paycardSuccess extends BasicPage {
 

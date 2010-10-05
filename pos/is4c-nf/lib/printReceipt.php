@@ -20,9 +20,12 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
-if (!function_exists("setDrawerKick")) include($_SERVER["DOCUMENT_ROOT"]."/lib/setDrawerKick.php");  // apbw 03/29/05 Drawer Kick Patch
-if (!function_exists("writeLine")) include_once($_SERVER["DOCUMENT_ROOT"]."/lib/printLib.php");	// apbw 03/26/05 Wedge Printer Swap Patch
-if (!isset($IS4C_LOCAL)) include($_SERVER["DOCUMENT_ROOT"]."/lib/LocalStorage/conf.php");
+$IS4C_PATH = isset($IS4C_PATH)?$IS4C_PATH:"";
+if (empty($IS4C_PATH)){ while(!file_exists($IS4C_PATH."is4c.css")) $IS4C_PATH .= "../"; }
+
+if (!function_exists("setDrawerKick")) include($IS4C_PATH."lib/setDrawerKick.php");  // apbw 03/29/05 Drawer Kick Patch
+if (!function_exists("writeLine")) include_once($IS4C_PATH."lib/printLib.php");	// apbw 03/26/05 Wedge Printer Swap Patch
+if (!isset($IS4C_LOCAL)) include($IS4C_PATH."lib/LocalStorage/conf.php");
 
 // ----------------------------------------------------------- 
 // printReceipt.php is the main page for printing receipts.  

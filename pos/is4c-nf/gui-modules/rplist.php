@@ -21,18 +21,22 @@
 
 *********************************************************************************/
 
-if (!class_exists("NoInputPage")) include_once($_SERVER["DOCUMENT_ROOT"]."/gui-class-lib/NoInputPage.php");
-if (!function_exists("tDataConnect")) include($_SERVER["DOCUMENT_ROOT"]."/lib/connect.php");
-if (!function_exists("reprintReceipt")) include($_SERVER["DOCUMENT_ROOT"]."/lib/reprint.php");
-if (!isset($IS4C_LOCAL)) include($_SERVER["DOCUMENT_ROOT"]."/lib/LocalStorage/conf.php");
+$IS4C_PATH = isset($IS4C_PATH)?$IS4C_PATH:"";
+if (empty($IS4C_PATH)){ while(!file_exists($IS4C_PATH."is4c.css")) $IS4C_PATH .= "../"; }
+
+if (!class_exists("NoInputPage")) include_once($IS4C_PATH."gui-class-lib/NoInputPage.php");
+if (!function_exists("tDataConnect")) include($IS4C_PATH."lib/connect.php");
+if (!function_exists("reprintReceipt")) include($IS4C_PATH."lib/reprint.php");
+if (!isset($IS4C_LOCAL)) include($IS4C_PATH."lib/LocalStorage/conf.php");
 
 class rplist extends NoInputPage {
 
 	function preprocess(){
+		global $IS4C_PATH;
 		if (isset($_REQUEST['selectlist'])){
 			if (!empty($_REQUEST['selectlist']))
 				reprintReceipt($_REQUEST['selectlist']);
-			header("Location: /gui-modules/pos2.php");
+			header("Location: {$IS4C_PATH}gui-modules/pos2.php");
 			return False;
 		}
 		return True;

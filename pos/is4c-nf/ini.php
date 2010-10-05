@@ -20,14 +20,17 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
+$IS4C_PATH = isset($IS4C_PATH)?$IS4C_PATH:"";
+if (empty($IS4C_PATH)){ while(!file_exists($IS4C_PATH."is4c.css")) $IS4C_PATH .= "../"; }
+
 if (!isset($IS4C_LOCAL))
-	require_once($_SERVER["DOCUMENT_ROOT"]."/lib/LocalStorage/conf.php");
+	require_once($IS4C_PATH."lib/LocalStorage/conf.php");
 
 /************************************************************************************
 General Settings
 ************************************************************************************/
 
-$IS4C_LOCAL->set("OS",'win32');
+$IS4C_LOCAL->set("OS",'other');
 $IS4C_LOCAL->set("browserOnly",0);
 $IS4C_LOCAL->set("store",'wfc');
 $IS4C_LOCAL->set("laneno",99);
@@ -53,7 +56,7 @@ $IS4C_LOCAL->set("mPass",'');
 $IS4C_LOCAL->set("DBMS",'mysql');
 $IS4C_LOCAL->set("tDatabase",'translog');
 $IS4C_LOCAL->set("pDatabase",'opdata');
-$IS4C_LOCAL->set("localhost",'127.0.0.1');
+$IS4C_LOCAL->set("localhost",'');
 $IS4C_LOCAL->set("localUser",'');
 $IS4C_LOCAL->set("localPass",'');
 
@@ -66,7 +69,7 @@ $IS4C_LOCAL->set("newReceipt",1);
 
 //$IS4C_LOCAL->set("printerPort","LPT1:");
 //$IS4C_LOCAL->set("printerPort","/dev/lp0");
-$IS4C_LOCAL->set("printerPort",'C:/IS4C/fakereceipt.txt');
+$IS4C_LOCAL->set("printerPort",'fakereceipt.txt');
 
 $IS4C_LOCAL->set("receiptHeader1",'WHOLE FOODS COMMUNITY CO-OP');
 $IS4C_LOCAL->set("receiptHeader2",'(218) 728-0884');

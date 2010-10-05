@@ -21,11 +21,11 @@
 
 *********************************************************************************/
 
-if (!class_exists("MainFramePage")) include_once($_SERVER["DOCUMENT_ROOT"]."/gui-class-lib/MainFramePage.php");
-if (!function_exists("changeCurrentPage")) include_once($_SERVER["DOCUMENT_ROOT"]."/gui-base.php");
-if (!function_exists("printfooterb")) include_once($_SERVER["DOCUMENT_ROOT"]."/lib/drawscreen.php");
-if (!function_exists("receipt")) include_once($_SERVER["DOCUMENT_ROOT"]."/lib/clientscripts.php");
-if (!isset($IS4C_LOCAL)) include($_SERVER["DOCUMENT_ROOT"]."/lib/LocalStorage/conf.php");
+if (!class_exists("MainFramePage")) include_once($_SESSION["INCLUDE_PATH"]."/gui-class-lib/MainFramePage.php");
+if (!function_exists("changeCurrentPage")) include_once($_SESSION["INCLUDE_PATH"]."/gui-base.php");
+if (!function_exists("printfooterb")) include_once($_SESSION["INCLUDE_PATH"]."/lib/drawscreen.php");
+if (!function_exists("receipt")) include_once($_SESSION["INCLUDE_PATH"]."/lib/clientscripts.php");
+if (!isset($IS4C_LOCAL)) include($_SESSION["INCLUDE_PATH"]."/lib/LocalStorage/conf.php");
 
 class paycardSignature extends MainFramePage{
 
@@ -40,7 +40,7 @@ class paycardSignature extends MainFramePage{
 			}
 			else if (strlen($input) > 0){
 				$file = $_POST['input'];
-				$saveas = $_SERVER["DOCUMENT_ROOT"]."/graphics/SigImages/".basename($_POST['input']);
+				$saveas = $_SESSION["INCLUDE_PATH"]."/graphics/SigImages/".basename($_POST['input']);
 				copy($_POST['input'],$saveas);
 				unlink($_POST['input']);
 				$IS4C_LOCAL->set("CapturedSigFile",basename($saveas));

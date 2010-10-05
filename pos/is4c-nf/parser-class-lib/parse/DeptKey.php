@@ -20,10 +20,12 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
+$IS4C_PATH = isset($IS4C_PATH)?$IS4C_PATH:"";
+if (empty($IS4C_PATH)){ while(!file_exists($IS4C_PATH."is4c.css")) $IS4C_PATH .= "../"; }
 
-if (!class_exists("Parser")) include_once($_SERVER["DOCUMENT_ROOT"]."/parser-class-lib/Parser.php");
-if (!isset($IS4C_LOCAL)) include_once($_SERVER["DOCUMENT_ROOT"]."/lib/LocalStorage/conf.php");
-if (!function_exists("deptkey")) include_once($_SERVER["DOCUMENT_ROOT"]."/lib/prehkeys.php");
+if (!class_exists("Parser")) include_once($IS4C_PATH."parser-class-lib/Parser.php");
+if (!isset($IS4C_LOCAL)) include_once($IS4C_PATH."lib/LocalStorage/conf.php");
+if (!function_exists("deptkey")) include_once($IS4C_PATH."lib/prehkeys.php");
 
 class DeptKey extends Parser {
 	function check($str){
@@ -34,7 +36,7 @@ class DeptKey extends Parser {
 	}
 
 	function parse($str){
-		global $IS4C_LOCAL;
+		global $IS4C_LOCAL,$IS4C_PATH;
 
 		$split = explode("DP",$str);
 		$dept = $split[1];
@@ -55,14 +57,14 @@ class DeptKey extends Parser {
 				$IS4C_LOCAL->set("endorseType","stock");
 				$IS4C_LOCAL->set("equityAmt",$price);
 				$IS4C_LOCAL->set("boxMsg","<b>Equity Sale</b><br>Insert paperwork and press<br><font size=-1>[enter] to continue, [clear] to cancel</font>");
-				$ret['main_frame'] = '/gui-modules/boxMsg2.php';
+				$ret['main_frame'] = $IS4C_PATH.'gui-modules/boxMsg2.php';
 			}
 		}
 		elseif ($dept == 990){
 			$IS4C_LOCAL->set("warned",1);
 			$IS4C_LOCAL->set("warnBoxType","warnAR");
 			$IS4C_LOCAL->set("boxMsg","<b>A/R Payment Sale</b><br>remember to retain you<br>reprinted receipt<br><font size=-1>[enter] to continue, [clear] to cancel</font>");
-			$ret['main_frame'] = '/gui-modules/boxMsg2.php';
+			$ret['main_frame'] = $IS4C_PATH.'gui-modules/boxMsg2.php';
 		}
 		
 		if (!$ret['main_frame'])

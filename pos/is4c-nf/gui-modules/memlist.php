@@ -1,7 +1,7 @@
 <?php
 /*******************************************************************************
 
-   Copyright 2001, 2004 Wedge Community Co-op
+   Copyright 2010 Whole Foods Co-op
 
    This file is part of IS4C.
 
@@ -20,11 +20,17 @@
    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
-if (!class_exists("NoInputPage")) include_once($_SERVER["DOCUMENT_ROOT"]."/gui-class-lib/NoInputPage.php");
-if (!function_exists("pDataConnect")) include($_SERVER["DOCUMENT_ROOT"]."/lib/connect.php");
-if (!function_exists("setMember")) include($_SERVER["DOCUMENT_ROOT"]."/lib/prehkeys.php");
-if (!function_exists("printfooter")) include($_SERVER["DOCUMENT_ROOT"]."/lib/drawscreen.php");
-if (!isset($IS4C_LOCAL)) include($_SERVER["DOCUMENT_ROOT"]."/lib/LocalStorage/conf.php");
+
+$IS4C_PATH = isset($IS4C_PATH)?$IS4C_PATH:"";
+if (empty($IS4C_PATH)){ while(!file_exists($IS4C_PATH."is4c.css")) $IS4C_PATH .= "../"; }
+
+ini_set('display_errors','1');
+
+if (!class_exists("NoInputPage")) include_once($IS4C_PATH."gui-class-lib/NoInputPage.php");
+if (!function_exists("pDataConnect")) include($IS4C_PATH."lib/connect.php");
+if (!function_exists("setMember")) include($IS4C_PATH."lib/prehkeys.php");
+if (!function_exists("printfooter")) include($IS4C_PATH."lib/drawscreen.php");
+if (!isset($IS4C_LOCAL)) include($IS4C_PATH."lib/LocalStorage/conf.php");
 
 class memlist extends NoInputPage {
 
@@ -34,7 +40,7 @@ class memlist extends NoInputPage {
 	var $db;
 
 	function preprocess(){
-		global $IS4C_LOCAL;
+		global $IS4C_LOCAL,$IS4C_PATH;
 		$IS4C_LOCAL->set("away",1);
 		$entered = "";
 		if ($IS4C_LOCAL->get("idSearch") && strlen($IS4C_LOCAL->get("idSearch")) > 0) {
@@ -63,7 +69,7 @@ class memlist extends NoInputPage {
 			$IS4C_LOCAL->set("mirequested",0);
 			$IS4C_LOCAL->set("scan","scan");
 			$IS4C_LOCAL->set("reprintNameLookup",0);
-			header("Location: /gui-modules/pos2.php");
+			header("Location: {$IS4C_PATH}gui-modules/pos2.php");
 			return False;
 		}
 
@@ -89,9 +95,9 @@ class memlist extends NoInputPage {
 			setMember($row["CardNo"], $personNum,$row);
 			$IS4C_LOCAL->set("scan","scan");
 			if ($entered != $IS4C_LOCAL->get("defaultNonMem") && check_unpaid_ar($row["CardNo"]))
-				header("Location: /gui-modules/UnpaidAR.php");
+				header("Location: {$IS4C_PATH}gui-modules/UnpaidAR.php");
 			else
-				header("Location: /gui-modules/pos2.php");
+				header("Location: {$IS4C_PATH}gui-modules/pos2.php");
 			return False;
 		}
 
@@ -141,7 +147,7 @@ class memlist extends NoInputPage {
 		$db = $this->db;
 
 		echo "<div class=\"baseHeight\">"
-			."<form id=\"selectform\" method=\"post\" action=\"/gui-modules/memlist.php\">";
+			."<form id=\"selectform\" method=\"post\" action=\"{$_SERVER['PHP_SELF']}\">";
 
 		/* for no results, just throw up a re-do
 		 * otherwise, put results in a select box

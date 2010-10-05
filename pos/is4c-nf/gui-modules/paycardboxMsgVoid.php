@@ -21,11 +21,11 @@
 
 *********************************************************************************/
 
-if (!class_exists("PaycardProcessPage")) include_once($_SERVER["DOCUMENT_ROOT"]."/gui-class-lib/PaycardProcessPage.php");
-if (!function_exists("paycard_reset")) include_once($_SERVER["DOCUMENT_ROOT"]."/lib/paycardLib.php");
-if (!function_exists("printfooter")) include_once($_SERVER["DOCUMENT_ROOT"]."/lib/drawscreen.php");
-if (!function_exists("pDataConnect")) include_once($_SERVER["DOCUMENT_ROOT"]."/lib/connect.php");
-if (!isset($IS4C_LOCAL)) include($_SERVER["DOCUMENT_ROOT"]."/lib/LocalStorage/conf.php");
+if (!class_exists("PaycardProcessPage")) include_once($_SESSION["INCLUDE_PATH"]."/gui-class-lib/PaycardProcessPage.php");
+if (!function_exists("paycard_reset")) include_once($_SESSION["INCLUDE_PATH"]."/lib/paycardLib.php");
+if (!function_exists("printfooter")) include_once($_SESSION["INCLUDE_PATH"]."/lib/drawscreen.php");
+if (!function_exists("pDataConnect")) include_once($_SESSION["INCLUDE_PATH"]."/lib/connect.php");
+if (!isset($IS4C_LOCAL)) include($_SESSION["INCLUDE_PATH"]."/lib/LocalStorage/conf.php");
 
 
 class paycardboxMsgVoid extends BasicPage {
@@ -79,7 +79,7 @@ class paycardboxMsgVoid extends BasicPage {
 			$id = $IS4C_LOCAL->get("paycard_id");
 			foreach($IS4C_LOCAL->get("RegisteredPaycardClasses") as $rpc){
 				if (!class_exists($rpc)) 
-					include_once($_SERVER["DOCUMENT_ROOT"]."/cc-modules/$rpc.php");
+					include_once($_SESSION["INCLUDE_PATH"]."/cc-modules/$rpc.php");
 				$myObj = new $rpc();
 				if ($myObj->handlesType($IS4C_LOCAL->get("paycard_type"))){
 					$ret = $myObj->paycard_void($id);

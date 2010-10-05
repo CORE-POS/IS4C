@@ -21,14 +21,19 @@
 
 *********************************************************************************/
 
+$IS4C_PATH = isset($IS4C_PATH)?$IS4C_PATH:"";
+if (empty($IS4C_PATH)){ while(!file_exists($IS4C_PATH."is4c.css")) $IS4C_PATH .= "../"; }
+
+ini_set('display_errors','1');
+
 if (!isset($IS4C_LOCAL))
-	include($_SERVER['DOCUMENT_ROOT'].'/lib/LocalStorage/conf.php');
+	include($IS4C_PATH.'lib/LocalStorage/conf.php');
 if (!function_exists('array_to_json'))
-	include($_SERVER['DOCUMENT_ROOT'].'/lib/array_to_json.php');
+	include($IS4C_PATH.'lib/array_to_json.php');
 if (!function_exists('udpSend'))
-	include($_SERVER['DOCUMENT_ROOT'].'/lib/udpSend.php');
+	include($IS4C_PATH.'lib/udpSend.php');
 if (!function_exists('inputUnknown'))
-	include($_SERVER['DOCUMENT_ROOT'].'/lib/drawscreen.php');
+	include($IS4C_PATH.'lib/drawscreen.php');
 
 /*
  * MAIN PARSING BEGINS
@@ -53,7 +58,7 @@ if ($entered != ""){
 	/* this breaks the model a bit, but I'm putting
 	 * putting the CC parser first manually to minimize
 	 * code that potentially handles the PAN */
-	include_once($_SERVER["DOCUMENT_ROOT"]."/cc-modules/lib/paycardEntered.php");
+	include_once($_SESSION["INCLUDE_PATH"]."/cc-modules/lib/paycardEntered.php");
 	$pe = new paycardEntered();
 	if ($pe->check($entered)){
 		$valid = $pe->parse($entered);
@@ -71,7 +76,7 @@ if ($entered != ""){
 	 * This chain should be used for checking prefixes/suffixes
 	 * to set up appropriate $IS4C_LOCAL variables.
 	 */
-	$parser_lib_path = $_SERVER["DOCUMENT_ROOT"]."/parser-class-lib/";
+	$parser_lib_path = $_SESSION["INCLUDE_PATH"]."/parser-class-lib/";
 	if (!is_array($IS4C_LOCAL->get("preparse_chain")))
 		$IS4C_LOCAL->set("preparse_chain",get_preparse_chain());
 

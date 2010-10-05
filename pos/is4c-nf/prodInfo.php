@@ -21,10 +21,10 @@
 
 *********************************************************************************/
 
-if (!function_exists("changeCurrentPage")) include_once($_SERVER["DOCUMENT_ROOT"]."/gui-base.php");
-if (!function_exists("pDataConnect")) include_once($_SERVER["DOCUMENT_ROOT"]."/lib/connect.php");
-if (!function_exists("writeLine")) include_once($_SERVER["DOCUMENT_ROOT"]."/lib/printLib.php");
-if (!isset($IS4C_LOCAL)) include($_SERVER["DOCUMENT_ROOT"]."/lib/LocalStorage/conf.php");
+if (!function_exists("changeCurrentPage")) include_once($_SESSION["INCLUDE_PATH"]."/gui-base.php");
+if (!function_exists("pDataConnect")) include_once($_SESSION["INCLUDE_PATH"]."/lib/connect.php");
+if (!function_exists("writeLine")) include_once($_SESSION["INCLUDE_PATH"]."/lib/printLib.php");
+if (!isset($IS4C_LOCAL)) include($_SESSION["INCLUDE_PATH"]."/lib/LocalStorage/conf.php");
 
 $entered = strtoupper(trim($_POST["input"]));
 

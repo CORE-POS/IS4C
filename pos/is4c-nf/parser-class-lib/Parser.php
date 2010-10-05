@@ -58,7 +58,8 @@ class Parser {
 }
 
 function get_parse_chain(){
-	$PARSEROOT = $_SERVER["DOCUMENT_ROOT"]."/parser-class-lib/";
+	global $IS4C_PATH;
+	$PARSEROOT = $IS4C_PATH."parser-class-lib";
 
 	$parse_chain = array();
 	$first = "";
@@ -88,7 +89,9 @@ function get_parse_chain(){
 }
 
 function get_preparse_chain(){
-	$PARSEROOT = $_SERVER["DOCUMENT_ROOT"]."/parser-class-lib/";
+	global $IS4C_PATH;
+
+	$PARSEROOT = $IS4C_PATH."parser-class-lib";
 
 	$preparse_chain = array();
 	$dh = opendir($PARSEROOT."/preparse");

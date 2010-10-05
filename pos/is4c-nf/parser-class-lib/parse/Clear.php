@@ -21,9 +21,12 @@
 
 *********************************************************************************/
 
-if (!class_exists("Parser")) include_once($_SERVER["DOCUMENT_ROOT"]."/parser-class-lib/Parser.php");
-if (!function_exists("addtare")) include_once($_SERVER["DOCUMENT_ROOT"]."/lib/additem.php");
-if (!isset($IS4C_LOCAL)) include($_SERVER["DOCUMENT_ROOT"]."/lib/LocalStorage/conf.php");
+$IS4C_PATH = isset($IS4C_PATH)?$IS4C_PATH:"";
+if (empty($IS4C_PATH)){ while(!file_exists($IS4C_PATH."is4c.css")) $IS4C_PATH .= "../"; }
+
+if (!class_exists("Parser")) include_once($IS4C_PATH."parser-class-lib/Parser.php");
+if (!function_exists("addtare")) include_once($IS4C_PATH."lib/additem.php");
+if (!isset($IS4C_LOCAL)) include($IS4C_PATH."lib/LocalStorage/conf.php");
 
 class Clear extends Parser {
 	function check($str){
@@ -33,7 +36,7 @@ class Clear extends Parser {
 	}
 
 	function parse($str){
-		global $IS4C_LOCAL;
+		global $IS4C_LOCAL,$IS4C_PATH;
 
 		$IS4C_LOCAL->set("msgrepeat",0);
 		$IS4C_LOCAL->set("strendered","");
@@ -47,7 +50,7 @@ class Clear extends Parser {
 			addtare(0);
 
 		$ret = $this->default_json();
-		$ret['main_frame'] = "/gui-modules/pos2.php";
+		$ret['main_frame'] = $IS4C_PATH."gui-modules/pos2.php";
 		return $ret;
 	}
 

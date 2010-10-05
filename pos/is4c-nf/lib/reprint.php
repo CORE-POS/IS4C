@@ -21,14 +21,16 @@
 
 *********************************************************************************/
 
+$IS4C_PATH = isset($IS4C_PATH)?$IS4C_PATH:"";
+if (empty($IS4C_PATH)){ while(!file_exists($IS4C_PATH."is4c.css")) $IS4C_PATH .= "../"; }
 
 // ----------------------------------------------------------- 
 // reprint the specified receipt 
 // -----------------------------------------------------------
 
-if (!function_exists("pDataConnect")) include($_SERVER["DOCUMENT_ROOT"]."/lib/connect.php");
-if (!function_exists("writeLine")) include($_SERVER["DOCUMENT_ROOT"]."/lib/printLib.php");
-if (!isset($IS4C_LOCAL)) include($_SERVER["DOCUMENT_ROOT"]."/lib/LocalStorage/conf.php");
+if (!function_exists("pDataConnect")) include($IS4C_PATH."lib/connect.php");
+if (!function_exists("writeLine")) include($IS4C_PATH."lib/printLib.php");
+if (!isset($IS4C_LOCAL)) include($IS4C_PATH."lib/LocalStorage/conf.php");
 
 function reprintReceipt($trans_num=""){
 	global $IS4C_LOCAL;

@@ -28,23 +28,26 @@
  * variable
  */
 
-if (!class_exists("NoInputPage")) include_once($_SERVER["DOCUMENT_ROOT"]."/gui-class-lib/NoInputPage.php");
-if (!function_exists("pDataConnect")) include_once($_SERVER["DOCUMENT_ROOT"]."/lib/connect.php");
-if (!isset($IS4C_LOCAL)) include($_SERVER["DOCUMENT_ROOT"]."/lib/LocalStorage/conf.php");
+$IS4C_PATH = isset($IS4C_PATH)?$IS4C_PATH:"";
+if (empty($IS4C_PATH)){ while(!file_exists($IS4C_PATH."is4c.css")) $IS4C_PATH .= "../"; }
+
+if (!class_exists("NoInputPage")) include_once($IS4C_PATH."gui-class-lib/NoInputPage.php");
+if (!function_exists("pDataConnect")) include_once($IS4C_PATH."lib/connect.php");
+if (!isset($IS4C_LOCAL)) include($IS4C_PATH."lib/LocalStorage/conf.php");
 
 class adminlogin extends NoInputPage {
 	var $box_color;
 	var $msg;
 
 	function preprocess(){
-		global $IS4C_LOCAL;
+		global $IS4C_LOCAL,$IS4C_PATH;
 		$this->box_color="#004080";
 		$this->msg = "enter admin password";
 
 		if (isset($_REQUEST['reginput'])){
 			$passwd = $_REQUEST['reginput'];
 			if (strtoupper($passwd) == "CL"){
-				header("Location: /gui-modules/pos2.php");
+				header("Location: {$IS4C_PATH}gui-modules/pos2.php");
 				return False;	
 			}
 			else if (!is_numeric($passwd) || $passwd > 9999 || $passwd < 1){
@@ -83,7 +86,7 @@ class adminlogin extends NoInputPage {
 		<span class="larger">
 		<?php echo $heading ?>
 		</span><br />
-		<form name="form" method="post" autocomplete="off" action="/gui-modules/adminlogin.php">
+		<form name="form" method="post" autocomplete="off" action="<?php echo $_SERVER['PHP_SELF']; ?>">
 		<input type="password" id="reginput" name="reginput" tabindex="0" onblur="$('#reginput').focus();" />
 		</form>
 		<p />

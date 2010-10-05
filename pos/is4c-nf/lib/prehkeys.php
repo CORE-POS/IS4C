@@ -21,12 +21,15 @@
 
 *********************************************************************************/
 
-if (!function_exists("addItem")) include($_SERVER["DOCUMENT_ROOT"]."/lib/additem.php");
-if (!function_exists("truncate2")) include_once($_SERVER["DOCUMENT_ROOT"]."/lib/lib.php");
-if (!function_exists("lastpage")) include($_SERVER["DOCUMENT_ROOT"]."/lib/listitems.php");
-if (!function_exists("paycard_reset")) include($_SERVER["DOCUMENT_ROOT"]."/lib/paycardLib.php");
-if (!function_exists("blueLine")) include($_SERVER["DOCUMENT_ROOT"]."/lib/session.php");
-if (!function_exists("boxMsgscreen")) include($_SERVER["DOCUMENT_ROOT"]."/lib/clientscripts.php");
+$IS4C_PATH = isset($IS4C_PATH)?$IS4C_PATH:"";
+if (empty($IS4C_PATH)){ while(!file_exists($IS4C_PATH."is4c.css")) $IS4C_PATH .= "../"; }
+
+if (!function_exists("addItem")) include($IS4C_PATH."lib/additem.php");
+if (!function_exists("truncate2")) include_once($IS4C_PATH."lib/lib.php");
+if (!function_exists("lastpage")) include($IS4C_PATH."lib/listitems.php");
+if (!function_exists("paycard_reset")) include($IS4C_PATH."lib/paycardLib.php");
+if (!function_exists("blueLine")) include($IS4C_PATH."lib/session.php");
+if (!function_exists("boxMsgscreen")) include($IS4C_PATH."lib/clientscripts.php");
 
 function clearMember(){
 	global $IS4C_LOCAL;
@@ -38,7 +41,7 @@ function clearMember(){
 }
 
 function memberID($member_number) {
-	global $IS4C_LOCAL;
+	global $IS4C_LOCAL,$IS4C_PATH;
 
 	$query = "select * from custdata where CardNo = '".$member_number."'";
 
@@ -64,11 +67,12 @@ function memberID($member_number) {
 	} 
 
 	// special hard coding for member 5607 WFC 
+	// needs to go away
 	if ($member_number == "5607"){
 		if ($IS4C_LOCAL->get("requestType") == ""){
 			$IS4C_LOCAL->set("requestType","member gift");
 			$IS4C_LOCAL->set("requestMsg","Card for which member?");
-			$ret['main_frame'] = "/gui-modules/requestInfo.php";
+			$ret['main_frame'] = $IS4C_PATH."gui-modules/requestInfo.php";
 			$IS4C_LOCAL->set("strEntered","5607id");
 		}
 		else if ($IS4C_LOCAL->get("requestType") == "member gift"){
@@ -84,7 +88,7 @@ function memberID($member_number) {
 	$IS4C_LOCAL->set("memMsg","");
 
 	if ($ret['main_frame'] === false)
-		$ret['main_frame'] = "/gui-modules/memlist.php";
+		$ret['main_frame'] = $IS4C_PATH."gui-modules/memlist.php";
 
 	return $ret;
 }

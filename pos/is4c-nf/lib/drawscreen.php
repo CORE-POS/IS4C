@@ -21,8 +21,11 @@
 
 *********************************************************************************/
 
-if (!function_exists("rePoll")) include($_SERVER["DOCUMENT_ROOT"]."/lib/lib.php");
-if (!isset($IS4C_LOCAL)) include($_SERVER["DOCUMENT_ROOT"]."/lib/LocalStorage/conf.php");
+$IS4C_PATH = isset($IS4C_PATH)?$IS4C_PATH:"";
+if (empty($IS4C_PATH)){ while(!file_exists($IS4C_PATH."is4c.css")) $IS4C_PATH .= "../"; }
+
+if (!function_exists("rePoll")) include($IS4C_PATH."lib/lib.php");
+if (!isset($IS4C_LOCAL)) include($IS4C_PATH."lib/LocalStorage/conf.php");
 
 function printfooterb() {
 	$ret = "<form name='hidden'>\n";
@@ -153,8 +156,8 @@ function printfooter($readOnly=False) {
 
 	$ret .= "<tr class=\"values\">";
 	$ret .= "<td class=\"first\">".number_format($dblyousaved,2)."</td>";
-	$ret .= "<td class=\"reg\">".number_format($strperdiscount,2)."</td>";
-	$ret .= "<td class=\"reg\">".number_format($strmemSpecial,2)."</td>";
+	$ret .= "<td class=\"reg\">".number_format((double)$strperdiscount,2)."</td>";
+	$ret .= "<td class=\"reg\">".number_format((double)$strmemSpecial,2)."</td>";
 	$ret .= "<td class=\"reg\">".number_format($dbldiscounttotal,2)."</td>";
 	if ($IS4C_LOCAL->get("ttlflag") == 1 && $IS4C_LOCAL->get("End") != 1) {
 		if ($IS4C_LOCAL->get("fntlflag") == 1) {
@@ -227,15 +230,18 @@ function msgbox($strmsg, $icon,$noBeep=False) {
 //--------------------------------------------------------------------//
 
 function xboxMsg($strmsg) {
-	return msgbox($strmsg, "/graphics/crossD.gif");
+	global $IS4C_PATH;
+	return msgbox($strmsg, $IS4C_PATH."graphics/crossD.gif");
 }
 
 function boxMsg($strmsg,$header="",$noBeep=False) {
-	return msgbox($strmsg, "/graphics/exclaimC.gif",$noBeep);
+	global $IS4C_PATH;
+	return msgbox($strmsg, $IS4C_PATH."graphics/exclaimC.gif",$noBeep);
 }
 
 function inputUnknown() {
-	return msgbox("<B>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;input unknown</B>", "/graphics/exclaimC.gif");
+	global $IS4C_PATH;
+	return msgbox("<B>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;input unknown</B>", $IS4C_PATH."graphics/exclaimC.gif");
 }
 
 //--------------------------------------------------------------------//

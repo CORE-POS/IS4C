@@ -20,17 +20,19 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
+$IS4C_PATH = isset($IS4C_PATH)?$IS4C_PATH:"";
+if (empty($IS4C_PATH)){ while(!file_exists($IS4C_PATH."is4c.css")) $IS4C_PATH .= "../"; }
 
-if (!class_exists("Parser")) include_once($_SERVER["DOCUMENT_ROOT"]."/parser-class-lib/Parser.php");
-if (!function_exists("tender")) include_once($_SERVER["DOCUMENT_ROOT"]."/lib/prehkeys.php");
-if (!function_exists("boxMsg")) include_once($_SERVER["DOCUMENT_ROOT"]."/lib/drawscreen.php");
-if (!function_exists("boxMsgscreen")) include_once($_SERVER["DOCUMENT_ROOT"]."/lib/clientscripts.php");
-if (!isset($IS4C_LOCAL)) include($_SERVER["DOCUMENT_ROOT"]."/lib/LocalStorage/conf.php");
+if (!class_exists("Parser")) include_once($IS4C_PATH."parser-class-lib/Parser.php");
+if (!function_exists("tender")) include_once($IS4C_PATH."lib/prehkeys.php");
+if (!function_exists("boxMsg")) include_once($IS4C_PATH."lib/drawscreen.php");
+if (!function_exists("boxMsgscreen")) include_once($IS4C_PATH."lib/clientscripts.php");
+if (!isset($IS4C_LOCAL)) include($IS4C_PATH."lib/LocalStorage/conf.php");
 
 class SimpleTender extends Parser {
 	var $stored_ret;
 	function check($str){
-		global $IS4C_LOCAL;
+		global $IS4C_LOCAL,$IS4C_PATH;
 		$this->stored_ret = $this->default_json();
 		switch($str){
 		case "TA":
@@ -61,7 +63,7 @@ class SimpleTender extends Parser {
 				$IS4C_LOCAL->set("warnBoxType","warnCC");
 				$IS4C_LOCAL->set("warned",1);
 				$IS4C_LOCAL->set("boxMsg","<BR>charge $".$IS4C_LOCAL->get("runningTotal")." to credit card</B><BR>press [enter] to continue<P><FONT size='-1'>[clear] to cancel</FONT>");
-				$this->stored_ret['main_frame'] = '/gui-modules/boxMsg2.php';
+				$this->stored_ret['main_frame'] = $IS4C_PATH.'gui-modules/boxMsg2.php';
 			}
 			else 
 				$this->stored_ret['output'] = boxMsg("transaction must be totaled<br>before tender can be<br>accepted"); 
@@ -91,7 +93,7 @@ class SimpleTender extends Parser {
 				$IS4C_LOCAL->set("strEntered",$IS4C_LOCAL->get("runningTotal")*100);
 				$IS4C_LOCAL->set("tenderamt",$IS4C_LOCAL->get("runningTotal"));
 				$IS4C_LOCAL->set("strEntered",$IS4C_LOCAL->get("strEntered")."CK");
-				$this->stored_ret['main_frame'] = '/gui-modules/boxMsg2.php';
+				$this->stored_ret['main_frame'] = $IS4C_PATH.'gui-modules/boxMsg2.php';
 			}
 			else 
 				$this->stored_ret['output'] = boxMsg("transaction must be totaled<br>before tender can be<br>accepted");
@@ -121,7 +123,7 @@ class SimpleTender extends Parser {
 				$IS4C_LOCAL->set("mirequested",1);
 				$IS4C_LOCAL->set("away",1);
 				$IS4C_LOCAL->set("search_or_list",1);
-				$this->stored_ret['main_frame'] = '/gui-modules/memlist.php';
+				$this->stored_ret['main_frame'] = $IS4C_PATH.'gui-modules/memlist.php';
 			}
 			return True;
 		}

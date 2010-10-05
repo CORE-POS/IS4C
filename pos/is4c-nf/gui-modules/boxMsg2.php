@@ -21,20 +21,26 @@
 
 *********************************************************************************/
 
-if (!class_exists("BasicPage")) include_once($_SERVER["DOCUMENT_ROOT"]."/gui-class-lib/BasicPage.php");
-if(!function_exists("boxMsg")) include($_SERVER["DOCUMENT_ROOT"]."/lib/drawscreen.php");
-if (!function_exists("errorBeep")) include($_SERVER["DOCUMENT_ROOT"]."/lib/lib.php");
-if (!isset($IS4C_LOCAL)) include($_SERVER["DOCUMENT_ROOT"]."/lib/LocalStorage/conf.php");
+$IS4C_PATH = isset($IS4C_PATH)?$IS4C_PATH:"";
+if (empty($IS4C_PATH)){ while(!file_exists($IS4C_PATH."is4c.css")) $IS4C_PATH .= "../"; }
+
+ini_set('display_errors','1');
+
+if (!class_exists("BasicPage")) include_once($IS4C_PATH."gui-class-lib/BasicPage.php");
+if(!function_exists("boxMsg")) include($IS4C_PATH."lib/drawscreen.php");
+if (!function_exists("errorBeep")) include($IS4C_PATH."lib/lib.php");
+if (!isset($IS4C_LOCAL)) include($IS4C_PATH."lib/LocalStorage/conf.php");
 
 class boxMsg2 extends BasicPage {
 
 	function head_content(){
+		global $IS4C_PATH;
 		?>
 		<script type="text/javascript">
 		function submitWrapper(){
 			var str = $('#reginput').val();
 			$.ajax({
-				url: '/ajax-callbacks/ajax-decision.php',
+				url: '<?php echo $IS4C_PATH; ?>ajax-callbacks/ajax-decision.php',
 				type: 'get',
 				data: 'input='+str,
 				dataType: 'json',
@@ -42,7 +48,7 @@ class boxMsg2 extends BasicPage {
 				success: function(data){
 					if (data.endorse){
 						$.ajax({
-							url: '/ajax-callbacks/ajax-endorse.php',
+							url: '<?php echo $IS4C_PATH; ?>ajax-callbacks/ajax-endorse.php',
 							type: 'get',
 							cache: false,
 							success: function(){}

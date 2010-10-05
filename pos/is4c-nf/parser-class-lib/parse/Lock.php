@@ -21,8 +21,11 @@
 
 *********************************************************************************/
 
-if (!class_exists("Parser")) include_once($_SERVER["DOCUMENT_ROOT"]."/parser-class-lib/Parser.php");
-if (!isset($IS4C_LOCAL)) include($_SERVER["DOCUMENT_ROOT"]."/lib/LocalStorage/conf.php");
+$IS4C_PATH = isset($IS4C_PATH)?$IS4C_PATH:"";
+if (empty($IS4C_PATH)){ while(!file_exists($IS4C_PATH."is4c.css")) $IS4C_PATH .= "../"; }
+
+if (!class_exists("Parser")) include_once($IS4C_PATH."parser-class-lib/Parser.php");
+if (!isset($IS4C_LOCAL)) include($IS4C_PATH."lib/LocalStorage/conf.php");
 
 class Lock extends Parser {
 	function check($str){
@@ -32,10 +35,10 @@ class Lock extends Parser {
 	}
 
 	function parse($str){
-		global $IS4C_LOCAL;
+		global $IS4C_LOCAL,$IS4C_PATH;
 		$IS4C_LOCAL->set("inputMasked",1);
 		$ret = $this->default_json();
-		$ret['main_frame'] = '/gui-modules/login3.php';
+		$ret['main_frame'] = $IS4C_PATH.'gui-modules/login3.php';
 		return $ret;
 	}
 

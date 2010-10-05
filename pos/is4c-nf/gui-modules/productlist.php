@@ -21,9 +21,12 @@
 
 *********************************************************************************/
  // session_start(); 
-if (!class_exists("NoInputPage")) include_once($_SERVER["DOCUMENT_ROOT"]."/gui-class-lib/NoInputPage.php");
-if (!function_exists("pDataConnect")) include($_SERVER["DOCUMENT_ROOT"]."/lib/connect.php");
-if (!isset($IS4C_LOCAL)) include($_SERVER["DOCUMENT_ROOT"]."/lib/LocalStorage/conf.php");
+$IS4C_PATH = isset($IS4C_PATH)?$IS4C_PATH:"";
+if (empty($IS4C_PATH)){ while(!file_exists($IS4C_PATH."is4c.css")) $IS4C_PATH .= "../"; }
+
+if (!class_exists("NoInputPage")) include_once($IS4C_PATH."gui-class-lib/NoInputPage.php");
+if (!function_exists("pDataConnect")) include($IS4C_PATH."lib/connect.php");
+if (!isset($IS4C_LOCAL)) include($IS4C_PATH."lib/LocalStorage/conf.php");
 
 class productlist extends NoInputPage {
 
@@ -33,7 +36,7 @@ class productlist extends NoInputPage {
 	var $boxSize;
 
 	function preprocess(){
-		global $IS4C_LOCAL;
+		global $IS4C_LOCAL,$IS4C_PATH;
 
 		$entered = "";
 		if (isset($_REQUEST["search"]))
@@ -45,7 +48,7 @@ class productlist extends NoInputPage {
 
 		// canceled
 		if (empty($entered)){
-			header("Location: /gui-modules/pos2.php");
+			header("Location: {$IS4C_PATH}gui-modules/pos2.php");
 			return False;
 		}
 
@@ -53,7 +56,7 @@ class productlist extends NoInputPage {
 		if (is_numeric($entered) && strlen($entered) == 13){
 			$IS4C_LOCAL->set("msgrepeat",1);
 			$IS4C_LOCAL->set("strRemembered",$entered);
-			header("Location: /gui-modules/pos2.php");
+			header("Location: {$IS4C_PATH}gui-modules/pos2.php");
 			return False;
 		}
 
@@ -198,7 +201,7 @@ class productlist extends NoInputPage {
 			<span class="larger">
 			<?php echo $strmsg;?>
 			</span>
-			<form action="/gui-modules/productlist.php" method="post" autocomplete="off">
+			<form action="<?php echo $_SERVER['PHP_SELF']; ?>" method="post" autocomplete="off">
 			<input type="text" name="search" size="15" id="search"
 				onblur="$('#search).focus();" />
 			</form>

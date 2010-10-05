@@ -51,8 +51,11 @@ fetch_array(result_object, connection_identifer)
 
 **************************************************/
 
-define('DEBUG_MYSQL_QUERIES',$_SERVER['DOCUMENT_ROOT'].'/queries.log');
-define('DEBUG_SMART_INSERTS',$_SERVER['DOCUMENT_ROOT'].'/smart_insert_errors.log');
+$IS4C_PATH = isset($IS4C_PATH)?$IS4C_PATH:"";
+if (empty($IS4C_PATH)){ while(!file_exists($IS4C_PATH."is4c.css")) $IS4C_PATH .= "../"; }
+
+define('DEBUG_MYSQL_QUERIES',$IS4C_PATH.'queries.log');
+define('DEBUG_SMART_INSERTS',$IS4C_PATH.'smart_insert_errors.log');
 
 $TYPE_MYSQL = 'MYSQL';
 $TYPE_MSSQL = 'MSSQL'; 
@@ -160,7 +163,7 @@ class SQLManager {
 		switch($this->db_types[$which_connection]){
 		case $this->TYPE_MYSQL:
 			$result = mysql_query($query_text,$this->connections[$which_connection]);
-			if (!$result && DEBUG_MYSQL_QUERIES != ""){
+			if (!$result && DEBUG_MYSQL_QUERIES != "" && is_writable(DEBUG_MYSQL_QUERIES)){
 				$fp = fopen(DEBUG_MYSQL_QUERIES,"a");
 				fwrite($fp,date('r').": ".$query_text."\n\n");
 				fclose($fp);
@@ -168,7 +171,7 @@ class SQLManager {
 			return $result;
 		case $this->TYPE_MSSQL:
 			$result = mssql_query($query_text,$this->connections[$which_connection]);
-			if (!$result && DEBUG_MYSQL_QUERIES != ""){
+			if (!$result && DEBUG_MYSQL_QUERIES != "" && is_writable(DEBUG_MYSQL_QUERIES)){
 				$fp = fopen(DEBUG_MYSQL_QUERIES,"a");
 				fwrite($fp,date('r').": ".$query_text."\n\n");
 				fclose($fp);
@@ -328,9 +331,11 @@ class SQLManager {
 		foreach ($queries as $q){
 			if(!$this->query($q,$dest_db)){
 				$ret = False;
-				$fp = fopen(DEBUG_MYSQL_QUERIES,"a");
-				fwrite($fp,$q."\n\n");
-				fclose($fp);
+				if (is_writable(DEBUG_MYSQL_QUERIES)){
+					$fp = fopen(DEBUG_MYSQL_QUERIES,"a");
+					fwrite($fp,$q."\n\n");
+					fclose($fp);
+				}
 			}
 		}
 
@@ -476,7 +481,7 @@ class SQLManager {
 
 		$fp = -1;
 		$tstamp = date("r");
-		if ($OUTFILE != "")
+		if ($OUTFILE != "" && is_writable($OUTFILE))
 			$fp = fopen($OUTFILE,"a");
 
 		$cols = "(";
@@ -518,7 +523,7 @@ class SQLManager {
 		if (!$ret && $OUTFILE != ""){
 			fwrite($fp,"$tstamp: $insertQ\n");
 		}
-		if ($OUTFILE != "") fclose($fp);
+		if ($OUTFILE != "" && is_writable($OUTFILE)) fclose($fp);
 
 		return $ret;
 	}

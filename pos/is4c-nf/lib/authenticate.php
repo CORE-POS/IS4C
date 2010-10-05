@@ -22,14 +22,16 @@
 *********************************************************************************/
  
 // session_cache_limiter('nocache');
+$IS4C_PATH = isset($IS4C_PATH)?$IS4C_PATH:"";
+if (empty($IS4C_PATH)){ while(!file_exists($IS4C_PATH."is4c.css")) $IS4C_PATH .= "../"; }
 
-include($_SERVER['DOCUMENT_ROOT']."/ini.php");
-if (!function_exists("pDataConnect")) include($_SERVER["DOCUMENT_ROOT"]."/lib/connect.php");
-if (!function_exists("addactivity")) include($_SERVER["DOCUMENT_ROOT"]."/lib/additem.php");
-if (!function_exists("memberID")) include($_SERVER["DOCUMENT_ROOT"]."/lib/prehkeys.php");
-if (!function_exists("rePoll")) include($_SERVER["DOCUMENT_ROOT"]."/lib/lib.php");
-if (!function_exists("drawerKick")) include($_SERVER["DOCUMENT_ROOT"]."/lib/printLib.php");
-if (!isset($IS4C_LOCAL)) include($_SERVER["DOCUMENT_ROOT"]."/lib/LocalStorage/conf.php");
+include($IS4C_PATH."ini.php");
+if (!function_exists("pDataConnect")) include($IS4C_PATH."lib/connect.php");
+if (!function_exists("addactivity")) include($IS4C_PATH."lib/additem.php");
+if (!function_exists("memberID")) include($IS4C_PATH."lib/prehkeys.php");
+if (!function_exists("rePoll")) include($IS4C_PATH."lib/lib.php");
+if (!function_exists("drawerKick")) include($IS4C_PATH."lib/printLib.php");
+if (!isset($IS4C_LOCAL)) include($IS4C_PATH."lib/LocalStorage/conf.php");
 
 function authenticate($password,$activity=1){
 	global $IS4C_LOCAL;

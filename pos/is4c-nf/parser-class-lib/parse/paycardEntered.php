@@ -21,9 +21,9 @@
 
 *********************************************************************************/
 
-if (!class_exists("Parser")) include_once($_SERVER["DOCUMENT_ROOT"]."/parser-class-lib/Parser.php");
-if (!function_exists("paycard_reset")) include_once($_SERVER["DOCUMENT_ROOT"]."/lib/paycardLib.php");
-if (!isset($IS4C_LOCAL)) include($_SERVER["DOCUMENT_ROOT"]."/lib/LocalStorage/conf.php");
+if (!class_exists("Parser")) include_once($_SESSION["INCLUDE_PATH"]."/parser-class-lib/Parser.php");
+if (!function_exists("paycard_reset")) include_once($_SESSION["INCLUDE_PATH"]."/lib/paycardLib.php");
+if (!isset($IS4C_LOCAL)) include($_SESSION["INCLUDE_PATH"]."/lib/LocalStorage/conf.php");
 
 class paycardEntered extends Parser {
 	var $swipestr;
@@ -143,7 +143,7 @@ class paycardEntered extends Parser {
 		}
 
 		foreach($IS4C_LOCAL->get("RegisteredPaycardClasses") as $rpc){
-			if (!class_exists($rpc)) include_once($_SERVER["DOCUMENT_ROOT"]."/cc-modules/$rpc.php");
+			if (!class_exists($rpc)) include_once($_SESSION["INCLUDE_PATH"]."/cc-modules/$rpc.php");
 			$myObj = new $rpc();
 			if ($myObj->handlesType($IS4C_LOCAL->get("paycard_type")))
 				return $myObj->entered($validate);

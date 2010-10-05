@@ -26,15 +26,15 @@
  *
  */
 
-if (!class_exists("BasicCCModule")) include_once($_SERVER["DOCUMENT_ROOT"]."/cc-modules/BasicCCModule.php");
+if (!class_exists("BasicCCModule")) include_once($_SESSION["INCLUDE_PATH"]."/cc-modules/BasicCCModule.php");
 
-if (!class_exists("xmlData")) include_once($_SERVER["DOCUMENT_ROOT"]."/lib/xmlData.php");
-if (!function_exists("paycard_reset")) include_once($_SERVER["DOCUMENT_ROOT"]."/lib/paycardLib.php");
-if (!function_exists("receipt")) include_once($_SERVER["DOCUMENT_ROOT"]."/lib/clientscripts.php");
-if (!function_exists("deptkey")) include_once($_SERVER["DOCUMENT_ROOT"]."/lib/prehkeys.php");
-if (!function_exists("tDataConnect")) include_once($_SERVER["DOCUMENT_ROOT"]."/lib/connect.php");
-if (!class_exists("Void")) include_once($_SERVER["DOCUMENT_ROOT"]."/parser-class-lib/parse/Void.php");
-if (!isset($IS4C_LOCAL)) include($_SERVER["DOCUMENT_ROOT"]."/lib/LocalStorage/conf.php");
+if (!class_exists("xmlData")) include_once($_SESSION["INCLUDE_PATH"]."/lib/xmlData.php");
+if (!function_exists("paycard_reset")) include_once($_SESSION["INCLUDE_PATH"]."/lib/paycardLib.php");
+if (!function_exists("receipt")) include_once($_SESSION["INCLUDE_PATH"]."/lib/clientscripts.php");
+if (!function_exists("deptkey")) include_once($_SESSION["INCLUDE_PATH"]."/lib/prehkeys.php");
+if (!function_exists("tDataConnect")) include_once($_SESSION["INCLUDE_PATH"]."/lib/connect.php");
+if (!class_exists("Void")) include_once($_SESSION["INCLUDE_PATH"]."/parser-class-lib/parse/Void.php");
+if (!isset($IS4C_LOCAL)) include($_SESSION["INCLUDE_PATH"]."/lib/LocalStorage/conf.php");
 
 define('MERCURY_TERMINAL_ID',"");
 define('MERCURY_PASSWORD',"");

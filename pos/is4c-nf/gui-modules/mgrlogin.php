@@ -21,11 +21,16 @@
 
 *********************************************************************************/
 
-if (!class_exists("NoInputPage")) include_once($_SERVER["DOCUMENT_ROOT"]."/gui-class-lib/NoInputPage.php");
-if (!isset($IS4C_LOCAL)) include($_SERVER["DOCUMENT_ROOT"]."/lib/LocalStorage/conf.php");
-if (!function_exists("array_to_json")) include($_SERVER['DOCUMENT_ROOT']."/lib/array_to_json.php");
-if (!function_exists("pDataConnect")) include($_SERVER['DOCUMENT_ROOT']."/lib/connect.php");
-if (!function_exists("udpSend")) include($_SERVER['DOCUMENT_ROOT']."/lib/udpSend.php");
+$IS4C_PATH = isset($IS4C_PATH)?$IS4C_PATH:"";
+if (empty($IS4C_PATH)){ while(!file_exists($IS4C_PATH."is4c.css")) $IS4C_PATH .= "../"; }
+
+ini_set('display_errors','1');
+
+if (!class_exists("NoInputPage")) include_once($IS4C_PATH."gui-class-lib/NoInputPage.php");
+if (!isset($IS4C_LOCAL)) include($IS4C_PATH."lib/LocalStorage/conf.php");
+if (!function_exists("array_to_json")) include($IS4C_PATH."lib/array_to_json.php");
+if (!function_exists("pDataConnect")) include($IS4C_PATH."lib/connect.php");
+if (!function_exists("udpSend")) include($IS4C_PATH."lib/udpSend.php");
 
 class mgrlogin extends NoInputPage {
 
@@ -39,6 +44,7 @@ class mgrlogin extends NoInputPage {
 	}
 
 	function head_content(){
+		global $IS4C_PATH;
 		?>
 		<script type="text/javascript">
 		function submitWrapper(){
@@ -55,17 +61,17 @@ class mgrlogin extends NoInputPage {
 				success: function(data){
 					if (data.cancelOrder){
 						$.ajax({
-							url: '/ajax-callbacks/ajax-end.php',
+							url: '<?php echo $IS4C_PATH; ?>ajax-callbacks/ajax-end.php',
 							type: 'get',
 							data: 'receiptType=cancelled',
 							cache: false,
 							success: function(data2){
-								location = '/gui-modules/pos2.php';
+								location = '<?php echo $IS4C_PATH; ?>gui-modules/pos2.php';
 							}
 						});
 					}
 					else if (data.giveUp){
-						location = '/gui-modules/pos2.php';
+						location = '<?php echo $IS4C_PATH; ?>gui-modules/pos2.php';
 					}
 					else {
 						$('div.colored').css('background',data.color);

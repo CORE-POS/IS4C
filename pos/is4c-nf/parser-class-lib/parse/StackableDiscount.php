@@ -21,10 +21,10 @@
 
 *********************************************************************************/
 
-if (!class_exists("Parser")) include_once($_SERVER["DOCUMENT_ROOT"]."/parser-class-lib/Parser.php");
-if (!function_exists("percentDiscount")) include_once($_SERVER["DOCUMENT_ROOT"]."/lib/prehkeys.php");
-if (!function_exists("boxMsg")) include_once($_SERVER["DOCUMENT_ROOT"]."/lib/drawscreen.php");
-if (!isset($IS4C_LOCAL)) include($_SERVER["DOCUMENT_ROOT"]."/lib/LocalStorage/conf.php");
+if (!class_exists("Parser")) include_once($_SESSION["INCLUDE_PATH"]."/parser-class-lib/Parser.php");
+if (!function_exists("percentDiscount")) include_once($_SESSION["INCLUDE_PATH"]."/lib/prehkeys.php");
+if (!function_exists("boxMsg")) include_once($_SESSION["INCLUDE_PATH"]."/lib/drawscreen.php");
+if (!isset($IS4C_LOCAL)) include($_SESSION["INCLUDE_PATH"]."/lib/LocalStorage/conf.php");
 
 class StackableDiscount extends Parser {
 	function check($str){

@@ -1,7 +1,7 @@
 <?php
 
-print_docs($_SERVER["DOCUMENT_ROOT"]."/parser-class-lib/preparse/");
-print_docs($_SERVER["DOCUMENT_ROOT"]."/parser-class-lib/parse/");
+print_docs($_SESSION["INCLUDE_PATH"]."/parser-class-lib/preparse/");
+print_docs($_SESSION["INCLUDE_PATH"]."/parser-class-lib/parse/");
 
 
 function print_docs($dir){
