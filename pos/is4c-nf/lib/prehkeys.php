@@ -939,7 +939,7 @@ function staffCharge($arg) {
 
 	$staffID = substr($arg, 0, 4);
 
-	$pQuery = "select * from chargecodeView where chargecode = '".$arg."'";
+	$pQuery = "select staffID,chargecode,blueLine from chargecodeview where chargecode = '".$arg."'";
 	$pConn = pDataConnect();
 	$result = $pConn->query($pQuery);
 	$num_rows = $pConn->num_rows($result);
