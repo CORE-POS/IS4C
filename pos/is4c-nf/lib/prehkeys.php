@@ -43,7 +43,10 @@ function clearMember(){
 function memberID($member_number) {
 	global $IS4C_LOCAL,$IS4C_PATH;
 
-	$query = "select * from custdata where CardNo = '".$member_number."'";
+	$query = "select CardNo,personNum,LastName,FirstName,CashBack,Balance,Discount,
+		MemDiscountLimit,ChargeOk,WriteChecks,StoreCoupons,Type,memType,staff,
+		SSI,Purchases,NumberOfChecks,memCoupons,blueLine,Shown,id from custdata 
+		where CardNo = '".$member_number."'";
 
 	$ret = array(
 		"main_frame"=>false,
@@ -898,17 +901,17 @@ function chargeOk() {
 	if ($IS4C_LOCAL->get("standalone") == 0)
 		$conn = pDataConnect();
 
-	$query2 = "select Balance, MemDiscountLimit, chargeOk from custdata where CardNo = '".$IS4C_LOCAL->get("memberID")."'";
+	$query2 = "select Balance, MemDiscountLimit, ChargeOk from custdata where CardNo = '".$IS4C_LOCAL->get("memberID")."'";
 	$result2 = $conn->query($query2);
 	$num_rows2 = $conn->num_rows($result2);
 	$row2 = $conn->fetch_array($result2);
 
 
 	$chargeOk = 1;
-	if ($num_rows2 == 0 || !$row2["chargeOk"]) {
+	if ($num_rows2 == 0 || !$row2["ChargeOk"]) {
 		$chargeOk = 0;
 	}
-	elseif ( $row2["chargeOk"] == 0 ) {
+	elseif ( $row2["ChargeOk"] == 0 ) {
 
 		$chargeOk = 0;	
 	}

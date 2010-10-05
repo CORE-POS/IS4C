@@ -198,12 +198,13 @@ function loaddata() {
 
 	if ($IS4C_LOCAL->get("memberID") == "0") {
 		// not used - andy 4/12/07
-		//$query_member = "select * from custdata where CardNo = '205203'";
 		$IS4C_LOCAL->set("percentDiscount",0);
 		$IS4C_LOCAL->set("memType",0);
 	}
 	else {
-		$query_member = "select * from custdata where CardNo = '".$IS4C_LOCAL->get("memberID")."'";
+		$query_member = "select CardNo,memType,Type,Discount,staff,SSI,
+				MemDiscountLimit,blueLine,FirstName,LastName
+				from custdata where CardNo = '".$IS4C_LOCAL->get("memberID")."'";
 		$db_product = pDataConnect();
 		$result = $db_product->query($query_member);
 		if ($db_product->num_rows($result) > 0) {

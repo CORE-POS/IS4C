@@ -76,9 +76,13 @@ class memlist extends NoInputPage {
 		$memberID = $entered;
 		$db_a = pDataConnect();
 
-		$query = "select * from custdata where CardNo = '".$entered."' order by personNum";
+		$query = "select CardNo,personNum,LastName,FirstName,CashBack,Balance,Discount,
+			MemDiscountLimit,ChargeOk,WriteChecks,StoreCoupons,Type,memType,staff,
+			SSI,Purchases,NumberOfChecks,memCoupons,blueLine,Shown,id from custdata 
+			where CardNo = '".$entered."' order by personNum";
 		if (!is_numeric($entered)) {
-			$query = "select * from custdata where LastName like '".$entered."%' order by LastName, FirstName";
+			$query = "select CardNo,personNum,LastName,FirstName from custdata 
+				where LastName like '".$entered."%' order by LastName, FirstName";
 		}
 
 		$result = $db_a->query($query);

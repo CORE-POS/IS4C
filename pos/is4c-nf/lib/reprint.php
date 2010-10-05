@@ -71,7 +71,8 @@ function reprintReceipt($trans_num=""){
 		$connect->close();
 
 		$connID = pDataConnect();
-		$queryID = "select * from custdata where CardNo = '".$IS4C_LOCAL->get("memberID")."' and personNum=1";
+		$queryID = "select LastName,FirstName,Type,blueLine from custdata 
+			where CardNo = '".$IS4C_LOCAL->get("memberID")."' and personNum=1";
 		$result = $connID->query($queryID);
 		$row = $connID->fetch_array($result);
 
