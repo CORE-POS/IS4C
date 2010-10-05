@@ -56,10 +56,10 @@ class adminlogin extends NoInputPage {
 			}
 			else {
 				$query = "select emp_no, FirstName, LastName from employees 
-					where empactive = 1 and frontendsecurity >= "
+					where EmpActive = 1 and frontendsecurity >= "
 					.$IS4C_LOCAL->get("adminRequestLevel")
-					." and (cashierpassword = ".$passwd
-					." or adminpassword = ".$passwd.")";
+					." and (CashierPassword = ".$passwd
+					." or AdminPassword = ".$passwd.")";
 				$db = pDataConnect();
 				$result = $db->query($query);
 				$num_rows = $db->num_rows($result);

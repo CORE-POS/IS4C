@@ -56,8 +56,8 @@ function authenticate($password,$activity=1){
 	$row_g = $db_g->fetch_array($result_g);
 
 	if ($row_g["LoggedIn"] == 0) {
-		$query_q = "select emp_no, FirstName, LastName from employees where empactive = 1 "
-			."and cashierpassword = ".$password;
+		$query_q = "select emp_no, FirstName, LastName from employees where EmpActive = 1 "
+			."and CashierPassword = ".$password;
 		$db_q = pDataConnect();
 		$result_q = $db_q->query($query_q);
 		$num_rows_q = $db_q->num_rows($result_q);
