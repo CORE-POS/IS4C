@@ -574,7 +574,8 @@ function deptkey($price, $dept,$ret=array()) {
 	$total = $price * $IS4C_LOCAL->get("quantity");
 	$intdept = $dept;
 
-	$query = "select * from departments where dept_no = ".$intdept;
+	$query = "select dept_no,dept_name,dept_tax,dept_fs,dept_limit,
+		dept_minimum,dept_discount from departments where dept_no = ".$intdept;
 	$db = pDataConnect();
 	$result = $db->query($query);
 
