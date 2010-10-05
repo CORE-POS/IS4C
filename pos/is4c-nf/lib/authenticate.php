@@ -50,7 +50,7 @@ function authenticate($password,$activity=1){
 	if (!is_numeric($password)) return False; // if password is non-numeric, not a valid password
 	elseif ($password > 9999 || $password < 1) return False; // if password is greater than 4 digits or less than 1, not a valid password
 
-	$query_g = "select * from globalvalues";
+	$query_g = "select LoggedIn,CashierNo from globalvalues";
 	$db_g = pDataConnect();
 	$result_g = $db_g->query($query_g);
 	$row_g = $db_g->fetch_array($result_g);
@@ -68,23 +68,23 @@ function authenticate($password,$activity=1){
 			testremote();
 
 			setglobalvalue("CashierNo", $row_q["emp_no"]);
-			setglobalvalue("cashier", $row_q["FirstName"]." ".substr($row_q["LastName"], 0, 1).".");
+			setglobalvalue("Cashier", $row_q["FirstName"]." ".substr($row_q["LastName"], 0, 1).".");
 
 			loadglobalvalues();
 
 			$transno = gettransno($row_q["emp_no"]);
 			$IS4C_LOCAL->set("transno",$transno);
-			setglobalvalue("transno", $transno);
+			setglobalvalue("TransNo", $transno);
 			setglobalvalue("LoggedIn", 1);
 
 			if ($transno == 1) addactivity($activity);
 			
 		} elseif ($password == 9999) {
 			setglobalvalue("CashierNo", 9999);
-			setglobalvalue("cashier", "Training Mode");
+			setglobalvalue("Cashier", "Training Mode");
 			$transno = gettransno(9999);
 			$IS4C_LOCAL->set("transno",$transno);
-			setglobalvalue("transno", $transno);
+			setglobalvalue("TransNo", $transno);
 			setglobalvalue("LoggedIn", 1);
 			loadglobalvalues();
 			$IS4C_LOCAL->set("training",1);

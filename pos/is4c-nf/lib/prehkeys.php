@@ -742,7 +742,7 @@ function ttl() {
 		$result2 = $mconn->query($query2);
 
 		$IS4C_LOCAL->set("ttlflag",1);
-		setglobalvalue("ttlflag", 1);
+		setglobalvalue("TTLFlag", 1);
 		$temp = chargeOk();
 		if ($IS4C_LOCAL->get("balance") < $IS4C_LOCAL->get("memChargeTotal") && $IS4C_LOCAL->get("memChargeTotal") > 0){
 			if ($IS4C_LOCAL->get("warned") == 1 and $IS4C_LOCAL->get("warnBoxType") == "warnOverpay"){
@@ -833,7 +833,7 @@ function fsEligible() {
 	}
 	else {
 		$IS4C_LOCAL->set("fntlflag",1);
-		setglobalvalue("fntlflag", 1);
+		setglobalvalue("FntlFlag", 1);
 		if ($IS4C_LOCAL->get("ttlflag") != 1) ttl();
 		else addItem("", "Foodstamps Eligible", "" , "", "D", 0, 0, truncate2($IS4C_LOCAL->get("fsEligible")), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7);
 

@@ -30,7 +30,8 @@ if (!isset($IS4C_LOCAL)) include($IS4C_PATH."lib/LocalStorage/conf.php");
 function loadglobalvalues() {
 	global $IS4C_LOCAL;
 
-	$query = "select * from globalvalues";
+	$query = "select CashierNo,Cashier,LoggedIn,TransNo,TTLFlag,
+		FntlFlag,TaxExempt from globalvalues";
 	$db = pDataConnect();
 	$result = $db->query($query);
 	$row = $db->fetch_array($result);
@@ -82,7 +83,7 @@ function setglobalvalue($param, $value) {
 function setglobalflags($value) {
 	$db = pDataConnect();
 
-	$db->query("update globalvalues set ttlflag = ".$value.", fntlflag = ".$value);
+	$db->query("update globalvalues set TTLFlag = ".$value.", FntlFlag = ".$value);
 	$db->close();
 }
 
