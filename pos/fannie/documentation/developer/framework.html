@@ -1,0 +1,12 @@
+<html>
+	<head>
+		<title>Framework</title>
+	</head>
+	<body>
+		A framework needs some rules. I hate rules, so let's keep this short. I think we can share code if everyone can live with just two requirements.
+		<h3>One configuration</h3>
+		Let's all agree on one configuration file. I say it should be config.php and it should live at the root of fannie. The upside is every script needs just one relative include; variables in the config then fill in the rest of what you need. This lets fannie sit in subdirectories and lets any given tool/report find the top of fannie, regardless of whose store it's running at.
+		<h3>One database structure</h3>
+		There's no easy way around this. I propose we track against the Wedge release. Table names and column names have to match. If you need something else, add a table and put a CREATE statement for it in the install script. Then anyone who grabs a git update can generate your new table and use your new tool/report without changing their existing stuff.
+	</body>
+</html>
