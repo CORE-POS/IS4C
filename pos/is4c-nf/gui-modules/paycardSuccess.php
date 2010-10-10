@@ -21,18 +21,21 @@
 
 *********************************************************************************/
 
-if (!class_exists("BasicPage")) include_once($_SESSION["INCLUDE_PATH"]."/gui-class-lib/BasicPage.php");
-if (!function_exists("paycard_reset")) include_once($_SESSION["INCLUDE_PATH"]."/lib/paycardLib.php");
-if (!function_exists("ttl")) include_once($_SESSION["INCLUDE_PATH"]."/lib/prehkeys.php");
-if (!function_exists("printfooterb")) include_once($_SESSION["INCLUDE_PATH"]."/lib/drawscreen.php");
-if (!function_exists("tDataConnect")) include_once($_SESSION["INCLUDE_PATH"]."/lib/connect.php");
-if (!function_exists("udpSend")) include_once($_SESSION["INCLUDE_PATH"]."/lib/udpSend.php");
-if (!isset($IS4C_LOCAL)) include($_SESSION["INCLUDE_PATH"]."/lib/LocalStorage/conf.php");
+$IS4C_PATH = isset($IS4C_PATH)?$IS4C_PATH:"";
+if (empty($IS4C_PATH)){ while(!file_exists($IS4C_PATH."is4c.css")) $IS4C_PATH .= "../"; }
+
+if (!class_exists("BasicPage")) include_once($IS4C_PATH."gui-class-lib/BasicPage.php");
+if (!function_exists("paycard_reset")) include_once($IS4C_PATH."lib/paycardLib.php");
+if (!function_exists("ttl")) include_once($IS4C_PATH."lib/prehkeys.php");
+if (!function_exists("printfooterb")) include_once($IS4C_PATH."lib/drawscreen.php");
+if (!function_exists("tDataConnect")) include_once($IS4C_PATH."lib/connect.php");
+if (!function_exists("udpSend")) include_once($IS4C_PATH."lib/udpSend.php");
+if (!isset($IS4C_LOCAL)) include($IS4C_PATH."lib/LocalStorage/conf.php");
 
 class paycardSuccess extends BasicPage {
 
 	function preprocess(){
-		global $IS4C_LOCAL;
+		global $IS4C_LOCAL,$IS4C_PATH;
 		// check for input
 		if( isset($_REQUEST["reginput"])) {
 			$input = strtoupper(trim($_POST["reginput"]));
@@ -70,11 +73,11 @@ class paycardSuccess extends BasicPage {
 				$IS4C_LOCAL->set("strRemembered","TO");
 				$IS4C_LOCAL->set("msgrepeat",1);
 
-				header("Location: /gui-modules/pos2.php");
+				header("Location: {$IS4C_PATH}gui-modules/pos2.php");
 				return False;
 			}
 			else if ($mode == PAYCARD_MODE_AUTH && $input == "VD"){
-				header("Location: /gui-modules/paycardboxMsgVoid.php");
+				header("Location: {$IS4C_PATH}gui-modules/paycardboxMsgVoid.php");
 				return False;
 			}
 		}
@@ -82,12 +85,13 @@ class paycardSuccess extends BasicPage {
 	}
 
 	function head_content(){
+		global $IS4C_PATH;
 		?>
 		<script type="text/javascript">
 		function submitWrapper(){
 			var str = $('#reginput').val();
 			if (str.toUpperCase() == 'RP'){
-				$.ajax({url: '/ajax-callbacks/ajax-end.php',
+				$.ajax({url: '<?php echo $IS4C_PATH; ?>ajax-callbacks/ajax-end.php',
 					cache: false,
 					type: 'post',
 					data: 'receiptType='+$('#rp_type').val(),
@@ -103,8 +107,8 @@ class paycardSuccess extends BasicPage {
 	}
 
 	function body_content(){
-		global $IS4C_LOCAL;
-		$this->input_header("onsubmit=\"return submitWrapper();\" action=\"/gui-modules/paycardSuccess.php\"");
+		global $IS4C_LOCAL,$IS4C_PATH;
+		$this->input_header("onsubmit=\"return submitWrapper();\" action=\"{$IS4C_PATH}gui-modules/paycardSuccess.php\"");
 		?>
 		<div class="baseHeight">
 		<?php

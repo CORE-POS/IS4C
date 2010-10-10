@@ -21,9 +21,12 @@
 
 *********************************************************************************/
 
-if (!class_exists("Parser")) include_once($_SESSION["INCLUDE_PATH"]."/parser-class-lib/Parser.php");
-if (!function_exists("paycard_reset")) include_once($_SESSION["INCLUDE_PATH"]."/lib/paycardLib.php");
-if (!isset($IS4C_LOCAL)) include($_SESSION["INCLUDE_PATH"]."/lib/LocalStorage/conf.php");
+$IS4C_PATH = isset($IS4C_PATH)?$IS4C_PATH:"";
+if (empty($IS4C_PATH)){ while(!file_exists($IS4C_PATH."is4c.css")) $IS4C_PATH .= "../"; }
+
+if (!class_exists("Parser")) include_once($IS4C_PATH."parser-class-lib/Parser.php");
+if (!function_exists("paycard_reset")) include_once($IS4C_PATH."lib/paycardLib.php");
+if (!isset($IS4C_LOCAL)) include($IS4C_PATH."lib/LocalStorage/conf.php");
 
 class paycardEntered extends Parser {
 	var $swipestr;
@@ -71,7 +74,7 @@ class paycardEntered extends Parser {
 	}
 
 	function paycard_entered($mode,$card,$manual,$type){
-		global $IS4C_LOCAL;
+		global $IS4C_LOCAL,$IS4C_PATH;
 		$ret = $this->default_json();
 		// initialize
 		$validate = true; // run Luhn's on PAN, check expiration date
@@ -143,7 +146,7 @@ class paycardEntered extends Parser {
 		}
 
 		foreach($IS4C_LOCAL->get("RegisteredPaycardClasses") as $rpc){
-			if (!class_exists($rpc)) include_once($_SESSION["INCLUDE_PATH"]."/cc-modules/$rpc.php");
+			if (!class_exists($rpc)) include_once($IS4C_PATH."cc-modules/$rpc.php");
 			$myObj = new $rpc();
 			if ($myObj->handlesType($IS4C_LOCAL->get("paycard_type")))
 				return $myObj->entered($validate,$ret);

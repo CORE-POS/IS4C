@@ -991,7 +991,7 @@ function create_trans_dbs($db,$type){
 		WHEN (matched > 0)
 			THEN '1 w/ vol adj'
 		WHEN (trans_type = 'T')
-			THEN description
+			THEN l.description
 		ELSE
 			''
 		END
@@ -1057,7 +1057,7 @@ function create_trans_dbs($db,$type){
 			WHEN (voided = 5 or voided = 11 or voided = 17 or trans_type = 'T')
 				THEN ''
 			ELSE
-				description
+				l.description
 			END
 			as description,
 			CASE
@@ -1092,7 +1092,7 @@ function create_trans_dbs($db,$type){
 			WHEN (matched > 0)
 				THEN '1 w/ vol adj'
 			WHEN (trans_type = 'T')
-				THEN description
+				THEN l.description
 			ELSE
 				''
 			END
@@ -1148,6 +1148,7 @@ function create_trans_dbs($db,$type){
 	}
 	if (!$db->table_exists('screendisplay',$name)){
 		$db->query($screen,$name);
+		echo mysql_error();
 	}
 
 	$sAdd = "select max(datetime) AS datetime,

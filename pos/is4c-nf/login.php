@@ -33,6 +33,6 @@ initiate_session();
 if ($IS4C_LOCAL->get("SessionFirstRun") == "")
 	$IS4C_LOCAL->set("SessionFirstRun",1);
 
-header("Location: {$_SESSION['URL_PATH']}/gui-modules/login2.php");
+header("Location: {$IS4C_PATH}gui-modules/login2.php");
 ?>
 

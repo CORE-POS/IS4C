@@ -20,7 +20,11 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
-if (!isset($IS4C_LOCAL)) include($_SESSION["INCLUDE_PATH"]."/lib/LocalStorage/conf.php");
+
+$IS4C_PATH = isset($IS4C_PATH)?$IS4C_PATH:"";
+if (empty($IS4C_PATH)){ while(!file_exists($IS4C_PATH."is4c.css")) $IS4C_PATH .= "../"; }
+
+if (!isset($IS4C_LOCAL)) include($IS4C_PATH."lib/LocalStorage/conf.php");
 
 define('PAYCARD_MODE_BALANCE',   1);
 define('PAYCARD_MODE_AUTH',      2);
@@ -198,6 +202,7 @@ function paycard_validExpiration($exp) {
 	if( $eM < 1 || $eM > 12)
 		return -2;
 	// get today's date
+	date_default_timezone_set('America/Chicago');
 	$cM = (int)date('n'); // Numeric representation of a month, without leading zeros (1 through 12)
 	$cY = (int)date('y'); // A two digit representation of a year (99 or 03)
 	// check date

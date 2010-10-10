@@ -24,6 +24,8 @@
 $IS4C_PATH = isset($IS4C_PATH)?$IS4C_PATH:"";
 if (empty($IS4C_PATH)){ while(!file_exists($IS4C_PATH."is4c.css")) $IS4C_PATH .= "../"; }
 
+ini_set('display_errors','1');
+
 if (!function_exists("addcomment")) include_once($IS4C_PATH."lib/additem.php");
 if (!function_exists("array_to_json")) include_once($IS4C_PATH."lib/array_to_json.php");
 if (!function_exists("paycard_reset")) include_once($IS4C_PATH."lib/paycardLib.php");

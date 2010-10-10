@@ -21,15 +21,19 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
-if (!class_exists("PaycardProcessPage")) include_once($_SESSION["INCLUDE_PATH"]."/gui-class-lib/PaycardProcessPage.php");
-if (!function_exists("paycard_reset")) require_once($_SESSION["INCLUDE_PATH"]."/lib/paycardLib.php");
-if (!function_exists("printfooter")) require_once($_SESSION["INCLUDE_PATH"]."/lib/drawscreen.php");
-if (!isset($IS4C_LOCAL)) include($_SESSION["INCLUDE_PATH"]."/lib/LocalStorage/conf.php");
+
+$IS4C_PATH = isset($IS4C_PATH)?$IS4C_PATH:"";
+if (empty($IS4C_PATH)){ while(!file_exists($IS4C_PATH."is4c.css")) $IS4C_PATH .= "../"; }
+
+if (!class_exists("PaycardProcessPage")) include_once($IS4C_PATH."gui-class-lib/PaycardProcessPage.php");
+if (!function_exists("paycard_reset")) require_once($IS4C_PATH."lib/paycardLib.php");
+if (!function_exists("printfooter")) require_once($IS4C_PATH."lib/drawscreen.php");
+if (!isset($IS4C_LOCAL)) include($IS4C_PATH."lib/LocalStorage/conf.php");
 
 class paycardboxMsgAuth extends PaycardProcessPage {
 
 	function preprocess(){
-		global $IS4C_LOCAL;
+		global $IS4C_LOCAL,$IS4C_PATH;
 		// check for posts before drawing anything, so we can redirect
 		if( isset($_REQUEST['reginput'])) {
 			$input = strtoupper(trim($_REQUEST['reginput']));
@@ -42,7 +46,7 @@ class paycardboxMsgAuth extends PaycardProcessPage {
 				$IS4C_LOCAL->set("ccTermOut","resettotal:".
 					str_replace(".","",sprintf("%.2f",$IS4C_LOCAL->get("amtdue"))));
 				paycard_reset();
-				header("Location: /gui-modules/pos2.php");
+				header("Location: {$IS4C_PATH}gui-modules/pos2.php");
 				return False;
 			}
 			else if ($input == ""){

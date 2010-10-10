@@ -1,7 +1,7 @@
 <?php
 /*******************************************************************************
 
-    Copyright 2001, 2004 Wedge Community Co-op
+    Copyright 2010 Whole Foods Co-op
 
     This file is part of IS4C.
 
@@ -21,14 +21,17 @@
 
 *********************************************************************************/
 
-if (!class_exists("PaycardProcessPage")) include_once($_SESSION["INCLUDE_PATH"]."/gui-class-lib/PaycardProcessPage.php");
-if (!function_exists("paycard_reset")) include_once($_SESSION["INCLUDE_PATH"]."/lib/paycardLib.php");
-if (!isset($IS4C_LOCAL)) include($_SESSION["INCLUDE_PATH"]."/lib/LocalStorage/conf.php");
+$IS4C_PATH = isset($IS4C_PATH)?$IS4C_PATH:"";
+if (empty($IS4C_PATH)){ while(!file_exists($IS4C_PATH."is4c.css")) $IS4C_PATH .= "../"; }
+
+if (!class_exists("PaycardProcessPage")) include_once($IS4C_PATH."gui-class-lib/PaycardProcessPage.php");
+if (!function_exists("paycard_reset")) include_once($IS4C_PATH."lib/paycardLib.php");
+if (!isset($IS4C_LOCAL)) include($IS4C_PATH."lib/LocalStorage/conf.php");
 
 class paycardboxMsgGift extends PaycardProcessPage {
 
 	function preprocess(){
-		global $IS4C_LOCAL;
+		global $IS4C_LOCAL,$IS4C_PATH;
 		// check for posts before drawing anything, so we can redirect
 		if( isset($_REQUEST['reginput'])) {
 			$input = strtoupper(trim($_REQUEST['reginput']));
@@ -39,7 +42,7 @@ class paycardboxMsgGift extends PaycardProcessPage {
 				$IS4C_LOCAL->set("endorseType","");
 				$IS4C_LOCAL->set("togglefoodstamp",0);
 				paycard_reset();
-				header("Location: /gui-modules/pos2.php");
+				header("Location: {$IS4C_PATH}gui-modules/pos2.php");
 				return False;
 			}
 	

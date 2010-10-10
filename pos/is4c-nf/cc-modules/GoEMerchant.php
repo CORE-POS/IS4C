@@ -1,7 +1,7 @@
 <?php
 /*******************************************************************************
 
-    Copyright 2007 Whole Foods Co-op
+    Copyright 2007,2010 Whole Foods Co-op
 
     This file is part of IS4C.
 
@@ -21,17 +21,19 @@
 
 *********************************************************************************/
 
+$IS4C_PATH = isset($IS4C_PATH)?$IS4C_PATH:"";
+if (empty($IS4C_PATH)){ while(!file_exists($IS4C_PATH."is4c.css")) $IS4C_PATH .= "../"; }
 
-if (!class_exists("BasicCCModule")) include_once($_SESSION["INCLUDE_PATH"]."/cc-modules/BasicCCModule.php");
+if (!class_exists("BasicCCModule")) include_once($IS4C_PATH."cc-modules/BasicCCModule.php");
 
-if (!class_exists("xmlData")) include_once($_SESSION["INCLUDE_PATH"]."/lib/xmlData.php");
-if (!class_exists("Void")) include_once($_SESSION["INCLUDE_PATH"]."/parser-class-lib/parse/Void.php");
-if (!function_exists("truncate2")) include_once($_SESSION["INCLUDE_PATH"]."/lib/lib.php");
-if (!function_exists("paycard_reset")) include_once($_SESSION["INCLUDE_PATH"]."/lib/paycardLib.php");
-if (!function_exists("tDataConnect")) include_once($_SESSION["INCLUDE_PATH"]."/lib/connect.php");
-if (!function_exists("tender")) include_once($_SESSION["INCLUDE_PATH"]."/lib/prehkeys.php");
-if (!function_exists("receipt")) include_once($_SESSION["INCLUDE_PATH"]."/lib/clientscripts.php");
-if (!isset($IS4C_LOCAL)) include($_SESSION["INCLUDE_PATH"]."/lib/LocalStorage/conf.php");
+if (!class_exists("xmlData")) include_once($IS4C_PATH."lib/xmlData.php");
+if (!class_exists("Void")) include_once($IS4C_PATH."parser-class-lib/parse/Void.php");
+if (!function_exists("truncate2")) include_once($IS4C_PATH."lib/lib.php");
+if (!function_exists("paycard_reset")) include_once($IS4C_PATH."lib/paycardLib.php");
+if (!function_exists("tDataConnect")) include_once($IS4C_PATH."lib/connect.php");
+if (!function_exists("tender")) include_once($IS4C_PATH."lib/prehkeys.php");
+if (!function_exists("receipt")) include_once($IS4C_PATH."lib/clientscripts.php");
+if (!isset($IS4C_LOCAL)) include($IS4C_PATH."lib/LocalStorage/conf.php");
 
 define('GOEMERCH_ID','');
 define('GOEMERCH_PASSWD','');
@@ -57,7 +59,7 @@ class GoEMerchant extends BasicCCModule {
 	}
 
 	function entered($validate,$json){
-		global $IS4C_LOCAL;
+		global $IS4C_LOCAL,$IS4C_PATH;
 		// error checks based on card type
 		if( $IS4C_LOCAL->get("CCintegrate") != 1) { // credit card integration must be enabled
 			paycard_reset();
@@ -132,7 +134,7 @@ class GoEMerchant extends BasicCCModule {
 			if ($IS4C_LOCAL->get("paycard_amount") == 0)
 				$IS4C_LOCAL->set("paycard_amount",$IS4C_LOCAL->get("amtdue"));
 			$IS4C_LOCAL->set("paycard_id",$IS4C_LOCAL->get("LastID")+1); // kind of a hack to anticipate it this way..
-			$json['main_frame'] = '/gui-modules/paycardboxMsgAuth.php';
+			$json['main_frame'] = $IS4C_PATH.'gui-modules/paycardboxMsgAuth.php';
 			return $json;
 			break;
 		} // switch mode
@@ -146,7 +148,7 @@ class GoEMerchant extends BasicCCModule {
 	}
 
 	function paycard_void($transID,$laneNo=-1,$transNo=-1,$json=array()) {
-		global $IS4C_LOCAL;
+		global $IS4C_LOCAL,$IS4C_PATH;
 		$this->voidTrans = "";
 		$this->voidRef = "";
 		// situation checking
@@ -298,7 +300,7 @@ class GoEMerchant extends BasicCCModule {
 	
 		// display FEC code box
 		$IS4C_LOCAL->set("inputMasked",1);
-		$json['main_frame'] = '/gui-modules/paycardboxMsgVoid.php';
+		$json['main_frame'] = $IS4C_PATH.'gui-modules/paycardboxMsgVoid.php';
 		return $json;
 	}
 
@@ -317,6 +319,7 @@ class GoEMerchant extends BasicCCModule {
 		$xml = new xmlData($authResult['response']);
 
 		// prepare some fields to store the parsed response; we'll add more as we verify it
+		date_default_timezone_set('America/Chicago');
 		$today = date('Ymd'); // numeric date only, it goes in an 'int' field as part of the primary key
 		$now = date('Y-m-d H:i:s'); // full timestamp
 		$cashierNo = $IS4C_LOCAL->get("CashierNo");
@@ -417,6 +420,7 @@ class GoEMerchant extends BasicCCModule {
 		global $IS4C_LOCAL;
 		$xml = new xmlData($authResult['response']);
 		// prepare some fields to store the parsed response; we'll add more as we verify it
+		date_default_timezone_set('America/Chicago');
 		$today = date('Ymd'); // numeric date only, it goes in an 'int' field as part of the primary key
 		$now = date('Y-m-d H:i:s'); // full timestamp
 		$cashierNo = $IS4C_LOCAL->get("CashierNo");
@@ -546,6 +550,7 @@ class GoEMerchant extends BasicCCModule {
 			return $this->setErrorMsg(PAYCARD_ERR_NOSEND); // database error, nothing sent (ok to retry)
 		}
 
+		date_default_timezone_set('America/Chicago');
 		$today = date('Ymd'); // numeric date only, it goes in an 'int' field as part of the primary key
 		$now = date('Y-m-d H:i:s'); // full timestamp
 		$cashierNo = $IS4C_LOCAL->get("CashierNo");
@@ -683,6 +688,7 @@ class GoEMerchant extends BasicCCModule {
 		}
 
 		// prepare data for the void request
+		date_default_timezone_set('America/Chicago');
 		$today = date('Ymd'); // numeric date only, it goes in an 'int' field as part of the primary key
 		$now = date('Y-m-d H:i:s'); // new timestamp
 		$cashierNo = $IS4C_LOCAL->get("CashierNo");

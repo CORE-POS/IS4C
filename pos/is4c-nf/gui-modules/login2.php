@@ -36,12 +36,13 @@ class login2 extends BasicPage {
 	var $msg;
 
 	function preprocess(){
+		global $IS4C_PATH;
 		$this->box_color = '#004080';
 		$this->msg = 'please enter your password';
 
 		if (isset($_REQUEST['reginput'])){
 			if (authenticate($_REQUEST['reginput'])){
-				header("Location: {$_SESSION["URL_PATH"]}/gui-modules/pos2.php");
+				header("Location: {$IS4C_PATH}gui-modules/pos2.php");
 				return False;
 			}
 			else {

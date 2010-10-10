@@ -480,6 +480,7 @@ class SQLManager {
 		$t_def = $this->table_definition($table_name,$which_connection);
 
 		$fp = -1;
+		date_default_timezone_set('America/Chicago');
 		$tstamp = date("r");
 		if ($OUTFILE != "" && is_writable($OUTFILE))
 			$fp = fopen($OUTFILE,"a");

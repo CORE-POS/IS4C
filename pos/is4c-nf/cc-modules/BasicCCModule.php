@@ -29,8 +29,11 @@
  *
  */
 
-if (!function_exists("paycard_errorText")) include_once($_SESSION["INCLUDE_PATH"]."/lib/paycardLib.php");
-if (!isset($IS4C_LOCAL)) include($_SESSION["INCLUDE_PATH"]."/lib/LocalStorage/conf.php");
+$IS4C_PATH = isset($IS4C_PATH)?$IS4C_PATH:"";
+if (empty($IS4C_PATH)){ while(!file_exists($IS4C_PATH."is4c.css")) $IS4C_PATH .= "../"; }
+
+if (!function_exists("paycard_errorText")) include_once($IS4C_PATH."lib/paycardLib.php");
+if (!isset($IS4C_LOCAL)) include($IS4C_PATH."lib/LocalStorage/conf.php");
 
 class BasicCCModule {
 	/* constructor
@@ -119,6 +122,7 @@ class BasicCCModule {
 	var $GATEWAY;
 	var $SOAPACTION;
 	function curlSend($data=False,$type='POST',$xml=False){
+		global $IS4C_PATH;
 		if($data && $type == 'GET')
 			$this->GATEWAY .= $data;
 
@@ -133,7 +137,7 @@ class BasicCCModule {
 		curl_setopt($curl_handle, CURLOPT_TIMEOUT,30);
 		//curl_setopt($curl_handle, CURLOPT_SSL_VERIFYPEER, 0);
 		curl_setopt($curl_handle, CURLOPT_CAINFO, 
-			$_SESSION["INCLUDE_PATH"]."/cc-modules/cacert.pem");
+			$IS4C_PATH."cc-modules/cacert.pem");
 		if ($type == 'SOAP'){
 			curl_setopt($curl_handle, CURLOPT_HTTPHEADER,
 				array("SOAPAction: ".$this->SOAPACTION,

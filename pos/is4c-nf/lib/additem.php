@@ -111,6 +111,7 @@ function addItem($strupc, $strdescription, $strtransType, $strtranssubType, $str
 	$db = tDataConnect();
 
 	$datetimestamp = "";
+	date_default_timezone_set('America/Chicago');
 	if ($IS4C_LOCAL->get("DBMS") == "mssql") {
 		$datetimestamp = strftime("%m/%d/%y %H:%M:%S %p", time());
 	} else {
