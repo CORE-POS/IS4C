@@ -846,9 +846,10 @@ function fsEligible() {
 //------------------------------------------
 
 function percentDiscount($strl) {
+	$ret = "";
 	if ($strl == 10.01) $strl = 10;
 
-	if (!is_numeric($strl) || $strl > 100 || $strl < 0) boxMsg("discount invalid");
+	if (!is_numeric($strl) || $strl > 100 || $strl < 0) $ret = boxMsg("discount invalid");
 	else {
 		$query = "select sum(total) as total from localtemptrans where upc = '0000000008005' group by upc";
 
@@ -866,11 +867,12 @@ function percentDiscount($strl) {
 				if ($strl != 0) discountnotify($strl);
 				$db->query("update localtemptrans set percentDiscount = ".$strl);
 			ttl();
-			lastpage();
+			$ret = lastpage();
 		}
-		else xboxMsg("10% discount already applied");
+		else $ret = xboxMsg("10% discount already applied");
 		$db->close();
 	}
+	return $ret;
 }
 
 //------------------------------------------
@@ -952,7 +954,7 @@ function staffCharge($arg) {
 	$row = $pConn->fetch_array($result);
 
 	if ($num_rows == 0) {
-		xboxMsg("unable to authenticate staff ".$staffID);
+		return xboxMsg("unable to authenticate staff ".$staffID);
 		$_Session["isStaff"] = 0;			// apbw 03/05/05 SCR
 	}
 	else {
@@ -969,11 +971,8 @@ function staffCharge($arg) {
 
 		ttl();
 		$IS4C_LOCAL->set("runningTotal",$IS4C_LOCAL->get("amtdue"));
-		tender("MI", $IS4C_LOCAL->get("runningTotal") * 100);
+		return tender("MI", $IS4C_LOCAL->get("runningTotal") * 100);
 
-		// lastpage();
-				
-		
 	}
 
 }
@@ -987,7 +986,7 @@ function endofShift() {
 	getsubtotals();
 	ttl();
 	$IS4C_LOCAL->set("runningtotal",$IS4C_LOCAL->get("amtdue"));
-	tender("CA", $IS4C_LOCAL->get("runningtotal") * 100);
+	return tender("CA", $IS4C_LOCAL->get("runningtotal") * 100);
 }
 
 //---------------------------	WORKING MEMBER DISCOUNT	-------------------------- 

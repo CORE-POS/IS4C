@@ -21,8 +21,11 @@
 
 *********************************************************************************/
 
-if (!class_exists("Parser")) include_once($_SESSION["INCLUDE_PATH"]."/parser-class-lib/Parser.php");
-if (!function_exists("staffCharge")) include_once($_SESSION["INCLUDE_PATH"]."/lib/prehkeys.php");
+$IS4C_PATH = isset($IS4C_PATH)?$IS4C_PATH:"";
+if (empty($IS4C_PATH)){ while(!file_exists($IS4C_PATH."is4c.css")) $IS4C_PATH .= "../"; }
+
+if (!class_exists("Parser")) include_once($IS4C_PATH."parser-class-lib/Parser.php");
+if (!function_exists("staffCharge")) include_once($IS4C_PATH."lib/prehkeys.php");
 
 class StaffCharge extends Parser {
 	var $left;
@@ -41,8 +44,14 @@ class StaffCharge extends Parser {
 	}
 
 	function parse($str){
-		staffCharge($this->left);
-		return False;
+		$ret = staffCharge($this->left);
+		if (is_array($ret))
+			return $ret;
+		else {
+			$json = $this->default_json();
+			$json['output'] = $ret;
+			return $json;
+		}
 	}
 
 	function doc(){

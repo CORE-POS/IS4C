@@ -21,9 +21,12 @@
 
 *********************************************************************************/
 
-if (!class_exists("Parser")) include_once($_SESSION["INCLUDE_PATH"]."/parser-class-lib/Parser.php");
-if (!function_exists("boxMsg")) include_once($_SESSION["INCLUDE_PATH"]."/lib/drawscreen.php");
-if (!isset($IS4C_LOCAL)) include($_SESSION["INCLUDE_PATH"]."/lib/LocalStorage/conf.php");
+$IS4C_PATH = isset($IS4C_PATH)?$IS4C_PATH:"";
+if (empty($IS4C_PATH)){ while(!file_exists($IS4C_PATH."is4c.css")) $IS4C_PATH .= "../"; }
+
+if (!class_exists("Parser")) include_once($IS4C_PATH."parser-class-lib/Parser.php");
+if (!function_exists("boxMsg")) include_once($IS4C_PATH."lib/drawscreen.php");
+if (!isset($IS4C_LOCAL)) include($IS4C_PATH."lib/LocalStorage/conf.php");
 
 class CaseDiscMsgs extends Parser {
 	function check($str){
@@ -37,14 +40,15 @@ class CaseDiscMsgs extends Parser {
 
 	function parse($str){
 		global $IS4C_LOCAL;
+		$ret = $this->default_json();
 		if ($str == "cdInvalid") 
-			boxMsg($IS4C_LOCAL->get("casediscount")."% case discount invalid");
+			$ret['output'] = boxMsg($IS4C_LOCAL->get("casediscount")."% case discount invalid");
 		elseif ($str == "cdStaffNA") 
-			boxMsg("case discount not applicable to staff");
+			$ret['output'] = boxMsg("case discount not applicable to staff");
 		elseif ($str == "cdSSINA") 
-			boxMsg("hit 10% key to apply case discount for member ".$IS4C_LOCAL->get("memberID"));
+			$ret['output'] = boxMsg("hit 10% key to apply case discount for member ".$IS4C_LOCAL->get("memberID"));
 	
-		return False;
+		return $ret;
 	}
 
 	function doc(){

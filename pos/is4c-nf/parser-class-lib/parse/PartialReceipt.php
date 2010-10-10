@@ -21,8 +21,12 @@
 
 *********************************************************************************/
 
-if (!class_exists("Parser")) include_once($_SESSION["INCLUDE_PATH"]."/parser-class-lib/Parser.php");
-if (!function_exists("receipt")) include_once($_SESSION["INCLUDE_PATH"]."/lib/clientscripts.php");
+$IS4C_PATH = isset($IS4C_PATH)?$IS4C_PATH:"";
+if (empty($IS4C_PATH)){ while(!file_exists($IS4C_PATH."is4c.css")) $IS4C_PATH .= "../"; }
+
+if (!class_exists("Parser")) include_once($IS4C_PATH."parser-class-lib/Parser.php");
+if (!function_exists("receipt")) include_once($IS4C_PATH."lib/clientscripts.php");
+if (!function_exists("lastpage")) include_once($IS4C_PATH."lib/listitems.php");
 
 class PartialReceipt extends Parser {
 	function check($str){
@@ -32,8 +36,10 @@ class PartialReceipt extends Parser {
 	}
 
 	function parse($str){
-		receipt("partial");
-		return True;
+		$ret = $this->default_json();
+		$ret['receipt'] = 'partial';
+		$ret['output'] = lastpage();
+		return $ret;
 	}
 
 	function doc(){

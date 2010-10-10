@@ -21,29 +21,34 @@
 
 *********************************************************************************/
 
-if (!class_exists("Parser")) include_once($_SESSION["INCLUDE_PATH"]."/parser-class-lib/Parser.php");
-if (!function_exists("percentDiscount")) include_once($_SESSION["INCLUDE_PATH"]."/lib/prehkeys.php");
-if (!function_exists("boxMsg")) include_once($_SESSION["INCLUDE_PATH"]."/lib/drawscreen.php");
-if (!isset($IS4C_LOCAL)) include($_SESSION["INCLUDE_PATH"]."/lib/LocalStorage/conf.php");
+$IS4C_PATH = isset($IS4C_PATH)?$IS4C_PATH:"";
+if (empty($IS4C_PATH)){ while(!file_exists($IS4C_PATH."is4c.css")) $IS4C_PATH .= "../"; }
+
+if (!class_exists("Parser")) include_once($IS4C_PATH."parser-class-lib/Parser.php");
+if (!function_exists("percentDiscount")) include_once($IS4C_PATH."lib/prehkeys.php");
+if (!function_exists("boxMsg")) include_once($IS4C_PATH."lib/drawscreen.php");
+if (!isset($IS4C_LOCAL)) include($IS4C_PATH."lib/LocalStorage/conf.php");
 
 class StackableDiscount extends Parser {
+	var $ret;
 	function check($str){
 		global $IS4C_LOCAL;
+		$this->ret = $this->default_json();
 		if (substr($str,-2) == "SD"){
 			$strl = substr($str,0,strlen($str)-2);
 			if (!is_numeric($strl)) 
 				return False;
 			elseif ($IS4C_LOCAL->get("tenderTotal") != 0) 
-				boxMsg("discount not applicable after tender");
+				$this->ret['output'] = boxMsg("discount not applicable after tender");
 			elseif ($strl > 50) 
-				boxMsg("discount exceeds maximum");
+				$this->ret['output'] = boxMsg("discount exceeds maximum");
 			elseif ($strl <= 0) 
-				boxMsg("discount must be greater than zero");
+				$this->ret['output'] = boxMsg("discount must be greater than zero");
 			elseif ($strl <= 50 and $strl > 0) {
 				$existingPD = $IS4C_LOCAL->get("percentDiscount");
 				$stackablePD = $strl;
 				$equivalentPD = ($existingPD + $stackablePD);								//	sum discounts
-				percentDiscount($equivalentPD);
+				$this->ret['output'] = percentDiscount($equivalentPD);
 			}
 			else 
 				return False;
@@ -53,7 +58,7 @@ class StackableDiscount extends Parser {
 	}
 
 	function parse($str){
-		return False;
+		return $this->ret;
 	}
 
 	function doc(){

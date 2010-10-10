@@ -20,16 +20,22 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
-if (!class_exists("MainFramePage")) include_once($_SESSION["INCLUDE_PATH"]."/gui-class-lib/MainFramePage.php");
-if (!function_exists("tDataConnect")) include($_SESSION["INCLUDE_PATH"]."/lib/connect.php");
-if (!function_exists("changeBothPages")) include($_SESSION["INCLUDE_PATH"]."/gui-base.php");
-if (!isset($IS4C_LOCAL)) include($_SESSION["INCLUDE_PATH"]."/lib/LocalStorage/conf.php");
 
-class QKDisplay extends MainFramePage {
+$IS4C_PATH = isset($IS4C_PATH)?$IS4C_PATH:"";
+if (empty($IS4C_PATH)){ while(!file_exists($IS4C_PATH."is4c.css")) $IS4C_PATH .= "../"; }
+
+ini_set('display_errors','1');
+
+if (!class_exists("NoInputPage")) include_once($IS4C_PATH."gui-class-lib/NoInputPage.php");
+if (!function_exists("tDataConnect")) include($IS4C_PATH."lib/connect.php");
+if (!isset($IS4C_LOCAL)) include($IS4C_PATH."lib/LocalStorage/conf.php");
+
+class QKDisplay extends NoInputPage {
 
 	var $offset;
 
-	function head(){
+	function head_content(){
+		global $IS4C_PATH;
 		?>
 		<script type="text/javascript" >
 		var prevKey = -1;
@@ -59,12 +65,12 @@ class QKDisplay extends MainFramePage {
 				setSelected(jsKey-96);
 			}
 			else if (jsKey == 33 || jsKey == 38){
-				top.main_frame.location = 
-					'/gui-modules/QKDisplay.php?offset=<?php echo ($this->offset - 1)?>';
+				location = 
+					'<?php echo $IS4C_PATH; ?>gui-modules/QKDisplay.php?offset=<?php echo ($this->offset - 1)?>';
 			}
 			else if (jsKey == 34 || jsKey == 40){
-				top.main_frame.location = 
-					'/gui-modules/QKDisplay.php?offset=<?php echo ($this->offset + 1)?>';
+				location = 
+					'<?php echo $IS4C_PATH; ?>gui-modules/QKDisplay.php?offset=<?php echo ($this->offset + 1)?>';
 			}
 			prevPrevKey = prevKey;
 			prevKey = jsKey;
@@ -78,10 +84,10 @@ class QKDisplay extends MainFramePage {
 			if (row == 2) id = num - 7;
 			else if (row == 1) id = num - 1;
 			else if (row == 0) id = num + 5;
-			if (document.getElementById('qkDiv'+id)){
-				document.getElementById('qkDiv'+selectedId).style.border='0';
-				document.getElementById('qkDiv'+id).style.border='solid 3px #004080';
-				document.getElementById('qkButton'+id).focus();
+			if ($('#qkDiv'+id)){
+				$('#qkDiv'+selectedId).css('border','0');
+				$('#qkDiv'+id).css('border','solid 3px #004080');
+				$('#qkButton'+id).focus();
 				selectedId = id;
 			}
 		}
@@ -89,44 +95,47 @@ class QKDisplay extends MainFramePage {
 		<?php
 	} // END head() FUNCTION
 
-	function body_tag(){
-		echo "<body onload='setSelected(7);'>";
-	}
-
 	function preprocess(){
-		global $IS4C_LOCAL;
+		global $IS4C_LOCAL,$IS4C_PATH;
 
-		$this->offset = isset($_GET['offset'])?$_GET['offset']:0;
+		$this->offset = isset($_REQUEST['offset'])?$_REQUEST['offset']:0;
 
 		if (count($_POST) > 0){
-			if ($_POST["clear"] == 0){
+			if ($_REQUEST["clear"] == 0){
 				// submit process changes line break
 				// depending on platform
 				// apostrophes pick up slashes
-				$choice = str_replace("\r","",$_POST["quickkey_submit"]);
+				$choice = str_replace("\r","",$_REQUEST["quickkey_submit"]);
 				$choice = stripslashes($choice);
 
-				$value = $_POST[md5($choice)];
+				$value = $_REQUEST[md5($choice)];
 
 				$output = $IS4C_LOCAL->get("qkInput").$value;
 				$IS4C_LOCAL->set("msgrepeat",1);
 				$IS4C_LOCAL->set("strRemembered",$output);
 				$IS4C_LOCAL->set("currentid",$IS4C_LOCAL->get("qkCurrentId"));
 			}
-			changeBothPages("/gui-modules/input.php","/gui-modules/pos2.php");
+			if (substr(strtoupper($output),0,2) == "QK"){
+				$IS4C_LOCAL->set("qkNumber",substr($output,2));
+				return True;
+			}
+			else {
+				header("Location: {$IS4C_PATH}gui-modules/pos2.php");
+			}
 			return False;
 		}
-
 		return True;
 	} // END preprocess() FUNCTION
 
 	function body_content(){
-		global $IS4C_LOCAL;
+		global $IS4C_LOCAL,$IS4C_PATH;
+
+		$this->add_onload_command("setSelected(7);");
 
 		echo "<div class=\"baseHeight\" style=\"border: solid 1px black;\">";
 		echo "<form action=\"".$_SERVER["PHP_SELF"]."\" method=\"post\">";
 
-		include($_SESSION["INCLUDE_PATH"]."/quickkeys/keys/"
+		include($IS4C_PATH."quickkeys/keys/"
 			.$IS4C_LOCAL->get("qkNumber").".php");
 
 		$num_pages = ceil(count($my_keys)/9.0);
@@ -141,7 +150,7 @@ class QKDisplay extends MainFramePage {
 					if ($num_pages > 1 && $count == 3){
 						echo "<div class=\"qkArrowBox\">";
 						echo "<input type=submit value=Up class=qkArrow 
-							onclick=\"top.main_frame.location='/gui-modules/QKDisplay.php?offset=".($page-1)."'; return false;\" />";
+							onclick=\"location='{$IS4C_PATH}gui-modules/QKDisplay.php?offset=".($page-1)."'; return false;\" />";
 						echo "</div>";
 					}
 					echo "</div>";
@@ -157,7 +166,7 @@ class QKDisplay extends MainFramePage {
 		if ($num_pages > 1){
 			echo "<div class=\"qkArrowBox\">";
 			echo "<input type=submit value=Down class=qkArrow 
-				onclick=\"top.main_frame.location='/gui-modules/QKDisplay.php?offset=".($page+1)."'; return false;\" />";
+				onclick=\"location='{$IS4C_PATH}gui-modules/QKDisplay.php?offset=".($page+1)."'; return false;\" />";
 			echo "</div>";
 
 		}
