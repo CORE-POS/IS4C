@@ -20,10 +20,8 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
+include('../config.php');
 require_once('../src/mysql_connect.php');
-$page_title = 'Fannie - Item Maintanence';
-$header = 'Item Maintanence';
-include('../src/header.html');
 
 require_once('../auth/login.php');
 $validatedUser = validateUserQuiet('pricechange');
@@ -31,87 +29,49 @@ $auditedUser = validateUserQuiet('audited_pricechange');
 $logged_in = checkLogin();
 refreshSession();
 
-?>
+$page_title = 'Fannie - Item Maintanence';
+$header = 'Item Maintanence';
+include('../src/header.html');
 
-<html>
-<head>
-<SCRIPT LANGUAGE="JavaScript">
+$upc = str_pad($_REQUEST['upc'],'0',13,STR_PAD_LEFT);
 
-<!-- This script and many more are available free online at -->
-<!-- The JavaScript Source!! http://javascript.internet.com -->
-<!-- John Munn  (jrmunn@home.com) -->
+$up_array = array();
+$up_array['tax'] = isset($_REQUEST['tax'])?$_REQUEST['tax']:0;
+$up_array['foodstamp'] = isset($_REQUEST['FS'])?1:0;
+$up_array['scale'] = isset($_REQUEST['Scale'])?1:0;
+$up_array['deposit'] = isset($_REQUEST['deposit'])?$_REQUEST['deposit']:0;
+$up_array['qttyEnforced'] = isset($_REQUEST['QtyFrc'])?1:0;
+$up_array['discount'] = isset($_REQUEST['NoDisc'])?0:1;
+$up_array['normal_price'] = isset($_REQUEST['price'])?$_REQUEST['price']:0;
+$up_array['description'] = $dbc->escape($_REQUEST['descript']);
+$up_array['pricemethod'] = 0;
+$up_array['groupprice'] = 0.00;
+$up_array['quantity'] = 0;
+$up_array['department'] = $_REQUEST['department'];
+$up_array['size'] = "''";
+$up_array['scaleprice'] = 0.00;
+$up_array['modified'] = $dbc->now();
+$up_array['advertised'] = 1;
+$up_array['tareweight'] = 0;
+$up_array['unitofmeasure'] = "''";
+$up_array['wicable'] = 0;
+$up_array['idEnforced'] = 0;
+$up_array['cost'] = $_REQUEST['cost'];
+$up_array['inUse'] = 1;
+$up_array['subdept'] = $_REQUEST['subdepartment'];
+$up_array['local'] = isset($_REQUEST['local'])?1:0;
+$up_array['numflag'] = 0;
 
-<!-- Begin
- function putFocus(formInst, elementInst) {
-  if (document.forms.length > 0) {
-   document.forms[formInst].elements[elementInst].focus();
-  }
- }
-// The second number in the "onLoad" command in the body
-// tag determines the form's focus. Counting starts with '0'
-//  End -->
-</script>
-</head>
-<?php
-echo "<BODY onLoad='putFocus(0,0);'>";
-
-foreach ($_POST AS $key => $value) {
-    $$key = $value;
-    //echo $key . ": " . $$key . "<br>";
-
-    if($$key == 1){
-       $key = 1;
-    }elseif($$key == 2){
-       $key = 2;
-    }else{
-       $key = 0;
-    }
-
-    if(!isset($key)){
-	$value = 0;
-    }
-
-}
-
-$today = date("m-d-Y h:m:s");
-
-if(!isset($Scale)){
-	$Scale = 0;
-}
-
-if(!isset($FS)){
-	$FS=0;
-}
-
-if(!isset($NoDisc)){
-	$NoDisc=1;
-}
-
-$inUse = (isset($inUse))?1:0;
-
-if(!isset($QtyFrc)){
-	$QtyFrc = 0;
-}
-
-if(!isset($deposit)){
-	$deposit = 0;
-}
-
-if(!isset($tax)){
-	$tax = 0;
-}
-
-$pricemethod=0;
-$vol_price=0;
-$vol_qtty=0;
+/* turn on volume pricing if specified, but don't
+   alter pricemethod if it's already non-zero */
 if (isset($_REQUEST['doVolume']) && is_numeric($_REQUEST['vol_price']) && is_numeric($_REQUEST['vol_qtty'])){
-	$pricemethod = $_REQUEST['pricemethod'];
-	if ($pricemethod==0) $pricemethod=2;
-	$vol_price = $_REQUEST['vol_price'];
-	$vol_qtty = $_REQUEST['vol_qtty'];
+	$up_array['pricemethod'] = $_REQUEST['pricemethod'];
+	if ($up_array['pricemethod']==0) $up_array['pricemethod']=2;
+	$up_array['groupprice'] = $_REQUEST['vol_price'];
+	$up_array['quantity'] = $_REQUEST['vol_qtty'];
 }
 
-$sID = $dbc->query("SELECT superID FROM MasterSuperDepts WHERE dept_ID=$department");
+$sID = $dbc->query("SELECT superID FROM MasterSuperDepts WHERE dept_ID=".$up_array['department']);
 $sID = array_pop($dbc->fetch_row($sID));
 
 $uid = 0;
@@ -132,68 +92,65 @@ elseif ($auditedUser){
     audit($sID,$auditedUser,$upc,$descript,$price,$tax,$FS,$Scale,$NoDisc);
 }
 
-$local = (isset($_REQUEST['local']))?1:0;
-
-$descript = $dbc->escape($descript);
-$query = "UPDATE products 
-	SET description = $descript, 
-	normal_price=$price,
-	tax='$tax',
-	scale='$Scale',
-	foodstamp='$FS',
-	department = '$department',
-	subdept = '$subdepartment',
-	inUse = '$inUse',
-        qttyEnforced = '$QtyFrc',
-        discount='$NoDisc',
-	modified={$dbc->now()},
-	deposit=$deposit,
-	pricemethod=$pricemethod,
-	groupprice=$vol_price,
-	quantity=$vol_qtty,
-	cost=$cost,
-	local=$local
-	where upc ='$upc'";
-//echo $query;
-$result = $dbc->query($query);
+$dbc->smart_update('products',$up_array,"upc='$upc'");
 
 if ($dbc->table_exists('prodExtra')){
-	$manu = $dbc->escape($_REQUEST['manufacturer']);
-	$dist = $dbc->escape($_REQUEST['distributor']);
+	$arr = array();
+	$arr['manufacturer'] = $dbc->escape($_REQUEST['manufacturer']);
+	$arr['distributor'] = $dbc->escape($_REQUEST['distributor']);
+	$arr['cost'] = $up_array['cost'];
+	$arr['location'] = $dbc->escape($_REQUEST['location']);
+
 	$checkR = $dbc->query("SELECT upc FROM prodExtra WHERE upc='$upc'");
 	if ($dbc->num_rows($checkR) == 0){
-		$xInsQ = "INSERT INTO prodExtra (upc,distributor,manufacturer,cost,margin,variable_pricing,location,
-						case_quantity,case_cost,case_info) VALUES
-						('$upc',$dist,$manu,$cost,0.00,0,'$location','',0.00,'')";
-		$dbc->query($xInsQ);
+		// if prodExtra record doesn't exist, needs more values
+		$arr['upc'] = $dbc->escape($upc);
+		$arr['variable_pricing'] = 0;
+		$arr['margin'] = 0;
+		$arr['case_quantity'] = "''";
+		$arr['case_cost'] = 0.00;
+		$arr['case_info'] = "''";
+		$dbc->smart_insert('prodExtra',$arr);
 	}
 	else {
-		$xUpQ = "UPDATE prodExtra SET distributor=$dist,manufacturer=$manu,
-			cost=$cost,location='$location'
-			WHERE upc='$upc'";
-		$dbc->query($xUpQ);
+		$dbc->smart_update('prodExtra',$arr,"WHERE upc='$upc'");
 	}
 }
 if ($dbc->table_exists("prodUpdate")){
-	$query = sprintf("INSERT INTO prodUpdate VALUES ('%s','%s',%f,%d,%d,%d,%d,
-		%d,%s,%d,%d,%d,1)",$upc,$descript,$price,$department,$tax,$FS,$Scale,
-		isset($_REQUEST['likeCode'])?$_REQUEST['likeCode']:0,$dbc->now(),
-		0,$QtyFrc,$NoDisc);
-	$result =  $dbc->query($query);
+	$puarray = array(
+	'upc' => $dbc->escape($upc),
+	'description' => $up_array['description'],
+	'price' => $up_array['normal_price'],
+	'dept' => $up_array['department'],
+	'tax' => $up_array['tax'],
+	'fs' => $up_array['foodstamp'],
+	'scale' => $up_array['scale'],
+	'likeCode' => isset($_REQUEST['likeCode'])?$_REQUEST['likeCode']:0,
+	'modified' => $dbc->now(),
+	'user' => $uid,
+	'forceQty' => $up_array['qttyEnforced'],
+	'noDisc' => $up_array['discount'],
+	'inUse' => $up_array['inUse']
+	);
+	$dbc->smart_insert('prodUpdate',$puarray);
 }
 if(isset($_REQUEST['s_plu'])){
 	$s_plu = substr($_REQUEST['s_plu'],3,4);
-	$s_itemdesc = $descript;
+	$scale_array = array();
+	$scale_array['plu'] = $upc;
+	$scale_array['itemdesc'] = $ins_array['description'];
+	$scale_array['price'] = $ins_array['normal_price'];
 	if (isset($_REQUEST['s_longdesc']) && !empty($_REQUEST['s_longdesc']))
-		$s_itemdesc = $_REQUESt['s_longdesc'];
-	$tare = isset($_REQUEST['s_tare'])?$_REQUEST['s_tare']:0;
-	$shelflife = isset($_REQUEST['s_shelflife'])?$_REQUEST['s_shelflife']:0;
-	$s_bycount = isset($_REQUEST['s_bycount'])?1:0;
-	$s_graphics = isset($_REQUEST['s_graphics'])?1:0;
+		$scale_array['itemdesc'] = $dbc->escape($_REQUEST['s_longdesc']);
+	$scale_array['tare'] = isset($_REQUEST['s_tare'])?$_REQUEST['s_tare']:0;
+	$scale_array['shelflife'] = isset($_REQUEST['s_shelflife'])?$_REQUEST['s_shelflife']:0;
+	$scale_array['bycount'] = isset($_REQUEST['s_bycount'])?1:0;
+	$scale_array['graphics'] = isset($_REQUEST['s_graphics'])?1:0;
 	$s_type = isset($_REQUEST['s_type'])?$_REQUEST['s_type']:'Random Weight';
-	$s_text = isset($_REQUEST['s_text'])?$_REQUEST['s_text']:'';
+	$scale_array['weight'] = ($s_type=="Random Weight")?0:1;
+	$scale_array['text'] = isset($_REQUEST['s_text'])?$dbc->escape($_REQUEST['s_text']):"''";
 
-	$_label = isset($_REQUEST['s_label'])?$_REQUEST['s_label']:'horizontal';	
+	$s_label = isset($_REQUEST['s_label'])?$_REQUEST['s_label']:'horizontal';	
 	if ($s_label == "horizontal" && $s_type == "Random Weight")
 		$s_label = 133;
 	elseif ($s_label == "horizontal" && $s_type == "Fixed Weight")
@@ -203,43 +160,27 @@ if(isset($_REQUEST['s_plu'])){
 	elseif ($s_label == "vertical" && $s_type == "Fixed Weight")
 		$s_label = 23;
 
-	/* apostrophe filter */
-	$s_itemdesc = str_replace("'","",$s_itemdesc);
-	$s_text = str_replace("'","",$s_text);
-	$s_itemdesc = str_replace("\"","",$s_itemdesc);
-	$s_text = str_replace("\"","",$s_text);
+	$scale_array['label'] = $s_label;
+	$scale_array['excpetionprice'] = 0.00;
+	$scale_array['class'] = "''";
 
 	$chk = $dbc->query("SELECT * FROM scaleItems WHERE plu='$upc'");
 	$action = "ChangeOneItem";
 	if ($dbc->num_rows($chk) == 0){
-		$query = sprintf("INSERT INTO scaleItems (plu,price,itemdesc,
-			exceptionprice,weight,bycount,tare,shelflife,text,
-			class,label,graphics VALUES ('%s',%f,'%s',0.00,%d,%d,
-			%f,%d,'%s','',%d,%d)",$upc,$price,$s_itemdesc,
-			($s_type=="Random Weight")?0:1,$s_bycount,$s_tare,
-			$s_shelflife,$s_text,$s_label,$s_graphics);
-		$dbc->query($query);
+		$dbc->smart_insert('scaleItems',$scale_array);
 		$action = "WriteOneItem";
 	}
 	else {
-		$query = "UPDATE scaleItems SET
-			price=".$price.",
-			itemdesc='".$s_itemdesc."',
-			weight=".(($s_type=="Random Weight")?0:1).",
-			bycount=".$s_bycount.",
-			tare=".$s_tare.",
-			shelflife=".$s_shelflife.",
-			text='".$s_text."',
-			label=".$s_label.",
-			graphics=".$s_graphics."
-			WHERE plu='$upc'";
-		$dbc->query($query);
+		unset($scale_array['plu']);
+		$dbc->smart_update('scaleItems',$scale_array,"plu='$upc'");
+		$action = "ChangeOneItem";
 	}
 
 	include('hobartcsv/parse.php');
-	parseitem($action,$s_plu,$s_itemdesc,$s_tare,$s_shelflife,$price,
-		$s_bycount,$s_type,0.00,$s_text,$s_label,
-		($s_graphics==1)?121:0);
+	parseitem($action,$s_plu,trim($scale_array["itemdesc"],"'"),
+		$scale_array['tare'],$scale_array['shelflife'],$scale_array['price'],
+		$scale_array['bycount'],$s_type,0.00,trim($scale_array['text'],"'"),
+		$scale_array['label'],($scale_array['graphics']==1)?121:0);
 }
 
 /* push updates to the lanes */
@@ -257,9 +198,9 @@ if (isset($_REQUEST['likeCode']) && $_REQUEST['likeCode'] != -1){
 	if (!isset($_REQUEST['update'])){
 		$upcsQ = "SELECT upc FROM upcLike WHERE likeCode={$_REQUEST['likeCode']} AND upc <> '$upc'";
 		$upcsR = $dbc->query($upcsQ);
+		unset($up_array['description']);
 		while($upcsW = $dbc->fetch_row($upcsR)){
-			$lcUpdateQ = str_replace("where upc ='$upc'","where upc='$upcsW[0]'",$query);
-			$dbc->query($lcUpdateQ);
+			$dbc->smart_update('products',$up_array,"upc='$upcsW[0]'");
 			updateProductAllLanes($upcsW[0]);
 		}
 	}
@@ -269,25 +210,27 @@ elseif (isset($_REQUEST['likeCode']) && $_REQUEST['likeCode'] == -1){
 }
 
 
-$query1 = "SELECT * FROM products WHERE upc = " .$upc;
+$query1 = "SELECT upc,description,normal_price,department,subdept,
+		foodstamp,scale,qttyEnforced,discount,inUse,deposit
+		 FROM products WHERE upc = '$upc'";
 $result1 = $dbc->query($query1);
 $row = $dbc->fetch_array($result1);
 
 echo "<table border=0>";
-        echo "<tr><td align=right><b>UPC</b></td><td><font color='red'>".$row[0]."</font><input type=hidden value='$row[0]' name=upc></td>";
-        echo "</tr><tr><td><b>Description</b></td><td>$row[1]</td>";
-        echo "<td><b>Price</b></td><td>$$row[2]</td></tr></table>";
+        echo "<tr><td align=right><b>UPC</b></td><td><font color='red'>".$row['upc']."</font><input type=hidden value='{$row['upc']}' name=upc></td>";
+        echo "</tr><tr><td><b>Description</b></td><td>{$row['description']}</td>";
+        echo "<td><b>Price</b></td><td>\${$row['normal_price']}</td></tr></table>";
         echo "<table border=0><tr>";
         echo "<th>Dept<th>subDept<th>FS<th>Scale<th>QtyFrc<th>NoDisc<th>inUse<th>deposit</b>";
         echo "</tr>";
         echo "<tr>";
-        $dept=$row[12];
-        $query2 = "SELECT * FROM departments where dept_no = " .$dept;
+        $dept=$row['department'];
+        $query2 = "SELECT dept_name FROM departments where dept_no = " .$dept;
         $result2 = $dbc->query($query2);
 		$row2 = $dbc->fetch_array($result2);
 		
 		$subdept=$row["subdept"];
-		$query2a = "SELECT * FROM subdepts WHERE subdept_no = " .$subdept;
+		$query2a = "SELECT subdept_name FROM subdepts WHERE subdept_no = " .$subdept;
 		$result2a = $dbc->query($query2a);
 		$row2a = $dbc->fetch_array($result2a);
 		
@@ -324,31 +267,19 @@ echo "<table border=0>";
         echo "></td><td align=center><input type=text value=\"".$row["deposit"]."\" name=deposit size='5'";
 		echo "></td></tr>";
 
-        //echo "<tr><td>" . $row[4] . "</td><td>" . $row[5]. "</td><td>" . $row[6] ."</td><td>" . $row[7] . "</td><td>" . $row[8] . "</td></tr>";
-        //echo "<tr><td>" . $row[9] . "</td><td>" . $row[10] . "</td><td>" . $row[11] . "</td><td>" . $row[12] . "</td>";
         
         echo "</table>";
-        //echo "I am here.";
 		echo "<hr>"; 
-		echo "<form action='../item/itemMaint.php' method=post>";
+		echo "<form action='itemMaint.php' method=post>";
         echo "<input name=upc type=text id=upc> Enter UPC/PLU here<br>";
         echo "<input name=submit type=submit value=submit>";
         echo "</form>";
-
-//
-//	PHP INPUT DEBUG FUNCTION -- very helpful!
-//
-
-
-// function debug_p($var, $title) 
-// {
-//     print "<h4>$title</h4><pre>";
-//     print_r($var);
-//     print "</pre>";
-// }
-// 
-// debug_p($_REQUEST, "all the data coming in");
-
-
+?>
+<script type="text/javascript">
+$(document).ready(function(){
+	$('#upc').focus();
+});
+</script>
+<?php
 include('../src/footer.html');
 ?>

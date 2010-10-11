@@ -32,20 +32,35 @@ $laneupdate_sql = new SQLManager($FANNIE_SERVER,$FANNIE_SERVER_DBMS,$FANNIE_OP_D
 function addProductAllLanes($upc){
 	global $laneupdate_sql, $FANNIE_LANES, $FANNIE_OP_DB, $FANNIE_SERVER_DBMS;
 
+	$server_table_def = $laneupdate_sql->table_definition('products',$FANNIE_OP_DB);
+
+	// generate list of server columns
+	$server_cols = array();
+	foreach($server_table_def as $k=>$v)
+		$server_cols[$k] = True;
+
 	for ($i = 0; $i < count($FANNIE_LANES); $i++){
 		$laneupdate_sql->add_connection($FANNIE_LANES[$i]['host'],$FANNIE_LANES[$i]['type'],
 			$FANNIE_LANES[$i]['op'],$FANNIE_LANES[$i]['user'],
 			$FANNIE_LANES[$i]['pw']);
-		$selQ = "SELECT upc,description,normal_price,pricemethod,groupprice,quantity,
-			special_price,specialpricemethod,specialgroupprice,specialquantity,start_date,end_date,
-			department,size,tax,foodstamp,scale,mixmatchcode,modified,advertised,tareweight,discount,
-			discounttype,unitofmeasure,wicable,qttyEnforced,inUse,scaleprice,idEnforced,cost,
-			numflag,subdept,deposit,local,id FROM products WHERE upc='$upc'";	
-		$ins = "INSERT INTO products (upc,description,normal_price,pricemethod,groupprice,quantity,
-			special_price,specialpricemethod,specialgroupprice,specialquantity,start_date,end_date,
-			department,size,tax,foodstamp,scale,mixmatchcode,modified,advertised,tareweight,discount,
-			discounttype,unitofmeasure,wicable,qttyEnforced,inUse,scaleprice,idEnforced,cost,
-			numflag,subdept,deposit,local,id)";
+
+		// generate list of columns that exist on both
+		// the server and the lane
+		$lane_table_def = $laneupdate_sql->table_definition('products',$FANNIE_LANES[$i]['op']);
+		$matching_columns = array();
+		foreach($lane_table_def as $k=>$v){
+			if (isset($server_cols[$k])) $matching_columns[] = $k;
+		}
+
+		$selQ = "SELECT ";
+		$ins = "INSERT INTO products (";
+		foreach($matching_columns as $col){
+			$selQ .= $col.",";
+			$ins .= $col.",";
+		}
+		$selQ = rtrim($selQ,",")." FROM products WHERE upc='$upc'";
+		$ins = rtrim($ins,",").")";
+
 		$laneupdate_sql->transfer($FANNIE_OP_DB,$selQ,$FANNIE_LANES[$i]['op'],$ins);
 	}
 }

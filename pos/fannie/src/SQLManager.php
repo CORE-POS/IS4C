@@ -417,6 +417,51 @@ class SQLManager {
 
 		return $ret;
 	}
+
+	/* update as much data as possible
+	 * $values is an associative array of column_name => column_value
+	 * Values are taken as is (i.e., you have to quote your strings)
+	 * 
+	 * Caveat: There are a couple places this could break down
+	 * 1) If your WHERE clause requires a column that doesn't exist,
+	 *    the query will fail. No way around it. Auto-modifying 
+	 *    WHERE clauses seems like a terrible idea
+	 * 2) This only works with a single table. Updates involving joins
+	 *    are rare in the code base though.
+	 */
+	function smart_update($table_name,$values,$where_clause,$which_connection=''){
+                if ($which_connection == '')
+                        $which_connection=$this->default_db;
+
+		$exists = $this->table_exists($table_name,$which_connection);
+
+		if (!$exists) return False;
+		if ($exists === -1) return -1;
+
+		$t_def = $this->table_definition($table_name,$which_connection);
+
+		$sets = "";
+		foreach($values as $k=>$v){
+			if (isset($t_def[$k])){
+				$col_name = $k;
+				if($this->connections[$which_connection]->databaseType == 'mysql')
+					$sets .= "`".$col_name."`";
+				else
+					$sets .= $col_name;
+				$sets .= "=".$v.",";
+			}
+			else {
+				echo "No column - $k";
+				// implication: column isn't in the table
+			}
+		}
+		$sets = rtrim($sets,",");
+		$upQ = "UPDATE $table_name SET $sets WHERE $where_clause";
+
+		$ret = $this->query($upQ,$which_connection);
+
+		return $ret;
+	}
 }
 
 ?>

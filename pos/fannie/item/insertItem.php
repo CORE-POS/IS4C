@@ -21,12 +21,8 @@
 
 *********************************************************************************/
 include('../config.php');
-
 include('prodFunction.php');
 include_once('../src/mysql_connect.php');
-$page_title = 'Fannie - Item Maintanence';
-$header = 'Item Maintanence';
-include('../src/header.html');
 
 include_once('../auth/login.php');
 $validatedUser = validateUserQuiet('pricechange');
@@ -34,12 +30,9 @@ $auditedUser = validateUserQuiet('audited_pricechange');
 $logged_in = checkLogin();
 refreshSession();
 
-?>
-<?php
-
-
-$today = date("m-d-Y h:m:s");
-echo $today;
+$page_title = 'Fannie - Item Maintanence';
+$header = 'Item Maintanence';
+include('../src/header.html');
 
 $upc = str_pad($_REQUEST['upc'],'0',13,STR_PAD_LEFT);
 
@@ -124,7 +117,7 @@ $ins_array['idEnforced'] = 0;
 $ins_array['cost'] = $_REQUEST['cost'];
 $ins_array['inUse'] = 1;
 $ins_array['subdept'] = $_REQUEST['subdepartment'];
-$ins_array['local'] = 0;
+$ins_array['local'] = isset($_REQUEST['local'])?1:0;
 $ins_array['start_date'] = "'1900-01-01'";
 $ins_array['end_date'] = "'1900-01-01'";
 $ins_array['numflag'] = 0;
@@ -174,17 +167,21 @@ if ($dbc->table_exists("prodUpdate")){
 }
 if (isset($_REQUEST['s_plu'])){
 	$s_plu = substr($upc,3,4);
-	$s_itemdesc = $descript;
+	$scale_array = array();
+	$scale_array['plu'] = $upc;
+	$scale_array['itemdesc'] = $ins_array['description'];
+	$scale_array['price'] = $ins_array['normal_price'];
 	if (isset($_REQUEST['s_longdesc']) && !empty($_REQUEST['s_longdesc']))
-		$s_itemdesc = $dbc->escape($_REQUEST['s_longdesc']);
-	$tare = isset($_REQUEST['s_tare'])?$_REQUEST['s_tare']:0;
-	$shelflife = isset($_REQUEST['s_shelflife'])?$_REQUEST['s_shelflife']:0;
-	$s_bycount = isset($_REQUEST['s_bycount'])?1:0;
-	$s_graphics = isset($_REQUEST['s_graphics'])?1:0;
+		$scale_array['itemdesc'] = $dbc->escape($_REQUEST['s_longdesc']);
+	$scale_array['tare'] = isset($_REQUEST['s_tare'])?$_REQUEST['s_tare']:0;
+	$scale_array['shelflife'] = isset($_REQUEST['s_shelflife'])?$_REQUEST['s_shelflife']:0;
+	$scale_array['bycount'] = isset($_REQUEST['s_bycount'])?1:0;
+	$scale_array['graphics'] = isset($_REQUEST['s_graphics'])?1:0;
 	$s_type = isset($_REQUEST['s_type'])?$_REQUEST['s_type']:'Random Weight';
-	$s_text = isset($_REQUEST['s_text'])?$_REQUEST['s_text']:'';
+	$scale_array['weight'] = ($s_type=="Random Weight")?0:1;
+	$scale_array['text'] = isset($_REQUEST['s_text'])?$dbc->escape($_REQUEST['s_text']):"''";
 
-	$_label = isset($_REQUEST['s_label'])?$_REQUEST['s_label']:'horizontal';	
+	$s_label = isset($_REQUEST['s_label'])?$_REQUEST['s_label']:'horizontal';
 	if ($s_label == "horizontal" && $s_type == "Random Weight")
 		$s_label = 133;
 	elseif ($s_label == "horizontal" && $s_type == "Fixed Weight")
@@ -194,33 +191,25 @@ if (isset($_REQUEST['s_plu'])){
 	elseif ($s_label == "vertical" && $s_type == "Fixed Weight")
 		$s_label = 23;
 
-	/* apostrophe filter */
-	$s_itemdesc = str_replace("'","",$s_itemdesc);
-	$s_text = str_replace("'","",$s_text);
-	$s_itemdesc = str_replace("\"","",$s_itemdesc);
-	$s_text = str_replace("\"","",$s_text);
+	$scale_array['label'] = $s_label;
+	$scale_array['excpetionprice'] = 0.00;
+	$scale_array['class'] = "''";
 
 	$dbc->query("DELETE FROM scaleItems WHERE plu='$upc'");
-	$query = sprintf("INSERT INTO scaleItems (plu,price,itemdesc,
-		exceptionprice,weight,bycount,tare,shelflife,text,
-		class,label,graphics VALUES ('%s',%f,%s,0.00,%d,%d,
-		%f,%d,'%s','',%d,%d)",$upc,$price,$s_itemdesc,
-		($s_type=="Random Weight")?0:1,$s_bycount,$s_tare,
-		$s_shelflife,$s_text,$s_label,$s_graphics);
-	$dbc->query($query);
+	$dbc->smart_insert("scaleItems",$scale_array);
 
 	$action = "WriteOneItem";
 	include('hobartcsv/parse.php');
-	parseitem($action,$s_plu,$s_itemdesc,$s_tare,$s_shelflife,$price,
-		$s_bycount,$s_type,0.00,$s_text,$s_label,
-		($s_graphics==1)?121:0);
+	parseitem($action,$s_plu,trim($scale_array["itemdesc"],"'"),
+		$scale_array['tare'],$scale_array['shelflife'],$scale_array['price'],
+		$scale_array['bycount'],$s_type,0.00,trim($scale_array['text'],"'"),
+		$scale_array['label'],($scale_array['graphics']==1)?121:0);
 }
 
 include('laneUpdates.php');
 updateProductAllLanes($upc);
 
 $prodQ = "SELECT * FROM products WHERE upc = ".$upc;
-//echo $prodQ;
 $prodR = $dbc->query($prodQ);
 $row = $dbc->fetch_array($prodR);
 
