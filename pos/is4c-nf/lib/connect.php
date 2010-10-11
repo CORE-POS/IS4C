@@ -154,8 +154,6 @@ function getsubtotals() {
 	/* using a string for amtdue behaves strangely for
 	 * values > 1000, so use floating point */
 	$IS4C_LOCAL->set("amtdue",(double)round($IS4C_LOCAL->get("runningTotal") - $IS4C_LOCAL->get("transDiscount") + $IS4C_LOCAL->get("taxTotal"), 2));
-	
-
 
 	if ( $IS4C_LOCAL->get("fsEligible") > $IS4C_LOCAL->get("subtotal") ) {
 		$IS4C_LOCAL->set("fsEligible",$IS4C_LOCAL->get("subtotal"));
@@ -196,8 +194,6 @@ function gettransno($CashierNo) {
 function testremote() {
 	global $IS4C_LOCAL;
 
-	// set_error_handler("dataError");
-
 
 	$intConnected = pinghost($IS4C_LOCAL->get("mServer"));
 	if ($intConnected == 1) {
@@ -212,102 +208,99 @@ function testremote() {
 }
 
 // ------------------------------------------------------------------
-
-function testcc() {
-	
-}
-
-// ------------------------------------------------------------------
 function uploadtoServer()
 {
 	global $IS4C_LOCAL;
 
 	$uploaded = 0;
 
-	if ($IS4C_LOCAL->get("DBMS") == "mssql") {
-
-		$strUploadDTrans = "insert ".trim($IS4C_LOCAL->get("mServer")).".".trim($IS4C_LOCAL->get("mDatabase")).".dbo.dtransactions select * from dtransactions";
-		$strUploadAlog = "insert ".trim($IS4C_LOCAL->get("mServer")).".".trim($IS4C_LOCAL->get("mDatabase")).".dbo.alog select * from alog";
-		$strUploadsuspended = "insert ".trim($IS4C_LOCAL->get("mServer")).".".trim($IS4C_LOCAL->get("mDatabase")).".dbo.suspended select * from suspended";		
-		
-		$strUploadToday = "insert ".trim($IS4C_LOCAL->get("mServer")).".".trim($IS4C_LOCAL->get("mDatabase")).".dbo.dtranstoday select * from dtransactions";
-		
-		$connect = tDataConnect();
-
-		if ( $connect->query($strUploadDTrans) ) {
-
-			$connect->query("truncate table dtransactions");
-			$connect->query($strUploadAlog);
-			$connect->query("truncate table alog");
-			$connect->query($strUploadsuspended);
-			$connect->query("truncate table suspended");
-			$uploaded = 1;
-			$IS4C_LOCAL->set("standalone",0);
-
-		} else {
-
-			$uploaded = 0;
-			$IS4C_LOCAL->set("standalone",1);
-		}
+	// new upload method makes use of SQLManager's transfer method
+	// to simulate cross-server queries
+	$connect = tDataConnect();
+	$connect->add_connection($IS4C_LOCAL->get("mServer"),
+				$IS4C_LOCAL->get("mDBMS"),
+				$IS4C_LOCAL->get("mDatabase"),
+				$IS4C_LOCAL->get("mUser"),
+				$IS4C_LOCAL->get("mPass"),
+				False);
+	if (!isset($connect->connections[$IS4C_LOCAL->get("mDatabase")]) ||
+		$connect->connections[$IS4C_LOCAL->get("mDatabase")] === False){
+		$IS4C_LOCAL->set("standalone",1);
+		return 0;	
 	}
-	else {
-		// new upload method makes use of SQLManager's transfer method
-		// to simulate cross-server queries
-		$connect = tDataConnect();
-		$connect->add_connection($IS4C_LOCAL->get("mServer"),
-					$IS4C_LOCAL->get("mDBMS"),
-					$IS4C_LOCAL->get("mDatabase"),
-					$IS4C_LOCAL->get("mUser"),
-					$IS4C_LOCAL->get("mPass"),
-					False);
-		if (!isset($connect->connections[$IS4C_LOCAL->get("mDatabase")]) ||
-			$connect->connections[$IS4C_LOCAL->get("mDatabase")] === False){
-			$IS4C_LOCAL->set("standalone",1);
-			return 0;	
-		}
 
-		$dtcols = "datetime,register_no,emp_no,trans_no,upc,description,
-			trans_type,trans_subtype,trans_status,department,quantity,
-			Scale,cost,unitPrice,total,regPrice,tax,foodstamp,discount,
-			memDiscount,discountable,discounttype,voided,percentDiscount,
-			ItemQtty,volDiscType,volume,VolSpecial,mixMatch,matched,
-			memType,isStaff,numflag,charflag,card_no,trans_id";
+	$dt_matches = getMatchingColumns($connect,"dtransactions");
 
-		if ($connect->transfer($IS4C_LOCAL->get("tDatabase"),
-			"select * from dtransactions",
-			$IS4C_LOCAL->get("mDatabase"),"insert into dtransactions ($dtcols)")){
+	if ($connect->transfer($IS4C_LOCAL->get("tDatabase"),
+		"select {$dt_matches} from dtransactions",
+		$IS4C_LOCAL->get("mDatabase"),"insert into dtransactions ({$dt_matches})")){
 
-			$connect->transfer($IS4C_LOCAL->get("tDatabase"),
-				"select * from alog",
-				$IS4C_LOCAL->get("mDatabase"),
-				"insert into alog");
-			$connect->transfer($IS4C_LOCAL->get("tDatabase"),
-				"select * from suspended",
-				$IS4C_LOCAL->get("mDatabase"),
-				"insert into suspended ($dtcols)");
+		$al_matches = getMatchingColumns($connect,"alog");
+		$al_success = $connect->transfer($IS4C_LOCAL->get("tDatabase"),
+			"select {$al_matches} from alog",
+			$IS4C_LOCAL->get("mDatabase"),
+			"insert into alog ({$al_matches})");
 
-			$connect->query("truncate table dtransactions",
-				$IS4C_LOCAL->get("tDatabase"));
+
+		$su_matches = getMatchingColumns($connect,"suspended");
+		$su_sucess = $connect->transfer($IS4C_LOCAL->get("tDatabase"),
+			"select {$su_matches} from suspended",
+			$IS4C_LOCAL->get("mDatabase"),
+			"insert into suspended ({$su_matches})");
+
+		$connect->query("truncate table dtransactions",
+			$IS4C_LOCAL->get("tDatabase"));
+		if ($al_success){
 			$connect->query("truncate table alog",
 				$IS4C_LOCAL->get("tDatabase"));
+		}
+		if ($su_success){
 			$connect->query("truncate table suspended",
 				$IS4C_LOCAL->get("tDatabase"));
-
-			$uploaded = 1;
-			$IS4C_LOCAL->set("standalone",0);
-		}
-		else {
-			$uploaded = 0;
-			$IS4C_LOCAL->set("standalone",1);
 		}
 
-		$connect->close($IS4C_LOCAL->get("mDatabase"));
-		$connect->close($IS4C_LOCAL->get("tDatabase"));
+		$uploaded = 1;
+		$IS4C_LOCAL->set("standalone",0);
 	}
+	else {
+		$uploaded = 0;
+		$IS4C_LOCAL->set("standalone",1);
+	}
+
+	$connect->close($IS4C_LOCAL->get("mDatabase"));
+	$connect->close($IS4C_LOCAL->get("tDatabase"));
 
 	uploadCCdata();
 
 	return $uploaded;
+}
+
+/* get a list of columns that exist on the local db
+   and the server db for the given table
+   $connection should be a SQLManager object that's
+   already connected
+   if $table2 is provided, it match columns from
+   local.table_name against remote.table2
+*/
+function getMatchingColumns($connection,$table_name,$table2=""){
+	global $IS4C_LOCAL;
+
+	$local_poll = $connection->table_definition($table_name,$IS4C_LOCAL->get("tDatabase"));
+	$local_cols = array();
+	foreach($local_poll as $name=>$v)
+		$local_cols[$name] = True;
+	$remote_poll = $connection->table_definition((!empty($table2)?$table2:$table_name),
+				$IS4C_LOCAL->get("mDatabase"));
+	$matching_cols = array();
+	foreach($remote_poll as $name=>$v){
+		if (isset($local_cols[$name]))
+			$matching_cols[] = $name;
+	}
+
+	$ret = "";
+	foreach($matching_cols as $col)
+		$ret .= $col.",";
+	return rtrim($ret,",");
 }
 
 function uploadCCdata(){
@@ -320,26 +313,34 @@ function uploadCCdata(){
 				$IS4C_LOCAL->get("mUser"),
 				$IS4C_LOCAL->get("mPass"),
 				False);
+
+	$req_cols = getMatchingColumns($sql,"efsnetrequest");
 	if ($sql->transfer($IS4C_LOCAL->get("tDatabase"),
-		"select * from efsnetrequest",
-		$IS4C_LOCAL->get("mDatabase"),"insert into efsnetrequest")){
+		"select {$req_cols} from efsnetrequest",
+		$IS4C_LOCAL->get("mDatabase"),"insert into efsnetrequest ({$req_cols})")){
 
 		$sql->query("truncate table efsnetrequest",
 			$IS4C_LOCAL->get("tDatabase"));
 
-		$sql->transfer($IS4C_LOCAL->get("tDatabase"),
-			"select * from efsnetresponse",
+		$res_cols = getMatchingColumns($sql,"efsnetresponse");
+		$res_success = $sql->transfer($IS4C_LOCAL->get("tDatabase"),
+			"select {$res_cols} from efsnetresponse",
 			$IS4C_LOCAL->get("mDatabase"),
-			"insert into efsnetresponse");
-		$sql->query("truncate table efsnetresponse",
-			$IS4C_LOCAL->get("tDatabase"));
+			"insert into efsnetresponse ({$res_cols})");
+		if ($res_success){
+			$sql->query("truncate table efsnetresponse",
+				$IS4C_LOCAL->get("tDatabase"));
+		}
 
-		$sql->transfer($IS4C_LOCAL->get("tDatabase"),
-			"select * from efsnetrequestmod",
+		$mod_cols = getMatchingColumns($sql,"efsnetrequestmod");
+		$mod_success = $sql->transfer($IS4C_LOCAL->get("tDatabase"),
+			"select {$mod_cols} from efsnetrequestmod",
 			$IS4C_LOCAL->get("mDatabase"),
-			"insert into efsnetrequestmod");
-		$sql->query("truncate table efsnetrequestmod",
-			$IS4C_LOCAL->get("tDatabase"));
+			"insert into efsnetrequestmod ({$mod_cols})");
+		if ($mod_success){
+			$sql->query("truncate table efsnetrequestmod",
+				$IS4C_LOCAL->get("tDatabase"));
+		}
 	}
 }
 

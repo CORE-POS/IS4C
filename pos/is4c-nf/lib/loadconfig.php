@@ -63,21 +63,6 @@ function setglobalvalue($param, $value) {
 
 	$db->query($strUpdate);
 	$db->close();
-	
-	// ***** CvR 09/22/05 if CCIntegrate is on, test for PCCharge server ***** END
-	if($IS4C_LOCAL->get("CCintegrate") == 1){
-	   testcc();
-	}
-	
-	// ***** CvR 09/22/05 if successful test of PCCharge database, update globalvalues table on is4cc on PCCharge server ***** END
-	/*
-	if($_SESSION["ccMysql"] == 1){
-	   $cn = cDataConnect(); 
-	
-	   $result1 = $cn->query($ccUpdate);	
-	   $cn->close();
-	}
-	 */
 }
 
 function setglobalflags($value) {

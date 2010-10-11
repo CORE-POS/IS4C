@@ -1,7 +1,7 @@
 <?php
 /*******************************************************************************
 
-    Copyright 2007 Whole Foods Co-op
+    Copyright 2007,2010 Whole Foods Co-op
 
     This file is part of IS4C.
 
@@ -21,20 +21,23 @@
 
 *********************************************************************************/
 
+$IS4C_PATH = isset($IS4C_PATH)?$IS4C_PATH:"";
+if (empty($IS4C_PATH)){ while(!file_exists($IS4C_PATH."is4c.css")) $IS4C_PATH .= "../"; }
+
 /*
  * Valutec processing module
  *
  */
 
-if (!class_exists("BasicCCModule")) include_once($_SESSION["INCLUDE_PATH"]."/cc-modules/BasicCCModule.php");
+if (!class_exists("BasicCCModule")) include_once($IS4C_PATH."cc-modules/BasicCCModule.php");
 
-if (!class_exists("xmlData")) include_once($_SESSION["INCLUDE_PATH"]."/lib/xmlData.php");
-if (!function_exists("paycard_reset")) include_once($_SESSION["INCLUDE_PATH"]."/lib/paycardLib.php");
-if (!function_exists("receipt")) include_once($_SESSION["INCLUDE_PATH"]."/lib/clientscripts.php");
-if (!function_exists("deptkey")) include_once($_SESSION["INCLUDE_PATH"]."/lib/prehkeys.php");
-if (!function_exists("tDataConnect")) include_once($_SESSION["INCLUDE_PATH"]."/lib/connect.php");
-if (!class_exists("Void")) include_once($_SESSION["INCLUDE_PATH"]."/parser-class-lib/parse/Void.php");
-if (!isset($IS4C_LOCAL)) include($_SESSION["INCLUDE_PATH"]."/lib/LocalStorage/conf.php");
+if (!class_exists("xmlData")) include_once($IS4C_PATH."lib/xmlData.php");
+if (!function_exists("paycard_reset")) include_once($IS4C_PATH."lib/paycardLib.php");
+if (!function_exists("receipt")) include_once($IS4C_PATH."lib/clientscripts.php");
+if (!function_exists("deptkey")) include_once($IS4C_PATH."lib/prehkeys.php");
+if (!function_exists("tDataConnect")) include_once($IS4C_PATH."lib/connect.php");
+if (!class_exists("Void")) include_once($IS4C_PATH."parser-class-lib/parse/Void.php");
+if (!isset($IS4C_LOCAL)) include($IS4C_PATH."lib/LocalStorage/conf.php");
 
 class Valutec extends BasicCCModule {
 	var $temp;
@@ -56,11 +59,12 @@ class Valutec extends BasicCCModule {
 	 * to move all type-specific handling code out
 	 * of the paycard* files
 	 */
-	function entered($validate){
-		global $IS4C_LOCAL;
+	function entered($validate,$json){
+		global $IS4C_LOCAL,$IS4C_PATH;
 		// error checks based on card type
 		if( $IS4C_LOCAL->get("gcIntegrate") != 1) { // credit card integration must be enabled
-			return paycard_errBox(PAYCARD_TYPE_GIFT,"Card Integration Disabled","Please process gift cards in standalone","[clear] to cancel");
+			$json['output'] = paycard_errBox(PAYCARD_TYPE_GIFT,"Card Integration Disabled","Please process gift cards in standalone","[clear] to cancel");
+			return $json;
 		}
 
 		// error checks based on processing mode
@@ -81,22 +85,26 @@ class Valutec extends BasicCCModule {
 			$search = $dbTrans->query($sql);
 			$num = $dbTrans->num_rows($search);
 			if( $num < 1) {
-				return paycard_msgBox(PAYCARD_TYPE_GIFT,"Card Not Used","That card number was not used in this transaction","[clear] to cancel");
+				$json['output'] = paycard_msgBox(PAYCARD_TYPE_GIFT,"Card Not Used","That card number was not used in this transaction","[clear] to cancel");
+				return $json;
 			} else if( $num > 1) {
-				return paycard_msgBox(PAYCARD_TYPE_GIFT,"Multiple Uses","That card number was used more than once in this transaction; select the payment and press VOID","[clear] to cancel");
+				$json['output'] = paycard_msgBox(PAYCARD_TYPE_GIFT,"Multiple Uses","That card number was used more than once in this transaction; select the payment and press VOID","[clear] to cancel");
+				return $json;
 			}
 			$payment = $dbTrans->fetch_array($search);
-			return $this->paycard_void($payment['transID']);
+			return $this->paycard_void($payment['transID'],$json);
 		}
 
 		// check card data for anything else
 		if( $validate) {
 			if( paycard_validNumber($IS4C_LOCAL->get("paycard_PAN")) != 1) {
-				return paycard_errBox(PAYCARD_TYPE_GIFT,"Invalid Card Number",
+				$json['output'] = paycard_errBox(PAYCARD_TYPE_GIFT,"Invalid Card Number",
 					"Swipe again or type in manually","[clear] to cancel");
+				return $json;
 			} else if( paycard_accepted($IS4C_LOCAL->get("paycard_PAN"), !paycard_live(PAYCARD_TYPE_GIFT)) != 1) {
-				return paycard_msgBox(PAYCARD_TYPE_GIFT,"Unsupported Card Type",
+				$json['output'] = paycard_msgBox(PAYCARD_TYPE_GIFT,"Unsupported Card Type",
 					"We cannot process " . $IS4C_LOCAL->get("paycard_issuer") . " cards","[clear] to cancel");
+				return $json;
 			}
 		}
 
@@ -105,32 +113,34 @@ class Valutec extends BasicCCModule {
 		case PAYCARD_MODE_AUTH:
 			$IS4C_LOCAL->set("paycard_amount",$IS4C_LOCAL->get("amtdue"));
 			$IS4C_LOCAL->set("paycard_id",$IS4C_LOCAL->get("LastID")+1); // kind of a hack to anticipate it this way..
-			changeCurrentPage('/gui-modules/paycardboxMsgAuth.php');
-			return True;
+			$json['main_frame'] = $IS4C_PATH.'gui-modules/paycardboxMsgAuth.php';
+			return $json;
 	
 		case PAYCARD_MODE_ACTIVATE:
 		case PAYCARD_MODE_ADDVALUE:
 			$IS4C_LOCAL->set("paycard_amount",0);
 			$IS4C_LOCAL->set("paycard_id",$IS4C_LOCAL->get("LastID")+1); // kind of a hack to anticipate it this way..
-			changeCurrentPage('/gui-modules/paycardboxMsgGift.php');
-			return True;
+			$json['main_frame'] = $IS4C_PATH.'gui-modules/paycardboxMsgGift.php';
+			return $json;
 	
 		case PAYCARD_MODE_BALANCE:
 		// forbid balance check on testcard2, because it prevents voiding of anything before (like activation),
 		// and we want testcard2 to remain inactive so that we can use it to test activations
 			if( !strcasecmp($IS4C_LOCAL->get("paycard_PAN"),"7018525757980004481")) { // == doesn't work because the string is numeric and very large, so PHP has trouble turning it into an (int) for comparison
-				return paycard_msgBox(PAYCARD_TYPE_GIFT,"Not Allowed",
+				$json['output'] = paycard_msgBox(PAYCARD_TYPE_GIFT,"Not Allowed",
 					"The second test gift card may not be Balance-Checked<br>Ask IT for details",
 					"[clear] to cancel");
+				return $json;
 			}
-			changeCurrentPage('/gui-modules/paycardboxMsgBalance.php');
-			return True;
+			$json['main_frame'] = $IS4C_PATH.'gui-modules/paycardboxMsgBalance.php';
+			return $json;
 		} // switch mode
 	
 		// if we're still here, it's an error
-		return paycard_errBox(PAYCARD_TYPE_GIFT,"Invalid Mode",
+		$json['output'] = paycard_errBox(PAYCARD_TYPE_GIFT,"Invalid Mode",
 			"This card type does not support that processing mode",
 			"[clear] to cancel");
+		return $json;
 	}
 
 	/* doSend()
@@ -166,7 +176,7 @@ class Valutec extends BasicCCModule {
 	 * cleanliness. You could leave this as is and
 	 * do all the everything inside doSend()
 	 */
-	function cleanup(){
+	function cleanup($json){
 		global $IS4C_LOCAL;
 		switch($IS4C_LOCAL->get("paycard_mode")){
 		case PAYCARD_MODE_BALANCE:
@@ -175,7 +185,7 @@ class Valutec extends BasicCCModule {
 			break;
 		case PAYCARD_MODE_ADDVALUE:
 		case PAYCARD_MODE_ACTIVATE:
-			receipt("gcSlip");
+			$IS4C_LOCAL->set("autoReprint",1);
 			$ttl = $IS4C_LOCAL->get("paycard_amount");
 			deptkey($ttl*100,9020);
 			$resp = $IS4C_LOCAL->get("paycard_response");	
@@ -186,7 +196,7 @@ class Valutec extends BasicCCModule {
 			$IS4C_LOCAL->set("boxMsg",$IS4C_LOCAL->get("boxMsg")."<p>[enter] to continue<br>\"rp\" to reprint slip</font>");
 			break;
 		case PAYCARD_MODE_AUTH:
-			receipt("gcSlip");
+			$IS4C_LOCAL->set("autoReprint",1);
 			tender("GD", ($IS4C_LOCAL->get("paycard_amount")*100));
 			$resp = $IS4C_LOCAL->get("paycard_response");
 			$IS4C_LOCAL->set("boxMsg","<b>Approved</b><font size=-1><p>Used: $".$IS4C_LOCAL->get("paycard_amount")."<br />New balance: $".$resp["Balance"]);
@@ -197,13 +207,14 @@ class Valutec extends BasicCCModule {
 			break;
 		case PAYCARD_MODE_VOID:
 		case PAYCARD_MODE_VOIDITEM:
-			receipt("gcSlip");
+			$IS4C_LOCAL->set("autoReprint",1);
 			$v = new Void();
 			$v->voidid($IS4C_LOCAL->get("paycard_id"));
 			$resp = $IS4C_LOCAL->get("paycard_response");
 			$IS4C_LOCAL->set("boxMsg","<b>Voided</b><font size=-1><p>New balance: $".$resp["Balance"]."<p>[enter] to continue<br>\"rp\" to reprint slip</font>");
 			break;
 		}
+		return $json;
 	}
 
 	/* paycard_void($transID)
@@ -211,12 +222,13 @@ class Valutec extends BasicCCModule {
 	 * Again, this is for removing type-specific
 	 * code from paycard*.php files.
 	 */
-	function paycard_void($transID){
-		global $IS4C_LOCAL;
+	function paycard_void($transID,$json=array()){
+		global $IS4C_LOCAL,$IS4C_PATH;
 		// situation checking
 		if( $IS4C_LOCAL->get("gcIntegrate") != 1) { // gift card integration must be enabled
-			return paycard_errBox(PAYCARD_TYPE_GIFT,"Card Integration Disabled",
+			$json['output'] = paycard_errBox(PAYCARD_TYPE_GIFT,"Card Integration Disabled",
 				"Please process gift cards in standalone","[clear] to cancel");
+			return $json;
 		}
 		
 		// initialize
@@ -235,11 +247,13 @@ class Valutec extends BasicCCModule {
 		$search = $dbTrans->query($sql);
 		$num = $dbTrans->num_rows($search);
 		if( $num < 1) {
-			return paycard_errBox(PAYCARD_TYPE_GIFT,"Internal Error",
+			$json['output'] = paycard_errBox(PAYCARD_TYPE_GIFT,"Internal Error",
 				"Card request not found, unable to void","[clear] to cancel");
+			return $json;
 		} else if( $num > 1) {
-			return paycard_errBox(PAYCARD_TYPE_GIFT,"Internal Error",
+			$json['output'] = paycard_errBox(PAYCARD_TYPE_GIFT,"Internal Error",
 				"Card request not distinct, unable to void","[clear] to cancel");
+			return $json;
 		}
 		$request = $dbTrans->fetch_array($search);
 
@@ -252,11 +266,13 @@ class Valutec extends BasicCCModule {
 		$search = $dbTrans->query($sql);
 		$num = $dbTrans->num_rows($search);
 		if( $num < 1) {
-			return paycard_errBox(PAYCARD_TYPE_GIFT,"Internal Error",
+			$json['output'] = paycard_errBox(PAYCARD_TYPE_GIFT,"Internal Error",
 				"Card response not found, unable to void","[clear] to cancel");
+			return $json;
 		} else if( $num > 1) {
-			return paycard_errBox(PAYCARD_TYPE_GIFT,"Internal Error",
+			$json['output'] =paycard_errBox(PAYCARD_TYPE_GIFT,"Internal Error",
 				"Card response not distinct, unable to void","[clear] to cancel");
+			return $json;
 		}
 		$response = $dbTrans->fetch_array($search);
 
@@ -273,39 +289,47 @@ class Valutec extends BasicCCModule {
 		$search = $dbTrans->query($sql);
 		$num = $dbTrans->num_rows($search);
 		if( $num < 1) {
-			return paycard_errBox(PAYCARD_TYPE_GIFT,"Internal Error",
+			$json['output'] = paycard_errBox(PAYCARD_TYPE_GIFT,"Internal Error",
 				"Transaction item not found, unable to void","[clear] to cancel");
+			return $json;
 		} else if( $num > 1) {
-			return paycard_errBox(PAYCARD_TYPE_GIFT,"Internal Error",
+			$json['output'] =paycard_errBox(PAYCARD_TYPE_GIFT,"Internal Error",
 				"Transaction item not distinct, unable to void","[clear] to cancel");
+			return $json;
 		}
 		$lineitem = $dbTrans->fetch_array($search);
 
 		// make sure the gift card transaction is applicable to void
 		if( !$response || $response['commErr'] != 0 || 
 		     $response['httpCode'] != 200 || $response['validResponse'] != 1) {
-			return paycard_msgBox(PAYCARD_TYPE_GIFT,"Unable to Void",
+			$json['output'] = paycard_msgBox(PAYCARD_TYPE_GIFT,"Unable to Void",
 				"Card transaction not successful","[clear] to cancel");
+			return $json;
 		} else if( $voided > 0) {
-			return paycard_errBox(PAYCARD_TYPE_GIFT,"Unable to Void",
+			$json['output'] =paycard_errBox(PAYCARD_TYPE_GIFT,"Unable to Void",
 				"Card transaction already voided","[clear] to cancel");
+			return $json;
 		} else if( $request['live'] != paycard_live(PAYCARD_TYPE_GIFT)) {
 			// this means the transaction was submitted to the test platform, but we now think we're in live mode, or vice-versa
 			// I can't imagine how this could happen (short of serious $_SESSION corruption), but worth a check anyway.. --atf 7/26/07
-			return paycard_errBox(PAYCARD_TYPE_GIFT,"Unable to Void",
+			$json['output'] = paycard_errBox(PAYCARD_TYPE_GIFT,"Unable to Void",
 				"Processor platform mismatch","[clear] to cancel");
+			return $json;
 		} else if( $response['xAuthorized'] != 'true') {
-			return paycard_msgBox(PAYCARD_TYPE_GIFT,"Unable to Void",
+			$json['output'] = paycard_msgBox(PAYCARD_TYPE_GIFT,"Unable to Void",
 				"Card transaction not approved","[clear] to cancel");
+			return $json;
 		} else if( $response['xAuthorizationCode'] < 1) {
-			return paycard_errBox(PAYCARD_TYPE_GIFT,"Internal Error",
+			$json['output'] = paycard_errBox(PAYCARD_TYPE_GIFT,"Internal Error",
 				"Invalid authorization number","[clear] to cancel");
+			return $json;
 		}
 
 		// make sure the transaction line-item is applicable to void
 		if( $lineitem['trans_status'] == "V" || $lineitem['voided'] != 0) {
-			return paycard_errBox(PAYCARD_TYPE_GIFT,"Internal Error",
+			$json['output'] = paycard_errBox(PAYCARD_TYPE_GIFT,"Internal Error",
 				"Void records do not match","[clear] to cancel");
+			return $json;
 		}
 
 		// save the details
@@ -323,8 +347,8 @@ class Valutec extends BasicCCModule {
 		}
 	
 		// display FEC code box
-		changeCurrentPageJS('/gui-modules/paycardboxMsgVoid.php');
-		return True;
+		$json['main_frame'] = $IS4C_PATH.'gui-modules/paycardboxMsgVoid.php';
+		return $json;
 	}
 
 	// END INTERFACE METHODS

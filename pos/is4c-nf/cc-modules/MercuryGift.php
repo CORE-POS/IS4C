@@ -1,7 +1,7 @@
 <?php
 /*******************************************************************************
 
-    Copyright 2007 Whole Foods Co-op
+    Copyright 2007,2010 Whole Foods Co-op
 
     This file is part of IS4C.
 
@@ -21,20 +21,23 @@
 
 *********************************************************************************/
 
+$IS4C_PATH = isset($IS4C_PATH)?$IS4C_PATH:"";
+if (empty($IS4C_PATH)){ while(!file_exists($IS4C_PATH."is4c.css")) $IS4C_PATH .= "../"; }
+
 /*
- * Valutec processing module
+ * Mercury Gift Card processing module
  *
  */
 
-if (!class_exists("BasicCCModule")) include_once($_SESSION["INCLUDE_PATH"]."/cc-modules/BasicCCModule.php");
+if (!class_exists("BasicCCModule")) include_once($IS4C_PATH."cc-modules/BasicCCModule.php");
 
-if (!class_exists("xmlData")) include_once($_SESSION["INCLUDE_PATH"]."/lib/xmlData.php");
-if (!function_exists("paycard_reset")) include_once($_SESSION["INCLUDE_PATH"]."/lib/paycardLib.php");
-if (!function_exists("receipt")) include_once($_SESSION["INCLUDE_PATH"]."/lib/clientscripts.php");
-if (!function_exists("deptkey")) include_once($_SESSION["INCLUDE_PATH"]."/lib/prehkeys.php");
-if (!function_exists("tDataConnect")) include_once($_SESSION["INCLUDE_PATH"]."/lib/connect.php");
-if (!class_exists("Void")) include_once($_SESSION["INCLUDE_PATH"]."/parser-class-lib/parse/Void.php");
-if (!isset($IS4C_LOCAL)) include($_SESSION["INCLUDE_PATH"]."/lib/LocalStorage/conf.php");
+if (!class_exists("xmlData")) include_once($IS4C_PATH."lib/xmlData.php");
+if (!function_exists("paycard_reset")) include_once($IS4C_PATH."lib/paycardLib.php");
+if (!function_exists("receipt")) include_once($IS4C_PATH."lib/clientscripts.php");
+if (!function_exists("deptkey")) include_once($IS4C_PATH."lib/prehkeys.php");
+if (!function_exists("tDataConnect")) include_once($IS4C_PATH."lib/connect.php");
+if (!class_exists("Void")) include_once($IS4C_PATH."parser-class-lib/parse/Void.php");
+if (!isset($IS4C_LOCAL)) include($IS4C_PATH."lib/LocalStorage/conf.php");
 
 define('MERCURY_TERMINAL_ID',"");
 define('MERCURY_PASSWORD',"");
@@ -62,7 +65,7 @@ class MercuryGift extends BasicCCModule {
 	 * of the paycard* files
 	 */
 	function entered($validate,$json){
-		global $IS4C_LOCAL;
+		global $IS4C_LOCAL,$IS4C_PATH;
 		// error checks based on card type
 		if( $IS4C_LOCAL->get("gcIntegrate") != 1) { // credit card integration must be enabled
 			$json['output'] = paycard_errBox(PAYCARD_TYPE_GIFT,"Card Integration Disabled","Please process gift cards in standalone","[clear] to cancel");
@@ -115,22 +118,23 @@ class MercuryGift extends BasicCCModule {
 		case PAYCARD_MODE_AUTH:
 			$IS4C_LOCAL->set("paycard_amount",$IS4C_LOCAL->get("amtdue"));
 			$IS4C_LOCAL->set("paycard_id",$IS4C_LOCAL->get("LastID")+1); // kind of a hack to anticipate it this way..
-			$json['main_frame'] = '/gui-modules/paycardboxMsgAuth.php';
+			$json['main_frame'] = $IS4C_PATH.'gui-modules/paycardboxMsgAuth.php';
 			return $json;
 	
 		case PAYCARD_MODE_ACTIVATE:
 		case PAYCARD_MODE_ADDVALUE:
 			$IS4C_LOCAL->set("paycard_amount",0);
 			$IS4C_LOCAL->set("paycard_id",$IS4C_LOCAL->get("LastID")+1); // kind of a hack to anticipate it this way..
-			$json['main_frame'] = '/gui-modules/paycardboxMsgGift.php';
+			$json['main_frame'] = $IS4C_PATH.'gui-modules/paycardboxMsgGift.php';
 			return $json;
 	
 		case PAYCARD_MODE_BALANCE:
-			$json['main_frame'] = '/gui-modules/paycardboxMsgBalance.php';
+			$json['main_frame'] = $IS4C_PATH.'gui-modules/paycardboxMsgBalance.php';
 			return $json;
 		} // switch mode
 	
 		// if we're still here, it's an error
+		paycard_reset();
 		$json['output'] = paycard_errBox(PAYCARD_TYPE_GIFT,"Invalid Mode",
 			"This card type does not support that processing mode",
 			"[clear] to cancel");
@@ -219,7 +223,7 @@ class MercuryGift extends BasicCCModule {
 	 * code from paycard*.php files.
 	 */
 	function paycard_void($transID,$json=array()){
-		global $IS4C_LOCAL;
+		global $IS4C_LOCAL,$IS4C_PATH;
 		// situation checking
 		if( $IS4C_LOCAL->get("gcIntegrate") != 1) { // gift card integration must be enabled
 			$json['output'] = paycard_errBox(PAYCARD_TYPE_GIFT,"Card Integration Disabled",
@@ -344,7 +348,7 @@ class MercuryGift extends BasicCCModule {
 		}
 	
 		// display FEC code box
-		$json['main_frame'] = '/gui-modules/paycardboxMsgVoid.php';
+		$json['main_frame'] = $IS4C_PATH.'gui-modules/paycardboxMsgVoid.php';
 		return $json;
 	}
 

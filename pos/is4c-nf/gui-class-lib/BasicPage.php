@@ -113,7 +113,6 @@ class BasicPage {
 			$inputType = "password";
 		// this needs to be configurable; just fixing
 		// a giant PHP warning for the moment
-		date_default_timezone_set('America/Chicago');
 		$time = strftime("%m/%d/%y %I:%M %p", time());
 
 		$IS4C_LOCAL->set("repeatable",0);
@@ -191,7 +190,6 @@ class BasicPage {
 		global $IS4C_LOCAL;
 		$this->add_onload_command("betterDate();\n");
 		
-		date_default_timezone_set('America/Chicago');
 		$time = strftime("%m/%d/%y %I:%M %p", time());
 
 		$IS4C_LOCAL->set("repeatable",0);

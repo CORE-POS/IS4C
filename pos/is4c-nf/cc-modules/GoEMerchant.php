@@ -101,7 +101,7 @@ class GoEMerchant extends BasicCCModule {
 				return $json;
 			}
 			$payment = $dbTrans->fetch_array($search);
-			return $this->paycard_void($payment['transID'],$payment['laneNo'],$payment['transNo'],$json);
+			return $this->paycard_void($payment['transID'],$lane,$trans,$json);
 			break;
 
 		case PAYCARD_MODE_AUTH:
@@ -319,7 +319,6 @@ class GoEMerchant extends BasicCCModule {
 		$xml = new xmlData($authResult['response']);
 
 		// prepare some fields to store the parsed response; we'll add more as we verify it
-		date_default_timezone_set('America/Chicago');
 		$today = date('Ymd'); // numeric date only, it goes in an 'int' field as part of the primary key
 		$now = date('Y-m-d H:i:s'); // full timestamp
 		$cashierNo = $IS4C_LOCAL->get("CashierNo");
@@ -420,7 +419,6 @@ class GoEMerchant extends BasicCCModule {
 		global $IS4C_LOCAL;
 		$xml = new xmlData($authResult['response']);
 		// prepare some fields to store the parsed response; we'll add more as we verify it
-		date_default_timezone_set('America/Chicago');
 		$today = date('Ymd'); // numeric date only, it goes in an 'int' field as part of the primary key
 		$now = date('Y-m-d H:i:s'); // full timestamp
 		$cashierNo = $IS4C_LOCAL->get("CashierNo");
@@ -524,7 +522,7 @@ class GoEMerchant extends BasicCCModule {
 		}
 		$IS4C_LOCAL->set("ccCustCopy",0);
 		if ($IS4C_LOCAL->get("SigCapture") == "")
-		$json['receipt'] = "ccSlip";
+			$json['receipt'] = "ccSlip";
 		return $json;
 	}
 
@@ -550,7 +548,6 @@ class GoEMerchant extends BasicCCModule {
 			return $this->setErrorMsg(PAYCARD_ERR_NOSEND); // database error, nothing sent (ok to retry)
 		}
 
-		date_default_timezone_set('America/Chicago');
 		$today = date('Ymd'); // numeric date only, it goes in an 'int' field as part of the primary key
 		$now = date('Y-m-d H:i:s'); // full timestamp
 		$cashierNo = $IS4C_LOCAL->get("CashierNo");
@@ -688,7 +685,6 @@ class GoEMerchant extends BasicCCModule {
 		}
 
 		// prepare data for the void request
-		date_default_timezone_set('America/Chicago');
 		$today = date('Ymd'); // numeric date only, it goes in an 'int' field as part of the primary key
 		$now = date('Y-m-d H:i:s'); // new timestamp
 		$cashierNo = $IS4C_LOCAL->get("CashierNo");

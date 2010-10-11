@@ -432,11 +432,11 @@ class SQLManager {
                 case $this->TYPE_MYSQL:
                         $return = array();
                         $result = $this->query("SHOW COLUMNS FROM $table_name",$which_connection);
-                        while($row = $this->fetch_row($result)){
+                        while($row = $this->fetch_row($result,$which_connection)){
 				$auto = False;
 				if (strstr($row[5],"auto_increment"))
 					$auto = True;
-                                $return[strtoupper($row[0])] = array($row[1],$auto,$row[0]);
+                                $return[$row[0]] = array($row[1],$auto,$row[0]);
 			}
                         if (count($return) == 0) return False;
                         else return $return;
@@ -451,10 +451,10 @@ class SQLManager {
                                                 LEFT JOIN systypes AS t
                                                 ON c.xtype=t.xtype
                                                 WHERE o.name='$table_name'",$which_connection);
-                        while($row = $this->fetch_row($result)){
+                        while($row = $this->fetch_row($result,$which_connection)){
 				$auto = False;
 				if ($row[3] == 1) $auto = True;
-				$return[strtoupper($row[0])] = array($row[1]."(".$row[2].")",$auto,$row[0]);
+				$return[$row[0]] = array($row[1]."(".$row[2].")",$auto,$row[0]);
 			}
                         if (count($return) == 0) return False;
                         else return $return;
@@ -488,7 +488,7 @@ class SQLManager {
 		$cols = "(";
 		$vals = "(";
 		foreach($values as $k=>$v){
-			$k = strtoupper($k);
+			//$k = strtoupper($k);
 			if (isset($t_def[$k]) && is_array($t_def[$k])){
 				if (!$t_def[$k][1]){
 					if (stristr($t_def[$k][0],"money") ||

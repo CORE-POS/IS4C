@@ -1,7 +1,7 @@
 <?php
 /*******************************************************************************
 
-    Copyright 2007 Whole Foods Co-op
+    Copyright 2007,2010 Whole Foods Co-op
 
     This file is part of IS4C.
 
@@ -21,17 +21,19 @@
 
 *********************************************************************************/
 
+$IS4C_PATH = isset($IS4C_PATH)?$IS4C_PATH:"";
+if (empty($IS4C_PATH)){ while(!file_exists($IS4C_PATH."is4c.css")) $IS4C_PATH .= "../"; }
 
-if (!class_exists("BasicCCModule")) include_once($_SESSION["INCLUDE_PATH"]."/cc-modules/BasicCCModule.php");
+if (!class_exists("BasicCCModule")) include_once($IS4C_PATH."cc-modules/BasicCCModule.php");
 
-if (!class_exists("xmlData")) include_once($_SESSION["INCLUDE_PATH"]."/lib/xmlData.php");
-if (!class_exists("Void")) include_once($_SESSION["INCLUDE_PATH"]."/parser-class-lib/parse/Void.php");
-if (!function_exists("truncate2")) include_once($_SESSION["INCLUDE_PATH"]."/lib/lib.php");
-if (!function_exists("paycard_reset")) include_once($_SESSION["INCLUDE_PATH"]."/lib/paycardLib.php");
-if (!function_exists("tDataConnect")) include_once($_SESSION["INCLUDE_PATH"]."/lib/connect.php");
-if (!function_exists("tender")) include_once($_SESSION["INCLUDE_PATH"]."/lib/prehkeys.php");
-if (!function_exists("receipt")) include_once($_SESSION["INCLUDE_PATH"]."/lib/clientscripts.php");
-if (!isset($IS4C_LOCAL)) include($_SESSION["INCLUDE_PATH"]."/lib/LocalStorage/conf.php");
+if (!class_exists("xmlData")) include_once($IS4C_PATH."lib/xmlData.php");
+if (!class_exists("Void")) include_once($IS4C_PATH."parser-class-lib/parse/Void.php");
+if (!function_exists("truncate2")) include_once($IS4C_PATH."lib/lib.php");
+if (!function_exists("paycard_reset")) include_once($IS4C_PATH."lib/paycardLib.php");
+if (!function_exists("tDataConnect")) include_once($IS4C_PATH."lib/connect.php");
+if (!function_exists("tender")) include_once($IS4C_PATH."lib/prehkeys.php");
+if (!function_exists("receipt")) include_once($IS4C_PATH."lib/clientscripts.php");
+if (!isset($IS4C_LOCAL)) include($IS4C_PATH."lib/LocalStorage/conf.php");
 
 define('AUTHDOTNET_LOGIN','6Jc5c8QcB');
 define('AUTHDOTNET_TRANS_KEY','68j46u5S3RL4CCbX');
@@ -43,14 +45,16 @@ class AuthorizeDotNet extends BasicCCModule {
 		else return False;
 	}
 
-	function entered($validate){
+	function entered($validate,$json){
 		global $IS4C_LOCAL;
 		// error checks based on card type
 		if( $IS4C_LOCAL->get("CCintegrate") != 1) { // credit card integration must be enabled
-			return paycard_errBox(PAYCARD_TYPE_GIFT,
+			paycard_reset();
+			$json['output'] = paycard_errBox(PAYCARD_TYPE_GIFT,
 				"Card Integration Disabled",
 				"Please process credit cards in standalone",
 				"[clear] to cancel");
+			return $json;
 		}
 
 		// error checks based on processing mode
@@ -72,56 +76,70 @@ class AuthorizeDotNet extends BasicCCModule {
 			$search = $dbTrans->query($sql);
 			$num = $dbTrans->num_rows($search);
 			if( $num < 1) {
-				return paycard_msgBox(PAYCARD_TYPE_CREDIT,"Card Not Used",
+				paycard_reset();
+				$json['output'] = paycard_msgBox(PAYCARD_TYPE_CREDIT,"Card Not Used",
 					"That card number was not used in this transaction","[clear] to cancel");
+				return $json;
 			} else if( $num > 1) {
-				return paycard_msgBox(PAYCARD_TYPE_CREDIT,"Multiple Uses",
+				paycard_reset();
+				$json['output'] = paycard_msgBox(PAYCARD_TYPE_CREDIT,"Multiple Uses",
 					"That card number was used more than once in this transaction; select the payment and press VOID","[clear] to cancel");
+				return $json;
 			}
 			$payment = $dbTrans->fetch_array($search);
-			return $this->paycard_void($payment['transID']);
+			return $this->paycard_void($payment['transID'],$lane,$trans,$json);
 
 		case PAYCARD_MODE_AUTH:
 			if( $validate) {
 				if( paycard_validNumber($IS4C_LOCAL->get("paycard_PAN")) != 1) {
-					return paycard_errBox(PAYCARD_TYPE_CREDIT,
+					paycard_reset();
+					$json['output'] = paycard_errBox(PAYCARD_TYPE_CREDIT,
 						"Invalid Card Number",
 						"Swipe again or type in manually",
 						"[clear] to cancel");
+					return $json;
 				} else if( paycard_accepted($IS4C_LOCAL->get("paycard_PAN"), !paycard_live(PAYCARD_TYPE_CREDIT)) != 1) {
-					return paycard_msgBox(PAYCARD_TYPE_CREDIT,
+					paycard_reset();
+					$json['output'] = paycard_msgBox(PAYCARD_TYPE_CREDIT,
 						"Unsupported Card Type",
 						"We cannot process " . $IS4C_LOCAL->get("paycard_issuer") . " cards",
 						"[clear] to cancel");
+					return $json;
 				} else if( paycard_validExpiration($IS4C_LOCAL->get("paycard_exp")) != 1) {
-					return paycard_errBox(PAYCARD_TYPE_CREDIT,
+					paycard_reset();
+					$json['output'] = paycard_errBox(PAYCARD_TYPE_CREDIT,
 						"Invalid Expiration Date",
 						"The expiration date has passed or was not recognized",
 						"[clear] to cancel");
+					return $json;
 				}
 			}
 			// set initial variables
 			getsubtotals();
 			$IS4C_LOCAL->set("paycard_amount",$IS4C_LOCAL->get("amtdue"));
 			$IS4C_LOCAL->set("paycard_id",$IS4C_LOCAL->get("LastID")+1); // kind of a hack to anticipate it this way..
-			changeCurrentPage('/gui-modules/paycardboxMsgAuth.php');
-			return True;
+			$json['main_frame'] = $IS4C_PATH.'gui-modules/paycardboxMsgAuth.php');
+			return $json;
+			break;
 		} // switch mode
 	
 		// if we're still here, it's an error
-		return paycard_errBox(PAYCARD_TYPE_CREDIT,"Invalid Mode",
+		paycard_reset();
+		$json['output'] = paycard_errBox(PAYCARD_TYPE_CREDIT,"Invalid Mode",
 			"This card type does not support that processing mode","[clear] to cancel");
-
+		return $json;
 	}
 
-	function paycard_void($transID) {
+	function paycard_void($transID,$laneNo=-1,$transNo=-1,$json=array()) {
 		global $IS4C_LOCAL;
 		// situation checking
 		if( $IS4C_LOCAL->get("CCintegrate") != 1) { // credit card integration must be enabled
-			return paycard_errBox(PAYCARD_TYPE_CREDIT,
+			paycard_reset();
+			$json['output'] = paycard_errBox(PAYCARD_TYPE_CREDIT,
 				"Card Integration Disabled",
 				"Please process credit cards in standalone",
 				"[clear] to cancel");
+			return $json;
 		}
 	
 		// initialize
@@ -130,6 +148,8 @@ class AuthorizeDotNet extends BasicCCModule {
 		$cashier = $IS4C_LOCAL->get("CashierNo");
 		$lane = $IS4C_LOCAL->get("laneno");
 		$trans = $IS4C_LOCAL->get("transno");
+		if ($laneNo != -1) $lane = $laneNo;
+		if ($transNo != -1) $trans = $transNo;
 	
 		// look up the request using transID (within this transaction)
 		$sql = "SELECT * FROM efsnetRequest WHERE [date]='".$today."' AND cashierNo=".$cashier." AND laneNo=".$lane." AND transNo=".$trans." AND transID=".$transID;
@@ -140,11 +160,15 @@ class AuthorizeDotNet extends BasicCCModule {
 		$search = $dbTrans->query($sql);
 		$num = $dbTrans->num_rows($search);
 		if( $num < 1) {
-			return paycard_errBox(PAYCARD_TYPE_CREDIT,"Internal Error",
+			paycard_reset();
+			$json['output'] = paycard_errBox(PAYCARD_TYPE_CREDIT,"Internal Error",
 				"Card request not found, unable to void","[clear] to cancel");
+			return $json;
 		} else if( $num > 1) {
-			return paycard_errBox(PAYCARD_TYPE_CREDIT,"Internal Error",
+			paycard_reset();
+			$json['output'] = paycard_errBox(PAYCARD_TYPE_CREDIT,"Internal Error",
 				"Card request not distinct, unable to void","[clear] to cancel");
+			return $json;
 		}
 		$request = $dbTrans->fetch_array($search);
 
@@ -157,11 +181,15 @@ class AuthorizeDotNet extends BasicCCModule {
 		$search = $dbTrans->query($sql);
 		$num = $dbTrans->num_rows($search);
 		if( $num < 1) {
-			return paycard_errBox(PAYCARD_TYPE_CREDIT,"Internal Error",
+			paycard_reset();
+			$json['output'] = paycard_errBox(PAYCARD_TYPE_CREDIT,"Internal Error",
 				"Card response not found, unable to void","[clear] to cancel");
+			return $json;
 		} else if( $num > 1) {
-			return paycard_errBox(PAYCARD_TYPE_CREDIT,"Internal Error",
+			paycard_reset();
+			$json['output'] = paycard_errBox(PAYCARD_TYPE_CREDIT,"Internal Error",
 				"Card response not distinct, unable to void","[clear] to cancel");
+			return $json;
 		}
 		$response = $dbTrans->fetch_array($search);
 
@@ -179,41 +207,59 @@ class AuthorizeDotNet extends BasicCCModule {
 		$search = $dbTrans->query($sql);
 		$num = $dbTrans->num_rows($search);
 		if( $num < 1) {
-			return paycard_errBox(PAYCARD_TYPE_CREDIT,"Internal Error",
+			paycard_reset();
+			$json['output'] = paycard_errBox(PAYCARD_TYPE_CREDIT,"Internal Error",
 				"Transaction item not found, unable to void","[clear] to cancel");
+			return $json;
 		} else if( $num > 1) {
-			return paycard_errBox(PAYCARD_TYPE_CREDIT,"Internal Error",
+			paycard_reset();
+			$json['output'] = paycard_errBox(PAYCARD_TYPE_CREDIT,"Internal Error",
 				"Transaction item not distinct, unable to void","[clear] to cancel");
+			return $json;
 		}
 		$lineitem = $dbTrans->fetch_array($search);
 
 		// make sure the payment is applicable to void
 		if( $response['commErr'] != 0 || $response['httpCode'] != 200 || $response['validResponse'] != 1) {
-			return paycard_msgBox(PAYCARD_TYPE_CREDIT,"Unable to Void",
+			paycard_reset();
+			$json['output'] = paycard_msgBox(PAYCARD_TYPE_CREDIT,"Unable to Void",
 				"Card transaction not successful","[clear] to cancel");
+			return $json;
 		} else if( $voided > 0) {
-			return paycard_errBox(PAYCARD_TYPE_CREDIT,"Unable to Void",
+			paycard_reset();
+			$json['output'] = paycard_errBox(PAYCARD_TYPE_CREDIT,"Unable to Void",
 				"Card transaction already voided","[clear] to cancel");
+			return $json;
 		} else if( $request['live'] != paycard_live(PAYCARD_TYPE_CREDIT)) {
 			// this means the transaction was submitted to the test platform, but we now think we're in live mode, or vice-versa
 			// I can't imagine how this could happen (short of serious $_SESSION corruption), but worth a check anyway.. --atf 7/26/07
-			return paycard_errBox(PAYCARD_TYPE_CREDIT,"Unable to Void",
+			paycard_reset();
+			$json['output'] = paycard_errBox(PAYCARD_TYPE_CREDIT,"Unable to Void",
 				"Processor platform mismatch","[clear] to cancel");
+			return $json;
 		} else if( $response['xResponseCode'] != 1) {
-			return paycard_msgBox(PAYCARD_TYPE_CREDIT,"Unable to Void",
+			paycard_reset();
+			$json['output'] = paycard_msgBox(PAYCARD_TYPE_CREDIT,"Unable to Void",
 				"Credit card transaction not approved<br>The result code was " . $response['xResponseCode'],"[clear] to cancel");
+			return $json;
 		} else if( $response['xTransactionID'] < 1) {
-			return paycard_errBox(PAYCARD_TYPE_CREDIT,"Internal Error",
+			paycard_reset();
+			$json['output'] = paycard_errBox(PAYCARD_TYPE_CREDIT,"Internal Error",
 				"Invalid reference number","[clear] to cancel");
+			return $json;
 		}
 
 		// make sure the tender line-item is applicable to void
 		if( $lineitem['trans_type'] != "T" || $lineitem['trans_subtype'] != "CC" ){
-			return paycard_errBox(PAYCARD_TYPE_CREDIT,"Internal Error",
+			paycard_reset();
+			$json['output'] = paycard_errBox(PAYCARD_TYPE_CREDIT,"Internal Error",
 				"Authorization and tender records do not match $transID","[clear] to cancel");
+			return $json;
 		} else if( $lineitem['trans_status'] == "V" || $lineitem['voided'] != 0) {
-			return paycard_errBox(PAYCARD_TYPE_CREDIT,"Internal Error",
+			paycard_reset();
+			$json['output'] = paycard_errBox(PAYCARD_TYPE_CREDIT,"Internal Error",
 				"Void records do not match","[clear] to cancel");
+			return $json;
 		}
 	
 		// save the details
@@ -226,9 +272,8 @@ class AuthorizeDotNet extends BasicCCModule {
 	
 		// display FEC code box
 		$IS4C_LOCAL->set("inputMasked",1);
-		changeBothPages('/gui-modules/input.php',
-			'/gui-modules/paycardboxMsgVoid.php');
-		return False;
+		$json['main_frame'] = $IS4C_PATH.'gui-modules/paycardboxMsgVoid.php';
+		return $json;
 	}
 
 	function handleResponse($authResult){
@@ -306,20 +351,26 @@ class AuthorizeDotNet extends BasicCCModule {
 		$dbTrans->query($sql);
 
 		if( $authResult['curlErr'] != CURLE_OK || $authResult['curlHTTP'] != 200){
+			if ($authResult['curlHTTP'] == '0'){
+				$IS4C_LOCAL->set("boxMsg","No response from processor<br />
+							The transaction did not go through");
+				return PAYCARD_ERR_PROC;
+			}	
 			return $this->setErrorMsg(PAYCARD_ERR_COMM);
 		}
 
 		switch ($xml->get("RESPONSECODE")){
 			case 1: // APPROVED
-			//	$_SESSION["msgrepeat"] = 1;
-			//	$_SESSION["strRemembered"] = ($this->AMOUNT*100)."CC";
+				$IS4C_LOCAL->set("ccTermOut","approval:".str_pad($xml->get("AUTH_CODE"),6,'0',STR_PAD_RIGHT));
 				return PAYCARD_ERR_OK;
 			case 2: // DECLINED
+				$IS4C_LOCAL->set("ccTermOut","approval:denied");
 				$IS4C_LOCAL->set("boxMsg","Transaction declined");
 				if ($xml->get_first("ERRORCODE") == 4)
 					$IS4C_LOCAL->set("boxMsg",$IS4C_LOCAL.get("boxMsg")."<br />Pick up card)");
 				break;
 			case 3: // ERROR
+				$IS4C_LOCAL->set("ccTermOut","resettotal");
 				$IS4C_LOCAL->set("boxMsg","");
 				$codes = $xml->get("ERRORCODE");
 				$texts = $xml->get("ERRORTEXT");
@@ -407,8 +458,6 @@ class AuthorizeDotNet extends BasicCCModule {
 
 		switch ($xml->get("RESPONSECODE")){
 			case 1: // APPROVED
-			//	$_SESSION["msgrepeat"] = 1;
-			//	$_SESSION["strRemembered"] = ($this->AMOUNT*100)."CC";
 				return PAYCARD_ERR_OK;
 			case 2: // DECLINED
 				$IS4C_LOCAL->set("boxMsg","Transaction declined");
@@ -435,12 +484,15 @@ class AuthorizeDotNet extends BasicCCModule {
 		return PAYCARD_ERROR_PROC;
 	}
 
-	function cleanup(){
+	function cleanup($json){
 		global $IS4C_LOCAL;
 		switch($IS4C_LOCAL->get("paycard_mode")){
 		case PAYCARD_MODE_AUTH:
 			$IS4C_LOCAL->set("ccTender",1); 
-			tender("CC", ($IS4C_LOCAL->get("paycard_amount")*100));
+			// cast to string. tender function expects string input
+			// numeric input screws up parsing on negative values > $0.99
+			$amt = "".($IS4C_LOCAL->get("paycard_amount")*100);
+			tender("CC", $amt);
 			$IS4C_LOCAL->set("boxMsg","<b>Approved</b><font size=-1><p>Please verify cardholder signature<p>[enter] to continue<br>\"rp\" to reprint slip<br>[clear] to cancel and void</font>");
 			break;
 		case PAYCARD_MODE_VOID:
@@ -449,7 +501,10 @@ class AuthorizeDotNet extends BasicCCModule {
 			$IS4C_LOCAL->set("boxMsg","<b>Voided</b><p><font size=-1>[enter] to continue<br>\"rp\" to reprint slip</font>");
 			break;	
 		}
-		receipt("ccSlip");
+		$IS4C_LOCAL->set("ccCustCopy",0);
+		if ($IS4C_LOCAL->get("SigCapture") == "")
+			$json['receipt'] = "ccSlip";
+		return $json;
 	}
 
 	function doSend($type){
@@ -457,6 +512,7 @@ class AuthorizeDotNet extends BasicCCModule {
 		case PAYCARD_MODE_AUTH: return $this->send_auth();
 		case PAYCARD_MODE_VOID: return $this->send_void(); 
 		default:
+			paycard_reset();
 			return $this->setErrorMsg(0);
 		}
 	}	
@@ -465,8 +521,10 @@ class AuthorizeDotNet extends BasicCCModule {
 		global $IS4C_LOCAL;
 		// initialize
 		$dbTrans = tDataConnect();
-		if( !$dbTrans)
+		if( !$dbTrans){
+			paycard_reset();
 			return $this->setErrorMsg(PAYCARD_ERR_NOSEND); // database error, nothing sent (ok to retry)
+		}
 
 		$today = date('Ymd'); // numeric date only, it goes in an 'int' field as part of the primary key
 		$now = date('Y-m-d H:i:s'); // full timestamp
@@ -545,15 +603,17 @@ class AuthorizeDotNet extends BasicCCModule {
 
 		$postData = $this->array2post($postValues);
 		$this->GATEWAY = "https://test.authorize.net/gateway/transact.dll";
-		return $this->curlSend($postData);
+		return $this->curlSend($postData,'POST',False);
 	}
 
 	function send_void(){
 		global $IS4C_LOCAL;
 		// initialize
 		$dbTrans = tDataConnect();
-		if( !$dbTrans)
+		if( !$dbTrans){
+			paycard_reset();
 			return $this->setErrorMsg(PAYCARD_ERR_NOSEND);
+		}
 
 		// prepare data for the void request
 		$today = date('Ymd'); // numeric date only, it goes in an 'int' field as part of the primary key
@@ -610,7 +670,7 @@ class AuthorizeDotNet extends BasicCCModule {
 
 		$postData = $this->array2post($postValues);
 		$this->GATEWAY = "https://test.authorize.net/gateway/transact.dll";
-		return $this->curlSend($postData);
+		return $this->curlSend($postData,'POST',False);
 	}
 }
 
