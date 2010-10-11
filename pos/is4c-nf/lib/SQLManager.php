@@ -54,8 +54,8 @@ fetch_array(result_object, connection_identifer)
 $IS4C_PATH = isset($IS4C_PATH)?$IS4C_PATH:"";
 if (empty($IS4C_PATH)){ while(!file_exists($IS4C_PATH."is4c.css")) $IS4C_PATH .= "../"; }
 
-define('DEBUG_MYSQL_QUERIES',$IS4C_PATH.'queries.log');
-define('DEBUG_SMART_INSERTS',$IS4C_PATH.'smart_insert_errors.log');
+define('DEBUG_MYSQL_QUERIES',$IS4C_PATH.'log/queries.log');
+define('DEBUG_SMART_INSERTS',$IS4C_PATH.'log/smart_insert_errors.log');
 
 $TYPE_MYSQL = 'MYSQL';
 $TYPE_MSSQL = 'MSSQL'; 

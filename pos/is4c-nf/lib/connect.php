@@ -236,14 +236,17 @@ function uploadtoServer()
 		$IS4C_LOCAL->get("mDatabase"),"insert into dtransactions ({$dt_matches})")){
 
 		$al_matches = getMatchingColumns($connect,"alog");
+		$al_my = ""; // interval is a mysql reserved word
+		if ($IS4C_LOCAL->get("DBMS") == "mysql")
+			$al_my = str_replace("Interval","`Interval`",$al_matches);
 		$al_success = $connect->transfer($IS4C_LOCAL->get("tDatabase"),
-			"select {$al_matches} from alog",
+			"select ".(empty($al_my)?$al_matches:$al_my)." from alog",
 			$IS4C_LOCAL->get("mDatabase"),
 			"insert into alog ({$al_matches})");
 
 
 		$su_matches = getMatchingColumns($connect,"suspended");
-		$su_sucess = $connect->transfer($IS4C_LOCAL->get("tDatabase"),
+		$su_success = $connect->transfer($IS4C_LOCAL->get("tDatabase"),
 			"select {$su_matches} from suspended",
 			$IS4C_LOCAL->get("mDatabase"),
 			"insert into suspended ({$su_matches})");

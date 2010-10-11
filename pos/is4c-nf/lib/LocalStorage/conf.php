@@ -24,6 +24,9 @@
 $IS4C_PATH = isset($IS4C_PATH)?$IS4C_PATH:"";
 if (empty($IS4C_PATH)){ while(!file_exists($IS4C_PATH."is4c.css")) $IS4C_PATH .= "../"; }
 
+ini_set('display_errors',1);
+ini_set('error_log',$IS4C_PATH."log/php-errors.log");
+
 $LOCAL_STORAGE_MECHANISM = 'SessionStorage';
 
 if (!class_exists($LOCAL_STORAGE_MECHANISM)){

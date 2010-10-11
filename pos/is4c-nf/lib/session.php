@@ -68,10 +68,6 @@ function system_init() {
         $IS4C_LOCAL->set("ccRemoteServerUp",1);
 	$IS4C_LOCAL->set("ccTermOut","idle");
 	$IS4C_LOCAL->set("search_or_list",0);
-
-	if($IS4C_LOCAL->get("CCintegrate") == 1){
-	   testcc();
-	}
 }
 
 function transReset() {
