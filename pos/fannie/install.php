@@ -20,6 +20,8 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
+ini_set('display_errors','1');
+date_default_timezone_set('America/Chicago');
 ?>
 <?php include('config.php'); ?>
 Necessities
@@ -31,9 +33,10 @@ Necessities
 $FILEPATH = rtrim($_SERVER['SCRIPT_FILENAME'],'install.php');
 $URL = rtrim($_SERVER['SCRIPT_NAME'],'install.php');
 
-$chk = posix_getpwuid(posix_getuid());
-if (isset($chk['name']))
+if (function_exists('posix_getpwuid')){
+	$chk = posix_getpwuid(posix_getuid());
 	echo "PHP is running as: ".$chk['name']."<br />";
+}
 else
 	echo "PHP is (probably) running as: ".get_current_user()."<br />";
 
@@ -658,7 +661,7 @@ function create_op_dbs($con){
 		`cost` numeric(10,2) default NULL,
 		`margin` numeric(10,2) default NULL,
 		`variable_pricing` tinyint default NULL,
-		`location` varchar(30), default NULL,
+		`location` varchar(30) default NULL,
 		`case_quantity` varchar(15) default NULL,
 		`case_cost` numeric(10,2) default NULL,
 		`case_info` varchar(100) default NULL,
@@ -746,7 +749,7 @@ function create_op_dbs($con){
 
 	$batchQ = "CREATE TABLE `batches` (
 	  `batchID` int(5) NOT NULL auto_increment,
-	  `startDate` datetime NOT NULL default CURRENT_TIMESTAMP,
+	  `startDate` datetime default NULL,
 	  `endDate` datetime default NULL,
 	  `batchName` varchar(80) default NULL,
 	  `batchType` int(3) default NULL,
@@ -1252,13 +1255,19 @@ function create_op_dbs($con){
 		$con->query($superQ,$FANNIE_OP_DB);
 	}
 
+	// mysql doesn't permit subqueries in the
+	// FROM clause of a VIEW. Lame.
+	$minQ = "CREATE VIEW SuperMinIdView AS
+		SELECT MIN(superID) as superID,dept_ID
+		FROM superdepts
+		GROUP BY dept_ID";
+	if (!$con->table_exists("SuperMinIdView",$FANNIE_OP_DB)){
+		$con->query($minQ,$FANNIE_OP_DB);
+	}
+
 	$masterQ = "CREATE VIEW MasterSuperDepts AS
 		SELECT n.superID,n.super_name,s.dept_ID
-		FROM (
-		SELECT min(superID) as superID,
-		dept_ID
-		FROM superdepts
-		GROUP BY dept_ID) as s
+		FROM SuperMinIdView AS s
 		LEFT JOIN superDeptNames AS n
 		on s.superID=n.superID";
 	if (!$con->table_exists("MasterSuperDepts",$FANNIE_OP_DB)){
@@ -1337,7 +1346,7 @@ function create_op_dbs($con){
 			vendorID int)";
 	}
 	if (!$con->table_exists('vendorItems',$FANNIE_OP_DB)){
-		$con->query($vdQ);
+		$con->query($viQ);
 	}
 
 	$vdQ = "create table vendorDepartments (
@@ -1390,9 +1399,9 @@ function create_op_dbs($con){
 		name varchar(100),
 		stamp datetime,";
 	if ($FANNIE_SERVER_DBMS == "MSSQL")
-		$poQ .= "id int IDENTITY (1,1) NOT NULL)";
+		$poQ .= "id int IDENTITY (1,1) NOT NULL, primary key(id))";
 	else
-		$poQ .= "id int auto_increment NOT NULL)";
+		$poQ .= "id int auto_increment NOT NULL, primary key(id))";
 	if (!$con->table_exists('PurchaseOrder',$FANNIE_OP_DB)){
 		$con->query($poQ,$FANNIE_OP_DB);
 	}
@@ -1414,7 +1423,8 @@ function create_op_dbs($con){
 		fullname varchar(200),
 		order_info text,
 		special_instructions text,
-		superDept int
+		superDept int,
+		primary key(order_id)
 		)";
 	if ($FANNIE_SERVER_DBMS == "MSSQL"){
 		$so = "CREATE TABLE SpecialOrder (
@@ -1425,7 +1435,8 @@ function create_op_dbs($con){
 			fullname varchar(200),
 			order_info text,
 			special_instructions text,
-			superDept int
+			superDept int,
+			primary key(order_id)
 			)";
 	}
 	if (!$con->table_exists('SpecialOrder',$FANNIE_OP_DB)){
@@ -1538,7 +1549,10 @@ function create_op_dbs($con){
 }
 
 function create_trans_dbs($con){
-	global $FANNIE_TRANS_DB, $FANNIE_SERVER_DBMS;
+	global $FANNIE_TRANS_DB, $FANNIE_SERVER_DBMS, $FANNIE_OP_DB;
+
+	$opstr = $FANNIE_OP_DB;
+	if ($FANNIE_SERVER_DBMS=="mssql") $opstr .= ".dbo";
 
 	$alogQ = "CREATE TABLE alog (
 	`datetime` datetime,
@@ -1844,7 +1858,7 @@ function create_trans_dbs($con){
 			a.diff IS NULL THEN 0 ELSE a.diff END
 			AS CurrentStock
 		FROM InvDeliveryTotals AS d
-		INNER JOIN VendorItems AS v 
+		INNER JOIN $opstr.VendorItems AS v 
 		ON d.upc = v.upc
 		LEFT JOIN InvSalesTotals AS s
 		ON d.upc = s.upc LEFT JOIN
@@ -2076,7 +2090,7 @@ function create_dlogs($con){
 			-1 * total
 		END AS tender
 		from dlog
-		where ".$con->datediff($con->now(),'datetime')."= 0
+		where ".$con->datediff($con->now(),'tdate')."= 0
 		and trans_subtype not in ('0','')";
 	if (!$con->table_exists("TenderTapeGeneric",$FANNIE_TRANS_DB)){
 		$con->query($ttG,$FANNIE_TRANS_DB);

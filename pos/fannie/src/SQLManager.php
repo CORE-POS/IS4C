@@ -75,8 +75,17 @@ class SQLManager {
 		$this->connections[$database] = $conn;
 
 		if (!$ok){
-			$this->connections[$database] = False;
-			return False;
+			$conn = ADONewConnection($type);
+			$conn->SetFetchMode(ADODB_FETCH_BOTH);
+			$ok = $conn->Connect($server,$username,$password);
+			if ($ok){
+				$conn->Execute("CREATE DATABASE $database");
+				$this->connections[$database] = $conn;
+			}
+			else {
+				$this->connections[$database] = False;
+				return False;
+			}
 		}
 		return True;
 	}
@@ -97,10 +106,13 @@ class SQLManager {
 		$con = $this->connections[$which_connection];
 
 		$ok = $con->Execute($query_text);
-		if (!$ok){
+		if (!$ok && is_writable($QUERY_LOG)){
 			$fp = fopen($QUERY_LOG,'a');
 			fputs($fp,$_SERVER['PHP_SELF'].": ".date('r').': '.$query_text."\n");
 			fclose($fp);
+		}
+		else if (!$ok){
+			echo "Bad query: $query_text<br />";
 		}
 		return $ok;
 	}
@@ -349,7 +361,7 @@ class SQLManager {
 		$return = array();
 		if (is_array($cols)){
 			foreach($cols as $c)
-				array_push($return,array($c->name,$c->type));	
+				$return[$c->name] = $c->type;
 			return $return;
 		}
 		return False;
@@ -364,6 +376,46 @@ class SQLManager {
 		case 'mssql':
 			return str_ireplace("SELECT ","SELECT TOP $int_limit ",$query);
 		}
+	}
+
+	/* insert as much data as possible
+	 * $values is an associative array of column_name => column_value
+	 * Values are taken as is (i.e., you have to quote your strings)
+	 */
+	function smart_insert($table_name,$values,$which_connection=''){
+                if ($which_connection == '')
+                        $which_connection=$this->default_db;
+
+		$exists = $this->table_exists($table_name,$which_connection);
+
+		if (!$exists) return False;
+		if ($exists === -1) return -1;
+
+		$t_def = $this->table_definition($table_name,$which_connection);
+
+		$cols = "(";
+		$vals = "(";
+		foreach($values as $k=>$v){
+			if (isset($t_def[$k])){
+				$vals .= $v.",";
+				$col_name = $k;
+				if($this->connections[$which_connection]->databaseType == 'mysql')
+					$cols .= "`".$col_name."`,";
+				else
+					$cols .= $col_name.",";
+			}
+			else {
+				echo "No column - $k";
+				// implication: column isn't in the table
+			}
+		}
+		$cols = substr($cols,0,strlen($cols)-1).")";
+		$vals = substr($vals,0,strlen($vals)-1).")";
+		$insertQ = "INSERT INTO $table_name $cols VALUES $vals";
+
+		$ret = $this->query($insertQ,$which_connection);
+
+		return $ret;
 	}
 }
 

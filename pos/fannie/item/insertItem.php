@@ -20,6 +20,8 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
+include('../config.php');
+
 include('prodFunction.php');
 include_once('../src/mysql_connect.php');
 $page_title = 'Fannie - Item Maintanence';
@@ -33,60 +35,26 @@ $logged_in = checkLogin();
 refreshSession();
 
 ?>
-<html>
-<head>
-<SCRIPT LANGUAGE="JavaScript">
-
-<!-- This script and many more are available free online at -->
-<!-- The JavaScript Source!! http://javascript.internet.com -->
-<!-- John Munn  (jrmunn@home.com) -->
-
-<!-- Begin
- function putFocus(formInst, elementInst) {
-  if (document.forms.length > 0) {
-   document.forms[formInst].elements[elementInst].focus();
-  }
- }
-// The second number in the "onLoad" command in the body
-// tag determines the form's focus. Counting starts with '0'
-//  End -->
-</script>
-
-</head>
-<BODY onLoad='putFocus(0,0);'>
-
 <?php
-
-
-foreach ($_POST AS $key => $value) {
-    $$key = $value;
-}
 
 
 $today = date("m-d-Y h:m:s");
 echo $today;
 
-if(!isset($tax)){
-	$tax = 0;
-}	
-if(!isset($FS)){
-	$FS = 0;
-}
-if(!isset($Scale)){
-	$Scale = 0;
-}
-if(!isset($deposit) || is_null($deposit)){
-	$deposit = 0;
-}
-if(!isset($QtyFrc)){
-	$QtyFrc = 0;
-}
-$discount = (isset($_REQUEST['NoDisc']))?0:1;
+$upc = str_pad($_REQUEST['upc'],'0',13,STR_PAD_LEFT);
 
-if (!$price) $price = 0;
-$descript = $dbc->escape($descript);
+$ins_array = array();
+$ins_array['upc'] = $dbc->escape($_REQUEST['upc']);
+$ins_array['tax'] = isset($_REQUEST['tax'])?$_REQUEST['tax']:0;
+$ins_array['foodstamp'] = isset($_REQUEST['FS'])?1:0;
+$ins_array['scale'] = isset($_REQUEST['Scale'])?1:0;
+$ins_array['deposit'] = isset($_REQUEST['deposit'])?$_REQUEST['deposit']:0;
+$ins_array['qttyEnforced'] = isset($_REQUEST['QtyFrc'])?1:0;
+$ins_array['discount'] = isset($_REQUEST['NoDisc'])?0:1;
+$ins_array['normal_price'] = isset($_REQUEST['price'])?$_REQUEST['price']:0;
+$ins_array['description'] = $dbc->escape($_REQUEST['descript']);
 
-/* set tax and FS by department defaults */
+/* set tax and FS to department defaults */
 $deptSub = 0;
 $taxfsQ = "select dept_tax,dept_fs,
 	dept_discount,
@@ -95,10 +63,10 @@ $taxfsQ = "select dept_tax,dept_fs,
 $taxfsR = $dbc->query($taxfsQ);
 if ($dbc->num_rows($taxfsR) > 0){
 	$taxfsW = $dbc->fetch_array($taxfsR);
-	$tax = $taxfsW[0];
-	$FS = $taxfsW[1];
-	$discount = $taxfsW[2];
-	$deptSub = $taxfsW[3];
+	$ins_array['tax'] = $taxfsW['dept_tax'];
+	$ins_array['foodstamp'] = $taxfsW['dept_fs'];
+	$ins_array['discount'] = $taxfsW['dept_discount'];
+	$deptSub = $taxfsW['superID'];
 }
 
 /* AUTHENTICATION CLASS: pricechange OR audited_pricechange
@@ -127,21 +95,39 @@ elseif ($auditedUser){
 }
 if (!$validatedUser && !$auditedUser){
 	echo "Please ";
-	echo "<a href=/auth/ui/loginform.php?redirect=/queries/productTest.php?upc=$upc>";
+	echo "<a href={$FANNIE_URL}auth/ui/loginform.php?redirect=/queries/productTest.php?upc=$upc>";
 	echo "login</a> to add new items";
 	return;
 }
 
-$del99Q = "DELETE FROM products where upc = '$upc'";
+$del99Q = "DELETE FROM products WHERE upc = '$upc'";
 $delISR = $dbc->query($del99Q);
 
-$query99 = "INSERT INTO Products (upc,description,normal_price,pricemethod,groupprice,quantity,
-	special_price,specialpricemethod,specialgroupprice,specialquantity,
-	department,size,tax,foodstamp,scale,scaleprice,mixmatchcode,modified,advertised,tareweight,discount,
-	discounttype,unitofmeasure,wicable,qttyEnforced,idEnforced,cost,inUse,subdept,deposit,local,
-	start_date,end_date,numflag)
-VALUES('$upc',$descript,$price,0,0.00,0,0.00,0,0.00,0,$department,'',$tax,$FS,$Scale,0,0,{$dbc->now()},
-1,0,$discount,0,'',0,$QtyFrc,0,$cost,1,$subdepartment,$deposit,0,'1900-01-01','1900-01-01',0)";
+$ins_array['pricemethod'] = 0;
+$ins_array['groupprice'] = 0.00;
+$ins_array['quantity'] = 0;
+$ins_array['special_price'] = 0.00;
+$ins_array['specialpricemethod'] = 0;
+$ins_array['specialgroupprice'] = 0.00;
+$ins_array['specialquantity'] = 0;
+$ins_array['department'] = $_REQUEST['department'];
+$ins_array['size'] = "''";
+$ins_array['scaleprice'] = 0.00;
+$ins_array['mixmatchcode'] = "'0'";
+$ins_array['modified'] = $dbc->now();
+$ins_array['advertised'] = 1;
+$ins_array['tareweight'] = 0;
+$ins_array['discounttype'] = 0;
+$ins_array['unitofmeasure'] = "''";
+$ins_array['wicable'] = 0;
+$ins_array['idEnforced'] = 0;
+$ins_array['cost'] = $_REQUEST['cost'];
+$ins_array['inUse'] = 1;
+$ins_array['subdept'] = $_REQUEST['subdepartment'];
+$ins_array['local'] = 0;
+$ins_array['start_date'] = "'1900-01-01'";
+$ins_array['end_date'] = "'1900-01-01'";
+$ins_array['numflag'] = 0;
 
 if (isset($_REQUEST['likeCode']) && $_REQUEST['likeCode'] != -1){
 	$dbc->query("DELETE FROM upcLike WHERE upc='$upc'");
@@ -149,24 +135,42 @@ if (isset($_REQUEST['likeCode']) && $_REQUEST['likeCode'] != -1){
 	$dbc->query($lcQ);	
 }
 // echo "<br>" .$query99. "<br>";
-$resultI = $dbc->query($query99);
+$resultI = $dbc->smart_insert('products',$ins_array);
 
 if ($dbc->table_exists('prodExtra')){
-	$manu = $dbc->escape($_REQUEST['manufacturer']);
-	$dist = $dbc->escape($_REQUEST['distributor']);
+	$pxarray = array(
+	'upc' => $dbc->escape($upc),
+	'distributor' => $dbc->escape($_REQUEST['distributor']),
+	'manufacturer' => $dbc->escape($_REQUEST['manufacturer']),
+	'cost' => $_REQUEST['cost'],
+	'margin' => 0.00,
+	'variable_pricing' => 0,
+	'location' => $dbc->escape($_REQUEST['location']),
+	'case_quantity' => "''",
+	'case_cost' => 0.00,
+	'case_info' => "''"
+	);
 	$dbc->query("DELETE FROM prodExtra WHERE upc='$upc'");
-	$xInsQ = "INSERT INTO prodExtra (upc,distributor,manufacturer,cost,margin,variable_pricing,location,
-					case_quantity,case_cost,case_info) VALUES
-					('$upc',$dist,$manu,$cost,0.00,0,'$location','',0.00,'')";
-	$dbc->query($xInsQ);
+	$dbc->smart_insert('prodExtra',$pxarray);
 }
 
 if ($dbc->table_exists("prodUpdate")){
-	$query = sprintf("INSERT INTO prodUpdate VALUES ('%s',%s,%f,%d,%d,%d,%d,
-		%d,%s,%d,%d,%d,1)",$upc,$descript,$price,$department,$tax,$FS,$Scale,
-		isset($_REQUEST['likeCode'])?$_REQUEST['likeCode']:0,$dbc->now(),
-		$uid,$QtyFrc,$discount);
-	$result =  $dbc->query($query);
+	$puarray = array(
+	'upc' => $dbc->escape($upc),
+	'description' => $ins_array['description'],
+	'price' => $ins_array['normal_price'],
+	'dept' => $ins_array['department'],
+	'tax' => $ins_array['tax'],
+	'fs' => $ins_array['foodstamp'],
+	'scale' => $ins_array['scale'],
+	'likeCode' => isset($_REQUEST['likeCode'])?$_REQUEST['likeCode']:0,
+	'modified' => $dbc->now(),
+	'user' => $uid,
+	'forceQty' => $ins_array['qttyEnforced'],
+	'noDisc' => $ins_array['discount'],
+	'inUse' => $ins_array['inUse']
+	);
+	$dbc->smart_insert('prodUpdate',$puarray);
 }
 if (isset($_REQUEST['s_plu'])){
 	$s_plu = substr($upc,3,4);
@@ -222,8 +226,8 @@ $row = $dbc->fetch_array($prodR);
 
 		echo "<table border=0>";
         echo "<tr><td align=right><b>UPC</b></td><td><font color='red'>".$upc."</font><input type=hidden value='".$upc."' name=upc></td>";
-        echo "</tr><tr><td><b>Description</b></td><td>".$descript."</td>";
-        echo "<td><b>Price</b></td><td>".$price."</td></tr></table>";
+        echo "</tr><tr><td><b>Description</b></td><td>".$_REQUEST['descript']."</td>";
+        echo "<td><b>Price</b></td><td>".$_REQUEST['price']."</td></tr></table>";
         echo "<table border=0><tr>";
         echo "<th>Dept<th>subDept<th>FS<th>Scale<th>QtyFrc<th>NoDisc<th>inUse<th>deposit</b>";
         echo "</tr>";
@@ -284,20 +288,13 @@ $row = $dbc->fetch_array($prodR);
 	    echo "testwindow.moveTo(50,50);";
 	    echo "</script>";
     }
-//
-//	PHP INPUT DEBUG SCRIPT -- very useful!
-//
-
-/*
-function debug_p($var, $title) 
-{
-    print "<h4>$title</h4><pre>";
-    print_r($var);
-    print "</pre>";
-}
-
-debug_p($_REQUEST, "all the data coming in");
-*/
+	?>
+	<script type="text/javascript">
+	$(document).ready(function(){
+		$('#upc').focus();
+	});
+    	</script>
+<?php
 
 include('../src/footer.html');
 ?>

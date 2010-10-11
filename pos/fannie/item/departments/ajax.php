@@ -39,7 +39,7 @@ if (isset($_REQUEST['action'])){
 		deptDisplay($_REQUEST['did']);
 		break;
 	case 'deptSave':
-		deptSave($_POST);
+		deptSave($_REQUEST);
 		break;
 	case 'addSub':
 		addSub($_REQUEST['name'],$_REQUEST['did']);
@@ -109,11 +109,20 @@ function deptSave($array){
 			return;
 		}
 
-		$insQ = sprintf("INSERT INTO departments VALUES (%d,%s,%d,%d,%f,%f,%d,"
-			.$dbc->now().",1)",$id,$name,$tax,$fs,$max,$min,$disc);
-		$dbc->query($insQ);
+		$ins_array = array(
+		'dept_no' => $id,
+		'dept_name' => $name,
+		'dept_tax' => $tax,
+		'dept_fs' => $fs,
+		'dept_discount' => $disc,
+		'dept_limit' => $max,
+		'dept_minimum' => $min,
+		'modified' => $dbc->now(),
+		'modifiedby' => 1		
+		);
+		$dbc->smart_insert('departments',$ins_array);
 
-		$insQ = "INSERT INTO superdepts VALUES (0,$id)";
+		$insQ = "INSERT INTO superdepts (superID,dept_ID) VALUES (0,$id)";
 		$dbc->query($insQ);
 	}
 	else {
@@ -134,7 +143,7 @@ function deptSave($array){
 		$dbc->query("UPDATE deptMargin SET margin=$margin WHERE dept_ID=$id");
 	}
 	else {
-		$dbc->query("INSERT INTO deptMargin VALUES ($id,$margin)");
+		$dbc->query("INSERT INTO deptMargin (dept_ID,margin) VALUES ($id,$margin)");
 	}
 
 	$checkS = $dbc->query("SELECT * FROM deptSalesCodes WHERE dept_ID=$id");
@@ -142,10 +151,10 @@ function deptSave($array){
 		$dbc->query("UPDATE deptSalesCodes SET salesCode=$pcode WHERE dept_ID=$id");
 	}
 	else if (is_numeric($pcode)){
-		$dbc->query("INSERT INTO deptSalesCodes VALUES ($id,$pcode)");
+		$dbc->query("INSERT INTO deptSalesCodes (dept_ID,salesCode) VALUES ($id,$pcode)");
 	}
 	else if ($dbc->num_rows($checkS) == 0 && !is_numeric($pcode)){
-		$dbc->query("INSERT INTO deptSalesCodes VALUES ($id,$id)");
+		$dbc->query("INSERT INTO deptSalesCodes (dept_ID,salesCode) VALUES ($id,$id)");
 	}
 
 	if ($new == 1){

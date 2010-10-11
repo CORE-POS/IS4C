@@ -78,10 +78,11 @@ function itemParse($upc){
 			LEFT JOIN vendorDepartments AS d ON i.vendorDept=d.deptID
 			WHERE upc='$upc'";
 		$dataR = $dbc->query($dataQ);
-		if ($dbc->num_rows($dataR) > 0)
+		if ($dbc->num_rows($dataR) > 0){
 			$data = $dbc->fetch_row($dataR);
-		if (is_numeric($data['cost']) && is_numeric($data['margin']))
-			$data['srp'] = getSRP($data['cost'],$data['margin']);
+			if (is_numeric($data['cost']) && is_numeric($data['margin']))
+				$data['srp'] = getSRP($data['cost'],$data['margin']);
+		}
 	}
         echo "<BODY onLoad='putFocus(0,1);'>";
         echo "<span style=\"color:red;\">Item not found.  You are creating a new one.  </span>";
@@ -154,10 +155,10 @@ function itemParse($upc){
 					    CS_SOURCE_LABEL=>$row->dept_name, 
 					    CS_TARGET_ID=>$row->subdept_no, 
 						CS_TARGET_LABEL=>$row->subdept_name);
-				}            
+			    }            
 
-		    	//instantiate class
-		    	$subdept = new chainedSelectors(
+				//instantiate class
+				$subdept = new chainedSelectors(
 					$selectorNames, 
 			        $selectorData);
 				?>
@@ -267,7 +268,7 @@ function itemParse($upc){
 	echo "name='deposit' size='5' value=0></td>";
 	echo "</tr><tr><th align=right>Cost</th>";
 	printf("<td>$<input type=text size=5 value=\"%.2f\" id=cost name=cost onchange=\"cscallback();\" /></td>",
-		(is_numeric($data['cost'])?$data['cost']:0) );
+		(isset($data['cost']) && is_numeric($data['cost'])?$data['cost']:0) );
 	echo "</tr><th align-right>Location</th>";
 	echo "<td><input type=text size=5 value=\"\" name=location /></td>";
 	echo "</tr><th align=right>Local</th>";

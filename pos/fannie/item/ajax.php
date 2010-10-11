@@ -34,7 +34,10 @@ function GetLikecodeItems($lc){
 function MarginFS($upc,$cost,$dept){
 	global $dbc;
 	$price = $dbc->query("SELECT normal_price FROM products WHERE upc='$upc'");
-	$price = array_pop($dbc->fetch_row($price));
+	if ($dbc->num_rows($price) > 0)
+		$price = array_pop($dbc->fetch_row($price));
+	else
+		$price = "None";
 
 	$dm = $dbc->query("SELECT margin FROM deptMargin WHERE dept_ID=$dept");
 	if ($dbc->num_rows($dm) > 0){
@@ -49,7 +52,9 @@ function MarginFS($upc,$cost,$dept){
 	else $ret .= sprintf("%.2f%%",$dm*100);
 	$ret .= "<br />";
 	
-	$actual = ($price-$cost)/$price;
+	$actual = 0;
+	if ($price != 0)
+		$actual = ($price-$cost)/$price;
 	if (($actual > $dm && is_numeric($dm)) || !is_numeric($dm) ){
 		$ret .= sprintf("<span style=\"color:green;\">Current margin on this item is %.2f%%<br />",
 			$actual*100);
