@@ -44,7 +44,7 @@ fetch_array(result_object, connection_identifer)
 	Returns the row array, using the default connection if no identifier is provided.
 
 **************************************************/
-$QUERY_LOG = "/tmp/queries.log";
+$QUERY_LOG = $FANNIE_ROOT."logs/queries.log";
 
 if (!function_exists("ADONewConnection")) include($FANNIE_ROOT.'adodb5/adodb.inc.php');
 

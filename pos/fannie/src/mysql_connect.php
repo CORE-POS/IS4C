@@ -29,7 +29,4 @@ $dbc = new SQLManager($FANNIE_SERVER,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 		$FANNIE_SERVER_USER,$FANNIE_SERVER_PW);
 setlocale(LC_MONETARY, 'en_US');
 
-if (!function_exists('escape_data')) include($path."src/escape_data.php");
-
-
 ?>
