@@ -3,6 +3,23 @@
 		<title>Howto Write A Paycard Module</title>
 	</head>
 	<body>
-	To-do...
+	This is a guide to writing a paycard class that can be used with
+	IS4C. This is not a guide to PCI compliance. Asking whether is a
+	given module is PCI compliant is probably the wrong approach.
+	Modules shouldn't retain any credit card numbers, but I highly
+	encourage you to trace through and verify that to your own satisfaction.
+	Even that, however, is a small facet of PCI compliance.
+	<p />
+	OK, no more soapbox. Most payment gateways are actually pretty simple.
+	You take some data - card info, amount, transaction type, etc - format
+	it to the gateway's liking - as HTTP, XML, SOAP, etc - and send it
+	to an HTTPS URL. The gateway sends a response, again formatted somehow,
+	telling you what happened. Generally this response is approved,
+	declined, or an error message.
+	<p />
+	In a lot of cases, all that really varies from one gateway to another
+	is the formatting of what you send and the formatting of how it
+	replies. That leaves a lot of potential for code re-use and
+	interchangeable payment modules.
 	</body>
 </html>
