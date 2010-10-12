@@ -143,12 +143,6 @@ class suspendedlist extends NoInputPage {
 	function doResume($reg,$emp,$trans){
 		global $IS4C_LOCAL;
 
-		$select_query = "select datetime, register_no, emp_no, trans_no, upc, "
-			."description, trans_type, trans_subtype, trans_status, department, quantity, scale, "
-			."unitPrice, total, regPrice, tax, foodstamp, discount, memDiscount, discountable, "
-			."discounttype, voided, percentDiscount, ItemQtty, volDiscType, volume, VolSpecial, mixMatch, "
-			."matched, memType, isStaff, card_no from suspendedtoday where register_no = $reg "
-			." and emp_no = ".$emp." and trans_no = ".$trans." order by trans_id";
 		$query_del = "delete from suspended where register_no = ".$reg." and emp_no = "
 			.$emp." and trans_no = ".$trans;
 
@@ -157,26 +151,25 @@ class suspendedlist extends NoInputPage {
 		$result_a = $db_a->query($query_a);
 		$num_rows_a = $db_a->num_rows($result_a);
 
-		$insQ = "INSERT INTO localtemptrans (datetime,register_no,emp_no,trans_no,upc,description,
-			trans_type,trans_subtype,trans_status,department,quantity,scale,unitPrice,total,regPrice,
-			tax,foodstamp,discount,memDiscount,discountable,discounttype,voided,percentDiscount,ItemQtty,
-			volDiscType,volume,VolSpecial,mixMatch,matched,memType,staff,card_no)";
-		if ($IS4C_LOCAL->get("DBMS") == "mssql" && $IS4C_LOCAL->get("store") == "wfc")
-			$insQ = str_replace("staff","isStaff",$insQ);
-
 		// use SQLManager's transfer method when not in stand alone mode
 		// to eliminate the cross server query - andy 8/31/07
 		if ($num_rows_a == 0) {
 			if ($IS4C_LOCAL->get("standalone") == 0){
 				$db_a->add_connection($IS4C_LOCAL->get("mServer"),$IS4C_LOCAL->get("mDBMS"),
 					$IS4C_LOCAL->get("mDatabase"),$IS4C_LOCAL->get("mUser"),$IS4C_LOCAL->get("mPass"));
-				$success = $db_a->transfer($IS4C_LOCAL->get("mDatabase"),$select_query,
-					$IS4C_LOCAL->get("tDatabase"),$insQ);
+				$cols = getMatchingColumns($db_a,"localtemptrans","suspendedtoday");
+				$remoteQ = "select {$cols} from suspendedtoday where register_no = $reg "
+					." and emp_no = ".$emp." and trans_no = ".$trans." order by trans_id";
+				$success = $db_a->transfer($IS4C_LOCAL->get("mDatabase"),$remoteQ,
+					$IS4C_LOCAL->get("tDatabase"),"insert into localtemptrans ({$cols})");
 				if ($success)
 					$db_a->query($query_del,$IS4C_LOCAL->get("mDatabase"));
+				$db_a->close($IS4C_LOCAL->get("mDatabase"));
 			}
 			else {	
-				$success = $db_a->query("insert into localtemptrans ".$query);
+				$localQ = "select * from suspendedtoday where register_no = $reg "
+					." and emp_no = ".$emp." and trans_no = ".$trans." order by trans_id";
+				$success = $db_a->query("insert into localtemptrans ".$localQ);
 				if ($success)
 					$db_a->query($query_del);
 			}

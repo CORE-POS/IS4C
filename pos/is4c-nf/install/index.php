@@ -852,7 +852,8 @@ function create_trans_dbs($db,$type){
 		$db->query($memcharge,$name);
 	}
 
-	$mAdd = "select 
+	$mAdd = "CREATE VIEW memdiscountadd AS
+		select 
 		max(datetime) as datetime, 
 		register_no, 
 		emp_no, 
@@ -1151,7 +1152,8 @@ function create_trans_dbs($db,$type){
 		echo mysql_error();
 	}
 
-	$sAdd = "select max(datetime) AS datetime,
+	$sAdd = "CREATE VIEW staffdiscountadd AS
+		select max(datetime) AS datetime,
 		register_no AS register_no,
 		emp_no AS emp_no,
 		trans_no AS trans_no,

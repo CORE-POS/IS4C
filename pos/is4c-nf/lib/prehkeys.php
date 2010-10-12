@@ -722,24 +722,25 @@ function ttl() {
 		exit;
 	}
 	else {
+		$mconn = tDataConnect();
+		$query = "";
+		$query2 = "";
 		if ($IS4C_LOCAL->get("isMember") == 1) {
-			$query = "INSERT into localtemptrans (datetime, register_no, emp_no, trans_no, upc, description, trans_type, trans_subtype, trans_status, department, quantity, scale, unitPrice, total, regPrice, tax, foodstamp, discount, memDiscount, discountable, discounttype, voided, percentDiscount, ItemQtty, volDiscType, volume, VolSpecial, mixMatch, matched, card_no, memType, staff) select datetime, register_no, emp_no, trans_no, upc, description, trans_type, trans_subtype, trans_status, department, quantity, scale, unitPrice, total, regPrice, tax, foodstamp, discount, memDiscount, discountable, discounttype, voided, percentDiscount, ItemQtty, volDiscType, volume, VolSpecial, mixMatch, matched, card_no, memType, staff from memdiscountadd";
+			$cols = localMatchingColumns($mconn,"localtemptrans","memdiscountadd");
+			$query = "INSERT INTO localtemptrans ({$cols}) SELECT {$cols} FROM memdiscountadd";
 		} else {
-			$query = "INSERT into localtemptrans (datetime, register_no, emp_no, trans_no, upc, description, trans_type, trans_subtype, trans_status, department, quantity, scale, unitPrice, total, regPrice, tax, foodstamp, discount, memDiscount, discountable, discounttype, voided, percentDiscount, ItemQtty, volDiscType, volume, VolSpecial, mixMatch, matched, card_no, memType, staff) select datetime, register_no, emp_no, trans_no, upc, description, trans_type, trans_subtype, trans_status, department, quantity, scale, unitPrice, total, regPrice, tax, foodstamp, discount, memDiscount, discountable, discounttype, voided, percentDiscount, ItemQtty, volDiscType, volume, VolSpecial, mixMatch, matched, card_no, memType, staff from memdiscountremove";
+			$cols = localMatchingColumns($mconn,"localtemptrans","memdiscountremove");
+			$query = "INSERT INTO localtemptrans ({$cols}) SELECT {$cols} FROM memdiscountremove";
 		}
 
 		if ($IS4C_LOCAL->get("isStaff") != 0) {
-			$query2 = "INSERT into localtemptrans (datetime, register_no, emp_no, trans_no, upc, description, trans_type, trans_subtype, trans_status, department, quantity, scale, unitPrice, total, regPrice, tax, foodstamp, discount, memDiscount, discountable, discounttype, voided, percentDiscount, ItemQtty, volDiscType, volume, VolSpecial, mixMatch, matched, card_no, memType, staff) select datetime, register_no, emp_no, trans_no, upc, description, trans_type, trans_subtype, trans_status, department, quantity, scale, unitPrice, total, regPrice, tax, foodstamp, discount, memDiscount, discountable, discounttype, voided, percentDiscount, ItemQtty, volDiscType, volume, VolSpecial, mixMatch, matched, card_no, memType, staff from staffdiscountadd";
+			$cols = localMatchingColumns($mconn,"localtemptrans","staffdiscountadd");
+			$query2 = "INSERT INTO localtemptrans ({$cols}) SELECT {$cols} FROM staffdiscountadd";
 		} else {
-			$query2 = "INSERT into localtemptrans (datetime, register_no, emp_no, trans_no, upc, description, trans_type, trans_subtype, trans_status, department, quantity, scale, unitPrice, total, regPrice, tax, foodstamp, discount, memDiscount, discountable, discounttype, voided, percentDiscount, ItemQtty, volDiscType, volume, VolSpecial, mixMatch, matched, card_no, memType, staff) select datetime, register_no, emp_no, trans_no, upc, description, trans_type, trans_subtype, trans_status, department, quantity, scale, unitPrice, total, regPrice, tax, foodstamp, discount, memDiscount, discountable, discounttype, voided, percentDiscount, ItemQtty, volDiscType, volume, VolSpecial, mixMatch, matched, card_no, memType, staff from staffdiscountremove";
+			$cols = localMatchingColumns($mconn,"localtemptrans","staffdiscountremove");
+			$query2 = "INSERT INTO localtemptrans ({$cols}) SELECT {$cols} FROM staffdiscountremove";
 		}
 
-		if ($IS4C_LOCAL->get("DBMS") == "mssql" && $IS4C_LOCAL->get("store") == "wfc"){
-			$query = str_replace(", staff",", isStaff",$query);	
-			$query2 = str_replace(", staff",", isStaff ",$query2);	
-		}
-
-		$mconn = tDataConnect();
 		$result = $mconn->query($query);
 		$result2 = $mconn->query($query2);
 
