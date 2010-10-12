@@ -413,6 +413,7 @@ class SQLManager {
 		$vals = substr($vals,0,strlen($vals)-1).")";
 		$insertQ = "INSERT INTO $table_name $cols VALUES $vals";
 
+		//echo $insertQ;
 		$ret = $this->query($insertQ,$which_connection);
 
 		return $ret;

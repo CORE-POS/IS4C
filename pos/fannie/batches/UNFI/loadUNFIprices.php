@@ -98,6 +98,7 @@ while(!feof($fp)){
 	/* csv parser takes a comma-separated line and returns its elements
 	   as an array */
 	$data = csv_parser($line);
+	if (!is_array($data)) continue;
 
 	// grab data from appropriate columns
 	$sku = $data[$SKU];
@@ -165,7 +166,9 @@ while(!feof($fp)){
 	// of the CSV file
 	$marginQ = "select margin from unfiCategories where categoryID = $category";
 	$marginR = $dbc->query($marginQ);
-	$margin = array_pop($dbc->fetch_array($marginR));
+	$margin = 0.45;
+	if ($dbc->num_rows($marginR) > 0)
+		$margin = array_pop($dbc->fetch_array($marginR));
 
 	// calculate a SRP from unit cost and desired margin
 	$srp = round($net_cost / (1 - $margin),2);
@@ -205,6 +208,8 @@ fclose($fp);
 */
 if (count($filestoprocess) == 0){
 	/* html header, including navbar */
+	$page_title = "Done loading items";
+	$header = "Done loading items";
 	include($FANNIE_ROOT."src/header.html");
 
 	// this stored procedure compensates for items ordered from

@@ -32,10 +32,10 @@ try {
 catch(Exception $e){}
 $dbc->query("CREATE TABLE tempCapPrices (upc varchar(13), price decimal(10,2))");
 
-$SUB = 1;
-$UPC = 2;
-$SKU = 3;
-$PRICE = 14;
+$SUB = 2;
+$UPC = 3;
+$SKU = 4;
+$PRICE = 15;
 
 $datastarts = False;
 
@@ -43,6 +43,8 @@ $fp = fopen("tmp/CAP.csv","r");
 while(!feof($fp)){
 	$line = fgets($fp);
 	$data = csv_parser($line);
+	if (!is_array($data)) continue;
+	if (count($data) < 14) continue;
 
 	if (!$datastarts){
 		if (strstr($data[$UPC],'UPC') !== false ) $datastarts = True;

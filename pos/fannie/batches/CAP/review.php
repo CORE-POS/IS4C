@@ -43,11 +43,11 @@ if (isset($_POST["start"])){
 			$ins = sprintf("INSERT INTO batches (startDate,endDate,
 					batchName,batchType,discountType) 
 					VALUES ('%s','%s',
-					'%s Co+op %s',1,1)",$start,$end,
+					'%s Coop Deals %s',1,1)",$start,$end,
 					$names[$i],$naming);
 			$dbc->query($ins);
 			$fetch = sprintf("SELECT max(batchID) from batches WHERE
-					batchName='%s Co+op %s'",$names[$i],$naming);
+					batchName='%s Coop Deals %s'",$names[$i],$naming);
 			$fetch = $dbc->query($fetch);
 			$bID = array_pop($dbc->fetch_row($fetch));
 			$batchIDs[$names[$i]] = $bID;

@@ -1415,70 +1415,6 @@ function create_op_dbs($con){
 		$con->query($poiQ,$FANNIE_OP_DB);
 	}
 
-	$so = "CREATE TABLE SpecialOrder (
-		order_id int not null auto_increment,
-		order_date datetime,
-		uid int,
-		status smallint,
-		fullname varchar(200),
-		order_info text,
-		special_instructions text,
-		superDept int,
-		primary key(order_id)
-		)";
-	if ($FANNIE_SERVER_DBMS == "MSSQL"){
-		$so = "CREATE TABLE SpecialOrder (
-			order_id int identity(1,1) not null,
-			order_date datetime,
-			uid int,
-			status smallint,
-			fullname varchar(200),
-			order_info text,
-			special_instructions text,
-			superDept int,
-			primary key(order_id)
-			)";
-	}
-	if (!$con->table_exists('SpecialOrder',$FANNIE_OP_DB)){
-		$con->query($so,$FANNIE_OP_DB);
-	}
-
-	$soU = "CREATE TABLE SpecialOrderUser (
-		id int not null auto_increment,
-		card_no int,
-		lastname varchar(100),
-		firstname varchar(50),
-		street1 varchar(100),
-		street2 varchar(100),
-		city varchar(20),
-		state char(2),
-		zip varchar(10),
-		phone varchar(30),
-		alt_phone varchar(30),
-		email varchar(50),
-		primary key(id)
-		)";
-	if ($FANNIE_SERVER_DBMS == "MSSQL"){
-		$soU = "CREATE TABLE SpecialOrderUser (
-			id int identity(1,1) not null,
-			card_no int,
-			lastname varchar(100),
-			firstname varchar(50),
-			street1 varchar(100),
-			street2 varchar(100),
-			city varchar(20),
-			state char(2),
-			zip varchar(10),
-			phone varchar(30),
-			alt_phone varchar(30),
-			email varchar(50),
-			primary key(id)
-			)";
-	}
-	if (!$con->table_exists('SpecialOrderUser',$FANNIE_OP_DB)){
-		$con->query($soU,$FANNIE_OP_DB);
-	}
-
 	/* listing of email invoices that have been
 	   sent to members */
 	$emailLog = "CREATE TABLE emailLog (
@@ -1970,6 +1906,14 @@ function create_dlogs($con){
 
 	if (!$con->table_exists('suspended',$FANNIE_TRANS_DB)){
 		$con->query('CREATE TABLE suspended '.$trans_columns,$FANNIE_TRANS_DB);
+	}
+
+	if (!$con->table_exists('PendingSpecialOrder',$FANNIE_TRANS_DB)){
+		$con->query('CREATE TABLE PendingSpecialOrder (order_id int,'.substr($trans_columns,1),$FANNIE_TRANS_DB);
+	}
+
+	if (!$con->table_exists('CompleteSpecialOrder',$FANNIE_TRANS_DB)){
+		$con->query('CREATE TABLE CompleteSpecialOrder (order_id int,'.substr($trans_columns,1),$FANNIE_TRANS_DB);
 	}
 
 	$dlogView = "select 

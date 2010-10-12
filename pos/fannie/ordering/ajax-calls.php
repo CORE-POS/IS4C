@@ -1,0 +1,382 @@
+<?php
+include('../config.php');
+include($FANNIE_ROOT.'src/mysql_connect.php');
+
+if (!isset($_REQUEST['action'])) exit;
+$orderID = isset($_REQUEST['orderID'])?(int)$_REQUEST['orderID']:'';
+
+switch ($_REQUEST['action']){
+case 'loadCustomer':
+	echo getCustomerForm($orderID);
+	break;
+case 'reloadMem':
+	echo getCustomerForm($orderID,$_REQUEST['memNum']);
+	break;
+case 'loadItems':
+	echo getItemForm($orderID);
+	break;
+case 'newUPC':
+	addUPC($orderID,$_REQUEST['memNum'],$_REQUEST['upc']);
+	echo getItemForm($orderID);
+	break;
+case 'deleteUPC':
+	$upc = str_pad($_REQUEST['upc'],13,'0',STR_PAD_LEFT);
+	$delQ = sprintf("DELETE FROM PendingSpecialOrder WHERE order_id=%d
+		AND upc=%s",$_REQUEST['orderID'],$dbc->escape($upc));
+	$delR = $dbc->query($delQ);
+	echo getItemForm($_REQUEST['orderID']);
+	break;
+case 'saveDesc':
+	$upc = str_pad($_REQUEST['upc'],13,'0',STR_PAD_LEFT);
+	$desc = $_REQUEST['desc'];
+	$desc = rtrim($desc,' SO');
+	$desc = substr($desc,0,32)." SO";
+	$upQ = sprintf("UPDATE PendingSpecialOrder SET
+		description=%s WHERE order_id=%d AND upc=%s",
+		$dbc->escape($desc),$_REQUEST['orderID'],
+		$dbc->escape($upc));
+	$dbc->query($upQ);
+	break;
+case 'savePrice':
+	$upc = str_pad($_REQUEST['upc'],13,'0',STR_PAD_LEFT);
+	$upQ = sprintf("UPDATE PendingSpecialOrder SET
+		total=%f WHERE order_id=%d AND upc=%s",
+		$_REQUEST['price'],$_REQUEST['orderID'],
+		$dbc->escape($upc));
+	$dbc->query($upQ);
+	break;
+case 'saveQty':
+	$upc = str_pad($_REQUEST['upc'],13,'0',STR_PAD_LEFT);
+	$upQ = sprintf("UPDATE PendingSpecialOrder SET
+		quantity=%f,ItemQtty=%f WHERE order_id=%d AND upc=%s",
+		$_REQUEST['qty'],$_REQUEST['qty'],$_REQUEST['orderID'],
+		$dbc->escape($upc));
+	$dbc->query($upQ);
+	break;
+case 'saveDept':
+	$upc = str_pad($_REQUEST['upc'],13,'0',STR_PAD_LEFT);
+	$upQ = sprintf("UPDATE PendingSpecialOrder SET
+		department=%d WHERE order_id=%d AND upc=%s",
+		$_REQUEST['dept'],$_REQUEST['orderID'],
+		$dbc->escape($upc));
+	$dbc->query($upQ);
+	break;
+}
+
+function addUPC($orderID,$memNum,$upc){
+	global $dbc;
+
+	$upc = str_pad($upc,13,'0',STR_PAD_LEFT);
+	
+	$ins_array = genericRow($orderID);
+	$ins_array['upc'] = "'$upc'";
+	$ins_array['card_no'] = "'$memNum'";
+	$ins_array['trans_type'] = "'I'";
+
+	$caseSize = 1;
+	$caseQ = "SELECT units FROM vendorItems WHERE
+		upc='$upc'";
+	$caseR = $dbc->query($caseQ);
+	if ($dbc->num_rows($caseR) > 0)
+		$caseSize = array_pop($dbc->fetch_row($caseR));
+	$ins_array['quantity'] = $caseSize;
+	$ins_array['ItemQtty'] = $caseSize;
+
+	$mempricing = False;
+	if ($memNum != 0 && !empty($memNum)){
+		$r = $dbc->query("SELECT type FROM custdata WHERE CardNo=$memNum");
+		$w = $dbc->fetch_row($r);
+		if ($w['type'] == 'PC') $mempricing = True;
+	}
+
+	$pdQ = "SELECT normal_price,special_price,department,discounttype,
+		description FROM products WHERE upc='$upc'";
+	$pdR = $dbc->query($pdQ);
+	if ($dbc->num_rows($pdR) > 0){
+		$pdW = $dbc->fetch_row($pdR);
+		$ins_array['department'] = $pdW['department'];
+		$ins_array['total'] = $pdW['normal_price']*$caseSize;
+		if ($mempricing){
+			if ($pdW['discounttype'] == 2)
+				$ins_array['total'] = $pdW['special_price']*$caseSize;
+			else
+				$ins_array['total'] = $pdW['normal_price']*$caseSize*0.85;
+		}
+		$ins_array['description'] = "'".substr($pdW['description'],0,32)." SO'";
+	}
+
+	$tidQ = "SELECT MAX(trans_id) FROM PendingSpecialOrder WHERE order_id=".$orderID;
+	$tidR = $dbc->query($tidQ);
+	$tidW = $dbc->fetch_row($tidR);
+	$ins_array['trans_id'] = $tidW[0]+1;
+
+	$dbc->smart_insert('PendingSpecialOrder',$ins_array);
+}
+
+function CreateEmptyOrder(){
+	global $dbc;
+	$orderID = 1;
+	$r = $dbc->query("SELECT MAX(order_id) FROM PendingSpecialOrder");
+	if ($dbc->num_rows($r) > 0){
+		$max = array_pop($dbc->fetch_row($r));
+		if (!empty($max)) $orderID = $max+1;
+	}
+
+	$ins_array = genericRow($orderID);
+	$dbc->smart_insert('PendingSpecialOrder',$ins_array);
+	return $orderID;
+}
+
+function genericRow($orderID){
+	global $dbc;
+	return array(
+	'order_id'=>$orderID,
+	'datetime'=>$dbc->now(),
+	'emp_no'=>1001,
+	'register_no'=>30,
+	'trans_no'=>$orderID,
+	'upc'=>'0',
+	'description'=>"'SPECIAL ORDER'",
+	'trans_type'=>"'C'",
+	'trans_subtype'=>"''",
+	'trans_status'=>"''",
+	'department'=>0,
+	'quantity'=>0,
+	'scale'=>0,
+	'cost'=>0,
+	'unitPrice'=>0,
+	'total'=>0,
+	'regPrice'=>0,
+	'tax'=>0,
+	'foodstamp'=>0,
+	'discount'=>0,
+	'memDiscount'=>0,
+	'discountable'=>0,
+	'voided'=>0,
+	'percentDiscount'=>0,
+	'ItemQtty'=>0,
+	'volDiscType'=>0,
+	'volume'=>0,
+	'VolSpecial'=>0,
+	'mixMatch'=>0,
+	'matched'=>0,
+	'memType'=>0,
+	'isStaff'=>0,
+	'numflag'=>0,
+	'charflag'=>"''",	
+	'card_no'=>0,
+	'trans_id'=>0
+	);
+}
+
+function getCustomerForm($orderID,$memNum=0){
+	global $dbc;
+
+	if (empty($orderID)) $orderID = CreateEmptyOrder();
+
+	$names = array();
+	$contact_row = array(
+		'street'=>'',
+		'city'=>'',
+		'state'=>'',
+		'zip'=>'',
+		'phone'=>'',
+		'email_1'=>'',
+		'email_2'=>''
+	);
+	$status_row = array(
+		'type' => 'REG',
+		'status' => ''
+	);
+	
+	$table = "PendingSpecialOrder";
+
+	if (!empty($orderID)){
+		// find the order in pending or completed table
+		$find1Q = "SELECT order_id FROM PendingSpecialOrder WHERE order_id=$orderID";
+		$find1R = $dbc->query($find1Q);
+		if ($dbc->num_rows($find1R)==0){
+			$find2Q = "SELECT order_id FROM CompleteSpecialOrder WHERE order_id=$orderID";
+			$find2R = $dbc->query($find2Q);
+			if ($dbc->num_rows($find2R) > 0)
+				$table = "CompleteSpecialOrder";
+		}
+
+		// look up member id if applicable
+		if (empty($memNum)){
+			$findMem = "SELECT card_no FROM $table WHERE order_id=$orderID";
+			$memR = $dbc->query($findMem);
+			if ($dbc->num_rows($memR) > 0)
+				$memNum = array_pop($dbc->fetch_row($memR));
+		}
+		else {
+			$q = sprintf("UPDATE PendingSpecialOrder SET card_no=%d
+				WHERE order_id=%d",$memNum,$orderID);
+			$r = $dbc->query($q);
+		}
+
+		if ($memNum != 0){
+			$namesQ = sprintf("SELECT FirstName,LastName FROM custdata
+				WHERE CardNo=%d ORDER BY personNum",$memNum);
+			$namesR = $dbc->query($namesQ);
+			while($namesW = $dbc->fetch_row($namesR))
+				$names[] = array($namesW['FirstName'],$namesW['LastName']);
+
+			$contactQ = sprintf("SELECT street,city,state,zip,phone,email_1,email_2
+				FROM meminfo WHERE card_no=%d",$memNum);
+			$contactR = $dbc->query($contactQ);
+			$contact_row = $dbc->fetch_row($contactR);
+
+			$statusQ = sprintf("SELECT type FROM custdata WHERE CardNo=%d",$memNum);
+			$statusR = $dbc->query($statusQ);
+			$status_row  = $dbc->fetch_row($statusR);
+			if ($status_row['type'] == 'INACT')
+				$status_row['status'] = 'Inactive';
+			if ($status_row['type'] == 'INACT2')
+				$status_row['status'] = 'Inactive';
+			elseif ($status_row['type'] == 'TERM')
+				$status_row['status'] = 'Terminated';
+		}
+	}
+
+	$ret = "";
+	$ret .= sprintf('<input type="hidden" id="orderID" value="%d" />',$orderID);
+	$ret .= sprintf('<b>Member Number</b>: <input type="text" size="4"
+			id="memNum" value="%s" onchange="memNumEntered();"
+			/>',($memNum==0?'':$memNum));
+	$ret .= '<br />';
+	$ret .= '<b>Owner</b>: '.($status_row['type']=='PC'?'Yes':'No');
+	$ret .= sprintf('<input type="hidden" id="isMember" value="%s" />',
+			$status_row['type']);
+	$ret .= '<br />';
+	if (!empty($status_row['status'])){
+		$ret .= '<b>Account status</b>: '.$status_row['status'];
+		$ret .= '<br />';
+	}
+	$ret .= '<table cellspacing="0" cellpadding="4" border="1">';
+
+	// names
+	if (empty($names)){
+		$ret .= '<tr><th>First Name</th><td><input type="text" id="t_firstName" /></td>';
+		$ret .= '<th>Last Name</th><td><input type="text" id="t_lastName" /></td></tr>';
+	}
+	else {
+		$ret .= '<tr><th>Name</th><td colspan="3"><select id="s_personNum">';
+		foreach($names as $n){
+			$ret .= sprintf('<option>%s %s</option>',$n[0],$n[1]);
+		}
+		$ret .= '</select></td></tr>';
+	}
+
+	// address
+	if(strstr($contact_row['street'],"\n")){
+		$tmp = explode("\n",$contact_row['street']);	
+		$contact_row['street'] = $tmp[0];
+		$contact_row['street2'] = $tmp[1];
+	}
+	else
+		$contact_row['street2'] = '';
+
+	$ret .= sprintf('<tr><th>Address</th><td><input type="text" id="t_addr1" value="%s" /></td>
+		<th>E-mail</th><td><input type="text" id="t_email" value="%s" /></td></tr>
+		<tr><th>Addr (2)</th><td><input type="text" id="t_addr2" value="%s" /></td>
+		<th>City</th><td><input type="text" id="t_city" value="%s" size="10" /></td>
+		<th>State</th><td><input type="text" id="t_state" value="%s" size="2" /></td>
+		<th>Zip</th><td><input type="text" id="t_zip" value="%s" size="5" /></td></tr>
+		<tr><th>Phone</th><td><input type="text" id="t_ph1" value="%s" /></td>
+		<th>Alt. Phone</th><td><input type="text" id="t_ph2" value="%s" /></td></tr>',
+		$contact_row['street'],$contact_row['email_1'],$contact_row['street2'],
+		$contact_row['city'],$contact_row['state'],$contact_row['zip'],
+		$contact_row['phone'],$contact_row['email_2']);
+		
+	$ret .= '</table>';
+
+	return $ret;
+}
+
+function getItemForm($orderID){
+	global $dbc;
+	
+	$ret = '<b>UPC</b>: <input type="text" id="newupc" maxlength="13" />';
+	$ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';	
+	$ret .= '<input type="submit" onclick="addUPC();return false;" value="Add Item" />';
+
+	$ret .= '<p />';
+
+	// find the order in pending or completed table
+	$table = "PendingSpecialOrder";
+	$find1Q = "SELECT order_id FROM PendingSpecialOrder WHERE order_id=$orderID";
+	$find1R = $dbc->query($find1Q);
+	if ($dbc->num_rows($find1R)==0){
+		$find2Q = "SELECT order_id FROM CompleteSpecialOrder WHERE order_id=$orderID";
+		$find2R = $dbc->query($find2Q);
+		if ($dbc->num_rows($find2R) > 0)
+			$table = "CompleteSpecialOrder";
+	}
+
+	if ($table == "PendingSpecialOrder")
+		$ret .= editableItemList($orderID);
+	else
+		$ret .= itemList($orderID);
+
+	return $ret;
+}
+
+function editableItemList($orderID){
+	global $dbc;
+
+	$ret = '<table cellspacing="0" cellpadding="4" border="1">';
+	$ret .= '<tr><th>UPC</th><th>Description</th><th>Price</th><th>Qty</th><th>Department</th><th>&nbsp;</th></tr>';
+	$q = "SELECT upc,description,total,quantity,department FROM PendingSpecialOrder
+		WHERE order_id=$orderID AND trans_type='I'";
+	$r = $dbc->query($q);
+	while($w = $dbc->fetch_row($r)){
+		$ret .= sprintf('<tr>
+				<td>%s</td>
+				<td><input onchange="saveDesc($(this).val(),%s);return false;" value="%s" /></td>
+				<td><input size="5" onchange="savePrice($(this).val(),%s);return false;" value="%.2f" /></td>
+				<td><input size="4" onchange="saveQty($(this).val(),%s);return false;" value="%.2f" /></td>
+				<td><input size="4" onchange="saveDept($(this).val(),%s);return false;" value="%d" /></td>
+				<td><a href="" onclick="deleteUPC(%d,%s);return false;">Delete</a>
+				</tr>',
+				$w['upc'],
+				"'".$w['upc']."'",$w['description'],
+				"'".$w['upc']."'",$w['total'],
+				"'".$w['upc']."'",$w['quantity'],
+				"'".$w['upc']."'",$w['department'],
+				$orderID,$w['upc']
+			);
+	}
+	$ret .= '</table>';
+	return $ret;
+}
+
+function itemList($orderID){
+	global $dbc;
+
+	$ret .= '<table cellspacing="0" cellpadding="4" border="1">';
+	$ret .= '<tr><th>UPC</th><th>Description</th><th>Price</th><th>Qty</th><th>Department</th></tr>';
+	$q = "SELECT upc,description,total,quantity,department FROM CompleteSpecialOrder
+		WHERE order_id=$orderID AND trans_type='I'";
+	$r = $dbc->query($q);
+	while($w = $dbc->fetch_row($r)){
+		$ret .= sprintf('<tr>
+				<td>%s</td>
+				<td>%s</td>
+				<td>%.2</td>
+				<td>%.2f</td>
+				<td>%d</td>
+				</tr>',
+				$w['upc'],
+				$w['description'],
+				$w['total'],
+				$w['quantity'],
+				$w['department']
+			);
+	}
+	$ret .= '</table>';
+	return $ret;
+}
+
+
+?>
