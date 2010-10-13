@@ -29,26 +29,28 @@ if (!function_exists("boxMsg")) include_once($IS4C_PATH."lib/drawscreen.php");
 if (!isset($IS4C_LOCAL)) include($IS4C_PATH."lib/LocalStorage/conf.php");
 
 class DiscountApplied extends Parser {
+	var $ret;
 	function check($str){
 		global $IS4C_LOCAL;
+		$this->ret = $this->default_json();
 		if (substr($str,-2) == "DA"){
 			$strl = substr($str,0,strlen($str)-2);
 			if (substr($str,0,2) == "VD")
-				percentDiscount(0);
+				$this->ret = percentDiscount(0,$this->ret);
 			elseif (!is_numeric($strl)) 
 				return False;
 			elseif ($IS4C_LOCAL->get("tenderTotal") != 0) 
-				boxMsg("discount not applicable after tender");
+				$this->ret['output'] = boxMsg("discount not applicable after tender");
 			elseif ($strl > 50) 
-				boxMsg("discount exceeds maximum");
+				$this->ret['output'] = boxMsg("discount exceeds maximum");
 			elseif ($strl <= 0) 
-				boxMsg("discount must be greater than zero");
+				$this->ret['output'] = boxMsg("discount must be greater than zero");
 			elseif ($strl == 15 && $IS4C_LOCAL->get("isStaff") == 0 && (substr($IS4C_LOCAL->get("memberID"), 0, 1) != "9" || strlen($IS4C_LOCAL->get("memberID")) != 6)) 
-				boxMsg("Staff discount not applicable");
+				$this->ret['output'] = boxMsg("Staff discount not applicable");
 			elseif ($strl == 10 && $IS4C_LOCAL->get("isMember") == 0) 
-				boxMsg("Member discount not applicable");
+				$this->ret['output'] = boxMsg("Member discount not applicable");
 			elseif ($strl <= 50 and $strl > 0) 
-				percentDiscount($strl);
+				$this->ret = percentDiscount($strl,$this->ret);
 			else 
 				return False;
 			return True;
@@ -57,7 +59,7 @@ class DiscountApplied extends Parser {
 	}
 
 	function parse($str){
-		return False;
+		return $this->ret;
 	}
 
 	function doc(){

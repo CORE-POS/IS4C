@@ -44,14 +44,9 @@ class StaffCharge extends Parser {
 	}
 
 	function parse($str){
-		$ret = staffCharge($this->left);
-		if (is_array($ret))
-			return $ret;
-		else {
-			$json = $this->default_json();
-			$json['output'] = $ret;
-			return $json;
-		}
+		$ret = $this->default_json();
+		staffCharge($this->left,$ret);
+		return $ret;
 	}
 
 	function doc(){

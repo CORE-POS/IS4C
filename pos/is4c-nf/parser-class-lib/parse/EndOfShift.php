@@ -35,7 +35,8 @@ class EndOfShift extends Parser {
 	}
 
 	function parse($str){
-		return endofShift();
+		$json = $this->default_json();
+		return endofShift($json);
 	}
 
 	function doc(){

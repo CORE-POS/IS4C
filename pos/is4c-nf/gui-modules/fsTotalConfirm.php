@@ -40,11 +40,19 @@ class fsTotalConfirm extends NoInputPage {
 		if (isset($_REQUEST["selectlist"])){
 			$choice = $_REQUEST["selectlist"];
 			if ($choice == "EF"){
-				fsEligible();
+				$chk = fsEligible();
+				if ($chk !== True){
+					header("Location: $chk");
+					return False;
+				}
 				$this->tendertype = 'EF';
 			}
 			elseif ($choice == "EC"){
-				ttl();
+				$chk = ttl();
+				if ($chk !== True){
+					header("Location: $chk");
+					return False;
+				}
 				$this->tendertype = 'EC';
 			}
 			else if ($choice == ''){

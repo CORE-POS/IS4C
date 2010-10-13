@@ -507,9 +507,12 @@ function tender($right, $strl) {
 		    && ($right == "CC" || $right == "GD")){
 			$IS4C_LOCAL->set("change",0);
 			$IS4C_LOCAL->set("fntlflag",0);
-			ttl();
-			$ret['output'] = lastpage();
-			return $ret;;	
+			$chk = ttl();
+			if ($chk === True)
+				$ret['output'] = lastpage();
+			else
+				$ret['main_frame'] = $chk;
+			return $ret;
 		}
 
 		$IS4C_LOCAL->set("change",-1 * $IS4C_LOCAL->get("amtdue"));
@@ -531,8 +534,11 @@ function tender($right, $strl) {
 	else {
 		$IS4C_LOCAL->set("change",0);
 		$IS4C_LOCAL->set("fntlflag",0);
-		ttl();
-		$ret['output'] = lastpage();
+		$chk = ttl();
+		if ($chk === True)
+			$ret['output'] = lastpage();
+		else
+			$ret['main_frame'] = $chk;
 	}
 	$ret['redraw_footer'] = true;
 	return $ret;
@@ -711,15 +717,12 @@ function deptkey($price, $dept,$ret=array()) {
 
 //-------------------------------------------------
 
-// re-wrote the queries to resolve insert statement errors -- apbw 7/01/05
+// return value: true on success, URL on failure
 function ttl() {
-	global $IS4C_LOCAL;
+	global $IS4C_LOCAL,$IS4C_PATH;
 
-	//$IS4C_LOCAL->set("ttlrequested",1);
-	
 	if ($IS4C_LOCAL->get("memberID") == "0") {
-		changeBothPages("/gui-modules/noinput.php", "/gui-modules/memsearch.php");
-		exit;
+		return $IS4C_PATH."gui-modules/memlist.php";
 	}
 	else {
 		$mconn = tDataConnect();
@@ -759,10 +762,8 @@ function ttl() {
 						$IS4C_LOCAL->get("memChargeTotal"),
 						$IS4C_LOCAL->get("balance")));
 				$IS4C_LOCAL->set("strEntered","TL");
-				changeBothPages("/gui-modules/input.php","/gui-modules/boxMsg2.php");
-				exit;
+				return $IS4C_PATH."gui-modules/boxMsg2.php";
 			}
-				
 		}
 		else {
 			$IS4C_LOCAL->set("warned",0);
@@ -792,8 +793,7 @@ function ttl() {
 		}
 
 	}
-
-	//$IS4C_LOCAL->set("repeat",0);
+	return True;
 }
 
 function peekItem(){
@@ -831,13 +831,13 @@ function fsEligible() {
 	global $IS4C_LOCAL;
 	getsubtotals();
 	if ($IS4C_LOCAL->get("fsEligible") < 0 && False) {
-		boxMsg("Foodstamp eligible amount inapplicable<P>Please void out earlier tender and apply foodstamp first");
-		return False;
+		$IS4C_LOCAL->set("boxMsg","Foodstamp eligible amount inapplicable<P>Please void out earlier tender and apply foodstamp first");
+		return $IS4C_PATH."gui-modules/boxMsg2.php";
 	}
 	else {
 		$IS4C_LOCAL->set("fntlflag",1);
 		setglobalvalue("FntlFlag", 1);
-		if ($IS4C_LOCAL->get("ttlflag") != 1) ttl();
+		if ($IS4C_LOCAL->get("ttlflag") != 1) return ttl();
 		else addItem("", "Foodstamps Eligible", "" , "", "D", 0, 0, truncate2($IS4C_LOCAL->get("fsEligible")), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7);
 
 		return True;
@@ -846,11 +846,10 @@ function fsEligible() {
 
 //------------------------------------------
 
-function percentDiscount($strl) {
-	$ret = "";
+function percentDiscount($strl,$json=array()) {
 	if ($strl == 10.01) $strl = 10;
 
-	if (!is_numeric($strl) || $strl > 100 || $strl < 0) $ret = boxMsg("discount invalid");
+	if (!is_numeric($strl) || $strl > 100 || $strl < 0) $json['output'] = boxMsg("discount invalid");
 	else {
 		$query = "select sum(total) as total from localtemptrans where upc = '0000000008005' group by upc";
 
@@ -867,13 +866,15 @@ function percentDiscount($strl) {
 
 				if ($strl != 0) discountnotify($strl);
 				$db->query("update localtemptrans set percentDiscount = ".$strl);
-			ttl();
-			$ret = lastpage();
+			$chk = ttl();
+			if ($chk !== True)
+				$json['main_frame'] = $chk;
+			$json['output'] = lastpage();
 		}
-		else $ret = xboxMsg("10% discount already applied");
+		else $json['output'] = xboxMsg("10% discount already applied");
 		$db->close();
 	}
-	return $ret;
+	return $json;
 }
 
 //------------------------------------------
@@ -941,11 +942,10 @@ function comment($comment){
 }
 //----------------------------------------------------------
 
-function staffCharge($arg) {
+function staffCharge($arg,$json=array()) {
 	global $IS4C_LOCAL;
 
 	$IS4C_LOCAL->set("sc",1);
-
 	$staffID = substr($arg, 0, 4);
 
 	$pQuery = "select staffID,chargecode,blueLine from chargecodeview where chargecode = '".$arg."'";
@@ -955,8 +955,9 @@ function staffCharge($arg) {
 	$row = $pConn->fetch_array($result);
 
 	if ($num_rows == 0) {
-		return xboxMsg("unable to authenticate staff ".$staffID);
-		$_Session["isStaff"] = 0;			// apbw 03/05/05 SCR
+		$json['output'] = xboxMsg("unable to authenticate staff ".$staffID);
+		$IS4C_LOCAL->set("isStaff",0);			// apbw 03/05/05 SCR
+		return $json;
 	}
 	else {
 		$IS4C_LOCAL->set("isStaff",1);			// apbw 03/05/05 SCR
@@ -964,13 +965,16 @@ function staffCharge($arg) {
 		$tQuery = "update localtemptrans set card_no = '".$staffID."', percentDiscount = 15";
 		$tConn = tDataConnect();
 
-		// getsubtotals();
 		addscDiscount();		
 		discountnotify(15);
 		$tConn->query($tQuery);
 		getsubtotals();
 
-		ttl();
+		$chk = ttl();
+		if ($chk !== True){
+			$json['main_frame'] = $chk;
+			return $json;
+		}
 		$IS4C_LOCAL->set("runningTotal",$IS4C_LOCAL->get("amtdue"));
 		return tender("MI", $IS4C_LOCAL->get("runningTotal") * 100);
 
@@ -978,14 +982,18 @@ function staffCharge($arg) {
 
 }
 
-function endofShift() {
+function endofShift($json) {
 	global $IS4C_LOCAL;
 
 	$IS4C_LOCAL->set("memberID","99999");
 	$IS4C_LOCAL->set("memMsg","End of Shift");
 	addEndofShift();
 	getsubtotals();
-	ttl();
+	$chk = ttl();
+	if ($chk !== True){
+		$json['main_frame'] = $chk;
+		return $json;
+	}
 	$IS4C_LOCAL->set("runningtotal",$IS4C_LOCAL->get("amtdue"));
 	return tender("CA", $IS4C_LOCAL->get("runningtotal") * 100);
 }

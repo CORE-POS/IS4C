@@ -48,7 +48,7 @@ class StackableDiscount extends Parser {
 				$existingPD = $IS4C_LOCAL->get("percentDiscount");
 				$stackablePD = $strl;
 				$equivalentPD = ($existingPD + $stackablePD);								//	sum discounts
-				$this->ret['output'] = percentDiscount($equivalentPD);
+				$this->ret = percentDiscount($equivalentPD,$this->ret);
 			}
 			else 
 				return False;
