@@ -39,15 +39,21 @@ function select_dlog($date, $enddate=""){
   $daydiff = abs($diffRow['daydiff']);
 
   // parse out starting month and year
+  $month=0;
+  $year=0;
   $array = explode("-",$date);
-  $month = $array[1];
-  $year = $array[0];
-  if ($year == $date){
-	$array = explode("/",$date);
-	$month = $array[0];
-	$year = $array[2];
+  if (is_array($array) && count($array) == 3){
+	  $month = $array[1];
+	  $year = $array[0];
   }
-  if ($month == $date) return "dlog";
+  else {
+	$array = explode("/",$date);
+	if (is_array($array) && count($array) == 3){
+		$month = $array[0];
+		$year = $array[2];
+	}
+  }
+  if ($month == 0 && $year == 0) return "dlog";
   if (strlen($year) == 2) $year = "20".$year;
   
   // no end date, so give the smallest chunk

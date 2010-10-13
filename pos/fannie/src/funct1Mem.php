@@ -26,10 +26,8 @@
 // $dbpass = '';
 // $dbdata = 'is4c_op';
 
-// $db = mysql_connect($dbhost,$dbuser,$dbpass);
-// mysql_select_db($dbdata,$db);
-require('mysql_connect');
-
+// $db = $dbc->connect($dbhost,$dbuser,$dbpass);
+// $dbc->select_db($dbdata,$db);
 
 /* -----------------------start select_to_table-----------------------*/
 /* creates a table from query defined outside function. 
@@ -45,18 +43,19 @@ require('mysql_connect');
 
 function select_cols_to_table($query,$border,$bgcolor,$cols)
 {
-        $results = mysql_query($query);
+	global $dbc;
+        $results = $dbc->query($query);
         //echo "<b>query: $query</b>";
         //layout table header
         echo "<table border = $border bgcolor=$bgcolor>\n";
         echo "<tr align left>\n";
         /*for($i=0; $i<5; $i++)
         {
-                echo "<th>" . mysql_field_name($results,$i). "</th>\n";
+                echo "<th>" . $dbc->field_name($results,$i). "</th>\n";
         }
         echo "</tr>\n"; *///end table header
         //layout table body
-        while($row = mysql_fetch_row($results))
+        while($row = $dbc->fetch_row($results))
         {
                 echo "<tr align=left>\n";
                 echo "<td >";
@@ -87,11 +86,12 @@ function select_cols_to_table($query,$border,$bgcolor,$cols)
 
 function prodList_to_table($query,$border,$bgcolor,$upc)
 {
-        $results = mysql_query($query) or
-                die("<li>errorno=".mysql_errno()
-                        ."<li>error=" .mysql_error()
+	global $dbc;
+        $results = $dbc->query($query) or
+                die("<li>errorno=".$dbc->errno()
+                        ."<li>error=" .$dbc->error()
                         ."<li>query=".$query);
-        $number_cols = mysql_num_fields($results);
+        $number_cols = $dbc->num_fields($results);
         //display query
         //echo "<b>query: $query</b>";
         //layout table header
@@ -99,11 +99,11 @@ function prodList_to_table($query,$border,$bgcolor,$upc)
         echo "<tr align left>\n";
         /*for($i=0; $i<5; $i++)
         {
-                echo "<th>" . mysql_field_name($results,$i). "</th>\n";
+                echo "<th>" . $dbc->field_name($results,$i). "</th>\n";
         }
         echo "</tr>\n"; *///end table header
         //layout table body
-        while($row = mysql_fetch_row($results))
+        while($row = $dbc->fetch_row($results))
         {
                 echo "<tr align=left>\n";
 		if($row[0]==$upc){
@@ -146,11 +146,12 @@ function prodList_to_table($query,$border,$bgcolor,$upc)
 
 function like_to_table($query,$border,$bgcolor)
 {
-        $results = mysql_query($query) or
-                die("<li>errorno=".mysql_errno()
-                        ."<li>error=" .mysql_error()
+	global $dbc;
+        $results = $dbc->query($query) or
+                die("<li>errorno=".$dbc->errno()
+                        ."<li>error=" .$dbc->error()
                         ."<li>query=".$query);
-        $number_cols = mysql_num_fields($results);
+        $number_cols = $dbc->num_fields($results);
         //display query
         //echo "<b>query: $query</b>";
         //layout table header
@@ -158,11 +159,11 @@ function like_to_table($query,$border,$bgcolor)
         echo "<tr align left>\n";
         /*for($i=0; $i<5; $i++)
         {
-                echo "<th>" . mysql_field_name($results,$i). "</th>\n";
+                echo "<th>" . $dbc->field_name($results,$i). "</th>\n";
         }
         echo "</tr>\n"; *///end table header
         //layout table body
-        while($row = mysql_fetch_row($results))
+        while($row = $dbc->fetch_row($results))
         {
                 echo "<tr align=left>\n";
                 echo "<td >";
@@ -194,20 +195,21 @@ function like_to_table($query,$border,$bgcolor)
 
 function receipt_to_table($query,$query2,$border,$bgcolor)
 {
+	global $dbc;
 	//echo $query2;
-    $result = mysql_query($query2);
-	$results = mysql_query($query); 
-	$number_cols = mysql_num_fields($results);
-	$number2_cols = mysql_num_fields($result);
+    $result = $dbc->query($query2);
+	$results = $dbc->query($query); 
+	$number_cols = $dbc->num_fields($results);
+	$number2_cols = $dbc->num_fields($result);
 	//display query
 	//echo "<b>query: $query</b>";
 	//layout table header
-	$row2 = mysql_fetch_row($result);
+	$row2 = $dbc->fetch_row($result);
 	$emp_no = $row2[4];	
 	//echo $emp_no;
 	//$queryEmp = "SELECT * FROM Employees where emp_no = $emp_no";
-	//$resEmp = mysql_query($queryEmp,$db);
-	//$rowEmp = mysql_fetch_row($resEmp);
+	//$resEmp = $dbc->query($queryEmp,$db);
+	//$rowEmp = $dbc->fetch_row($resEmp);
 	//echo $rowEmp[4];
 	
 	//echo $query2;
@@ -221,11 +223,11 @@ function receipt_to_table($query,$query2,$border,$bgcolor)
 	echo "<tr align left>\n";
 	/*for($i=0; $i<5; $i++)
 	{
-		echo "<th>" . mysql_field_name($results,$i). "</th>\n";
+		echo "<th>" . $dbc->field_name($results,$i). "</th>\n";
 	}
 	echo "</tr>\n"; *///end table header
 	//layout table body
-	while($row = mysql_fetch_row($results)) {
+	while($row = $dbc->fetch_row($results)) {
 		echo "<tr><td align=left>";
 		echo $row["description"]; 
 		echo "</td><td align=right>";
@@ -272,11 +274,11 @@ echo "<td align=right>";
 function select_star_from($table)
 {
 	$query = "SELECT * FROM $table";
-	$results = mysql_query($query) or
-		die("<li>errorno=".mysql_errno()
-			."<li>error=" .mysql_error()
+	$results = $dbc->query($query) or
+		die("<li>errorno=".$dbc->errno()
+			."<li>error=" .$dbc->error()
 			."<li>query=".$query);
-	$number_cols = mysql_num_fields($results);
+	$number_cols = $dbc->num_fields($results);
 	//display query
 	echo "<b>query: $query</b>";
 	//layout table header
@@ -284,11 +286,11 @@ function select_star_from($table)
 	echo "<tr align left>\n";
 	for($i=0; $i<$number_cols; $i++)
 	{
-		echo "<th>" . mysql_field_name($results,$i). "</th>\n";
+		echo "<th>" . $dbc->field_name($results,$i). "</th>\n";
 	}
 	echo "</tr>\n"; //end table header
 	//layout table body
-	while($row = mysql_fetch_row($results))
+	while($row = $dbc->fetch_row($results))
 	{
 		echo "<tr align left>\n";
 		for ($i=0;$i<$number_cols; $i++)
@@ -322,11 +324,11 @@ function select_star_from($table)
 function select_where_equal($table,$where,$whereVar)
 {
 	$query = "SELECT * FROM $table WHERE $where = '$whereVar'";
-	$results = mysql_query($query) or
-		die("<li>errorno=".mysql_errno()
-			."<li>error=" .mysql_error()
+	$results = $dbc->query($query) or
+		die("<li>errorno=".$dbc->errno()
+			."<li>error=" .$dbc->error()
 			."<li>query=".$query);
-	$number_cols = mysql_num_fields($results);
+	$number_cols = $dbc->num_fields($results);
 	//display query
 	echo "<b>query: $query</b>";
 	//layout table header
@@ -334,11 +336,11 @@ function select_where_equal($table,$where,$whereVar)
 	echo "<tr align left>\n";
 	for($i=0; $i<$number_cols; $i++)
 	{
-		echo "<th>" . mysql_field_name($results,$i). "</th>\n";
+		echo "<th>" . $dbc->field_name($results,$i). "</th>\n";
 	}
 	echo "</tr>\n"; //end table header
 	//layout table body
-	while($row = mysql_fetch_row($results))
+	while($row = $dbc->fetch_row($results))
 	{
 		echo "<tr align left>\n";
 		for ($i=0;$i<$number_cols; $i++)
@@ -373,11 +375,11 @@ function select_where_equal($table,$where,$whereVar)
 function select_where_between($table,$where,$whereVar1,$whereVar2)
 {
 	$query = "SELECT * FROM $table WHERE $where BETWEEN '$whereVar1' AND '$whereVar2'";
-	$results = mysql_query($query) or
-		die("<li>errorno=".mysql_errno()
-			."<li>error=" .mysql_error()
+	$results = $dbc->query($query) or
+		die("<li>errorno=".$dbc->errno()
+			."<li>error=" .$dbc->error()
 			."<li>query=".$query);
-	$number_cols = mysql_num_fields($results);
+	$number_cols = $dbc->num_fields($results);
 	//display query
 	echo "<b>query: $query</b>";
 	//layout table header
@@ -385,11 +387,11 @@ function select_where_between($table,$where,$whereVar1,$whereVar2)
 	echo "<tr align left>\n";
 	for($i=0; $i<$number_cols; $i++)
 	{
-		echo "<th>" . mysql_field_name($results,$i). "</th>\n";
+		echo "<th>" . $dbc->field_name($results,$i). "</th>\n";
 	}
 	echo "</tr>\n"; //end table header
 	//layout table body
-	while($row = mysql_fetch_row($results))
+	while($row = $dbc->fetch_row($results))
 	{
 		echo "<tr align left>\n";
 		for ($i=0;$i<$number_cols; $i++)
@@ -422,12 +424,13 @@ function select_where_between($table,$where,$whereVar1,$whereVar2)
 
 function select_to_drop($table,$value,$label,$name)
 {
+	global $dbc;
 	$query = "SELECT * FROM $table";
-	$results = mysql_query($query) or
-		die("<li>errorno=".mysql_errno()
-			."<li>error=" .mysql_error()
+	$results = $dbc->query($query) or
+		die("<li>errorno=".$dbc->errno()
+			."<li>error=" .$dbc->error()
 			."<li>query=".$query);
-	$number_cols = mysql_num_fields($results);
+	$number_cols = $dbc->num_fields($results);
 	//display query
 	//echo "<b>query: $query</b>";
 	echo "<select name=$name id=$name>";
@@ -436,12 +439,12 @@ function select_to_drop($table,$value,$label,$name)
   		echo "<option value=" .$row_members[$value] . ">";
   		echo $row_members[$label];
   		echo "</option>";
-	} while ($row_members = mysql_fetch_array($results));
-  	$rows = mysql_num_rows($results);
+	} while ($row_members = $dbc->fetch_array($results));
+  	$rows = $dbc->num_rows($results);
   	if($rows > 0) 
   	{
-    	mysql_data_seek($results, 0);
-		$row_members = mysql_fetch_assoc($results);
+    	$dbc->data_seek($results, 0);
+		$row_members = $dbc->fetch_assoc($results);
   	}
 
 }
@@ -458,14 +461,15 @@ function select_to_drop($table,$value,$label,$name)
 
 function query_to_drop($query,$value,$label,$name,$line)
 {
-	$results = mysql_query($query); 
-        //$number_cols = mysql_num_fields($results);
+	global $dbc;
+	$results = $dbc->query($query); 
+        //$number_cols = $dbc->num_fields($results);
         //display query
 	//echo $number_cols;
         //echo "<b>query: $query</b>";
 	echo "<select name=$name id=$name>";
         
-	while($row_members = mysql_fetch_array($results)){
+	while($row_members = $dbc->fetch_array($results)){
 	   if($line == $row_members[$value]){
    	      echo "<option value=" .$row_members[$value] . " selected>";
 	      echo $row_members[$label];
@@ -483,23 +487,24 @@ function query_to_drop($query,$value,$label,$name,$line)
 			echo "<option value=" .$row_members[$value] . ">";
                 	echo $row_members[$label];
 		}
-        } while ($row_members = mysql_fetch_array($results));*/
-        	$rows = mysql_num_rows($results);
+        } while ($row_members = $dbc->fetch_array($results));*/
+        	$rows = $dbc->num_rows($results);
         if($rows > 0)
         {
-        mysql_data_seek($results, 0);
-                $row_members = mysql_fetch_array($results);
+        $dbc->data_seek($results, 0);
+                $row_members = $dbc->fetch_array($results);
         }
 
 }
 
 function item_sales_month($upc,$period,$time){
+	global $dbc;
     $query_sales = "SELECT COUNT(upc),SUM(total) FROM dLogMonth WHERE upc = '$upc' AND datediff($period,getdate(),tdate) = $time";
     //echo $query_sales;	
-    $result_sales = mysql_query($query_sales);
-    $num_sales = mysql_num_rows($result_sales);
+    $result_sales = $dbc->query($query_sales);
+    $num_sales = $dbc->num_rows($result_sales);
     
-    $row_sales=mysql_fetch_row($result_sales);
+    $row_sales=$dbc->fetch_row($result_sales);
     echo "<td align=right>";
     echo $row_sales[0]; 
     echo "</td><td align=right>$ " . $row_sales[1];
@@ -507,12 +512,13 @@ function item_sales_month($upc,$period,$time){
 }
 
 function item_sales_last_month($upc,$period,$time){
+	global $dbc;
     $query_sales = "SELECT COUNT(upc),SUM(total) FROM dLogLastMonth WHERE upc = '$upc' AND datediff($period,getdate(),tdate) = $time";
     //echo $query_sales;        
-    $result_sales = mysql_query($query_sales);
-    $num_sales = mysql_num_rows($result_sales);
+    $result_sales = $dbc->query($query_sales);
+    $num_sales = $dbc->num_rows($result_sales);
     
-    $row_sales=mysql_fetch_row($result_sales);
+    $row_sales=$dbc->fetch_row($result_sales);
     echo "<td align=right>";
     echo $row_sales[0]; 
     echo "</td><td align=right>$ " . $row_sales[1];
@@ -535,11 +541,12 @@ function test_upc($upc){
 }
 
 function test_like($upc){
+	global $dbc;
    $upc = str_pad_upc($upc); 
    $testLikeQ = "SELECT likeCode FROM upcLike WHERE upc = '$upc'";
-   $testLikeR = mysql_query($testLikeQ);
-   $testLikeN = mysql_num_rows($testLikeR);
-   $testLikeR = mysql_fetch_row($testLikeR);
+   $testLikeR = $dbc->query($testLikeQ);
+   $testLikeN = $dbc->num_rows($testLikeR);
+   $testLikeR = $dbc->fetch_row($testLikeR);
 
    return $testLikeN;
 }
@@ -548,14 +555,15 @@ function test_like($upc){
 */
 
 function find_like_code($upc){
+	global $dbc;
    $like = test_like($upc);
    //echo $like;
    if($like > 0){
       $upc = str_pad_upc($upc);
       $getLikeCodeQ = "SELECT * FROM upcLike WHERE upc = '$upc'";
       //echo $getLikeCodeQ;
-      $getLikeCodeR = mysql_query($getLikeCodeQ);
-      $getLikeCodeW = mysql_fetch_row($getLikeCodeR);
+      $getLikeCodeR = $dbc->query($getLikeCodeQ);
+      $getLikeCodeW = $dbc->fetch_row($getLikeCodeR);
       $likeCode = $getLikeCodeW[1];     
       //echo $likeCode;
     }else{
@@ -568,11 +576,12 @@ function find_like_code($upc){
 /* finds all like coded items that share likeCode with $upc*/
 
 function like_coded_items($upc){
+	global $dbc;
    $like = test_like($upc);
    $upc = str_pad_upc($upc);
    
    $selUPCLikeQ = "SELECT * FROM upcLike where likeCode = $like";
-   $selUPCLikeR = mysql_query($selUPCLikeQ);
+   $selUPCLikeR = $dbc->query($selUPCLikeQ);
  
    return $selUPCLikeR;   
 }

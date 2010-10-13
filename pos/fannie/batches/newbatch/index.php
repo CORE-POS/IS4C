@@ -920,7 +920,9 @@ function showPairedBatchDisplay($id,$name){
 	$ret .= sprintf('<input type="hidden" id="currentBatchID" value="%d" />',$id);
 	$ret .= "<b>Batch name</b>: $name<br />";
 	$ret .= "<a href=\"\" onclick=\"backToList(); return false;\">Back to batch list</a> | ";
-	$ret .= "<a href=\"\" onclick=\"forceBatch($id); return false;\">Force batch</a><br />";
+	$ret .= "<a href=\"\" onclick=\"forceBatch($id); return false;\">Force batch</a>";
+	$ret .= "No limit";
+	$ret .= " <span id=\"currentLimit\" style=\"color:#000;\"></span>";
 
 	$q = "SELECT b.discounttype,salePrice,
 		CASE WHEN l.pricemethod IS NULL THEN 4 ELSE l.pricemethod END as pricemethod,

@@ -1,0 +1,62 @@
+A lot of this isn't my code, you're going to have to poke around a bit
+yourself for details.
+
+price_compare.php (price_compare.js has some AJAX calls):
+This lists the products in the current order. The order table isn't
+used directly. There are instead two views: unfi_diff & unfi_all.
+unfi_diff looks like this:
+
+BEGIN SQL:
+CREATE         view unfi_diff as 
+select p.upc,u.upcc, 
+p.description,
+u.item_desc,
+u.wholesale,
+u.vd_cost,
+p.normal_price,
+u.unfi_sku,
+u.wfc_srp,
+u.cat,
+p.department,
+CASE WHEN p.normal_price = 0 THEN 0 ELSE
+CONVERT(decimal(10,5),(p.normal_price - (u.vd_cost/u.pack))/p.normal_price) 
+END as our_margin,
+CONVERT(decimal(10,5),(u.wfc_srp - (u.vd_cost/u.pack))/ u.wfc_srp)
+as unfi_margin,
+case when u.wfc_srp > p.normal_price then 1 else 0 END as diff
+from products as p 
+right join unfi_order as u 
+on left(u.upcc,13)=p.upc
+where 
+p.normal_price <> u.wfc_srp and
+p.upc is not NULL
+END SQL
+
+This view is calculating the margin with the current price ("our_margin")
+and the margin with the new SRP ("unfi_margin"). The unfi_all view is
+nearly identical. It just lacks the "p.normal_price <> u.wfc_srp" clause.
+
+The list gets color coded to signify where new SRPs will give better margin
+than current prices. When the form is submitted, items that are checked on
+the far right will be put into a price update batch.
+
+A unfi_cat table is needed for this page. It's used to determine which
+subset of items in the order should be shown.
+
+The stuff in the AJAX section (isset($_GET["action"])) is pretty much all
+optional. Anything that prevents the file from processing can
+probably get chopped out, like do_prod_update or updateProductAllLanes. 
+
+price_update.php:
+Processes data from price_update.php. It creates a batch and inserts
+the selected items into that batch (with the new SRPs). The tables
+batchTest and batchListTest are required. The shelf tag related stuff
+(pricePerOunce, tables newBar*) can all get chopped out if they cause problems.
+
+batches.php:
+Lists existing batches. Items can be removed from batches, otherwise there isn't
+much editing functionality here. To make the actual change, click the batch name,
+then go to the bottom of the item list and click Force Batch Now. This makes the
+appropriate price changes in the table Products. The actual update happens in
+forceBatch.php. The productsUpdateAll stored procedure pushes my Products table
+from the server to each of the lanes. That probably needs to be removed or changed.

@@ -8,7 +8,9 @@ $path = "";
 $found = False;
 $uri = $_SERVER['REQUEST_URI'];
 $tmp = explode("?",$uri);
-foreach(explode("/",$_SERVER["REQUEST_URI"]) as $x){
+if (is_array($tmp) && count($tmp) > 1)
+	$uri = $tmp[0];
+foreach(explode("/",$uri) as $x){
 	if (strpos($x,".php") === False
 		&& strlen($x) != 0){
 		$path .= "../";
