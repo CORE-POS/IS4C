@@ -26,7 +26,7 @@ function ArrayToXls($array){
 	$workbook->close();
 
 	$ret = file_get_contents($fn);
-	unlink($rn);
+	unlink($fn);
 	return $ret;
 }
 

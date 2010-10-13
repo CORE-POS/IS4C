@@ -200,7 +200,7 @@ class SQLManager {
 	function fetch_field($result_object,$index,$which_connection=''){
 		if ($which_connection == '')
 			$which_connection = $this->default_db;
-		return $result_object->fields[$index];
+		return $result_object->FetchField($index);
 	}
 
 	/* copy a table from one database to another, not necessarily on
