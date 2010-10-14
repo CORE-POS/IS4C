@@ -65,7 +65,8 @@ included logins are '56' and '7000'.<br />
 <hr />
 <b>Custdata</b><br />
 Customer data is the membership information. Sample data includes
-members 6000 through 6010 and non-member 99999.<br />
+ a way too many mostly identical lines. A very scrubbed version
+of someone's customer table I think.<br />
 <input type=submit name=custdata value="Load sample customers" />
 <hr />
 <b>Products</b><br />

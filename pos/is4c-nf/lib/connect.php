@@ -312,7 +312,7 @@ function getMatchingColumns($connection,$table_name,$table2=""){
  */
 function localMatchingColumns($connection,$table1,$table2){
 	$poll1 = $connection->table_definition($table1);
-	$cols1 array();
+	$cols1 = array();
 	foreach($poll1 as $name=>$v)
 		$cols1[$name] = True;
 	$poll2 = $connection->table_definition($table2);

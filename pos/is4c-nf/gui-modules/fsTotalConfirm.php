@@ -35,7 +35,7 @@ class fsTotalConfirm extends NoInputPage {
 	var $tendertype;
 
 	function preprocess(){
-		global $IS4C_PATH;
+		global $IS4C_PATH,$IS4C_LOCAL;
 		$this->tendertype = "";
 		if (isset($_REQUEST["selectlist"])){
 			$choice = $_REQUEST["selectlist"];

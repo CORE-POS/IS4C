@@ -161,7 +161,7 @@ class Void extends Parser {
 		return "";
 	}
 
-	function voidupc($upc,$item_num,$silent=False) {
+	function voidupc($upc,$item_num=-1,$silent=False) {
 		global $IS4C_LOCAL;
 
 		$lastpageflag = 1;
@@ -290,6 +290,8 @@ class Void extends Parser {
 				."' and discounttype <> 3"
 			        ." and trans_id=$item_num";
 		}
+		if ($item_num == -1)
+			$query_upc = str_replace(" trans_id=$item_num"," voided=0",$query_upc);
 
 		$IS4C_LOCAL->set("discounttype",9);
 

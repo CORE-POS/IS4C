@@ -49,6 +49,12 @@ Necessities
 <h1>IS4C Install checks</h1>
 <h3>Basics</h3>
 <?php
+if (function_exists('posix_getpwuid')){
+	$chk = posix_getpwuid(posix_getuid());
+	echo "PHP is running as: ".$chk['name']."<br />";
+}
+else
+	echo "PHP is (probably) running as: ".get_current_user()."<br />";
 if (is_writable('../ini.php'))
 	echo '<i>ini.php</i> is writeable';
 else
@@ -859,13 +865,14 @@ function create_trans_dbs($db,$type){
 		emp_no, 
 		trans_no, 
 		upc, 
-		description, 
+		CASE WHEN volDiscType IN (3,4) THEN 'Set Discount' ELSE description END as description, 
 		'I' as trans_type, 
 		'' as trans_subtype,
 		'M' as trans_status, 
 		max(department) as department, 
 		1 as quantity, 
 		0 as scale, 
+		0 as cost,
 		-1 * sum(memDiscount) as unitPrice, 
 		-1 * sum(memDiscount) as total, 
 		-1 * sum(memDiscount )as regPrice, 
@@ -883,6 +890,10 @@ function create_trans_dbs($db,$type){
 		0 as VolSpecial, 
 		0 as mixMatch, 
 		0 as matched, 
+		0 as memType,
+		0 as staff,
+		0 as numflag,
+		'' as charflag,
 		 card_no as card_no
 		from localtemptrans 
 		where ((discounttype = 2 and unitPrice = regPrice) or trans_status = 'M') 
@@ -900,13 +911,14 @@ function create_trans_dbs($db,$type){
 		emp_no, 
 		trans_no, 
 		upc, 
-		description, 
+		CASE WHEN volDiscType IN (3,4) THEN 'Set Discount' ELSE description END as description, 
 		'I' as trans_type, 
 		'' as trans_subtype, 
 		'M' as trans_status, 
 		max(department) as department, 
 		1 as quantity, 
 		0 as scale, 
+		0 as cost,
 		-1 * (sum(case when (discounttype = 2 and unitPrice <> regPrice) then -1 * memDiscount 
 		else memDiscount end)) as unitPrice, 
 		-1 * (sum(case when (discounttype = 2 and unitPrice <> regPrice) then -1 * memDiscount 
@@ -928,6 +940,10 @@ function create_trans_dbs($db,$type){
 		0 as VolSpecial, 
 		0 as mixMatch, 
 		0 as matched, 
+		0 as memType,
+		0 as staff,
+		0 as numflag,
+		'' as charflag,
 		card_no as card_no
 		from localtemptrans 
 		where ((discounttype = 2 and unitPrice <> regPrice) or trans_status = 'M') 
@@ -1165,6 +1181,7 @@ function create_trans_dbs($db,$type){
 		max(department) AS department,
 		1 AS quantity,
 		0 AS scale,
+		0 AS cost,
 		(-(1) * sum(memDiscount)) AS unitPrice,
 		(-(1) * sum(memDiscount)) AS total,
 		(-(1) * sum(memDiscount)) AS regPrice,
@@ -1176,6 +1193,10 @@ function create_trans_dbs($db,$type){
 		0 AS ItemQtty,0 AS volDiscType,
 		0 AS volume,0 AS VolSpecial,
 		0 AS mixMatch,0 AS matched,
+		0 as memType,
+		0 as staff,
+		0 as numflag,
+		'' as charflag,
 		card_no AS card_no 
 		from localtemptrans 
 		where (((discounttype = 4) and (unitPrice = regPrice)) or (trans_status = 'S')) 
@@ -1198,6 +1219,7 @@ function create_trans_dbs($db,$type){
 		max(department) as department, 
 		1 as quantity, 
 		0 as scale, 
+		0 as cost,
 		-1 * (sum(case when (discounttype = 4 and unitPrice <> regPrice) then -1 * memDiscount 
 		else memDiscount end)) as unitPrice, 
 		-1 * (sum(case when (discounttype = 4 and unitPrice <> regPrice) then -1 * memDiscount 
@@ -1219,6 +1241,10 @@ function create_trans_dbs($db,$type){
 		0 as VolSpecial, 
 		0 as mixMatch, 
 		0 as matched, 
+		0 as memType,
+		0 as staff,
+		0 as numflag,
+		'' as charflag,
 		card_no as card_no
 		from localtemptrans 
 		where ((discounttype = 4 and unitPrice <> regPrice) or trans_status = 'S') 

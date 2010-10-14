@@ -52,7 +52,7 @@ class Totals extends Parser {
 			}
 			else if ($IS4C_LOCAL->get("requestType") == "tax exempt"){
 				addTaxExempt();
-				addcomment("Tax Ex ID#".$IS4C_LOCAL->get("requestMsg"));
+				addcomment("Tax Ex ID# ".$IS4C_LOCAL->get("requestMsg"));
 				$IS4C_LOCAL->set("requestType","");
 			}
 		}

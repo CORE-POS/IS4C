@@ -226,7 +226,7 @@ function checkstatus($num) {
 	}
 
 	$query = "select voided,unitPrice,discountable,
-		discounttype
+		discounttype,trans_status
 		from localtemptrans where trans_id = ".$num;
 
 	$db = tDataConnect();
