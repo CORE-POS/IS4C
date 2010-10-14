@@ -103,7 +103,10 @@ if (isset($_GET["submit"])){
 	$query .= " ORDER BY year(tdate),month(tdate),day(tdate),emp_no,register_no,trans_no ";
 
 	$result = $dbc->query($query);
-	if ($dbc->num_rows($result) == 0)
+	if (!empty($trans_num) && !empty($date)){
+		header("Location: reprint.php?date=$date&receipt=$trans_num");
+	}
+	else if ($dbc->num_rows($result) == 0)
 		echo "<b>No receipts match the given criteria</b>";
 	elseif ($dbc->num_rows($result) == 1){
 		$row = $dbc->fetch_row($result);

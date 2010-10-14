@@ -10,7 +10,9 @@ Date: <input type=text name=date><br>
 Receipt Num: <input type=text name=receipt><br>
 <input type=submit name=submit>
 <?php
-if(isset($_GET['receipt'])){
+$transNum= isset($_REQUEST['receipt'])?$_REQUEST['receipt']:'';
+$date1 = "";
+if(isset($_REQUEST['month'])){
     $receipt = $_GET['receipt'];
 
     if(strlen($_GET['month'])<2){
@@ -20,17 +22,26 @@ if(isset($_GET['receipt'])){
     }
     $day = $_GET['day'];
     $year = $_GET['year'];
-    $transNum = $_GET['receipt'];
     $date1 = $year."-".$month."-".$day;
-}elseif(isset($_POST['submit'])){
-   $date = $_POST['date'];
-   $transNum= $_POST['receipt'];
-   $month = substr($date,0,2);
-   $day = substr($date,3,2);
-   $year = substr($date,6,4);
-   $date1 = $year."-".$month."-".$day;
-}else{
-
+}elseif(isset($_REQUEST['date'])){
+   $date = $_REQUEST['date'];
+   $tmp = explode("-",$date);
+   if (is_array($tmp) && count($tmp)==3){
+	$year = strlen($tmp[0]==2)?'20'.$tmp[0]:$tmp[0];
+	$month = str_pad($tmp[1],2,'0',STR_PAD_LEFT);
+	$day = str_pad($tmp[2],2,'0',STR_PAD_LEFT);
+	$date1 = $year."-".$month."-".$day;
+   }
+   else {
+	$tmp = explode("/",$date);
+	if (is_array($tmp) && count($tmp)==3){
+		$year = strlen($tmp[2]==2)?'20'.$tmp[2]:$tmp[2];
+		$month = str_pad($tmp[0],2,'0',STR_PAD_LEFT);
+		$day = str_pad($tmp[1],2,'0',STR_PAD_LEFT);
+		$date1 = $year."-".$month."-".$day;
+	}
+	else $date1 = $date;
+   }
 }
 
 function receiptHeader($date,$trans){
@@ -66,7 +77,7 @@ function receiptHeader($date,$trans){
 $border = 0;
 //$color = #000000
 
-if (isset($_GET['receipt']) || isset($_POST['receipt']))
+if ($_REQUEST['receipt'])
 	receiptHeader($date1,$transNum);
 
 ?>
