@@ -239,7 +239,7 @@ class MercuryGift extends BasicCCModule {
 		$trans = $IS4C_LOCAL->get("transno");
 
 		// look up the request using transID (within this transaction)
-		$sql = "SELECT * FROM valutecRequest WHERE [date]=".$today." AND cashierNo=".$cashier." AND laneNo=".$lane." AND transNo=".$trans." AND transID=".$transID;
+		$sql = "SELECT live,PAN,mode,amount FROM valutecRequest WHERE [date]=".$today." AND cashierNo=".$cashier." AND laneNo=".$lane." AND transNo=".$trans." AND transID=".$transID;
 		if ($IS4C_LOCAL->get("DBMS") == "mysql"){
 			$sql = str_replace("[","",$sql);
 			$sql = str_replace("]","",$sql);
@@ -258,7 +258,9 @@ class MercuryGift extends BasicCCModule {
 		$request = $dbTrans->fetch_array($search);
 
 		// look up the response
-		$sql = "SELECT * FROM valutecResponse WHERE [date]=".$today." AND cashierNo=".$cashier." AND laneNo=".$lane." AND transNo=".$trans." AND transID=".$transID;
+		$sql = "SELECT commErr,httpCode,validResponse,xAuthorized,
+			xAuthorizationCode FROM valutecResponse WHERE [date]=".$today." 
+			AND cashierNo=".$cashier." AND laneNo=".$lane." AND transNo=".$trans." AND transID=".$transID;
 		if ($IS4C_LOCAL->get("DBMS") == "mysql"){
 			$sql = str_replace("[","",$sql);
 			$sql = str_replace("]","",$sql);
@@ -277,7 +279,7 @@ class MercuryGift extends BasicCCModule {
 		$response = $dbTrans->fetch_array($search);
 
 		// look up any previous successful voids
-		$sql = "SELECT * FROM valutecRequestMod WHERE [date]=".$today." AND cashierNo=".$cashier." AND laneNo=".$lane." AND transNo=".$trans." AND transID=".$transID." AND mode='void' AND (xAuthorized='true' or xAuthorized='Appro')";
+		$sql = "SELECT transID FROM valutecRequestMod WHERE [date]=".$today." AND cashierNo=".$cashier." AND laneNo=".$lane." AND transNo=".$trans." AND transID=".$transID." AND mode='void' AND (xAuthorized='true' or xAuthorized='Appro')";
 		if ($IS4C_LOCAL->get("DBMS") == "mysql"){
 			$sql = str_replace("[","",$sql);
 			$sql = str_replace("]","",$sql);
@@ -285,7 +287,8 @@ class MercuryGift extends BasicCCModule {
 		$search = $dbTrans->query($sql);
 		$voided = $dbTrans->num_rows($search);
 		// look up the transaction tender line-item
-		$sql = "SELECT * FROM localtemptrans WHERE trans_id=" . $transID;
+		$sql = "SELECT trans_type,trans_subtype,trans_status,voided
+		       	FROM localtemptrans WHERE trans_id=" . $transID;
 		$search = $dbTrans->query($sql);
 		$num = $dbTrans->num_rows($search);
 		if( $num < 1) {
@@ -702,7 +705,7 @@ class MercuryGift extends BasicCCModule {
 		$IS4C_LOCAL->set("paycard_response",$temp);
 		if ($xml->get_first("AUTHORIZE")){
 			$IS4C_LOCAL->set("paycard_amount",$xml->get_first("AUTHORIZE"));	
-			$correctionQ = sprintf("UPDATE valutecrequest SET amount=%f WHERE
+			$correctionQ = sprintf("UPDATE valutecRequest SET amount=%f WHERE
 				date=%s AND identifier='%s'",
 				$xml->get_first("AUTHORIZE"),date("Ymd"),$identifier);
 			$dbTrans->query($correctionQ);

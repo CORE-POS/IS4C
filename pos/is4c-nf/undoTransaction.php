@@ -53,12 +53,12 @@ if ($trans_num != "" && $trans_num != "CL"){
 	if ($register_no == $IS4C_LOCAL->get("laneno")){
 		$db = tDataConnect();
 		$query = "select upc, description, trans_type, trans_subtype,
-			trans_status, department, quantity, Scale, unitPrice,
+			trans_status, department, quantity, scale, unitPrice,
 			total, regPrice, tax, foodstamp, discount, memDiscount,
 			discountable, discounttype, voided, PercentDiscount,
 			ItemQtty, volDiscType, volume, VolSpecial, mixMatch,
 			matched, card_no, trans_id
-			from localTransToday where register_no = $register_no
+			from localtranstoday where register_no = $register_no
 			and emp_no = $emp_no and trans_no = $old_trans_no
 			and ".$db->datediff($db->now(),'datetime')." = 0
 			and trans_status <> 'X'

@@ -111,7 +111,6 @@ function addItem($strupc, $strdescription, $strtransType, $strtranssubType, $str
 	$db = tDataConnect();
 
 	$datetimestamp = "";
-	date_default_timezone_set('America/Chicago');
 	if ($IS4C_LOCAL->get("DBMS") == "mssql") {
 		$datetimestamp = strftime("%m/%d/%y %H:%M:%S %p", time());
 	} else {
@@ -469,9 +468,11 @@ function addactivity($activity) {
 		'Activity'	=> nullwrap($activity),
 		'Interval'	=> nullwrap($interval)
 		);
-	$result = $db->smart_insert("ActivityTempLog",$values);
-
-	// $_SESSION["datetimestamp"] = time();
+	if ($IS4C_LOCAL->get("DBMS")=="mysql"){
+		unset($values['Interval']);
+		$values['`Interval`'] = nullwrap($interval);
+	}
+	$result = $db->smart_insert("activitytemplog",$values);
 
 	$db->close();
 

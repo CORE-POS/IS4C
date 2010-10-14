@@ -239,7 +239,7 @@ class Valutec extends BasicCCModule {
 		$trans = $IS4C_LOCAL->get("transno");
 
 		// look up the request using transID (within this transaction)
-		$sql = "SELECT * FROM valutecRequest WHERE [date]=".$today." AND cashierNo=".$cashier." AND laneNo=".$lane." AND transNo=".$trans." AND transID=".$transID;
+		$sql = "SELECT live,PAN,mode,amount FROM valutecRequest WHERE [date]=".$today." AND cashierNo=".$cashier." AND laneNo=".$lane." AND transNo=".$trans." AND transID=".$transID;
 		if ($IS4C_LOCAL->get("DBMS") == "mysql"){
 			$sql = str_replace("[","",$sql);
 			$sql = str_replace("]","",$sql);
@@ -258,7 +258,9 @@ class Valutec extends BasicCCModule {
 		$request = $dbTrans->fetch_array($search);
 
 		// look up the response
-		$sql = "SELECT * FROM valutecResponse WHERE [date]=".$today." AND cashierNo=".$cashier." AND laneNo=".$lane." AND transNo=".$trans." AND transID=".$transID;
+		$sql = "SELECT commErr,httpCode,validResponse,xAuthorized,
+			xAuthorizationCode FROM valutecResponse WHERE [date]=".$today." 
+			AND cashierNo=".$cashier." AND laneNo=".$lane." AND transNo=".$trans." AND transID=".$transID;
 		if ($IS4C_LOCAL->get("DBMS") == "mysql"){
 			$sql = str_replace("[","",$sql);
 			$sql = str_replace("]","",$sql);
@@ -277,7 +279,7 @@ class Valutec extends BasicCCModule {
 		$response = $dbTrans->fetch_array($search);
 
 		// look up any previous successful voids
-		$sql = "SELECT * FROM valutecRequestMod WHERE [date]=".$today." AND cashierNo=".$cashier." AND laneNo=".$lane." AND transNo=".$trans." AND transID=".$transID." AND mode='void' AND xAuthorized='true'";
+		$sql = "SELECT transID FROM valutecRequestMod WHERE [date]=".$today." AND cashierNo=".$cashier." AND laneNo=".$lane." AND transNo=".$trans." AND transID=".$transID." AND mode='void' AND xAuthorized='true'";
 		if ($IS4C_LOCAL->get("DBMS") == "mysql"){
 			$sql = str_replace("[","",$sql);
 			$sql = str_replace("]","",$sql);
@@ -285,7 +287,8 @@ class Valutec extends BasicCCModule {
 		$search = $dbTrans->query($sql);
 		$voided = $dbTrans->num_rows($search);
 		// look up the transaction tender line-item
-		$sql = "SELECT * FROM localtemptrans WHERE trans_id=" . $transID;
+		$sql = "SELECT trans_type,trans_subtype,trans_status,voided
+		       	FROM localtemptrans WHERE trans_id=" . $transID;
 		$search = $dbTrans->query($sql);
 		$num = $dbTrans->num_rows($search);
 		if( $num < 1) {

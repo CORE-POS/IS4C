@@ -225,7 +225,9 @@ function checkstatus($num) {
 		$num = 0;
 	}
 
-	$query = "select * from localtemptrans where trans_id = ".$num;
+	$query = "select voided,unitPrice,discountable,
+		discounttype
+		from localtemptrans where trans_id = ".$num;
 
 	$db = tDataConnect();
 	$result = $db->query($query);
@@ -887,7 +889,7 @@ function chargeOk() {
 	// change the connection based on standalone status, rather
 	// than the query - andy 8/31/07
 	$conn = -1;
-	$query = "select * from memchargebalance where CardNo = '".$IS4C_LOCAL->get("memberID")."'";
+	$query = "select availBal,balance from memchargebalance where CardNo = '".$IS4C_LOCAL->get("memberID")."'";
 	if ($IS4C_LOCAL->get("standalone") == 0 || False) {
 		$conn = mDataConnect();
 	}

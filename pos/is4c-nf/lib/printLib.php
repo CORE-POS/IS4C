@@ -392,7 +392,7 @@ function chargeBalance($receipt){
 	chargeOK();
 
 	$db = tDataConnect();
-	$checkQ = "select * from localtemptrans where department=990 or trans_subtype='MI'";
+	$checkQ = "select trans_id from localtemptrans where department=990 or trans_subtype='MI'";
 	$checkR = $db->query($checkQ);
 	$num_rows = $db->num_rows($checkR);
 

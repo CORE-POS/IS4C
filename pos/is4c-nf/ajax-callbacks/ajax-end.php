@@ -126,7 +126,7 @@ function moveTempData() {
 	$connection->query("update localtemptrans set upc = 'DISCOUNT', description = upc, department = 0 where trans_status = 'S'");
 
 	$connection->query("insert into localtrans select * from localtemptrans");
-	$connection->query("insert into localTrans_Today select * from localtemptrans");
+	$connection->query("insert into localtrans_today select * from localtemptrans");
 	$connection->query("insert into dtransactions select * from localtemptrans");
 
 	$connection->query("insert into activitylog select * from activitytemplog");

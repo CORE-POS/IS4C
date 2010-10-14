@@ -41,13 +41,19 @@ class ClubCard extends Parser {
 
 	function parse($str){
 		global $IS4C_LOCAL;
-		$query = "select * from localtemptrans where trans_id = " . $IS4C_LOCAL->get("currentid");	
+		$query = "select upc,description,VolSpecial,quantity,
+			total,discount,memDiscount,discountable,
+			unitPrice,scale,foodstamp,voided,discounttype,
+			trans_type,trans_status,department,regPrice,
+			tax,volume,volDiscType
+			from localtemptrans where 
+			trans_id = " . $IS4C_LOCAL->get("currentid");	
 		$connection = tDataConnect();
 		$result = $connection->query($query);
-		$row = $connection->fetch_array($result);
 		$num_rows = $connection->num_rows($result);
 
 		if ($num_rows > 0) {
+			$row = $connection->fetch_array($result);
 			$strUPC = $row["upc"];
 			$strDescription = $row["description"];
 			$dblVolSpecial = $row["VolSpecial"];			

@@ -124,7 +124,8 @@ function drawitems($top_item, $rows, $highlight) {
 	}
 	else {
 
-		$query_range = "select * from screendisplay where trans_id >= ".$top_item." and trans_id <= "
+		$query_range = "select trans_id,description,total,comment,status,lineColor
+		       		from screendisplay where trans_id >= ".$top_item." and trans_id <= "
 				.($top_item + $rows)." order by trans_id";
 		$db_range = tDataConnect();
 		$result_range = $db_range->query($query_range);

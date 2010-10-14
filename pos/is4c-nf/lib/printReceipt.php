@@ -176,7 +176,7 @@ function printReceipt($arg1,$second=False) {
 	else {
 
 		/***** jqh 09/29/05 if receipt isn't full, then display receipt in old style *****/
-		$query="select * from receipt";
+		$query="select linetoprint from receipt";
 		$db = tDataConnect();
 		$result = $db->query($query);
 		$num_rows = $db->num_rows($result);

@@ -111,7 +111,11 @@ class Void extends Parser {
 	function voidid($item_num) {
 		global $IS4C_LOCAL;
 
-		$query = "select * from localtemptrans where trans_id = ".$item_num;
+		$query = "select upc,VolSpecial,quantity,trans_subtype,unitPrice,
+			discount,memDiscount,discountable,scale,numflag,charflag,
+			foodstamp,discounttype,total,cost,description,trans_type,
+			department,regPrice,tax,volDiscType,volume
+		       	from localtemptrans where trans_id = ".$item_num;
 		$db = tDataConnect();
 		$result = $db->query($query);
 		$row = $db->fetch_array($result);
@@ -262,15 +266,27 @@ class Void extends Parser {
 
 		unset($result);
 		//----------------------Void Item------------------
-		$query_upc = "select * from localtemptrans where upc = '".$upc."' and unitPrice = "
+			$query_upc = "select ItemQtty,foodstamp,discounttype,mixMatch,cost,
+				numflag,charflag,unitPrice,discounttype,regPrice,discount,
+				memDiscount,discountable,description,trans_type,trans_subtype,
+				department,tax,VolSpecial
+				from localtemptrans where upc = '".$upc."' and unitPrice = "
 			     .$scaleprice." and trans_id=$item_num";
 		if ($IS4C_LOCAL->get("discounttype") == 3) {
-			$query_upc = "select * from localtemptrans where upc = '".$upc
+			$query_upc = "select ItemQtty,foodstamp,discounttype,mixMatch,cost,
+				numflag,charflag,unitPrice,discounttype,regPrice,discount,
+				memDiscount,discountable,description,trans_type,trans_subtype,
+				department,tax,VolSpecial
+				from localtemptrans where upc = '".$upc
 				."' and discounttype = 3 and unitPrice = ".$IS4C_LOCAL->get("caseprice")
 			        ." and trans_id=$item_num";
 		}
 		elseif ($deliflag == 0) {
-			$query_upc = "select * from localtemptrans where upc = '".$upc
+			$query_upc = "select ItemQtty,foodstamp,discounttype,mixMatch,cost,
+				numflag,charflag,unitPrice,discounttype,regPrice,discount,
+				memDiscount,discountable,description,trans_type,trans_subtype,
+				department,tax,VolSpecial
+			       	from localtemptrans where upc = '".$upc
 				."' and discounttype <> 3"
 			        ." and trans_id=$item_num";
 		}
@@ -296,7 +312,7 @@ class Void extends Parser {
 		    ($IS4C_LOCAL->get("isStaff") != 0 && $row["discounttype"] == 4)) && 
 		    ($row["unitPrice"] == $row["regPrice"])) {
 			$db_p = pDataConnect();
-			$query_p = "select * from products where upc = '".$upc."'";
+			$query_p = "select special_price from products where upc = '".$upc."'";
 			$result_p = $db_p->query($query_p);
 			$row_p = $db_p->fetch_array($result_p);
 			
@@ -323,7 +339,9 @@ class Void extends Parser {
 			$mmqtty = nullwrap($row_mm["mmqtty"]);
 	
 			$db_pq = pDataConnect();
-			$query_pq = "select * from products where upc = '".$upc."'";
+			$query_pq = "select normal_price,groupprice,quantity,specialquantity,
+				specialgroupprice
+			       	from products where upc = '".$upc."'";
 			$result_pq = $db_pq->query($query_pq);
 			$row_pq = $db_pq->fetch_array($result_pq);
 	

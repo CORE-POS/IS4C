@@ -97,7 +97,7 @@ $db->query($rpQ);
 
 $createStr = "CREATE VIEW lttsubtotals AS
 	select tdate,\n";
-$ratesQ = "select description,rate from taxRates";
+$ratesQ = "select description,rate from taxrates";
 $ratesR = $db->query($ratesQ);
 $desc = array();
 $rates = array();

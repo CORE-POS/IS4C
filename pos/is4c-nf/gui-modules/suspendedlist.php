@@ -147,7 +147,7 @@ class suspendedlist extends NoInputPage {
 			.$emp." and trans_no = ".$trans;
 
 		$db_a = tDataConnect();
-		$query_a = "select * from localtemptrans";
+		$query_a = "select trans_id from localtemptrans";
 		$result_a = $db_a->query($query_a);
 		$num_rows_a = $db_a->num_rows($result_a);
 

@@ -173,11 +173,8 @@ function blueLine($row) {
 function loaddata() {
 	global $IS4C_LOCAL;
 	
-	$query_local = "select * from localtemptrans";
+	$query_local = "select card_no from localtemptrans";
 	
-	// not used for anything - andy 4/12/07
-	$query_product = "select * from products where upc='0000000000029'";
-
 	$db_local = tDataConnect();
 	$result_local = $db_local->query($query_local);
 	$num_rows_local = $db_local->num_rows($result_local);

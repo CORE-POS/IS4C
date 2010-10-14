@@ -77,7 +77,12 @@ class UPC extends Parser {
 		}
 
 		$db = pDataConnect();
-		$query = "select * from products where upc = '".$upc."'";
+		$query = "select inUse,upc,description,normal_price,scale,deposit,
+			qttyEnforced,department,local,cost,tax,foodstamp,discount,
+			discounttype,specialpricemethod,special_price,groupprice,
+			pricemethod,quantity,specialgroupprice,specialquantity,
+			mixmatchcode
+		       	from products where upc = '".$upc."'";
 		$result = $db->query($query);
 		$num_rows = $db->num_rows($result);
 		$row = $db->fetch_array($result);
@@ -342,22 +347,22 @@ class UPC extends Parser {
 						$quals = 0;
 						$dept1 = 0;
 						if($dbt->num_rows($r1)>0){
-							$row = $dbt->fetch_row($r1);
-							$quals = round($row[0]);
-							$dept1 = $row[1];	
+							$rowq = $dbt->fetch_row($r1);
+							$quals = round($rowq[0]);
+							$dept1 = $rowq[1];	
 						}
 						$q2 = "SELECT sum(ItemQtty),max(department) FROM localtemptrans WHERE mixMatch='$discMM' and trans_status <> 'R'";
 						$r2 = $dbt->query($q2);
 						$dept2 = 0;
 						$discs = 0;
 						if($dbt->num_rows($r2)>0){
-							$row = $dbt->fetch_row($r2);
-							$discs = round($row[0]);
-							$dept2 = $row[1];	
+							$rowq = $dbt->fetch_row($r2);
+							$discs = round($rowq[0]);
+							$dept2 = $rowq[1];	
 						}
 
 						$q3 = "SELECT sum(matched) FROM localtemptrans WHERE
-							mixmatch IN ('$qualMM','$discMM')";
+							mixMatch IN ('$qualMM','$discMM')";
 						$r3 = $dbt->query($q3);
 						$matches = ($dbt->num_rows($r3)>0)?array_pop($dbt->fetch_array($r3)):0;
 
@@ -436,7 +441,7 @@ class UPC extends Parser {
 						if ($volume == $i) $tmp = $stem.'_d';
 
 						$chkQ = "SELECT sum(CASE WHEN scale=0 THEN ItemQtty ELSE 1 END) 
-							FROM localtemptrans WHERE mixmatch='$tmp' and trans_status<>'R'";
+							FROM localtemptrans WHERE mixMatch='$tmp' and trans_status<>'R'";
 						$chkR = $dbt->query($chkQ);
 						$tsets = array_pop($dbt->fetch_row($chkR));
 						if ($tsets == ""){
@@ -452,7 +457,7 @@ class UPC extends Parser {
 					// count existing sets
 					$matches = 0;
 					$mQ = "SELECT sum(matched) FROM localtemptrans WHERE
-						left(mixmatch,11)='{$stem}_'";
+						left(mixMatch,11)='{$stem}_'";
 					$mR = $dbt->query($mQ);
 					if ($dbt->num_rows($mR) > 0)
 						$matches = array_pop($dbt->fetch_row($mR));
@@ -470,7 +475,7 @@ class UPC extends Parser {
 							$discount_dept = $department;
 						else {
 							$dQ = "SELECT max(department) FROM localtemptrans
-								WHERE mixmatch='{$stem}_d'";
+								WHERE mixMatch='{$stem}_d'";
 							$dR = $dbt->query($dQ);
 							$discount_dept = array_pop($dbt->fetch_row($dR));
 						}
@@ -632,13 +637,13 @@ class UPC extends Parser {
 
 				$query = "select max(t.unitPrice) as unitPrice,
 					max(t.department) as department,
-					max(t.itemQtty) as itemQtty,
+					max(t.ItemQtty) as itemQtty,
 					sum(case when c.quantity is null then 0 else c.quantity end) as couponQtty,
 					max(case when c.quantity is null then 0 else t.foodstamp end) as foodstamp,
 					max(t.emp_no) as emp_no,
 					max(t.trans_no) as trans_no,
 					t.trans_id from
-					localtemptrans as t left join couponapplied as c
+					localtemptrans as t left join couponApplied as c
 					on t.emp_no=c.emp_no and t.trans_no=c.trans_no
 					and t.trans_id=c.trans_id
 					where (substring(t.upc,4,5)='$man_id'";
@@ -693,13 +698,17 @@ class UPC extends Parser {
 									$value = -1 * $available["$id"][0];
 								
 								if ($qty <= $available["$id"][1]){
-									$q = "INSERT INTO couponApplied VALUES (
+									$q = "INSERT INTO couponApplied 
+										(emp_no,trans_no,quantity,trans_id)
+										VALUES (
 										$emp_no,$transno,$qty,$id)";
 									$r = $db->query($q);
 									$applied += $qty;
 								}
 								else {
-									$q = "INSERT INTO couponApplied VALUES (
+									$q = "INSERT INTO couponApplied 
+										(emp_no,trans_no,quantity,trans_id)
+										VALUES (
 										$emp_no,$transno,".
 										$available["$id"][1].",$id)";
 									$r = $db->query($q);
@@ -765,8 +774,8 @@ class UPC extends Parser {
 		 * has been used in this transaction
 		 * against the limit */
 		$transDB = tDataConnect();
-		$limitQ = "select case when sum(itemQtty) is null
-			then 0 else sum(itemQtty) end
+		$limitQ = "select case when sum(ItemQtty) is null
+			then 0 else sum(ItemQtty) end
 			from localtemptrans where
 			upc = '".$upc."'";
 		$limitR = $transDB->query($limitQ);
@@ -778,8 +787,8 @@ class UPC extends Parser {
 		/* verify the minimum purchase has been made */
 		switch($infoW["minType"]){
 		case "Q": // must purchase at least X
-			$minQ = "select case when sum(itemQtty) is null
-				then 0 else sum(itemQtty) end
+			$minQ = "select case when sum(ItemQtty) is null
+				then 0 else sum(ItemQtty) end
 			       	from localtemptrans
 				as l left join opData.dbo.houseCouponItems 
 				as h on l.upc = h.upc
@@ -793,8 +802,8 @@ class UPC extends Parser {
 			}
 			break;
 		case "Q+": // must purchase more than X
-			$minQ = "select case when sum(itemQtty) is null
-				then 0 else sum(itemQtty) end
+			$minQ = "select case when sum(ItemQtty) is null
+				then 0 else sum(ItemQtty) end
 			       	from localtemptrans
 				as l left join opData.dbo.houseCouponItems 
 				as h on l.upc = h.upc
@@ -839,8 +848,8 @@ class UPC extends Parser {
 			break;
 		case 'M': // must purchase at least X qualifying items
 			  // and some quantity corresponding discount items
-			$minQ = "select case when sum(itemQtty) is null then 0 else
-				sum(itemQtty) end
+			$minQ = "select case when sum(ItemQtty) is null then 0 else
+				sum(ItemQtty) end
 				from localtemptrans
 				as l left join opData.dbo.houseCouponItems
 				as h on l.upc = h.upc
@@ -851,8 +860,8 @@ class UPC extends Parser {
 			$minR = $transDB->query($minQ);
 			$validQtty = array_pop($transDB->fetch_row($minR));
 
-			$min2Q = "select case when sum(itemQtty) is null then 0 else
-				sum(itemQtty) end
+			$min2Q = "select case when sum(ItemQtty) is null then 0 else
+				sum(ItemQtty) end
 				from localtemptrans
 				as l left join opData.dbo.houseCouponItems
 				as h on l.upc = h.upc
@@ -1024,7 +1033,9 @@ class UPC extends Parser {
 		$upc = str_pad($upc,13,'0',STR_PAD_LEFT);
 
 		$db = pDataConnect();
-		$query = "select * from products where upc='".$upc."'";
+		$query = "select description,scale,tax,foodstamp,discounttype,
+			discount,department,normal_price
+		       	from products where upc='".$upc."'";
 		$result = $db->query($query);
 
 		if ($db->num_rows($result) <= 0) return;

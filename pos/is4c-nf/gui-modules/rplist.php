@@ -75,7 +75,7 @@ class rplist extends NoInputPage {
 		."from localtranstoday where register_no = ".$IS4C_LOCAL->get("laneno")." and emp_no = ".$IS4C_LOCAL->get("CashierNo")
 		." group by register_no, emp_no, trans_no order by trans_no desc";
 		if ($IS4C_LOCAL->get("DBMS") == "mysql" && $IS4C_LOCAL->get("store") != "wfc")
-			$query = "select * from rp_list where register_no = ".$IS4C_LOCAL->get("laneno")." and emp_no = ".$IS4C_LOCAL->get("CashierNo")." order by trans_no desc";
+			$query = "select register_no,emp_no,trans_no,total from rp_list where register_no = ".$IS4C_LOCAL->get("laneno")." and emp_no = ".$IS4C_LOCAL->get("CashierNo")." order by trans_no desc";
 
 		$db = tDataConnect();
 		$result = $db->query($query);

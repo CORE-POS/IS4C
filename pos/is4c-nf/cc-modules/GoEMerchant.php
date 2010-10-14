@@ -171,7 +171,9 @@ class GoEMerchant extends BasicCCModule {
 		if ($transNo != -1) $trans = $transNo;
 	
 		// look up the request using transID (within this transaction)
-		$sql = "SELECT * FROM efsnetRequest WHERE [date]='".$today."' AND cashierNo=".$cashier." AND laneNo=".$lane." AND transNo=".$trans." AND transID=".$transID;
+		$sql = "SELECT live,PAN,mode,amount,name FROM efsnetRequest 
+			WHERE [date]='".$today."' AND cashierNo=".$cashier." AND 
+			laneNo=".$lane." AND transNo=".$trans." AND transID=".$transID;
 		if ($IS4C_LOCAL->get("DBMS") == "mysql"){
 			$sql = str_replace("[","",$sql);
 			$sql = str_replace("]","",$sql);
@@ -192,7 +194,9 @@ class GoEMerchant extends BasicCCModule {
 		$request = $dbTrans->fetch_array($search);
 
 		// look up the response
-		$sql = "SELECT * FROM efsnetResponse WHERE [date]='".$today."' AND cashierNo=".$cashier." AND laneNo=".$lane." AND transNo=".$trans." AND transID=".$transID;
+		$sql = "SELECT commErr,httpCode,validResponse,xResponseCode,
+			xTransactionID FROM efsnetResponse WHERE [date]='".$today."' 
+			AND cashierNo=".$cashier." AND laneNo=".$lane." AND transNo=".$trans." AND transID=".$transID;
 		if ($IS4C_LOCAL->get("DBMS") == "mysql"){
 			$sql = str_replace("[","",$sql);
 			$sql = str_replace("]","",$sql);
@@ -213,7 +217,7 @@ class GoEMerchant extends BasicCCModule {
 		$response = $dbTrans->fetch_array($search);
 
 		// look up any previous successful voids
-		$sql = "SELECT * FROM efsnetRequestMod WHERE [date]=".$today." AND cashierNo=".$cashier." AND laneNo=".$lane." AND transNo=".$trans." AND transID=".$transID
+		$sql = "SELECT transID FROM efsnetRequestMod WHERE [date]=".$today." AND cashierNo=".$cashier." AND laneNo=".$lane." AND transNo=".$trans." AND transID=".$transID
 				." AND mode='void' AND xResponseCode=0";
 		if ($IS4C_LOCAL->get("DBMS") == "mysql"){
 			$sql = str_replace("[","",$sql);
@@ -229,7 +233,8 @@ class GoEMerchant extends BasicCCModule {
 		}
 
 		// look up the transaction tender line-item
-		$sql = "SELECT * FROM localtemptrans WHERE trans_id=".$transID;
+		$sql = "SELECT trans_type,trans_subtype,trans_status,voided
+		       	FROM localtemptrans WHERE trans_id=" . $transID;
 		$search = $dbTrans->query($sql);
 		$num = $dbTrans->num_rows($search);
 		if( $num < 1) {

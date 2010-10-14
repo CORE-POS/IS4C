@@ -548,7 +548,7 @@ function create_op_dbs($db,$type){
 	$ccView = "CREATE VIEW chargecodeview AS
 		SELECT c.staffID, c.chargecode, d.blueLine
 		FROM chargecode AS c, custdata AS d
-		WHERE c.staffID = d.cardno";
+		WHERE c.staffID = d.CardNo";
 	if (!$db->table_exists('chargecodeview',$name)){
 		$db->query($ccView,$name);
 	}
@@ -3439,11 +3439,11 @@ function crossover_views(){
 
 	$mcV = "CREATE view memchargebalance as
 		SELECT 
-		c.cardNo,
-		(case when m.card_no is null then c.memDiscountLimit - c.balance else
-		c.memDiscountLimit -(c.balance-m.chargeTotal)end) 
+		c.CardNo,
+		(case when m.card_no is null then c.memDiscountLimit - c.Balance else
+		c.memDiscountLimit -(c.Balance-m.chargeTotal)end) 
 		as availBal,
-		(case when m.card_no is null then c.balance else c.balance-m.chargeTotal end) as balance
+		(case when m.card_no is null then c.Balance else c.Balance-m.chargeTotal end) as balance
 		FROM custdata c left outer join ".
 		$IS4C_LOCAL->get('tDatabase').".memchargetotals m on
 		c.CardNo = m.card_no";

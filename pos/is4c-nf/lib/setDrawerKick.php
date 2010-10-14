@@ -56,11 +56,10 @@ function setDrawerKickLater()
 
 	$db = tDataConnect();
 
-	$query = "select * from localtemptrans where (trans_subtype = 'CA' and total <> 0) or trans_subtype = 'CC' or upc='0000000001065'";
+	$query = "select trans_id from localtemptrans where (trans_subtype = 'CA' and total <> 0) or trans_subtype = 'CC' or upc='0000000001065'";
 
 	$result = $db->query($query);
 	$num_rows = $db->num_rows($result);
-	$row = $db->fetch_array($result);
 
 	if ($num_rows != 0) {
 	 //$_SESSION["kick"] = 1;

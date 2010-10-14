@@ -66,7 +66,7 @@ function tenderReport(){
 	$receipt = "";
 
 	foreach(array_keys($DESIRED_TENDERS) as $tender_code){
-		$query = "select * from TenderTapeGeneric where emp_no=".$IS4C_LOCAL->get("CashierNo").
+		$query = "select tdate from TenderTapeGeneric where emp_no=".$IS4C_LOCAL->get("CashierNo").
 			" and trans_subtype = '".$tender_code."' order by tdate";
 		$result = $db_a->query($query);
 		$num_rows = $db_a->num_rows($result);
@@ -83,7 +83,8 @@ function tenderReport(){
 		$receipt .= $ref;
 		$receipt .=	centerString("------------------------------------------------------");
 
-		$query = "select * from TenderTapeGeneric where emp_no=".$IS4C_LOCAL->get("CashierNo").
+		$query = "select tdate,register_no,trans_no,tender
+		       	from TenderTapeGeneric where emp_no=".$IS4C_LOCAL->get("CashierNo").
 			" and trans_subtype = '".$tender_code."' order by tdate";
 		$result = $db_a->query($query);
 		$num_rows = $db_a->num_rows($result);

@@ -339,31 +339,31 @@ function uploadCCdata(){
 				$IS4C_LOCAL->get("mPass"),
 				False);
 
-	$req_cols = getMatchingColumns($sql,"efsnetrequest");
+	$req_cols = getMatchingColumns($sql,"efsnetRequest");
 	if ($sql->transfer($IS4C_LOCAL->get("tDatabase"),
-		"select {$req_cols} from efsnetrequest",
-		$IS4C_LOCAL->get("mDatabase"),"insert into efsnetrequest ({$req_cols})")){
+		"select {$req_cols} from efsnetRequest",
+		$IS4C_LOCAL->get("mDatabase"),"insert into efsnetRequest ({$req_cols})")){
 
-		$sql->query("truncate table efsnetrequest",
+		$sql->query("truncate table efsnetRequest",
 			$IS4C_LOCAL->get("tDatabase"));
 
-		$res_cols = getMatchingColumns($sql,"efsnetresponse");
+		$res_cols = getMatchingColumns($sql,"efsnetResponse");
 		$res_success = $sql->transfer($IS4C_LOCAL->get("tDatabase"),
-			"select {$res_cols} from efsnetresponse",
+			"select {$res_cols} from efsnetResponse",
 			$IS4C_LOCAL->get("mDatabase"),
-			"insert into efsnetresponse ({$res_cols})");
+			"insert into efsnetResponse ({$res_cols})");
 		if ($res_success){
-			$sql->query("truncate table efsnetresponse",
+			$sql->query("truncate table efsnetResponse",
 				$IS4C_LOCAL->get("tDatabase"));
 		}
 
-		$mod_cols = getMatchingColumns($sql,"efsnetrequestmod");
+		$mod_cols = getMatchingColumns($sql,"efsnetRequestMod");
 		$mod_success = $sql->transfer($IS4C_LOCAL->get("tDatabase"),
-			"select {$mod_cols} from efsnetrequestmod",
+			"select {$mod_cols} from efsnetRequestMod",
 			$IS4C_LOCAL->get("mDatabase"),
-			"insert into efsnetrequestmod ({$mod_cols})");
+			"insert into efsnetRequestMod ({$mod_cols})");
 		if ($mod_success){
-			$sql->query("truncate table efsnetrequestmod",
+			$sql->query("truncate table efsnetRequestMod",
 				$IS4C_LOCAL->get("tDatabase"));
 		}
 	}

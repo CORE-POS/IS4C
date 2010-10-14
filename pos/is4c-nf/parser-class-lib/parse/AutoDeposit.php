@@ -62,7 +62,9 @@ class AutoDeposit extends Parser {
 		global $IS4C_LOCAL;
 
 		$db = pDataConnect();
-		$query = "select * from products where upc='".$upc."'";
+		$query = "select description,scale,tax,foodstamp,discounttype,
+			discount,department,normal_price
+		       	from products where upc='".$upc."'";
 		$result = $db->query($query);
 
 		if ($db->num_rows($result) <= 0) return;
