@@ -79,63 +79,38 @@ function getsubtotals() {
 	$result = $connection->query($query);
 	$row = $connection->fetch_array($result);
 
-	if (!$row || $row["LastID"] == 0) {
-		$IS4C_LOCAL->set("LastID",0);
-		$IS4C_LOCAL->set("runningTotal",0);
-		$IS4C_LOCAL->set("subtotal",0);
-		$IS4C_LOCAL->set("taxTotal",0);
-		$IS4C_LOCAL->set("discounttotal",0);
-		$IS4C_LOCAL->set("tenderTotal",0);
-		$IS4C_LOCAL->set("memSpecial",0);
-		$IS4C_LOCAL->set("staffSpecial",0);
-		$IS4C_LOCAL->set("percentDiscount",0);
-		$IS4C_LOCAL->set("transDiscount",0);
-		$IS4C_LOCAL->set("fsTaxExempt",0);
-		$IS4C_LOCAL->set("fsEligible",0);
+	// reset a few variables
+	if (False && (!$row || $row["LastID"] == 0)) {
 		$IS4C_LOCAL->set("ttlflag",0);
 		$IS4C_LOCAL->set("fntlflag",0);
-		$IS4C_LOCAL->set("memCouponTTL",0);
-		$IS4C_LOCAL->set("refundTotal",0);
-		$IS4C_LOCAL->set("chargeTotal",0);
-		$IS4C_LOCAL->set("ccTotal",0);
-		$IS4C_LOCAL->set("memChargeTotal",0);
-		$IS4C_LOCAL->set("madCoup",0);
-		$IS4C_LOCAL->set("scTaxTotal",0);
-		$IS4C_LOCAL->set("scDiscount",0);
-		$IS4C_LOCAL->set("paymentTotal",0);
-		$IS4C_LOCAL->set("discountableTotal",0);
-		$IS4C_LOCAL->set("localTotal",0.00);
-
 		setglobalflags(0);
 	}
-	else {
-		$IS4C_LOCAL->set("LastID",(double) $row["LastID"]);
-		$IS4C_LOCAL->set("memberID",trim($row["card_no"]));
-		$IS4C_LOCAL->set("runningTotal",(double) $row["runningTotal"]);
-		$IS4C_LOCAL->set("taxTotal",(double) $row["taxTotal"]);
-		$IS4C_LOCAL->set("discounttotal",(double) $row["discountTTL"]);
-		$IS4C_LOCAL->set("madCoup",(double) $row["madCoupon"]);
-		$IS4C_LOCAL->set("memSpecial",(double) $row["memSpecial"]);
-		$IS4C_LOCAL->set("staffSpecial",(double) $row["staffSpecial"]);
-		$IS4C_LOCAL->set("tenderTotal",(double) $row["tenderTotal"]);
-		$IS4C_LOCAL->set("percentDiscount",(int) $row["percentDiscount"]);
-		$IS4C_LOCAL->set("transDiscount",(double) $row["transDiscount"]);
 
-		$IS4C_LOCAL->set("scDiscount",(double) $row["scDiscount"]);
-		$IS4C_LOCAL->set("scTaxTotal",(double) $row["scTaxTotal"]);
-		$IS4C_LOCAL->set("fsTaxExempt",(double) $row["fsTaxExempt"]);
-		$IS4C_LOCAL->set("fsEligible",(double) $row["fsEligible"]);
-		$IS4C_LOCAL->set("memCouponTTL",-1 * ((double) $row["couponTotal"]) + ((double) $row["memCoupon"]));
-		$IS4C_LOCAL->set("refundTotal",(double) $row["refundTotal"]);
-		$IS4C_LOCAL->set("chargeTotal",(double) $row["chargeTotal"]);
-		$IS4C_LOCAL->set("ccTotal",(double) $row["ccTotal"]);
-		$IS4C_LOCAL->set("paymentTotal",(double) $row["paymentTotal"]);
-		$IS4C_LOCAL->set("memChargeTotal",(double) $row["memChargeTotal"]);
-		$IS4C_LOCAL->set("discountableTotal",(double) $row["discountableTotal"]);
-		$IS4C_LOCAL->set("localTotal",(double) $row["localTotal"]);
-	}
+	$IS4C_LOCAL->set("LastID", (!$row || !isset($row['LastID'])) ? 0 : (double)$row["LastID"] );
+	$IS4C_LOCAL->set("memberID", (!$row || !isset($row['card_no'])) ? "0" : trim($row["card_no"]) );
+	$IS4C_LOCAL->set("runningTotal", (!$row || !isset($row['runningTotal'])) ? 0 : (double)$row["runningTotal"] );
+	$IS4C_LOCAL->set("taxTotal", (!$row || !isset($row['taxTotal'])) ? 0 : (double)$row["taxTotal"] );
+	$IS4C_LOCAL->set("discounttotal", (!$row || !isset($row['discounttotal'])) ? 0 : (double)$row["discountTTL"] );
+	$IS4C_LOCAL->set("tenderTotal", (!$row || !isset($row['tenderTotal'])) ? 0 : (double)$row["tenderTotal"] );
+	$IS4C_LOCAL->set("memSpecial", (!$row || !isset($row['memSpecial'])) ? 0 : (double)$row["memSpecial"] );
+	$IS4C_LOCAL->set("staffSpecial", (!$row || !isset($row['staffSpecial'])) ? 0 : (double)$row["staffSpecial"] );
+	$IS4C_LOCAL->set("percentDiscount", (!$row || !isset($row['percentDiscount'])) ? 0 : (double)$row["percentDiscount"] );
+	$IS4C_LOCAL->set("transDiscount", (!$row || !isset($row['transDiscount'])) ? 0 : (double)$row["transDiscount"] );
+	$IS4C_LOCAL->set("fsTaxExempt", (!$row || !isset($row['fsTaxExempt'])) ? 0 : (double)$row["fsTaxExempt"] );
+	$IS4C_LOCAL->set("fsEligible", (!$row || !isset($row['fsEligible'])) ? 0 : (double)$row["fsEligible"] );
+	$IS4C_LOCAL->set("memCouponTTL", (!$row || !isset($row['couponTotal']) || !isset($row['memCoupon'])) ? 0 : -1 * ((double) $row["couponTotal"]) + ((double) $row["memCoupon"]));
+	$IS4C_LOCAL->set("refundTotal", (!$row || !isset($row['refundTotal'])) ? 0 : (double)$row["refundTotal"] );
+	$IS4C_LOCAL->set("chargeTotal", (!$row || !isset($row['chargeTotal'])) ? 0 : (double)$row["chargeTotal"] );
+	$IS4C_LOCAL->set("ccTotal", (!$row || !isset($row['ccTotal'])) ? 0 : (double)$row["ccTotal"] );
+	$IS4C_LOCAL->set("memChargeTotal", (!$row || !isset($row['memChargeTotal'])) ? 0 : (double)$row["memChargeTotal"] );
+	$IS4C_LOCAL->set("madCoup", (!$row || !isset($row['madCoup'])) ? 0 : (double)$row["madCoup"] );
+	$IS4C_LOCAL->set("scTaxTotal", (!$row || !isset($row['scTaxTotal'])) ? 0 : (double)$row["scTaxTotal"] );
+	$IS4C_LOCAL->set("scDiscount", (!$row || !isset($row['scDiscount'])) ? 0 : (double)$row["scDiscount"] );
+	$IS4C_LOCAL->set("paymentTotal", (!$row || !isset($row['paymentTotal'])) ? 0 : (double)$row["paymentTotal"] );
+	$IS4C_LOCAL->set("discountableTotal", (!$row || !isset($row['discountableTotal'])) ? 0 : (double)$row["discountableTotal"] );
+	$IS4C_LOCAL->set("localTotal", (!$row || !isset($row['localTotal'])) ? 0 : (double)$row["localTotal"] );
 
-	if ($IS4C_LOCAL->get("memberID") == "" && $IS4C_LOCAL->get("runningTotal") > 0) {
+	if ($IS4C_LOCAL->get("memberID") == "0" && $IS4C_LOCAL->get("runningTotal") > 0) {
 		if ($IS4C_LOCAL->get("SSI") != 0 && ($IS4C_LOCAL->get("isStaff") == 3 || $IS4C_LOCAL->get("isStaff") == 6)) wmdiscount();
 	}
 
