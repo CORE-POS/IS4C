@@ -11,6 +11,8 @@
 		The classes in gui-class-lib provide a uniform way to do screen output. Using one of these classes makes it easier to create a new "page" that matches the rest of IS4C visually and ensures doctype, css, and js are brought in correctly.
 		<h3>Modular Paycards</h3>
 		The various payment gateways I've worked with have a lot of similarities. Exact implementation can probably be interchangeable as far as the rest of IS4C is concerned. Since sharing the exact implementation for a gateway isn't always permitted, pushing as much as possible into a generic base class ought to streamline the implementation when people are forced to re-invent the details.
+		<h3>Hardware Flexibility</h3>
+		There should be classes to deal with printers, scales, and other peripherals so support for new hardware can be added without revising existing code.
 		<h3>Database Best Practices</h3>
 		This is the hard part. Ideally, we'd all keep the same schema. Realistically, I don't see this happening. With a little caution, I think we can at least have scripts that degrade gracefully when the underlying structure changes. Ideas:
 		<ul>
