@@ -162,6 +162,40 @@ confsave('printerPort',"'".$IS4C_LOCAL->get('printerPort')."'");
 Path to the printer. Common ports are LPT1: (windows) and /dev/lp0 (linux).
 Can also print to a text file if it's just a regular file name.
 <hr />
+<b>Scanner/scale port</b>:
+<?php
+if(isset($_REQUEST['SPORT'])) $IS4C_LOCAL->set('scalePort',$_REQUEST['SPORT']);
+printf("<input type=text name=SPORT value=\"%s\" />",$IS4C_LOCAL->get('scalePort'));
+confsave('scalePort',"'".$IS4C_LOCAL->get('scalePort')."'");
+?>
+<br />
+Path to the scanner scale. Common values are COM1 (windows) and /dev/ttyS0 (linux).
+<br />
+<b>Scanner/scale driver</b>:
+<?php
+if(isset($_REQUEST['SDRIVER'])) $IS4C_LOCAL->set('scaleDriver',$_REQUEST['SDRIVER']);
+printf("<input type=text name=SDRIVER value=\"%s\" />",$IS4C_LOCAL->get('scaleDriver'));
+confsave('scaleDriver',"'".$IS4C_LOCAL->get('scaleDriver')."'");
+?>
+<br />
+The name of your scale driver. Known good values include "ssd" and "NewMagellan".
+<?php
+// try to initialize scale driver
+if ($IS4C_LOCAL->get("scaleDriver") != ""){
+	$classname = $IS4C_LOCAL->get("scaleDriver");
+	if (!file_exists('../scale-drivers/php-wrappers/'.$classname.'.php'))
+		echo "<br /><i>Warning: PHP driver file not found</i>";
+	else {
+		include('../scale-drivers/php-wrappers/'.$classname.'.php');
+		$instance = new $classname();
+		$instance->SavePortConfiguration($IS4C_LOCAL->get("scalePort"));
+		$abs_path = substr($_SERVER['SCRIPT_FILENAME'],0,
+				strlen($_SERVER['SCRIPT_FILENAME'])-strlen('install/extra_config.php'));
+		$instance->SaveDirectoryConfiguration($abs_path);
+	}
+}
+?>
+<hr />
 <b>Receipt Headers</b>:<br />
 You can add more in the customreceipt table, but for historical
 reasons the first three are hard coded here.<br />

@@ -1,3 +1,6 @@
 *.pyc
 pos/is4c/ini/ini.php
 *~
+pos/is4c-nf/log/*.log
+pos/is4c-nf/ini.php
+ssd

@@ -25,45 +25,16 @@ if (empty($IS4C_PATH)){ while(!file_exists($IS4C_PATH."is4c.css")) $IS4C_PATH .=
 
 if (!isset($IS4C_LOCAL))
 	include($IS4C_PATH.'lib/LocalStorage/conf.php');
-if (!function_exists('scaledisplaymsg'))
-	include($IS4C_PATH.'lib/drawscreen.php');
-if (!function_exists('array_to_json'))
-	include($IS4C_PATH.'lib/array_to_json.php');
 
-$readfile = $IS4C_PATH.'NewMagellan/scanner-scale';
-$i = 0;
+$scaleDriver = $IS4C_LOCAL->get("scaleDriver");
+$sd = 0;
+if ($scaleDriver != "" && !class_exists($scaleDriver))
+	include($IS4C_PATH.'scale-drivers/php-wrappers/'.$scaleDriver.'.php');
+	$sd = new $scaleDriver();
 
-$scale_display = "";
-$scans = array();
-if (file_exists($readfile.".data") && !file_exists($readfile.".lock")){
-
-	$fp = fopen($readfile.".lock","w");
-	fclose($fp);
-
-	$data = file_get_contents($readfile.".data");
-
-	unlink($readfile.".data");
-	unlink($readfile.".lock");
-
-	foreach(explode("\n",$data) as $line){
-		$line = rtrim($line,"\r"); // in case OS adds it
-		if (empty($line)) continue;
-		if ($line[0] == 'S'){
-			$scale_display = scaledisplaymsg($line);
-		}
-		else {
-			$scans[] = $line;
-		}
-	}
-}
-
-$output = array();
-if (!empty($scale_display)) $output['scale'] = $scale_display;
-if (!empty($scans)) $output['scans'] = $scans;
-
-if (!empty($output))
-	echo array_to_json($output);
+if (is_object($sd))
+	$sd->ReadFromScale();	
 else
-	echo "{}";
+	echo "{}"; // no driver => empty json
 
 ?>

@@ -40,6 +40,9 @@ using System.IO.Ports;
 using System.Windows.Forms;
 using System.Threading;
 
+#define MAGELLAN_OUTPUT_FILE "/var/www/html/git/IS4C/pos/is4c-nf/scale-drivers/drivers/NewMagellan/scanner-scale.data"
+#define MAGELLAN_LOCK_FILE "/var/www/html/git/IS4C/pos/is4c-nf/scale-drivers/drivers/NewMagellan/scanner-scale.lock"
+
 namespace SPH {
 
 public class SPH_Magellan_Scale : SerialPortHandler {
@@ -117,14 +120,14 @@ public class SPH_Magellan_Scale : SerialPortHandler {
 	}
 
 	private void PushOutput(string s){
-		while (File.Exists("scanner-scale.lock")){
+		while (File.Exists(MAGELLAN_LOCK_FILE)){
 			Thread.Sleep(50);
 		}
-		File.Create("scanner-scale.lock").Dispose();
-		StreamWriter sw = File.AppendText("scanner-scale.data");
+		File.Create(MAGELLAN_LOCK_FILE).Dispose();
+		StreamWriter sw = File.AppendText(MAGELLAN_OUTPUT_FILE);
 		sw.WriteLine(s);
 		sw.Close();
-		File.Delete("scanner-scale.lock");
+		File.Delete(MAGELLAN_LOCK_FILE);
 	}
 
 	private string ParseData(string s){

@@ -51,6 +51,10 @@
 #include <termios.h> /* POSIX terminal control definitions */
 #include <ctype.h>
 
+#define SSD_SERIAL_PORT "/dev/ttyS0"
+#define SCALE_OUTPUT_FILE "/pos/is4c/rs232/scale"
+#define SCANNER_OUTPUT_FILE "/pos/is4c/rs232/scanner"
+
 int main(void) {
     /* Our process ID and Session ID */
     pid_t pid, sid;
@@ -90,7 +94,7 @@ int main(void) {
     int open_port(void) {
         int fd;                   /* File descriptor for the port */
 
-        fd = open("/dev/ttyS0", O_RDWR | O_NOCTTY | O_NDELAY);
+        fd = open(SSD_SERIAL_PORT, O_RDWR | O_NOCTTY | O_NDELAY);
 
         if (fd == -1) {
          fprintf(stderr, "open_port: Unable to open /dev/ttyS0 - %s\n",
@@ -158,7 +162,7 @@ int main(void) {
                     for (i = 0; i < 17; i++) {
                         scannerInput[i] = serialBuffer[i+4];
                     }
-                    fp_scanner = fopen("/pos/is4c/rs232/scanner", "w");
+                    fp_scanner = fopen(SCANNER_OUTPUT_FILE, "w");
                     fprintf(fp_scanner, "%s\n", scannerInput);
                     fclose(fp_scanner);
                 }
@@ -171,7 +175,7 @@ int main(void) {
                     else if (serialBuffer[2] == '4' && serialBuffer[3] == '3') {
                         write(mainfd, "S11\r", 5);
                         if (strcmp(scaleBuffer, serialBuffer) != 0) {
-                            fp_scale = fopen("/pos/is4c/rs232/scale", "w");
+                            fp_scale = fopen(SCALE_OUTPUT_FILE, "w");
                             fprintf(fp_scale, "%s\n", serialBuffer);
                             fclose(fp_scale);
                         }
@@ -179,7 +183,7 @@ int main(void) {
                     else if (serialBuffer[2] == '4') {
                         write(mainfd, "S14\r", 5);
                         if (strcmp(scaleBuffer, serialBuffer) != 0) {
-                            fp_scale = fopen("/pos/is4c/rs232/scale", "w");
+                            fp_scale = fopen(SCALE_OUTPUT_FILE, "w");
                             fprintf(fp_scale, "%s\n", serialBuffer);
                             fclose(fp_scale);
                         }

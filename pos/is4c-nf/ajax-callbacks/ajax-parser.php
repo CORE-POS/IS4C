@@ -30,10 +30,14 @@ if (!isset($IS4C_LOCAL))
 	include($IS4C_PATH.'lib/LocalStorage/conf.php');
 if (!function_exists('array_to_json'))
 	include($IS4C_PATH.'lib/array_to_json.php');
-if (!function_exists('udpSend'))
-	include($IS4C_PATH.'lib/udpSend.php');
 if (!function_exists('inputUnknown'))
 	include($IS4C_PATH.'lib/drawscreen.php');
+
+$scaleDriver = $IS4C_LOCAL->get("scaleDriver");
+$sd = 0;
+if ($scaleDriver != "" && !class_exists($scaleDriver))
+	include($IS4C_PATH.'scale-drivers/php-wrappers/'.$scaleDriver.'.php');
+	$sd = new $scaleDriver();
 
 /*
  * MAIN PARSING BEGINS
@@ -113,7 +117,8 @@ if ($entered != ""){
 		if ($result && is_array($result)){
 			$json = array_to_json($result);
 			if (isset($result['udpmsg']) && $result['udpmsg'] !== False){
-				udpSend($result['udpmsg']);
+				if (is_object($sd))
+					$sd->WriteToScale($result['udpmsg']);
 			}
 		}
 		else {
@@ -122,7 +127,8 @@ if ($entered != ""){
 				'target'=>'.baseHeight',
 				'output'=>inputUnknown());
 			$json = array_to_json($arr);
-			udpSend('errorBeep');
+			if (is_object($sd))
+				$sd->WriteToScale('errorBeep');
 		}
 	}
 }
