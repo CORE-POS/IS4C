@@ -1093,10 +1093,22 @@ function create_op_dbs($con){
 
 	$memTypeQ = "CREATE TABLE memtype (
 		memtype tinyint,
-		memDesc varchar(20))";
+		memDesc varchar(20)),
+		primary key (memtype)";
 	if (!$con->table_exists('memtype',$FANNIE_OP_DB)){
 		$con->query($memTypeQ,$FANNIE_OP_DB);
 	}
+
+	$memDefaults = "CREATE TABLE memdefaults (
+		memtype tinyint,
+		cd_type varchar(10),
+		discount smallint,
+		staff tinyint,
+		SSI tinyint,
+		primary key (memtype))";
+	if (!$con->table_exists("memdefaults",$FANNIE_OP_DB)){
+		$con->query($memDefaults,$FANNIE_OP_DB);
+	}	
 
 	$custdataQ = "CREATE TABLE `custdata` (
 	  `CardNo` int(8) default NULL,
