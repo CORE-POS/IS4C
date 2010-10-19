@@ -64,6 +64,65 @@ elseif (isset($_REQUEST['saveType'])){
 	$r = $dbc->query($q);
 	exit;
 }
+elseif (isset($_REQUEST['newMemForm'])){
+	$q = "SELECT MAX(memtype) FROM memtype";
+	$r = $dbc->query($q);
+	$sug = 0;
+	if($dbc->num_rows($r)>0){
+		$w = $dbc->fetch_row($r);
+		if(!empty($w)) $sug = $w[0]+1;
+	}
+	echo "Give the new memtype an ID number. The one
+		provided is only a suggestion. ID numbers
+		must be unique.";
+	printf('<br /><br /><b>New ID</b>: <input size="4" value="%d"
+		id="newTypeID" />',$sug);
+	echo ' <input type="submit" value="Create New Type"
+		onclick="finishMemType();return false;" />';
+	exit;
+}
+elseif (isset($_REQUEST['new_t_id'])){
+	/* do some extra sanity checks
+	   on a new member type
+	*/
+	$id = $_REQUEST['new_t_id'];
+	if (!is_numeric($id)){
+		echo 'ID '.$id.' is not a number';
+		echo '<br /><br />';
+		echo '<a href="" onclick="newMemType();return false;">Try Again</a>';
+	}
+	else {
+		$q = sprintf("SELECT memtype FROM memtype WHERE
+			memtype=%d",$id);
+		$r = $dbc->query($q);
+		if ($dbc->num_rows($r) > 0){
+			echo 'ID is already in use';
+			echo '<br /><br />';
+			echo '<a href="" onclick="newMemType();return false;">Try Again</a>';
+		}
+		else {
+			$mt = array(
+				'memtype'=>$id,
+				'memDesc'=>"''"
+			);
+			
+			$md = array(
+				'memtype'=>$id,
+				'cd_type'=>"'REG'",
+				'discount'=>0,
+				'staff'=>0,
+				'SSI'=>0			
+			);	
+
+			$dbc->smart_insert('memtype',$mt);
+			$dbc->smart_insert('memdefaults',$md);
+
+			echo getTypeTable();
+		}
+	}
+	exit;
+}
+/* end ajax callbacks */
 
 function getTypeTable(){
 	global $dbc;
@@ -95,6 +154,7 @@ function getTypeTable(){
 			);
 	}
 	$ret .= "</table>";
+	$ret .= '<br /><a href="" onclick="newMemType();return false;">New Member Type</a>';
 	return $ret;
 }
 
@@ -103,6 +163,29 @@ $header = "Member Types";
 include($FANNIE_ROOT.'src/header.html');
 ?>
 <script type="text/javascript">
+function newMemType(){
+	$.ajax({url:'types.php',
+		cache: false,
+		dataType: 'post',
+		data: 'newMemForm=yes',
+		success: function(data){
+			$('#mainDisplay').html(data);
+		}
+	});
+}
+
+function finishMemType(){
+	var t_id = $('#newTypeID').val();
+	$.ajax({url:'types.php',
+		cache: false,
+		dataType: 'post',
+		data: 'new_t_id='+t_id,
+		success: function(data){
+			$('#mainDisplay').html(data);
+		}
+	});
+}
+
 function saveMem(st,t_id){
 	var cd_type = 'REG';
 	if (st == true) cd_type='PC';
@@ -165,7 +248,9 @@ function saveType(typedesc,t_id){
 }
 </script>
 <?php
+echo '<div id="mainDisplay">';
 echo getTypeTable();
+echo '</div>';
 
 include($FANNIE_ROOT.'src/footer.html');
 
