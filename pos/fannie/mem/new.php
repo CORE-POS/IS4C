@@ -22,6 +22,12 @@
 *********************************************************************************/
 include('../config.php');
 include($FANNIE_ROOT.'src/mysql_connect.php');
+include($FANNIE_ROOT.'auth/login.php');
+
+if (!validateUserQuiet('memgen')){
+	header("Location: {$FANNIE_URL}auth/ui/login.php?redirect={$FANNIE_URL}mem/new.php");
+	exit;
+}
 
 $page_title = "Fannie :: Create Members";
 $header = "Create Members";

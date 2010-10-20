@@ -79,6 +79,8 @@ elseif (isset($_REQUEST['newMemForm'])){
 		id="newTypeID" />',$sug);
 	echo ' <input type="submit" value="Create New Type"
 		onclick="finishMemType();return false;" />';
+	echo ' <input type="submit" value="Cancel"
+		onclick="cancelMemType();return false;" />';
 	exit;
 }
 elseif (isset($_REQUEST['new_t_id'])){
@@ -122,6 +124,10 @@ elseif (isset($_REQUEST['new_t_id'])){
 	}
 	exit;
 }
+elseif(isset($_REQUEST['goHome'])){
+	echo getTypeTable();
+	exit;
+}
 /* end ajax callbacks */
 
 function getTypeTable(){
@@ -158,6 +164,12 @@ function getTypeTable(){
 	return $ret;
 }
 
+include($FANNIE_ROOT.'auth/login.php');
+if (!validateUserQuiet('editmembers')){
+	header("Location: {$FANNIE_URL}auth/ui/loginform.php?redirect={$FANNIE_URL}mem/types.php");
+	exit;
+}
+
 $page_title = "Fannie :: Member Types";
 $header = "Member Types";
 include($FANNIE_ROOT.'src/header.html');
@@ -180,6 +192,17 @@ function finishMemType(){
 		cache: false,
 		dataType: 'post',
 		data: 'new_t_id='+t_id,
+		success: function(data){
+			$('#mainDisplay').html(data);
+		}
+	});
+}
+
+function cancelMemType(){
+	$.ajax({url:'types.php',
+		cache: false,
+		dataType: 'post',
+		data: 'goHome=yes',
 		success: function(data){
 			$('#mainDisplay').html(data);
 		}
