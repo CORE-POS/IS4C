@@ -141,6 +141,9 @@ class SQLManager {
 	}
 
 	function fetch_array($result_object,$which_connection=''){
+		if (is_null($result_object)) return false;
+		if ($result_object === false) return false;
+
 		if ($which_connection == '')
 			$which_connection = $this->default_db;
 		$ret = $result_object->fields;
@@ -376,6 +379,27 @@ class SQLManager {
 		case 'mssql':
 			return str_ireplace("SELECT ","SELECT TOP $int_limit ",$query);
 		}
+	}
+
+	function error($which_connection=''){
+		if ($which_connection == '')
+			$which_connection=$this->default_db;
+		$con = $this->connections[$which_connection];
+		return $con->ErrorMsg();
+	}
+
+	function insert_id($which_connection=''){
+		if ($which_connection == '')
+			$which_connection=$this->default_db;
+		$con = $this->connections[$which_connection];
+		return $con->Insert_ID();
+	}
+
+	function affected_rows($which_connection=''){
+		if ($which_connection == '')
+			$which_connection=$this->default_db;
+		$con = $this->connections[$which_connection];
+		return $con->Affected_Rows();
 	}
 
 	/* insert as much data as possible
