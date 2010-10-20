@@ -191,7 +191,7 @@ function table_check(){
 			session_id varchar(50),
 			real_name varchar(75),
 			PRIMARY KEY (name)
-			)");	
+			)");
 	}
 	if (!$sql->table_exists('userPrivs')){
 		$sql->query("CREATE TABLE userPrivs (

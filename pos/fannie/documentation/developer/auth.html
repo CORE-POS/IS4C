@@ -1,0 +1,122 @@
+<html>
+<head>
+	<title>Authentication System</title>
+</head>
+<body>
+The backend eventually needs access controls.
+In my opinion, the "backendsecurity" column
+in the employees table isn't going to work. There's
+enough going on that tiered access just doesn't
+make sense. For example, the front end manager
+should be able to edit cashiers but probably not
+products. Buyers or scanning should be able to
+edit products but probably not cashiers.
+<p />
+We need something more nuanced (mandatory access 
+controls if you're into terminology). The system
+described here is included with fannie. It isn't
+perfect (frankly, the table structure is just
+bone-headed) but it works and is reasonably
+flexible.
+<p />
+<h3>Authenticating Users</h3>
+The auth package is primarily SQL based. The UI lets
+you add and remove users, change passwords, etc.
+The system can be run entirely this way with usernames
+and (encrypted) passwords right in the database.
+Users generally don't like keeping track of lots
+of passwords, so I've added a couple alternatives.
+<p />
+You can authenticate against an /etc/shadow file.
+A small utility, shadowread, is included to
+let apache pull password hashes out without
+making /etc/shadow readable for all users
+(PHP-PAM integration was in rough shape when I wrote
+this). This is just for name &amp; password matching;
+the user still exists in SQL.
+<p />
+You can authenticate against an LDAP server. I use
+it with openldap. It could probably be done with
+Active Directory in a Windows environment.
+Again this is just for name &amp; password matching.
+<p />
+Both LDAP and shadow logins will automatically
+create users in the database if needed.
+<h3>Permissions</h3>
+The auth package is structured around the notion
+of <i>authorization classes</i>. An authorization class
+is simply something a user is allowed to do - 
+for instance "edit_prices" could be an authorization class.
+<p />
+For finer granularity, there are optional sub-class limits.
+These are pretty flexible. These don't have to mean the same
+thing in all contexts, and can be anything that works in a SQL
+BETWEEN statements. For example, you could use these to give
+someone permission to edit prices, but only for products in
+departments 10 through 15. Or you could give someone permission
+to edit members, but only if their member type is 1.
+<h3>Groups</h3>
+You can put users in groups and then assign authorization classes
+to the group. The table structure for this is idiotic but functional.
+It saves some headaches rolling out a new tool
+or trying to remember all the authorizations a new employee needs.
+<h3>Tying it all together</h3>
+There are really only two functions that get used a lot to access
+user information from Fannie:
+<ul>
+<li><b>checkLogin()</b> returns the name of the user, or false 
+if the user has not logged in.</li>
+<li><b>validateUserQuiet(string $auth_class [,string $sub_start, string $sub_end])</b> 
+returns the name of the user if they are logged in and have the
+requested authorization. Otherwise it returns false.</li>
+</ul>
+The login page (auth/ui/loginform.php) accepts an optional GET argument
+in the URL, redirect. So a fannie tool that uses authentication will
+have a little section like this:
+<pre>
+include($FANNIE_ROOT."auth/login.php");
+if (!validateUserQuiet("edit_prices")){
+	$redirect = $FANNIE_URL."item/itemMaint.php";
+	$loginpage = $FANNIE_URL."auth/ui/loginform.php";
+	header("Location: $loginpage?redirect=$redirect");
+	exit;
+}
+</pre>
+This sends the user to a login form, if needed, and once they
+enter a valid username and password brings them right
+back to what they were doing.
+<h3>Installation</h3>
+The auth packages uses itself to check who can edit users,
+permissions, etc so there's a little backdoor for initial
+installation. 
+<ol>
+<li>Create a file in auth/ named init.php. It can be empty.</li>
+<li>Go to auth/ui/menu.php in a browser.</li>
+<li>Create a user for yourself. Remember your password.</li>
+<li>Give your user the authorization "admin". This provides
+access to manage the auth package.</li>
+<li>Delete the init.php file created in step one.</li>
+</ol>
+<h3>Drawbacks and/or Gotchas</h3>
+Just stuff to be aware of. Some can probably be fixed, some are inherent.
+<ul>
+<li>You will not remember the names of all the authorization
+classes. It's easy enough to go look in the code, but it's an
+annoying extra step. A drop down list of existing authorizations
+would help some. Groups help some.</li>
+<li>Groups must have at least one user. groups.php could be
+re-written around a new schema, but it's not a priority for me.</li>
+<li>The example code above, which is used throughout fannie, is kind
+of sloppy. If someone has a valid username &amp; password but not
+that particular authorization, the redirect loops. It works - 
+anyone who should have access will call IT to ask what's going on -
+but could be handled more gracefully.</li>
+<li>All three name &amp; password systems are enabled. Turning one
+off involves editing either auth/ui/loginform.php or auth/login.php.
+This should probably be configurable.</li>
+<li>LDAP configuration is hard coded in auth/login.php. Probably not
+a big deal until it's been tested with several different LDAP servers
+to get an idea just how many config options will be needed.</li>
+</ul>
+</body>
+</html>

@@ -77,8 +77,6 @@ function shadow_login($name,$passwd){
 	$output = array();
 	$return_value = -1;
 	exec("../shadowread/shadowread \"$name\"",$output,$return_value);
-	echo var_dump($output);
-	echo var_dump($return_value);
 	if ($return_value != 0)
 		return false;
 
