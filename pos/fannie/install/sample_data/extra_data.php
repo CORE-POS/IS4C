@@ -1,7 +1,7 @@
 <?php
-include('../config.php');
+include('../../config.php');
 if(!class_exists('SQLManager'))
-	include('../src/SQLManager.php');
+	include($FANNIE_ROOT.'src/SQLManager.php');
 ?>
 <html>
 <head>

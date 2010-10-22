@@ -370,6 +370,18 @@ class SQLManager {
 		return False;
 	}
 
+	function currency($which_connection=''){
+		if ($which_connection == '')
+			$which_connection=$this->default_db;
+		switch($this->connections[$which_connection]->databaseType){
+		case 'mysql':
+			return 'decimal(10,2)';
+		case 'mssql':
+			return 'money';
+		}
+		return 'decimal(10,2)';
+	}
+
 	function add_select_limit($query,$int_limit,$which_connection=''){
 		if ($which_connection == '')
 			$which_connection=$this->default_db;
