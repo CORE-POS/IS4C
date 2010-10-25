@@ -116,30 +116,38 @@ function win32() {
 	return $winos;
 }
 
-function execScript($script) {
-	global $IS4C_LOCAL;
-
-	if (win32() == 1) {
-		$IS4C_LOCAL->set("beep",$script);
-	} else {
-		exec("/pos/is4c/rs232/".$script);
+function scaleObject(){
+	global $IS4C_LOCAL, $IS4C_PATH;
+	$scaleDriver = $IS4C_LOCAL->get("scaleDriver");
+	$sd = 0;
+	if ($scaleDriver != "" && !class_exists($scaleDriver)){
+		include($IS4C_PATH.'scale-drivers/php-wrappers/'.$scaleDriver.'.php');
+		$sd = new $scaleDriver();
 	}
 }
 
 function goodBeep() {
-	execScript("goodBeep");
+	global $IS4C_LOCAL;
+	$IS4C_LOCAL->set("beep","goodBeep");
+	$sd->WriteToScale("goodBeep");
 }
 
 function rePoll() {
-	execScript("rePoll");
+	global $IS4C_LOCAL;
+	$IS4C_LOCAL->set("beep","rePoll");
+	$sd->WriteToScale("rePoll");
 }
 
 function errorBeep() {
-	execScript("errorBeep");
+	global $IS4C_LOCAL;
+	$IS4C_LOCAL->set("beep","errorBeep");
+	$sd->WriteToScale("errorBeep");
 }
 
 function twoPairs() {
-	execScript("twoPairs");
+	global $IS4C_LOCAL;
+	$IS4C_LOCAL->set("beep","twoPairs");
+	$sd->WriteToScale("twoPairs");
 }
 
 ?>

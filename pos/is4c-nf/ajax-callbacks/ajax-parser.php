@@ -32,12 +32,10 @@ if (!function_exists('array_to_json'))
 	include($IS4C_PATH.'lib/array_to_json.php');
 if (!function_exists('inputUnknown'))
 	include($IS4C_PATH.'lib/drawscreen.php');
+if (!function_exists('scaleObject'))
+	include($IS4C_PATH.'lib/lib.php');
 
-$scaleDriver = $IS4C_LOCAL->get("scaleDriver");
-$sd = 0;
-if ($scaleDriver != "" && !class_exists($scaleDriver))
-	include($IS4C_PATH.'scale-drivers/php-wrappers/'.$scaleDriver.'.php');
-	$sd = new $scaleDriver();
+$sd = scaleObject();
 
 /*
  * MAIN PARSING BEGINS

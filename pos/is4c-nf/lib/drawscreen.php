@@ -148,9 +148,9 @@ function printfooter($readOnly=False) {
 		if ($IS4C_LOCAL->get("scale") == 0 && $IS4C_LOCAL->get("SNR") == 1) {
 			rePoll();
 		}
-		if ($IS4C_LOCAL->get("cashOverAmt") <> 0) {		// apbw/cvr 03/05/05 CashBackBeep
-			twoPairs();		// apbw/cvr 03/05/05 CashBackBeep
-			$IS4C_LOCAL->set("cashOverAmt",0);			// apbw/cvr 03/05/05 CashBackBeep
+		if ($IS4C_LOCAL->get("cashOverAmt") <> 0) {
+			twoPairs();
+			$IS4C_LOCAL->set("cashOverAmt",0);
 		}
 	}
 

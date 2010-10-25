@@ -34,4 +34,5 @@ if ($IS4C_LOCAL->get("away") == 1)
 	echo printfooterb();
 else
 	echo printfooter();
+
 ?>
