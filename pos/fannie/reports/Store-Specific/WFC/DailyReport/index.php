@@ -108,7 +108,7 @@ echo tablify($tenders,array(1,0,2,3),array("Account","Type","Amount","Count"),
 	     array($ALIGN_LEFT,$ALIGN_LEFT,$ALIGN_RIGHT|$TYPE_MONEY,$ALIGN_RIGHT),2);
 
 
-$pCodeQ = "SELECT s.salesCode,-1*sum(l.total) as total 
+$pCodeQ = "SELECT s.salesCode,-1*sum(l.total) as total,min(l.department) 
 FROM $dlog as l join departments as d on l.department = d.dept_no
 LEFT JOIN deptSalesCodes AS s ON d.dept_no=s.dept_ID
 WHERE datediff(dd,getdate(),tDate) = $datediff 
@@ -150,7 +150,7 @@ $pCodes = array("41201"=>array(0.0),
 		"41705"=>array(0.0));
 while($row = $dbc->fetch_row($pCodeR)){
 	if (isset($pCodes[$row[0]])) $pCodes[$row[0]][0] = $row[1];
-	else echo $row[0];
+	//else var_dump( $row[2] );
 }
 echo "<br /><b>Sales</b>";
 echo tablify($pCodes,array(0,1),array("pCode","Sales"),
