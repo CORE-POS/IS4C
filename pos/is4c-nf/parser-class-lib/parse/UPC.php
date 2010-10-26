@@ -48,6 +48,12 @@ class UPC extends Parser {
 		global $IS4C_LOCAL,$IS4C_PATH;
 		$ret = $this->default_json();
 
+		if ($IS4C_LOCAL->get("refund")==1 && ($IS4C_LOCAL->get("refundComment") == ""){
+			$ret['main_frame'] = $IS4C_PATH.'gui-modules/refundComment.php';
+			$IS4C_LOCAL->set("refundComment",$IS4C_LOCAL->get("strEntered"));
+			return $ret;
+		}
+
 		$hitareflag = 0;
 		$entered = str_replace(".", " ", $entered);
 

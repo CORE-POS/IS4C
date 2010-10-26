@@ -129,25 +129,33 @@ function scaleObject(){
 function goodBeep() {
 	global $IS4C_LOCAL;
 	$IS4C_LOCAL->set("beep","goodBeep");
-	$sd->WriteToScale("goodBeep");
+	$sd = scaleObject();
+	if (is_object($sd))
+		$sd->WriteToScale("goodBeep");
 }
 
 function rePoll() {
 	global $IS4C_LOCAL;
 	$IS4C_LOCAL->set("beep","rePoll");
-	$sd->WriteToScale("rePoll");
+	$sd = scaleObject();
+	if (is_object($sd))
+		$sd->WriteToScale("rePoll");
 }
 
 function errorBeep() {
 	global $IS4C_LOCAL;
 	$IS4C_LOCAL->set("beep","errorBeep");
-	$sd->WriteToScale("errorBeep");
+	$sd = scaleObject();
+	if (is_object($sd))
+		$sd->WriteToScale("errorBeep");
 }
 
 function twoPairs() {
 	global $IS4C_LOCAL;
 	$IS4C_LOCAL->set("beep","twoPairs");
-	$sd->WriteToScale("twoPairs");
+	$sd = scaleObject();
+	if (is_object($sd))
+		$sd->WriteToScale("twoPairs");
 }
 
 ?>

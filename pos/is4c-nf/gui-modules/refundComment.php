@@ -44,9 +44,13 @@ class RefundComment extends NoInputPage {
 			}
 			else {
 				$input = str_replace("'","",$input);
-				addcomment("RF: ".$input);
-				$IS4C_LOCAL->set("msgrepeat",1);
 				$IS4C_LOCAL->set("strRemembered",$IS4C_LOCAL->get("refundComment"));
+				// add comment calls additem(), which wipes
+				// out refundComment; save it
+				addcomment("RF: ".$input);
+				$IS4C_LOCAL->set("refundComment",$IS4C_LOCAL->get("strRemembered"));
+				$IS4C_LOCAL->set("msgrepeat",1);
+				$IS4C_LOCAL->set("refund",1);
 			}
 			header("Location: {$IS4C_PATH}gui-modules/pos2.php");
 			return False;
@@ -115,7 +119,7 @@ class RefundComment extends NoInputPage {
 		<?php
 		$IS4C_LOCAL->set("scan","noScan");
 		$this->add_onload_command("\$('#selectlist').focus();\n");
-		if (isset($_POST['selectlist']) && $_POST['selectlist'] == 'Other') 
+		//if (isset($_POST['selectlist']) && $_POST['selectlist'] == 'Other') 
 			$this->add_onload_command("\$('#selectlist').keypress(processkeypress);\n");
 	} // END body_content() FUNCTION
 }

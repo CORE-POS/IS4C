@@ -51,6 +51,14 @@ if ($entered == "RI") $entered = $IS4C_LOCAL->get("strEntered");
 
 if ($IS4C_LOCAL->get("msgrepeat") == 1 && $entered != "CL") {
 	$entered = $IS4C_LOCAL->get("strRemembered");
+	$arr = array(
+		'main_frame'=>false,
+		'target'=>'.baseHeight',
+		'output'=>".".$entered."."
+	);
+	$json = array_to_json($arr);
+	//echo $json;
+	//exit;
 }
 $IS4C_LOCAL->set("strEntered",$entered);
 

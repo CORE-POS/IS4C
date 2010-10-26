@@ -43,7 +43,11 @@ class DeptKey extends Parser {
 		$amt = $split[0];
 		$ret = $this->default_json();
 
-		if ($IS4C_LOCAL->get("warned") == 1 and ($IS4C_LOCAL->get("warnBoxType") == "warnEquity" or $IS4C_LOCAL->get("warnBoxType") == "warnAR")){
+		if ($IS4C_LOCAL->get("refund")==1 && $IS4C_LOCAL->get("refundComment") == ""){
+			$ret['main_frame'] = $IS4C_PATH.'gui-modules/refundComment.php';
+			$IS4C_LOCAL->set("refundComment",$IS4C_LOCAL->get("strEntered"));
+		}
+		elseif ($IS4C_LOCAL->get("warned") == 1 and ($IS4C_LOCAL->get("warnBoxType") == "warnEquity" or $IS4C_LOCAL->get("warnBoxType") == "warnAR")){
 			$IS4C_LOCAL->set("warned",0);
 			$IS4C_LOCAL->set("warnBoxType","");
 		}

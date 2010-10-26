@@ -89,6 +89,7 @@ function addItem($strupc, $strdescription, $strtransType, $strtranssubType, $str
 		if ($strtransstatus != "V" && $strtransstatus != "D") $strtransstatus = "R" ;	// edited by apbw 6/04/05 to correct voiding of refunded items
 
 		$IS4C_LOCAL->set("refund",0);
+		$IS4C_LOCAL->set("refundComment","");
 	}
 
 	/* Nothing in the code can set $_SESSION["void"] to 1
