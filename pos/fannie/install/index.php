@@ -498,10 +498,8 @@ function create_op_dbs($con){
 	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 			'prodUpdate','op');
 
-	if (!$con->table_exists('prodUpdateArchive',$FANNIE_OP_DB)){
-		duplicate_structure($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-				'prodUpdate','prodUpdateArchive');
-	}
+	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+			'prodUpdateArchive','op');
 
 	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 			'ProdPriceHistory','op');
@@ -630,153 +628,28 @@ function create_trans_dbs($con){
 	$opstr = $FANNIE_OP_DB;
 	if ($FANNIE_SERVER_DBMS=="mssql") $opstr .= ".dbo";
 
-	$alogQ = "CREATE TABLE alog (
-	`datetime` datetime,
-	LaneNo tinyint,
-	CashierNo tinyint,
-	TransNo int,
-	Activity tinyint,
-	`Interval` double)";
-	if ($FANNIE_SERVER_DBMS == 'MSSQL'){
-		$alogQ = str_replace("`datetime`","[datetime]",$alogQ);
-		$alogQ = str_replace("`","",$alogQ);
-	}
-	if(!$con->table_exists("alog",$FANNIE_TRANS_DB)){
-		$con->query($alogQ,$FANNIE_TRANS_DB);
-	}
+	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+			'alog','trans');
 
-	$efsrq = "CREATE TABLE efsnetRequest (
-		date int ,
-		cashierNo int ,
-		laneNo int ,
-		transNo int ,
-		transID int ,
-		datetime datetime ,
-		refNum varchar (50) ,
-		live tinyint ,
-		mode varchar (32) ,
-		amount double ,
-		PAN varchar (19) ,
-		issuer varchar (16) ,
-		name varchar (50) ,
-		manual tinyint ,
-		sentPAN tinyint ,
-		sentExp tinyint ,
-		sentTr1 tinyint ,
-		sentTr2 tinyint 
-		)";
-	if(!$con->table_exists('efsnetRequest',$FANNIE_TRANS_DB)){
-		$con->query($efsrq,$FANNIE_TRANS_DB);
-	}
+	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+			'efsnetRequest','trans');
 
-		$efsrp = "CREATE TABLE efsnetResponse (
-		date int ,
-		cashierNo int ,
-		laneNo int ,
-		transNo int ,
-		transID int ,
-		datetime datetime ,
-		refNum varchar (50),
-		seconds float ,
-		commErr int ,
-		httpCode int ,
-		validResponse smallint ,
-		xResponseCode varchar (4),
-		xResultCode varchar (4), 
-		xResultMessage varchar (100),
-		xTransactionID varchar (12),
-		xApprovalNumber varchar (20)
-		)";
-	if(!$con->table_exists('efsnetResponse',$FANNIE_TRANS_DB)){
-		$con->query($efsrp,$FANNIE_TRANS_DB);
-	}
+	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+			'efsnetResponse','trans');
 
-	$efsrqm = "CREATE TABLE efsnetRequestMod (
-		date int ,
-		cashierNo int ,
-		laneNo int ,
-		transNo int ,
-		transID int ,
-		datetime datetime ,
-		origRefNum varchar (50),
-		origAmount double ,
-		origTransactionID varchar(12) ,
-		mode varchar (32),
-		altRoute tinyint ,
-		seconds float ,
-		commErr int ,
-		httpCode int ,
-		validResponse smallint ,
-		xResponseCode varchar(4),
-		xResultCode varchar(4),
-		xResultMessage varchar(100)
-		)";
-	if(!$con->table_exists('efsnetRequestMod',$FANNIE_TRANS_DB)){
-		$con->query($efsrqm,$FANNIE_TRANS_DB);
-	}
+	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+			'efsnetRequestMod','trans');
 
-	$vrq = "CREATE TABLE valutecRequest (
-		date int,
-		cashierNo int,
-		laneNo int,
-		transNo int,
-		transID int,
-		datetime datetime,
-		identifier varchar(10),
-		terminalID varchar(20),
-		live tinyint,
-		mode varchar(32),
-		amount double,
-		PAN varchar(19),
-		manual tinyint
-		)";
-	if(!$con->table_exists('valutecRequest',$FANNIE_TRANS_DB)){
-		$con->query($vrq,$FANNIE_TRANS_DB);
-	}
+	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+			'valutecRequest','trans');
 
-	$vrp = "CREATE TABLE valutecResponse (
-		date int,
-		cashierNo int,
-		laneNo int,
-		transNo int,
-		transID int,
-		datetime datetime,
-		identifier varchar(10),
-		seconds float,
-		commErr int,
-		httpCode int,
-		validResponse smallint,
-		xAuthorized varchar(5),
-		xAuthorizationCode varchar(9),
-		xBalance varchar(8),
-		xErrorMsg varchar(100)
-		)";
-	if(!$con->table_exists('valutecResponse',$FANNIE_TRANS_DB)){
-		$con->query($vrp,$FANNIE_TRANS_DB);
-	}
+	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+			'valutecResponse','trans');
 
-	$vrqm = "CREATE TABLE valutecRequestMod (
-		date int,
-		cashierNo int,
-		laneNo int,
-		transNo int,
-		transID int,
-		datetime datetime,
-		origAuthCode varchar(9),
-		mode varchar(32),
-		seconds float,
-		commErr int,
-		httpCode int,
-		validResponse smallint,
-		xAuthorized varchar(5),
-		xAuthorizationCode varchar(9),
-		xBalance varchar(8),
-		xErrorMsg varchar(100)
-		)";
-	if(!$con->table_exists('valutecRequestMod',$FANNIE_TRANS_DB)){
-		$con->query($vrqm,$FANNIE_TRANS_DB);
-	}
+	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+			'valutecRequestMod','trans');
 
+	/* invoice stuff is very beta; not documented yet */
 	$invCur = "CREATE TABLE InvDelivery (
 		inv_date datetime,
 		upc varchar(13),
@@ -959,508 +832,62 @@ function create_trans_dbs($con){
 function create_dlogs($con){
 	global $FANNIE_TRANS_DB, $FANNIE_SERVER_DBMS, $FANNIE_AR_DEPARTMENTS, $FANNIE_EQUITY_DEPARTMENTS, $FANNIE_OP_DB;
 
-	$trans_columns = "(
-	  `datetime` datetime default NULL,
-	  `register_no` smallint(6) default NULL,
-	  `emp_no` smallint(6) default NULL,
-	  `trans_no` int(11) default NULL,
-	  `upc` varchar(255) default NULL,
-	  `description` varchar(255) default NULL,
-	  `trans_type` varchar(255) default NULL,
-	  `trans_subtype` varchar(255) default NULL,
-	  `trans_status` varchar(255) default NULL,
-	  `department` smallint(6) default NULL,
-	  `quantity` double default NULL,
-	  `scale` tinyint(4) default NULL,
-	  `cost` double default 0.00 NULL,
-	  `unitPrice` double default NULL,
-	  `total` double default NULL,
-	  `regPrice` double default NULL,
-	  `tax` smallint(6) default NULL,
-	  `foodstamp` tinyint(4) default NULL,
-	  `discount` double default NULL,
-	  `memDiscount` double default NULL,
-	  `discountable` tinyint(4) default NULL,
-	  `discounttype` tinyint(4) default NULL,
-	  `voided` tinyint(4) default NULL,
-	  `percentDiscount` tinyint(4) default NULL,
-	  `ItemQtty` double default NULL,
-	  `volDiscType` tinyint(4) default NULL,
-	  `volume` tinyint(4) default NULL,
-	  `VolSpecial` double default NULL,
-	  `mixMatch` varchar(13) default NULL,
-	  `matched` smallint(6) default NULL,
-	  `memType` tinyint(2) default NULL,
-	  `staff` tinyint(4) default NULL,
-	  `numflag` smallint(6) default 0 NULL,
-	  `charflag` varchar(2) default '' NULL,
-	  `card_no` varchar(255) default NULL,
-	  `trans_id` int(11) default NULL
-	)";
+	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+			'dtransactions','trans');
 
-	if ($FANNIE_SERVER_DBMS == 'MSSQL'){
-		$trans_columns = "([datetime] [datetime] NOT NULL ,
-			[register_no] [smallint] NOT NULL ,
-			[emp_no] [smallint] NOT NULL ,
-			[trans_no] [int] NOT NULL ,
-			[upc] [nvarchar] (13) COLLATE SQL_Latin1_General_CP1_CI_AS NULL ,
-			[description] [nvarchar] (30) COLLATE SQL_Latin1_General_CP1_CI_AS NULL ,
-			[trans_type] [nvarchar] (1) COLLATE SQL_Latin1_General_CP1_CI_AS NULL ,
-			[trans_subtype] [nvarchar] (2) COLLATE SQL_Latin1_General_CP1_CI_AS NULL ,
-			[trans_status] [nvarchar] (1) COLLATE SQL_Latin1_General_CP1_CI_AS NULL ,
-			[department] [smallint] NULL ,
-			[quantity] [float] NULL ,
-			[scale] [tinyint] NULL ,
-			[cost] [money] NULL ,
-			[unitPrice] [money] NULL ,
-			[total] [money] NOT NULL ,
-			[regPrice] [money] NULL ,
-			[tax] [smallint] NULL ,
-			[foodstamp] [tinyint] NOT NULL ,
-			[discount] [money] NOT NULL ,
-			[memDiscount] [money] NULL ,
-			[discountable] [tinyint] NULL ,
-			[discounttype] [tinyint] NULL ,
-			[voided] [tinyint] NULL ,
-			[percentDiscount] [tinyint] NULL ,
-			[ItemQtty] [float] NULL ,
-			[volDiscType] [tinyint] NOT NULL ,
-			[volume] [tinyint] NOT NULL ,
-			[VolSpecial] [money] NOT NULL ,
-			[mixMatch] [nvarchar] (13) COLLATE SQL_Latin1_General_CP1_CI_AS NULL ,
-			[matched] [smallint] NOT NULL ,
-			[memType] [smallint] NULL ,
-			[isStaff] [tinyint] NULL ,
-			[numflag] [smallint] NULL ,
-			[charflag] [nvarchar] (2) COLLATE SQL_Latin1_General_CP1_CI_AS NULL ,
-			[card_no] [nvarchar] (6) COLLATE SQL_Latin1_General_CP1_CI_AS NULL ,
-			[trans_id] [int] NOT NULL )";
-	}
+	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+			'transarchive','trans');
 
-	if (!$con->table_exists('dtransactions',$FANNIE_TRANS_DB)){
-		$con->query('CREATE TABLE dtransactions '.$trans_columns,$FANNIE_TRANS_DB);
-	}
-	if (!$con->table_exists('transarchive',$FANNIE_TRANS_DB)){
-		$con->query('CREATE TABLE transarchive '.$trans_columns,$FANNIE_TRANS_DB);
-	}
+	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+			'suspended','trans');
 
-	if (!$con->table_exists('suspended',$FANNIE_TRANS_DB)){
-		$con->query('CREATE TABLE suspended '.$trans_columns,$FANNIE_TRANS_DB);
-	}
+	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+			'PendingSpecialOrder','trans');
 
-	if (!$con->table_exists('PendingSpecialOrder',$FANNIE_TRANS_DB)){
-		$con->query('CREATE TABLE PendingSpecialOrder (order_id int,'.substr($trans_columns,1),$FANNIE_TRANS_DB);
-	}
+	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+			'CompleteSpecialOrder','trans');
 
-	if (!$con->table_exists('CompleteSpecialOrder',$FANNIE_TRANS_DB)){
-		$con->query('CREATE TABLE CompleteSpecialOrder (order_id int,'.substr($trans_columns,1),$FANNIE_TRANS_DB);
-	}
+	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+			'dlog','trans');
 
-	$dlogView = "select 
-		`dtransactions`.`datetime` AS `tdate`,
-		`dtransactions`.`register_no` AS `register_no`,
-		`dtransactions`.`emp_no` AS `emp_no`,
-		`dtransactions`.`trans_no` AS `trans_no`,
-		`dtransactions`.`upc` AS `upc`,
-		`dtransactions`.`trans_type` AS `trans_type`,
-		`dtransactions`.`trans_subtype` AS `trans_subtype`,
-		`dtransactions`.`trans_status` AS `trans_status`,
-		`dtransactions`.`department` AS `department`,
-		`dtransactions`.`quantity` AS `quantity`,
-		`dtransactions`.`unitPrice` AS `unitPrice`,
-		`dtransactions`.`total` AS `total`,
-		`dtransactions`.`tax` AS `tax`,
-		`dtransactions`.`foodstamp` AS `foodstamp`,
-		`dtransactions`.`ItemQtty` AS `itemQtty`,
-		`dtransactions`.`card_no` AS `card_no`,
-		`dtransactions`.`trans_id` AS `trans_id` 
-		from `dtransactions` 
-		where 
-		((`dtransactions`.`trans_status` <> 'D') 
-		and 
-		(`dtransactions`.`trans_status` <> 'X'))";
-	if ($FANNIE_SERVER_DBMS == 'MSSQL'){
-		$dlogView = "SELECT
-			datetime AS tdate,
-			register_no,
-			emp_no,
-			trans_no,
-			upc,
-			trans_type,
-			trans_subtype,
-			trans_status,
-			department,
-			quantity,
-			unitPrice,
-			total,
-			tax,
-			foodstamp,
-			ItemQtty,
-			card_no,
-			trans_id
-			FROM dtransactions
-			WHERE trans_status NOT IN ('D','X')";
-	}
-	if (!$con->table_exists('dlog',$FANNIE_TRANS_DB)){
-		$con->query('CREATE VIEW dlog AS '.$dlogView,$FANNIE_TRANS_DB);
-	}
-	if (!$con->table_exists('dlog_90_view',$FANNIE_TRANS_DB)){
-		$dlogView90 = str_replace('dtransactions','transarchive',$dlogView);
-		$con->query('CREATE VIEW dlog_90_view AS '.$dlogView90,$FANIE_TRANS_DB);
-	}
+	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+			'dlog_90_view','trans');
 
-	$log_columns = "(`tdate` datetime default NULL,
-          `register_no` smallint(6) default NULL,
-          `emp_no` smallint(6) default NULL,
-          `trans_no` int(11) default NULL,
-          `upc` varchar(255) default NULL,
-          `trans_type` varchar(255) default NULL,
-          `trans_subtype` varchar(255) default NULL,
-          `trans_status` varchar(255) default NULL,
-          `department` smallint(6) default NULL,
-          `quantity` double default NULL,
-          `unitPrice` double default NULL,
-          `total` double default NULL,
-          `tax` smallint(6) default NULL,
-          `foodstamp` tinyint(4) default NULL,
-          `ItemQtty` double default NULL,
-          `card_no` varchar(255) default NULL,
-          `trans_id` int(11) default NULL)";
-	if ($FANNIE_SERVER_DBMS == 'MSSQL'){
-		$log_columns = "([tdate] [datetime] NOT NULL ,
-                        [register_no] [smallint] NOT NULL ,
-                        [emp_no] [smallint] NOT NULL ,
-                        [trans_no] [int] NOT NULL ,
-                        [upc] [nvarchar] (13) COLLATE SQL_Latin1_General_CP1_CI_AS NULL ,
-                        [trans_type] [nvarchar] (1) COLLATE SQL_Latin1_General_CP1_CI_AS NULL ,
-                        [trans_subtype] [nvarchar] (2) COLLATE SQL_Latin1_General_CP1_CI_AS NULL ,
-                        [trans_status] [nvarchar] (1) COLLATE SQL_Latin1_General_CP1_CI_AS NULL ,
-                        [department] [smallint] NULL ,
-                        [quantity] [float] NULL ,
-                        [total] [money] NOT NULL ,
-                        [regPrice] [money] NULL ,
-                        [tax] [smallint] NULL ,
-                        [foodstamp] [tinyint] NOT NULL ,
-                        [ItemQtty] [float] NULL ,
-                        [card_no] [nvarchar] (6) COLLATE SQL_Latin1_General_CP1_CI_AS NULL ,
-                        [trans_id] [int] NOT NULL )";
-	}
+	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+			'dlog_15','trans');
 
-	if (!$con->table_exists('dlog_15',$FANNIE_TRANS_DB)){
-		$con->query('CREATE TABLE dlog_15 '.$log_columns,$FANIE_TRANS_DB);
-	}
+	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+			'suspendedtoday','trans');
 
-	$susToday = "CREATE VIEW suspendedtoday AS
-		SELECT * FROM suspended WHERE
-		".$con->datediff($con->now(),'datetime')." = 0";
-	if (!$con->table_exists('suspendedtoday',$FANNIE_TRANS_DB)){
-		$con->query($susToday,$FANNIE_TRANS_DB);
-	}
+	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+			'TenderTapeGeneric','trans');
 
-	$ttG = "CREATE view TenderTapeGeneric
-		as
-		select 
-		tdate, 
-		emp_no, 
-		register_no,
-		trans_no,
-		CASE WHEN trans_subtype = 'CP' AND upc LIKE '%MAD%' THEN ''
-		     WHEN trans_subtype IN ('EF','EC','TA') THEN 'EF'
-		     ELSE trans_subtype
-		END AS trans_subtype,
-		CASE WHEN trans_subtype = 'ca' THEN
-		CASE WHEN total >= 0 THEN total ELSE 0 END
-		     ELSE
-			-1 * total
-		END AS tender
-		from dlog
-		where ".$con->datediff($con->now(),'tdate')."= 0
-		and trans_subtype not in ('0','')";
-	if (!$con->table_exists("TenderTapeGeneric",$FANNIE_TRANS_DB)){
-		$con->query($ttG,$FANNIE_TRANS_DB);
-	}
+	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+			'rp_dt_receipt_90','trans');
 
-	$rp1Q = "CREATE  view rp_dt_receipt_90 as 
-		select 
-		datetime,
-		register_no,
-		emp_no,
-		trans_no,
-		description,
-		case 
-			when voided = 5 
-				then 'Discount'
-			when trans_status = 'M'
-				then 'Mbr special'
-			when scale <> 0 and quantity <> 0 
-				then concat(convert(quantity,char), ' @ ', convert(unitPrice,char))
-			when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity = 1
-				then concat(convert(volume,char), ' /', convert(unitPrice,char))
-			when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity <> 1
-				then concat(convert(Quantity,char), ' @ ', convert(Volume,char), ' /', convert(unitPrice,char))
-			when abs(itemQtty) > 1 and discounttype = 3
-				then concat(convert(ItemQtty,char), ' /', convert(UnitPrice,char))
-			when abs(itemQtty) > 1
-				then concat(convert(quantity,char), ' @ ', convert(unitPrice,char))	
-			when matched > 0
-				then '1 w/ vol adj'
-			else ''
-				
-		end
-		as comment,
-			total,
+	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+			'rp_receipt_header_90','trans');
 
-		case 
-			when trans_status = 'V' 
-				then 'VD'
-			when trans_status = 'R'
-				then 'RF'
-			when tax <> 0 and foodstamp <> 0
-				then 'TF'
-			when tax <> 0 and foodstamp = 0
-				then 'T' 
-			when tax = 0 and foodstamp <> 0
-				then 'F'
-			when tax = 0 and foodstamp = 0
-				then '' 
-		end
-		as Status,
-		trans_type,
-		card_no as memberID,
-		unitPrice,
-		voided,
-		trans_id,
-		concat(convert(emp_no,char), '-', convert(register_no,char), '-', convert(trans_no,char)) as trans_num
+	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+			'memIouToday','trans');
 
-		from transArchive
-		where voided <> 5 and UPC <> 'TAX' and UPC <> 'DISCOUNT'";
-	if ($FANNIE_SERVER_DBMS == 'MSSQL'){
-		$rp1Q = "CREATE  view rp_dt_receipt_90 as 
-			select 
-			datetime,
-			register_no,
-			emp_no,
-			trans_no,
-			description,
-			case 
-				when voided = 5 
-					then 'Discount'
-				when trans_status = 'M'
-					then 'Mbr special'
-				when scale <> 0 and quantity <> 0 
-					then convert(varchar, quantity) + ' @ ' + convert(varchar, unitPrice)
-				when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity = 1
-					then convert(varchar, volume) + ' /' + convert(varchar, unitPrice)
-				when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity <> 1
-					then convert(varchar, Quantity) + ' @ ' + convert(varchar, Volume) + ' /' + convert(varchar, unitPrice)
-				when abs(itemQtty) > 1 and discounttype = 3
-					then convert(varchar,ItemQtty) + ' /' + convert(varchar, UnitPrice)
-				when abs(itemQtty) > 1
-					then convert(varchar, quantity) + ' @ ' + convert(varchar, unitPrice)	
-				when matched > 0
-					then '1 w/ vol adj'
-				else ''
-					
-			end
-			as comment,
-				total,
+	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+			'newBalanceToday_cust','trans');
 
-			case 
-				when trans_status = 'V' 
-					then 'VD'
-				when trans_status = 'R'
-					then 'RF'
-				when tax <> 0 and foodstamp <> 0
-					then 'TF'
-				when tax <> 0 and foodstamp = 0
-					then 'T' 
-				when tax = 0 and foodstamp <> 0
-					then 'F'
-				when tax = 0 and foodstamp = 0
-					then '' 
-			end
-			as Status,
-			trans_type,
-			card_no as memberID,
-			unitPrice,
-			voided,
-			trans_id,
-			(convert(varchar,emp_no) +  '-' + convert(varchar,register_no) + '-' + convert(varchar,trans_no)) as trans_num
+	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+			'ar_history','trans');
 
-			from transArchive
-			where voided <> 5 and UPC <> 'TAX' and UPC <> 'DISCOUNT'";
-	}
-	if (!$con->table_exists("rp_dt_receipt_90",$FANNIE_TRANS_DB)){
-		$con->query($rp1Q,$FANNIE_TRANS_DB);
-	}
+	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+			'stockpurchases','trans');
 
-	$rp2Q = "create  view rp_receipt_header_90 as
-		select
-		datetime as dateTimeStamp,
-		card_no as memberID,
-		concat(convert(emp_no,char), '-', convert(register_no,char), '-', convert(trans_no,char)) as trans_num,
-		register_no,
-		emp_no,
-		trans_no,
-		convert(sum(case when discounttype = 1 then discount else 0 end),decimal(10,2)) as discountTTL,
-		convert(sum(case when discounttype = 2 then memDiscount else 0 end),decimal(10,2)) as memSpecial,
-		convert(sum(case when upc = '0000000008005' then total else 0 end),decimal(10,2)) as couponTotal,
-		convert(sum(case when upc = 'MEMCOUPON' then unitPrice else 0 end),decimal(10,2)) as memCoupon,
-		abs(sum(case when trans_subtype = 'MI' or trans_subtype = 'CX' then total else 0 end)) as chargeTotal,
-		sum(case when upc = 'Discount' then total else 0 end) as transDiscount,
-		sum(case when trans_type = 'T' then -1 * total else 0 end) as tenderTotal
+	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+			'stockSum_purch','trans');
 
-		from transArchive
-		group by register_no, emp_no, trans_no, card_no, datetime";
-	if ($FANNIE_SERVER_DBMS == 'MSSQL'){
-		$rp2Q = "create  view rp_receipt_header_90 as
-			select
-			datetime as dateTimeStamp,
-			card_no as memberID,
-			(convert(varchar,emp_no) +  '-' + convert(varchar,register_no) + '-' + convert(varchar,trans_no)) as trans_num,
-			register_no,
-			emp_no,
-			trans_no,
-			convert(numeric(10,2), sum(case when discounttype = 1 then discount else 0 end)) as discountTTL,
-			convert(numeric(10,2), sum(case when discounttype = 2 then memDiscount else 0 end)) as memSpecial,
-			convert(numeric(10,2), sum(case when upc = '0000000008005' then total else 0 end)) as couponTotal,
-			convert(numeric(10,2), sum(case when upc = 'MEMCOUPON' then unitPrice else 0 end)) as memCoupon,
-			abs(sum(case when trans_subtype = 'MI' or trans_subtype = 'CX' then total else 0 end)) as chargeTotal,
-			sum(case when upc = 'Discount' then total else 0 end) as transDiscount,
-			sum(case when trans_type = 'T' then -1 * total else 0 end) as tenderTotal
+	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+			'stockSumToday','trans');
 
-			from transArchive
-			group by register_no, emp_no, trans_no, card_no, datetime";
-	}
-	if (!$con->table_exists("rp_receipt_header_90",$FANNIE_TRANS_DB)){
-		$con->query($rp2Q,$FANNIE_TRANS_DB);
-	}
-
-	$ret = preg_match_all("/[0-9]+/",$FANNIE_AR_DEPARTMENTS,$depts);
-	if ($ret != 0){
-		/* AR departments exist */
-		$depts = array_pop($depts);
-		$dlist = "(";
-		foreach ($depts as $d){
-			$dlist .= $d.",";	
-		}
-		$dlist = substr($dlist,0,strlen($dlist)-1).")";
-
-		/* view for today's charges & payments */
-		$iouView = "CREATE VIEW memIouToday AS
-			SELECT card_no,
-			SUM(CASE WHEN trans_subtype='MI' THEN total ELSE 0 END) as charges,
-			SUM(CASE WHEN department IN $dlist THEN total ELSE 0 END) as payments
-			FROM dlog WHERE ".$con->datediff($con->now(),'tdate')." = 0
-			AND (trans_subtype='MI' OR department IN $dlist)
-			GROUP BY card_no";
-		if (!$con->table_exists("memIouToday",$FANNIE_TRANS_DB)){
-			$con->query($iouView,$FANNIE_TRANS_DB);
-		}
-
-		
-		/* view for real-time account balances */
-		$cdata = ($FANNIE_SERVER_DBMS=='MSSQL')?$FANNIE_OP_DB.".dbo.custdata":$FANNIE_OP_DB.".custdata";
-		$newBal = "CREATE VIEW newBalanceToday_cust AS
-			SELECT   c.cardno as memnum, c.discount as discounttype,c.balance as ARCurrBalance,
-			(case when a.charges is NULL then 0 ELSE a.charges END) as totcharges,
-			(CASE WHEN a.payments IS NULL THEN 0 ELSE a.payments END) as totpayments,
-			(CASE when a.card_no is NULL then c.Balance ELSE (c.Balance -a.charges - a.payments)END) as balance
-			FROM $cdata as c left outer join memIouToday as a ON c.cardno = a.card_no
-			where c.personnum = 1";
-		if (!$con->table_exists("newBalanceToday_cust",$FANNIE_TRANS_DB)){
-			$con->query($newBal,$FANNIE_TRANS_DB);
-		}
-
-		/* table for storing charge/payment history */
-		$arHist = "CREATE TABLE ar_history (
-			card_no int,
-			Charges decimal(10,2),
-			Payments decimal(10,2),
-			tdate datetime,
-			trans_num varchar(90)
-		)";
-		if ($FANNIE_TRANS_DB == "MSSQL")
-			$arHist = str_replace("decimal(10,2)","money",$arHist);
-		if (!$con->table_exists("ar_history",$FANNIE_TRANS_DB)){
-			$con->query($arHist);
-		}
-	}
-
-	$ret = preg_match_all("/[0-9]+/",$FANNIE_EQUITY_DEPARTMENTS,$depts);
-	if ($ret != 0){
-		/* equity departments exist */
-		$depts = array_pop($depts);
-		$dlist = "(";
-		foreach ($depts as $d){
-			$dlist .= $d.",";	
-		}
-		$dlist = substr($dlist,0,strlen($dlist)-1).")";
-
-		/* table for equity purchase history */
-		$eqHist = "CREATE TABLE stockpurchases (
-			card_no int,
-			stockPurchase decimal(10,2),
-			tdate datetime,
-			trans_num varchar(90),
-			dept int
-		)";
-		if ($FANNIE_TRANS_DB == "MSSQL")
-			$eqHist = str_replace("decimal(10,2)","money",$eqHist);
-		if (!$con->table_exists("stockpurchases",$FANNIE_TRANS_DB)){
-			$con->query($eqHist,$FANNIE_TRANS_DB);
-		}
-
-		/* per-member equity totals */
-		$sumHist = "CREATE VIEW stockSum_purch AS
-			SELECT card_no,
-			SUM(stockPurchase) AS totPayments,
-			MIN(tdate) AS startdate
-			FROM stockpurchases
-			GROUP BY card_no";
-		if (!$con->table_exists("stockSum_purch",$FANNIE_TRANS_DB)){
-			$con->query($sumHist,$FANNIE_TRANS_DB);
-		}
-
-		/* equity purchases today */
-		$eqToday = "CREATE VIEW stockSumToday AS
-			SELECT card_no,
-			CASE WHEN department IN $dlist THEN total ELSE 0 END AS totPayments,
-			MIN(tdate) AS startdate
-			FROM dlog WHERE ".$con->datediff($con->now(),'tdate')." = 0
-			AND department IN $dlist
-			GROUP BY card_no";
-		if (!$con->table_exists("stockSumToday",$FANNIE_TRANS_DB)){
-			$con->query($eqToday,$FANNIE_TRANS_DB);
-		}
-
-		$minfo = ($FANNIE_SERVER_DBMS=='MSSQL')?$FANNIE_OP_DB.".dbo.meminfo":$FANNIE_OP_DB.".meminfo";
-		/* real-time equity totals */
-		$newBalEq = "CREATE VIEW newBalanceStockToday_test 
-			SELECT
-			m.card_no as card_no,
-			case
-				when a.card_no is not null and b.card_no is not null
-				then a.totPayments + b.totPayments
-				when a.card_no is not null
-				then a.totPayments
-				when b.card_no is not null
-				then b.totPayments
-			end
-			as payments,
-			case when a.startdate is null then
-			b.startdate else a.startdate end
-			as startdate
-
-			FROM $minfo as m LEFT JOIN
-			stockSum_purch as a on a.card_no=m.card_no
-			LEFT JOIN stockSumToday as b
-			ON m.card_no=b.card_no
-			WHERE a.card_no is not null OR b.card_no is not null";
-		if (!$con->table_exists("newBalanceStockToday_test",$FANNIE_TRANS_DB)){
-			$con->query($newBalEq,$FANNIE_TRANS_DB);
-		}
-	}
+	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+			'newBalanceStockToday_test','trans');
 }
 
 function create_archive_dbs($con) {

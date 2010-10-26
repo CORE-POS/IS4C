@@ -49,16 +49,59 @@ function create_if_needed($con,$dbms,$db_name,$table_name,$stddb){
 	$con->query($CREATE["$stddb.$table_name"],$db_name);
 }
 
-/* create another table with the same
+/* query to create another table with the same
 	columns
 */
-function duplicate_structure($con,$dbms,$db_name,$table1,$table2){
+function duplicate_structure($dbms,$table1,$table2){
 	if ($dbms == "MYSQL"){
-		$con->query("CREATE TABLE `$table2` LIKE `$table1`",$db_name);
+		return "CREATE TABLE `$table2` LIKE `$table1`";
 	}
 	elseif ($dbms == "MSSQL"){
-		$con->query("SELECT * INTO [$table2] FROM [$table1] WHERE 1=0",$db_name);
+		return "SELECT * INTO [$table2] FROM [$table1] WHERE 1=0";
 	}
+}
+
+function ar_departments(){
+	global $FANNIE_AR_DEPARTMENTS;
+	$ret = preg_match_all("/[0-9]+/",$FANNIE_AR_DEPARTMENTS,$depts);
+	if ($ret != 0){
+		/* AR departments exist */
+		$depts = array_pop($depts);
+		$dlist = "(";
+		foreach ($depts as $d){
+			$dlist .= $d.",";	
+		}
+		$dlist = substr($dlist,0,strlen($dlist)-1).")";
+		return $dlist;
+	}
+	return "";
+}
+
+function equity_departments(){
+	global $FANNIE_EQUITY_DEPARTMENTS;
+	$ret = preg_match_all("/[0-9]+/",$FANNIE_EQUITY_DEPARTMENTS,$depts);
+	if ($ret != 0){
+		/* equity departments exist */
+		$depts = array_pop($depts);
+		$dlist = "(";
+		foreach ($depts as $d){
+			$dlist .= $d.",";	
+		}
+		$dlist = substr($dlist,0,strlen($dlist)-1).")";
+		return $dlist;
+	}
+	return "";
+}
+
+function qualified_names(){
+	global $FANNIE_SERVER_DBMS,$FANNIE_OP_DB,$FANNIE_TRANS_DB;
+
+	$ret = array("op"=>$FANNIE_OP_DB,"trans"=>$FANNIE_TRANS_DB);
+	if ($FANNIE_SERVER_DBMS == "MSSQL"){
+		$ret["op"] .= ".dbo";
+		$ret["trans"] .= ".dbo";
+	}
+	return $ret;
 }
 
 ?>

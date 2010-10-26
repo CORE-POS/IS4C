@@ -1,4 +1,137 @@
 <?php
+/*
+Table: products
+
+Columns:
+	upc int or varchar, dbms dependent
+	description varchar
+	normal_price double
+	pricemethod smallint
+	groupprice double
+	quantity smallint
+	special_price double
+	specialpricemethod smallint
+	specialgroupprice double
+	specialquantity smallint
+	start_date datetime
+	end_date datetime
+	department smallint
+	size varchar
+	tax smallint
+	foodstamp tinyint
+	scale tinyint
+	scaleprice tinyint
+	mixmatchcode varchar
+	modified datetime
+	advertised tinyint
+	tareweight double
+	discount smallint
+	discounttype tinyint
+	unitofmeasure varchar
+	wicable tinyint
+	qttyEnforced tinyint
+	idEnforced tinyint
+	cost double
+	inUse tinyint
+	numflag int
+	subdept smallint
+	deposit double
+	local tinyint
+	id int auto_increment
+
+Depends on:
+	none
+
+Use:
+This table lists items in the system.
+
+upc is how items are identified. Regardless of
+whether it's an integer or a varchar, it should
+always have length 13. Whether or not to include
+check digits is up to the individual store.
+
+id provides a unique row identifier, but upc
+should probably be unique too. If not, you'll have
+to add code to either let the cashier choose which
+matching record or to limit which records are
+pushed to the registers.
+
+description is used for screen display, reporting,
+and receipts.
+
+Pricing:
+When an item has pricemethod 0, the price is
+simply normal_price. If pricemethod is greater than
+0, groupprice and quantity are used to calculate
+the price. There is variance here by implementation,
+but generally pricemethod 1 or 2 will yield the
+most obvious grouped pricing. Example: buy one, get
+the second 50% off
+	normal_price => 1.00
+	pricemethod => 1 (or maybe 2)
+	groupprice => 1.50
+	quantity => 2
+If discounttype is greater than zero, the special*
+columns get used instead but otherwise behavior
+should be similar.
+
+start_date and end_date indicate the start and end
+of a sale. The current register code does not check
+these to validate sales.
+
+department and subdept are an item's department
+and subdepartment settings.
+
+tax indicates if an item is taxable and at what rate
+
+foodstamp indicates whether an item can be purchased
+using foodstamps
+
+scale indicates whether an item should be sold by weight
+
+mixmatchcode relates to pricing when pricemethod is
+greater than zero. Items with the same mixmatchcode
+are considred equivalent when determining whether the
+customer has reached the required quantity.
+
+modified [ideally] lists the last time a product was
+changed. Not all back end tools remember to update this
+and of course direct updates via SQL may forget too.
+
+tareweight is a default tare for by weight items
+
+discount indicates whether an item is eligible for
+percentage discounts on a whole transactions. Value 0
+means exclude from discounts.
+
+discounttype indicates if an item is on sale
+	0 => not on sale
+	1 => on sale for everyone
+	2 => on sale for members
+Values greater than 2 may be used, but results will
+vary based on whose code you're running
+
+unitofmeasure might be used for screen display and
+receipt listings of quantity. 
+
+qttyEnforced forces the cashier to enter an explicit
+quantity when ringing up the item
+
+cost is the item's cost
+
+isUse indicates whether the item is currently
+available for sale. Whether cashiers can bypass this
+setting probably varies by front end implementation.
+
+local indicates whether the item is locally sourced.
+
+Other columns:
+size, scaleprice, advertised, wicable, idEnforced,
+numflag, and deposit have no current meaning on the
+front or back end. Or no current implementation.
+The meaning of idEnforced is pretty clear, but setting
+it won't *do* anything.
+*/
 
 $CREATE['op.products'] = "
 	CREATE TABLE `products` (
