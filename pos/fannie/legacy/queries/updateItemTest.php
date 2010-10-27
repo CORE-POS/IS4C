@@ -319,7 +319,9 @@ if(!empty($likeCode)){
 
     
 	    //INSERTED HERE TO INSERT UPDATE INTO prodUpdate for likecoded items. 
-	    $selectQ = "SELECT * FROM upcLike WHERE likecode = $likeCode";
+	    // and push updates to the lanes
+	    $selectQ = "SELECT u.* FROM upcLike as u inner join products as p 
+			on u.upc=p.upc  WHERE likecode = $likeCode";
 	    //echo $selectQ;
 	    $selectR = $sql->query($selectQ);
 	    while($selectW = $sql->fetch_array($selectR)){
@@ -329,6 +331,7 @@ if(!empty($likeCode)){
 			      FROM products where upc = '$upcL'";
 		  $insR= $sql->query($insQ);
 		  //echo $selectQ . "<br>";
+		  updateProductAllLanes($upcL);
 	      }   
 	    }
     	

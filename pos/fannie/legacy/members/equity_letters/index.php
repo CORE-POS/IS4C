@@ -3,6 +3,7 @@ include('../../../config.php');
 include($FANNIE_ROOT.'src/fpdf/fpdf.php');
 
 if (!class_exists("SQLManager")) require_once($FANNIE_ROOT."src/SQLManager.php");
+include('../../db.php');
 
 if (isset($_GET['action'])){
 	$out = $_GET['action']."`";
@@ -236,7 +237,7 @@ function dueDisplays($subtype){
 
 function pastDueDisplays($subtype){
 	global $sql;
-	$ret .= "<form action=pastdue.php method=post>";
+	$ret = "<form action=pastdue.php method=post>";
 	$ret .= "<table cellpadding=0 cellspacing=4><tr><td>";
 	$ret .= "<select id=cardnos name=cardno[] multiple size=20>";
 

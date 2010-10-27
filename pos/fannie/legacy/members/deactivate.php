@@ -1,4 +1,8 @@
 <?php
+include('../../config.php');
+
+if (!class_exists("SQLManager")) include($FANNIE_ROOT.'src/SQLManager.php');
+include('../db.php');
 
 include('memAddress.php');
 include('header.html');

@@ -37,7 +37,7 @@ while($selAddW = $sql->fetch_row($selAddR)){
    $pdf->AddPage();
    $pdf->SetFont('Scala','B','14');
    $pdf->Cell(20,10,'Whole Foods Community Co-op',0);
-   $pdf->Image('/srv/www/htdocs/images/WFCLogoCThru1.jpg',130,10,50,25);
+   $pdf->Image($FANNIE_ROOT.'legacy/images/WFCLogoCThru1.jpg',130,10,50,25);
    $pdf->Ln(5);
    $pdf->SetFont('Scala','','12');
    $pdf->Cell(20,10,'610 East Fourth Street',0);
@@ -55,11 +55,13 @@ while($selAddW = $sql->fetch_row($selAddR)){
    $firstname = ucwords(strtolower($selAddW[1]));
    $lastname = ucwords(strtolower($selAddW[2]));
    $fullname = $firstname." ".$lastname;
+	/*
    $equity = $selAddW[8];
    $classA = 20;
    $classB = $equity - 20;
    $remainingB = 100 - $equity;
    $endDate = $selAddW[9];
+	*/
 
    //Member address
    $pdf->Cell(10,10,trim($fullname),0);
@@ -112,7 +114,7 @@ at mms@wholefoods.coop";
    $pdf->Ln(10);
 
    $pdf->MultiCell(0,5,"Amanda Borgren");
-   $pdf->MultiCell(0,5,"Member Services");
+   $pdf->MultiCell(0,5,"Owner Services");
 
 }
 

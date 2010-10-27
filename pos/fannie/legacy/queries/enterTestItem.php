@@ -154,7 +154,6 @@ $resultI = $sql->query($query99);
 //$insertR = $sql->query('EXEC insertItemProc',$db);
 require('laneUpdates.php');
 addProductAllLanes($upc);
-//exec("php fork.php laneUpdates $upc");
 
 if (empty($manufacturer))
 	$manufacturer = '';

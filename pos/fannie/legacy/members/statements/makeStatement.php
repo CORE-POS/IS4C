@@ -52,12 +52,8 @@ if ($prevPrevMonth == 0){
 	$prevPrevYear = $year - 1;
 }
 
-$endDay = get_month_day($prevMonth,$year);
+$stateDate = date("d F, Y",mktime(0,0,0,$month,0,$year));
 
-//$stateDate = $endDay."/".$prevMonth."/".$year;
-//$stateDate = $endDay." ".date("F",$prevMonth).", ".$year;
-$dateFormat = "d F, Y";
-$stateDate = make_date($prevMonth,$endDay,$year,$dateFormat);
 $pdf = new FPDF();
 
 //Meat of the statement

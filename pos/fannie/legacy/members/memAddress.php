@@ -308,7 +308,7 @@ function addressForm($memNum)
                         echo "<td bgcolor='FFFF33'>Address2: </td>";
                         echo "<td><input name=address2 maxlength=30 value='" . (isset($address[1])?$address[1]:'') . "'></td>";
                         echo "<td bgcolor='FFFF33'>UPC: </td>";
-			echo "<td><input name=cardUPC maxlength=11 value=\"".$cardUPC."\" /></td>";
+			echo "<td><input name=cardUPC maxlength=13 value=\"".$cardUPC."\" /></td>";
                 echo "</tr>";
                 echo "<tr>";
                         echo "<td bgcolor='FFFF33'>City: </td>";
@@ -614,7 +614,7 @@ function addressFormLimited($memNum)
                         echo "<td bgcolor='FFFF33'>Address2: </td>";
                         echo "<td><input name=address2 maxlength=30 value='" .(isset($address[1])? $address[1] :''). "'></td>";
                         echo "<td bgcolor='FFFF33'>UPC: </td>";
-			echo "<td><input name=cardUPC maxlength=11 value=\"".$cardUPC."\" /></td>";
+			echo "<td><input name=cardUPC maxlength=13 value=\"".$cardUPC."\" /></td>";
                 echo "</tr>";
                 echo "<tr>";
                         echo "<td bgcolor='FFFF33'>City: </td>";
