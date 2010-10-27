@@ -124,6 +124,99 @@ function saveDept(new_dept,upc){
 	}
 	});
 }
+function saveFN(oid,val){
+	$.ajax({
+	url: 'ajax-calls.php',
+	dataType: 'post',
+	data: 'action=saveFN&orderID='+oid+'&fn='+val,
+	cache: false,
+	success: function(resp){}
+	});
+}
+function saveLN(oid,val){
+	$.ajax({
+	url: 'ajax-calls.php',
+	dataType: 'post',
+	data: 'action=saveLN&orderID='+oid+'&ln='+val,
+	cache: false,
+	success: function(resp){}
+	});
+}
+function saveCity(oid,val){
+	$.ajax({
+	url: 'ajax-calls.php',
+	dataType: 'post',
+	data: 'action=saveCity&orderID='+oid+'&city='+val,
+	cache: false,
+	success: function(resp){}
+	});
+}
+function saveState(oid,val){
+	$.ajax({
+	url: 'ajax-calls.php',
+	dataType: 'post',
+	data: 'action=saveState&orderID='+oid+'&state='+val,
+	cache: false,
+	success: function(resp){}
+	});
+}
+function saveZip(oid,val){
+	$.ajax({
+	url: 'ajax-calls.php',
+	dataType: 'post',
+	data: 'action=saveZip&orderID='+oid+'&zip='+val,
+	cache: false,
+	success: function(resp){}
+	});
+}
+function savePh(oid,val){
+	$.ajax({
+	url: 'ajax-calls.php',
+	dataType: 'post',
+	data: 'action=savePh&orderID='+oid+'&ph='+val,
+	cache: false,
+	success: function(resp){}
+	});
+}
+function savePh2(oid,val){
+	$.ajax({
+	url: 'ajax-calls.php',
+	dataType: 'post',
+	data: 'action=savePh2&orderID='+oid+'&ph2='+val,
+	cache: false,
+	success: function(resp){}
+	});
+}
+function saveEmail(oid,val){
+	$.ajax({
+	url: 'ajax-calls.php',
+	dataType: 'post',
+	data: 'action=saveEmail&orderID='+oid+'&email='+val,
+	cache: false,
+	success: function(resp){}
+	});
+}
+function saveAddr(oid){
+	var addr1 = $('#t_addr1').val();
+	var addr2 = $('#t_addr2').val();
+	$.ajax({
+	url: 'ajax-calls.php',
+	dataType: 'post',
+	data: 'action=saveAddr&addr1='+addr1+'&addr2='+addr2+'&orderID='+oid,
+	cache: false,
+	success: function(resp){}
+	});
+}
+function saveText(oid,val){
+	val = escape(val);
+	$.ajax({
+	url: 'ajax-calls.php',
+	dataType: 'post',
+	data: 'action=saveText&val='+val+'&orderID='+oid,
+	cache: false,
+	success: function(resp){alert(resp);}
+	});
+}
 </script>
 <?php
 include($FANNIE_ROOT.'src/footer.html');

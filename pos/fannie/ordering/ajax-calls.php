@@ -61,6 +61,109 @@ case 'saveDept':
 		$dbc->escape($upc));
 	$dbc->query($upQ);
 	break;
+case 'saveAddr':
+	if (canSaveAddress($orderID) == True){
+		$addr = $_REQUEST['addr1'];
+		if (!empty($_REQUEST['addr2']))
+			$addr .= "\n".$_REQUEST['addr2'];
+		$dbc->query(sprintf("UPDATE SpecialOrderContact
+			SET street=%s WHERE card_no=%d",
+			$dbc->escape($addr),$orderID));
+	}
+	break;
+case 'saveFN':
+	if (canSaveAddress($orderID) == True){
+		$dbc->query(sprintf("UPDATE SpecialOrderContact
+			SET first_name=%s WHERE card_no=%d",
+			$dbc->escape($_REQUEST['fn']),$orderID));
+	}
+	break;
+case 'saveLN':
+	if (canSaveAddress($orderID) == True){
+		$dbc->query(sprintf("UPDATE SpecialOrderContact
+			SET last_name=%s WHERE card_no=%d",
+			$dbc->escape($_REQUEST['ln']),$orderID));
+	}
+	break;
+case 'saveCity':
+	if (canSaveAddress($orderID) == True){
+		$dbc->query(sprintf("UPDATE SpecialOrderContact
+			SET city=%s WHERE card_no=%d",
+			$dbc->escape($_REQUEST['city']),$orderID));
+	}
+	break;
+case 'saveSate':
+	if (canSaveAddress($orderID) == True){
+		$dbc->query(sprintf("UPDATE SpecialOrderContact
+			SET state=%s WHERE card_no=%d",
+			$dbc->escape($_REQUEST['state']),$orderID));
+	}
+	break;
+case 'saveZip':
+	if (canSaveAddress($orderID) == True){
+		$dbc->query(sprintf("UPDATE SpecialOrderContact
+			SET zip=%s WHERE card_no=%d",
+			$dbc->escape($_REQUEST['zip']),$orderID));
+	}
+	break;
+case 'savePh':
+	if (canSaveAddress($orderID) == True){
+		$dbc->query(sprintf("UPDATE SpecialOrderContact
+			SET phone=%s WHERE card_no=%d",
+			$dbc->escape($_REQUEST['ph']),$orderID));
+	}
+	break;
+case 'savePh2':
+	if (canSaveAddress($orderID) == True){
+		$dbc->query(sprintf("UPDATE SpecialOrderContact
+			SET email_2=%s WHERE card_no=%d",
+			$dbc->escape($_REQUEST['ph2']),$orderID));
+	}
+	break;
+case 'saveEmail':
+	if (canSaveAddress($orderID) == True){
+		$dbc->query(sprintf("UPDATE SpecialOrderContact
+			SET email_1=%s WHERE card_no=%d",
+			$dbc->escape($_REQUEST['email']),$orderID));
+	}
+	break;
+case 'UpdateStatus':
+	$q = sprintf("UPDATE SpecialOrderStatus SET
+		status_flag=%d WHERE order_id=%d",
+		$_REQUEST['val'],$orderID);
+	$dbc->query($q);
+	break;
+case 'UpdateSub':
+	$q = sprintf("UPDATE SpecialOrderStatus SET
+		sub_status=%d WHERE order_id=%d",
+		$_REQUEST['val'],$orderID);
+	$dbc->query($q);
+	break;
+case 'saveText':
+	$q = sprintf("UPDATE SpecialOrderNotes SET
+		notes=%s WHERE order_id=%d",
+		$dbc->escape($_REQUEST['val']),
+		$orderID);
+	$dbc->query($q);
+	break;
+}
+
+function canSaveAddress($orderID){
+	global $dbc;
+
+	$chk = $dbc->query(sprintf("SELECT card_no FROM PendingSpecialOrder
+			WHERE order_id=%d",$orderID));
+	if ($dbc->num_rows($chk) == 0){
+		return False;
+	}
+	$row = $dbc->fetch_row($chk);
+	if ($row['card_no'] != 0) return False;
+
+	$chk = $dbc->query(sprintf("SELECT card_no FROM SpecialOrderContact
+			WHERE card_no=%d",$orderID));
+	if ($dbc->num_rows($chk) == 0)
+		CreateContactRow($orderID);	
+	return True;
 }
 
 function addUPC($orderID,$memNum,$upc){
@@ -113,6 +216,27 @@ function addUPC($orderID,$memNum,$upc){
 	$dbc->smart_insert('PendingSpecialOrder',$ins_array);
 }
 
+function CreateContactRow($orderID){
+	global $dbc;
+
+	$vals = array(
+		'card_no'=>$orderID,
+		'last_name'=>"''",
+		'first_name'=>"''",
+		'othlast_name'=>"''",
+		'othfirst_name'=>"''",
+		'street'=>"''",
+		'city'=>"''",
+		'state'=>"''",
+		'zip'=>"''",
+		'phone'=>"''",
+		'email_1'=>"''",
+		'email_2'=>"''",
+		'ads_OK'=>1
+	);
+	$dbc->smart_insert('SpecialOrderContact',$vals);
+}
+
 function CreateEmptyOrder(){
 	global $dbc;
 	$orderID = 1;
@@ -124,6 +248,20 @@ function CreateEmptyOrder(){
 
 	$ins_array = genericRow($orderID);
 	$dbc->smart_insert('PendingSpecialOrder',$ins_array);
+
+	$vals = array(
+		'order_id'=>$orderID,
+		'notes'=>"''",
+	);
+	$dbc->smart_insert("SpecialOrderNotes",$vals);
+
+	$vals = array(
+		'order_id'=>$orderID,
+		'status_flag'=>0,
+		'sub_status'=>0
+	);
+	$dbc->smart_insert("SpecialOrderStatus",$vals);
+
 	return $orderID;
 }
 
@@ -169,12 +307,14 @@ function genericRow($orderID){
 	);
 }
 
-function getCustomerForm($orderID,$memNum=0){
+function getCustomerForm($orderID,$memNum="0"){
 	global $dbc;
 
 	if (empty($orderID)) $orderID = CreateEmptyOrder();
 
 	$names = array();
+	$fn = "";
+	$ln = "";
 	$contact_row = array(
 		'street'=>'',
 		'city'=>'',
@@ -188,56 +328,66 @@ function getCustomerForm($orderID,$memNum=0){
 		'type' => 'REG',
 		'status' => ''
 	);
+
+	$notes = "";
 	
 	$table = "PendingSpecialOrder";
 
-	if (!empty($orderID)){
-		// find the order in pending or completed table
-		$find1Q = "SELECT order_id FROM PendingSpecialOrder WHERE order_id=$orderID";
-		$find1R = $dbc->query($find1Q);
-		if ($dbc->num_rows($find1R)==0){
-			$find2Q = "SELECT order_id FROM CompleteSpecialOrder WHERE order_id=$orderID";
-			$find2R = $dbc->query($find2Q);
-			if ($dbc->num_rows($find2R) > 0)
-				$table = "CompleteSpecialOrder";
-		}
+	// look up member id if applicable
+	if ($memNum === "0"){
+		$findMem = "SELECT card_no FROM $table WHERE order_id=$orderID";
+		$memR = $dbc->query($findMem);
+		if ($dbc->num_rows($memR) > 0)
+			$memNum = array_pop($dbc->fetch_row($memR));
+	}
+	else if ($memNum == ""){
+		$q = sprintf("UPDATE PendingSpecialOrder SET card_no=%d
+			WHERE order_id=%d",0,$orderID);
+		$r = $dbc->query($q);
+	}
+	else {
+		$q = sprintf("UPDATE PendingSpecialOrder SET card_no=%d
+			WHERE order_id=%d",$memNum,$orderID);
+		$r = $dbc->query($q);
+	}
 
-		// look up member id if applicable
-		if (empty($memNum)){
-			$findMem = "SELECT card_no FROM $table WHERE order_id=$orderID";
-			$memR = $dbc->query($findMem);
-			if ($dbc->num_rows($memR) > 0)
-				$memNum = array_pop($dbc->fetch_row($memR));
-		}
-		else {
-			$q = sprintf("UPDATE PendingSpecialOrder SET card_no=%d
-				WHERE order_id=%d",$memNum,$orderID);
-			$r = $dbc->query($q);
-		}
+	if ($memNum != 0){
+		$namesQ = sprintf("SELECT FirstName,LastName FROM custdata
+			WHERE CardNo=%d ORDER BY personNum",$memNum);
+		$namesR = $dbc->query($namesQ);
+		while($namesW = $dbc->fetch_row($namesR))
+			$names[] = array($namesW['FirstName'],$namesW['LastName']);
 
-		if ($memNum != 0){
-			$namesQ = sprintf("SELECT FirstName,LastName FROM custdata
-				WHERE CardNo=%d ORDER BY personNum",$memNum);
-			$namesR = $dbc->query($namesQ);
-			while($namesW = $dbc->fetch_row($namesR))
-				$names[] = array($namesW['FirstName'],$namesW['LastName']);
-
-			$contactQ = sprintf("SELECT street,city,state,zip,phone,email_1,email_2
+		$contactQ = sprintf("SELECT street,city,state,zip,phone,email_1,email_2
 				FROM meminfo WHERE card_no=%d",$memNum);
-			$contactR = $dbc->query($contactQ);
-			$contact_row = $dbc->fetch_row($contactR);
+		$contactR = $dbc->query($contactQ);
+		$contact_row = $dbc->fetch_row($contactR);
 
-			$statusQ = sprintf("SELECT type FROM custdata WHERE CardNo=%d",$memNum);
-			$statusR = $dbc->query($statusQ);
-			$status_row  = $dbc->fetch_row($statusR);
-			if ($status_row['type'] == 'INACT')
-				$status_row['status'] = 'Inactive';
-			if ($status_row['type'] == 'INACT2')
-				$status_row['status'] = 'Inactive';
-			elseif ($status_row['type'] == 'TERM')
-				$status_row['status'] = 'Terminated';
+		$statusQ = sprintf("SELECT type FROM custdata WHERE CardNo=%d",$memNum);
+		$statusR = $dbc->query($statusQ);
+		$status_row  = $dbc->fetch_row($statusR);
+		if ($status_row['type'] == 'INACT')
+			$status_row['status'] = 'Inactive';
+		if ($status_row['type'] == 'INACT2')
+			$status_row['status'] = 'Inactive';
+		elseif ($status_row['type'] == 'TERM')
+			$status_row['status'] = 'Terminated';
+	}
+	else {
+		$q = "SELECT last_name,first_name,street,city,state,zip,phone,email_1,email_2
+			FROM SpecialOrderContact WHERE card_no=$orderID";
+		$r = $dbc->query($q);	
+		if ($dbc->num_rows($r) > 0){
+			$contact_row = $dbc->fetch_row($r);
+			$fn = $contact_row['first_name'];
+			$ln = $contact_row['last_name'];
 		}
 	}
+
+	$q = "SELECT notes FROM SpecialOrderNotes WHERE order_id=$orderID";
+	$r = $dbc->query($q);
+	if ($dbc->num_rows($r) > 0)
+		$notes = array_pop($dbc->fetch_row($r));
 
 	$ret = "";
 	$ret .= sprintf('<input type="hidden" id="orderID" value="%d" />',$orderID);
@@ -257,16 +407,29 @@ function getCustomerForm($orderID,$memNum=0){
 
 	// names
 	if (empty($names)){
-		$ret .= '<tr><th>First Name</th><td><input type="text" id="t_firstName" /></td>';
-		$ret .= '<th>Last Name</th><td><input type="text" id="t_lastName" /></td></tr>';
+		$ret .= sprintf('<tr><th>First Name</th><td>
+				<input type="text" id="t_firstName" 
+				value="%s" onchange="saveFN(%d,this.value);" 
+				/></td>',$fn,$orderID);
+		$ret .= sprintf('<th>Last Name</th><td><input 
+				type="text" id="t_lastName" value="%s"
+				onchange="saveLN(%d,this.value);" /></td>',
+				$ln,$orderID);
 	}
 	else {
 		$ret .= '<tr><th>Name</th><td colspan="3"><select id="s_personNum">';
 		foreach($names as $n){
 			$ret .= sprintf('<option>%s %s</option>',$n[0],$n[1]);
 		}
-		$ret .= '</select></td></tr>';
+		$ret .= '</select></td>';
 	}
+
+	$ret .= '<td rowspan="3" colspan="4">';
+	$ret .= '<textarea rows="5" cols="25" 
+		onchange="saveText('.$orderID.',this.value);">';
+	$ret .= $notes;
+	$ret .= '</textarea>';
+	$ret .= '</td></tr>';
 
 	// address
 	if(strstr($contact_row['street'],"\n")){
@@ -277,17 +440,28 @@ function getCustomerForm($orderID,$memNum=0){
 	else
 		$contact_row['street2'] = '';
 
-	$ret .= sprintf('<tr><th>Address</th><td><input type="text" id="t_addr1" value="%s" /></td>
-		<th>E-mail</th><td><input type="text" id="t_email" value="%s" /></td></tr>
-		<tr><th>Addr (2)</th><td><input type="text" id="t_addr2" value="%s" /></td>
-		<th>City</th><td><input type="text" id="t_city" value="%s" size="10" /></td>
-		<th>State</th><td><input type="text" id="t_state" value="%s" size="2" /></td>
-		<th>Zip</th><td><input type="text" id="t_zip" value="%s" size="5" /></td></tr>
-		<tr><th>Phone</th><td><input type="text" id="t_ph1" value="%s" /></td>
-		<th>Alt. Phone</th><td><input type="text" id="t_ph2" value="%s" /></td></tr>',
-		$contact_row['street'],$contact_row['email_1'],$contact_row['street2'],
-		$contact_row['city'],$contact_row['state'],$contact_row['zip'],
-		$contact_row['phone'],$contact_row['email_2']);
+	$ret .= sprintf('<tr><th>Address</th><td><input type="text" id="t_addr1" value="%s" 
+		onchange="saveAddr(%d);" /></td><th>E-mail</th><td><input type="text" 
+		id="t_email" value="%s" onchange="saveEmail(%d,this.value);" /></td></tr>
+		<tr><th>Addr (2)</th><td><input type="text" id="t_addr2" value="%s" 
+		onchange="saveAddr(%d);" /></td><th>City</th><td><input type="text" id="t_city" 
+		value="%s" size="10" onchange="saveCity(%d,this.value);" /></td></tr>
+		<tr><th>Phone</th><td><input 
+		type="text" id="t_ph1" value="%s" onchange="savePh(%d,this.value);" /></td>
+		<th>Alt. Phone</th><td><input type="text" id="t_ph2" value="%s" 
+		onchange="savePh2(%d,this.value);" /></td>
+		<th>State</th>
+		<td><input type="text" id="t_state" value="%s" size="2" onchange="saveState(%d,this.value);"
+		/></td><th>Zip</th><td><input type="text" id="t_zip" value="%s" size="5" 
+		onchange="saveZip(%d,this.value); " /></td></tr>',
+		$contact_row['street'],$orderID,
+		$contact_row['email_1'],$orderID,
+		$contact_row['street2'],$orderID,
+		$contact_row['city'],$orderID,
+		$contact_row['phone'],$orderID,
+		$contact_row['email_2'],$orderID,
+		$contact_row['state'],$orderID,
+		$contact_row['zip'],$orderID);
 		
 	$ret .= '</table>';
 
@@ -344,7 +518,7 @@ function editableItemList($orderID){
 				"'".$w['upc']."'",$w['total'],
 				"'".$w['upc']."'",$w['quantity'],
 				"'".$w['upc']."'",$w['department'],
-				$orderID,$w['upc']
+				$orderID,"'".$w['upc']."'"
 			);
 	}
 	$ret .= '</table>';
