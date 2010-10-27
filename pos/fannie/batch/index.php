@@ -28,7 +28,7 @@
 	require_once($FANNIE_ROOT.'src/mysql_connect.php');
 	
 	require_once($FANNIE_ROOT.'lib/table_batchTypes.php');
-		$batchTypes_result=get_batchTypes(&$backoffice);
+	$batchTypes_result=get_batchTypes(&$backoffice);
 	
 	require_once('sql.php');
 		

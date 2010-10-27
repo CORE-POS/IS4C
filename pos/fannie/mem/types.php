@@ -59,7 +59,7 @@ elseif (isset($_REQUEST['saveDisc'])){
 elseif (isset($_REQUEST['saveType'])){
 	$q = sprintf("UPDATE memtype SET memDesc=%s
 		WHERE memtype=%d",
-		$dbc->escape($_REQUEST['saveDisc']),
+		$dbc->escape($_REQUEST['saveType']),
 		$_REQUEST['t_id']);
 	$r = $dbc->query($q);
 	exit;
