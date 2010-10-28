@@ -44,6 +44,8 @@ Necessities
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <a href="extra_config.php">Additional Configuration</a>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<a href="scanning.php">Scanning Options</a>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <a href="extra_data.php">Sample Data</a>
 <form action=index.php method=post>
 <h1>IS4C Install checks</h1>

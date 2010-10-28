@@ -1,0 +1,52 @@
+<html>
+<head><title>Scanning UPCs</title>
+</head>
+<body>
+The UPC <a href="howto-parse.html">parser module</a> is currently
+hard to trace through and should probably be more flexible. I think
+it should [eventually] be modular in three ways: handle special
+store-specific UPCs so they don't have to be hard-coded, allow 
+discounts to be calculated differently by location, and allow
+pricing methods to vary by location.
+<hr />
+<h3>Special UPCs</h3>
+This collection of classes handles UPCs that aren't actually 
+products. For example, at WFC I use UPC prefix "4" on barcoded
+member cards and custom coupons; someone else may use the prefix
+differently or just not need that code enabled. 
+<p />
+<i>Note: Special UPCs cannot exist in the products table or they
+will be treated like normal items</i>
+<p />
+All Special UPC object should subclass SpecialUPC (lib/Scanning/SpecialUPC.php)
+and implement two methods:
+<ul>
+<li>is_special(string upc) - return true is the module handles this upc, false
+otherwise</li>
+<li>handle(string upc, array json) - perform whatever operations the
+upc should trigger. handle() should return a json array with the same
+formatting as a parser object (<a href="howto-parse.html">Reference</a>).
+The json argument passed in will have all the required fields; handle()
+just needs to make updates.</li>
+</ul>
+<h3>Example</h3>
+For used to at some point and was still hardcoded in)
+<pre>
+class WackyPLU extends SpecialUPC {
+
+	function is_special($upc){
+		if ($upc == "0000000008005")
+			return true;
+		return false;
+	}
+	
+	function handle($upc,$json){
+		global $IS4C_PATH;
+		$json['main_frame'] = $IS4C_PATH.'gui-modules/memlist.php';
+		return $json;
+	}
+}
+</pre>
+<hr />
+</body>
+</html>

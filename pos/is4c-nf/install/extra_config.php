@@ -16,6 +16,8 @@ body {
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 Additional Configuration
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<a href="scanning.php">Scanning Options</a>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <a href="extra_data.php">Sample Data</a>
 <form action=extra_config.php method=post>
 <b>Browser only</b>: <select name=BROWSER_ONLY>

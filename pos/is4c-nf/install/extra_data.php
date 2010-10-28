@@ -18,6 +18,8 @@ body {
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <a href="extra_config.php">Additional Configuration</a>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<a href="scanning.php">Scanning Options</a>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 Sample Data
 <br />
 <form action=extra_data.php method=post>
