@@ -20,48 +20,55 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
-
 $IS4C_PATH = isset($IS4C_PATH)?$IS4C_PATH:"";
 if (empty($IS4C_PATH)){ while(!file_exists($IS4C_PATH."is4c.css")) $IS4C_PATH .= "../"; }
 
-if (!class_exists("SpecialUPC")) include($IS4C_PATH."lib/Scanning/SpecialUPC.php");
+if (!class_exists('DiscountType')) include($IS4C_PATH.'lib/Scanning/DiscountType.php');
 if (!isset($IS4C_LOCAL)) include($IS4C_PATH."lib/LocalStorage/conf.php");
 
-if (!function_exists('pDataConnect')) include($IS4C_PATH."lib/connect.php");
-if (!function_exists('boxMsg')) include($IS4C_PATH."lib/drawscreen.php");
-if (!function_exists('memberID')) include($IS4C_PATH."lib/prehkeys.php");
+if (!function_exists('adddiscount')) include($IS4C_PATH.'lib/additem.php');
 
-class MemberCard extends SpecialUPC {
+class StaffSale extends DiscountType {
 
-	function is_special($upc){
-		if (substr($upc,0,7) == "0042363")
-			return true;
+	function priceInfo($row,$quantity=1){
+		global $IS4C_LOCAL;
+		$ret = array();
 
+		$ret["regPrice"] = $row['normal_price'];
+		$ret["unitPrice"] = $row['normal_price'];
+
+		$ret['discount'] = 0;
+		$ret['memDiscount'] = ($ret['regPrice'] - $row['special_price']) * $quantity;
+
+		if ($IS4C_LOCAL->get("isStaff") == 1)
+			$ret["unitPrice"] = $row['special_price'];
+
+		$this->savedRow = $row;
+		$this->savedInfo = $ret;
+		return $ret;
+	}
+
+	function addDiscountLine(){
+		global $IS4C_LOCAL;	
+		if ($IS4C_LOCAL->get("isStaff") == 1){
+			$IS4C_LOCAL->set("voided",2);
+			adddiscount($this->savedInfo['memDiscount'],
+				$this->savedRow['department']);
+		}
+	}
+
+	function isSale(){
+		return true;
+	}
+
+	function isMemberOnly(){
 		return false;
 	}
 
-	function handle($upc,$json){
-		global $IS4C_LOCAL,$IS4C_PATH;
-
-		$db = pDataConnect();
-		$query = "select card_no from memberCards where upc='$upc'";
-		$result = $db->query($query);
-
-		if ($db->num_rows($result) < 1){
-			if ($IS4C_LOCAL->get("standalone") == 1){
-				$json['output'] = boxMsg("Can't assign new cards<br />in standalone");
-			}
-			else {
-				$json['main_frame'] = $IS4C_PATH.'gui-modules/AssignMemCard.php?upc='.$upc;
-			}
-			return $json;
-		}
-
-		$row = $db->fetch_array($result);
-		$IS4C_LOCAL->set("memberCardUsed",1);
-		$json = memberID($row[0]);
-		return $json;
+	function isStaffOnly(){
+		return true;
 	}
+
 }
 
 ?>

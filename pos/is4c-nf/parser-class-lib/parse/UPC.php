@@ -59,7 +59,6 @@ class UPC extends Parser {
 
 		$quantity = $IS4C_LOCAL->get("quantity");
 		if ($IS4C_LOCAL->get("quantity") == 0 && $IS4C_LOCAL->get("multiple") == 0) $quantity = 1;
-		$scaleprice = 0;
 
 		/* exapnd UPC-E */
 		if (substr($entered, 0, 1) == 0 && strlen($entered) == 7) {
@@ -77,6 +76,8 @@ class UPC extends Parser {
 		if (strlen($entered) == 13 && substr($entered, 0, 1) != 0) $upc = "0".substr($entered, 0, 12);
 		else $upc = substr("0000000000000".$entered, -13);
 
+		/* extract scale-sticker prices */
+		$scaleprice = 0;
 		if (substr($upc, 0, 3) == "002") {
 			$scaleprice = truncate2(substr($upc, -4)/100);
 			$upc = substr($upc, 0, 8)."00000";
@@ -238,10 +239,8 @@ class UPC extends Parser {
 		$cost = isset($row["cost"])?$row["cost"]:0.00;
 		$numflag = isset($row["local"])?$row["local"]:0;
 		$charflag = "";
-
 		$regPrice = $row["normal_price"];
 		$CardNo = $IS4C_LOCAL->get("memberID");
-
 
 		/* do tax shift */
 		$tax = $row['tax'];
@@ -258,82 +257,42 @@ class UPC extends Parser {
 		}
 
 		/* do discount shifts */
-		$discounttype = nullwrap($row["discounttype"]);
 		$discountable = $row["discount"];
-		$discountmethod = nullwrap($row["specialpricemethod"]);
 		if ($IS4C_LOCAL->get("toggleDiscountable") == 1) {
 			$IS4C_LOCAL->set("toggleDiscountable",0);
 			$discountable = ($discountable == 0) ? 1 : 0;
 		}
 
-		/* deal with scale (e.g., hobart) stickered items */ 
-		if (substr($upc, 0, 3) == "002" && ($scale == 0 || $discounttype == 0)) {
-			/* if the item isn't on sale or isn't sold by weight,
-			   just use the price from the sticker 
-			   and don't worry about exact weight */
-			$unitPrice = $scaleprice;
-			$regPrice = $unitPrice;
-		}
-		elseif (substr($upc,0,3) == "002" && $row["scale"] != 0){
-			/* if the item is on sale AND sold by weight,
-			   use the sticker price to calculate the
-			   actual weight */
-			$quantity = truncate2($scaleprice / $row["normal_price"]);
-			$unitPrice = $row["normal_price"];
-			$regPrice = $row["normal_price"];
-		}
-
 		/*
 			BEGIN: figure out discounts by type
-			Set up $discount and $memDiscount,
-			adjust unitPrice if needed	
 		*/
 
-		$discount = 0;
-		$memDiscount = 0;
+		/* get discount object */
+		$discounttype = nullwrap($row["discounttype"]);
+		$discountmethod = nullwrap($row["specialpricemethod"]);
+		$DTClasses = $IS4C_LOCAL->get("DiscountTypeClasses");
+		if (!class_exists($DTClasses[$discounttype]))
+			include($IS4C_PATH."lib/Scanning/DiscountTypes/".$DTClasses[$discounttype].".php");
+		$DiscountObject = new $DTClasses[$discounttype];
+
+		/* add in sticker price and calculate a quantity
+		   if the item is stickered, scaled, and on sale */
+		if (substr($upc,0,3) == "002"){
+			if ($DiscountObject->isSale() && $scale == 1)
+				$quantity = truncate2($scaleprice / $row["normal_price"]);
+			$row['normal_price'] = $scaleprice;
+		}
+
+		$pricing = $DiscountObject->priceInfo($row,$quantity);
+		$unitPrice = truncate2($pricing['unitPrice']);
+		$regPrice = truncate2($pricing['regPrice']);
+		$discount = truncate2($pricing['discount']);
+		$memDiscount = truncate2($pricing['memDiscount']);
 
 		// don't know what this is - wedge?
 		if ($IS4C_LOCAL->get("nd") == 1 && $discountable == 7) {
 			$discountable = 3;
 			$IS4C_LOCAL->set("nd",0);
-		}
-
-		/* member special pricing
-		   2 => special_price is an alternate price
-		   4 => special_price is a discount amount
-		*/
-		if ($discounttype == 2 || $discounttype == 4) {
-			$memDiscount = truncate2($row["normal_price"] * $quantity) - truncate2($row["special_price"] * $quantity);
-			$discount = 0;
-			if ($IS4C_LOCAL->get("isMember") == 1)
-				$unitPrice = nullwrap($row["special_price"]);
-		}
-		/* special price for everyone */
-		elseif ($discounttype == 1 && $discountmethod == 0) {
-			$discount = ($unitPrice - $row["special_price"]) * $quantity;
-			$memDiscount = 0;
-			$unitPrice = $row["special_price"];
-		}
-		/* doing a % discount for members - andy */
-		elseif ($discounttype == 3) {
-			$discount = 0;
-			$memDiscount = truncate2($row['special_price']*$unitPrice);
-			if ($IS4C_LOCAL->get("isMember"))
-				$unitPrice = nullwrap($unitPrice - $memDiscount);
-		}
-		/* haven't looked at this in forever; might
-		   actually be the same as type #4 */
-		elseif ($discounttype == 5){
-			$discount = 0;
-			$memDiscount = truncate2($row["special_price"]*$quantity);
-			if ($IS4C_LOCAL->get("isMember"))
-				$unitPrice = nullwrap($unitPrice - $memDiscount);
-		}
-
-		/* wedge? */
-		if ($IS4C_LOCAL->get("casediscount") > 0 && $IS4C_LOCAL->get("casediscount") <= 100) {
-			$casediscount = (100 - $IS4C_LOCAL->get("casediscount"))/100;
-			$unitPrice = $casediscount * $unitPrice;
 		}
 
 		/*
@@ -342,7 +301,7 @@ class UPC extends Parser {
 
 		/*
 			BEGIN: group pricing
-			pricemethods > 0
+			(pricemethods > 0)
 		*/
 
 		//-------------Mix n Match -------------------------------------
@@ -361,7 +320,7 @@ class UPC extends Parser {
 			$volume = nullwrap($row["specialquantity"]);
 			
 			$isVolumeSale = true;
-			if ($discounttype == 2 && $IS4C_LOCAL->get("isMember") == 1)
+			if ($DiscountObject->isMemberSale() && $IS4C_LOCAL->get("isMember") == 1)
 				$potentialMemSpecial = true;
 		}
 
@@ -376,11 +335,11 @@ class UPC extends Parser {
 					mixMatch from localtemptrans 
 					where trans_status <> 'R' AND 
 					mixMatch = '".$mixMatch."' group by mixMatch";
-				if (!$row["mixmatchcode"] || $row["mixmatchcode"] == '0') {
+				if (!$mixMatch || $mixMatch == '0') {
 					$mixMatch = 0;
 					$queryt = "select sum(ItemQtty - matched) as mmqtty from "
 						."localtemptrans where trans_status<>'R' AND "
-						."upc = '".$row["upc"]."' group by upc";
+						."upc = '".$upc."' group by upc";
 				}
 				$resultt = $dbt->query($queryt);
 				$num_rowst = $dbt->num_rows($resultt);
@@ -490,9 +449,9 @@ class UPC extends Parser {
 				$quals = 0;
 				$dept1 = 0;
 				if($dbt->num_rows($r1)>0){
-					$row = $dbt->fetch_row($r1);
-					$quals = round($row[0]);
-					$dept1 = $row[1];	
+					$rowq = $dbt->fetch_row($r1);
+					$quals = round($rowq[0]);
+					$dept1 = $rowq[1];	
 				}
 
 				// lookup existing discounters (i.e., item Bs)
@@ -510,11 +469,11 @@ class UPC extends Parser {
 				$discountIsScale = False;
 				$scaleDiscMax = 0;
 				if($dbt->num_rows($r2)>0){
-					$row = $dbt->fetch_row($r2);
-					$discs = round($row[0]);
-					$dept2 = $row[1];
-					if ($row[2]==1) $discountIsScale = True;
-					$scaleDiscMax = $row[3];
+					$rowd = $dbt->fetch_row($r2);
+					$discs = round($rowd[0]);
+					$dept2 = $rowd[1];
+					if ($rowd[2]==1) $discountIsScale = True;
+					$scaleDiscMax = $rowd[3];
 				}
 				if ($quantity != (int)$quantity && $mixMatch < 0){
 					$discountIsScale = True;
@@ -579,7 +538,7 @@ class UPC extends Parser {
 					/* everything except member specials gets a separate
 					   "discount" line
 					*/
-					if (!$isVolumeSale || ($isVolumeSale && $discounttype != 2)){
+					if (!$isVolumeSale || ($isVolumeSale && !$DiscountObject->isMemberSale() )){
 						addItem($upc, $description, "I", "", "", $department, 
 							$sets, truncate2($unitPrice), 
 							truncate2($sets * $unitPrice), 
@@ -599,7 +558,7 @@ class UPC extends Parser {
 							additemdiscount($dept2,$maxDiscount);
 						}
 					}
-					else if ($isVolumeSale && $discounttype == 2){
+					else if ($isVolumeSale && $DiscountObject->isMemberSale() ){
 						// don't bother trying to split discount
 						addItem($upc, $description, "I", "", "", $department, 
 							$sets, truncate2($unitPrice), 
@@ -623,7 +582,6 @@ class UPC extends Parser {
 				   Discount item has the same stem plus '_d'
 				   (e.g, mmitemstem_d)
 				*/
-				$mixMatch  = $row["mixmatchcode"];
 				$stem = substr($mixMatch,0,10);	
 				$sets = 99;
 				// count up total sets
@@ -718,15 +676,6 @@ class UPC extends Parser {
 		if ($quantity != 0) {
 			$qtty = $quantity;
 
-			if ($IS4C_LOCAL->get("casediscount") > 0) {
-				addcdnotify();
-				$discounttype = 3;
-				$IS4C_LOCAL->set("casediscount",0);
-				$quantity = 1;
-				$unitPrice = $total;
-				$regPrice = $total;
-			}
-
 			if ($IS4C_LOCAL->get("ddNotify") == 1 && $IS4C_LOCAL->get("itemPD") == 10) {
 				$IS4C_LOCAL->set("itemPD",0);
 				$discountable = 7;
@@ -746,27 +695,11 @@ class UPC extends Parser {
 			$ret['udpmsg'] = 'goodBeep';
 		}
 
-		if ($tax != 1) $IS4C_LOCAL->set("voided",0);
+		// probably pointless, see what happens without it
+		//if ($tax != 1) $IS4C_LOCAL->set("voided",0);
 
 		/* add discount notifications lines, if applicable */
-		if ($discounttype == 1 && $discountmethod == 0) {
-			$IS4C_LOCAL->set("voided",2);
-			adddiscount($discount,$department);
-		}
-		elseif ($discounttype == 2 && $IS4C_LOCAL->get("isMember") == 1) {
-			$IS4C_LOCAL->set("voided",2);
-			adddiscount($memDiscount,$department);
-		}
-		elseif ($discounttype == 3 && $IS4C_LOCAL->get("isMember") == 1) {
-			$IS4C_LOCAL->set("voided",2);
-			adddiscount($memDiscount,$department);
-		}
-		elseif ($discounttype == 4 && $IS4C_LOCAL->get("isStaff") != 0) {
-			$IS4C_LOCAL->set("voided",2);
-			adddiscount($memDiscount,$department);
-		}
-		else 
-			$IS4C_LOCAL->set("voided",0);
+		$DiscountObject->addDiscountLine();
 
 		/* reset various flags and variables */
 		if ($IS4C_LOCAL->get("tare") != 0) $IS4C_LOCAL->set("tare",0);
@@ -774,6 +707,7 @@ class UPC extends Parser {
 		$IS4C_LOCAL->set("fntlflag",0);
 		$IS4C_LOCAL->set("quantity",0);
 		$IS4C_LOCAL->set("itemPD",0);
+		$IS4C_LOCAL->set("voided",0);
 		setglobalflags(0);
 
 		/* output item list, update totals footer */

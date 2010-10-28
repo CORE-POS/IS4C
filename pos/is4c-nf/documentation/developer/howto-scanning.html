@@ -48,5 +48,52 @@ class WackyPLU extends SpecialUPC {
 }
 </pre>
 <hr />
+<h3>Discount Types</h3>
+Calculating discounts and pricing is done based on opdata.products.discounttype.
+This column is an integer, and simply hard-coding checks for a specific value is
+bound to eventually conflict with another location's usage. Discount Type modules
+are are a simple solution. Each store can specify an array of modules in their
+configuration and opdata.products.discounttype maps into that array. Then it
+doesn't matter if discounttype==4 means something different at WFC than it does
+at the Wedge.
+<p />
+All Discount Type objects should subclass DiscountType (lib/Scanning/DiscountType.php)
+and implement the following method:
+<ul>
+<li>priceInfo(array $row, integer $quantity) - given the $row from opdata.products,
+this method should return a keyed array with four entries: regPrice, unitPrice,
+discount, and memDiscount. These entries correspond with columns of the same
+name in translog.localtemptrans.</li>
+</ul>
+There are four additional, optional methods that may be define as needed:
+<ul>
+<li>addDiscountLine() - if you want to add an informational "YOU SAVED" line
+to the transaction, do so here.</li>
+<li>isSale() - returns true if this is the discount type for "normal" pricing.
+Parent version return false.</li>
+<li>isMemberOnly() - returns true if the sale is only applicable to members.
+Parent version return false.</li>
+<li>isStaffOnly() - returns true is the sale is only applicable to staff.
+Parent version return false.</li>
+</ul>
+<h3>Example</h3>
+Here's a simple sale (see actual implementation for optional methods):
+<pre>
+class EveryoneSale extends DiscountType {
+
+	function priceInfo($row, $quantity){
+		$ret = array(
+			'regPrice'  => $row['normal_price'],
+			'unitPrice' => $row['special_price'],
+			'memDiscount'  => 0
+		);
+
+		$ret['discount'] = ($ret['regPrice'] - $ret['unitPrice']) * $quantity;
+
+		return $ret;
+	}
+}
+</pre>
+<hr />
 </body>
 </html>

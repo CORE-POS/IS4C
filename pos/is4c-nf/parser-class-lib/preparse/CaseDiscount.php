@@ -29,7 +29,8 @@ if (!isset($IS4C_LOCAL)) include($IS4C_PATH."lib/LocalStorage/conf.php");
 class CaseDiscount extends Parser {
 	
 	function check($str){
-		if (strstr($str,"CT"))
+		// force quantity == 1
+		if (strstr($str,"CT") && !strstr($str,"*"))
 			return True;
 		return False;
 	}
