@@ -223,24 +223,14 @@ class UPC extends Parser {
 		   END error checking round #1
 		*/	
 
-		if ($row["deposit"] > 0){
+		// wfc uses deposit field to link another upc
+		if (isset($row["deposit"]) && $row["deposit"] > 0){
 			$dupc = (int)$row["deposit"];
 			$this->add_deposit($dupc);
 		}
 
 		$upc = $row["upc"];
-		$description = $row["description"];
-		$description = str_replace("'", "", $description);
-		$description = str_replace(",", "", $description);
-		$transType = "I";
-		$transsubType = "CA";
-		$department = $row["department"];
-		$unitPrice = $row["normal_price"];
-		$cost = isset($row["cost"])?$row["cost"]:0.00;
-		$numflag = isset($row["local"])?$row["local"]:0;
-		$charflag = "";
-		$regPrice = $row["normal_price"];
-		$CardNo = $IS4C_LOCAL->get("memberID");
+		$row['numflag'] = isset($row["local"])?$row["local"]:0;
 
 		/* do tax shift */
 		$tax = $row['tax'];
@@ -248,6 +238,7 @@ class UPC extends Parser {
 			$tax = ($tax==0) ? 1 : 0;
 			$IS4C_LOCAL->set("toggletax",0);
 		}
+		$row['tax'] = $tax;
 
 		/* do foodstamp shift */
 		$foodstamp = $row["foodstamp"];
@@ -255,6 +246,7 @@ class UPC extends Parser {
 			$IS4C_LOCAL->set("togglefoodstamp",0);
 			$foodstamp = ($foodstamp==0) ? 1 : 0;
 		}
+		$row['foodstamp'] = $foodstamp;
 
 		/* do discount shifts */
 		$discountable = $row["discount"];
@@ -262,6 +254,7 @@ class UPC extends Parser {
 			$IS4C_LOCAL->set("toggleDiscountable",0);
 			$discountable = ($discountable == 0) ? 1 : 0;
 		}
+		$row['discount'] = $discountable;
 
 		/*
 			BEGIN: figure out discounts by type
@@ -269,7 +262,6 @@ class UPC extends Parser {
 
 		/* get discount object */
 		$discounttype = nullwrap($row["discounttype"]);
-		$discountmethod = nullwrap($row["specialpricemethod"]);
 		$DTClasses = $IS4C_LOCAL->get("DiscountTypeClasses");
 		if (!class_exists($DTClasses[$discounttype]))
 			include($IS4C_PATH."lib/Scanning/DiscountTypes/".$DTClasses[$discounttype].".php");
@@ -283,12 +275,6 @@ class UPC extends Parser {
 			$row['normal_price'] = $scaleprice;
 		}
 
-		$pricing = $DiscountObject->priceInfo($row,$quantity);
-		$unitPrice = truncate2($pricing['unitPrice']);
-		$regPrice = truncate2($pricing['regPrice']);
-		$discount = truncate2($pricing['discount']);
-		$memDiscount = truncate2($pricing['memDiscount']);
-
 		// don't know what this is - wedge?
 		if ($IS4C_LOCAL->get("nd") == 1 && $discountable == 7) {
 			$discountable = 3;
@@ -299,396 +285,27 @@ class UPC extends Parser {
 			END: figure out discounts by type
 		*/
 
-		/*
-			BEGIN: group pricing
-			(pricemethods > 0)
-		*/
+		/* get price method object  & add item*/
+		$pricemethod = nullwrap($row["pricemethod"]);
+		if ($DiscountObject->isSale())
+			$pricemethod = nullwrap($row["specialpricemethod"]);
+		$PMClasses = $IS4C_LOCAL->get("PriceMethodClasses");
+		if (!class_exists($PMClasses[$pricemethod]))
+			include($IS4C_PATH."lib/Scanning/PriceMethods/".$PMClasses[$pricemethod].".php");
+		$PriceMethodObject = new $PMClasses[$pricemethod];
+		$PriceMethodObject->addItem($row, $quantity, $DiscountObject);	
 
-		//-------------Mix n Match -------------------------------------
-		$matched = 0;
-
-		$VolSpecial = nullwrap($row["groupprice"]);	
-		$volDiscType = nullwrap($row["pricemethod"]);
-		$volume = nullwrap($row["quantity"]);
-
-		/* use equivalent "special" columns for group sales */
-		$isVolumeSale = false;
-		$potentialMemSpecial = false;
-		if ($row["specialpricemethod"] > 0){
-			$VolSpecial = nullwrap($row["specialgroupprice"]);
-			$volDiscType = nullwrap($row["specialpricemethod"]);
-			$volume = nullwrap($row["specialquantity"]);
-			
-			$isVolumeSale = true;
-			if ($DiscountObject->isMemberSale() && $IS4C_LOCAL->get("isMember") == 1)
-				$potentialMemSpecial = true;
-		}
-
-		$mixMatch  = $row["mixmatchcode"];
-		if ($volDiscType != 0){
-			$dbt = tDataConnect();
-			/* switch on pricing method */
-			switch($volDiscType){
-			case 1: // not really sure; historic
-			case 2: // X for $Y (e.g., $0.50 each or 3 for $1)
-				$queryt = "select sum(ItemQtty - matched) as mmqtty, 
-					mixMatch from localtemptrans 
-					where trans_status <> 'R' AND 
-					mixMatch = '".$mixMatch."' group by mixMatch";
-				if (!$mixMatch || $mixMatch == '0') {
-					$mixMatch = 0;
-					$queryt = "select sum(ItemQtty - matched) as mmqtty from "
-						."localtemptrans where trans_status<>'R' AND "
-						."upc = '".$upc."' group by upc";
-				}
-				$resultt = $dbt->query($queryt);
-				$num_rowst = $dbt->num_rows($resultt);
-
-				if ($volDiscType == 1)
-					$unitPrice = truncate2($VolSpecial/$volume);  
-
-				$voladj = $VolSpecial - (($volume - 1) * $unitPrice); // one at special price
-				$newmm = (int) ($quantity/$volume); // number of complete sets
-
-				$mmqtty = 0;
-				if ($num_rowst > 0) {
-					$rowt = $dbt->fetch_array($resultt);
-					// number not in complete sets in localtemptrans
-					$mmqtty = floor($rowt["mmqtty"]); 
-				}
-
-				// unmatched items in localtemptrans + any left
-				// over from this scan after accounting for
-				// new complete sets
-				$newmmtotal = $mmqtty + (floor($quantity) % $volume);		 
-
-				/* add complete sets
-				   Items on member special are just added at
-				   regular price if a member number hasn't
-				   been entered yet */
-				if ($newmm >= 1) {
-					if (!$isVolumeSale || ($isVolumeSale && !$potentialMemSpecial)){
-						addItem($upc, $description, "I", "", "", $department, 
-							$newmm * $volume, truncate2($VolSpecial), 
-							truncate2($newmm * $VolSpecial), 
-							truncate2($VolSpecial), $scale, $tax, $foodstamp, 
-							$discount, $memDiscount, $discountable, 
-							$discounttype, $volume * $newmm, 
-							$volDiscType, $volume, $VolSpecial, 
-							$mixMatch, $volume * $newmm, 0, 
-							truncate2($newmm*$cost),$numflag,$charflag);
-					}
-					else if ($isVolumeSale && $potentialMemSpecial){
-						addItem($upc, $description, "I", "", "", $department, 
-							$newmm * $volume, truncate2($unitPrice), 
-							truncate2($newmm * $volume * $unitPrice), 
-							truncate2($unitPrice), $scale, $tax, $foodstamp, 
-							$discount, 
-							$newmm * (($volume * $unitPrice) - $VolSpecial), 
-							$discountable, 
-							$discounttype, $volume * $newmm, 
-							$volDiscType, $volume, $VolSpecial, 
-							$mixMatch, $volume * $newmm, 0, 
-							truncate2($newmm*$cost),$numflag,$charflag);
-					}
-					$quantity = $quantity - ($newmm*$volume);
-					$newmm = 0;
-					$IS4C_LOCAL->set("qttyvalid",0);
-				}
-
-				/* if this ring completes a set with
-				   existing unmatched items in localtemptrans,
-				   add an item with volume adjusted price
-				   again, member specials are handled
-				   differently if a member number hasn't
-				   been entered yet */
-				if ($newmmtotal >= $volume) {
-					if (!$isVolumeSale || ($isVolumeSale && !$potentialMemSpecial)){
-						addItem($upc, $description, "I", "", "", $department, 
-							1, $voladj, $voladj, $voladj, $scale, $tax, 
-							$foodstamp, $discount, $memDiscount, $discountable, 
-							$discounttype, 1, $volDiscType, $volume, 
-							$VolSpecial, $mixMatch, $volume, 0, 
-							$cost, $numflag, $charflag);
-					}
-					else if ($isVolumeSale && $potentialMemSpecial){
-						addItem($upc, $description, "I", "", "", $department, 
-							1, $unitPrice, $unitPrice, $unitPrice, $scale, $tax, 
-							$foodstamp, $discount, 
-							$unitPrice - $voladj, $discountable, 
-							$discounttype, 1, $volDiscType, $volume, 
-							$VolSpecial, $mixMatch, $volume, 0, 
-							$cost, $numflag, $charflag);
-					}
-					$quantity = $quantity - 1;
-					if ($quantity < 0) $quantity = 0; // might happen with scaled item
-					$newmmtotal = 0;
-					$IS4C_LOCAL->set("qttyvalid",0);
-				}
-				break; // end case 1,2
-
-			case 3:
-			case 4:
-				/* not straight-up interchangable
-				 * ex: buy item A, get $1 off item B
-				 * need strict pairs AB 
-				 *
-				 * type 3 tries to split the discount amount
-				 * across A & B's departments; type 4
-				 * does not 
-				 */
-				$qualMM = abs($mixMatch);
-				$discMM = -1*abs($mixMatch);
-
-				// lookup existing qualifiers (i.e., item As)
-				// by-weight items are rounded down here
-				$q1 = "SELECT floor(sum(ItemQtty)),max(department) 
-					FROM localtemptrans WHERE mixMatch='$qualMM' 
-					and trans_status <> 'R'";
-				$r1 = $dbt->query($q1);
-				$quals = 0;
-				$dept1 = 0;
-				if($dbt->num_rows($r1)>0){
-					$rowq = $dbt->fetch_row($r1);
-					$quals = round($rowq[0]);
-					$dept1 = $rowq[1];	
-				}
-
-				// lookup existing discounters (i.e., item Bs)
-				// by-weight items are counted per-line here
-				//
-				// extra checks to make sure the maximum
-				// discount on scale items is "free"
-				$q2 = "SELECT sum(CASE WHEN scale=0 THEN ItemQtty ELSE 1 END),
-					max(department),max(scale),max(total) FROM localtemptrans 
-					WHERE mixMatch='$discMM' 
-					and trans_status <> 'R'";
-				$r2 = $dbt->query($q2);
-				$dept2 = 0;
-				$discs = 0;
-				$discountIsScale = False;
-				$scaleDiscMax = 0;
-				if($dbt->num_rows($r2)>0){
-					$rowd = $dbt->fetch_row($r2);
-					$discs = round($rowd[0]);
-					$dept2 = $rowd[1];
-					if ($rowd[2]==1) $discountIsScale = True;
-					$scaleDiscMax = $rowd[3];
-				}
-				if ($quantity != (int)$quantity && $mixMatch < 0){
-					$discountIsScale = True;
-					$scaleDiscMax = $quantity * $unitPrice;
-				}
-
-				// items that have already been used in an AB set
-				$q3 = "SELECT sum(matched) FROM localtemptrans WHERE
-					mixmatch IN ('$qualMM','$discMM')";
-				$r3 = $dbt->query($q3);
-				$matches = ($dbt->num_rows($r3)>0)?array_pop($dbt->fetch_array($r3)):0;
-
-				// reduce totals by existing matches
-				// implicit: quantity required for B = 1
-				// i.e., buy X item A save on 1 item B
-				$matches = $matches/$volume;
-				$quals -= $matches*($volume-1);
-				$discs -= $matches;
-				
-				// where does the currently scanned item go?
-				if ($mixMatch > 0){
-					$quals = ($quals >0)?$quals+floor($quantity):floor($quantity);
-					$dept1 = $department;
-				}
-				else {
-					// again, scaled items count once per line
-					if ($quantity != (int)$quantity)
-						$discs = ($discs >0)?$discs+1:1;
-					else
-						$discs = ($discs >0)?$discs+$quantity:$quantity;
-					$dept2 = $department;
-				}
-
-				// count up complete sets
-				$sets = 0;
-				while($discs > 0 && $quals >= ($volume-1) ){
-					$discs -= 1;
-					$quals -= ($volume -1);
-					$sets++;
-				}
-				
-				if ($sets > 0){
-					// if the current item is by-weight, quantity
-					// decrement has to be corrected, but matches
-					// should still be an integer
-					$ttlMatches = $sets;
-					if($quantity != (int)$quantity) $sets = $quantity;
-					$quantity = $quantity - $sets;
-
-					if ($quantity < 0) $quantity = 0;
-
-					$qualDisc = $sets*($volume-1)*($VolSpecial/$volume);
-					$discDisc = $sets*($VolSpecial/$volume);
-					$maxDiscount = $sets*$VolSpecial;
-
-					if ($scaleDiscMax != 0 && $maxDiscount > $scaleDiscMax){
-						$maxDiscount = truncate2($scaleDiscMax);
-						$qualDisc = truncate2($scaleDiscMax / 2);
-						$discDisc = truncate2($scaleDiscMax / 2);
-					}
-
-					/* everything except member specials gets a separate
-					   "discount" line
-					*/
-					if (!$isVolumeSale || ($isVolumeSale && !$DiscountObject->isMemberSale() )){
-						addItem($upc, $description, "I", "", "", $department, 
-							$sets, truncate2($unitPrice), 
-							truncate2($sets * $unitPrice), 
-							truncate2($unitPrice), $scale, $tax, $foodstamp, 
-							$discount, $memDiscount, $discountable, 
-							$discounttype, $sets, $volDiscType, $volume, 
-							$VolSpecial, $mixMatch, $volume*$ttlMatches, 0, 
-							truncate2($sets*$cost),$numflag,$charflag);
-						/* type 3 => split discount across depts
-						 * type 4 => all discount on disc dept
-						 */
-						if ($volDiscType == 3){
-							additemdiscount($dept1,$qualDisc);
-							additemdiscount($dept2,$discDisc);
-						}
-						elseif($volDiscType == 4){
-							additemdiscount($dept2,$maxDiscount);
-						}
-					}
-					else if ($isVolumeSale && $DiscountObject->isMemberSale() ){
-						// don't bother trying to split discount
-						addItem($upc, $description, "I", "", "", $department, 
-							$sets, truncate2($unitPrice), 
-							truncate2($sets * $unitPrice), 
-							truncate2($unitPrice), $scale, $tax, $foodstamp, 
-							$discount, $maxDiscount, $discountable, 
-							$discounttype, $sets, $volDiscType, $volume, 
-							$VolSpecial, $mixMatch, $volume*$ttlMatches, 0, 
-							truncate2($sets*$cost),$numflag,$charflag);
-					}
-					$IS4C_LOCAL->set("qttyvalid",0);
-				}
-				break; // end case 3,4
-
-			case 5:
-				/* elaborate set matching; can require up to
-				   11 separate items
-				   Qualifying item(s) have a mixmatch code
-				   with a matching 'stem' plus '_qX'
-				   (e.g., mmitemstem_q0, mmitemstem_q1, etc)
-				   Discount item has the same stem plus '_d'
-				   (e.g, mmitemstem_d)
-				*/
-				$stem = substr($mixMatch,0,10);	
-				$sets = 99;
-				// count up total sets
-				for($i=0; $i<=$volume; $i++){
-					$tmp = $stem."_q".$i;
-					if ($volume == $i) $tmp = $stem.'_d';
-
-					$chkQ = "SELECT sum(CASE WHEN scale=0 THEN ItemQtty ELSE 1 END) 
-						FROM localtemptrans WHERE mixmatch='$tmp' 
-						and trans_status<>'R'";
-					$chkR = $dbt->query($chkQ);
-					$tsets = array_pop($dbt->fetch_row($chkR));
-					if ($tsets == ""){
-						$tsets = 0;
-					}
-					if ($tmp == $mixMatch){
-						$tsets += is_int($quantity)?$quantity:1;
-					}
-
-					if ($tsets < $sets)
-						$sets = $tsets;
-
-					// item not found, no point continuing
-					if ($sets == 0) break;
-				}
-
-				// count existing sets
-				$matches = 0;
-				$mQ = "SELECT sum(matched) FROM localtemptrans WHERE
-					left(mixmatch,11)='{$stem}_'";
-				$mR = $dbt->query($mQ);
-				if ($dbt->num_rows($mR) > 0)
-					$matches = array_pop($dbt->fetch_row($mR));
-				$sets -= $matches;
-				
-				// this means the current item
-				// completes a new set
-				if ($sets > 0){
-					if($quantity != (int)$quantity) $sets = $quantity;
-
-					// mem specials again; see case 1,2
-					if (!$isVolumeSale || ($isVolumeSale && !$potentialMemSpecial)){
-						addItem($upc, $description, "I", "", "", $department, 
-							$sets, truncate2($unitPrice), 
-							truncate2($sets * $unitPrice), 
-							truncate2($unitPrice), $scale, $tax, $foodstamp, 
-							$discount, $memDiscount, $discountable, 
-							$discounttype, $sets, $volDiscType, $volume, 
-							$VolSpecial, $mixMatch, $sets, 0, 
-							truncate2($sets*$unitPrice),$numflag,$charflag);
-						$discount_dept = 0;
-						if ($mixMatch == $stem.'_d')
-							$discount_dept = $department;
-						else {
-							$dQ = "SELECT max(department),sum(ItemQtty) 
-								FROM localtemptrans
-								WHERE mixmatch='{$stem}_d'";
-							$dR = $dbt->query($dQ);
-							$dW = $dbt->fetch_row($dR);
-							$discount_dept = $dW[0];
-							$sets = $dW[1];
-						}
-						additemdiscount($discount_dept,$sets*$VolSpecial);
-					}
-					else if ($isVolumeSale && $potentialMemSpecial){
-						addItem($upc, $description, "I", "", "", $department, 
-							$sets, truncate2($unitPrice), 
-							truncate2($sets * $unitPrice), 
-							truncate2($unitPrice), $scale, $tax, $foodstamp, 
-							$discount, $sets*$VolSpecial, $discountable, 
-							$discounttype, $sets, $volDiscType, $volume, 
-							$VolSpecial, $mixMatch, $sets, 0, 
-							truncate2($sets*$unitPrice),$numflag,$charflag);
-					}
-					$IS4C_LOCAL->set("qttyvalid",0);
-					$quantity -= $sets;
-				}
-				break; // end case 5
-			} // end switching on price method
-		}
-
-		/*
-			END: group pricing
-		*/
-
-		$total = truncate2($unitPrice * $quantity);
-		$unitPrice = truncate2($unitPrice);
-
-		/* got this far:
-		   the item is valid and there's a quantity left
-		   to add to the transaction */
+		// cleanup, reset flags and beep
 		if ($quantity != 0) {
-			$qtty = $quantity;
-
+			// ddNotify is legacy/unknown. likely doesn't work
 			if ($IS4C_LOCAL->get("ddNotify") == 1 && $IS4C_LOCAL->get("itemPD") == 10) {
 				$IS4C_LOCAL->set("itemPD",0);
 				$discountable = 7;
 			}
-
 			$intvoided = 0;
 			if ($IS4C_LOCAL->get("ddNotify") == 1 && $discountable == 7) 
 				$intvoided = 22;
 
-			addItem($upc, $description, "I", " ", " ", $department, $quantity, $unitPrice, 
-				$total, $regPrice, $scale, $tax, $foodstamp, $discount, $memDiscount, 
-				$discountable, $discounttype, $qtty, $volDiscType, $volume, $VolSpecial, 
-				$mixMatch, $matched, $intvoided, truncate2($quantity*$cost),$numflag,$charflag);
 			$IS4C_LOCAL->set("msgrepeat",0);
 			$IS4C_LOCAL->set("qttyvalid",0);
 

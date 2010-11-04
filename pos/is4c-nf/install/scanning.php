@@ -113,6 +113,62 @@ $saveStr = rtrim($saveStr,",").")";
 confsave('DiscountTypeClasses',$saveStr);
 ?>
 <hr />
+Price Methods dictate how item prices are calculated.
+There's some overlap with Discount Types, but <i>generally</i>
+price methods deal with grouped items.<br />
+<b>Number of Price Methods</b>:
+<?php
+if (isset($_REQUEST['PM_COUNT']) && is_numeric($_REQUEST['PM_COUNT'])) $IS4C_LOCAL->set('PriceMethodCount',$_REQUEST['PM_COUNT']);
+if ($IS4C_LOCAL->get("PriceMethodCount") == "") $IS4C_LOCAL->set("PriceMethodCount",3);
+if ($IS4C_LOCAL->get("PriceMethodCount") <= 0) $IS4C_LOCAL->set("PriceMethodCount",1);
+printf("<input type=text size=4 name=PM_COUNT value=\"%d\" />",
+	$IS4C_LOCAL->get('PriceMethodCount'));
+confsave('PriceMethodCount',$IS4C_LOCAL->get('PriceMethodCount'));
+?>
+<br /><b>Price Method Mapping</b>:<br />
+<?php
+if (isset($_REQUEST['PM_MODS'])) $IS4C_LOCAL->set('PriceMethodClasses',$_REQUEST['PM_MODS']);
+if (!is_array($IS4C_LOCAL->get('PriceMethodClasses'))){
+	$IS4C_LOCAL->set('PriceMethodClasses',
+		array(
+			'BasicPM',
+			'GroupPM',
+			'QttyEnforcedGroupPM'
+		));
+}
+$pms = array();
+$dh = opendir('../lib/Scanning/PriceMethods');
+while(False !== ($f = readdir($dh))){
+	if ($f == "." || $f == "..")
+		continue;
+	if (substr($f,-4) == ".php"){
+		$pms[] = rtrim($f,".php");
+	}
+}
+$pm_conf = $IS4C_LOCAL->get("PriceMethodClasses");
+for($i=0;$i<$IS4C_LOCAL->get('PriceMethodCount');$i++){
+	echo "[$i] => ";
+	echo "<select name=PM_MODS[]>";
+	foreach($pms as $p) {
+		echo "<option";
+		if (isset($pm_conf[$i]) && $pm_conf[$i] == $p)
+			echo " selected";
+		echo ">$p</option>";
+	}
+	echo "</select><br />";
+}
+$saveStr = "array(";
+$tmp_count = 0;
+foreach($IS4C_LOCAL->get("PriceMethodClasses") as $r){
+	$saveStr .= "'".$r."',";
+	if ($tmp_count == $IS4C_LOCAL->get("PriceMethodCount")-1)
+		break;
+	$tmp_count++;
+}
+$saveStr = rtrim($saveStr,",").")";
+confsave('PriceMethodClasses',$saveStr);
+?>
+<hr />
 <input type=submit value="Save Changes" />
 </form>
 </body>

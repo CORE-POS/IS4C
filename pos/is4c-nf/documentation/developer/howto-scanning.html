@@ -30,7 +30,8 @@ The json argument passed in will have all the required fields; handle()
 just needs to make updates.</li>
 </ul>
 <h3>Example</h3>
-For used to at some point and was still hardcoded in)
+UPC 8005 switches to a member list at some store (or used to at some point and 
+was still hardcoded in)
 <pre>
 class WackyPLU extends SpecialUPC {
 
@@ -94,6 +95,30 @@ class EveryoneSale extends DiscountType {
 	}
 }
 </pre>
+<hr />
+<h3>Price Methods</h3>
+Price Methods also deal with calculating prices and discounts, but
+based on opdata.products.pricemethod (or opdata.products.specialpricemethod
+for sales). There's a bit of overlap with Discount Types in that respect.
+The key difference is that price method objects are responsible
+for adding the item to the transaction. In general, additional price
+methods beyond the basic case have to do with grouped sales and keep
+track of which items in a transaction are part of the group. 
+<p />
+Like discount types, each store can specify an array of price method
+modules in their configuration and opdata.products.pricemethod
+maps into that array. The same reasons to avoid hard coding apply
+here, too.
+<p />
+All Price Method objects should subclass PriceMethod (lib/Scanning/PriceMethod.php)
+and implement the following method:
+<ul>
+<li>addItem(array $row, double $quantity, object $priceObj) - given
+the row from opdata.products, quantity, and discount type object
+(see above), this method should add the item to the transaction.
+The return value of this method is currently ignored.
+</li>
+</ul>
 <hr />
 </body>
 </html>
