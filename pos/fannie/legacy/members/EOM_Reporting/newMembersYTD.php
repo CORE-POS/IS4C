@@ -1,6 +1,7 @@
 <?php
 include('../../../config.php');
 if (!class_exists("SQLManager")) require_once($FANNIE_ROOT."src/SQLManager.php");
+include('../../db.php');
 include($FANNIE_ROOT.'src/select_dlog.php');
 
 if (isset($_GET['excel'])){
@@ -79,7 +80,8 @@ while($t_row = $sql->fetch_row($result)){
 			echo "<td width=120 bgcolor=$backgrounds[$b]>$row[6]</td>";
 			echo "<td width=120 bgcolor=$backgrounds[$b]>$row[7]</td>";
 			$temp = explode(" ",$row[8]);
-			$fixdate = $months[$temp[0]]."/".$temp[1]."/".$temp[2];
+			$temp = explode("-",$temp[0]);
+			$fixdate = $temp[1]."/".$temp[2]."/".$temp[0];
 			echo "<td width=120 bgcolor=$backgrounds[$b]>$fixdate</td>";
 			echo "<td width=120 bgcolor=$backgrounds[$b]>$stock</td>";
 			echo "</tr>";
@@ -104,7 +106,8 @@ echo "<td width=120 bgcolor=$backgrounds[$b]>$row[5]</td>";
 echo "<td width=120 bgcolor=$backgrounds[$b]>$row[6]</td>";
 echo "<td width=120 bgcolor=$backgrounds[$b]>$row[7]</td>";
 $temp = explode(" ",$row[8]);
-$fixdate = $months[$temp[0]]."/".$temp[1]."/".$temp[2];
+$temp = explode("-",$temp[0]);
+$fixdate = $temp[1]."/".$temp[2]."/".$temp[0];
 echo "<td width=120 bgcolor=$backgrounds[$b]>$fixdate</td>";
 echo "<td width=120 bgcolor=$backgrounds[$b]>$stock</td>";
 echo "</tr>";

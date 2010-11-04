@@ -270,8 +270,7 @@ function displayCashier($date,$empno){
 }
 
 function save($empno,$date,$tenders,$checks,$notes){
-	$sql = dbconnect();
-	$dbc = $sql;
+	global $sql;
 	
 	$notes = str_replace("'","''",urldecode($notes));
 	$checkQ = "select emp_no from dailyNotes where datediff(dd,date,'$date')=0 and emp_no=$empno";

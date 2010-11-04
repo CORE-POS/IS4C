@@ -159,7 +159,6 @@ else if (isset($_POST["upc"])){
 	}
 	echo "Pushing products to the lanes<br />";
 	flush();
-	include($FANNIE_ROOT.'legacy/queries/laneUpdates.php');
 	syncProductsAllLanes();
 	//exec("php fork.php sync products");
 	echo "<script type=text/javascript>window.top.location='new_items.php';</script>";

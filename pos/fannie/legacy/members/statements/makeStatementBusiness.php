@@ -164,7 +164,7 @@ while($selAddW = $sql->fetch_row($selAddR)){
    $count = 0;
    while($selTransW = $sql->fetch_row($selTransR)){
 	if ($selTransW[0] != $selAddW[0]){
-		mssql_data_seek($selTransR,$rowNum);
+		$sql->data_seek($selTransR,$rowNum);
 		break;
 	}
 	else $rowNum++;

@@ -9,7 +9,7 @@ $user = validateUserQuiet('overshorts');
  * was being entered.
  */
 if (!$user && !isset($_POST['action'])){
-	header("Location: {$FANNIE_URL}auth/ui/loginform.php?redirect={$FANNIE_URL}FE/overshort.php");
+	header("Location: {$FANNIE_URL}auth/ui/loginform.php?redirect={$FANNIE_URL}legacy/FE/overshort.php");
 	return;
 }
 

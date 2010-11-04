@@ -73,9 +73,7 @@ if(isset($_POST['buyer'])){
    $buyID = '99';
 }
 
-$filter = $_POST['filter'];
-if (!isset($_POST['filter']))
-	$filter = $_GET['filter'];
+$filter = isset($_REQUEST['filter'])?$_REQUEST['filter']:'';
 
 $unfi_table = "unfi_diff";
 if ($filter == "Yes")

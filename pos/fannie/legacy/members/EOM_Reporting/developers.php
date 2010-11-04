@@ -1,6 +1,7 @@
 <?php
 include('../../../config.php');
 if (!class_exists("SQLManager")) require_once($FANNIE_ROOT."src/SQLManager.php");
+include('../../db.php');
 include($FANNIE_ROOT.'src/select_dlog.php');
 
 if (isset($_GET['excel'])){

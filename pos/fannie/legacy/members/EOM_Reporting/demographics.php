@@ -1,6 +1,7 @@
 <?php
 include('../../../config.php');
 if (!class_exists("SQLManager")) require_once($FANNIE_ROOT."src/SQLManager.php");
+include('../../db.php');
 include($FANNIE_ROOT.'src/select_dlog.php');
 
 if (isset($_GET['excel'])){
@@ -155,7 +156,7 @@ while($yearW = $sql->fetch_row($yearR)){
 			foreach($curVisits as $c) $sum+=$c;
 			$avg = $sum/12.0;
 			if ($curLength < 12)
-				$avg = $sum / ((float)$curLength);
+				$avg = ($curLength==0) ? 0 : $sum / ((float)$curLength);
 			if ($avg < 1) $patronageBuckets["Less than 1"]++;
 			elseif ($avg < 2) $patronageBuckets["1-2"]++;
 			elseif ($avg < 3) $patronageBuckets["2-3"]++;
@@ -184,7 +185,7 @@ $sum = 0;
 foreach($curVisits as $c) $sum+=$c;
 $avg = $sum/12.0;
 if ($curLength < 12)
-	$avg = $sum / ((float)$curLength);
+	$avg = ($curLength==0) ? 0 : $sum / ((float)$curLength);
 if ($avg < 1) $patronageBuckets["Less than 1"]++;
 elseif ($avg < 2) $patronageBuckets["1-2"]++;
 elseif ($avg < 3) $patronageBuckets["2-3"]++;

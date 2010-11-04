@@ -33,7 +33,7 @@ echo "<form action=newBarBatch.php method=Post>";
 foreach ($_POST["pricechange"] as $value) {
       $getUNFIPriceQ = "SELECT * FROM unfi_all where upc = '".$value."'";
       //echo $getUNFIPriceQ . "<br>";
-      $getUNFIPriceR = $sql->query($getUNFIPriceQ,$db);
+      $getUNFIPriceR = $sql->query($getUNFIPriceQ);
       $getUNFIPriceW = $sql->fetch_array($getUNFIPriceR);
       $upc = $getUNFIPriceW['upc'];
       $upcl = ltrim($getUNFIPriceW['upc'],0);

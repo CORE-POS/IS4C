@@ -130,12 +130,12 @@ for($i=0; $i<3; $i++){
 	if (is_array($fnames) && isset($fnames[$i]) && 
 	    is_array($lnames) && isset($lnames[$i]) &&
 	    !empty($lnames[$i]) && !empty($fnames[$i])){
-		$custQ = sprintf("INSERT INTO custdata SELECT cardno,%d,'%s','%s',CashBack,Balance,
+		$custQ = sprintf("INSERT INTO custdata SELECT cardno,%d,%s,%s,CashBack,Balance,
 				Discount,MemDiscountLimit,ChargeOk,WriteChecks,StoreCoupons,Type,
 				memType,staff,SSI,Purchases,NumberOfChecks,memCoupons,'%s',1 FROM
 				custdata WHERE cardno=%d AND personnum=1",($i+2),$lnames[$i],$fnames[$i],
-				($memNum.' '.$lnames[$i].$bladd),$memNum);
-		$memQ = sprintf("INSERT INTO memNames SELECT '%s','%s',memNum,%d,checks,charge,
+				($memNum.' '.trim($lnames[$i],"'").$bladd),$memNum);
+		$memQ = sprintf("INSERT INTO memNames SELECT %s,%s,memNum,%d,checks,charge,
 				active,'%s' FROM memNames where memNum=%d and personnum=1",
 				$lnames[$i],$fnames[$i],
 				($i+2),($memNum.'.'.($i+2).'.1'),$memNum);

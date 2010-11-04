@@ -1,6 +1,7 @@
 <?php
 include('../../../config.php');
 if (!class_exists("SQLManager")) require_once($FANNIE_ROOT."src/SQLManager.php");
+include('../../db.php');
 include($FANNIE_ROOT.'src/select_dlog.php');
 
 if (isset($_GET['excel'])){
@@ -11,7 +12,7 @@ if (isset($_GET['excel'])){
 
 include($FANNIE_ROOT.'cache/cache.php');
 $cached_output = get_cache("monthly");
-if ($cached_output){
+if (false && $cached_output){
 	echo $cached_output;
 	exit;
 }
@@ -70,11 +71,13 @@ while($row = $sql->fetch_row($result)){
 			echo "<td bgcolor=$backgrounds[$b]>$lastrow[1]</td>";
 			echo "<td bgcolor=$backgrounds[$b]>$lastrow[2]</td>";
 			$temp = explode(' ',$lastrow[3]);
-			$fixeddate = $months[$temp[0]]."/".$temp[1]."/".$temp[2];
+			$temp = explode('-',$temp[0]);
+			$fixeddate = $temp[1]."/".$temp[2]."/".$temp[0];
 			echo "<td bgcolor=$backgrounds[$b]>$fixeddate</td>";
 			echo "<td bgcolor=$backgrounds[$b]>$firstBuy</td>";
 			$temp = explode(' ',$lastrow[5]);
-			$fixeddate = $months[$temp[0]]."/".$temp[1]."/".$temp[2];
+			$temp = explode('-',$temp[0]);
+			$fixeddate = $temp[1]."/".$temp[2]."/".$temp[0];
 			echo "<td bgcolor=$backgrounds[$b]>$fixeddate</td>";
 			echo "<td bgcolor=$backgrounds[$b]>$lastrow[6]</td>";
 			echo "</tr>";
@@ -91,11 +94,13 @@ if (count($lastrow) > 0){
 	echo "<td bgcolor=$backgrounds[$b]>$lastrow[1]</td>";
 	echo "<td bgcolor=$backgrounds[$b]>$lastrow[2]</td>";
 	$temp = explode(' ',$lastrow[3]);
-	$fixeddate = $months[$temp[0]]."/".$temp[1]."/".$temp[2];
+	$temp = explode('-',$temp[0]);
+	$fixeddate = $temp[1]."/".$temp[2]."/".$temp[0];
 	echo "<td bgcolor=$backgrounds[$b]>$fixeddate</td>";
 	echo "<td bgcolor=$backgrounds[$b]>$firstBuy</td>";
 	$temp = explode(' ',$lastrow[5]);
-	$fixeddate = $months[$temp[0]]."/".$temp[1]."/".$temp[2];
+	$temp = explode('-',$temp[0]);
+	$fixeddate = $temp[1]."/".$temp[2]."/".$temp[0];
 	echo "<td bgcolor=$backgrounds[$b]>$fixeddate</td>";
 	echo "<td bgcolor=$backgrounds[$b]>$lastrow[6]</td>";
 	echo "</tr>";

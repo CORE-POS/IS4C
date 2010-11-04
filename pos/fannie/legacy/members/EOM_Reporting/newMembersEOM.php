@@ -1,6 +1,7 @@
 <?php
 include('../../../config.php');
 if (!class_exists("SQLManager")) require_once($FANNIE_ROOT."src/SQLManager.php");
+include('../../db.php');
 include($FANNIE_ROOT.'src/select_dlog.php');
 
 if (isset($_GET['excel'])){
@@ -38,7 +39,10 @@ $query = "select m.card_no,
 	m.street,m.city,m.state,m.zip,
 	d.start_date,
 	dateadd(yy,2,d.start_date) as endDate,
-	s.stockPurchase
+	s.stockPurchase,
+	year(d.start_date),
+	month(d.start_date),
+	day(d.start_date)
 	from meminfo as m
 	left join stockPurchases as s on m.card_no=s.card_no
 	left join custdata as c on m.card_no=c.cardno and c.personnum=1
@@ -78,7 +82,8 @@ while($t_row = $sql->fetch_row($result)){
 			echo "<td width=120 bgcolor=$backgrounds[$b]>$row[6]</td>";
 			echo "<td width=120 bgcolor=$backgrounds[$b]>$row[7]</td>";
 			$temp = explode(" ",$row[8]);
-			$fixdate = $months[$temp[0]]."/".$temp[1]."/".$temp[2];
+			$temp = explode("-",$temp[0]);
+			$fixdate = $temp[1]."/".$temp[2]."/".$temp[0];
 			echo "<td width=120 bgcolor=$backgrounds[$b]>$fixdate</td>";
 			echo "<td width=120 bgcolor=$backgrounds[$b]>$stock</td>";
 			echo "</tr>";
@@ -99,6 +104,7 @@ while($t_row = $sql->fetch_row($result)){
 		$curMem = $t_row[0];
 		$row = $t_row;
 		$stock = 0;
+
 		$curyear = $t_row[10];
 		$curday = $t_row[11];
 		$curmonth = $t_row[12];
@@ -116,7 +122,8 @@ echo "<td width=120 bgcolor=$backgrounds[$b]>$row[5]</td>";
 echo "<td width=120 bgcolor=$backgrounds[$b]>$row[6]</td>";
 echo "<td width=120 bgcolor=$backgrounds[$b]>$row[7]</td>";
 $temp = explode(" ",$row[8]);
-$fixdate = $months[$temp[0]]."/".$temp[1]."/".$temp[2];
+$temp = explode("-",$temp[0]);
+$fixdate = $temp[1]."/".$temp[2]."/".$temp[0];
 echo "<td width=120 bgcolor=$backgrounds[$b]>$fixdate</td>";
 echo "<td width=120 bgcolor=$backgrounds[$b]>$stock</td>";
 echo "</tr>";

@@ -10,7 +10,7 @@ for i in xrange(3):
 	if month == 0:
 		month = 12
 		year -= 1
-	dlog += "SELECT * FROM dlog_archive.dbo.dlog_%d_%s" % (year, str(month).zfill(2))
+	dlog += "SELECT * FROM trans_archive.dbo.dlog%d%s" % (year, str(month).zfill(2))
 	if i != 2: dlog += " UNION ALL "
 	else: dlog += ")"
 
