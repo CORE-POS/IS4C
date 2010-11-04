@@ -134,9 +134,12 @@ else {
 		$meminfo['card_no'] = $i;
 		$dbc->smart_insert('custdata',$custdata);
 		$dbc->smart_insert('meminfo',$meminfo);
+		$dbc->query(sprintf("INSERT INTO memDates VALUES (%s,NULL,NULL)",
+			$dbc->escape($i)));
 	}
 }
 
 include($FANNIE_ROOT.'src/footer.html');
 
 ?>
+@

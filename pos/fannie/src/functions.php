@@ -52,12 +52,14 @@ function select_to_table($query,$border,$bgcolor)
 	//layout table header
 	echo "<font size = 2>";
 	echo "<table border = $border bgcolor=$bgcolor cellspacing=0 cellpadding=3>\n";
+	/*
 	echo "<tr align left>\n";
 	for($i=0; $i<$number_cols; $i++)
 	{
 		echo "<th><font size =2>" . $dbc->field_name($results,$i). "</font></th>\n";
 	}
 	echo "</tr>\n"; //end table header
+	*/
 	//layout table body
 	while($row = $dbc->fetch_row($results))
 	{
@@ -81,6 +83,55 @@ function select_to_table($query,$border,$bgcolor)
 
 /* -------------------------------end select_to_table-------------------*/ 
 
+function select_to_table2($query,$border,$bgcolor,$width="120",$spacing="0",$padding="0",$headers=array(),$nostart=False)
+{
+	global $dbc;
+	$results = $dbc->query($query); 
+	$number_cols = $dbc->num_fields($results);
+	$num_rows = $dbc->num_rows($results);
+	$backgrounds = array('#ffffff',$bgcolor);
+	$b = 0;	
+	//display query
+	//echo "<b>query: $query</b>";
+	//layout table header
+	echo "<font size = 2>";
+	if (!$nostart){
+	    if($num_rows !=0){
+	       echo "<table border = $border cellpadding=$padding cellspacing=$spacing>\n";
+	    }else{
+	       echo "<table border=0 bgcolor=$bgcolor>\n";
+	    }
+	}
+	echo "<tr align left>\n";
+    if($num_rows == 0){
+       echo "There are no results to report";
+    }else{
+
+	if (count($headers) > 0){
+		echo "<tr>\n";
+		foreach ($headers as $h)
+			echo "<th width=$width bgcolor=$backgrounds[$b]><font size=2>".$h."</font></th>\n";
+		echo "</tr>";
+		$b = 1;
+	}
+    while($row = $dbc->fetch_array($results))
+	{
+		echo "<tr align left>\n";
+		for ($i=0;$i<$number_cols; $i++)
+		{
+		echo "<td width = $width bgcolor=$backgrounds[$b]><font size = 2>";
+			if(!isset($row[$i])) //test for null value
+			{
+				echo "NULL";
+			}else{
+				echo $row[$i];
+			}
+			echo "</font></td>\n";
+		} echo "</tr>\n";
+		$b = ($b+1)%2;
+	} } echo "</table>\n";
+	echo "</font>";
+}
 /* -------------------------------start select_num_table----------------*/
 
 function select_num_table($query,$border,$bgcolor)

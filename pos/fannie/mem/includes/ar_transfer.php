@@ -139,6 +139,7 @@ if (isset($_REQUEST['submit1']) || isset($_REQUEST['submit2'])){
 		'department'=>'',
 		'quantity'=>1,
 		'scale'=>0,
+		'cost'=>0,
 		'unitPrice'=>'',
 		'total'=>'',
 		'regPrice'=>'',
@@ -158,6 +159,8 @@ if (isset($_REQUEST['submit1']) || isset($_REQUEST['submit2'])){
 		'matched'=>0,
 		'memType'=>'',
 		'isStaff'=>'',
+		'numflag'=>0,
+		'charflag'=>'',
 		'card_no'=>'',
 		'trans_id'=>''	
 		);
