@@ -628,8 +628,8 @@ function create_trans_dbs($db,$type){
 
 	$alogQ = "CREATE TABLE activitylog (
 		`datetime` datetime,
-		LaneNo tinyint,
-		CashierNo tinyint,
+		LaneNo smallint,
+		CashierNo smallint,
 		TransNo int,
 		Activity tinyint,
 		`Interval` real)";
@@ -3286,8 +3286,8 @@ function create_min_server($db,$type){
 
 	$alogQ = "CREATE TABLE alog (
 		`datetime` datetime,
-		LaneNo tinyint,
-		CashierNo tinyint,
+		LaneNo smallint,
+		CashierNo smallint,
 		TransNo int,
 		Activity tinyint,
 		`Interval` real)";

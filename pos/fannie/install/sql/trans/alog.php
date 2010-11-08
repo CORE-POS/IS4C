@@ -23,8 +23,8 @@ WFC does not use this table for anything.
 $CREATE['trans.alog'] = "
 	CREATE TABLE alog (
 	`datetime` datetime,
-	LaneNo tinyint,
-	CashierNo tinyint,
+	LaneNo smallint,
+	CashierNo smallint,
 	TransNo int,
 	Activity tinyint,
 	`Interval` double

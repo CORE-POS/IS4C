@@ -28,7 +28,6 @@ include($FANNIE_ROOT.'src/select_dlog.php');
 if (isset($_GET['date1'])){
 	$date1 = $_GET['date1'];
 	$date2 = $_GET['date2'];
-	$excel = $_GET['excel'];
 	$upc = $_GET['upc'];
 	if (is_numeric($upc))
 		$upc = str_pad($upc,13,'0',STR_PAD_LEFT);
