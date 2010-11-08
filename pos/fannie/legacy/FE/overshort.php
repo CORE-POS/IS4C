@@ -636,9 +636,6 @@ function save($date,$data){
 	global $sql;
 	$bycashier = explode(',',$data);
 
-	$fp = fopen('oslog','a');
-	fwrite($fp,date('r')+"\n");
-	
 	foreach ($bycashier as $c){
 		$temp = explode(':',$c);
 		if (count($temp) != 2) continue;
@@ -655,17 +652,14 @@ function save($date,$data){
 				if ($sql->num_rows($checkR) == 0){
 					$insQ = "insert into dailyCounts values ('$date',$cashier,'$tender_type',$amt)";
 					$insR = $sql->query($insQ);
-					fwrite($fp,$insQ."\n");
 				}
 				else {
 					$upQ = "update dailyCounts set amt=$amt where date='$date' and emp_no=$cashier and tender_type='$tender_type'";
 					$upR = $sql->query($upQ);
-					fwrite($fp,$upQ."\n");
 				}
 			}
 		}
 	}	
-	fclose($fp);
 }
 
 function saveNotes($date,$notes){
