@@ -157,11 +157,13 @@ if (count($filestoprocess) == 0){
 	include($FANNIE_ROOT."src/header.html");
 
 	echo "Finished processing Vitamer price file<br />";
-	if ($PRICEFILE_USE_SPLITS && isset($_GET['processed'])){
+	if ($PRICEFILE_USE_SPLITS){
 		echo "Files processed:<br />";
-		foreach (unserialize(base64_decode($_GET["processed"])) as $p){
-			echo $p."<br />";
-			unlink("../tmp/$p");
+		if (isset($_GET['processed'])){
+			foreach (unserialize(base64_decode($_GET["processed"])) as $p){
+				echo $p."<br />";
+				unlink("../tmp/$p");
+			}
 		}
 		echo $current."<br />";
 		unlink("../tmp/$current");
