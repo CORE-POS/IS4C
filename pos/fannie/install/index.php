@@ -360,6 +360,32 @@ confset('FANNIE_LANES',$conf);
 }
 ?>
 <hr />
+<b>Color-Highlighted Logs</b>:
+<?php
+if (!isset($FANNIE_PRETTY_LOGS)) $FANNIE_PRETTY_LOGS = 0;
+if (isset($_REQUEST['FANNIE_PRETTY_LOGS'])) $FANNIE_PRETTY_LOGS = $_REQUEST['FANNIE_PRETTY_LOGS'];
+confset('FANNIE_PRETTY_LOGS',"$FANNIE_PRETTY_LOGS");
+echo '<select name="FANNIE_PRETTY_LOGS">';
+if ($FANNIE_PRETTY_LOGS == 0){
+	echo '<option value="1">Yes</option>';
+	echo '<option value="0" selected>No</option>';
+}
+else {
+	echo '<option value="1" selected>Yes</option>';
+	echo '<option value="0">No</option>';
+}
+echo '</select>';
+?>
+<br />
+<b>Log Rotation Count</b>:
+<?php
+if (!isset($FANNIE_LOG_COUNT)) $FANNIE_LOG_COUNT = 5;
+if (isset($_REQUEST['FANNIE_LOG_COUNT'])) $FANNIE_LOG_COUNT = $_REQUEST['FANNIE_LOG_COUNT'];
+confset('FANNIE_LOG_COUNT',"$FANNIE_LOG_COUNT");
+echo "<input type=text name=FANNIE_LOG_COUNT value=\"$FANNIE_LOG_COUNT\" size=3 />";
+echo "<br />";
+?>
+<hr />
 <b>Scales</b>:
 <?php
 if (!isset($FANNIE_NUM_SCALES)) $FANNIE_NUM_SCALES = 0;

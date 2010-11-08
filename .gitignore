@@ -5,6 +5,6 @@ pos/is4c-nf/log/*.log
 pos/is4c-nf/ini.php
 pos/fannie/reports/cash_report/image_area/*
 pos/fannie/config.php
-pos/fannie/logs/*.log
+pos/fannie/logs/*.log*
 pos/is4c-nf/scale-drivers/drivers/rs232/ssd
 */tmp/*
