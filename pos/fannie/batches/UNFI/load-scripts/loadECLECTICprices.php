@@ -38,19 +38,21 @@
 */
 
 /* configuration for your module - Important */
-include("../../config.php");
+include("../../../config.php");
 require($FANNIE_ROOT.'src/csv_parser.php');
 require($FANNIE_ROOT.'src/mysql_connect.php');
 
 // the column number in the CSV file
 // where various information is stored
-$SKU = 0;
+$SKU = 7;
+$BRAND = 1;
 $DESCRIPTION = 2;
 $QTY = 3;
-$UPC = 1;
-$WHOLESALE = 4;
+$SIZE = 4;
+$UPC = 0;
+$WHOLESALE = 9;
 
-$VENDOR_ID = 3;
+$VENDOR_ID = 5;
 $PRICEFILE_USE_SPLITS = True;
 
 /*
@@ -64,8 +66,8 @@ $i = 0;
 $fp = 0;
 if ($PRICEFILE_USE_SPLITS){
 	if (!isset($_GET["filestoprocess"])){
-		system("split -l 2500 tmp/unfi.csv tmp/UNFISPLIT");
-		$dir = opendir("tmp");
+		system("split -l 2500 ../tmp/unfi.csv ../tmp/UNFISPLIT");
+		$dir = opendir("../tmp");
 		while ($current = readdir($dir)){
 			if (!strstr($current,"UNFISPLIT"))
 				continue;
@@ -83,7 +85,7 @@ else {
 // remove one split from the list and process that
 $current = array_pop($filestoprocess);
 
-$fp = fopen("tmp/$current",'r');
+$fp = fopen("../tmp/$current",'r');
 while(!feof($fp)){
 	$line = fgets($fp);
 	/* csv parser takes a comma-separated line and returns its elements
@@ -91,23 +93,25 @@ while(!feof($fp)){
 	$data = csv_parser($line);
 
 	// grab data from appropriate columns
-	$upc = str_pad($data[$UPC],13,'0',STR_PAD_LEFT);
+	$upc = str_replace(" ","",$data[$UPC]);
+	$upc = str_replace("-","",$upc);
+	$upc = rtrim($upc,"\r\n");
+	$upc = str_pad($upc,13,'0',STR_PAD_LEFT);
 	// zeroes isn't a real item, skip it
 	if ($upc == "0000000000000" || !is_numeric($upc))
 		continue;
-	$upc = '0'.substr($upc,0,12);
 	$sku = str_replace("-","",$data[$SKU]);
-	$brand = 'NATURES PLUS';
+	$brand = $data[$BRAND];
 	$description = $data[$DESCRIPTION];
-	$size = $data[$QTY];
-	$qty = 1;
+	$size = $data[$SIZE].' '.$data[$SIZE+1];
+	$qty = $data[$QTY];
 	$wholesale = trim($data[$WHOLESALE]," \$");
 	// can't process items w/o price (usually promos/samples anyway)
 	if (empty($wholesale))
 		continue;
 
 	// need unit cost, not case cost
-	$net_cost = $wholesale / $qty;
+	$net_cost = $wholesale;
 
 	// set cost in $PRICEFILE_COST_TABLE
 	$upQ = "update prodExtra set cost=$net_cost where upc='$upc'";
@@ -125,7 +129,6 @@ while(!feof($fp)){
 			$dbc->escape($size),$dbc->escape($upc),$qty,$net_cost,$dbc->escape($description),
 			$VENDOR_ID);
 	$insR = $dbc->query($insQ);
-
 }
 fclose($fp);
 
@@ -150,21 +153,21 @@ if (count($filestoprocess) == 0){
 	/* html header, including navbar */
 	include($FANNIE_ROOT."src/header.html");
 
-	echo "Finished processing NPATH price file<br />";
+	echo "Finished processing ECLECTIC price file<br />";
 	if ($PRICEFILE_USE_SPLITS){
 		echo "Files processed:<br />";
 		foreach (unserialize(base64_decode($_GET["processed"])) as $p){
 			echo $p."<br />";
-			unlink("tmp/$p");
+			unlink("../tmp/$p");
 		}
 		echo $current."<br />";
-		unlink("tmp/$current");
+		unlink("../tmp/$current");
 	}
 	else echo "unfi.csv<br />";
-	unlink("tmp/unfi.csv");
+	unlink("../tmp/unfi.csv");
 	
 	echo "<br />";
-	echo "<a href=index.php>Vendor Pricing Home</a>";
+	echo "<a href=../index.php>Vendor Pricing Home</a>";
 
 	/* html footer */
 	include($FANNIE_ROOT."src/footer.html");
@@ -177,7 +180,7 @@ else {
 
 	$sendable_data = base64_encode(serialize($filestoprocess));
 	$encoded2 = base64_encode(serialize($processed));
-	header("Location: loadNPATHprices.php?filestoprocess=$sendable_data&processed=$encoded2");
+	header("Location: loadECLECTICprices.php?filestoprocess=$sendable_data&processed=$encoded2");
 
 }
 

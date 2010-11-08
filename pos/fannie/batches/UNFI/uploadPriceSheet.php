@@ -46,7 +46,7 @@ if (isset($_POST['MAX_FILE_SIZE'])){
 	else {
 		move_uploaded_file($tmpfile, "tmp/unfi.csv");
 	}
-	header("Location: ".$_REQUEST['vendorPage']);
+	header("Location: load-scripts/".$_REQUEST['vendorPage']);
 }
 else {
 
@@ -62,6 +62,7 @@ Vendor: <select name=vendorPage>
 <option value="loadNPATHprices.php">NATURES PATH</option>
 <option value="loadOWHprices.php">OREGONS WILD HARVEST</option>
 <option value="loadECLECTICprices.php">ECLECTIC</option>
+<option value="loadVITAMERprices.php">VITAMER</option>
 </select><br />
 <input type="hidden" name="MAX_FILE_SIZE" value="20971520" />
 Filename: <input type="file" id="file" name="upload" />

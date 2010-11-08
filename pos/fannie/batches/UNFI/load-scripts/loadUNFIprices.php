@@ -38,7 +38,7 @@
 */
 
 /* configuration for your module - Important */
-include("../../config.php");
+include("../../../config.php");
 require($FANNIE_ROOT.'src/csv_parser.php');
 require($FANNIE_ROOT.'src/mysql_connect.php');
 
@@ -68,8 +68,8 @@ $i = 0;
 $fp = 0;
 if ($PRICEFILE_USE_SPLITS){
 	if (!isset($_GET["filestoprocess"])){
-		system("split -l 2500 tmp/unfi.csv tmp/UNFISPLIT");
-		$dir = opendir("tmp");
+		system("split -l 2500 ../tmp/unfi.csv ../tmp/UNFISPLIT");
+		$dir = opendir("../tmp");
 		while ($current = readdir($dir)){
 			if (!strstr($current,"UNFISPLIT"))
 				continue;
@@ -92,7 +92,7 @@ else {
 // remove one split from the list and process that
 $current = array_pop($filestoprocess);
 
-$fp = fopen("tmp/$current",'r');
+$fp = fopen("../tmp/$current",'r');
 while(!feof($fp)){
 	$line = fgets($fp);
 	/* csv parser takes a comma-separated line and returns its elements
@@ -246,16 +246,16 @@ if (count($filestoprocess) == 0){
 		echo "Files processed:<br />";
 		foreach (unserialize(base64_decode($_GET["processed"])) as $p){
 			echo $p."<br />";
-			unlink("tmp/$p");
+			unlink("../tmp/$p");
 		}
 		echo $current."<br />";
-		unlink("tmp/$current");
+		unlink("../tmp/$current");
 	}
 	else echo "unfi.csv<br />";
-	unlink("tmp/unfi.csv");
+	unlink("../tmp/unfi.csv");
 	
 	echo "<br />";
-	echo "<a href=index.php>UNFI Pricing Home</a>";
+	echo "<a href=../index.php>UNFI Pricing Home</a>";
 
 	/* html footer */
 	include($FANNIE_ROOT."src/footer.html");

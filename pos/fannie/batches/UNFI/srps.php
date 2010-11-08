@@ -54,7 +54,7 @@ if (isset($_REQUEST['vendorID'])){
 		on p.department=m.dept_ID
 		where v.vendorID=$id
 		and (d.margin is not null or m.margin is not null)";
-			$fetchR = $dbc->query($fetchQ);
+	$fetchR = $dbc->query($fetchQ);
 	while ($fetchW = $dbc->fetch_array($fetchR)){
 		// calculate a SRP from unit cost and desired margin
 		$srp = round($fetchW['cost'] / (1 - $fetchW['margin']),2);
