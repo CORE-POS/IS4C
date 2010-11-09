@@ -21,6 +21,23 @@
 
 *********************************************************************************/
 
+/* HELP
+ 
+   nightly.batch.php
+
+   This script sets up sales. First it takes all items
+   off sale, then it applies sales batches with a 
+   start and end date including the current day.
+
+   This script should run daily. Because batch start
+   and end dates are inclusive, scheduling the script
+   after midnight will give the most sensible results.
+
+   THIS SCRIPT IS CURRENTLY DISABLED TO AVOID CONFLICTS
+   AT WFC. IF YOU WANT TO USE IT, REMOVE THE "exit"
+   LINE.
+*/
+
 /* why is this file such a mess?
 
    SQL for UPDATE against multiple tables is different 
@@ -31,20 +48,17 @@
 
 include('../config.php');
 include($FANNIE_ROOT.'src/SQLManager.php');
+include($FANNIE_ROOT.'src/cron_msg.php');
 
 set_time_limit(0);
 
 $sql = new SQLManager($FANNIE_SERVER,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 		$FANNIE_SERVER_USER,$FANNIE_SERVER_PW);
 
-$sql->query("TRUNCATE TABLE batchCutPaste");
 exit;
 
 /*
 // update batch merge table 
-$sql->query("TRUNCATE TABLE batchMergeTable");
-$sql->query("INSERT INTO batchMergeTable SELECT * FROM batchMergeProd");
-$sql->query("INSERT INTO batchMergeTable SELECT * FROM batchMergeLC");
 
 // unsale everything  
 $sql->query("UPDATE products SET

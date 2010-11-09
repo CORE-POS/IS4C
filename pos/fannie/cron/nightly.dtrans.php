@@ -21,8 +21,39 @@
 
 *********************************************************************************/
 
+/* HELP
+
+   nightly.dtrans.php
+
+   This script archives transaction data. The main
+   reason for rotating transaction data into
+   multiple snapshot tables is speed. A single large
+   transaction table eventually becomes slow. The 
+   rotation applied here is as follows:
+
+   dtransactions is copied into transarchive, then
+   transarchive is trimmed so it contains the previous
+   90 days of transactions.
+
+   dlog_15, a lookup table of the past 15 days'
+   transaction data, is reloaded using transarchive
+
+   dtransactions is also copied to a monthly snapshot,
+   transarchiveYYYYMM on the archive database. Support
+   for archiving to a remote server is theoretical and
+   should be thoroughly tested before being put into
+   production. Archive tables are created automatically
+   as are corresponding dlog and receipt views.
+
+   After dtransactions has been copied to these two
+   locations, it is truncated. This script is meant to
+   be run nightly so that dtransactions always holds
+   just the current day's data. 
+*/
+
 include('../config.php');
 include('../src/SQLManager.php');
+include($FANNIE_ROOT.'src/cron_msg.php');
 
 set_time_limit(0);
 
@@ -30,12 +61,22 @@ $sql = new SQLManager($FANNIE_SERVER,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
 		$FANNIE_SERVER_USER,$FANNIE_SERVER_PW);
 
 /* Load dtransactions into the archive, trim to 90 days */
-$sql->query("INSERT INTO transarchive SELECT * FROM dtransactions");
-$sql->query("DELETE FROM transarchive WHERE ".$sql->datediff($sql->now(),'datetime')." > 90");
+$chk1 = $sql->query("INSERT INTO transarchive SELECT * FROM dtransactions");
+$chk2 = $sql->query("DELETE FROM transarchive WHERE ".$sql->datediff($sql->now(),'datetime')." > 90");
+if ($chk1 === false)
+	echo cron_msg("Error loading data into transarchive");
+elseif ($chk2 === false)
+	echo cron_msg("Error trimming transarchive");
+else
+	echo cron_msg("Data rotated into transarchive");
 
 /* reload all the small snapshot */
-$sql->query("TRUNCATE TABLE dlog_15");
-$sql->query("INSERT INTO dlog_15 SELECT * FROM dlog_90_view WHERE ".$sql->datediff($sql->now(),'tdate')." <= 15");
+$chk1 = $sql->query("TRUNCATE TABLE dlog_15");
+$chk2 = $sql->query("INSERT INTO dlog_15 SELECT * FROM dlog_90_view WHERE ".$sql->datediff($sql->now(),'tdate')." <= 15");
+if ($chk1 === false || $chk2 === false)
+	echo cron_msg("Error reloading dlog_15");
+else
+	echo cron_msg("Success reloading dlog_15");
 
 /* figure out which monthly archive dtransactions data belongs in */
 $res = $sql->query("SELECT month(datetime),year(datetime) FROM dtransactions");
@@ -43,13 +84,14 @@ $row = $sql->fetch_row($res);
 $dstr = $row[1].(str_pad($row[0],2,'0',STR_PAD_LEFT));
 $table = 'transArchive'.$dstr;
 
-
-/* store montly archive locally or remotely as needed */
+/* store montly archive locally or remotely as needed 
+   remote archiving is very beta
+*/
 if ($FANNIE_ARCHIVE_REMOTE){
 	$sql = new SQLManager($FANNIE_ARCHIVE_SERVER,$FANNIE_ARCHIVE_DBMS,
 		$FANNIE_ARCHIVE_DB,$FANNIE_ARCHIVE_USER,$FANNIE_ARCHIVE_PW);
 	if (!$sql->table_exists($table)){
-		createArchive($table,$sql);	
+		createArchive($table,$sql);
 		createViews($dstr,$sql);
 	}
 	$sql->add_connection($FANNIE_SERVER,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
@@ -64,18 +106,27 @@ else {
 		$query = "CREATE $table LIKE $FANNIE_TRANS_DB.dtransactions";
 		if ($FANNIE_SERVER_DBMS == 'MSSQL')
 			$query = "SELECT * INTO $table FROM $FANNIE_TRANS_DB.dbo.dtransactions";
-		$sql->query($query,$FANNIE_ARCHIVE_DB);
+		$chk1 = $sql->query($query,$FANNIE_ARCHIVE_DB);
+		$chk2 = true;
 		if ($FANNIE_SERVER_DBMS == "MYSQL"){
 			// mysql doesn't create & populate in one step
-			$sql->query("INSERT INTO $table SELECT * FROM $FANNIE_TRANS_DB.dtransactions");
+			$chk2 = $sql->query("INSERT INTO $table SELECT * FROM $FANNIE_TRANS_DB.dtransactions");
 		}
+		if ($chk1 === false || $chk2 === false)
+			echo cron_msg("Error creating new archive $table");
+		else
+			echo cron_msg("Created new table $table and archived dtransactions");
 		createViews($dstr,$sql);
 	}
 	else {
 		$query = "INSERT INTO $table SELECT * FROM $FANNIE_TRANS_DB.dtransactions";
 		if ($FANNIE_SERVER_DBMS == 'MSSQL')
 			$query = "INSERT INTO $table SELECT * FROM $FANNIE_TRANS_DB.dbo.dtransactions";
-		$sql->query($query,$FANNIE_ARCHIVE_DB);
+		$chk = $sql->query($query,$FANNIE_ARCHIVE_DB);
+		if ($chk === false)
+			echo cron_msg("Error archiving dtransactions");
+		else
+			echo cron_msg("Success archiving dtransactions");
 	}
 }
 
@@ -83,7 +134,11 @@ else {
 /* drop dtransactions data */
 $sql = new SQLManager($FANNIE_SERVER,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
 		$FANNIE_SERVER_USER,$FANNIE_SERVER_PW);
-$sql->query("TRUNCATE TABLE dtransactions");
+$chk = $sql->query("TRUNCATE TABLE dtransactions");
+if ($chk === false)
+	echo cron_msg("Error truncating dtransactions");
+else
+	echo cron_msg("Success truncating dtransactions");
 
 function createArchive($name,$db){
 	global $FANNIE_SERVER_DBMS, $FANNIE_ARCHIVE_REMOTE,
@@ -250,7 +305,9 @@ function createViews($dstr,$db){
 			from transArchive$dstr as d
 			where d.trans_status not in ('D','X','Z') and d.emp_no not in (9999,56) and d.register_no  <> 99";
 	}
-	$db->query($dlogQ,$FANNIE_ARCHIVE_DB);
+	$chk = $db->query($dlogQ,$FANNIE_ARCHIVE_DB);
+	if ($chk === false)
+		echo cron_msg("Error creating dlog view for new archive table");
 
 	$rp1Q = "CREATE  view rp_dt_receipt_$dstr as 
 		select 
@@ -362,7 +419,9 @@ function createViews($dstr,$db){
 			from transArchive$dstr
 			where voided <> 5 and UPC <> 'TAX' and UPC <> 'DISCOUNT'";
 	}
-	$db->query($rp1Q,$FANNIE_ARCHIVE_DB);
+	$chk = $db->query($rp1Q,$FANNIE_ARCHIVE_DB);
+	if ($chk === false)
+		echo cron_msg("Error creating receipt view for new archive table");
 
 	$rp2Q = "create  view rp_receipt_header_$dstr as
 		select
@@ -402,7 +461,9 @@ function createViews($dstr,$db){
 			from transArchive$dstr
 			group by register_no, emp_no, trans_no, card_no, datetime";
 	}
-	$db->query($rp2Q,$FANNIE_ARCHIVE_DB);
+	$chk = $db->query($rp2Q,$FANNIE_ARCHIVE_DB);
+	if ($chk === false)
+		echo cron_msg("Error creating receipt header view for new archive table");
 }
 
 ?>

@@ -21,6 +21,18 @@
 
 *********************************************************************************/
 
+/* HELP
+
+   weekly.spins.php
+
+   The idea here is to send weekly sales data
+   to SPINS. This script isn't yet in active
+   use and may contain bugs. 
+
+   SPINS data is sent via FTP; credentials must
+   be specified manually in the script.
+*/
+
 set_time_limit(0);
 
 $SPINS_SERVER = "ftp.spins.com";

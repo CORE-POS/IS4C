@@ -23,15 +23,13 @@
 
 /* HELP
 
-   nightly.tablecache.php
+   nightly.clipboard.php
 
-   Something of a catch-all, this script is used generically
-   to load data into lookup tables. Generally this means copying
-   data from relatively slow views into tables so subesquent
-   queries against that data will be faster.
+   This script truncates the table batchCutPaste. This table
+   acts as a clipboard so users can cut/paste items from
+   on sales batch to another. The table must be truncated
+   periodically or old data will linger indefinitely.	
 
-   This currently affects cashier performance reporting and
-   batch movement reporting.
 */
 
 include('../config.php');
@@ -43,22 +41,10 @@ set_time_limit(0);
 $sql = new SQLManager($FANNIE_SERVER,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 		$FANNIE_SERVER_USER,$FANNIE_SERVER_PW);
 
-$chk = $sql->query("TRUNCATE TABLE CashPerformDay_cache");
-if ($chk === False)
-	echo cron_msg("Could not truncate CashPerformDay_cache");
-$chk = $sql->query("INSERT INTO CashPerformDay_cache SELECT * FROM CashPerformDay");
-if ($chk === False)
-	echo cron_msg("Could not load data for CashPerformDay_cache");
+$chk = $sql->query("TRUNCATE TABLE batchCutPaste");
+if ($chk === false)
+	echo cron_msg("Error clearing batch clipboard");
+else
+	echo cron_msg("Cleared batch clipboard");
 
-$chk = $sql->query("TRUNCATE TABLE batchMergeTable");
-if ($chk === False)
-	echo cron_msg("Could not truncate batchMergeTable");
-$chk = $sql->query("INSERT INTO batchMergeTable SELECT * FROM batchMergeProd");
-if ($chk === False)
-	echo cron_msg("Could not load data from batchMergeProd");
-$chk = $sql->query("INSERT INTO batchMergeTable SELECT * FROM batchMergeLC");
-if ($chk === False)
-	echo cron_msg("Could not load data from batchMergeLC");
-
-echo cron_msg("Success");
 ?>

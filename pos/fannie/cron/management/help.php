@@ -1,7 +1,7 @@
 <?php
 /*******************************************************************************
 
-    Copyright 2009 Whole Foods Co-op
+    Copyright 2010 Whole Foods Co-op
 
     This file is part of Fannie.
 
@@ -20,39 +20,35 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
+include('../../config.php');
 
-if (!chdir("CompressProdUpdate")){
-	echo "Error: Can't find directory (archive prod update)";
+$fn = isset($_REQUEST['fn'])?$_REQUEST['fn']:'';
+if ($fn == ''){
+	echo "No file specified";
 	exit;
 }
 
-include('../../config.php');
-include($FANNIE_ROOT.'src/SQLManager.php');
+$fn = $FANNIE_ROOT.'cron/'.base64_decode($fn);
 
-/* HELP
-
-   This script dumps prodUpdate into an archive
-   table and truncates it. Keeping prodUpdate
-   small makes scanning it for interesting changes
-   a faster process.
-
-   This should be called *after* any other compress 
-   scripts.
-*/
-
-set_time_limit(0);
-ini_set('memory_limit','256M');
-
-$sql = new SQLManager($FANNIE_SERVER,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-		$FANNIE_SERVER_USER,$FANNIE_SERVER_PW);
-
-$worked = $sql->query("INSERT INTO prodUpdateArchive SELECT * FROM prodUpdate");
-if ($worked){
-	$sql->query("TRUNCATE TABLE prodUpdate");
+$data = file_get_contents($fn);
+$tokens = token_get_all($data);
+$doc = "";
+foreach($tokens as $t){
+	if ($t[0] == T_COMMENT){
+		if (strstr($t[1],"HELP"))
+			$doc .= $t[1]."\n";
+	}
 }
-else {
-	echo "There was an archiving error on prodUpdate\n";
-	flush();
-}
+
+echo "<html><head><title>";
+echo basename($fn);
+echo "</title></head><body>";
+echo "<pre>";
+if (!empty($doc))
+	echo $doc;
+else
+	echo "Sorry, no documentation for this script";
+echo "</pre>";
+echo "</body></html>";
 
 ?>

@@ -21,6 +21,21 @@
 
 *********************************************************************************/
 
+/* HELP
+
+   This script scans prodUpdate for instances
+   where a product's department actually changed
+   and logs those into ProdDepartmentHistory.
+
+   This is just faster to deal with as prodUpdate
+   ends up having a ton of entries.
+*/
+
+if (!chdir("CompressProdUpdate")){
+	echo "Error: Can't find directory (prod update compress dept)";
+	exit;
+}
+
 include('../../config.php');
 include($FANNIE_ROOT.'src/SQLManager.php');
 

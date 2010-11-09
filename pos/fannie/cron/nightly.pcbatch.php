@@ -21,18 +21,39 @@
 
 *********************************************************************************/
 
+/* HELP
+
+   nightly.pcbatch.php
+
+   This script triggers Price Change batches, a
+   special type of batch that changes a group of
+   items' regular price rather than setting a sale
+   price. Batches with a discount type of zero
+   are considered price change batches.
+
+   This script performs price changes for
+   batches with a startDate matching the current
+   date. To work effectively, it must be run at
+   least once a day.
+
+   Changes are logged in prodUpdate if possible.
+*/
+
 include('../config.php');
 include($FANNIE_ROOT.'src/SQLManager.php');
+include($FANNIE_ROOT.'src/cron_msg.php');
 
 set_time_limit(0);
 
 $sql = new SQLManager($FANNIE_SERVER,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 		$FANNIE_SERVER_USER,$FANNIE_SERVER_PW);
 
+$chk_vital = array();
+$chk_opt = array();
 
 /* change prices
 */
-$sql->query("UPDATE products SET
+$chk_vital[] = $sql->query("UPDATE products SET
 		normal_price = l.salePrice
 		FROM products AS p, batches AS b, batchList AS l
 		WHERE l.batchID=b.batchID AND l.upc=p.upc
@@ -51,14 +72,14 @@ if ($sql->table_exists("prodUpdate")){
 		AND l.upc NOT LIKE 'LC%'
 		AND b.discountType = 0
 		AND ".$sql->datediff($sql->now(),'b.startDate')." = 0";
-	$sql->query($upQ);
+	$chk_opt[] = $sql->query($upQ);
 }
 
 /* likecoded items differentiated
    for char concatenation
 */
 if ($FANNIE_SERVER_DBMS == "MYSQL"){
-	$sql->query("UPDATE products SET normal_price = l.salePrice
+	$chk_vital[] = $sql->query("UPDATE products SET normal_price = l.salePrice
 		FROM products AS p LEFT JOIN
 		likeCodeView AS v ON v.upc=p.upc LEFT JOIN
 		batchList AS l ON l.upc=concat('LC',convert(v.likeCode,char))
@@ -79,11 +100,11 @@ if ($FANNIE_SERVER_DBMS == "MYSQL"){
 			WHERE l.upc LIKE 'LC%'
 			AND b.discountType = 0
 			AND ".$sql->datediff($sql->now(),'b.startDate')." = 0";
-		$sql->query($upQ);
+		$chk_opt[] = $sql->query($upQ);
 	}
 }
 else {
-	$sql->query("UPDATE products SET normal_price = l.salePrice
+	$chk_vital[] = $sql->query("UPDATE products SET normal_price = l.salePrice
 		FROM products AS p LEFT JOIN
 		likeCodeView AS v ON v.upc=p.upc LEFT JOIN
 		batchList AS l ON l.upc='LC'+convert(varchar,v.likecode)
@@ -91,15 +112,6 @@ else {
 		WHERE l.upc LIKE 'LC%'
 		AND b.discountType = 0
 		AND ".$sql->datediff($sql->now(),'b.startDate')." = 0");
-
-	/*
-	$sql->query("UPDATE products
-		SET mixmatchcode=convert(varchar,u.likecode+500)
-		FROM 
-		products AS p
-		INNER JOIN upcLike AS u
-		ON p.upc=u.upc");
-	*/
 
 	if ($sql->table_exists("prodUpdate")){
 		$upQ = "INSERT INTO prodUpdate
@@ -113,8 +125,27 @@ else {
 			WHERE l.upc LIKE 'LC%'
 			AND b.discountType = 0
 			AND ".$sql->datediff($sql->now(),'b.startDate')." = 0";
-		$sql->query($upQ);
+		$chk_opt[] = $sql->query($upQ);
 	}
 }
 
+$success = true;
+foreach($chk_vital as $chk){
+	if ($chk === false)
+		$success = false;
+}
+if ($success)
+	echo cron_msg("Price change batches run successfully");
+else
+	echo cron_msg("Error running price change batches");
+
+$success = true;
+foreach($chk_opt as $chk){
+	if ($chk === false)
+		$success = false;
+}
+if ($success)
+	echo cron_msg("Changes logged in prodUpdate");
+else
+	echo cron_msg("Error logging changes");
 ?>

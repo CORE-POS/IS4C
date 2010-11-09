@@ -21,6 +21,21 @@
 
 *********************************************************************************/
 
+/* HELP
+
+   This script scans prodUpdate for instances
+   where a product's price actually changed
+   and logs those into ProdPriceHistory.
+
+   This is just faster to deal with as prodUpdate
+   ends up having a ton of entries.
+*/
+
+if (!chdir("CompressProdUpdate")){
+	echo "Error: Can't find directory (prod update compress price)";
+	exit;
+}
+
 include('../../config.php');
 include($FANNIE_ROOT.'src/SQLManager.php');
 

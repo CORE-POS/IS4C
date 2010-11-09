@@ -21,6 +21,7 @@
 
 *********************************************************************************/
 include('../../config.php');
+include($FANNIE_ROOT.'src/mysql_connect.php');
 include($FANNIE_ROOT.'auth/login.php');
 
 /* This is a very light wrapper around cron. The
@@ -75,6 +76,15 @@ if (isset($_REQUEST['enabled'])){
 
 		$output = system("crontab $tmpfn 2>&1");
 
+		/* backup crontab just in case */
+		$dbc->query("TRUNCATE TABLE cronBackup");
+		$dbc->query(sprintf("INSERT INTO cronBackup
+				VALUES (%s,%s)",
+				$dbc->now(),
+				$dbc->escape(file_get_contents($tmpfn))
+			    )
+		);
+
 		unlink($tmpfn);
 	}
 }
@@ -120,7 +130,8 @@ foreach($jobs as $job){
 		<td><input type="text" size="2" name="day[]" value="%s" /></td>
 		<td><input type="text" size="2" name="month[]" value="%s" /></td>
 		<td><input type="text" size="2" name="wkdy[]" value="%s" /></td>
-		<td><input type="hidden" name="cmd[]" value="%s" />%s</td>
+		<td><input type="hidden" name="cmd[]" value="%s" />
+		<a href="" onclick="window.open(\'help.php?fn=%s\',\'Help\',\'height=200,width=500,scrollbars=1\');return false;">%s</a></td>
 		</tr>',
 		(isset($tab['jobs'][$shortname])?'checked':''),$i,
 		(isset($tab['jobs'][$shortname])?$tab['jobs'][$shortname]['min']:'0'),
@@ -129,7 +140,7 @@ foreach($jobs as $job){
 		(isset($tab['jobs'][$shortname])?$tab['jobs'][$shortname]['month']:'1'),
 		(isset($tab['jobs'][$shortname])?$tab['jobs'][$shortname]['wkdy']:'*'),
 		(isset($tab['jobs'][$shortname])?$tab['jobs'][$shortname]['cmd']:$cmd),
-		$shortname
+		base64_encode($shortname),$shortname
 	);
 	if (isset($tab['jobs'][$shortname]))
 		unset($tab['jobs'][$shortname]);
