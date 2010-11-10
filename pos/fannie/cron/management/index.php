@@ -119,7 +119,7 @@ $i = 0;
 foreach($jobs as $job){
 	$shortname = substr($job,strlen($FANNIE_ROOT."cron/"));
 
-	$cmd = "cd {$FANNIE_ROOT}cron && php ./{$shortname} > {$FANNIE_ROOT}logs/dayend.log";
+	$cmd = "cd {$FANNIE_ROOT}cron && php ./{$shortname} >> {$FANNIE_ROOT}logs/dayend.log";
 
 	// defaults are set as once a year so someone doesn't accidentallly
 	// start firing a job off every minute
@@ -218,7 +218,7 @@ function read_crontab(){
 		$tmp = preg_split("/\s+/",$line,6);
 		if (count($tmp) == 6){
 			$sn = str_replace("cd {$FANNIE_ROOT}cron && php ./","",$tmp[5]);
-			$sn = str_replace(" > {$FANNIE_ROOT}logs/dayend.log","",$sn);
+			$sn = str_replace(" >> {$FANNIE_ROOT}logs/dayend.log","",$sn);
 			$ret['jobs'][$sn] = array(
 				'min' => $tmp[0],
 				'hour' => $tmp[1],
