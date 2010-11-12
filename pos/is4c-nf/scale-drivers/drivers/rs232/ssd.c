@@ -107,9 +107,9 @@ int main(void) {
     int mainfd = 0;
     int num, n; // File descriptor
     char chout[16];
-    char serialBuffer[16];
+    char serialBuffer[100];
     char preBuffer[16];
-    char scannerInput[12];
+    char scannerInput[100];
     char scaleInput[9];
     char scaleBuffer[9] = "000000000";
     struct termios options;
@@ -159,9 +159,29 @@ int main(void) {
 
                 /**************** process scanned data ****************/
                 if (serialBuffer[1] == '0') {
-                    for (i = 0; i < 17; i++) {
-                        scannerInput[i] = serialBuffer[i+4];
-                    }
+		    if (serialBuffer[3] == 'A' || serialBuffer[3] == 'E' || serialBuffer[3] == 'F'){
+			/* familar UPC A/E/F */
+                        for (i = 0; i < 17; i++) {
+                            scannerInput[i] = serialBuffer[i+4];
+                        }
+		    }
+		    else if (serialBuffer[3] == 'R'){
+			/* GS1 databar */
+			scannerInput[0] = 'G';
+			scannerInput[1] = 'S';
+			scannerInput[2] = '1';
+			scannerInput[3] = '~';
+			scannerInput[4] = serialBuffer[3];
+			scannerInput[5] = serialBuffer[4];
+
+			for (i=5; i<= num; i++)	{
+			    scannerInput[i+1] = serialBuffer[i];
+			}	
+		    }
+		    else {
+			/* unknown barcode type */
+			scannerInput[0] = '\0';
+		    }
                     fp_scanner = fopen(SCANNER_OUTPUT_FILE, "w");
                     fprintf(fp_scanner, "%s\n", scannerInput);
                     fclose(fp_scanner);

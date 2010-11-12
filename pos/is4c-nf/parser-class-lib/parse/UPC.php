@@ -37,10 +37,15 @@ class UPC extends Parser {
 	function check($str){
 		if (is_numeric($str) && strlen($str) < 16)
 			return True;
+		else if (substr($str,0,4) == "GS1~")
+			return True;
 		return False;
 	}
 
 	function parse($str){
+		if (substr($str,0,4) == "GS1~")
+			$str = $this->fixGS1($str);
+
 		return $this->upcscanned($str);
 	}
 
@@ -392,6 +397,26 @@ class UPC extends Parser {
 			$quantity,0,0,0,0,0,0);
 
 		$IS4C_LOCAL->set("refund",$save_refund);
+	}
+
+	function fixGS1($str){
+		// remove GS1~ prefix + two additional characters
+		$str = substr($str,6);
+
+		// check application identifier
+
+		// coupon; return whole thing
+		if (substr($str,0,4) == "8110")
+			return $str;
+
+		// GTIN-14; return w/o check digit,
+		// ignore any other fields for now
+		if (substr($str,0,1) == "10")
+			return substr($str,2,13);
+		
+		// application identifier not recognized
+		// will likely cause no such item error
+		return $str; 
 	}
 
 	function doc(){

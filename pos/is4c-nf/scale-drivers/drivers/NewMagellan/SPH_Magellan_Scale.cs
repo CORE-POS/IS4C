@@ -164,6 +164,8 @@ public class SPH_Magellan_Scale : SerialPortHandler {
 			return s.Substring(4);
 		else if (s.Substring(0,4) == "S08E")
 			return this.ExpandUPCE(s.Substring(4));
+		else if (s.Substring(0,4) == "S08R")
+			return "GS1~"+s.Substring(3);
 		else
 			return s;
 
