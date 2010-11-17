@@ -115,6 +115,7 @@ class DatabarCoupon extends SpecialUPC {
 		// second required item
 		$second_req = array();
 		$req_rules_code = 1;
+		$duplicate_prefix_flag = false;
 		if (isset($upc[$pos]) && $upc[$pos] == "1"){
 			$pos += 1;
 
@@ -134,11 +135,17 @@ class DatabarCoupon extends SpecialUPC {
 
 			$sm_length = ((int)$upc[$pos]) + 6;
 			$pos += 1;
-			$second_req['man_id'] = substr($upc,$pos,$sm_length);
-			$pos += $sm_length;
+			if ($sm_length == 15){ // 9+6
+				$second_req['man_id'] = $first_req['man_id'];
+				$duplicate_prefix_flag = true;
+			}
+			else {
+				$second_req['man_id'] = substr($upc,$pos,$sm_length);
+				$pos += $sm_length;
 
-			if ($sm_length == 6)
-				$second_req['man_id'] = "0".$second_req['man_id'];
+				if ($sm_length == 6)
+					$second_req['man_id'] = "0".$second_req['man_id'];
+			}
 		}
 
 		// third required item
@@ -159,11 +166,23 @@ class DatabarCoupon extends SpecialUPC {
 
 			$tm_length = ((int)$upc[$pos]) + 6;
 			$pos += 1;
-			$third_req['man_id'] = substr($upc,$pos,$tm_length);
-			$pos += $tm_length;
+			if ($tm_length == 15){ // 9+6
+				$third_req['man_id'] = $first_req['man_id'];
+				$duplicate_prefix_flag = true;
+			}
+			else {
+				$third_req['man_id'] = substr($upc,$pos,$tm_length);
+				$pos += $tm_length;
 
-			if ($tm_length == 6)
-				$third_req['man_id'] = "0".$third_req['man_id'];
+				if ($tm_length == 6)
+					$third_req['man_id'] = "0".$third_req['man_id'];
+			}
+		}
+
+		if ($duplicate_prefix_flag){
+			$first_req['man_id'] .= $first_req['family'];
+			$second_req['man_id'] .= $second_req['family'];
+			$third_req['man_id'] .= $third_req['family'];
 		}
 
 		// expiration date
