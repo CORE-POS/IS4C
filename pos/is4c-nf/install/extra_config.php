@@ -403,6 +403,13 @@ if (isset($_REQUEST['CS5'])) $IS4C_LOCAL->set('chargeSlip5',$_REQUEST['CS5']);
 printf("<br /><input size=40 type=text name=CS5 value=\"%s\" />",$IS4C_LOCAL->get('chargeSlip5'));
 confsave('chargeSlip5',"'".$IS4C_LOCAL->get('chargeSlip5')."'");
 ?>
+<br /><b>Signature Required Limit</b>:
+<?php
+if (isset($_REQUEST['CCSigLimit'])) $IS4C_LOCAL->set('CCSigLimit',$_REQUEST['CCSigLimit']);
+if ($IS4C_LOCAL->get('CCSigLimit')=="") $IS4C_LOCAL->set('CCSigLimit',0.00);
+printf(" \$<input size=4 type=text name=CCSigLimit value=\"%s\" />",$IS4C_LOCAL->get('CCSigLimit'));
+confsave('CCSigLimit',$IS4C_LOCAL->get('CCSigLimit'));
+?>
 <br /><b>Signature Capture Device</b>:
 <?php
 if (isset($_REQUEST['SigCapture'])) $IS4C_LOCAL->set('SigCapture',$_REQUEST['SigCapture']);

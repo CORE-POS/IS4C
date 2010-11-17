@@ -118,7 +118,7 @@ class AuthorizeDotNet extends BasicCCModule {
 			getsubtotals();
 			$IS4C_LOCAL->set("paycard_amount",$IS4C_LOCAL->get("amtdue"));
 			$IS4C_LOCAL->set("paycard_id",$IS4C_LOCAL->get("LastID")+1); // kind of a hack to anticipate it this way..
-			$json['main_frame'] = $IS4C_PATH.'gui-modules/paycardboxMsgAuth.php');
+			$json['main_frame'] = $IS4C_PATH.'gui-modules/paycardboxMsgAuth.php';
 			return $json;
 			break;
 		} // switch mode
@@ -507,7 +507,7 @@ class AuthorizeDotNet extends BasicCCModule {
 			break;	
 		}
 		$IS4C_LOCAL->set("ccCustCopy",0);
-		if ($IS4C_LOCAL->get("SigCapture") == "")
+		if ($IS4C_LOCAL->get("SigCapture") == "" && $IS4C_LOCAL->get("paycard_amount") > $IS4C_LOCAL->get("CCSigLimit"))
 			$json['receipt'] = "ccSlip";
 		return $json;
 	}
