@@ -24,7 +24,7 @@
 /* configuration for your module - Important */
 include("../../config.php");
 
-if (isset($_POST['MAX_FILE_SIZE'])){
+if (isset($_POST['MAX_FILE_SIZE']) && $_REQUEST['vendorPage'] != ""){
 	$dh = opendir("tmp/");
 	while (($file = readdir($dh)) !== false) {
 		if (!is_dir("tmp/".$file)) unlink("tmp/".$file);
@@ -54,15 +54,20 @@ else {
 	$page_title = "Fannie - UNFI Price File";
 	$header = "Upload UNFI Pricing File";
 	include($FANNIE_ROOT.'src/header.html');
+
+	if (isset($_REQUEST['vendorPage']))
+		echo "<i>Error: no vendor selected</i><br />";
 ?>
 <form enctype="multipart/form-data" action="uploadPriceSheet.php" method="post">
 Vendor: <select name=vendorPage>
+<option value="">Select a vendor</option>
 <option value="loadUNFIprices.php">UNFI</option>
 <option value="loadSELECTprices.php">SELECT</option>
 <option value="loadNPATHprices.php">NATURES PATH</option>
 <option value="loadOWHprices.php">OREGONS WILD HARVEST</option>
 <option value="loadECLECTICprices.php">ECLECTIC</option>
 <option value="loadVITAMERprices.php">VITAMER</option>
+<option value="loadNFACTORprices.php">NATURAL FACTORS</option>
 </select><br />
 <input type="hidden" name="MAX_FILE_SIZE" value="20971520" />
 Filename: <input type="file" id="file" name="upload" />

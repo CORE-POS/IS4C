@@ -101,15 +101,15 @@ function bill($cardno,$amt,$desc){
 	$insQ = "INSERT INTO dtransactions VALUES (
 		getdate(),$LANE_NO,$EMP_NO,$t_no,
 		'{$amt}DP703','$desc','D','','',703,
-		1.0,0,$amt,$amt,$amt,0,0,.0,.0,
-		0,0,0,NULL,0.0,0,0,.0,0,0,0,0,
+		1.0,0,0.00,$amt,$amt,$amt,0,0,.0,.0,
+		0,0,0,NULL,0.0,0,0,.0,0,0,0,0,0,'',
 		$cardno,1)";
 	$amt *= -1;
 	$insQ2 = "INSERT INTO dtransactions VALUES (
 		getdate(),$LANE_NO,$EMP_NO,$t_no,
 		0,'InStore Charges','T','MI',0,0,
-		0.0,0,.0,$amt,.0,0,0,.0,.0,
-		0,0,0,NULL,0.0,0,0,.0,0,0,0,0,
+		0.0,0,0.00,.0,$amt,.0,0,0,.0,.0,
+		0,0,0,NULL,0.0,0,0,.0,0,0,0,0,0,'',
 		$cardno,2)";
 	$sql->query($insQ);
 	$sql->query($insQ2);

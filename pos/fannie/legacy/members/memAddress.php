@@ -4,7 +4,7 @@ include_once($FANNIE_ROOT.'auth/login.php');
 
 function addressList($memNum)
 {
-	global $sql;
+	global $sql,$FANNIE_URL;
 	$custQ = "SELECT * FROM custdata where cardno = $memNum and personnum= 1";
 	$custR = $sql->query($custQ);
         $custN = $sql->num_rows($custR);
@@ -96,6 +96,7 @@ function addressList($memNum)
 			  else
 				echo "</td>";
                         }
+			echo "<td><a href=\"{$FANNIE_URL}ordering/clearinghouse.php?card_no=$memNum\">Special Orders</a></td>";
 		echo "</tr>";
 		echo "<tr>";
 			echo "<td bgcolor='FFFF33'>First Name: </td>";

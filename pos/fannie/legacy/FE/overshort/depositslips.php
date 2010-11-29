@@ -216,13 +216,15 @@ if (isset($_GET['startDate'])){
 	$pdf->SetTextColor(0,0,0);
 	$denoms = array('0.01','0.05','0.10','0.25','1.00','5.00','10.00');
 	$total = array_sum($dbstack['buyAmount']);
-	if ($dbstack['buyAmount']['0.01'] > 50)
-		$total = $dbstack['buyAmount']['0.01'];
-	foreach($denoms as $d){
-		$pdf->SetX(($width+2)*4+5);
-		$pdf->Cell(10,7,'$','L',0,'L');
-		$pdf->Cell(10,7,"$d",0,0,'R');
-		$pdf->Cell(35,7,$dbstack['buyAmount'][$d],'RB',1,'C');
+	if (!empty($dbstack['buyAmount'])){
+		if ($dbstack['buyAmount']['0.01'] > 50)
+			$total = $dbstack['buyAmount']['0.01'];
+		foreach($denoms as $d){
+			$pdf->SetX(($width+2)*4+5);
+			$pdf->Cell(10,7,'$','L',0,'L');
+			$pdf->Cell(10,7,"$d",0,0,'R');
+			$pdf->Cell(35,7,$dbstack['buyAmount'][$d],'RB',1,'C');
+		}
 	}
 	$pdf->SetX(($width+2)*4+5);
 	$pdf->Cell(20,7,"Total:",'LB',0,'R');

@@ -47,6 +47,7 @@ else {
 <li><a href="corrections.php?type=equity_transfer">Equity Transfer</a></li>
 <li><a href="corrections.php?type=ar_transfer">AR Transfer</a></li>
 <li><a href="corrections.php?type=equity_ar_swap">AR/Equity Swap</a></li>
+<li><a href="corrections.php?type=equity_ar_dump">Remove Equity/AR</a></li>
 </ul>
 <?php
 }

@@ -79,7 +79,7 @@ if (isset($_GET["submit"])){
 	if ($trans_subtype != "")
 		$tender_clause .= "trans_subtype='$trans_subtype'";	
 	if ($tenderTotal != ""){
-		if ($tender_clause[strlen($tender_clause)] != " ") $tender_clause .= " AND ";
+		if ($tender_clause[strlen($tender_clause)-1] != " ") $tender_clause .= " AND ";
 		$tender_clause .= "total=-1*$tenderTotal";
 	}
 	$tender_clause .= ")";

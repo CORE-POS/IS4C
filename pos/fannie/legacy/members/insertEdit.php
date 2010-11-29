@@ -177,32 +177,12 @@ if ($discList == '')
 
 $staff=0;
 $disc = 0;
-if($discList == 1){
-  $disc = 0;
-  $mem = "PC";
-}elseif($discList == 0){
-  $disc = 0;
-  $mem = "REG";
-}elseif($discList == 2 || $discList == 7){
-  $disc = 0;
-  $mem = "PC";
-}elseif($discList == 3){
-  $disc = 12;
-  $mem = "PC";
-  $staff=1;
-}elseif($discList == 4){
-  $disc = 0;
-  $mem = "PC";
-}elseif($discList == 5){
-  $disc = 0;
-  $mem = "PC";
-}elseif($discList == 9){
-  $disc = 12;
-  $mem = "REG";
-  $staff=1;
-}else{
-  $disc = 0;
-  $mem = "REG";
+$mem = "REG";
+if ($discList == 1 || $discList == 3)
+	$mem = "PC";
+if ($discList == 3 || $discList == 9){
+	$disc = 12;
+	$staff=1;
 }
 
 if (isset($discount) && isset($doDiscount))

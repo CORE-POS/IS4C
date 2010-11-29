@@ -25,7 +25,7 @@ include($FANNIE_ROOT.'src/mysql_connect.php');
 include($FANNIE_ROOT.'auth/login.php');
 
 if (!validateUserQuiet('memgen')){
-	header("Location: {$FANNIE_URL}auth/ui/login.php?redirect={$FANNIE_URL}mem/new.php");
+	header("Location: {$FANNIE_URL}auth/ui/loginform.php?redirect={$FANNIE_URL}mem/new.php");
 	exit;
 }
 

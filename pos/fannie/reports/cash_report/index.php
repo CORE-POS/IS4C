@@ -53,8 +53,7 @@ $query = "select
 	  SUM(CASE WHEN transinterval = 0 then 1 else transinterval END) / count(emp_no)  / 60 as minutes,
 	  SUM(Cancels) / count(emp_no) as cancels,
 	  MIN(proc_date)
-	  from cashperformday
-	  where datepart(yy,proc_date) in (2005,2006,2007,2008,2009,2010)
+	  from cashperformday_cache
 	  GROUP BY emp_no,datediff(ww,proc_date,getdate()),datepart(yy,proc_date)
           ORDER BY year desc, week asc"; 
 }
@@ -69,9 +68,8 @@ $query = "select
           SUM(CASE WHEN transInterval = 0 THEN 1 ELSE transInterval END)/60 as minutes,
           SUM(cancels)as cancels,
           MIN(proc_date)
-          FROM cashperformday
+          FROM cashperformday_cache
           WHERE emp_no = $emp_no
-          AND datepart(yy,proc_date) IN(2005,2006,2007,2008,2009,2010)
           GROUP BY emp_no,datediff(ww,proc_date,getdate()),datepart(yy,proc_date)
           ORDER BY year desc,week asc";
 }
@@ -90,6 +88,7 @@ remove the time from the week
 */
 while ($row = $dbc->fetch_array($result)){
   $temp = explode(" ",$row[8]);
+  $temp = explode("-",$temp[0]);
   $week[$i] = $temp[0]." ".$temp[1]." ".$temp[2];
   $minutes = $row[6];
   // zeroes values where minutes = 0

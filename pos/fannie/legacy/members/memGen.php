@@ -198,6 +198,9 @@ function prefetch_result($memID,$lName,$fName){
       return false;
     }
     else{
+
+      $lName = str_replace("'","",$lName);
+      $fName = str_replace("'","",$fName);
       
       $query = "SELECT CardNo 
                 FROM custdata 
@@ -245,11 +248,11 @@ function prefetch_result($memID,$lName,$fName){
     }
   }
   else{
-    $query = ("SELECT CardNo
+    $query = sprintf("SELECT CardNo
                FROM custdata
                WHERE 
-               CardNo = $memID
-               AND PersonNum= 1");
+               CardNo = %d 
+               AND PersonNum= 1",$memID);
 
     $result = $sql->query($query);
     return $result;

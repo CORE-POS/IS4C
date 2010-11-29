@@ -300,7 +300,7 @@ function display($date1,$date2,$excel=False){
 		$ret .= "<tr class=$classes[$c]>"; $c = ($c+1)%2;
 		if ($k > 40000){
 			$ret .= "<td>";
-			$ret .= $pCodes_lookup[$k];
+			$ret .= isset($pCodes_lookup[$k])?$pCodes_lookup[$k]:'';
 			$ret .= "</td>";
 			$ret .= "<td>$k</td>";
 		}

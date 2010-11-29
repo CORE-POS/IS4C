@@ -7,7 +7,8 @@ include 'functMem.php';
 include 'header.html';
 
 ?>
-<body bgcolor="#66CC99" leftmargin="0" topmargin="0" marginwidth="0" marginheight="0">
+<body bgcolor="#66CC99" leftmargin="0" topmargin="0" marginwidth="0" marginheight="0"
+	onload="document.getElementById('memNum_t').focus();" >
 <table width="660" height="111" border="0" cellpadding="0" cellspacing="0" bgcolor="#66cc99">
   <tr>
     <td colspan="2"><h1><img src="../images/newLogo_small1.gif" /></h1></td>
@@ -23,13 +24,13 @@ include 'header.html';
   </tr>
   <tr>
     <td colspan="9">
-<img src="../images/memDown.gif" alt="" name="Members" border="0" id="Members" onload="MM_nbGroup('init','group1','Members','images/memUp.gif',1)" />
+<img src="../images/memDown.gif" alt="" name="Members" border="0" id="Members"  />
 <a href="">
 <img src="../images/repUp.gif" alt="" name="Reports" width="81" height="62" border="0" id="Reports" /></a>
 <a href="" target="_top">
-<img name="Items" src="../images/itemsUp.gif" border="0" alt="Items" onLoad="" /></a>
+<img name="Items" src="../images/itemsUp.gif" border="0" alt="Items"  /></a>
 <a href=""> 
-<img name="Reference" src="../images/refUp.gif" border="0" alt="Reference" onLoad="" /></a></td>
+<img name="Reference" src="../images/refUp.gif" border="0" alt="Reference"  /></a></td>
     <td colspan="2">&nbsp;</td>
   </tr>
   <tr>
@@ -45,7 +46,7 @@ include 'header.html';
     #:</font></td>
     <td>
       		<font size="2"> <font face="Papyrus, Verdana, Arial, Helvetica, sans-serif">
-      		<input name="memNum" type="text" id="memNum" size="5" maxlength="8" />
+      		<input name="memNum" type="text" id="memNum_t" size="5" maxlength="8" />
       		</font></font>
     </td>
     <td width="82" valign="middle"><font size="2" face="Papyrus, Verdana, Arial, Helvetica, sans-serif">Last Name</font></td>
