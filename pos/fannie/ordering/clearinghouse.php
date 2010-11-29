@@ -4,13 +4,18 @@ include($FANNIE_ROOT.'src/mysql_connect.php');
 
 $page_title = "Special Order :: Mangement";
 $header = "Manage Special Orders";
+if (isset($_REQUEST['card_no']) && is_numeric($_REQUEST['card_no'])){
+	$header = "Special Orders for Member #".((int)$_REQUEST['card_no']);
+}
 include($FANNIE_ROOT.'src/header.html');
 
 $status = array(
 	0 => "New",
 	1 => "Assigned",
-	2 => "Ordered",
-	3 => "Arrived"
+	2 => "Pending",
+	3 => "Paid",
+	4 => "Ordered",
+	5 => "Arrived"
 );
 
 $assignments = array();
@@ -20,6 +25,7 @@ $r = $dbc->query($q);
 while($w = $dbc->fetch_row($r))
 	$assignments[$w[0]] = $w[1];
 $assignments[0] = "No One";
+$assignments[-1] = "Multiple";
 
 $f1 = (isset($_REQUEST['f1']) && $_REQUEST['f1'] !== '')?(int)$_REQUEST['f1']:'';
 $f2 = (isset($_REQUEST['f2']) && $_REQUEST['f2'] !== '')?(int)$_REQUEST['f2']:'';
@@ -54,21 +60,37 @@ foreach($assignments as $k=>$v){
 echo '</select>';
 echo '<hr />';
 
+if (isset($_REQUEST['card_no']) && is_numeric($_REQUEST['card_no'])){
+	if (empty($filterstring))
+		$filterstring .= sprintf("WHERE p.card_no=%d",$_REQUEST['card_no']);
+	else
+		$filterstring .= sprintf(" AND p.card_no=%d",$_REQUEST['card_no']);
+	printf('<input type="hidden" id="cardno" value="%d" />',$_REQUEST['card_no']);
+}
+
 $q = "SELECT min(datetime) as orderDate,p.order_id,sum(total) as value,
-	count(*)-1 as items,status_flag,sub_status FROM PendingSpecialOrder as p
+	count(*)-1 as items,status_flag,sub_status,
+	CASE WHEN MAX(p.card_no)=0 THEN MAX(t.last_name) ELSE MAX(c.LastName) END as name	
+	FROM PendingSpecialOrder as p
 	LEFT JOIN SpecialOrderStatus as s ON p.order_id=s.order_id
+	LEFT JOIN SpecialOrderNotes as n ON n.order_id=p.order_id
+	LEFT JOIN custdata AS c ON c.CardNo=p.card_no
+	LEFT JOIN SpecialOrderContact as t on t.card_no=p.order_id
 	$filterstring
 	GROUP BY p.order_id,status_flag,sub_status
+	HAVING count(*) > 1 OR
+	SUM(CASE WHEN notes LIKE '' THEN 0 ELSE 1 END) > 0
 	ORDER BY min(datetime)";
 $r = $dbc->query($q);
 $ret = '<table cellspacing="0" cellpadding="4" border="1">
-	<tr><th>Order Date</th><th>Order ID</th><th>Value</th>
+	<tr><th>Order Date</th><th>Order ID</th><th>Name</th><th>Value</th>
 	<th>Items</th><th>Status</th><th>Assigned To</th></tr>';
 while($w = $dbc->fetch_row($r)){
 	$ret .= sprintf('<tr><td><a href="view.php?orderID=%d">%s</a></td>
-		<td>%d</td><td>%.2f</td>
+		<td>%d</td><td>%s</td><td>%.2f</td>
 		<td>%d</td>',$w['order_id'],
 		$w['orderDate'],$w['order_id'],
+		$w['name'],
 		$w['value'],$w['items']);
 	$ret .= '<td><select id="s_status" onchange="updateStatus('.$w['order_id'].');">';
 	foreach($status as $k=>$v){
@@ -93,8 +115,12 @@ echo $ret;
 function refilter(){
 	var f1 = $('#f_1').val();
 	var f2 = $('#f_2').val();
+
+	var loc = 'clearinghouse.php?f1='+f1+'&f2='+f2;
+	if ($('#cardno').length!=0)
+		loc += '&card_no='+$('#cardno').val();
 	
-	location = 'clearinghouse.php?f1='+f1+'&f2='+f2;
+	location = loc;
 }
 function updateStatus(oid){
 	var val = $('#s_status').val();

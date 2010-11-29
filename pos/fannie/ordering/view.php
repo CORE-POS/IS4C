@@ -58,10 +58,11 @@ function addUPC(){
 	var oid = $('#orderID').val();
 	var cardno = $('#memNum').val();
 	var upc = $('#newupc').val();
+	var qty = $('#newcases').val();
 	$.ajax({
 	url: 'ajax-calls.php',
 	dataType: 'post',
-	data: 'action=newUPC&orderID='+oid+'&memNum='+cardno+'&upc='+upc,
+	data: 'action=newUPC&orderID='+oid+'&memNum='+cardno+'&upc='+upc+'&cases='+qty,
 	cache: false,
 	success: function(resp){
 		$('#itemDiv').html(resp);
@@ -97,6 +98,27 @@ function savePrice(new_price,upc){
 	url: 'ajax-calls.php',
 	dataType: 'post',
 	data: 'action=savePrice&orderID='+oid+'&upc='+upc+'&price='+new_price,
+	cache: false,
+	success: function(resp){
+	}
+	});
+}
+function saveSRP(new_price,upc){
+	var oid = $('#orderID').val();
+	$.ajax({
+	url: 'ajax-calls.php',
+	dataType: 'post',
+	data: 'action=saveSRP&orderID='+oid+'&upc='+upc+'&srp='+new_price,
+	cache: false,
+	success: function(resp){
+	}
+	});
+}
+function saveCtC(val,oid){
+	$.ajax({
+	url: 'ajax-calls.php',
+	dataType: 'post',
+	data: 'action=saveCtC&orderID='+oid+'&val='+val,
 	cache: false,
 	success: function(resp){
 	}
@@ -214,8 +236,32 @@ function saveText(oid,val){
 	dataType: 'post',
 	data: 'action=saveText&val='+val+'&orderID='+oid,
 	cache: false,
-	success: function(resp){alert(resp);}
+	success: function(resp){}
 	});
+}
+function saveConfirmDate(val,oid){
+	if (val){
+		$.ajax({
+		url: 'ajax-calls.php',
+		dataType: 'post',
+		data: 'action=confirmOrder&orderID='+oid,
+		cache: false,
+		success: function(resp){
+			$('#confDateSpan').html('Confirmed '+resp);
+		}
+		});
+	}
+	else {
+		$.ajax({
+		url: 'ajax-calls.php',
+		dataType: 'post',
+		data: 'action=unconfirmOrder&orderID='+oid,
+		cache: false,
+		success: function(resp){
+			$('#confDateSpan').html('Not confirmed');
+		}
+		});
+	}
 }
 </script>
 <?php

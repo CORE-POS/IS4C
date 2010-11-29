@@ -877,6 +877,9 @@ function create_dlogs($con){
 			'SpecialOrderNotes','trans');
 
 	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+			'SpecialOrderHistory','trans');
+
+	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
 			'SpecialOrderStatus','trans');
 
 	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,

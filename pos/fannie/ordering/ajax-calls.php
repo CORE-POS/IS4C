@@ -1,6 +1,11 @@
 <?php
 include('../config.php');
 include($FANNIE_ROOT.'src/mysql_connect.php');
+include($FANNIE_ROOT.'auth/login.php');
+
+$canEdit = false;
+if (validateUserQuiet('ordering_edit'))
+	$canEdit = true;
 
 if (!isset($_REQUEST['action'])) exit;
 $orderID = isset($_REQUEST['orderID'])?(int)$_REQUEST['orderID']:'';
@@ -16,7 +21,8 @@ case 'loadItems':
 	echo getItemForm($orderID);
 	break;
 case 'newUPC':
-	addUPC($orderID,$_REQUEST['memNum'],$_REQUEST['upc']);
+	$qty = is_numeric($_REQUEST['cases'])?(int)$_REQUEST['cases']:1;
+	addUPC($orderID,$_REQUEST['memNum'],$_REQUEST['upc'],$qty);
 	echo getItemForm($orderID);
 	break;
 case 'deleteUPC':
@@ -37,11 +43,25 @@ case 'saveDesc':
 		$dbc->escape($upc));
 	$dbc->query($upQ);
 	break;
+case 'saveCtC':
+	$upQ = sprintf("UPDATE PendingSpecialOrder SET
+		numflag=%d WHERE order_id=%d AND trans_id=0",
+		$_REQUEST['val'],$_REQUEST['orderID']);
+	$dbc->query($upQ);
+	break;
 case 'savePrice':
 	$upc = str_pad($_REQUEST['upc'],13,'0',STR_PAD_LEFT);
 	$upQ = sprintf("UPDATE PendingSpecialOrder SET
 		total=%f WHERE order_id=%d AND upc=%s",
 		$_REQUEST['price'],$_REQUEST['orderID'],
+		$dbc->escape($upc));
+	$dbc->query($upQ);
+	break;
+case 'saveSRP':
+	$upc = str_pad($_REQUEST['upc'],13,'0',STR_PAD_LEFT);
+	$upQ = sprintf("UPDATE PendingSpecialOrder SET
+		regPrice=%f WHERE order_id=%d AND upc=%s",
+		$_REQUEST['srp'],$_REQUEST['orderID'],
 		$dbc->escape($upc));
 	$dbc->query($upQ);
 	break;
@@ -146,6 +166,19 @@ case 'saveText':
 		$orderID);
 	$dbc->query($q);
 	break;
+case 'confirmOrder':
+	$q = sprintf("INSERT INTO SpecialOrderHistory VALUES
+		(%d,'CONFIRMED',%s,'')",$_REQUEST['orderID'],
+		$dbc->now());
+	$dbc->query($q);
+	echo date("M j Y g:ia");
+	break;
+case 'unconfirmOrder':
+	$q = sprintf("DELETE FROM SpecialOrderHistory WHERE
+		order_id=%d AND entry_type='CONFIRMED'",
+		$_REQUEST['orderID']);
+	$dbc->query($q);
+	break;
 }
 
 function canSaveAddress($orderID){
@@ -166,7 +199,7 @@ function canSaveAddress($orderID){
 	return True;
 }
 
-function addUPC($orderID,$memNum,$upc){
+function addUPC($orderID,$memNum,$upc,$num_cases=1){
 	global $dbc;
 
 	$upc = str_pad($upc,13,'0',STR_PAD_LEFT);
@@ -183,7 +216,7 @@ function addUPC($orderID,$memNum,$upc){
 	if ($dbc->num_rows($caseR) > 0)
 		$caseSize = array_pop($dbc->fetch_row($caseR));
 	$ins_array['quantity'] = $caseSize;
-	$ins_array['ItemQtty'] = $caseSize;
+	$ins_array['ItemQtty'] = $num_cases;
 
 	$mempricing = False;
 	if ($memNum != 0 && !empty($memNum)){
@@ -198,12 +231,13 @@ function addUPC($orderID,$memNum,$upc){
 	if ($dbc->num_rows($pdR) > 0){
 		$pdW = $dbc->fetch_row($pdR);
 		$ins_array['department'] = $pdW['department'];
-		$ins_array['total'] = $pdW['normal_price']*$caseSize;
+		$ins_array['total'] = $pdW['normal_price']*$caseSize*$num_cases;
+		$ins_array['regPrice'] = $pdW['normal_price']*$caseSize*$num_cases;
 		if ($mempricing){
 			if ($pdW['discounttype'] == 2)
-				$ins_array['total'] = $pdW['special_price']*$caseSize;
+				$ins_array['total'] = $pdW['special_price']*$caseSize*$num_cases;
 			else
-				$ins_array['total'] = $pdW['normal_price']*$caseSize*0.85;
+				$ins_array['total'] = $pdW['normal_price']*$caseSize*$num_cases*0.85;
 		}
 		$ins_array['description'] = "'".substr($pdW['description'],0,32)." SO'";
 	}
@@ -247,6 +281,7 @@ function CreateEmptyOrder(){
 	}
 
 	$ins_array = genericRow($orderID);
+	$ins_array['numflag'] = 1;
 	$dbc->smart_insert('PendingSpecialOrder',$ins_array);
 
 	$vals = array(
@@ -389,7 +424,21 @@ function getCustomerForm($orderID,$memNum="0"){
 	if ($dbc->num_rows($r) > 0)
 		$notes = array_pop($dbc->fetch_row($r));
 
+	$q = "SELECT entry_date FROM SpecialOrderHistory WHERE order_id=$orderID AND entry_type='CONFIRMED'";
+	$r = $dbc->query($q);
+	$confirm_date = "";
+	if ($dbc->num_rows($r) > 0)	
+		$confirm_date = array_pop($dbc->fetch_row($r));
+
+	$callback = 1;
+	$q = "SELECT numflag FROM PendingSpecialOrder WHERE order_id=$orderID AND trans_id=0";
+	$r = $dbc->query($q);
+	if ($dbc->num_rows($r) > 0)
+		$callback = array_pop($dbc->fetch_row($r));
+
 	$ret = "";
+	$ret .= '<table width="95%" cellpadding="4" cellspacing=4" border="0">';
+	$ret .= '<tr><td align="left" valign="top">';
 	$ret .= sprintf('<input type="hidden" id="orderID" value="%d" />',$orderID);
 	$ret .= sprintf('<b>Member Number</b>: <input type="text" size="4"
 			id="memNum" value="%s" onchange="memNumEntered();"
@@ -403,6 +452,28 @@ function getCustomerForm($orderID,$memNum="0"){
 		$ret .= '<b>Account status</b>: '.$status_row['status'];
 		$ret .= '<br />';
 	}
+	$ret .= '</td><td align="right" valign="top">';
+	$ret .= '<b>Call to Confirm</b>: ';
+	$ret .= '<select onchange="saveCtC(this.value,'.$orderID.');">';
+	if ($callback == 1){
+		$ret .= '<option value="1" selected>Yes</option>';	
+		$ret .= '<option value="0">No</option>';	
+	}
+	else {
+		$ret .= '<option value="1">Yes</option>';	
+		$ret .= '<option value="0" selected>No</option>';	
+	}
+	$ret .= '</select><br />';	
+	$ret .= '<span id="confDateSpan">'.(!empty($confirm_date)?'Confirmed '.$confirm_date:'Not confirmed')."</span> ";
+	$ret .= '<input type="checkbox" onclick="saveConfirmDate(this.checked,';
+	$ret .= $orderID.');" ';
+	if (!empty($confirm_date)) $ret .= "checked";
+	$ret .= ' /><br />';
+
+	$ret .= "<input type=\"submit\" value=\"Done\"
+		onclick=\"location='index.php';return false;\" />";
+	$ret .= '</td></tr></table>';
+
 	$ret .= '<table cellspacing="0" cellpadding="4" border="1">';
 
 	// names
@@ -469,10 +540,12 @@ function getCustomerForm($orderID,$memNum="0"){
 }
 
 function getItemForm($orderID){
-	global $dbc;
+	global $dbc,$canEdit;
 	
 	$ret = '<b>UPC</b>: <input type="text" id="newupc" maxlength="13" />';
-	$ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';	
+	$ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
+	$ret .= '<b>Cases</b>: <input id="newcases" maxlength="2" value="1" size="3" />';
+	$ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
 	$ret .= '<input type="submit" onclick="addUPC();return false;" value="Add Item" />';
 
 	$ret .= '<p />';
@@ -488,10 +561,10 @@ function getItemForm($orderID){
 			$table = "CompleteSpecialOrder";
 	}
 
-	if ($table == "PendingSpecialOrder")
+	if ($table == "PendingSpecialOrder" && $canEdit)
 		$ret .= editableItemList($orderID);
 	else
-		$ret .= itemList($orderID);
+		$ret .= itemList($orderID,$table);
 
 	return $ret;
 }
@@ -500,21 +573,28 @@ function editableItemList($orderID){
 	global $dbc;
 
 	$ret = '<table cellspacing="0" cellpadding="4" border="1">';
-	$ret .= '<tr><th>UPC</th><th>Description</th><th>Price</th><th>Qty</th><th>Department</th><th>&nbsp;</th></tr>';
-	$q = "SELECT upc,description,total,quantity,department FROM PendingSpecialOrder
+	$ret .= '<tr><th>UPC</th><th>SKU</th><th>Description</th><th>Cases</th><th>SRP</th><th>Actual</th><th>Qty</th><th>Dept</th><th>&nbsp;</th></tr>';
+	$q = "SELECT o.upc,o.description,total,quantity,department,sku,ItemQtty,regPrice FROM PendingSpecialOrder as o
+		left join vendorItems as v on o.upc=v.upc
 		WHERE order_id=$orderID AND trans_type='I'";
 	$r = $dbc->query($q);
 	while($w = $dbc->fetch_row($r)){
 		$ret .= sprintf('<tr>
 				<td>%s</td>
+				<td>%s</td>
 				<td><input onchange="saveDesc($(this).val(),%s);return false;" value="%s" /></td>
+				<td>%d</td>
+				<td><input size="5" onchange="saveSRP($(this).val(),%s);return false;" value="%.2f" /></td>
 				<td><input size="5" onchange="savePrice($(this).val(),%s);return false;" value="%.2f" /></td>
 				<td><input size="4" onchange="saveQty($(this).val(),%s);return false;" value="%.2f" /></td>
 				<td><input size="4" onchange="saveDept($(this).val(),%s);return false;" value="%d" /></td>
-				<td><a href="" onclick="deleteUPC(%d,%s);return false;">Delete</a>
+				<td>[<a href="" onclick="deleteUPC(%d,%s);return false;">X</a>]</td>
 				</tr>',
 				$w['upc'],
+				(!empty($w['sku'])?$w['sku']:'&nbsp;'),
 				"'".$w['upc']."'",$w['description'],
+				$w['ItemQtty'],
+				"'".$w['upc']."'",$w['regPrice'],
 				"'".$w['upc']."'",$w['total'],
 				"'".$w['upc']."'",$w['quantity'],
 				"'".$w['upc']."'",$w['department'],
@@ -525,27 +605,33 @@ function editableItemList($orderID){
 	return $ret;
 }
 
-function itemList($orderID){
+function itemList($orderID,$table="CompleteSpecialOrder"){
 	global $dbc;
 
-	$ret .= '<table cellspacing="0" cellpadding="4" border="1">';
-	$ret .= '<tr><th>UPC</th><th>Description</th><th>Price</th><th>Qty</th><th>Department</th></tr>';
-	$q = "SELECT upc,description,total,quantity,department FROM CompleteSpecialOrder
+	$ret = '<table cellspacing="0" cellpadding="4" border="1">';
+	$ret .= '<tr><th>UPC</th><th>Description</th><th>Cases</th><th>Est. Price</th>
+		<th>Qty</th><th>Est. Savings</th><th>&nbsp;</th></tr>';
+	$q = "SELECT o.upc,o.description,total,quantity,department,sku,regPrice,ItemQtty FROM $table as o
+		left join vendorItems as v on o.upc=v.upc
 		WHERE order_id=$orderID AND trans_type='I'";
 	$r = $dbc->query($q);
 	while($w = $dbc->fetch_row($r)){
 		$ret .= sprintf('<tr>
 				<td>%s</td>
 				<td>%s</td>
-				<td>%.2</td>
-				<td>%.2f</td>
 				<td>%d</td>
+				<td>%.2f</td>
+				<td>%.2f</td>
+				<td>%.2f</td>		
+				<td><a href="" onclick="deleteUPC(%d,%s);return false;">Delete</a>
 				</tr>',
 				$w['upc'],
 				$w['description'],
+				$w['ItemQtty'],
 				$w['total'],
 				$w['quantity'],
-				$w['department']
+				($w['regPrice'] - $w['total']),
+				$orderID,"'".$w['upc']."'"
 			);
 	}
 	$ret .= '</table>';
