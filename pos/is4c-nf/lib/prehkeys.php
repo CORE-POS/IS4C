@@ -173,7 +173,6 @@ function setMember($member, $personNumber, $row) {
 		tender("MI", $IS4C_LOCAL->get("runningTotal") * 100);
 	}
 
-	//return check_unpaid_ar($member);
 }
 
 function check_unpaid_ar($cardno){
@@ -182,10 +181,9 @@ function check_unpaid_ar($cardno){
 	// only attempt if server is available
 	// and not the default non-member
 	if ($cardno == $IS4C_LOCAL->get("defaultNonMem")) return False;
-	if ($IS4C_LOCAL->get("standalone") == 1) return False;
 	if ($IS4C_LOCAL->get("balance") == 0) return False;
 
-	$db = mDataConnect();
+	$db = pDataConnect();
 
 	if (!$db->table_exists("unpaid_ar_today")) return False;
 

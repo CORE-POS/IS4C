@@ -929,6 +929,15 @@ function create_dlogs($con){
 
 	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
 			'newBalanceStockToday_test','trans');
+
+	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+			'memChargeBalance','trans');
+
+	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+			'unpaid_ar_balances','trans');
+
+	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+			'unpaid_ar_today','trans');
 }
 
 function create_archive_dbs($con) {

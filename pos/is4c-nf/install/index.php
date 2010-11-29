@@ -617,9 +617,19 @@ function create_op_dbs($db,$type){
 		c.CardNo,
 		c.memDiscountLimit - c.Balance AS availBal,	
 		c.Balance as balance
-		FROM custdata WHERE personNum = 1";
-	if (!$db->table_exists('memchargebalance'),$name){
+		FROM custdata AS c WHERE personNum = 1";
+	if (!$db->table_exists('memchargebalance',$name)){
 		$db->query($mcV,$name);
+	}
+
+	$uaQ = "CREATE TABLE unpaid_ar_today (
+		card_no int,
+		old_balance real,
+		recent_payments real,
+		primary key (card_no)
+		)";
+	if (!$db->table_exists('unpaid_ar_today',$name)){
+		$db->query($uaQ,$name);
 	}
 }
 
