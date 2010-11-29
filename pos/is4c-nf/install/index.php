@@ -222,8 +222,6 @@ else {
 	echo "<span style=\"color:red;\">Host appears to be down</span>";
 }
 
-if ($gotDBs == 2)
-	crossover_views();
 ?>
 <br /><br />
 Server database host: 
@@ -611,7 +609,17 @@ function create_op_dbs($db,$type){
 		upc varchar(13),
 		type varchar(15))";
 	if(!$db->table_exists('houseCouponItems',$name)){
-		$db->query($hciQ);
+		$db->query($hciQ,$name);
+	}
+
+	$mcV = "CREATE view memchargebalance as
+		SELECT 
+		c.CardNo,
+		c.memDiscountLimit - c.Balance AS availBal,	
+		c.Balance as balance
+		FROM custdata WHERE personNum = 1";
+	if (!$db->table_exists('memchargebalance'),$name){
+		$db->query($mcV,$name);
 	}
 }
 
@@ -850,14 +858,6 @@ function create_trans_dbs($db,$type){
 		." = 0";
 	if (!$db->table_exists('localtranstoday',$name)){
 		$db->query($lttoday,$name);
-	}
-
-	$memcharge = "CREATE VIEW memchargetotals AS select
-		card_no,sum(total) AS chargeTotal FROM
-		dtransactions WHERE trans_subtype='MI'
-		GROUP BY card_no";
-	if (!$db->table_exists('memchargetotals',$name)){
-		$db->query($memcharge,$name);
 	}
 
 	$mAdd = "CREATE VIEW memdiscountadd AS
@@ -3448,37 +3448,6 @@ function create_min_server($db,$type){
 		and trans_subtype not in ('0','')";
 	if (!$db->table_exists("TenderTapeGeneric",$name)){
 		$db->query($ttG,$name);
-	}
-}
-
-/* separate function for views that
- * use both databases. Call last to ensure
- * tables/views in both databases already
- * exist 
- */
-function crossover_views(){
-	global $IS4C_LOCAL;
-
-	$sql = new SQLManager($IS4C_LOCAL->get('localhost'),
-		$IS4C_LOCAL->get('DBMS'),
-		$IS4C_LOCAL->get('pDatabase'),
-		$IS4C_LOCAL->get('localUser'),
-		$IS4C_LOCAL->get('localPass'));
-
-	$mcV = "CREATE view memchargebalance as
-		SELECT 
-		c.CardNo,
-		(case when m.card_no is null then c.memDiscountLimit - c.Balance else
-		c.memDiscountLimit -(c.Balance-m.chargeTotal)end) 
-		as availBal,
-		(case when m.card_no is null then c.Balance else c.Balance-m.chargeTotal end) as balance
-		FROM custdata c left outer join ".
-		$IS4C_LOCAL->get('tDatabase').".memchargetotals m on
-		c.CardNo = m.card_no";
-	if($IS4C_LOCAL->get('DBMS') == 'mssql')
-		$mcV = str_replace('memchargetotals','dbo.memchargetotals',$mcV);
-	if(!$sql->table_exists('memchargebalance',$IS4C_LOCAL->get('pDatabase'))){
-		$sql->query($mcV,$IS4C_LOCAL->get('pDatabase'));
 	}
 }
 

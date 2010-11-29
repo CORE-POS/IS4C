@@ -8,3 +8,5 @@ pos/fannie/config.php
 pos/fannie/logs/*.log*
 pos/is4c-nf/scale-drivers/drivers/rs232/ssd
 */tmp/*
+pos/fannie/item/images/done/*
+pos/fannie/item/images/new/*

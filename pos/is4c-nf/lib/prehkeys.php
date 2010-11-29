@@ -886,16 +886,10 @@ function chargeOk() {
 
 	getsubtotals();
 
-	// change the connection based on standalone status, rather
-	// than the query - andy 8/31/07
-	$conn = -1;
-	$query = "select availBal,balance from memchargebalance where CardNo = '".$IS4C_LOCAL->get("memberID")."'";
-	if ($IS4C_LOCAL->get("standalone") == 0 || False) {
-		$conn = mDataConnect();
-	}
-	else {
-		$conn = pDataConnect();
-	}
+	$conn = pDataConnect();
+	$query = "select m.availBal,m.balance,c.ChargeOk from memchargebalance as m
+		left join custdata AS c ON m.CardNo=c.CardNo AND c.personNum=1
+		where CardNo = '".$IS4C_LOCAL->get("memberID")."'";
 
 	$result = $conn->query($query);
 	$num_rows = $conn->num_rows($result);
@@ -904,24 +898,13 @@ function chargeOk() {
 	$availBal = $row["availBal"] + $IS4C_LOCAL->get("memChargeTotal");
 	
 	$IS4C_LOCAL->set("balance",$row["balance"]);
-	$IS4C_LOCAL->set("availBal",number_format($availBal,2,'.',''));		
+	$IS4C_LOCAL->set("availBal",number_format($availBal,2,'.',''));	
 	
-	// switch back to local DB if need be
-	if ($IS4C_LOCAL->get("standalone") == 0)
-		$conn = pDataConnect();
-
-	$query2 = "select Balance, MemDiscountLimit, ChargeOk from custdata where CardNo = '".$IS4C_LOCAL->get("memberID")."'";
-	$result2 = $conn->query($query2);
-	$num_rows2 = $conn->num_rows($result2);
-	$row2 = $conn->fetch_array($result2);
-
-
 	$chargeOk = 1;
-	if ($num_rows2 == 0 || !$row2["ChargeOk"]) {
+	if ($num_rows == 0 || !$row["ChargeOk"]) {
 		$chargeOk = 0;
 	}
-	elseif ( $row2["ChargeOk"] == 0 ) {
-
+	elseif ( $row["ChargeOk"] == 0 ) {
 		$chargeOk = 0;	
 	}
 
