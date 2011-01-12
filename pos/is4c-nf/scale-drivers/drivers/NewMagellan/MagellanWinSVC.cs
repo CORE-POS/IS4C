@@ -22,15 +22,12 @@
 
 /*************************************************************
  * Magellan
- * 	Main app. Starts the thread for each SerialPortHandler
- * and passes them WebBrowser load event Urls.
+ * 	
+ * Wraps Magellan in a Windows Service.
+ * Use installutil.exe posSVC.exe to install. When prompted
+ * for a username and password, a fully qualified name
+ * (i.e., %COMPUTER%\%USER%) is required.
  *
- * Otherwise, minor details - sizing the window, watching
- * for the Url http://localhost/bye.html that indicates it's
- * time to exit. 
- *
- * Note that exit won't work cleanly if a SerialPortHandler
- * blocks indefinitely. Use timeouts in polling reads.
 *************************************************************/
 using System;
 using System.ServiceProcess;
@@ -68,5 +65,8 @@ public class MyInstaller : ServiceProcessInstaller {
 	public MyInstaller(){
 		this.s = new ServiceInstaller();	
 		this.s.ServiceName = "IS4C Scale Monitor";
+		this.Installers.AddRange(new Installer[] {
+			this.s
+		});
 	}	
 }
