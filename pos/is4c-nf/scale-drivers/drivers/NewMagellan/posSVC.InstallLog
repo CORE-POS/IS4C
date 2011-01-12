@@ -1,0 +1,13 @@
+﻿Installing assembly 'C:\git\IS4C\pos\is4c-nf\scale-drivers\drivers\NewMagellan\posSVC.exe'.
+Affected parameters are:
+   logtoconsole = 
+   assemblypath = C:\git\IS4C\pos\is4c-nf\scale-drivers\drivers\NewMagellan\posSVC.exe
+   logfile = C:\git\IS4C\pos\is4c-nf\scale-drivers\drivers\NewMagellan\posSVC.InstallLog
+No public installers with the RunInstallerAttribute.Yes attribute could be found in the C:\git\IS4C\pos\is4c-nf\scale-drivers\drivers\NewMagellan\posSVC.exe assembly.
+Committing assembly 'C:\git\IS4C\pos\is4c-nf\scale-drivers\drivers\NewMagellan\posSVC.exe'.
+Affected parameters are:
+   logtoconsole = 
+   assemblypath = C:\git\IS4C\pos\is4c-nf\scale-drivers\drivers\NewMagellan\posSVC.exe
+   logfile = C:\git\IS4C\pos\is4c-nf\scale-drivers\drivers\NewMagellan\posSVC.InstallLog
+No public installers with the RunInstallerAttribute.Yes attribute could be found in the C:\git\IS4C\pos\is4c-nf\scale-drivers\drivers\NewMagellan\posSVC.exe assembly.
+Remove InstallState file because there are no installers.

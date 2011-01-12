@@ -34,19 +34,18 @@
  * Sends beep requests to the scale in PageLoaded(Uri) as
  * determined by frame #1
 *************************************************************/
+
 using System;
 using System.IO;
 using System.IO.Ports;
-using System.Windows.Forms;
 using System.Threading;
-
-#define MAGELLAN_OUTPUT_FILE "/var/www/html/git/IS4C/pos/is4c-nf/scale-drivers/drivers/NewMagellan/scanner-scale.data"
-#define MAGELLAN_LOCK_FILE "/var/www/html/git/IS4C/pos/is4c-nf/scale-drivers/drivers/NewMagellan/scanner-scale.lock"
 
 namespace SPH {
 
 public class SPH_Magellan_Scale : SerialPortHandler {
 	private bool got_weight;
+	private static String MAGELLAN_OUTPUT_FILE = "/var/www/html/git/IS4C/pos/is4c-nf/scale-drivers/drivers/NewMagellan/scanner-scale.data";
+	private static String MAGELLAN_LOCK_FILE = "/var/www/html/git/IS4C/pos/is4c-nf/scale-drivers/drivers/NewMagellan/scanner-scale.lock";
 
 	public SPH_Magellan_Scale(string p) : base(p){
 		sp = new SerialPort();

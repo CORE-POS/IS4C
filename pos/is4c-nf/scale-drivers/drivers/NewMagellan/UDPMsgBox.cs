@@ -81,8 +81,7 @@ public class UDPMsgBox {
 		string receiveString = System.Text.Encoding.ASCII.GetString(receiveBytes);
 
 		Console.WriteLine("Received: "+ receiveString);
-		parent.Invoke(parent.MsgDelegate,
-				new Object[]{ receiveString });
+		parent.MsgRecv(receiveString);
 	}
 
 	public void Stop(){

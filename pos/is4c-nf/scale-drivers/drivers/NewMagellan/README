@@ -11,3 +11,14 @@ COMPILATION
 2. Non-windows
 	Requires mono.
 	Use the makefile.
+
+DESIGN NOTES
+
+Originally, this was similar to the original, VB magellan
+and used a WebBrowser object embedded in a windows form with
+various page change callbacks registered. Turns out WebBrowser
+objects are flaky at best on the Linux/mono side of things, so
+there's been some significant refactoring to remove the GUI 
+portions. Some naming conventions seem odd now that made sense
+in the original structure (e.g., DelegateForm is no longer a
+System.Windows.Forms.Form, nor does it contain any delegates).

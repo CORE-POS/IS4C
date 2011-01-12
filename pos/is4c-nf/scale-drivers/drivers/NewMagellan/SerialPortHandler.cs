@@ -37,7 +37,6 @@
 using System;
 using System.IO.Ports;
 using System.Threading;
-using System.Windows.Forms;
 using CustomForms;
 
 namespace SPH {
@@ -46,7 +45,7 @@ public class SerialPortHandler {
 	public Thread SPH_Thread;
 	protected bool SPH_Running;
 	protected SerialPort sp;
-	protected DelegateForm parent;
+	protected CustomForms.DelegateForm parent;
 	protected string port;
 
 	public SerialPortHandler(string p){ 

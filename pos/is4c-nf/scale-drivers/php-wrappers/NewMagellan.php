@@ -64,13 +64,13 @@ class NewMagellan extends ScaleDriverWrapper {
 		/* replace file location #defines */
 		$fp = fopen($IS4C_PATH."scale-drivers/drivers/NewMagellan/SPH_Magellan_Scale.cs","w");
 		foreach($lines as $l){
-			if (strstr($l,"#define MAGELLAN_OUTPUT_FILE ") !== False){
-				fprintf($fp,'#define MAGELLAN_OUTPUT_FILE "%s"',
+			if (strstr($l,"static String MAGELLAN_OUTPUT_FILE ") !== False){
+				fprintf($fp,'private static String MAGELLAN_OUTPUT_FILE = "%s";',
 					$absPath."scale-drivers/drivers/NewMagellan/scanner-scale.data");
 				fwrite($fp,"\n");
 			}
-			elseif (strstr($l,"#define MAGELLAN_LOCK_FILE ") !== False){
-				fprintf($fp,'#define MAGELLAN_LOCK_FILE "%s"',
+			elseif (strstr($l,"static String MAGELLAN_LOCK_FILE ") !== False){
+				fprintf($fp,'private static String MAGELLAN_LOCK_FILE = "%s";',
 					$absPath."scale-drivers/drivers/NewMagellan/scanner-scale.lock");
 				fwrite($fp,"\n");
 			}

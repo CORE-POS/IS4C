@@ -22,19 +22,13 @@
 
 /*************************************************************
  * Magellan
- * 	Main app. Starts the thread for each SerialPortHandler
- * and passes them WebBrowser load event Urls.
- *
- * Otherwise, minor details - sizing the window, watching
- * for the Url http://localhost/bye.html that indicates it's
- * time to exit. 
+ * 	Main app. Starts all requested Serial Port Handlers
+ * and monitors UDP for messages
  *
  * Note that exit won't work cleanly if a SerialPortHandler
  * blocks indefinitely. Use timeouts in polling reads.
 *************************************************************/
 using System;
-using System.Drawing;
-using System.Windows.Forms;
 using System.Threading;
 using System.IO;
 using System.Collections;
@@ -43,28 +37,12 @@ using CustomForms;
 using CustomUDP;
 using SPH;
 
-class Magellan : DelegateForm {
+public class Magellan : DelegateForm {
 
 	private SerialPortHandler[] sph;
 	private UDPMsgBox u;
-	private WebBrowser wb;
 
 	public Magellan(){
-
-		MsgDelegate = new MsgRecv(this.MsgRecvMethod);
-
-		//this.FormBorderStyle = FormBorderStyle.None;
-		//this.WindowState = FormWindowState.Maximized;
-		//int width = Screen.PrimaryScreen.Bounds.Width;
-		//int height = Screen.PrimaryScreen.Bounds.Height;
-		int width = 800;
-		int height = 600;
-		this.Size = new Size(width,height);
-
-		wb = new WebBrowser();
-		wb.Parent = this;
-		wb.Size = new Size(width,height);
-		wb.Url = new Uri("http://localhost/");
 
 		ArrayList conf = ReadConfig();
 		sph = new SerialPortHandler[conf.Count];
@@ -90,7 +68,7 @@ class Magellan : DelegateForm {
 		}
 	}	
 
-	public void MsgRecvMethod(string msg){
+	public override void MsgRecv(string msg){
 		if (msg == "exit"){
 			this.ShutDown();
 		}
@@ -101,7 +79,7 @@ class Magellan : DelegateForm {
 		}
 	}
 
-	private void ShutDown(){
+	public void ShutDown(){
 		try {
 			u.Stop();
 			foreach(SerialPortHandler s in sph){
@@ -111,9 +89,6 @@ class Magellan : DelegateForm {
 		catch(Exception ex){
 			System.Console.WriteLine(ex);
 		}
-
-		this.Dispose();
-		Application.Exit();
 	}
 
 	/*
@@ -154,8 +129,15 @@ class Magellan : DelegateForm {
 		return al;
 	}
 
-	[STAThread]
 	static public void Main(){
-		Application.Run(new Magellan());
+		Magellan m = new Magellan();
+		bool exiting = false;
+		while(!exiting){
+			string user_in = System.Console.ReadLine();
+			if (user_in == "exit"){
+				m.ShutDown();
+				exiting = true;
+			}
+		}
 	}
 }

@@ -1,15 +1,24 @@
 CC=gmcs
 RM=rm -f
-BASE_LIBS=-r:System.Drawing -r:System.Windows.Forms
+BASE_LIBS=
 
-all: DelegateForm.dll SPH.dll Magellan.cs
-	$(CC) -target:exe $(BASE_LIBS) -r:SPH.dll -r:DelegateForm.dll -out:pos.exe Magellan.cs
+all: DelegateForm.dll SPH.dll UDPMsgBox.dll Magellan.cs
+	$(CC) -target:exe $(BASE_LIBS) -r:SPH.dll -r:DelegateForm.dll -r:UDPMsgBox.dll -out:pos.exe Magellan.cs
 
-DelegateForm.dll: DelegateBrowserForm.cs
-	$(CC) -target:library $(BASE_LIBS) -out:DelegateForm.dll DelegateBrowserForm.cs
+UDPMsgBox.dll: DelegateForm.dll UDPMsgBox.cs
+	$(CC) -target:library $(BASE_LIBS) -r:DelegateForm.dll -out:UDPMsgBox.dll UDPMsgBox.cs
 
-SPH.dll: DelegateForm.dll SerialPortHandler.cs SPH_Magellan_Scale.cs SPH_Ingenico_i6550.cs
-	$(CC) -target:library $(BASE_LIBS) -r:DelegateForm.dll -out:SPH.dll SerialPortHandler.cs SPH_Magellan_Scale.cs SPH_Ingenico_i6550.cs
+DelegateForm.dll: DelegateForm.cs
+	$(CC) -target:library $(BASE_LIBS) -out:DelegateForm.dll DelegateForm.cs
+
+SPH.dll: DelegateForm.dll SerialPortHandler.cs SPH_Magellan_Scale.cs 
+	$(CC) -target:library $(BASE_LIBS) -r:DelegateForm.dll -out:SPH.dll SerialPortHandler.cs SPH_Magellan_Scale.cs
+
+Magellan.dll: DelegateForm.dll SPH.dll UDPMsgBox.dll Magellan.cs
+	$(CC) -target:library $(BASE_LIBS) -r:SPH.dll -r:DelegateForm.dll -r:UDPMsgBox.dll -out:Magellan.dll Magellan.cs
+
+posSVC.exe: Magellan.dll MagellanWinSVC.cs
+	$(CC) -target:exe $(BASE_LIBS) -r:System.ServiceProcess.dll -r:System.Configuration.Install.dll -r:SPH.dll -r:DelegateForm.dll -r:UDPMsgBox.dll -r:Magellan.dll -out:posSVC.exe MagellanWinSVC.cs
 
 clean:
-	$(RM) pos.exe SPH.dll DelegateForm.dll
+	$(RM) pos.exe SPH.dll DelegateForm.dll UDPMsgBox.dll

@@ -27,16 +27,13 @@
  *
 *************************************************************/
 using System;
-using System.Drawing;
-using System.Windows.Forms;
 using System.Threading;
 
 namespace CustomForms {
 
-public class DelegateForm : Form {
+public abstract class DelegateForm {
 
-	public delegate void MsgRecv(string msg);
-	public MsgRecv MsgDelegate;
+	public abstract void MsgRecv(string msg);
 }
 
 }
