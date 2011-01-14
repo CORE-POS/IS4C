@@ -44,7 +44,7 @@ class ssd extends ScaleDriverWrapper {
 		foreach($lines as $l){
 			if (strstr($l,"#define SSD_SERIAL_PORT ") === False) fwrite($fp,$l);
 			else {
-				fprintf($fp,'#define SSD_SERIAL_PORT "%s"',$portName);
+				fwrite($fp,sprintf('#define SSD_SERIAL_PORT "%s"',$portName));
 				fwrite($fp,"\n");
 			}
 		}
@@ -64,13 +64,13 @@ class ssd extends ScaleDriverWrapper {
 		$fp = fopen($IS4C_PATH."scale-drivers/drivers/rs232/ssd.c","w");
 		foreach($lines as $l){
 			if (strstr($l,"#define SCALE_OUTPUT_FILE ") !== False){
-				fprintf($fp,'#define SCALE_OUTPUT_FILE "%s"',
-					$absPath."scale-drivers/drivers/rs232/scale");
+				fwrite($fp,sprintf('#define SCALE_OUTPUT_FILE "%s"',
+					$absPath."scale-drivers/drivers/rs232/scale"));
 				fwrite($fp,"\n");
 			}
 			elseif (strstr($l,"#define SCANNER_OUTPUT_FILE ") !== False){
-				fprintf($fp,'#define SCANNER_OUTPUT_FILE "%s"',
-					$absPath."scale-drivers/drivers/rs232/scanner");
+				fwrite($fp,sprintf('#define SCANNER_OUTPUT_FILE "%s"',
+					$absPath."scale-drivers/drivers/rs232/scanner"));
 				fwrite($fp,"\n");
 			}
 			else fwrite($fp,$l);

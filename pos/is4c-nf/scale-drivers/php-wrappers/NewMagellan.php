@@ -45,7 +45,7 @@ class NewMagellan extends ScaleDriverWrapper {
 		foreach($lines as $l){
 			if (strstr($l,"SPH_Magellan_Scale") === False) fwrite($fp,$l);
 			else {
-				fprintf($fp,'%s SPH_Magellan_Scale',$portName);
+				fwrite($fp,sprintf('%s SPH_Magellan_Scale',$portName));
 				fwrite($fp,"\n");
 			}
 		}
@@ -65,13 +65,13 @@ class NewMagellan extends ScaleDriverWrapper {
 		$fp = fopen($IS4C_PATH."scale-drivers/drivers/NewMagellan/SPH_Magellan_Scale.cs","w");
 		foreach($lines as $l){
 			if (strstr($l,"static String MAGELLAN_OUTPUT_FILE ") !== False){
-				fprintf($fp,'private static String MAGELLAN_OUTPUT_FILE = "%s";',
-					$absPath."scale-drivers/drivers/NewMagellan/scanner-scale.data");
+				fwrite($fp,sprintf('private static String MAGELLAN_OUTPUT_FILE = "%s";',
+					$absPath."scale-drivers/drivers/NewMagellan/scanner-scale.data"));
 				fwrite($fp,"\n");
 			}
 			elseif (strstr($l,"static String MAGELLAN_LOCK_FILE ") !== False){
-				fprintf($fp,'private static String MAGELLAN_LOCK_FILE = "%s";',
-					$absPath."scale-drivers/drivers/NewMagellan/scanner-scale.lock");
+				fwrite($fp,sprintf('private static String MAGELLAN_LOCK_FILE = "%s";',
+					$absPath."scale-drivers/drivers/NewMagellan/scanner-scale.lock"));
 				fwrite($fp,"\n");
 			}
 			else fwrite($fp,$l);
