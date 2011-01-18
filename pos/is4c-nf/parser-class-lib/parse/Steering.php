@@ -88,7 +88,7 @@ class Steering extends Parser {
 			}
 			return True;
 		case "DDD":
-			$IS4C_LOCAL->set("adminRequest","/ddd.php");
+			$IS4C_LOCAL->set("adminRequest",$IS4C_PATH."ajax-callbacks/ddd.php");
 			$IS4C_LOCAL->set("adminLoginMsg","DDD these items?");
 			$IS4C_LOCAL->set("adminRequestLevel","10");
 			$IS4C_LOCAL->set("away",1);

@@ -1,0 +1,7 @@
+[18-Jan-2011 10:09:11] PHP Notice:  Undefined index:  INCLUDE_PATH in C:\is4c\gui-modules\input.php on line 24
+[18-Jan-2011 10:09:11] PHP Warning:  main(/gui-class-lib/BasicPage.php): failed to open stream: No such file or directory in C:\is4c\gui-modules\input.php on line 24
+[18-Jan-2011 10:09:11] PHP Warning:  main(): Failed opening '/gui-class-lib/BasicPage.php' for inclusion (include_path='.;c:\php4\pear') in C:\is4c\gui-modules\input.php on line 24
+[18-Jan-2011 10:09:11] PHP Notice:  Undefined index:  INCLUDE_PATH in C:\is4c\gui-modules\input.php on line 25
+[18-Jan-2011 10:09:11] PHP Warning:  main(/lib/LocalStorage/conf.php): failed to open stream: No such file or directory in C:\is4c\gui-modules\input.php on line 25
+[18-Jan-2011 10:09:11] PHP Warning:  main(): Failed opening '/lib/LocalStorage/conf.php' for inclusion (include_path='.;c:\php4\pear') in C:\is4c\gui-modules\input.php on line 25
+[18-Jan-2011 10:09:11] PHP Fatal error:  Class input:  Cannot inherit from undefined class basicpage in C:\is4c\gui-modules\input.php on line 27

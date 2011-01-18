@@ -39,6 +39,7 @@ if ($IS4C_LOCAL->get("End") == 1) {
 }
 
 $receiptType = isset($_REQUEST['receiptType'])?$_REQUEST['receiptType']:'';
+var_dump($_REQUEST);
 
 if (strlen($receiptType) > 0) {
 	
@@ -57,6 +58,7 @@ if (strlen($receiptType) > 0) {
 		printReceipt($receiptType,True);
 	}
 
+	var_dump($IS4C_LOCAL->get("End"));
 	if ($IS4C_LOCAL->get("End") >= 1 || $receiptType == "cancelled"
 		|| $receiptType == "suspended"){
 		$IS4C_LOCAL->set("End",0);

@@ -191,8 +191,9 @@ if ($IS4C_LOCAL->get("scaleDriver") != ""){
 		include('../scale-drivers/php-wrappers/'.$classname.'.php');
 		$instance = new $classname();
 		$instance->SavePortConfiguration($IS4C_LOCAL->get("scalePort"));
-		$abs_path = substr($_SERVER['SCRIPT_FILENAME'],0,
-				strlen($_SERVER['SCRIPT_FILENAME'])-strlen('install/extra_config.php'));
+		$abs_path = substr($_SERVER['PATH_TRANSLATED'],0,
+				strlen($_SERVER['PATH_TRANSLATED'])-strlen('install/extra_config.php')-1);
+		var_dump($abs_path);
 		$instance->SaveDirectoryConfiguration($abs_path);
 	}
 }

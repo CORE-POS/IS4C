@@ -202,7 +202,6 @@ function paycard_validExpiration($exp) {
 	if( $eM < 1 || $eM > 12)
 		return -2;
 	// get today's date
-	date_default_timezone_set('America/Chicago');
 	$cM = (int)date('n'); // Numeric representation of a month, without leading zeros (1 through 12)
 	$cY = (int)date('y'); // A two digit representation of a year (99 or 03)
 	// check date

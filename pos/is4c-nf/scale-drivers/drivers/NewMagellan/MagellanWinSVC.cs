@@ -45,7 +45,9 @@ public class MagellanWinSVC : ServiceBase {
 	}
 
 	override protected void OnStart(String[] args){
-		this.my_obj = new Magellan();
+		SerialPortHandler[] sph = new SerialPortHandler[1];
+		sph[0] = new SPH_Magellan_Scale("COM1");
+		this.my_obj = new Magellan(sph);
 	}
 
 	override protected void OnStop(){

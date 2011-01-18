@@ -887,7 +887,7 @@ function chargeOk() {
 	$conn = pDataConnect();
 	$query = "select m.availBal,m.balance,c.ChargeOk from memchargebalance as m
 		left join custdata AS c ON m.CardNo=c.CardNo AND c.personNum=1
-		where CardNo = '".$IS4C_LOCAL->get("memberID")."'";
+		where m.CardNo = '".$IS4C_LOCAL->get("memberID")."'";
 
 	$result = $conn->query($query);
 	$num_rows = $conn->num_rows($result);

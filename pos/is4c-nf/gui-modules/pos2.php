@@ -88,7 +88,7 @@ class pos2 extends BasicPage {
 						break;
 					}
 				});\n");
-		$this->add_onload_command("pollScale();\n");
+		$this->add_onload_command("pollScale(false);\n");
 		if ($IS4C_LOCAL->get("msgrepeat") == 1)
 			$this->add_onload_command("submitWrapper();");
 		?>

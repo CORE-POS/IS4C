@@ -48,8 +48,13 @@ function writeLine($text) {
 
 	if ($IS4C_LOCAL->get("print") != 0) {
 
-		if (is_writable($IS4C_LOCAL->get("printerPort"))){
-			$fp = fopen($IS4C_LOCAL->get("printerPort"), "w");
+		/* check fails on LTP1: in PHP4
+		   suppress open errors and check result
+		   instead 
+		*/
+		//if (is_writable($IS4C_LOCAL->get("printerPort"))){
+		$fp = @fopen($IS4C_LOCAL->get("printerPort"), "w");
+		if ($fp){
 			fwrite($fp, $text);
 			fclose($fp);
 		}

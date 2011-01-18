@@ -42,8 +42,8 @@ public class Magellan : DelegateForm {
 	private SerialPortHandler[] sph;
 	private UDPMsgBox u;
 
+	// read deisred modules from config file
 	public Magellan(){
-
 		ArrayList conf = ReadConfig();
 		sph = new SerialPortHandler[conf.Count];
 		for(int i = 0; i < conf.Count; i++){
@@ -55,6 +55,17 @@ public class Magellan : DelegateForm {
 			sph[i] = (SerialPortHandler)Activator.CreateInstance(t, new Object[]{ port });
 			sph[i].SetParent(this);
 		}
+		FinishInit();
+	}
+
+	// alternate constructor for specifying
+	// desired modules at compile-time
+	public Magellan(SerialPortHandler[] args){
+		this.sph = args;
+		FinishInit();
+	}
+
+	private void FinishInit(){
 		MonitorSerialPorts();
 
 		u = new UDPMsgBox(9450);
@@ -81,10 +92,10 @@ public class Magellan : DelegateForm {
 
 	public void ShutDown(){
 		try {
-			u.Stop();
 			foreach(SerialPortHandler s in sph){
 				s.Stop();
 			}
+			u.Stop();
 		}
 		catch(Exception ex){
 			System.Console.WriteLine(ex);
@@ -135,6 +146,7 @@ public class Magellan : DelegateForm {
 		while(!exiting){
 			string user_in = System.Console.ReadLine();
 			if (user_in == "exit"){
+				System.Console.WriteLine("stopping");
 				m.ShutDown();
 				exiting = true;
 			}

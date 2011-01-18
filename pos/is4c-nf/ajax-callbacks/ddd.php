@@ -1,7 +1,7 @@
 <?php
 /*******************************************************************************
 
-    Copyright 2010 Whole Foods Co-op
+    Copyright 2009 Whole Foods Co-op
 
     This file is part of IS4C.
 
@@ -20,55 +20,38 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
+ // session_start(); 
 $IS4C_PATH = isset($IS4C_PATH)?$IS4C_PATH:"";
 if (empty($IS4C_PATH)){ while(!file_exists($IS4C_PATH."is4c.css")) $IS4C_PATH .= "../"; }
 
-if (!class_exists('DiscountType')) include($IS4C_PATH.'lib/Scanning/DiscountType.php');
+if (!function_exists("tDataConnect")) include($IS4C_PATH."lib/connect.php");
 if (!isset($IS4C_LOCAL)) include($IS4C_PATH."lib/LocalStorage/conf.php");
 
-if (!function_exists('adddiscount')) include($IS4C_PATH.'lib/additem.php');
+$IS4C_LOCAL->set("away",1);
 
-class PercentMemSale extends DiscountType {
+/*
+ * DDD is WFC lingo for unsaleable goods (dropped, dented, damaged, etc)
+ * Functionally this works like canceling a transaction, but marks
+ * items with a different trans_status (Z) so these items can
+ * be pulled out in later reports
+ */
 
-	function priceInfo($row,$quantity=1){
-		global $IS4C_LOCAL;
-		$ret = array();
+$db = tDataConnect();
+$query = "UPDATE localtemptrans SET trans_status='Z'";
+$db->query($query);
+$query = "INSERT INTO dtransactions SELECT * from localtemptrans";
+$db->query($query);
+$query = "INSERT INTO localtrans SELECT * from localtemptrans";
+$db->query($query);
 
-		$ret["regPrice"] = $row['normal_price'];
-		$ret["unitPrice"] = $row['normal_price'];
+$IS4C_LOCAL->set("plainmsg","items marked ddd");
+$IS4C_LOCAL->set("beep","rePoll");
+$IS4C_LOCAL->set("msg",2);
+$IS4C_LOCAL->set("End",2);
 
-		$ret['discount'] = 0;
-		$ret['memDiscount'] = ($ret['unitPrice'] * $row['special_price']) * $quantity;
-
-		if ($IS4C_LOCAL->get("isMember") == 1)
-			$ret['unitPrice'] = $ret['unitPrice'] * $row['special_price'];
-
-		$this->savedRow = $row;
-		$this->savedInfo = $ret;
-		return $ret;
-	}
-
-	function addDiscountLine(){
-		global $IS4C_LOCAL;	
-		if ($IS4C_LOCAL->get("isMember")){
-			$IS4C_LOCAL->set("voided",2);
-			adddiscount($this->savedInfo['memDiscount'],
-				$this->savedRow['department']);
-		}
-	}
-
-	function isSale(){
-		return true;
-	}
-
-	function isMemberOnly(){
-		return true;
-	}
-
-	function isStaffOnly(){
-		return false;
-	}
-
-}
+$_REQUEST['receiptType'] = 'ddd';
+ob_start();
+include($IS4C_PATH.'ajax-callbacks/ajax-end.php');
+header("Location: {$IS4C_PATH}gui-modules/pos2.php");
 
 ?>

@@ -53,6 +53,8 @@ public class UDPMsgBox {
 	protected bool running;
 	protected DelegateForm parent;
 	protected int port;
+	protected UdpClient u;
+
 
 	public UDPMsgBox(int p){ 
 		this.My_Thread = new Thread(new ThreadStart(this.Read));
@@ -64,7 +66,7 @@ public class UDPMsgBox {
 
 	public void Read(){ 
 		IPEndPoint e = new IPEndPoint(IPAddress.Any, 0);
-		UdpClient u = new UdpClient(this.port);
+		u = new UdpClient(this.port);
 
 		while(running){
 			try {
@@ -86,6 +88,7 @@ public class UDPMsgBox {
 
 	public void Stop(){
 		running = false;
+		u.Close();
 		My_Thread.Join();
 	}
 

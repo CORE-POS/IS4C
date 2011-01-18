@@ -62,6 +62,7 @@ public class SerialPortHandler {
 	public void Stop(){
 		SPH_Running = false;
 		SPH_Thread.Join();
+		System.Console.WriteLine("SPH Stopped");
 	}
 
 }

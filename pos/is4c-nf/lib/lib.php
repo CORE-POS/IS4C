@@ -124,6 +124,7 @@ function scaleObject(){
 		include($IS4C_PATH.'scale-drivers/php-wrappers/'.$scaleDriver.'.php');
 		$sd = new $scaleDriver();
 	}
+	return $sd;
 }
 
 function goodBeep() {

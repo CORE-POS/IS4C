@@ -82,7 +82,7 @@ class NewMagellan extends ScaleDriverWrapper {
 	function ReadFromScale(){
 		global $IS4C_LOCAL,$IS4C_PATH;
 
-		$readfile = $IS4C_PATH.'scale-drivers/NewMagellan/scanner-scale';
+		$readfile = $IS4C_PATH.'scale-drivers/drivers/NewMagellan/scanner-scale';
 		$scale_display = "";
 		$scans = array();
 		if (file_exists($readfile.".data") && !file_exists($readfile.".lock")){

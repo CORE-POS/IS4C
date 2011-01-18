@@ -6,7 +6,7 @@ function pollScale(drop_scans){
 		cache: false,
 		dataType: 'json',
 		error: function(){
-			rePoll(drop_scans,50);
+			rePoll(drop_scans);
 		},
 		success: function(data){
 			if (data){
@@ -21,12 +21,13 @@ function pollScale(drop_scans){
 					}
 				}
 			}
-			rePoll(drop_scans,50);
+			rePoll(drop_scans);
 		}
 	});
 }
 
-function rePoll(drop_scans,timeout){
+function rePoll(drop_scans){
+	var timeout = 25;
 	if (drop_scans)
 		setTimeout('pollScale(true)',timeout);
 	else
