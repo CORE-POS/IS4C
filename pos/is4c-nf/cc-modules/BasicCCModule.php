@@ -35,6 +35,8 @@ if (empty($IS4C_PATH)){ while(!file_exists($IS4C_PATH."is4c.css")) $IS4C_PATH .=
 if (!function_exists("paycard_errorText")) include_once($IS4C_PATH."lib/paycardLib.php");
 if (!isset($IS4C_LOCAL)) include($IS4C_PATH."lib/LocalStorage/conf.php");
 
+define("LOCAL_CERT_PATH",$_SERVER['DOCUMENT_ROOT']."/cc-modules/cacert.pem");
+
 class BasicCCModule {
 	/* constructor
 	 * takes no arguments
@@ -136,8 +138,7 @@ class BasicCCModule {
 		curl_setopt($curl_handle, CURLOPT_FRESH_CONNECT,true);
 		curl_setopt($curl_handle, CURLOPT_TIMEOUT,30);
 		//curl_setopt($curl_handle, CURLOPT_SSL_VERIFYPEER, 0);
-		curl_setopt($curl_handle, CURLOPT_CAINFO, 
-			$IS4C_PATH."cc-modules/cacert.pem");
+		curl_setopt($curl_handle, CURLOPT_CAINFO, LOCAL_CERT_PATH);
 		if ($type == 'SOAP'){
 			curl_setopt($curl_handle, CURLOPT_HTTPHEADER,
 				array("SOAPAction: ".$this->SOAPACTION,
