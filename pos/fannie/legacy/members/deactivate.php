@@ -74,7 +74,7 @@ if (!isset($_POST['termType'])){
 else {
   $memNum = $memID;
   $termType = $_POST['termType'];
-  $codes = $_POST["reasoncodes"];
+  $codes = isset($_REQUEST["reasoncodes"])?$_REQUEST['reasoncodes']:array();
  
   $reasonCode = 0;
   foreach($codes as $c)

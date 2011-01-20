@@ -27,7 +27,6 @@ $dlog = "trans_archive.dbo.dlog".date("Ym",$stamp);
 
 $output = get_cache("monthly");
 if (!$output){
-	echo "UNCACHED:";
 	ob_start();
 
 	$dateQ = "select min(tdate),max(tdate) from $dlog where datediff(mm,getdate(),tdate) = -1";

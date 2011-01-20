@@ -40,7 +40,8 @@ if (isset($_POST['firstName']))
 ********************************************************************/
 
 $row = "";
-$result = prefetch_result($memID,$lName,$fName);
+$query_drop = "";
+$result = prefetch_result($memID,$lName,$fName,$query_drop);
 if ($sql->num_rows($result) > 0){
   $row = $sql->fetch_array($result);
   $memID = $row[0];
@@ -135,7 +136,7 @@ else{
   else{
     echo "There is more than one result <br>";
     //echo $numMemRows;
-    $query_drop = "SELECT * FROM custdata where LastName like '$cliplName' AND FirstName LIKE '$clipfName' order by FirstName,CardNo";
+    //$query_drop = "SELECT * FROM custdata where LastName like '$cliplName' AND FirstName LIKE '$clipfName' order by FirstName,CardNo";
     //echo $query_drop;
     $value="CardNo";
     $label="FirstName";
@@ -191,7 +192,7 @@ Next Mem
 // prefetch_result is here to find a result row earlier in
 // execution.  This way member id can be pulled out of the
 // result and filled into menu links as needed.
-function prefetch_result($memID,$lName,$fName){
+function prefetch_result($memID,$lName,$fName,&$qd){
   global $sql;
   if(empty($memID)){
     if(empty($lName)){
@@ -208,11 +209,23 @@ function prefetch_result($memID,$lName,$fName){
                 LastName LIKE '$lName%'
                 AND FirstName LIKE '$fName%'
                 ORDER BY LastName,FirstName,CardNo";
+      $qd = "SELECT * 
+                FROM custdata 
+                WHERE 
+                LastName LIKE '$lName%'
+                AND FirstName LIKE '$fName%'
+                ORDER BY LastName,FirstName,CardNo";
       $result = $sql->query($query);
       if ($sql->num_rows($result) > 0)
 	return $result;
 
       $query = "SELECT CardNo
+                FROM custdata
+                WHERE 
+                LastName LIKE '%$lName%'
+                AND FirstName LIKE '%$fName%'
+                ORDER BY LastName,FirstName,CardNo";
+      $qd = "SELECT *
                 FROM custdata
                 WHERE 
                 LastName LIKE '%$lName%'
@@ -233,11 +246,23 @@ function prefetch_result($memID,$lName,$fName){
                 LastName LIKE '$cliplName'
                 AND FirstName LIKE '$clipfName'
                 ORDER BY LastName,FirstName,CardNo";
+      $qd = "SELECT *
+                FROM custdata
+                WHERE 
+                LastName LIKE '$cliplName'
+                AND FirstName LIKE '$clipfName'
+                ORDER BY LastName,FirstName,CardNo";
       $result = $sql->query($query);
       if ($sql->num_rows($result) > 0)
 	return $result;
 
       $query = "SELECT CardNo
+                FROM custdata
+                WHERE 
+                LastName LIKE '%$cliplName'
+                AND FirstName LIKE '%$clipfName'
+                ORDER BY LastName,FirstName,CardNo";
+      $qd = "SELECT *
                 FROM custdata
                 WHERE 
                 LastName LIKE '%$cliplName'

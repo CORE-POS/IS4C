@@ -13,6 +13,7 @@ function csv_parser($input,$q="\"",$s=","){
 
 	$ret = array();
 	$cur = 0;
+	$ret[$cur] = "";
 	$quoted = false;
 	foreach ($input as $x){
 		if ($x == $QUOTE_CHAR)

@@ -88,6 +88,7 @@ $tenders = array("Cash"=>array(10120,0.0,0),
 		"Gift Card"=>array(21205,0.0,0),
 		"GIFT CERT"=>array(21200,0.0,0),
 		"InStore Charges"=>array(10710,0.0,0),
+		"Pay Pal"=>array(10120,0.0,0),
 		"Coupons"=>array(10740,0.0,0),
 		"InStoreCoupon"=>array(67710,0.0,0),
 		"RRR Coupon"=>array(63380,0.0,0));

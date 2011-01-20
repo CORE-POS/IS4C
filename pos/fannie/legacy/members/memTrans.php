@@ -15,7 +15,8 @@ $query = "SELECT month(tdate),day(tdate),year(tdate),trans_num,
 	sum(case when department=990 then total else 0 end) as payment,
 	sum(case when trans_subtype='MI' then total else 0 end) as charges,
 	sum(case when department in (991,992) then total else 0 end) as stock,
-	sum(case when trans_subtype='MA' then total else 0 end) as madcoupon
+	sum(case when trans_subtype='MA' then total else 0 end) as madcoupon,
+	sum(case when upc='DISCOUNT' then total else 0 end) as discountTTL
 	FROM trans_archive.dbo.dlog$my
 	WHERE card_no=$mem
 	GROUP BY year(tdate),month(tdate),day(tdate),trans_num
@@ -54,6 +55,7 @@ while($row = $sql->fetch_row($result)){
 	if ($row[6] != 0) echo "<span style=\"color:#0055aa;\">C</span>";
 	if ($row[7] != 0) echo "<span style=\"color:#ff3300;\">S</span>";
 	if ($row[8] != 0) echo "<span style=\"color:#003311;\">MC</span>";
+	if ($row[9] != 0) echo "<span style=\"color:#003333;\">%</span>";
 	echo "&nbsp;</td>";
 	echo "</tr>";
 	$spending += $row[4];

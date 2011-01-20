@@ -29,7 +29,7 @@ FOR($numStart=$numBegin;$numStart<$numEnd+1;$numStart++){
 	echo $query2 . "<br>";
 	$result2 = $sql->query($query2);
 
-	$query3 = "INSERT INTO custdata VALUES($numStart,1,'NEW STAFF','',999.99,0,10,0,1,1,1,'REG',9,0,0,0,999,999,'$numName',1)";
+	$query3 = "INSERT INTO custdata VALUES($numStart,1,'NEW STAFF','',999.99,0,12,0,1,1,1,'REG',9,0,0,0,999,999,'$numName',1)";
 	echo $query3;
 	$result3 = $sql->query($query3);
 

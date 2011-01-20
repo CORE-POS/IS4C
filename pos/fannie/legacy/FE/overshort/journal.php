@@ -49,7 +49,8 @@ $tender_pcode_lookup = array(
 	'IC' => 67710,
 	'MA' => 66600,
 	'RR' => 63380,
-	'EF' => 10120
+	'EF' => 10120,
+	'PP' => 10120
 );
 
 $double_lookup = array(
@@ -237,13 +238,14 @@ function display($date1,$date2,$excel=False){
 		$ret .= "<td>&nbsp;</td><td>&nbsp;</td>";
 	$ret .= "<td class=money>";
 	if (!$excel){
-		$ret .= "<input type=text size=7 value=\"".$data['other']['depositAmount']."\"";
+		$ret .= "<input type=text size=7 value=\"";
+		$ret .= (isset($data['other']['depositAmount'])?$data['other']['depositAmount']:'')."\"";
 		$ret .= " onchange=\"save2(this.value,'other','depositAmount');rb($endTS);\" ";
 		$ret .= "style=\"text-align:right\" name=debit$endTS />";
 	}
 	else
-		$ret .= $data['other']['depositAmount'];
-	$overshorts[$endTS] += $data['other']['depositAmount'];
+		$ret .= (isset($data['other']['depositAmount'])?$data['other']['depositAmount']:'');
+	$overshorts[$endTS] += isset($data['other']['depositAmount'])?$data['other']['depositAmount']:0;
 	
 	$ret .= "</td>";
 	$ret .= "<td>&nbsp;</td>";
@@ -390,7 +392,7 @@ function display($date1,$date2,$excel=False){
 	for($i=0;$i<$num_days;$i++){
 		$ts = mktime(0,0,0,$sM,$sD+$i,$sY);
 		$ret .= "<td class=money>";
-		if ($data['other']['tax'][$ts] < 0){
+		if (isset($data['other']['tax'][$ts]) && $data['other']['tax'][$ts] < 0){
 			if (!$excel){
 				$ret .= "<input type=text size=7 value=\"".(-1*$data['other']['tax'][$ts])."\" ";
 				$ret .= "onchange=\"save3(this.value,'other','tax','$ts');rb($ts);\" ";
@@ -403,7 +405,7 @@ function display($date1,$date2,$excel=False){
 		else
 			$ret .= "&nbsp;";
 		$ret .= "</td><td class=money>";
-		if ($data['other']['tax'][$ts] >= 0){
+		if (isset($data['other']['tax'][$ts]) && $data['other']['tax'][$ts] >= 0){
 			if (!$excel){
 				$ret .= "<input type=text size=7 value=\"".$data['other']['tax'][$ts]."\" ";
 				$ret .= "onchange=\"save3(this.value,'other','tax','$ts');rb($ts);\" ";
@@ -425,7 +427,7 @@ function display($date1,$date2,$excel=False){
 		$ts = mktime(0,0,0,$sM,$sD+$i,$sY);
 		$ret .= "<td class=money>";
 		$ret .= "</td><td class=money>";
-		if ($data['other']['gazette'][$ts] < 0){
+		if (isset($data['other']['gazette'][$ts]) && $data['other']['gazette'][$ts] < 0){
 			if (!$excel){
 				$ret .= "<input type=text size=7 value=\"".(-1*$data['other']['gazette'][$ts])."\" ";
 				$ret .= "onchange=\"save3(this.value,'other','gazette','$ts');rb($ts);\" ";
@@ -437,7 +439,7 @@ function display($date1,$date2,$excel=False){
 		}
 		else
 			$ret .= "&nbsp;";
-		if ($data['other']['gazette'][$ts] >= 0){
+		if (isset($data['other']['gazette'][$ts]) && $data['other']['gazette'][$ts] >= 0){
 			if (!$excel){
 				$ret .= "<input type=text size=7 value=\"".$data['other']['gazette'][$ts]."\" ";
 				$ret .= "onchange=\"save3(this.value,'other','gazette','$ts');rb($ts);\" ";
@@ -459,7 +461,7 @@ function display($date1,$date2,$excel=False){
 		$ts = mktime(0,0,0,$sM,$sD+$i,$sY);
 		$ret .= "<td class=money>";
 		$ret .= "</td><td class=money>";
-		if ($data['other']['foundmoney'][$ts] < 0){
+		if (isset($data['other']['foundmoney'][$ts]) && $data['other']['foundmoney'][$ts] < 0){
 			if (!$excel){
 				$ret .= "<input type=text size=7 value=\"".(-1*$data['other']['foundmoney'][$ts])."\" ";
 				$ret .= "onchange=\"save3(this.value,'other','foundmoney','$ts');rb($ts);\" ";
@@ -471,7 +473,7 @@ function display($date1,$date2,$excel=False){
 		}
 		else
 			$ret .= "&nbsp;";
-		if ($data['other']['foundmoney'][$ts] >= 0){
+		if (isset($data['other']['foundmoney'][$ts]) && $data['other']['foundmoney'][$ts] >= 0){
 			if (!$excel){
 				$ret .= "<input type=text size=7 value=\"".$data['other']['foundmoney'][$ts]."\" ";
 				$ret .= "onchange=\"save3(this.value,'other','foundmoney','$ts');rb($ts);\" ";
@@ -615,13 +617,14 @@ function display($date1,$date2,$excel=False){
 	$ret .= "<td>&nbsp;</td>";
 	$ret .= "<td class=money>";
 	if (!$excel){
-		$ret .= "<input type=text size=7 value=\"".$data['other']['buyAmount']."\"";
+		$ret .= "<input type=text size=7 value=\"";
+		$ret .= (isset($data['other']['buyAmount'])?$data['other']['buyAmount']:'')."\"";
 		$ret .= " onchange=\"save2(this.value,'other','buyAmount');rb($endTS);\" ";
 		$ret .= "style=\"text-align:right\" name=credit$endTS />";
 	}
 	else
-		$ret .= $data['other']['buyAmount'];
-	$overshorts[$endTS] -= $data['other']['buyAmount'];
+		$ret .= (isset($data['other']['buyAmount'])?$data['other']['buyAmount']:'');
+	$overshorts[$endTS] -= isset($data['other']['buyAmount'])?$data['other']['buyAmount']:0;
 	$ret .= "</td>";
 	$ret .= "</tr>";
 
@@ -713,7 +716,7 @@ function fetch_data($date1,$date2){
 	$extraTenderQ = "select datepart(yy,tdate),datepart(mm,tdate),datepart(dd,tdate),
 			trans_subtype,sum(total)*-1 FROM $dlog as d
 			WHERE tdate between '$date1 00:00:00' AND
-			'$date2 23:59:59' and trans_subtype in ('MA','RR')
+			'$date2 23:59:59' and trans_subtype in ('MA','RR','PP')
 			group by
 			datepart(yy,tdate),datepart(mm,tdate),datepart(dd,tdate),
 			trans_subtype";
@@ -733,6 +736,7 @@ function fetch_data($date1,$date2){
 
 		$name = "RRR Coupons";
 		if ($code == "MA") $name = "Mad Coupons";
+		if ($code == "PP") $name = "Pay Pal";
 
 		$data['tenders'][$code]['name'] = $name;
 		$data['tenders'][$code][$timestamp] += $extraTenderW[4];

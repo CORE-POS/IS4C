@@ -62,7 +62,7 @@ $sql = new SQLManager($FANNIE_SERVER,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
 
 /* Load dtransactions into the archive, trim to 90 days */
 $chk1 = $sql->query("INSERT INTO transarchive SELECT * FROM dtransactions");
-$chk2 = $sql->query("DELETE FROM transarchive WHERE ".$sql->datediff($sql->now(),'datetime')." > 90");
+$chk2 = $sql->query("DELETE FROM transarchive WHERE ".$sql->datediff($sql->now(),'datetime')." > 92");
 if ($chk1 === false)
 	echo cron_msg("Error loading data into transarchive");
 elseif ($chk2 === false)

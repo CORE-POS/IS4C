@@ -73,7 +73,8 @@ $BILLING_NONMEMBER = array(
 	"1/ 5FULL" => 300,
 	"1/2FULL" => 750,
 	"EFULL"  => 300,
-	"FFULL"  => 750
+	"FFULL"  => 750,
+	"CFULL"  => 135
 );
 
 if (isset($_POST['cardnos'])){
@@ -122,6 +123,7 @@ else if (isset($_POST['MAX_FILE_SIZE'])){
 		$line = fgets($fp);
 		$data = csv_parser($line);
 
+		if (!isset($data[$PHONE])) continue;
 		if (!is_numeric($data[$PHONE][0])) continue;
 
 		$ph = $data[$PHONE];
@@ -141,11 +143,11 @@ else if (isset($_POST['MAX_FILE_SIZE'])){
 			m.card_no = s.cardno
 			WHERE (c.memtype = 2 or s.memtype1 = 2)
 			and (m.phone='$ph' OR m.email_2='$ph'
-			or c.lastname='$cn')";
+			or c.lastname=$cn)";
 		$searchR = $sql->query($searchQ);
 
 		if ($sql->num_rows($searchR) > 1){
-			$tmp = explode(" ",$cn);
+			$tmp = explode(" ",$data[$CONTACT]);
 			$searchQ = "SELECT m.card_no,c.lastname FROM
 				meminfo as m left join custdata as c
 				on m.card_no=c.cardno and c.personnum=1

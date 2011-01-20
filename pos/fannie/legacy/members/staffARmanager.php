@@ -3,7 +3,7 @@ include('../../config.php');
 
 if (!class_exists("SQLManager")) require_once($FANNIE_ROOT."src/SQLManager.php");
 include('../db.php');
-$mysql = new SQLManager('nexus.wfco-op.store','MYSQL','pyaroll1','root');
+$mysql = new SQLManager('nexus.wfco-op.store','MYSQL','payroll1','root');
 
 /* delete is easy
  * just delete from staffID and staffAR
@@ -33,7 +33,7 @@ if (isset($_POST['add'])){
 	$lname = $namesW[1];
 	
 	$findQ = "select adpID from employees where lastName='$lname'";
-	$mysql->select_db('payroll1');
+	//$mysql->select_db('payroll1');
 	$findR = $mysql->query($findQ);
 	switch($mysql->num_rows($findR)){
 	case 0: // no employee found with that first & last name
