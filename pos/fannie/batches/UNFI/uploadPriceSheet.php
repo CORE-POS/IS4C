@@ -68,6 +68,9 @@ Vendor: <select name=vendorPage>
 <option value="loadECLECTICprices.php">ECLECTIC</option>
 <option value="loadVITAMERprices.php">VITAMER</option>
 <option value="loadNFACTORprices.php">NATURAL FACTORS</option>
+<option value="loadSUKIprices.php">SUKI</option>
+<option value="loadSIMPprices.php">SIMPLERS</option>
+<option value="loadHPprices.php">HERB PHARM</option>
 </select><br />
 <input type="hidden" name="MAX_FILE_SIZE" value="20971520" />
 Filename: <input type="file" id="file" name="upload" />

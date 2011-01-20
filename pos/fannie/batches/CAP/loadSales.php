@@ -35,7 +35,7 @@ $dbc->query("CREATE TABLE tempCapPrices (upc varchar(13), price decimal(10,2))")
 $SUB = 1;
 $UPC = 2;
 $SKU = 3;
-$PRICE = 14;
+$PRICE = 15;
 
 $datastarts = false;
 

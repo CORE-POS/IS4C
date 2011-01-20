@@ -1,7 +1,7 @@
 <?php
 /*******************************************************************************
 
-    Copyright 2009 Whole Foods Co-op
+    Copyright 2011 Whole Foods Co-op
 
     This file is part of Fannie.
 
@@ -45,16 +45,12 @@ require($FANNIE_ROOT.'src/mysql_connect.php');
 // the column number in the CSV file
 // where various information is stored
 $SKU = 1;
-$BRAND = 2;
-$DESCRIPTION = 6;
-$QTY = 3;
-$SIZE1 = 4;
-$UPC = 15;
-$CATEGORY = 5;
-$WHOLESALE = 9;
-$DISCOUNT = 9;
+$DESCRIPTION = 4;
+$QTY = 5;
+$UPC = 2;
+$WHOLESALE = 6;
 
-$VENDOR_ID = 1;
+$VENDOR_ID = 8;
 $PRICEFILE_USE_SPLITS = True;
 
 /*
@@ -75,9 +71,6 @@ if ($PRICEFILE_USE_SPLITS){
 				continue;
 			$filestoprocess[$i++] = $current;
 		}
-		
-		$truncateQ = "truncate table UNFI_order";
-		$truncateR = $dbc->query($truncateQ);
 		$delQ = "DELETE FROM vendorItems WHERE vendorID=$VENDOR_ID";
 		$delR = $dbc->query($delQ);
 	}
@@ -86,8 +79,6 @@ if ($PRICEFILE_USE_SPLITS){
 	}
 }
 else {
-	$truncateQ = "truncate table UNFI_order";
-	$truncateR = $dbc->query($truncateQ);
 	$delQ = "DELETE FROM vendorItems WHERE vendorID=$VENDOR_ID";
 	$delR = $dbc->query($delQ);
 	$filestoprocess[] = "unfi.csv";
@@ -102,51 +93,29 @@ while(!feof($fp)){
 	/* csv parser takes a comma-separated line and returns its elements
 	   as an array */
 	$data = csv_parser($line);
-	if (!is_array($data)) continue;
 
 	if (!isset($data[$UPC])) continue;
 
 	// grab data from appropriate columns
-	$sku = $data[$SKU];
-	$brand = $data[$BRAND];
-	$description = $data[$DESCRIPTION];
-	$qty = $data[$QTY];
-	$size = $data[$SIZE1];
-	$upc = substr($data[$UPC],0,13);
+	$upc = str_replace(" ","",$data[$UPC]);
+	$upc = rtrim($upc,"\r\n");
+	$upc = str_pad($upc,13,'0',STR_PAD_LEFT);
 	// zeroes isn't a real item, skip it
-	if ($upc == "0000000000000")
+	if ($upc == "0000000000000" || !is_numeric($upc))
 		continue;
-	$category = $data[$CATEGORY];
-	$wholesale = trim($data[$WHOLESALE]);
-	$discount = trim($data[$DISCOUNT]);
+	$upc = '0'.substr($upc,0,12);
+	$sku = str_replace("-","",$data[$SKU]);
+	$brand = 'SUKI';
+	$description = substr($data[$DESCRIPTION],0,50);
+	$size = $data[$QTY];
+	$qty = 1;
+	$wholesale = trim($data[$WHOLESALE]," \$");
 	// can't process items w/o price (usually promos/samples anyway)
-	if (empty($wholesale) or empty($discount))
-		continue;
-
-	// don't repeat items
-	$checkQ = "SELECT upcc FROM UNFI_order WHERE upcc='$upc'";
-	$checkR = $dbc->query($checkQ);
-	if ($dbc->num_rows($checkR) > 0) continue;
-
-	// syntax fixes. kill apostrophes in text fields,
-	// trim $ off amounts as well as commas for the
-	// occasional > $1,000 item
-	$brand = preg_replace("/\'/","",$brand);
-	$description = preg_replace("/\'/","",$description);
-	$wholesale = preg_replace("/\\\$/","",$wholesale);
-	$wholesale = preg_replace("/,/","",$wholesale);
-	$discount = preg_replace("/\\\$/","",$discount);
-	$discount = preg_replace("/,/","",$discount);
-
-	// skip the item if prices aren't numeric
-	// this will catch the 'label' line in the first CSV split
-	// since the splits get returned in file system order,
-	// we can't be certain *when* that chunk will come up
-	if (!is_numeric($wholesale) or !is_numeric($discount))
+	if (empty($wholesale))
 		continue;
 
 	// need unit cost, not case cost
-	$net_cost = $discount / $qty;
+	$net_cost = $wholesale / $qty;
 
 	// set cost in $PRICEFILE_COST_TABLE
 	$upQ = "update prodExtra set cost=$net_cost where upc='$upc'";
@@ -155,38 +124,17 @@ while(!feof($fp)){
 	$upR = $dbc->query($upQ);
 	// end $PRICEFILE_COST_TABLE cost tracking
 
-	$insQ = "INSERT INTO VendorItems (brand,sku,size,upc,units,cost,description,vendorDept,vendorID)
-			VALUES ('$brand',$sku,'$size','$upc',$qty,$net_cost,
-			'$description',$category,$VENDOR_ID)";
+	// if the item doesn't exist in the general vendor catalog table,
+	// add it. 
+	$insQ = sprintf("INSERT INTO VendorItems (brand,sku,size,upc,units,cost,description,vendorDept,vendorID)
+			VALUES (%s,%s,%s,%s,%d,%f,%s,NULL,%d)",$dbc->escape($brand),$dbc->escape($sku),
+			$dbc->escape($size),$dbc->escape($upc),$qty,$net_cost,$dbc->escape($description),
+			$VENDOR_ID);
 	$insR = $dbc->query($insQ);
-	// end general UNFI catalog queries
 
-	// requested margin
-	// I'm calculating margins based on an in-house table of UNFI catagory ID #s
-	// and desired margins. Alternatively, SRP could be lifted right out
-	// of the CSV file
-	$marginQ = "select margin from unfiCategories where categoryID = $category";
-	$marginR = $dbc->query($marginQ);
-	$margin = 0.45;
-	if ($dbc->num_rows($marginR) > 0)
-		$margin = array_pop($dbc->fetch_array($marginR));
-
-	// calculate a SRP from unit cost and desired margin
-	$srp = round($net_cost / (1 - $margin),2);
-
-	// prices should end in 5 or 9, so add a cent until that's true
-	while (substr($srp,strlen($srp)-1,strlen($srp)) != "5" and
-	       substr($srp,strlen($srp)-1,strlen($srp)) != "9")
-		$srp += 0.01;
-	// end margin calculations
-
-	// UNFI_order is what the UNFI price change page builds on,
-	// that's why it's being populated here
-	// it's just a table containing all items in the current order
-	$insQ = "INSERT INTO UNFI_order (unfi_sku,brand,item_desc,pack,pack_size,upcc,cat,wholesale,
-		 vd_cost,wfc_srp) VALUES ($sku,'$brand','$description',$qty,'$size','$upc',
-		 $category,$wholesale,$discount,$srp)";
-	$insR = $dbc->query($insQ);
+	$srp = (!empty($data[7]))?ltrim($data[7],'$'):ltrim($data[8],'$');
+	$dbc->query(sprintf("INSERT INTO vendorSRPs VALUES (%d,%s,%f)",
+		$VENDOR_ID,$dbc->escape($upc),$srp));
 }
 fclose($fp);
 
@@ -209,45 +157,18 @@ fclose($fp);
 */
 if (count($filestoprocess) == 0){
 	/* html header, including navbar */
-	$page_title = "Done loading items";
-	$header = "Done loading items";
+	$page_title = "Fannie : Loaded Suki Prices";
+	$header = "Loaded Suki Prices";
 	include($FANNIE_ROOT."src/header.html");
 
-	// this stored procedure compensates for items ordered from
-	// UNFI under one UPC but sold in-store under a different UPC
-	// (mostly bulk items sold by PLU). All it does is update the
-	// upcc field in UNFI_order for the affected items
-	$pluQ1 = "UPDATE UNFI_order AS u
-		INNER JOIN UnfiToPLU AS p
-		ON u.unfi_sku = p.unfi_sku
-		SET u.upcc = p.wfc_plu";
-	$pluQ2 = "UPDATE prodExtra AS x
-		INNER JOIN UnfiToPLU AS p
-		ON x.upc=p.wfc_plu
-		INNER JOIN UNFI_order AS u
-		ON u.unfi_sku=p.unfi_sku
-		SET x.cost = u.vd_cost / u.pack";
-	if ($FANNIE_SERVER_DBMS == "MSSQL"){
-		$pluQ1 = "UPDATE UNFI_order SET upcc = p.wfc_plu
-			FROM UNFI_order AS u RIGHT JOIN
-			UnfiToPLU AS p ON u.unfi_sku = p.unfi_sku
-			WHERE u.unfi_sku IS NOT NULL";
-		$pluQ2 = "UPDATE prodExtra
-			SET cost = u.vd_cost / u.pack
-			FROM UnfiToPLU AS p LEFT JOIN
-			UNFI_order AS u ON p.unfi_sku = u.unfi_sku
-			LEFT JOIN prodExtra AS x
-			ON p.wfc_plu = x.upc";
-	}
-	$dbc->query($pluQ1);
-	$dbc->query($pluQ2);
-
-	echo "Finished processing UNFI price file<br />";
+	echo "Finished processing Suki price file<br />";
 	if ($PRICEFILE_USE_SPLITS){
 		echo "Files processed:<br />";
-		foreach (unserialize(base64_decode($_GET["processed"])) as $p){
-			echo $p."<br />";
-			unlink("../tmp/$p");
+		if (isset($_GET['processed'])){
+			foreach (unserialize(base64_decode($_GET["processed"])) as $p){
+				echo $p."<br />";
+				unlink("../tmp/$p");
+			}
 		}
 		echo $current."<br />";
 		unlink("../tmp/$current");
@@ -256,7 +177,7 @@ if (count($filestoprocess) == 0){
 	unlink("../tmp/unfi.csv");
 	
 	echo "<br />";
-	echo "<a href=../index.php>UNFI Pricing Home</a>";
+	echo "<a href=../index.php>Vendor Pricing Home</a>";
 
 	/* html footer */
 	include($FANNIE_ROOT."src/footer.html");
@@ -269,7 +190,7 @@ else {
 
 	$sendable_data = base64_encode(serialize($filestoprocess));
 	$encoded2 = base64_encode(serialize($processed));
-	header("Location: loadUNFIprices.php?filestoprocess=$sendable_data&processed=$encoded2");
+	header("Location: loadSUKIprices.php?filestoprocess=$sendable_data&processed=$encoded2");
 
 }
 

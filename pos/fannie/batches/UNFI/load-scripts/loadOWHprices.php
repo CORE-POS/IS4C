@@ -47,7 +47,7 @@ require($FANNIE_ROOT.'src/mysql_connect.php');
 $SKU = 0;
 $DESCRIPTION = 1;
 $QTY = 2;
-$UPC = 7;
+$UPC = 6;
 $WHOLESALE = 3;
 
 $VENDOR_ID = 4;
@@ -71,12 +71,16 @@ if ($PRICEFILE_USE_SPLITS){
 				continue;
 			$filestoprocess[$i++] = $current;
 		}
+		$delQ = "DELETE FROM vendorItems WHERE vendorID=$VENDOR_ID";
+		$delR = $dbc->query($delQ);
 	}
 	else {
 		$filestoprocess = unserialize(base64_decode($_GET["filestoprocess"]));	
 	}
 }
 else {
+	$delQ = "DELETE FROM vendorItems WHERE vendorID=$VENDOR_ID";
+	$delR = $dbc->query($delQ);
 	$filestoprocess[] = "unfi.csv";
 }
 
@@ -89,6 +93,8 @@ while(!feof($fp)){
 	/* csv parser takes a comma-separated line and returns its elements
 	   as an array */
 	$data = csv_parser($line);
+
+	if (!isset($data[$UPC])) continue;
 
 	// grab data from appropriate columns
 	$upc = str_replace(" ","",$data[$UPC]);
@@ -120,13 +126,15 @@ while(!feof($fp)){
 
 	// if the item doesn't exist in the general vendor catalog table,
 	// add it. 
-	$cleanQ = "delete from VendorItems where upc = '$upc' AND vendorID=$VENDOR_ID";
-	$dbc->query($cleanQ);
 	$insQ = sprintf("INSERT INTO VendorItems (brand,sku,size,upc,units,cost,description,vendorDept,vendorID)
 			VALUES (%s,%s,%s,%s,%d,%f,%s,NULL,%d)",$dbc->escape($brand),$dbc->escape($sku),
 			$dbc->escape($size),$dbc->escape($upc),$qty,$net_cost,$dbc->escape($description),
 			$VENDOR_ID);
 	$insR = $dbc->query($insQ);
+
+	$srp = (!empty($data[4]))?ltrim($data[4],'$'):ltrim($data[5],'$');
+	$dbc->query(sprintf("INSERT INTO vendorSRPs VALUES (%d,%s,%f)",
+		$VENDOR_ID,$dbc->escape($upc),$srp));
 }
 fclose($fp);
 
@@ -149,14 +157,18 @@ fclose($fp);
 */
 if (count($filestoprocess) == 0){
 	/* html header, including navbar */
+	$page_title = "Fannie : Loaded OWH Prices";
+	$header = "Loaded OWH Prices";
 	include($FANNIE_ROOT."src/header.html");
 
 	echo "Finished processing OWH price file<br />";
 	if ($PRICEFILE_USE_SPLITS){
 		echo "Files processed:<br />";
-		foreach (unserialize(base64_decode($_GET["processed"])) as $p){
-			echo $p."<br />";
-			unlink("../tmp/$p");
+		if (isset($_GET['processed'])){
+			foreach (unserialize(base64_decode($_GET["processed"])) as $p){
+				echo $p."<br />";
+				unlink("../tmp/$p");
+			}
 		}
 		echo $current."<br />";
 		unlink("../tmp/$current");

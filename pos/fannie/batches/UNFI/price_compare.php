@@ -92,7 +92,7 @@ if (isset($_GET['action'])){
 
 //Get buyID from index form. Set to 99 (all buyers) if not set.
 $buyID = (isset($_REQUEST['buyer']))?$_REQUEST['buyer']:99;
-$filter = $_REQUEST['filter'];
+$filter = (isset($_REQUEST['filter']))?$_REQUEST['filter']:'No';
 $unfi_table = "unfi_diff";
 if ($filter == "Yes")
 	$unfi_table = "unfi_all";
@@ -114,10 +114,8 @@ a {
 <script src="price_compare.js" type="text/javascript"></script>
 </head>
 <?php
-}
-
-//Click to create Excel page...
 echo "<a href=price_compare.php?excel=1&buyer=$buyID&filter=$filter>Dump to Excel</a><br>";
+}
 
 //Connect to mysql server
 
@@ -127,9 +125,12 @@ $mysql = new SQLManager('nexus.wfco-op.store','MYSQL','IS4C','root');
    $sort = isset($_GET['sort'])?$_GET['sort']:'';
 
    //create form page
+if (!isset($_GET['excel'])){
    echo "<form action=price_update.php method=post>";
    echo "<tr><td><input type=submit name=submit value=submit></td><td><input type=reset value=reset name=reset></td></tr>";
-   echo "<table><th>Our UPC<th>Our Desc<th>Cost<th>Our Price<th>Our Margin<th>UNFI SRP<th>UNFI Margin<th>";
+}
+   echo "<table><th>Our UPC</th><th>Our Desc</th><th>Cost</th><th>Our Price</th><th>Our Margin</th><th>UNFI SRP</th><th>UNFI Margin</th><th>";
+if (!isset($_GET['excel'])){
    if($sort=='cat'){
       echo "<a href=price_compare.php?sort=cat1&buyer=$buyID&filter=$filter>Cat<a><th>";
    }else{
@@ -146,6 +147,9 @@ $mysql = new SQLManager('nexus.wfco-op.store','MYSQL','IS4C','root');
    else {
      echo "<a href=price_compare.php?sort=variable_pricing&buyer=$buyID&filter=$filter>Var</a>";
    }
+}
+else
+   echo "Cat</th><th>Diff</th><th>Var</th></tr>";
    $i = 1;
 
    //If sort is set (header has been clicked, test to see if we need to reverse
@@ -203,17 +207,34 @@ $mysql = new SQLManager('nexus.wfco-op.store','MYSQL','IS4C','root');
          $sort = 0;
       }
       echo "<tr id=row$pupc>";
-      echo  "<td bgcolor=$bg><a href={$FANNIE_URL}item/itemMaint.php?upc=$pupc>$pupc</td><td bgcolor=$bg>$pdesc</td><td bgcolor=$bg>$cost</td><td bgcolor=$bg id=pricefield$pupc><a href=\"\" onclick=\"editPrice('$pupc'); return false;\">$pprice</a></td>";
-      echo  "<td bgcolor=$bg>$ourMarg</td><td id=unfiprice$pupc bgcolor=$bg><a href=\"\" onclick=\"editUnfiPrice('$pupc'); return false;\">$uprice</a></td><td bgcolor=$bg>$unMarg</td><td bgcolor=$bg>$cat</td><td bgcolor=$bg>$sort</td>";
-      echo "<td bgcolor=$bg><input type=checkbox id=var$pupc ";
-      if ($var == 1)
-	echo "checked ";
-      echo "onclick=\"toggleVariable('$pupc');\" /></td>";
-      echo "<td bgcolor=$bg><input type=checkbox name=pricechange[] value=$pupc>UNFI";
+      if (!isset($_REQUEST['excel'])){
+	      echo  "<td bgcolor=$bg><a href={$FANNIE_URL}item/itemMaint.php?upc=$pupc>$pupc</td><td bgcolor=$bg>$pdesc</td><td bgcolor=$bg>$cost</td><td bgcolor=$bg id=pricefield$pupc><a href=\"\" onclick=\"editPrice('$pupc'); return false;\">$pprice</a></td>";
+	      echo  "<td bgcolor=$bg>$ourMarg</td><td id=unfiprice$pupc bgcolor=$bg><a href=\"\" onclick=\"editUnfiPrice('$pupc'); return false;\">$uprice</a></td><td bgcolor=$bg>$unMarg</td><td bgcolor=$bg>$cat</td><td bgcolor=$bg>$sort</td>";
+	      echo "<td bgcolor=$bg><input type=checkbox id=var$pupc ";
+	      if ($var == 1)
+		echo "checked ";
+	      echo "onclick=\"toggleVariable('$pupc');\" /></td>";
+	      echo "<td bgcolor=$bg><input type=checkbox name=pricechange[] value=$pupc>UNFI";
+      }
+      else {
+		echo "<td bgcolor=$bg>$pupc</td>";
+		echo "<td bgcolor=$bg>$pdesc</td>";
+		echo "<td bgcolor=$bg>$cost</td>";
+		echo "<td bgcolor=$bg>$pprice</td>";
+		echo "<td bgcolor=$bg>$ourMarg</td>";
+		echo "<td bgcolor=$bg>$uprice</td>";
+		echo "<td bgcolor=$bg>$unMarg</td>";
+		echo "<td bgcolor=$bg>$cat</td>";
+		echo "<td bgcolor=$bg>$sort</td>";
+		echo "<td bgcolor=$bg>".($var==1?'X':'')."</td>";
+		echo "<td bgcolor=$bg>UNFI</td>";
+      }
       echo "</tr>";
    }
 
 echo "</table>";
-echo "<input type=hidden value=$buyID name=buyID>";
-echo "</form>";
+if (!isset($_GET['excel'])){
+	echo "<input type=hidden value=$buyID name=buyID>";
+	echo "</form>";
+}
 ?>
