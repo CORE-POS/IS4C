@@ -1,0 +1,49 @@
+<html>
+<head>
+	<title>New Magellan</title>
+</head>
+<body>
+NewMagellan is one of the scale drivers included in this release.
+It works to connect IS4C to a Magellan scanner/scale, but it also
+serves as a base point for communicating with multiple external
+devices.
+<p />
+NewMagellan is written in C# .NET. All traces of winforms have been
+stripped out for the sake of mono compatibility. It doesn't require
+Visual Studio on Windows; the .NET 2 SDK includes a command line that's
+sufficient. Both a makefile for linux and a batch file for compiling
+on windows included.
+<p />
+<b>How it works</b>
+<p />
+Magellan reads ports.conf to see what drivers to use. Entries are just
+a port (COM1, /dev/Stty1, etc) and a driver name (e.g., SPH_Magellan_Scale).
+You can have more than one driver running - say a scanner/scale
+and a signature capture device.
+<p />
+Each driver is launched in its own thread. Other than implementing the
+SerialPortHandler class, there's no hard and fast requirements what a driver
+actually has to do. Reading from the relevant serial port would probably
+be the most common. Writing to the file system is the easiest way I've found
+to pass info to IS4C (similar to what ssd does).
+<p />
+After starting all the drivers, Magellan launches one more thread with
+a simple UDP server. All it does is listen (port 9450 by default) and
+pass any received messages to each driver. This way IS4C can send
+commands to devices directly without intermediary files.
+<p />
+The current version accepts command line input of messages, too. Writing
+an init script to background the process is left as an excercise for
+the sysadmin on linux (or when I get around to it). The windows version
+compiles a second executable that can be registered as a windows service.
+<p />
+Win32 service notes: the port/driver configuration is hard-coded into
+the executable, so you have to recompile to make changes (alternately you
+could hard-code the path to ports.conf, but that would mean a recompile
+too). The .NET SDK includes a utility called installutil.exe. To install,
+run installutil.exe posSVC.exe. To remove, run installutil.exe /u posSVC.exe.
+Installation prompts for a username and password. The username has to 
+include the machine name (e.g., POS1\is4c_user) to work. It took me awhile
+to figure that out.
+</body>
+</html>

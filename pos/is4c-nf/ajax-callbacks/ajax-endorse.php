@@ -26,7 +26,7 @@ if (empty($IS4C_PATH)){ while(!file_exists($IS4C_PATH."is4c.css")) $IS4C_PATH .=
 include_once($IS4C_PATH."ini.php");
 include_once($IS4C_PATH."lib/session.php");
 include_once($IS4C_PATH."lib/printLib.php");
-include_once($IS4C_PATH.."lib/printReceipt.php");
+include_once($IS4C_PATH."lib/printReceipt.php");
 include_once($IS4C_PATH."lib/connect.php");
 include_once($IS4C_PATH."lib/prehkeys.php");
 if (!isset($IS4C_LOCAL)) include($IS4C_PATH."lib/LocalStorage/conf.php");

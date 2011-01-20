@@ -51,10 +51,14 @@ class boxMsg2 extends BasicPage {
 							url: '<?php echo $IS4C_PATH; ?>ajax-callbacks/ajax-endorse.php',
 							type: 'get',
 							cache: false,
-							success: function(){}
+							success: function(){
+								location = data.dest_page;
+							}
 						});
 					}
-					location = data.dest_page;
+					else {
+						location = data.dest_page;
+					}
 				}
 			});
 			return false;
