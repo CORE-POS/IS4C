@@ -125,8 +125,18 @@ class ContactInfo extends MemberModule {
 	function ShowSearchForm(){
 		return '<p><b>First Name</b>: <input type="text" name="ContactInfo_fn"
 				size="10" /> &nbsp;&nbsp;&nbsp; <b>Last Name</b>: 
-				<input type="text" name="ContactInfo_ln" size="10"
-				/></p>';
+				<input type="text" name="ContactInfo_ln" size="10" />
+				<br /><br />
+				<b>Address</b>: 
+				<input type="text" name="ContactInfo_addr" size="15" />
+				<br /><br />
+				<b>City</b>: 
+				<input type="text" name="ContactInfo_city" size="8" />
+				<b>State</b>:
+				<input type="text" name="ContactInfo_state" size="2" />
+				<b>Zip</b>:
+				<input type="text" name="ContactInfo_zip" size="5" />
+				</p>';
 	}
 
 	function GetSearchResults(){
@@ -134,26 +144,43 @@ class ContactInfo extends MemberModule {
 
 		$fn = isset($_REQUEST['ContactInfo_fn'])?$_REQUEST['ContactInfo_fn']:"";
 		$ln = isset($_REQUEST['ContactInfo_ln'])?$_REQUEST['ContactInfo_ln']:"";
+		$addr = isset($_REQUEST['ContactInfo_addr'])?$_REQUEST['ContactInfo_addr']:"";
+		$city = isset($_REQUEST['ContactInfo_city'])?$_REQUEST['ContactInfo_city']:"";
+		$state = isset($_REQUEST['ContactInfo_state'])?$_REQUEST['ContactInfo_state']:"";
+		$zip = isset($_REQUEST['ContactInfo_zip'])?$_REQUEST['ContactInfo_zip']:"";
 
 		$where = "";
-		if (!empty($fn) && !empty($ln)){
-			$where = sprintf("FirstName LIKE %s AND LastName LIKE %s",
-					$dbc->escape("%".$fn."%"),
-					$dbc->escape("%".$ln."%"));
-		}
-		else if (!empty($fn)){
-			$where = sprintf("FirstName LIKE %s",
+		if (!empty($fn)){
+			$where .= sprintf(" AND FirstName LIKE %s",
 					$dbc->escape("%".$fn."%"));
 		}
-		else if (!empty($ln)){
-			$where = sprintf("LastName LIKE %s",
+		if (!empty($ln)){
+			$where .= sprintf(" AND LastName LIKE %s",
 					$dbc->escape("%".$ln."%"));
+		}
+		if (!empty($addr)){
+			$where .= sprintf(" AND street LIKE %s",
+					$dbc->escape("%".$addr."%"));
+		}
+		if (!empty($city)){
+			$where .= sprintf(" AND city LIKE %s",
+					$dbc->escape("%".$city."%"));
+		}
+		if (!empty($state)){
+			$where .= sprintf(" AND state LIKE %s",
+					$dbc->escape("%".$state."%"));
+		}
+		if (!empty($zip)){
+			$where .= sprintf(" AND zip LIKE %s",
+					$dbc->escape("%".$zip."%"));
 		}
 
 		$ret = array();
 		if (!empty($where)){
 			$q = "SELECT CardNo,FirstName,LastName FROM
-				custdata WHERE $where ORDER BY CardNo";
+				custdata as c LEFT JOIN meminfo AS m
+				ON c.CardNo = m.card_no
+				WHERE 1=1 $where ORDER BY m.card_no";
 			$r = $dbc->query($q);
 			if ($dbc->num_rows($r) > 0){
 				while($w = $dbc->fetch_row($r)){
