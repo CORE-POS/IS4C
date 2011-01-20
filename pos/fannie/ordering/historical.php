@@ -1,7 +1,7 @@
 <?php
 /*******************************************************************************
 
-    Copyright 2010 Whole Foods Co-op
+    Copyright 2011 Whole Foods Co-op
 
     This file is part of Fannie.
 
@@ -23,17 +23,17 @@
 include('../config.php');
 include($FANNIE_ROOT.'src/mysql_connect.php');
 
-$page_title = "Special Order :: Mangement";
-$header = "Manage Special Orders";
+$page_title = "Special Order :: History";
+$header = "Historical Special Orders";
 if (isset($_REQUEST['card_no']) && is_numeric($_REQUEST['card_no'])){
-	$header = "Special Orders for Member #".((int)$_REQUEST['card_no']);
+	$header = "Past Special Orders for Member #".((int)$_REQUEST['card_no']);
 }
 include($FANNIE_ROOT.'src/header.html');
 
 $status = array(
-	0 => "New",
-	2 => "Pending",
-	4 => "Placed"
+	7 => "Completed",
+	8 => "Canceled",
+	9 => "Inquiry"
 );
 
 $assignments = array();
@@ -61,11 +61,11 @@ if ($f1 !== ''){
 	$filterstring = sprintf("WHERE status_flag=%d",$f1);
 }
 
-echo "Current Orders";
-echo "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
-echo sprintf('<a href="historical.php%s">Old Orders</a>',
+echo sprintf('<a href="clearinghouse.php%s">Current Orders</a>',
 	(isset($_REQUEST['card_no'])?'?card_no='.$_REQUEST['card_no']:'')
 );
+echo "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
+echo "Old Orders";
 echo '<p />';
 
 echo "<b>Status</b>: ";
@@ -109,7 +109,7 @@ $q = "SELECT min(datetime) as orderDate,p.order_id,sum(total) as value,
 	count(*)-1 as items,status_flag,
 	CASE WHEN MAX(p.card_no)=0 THEN MAX(t.last_name) ELSE MAX(c.LastName) END as name,
 	MIN(CASE WHEN trans_type='I' THEN charflag ELSE 'ZZZZ' END) as charflag
-	FROM PendingSpecialOrder as p
+	FROM CompleteSpecialOrder as p
 	LEFT JOIN SpecialOrderStatus as s ON p.order_id=s.order_id
 	LEFT JOIN SpecialOrderNotes as n ON n.order_id=p.order_id
 	LEFT JOIN custdata AS c ON c.CardNo=p.card_no AND personNum=p.voided
@@ -131,7 +131,7 @@ while($w = $dbc->fetch_row($r)){
 if ($f2 !== '' || $f3 !== ''){
 	$filter2 = ($f2!==''?sprintf("AND m.superID=%d",$f2):'');
 	$filter3 = ($f3!==''?sprintf("AND p.mixMatch=%s",$dbc->escape($f3)):'');
-	$q = "SELECT order_id FROM PendingSpecialOrder AS p
+	$q = "SELECT order_id FROM CompleteSpecialOrder AS p
 		INNER JOIN MasterSuperDepts AS m ON 
 		p.department=m.dept_ID
 		WHERE 1=1 $filter2 $filter3
@@ -143,8 +143,8 @@ if ($f2 !== '' || $f3 !== ''){
 
 	if ($f2 !== '' && $f3 === ''){
 		$q2 = sprintf("SELECT s.order_id FROM SpecialOrderNotes AS s
-				INNER JOIN PendingSpecialOrder AS p
-				ON p.order_id=s.order_id
+				INNER JOIN CompleteSpecialOrder AS c
+				ON s.order_id=c.order_id
 				WHERE s.superID=%d
 				GROUP BY s.order_id",$f2);
 		$r2 = $dbc->query($q2);
@@ -169,9 +169,6 @@ $ret .= sprintf('<table cellspacing="0" cellpadding="4" border="1">
 	base64_encode("count(*)-1"),
 	base64_encode("status_flag")
 );
-$ret .= sprintf('<td><img src="%s" alt="Print" 
-		onclick="$(\'#pdfform\').submit();" /></td>',
-		$FANNIE_URL.'src/img/buttons/action_print.gif');
 $ret .= '</tr>';
 foreach($orders as $w){
 	if (!isset($valid_ids[$w['order_id']])) continue;
@@ -182,16 +179,9 @@ foreach($orders as $w){
 		$w['orderDate'],$w['order_id'],
 		$w['name'],
 		$w['value'],$w['items']);
-	$ret .= '<td><select id="s_status" onchange="updateStatus('.$w['order_id'].',$(this).val());">';
-	foreach($status as $k=>$v){
-		$ret .= sprintf('<option %s value="%d">%s</option>',
-			($w['status_flag']==$k?'selected':''),
-			$k,$v);
-	}
-	$ret .= "</select></td>";
+	$ret .= '<td>'.$status[$w['status_flag']].'</td>';
 	$ret .= "<td align=center>".($w['charflag']=='P'?'Yes':'No')."</td>";
-	$ret .= sprintf('<td><input type="checkbox" name="oids[]" value="%d" /></td></tr>',
-			$w['order_id']);
+	$ret .= "</tr>";
 }
 $ret .= "</table>";
 

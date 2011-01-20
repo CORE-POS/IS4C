@@ -112,7 +112,7 @@ class SQLManager {
 			fclose($fp);
 		}
 		else if (!$ok){
-			echo "Bad query: $query_text<br />";
+			echo "Bad query: {$_SERVER['PHP_SELF']}: $query_text<br />";
 		}
 		return $ok;
 	}

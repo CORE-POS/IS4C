@@ -1,6 +1,35 @@
 <?php
+/*******************************************************************************
+
+    Copyright 2010 Whole Foods Co-op
+
+    This file is part of Fannie.
+
+    Fannie is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    Fannie is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    in the file license.txt along with IS4C; if not, write to the Free Software
+    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+*********************************************************************************/
 include('../config.php');
 include($FANNIE_ROOT.'src/mysql_connect.php');
+
+include($FANNIE_ROOT.'auth/login.php');
+if (!checkLogin()){
+	$url = $FANNIE_URL."auth/ui/loginform.php";
+	$rd = $FANNIE_URL."ordering/";
+	header("Location: $url?redirect=$rd");
+	exit;
+}
 
 $page_title = "Special Order :: Create";
 $header = "Create Special Order";
@@ -39,7 +68,24 @@ $(document).ready(function(){
 	});
 
 });
+function confirmC(oid,tid){
+	var t = new Array();
+	t[7] = "Completed";
+	t[8] = "Canceled";
+	t[9] = "Inquiry";
 
+	if (confirm("Are you sure you want to close this order as "+t[tid]+"?")){
+		$.ajax({
+		url: 'ajax-calls.php',
+		dataType: 'post',
+		data: 'action=closeOrder&orderID='+oid+'&status='+tid,
+		cache: false,
+		success: function(resp){
+			location = 'review.php?orderID='+oid;
+		}
+		});
+	}
+}
 function memNumEntered(){
 	var oid = $('#orderID').val();
 	var cardno = $('#memNum').val();	
@@ -100,6 +146,8 @@ function savePrice(new_price,upc){
 	data: 'action=savePrice&orderID='+oid+'&upc='+upc+'&price='+new_price,
 	cache: false,
 	success: function(resp){
+		if ($('#discPercent'+upc).html() != 'Sale')
+			$('#discPercent'+upc).html(resp+"%");
 	}
 	});
 }
@@ -111,6 +159,8 @@ function saveSRP(new_price,upc){
 	data: 'action=saveSRP&orderID='+oid+'&upc='+upc+'&srp='+new_price,
 	cache: false,
 	success: function(resp){
+		if ($('#discPercent').html() != 'Sale')
+			$('#discPercent').html(resp+"%");
 	}
 	});
 }
@@ -141,6 +191,17 @@ function saveDept(new_dept,upc){
 	url: 'ajax-calls.php',
 	dataType: 'post',
 	data: 'action=saveDept&orderID='+oid+'&upc='+upc+'&dept='+new_dept,
+	cache: false,
+	success: function(resp){
+	}
+	});
+}
+function saveVendor(new_vendor,upc){
+	var oid = $('#orderID').val();
+	$.ajax({
+	url: 'ajax-calls.php',
+	dataType: 'post',
+	data: 'action=saveVendor&orderID='+oid+'&upc='+upc+'&vendor='+new_vendor,
 	cache: false,
 	success: function(resp){
 	}
@@ -229,12 +290,30 @@ function saveAddr(oid){
 	success: function(resp){}
 	});
 }
+function saveNoteDept(oid,val){
+	$.ajax({
+	url: 'ajax-calls.php',
+	dataType: 'post',
+	data: 'action=saveNoteDept&val='+val+'&orderID='+oid,
+	cache: false,
+	success: function(resp){}
+	});
+}
 function saveText(oid,val){
 	val = escape(val);
 	$.ajax({
 	url: 'ajax-calls.php',
 	dataType: 'post',
 	data: 'action=saveText&val='+val+'&orderID='+oid,
+	cache: false,
+	success: function(resp){}
+	});
+}
+function savePN(oid,val){
+	$.ajax({
+	url: 'ajax-calls.php',
+	dataType: 'post',
+	data: 'action=savePN&val='+val+'&orderID='+oid,
 	cache: false,
 	success: function(resp){}
 	});
@@ -262,6 +341,14 @@ function saveConfirmDate(val,oid){
 		}
 		});
 	}
+}
+function validateAndHome(){
+	var nD = $('#nDept').val();
+	var nT = $('#nText').val();
+	if (nT != "" && nD == 0)
+		alert("Assign your notes to a department");
+	else
+		location = 'index.php';
 }
 </script>
 <?php

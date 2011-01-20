@@ -1,11 +1,3 @@
-let csc toss on initial assignment
-tags
-	tag per order item (oid, tid)?
-	bold name
-	pricing info including saved
-	barcodes
-	date tag printed
-	product description
-	reprints as needed
-online equivalent
-tag mockups, run-through w/ lane
+vendor source
+auto assign via department
+zero pricing for non-UNFI items

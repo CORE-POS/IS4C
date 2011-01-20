@@ -24,6 +24,7 @@ $CREATE['trans.SpecialOrderNotes'] = "
 	CREATE TABLE SpecialOrderNotes (
 		order_id int,
 		notes text,
+		superID int,
 		PRIMARY KEY (order_id)
 	)
 ";
