@@ -54,9 +54,11 @@ function deleteitem($plu){
   }
 
   for ($i = 0; $i < count($FANNIE_SCALES); $i++){
-	copy($CSV_dir."/".$session_key."_di_scale_".$i.".csv",$DGW_dir);
+	copy($CSV_dir."/".$session_key."_di_scale_".$i.".csv",
+	     $DGW_dir."/".$session_key."_di_scale_".$i.".csv");
 	unlink($CSV_dir."/".$session_key."_di_scale_".$i.".csv");
-	copy($CSV_dir."/".$session_key."_dt_scale_".$i.".csv",$DGW_dir);
+	copy($CSV_dir."/".$session_key."_dt_scale_".$i.".csv",
+	     $DGW_dir."/".$session_key."_dt_scale_".$i.".csv");
 	unlink($CSV_dir."/".$session_key."_dt_scale_".$i.".csv");
   }
 }

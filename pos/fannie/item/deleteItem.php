@@ -71,18 +71,21 @@ if (isset($_REQUEST['upc']) && !isset($_REQUEST['deny'])){
 		}
 	}
 	else if (isset($_REQUEST['confirm'])){
+		$plu = substr($upc,3,4);
 		$upc = $dbc->escape($upc);
 		$delQ = sprintf("DELETE FROM products WHERE upc=%s",$upc);
 		$dbc->query($delQ);
 		$delxQ = sprintf("DELETE FROM prodExtra WHERE upc=%s",$upc);
 		$dbc->query($delxQ);
 		if ($dbc->table_exists("scaleItems")){
-			$scaleQ = sprintf("DELETE FROM scaleItems WHERE upc=%s",$upc);
+			$scaleQ = sprintf("DELETE FROM scaleItems WHERE plu=%s",$upc);
 			$dbc->query($scaleQ);
+			include('hobartcsv/parse.php');
+			deleteitem($plu);
 		}
 
 		include('laneUpdates.php');
-		deleteProductAllLanes($upc);
+		deleteProductAllLanes(str_replace("'","",$upc));
 
 		printf("Item %s has been deleted<br /><br />",$upc);
 		echo "<a href=\"deleteItem.php\">Delete another item</a>";

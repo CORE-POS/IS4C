@@ -105,7 +105,7 @@ function delete_item($filename,$scaletype,$scaleip,$department,$plu){
     }
   }
   else
-    fputs($fp,"DeleteOneItem,$p\r\n");
+    fputs($fp,"DeleteOneItem,$plu\r\n");
 
   fclose($fp);
 
@@ -122,7 +122,7 @@ function delete_text($filename,$scaletype,$scaleip,$department,$plu){
     }
   }
   else
-    fputs($fp,"DeleteOneExpandedText,$p\r\n");
+    fputs($fp,"DeleteOneExpandedText,$plu\r\n");
 
   fclose($fp);
 
