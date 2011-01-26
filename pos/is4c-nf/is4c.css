@@ -1,6 +1,6 @@
 html { overflow: hidden; }
 body { font-family: arial; background-image: url('/graphics/is4c.gif');
-       background-repeat: no-repeat; }
+       background-repeat: no-repeat; margin-top:20px;}
 div#boundingBox { width: 675px; }
 /*********************************************
  * main display
@@ -91,7 +91,7 @@ div#inputArea .notices .time {font-size: 115%; font-weight: bold; padding-left: 
 /*********************************************
  * Scale display 
 *********************************************/
-div#scalebox { position: absolute; left: 676px; top: 2px; }
+div#scalebox { position: absolute; left: 676px; top: 22px; }
 div#scaleClear { clear: right; height: 1px; }
 div#scaleTop { width: 118px; color: #ffffff; font-size: 80%; font-weight: bold; height: 18px;
 	       text-align: center; background: #004080;}

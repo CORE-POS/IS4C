@@ -34,7 +34,7 @@ class qtty2 extends BasicPage {
 	var $msg;
 
 	function preprocess(){
-		global $IS4C_PATH;
+		global $IS4C_PATH,$IS4C_LOCAL;
 
 		$this->box_color="#004080";
 		$this->msg = "quantity required";
@@ -52,7 +52,7 @@ class qtty2 extends BasicPage {
 		elseif (is_numeric($qtty) && $qtty < 9999 && $qtty >= 0) {
 			$IS4C_LOCAL->set("qttyvalid",1);
 			$IS4C_LOCAL->set("strRemembered",$qtty."*".$IS4C_LOCAL->get("item"));
-			$IS4C_LOCAL->set("msgrepeat",2);
+			$IS4C_LOCAL->set("msgrepeat",1);
 			header("Location: {$IS4C_PATH}gui-modules/pos2.php");
 			return False;
 		}

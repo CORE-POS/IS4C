@@ -44,8 +44,9 @@ namespace SPH {
 
 public class SPH_Magellan_Scale : SerialPortHandler {
 	private bool got_weight;
-private static String MAGELLAN_OUTPUT_FILE = "C:\\IS4C\\scale-drivers/drivers/NewMagellan/scanner-scale.data";
-private static String MAGELLAN_LOCK_FILE = "C:\\IS4C\\scale-drivers/drivers/NewMagellan/scanner-scale.lock";
+//private static String MAGELLAN_OUTPUT_FILE = "C:\\IS4C\\scale-drivers/drivers/NewMagellan/scanner-scale.data";
+private static String MAGELLAN_OUTPUT_DIR = "C:\\IS4C\\scale-drivers\\drivers\\NewMagellan\\ss-output";
+//private static String MAGELLAN_LOCK_FILE = "C:\\IS4C\\scale-drivers/drivers/NewMagellan/scanner-scale.lock";
 
 	public SPH_Magellan_Scale(string p) : base(p){
 		sp = new SerialPort();
@@ -119,6 +120,7 @@ private static String MAGELLAN_LOCK_FILE = "C:\\IS4C\\scale-drivers/drivers/NewM
 	}
 
 	private void PushOutput(string s){
+		/*
 		while (File.Exists(MAGELLAN_LOCK_FILE)){
 			Thread.Sleep(50);
 		}
@@ -126,7 +128,29 @@ private static String MAGELLAN_LOCK_FILE = "C:\\IS4C\\scale-drivers/drivers/NewM
 		StreamWriter sw = File.AppendText(MAGELLAN_OUTPUT_FILE);
 		sw.WriteLine(s);
 		sw.Close();
-		File.Delete(MAGELLAN_LOCK_FILE);
+		//File.Delete(MAGELLAN_LOCK_FILE);
+		*/
+
+		/* trying to maintain thread safety between
+		 * two apps in different languages....
+		 *
+		 * 1. Create a new file for each bit of output
+		 * 2. Give each file a unique name (i.e., don't
+		 *    overwrite earlier output)
+		 * 3. Generate files in a temporary directory, then
+		 *    move the finished files to the output directory
+		 *    (i.e., so they aren't read too early)
+		 */
+		int ticks = Environment.TickCount;
+		while(File.Exists(MAGELLAN_OUTPUT_DIR+"\\"+ticks))
+			ticks++;
+
+		TextWriter sw = new StreamWriter(MAGELLAN_OUTPUT_DIR+"\\tmp\\"+ticks);
+		sw = TextWriter.Synchronized(sw);
+		sw.WriteLine(s);
+		sw.Close();
+		File.Move(MAGELLAN_OUTPUT_DIR+"\\tmp\\"+ticks,
+			  MAGELLAN_OUTPUT_DIR+"\\"+ticks);
 	}
 
 	private string ParseData(string s){

@@ -74,6 +74,9 @@ function paycard_info($pan) {
 		$type = PAYCARD_TYPE_GIFT;
 		if(      $iin>=7019208 && $iin<=7019208) { $issuer="Co-op Gift"; $accepted=true; } // NCGA gift cards
 		else if( $iin>=7018525 && $iin<=7018525) { $issuer="Valutec Gift"; $test=true; } // valutec test cards (linked to test merchant/terminal ID)
+		else if ($iin>=6050110 && $iin<=6050110) {
+			$issuer="Co-Plus Gift Card"; $accepted=true;
+		}
 	}
 	return array('type'=>$type, 'issuer'=>$issuer, 'accepted'=>$accepted, 'test'=>$test);
 } // paycard_info()
@@ -406,7 +409,7 @@ function paycard_msgBox($type, $title, $msg, $action) {
 	else if( $IS4C_LOCAL->get("paycard_type") == PAYCARD_TYPE_STORE)  $header = "Wedge - Wedge Card";
 	$boxmsg = "<span class=\"larger\">".trim($title)."</span><p />";
 	$boxmsg .= trim($msg)."<p />".trim($action);
-	return boxMsg($boxmsg,$header);
+	return boxMsg($boxmsg,$header,True);
 } // paycard_msgBox()
 
 

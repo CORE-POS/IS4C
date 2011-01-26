@@ -13,7 +13,7 @@ function runParser(input_str,rel_prefix){
 			alert(xml_ro);
 		},
 		success: parserHandler
-		});
+	});
 }
 
 function parserHandler(data,status_str,xml_ro){

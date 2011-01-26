@@ -166,7 +166,7 @@ class UPC extends Parser {
 
 		/* got a scale weight, make sure the tare
 		   is valid */
-		if ($scale != 0){
+		if ($scale != 0 and substr($upc,0,3) != "002"){
 			$quantity = $IS4C_LOCAL->get("weight") - $IS4C_LOCAL->get("tare");
 			if ($IS4C_LOCAL->get("quantity") != 0) 
 				$quantity = $IS4C_LOCAL->get("quantity") - $IS4C_LOCAL->get("tare");
@@ -247,7 +247,7 @@ class UPC extends Parser {
 
 		/* do foodstamp shift */
 		$foodstamp = $row["foodstamp"];
-		if ($IS4C_LOCAL->get("togglefoodstamp") != 1){
+		if ($IS4C_LOCAL->get("togglefoodstamp") != 0){
 			$IS4C_LOCAL->set("togglefoodstamp",0);
 			$foodstamp = ($foodstamp==0) ? 1 : 0;
 		}

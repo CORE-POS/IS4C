@@ -50,6 +50,9 @@ class pos2 extends BasicPage {
 			runParser(str,'<?php echo $IS4C_PATH; ?>');
 			return false;
 		}
+		function parseWrapper(str){
+			runParser(str,'<?php echo $IS4C_PATH; ?>');
+		}
 		function lockScreen(){
 			$.ajax({
 				'url': '<?php echo $IS4C_PATH; ?>ajax-callbacks/ajax-lock.php',
@@ -68,7 +71,7 @@ class pos2 extends BasicPage {
 		global $IS4C_LOCAL;
 		$this->input_header('onsubmit="return submitWrapper();"');
 		$this->add_onload_command("setTimeout('lockScreen()', 180000);\n");
-		$this->add_onload_command("\$('#reginput').keyup(function(ev){
+		$this->add_onload_command("\$('#reginput').keydown(function(ev){
 					switch(ev.keyCode){
 					case 33:
 						\$('#reginput').val('U11');

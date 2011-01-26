@@ -129,7 +129,7 @@ class paycardSuccess extends BasicPage {
 			$IS4C_LOCAL->set("boxMsg",$msg);
 		}
 		 */
-		echo boxMsg($IS4C_LOCAL->get("boxMsg"));
+		echo boxMsg($IS4C_LOCAL->get("boxMsg"),"",True);
 		$IS4C_LOCAL->set("msgrepeat",2);
 		udpSend('goodBeep');
 		?>

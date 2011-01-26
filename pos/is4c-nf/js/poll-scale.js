@@ -1,11 +1,9 @@
 function pollScale(drop_scans){
-	drop_scans = typeof(drop_scans) != 'undefined' ? drop_scans : false;
-	
 	$.ajax({url: '/ajax-callbacks/ajax-poll-scale.php',
 		type: 'post',
 		cache: false,
 		dataType: 'json',
-		error: function(){
+		error: function(e1,e2,e3){
 			rePoll(drop_scans);
 		},
 		success: function(data){
@@ -13,12 +11,12 @@ function pollScale(drop_scans){
 				if (data.scale){
 					$('#scaleBottom').html(data.scale);	
 				}
-				if (!drop_scans && data.scans){
-					for (var i=0; i<data.scans.length; i++){
-						var v = $('#reginput').val();
-						$('#reginput').val(v+data.scans[i]);
-						submitWrapper();
-					}
+				var URL = location.href;
+				var pagename = URL.substring(URL.lastIndexOf('/') + 1);
+				if (pagename == 'pos2.php' && data.scans){
+					var v = $('#reginput').val();
+					parseWrapper(v+data.scans);
+					$('#reginput').val('');
 				}
 			}
 			rePoll(drop_scans);

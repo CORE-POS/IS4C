@@ -103,7 +103,7 @@ function getsubtotals() {
 	$IS4C_LOCAL->set("chargeTotal", (!$row || !isset($row['chargeTotal'])) ? 0 : (double)$row["chargeTotal"] );
 	$IS4C_LOCAL->set("ccTotal", (!$row || !isset($row['ccTotal'])) ? 0 : (double)$row["ccTotal"] );
 	$IS4C_LOCAL->set("memChargeTotal", (!$row || !isset($row['memChargeTotal'])) ? 0 : (double)$row["memChargeTotal"] );
-	$IS4C_LOCAL->set("madCoup", (!$row || !isset($row['madCoup'])) ? 0 : (double)$row["madCoup"] );
+	$IS4C_LOCAL->set("madCoup", (!$row || !isset($row['madCoupon'])) ? 0 : (double)$row["madCoupon"] );
 	$IS4C_LOCAL->set("scTaxTotal", (!$row || !isset($row['scTaxTotal'])) ? 0 : (double)$row["scTaxTotal"] );
 	$IS4C_LOCAL->set("scDiscount", (!$row || !isset($row['scDiscount'])) ? 0 : (double)$row["scDiscount"] );
 	$IS4C_LOCAL->set("paymentTotal", (!$row || !isset($row['paymentTotal'])) ? 0 : (double)$row["paymentTotal"] );

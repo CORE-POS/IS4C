@@ -72,7 +72,7 @@ if ($entered != ""){
 	$pe = new paycardEntered();
 	if ($pe->check($entered)){
 		$valid = $pe->parse($entered);
-		$entered = "paycard";
+		$entered = "PAYCARD";
 		$IS4C_LOCAL->set("strEntered","");
 		$json = array_to_json($valid);
 	}
@@ -100,7 +100,7 @@ if ($entered != ""){
 				break;
 	}
 
-	if ($entered != "" && $entered != "paycard"){
+	if ($entered != "" && $entered != "PAYCARD"){
 		/* 
 		 * SECOND PARSE CHAIN
 		 * these parser objects should process any input

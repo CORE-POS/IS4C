@@ -83,8 +83,10 @@ class NewMagellan extends ScaleDriverWrapper {
 		global $IS4C_LOCAL,$IS4C_PATH;
 
 		$readfile = $IS4C_PATH.'scale-drivers/drivers/NewMagellan/scanner-scale';
+		$readdir = $IS4C_PATH.'scale-drivers/drivers/NewMagellan/ss-output';
 		$scale_display = "";
 		$scans = array();
+		/*
 		if (file_exists($readfile.".data") && !file_exists($readfile.".lock")){
 
 			$fp = fopen($readfile.".lock","w");
@@ -106,10 +108,26 @@ class NewMagellan extends ScaleDriverWrapper {
 				}
 			}
 		}
+		*/
+		$dh  = opendir($readdir);
+		while (false !== ($fn = readdir($dh))) {
+			if (is_dir($readdir."/".$fn)) continue;
+			$data = file_get_contents($readdir."/".$fn);
+			unlink($readdir."/".$fn);
+			$line = rtrim($data,"\r\n");
+			if (empty($line)) continue;
+			if ($line[0] == 'S'){
+				$scale_display = scaledisplaymsg($line);
+			}
+			else {
+				$scans[] = $line;
+			}
+			break;
+		}
 
 		$output = array();
 		if (!empty($scale_display)) $output['scale'] = $scale_display;
-		if (!empty($scans)) $output['scans'] = $scans;
+		if (!empty($scans)) $output['scans'] = $scans[0];
 
 		if (!empty($output)) echo array_to_json($output);
 		else echo "{}";

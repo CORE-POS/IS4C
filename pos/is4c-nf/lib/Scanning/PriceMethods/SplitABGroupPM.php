@@ -40,7 +40,7 @@ if (!class_exists('PriceMethod')) include($IS4C_PATH.'lib/Scanning/PriceMethod.p
 if (!function_exists('addItem')) include($IS4C_PATH.'lib/additem.php');
 if (!function_exists('truncate2')) include($IS4C_PATH.'lib/lib.php');
 
-class ABGroupPM extends PriceMethod {
+class SplitABGroupPM extends PriceMethod {
 
 	function addItem($row,$quantity,$priceObj){
 		if ($quantity == 0) return false;
