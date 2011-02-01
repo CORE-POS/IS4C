@@ -17,15 +17,17 @@ function runParser(input_str,rel_prefix){
 }
 
 function parserHandler(data,status_str,xml_ro){
-	if (!data.main_frame){
+	if (data.main_frame){
+		location = data.main_frame;
+		return;
+	}
+	else {
 		if (data.output)
 			$(data.target).html(data.output);
 	}
-	else {
-		location = data.main_frame;
-	}
 
 	if (data.redraw_footer){
+		/*
 		$.ajax({
 			url: IS4C_JS_PREFIX+'ajax-callbacks/ajax-footer.php',
 			type: 'GET',
@@ -34,6 +36,23 @@ function parserHandler(data,status_str,xml_ro){
 				$('#footer').html(data);
 			}
 		});
+		*/
+		$('#footer').html(data.redraw_footer);
+	}
+
+	if (data.scale){
+		/*
+		$.ajax({
+			url: IS4C_JS_PREFIX+'ajax-callbacks/ajax-scale.php',
+			type: 'get',
+			data: 'input='+data.scale,
+			cache: false,
+			success: function(res){
+				$('#scaleBottom').html(res);
+			}
+		});
+		*/
+		$('#scaleBottom').html(data.scale);
 	}
 
 	if (data.receipt){
@@ -43,18 +62,6 @@ function parserHandler(data,status_str,xml_ro){
 			data: 'receiptType='+data.receipt,
 			cache: false,
 			success: function(data){
-			}
-		});
-	}
-
-	if (data.scale){
-		$.ajax({
-			url: IS4C_JS_PREFIX+'ajax-callbacks/ajax-scale.php',
-			type: 'get',
-			data: 'input='+data.scale,
-			cache: false,
-			success: function(res){
-				$('#scaleBottom').html(res);
 			}
 		});
 	}

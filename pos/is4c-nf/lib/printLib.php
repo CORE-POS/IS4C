@@ -492,15 +492,17 @@ function printCCSigSlip($dateTimeStamp,$ref,$storeCopy=True,$rp=0){
 	$trans = $ert[2];
 	$slip = "";
 	$db = -1;
+	$idclause = "";
+	$limit = "";
+	$sort = "";
 
 	if ( $rp != 0 ) {	// if this is a reprint of a previous transaction, loop through all cc slips for that transaction
-		$idclause = "";
-		$limit = "";
-		$sort = "";
 		$db = mDataConnect();
 	} else {		// else if current transaction, just grab most recent 
-		$idclause = " and transID = ".$IS4C_LOCAL->get("paycard_id");
-		$limit = " TOP 1 ";
+		if ($storeCopy){
+			$idclause = " and transID = ".$IS4C_LOCAL->get("paycard_id");
+			$limit = " TOP 1 ";
+		}
 		$sort = " desc ";
 		$db = tDataConnect();
 	}

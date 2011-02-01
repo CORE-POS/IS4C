@@ -51,14 +51,6 @@ if ($entered == "RI") $entered = $IS4C_LOCAL->get("strEntered");
 
 if ($IS4C_LOCAL->get("msgrepeat") == 1 && $entered != "CL") {
 	$entered = $IS4C_LOCAL->get("strRemembered");
-	$arr = array(
-		'main_frame'=>false,
-		'target'=>'.baseHeight',
-		'output'=>".".$entered."."
-	);
-	$json = array_to_json($arr);
-	//echo $json;
-	//exit;
 }
 $IS4C_LOCAL->set("strEntered",$entered);
 
@@ -74,7 +66,7 @@ if ($entered != ""){
 		$valid = $pe->parse($entered);
 		$entered = "PAYCARD";
 		$IS4C_LOCAL->set("strEntered","");
-		$json = array_to_json($valid);
+		$json = $valid;
 	}
 
 	$IS4C_LOCAL->set("quantity",0);
@@ -121,7 +113,7 @@ if ($entered != ""){
 			}
 		}
 		if ($result && is_array($result)){
-			$json = array_to_json($result);
+			$json = $result;
 			if (isset($result['udpmsg']) && $result['udpmsg'] !== False){
 				if (is_object($sd))
 					$sd->WriteToScale($result['udpmsg']);
@@ -132,7 +124,7 @@ if ($entered != ""){
 				'main_frame'=>false,
 				'target'=>'.baseHeight',
 				'output'=>inputUnknown());
-			$json = array_to_json($arr);
+			$json = $arr;
 			if (is_object($sd))
 				$sd->WriteToScale('errorBeep');
 		}
@@ -141,7 +133,19 @@ if ($entered != ""){
 
 $IS4C_LOCAL->set("msgrepeat",0);
 
+
 if (empty($json)) $json = "{}";
-echo $json;
+else {
+	if (isset($json['redraw_footer']) && $json['redraw_footer'] !== False){
+		if ($IS4C_LOCAL->get("away") == 1)
+			$json['redraw_footer'] = printfooterb();
+		else
+			$json['redraw_footer'] = printfooter();
+	}
+	if (isset($json['scale']) && $json['scale'] !== False){
+		$json['scale'] = scaledisplaymsg($json['scale']);
+	}
+	echo array_to_json($json);
+}
 
 ?>

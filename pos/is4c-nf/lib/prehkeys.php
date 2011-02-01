@@ -90,7 +90,7 @@ function memberID($member_number) {
 	$IS4C_LOCAL->set("percentDiscount",0);
 	$IS4C_LOCAL->set("memMsg","");
 
-	if ($ret['main_frame'] === false)
+	if (empty($ret['output']) && $ret['main_frame'] == false)
 		$ret['main_frame'] = $IS4C_PATH."gui-modules/memlist.php";
 
 	return $ret;

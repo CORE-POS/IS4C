@@ -518,6 +518,9 @@ class GoEMerchant extends BasicCCModule {
 			$amt = "".($IS4C_LOCAL->get("paycard_amount")*100);
 			tender("CC", $amt);
 			$IS4C_LOCAL->set("boxMsg","<b>Approved</b><font size=-1><p>Please verify cardholder signature<p>[enter] to continue<br>\"rp\" to reprint slip<br>[void] to cancel and void</font>");
+			if ($IS4C_LOCAL->get("paycard_amount") <= $IS4C_LOCAL->get("CCSigLimit")){
+				$IS4C_LOCAL->set("boxMsg","<b>Approved</b><font size=-1><p>No signature required<p>[enter] to continue<br>[void] to cancel and void</font>");
+			}	
 			break;
 		case PAYCARD_MODE_VOID:
 			$v = new Void();

@@ -151,7 +151,7 @@ function printReceipt($arg1,$second=False) {
 
 		// append customer copy to actual lane receipt
 		if ($IS4C_LOCAL->get('standalone') == 0)
-			$receipt .= printCCSigSlip($dateTimeStamp, $ref, false, 1);
+			$receipt .= printCCSigSlip($dateTimeStamp, $ref, false, 0);
 
 		if ($IS4C_LOCAL->get("autoReprint") == 1)
 			$receipt .= printGCSlip($dateTimeStamp, $ref, false, 1);

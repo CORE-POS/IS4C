@@ -79,7 +79,7 @@ class requestInfo extends NoInputPage {
 		<?php echo $IS4C_LOCAL->get("requestType") ?>
 		</span>
 		<form name="form" method="post" autocomplete="off" onsubmit="return submitWrapper();">
-		<input type="text" id="input" name='input' tabindex="0" onblur="$('#input').focus()" />
+		<input type="text" id="reginput" name='input' tabindex="0" onblur="$('#input').focus()" />
 		</form>
 		<p />
 		<?php echo $IS4C_LOCAL->get("requestMsg") ?>
@@ -88,7 +88,7 @@ class requestInfo extends NoInputPage {
 		</div>
 
 		<?php
-		$this->add_onload_command("\$('#input').focus();");
+		$this->add_onload_command("\$('#reginput').focus();");
 		$IS4C_LOCAL->set("scan","noScan");
 	} // END true_body() FUNCTION
 

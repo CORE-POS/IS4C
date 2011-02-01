@@ -42,7 +42,7 @@ class undo extends NoInputPage {
 		<span class="larger">
 		<?php echo $this->msg ?>
 		</span><br />
-		<form name="form" method='post' autocomplete="off" action="<?php echo $_SERVER["PHP_SELF"; ?>">
+		<form name="form" method='post' autocomplete="off" action="<?php echo $_SERVER["PHP_SELF"]; ?>">
 		<input type="text" name="reginput" id="reginput" tabindex="0" onblur="($'#reginput').focus();" >
 		</form>
 		<p />
@@ -127,7 +127,7 @@ class undo extends NoInputPage {
 					discountable, discounttype, voided, PercentDiscount,
 					ItemQtty, volDiscType, volume, VolSpecial, mixMatch,
 					matched, card_no, trans_id
-					from dTransToday where register_no = $register_no
+					from dtransactions where register_no = $register_no
 					and emp_no = $emp_no and trans_no = $old_trans_no
 					and ".$db->datediff($db->now(),'datetime')." = 0
 					and trans_status <> 'X'
@@ -206,12 +206,23 @@ class undo extends NoInputPage {
 						$row["mixMatch"],$row["matched"],$row["voided"]);
 				}
 			}
-			setMember($card_no,1);
+
+			$op = pDataConnect();
+			$query = "select CardNo,personNum,LastName,FirstName,CashBack,Balance,Discount,
+				MemDiscountLimit,ChargeOk,WriteChecks,StoreCoupons,Type,memType,staff,
+				SSI,Purchases,NumberOfChecks,memCoupons,blueLine,Shown,id from custdata 
+				where CardNo = '".$card_no."'";
+			$res = $op->query($query);
+			$row = $op->fetch_row($res);
+			setMember($card_no,1,$row);
 			$IS4C_LOCAL->set("autoReprint",0);
 
 			/* restore the logged in cashier */
 			$IS4C_LOCAL->set("CashierNo",$prevCashier);
 			$IS4C_LOCAL->set("transno",gettransno($prevCashier));
+			
+			header("Location: {$IS4C_PATH}gui-modules/undo_confirm.php");
+			return False;
 		}
 		return True;
 	}

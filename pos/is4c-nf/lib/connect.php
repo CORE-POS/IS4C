@@ -80,7 +80,7 @@ function getsubtotals() {
 	$row = $connection->fetch_array($result);
 
 	// reset a few variables
-	if (False && (!$row || $row["LastID"] == 0)) {
+	if (!$row || $row["LastID"] == 0) {
 		$IS4C_LOCAL->set("ttlflag",0);
 		$IS4C_LOCAL->set("fntlflag",0);
 		setglobalflags(0);

@@ -102,7 +102,7 @@ class MercuryGift extends BasicCCModule {
 
 		// check card data for anything else
 		if( $validate) {
-			if( paycard_validNumber($IS4C_LOCAL->get("paycard_PAN")) != 1) {
+			if( paycard_validNumber($IS4C_LOCAL->get("paycard_PAN")) != 1 && substr($IS4C_LOCAL->get("paycard_PAN"),0,7) != "6050110") {
 				$json['output'] = paycard_errBox(PAYCARD_TYPE_GIFT,"Invalid Card Number",
 					"Swipe again or type in manually","[clear] to cancel");
 				return $json;

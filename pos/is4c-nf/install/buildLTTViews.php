@@ -205,6 +205,7 @@ for ($i = 0; $i < count($rates); $i++){
 		$fsTaxStr .= "-s.fsTaxable".$desc[$j];
 	$fsTaxStr .= ") * ".$rates[$i]."))";
 }
+$fsTaxStr .= " ELSE 0 ";
 $fsTaxStr .= " END END END,decimal(10,2))\n";
 
 if(count($rates) > 0){

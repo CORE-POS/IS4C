@@ -24,10 +24,11 @@
 $IS4C_PATH = isset($IS4C_PATH)?$IS4C_PATH:"";
 if (empty($IS4C_PATH)){ while(!file_exists($IS4C_PATH."is4c.css")) $IS4C_PATH .= "../"; }
 
-if (!class_exists("InputPage")) include_once($IS4C_PATH."gui-class-lib/InputPage.php");
+if (!class_exists("BasicPage")) include_once($IS4C_PATH."gui-class-lib/BasicPage.php");
 if (!class_exists("ScrollItems")) include_once($IS4C_PATH."parser-class-lib/parse/ScrollItems.php");
 if (!function_exists("addItem")) include_once($IS4C_PATH."lib/additem.php");
 if (!function_exists("setMember")) include_once($IS4C_PATH."lib/prehkeys.php");
+if (!function_exists("printfooter")) include_once($IS4C_PATH."lib/drawscreen.php");
 if (!isset($IS4C_LOCAL)) include($IS4C_PATH."lib/LocalStorage/conf.php");
 
 
@@ -35,17 +36,27 @@ if (!isset($IS4C_LOCAL)) include($IS4C_PATH."lib/LocalStorage/conf.php");
    CL cancels the attempt (wraps to input "CN")
    {Enter} finishes the transaction (wraps to input "0CA")
 */
-class undo_confirm extends InputPage {
+class undo_confirm extends BasicPage {
 	var $box_color;
 	var $msg;
 
 	function body_content(){
 		global $IS4C_LOCAL;
+		echo $this->input_header();
 		?>
 		<div class="baseHeight">
-		<?php echo lastpage(); ?>
+		<?php 
+			if (empty($this->msg))
+				echo lastpage(); 
+			else {
+				echo $this->msg;	
+			}
+		?>
 		</div>
 		<?php
+		echo "<div id=\"footer\">";
+		echo printfooter();
+		echo "</div>";
 		$this->add_onload_command("\$('#reginput').keyup(function(ev){
 					switch(ev.keyCode){
 					case 33:
@@ -72,6 +83,7 @@ class undo_confirm extends InputPage {
 
 	function preprocess(){
 		global $IS4C_LOCAL,$IS4C_PATH;
+		$this->msg = "";
 		if (isset($_REQUEST['reginput'])){
 			switch(strtoupper($_REQUEST['reginput'])){
 			case 'CL':
@@ -96,7 +108,8 @@ class undo_confirm extends InputPage {
 				// for simplicity; all its really
 				// doing is updating a couple session vars
 				$si = new ScrollItems();
-				$si->parse($_REQUEST['reginput']);
+				$json = $si->parse($_REQUEST['reginput']);
+				$this->msg = $json['output'];
 				break;
 			default:
 				break;

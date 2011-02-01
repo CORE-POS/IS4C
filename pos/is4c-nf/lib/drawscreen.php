@@ -88,7 +88,7 @@ function printfooter($readOnly=False) {
 	$ret .= "<td class=\"reg\">$strpercentdisclabel</td>";
 	$ret .= "<td class=\"reg\">Mbr Special</td>";
 	$ret .= "<td class=\"reg\">Special</td>";
-	if ( $IS4C_LOCAL->get("ttlflag") == 1  and $IS4C_LOCAL->get("End") != 1 ) {
+	if ( $IS4C_LOCAL->get("ttlflag") == 1 and $IS4C_LOCAL->get("End") != 1 ) {
 		if ($IS4C_LOCAL->get("fntlflag") == 1) {
 			$ret .= "<td class=\"fs\">fs Amount Due</td>";
 		} else {

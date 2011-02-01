@@ -121,7 +121,9 @@ class fsTotalConfirm extends NoInputPage {
 		?>
 		<div class="baseHeight">
 		<div class="centeredDisplay colored">
+		<?php if (empty($this->tendertype)){ ?>
 		<span class="larger">Customer is using the</span>
+		<?php } ?>
 		<form id="selectform" method="post" action="<?php echo $_SERVER['PHP_SELF']; ?>">
 
 		<?php if (empty($this->tendertype)){ ?>

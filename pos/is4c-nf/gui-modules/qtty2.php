@@ -65,6 +65,7 @@ class qtty2 extends BasicPage {
 	function body_content(){
 		global $IS4C_LOCAL;
 		$this->input_header();
+		echo printheaderb();
 		$style = "style=\"background:{$this->box_color};\"";
 		?>
 		<div class="baseHeight">
