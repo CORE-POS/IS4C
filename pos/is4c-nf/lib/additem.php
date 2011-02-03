@@ -469,10 +469,12 @@ function addactivity($activity) {
 		'Activity'	=> nullwrap($activity),
 		'Interval'	=> nullwrap($interval)
 		);
+		/*
 	if ($IS4C_LOCAL->get("DBMS")=="mysql"){
 		unset($values['Interval']);
 		$values['`Interval`'] = nullwrap($interval);
 	}
+	*/
 	$result = $db->smart_insert("activitytemplog",$values);
 
 	$db->close();

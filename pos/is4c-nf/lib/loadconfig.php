@@ -47,6 +47,33 @@ function loadglobalvalues() {
 	$db->close();
 }
 
+function loadglobalvalue($param,$val){
+	global $IS4C_LOCAL;
+	switch(strtoupper($param)){
+	case 'CASHIERNO':
+		$IS4C_LOCAL->set("CashierNo",$val);	
+		break;
+	case 'CASHIER':
+		$IS4C_LOCAL->set("cashier",$val);
+		break;
+	case 'LOGGEDIN':
+		$IS4C_LOCAL->set("LoggedIn",$val);
+		break;
+	case 'TRANSNO':
+		$IS4C_LOCAL->set("transno",$val);
+		break;
+	case 'TTLFLAG':
+		$IS4C_LOCAL->set("ttlflag",$val);
+		break;
+	case 'FNTLFLAG':
+		$IS4C_LOCAL->set("fntlflag",$val);
+		break;
+	case 'TAXEXEMPT':
+		$IS4C_LOCAL->set("TaxExempt",$val);
+		break;
+	}
+}
+
 function setglobalvalue($param, $value) {
 	global $IS4C_LOCAL;
 
@@ -56,12 +83,27 @@ function setglobalvalue($param, $value) {
 		$value = "'".$value."'";
 	}
 	
-	$laneno = $IS4C_LOCAL->get('laneno');
-	
 	$strUpdate = "update globalvalues set ".$param." = ".$value;
-	$ccUpdate = "update globalvalues set ".$param."=".$value." WHERE lane =".$laneno;
 
 	$db->query($strUpdate);
+	$db->close();
+}
+
+function setglobalvalues($arr){
+	$setStr = "";
+	foreach($arr as $param => $value){
+		$setStr .= $param." = ";
+		if (!is_numeric($value))
+			$setStr .= "'".$value."',";
+		else
+			$setStr .= $value.",";
+		loadglobalvalue($param,$value);
+	}
+	$setStr = rtrim($setStr,",");
+
+	$db = pDataConnect();
+	$upQ = "UPDATE globalvalues SET ".$setStr;
+	$db->query($upQ);
 	$db->close();
 }
 

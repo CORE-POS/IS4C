@@ -22,10 +22,7 @@
 *********************************************************************************/
 
 // Sets the $_SESSION["kick"] variable to control when the drawer opens ----- apbw 03/29/05 Drawer Kick Patch
-$IS4C_PATH = isset($IS4C_PATH)?$IS4C_PATH:"";
-if (empty($IS4C_PATH)){ while(!file_exists($IS4C_PATH."is4c.css")) $IS4C_PATH .= "../"; }
-
-if (!isset($IS4C_LOCAL)) include($IS4C_PATH."lib/LocalStorage/conf.php");
+if (!isset($IS4C_LOCAL)) include($_SERVER["DOCUMENT_ROOT"]."/lib/LocalStorage/conf.php");
 
 
 function setDrawerKick()
@@ -56,10 +53,11 @@ function setDrawerKickLater()
 
 	$db = tDataConnect();
 
-	$query = "select trans_id from localtemptrans where (trans_subtype = 'CA' and total <> 0) or trans_subtype = 'CC' or upc='0000000001065'";
+	$query = "select * from localtemptrans where (trans_subtype = 'CA' and total <> 0) or (trans_subtype = 'CC' AND (total < -25 or total > 0)) or upc='0000000001065'";
 
 	$result = $db->query($query);
 	$num_rows = $db->num_rows($result);
+	$row = $db->fetch_array($result);
 
 	if ($num_rows != 0) {
 	 //$_SESSION["kick"] = 1;

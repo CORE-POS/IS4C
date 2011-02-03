@@ -83,7 +83,7 @@ class Void extends Parser {
 		global $IS4C_LOCAL;
 
 		if ($item_num) {
-			$query = "select upc, quantity, ItemQtty, foodstamp, total, voided from localtemptrans where "
+			$query = "select upc, quantity, ItemQtty, foodstamp, total, voided, charflag from localtemptrans where "
 				."trans_id = ".$item_num;
 
 			$db = tDataConnect();
@@ -97,7 +97,7 @@ class Void extends Parser {
 				if ((!$row["upc"] || strlen($row["upc"]) < 1) && $row["voided"] == 1) 
 
 					return boxMsg("Item already voided");
-				elseif (!$row["upc"] || strlen($row["upc"]) < 1) 
+				elseif (!$row["upc"] || strlen($row["upc"]) < 1 || $row['charflag'] == 'SO') 
 					return $this->voidid($item_num);
 				elseif ($IS4C_LOCAL->get("discounttype") == 3) 
 					return $this->voidupc($row["quantity"]."*".$row["upc"],$item_num);
@@ -114,7 +114,7 @@ class Void extends Parser {
 		$query = "select upc,VolSpecial,quantity,trans_subtype,unitPrice,
 			discount,memDiscount,discountable,scale,numflag,charflag,
 			foodstamp,discounttype,total,cost,description,trans_type,
-			department,regPrice,tax,volDiscType,volume
+			department,regPrice,tax,volDiscType,volume,mixMatch,matched
 		       	from localtemptrans where trans_id = ".$item_num;
 		$db = tDataConnect();
 		$result = $db->query($query);
@@ -137,6 +137,8 @@ class Void extends Parser {
 		$cost = isset($row["cost"])?-1*$row["cost"]:0;
 		$numflag = isset($row["numflag"])?$row["numflag"]:0;
 		$charflag = isset($row["charflag"])?$row["charflag"]:0;
+		$mm = $row['mixMatch'];
+		$matched = $row['matched'];
 
 		$foodstamp = 0;
 		if ($row["foodstamp"] != 0) $foodstamp = 1;
@@ -152,7 +154,7 @@ class Void extends Parser {
 
 		$update = "update localtemptrans set voided = 1 where trans_id = ".$item_num;
 		$db->query($update);
-		addItem($upc, $row["description"], $row["trans_type"], $row["trans_subtype"], "V", $row["department"], $quantity, $unitPrice, $total, $row["regPrice"], $scale, $row["tax"], $foodstamp, $discount, $memDiscount, $discountable, $discounttype, $quantity, $row["volDiscType"], $row["volume"], $VolSpecial, 0, 0, 1, $cost, $numflag, $charflag);
+		addItem($upc, $row["description"], $row["trans_type"], $row["trans_subtype"], "V", $row["department"], $quantity, $unitPrice, $total, $row["regPrice"], $scale, $row["tax"], $foodstamp, $discount, $memDiscount, $discountable, $discounttype, $quantity, $row["volDiscType"], $row["volume"], $VolSpecial, $mm, $matched, 1, $cost, $numflag, $charflag);
 		if ($row["trans_type"] != "T") {
 			$IS4C_LOCAL->set("ttlflag",0);
 		}

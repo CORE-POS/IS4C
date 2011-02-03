@@ -43,6 +43,7 @@ function initiate_session() {
 	getsubtotals();
 	loadglobalvalues();
 	loaddata();
+	customreceipt();
 }
 
 function system_init() {
@@ -221,5 +222,30 @@ function loaddata() {
 	}
 }
 
+/* fetch customer receipt header & footer lines
+ * use to be in ini.php and on the remote DB, doesn't
+ * belong on either */
+function customreceipt(){
+	global $IS4C_LOCAL;
+
+	$db = pDataConnect(); 
+	$headerQ = "select text from customReceipt where type='header' order by seq";
+	$headerR = $db->query($headerQ);
+	$IS4C_LOCAL->set("receiptHeaderCount",$db->num_rows($headerR));
+	for ($i = 1; $i <= $IS4C_LOCAL->get("receiptHeaderCount"); $i++){
+		$headerW = $db->fetch_array($headerR);
+		$IS4C_LOCAL->set("receiptHeader$i",$headerW[0]);
+	}
+	$footerQ = "select text from customReceipt where type='footer' order by seq";
+	$footerR = $db->query($footerQ);
+	$IS4C_LOCAL->set("receiptFooterCount",$db->num_rows($footerR));
+
+	for ($i = 1; $i <= $IS4C_LOCAL->get("receiptFooterCount"); $i++){
+		$footerW = $db->fetch_array($footerR);
+		$IS4C_LOCAL->set("receiptFooter$i",$footerW[0]);
+	}
+	
+	$db->db_close();
+}
 
 ?>

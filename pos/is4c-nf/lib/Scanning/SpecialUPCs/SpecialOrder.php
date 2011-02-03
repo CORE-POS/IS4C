@@ -76,7 +76,7 @@ class SpecialOrder extends SpecialUPC {
 		$row = $db->fetch_array($result);
 		addItem($row['upc'],$row['description'],'I','','',$row['department'],$row['quantity'],
 			$row['unitPrice'],$row['total'],$row['regPrice'],0,$row['dept_tax'],
-			$row['dept_fs'],0.00,0.00,0,0,$row['ItemQtty'],0,0,0,'',0,0,0.00,0,'');
+			$row['dept_fs'],0.00,0.00,0,0,$row['ItemQtty'],0,0,0,$orderID,$transID,0,0.00,0,'SO');
 		$json['output'] = lastpage();
 
 		return $json;

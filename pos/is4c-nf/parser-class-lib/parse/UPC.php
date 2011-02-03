@@ -298,7 +298,13 @@ class UPC extends Parser {
 		if (!class_exists($PMClasses[$pricemethod]))
 			include($IS4C_PATH."lib/Scanning/PriceMethods/".$PMClasses[$pricemethod].".php");
 		$PriceMethodObject = new $PMClasses[$pricemethod];
+		// prefetch: otherwise object members 
+		// pass out of scope in addItem()
+		$prefetch = $DiscountObject->priceInfo($row,$quantity);
 		$PriceMethodObject->addItem($row, $quantity, $DiscountObject);	
+
+		/* add discount notifications lines, if applicable */
+		$DiscountObject->addDiscountLine();
 
 		// cleanup, reset flags and beep
 		if ($quantity != 0) {
@@ -319,9 +325,6 @@ class UPC extends Parser {
 
 		// probably pointless, see what happens without it
 		//if ($tax != 1) $IS4C_LOCAL->set("voided",0);
-
-		/* add discount notifications lines, if applicable */
-		$DiscountObject->addDiscountLine();
 
 		/* reset various flags and variables */
 		if ($IS4C_LOCAL->get("tare") != 0) $IS4C_LOCAL->set("tare",0);

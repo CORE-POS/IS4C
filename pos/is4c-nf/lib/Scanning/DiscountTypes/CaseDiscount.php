@@ -32,6 +32,9 @@ class CaseDiscount extends DiscountType {
 
 	function priceInfo($row,$quantity=1){
 		global $IS4C_LOCAL;
+		if (is_array($this->savedInfo))
+			return $this->savedInfo;
+
 		$ret = array();
 
 		$ret["regPrice"] = $row['normal_price'];

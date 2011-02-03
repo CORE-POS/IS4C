@@ -29,6 +29,8 @@ class NormalPricing extends DiscountType {
 
 	function priceInfo($row,$quantity=1){
 		$ret = array();
+		if (is_array($this->savedInfo))
+			return $this->savedInfo;
 
 		$ret["regPrice"] = $row['normal_price'];
 		$ret["unitPrice"] = $row['normal_price'];

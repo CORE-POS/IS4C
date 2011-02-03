@@ -28,6 +28,7 @@ ini_set('display_errors','1');
 
 if (!class_exists("BasicPage")) include($IS4C_PATH."gui-class-lib/BasicPage.php");
 if (!function_exists("authenticate")) include($IS4C_PATH."lib/authenticate.php");
+if (!function_exists("testremote")) include($IS4C_PATH."lib/connect.php");
 if (!isset($IS4C_LOCAL)) include($IS4C_PATH."lib/LocalStorage/conf.php");
 
 class login2 extends BasicPage {
@@ -42,6 +43,7 @@ class login2 extends BasicPage {
 
 		if (isset($_REQUEST['reginput'])){
 			if (authenticate($_REQUEST['reginput'])){
+				testremote();
 				header("Location: {$IS4C_PATH}gui-modules/pos2.php");
 				return False;
 			}

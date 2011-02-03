@@ -58,36 +58,41 @@ function authenticate($password,$activity=1){
 	if ($row_g["LoggedIn"] == 0) {
 		$query_q = "select emp_no, FirstName, LastName from employees where EmpActive = 1 "
 			."and CashierPassword = ".$password;
-		$db_q = pDataConnect();
-		$result_q = $db_q->query($query_q);
-		$num_rows_q = $db_q->num_rows($result_q);
+		$result_q = $db_g->query($query_q);
+		$num_rows_q = $db_g->num_rows($result_q);
 
 		if ($num_rows_q > 0) {
-			$row_q = $db_q->fetch_array($result_q);
+			$row_q = $db_g->fetch_array($result_q);
 
-			testremote();
-
-			setglobalvalue("CashierNo", $row_q["emp_no"]);
-			setglobalvalue("Cashier", $row_q["FirstName"]." ".substr($row_q["LastName"], 0, 1).".");
-
+			//testremote();
 			loadglobalvalues();
 
 			$transno = gettransno($row_q["emp_no"]);
 			$IS4C_LOCAL->set("transno",$transno);
-			setglobalvalue("TransNo", $transno);
-			setglobalvalue("LoggedIn", 1);
+
+			$globals = array(
+				"CashierNo" => $row_q["emp_no"],
+				"Cashier" => $row_q["FirstName"]." ".substr($row_q["LastName"], 0, 1).".",
+				"TransNo" => $transno,
+				"LoggedIn" => 1
+			);
+			setglobalvalues($globals);
 
 			if ($transno == 1) addactivity($activity);
 			
 		} elseif ($password == 9999) {
-			setglobalvalue("CashierNo", 9999);
-			setglobalvalue("Cashier", "Training Mode");
+			loadglobalvalues();
 			$transno = gettransno(9999);
 			$IS4C_LOCAL->set("transno",$transno);
-			setglobalvalue("TransNo", $transno);
-			setglobalvalue("LoggedIn", 1);
-			loadglobalvalues();
 			$IS4C_LOCAL->set("training",1);
+
+			$globals = array(
+				"CashierNo" => 9999,
+				"Cashier" => "Training Mode",
+				"TransNo" => $transno,
+				"LoggedIn" => 1
+			);
+			setglobalvalues($globals);
 		}
 		else return False;
 	}
@@ -101,22 +106,18 @@ function authenticate($password,$activity=1){
 			."(frontendsecurity >= 30 or emp_no = ".$row_g["CashierNo"].") "
 			."and (CashierPassword = '".$password."' or AdminPassword = '".$password."')";
 
-		$db_a = pDataConnect();
-		$result_a = $db_a->query($query_a);	
+		$result_a = $db_g->query($query_a);	
 
-		$num_rows_a = $db_a->num_rows($result_a);
-
-		$db_a->db_close();
+		$num_rows_a = $db_g->num_rows($result_a);
 
 		if ($num_rows_a > 0) {
 
 			loadglobalvalues();
-
-			testremote();
+			//testremote();
 		}
 		elseif ($row_g["CashierNo"] == "9999" && $password == "9999"){
 			loadglobalvalues();
-			testremote();
+			//testremote();
 			$IS4C_LOCAL->set("training",1);
 		}
 		else return False;
@@ -124,9 +125,6 @@ function authenticate($password,$activity=1){
 
 	$db_g->db_close();
 	
-	// this is should really be placed more logically... andy
-	customreceipt();
-
 	if ($IS4C_LOCAL->get("LastID") != 0 && $IS4C_LOCAL->get("memberID") != "0" && $IS4C_LOCAL->get("memberID") != "") {
 		$IS4C_LOCAL->set("unlock",1);
 		memberID($IS4C_LOCAL->get("memberID"));
@@ -163,33 +161,6 @@ function nsauthenticate($password){
 		return True;
 	}
 	return False;
-}
-
-
-/* fetch customer receipt header & footer lines
- * use to be in ini.php and on the remote DB, doesn't
- * belong on either */
-function customreceipt(){
-	global $IS4C_LOCAL;
-
-	$db = pDataConnect(); 
-	$headerQ = "select text from customReceipt where type='header' order by seq";
-	$headerR = $db->query($headerQ);
-	$IS4C_LOCAL->set("receiptHeaderCount",$db->num_rows($headerR));
-	for ($i = 1; $i <= $IS4C_LOCAL->get("receiptHeaderCount"); $i++){
-		$headerW = $db->fetch_array($headerR);
-		$IS4C_LOCAL->set("receiptHeader$i",$headerW[0]);
-	}
-	$footerQ = "select text from customReceipt where type='footer' order by seq";
-	$footerR = $db->query($footerQ);
-	$IS4C_LOCAL->set("receiptFooterCount",$db->num_rows($footerR));
-
-	for ($i = 1; $i <= $IS4C_LOCAL->get("receiptFooterCount"); $i++){
-		$footerW = $db->fetch_array($footerR);
-		$IS4C_LOCAL->set("receiptFooter$i",$footerW[0]);
-	}
-	
-	$db->db_close();
 }
 
 ?>

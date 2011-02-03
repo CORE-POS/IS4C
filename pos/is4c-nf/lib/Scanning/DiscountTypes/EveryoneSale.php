@@ -31,6 +31,9 @@ if (!function_exists('adddiscount')) include($IS4C_PATH.'lib/additem.php');
 class EveryoneSale extends DiscountType {
 
 	function priceInfo($row,$quantity=1){
+		if (is_array($this->savedInfo))
+			return $this->savedInfo;
+
 		$ret = array();
 
 		$ret["regPrice"] = $row['normal_price'];
