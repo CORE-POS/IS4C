@@ -1,35 +1,43 @@
 <?php
 
+require('../../config.php');
+$page_title = "Fannie : Scale Delete";
+$header = "Scale Delete";
+include($FANNIE_ROOT."src/header.html");
 
-if (isset($_GET['scale'])){
+
+if (isset($_GET['plu'])){
 	include('parse.php');
 
-	$fetchQ = "select plu from scaleItems where plu='0027985000000'";
-	$fetchR = $sql->query($fetchQ);
-	$plus = array();
-	$i = 0;
-	while ($fetchW = $sql->fetch_array($fetchR)){
-		preg_match("/002(\d\d\d\d)0/",$fetchW[0],$matches);
-		$plu = $matches[1];
-		if (!empty($plu)){
-			$plus[$i] = $plu;
-			$i++;
-		}
+	$plu = $_REQUEST['plu'];
+	if (strlen($plu) <= 4)
+		$plu = str_pad($plu,4,'0',STR_PAD_LEFT);
+	else{
+		$plu = str_pad($plu,13,'0',STR_PAD_LEFT);
+		$plu = substr($plu,3,4);
 	}
-	deleteitem($plus);
-	echo "Item delete requested";
+
+	include($FANNIE_ROOT."src/mysql_connect.php");
+	$query = sprintf("DELETE FROM scaleItems WHERE plu='002%s000000'",
+		$plu);
+	$result = $dbc->query($query);	
+
+	deleteitem($plu);
+	echo "Item delete requested<br />";
+	echo "<a href=delete.php>Delete another</a>";
+
 }
 else {
+	echo "<p>Delete item from scale but retain in POS</p>";
 	echo "<form action=delete.php method=get>";
-	echo "<select name=scale>";
-	$i = 0;
-	foreach($scale_ips as $s){
-		echo "<option value=$i>$s</option>";
-		$i++;
-	}
-	echo "</select>";
+	echo "PLU/UPC: <input id=plu type=text name=plu />";
 	echo "<input type=submit value=Delete />";
 	echo "</form>";
+	echo "<script type=\"text/javascript\">
+		\$('#plu').focus();
+		</script>";
 }
+
+include($FANNIE_ROOT."src/footer.html");
 
 ?>

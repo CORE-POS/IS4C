@@ -70,13 +70,15 @@ function select_dlog($date, $enddate=""){
   
   // new - get enddate
   $endarray = explode('-',$enddate);
-  $endmonth = $endarray[1];
   $endyear = $endarray[0];
+  $endmonth = 0;
   if ($endyear == $enddate){
     $endarray = explode("/",$enddate);
     $endmonth = $endarray[0];
     $endyear = $endarray[2];
   }
+  else 
+    $endmonth = $endarray[1];
   if ($endmonth == $enddate){
     return "dlog";
   }

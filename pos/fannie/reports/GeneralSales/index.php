@@ -33,7 +33,7 @@ if (isset($_REQUEST['submit'])){
 	$dlog = select_dlog($d1,$d2);
 
 	if (isset($_REQUEST['excel'])){
-		header("Content-Disposition: inline; filename=sales_$d1_$d2.xls");
+		header("Content-Disposition: inline; filename=sales_{$d1}_{$d2}.xls");
 		header("Content-type: application/vnd.ms-excel; name='excel'");
 	}
 	else{
