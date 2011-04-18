@@ -28,6 +28,7 @@ ini_set('display_errors','1');
 
 if (!class_exists("BasicPage")) include_once($IS4C_PATH."gui-class-lib/BasicPage.php");
 if (!function_exists("authenticate")) include($IS4C_PATH."lib/authenticate.php");
+if (!function_exists("scaleObject")) include($IS4C_PATH."lib/lib.php");
 if (!isset($IS4C_LOCAL)) include($IS4C_PATH."lib/LocalStorage/conf.php");
 
 class login3 extends BasicPage {
@@ -43,6 +44,9 @@ class login3 extends BasicPage {
 		$this->msg = "please enter password";
 		if (isset($_REQUEST['reginput'])){
 			if (authenticate($_REQUEST['reginput'],4)){
+				$sd = scaleObject();
+				if (is_object($sd))
+					$sd->ReadReset();
 				header("Location: {$IS4C_PATH}gui-modules/pos2.php");
 				return False;
 			}

@@ -43,7 +43,7 @@ class MemberSale extends DiscountType {
 		$ret['discount'] = 0;
 		$ret['memDiscount'] = ($ret['regPrice'] - $row['special_price']) * $quantity;
 
-		if ($IS4C_LOCAL->get("isMember") == 1)
+		if ($IS4C_LOCAL->get("isMember") == 1 || $IS4C_LOCAL->get("memberID") == $IS4C_LOCAL->get("visitingMem"))
 			$ret["unitPrice"] = $row['special_price'];
 
 		$this->savedRow = $row;
@@ -53,7 +53,7 @@ class MemberSale extends DiscountType {
 
 	function addDiscountLine(){
 		global $IS4C_LOCAL;	
-		if ($IS4C_LOCAL->get("isMember")){
+		if ($IS4C_LOCAL->get("isMember") == 1 || $IS4C_LOCAL->get("memberID") == $IS4C_LOCAL->get("visitingMem")){
 			$IS4C_LOCAL->set("voided",2);
 			adddiscount($this->savedInfo['memDiscount'],
 				$this->savedRow['department']);

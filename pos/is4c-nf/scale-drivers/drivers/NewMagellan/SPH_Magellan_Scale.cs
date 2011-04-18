@@ -45,7 +45,7 @@ namespace SPH {
 public class SPH_Magellan_Scale : SerialPortHandler {
 	private bool got_weight;
 //private static String MAGELLAN_OUTPUT_FILE = "C:\\IS4C\\scale-drivers/drivers/NewMagellan/scanner-scale.data";
-private static String MAGELLAN_OUTPUT_DIR = "C:\\IS4C\\scale-drivers\\drivers\\NewMagellan\\ss-output";
+private static String MAGELLAN_OUTPUT_DIR = "C:\\is4c\\scale-drivers\\drivers\\NewMagellan\\ss-output";
 //private static String MAGELLAN_LOCK_FILE = "C:\\IS4C\\scale-drivers/drivers/NewMagellan/scanner-scale.lock";
 
 	public SPH_Magellan_Scale(string p) : base(p){

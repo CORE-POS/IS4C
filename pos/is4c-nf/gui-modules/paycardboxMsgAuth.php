@@ -28,6 +28,7 @@ if (empty($IS4C_PATH)){ while(!file_exists($IS4C_PATH."is4c.css")) $IS4C_PATH .=
 if (!class_exists("PaycardProcessPage")) include_once($IS4C_PATH."gui-class-lib/PaycardProcessPage.php");
 if (!function_exists("paycard_reset")) require_once($IS4C_PATH."lib/paycardLib.php");
 if (!function_exists("printfooter")) require_once($IS4C_PATH."lib/drawscreen.php");
+if (!function_exists("sigTermObject")) require_once($IS4C_PATH."lib/lib.php");
 if (!isset($IS4C_LOCAL)) include($IS4C_PATH."lib/LocalStorage/conf.php");
 
 class paycardboxMsgAuth extends PaycardProcessPage {
@@ -45,6 +46,9 @@ class paycardboxMsgAuth extends PaycardProcessPage {
 				$IS4C_LOCAL->set("togglefoodstamp",0);
 				$IS4C_LOCAL->set("ccTermOut","resettotal:".
 					str_replace(".","",sprintf("%.2f",$IS4C_LOCAL->get("amtdue"))));
+				$st = sigTermObject();
+				if (is_object($st))
+					$st->WriteToScale($IS4C_LOCAL->get("ccTermOut"));
 				paycard_reset();
 				header("Location: {$IS4C_PATH}gui-modules/pos2.php");
 				return False;

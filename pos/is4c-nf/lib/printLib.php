@@ -96,7 +96,7 @@ function drawerKick() {
 
 // -------------------------------------------------------------
 function printReceiptHeader($dateTimeStamp, $ref) {
-	global $IS4C_LOCAL;
+	global $IS4C_LOCAL,$IS4C_PATH;
 
 //	writeLine(chr(27).chr(33).chr(5)); // Compress font	// apbw/tt old Wedge receipt printers Franking II
 
@@ -104,20 +104,37 @@ function printReceiptHeader($dateTimeStamp, $ref) {
 
 		/***** jqh 09/29/05 changes made for new receipt settings *****/
 		.chr(27).chr(33).chr(5);
-		if ($IS4C_LOCAL->get("newReceipt")==1){
+		$i = 2; // for headers below
+		if ($IS4C_LOCAL->get("newReceipt")==1 && $IS4C_LOCAL->get("store") != "wfc"){
 		 	$receipt.=biggerFont(centerBig($IS4C_LOCAL->get("receiptHeader1")))."\n\n";
-		}else{
+		}
+		else if ($IS4C_LOCAL->get("newReceipt")==1 && $IS4C_LOCAL->get("store") == "wfc"){
+			$img = RenderBitmapFromFile($IS4C_PATH."graphics/WFC_Logo.bmp");
+			$receipt .= $img."\n";
+			$i=4;
+			/*
+			$i=1;
+			for(;$i<=3;$i++)
+				$receipt.=biggerFont(centerBig($IS4C_LOCAL->get("receiptHeader$i")))."\n";
+			*/
+			$receipt .= "\n";
+		}
+		else{
 			// zero-indexing the receipt header and footer list
 	 		$receipt.=biggerFont(centerBig($IS4C_LOCAL->get("receiptHeader1")))."\n";
 		}
-		// and continuing on at one
-		for ($i = 2; $i <= $IS4C_LOCAL->get("receiptHeaderCount"); $i++)
+		// and continuing on 
+		for (; $i <= $IS4C_LOCAL->get("receiptHeaderCount"); $i++)
 			$receipt.=centerString($IS4C_LOCAL->get("receiptHeader$i"))."\n";
-		//$receipt.=centerString($IS4C_LOCAL->get("receiptHeader2"))."\n"
-		//.centerString($IS4C_LOCAL->get("receiptHeader3"))."\n"
-		$receipt.=centerString(build_time($dateTimeStamp)."     ".$ref)."\n"
-		.centerString("Cashier: ".$IS4C_LOCAL->get("cashier"))."\n"
-		."\n\n";
+
+		$receipt .= "\n";
+		$receipt .= "Cashier: ".$IS4C_LOCAL->get("cashier")."\n\n";
+
+		$time = build_time($dateTimeStamp);
+		$time = str_replace(" ","     ",$time);
+		$spaces = 55 - strlen($time) - strlen($ref);
+		$receipt .= $time.str_repeat(' ',$spaces).$ref."\n";
+			
 		/***** jqh end change *****/
 	
 	return $receipt;
@@ -553,17 +570,31 @@ function printCCSigSlip($dateTimeStamp,$ref,$storeCopy=True,$rp=0){
 				.centerString($IS4C_LOCAL->get("receiptHeader2"))."\n\n";	// phone
 		}
 				
-		$slip .= $trantype."\n"			// trans type:  purchase, canceled purchase, refund or canceled refund
-			."Card: ".$cardBrand."  ".$pan."\n"
-			."Date: ".date('m/d/y h:i a', strtotime($row['datetime']))."\n"
-			."Reference: ".$ref."\n"  			// our ref #
-			."Entry Method:  ".$entryMethod."\n"  		// swiped or manual entry
-			."Sequence Number:  ".$sequenceNum."\n"	// their sequence #		
-			//."Authorization:  ".$approvalPhrase." ".$authCode."\n"		// result + auth number
-			."Authorization:  ".$approvalPhrase."\n"		// result + auth number
-			.boldFont()  // change to bold font for the total
-			."Amount: ".$amt."\n"		
-			.normalFont();
+		if ($storeCopy){
+			$slip .= $trantype."\n"			// trans type:  purchase, canceled purchase, refund or canceled refund
+				."Card: ".$cardBrand."  ".$pan."\n"
+				."Reference:  ".$ref."\n"
+				."Date & Time:  ".$date."\n"
+				."Entry Method:  ".$entryMethod."\n"  		// swiped or manual entry
+				."Sequence Number:  ".$sequenceNum."\n"	// their sequence #		
+				//."Authorization:  ".$approvalPhrase." ".$authCode."\n"		// result + auth number
+				."Authorization:  ".$approvalPhrase."\n"		// result + auth number
+				.boldFont()  // change to bold font for the total
+				."Amount: ".$amt."\n"		
+				.normalFont();
+		}
+		else {
+			// use columns instead
+			$c1 = array();
+			$c2 = array();
+			$c1[] = $trantype;
+			$c1[] = "Entry Method:  ".$entryMethod;
+			$c1[] = "Sequence Number:  ".$sequenceNum;
+			$c2[] = $cardBrand."  ".$pan;
+			$c2[] = "Authorization:  ".$approvalPhrase;
+			$c2[] = boldFont()."Amount: ".$amt.normalFont();
+			$slip .= twoColumns($c1,$c2);
+		}
 		if ($storeCopy){
 			$slip .= centerString("I agree to pay above total amount")."\n"
 			.centerString("according to card issuer agreement.")."\n\n"
@@ -620,9 +651,9 @@ function localTTL(){
 
 	if ($IS4C_LOCAL->get("localTotal") == 0) return "";
 
-	$str = sprintf("Local purchases: \$%.2f",
+	$str = sprintf("LOCAL PURCHASES = \$%.2f",
 		$IS4C_LOCAL->get("localTotal"));
-	return "\n\n".centerString($str)."\n\n";
+	return $str."\n";
 }
 
 function receiptDetail($reprint=False,$trans_num='') { // put into its own function to make it easier to follow, and slightly modified for wider-spread use of joe's "new" receipt format --- apbw 7/3/2007
@@ -685,11 +716,11 @@ function receiptDetail($reprint=False,$trans_num='') { // put into its own funct
 				if ($row['2']==''){
 					$detail .= "\n";
 				}else{
-					$detail .= "-- ";
+					//$detail .= "-- ";
 					$detail .= boldFont();
 					$detail .= $row[2];
 					$detail .= normalFont();
-					$detail .= " --\n";
+					$detail .= "\n";
 				}
 			}
 			/***** jqh 12/14/05 fix tax exempt on receipt *****/

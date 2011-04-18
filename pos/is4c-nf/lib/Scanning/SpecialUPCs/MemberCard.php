@@ -48,12 +48,7 @@ class MemberCard extends SpecialUPC {
 		$result = $db->query($query);
 
 		if ($db->num_rows($result) < 1){
-			if ($IS4C_LOCAL->get("standalone") == 1){
-				$json['output'] = boxMsg("Can't assign new cards<br />in standalone");
-			}
-			else {
-				$json['main_frame'] = $IS4C_PATH.'gui-modules/AssignMemCard.php?upc='.$upc;
-			}
+			$json['output'] = boxMsg("Card not assigned");
 			return $json;
 		}
 

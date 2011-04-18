@@ -108,6 +108,7 @@ class Bitmap {
 	} // LastError()
 	
 	function Load($filename, $filedata=null) {
+		$data = "";
 		if ($filename === true) {
 			$data = $filedata;
 		} else {
@@ -208,8 +209,14 @@ class Bitmap {
 		$rowDataSize = (int)((($width * $bpp) + 31) / 32) * 4;
 		if ($imgDataSize === null || $imgDataSize === 0)
 			$imgDataSize = abs($height) * $rowDataSize;
-		else if ($imgDataSize != (abs($height) * $rowDataSize))
-			return $this->ReturnError("Load(): incorrect image data size (".$imgDataSize." reported, ".(abs($height) * $rowDataSize)." expected)");
+		else if ($imgDataSize != (abs($height) * $rowDataSize)){
+			while(ord($data[strlen($data)-1])===0){
+				$imgDataSize--;
+				$data = substr($data,0,strlen($data)-1);
+			}
+			if($imgDataSize != (abs($height) * $rowDataSize))
+				return $this->ReturnError("Load(): incorrect image data size (".$imgDataSize." reported, ".(abs($height) * $rowDataSize)." expected)");
+		}
 		if ($hppm !== null && $hppm <= 0)
 			return $this->ReturnError("Load(): invalid horizontal pixels-per-meter ".$hppm);
 		if ($vppm !== null && $vppm <= 0)
@@ -572,4 +579,31 @@ class Bitmap {
 	} // GetRawBytesPerRow()
 	
 } // Bitmap
+
+function RenderBitmapFromFile($fn){
+	$slip = "";
+
+	$bmp = new Bitmap();
+	$bmp->Load($fn);
+
+	$bmpData = $bmp->GetRawData();
+	$bmpWidth = $bmp->GetWidth();
+	$bmpHeight = $bmp->GetHeight();
+	$bmpRawBytes = (int)(($bmpWidth + 7)/8);
+
+	$printer = new ESCPOSPrintHandler();
+	$stripes = $printer->TransposeBitmapData($bmpData, $bmpWidth);
+	for($i=0; $i<count($stripes); $i++)
+		$stripes[$i] = $printer->InlineBitmap($stripes[$i], $bmpWidth);
+
+	$slip .= $printer->AlignCenter();
+	if (count($stripes) > 1)
+		$slip .= $printer->LineSpacing(0);
+	$slip .= implode("\n",$stripes);
+	if (count($stripes) > 1)
+		$slip .= $printer->ResetLineSpacing()."\n";
+	$slip .= $printer->AlignLeft();
+
+	return $slip;
+}
 

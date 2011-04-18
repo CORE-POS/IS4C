@@ -87,10 +87,12 @@ function getsubtotals() {
 	}
 
 	$IS4C_LOCAL->set("LastID", (!$row || !isset($row['LastID'])) ? 0 : (double)$row["LastID"] );
-	$IS4C_LOCAL->set("memberID", (!$row || !isset($row['card_no'])) ? "0" : trim($row["card_no"]) );
+	$cn = (!$row || !isset($row['card_no'])) ? "0" : trim($row["card_no"]);
+	if ($cn != "0" || $IS4C_LOCAL->get("memberID") == "") 
+		$IS4C_LOCAL->set("memberID",$cn);
 	$IS4C_LOCAL->set("runningTotal", (!$row || !isset($row['runningTotal'])) ? 0 : (double)$row["runningTotal"] );
 	$IS4C_LOCAL->set("taxTotal", (!$row || !isset($row['taxTotal'])) ? 0 : (double)$row["taxTotal"] );
-	$IS4C_LOCAL->set("discounttotal", (!$row || !isset($row['discounttotal'])) ? 0 : (double)$row["discountTTL"] );
+	$IS4C_LOCAL->set("discounttotal", (!$row || !isset($row['discountTTL'])) ? 0 : (double)$row["discountTTL"] );
 	$IS4C_LOCAL->set("tenderTotal", (!$row || !isset($row['tenderTotal'])) ? 0 : (double)$row["tenderTotal"] );
 	$IS4C_LOCAL->set("memSpecial", (!$row || !isset($row['memSpecial'])) ? 0 : (double)$row["memSpecial"] );
 	$IS4C_LOCAL->set("staffSpecial", (!$row || !isset($row['staffSpecial'])) ? 0 : (double)$row["staffSpecial"] );

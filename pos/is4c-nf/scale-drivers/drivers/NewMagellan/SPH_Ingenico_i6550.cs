@@ -39,11 +39,13 @@
 *************************************************************/
 using System;
 using System.IO.Ports;
-using System.Windows.Forms;
 using System.Threading;
 using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
+using System.IO;
+using System.Net;
+using System.Net.Sockets;
 
 using BitmapBPP;
 
@@ -74,7 +76,7 @@ public class Signature {
 
 	// helpful example provided @ 
 	// http://combustibleknowledge.com/2009/08/29/3-byte-ascii-format-deciphered/
-	public string BuildImage(){
+	public string BuildImage(string path){
 		List<Point> points = new List<Point>();
 		List<byte> byteList = new List<byte>();
 
@@ -141,10 +143,10 @@ public class Signature {
 			}
 		}
 
-		return DrawSignatureImage(points);
+		return DrawSignatureImage(points,path);
 	}
 
-	private string DrawSignatureImage(List<Point> Points){
+	private string DrawSignatureImage(List<Point> Points,string path){
 		int width=2048;
 		int height=512;
 		Bitmap bmp = new Bitmap(width, height);
@@ -185,7 +187,7 @@ public class Signature {
 		System.Text.StringBuilder sBuilder = new System.Text.StringBuilder();
 		for (int i = 0; i < hash.Length; i++)
 		    sBuilder.Append(hash[i].ToString("x2"));
-		string base_fn = sBuilder.ToString()+".bmp";
+		string base_fn = path + "\\" + sBuilder.ToString()+".bmp";
 
 		newImage.Save(base_fn, System.Drawing.Imaging.ImageFormat.Bmp);
 
@@ -193,7 +195,7 @@ public class Signature {
 		byte[] fixbpp = BitmapBPP.BitmapConverter.To1bpp(base_fn);
 		System.IO.File.WriteAllBytes(base_fn,fixbpp);
 
-		return System.IO.Directory.GetCurrentDirectory()+"\\"+base_fn;
+		return base_fn;
 	}
 
 }
@@ -207,6 +209,8 @@ public class SPH_Ingenico_i6550 : SerialPortHandler {
 	private string pos_trans_no;
 	private bool getting_signature;
 	private Signature sig_object;
+
+	private static String INGENICO_OUTPUT_DIR = "C:\\is4c\\scale-drivers\\drivers\\NewMagellan\\cc-output";
 
 	public SPH_Ingenico_i6550(string p) : base(p){
 		last_message = null;
@@ -378,66 +382,66 @@ public class SPH_Ingenico_i6550 : SerialPortHandler {
 	// 	* resettotal:xxx => start over but immediately re-total
 	// 		(so the cashier doesn't have to do it again)
 	// 	* sig => request a signature
-	override public void PageLoaded(Uri u){
-		Uri MainFrameUrl = (Uri)parent.Invoke(parent.UrlDelegate,
-						new Object[]{ 1 });
-		if (u == MainFrameUrl){
-			string posInput = (string)parent.Invoke(parent.CheckDelegate,
-							new Object[]{ 1, "ccTermOut" });
-			if (!getting_signature && posInput.Length > 6 && posInput.Substring(0,6) == "total:"){
-				string amount = posInput.Substring(6);
-				for(int i=0; i<amount.Length; i++){
-					if ( (int)amount[i] < 0x30 || (int)amount[i] > 0x39 )
-						return; // not a number
-				}
-				ConfirmedWrite(GetLRC(AmountMessage(amount)));
-
-				if (VERBOSE)
-					System.Console.WriteLine("Sent amount: "+amount);
+	// 	* approval:xxx => pass back approval code
+	override public void HandleMsg(String msg){
+		if (!getting_signature && msg.Length > 6 && msg.Substring(0,6) == "total:"){
+			string amount = msg.Substring(6);
+			for(int i=0; i<amount.Length; i++){
+				if ( (int)amount[i] < 0x30 || (int)amount[i] > 0x39 )
+					return; // not a number
 			}
-			else if (posInput == "reset"){
-				last_message = null;
-				getting_signature = false;
-				ByteWrite(GetLRC(HardResetMessage())); // force, no matter what
-				ConfirmedWrite(GetLRC(SetPaymentTypeMessage("2")));
-
-				if (VERBOSE)
-					System.Console.WriteLine("Sent reset");
-			}
-			else if (!getting_signature && posInput.Length > 11 && posInput.Substring(0,11) == "resettotal:"){
-				ConfirmedWrite(GetLRC(HardResetMessage()));
-				ConfirmedWrite(GetLRC(SetPaymentTypeMessage("2")));
-
-				if (VERBOSE)
-					System.Console.WriteLine("Sent reset");
-
-				string amount = posInput.Substring(11);
-				for(int i=0; i<amount.Length; i++){
-					if ( (int)amount[i] < 0x30 || (int)amount[i] > 0x39 )
-						return; // not a number
-				}
-				ConfirmedWrite(GetLRC(AmountMessage(amount)));
-
-				if (VERBOSE)
-					System.Console.WriteLine("Sent amount: "+amount);
-			}
-			else if (!getting_signature && posInput.Length > 9 && posInput.Substring(0,9) == "approval:"){
-				string approval_code = posInput.Substring(9);
-				ConfirmedWrite(GetLRC(AuthMessage(approval_code)));
-				getting_signature = true;	
-				last_message = null;
-				ConfirmedWrite(GetLRC(StatusRequestMessage()));
-			}
-			else if (!getting_signature && posInput == "sig"){
-				ConfirmedWrite(GetLRC(SigRequestMessage()));
-				getting_signature = true;	
-				last_message = null;
-				ConfirmedWrite(GetLRC(StatusRequestMessage()));
-			}
+			ConfirmedWrite(GetLRC(AmountMessage(amount)));
 
 			if (VERBOSE)
-				System.Console.WriteLine(posInput);
+				System.Console.WriteLine("Sent amount: "+amount);
 		}
+		else if (msg == "reset"){
+			last_message = null;
+			getting_signature = false;
+			ByteWrite(GetLRC(HardResetMessage())); // force, no matter what
+			ConfirmedWrite(GetLRC(SetPaymentTypeMessage("2")));
+
+			if (VERBOSE)
+				System.Console.WriteLine("Sent reset");
+		}
+		else if (!getting_signature && msg.Length > 11 && msg.Substring(0,11) == "resettotal:"){
+			ConfirmedWrite(GetLRC(HardResetMessage()));
+			ConfirmedWrite(GetLRC(SetPaymentTypeMessage("2")));
+
+			if (VERBOSE)
+				System.Console.WriteLine("Sent reset");
+
+			string amount = msg.Substring(11);
+			for(int i=0; i<amount.Length; i++){
+				if ( (int)amount[i] < 0x30 || (int)amount[i] > 0x39 )
+					return; // not a number
+			}
+			ConfirmedWrite(GetLRC(AmountMessage(amount)));
+
+			if (VERBOSE)
+				System.Console.WriteLine("Sent amount: "+amount);
+		}
+		else if (!getting_signature && msg.Length > 9 && msg.Substring(0,9) == "approval:"){
+			string approval_code = msg.Substring(9);
+			ConfirmedWrite(GetLRC(AuthMessage(approval_code)));
+			getting_signature = true;	
+			last_message = null;
+			ConfirmedWrite(GetLRC(StatusRequestMessage()));
+		}
+		else if (!getting_signature && msg == "sig"){
+			ConfirmedWrite(GetLRC(SigRequestMessage()));
+			getting_signature = true;	
+			last_message = null;
+			ConfirmedWrite(GetLRC(StatusRequestMessage()));
+		}
+		else if (msg == "poke"){
+			UdpClient u = new UdpClient("127.0.0.1",9451);
+			Byte[] sendb = Encoding.ASCII.GetBytes("hi there");
+			u.Send(sendb, sendb.Length);
+		}
+
+		if (VERBOSE)
+			System.Console.WriteLine(msg);
 	}
 
 	/***********************************************
@@ -646,6 +650,7 @@ public class SPH_Ingenico_i6550 : SerialPortHandler {
 			ConfirmedWrite(GetLRC(GetVariableMessage("000712")));
 		}
 	}
+
 	private void ParseSigBlockMessage(int status, byte[] msg){
 		System.Text.ASCIIEncoding enc = new System.Text.ASCIIEncoding();
 		
@@ -662,12 +667,12 @@ public class SPH_Ingenico_i6550 : SerialPortHandler {
 			// signature capture complete
 			string sigfile="";
 			try{
-			sigfile = sig_object.BuildImage();
+			sigfile = sig_object.BuildImage(INGENICO_OUTPUT_DIR+"\\sig");
 			}catch(Exception e){
 				System.Console.WriteLine(e);
 			}
 			getting_signature = false;
-			PassBackSig(sigfile);
+			PushOutput(sigfile);
 			ConfirmedWrite(GetLRC(HardResetMessage()));
 		}
 		else {
@@ -678,6 +683,7 @@ public class SPH_Ingenico_i6550 : SerialPortHandler {
 			ConfirmedWrite(GetLRC(GetVariableMessage(var_num)));
 		}
 	}
+
 	private void ParseAuthMessage(byte[] msg){
 		System.Text.ASCIIEncoding enc = new System.Text.ASCIIEncoding();
 		
@@ -782,29 +788,24 @@ public class SPH_Ingenico_i6550 : SerialPortHandler {
 			stripe += "?";
 		}
 
-		string check = (string)parent.Invoke(parent.CheckDelegate,
-						new Object[]{ 1, "scan" });
-		if (check != null && check != "noScan"){
-			parent.Invoke(parent.SetDelegate,
-				      new Object[]{ 0, "reginput", stripe });
-			parent.Invoke(parent.SubmitDelegate,
-				      new Object[]{ 0, 0 });
-		}
+		PushOutput(stripe);
 
 		if (VERBOSE)
 			System.Console.WriteLine(stripe);
 		stripe = null;
 	}
 
-	private void PassBackSig(string filename){
-		string check = (string)parent.Invoke(parent.CheckDelegate,
-						new Object[]{ 1, "scan" });
-		if (check != null && check != "noScan"){
-			parent.Invoke(parent.SetDelegate,
-				      new Object[]{ 0, "reginput", filename });
-			parent.Invoke(parent.SubmitDelegate,
-				      new Object[]{ 0, 0 });
-		}
+	private void PushOutput(string s){
+		int ticks = Environment.TickCount;
+		while(File.Exists(INGENICO_OUTPUT_DIR+"\\"+ticks))
+			ticks++;
+
+		TextWriter sw = new StreamWriter(INGENICO_OUTPUT_DIR+"\\tmp\\"+ticks);
+		sw = TextWriter.Synchronized(sw);
+		sw.WriteLine(s);
+		sw.Close();
+		File.Move(INGENICO_OUTPUT_DIR+"\\tmp\\"+ticks,
+			  INGENICO_OUTPUT_DIR+"\\"+ticks);
 	}
 }
 

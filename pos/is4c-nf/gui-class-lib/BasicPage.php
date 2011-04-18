@@ -274,10 +274,7 @@ class BasicPage {
 			src="<?php echo $IS4C_PATH; ?>js/poll-scale.js">
 		</script>
 		<?php
-		if ($include_scans)
-			$this->add_onload_command("pollScale(true);\n");
-		else
-			$this->add_onload_command("pollScale(false);\n");
+		$this->add_onload_command("pollScale();\n");
 	}
 }
 

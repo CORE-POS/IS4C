@@ -37,7 +37,7 @@ class paycardSuccess extends BasicPage {
 	function preprocess(){
 		global $IS4C_LOCAL,$IS4C_PATH;
 		// check for input
-		if( isset($_REQUEST["reginput"])) {
+		if(isset($_REQUEST["reginput"])) {
 			$input = strtoupper(trim($_POST["reginput"]));
 			$mode = $IS4C_LOCAL->get("paycard_mode");
 			$type = $IS4C_LOCAL->get("paycard_type");
@@ -80,6 +80,18 @@ class paycardSuccess extends BasicPage {
 				header("Location: {$IS4C_PATH}gui-modules/paycardboxMsgVoid.php");
 				return False;
 			}
+		}
+		/* shouldn't happen unless session glitches
+		   but getting here implies the transaction
+		   succeeded */
+		$var = $IS4C_LOCAL->get("boxMsg");
+		if (empty($var)){
+			$IS4C_LOCAL->set("boxMsg",
+				"<b>Approved</b><font size=-1>
+				<p>&nbsp;
+				<p>[enter] to continue
+				<br>[void] to cancel and void
+				</font>");
 		}
 		return True;
 	}

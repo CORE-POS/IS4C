@@ -29,6 +29,7 @@ ini_set('display_errors','1');
 if (!function_exists("addcomment")) include_once($IS4C_PATH."lib/additem.php");
 if (!function_exists("array_to_json")) include_once($IS4C_PATH."lib/array_to_json.php");
 if (!function_exists("paycard_reset")) include_once($IS4C_PATH."lib/paycardLib.php");
+if (!function_exists("sigTermObject")) include_once($IS4C_PATH."lib/lib.php");
 if (!isset($IS4C_LOCAL)) include($IS4C_PATH."lib/LocalStorage/conf.php");
 
 // send the request
@@ -45,17 +46,23 @@ foreach($IS4C_LOCAL->get("RegisteredPaycardClasses") as $rpc){
 	}
 }
 
+$st = sigTermObject();
+
 $result = $myObj->doSend($IS4C_LOCAL->get("paycard_mode"));
 if ($result == PAYCARD_ERR_OK){
 	paycard_wipe_pan();
 	$json = $myObj->cleanup($json);
 	$IS4C_LOCAL->set("strRemembered","");
 	$IS4C_LOCAL->set("msgrepeat",0);
+	if (is_object($st))
+		$st->WriteToScale($IS4C_LOCAL->get("ccTermOut"));
 }
 else {
 	paycard_reset();
 	$IS4C_LOCAL->set("msgrepeat",0);
 	$json['main_frame'] = $IS4C_PATH.'gui-modules/boxMsg2.php';
+	if (is_object($st))
+		$st->WriteToScale($IS4C_LOCAL->get("ccTermOut"));
 }
 
 echo array_to_json($json);

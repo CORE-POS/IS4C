@@ -52,6 +52,9 @@ class ScaleDriverWrapper {
 	*/
 	function WriteToScale($str){}
 
+	/* clear all pending input */
+	function ReadReset(){}
+
 }
 
 ?>

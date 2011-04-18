@@ -127,6 +127,18 @@ function scaleObject(){
 	return $sd;
 }
 
+function sigTermObject(){
+	global $IS4C_LOCAL, $IS4C_PATH;
+	$termDriver = $IS4C_LOCAL->get("termDriver");
+	$st = 0;
+	if ($termDriver != ""){  
+		if (!class_exists($termDriver))
+			include($IS4C_PATH.'scale-drivers/php-wrappers/'.$termDriver.'.php');
+		$st = new $termDriver();
+	}
+	return $st;
+}
+
 function goodBeep() {
 	global $IS4C_LOCAL;
 	$IS4C_LOCAL->set("beep","goodBeep");

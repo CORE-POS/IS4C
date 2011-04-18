@@ -124,7 +124,6 @@ class NewMagellan extends ScaleDriverWrapper {
 			}
 			break;
 		}
-		closedir($dh);
 
 		$output = array();
 		if (!empty($scale_display)) $output['scale'] = $scale_display;
@@ -132,18 +131,6 @@ class NewMagellan extends ScaleDriverWrapper {
 
 		if (!empty($output)) echo array_to_json($output);
 		else echo "{}";
-	}
-
-	function ReadReset(){
-		global $IS4C_PATH;
-		$readdir = $IS4C_PATH.'scale-drivers/drivers/NewMagellan/ss-output';
-		$dh  = opendir($readdir);
-		while (false !== ($fn = readdir($dh))) {
-			if (is_dir($readdir."/".$fn)) continue;
-			unlink($readdir."/".$fn);
-		}
-		closedir($dh);
-		$this->WriteToScale('rePoll');
 	}
 
 	/* just wraps UDP send because commands 

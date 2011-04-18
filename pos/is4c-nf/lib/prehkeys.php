@@ -66,6 +66,7 @@ function memberID($member_number) {
 		$IS4C_LOCAL->get("requestType") == "member gift"))) {
            	$row = $db->fetch_array($result);
 	     	setMember($row["CardNo"], $row["personNum"],$row);
+		$ret['redraw_footer'] = True;
 		$ret['output'] = lastpage();
 	} 
 
@@ -162,9 +163,7 @@ function setMember($member, $personNumber, $row) {
 		$IS4C_LOCAL->set("staffSpecial",0);
 	}
 
-	if ($IS4C_LOCAL->get("unlock") != 1) {
-		ttl();
-	}
+	ttl();
 	$IS4C_LOCAL->set("unlock",0);
 
 	if ($IS4C_LOCAL->get("mirequested") == 1) {
@@ -778,10 +777,15 @@ function ttl() {
 		// check in case something else like an
 		// approval code is already being sent
 		// to the cc terminal
-		if ($IS4C_LOCAL->get("ccTermOut")=="idle"){
-			$IS4C_LOCAL->set("ccTermOut","total:".
-				str_replace(".","",sprintf("%.2f",$amtDue)));
-		}
+		//if ($IS4C_LOCAL->get("ccTermOut")=="idle"){
+		$IS4C_LOCAL->set("ccTermOut","total:".
+			str_replace(".","",sprintf("%.2f",$amtDue)));
+		/*
+		$st = sigTermObject();
+		if (is_object($st))
+			$st->WriteToScale($IS4C_LOCAL->get("ccTermOut"));
+		*/
+		//}
 
 		$peek = peekItem();
 		if (substr($peek,0,9) != "Subtotal "){

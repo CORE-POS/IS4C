@@ -39,7 +39,6 @@ if ($IS4C_LOCAL->get("End") == 1) {
 }
 
 $receiptType = isset($_REQUEST['receiptType'])?$_REQUEST['receiptType']:'';
-var_dump($_REQUEST);
 
 if (strlen($receiptType) > 0) {
 	
@@ -58,7 +57,6 @@ if (strlen($receiptType) > 0) {
 		printReceipt($receiptType,True);
 	}
 
-	var_dump($IS4C_LOCAL->get("End"));
 	if ($IS4C_LOCAL->get("End") >= 1 || $receiptType == "cancelled"
 		|| $receiptType == "suspended"){
 		$IS4C_LOCAL->set("End",0);
@@ -124,7 +122,7 @@ function moveTempData() {
 	$connection = tDataConnect();
 
 	$connection->query("update localtemptrans set trans_type = 'T' where trans_subtype = 'CP'");
-	$connection->query("update localtemptrans set trans_type = 'T', trans_subtype = 'IC' where upc in ('0000000008019', '0000000003031', '0000000001014')");
+	//$connection->query("update localtemptrans set trans_type = 'T', trans_subtype = 'IC' where upc in ('0000000008019', '0000000003031', '0000000001014')");
 	$connection->query("update localtemptrans set upc = 'DISCOUNT', description = upc, department = 0 where trans_status = 'S'");
 
 	$connection->query("insert into localtrans select * from localtemptrans");

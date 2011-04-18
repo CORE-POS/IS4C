@@ -87,6 +87,15 @@ confsave('defaultNonMem',"'".$IS4C_LOCAL->get('defaultNonMem')."'");
 <br />
 Normally a single account number is used for most if not all non-member
 transactions. Specify that account number here.
+<b>Visiting Member #</b>: 
+<?php
+if(isset($_REQUEST['VISMEM'])) $IS4C_LOCAL->set('visitingMem',$_REQUEST['VISMEM']);
+printf("<input type=text name=VISMEM value=\"%s\" />",$IS4C_LOCAL->get('visitingMem'));
+confsave('visitingMem',"'".$IS4C_LOCAL->get('visitingMem')."'");
+?>
+<br />
+This account provides members of other co-ops with member pricing
+but no other benefits. Leave blank to disable.
 <br />
 <b>Show non-member account in searches</b>: <select name=SHOW_NONMEM>
 <?php

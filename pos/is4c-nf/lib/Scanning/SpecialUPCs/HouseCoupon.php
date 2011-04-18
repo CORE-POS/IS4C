@@ -291,6 +291,23 @@ class HouseCoupon extends SpecialUPC {
 			$row = $transDB->fetch_row($valR);
 			$value = $row[1] * $value;
 			break;
+		case "AD": // all department discount
+			// apply discount across all items
+			// scales with quantity for by-weight items
+			$value = $infoW["discountValue"];
+			$valQ = "select sum(quantity) from localtemptrans
+				as l left join opdata.dbo.houseCouponItems
+				as h on l.department = h.upc
+				where h.coupID=".$coupID."
+				and h.type in ('BOTH','DISCOUNT')
+				and l.total > 0
+				order by unitPrice asc";
+			if ($IS4C_LOCAL->get("DBMS") == "mysql")
+				$valQ = str_replace("dbo.","",$valQ);
+			$valR = $transDB->query($valQ);
+			$row = $transDB->fetch_row($valR);
+			$value = $row[1] * $value;
+			break;
 		case "FI": // flat discount for items
 			// simply take off the requested amount
 			// scales with quantity for by-weight items

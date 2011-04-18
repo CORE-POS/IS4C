@@ -76,7 +76,8 @@ function printReceipt($arg1,$second=False) {
 		$member = "Member ".trim($IS4C_LOCAL->get("memberID"));
 		$your_discount = $IS4C_LOCAL->get("transDiscount") + $IS4C_LOCAL->get("memCouponTTL");
 
-		if ($IS4C_LOCAL->get("transDiscount") + $IS4C_LOCAL->get("memCouponTTL") + $IS4C_LOCAL->get("specials") > 0) {
+		if ($IS4C_LOCAL->get("transDiscount") + $IS4C_LOCAL->get("memCouponTTL") + $IS4C_LOCAL->get("specials") > 0 ) {
+			/*
 			$receipt .= "\n".centerString("------------------ YOUR SAVINGS -------------------")."\n";
 
 			if ($your_discount > 0) {
@@ -88,13 +89,16 @@ function printReceipt($arg1,$second=False) {
 			}
 
 			$receipt .= centerString("---------------------------------------------------")."\n";
+			*/
+			$receipt .= 'TODAY YOU SAVED = $'.number_format($your_discount + $IS4C_LOCAL->get("specials"),2)."\n";
 		}
+		$receipt .= localTTL();
 		$receipt .= "\n";
 	
 		if (trim($IS4C_LOCAL->get("memberID")) != $IS4C_LOCAL->get("defaultNonMem")) {
 			/***** jqh 09/29/05 change made to thank you line depending on session newReceipt *****/
 			if ($IS4C_LOCAL->get("newReceipt")==1){
-				$receipt .= biggerFont(centerBig("Thank You - ".$member."!!"))."\n\n";
+				$receipt .= biggerFont(centerBig("thank you - owner ".trim($IS4C_LOCAL->get("memberID"))))."\n\n";
 			}else{
 				$receipt .= centerString("Thank You - ".$member."!!!")."\n";
 			}
@@ -103,13 +107,21 @@ function printReceipt($arg1,$second=False) {
 		else {
 			/***** jqh 09/29/05 change made to thank you line depending on session newReceipt *****/
 			if ($IS4C_LOCAL->get("newReceipt")==1){
-				$receipt .= biggerFont(centerBig("Thank You!!!"))."\n\n";
+				$receipt .= biggerFont(centerBig("thank you"))."\n\n";
 			}else{
 				$receipt .= centerString("Thank You!!!")."\n";
 			}
 			/***** jqh end change *****/
 		}
 
+		for ($i = 1; $i <= $IS4C_LOCAL->get("receiptFooterCount"); $i++)
+			$receipt .= centerString($IS4C_LOCAL->get("receiptFooter$i"))."\n";
+
+		if ($IS4C_LOCAL->get("store")=="wfc"){
+			$refund_date = date("m/d/Y",mktime(0,0,0,date("n"),date("j")+30,date("Y")));
+			$receipt .= centerString("returns accepted with this receipt through ".$refund_date."\n");
+		}
+		/*
 		if ($IS4C_LOCAL->get("yousaved") > 0) {
 			$receipt .= centerString("You Saved $".number_format($IS4C_LOCAL->get("yousaved"), 2))."\n";
 		}
@@ -122,13 +134,10 @@ function printReceipt($arg1,$second=False) {
 			$receipt .= centerString("You could have saved $"
 				    .number_format($IS4C_LOCAL->get("couldhavesaved"), 2))."\n";
 		}
+		*/
 
-		$receipt .= localTTL();
+		//$receipt .= localTTL();
 
-		/***** jqh 09/29/05 change made to receipt footer depending on session newReceipt *****/
-		for ($i = 1; $i <= $IS4C_LOCAL->get("receiptFooterCount"); $i++)
-			$receipt .= centerString($IS4C_LOCAL->get("receiptFooter$i"))."\n";
-		/***** jqh end change *****/
 
 		/***** CvR add charge total to receipt bottom ****/
 		

@@ -8,12 +8,13 @@ function runParser(input_str,rel_prefix){
 		data: "input="+input_str,
 		dataType: "json",
 		cache: false,
-		error: function(xml_ro,st,err){
-			alert(st); alert(xml_ro.status);
-			alert(xml_ro);
-		},
+		error: parserError,
 		success: parserHandler
 	});
+}
+
+function parserError(xml_ro,st,err){
+
 }
 
 function parserHandler(data,status_str,xml_ro){

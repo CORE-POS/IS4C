@@ -36,6 +36,7 @@ if (!function_exists('scaleObject'))
 	include($IS4C_PATH.'lib/lib.php');
 
 $sd = scaleObject();
+$st = sigTermObject();
 
 /*
  * MAIN PARSING BEGINS
@@ -117,6 +118,8 @@ if ($entered != ""){
 			if (isset($result['udpmsg']) && $result['udpmsg'] !== False){
 				if (is_object($sd))
 					$sd->WriteToScale($result['udpmsg']);
+				if (is_object($st))
+					$st->WriteToScale($result['udpmsg']);
 			}
 		}
 		else {
@@ -132,7 +135,6 @@ if ($entered != ""){
 }
 
 $IS4C_LOCAL->set("msgrepeat",0);
-
 
 if (empty($json)) $json = "{}";
 else {

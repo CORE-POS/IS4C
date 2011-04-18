@@ -29,6 +29,7 @@ ini_set('display_errors','1');
 if (!class_exists("BasicPage")) include($IS4C_PATH."gui-class-lib/BasicPage.php");
 if (!function_exists("authenticate")) include($IS4C_PATH."lib/authenticate.php");
 if (!function_exists("testremote")) include($IS4C_PATH."lib/connect.php");
+if (!function_exists("scaleObject")) include($IS4C_PATH."lib/lib.php");
 if (!isset($IS4C_LOCAL)) include($IS4C_PATH."lib/LocalStorage/conf.php");
 
 class login2 extends BasicPage {
@@ -44,6 +45,9 @@ class login2 extends BasicPage {
 		if (isset($_REQUEST['reginput'])){
 			if (authenticate($_REQUEST['reginput'])){
 				testremote();
+				$sd = scaleObject();
+				if (is_object($sd))
+					$sd->ReadReset();
 				header("Location: {$IS4C_PATH}gui-modules/pos2.php");
 				return False;
 			}
@@ -97,7 +101,8 @@ class login2 extends BasicPage {
 				echo "<a href=\"\" onclick=\"window.top.close();\" ";
 			}
 			else {
-				echo "<a href='/bye.html' onclick=\"var cw=window.open('','Customer_Display'); cw.close()\" ";
+				//echo "<a href='/bye.html' onclick=\"var cw=window.open('','Customer_Display'); cw.close()\" ";
+				echo "<a href=\"/bye.html\" ";
 			}
 			echo "onmouseover=\"document.exit.src='{$IS4C_PATH}graphics/switchred2.gif';\" ";
 			echo "onmouseout=\"document.exit.src='{$IS4C_PATH}graphics/switchblue2.gif';\">";

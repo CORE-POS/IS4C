@@ -48,13 +48,13 @@ class RRR extends Parser {
 		}
 		$this->add($qty);
 
+		$ret['output'] = lastpage();
+
 		getsubtotals();
 		if ($IS4C_LOCAL->get("runningTotal") == 0){
 			$IS4C_LOCAL->set("End",2);
 			$ret['receipt'] = 'none';
 		}
-		else
-			$ret['output'] = lastpage();
 		return $ret;
 	}
 

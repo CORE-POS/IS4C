@@ -46,6 +46,7 @@ class SplitABGroupPM extends PriceMethod {
 		if ($quantity == 0) return false;
 
 		$pricing = $priceObj->priceInfo($row,$quantity);
+		$department = $row['department'];
 
 		$mixMatch = $row['mixmatchcode'];
 		/* group definition: number of items
@@ -70,6 +71,7 @@ class SplitABGroupPM extends PriceMethod {
 		$qualMM = abs($mixMatch);
 		$discMM = -1*abs($mixMatch);
 
+		$dbt = tDataConnect();
 		// lookup existing qualifiers (i.e., item As)
 		// by-weight items are rounded down here
 		$q1 = "SELECT floor(sum(ItemQtty)),max(department) 
@@ -139,9 +141,9 @@ class SplitABGroupPM extends PriceMethod {
 
 		// count up complete sets
 		$sets = 0;
-		while($discs > 0 && $quals >= ($volume-1) ){
+		while($discs > 0 && $quals >= ($groupQty-1) ){
 			$discs -= 1;
-			$quals -= ($volume -1);
+			$quals -= ($groupQty -1);
 			$sets++;
 		}
 
@@ -181,7 +183,7 @@ class SplitABGroupPM extends PriceMethod {
 				$row['mixmatchcode'],
 				$ttlMatches * $groupQty,
 				0,
-				(isset($row['cost']) ? $row['cost']*$new_sets*$groupQty : 0.00),
+				(isset($row['cost']) ? $row['cost']*$sets*$groupQty : 0.00),
 				(isset($row['numflag']) ? $row['numflag'] : 0),
 				(isset($row['charflag']) ? $row['charflag'] : '')
 			);

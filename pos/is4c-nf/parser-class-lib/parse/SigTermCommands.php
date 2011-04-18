@@ -21,11 +21,15 @@
 
 *********************************************************************************/
 
+$IS4C_PATH = isset($IS4C_PATH)?$IS4C_PATH:"";
+if (empty($IS4C_PATH)){ while(!file_exists($IS4C_PATH."is4c.css")) $IS4C_PATH .= "../"; }
+
 if (!class_exists("Parser")) include_once($_SESSION["INCLUDE_PATH"]."/parser-class-lib/Parser.php");
 if (!function_exists("rePoll")) include_once($_SESSION["INCLUDE_PATH"]."/lib/lib.php");
 if (!isset($IS4C_LOCAL)) include($_SESSION["INCLUDE_PATH"]."/lib/LocalStorage/conf.php");
 
 class SigTermCommands extends Parser {
+
 	function check($str){
 		global $IS4C_LOCAL;
 		if ($str == "TRESET"){
@@ -34,14 +38,18 @@ class SigTermCommands extends Parser {
 		}
 		if ($str == "TSIG"){
 			$IS4C_LOCAL->set("ccTermOut","sig");
-			changeBothPages("/gui-modules/input.php","/gui-modules/paycardSignature.php");
+			return True;
 		}
 		return False;
 	}
 
 	function parse($str){
-		//changeBothPages("/gui-modules/input.php","/gui-modules/pos2.php");	
-		return True;
+		global $IS4C_PATH,$IS4C_LOCAL;
+		$ret = $this->default_json();
+		$ret['udpmsg'] = $IS4C_LOCAL->get("ccTermOut");
+		if ($ret['udpmsg'] == "sig")
+			$ret['main_frame'] = $IS4C_PATH.'gui-modules/paycardSignature.php';
+		return $ret;
 	}
 
 	function doc(){

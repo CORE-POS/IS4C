@@ -47,8 +47,18 @@ class DiscountType {
 		return false;
 	}
 
+	// function alias to match existing code
+	function isMemberSale(){
+		return $this->isMemberOnly();
+	}
+
 	function isStaffOnly(){
 		return false;
+	}
+
+	// ditto
+	function isStaffSale(){
+		return $this->isStaffOnly();
 	}
 
 }

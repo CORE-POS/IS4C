@@ -2041,9 +2041,9 @@ function create_trans_dbs($db,$type){
 
 	select 	upc,
 		case when discounttype=1 then
-		concat(' > YOU SAVED $',convert(convert(sum(quantity*regprice-quantity*unitprice),decimal(10,2)),char(20)),'  <')
+		concat(' > you saved $',convert(convert(sum(quantity*regprice-quantity*unitprice),decimal(10,2)),char(20)),'  <')
 		when discounttype=2 then
-		concat(' > YOU SAVED $',convert(convert(sum(quantity*regprice-quantity*unitprice),decimal(10,2)),char(20)),'  Member Special <')
+		concat(' > you saved $',convert(convert(sum(quantity*regprice-quantity*unitprice),decimal(10,2)),char(20)),'  Member Special <')
 		end as description,
 		trans_type,'0' as trans_subtype,0 as itemQtty,discounttype,volume,
 		'D' as trans_status,
@@ -2100,9 +2100,9 @@ function create_trans_dbs($db,$type){
 
 		select 	upc,
 			case when discounttype=1 then
-			' > YOU SAVED $'+convert(varchar(20),convert(money,sum(quantity*regprice-quantity*unitprice)))+'  <'
+			' > you saved $'+convert(varchar(20),convert(money,sum(quantity*regprice-quantity*unitprice)))+'  <'
 			when discounttype=2 then
-			' > YOU SAVED $'+convert(varchar(20),convert(money,sum(quantity*regprice-quantity*unitprice)))+'  Member Special <'
+			' > you saved $'+convert(varchar(20),convert(money,sum(quantity*regprice-quantity*unitprice)))+'  Member Special <'
 			end as description,
 			trans_type,'0' as trans_subtype,0 as itemQtty,discounttype,volume,
 			'D' as trans_status,
@@ -2421,7 +2421,7 @@ function create_trans_dbs($db,$type){
 
 	union all
 
-	select replace(replace(r1.linetoprint,'** T',' = T'),' **',' = ') as linetoprint,
+	select replace(replace(replace(r1.linetoprint,'** T',' = t'),' **',' = '),'W','w') as linetoprint,
 	r1.sequence,r2.dept_name,1 as ordered,r2.upc
 	from receipt_reorder_g as r1 join receipt_reorder_g as r2 on r1.sequence+1=r2.sequence
 	where r1.linetoprint like '** T%' and r2.dept_name is not null and r1.linetoprint<>'** Tare Weight 0 **'
@@ -2479,7 +2479,9 @@ function create_trans_dbs($db,$type){
 	select linetoprint,sequence,dept_name,4 as ordered,upc
 	from receipt_reorder_g
 	where (trans_type='T' and department = 0)
-	or (department = 0 and trans_type NOT IN ('CM','I')) 
+	or (department = 0 and trans_type NOT IN ('CM','I')
+	and linetoprint NOT LIKE '** %'
+	and linetoprint NOT LIKE 'Subtotal%') 
 
 	union all
 
@@ -2503,7 +2505,7 @@ function create_trans_dbs($db,$type){
 
 		union all
 
-		select replace(replace(r1.linetoprint,'** T',' = T'),' **',' = ') as linetoprint,
+		select replace(replace(replace(r1.linetoprint,'** T',' = T'),' **',' = '),'W','w') as linetoprint,
 		r1.[sequence],r2.dept_name,1 as ordered,r2.upc
 		from receipt_reorder_g r1 join receipt_reorder_g r2 on r1.[sequence]+1=r2.[sequence]
 		where r1.linetoprint like '** T%' and r2.dept_name is not null and r1.linetoprint<>'** Tare Weight 0 **'
