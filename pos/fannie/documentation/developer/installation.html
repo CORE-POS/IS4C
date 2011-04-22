@@ -3,16 +3,59 @@
 		<title>Fannie Installation</title>
 	</head>
 	<body>
-	Installing Fannie is supposed to be easy.
+	NB: File paths are suggestions for clarify. Fannie can go anywhere on your server.
+	Documentation is for installing fannie locally. Replace localhost with a proper
+	URL if that's not the case.
+	<h2>Pre-requisites</h2>
+	Exact steps will vary by OS.  Skip ahead if you know your way around a LAMP/WAMP stack.
+	<ul>
+	<li> Install Apache Web Server. Version 2+ recommended</li>
+	<li> Install PHP. Version 5+ recommended</li>
+	<li> Install MySQL database server. Version 5+ <b>required</b></li>
+	</ul>
+	Start Apache and MySQL services. Windows-based installers probably did this for
+	you. On linux, try "/etc/init.d/mysqld start" or "/etc/init.d/httpd start". The
+	exact name of the init script may vary depending on your distribution.
+	<p />
+	Configure Apache and MySQL to start at boot-time. Again, Windows likely did
+	this for you. If not, right click my Computer and see Manage =&gt; Services.
+	On Red Hat-ish linux distros, "/sbin/chkconfig/[init script name] on" should
+	do the trick. On Debian/Ubuntu, seek documentation on service management...
+	<p />
+	Sanity check: make sure Apache+PHP is in business. Copy this into a file named
+	index.php:
+	<pre>
+	&lt;php?
+	phpinfo();
+	?&gt;
+	</pre>
+	Place your index.php in Apache's web root. This is <i>probably</i>:
+	<ul>
+	<li>Windows: C:\Program Files\Apache Group\Apache 2\htdocs\</li>
+	<li>Linux: /var/www/html/</li>
+	<li>Mac: /Library/WebServer/Documents/</li>
+	</ul>
+	Point a browser at http://localhost/. If you get a big mess of PHP installation
+	info, you're in business. If you get an Apache place holder page, either PHP isn't
+	enabled (fiddle with Apache configuration), or the index.php file isn't in the
+	right place (check DocumentRoot in Apache configuration). If you get a connection
+	refused error, Apache probably isn't running. For other problems, you're on your
+	own.
+	<h2>Installing Fannie</h2>
 	<ol>
-		<li>Drop it on a webserver</li>
-		<li>Navigate to the install.php script with a browser
+		<li>Place the fannie directory in your web root. See prerequisites
+		for OS-specific possibilities. If you made an index.php file for
+		testing purposes, the fannie directory should go in the same place.</li>
+		<li>Point a browser at http://localhost/fannie/install/. This page is
+		used for initial fannie installation <b>and</b> configuration options.</li>
 		<ul>
-			<li>The install script tries to write the configuration file, config.php. It'll tell you what the web server's uid is and whether or not the config file is writable. If it isn't, you need to fix that.</li>
-			<li>Once you plug in your database connection values, the install script creates all the tables and views it needs (in theory).
+			<li>The install script tries to write the configuration file, http://localhost/fannie/config.php. It'll tell you what the web server's uid is and whether or not the config file is writable. If it isn't, you need to fix that or none of the settings wills save.</li>
+			<li>Enter database connection information under the <i>Main Server</i> heading. In a basic setup, the server host is localhost, the type is MySQL, the database username is root and hopefully you know the password. You can name the operational and transaction databases whatever you like or just accept the defaults.
 			</li>
+			<li>Click Re-Run at the bottom of the page. This may take a little while as the databases get built. (Depending on your hardware and software configuration, you might even hit a PHP time/memory error. Try refreshing, maybe even a couple times.) If MySQL is running and the connection settings are correct, you should see
+			both Testing Connection lines under Main Server showing Succeeded.</li>
 		</ul>
-		<li>There is no step 3</li>
+		<li>Fannie is now installed and functional, albeit on a very basic level</li>
 	</ol>
 	</body>
 </html>

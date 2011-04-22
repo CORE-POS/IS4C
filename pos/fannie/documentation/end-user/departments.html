@@ -1,0 +1,72 @@
+<html>
+<head>
+	<title>Departments</title>
+</head>
+<body>
+IS4C/Fannie organizes items into departments. You'll need at least one, but
+putting all items in a single department isn't ideal. Separating items into
+departments allows better reporting options as well as data normalization
+(e.g., quickly see if all items in a grouping are taxed correctly).
+<p />
+How you organize your items likely depends on what you sell, how your
+staff is structured, and what reporting options you want. The purpose of 
+this document is to explain the department options that are available
+so you can design a scheme that fits your organization.
+<p />
+IS4C/Fannie provides three levels of granularity. <i>Super Departments</i>
+contain <i>Departments</i> which in turn contain <i>Sub Departments</i>.
+We're going to examine the middle tier first.
+<h2>Departments</h2>
+Historically, departments were the first product category provided. As a 
+result, they're key to both the front and back end. Basically every tool
+in IS4C/Fannie understands departments; the same is not necessarily true
+of other layers that were added later to meet various stores' needs. 
+<b>Departments are the only categorization that's mandatory</b>.
+<p />
+For the most part, departments are the only categorization the
+front end understands. Transaction data is tagged by department. 
+Open rings are assigned to a department. If you need to distinguish
+between two types of product in any and all circumstances, put them
+in separate departments.
+<p />
+Departments are created and edited by going to Item Maintenance =&gt;
+Manage Departments in fannie's left hand menu, then <i>Manage departments</i>.
+Options for a department include:
+<ul>
+<li><i>Name</i> that shows up in reporting and open rings</li>
+<li><i>Tax</i> status. Besides affecting open rings, department-level tax
+status can provide sane defaults for new products. For example, placing
+water and soda in separate departments might be better than a single
+beverages department if your state taxes those products differently.</li>
+<li><i>Foodstamp</i> like tax, except whether an item can be purchased
+with foodstamps.</li>
+<li><i>Discount</i> like tax, except whether an item is included in 
+transaction-level discounts (equity or gift card purchases are good examples
+of departments that should not receive any discounts).</li>
+<li><i>Min</i> and <i>Max</i> are soft limits for open rings. Amounts outside 
+the range will prompt the cashier to confirm.</li>
+<li><i>Margin</i> is used to calculate pricing (if item cost is available)</li>
+<li><i>Sales Code</i> is yet another way of grouping departments. Plug whatever
+you want here to roll out custom reporting.</li>
+</ul>
+<h2>Super Departments</h2>
+Super Departments provide a categorization tier above departments. They are optional.
+For example, you might want to group a number of departments as "Grocery" or "Produce".
+Whether you need super departments and how to arrange them depends a lot on
+your staff structure. They're used primarily in back end tools to help an employee
+narrow in on the group of departments they normally deal with.
+<p />
+Super Departments are created/managed by selecting Item Maintaince =&gt; Manage Departments,
+then <i>Manage Super Departments</i>. Select "Create" from the drop down to make a new one,
+otherwise choose the one you want to edit and add/remove departments using the arrow
+buttons.
+<h2>Sub Departments</h2>
+Sub Departments provide a categorization tier below departments. They are also optional.
+For example, you could have white/wheat/rye sub departments under a general "Bread" department.
+Whether you wnat or need these is again dependent on your organization.
+<p />
+Sub Departments are created/managed by selecting Item Maintaince =&gt; Manage Departments,
+then <i>Manage Sub Departments</i>. Choose a department from the drop down, then
+add/remove sub departments as needed.
+</body>
+</html>

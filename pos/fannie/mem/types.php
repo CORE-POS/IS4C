@@ -178,7 +178,7 @@ include($FANNIE_ROOT.'src/header.html');
 function newMemType(){
 	$.ajax({url:'types.php',
 		cache: false,
-		dataType: 'post',
+		type: 'post',
 		data: 'newMemForm=yes',
 		success: function(data){
 			$('#mainDisplay').html(data);
@@ -190,7 +190,7 @@ function finishMemType(){
 	var t_id = $('#newTypeID').val();
 	$.ajax({url:'types.php',
 		cache: false,
-		dataType: 'post',
+		type: 'post',
 		data: 'new_t_id='+t_id,
 		success: function(data){
 			$('#mainDisplay').html(data);
@@ -201,7 +201,7 @@ function finishMemType(){
 function cancelMemType(){
 	$.ajax({url:'types.php',
 		cache: false,
-		dataType: 'post',
+		type: 'post',
 		data: 'goHome=yes',
 		success: function(data){
 			$('#mainDisplay').html(data);
@@ -214,7 +214,7 @@ function saveMem(st,t_id){
 	if (st == true) cd_type='PC';
 	$.ajax({url:'types.php',
 		cache: false,
-		dataType: 'post',
+		type: 'post',
 		data: 't_id='+t_id+'&saveMem='+cd_type,
 		success: function(data){
 
@@ -227,7 +227,7 @@ function saveStaff(st,t_id){
 	if (st == true) staff=1;
 	$.ajax({url:'types.php',
 		cache: false,
-		dataType: 'post',
+		type: 'post',
 		data: 't_id='+t_id+'&saveStaff='+staff,
 		success: function(data){
 
@@ -240,7 +240,7 @@ function saveSSI(st,t_id){
 	if (st == true) ssi=1;
 	$.ajax({url:'types.php',
 		cache: false,
-		dataType: 'post',
+		type: 'post',
 		data: 't_id='+t_id+'&saveSSI='+ssi,
 		success: function(data){
 
@@ -251,7 +251,7 @@ function saveSSI(st,t_id){
 function saveDisc(disc,t_id){
 	$.ajax({url:'types.php',
 		cache: false,
-		dataType: 'post',
+		type: 'post',
 		data: 't_id='+t_id+'&saveDisc='+disc,
 		success: function(data){
 
@@ -262,7 +262,7 @@ function saveDisc(disc,t_id){
 function saveType(typedesc,t_id){
 	$.ajax({url:'types.php',
 		cache: false,
-		dataType: 'post',
+		type: 'post',
 		data: 't_id='+t_id+'&saveType='+typedesc,
 		success: function(data){
 
