@@ -171,7 +171,7 @@ case when convert(l.runningTotal - s.transDiscount,decimal(10,2)) * .05 > 2.5 th
 else convert (l.runningTotal - s.transDiscount,decimal(10,2)) * .05 end as madCoupon,
 s.fsEligible as fsEligible,\n";
 
-$ratesQ = "select description,rate from taxRates order by rate desc";
+$ratesQ = "select description,rate from taxrates order by rate desc";
 $ratesR = $db->query($ratesQ);
 $desc =  array();
 $rates = array();
