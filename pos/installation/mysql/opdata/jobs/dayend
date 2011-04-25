@@ -1,9 +1,0 @@
-#!/bin/sh
-
-/pos/is4c/mysql/opdata/jobs/reloadproducts
-/pos/is4c/mysql/opdata/jobs/reloadcustdata
-
-
-mysql < dayendreset
-
-

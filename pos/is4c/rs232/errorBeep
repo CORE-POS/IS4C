@@ -1,7 +1,0 @@
-#!/bin/sh
-
-echo -e "S334\r" > /dev/ttyS0
-sleep 0.1
-echo -e "S334\r" > /dev/ttyS0
-sleep 0.1
-echo -e "S334\r" > /dev/ttyS0

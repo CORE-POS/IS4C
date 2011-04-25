@@ -1,7 +1,0 @@
-use translog;
-DROP VIEW IF EXISTS `localtranstoday`;
-
-create view localtranstoday as
-select * from localtrans 
-where datediff(datetime, now()) = 0; 
-

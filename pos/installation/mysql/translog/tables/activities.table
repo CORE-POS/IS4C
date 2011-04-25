@@ -1,6 +1,0 @@
-use translog;
-DROP TABLE IF EXISTS `activities`;
-CREATE TABLE `activities` (
-  `Activity` tinyint(4) default NULL,
-  `Description` varchar(15) default NULL
-)

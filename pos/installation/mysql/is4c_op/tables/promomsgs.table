@@ -1,9 +1,0 @@
-use is4c_op;
-
-DROP TABLE IF EXISTS `promomsgs`;
-CREATE TABLE `promomsgs` (
-  `startDate` datetime default NULL,
-  `endDate` datetime default NULL,
-  `promoMsg` varchar(50) default NULL,
-  `sequence` tinyint(4) default NULL
-) ENGINE=MyISAM DEFAULT CHARSET=latin1;

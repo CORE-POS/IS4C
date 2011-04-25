@@ -1,4 +1,0 @@
-use is4c_op;
-
-INSERT INTO `tenders` VALUES (1,'CA','Cash','CA','Change',0,500,500),(2,'CK','Check','CKCB','Cash Back',0,500,0),(3,'CC','Credit Card','','',0,500,99999),(4,'DC','Debit Card','DCCB','Cash Back',0,100,0),(5,'FS','EBT','','',0,100,10),(6,'MC','Coupons','','',0,20,0.01),(7,'MI','Instore Charges','','',0,1000,5),(8,'TC','Gift Certificate','TCCB','Change',0.01,0,10),(9,'EC','EBT Cash','ECCB','ECT Cash Back',0,500,0),(10,'WT','WIC','CK','',0.01,900,0),(11,'IC','Instore Coupon','','',0.01,5,0);
-UNLOCK TABLES;

@@ -1,9 +1,0 @@
-use opdata;
-
-DROP TABLE IF EXISTS `couponcodes`;
-CREATE TABLE `couponcodes` (
-  `Code` varchar(4) default NULL,
-  `Qty` int(11) default NULL,
-  `Value` double default NULL,
-  KEY `Code` (`Code`)
-) ENGINE=MyISAM DEFAULT CHARSET=latin1;

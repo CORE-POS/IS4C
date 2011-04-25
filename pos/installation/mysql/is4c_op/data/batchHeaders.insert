@@ -1,3 +1,0 @@
-USE  `is4c_op`;
-INSERT INTO `is4c_op`.`batchHeaders` (`id`, `name`, `start`, `end`, `batchType_id`, `modified`, `whomodified`, `active`) VALUES
-(1, 'Sample Batch', '2010-08-01 00:00:00', '2010-08-31 00:00:00', 1, '2010-04-12 13:22:47', '10.10.10.57', 1);

@@ -1,4 +1,0 @@
-#!/bin/sh
-
-echo -e "S11\r" > /dev/ttyS0
-echo -e "S14\r" > /dev/ttyS0

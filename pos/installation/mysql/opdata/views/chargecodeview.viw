@@ -1,8 +1,0 @@
-use opdata;
-DROP VIEW IF EXISTS `chargecodeview`;
-
-create view chargecodeview as
-
-select c.staffID, c.chargecode, d.blueLine
-from chargecode c, custdata d
-where c.staffID = d.cardno

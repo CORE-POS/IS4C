@@ -1,9 +1,0 @@
-use is4c_op;
-
-DROP TABLE IF EXISTS `brands`;
-CREATE TABLE `brands` (
-	`id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
-	`name` VARCHAR(30) NOT NULL,
-	PRIMARY KEY (`id`),
-	INDEX (`name`)
-) ENGINE = MYISAM ;

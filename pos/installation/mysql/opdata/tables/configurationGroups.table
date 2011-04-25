@@ -1,8 +1,0 @@
-use opdata;
-
-DROP TABLE IF EXISTS `configurationGroups`;
-CREATE TABLE `configurationGroups` (
-  `group_id` smallint(6) NOT NULL AUTO_INCREMENT COMMENT 'Primary key',
-  `group_name` varchar(40) default NULL COMMENT 'The name of the configuration group.',
-  KEY `group_id` (`group_id`)
-) ENGINE=MyISAM DEFAULT CHARSET=latin1;

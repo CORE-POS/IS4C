@@ -1,4 +1,0 @@
-#!/bin/sh
-
-chmod 777 /dev/lp0
-chmod 777 /dev/ttyS0

@@ -1,9 +1,0 @@
-use is4c_op;
-
-DROP TABLE IF EXISTS `subdepts`;
-CREATE TABLE `subdepts` (
-  `subdept_no` smallint(4) NOT NULL,
-  `subdept_name` varchar(30) default NULL,
-  `dept_ID` tinyint(2) default NULL,
-  KEY `subdept_no` (`subdept_no`)
-) ENGINE=MyISAM DEFAULT CHARSET=latin1;

@@ -1,7 +1,0 @@
-use is4c_op;
-
-DROP TABLE IF EXISTS `upclike`;
-CREATE TABLE `upclike` (
-  `upc` varchar(13) default NULL,
-  `likeCode` int(4) default NULL
-) ENGINE=MyISAM DEFAULT CHARSET=latin1;

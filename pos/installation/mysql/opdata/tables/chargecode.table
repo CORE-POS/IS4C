@@ -1,7 +1,0 @@
-use opdata;
-
-DROP TABLE IF EXISTS `chargecode`;
-CREATE TABLE `chargecode` (
-  `staffID` varchar(4) default NULL,
-  `chargecode` varchar(6) default NULL
-) ENGINE=MyISAM DEFAULT CHARSET=latin1;

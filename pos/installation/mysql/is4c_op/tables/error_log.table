@@ -1,6 +1,0 @@
-use is4c_op;
-
-DROP TABLE IF EXISTS `error_log`;
-CREATE TABLE `error_log` (
-  `error_message` char(80) default NULL
-) ENGINE=MyISAM DEFAULT CHARSET=latin1;

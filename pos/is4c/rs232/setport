@@ -1,5 +1,0 @@
-#!/bin/sh
-
-stty 9600 oddp crtscts -F /dev/ttyS0
-
-

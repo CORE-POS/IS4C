@@ -1,8 +1,0 @@
-use is4c_op;
-
-DROP TABLE IF EXISTS `memtype`;
-CREATE TABLE `memtype` (
-  `memtype` tinyint(2) default NULL,
-  `memDesc` varchar(20) default NULL,
-  KEY `memtype` (`memtype`)
-) ENGINE=MyISAM DEFAULT CHARSET=latin1;
