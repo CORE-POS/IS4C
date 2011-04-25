@@ -1,0 +1,48 @@
+<html>
+<head>
+	<title>Scale Drivers</title>
+</head>
+<body>
+Interacting with a scanner scale is one of the more complicated parts
+of IS4C. Often this isn't even written in PHP. To make scale interactions
+consistent with various devices and OSes, each driver should provide
+a lightweight PHP wrapper class that extends ScaleDriverWrapper.
+<br />
+For the sake of orderliness, each driver implementation should have its
+own directory in scale-drivers/drivers/. PHP wrapper classes should be in
+scale-drivers/php-wrappers. The PHP file name and class name should correspond,
+but naming conventions for the actual driver implmentation are up to the
+individual developer.
+<br />
+ScaleDriverWrapper provides the following methods:
+<ul>
+<li><b>SavePortConfiguration(string port_name)</b> - This function is called
+when the user changes the driver or serial port on the installation/configuration
+page. Typically this function will re-write some small piece of the actual
+implementation. </li>
+<li><b>SaveDirectoryConfiguration(string absolute_path)</b> - This function is
+also called when the user changes the driver or serial port on the config page.
+The argument is the absolute path to the top of IS4C, including a trailing
+slash. Some driver implementations involve file i/o and need to be tweaked
+depending on IS4C's file system location.</li>
+<li><b>ReadFromScale()</b> - This function reads input from the device
+and prints a JSON object. The object may contain two fields: <i>scale</i>,
+which is an HTML string to display as the current weight or scale status,
+and <i>scans</i>, which is an array of UPCs. Output may include either or
+both fields. Using the scaledisplaymsg() function (lib/drawscreen.php) to 
+generate scale HTML is highly recommended as that function will also
+update necessary session variables.</li>
+<li><b>WriteToScale(string command)</b> - This function sends commands
+to the scale. Current commands are:
+<ul>
+<li>goodBeep</li>
+<li>errorBeep</li>
+<li>twoPairs</li>
+<li>rePoll</li>
+<li>wakeup</li>
+</ul>
+Commands are not case sensitive. A driver does not necessarily
+have to handle all known commands.</li>
+</ul>
+</body>
+</html>

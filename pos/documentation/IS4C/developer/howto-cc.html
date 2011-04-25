@@ -1,0 +1,105 @@
+<html>
+	<head>
+		<title>Howto Write A Paycard Module</title>
+	</head>
+	<body>
+	This is a guide to writing a paycard class that can be used with
+	IS4C. This is not a guide to PCI compliance. Asking whether is a
+	given module is PCI compliant is probably the wrong approach.
+	Modules shouldn't retain any credit card numbers, but I highly
+	encourage you to trace through and verify that to your own satisfaction.
+	Even that, however, is a small facet of PCI compliance.
+	<p />
+	OK, no more soapbox. Most payment gateways are actually pretty simple.
+	You take some data - card info, amount, transaction type, etc - format
+	it to the gateway's liking - as HTTP, XML, SOAP, etc - and send it
+	to an HTTPS URL. The gateway sends a response, again formatted somehow,
+	telling you what happened. Generally this response is approved,
+	declined, or an error message.
+	<p />
+	In a lot of cases, all that really varies from one gateway to another
+	is the formatting of what you send and the formatting of how it
+	replies. That leaves a lot of potential for code re-use and
+	interchangeable payment modules.
+	<h3>Primer: Credit Cards</h3>
+	Some collective knowledge on cards isn't a bad idea, although doubtless I don't know everything.
+	<p />
+	Your basic credit card transaction consists of two parts: an <i>auth</i> transaction requests
+	funds from the customer's bank, and a <i>settle</i> transaction that actually transfers
+	funds to your account. A <i>settle</i> must correspond to an existing <i>auth</i>. Most
+	gateways provide another type of transaction that combines the two - an auth that will
+	automatically settle - but terminology varies from one to another.
+	<p />
+	The other common credit card operations are <i>void</i> and <i>credit</i>. A <i>void</i>
+	transaction cancels an existing <i>auth</i> - sort of. If you <i>void</i> an <i>auth</i>,
+	it will never <i>settle</i>, but it may hang on the cardholder's account as a pending
+	charge. How long this pending charge sticks around is up to the issuing bank; as the
+	merchant, it's out of your control. A <i>credit</i> transaction is a refund.
+	<p />
+	Most gateways will accept either a card number, commonly called PAN, and expiration
+	date <b>or</b> track data. Track data is what's on the magnetic stripe. Sending track
+	data will generally result in significantly lower processing charges. Most cards have
+	two tracks, actually called <i>Track 1</i> and <i>Track 2</i>. You may or may not
+	get both depending on the card and how readable the stripe is. You can generally
+	send either or both. The exact format required may vary from processor to processor.
+	Note the parsing functions in lib/paycardLib.php remove start and end sentinel
+	characters; if your gateway wants them, the start and end for track 1 are
+	(normally) "%" and "?". The start and end for track 2 are ";" and "?".
+	<h3>Primer: Gift Cards</h3>
+	These probably vary more from provider to provider. When a customer uses their gift card
+	as tender, IS4C calls this an <i>auth</i> transaction. Gift cards also usually include
+	transaction types to check current balance, activate a new card, and add value
+	to an activated card. Refunds to a gift card map nicely to <i>add value</i>. If there
+	isn't a specific <i>void</i> transaction, you can fake one with auths and add values
+	to reverse earlier transactions.
+	<h3>BasicCCModule Class</h3>
+	This class has a few methods that are required by every implementation
+	and a few utility functions that may be helpful. First, required methods:
+	<ul>
+	<li><b>handlesType(string_type)</b> - paycard types are defined in lib/paycardLib.php.
+	A paycard module should return True for the types of transaction (credit, gift,
+	etc) that it handles and False for all other. When multiple modules are enabled,
+	this method dictates which is used for a given entry.</li>
+	<li><b>entered(bool_validate,array_json)</b> - this method is called during parsing, so
+	it should return a json array like a parser module. Normally one is passed in
+	that you can work with. Mostly what happens here is validating the given card
+	can be processed and setting up session variables. If your module uses the
+	existing efsnet* or valutec* tables, you can probably copy
+	this out of an existing credit or gift module (depending what you're writing)
+	without much modification.</li>
+	<li><b>paycard-void(int_transID)</b> - this method is similar to entered() but focused
+	on voids. Again the return is a json array.
+	There are a few extra checks to ensure a void-able transaction occurred,
+	it hasn't been voided already, etc. Again, you can likely lift this out of an
+	existing gift or credit module.</li>
+	<li><b>doSend(string_type)</b> - this method should send formatted data to
+	the gateway and process the results. WFC's modules all follow a similar structure
+	for doing this, but following the pattern isn't required. The return value should be
+	PAYCARD_ERR_OK, a defined constant, if the transaction succeeded. If the transaction
+	didn't succeed, the return value can be <i>anything</i> else. Failed doSend()s are
+	directed to gui-modules/boxMsg2.php. Set any error message to display in
+	$IS4C_LOCAL->boxMsg.</li>
+	<li><b>cleanup(array_json)</b> - this method is called when doSend succeeds. The return
+	type is a json array. Typical things to do here include printing receipts and
+	tendering.</li>
+	</ul>
+	I normally put a switch statement in doSend and have a separate send function for each sub-type of
+	transaction (auth, void, etc). Each send function builds an appropriate data "block"
+	and sends it using curlSend(). In turn, curlSend() gives the result to handlesResponse().
+	From there I use another switch on type with handleResponse functions for each type.
+	There's no particular reason doSend needs to be implemented this way, but if you're trying to
+	trace along that's the general plan.
+	<h3>What's Going to Go Wrong?</h3>
+	Implementation isn't so bad, but there are potential problems (if anyone knows solutions, clue
+	me in and I'll happily trim this list).
+	<ul>
+	<li>The big, glaring one: if your internet goes down, so does card processing. I have separate,
+	dedicated terminals around anyway for PIN transactions and those can do dial up transactions.
+	That may be the simplest, albeit not cheapest, solution.</li>
+	<li>Curl Errors: sometimes the send/receive process fails. If it's just a random hiccup,
+	most gateways provide a method for querying transaction status. I don't do this; normally
+	when I have connection problems, I have several in a row, so I batch-void everything
+	that had problems on a regular basis.</li>
+	</ul>
+	</body>
+</html>

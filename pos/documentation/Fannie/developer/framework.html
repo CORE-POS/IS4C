@@ -1,0 +1,21 @@
+<html>
+	<head>
+		<title>Framework</title>
+	</head>
+	<body>
+		A framework needs some rules. I hate rules, so let's keep this short. I think we can share code if everyone can live with just two requirements.
+		<h3>One configuration</h3>
+		Let's all agree on one configuration file. I say it should be config.php and it should live at the root of fannie. The upside is every script needs just one relative include; variables in the config then fill in the rest of what you need. This lets fannie sit in subdirectories and lets any given tool/report find the top of fannie, regardless of whose store it's running at.
+		<h3>Database Best Practices</h3>
+		This is the hard part. Ideally, we'd all keep the same schema. Realistically, I don't see this happening. With a little caution, I think we can at least have scripts that degrade gracefully when the underlying structure changes. Ideas:
+		<ul>
+		<li>Grab row values by column name instead of numeric index. As long as the column exists, you'll get the right value, regardless of actual layout</li>
+		<li>Use the SQLManager class where you can. I know most people are using MySQL, but I don't see any downside to keeping the system fairly open. If someone wants to run IS4C on top of Postgres, it's a much easier port down the line. There are also a couple bits of handy functionality:
+			<ul>
+			<li>SQLManager::smart_insert(table_name,value_array) - this method takes an array of column names &amp; values, polls the given table to see which of those columns are available, then forms an appropriate INSERT statement. Obviously this doesn't guarantee all your information will be written, but it increases the chances of basic success. If your script is trying to create a products record, it'll probably at least get a row into that table with upc, price, department, etc.</li>
+			<li>SQLManager::smart_update(table_name,value_array,where_clause) - this method takes an array of column names &amp; values, polls the given table to see which columns are available, then forms an appropriate UPDATE statement. Again, not all data is necessarily saved, but if your script is trying to change a price it'll likely manage to do so. This only works for single-table updates, but those are the norm in Fannie anyway.</li>
+			</ul>
+		</li>
+		<li>Put CREATE statements in install.php when you need new tables. This makes it easy for other developers (and regular users) to add the tables your script needs. Don't drop and recreate tables that already exist; deleting someone else's data is impolite.</li>
+	</body>
+</html>

@@ -1,0 +1,38 @@
+<html>
+	<head>
+		<title>Howto Write a GUI Object</title>
+	</head>
+	<body>
+	The classes in gui-class-lib provide a structured way to draw screen output.
+	All subclasses follow a nearly identical path; the variations on BasicPage
+	just automatically fill in some common variations.
+	<h3>How a page is generated</h3>
+	<ol>
+	<li>The preprocess() method is called. If the return is False, nothing is
+	drawn. Preprocess is typically used to deal with session and/or form data,
+	and to redirect to other pages when applicable. Setting headers to redirect
+	is really the only reason I can think of to return false.</li>
+	<li>Doctype, html and head tags, the default css, and jquery are all
+	output automatically, then head_content() is called. Use head_content()
+	to add more javascript or custom CSS.</li>
+	<li>A closing head tag and opening body tag are output, then body_content()
+	is called. Print the main contents here.</li>
+	<li>Closing tags are added and all javascript specified by calls to the
+	add_onload_commands() method are called. These stack; you can call 
+	add_onload_commands() multiple times to execute multiple actions on page-load.
+	</li>
+	</ol>
+	<h3>Variants</h3>
+	<ul>
+	<li><b>InputPage</b> - this variant includes an input box at the top of the screen, similar to
+	input.php in the framed version of IS4C, and includes the totals footer. The input form's action
+	is PHP_SELF. If you need a different action, use BasicPage and call the input_header() method
+	manually. It accepts an optional "action" argument.</li>
+	<li><b>NoInputPage</b> - this variant omits the input box but still has time and standalone
+	status, similar to noinput.php in the framed version of IS4C. It also includes the totals
+	footer.</li>
+	<li><b>PaycardProcessPage</b> - this variant includes some extra javascript functions that
+	are useful for submitting paycard requests via AJAX calls.</li>
+	</ul>
+	</body>
+</html>
