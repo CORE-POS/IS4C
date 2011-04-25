@@ -1,7 +1,7 @@
 <?php
 /*******************************************************************************
 
-    Copyright 2010 Whole Foods Co-op
+    Copyright 2011 Whole Foods Co-op
 
     This file is part of Fannie.
 
@@ -21,89 +21,67 @@
 
 *********************************************************************************/
 
-include('../../src/mysql_connect.php');
-include('../../src/select_dlog.php');
+include('../config.php');
 
-if (isset($_REQUEST['batchID'])){
-	$batchID = "(".$_REQUEST['batchID'].")";
-	if (is_array($_REQUEST['batchID'])){
-		$batchID = "(";
-		foreach($_REQUEST['batchID'] as $bid)
-			$batchID .= $bid.",";
-		$batchID = rtrim($batchID,",").")";	
-	}
+$page_title = "Fannie : Reports";
+$header = "Reports";
+include($FANNIE_ROOT.'src/header.html');
+?>
+<ul>
+<li>Movement Reports are a collection of reports relating to per-UPC sales stats
+	<ul>
+	<li><a href="DepartmentMovement/">Department Movement</a> lists sales
+		for a department or group of departments over a given date range.</li>
+	<li><a href="ManufacturerMovement/">Manufacturer Movement</a> lists sales
+		for products from a specific manufacturer over a given date range.
+		Manufacturer is given either by name or as a UPC prefix.</li>
+	<li><a href="ProductMovement/">Product Movement</a> lists sales for a 
+		specific UPC over a given date range.</li>
+	<li><a href="CorrelatedMovement/">Correlated Movement</a> shows what
+		items purchasers from a certain department or group of departments
+		also buy. Optionally, results can be filtered by department too.
+		This may be clearer with an example: among transactions that
+		include a sandwich, what do sales from the beverages department
+		look like?</li>
+	<li><a href="NonMovement/">Non-Movement</a> shows items in a department
+		or group of departments that have no sales over a given date range.
+		This is mostly for finding discontinued or mis-entered products.</li>
+	<li><a href="Trends/">Trends</a> shows daily sales totals for items
+		over a given date range. Items can be included by UPC, department,
+		or manufacturer.</li>
+	<li><a href="MonthOverMonth/">Monthly Movement</a> shows monthly sales totals
+		for items or departments.</li>
+	<li><a href="MovementPrice/">Movement by Price</a> lists item sales with
+		a separate line for each price point. If an item was sold at more
+		than one price in the given date range, sales from each	price
+		are listed separately.</li>
+	</ul>
+<li>Sales Reports are a higher level collection generally relating to store-wide sales
+	<ul>
+	<li><a href="GeneralSales/">General Sales Report</a> shows total sales per
+		department for a given date range in dollars as well as a percentage
+		of store-wide sales.</li>
+	<li><a href="SalesToday/">Today's Sales</a> shows current day totals by hour.</li>
+	<li><a href="HourlySales/">Store Hourly Sales</a> lists store-wide sales per hour
+		over a given date range.</li>
+	<li><a href="HourlySales/hourlySalesDept.php">Department Hourly Sales</a> lists
+		sales per hour over a given date range for a subset of departments.</li>
+	</ul>
+<li><a href="../item/productList.php">Product List</a> is a cross between a report and 
+	a tool. It lists current item prices and status flags for a department or set
+	of departments but also allows editing.</li>
+<li><a href="PriceHistory/">Price History</a> shows what prices an item as been
+	assigned over a given time period.</li>
+<li><a href="DepartmentSettings/">Department Settings</a> provides a quick overview
+	of current department settings for margin, tax, and foodstamp status.</li>
+<li><a href="OpenRings/">Open Rings</a> shows UPC-less sales for a department or
+	group of departments over a given date range.</li>
+<li><a href="BatchReport/">Batch Report</a> lists sales for items in a 
+	sales batch (or group of sales batches).</li>
+<li><a href="CustomerCount/">Customer Count</a> lists the number of customers
+	per day, separated by membership type.</li>
+</ul>
 
-	$batchInfoQ = "SELECT batchName,
-			year(startDate) as sy, month(startDate) as sm, day(startDate) as sd,
-			year(endDate) as ey, month(endDate) as em, day(endDate) as ed,
-			FROM batches where batchID IN $batchID";
-	$batchInfoR = $dbc->query($batchInfoQ);
-
-	if(isset($_GET['excel'])){
-	   header('Content-Type: application/ms-excel');
-	   header('Content-Disposition: attachment; filename="batchSales.xls"');
-	}
-	$bStart = isset($_REQUEST['start'])?$_REQUEST['start']:'';
-	$bEnd = isset($_REQUEST['end'])?$_REQUEST['end']:'';
-	$bName = "";
-	while($batchInfoW = $dbc->fetch_array($batchInfoR)){
-		$bName .= $batchInfoW['batchName']." ";
-		if (empty($bStart)) {
-			$bStart = sprintf("%d-%02d-%02d",$batchInfoW['sy'],
-				$batchInfoW['sm'],$batchInfoW['sd']);
-		}
-		if (empty($bEnd)){ 
-			$bEnd = sprintf("%d-%02d-%02d",$batchInfoW['ey'],
-				$batchInfoW['em'],$batchInfoW['ed']);
-		}
-	}
-
-	echo "<h2>$bName</h2>";
-	echo "<p><font color=black>From: </font> $bStart <font color=black>to: </font> $bEnd</p>";
-
-	$dlog = select_dlog($bnStart,$bnEnd);
-
-	if(!isset($_GET['excel'])){
-	   echo "<p class=excel><a href=batchReport.php?batchID=$batchID&excel=1&startDate=$bnStart&endDate=$bnEnd>Click here for Excel version</a></p>";
-	}
-
-	$salesBatchQ ="select d.upc, b.description, sum(d.total) as sales, 
-		 sum(case when d.trans_status in ('M','V') then d.itemQtty else d.quantity end) as quantity
-		 FROM $dlog as d left join batchMergeTable as b
-		 ON d.upc = b.upc
-		 WHERE d.tdate BETWEEN '$bStart' and '$bEnd' 
-		 AND b.batchID IN $batchID 
-		 AND d.trans_status <> 'M'
-		 GROUP BY d.upc, b.description
-		 ORDER BY d.upc";
-
-	$salesBatchR= $dbc->query($salesBatchQ);
-
-	$i = 0;
-
-	echo "<table border=0 cellpadding=1 cellspacing=0 ><th>UPC<th>Description<th>$ Sales<th>Quantity";
-	while($salesBatchW = $dbc->fetch_array($salesBatchR)){
-		$upc = $salesBatchW['upc'];
-		$desc = $salesBatchW['description'];
-		$sales = $salesBatchW['sales'];
-		$qty = $salesBatchW['quantity'];
-		$imod = $i%2;
-   
-		if($imod==1){
-			$rColor= '#ffffff';
-		}else{
-			$rColor= '#ffffcc';
-		}
-
-		echo "<tr bgcolor=$rColor><td width=120>$upc</td><td width=300>$desc</td><td width=50>$sales</td><td width=50 align=right>$qty</td></tr>";
-		$i++;
-	}
-	echo "</table>";
-}
-else {
-	include("../../src/header.html");
-
-	include("../../src/footer.html");
-}
-
+<?php
+include($FANNIE_ROOT.'src/footer.html');
 ?>

@@ -66,7 +66,7 @@ if (isset($_REQUEST['month1'])){
 		$result = $dbc->query($query);
 		while($row = $dbc->fetch_row($result)){
 			$mstr = $m1."/".$y1;
-			if (!isset($months[$mtr])) $months[$mstr] = True;
+			if (!isset($months[$mstr])) $months[$mstr] = True;
 			if (!isset($rows[$row[0]])){
 				$rows[$row[0]] = array();
 				$rows[$row[0]]['subtitle'] = $row[1];
