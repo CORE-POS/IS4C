@@ -1,7 +1,7 @@
 <?php
 /*******************************************************************************
 
-    Copyright 2010 Whole Foods Co-op, Duluth, MN
+    Copyright 2011 Whole Foods Co-op, Duluth, MN
 
     This file is part of Fannie.
 
@@ -20,19 +20,17 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
-include('../config.php');
+include('../../config.php');
 
 $page_title = "Fannie :: Member Tools";
-$header = "Member Tools";
+$header = "Import Member Information";
 
 include($FANNIE_ROOT.'src/header.html');
 ?>
 <ul>
-<li><a href="search.php">View/Edit Members</a></li>
-<li><a href="types.php">Manage Member Types</a></li>
-<li><a href="new.php">Create New Members</a></li>
-<li><a href="numbers/index.php">Print Member Stickers</a></li>
-<li><a href="import/">Import Data</a></li>
+<li><a href="nn.php">Names &amp; Numbers</a></li>
+<li><a href="contact.php">Contact Information</a></li>
+<li><a href="equity.php">Existing Equity</a></li>
 </ul>
 <?php
 include($FANNIE_ROOT.'src/footer.html');

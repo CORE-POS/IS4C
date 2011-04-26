@@ -1,0 +1,85 @@
+<html>
+<head>
+	<title>Members</title>
+</head>
+<body>
+This document will guide you through some basic member related tasks.
+If you're starting from scratch, these should go roughly in order.
+<h2>Membership Types</h2>
+Every transaction is associated with an account. Membership types
+let you group accounts for reporting purposes as well as confer 
+different benefits to different accounts.
+<p />
+Member Types are edited by choosing Adming =&gt; Member Management
+from Fannie's left hand menu, then <i>Manage Member Types</i>.
+Each membership type is given a description for reporting purposes.
+The <i>member</i> column denotes whether the account type is actually
+a member. Non-member account types are an option to provide sales
+to the general public. Accounts may also be assigned a percentage
+discount or marked as store staff.
+<p />
+Set up as many types as you need. Stores that only sell to members
+will require at least one member type. Stores that sell to the 
+general public will need at least one type marked member and
+on non-member type.
+<h2>Membership-related Settings</h2>
+Fannie's configuration page (if you've been following this guide, probably
+http://localhost/fannie/install/) exposes a couple of membership related 
+options you can adjust if needed.
+<p />
+The first is <i>Names per membership</i>, near the top of the page. If more
+than one person's name can be associated with a membership, increase this
+option accordingly.
+<p />
+The other option is <i>Equity Department(s)</i>, near the bottom of the page.
+If you want to track member equity via POS, you must define dedicated equity
+departments. At minimum there must be one, but you may define multiple 
+equity department if needed (e.g., to track voting &amp; non-voting shares
+separately). Separate multiple departments however you like - spaces, commas,
+whatever.
+<p />
+<h2>Importing Existing Memberships</h2>
+Many stores already have members and re-entering them all by hand
+is less than ideal. If you can export your data into some form of spreadsheet
+and save it as a CSV, mass importing is a quicker option. Select
+Admin =&gt; Member Management from Fannie's left hand menu, then
+<i>Import Data</i>.
+<p />
+First, bring in <i>Names &amp; Numbers</i>. Your spreadsheet should contain
+columns for member number, first name, and last name. If you've defined
+membership types, you may also include a type column as well. It doesn't
+matter what order the columns are in or if there are extra columns; you
+can specify where the relevant data is during the import. If Fannie can't
+upload data sheets, there will be a giant warning telling you which
+directory needs write permissions.
+<p />
+Next, bring in <i>Contact Information</i>. Your spreadsheet must have
+a column for member number, and may include any combination of the
+following: street address, second line of street address, city,
+state, zip code, phone number, alternate phone number, and email address.
+Same flexibility applies with regard to column order and extra
+columns.
+<p />
+<h2>Brief Detour: Equity Tracking</h2>
+If you plan to track equity through POS, there's an implementation detail to be
+aware of. Equity is stored as a list of equity-related transactions. At any given
+time, a member's equity balance is the sum of all their equity purchases. Storing
+equity this way provides a history that can be verified against transaction logs
+in the event of a dispute as well as greater flexibility in coping with varying
+equity requirements.
+<p />
+If you're opening a new store, you can just define a equity department (or more
+than one) and be done. If you already have members though, you need to bring
+their existing equity balances in as a starting point for POS.
+<p />
+<h2>Back to Importing Data</h2>
+The last import option is <i>existing equity</i>. At minimum, your spreadsheet
+should provide a member number and an equity amount. Optionally, you can
+include a transaction identifier referencing your previous system, a IS4C
+department number to distinguish a specific type of equity, or a date
+(YYYY-MM-DD) of purchase. You don't have to bring in existing balances as
+a lump sum; if it's useful for reporting purposes or enforcing member-equity
+requirements, you can specify multiple rows per member (collectively these should
+add up to the current balance).
+</body>
+</html>
