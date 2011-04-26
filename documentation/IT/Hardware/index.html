@@ -1,0 +1,131 @@
+<html>
+<head>
+	<title>Hardware Requirements</title>
+</head>
+<body>
+<h2>Lane Machine</h2>
+A typical IS4C lane set up includes a fairly standard PC
+and a few peripherals.
+<ul>
+<li>PC Requirements: pretty lightweight. It's probably not possible to buy a new
+PC that isn't capable of running IS4C with acceptable performance. RAM is usually
+the biggest bottleneck, but even then many stores are operating registers with
+less than the 2-4GB that's practically standard these days. Multi-core likely helps
+with the database+webserver workload, but again that's pretty common now. Disk space
+is dirt cheap; just get something in the 250GB range and never worry about it again.
+Gigabit ethernet
+would be a nice boost if you have infrastructure for it through out, but certainly
+isn't a requirement. Be aware that many POS peripherals rely on PC ports - 
+serial, parallel, and ps/2 - that are rapidly disappearing on newer PCs, especially
+if you get something in a small form factor. USB adapters are usually a workable solution.</li>
+<li>Scanner-Scale: nearly all existing code is targeted for and tested on
+DataLogic Magellan 8xxx series scales. Go with one of these.</li>
+<li>Receipt Printer: again, the easiest solution is to recommend what's already in
+use: Epson TM-H6000II. Other Epson POS printers may speak a similar enough
+dialect to be useable. If other stores are using different models, we should
+add them to this list.</li>
+<li>Cash Drawer: anything that's compatible with your printer (POS cash drawers
+typically connect to receipt printers).</li>
+<li>Keyboard: IS4C is best operated using a programmable keyboard. The QWERTY keys
+are used when looking up members or products by name; exactly how many programmable
+keys you need will vary by how many tenders you accept, departments/products you
+need shortcuts for, etc. Aim high. It's far better to have extra keys than to
+run out. A double-zero button on the number pad and an over-sized enter button
+are both handy features that are reasonably common on POS-keyboards.</li>
+<li>Mouse: strictly speaking, you don't need one, but it's nice for OS-related
+stuff like shutting down or restarting a machine (especially when a programmed
+keyboard lacks some normal characters &amp; navigation keys). A trackball is
+a nice solution for tighter spaces.</li> 
+<li>Monitor(s): it's far easier to operate with one. IS4C works fine in 1024x768
+or ever 800x600. Finding an incompatible display ought to be nearly impossible.
+For separate customer and cashier displays, just put in a simple VGA splitter
+to send the same output to both monitors.</li>
+</ul>
+<h2>Server Machine(s)</h2>
+You want some more serious horsepower here. Overall performance is tied to
+database performance, which again is bottlenecked principally by RAM. Disk space
+is a slightly greater concern here than on the lanes because transaction history
+grows continuously and you'll likely want local and external backups. For 
+reference, WFC runs ~40,000 transactions a day and has a transaction history
+dating back to late 2004 a full database back up is ~14GB. That's not perfectly
+indicative of growth rate; our transactions per day have increased over the
+same time period, but in a world where disks are measured in hundreds of GBs 
+(if not in TBs) running out of space isn't a big issue. Now, options:
+<ul>
+	<li>If you're going to use one server:
+	<ul>
+		<li>Get a multi-core, 64-bit processor. 64 bit software is mature enough
+			that the extra RAM ceiling is worth having, even if you start out
+			with 4GB or less.</li>
+		<li>Get a bunch of RAM. 4GB with slots open for expanion is probably
+			a good starting point. If you can afford more, more is always
+			better.</li>	
+		<li>Get a bunch of disk space. 250GB is probably sufficient for a long
+			time. Fast disks will help database performance. An SSD plus
+			a normal disk for backups might be the best option these days
+			(as opposed to SAS/SCSI RAID array), both in price/performance
+			ratio and ease of set up management. This would be strictly
+			a performance bonsus; IS4C will run fine on a 7200RPM SATA
+			disk. Two physicals disks total is a good idea to protect
+			local backups from a single drive failure.</li>
+		<li>Gigabit ethernet would be nice if your infrastructure supports it
+			throughout</li>
+		<li>Dual NICs could be handy if you want POS separated from the rest
+			of your network.</li>
+	</ul>
+	</li>
+	<li>If you're going to use two servers:
+	<ul>
+		<li>Get a heavier duty machine exactly as above. Put the database on this machine.</li>
+		<li>Get a lighter weight machine and put Apache+Fannie on that. This is a much lower
+			workload. Basically anything you can lay hands on will be sufficient.</li>
+		<li>Advantages of this set up include:
+			<ul>
+			<li>DB Server can dedicate all resources to the most intensive task.</li>
+			<li>Dual servers provide convenient backup locations for each other.
+				You still want off sites of course, but this protects you in
+				the event of a dead disk controller, exploding power supply.
+				or other "entire machine" failure</li>	
+			<li>If the Apache machine has dual NICs, the demarcation between POS
+				and non-POS networks is cleaner. Firewall rules that simply
+				don't allow any traffic across that point are simpler than
+				rules permitting certain ports.</li>
+			<li>If one machine fails, you can roll-over to a single server model
+				(quickly and easily if they have mutual backups) while waiting
+				for replacement parts or a replacement server. If the stronger
+				machine goes down, interim performance won't be ideal, but
+				it will at least be functional.</li>
+			</ul>
+		</li>
+	</ul>
+	</li>
+	<li>If you're going to use three servers:
+	<ul>
+		<li>Get a lightweight machine for Apache + Fannie.</li>
+		<li>Get a heavy duty machine for database work. Put historical transaction data
+			on this machine and use it to generate reports.</li>
+		<li>Get a machine somewhere inbetween these two to act as the
+			POS server.</li>
+	</ul>
+	Note: the three server set up is not officially supported yet. The main idea of this
+	set up is to alleviate pressure on the main POS server. The only database functionality
+	that's truly resource intensive is querying against a large segment of transaction data.
+	Shipping this data to a dedicated machine means complex or long term reporting - which
+	isn't really time-sensitive - won't bog down anything else.
+</ul>
+<h2>Label-printing scales (Deli/Bulk/Prepack/Etc)</h2>
+A few stores have had success sending data directly to Hobart Quantum TCP scales and there's
+some basic support for it in Fannie. If it's something you're interested in, going with
+that model is probably easiest; if you have a different model, try to find out if it supports
+Hobart's Data GateWeigh utility. This utility is Windows-based, so you may need a dedicated
+[ultra low resource] box just to run it (depending on other infrastructure, spare machines, etc).
+
+Of note: when Quantum TCPs go into powersave/sleep mode, they seem to forget about wireless 
+settings. Just waking it up isn't sufficient to fix this; it takes a full powercycling. Unless
+the scale is in fairly constant use through the day, this isn't the most useful feature.
+<h2>Shelf tags</h2>
+Shelf tag are generated in 8.5" x 11" layouts. There's no special printer requirement for these.
+We should probably make some layout for specific standards (Avery #s or something) rather than
+the random, no-name stack WFC uses.
+</body>
+</html>
