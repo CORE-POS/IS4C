@@ -1,0 +1,100 @@
+<html>
+<head>
+	<title>Sales Batches</title>
+</head>
+<body>
+Sale pricing is managed through <i>batches</i>. A batch is a
+group of items and sale prices that will have sale pricing
+for a pre-defined time period and conditions.
+<p />
+What sort of conditions? Out of the box, IS4C supports
+two types of sale price: sale prices that are applicable
+to all customers and sale prices that apply only to
+members. The third type of batch, Price Change, isn't
+really a sale but sort of fits the batch model. It will
+be discussed later.
+<p />
+<h2>Batch Types</h2>
+Before you can make sales batches, you need to define
+a batch type or two. Batch types define the exist to
+define conditions - that is, how the sale price is applied
+- and for organizational purposes. You can have multiple
+batch types with the same style of pricing - e.g.,
+Co+op Deals as well as Public Sales - to match batches
+with store signage or other internal logistics. To add,
+remove, or adjust batch types click Sales Batches
+on Fannie's left hand menu, then <i>Manage Batch types</i>.
+Note edits are saved automatically.
+<h2>Creating a Sales Batch</h2>
+With batch types in place, you can create a sales batch.
+Go to Sales Batches in Fannie's left hand menu,
+then select the menu option <i>Sales Batches</i>. At the
+top of this page are fields to create a new batch. The
+remainder of the page lists existing batches. You can view
+all batches, pending batches (haven't happened yet), current
+batches (on sale now), or historical batches (done &amp; over).
+<p />
+Batches can be tagged and filtered by owner. This feature is
+dependent on super departments. It's also optional, so feel
+free to ignore it.
+<p />
+To create a new batch, select a type at the top and plug 
+in a name for the batch, a start date, and an end date, then
+click the Add button. This simply adds a new batch to the list
+below.
+<p />
+To add item to your batch, click on the batch's name. To
+make any alterations to the batch type, name, or dates, click
+the edit/pencil icon. To delete a batch, click the red X icon.
+<p />
+Clicking a batch's name goes to the item level view. From here,
+you can add, remove, or re-price items in a batch. First, enter
+a UPC and click add (or press enter). If the item is found, its
+description and regular price are displayed with a field
+for sale price. Plug in a sale price and hit enter again. Tip:
+if you miskeyed the UPC, just leave sale price blank and hit enter
+to start over.
+<p />
+The list of items in the batch is editable in a similar manner to
+the list of batches. Click the red X to remove an item from the
+batch or the pencil icon to edit the sale price. When editing,
+sale prices are expressed as two numbers, e.g. 1 for $1.99. You can
+use this to set up quantity-specific sales like 3-for-$1; this option
+is omited from the default "add item" interface simply because
+it's not used very often.
+<p />
+The last option of note in the item view is <i>Force Batch</i>. Typically
+sale pricing is applied on the start date during normal nightly
+database tasks. If you need an item on sale <b>immediately</b> - for
+instance, if a new item was just added to a live sale - this option
+will re-price all items in the batch.
+<h2>Price Change Batches</h2>
+Price change batches are similar to sales batches - they consist
+of a group of items and alternate prices, but rather than applying
+a sale price to items, these batches alter the items' regular price.
+Add and print shelftag options are used mainly with price change
+batches. The general idea is to get new signage ready for a group
+of items, then push new prices with the <i>Force Batch</i> option.
+<h2>Intentionally Left Out (for now)</h2>
+A couple links and options aren't covered above. What/why:
+<ol>
+	<li>Likecodes are groups of items with different UPCs that
+		POS considers identical (think produce). The concept
+		itself isn't well documented yet, but in the batch
+		context they're just an alternative to entering
+		items by upc.</li>
+	<li>Add limit puts a cap on sale prices per transaction
+	i.e., one per customer. This was used for some one-time WFC
+	promotions and I'm not 100% sure it still works. Probably does,
+	but test it first.</li>
+	<li>The <i>Cut</i> option by items removes an item from a batch
+		and stores it on a background "clipboard". If there
+		are items on your clipboard, you can paste them into
+		another batch. Each user gets their own clipboard, but
+		authentication needs to be turned on for that to
+		work.</li>	
+</ol>
+<h2>See also:</h2>
+<a href="speciality-batches.html">Specialty Batch Tools</a>
+</body>
+</html>

@@ -1,0 +1,35 @@
+<html>
+<head>
+	<title>Speciality Batch Tools</title>
+</head>
+<body>
+<i>This is more of a state of tools report than proper end-user
+documentation at this point</i>.
+<h2>Co+op Deals</h2>
+This ought to work most places. The first option, 
+<i>Upload Price File</i>, just takes a co-op deals flyer saved as
+a CSV. The biggest question here is whether what my merch manager
+gives me is the same as what other stores receive. The other
+minor gotcha is lately they've been putting newlines in the
+header row which kicks out an ugly CSV (at least in OpenOffice).
+Deleting the multiline headers before export fixes that.
+<p />
+The other option, <i>Review &amp; create</i> lists Co+op Deals
+items that exist in POS and has fields for start/end dates to
+generate batches containing all the appropriate items. The main
+snag is this depends on super departments. Creating a single
+super department that encompasses all departments would be
+sufficient to make this work (producing one big Deals batch).
+<h2>Vendor Pricing</h2>
+This one takes a vendor pricing CSV and updates item costs. The
+biggest question is again how standardized are each vendor's files?
+Do my UNFI sheets have the same layout as everyone else's?
+<p />
+The other snag is just the degree of prep work. SRPs are calculated
+based on the desired margins for departments, so you need the whole
+department scheme figured out and have all the item &amp; margin
+assignments done. Super departments tie in again with managing
+vendor-specific price change batches, but the "All" options do
+provide an alternative.
+</body>
+</html>
