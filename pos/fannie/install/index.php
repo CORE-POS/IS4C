@@ -29,6 +29,8 @@ include('db.php');
 ?>
 Necessities
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<a href="mem.php">Members</a>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <a href="sample_data/extra_data.php">Sample Data</a>
 <form action=index.php method=post>
 <h1>Fannie install checks</h1>
@@ -75,14 +77,6 @@ else{
 }
 ?>
 </select>
-<br />
-Names per membership
-<?php
-if (!isset($FANNIE_NAMES_PER_MEM)) $FANNIE_NAMES_PER_MEM = 1;
-if (isset($_REQUEST['FANNIE_NAMES_PER_MEM'])) $FANNIE_NAMES_PER_MEM = $_REQUEST['FANNIE_NAMES_PER_MEM'];
-confset('FANNIE_NAMES_PER_MEM',$FANNIE_NAMES_PER_MEM);
-echo "<input type=text size=3 name=FANNIE_NAMES_PER_MEM value=\"$FANNIE_NAMES_PER_MEM\" />";
-?>
 <br />
 Default Shelf Tag Layout
 <select name=FANNIE_DEFAULT_PDF>
@@ -456,22 +450,6 @@ for($i=0; $i<$FANNIE_NUM_SCALES; $i++){
 }
 confset('FANNIE_SCALES',$conf);
 }
-?>
-<hr />
-<b>Equity/Store Charge</b>:
-<br />Equity Department(s): 
-<?php
-if (!isset($FANNIE_EQUITY_DEPARTMENTS)) $FANNIE_EQUITY_DEPARTMENTS = '';
-if (isset($_REQUEST['FANNIE_EQUITY_DEPARTMENTS'])) $FANNIE_EQUITY_DEPARTMENTS=$_REQUEST['FANNIE_EQUITY_DEPARTMENTS'];
-confset('FANNIE_EQUITY_DEPARTMENTS',"'$FANNIE_EQUITY_DEPARTMENTS'");
-printf("<input type=\"text\" name=\"FANNIE_EQUITY_DEPARTMENTS\" value=\"%s\" />",$FANNIE_EQUITY_DEPARTMENTS);
-?>
-<br />Store Charge Department(s): 
-<?php
-if (!isset($FANNIE_AR_DEPARTMENTS)) $FANNIE_AR_DEPARTMENTS = '';
-if (isset($_REQUEST['FANNIE_AR_DEPARTMENTS'])) $FANNIE_AR_DEPARTMENTS=$_REQUEST['FANNIE_AR_DEPARTMENTS'];
-confset('FANNIE_AR_DEPARTMENTS',"'$FANNIE_AR_DEPARTMENTS'");
-printf("<input type=\"text\" name=\"FANNIE_AR_DEPARTMENTS\" value=\"%s\" />",$FANNIE_AR_DEPARTMENTS);
 ?>
 <hr />
 <input type=submit value="Re-run" />

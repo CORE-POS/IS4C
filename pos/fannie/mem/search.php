@@ -22,7 +22,6 @@
 *********************************************************************************/
 include('../config.php');
 include('MemberModule.php');
-include('EnabledModules.php');
 include($FANNIE_ROOT.'src/mysql_connect.php');
 
 $page_title = "Fannie :: Find Member";
@@ -35,7 +34,7 @@ if (!$searchButton){
 
 	echo '<form action="search.php" method="post">';
 	echo '<p><b>Member Number</>: <input type="text" name="memNum" id="mn" size="5" /></p>';
-	foreach($memModules as $mm){
+	foreach($FANNIE_MEMBER_MODULES as $mm){
 		include('modules/'.$mm.'.php');
 		$instance = new $mm();
 		if ($instance->HasSearch()){
@@ -63,7 +62,7 @@ else {
 			exit;
 		}
 	}
-	foreach($memModules as $mm){
+	foreach($FANNIE_MEMBER_MODULES as $mm){
 		include('modules/'.$mm.'.php');
 		$instance = new $mm();
 		if ($instance->HasSearch()){
