@@ -24,20 +24,76 @@ general public will need at least one type marked member and
 on non-member type.
 <h2>Membership-related Settings</h2>
 Fannie's configuration page (if you've been following this guide, probably
-http://localhost/fannie/install/) exposes a couple of membership related 
-options you can adjust if needed.
+http://localhost/fannie/install/) has a few membership options. Click the
+<i>Members</i> link at the top of the configuration page.
 <p />
 The first is <i>Names per membership</i>, near the top of the page. If more
 than one person's name can be associated with a membership, increase this
 option accordingly.
 <p />
-The other option is <i>Equity Department(s)</i>, near the bottom of the page.
+The next option is <i>Equity Department(s)</i>, near the bottom of the page.
 If you want to track member equity via POS, you must define dedicated equity
 departments. At minimum there must be one, but you may define multiple 
 equity department if needed (e.g., to track voting &amp; non-voting shares
 separately). Separate multiple departments however you like - spaces, commas,
 whatever.
 <p />
+<i>Store Charge Department(s)</i> are used to provide limited credit accounts
+to members. WFC strongly advises against using this feature widely. The
+administrative overhead required for the small subset of customers that
+actually use it is nightmarish. As an accounts receivable system for
+businesses, it's an OK solution.
+<p />
+The last option is <i>Enabled Modules</i>. Membership can mean slightly (or very)
+different things to different people, so the idea here is to manage member
+information in small, independent pieces to maximize flexibility. For example,
+a store might use the default modules for member contact information and member
+type management, but use a customized module for equity. Or a store might
+disable irrelevant modules all together.
+<p />
+Enabling &amp; disabling modules primarily impacts what the member
+view/edit interface looks like. The <i>Adjust Module Display Order</i> link
+gives a little additional control of that interface layout. Disabling a module
+also doesn't remove any existing information or disable all related options.
+For instance, you could choose not to display equity information on the
+member editing interface but equity reports would still work.
+<p />
+Existing modules:
+<ul>
+	<li><i>AR</i> is for store charge accounts (heed warning above!).
+		It displays current balance and the account's limit. The
+		transfer/convert links are for fixing cashier mistakes related
+		to A/R.</li>
+	<li><i>ContactInfo</i> stores primary member name, mailing address,
+		email address, and two phone numbers. The Gets Mail checkbox
+		is currently used to avoid sending newsletters, coupons, and
+		other optional stuff to members who don't want it while
+		keeping their info in the system for mandatory stuff like
+		patronage rebates.</li>
+	<li><i>Equity</i> lists current balance with a links to the member's
+		equity history, a tool for transfering equity from one
+		member to another, and a tool for converting equity from
+		one form to another (only applicable if there are multiple
+		equity departments).</li>
+	<li><i>Household Members</i> manages additional names associated
+		with the membership.</li>
+	<li><i>MemDates</i> provides start date and end date fields for the
+		membership.</li>
+	<li><i>MemType</i> adjusts membership type. It also displays the
+		percentage discount associated with that type.</li>
+	<li><i>Notes</i> is a generic comment box for any miscellaneous
+		information. Older comments are kept for reference via
+		the History link.</li>
+	<li><i>Suspension</i> is for removing member benefits from an
+		account, either temporarily or permanently. The process
+		automatically saves &amp; restores a couple settings
+		besides membership type to streamline the process and
+		reduce mistakes. The Fannie implementation isn't quite
+		done yet.</li>
+</ul>
+Minimally, most stores will need ContactInfo or something replacing it
+to get member names into the system as well as MemType if there is more
+than one type of account.
 <h2>Importing Existing Memberships</h2>
 Many stores already have members and re-entering them all by hand
 is less than ideal. If you can export your data into some form of spreadsheet
