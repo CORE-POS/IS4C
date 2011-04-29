@@ -15,6 +15,6 @@ end polling, transarchive contains the last
 in that time frame, using this table can
 simplify or speed up queries.
 */
-$CREATE['op.transarchive'] = duplicate_structure($dbms,
+$CREATE['trans.transarchive'] = duplicate_structure($dbms,
 					'dtransactions','transarchive');
 ?>

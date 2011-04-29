@@ -15,7 +15,7 @@ entries into historic "special order" departments
 $CREATE['trans.SpecialOrderDeptMap'] = "
 	CREATE TABLE SpecialOrderDeptMap (
 		dept_ID int,
-		map_to int
+		map_to int,
 		PRIMARY KEY  (dept_ID)
 	)
 ";

@@ -19,7 +19,6 @@ their special order.
 
 This particular table is for finished orders
 */
-$CREATE['op.customReceipt'] = "
 $CREATE['trans.CompleteSpecialOrder'] = "
 	CREATE TABLE CompleteSpecialOrder (
 	  `order_id` int default NULL,

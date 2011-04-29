@@ -16,7 +16,7 @@ the purposes of reporting. Essentially a free
 department field you can use for whatever
 you want.
 */
-$CREATE['op.deptSalesCodes'] "
+$CREATE['op.deptSalesCodes'] = "
 	CREATE TABLE deptSalesCodes (
 		dept_ID int,
 		salesCode int

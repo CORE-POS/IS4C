@@ -1,6 +1,6 @@
 <?php
 /*
-Table: memdefaults
+Table: meminfo
 
 Columns:
 	card_no smallint

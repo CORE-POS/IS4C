@@ -729,7 +729,7 @@ function create_trans_dbs($con){
 
 	$invSalesView = "CREATE VIEW InvSales AS
 		select datetime as inv_date,upc,quantity,total as price
-		FROM transArchive WHERE ".$con->monthdiff($con->now(),'datetime')." <= 1
+		FROM transarchive WHERE ".$con->monthdiff($con->now(),'datetime')." <= 1
 		AND scale=0 AND trans_status NOT IN ('X','R') 
 		AND trans_type = 'I' AND trans_subtype <> '0'
 		AND register_no <> 99 AND emp_no <> 9999";
@@ -1147,7 +1147,7 @@ function create_archive_dbs($con) {
 			group by register_no, emp_no, trans_no, card_no, datetime";
 	}
 	if (!$con->table_exists("rp_receipt_header_$dstr",$FANNIE_ARCHIVE_DB)){
-		$con->query($rp2Q,$FANNIE_ARCHIVE_DBMS);
+		$con->query($rp2Q,$FANNIE_ARCHIVE_DB);
 	}
 }
 

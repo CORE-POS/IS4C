@@ -13,7 +13,7 @@ body {
 </style>
 </head>
 <body>
-<a href="../install.php">Necessities</a>
+<a href="../index.php">Necessities</a>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 Sample Data
 <br />
@@ -49,6 +49,11 @@ elseif(isset($_REQUEST['depts'])){
 	$db->query("TRUNCATE TABLE subdepts");
 	loaddata($db,'subdepts');
 }
+elseif (isset($_REQUEST['tenders'])){
+	echo "Loadintg tenders";
+	$db->query("TRUNCATE TABLE tenders");
+	loaddata($db,'tenders');
+}
 ?>
 </i></blockquote>
 Some sample data is available to get a test lane
@@ -76,6 +81,10 @@ You can also ring amounts directly to a department. Not needed,
 strictly speaking, for a basic lane (Ring up items, total, 
 accept tender, provide change).<br />
 <input type=submit name=depts value="Load sample departments" />
+<hr />
+<b>Tenders</b>:
+Load all the default tenders into the tenders table.<br />
+<input type=submit name=tenders value="Load default tenders" />
 </form>
 </body>
 </html>

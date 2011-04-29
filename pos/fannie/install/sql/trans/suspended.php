@@ -18,6 +18,6 @@ localtemptrans table is copied here. When a transaction
 is resumed, appropriate rows are sent from here
 to that register's localtemptrans table.
 */
-$CREATE['op.suspended'] = duplicate_structure($dbms,
+$CREATE['trans.suspended'] = duplicate_structure($dbms,
 					'dtransactions','suspended');
 ?>

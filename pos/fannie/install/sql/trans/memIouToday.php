@@ -31,7 +31,8 @@ $CREATE['trans.memIouToday'] = "
 ";
 
 if (empty($dlist)){
-	$CREATE['trans.memIouToday'] = "SELECT 1";
+	$CREATE['trans.memIouToday'] = "CREATE VIEW memIouToday AS 
+		SELECT 1 as card_no,0 as charges, 0 as payments";
 }
 
 ?>
