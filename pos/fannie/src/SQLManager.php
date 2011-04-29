@@ -80,6 +80,7 @@ class SQLManager {
 			$ok = $conn->Connect($server,$username,$password);
 			if ($ok){
 				$conn->Execute("CREATE DATABASE $database");
+				$conn->Execute("USE $database");
 				$this->connections[$database] = $conn;
 			}
 			else {
