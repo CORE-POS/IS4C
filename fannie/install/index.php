@@ -461,6 +461,9 @@ function create_op_dbs($con){
 	global $FANNIE_OP_DB, $FANNIE_SERVER_DBMS;
 
 	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+			'employees','op');
+
+	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 			'departments','op');
 
 	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
@@ -486,6 +489,9 @@ function create_op_dbs($con){
 
 	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 			'products','op');
+
+	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+			'productBackup','op');
 
 	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 			'likeCodes','op');
@@ -561,6 +567,9 @@ function create_op_dbs($con){
 
 	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 			'custdata','op');
+
+	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+			'custdataBackup','op');
 
 	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 			'meminfo','op');
@@ -814,7 +823,7 @@ function create_trans_dbs($con){
 			a.diff IS NULL THEN 0 ELSE a.diff END
 			AS CurrentStock
 		FROM InvDeliveryTotals AS d
-		INNER JOIN $opstr.VendorItems AS v 
+		INNER JOIN $opstr.vendorItems AS v 
 		ON d.upc = v.upc
 		LEFT JOIN InvSalesTotals AS s
 		ON d.upc = s.upc LEFT JOIN

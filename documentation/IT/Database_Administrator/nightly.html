@@ -1,0 +1,58 @@
+<html>
+<head>
+	<title>Maintenance Tasks</title>
+</head>
+<body>
+The primary focus of this document is periodic
+data manipulations required for IS4C. Tasks can
+be managed through Dayend Polling =&gt; Scheduled
+Tasks. This is just a light wrapper around
+cron; manipulating your own crontab directly
+is perfectly fine, too.
+<h2>The Transaction Shuffle</h2>
+The most important nightly task to understand is
+transaction archiving. 
+Sooner or later, depending on one's
+hardware budget, reporting queries against <i>all transaction
+data, ever</i> get unbearably slow, so transaction data
+is segmented into monthly tables. At any given time:
+<ul>
+	<li><b>dtransactions</b> on the transaction database (default: is4c_trans)
+		contains today's transactions.</li>
+	<li><b>transarchive</b> on the transaction database (default: is4c_trans)
+		contains the previous 90 days' transactions.</li>
+	<li><b>transArchiveYYYYMM</b> on the archive database (default: trans_archive)
+		contains transactions for the month MM in year YYYY.</li>
+</ul>
+At some point each night, dtransactions' data is copied into both transarchive
+and the correct monthly table, then dtransactions is truncated in preparation
+for the next day.
+The included task <b>nightly.dtrans.php</b> handles this rotation. Any other
+nightly tasks that examine or manipulate the current day's transactions need
+to know where that data is. 
+<h2>Batches</h2>
+There are two related tasks here. <b>nightly.batch.php</b> takes all items
+off sale (resetting them to normal_price), then applies any current sales
+batches based on batch start and end dates. Schedule this batch at or shortly
+after midnight to make start and end dates behave sensibly. 
+<p />
+The other task, <b>nightly.pcbatch.php</b> updates items' regular, non-sale
+price (i.e., normal_price) based on any price change batches with a matching
+start date. Price change batches are only applied once, so their end date
+is irrelevant. This task should also run after midnight.
+<p />
+It doesn't matter which batch task runs first. Scheduling them at the
+exact same time might be unsafe though; leave a couple minutes in between at 
+least.
+<h2>Equity Tracking</h2>
+Equity purchases are stored in the table <b>stockpurchases</b>. To keep this
+up to date, run the task <b>nightly.equity.php</b> nightly. This task should 
+be run after the dtransactions rotation and after midnight.
+<h2>Table Copies</h2>
+The included task <b>nightly.table.snapshot.php</b> copies the contents
+of table to backup tables. These are no substitute for a proper database
+backup, but allow for retreiving a small bit of old information from
+without loading up a backup of the entire database. Currently, it
+copies products and custdata to productBackup and custdataBackup.
+</body>
+</html>

@@ -1,0 +1,53 @@
+<html>
+<head>
+	<title>Normal Data Flow</title>
+</head>
+<body>
+During normal operation, information is copied from
+a lane's database to the server database and vice versa.
+Some of these operations happen automatically. Others
+occur manually by default but can be scheduled to
+occur periodically.
+<h2>Lane =&gt; Server Data</h2>
+The lane sends transaction data to the server. At the end of
+a transaction, the tables <b>dtransactions</b> and <b>alog</b>
+are inserted into corresponding tables on the server. Upon 
+successful transfer, the lane tables are truncated. 
+<p />
+If the
+server is unavailable (e.g., network is down), the lane just
+keeps adding to dtransactions and alog until the server
+becomes available again. If bringing the server back online
+after a long outage, keep in mind that large transfers will
+be required to get all accumulated transactions. In extreme
+cases, the lane might stop responding for a couple minutes
+until the transfer query completes.
+<h2>Server =&gt; Lane Data</h2>
+Each lane maintains its own copy of the following server 
+tables: <b>products</b>, <b>custdata</b>, <b>employees</b>,
+<b>tenders</b>, and <b>departments</b>. These tables contain
+items for sale, member accounts, cashier logins, payments 
+accepted, and item categories (respectively). By default, copying
+these tables from the server to the lanes is manual. The
+Synchronize menu in Fannie provides options. 
+<p />
+Employees, tenders, and deparmtents normally don't change often
+enough to merit any automated updates, but nightly tasks
+to reload products and custdata from the server may be a good idea.
+This should be scheduled after any other nightly tasks that
+manipulate products or custdata.
+<p />
+Note that Fannie tools for editing individual products and
+custdata accounts will push those changes to the lanes 
+immediately. Updating a record or two is more efficient than
+reloading an entire table.
+<h2>Lane =&gt; Server =&gt; Lane Data</h2>
+For the sake of completeness, suspending and resuming transactions
+involves moving data in both directions. When suspending a transaction,
+the contents of <b>localtemptrans</b> on the lane are copied to
+<b>suspended</b> on the server. When resuming a transaction, appropriate
+records from <b>suspended</b> on the server are copied to 
+<b>localtemptrans</b> on the lane. Both operations are always
+manual as the cashier has to input suspend or resume commands.
+</body>
+</html>
