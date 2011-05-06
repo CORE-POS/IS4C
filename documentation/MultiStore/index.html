@@ -1,0 +1,64 @@
+<html>
+<head>
+	<title>Multi Store</title>
+</head>
+<body>
+<blockquote><i>Very alpha draft; document may contain design philosophy
+	and pointless asides as well as practical, useful information.
+</i></blockquote>
+<h2>Architecture</h2>
+Each store has its own IS4C server. This server is responsible for
+managing that store's lanes. One server may be denoted the <i>Master</i>
+server. Functionally, all servers have the same software. The Master
+server just gets to wear a special hat.
+<p />
+The advantages of having what's basically a two tier system despite
+three obvious tiers (lane, store server, master organization-wide server)
+are flexibility in provisioning and robustness in the event of failure.
+<p />
+A two store operation could purchase two store servers, one for each store,
+and simply denote on of them master. Alternatively, they could purchase
+three store servers, one for each store and a third with no actual lanes of
+its own to act as master. In the two store, three server set up, the 
+organization can temporarily cope with any single hardware failure with simple configuration
+changes; there's no additional software to install.
+<h2>Configuration</h2>
+There's a <i>Stores</i> link at the top of Fannie's configuration. Each store server
+has its own copy of Fannie and own unique configuration file. Configuration for each
+server is as follows:
+<ol>
+<li>Enter the number of other stores and re-run to expose additional fields. Remember,
+a dedicated master server counts as a store, too.</li>
+<li>Enter databse connection information for the other stores. Technically, only the
+master store needs to know about all stores; the other stores just need to know how
+to reach the master.</li>
+<li>Mark which store server is the Master.</li>
+<li>Enter the name of the archive database for the Master server.</li>
+<li>Hit re-run again to save additional configuration.</li>
+</ol>
+<h2>Store =&gt; Master Transaction Info</h2>
+Since the Master Store is functionally identical to other stores, transaction data
+is archived in the same way. Snapshot tables exist for each month and the transarchive
+table holds the previous 90 days. If the master server is a dedicated machine with
+no lanes, dtransactions will simply be empty. See DBA docs for more info on transaction
+archive structure.
+<p />
+The provided cron script <b>nightly.hq.dtrans.php</b> will transfer transaction data from a store
+to the master database. First it creates a temporary table on the master server. This table
+is named based on the store's IP. If multiple stores are sending data to master simultaneously
+<i>and</i> different store servers have the same IP, this could go haywire. Give your store servers
+different IPs. The store then copies its dtransactions to the temporary table on master.
+<p />
+Next the script copies data from the temporary table into transarchive and the appropriate monthly
+snapshot. Finally it drops the temporary table. Overall, using a temporary table should be slightly
+faster since data only goes over the network once. The extra, unique table also simplifies concurrency
+issues if multiple stores are submitting transaction data to master simultaneously.
+<p />
+Misc: this job should happen <b>before</b> the store's local transaction archiving, or dtransactions
+will be empty. This also copies data one record at a time to accomodate WFC's mess of a
+store server on SQL Server + Windows and a master server on MySQL + OS X (and the Apache side of
+Fannie on CentOS for maximum platform inconsistency... er platform independence...). Piping
+mysqldump would probably be faster if all machines are MySQL, but current performance is
+still only 30-40 seconds, tops.
+</body>
+</html>

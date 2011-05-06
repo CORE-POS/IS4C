@@ -89,7 +89,7 @@ for($i=0; $i<$FANNIE_NUM_STORES; $i++){
 	if (!isset($FANNIE_STORES[$i]['host'])) $FANNIE_STORES[$i]['host'] = '127.0.0.1';
 	if (isset($_REQUEST["STORE_HOST_$i"])){ $FANNIE_STORES[$i]['host'] = $_REQUEST["STORE_HOST_$i"]; }
 	$conf .= "'host'=>'{$FANNIE_STORES[$i]['host']}',";
-	echo "Store ".($i+1)." Database Host: <input type=text name=LANE_STORE_$i value=\"{$FANNIE_STORES[$i]['host']}\" /><br />";
+	echo "Store ".($i+1)." Database Host: <input type=text name=STORE_HOST_$i value=\"{$FANNIE_STORES[$i]['host']}\" /><br />";
 	
 	if (!isset($FANNIE_STORES[$i]['type'])) $FANNIE_STORES[$i]['type'] = 'MYSQL';
 	if (isset($_REQUEST["STORE_TYPE_$i"])) $FANNIE_STORES[$i]['type'] = $_REQUEST["STORE_TYPE_$i"];
@@ -118,7 +118,7 @@ for($i=0; $i<$FANNIE_NUM_STORES; $i++){
 	$conf .= "'op'=>'{$FANNIE_STORES[$i]['op']}',";
 	echo "Store ".($i+1)." Operational DB: <input type=text name=STORE_OP_$i value=\"{$FANNIE_STORES[$i]['op']}\" /><br />";
 
-	if (!isset($FANNIE_STORES[$i]['trans'])) $FANNIE_STORES[$i]['trans'] = 'is4c_log';
+	if (!isset($FANNIE_STORES[$i]['trans'])) $FANNIE_STORES[$i]['trans'] = 'is4c_trans';
 	if (isset($_REQUEST["STORE_TRANS_$i"])) $FANNIE_STORES[$i]['trans'] = $_REQUEST["STORE_TRANS_$i"];
 	$conf .= "'trans'=>'{$FANNIE_STORES[$i]['trans']}'";
 	echo "Store ".($i+1)." Transaction DB: <input type=text name=STORE_TRANS_$i value=\"{$FANNIE_STORES[$i]['trans']}\" /><br />";
@@ -143,12 +143,12 @@ printf("<option value=\"me\" %s>This Store</option>",
 for($i = 0; $i < $FANNIE_NUM_STORES; $i++){
 	printf("<option value=%d %s>Store %d</option>",
 		$i,
-		($i==$FANNIE_MASTER_STORE?'selected':''),
+		($i==$FANNIE_MASTER_STORE && $FANNIE_MASTER_STORE != 'me'?'selected':''),
 		($i+1)
 	);
 }
 echo "</select>";
-if ($FANNIE_MASTER_STORE >= $FANNIE_NUM_STORES) $FANNIE_MASTER_STORE=0; // sanity
+if ($FANNIE_MASTER_STORE != "me" && $FANNIE_MASTER_STORE >= $FANNIE_NUM_STORES) $FANNIE_MASTER_STORE=0; // sanity
 confset('FANNIE_MASTER_STORE',"'$FANNIE_MASTER_STORE'");
 echo "<br />";
 echo "<b>Master Archive DB</b>: ";

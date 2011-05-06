@@ -66,12 +66,11 @@ $monthTable = "transArchive".$dstr;
 if (!$sql->table_exists($monthTable,$FANNIE_MASTER_ARCH_DB)){
 	if ($minfo['type'] == "MYSQL"){
 		$createQ = "CREATE TABLE $monthTable LIKE ".$minfo['trans'].".dtransactions";
-		echo $createQ."\n";
-		//$sql->query($createQ,$FANNIE_MASTER_ARCH_DB);
+		$sql->query($createQ,$FANNIE_MASTER_ARCH_DB);
 	}
 	else {
 		$createQ = "SELECT * INTO $monthTable FROM ".$minfo['trans'].".dbo.dtransactions WHERE 1=0";
-		//$sql->query($createQ,$FANNIE_MASTER_ARCH_DB);
+		$sql->query($createQ,$FANNIE_MASTER_ARCH_DB);
 	}
 }
 
@@ -80,28 +79,28 @@ if (!$sql->table_exists($monthTable,$FANNIE_MASTER_ARCH_DB)){
 $tempTable = "transTemp".str_replace(".","_",$FANNIE_SERVER);
 if ($minfo['type'] == "MYSQL"){
 	$tempQ = "CREATE TABLE $tempTable LIKE $monthTable";
-	echo $tempQ."\n";
-	//$sql->query($tempQ,$FANNIE_MASTER_ARCH_DB);
+	$sql->query($tempQ,$FANNIE_MASTER_ARCH_DB);
 }
 else {
 	$tempQ = "SELECT * INTO $tempTable FROM $monthTable WHERE 1=0";
-	//$sql->query($tempQ,$FANNIE_MASTER_ARCH_DB);
+	$sql->query($tempQ,$FANNIE_MASTER_ARCH_DB);
 }
 
-/* actual transfer
-$sql->transfer($FANNIE_TRANS,"SELECT * FROM dtransactions",
+/* actual transfer */
+$sql->transfer($FANNIE_TRANS_DB,"SELECT * FROM dtransactions",
 		$FANNIE_MASTER_ARCH_DB,"INSERT INTO $tempTable");
-*/
 
+// copy data from temp table to transarchive and month snapshot
 $insQ1 = "INSERT INTO $monthTable SELECT * FROM $tempTable";
 $insQ2 = "INSERT INTO ".$minfo['trans'].".dbo.transarchive SELECT * FROM $tempTable";
 if ($minfo['type'] == "MYSQL"){
 	$insQ2 = str_replace("dbo.","",$insQ2);
 }
+$sql->query($insQ1,$FANNIE_MASTER_ARCH_DB);
+$sql->query($insQ2,$FANNIE_MASTER_ARCH_DB);
+
+// get rid of the temp table
 $cleanQ = "DROP TABLE $tempTable";
-//$sql->query($insQ1,$FANNIE_MASTER_ARCH_DB);
-//$sql->query($insQ2,$FANNIE_MASTER_ARCH_DB);
-//$sql->query($cleanQ,$FANNIE_MASTER_ARCH_DB);
-echo "$insQ1\n$insQ2\n$cleanQ\n";
+$sql->query($cleanQ,$FANNIE_MASTER_ARCH_DB);
 
 ?>
