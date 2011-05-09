@@ -77,45 +77,39 @@ if ($FANNIE_SERVER_DBMS == "MYSQL"){
 		SET p.mixmatchcode=convert(u.likeCode+500,char)");
 
 	$sql->query("UPDATE products AS p
-		LEFT JOIN batchList AS l ON p.upc=l.upc
-		LEFT JOIN batches AS b ON l.batchID=b.batchID
+		LEFT JOIN batchPriority AS b ON p.upc=b.upc
 		SET
-		p.special_price = l.salePrice,
-		p.specialpricemethod = l.pricemethod,
-		p.specialgroupprice=CASE WHEN l.salePrice < 0 THEN -1*l.salePrice ELSE l.salePrice END,
-		p.specialquantity = l.quantity,
+		p.special_price = b.salePrice,
+		p.specialpricemethod = b.pricemethod,
+		p.specialgroupprice=CASE WHEN b.salePrice < 0 THEN -1*b.salePrice ELSE b.salePrice END,
+		p.specialquantity = b.quantity,
 		p.start_date = b.startDate,
 		p.end_date = b.endDate,
 		p.discounttype = b.discountType,
 		p.mixmatchcode = CASE 
-			WHEN l.pricemethod IN (3,4) AND l.salePrice >= 0 THEN convert(l.batchID,char)
-			WHEN l.pricemethod IN (3,4) AND l.salePrice < 0 THEN convert(-1*l.batchID,char)
+			WHEN b.pricemethod IN (3,4) AND b.salePrice >= 0 THEN convert(b.batchID,char)
+			WHEN l.pricemethod IN (3,4) AND b.salePrice < 0 THEN convert(-1*b.batchID,char)
 			ELSE p.mixmatchcode 
 		END	
-		WHERE l.upc NOT LIKE 'LC%'
-		AND b.discountType <> 0
-		AND ".$sql->datediff($sql->now,'b.startDate')." >= 0
-		AND ".$sql->datediff($sql->now,'b.endDate')." <= 0");
+		WHERE b.upc NOT LIKE 'LC%'
+		AND b.discountType <> 0");
 
 	$sql->query("UPDATE products AS p LEFT JOIN
-		likeCodeView AS v ON v.upc=p.upc LEFT JOIN
-		batchList AS l ON l.upc=concat('LC',convert(v.likeCode,char))
-		LEFT JOIN batches AS b ON b.batchID = l.batchID
-		SET p.special_price = l.salePrice,
-		p.end_date = b.enddate,p.start_date=b.startdate,
-		p.specialgroupprice=CASE WHEN l.salePrice < 0 THEN -1*l.salePrice ELSE l.salePrice END,
-		p.specialquantity=l.quantity,
-		p.specialpricemethod=l.pricemethod,
-		p.discounttype = b.discounttype,
+		likeCodeView AS v ON v.upc=p.upc 
+		batchPriority AS b ON b.upc=concat('LC',convert(v.likeCode,char))
+		SET p.special_price = b.salePrice,
+		p.end_date = b.endDate,p.start_date=b.startDate,
+		p.specialgroupprice=CASE WHEN l.salePrice < 0 THEN -1*b.salePrice ELSE b.salePrice END,
+		p.specialquantity=b.quantity,
+		p.specialpricemethod=b.pricemethod,
+		p.discounttype = b.discountType,
 		p.mixmatchcode = CASE 
-			WHEN l.pricemethod IN (3,4) AND l.salePrice >= 0 THEN convert(l.batchID,char)
-			WHEN l.pricemethod IN (3,4) AND l.salePrice < 0 THEN convert(-1*l.batchID,char)
+			WHEN b.pricemethod IN (3,4) AND b.salePrice >= 0 THEN convert(b.batchID,char)
+			WHEN b.pricemethod IN (3,4) AND b.salePrice < 0 THEN convert(-1*b.batchID,char)
 			ELSE p.mixmatchcode 
 		END	
-		WHERE l.upc LIKE 'LC%'
-		AND b.discountType <> 0
-		AND ".$sql->datediff($sql->now,'b.startDate')." >= 0
-		AND ".$sql->datediff($sql->now,'b.endDate')." <= 0");
+		WHERE b.upc LIKE 'LC%'
+		AND b.discountType <> 0");
 }
 else {
 	$sql->query("UPDATE products
@@ -126,45 +120,39 @@ else {
 		ON p.upc=u.upc");
 	$sql->query("UPDATE products 
 		SET
-		special_price = l.salePrice,
-		specialpricemethod = l.pricemethod,
-		specialgroupprice=CASE WHEN l.salePrice < 0 THEN -1*l.salePrice ELSE l.salePrice END,
-		specialquantity = l.quantity,
+		special_price = b.salePrice,
+		specialpricemethod = b.pricemethod,
+		specialgroupprice=CASE WHEN b.salePrice < 0 THEN -1*b.salePrice ELSE b.salePrice END,
+		specialquantity = b.quantity,
 		start_date = b.startDate,
 		end_date = b.endDate,
 		discounttype = b.discountType,
 		mixmatchcode = CASE 
-			WHEN l.pricemethod IN (3,4) AND l.salePrice >= 0 THEN convert(varchar,l.batchID)
-			WHEN l.pricemethod IN (3,4) AND l.salePrice < 0 THEN convert(varchar,-1*l.batchID)
+			WHEN b.pricemethod IN (3,4) AND b.salePrice >= 0 THEN convert(varchar,b.batchID)
+			WHEN b.pricemethod IN (3,4) AND b.salePrice < 0 THEN convert(varchar,-1*b.batchID)
 			ELSE p.mixmatchcode 
 		END
 		FROM products AS p
-		LEFT JOIN batchList AS l ON p.upc=l.upc
-		LEFT JOIN batches AS b ON l.batchID=b.batchID
-		WHERE l.upc NOT LIKE 'LC%'
-		AND b.discountType <> 0
-		AND ".$sql->datediff($sql->now,'b.startDate')." >= 0
-		AND ".$sql->datediff($sql->now,'b.endDate')." <= 0");
+		LEFT JOIN batchPriority AS b ON p.upc=b.upc
+		WHERE b.upc NOT LIKE 'LC%'
+		AND b.discountType <> 0");
 
-	$sql->query("UPDATE products SET special_price = l.salePrice,
+	$sql->query("UPDATE products SET special_price = b.salePrice,
 		end_date = b.enddate,start_date=b.startdate,
-		specialgroupprice=CASE WHEN l.salePrice < 0 THEN -1*l.salePrice ELSE l.salePrice END,
-		specialquantity=l.quantity,
-		specialpricemethod=l.pricemethod,
+		specialgroupprice=CASE WHEN b.salePrice < 0 THEN -1*b.salePrice ELSE b.salePrice END,
+		specialquantity=b.quantity,
+		specialpricemethod=b.pricemethod,
 		discounttype = b.discounttype,
 		mixmatchcode = CASE 
-			WHEN l.pricemethod IN (3,4) AND l.salePrice >= 0 THEN convert(varchar,l.batchID)
-			WHEN l.pricemethod IN (3,4) AND l.salePrice < 0 THEN convert(varchar,-1*l.batchID)
+			WHEN b.pricemethod IN (3,4) AND b.salePrice >= 0 THEN convert(varchar,b.batchID)
+			WHEN b.pricemethod IN (3,4) AND b.salePrice < 0 THEN convert(varchar,-1*b.batchID)
 			ELSE p.mixmatchcode 
 		END
 		FROM products AS p LEFT JOIN
 		likeCodeView AS v ON v.upc=p.upc LEFT JOIN
-		batchList AS l ON l.upc='LC'+convert(varchar,v.likecode)
-		LEFT JOIN batches AS b ON b.batchID = l.batchID
-		WHERE l.upc LIKE 'LC%'
-		AND b.discountType <> 0
-		AND ".$sql->datediff($sql->now,'b.startDate')." >= 0
-		AND ".$sql->datediff($sql->now,'b.endDate')." <= 0");
+		batchPriority AS b ON b.upc='LC'+convert(varchar,v.likecode)
+		WHERE b.upc LIKE 'LC%'
+		AND b.discountType <> 0");
 }
 */
 

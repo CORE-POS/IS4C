@@ -126,8 +126,8 @@ else if (isset($_REQUEST['makeTheBatch'])){
 	$dtQ = "SELECT discType FROM batchType WHERE batchTypeID=$btype";
 	$dt = array_pop($dbc->fetch_row($dbc->query($dtQ)));
 
-	$insQ = sprintf("INSERT INTO batches (startDate,endDate,batchName,batchType,discounttype)
-			VALUES (%s,%s,%s,%d,%d)",$date1,$date2,$bname,$btype,$dt);
+	$insQ = sprintf("INSERT INTO batches (startDate,endDate,batchName,batchType,discounttype,priority)
+			VALUES (%s,%s,%s,%d,%d,0)",$date1,$date2,$bname,$btype,$dt);
 	$insR = $dbc->query($insQ);
 
 	$idQ = sprintf("SELECT max(batchID) FROM batches WHERE batchName=%s",$bname);

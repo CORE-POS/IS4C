@@ -40,7 +40,7 @@ $typesR = $dbc->query($typesQ);
 while ($typesW = $dbc->fetch_array($typesR))
 	$batchtypes[$typesW[0]] = $typesW[1];
 	
-$ownersQ = "SELECT super_name FROM superDeptNames GROUP BY super_name ORDER BY super_name";
+$ownersQ = "SELECT super_name FROM MasterSuperDepts GROUP BY super_name ORDER BY super_name";
 $ownersR = $dbc->query($ownersQ);
 $owners = array('');
 while($ownersW = $dbc->fetch_row($ownersR))
@@ -66,13 +66,16 @@ if (isset($_GET['action'])){
 		$startdate = $_GET['startdate']." 00:00:00.00";
 		$enddate = $_GET['enddate']." 00:00:00.00";
 		$owner = $_GET['owner'];
+		$priority = isset($_REQUEST['priority']) ? $_REQUEST['priority'] : 0;
 		
 		$infoQ = "select discType from batchType where batchTypeID=$type";
 		$infoR = $dbc->query($infoQ);
 		$discounttype = array_pop($dbc->fetch_array($infoR));
 		
-		$insQ = "insert into batches (startDate,endDate,batchName,batchType,discounttype)
-			values ('$startdate','$enddate','$name',$type,$discounttype)";
+		$insQ = sprintf("INSERT INTO batches (startDate,endDate,batchName,batchType,
+				discounttype,priority) VALUES (%s,%s,%s,%d,%d,%d)",
+				$dbc->escape($startdate),$dbc->escape($enddate),
+				$dbc->escape($name),$type,$discounttype,$priority);
 		$insR = $dbc->query($insQ);
 		
 		$idQ = "select max(batchID) from batches";
@@ -463,11 +466,11 @@ if (isset($_GET['action'])){
  * inputarea div
  */
 function newBatchInput(){
-	global $batchtypes, $FANNIE_URL;
+	global $batchtypes, $FANNIE_URL, $FANNIE_MASTER_STORE;
 
 	$ret = "<form onsubmit=\"newBatch(); return false;\">";
 	$ret .= "<table>";
-	$ret .= "<tr><th>Batch Type</th><th>Name</th><th>Start date</th><th>End date</th><th>Owner</th></tr>";
+	$ret .= "<tr><th>Batch Type</th><th>Name</th><th>Start date</th><th>End date</th><th>Owner</th><th>Priority</tr>";
 	$ret .= "<tr>";
 	$ret .= "<td><select id=newBatchType>";
 	foreach ($batchtypes as $id=>$desc){
@@ -475,12 +478,16 @@ function newBatchInput(){
 	}
 	$ret .= "</select></td>";
 	$ret .= "<td><input type=text id=newBatchName /></td>";
-	$ret .= "<td><input type=text id=newBatchStartDate onfocus=\"showCalendarControl(this);\" /></td>";
-	$ret .= "<td><input type=text id=newBatchEndDate onfocus=\"showCalendarControl(this);\" /></td>";
+	$ret .= "<td><input type=text size=10 id=newBatchStartDate onfocus=\"showCalendarControl(this);\" /></td>";
+	$ret .= "<td><input type=text size=10 id=newBatchEndDate onfocus=\"showCalendarControl(this);\" /></td>";
 	$ret .= "<td><select id=newBatchOwner />";
 	global $owners;
 	foreach ($owners as $o)
 		$ret .= "<option>$o</option>";
+	$ret .= "</select></td>";
+	$ret .= "<td><select id=\"newBatchPriority\">";
+	$ret .= sprintf('<option value="%d">Default</option>',($FANNIE_MASTER_STORE=='me'?10:0));
+	$ret .= sprintf('<option value="%d">Override</option>',($FANNIE_MASTER_STORE=='me'?30:20));
 	$ret .= "</select></td>";
 	$ret .= "<td><input type=submit value=Add /></td>";
 	$ret .= "</tr></table></form><br />";
@@ -500,7 +507,7 @@ function newBatchInput(){
 
 function addItemUPCInput($newtags=false){
 	$ret = "<form onsubmit=\"addItem(); return false;\">";
-	$ret .= "<b style=\"color:#000;\">UPC</b>: <input type=text id=addItemUPC /> ";
+	$ret .= "<b style=\"color:#000;\">UPC</b>: <input type=text maxlength=13 id=addItemUPC /> ";
 	$ret .= "<input type=submit value=Add />";
 	$ret .= "<input type=checkbox id=addItemTag";
 	if ($newtags)

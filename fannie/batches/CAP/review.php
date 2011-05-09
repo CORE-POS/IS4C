@@ -41,9 +41,9 @@ if (isset($_POST["start"])){
 	for($i=0;$i<count($upcs);$i++){
 		if(!isset($batchIDs[$names[$i]])){
 			$ins = sprintf("INSERT INTO batches (startDate,endDate,
-					batchName,batchType,discountType) 
+					batchName,batchType,discountType,priority) 
 					VALUES ('%s','%s',
-					'%s Coop Deals %s',1,1)",$start,$end,
+					'%s Coop Deals %s',1,1,0)",$start,$end,
 					$names[$i],$naming);
 			$dbc->query($ins);
 			$fetch = sprintf("SELECT max(batchID) from batches WHERE

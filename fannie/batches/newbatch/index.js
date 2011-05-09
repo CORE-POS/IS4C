@@ -138,8 +138,9 @@ function newBatch(){
 	var startdate = document.getElementById('newBatchStartDate').value;
 	var enddate = document.getElementById('newBatchEndDate').value;
 	var owner = document.getElementById('newBatchOwner').value;
+	var priority = document.getElementById('newBatchPriority').value;
 	
-	phpSend('newBatch&type='+type+'&name='+name+'&startdate='+startdate+'&enddate='+enddate+'&owner='+owner);
+	phpSend('newBatch&type='+type+'&name='+name+'&startdate='+startdate+'&enddate='+enddate+'&owner='+owner+'&priority='+priority);
 	
 	document.getElementById('newBatchType').value = 0;
 	document.getElementById('newBatchName').value = '';

@@ -43,8 +43,8 @@ $bidQ = "SELECT batchID FROM batches WHERE batchName='$batchName' AND batchType=
 	ORDER BY batchID DESC";
 $bidR = $dbc->query($bidQ);
 if ($dbc->num_rows($bidR) == 0){
-	$insQ = "INSERT INTO batches (batchName,startDate,endDate,batchType,discounttype) VALUES
-		('$batchName','1900-01-01','1900-01-01',4,0)";
+	$insQ = "INSERT INTO batches (batchName,startDate,endDate,batchType,discounttype,priority) VALUES
+		('$batchName','1900-01-01','1900-01-01',4,0,0)";
 	$insR = $dbc->query($insQ);
 	$bidR = $dbc->query($bidQ);
 }
