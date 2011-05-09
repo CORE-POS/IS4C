@@ -35,6 +35,7 @@
 include('../config.php');
 
 $table = (isset($_REQUEST['tablename']))?$_REQUEST['tablename']:'';
+if (isset($_REQUEST['othertable']) && !empty($_REQUEST['othertable'])) $table = $_REQUEST['othertable'];
 
 $page_title = "Fannie : Sync Data";
 $header = "Syncing data";

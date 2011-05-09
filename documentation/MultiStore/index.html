@@ -60,5 +60,14 @@ store server on SQL Server + Windows and a master server on MySQL + OS X (and th
 Fannie on CentOS for maximum platform inconsistency... er platform independence...). Piping
 mysqldump would probably be faster if all machines are MySQL, but current performance is
 still only 30-40 seconds, tops.
+<h2>Syncing Operational Data</h2>
+Manual syncing is accessible from Fannie. Click <i>Synchronize</i>, then <i>Synch Stores</i>.
+Options depend on whether you're at the master store. You can send a table:
+<ul>
+<li>From master to all other stores</li>
+<li>From master to a single store</li>
+<li>From a regular store to the master store</li>
+</ul>
+This tool <b>replaces</b> data at the destination store(s) rather than adds to it.
 </body>
 </html>

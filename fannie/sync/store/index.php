@@ -21,10 +21,10 @@
 
 *********************************************************************************/
 
-include('../config.php');
+include('../../config.php');
 
-$page_title = "Fannie : Sync Lane";
-$header = "Sync Lane Operational Tables";
+$page_title = "Fannie : Sync Store";
+$header = "Sync Store Operational Tables";
 include($FANNIE_ROOT.'src/header.html');
 
 echo "<form action=\"tablesync.php\" method=\"get\">";
@@ -40,9 +40,22 @@ echo "<b>Table</b>: <select name=\"tablename\">
 
 echo "<b>Other table</b>: <input type=\"text\" name=\"othertable\" /><br /><br />";
 
+if ($FANNIE_MASTER_STORE == 'me'){
+	echo "<b>Send to</b>: <select name=\"storeNum\">
+	<option value=\"\">All Stores</option>";
+	for ($i=0;$i<$FANNIE_NUM_STORES;$i++)
+		printf('<option value="%d">%s</option>',$i,$FANNIE_STORES[$i]['host']);
+	echo "</select><br />";
+}
+else {
+	echo "You are <b>not</b> the master store. You are sending
+		this store's table <b>to</b> the master store.
+		This store's data will <b>replace</b> the master
+		store's data. Be careful.<br />";
+}
+
 echo '<input type="submit" value="Send Data" />';
 echo "</form>";
-echo '<a href="store/">Sync Stores</a>';
 
 include($FANNIE_ROOT.'src/footer.html');
 
