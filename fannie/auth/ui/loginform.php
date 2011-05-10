@@ -44,7 +44,6 @@ include($auth_path."config.php");
 
 if ($current_user){
   include($auth_path."src/header.html");
-  echo "<html><body bgcolor=cabb1e>";
   echo "You are logged in as $current_user<p />";
   if (isset($_GET['redirect'])){
 	echo "<b style=\"font-size:1.5em;\">It looks like you don't have permission to access this page</b><p />";
@@ -59,10 +58,10 @@ else {
     $login = login($name,$password);
     $redirect = $_POST['redirect'];
 
-    if (!$login)
+    if (!$login && $FANNIE_AUTH_LDAP)
 	$login = ldap_login($name,$password);
 
-    if (!$login)
+    if (!$login && $FANNIE_AUTH_SHADOW)
         $login = shadow_login($name,$password);
 
     if ($login){

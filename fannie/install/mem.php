@@ -28,6 +28,8 @@ $FILEPATH = $FANNIE_ROOT;
 ?>
 <a href="index.php">Necessities</a>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<a href="auth.php">Authentication</a>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 Members 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <a href="sample_data/extra_data.php">Sample Data</a>

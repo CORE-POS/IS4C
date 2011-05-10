@@ -91,6 +91,16 @@ function getUID($name){
   return $uid;
 }
 
+function getNumUsers(){
+  if (!auth_enabled()) return 9999;
+	
+  $sql = dbconnect();
+  $fetchQ = "select uid from users";
+  $fetchR = $sql->query($fetchQ);
+
+  return $sql->num_rows($fetchR);
+}
+
 function getGID($group){
   if (!isAlphaNumeric($group))
     return false;

@@ -40,7 +40,7 @@ because this function sets a cookie, nothing before this function
 call can produce output
 */
 function login($name,$password){
-  if (!isAlphanumeric($name) or !isAlphanumeric($password)){
+  if (!isAlphanumeric($name)){
     return false;
   }
 
@@ -91,45 +91,24 @@ function shadow_login($name,$passwd){
 
 /* login using an ldap server 
  * 
- * Constants need to be defined:
- * $LDAP_HOST => hostname or url of ldap server
- * $LDAP_PORT => ldap port on server
- * $LDAP_BASE_DN => DN to search for users
- * $LDAP_SEARCH_FIELD => entry containing the username
- *
- * Optional constants for importing LDAP users
- * into SQL automatically:
- * $LDAP_UID_FIELD => entry containing the user ID number
- * $LDAP_FULLNAME_FIELDS => entry or entries containing
-			    the user's full name
- *
  * Tested against openldap 2.3.27
  */
 function ldap_login($name,$passwd){
-	$LDAP_HOST = "locke.wfco-op.store";
-	$LDAP_PORT = 389;
-	$LDAP_BASE_DN = "ou=People,dc=wfco-op,dc=store";
-	$LDAP_SEARCH_FIELD = "uid";
+	global $FANNIE_LDAP_SERVER, $FANNIE_LDAP_PORT, $FANNIE_LDAP_DN, $FANNIE_LDAP_SEARCH_FIELD, $FANNIE_LDAP_UID_FIELD, $FANNIE_LDAP_RN_FIELD;
 
-	$LDAP_UID_FIELD = "uidnumber";
-	$LDAP_FULLNAME_FIELDS = array("cn");
-
-	$conn = ldap_connect($LDAP_HOST,$LDAP_PORT);
+	$conn = ldap_connect($FANNIE_LDAP_SERVER,$FANNIE_LDAP_PORT);
 	if (!$conn) return false;
 
-	$search_result = ldap_search($conn,$LDAP_BASE_DN,
-				     $LDAP_SEARCH_FIELD."=".$name);
+	$search_result = ldap_search($conn,$FANNIE_LDAP_DN,
+				     $FANNIE_LDAP_SEARCH_FIELD."=".$name);
 	if (!$search_result) return false;
 
 	$ldap_info = ldap_get_entries($conn,$search_result);
 	if (!$ldap_info) return false;
 
 	$user_dn = $ldap_info[0]["dn"];
-	$uid = $ldap_info[0][$LDAP_UID_FIELD][0];
-	$fullname = "";
-	foreach($LDAP_FULLNAME_FIELDS as $f)
-		$fullname .= $ldap_info[0][$f][0]." ";
-	$fullname = rtrim($fullname);
+	$uid = $ldap_info[0][$FANNIE_LDAP_UID_FIELD][0];
+	$fullname = $ldap_info[0][$FANNIE_LDAP_RN_FIELD];
 
 	if (ldap_bind($conn,$user_dn,$passwd)){
 		syncUserLDAP($name,$uid,$fullname);	
@@ -161,7 +140,7 @@ a session id is also stored in this table, but that is created
 when the user actually logs in
 */
 function createLogin($name,$password){
-  if (!isAlphanumeric($name) or !isAlphanumeric($password)){
+  if (!isAlphanumeric($name) ){
     //echo 'failed alphanumeric';
     return false;
   }

@@ -28,6 +28,8 @@ include('util.php');
 ?>
 <a href="index.php">Necessities</a>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<a href="auth.php">Authentication</a>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <a href="mem.php">Members</a>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 Stores

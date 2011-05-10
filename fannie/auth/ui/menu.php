@@ -23,6 +23,7 @@
 
 require('../login.php');
 $path = guesspath();
+include($path."config.php");
 $page_title = 'Fannie : Auth : Menu';
 $header = 'Fannie : Auth : Menu';
 include($path."src/header.html");
@@ -38,14 +39,15 @@ else {
     $options = 'limited';
   }
   
-  /* commented out options don't apply
-     when using UNIX or LDAP passwords */
+  /* password change only allowed if not using
+     UNIX or LDAP passwords */
   echo "Welcome $name<p />";
   echo "<ul>";
   if ($options == 'all'){
     echo "<li><a href=viewUsers.php>View users</a></li>";
     echo "<li><a href=createUser.php>Create user</a></li>";
-    //echo "<li><a href=resetUserPassword.php>Reset user password</a></li>";
+    if (!$FANNIE_AUTH_SHADOW && !$FANNIE_AUTH_LDAP)
+	echo "<li><a href=resetUserPassword.php>Reset user password</a></li>";
     echo "<li><a href=deleteUser.php>Delete user</a></li>";
     echo "<li><a href=viewAuths.php>View authorizations</a></li>";
     echo "<li><a href=addAuth.php>Add new authorization</a></li>";
@@ -62,7 +64,8 @@ else {
     echo "<br />";
     echo "<li><a href=pose.php>Switch User</a></li>";
   }
-  //echo "<li><a href=changepass.php>Change password</a></li>";
+  if (!$FANNIE_AUTH_SHADOW && !$FANNIE_AUTH_LDAP)
+	  echo "<li><a href=changepass.php>Change password</a></li>";
   echo "<li><a href=loginform.php?logout=yes>Logout</a></li>";
   echo "</ul>";
 }  

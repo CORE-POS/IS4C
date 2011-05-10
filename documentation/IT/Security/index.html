@@ -1,0 +1,106 @@
+<html>
+<head>
+	<title>Security</title>
+</head>
+<body>
+This document covers IS4C authentication and general security tips.
+Almost all of this is optional, and there are certainly existing stores
+ignoring different parts of it to no real ill effect. IS4C does not store
+any particularly sensitive information, and there are [unfortunately] far
+easier ways to steal from a retail establishment than breaking into the POS.
+<h1>Firewall(s)</h1>
+A firewall is your first line of defense. There's no reason to allow any
+one but your staff access to Fannie or POS. Regardless of what firewall software
+you use, keeping the public off your network is recommended.
+<p />
+Putting employee workstations and front end POS on different subnets is
+recommended, if possible. The easiest way to accomplish this is to use a
+machine with two NICs for your Fannie server. If the workstation network is
+192.168.1.x and the POS network is 192.168.2.x, the server is accessible
+from both without allowing any traffic from one subnet to the other.
+<h1>Front End Authentication</h1>
+Authentication at the registers is fairly simplistic. Employees are
+assigned a numeric passcode (via Fannie's Admin =&gt; Cashier Management menu item).
+Front End employees are subdivided into two tiers of access. <i>Regular</i> cashiers
+can only log into a lane if the lane is not currently in use. <i>Manager</i> cashiers
+can always log into a lane, even if someone else is already logged in. Primarily, the 
+higher level is used when a regular employee goes home for the day without
+logging out properly.
+<h1>Back End Authentication</h1>
+First and foremost, Fannie's authentication system is optional. If you run into
+headaches, you can always turn it off. You can also ignore it entirely if you
+so choose.
+<p />
+Fannie relies on a more elaborate authentication systems. Users log in with a user
+name and password. Rather than arrange users in tiers, access is granted on a
+per-task basis. This is for maximum flexibility; one user might have permission
+to edit products but not members while another might have permission to edit
+members but not products.
+<p />
+To get started with authentication, follow the <i>Authentication</i> link on
+Fannie's configuration. First set <i>Authentication Enabled</i> to Yes (ignore
+the other options for now; they'll be covered later). User accounts and permissions
+are stored in the database. After authentication is enabled, if no users exist
+you will be prompted to create an initial user. Enter a username and password.
+If nothing goes wrong, that user will be created with <i>admin</i> privileges.
+<p />
+With an admin account created, go to the user account administration section,
+http://localhost/fannie/auth/ui/ (substituting a correct host name and path
+to fannie if needed). Log in and you get a big menu of options. You can:
+<ul>
+<li>View existing users, create new ones, and delete users</li>
+<li>View authorizations for a user, assign new authorizations, or delete existing ones</li>
+<li>Manipulate groups</li>
+<li>Switch to another user (useful for testing/troubleshooting other people's accounts)</li>
+</ul>
+Creating and deleting users is pretty straightforward. Authorizations are the permission
+system. The authorization class refers to the task, and optional subclasses allow further
+refinement. For example, the authorization class <i>admin</i> (subclass all, all) grants
+access to all these user / authorization / group tools. GIANT TODO: make list of existing
+auth classes in fannie...
+<p />
+While task based permissions are flexible, they're also a bit unwieldy if someone needs
+a lot of access. Arranging users into groups helps alleviate this. Assigning an authorization
+to a group is the same as adding the authorization to each of the groups member's individually.
+Similarly, adding a user to a group gives that user all the authorizations assigned to that
+group.
+<p />
+Now, about those other configuration options. User permissions are always stored in
+the database, but there are a few options for validating username and password combinations.
+<ol>
+<li>SQL. User passwords (hashes) are stored directly in the database. This one's mandatory.</li>
+<li>Shadow. This option matches usernames and passwords against entries in the /etc/shadow file.
+This is a Linux-only option. If the server is providing other services - e.g., email, samba, etc -
+and already has user accounts, Fannie can use those. This option relies on the included
+shadowread utility. If the config page reports any errors with shadowread, just recompile
+and install it (very simple. make, sudo make install)</li>
+<li>LDAP. This options checks usernames and passwords against an LDAP server. The defaults
+are tailored to openldap, but in theory you can use any LDAP server provided the field
+names are correct. Active Directory is obviously the other major option; if someone figures
+out appropriate field names for AD, they'll be added here as suggestions.</li>
+</ol>
+Shadow and LDAP authentication are both optional; if you don't have existing accounts to re-use,
+SQL authentication works fine. The only disadvantage is it's yet another set up process
+for users to go through and yet another password to remember. If you do use shadow or LDAP, keep
+in mind that accounts are imported into the database passively - i.e., when a user logins in the
+first time, that account is imported - rather than all at once.
+<h1>Configuration Files</h1>
+You may not want the web-based install/config pages accessible to everyone (in practice, this has
+never been an issue). Fannie includes a shell script, secure.sh, in the install directory that will
+generate a username/password combo and apply it to that directory. If this results in a 500 Internal
+Server error, you most likely need to add <i>AuthConfig</i> to your main apache config's 
+<i>AllowOverride</i> line. Copy the same script to lanes' install directory and re-run if the same restriction
+is desired there. 
+<p />
+Windows folks: the script creates an .htaccess that looks like this:
+<code>
+AuthType Basic
+AuthName "Fannie Config"
+AuthUserFile /path/to/password/file
+Require valid-user
+</code>
+Correct the path for password file as needed. You're on your own to figure out
+how to actually create a htpasswd file on Windows. Maybe there's a command for it
+in C:\{Whatever}\Apache\bin
+</body>
+</html>

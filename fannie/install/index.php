@@ -29,6 +29,8 @@ include('db.php');
 ?>
 Necessities
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<a href="auth.php">Authentication</a>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <a href="mem.php">Members</a>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <a href="stores.php">Stores</a>
@@ -63,22 +65,6 @@ else {
 	echo "<span style=\"color:red;\"><b>Error</b>: config.php is not writeable</span>";
 }
 ?>
-<br />
-Authentication enabled
-<select name=FANNIE_AUTH_ENABLED>
-<?php
-if (!isset($FANNIE_AUTH_ENABLED)) $FANNIE_AUTH_ENABLED = False;
-if (isset($_REQUEST['FANNIE_AUTH_ENABLED'])) $FANNIE_AUTH_ENABLED = $_REQUEST['FANNIE_AUTH_ENABLED'];
-if ($FANNIE_AUTH_ENABLED === True || $FANNIE_AUTH_ENABLED == 'Yes'){
-	confset('FANNIE_AUTH_ENABLED','True');
-	echo "<option selected>Yes</option><option>No</option>";
-}
-else{
-	confset('FANNIE_AUTH_ENABLED','False');
-	echo "<option>Yes</option><option selected>No</option>";
-}
-?>
-</select>
 <br />
 Default Shelf Tag Layout
 <select name=FANNIE_DEFAULT_PDF>
