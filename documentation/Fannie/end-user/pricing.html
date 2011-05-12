@@ -1,0 +1,132 @@
+<html>
+<head>
+	<title>Products &amp; Pricing</title>
+</head>
+<body>
+This is the master list of product and price related
+management. We're going to reference the <b>price change
+page</b> a whole lot, so to get there:
+<i>Click Item Maintenance in Fannie's left hand menu</i>.
+<h1>How do I add an item to POS?</h1>
+Go to the price change page. Enter your item's UPC. Leading
+zeroes are not necessary. At minimum, enter a
+<i>description</i> and <i>price</i>, then select a <i>Dept</i>
+(department). All other fields are optional. Click
+<i>Create Item</i>. Tax and
+foodstamp status is assigned automatically based on department.
+<hr />
+<h1>How do I add two items with the same UPC?</h1>
+This is not allowed. 
+<hr />
+<h1>How do I change an item's price?</h1>
+Go to the price change page. Enter your item's UPC. Alter
+the <i>Price</i> field. Click <i>Update Item</i>.
+<hr />
+<h1>How do I find an item without the UPC?</h1>
+Go to the price change page. Enter part of the item's
+description. This will list all item's with a matching
+description. Click on the one that you want. If only one
+item has that description, it'll skip straight to editing
+that item.
+<hr />
+<h1>Why isn't my item the same price at all lanes?</h1>
+There are a few possibilities. First, go to the price
+change page and look up the item. Now scroll down to
+the <i>Lane Status</i> section.
+<ul>
+<li>If some or all of your lanes aren't listed here,
+they need to be added to Fannie's configuration. Do so,
+or contact the IT staff in charge of doing so, then revisit
+this guide.</li>
+<li>If <i>can't connect</i> messages show up for some
+or all of the lanes, there's a configuration error or
+network problem. Contact the staff in charge of fixing that,
+then revisit this guide.</li>
+<li>If all lanes show prices for the item, just not
+the correct prices, just click <i>Update Item</i>. This will
+update all lane prices. If one of the two issues above
+was not the problem, perhaps notify IT so they can
+determine where prices got out of sync.</li>
+</ul>
+<hr />
+<h1>Why does the item I entered say "not found" at the lanes</h1>
+First look up the item on the price change page and scroll
+down to the lane section. If any lanes are missing or show
+incorrect information, see the above question <i>why isn't
+my item the same price at all lanes</i> to resolve problems,
+then click <i>Update Item</i> to re-send it to the lanes.
+<p />
+If lane status appears correct, the next mostly likely issue
+is check digits (or lack thereof). Write down the exact
+UPC shown on the lane's <i>item not found</i> error. The item
+must be entered with this exact UPC. If your scanner includes
+check digits, include check digits in Fannie. If your scanner
+omits check digits, omit them in Fannie. EAN-style barcodes
+cause the most problems here as the check digit is harder
+to identify.
+<hr />
+<h1>Why does an item ring up with "w/ volume adjust" messages?</h1>
+A volume price scheme may have been added accidentially.
+Look up the item on the price change page. Click the <i>Price</i>
+drop down and choose <i>Volume Price</i>. Delete any entries here
+and uncheck the checkbox, then click <i>Update Item</i>.
+<hr />
+<h1>How do I put an item on sale?</h1>
+Create a sales batch and add the item, or simply add it to an
+existing batch. If it needs to go on sale immediately, use the
+<i>Force Batch</i> option. See <a href="batches.html">Sales Batches</a>
+for more details.
+<hr />
+<h1>How do I take an item off sale?</h1>
+First look up the item on the price change page. Examine the green
+<i>Sale Price</i> row to find out which batch the item is in. Then
+go to that batch and delete the item. You may need to return to the
+price change page and re-submit the item to make the change
+immediate.
+<hr />
+<h1>Why does an item show a message about not being for sale?</h1>
+It's likely not marked <i>InUse</i>. It's a soft error that cashiers
+can bypass, but to remove the warning look up the item on the
+price change page, check <i>InUse</i> under <i>Extra Info</i>, then
+click <i>Update Item</i>.
+<hr />
+<h1>Why is the lane saying "place item on scale"?</h1>
+The item is marked as sold by weight. Look up the item on the price change
+page, then uncheck the <i>Scale</i> box and <i>Update Item</i>.
+<hr />
+<h1>Why isn't the lane weighing an item?</h1>
+The item is not marked as sold by weight. Look up the item on the price change
+page, then check the <i>Scale</i> box and <i>Update Item</i>.
+<hr />
+<h1>How do I enter variable-weight, pre-stickered items such as from a Hobart deli scale?</h1>
+First, set your scale to use UPC prefix "2" and include the price in the UPC
+rather than the weight. This is generally the default anyway. Now, examing a sticker
+UPC, the first digit should be 2. The next <i>five</i> digits are the item number,
+and the <i>five</i> digits after that are the price. Last is the check digit (note:
+if you're not omitting check digits, this feature probably doesn't work). Go
+to the price change page. Enter the first <i>six</i> digits of the the sticker UPC
+followed by <i>five</i> zeroes. For example, an item with sticker UPC
+21234500199 (plus check digit) should be entered as 21234500000. Entering a price
+is largely optional, but otherwise the settings work like any other item.
+<hr />
+<h1>How do I put a variable-weight, pre-stickered item on sale?</h1>
+If the item is stickered by count rather than by weight, just enter it into
+a sales batch normally, with the UPC adjusted as listed in the above question.
+<p />
+If the item is stickered by weight, you need to make a couple adjustments.
+Look up the item on the price change page. Make sure the price field is set to
+the item's regular, non-sale price. This is used at check-out time to calculate
+how much the item weighs which affects sale price. Also make sure the <i>Scale</i>
+box is checked. With these two settings correct, click <i>Update Item</i>, then
+go add the appropriate UPC and sale price-per-weight in a sales batch.
+<hr />
+<h1>How do I ensure an item is not discounted?</h1>
+If you use transaction-level discounts, like 5% off an entire transaction, some items
+may need to be included such as loss-leaders, gift cards, or equity. To exclude an
+item from this type of discount, look it up on the price change page and
+check the <i>NoDisc</i> box. Then <i>Update Item</i>.
+<hr />
+<h1>How do I require the cashier to enter a quantity for an item?</h1>
+This feature is typically used with product PLUs that aren't weighed. Look up the
+item on the price change page, then check the <i>QtyFrc</i> box. Click
+<i>Update Item</i>.

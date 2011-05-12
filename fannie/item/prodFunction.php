@@ -633,6 +633,13 @@ function itemParse($upc){
 			echo "<legend>Margin</legend>";
 			MarginFS($rowItem['upc'],$rowItem['cost'],$rowItem['department']);
 			echo "</fieldset>";
+
+			echo '<fieldset id="lanefs">';
+			echo '<legend>Lane Status</legend>';
+			include('prodAllLanes.php');
+			echo allLanes($upc);
+			echo '</fieldset>';
+		
 	}
     return $num;
 }
