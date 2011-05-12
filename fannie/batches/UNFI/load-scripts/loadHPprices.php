@@ -48,9 +48,14 @@ $SKU = 0;
 $DESCRIPTION = 2;
 $QTY = 1;
 $UPC = 3;
-$WHOLESALE = 4;
+$WHOLESALE = 5;
 
-$VENDOR_ID = 10;
+require($FANNIE_ROOT.'batches/UNFI/lib.php');
+$VENDOR_ID = getVendorID(basename($_SERVER['SCRIPT_FILENAME']));
+if ($VENDOR_ID === False){
+	echo "Error: no vendor has this load script";
+	exit;
+}
 $PRICEFILE_USE_SPLITS = True;
 
 /*
@@ -132,7 +137,7 @@ while(!feof($fp)){
 			$VENDOR_ID);
 	$insR = $dbc->query($insQ);
 
-	$srp = (!empty($data[5]))?ltrim($data[5],'$'):ltrim($data[6],'$');
+	$srp = (!empty($data[6]))?ltrim($data[6],'$'):ltrim($data[7],'$');
 	$dbc->query(sprintf("INSERT INTO vendorSRPs VALUES (%d,%s,%f)",
 		$VENDOR_ID,$dbc->escape($upc),$srp));
 }

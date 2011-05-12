@@ -51,7 +51,12 @@ $QTY = 8;
 $UPC = 7;
 $WHOLESALE = 9;
 
-$VENDOR_ID = 6;
+require($FANNIE_ROOT.'batches/UNFI/lib.php');
+$VENDOR_ID = getVendorID(basename($_SERVER['SCRIPT_FILENAME']));
+if ($VENDOR_ID === False){
+	echo "Error: no vendor has this load script";
+	exit;
+}
 $PRICEFILE_USE_SPLITS = True;
 
 /*

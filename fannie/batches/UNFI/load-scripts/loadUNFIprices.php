@@ -54,7 +54,12 @@ $CATEGORY = 5;
 $WHOLESALE = 9;
 $DISCOUNT = 9;
 
-$VENDOR_ID = 1;
+require($FANNIE_ROOT.'batches/UNFI/lib.php');
+$VENDOR_ID = getVendorID(basename($_SERVER['SCRIPT_FILENAME']));
+if ($VENDOR_ID === False){
+	echo "Error: no vendor has this load script";
+	exit;
+}
 $PRICEFILE_USE_SPLITS = True;
 
 /*
@@ -78,8 +83,10 @@ if ($PRICEFILE_USE_SPLITS){
 		
 		$truncateQ = "truncate table UNFI_order";
 		$truncateR = $dbc->query($truncateQ);
+		/*
 		$delQ = "DELETE FROM vendorItems WHERE vendorID=$VENDOR_ID";
 		$delR = $dbc->query($delQ);
+		*/
 	}
 	else {
 		$filestoprocess = unserialize(base64_decode($_GET["filestoprocess"]));	
@@ -88,8 +95,10 @@ if ($PRICEFILE_USE_SPLITS){
 else {
 	$truncateQ = "truncate table UNFI_order";
 	$truncateR = $dbc->query($truncateQ);
+	/*
 	$delQ = "DELETE FROM vendorItems WHERE vendorID=$VENDOR_ID";
 	$delR = $dbc->query($delQ);
+	*/
 	$filestoprocess[] = "unfi.csv";
 }
 
@@ -155,6 +164,7 @@ while(!feof($fp)){
 	$upR = $dbc->query($upQ);
 	// end $PRICEFILE_COST_TABLE cost tracking
 
+	$dbc->query("DELETE FROM VendorItems WHERE upc='$upc'");
 	$insQ = "INSERT INTO VendorItems (brand,sku,size,upc,units,cost,description,vendorDept,vendorID)
 			VALUES ('$brand',$sku,'$size','$upc',$qty,$net_cost,
 			'$description',$category,$VENDOR_ID)";

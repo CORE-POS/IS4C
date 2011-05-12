@@ -61,6 +61,13 @@ if (isset($_REQUEST['action'])){
 	case 'addPosItem':
 		addPosItem($_REQUEST['upc'],$_REQUEST['vid'],$_REQUEST['price'],$_REQUEST['dept']);
 		break;
+	case 'saveScript':
+		$q1 = sprintf("DELETE FROM vendorLoadScripts WHERE vendorID=%d",$_REQUEST['vid']);
+		$dbc->query($q1);
+		$q2 = sprintf("INSERT INTO vendorLoadScripts (vendorID,loadScript) VALUES (%d,%s)",
+			$_REQUEST['vid'],$dbc->escape($_REQUEST['script']));
+		$dbc->query($q2);
+		break;
 	}
 }
 
@@ -214,6 +221,14 @@ function getVendorInfo($id){
 	else
 		$ret .= "<b>Name</b>: ".array_pop($dbc->fetch_row($nameR));
 	$ret .= "<p />";
+
+	$scriptR = $dbc->query("SELECT loadScript FROM vendorLoadScripts WHERE vendorID=$id");
+	$ls = "";
+	if ($scriptR && $dbc->num_rows($scriptR) > 0)
+		$ls = array_pop($dbc->fetch_row($scriptR));
+	$ret .= sprintf('<b>Load script</b>: <input type="text" value="%s" id="vscript" />
+		<input type="submit" value="Save" onclick="saveScript(%d); return false;" />
+		<p />',$ls,$id);
 
 	$itemR = $dbc->query("SELECT COUNT(*) FROM vendorItems WHERE vendorID=$id");
 	$num = array_pop($dbc->fetch_row($itemR));

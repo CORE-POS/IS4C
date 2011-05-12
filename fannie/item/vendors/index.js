@@ -20,6 +20,28 @@
 
 *********************************************************************************/
 
+function saveScript(vID){
+	var scriptName = $('#vscript').val();
+
+	if (vscript == ''){
+		return;
+	}
+
+	$.ajax({
+		url: 'ajax.php',
+		type: 'POST',
+		dataType: 'text/html',
+		timeout: 1000,
+		data: 'vid='+vID+'&script='+scriptName+'&action=saveScript',
+		error: function(){
+			alert('Error saving script name');
+		},
+		success: function(resp){
+			alert('Saved as '+scriptName);
+		}
+	});
+}
+
 function vendorchange(){
 	var vID = $('#vendorselect').val();
 

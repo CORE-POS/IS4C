@@ -50,7 +50,12 @@ $QTY = 3;
 $UPC = 1;
 $WHOLESALE = 4;
 
-$VENDOR_ID = 3;
+require($FANNIE_ROOT.'batches/UNFI/lib.php');
+$VENDOR_ID = getVendorID(basename($_SERVER['SCRIPT_FILENAME']));
+if ($VENDOR_ID === False){
+	echo "Error: no vendor has this load script";
+	exit;
+}
 $PRICEFILE_USE_SPLITS = True;
 
 /*
@@ -71,6 +76,8 @@ if ($PRICEFILE_USE_SPLITS){
 				continue;
 			$filestoprocess[$i++] = $current;
 		}
+		$delQ = "DELETE FROM vendorItems WHERE vendorID=$VENDOR_ID";
+		$delR = $dbc->query($delQ);
 	}
 	else {
 		$filestoprocess = unserialize(base64_decode($_GET["filestoprocess"]));	
@@ -78,6 +85,8 @@ if ($PRICEFILE_USE_SPLITS){
 }
 else {
 	$filestoprocess[] = "unfi.csv";
+	$delQ = "DELETE FROM vendorItems WHERE vendorID=$VENDOR_ID";
+	$delR = $dbc->query($delQ);
 }
 
 // remove one split from the list and process that
@@ -118,14 +127,15 @@ while(!feof($fp)){
 
 	// if the item doesn't exist in the general vendor catalog table,
 	// add it. 
-	$cleanQ = "delete from VendorItems where upc = '$upc' AND vendorID=$VENDOR_ID";
-	$dbc->query($cleanQ);
 	$insQ = sprintf("INSERT INTO VendorItems (brand,sku,size,upc,units,cost,description,vendorDept,vendorID)
 			VALUES (%s,%s,%s,%s,%d,%f,%s,NULL,%d)",$dbc->escape($brand),$dbc->escape($sku),
 			$dbc->escape($size),$dbc->escape($upc),$qty,$net_cost,$dbc->escape($description),
 			$VENDOR_ID);
 	$insR = $dbc->query($insQ);
 
+	$srp = (!empty($data[6]))?ltrim($data[6],' $'):ltrim($data[7],' $');
+	$dbc->query(sprintf("INSERT INTO vendorSRPs VALUES (%d,%s,%f)",
+		$VENDOR_ID,$dbc->escape($upc),$srp));
 }
 fclose($fp);
 

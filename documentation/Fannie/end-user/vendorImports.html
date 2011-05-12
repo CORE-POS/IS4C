@@ -1,0 +1,88 @@
+<html>
+<head>
+	<title>Import Vendor Pricing</title>
+</head>
+<body>
+This document discusses how to import spreadsheets of
+vendor pricing info. This information is used to
+calculate pricing based on desired margins.
+<h1>Step 1: Create Vendor(s)</h1>
+To import vendor information, you need vendors.
+Select Item Maintenance =&gt; <i>Manage Vendors</i>
+from Fannie's left hand menu. Each vendor needs an
+associated <i>Load Script</i> to import with. Fannie
+currently includes scripts for the following vendors:
+<ul>
+	<li>Eclectic Institute - <i>loadECLECTICprices.php</i></li>
+	<li>Herb Pharm - <i>loadHPprices.php</i></li>
+	<li>Natural Factors - <i>loadNFACTORprices.php</i></li>
+	<li>Nature's Plus - <i>loadNPATHprices.php</i></li>
+	<li>Oregon's Wild Harvest - <i>loadOWHprices.php</i></li>
+	<li>Select - <i>loadSELECTprices.php</i></li>
+	<li>Simpler's - <i>loadSIMPprices.php</i></li>
+	<li>Suki - <i>loadSUKIprices.php</i></li>
+	<li>UNFI - <i>loadUNFIprices.php</i></li>
+	<li>Vitamer - <i>loadVITAMERprices.php</i></li>
+</ul>
+These scripts are all designed around the spreadsheets WFC
+has received. I don't know if all these vendors use a consistent
+format. The bigger ones like UNFI probably do, but that's not a 
+guarantee.
+<h1>Step 2: Change the spreadsheet to a CSV</h1>
+Fannie doesn't speak Excel, at least in this case. Open the file,
+and use Save As to change the format to CSV (if you get more than
+one CSV option, look for one mentioning Windows to get correct
+line-endings). If the file is larger than a couple MBs, you may
+need to compress it to avoid upload limits. Use the utility of your
+choose to zip it.
+<h1>Step 3: Upload the file</h1>
+Select Sales Batches =&gt; <i>Vendor Pricing</i> from Fannie's left
+hand menu. On the next page choose <i>Upload Price Sheet</i>. Choose
+the correct vendor from the drop down menu, then upload your CSV
+(or zipped CSV).
+<p />
+<i>This upload can take a long time. Like 10-15 minutes. Part of this
+is weird voodoo to avoid memory/CPU limits on old hardware, and part of
+it is dealing with partial pricing files. Many vendors only include
+changed items in the file; updating items one at a time rather than
+dumping all info and rebuilding essentially doubles execution time</i>.
+<h1>Step 4: Calculate SRPs</h1>
+Return to the Vendor Pricing menu via Fannie's menu (Sales Batches
+=&gt; Vendor Pricing) and choose <i>Recalculate SRPs</i>. Select the
+vendor, then click recalculate.
+<p />
+Fannie checks two places for desired margin. Top priority is vendor
+department settings. You can load vendor's department numbering
+scheme (e.g., UNFI's categories) and assign these margin percentages.
+This is currently a manual process to nag your DBA about. If vendor
+departments aren't used for this vendor, Fannie uses the POS department
+margin setting. See <a href="departments.php">departments</a> for
+instructions on defining department margins.
+<p />
+<h1>Step 5: Create a Price Change Batch</h1>
+Return to the Vendor Pricing menu via Fannie's menu (Sales Batches
+=&gt; Vendor Pricing) and choose <i>Create Price Change Batch</i>. 
+Select the vendor and optionally super department. <i>All</i> is fine
+if you aren't using super departments. The default value, No, for
+<i>Show All Items</i> excludes everything where the current POS price
+matches the calculated SRP. Click <i>Continue</i>.
+<p />
+A price change batch is created immediately. Its name is listed at the
+top of the page. If you return to this tool on the same day, it will
+just resume editing that same batch.
+<p />
+Green rows show items where current margin exceeds desired margin.
+Red rows show items where current margin is below desired margin.
+White rows show items marked in the <i>Var</i> column. This is for
+marking items that purposely ignore normal margin.
+<p />
+Clicking <i>Add</i> will put that item into the price change batch
+with the listed SRP. You can also adjust the calculated SRPs by
+click on them. Click <i>Del</i> to remove an item from the price
+change batch if it was added by mistake.
+<h1>Step 6: Apply new prices</h1>
+Go to the batch tool (<i>Sales Batches</i> in Fannie's left hand menu)
+and either manually force your price change batch or give it
+a start date for a later, automated applicatio.
+</body>
+</html>

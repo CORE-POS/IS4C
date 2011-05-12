@@ -119,7 +119,7 @@ echo "<a href=price_compare.php?excel=1&buyer=$buyID&filter=$filter>Dump to Exce
 
 //Connect to mysql server
 
-$mysql = new SQLManager('nexus.wfco-op.store','MYSQL','IS4C','root');
+$mysql = new SQLManager('locke.wfco-op.store','MYSQL','IS4C','is4c','is4c');
 
 
    $sort = isset($_GET['sort'])?$_GET['sort']:'';

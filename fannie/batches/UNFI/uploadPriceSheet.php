@@ -23,6 +23,7 @@
 
 /* configuration for your module - Important */
 include("../../config.php");
+include($FANNIE_ROOT.'src/mysql_connect.php');
 
 if (isset($_POST['MAX_FILE_SIZE']) && $_REQUEST['vendorPage'] != ""){
 	$dh = opendir("tmp/");
@@ -57,20 +58,27 @@ else {
 
 	if (isset($_REQUEST['vendorPage']))
 		echo "<i>Error: no vendor selected</i><br />";
+
+	$opts = '<option value="">Select a vendor</option>';
+	$q = "select v.vendorName,l.loadScript from 
+		vendors as v inner join
+		vendorLoadScripts as l
+		on v.vendorID=l.vendorID
+		order by v.vendorName";
+	$r = $dbc->query($q);
+	while($w = $dbc->fetch_row($r)){
+		$opts .= sprintf('<option value="%s">%s</option>',
+			$w['loadScript'],$w['vendorName']);
+	}
+
+	if (!is_writable("tmp/")){
+		echo '<p><span style="color:red">Warning: tmp directory is not
+			writeable. Uploads will not work</span></p>';
+	}
 ?>
 <form enctype="multipart/form-data" action="uploadPriceSheet.php" method="post">
 Vendor: <select name=vendorPage>
-<option value="">Select a vendor</option>
-<option value="loadUNFIprices.php">UNFI</option>
-<option value="loadSELECTprices.php">SELECT</option>
-<option value="loadNPATHprices.php">NATURES PATH</option>
-<option value="loadOWHprices.php">OREGONS WILD HARVEST</option>
-<option value="loadECLECTICprices.php">ECLECTIC</option>
-<option value="loadVITAMERprices.php">VITAMER</option>
-<option value="loadNFACTORprices.php">NATURAL FACTORS</option>
-<option value="loadSUKIprices.php">SUKI</option>
-<option value="loadSIMPprices.php">SIMPLERS</option>
-<option value="loadHPprices.php">HERB PHARM</option>
+<?php echo $opts; ?>
 </select><br />
 <input type="hidden" name="MAX_FILE_SIZE" value="20971520" />
 Filename: <input type="file" id="file" name="upload" />
