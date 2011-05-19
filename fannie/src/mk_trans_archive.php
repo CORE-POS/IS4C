@@ -110,15 +110,19 @@ function mk_trans_archive_table($month,$year,$db,$redo=False){
 	$name = "transArchive".$year.$month;
 
 	$q = "CREATE TABLE $name $trans_columns";
-	echo $q;
 	
 	$exists = $db->table_exists($name);
 	if (!$exists){
 		$db->query($q,$FANNIE_ARCHIVE_DB);
+		echo "Created archive table for $month / $year<br />";
 	}
 	else if ($exists && $redo){
 		$db->query("DROP TABLE $name",$FANNIE_ARCHIVE_DB);
 		$db->query($q,$FANNIE_ARCHIVE_DB);
+		echo "Re-created archive table for $month / $year<br />";
+	}
+	else {
+		echo "Skipping existing table for $month / $year<br />";
 	}
 }
 
@@ -164,7 +168,7 @@ function mk_trans_archive_views($month,$year,$db){
 		$dlogQ .= "(convert(varchar,d.emp_no) +  '-' + convert(varchar,d.register_no) + '-' + 
 			convert(varchar,d.trans_no)) as trans_num";
 	}
-	$dlogQ .= "from transArchive$year$month as d
+	$dlogQ .= " from transArchive$year$month as d
 		where d.trans_status not in ('D','X','Z') and d.emp_no not in (9999,56) and d.register_no  <> 99";
 	
 	$rp1Q = "CREATE  view rp_dt_receipt_$year$month as 
@@ -321,7 +325,9 @@ function mk_trans_archive_views($month,$year,$db){
 	$db->query($rp1Q);
 	if ($db->table_exists("rp_receipt_header_".$year.$month,$FANNIE_ARCHIVE_DB))
 		$db->query("DROP VIEW rp_receipt_header_$year$month");
-	$db->query($rp1Q);
+	$db->query($rp2Q);
+
+	echo "Created views for $month / $year <br />";
 }
 	
 
