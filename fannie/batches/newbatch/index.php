@@ -77,10 +77,7 @@ if (isset($_GET['action'])){
 				$dbc->escape($startdate),$dbc->escape($enddate),
 				$dbc->escape($name),$type,$discounttype,$priority);
 		$insR = $dbc->query($insQ);
-		
-		$idQ = "select max(batchID) from batches";
-		$idR = $dbc->query($idQ);
-		$id = array_pop($dbc->fetch_array($idR));
+		$id = $dbc->insert_id();
 		
 		$insQ = "insert batchowner values ($id,'$owner')";
 		$insR = $dbc->query($insQ);
@@ -454,6 +451,32 @@ if (isset($_GET['action'])){
 		$limitQ = sprintf("UPDATE batchList SET quantity=%d WHERE batchID=%d",
 				$_REQUEST['limit'],$_REQUEST['batchID']);
 		$dbc->query($limitQ);
+		break;
+	case 'autoTag':
+		$delQ = sprintf("DELETE FROM batchBarcodes where batchID=%d",$_REQUEST['batchID']);
+		$dbc->query($delQ);
+		
+		$insQ = sprintf("INSERT INTO batchBarcodes
+			select l.upc,p.description,l.salePrice, 
+			case when x.manufacturer is null then v.brand
+			else x.manufacturer end,
+			case when v.sku is null then '' else v.sku end,
+			case when v.size is null then '' else v.size end,
+			case when v.units is null then 1 else v.units end,
+			case when x.distributor is null then z.vendorName
+			else x.distributor end,
+			l.batchID
+			from batchList as l
+			inner join products as p on
+			l.upc=p.upc
+			left join prodExtra as x on
+			l.upc=x.upc
+			left join vendorItems as v on
+			l.upc=v.upc
+			left join vendors as z on
+			v.vendorID=z.vendorID
+			where batchID=%d",$_REQUEST['batchID']);
+		$dbc->query($insQ);
 		break;
 	}
 	
@@ -846,6 +869,7 @@ function showBatchDisplay($id,$orderby=' ORDER BY b.listID DESC'){
 	$ret = "<span class=\"newBatchBlack\"><b>Batch name</b>: $name</span><br />";
 	$ret .= "<a href=\"\" onclick=\"backToList(); return false;\">Back to batch list</a> | ";
 	$ret .= "<a href=\"{$FANNIE_URL}admin/labels/batchtags.php?batchID%5B%5D=$id\">Print shelf tags</a> | ";
+	$ret .= "<a href=\"\" onclick=\"autoTag($id); return false;\">Auto-tag</a> | ";
 	if ($cp > 0)
 		$ret .= "<a href=\"\" onclick=\"doPaste($uid,$id); return false;\">Paste Items ($cp)</a> | ";
 	$ret .= "<a href=\"\" onclick=\"forceBatch($id); return false;\">Force batch</a> | ";

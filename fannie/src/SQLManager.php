@@ -114,6 +114,8 @@ class SQLManager {
 		}
 		else if (!$ok){
 			echo "Bad query: {$_SERVER['PHP_SELF']}: $query_text<br />";
+			// adding mysql_error()
+			echo $this->error($which_connection)."<br />";
 		}
 		return $ok;
 	}
