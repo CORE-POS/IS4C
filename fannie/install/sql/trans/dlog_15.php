@@ -47,7 +47,9 @@ $CREATE['trans.dlog_15'] = "
           `foodstamp` tinyint(4) default NULL,
           `ItemQtty` double default NULL,
           `card_no` varchar(255) default NULL,
-          `trans_id` int(11) default NULL)";
+          `trans_id` int(11) default NULL,
+          `trans_num` varchar(25) default NULL
+	 )";
 
 if ($dbms == "MSSQL"){
 	$CREATE['trans.dlog_15'] = "
@@ -67,7 +69,8 @@ if ($dbms == "MSSQL"){
                         [foodstamp] [tinyint] NOT NULL ,
                         [ItemQtty] [float] NULL ,
                         [card_no] [nvarchar] (6) COLLATE SQL_Latin1_General_CP1_CI_AS NULL ,
-                        [trans_id] [int] NOT NULL 
+                        [trans_id] [int] NOT NULL ,
+                        [trans_num] [nvarchar] (25) COLLATE SQL_Latin1_General_CP1_CI_AS NULL 
 		)
 	";
 }

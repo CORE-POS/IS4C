@@ -192,6 +192,55 @@ class SQLManager {
 		}	
 	}
 
+	function seconddiff($date1,$date2,$which_connection=''){
+		if ($which_connection == '')
+			$which_connection = $this->default_db;
+		switch($this->connections[$which_connection]->databaseType){
+		case 'mysql':
+			return "TIMESTAMPDIFF(SECOND,$date1,$date2)";
+		case 'mssql':
+			return "datediff(ss,$date2,$date1)";
+		}	
+	}
+
+	// flip argument order by mysql vs mssql
+	function convert($expr,$type,$which_connection=''){
+		if ($which_connection == '')
+			$which_connection = $this->default_db;
+		switch($this->connections[$which_connection]->databaseType){
+		case 'mysql':
+			return "CONVERT($expr,$type)";
+		case 'mssql':
+			return "CONVERT($type,$expr)";
+		}
+		return "";
+	}
+
+	// note: to swing variable number of args,
+	// connection is manadatory. use empty string
+	// for default connection
+	function concat(){
+		$args = func_get_args();
+		$ret = "";
+		$which_connection = $args[count($args)-1];
+		if ($which_connection == '')
+			$which_connection = $this->default_db;
+		switch($this->connections[$which_connection]->databaseType){
+		case 'mysql':
+			$ret .= "CONCAT(";
+			for($i=0;$i<count($args)-1;$i++)
+				$ret .= $args[$i].",";	
+			$ret = rtrim($ret,",").")";
+			break;
+		case 'mssql':
+			for($i=0;$i<count($args)-1;$i++)
+				$ret .= $args[$i]."+";	
+			$ret = rtrim($ret,"+");
+			break;
+		}
+		return $ret;
+	}
+
 	function weekdiff($date1,$date2,$which_connection=''){
 		if ($which_connection == '')
 			$which_connection = $this->default_db;

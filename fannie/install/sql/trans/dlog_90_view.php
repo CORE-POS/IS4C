@@ -53,9 +53,14 @@ $CREATE['trans.dlog_90_view'] = "
 		foodstamp,
 		ItemQtty,
 		card_no,
-		trans_id
+		trans_id,
+		".$con->concat(
+			$con->convert('emp_no','char'),"'-'",
+			$con->convert('register_no','char'),"'-'",
+			$con->convert('trans_no','char'),'')
+		." as trans_num
 		FROM transarchive
-		WHERE trans_status NOT IN ('D','X')
+		WHERE trans_status NOT IN ('D','X','Z')
 		AND emp_no <> 9999 and register_no <> 99
 ";
 ?>

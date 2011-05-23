@@ -18,7 +18,7 @@ balances by membership
 */
 $names = qualified_names();
 $CREATE['trans.newBalanceStockToday_test'] = "
-	CREATE VIEW newBalanceStockToday_test 
+	CREATE VIEW newBalanceStockToday_test AS
 		SELECT
 		m.card_no as card_no,
 		case
