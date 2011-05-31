@@ -1,4 +1,5 @@
 <?php
+include('../../config.php');
 /*
 this page generates a set of graphs
 for cashier performance
@@ -23,15 +24,24 @@ function avg($array){
 }
 
 if (!isset($_GET['emp_no'])){
+	$page_title = "Fannie :: Cashier Report";
+	$header = "Cashier Report";
+	include($FANNIE_ROOT.'src/header.html');
 ?>
+<script type="text/javascript">
+$(document).ready(function(){
+	$('#emp_no').focus();
+});
+</script>
 Enter an employee number<br />
 <form method=get action=<?php echo $_SERVER['PHP_SELF'] ?> >
-<input type=text name=emp_no size=4 />&nbsp;
+<input type=text id=emp_no name=emp_no size=4 />&nbsp;
 <input type=submit value="Get report" />
 <input type=checkbox name=pdf /> PDF
 </form>
 <?php
-  return;
+	include($FANNIE_ROOT.'src/footer.html');
+	return;
 }
 
 /*
@@ -45,8 +55,8 @@ $query = "";
 if($emp_no==""){
 $query = "select
           emp_no,
-          datediff(ww,proc_date,getdate()) as week,
-          datepart(yy,proc_date) as year,
+          ".$dbc->weekdiff($dbc->now(),'proc_date')." as week,
+          year(proc_date) as year,
 	  SUM(Rings) / count(emp_no) as rings,
 	  CONVERT(int,SUM(items)) / count(emp_no) as items,
 	  COUNT(Rings) / count(emp_no) as Trans,
@@ -54,14 +64,14 @@ $query = "select
 	  SUM(Cancels) / count(emp_no) as cancels,
 	  MIN(proc_date)
 	  from cashperformday_cache
-	  GROUP BY emp_no,datediff(ww,proc_date,getdate()),datepart(yy,proc_date)
-          ORDER BY year desc, week asc"; 
+	  GROUP BY emp_no,".$dbc->weekdiff($dbc->now(),'proc_date').",year(proc_date)
+	  ORDER BY year(proc_date) desc,".$dbc->weekdiff($dbc->now(),'proc_date')." asc";
 }
 else {
 $query = "select
           emp_no,
-          datediff(ww,proc_date,getdate()) as week,
-          datepart(yy,proc_date) as year,
+          ".$dbc->weekdiff($dbc->now(),'proc_date')." as week,
+          year(proc_date) as year,
           SUM(Rings) as rings,
           CONVERT(int,SUM(items)) as items,
           COUNT(*) as TRANS,
@@ -70,8 +80,8 @@ $query = "select
           MIN(proc_date)
           FROM cashperformday_cache
           WHERE emp_no = $emp_no
-          GROUP BY emp_no,datediff(ww,proc_date,getdate()),datepart(yy,proc_date)
-          ORDER BY year desc,week asc";
+	  GROUP BY emp_no,".$dbc->weekdiff($dbc->now(),'proc_date').",year(proc_date)
+	  ORDER BY year(proc_date) desc,".$dbc->weekdiff($dbc->now(),'proc_date')." asc";
 }
 $result = $dbc->query($query);
 
