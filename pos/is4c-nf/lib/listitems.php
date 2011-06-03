@@ -3,36 +3,36 @@
 
     Copyright 2001, 2004 Wedge Community Co-op
 
-    This file is part of IS4C.
+    This file is part of IT CORE.
 
-    IS4C is free software; you can redistribute it and/or modify
+    IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    IS4C is distributed in the hope that it will be useful,
+    IT CORE is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    in the file license.txt along with IS4C; if not, write to the Free Software
+    in the file license.txt along with IT CORE; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
  // session_start(); 
-$IS4C_PATH = isset($IS4C_PATH)?$IS4C_PATH:"";
-if (empty($IS4C_PATH)){ while(!file_exists($IS4C_PATH."is4c.css")) $IS4C_PATH .= "../"; }
+$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
+if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
 
-if (!function_exists("getsubtotals")) include($IS4C_PATH."lib/connect.php");
-if (!function_exists("printheaderb")) include($IS4C_PATH."lib/drawscreen.php");
-if (!isset($IS4C_LOCAL)) include($IS4C_PATH."lib/LocalStorage/conf.php");
+if (!function_exists("getsubtotals")) include($CORE_PATH."lib/connect.php");
+if (!function_exists("printheaderb")) include($CORE_PATH."lib/drawscreen.php");
+if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
 
 function listitems($top_item, $highlight) {
-	global $IS4C_LOCAL;
+	global $CORE_LOCAL;
 
 	getsubtotals();
-	$LastID = $IS4C_LOCAL->get("LastID");
+	$LastID = $CORE_LOCAL->get("LastID");
 
 //----------------Boundary Top ------------------
 
@@ -53,28 +53,28 @@ function listitems($top_item, $highlight) {
 		$top_item = ($highlight - 11);
 	}
 
-	$IS4C_LOCAL->set("currenttopid",$top_item);
-	$IS4C_LOCAL->set("currentid",$highlight);
+	$CORE_LOCAL->set("currenttopid",$top_item);
+	$CORE_LOCAL->set("currentid",$highlight);
 
 //------------------Boundary Bottom----------------
 
 	return drawitems($top_item, 11, $highlight);
-	$IS4C_LOCAL->set("currentid",$highlight);
+	$CORE_LOCAL->set("currentid",$highlight);
 }
 
 
 
 function printReceiptfooter($readOnly=False) {
-	global $IS4C_LOCAL;
+	global $CORE_LOCAL;
 
-	if ($IS4C_LOCAL->get("sc") == 1) {
+	if ($CORE_LOCAL->get("sc") == 1) {
 		return lastpage();
 	}
 	else {
 
 		if (!$readOnly)
 			getsubtotals();
-		$last_id = $IS4C_LOCAL->get("LastID");
+		$last_id = $CORE_LOCAL->get("LastID");
 
 		if (($last_id - 7) < 0) {
 			$top_id = 1;
@@ -86,11 +86,11 @@ function printReceiptfooter($readOnly=False) {
 		$ret = drawitems($top_id, 7, 0);
 
 		$ret .= "<div class=\"farewellMsg\">"
-			.$IS4C_LOCAL->get("farewellMsg1")
+			.$CORE_LOCAL->get("farewellMsg1")
 			."<br />"
-			.$IS4C_LOCAL->get("farewellMsg2")
+			.$CORE_LOCAL->get("farewellMsg2")
 			."<br />"
-			.$IS4C_LOCAL->get("farewellMsg3")
+			.$CORE_LOCAL->get("farewellMsg3")
 			."</div>";
 		return $ret;
 	}
@@ -99,7 +99,7 @@ function printReceiptfooter($readOnly=False) {
 
 
 function drawitems($top_item, $rows, $highlight) {
-	global $IS4C_LOCAL;
+	global $CORE_LOCAL;
 
 	$ret = printheaderb();
 
@@ -114,11 +114,11 @@ function drawitems($top_item, $rows, $highlight) {
 
 	if ($rowCount == 0) {
 		$ret .= "<div class=\"centerOffset\">";
-		if ($IS4C_LOCAL->get("training") != 1) {
-			$ret .= plainmsg($IS4C_LOCAL->get("welcomeMsg1")."<BR>".$IS4C_LOCAL->get("welcomeMsg2"));
+		if ($CORE_LOCAL->get("training") != 1) {
+			$ret .= plainmsg($CORE_LOCAL->get("welcomeMsg1")."<BR>".$CORE_LOCAL->get("welcomeMsg2"));
 		}
 		else {
-			$ret .= plainmsg($IS4C_LOCAL->get("trainingMsg1")."<BR>".$IS4C_LOCAL->get("trainingMsg2"));
+			$ret .= plainmsg($CORE_LOCAL->get("trainingMsg1")."<BR>".$CORE_LOCAL->get("trainingMsg2"));
 		}
 		$ret .= "</div>";
 	}
@@ -169,12 +169,12 @@ function drawitems($top_item, $rows, $highlight) {
 
 
 function lastpage($readOnly=False) {
-	global $IS4C_LOCAL;
+	global $CORE_LOCAL;
 
 	if (!$readOnly){
 		getsubtotals();
 	}
-	$last_id = $IS4C_LOCAL->get("LastID");
+	$last_id = $CORE_LOCAL->get("LastID");
 
 	if (($last_id - 11) < 0) {
 		$top_id = 1;
@@ -184,8 +184,8 @@ function lastpage($readOnly=False) {
 	}
 	
 	if (!$readOnly){
-		$IS4C_LOCAL->set("currentid",$last_id);
-		$IS4C_LOCAL->set("currenttopid",$top_id);
+		$CORE_LOCAL->set("currentid",$last_id);
+		$CORE_LOCAL->set("currenttopid",$top_id);
 	}
 	return drawitems($top_id, 11, $last_id);
 }

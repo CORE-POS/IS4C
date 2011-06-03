@@ -3,29 +3,29 @@
 
     Copyright 2001, 2004 Wedge Community Co-op
 
-    This file is part of IS4C.
+    This file is part of IT CORE.
 
-    IS4C is free software; you can redistribute it and/or modify
+    IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    IS4C is distributed in the hope that it will be useful,
+    IT CORE is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    in the file license.txt along with IS4C; if not, write to the Free Software
+    in the file license.txt along with IT CORE; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
-$IS4C_PATH = isset($IS4C_PATH)?$IS4C_PATH:"";
-if (empty($IS4C_PATH)){ while(!file_exists($IS4C_PATH."is4c.css")) $IS4C_PATH .= "../"; }
+$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
+if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
 
-if (!function_exists("setDrawerKick")) include($IS4C_PATH."lib/setDrawerKick.php");  // apbw 03/29/05 Drawer Kick Patch
-if (!function_exists("writeLine")) include_once($IS4C_PATH."lib/printLib.php");	// apbw 03/26/05 Wedge Printer Swap Patch
-if (!isset($IS4C_LOCAL)) include($IS4C_PATH."lib/LocalStorage/conf.php");
+if (!function_exists("setDrawerKick")) include($CORE_PATH."lib/setDrawerKick.php");  // apbw 03/29/05 Drawer Kick Patch
+if (!function_exists("writeLine")) include_once($CORE_PATH."lib/printLib.php");	// apbw 03/26/05 Wedge Printer Swap Patch
+if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
 
 // ----------------------------------------------------------- 
 // printReceipt.php is the main page for printing receipts.  
@@ -35,7 +35,7 @@ if (!isset($IS4C_LOCAL)) include($IS4C_PATH."lib/LocalStorage/conf.php");
 
 
 function printReceipt($arg1,$second=False) {
-	global $IS4C_LOCAL;
+	global $CORE_LOCAL;
 
 	$dokick = setDrawerKickLater();
 	$receipt = "";
@@ -49,13 +49,13 @@ function printReceipt($arg1,$second=False) {
   turn off staff charge receipt printing if toggled - apbw 2/1/05 
   ---------------------------------------------------------------- */
 
-	$noreceipt = ($IS4C_LOCAL->get("receiptToggle")==1 ? 0 : 1);
+	$noreceipt = ($CORE_LOCAL->get("receiptToggle")==1 ? 0 : 1);
 	
 	$dateTimeStamp = time();		// moved by apbw 2/15/05 SCR
 
 // -- Our Reference number for the transaction.
 
-	$ref = trim($IS4C_LOCAL->get("CashierNo"))."-".trim($IS4C_LOCAL->get("laneno"))."-".trim($IS4C_LOCAL->get("transno"));
+	$ref = trim($CORE_LOCAL->get("CashierNo"))."-".trim($CORE_LOCAL->get("laneno"))."-".trim($CORE_LOCAL->get("transno"));
 
 
 	if ($noreceipt != 1) 		// moved by apbw 2/15/05 SCR
@@ -73,10 +73,10 @@ function printReceipt($arg1,$second=False) {
 	if ($arg1 == "full") {
 
 		$receipt .= receiptDetail();
-		$member = "Member ".trim($IS4C_LOCAL->get("memberID"));
-		$your_discount = $IS4C_LOCAL->get("transDiscount") + $IS4C_LOCAL->get("memCouponTTL");
+		$member = "Member ".trim($CORE_LOCAL->get("memberID"));
+		$your_discount = $CORE_LOCAL->get("transDiscount") + $CORE_LOCAL->get("memCouponTTL");
 
-		if ($IS4C_LOCAL->get("transDiscount") + $IS4C_LOCAL->get("memCouponTTL") + $IS4C_LOCAL->get("specials") > 0 ) {
+		if ($CORE_LOCAL->get("transDiscount") + $CORE_LOCAL->get("memCouponTTL") + $CORE_LOCAL->get("specials") > 0 ) {
 			/*
 			$receipt .= "\n".centerString("------------------ YOUR SAVINGS -------------------")."\n";
 
@@ -84,21 +84,21 @@ function printReceipt($arg1,$second=False) {
 				$receipt .= "    DISCOUNTS: $".number_format($your_discount, 2)."\n";
 			}
 
-			if ($IS4C_LOCAL->get("specials") > 0) {
-				$receipt .= "    SPECIALS: $".number_format($IS4C_LOCAL->get("specials"), 2)."\n";
+			if ($CORE_LOCAL->get("specials") > 0) {
+				$receipt .= "    SPECIALS: $".number_format($CORE_LOCAL->get("specials"), 2)."\n";
 			}
 
 			$receipt .= centerString("---------------------------------------------------")."\n";
 			*/
-			$receipt .= 'TODAY YOU SAVED = $'.number_format($your_discount + $IS4C_LOCAL->get("specials"),2)."\n";
+			$receipt .= 'TODAY YOU SAVED = $'.number_format($your_discount + $CORE_LOCAL->get("specials"),2)."\n";
 		}
 		$receipt .= localTTL();
 		$receipt .= "\n";
 	
-		if (trim($IS4C_LOCAL->get("memberID")) != $IS4C_LOCAL->get("defaultNonMem")) {
+		if (trim($CORE_LOCAL->get("memberID")) != $CORE_LOCAL->get("defaultNonMem")) {
 			/***** jqh 09/29/05 change made to thank you line depending on session newReceipt *****/
-			if ($IS4C_LOCAL->get("newReceipt")==1){
-				$receipt .= biggerFont(centerBig("thank you - owner ".trim($IS4C_LOCAL->get("memberID"))))."\n\n";
+			if ($CORE_LOCAL->get("newReceipt")==1){
+				$receipt .= biggerFont(centerBig("thank you - owner ".trim($CORE_LOCAL->get("memberID"))))."\n\n";
 			}else{
 				$receipt .= centerString("Thank You - ".$member."!!!")."\n";
 			}
@@ -106,7 +106,7 @@ function printReceipt($arg1,$second=False) {
 		}
 		else {
 			/***** jqh 09/29/05 change made to thank you line depending on session newReceipt *****/
-			if ($IS4C_LOCAL->get("newReceipt")==1){
+			if ($CORE_LOCAL->get("newReceipt")==1){
 				$receipt .= biggerFont(centerBig("thank you"))."\n\n";
 			}else{
 				$receipt .= centerString("Thank You!!!")."\n";
@@ -114,25 +114,25 @@ function printReceipt($arg1,$second=False) {
 			/***** jqh end change *****/
 		}
 
-		for ($i = 1; $i <= $IS4C_LOCAL->get("receiptFooterCount"); $i++)
-			$receipt .= centerString($IS4C_LOCAL->get("receiptFooter$i"))."\n";
+		for ($i = 1; $i <= $CORE_LOCAL->get("receiptFooterCount"); $i++)
+			$receipt .= centerString($CORE_LOCAL->get("receiptFooter$i"))."\n";
 
-		if ($IS4C_LOCAL->get("store")=="wfc"){
+		if ($CORE_LOCAL->get("store")=="wfc"){
 			$refund_date = date("m/d/Y",mktime(0,0,0,date("n"),date("j")+30,date("Y")));
 			$receipt .= centerString("returns accepted with this receipt through ".$refund_date."\n");
 		}
 		/*
-		if ($IS4C_LOCAL->get("yousaved") > 0) {
-			$receipt .= centerString("You Saved $".number_format($IS4C_LOCAL->get("yousaved"), 2))."\n";
+		if ($CORE_LOCAL->get("yousaved") > 0) {
+			$receipt .= centerString("You Saved $".number_format($CORE_LOCAL->get("yousaved"), 2))."\n";
 		}
 
-		if ($IS4C_LOCAL->get("couldhavesaved") > 0 && $IS4C_LOCAL->get("yousaved") > 0) {
+		if ($CORE_LOCAL->get("couldhavesaved") > 0 && $CORE_LOCAL->get("yousaved") > 0) {
 			$receipt .= centerString("You could have saved an additional $"
-				    .number_format($IS4C_LOCAL->get("couldhavesaved"), 2))."\n";
+				    .number_format($CORE_LOCAL->get("couldhavesaved"), 2))."\n";
 		}
-		elseif ($IS4C_LOCAL->get("couldhavesaved") > 0) {
+		elseif ($CORE_LOCAL->get("couldhavesaved") > 0) {
 			$receipt .= centerString("You could have saved $"
-				    .number_format($IS4C_LOCAL->get("couldhavesaved"), 2))."\n";
+				    .number_format($CORE_LOCAL->get("couldhavesaved"), 2))."\n";
 		}
 		*/
 
@@ -147,40 +147,40 @@ function printReceipt($arg1,$second=False) {
 
 		// --- apbw 2/15/05 SCR ---
 		/*
-		if ($IS4C_LOCAL->get("chargetender") == 1 && $IS4C_LOCAL->get("End") == 1) {						
+		if ($CORE_LOCAL->get("chargetender") == 1 && $CORE_LOCAL->get("End") == 1) {						
 			$receipt = $receipt.printChargeFooterCust($dateTimeStamp, $ref);	
 		}
 		 */
 
 		/*
-		if ($IS4C_LOCAL->get("ccTender") == 1) {
+		if ($CORE_LOCAL->get("ccTender") == 1) {
 			$receipt = $receipt.printCCFooter($dateTimeStamp,$ref);
 		}
 		 */
 
 		// append customer copy to actual lane receipt
-		if ($IS4C_LOCAL->get('standalone') == 0)
+		if ($CORE_LOCAL->get('standalone') == 0)
 			$receipt .= printCCSigSlip($dateTimeStamp, $ref, false, 0);
 
-		if ($IS4C_LOCAL->get("autoReprint") == 1)
+		if ($CORE_LOCAL->get("autoReprint") == 1)
 			$receipt .= printGCSlip($dateTimeStamp, $ref, false, 1);
 		else
 			$receipt .= printGCSlip($dateTimeStamp, $ref, true, 1);
 
-		if ($IS4C_LOCAL->get("promoMsg") == 1) {
+		if ($CORE_LOCAL->get("promoMsg") == 1) {
 			promoMsg();
 
 		}
 
 		$receipt .= storeCreditIssued($second);
 
-		$IS4C_LOCAL->set("headerprinted",0);
+		$CORE_LOCAL->set("headerprinted",0);
 
 	}
 	else if ($arg1 == "cab"){
-		$ref = $IS4C_LOCAL->get("cabReference");
+		$ref = $CORE_LOCAL->get("cabReference");
 		$receipt = printCabCoupon($dateTimeStamp, $ref);
-		$IS4C_LOCAL->set("cabReference","");
+		$CORE_LOCAL->set("cabReference","");
 	}
 	else {
 
@@ -223,7 +223,7 @@ function printReceipt($arg1,$second=False) {
 		authorization, before tendering *****/
 		
 		elseif ($arg1 == "ccSlip") {
-			//if ($IS4C_LOCAL->get("ccCustCopy") == 1){
+			//if ($CORE_LOCAL->get("ccCustCopy") == 1){
 			//	$receipt = printCCSigSlip($dateTimeStamp,$ref,False);
 			//}
 			//else {
@@ -231,7 +231,7 @@ function printReceipt($arg1,$second=False) {
 			//}
 		}
 		else if ($arg1 == "gcSlip") { // --atf 10/8/07
-			if ($IS4C_LOCAL->get("autoReprint") == 1){
+			if ($CORE_LOCAL->get("autoReprint") == 1){
 				$receipt = printGCSlip($dateTimeStamp,$ref,true);
 			}
 			else {
@@ -253,7 +253,7 @@ else {
 /* --------------------------------------------------------------
   print store copy of charge slip regardless of receipt print setting - apbw 2/14/05 
   ---------------------------------------------------------------- */
-if ($IS4C_LOCAL->get("chargetender") == 1 && $IS4C_LOCAL->get("End") == 1) {
+if ($CORE_LOCAL->get("chargetender") == 1 && $CORE_LOCAL->get("End") == 1) {
 	if ($noreceipt == 1) {	
 		$receipt = $receipt.printChargeFooterStore($dateTimeStamp, $ref);
 	} else {	

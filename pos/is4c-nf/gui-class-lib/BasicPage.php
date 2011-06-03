@@ -3,20 +3,20 @@
 
     Copyright 2007,2010 Whole Foods Co-op
 
-    This file is part of IS4C.
+    This file is part of IT CORE.
 
-    IS4C is free software; you can redistribute it and/or modify
+    IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    IS4C is distributed in the hope that it will be useful,
+    IT CORE is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    in the file license.txt along with IS4C; if not, write to the Free Software
+    in the file license.txt along with IT CORE; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
@@ -36,10 +36,10 @@
  * Any of these functions may be overriden by subclasses
  */
 
-$IS4C_PATH = isset($IS4C_PATH)?$IS4C_PATH:"";
-if (empty($IS4C_PATH)){ while(!file_exists($IS4C_PATH."is4c.css")) $IS4C_PATH .= "../"; }
+$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
+if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
 
-if (!function_exists('scaledisplaymsg')) include($IS4C_PATH.'lib/drawscreen.php');
+if (!function_exists('scaledisplaymsg')) include($CORE_PATH.'lib/drawscreen.php');
 
 class BasicPage {
 
@@ -68,16 +68,16 @@ class BasicPage {
 	}
 
 	function print_page(){
-		global $IS4C_PATH;
+		global $CORE_PATH;
 		?>
 		<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 		<html>
 		<?php
 		echo "<head>";
 		echo "<link rel=\"stylesheet\" type=\"text/css\"
-		    href=\"{$IS4C_PATH}/is4c.css\">";
+		    href=\"{$CORE_PATH}/pos.css\">";
 		echo "<script type=\"text/javascript\"
-			src=\"{$IS4C_PATH}/js/jquery.js\"></script>";
+			src=\"{$CORE_PATH}/js/jquery.js\"></script>";
 		$this->head_content();
 		echo "</head>";
 		echo "<body>";
@@ -102,20 +102,20 @@ class BasicPage {
 	}
 
 	function input_header($action=""){
-		global $IS4C_LOCAL,$IS4C_PATH;
+		global $CORE_LOCAL,$CORE_PATH;
 		if (empty($action))
 			$action = "action=\"".$_SERVER['PHP_SELF']."\"";
 
 		$this->add_onload_command("betterDate();\n\$('#reginput').focus();");
 		
 		$inputType = "text";
-		if ($IS4C_LOCAL->get("inputMasked") != 0)
+		if ($CORE_LOCAL->get("inputMasked") != 0)
 			$inputType = "password";
 		// this needs to be configurable; just fixing
 		// a giant PHP warning for the moment
 		$time = strftime("%m/%d/%y %I:%M %p", time());
 
-		$IS4C_LOCAL->set("repeatable",0);
+		$CORE_LOCAL->set("repeatable",0);
 		?>
 		<script type="text/javascript">
 		function betterDate() {
@@ -144,39 +144,39 @@ class BasicPage {
 		}
 		</script>
 		<div id="inputArea">
-			<div class="inputform <?php echo ($IS4C_LOCAL->get("training")==1?'training':''); ?>">
+			<div class="inputform <?php echo ($CORE_LOCAL->get("training")==1?'training':''); ?>">
 				<form name="form" id="formlocal" method="post" autocomplete="off"
 					<?php echo $action; ?> >
 				<input name="reginput" value="" onblur="$('#reginput').focus();"
 					type="<?php echo $inputType; ?>" id="reginput"  />
 				</form>
 			</div>
-			<div class="notices <?php echo ($IS4C_LOCAL->get("training")==1?'training':''); ?>">
+			<div class="notices <?php echo ($CORE_LOCAL->get("training")==1?'training':''); ?>">
 			<?php
-			if ($IS4C_LOCAL->get("training") == 1) {
+			if ($CORE_LOCAL->get("training") == 1) {
 				echo "<span class=\"text\">training </span>"
-				     ."<img src='{$IS4C_PATH}graphics/BLUEDOT.GIF'>&nbsp;&nbsp;&nbsp;";
+				     ."<img src='{$CORE_PATH}graphics/BLUEDOT.GIF'>&nbsp;&nbsp;&nbsp;";
 			}
-			elseif ($IS4C_LOCAL->get("standalone") == 0) {
-				echo "<img src='{$IS4C_PATH}graphics/GREENDOT.GIF'>&nbsp;&nbsp;&nbsp;";
+			elseif ($CORE_LOCAL->get("standalone") == 0) {
+				echo "<img src='{$CORE_PATH}graphics/GREENDOT.GIF'>&nbsp;&nbsp;&nbsp;";
 			}
 			else {
 				echo "<span class=\"text\">stand alone</span>"
-				     ."<img src='{$IS4C_PATH}graphics/REDDOT.GIF'>&nbsp;&nbsp;&nbsp;";
+				     ."<img src='{$CORE_PATH}graphics/REDDOT.GIF'>&nbsp;&nbsp;&nbsp;";
 			}
-			if($IS4C_LOCAL->get("CCintegrate") == 1 && 
-				$IS4C_LOCAL->get("ccLive") == 1 && $IS4C_LOCAL->get("training") == 0){
-			   echo "<img src='{$IS4C_PATH}graphics/ccIn.gif'>&nbsp;";
-			}elseif($IS4C_LOCAL->get("CCintegrate") == 1 && 
-				($IS4C_LOCAL->get("training") == 1 || $IS4C_LOCAL->get("ccLive") == 0)){
-			   echo "<img src='{$IS4C_PATH}graphics/ccTest.gif'>&nbsp;";
+			if($CORE_LOCAL->get("CCintegrate") == 1 && 
+				$CORE_LOCAL->get("ccLive") == 1 && $CORE_LOCAL->get("training") == 0){
+			   echo "<img src='{$CORE_PATH}graphics/ccIn.gif'>&nbsp;";
+			}elseif($CORE_LOCAL->get("CCintegrate") == 1 && 
+				($CORE_LOCAL->get("training") == 1 || $CORE_LOCAL->get("ccLive") == 0)){
+			   echo "<img src='{$CORE_PATH}graphics/ccTest.gif'>&nbsp;";
 			}
 
 			echo "<span id=\"timeSpan\" class=\"time\">".$time."</span>\n";
-			if ($IS4C_LOCAL->get("prefix") != ""){
+			if ($CORE_LOCAL->get("prefix") != ""){
 				$this->add_onload_command("\$('#reginput').val('"
-					.$IS4C_LOCAL->get("prefix")."');\n");
-				$IS4C_LOCAL->set("prefix","");
+					.$CORE_LOCAL->get("prefix")."');\n");
+				$CORE_LOCAL->set("prefix","");
 			}
 			?>
 
@@ -187,12 +187,12 @@ class BasicPage {
 	}
 
 	function noinput_header(){
-		global $IS4C_LOCAL;
+		global $CORE_LOCAL;
 		$this->add_onload_command("betterDate();\n");
 		
 		$time = strftime("%m/%d/%y %I:%M %p", time());
 
-		$IS4C_LOCAL->set("repeatable",0);
+		$CORE_LOCAL->set("repeatable",0);
 		?>
 		<script type="text/javascript">
 		function betterDate() {
@@ -226,22 +226,22 @@ class BasicPage {
 			</div>
 			<div class="notices">
 			<?php	
-			if ($IS4C_LOCAL->get("training") == 1) {
+			if ($CORE_LOCAL->get("training") == 1) {
 				echo "<span class=\"text\">training </span>"
 				     ."<img src='/graphics/BLUEDOT.GIF'>&nbsp;&nbsp;&nbsp;";
 			}
-			elseif ($IS4C_LOCAL->get("standalone") == 0) {
+			elseif ($CORE_LOCAL->get("standalone") == 0) {
 				echo "<img src='/graphics/GREENDOT.GIF'>&nbsp;&nbsp;&nbsp;";
 			}
 			else {
 				echo "<span class=\"text\">stand alone</span>"
 				     ."<img src='/graphics/REDDOT.GIF'>&nbsp;&nbsp;&nbsp;";
 			}
-			if($IS4C_LOCAL->get("CCintegrate") == 1 && 
-				$IS4C_LOCAL->get("ccLive") == 1 && $IS4C_LOCAL->get("training") == 0){
+			if($CORE_LOCAL->get("CCintegrate") == 1 && 
+				$CORE_LOCAL->get("ccLive") == 1 && $CORE_LOCAL->get("training") == 0){
 			   echo "<img src='/graphics/ccIn.gif'>&nbsp;";
-			}elseif($IS4C_LOCAL->get("CCintegrate") == 1 && 
-				($IS4C_LOCAL->get("training") == 1 || $IS4C_LOCAL->get("ccLive") == 0)){
+			}elseif($CORE_LOCAL->get("CCintegrate") == 1 && 
+				($CORE_LOCAL->get("training") == 1 || $CORE_LOCAL->get("ccLive") == 0)){
 			   echo "<img src='/graphics/ccTest.gif'>&nbsp;";
 			}
 
@@ -268,10 +268,10 @@ class BasicPage {
 	}
 
 	function scanner_scale_polling($include_scans=True){
-		global $IS4C_PATH;
+		global $CORE_PATH;
 		?>
 		<script type="text/javascript"
-			src="<?php echo $IS4C_PATH; ?>js/poll-scale.js">
+			src="<?php echo $CORE_PATH; ?>js/poll-scale.js">
 		</script>
 		<?php
 		$this->add_onload_command("pollScale();\n");

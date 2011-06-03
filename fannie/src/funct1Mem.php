@@ -16,7 +16,7 @@
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    in the file license.txt along with IS4C; if not, write to the Free Software
+    in the file license.txt along with IT CORE; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
@@ -525,7 +525,7 @@ function item_sales_last_month($upc,$period,$time){
     
 }
 
-/* pads upc with zeroes to make $upc into IS4C compliant upc*/
+/* pads upc with zeroes to make $upc into IT CORE compliant upc*/
 
 function str_pad_upc($upc){
    $strUPC = str_pad($upc,13,"0",STR_PAD_LEFT);

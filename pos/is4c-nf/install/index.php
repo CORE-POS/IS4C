@@ -3,36 +3,36 @@
 
     Copyright 2010 Whole Foods Co-op
 
-    This file is part of IS4C.
+    This file is part of IT CORE.
 
-    IS4C is free software; you can redistribute it and/or modify
+    IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    IS4C is distributed in the hope that it will be useful,
+    IT CORE is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    in the file license.txt along with IS4C; if not, write to the Free Software
+    in the file license.txt along with IT CORE; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
 
-$IS4C_PATH = isset($IS4C_PATH)?$IS4C_PATH:"";
-if (empty($IS4C_PATH)){ while(!file_exists($IS4C_PATH."is4c.css")) $IS4C_PATH .= "../"; }
+$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
+if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
 
 ini_set('display_errors','1');
 
-include($IS4C_PATH.'ini.php');
-include($IS4C_PATH.'lib/lib.php');
+include($CORE_PATH.'ini.php');
+include($CORE_PATH.'lib/lib.php');
 include('util.php');
 ?>
 <html>
 <head>
-<title>IS4C Lane Installation</title>
+<title>IT CORE Lane Installation</title>
 <style type="text/css">
 body {
 	line-height: 1.5em;
@@ -48,7 +48,7 @@ Necessities
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <a href="extra_data.php">Sample Data</a>
 <form action=index.php method=post>
-<h1>IS4C Install checks</h1>
+<h1>IT CORE Install checks</h1>
 <h3>Basics</h3>
 <?php
 if (function_exists('posix_getpwuid')){
@@ -71,8 +71,8 @@ if (!function_exists("socket_create")){
 <br />
 OS: <select name=OS>
 <?php
-if (isset($_REQUEST['OS'])) $IS4C_LOCAL->set('OS',$_REQUEST['OS']);
-if ($IS4C_LOCAL->get('OS') == 'win32'){
+if (isset($_REQUEST['OS'])) $CORE_LOCAL->set('OS',$_REQUEST['OS']);
+if ($CORE_LOCAL->get('OS') == 'win32'){
 	echo "<option value=win32 selected>Windows</option>";
 	echo "<option value=other>*nix</option>";
 }
@@ -80,32 +80,32 @@ else {
 	echo "<option value=win32>Windows</option>";
 	echo "<option value=other selected>*nix</option>";
 }
-confsave('OS',"'".$IS4C_LOCAL->get('OS')."'");
+confsave('OS',"'".$CORE_LOCAL->get('OS')."'");
 ?>
 </select><br />
 Lane number:
 <?php
-if (isset($_REQUEST['LANE_NO']) && is_numeric($_REQUEST['LANE_NO'])) $IS4C_LOCAL->set('laneno',$_REQUEST['LANE_NO']);
+if (isset($_REQUEST['LANE_NO']) && is_numeric($_REQUEST['LANE_NO'])) $CORE_LOCAL->set('laneno',$_REQUEST['LANE_NO']);
 printf("<input type=text name=LANE_NO value=\"%d\" />",
-	$IS4C_LOCAL->get('laneno'));
-confsave('laneno',$IS4C_LOCAL->get('laneno'));
+	$CORE_LOCAL->get('laneno'));
+confsave('laneno',$CORE_LOCAL->get('laneno'));
 ?>
 <br />
 <hr />
 <h3>Database set up</h3>
 Lane database host: 
 <?php
-if (isset($_REQUEST['LANE_HOST'])) $IS4C_LOCAL->set('localhost',$_REQUEST['LANE_HOST']);
+if (isset($_REQUEST['LANE_HOST'])) $CORE_LOCAL->set('localhost',$_REQUEST['LANE_HOST']);
 printf("<input type=text name=LANE_HOST value=\"%s\" />",
-	$IS4C_LOCAL->get('localhost'));
-confsave('localhost',"'".$IS4C_LOCAL->get('localhost')."'");
+	$CORE_LOCAL->get('localhost'));
+confsave('localhost',"'".$CORE_LOCAL->get('localhost')."'");
 ?>
 <br />
 Lane database type:
 <select name=LANE_DBMS>
 <?php
-if(isset($_REQUEST['LANE_DBMS'])) $IS4C_LOCAL->set('DBMS',$_REQUEST['LANE_DBMS']);
-if ($IS4C_LOCAL->get('DBMS') == 'mssql'){
+if(isset($_REQUEST['LANE_DBMS'])) $CORE_LOCAL->set('DBMS',$_REQUEST['LANE_DBMS']);
+if ($CORE_LOCAL->get('DBMS') == 'mssql'){
 	echo "<option value=mysql>MySQL</option>";
 	echo "<option value=mssql selected>SQL Server</option>";
 }
@@ -113,31 +113,31 @@ else {
 	echo "<option value=mysql selected>MySQL</option>";
 	echo "<option value=mssql>SQL Server</option>";
 }
-confsave('DBMS',"'".$IS4C_LOCAL->get('DBMS')."'");
+confsave('DBMS',"'".$CORE_LOCAL->get('DBMS')."'");
 ?>
 </select><br />
 Lane user name:
 <?php
-if (isset($_REQUEST['LANE_USER'])) $IS4C_LOCAL->set('localUser',$_REQUEST['LANE_USER']);
+if (isset($_REQUEST['LANE_USER'])) $CORE_LOCAL->set('localUser',$_REQUEST['LANE_USER']);
 printf("<input type=text name=LANE_USER value=\"%s\" />",
-	$IS4C_LOCAL->get('localUser'));
-confsave('localUser',"'".$IS4C_LOCAL->get('localUser')."'");
+	$CORE_LOCAL->get('localUser'));
+confsave('localUser',"'".$CORE_LOCAL->get('localUser')."'");
 ?>
 <br />
 Lane password:
 <?php
-if (isset($_REQUEST['LANE_PASS'])) $IS4C_LOCAL->set('localPass',$_REQUEST['LANE_PASS']);
+if (isset($_REQUEST['LANE_PASS'])) $CORE_LOCAL->set('localPass',$_REQUEST['LANE_PASS']);
 printf("<input type=password name=LANE_PASS value=\"%s\" />",
-	$IS4C_LOCAL->get('localPass'));
-confsave('localPass',"'".$IS4C_LOCAL->get('localPass')."'");
+	$CORE_LOCAL->get('localPass'));
+confsave('localPass',"'".$CORE_LOCAL->get('localPass')."'");
 ?>
 <br />
 Lane operational DB:
 <?php
-if (isset($_REQUEST['LANE_OP_DB'])) $IS4C_LOCAL->set('pDatabase',$_REQUEST['LANE_OP_DB']);
+if (isset($_REQUEST['LANE_OP_DB'])) $CORE_LOCAL->set('pDatabase',$_REQUEST['LANE_OP_DB']);
 printf("<input type=text name=LANE_OP_DB value=\"%s\" />",
-	$IS4C_LOCAL->get('pDatabase'));
-confsave('pDatabase',"'".$IS4C_LOCAL->get('pDatabase')."'");
+	$CORE_LOCAL->get('pDatabase'));
+confsave('pDatabase',"'".$CORE_LOCAL->get('pDatabase')."'");
 ?>
 <br />
 Testing Operation DB Connection:
@@ -145,21 +145,21 @@ Testing Operation DB Connection:
 $gotDBs = 0;
 if (!class_exists('SQLManager'))
 	include('../lib/SQLManager.php');
-if ($IS4C_LOCAL->get("DBMS") == "mysql")
+if ($CORE_LOCAL->get("DBMS") == "mysql")
 	$val = ini_set('mysql.connect_timeout',5);
 
-if (pinghost($IS4C_LOCAL->get('localhost')) == 1){
-	$sql = new SQLManager($IS4C_LOCAL->get('localhost'),
-			$IS4C_LOCAL->get('DBMS'),
-			$IS4C_LOCAL->get('pDatabase'),
-			$IS4C_LOCAL->get('localUser'),
-			$IS4C_LOCAL->get('localPass'));
-	if ($sql->connections[$IS4C_LOCAL->get('pDatabase')] == False){
+if (pinghost($CORE_LOCAL->get('localhost')) == 1){
+	$sql = new SQLManager($CORE_LOCAL->get('localhost'),
+			$CORE_LOCAL->get('DBMS'),
+			$CORE_LOCAL->get('pDatabase'),
+			$CORE_LOCAL->get('localUser'),
+			$CORE_LOCAL->get('localPass'));
+	if ($sql->connections[$CORE_LOCAL->get('pDatabase')] == False){
 		echo "<span style=\"color:red;\">Failed</span>";
 	}
 	else {
 		echo "<span style=\"color:green;\">Succeeded</span>";
-		create_op_dbs($sql,$IS4C_LOCAL->get('DBMS'));
+		create_op_dbs($sql,$CORE_LOCAL->get('DBMS'));
 		$gotDBs++;
 	}
 }
@@ -170,21 +170,21 @@ else {
 <br />
 Lane transaction DB:
 <?php
-if (isset($_REQUEST['LANE_TRANS_DB'])) $IS4C_LOCAL->set('tDatabase',$_REQUEST['LANE_TRANS_DB']);
+if (isset($_REQUEST['LANE_TRANS_DB'])) $CORE_LOCAL->set('tDatabase',$_REQUEST['LANE_TRANS_DB']);
 printf("<input type=text name=LANE_TRANS_DB value=\"%s\" />",
-	$IS4C_LOCAL->get('tDatabase'));
-confsave('tDatabase',"'".$IS4C_LOCAL->get('tDatabase')."'");
+	$CORE_LOCAL->get('tDatabase'));
+confsave('tDatabase',"'".$CORE_LOCAL->get('tDatabase')."'");
 ?>
 <br />
 Testing transational DB connection:
 <?php
-if(pinghost($IS4C_LOCAL->get('localhost')) == 1){
-	$sql = new SQLManager($IS4C_LOCAL->get('localhost'),
-			$IS4C_LOCAL->get('DBMS'),
-			$IS4C_LOCAL->get('tDatabase'),
-			$IS4C_LOCAL->get('localUser'),
-			$IS4C_LOCAL->get('localPass'));
-	if ($sql->connections[$IS4C_LOCAL->get('tDatabase')] == False){
+if(pinghost($CORE_LOCAL->get('localhost')) == 1){
+	$sql = new SQLManager($CORE_LOCAL->get('localhost'),
+			$CORE_LOCAL->get('DBMS'),
+			$CORE_LOCAL->get('tDatabase'),
+			$CORE_LOCAL->get('localUser'),
+			$CORE_LOCAL->get('localPass'));
+	if ($sql->connections[$CORE_LOCAL->get('tDatabase')] == False){
 		echo "<span style=\"color:red;\">Failed</span>";
 	}
 	else {
@@ -214,7 +214,7 @@ if(pinghost($IS4C_LOCAL->get('localhost')) == 1){
 			}
 		}
 
-		create_trans_dbs($sql,$IS4C_LOCAL->get('DBMS'));
+		create_trans_dbs($sql,$CORE_LOCAL->get('DBMS'));
 		$gotDBs++;
 	}
 }
@@ -226,17 +226,17 @@ else {
 <br /><br />
 Server database host: 
 <?php
-if (isset($_REQUEST['SERVER_HOST'])) $IS4C_LOCAL->set('mServer',$_REQUEST['SERVER_HOST']);
+if (isset($_REQUEST['SERVER_HOST'])) $CORE_LOCAL->set('mServer',$_REQUEST['SERVER_HOST']);
 printf("<input type=text name=SERVER_HOST value=\"%s\" />",
-	$IS4C_LOCAL->get('mServer'));
-confsave('mServer',"'".$IS4C_LOCAL->get('mServer')."'");
+	$CORE_LOCAL->get('mServer'));
+confsave('mServer',"'".$CORE_LOCAL->get('mServer')."'");
 ?>
 <br />
 Server database type:
 <select name=SERVER_TYPE>
 <?php
-if (isset($_REQUEST['SERVER_TYPE'])) $IS4C_LOCAL->set('mDBMS',$_REQUEST['SERVER_TYPE']);
-if ($IS4C_LOCAL->get('mDBMS') == 'mssql'){
+if (isset($_REQUEST['SERVER_TYPE'])) $CORE_LOCAL->set('mDBMS',$_REQUEST['SERVER_TYPE']);
+if ($CORE_LOCAL->get('mDBMS') == 'mssql'){
 	echo "<option value=mysql>MySQL</option>";
 	echo "<option value=mssql selected>SQL Server</option>";
 }
@@ -244,47 +244,47 @@ else {
 	echo "<option value=mysql selected>MySQL</option>";
 	echo "<option value=mssql>SQL Server</option>";
 }
-confsave('mDBMS',"'".$IS4C_LOCAL->get('mDBMS')."'");
+confsave('mDBMS',"'".$CORE_LOCAL->get('mDBMS')."'");
 ?>
 </select><br />
 Server user name:
 <?php
-if (isset($_REQUEST['SERVER_USER'])) $IS4C_LOCAL->set('mUser',$_REQUEST['SERVER_USER']);
+if (isset($_REQUEST['SERVER_USER'])) $CORE_LOCAL->set('mUser',$_REQUEST['SERVER_USER']);
 printf("<input type=text name=SERVER_USER value=\"%s\" />",
-	$IS4C_LOCAL->get('mUser'));
-confsave('mUser',"'".$IS4C_LOCAL->get('mUser')."'");
+	$CORE_LOCAL->get('mUser'));
+confsave('mUser',"'".$CORE_LOCAL->get('mUser')."'");
 ?>
 <br />
 Server password:
 <?php
-if (isset($_REQUEST['SERVER_PASS'])) $IS4C_LOCAL->set('mPass',$_REQUEST['SERVER_PASS']);
+if (isset($_REQUEST['SERVER_PASS'])) $CORE_LOCAL->set('mPass',$_REQUEST['SERVER_PASS']);
 printf("<input type=password name=SERVER_PASS value=\"%s\" />",
-	$IS4C_LOCAL->get('mPass'));
-confsave('mPass',"'".$IS4C_LOCAL->get('mPass')."'");
+	$CORE_LOCAL->get('mPass'));
+confsave('mPass',"'".$CORE_LOCAL->get('mPass')."'");
 ?>
 <br />
 Server database name:
 <?php
-if (isset($_REQUEST['SERVER_DB'])) $IS4C_LOCAL->set('mDatabase',$_REQUEST['SERVER_DB']);
+if (isset($_REQUEST['SERVER_DB'])) $CORE_LOCAL->set('mDatabase',$_REQUEST['SERVER_DB']);
 printf("<input type=text name=SERVER_DB value=\"%s\" />",
-	$IS4C_LOCAL->get('mDatabase'));
-confsave('mDatabase',"'".$IS4C_LOCAL->get('mDatabase')."'");
+	$CORE_LOCAL->get('mDatabase'));
+confsave('mDatabase',"'".$CORE_LOCAL->get('mDatabase')."'");
 ?>
 <br />
 Testing server connection:
 <?php
-if(pinghost($IS4C_LOCAL->get("mServer")) == 1){
-	$sql = new SQLManager($IS4C_LOCAL->get('mServer'),
-			$IS4C_LOCAL->get('mDBMS'),
-			$IS4C_LOCAL->get('mDatabase'),
-			$IS4C_LOCAL->get('mUser'),
-			$IS4C_LOCAL->get('mPass'));
-	if ($sql->connections[$IS4C_LOCAL->get('mDatabase')] == False){
+if(pinghost($CORE_LOCAL->get("mServer")) == 1){
+	$sql = new SQLManager($CORE_LOCAL->get('mServer'),
+			$CORE_LOCAL->get('mDBMS'),
+			$CORE_LOCAL->get('mDatabase'),
+			$CORE_LOCAL->get('mUser'),
+			$CORE_LOCAL->get('mPass'));
+	if ($sql->connections[$CORE_LOCAL->get('mDatabase')] == False){
 		echo "<span style=\"color:red;\">Failed</span>";
 	}
 	else {
 		echo "<span style=\"color:green;\">Succeeded</span>";
-		create_min_server($sql,$IS4C_LOCAL->get('mDBMS'));
+		create_min_server($sql,$CORE_LOCAL->get('mDBMS'));
 	}
 }
 else {
@@ -299,11 +299,11 @@ descriptions should be DB-legal syntax (e.g., no spaces). A rate of
 <?php
 $rates = array();
 if($gotDBs == 2){
-	$sql = new SQLManager($IS4C_LOCAL->get('localhost'),
-			$IS4C_LOCAL->get('DBMS'),
-			$IS4C_LOCAL->get('tDatabase'),
-			$IS4C_LOCAL->get('localUser'),
-			$IS4C_LOCAL->get('localPass'));
+	$sql = new SQLManager($CORE_LOCAL->get('localhost'),
+			$CORE_LOCAL->get('DBMS'),
+			$CORE_LOCAL->get('tDatabase'),
+			$CORE_LOCAL->get('localUser'),
+			$CORE_LOCAL->get('localPass'));
 	$ratesR = $sql->query("SELECT id,rate,description FROM taxrates ORDER BY id");
 	while($row=$sql->fetch_row($ratesR))
 		$rates[] = array($row[0],$row[1],$row[2]);
@@ -323,8 +323,8 @@ printf("<tr><td>(Add)</td><td><input type=text name=TAX_RATE[] value=\"\" /></td
 <?php
 
 function create_op_dbs($db,$type){
-	global $IS4C_LOCAL;
-	$name = $IS4C_LOCAL->get('pDatabase');
+	global $CORE_LOCAL;
+	$name = $CORE_LOCAL->get('pDatabase');
 
 	$chargeCodeQ = "CREATE TABLE chargecode (
 		staffID varchar(4),
@@ -634,8 +634,8 @@ function create_op_dbs($db,$type){
 }
 
 function create_trans_dbs($db,$type){
-	global $IS4C_LOCAL;
-	$name = $IS4C_LOCAL->get('tDatabase');
+	global $CORE_LOCAL;
+	$name = $CORE_LOCAL->get('tDatabase');
 
 	$actQ = "CREATE TABLE activities (
 		Activity tinyint,
@@ -2212,7 +2212,7 @@ function create_trans_dbs($db,$type){
 	'' as department,
 	'' as upc,
 	'' as trans_subtype
-	from ".$IS4C_LOCAL->get('pDatabase').".promoMsgsView";
+	from ".$CORE_LOCAL->get('pDatabase').".promoMsgsView";
 	if($type == 'mssql'){
 		$lttreorderG = "CREATE view ltt_receipt_reorder_g as
 		select top 100 percent
@@ -2298,7 +2298,7 @@ function create_trans_dbs($db,$type){
 		'' as department,
 		'' as upc,
 		'' as trans_subtype
-		from ".$IS4C_LOCAL->get('pDatabase').".dbo.promoMsgsView";
+		from ".$CORE_LOCAL->get('pDatabase').".dbo.promoMsgsView";
 	}
 	if(!$db->table_exists('ltt_receipt_reorder_g',$name)){
 		$db->query($lttreorderG,$name);
@@ -2351,7 +2351,7 @@ function create_trans_dbs($db,$type){
 		trans_type,
 		upc
 		from ltt_receipt_reorder_g r
-		left outer join ".$IS4C_LOCAL->get('pDatabase').".subdepts d on r.department=d.dept_ID
+		left outer join ".$CORE_LOCAL->get('pDatabase').".subdepts d on r.department=d.dept_ID
 		where r.total<>0 or r.unitprice=0
 		order by sequence";
 	if($type == 'mssql'){
@@ -2402,7 +2402,7 @@ function create_trans_dbs($db,$type){
 			trans_type,
 			upc
 			from ltt_receipt_reorder_g r
-			left outer join ".$IS4C_LOCAL->get('pDatabase')."dbo.subdepts
+			left outer join ".$CORE_LOCAL->get('pDatabase')."dbo.subdepts
 		       	d on r.department=d.dept_ID
 			where r.total<>0 or r.unitprice=0
 			order by sequence";
@@ -2794,7 +2794,7 @@ function create_trans_dbs($db,$type){
 		'' as department,
 		'' as upc,
 		'' as trans_subtype
-		from ".$IS4C_LOCAL->get('pDatabase').".promoMsgsView";
+		from ".$CORE_LOCAL->get('pDatabase').".promoMsgsView";
 	if($type == 'mssql'){
 		$rpreorderG = "CREATE     view rp_ltt_receipt_reorder_g as
 		select top 100 percent
@@ -2880,7 +2880,7 @@ function create_trans_dbs($db,$type){
 		'' as department,
 		'' as upc,
 		'' as trans_subtype
-		from ".$IS4C_LOCAL->get('pDatabase').".dbo.promoMsgsView";
+		from ".$CORE_LOCAL->get('pDatabase').".dbo.promoMsgsView";
 	}	
 	if(!$db->table_exists("rp_ltt_receipt_reorder_g",$name)){
 		$db->query($rpreorderG,$name);
@@ -2940,7 +2940,7 @@ function create_trans_dbs($db,$type){
 		upc
 
 		from rp_ltt_receipt_reorder_g r
-		left outer join ".$IS4C_LOCAL->get('pDatabase').".subdepts d 
+		left outer join ".$CORE_LOCAL->get('pDatabase').".subdepts d 
 		on r.department=d.dept_ID
 		where r.total<>0 or r.unitprice=0
 		order by register_no,emp_no,trans_no,card_no,sequence";
@@ -2997,7 +2997,7 @@ function create_trans_dbs($db,$type){
 		upc
 
 		from rp_ltt_receipt_reorder_g r
-		left outer join ".$IS4C_LOCAL->get('pDatabase').".dbo.subdepts d 
+		left outer join ".$CORE_LOCAL->get('pDatabase').".dbo.subdepts d 
 		on r.department=d.dept_ID
 		where r.total<>0 or r.unitprice=0
 		order by register_no,emp_no,trans_no,card_no,sequence";
@@ -3202,8 +3202,8 @@ function create_trans_dbs($db,$type){
 }
 
 function create_min_server($db,$type){
-	global $IS4C_LOCAL;
-	$name = $IS4C_LOCAL->get('mDatabase');
+	global $CORE_LOCAL;
+	$name = $CORE_LOCAL->get('mDatabase');
 
 	$dtransQ = "CREATE TABLE `dtransactions` (
 	  `datetime` datetime default NULL,

@@ -16,23 +16,23 @@
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    in the file license.txt along with IS4C; if not, write to the Free Software
+    in the file license.txt along with IT CORE; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
 
-$tos = array(	0=>"andy",
-		1=>"jim, lisa",
-		2=>"brad, lisa",
-		3=>"jane, eric, justin, vicky",
-		4=>"joeu, lisa",
-		5=>"jillhall, lisa",
-		6=>"michael",
-		7=>"shannon",
-		8=>"jesse, lisa",
-		9=>"jesse, lisa"
+$tos = array(	0=>"andy@wholefoods.coop",
+		1=>"jim@wholefoods.coop, lisa@wholefoods.coop",
+		2=>"jesse@wholefoods.coop, lisa@wholefoods.coop",
+		3=>"debbie@wholefoods.coop, mfudala@wholefoods.coop, justin@wholefoods.coop",
+		4=>"joeu@wholefoods.coop, lisa@wholefoods.coop",
+		5=>"jillhall@wholefoods.coop, lisa@wholefoods.coop",
+		6=>"michael@wholefoods.coop, alex@wholefoods.coop",
+		7=>"shannon@wholefoods.coop",
+		8=>"jesse@wholefoods.coop, lisa@wholefoods.coop",
+		9=>"raelynn@wholefoods.coop, lisa@wholefoods.coop"
 );	
-$hostname = 'key';
+$hostname = 'key.wfco-op.store';
 
 function auditPriceChange($sql,$uid,$upc,$price,$batchID){
 	global $tos, $hostname, $FANNIE_URL;
@@ -45,7 +45,7 @@ function auditPriceChange($sql,$uid,$upc,$price,$batchID){
 	$dept_sub = $row[2];
 
 	$subject = "Batch Update notification: ".$row[1];
-	$message .= "Batch $row[1] has been changed\n";
+	$message = "Batch $row[1] has been changed\n";
 	$message .= "Item $upc ($row[0]) has been added to the batch\n";	
 	$message .= "Sale Price: $".$price."\n";
 	$message .= "\n";
@@ -75,7 +75,7 @@ function auditPriceChangeLC($sql,$uid,$upc,$price,$batchID){
 	$dept_sub = array_pop($sql->fetch_row($deptR));
 
 	$subject = "Batch Update notification: ".$row[1];
-	$message .= "Batch $row[1] has been changed\n";
+	$message = "Batch $row[1] has been changed\n";
 	$message .= "Likecode $upc ($row[0]) has been added to the batch\n";	
 	$message .= "Sale price: $".$price."\n";
 	$message .= "\n";
@@ -115,7 +115,7 @@ function auditSavePrice($sql,$uid,$upc,$price,$batchID){
 		$dept_sub = $row[2];
 
 	$subject = "Batch Update notification: ".$row[1];
-	$message .= "Batch $row[1] has been changed\n";
+	$message = "Batch $row[1] has been changed\n";
 	$message .= "Item $upc ($row[0]) has been re-priced\n";	
 	$message .= "Sale Price: $".$price."\n";
 	$message .= "\n";
@@ -155,7 +155,7 @@ function auditDelete($sql,$uid,$upc,$batchID){
 		$dept_sub = $row[2];
 
 	$subject = "Batch Update notification: ".$row[1];
-	$message .= "Batch $row[1] has been changed\n";
+	$message = "Batch $row[1] has been changed\n";
 	$message .= "Item $upc ($row[0]) has been deleted from the batch\n";	
 	$message .= "\n";
 	$message .= "Go to the batch page:\n";

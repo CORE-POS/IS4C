@@ -77,7 +77,7 @@
 	$html.='
 		<link href="item.css" media="screen" rel="stylesheet" type="text/css"/>
 		<script src="item.js" type="text/javascript"></script>
-		<title>IS4C - Item Maintenance</title>
+		<title>IT CORE - Item Maintenance</title>
 		</head>
 	<body onload="body_onload();">';
 	

@@ -3,39 +3,39 @@
 
     Copyright 2001, 2004 Wedge Community Co-op
 
-    This file is part of IS4C.
+    This file is part of IT CORE.
 
-    IS4C is free software; you can redistribute it and/or modify
+    IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    IS4C is distributed in the hope that it will be useful,
+    IT CORE is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    in the file license.txt along with IS4C; if not, write to the Free Software
+    in the file license.txt along with IT CORE; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
 
-$IS4C_PATH = isset($IS4C_PATH)?$IS4C_PATH:"";
-if (empty($IS4C_PATH)){ while(!file_exists($IS4C_PATH."is4c.css")) $IS4C_PATH .= "../"; }
+$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
+if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
 
 ini_set('display_errors','1');
 
-if (!class_exists("NoInputPage")) include_once($IS4C_PATH."gui-class-lib/NoInputPage.php");
-if (!function_exists("tDataConnect")) include($IS4C_PATH."lib/connect.php");
-if (!isset($IS4C_LOCAL)) include($IS4C_PATH."lib/LocalStorage/conf.php");
+if (!class_exists("NoInputPage")) include_once($CORE_PATH."gui-class-lib/NoInputPage.php");
+if (!function_exists("tDataConnect")) include($CORE_PATH."lib/connect.php");
+if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
 
 class QKDisplay extends NoInputPage {
 
 	var $offset;
 
 	function head_content(){
-		global $IS4C_PATH;
+		global $CORE_PATH;
 		?>
 		<script type="text/javascript" >
 		var prevKey = -1;
@@ -66,11 +66,11 @@ class QKDisplay extends NoInputPage {
 			}
 			else if (jsKey == 33 || jsKey == 38){
 				location = 
-					'<?php echo $IS4C_PATH; ?>gui-modules/QKDisplay.php?offset=<?php echo ($this->offset - 1)?>';
+					'<?php echo $CORE_PATH; ?>gui-modules/QKDisplay.php?offset=<?php echo ($this->offset - 1)?>';
 			}
 			else if (jsKey == 34 || jsKey == 40){
 				location = 
-					'<?php echo $IS4C_PATH; ?>gui-modules/QKDisplay.php?offset=<?php echo ($this->offset + 1)?>';
+					'<?php echo $CORE_PATH; ?>gui-modules/QKDisplay.php?offset=<?php echo ($this->offset + 1)?>';
 			}
 			prevPrevKey = prevKey;
 			prevKey = jsKey;
@@ -96,7 +96,7 @@ class QKDisplay extends NoInputPage {
 	} // END head() FUNCTION
 
 	function preprocess(){
-		global $IS4C_LOCAL,$IS4C_PATH;
+		global $CORE_LOCAL,$CORE_PATH;
 
 		$this->offset = isset($_REQUEST['offset'])?$_REQUEST['offset']:0;
 
@@ -110,17 +110,17 @@ class QKDisplay extends NoInputPage {
 
 				$value = $_REQUEST[md5($choice)];
 
-				$output = $IS4C_LOCAL->get("qkInput").$value;
-				$IS4C_LOCAL->set("msgrepeat",1);
-				$IS4C_LOCAL->set("strRemembered",$output);
-				$IS4C_LOCAL->set("currentid",$IS4C_LOCAL->get("qkCurrentId"));
+				$output = $CORE_LOCAL->get("qkInput").$value;
+				$CORE_LOCAL->set("msgrepeat",1);
+				$CORE_LOCAL->set("strRemembered",$output);
+				$CORE_LOCAL->set("currentid",$CORE_LOCAL->get("qkCurrentId"));
 			}
 			if (substr(strtoupper($output),0,2) == "QK"){
-				$IS4C_LOCAL->set("qkNumber",substr($output,2));
+				$CORE_LOCAL->set("qkNumber",substr($output,2));
 				return True;
 			}
 			else {
-				header("Location: {$IS4C_PATH}gui-modules/pos2.php");
+				header("Location: {$CORE_PATH}gui-modules/pos2.php");
 			}
 			return False;
 		}
@@ -128,15 +128,15 @@ class QKDisplay extends NoInputPage {
 	} // END preprocess() FUNCTION
 
 	function body_content(){
-		global $IS4C_LOCAL,$IS4C_PATH;
+		global $CORE_LOCAL,$CORE_PATH;
 
 		$this->add_onload_command("setSelected(7);");
 
 		echo "<div class=\"baseHeight\" style=\"border: solid 1px black;\">";
 		echo "<form action=\"".$_SERVER["PHP_SELF"]."\" method=\"post\">";
 
-		include($IS4C_PATH."quickkeys/keys/"
-			.$IS4C_LOCAL->get("qkNumber").".php");
+		include($CORE_PATH."quickkeys/keys/"
+			.$CORE_LOCAL->get("qkNumber").".php");
 
 		$num_pages = ceil(count($my_keys)/9.0);
 		$page = $this->offset % $num_pages;
@@ -150,7 +150,7 @@ class QKDisplay extends NoInputPage {
 					if ($num_pages > 1 && $count == 3){
 						echo "<div class=\"qkArrowBox\">";
 						echo "<input type=submit value=Up class=qkArrow 
-							onclick=\"location='{$IS4C_PATH}gui-modules/QKDisplay.php?offset=".($page-1)."'; return false;\" />";
+							onclick=\"location='{$CORE_PATH}gui-modules/QKDisplay.php?offset=".($page-1)."'; return false;\" />";
 						echo "</div>";
 					}
 					echo "</div>";
@@ -166,7 +166,7 @@ class QKDisplay extends NoInputPage {
 		if ($num_pages > 1){
 			echo "<div class=\"qkArrowBox\">";
 			echo "<input type=submit value=Down class=qkArrow 
-				onclick=\"location='{$IS4C_PATH}gui-modules/QKDisplay.php?offset=".($page+1)."'; return false;\" />";
+				onclick=\"location='{$CORE_PATH}gui-modules/QKDisplay.php?offset=".($page+1)."'; return false;\" />";
 			echo "</div>";
 
 		}
@@ -174,7 +174,7 @@ class QKDisplay extends NoInputPage {
 		echo "<input type=\"hidden\" value=\"0\" name=\"clear\" id=\"doClear\" />";	
 		echo "</form>";
 		echo "</div>";
-		$IS4C_LOCAL->set("scan","noScan");
+		$CORE_LOCAL->set("scan","noScan");
 	} // END body_content() FUNCTION
 
 }

@@ -3,37 +3,37 @@
 
     Copyright 2001, 2004 Wedge Community Co-op
 
-    This file is part of IS4C.
+    This file is part of IT CORE.
 
-    IS4C is free software; you can redistribute it and/or modify
+    IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    IS4C is distributed in the hope that it will be useful,
+    IT CORE is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    in the file license.txt along with IS4C; if not, write to the Free Software
+    in the file license.txt along with IT CORE; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
 
-$IS4C_PATH = isset($IS4C_PATH)?$IS4C_PATH:"";
-if (empty($IS4C_PATH)){ while(!file_exists($IS4C_PATH."is4c.css")) $IS4C_PATH .= "../"; }
+$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
+if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
 
 // ----------------------------------------------------------- 
 // reprint the specified receipt 
 // -----------------------------------------------------------
 
-if (!function_exists("pDataConnect")) include($IS4C_PATH."lib/connect.php");
-if (!function_exists("writeLine")) include($IS4C_PATH."lib/printLib.php");
-if (!isset($IS4C_LOCAL)) include($IS4C_PATH."lib/LocalStorage/conf.php");
+if (!function_exists("pDataConnect")) include($CORE_PATH."lib/connect.php");
+if (!function_exists("writeLine")) include($CORE_PATH."lib/printLib.php");
+if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
 
 function reprintReceipt($trans_num=""){
-	global $IS4C_LOCAL;
+	global $CORE_LOCAL;
 
 	if (strlen($trans_num) >= 1) {
 		$title = chr(27).chr(33).chr(5).centerString("***    R E P R I N T    ***")."\n\n\n";
@@ -54,52 +54,52 @@ function reprintReceipt($trans_num=""){
 		$dateTimeStamp = $headerRow["dateTimeStamp"];
 		$dateTimeStamp = strtotime($dateTimeStamp);
 
-		$IS4C_LOCAL->set("memberID",$headerRow["memberID"]);
-		$IS4C_LOCAL->set("memCouponTLL",$headerRow["couponTotal"]);
-		$IS4C_LOCAL->set("transDiscount",$headerRow["transDiscount"]);
-		$IS4C_LOCAL->set("chargeTotal",-1*$headerRow["chargeTotal"]);
+		$CORE_LOCAL->set("memberID",$headerRow["memberID"]);
+		$CORE_LOCAL->set("memCouponTLL",$headerRow["couponTotal"]);
+		$CORE_LOCAL->set("transDiscount",$headerRow["transDiscount"]);
+		$CORE_LOCAL->set("chargeTotal",-1*$headerRow["chargeTotal"]);
 
-		if ($IS4C_LOCAL->get("chargeTotal") != 0) { 
-			$IS4C_LOCAL->set("chargetender",1);
+		if ($CORE_LOCAL->get("chargeTotal") != 0) { 
+			$CORE_LOCAL->set("chargetender",1);
 		} else {
-			$IS4C_LOCAL->set("chargetender",0);
+			$CORE_LOCAL->set("chargetender",0);
 		}
 
-		$IS4C_LOCAL->set("discounttotal",$headerRow["discountTTL"]);
-		$IS4C_LOCAL->set("memSpecial",$headerRow["memSpecial"]);
+		$CORE_LOCAL->set("discounttotal",$headerRow["discountTTL"]);
+		$CORE_LOCAL->set("memSpecial",$headerRow["memSpecial"]);
 
 		$connect->close();
 
 		$connID = pDataConnect();
 		$queryID = "select LastName,FirstName,Type,blueLine from custdata 
-			where CardNo = '".$IS4C_LOCAL->get("memberID")."' and personNum=1";
+			where CardNo = '".$CORE_LOCAL->get("memberID")."' and personNum=1";
 		$result = $connID->query($queryID);
 		$row = $connID->fetch_array($result);
 
 		// restore names for charge slips
-		$IS4C_LOCAL->set("lname",$row["LastName"]);
-		$IS4C_LOCAL->set("fname",$row["FirstName"]);
+		$CORE_LOCAL->set("lname",$row["LastName"]);
+		$CORE_LOCAL->set("fname",$row["FirstName"]);
 
 		if ($row["Type"] == "PC") {
-			$IS4C_LOCAL->set("isMember",1);
+			$CORE_LOCAL->set("isMember",1);
 		}
 		else {
-			$IS4C_LOCAL->set("isMember",0);
+			$CORE_LOCAL->set("isMember",0);
 		}
-		$IS4C_LOCAL->set("memMsg",$row["blueLine"]);
+		$CORE_LOCAL->set("memMsg",$row["blueLine"]);
 	
 		$connID->close();
 
-		if ($IS4C_LOCAL->get("isMember") == 1) {
-			$IS4C_LOCAL->set("yousaved",number_format( $IS4C_LOCAL->get("transDiscount") + $IS4C_LOCAL->get("discounttotal") + $IS4C_LOCAL->get("memSpecial") + $IS4C_LOCAL->get("memCouponTTL"), 2));
-			$IS4C_LOCAL->set("couldhavesaved",0);
-			$IS4C_LOCAL->set("specials",number_format($IS4C_LOCAL->get("discounttotal") + $IS4C_LOCAL->get("memSpecial"), 2));
+		if ($CORE_LOCAL->get("isMember") == 1) {
+			$CORE_LOCAL->set("yousaved",number_format( $CORE_LOCAL->get("transDiscount") + $CORE_LOCAL->get("discounttotal") + $CORE_LOCAL->get("memSpecial") + $CORE_LOCAL->get("memCouponTTL"), 2));
+			$CORE_LOCAL->set("couldhavesaved",0);
+			$CORE_LOCAL->set("specials",number_format($CORE_LOCAL->get("discounttotal") + $CORE_LOCAL->get("memSpecial"), 2));
 		}
 		else {
-			$dblyousaved = number_format($IS4C_LOCAL->get("memSpecial"), 2);
-			$IS4C_LOCAL->set("yousaved",$IS4C_LOCAL->get("discounttotal"));
-			$IS4C_LOCAL->set("couldhavesaved",number_format($IS4C_LOCAL->get("memSpecial"), 2));
-			$IS4C_LOCAL->set("specials",$IS4C_LOCAL->get("discounttotal"));
+			$dblyousaved = number_format($CORE_LOCAL->get("memSpecial"), 2);
+			$CORE_LOCAL->set("yousaved",$CORE_LOCAL->get("discounttotal"));
+			$CORE_LOCAL->set("couldhavesaved",number_format($CORE_LOCAL->get("memSpecial"), 2));
+			$CORE_LOCAL->set("specials",$CORE_LOCAL->get("discounttotal"));
 		}
 
 
@@ -109,49 +109,49 @@ function reprintReceipt($trans_num=""){
 		$receipt .= receiptDetail(True,$ref);
 
 		// The Nitty Gritty:
-		$member = "Member ".trim($IS4C_LOCAL->get("memberID"));
-		$your_discount = $IS4C_LOCAL->get("transDiscount") + $IS4C_LOCAL->get("memCouponTTL");
+		$member = "Member ".trim($CORE_LOCAL->get("memberID"));
+		$your_discount = $CORE_LOCAL->get("transDiscount") + $CORE_LOCAL->get("memCouponTTL");
 
-		if ($IS4C_LOCAL->get("transDiscount") + $IS4C_LOCAL->get("memCouponTTL") + $IS4C_LOCAL->get("specials") > 0) {
+		if ($CORE_LOCAL->get("transDiscount") + $CORE_LOCAL->get("memCouponTTL") + $CORE_LOCAL->get("specials") > 0) {
 			$receipt .= "\n".centerString("------------------ YOUR SAVINGS -------------------")."\n";
 
 			if ($your_discount > 0) {
 				$receipt .= "    DISCOUNTS: $".number_format($your_discount, 2)."\n";
 			}
 
-			if ($IS4C_LOCAL->get("specials") > 0) {
-				$receipt .= "    SPECIALS: $".number_format($IS4C_LOCAL->get("specials"), 2)."\n";
+			if ($CORE_LOCAL->get("specials") > 0) {
+				$receipt .= "    SPECIALS: $".number_format($CORE_LOCAL->get("specials"), 2)."\n";
 			}
 
 			$receipt .= centerString("---------------------------------------------------")."\n";
 		}
 		$receipt .= "\n";
 	
-		if (trim($IS4C_LOCAL->get("memberID")) != $IS4C_LOCAL->get("defaultNonMem")) {
+		if (trim($CORE_LOCAL->get("memberID")) != $CORE_LOCAL->get("defaultNonMem")) {
 			$receipt .= centerString("Thank You - ".$member."!!!")."\n";
 		}
 		else {
 			$receipt .= centerString("Thank You!!!")."\n";
 		}
 
-		if ($IS4C_LOCAL->get("yousaved") > 0) {
-			$receipt .= centerString("You Saved $".number_format($IS4C_LOCAL->get("yousaved"), 2))."\n";
+		if ($CORE_LOCAL->get("yousaved") > 0) {
+			$receipt .= centerString("You Saved $".number_format($CORE_LOCAL->get("yousaved"), 2))."\n";
 		}
 
-		if ($IS4C_LOCAL->get("couldhavesaved") > 0 && $IS4C_LOCAL->get("yousaved") > 0) {
+		if ($CORE_LOCAL->get("couldhavesaved") > 0 && $CORE_LOCAL->get("yousaved") > 0) {
 			$receipt .= centerString("You could have saved an additional $"
-				    .number_format($IS4C_LOCAL->get("couldhavesaved"), 2))."\n";
+				    .number_format($CORE_LOCAL->get("couldhavesaved"), 2))."\n";
 		}
-		elseif ($IS4C_LOCAL->get("couldhavesaved") > 0) {
+		elseif ($CORE_LOCAL->get("couldhavesaved") > 0) {
 			$receipt .= centerString("You could have saved $"
-				    .number_format($IS4C_LOCAL->get("couldhavesaved"), 2))."\n";
+				    .number_format($CORE_LOCAL->get("couldhavesaved"), 2))."\n";
 		}
 
 		$receipt .= centerString("Returns accepted with receipt")."\n"
 			.centerString("within 30 days of purchase.")."\n\n\n";
 
 
-		if ($IS4C_LOCAL->get("chargetender") != 0 ) {			// apbw 03/10/05 Reprint patch
+		if ($CORE_LOCAL->get("chargetender") != 0 ) {			// apbw 03/10/05 Reprint patch
 			$receipt = $receipt.printChargeFooterStore($dateTimeStamp, $ref);	// apbw 03/10/05 Reprint patch
 		}			// apbw 03/10/05 Reprint patch
 
@@ -162,9 +162,9 @@ function reprintReceipt($trans_num=""){
 		writeLine($receipt.chr(27).chr(105));			// apbw 03/10/05 Reprint patch
 		$receipt = "";			// apbw 03/10/05 Reprint patch
 
-		$IS4C_LOCAL->set("memMsg","");
-		$IS4C_LOCAL->set("memberID","0");
-		$IS4C_LOCAL->set("percentDiscount",0);
+		$CORE_LOCAL->set("memMsg","");
+		$CORE_LOCAL->set("memberID","0");
+		$CORE_LOCAL->set("percentDiscount",0);
 	}
 }
 

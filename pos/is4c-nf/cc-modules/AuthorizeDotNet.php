@@ -3,37 +3,37 @@
 
     Copyright 2007,2010 Whole Foods Co-op
 
-    This file is part of IS4C.
+    This file is part of IT CORE.
 
-    IS4C is free software; you can redistribute it and/or modify
+    IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    IS4C is distributed in the hope that it will be useful,
+    IT CORE is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    in the file license.txt along with IS4C; if not, write to the Free Software
+    in the file license.txt along with IT CORE; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
 
-$IS4C_PATH = isset($IS4C_PATH)?$IS4C_PATH:"";
-if (empty($IS4C_PATH)){ while(!file_exists($IS4C_PATH."is4c.css")) $IS4C_PATH .= "../"; }
+$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
+if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
 
-if (!class_exists("BasicCCModule")) include_once($IS4C_PATH."cc-modules/BasicCCModule.php");
+if (!class_exists("BasicCCModule")) include_once($CORE_PATH."cc-modules/BasicCCModule.php");
 
-if (!class_exists("xmlData")) include_once($IS4C_PATH."lib/xmlData.php");
-if (!class_exists("Void")) include_once($IS4C_PATH."parser-class-lib/parse/Void.php");
-if (!function_exists("truncate2")) include_once($IS4C_PATH."lib/lib.php");
-if (!function_exists("paycard_reset")) include_once($IS4C_PATH."lib/paycardLib.php");
-if (!function_exists("tDataConnect")) include_once($IS4C_PATH."lib/connect.php");
-if (!function_exists("tender")) include_once($IS4C_PATH."lib/prehkeys.php");
-if (!function_exists("receipt")) include_once($IS4C_PATH."lib/clientscripts.php");
-if (!isset($IS4C_LOCAL)) include($IS4C_PATH."lib/LocalStorage/conf.php");
+if (!class_exists("xmlData")) include_once($CORE_PATH."lib/xmlData.php");
+if (!class_exists("Void")) include_once($CORE_PATH."parser-class-lib/parse/Void.php");
+if (!function_exists("truncate2")) include_once($CORE_PATH."lib/lib.php");
+if (!function_exists("paycard_reset")) include_once($CORE_PATH."lib/paycardLib.php");
+if (!function_exists("tDataConnect")) include_once($CORE_PATH."lib/connect.php");
+if (!function_exists("tender")) include_once($CORE_PATH."lib/prehkeys.php");
+if (!function_exists("receipt")) include_once($CORE_PATH."lib/clientscripts.php");
+if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
 
 define('AUTHDOTNET_LOGIN','6Jc5c8QcB');
 define('AUTHDOTNET_TRANS_KEY','68j46u5S3RL4CCbX');
@@ -46,9 +46,9 @@ class AuthorizeDotNet extends BasicCCModule {
 	}
 
 	function entered($validate,$json){
-		global $IS4C_LOCAL;
+		global $CORE_LOCAL;
 		// error checks based on card type
-		if( $IS4C_LOCAL->get("CCintegrate") != 1) { // credit card integration must be enabled
+		if( $CORE_LOCAL->get("CCintegrate") != 1) { // credit card integration must be enabled
 			paycard_reset();
 			$json['output'] = paycard_errBox(PAYCARD_TYPE_GIFT,
 				"Card Integration Disabled",
@@ -58,18 +58,18 @@ class AuthorizeDotNet extends BasicCCModule {
 		}
 
 		// error checks based on processing mode
-		switch( $IS4C_LOCAL->get("paycard_mode")) {
+		switch( $CORE_LOCAL->get("paycard_mode")) {
 		case PAYCARD_MODE_VOID:
 			// use the card number to find the trans_id
 			$dbTrans = tDataConnect();
 			$today = date('Ymd');
-			$pan4 = substr($IS4C_LOCAL->get("paycard_PAN"),-4);
-			$cashier = $IS4C_LOCAL->get("CashierNo");
-			$lane = $IS4C_LOCAL->get("laneno");
-			$trans = $IS4C_LOCAL->get("transno");
+			$pan4 = substr($CORE_LOCAL->get("paycard_PAN"),-4);
+			$cashier = $CORE_LOCAL->get("CashierNo");
+			$lane = $CORE_LOCAL->get("laneno");
+			$trans = $CORE_LOCAL->get("transno");
 			$sql = "SELECT transID FROM efsnetRequest WHERE [date]='".$today."' AND (PAN LIKE '%".$pan4."') " .
 				"AND cashierNo=".$cashier." AND laneNo=".$lane." AND transNo=".$trans;
-			if ($IS4C_LOCAL->get("DBMS") == "mysql"){
+			if ($CORE_LOCAL->get("DBMS") == "mysql"){
 				$sql = str_replace("[","",$sql);
 				$sql = str_replace("]","",$sql);
 			}
@@ -91,21 +91,21 @@ class AuthorizeDotNet extends BasicCCModule {
 
 		case PAYCARD_MODE_AUTH:
 			if( $validate) {
-				if( paycard_validNumber($IS4C_LOCAL->get("paycard_PAN")) != 1) {
+				if( paycard_validNumber($CORE_LOCAL->get("paycard_PAN")) != 1) {
 					paycard_reset();
 					$json['output'] = paycard_errBox(PAYCARD_TYPE_CREDIT,
 						"Invalid Card Number",
 						"Swipe again or type in manually",
 						"[clear] to cancel");
 					return $json;
-				} else if( paycard_accepted($IS4C_LOCAL->get("paycard_PAN"), !paycard_live(PAYCARD_TYPE_CREDIT)) != 1) {
+				} else if( paycard_accepted($CORE_LOCAL->get("paycard_PAN"), !paycard_live(PAYCARD_TYPE_CREDIT)) != 1) {
 					paycard_reset();
 					$json['output'] = paycard_msgBox(PAYCARD_TYPE_CREDIT,
 						"Unsupported Card Type",
-						"We cannot process " . $IS4C_LOCAL->get("paycard_issuer") . " cards",
+						"We cannot process " . $CORE_LOCAL->get("paycard_issuer") . " cards",
 						"[clear] to cancel");
 					return $json;
-				} else if( paycard_validExpiration($IS4C_LOCAL->get("paycard_exp")) != 1) {
+				} else if( paycard_validExpiration($CORE_LOCAL->get("paycard_exp")) != 1) {
 					paycard_reset();
 					$json['output'] = paycard_errBox(PAYCARD_TYPE_CREDIT,
 						"Invalid Expiration Date",
@@ -116,9 +116,9 @@ class AuthorizeDotNet extends BasicCCModule {
 			}
 			// set initial variables
 			getsubtotals();
-			$IS4C_LOCAL->set("paycard_amount",$IS4C_LOCAL->get("amtdue"));
-			$IS4C_LOCAL->set("paycard_id",$IS4C_LOCAL->get("LastID")+1); // kind of a hack to anticipate it this way..
-			$json['main_frame'] = $IS4C_PATH.'gui-modules/paycardboxMsgAuth.php';
+			$CORE_LOCAL->set("paycard_amount",$CORE_LOCAL->get("amtdue"));
+			$CORE_LOCAL->set("paycard_id",$CORE_LOCAL->get("LastID")+1); // kind of a hack to anticipate it this way..
+			$json['main_frame'] = $CORE_PATH.'gui-modules/paycardboxMsgAuth.php';
 			return $json;
 			break;
 		} // switch mode
@@ -131,9 +131,9 @@ class AuthorizeDotNet extends BasicCCModule {
 	}
 
 	function paycard_void($transID,$laneNo=-1,$transNo=-1,$json=array()) {
-		global $IS4C_LOCAL;
+		global $CORE_LOCAL;
 		// situation checking
-		if( $IS4C_LOCAL->get("CCintegrate") != 1) { // credit card integration must be enabled
+		if( $CORE_LOCAL->get("CCintegrate") != 1) { // credit card integration must be enabled
 			paycard_reset();
 			$json['output'] = paycard_errBox(PAYCARD_TYPE_CREDIT,
 				"Card Integration Disabled",
@@ -145,9 +145,9 @@ class AuthorizeDotNet extends BasicCCModule {
 		// initialize
 		$dbTrans = tDataConnect();
 		$today = date('Ymd');
-		$cashier = $IS4C_LOCAL->get("CashierNo");
-		$lane = $IS4C_LOCAL->get("laneno");
-		$trans = $IS4C_LOCAL->get("transno");
+		$cashier = $CORE_LOCAL->get("CashierNo");
+		$lane = $CORE_LOCAL->get("laneno");
+		$trans = $CORE_LOCAL->get("transno");
 		if ($laneNo != -1) $lane = $laneNo;
 		if ($transNo != -1) $trans = $transNo;
 	
@@ -155,7 +155,7 @@ class AuthorizeDotNet extends BasicCCModule {
 		$sql = "SELECT live,PAN,mode,amount,name FROM efsnetRequest 
 			WHERE [date]='".$today."' AND cashierNo=".$cashier." 
 			AND laneNo=".$lane." AND transNo=".$trans." AND transID=".$transID;
-		if ($IS4C_LOCAL->get("DBMS") == "mysql"){
+		if ($CORE_LOCAL->get("DBMS") == "mysql"){
 			$sql = str_replace("[","",$sql);
 			$sql = str_replace("]","",$sql);
 		}
@@ -178,7 +178,7 @@ class AuthorizeDotNet extends BasicCCModule {
 		$sql = "SELECT commErr,httpCode,validResponse,xResponseCode,
 			xTransactionID FROM efsnetResponse WHERE [date]='".$today."' 
 			AND cashierNo=".$cashier." AND laneNo=".$lane." AND transNo=".$trans." AND transID=".$transID;
-		if ($IS4C_LOCAL->get("DBMS") == "mysql"){
+		if ($CORE_LOCAL->get("DBMS") == "mysql"){
 			$sql = str_replace("[","",$sql);
 			$sql = str_replace("]","",$sql);
 		}
@@ -200,7 +200,7 @@ class AuthorizeDotNet extends BasicCCModule {
 		// look up any previous successful voids
 		$sql = "SELECT transID FROM efsnetRequestMod WHERE [date]=".$today." AND cashierNo=".$cashier." AND laneNo=".$lane." AND transNo=".$trans." AND transID=".$transID
 				." AND mode='void' AND xResponseCode=0";
-		if ($IS4C_LOCAL->get("DBMS") == "mysql"){
+		if ($CORE_LOCAL->get("DBMS") == "mysql"){
 			$sql = str_replace("[","",$sql);
 			$sql = str_replace("]","",$sql);
 		}
@@ -268,22 +268,22 @@ class AuthorizeDotNet extends BasicCCModule {
 		}
 	
 		// save the details
-		$IS4C_LOCAL->set("paycard_PAN",$request['PAN']);
-		$IS4C_LOCAL->set("paycard_amount",(($request['mode']=='refund') ? -1 : 1) * $request['amount']);
-		$IS4C_LOCAL->set("paycard_id",$transID);
-		$IS4C_LOCAL->set("paycard_type",PAYCARD_TYPE_CREDIT);
-		$IS4C_LOCAL->set("paycard_mode",PAYCARD_MODE_VOID);
-		$IS4C_LOCAL->set("paycard_name",$request["name"]);
+		$CORE_LOCAL->set("paycard_PAN",$request['PAN']);
+		$CORE_LOCAL->set("paycard_amount",(($request['mode']=='refund') ? -1 : 1) * $request['amount']);
+		$CORE_LOCAL->set("paycard_id",$transID);
+		$CORE_LOCAL->set("paycard_type",PAYCARD_TYPE_CREDIT);
+		$CORE_LOCAL->set("paycard_mode",PAYCARD_MODE_VOID);
+		$CORE_LOCAL->set("paycard_name",$request["name"]);
 	
 		// display FEC code box
-		$IS4C_LOCAL->set("inputMasked",1);
-		$json['main_frame'] = $IS4C_PATH.'gui-modules/paycardboxMsgVoid.php';
+		$CORE_LOCAL->set("inputMasked",1);
+		$json['main_frame'] = $CORE_PATH.'gui-modules/paycardboxMsgVoid.php';
 		return $json;
 	}
 
 	function handleResponse($authResult){
-		global $IS4C_LOCAL;
-		switch($IS4C_LOCAL->get("paycard_mode")){
+		global $CORE_LOCAL;
+		switch($CORE_LOCAL->get("paycard_mode")){
 		case PAYCARD_MODE_AUTH:
 			return $this->handleResponseAuth($authResult);
 		case PAYCARD_MODE_VOID:
@@ -292,15 +292,15 @@ class AuthorizeDotNet extends BasicCCModule {
 	}
 
 	function handleResponseAuth($authResult){
-		global $IS4C_LOCAL;
+		global $CORE_LOCAL;
 		$xml = new xmlData($authResult['response']);
 		// prepare some fields to store the parsed response; we'll add more as we verify it
 		$today = date('Ymd'); // numeric date only, it goes in an 'int' field as part of the primary key
 		$now = date('Y-m-d H:i:s'); // full timestamp
-		$cashierNo = $IS4C_LOCAL->get("CashierNo");
-		$laneNo = $IS4C_LOCAL->get("laneno");
-		$transNo = $IS4C_LOCAL->get("transno");
-		$transID = $IS4C_LOCAL->get("paycard_id");
+		$cashierNo = $CORE_LOCAL->get("CashierNo");
+		$laneNo = $CORE_LOCAL->get("laneno");
+		$transNo = $CORE_LOCAL->get("transno");
+		$transID = $CORE_LOCAL->get("paycard_id");
 		$sqlColumns =
 			"[date],cashierNo,laneNo,transNo,transID," .
 			"[datetime]," .
@@ -349,7 +349,7 @@ class AuthorizeDotNet extends BasicCCModule {
 
 		$dbTrans = tDataConnect();
 		$sql = "INSERT INTO efsnetResponse (" . $sqlColumns . ") VALUES (" . $sqlValues . ")";
-		if ($IS4C_LOCAL->get("DBMS") == "mysql"){
+		if ($CORE_LOCAL->get("DBMS") == "mysql"){
 			$sql = str_replace("[","",$sql);
 			$sql = str_replace("]","",$sql);
 		}
@@ -357,7 +357,7 @@ class AuthorizeDotNet extends BasicCCModule {
 
 		if( $authResult['curlErr'] != CURLE_OK || $authResult['curlHTTP'] != 200){
 			if ($authResult['curlHTTP'] == '0'){
-				$IS4C_LOCAL->set("boxMsg","No response from processor<br />
+				$CORE_LOCAL->set("boxMsg","No response from processor<br />
 							The transaction did not go through");
 				return PAYCARD_ERR_PROC;
 			}	
@@ -366,46 +366,46 @@ class AuthorizeDotNet extends BasicCCModule {
 
 		switch ($xml->get("RESPONSECODE")){
 			case 1: // APPROVED
-				$IS4C_LOCAL->set("ccTermOut","approval:".str_pad($xml->get("AUTH_CODE"),6,'0',STR_PAD_RIGHT));
+				$CORE_LOCAL->set("ccTermOut","approval:".str_pad($xml->get("AUTH_CODE"),6,'0',STR_PAD_RIGHT));
 				return PAYCARD_ERR_OK;
 			case 2: // DECLINED
-				$IS4C_LOCAL->set("ccTermOut","approval:denied");
-				$IS4C_LOCAL->set("boxMsg","Transaction declined");
+				$CORE_LOCAL->set("ccTermOut","approval:denied");
+				$CORE_LOCAL->set("boxMsg","Transaction declined");
 				if ($xml->get_first("ERRORCODE") == 4)
-					$IS4C_LOCAL->set("boxMsg",$IS4C_LOCAL.get("boxMsg")."<br />Pick up card)");
+					$CORE_LOCAL->set("boxMsg",$CORE_LOCAL.get("boxMsg")."<br />Pick up card)");
 				break;
 			case 3: // ERROR
-				$IS4C_LOCAL->set("ccTermOut","resettotal");
-				$IS4C_LOCAL->set("boxMsg","");
+				$CORE_LOCAL->set("ccTermOut","resettotal");
+				$CORE_LOCAL->set("boxMsg","");
 				$codes = $xml->get("ERRORCODE");
 				$texts = $xml->get("ERRORTEXT");
 				if (!is_array($codes))
-					$IS4C_LOCAL->set("boxMsg","EC$codes: $texts");
+					$CORE_LOCAL->set("boxMsg","EC$codes: $texts");
 				else{
 					for($i=0; $i<count($codes);$i++){
-						$IS4C_LOCAl->set("boxMsg",$IS4C_LOCAL->get("boxMsg")."EC".$codes[$i].": ".$texts[$i]);
+						$CORE_LOCAL->set("boxMsg",$CORE_LOCAL->get("boxMsg")."EC".$codes[$i].": ".$texts[$i]);
 						if ($i != count($codes)-1) 
-							$IS4C_LOCAL->set("boxMsg",$IS4C_LOCAL->get("boxMsg")."<br />");
+							$CORE_LOCAL->set("boxMsg",$CORE_LOCAL->get("boxMsg")."<br />");
 					}
 				}
 				break;
 			default:
-				$IS4C_LOCAL->set("boxMsg","An unknown error occurred<br />at the gateway");
+				$CORE_LOCAL->set("boxMsg","An unknown error occurred<br />at the gateway");
 		}
 		return PAYCARD_ERROR_PROC;
 	}
 
 	function handleResponseVoid($authResult){
-		global $IS4C_LOCAL;
+		global $CORE_LOCAL;
 		$xml = new xmlData($authResult['response']);
 		// prepare some fields to store the parsed response; we'll add more as we verify it
 		$today = date('Ymd'); // numeric date only, it goes in an 'int' field as part of the primary key
 		$now = date('Y-m-d H:i:s'); // full timestamp
-		$cashierNo = $IS4C_LOCAL->get("CashierNo");
-		$laneNo = $IS4C_LOCAL->get("laneno");
-		$transNo = $IS4C_LOCAL->get("transno");
-		$transID = $IS4C_LOCAL->get("paycard_id");
-		$amount = $IS4C_LOCAL->get("paycard_amount");
+		$cashierNo = $CORE_LOCAL->get("CashierNo");
+		$laneNo = $CORE_LOCAL->get("laneno");
+		$transNo = $CORE_LOCAL->get("transno");
+		$transID = $CORE_LOCAL->get("paycard_id");
+		$amount = $CORE_LOCAL->get("paycard_amount");
 		$amountText = number_format(abs($amount), 2, '.', '');
 
 		// prepare some fields to store the request and the parsed response; we'll add more as we verify it
@@ -451,7 +451,7 @@ class AuthorizeDotNet extends BasicCCModule {
 
 		$dbTrans = tDataConnect();
 		$sql = "INSERT INTO efsnetRequestMod (" . $sqlColumns . ") VALUES (" . $sqlValues . ")";
-		if ($IS4C_LOCAL->get("DBMS") == "mysql"){
+		if ($CORE_LOCAL->get("DBMS") == "mysql"){
 			$sql = str_replace("[","",$sql);
 			$sql = str_replace("]","",$sql);
 		}
@@ -465,49 +465,49 @@ class AuthorizeDotNet extends BasicCCModule {
 			case 1: // APPROVED
 				return PAYCARD_ERR_OK;
 			case 2: // DECLINED
-				$IS4C_LOCAL->set("boxMsg","Transaction declined");
+				$CORE_LOCAL->set("boxMsg","Transaction declined");
 				if ($xml->get_first("ERRORCODE") == 4)
-					$IS4C_LOCAL->set("boxMsg",$IS4C_LOCAL->get("boxMsg")."<br />Pick up card");
+					$CORE_LOCAL->set("boxMsg",$CORE_LOCAL->get("boxMsg")."<br />Pick up card");
 				break;
 			case 3: // ERROR
-				$IS4C_LOCAL->set("boxMsg","");
+				$CORE_LOCAL->set("boxMsg","");
 				$codes = $xml->get("ERRORCODE");
 				$texts = $xml->get("ERRORTEXT");
 				if (!is_array($codes))
-					$IS4C_LOCAL->set("boxMsg","EC$codes: $texts");
+					$CORE_LOCAL->set("boxMsg","EC$codes: $texts");
 				else{
 					for($i=0; $i<count($codes);$i++){
-						$IS4C_LOCAL->set("boxMsg",$IS4C_LOCAL->get("boxMsg")."EC".$codes[$i].": ".$texts[$i]);
+						$CORE_LOCAL->set("boxMsg",$CORE_LOCAL->get("boxMsg")."EC".$codes[$i].": ".$texts[$i]);
 						if ($i != count($codes)-1) 
-							$IS4C_LOCAL->set("boxMsg",$IS4C_LOCAL->get("boxMsg")."<br />");
+							$CORE_LOCAL->set("boxMsg",$CORE_LOCAL->get("boxMsg")."<br />");
 					}
 				}
 				break;
 			default:
-				$IS4C_LOCAL->set("boxMsg","An unknown error occurred<br />at the gateway");
+				$CORE_LOCAL->set("boxMsg","An unknown error occurred<br />at the gateway");
 		}
 		return PAYCARD_ERROR_PROC;
 	}
 
 	function cleanup($json){
-		global $IS4C_LOCAL;
-		switch($IS4C_LOCAL->get("paycard_mode")){
+		global $CORE_LOCAL;
+		switch($CORE_LOCAL->get("paycard_mode")){
 		case PAYCARD_MODE_AUTH:
-			$IS4C_LOCAL->set("ccTender",1); 
+			$CORE_LOCAL->set("ccTender",1); 
 			// cast to string. tender function expects string input
 			// numeric input screws up parsing on negative values > $0.99
-			$amt = "".($IS4C_LOCAL->get("paycard_amount")*100);
+			$amt = "".($CORE_LOCAL->get("paycard_amount")*100);
 			tender("CC", $amt);
-			$IS4C_LOCAL->set("boxMsg","<b>Approved</b><font size=-1><p>Please verify cardholder signature<p>[enter] to continue<br>\"rp\" to reprint slip<br>[clear] to cancel and void</font>");
+			$CORE_LOCAL->set("boxMsg","<b>Approved</b><font size=-1><p>Please verify cardholder signature<p>[enter] to continue<br>\"rp\" to reprint slip<br>[clear] to cancel and void</font>");
 			break;
 		case PAYCARD_MODE_VOID:
 			$v = new Void();
-			$v->voidid($IS4C_LOCAL->get("paycard_id"));
-			$IS4C_LOCAL->set("boxMsg","<b>Voided</b><p><font size=-1>[enter] to continue<br>\"rp\" to reprint slip</font>");
+			$v->voidid($CORE_LOCAL->get("paycard_id"));
+			$CORE_LOCAL->set("boxMsg","<b>Voided</b><p><font size=-1>[enter] to continue<br>\"rp\" to reprint slip</font>");
 			break;	
 		}
-		$IS4C_LOCAL->set("ccCustCopy",0);
-		if ($IS4C_LOCAL->get("SigCapture") == "" && $IS4C_LOCAL->get("paycard_amount") > $IS4C_LOCAL->get("CCSigLimit"))
+		$CORE_LOCAL->set("ccCustCopy",0);
+		if ($CORE_LOCAL->get("SigCapture") == "" && $CORE_LOCAL->get("paycard_amount") > $CORE_LOCAL->get("CCSigLimit"))
 			$json['receipt'] = "ccSlip";
 		return $json;
 	}
@@ -523,7 +523,7 @@ class AuthorizeDotNet extends BasicCCModule {
 	}	
 
 	function send_auth(){
-		global $IS4C_LOCAL;
+		global $CORE_LOCAL;
 		// initialize
 		$dbTrans = tDataConnect();
 		if( !$dbTrans){
@@ -533,22 +533,22 @@ class AuthorizeDotNet extends BasicCCModule {
 
 		$today = date('Ymd'); // numeric date only, it goes in an 'int' field as part of the primary key
 		$now = date('Y-m-d H:i:s'); // full timestamp
-		$cashierNo = $IS4C_LOCAL->get("CashierNo");
-		$laneNo = $IS4C_LOCAL->get("laneno");
-		$transNo = $IS4C_LOCAL->get("transno");
-		$transID = $IS4C_LOCAL->get("paycard_id");
-		$amount = $IS4C_LOCAL->get("paycard_amount");
+		$cashierNo = $CORE_LOCAL->get("CashierNo");
+		$laneNo = $CORE_LOCAL->get("laneno");
+		$transNo = $CORE_LOCAL->get("transno");
+		$transID = $CORE_LOCAL->get("paycard_id");
+		$amount = $CORE_LOCAL->get("paycard_amount");
 		$amountText = number_format(abs($amount), 2, '.', '');
 		$mode = (($amount < 0) ? 'refund' : 'tender');
-		$manual = ($IS4C_LOCAL->get("paycard_manual") ? 1 : 0);
-		$cardPAN = $IS4C_LOCAL->get("paycard_PAN");
+		$manual = ($CORE_LOCAL->get("paycard_manual") ? 1 : 0);
+		$cardPAN = $CORE_LOCAL->get("paycard_PAN");
 		$cardPANmasked = paycard_maskPAN($cardPAN,0,4);
-		$cardIssuer = $IS4C_LOCAL->get("paycard_issuer");
-		$cardExM = substr($IS4C_LOCAL->get("paycard_exp"),0,2);
-		$cardExY = substr($IS4C_LOCAL->get("paycard_exp"),2,2);
-		$cardTr1 = $IS4C_LOCAL->get("paycard_tr1");
-		$cardTr2 = $IS4C_LOCAL->get("paycard_tr2");
-		$cardName = $IS4C_LOCAL->get("paycard_name");
+		$cardIssuer = $CORE_LOCAL->get("paycard_issuer");
+		$cardExM = substr($CORE_LOCAL->get("paycard_exp"),0,2);
+		$cardExY = substr($CORE_LOCAL->get("paycard_exp"),2,2);
+		$cardTr1 = $CORE_LOCAL->get("paycard_tr1");
+		$cardTr2 = $CORE_LOCAL->get("paycard_tr2");
+		$cardName = $CORE_LOCAL->get("paycard_name");
 		$refNum = $this->refnum($transID);
 		$live = 1;
 
@@ -564,7 +564,7 @@ class AuthorizeDotNet extends BasicCCModule {
 		"x_amount"	=> $amount,
 		"x_user_ref"	=> $refNum
 		);
-		if ($IS4C_LOCAL->get("training") == 1)
+		if ($CORE_LOCAL->get("training") == 1)
 			$postValues["x_test_request"] = "1";
 
 		if ($mode == "refund")
@@ -598,7 +598,7 @@ class AuthorizeDotNet extends BasicCCModule {
 			sprintf("'%s','%s',%d,'%s',%s,",  $now, $refNum, $live, $mode, $amountText) .
 			sprintf("'%s','%s',%d,'%s'",           $cardPANmasked, $cardIssuer, $manual, $name);
 		$sql = "INSERT INTO efsnetRequest (" . $sqlCols . ") VALUES (" . $sqlVals . ")";
-		if ($IS4C_LOCAL->get("DBMS") == "mysql"){
+		if ($CORE_LOCAL->get("DBMS") == "mysql"){
 			$sql = str_replace("[","",$sql);
 			$sql = str_replace("]","",$sql);
 		}
@@ -612,7 +612,7 @@ class AuthorizeDotNet extends BasicCCModule {
 	}
 
 	function send_void(){
-		global $IS4C_LOCAL;
+		global $CORE_LOCAL;
 		// initialize
 		$dbTrans = tDataConnect();
 		if( !$dbTrans){
@@ -623,22 +623,22 @@ class AuthorizeDotNet extends BasicCCModule {
 		// prepare data for the void request
 		$today = date('Ymd'); // numeric date only, it goes in an 'int' field as part of the primary key
 		$now = date('Y-m-d H:i:s'); // new timestamp
-		$cashierNo = $IS4C_LOCAL->get("CashierNo");
-		$laneNo = $IS4C_LOCAL->get("laneno");
-		$transNo = $IS4C_LOCAL->get("transno");
-		$transID = $IS4C_LOCAL->get("paycard_id");
-		$amount = $IS4C_LOCAL->get("paycard_amount");
+		$cashierNo = $CORE_LOCAL->get("CashierNo");
+		$laneNo = $CORE_LOCAL->get("laneno");
+		$transNo = $CORE_LOCAL->get("transno");
+		$transID = $CORE_LOCAL->get("paycard_id");
+		$amount = $CORE_LOCAL->get("paycard_amount");
 		$amountText = number_format(abs($amount), 2, '.', '');
 		$mode = 'void';
-		$manual = ($IS4C_LOCAL->get("paycard_manual") ? 1 : 0);
-		$cardPAN = $IS4C_LOCAL->get("paycard_PAN");
+		$manual = ($CORE_LOCAL->get("paycard_manual") ? 1 : 0);
+		$cardPAN = $CORE_LOCAL->get("paycard_PAN");
 		$cardPANmasked = paycard_maskPAN($cardPAN,0,4);
-		$cardIssuer = $IS4C_LOCAL->get("paycard_issuer");
-		$cardExM = substr($IS4C_LOCAL->get("paycard_exp"),0,2);
-		$cardExY = substr($IS4C_LOCAL->get("paycard_exp"),2,2);
-		$cardTr1 = $IS4C_LOCAL->get("paycard_tr1");
-		$cardTr2 = $IS4C_LOCAL->get("paycard_tr2");
-		$cardName = $IS4C_LOCAL->get("paycard_name");
+		$cardIssuer = $CORE_LOCAL->get("paycard_issuer");
+		$cardExM = substr($CORE_LOCAL->get("paycard_exp"),0,2);
+		$cardExY = substr($CORE_LOCAL->get("paycard_exp"),2,2);
+		$cardTr1 = $CORE_LOCAL->get("paycard_tr1");
+		$cardTr2 = $CORE_LOCAL->get("paycard_tr2");
+		$cardName = $CORE_LOCAL->get("paycard_name");
 		$refNum = $this->refnum($transID);
 		$live = 1;
 
@@ -661,7 +661,7 @@ class AuthorizeDotNet extends BasicCCModule {
 		// look up the TransactionID from the original response (card number and amount should already be in session vars)
 		$sql = "SELECT xTransactionID FROM efsnetResponse WHERE [date]='".$today."'" .
 			" AND cashierNo=".$cashierNo." AND laneNo=".$laneNo." AND transNo=".$transNo." AND transID=".$transID;
-		if ($IS4C_LOCAL->get("DBMS") == "mysql"){
+		if ($CORE_LOCAL->get("DBMS") == "mysql"){
 			$sql = str_replace("[","",$sql);
 			$sql = str_replace("]","",$sql);
 		}

@@ -3,20 +3,20 @@
 
    Copyright 2001, 2004 Wedge Community Co-op
 
-   This file is part of IS4C.
+   This file is part of IT CORE.
 
-   IS4C is free software; you can redistribute it and/or modify
+   IT CORE is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
    (at your option) any later version.
 
-   IS4C is distributed in the hope that it will be useful,
+   IT CORE is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   in the file license.txt along with IS4C; if not, write to the Free Software
+   in the file license.txt along with IT CORE; if not, write to the Free Software
    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
@@ -24,7 +24,7 @@ if (!class_exists("MainFramePage")) include_once($_SESSION["INCLUDE_PATH"]."/gui
 if (!function_exists("tDataConnect")) include($_SESSION["INCLUDE_PATH"]."/lib/connect.php");
 if (!function_exists("setMember")) include($_SESSION["INCLUDE_PATH"]."/lib/prehkeys.php");
 if (!function_exists("changeBothPages")) include($_SESSION["INCLUDE_PATH"]."/gui-base.php");
-if (!isset($IS4C_LOCAL)) include($_SESSION["INCLUDE_PATH"]."/lib/LocalStorage/conf.php");
+if (!isset($CORE_LOCAL)) include($_SESSION["INCLUDE_PATH"]."/lib/LocalStorage/conf.php");
 
 class virtualCouponList extends MainFramePage {
 
@@ -33,8 +33,8 @@ class virtualCouponList extends MainFramePage {
 	var $db;
 
 	function preprocess(){
-		global $IS4C_LOCAL;
-		$IS4C_LOCAL->set("away",1);
+		global $CORE_LOCAL;
+		$CORE_LOCAL->set("away",1);
 
 		if (isset($_POST["selectlist"])){
 			$id = $_POST["selectlist"];
@@ -42,13 +42,13 @@ class virtualCouponList extends MainFramePage {
 			if ($id != "CL")
 				addVirtualCoupon($id);
 
-			$IS4C_LOCAL->set("away",0);
+			$CORE_LOCAL->set("away",0);
 			changeBothPages("/gui-modules/input.php","/gui-modules/pos2.php");
 			return False;
 		}
 
 		$sql = pDataConnect();
-		$cardno = $IS4C_LOCAL->get("memberID");
+		$cardno = $CORE_LOCAL->get("memberID");
 		$discountQ = "select flag,name from virtualcoupon as v
 				left join custdata as c 
 				on c.memcoupons & v.flag <> 0
@@ -64,8 +64,8 @@ class virtualCouponList extends MainFramePage {
 		$this->db = $sql;
 
 		if ($sql->num_rows($discountR) == 0){
-			$IS4C_LOCAL->set("away",0);
-			$IS4C_LOCAL->set("boxMsg","No virtual coupons available");
+			$CORE_LOCAL->set("away",0);
+			$CORE_LOCAL->set("boxMsg","No virtual coupons available");
 			changeBothPages("/gui-modules/input.php","/gui-modules/boxMsg2.php");
 			return False;
 
@@ -79,7 +79,7 @@ class virtualCouponList extends MainFramePage {
 	}
 
 	function head(){
-		global $IS4C_LOCAL;
+		global $CORE_LOCAL;
 		// Javascript is only needed if there are results
 		?>
 		<script type="text/javascript" >
@@ -108,7 +108,7 @@ class virtualCouponList extends MainFramePage {
 	} // END head() FUNCTION
 
 	function body_content(){
-		global $IS4C_LOCAL;
+		global $CORE_LOCAL;
 		$result = $this->temp_result;
 		$db = $this->db;
 

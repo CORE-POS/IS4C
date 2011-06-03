@@ -8,7 +8,7 @@
 	function body() {
 		global $FANNIE_URL;
 		return '
-		<div id="page_top"><a class="a_unstyled" href="'.$FANNIE_URL.'">IS4C Maintenance &amp; Reporting</a></div>
+		<div id="page_top"><a class="a_unstyled" href="'.$FANNIE_URL.'">IT CORE Maintenance &amp; Reporting</a></div>
 		<div id="page_nav">
 			<ul>
 				<li><a href="'.$FANNIE_URL.'item">Item Maintenance</a></li>

@@ -3,20 +3,20 @@
 
     Copyright 2001, 2004 Wedge Community Co-op
 
-    This file is part of IS4C.
+    This file is part of IT CORE.
 
-    IS4C is free software; you can redistribute it and/or modify
+    IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    IS4C is distributed in the hope that it will be useful,
+    IT CORE is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    in the file license.txt along with IS4C; if not, write to the Free Software
+    in the file license.txt along with IT CORE; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
@@ -28,26 +28,26 @@
  * variable
  */
 
-$IS4C_PATH = isset($IS4C_PATH)?$IS4C_PATH:"";
-if (empty($IS4C_PATH)){ while(!file_exists($IS4C_PATH."is4c.css")) $IS4C_PATH .= "../"; }
+$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
+if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
 
-if (!class_exists("NoInputPage")) include_once($IS4C_PATH."gui-class-lib/NoInputPage.php");
-if (!function_exists("pDataConnect")) include_once($IS4C_PATH."lib/connect.php");
-if (!isset($IS4C_LOCAL)) include($IS4C_PATH."lib/LocalStorage/conf.php");
+if (!class_exists("NoInputPage")) include_once($CORE_PATH."gui-class-lib/NoInputPage.php");
+if (!function_exists("pDataConnect")) include_once($CORE_PATH."lib/connect.php");
+if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
 
 class adminlogin extends NoInputPage {
 	var $box_color;
 	var $msg;
 
 	function preprocess(){
-		global $IS4C_LOCAL,$IS4C_PATH;
+		global $CORE_LOCAL,$CORE_PATH;
 		$this->box_color="#004080";
 		$this->msg = "enter admin password";
 
 		if (isset($_REQUEST['reginput'])){
 			$passwd = $_REQUEST['reginput'];
 			if (strtoupper($passwd) == "CL"){
-				header("Location: {$IS4C_PATH}gui-modules/pos2.php");
+				header("Location: {$CORE_PATH}gui-modules/pos2.php");
 				return False;	
 			}
 			else if (!is_numeric($passwd) || $passwd > 9999 || $passwd < 1){
@@ -57,14 +57,14 @@ class adminlogin extends NoInputPage {
 			else {
 				$query = "select emp_no, FirstName, LastName from employees 
 					where EmpActive = 1 and frontendsecurity >= "
-					.$IS4C_LOCAL->get("adminRequestLevel")
+					.$CORE_LOCAL->get("adminRequestLevel")
 					." and (CashierPassword = ".$passwd
 					." or AdminPassword = ".$passwd.")";
 				$db = pDataConnect();
 				$result = $db->query($query);
 				$num_rows = $db->num_rows($result);
 				if ($num_rows != 0) {
-					header("Location: ".$IS4C_LOCAL->get("adminRequest"));
+					header("Location: ".$CORE_LOCAL->get("adminRequest"));
 					return False;
 				}
 				else {
@@ -77,8 +77,8 @@ class adminlogin extends NoInputPage {
 	}
 
 	function body_content(){
-		global $IS4C_LOCAL;
-		$heading = $IS4C_LOCAL->get("adminLoginMsg");
+		global $CORE_LOCAL;
+		$heading = $CORE_LOCAL->get("adminLoginMsg");
 		$style = "style=\"background:{$this->box_color};\"";
 		?>
 		<div class="baseHeight">
@@ -96,7 +96,7 @@ class adminlogin extends NoInputPage {
 		</div>
 		<?php
 		$this->add_onload_command("\$('#reginput').focus();");
-		$IS4C_LOCAL->set("scan","noScan");
+		$CORE_LOCAL->set("scan","noScan");
 	} // END true_body() FUNCTION
 
 

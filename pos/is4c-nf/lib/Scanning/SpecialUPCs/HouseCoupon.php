@@ -3,34 +3,34 @@
 
     Copyright 2010 Whole Foods Co-op
 
-    This file is part of IS4C.
+    This file is part of IT CORE.
 
-    IS4C is free software; you can redistribute it and/or modify
+    IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    IS4C is distributed in the hope that it will be useful,
+    IT CORE is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    in the file license.txt along with IS4C; if not, write to the Free Software
+    in the file license.txt along with IT CORE; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
 
-$IS4C_PATH = isset($IS4C_PATH)?$IS4C_PATH:"";
-if (empty($IS4C_PATH)){ while(!file_exists($IS4C_PATH."is4c.css")) $IS4C_PATH .= "../"; }
+$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
+if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
 
-if (!class_exists("SpecialUPC")) include($IS4C_PATH."lib/Scanning/SpecialUPC.php");
-if (!isset($IS4C_LOCAL)) include($IS4C_PATH."lib/LocalStorage/conf.php");
+if (!class_exists("SpecialUPC")) include($CORE_PATH."lib/Scanning/SpecialUPC.php");
+if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
 
-if (!function_exists("boxMsg")) include($IS4C_PATH."lib/drawscreen.php");
-if (!function_exists("getsubtotals")) include($IS4C_PATH."lib/connect.php");
-if (!function_exists("lastpage")) include($IS4C_PATH."lib/listitems.php");
-if (!function_exists("addhousecoupon")) include($IS4C_PATH."lib/additem.php");
+if (!function_exists("boxMsg")) include($CORE_PATH."lib/drawscreen.php");
+if (!function_exists("getsubtotals")) include($CORE_PATH."lib/connect.php");
+if (!function_exists("lastpage")) include($CORE_PATH."lib/listitems.php");
+if (!function_exists("addhousecoupon")) include($CORE_PATH."lib/additem.php");
 
 class HouseCoupon extends SpecialUPC {
 
@@ -42,7 +42,7 @@ class HouseCoupon extends SpecialUPC {
 	}
 
 	function handle($upc,$json){
-		global $IS4C_LOCAL;
+		global $CORE_LOCAL;
 
 		$coupID = ltrim(substr($upc,-5),"0");
 		$leadDigits = substr($upc,3,5);
@@ -57,7 +57,7 @@ class HouseCoupon extends SpecialUPC {
 			datediff(dd,getdate(),endDate) end as expired
 			from
 			houseCoupons where coupID=".$coupID;
-		if ($IS4C_LOCAL->get("DBMS") == "mysql"){
+		if ($CORE_LOCAL->get("DBMS") == "mysql"){
 			$infoQ = str_replace("dd,getdate(),endDate","endDate,now()",$infoQ);
 			$infoQ = str_replace("limit","`limit`",$infoQ);
 		}
@@ -91,15 +91,15 @@ class HouseCoupon extends SpecialUPC {
 		/* check for member-only, tigher use tracking
 		   available with member coupons */
 		if ($infoW["memberOnly"] == 1 and 
-		   ($IS4C_LOCAL->get("memberID") == "0" or $IS4C_LOCAL->get("isMember") != 1)
+		   ($CORE_LOCAL->get("memberID") == "0" or $CORE_LOCAL->get("isMember") != 1)
 		   ){
 			$json['output'] = boxMsg("Member only coupon<br>Apply member number first");
 			return $json;
 		}
-		else if ($infoW["memberOnly"] == 1 && $IS4C_LOCAL->get("standalone")==0){
+		else if ($infoW["memberOnly"] == 1 && $CORE_LOCAL->get("standalone")==0){
 			$mDB = mDataConnect();
 			$mR = $mDB->query("SELECT quantity FROM houseCouponThisMonth
-				WHERE card_no=".$IS4C_LOCAL->get("memberID")." and
+				WHERE card_no=".$CORE_LOCAL->get("memberID")." and
 				upc='$upc'");
 			if ($mDB->num_rows($mR) > 0){
 				$uses = array_pop($mDB->fetch_row($mR));
@@ -119,7 +119,7 @@ class HouseCoupon extends SpecialUPC {
 				as l left join opData.dbo.houseCouponItems 
 				as h on l.upc = h.upc
 				where h.coupID=".$coupID;
-			if ($IS4C_LOCAL->get("DBMS") == "mysql")
+			if ($CORE_LOCAL->get("DBMS") == "mysql")
 				$minQ = str_replace("dbo.","",$minQ);
 			$minR = $transDB->query($minQ);
 			$validQtty = array_pop($transDB->fetch_row($minR));
@@ -135,7 +135,7 @@ class HouseCoupon extends SpecialUPC {
 				as l left join opData.dbo.houseCouponItems 
 				as h on l.upc = h.upc
 				where h.coupID=".$coupID;
-			if ($IS4C_LOCAL->get("DBMS") == "mysql")
+			if ($CORE_LOCAL->get("DBMS") == "mysql")
 				$minQ = str_replace("dbo.","",$minQ);
 			$minR = $transDB->query($minQ);
 			$validQtty = array_pop($transDB->fetch_row($minR));
@@ -151,7 +151,7 @@ class HouseCoupon extends SpecialUPC {
 				as l left join opData.dbo.houseCouponItems
 				as h on l.department = h.upc
 				where h.coupID=".$coupID;
-			if ($IS4C_LOCAL->get("DBMS") == "mysql")
+			if ($CORE_LOCAL->get("DBMS") == "mysql")
 				$minQ = str_replace("dbo.","",$minQ);
 			$minR = $transDB->query($minQ);
 			$validQtty = array_pop($transDB->fetch_row($minR));
@@ -167,7 +167,7 @@ class HouseCoupon extends SpecialUPC {
 				as l left join opData.dbo.houseCouponItems
 				as h on l.department = h.upc
 				where h.coupID=".$coupID;
-			if ($IS4C_LOCAL->get("DBMS") == "mysql")
+			if ($CORE_LOCAL->get("DBMS") == "mysql")
 				$minQ = str_replace("dbo.","",$minQ);
 			$minR = $transDB->query($minQ);
 			$validQtty = array_pop($transDB->fetch_row($minR));
@@ -185,7 +185,7 @@ class HouseCoupon extends SpecialUPC {
 				as h on l.upc = h.upc
 				where h.coupID=$coupID
 				and h.type = 'QUALIFIER'";
-			if ($IS4C_LOCAL->get("DBMS") == "mysql")
+			if ($CORE_LOCAL->get("DBMS") == "mysql")
 				$minQ = str_replace("dbo.","",$minQ);
 			$minR = $transDB->query($minQ);
 			$validQtty = array_pop($transDB->fetch_row($minR));
@@ -197,7 +197,7 @@ class HouseCoupon extends SpecialUPC {
 				as h on l.upc = h.upc
 				where h.coupID=$coupID
 				and h.type = 'DISCOUNT'";
-			if ($IS4C_LOCAL->get("DBMS") == "mysql")
+			if ($CORE_LOCAL->get("DBMS") == "mysql")
 				$min2Q = str_replace("dbo.","",$min2Q);
 			$min2R = $transDB->query($min2Q);
 			$validQtty2 = array_pop($transDB->fetch_row($min2R));
@@ -250,7 +250,7 @@ class HouseCoupon extends SpecialUPC {
 				and h.type in ('BOTH','DISCOUNT')
 				and l.total >0
 				order by unitPrice asc";
-			if ($IS4C_LOCAL->get("DBMS") == "mysql")
+			if ($CORE_LOCAL->get("DBMS") == "mysql")
 				$valQ = str_replace("dbo.","",$valQ);
 			$valR = $transDB->query($valQ);
 			$valW = $transDB->fetch_row($valR);
@@ -268,7 +268,7 @@ class HouseCoupon extends SpecialUPC {
 				and h.type in ('BOTH','DISCOUNT')
 				and l.total >0
 				order by unitPrice asc";
-			if ($IS4C_LOCAL->get("DBMS") == "mysql")
+			if ($CORE_LOCAL->get("DBMS") == "mysql")
 				$deptQ = str_replace("dbo.","",$deptQ);
 			$deptR = $transDB->query($deptQ);
 			$row = $transDB->fetch_row($deptR);
@@ -285,7 +285,7 @@ class HouseCoupon extends SpecialUPC {
 				and h.type in ('BOTH','DISCOUNT')
 				and l.total > 0
 				order by unitPrice asc";
-			if ($IS4C_LOCAL->get("DBMS") == "mysql")
+			if ($CORE_LOCAL->get("DBMS") == "mysql")
 				$valQ = str_replace("dbo.","",$valQ);
 			$valR = $transDB->query($valQ);
 			$row = $transDB->fetch_row($valR);
@@ -302,7 +302,7 @@ class HouseCoupon extends SpecialUPC {
 				and h.type in ('BOTH','DISCOUNT')
 				and l.total > 0
 				order by unitPrice asc";
-			if ($IS4C_LOCAL->get("DBMS") == "mysql")
+			if ($CORE_LOCAL->get("DBMS") == "mysql")
 				$valQ = str_replace("dbo.","",$valQ);
 			$valR = $transDB->query($valQ);
 			$row = $transDB->fetch_row($valR);
@@ -319,7 +319,7 @@ class HouseCoupon extends SpecialUPC {
 				and h.type in ('BOTH','DISCOUNT')
 				and l.total > 0
 				order by unitPrice asc";
-			if ($IS4C_LOCAL->get("DBMS") == "mysql")
+			if ($CORE_LOCAL->get("DBMS") == "mysql")
 				$valQ = str_replace("dbo.","",$valQ);
 			$valR = $transDB->query($valQ);
 			$row = $transDB->fetch_row($valR);
@@ -330,7 +330,7 @@ class HouseCoupon extends SpecialUPC {
 			break;
 		case "%": // percent discount on all items
 			getsubtotals();
-			$value = $infoW["discountValue"]*$IS4C_LOCAL->get("discountableTotal");
+			$value = $infoW["discountValue"]*$CORE_LOCAL->get("discountableTotal");
 			break;
 		}
 

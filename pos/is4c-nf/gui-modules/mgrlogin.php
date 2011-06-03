@@ -3,34 +3,34 @@
 
     Copyright 2001, 2004 Wedge Community Co-op
 
-    This file is part of IS4C.
+    This file is part of IT CORE.
 
-    IS4C is free software; you can redistribute it and/or modify
+    IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    IS4C is distributed in the hope that it will be useful,
+    IT CORE is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    in the file license.txt along with IS4C; if not, write to the Free Software
+    in the file license.txt along with IT CORE; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
 
-$IS4C_PATH = isset($IS4C_PATH)?$IS4C_PATH:"";
-if (empty($IS4C_PATH)){ while(!file_exists($IS4C_PATH."is4c.css")) $IS4C_PATH .= "../"; }
+$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
+if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
 
 ini_set('display_errors','1');
 
-if (!class_exists("NoInputPage")) include_once($IS4C_PATH."gui-class-lib/NoInputPage.php");
-if (!isset($IS4C_LOCAL)) include($IS4C_PATH."lib/LocalStorage/conf.php");
-if (!function_exists("array_to_json")) include($IS4C_PATH."lib/array_to_json.php");
-if (!function_exists("pDataConnect")) include($IS4C_PATH."lib/connect.php");
-if (!function_exists("udpSend")) include($IS4C_PATH."lib/udpSend.php");
+if (!class_exists("NoInputPage")) include_once($CORE_PATH."gui-class-lib/NoInputPage.php");
+if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
+if (!function_exists("array_to_json")) include($CORE_PATH."lib/array_to_json.php");
+if (!function_exists("pDataConnect")) include($CORE_PATH."lib/connect.php");
+if (!function_exists("udpSend")) include($CORE_PATH."lib/udpSend.php");
 
 class mgrlogin extends NoInputPage {
 
@@ -44,7 +44,7 @@ class mgrlogin extends NoInputPage {
 	}
 
 	function head_content(){
-		global $IS4C_PATH;
+		global $CORE_PATH;
 		?>
 		<script type="text/javascript">
 		function submitWrapper(){
@@ -61,17 +61,17 @@ class mgrlogin extends NoInputPage {
 				success: function(data){
 					if (data.cancelOrder){
 						$.ajax({
-							url: '<?php echo $IS4C_PATH; ?>ajax-callbacks/ajax-end.php',
+							url: '<?php echo $CORE_PATH; ?>ajax-callbacks/ajax-end.php',
 							type: 'get',
 							data: 'receiptType=cancelled',
 							cache: false,
 							success: function(data2){
-								location = '<?php echo $IS4C_PATH; ?>gui-modules/pos2.php';
+								location = '<?php echo $CORE_PATH; ?>gui-modules/pos2.php';
 							}
 						});
 					}
 					else if (data.giveUp){
-						location = '<?php echo $IS4C_PATH; ?>gui-modules/pos2.php';
+						location = '<?php echo $CORE_PATH; ?>gui-modules/pos2.php';
 					}
 					else {
 						$('div.colored').css('background',data.color);
@@ -89,7 +89,7 @@ class mgrlogin extends NoInputPage {
 	}
 
 	function body_content(){
-		global $IS4C_LOCAL;
+		global $CORE_LOCAL;
 		$this->add_onload_command("\$('#reginput').focus();\n");
 		$style = "style=\"background:#004080;\"";
 		?>
@@ -108,12 +108,12 @@ class mgrlogin extends NoInputPage {
 		</div>
 		</div>
 		<?php
-		$IS4C_LOCAL->set("beep","noScan");
+		$CORE_LOCAL->set("beep","noScan");
 	} // END true_body() FUNCTION
 
 	function mgrauthenticate($password){
-		global $IS4C_LOCAL;
-		$IS4C_LOCAL->set("away",1);
+		global $CORE_LOCAL;
+		$CORE_LOCAL->set("away",1);
 
 		$ret = array(
 			'cancelOrder'=>false,
@@ -153,14 +153,14 @@ class mgrlogin extends NoInputPage {
 	}
 
 	function cancelorder() {
-		global $IS4C_LOCAL;
+		global $CORE_LOCAL;
 
-		$IS4C_LOCAL->set("msg",2);
-		$IS4C_LOCAL->set("plainmsg","transaction cancelled");
-		$IS4C_LOCAL->set("beep","rePoll");
+		$CORE_LOCAL->set("msg",2);
+		$CORE_LOCAL->set("plainmsg","transaction cancelled");
+		$CORE_LOCAL->set("beep","rePoll");
 		udpSend("rePoll");
-		$IS4C_LOCAL->set("ccTermOut","reset");
-		$IS4C_LOCAL->set("receiptType","cancelled");
+		$CORE_LOCAL->set("ccTermOut","reset");
+		$CORE_LOCAL->set("receiptType","cancelled");
 	}
 }
 

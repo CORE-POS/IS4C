@@ -3,27 +3,27 @@
 
     Copyright 2007 Whole Foods Co-op
 
-    This file is part of IS4C.
+    This file is part of IT CORE.
 
-    IS4C is free software; you can redistribute it and/or modify
+    IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    IS4C is distributed in the hope that it will be useful,
+    IT CORE is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    in the file license.txt along with IS4C; if not, write to the Free Software
+    in the file license.txt along with IT CORE; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
 
 if (!class_exists("Parser")) include_once($_SESSION["INCLUDE_PATH"]."/parser-class-lib/Parser.php");
 if (!function_exists("paycard_reset")) include_once($_SESSION["INCLUDE_PATH"]."/lib/paycardLib.php");
-if (!isset($IS4C_LOCAL)) include($_SESSION["INCLUDE_PATH"]."/lib/LocalStorage/conf.php");
+if (!isset($CORE_LOCAL)) include($_SESSION["INCLUDE_PATH"]."/lib/LocalStorage/conf.php");
 
 class paycardEntered extends Parser {
 	var $swipestr;
@@ -83,19 +83,19 @@ class paycardEntered extends Parser {
 	}
 
 	function paycard_entered($mode,$card,$manual,$type){
-		global $IS4C_LOCAL;
+		global $CORE_LOCAL;
 		// initialize
 		$validate = true; // run Luhn's on PAN, check expiration date
 		paycard_reset();
-		$IS4C_LOCAL->set("paycard_mode",$mode);
-		$IS4C_LOCAL->set("paycard_manual",($manual ? 1 : 0));
+		$CORE_LOCAL->set("paycard_mode",$mode);
+		$CORE_LOCAL->set("paycard_manual",($manual ? 1 : 0));
 
 		// error checks based on transaction
 		if( $mode == PAYCARD_MODE_AUTH) {
-			if( $IS4C_LOCAL->get("ttlflag") != 1) { // must subtotal before running card
+			if( $CORE_LOCAL->get("ttlflag") != 1) { // must subtotal before running card
 				return paycard_msgBox($type,"No Total",
 					"Transaction must be totaled before tendering or refunding","[clear] to cancel");
-			} else if( abs($IS4C_LOCAL->get("amtdue")) < 0.005) { // can't tender for more than due
+			} else if( abs($CORE_LOCAL->get("amtdue")) < 0.005) { // can't tender for more than due
 				return paycard_msgBox($type,"No Total",
 					"Nothing to tender or refund","[clear] to cancel");
 			}
@@ -108,7 +108,7 @@ class paycardEntered extends Parser {
 		}
 	
 		// parse card data
-		if( $IS4C_LOCAL->get("paycard_manual")) {
+		if( $CORE_LOCAL->get("paycard_manual")) {
 			if( strtoupper(substr($card,0,4)) == "TEST" && !paycard_live($type)) {
 				// in testing mode, we have shorthand for various training card numbers
 				if( $type == PAYCARD_TYPE_CREDIT) {
@@ -137,20 +137,20 @@ class paycardEntered extends Parser {
 				$type = paycard_type($card);
 			}
 			if( $type == PAYCARD_TYPE_GIFT) {
-				$IS4C_LOCAL->set("paycard_PAN",$card); // our gift cards have no expiration date or conf code
+				$CORE_LOCAL->set("paycard_PAN",$card); // our gift cards have no expiration date or conf code
 			} else if( !paycard_live($type) && substr($card,0,7) == "9999999") {
 				// fill in EFSnet's test visa account, since the physical test cards only work in standalone
-				$IS4C_LOCAL->set("paycard_PAN","4455010000000001");
-				$IS4C_LOCAL->set("paycard_exp","1209");
+				$CORE_LOCAL->set("paycard_PAN","4455010000000001");
+				$CORE_LOCAL->set("paycard_exp","1209");
 			} else {
-				$IS4C_LOCAL->set("paycard_PAN",substr($card,0,-4));
-				$IS4C_LOCAL->set("paycard_exp",substr($card,-4,4));
+				$CORE_LOCAL->set("paycard_PAN",substr($card,0,-4));
+				$CORE_LOCAL->set("paycard_exp",substr($card,-4,4));
 			}
 		} else {
 			// swiped magstripe (reference to ISO format at end of this file)
 			$stripe = paycard_magstripe($card);
 			if( !is_array($stripe)) {
-				return paycard_errBox($type,$IS4C_LOCAL->get("paycard_manual")."Card Data Invalid","Please swipe again or type in manually","[clear] to cancel");
+				return paycard_errBox($type,$CORE_LOCAL->get("paycard_manual")."Card Data Invalid","Please swipe again or type in manually","[clear] to cancel");
 			}
 			// check for the Concord test card
 			if( !paycard_live(PAYCARD_TYPE_CREDIT) && substr($stripe["pan"],0,7) == "9999999") {
@@ -160,34 +160,34 @@ class paycardEntered extends Parser {
 						"Test Card Malfunction","Please contact IT","[clear] to cancel");
 				}
 			}
-			$IS4C_LOCAL->set("paycard_PAN",$stripe["pan"]);
-			$IS4C_LOCAL->set("paycard_exp",$stripe["exp"]);
-			$IS4C_LOCAL->set("paycard_name",$stripe["name"]);
-			$IS4C_LOCAL->set("paycard_tr1",$stripe["tr1"]);
-			$IS4C_LOCAL->set("paycard_tr2",$stripe["tr2"]);
-			$IS4C_LOCAL->set("paycard_tr3",$stripe["tr3"]);
+			$CORE_LOCAL->set("paycard_PAN",$stripe["pan"]);
+			$CORE_LOCAL->set("paycard_exp",$stripe["exp"]);
+			$CORE_LOCAL->set("paycard_name",$stripe["name"]);
+			$CORE_LOCAL->set("paycard_tr1",$stripe["tr1"]);
+			$CORE_LOCAL->set("paycard_tr2",$stripe["tr2"]);
+			$CORE_LOCAL->set("paycard_tr3",$stripe["tr3"]);
 		} // manual/swiped
 
 		// determine card issuer and type
-		$IS4C_LOCAL->set("paycard_type",paycard_type($IS4C_LOCAL->get("paycard_PAN")));
-		$IS4C_LOCAL->set("paycard_issuer",paycard_issuer($IS4C_LOCAL->get("paycard_PAN")));
+		$CORE_LOCAL->set("paycard_type",paycard_type($CORE_LOCAL->get("paycard_PAN")));
+		$CORE_LOCAL->set("paycard_issuer",paycard_issuer($CORE_LOCAL->get("paycard_PAN")));
 	
 		// if we knew the type coming in, make sure it agrees
-		if( $type != PAYCARD_TYPE_UNKNOWN && $type != $IS4C_LOCAL->get("paycard_type")) {
+		if( $type != PAYCARD_TYPE_UNKNOWN && $type != $CORE_LOCAL->get("paycard_type")) {
 			paycard_reset();
 			return paycard_msgBox($type,"Type Mismatch",
 				"Card number does not match card type","[clear] to cancel");
 		}
 
-		foreach($IS4C_LOCAL->get("RegisteredPaycardClasses") as $rpc){
+		foreach($CORE_LOCAL->get("RegisteredPaycardClasses") as $rpc){
 			if (!class_exists($rpc)) include_once($_SESSION["INCLUDE_PATH"]."/cc-modules/$rpc.php");
 			$myObj = new $rpc();
-			if ($myObj->handlesType($IS4C_LOCAL->get("paycard_type")))
+			if ($myObj->handlesType($CORE_LOCAL->get("paycard_type")))
 				return $myObj->entered($validate);
 		}
 
 		paycard_reset();
-		return paycard_errBox(PAYCARD_TYPE_UNKNOWN,"Unknown Card Type ".$IS4C_LOCAL->get("paycard_type"),"","[clear] to cancel");
+		return paycard_errBox(PAYCARD_TYPE_UNKNOWN,"Unknown Card Type ".$CORE_LOCAL->get("paycard_type"),"","[clear] to cancel");
 	}
 
 	function doc(){

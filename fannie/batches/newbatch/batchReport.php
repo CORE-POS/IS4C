@@ -16,7 +16,7 @@
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    in the file license.txt along with IS4C; if not, write to the Free Software
+    in the file license.txt along with IT CORE; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
@@ -38,6 +38,8 @@ if(isset($_GET['excel'])){
    
 }else{
 
+$page_title = "Batch Report";
+$header = "Fannie :: Batch Report";
 include("../../src/header.html");
 
 }
@@ -72,15 +74,12 @@ if(!isset($_GET['excel'])){
    echo "<p class=excel><a href=batchReport.php?batchID=$batchID&excel=1&startDate=$bnStart&endDate=$bnEnd>Click here for Excel version</a></p>";
 }
 
-$salesBatchQ ="select d.upc, b.description, sum(d.total) as sales, 
-	 sum(case when d.trans_status in ('M','V') then d.itemQtty else d.quantity end) as quantity
+$salesBatchQ ="select d.upc, b.description, sum(d.total) as sales, sum(CASE WHEN trans_status='M' then 0 else d.quantity END) as quantity
          FROM $dlog as d left join batchMergeTable as b
          ON d.upc = b.upc
          WHERE d.tdate BETWEEN '$bStart' and '$bEnd' 
          AND b.batchID = $batchID 
-	 AND d.trans_status <> 'M'
-         GROUP BY d.upc, b.description
-	 ORDER BY d.upc";
+         GROUP BY d.upc, b.description";
 
 $salesBatchR= $dbc->query($salesBatchQ);
 

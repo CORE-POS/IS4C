@@ -1,7 +1,7 @@
 <?php
 
-$IS4C_PATH = isset($IS4C_PATH)?$IS4C_PATH:"";
-if (empty($IS4C_PATH)){ while(!file_exists($IS4C_PATH."is4c.css")) $IS4C_PATH .= "../"; }
+$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
+if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
 
 class quickkey {
 	var $title;
@@ -15,7 +15,7 @@ class quickkey {
 	}
 
 	function display($id=""){
-		global $IS4C_PATH;
+		global $CORE_PATH;
 		$ret = sprintf("<form action=\"%s\" method=\"post\"
 			style=\"display:inline;\">",
 			$_SERVER["PHP_SELF"]);
@@ -36,7 +36,7 @@ class quickkey {
 				src=\"%s\" />
 				<input type=\"hidden\" name=\"%s\"
 				value=\"%s\" />",$id,$this->title,
-				$IS4C_PATH.
+				$CORE_PATH.
 				"quickkeys/imgs/".$this->img,
 				md5($this->title),
 				$this->output_text);

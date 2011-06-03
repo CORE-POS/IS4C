@@ -3,29 +3,29 @@
 
     Copyright 2007 Whole Foods Co-op
 
-    This file is part of IS4C.
+    This file is part of IT CORE.
 
-    IS4C is free software; you can redistribute it and/or modify
+    IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    IS4C is distributed in the hope that it will be useful,
+    IT CORE is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    in the file license.txt along with IS4C; if not, write to the Free Software
+    in the file license.txt along with IT CORE; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
-$IS4C_PATH = isset($IS4C_PATH)?$IS4C_PATH:"";
-if (empty($IS4C_PATH)){ while(!file_exists($IS4C_PATH."is4c.css")) $IS4C_PATH .= "../"; }
+$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
+if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
 
-if (!class_exists("Parser")) include_once($IS4C_PATH."parser-class-lib/Parser.php");
-if (!isset($IS4C_LOCAL)) include_once($IS4C_PATH."lib/LocalStorage/conf.php");
-if (!function_exists("deptkey")) include_once($IS4C_PATH."lib/prehkeys.php");
+if (!class_exists("Parser")) include_once($CORE_PATH."parser-class-lib/Parser.php");
+if (!isset($CORE_LOCAL)) include_once($CORE_PATH."lib/LocalStorage/conf.php");
+if (!function_exists("deptkey")) include_once($CORE_PATH."lib/prehkeys.php");
 
 class DeptKey extends Parser {
 	function check($str){
@@ -36,39 +36,39 @@ class DeptKey extends Parser {
 	}
 
 	function parse($str){
-		global $IS4C_LOCAL,$IS4C_PATH;
+		global $CORE_LOCAL,$CORE_PATH;
 
 		$split = explode("DP",$str);
 		$dept = $split[1];
 		$amt = $split[0];
 		$ret = $this->default_json();
 
-		if ($IS4C_LOCAL->get("refund")==1 && $IS4C_LOCAL->get("refundComment") == ""){
-			$ret['main_frame'] = $IS4C_PATH.'gui-modules/refundComment.php';
-			$IS4C_LOCAL->set("refundComment",$IS4C_LOCAL->get("strEntered"));
+		if ($CORE_LOCAL->get("refund")==1 && $CORE_LOCAL->get("refundComment") == ""){
+			$ret['main_frame'] = $CORE_PATH.'gui-modules/refundComment.php';
+			$CORE_LOCAL->set("refundComment",$CORE_LOCAL->get("strEntered"));
 		}
-		elseif ($IS4C_LOCAL->get("warned") == 1 and ($IS4C_LOCAL->get("warnBoxType") == "warnEquity" or $IS4C_LOCAL->get("warnBoxType") == "warnAR")){
-			$IS4C_LOCAL->set("warned",0);
-			$IS4C_LOCAL->set("warnBoxType","");
+		elseif ($CORE_LOCAL->get("warned") == 1 and ($CORE_LOCAL->get("warnBoxType") == "warnEquity" or $CORE_LOCAL->get("warnBoxType") == "warnAR")){
+			$CORE_LOCAL->set("warned",0);
+			$CORE_LOCAL->set("warnBoxType","");
 		}
 		elseif ($dept == 991 || $dept == 992){
-			$ref = trim($IS4C_LOCAL->get("CashierNo"))."-"
-				.trim($IS4C_LOCAL->get("laneno"))."-"
-				.trim($IS4C_LOCAL->get("transno"));
-			if ($IS4C_LOCAL->get("LastEquityReference") != $ref){
-				$IS4C_LOCAL->set("warned",1);
-				$IS4C_LOCAL->set("warnBoxType","warnEquity");
-				$IS4C_LOCAL->set("endorseType","stock");
-				$IS4C_LOCAL->set("equityAmt",$price);
-				$IS4C_LOCAL->set("boxMsg","<b>Equity Sale</b><br>Insert paperwork and press<br><font size=-1>[enter] to continue, [clear] to cancel</font>");
-				$ret['main_frame'] = $IS4C_PATH.'gui-modules/boxMsg2.php';
+			$ref = trim($CORE_LOCAL->get("CashierNo"))."-"
+				.trim($CORE_LOCAL->get("laneno"))."-"
+				.trim($CORE_LOCAL->get("transno"));
+			if ($CORE_LOCAL->get("LastEquityReference") != $ref){
+				$CORE_LOCAL->set("warned",1);
+				$CORE_LOCAL->set("warnBoxType","warnEquity");
+				$CORE_LOCAL->set("endorseType","stock");
+				$CORE_LOCAL->set("equityAmt",$price);
+				$CORE_LOCAL->set("boxMsg","<b>Equity Sale</b><br>Insert paperwork and press<br><font size=-1>[enter] to continue, [clear] to cancel</font>");
+				$ret['main_frame'] = $CORE_PATH.'gui-modules/boxMsg2.php';
 			}
 		}
 		elseif ($dept == 990){
-			$IS4C_LOCAL->set("warned",1);
-			$IS4C_LOCAL->set("warnBoxType","warnAR");
-			$IS4C_LOCAL->set("boxMsg","<b>A/R Payment Sale</b><br>remember to retain you<br>reprinted receipt<br><font size=-1>[enter] to continue, [clear] to cancel</font>");
-			$ret['main_frame'] = $IS4C_PATH.'gui-modules/boxMsg2.php';
+			$CORE_LOCAL->set("warned",1);
+			$CORE_LOCAL->set("warnBoxType","warnAR");
+			$CORE_LOCAL->set("boxMsg","<b>A/R Payment Sale</b><br>remember to retain you<br>reprinted receipt<br><font size=-1>[enter] to continue, [clear] to cancel</font>");
+			$ret['main_frame'] = $CORE_PATH.'gui-modules/boxMsg2.php';
 		}
 		
 		if (!$ret['main_frame'])

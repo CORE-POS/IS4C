@@ -3,32 +3,32 @@
 
     Copyright 2001, 2004 Wedge Community Co-op
 
-    This file is part of IS4C.
+    This file is part of IT CORE.
 
-    IS4C is free software; you can redistribute it and/or modify
+    IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    IS4C is distributed in the hope that it will be useful,
+    IT CORE is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    in the file license.txt along with IS4C; if not, write to the Free Software
+    in the file license.txt along with IT CORE; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
 
-$IS4C_PATH = isset($IS4C_PATH)?$IS4C_PATH:"";
-if (empty($IS4C_PATH)){ while(!file_exists($IS4C_PATH."is4c.css")) $IS4C_PATH .= "../"; }
+$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
+if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
 
-if (!function_exists("pDataConnect")) include($IS4C_PATH."lib/connect.php");
-if (!isset($IS4C_LOCAL)) include($IS4C_PATH."lib/LocalStorage/conf.php");
+if (!function_exists("pDataConnect")) include($CORE_PATH."lib/connect.php");
+if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
 
 function loadglobalvalues() {
-	global $IS4C_LOCAL;
+	global $CORE_LOCAL;
 
 	$query = "select CashierNo,Cashier,LoggedIn,TransNo,TTLFlag,
 		FntlFlag,TaxExempt from globalvalues";
@@ -36,46 +36,46 @@ function loadglobalvalues() {
 	$result = $db->query($query);
 	$row = $db->fetch_array($result);
 
-	$IS4C_LOCAL->set("CashierNo",$row["CashierNo"]);
-	$IS4C_LOCAL->set("cashier",$row["Cashier"]);
-	$IS4C_LOCAL->set("LoggedIn",$row["LoggedIn"]);
-	$IS4C_LOCAL->set("transno",$row["TransNo"]);
-	$IS4C_LOCAL->set("ttlflag",$row["TTLFlag"]);
-	$IS4C_LOCAL->set("fntlflag",$row["FntlFlag"]);
-	$IS4C_LOCAL->set("TaxExempt",$row["TaxExempt"]);
+	$CORE_LOCAL->set("CashierNo",$row["CashierNo"]);
+	$CORE_LOCAL->set("cashier",$row["Cashier"]);
+	$CORE_LOCAL->set("LoggedIn",$row["LoggedIn"]);
+	$CORE_LOCAL->set("transno",$row["TransNo"]);
+	$CORE_LOCAL->set("ttlflag",$row["TTLFlag"]);
+	$CORE_LOCAL->set("fntlflag",$row["FntlFlag"]);
+	$CORE_LOCAL->set("TaxExempt",$row["TaxExempt"]);
 
 	$db->close();
 }
 
 function loadglobalvalue($param,$val){
-	global $IS4C_LOCAL;
+	global $CORE_LOCAL;
 	switch(strtoupper($param)){
 	case 'CASHIERNO':
-		$IS4C_LOCAL->set("CashierNo",$val);	
+		$CORE_LOCAL->set("CashierNo",$val);	
 		break;
 	case 'CASHIER':
-		$IS4C_LOCAL->set("cashier",$val);
+		$CORE_LOCAL->set("cashier",$val);
 		break;
 	case 'LOGGEDIN':
-		$IS4C_LOCAL->set("LoggedIn",$val);
+		$CORE_LOCAL->set("LoggedIn",$val);
 		break;
 	case 'TRANSNO':
-		$IS4C_LOCAL->set("transno",$val);
+		$CORE_LOCAL->set("transno",$val);
 		break;
 	case 'TTLFLAG':
-		$IS4C_LOCAL->set("ttlflag",$val);
+		$CORE_LOCAL->set("ttlflag",$val);
 		break;
 	case 'FNTLFLAG':
-		$IS4C_LOCAL->set("fntlflag",$val);
+		$CORE_LOCAL->set("fntlflag",$val);
 		break;
 	case 'TAXEXEMPT':
-		$IS4C_LOCAL->set("TaxExempt",$val);
+		$CORE_LOCAL->set("TaxExempt",$val);
 		break;
 	}
 }
 
 function setglobalvalue($param, $value) {
-	global $IS4C_LOCAL;
+	global $CORE_LOCAL;
 
 	$db = pDataConnect();
 	

@@ -16,7 +16,7 @@ Depends on:
 	none
 
 Use:
-List of tenders IS4C accepts. TenderCode
+List of tenders IT CORE accepts. TenderCode
 should be unique; it's what cashiers type in
 at the register as well as the identifier that
 eventually shows up in transaction logs.

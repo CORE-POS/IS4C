@@ -3,30 +3,30 @@
 
     Copyright 2001, 2004 Wedge Community Co-op
 
-    This file is part of IS4C.
+    This file is part of IT CORE.
 
-    IS4C is free software; you can redistribute it and/or modify
+    IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    IS4C is distributed in the hope that it will be useful,
+    IT CORE is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    in the file license.txt along with IS4C; if not, write to the Free Software
+    in the file license.txt along with IT CORE; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
 
-$IS4C_PATH = isset($IS4C_PATH)?$IS4C_PATH:"";
-if (empty($IS4C_PATH)){ while(!file_exists($IS4C_PATH."is4c.css")) $IS4C_PATH .= "../"; }
+$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
+if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
 
-if (!class_exists("NoInputPage")) include_once($IS4C_PATH."gui-class-lib/NoInputPage.php");
-if (!function_exists("tDataConnect")) include($IS4C_PATH."lib/connect.php");
-if (!isset($IS4C_LOCAL)) include($IS4C_PATH."lib/LocalStorage/conf.php");
+if (!class_exists("NoInputPage")) include_once($CORE_PATH."gui-class-lib/NoInputPage.php");
+if (!function_exists("tDataConnect")) include($CORE_PATH."lib/connect.php");
+if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
 
 class suspendedlist extends NoInputPage {
 	var $temp_result;
@@ -58,7 +58,7 @@ class suspendedlist extends NoInputPage {
 	} // END head() FUNCTION
 
 	function preprocess(){
-		global $IS4C_LOCAL,$IS4C_PATH;
+		global $CORE_LOCAL,$CORE_PATH;
 
 		/* form submitted */
 		if (isset($_REQUEST['selectlist'])){
@@ -66,7 +66,7 @@ class suspendedlist extends NoInputPage {
 				$tmp = explode("::",$_REQUEST['selectlist']);
 				$this->doResume($tmp[0],$tmp[1],$tmp[2]);
 			}
-			header("Location: {$IS4C_PATH}gui-modules/pos2.php");
+			header("Location: {$CORE_PATH}gui-modules/pos2.php");
 			return False;
 		}
 
@@ -75,7 +75,7 @@ class suspendedlist extends NoInputPage {
 
 		$db_a = tDataConnect();
 		$result = "";
-		if ($IS4C_LOCAL->get("standalone") == 1) $result = $db_a->query($query_local);
+		if ($CORE_LOCAL->get("standalone") == 1) $result = $db_a->query($query_local);
 		else {
 			$db_a->close();
 			$db_a = mDataConnect();
@@ -85,7 +85,7 @@ class suspendedlist extends NoInputPage {
 		$num_rows = $db_a->num_rows($result);
 		
 		// original code seems to do this either way
-		$IS4C_LOCAL->set("scan","noScan");
+		$CORE_LOCAL->set("scan","noScan");
 
 		/* if there are suspended transactions available, 
 		 * store the result and row count as class variables
@@ -102,15 +102,15 @@ class suspendedlist extends NoInputPage {
 		}
 		else {
 			$db_a->close();
-			$IS4C_LOCAL->set("boxMsg","no suspended transaction");
-			header("Location: {$IS4C_PATH}gui-modules/pos2.php");	
+			$CORE_LOCAL->set("boxMsg","no suspended transaction");
+			header("Location: {$CORE_PATH}gui-modules/pos2.php");	
 			return False;
 		}
 		return True;
 	} // END preprocess() FUNCTION
 
 	function body_content(){
-		global $IS4C_LOCAL;
+		global $CORE_LOCAL;
 		$num_rows = $this->temp_num_rows;
 		$result = $this->temp_result;
 		$db = $this->temp_db;
@@ -135,13 +135,13 @@ class suspendedlist extends NoInputPage {
 			."use arrow keys to navigate<br />[clear] to cancel</div>\n"
 			."<div class=\"clear\"></div>";
 		echo "</div>";
-		$IS4C_LOCAL->set("scan","noScan");
+		$CORE_LOCAL->set("scan","noScan");
 		$this->add_onload_command("\$('#selectlist').focus();");
 		$this->add_onload_command("\$('#selectlist').keypress(processkeypress);");
 	} // END body_content() FUNCTION
 
 	function doResume($reg,$emp,$trans){
-		global $IS4C_LOCAL;
+		global $CORE_LOCAL;
 
 		$query_del = "delete from suspended where register_no = ".$reg." and emp_no = "
 			.$emp." and trans_no = ".$trans;
@@ -154,17 +154,17 @@ class suspendedlist extends NoInputPage {
 		// use SQLManager's transfer method when not in stand alone mode
 		// to eliminate the cross server query - andy 8/31/07
 		if ($num_rows_a == 0) {
-			if ($IS4C_LOCAL->get("standalone") == 0){
-				$db_a->add_connection($IS4C_LOCAL->get("mServer"),$IS4C_LOCAL->get("mDBMS"),
-					$IS4C_LOCAL->get("mDatabase"),$IS4C_LOCAL->get("mUser"),$IS4C_LOCAL->get("mPass"));
+			if ($CORE_LOCAL->get("standalone") == 0){
+				$db_a->add_connection($CORE_LOCAL->get("mServer"),$CORE_LOCAL->get("mDBMS"),
+					$CORE_LOCAL->get("mDatabase"),$CORE_LOCAL->get("mUser"),$CORE_LOCAL->get("mPass"));
 				$cols = getMatchingColumns($db_a,"localtemptrans","suspendedtoday");
 				$remoteQ = "select {$cols} from suspendedtoday where register_no = $reg "
 					." and emp_no = ".$emp." and trans_no = ".$trans." order by trans_id";
-				$success = $db_a->transfer($IS4C_LOCAL->get("mDatabase"),$remoteQ,
-					$IS4C_LOCAL->get("tDatabase"),"insert into localtemptrans ({$cols})");
+				$success = $db_a->transfer($CORE_LOCAL->get("mDatabase"),$remoteQ,
+					$CORE_LOCAL->get("tDatabase"),"insert into localtemptrans ({$cols})");
 				if ($success)
-					$db_a->query($query_del,$IS4C_LOCAL->get("mDatabase"));
-				$db_a->close($IS4C_LOCAL->get("mDatabase"));
+					$db_a->query($query_del,$CORE_LOCAL->get("mDatabase"));
+				$db_a->close($CORE_LOCAL->get("mDatabase"));
 			}
 			else {	
 				$localQ = "select * from suspendedtoday where register_no = $reg "
@@ -175,15 +175,15 @@ class suspendedlist extends NoInputPage {
 			}
 		}
 
-		$query_update = "update localtemptrans set register_no = ".$IS4C_LOCAL->get("laneno").", emp_no = ".$IS4C_LOCAL->get("CashierNo")
-			.", trans_no = ".$IS4C_LOCAL->get("transno");
+		$query_update = "update localtemptrans set register_no = ".$CORE_LOCAL->get("laneno").", emp_no = ".$CORE_LOCAL->get("CashierNo")
+			.", trans_no = ".$CORE_LOCAL->get("transno");
 
 		$db_a->query($query_update);
 		getsubtotals();
-		$IS4C_LOCAL->set("unlock",1);
-		if ($IS4C_LOCAL->get("chargeTotal") != 0) 
-			$IS4C_LOCAL->set("chargetender",1);
-		$IS4C_LOCAL->set("msg",0);
+		$CORE_LOCAL->set("unlock",1);
+		if ($CORE_LOCAL->get("chargeTotal") != 0) 
+			$CORE_LOCAL->set("chargetender",1);
+		$CORE_LOCAL->set("msg",0);
 	}
 }
 

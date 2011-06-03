@@ -16,7 +16,7 @@
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    in the file license.txt along with IS4C; if not, write to the Free Software
+    in the file license.txt along with IT CORE; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
@@ -32,10 +32,10 @@ try {
 catch(Exception $e){}
 $dbc->query("CREATE TABLE tempCapPrices (upc varchar(13), price decimal(10,2))");
 
-$SUB = 1;
-$UPC = 2;
-$SKU = 3;
-$PRICE = 15;
+$SUB = 5;
+$UPC = 6;
+$SKU = 7;
+$PRICE = 21;
 
 $datastarts = false;
 

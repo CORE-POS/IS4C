@@ -3,61 +3,61 @@
 
     Copyright 2010 Whole Foods Co-op
 
-    This file is part of IS4C.
+    This file is part of IT CORE.
 
-    IS4C is free software; you can redistribute it and/or modify
+    IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    IS4C is distributed in the hope that it will be useful,
+    IT CORE is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    in the file license.txt along with IS4C; if not, write to the Free Software
+    in the file license.txt along with IT CORE; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
 
-$IS4C_PATH = isset($IS4C_PATH)?$IS4C_PATH:"";
-if (empty($IS4C_PATH)){ while(!file_exists($IS4C_PATH."is4c.css")) $IS4C_PATH .= "../"; }
+$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
+if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
  
-if (!isset($IS4C_LOCAL)) include($IS4C_PATH."lib/LocalStorage/conf.php");
-if (!function_exists('array_to_json')) include($IS4C_PATH.'lib/array_to_json.php');
+if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
+if (!function_exists('array_to_json')) include($CORE_PATH.'lib/array_to_json.php');
 
 $decision = isset($_REQUEST['input'])?strtoupper(trim($_REQUEST["input"])):'CL';
 
-if ($IS4C_LOCAL->get("requestType") != "" && strlen($decision) <= 0)
+if ($CORE_LOCAL->get("requestType") != "" && strlen($decision) <= 0)
 	$decision = "CL";
 
-$ret = array('dest_page'=>$IS4C_PATH.'gui-modules/pos2.php',
+$ret = array('dest_page'=>$CORE_PATH.'gui-modules/pos2.php',
 		'endorse'=>false);
 
 if ($decision == "CL") {
-	$IS4C_LOCAL->set("msgrepeat",0);
-	$IS4C_LOCAL->set("toggletax",0);
-	$IS4C_LOCAL->set("chargetender",0);
-	$IS4C_LOCAL->set("togglefoodstamp",0);
-	$IS4C_LOCAL->set("endorseType","");
-	$IS4C_LOCAL->set("warned",0);
-	$IS4C_LOCAL->set("warnBoxType","");
+	$CORE_LOCAL->set("msgrepeat",0);
+	$CORE_LOCAL->set("toggletax",0);
+	$CORE_LOCAL->set("chargetender",0);
+	$CORE_LOCAL->set("togglefoodstamp",0);
+	$CORE_LOCAL->set("endorseType","");
+	$CORE_LOCAL->set("warned",0);
+	$CORE_LOCAL->set("warnBoxType","");
 }
 elseif (strlen($decision) > 0) {
 
-	$IS4C_LOCAL->set("msgrepeat",1);
-	$IS4C_LOCAL->set("strRemembered",$IS4C_LOCAL->get("strEntered"));
+	$CORE_LOCAL->set("msgrepeat",1);
+	$CORE_LOCAL->set("strRemembered",$CORE_LOCAL->get("strEntered"));
 	
-	if ($IS4C_LOCAL->get("requestType") != ""){
-		$IS4C_LOCAL->set("requestMsg",$decision);
+	if ($CORE_LOCAL->get("requestType") != ""){
+		$CORE_LOCAL->set("requestMsg",$decision);
 	}
 }
 else {
-	$IS4C_LOCAL->set("msgrepeat",1);
-	$IS4C_LOCAL->set("strRemembered",$IS4C_LOCAL->get("strEntered"));
+	$CORE_LOCAL->set("msgrepeat",1);
+	$CORE_LOCAL->set("strRemembered",$CORE_LOCAL->get("strEntered"));
 
-	if ($IS4C_LOCAL->get("endorseType") != ""){
+	if ($CORE_LOCAL->get("endorseType") != ""){
 		$ret['endorse'] = true;
 	}
 }

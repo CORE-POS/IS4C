@@ -155,7 +155,7 @@ voided indicates whether a line has been voided
 	0 => no
 	1 => yes
 voided is also used as a status flag in some cases
-You'd have to dig into IS4C code a bit to get a
+You'd have to dig into IT CORE code a bit to get a
 handle on that.
 	
 percentDiscount is a percentage discount applied to
@@ -171,7 +171,7 @@ If an item is on sale, those become specialpricemethod,
 specialquantity, and specialgroupprice (respectively).
 Exact calculations depend a lot of volDiscType. 0 means
 there is no volume discount, and either 1 or 2 (depending
-on IS4C version) will probably do a simple 3 for $2 style
+on IT CORE version) will probably do a simple 3 for $2 style
 sale (quantity=3, groupprice=2.00). Higher type values
 vary.
 

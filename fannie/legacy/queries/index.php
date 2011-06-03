@@ -26,7 +26,7 @@
 				<a href=/git/fannie/batches/xlsbatch/>Excel Batch</a>
 				</td>
  				<td>&nbsp;</td>
-				<td><a href="docs/batches.html">Gateway to the IS4C batch maintenance system</a></td>
+				<td><a href="docs/batches.html">Gateway to the IT CORE batch maintenance system</a></td>
 			</tr>
 			<tr>
 				<td><a href=/git/fannie/item/productList.php>Product List (UPC Sort)</a></td>

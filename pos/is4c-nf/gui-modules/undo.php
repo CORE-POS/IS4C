@@ -3,38 +3,38 @@
 
     Copyright 2001, 2004 Wedge Community Co-op
 
-    This file is part of IS4C.
+    This file is part of IT CORE.
 
-    IS4C is free software; you can redistribute it and/or modify
+    IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    IS4C is distributed in the hope that it will be useful,
+    IT CORE is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    in the file license.txt along with IS4C; if not, write to the Free Software
+    in the file license.txt along with IT CORE; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
 
-$IS4C_PATH = isset($IS4C_PATH)?$IS4C_PATH:"";
-if (empty($IS4C_PATH)){ while(!file_exists($IS4C_PATH."is4c.css")) $IS4C_PATH .= "../"; }
+$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
+if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
 
-if (!class_exists("NoInputPage")) include_once($IS4C_PATH."gui-class-lib/NoInputPage.php");
-if (!function_exists("addItem")) include_once($IS4C_PATH."lib/additem.php");
-if (!function_exists("setMember")) include_once($IS4C_PATH."lib/prehkeys.php");
-if (!isset($IS4C_LOCAL)) include($IS4C_PATH."lib/LocalStorage/conf.php");
+if (!class_exists("NoInputPage")) include_once($CORE_PATH."gui-class-lib/NoInputPage.php");
+if (!function_exists("addItem")) include_once($CORE_PATH."lib/additem.php");
+if (!function_exists("setMember")) include_once($CORE_PATH."lib/prehkeys.php");
+if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
 
 class undo extends NoInputPage {
 	var $box_color;
 	var $msg;
 
 	function body_content(){
-		global $IS4C_LOCAL;
+		global $CORE_LOCAL;
 		$style = "style=\"background:{$this->box_color};\"";
 		?>
 		<div class="baseHeight">
@@ -52,11 +52,11 @@ class undo extends NoInputPage {
 		</div>
 		<?php
 		$this->add_onload_command("\$('#reginput').focus();");
-		$IS4C_LOCAL->set("beep","noScan");
+		$CORE_LOCAL->set("beep","noScan");
 	}
 
 	function preprocess(){
-		global $IS4C_LOCAL,$IS4C_PATH;
+		global $CORE_LOCAL,$CORE_PATH;
 		$this->box_color = "#004080";
 		$this->msg = "Undo transaction";
 
@@ -65,7 +65,7 @@ class undo extends NoInputPage {
 
 			// clear/cancel undo attempt
 			if ($trans_num == "" || $trans_num == "CL"){
-				header("Location: {$IS4C_PATH}gui-modules/pos2.php");
+				header("Location: {$CORE_PATH}gui-modules/pos2.php");
 				return False;
 			}
 
@@ -97,7 +97,7 @@ class undo extends NoInputPage {
 
 			$db = 0;
 			$query = "";
-			if ($register_no == $IS4C_LOCAL->get("laneno")){
+			if ($register_no == $CORE_LOCAL->get("laneno")){
 				// look up transation locally
 				$db = tDataConnect();
 				$query = "select upc, description, trans_type, trans_subtype,
@@ -112,7 +112,7 @@ class undo extends NoInputPage {
 					and trans_status <> 'X'
 					order by trans_id";
 			}
-			else if ($IS4C_LOCAL->get("standalone") == 1){
+			else if ($CORE_LOCAL->get("standalone") == 1){
 				// error: remote lookups won't work in standalone
 				$this->box_color="#800000";
 				$this->msg = "Transaction not found";
@@ -143,9 +143,9 @@ class undo extends NoInputPage {
 			}
 
 			/* change the cashier to the original transaction's cashier */
-			$prevCashier = $IS4C_LOCAL->get("CashierNo");
-			$IS4C_LOCAL->set("CashierNo",$emp_no);
-			$IS4C_LOCAL->set("transno",gettransno($emp_no));	
+			$prevCashier = $CORE_LOCAL->get("CashierNo");
+			$CORE_LOCAL->set("CashierNo",$emp_no);
+			$CORE_LOCAL->set("transno",gettransno($emp_no));	
 
 			/* rebuild the transaction, line by line, in reverse */
 			$card_no = 0;
@@ -215,13 +215,13 @@ class undo extends NoInputPage {
 			$res = $op->query($query);
 			$row = $op->fetch_row($res);
 			setMember($card_no,1,$row);
-			$IS4C_LOCAL->set("autoReprint",0);
+			$CORE_LOCAL->set("autoReprint",0);
 
 			/* restore the logged in cashier */
-			$IS4C_LOCAL->set("CashierNo",$prevCashier);
-			$IS4C_LOCAL->set("transno",gettransno($prevCashier));
+			$CORE_LOCAL->set("CashierNo",$prevCashier);
+			$CORE_LOCAL->set("transno",gettransno($prevCashier));
 			
-			header("Location: {$IS4C_PATH}gui-modules/undo_confirm.php");
+			header("Location: {$CORE_PATH}gui-modules/undo_confirm.php");
 			return False;
 		}
 		return True;

@@ -16,11 +16,19 @@
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    in the file license.txt along with IS4C; if not, write to the Free Software
+    in the file license.txt along with IT CORE; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
 include('../config.php');
+
+include($FANNIE_ROOT.'auth/login.php');
+if (!checkLogin()){
+	$url = $FANNIE_URL."auth/ui/loginform.php";
+	$rd = $FANNIE_URL."ordering/";
+	header("Location: $url?redirect=$rd");
+	exit;
+}
 
 $page_title = "Fannie :: Special Orders";
 $header = "Special Orders";
@@ -35,6 +43,7 @@ include($FANNIE_ROOT.'src/header.html');
 	</ul>
 </li>
 <li><a href="receivingReport.php">Receiving Report</a></li>
+<li><a href="muzak.php">Muzak</a></li>
 </ul>
 <?php
 include($FANNIE_ROOT.'src/footer.html');

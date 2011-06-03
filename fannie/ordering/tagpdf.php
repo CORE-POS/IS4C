@@ -16,7 +16,7 @@
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    in the file license.txt along with IS4C; if not, write to the Free Software
+    in the file license.txt along with IT CORE; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
@@ -54,9 +54,11 @@ if (isset($_REQUEST['toids'])){
 		$q = "SELECT ItemQtty,total,regPrice,p.card_no,description,department,
 			CASE WHEN p.card_no=0 THEN t.last_name ELSE c.LastName END as name,
 			CASE WHEN p.card_no=0 THEN t.first_name ELSE c.FirstName END as fname,
+			CASE WHEN p.card_no=0 THEN t.phone ELSE m.phone END as phone,
 			discounttype
 			FROM PendingSpecialOrder AS p
 			LEFT JOIN custdata AS c ON p.card_no=c.CardNo AND personNum=p.voided
+			LEFT JOIN meminfo AS m ON c.CardNo=m.card_no
 			LEFT JOIN SpecialOrderContact AS t ON t.card_no=p.order_id
 			WHERE trans_id=$tid AND p.order_id=$oid";
 		$r = $dbc->query($q);
@@ -93,34 +95,38 @@ if (isset($_REQUEST['toids'])){
 		}
 
 		$pdf->SetFont('Arial','','16');
-		$pdf->Cell(100,10,$w['description'],0,1,'C');
+		$pdf->Cell(100,9,$w['description'],0,1,'C');
 		$pdf->SetX($x);
-		$pdf->Cell(100,10,"Cases: ".$w['ItemQtty'],0,1,'C');
+		$pdf->Cell(100,9,"Cases: ".$w['ItemQtty'],0,1,'C');
 		$pdf->SetX($x);
 		$pdf->SetFont('Arial','B','16');
-		$pdf->Cell(100,10,sprintf("Total: \$%.2f",$w['total']),0,1,'C');
+		$pdf->Cell(100,9,sprintf("Total: \$%.2f",$w['total']),0,1,'C');
 		$pdf->SetFont('Arial','','12');
 		$pdf->SetX($x);
 		if ($w['discounttype'] == 1 || $w['discounttype'] == 2){
-			$pdf->Cell(100,10,'Sale Price',0,1,'C');
+			$pdf->Cell(100,9,'Sale Price',0,1,'C');
 			$pdf->SetX($x);
 
 		}
 		elseif ($w['regPrice']-$w['total'] > 0){
 			$percent = round(100 * (($w['regPrice']-$w['total'])/$w['regPrice']));
-			$pdf->Cell(100,10,sprintf("Owner Savings: \$%.2f (%d%%)",
+			$pdf->Cell(100,9,sprintf("Owner Savings: \$%.2f (%d%%)",
 					$w['regPrice'] - $w['total'],$percent),0,1,'C');
 			$pdf->SetX($x);
 		}
-		$pdf->Cell(100,10,"Tag Date: ".$date,0,1,'C');
+		$pdf->Cell(100,6,"Tag Date: ".$date,0,1,'C');
 		$pdf->SetX($x);
-		$pdf->Cell(100,10,"Dept #".$w['department'],0,1,'C');
+		$pdf->Cell(100,6,"Dept #".$w['department'],0,1,'C');
+		$pdf->SetX($x);
+		$pdf->Cell(100,6,"Ph: ".$w['phone'],0,1,'C');
+		$pdf->SetXY($x,$y+85);
+		$pdf->Cell(160,10,"Notes: _________________________________");	
 		$pdf->SetX($x);
 		
 		$upc = "454".str_pad($oid,6,'0',STR_PAD_LEFT).str_pad($tid,2,'0',STR_PAD_LEFT);
 		//$chk = $pdf->GetCheckDigit($upc);
 
-		$pdf->UPC_A($x+30,$y+90,$upc);
+		$pdf->UPC_A($x+30,$y+95,$upc);
 		
 		$count++;
 	}

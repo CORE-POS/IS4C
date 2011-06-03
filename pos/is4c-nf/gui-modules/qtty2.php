@@ -3,30 +3,30 @@
 
     Copyright 2001, 2004 Wedge Community Co-op
 
-    This file is part of IS4C.
+    This file is part of IT CORE.
 
-    IS4C is free software; you can redistribute it and/or modify
+    IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    IS4C is distributed in the hope that it will be useful,
+    IT CORE is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    in the file license.txt along with IS4C; if not, write to the Free Software
+    in the file license.txt along with IT CORE; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
-$IS4C_PATH = isset($IS4C_PATH)?$IS4C_PATH:"";
-if (empty($IS4C_PATH)){ while(!file_exists($IS4C_PATH."is4c.css")) $IS4C_PATH .= "../"; }
+$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
+if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
 
-if (!class_exists("BasicPage")) include_once($IS4C_PATH."gui-class-lib/BasicPage.php");
-if (!function_exists("udpSend")) include_once($IS4C_PATH."lib/udpSend.php");
-if (!function_exists("printfooter")) include_once($IS4C_PATH."lib/drawscreen.php");
-if (!isset($IS4C_LOCAL)) include($IS4C_PATH."lib/LocalStorage/conf.php");
+if (!class_exists("BasicPage")) include_once($CORE_PATH."gui-class-lib/BasicPage.php");
+if (!function_exists("udpSend")) include_once($CORE_PATH."lib/udpSend.php");
+if (!function_exists("printfooter")) include_once($CORE_PATH."lib/drawscreen.php");
+if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
 
 class qtty2 extends BasicPage {
 
@@ -34,7 +34,7 @@ class qtty2 extends BasicPage {
 	var $msg;
 
 	function preprocess(){
-		global $IS4C_PATH,$IS4C_LOCAL;
+		global $CORE_PATH,$CORE_LOCAL;
 
 		$this->box_color="#004080";
 		$this->msg = "quantity required";
@@ -43,17 +43,17 @@ class qtty2 extends BasicPage {
 
 		$qtty = strtoupper(trim($_REQUEST["reginput"]));
 		if ($qtty == "CL") {
-			$IS4C_LOCAL->set("qttyvalid",0);
-			$IS4C_LOCAL->set("quantity",0);
-			$IS4C_LOCAL->set("msgrepeat",0);
-			header("Location: {$IS4C_PATH}gui-modules/pos2.php");
+			$CORE_LOCAL->set("qttyvalid",0);
+			$CORE_LOCAL->set("quantity",0);
+			$CORE_LOCAL->set("msgrepeat",0);
+			header("Location: {$CORE_PATH}gui-modules/pos2.php");
 			return False;
 		}
 		elseif (is_numeric($qtty) && $qtty < 9999 && $qtty >= 0) {
-			$IS4C_LOCAL->set("qttyvalid",1);
-			$IS4C_LOCAL->set("strRemembered",$qtty."*".$IS4C_LOCAL->get("item"));
-			$IS4C_LOCAL->set("msgrepeat",1);
-			header("Location: {$IS4C_PATH}gui-modules/pos2.php");
+			$CORE_LOCAL->set("qttyvalid",1);
+			$CORE_LOCAL->set("strRemembered",$qtty."*".$CORE_LOCAL->get("item"));
+			$CORE_LOCAL->set("msgrepeat",1);
+			header("Location: {$CORE_PATH}gui-modules/pos2.php");
 			return False;
 		}
 
@@ -63,7 +63,7 @@ class qtty2 extends BasicPage {
 	}
 
 	function body_content(){
-		global $IS4C_LOCAL;
+		global $CORE_LOCAL;
 		$this->input_header();
 		echo printheaderb();
 		$style = "style=\"background:{$this->box_color};\"";
@@ -80,8 +80,8 @@ class qtty2 extends BasicPage {
 		</div>
 
 		<?php
-		$IS4C_LOCAL->set("msgrepeat",2);
-		$IS4C_LOCAL->set("item",$IS4C_LOCAL->get("strEntered"));
+		$CORE_LOCAL->set("msgrepeat",2);
+		$CORE_LOCAL->set("item",$CORE_LOCAL->get("strEntered"));
 		udpSend('errorBeep');
 		echo "<div id=\"footer\">";
 		echo printfooter();

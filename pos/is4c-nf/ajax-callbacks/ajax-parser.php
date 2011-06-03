@@ -3,37 +3,37 @@
 
     Copyright 2010 Whole Foods Co-op.
 
-    This file is part of IS4C.
+    This file is part of IT CORE.
 
-    IS4C is free software; you can redistribute it and/or modify
+    IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    IS4C is distributed in the hope that it will be useful,
+    IT CORE is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    in the file license.txt along with IS4C; if not, write to the Free Software
+    in the file license.txt along with IT CORE; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
 
-$IS4C_PATH = isset($IS4C_PATH)?$IS4C_PATH:"";
-if (empty($IS4C_PATH)){ while(!file_exists($IS4C_PATH."is4c.css")) $IS4C_PATH .= "../"; }
+$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
+if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
 
 ini_set('display_errors','1');
 
-if (!isset($IS4C_LOCAL))
-	include($IS4C_PATH.'lib/LocalStorage/conf.php');
+if (!isset($CORE_LOCAL))
+	include($CORE_PATH.'lib/LocalStorage/conf.php');
 if (!function_exists('array_to_json'))
-	include($IS4C_PATH.'lib/array_to_json.php');
+	include($CORE_PATH.'lib/array_to_json.php');
 if (!function_exists('inputUnknown'))
-	include($IS4C_PATH.'lib/drawscreen.php');
+	include($CORE_PATH.'lib/drawscreen.php');
 if (!function_exists('scaleObject'))
-	include($IS4C_PATH.'lib/lib.php');
+	include($CORE_PATH.'lib/lib.php');
 
 $sd = scaleObject();
 $st = sigTermObject();
@@ -48,12 +48,12 @@ if (isset($_REQUEST["input"])) {
 
 if (substr($entered, -2) == "CL") $entered = "CL";
 
-if ($entered == "RI") $entered = $IS4C_LOCAL->get("strEntered");
+if ($entered == "RI") $entered = $CORE_LOCAL->get("strEntered");
 
-if ($IS4C_LOCAL->get("msgrepeat") == 1 && $entered != "CL") {
-	$entered = $IS4C_LOCAL->get("strRemembered");
+if ($CORE_LOCAL->get("msgrepeat") == 1 && $entered != "CL") {
+	$entered = $CORE_LOCAL->get("strRemembered");
 }
-$IS4C_LOCAL->set("strEntered",$entered);
+$CORE_LOCAL->set("strEntered",$entered);
 
 $json = "";
 
@@ -61,29 +61,29 @@ if ($entered != ""){
 	/* this breaks the model a bit, but I'm putting
 	 * putting the CC parser first manually to minimize
 	 * code that potentially handles the PAN */
-	include_once($IS4C_PATH."cc-modules/lib/paycardEntered.php");
+	include_once($CORE_PATH."cc-modules/lib/paycardEntered.php");
 	$pe = new paycardEntered();
 	if ($pe->check($entered)){
 		$valid = $pe->parse($entered);
 		$entered = "PAYCARD";
-		$IS4C_LOCAL->set("strEntered","");
+		$CORE_LOCAL->set("strEntered","");
 		$json = $valid;
 	}
 
-	$IS4C_LOCAL->set("quantity",0);
-	$IS4C_LOCAL->set("multiple",0);
+	$CORE_LOCAL->set("quantity",0);
+	$CORE_LOCAL->set("multiple",0);
 
 	/* FIRST PARSE CHAIN:
 	 * Objects belong in the first parse chain if they
 	 * modify the entered string, but do not process it
 	 * This chain should be used for checking prefixes/suffixes
-	 * to set up appropriate $IS4C_LOCAL variables.
+	 * to set up appropriate $CORE_LOCAL variables.
 	 */
-	$parser_lib_path = $IS4C_PATH."parser-class-lib/";
-	if (!is_array($IS4C_LOCAL->get("preparse_chain")))
-		$IS4C_LOCAL->set("preparse_chain",get_preparse_chain());
+	$parser_lib_path = $CORE_PATH."parser-class-lib/";
+	if (!is_array($CORE_LOCAL->get("preparse_chain")))
+		$CORE_LOCAL->set("preparse_chain",get_preparse_chain());
 
-	foreach ($IS4C_LOCAL->get("preparse_chain") as $cn){
+	foreach ($CORE_LOCAL->get("preparse_chain") as $cn){
 		if (!class_exists("cn"))
 			include_once($parser_lib_path."preparse/".$cn.".php");
 		$p = new $cn();
@@ -100,11 +100,11 @@ if ($entered != ""){
 		 * completely. The return value of parse() determines
 		 * whether to call lastpage() [list the items on screen]
 		 */
-		if (!is_array($IS4C_LOCAL->get("parse_chain")))
-			$IS4C_LOCAL->set("parse_chain",get_parse_chain());
+		if (!is_array($CORE_LOCAL->get("parse_chain")))
+			$CORE_LOCAL->set("parse_chain",get_parse_chain());
 
 		$result = False;
-		foreach ($IS4C_LOCAL->get("parse_chain") as $cn){
+		foreach ($CORE_LOCAL->get("parse_chain") as $cn){
 			if (!class_exists($cn))
 				include_once($parser_lib_path."parse/".$cn.".php");
 			$p = new $cn();
@@ -134,12 +134,12 @@ if ($entered != ""){
 	}
 }
 
-$IS4C_LOCAL->set("msgrepeat",0);
+$CORE_LOCAL->set("msgrepeat",0);
 
 if (empty($json)) $json = "{}";
 else {
 	if (isset($json['redraw_footer']) && $json['redraw_footer'] !== False){
-		if ($IS4C_LOCAL->get("away") == 1)
+		if ($CORE_LOCAL->get("away") == 1)
 			$json['redraw_footer'] = printfooterb();
 		else
 			$json['redraw_footer'] = printfooter();

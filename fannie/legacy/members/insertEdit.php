@@ -111,11 +111,6 @@ $discList=$_POST['discList'];
 $enddate = $_POST['endDate'];
 $curDiscLimit = $_POST['curDiscLimit'];
 $mailflag = $_POST['mailflag'];
-if($mailflag == 1){
-   $admin = 0;
-}elseif($mailflag==0){
-   $admin = 4;
-}
 
 $sql->query(sprintf("DELETE FROM memberCards WHERE card_no=%d",$memNum));
 if (isset($_REQUEST['cardUPC']) && is_numeric($_REQUEST['cardUPC'])){
@@ -123,9 +118,8 @@ if (isset($_REQUEST['cardUPC']) && is_numeric($_REQUEST['cardUPC'])){
 		$memNum,str_pad($_REQUEST['cardUPC'],13,'0',STR_PAD_LEFT)));
 }
 
-$mailQuery = "update mbrmastr set mailflag=$mailflag, adminhold=$admin where memnum=$memNum";
-$mailResult = $sql->query($mailQuery);
 $sql->query("UPDATE meminfo SET ads_OK=$mailflag WHERE card_no=$memNum");
+$sql->query("UPDATE memContact SET pref=$mailflag WHERE card_no=$memNum");
 
 //echo $charge1."<br />".$charge2."<br />".$charge3."<br />".$checks1."<br />".$checks2."<br />".$checks3."<br />";
 $charge1=$charge2=$charge3=0;
@@ -200,10 +194,10 @@ $memNamesR = $sql->query($memNamesQ);
 // update other stuff
 if(isset($discList)){
   $discMstrQ = "UPDATE mbrmastr SET DiscountPerc = $disc, memType=$discList, DiscountType = $discList WHERE memNum = $memNum";
-  $discIS4C = "UPDATE custData SET memdiscountlimit = $arLimit,memType = $discList,Discount = $disc,staff=$staff WHERE cardNo = $memNum";
+  $discCORE = "UPDATE custData SET memdiscountlimit = $arLimit,memType = $discList,Discount = $disc,staff=$staff WHERE cardNo = $memNum";
   $typeQ = "UPDATE custData set type = '$mem' where cardNo=$memNum and type <> 'INACT' and type <> 'TERM'";
   $discRes1 = $sql->query($discMstrQ);
-  $discRes2 = $sql->query($discIS4C);
+  $discRes2 = $sql->query($discCORE);
   $typeR = $sql->query($typeQ);
 }
 

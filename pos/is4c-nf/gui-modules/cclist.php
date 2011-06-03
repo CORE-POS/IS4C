@@ -3,17 +3,17 @@
 if (!class_exists("MainFramePage")) include_once($_SESSION["INCLUDE_PATH"]."/gui-class-lib/MainFramePage.php");
 if (!function_exists("paycard_reset")) include_once($_SESSION["INCLUDE_PATH"]."/lib/paycardLib.php");
 if (!function_exists("changeBothPages")) include_once($_SESSION["INCLUDE_PATH"]."/gui-base.php");
-if (!isset($IS4C_LOCAL)) include($_SESSION["INCLUDE_PATH"]."/lib/LocalStorage/conf.php");
+if (!isset($CORE_LOCAL)) include($_SESSION["INCLUDE_PATH"]."/lib/LocalStorage/conf.php");
 
 class giftcardlist extends MainFramePage {
 
 	function preprocess(){
-		global $IS4C_LOCAL;
+		global $CORE_LOCAL;
 		if (isset($_POST["selectlist"])){
 			$prefix = $_POST["selectlist"];
 			if ($prefix == "CCM"){
-				$IS4C_LOCAL->set("strRemembered","CCM");
-				$IS4C_LOCAL->set("msgrepeat",1);
+				$CORE_LOCAL->set("strRemembered","CCM");
+				$CORE_LOCAL->set("msgrepeat",1);
 				changeBothPages("/gui-modules/input.php","/gui-modules/pos2.php");
 			}
 			else
@@ -55,7 +55,7 @@ class giftcardlist extends MainFramePage {
 	} // END head() FUNCTION
 
 	function body_content() {
-		global $IS4C_LOCAL;
+		global $CORE_LOCAL;
 		?>
 		<div class="baseHeight">
 		<div class="centeredDisplay colored">
@@ -73,7 +73,7 @@ class giftcardlist extends MainFramePage {
 		</div>
 		</div>	
 		<?php
-		$IS4C_LOCAL->set("scan","noScan");
+		$CORE_LOCAL->set("scan","noScan");
 	} // END body_content() FUNCTION
 }
 

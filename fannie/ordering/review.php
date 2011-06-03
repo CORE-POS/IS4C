@@ -16,7 +16,7 @@
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    in the file license.txt along with IS4C; if not, write to the Free Software
+    in the file license.txt along with IT CORE; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
@@ -42,6 +42,8 @@ if ($orderID === ''){
 	exit;
 }
 ?>
+<input type="submit" value="Duplicate Order" 
+	onclick="copyOrder(<?php echo $orderID; ?>); return false;" />
 <fieldset>
 <legend>Customer Information</legend>
 <div id="customerDiv"></div>
@@ -51,18 +53,37 @@ if ($orderID === ''){
 <div id="itemDiv"></div>
 </fieldset>
 <script type="text/javascript">
+function copyOrder(oid){
+	if (confirm("Copy this order?")){
+		$.ajax({
+		url:'ajax-calls.php',
+		type:'post',
+		data:'action=copyOrder&orderID='+oid,
+		cache: false,
+		error: function(e1,e2,e3){
+			alert(e1);alert(e2);alert(e3);
+		},
+		success: function(resp){
+			location='view.php?orderID='+resp;
+		}
+		});
+	}
+}
 $(document).ready(function(){
 	$.ajax({
 	url: 'ajax-calls.php',
-	dataType: 'post',
+	type: 'post',
 	data: 'action=loadCustomer&orderID=<?php echo $orderID; ?>&nonForm=yes',
 	cache: false,
+	error: function(e1,e2,e3){
+		alert(e1);alert(e2);alert(e3);
+	},
 	success: function(resp){
 		$('#customerDiv').html(resp);
 		var oid = $('#orderID').val();
 		$.ajax({
 		url: 'ajax-calls.php',
-		dataType: 'post',
+		type: 'post',
 		data: 'action=loadItems&orderID='+oid+'&nonForm=yes',
 		cache: false,
 		success: function(resp){

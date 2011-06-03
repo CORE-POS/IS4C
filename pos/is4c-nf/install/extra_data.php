@@ -25,11 +25,11 @@ Sample Data
 <form action=extra_data.php method=post>
 <blockquote><i>
 <?php
-$db = new SQLManager($IS4C_LOCAL->get('localhost'),
-	$IS4C_LOCAL->get('DBMS'),
-	$IS4C_LOCAL->get('pDatabase'),
-	$IS4C_LOCAL->get('localUser'),
-	$IS4C_LOCAL->get('localPass'));
+$db = new SQLManager($CORE_LOCAL->get('localhost'),
+	$CORE_LOCAL->get('DBMS'),
+	$CORE_LOCAL->get('pDatabase'),
+	$CORE_LOCAL->get('localUser'),
+	$CORE_LOCAL->get('localPass'));
 
 if (isset($_REQUEST['employees'])){
 	echo "Loading employees";
