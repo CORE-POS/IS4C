@@ -133,7 +133,7 @@ echo "<input type=password name=FANNIE_SERVER_PW value=\"$FANNIE_SERVER_PW\" />"
 ?>
 <br />Server Operational DB name
 <?php
-if (!isset($FANNIE_OP_DB)) $FANNIE_OP_DB = 'is4c_op';
+if (!isset($FANNIE_OP_DB)) $FANNIE_OP_DB = 'core_op';
 if (isset($_REQUEST['FANNIE_OP_DB']))
 	$FANNIE_OP_DB = $_REQUEST['FANNIE_OP_DB'];
 confset('FANNIE_OP_DB',"'$FANNIE_OP_DB'");
@@ -141,7 +141,7 @@ echo "<input type=text name=FANNIE_OP_DB value=\"$FANNIE_OP_DB\" />";
 ?>
 <br />Server Transaction DB name
 <?php
-if (!isset($FANNIE_TRANS_DB)) $FANNIE_TRANS_DB = 'is4c_trans';
+if (!isset($FANNIE_TRANS_DB)) $FANNIE_TRANS_DB = 'core_trans';
 if (isset($_REQUEST['FANNIE_TRANS_DB']))
 	$FANNIE_TRANS_DB = $_REQUEST['FANNIE_TRANS_DB'];
 confset('FANNIE_TRANS_DB',"'$FANNIE_TRANS_DB'");

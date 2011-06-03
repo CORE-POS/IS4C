@@ -31,7 +31,7 @@ discountType and discountValue specify
 how the discount is calculated
 
 The nuts and bolts of this are in
-the UPC.php parser module (IS4C).
+the UPC.php parser module (IT CORE).
 */
 $CREATE['op.houseCoupons'] = "
 	CREATE TABLE houseCoupons (
