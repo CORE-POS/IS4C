@@ -642,7 +642,7 @@ function item_sales_last_month_like($likecode,$period,$time){
     echo "</td><td align=right>$ " . $row_sales[1];
 }
     
-/* pads upc with zeroes to make $upc into IS4C compliant upc*/
+/* pads upc with zeroes to make $upc into IT CORE compliant upc*/
 
 function str_pad_upc($upc){
    $strUPC = str_pad($upc,13,"0",STR_PAD_LEFT);

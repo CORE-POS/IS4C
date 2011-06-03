@@ -3,36 +3,36 @@
 
     Copyright 2001, 2004 Wedge Community Co-op
 
-    This file is part of IS4C.
+    This file is part of IT CORE.
 
-    IS4C is free software; you can redistribute it and/or modify
+    IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    IS4C is distributed in the hope that it will be useful,
+    IT CORE is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    in the file license.txt along with IS4C; if not, write to the Free Software
+    in the file license.txt along with IT CORE; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
 
-$IS4C_PATH = isset($IS4C_PATH)?$IS4C_PATH:"";
-if (empty($IS4C_PATH)){ while(!file_exists($IS4C_PATH."is4c.css")) $IS4C_PATH .= "../"; }
+$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
+if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
 
-if (!class_exists("NoInputPage")) include_once($IS4C_PATH."gui-class-lib/NoInputPage.php");
-if (!function_exists("tDataConnect")) include($IS4C_PATH."lib/connect.php");
-if (!function_exists("receipt")) include($IS4C_PATH."lib/clientscripts.php");
-if (!isset($IS4C_LOCAL)) include($IS4C_PATH."lib/LocalStorage/conf.php");
+if (!class_exists("NoInputPage")) include_once($CORE_PATH."gui-class-lib/NoInputPage.php");
+if (!function_exists("tDataConnect")) include($CORE_PATH."lib/connect.php");
+if (!function_exists("receipt")) include($CORE_PATH."lib/clientscripts.php");
+if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
 
 class cablist extends NoInputPage {
 
 	function head_content(){
-		global $IS4C_PATH;
+		global $CORE_PATH;
 		?>
 		<script type="text/javascript" >
 		var prevKey = -1;
@@ -57,17 +57,17 @@ class cablist extends NoInputPage {
 			var ref = $('#selectlist').val();
 			if (ref != ""){
 				$.ajax({
-					url: '<?php echo $IS4C_PATH; ?>ajax-callbacks/ajax-cabreceipt.php',
+					url: '<?php echo $CORE_PATH; ?>ajax-callbacks/ajax-cabreceipt.php',
 					type: 'get',
 					cache: false,
 					data: 'input='+ref,
 					success: function(){
-						location='<?php echo $IS4C_PATH; ?>gui-modules/pos2.php';
+						location='<?php echo $CORE_PATH; ?>gui-modules/pos2.php';
 					}
 				});
 			}
 			else {
-				location='<?php echo $IS4C_PATH; ?>gui-modules/pos2.php';
+				location='<?php echo $CORE_PATH; ?>gui-modules/pos2.php';
 			}
 
 			return false;
@@ -79,10 +79,10 @@ class cablist extends NoInputPage {
 	}
 	
 	function body_content(){
-		global $IS4C_LOCAL;
+		global $CORE_LOCAL;
 
 		$db = pDataConnect();
-		$query = "SELECT frontendsecurity FROM employees WHERE emp_no=".$IS4C_LOCAL->get("CashierNo");
+		$query = "SELECT frontendsecurity FROM employees WHERE emp_no=".$CORE_LOCAL->get("CashierNo");
 		$result = $db->query($query);
 		$fes = 0;
 		if ($db->num_rows($result) > 0)
@@ -100,7 +100,7 @@ class cablist extends NoInputPage {
 			having sum((case when trans_type='T' THEN -1*total ELSE 0 end)) >= 30
 			order by register_no,emp_no,trans_no desc";
 			$db = tDataConnect();
-			if ($IS4C_LOCAL->get("standalone") == 0){
+			if ($CORE_LOCAL->get("standalone") == 0){
 				$query = str_replace("localtranstoday","dtransactions",$query);
 				$db = mDataConnect();
 			}
@@ -109,7 +109,7 @@ class cablist extends NoInputPage {
 		}
 		else {
 			$query = "select emp_no, register_no, trans_no, sum((case when trans_type = 'T' then -1 * total else 0 end)) as total "
-			."from localtranstoday where register_no = ".$IS4C_LOCAL->get("laneno")." and emp_no = ".$IS4C_LOCAL->get("CashierNo")
+			."from localtranstoday where register_no = ".$CORE_LOCAL->get("laneno")." and emp_no = ".$CORE_LOCAL->get("CashierNo")
 			." group by register_no, emp_no, trans_no
 			having sum((case when trans_type='T' THEN -1*total ELSE 0 end)) >= 30
 			order by trans_no desc";
@@ -153,7 +153,7 @@ class cablist extends NoInputPage {
 		</div>
 
 		<?
-		$IS4C_LOCAL->set("scan","noScan");
+		$CORE_LOCAL->set("scan","noScan");
 	} // END body_content() FUNCTION
 }
 

@@ -3,28 +3,28 @@
 
     Copyright 2001, 2004 Wedge Community Co-op
 
-    This file is part of IS4C.
+    This file is part of IT CORE.
 
-    IS4C is free software; you can redistribute it and/or modify
+    IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    IS4C is distributed in the hope that it will be useful,
+    IT CORE is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    in the file license.txt along with IS4C; if not, write to the Free Software
+    in the file license.txt along with IT CORE; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
 
-$IS4C_PATH = isset($IS4C_PATH)?$IS4C_PATH:"";
-if (empty($IS4C_PATH)){ while(!file_exists($IS4C_PATH."is4c.css")) $IS4C_PATH .= "../"; }
+$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
+if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
 
-if (!isset($IS4C_LOCAL)) include($IS4C_PATH."lib/LocalStorage/conf.php");
+if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
 
 define('PAYCARD_MODE_BALANCE',   1);
 define('PAYCARD_MODE_AUTH',      2);
@@ -107,20 +107,20 @@ function paycard_issuer($pan) {
 
 // determine if card transactions should be sent to the live or test platform; return 1 if live, 0 if test
 function paycard_live($type = PAYCARD_TYPE_UNKNOWN) {
-	global $IS4C_LOCAL;
+	global $CORE_LOCAL;
 
 	// these session vars require training mode no matter what card type
-	if( $IS4C_LOCAL->get("training") != 0 || $IS4C_LOCAL->get("CashierNo") == 9999)
+	if( $CORE_LOCAL->get("training") != 0 || $CORE_LOCAL->get("CashierNo") == 9999)
 		return 0;
 	// special session vars for each card type
 	if( $type === PAYCARD_TYPE_CREDIT) {
-		if( $IS4C_LOCAL->get("ccLive") != 1)
+		if( $CORE_LOCAL->get("ccLive") != 1)
 			return 0;
 	} else if( $type === PAYCARD_TYPE_GIFT) {
-		if( $IS4C_LOCAL->get("training") == 1)
+		if( $CORE_LOCAL->get("training") == 1)
 			return 0;
 	} else if( $type === PAYCARD_TYPE_STORE) {
-		if( $IS4C_LOCAL->get("storecardLive") != 1)
+		if( $CORE_LOCAL->get("storecardLive") != 1)
 			return 0;
 	}
 	return 1;
@@ -130,33 +130,33 @@ function paycard_live($type = PAYCARD_TYPE_UNKNOWN) {
 // reset all paycard related session variables; it's important to do this as soon as possible,
 // so we don't have the full card number or track data in memory any longer than necessary
 function paycard_reset() {
-	global $IS4C_LOCAL;
+	global $CORE_LOCAL;
 
 	// make sure this matches session.php!!!
-	$IS4C_LOCAL->set("paycard_manual",0);
-	$IS4C_LOCAL->set("paycard_amount",0.00);
-	$IS4C_LOCAL->set("paycard_mode",0);
-	$IS4C_LOCAL->set("paycard_id",0);
-	$IS4C_LOCAL->set("paycard_PAN",'');
-	$IS4C_LOCAL->set("paycard_exp",'');
-	$IS4C_LOCAL->set("paycard_name",'Customer');
-	$IS4C_LOCAL->set("paycard_tr1",false);
-	$IS4C_LOCAL->set("paycard_tr2",false);
-	$IS4C_LOCAL->set("paycard_tr3",false);
-	$IS4C_LOCAL->set("paycard_type",0);
-	$IS4C_LOCAL->set("paycard_issuer",'Unknown');
-	$IS4C_LOCAL->set("paycard_response",array());
-	$IS4C_LOCAL->set("paycard_trans",'');
-	$IS4C_LOCAL->set("paycard_cvv2",'');
+	$CORE_LOCAL->set("paycard_manual",0);
+	$CORE_LOCAL->set("paycard_amount",0.00);
+	$CORE_LOCAL->set("paycard_mode",0);
+	$CORE_LOCAL->set("paycard_id",0);
+	$CORE_LOCAL->set("paycard_PAN",'');
+	$CORE_LOCAL->set("paycard_exp",'');
+	$CORE_LOCAL->set("paycard_name",'Customer');
+	$CORE_LOCAL->set("paycard_tr1",false);
+	$CORE_LOCAL->set("paycard_tr2",false);
+	$CORE_LOCAL->set("paycard_tr3",false);
+	$CORE_LOCAL->set("paycard_type",0);
+	$CORE_LOCAL->set("paycard_issuer",'Unknown');
+	$CORE_LOCAL->set("paycard_response",array());
+	$CORE_LOCAL->set("paycard_trans",'');
+	$CORE_LOCAL->set("paycard_cvv2",'');
 } // paycard_reset()
 
 function paycard_wipe_pan(){
-	global $IS4C_LOCAL;
-	$IS4C_LOCAL->set("paycard_tr1",false);
-	$IS4C_LOCAL->set("paycard_tr2",false);
-	$IS4C_LOCAL->set("paycard_tr3",false);
-	$IS4C_LOCAL->set("paycard_PAN",'');
-	$IS4C_LOCAL->set("paycard_exp",'');
+	global $CORE_LOCAL;
+	$CORE_LOCAL->set("paycard_tr1",false);
+	$CORE_LOCAL->set("paycard_tr2",false);
+	$CORE_LOCAL->set("paycard_tr3",false);
+	$CORE_LOCAL->set("paycard_PAN",'');
+	$CORE_LOCAL->set("paycard_exp",'');
 }
 
 
@@ -220,7 +220,7 @@ function paycard_validExpiration($exp) {
 // decode the magnetic strip from a payment card and make sure its data is internally consistent
 // return an array if successful (including pan, exp, name, tr1, tr2, tr3) or an error code < 0 if not
 function paycard_magstripe($data) {
-	global $IS4C_LOCAL;
+	global $CORE_LOCAL;
 
 	// initialize
 	$tr1 = false;
@@ -258,7 +258,7 @@ function paycard_magstripe($data) {
 			// from cc-terminal if in case it differs
 			$amt = str_pad(substr($track,1),3,'0',STR_PAD_LEFT);
 			$amt = substr($amt,0,strlen($amt)-2).".".substr($amt,-2);	
-			$IS4C_LOCAL->set("paycard_amount",$amt);
+			$CORE_LOCAL->set("paycard_amount",$amt);
 		}
 		// ignore tracks with unrecognized start sentinels
 		// readers often put E? or something similar if they have trouble reading,
@@ -358,7 +358,7 @@ function paycard_moneyFormat($amt) {
 
 // helper function to build error messages
 function paycard_errorText($title, $code, $text, $retry, $standalone, $refuse, $carbon, $tellIT, $type) {
-	global $IS4C_LOCAL;
+	global $CORE_LOCAL;
 
 	// pick the icon
 	if( $carbon)
@@ -392,8 +392,8 @@ function paycard_errorText($title, $code, $text, $retry, $standalone, $refuse, $
 	if( $retry) {
 		$msg .= "[enter] to retry<br>";
 	} else {
-		$IS4C_LOCAL->set("strEntered","");
-		$IS4C_LOCAL->set("strRemembered","");
+		$CORE_LOCAL->set("strEntered","");
+		$CORE_LOCAL->set("strRemembered","");
 	}
 	$msg .= "[clear] to cancel</font>";
 	return $msg;
@@ -402,11 +402,11 @@ function paycard_errorText($title, $code, $text, $retry, $standalone, $refuse, $
 
 // display a paycard-related error due to cashier mistake
 function paycard_msgBox($type, $title, $msg, $action) {
-	global $IS4C_LOCAL;
-	$header = "IS4C - Payment Card";
-	if( $IS4C_LOCAL->get("paycard_type") == PAYCARD_TYPE_CREDIT)      $header = "Wedge - Credit Card";
-	else if( $IS4C_LOCAL->get("paycard_type") == PAYCARD_TYPE_GIFT)   $header = "Wedge - Gift Card";
-	else if( $IS4C_LOCAL->get("paycard_type") == PAYCARD_TYPE_STORE)  $header = "Wedge - Wedge Card";
+	global $CORE_LOCAL;
+	$header = "IT CORE - Payment Card";
+	if( $CORE_LOCAL->get("paycard_type") == PAYCARD_TYPE_CREDIT)      $header = "Wedge - Credit Card";
+	else if( $CORE_LOCAL->get("paycard_type") == PAYCARD_TYPE_GIFT)   $header = "Wedge - Gift Card";
+	else if( $CORE_LOCAL->get("paycard_type") == PAYCARD_TYPE_STORE)  $header = "Wedge - Wedge Card";
 	$boxmsg = "<span class=\"larger\">".trim($title)."</span><p />";
 	$boxmsg .= trim($msg)."<p />".trim($action);
 	return boxMsg($boxmsg,$header,True);
@@ -415,12 +415,12 @@ function paycard_msgBox($type, $title, $msg, $action) {
 
 // display a paycard-related error due to system, network or other non-cashier mistake
 function paycard_errBox($type, $title, $msg, $action) {
-	global $IS4C_LOCAL;
+	global $CORE_LOCAL;
 
 	$header = "Wedge - Payment Card";
-	if( $IS4C_LOCAL->get("paycard_type") == PAYCARD_TYPE_CREDIT)      $header = "Wedge - Credit Card";
-	else if( $IS4C_LOCAL->get("paycard_type") == PAYCARD_TYPE_GIFT)   $header = "Wedge - Gift Card";
-	else if( $IS4C_LOCAL->get("paycard_type") == PAYCARD_TYPE_STORE)  $header = "Wedge - Wedge Card";
+	if( $CORE_LOCAL->get("paycard_type") == PAYCARD_TYPE_CREDIT)      $header = "Wedge - Credit Card";
+	else if( $CORE_LOCAL->get("paycard_type") == PAYCARD_TYPE_GIFT)   $header = "Wedge - Gift Card";
+	else if( $CORE_LOCAL->get("paycard_type") == PAYCARD_TYPE_STORE)  $header = "Wedge - Wedge Card";
 	return xboxMsg("<b>".trim($title)."</b><p><font size=-1>".trim($msg)."<p>".trim($action)."</font>", $header);
 } // paycard_errBox()
 

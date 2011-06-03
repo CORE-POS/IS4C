@@ -10,7 +10,7 @@
 	$html.=head();
 	
 	$html.='
-		<title>IS4C - Labels</title>
+		<title>IT CORE - Labels</title>
 		</head>
 	<body>';
 	

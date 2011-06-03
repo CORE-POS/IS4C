@@ -16,7 +16,7 @@
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    in the file license.txt along with IS4C; if not, write to the Free Software
+    in the file license.txt along with IT CORE; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
@@ -51,6 +51,12 @@ case 'newUPC':
 	$qty = is_numeric($_REQUEST['cases'])?(int)$_REQUEST['cases']:1;
 	addUPC($orderID,$_REQUEST['memNum'],$_REQUEST['upc'],$qty);
 	echo getItemForm($orderID);
+	break;
+case 'deleteID':
+	$delQ = sprintf("DELETE FROM PendingSpecialOrder WHERE order_id=%d
+		AND trans_id=%d",$_REQUEST['orderID'],$_REQUEST['transID']);
+	$delR = $dbc->query($delQ);
+	echo getItemForm($_REQUEST['orderID']);
 	break;
 case 'deleteUPC':
 	$upc = str_pad($_REQUEST['upc'],13,'0',STR_PAD_LEFT);
@@ -105,7 +111,7 @@ case 'saveSRP':
 case 'saveQty':
 	$upc = str_pad($_REQUEST['upc'],13,'0',STR_PAD_LEFT);
 	$upQ = sprintf("UPDATE PendingSpecialOrder SET
-		quantity=%f,ItemQtty=%f WHERE order_id=%d AND upc=%s",
+		quantity=%f WHERE order_id=%d AND upc=%s",
 		$_REQUEST['qty'],$_REQUEST['qty'],$_REQUEST['orderID'],
 		$dbc->escape($upc));
 	$dbc->query($upQ);
@@ -255,6 +261,11 @@ case 'closeOrder':
 			WHERE order_id=%d",$_REQUEST['orderID']);
 	$dbc->query($cleanQ);
 	break;
+case 'copyOrder':
+	$oid = sprintf("%d",$_REQUEST['orderID']);
+	$nid = DuplicateOrder($oid);
+	echo $nid;
+	break;
 }
 
 function canSaveAddress($orderID){
@@ -278,6 +289,7 @@ function canSaveAddress($orderID){
 function addUPC($orderID,$memNum,$upc,$num_cases=1){
 	global $dbc;
 
+	$sku = str_pad($upc,6,'0',STR_PAD_LEFT);
 	$upc = str_pad($upc,13,'0',STR_PAD_LEFT);
 	
 	$ins_array = genericRow($orderID);
@@ -287,16 +299,22 @@ function addUPC($orderID,$memNum,$upc,$num_cases=1){
 
 	$caseSize = 1;
 	$vendor = "";
-	$caseQ = "SELECT units,vendorName FROM vendorItems as i
+	$vendor_desc = "";
+	$srp = 0.00;
+	$vendor_upc = "";
+	$caseQ = "SELECT units,vendorName,description,srp,i.upc FROM vendorItems as i
 			LEFT JOIN vendors AS v ON
-			i.vendorID=v.vendorID WHERE
-		upc='$upc'";
+			i.vendorID=v.vendorID LEFT JOIN
+			vendorSRPs AS s ON i.upc=s.upc AND i.vendorID=s.vendorID
+		WHERE i.upc='$upc' OR i.sku='$sku' OR i.sku='0$sku'";
 	$caseR = $dbc->query($caseQ);
 	if ($dbc->num_rows($caseR) > 0)
-		list($caseSize,$vendor) = $dbc->fetch_row($caseR);
+		list($caseSize,$vendor,$vendor_desc,$srp,$vendor_upc) = $dbc->fetch_row($caseR);
+	if (!empty($vendor_upc)) $ins_array['upc'] = "'$vendor_upc'";
 	$ins_array['quantity'] = $caseSize;
 	$ins_array['ItemQtty'] = $num_cases;
 	$ins_array['mixMatch'] = $dbc->escape(substr($vendor,0,26));
+	$ins_array['description'] = $dbc->escape(substr($vendor_desc,0,32)." SO");
 
 	$mempricing = False;
 	if ($memNum != 0 && !empty($memNum)){
@@ -306,12 +324,13 @@ function addUPC($orderID,$memNum,$upc,$num_cases=1){
 	}
 
 	$pdQ = "SELECT normal_price,special_price,department,discounttype,
-		description FROM products WHERE upc='$upc'";
+		description,discount FROM products WHERE upc='$upc'";
 	$pdR = $dbc->query($pdQ);
 	if ($dbc->num_rows($pdR) > 0){
 		$pdW = $dbc->fetch_row($pdR);
 
 		$ins_array['department'] = $pdW['department'];
+		$ins_array['discountable'] = $pdW['discount'];
 		$mapQ = "SELECT map_to FROM SpecialOrderDeptMap WHERE dept_ID=".$pdW['department'];
 		$mapR = $dbc->query($mapQ);
 		if ($dbc->num_rows($mapR) > 0)
@@ -334,6 +353,13 @@ function addUPC($orderID,$memNum,$upc,$num_cases=1){
 		}
 		$ins_array['description'] = "'".substr($pdW['description'],0,32)." SO'";
 		$ins_array['discounttype'] = $pdW['discounttype'];
+	}
+	elseif ($srp != 0){
+		// use vendor SRP if applicable
+		$ins_array['regPrice'] = $srp*$caseSize*$num_cases;
+		$ins_array['total'] = $srp*$caseSize*$num_cases;
+		if ($mempricing)
+			$ins_array['total'] *= 0.85;
 	}
 
 
@@ -366,6 +392,28 @@ function CreateContactRow($orderID){
 		'ads_OK'=>1
 	);
 	$dbc->smart_insert('SpecialOrderContact',$vals);
+}
+
+function DuplicateOrder($old_id){
+	global $dbc;
+	$new_id = CreateEmptyOrder();
+	$delQ = "DELETE FROM PendingSpecialOrder WHERE order_id=$new_id";
+	$dbc->query($delQ);
+
+	$copyQ = "INSERT INTO PendingSpecialOrder
+		SELECT $new_id,".$dbc->now().",
+		register_no,emp_no,trans_no,upc,description,
+		trans_type,trans_subtype,trans_status,
+		department,quantity,scale,cost,unitPrice,
+		total,regPrice,tax,foodstamp,discount,
+		memDiscount,discountable,discounttype,
+		voided,percentDiscount,ItemQtty,volDiscType,
+		volume,VolSpecial,mixMatch,matched,memtype,
+		isStaff,0,'',card_no,trans_id
+		FROM CompleteSpecialOrder WHERE order_id=$old_id";	
+	$dbc->query($copyQ);
+	
+	return $new_id;
 }
 
 function CreateEmptyOrder(){
@@ -421,7 +469,7 @@ function genericRow($orderID){
 	'foodstamp'=>0,
 	'discount'=>0,
 	'memDiscount'=>0,
-	'discountable'=>0,
+	'discountable'=>1,
 	'voided'=>0,
 	'percentDiscount'=>0,
 	'ItemQtty'=>0,
@@ -467,6 +515,17 @@ function getCustomerForm($orderID,$memNum="0"){
 	
 	$table = "PendingSpecialOrder";
 
+	// detect member UPC entry
+	if ($memNum > 9999999){
+		$q = sprintf("SELECT card_no FROM memberCards WHERE upc=%s",
+			$dbc->escape(str_pad($memNum,13,'0',STR_PAD_LEFT)));
+		$r = $dbc->query($q);
+		if ($dbc->num_rows($r) > 0)
+			$memNum = array_pop($dbc->fetch_row($r));
+		else
+			$memNum = "";
+	}
+
 	// look up member id if applicable
 	if ($memNum === "0"){
 		$findMem = "SELECT card_no,voided FROM $table WHERE order_id=$orderID";
@@ -483,6 +542,7 @@ function getCustomerForm($orderID,$memNum="0"){
 		$r = $dbc->query($q);
 	}
 	else {
+		
 		$q = sprintf("UPDATE PendingSpecialOrder SET card_no=%d
 			WHERE order_id=%d",$memNum,$orderID);
 		$r = $dbc->query($q);
@@ -613,7 +673,7 @@ function getCustomerForm($orderID,$memNum="0"){
 		$ret .= '</select></td>';
 		$ret .= '<td>&nbsp;</td>';
 	}
-	$ret .= sprintf('<td colspan="4">Notes for:
+	$ret .= sprintf('<td colspan="4">For Department:
 		<select id="nDept" onchange="saveNoteDept(%d,$(this).val());">
 		<option value="0">Choose...</option>',$orderID);
 	$sQ = "select superID,super_name from MasterSuperDepts
@@ -864,6 +924,8 @@ function getItemForm($orderID){
 	$ret .= '<b>Cases</b>: <input id="newcases" maxlength="2" value="1" size="3" />';
 	$ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
 	$ret .= '<input type="submit" onclick="addUPC();return false;" value="Add Item" />';
+	$ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
+	$ret .= '<input type="submit" onclick="searchWindow();return false;" value="Search" />';
 
 	$ret .= '<p />';
 
@@ -876,8 +938,9 @@ function getItemForm($orderID){
 
 	if ($canEdit){
 		$ret .= '<p />';
-		$ret .= '<b>Manually close order as</b>: ';
-		$ret .= sprintf('<input type="submit" value="Completed"
+		$ret .= '<b><a href="" onclick="$(\'#manualclosebuttons\').toggle();return false;">Manually close order</a></b>';
+		$ret .= sprintf('<span id="manualclosebuttons" style="display:none;"> as:
+				<input type="submit" value="Completed"
 				onclick="confirmC(%d,7);return false;" />
 				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 				<input type="submit" value="Canceled"
@@ -885,7 +948,7 @@ function getItemForm($orderID){
 				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 				<input type="submit" value="Inquiry"
 				onclick="confirmC(%d,9);return false;" />
-				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;',
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>',
 				$orderID,$orderID,$orderID);
 	}
 	return $ret;
@@ -902,9 +965,10 @@ function editableItemList($orderID){
 
 	$ret = '<table cellspacing="0" cellpadding="4" border="1">';
 	$ret .= '<tr><th>UPC</th><th>SKU</th><th>Description</th><th>Cases</th><th>SRP</th><th>Actual</th><th>Qty</th><th>Dept</th><th>&nbsp;</th></tr>';
-	$q = "SELECT o.upc,o.description,total,quantity,department,sku,ItemQtty,regPrice,o.discounttype,o.charflag,o.mixMatch FROM PendingSpecialOrder as o
-		left join vendorItems as v on o.upc=v.upc
-		WHERE order_id=$orderID AND trans_type='I' AND (vendorID=1 or vendorID is null)
+	$q = "SELECT o.upc,o.description,total,quantity,department,v.sku,ItemQtty,regPrice,o.discounttype,o.charflag,o.mixMatch,
+		o.trans_id FROM PendingSpecialOrder as o
+		left join vendorItems as v on o.upc=v.upc AND vendorID=1
+		WHERE order_id=$orderID AND trans_type='I' 
 		ORDER BY trans_id DESC";
 	$r = $dbc->query($q);
 	while($w = $dbc->fetch_row($r)){
@@ -933,9 +997,9 @@ function editableItemList($orderID){
 					$id,$name);
 			}
 			$ret .= sprintf('</select></td>
-					<td>[<a href="" onclick="deleteUPC(%d,%s);return false;">X</a>]</td>
+					<td>[<a href="" onclick="deleteID(%d,%d);return false;">X</a>]</td>
 					</tr>',
-					$orderID,"'".$w['upc']."'"
+					$orderID,$w['trans_id']
 			);
 			$ret .= '<tr>';
 			$ret .= sprintf('<td colspan="2" align="right">Unit Price: $%.2f</td>',

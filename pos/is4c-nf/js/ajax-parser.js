@@ -1,9 +1,9 @@
-var IS4C_JS_PREFIX = "";
+var CORE_JS_PREFIX = "";
 
 function runParser(input_str,rel_prefix){
-	IS4C_JS_PREFIX = rel_prefix;
+	CORE_JS_PREFIX = rel_prefix;
 	$.ajax({
-		url: IS4C_JS_PREFIX+'ajax-callbacks/ajax-parser.php',
+		url: CORE_JS_PREFIX+'ajax-callbacks/ajax-parser.php',
 		type: 'GET',
 		data: "input="+input_str,
 		dataType: "json",
@@ -30,7 +30,7 @@ function parserHandler(data,status_str,xml_ro){
 	if (data.redraw_footer){
 		/*
 		$.ajax({
-			url: IS4C_JS_PREFIX+'ajax-callbacks/ajax-footer.php',
+			url: CORE_JS_PREFIX+'ajax-callbacks/ajax-footer.php',
 			type: 'GET',
 			cache: false,
 			success: function(data){
@@ -44,7 +44,7 @@ function parserHandler(data,status_str,xml_ro){
 	if (data.scale){
 		/*
 		$.ajax({
-			url: IS4C_JS_PREFIX+'ajax-callbacks/ajax-scale.php',
+			url: CORE_JS_PREFIX+'ajax-callbacks/ajax-scale.php',
 			type: 'get',
 			data: 'input='+data.scale,
 			cache: false,
@@ -58,7 +58,7 @@ function parserHandler(data,status_str,xml_ro){
 
 	if (data.receipt){
 		$.ajax({
-			url: IS4C_JS_PREFIX+'ajax-callbacks/ajax-end.php',
+			url: CORE_JS_PREFIX+'ajax-callbacks/ajax-end.php',
 			type: 'GET',
 			data: 'receiptType='+data.receipt,
 			cache: false,
@@ -68,6 +68,6 @@ function parserHandler(data,status_str,xml_ro){
 	}
 
 	if (data.retry){
-		setTimeout("runParser('"+data.retry+"','"+IS4C_JS_PREFIX+"');",700);
+		setTimeout("runParser('"+data.retry+"','"+CORE_JS_PREFIX+"');",700);
 	}
 }

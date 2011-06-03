@@ -3,34 +3,34 @@
 
     Copyright 2001, 2004 Wedge Community Co-op
 
-    This file is part of IS4C.
+    This file is part of IT CORE.
 
-    IS4C is free software; you can redistribute it and/or modify
+    IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    IS4C is distributed in the hope that it will be useful,
+    IT CORE is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    in the file license.txt along with IS4C; if not, write to the Free Software
+    in the file license.txt along with IT CORE; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
 
-$IS4C_PATH = isset($IS4C_PATH)?$IS4C_PATH:"";
-if (empty($IS4C_PATH)){ while(!file_exists($IS4C_PATH."is4c.css")) $IS4C_PATH .= "../"; }
+$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
+if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
 
-if (!function_exists("receipt")) include($IS4C_PATH."lib/clientscripts.php");
-if (!function_exists("getMatchingColumns")) include($IS4C_PATH."lib/connect.php");
-if (!isset($IS4C_LOCAL)) include($IS4C_PATH."lib/LocalStorage/conf.php");
+if (!function_exists("receipt")) include($CORE_PATH."lib/clientscripts.php");
+if (!function_exists("getMatchingColumns")) include($CORE_PATH."lib/connect.php");
+if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
 
 
 function suspendorder() {
-	global $IS4C_LOCAL;
+	global $CORE_LOCAL;
 
 	//testremote();
 	$query_a = "select emp_no, trans_no from localtemptrans";
@@ -40,29 +40,29 @@ function suspendorder() {
 	$cashier_no = substr("000".$row_a["emp_no"], -2);
 	$trans_no = substr("0000".$row_a["trans_no"], -4);
 
-	if ($IS4C_LOCAL->get("standalone") == 0) {
-		$db_a->add_connection($IS4C_LOCAL->get("mServer"),$IS4C_LOCAL->get("mDBMS"),
-			$IS4C_LOCAL->get("mDatabase"),$IS4C_LOCAL->get("mUser"),$IS4C_LOCAL->get("mPass"));
+	if ($CORE_LOCAL->get("standalone") == 0) {
+		$db_a->add_connection($CORE_LOCAL->get("mServer"),$CORE_LOCAL->get("mDBMS"),
+			$CORE_LOCAL->get("mDatabase"),$CORE_LOCAL->get("mUser"),$CORE_LOCAL->get("mPass"));
 		$cols = getMatchingColumns($db_a,"localtemptrans","suspended");
-		$db_a->transfer($IS4C_LOCAL->get("tDatabase"),"select {$cols} from localtemptrans",
-			$IS4C_LOCAL->get("mDatabase"),"insert into suspended ($cols)");
-		$db_a->close($IS4C_LOCAL->get("mDatabase"));
+		$db_a->transfer($CORE_LOCAL->get("tDatabase"),"select {$cols} from localtemptrans",
+			$CORE_LOCAL->get("mDatabase"),"insert into suspended ($cols)");
+		$db_a->close($CORE_LOCAL->get("mDatabase"));
 	}
 	else { 
 		$query = "insert into suspended select * from localtemptrans";
 		$result = $db_a->query($query);
 	}
 
-	$IS4C_LOCAL->set("plainmsg","transaction suspended");
-	$IS4C_LOCAL->set("msg",2);
+	$CORE_LOCAL->set("plainmsg","transaction suspended");
+	$CORE_LOCAL->set("msg",2);
 	receipt("suspended");
-	$recall_line = $IS4C_LOCAL->get("standalone")." ".$IS4C_LOCAL->get("laneno")." ".$cashier_no." ".$trans_no;
+	$recall_line = $CORE_LOCAL->get("standalone")." ".$CORE_LOCAL->get("laneno")." ".$cashier_no." ".$trans_no;
 
 	$db_a->close();
 }
 
 function checksuspended() {
-	global $IS4C_LOCAL;
+	global $CORE_LOCAL;
 
 	//testremote();
 
@@ -70,7 +70,7 @@ function checksuspended() {
 	$query_local = "select * from suspendedtoday";
 		
 	$result = "";
-	if ($IS4C_LOCAL->get("standalone") == 1) {
+	if ($CORE_LOCAL->get("standalone") == 1) {
 		$result = $db_a->query($query_local);
 	} else {
 		$db_a->close();

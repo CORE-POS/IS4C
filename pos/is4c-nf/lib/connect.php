@@ -3,33 +3,33 @@
 
     Copyright 2001, 2004 Wedge Community Co-op
 
-    This file is part of IS4C.
+    This file is part of IT CORE.
 
-    IS4C is free software; you can redistribute it and/or modify
+    IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    IS4C is distributed in the hope that it will be useful,
+    IT CORE is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    in the file license.txt along with IS4C; if not, write to the Free Software
+    in the file license.txt along with IT CORE; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
 
-$IS4C_PATH = isset($IS4C_PATH)?$IS4C_PATH:"";
-if (empty($IS4C_PATH)){ while(!file_exists($IS4C_PATH."is4c.css")) $IS4C_PATH .= "../"; }
+$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
+if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
 
-if (!class_exists("SQLManager")) include($IS4C_PATH."lib/SQLManager.php");
+if (!class_exists("SQLManager")) include($CORE_PATH."lib/SQLManager.php");
 
-if (!function_exists("setglobalflags")) include($IS4C_PATH."lib/loadconfig.php");
-if (!function_exists("pinghost")) include($IS4C_PATH."lib/lib.php");
-if (!function_exists("wmdiscount")) include($IS4C_PATH."lib/prehkeys.php");
-if (!isset($IS4C_LOCAL)) include($IS4C_PATH."lib/LocalStorage/conf.php");
+if (!function_exists("setglobalflags")) include($CORE_PATH."lib/loadconfig.php");
+if (!function_exists("pinghost")) include($CORE_PATH."lib/lib.php");
+if (!function_exists("wmdiscount")) include($CORE_PATH."lib/prehkeys.php");
+if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
 
 
 /***********************************************************************************************
@@ -42,28 +42,28 @@ if (!isset($IS4C_LOCAL)) include($IS4C_PATH."lib/LocalStorage/conf.php");
 
 function tDataConnect()
 {
-	global $IS4C_LOCAL;
+	global $CORE_LOCAL;
 
-	$sql = new SQLManager($IS4C_LOCAL->get("localhost"),$IS4C_LOCAL->get("DBMS"),$IS4C_LOCAL->get("tDatabase"),
-			      $IS4C_LOCAL->get("localUser"),$IS4C_LOCAL->get("localPass"),False);
+	$sql = new SQLManager($CORE_LOCAL->get("localhost"),$CORE_LOCAL->get("DBMS"),$CORE_LOCAL->get("tDatabase"),
+			      $CORE_LOCAL->get("localUser"),$CORE_LOCAL->get("localPass"),False);
 	return $sql;
 }
 
 function pDataConnect()
 {
-	global $IS4C_LOCAL;
+	global $CORE_LOCAL;
 
-	$sql = new SQLManager($IS4C_LOCAL->get("localhost"),$IS4C_LOCAL->get("DBMS"),$IS4C_LOCAL->get("pDatabase"),
-			      $IS4C_LOCAL->get("localUser"),$IS4C_LOCAL->get("localPass"),False);
+	$sql = new SQLManager($CORE_LOCAL->get("localhost"),$CORE_LOCAL->get("DBMS"),$CORE_LOCAL->get("pDatabase"),
+			      $CORE_LOCAL->get("localUser"),$CORE_LOCAL->get("localPass"),False);
 	return $sql;
 }
 
 function mDataConnect()
 {
-	global $IS4C_LOCAL;
+	global $CORE_LOCAL;
 
-	$sql = new SQLManager($IS4C_LOCAL->get("mServer"),$IS4C_LOCAL->get("mDBMS"),$IS4C_LOCAL->get("mDatabase"),
-			      $IS4C_LOCAL->get("mUser"),$IS4C_LOCAL->get("mPass"),False);
+	$sql = new SQLManager($CORE_LOCAL->get("mServer"),$CORE_LOCAL->get("mDBMS"),$CORE_LOCAL->get("mDatabase"),
+			      $CORE_LOCAL->get("mUser"),$CORE_LOCAL->get("mPass"),False);
 	return $sql;
 }
 
@@ -72,7 +72,7 @@ function mDataConnect()
 // getsubtotals() updates the values held in our session variables.
 
 function getsubtotals() {
-	global $IS4C_LOCAL;
+	global $CORE_LOCAL;
 
 	$query = "SELECT * FROM subtotals";
 	$connection = tDataConnect();
@@ -81,59 +81,59 @@ function getsubtotals() {
 
 	// reset a few variables
 	if (!$row || $row["LastID"] == 0) {
-		$IS4C_LOCAL->set("ttlflag",0);
-		$IS4C_LOCAL->set("fntlflag",0);
+		$CORE_LOCAL->set("ttlflag",0);
+		$CORE_LOCAL->set("fntlflag",0);
 		setglobalflags(0);
 	}
 
-	$IS4C_LOCAL->set("LastID", (!$row || !isset($row['LastID'])) ? 0 : (double)$row["LastID"] );
+	$CORE_LOCAL->set("LastID", (!$row || !isset($row['LastID'])) ? 0 : (double)$row["LastID"] );
 	$cn = (!$row || !isset($row['card_no'])) ? "0" : trim($row["card_no"]);
-	if ($cn != "0" || $IS4C_LOCAL->get("memberID") == "") 
-		$IS4C_LOCAL->set("memberID",$cn);
-	$IS4C_LOCAL->set("runningTotal", (!$row || !isset($row['runningTotal'])) ? 0 : (double)$row["runningTotal"] );
-	$IS4C_LOCAL->set("taxTotal", (!$row || !isset($row['taxTotal'])) ? 0 : (double)$row["taxTotal"] );
-	$IS4C_LOCAL->set("discounttotal", (!$row || !isset($row['discountTTL'])) ? 0 : (double)$row["discountTTL"] );
-	$IS4C_LOCAL->set("tenderTotal", (!$row || !isset($row['tenderTotal'])) ? 0 : (double)$row["tenderTotal"] );
-	$IS4C_LOCAL->set("memSpecial", (!$row || !isset($row['memSpecial'])) ? 0 : (double)$row["memSpecial"] );
-	$IS4C_LOCAL->set("staffSpecial", (!$row || !isset($row['staffSpecial'])) ? 0 : (double)$row["staffSpecial"] );
-	$IS4C_LOCAL->set("percentDiscount", (!$row || !isset($row['percentDiscount'])) ? 0 : (double)$row["percentDiscount"] );
-	$IS4C_LOCAL->set("transDiscount", (!$row || !isset($row['transDiscount'])) ? 0 : (double)$row["transDiscount"] );
-	$IS4C_LOCAL->set("fsTaxExempt", (!$row || !isset($row['fsTaxExempt'])) ? 0 : (double)$row["fsTaxExempt"] );
-	$IS4C_LOCAL->set("fsEligible", (!$row || !isset($row['fsEligible'])) ? 0 : (double)$row["fsEligible"] );
-	$IS4C_LOCAL->set("memCouponTTL", (!$row || !isset($row['couponTotal']) || !isset($row['memCoupon'])) ? 0 : -1 * ((double) $row["couponTotal"]) + ((double) $row["memCoupon"]));
-	$IS4C_LOCAL->set("refundTotal", (!$row || !isset($row['refundTotal'])) ? 0 : (double)$row["refundTotal"] );
-	$IS4C_LOCAL->set("chargeTotal", (!$row || !isset($row['chargeTotal'])) ? 0 : (double)$row["chargeTotal"] );
-	$IS4C_LOCAL->set("ccTotal", (!$row || !isset($row['ccTotal'])) ? 0 : (double)$row["ccTotal"] );
-	$IS4C_LOCAL->set("memChargeTotal", (!$row || !isset($row['memChargeTotal'])) ? 0 : (double)$row["memChargeTotal"] );
-	$IS4C_LOCAL->set("madCoup", (!$row || !isset($row['madCoupon'])) ? 0 : (double)$row["madCoupon"] );
-	$IS4C_LOCAL->set("scTaxTotal", (!$row || !isset($row['scTaxTotal'])) ? 0 : (double)$row["scTaxTotal"] );
-	$IS4C_LOCAL->set("scDiscount", (!$row || !isset($row['scDiscount'])) ? 0 : (double)$row["scDiscount"] );
-	$IS4C_LOCAL->set("paymentTotal", (!$row || !isset($row['paymentTotal'])) ? 0 : (double)$row["paymentTotal"] );
-	$IS4C_LOCAL->set("discountableTotal", (!$row || !isset($row['discountableTotal'])) ? 0 : (double)$row["discountableTotal"] );
-	$IS4C_LOCAL->set("localTotal", (!$row || !isset($row['localTotal'])) ? 0 : (double)$row["localTotal"] );
+	if ($cn != "0" || $CORE_LOCAL->get("memberID") == "") 
+		$CORE_LOCAL->set("memberID",$cn);
+	$CORE_LOCAL->set("runningTotal", (!$row || !isset($row['runningTotal'])) ? 0 : (double)$row["runningTotal"] );
+	$CORE_LOCAL->set("taxTotal", (!$row || !isset($row['taxTotal'])) ? 0 : (double)$row["taxTotal"] );
+	$CORE_LOCAL->set("discounttotal", (!$row || !isset($row['discountTTL'])) ? 0 : (double)$row["discountTTL"] );
+	$CORE_LOCAL->set("tenderTotal", (!$row || !isset($row['tenderTotal'])) ? 0 : (double)$row["tenderTotal"] );
+	$CORE_LOCAL->set("memSpecial", (!$row || !isset($row['memSpecial'])) ? 0 : (double)$row["memSpecial"] );
+	$CORE_LOCAL->set("staffSpecial", (!$row || !isset($row['staffSpecial'])) ? 0 : (double)$row["staffSpecial"] );
+	$CORE_LOCAL->set("percentDiscount", (!$row || !isset($row['percentDiscount'])) ? 0 : (double)$row["percentDiscount"] );
+	$CORE_LOCAL->set("transDiscount", (!$row || !isset($row['transDiscount'])) ? 0 : (double)$row["transDiscount"] );
+	$CORE_LOCAL->set("fsTaxExempt", (!$row || !isset($row['fsTaxExempt'])) ? 0 : (double)$row["fsTaxExempt"] );
+	$CORE_LOCAL->set("fsEligible", (!$row || !isset($row['fsEligible'])) ? 0 : (double)$row["fsEligible"] );
+	$CORE_LOCAL->set("memCouponTTL", (!$row || !isset($row['couponTotal']) || !isset($row['memCoupon'])) ? 0 : -1 * ((double) $row["couponTotal"]) + ((double) $row["memCoupon"]));
+	$CORE_LOCAL->set("refundTotal", (!$row || !isset($row['refundTotal'])) ? 0 : (double)$row["refundTotal"] );
+	$CORE_LOCAL->set("chargeTotal", (!$row || !isset($row['chargeTotal'])) ? 0 : (double)$row["chargeTotal"] );
+	$CORE_LOCAL->set("ccTotal", (!$row || !isset($row['ccTotal'])) ? 0 : (double)$row["ccTotal"] );
+	$CORE_LOCAL->set("memChargeTotal", (!$row || !isset($row['memChargeTotal'])) ? 0 : (double)$row["memChargeTotal"] );
+	$CORE_LOCAL->set("madCoup", (!$row || !isset($row['madCoupon'])) ? 0 : (double)$row["madCoupon"] );
+	$CORE_LOCAL->set("scTaxTotal", (!$row || !isset($row['scTaxTotal'])) ? 0 : (double)$row["scTaxTotal"] );
+	$CORE_LOCAL->set("scDiscount", (!$row || !isset($row['scDiscount'])) ? 0 : (double)$row["scDiscount"] );
+	$CORE_LOCAL->set("paymentTotal", (!$row || !isset($row['paymentTotal'])) ? 0 : (double)$row["paymentTotal"] );
+	$CORE_LOCAL->set("discountableTotal", (!$row || !isset($row['discountableTotal'])) ? 0 : (double)$row["discountableTotal"] );
+	$CORE_LOCAL->set("localTotal", (!$row || !isset($row['localTotal'])) ? 0 : (double)$row["localTotal"] );
 
-	if ($IS4C_LOCAL->get("memberID") == "0" && $IS4C_LOCAL->get("runningTotal") > 0) {
-		if ($IS4C_LOCAL->get("SSI") != 0 && ($IS4C_LOCAL->get("isStaff") == 3 || $IS4C_LOCAL->get("isStaff") == 6)) wmdiscount();
+	if ($CORE_LOCAL->get("memberID") == "0" && $CORE_LOCAL->get("runningTotal") > 0) {
+		if ($CORE_LOCAL->get("SSI") != 0 && ($CORE_LOCAL->get("isStaff") == 3 || $CORE_LOCAL->get("isStaff") == 6)) wmdiscount();
 	}
 
-	if ($IS4C_LOCAL->get("sc") == 1) {
-		$IS4C_LOCAL->set("taxTotal",$IS4C_LOCAL->get("scTaxTotal"));
+	if ($CORE_LOCAL->get("sc") == 1) {
+		$CORE_LOCAL->set("taxTotal",$CORE_LOCAL->get("scTaxTotal"));
 	}
 
-	if ( $IS4C_LOCAL->get("TaxExempt") == 1 ) {
-		$IS4C_LOCAL->set("taxable",0);
-		$IS4C_LOCAL->set("taxTotal",0);
-		$IS4C_LOCAL->set("fsTaxable",0);
-		$IS4C_LOCAL->set("fsTaxExempt",0);
+	if ( $CORE_LOCAL->get("TaxExempt") == 1 ) {
+		$CORE_LOCAL->set("taxable",0);
+		$CORE_LOCAL->set("taxTotal",0);
+		$CORE_LOCAL->set("fsTaxable",0);
+		$CORE_LOCAL->set("fsTaxExempt",0);
 	}
 
-	$IS4C_LOCAL->set("subtotal",number_format($IS4C_LOCAL->get("runningTotal") - $IS4C_LOCAL->get("transDiscount"), 2));
+	$CORE_LOCAL->set("subtotal",number_format($CORE_LOCAL->get("runningTotal") - $CORE_LOCAL->get("transDiscount"), 2));
 	/* using a string for amtdue behaves strangely for
 	 * values > 1000, so use floating point */
-	$IS4C_LOCAL->set("amtdue",(double)round($IS4C_LOCAL->get("runningTotal") - $IS4C_LOCAL->get("transDiscount") + $IS4C_LOCAL->get("taxTotal"), 2));
+	$CORE_LOCAL->set("amtdue",(double)round($CORE_LOCAL->get("runningTotal") - $CORE_LOCAL->get("transDiscount") + $CORE_LOCAL->get("taxTotal"), 2));
 
-	if ( $IS4C_LOCAL->get("fsEligible") > $IS4C_LOCAL->get("subtotal") ) {
-		$IS4C_LOCAL->set("fsEligible",$IS4C_LOCAL->get("subtotal"));
+	if ( $CORE_LOCAL->get("fsEligible") > $CORE_LOCAL->get("subtotal") ) {
+		$CORE_LOCAL->set("fsEligible",$CORE_LOCAL->get("subtotal"));
 	}
 
 
@@ -146,10 +146,10 @@ function getsubtotals() {
 // Given $CashierNo, gettransno() will look up the number of the most recent transaction.
 
 function gettransno($CashierNo) {
-	global $IS4C_LOCAL;
+	global $CORE_LOCAL;
 
-	$database = $IS4C_LOCAL->get("tDatabase");
-	$register_no = $IS4C_LOCAL->get("laneno");
+	$database = $CORE_LOCAL->get("tDatabase");
+	$register_no = $CORE_LOCAL->get("laneno");
 	$query = "SELECT max(trans_no) as maxtransno from localtranstoday where emp_no = '"
 		.$CashierNo."' and register_no = '"
 		.$register_no."' GROUP by register_no, emp_no";
@@ -169,86 +169,86 @@ function gettransno($CashierNo) {
 // ------------------------------------------------------------------
 
 function testremote() {
-	global $IS4C_LOCAL;
+	global $CORE_LOCAL;
 
 
-	$intConnected = pinghost($IS4C_LOCAL->get("mServer"));
+	$intConnected = pinghost($CORE_LOCAL->get("mServer"));
 	if ($intConnected == 1) {
 
 		uploadtoServer(); 
 
 	} else {
-		$IS4C_LOCAL->set("standalone",1);
+		$CORE_LOCAL->set("standalone",1);
 	}
 
-	return ($IS4C_LOCAL->get("standalone") + 1) % 2;
+	return ($CORE_LOCAL->get("standalone") + 1) % 2;
 }
 
 // ------------------------------------------------------------------
 function uploadtoServer()
 {
-	global $IS4C_LOCAL;
+	global $CORE_LOCAL;
 
 	$uploaded = 0;
 
 	// new upload method makes use of SQLManager's transfer method
 	// to simulate cross-server queries
 	$connect = tDataConnect();
-	$connect->add_connection($IS4C_LOCAL->get("mServer"),
-				$IS4C_LOCAL->get("mDBMS"),
-				$IS4C_LOCAL->get("mDatabase"),
-				$IS4C_LOCAL->get("mUser"),
-				$IS4C_LOCAL->get("mPass"),
+	$connect->add_connection($CORE_LOCAL->get("mServer"),
+				$CORE_LOCAL->get("mDBMS"),
+				$CORE_LOCAL->get("mDatabase"),
+				$CORE_LOCAL->get("mUser"),
+				$CORE_LOCAL->get("mPass"),
 				False);
-	if (!isset($connect->connections[$IS4C_LOCAL->get("mDatabase")]) ||
-		$connect->connections[$IS4C_LOCAL->get("mDatabase")] === False){
-		$IS4C_LOCAL->set("standalone",1);
+	if (!isset($connect->connections[$CORE_LOCAL->get("mDatabase")]) ||
+		$connect->connections[$CORE_LOCAL->get("mDatabase")] === False){
+		$CORE_LOCAL->set("standalone",1);
 		return 0;	
 	}
 
 	$dt_matches = getMatchingColumns($connect,"dtransactions");
 
-	if ($connect->transfer($IS4C_LOCAL->get("tDatabase"),
+	if ($connect->transfer($CORE_LOCAL->get("tDatabase"),
 		"select {$dt_matches} from dtransactions",
-		$IS4C_LOCAL->get("mDatabase"),"insert into dtransactions ({$dt_matches})")){
+		$CORE_LOCAL->get("mDatabase"),"insert into dtransactions ({$dt_matches})")){
 
 		$al_matches = getMatchingColumns($connect,"alog");
 		$al_my = ""; // interval is a mysql reserved word
-		if ($IS4C_LOCAL->get("DBMS") == "mysql")
+		if ($CORE_LOCAL->get("DBMS") == "mysql")
 			$al_my = str_replace("Interval","`Interval`",$al_matches);
-		$al_success = $connect->transfer($IS4C_LOCAL->get("tDatabase"),
+		$al_success = $connect->transfer($CORE_LOCAL->get("tDatabase"),
 			"select ".(empty($al_my)?$al_matches:$al_my)." from alog",
-			$IS4C_LOCAL->get("mDatabase"),
+			$CORE_LOCAL->get("mDatabase"),
 			"insert into alog ({$al_matches})");
 
 
 		$su_matches = getMatchingColumns($connect,"suspended");
-		$su_success = $connect->transfer($IS4C_LOCAL->get("tDatabase"),
+		$su_success = $connect->transfer($CORE_LOCAL->get("tDatabase"),
 			"select {$su_matches} from suspended",
-			$IS4C_LOCAL->get("mDatabase"),
+			$CORE_LOCAL->get("mDatabase"),
 			"insert into suspended ({$su_matches})");
 
 		$connect->query("truncate table dtransactions",
-			$IS4C_LOCAL->get("tDatabase"));
+			$CORE_LOCAL->get("tDatabase"));
 		if ($al_success){
 			$connect->query("truncate table alog",
-				$IS4C_LOCAL->get("tDatabase"));
+				$CORE_LOCAL->get("tDatabase"));
 		}
 		if ($su_success){
 			$connect->query("truncate table suspended",
-				$IS4C_LOCAL->get("tDatabase"));
+				$CORE_LOCAL->get("tDatabase"));
 		}
 
 		$uploaded = 1;
-		$IS4C_LOCAL->set("standalone",0);
+		$CORE_LOCAL->set("standalone",0);
 	}
 	else {
 		$uploaded = 0;
-		$IS4C_LOCAL->set("standalone",1);
+		$CORE_LOCAL->set("standalone",1);
 	}
 
-	$connect->close($IS4C_LOCAL->get("mDatabase"));
-	$connect->close($IS4C_LOCAL->get("tDatabase"));
+	$connect->close($CORE_LOCAL->get("mDatabase"));
+	$connect->close($CORE_LOCAL->get("tDatabase"));
 
 	uploadCCdata();
 
@@ -263,14 +263,14 @@ function uploadtoServer()
    local.table_name against remote.table2
 */
 function getMatchingColumns($connection,$table_name,$table2=""){
-	global $IS4C_LOCAL;
+	global $CORE_LOCAL;
 
-	$local_poll = $connection->table_definition($table_name,$IS4C_LOCAL->get("tDatabase"));
+	$local_poll = $connection->table_definition($table_name,$CORE_LOCAL->get("tDatabase"));
 	$local_cols = array();
 	foreach($local_poll as $name=>$v)
 		$local_cols[$name] = True;
 	$remote_poll = $connection->table_definition((!empty($table2)?$table2:$table_name),
-				$IS4C_LOCAL->get("mDatabase"));
+				$CORE_LOCAL->get("mDatabase"));
 	$matching_cols = array();
 	foreach($remote_poll as $name=>$v){
 		if (isset($local_cols[$name]))
@@ -306,42 +306,42 @@ function localMatchingColumns($connection,$table1,$table2){
 }
 
 function uploadCCdata(){
-	global $IS4C_LOCAL;
+	global $CORE_LOCAL;
 
 	$sql = tDataConnect();
-	$sql->add_connection($IS4C_LOCAL->get("mServer"),
-				$IS4C_LOCAL->get("mDBMS"),
-				$IS4C_LOCAL->get("mDatabase"),
-				$IS4C_LOCAL->get("mUser"),
-				$IS4C_LOCAL->get("mPass"),
+	$sql->add_connection($CORE_LOCAL->get("mServer"),
+				$CORE_LOCAL->get("mDBMS"),
+				$CORE_LOCAL->get("mDatabase"),
+				$CORE_LOCAL->get("mUser"),
+				$CORE_LOCAL->get("mPass"),
 				False);
 
 	$req_cols = getMatchingColumns($sql,"efsnetRequest");
-	if ($sql->transfer($IS4C_LOCAL->get("tDatabase"),
+	if ($sql->transfer($CORE_LOCAL->get("tDatabase"),
 		"select {$req_cols} from efsnetRequest",
-		$IS4C_LOCAL->get("mDatabase"),"insert into efsnetRequest ({$req_cols})")){
+		$CORE_LOCAL->get("mDatabase"),"insert into efsnetRequest ({$req_cols})")){
 
 		$sql->query("truncate table efsnetRequest",
-			$IS4C_LOCAL->get("tDatabase"));
+			$CORE_LOCAL->get("tDatabase"));
 
 		$res_cols = getMatchingColumns($sql,"efsnetResponse");
-		$res_success = $sql->transfer($IS4C_LOCAL->get("tDatabase"),
+		$res_success = $sql->transfer($CORE_LOCAL->get("tDatabase"),
 			"select {$res_cols} from efsnetResponse",
-			$IS4C_LOCAL->get("mDatabase"),
+			$CORE_LOCAL->get("mDatabase"),
 			"insert into efsnetResponse ({$res_cols})");
 		if ($res_success){
 			$sql->query("truncate table efsnetResponse",
-				$IS4C_LOCAL->get("tDatabase"));
+				$CORE_LOCAL->get("tDatabase"));
 		}
 
 		$mod_cols = getMatchingColumns($sql,"efsnetRequestMod");
-		$mod_success = $sql->transfer($IS4C_LOCAL->get("tDatabase"),
+		$mod_success = $sql->transfer($CORE_LOCAL->get("tDatabase"),
 			"select {$mod_cols} from efsnetRequestMod",
-			$IS4C_LOCAL->get("mDatabase"),
+			$CORE_LOCAL->get("mDatabase"),
 			"insert into efsnetRequestMod ({$mod_cols})");
 		if ($mod_success){
 			$sql->query("truncate table efsnetRequestMod",
-				$IS4C_LOCAL->get("tDatabase"));
+				$CORE_LOCAL->get("tDatabase"));
 		}
 	}
 }

@@ -16,7 +16,7 @@
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    in the file license.txt along with IS4C; if not, write to the Free Software
+    in the file license.txt along with IT CORE; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
@@ -36,6 +36,8 @@ $header = "Create Special Order";
 include($FANNIE_ROOT.'src/header.html');
 
 $orderID = isset($_REQUEST['orderID'])?$_REQUEST['orderID']:'';
+$return_path = (isset($_SERVER['HTTP_REFERER']) && strstr($_SERVER['HTTP_REFERER'],'git/fannie/ordering/clearinghouse.php')) ? $_SERVER['HTTP_REFERER'] : $FANNIE_URL.'ordering/';
+printf("<input type=hidden id=redirectURL value=\"%s\" />",$return_path);
 ?>
 <fieldset>
 <legend>Customer Information</legend>

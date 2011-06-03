@@ -3,20 +3,20 @@
 
     Copyright 2007 Whole Foods Co-op
 
-    This file is part of IS4C.
+    This file is part of IT CORE.
 
-    IS4C is free software; you can redistribute it and/or modify
+    IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    IS4C is distributed in the hope that it will be useful,
+    IT CORE is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    in the file license.txt along with IS4C; if not, write to the Free Software
+    in the file license.txt along with IT CORE; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
@@ -29,11 +29,11 @@
  *
  */
 
-$IS4C_PATH = isset($IS4C_PATH)?$IS4C_PATH:"";
-if (empty($IS4C_PATH)){ while(!file_exists($IS4C_PATH."is4c.css")) $IS4C_PATH .= "../"; }
+$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
+if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
 
-if (!function_exists("paycard_errorText")) include_once($IS4C_PATH."lib/paycardLib.php");
-if (!isset($IS4C_LOCAL)) include($IS4C_PATH."lib/LocalStorage/conf.php");
+if (!function_exists("paycard_errorText")) include_once($CORE_PATH."lib/paycardLib.php");
+if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
 
 define("LOCAL_CERT_PATH",$_SERVER['DOCUMENT_ROOT']."/cc-modules/cacert.pem");
 
@@ -74,7 +74,7 @@ class BasicCCModule {
 	 * On success, return PAYCARD_ERR_OK.
 	 * On failure, return anything else and set any
 	 * error messages to be displayed in
-	 * $IS4C_LOCAL->["boxMsg"].
+	 * $CORE_LOCAL->["boxMsg"].
 	 */
 	function doSend($type){
 		return $this->setErrorMsg(0);
@@ -124,7 +124,7 @@ class BasicCCModule {
 	var $GATEWAY;
 	var $SOAPACTION;
 	function curlSend($data=False,$type='POST',$xml=False){
-		global $IS4C_PATH;
+		global $CORE_PATH;
 		if($data && $type == 'GET')
 			$this->GATEWAY .= $data;
 
@@ -190,10 +190,10 @@ class BasicCCModule {
 	 * efsnet.php
 	 */
 	function refnum($transID){
-		global $IS4C_LOCAL;
-		$transNo   = (int)$IS4C_LOCAL->get("transno");
-		$cashierNo = (int)$IS4C_LOCAL->get("CashierNo");
-		$laneNo    = (int)$IS4C_LOCAL->get("laneno");
+		global $CORE_LOCAL;
+		$transNo   = (int)$CORE_LOCAL->get("transno");
+		$cashierNo = (int)$CORE_LOCAL->get("CashierNo");
+		$laneNo    = (int)$CORE_LOCAL->get("laneno");
 		// fail if any field is too long (we don't want to truncate, since that might produce a non-unique refnum and cause bigger problems)
 		if( $transID > 999 || $transNo > 999 || $laneNo > 99 || $cashierNo > 9999)
 			return "";
@@ -260,7 +260,7 @@ class BasicCCModule {
 	}
 
 	/* setErrorMsg($errorCode)
-	 * Set $IS4C_LOCAL->["boxMsg"] appropriately for
+	 * Set $CORE_LOCAL->["boxMsg"] appropriately for
 	 * the given error code. I find this easier
 	 * than manually setting an appropriate message
 	 * every time I return a common error like
@@ -269,22 +269,22 @@ class BasicCCModule {
 	 * assigned here
 	 */
 	function setErrorMsg($errorCode){
-		global $IS4C_LOCAL;
+		global $CORE_LOCAL;
 		switch ($errorCode){
 		case PAYCARD_ERR_NOSEND:
-			$IS4C_LOCAL->set("boxMsg",paycard_errorText("Internal Error",$errorCode,"",1,1,0,0,1,$IS4C_LOCAL->get("paycard_type")));
+			$CORE_LOCAL->set("boxMsg",paycard_errorText("Internal Error",$errorCode,"",1,1,0,0,1,$CORE_LOCAL->get("paycard_type")));
 			break;
 		case PAYCARD_ERR_COMM:
-			$IS4C_LOCAL->set("boxMsg",paycard_errorText("Communication Error",$errorCode,"",1,1,0,0,0,$IS4C_LOCAL->get("paycard_type")));
+			$CORE_LOCAL->set("boxMsg",paycard_errorText("Communication Error",$errorCode,"",1,1,0,0,0,$CORE_LOCAL->get("paycard_type")));
 			break;
 		case PAYCARD_ERR_TIMEOUT:
-			$IS4C_LOCAL->set("boxMsg",paycard_errorText("Timeout Error",$errorCode,"",0,0,0,1,0,$IS4C_LOCAL->get("paycard_type")));
+			$CORE_LOCAL->set("boxMsg",paycard_errorText("Timeout Error",$errorCode,"",0,0,0,1,0,$CORE_LOCAL->get("paycard_type")));
 			break;
 		case PAYCARD_ERR_DATA:
-			$IS4C_LOCAL->set("boxMsg",paycard_errorText("System Error",$errorCode,"",0,0,0,1,1,$IS4C_LOCAL->get("paycard_type")));
+			$CORE_LOCAL->set("boxMsg",paycard_errorText("System Error",$errorCode,"",0,0,0,1,1,$CORE_LOCAL->get("paycard_type")));
 			break;
 		default:
-			$IS4C_LOCAL->set("boxMsg",paycard_errorText("Internal Error",$errorCode,"",1,1,0,0,1,$IS4C_LOCAL->get("paycard_type")));
+			$CORE_LOCAL->set("boxMsg",paycard_errorText("Internal Error",$errorCode,"",1,1,0,0,1,$CORE_LOCAL->get("paycard_type")));
 			break;
 		return $errorCode;
 		}

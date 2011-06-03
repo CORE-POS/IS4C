@@ -3,41 +3,41 @@
 
     Copyright 2007,2010 Whole Foods Co-op
 
-    This file is part of IS4C.
+    This file is part of IT CORE.
 
-    IS4C is free software; you can redistribute it and/or modify
+    IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    IS4C is distributed in the hope that it will be useful,
+    IT CORE is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    in the file license.txt along with IS4C; if not, write to the Free Software
+    in the file license.txt along with IT CORE; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
 
-$IS4C_PATH = isset($IS4C_PATH)?$IS4C_PATH:"";
-if (empty($IS4C_PATH)){ while(!file_exists($IS4C_PATH."is4c.css")) $IS4C_PATH .= "../"; }
+$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
+if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
 
 /*
  * Mercury Gift Card processing module
  *
  */
 
-if (!class_exists("BasicCCModule")) include_once($IS4C_PATH."cc-modules/BasicCCModule.php");
+if (!class_exists("BasicCCModule")) include_once($CORE_PATH."cc-modules/BasicCCModule.php");
 
-if (!class_exists("xmlData")) include_once($IS4C_PATH."lib/xmlData.php");
-if (!function_exists("paycard_reset")) include_once($IS4C_PATH."lib/paycardLib.php");
-if (!function_exists("receipt")) include_once($IS4C_PATH."lib/clientscripts.php");
-if (!function_exists("deptkey")) include_once($IS4C_PATH."lib/prehkeys.php");
-if (!function_exists("tDataConnect")) include_once($IS4C_PATH."lib/connect.php");
-if (!class_exists("Void")) include_once($IS4C_PATH."parser-class-lib/parse/Void.php");
-if (!isset($IS4C_LOCAL)) include($IS4C_PATH."lib/LocalStorage/conf.php");
+if (!class_exists("xmlData")) include_once($CORE_PATH."lib/xmlData.php");
+if (!function_exists("paycard_reset")) include_once($CORE_PATH."lib/paycardLib.php");
+if (!function_exists("receipt")) include_once($CORE_PATH."lib/clientscripts.php");
+if (!function_exists("deptkey")) include_once($CORE_PATH."lib/prehkeys.php");
+if (!function_exists("tDataConnect")) include_once($CORE_PATH."lib/connect.php");
+if (!class_exists("Void")) include_once($CORE_PATH."parser-class-lib/parse/Void.php");
+if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
 
 define('MERCURY_TERMINAL_ID',"");
 define('MERCURY_PASSWORD',"");
@@ -65,25 +65,25 @@ class MercuryGift extends BasicCCModule {
 	 * of the paycard* files
 	 */
 	function entered($validate,$json){
-		global $IS4C_LOCAL,$IS4C_PATH;
+		global $CORE_LOCAL,$CORE_PATH;
 		// error checks based on card type
-		if( $IS4C_LOCAL->get("gcIntegrate") != 1) { // credit card integration must be enabled
+		if( $CORE_LOCAL->get("gcIntegrate") != 1) { // credit card integration must be enabled
 			$json['output'] = paycard_errBox(PAYCARD_TYPE_GIFT,"Card Integration Disabled","Please process gift cards in standalone","[clear] to cancel");
 			return $json;
 		}
 
 		// error checks based on processing mode
-		if( $IS4C_LOCAL->get("paycard_mode") == PAYCARD_MODE_VOID) {
+		if( $CORE_LOCAL->get("paycard_mode") == PAYCARD_MODE_VOID) {
 			// use the card number to find the trans_id
 			$dbTrans = tDataConnect();
 			$today = date('Ymd'); // numeric date only, in an int field
 			$pan = $this->getPAN();
-			$cashier = $IS4C_LOCAL->get("CashierNo");
-			$lane = $IS4C_LOCAL->get("laneno");
-			$trans = $IS4C_LOCAL->get("transno");
+			$cashier = $CORE_LOCAL->get("CashierNo");
+			$lane = $CORE_LOCAL->get("laneno");
+			$trans = $CORE_LOCAL->get("transno");
 			$sql = "SELECT transID FROM valutecRequest WHERE [date]=".$today." AND PAN='".$pan."' " .
 				"AND cashierNo=".$cashier." AND laneNo=".$lane." AND transNo=".$trans;
-			if ($IS4C_LOCAL->get("DBMS") == "mysql"){
+			if ($CORE_LOCAL->get("DBMS") == "mysql"){
 				$sql = str_replace("[","",$sql);
 				$sql = str_replace("]","",$sql);
 			}
@@ -102,34 +102,34 @@ class MercuryGift extends BasicCCModule {
 
 		// check card data for anything else
 		if( $validate) {
-			if( paycard_validNumber($IS4C_LOCAL->get("paycard_PAN")) != 1 && substr($IS4C_LOCAL->get("paycard_PAN"),0,7) != "6050110") {
+			if( paycard_validNumber($CORE_LOCAL->get("paycard_PAN")) != 1 && substr($CORE_LOCAL->get("paycard_PAN"),0,7) != "6050110") {
 				$json['output'] = paycard_errBox(PAYCARD_TYPE_GIFT,"Invalid Card Number",
 					"Swipe again or type in manually","[clear] to cancel");
 				return $json;
-			} else if( paycard_accepted($IS4C_LOCAL->get("paycard_PAN"), !paycard_live(PAYCARD_TYPE_GIFT)) != 1) {
+			} else if( paycard_accepted($CORE_LOCAL->get("paycard_PAN"), !paycard_live(PAYCARD_TYPE_GIFT)) != 1) {
 				$json['output'] = paycard_msgBox(PAYCARD_TYPE_GIFT,"Unsupported Card Type",
-					"We cannot process " . $IS4C_LOCAL->get("paycard_issuer") . " cards","[clear] to cancel");
+					"We cannot process " . $CORE_LOCAL->get("paycard_issuer") . " cards","[clear] to cancel");
 				return $json;
 			}
 		}
 
 		// other modes
-		switch( $IS4C_LOCAL->get("paycard_mode")) {
+		switch( $CORE_LOCAL->get("paycard_mode")) {
 		case PAYCARD_MODE_AUTH:
-			$IS4C_LOCAL->set("paycard_amount",$IS4C_LOCAL->get("amtdue"));
-			$IS4C_LOCAL->set("paycard_id",$IS4C_LOCAL->get("LastID")+1); // kind of a hack to anticipate it this way..
-			$json['main_frame'] = $IS4C_PATH.'gui-modules/paycardboxMsgAuth.php';
+			$CORE_LOCAL->set("paycard_amount",$CORE_LOCAL->get("amtdue"));
+			$CORE_LOCAL->set("paycard_id",$CORE_LOCAL->get("LastID")+1); // kind of a hack to anticipate it this way..
+			$json['main_frame'] = $CORE_PATH.'gui-modules/paycardboxMsgAuth.php';
 			return $json;
 	
 		case PAYCARD_MODE_ACTIVATE:
 		case PAYCARD_MODE_ADDVALUE:
-			$IS4C_LOCAL->set("paycard_amount",0);
-			$IS4C_LOCAL->set("paycard_id",$IS4C_LOCAL->get("LastID")+1); // kind of a hack to anticipate it this way..
-			$json['main_frame'] = $IS4C_PATH.'gui-modules/paycardboxMsgGift.php';
+			$CORE_LOCAL->set("paycard_amount",0);
+			$CORE_LOCAL->set("paycard_id",$CORE_LOCAL->get("LastID")+1); // kind of a hack to anticipate it this way..
+			$json['main_frame'] = $CORE_PATH.'gui-modules/paycardboxMsgGift.php';
 			return $json;
 	
 		case PAYCARD_MODE_BALANCE:
-			$json['main_frame'] = $IS4C_PATH.'gui-modules/paycardboxMsgBalance.php';
+			$json['main_frame'] = $CORE_PATH.'gui-modules/paycardboxMsgBalance.php';
 			return $json;
 		} // switch mode
 	
@@ -148,7 +148,7 @@ class MercuryGift extends BasicCCModule {
 	 * On success, return PAYCARD_ERR_OK.
 	 * On failure, return anything else and set any
 	 * error messages to be displayed in
-	 * $IS4C_LOCAL->["boxMsg"].
+	 * $CORE_LOCAL->["boxMsg"].
 	 */
 	function doSend($type){
 		$this->second_try = False;
@@ -176,42 +176,42 @@ class MercuryGift extends BasicCCModule {
 	 * do all the everything inside doSend()
 	 */
 	function cleanup($json){
-		global $IS4C_LOCAL;
-		switch($IS4C_LOCAL->get("paycard_mode")){
+		global $CORE_LOCAL;
+		switch($CORE_LOCAL->get("paycard_mode")){
 		case PAYCARD_MODE_BALANCE:
-			$resp = $IS4C_LOCAL->get("paycard_response");
-			$IS4C_LOCAL->set("boxMsg","<b>Success</b><font size=-1><p>Gift card balance: $".$resp["Balance"]."<p>\"rp\" to print<br>[enter] to continue</font>");	
+			$resp = $CORE_LOCAL->get("paycard_response");
+			$CORE_LOCAL->set("boxMsg","<b>Success</b><font size=-1><p>Gift card balance: $".$resp["Balance"]."<p>\"rp\" to print<br>[enter] to continue</font>");	
 			break;
 		case PAYCARD_MODE_ADDVALUE:
 		case PAYCARD_MODE_ACTIVATE:
 			//receipt("gcSlip");
-			$IS4C_LOCAL->set("autoReprint",1);
-			$ttl = $IS4C_LOCAL->get("paycard_amount");
+			$CORE_LOCAL->set("autoReprint",1);
+			$ttl = $CORE_LOCAL->get("paycard_amount");
 			deptkey($ttl*100,9020);
-			$resp = $IS4C_LOCAL->get("paycard_response");	
-			$IS4C_LOCAL->set("boxMsg","<b>Success</b><font size=-1><p>New card balance: $".$resp["Balance"]);
+			$resp = $CORE_LOCAL->get("paycard_response");	
+			$CORE_LOCAL->set("boxMsg","<b>Success</b><font size=-1><p>New card balance: $".$resp["Balance"]);
 				// reminder to void everything on testgift2, so that it remains inactive to test activations
-			$IS4C_LOCAL->set("boxMsg",$IS4C_LOCAL->get("boxMsg")."<p>[enter] to continue<br>\"rp\" to reprint slip</font>");
+			$CORE_LOCAL->set("boxMsg",$CORE_LOCAL->get("boxMsg")."<p>[enter] to continue<br>\"rp\" to reprint slip</font>");
 			break;
 		case PAYCARD_MODE_AUTH:
 			//receipt("gcSlip");
-			$IS4C_LOCAL->set("autoReprint",1);
-			tender("GD", ($IS4C_LOCAL->get("paycard_amount")*100));
-			$resp = $IS4C_LOCAL->get("paycard_response");
-			$IS4C_LOCAL->set("boxMsg","<b>Approved</b><font size=-1><p>Used: $".$IS4C_LOCAL->get("paycard_amount")."<br />New balance: $".$resp["Balance"]);
+			$CORE_LOCAL->set("autoReprint",1);
+			tender("GD", ($CORE_LOCAL->get("paycard_amount")*100));
+			$resp = $CORE_LOCAL->get("paycard_response");
+			$CORE_LOCAL->set("boxMsg","<b>Approved</b><font size=-1><p>Used: $".$CORE_LOCAL->get("paycard_amount")."<br />New balance: $".$resp["Balance"]);
 			// reminder to void everything on testgift2, so that it remains inactive to test activations
-			if( !strcasecmp($IS4C_LOCAL->get("paycard_PAN"),"7018525757980004481")) // == doesn't work because the string is numeric and very large, so PHP has trouble turning it into an (int) for comparison
-				$IS4C_LOCAL->set("boxMsg",$IS4C_LOCAL->get("boxMsg")."<br><b>REMEMBER TO VOID THIS</b><br>(ask IT for details)");
-			$IS4C_LOCAL->set("boxMsg",$IS4C_LOCAL->get("boxMsg")."<p>[enter] to continue<br>\"rp\" to reprint slip<br>[clear] to cancel and void</font>");
+			if( !strcasecmp($CORE_LOCAL->get("paycard_PAN"),"7018525757980004481")) // == doesn't work because the string is numeric and very large, so PHP has trouble turning it into an (int) for comparison
+				$CORE_LOCAL->set("boxMsg",$CORE_LOCAL->get("boxMsg")."<br><b>REMEMBER TO VOID THIS</b><br>(ask IT for details)");
+			$CORE_LOCAL->set("boxMsg",$CORE_LOCAL->get("boxMsg")."<p>[enter] to continue<br>\"rp\" to reprint slip<br>[clear] to cancel and void</font>");
 			break;
 		case PAYCARD_MODE_VOID:
 		case PAYCARD_MODE_VOIDITEM:
 			//receipt("gcSlip");
-			$IS4C_LOCAL->set("autoReprint",1);
+			$CORE_LOCAL->set("autoReprint",1);
 			$v = new Void();
-			$v->voidid($IS4C_LOCAL->get("paycard_id"));
-			$resp = $IS4C_LOCAL->get("paycard_response");
-			$IS4C_LOCAL->set("boxMsg","<b>Voided</b><font size=-1><p>New balance: $".$resp["Balance"]."<p>[enter] to continue<br>\"rp\" to reprint slip</font>");
+			$v->voidid($CORE_LOCAL->get("paycard_id"));
+			$resp = $CORE_LOCAL->get("paycard_response");
+			$CORE_LOCAL->set("boxMsg","<b>Voided</b><font size=-1><p>New balance: $".$resp["Balance"]."<p>[enter] to continue<br>\"rp\" to reprint slip</font>");
 			break;
 		}
 		return $json;
@@ -223,9 +223,9 @@ class MercuryGift extends BasicCCModule {
 	 * code from paycard*.php files.
 	 */
 	function paycard_void($transID,$json=array()){
-		global $IS4C_LOCAL,$IS4C_PATH;
+		global $CORE_LOCAL,$CORE_PATH;
 		// situation checking
-		if( $IS4C_LOCAL->get("gcIntegrate") != 1) { // gift card integration must be enabled
+		if( $CORE_LOCAL->get("gcIntegrate") != 1) { // gift card integration must be enabled
 			$json['output'] = paycard_errBox(PAYCARD_TYPE_GIFT,"Card Integration Disabled",
 				"Please process gift cards in standalone","[clear] to cancel");
 			return $json;
@@ -234,13 +234,13 @@ class MercuryGift extends BasicCCModule {
 		// initialize
 		$dbTrans = tDataConnect();
 		$today = date('Ymd');
-		$cashier = $IS4C_LOCAL->get("CashierNo");
-		$lane = $IS4C_LOCAL->get("laneno");
-		$trans = $IS4C_LOCAL->get("transno");
+		$cashier = $CORE_LOCAL->get("CashierNo");
+		$lane = $CORE_LOCAL->get("laneno");
+		$trans = $CORE_LOCAL->get("transno");
 
 		// look up the request using transID (within this transaction)
 		$sql = "SELECT live,PAN,mode,amount FROM valutecRequest WHERE [date]=".$today." AND cashierNo=".$cashier." AND laneNo=".$lane." AND transNo=".$trans." AND transID=".$transID;
-		if ($IS4C_LOCAL->get("DBMS") == "mysql"){
+		if ($CORE_LOCAL->get("DBMS") == "mysql"){
 			$sql = str_replace("[","",$sql);
 			$sql = str_replace("]","",$sql);
 		}
@@ -261,7 +261,7 @@ class MercuryGift extends BasicCCModule {
 		$sql = "SELECT commErr,httpCode,validResponse,xAuthorized,
 			xAuthorizationCode FROM valutecResponse WHERE [date]=".$today." 
 			AND cashierNo=".$cashier." AND laneNo=".$lane." AND transNo=".$trans." AND transID=".$transID;
-		if ($IS4C_LOCAL->get("DBMS") == "mysql"){
+		if ($CORE_LOCAL->get("DBMS") == "mysql"){
 			$sql = str_replace("[","",$sql);
 			$sql = str_replace("]","",$sql);
 		}
@@ -280,7 +280,7 @@ class MercuryGift extends BasicCCModule {
 
 		// look up any previous successful voids
 		$sql = "SELECT transID FROM valutecRequestMod WHERE [date]=".$today." AND cashierNo=".$cashier." AND laneNo=".$lane." AND transNo=".$trans." AND transID=".$transID." AND mode='void' AND (xAuthorized='true' or xAuthorized='Appro')";
-		if ($IS4C_LOCAL->get("DBMS") == "mysql"){
+		if ($CORE_LOCAL->get("DBMS") == "mysql"){
 			$sql = str_replace("[","",$sql);
 			$sql = str_replace("]","",$sql);
 		}
@@ -337,28 +337,28 @@ class MercuryGift extends BasicCCModule {
 		}
 
 		// save the details
-		$IS4C_LOCAL->set("paycard_PAN",$request['PAN']);
+		$CORE_LOCAL->set("paycard_PAN",$request['PAN']);
 		if( $request['mode'] == 'refund')
-			$IS4C_LOCAL->set("paycard_amount",-$request['amount']);
+			$CORE_LOCAL->set("paycard_amount",-$request['amount']);
 		else
-			$IS4C_LOCAL->set("paycard_amount",$request['amount']);
-		$IS4C_LOCAL->set("paycard_id",$transID);
-		$IS4C_LOCAL->set("paycard_type",PAYCARD_TYPE_GIFT);
+			$CORE_LOCAL->set("paycard_amount",$request['amount']);
+		$CORE_LOCAL->set("paycard_id",$transID);
+		$CORE_LOCAL->set("paycard_type",PAYCARD_TYPE_GIFT);
 		if( $lineitem['trans_type'] == "T" && $lineitem['trans_subtype'] == "GD") {
-			$IS4C_LOCAL->set("paycard_mode",PAYCARD_MODE_VOID);
+			$CORE_LOCAL->set("paycard_mode",PAYCARD_MODE_VOID);
 		} else {
-			$IS4C_LOCAL->set("paycard_mode",PAYCARD_MODE_VOIDITEM);
+			$CORE_LOCAL->set("paycard_mode",PAYCARD_MODE_VOIDITEM);
 		}
 	
 		// display FEC code box
-		$json['main_frame'] = $IS4C_PATH.'gui-modules/paycardboxMsgVoid.php';
+		$json['main_frame'] = $CORE_PATH.'gui-modules/paycardboxMsgVoid.php';
 		return $json;
 	}
 
 	// END INTERFACE METHODS
 	
 	function send_auth($domain="w1.mercurypay.com"){
-		global $IS4C_LOCAL;
+		global $CORE_LOCAL;
 		// initialize
 		$dbTrans = tDataConnect();
 		if( !$dbTrans)
@@ -367,15 +367,15 @@ class MercuryGift extends BasicCCModule {
 		// prepare data for the request
 		$today = date('Ymd'); // numeric date only, it goes in an 'int' field as part of the primary key
 		$now = date('Y-m-d H:i:s'); // full timestamp
-		$cashierNo = $IS4C_LOCAL->get("CashierNo");
-		$laneNo = $IS4C_LOCAL->get("laneno");
-		$transNo = $IS4C_LOCAL->get("transno");
-		$transID = $IS4C_LOCAL->get("paycard_id");
+		$cashierNo = $CORE_LOCAL->get("CashierNo");
+		$laneNo = $CORE_LOCAL->get("laneno");
+		$transNo = $CORE_LOCAL->get("transno");
+		$transID = $CORE_LOCAL->get("paycard_id");
 		$program = 'Gift'; // valutec also has 'Loyalty' cards which store arbitrary point values
-		$amount = $IS4C_LOCAL->get("paycard_amount");
+		$amount = $CORE_LOCAL->get("paycard_amount");
 		$amountText = number_format(abs($amount), 2, '.', '');
 		$mode = "";
-		switch( $IS4C_LOCAL->get("paycard_mode")) {
+		switch( $CORE_LOCAL->get("paycard_mode")) {
 		case PAYCARD_MODE_AUTH:      $mode = (($amount < 0) ? 'refund' : 'tender');  break;
 		case PAYCARD_MODE_ADDVALUE:  $mode = 'addvalue';  break;
 		case PAYCARD_MODE_ACTIVATE:  $mode = 'activate';  break;
@@ -384,7 +384,7 @@ class MercuryGift extends BasicCCModule {
 		$termID = $this->getTermID();
 		$password = $this->getPw();
 		$live = 0;
-		$manual = ($IS4C_LOCAL->get("paycard_manual") ? 1 : 0);
+		$manual = ($CORE_LOCAL->get("paycard_manual") ? 1 : 0);
 		$cardPAN = $this->getPAN();
 		$cardTr2 = $this->getTrack2();
 		$identifier = $this->valutec_identifier($transID); // valutec allows 10 digits; this uses lanenum-transnum-transid since we send cashiernum in another field
@@ -399,7 +399,7 @@ class MercuryGift extends BasicCCModule {
 			sprintf("'%s','%s','%s',%d,", $now, $identifier, $termID, $live) .
 			sprintf("'%s',%s,'%s',%d",    $mode, $amountText, $cardPAN, $manual);
 		$sql = "INSERT INTO valutecRequest (" . $sqlColumns . ") VALUES (" . $sqlValues . ")";
-		if ($IS4C_LOCAL->get("DBMS") == "mysql"){
+		if ($CORE_LOCAL->get("DBMS") == "mysql"){
 			$sql = str_replace("[","",$sql);
 			$sql = str_replace("]","",$sql);
 		}
@@ -444,7 +444,7 @@ class MercuryGift extends BasicCCModule {
 			"http://www.mercurypay.com");
 
 
-		if ($IS4C_LOCAL->get("training") == 1)
+		if ($CORE_LOCAL->get("training") == 1)
 			$this->GATEWAY = "https://w1.mercurydev.net/ws/ws.asmx";
 		else
 			$this->GATEWAY = "https://$domain/ws/ws.asmx";
@@ -453,7 +453,7 @@ class MercuryGift extends BasicCCModule {
 	}
 
 	function send_void($domain="w1.mercurypay.com"){
-		global $IS4C_LOCAL;
+		global $CORE_LOCAL;
 		// initialize
 		$dbTrans = tDataConnect();
 		if( !$dbTrans)
@@ -462,12 +462,12 @@ class MercuryGift extends BasicCCModule {
 		// prepare data for the void request
 		$today = date('Ymd'); // numeric date only, it goes in an 'int' field as part of the primary key
 		$now = date('Y-m-d H:i:s'); // full timestamp
-		$cashierNo = $IS4C_LOCAL->get("CashierNo");
-		$laneNo = $IS4C_LOCAL->get("laneno");
-		$transNo = $IS4C_LOCAL->get("transno");
-		$transID = $IS4C_LOCAL->get("paycard_id");
+		$cashierNo = $CORE_LOCAL->get("CashierNo");
+		$laneNo = $CORE_LOCAL->get("laneno");
+		$transNo = $CORE_LOCAL->get("transno");
+		$transID = $CORE_LOCAL->get("paycard_id");
 		$program = 'Gift'; // valutec also has 'Loyalty' cards which store arbitrary point values
-		$amount = $IS4C_LOCAL->get("paycard_amount");
+		$amount = $CORE_LOCAL->get("paycard_amount");
 		$amountText = number_format(abs($amount), 2, '.', '');
 		$mode = 'void';
 		$cardPAN = $this->getPAN();
@@ -479,7 +479,7 @@ class MercuryGift extends BasicCCModule {
 		$sql = "SELECT xAuthorizationCode FROM valutecResponse WHERE [date]='".$today."'" .
 			" AND cashierNo=".$cashierNo." AND laneNo=".$laneNo." AND 
 			transNo=".$transNo." AND transID=".$transID;
-		if ($IS4C_LOCAL->get("DBMS") == "mysql"){
+		if ($CORE_LOCAL->get("DBMS") == "mysql"){
 			$sql = str_replace("[","",$sql);
 			$sql = str_replace("]","",$sql);
 		}
@@ -494,7 +494,7 @@ class MercuryGift extends BasicCCModule {
 		$sql = "SELECT mode FROM valutecRequest WHERE [date]='".$today."'" .
 			" AND cashierNo=".$cashierNo." AND laneNo=".$laneNo." AND 
 			transNo=".$transNo." AND transID=".$transID;
-		if ($IS4C_LOCAL->get("DBMS") == "mysql"){
+		if ($CORE_LOCAL->get("DBMS") == "mysql"){
 			$sql = str_replace("[","",$sql);
 			$sql = str_replace("]","",$sql);
 		}
@@ -537,7 +537,7 @@ class MercuryGift extends BasicCCModule {
 			array("tran"=>$msgXml,"pw"=>$password),
 			"http://www.mercurypay.com");
 
-		if ($IS4C_LOCAL->get("training") == 1)
+		if ($CORE_LOCAL->get("training") == 1)
 			$this->GATEWAY = "https://w1.mercurydev.net/ws/ws.asmx";
 		else
 			$this->GATEWAY = "https://$domain/ws/ws.asmx";
@@ -546,9 +546,9 @@ class MercuryGift extends BasicCCModule {
 	}
 
 	function send_balance($domain="w1.mercurypay.com"){
-		global $IS4C_LOCAL;
+		global $CORE_LOCAL;
 		// prepare data for the request
-		$cashierNo = $IS4C_LOCAL->get("CashierNo");
+		$cashierNo = $CORE_LOCAL->get("CashierNo");
 		$program = 'Gift'; // valutec also has 'Loyalty' cards which store arbitrary point values
 		$cardPAN = $this->getPAN();
 		$cardTr2 = $this->getTrack2();
@@ -584,7 +584,7 @@ class MercuryGift extends BasicCCModule {
 		//$soaptext = str_replace("</GiftTransaction>",
 		//	"</GiftTransaction><pw>$password</pw>",$soaptext);
 
-		if ($IS4C_LOCAL->get("training") == 1)
+		if ($CORE_LOCAL->get("training") == 1)
 			$this->GATEWAY = "https://w1.mercurydev.net/ws/ws.asmx";
 		else
 			$this->GATEWAY = "https://$domain/ws/ws.asmx";
@@ -593,8 +593,8 @@ class MercuryGift extends BasicCCModule {
 	}
 
 	function handleResponse($authResult){
-		global $IS4C_LOCAL;
-		switch($IS4C_LOCAL->get("paycard_mode")){
+		global $CORE_LOCAL;
+		switch($CORE_LOCAL->get("paycard_mode")){
 		case PAYCARD_MODE_AUTH:
 		case PAYCARD_MODE_ACTIVATE:
 		case PAYCARD_MODE_ADDVALUE:
@@ -608,7 +608,7 @@ class MercuryGift extends BasicCCModule {
 	}
 
 	function handleResponseAuth($authResult){
-		global $IS4C_LOCAL;
+		global $CORE_LOCAL;
 		$resp = $this->desoapify("GiftTransactionResult",
 			$authResult["response"]);
 		$xml = new xmlData($resp);
@@ -621,10 +621,10 @@ class MercuryGift extends BasicCCModule {
 		// prepare data for the request
 		$today = date('Ymd'); // numeric date only, it goes in an 'int' field as part of the primary key
 		$now = date('Y-m-d H:i:s'); // full timestamp
-		$cashierNo = $IS4C_LOCAL->get("CashierNo");
-		$laneNo = $IS4C_LOCAL->get("laneno");
-		$transNo = $IS4C_LOCAL->get("transno");
-		$transID = $IS4C_LOCAL->get("paycard_id");
+		$cashierNo = $CORE_LOCAL->get("CashierNo");
+		$laneNo = $CORE_LOCAL->get("laneno");
+		$transNo = $CORE_LOCAL->get("transno");
+		$transID = $CORE_LOCAL->get("paycard_id");
 		$program = 'Gift';
 		$identifier = $this->valutec_identifier($transID); // valutec allows 10 digits; this uses lanenum-transnum-transid since we send cashiernum in another field
 
@@ -670,7 +670,7 @@ class MercuryGift extends BasicCCModule {
 		$sqlColumns .= ",validResponse";
 		$sqlValues .= ",".$validResponse;
 		$sql = "INSERT INTO valutecResponse (" . $sqlColumns . ") VALUES (" . $sqlValues . ")";
-		if ($IS4C_LOCAL->get("DBMS") == "mysql"){
+		if ($CORE_LOCAL->get("DBMS") == "mysql"){
 			$sql = str_replace("[","",$sql);
 			$sql = str_replace("]","",$sql);
 		}
@@ -684,7 +684,7 @@ class MercuryGift extends BasicCCModule {
 					return $this->send_auth("w2.backuppay.com");
 				}
 				else {
-					$IS4C_LOCAL->set("boxMsg","No response from processor<br />
+					$CORE_LOCAL->set("boxMsg","No response from processor<br />
 								The transaction did not go through");
 					return PAYCARD_ERR_PROC;
 				}
@@ -697,14 +697,14 @@ class MercuryGift extends BasicCCModule {
 			return $this->setErrorMsg(PAYCARD_ERR_DATA); // invalid server response, we don't know if the transaction was processed (use carbon)
 		}
 
-		// put the parsed response into $IS4C_LOCAL so the caller, receipt printer, etc can get the data they need
-		$IS4C_LOCAL->set("paycard_response",array());
-		$IS4C_LOCAL->set("paycard_response",$xml->array_dump());
-		$temp = $IS4C_LOCAL->get("paycard_response");
+		// put the parsed response into $CORE_LOCAL so the caller, receipt printer, etc can get the data they need
+		$CORE_LOCAL->set("paycard_response",array());
+		$CORE_LOCAL->set("paycard_response",$xml->array_dump());
+		$temp = $CORE_LOCAL->get("paycard_response");
 		$temp["Balance"] = $temp["BALANCE"];
-		$IS4C_LOCAL->set("paycard_response",$temp);
+		$CORE_LOCAL->set("paycard_response",$temp);
 		if ($xml->get_first("AUTHORIZE")){
-			$IS4C_LOCAL->set("paycard_amount",$xml->get_first("AUTHORIZE"));	
+			$CORE_LOCAL->set("paycard_amount",$xml->get_first("AUTHORIZE"));	
 			$correctionQ = sprintf("UPDATE valutecRequest SET amount=%f WHERE
 				date=%s AND identifier='%s'",
 				$xml->get_first("AUTHORIZE"),date("Ymd"),$identifier);
@@ -717,12 +717,12 @@ class MercuryGift extends BasicCCModule {
 		}
 
 		// the authorizor gave us some failure code
-		$IS4C_LOCAL->set("boxMsg","Processor error: ".$errorMsg);
+		$CORE_LOCAL->set("boxMsg","Processor error: ".$errorMsg);
 		return PAYCARD_ERR_PROC; // authorization failed, response fields in $_SESSION["paycard_response"]
 	}
 
 	function handleResponseVoid($vdResult){
-		global $IS4C_LOCAL;
+		global $CORE_LOCAL;
 		$resp = $this->desoapify("GiftTransactionResult",
 			$vdResult["response"]);
 		$xml = new xmlData($resp);
@@ -735,11 +735,11 @@ class MercuryGift extends BasicCCModule {
 		// prepare data for the void request
 		$today = date('Ymd'); // numeric date only, it goes in an 'int' field as part of the primary key
 		$now = date('Y-m-d H:i:s'); // full timestamp
-		$cashierNo = $IS4C_LOCAL->get("CashierNo");
-		$laneNo = $IS4C_LOCAL->get("laneno");
-		$transNo = $IS4C_LOCAL->get("transno");
-		$transID = $IS4C_LOCAL->get("paycard_id");
-		$amount = $IS4C_LOCAL->get("paycard_amount");
+		$cashierNo = $CORE_LOCAL->get("CashierNo");
+		$laneNo = $CORE_LOCAL->get("laneno");
+		$transNo = $CORE_LOCAL->get("transno");
+		$transID = $CORE_LOCAL->get("paycard_id");
+		$amount = $CORE_LOCAL->get("paycard_amount");
 		$amountText = number_format(abs($amount), 2, '.', '');
 		$mode = 'void';
 		$authcode = $this->temp;
@@ -774,7 +774,7 @@ class MercuryGift extends BasicCCModule {
 		$sqlColumns .= ",validResponse";
 		$sqlValues .= ",".$validResponse;
 		$sql = "INSERT INTO valutecRequestMod (" . $sqlColumns . ") VALUES (" . $sqlValues . ")";
-		if ($IS4C_LOCAL->get("DBMS") == "mysql"){
+		if ($CORE_LOCAL->get("DBMS") == "mysql"){
 			$sql = str_replace("[","",$sql);
 			$sql = str_replace("]","",$sql);
 		}
@@ -787,7 +787,7 @@ class MercuryGift extends BasicCCModule {
 					return $this->send_void("w2.backuppay.com");
 				}
 				else {
-					$IS4C_LOCAL->set("boxMsg","No response from processor<br />
+					$CORE_LOCAL->set("boxMsg","No response from processor<br />
 								The transaction did not go through");
 					return PAYCARD_ERR_PROC;
 				}
@@ -799,12 +799,12 @@ class MercuryGift extends BasicCCModule {
 			return $this->setErrorMsg(PAYCARD_ERR_DATA); // invalid server response, we don't know if the transaction was voided (use carbon)
 		}
 
-		// put the parsed response into $IS4C_LOCAL so the caller, receipt printer, etc can get the data they need
-		$IS4C_LOCAL->set("paycard_response",array());
-		$IS4C_LOCAL->set("paycard_response",$xml->array_dump());
-		$temp = $IS4C_LOCAL->get("paycard_response");
+		// put the parsed response into $CORE_LOCAL so the caller, receipt printer, etc can get the data they need
+		$CORE_LOCAL->set("paycard_response",array());
+		$CORE_LOCAL->set("paycard_response",$xml->array_dump());
+		$temp = $CORE_LOCAL->get("paycard_response");
 		$temp["Balance"] = $temp["BALANCE"];
-		$IS4C_LOCAL->set("paycard_response",$temp);
+		$CORE_LOCAL->set("paycard_response",$temp);
 
 		// comm successful, check the Authorized, AuthorizationCode and ErrorMsg fields
 		if( $xml->get('CMDSTATUS') == 'Approved' && $xml->get('REFNO') != '' ){
@@ -812,12 +812,12 @@ class MercuryGift extends BasicCCModule {
 		}
 
 		// the authorizor gave us some failure code
-		$IS4C_LOCAL->set("boxMsg","PROCESSOR ERROR: ".$xml->get_first("ERRORMSG"));
+		$CORE_LOCAL->set("boxMsg","PROCESSOR ERROR: ".$xml->get_first("ERRORMSG"));
 		return PAYCARD_ERR_PROC; 
 	}
 
 	function handleResponseBalance($balResult){
-		global $IS4C_LOCAL;
+		global $CORE_LOCAL;
 		$resp = $this->desoapify("GiftTransactionResult",
 			$balResult["response"]);
 		$xml = new xmlData($resp);
@@ -830,7 +830,7 @@ class MercuryGift extends BasicCCModule {
 					return $this->send_balance("w2.backuppay.com");
 				}
 				else {
-					$IS4C_LOCAL->set("boxMsg","No response from processor<br />
+					$CORE_LOCAL->set("boxMsg","No response from processor<br />
 								The transaction did not go through");
 					return PAYCARD_ERR_PROC;
 				}
@@ -838,12 +838,12 @@ class MercuryGift extends BasicCCModule {
 			return $this->setErrorMsg(PAYCARD_ERR_COMM); // comm error, try again
 		}
 
-		$IS4C_LOCAL->set("paycard_response",array());
-		$IS4C_LOCAL->set("paycard_response",$xml->array_dump());
-		$resp = $IS4C_LOCAL->get("paycard_response");
+		$CORE_LOCAL->set("paycard_response",array());
+		$CORE_LOCAL->set("paycard_response",$xml->array_dump());
+		$resp = $CORE_LOCAL->get("paycard_response");
 		if (isset($resp["BALANCE"])){
 			$resp["Balance"] = $resp["BALANCE"];
-			$IS4C_LOCAL->set("paycard_response",$resp);
+			$CORE_LOCAL->set("paycard_response",$resp);
 		}
 
 		// there's less to verify for balance checks, just make sure all the fields are there
@@ -856,16 +856,16 @@ class MercuryGift extends BasicCCModule {
 		}
 
 		// the authorizor gave us some failure code
-		$IS4C_LOCAL->set("boxMsg","Processor error: ".$xml->get_first("TEXTRESPONSE"));
+		$CORE_LOCAL->set("boxMsg","Processor error: ".$xml->get_first("TEXTRESPONSE"));
 		return PAYCARD_ERR_PROC; // authorization failed, response fields in $_SESSION["paycard_response"]
 	}
 
 	// generate a partially-daily-unique identifier number according to the gift card processor's limitations
 	// along with their CashierID field, it will be a daily-unique identifier on the transaction
 	function valutec_identifier($transID) {
-		global $IS4C_LOCAL;
-		$transNo   = (int)$IS4C_LOCAL->get("transno");
-		$laneNo    = (int)$IS4C_LOCAL->get("laneno");
+		global $CORE_LOCAL;
+		$transNo   = (int)$CORE_LOCAL->get("transno");
+		$laneNo    = (int)$CORE_LOCAL->get("laneno");
 		// fail if any field is too long (we don't want to truncate, since that might produce a non-unique refnum and cause bigger problems)
 		if( $transID > 999 || $transNo > 999 || $laneNo > 99)
 			return "";
@@ -878,16 +878,16 @@ class MercuryGift extends BasicCCModule {
 	} // valutec_identifier()
 	
 	function getTermID(){
-		global $IS4C_LOCAL;
-		if ($IS4C_LOCAL->get("training") == 1)
+		global $CORE_LOCAL;
+		if ($CORE_LOCAL->get("training") == 1)
 			return "595901";
 		else
 			return MERCURY_TERMINAL_ID;
 	}
 
 	function getPw(){
-		global $IS4C_LOCAL;
-		if ($IS4C_LOCAL->get("training") == 1){
+		global $CORE_LOCAL;
+		if ($CORE_LOCAL->get("training") == 1){
 			return "xyz";
 		}
 		else
@@ -895,18 +895,18 @@ class MercuryGift extends BasicCCModule {
 	}
 
 	function getPAN(){
-		global $IS4C_LOCAL;
-		if ($IS4C_LOCAL->get("training") == 1)
+		global $CORE_LOCAL;
+		if ($CORE_LOCAL->get("training") == 1)
 			return "6050110000000296951";
 		else
-			return $IS4C_LOCAL->get("paycard_PAN");
+			return $CORE_LOCAL->get("paycard_PAN");
 	}
 
 	function getTrack2(){
-		global $IS4C_LOCAL;
-		if ($IS4C_LOCAL->get("training") == 1)
+		global $CORE_LOCAL;
+		if ($CORE_LOCAL->get("training") == 1)
 			return False;
 		else
-			return $IS4C_LOCAL->get("paycard_tr2");
+			return $CORE_LOCAL->get("paycard_tr2");
 	}
 }

@@ -3,44 +3,44 @@
 
     Copyright 2010 Whole Foods Co-op
 
-    This file is part of IS4C.
+    This file is part of IT CORE.
 
-    IS4C is free software; you can redistribute it and/or modify
+    IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    IS4C is distributed in the hope that it will be useful,
+    IT CORE is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    in the file license.txt along with IS4C; if not, write to the Free Software
+    in the file license.txt along with IT CORE; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-$IS4C_PATH = isset($IS4C_PATH)?$IS4C_PATH:"";
-if (empty($IS4C_PATH)){ while(!file_exists($IS4C_PATH."is4c.css")) $IS4C_PATH .= "../"; }
+$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
+if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
 
-if (!isset($IS4C_LOCAL)) include($IS4C_PATH.'lib/LocalStorage/conf.php');
-if (!class_exists("ScaleDriverWrapper")) include($IS4C_PATH."scale-drivers/php-wrappers/ScaleDriverWrapper.php");
-if (!function_exists('scaledisplaymsg')) include($IS4C_PATH.'lib/drawscreen.php');
-if (!function_exists('array_to_json')) include($IS4C_PATH.'lib/array_to_json.php');
+if (!isset($CORE_LOCAL)) include($CORE_PATH.'lib/LocalStorage/conf.php');
+if (!class_exists("ScaleDriverWrapper")) include($CORE_PATH."scale-drivers/php-wrappers/ScaleDriverWrapper.php");
+if (!function_exists('scaledisplaymsg')) include($CORE_PATH.'lib/drawscreen.php');
+if (!function_exists('array_to_json')) include($CORE_PATH.'lib/array_to_json.php');
 
 class ssd extends ScaleDriverWrapper {
 
 	function SavePortConfiguration($portName){
-		global $IS4C_PATH;
+		global $CORE_PATH;
 
 		/* read in c code file */
-		$fp = fopen($IS4C_PATH."scale-drivers/drivers/rs232/ssd.c","r");
+		$fp = fopen($CORE_PATH."scale-drivers/drivers/rs232/ssd.c","r");
 		$lines = array();
 		while(!feof($fp)) $lines[] = fgets($fp);
 		fclose($fp);
 
 		/* replace SSD_SERIAL_PORT definition */
-		$fp = fopen($IS4C_PATH."scale-drivers/drivers/rs232/ssd.c","w");
+		$fp = fopen($CORE_PATH."scale-drivers/drivers/rs232/ssd.c","w");
 		foreach($lines as $l){
 			if (strstr($l,"#define SSD_SERIAL_PORT ") === False) fwrite($fp,$l);
 			else {
@@ -52,16 +52,16 @@ class ssd extends ScaleDriverWrapper {
 	}
 
 	function SaveDirectoryConfiguration($absPath){
-		global $IS4C_PATH;
+		global $CORE_PATH;
 
 		/* read in c code file */
-		$fp = fopen($IS4C_PATH."scale-drivers/drivers/rs232/ssd.c","r");
+		$fp = fopen($CORE_PATH."scale-drivers/drivers/rs232/ssd.c","r");
 		$lines = array();
 		while(!feof($fp)) $lines[] = fgets($fp);
 		fclose($fp);
 
 		/* replace file location #defines */
-		$fp = fopen($IS4C_PATH."scale-drivers/drivers/rs232/ssd.c","w");
+		$fp = fopen($CORE_PATH."scale-drivers/drivers/rs232/ssd.c","w");
 		foreach($lines as $l){
 			if (strstr($l,"#define SCALE_OUTPUT_FILE ") !== False){
 				fwrite($fp,sprintf('#define SCALE_OUTPUT_FILE "%s"',
@@ -79,14 +79,14 @@ class ssd extends ScaleDriverWrapper {
 	}
 
 	function ReadFromScale(){
-		global $IS4C_LOCAL,$IS4C_PATH;
+		global $CORE_LOCAL,$CORE_PATH;
 
-		$scale_data = file_get_contents($IS4C_PATH.'scale-drivers/drivers/rs232/scale');
-		$fp = open($IS4C_PATH.'scale-drivers/drivers/rs232/scale','w');
+		$scale_data = file_get_contents($CORE_PATH.'scale-drivers/drivers/rs232/scale');
+		$fp = open($CORE_PATH.'scale-drivers/drivers/rs232/scale','w');
 		fclose($fp);
 
-		$scan_data = file_get_contents($IS4C_PATH.'scale-drivers/drivers/rs232/scanner');
-		$fp = open($IS4C_PATH.'scale-drivers/drivers/rs232/scanner','w');
+		$scan_data = file_get_contents($CORE_PATH.'scale-drivers/drivers/rs232/scanner');
+		$fp = open($CORE_PATH.'scale-drivers/drivers/rs232/scanner','w');
 		fclose($fp);
 	
 		$scale_display = '';
@@ -105,8 +105,8 @@ class ssd extends ScaleDriverWrapper {
 	}
 
 	function WriteToScale($str){
-		global $IS4C_LOCAL;
-		$port = $IS4C_LOCAL->get("scalePort");
+		global $CORE_LOCAL;
+		$port = $CORE_LOCAL->get("scalePort");
 
 		switch(strtolower($str)){
 		case 'goodbeep':

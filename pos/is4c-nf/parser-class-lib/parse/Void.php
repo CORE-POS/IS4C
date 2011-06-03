@@ -3,34 +3,34 @@
 
     Copyright 2007 Whole Foods Co-op
 
-    This file is part of IS4C.
+    This file is part of IT CORE.
 
-    IS4C is free software; you can redistribute it and/or modify
+    IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    IS4C is distributed in the hope that it will be useful,
+    IT CORE is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    in the file license.txt along with IS4C; if not, write to the Free Software
+    in the file license.txt along with IT CORE; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
-$IS4C_PATH = isset($IS4C_PATH)?$IS4C_PATH:"";
-if (empty($IS4C_PATH)){ while(!file_exists($IS4C_PATH."is4c.css")) $IS4C_PATH .= "../"; }
+$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
+if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
 
-if (!class_exists("Parser")) include_once($IS4C_PATH."parser-class-lib/Parser.php");
-if (!function_exists("tDataConnect")) include_once($IS4C_PATH."lib/connect.php");
-if (!function_exists("boxMsg")) include_once($IS4C_PATH."lib/drawscreen.php");
-if (!function_exists("lastpage")) include_once($IS4C_PATH."lib/listitems.php");
-if (!function_exists("checkstatus")) include_once($IS4C_PATH."lib/prehkeys.php");
-if (!function_exists("addItem")) include_once($IS4C_PATH."lib/additem.php");
-if (!function_exists("nullwrap")) include_once($IS4C_PATH."lib/lib.php");
-if (!isset($IS4C_LOCAL)) include($IS4C_PATH."lib/LocalStorage/conf.php");
+if (!class_exists("Parser")) include_once($CORE_PATH."parser-class-lib/Parser.php");
+if (!function_exists("tDataConnect")) include_once($CORE_PATH."lib/connect.php");
+if (!function_exists("boxMsg")) include_once($CORE_PATH."lib/drawscreen.php");
+if (!function_exists("lastpage")) include_once($CORE_PATH."lib/listitems.php");
+if (!function_exists("checkstatus")) include_once($CORE_PATH."lib/prehkeys.php");
+if (!function_exists("addItem")) include_once($CORE_PATH."lib/additem.php");
+if (!function_exists("nullwrap")) include_once($CORE_PATH."lib/lib.php");
+if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
 
 class Void extends Parser {
 	function check($str){
@@ -40,30 +40,30 @@ class Void extends Parser {
 	}
 
 	function parse($str){
-		global $IS4C_LOCAL;
+		global $CORE_LOCAL;
 		$ret = $this->default_json();
 		if (strlen($str) > 2)
 			$ret['output'] = $this->voidupc(substr($str,2));
-		elseif ($IS4C_LOCAL->get("currentid") == 0) 
+		elseif ($CORE_LOCAL->get("currentid") == 0) 
 			$ret['output'] = boxMsg("No Item on Order");
 		else {
-			$str = $IS4C_LOCAL->get("currentid");
+			$str = $CORE_LOCAL->get("currentid");
 
 			checkstatus($str);
 
-			if ($IS4C_LOCAL->get("voided") == 2) {
+			if ($CORE_LOCAL->get("voided") == 2) {
 				$ret['output'] = $this->voiditem($str -1);
 			}
-			elseif ($IS4C_LOCAL->get("voided") == 3 || $IS4C_LOCAL->get("voided") == 6 || $IS4C_LOCAL->get("voided") == 8) 
+			elseif ($CORE_LOCAL->get("voided") == 3 || $CORE_LOCAL->get("voided") == 6 || $CORE_LOCAL->get("voided") == 8) 
 				$ret['output'] = boxMsg("Cannot void this entry");
-			elseif ($IS4C_LOCAL->get("voided") == 4 || $IS4C_LOCAL->get("voided") == 5) 
+			elseif ($CORE_LOCAL->get("voided") == 4 || $CORE_LOCAL->get("voided") == 5) 
 				percentDiscount(0);
-			elseif ($IS4C_LOCAL->get("voided") == 10) {
+			elseif ($CORE_LOCAL->get("voided") == 10) {
 				reverseTaxExempt();
 			}
-			elseif ($IS4C_LOCAL->get("transstatus") == "V") {
+			elseif ($CORE_LOCAL->get("transstatus") == "V") {
 				$ret['output'] = boxMsg("Item already voided");
-				$IS4C_LOCAL->set("transstatus","");
+				$CORE_LOCAL->set("transstatus","");
 			}
 			else 
 				$ret['output'] = $this->voiditem($str);
@@ -80,7 +80,7 @@ class Void extends Parser {
 	}
 
 	function voiditem($item_num) {
-		global $IS4C_LOCAL;
+		global $CORE_LOCAL;
 
 		if ($item_num) {
 			$query = "select upc, quantity, ItemQtty, foodstamp, total, voided, charflag from localtemptrans where "
@@ -99,7 +99,7 @@ class Void extends Parser {
 					return boxMsg("Item already voided");
 				elseif (!$row["upc"] || strlen($row["upc"]) < 1 || $row['charflag'] == 'SO') 
 					return $this->voidid($item_num);
-				elseif ($IS4C_LOCAL->get("discounttype") == 3) 
+				elseif ($CORE_LOCAL->get("discounttype") == 3) 
 					return $this->voidupc($row["quantity"]."*".$row["upc"],$item_num);
 				else  
 					return $this->voidupc($row["ItemQtty"]."*".$row["upc"],$item_num);
@@ -109,7 +109,7 @@ class Void extends Parser {
 	}	
 
 	function voidid($item_num) {
-		global $IS4C_LOCAL;
+		global $CORE_LOCAL;
 
 		$query = "select upc,VolSpecial,quantity,trans_subtype,unitPrice,
 			discount,memDiscount,discountable,scale,numflag,charflag,
@@ -128,7 +128,7 @@ class Void extends Parser {
 		if ($row["trans_subtype"] == "FS") 
 			$total = -1 * $row["unitPrice"];
 
-		$CardNo = $IS4C_LOCAL->get("memberID");
+		$CardNo = $CORE_LOCAL->get("memberID");
 		$discount = -1 * $row["discount"];
 		$memDiscount = -1 * $row["memDiscount"];
 		$discountable = $row["discountable"];
@@ -145,10 +145,10 @@ class Void extends Parser {
 
 		$discounttype = nullwrap($row["discounttype"]);
 
-		if ($IS4C_LOCAL->get("tenderTotal") < 0 && $foodstamp = 1 && (-1 * $total) > $IS4C_LOCAL->get("fsEligible")) {
+		if ($CORE_LOCAL->get("tenderTotal") < 0 && $foodstamp = 1 && (-1 * $total) > $CORE_LOCAL->get("fsEligible")) {
 			return boxMsg("Item already paid for");
 		}
-		elseif ($IS4C_LOCAL->get("tenderTotal") < 0 && (-1 * $total) > $IS4C_LOCAL->get("runningTotal") - $IS4C_LOCAL->get("taxTotal")) {
+		elseif ($CORE_LOCAL->get("tenderTotal") < 0 && (-1 * $total) > $CORE_LOCAL->get("runningTotal") - $CORE_LOCAL->get("taxTotal")) {
 			return boxMsg("Item already paid for");
 		}
 
@@ -156,7 +156,7 @@ class Void extends Parser {
 		$db->query($update);
 		addItem($upc, $row["description"], $row["trans_type"], $row["trans_subtype"], "V", $row["department"], $quantity, $unitPrice, $total, $row["regPrice"], $scale, $row["tax"], $foodstamp, $discount, $memDiscount, $discountable, $discounttype, $quantity, $row["volDiscType"], $row["volume"], $VolSpecial, $mm, $matched, 1, $cost, $numflag, $charflag);
 		if ($row["trans_type"] != "T") {
-			$IS4C_LOCAL->set("ttlflag",0);
+			$CORE_LOCAL->set("ttlflag",0);
 		}
 		else ttl();
 
@@ -164,7 +164,7 @@ class Void extends Parser {
 	}
 
 	function voidupc($upc,$item_num=-1,$silent=False) {
-		global $IS4C_LOCAL;
+		global $CORE_LOCAL;
 
 		$lastpageflag = 1;
 		$deliflag = 0;
@@ -188,7 +188,7 @@ class Void extends Parser {
 		elseif (!is_numeric($upc) && !strpos($upc, "DP")) $upc = "stop";
 		else {
 			$quantity = 1;
-			$weight = $IS4C_LOCAL->get("weight");
+			$weight = $CORE_LOCAL->get("weight");
 		}
 
 		$scaleprice = 0;
@@ -200,7 +200,7 @@ class Void extends Parser {
 				$deliflag = 1;
 			}
 			elseif (substr($upc, 0, 3) == "002" && substr($upc, -5) == "00000") {
-				$scaleprice = $IS4C_LOCAL->get("scaleprice");
+				$scaleprice = $CORE_LOCAL->get("scaleprice");
 				$deliflag = 1;
 			}
 		}
@@ -212,11 +212,11 @@ class Void extends Parser {
 		$query = "select sum(ItemQtty) as voidable, sum(quantity) as vquantity, max(scale) as scale, "
 			."max(volDiscType) as volDiscType from localtemptrans where upc = '".$upc
 			."' and unitPrice = ".$scaleprice." and discounttype <> 3 group by upc";
-		if ($IS4C_LOCAL->get("discounttype") == 3) {
+		if ($CORE_LOCAL->get("discounttype") == 3) {
 			$query = "select sum(quantity) as voidable, max(scale), as scale, "
 				."max(volDiscType) as volDiscType from localtemptrans where "
 				."upc = '".$upc."' and discounttype = 3 and unitPrice = "
-				.$IS4C_LOCAL->get("caseprice")." group by upc";
+				.$CORE_LOCAL->get("caseprice")." group by upc";
 		}
 		elseif ($deliflag == 0) {
 			$query = "select sum(ItemQtty) as voidable, sum(quantity) as vquantity, "
@@ -224,11 +224,11 @@ class Void extends Parser {
 				."localtemptrans where upc = '".$upc
 				."' and discounttype <> 3 group by upc, discounttype";
 		}
-		elseif ($IS4C_LOCAL->get("ddNotify") == 1) {
+		elseif ($CORE_LOCAL->get("ddNotify") == 1) {
 			$query = "select sum(ItemQtty) as voidable, sum(quantity) as vquantity,"
 				."max(scale) as scale, max(volDiscType) as volDiscType from "
 				."localtemptrans where upc = '".$upc."' and discounttype <> 3 "
-				."and discountable = ".$IS4C_LOCAL->get("discountable")." group by upc, "
+				."and discountable = ".$CORE_LOCAL->get("discountable")." group by upc, "
 				."discounttype, discountable";
 		}
 
@@ -241,8 +241,8 @@ class Void extends Parser {
 		$row = $db->fetch_array($result);
 
 		if (($row["scale"] == 1) && $weight > 0) {
-			$quantity = $weight - $IS4C_LOCAL->get("tare");
-			$IS4C_LOCAL->set("tare",0);
+			$quantity = $weight - $CORE_LOCAL->get("tare");
+			$CORE_LOCAL->set("tare",0);
 		}
 
 		$volDiscType = $row["volDiscType"];
@@ -274,13 +274,13 @@ class Void extends Parser {
 				department,tax,VolSpecial
 				from localtemptrans where upc = '".$upc."' and unitPrice = "
 			     .$scaleprice." and trans_id=$item_num";
-		if ($IS4C_LOCAL->get("discounttype") == 3) {
+		if ($CORE_LOCAL->get("discounttype") == 3) {
 			$query_upc = "select ItemQtty,foodstamp,discounttype,mixMatch,cost,
 				numflag,charflag,unitPrice,discounttype,regPrice,discount,
 				memDiscount,discountable,description,trans_type,trans_subtype,
 				department,tax,VolSpecial
 				from localtemptrans where upc = '".$upc
-				."' and discounttype = 3 and unitPrice = ".$IS4C_LOCAL->get("caseprice")
+				."' and discounttype = 3 and unitPrice = ".$CORE_LOCAL->get("caseprice")
 			        ." and trans_id=$item_num";
 		}
 		elseif ($deliflag == 0) {
@@ -295,7 +295,7 @@ class Void extends Parser {
 		if ($item_num == -1)
 			$query_upc = str_replace(" trans_id=$item_num"," voided=0",$query_upc);
 
-		$IS4C_LOCAL->set("discounttype",9);
+		$CORE_LOCAL->set("discounttype",9);
 
 		$result = $db->query($query_upc);
 		$row = $db->fetch_array($result);
@@ -309,11 +309,11 @@ class Void extends Parser {
 		$charflag = isset($row["charflag"])?$row["charflag"]:0;
 	
 		$unitPrice = $row["unitPrice"];
-		if (($IS4C_LOCAL->get("isMember") != 1 && $row["discounttype"] == 2) || 
-		    ($IS4C_LOCAL->get("isStaff") == 0 && $row["discounttype"] == 4)) 
+		if (($CORE_LOCAL->get("isMember") != 1 && $row["discounttype"] == 2) || 
+		    ($CORE_LOCAL->get("isStaff") == 0 && $row["discounttype"] == 4)) 
 			$unitPrice = $row["regPrice"];
-		elseif ((($IS4C_LOCAL->get("isMember") == 1 && $row["discounttype"] == 2) || 
-		    ($IS4C_LOCAL->get("isStaff") != 0 && $row["discounttype"] == 4)) && 
+		elseif ((($CORE_LOCAL->get("isMember") == 1 && $row["discounttype"] == 2) || 
+		    ($CORE_LOCAL->get("isStaff") != 0 && $row["discounttype"] == 4)) && 
 		    ($row["unitPrice"] == $row["regPrice"])) {
 			$db_p = pDataConnect();
 			$query_p = "select special_price from products where upc = '".$upc."'";
@@ -328,8 +328,8 @@ class Void extends Parser {
 		$memDiscount = -1 * $row["memDiscount"];
 		$discountable = $row["discountable"];
 
-		if ($IS4C_LOCAL->get("ddNotify") == 1) 
-			$discountable = $IS4C_LOCAL->get("discountable");
+		if ($CORE_LOCAL->get("ddNotify") == 1) 
+			$discountable = $CORE_LOCAL->get("discountable");
 
 		//----------------------mix match---------------------
 		if ($volDiscType >= 1 && $volDiscType != 3) {
@@ -380,26 +380,26 @@ class Void extends Parser {
 		$quantity = -1 * $quantity;
 		$total = $quantity * $unitPrice;
 	
-		$CardNo = $IS4C_LOCAL->get("memberID");
+		$CardNo = $CORE_LOCAL->get("memberID");
 		
 		$discounttype = nullwrap($row["discounttype"]);
 		if ($discounttype == 3) 
 			$quantity = -1 * $ItemQtty;
 
-		if ($IS4C_LOCAL->get("tenderTotal") < 0 && $foodstamp == 1 && 
-		   (-1 * $total) > $IS4C_LOCAL->get("fsEligible")) {
+		if ($CORE_LOCAL->get("tenderTotal") < 0 && $foodstamp == 1 && 
+		   (-1 * $total) > $CORE_LOCAL->get("fsEligible")) {
 			return boxMsg("Item already paid for");
 		}
-		elseif ($IS4C_LOCAL->get("tenderTotal") < 0 && (-1 * $total) > 
-			$IS4C_LOCAL->get("runningTotal") - $IS4C_LOCAL->get("taxTotal")) {
+		elseif ($CORE_LOCAL->get("tenderTotal") < 0 && (-1 * $total) > 
+			$CORE_LOCAL->get("runningTotal") - $CORE_LOCAL->get("taxTotal")) {
 			return boxMsg("Item already paid for");
 		}
 		elseif ($quantity != 0) {
 			addItem($upc, $row["description"], $row["trans_type"], $row["trans_subtype"], "V", $row["department"], $quantity, $unitPrice, $total, $row["regPrice"], $scale, $row["tax"], $foodstamp, $discount, $memDiscount, $discountable, $discounttype, $quantity, $volDiscType, $volume, $VolSpecial, $mixMatch, 0, 1, $cost, $numflag, $charflag);
 
 			if ($row["trans_type"] != "T") {
-				$IS4C_LOCAL->set("ttlflag",0);
-				$IS4C_LOCAL->set("discounttype",0);
+				$CORE_LOCAL->set("ttlflag",0);
+				$CORE_LOCAL->set("discounttype",0);
 			}
 
 			$db = pDataConnect();

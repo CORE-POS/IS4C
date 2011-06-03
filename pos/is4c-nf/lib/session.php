@@ -3,32 +3,32 @@
 
     Copyright 2001, 2004 Wedge Community Co-op
 
-    This file is part of IS4C.
+    This file is part of IT CORE.
 
-    IS4C is free software; you can redistribute it and/or modify
+    IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    IS4C is distributed in the hope that it will be useful,
+    IT CORE is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    in the file license.txt along with IS4C; if not, write to the Free Software
+    in the file license.txt along with IT CORE; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
 
-$IS4C_PATH = isset($IS4C_PATH)?$IS4C_PATH:"";
-if (empty($IS4C_PATH)){ while(!file_exists($IS4C_PATH."is4c.css")) $IS4C_PATH .= "../"; }
+$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
+if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
 
-include_once($IS4C_PATH."ini.php");
-if (!function_exists("pDataConnect")) include($IS4C_PATH."lib/connect.php");
-if (!function_exists("loadglobalvalues")) include($IS4C_PATH."lib/loadconfig.php");
-if (!function_exists("paycard_reset")) include($IS4C_PATH."lib/paycardLib.php");
-if (!isset($IS4C_LOCAL)) include($IS4C_PATH."lib/LocalStorage/conf.php");
+include_once($CORE_PATH."ini.php");
+if (!function_exists("pDataConnect")) include($CORE_PATH."lib/connect.php");
+if (!function_exists("loadglobalvalues")) include($CORE_PATH."lib/loadconfig.php");
+if (!function_exists("paycard_reset")) include($CORE_PATH."lib/paycardLib.php");
+if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
 
 // initiate_session();
 
@@ -47,117 +47,117 @@ function initiate_session() {
 }
 
 function system_init() {
-	global $IS4C_LOCAL;
+	global $CORE_LOCAL;
 
-	//$IS4C_LOCAL->set("datetimestamp",strftime("%Y-%m-%m/%d/%y %T",time()));
-	$IS4C_LOCAL->set("beep","noBeep");
-	$IS4C_LOCAL->set("scan","scan");
-	$IS4C_LOCAL->set("standalone",0);
-	$IS4C_LOCAL->set("SNR",0);
-	$IS4C_LOCAL->set("screset","staycool");
-	$IS4C_LOCAL->set("currentid",1);
-	$IS4C_LOCAL->set("currenttopid",1);
-	$IS4C_LOCAL->set("training",0);
-	$IS4C_LOCAL->set("adminRequest","");
-	$IS4C_LOCAL->set("weight",0);
-	$IS4C_LOCAL->set("scale",1);
-	$IS4C_LOCAL->set("msg",0);
-	$IS4C_LOCAL->set("plainmsg","");
-	//$IS4C_LOCAL->set("alert","");
-	$IS4C_LOCAL->set("away",0);
-	$IS4C_LOCAL->set("waitforScale",0);
-        $IS4C_LOCAL->set("ccRemoteServerUp",1);
-	$IS4C_LOCAL->set("ccTermOut","idle");
-	$IS4C_LOCAL->set("search_or_list",0);
+	//$CORE_LOCAL->set("datetimestamp",strftime("%Y-%m-%m/%d/%y %T",time()));
+	$CORE_LOCAL->set("beep","noBeep");
+	$CORE_LOCAL->set("scan","scan");
+	$CORE_LOCAL->set("standalone",0);
+	$CORE_LOCAL->set("SNR",0);
+	$CORE_LOCAL->set("screset","staycool");
+	$CORE_LOCAL->set("currentid",1);
+	$CORE_LOCAL->set("currenttopid",1);
+	$CORE_LOCAL->set("training",0);
+	$CORE_LOCAL->set("adminRequest","");
+	$CORE_LOCAL->set("weight",0);
+	$CORE_LOCAL->set("scale",1);
+	$CORE_LOCAL->set("msg",0);
+	$CORE_LOCAL->set("plainmsg","");
+	//$CORE_LOCAL->set("alert","");
+	$CORE_LOCAL->set("away",0);
+	$CORE_LOCAL->set("waitforScale",0);
+        $CORE_LOCAL->set("ccRemoteServerUp",1);
+	$CORE_LOCAL->set("ccTermOut","idle");
+	$CORE_LOCAL->set("search_or_list",0);
 }
 
 function transReset() {
-	global $IS4C_LOCAL;
+	global $CORE_LOCAL;
 
-	$IS4C_LOCAL->set("End",0);
-	$IS4C_LOCAL->set("memberID","0");
-	$IS4C_LOCAL->set("TaxExempt",0);
-	$IS4C_LOCAL->set("fstaxable",0);
-	$IS4C_LOCAL->set("yousaved",0);
-	$IS4C_LOCAL->set("couldhavesaved",0);
-	//$IS4C_LOCAL->set("void",0);
-	$IS4C_LOCAL->set("voided",0);
-	$IS4C_LOCAL->set("tare",0);
-	$IS4C_LOCAL->set("tenderamt",0);
-	$IS4C_LOCAL->set("change",0);
-	$IS4C_LOCAL->set("transstatus","");
-	$IS4C_LOCAL->set("ccTender",0);
-	$IS4C_LOCAL->set("ccAmtEntered",0);
-	$IS4C_LOCAL->set("ccAmt",0);
-	$IS4C_LOCAL->set("TenderType","XX");				
-	$IS4C_LOCAL->set("ChgName","Charge Account");			
-	$IS4C_LOCAL->set("cashOverAmt",0);				
-	$IS4C_LOCAL->set("chargetender",0);
-	$IS4C_LOCAL->set("mirequested",0);
-	$IS4C_LOCAL->set("toggletax",0);
-	$IS4C_LOCAL->set("togglefoodstamp",0);
-	$IS4C_LOCAL->set("toggleDiscountable",0);
-	//$IS4C_LOCAL->set("ttlrequested",0);
-	$IS4C_LOCAL->set("discounttype",0);
-	$IS4C_LOCAL->set("discountable",0);
-	$IS4C_LOCAL->set("refund",0);
-	//$IS4C_LOCAL->set("istaxable",0);
-	$IS4C_LOCAL->set("mfcoupon",0);
-	$IS4C_LOCAL->set("casediscount",0);
-	//$IS4C_LOCAL->set("ondiscount",0);
-	$IS4C_LOCAL->set("multiple",0);
-	$IS4C_LOCAL->set("quantity",0);
-	$IS4C_LOCAL->set("nd",0); 			// negates default 10% discount at the charge book
-	$IS4C_LOCAL->set("sc",0); 			// marks transaction as a staff charge at the charge book
-	$IS4C_LOCAL->set("idSearch","");
-	//$IS4C_LOCAL->set("repeat",0);
-	$IS4C_LOCAL->set("strEntered","");
-	$IS4C_LOCAL->set("strRemembered","");
-	$IS4C_LOCAL->set("msgrepeat",0);		// when set to 1, pos2.php takes the previous strEntered
-	$IS4C_LOCAL->set("boxMsg","");		
-	$IS4C_LOCAL->set("itemPD",0); 		// Item percent discount for the charge book
-	$IS4C_LOCAL->set("specials",0);
-	$IS4C_LOCAL->set("ccSwipe","");
-	$IS4C_LOCAL->set("ccName","");
-	$IS4C_LOCAL->set("ccType","");
-	$IS4C_LOCAL->set("troutd","");
-	$IS4C_LOCAL->set("ouxWait",0);
+	$CORE_LOCAL->set("End",0);
+	$CORE_LOCAL->set("memberID","0");
+	$CORE_LOCAL->set("TaxExempt",0);
+	$CORE_LOCAL->set("fstaxable",0);
+	$CORE_LOCAL->set("yousaved",0);
+	$CORE_LOCAL->set("couldhavesaved",0);
+	//$CORE_LOCAL->set("void",0);
+	$CORE_LOCAL->set("voided",0);
+	$CORE_LOCAL->set("tare",0);
+	$CORE_LOCAL->set("tenderamt",0);
+	$CORE_LOCAL->set("change",0);
+	$CORE_LOCAL->set("transstatus","");
+	$CORE_LOCAL->set("ccTender",0);
+	$CORE_LOCAL->set("ccAmtEntered",0);
+	$CORE_LOCAL->set("ccAmt",0);
+	$CORE_LOCAL->set("TenderType","XX");				
+	$CORE_LOCAL->set("ChgName","Charge Account");			
+	$CORE_LOCAL->set("cashOverAmt",0);				
+	$CORE_LOCAL->set("chargetender",0);
+	$CORE_LOCAL->set("mirequested",0);
+	$CORE_LOCAL->set("toggletax",0);
+	$CORE_LOCAL->set("togglefoodstamp",0);
+	$CORE_LOCAL->set("toggleDiscountable",0);
+	//$CORE_LOCAL->set("ttlrequested",0);
+	$CORE_LOCAL->set("discounttype",0);
+	$CORE_LOCAL->set("discountable",0);
+	$CORE_LOCAL->set("refund",0);
+	//$CORE_LOCAL->set("istaxable",0);
+	$CORE_LOCAL->set("mfcoupon",0);
+	$CORE_LOCAL->set("casediscount",0);
+	//$CORE_LOCAL->set("ondiscount",0);
+	$CORE_LOCAL->set("multiple",0);
+	$CORE_LOCAL->set("quantity",0);
+	$CORE_LOCAL->set("nd",0); 			// negates default 10% discount at the charge book
+	$CORE_LOCAL->set("sc",0); 			// marks transaction as a staff charge at the charge book
+	$CORE_LOCAL->set("idSearch","");
+	//$CORE_LOCAL->set("repeat",0);
+	$CORE_LOCAL->set("strEntered","");
+	$CORE_LOCAL->set("strRemembered","");
+	$CORE_LOCAL->set("msgrepeat",0);		// when set to 1, pos2.php takes the previous strEntered
+	$CORE_LOCAL->set("boxMsg","");		
+	$CORE_LOCAL->set("itemPD",0); 		// Item percent discount for the charge book
+	$CORE_LOCAL->set("specials",0);
+	$CORE_LOCAL->set("ccSwipe","");
+	$CORE_LOCAL->set("ccName","");
+	$CORE_LOCAL->set("ccType","");
+	$CORE_LOCAL->set("troutd","");
+	$CORE_LOCAL->set("ouxWait",0);
 	
-	$IS4C_LOCAL->set("warned",0);
-	$IS4C_LOCAL->set("warnBoxType","");
-	$IS4C_LOCAL->set("requestType","");
+	$CORE_LOCAL->set("warned",0);
+	$CORE_LOCAL->set("warnBoxType","");
+	$CORE_LOCAL->set("requestType","");
 }
 
 function printReset() {
-	global $IS4C_LOCAL;
+	global $CORE_LOCAL;
 
-	//$IS4C_LOCAL->set("franking",0);
-	//$IS4C_LOCAL->set("noreceipt",0);
-	$IS4C_LOCAL->set("receiptToggle",1);
-	$IS4C_LOCAL->set("receiptType","");
-	$IS4C_LOCAL->set("endorseType","");
-	//$IS4C_LOCAL->set("kick",1);	
+	//$CORE_LOCAL->set("franking",0);
+	//$CORE_LOCAL->set("noreceipt",0);
+	$CORE_LOCAL->set("receiptToggle",1);
+	$CORE_LOCAL->set("receiptType","");
+	$CORE_LOCAL->set("endorseType","");
+	//$CORE_LOCAL->set("kick",1);	
 
-	$IS4C_LOCAL->set("autoReprint",0);
-	$IS4C_LOCAL->set("reprintNameLookup",0);
+	$CORE_LOCAL->set("autoReprint",0);
+	$CORE_LOCAL->set("reprintNameLookup",0);
 }
 
 function memberReset() {
-	global $IS4C_LOCAL;
+	global $CORE_LOCAL;
 
-	$IS4C_LOCAL->set("memberID","0");
-	$IS4C_LOCAL->set("isMember",0);
-	$IS4C_LOCAL->set("isStaff",0);
-	$IS4C_LOCAL->set("SSI",0);
-	//$IS4C_LOCAL->set("discountcap",0);
-	$IS4C_LOCAL->set("memMsg","");
-	$IS4C_LOCAL->set("memType",0);
-	$IS4C_LOCAL->set("balance",0);
-	$IS4C_LOCAL->set("availBal",0);
-	$IS4C_LOCAL->set("percentDiscount",0);
+	$CORE_LOCAL->set("memberID","0");
+	$CORE_LOCAL->set("isMember",0);
+	$CORE_LOCAL->set("isStaff",0);
+	$CORE_LOCAL->set("SSI",0);
+	//$CORE_LOCAL->set("discountcap",0);
+	$CORE_LOCAL->set("memMsg","");
+	$CORE_LOCAL->set("memType",0);
+	$CORE_LOCAL->set("balance",0);
+	$CORE_LOCAL->set("availBal",0);
+	$CORE_LOCAL->set("percentDiscount",0);
 
-	$IS4C_LOCAL->set("ar_paid",0);
-	$IS4C_LOCAL->set("inactMem",0);
+	$CORE_LOCAL->set("ar_paid",0);
+	$CORE_LOCAL->set("inactMem",0);
 }
 
 function blueLine($row) {
@@ -172,7 +172,7 @@ function blueLine($row) {
 }
 
 function loaddata() {
-	global $IS4C_LOCAL;
+	global $CORE_LOCAL;
 	
 	$query_local = "select card_no from localtemptrans";
 	
@@ -184,38 +184,38 @@ function loaddata() {
 		$row_local = $db_local->fetch_array($result_local);
 		
 		if ($row_local["card_no"] && strlen($row_local["card_no"]) > 0) {
-			$IS4C_LOCAL->set("memberID",$row_local["card_no"]);
+			$CORE_LOCAL->set("memberID",$row_local["card_no"]);
 		}
 	}
 	// moved, no need to stay open - andy 4/12/07
 	$db_local->close();
 
-	if ($IS4C_LOCAL->get("memberID") == "0") {
+	if ($CORE_LOCAL->get("memberID") == "0") {
 		// not used - andy 4/12/07
-		$IS4C_LOCAL->set("percentDiscount",0);
-		$IS4C_LOCAL->set("memType",0);
+		$CORE_LOCAL->set("percentDiscount",0);
+		$CORE_LOCAL->set("memType",0);
 	}
 	else {
 		$query_member = "select CardNo,memType,Type,Discount,staff,SSI,
 				MemDiscountLimit,blueLine,FirstName,LastName
-				from custdata where CardNo = '".$IS4C_LOCAL->get("memberID")."'";
+				from custdata where CardNo = '".$CORE_LOCAL->get("memberID")."'";
 		$db_product = pDataConnect();
 		$result = $db_product->query($query_member);
 		if ($db_product->num_rows($result) > 0) {
 			$row = $db_product->fetch_array($result);
-			$IS4C_LOCAL->set("memMsg",blueLine($row));
-			$IS4C_LOCAL->set("memType",$row["memType"]);
-			$IS4C_LOCAL->set("percentDiscount",$row["Discount"]);
+			$CORE_LOCAL->set("memMsg",blueLine($row));
+			$CORE_LOCAL->set("memType",$row["memType"]);
+			$CORE_LOCAL->set("percentDiscount",$row["Discount"]);
 
-			if ($row["Type"] == "PC") $IS4C_LOCAL->set("isMember",1);
-			else $IS4C_LOCAL->set("isMember",0);
+			if ($row["Type"] == "PC") $CORE_LOCAL->set("isMember",1);
+			else $CORE_LOCAL->set("isMember",0);
 
-			$IS4C_LOCAL->set("isStaff",$row["staff"]);
-			$IS4C_LOCAL->set("SSI",$row["SSI"]);
-			$IS4C_LOCAL->set("discountcap",$row["MemDiscountLimit"]);
+			$CORE_LOCAL->set("isStaff",$row["staff"]);
+			$CORE_LOCAL->set("SSI",$row["SSI"]);
+			$CORE_LOCAL->set("discountcap",$row["MemDiscountLimit"]);
 
-			if ($IS4C_LOCAL->get("SSI") == 1) 
-				$IS4C_LOCAL->set("memMsg",$IS4C_LOCAL->get("memMsg")." #");
+			if ($CORE_LOCAL->get("SSI") == 1) 
+				$CORE_LOCAL->set("memMsg",$CORE_LOCAL->get("memMsg")." #");
 		}
 		// moved for proper scope - andy 4/12/07
 		$db_product->close();
@@ -226,23 +226,23 @@ function loaddata() {
  * use to be in ini.php and on the remote DB, doesn't
  * belong on either */
 function customreceipt(){
-	global $IS4C_LOCAL;
+	global $CORE_LOCAL;
 
 	$db = pDataConnect(); 
 	$headerQ = "select text from customReceipt where type='header' order by seq";
 	$headerR = $db->query($headerQ);
-	$IS4C_LOCAL->set("receiptHeaderCount",$db->num_rows($headerR));
-	for ($i = 1; $i <= $IS4C_LOCAL->get("receiptHeaderCount"); $i++){
+	$CORE_LOCAL->set("receiptHeaderCount",$db->num_rows($headerR));
+	for ($i = 1; $i <= $CORE_LOCAL->get("receiptHeaderCount"); $i++){
 		$headerW = $db->fetch_array($headerR);
-		$IS4C_LOCAL->set("receiptHeader$i",$headerW[0]);
+		$CORE_LOCAL->set("receiptHeader$i",$headerW[0]);
 	}
 	$footerQ = "select text from customReceipt where type='footer' order by seq";
 	$footerR = $db->query($footerQ);
-	$IS4C_LOCAL->set("receiptFooterCount",$db->num_rows($footerR));
+	$CORE_LOCAL->set("receiptFooterCount",$db->num_rows($footerR));
 
-	for ($i = 1; $i <= $IS4C_LOCAL->get("receiptFooterCount"); $i++){
+	for ($i = 1; $i <= $CORE_LOCAL->get("receiptFooterCount"); $i++){
 		$footerW = $db->fetch_array($footerR);
-		$IS4C_LOCAL->set("receiptFooter$i",$footerW[0]);
+		$CORE_LOCAL->set("receiptFooter$i",$footerW[0]);
 	}
 	
 	$db->db_close();

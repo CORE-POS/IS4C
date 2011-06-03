@@ -3,33 +3,33 @@
 
     Copyright 2007 Whole Foods Co-op
 
-    This file is part of IS4C.
+    This file is part of IT CORE.
 
-    IS4C is free software; you can redistribute it and/or modify
+    IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    IS4C is distributed in the hope that it will be useful,
+    IT CORE is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    in the file license.txt along with IS4C; if not, write to the Free Software
+    in the file license.txt along with IT CORE; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
 
-$IS4C_PATH = isset($IS4C_PATH)?$IS4C_PATH:"";
-if (empty($IS4C_PATH)){ while(!file_exists($IS4C_PATH."is4c.css")) $IS4C_PATH .= "../"; }
+$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
+if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
 
-if (!class_exists("Parser")) include_once($IS4C_PATH."parser-class-lib/Parser.php");
-if (!function_exists("boxMsg")) include_once($IS4C_PATH."lib/drawscreen.php");
-if (!function_exists("tDataConnect")) include_once($IS4C_PATH."lib/connect.php");
-if (!function_exists("drawerKick")) include_once($IS4C_PATH."lib/printLib.php");
-if (!function_exists("setglobalvalue")) include_once($IS4C_PATH."lib/loadconfig.php");
-if (!isset($IS4C_LOCAL)) include($IS4C_PATH."lib/LocalStorage/conf.php");
+if (!class_exists("Parser")) include_once($CORE_PATH."parser-class-lib/Parser.php");
+if (!function_exists("boxMsg")) include_once($CORE_PATH."lib/drawscreen.php");
+if (!function_exists("tDataConnect")) include_once($CORE_PATH."lib/connect.php");
+if (!function_exists("drawerKick")) include_once($CORE_PATH."lib/printLib.php");
+if (!function_exists("setglobalvalue")) include_once($CORE_PATH."lib/loadconfig.php");
+if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
 
 /* 
  * This class is for any input designed to set processing
@@ -43,7 +43,7 @@ class Steering extends Parser {
 	var $ret;
 
 	function check($str){
-		global $IS4C_LOCAL,$IS4C_PATH;
+		global $CORE_LOCAL,$CORE_PATH;
 		
 		$this->dest_input_page = "";
 		$this->dest_main_page = "";
@@ -53,21 +53,21 @@ class Steering extends Parser {
 		switch($str){
 			
 		case 'CAB':
-			if ($IS4C_LOCAL->get("LastID") != "0")
+			if ($CORE_LOCAL->get("LastID") != "0")
 				$this->ret['output'] = boxMsg("transaction in progress");
 			else {
-				$this->ret['main_frame'] = $IS4C_PATH."gui-modules/cablist.php";
+				$this->ret['main_frame'] = $CORE_PATH."gui-modules/cablist.php";
 			}
 			return True;
 		case "PV":
-			$IS4C_LOCAL->set("pvsearch","");
-			$IS4C_LOCAL->set("away",1);
-			$this->ret['main_frame'] = $IS4C_PATH."gui-modules/productlist.php";
+			$CORE_LOCAL->set("pvsearch","");
+			$CORE_LOCAL->set("away",1);
+			$this->ret['main_frame'] = $CORE_PATH."gui-modules/productlist.php";
 			return True;
 		/*
 		case "PV2":
-			$IS4C_LOCAL->set("pvsearch","");
-			$IS4C_LOCAL->set("away",1);
+			$CORE_LOCAL->set("pvsearch","");
+			$CORE_LOCAL->set("away",1);
 			$this->ret['main_frame'] = "/gui-modules/smartItemList.php";
 			return True;
 		*/
@@ -77,35 +77,35 @@ class Steering extends Parser {
 			return True;
 		 */
 		case "UNDO":
-			if ($IS4C_LOCAL->get("LastID") != "0")
+			if ($CORE_LOCAL->get("LastID") != "0")
 				$this->ret['output'] = boxMsg("transaction in progress");
 			else {
-				$IS4C_LOCAL->set("adminRequest",$IS4C_PATH."gui-modules/undo.php");
-				$IS4C_LOCAL->set("adminRequestLevel","30");
-				$IS4C_LOCAL->set("adminLoginMsg","Login to void transactions");
-				$IS4C_LOCAL->set("away",1);
-				$this->ret['main_frame'] = $IS4C_PATH."gui-modules/adminlogin.php";
+				$CORE_LOCAL->set("adminRequest",$CORE_PATH."gui-modules/undo.php");
+				$CORE_LOCAL->set("adminRequestLevel","30");
+				$CORE_LOCAL->set("adminLoginMsg","Login to void transactions");
+				$CORE_LOCAL->set("away",1);
+				$this->ret['main_frame'] = $CORE_PATH."gui-modules/adminlogin.php";
 			}
 			return True;
 		case "DDD":
-			$IS4C_LOCAL->set("adminRequest",$IS4C_PATH."ajax-callbacks/ddd.php");
-			$IS4C_LOCAL->set("adminLoginMsg","DDD these items?");
-			$IS4C_LOCAL->set("adminRequestLevel","10");
-			$IS4C_LOCAL->set("away",1);
-			$this->ret['main_frame'] = $IS4C_PATH."gui-modules/adminlogin.php";
+			$CORE_LOCAL->set("adminRequest",$CORE_PATH."ajax-callbacks/ddd.php");
+			$CORE_LOCAL->set("adminLoginMsg","DDD these items?");
+			$CORE_LOCAL->set("adminRequestLevel","10");
+			$CORE_LOCAL->set("away",1);
+			$this->ret['main_frame'] = $CORE_PATH."gui-modules/adminlogin.php";
 			return True;
 		case 'MG':
-			$IS4C_LOCAL->set("away",1);
-			$this->ret['main_frame'] = $IS4C_PATH."gui-modules/adminlist.php";
+			$CORE_LOCAL->set("away",1);
+			$this->ret['main_frame'] = $CORE_PATH."gui-modules/adminlist.php";
 			return True;
 		case 'RP':
-			if ($IS4C_LOCAL->get("LastID") != "0")
+			if ($CORE_LOCAL->get("LastID") != "0")
 				$this->ret['output'] = boxMsg("transaction in progress");
 			else {
 				$query = "select register_no, emp_no, trans_no, "
 					."sum((case when trans_type = 'T' then -1 * total else 0 end)) as total "
-					."from localtranstoday where register_no = ".$IS4C_LOCAL->get("laneno")
-					." and emp_no = ".$IS4C_LOCAL->get("CashierNo")
+					."from localtranstoday where register_no = ".$CORE_LOCAL->get("laneno")
+					." and emp_no = ".$CORE_LOCAL->get("CashierNo")
 					." group by register_no, emp_no, trans_no order by 1000 - trans_no";
 				$db = tDataConnect();
 				$result = $db->query($query);
@@ -115,57 +115,57 @@ class Steering extends Parser {
 				if ($num_rows == 0) 
 					$this->ret['output'] = boxMsg("no receipt found");
 				else {
-					$this->ret['main_frame'] = $IS4C_PATH."gui-modules/rplist.php";
+					$this->ret['main_frame'] = $CORE_PATH."gui-modules/rplist.php";
 				}
 			}				
 			return True;
 		case 'ID':
-			$IS4C_LOCAL->set("away",1);
-			$IS4C_LOCAL->set("search_or_list",1);
-			$this->ret['main_frame'] = $IS4C_PATH."gui-modules/memlist.php";
+			$CORE_LOCAL->set("away",1);
+			$CORE_LOCAL->set("search_or_list",1);
+			$this->ret['main_frame'] = $CORE_PATH."gui-modules/memlist.php";
 			return True;
 		case 'SO':
-			if ($IS4C_LOCAL->get("LastID") != 0) 
+			if ($CORE_LOCAL->get("LastID") != 0) 
 				$this->ret['output'] = boxMsg("Transaction in Progress");
 			else {
 				setglobalvalue("LoggedIn", 0);
-				$IS4C_LOCAL->set("LoggedIn",0);
+				$CORE_LOCAL->set("LoggedIn",0);
 				drawerKick();
-				$IS4C_LOCAL->set("training",0);
-				$IS4C_LOCAL->set("gui-scale","no");
-				$IS4C_LOCAL->set("away",1);
-				$this->ret['main_frame'] = $IS4C_PATH."gui-modules/login2.php";
+				$CORE_LOCAL->set("training",0);
+				$CORE_LOCAL->set("gui-scale","no");
+				$CORE_LOCAL->set("away",1);
+				$this->ret['main_frame'] = $CORE_PATH."gui-modules/login2.php";
 			}
 			return True;
 		case 'NS':
-			if ($IS4C_LOCAL->get("LastID") != 0) 
+			if ($CORE_LOCAL->get("LastID") != 0) 
 				$this->ret['output'] = boxMsg("Transaction in Progress");
 			else {
-				$IS4C_LOCAL->set("away",1);
-				$this->ret['main_frame'] = $IS4C_PATH."gui-modules/nslogin.php";
+				$CORE_LOCAL->set("away",1);
+				$this->ret['main_frame'] = $CORE_PATH."gui-modules/nslogin.php";
 			}
 			return True;
 		case 'GD':
-			$IS4C_LOCAL->set("msgrepeat",0);
-			$this->ret['main_frame'] = $IS4C_PATH."gui-modules/giftcardlist.php";
+			$CORE_LOCAL->set("msgrepeat",0);
+			$this->ret['main_frame'] = $CORE_PATH."gui-modules/giftcardlist.php";
 			return True;
 		/*
 		case 'CCM':
-			$IS4C_LOCAL->set("msgrepeat",0);
+			$CORE_LOCAL->set("msgrepeat",0);
 			$this->ret['main_frame'] = "/gui-modules/cclist.php";
 			return True;
 		*/
 		case "CN":
-			if ($IS4C_LOCAL->get("runningTotal") == 0) {
-				$IS4C_LOCAL->set("receiptType","cancelled");
-				$IS4C_LOCAL->set("msg",2);
+			if ($CORE_LOCAL->get("runningTotal") == 0) {
+				$CORE_LOCAL->set("receiptType","cancelled");
+				$CORE_LOCAL->set("msg",2);
 				$this->ret['receipt'] = 'cancelled';
 				$this->ret['output'] = printheaderb();
 				$this->ret['output'] .= plainmsg("transaction cancelled");
 			}
 			else {
-				$IS4C_LOCAL->set("away",1);
-				$this->ret['main_frame'] = $IS4C_PATH."gui-modules/mgrlogin.php";
+				$CORE_LOCAL->set("away",1);
+				$this->ret['main_frame'] = $CORE_PATH."gui-modules/mgrlogin.php";
 			}
 			return True;
 		}

@@ -15,7 +15,7 @@
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    in the file license.txt along with IS4C; if not, write to the Free Software
+    in the file license.txt along with IT CORE; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
@@ -81,6 +81,9 @@ function handleResponse() {
         		break;
 	case 'PS_pricing':
 			alert('Pricing Updated!');
+			break;
+	case 'autoTag':
+			alert('New tags generated');
 			break;
         case 'showBatch':
         		document.getElementById('inputarea').innerHTML = array[1];
@@ -511,4 +514,8 @@ function saveLimit(batchID){
 		document.getElementById('currentLimit').innerHTML = newlimit;
 
 	phpSend('saveLimit&batchID='+batchID+'&limit='+newlimit);
+}
+
+function autoTag(bID){
+	phpSend('autoTag&batchID='+bID);
 }

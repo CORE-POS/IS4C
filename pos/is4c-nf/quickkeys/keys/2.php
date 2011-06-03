@@ -1,9 +1,9 @@
 <?php
 
-$IS4C_PATH = isset($IS4C_PATH)?$IS4C_PATH:"";
-if (empty($IS4C_PATH)){ while(!file_exists($IS4C_PATH."is4c.css")) $IS4C_PATH .= "../"; }
+$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
+if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
 
-include_once($IS4C_PATH."quickkeys/quickkey.php");
+include_once($CORE_PATH."quickkeys/quickkey.php");
 
 $my_keys = array(
 	new quickkey("Cash","CA"),

@@ -25,7 +25,7 @@ products (e.g., coupons)<br />
 <b>Special UPCs</b>:<br />
 <select multiple size=10 name=SPECIAL_UPC_MODS[]>
 <?php
-if (isset($_REQUEST['SPECIAL_UPC_MODS'])) $IS4C_LOCAL->set('SpecialUpcClasses',$_REQUEST['SPECIAL_UPC_MODS']);
+if (isset($_REQUEST['SPECIAL_UPC_MODS'])) $CORE_LOCAL->set('SpecialUpcClasses',$_REQUEST['SPECIAL_UPC_MODS']);
 
 $mods = array();
 $dh = opendir('../lib/Scanning/SpecialUPCs');
@@ -38,7 +38,7 @@ while(False !== ($f = readdir($dh))){
 
 foreach($mods as $m){
 	$selected = "";
-	foreach($IS4C_LOCAL->get("SpecialUpcClasses") as $r){
+	foreach($CORE_LOCAL->get("SpecialUpcClasses") as $r){
 		if ($r == $m){
 			$selected = "selected";
 			break;
@@ -48,7 +48,7 @@ foreach($mods as $m){
 }
 
 $saveStr = "array(";
-foreach($IS4C_LOCAL->get("SpecialUpcClasses") as $r){
+foreach($CORE_LOCAL->get("SpecialUpcClasses") as $r){
 	$saveStr .= "'".$r."',";
 }
 $saveStr = rtrim($saveStr,",").")";
@@ -60,18 +60,18 @@ Discount type modules control how sale prices
 are calculated.<br />
 <b>Number of Discounts</b>:
 <?php
-if (isset($_REQUEST['DT_COUNT']) && is_numeric($_REQUEST['DT_COUNT'])) $IS4C_LOCAL->set('DiscountTypeCount',$_REQUEST['DT_COUNT']);
-if ($IS4C_LOCAL->get("DiscountTypeCount") == "") $IS4C_LOCAL->set("DiscountTypeCount",5);
-if ($IS4C_LOCAL->get("DiscountTypeCount") <= 0) $IS4C_LOCAL->set("DiscountTypeCount",1);
+if (isset($_REQUEST['DT_COUNT']) && is_numeric($_REQUEST['DT_COUNT'])) $CORE_LOCAL->set('DiscountTypeCount',$_REQUEST['DT_COUNT']);
+if ($CORE_LOCAL->get("DiscountTypeCount") == "") $CORE_LOCAL->set("DiscountTypeCount",5);
+if ($CORE_LOCAL->get("DiscountTypeCount") <= 0) $CORE_LOCAL->set("DiscountTypeCount",1);
 printf("<input type=text size=4 name=DT_COUNT value=\"%d\" />",
-	$IS4C_LOCAL->get('DiscountTypeCount'));
-confsave('DiscountTypeCount',$IS4C_LOCAL->get('DiscountTypeCount'));
+	$CORE_LOCAL->get('DiscountTypeCount'));
+confsave('DiscountTypeCount',$CORE_LOCAL->get('DiscountTypeCount'));
 ?>
 <br /><b>Discount Module Mapping</b>:<br />
 <?php
-if (isset($_REQUEST['DT_MODS'])) $IS4C_LOCAL->set('DiscountTypeClasses',$_REQUEST['DT_MODS']);
-if (!is_array($IS4C_LOCAL->get('DiscountTypeClasses'))){
-	$IS4C_LOCAL->set('DiscountTypeClasses',
+if (isset($_REQUEST['DT_MODS'])) $CORE_LOCAL->set('DiscountTypeClasses',$_REQUEST['DT_MODS']);
+if (!is_array($CORE_LOCAL->get('DiscountTypeClasses'))){
+	$CORE_LOCAL->set('DiscountTypeClasses',
 		array(
 			'NormalPricing',
 			'EveryoneSale',
@@ -89,8 +89,8 @@ while(False !== ($f = readdir($dh))){
 		$discounts[] = rtrim($f,".php");
 	}
 }
-$dt_conf = $IS4C_LOCAL->get("DiscountTypeClasses");
-for($i=0;$i<$IS4C_LOCAL->get('DiscountTypeCount');$i++){
+$dt_conf = $CORE_LOCAL->get("DiscountTypeClasses");
+for($i=0;$i<$CORE_LOCAL->get('DiscountTypeCount');$i++){
 	echo "[$i] => ";
 	echo "<select name=DT_MODS[]>";
 	foreach($discounts as $d) {
@@ -103,9 +103,9 @@ for($i=0;$i<$IS4C_LOCAL->get('DiscountTypeCount');$i++){
 }
 $saveStr = "array(";
 $tmp_count = 0;
-foreach($IS4C_LOCAL->get("DiscountTypeClasses") as $r){
+foreach($CORE_LOCAL->get("DiscountTypeClasses") as $r){
 	$saveStr .= "'".$r."',";
-	if ($tmp_count == $IS4C_LOCAL->get("DiscountTypeCount")-1)
+	if ($tmp_count == $CORE_LOCAL->get("DiscountTypeCount")-1)
 		break;
 	$tmp_count++;
 }
@@ -118,18 +118,18 @@ There's some overlap with Discount Types, but <i>generally</i>
 price methods deal with grouped items.<br />
 <b>Number of Price Methods</b>:
 <?php
-if (isset($_REQUEST['PM_COUNT']) && is_numeric($_REQUEST['PM_COUNT'])) $IS4C_LOCAL->set('PriceMethodCount',$_REQUEST['PM_COUNT']);
-if ($IS4C_LOCAL->get("PriceMethodCount") == "") $IS4C_LOCAL->set("PriceMethodCount",3);
-if ($IS4C_LOCAL->get("PriceMethodCount") <= 0) $IS4C_LOCAL->set("PriceMethodCount",1);
+if (isset($_REQUEST['PM_COUNT']) && is_numeric($_REQUEST['PM_COUNT'])) $CORE_LOCAL->set('PriceMethodCount',$_REQUEST['PM_COUNT']);
+if ($CORE_LOCAL->get("PriceMethodCount") == "") $CORE_LOCAL->set("PriceMethodCount",3);
+if ($CORE_LOCAL->get("PriceMethodCount") <= 0) $CORE_LOCAL->set("PriceMethodCount",1);
 printf("<input type=text size=4 name=PM_COUNT value=\"%d\" />",
-	$IS4C_LOCAL->get('PriceMethodCount'));
-confsave('PriceMethodCount',$IS4C_LOCAL->get('PriceMethodCount'));
+	$CORE_LOCAL->get('PriceMethodCount'));
+confsave('PriceMethodCount',$CORE_LOCAL->get('PriceMethodCount'));
 ?>
 <br /><b>Price Method Mapping</b>:<br />
 <?php
-if (isset($_REQUEST['PM_MODS'])) $IS4C_LOCAL->set('PriceMethodClasses',$_REQUEST['PM_MODS']);
-if (!is_array($IS4C_LOCAL->get('PriceMethodClasses'))){
-	$IS4C_LOCAL->set('PriceMethodClasses',
+if (isset($_REQUEST['PM_MODS'])) $CORE_LOCAL->set('PriceMethodClasses',$_REQUEST['PM_MODS']);
+if (!is_array($CORE_LOCAL->get('PriceMethodClasses'))){
+	$CORE_LOCAL->set('PriceMethodClasses',
 		array(
 			'BasicPM',
 			'GroupPM',
@@ -145,8 +145,8 @@ while(False !== ($f = readdir($dh))){
 		$pms[] = rtrim($f,".php");
 	}
 }
-$pm_conf = $IS4C_LOCAL->get("PriceMethodClasses");
-for($i=0;$i<$IS4C_LOCAL->get('PriceMethodCount');$i++){
+$pm_conf = $CORE_LOCAL->get("PriceMethodClasses");
+for($i=0;$i<$CORE_LOCAL->get('PriceMethodCount');$i++){
 	echo "[$i] => ";
 	echo "<select name=PM_MODS[]>";
 	foreach($pms as $p) {
@@ -159,9 +159,9 @@ for($i=0;$i<$IS4C_LOCAL->get('PriceMethodCount');$i++){
 }
 $saveStr = "array(";
 $tmp_count = 0;
-foreach($IS4C_LOCAL->get("PriceMethodClasses") as $r){
+foreach($CORE_LOCAL->get("PriceMethodClasses") as $r){
 	$saveStr .= "'".$r."',";
-	if ($tmp_count == $IS4C_LOCAL->get("PriceMethodCount")-1)
+	if ($tmp_count == $CORE_LOCAL->get("PriceMethodCount")-1)
 		break;
 	$tmp_count++;
 }

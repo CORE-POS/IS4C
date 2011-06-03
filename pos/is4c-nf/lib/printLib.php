@@ -3,34 +3,34 @@
 
     Copyright 2001, 2004 Wedge Community Co-op
 
-    This file is part of IS4C.
+    This file is part of IT CORE.
 
-    IS4C is free software; you can redistribute it and/or modify
+    IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    IS4C is distributed in the hope that it will be useful,
+    IT CORE is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    in the file license.txt along with IS4C; if not, write to the Free Software
+    in the file license.txt along with IT CORE; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
 
-$IS4C_PATH = isset($IS4C_PATH)?$IS4C_PATH:"";
-if (empty($IS4C_PATH)){ while(!file_exists($IS4C_PATH."is4c.css")) $IS4C_PATH .= "../"; }
+$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
+if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
 
-if (!function_exists("truncate2")) include_once($IS4C_PATH."lib/lib.php");
-if (!function_exists("chargeOK")) include_once($IS4C_PATH."lib/prehkeys.php");
+if (!function_exists("truncate2")) include_once($CORE_PATH."lib/lib.php");
+if (!function_exists("chargeOK")) include_once($CORE_PATH."lib/prehkeys.php");
 
-if (!class_exists("ESCPOSPrintHandler")) include_once($IS4C_PATH."lib/PrintHandlers/ESCPOSPrintHandler.class.php");
-if (!class_exists("Bitmap")) include_once($IS4C_PATH."lib/Bitmap4.class.php");
+if (!class_exists("ESCPOSPrintHandler")) include_once($CORE_PATH."lib/PrintHandlers/ESCPOSPrintHandler.class.php");
+if (!class_exists("Bitmap")) include_once($CORE_PATH."lib/Bitmap4.class.php");
 
-if (!isset($IS4C_LOCAL)) include_once($IS4C_PATH."lib/LocalStorage/conf.php");
+if (!isset($CORE_LOCAL)) include_once($CORE_PATH."lib/LocalStorage/conf.php");
 
 // --------------------------------------------------------------
 function build_time($timestamp) {
@@ -44,16 +44,16 @@ function centerString($text) {
 }
 // --------------------------------------------------------------
 function writeLine($text) {
-	global $IS4C_LOCAL;
+	global $CORE_LOCAL;
 
-	if ($IS4C_LOCAL->get("print") != 0) {
+	if ($CORE_LOCAL->get("print") != 0) {
 
 		/* check fails on LTP1: in PHP4
 		   suppress open errors and check result
 		   instead 
 		*/
-		//if (is_writable($IS4C_LOCAL->get("printerPort"))){
-		$fp = @fopen($IS4C_LOCAL->get("printerPort"), "w");
+		//if (is_writable($CORE_LOCAL->get("printerPort"))){
+		$fp = @fopen($CORE_LOCAL->get("printerPort"), "w");
 		if ($fp){
 			fwrite($fp, $text);
 			fclose($fp);
@@ -96,7 +96,7 @@ function drawerKick() {
 
 // -------------------------------------------------------------
 function printReceiptHeader($dateTimeStamp, $ref) {
-	global $IS4C_LOCAL,$IS4C_PATH;
+	global $CORE_LOCAL,$CORE_PATH;
 
 //	writeLine(chr(27).chr(33).chr(5)); // Compress font	// apbw/tt old Wedge receipt printers Franking II
 
@@ -105,30 +105,30 @@ function printReceiptHeader($dateTimeStamp, $ref) {
 		/***** jqh 09/29/05 changes made for new receipt settings *****/
 		.chr(27).chr(33).chr(5);
 		$i = 2; // for headers below
-		if ($IS4C_LOCAL->get("newReceipt")==1 && $IS4C_LOCAL->get("store") != "wfc"){
-		 	$receipt.=biggerFont(centerBig($IS4C_LOCAL->get("receiptHeader1")))."\n\n";
+		if ($CORE_LOCAL->get("newReceipt")==1 && $CORE_LOCAL->get("store") != "wfc"){
+		 	$receipt.=biggerFont(centerBig($CORE_LOCAL->get("receiptHeader1")))."\n\n";
 		}
-		else if ($IS4C_LOCAL->get("newReceipt")==1 && $IS4C_LOCAL->get("store") == "wfc"){
-			$img = RenderBitmapFromFile($IS4C_PATH."graphics/WFC_Logo.bmp");
+		else if ($CORE_LOCAL->get("newReceipt")==1 && $CORE_LOCAL->get("store") == "wfc"){
+			$img = RenderBitmapFromFile($CORE_PATH."graphics/WFC_Logo.bmp");
 			$receipt .= $img."\n";
 			$i=4;
 			/*
 			$i=1;
 			for(;$i<=3;$i++)
-				$receipt.=biggerFont(centerBig($IS4C_LOCAL->get("receiptHeader$i")))."\n";
+				$receipt.=biggerFont(centerBig($CORE_LOCAL->get("receiptHeader$i")))."\n";
 			*/
 			$receipt .= "\n";
 		}
 		else{
 			// zero-indexing the receipt header and footer list
-	 		$receipt.=biggerFont(centerBig($IS4C_LOCAL->get("receiptHeader1")))."\n";
+	 		$receipt.=biggerFont(centerBig($CORE_LOCAL->get("receiptHeader1")))."\n";
 		}
 		// and continuing on 
-		for (; $i <= $IS4C_LOCAL->get("receiptHeaderCount"); $i++)
-			$receipt.=centerString($IS4C_LOCAL->get("receiptHeader$i"))."\n";
+		for (; $i <= $CORE_LOCAL->get("receiptHeaderCount"); $i++)
+			$receipt.=centerString($CORE_LOCAL->get("receiptHeader$i"))."\n";
 
 		$receipt .= "\n";
-		$receipt .= "Cashier: ".$IS4C_LOCAL->get("cashier")."\n\n";
+		$receipt .= "Cashier: ".$CORE_LOCAL->get("cashier")."\n\n";
 
 		$time = build_time($dateTimeStamp);
 		$time = str_replace(" ","     ",$time);
@@ -148,7 +148,7 @@ function promoMsg() {
 // Charge Footer split into two functions by apbw 2/1/05
 
 function printChargeFooterCust($dateTimeStamp, $ref) {	// apbw 2/14/05 SCR
-	global $IS4C_LOCAL;
+	global $CORE_LOCAL;
 
 	$chgName = getChgName();			// added by apbw 2/14/05 SCR
 
@@ -156,13 +156,13 @@ function printChargeFooterCust($dateTimeStamp, $ref) {	// apbw 2/14/05 SCR
 
 	$receipt = chr(27).chr(33).chr(5)."\n\n\n".centerString("C U S T O M E R   C O P Y")."\n"
 		   .centerString("................................................")."\n"
-		   .centerString($IS4C_LOCAL->get("chargeSlip1"))."\n\n"
+		   .centerString($CORE_LOCAL->get("chargeSlip1"))."\n\n"
 		   ."CUSTOMER CHARGE ACCOUNT\n"
-		   ."Name: ".trim($IS4C_LOCAL->get("ChgName"))."\n"		// changed by apbw 2/14/05 SCR
-		   ."Member Number: ".trim($IS4C_LOCAL->get("memberID"))."\n"
+		   ."Name: ".trim($CORE_LOCAL->get("ChgName"))."\n"		// changed by apbw 2/14/05 SCR
+		   ."Member Number: ".trim($CORE_LOCAL->get("memberID"))."\n"
 		   ."Date: ".$date."\n"
 		   ."REFERENCE #: ".$ref."\n"
-		   ."Charge Amount: $".number_format(-1 * $IS4C_LOCAL->get("chargeTotal"), 2)."\n"
+		   ."Charge Amount: $".number_format(-1 * $CORE_LOCAL->get("chargeTotal"), 2)."\n"
 		   .centerString("................................................")."\n"
 		   ."\n\n\n\n\n\n\n"
 		   .chr(27).chr(105);
@@ -174,7 +174,7 @@ function printChargeFooterCust($dateTimeStamp, $ref) {	// apbw 2/14/05 SCR
 // Charge Footer split into two functions by apbw 2/1/05
 
 function printChargeFooterStore($dateTimeStamp, $ref) {	// apbw 2/14/05 SCR
-	global $IS4C_LOCAL;
+	global $CORE_LOCAL;
 
 	
 	$chgName = getChgName();			// added by apbw 2/14/05 SCR
@@ -184,22 +184,22 @@ function printChargeFooterStore($dateTimeStamp, $ref) {	// apbw 2/14/05 SCR
 	$receipt = "\n\n\n\n\n\n\n"
 		   .chr(27).chr(105)
 		   .chr(27).chr(33).chr(5)		// apbw 3/18/05 
-		   ."\n".centerString($IS4C_LOCAL->get("chargeSlip2"))."\n"
+		   ."\n".centerString($CORE_LOCAL->get("chargeSlip2"))."\n"
 		   .centerString("................................................")."\n"
-		   .centerString($IS4C_LOCAL->get("chargeSlip1"))."\n\n"
+		   .centerString($CORE_LOCAL->get("chargeSlip1"))."\n\n"
 		   ."CUSTOMER CHARGE ACCOUNT\n"
-		   ."Name: ".trim($IS4C_LOCAL->get("ChgName"))."\n"		// changed by apbw 2/14/05 SCR
-		   ."Member Number: ".trim($IS4C_LOCAL->get("memberID"))."\n"
+		   ."Name: ".trim($CORE_LOCAL->get("ChgName"))."\n"		// changed by apbw 2/14/05 SCR
+		   ."Member Number: ".trim($CORE_LOCAL->get("memberID"))."\n"
 		   ."Date: ".$date."\n"
 		   ."REFERENCE #: ".$ref."\n"
-		   ."Charge Amount: $".number_format(-1 * $IS4C_LOCAL->get("chargeTotal"), 2)."\n"
+		   ."Charge Amount: $".number_format(-1 * $CORE_LOCAL->get("chargeTotal"), 2)."\n"
 		   ."I AGREE TO PAY THE ABOVE AMOUNT\n"
 		   ."TO MY CHARGE ACCOUNT\n"
 		   ."Purchaser Sign Below\n\n\n"
 		   ."X____________________________________________\n"
-		   .$IS4C_LOCAL->get("fname")." ".$IS4C_LOCAL->get("lname")."\n\n"
+		   .$CORE_LOCAL->get("fname")." ".$CORE_LOCAL->get("lname")."\n\n"
 		   .centerString(".................................................")."\n\n";
-	$IS4C_LOCAL->set("chargetender",0);	// apbw 2/14/05 SCR (moved up a line for Reprint patch on 3/10/05)
+	$CORE_LOCAL->set("chargetender",0);	// apbw 2/14/05 SCR (moved up a line for Reprint patch on 3/10/05)
 
 	return $receipt;
 
@@ -207,7 +207,7 @@ function printChargeFooterStore($dateTimeStamp, $ref) {	// apbw 2/14/05 SCR
 }
 
 function printCabCoupon($dateTimeStamp, $ref){
-	global $IS4C_LOCAL;
+	global $CORE_LOCAL;
 
 	/* no cut
 	$receipt = "\n\n\n\n\n\n\n"
@@ -253,17 +253,17 @@ function printCabCoupon($dateTimeStamp, $ref){
 // -------------  frank.php incorporated into printlib on 3/24/05 apbw (from here to eof) -------
 
 function frank() {
-	global $IS4C_LOCAL;
+	global $CORE_LOCAL;
 
 	$date = strftime("%m/%d/%y %I:%M %p", time());
-	$ref = trim($IS4C_LOCAL->get("memberID"))." ".trim($IS4C_LOCAL->get("CashierNo"))." ".trim($IS4C_LOCAL->get("laneno"))." ".trim($IS4C_LOCAL->get("transno"));
-	$tender = "AMT: ".truncate2($IS4C_LOCAL->get("tenderamt"))."  CHANGE: ".truncate2($IS4C_LOCAL->get("change"));
+	$ref = trim($CORE_LOCAL->get("memberID"))." ".trim($CORE_LOCAL->get("CashierNo"))." ".trim($CORE_LOCAL->get("laneno"))." ".trim($CORE_LOCAL->get("transno"));
+	$tender = "AMT: ".truncate2($CORE_LOCAL->get("tenderamt"))."  CHANGE: ".truncate2($CORE_LOCAL->get("change"));
 	$output = center_check($ref)."\n"
 		.center_check($date)."\n"
-		.center_check($IS4C_LOCAL->get("ckEndorse1"))."\n"
-		.center_check($IS4C_LOCAL->get("ckEndorse2"))."\n"
-		.center_check($IS4C_LOCAL->get("ckEndorse3"))."\n"
-		.center_check($IS4C_LOCAL->get("ckEndorse4"))."\n"
+		.center_check($CORE_LOCAL->get("ckEndorse1"))."\n"
+		.center_check($CORE_LOCAL->get("ckEndorse2"))."\n"
+		.center_check($CORE_LOCAL->get("ckEndorse3"))."\n"
+		.center_check($CORE_LOCAL->get("ckEndorse4"))."\n"
 		.center_check($tender)."\n";
 
 
@@ -274,9 +274,9 @@ function frank() {
 // -----------------------------------------------------
 
 function frankgiftcert() {
-	global $IS4C_LOCAL;
+	global $CORE_LOCAL;
 
-	$ref = trim($IS4C_LOCAL->get("CashierNo"))."-".trim($IS4C_LOCAL->get("laneno"))."-".trim($IS4C_LOCAL->get("transno"));
+	$ref = trim($CORE_LOCAL->get("CashierNo"))."-".trim($CORE_LOCAL->get("laneno"))."-".trim($CORE_LOCAL->get("transno"));
 	$time_now = strftime("%m/%d/%y", time());				// apbw 3/10/05 "%D" didn't work - Franking patch
 	$next_year_stamp = mktime(0,0,0,date("m"), date("d"), date("Y")+1);
 	$next_year = strftime("%m/%d/%y", $next_year_stamp);		// apbw 3/10/05 "%D" didn't work - Franking patch
@@ -288,7 +288,7 @@ function frankgiftcert() {
 	$output .= str_repeat(" ", 12).$next_year;
 	$output .= str_repeat("\n", 3);
 	$output .= str_repeat(" ", 75);
-      $output .= "$".truncate2($IS4C_LOCAL->get("tenderamt"));
+      $output .= "$".truncate2($CORE_LOCAL->get("tenderamt"));
 	endorse($output); 
 
 }
@@ -296,24 +296,24 @@ function frankgiftcert() {
 // -----------------------------------------------------
 
 function frankstock() {
-	global $IS4C_LOCAL;
+	global $CORE_LOCAL;
 
 	$time_now = strftime("%m/%d/%y", time());		// apbw 3/10/05 "%D" didn't work - Franking patch
 	/* pointless
-	if ($IS4C_LOCAL->get("franking") == 0) {
-		$IS4C_LOCAL->set("franking",1);
+	if ($CORE_LOCAL->get("franking") == 0) {
+		$CORE_LOCAL->set("franking",1);
 	}
 	 */
-	$ref = trim($IS4C_LOCAL->get("CashierNo"))."-".trim($IS4C_LOCAL->get("laneno"))."-".trim($IS4C_LOCAL->get("transno"));
+	$ref = trim($CORE_LOCAL->get("CashierNo"))."-".trim($CORE_LOCAL->get("laneno"))."-".trim($CORE_LOCAL->get("transno"));
 	$output  = "";
 	$output .= str_repeat("\n", 40);	// 03/24/05 apbw Wedge Printer Swap Patch
-	if ($IS4C_LOCAL->get("equityAmt")){
+	if ($CORE_LOCAL->get("equityAmt")){
 		$output = "Equity Payment ref: ".$ref."   ".$time_now; // WFC 
-		$IS4C_LOCAL->set("equityAmt","");
-		$IS4C_LOCAL->set("LastEquityReference",$ref);
+		$CORE_LOCAL->set("equityAmt","");
+		$CORE_LOCAL->set("LastEquityReference",$ref);
 	}
 	else {
-		$output .= "Stock Payment $".$IS4C_LOCAL->get("tenderamt")." ref: ".$ref."   ".$time_now; // apbw 3/24/05 Wedge Printer Swap Patch
+		$output .= "Stock Payment $".$CORE_LOCAL->get("tenderamt")." ref: ".$ref."   ".$time_now; // apbw 3/24/05 Wedge Printer Swap Patch
 	}
 
 	endorse($output);
@@ -322,9 +322,9 @@ function frankstock() {
 
 
 function frankclassreg() {
-	global $IS4C_LOCAL;
+	global $CORE_LOCAL;
 
-	$ref = trim($IS4C_LOCAL->get("CashierNo"))."-".trim($IS4C_LOCAL->get("laneno"))."-".trim($IS4C_LOCAL->get("transno"));
+	$ref = trim($CORE_LOCAL->get("CashierNo"))."-".trim($CORE_LOCAL->get("laneno"))."-".trim($CORE_LOCAL->get("transno"));
 	$time_now = strftime("%m/%d/%y", time());		// apbw 3/10/05 "%D" didn't work - Franking patch
 	$output  = "";		
 	$output .= str_repeat("\n", 11);		// apbw 3/24/05 Wedge Printer Swap Patch
@@ -338,7 +338,7 @@ function frankclassreg() {
 //----------------------------------Credit Card footer----by CvR
 
 function printCCFooter($dateTimeStamp, $ref) {
-	global $IS4C_LOCAL;
+	global $CORE_LOCAL;
 
 	$date = build_time($dateTimeStamp);
 
@@ -346,17 +346,17 @@ function printCCFooter($dateTimeStamp, $ref) {
 			
 	$receipt = "\n".centerString("C U S T O M E R   C O P Y")."\n"
 		   .centerString("................................................")."\n"
-               .centerString($IS4C_LOCAL->get("chargeSlip1"))."\n\n"
+               .centerString($CORE_LOCAL->get("chargeSlip1"))."\n\n"
 		   .centerString("Cardholder acknowledges receipt of goods/services")."\n"
                .centerString("in the amount shown and agrees to pay for them")."\n"
                .centerString("according to card issuer agreement.")."\n\n"
 		   ."CREDIT CARD CHARGE\n"
-		   ."Name: ".trim($IS4C_LOCAL->get("ccName"))."\n"
-		   ."Member Number: ".trim($IS4C_LOCAL->get("memberID"))."\n"
+		   ."Name: ".trim($CORE_LOCAL->get("ccName"))."\n"
+		   ."Member Number: ".trim($CORE_LOCAL->get("memberID"))."\n"
 		   ."Date: ".$date."\n"
 		   ."REFERENCE #: ".$ref."\n"
-               ."TROUTD: ".trim($IS4C_LOCAL->get("troutd"))."\n"
-		   ."Charge Amount: $".number_format(-1*$IS4C_LOCAL->get("ccTotal"), 2)."\n"  //changed 04/01/05 Tak & CvR
+               ."TROUTD: ".trim($CORE_LOCAL->get("troutd"))."\n"
+		   ."Charge Amount: $".number_format(-1*$CORE_LOCAL->get("ccTotal"), 2)."\n"  //changed 04/01/05 Tak & CvR
 		   .centerString("................................................")."\n"
 		   ."\n\n\n\n\n\n\n"
 		   .chr(27).chr(105)
@@ -366,16 +366,16 @@ function printCCFooter($dateTimeStamp, $ref) {
 
 	// $receipt2 =""
 
-		   .centerString($IS4C_LOCAL->get("chargeSlip2"))."\n"
+		   .centerString($CORE_LOCAL->get("chargeSlip2"))."\n"
 		   .centerString("................................................")."\n"
-		   .centerString($IS4C_LOCAL->get("chargeSlip1"))."\n\n"
+		   .centerString($CORE_LOCAL->get("chargeSlip1"))."\n\n"
 		   ."CREDIT CARD CHARGE\n"
-		   ."Name: ".trim($IS4C_LOCAL->get("ccName"))."\n"
-		   ."Member Number: ".trim($IS4C_LOCAL->get("memberID"))."\n"
+		   ."Name: ".trim($CORE_LOCAL->get("ccName"))."\n"
+		   ."Member Number: ".trim($CORE_LOCAL->get("memberID"))."\n"
 		   ."Date: ".$date."\n"
 		   ."REFERENCE #: ".$ref."\n"
-               ."TROUTD: ".trim($IS4C_LOCAL->get("troutd"))."\n"
-		   ."Charge Amount: $".number_format(-1*$IS4C_LOCAL->get("ccTotal"), 2)."\n\n" //changed 04/01/05  Tak and CvR
+               ."TROUTD: ".trim($CORE_LOCAL->get("troutd"))."\n"
+		   ."Charge Amount: $".number_format(-1*$CORE_LOCAL->get("ccTotal"), 2)."\n\n" //changed 04/01/05  Tak and CvR
 		   .centerString("I agree to pay the above total amount")."\n"
 		   .centerString("according to card issuer agreement.")."\n\n"
 		   ."Purchaser Sign Below\n\n\n"
@@ -410,7 +410,7 @@ function centerBig($text) {
 
 /***** CvR 06/28/06 calculate current balance for receipt ****/
 function chargeBalance($receipt){
-	global $IS4C_LOCAL;
+	global $CORE_LOCAL;
 	chargeOK();
 
 	$db = tDataConnect();
@@ -418,10 +418,10 @@ function chargeBalance($receipt){
 	$checkR = $db->query($checkQ);
 	$num_rows = $db->num_rows($checkR);
 
-	$currActivity = $IS4C_LOCAL->get("memChargeTotal");
-	$currBalance = $IS4C_LOCAL->get("balance") - $currActivity;
+	$currActivity = $CORE_LOCAL->get("memChargeTotal");
+	$currBalance = $CORE_LOCAL->get("balance") - $currActivity;
 	
-	if(($num_rows > 0 || $currBalance != 0) && $IS4C_LOCAL->get("memberID") != 11){
+	if(($num_rows > 0 || $currBalance != 0) && $CORE_LOCAL->get("memberID") != 11){
  		$chargeString = "Current IOU Balance: $".sprintf("%.2f",$currBalance);
 		$receipt = $receipt."\n\n".biggerFont(centerBig($chargeString));
 	}
@@ -430,7 +430,7 @@ function chargeBalance($receipt){
 }
 
 function storeCreditIssued($second){
-	global $IS4C_LOCAL;
+	global $CORE_LOCAL;
 	if ($second) return "";
 
 	$db = tDataConnect();
@@ -450,8 +450,8 @@ function storeCreditIssued($second){
 	$slip .= biggerFont("Store credit issued")."\n\n";
 	$slip .= biggerFont(sprintf("Amount \$%.2f",$issued))."\n\n";
 
-	if ( $IS4C_LOCAL->get("fname") != "" && $IS4C_LOCAL->get("lname") != ""){
-		$slip .= "Name: ".$IS4C_LOCAL->get("fname")." ".$IS4C_LOCAL->get("lname")."\n\n";
+	if ( $CORE_LOCAL->get("fname") != "" && $CORE_LOCAL->get("lname") != ""){
+		$slip .= "Name: ".$CORE_LOCAL->get("fname")." ".$CORE_LOCAL->get("lname")."\n\n";
 	}
 	else {
 		$slip .= "Name: ____________________________________________\n\n";
@@ -467,10 +467,10 @@ function storeCreditIssued($second){
 function getChgName() {
 	/*      
 		the name that appears beneath the signature 
-		line on the customer copy is pulled from $IS4C_LOCAL. 
+		line on the customer copy is pulled from $CORE_LOCAL. 
 		Pulling the name here from custdata w/o respecting
 		personNum can cause this name to differ from the 
-		signature line, so I'm using $IS4C_LOCAL here too. I'm 
+		signature line, so I'm using $CORE_LOCAL here too. I'm 
 		leaving the query in place as a check that memberID
 		is valid; shouldn't slow anything down noticably.
 
@@ -481,25 +481,25 @@ function getChgName() {
 
 		andy
 	*/
-	global $IS4C_LOCAL;
-	$query = "select LastName, FirstName from custdata where CardNo = '" .$IS4C_LOCAL->get("memberID") ."'";
+	global $CORE_LOCAL;
+	$query = "select LastName, FirstName from custdata where CardNo = '" .$CORE_LOCAL->get("memberID") ."'";
 	$connection = pDataConnect();
 	$result = $connection->query($query);
 	$num_rows = $connection->num_rows($result);
 
 	if ($num_rows > 0) {
-		$LastInit = substr($IS4C_LOCAL->get("lname"), 0, 1).".";
-		$IS4C_LOCAL->set("ChgName",trim($IS4C_LOCAL->get("fname")) ." ". $LastInit);
+		$LastInit = substr($CORE_LOCAL->get("lname"), 0, 1).".";
+		$CORE_LOCAL->set("ChgName",trim($CORE_LOCAL->get("fname")) ." ". $LastInit);
 	}
 	else{
-		$IS4C_LOCAL->set("ChgName",$IS4C_LOCAL->get("memMsg"));
+		$CORE_LOCAL->set("ChgName",$CORE_LOCAL->get("memMsg"));
 	}
 
 	$connection->close();
 }
 
 function printCCSigSlip($dateTimeStamp,$ref,$storeCopy=True,$rp=0){
-	global $IS4C_LOCAL;
+	global $CORE_LOCAL;
 	normalFont();
 
 	$date = build_time($dateTimeStamp);
@@ -517,7 +517,7 @@ function printCCSigSlip($dateTimeStamp,$ref,$storeCopy=True,$rp=0){
 		$db = mDataConnect();
 	} else {		// else if current transaction, just grab most recent 
 		if ($storeCopy){
-			$idclause = " and transID = ".$IS4C_LOCAL->get("paycard_id");
+			$idclause = " and transID = ".$CORE_LOCAL->get("paycard_id");
 			$limit = " TOP 1 ";
 		}
 		$sort = " desc ";
@@ -529,7 +529,7 @@ function printCCSigSlip($dateTimeStamp,$ref,$storeCopy=True,$rp=0){
 		." and cashierNo = ".$emp." and laneNo = ".$reg
 		." and transNo = ".$trans ." ".$idclause
 		." order by datetime, cashierNo, laneNo, transNo, xTransactionID, transID ".$sort.", sortorder ".$sort;
-	if ($IS4C_LOCAL->get("DBMS") == "mysql" && $rp == 0){
+	if ($CORE_LOCAL->get("DBMS") == "mysql" && $rp == 0){
 		$query = str_replace("[date]","date",$query);
 		if ($limit != ""){
 			$query = str_replace($limit,"",$query);
@@ -560,14 +560,14 @@ function printCCSigSlip($dateTimeStamp,$ref,$storeCopy=True,$rp=0){
 			//$slip .= "CC".centerString("C U S T O M E R   C O P Y")."\n";	// "wedge copy"
 		}
 		else {
-			$slip .= "CC".substr(centerString($IS4C_LOCAL->get("chargeSlip2")),2)."\n";	// "wedge copy"
+			$slip .= "CC".substr(centerString($CORE_LOCAL->get("chargeSlip2")),2)."\n";	// "wedge copy"
 		}
 		$slip .= centerString("................................................")."\n";
 		if ($storeCopy){
-			$slip .= centerString($IS4C_LOCAL->get("chargeSlip1"))."\n"		// store name 
-				.centerString($IS4C_LOCAL->get("chargeSlip3").", ".$IS4C_LOCAL->get("chargeSlip4"))."\n"  // address
-				.centerString($IS4C_LOCAL->get("chargeSlip5"))."\n"		// merchant code 
-				.centerString($IS4C_LOCAL->get("receiptHeader2"))."\n\n";	// phone
+			$slip .= centerString($CORE_LOCAL->get("chargeSlip1"))."\n"		// store name 
+				.centerString($CORE_LOCAL->get("chargeSlip3").", ".$CORE_LOCAL->get("chargeSlip4"))."\n"  // address
+				.centerString($CORE_LOCAL->get("chargeSlip5"))."\n"		// merchant code 
+				.centerString($CORE_LOCAL->get("receiptHeader2"))."\n\n";	// phone
 		}
 				
 		if ($storeCopy){
@@ -610,9 +610,9 @@ function printCCSigSlip($dateTimeStamp,$ref,$storeCopy=True,$rp=0){
 		}			
 	}
 
-	if ($IS4C_LOCAL->get("SigCapture") != "" && $IS4C_LOCAL->get("SigSlipType") == "ccSlip"){
+	if ($CORE_LOCAL->get("SigCapture") != "" && $CORE_LOCAL->get("SigSlipType") == "ccSlip"){
 		$sig_file = $_SESSION["INCLUDE_PATH"]."/graphics/SigImages/"
-			.$IS4C_LOCAL->get("CapturedSigFile");
+			.$CORE_LOCAL->get("CapturedSigFile");
 
 		$bmp = new Bitmap();
 		$bmp->Load($sig_file);
@@ -647,17 +647,17 @@ function boldFont() {
 }
 
 function localTTL(){
-	global $IS4C_LOCAL;
+	global $CORE_LOCAL;
 
-	if ($IS4C_LOCAL->get("localTotal") == 0) return "";
+	if ($CORE_LOCAL->get("localTotal") == 0) return "";
 
 	$str = sprintf("LOCAL PURCHASES = \$%.2f",
-		$IS4C_LOCAL->get("localTotal"));
+		$CORE_LOCAL->get("localTotal"));
 	return $str."\n";
 }
 
 function receiptDetail($reprint=False,$trans_num='') { // put into its own function to make it easier to follow, and slightly modified for wider-spread use of joe's "new" receipt format --- apbw 7/3/2007
-	global $IS4C_LOCAL;
+	global $CORE_LOCAL;
 
 	$detail = "";
 	$empNo=0;$laneNo=0;$transNo=0;
@@ -668,7 +668,7 @@ function receiptDetail($reprint=False,$trans_num='') { // put into its own funct
 		$transNo = $temp[2];
 	}
 		
-	if ($IS4C_LOCAL->get("newReceipt") == 0 ) {	// if old style has been specifically requested for a partial or reprint, use old format
+	if ($CORE_LOCAL->get("newReceipt") == 0 ) {	// if old style has been specifically requested for a partial or reprint, use old format
 		$query="select linetoprint from receipt";
 		if ($reprint){
 			$query = "select linetoprint from rp_receipt
@@ -700,7 +700,7 @@ function receiptDetail($reprint=False,$trans_num='') { // put into its own funct
 		}
 
 		$db = tDataConnect();
-		if ($IS4C_LOCAL->get("DBMS") == "mysql"){
+		if ($CORE_LOCAL->get("DBMS") == "mysql"){
 			$query = str_replace("[","",$query);
 			$query = str_replace("]","",$query);
 		}
@@ -724,10 +724,10 @@ function receiptDetail($reprint=False,$trans_num='') { // put into its own funct
 				}
 			}
 			/***** jqh 12/14/05 fix tax exempt on receipt *****/
-			if ($row[1]==2 and $IS4C_LOCAL->get("TaxExempt")==1){
+			if ($row[1]==2 and $CORE_LOCAL->get("TaxExempt")==1){
 				$detail .= "                                         TAX    0.00\n";
 			}
-			elseif ($row[1]==1 and $IS4C_LOCAL->get("TaxExempt")==1){
+			elseif ($row[1]==1 and $CORE_LOCAL->get("TaxExempt")==1){
 				$queryExempt="select 
 					right((space(44) + upper(rtrim('SUBTOTAL'))), 44) 
 					+ right((space(8) + convert(varchar,runningTotal-tenderTotal)), 8) 
@@ -738,7 +738,7 @@ function receiptDetail($reprint=False,$trans_num='') { // put into its own funct
 				$detail .= $rowExempt[0]."\n";
 			}
 			else{
-				if ($IS4C_LOCAL->get("promoMsg") == 1 && $row[4] == 1 ){ // '*' added to local items 8/15/2007 apbw for eat local challenge 
+				if ($CORE_LOCAL->get("promoMsg") == 1 && $row[4] == 1 ){ // '*' added to local items 8/15/2007 apbw for eat local challenge 
 					$detail .= '*'.$row[0]."\n";
 				} else {
 					if ( strpos($row[0]," TOTAL") ) { 		// if it's the grand total line . . .
@@ -763,7 +763,7 @@ function receiptDetail($reprint=False,$trans_num='') { // put into its own funct
  * gift card receipt functions --atf 10/8/07
  */
 function printGCSlip($dateTimeStamp, $ref, $storeCopy=true, $rp=0) {
-	global $IS4C_LOCAL;
+	global $CORE_LOCAL;
 
 	$date = build_time($dateTimeStamp);
 	$ert = explode("-",$ref);
@@ -779,11 +779,11 @@ function printGCSlip($dateTimeStamp, $ref, $storeCopy=true, $rp=0) {
 	if( $rp == 0) {
 		$limit = " TOP 1";
 		$order = " desc";
-		$where .= " AND transID=".$IS4C_LOCAL->get("paycard_id");
+		$where .= " AND transID=".$CORE_LOCAL->get("paycard_id");
 	}
 	$sql = "SELECT".$limit." * FROM gcReceiptView WHERE ".$where." ORDER BY [datetime]".$order.", sortorder".$order;
 	$db = tDataConnect();
-	if ($IS4C_LOCAL->get("DBMS") == "mysql"){
+	if ($CORE_LOCAL->get("DBMS") == "mysql"){
 		$sql = "SELECT * FROM gcReceiptView WHERE ".$where." ORDER BY [datetime]".$order.", sortorder".$order." ".$limit;
 		$sql = str_replace("[","",$sql);
 		$sql = str_replace("]","",$sql);
@@ -803,11 +803,11 @@ function printGCSlip($dateTimeStamp, $ref, $storeCopy=true, $rp=0) {
 			if( $rp != 0)
 				$slip .= chr(27).chr(33).chr(5).centerString("***    R E P R I N T    ***")."\n";
 			// store header
-			$slip .= "GC".substr(centerString($IS4C_LOCAL->get("chargeSlip2")),2)."\n"  // "wedge copy"
+			$slip .= "GC".substr(centerString($CORE_LOCAL->get("chargeSlip2")),2)."\n"  // "wedge copy"
 					. centerString("................................................")."\n"
-					. centerString($IS4C_LOCAL->get("chargeSlip1"))."\n"  // store name 
-					. centerString($IS4C_LOCAL->get("chargeSlip3").", ".$IS4C_LOCAL->get("chargeSlip4"))."\n"  // address
-					. centerString($IS4C_LOCAL->get("receiptHeader2"))."\n"  // phone
+					. centerString($CORE_LOCAL->get("chargeSlip1"))."\n"  // store name 
+					. centerString($CORE_LOCAL->get("chargeSlip3").", ".$CORE_LOCAL->get("chargeSlip4"))."\n"  // address
+					. centerString($CORE_LOCAL->get("receiptHeader2"))."\n"  // phone
 					. "\n";
 		} else {
 			if( $x == 0) {
@@ -871,18 +871,18 @@ function printGCSlip($dateTimeStamp, $ref, $storeCopy=true, $rp=0) {
 } // printGCSlip()
 
 function printGCBalSlip() {
-	global $IS4C_LOCAL;
+	global $CORE_LOCAL;
 
 	// balance inquiries are not logged and have no meaning in a reprint,
 	// so we can assume that it just happened now and all data is still in session vars
-	$tempArr = $IS4C_LOCAL->get("paycard_response");
+	$tempArr = $CORE_LOCAL->get("paycard_response");
 	$bal = "$".number_format($tempArr["Balance"],2);
-	$pan = $IS4C_LOCAL->get("paycard_PAN"); // no need to mask gift card numbers
+	$pan = $CORE_LOCAL->get("paycard_PAN"); // no need to mask gift card numbers
 	$slip = normalFont()
 			.centerString(".................................................")."\n"
-			.centerString($IS4C_LOCAL->get("chargeSlip1"))."\n"		// store name 
-			.centerString($IS4C_LOCAL->get("chargeSlip3").", ".$IS4C_LOCAL->get("chargeSlip4"))."\n"  // address
-			.centerString($IS4C_LOCAL->get("receiptHeader2"))."\n"	// phone
+			.centerString($CORE_LOCAL->get("chargeSlip1"))."\n"		// store name 
+			.centerString($CORE_LOCAL->get("chargeSlip3").", ".$CORE_LOCAL->get("chargeSlip4"))."\n"  // address
+			.centerString($CORE_LOCAL->get("receiptHeader2"))."\n"	// phone
 			."\n"
 			."Gift Card Balance\n"
 			."Card: ".$pan."\n"

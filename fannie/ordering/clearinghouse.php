@@ -16,12 +16,21 @@
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    in the file license.txt along with IS4C; if not, write to the Free Software
+    in the file license.txt along with IT CORE; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
 include('../config.php');
 include($FANNIE_ROOT.'src/mysql_connect.php');
+
+include($FANNIE_ROOT.'auth/login.php');
+if (!checkLogin()){
+	$url = $FANNIE_URL."auth/ui/loginform.php";
+	$rd = $FANNIE_URL."ordering/clearinghouse.php";
+	header("Location: $url?redirect=$rd");
+	exit;
+}
+
 
 $page_title = "Special Order :: Mangement";
 $header = "Manage Special Orders";
@@ -32,6 +41,7 @@ include($FANNIE_ROOT.'src/header.html');
 
 $status = array(
 	0 => "New",
+	1 => "Waiting Callback",
 	2 => "Pending",
 	4 => "Placed"
 );
@@ -53,7 +63,7 @@ while($w = $dbc->fetch_row($r)){
 }
 
 $f1 = (isset($_REQUEST['f1']) && $_REQUEST['f1'] !== '')?(int)$_REQUEST['f1']:'';
-$f2 = (isset($_REQUEST['f2']) && $_REQUEST['f2'] !== '')?(int)$_REQUEST['f2']:'';
+$f2 = (isset($_REQUEST['f2']) && $_REQUEST['f2'] !== '')?$_REQUEST['f2']:-999;
 $f3 = (isset($_REQUEST['f3']) && $_REQUEST['f3'] !== '')?$_REQUEST['f3']:'';
 
 $filterstring = "";
@@ -78,11 +88,12 @@ foreach($status as $k=>$v){
 echo '</select>';
 echo '&nbsp;&nbsp;&nbsp;&nbsp;';
 echo '<b>Buyer</b>: <select id="f_2" onchange="refilter();">';
-echo '<option value="">All</option>';
+echo '<option value="-999">Choose one...</option>';
 foreach($assignments as $k=>$v){
 	printf("<option %s value=\"%d\">%s</option>",
-		($k===$f2?'selected':''),$k,$v);
+		($k==$f2?'selected':''),$k,$v);
 }
+printf('<option %s value="2%%2C8">Meat+Cool</option>',($f2=="2,8"?'selected':''));
 echo '</select>';
 echo '&nbsp;&nbsp;&nbsp;&nbsp;';
 echo '<b>Supplier</b>: <select id="f_3" onchange="refilter();">';
@@ -129,10 +140,10 @@ while($w = $dbc->fetch_row($r)){
 }
 
 if ($f2 !== '' || $f3 !== ''){
-	$filter2 = ($f2!==''?sprintf("AND m.superID=%d",$f2):'');
+	$filter2 = ($f2!==''?sprintf("AND m.superID IN (%s)",$f2):'');
 	$filter3 = ($f3!==''?sprintf("AND p.mixMatch=%s",$dbc->escape($f3)):'');
 	$q = "SELECT order_id FROM PendingSpecialOrder AS p
-		INNER JOIN MasterSuperDepts AS m ON 
+		LEFT JOIN MasterSuperDepts AS m ON 
 		p.department=m.dept_ID
 		WHERE 1=1 $filter2 $filter3
 		GROUP BY order_id";
@@ -145,7 +156,7 @@ if ($f2 !== '' || $f3 !== ''){
 		$q2 = sprintf("SELECT s.order_id FROM SpecialOrderNotes AS s
 				INNER JOIN PendingSpecialOrder AS p
 				ON p.order_id=s.order_id
-				WHERE s.superID=%d
+				WHERE s.superID IN (%s)
 				GROUP BY s.order_id",$f2);
 		$r2 = $dbc->query($q2);
 		while($w2 = $dbc->fetch_row($r2))

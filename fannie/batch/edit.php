@@ -76,7 +76,7 @@
 	$html.='
 		<link href="batch.css" media="screen" rel="stylesheet" type="text/css"/>
 		<script src="batch.js" type="text/javascript"></script>
-		<title>IS4C - Sale Batches</title>
+		<title>IT CORE - Sale Batches</title>
 	</head>
 	<body>';
 	

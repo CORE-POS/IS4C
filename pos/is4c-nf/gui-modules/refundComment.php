@@ -3,56 +3,56 @@
 
     Copyright 2010 Whole Foods Co-op
 
-    This file is part of IS4C.
+    This file is part of IT CORE.
 
-    IS4C is free software; you can redistribute it and/or modify
+    IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    IS4C is distributed in the hope that it will be useful,
+    IT CORE is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    in the file license.txt along with IS4C; if not, write to the Free Software
+    in the file license.txt along with IT CORE; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
 
-$IS4C_PATH = isset($IS4C_PATH)?$IS4C_PATH:"";
-if (empty($IS4C_PATH)){ while(!file_exists($IS4C_PATH."is4c.css")) $IS4C_PATH .= "../"; }
+$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
+if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
 
-if (!class_exists("NoInputPage")) include_once($IS4C_PATH."gui-class-lib/NoInputPage.php");
-if (!function_exists("addcomment")) include_once($IS4C_PATH."lib/additem.php");
-if (!isset($IS4C_LOCAL)) include($IS4C_PATH."lib/LocalStorage/conf.php");
+if (!class_exists("NoInputPage")) include_once($CORE_PATH."gui-class-lib/NoInputPage.php");
+if (!function_exists("addcomment")) include_once($CORE_PATH."lib/additem.php");
+if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
 
 class RefundComment extends NoInputPage {
 
 	function preprocess(){
-		global $IS4C_LOCAL,$IS4C_PATH;
+		global $CORE_LOCAL,$CORE_PATH;
 		if (isset($_REQUEST["selectlist"])){
 			$input = $_REQUEST["selectlist"];
 			if ($input == "CL"){
-				$IS4C_LOCAL->set("msgrepeat",0);
-				$IS4C_LOCAL->set("strRemembered","");
-				$IS4C_LOCAL->set("refundComment","");
+				$CORE_LOCAL->set("msgrepeat",0);
+				$CORE_LOCAL->set("strRemembered","");
+				$CORE_LOCAL->set("refundComment","");
 			}
 			else if ($input == "Other"){
 				return True;
 			}
 			else {
 				$input = str_replace("'","",$input);
-				$IS4C_LOCAL->set("strRemembered",$IS4C_LOCAL->get("refundComment"));
+				$CORE_LOCAL->set("strRemembered",$CORE_LOCAL->get("refundComment"));
 				// add comment calls additem(), which wipes
 				// out refundComment; save it
 				addcomment("RF: ".$input);
-				$IS4C_LOCAL->set("refundComment",$IS4C_LOCAL->get("strRemembered"));
-				$IS4C_LOCAL->set("msgrepeat",1);
-				$IS4C_LOCAL->set("refund",1);
+				$CORE_LOCAL->set("refundComment",$CORE_LOCAL->get("strRemembered"));
+				$CORE_LOCAL->set("msgrepeat",1);
+				$CORE_LOCAL->set("refund",1);
 			}
-			header("Location: {$IS4C_PATH}gui-modules/pos2.php");
+			header("Location: {$CORE_PATH}gui-modules/pos2.php");
 			return False;
 		}
 		return True;
@@ -84,7 +84,7 @@ class RefundComment extends NoInputPage {
 	} // END head() FUNCTION
 
 	function body_content() {
-		global $IS4C_LOCAL;
+		global $CORE_LOCAL;
 		?>
 		<div class="baseHeight">
 		<div class="centeredDisplay colored">
@@ -117,7 +117,7 @@ class RefundComment extends NoInputPage {
 		</div>
 		</div>	
 		<?php
-		$IS4C_LOCAL->set("scan","noScan");
+		$CORE_LOCAL->set("scan","noScan");
 		$this->add_onload_command("\$('#selectlist').focus();\n");
 		//if (isset($_POST['selectlist']) && $_POST['selectlist'] == 'Other') 
 			$this->add_onload_command("\$('#selectlist').keypress(processkeypress);\n");

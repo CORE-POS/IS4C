@@ -7,13 +7,13 @@ function confsave($key,$value){
 	$lines = array();
 	$found = False;
 	while($line = fgets($fp)){
-		if (strpos($line,'$IS4C_LOCAL->set("'.$key.'"') === 0){
-			$lines[] = sprintf("\$IS4C_LOCAL->set(\"%s\",%s);\n",
+		if (strpos($line,'$CORE_LOCAL->set("'.$key.'"') === 0){
+			$lines[] = sprintf("\$CORE_LOCAL->set(\"%s\",%s);\n",
 					$key,$value);
 			$found = True;
 		}
 		elseif (strpos($line,'?>') === 0 && !$found){
-			$lines[] = sprintf("\$IS4C_LOCAL->set(\"%s\",%s);\n",
+			$lines[] = sprintf("\$CORE_LOCAL->set(\"%s\",%s);\n",
 					$key,$value);
 			$lines[] = "?>\n";
 		}

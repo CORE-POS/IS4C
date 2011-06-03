@@ -3,26 +3,26 @@
 
     Copyright 2001, 2004 Wedge Community Co-op
 
-    This file is part of IS4C.
+    This file is part of IT CORE.
 
-    IS4C is free software; you can redistribute it and/or modify
+    IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    IS4C is distributed in the hope that it will be useful,
+    IT CORE is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    in the file license.txt along with IS4C; if not, write to the Free Software
+    in the file license.txt along with IT CORE; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
 
 if (!class_exists("BasicPage")) include_once($_SESSION["INCLUDE_PATH"]."/gui-class-lib/BasicPage.php");
-if (!isset($IS4C_LOCAL)) include($_SESSION["INCLUDE_PATH"]."/lib/LocalStorage/conf.php");
+if (!isset($CORE_LOCAL)) include($_SESSION["INCLUDE_PATH"]."/lib/LocalStorage/conf.php");
 
 class Input extends BasicPage {
 
@@ -33,7 +33,7 @@ class Input extends BasicPage {
 	}
 
 	function head(){
-		global $IS4C_LOCAL;
+		global $CORE_LOCAL;
 		?>
 		<script type="text/javascript">
 
@@ -124,8 +124,8 @@ class Input extends BasicPage {
 	} // END head() function
 
 	function body_content(){
-		global $IS4C_LOCAL;
-		if ($IS4C_LOCAL->get("inputMasked") != 0) {
+		global $CORE_LOCAL;
+		if ($CORE_LOCAL->get("inputMasked") != 0) {
 			$inputType = "password";
 		} else {
 			$inputType = "text";
@@ -139,7 +139,7 @@ class Input extends BasicPage {
 		 */
 		$time = strftime("%m/%d/%y %I:%M %p", time());
 
-		$IS4C_LOCAL->set("repeatable",0);
+		$CORE_LOCAL->set("repeatable",0);
 		?>
 		<div id="inputArea">
 			<div class="inputform">
@@ -151,22 +151,22 @@ class Input extends BasicPage {
 			</div>
 			<div class="notices">
 			<?php	
-			if ($IS4C_LOCAL->get("training") == 1) {
+			if ($CORE_LOCAL->get("training") == 1) {
 				echo "<span class=\"text\">training </span>"
 				     ."<img src='/graphics/BLUEDOT.GIF'>&nbsp;&nbsp;&nbsp;";
 			}
-			elseif ($IS4C_LOCAL->get("standalone") == 0) {
+			elseif ($CORE_LOCAL->get("standalone") == 0) {
 				echo "<img src='/graphics/GREENDOT.GIF'>&nbsp;&nbsp;&nbsp;";
 			}
 			else {
 				echo "<span class=\"text\">stand alone</span>"
 				     ."<img src='/graphics/REDDOT.GIF'>&nbsp;&nbsp;&nbsp;";
 			}
-			if($IS4C_LOCAL->get("CCintegrate") == 1 && 
-				$IS4C_LOCAL->get("ccLive") == 1 && $IS4C_LOCAL->get("training") == 0){
+			if($CORE_LOCAL->get("CCintegrate") == 1 && 
+				$CORE_LOCAL->get("ccLive") == 1 && $CORE_LOCAL->get("training") == 0){
 			   echo "<img src='/graphics/ccIn.gif'>&nbsp;";
-			}elseif($IS4C_LOCAL->get("CCintegrate") == 1 && 
-				($IS4C_LOCAL->get("training") == 1 || $IS4C_LOCAL->get("ccLive") == 0)){
+			}elseif($CORE_LOCAL->get("CCintegrate") == 1 && 
+				($CORE_LOCAL->get("training") == 1 || $CORE_LOCAL->get("ccLive") == 0)){
 			   echo "<img src='/graphics/ccTest.gif'>&nbsp;";
 			}
 
@@ -177,7 +177,7 @@ class Input extends BasicPage {
 		</div>
 		<?php
 		/*
-		if ( strlen($input) > 0 || $IS4C_LOCAL->get("msgrepeat") == 2) {
+		if ( strlen($input) > 0 || $CORE_LOCAL->get("msgrepeat") == 2) {
 			echo "<script type=\"text/javascript\">";
 			echo "if (top.main_frame.document.forms[0] &&
 				top.main_frame.document.forms[0].input){";

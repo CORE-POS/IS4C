@@ -3,20 +3,20 @@
 
     Copyright 2001, 2004 Wedge Community Co-op
 
-    This file is part of IS4C.
+    This file is part of IT CORE.
 
-    IS4C is free software; you can redistribute it and/or modify
+    IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    IS4C is distributed in the hope that it will be useful,
+    IT CORE is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    in the file license.txt along with IS4C; if not, write to the Free Software
+    in the file license.txt along with IT CORE; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
@@ -30,7 +30,7 @@ as include:
 	upcscanned.php
 	authenticate.php
 
-additem.php is the bread and butter of IS4C. addItem inserts the information
+additem.php is the bread and butter of IT CORE. addItem inserts the information
 stream for each item scanned, entered or transaction occurence into localtemptrans.
 Each of the above follows the following structure for entry into localtemptrans:
 	$strupc, 
@@ -61,18 +61,18 @@ Each of the above follows the following structure for entry into localtemptrans:
 Additionally, additem.php inserts entries into the activity log when a cashier 
 signs in
 -------------------------------------------------------------------------------*/
-$IS4C_PATH = isset($IS4C_PATH)?$IS4C_PATH:"";
-if (empty($IS4C_PATH)){ while(!file_exists($IS4C_PATH."is4c.css")) $IS4C_PATH .= "../"; }
+$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
+if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
 
-if (!function_exists("pDataConnect")) include($IS4C_PATH."lib/connect.php");
-if (!function_exists("nullwrap")) include($IS4C_PATH."lib/lib.php");
-if (!isset($IS4C_LOCAL)) include($IS4C_PATH."lib/LocalStorage/conf.php");
+if (!function_exists("pDataConnect")) include($CORE_PATH."lib/connect.php");
+if (!function_exists("nullwrap")) include($CORE_PATH."lib/lib.php");
+if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
 
 
 //-------insert line into localtemptrans with standard insert string--------------
 
 function addItem($strupc, $strdescription, $strtransType, $strtranssubType, $strtransstatus, $intdepartment, $dblquantity, $dblunitPrice, $dbltotal, $dblregPrice, $intscale, $inttax, $intfoodstamp, $dbldiscount, $dblmemDiscount, $intdiscountable, $intdiscounttype, $dblItemQtty, $intvolDiscType, $intvolume, $dblVolSpecial, $intmixMatch, $intmatched, $intvoided, $cost=0, $numflag=0, $charflag='') {
-	global $IS4C_LOCAL;
+	global $CORE_LOCAL;
 	//$dbltotal = truncate2(str_replace(",", "", $dbltotal)); replaced by apbw 7/27/05 with the next 4 lines -- to fix thousands place errors
 
 	$dbltotal = str_replace(",", "", $dbltotal);		
@@ -80,7 +80,7 @@ function addItem($strupc, $strdescription, $strtransType, $strtranssubType, $str
 	$dblunitPrice = str_replace(",", "", $dblunitPrice);
 	$dblunitPrice = number_format($dblunitPrice, 2, '.', '');
 
-	if ($IS4C_LOCAL->get("refund") == 1) {
+	if ($CORE_LOCAL->get("refund") == 1) {
 		$dblquantity = (-1 * $dblquantity);
 		$dbltotal = (-1 * $dbltotal);
 		$dbldiscount = (-1 * $dbldiscount);
@@ -88,8 +88,8 @@ function addItem($strupc, $strdescription, $strtransType, $strtranssubType, $str
 
 		if ($strtransstatus != "V" && $strtransstatus != "D") $strtransstatus = "R" ;	// edited by apbw 6/04/05 to correct voiding of refunded items
 
-		$IS4C_LOCAL->set("refund",0);
-		$IS4C_LOCAL->set("refundComment","");
+		$CORE_LOCAL->set("refund",0);
+		$CORE_LOCAL->set("refundComment","");
 	}
 
 	/* Nothing in the code can set $_SESSION["void"] to 1
@@ -102,17 +102,17 @@ function addItem($strupc, $strdescription, $strtransType, $strtranssubType, $str
 	 */
 
 
-	$intregisterno = $IS4C_LOCAL->get("laneno");
-	$intempno = $IS4C_LOCAL->get("CashierNo");
-	$inttransno = $IS4C_LOCAL->get("transno");
-	$strCardNo = $IS4C_LOCAL->get("memberID");
-	$memType = $IS4C_LOCAL->get("memType");
-	$staff = $IS4C_LOCAL->get("isStaff");
+	$intregisterno = $CORE_LOCAL->get("laneno");
+	$intempno = $CORE_LOCAL->get("CashierNo");
+	$inttransno = $CORE_LOCAL->get("transno");
+	$strCardNo = $CORE_LOCAL->get("memberID");
+	$memType = $CORE_LOCAL->get("memType");
+	$staff = $CORE_LOCAL->get("isStaff");
 
 	$db = tDataConnect();
 
 	$datetimestamp = "";
-	if ($IS4C_LOCAL->get("DBMS") == "mssql") {
+	if ($CORE_LOCAL->get("DBMS") == "mssql") {
 		$datetimestamp = strftime("%m/%d/%y %H:%M:%S %p", time());
 	} else {
 		$datetimestamp = strftime("%Y-%m-%d %H:%M:%S", time());
@@ -120,9 +120,9 @@ function addItem($strupc, $strdescription, $strtransType, $strtranssubType, $str
 
 	// this session variable never gets used
 	//$_SESSION["datetimestamp"] = $datetimestamp;
-	$IS4C_LOCAL->set("LastID",$IS4C_LOCAL->get("LastID") + 1);
+	$CORE_LOCAL->set("LastID",$CORE_LOCAL->get("LastID") + 1);
 	
-	$trans_id = $IS4C_LOCAL->get("LastID");
+	$trans_id = $CORE_LOCAL->get("LastID");
 
 	$values = array(
 		'datetime'	=> $datetimestamp,
@@ -160,7 +160,7 @@ function addItem($strupc, $strdescription, $strtransType, $strtranssubType, $str
 		'charflag'	=> $charflag,
 		'card_no'	=> (string)$strCardNo
 		);
-	if ($IS4C_LOCAL->get("DBMS") == "mssql" && $IS4C_LOCAL->get("store") == "wfc"){
+	if ($CORE_LOCAL->get("DBMS") == "mssql" && $CORE_LOCAL->get("store") == "wfc"){
 		unset($values["staff"]);
 		$values["isStaff"] = nullwrap($staff);
 	}
@@ -169,25 +169,25 @@ function addItem($strupc, $strdescription, $strtransType, $strtranssubType, $str
 	$db->close();
 
 	if ($strtransType == "I" || $strtransType == "D") {
-		$IS4C_LOCAL->set("beep","goodBeep");
+		$CORE_LOCAL->set("beep","goodBeep");
 		if ($intscale == 1) {
-			$IS4C_LOCAL->set("screset","rePoll");
+			$CORE_LOCAL->set("screset","rePoll");
 		}
-		elseif ($IS4C_LOCAL->get("weight") != 0) {
-			$IS4C_LOCAL->set("screset","rePoll");
+		elseif ($CORE_LOCAL->get("weight") != 0) {
+			$CORE_LOCAL->set("screset","rePoll");
 		}
-		$IS4C_LOCAL->set("repeatable",1);
+		$CORE_LOCAL->set("repeatable",1);
 	}
 	
-	$IS4C_LOCAL->set("msgrepeat",0);
-	$IS4C_LOCAL->set("toggletax",0);
-	$IS4C_LOCAL->set("togglefoodstamp",0);
-	$IS4C_LOCAL->set("SNR",0);
-	$IS4C_LOCAL->set("wgtRequested",0);
-	$IS4C_LOCAL->set("nd",0);
+	$CORE_LOCAL->set("msgrepeat",0);
+	$CORE_LOCAL->set("toggletax",0);
+	$CORE_LOCAL->set("togglefoodstamp",0);
+	$CORE_LOCAL->set("SNR",0);
+	$CORE_LOCAL->set("wgtRequested",0);
+	$CORE_LOCAL->set("nd",0);
 
-	$IS4C_LOCAL->set("ccAmtEntered",0);
-	$IS4C_LOCAL->set("ccAmt",0);
+	$CORE_LOCAL->set("ccAmtEntered",0);
+	$CORE_LOCAL->set("ccAmt",0);
 
 }
 
@@ -197,9 +197,9 @@ function addItem($strupc, $strdescription, $strtransType, $strtranssubType, $str
 //---------------------------------- insert tax line item --------------------------------------
 
 function addtax() {
-	global $IS4C_LOCAL;
+	global $CORE_LOCAL;
 
-	addItem("TAX", "Tax", "A", "", "", 0, 0, 0, $IS4C_LOCAL->get("taxTotal"), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+	addItem("TAX", "Tax", "A", "", "", 0, 0, 0, $CORE_LOCAL->get("taxTotal"), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 }
 
 //________________________________end addtax()
@@ -245,20 +245,20 @@ function addEndofShift() {
 //-------------------------------- insert deli discount (Wedge specific) -----------------------
 
 function addscDiscount() {
-	global $IS4C_LOCAL;
+	global $CORE_LOCAL;
 
-	if ($IS4C_LOCAL->get("scDiscount") != 0) {
-		addItem("DISCOUNT", "** 10% Deli Discount **", "I", "", "", 0, 1, truncate2(-1 * $IS4C_LOCAL->get("scDiscount")), truncate2(-1 * $IS4C_LOCAL->get("scDiscount")), 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 2);
+	if ($CORE_LOCAL->get("scDiscount") != 0) {
+		addItem("DISCOUNT", "** 10% Deli Discount **", "I", "", "", 0, 1, truncate2(-1 * $CORE_LOCAL->get("scDiscount")), truncate2(-1 * $CORE_LOCAL->get("scDiscount")), 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 2);
 	}
 //	addStaffCoffeeDiscount();
 
 }
 
 function addStaffCoffeeDiscount() {
-	global $IS4C_LOCAL;
+	global $CORE_LOCAL;
 
-	if ($IS4C_LOCAL->get("staffCoffeeDiscount") != 0) {
-		addItem("DISCOUNT", "** Coffee Discount **", "I", "", "", 0, 1, truncate2(-1 * $IS4C_LOCAL->get("staffCoffeeDiscount")), truncate2(-1 * $IS4C_LOCAL->get("staffCoffeeDiscount")), 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 2);
+	if ($CORE_LOCAL->get("staffCoffeeDiscount") != 0) {
+		addItem("DISCOUNT", "** Coffee Discount **", "I", "", "", 0, 1, truncate2(-1 * $CORE_LOCAL->get("staffCoffeeDiscount")), truncate2(-1 * $CORE_LOCAL->get("staffCoffeeDiscount")), 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 2);
 	}
 }
 
@@ -280,10 +280,10 @@ function adddiscount($dbldiscount,$department) {
 
 
 function addfsTaxExempt() {
-	global $IS4C_LOCAL;
+	global $CORE_LOCAL;
 
 	getsubtotals();
-	addItem("FS Tax Exempt", " Fs Tax Exempt ", "C", "", "D", 0, 0, $IS4C_LOCAL->get("fsTaxExempt"), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 17);
+	addItem("FS Tax Exempt", " Fs Tax Exempt ", "C", "", "D", 0, 0, $CORE_LOCAL->get("fsTaxExempt"), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 17);
 }
 
 //_____________________________end addfsTaxExempt()
@@ -306,10 +306,10 @@ function discountnotify($strl) {
 //------------------------------- insert tax exempt statement line -----------------------------
 
 function addTaxExempt() {
-	global $IS4C_LOCAL;
+	global $CORE_LOCAL;
 
 	addItem("", "** Order is Tax Exempt **", "", "", "D", 0, 0, 0, 0, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10);
-	$IS4C_LOCAL->set("TaxExempt",1);
+	$CORE_LOCAL->set("TaxExempt",1);
 	setglobalvalue("TaxExempt", 1);
 }
 
@@ -319,9 +319,9 @@ function addTaxExempt() {
 //------------------------------ insert reverse tax exempt statement ---------------------------
 
 function reverseTaxExempt() {
-	global $IS4C_LOCAL;
+	global $CORE_LOCAL;
 	addItem("", "** Tax Exemption Reversed **", "", "", "D", 0, 0, 0, 0, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10);
-	$IS4C_LOCAL->set("TaxExempt",0);
+	$CORE_LOCAL->set("TaxExempt",0);
 	setglobalvalue("TaxExempt", 0);
 }
 
@@ -330,8 +330,8 @@ function reverseTaxExempt() {
 //------------------------------ insert case discount statement --------------------------------
 
 function addcdnotify() {
-	global $IS4C_LOCAL;
-	addItem("", "** ".$IS4C_LOCAL->get("casediscount")."% Case Discount Applied", "", "", "D", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6);
+	global $CORE_LOCAL;
+	addItem("", "** ".$CORE_LOCAL->get("casediscount")."% Case Discount Applied", "", "", "D", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6);
 }
 
 //____________________________end addcdnotify()
@@ -357,9 +357,9 @@ function additemdiscount($intdepartment, $dbltotal) {
 //------------------------------ insert tare statement -----------------------------------------
 
 function addTare($dbltare) {
-	global $IS4C_LOCAL;
-	$IS4C_LOCAL->set("tare",$dbltare/100);
-	addItem("", "** Tare Weight ".$IS4C_LOCAL->get("tare")." **", "", "", "D", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6);
+	global $CORE_LOCAL;
+	$CORE_LOCAL->set("tare",$dbltare/100);
+	addItem("", "** Tare Weight ".$CORE_LOCAL->get("tare")." **", "", "", "D", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6);
 }
 
 //___________________________end addTare()
@@ -368,15 +368,15 @@ function addTare($dbltare) {
 //------------------------------- insert MAD coupon statement (WFC specific) -------------------
 
 function addMadCoup() {
-	global $IS4C_LOCAL;
+	global $CORE_LOCAL;
 
-		$madCoup = -1 * $IS4C_LOCAL->get("madCoup");
+		$madCoup = -1 * $CORE_LOCAL->get("madCoup");
 		addItem("MAD Coupon", "Member Appreciation Coupon", "I", "CP", "C", 0, 1, $madCoup, $madCoup, $madCoup, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 17);
 		
 }
 
 function addVirtualCoupon($id){
-	global $IS4C_LOCAL;
+	global $CORE_LOCAL;
 	$sql = pDataConnect();
 	$fetchQ = "select name,type,value,max from VirtualCoupon WHERE flag=$id";
 	$fetchR = $sql->query($fetchQ);
@@ -388,7 +388,7 @@ function addVirtualCoupon($id){
 	$desc = substr($coupW["name"],0,35);
 	switch(strtoupper($type)){
 	case 'PERCENT':
-		$val = $val * $IS4C_LOCAL->get("discountableTotal");
+		$val = $val * $CORE_LOCAL->get("discountableTotal");
 		break;
 	}
 	if ($limit != 0 && $val > $limit)
@@ -418,25 +418,25 @@ function addDeposit($quantity, $deposit, $foodstamp) {
 // ----------------------------- insert transaction discount -----------------------------------
 
 function addtransDiscount() {
-	global $IS4C_LOCAL;
-	addItem("DISCOUNT", "Discount", "I", "", "", 0, 1, truncate2(-1 * $IS4C_LOCAL->get("transDiscount")), truncate2(-1 * $IS4C_LOCAL->get("transDiscount")), 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0);
+	global $CORE_LOCAL;
+	addItem("DISCOUNT", "Discount", "I", "", "", 0, 1, truncate2(-1 * $CORE_LOCAL->get("transDiscount")), truncate2(-1 * $CORE_LOCAL->get("transDiscount")), 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0);
 }
 
 // ---------------------------- insert stamp in activitytemplog --------------------------------
 
 function addactivity($activity) {
-	global $IS4C_LOCAL;
+	global $CORE_LOCAL;
 
 	$timeNow = time();
 
-	if ($IS4C_LOCAL->get("CashierNo") > 0 && $IS4C_LOCAL->get("CashierNo") < 256) {
-		$intcashier = $IS4C_LOCAL->get("CashierNo");
+	if ($CORE_LOCAL->get("CashierNo") > 0 && $CORE_LOCAL->get("CashierNo") < 256) {
+		$intcashier = $CORE_LOCAL->get("CashierNo");
 	}
 	else {
 		$intcashier = 0;
 	}
 
-	if ($IS4C_LOCAL->get("DBMS") == "mssql") {
+	if ($CORE_LOCAL->get("DBMS") == "mssql") {
 		$strqtime = "select max(datetime) as maxDateTime, getdate() as rightNow from activitytemplog";
 	} else {
 		$strqtime = "select max(datetime) as maxDateTime, now() as rightNow from activitytemplog";
@@ -463,14 +463,14 @@ function addactivity($activity) {
 
 	$values = array(
 		'datetime'	=> nullwrap($datetimestamp),
-		'LaneNo'	=> nullwrap($IS4C_LOCAL->get("laneno")),
+		'LaneNo'	=> nullwrap($CORE_LOCAL->get("laneno")),
 		'CashierNo'	=> nullwrap($intcashier),
-		'TransNo'	=> nullwrap($IS4C_LOCAL->get("transno")),
+		'TransNo'	=> nullwrap($CORE_LOCAL->get("transno")),
 		'Activity'	=> nullwrap($activity),
 		'Interval'	=> nullwrap($interval)
 		);
 		/*
-	if ($IS4C_LOCAL->get("DBMS")=="mysql"){
+	if ($CORE_LOCAL->get("DBMS")=="mysql"){
 		unset($values['Interval']);
 		$values['`Interval`'] = nullwrap($interval);
 	}
