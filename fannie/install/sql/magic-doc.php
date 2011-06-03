@@ -1,6 +1,6 @@
 <?php
 if (!isset($_REQUEST['fn'])){
-	echo "<h3>is4c_op</h3>";
+	echo "<h3>core_op</h3>";
 	echo "This database contains relatively static information
 		related to operations, such as products and employees";
 	echo "<ul>";
@@ -19,7 +19,7 @@ if (!isset($_REQUEST['fn'])){
 	}
 	echo "</ul>";
 
-	echo "<h3>is4c_log</h3>";
+	echo "<h3>core_log</h3>";
 	echo "This database contains changing information,
 		primarily transaction related";
 	echo "<ul>";

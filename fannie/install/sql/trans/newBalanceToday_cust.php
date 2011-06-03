@@ -11,7 +11,7 @@ Columns:
 	balance (calculated)
 
 Depends on:
-	is4c_op.custdata (table)
+	core_op.custdata (table)
 	memIouToday (view)
 
 Use:

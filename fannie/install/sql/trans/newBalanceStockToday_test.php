@@ -8,7 +8,7 @@ Columns:
 	startdate datetime
 
 Depends on:
-	is4c_op.meminfo (table)
+	core_op.meminfo (table)
 	stockSum_purch (view)
 	stockSum_today (view)
 

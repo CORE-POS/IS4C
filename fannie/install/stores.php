@@ -115,12 +115,12 @@ for($i=0; $i<$FANNIE_NUM_STORES; $i++){
 	$conf .= "'pw'=>'{$FANNIE_STORES[$i]['pw']}',";
 	echo "Store ".($i+1)." Database Password: <input type=password name=STORE_PW_$i value=\"{$FANNIE_STORES[$i]['pw']}\" /><br />";
 
-	if (!isset($FANNIE_STORES[$i]['op'])) $FANNIE_STORES[$i]['op'] = 'is4c_op';
+	if (!isset($FANNIE_STORES[$i]['op'])) $FANNIE_STORES[$i]['op'] = 'core_op';
 	if (isset($_REQUEST["STORE_OP_$i"])) $FANNIE_STORES[$i]['op'] = $_REQUEST["STORE_OP_$i"];
 	$conf .= "'op'=>'{$FANNIE_STORES[$i]['op']}',";
 	echo "Store ".($i+1)." Operational DB: <input type=text name=STORE_OP_$i value=\"{$FANNIE_STORES[$i]['op']}\" /><br />";
 
-	if (!isset($FANNIE_STORES[$i]['trans'])) $FANNIE_STORES[$i]['trans'] = 'is4c_trans';
+	if (!isset($FANNIE_STORES[$i]['trans'])) $FANNIE_STORES[$i]['trans'] = 'core_trans';
 	if (isset($_REQUEST["STORE_TRANS_$i"])) $FANNIE_STORES[$i]['trans'] = $_REQUEST["STORE_TRANS_$i"];
 	$conf .= "'trans'=>'{$FANNIE_STORES[$i]['trans']}'";
 	echo "Store ".($i+1)." Transaction DB: <input type=text name=STORE_TRANS_$i value=\"{$FANNIE_STORES[$i]['trans']}\" /><br />";

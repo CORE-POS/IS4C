@@ -44,7 +44,7 @@ Depends on:
 	none
 
 Use:
-This is IS4C's transaction log. A rather important table.
+This is IT CORE's transaction log. A rather important table.
 
 A transaction can be uniquely identified by:
 date + register_no + emp_no + trans_no
@@ -85,7 +85,7 @@ trans_subtype refines the record's type. Values include
 	      Used to make notes on a transaction
 	(tender code) => goes with trans_type 'T',
 			 exact values depends what's
-			 in is4c_op.tenders
+			 in core_op.tenders
 	0 => no refinement available for this trans_type
 	blank => no refinement available for this trans_type
 
@@ -164,9 +164,9 @@ the whole transaction. This is an integer, so
 
 volDiscType is a volume discount type. Usage varies
 a lot here, but in general:
-	volDiscType => is4c_op.products.pricemethod
-	volume => is4c_op.products.quantity
-	VolSpecial => is4c_op.products.groupprice
+	volDiscType => core_op.products.pricemethod
+	volume => core_op.products.quantity
+	VolSpecial => core_op.products.groupprice
 If an item is on sale, those become specialpricemethod,
 specialquantity, and specialgroupprice (respectively).
 Exact calculations depend a lot of volDiscType. 0 means
@@ -185,14 +185,14 @@ matched notes item quantites that have already been used
 for a volume pricing group. This is so the same item doesn't
 get counted more than once.
 
-memType and staff match values in is4c_op.custdata. Including
+memType and staff match values in core_op.custdata. Including
 them here helps determine membership status at the time of 
 purchase as opposed to current status.
 
 numflag and charflag are generic status indicators. As far
 as I know, there's no uniform usage across implementations.
 
-card_no is the customer number from is4c_op.custdata.
+card_no is the customer number from core_op.custdata.
 */
 $CREATE['trans.dtransactions'] = "
 	CREATE TABLE dtransactions (

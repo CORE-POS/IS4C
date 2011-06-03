@@ -18,7 +18,7 @@ Depends on:
 Use:
 This table stores items from the vendor UNFI.
 Of note: depart is the vendors categorization setting,
-not IS4C/Fannie's. Size relates to an indivdual product.
+not IT CORE/Fannie's. Size relates to an indivdual product.
 Units relates to a case. So a case of beer has 24
 units, each with a size of 12 oz.
 
