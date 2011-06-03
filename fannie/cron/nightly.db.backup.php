@@ -16,7 +16,7 @@
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    in the file license.txt along with IS4C; if not, write to the Free Software
+    in the file license.txt along with IT CORE; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
@@ -56,7 +56,7 @@ foreach($dbs as $db){
 	}
 
 	$cmd = realpath($FANNIE_BACKUP_BIN."/mysqldump");
-	$cmd .= " -q -h \"$FANNIE_SERVER\" -u \"$FANNIE_SERVER_USER\" -p\"$FANNIE_SERVER_PW\" \"$db\"";
+	$cmd .= " -q --databases -h \"$FANNIE_SERVER\" -u \"$FANNIE_SERVER_USER\" -p\"$FANNIE_SERVER_PW\" \"$db\"";
 	$cmd = escapeshellcmd($cmd);
 	if ($FANNIE_BACKUP_GZIP)
 		$cmd .= " | ".escapeshellcmd(realpath($FANNIE_BACKUP_BIN."/gzip"));
