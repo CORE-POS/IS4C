@@ -1,0 +1,30 @@
+<html>
+<head>
+	<title>Creating new reports</title>
+</head>
+<body>
+<h1>Creating new reports</h1>
+Eventually a time will come when you need a different sort
+of report beyond what Fannie provides out of the box. If that
+time comes <em>before</em> you've learned any PHP and/or HTML,
+that's okay. Glance over the table &amp; view docs if needed and
+get somebody who speaks SQL. Yourself, another staffer, a kidnapped
+consultant, whatever.
+<p />
+Head over to Fannie's <a href="../../../fannie/reports/DBA/">report generator</a>
+(fannie/reports/DBA/ if you're reading this elsewhere). Put your query in the
+big box. There's some keyword scrubbing to prevent you from shooting yourself in the
+foot, but don't go <em>trying</em> to create a disaster. 
+If you're querying transaction data and you provide dates (or just a
+start date), the tool will automatically replace <i>dlog</i> and/or <i>dtransactions</i>
+with appropriate references to the archive structure. This is entirely optional; you
+can type references to archive tables and views manually, too.
+<p />
+Default output is a webpage. Check the download results box to get a spreadsheet
+instead. Some newer versions of Excel complain that the file isn't really in
+correct XLS format, but they can still open it.
+<p />
+If you're going to run a report often, you can save it by putting a name in the
+<i>Save As</i> field.
+</body>
+</html>

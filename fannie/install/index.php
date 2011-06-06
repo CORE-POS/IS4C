@@ -713,6 +713,9 @@ function create_op_dbs($con){
 
 	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 			'expingMems_thisMonth','op');
+
+	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+			'customReports','op');
 }
 
 function create_trans_dbs($con){
