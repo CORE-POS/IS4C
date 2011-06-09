@@ -10,3 +10,6 @@ pos/is4c-nf/scale-drivers/drivers/rs232/ssd
 */tmp/*
 fannie/item/images/done/*
 fannie/item/images/new/*
+fannie/legacy/FE/overshort/acct
+fannie/inventory/archive/*
+fannie/reports/Store-Specific/WFC/CCSettle/fetchLib.php
