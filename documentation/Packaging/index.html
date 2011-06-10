@@ -56,6 +56,15 @@ $ sudo rpm -Uvh it-core-is4c-nf-&lt;version&gt;.rpm
 Any of the last three lines could be omitted, although omitting all three would
 be kind of silly.
 <h1>DEB Packaging</h1>
-Todo
+The <i>dist/deb</i> contains a single alien-based script for converting .rpm files
+to .deb files. To create deb packges:
+<ol>
+<li>Set up a dkpg+alien environment ($deity help you if you're on an rpm-based system
+and have to do this from source packages)</li>
+<li>Build RPMs under <i>dist/rpm</i> as described above.</li>
+<li>Go to <i>dist/deb</i> and run the <b>make-debs.sh</b> script. This script requires
+both a version number and a build number (e.g., if the RPM is it-core-0.1.0-1.noarch.rpm,
+run make-debs.sh 0.1.0 1).</li>
+</ol>
 </body>
 </html>
