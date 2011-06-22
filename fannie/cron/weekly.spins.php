@@ -1,7 +1,7 @@
 <?php
 /*******************************************************************************
 
-    Copyright 2009 Whole Foods Co-op
+    Copyright 2011 Whole Foods Co-op
 
     This file is part of Fannie.
 
@@ -118,7 +118,7 @@ if (!$conn_id or !$login_id){
 	echo "FTP connect failed!";
 }
 
-//ftp_chdir($conn_id,"data");
+ftp_chdir($conn_id,"data");
 ftp_pasv($conn_id,True);
 
 $upload = ftp_put($conn_id, $filename, $outfile, FTP_ASCII);

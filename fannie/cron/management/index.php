@@ -58,10 +58,11 @@ include($FANNIE_ROOT.'src/header.html');
 if (isset($_REQUEST['enabled'])){
 	$indexes = $_REQUEST['enabled'];
 	if (is_array($indexes) && count($indexes) > 0){
-		$tmpfn = tempnam(sys_get_temp_dir(),"");
+		$tmpdir = function_exists("sys_get_temp_dir()")?sys_get_temp_dir():"/tmp/";
+		$tmpfn = tempnam($tmpdir,"");
 		$fp = fopen($tmpfn,"w");
 		if (isset($_REQUEST['email']) && !empty($_REQUEST['email']))
-			fwrite($fp,"EMAIL=".$_REQUEST['email']."\n");
+			fwrite($fp,"MAILTO=".$_REQUEST['email']."\n");
 		foreach($indexes as $i){
 			fprintf($fp,"%s %s %s %s %s %s\n",
 				$_REQUEST['min'][$i],
@@ -213,8 +214,8 @@ function read_crontab(){
 		if($line === false) continue;
 		$line = trim($line);
 		if ($line[0] == "#") continue;
-		if (substr($line,0,5) == "EMAIL")
-			$ret['email'] = substr($line,6);
+		if (substr($line,0,6) == "MAILTO")
+			$ret['email'] = substr($line,7);
 		$tmp = preg_split("/\s+/",$line,6);
 		if (count($tmp) == 6){
 			$sn = str_replace("cd {$FANNIE_ROOT}cron && php ./","",$tmp[5]);

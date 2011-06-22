@@ -11,7 +11,7 @@ Source0: it-core-0.1.0.tar.gz
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 #BuildRequires:  
-Requires: php >= 5, php-mysql, mysql >= 5, httpd >= 2
+Requires: php >= 5, php-mysql, php-xml, php-pear, php-ldap, mysql >= 5, httpd >= 2
 
 %description
 IT CORE is a collection of front end and back end
