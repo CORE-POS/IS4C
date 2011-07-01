@@ -1,0 +1,80 @@
+<html>
+<head>
+	<title>Install Guide: RPM</title>
+</head>
+<body>
+This guide is for installing it-core from RPMs. These instructions
+are based on Fedora, but should work on any Redhat-ish distro.
+<p />
+This mostly command-line references. Be not afraid. It's just more
+concise and accurate than verbally describing graphic interfaces.
+<p />
+<h3>Step one</h3>
+Install your OS. If your chosen distribution doesn't have good 
+documentation for this step, choose a new distribution.
+<h3>Step two</h3>
+Install some required packages.
+<pre>
+$ su
+# yum -y install httpd mysql-server php php-mysql php-xml php-pear php-ldap
+</pre>
+The first command, su, changes to the root user. You will be prompted for
+root's password. The second command install a bunch of packages via 
+Red Hat package manager, yum.
+<h3>Step three</h3>
+Download and install it-core. Your filenames may differ slightly, depending on
+the version number.
+<pre>
+# rpm -Uvh it-core-0.1.0-1.noarch.rpm
+# rpm -Uvh it-core-doc-0.1.0-1.noarch.rpm
+# rpm -Uvh it-core-fannie-0.1.0-1.noarch.rpm
+# rpm -Uvh it-core-is4c-nf-0.1.0-1.noarch.rpm
+</pre>
+These commands should be run as root. The base it-core package is always
+required. The it-core-doc package is just documentation and thus always
+optional. The it-core-fannie package contains the backend server; it-core-is4c-nf
+contains the lane point of sale system. Neither is strictly required, but
+omitting both wouldn't make much sense.
+<h3>Step four</h3>
+Start required services
+<pre>
+# /etc/init.d/mysqld start
+# mysqladmin password
+# /etc/init.d/mysqld restart
+# /sbin/chkconfig mysqld on
+</pre>
+The first command starts the mysql database. The second sets a root password. The
+third command just restarts the database so the password change takes affect.
+The fourth sets the database to automatically run on boot. Next is apache:
+<pre>
+# /etc/init.d/httpd start
+# /sbin/chkconfig httpd on
+</pre>
+This one's simpler. Start the service, configure it to start on boot.
+<h3>Step five</h3>
+Open a browser and go to http://localhost/it-core/. You should see at least a
+license as well as documentation, fannie, and/or is4c-nf folders depending
+on what you installed.
+<hr />
+<h3>Further ideas (Production environment)</h3>
+<ul>
+<li>You probably want a static IP address. Go to Applications =&gt; Other
+=&gt; Network (if your menu is different, try running nm-connection-editor
+from the command line). Pick the appropriate connection - wired is recommended
+- and edit.</li>
+<li>You probably want SSH access through the firewall. Go to Applications =&gt;
+Other =&gt; Firewall (if your menu is different, try running system-config-firewall
+from the command line). Scroll down services and check the box for SSH. If it's 
+already checked, toggle it off then back on just to be sure. Hit Apply to save
+the updated rules, then Reload to restart the firewall. Linux veterans
+can find the firewall configuration file at /etc/sysconfig/iptables.
+</li>
+<li>VNC can be useful for remote debugging. Go to Applications =&gt;
+Other =&gt; Remote Desktop (if your menu is different, try running
+vino-preferences from the command line). Turn on sharing. Security options
+are up to you. A password is recommended. Automatically accepting connections
+is not recommended. Tunneling VNC through SSH is more secure.
+</li>
+</ul>
+</body>
+</html>

@@ -3,68 +3,9 @@
 	<title>Packaging</title>
 </head>
 <body>
-The <i>dist</i> directory contains files &amp; scripts for
-building distributable packages. 
-<h1>RPM packaging</h1>
-Tools for making rpms are in <i>dist/rpm</i>. To build, go
-to that directory and run one of the two shell scripts.
 <ul>
-<li><b>setup-here.sh</b> requires one argument, a version number.
-It builds an appropriate source tarball,modifies the spec file
-and sets a user config file (~/.rpmmacros) to use this directory.</li>
-<li><b>just-prep.sh</b> is for users that already have their own
-rpm build environment. It also takes one argument, a version number,
-and simply produces an appropriate source tarball and spec file for
-use elsewhere.</li>
+	<li><a href="building.html">Building Packages from source</a></li>
+	<li><a href="install-rpm.html">Installing from RPMs</a></li>
 </ul>
-The build doesn't have any requirements other than rpmbuild itself (note:
-if you have trouble finding it, the OS package containing rpmbuild 
-is often hyphenated as rpm-build.) The whole procedure looks like this
-<pre style="background:#ccc;font-family:monospace;">
-$ ./setup-here.sh
-$ rpmbuild -ba SPECS/it-core.spec
-</pre>
-This creates four RPMs. Paths given below are typical and may vary on some
-distributions:
-<ul>
-<li><b>it-core</b> contains the license (/usr/share/it-core/license) and
-an apache config directive to point http://localhost/it-core at
-/usr/share/it-core. This directory is chosen to comply with Red Hat
-packaging guidelines for web applications, should IT CORE ever be submitted
-for formal inclusion in a distribution.</li>
-<li><b>it-core-doc</b> contains the documentation and installs to
-/usr/share/it-core/documentation</li>
-<li><b>it-core-fannie</b> contains the backend and installs to 
-/usr/share/it-core/fannie. This package also assigns appropriate config
-file permissions.</li>
-<li><b>it-core-is4c-nf</b> contains the front-end and installs to 
-/usr/share/it-core/is4c-nf. This package also assigns appropriate config
-file permissions.</li>
-</ul>
-All RPMs require PHP 5+, Apache 2+, MySQL 5+, and php-mysql. The subpackages
-each require the main it-core but are otherwise independent. 
-<p />
-Installation would look like this:
-<pre style="background:#ccc;font-family:monospace;">
-$ cd BUILD/noarch
-$ sudo rpm -Uvh it-core-&lt;version&gt;.rpm
-$ sudo /etc/init.d/httpd restart
-$ sudo rpm -Uvh it-core-doc-&lt;version&gt;.rpm
-$ sudo rpm -Uvh it-core-fannie-&lt;version&gt;.rpm
-$ sudo rpm -Uvh it-core-is4c-nf-&lt;version&gt;.rpm
-</pre>
-Any of the last three lines could be omitted, although omitting all three would
-be kind of silly.
-<h1>DEB Packaging</h1>
-The <i>dist/deb</i> contains a single alien-based script for converting .rpm files
-to .deb files. To create deb packges:
-<ol>
-<li>Set up a dkpg+alien environment ($deity help you if you're on an rpm-based system
-and have to do this from source packages)</li>
-<li>Build RPMs under <i>dist/rpm</i> as described above.</li>
-<li>Go to <i>dist/deb</i> and run the <b>make-debs.sh</b> script. This script requires
-both a version number and a build number (e.g., if the RPM is it-core-0.1.0-1.noarch.rpm,
-run make-debs.sh 0.1.0 1).</li>
-</ol>
 </body>
 </html>

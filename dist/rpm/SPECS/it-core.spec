@@ -50,6 +50,8 @@ Installs to http://localhost/it-core/is4c-nf/
 # scrub binaries to mono requirements aren't auto-added
 rm pos/is4c-nf/scale-drivers/drivers/NewMagellan/*.exe
 rm pos/is4c-nf/scale-drivers/drivers/NewMagellan/*.dll
+# ditto for libc binaries
+rm pos/is4c-nf/scale-drivers/c-wrappers/nm
 
 %build
 
