@@ -77,6 +77,10 @@ EOF
 
 cat << 'EOF' > pos/is4c-nf/ini.php
 <?php
+$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
+if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
+if (!isset($CORE_LOCAL))
+        require_once($CORE_PATH."lib/LocalStorage/conf.php");
 ?>
 EOF
 
@@ -94,7 +98,7 @@ chmod 644 %{_datadir}/it-core/fannie/config.php
 
 %post is4c-nf
 chown apache:apache %{_datadir}/it-core/is4c-nf/ini.php
-chmod 644 %{_datadir}/it-core/it-core/is4c-nf/ini.php
+chmod 644 %{_datadir}/it-core/is4c-nf/ini.php
 
 %files
 %defattr(-,root,root,-)

@@ -12,11 +12,24 @@ concise and accurate than verbally describing graphic interfaces.
 <h3>Step one</h3>
 Install your OS. If your chosen distribution doesn't have good 
 documentation for this step, choose a new distribution.
+<p />
+If your distro includes SELinux (Fedora, CentOS, and Red Hat Enterprise
+all do), disable it. There's no GUI for this. Edit /etc/sysconfig/selinux
+and change the line:
+<pre>
+SELINUX=enforcing
+</pre>
+to
+<pre>
+SELINUX=disabled
+</pre>
+This will fix a lot of permission headaches. You have to reboot 
+for the change to take effect.
 <h3>Step two</h3>
 Install some required packages.
 <pre>
 $ su
-# yum -y install httpd mysql-server php php-mysql php-xml php-pear php-ldap
+# yum -y install httpd mysql-server php php-mysql php-xml php-pear php-ldap php-process
 </pre>
 The first command, su, changes to the root user. You will be prompted for
 root's password. The second command install a bunch of packages via 
