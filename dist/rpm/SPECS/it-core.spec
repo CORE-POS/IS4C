@@ -2,10 +2,10 @@ Name: it-core
 Version: 0.1.0
 Release: 1%{?dist}
 Summary: IT CORE Point of Sale
-BuildArch: noarch
 AutoReqProv: no
 Group:  Applications/Internet
 License: GPLv2       
+BuildArch: noarch
 URL: http://github.com/gohanman/IS4C           
 Source0: it-core-0.1.0.tar.gz
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
@@ -42,6 +42,22 @@ Requires: %{name} = %{version}-%{release}
 A frameless IT CORE front end derived from IS4C
 Installs to http://localhost/it-core/is4c-nf/
 
+%package posdriver-sph
+Summary: IT CORE Scale Driver 
+Group: Applications/Internet
+Requires: %{name} = %{version}-%{release}, it-core-is4c-nf = %{version}-%{release}, mono-core
+BuildRequires: mono-devel
+%description posdriver-sph
+A mono-based driver for monitoring serial port(s)
+and reading UDP input
+
+%package posdriver-ssd
+Summary: IT CORE Scale Driver 
+Group: Applications/Internet
+Requires: %{name} = %{version}-%{release}, it-core-is4c-nf = %{version}-%{release} 
+%description posdriver-ssd
+A C-based driver for monitoring serial port(s)
+
 # debug script fails on filenames with spaces so disabling...
 %define  debug_package %{nil}
 
@@ -53,13 +69,22 @@ rm pos/is4c-nf/scale-drivers/drivers/NewMagellan/*.dll
 # ditto for libc binaries
 rm pos/is4c-nf/scale-drivers/c-wrappers/nm
 
+# fixup paths
+sed -e 's/.*private static String MAGELLAN_OUTPUT_DIR.*/private static String MAGELLAN_OUTPUT_DIR = "ss-output";/g' --in-place="" pos/is4c-nf/scale-drivers/drivers/NewMagellan/SPH_Magellan_Scale.cs
+
 %build
+cd pos/is4c-nf/scale-drivers/drivers/NewMagellan && make
+cd ../../../../../
+cd pos/is4c-nf/scale-drivers/drivers/rs232 && make
 
 %install
 rm -rf $RPM_BUILD_ROOT
 
 mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/httpd/conf.d
+mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/init.d/
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/it-core
+mkdir -p $RPM_BUILD_ROOT%{_localstatedir}/run/posdriver-sph
+mkdir -p $RPM_BUILD_ROOT%{_localstatedir}/run/posdriver-ssd
 
 cat << 'EOF' > $RPM_BUILD_ROOT%{_sysconfdir}/httpd/conf.d/it-core.conf
 # simple apache redirection
@@ -89,6 +114,12 @@ cp -r documentation $RPM_BUILD_ROOT%{_datadir}/it-core/
 cp -r pos/is4c-nf $RPM_BUILD_ROOT%{_datadir}/it-core/
 cp -r license $RPM_BUILD_ROOT%{_datadir}/it-core/
 
+# grab init scripts, create empty log files
+mv $RPM_BUILD_ROOT%{_datadir}/it-core/is4c-nf/scale-drivers/drivers/NewMagellan/posdriver-sph $RPM_BUILD_ROOT%{_sysconfdir}/init.d
+mv $RPM_BUILD_ROOT%{_datadir}/it-core/is4c-nf/scale-drivers/drivers/rs232/posdriver-ssd $RPM_BUILD_ROOT%{_sysconfdir}/init.d
+touch $RPM_BUILD_ROOT%{_localstatedir}/run/posdriver-sph/pos.log
+touch $RPM_BUILD_ROOT%{_localstatedir}/run/posdriver-ssd/ssd.log
+
 %clean
 rm -rf $RPM_BUILD_ROOT
 
@@ -99,6 +130,12 @@ chmod 644 %{_datadir}/it-core/fannie/config.php
 %post is4c-nf
 chown apache:apache %{_datadir}/it-core/is4c-nf/ini.php
 chmod 644 %{_datadir}/it-core/is4c-nf/ini.php
+
+%post posdriver-sph
+chown nobody:nobody %{_localstatedir}/posdriver-sph
+
+%post posdriver-ssd
+chown nobody:nobody %{_localstatedir}/posdriver-ssd
 
 %files
 %defattr(-,root,root,-)
@@ -115,6 +152,41 @@ chmod 644 %{_datadir}/it-core/is4c-nf/ini.php
 
 %files is4c-nf
 %defattr(-,root,root,-)
-%{_datadir}/it-core/is4c-nf
+%{_datadir}/it-core/is4c-nf/*.*
+%{_datadir}/it-core/is4c-nf/DEV_README
+%{_datadir}/it-core/is4c-nf/WFC_VS_RELEASE
+%{_datadir}/it-core/is4c-nf/ajax-callbacks/
+%{_datadir}/it-core/is4c-nf/cc-modules/
+%{_datadir}/it-core/is4c-nf/documentation/
+%{_datadir}/it-core/is4c-nf/graphics/
+%{_datadir}/it-core/is4c-nf/gui-class-lib/
+%{_datadir}/it-core/is4c-nf/gui-modules/
+%{_datadir}/it-core/is4c-nf/install/
+%{_datadir}/it-core/is4c-nf/js/
+%{_datadir}/it-core/is4c-nf/lib/
+%{_datadir}/it-core/is4c-nf/log/
+%{_datadir}/it-core/is4c-nf/parser-class-lib/
+%{_datadir}/it-core/is4c-nf/quickkeys/
+%{_datadir}/it-core/is4c-nf/test/
+%{_datadir}/it-core/is4c-nf/scale-drivers/c-wrappers/
+%{_datadir}/it-core/is4c-nf/scale-drivers/drivers/Magellan/
+%{_datadir}/it-core/is4c-nf/scale-drivers/php-wrappers/ScaleDriverWrapper.php
+
+%files posdriver-sph
+%defattr(-,root,root,-)
+%{_datadir}/it-core/is4c-nf/scale-drivers/drivers/NewMagellan/
+%{_datadir}/it-core/is4c-nf/scale-drivers/php-wrappers/NewMagellan.php
+%{_datadir}/it-core/is4c-nf/scale-drivers/php-wrappers/NM_Ingenico.php
+%{_sysconfdir}/init.d/posdriver-sph
+%dir %{_localstatedir}/run/posdriver-sph
+%ghost %{_localstatedir}/run/posdriver-sph/pos.log
+
+%files posdriver-ssd
+%defattr(-,root,root,-)
+%{_datadir}/it-core/is4c-nf/scale-drivers/drivers/rs232/
+%{_datadir}/it-core/is4c-nf/scale-drivers/php-wrappers/ssd.php
+%{_sysconfdir}/init.d/posdriver-ssd
+%dir %{_localstatedir}/run/posdriver-ssd
+%ghost %{_localstatedir}/run/posdriver-ssd/ssd.log
 
 %changelog

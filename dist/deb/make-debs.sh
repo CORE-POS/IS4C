@@ -67,4 +67,28 @@ else
 	echo "File not found: it-core-is4c-nf-$1-$2.noarch.rpm"
 fi
 
+if [ -f ../rpm/RPMS/noarch/it-core-posdriver-sph-$1-$2.noarch.rpm ]; then
+	echo "Building it-core posdriver-sph package"
+	alien --keep-version --generate --scripts ../rpm/RPMS/noarch/it-core-posdriver-sph-$1-$2.noarch.rpm
+	cd it-core-posdriver-sph-$1/
+	dpkg-buildpackage -d -b
+	cd ..
+	rm -rf it-core-posdriver-sph-$1/
+	rm -rf it-core-posdriver-sph-$1.orig/
+else
+	echo "File not found: it-core-posdriver-sph-$1-$2.noarch.rpm"
+fi
+
+if [ -f ../rpm/RPMS/noarch/it-core-posdriver-ssd-$1-$2.noarch.rpm ]; then
+	echo "Building it-core posdriver-ssd package"
+	alien --keep-version --generate --scripts ../rpm/RPMS/noarch/it-core-posdriver-ssd-$1-$2.noarch.rpm
+	cd it-core-posdriver-ssd-$1/
+	dpkg-buildpackage -d -b
+	cd ..
+	rm -rf it-core-posdriver-ssd-$1/
+	rm -rf it-core-posdriver-ssd-$1.orig/
+else
+	echo "File not found: it-core-posdriver-sph-$1-$2.noarch.rpm"
+fi
+
 rm *.changes
