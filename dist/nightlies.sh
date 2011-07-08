@@ -3,6 +3,8 @@
 VERSION=0.1.0
 RELEASE=`date +%Y.%m.%d`
 
+git pull
+
 # build RPMs
 cd rpm
 if [ 1 == 0 ]; then
