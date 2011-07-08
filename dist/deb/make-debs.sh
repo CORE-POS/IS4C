@@ -92,3 +92,4 @@ else
 fi
 
 rm *.changes
+mv *.deb DEBS/

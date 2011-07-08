@@ -13,3 +13,4 @@ fannie/item/images/new/*
 fannie/legacy/FE/overshort/acct
 fannie/inventory/archive/*
 fannie/reports/Store-Specific/WFC/CCSettle/fetchLib.php
+fannie/auth/shadowread/shadowread
