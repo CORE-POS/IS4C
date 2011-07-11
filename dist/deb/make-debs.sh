@@ -43,6 +43,7 @@ if [ -f ../rpm/RPMS/noarch/it-core-fannie-$1-$2.noarch.rpm ]; then
 	cd it-core-fannie-$1/
 	sed -e "s/Depends:.*/Depends: it-core (=$1-$2)/g" --in-place="" debian/control
 	sed -e "s/apache/www-data/g" --in-place="" debian/postinst
+	sed -e "s/apache/www-data/g" --in-place="" debian/preinst
 	dpkg-buildpackage -d -b
 	cd ..
 	rm -rf it-core-fannie-$1/

@@ -82,11 +82,45 @@ already checked, toggle it off then back on just to be sure. Hit Apply to save
 the updated rules, then Reload to restart the firewall. Linux veterans
 can find the firewall configuration file at /etc/sysconfig/iptables.
 </li>
+<li>You'll need remote MySQL access. First allow port 3306 through the firewall
+(see SSH above). Then make some modifications via MySQL itself:
+<pre>
+$ mysql -u root -p -h localhost
+> GRANT ALL ON *.* TO 'root'@'%' IDENTIFIED BY 'your_password';
+> FLUSH PRIVILEGES
+> EXIT
+</pre>
+</li>
 <li>VNC can be useful for remote debugging. Go to Applications =&gt;
 Other =&gt; Remote Desktop (if your menu is different, try running
 vino-preferences from the command line). Turn on sharing. Security options
 are up to you. A password is recommended. Automatically accepting connections
-is not recommended. Tunneling VNC through SSH is more secure.
+is not recommended. Depending on your network setup, allowing port 5900 through the
+see SSH above) might make sense.</li>
+</li>
+</ul>
+<hr />
+<h3>Troubleshooting</h3>
+An unsorted collection of <i>gotchas</i> as I discover them:
+<ul>
+<li>Printer isn't working: I've had issues with Fedora auto-detecting printers.
+Maybe the cutting edge cool kids don't use parallel ports anymore. Look in
+/dev. If you see a file lp0, that's the printer (which is good). If you just see
+a file parport0, you've got a parallel port but no printer (if there's no parport,
+maybe the parallel port is disabled in your BIOS). Open up a terminal and try:
+<pre>
+# /sbin/modprobe lp
+</pre>
+This should create the /dev/lp0 file. To make this happen on boot, paste this into
+/etc/sysconfig/modules/lp.modules:
+<pre>
+#!/bin/sh
+
+if [ ! -c /dev/lp0 ] ; then
+        exec /sbin/modprobe lp >/dev/null 2>&1
+fi
+</pre>
+Save the file and make it executable (chmod +x /etc/sysconfig/modules/lp.modules).
 </li>
 </ul>
 </body>
