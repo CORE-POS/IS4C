@@ -1,0 +1,4 @@
+You need writeable cache directories, like so:
+
+# mkdir -p cachefiles/{daily,monthly}
+# chmod -R 777 cachefiles

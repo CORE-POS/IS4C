@@ -11,6 +11,13 @@ pos/is4c-nf/scale-drivers/drivers/rs232/ssd
 fannie/item/images/done/*
 fannie/item/images/new/*
 fannie/legacy/FE/overshort/acct
+fannie/cache/cachefiles
 fannie/inventory/archive/*
-fannie/reports/Store-Specific/WFC/CCSettle/fetchLib.php
+fannie/reports/Store-Specific/WFC/CCSettle/xmlcache/*.xml
 fannie/auth/shadowread/shadowread
+fannie/src/Credentials/*.php
+dist/deb/DEBS/*.deb
+dist/rpm/BUILD/*
+dist/rpm/RPMS/*
+dist/rpm/SOURCES/*
+dist/rpm/SRPMS/*
