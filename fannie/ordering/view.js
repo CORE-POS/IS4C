@@ -197,6 +197,18 @@ function newQty(oid,tid){
 	}
 	});
 }
+function newDept(oid,tid){
+	var d = $('#newdept').val();
+	$.ajax({
+	url: 'ajax-calls.php',
+	type: 'post',
+	data: 'action=newDept&orderID='+oid+'&transID='+tid+'&dept='+d,
+	cache: false,
+	success: function(resp){
+		$('#itemDiv').html(resp);
+	}
+	});
+}
 function saveDept(new_dept,tid){
 	var oid = $('#orderID').val();
 	$.ajax({

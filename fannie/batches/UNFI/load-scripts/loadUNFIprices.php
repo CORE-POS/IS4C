@@ -231,7 +231,12 @@ if (count($filestoprocess) == 0){
 		INNER JOIN UnfiToPLU AS p
 		ON u.unfi_sku = p.unfi_sku
 		SET u.upcc = p.wfc_plu";
-	$pluQ2 = "UPDATE prodExtra AS x
+	$pluQ2 = "UPDATE vendorItems AS u
+		INNER JOIN UnfiToPLU AS p
+		ON u.sku = p.unfi_sku
+		SET u.upc = p.wfc_plu
+		WHERE u.vendorID=".$VENDOR_ID;
+	$pluQ3 = "UPDATE prodExtra AS x
 		INNER JOIN UnfiToPLU AS p
 		ON x.upc=p.wfc_plu
 		INNER JOIN unfi_order AS u
@@ -242,7 +247,12 @@ if (count($filestoprocess) == 0){
 			FROM unfi_order AS u RIGHT JOIN
 			UnfiToPLU AS p ON u.unfi_sku = p.unfi_sku
 			WHERE u.unfi_sku IS NOT NULL";
-		$pluQ2 = "UPDATE prodExtra
+		$pluQ2 = "UPDATE vendorItems SET upc = p.wfc_plu
+			FROM vendorItems AS u RIGHT JOIN
+			UnfiToPLU AS p ON u.sku = p.unfi_sku
+			WHERE u.unfi_sku IS NOT NULL
+			AND u.vendorID=".$VENDOR_ID;
+		$pluQ3 = "UPDATE prodExtra
 			SET cost = u.vd_cost / u.pack
 			FROM UnfiToPLU AS p LEFT JOIN
 			unfi_order AS u ON p.unfi_sku = u.unfi_sku
@@ -251,6 +261,7 @@ if (count($filestoprocess) == 0){
 	}
 	$dbc->query($pluQ1);
 	$dbc->query($pluQ2);
+	$dbc->query($pluQ3);
 
 	echo "Finished processing UNFI price file<br />";
 	if ($PRICEFILE_USE_SPLITS){

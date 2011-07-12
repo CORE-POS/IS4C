@@ -50,7 +50,9 @@ case 'loadItems':
 case 'newUPC':
 	$qty = is_numeric($_REQUEST['cases'])?(int)$_REQUEST['cases']:1;
 	$result = addUPC($orderID,$_REQUEST['memNum'],$_REQUEST['upc'],$qty);
-	if ($result[0] === False)
+	if (!is_numeric($_REQUEST['upc']))
+		echo getDeptForm($orderID,$result[1],$result[2]);
+	else if ($result[0] === False)
 		echo getItemForm($orderID);
 	else 
 		echo getQtyForm($orderID,$result[0],$result[1],$result[2]);
@@ -138,6 +140,14 @@ case 'newQty':
 	$upQ = sprintf("UPDATE PendingSpecialOrder SET
 		quantity=%f WHERE order_id=%d AND trans_id=%d",
 		$_REQUEST['qty'],$_REQUEST['orderID'],
+		$_REQUEST['transID']);
+	$dbc->query($upQ);
+	echo getItemForm($_REQUEST['orderID']);
+	break;
+case 'newDept':
+	$upQ = sprintf("UPDATE PendingSpecialOrder SET
+		department=%d WHERE order_id=%d AND trans_id=%d",
+		$_REQUEST['dept'],$_REQUEST['orderID'],
 		$_REQUEST['transID']);
 	$dbc->query($upQ);
 	echo getItemForm($_REQUEST['orderID']);
@@ -514,6 +524,12 @@ function DuplicateOrder($old_id,$from='CompleteSpecialOrder'){
 		SpecialOrderNotes WHERE order_id=$old_id";
 	$dbc->query("DELETE FROM SpecialOrderNotes WHERE order_id=".$new_id);
 	$dbc->query($notesQ);
+
+	$user = checkLogin();
+	$userQ = sprintf("UPDATE PendingSpecialOrder SET mixMatch=%s
+			WHERE order_id=%d AND trans_id=0",
+			$dbc->escape($user),$new_id);
+	$userR = $dbc->query($userQ);
 	
 	return $new_id;
 }
@@ -744,10 +760,12 @@ function getCustomerForm($orderID,$memNum="0"){
 		fwrite($fp,serialize($prints));
 		fclose($fp);
 	}
-	$ret .= sprintf('<br />Print tags <input type="checkbox" %s onclick="togglePrint(\'%s\',%d);" />',
+	$ret .= sprintf('<br />Queue tags <input type="checkbox" %s onclick="togglePrint(\'%s\',%d);" />',
 			(isset($prints[$orderID])?'checked':''),
 			$username,$orderID
 		);
+	$ret .= sprintf('<br /><a href="tagpdf.php?oids[]=%d" target="_tags%d">Print Now</a>',
+			$orderID,$orderID);
 	$ret .= '</td></tr></table>';
 
 	$extra = "";	
@@ -1055,6 +1073,28 @@ function getQtyForm($orderID,$default,$transID,$description){
 	$ret .= '<b>Qty</b>: <input type="text" id="newqty" value="'.$default.'" maxlength="3" size="4" />';
 	$ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
 	$ret .= '<input type="submit" value="Enter Qty" />';
+	$ret .= '</form>';
+	return $ret;
+}
+
+function getDeptForm($orderID,$transID,$description){
+	global $dbc;
+	$ret = '<i>This item ('.$description.') requires a department</i><br />';
+	$ret .= "<form onsubmit=\"newDept($orderID,$transID);return false;\">";
+	$ret .= '<select id="newdept">';
+	$q = "select super_name,
+		CASE WHEN MIN(map_to) IS NULL THEN MIN(m.dept_ID) ELSE MIN(map_to) END
+		from MasterSuperDepts
+		as m left join SpecialOrderDeptMap as s
+		on m.dept_ID=s.dept_ID
+		where m.superID > 0
+		group by super_name ORDER BY super_name";
+	$r = $dbc->query($q);
+	while($w = $dbc->fetch_row($r))
+		$ret .= sprintf('<option value="%d">%s</option>',$w[1],$w[0]);
+	$ret .= "</select>";
+	$ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
+	$ret .= '<input type="submit" value="Enter Dept" />';
 	$ret .= '</form>';
 	return $ret;
 }
