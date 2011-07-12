@@ -85,7 +85,7 @@ function syncProductsAllLanes(){
 
 			if (!is_readable('/pos/csvs/products.csv')) break;
 
-			$result = $sql->query("TRUNCATE TABLE Products","opdata");
+			$result = $sql->query("TRUNCATE TABLE products","opdata");
 
 			$sql->query("LOAD DATA LOCAL INFILE '/pos/csvs/products.csv' INTO TABLE
 				products FIELDS TERMINATED BY ',' OPTIONALLY

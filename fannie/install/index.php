@@ -581,7 +581,7 @@ function create_op_dbs($con){
 			'batchType','op');
 
 	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-			'batchOwner','op');
+			'batchowner','op');
 
 	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 			'batchCutPaste','op');

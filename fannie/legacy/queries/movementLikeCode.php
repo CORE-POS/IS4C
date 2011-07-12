@@ -35,8 +35,8 @@ if (isset($_GET['date1'])){
 		  u.likecode,l.likeCodeDesc,max(p.department),
 		  sum(case when t.trans_status in ('M','V') then t.itemqtty else t.quantity end ) as qty,
 		  sum(t.total) from
-		  $dlog as t left join upclike as u on u.upc = t.upc
-		  left join likecodes as l on u.likecode = l.likecode 
+		  $dlog as t left join upcLike as u on u.upc = t.upc
+		  left join likeCodes as l on u.likecode = l.likecode 
 		  left join products as p on t.upc = p.upc
 		  where u.upc is not null and u.likecode between $lc1 and $lc2
 		  and datediff(dd,t.tdate,'$date1') <= 0 

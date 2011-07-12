@@ -220,7 +220,7 @@ if(isset($_REQUEST['upc']) && !empty($_REQUEST['upc'])){
 					VALUES (%d,%s)",$_REQUEST['lc'],$dbc->escape($upcs[0]));
 				$insR = $dbc->query($insQ);
 
-				$fetchQ = sprintf("SELECT upc FROM upclike WHERE likeCode=%d",
+				$fetchQ = sprintf("SELECT upc FROM upcLike WHERE likeCode=%d",
 						$_REQUEST['lc']);
 				$fetchR = $dbc->query($fetchQ);
 				$upcs = array();

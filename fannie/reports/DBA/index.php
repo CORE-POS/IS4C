@@ -91,7 +91,7 @@ if ($errors == "" && $query != ""){
 				$idR = $dbc->query($idQ);
 				$id = array_pop($dbc->fetch_row($idR));
 				$id = ($id=="")?1:$id+1;
-				$insQ = sprintf("INSERT INTO CustomReports (reportID,reportName,reportQuery)
+				$insQ = sprintf("INSERT INTO customReports (reportID,reportName,reportQuery)
 					VALUES (%d,%s,%s)",$id,$dbc->escape($name),
 					$dbc->escape($saveableQ));
 				$insR = $dbc->query($insQ);

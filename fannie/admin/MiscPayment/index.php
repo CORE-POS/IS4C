@@ -85,7 +85,7 @@ function regularDisplay(){
 	echo "</select></td></tr>
 		<tr><td><b>Tender Type</b></td>
 		<td><select name=tender>";
-	$numsQ = "SELECT TenderCode,TenderName FROM Tenders 
+	$numsQ = "SELECT TenderCode,TenderName FROM tenders 
 		ORDER BY TenderName";
 	$numsR = $dbc->query($numsQ);
 	while($numsW = $dbc->fetch_row($numsR)){

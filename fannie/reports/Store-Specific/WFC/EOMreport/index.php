@@ -70,7 +70,7 @@ if (!$output){
 	AND l.trans_type <> 'T'";
 
 	$query2 = "SELECT t.TenderName,-sum(d.total) as total, COUNT(d.total)
-	FROM $dlog d ,Tenders as t 
+	FROM $dlog d ,tenders as t 
 	WHERE datediff(mm,getdate(),d.tDate) = -1 
 	AND d.trans_status <>'X'  
 	AND d.Trans_Subtype = t.TenderCode
@@ -118,7 +118,7 @@ if (!$output){
 
 	$query13 = "SELECT   m.memDesc,SUM(d.total) AS Sales
 	FROM         $dlog d INNER JOIN
-			      custData c ON d.card_no = c.CardNo INNER JOIN
+			      custdata c ON d.card_no = c.CardNo INNER JOIN
 			      memTypeID m ON c.memType = m.memTypeID
 	WHERE datediff(mm,getdate(),d.tDate) = -1 
 	AND (d.department < 600) AND d.department <> 0 AND (c.personnum= 1 or c.personnum is null)
@@ -133,7 +133,7 @@ if (!$output){
 
 	$query20 = "SELECT   SUM(d.total) AS Sales 
 			FROM $dlog d LEFT JOIN
-			custData c ON d.card_no = c.CardNo LEFT JOIN
+			custdata c ON d.card_no = c.CardNo LEFT JOIN
 			memTypeID m ON c.memType = m.memTypeID
 			WHERE datediff(mm,getdate(),d.tDate) = -1 
 			AND (d.department < 600) AND d.department <> 0 
@@ -155,7 +155,7 @@ if (!$output){
 
 	$query8 = "SELECT     m.memDesc, SUM(d.total) AS Discount 
 	FROM         $dlog d INNER JOIN
-			      custData c ON d.card_no = c.CardNo INNER JOIN
+			      custdata c ON d.card_no = c.CardNo INNER JOIN
 			      memTypeID m ON c.memType = m.memTypeID
 	WHERE datediff(mm,getdate(),d.tDate) = -1 
 	AND (d.upc = 'DISCOUNT') AND c.personnum= 1
@@ -164,7 +164,7 @@ if (!$output){
 
 	$query9 = "SELECT     d.upc, SUM(d.total) AS discount
 	FROM         $dlog d INNER JOIN
-			      custData c ON d.card_no = c.CardNo INNER JOIN
+			      custdata c ON d.card_no = c.CardNo INNER JOIN
 			      memTypeID m ON c.memType = m.memTypeID
 	WHERE datediff(mm,getdate(),d.tDate) = -1 
 	AND (d.upc = 'DISCOUNT') AND c.personnum = 1

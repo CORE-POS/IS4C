@@ -16,7 +16,7 @@ else {
   if (!class_exists("SQLManager")) require_once($FANNIE_ROOT.'src/SQLManager.php');
   include('../db.php');
 
-  $checkQ = "select * from likecodes where likecode=$lc";
+  $checkQ = "select * from likeCodes where likecode=$lc";
   $checkR = $sql->query($checkQ);
   $checkRow = $sql->fetch_row($checkR);
   if ($sql->num_rows($checkR) > 0){
@@ -26,7 +26,7 @@ else {
     echo "<a href=javascript:close()>Close</a>";
   }
   else {
-    $writeQ = "insert into likecodes (likecode,likecodedesc) values ($lc,'$desc')";
+    $writeQ = "insert into likeCodes (likecode,likecodedesc) values ($lc,'$desc')";
     $writeR = $sql->query($writeQ);
     echo "Like code $lc added as $desc<br /><br />";
     echo "<a href=addLikeCode.php>Add another</a><br />";

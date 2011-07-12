@@ -57,7 +57,7 @@ $batchInfoW = $sql->fetch_array($batchInfoR);
 
 
 $selBItemsQ = "SELECT b.*,p.*  from batchListTest as b LEFT JOIN 
-               Products as p ON p.upc like '%'+rtrim(b.upc)+'%' WHERE batchID = $batchID 
+               products as p ON p.upc like '%'+rtrim(b.upc)+'%' WHERE batchID = $batchID 
                ORDER BY b.listID DESC";
 //echo $selBItemsQ;
 $selBItemsR = $sql->query($selBItemsQ);

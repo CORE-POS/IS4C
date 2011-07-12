@@ -127,9 +127,9 @@ while(!feof($fp)){
 
 	// if the item doesn't exist in the general vendor catalog table,
 	// add it. 
-	$cleanQ = "delete from VendorItems where upc = '$upc' AND vendorID=$VENDOR_ID";
+	$cleanQ = "delete from vendorItems where upc = '$upc' AND vendorID=$VENDOR_ID";
 	$dbc->query($cleanQ);
-	$insQ = sprintf("INSERT INTO VendorItems (brand,sku,size,upc,units,cost,description,vendorDept,vendorID)
+	$insQ = sprintf("INSERT INTO vendorItems (brand,sku,size,upc,units,cost,description,vendorDept,vendorID)
 			VALUES (%s,%s,%s,%s,%d,%f,%s,NULL,%d)",$dbc->escape($brand),$dbc->escape($sku),
 			$dbc->escape($size),$dbc->escape($upc),$qty,$net_cost,$dbc->escape($description),
 			$VENDOR_ID);

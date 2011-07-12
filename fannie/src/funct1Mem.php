@@ -207,7 +207,7 @@ function receipt_to_table($query,$query2,$border,$bgcolor)
 	$row2 = $dbc->fetch_row($result);
 	$emp_no = $row2[4];	
 	//echo $emp_no;
-	//$queryEmp = "SELECT * FROM Employees where emp_no = $emp_no";
+	//$queryEmp = "SELECT * FROM employees where emp_no = $emp_no";
 	//$resEmp = $dbc->query($queryEmp,$db);
 	//$rowEmp = $dbc->fetch_row($resEmp);
 	//echo $rowEmp[4];

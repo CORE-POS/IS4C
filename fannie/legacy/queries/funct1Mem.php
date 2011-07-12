@@ -225,7 +225,7 @@ function receipt_to_table($query,$query2,$border,$bgcolor)
 	$row2 = $sql->fetch_row($result);
 	$emp_no = $row2[4];	
 	//echo $emp_no;
-	//$queryEmp = "SELECT * FROM Employees where emp_no = $emp_no";
+	//$queryEmp = "SELECT * FROM employees where emp_no = $emp_no";
 	//$resEmp = $sql->query($queryEmp,$db);
 	//$rowEmp = $sql->fetch_row($resEmp);
 	//echo $rowEmp[4];
@@ -580,11 +580,11 @@ function item_sales_month_like($likecode,$period,$time){
 	global $sql;
     if($period == 'mm'){
 	$dlog = "trans_archive.dbo.dlog".date("Ym");
-        $query_sales = "SELECT sum(d.quantity),SUM(d.total) from $dlog as d, upclike as u
+        $query_sales = "SELECT sum(d.quantity),SUM(d.total) from $dlog as d, upcLike as u
                         WHERE u.upc = d.upc AND u.likecode = $likecode  
                         AND datediff($period,getdate(),tdate) = $time";
     }else{
-        $query_sales = "SELECT sum(d.quantity),SUM(d.total) from dLog_90_view as d, upclike as u
+        $query_sales = "SELECT sum(d.quantity),SUM(d.total) from dLog_90_view as d, upcLike as u
                         WHERE u.upc = d.upc AND u.likecode = $likecode  
                         AND datediff($period,getdate(),tdate) = $time";
         //echo $query_sales;
@@ -624,12 +624,12 @@ function item_sales_last_month_like($likecode,$period,$time){
 	$stamp = mktime(0,0,0,date('n')-1,1,date('Y'));
 	$dlog = "trans_archive.dbo.dlog".date("Ym",$stamp);
     if($period == 'mm'){
-        $query_sales = "SELECT sum(d.quantity),SUM(d.total) from $dlog as d, upclike as u
+        $query_sales = "SELECT sum(d.quantity),SUM(d.total) from $dlog as d, upcLike as u
                         WHERE u.upc = d.upc AND u.likecode = $likecode  
                         AND datediff($period,getdate(),tdate) = $time";
     //echo $query_sales;        
     }else{
-        $query_sales = "SELECT sum(d.quantity),SUM(d.total) from $dlog as d, upclike as u
+        $query_sales = "SELECT sum(d.quantity),SUM(d.total) from $dlog as d, upcLike as u
                         WHERE u.upc = d.upc AND u.likecode = $likecode  
                         AND datediff($period,getdate(),tdate) = $time";
     }

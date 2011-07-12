@@ -315,14 +315,14 @@ function itemParse($upc){
     		}
     }else{
         oneItem($upc);
-			//         	$likeCodeQ = "SELECT u.*,l.likeCodeDesc FROM upclike as u, likecodes as l 
+			//         	$likeCodeQ = "SELECT u.*,l.likeCodeDesc FROM upcLike as u, likeCodes as l 
 			//                       WHERE u.likecode = l.likecode and u.upc = '$upc'";
 			//         	//echo $likeCodeQ; 
 			// $likeCodeR = $dbc->query($likeCodeQ);
 			// $likeCodeRow= $dbc->fetch_row($likeCodeR);
 			//    			$likeCodeNum = $dbc->num_rows($likeCodeR);
 			// 
-			//    	 		$listCodeQ = "SELECT * from likecodes";
+			//    	 		$listCodeQ = "SELECT * from likeCodes";
 			//    	 		$listCodeR = $dbc->query($listCodeQ);
 			//    	 		$listCodeRow = $dbc->fetch_row($likeCodeR);
 

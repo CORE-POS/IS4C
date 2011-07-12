@@ -11,7 +11,7 @@ if (isset($_GET['action'])){
 		$lc = $_GET['lc'];
 		$out .= "<table cellspacing=2 cellpadding=2>";
 		$out .= "<tr><th>UPC</th><th>description</th>";
-		$q = "select p.upc,p.description from products as p, upclike as u where p.upc = u.upc and u.likecode = $lc order by p.description";
+		$q = "select p.upc,p.description from products as p, upcLike as u where p.upc = u.upc and u.likecode = $lc order by p.description";
 		$r = $sql->query($q);
 		while ($w = $sql->fetch_array($r)){
 			$out .= "<tr>";
