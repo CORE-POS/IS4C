@@ -189,7 +189,7 @@ function tableSync($table){
 				break;
 			
 			$sql->transfer("translog","select * from dtrancleanup",
-					"WedgePOS","INSERT INTO transArchive ($dtcols)");
+					"WedgePOS","INSERT INTO transarchive ($dtcols)");
 			break;
 		}
 	}

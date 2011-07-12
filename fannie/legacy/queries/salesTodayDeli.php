@@ -11,7 +11,7 @@ include('../db.php');
 $query1="SELECT  datepart(hh,tDate),
 sum(case when t.superID = 3 then total else 0 end) as prodSales,
 sum(total)as Sales
-FROM dLog as d left join MasterSuperDepts as t
+FROM dlog as d left join MasterSuperDepts as t
 on d.department = t.dept_ID
 WHERE datediff(dd,getdate(),tDate)=0
 AND (trans_type ='I' OR Trans_type = 'D' or trans_type='M')
@@ -23,7 +23,7 @@ order by datepart(hh,tDate)";
 $query2="SELECT 
 sum(case when t.superID=3 then total else 0 end) as produceTotal,
 sum(total) as TotalSales
-FROM dLog as d left join MasterSuperDepts as t
+FROM dlog as d left join MasterSuperDepts as t
 on d.department = t.dept_ID
 WHERE datediff(dd,getdate(),tDate)=0
 AND (trans_type ='I' OR Trans_type = 'D' or trans_type='M')

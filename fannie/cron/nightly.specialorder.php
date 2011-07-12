@@ -40,7 +40,7 @@ set_time_limit(0);
 $sql = new SQLManager($FANNIE_SERVER,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
 		$FANNIE_SERVER_USER,$FANNIE_SERVER_PW);
 
-$query = "SELECT mixMatch,matched FROM transArchive
+$query = "SELECT mixMatch,matched FROM transarchive
 	WHERE charflag='SO' AND emp_no <> 9999 AND
 	register_no <> 99 AND trans_status NOT IN ('X','Z')
 	GROUP BY mixMatch,matched

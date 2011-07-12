@@ -9,7 +9,7 @@ include('../db.php');
 // to offset goofy transaction with odd upc on
 // 11/19/05.  register_no 1, trans_num 119-1-28
 $query1="SELECT  datepart(hh,tDate),sum(total)as Sales
-FROM dLog
+FROM dlog
 WHERE datediff(dd,getdate(),tDate)=0
 AND (trans_type ='I' OR Trans_type = 'D' or trans_type='M')
 AND department < 600
@@ -18,7 +18,7 @@ order by datepart(hh,tDate)";
 
 
 $query2="SELECT sum(total) as TotalSales
-FROM dLog
+FROM dlog
 WHERE datediff(dd,getdate(),tDate)=0
 AND (trans_type ='I' OR Trans_type = 'D' or trans_type='M')
 AND department < 600";

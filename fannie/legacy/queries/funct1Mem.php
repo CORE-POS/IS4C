@@ -584,7 +584,7 @@ function item_sales_month_like($likecode,$period,$time){
                         WHERE u.upc = d.upc AND u.likecode = $likecode  
                         AND datediff($period,getdate(),tdate) = $time";
     }else{
-        $query_sales = "SELECT sum(d.quantity),SUM(d.total) from dLog_90_view as d, upcLike as u
+        $query_sales = "SELECT sum(d.quantity),SUM(d.total) from dlog_90_view as d, upcLike as u
                         WHERE u.upc = d.upc AND u.likecode = $likecode  
                         AND datediff($period,getdate(),tdate) = $time";
         //echo $query_sales;
