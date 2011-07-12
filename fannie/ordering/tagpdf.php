@@ -143,8 +143,28 @@ if (!isset($_REQUEST['oids'])){
 	echo "<i>No order(s) selected</i><br />";
 }
 else {
+	?>
+	<script type="text/javascript">
+	function toggleChecked(status){
+		$(".cbox").each( function() {
+			$(this).attr("checked",status);
+		});
+	}
+	</script>
+	<?php
 	echo '<form action="tagpdf.php" method="get">';
+	echo '<input type="checkbox" id="sa" onclick="toggleChecked(this.checked);" />';
+	echo '<label for="sa"><b>Select All</b></label>';
 	echo '<table cellspacing="0" cellpadding="4" border="1">';
+	include($FANNIE_ROOT.'auth/login.php');
+	$username = checkLogin();
+	if (file_exists("/tmp/ordercache/$username.prints")){
+		$prints = unserialize(file_get_contents("/tmp/ordercache/$username.prints"));
+		foreach($prints as $oid=>$data){
+			if (!in_array($oid,$_REQUEST['oids']))
+				$_REQUEST['oids'][] = $oid;
+		}
+	}
 	foreach($_REQUEST['oids'] as $oid){
 		$q = sprintf("SELECT min(datetime) as orderDate,sum(total) as value,
 			count(*)-1 as items,
@@ -166,7 +186,7 @@ else {
 		while($w = $dbc->fetch_row($r)){
 			printf('<tr><td>&nbsp;</td><td>%s (%d)</td><td>%d x %d</td>
 				<td>$%.2f</td>
-				<td><input type="checkbox" name="toids[]" value="%d:%d" /></td>
+				<td><input type="checkbox" class="cbox" name="toids[]" value="%d:%d" /></td>
 				</tr>',
 				$w['description'],$w['department'],$w['ItemQtty'],$w['quantity'],
 				$w['total'],$w['trans_id'],$oid);

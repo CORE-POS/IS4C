@@ -38,6 +38,37 @@ include($FANNIE_ROOT.'src/header.html');
 $orderID = isset($_REQUEST['orderID'])?$_REQUEST['orderID']:'';
 $return_path = (isset($_SERVER['HTTP_REFERER']) && strstr($_SERVER['HTTP_REFERER'],'git/fannie/ordering/clearinghouse.php')) ? $_SERVER['HTTP_REFERER'] : $FANNIE_URL.'ordering/';
 printf("<input type=hidden id=redirectURL value=\"%s\" />",$return_path);
+
+$prev = -1;
+$next = -1;
+$found = False;
+if (isset($_REQUEST['k']) && file_exists("/tmp/ordercache/".$_REQUEST['k'])){
+	$fp = fopen("/tmp/ordercache/".$_REQUEST['k'],'r');
+	while (($buffer = fgets($fp, 4096)) !== false) {
+		if ((int)$buffer == $orderID) $found = True;
+		else if (!$found) $prev = (int)$buffer;
+		else if ($found) {
+			$next = (int)$buffer;
+			break;
+		}
+	}
+	fclose($fp);
+
+	echo '<div><div style="float:left;width:48%">';
+	if ($prev == -1)
+		echo 'Prev';
+	else
+		printf('<a href="view.php?orderID=%d&k=%s">Prev</a>',$prev,$_REQUEST['k']);
+	echo '</div><div style="text-align:right;float:right;width:48%">';
+	if ($next == -1)
+		echo 'Next';
+	else
+		printf('<a href="view.php?orderID=%d&k=%s">Next</a>',$next,$_REQUEST['k']);
+	echo '</div></div>';
+	echo '<div style="clear:both"></div>';
+}
+
+
 ?>
 <fieldset>
 <legend>Customer Information</legend>
@@ -47,6 +78,7 @@ printf("<input type=hidden id=redirectURL value=\"%s\" />",$return_path);
 <legend>Order Items</legend>
 <div id="itemDiv"></div>
 </fieldset>
+<div id="footerDiv"></div>
 <script type="text/javascript" src="view.js">
 </script>
 <?php
