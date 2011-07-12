@@ -566,10 +566,10 @@ function create_op_dbs($con){
 			'prodUpdateArchive','op');
 
 	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-			'ProdPriceHistory','op');
+			'prodPriceHistory','op');
 
 	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-			'ProdDepartmentHistory','op');
+			'prodDepartmentHistory','op');
 
 	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 			'batches','op');
@@ -581,7 +581,7 @@ function create_op_dbs($con){
 			'batchType','op');
 
 	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-			'batchowner','op');
+			'batchOwner','op');
 
 	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 			'batchCutPaste','op');
@@ -617,10 +617,10 @@ function create_op_dbs($con){
 			'batchPriority','op');
 
 	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-			'UNFI','op');
+			'unfi','op');
 
 	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-			'UNFI_order','op');
+			'unfi_order','op');
 
 	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 			'unfi_diff','op');
