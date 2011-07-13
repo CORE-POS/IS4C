@@ -184,7 +184,7 @@ if (isset($discount) && isset($doDiscount))
 
 // update top name
 //echo "<br>";
-$custnataQ = "Update custdata set firstname = $fName, lastname = $lName, blueline=$blueline where cardNo = $memNum and personnum = 1";
+$custdataQ = "Update custdata set firstname = $fName, lastname = $lName, blueline=$blueline where cardNo = $memNum and personnum = 1";
 $memNamesQ = "Update memNames set fname = $fName, lname = $lName where memNum = $memNum and personnum = 1";
 //echo $memNamesQ."<br>";
 $custdataR = $sql->query($custdataQ);
