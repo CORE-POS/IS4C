@@ -33,7 +33,7 @@ General Settings
 $IS4C_LOCAL->set("OS",'other');
 $IS4C_LOCAL->set("browserOnly",0);
 $IS4C_LOCAL->set("store",'wfc');
-$IS4C_LOCAL->set("laneno",99);
+$IS4C_LOCAL->set("laneno",12);
 
 /************************************************************************************
 Data Connection Settings
@@ -46,19 +46,19 @@ $IS4C_LOCAL["mDBMS"] = "pgsql";	// type of central server database server.
 $IS4C_LOCAL["mUser"] = "wfc_pos";
 $IS4C_LOCAL["mPass"] = "is4c";
  */
-$IS4C_LOCAL->set("mServer",'');
-$IS4C_LOCAL->set("mDatabase",'');
-$IS4C_LOCAL->set("mDBMS",'');
+$IS4C_LOCAL->set("mServer",'localhost');
+$IS4C_LOCAL->set("mDatabase",'is4cserver');
+$IS4C_LOCAL->set("mDBMS",'mysql');
 				// Options: mssql, mysql, pgsql
-$IS4C_LOCAL->set("mUser",'');
-$IS4C_LOCAL->set("mPass",'');
+$IS4C_LOCAL->set("mUser",'is4cserver');
+$IS4C_LOCAL->set("mPass",'is4cserver');
 
 $IS4C_LOCAL->set("DBMS",'mysql');
 $IS4C_LOCAL->set("tDatabase",'translog');
 $IS4C_LOCAL->set("pDatabase",'opdata');
-$IS4C_LOCAL->set("localhost",'');
-$IS4C_LOCAL->set("localUser",'');
-$IS4C_LOCAL->set("localPass",'');
+$IS4C_LOCAL->set("localhost",'localhost');
+$IS4C_LOCAL->set("localUser",'is4clane');
+$IS4C_LOCAL->set("localPass",'is4clane');
 
 /***********************************************************************************
 Receipt & Printer Settings
@@ -71,23 +71,23 @@ $IS4C_LOCAL->set("newReceipt",1);
 //$IS4C_LOCAL->set("printerPort","/dev/lp0");
 $IS4C_LOCAL->set("printerPort",'fakereceipt.txt');
 
-$IS4C_LOCAL->set("receiptHeader1",'WHOLE FOODS COMMUNITY CO-OP');
-$IS4C_LOCAL->set("receiptHeader2",'(218) 728-0884');
-$IS4C_LOCAL->set("receiptHeader3",'MEMBER OWNED SINCE 1970');
+$IS4C_LOCAL->set("receiptHeader1",'New Pioneer Food Co-op');
+$IS4C_LOCAL->set("receiptHeader2",'319 - 338 - 9441');
+$IS4C_LOCAL->set("receiptHeader3",'Keepin It Real Since 1971');
 
 $IS4C_LOCAL->set("receiptFooter1",'Returns accepted with receipt');
 $IS4C_LOCAL->set("receiptFooter2",'within 30 days of purchase');
-$IS4C_LOCAL->set("receiptFooter3",'Visit us at www.wholefoods.coop');
+$IS4C_LOCAL->set("receiptFooter3",'Visit us at www.newpi.coop');
 
 $IS4C_LOCAL->set("ckEndorse1",'FOR DEPOSIT ONLY');
 $IS4C_LOCAL->set("ckEndorse2",'TO MCCU');
 $IS4C_LOCAL->set("ckEndorse3",'ACCOUNT #');
-$IS4C_LOCAL->set("ckEndorse4",'WHOLE FOODS COMMUNITY CO-OP');
+$IS4C_LOCAL->set("ckEndorse4",'NEW PIONEER FOOD CO-OP');
 
-$IS4C_LOCAL->set("chargeSlip1",'WHOLE FOODS COMMUNITY CO-OP');
-$IS4C_LOCAL->set("chargeSlip2",'W F C   C O P Y');
-$IS4C_LOCAL->set("chargeSlip3",'610 E 4th St.');
-$IS4C_LOCAL->set("chargeSlip4",'Duluth, MN 55805');
+$IS4C_LOCAL->set("chargeSlip1",'NEW PIONEER FOOD CO-OP');
+$IS4C_LOCAL->set("chargeSlip2",'NEW PI COPY');
+$IS4C_LOCAL->set("chargeSlip3",'22 S. Van Buren St.');
+$IS4C_LOCAL->set("chargeSlip4",'Iowa City, IA 52240');
 $IS4C_LOCAL->set("chargeSlip5",'');
 
 
@@ -95,17 +95,17 @@ $IS4C_LOCAL->set("chargeSlip5",'');
 Screen Message Settings
 ************************************************************************************/
 
-$IS4C_LOCAL->set("welcomeMsg1",'welcome to the wfc');
-$IS4C_LOCAL->set("welcomeMsg2",'member owned since 1970');
+$IS4C_LOCAL->set("welcomeMsg1",'welcome to the New Pi ');
+$IS4C_LOCAL->set("welcomeMsg2",'Keepin It Real Since 1971');
 
-$IS4C_LOCAL->set("trainingMsg1",'welcome to the wfc frontend');
+$IS4C_LOCAL->set("trainingMsg1",'welcome to the New Pi Front End');
 $IS4C_LOCAL->set("trainingMsg2",'training mode is on');
 
-$IS4C_LOCAL->set("farewellMsg1",'Thanks for shopping at the WFC');
+$IS4C_LOCAL->set("farewellMsg1",'Thanks for shopping at the New Pi');
 $IS4C_LOCAL->set("farewellMsg2",'Returns accepted with receipt within 30 days');
-$IS4C_LOCAL->set("farewellMsg3",'(218) 728-0884');
+$IS4C_LOCAL->set("farewellMsg3",'(319) 338 - 9441');
 
-$IS4C_LOCAL->set("alertBar",'WFC - Alert');
+$IS4C_LOCAL->set("alertBar",'New Pi - Alert');
 
 /***********************************************************************************
 Credit Card
@@ -114,7 +114,7 @@ Credit Card
 $IS4C_LOCAL->set("CCintegrate",1);
 $IS4C_LOCAL->set("gcIntegrate",1);
 $IS4C_LOCAL->set("ccLive",1); 			// credit card integration live or testing. live = 1, testing = 0
-$IS4C_LOCAL->set("RegisteredPaycardClasses",array('GoEMerchant','MercuryGift'));
+$IS4C_LOCAL->set("RegisteredPaycardClasses",array('MercuryGift','GoEMerchant'));
 
 /***********************************************************************************
 Other Settings
@@ -139,4 +139,13 @@ $IS4C_LOCAL->set("touchscreen",False);
 
 //$IS4C_LOCAL->set("SigCapture",'COM1');
 $IS4C_LOCAL->set("SigCapture",'');
+$IS4C_LOCAL->set("visitingMem",'');
+$IS4C_LOCAL->set("scalePort",'');
+$IS4C_LOCAL->set("scaleDriver",'');
+$IS4C_LOCAL->set("CCSigLimit",0);
+$IS4C_LOCAL->set("SpecialUpcClasses",array());
+$IS4C_LOCAL->set("DiscountTypeCount",5);
+$IS4C_LOCAL->set("DiscountTypeClasses",array('NormalPricing','EveryoneSale','MemberSale','CaseDiscount','StaffSale'));
+$IS4C_LOCAL->set("PriceMethodCount",3);
+$IS4C_LOCAL->set("PriceMethodClasses",array('BasicPM','GroupPM','QttyEnforcedGroupPM'));
 ?>
