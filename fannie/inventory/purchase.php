@@ -24,6 +24,7 @@
 include('../config.php');
 require_once ($FANNIE_ROOT.'src/mysql_connect.php'); // Connect to the DB.
 include($FANNIE_ROOT.'src/EanUpc.php');
+include($FANNIE_ROOT.'src/tmp_dir.php');
 
 if (!isset($_REQUEST['save'])){
 	$page_title='Fannie - Purchase Orders';

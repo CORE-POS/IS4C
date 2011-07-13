@@ -22,6 +22,7 @@
 *********************************************************************************/
 include('../../config.php');
 include($FANNIE_ROOT.'src/mysql_connect.php');
+include($FANNIE_ROOT.'src/tmp_dir.php');
 include($FANNIE_ROOT.'auth/login.php');
 
 /* This is a very light wrapper around cron. The
@@ -58,8 +59,7 @@ include($FANNIE_ROOT.'src/header.html');
 if (isset($_REQUEST['enabled'])){
 	$indexes = $_REQUEST['enabled'];
 	if (is_array($indexes) && count($indexes) > 0){
-		$tmpdir = function_exists("sys_get_temp_dir()")?sys_get_temp_dir():"/tmp/";
-		$tmpfn = tempnam($tmpdir,"");
+		$tmpfn = tempnam(sys_get_temp_dir(),"");
 		$fp = fopen($tmpfn,"w");
 		if (isset($_REQUEST['email']) && !empty($_REQUEST['email']))
 			fwrite($fp,"MAILTO=".$_REQUEST['email']."\n");

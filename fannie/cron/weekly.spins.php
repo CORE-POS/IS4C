@@ -41,22 +41,8 @@ $SPINS_PW = "wfcc\$54*";
 
 include('../config.php');
 include($FANNIE_ROOT.'src/SQLManager.php');
+include($FANNIE_ROOT.'src/tmp_dir.php');
 
-if ( !function_exists('sys_get_temp_dir')) {
-  function sys_get_temp_dir() {
-    if (!empty($_ENV['TMP'])) { return realpath($_ENV['TMP']); }
-    if (!empty($_ENV['TMPDIR'])) { return realpath( $_ENV['TMPDIR']); }
-    if (!empty($_ENV['TEMP'])) { return realpath( $_ENV['TEMP']); }
-    $tempfile=tempnam(__FILE__,'');
-    if (file_exists($tempfile)) {
-      unlink($tempfile);
-      return realpath(dirname($tempfile));
-    }
-    return null;
-  }
-}
-
-$tstamp = time();
 $week = date("W",$tstamp);
 $week--;
 if ($week == 0) $week = 52;

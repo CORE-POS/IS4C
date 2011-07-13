@@ -1,7 +1,7 @@
 <?php
 /*******************************************************************************
 
-    Copyright 2009 Whole Foods Co-op
+    Copyright 2011 Whole Foods Co-op
 
     This file is part of Fannie.
 
@@ -21,20 +21,21 @@
 
 *********************************************************************************/
 
-/*
-   If all machines are on MySQL, this should be
-   much faster than SQLManager transfer
-*/
+// function sys_get_temp_dir doesn't exist in PHP < 5.2.1
 
-// mysql version probably looks like this (not tested):
-// could use some error checking on connection/success, obviously
-include_once($FANNIE_ROOT.'src/temp_dir.php');
-$tempfile = tempnam(sys_get_temp_dir(),$table.".sql");
-exec("mysqldump -u $FANNIE_SERVER_USER -p$FANNIE_SERVER_PW -h $FANNIE_SERVER $FANNIE_OP_DB $table > $tempfile");
-foreach($FANNIE_LANES as $lane){
-	exec("mysql -u {$lane['user']} -p{$lane['pw']} -h {$lane['host']} {$lane['op']} < $tempfile");
-	echo "<li>Lane ".($i+1)." completed successfully</li>";
+if ( !function_exists('sys_get_temp_dir')) {
+  function sys_get_temp_dir() {
+    if (!empty($_ENV['TMP'])) { return realpath($_ENV['TMP']); }
+    if (!empty($_ENV['TMPDIR'])) { return realpath( $_ENV['TMPDIR']); }
+    if (!empty($_ENV['TEMP'])) { return realpath( $_ENV['TEMP']); }
+    $tempfile=tempnam(__FILE__,'');
+    if (file_exists($tempfile)) {
+      unlink($tempfile);
+      return realpath(dirname($tempfile));
+    }
+    return null;
+  }
 }
-unlink($tempfile);
+
 
 ?>
