@@ -1,2 +1,36 @@
 <?php
+$FANNIE_ROOT = '/is4c/IS4C/fannie/';
+$FANNIE_URL = '/fannie/';
+$FANNIE_AUTH_ENABLED = False;
+$FANNIE_DEFAULT_PDF = 'Fannie Standard';
+$FANNIE_SERVER = 'localhost';
+$FANNIE_SERVER_DBMS = 'MYSQL';
+$FANNIE_SERVER_USER = 'root';
+$FANNIE_SERVER_PW = 'is4c';
+$FANNIE_OP_DB = 'is4c_op';
+$FANNIE_TRANS_DB = 'is4c_trans';
+$FANNIE_ARCHIVE_DB = 'trans_archive';
+$FANNIE_ARCHIVE_REMOTE = False;
+$FANNIE_NUM_LANES = 1;
+$FANNIE_LANES = array(array('host'=>'10.0.1.120','type'=>'MYSQL','user'=>'is4clane','pw'=>'is4clane','op'=>'opdata','trans'=>'translog'));
+$FANNIE_PRETTY_LOGS = 0;
+$FANNIE_LOG_COUNT = 5;
+$FANNIE_NUM_SCALES = 0;
+$FANNIE_SCALES = array();
+$FANNIE_NAMES_PER_MEM = 1;
+$FANNIE_EQUITY_DEPARTMENTS = '';
+$FANNIE_AR_DEPARTMENTS = '';
+$FANNIE_MEMBER_MODULES = array();
+$FANNIE_NUM_STORES = 3;
+$FANNIE_STORES = array(array('host'=>'127.0.0.1','type'=>'MYSQL','user'=>'root','pw'=>'','op'=>'is4c_op','trans'=>'is4c_trans'),array('host'=>'127.0.0.1','type'=>'MYSQL','user'=>'root','pw'=>'','op'=>'is4c_op','trans'=>'is4c_trans'),array('host'=>'127.0.0.1','type'=>'MYSQL','user'=>'root','pw'=>'','op'=>'is4c_op','trans'=>'is4c_trans'));
+$FANNIE_MASTER_STORE = '0';
+$FANNIE_MASTER_ARCH_DB = 'trans_archive';
+$FANNIE_AUTH_SHADOW = False;
+$FANNIE_AUTH_LDAP = False;
+$FANNIE_LDAP_SERVER = '127.0.0.1';
+$FANNIE_LDAP_PORT = '389';
+$FANNIE_LDAP_DN = 'ou=People,dc=example,dc=org';
+$FANNIE_LDAP_SEARCH_FIELD = 'uid';
+$FANNIE_LDAP_UID_FIELD = 'uidnumber';
+$FANNIE_LDAP_RN_FIELD = 'cn';
 ?>
