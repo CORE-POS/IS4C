@@ -12,9 +12,13 @@ Receipt header for dlog_90, basically.
 Legacy.
 */
 $edept = equity_departments();
+if (strlen($edept) <= 2)
+	$edept = "(-999)";
 $adept = ar_departments();
+if (strlen($adept) <= 2)
+	$adept = "(-999)";
 $CREATE['trans.dheader'] = "
-	CREATE   view dHeader as
+	CREATE   view dheader as
 	select
 	min(tdate) as proc_date,
 	min(tdate) as datetime,

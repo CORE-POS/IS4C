@@ -37,10 +37,19 @@ include($FANNIE_ROOT.'src/cron_msg.php');
 
 set_time_limit(0);
 
+// clean cache
+$dh = opendir("/tmp/ordercache/");
+while (($file = readdir($dh)) !== false) {
+	if ($file == "." || $file == "..") continue;
+	if (!is_file("/tmp/ordercache/".$file)) continue;
+	unlink("/tmp/ordercache/".$file);
+}
+closedir($dh);
+
 $sql = new SQLManager($FANNIE_SERVER,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
 		$FANNIE_SERVER_USER,$FANNIE_SERVER_PW);
 
-$query = "SELECT mixMatch,matched FROM transArchive
+$query = "SELECT mixMatch,matched FROM transarchive
 	WHERE charflag='SO' AND emp_no <> 9999 AND
 	register_no <> 99 AND trans_status NOT IN ('X','Z')
 	GROUP BY mixMatch,matched
@@ -54,7 +63,6 @@ while($row = $sql->fetch_row($result)){
 	$order_ids[] = (int)$row['mixMatch'];
 	$trans_ids[] = (int)$row['matched'];
 }
-sort($order_ids);
 
 $where = "( ";
 for($i=0;$i<count($order_ids);$i++){
@@ -111,9 +119,13 @@ $cleanupQ = "SELECT p.order_id FROM PendingSpecialOrder
 		ON p.order_id=n.order_id
 		LEFT JOIN SpecialOrderStatus AS s
 		ON p.order_id=s.order_id
-		WHERE n.order_id IS NULL
-		OR datalength(n.notes)=0
-		OR s.status_flag >= 4
+		WHERE (n.order_id IS NULL
+		OR datalength(n.notes)=0)
+		OR p.order_id IN (
+		SELECT order_id FROM CompleteSpecialOrder
+		WHERE trans_id=0
+		GROUP BY order_id
+		)
 		GROUP BY p.order_id
 		HAVING MAX(trans_id)=0";
 $cleanupR = $sql->query($cleanupQ);

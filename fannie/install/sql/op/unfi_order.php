@@ -1,6 +1,6 @@
 <?php
 /*
-Table: UNFI_order
+Table: unfi_order
 
 Columns:
 	unfi_sku varchar(13)
@@ -26,8 +26,8 @@ Deprecated. Use vendors (table) and vendorItems(table)
 instead. Vendor-based functionality should
 allow for more than one vendor.
 */
-$CREATE['op.UNFI_order'] = "
-	CREATE TABLE UNFI_order (
+$CREATE['op.unfi_order'] = "
+	CREATE TABLE unfi_order (
 		unfi_sku varchar(12),
 		brand varchar(50),
 		item_desc varchar(50),

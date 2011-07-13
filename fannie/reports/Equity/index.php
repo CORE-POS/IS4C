@@ -11,7 +11,7 @@ include($FANNIE_ROOT.'src/header.html');
 
 $q = sprintf("select stockPurchase,trans_num,dept_name,
 		year(tdate),month(tdate),day(tdate)
-		from stockPurchases AS s LEFT JOIN
+		from stockpurchases AS s LEFT JOIN
 		departments AS d ON s.dept=d.dept_no
 		WHERE s.card_no=%d ORDER BY tdate DESC",$memNum);
 if ($memNum == 0){

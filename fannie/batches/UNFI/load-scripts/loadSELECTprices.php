@@ -78,7 +78,7 @@ if ($PRICEFILE_USE_SPLITS){
 				continue;
 			$filestoprocess[$i++] = $current;
 		}
-		$cleanQ = "delete from VendorItems WHERE vendorID=$VENDOR_ID";
+		$cleanQ = "delete from vendorItems WHERE vendorID=$VENDOR_ID";
 		$dbc->query($cleanQ);
 	}
 	else {
@@ -87,7 +87,7 @@ if ($PRICEFILE_USE_SPLITS){
 }
 else {
 	$filestoprocess[] = "unfi.csv";
-	$cleanQ = "delete from VendorItems where vendorID=$VENDOR_ID";
+	$cleanQ = "delete from vendorItems where vendorID=$VENDOR_ID";
 	$dbc->query($cleanQ);
 }
 
@@ -128,7 +128,7 @@ while(!feof($fp)){
 
 	// if the item doesn't exist in the general vendor catalog table,
 	// add it. 
-	$insQ = sprintf("INSERT INTO VendorItems (brand,sku,size,upc,units,cost,description,vendorDept,vendorID)
+	$insQ = sprintf("INSERT INTO vendorItems (brand,sku,size,upc,units,cost,description,vendorDept,vendorID)
 			VALUES (%s,%s,%s,%s,%d,%f,%s,NULL,%d)",$dbc->escape($brand),$dbc->escape($sku),
 			$dbc->escape($size),$dbc->escape($upc),$qty,$net_cost,$dbc->escape($description),
 			$VENDOR_ID);

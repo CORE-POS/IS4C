@@ -42,7 +42,7 @@ $query = "select m.card_no,
 	s.stockPurchase,
 	datepart(yy,s.tdate),datepart(dd,s.tdate),datepart(mm,s.tdate)
 	from meminfo as m
-	left join stockPurchases as s on m.card_no=s.card_no
+	left join stockpurchases as s on m.card_no=s.card_no
 	left join custdata as c on m.card_no=c.cardno and c.personnum=1
 	left join memDates as d ON m.card_no=d.card_no
 	where datediff(yy,getdate(),d.start_date)=0

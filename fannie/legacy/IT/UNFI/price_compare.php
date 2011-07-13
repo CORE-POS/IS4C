@@ -162,7 +162,6 @@ $strCat = $strCat . ")";
      if(substr($sort,0,3) == 'cat'){
          $query = "SELECT u.*,p.cost,p.variable_pricing FROM $unfi_table as u left join prodExtra as p on u.upc=p.upc
 		    WHERE cat IN$strCat order by $sort,department,u.upc";
-         //$query = "SELECT * FROM UNFI_diff where cat = $cat order by $sort,department,upc";
      }
      else if (strstr("variable_pricing",$sort)){
 	 $query = "SELECT u.*,p.cost,p.variable_pricing FROM $unfi_table as u left join prodExtra as p on u.upc=p.upc
@@ -170,12 +169,10 @@ $strCat = $strCat . ")";
       }else{
         $query = "SELECT u.*,p.cost,p.variable_pricing FROM $unfi_table as u left join prodExtra as p on u.upc=p.upc
 		  WHERE cat IN$strCat order by $sort,cat,department,u.upc";
-        //$query = "SELECT * FROM UNFI_diff where cat = $cat order by $sort,cat,department,upc";
       }
    }else{
       $query = "SELECT u.*,p.cost,p.variable_pricing FROM $unfi_table as u left join prodExtra as p on u.upc=p.upc
 		 WHERE cat IN$strCat order by cat, department, u.upc";
-      //$query = "SELECT * FROM UNFI_diff where cat = $cat order by cat,department,upc";
    }
    $result = $sql->query($query);
 

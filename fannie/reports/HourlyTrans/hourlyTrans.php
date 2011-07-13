@@ -5,7 +5,7 @@ include($FANNIE_ROOT.'src/mysql_connect.php');
 
 $DAYS = array("","Sun","Mon","Tue","Wed","Thu","Fri","Sat");
 
-$subdeptsQ = "SELECT superID,super_name FROM superdeptnames ORDER BY super_name";
+$subdeptsQ = "SELECT superID,super_name FROM superDeptNames ORDER BY super_name";
 $subdeptsR = $dbc->query($subdeptsQ);
 $options = "<option value=-1>All</option>";
 while($subW = $dbc->fetch_row($subdeptsR))

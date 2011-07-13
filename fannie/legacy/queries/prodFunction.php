@@ -28,18 +28,18 @@ function itemParse($upc,$dupe='no',$description='',$prefix=false)
 	case 'UPC':
 		$upc = str_pad($upc,13,0,STR_PAD_LEFT);
 		$savedUPC = $upc;
-		$queryItem = "SELECT p.*,x.distributor,x.manufacturer FROM Products as p left join prodExtra as x on p.upc=x.upc WHERE p.upc = '$upc' or x.upc = '$upc'";
+		$queryItem = "SELECT p.*,x.distributor,x.manufacturer FROM products as p left join prodExtra as x on p.upc=x.upc WHERE p.upc = '$upc' or x.upc = '$upc'";
 		break;
 	case 'SKU':
-		$queryItem = "SELECT p.*,x.distributor,x.manufacturer FROM Products as p inner join vendorItems as v ON p.upc=v.upc left join prodExtra as x on p.upc=x.upc WHERE v.sku='$upc'";
+		$queryItem = "SELECT p.*,x.distributor,x.manufacturer FROM products as p inner join vendorItems as v ON p.upc=v.upc left join prodExtra as x on p.upc=x.upc WHERE v.sku='$upc'";
 		break;
 	case 'Brand Prefix':
-	      $queryItem = "SELECT p.*,x.distributor,x.manufacturer FROM Products as p left join prodExtra as x on p.upc=x.upc WHERE p.upc like '%$upc%' order by p.upc";
+	      $queryItem = "SELECT p.*,x.distributor,x.manufacturer FROM products as p left join prodExtra as x on p.upc=x.upc WHERE p.upc like '%$upc%' order by p.upc";
 		break;
 	}
     }
     else{
-        $queryItem = "SELECT p.*,x.distributor,x.manufacturer FROM Products as p left join prodExtra as x on p.upc=x.upc WHERE description LIKE '%$upc%' ORDER BY description";
+        $queryItem = "SELECT p.*,x.distributor,x.manufacturer FROM products as p left join prodExtra as x on p.upc=x.upc WHERE description LIKE '%$upc%' ORDER BY description";
     }
 
 	echo "<script type=\"text/javascript\">";
@@ -98,7 +98,7 @@ function itemParse($upc,$dupe='no',$description='',$prefix=false)
                 echo "<th>Dept<th>Tax<th>FS<th>Scale<th>QtyFrc<th>NoDisc<th>Local<th>Like Code<th>Shelf Tag</b>";
                 echo "</tr>";
                 echo "<tr>";
-                        $query2 = "SELECT * FROM Departments as d,
+                        $query2 = "SELECT * FROM departments as d,
 				MasterSuperDepts AS s WHERE s.dept_ID=d.dept_no AND dept_no NOT IN (60,225)
 				ORDER BY superID, dept_no";
                 echo "<td>";
@@ -110,7 +110,7 @@ function itemParse($upc,$dupe='no',$description='',$prefix=false)
 			$guess = 60;
 			if ($sql->num_rows($guessR) > 0)
 				$guess = array_pop($sql->fetch_array($guessR));
-                        $table = "Departments";
+                        $table = "departments";
                         $value = "dept_no";
                         $label = "dept_name";
                         $deptList = "dept";
@@ -225,14 +225,14 @@ function itemParse($upc,$dupe='no',$description='',$prefix=false)
         if($rowItem[6] <> 0){
            echo "<tr><td><font size=+1 color=green><b>Sale Price:</b></font></td><td><font size=+1 color=green>$rowItem[6]</font>";
            echo "<td colspan=2><font size=+1 color=green>End Date: $rowItem[11]</font></td><tr>";
-	   $findBatchQ = "select batchName from batches as b, batchlist as l
+	   $findBatchQ = "select batchName from batches as b, batchList as l
 			  where b.batchID = l.batchID and l.upc like '$upc'
 			  and datediff(dd,getdate(),b.startDate) <= 0
 			  and datediff(dd,getdate(),b.endDate) >= 0";
 	   $findBatchR = $sql->query($findBatchQ);
 	   $batchName = ($sql->num_rows($findBatchR) == 0) ? "Unknown" :array_pop($sql->fetch_array($findBatchR));
 	   if ($batchName == "Unknown" && $likecode != ""){
-		$findBatchQ = "select batchName from batches as b, batchlist as l
+		$findBatchQ = "select batchName from batches as b, batchList as l
 				where b.batchID=l.batchID and l.upc = 'LC$likecode'
 				and datediff(dd,getdate(),b.startDate) <= 0
 				and datediff(dd,getdate(),b.endDate) >= 0";
@@ -250,16 +250,16 @@ function itemParse($upc,$dupe='no',$description='',$prefix=false)
                 echo "</tr>";
                 echo "<tr align=top>";
                         //$dept=$row1[3];
-                        $query2 = "SELECT * FROM Departments as d,
+                        $query2 = "SELECT * FROM departments as d,
 				MasterSuperDepts AS s WHERE s.dept_ID=d.dept_no AND dept_no NOT IN (60,225)
 				ORDER BY superID, dept_no";
                 echo "<td>";
-                        $query3 = "SELECT dept_no,superID FROM Departments as d
+                        $query3 = "SELECT dept_no,superID FROM departments as d
 				LEFT JOIN MasterSuperDepts AS s ON d.dept_no=s.dept_ID
 				WHERE dept_no = $rowItem[12]";
                         $result3 = $sql->query($query3);
                         $row3 = $sql->fetch_array($result3);
-                        $table = "Departments";
+                        $table = "departments";
                         $value = "dept_no";
                         $label = "dept_name";
                         $deptList = "dept";
@@ -402,7 +402,7 @@ function itemParse($upc,$dupe='no',$description='',$prefix=false)
 		echo "<br /></td></tr><tr><td>";
                 echo "Like Code Linked Items</td><td>&nbsp;</td><td><input type=checkbox name=update value='no'></td><td colspan=4>Check to not update like code items</td></tr><tr><td>";
                 if($likeCodeNum > 0){
-                        $selLikeQ = "SELECT p.upc,p.description,p.normal_price FROM Products as p, upcLike as u WHERE u.upc = p.upc and u.likeCode = $likeCodeRow[1]";
+                        $selLikeQ = "SELECT p.upc,p.description,p.normal_price FROM products as p, upcLike as u WHERE u.upc = p.upc and u.likeCode = $likeCodeRow[1]";
                         likedtotable($selLikeQ,0,'FFFFCC');
 			echo"<td valign=top colspan=3><a href=./testSales.php?likecode=$likeCodeRow[1] target=lc_hist>Click for Like Code History</a></td>";
                 }

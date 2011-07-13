@@ -47,7 +47,7 @@ if (!isset($_POST['submit']) && !isset($_GET['fixedaddress'])){
 	echo "<form action=alterstatus.php method=post>";
 	echo "<input type=hidden name=memNum value=$memID>";
 	$curReasonCode = array_pop($sql->fetch_row($sql->query("SELECT reasonCode from suspensions WHERE cardno=$memNum")));
-	$curType = array_pop($sql->fetch_row($sql->query("SELECT type FROM custData WHERE cardno=$memNum AND personnum=1")));
+	$curType = array_pop($sql->fetch_row($sql->query("SELECT type FROM custdata WHERE cardno=$memNum AND personnum=1")));
 	$stats = array('INACT'=>'Inactive','TERM'=>'Termed','INACT2'=>'Term pending');
 	echo "<select name=status>";
 	foreach ($stats as $k=>$v){

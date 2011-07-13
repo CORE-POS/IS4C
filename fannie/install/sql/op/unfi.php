@@ -1,6 +1,6 @@
 <?php
 /*
-Table: UNFI
+Table: unfi
 
 Columns:
 	brand varchar(30)
@@ -26,8 +26,8 @@ Deprecated. Use vendors (table) and vendorItems(table)
 instead. Vendor-based functionality should
 allow for more than one vendor.
 */
-$CREATE['op.UNFI'] = "
-	CREATE TABLE `UNFI` (
+$CREATE['op.unfi'] = "
+	CREATE TABLE `unfi` (
 	  `brand` varchar(30) default NULL,
 	  `sku` int(6) default NULL,
 	  `size` varchar(25) default NULL,
@@ -42,8 +42,8 @@ $CREATE['op.UNFI'] = "
 ";
 
 if ($dbms == "MSSQL"){
-	$CREATE['op.UNFI'] = "
-		CREATE TABLE [UNFI] (
+	$CREATE['op.unfi'] = "
+		CREATE TABLE [unfi] (
 			[brand] [varchar] (30) COLLATE SQL_Latin1_General_CP1_CI_AS NULL ,
 			[sku] [int] NULL ,
 			[size] [varchar] (25) COLLATE SQL_Latin1_General_CP1_CI_AS NULL ,

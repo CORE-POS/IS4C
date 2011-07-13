@@ -1,0 +1,127 @@
+<html>
+<head>
+	<title>Install Guide: RPM</title>
+</head>
+<body>
+This guide is for installing it-core from RPMs. These instructions
+are based on Fedora, but should work on any Redhat-ish distro.
+<p />
+This mostly command-line references. Be not afraid. It's just more
+concise and accurate than verbally describing graphic interfaces.
+<p />
+<h3>Step one</h3>
+Install your OS. If your chosen distribution doesn't have good 
+documentation for this step, choose a new distribution.
+<p />
+If your distro includes SELinux (Fedora, CentOS, and Red Hat Enterprise
+all do), disable it. There's no GUI for this. Edit /etc/sysconfig/selinux
+and change the line:
+<pre>
+SELINUX=enforcing
+</pre>
+to
+<pre>
+SELINUX=disabled
+</pre>
+This will fix a lot of permission headaches. You have to reboot 
+for the change to take effect.
+<h3>Step two</h3>
+Install some required packages.
+<pre>
+$ su
+# yum -y install httpd mysql-server php php-mysql php-xml php-pear php-ldap php-process
+</pre>
+The first command, su, changes to the root user. You will be prompted for
+root's password. The second command install a bunch of packages via 
+Red Hat package manager, yum.
+<h3>Step three</h3>
+Download and install it-core. Your filenames may differ slightly, depending on
+the version number.
+<pre>
+# rpm -Uvh it-core-0.1.0-1.noarch.rpm
+# rpm -Uvh it-core-doc-0.1.0-1.noarch.rpm
+# rpm -Uvh it-core-fannie-0.1.0-1.noarch.rpm
+# rpm -Uvh it-core-is4c-nf-0.1.0-1.noarch.rpm
+</pre>
+These commands should be run as root. The base it-core package is always
+required. The it-core-doc package is just documentation and thus always
+optional. The it-core-fannie package contains the backend server; it-core-is4c-nf
+contains the lane point of sale system. Neither is strictly required, but
+omitting both wouldn't make much sense.
+<h3>Step four</h3>
+Start required services
+<pre>
+# /etc/init.d/mysqld start
+# mysqladmin password
+# /etc/init.d/mysqld restart
+# /sbin/chkconfig mysqld on
+</pre>
+The first command starts the mysql database. The second sets a root password. The
+third command just restarts the database so the password change takes affect.
+The fourth sets the database to automatically run on boot. Next is apache:
+<pre>
+# /etc/init.d/httpd start
+# /sbin/chkconfig httpd on
+</pre>
+This one's simpler. Start the service, configure it to start on boot.
+<h3>Step five</h3>
+Open a browser and go to http://localhost/it-core/. You should see at least a
+license as well as documentation, fannie, and/or is4c-nf folders depending
+on what you installed.
+<hr />
+<h3>Further ideas (Production environment)</h3>
+<ul>
+<li>You probably want a static IP address. Go to Applications =&gt; Other
+=&gt; Network (if your menu is different, try running nm-connection-editor
+from the command line). Pick the appropriate connection - wired is recommended
+- and edit.</li>
+<li>You probably want SSH access through the firewall. Go to Applications =&gt;
+Other =&gt; Firewall (if your menu is different, try running system-config-firewall
+from the command line). Scroll down services and check the box for SSH. If it's 
+already checked, toggle it off then back on just to be sure. Hit Apply to save
+the updated rules, then Reload to restart the firewall. Linux veterans
+can find the firewall configuration file at /etc/sysconfig/iptables.
+</li>
+<li>You'll need remote MySQL access. First allow port 3306 through the firewall
+(see SSH above). Then make some modifications via MySQL itself:
+<pre>
+$ mysql -u root -p -h localhost
+> GRANT ALL ON *.* TO 'root'@'%' IDENTIFIED BY 'your_password';
+> FLUSH PRIVILEGES
+> EXIT
+</pre>
+</li>
+<li>VNC can be useful for remote debugging. Go to Applications =&gt;
+Other =&gt; Remote Desktop (if your menu is different, try running
+vino-preferences from the command line). Turn on sharing. Security options
+are up to you. A password is recommended. Automatically accepting connections
+is not recommended. Depending on your network setup, allowing port 5900 through the
+see SSH above) might make sense.</li>
+</li>
+</ul>
+<hr />
+<h3>Troubleshooting</h3>
+An unsorted collection of <i>gotchas</i> as I discover them:
+<ul>
+<li>Printer isn't working: I've had issues with Fedora auto-detecting printers.
+Maybe the cutting edge cool kids don't use parallel ports anymore. Look in
+/dev. If you see a file lp0, that's the printer (which is good). If you just see
+a file parport0, you've got a parallel port but no printer (if there's no parport,
+maybe the parallel port is disabled in your BIOS). Open up a terminal and try:
+<pre>
+# /sbin/modprobe lp
+</pre>
+This should create the /dev/lp0 file. To make this happen on boot, paste this into
+/etc/sysconfig/modules/lp.modules:
+<pre>
+#!/bin/sh
+
+if [ ! -c /dev/lp0 ] ; then
+        exec /sbin/modprobe lp >/dev/null 2>&1
+fi
+</pre>
+Save the file and make it executable (chmod +x /etc/sysconfig/modules/lp.modules).
+</li>
+</ul>
+</body>
+</html>

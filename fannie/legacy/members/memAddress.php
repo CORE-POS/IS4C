@@ -443,7 +443,7 @@ function alterReason($memNum,$reasonCode,$status=False){
 		$insQ = "INSERT INTO suspension_history VALUES ('$username',getdate(),'','$memNum',$reasonCode)";
 		$insR = $sql->query($insQ);
 		if ($status){
-			$sql->query("UPDATE custData SET type='$status' WHERE cardno=$memNum");
+			$sql->query("UPDATE custdata SET type='$status' WHERE cardno=$memNum");
 			if ($status == "TERM")
 				$sql->query("UPDATE suspensions SET type='T' WHERE cardno=$memNum");
 			else

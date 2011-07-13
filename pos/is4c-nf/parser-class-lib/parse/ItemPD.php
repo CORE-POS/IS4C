@@ -34,7 +34,7 @@ if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
 
 class ItemPD extends Parser {
 	function check($str){
-		if (substr($str,-2) == "PD" && is_numeric(substr($str,0,strlen($str)-2))
+		if (substr($str,-2) == "PD" && is_numeric(substr($str,0,strlen($str)-2)))
 			return True;
 		return False;
 	}

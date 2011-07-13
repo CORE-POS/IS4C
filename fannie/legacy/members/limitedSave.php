@@ -113,10 +113,9 @@ if (isset($_REQUEST['cardUPC']) && is_numeric($_REQUEST['cardUPC'])){
 }
 
 // update top name
-$custDataQ = "Update custData set lastname = $lName, firstname = $fname, blueline=$blueline where cardNo = $memNum and personnum = 1";
+$custdataQ = "Update custdata set lastname = $lName, firstname = $fname, blueline=$blueline where cardNo = $memNum and personnum = 1";
 $memNamesQ = "Update memNames set lname = $lName, fname=$fname where memNum = $memNum and personnum = 1";
-//echo $custDataQ."<br />";
-$custDataR = $sql->query($custDataQ);
+$custdataR = $sql->query($custdataQ);
 //echo $memNamesQ."<br />";
 $memNamesR = $sql->query($memNamesQ);
 

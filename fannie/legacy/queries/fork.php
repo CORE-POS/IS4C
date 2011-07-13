@@ -60,7 +60,7 @@ function tableSync($table){
 			if(!$sql->add_connection($lane,'MYSQL','opdata','root','is4c'))
 				break;
 			
-			$sql->query("TRUNCATE TABLE Departments","opdata");
+			$sql->query("TRUNCATE TABLE departments","opdata");
 			$sql->query("TRUNCATE TABLE subdepts","opdata");
 			
 			$selQ = "SELECT dept_no,dept_name,dept_tax,dept_fs,dept_limit,dept_minimum,
@@ -78,7 +78,7 @@ function tableSync($table){
 		foreach($lanes as $lane){
 			if(!$sql->add_connection($lane,'MYSQL','opdata','root','is4c'))
 				break;
-			$sql->query("TRUNCATE TABLE Employees","opdata");
+			$sql->query("TRUNCATE TABLE employees","opdata");
 
 			$selQ = "SELECT emp_no,CashierPassword,AdminPassword,FirstName,
 				LastName,JobTitle,EmpActive,frontendsecurity,
@@ -189,7 +189,7 @@ function tableSync($table){
 				break;
 			
 			$sql->transfer("translog","select * from dtrancleanup",
-					"WedgePOS","INSERT INTO transArchive ($dtcols)");
+					"WedgePOS","INSERT INTO transarchive ($dtcols)");
 			break;
 		}
 	}

@@ -181,7 +181,7 @@ function select_dtrans($date, $enddate=""){
   elseif ($endmonth == $month && $endyear == $year)
 	return $FANNIE_ARCHIVE_DB.$dbconn."transArchive".$year.(str_pad($month,2,'0',STR_PAD_LEFT));
   elseif ($enddiff < 91 && $daydiff < 91)
-	return $FANNIE_TRANS_DB.$dbconn."transArchive";
+	return $FANNIE_TRANS_DB.$dbconn."transarchive";
 
   // otherwise:
   // create a union of dlog archives containing the
