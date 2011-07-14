@@ -103,7 +103,7 @@ echo "<a href=price_compare.php?excel=1&buyer=$buyID&filter=$filter>Dump to Exce
 
 //Connect to mysql server
 
-$mysql = new SQLManager('mysql.wfco-op.store','MYSQL','IS4C','root');
+$mysql = new SQLManager('mysql.wfco-op.store','MYSQL','IS4C','is4c','is4c');
 
 if($buyID == 99){
    $getCatQ = "SELECT unfi_cat FROM unfi_cat";
