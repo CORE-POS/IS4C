@@ -24,7 +24,7 @@ $selAddQ = "SELECT m.card_no, c.lastName,m.street, '',
 	   LEFT JOIN custdata as c on c.cardno=m.card_no and c.personnum=1
 	   LEFT JOIN newBalanceToday_cust as n ON m.card_no=n.memnum
 	   WHERE c.type not in ('TERM') and
-	   c.memtype = 2
+	   c.memtype IN (2,0)
 	   and n.balance > 0
 	   $cardsClause 
            ORDER BY m.card_no";
@@ -72,9 +72,10 @@ while($selAddW = $sql->fetch_row($selAddR)){
    $pdf->Cell(20,10,'610 East Fourth Street',0);
    $pdf->Ln(5);
    $pdf->Cell(20,10,'Duluth, MN  55805',0);
-   $pdf->Ln(18);
+   $pdf->Ln(13);
 
-   $pdf->Cell(10,10,$stateDate,0);
+   $pdf->Cell(10,5,sprintf("Invoice #: %s-%s",$selAddW[0],date("ymd")),0,1,'L');
+   $pdf->Cell(10,5,$stateDate,0);
    $pdf->Ln(15);
 
 
