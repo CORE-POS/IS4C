@@ -340,7 +340,7 @@ function addUPC($orderID,$memNum,$upc,$num_cases=1){
 		$upc = str_pad($upc,13,'0',STR_PAD_LEFT);
 
 	$manualSKU = False;
-	if ($upc[0] == "+"){
+	if (isset($upc[0]) && $upc[0] == "+"){
 		$sku = substr($upc,1);
 		$upc = "zimbabwe";
 		$manualSKU = True;
@@ -375,9 +375,10 @@ function addUPC($orderID,$memNum,$upc,$num_cases=1){
 
 	$mempricing = False;
 	if ($memNum != 0 && !empty($memNum)){
-		$r = $dbc->query("SELECT type FROM custdata WHERE CardNo=$memNum");
+		$r = $dbc->query("SELECT type,memType FROM custdata WHERE CardNo=$memNum");
 		$w = $dbc->fetch_row($r);
 		if ($w['type'] == 'PC') $mempricing = True;
+		elseif($w['memType'] == 9) $mempricing = True;
 	}
 
 	$pdQ = "SELECT normal_price,special_price,department,discounttype,
@@ -1329,7 +1330,7 @@ function getItemNonForm($orderID){
 function reprice($oid,$tid,$reg=False){
 	global $dbc;
 
-	$query = sprintf("SELECT o.unitPrice,o.itemQtty,o.quantity,o.discounttype,c.type
+	$query = sprintf("SELECT o.unitPrice,o.itemQtty,o.quantity,o.discounttype,c.type,c.memType
 		FROM PendingSpecialOrder AS o LEFT JOIN custdata AS c ON
 		o.card_no=c.CardNo AND c.personNum=1
 		WHERE order_id=%d AND trans_id=%d",$oid,$tid);
@@ -1340,7 +1341,7 @@ function reprice($oid,$tid,$reg=False){
 	if ($reg)
 		$regPrice = $reg;
 	$total = $regPrice;
-	if ($row['type'] == 'PC' && $row['discounttype'] == 0){
+	if (($row['type'] == 'PC' || $row['memType'] == 9) && $row['discounttype'] == 0){
 		$total *= 0.85;
 	}
 

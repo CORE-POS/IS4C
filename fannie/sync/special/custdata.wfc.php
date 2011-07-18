@@ -22,10 +22,10 @@
 *********************************************************************************/
 
 // fire DTS packages to sync MSSQL lanes with server
-$dbc->query("exec custdataUpdateAll");
+//$dbc->query("exec custdataUpdateAll");
 
 // Run DTS to export server data to a CSV file
-$dbc->query("exec master..xp_cmdshell 'dtsrun /S $FANNIE_SERVER /U $FANNIE_SERVER_USER /N CSV_custdata',no_output",$FANNIE_OP_DB);
+$dbc->query("exec master..xp_cmdshell 'dtsrun /S IS4CSERV\IS4CSERV /U $FANNIE_SERVER_USER /P is4c /N CSV_custdata',no_output",$FANNIE_OP_DB);
 
 // on each MySQL lane, load the CSV file
 foreach($FANNIE_LANES as $lane){

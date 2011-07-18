@@ -445,6 +445,17 @@ class SQLManager {
 		}
 	}
 
+	function sep($which_connection=''){
+		if ($which_connection == '')
+			$which_connection=$this->default_db;
+		switch($this->connections[$which_connection]->databaseType){
+		case 'mysql':
+			return ".";
+		case 'mssql':
+			return ".dbo.";
+		}
+	}
+
 	function error($which_connection=''){
 		if ($which_connection == '')
 			$which_connection=$this->default_db;
