@@ -43,12 +43,12 @@ if (isset($_REQUEST['submit'])){
 
 	$sales = "SELECT d.Dept_name,sum(t.total),sum(t.quantity),
 			s.superID,s.super_name
-			FROM departments as d, $dlog as t,
-			MasterSuperDepts AS s
-			WHERE d.Dept_no= t.Department 
-			AND d.Dept_no=s.dept_ID
-			AND (tDate BETWEEN '$d1 00:00:00' AND '$d2 23:59:59') 
-			AND (s.superID > 0) 
+			FROM $dlog AS t LEFT JOIN departments AS d
+			ON d.dept_no=t.department LEFT JOIN
+			MasterSuperDepts AS s ON t.department=s.dept_ID
+			WHERE 
+			(tDate BETWEEN '$d1 00:00:00' AND '$d2 23:59:59') 
+			AND (s.superID > 0 OR s.superID IS NULL) 
 			AND (t.trans_type = 'I' or t.trans_type = 'D')
 			GROUP BY s.superID,s.super_name,d.dept_name,t.department
 			ORDER BY s.superID,t.department";
@@ -66,7 +66,8 @@ if (isset($_REQUEST['submit'])){
 			WHERE
 			(tDate BETWEEN '$d1 00:00:00' AND '$d2 23:59:59') 
 			AND (t.trans_type = 'I' or t.trans_type = 'D')
-			AND (s.superID > 0 OR (s.superID IS NULL AND r.superID > 0))
+			AND (s.superID > 0 OR (s.superID IS NULL AND r.superID > 0)
+			OR (s.superID IS NULL AND r.superID IS NULL))
 			GROUP BY
 			CASE WHEN s.superID IS NULL THEN r.superID ELSE s.superID end,
 			CASE WHEN s.super_name IS NULL THEN r.super_name ELSE s.super_name END,
@@ -84,8 +85,9 @@ if (isset($_REQUEST['submit'])){
 	while($row = $dbc->fetch_row($salesR)){
 		if ($curSuper != $row[3]){
 			$curSuper = $row[3];
-			$supers[$curSuper] = array('sales'=>0.0,'qty'=>0.0,'name'=>$row[4],'depts'=>array());
 		}
+		if (!isset($supers[$curSuper]))
+			$supers[$curSuper] = array('sales'=>0.0,'qty'=>0.0,'name'=>$row[4],'depts'=>array());
 		$supers[$curSuper]['sales'] += $row[1];
 		$supers[$curSuper]['qty'] += $row[2];
 		$supers[$curSuper]['depts'][] = array('name'=>$row[0],'sales'=>$row[1],'qty'=>$row[2]);
@@ -93,6 +95,7 @@ if (isset($_REQUEST['submit'])){
 	}
 
 	foreach($supers as $s){
+		if ($s['sales']==0) continue;
 		echo "<table border=1>\n";//create table
 		echo "<tr align=right bgcolor='FFFF99'><td>&nbsp;</td><td>Sales</td><td>Qty</td><td>% Sales</td><td>Dept %</td></tr>\n";//create table header
 		$superSum = $s['sales'];
