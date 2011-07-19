@@ -3,6 +3,7 @@ include('../../../config.php');
 
 require($FANNIE_ROOT."src/SQLManager.php");
 include($FANNIE_ROOT.'legacy/db.php');
+include($FANNIE_ROOT.'src/tmp_dir.php');
 require('csv_parser.php');
 
 $PHONE = 2;
@@ -112,8 +113,9 @@ if (isset($_POST['cardnos'])){
 	}
 }
 else if (isset($_POST['MAX_FILE_SIZE'])){
-	move_uploaded_file($_FILES['upload']['tmp_name'],"tmp/file.csv");
-	$fp = fopen("tmp/file.csv","r");
+	$file = tempnam(sys_get_temp_dir(),"GGB");
+	move_uploaded_file($_FILES['upload']['tmp_name'],$file);
+	$fp = fopen($file,"r");
 	echo "<b>Gazette Billing Preview</b><br />
 		<table cellspacing=0 cellpadding=3 border=1><tr>
 		<th>#</th><th>Name</th><th>Type</th><th>Cost</th>
@@ -187,6 +189,8 @@ else if (isset($_POST['MAX_FILE_SIZE'])){
 	echo "</table>";
 	echo "<input type=submit value=\"Charge Accounts\" />";
 	echo "</form>";
+	fclose($fp);
+	unlink($file);
 }
 else {
 ?>

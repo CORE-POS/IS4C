@@ -22,6 +22,7 @@
 *********************************************************************************/
 include('../config.php');
 include($FANNIE_ROOT.'src/mysql_connect.php');
+include($FANNIE_ROOT.'src/tmp_dir.php');
 
 include($FANNIE_ROOT.'auth/login.php');
 if (!checkLogin()){
@@ -42,8 +43,9 @@ printf("<input type=hidden id=redirectURL value=\"%s\" />",$return_path);
 $prev = -1;
 $next = -1;
 $found = False;
-if (isset($_REQUEST['k']) && file_exists("/tmp/ordercache/".$_REQUEST['k'])){
-	$fp = fopen("/tmp/ordercache/".$_REQUEST['k'],'r');
+$cachepath = sys_get_temp_dir()."/ordercache/";
+if (isset($_REQUEST['k']) && file_exists($cachepath.$_REQUEST['k'])){
+	$fp = fopen($cachepath.$_REQUEST['k'],'r');
 	while (($buffer = fgets($fp, 4096)) !== false) {
 		if ((int)$buffer == $orderID) $found = True;
 		else if (!$found) $prev = (int)$buffer;

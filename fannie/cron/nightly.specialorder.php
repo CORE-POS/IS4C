@@ -34,15 +34,17 @@
 include('../config.php');
 include($FANNIE_ROOT.'src/SQLManager.php');
 include($FANNIE_ROOT.'src/cron_msg.php');
+include($FANNIE_ROOT.'src/tmp_dir.php');
 
 set_time_limit(0);
 
 // clean cache
-$dh = opendir("/tmp/ordercache/");
+$cachepath = sys_get_temp_dir()."/ordercache/";
+$dh = opendir($ordercache);
 while (($file = readdir($dh)) !== false) {
 	if ($file == "." || $file == "..") continue;
-	if (!is_file("/tmp/ordercache/".$file)) continue;
-	unlink("/tmp/ordercache/".$file);
+	if (!is_file($ordercache.$file)) continue;
+	unlink($ordercache.$file);
 }
 closedir($dh);
 

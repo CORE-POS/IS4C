@@ -41,6 +41,7 @@
 include("../../../config.php");
 require($FANNIE_ROOT.'src/csv_parser.php');
 require($FANNIE_ROOT.'src/mysql_connect.php');
+require($FANNIE_ROOT.'src/tmp_dir.php');
 
 // the column number in the CSV file
 // where various information is stored
@@ -66,10 +67,11 @@ $PRICEFILE_USE_SPLITS = True;
 $filestoprocess = array();
 $i = 0;
 $fp = 0;
+$tpath = sys_get_temp_dir()."/vendorupload/";
 if ($PRICEFILE_USE_SPLITS){
 	if (!isset($_GET["filestoprocess"])){
-		system("split -l 2500 ../tmp/unfi.csv ../tmp/UNFISPLIT");
-		$dir = opendir("../tmp");
+		system("split -l 2500 {$tpath}unfi.csv {$tpath}UNFISPLIT");
+		$dir = opendir($tpath);
 		while ($current = readdir($dir)){
 			if (!strstr($current,"UNFISPLIT"))
 				continue;
@@ -91,7 +93,7 @@ else {
 // remove one split from the list and process that
 $current = array_pop($filestoprocess);
 
-$fp = fopen("../tmp/$current",'r');
+$fp = fopen($tpath.$current,'r');
 while(!feof($fp)){
 	$line = fgets($fp);
 	/* csv parser takes a comma-separated line and returns its elements
@@ -180,14 +182,14 @@ if (count($filestoprocess) == 0){
 		if (isset($_GET['processed'])){
 			foreach (unserialize(base64_decode($_GET["processed"])) as $p){
 				echo $p."<br />";
-				unlink("../tmp/$p");
+				unlink($tpath.$p);
 			}
 		}
 		echo $current."<br />";
-		unlink("../tmp/$current");
+		unlink($tpath.$current);
 	}
 	else echo "unfi.csv<br />";
-	unlink("../tmp/unfi.csv");
+	unlink($tpath."unfi.csv");
 	
 	echo "<br />";
 	echo "<a href=../index.php>Vendor Pricing Home</a>";

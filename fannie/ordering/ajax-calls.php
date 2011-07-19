@@ -22,6 +22,7 @@
 *********************************************************************************/
 include('../config.php');
 include($FANNIE_ROOT.'src/mysql_connect.php');
+include($FANNIE_ROOT.'src/tmp_dir.php');
 include($FANNIE_ROOT.'auth/login.php');
 
 $canEdit = false;
@@ -303,12 +304,13 @@ case 'SplitOrder':
 	break;
 case 'UpdatePrint':
 	$user = $_REQUEST['user'];
-	$prints = unserialize(file_get_contents("/tmp/ordercache/$user.prints"));
+	$cachepath = sys_get_temp_dir()."/ordercache/";
+	$prints = unserialize(file_get_contents("{$cachepath}{$user}.prints"));
 	if (isset($prints[$_REQUEST['orderID']]))
 		unset($prints[$_REQUEST['orderID']]);
 	else
 		$prints[$_REQUEST['orderID']] = array();
-	$fp = fopen("/tmp/ordercache/$user.prints",'w');
+	$fp = fopen("{$cachepath}{$user}.prints",'w');
 	fwrite($fp,serialize($prints));
 	fclose($fp);
 	break;
@@ -753,11 +755,12 @@ function getCustomerForm($orderID,$memNum="0"){
 		onclick=\"validateAndHome();return false;\" />";
 	$username = checkLogin();
 	$prints = array();
-	if (file_exists("/tmp/ordercache/$username.prints")){
-		$prints = unserialize(file_get_contents("/tmp/ordercache/$username.prints"));
+	$cachepath = sys_get_temp_dir()."/ordercache/";
+	if (file_exists("{$cachepath}{$username}.prints")){
+		$prints = unserialize(file_get_contents("{$cachepath}{$username}.prints"));
 	}
 	else {
-		$fp = fopen("/tmp/ordercache/$username.prints",'w');
+		$fp = fopen("{$cachepath}{$username}.prints",'w');
 		fwrite($fp,serialize($prints));
 		fclose($fp);
 	}

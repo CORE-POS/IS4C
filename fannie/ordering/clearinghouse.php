@@ -22,6 +22,7 @@
 *********************************************************************************/
 include('../config.php');
 include($FANNIE_ROOT.'src/mysql_connect.php');
+include($FANNIE_ROOT.'src/tmp_dir.php');
 
 include($FANNIE_ROOT.'auth/login.php');
 $username = checkLogin();
@@ -32,14 +33,16 @@ if (!$username){
 	exit;
 }
 
-if (!is_dir("/tmp/ordercache/"))
-	mkdir("/tmp/ordercache/");
+$cachepath = sys_get_temp_dir()."/ordercache/";
+
+if (!is_dir($cachepath))
+	mkdir($cachepath);
 $key = dechex(str_replace(" ","",str_replace(".","",microtime())));
 $prints = array();
-if (file_exists("/tmp/ordercache/$username.prints"))
-	$prints = unserialize(file_get_contents("/tmp/ordercache/$username.prints"));
+if (file_exists("{$cachepath}{$username}.prints"))
+	$prints = unserialize(file_get_contents("{$cachepath}{$username}.prints"));
 else {
-	$fp = fopen("/tmp/ordercache/$username.prints",'w');
+	$fp = fopen("{$cachepath}{$username}.prints",'w');
 	fwrite($fp,serialize($prints));
 	fclose($fp);
 }
@@ -262,7 +265,7 @@ $ret .= sprintf('<td><img src="%s" alt="Print"
 		onclick="$(\'#pdfform\').submit();" /></td>',
 		$FANNIE_URL.'src/img/buttons/action_print.gif');
 $ret .= '</tr>';
-$fp = fopen("/tmp/ordercache/$key","w");
+$fp = fopen($cachepath.$key,"w");
 foreach($orders as $w){
 	if (!isset($valid_ids[$w['order_id']])) continue;
 

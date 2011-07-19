@@ -22,28 +22,31 @@
 *********************************************************************************/
 
 include('../../config.php');
+include($FANNIE_ROOT.'src/tmp_dir.php');
 
 if (isset($_POST['MAX_FILE_SIZE'])){
-	$dh = opendir("tmp/");
+	$tpath = sys_get_temp_dir()."/vendorupload/";
+	if (!is_dir($tpath)) mkdir($tpath);
+	$dh = opendir($tpath);
 	while (($file = readdir($dh)) !== false) {
-		if (!is_dir("tmp/".$file)) unlink("tmp/".$file);
+		if (!is_dir($tpath.$file)) unlink($tpath.$file);
 	}
 	closedir($dh);
 
 	$tmpfile = $_FILES['upload']['tmp_name'];
 	$path_parts = pathinfo($_FILES['upload']['name']);
 	if ($path_parts['extension'] == "zip"){
-		move_uploaded_file($tmpfile,"tmp/CAP.zip");
-		$output = system("unzip tmp/CAP.zip -d tmp/ &> /dev/null");
-		unlink("tmp/CAP.zip");
-		$dh = opendir("tmp/");
+		move_uploaded_file($tmpfile,$tpath."CAP.zip");
+		$output = system("unzip {$tpath}CAP.zip -d $tpath &> /dev/null");
+		unlink($tpath."CAP.zip");
+		$dh = opendir($tpath);
 		while (($file = readdir($dh)) !== false) {
-			if (!is_dir("tmp/".$file)) rename("tmp/".$file,"tmp/CAP.csv");
+			if (!is_dir($tpath.$file)) rename($tpath.$file,$tpath."CAP.csv");
 		}
 		closedir($dh);
 	}
 	else {
-		move_uploaded_file($tmpfile, "tmp/CAP.csv");
+		move_uploaded_file($tmpfile, $tpath."CAP.csv");
 	}
 	header("Location: loadSales.php");
 }
