@@ -173,7 +173,7 @@ while($w = $dbc->fetch_row($r)){
 }
 
 if ($f2 !== '' || $f3 !== ''){
-	$filter2 = ($f2!==''?sprintf("AND (m.superID IN (%s) OR (p.department=0 AND p.trans_id>0 AND n.superID IN (%s)))",$f2,$f2):'');
+	$filter2 = ($f2!==''?sprintf("AND (m.superID IN (%s) OR n.superID IN (%s))",$f2,$f2):'');
 	$filter3 = ($f3!==''?sprintf("AND p.mixMatch=%s",$dbc->escape($f3)):'');
 	$q = "SELECT p.order_id FROM PendingSpecialOrder AS p
 		LEFT JOIN MasterSuperDepts AS m ON p.department=m.dept_ID

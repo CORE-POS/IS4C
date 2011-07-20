@@ -33,10 +33,10 @@ try {
 catch(Exception $e){}
 $dbc->query("CREATE TABLE tempCapPrices (upc varchar(13), price decimal(10,2))");
 
-$SUB = 5;
-$UPC = 6;
-$SKU = 7;
-$PRICE = 21;
+$SUB = 2;
+$UPC = 3;
+$SKU = 4;
+$PRICE = 18;
 
 $datastarts = false;
 
