@@ -86,6 +86,18 @@ case 'saveCtC':
 		numflag=%d WHERE order_id=%d AND trans_id=0",
 		$_REQUEST['val'],$_REQUEST['orderID']);
 	$dbc->query($upQ);
+	if ($_REQUEST['val'] == 1){
+		$statusQ = sprintf("UPDATE SpecialOrderStatus SET status_flag=3,sub_status=%d
+			WHERE order_id=%d AND status_flag in (0,3)",
+			time(),$_REQUEST['orderID']);
+		$dbc->query($statusQ);
+	}
+	else if ($_REQUEST['val'] == 0){
+		$statusQ = sprintf("UPDATE SpecialOrderStatus SET status_flag=0,sub_status=%d
+			WHERE order_id=%d AND status_flag in (0,3)",
+			time(),$_REQUEST['orderID']);
+		$dbc->query($statusQ);
+	}
 	break;
 case 'savePrice':
 	$upQ = sprintf("UPDATE PendingSpecialOrder SET
@@ -545,7 +557,7 @@ function CreateEmptyOrder(){
 	$orderID = $dbc->insert_id();
 
 	$ins_array = genericRow($orderID);
-	$ins_array['numflag'] = 2;
+	$ins_array['numflag'] = 1;
 	$ins_array['mixMatch'] = $dbc->escape($user);
 	$dbc->smart_insert('PendingSpecialOrder',$ins_array);
 
@@ -558,7 +570,7 @@ function CreateEmptyOrder(){
 
 	$vals = array(
 		'order_id'=>$orderID,
-		'status_flag'=>0,
+		'status_flag'=>3,
 		'sub_status'=>time()
 	);
 	$dbc->smart_insert("SpecialOrderStatus",$vals);
@@ -780,7 +792,6 @@ function getCustomerForm($orderID,$memNum="0"){
 	$extra .= '</td><td align="right" valign="top">';
 	$extra .= '<b>Call to Confirm</b>: ';
 	$extra .= '<select id="ctcselect" onchange="saveCtC(this.value,'.$orderID.');">';
-	$extra .= '<option value="z"></option>';
 	if ($callback == 1){
 		$extra .= '<option value="1" selected>Yes</option>';	
 		$extra .= '<option value="0">No</option>';	
@@ -788,10 +799,6 @@ function getCustomerForm($orderID,$memNum="0"){
 	else if ($callback == 0){
 		$extra .= '<option value="1">Yes</option>';	
 		$extra .= '<option value="0" selected>No</option>';	
-	}
-	else {
-		$extra .= '<option value="1">Yes</option>';	
-		$extra .= '<option value="0">No</option>';	
 	}
 	$extra .= '</select><br />';	
 	$extra .= '<span id="confDateSpan">'.(!empty($confirm_date)?'Confirmed '.$confirm_date:'Not confirmed')."</span> ";
@@ -965,7 +972,7 @@ function getCustomerNonForm($orderID){
 	if ($dbc->num_rows($r) > 0)	
 		$confirm_date = array_pop($dbc->fetch_row($r));
 
-	$callback = 2;
+	$callback = 1;
 	$user = 'Unknown';
 	$q = "SELECT numflag,mixMatch FROM PendingSpecialOrder WHERE order_id=$orderID AND trans_id=0";
 	$r = $dbc->query($q);
