@@ -252,7 +252,7 @@ if (count($filestoprocess) == 0){
 		$pluQ2 = "UPDATE vendorItems SET upc = p.wfc_plu
 			FROM vendorItems AS u RIGHT JOIN
 			UnfiToPLU AS p ON u.sku = p.unfi_sku
-			WHERE u.unfi_sku IS NOT NULL
+			WHERE u.sku IS NOT NULL
 			AND u.vendorID=".$VENDOR_ID;
 		$pluQ3 = "UPDATE prodExtra
 			SET cost = u.vd_cost / u.pack
