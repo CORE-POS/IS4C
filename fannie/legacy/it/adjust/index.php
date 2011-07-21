@@ -234,7 +234,7 @@ function void_receipt($target_date,$receipt_date,$trans_num,$card_no=0){
 			$row["discount"] *= -1;
 			$row["memDiscount"] *= -1;
 			$row["quantity"] *= -1;
-			$row["itemQtty"] *= -1;
+			$row["ItemQtty"] *= -1;
 			addItem($row["upc"],$row["description"],$row["trans_type"],$row["trans_subtype"],
 				$row["trans_status"],$row["department"],$row["quantity"],
 				$row["unitPrice"],$row["total"],$row["regPrice"],

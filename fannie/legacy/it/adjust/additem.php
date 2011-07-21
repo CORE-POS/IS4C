@@ -65,7 +65,7 @@ signs in
 //-------insert line into localtemptrans with standard insert string--------------
 
 function addItem($strupc, $strdescription, $strtransType, $strtranssubType, $strtransstatus, $intdepartment, $dblquantity, $dblunitPrice, $dbltotal, $dblregPrice, $intscale, $inttax, $intfoodstamp, $dbldiscount, $dblmemDiscount, $intdiscountable, $intdiscounttype, $dblItemQtty, $intvolDiscType, $intvolume, $dblVolSpecial, $intmixMatch, $intmatched, $intvoided,$registerno=30,$empno=1001) {
-	global $CARDNO,$TRANSNO,$DATESTR,$TRANS_ID,$TODAY_FLAG,$sql;
+	global $CARDNO,$TRANSNO,$DATESTR,$TRANS_ID,$TODAY_FLAG,$sql,$MEMTYPE,$ISSTAFF;
 
 	$dbltotal = str_replace(",", "", $dbltotal);		
 	$dbltotal = number_format($dbltotal, 2, '.', '');
