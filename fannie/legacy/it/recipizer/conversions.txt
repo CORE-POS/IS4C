@@ -1,0 +1,46 @@
+tsp		fl oz	0.166666667
+tsp		T		0.333333333
+tsp		cup		0.0208333333
+tsp		pint		0.0104166667
+tsp		quart	0.00520833333
+tsp		gallon	0.00130208333
+T		tsp		3
+T		fl oz	0.5
+T		cup		0.0625
+T		pint		0.03125
+T		quart	0.015625
+T		gallon	0.00390625
+fl oz	tsp		6
+fl oz	T		2
+fl oz	cup		0.125
+fl oz	pint		0.0625
+fl oz	quart	0.03125
+fl oz	gallon	0.0078125
+cup		tsp		48
+cup		T		16
+cup		fl oz	8
+cup		pint		0.5
+cup		quart	0.25
+cup		gallon	0.0625
+pint		tsp		96
+pint		T		32
+pint		fl oz	16
+pint		cup		2
+pint		quart	0.5
+pint		gallon	0.125
+quart	tsp		192
+quart	T		64
+quart	fl oz	32
+quart	cup		4
+quart	pint		2
+quart	gallon	0.25
+gallon	tsp		768
+gallon	T		256
+gallon	fl oz	128
+gallon	cup		16
+gallon	pint		8
+gallon	quart	4
+oz		lbs		0.0625
+lbs		oz		16
+each		each		1
+

@@ -47,7 +47,7 @@ else {
 	fclose($fp);
 }
 
-$page_title = "Special Order :: Mangement";
+$page_title = "Special Order :: Management";
 $header = "Manage Special Orders";
 if (isset($_REQUEST['card_no']) && is_numeric($_REQUEST['card_no'])){
 	$header = "Special Orders for Member #".((int)$_REQUEST['card_no']);
@@ -65,8 +65,8 @@ echo '<html>
 	<body>';
 
 $status = array(
-	0 => "New",
-	3 => "Wants a call",
+	0 => "New, No Call",
+	3 => "New, Call",
 	1 => "Called/waiting",
 	2 => "Pending",
 	4 => "Placed",
