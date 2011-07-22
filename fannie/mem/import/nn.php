@@ -81,11 +81,11 @@ if (isset($_REQUEST['MAX_FILE_SIZE']) ){
 else if (isset($_REQUEST['importbutton'])){
 	include($FANNIE_ROOT.'src/mysql_connect.php');
 	$defaults_table = array();
-	$defQ = "SELECT memtype,cdtype,discount,staff,SSI from memdefaults";
+	$defQ = "SELECT memtype,cd_type,discount,staff,SSI from memdefaults";
 	$defR = $dbc->query($defQ);
 	while($defW = $dbc->fetch_row($defR)){
 		$defaults_table[$defW['memtype']] = array(
-			'type' => $defW['cdtype'],
+			'type' => $defW['cd_type'],
 			'discount' => $defW['discount'],
 			'staff' => $defW['staff'],
 			'SSI' => $defW['SSI']
