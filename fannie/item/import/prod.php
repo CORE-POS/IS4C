@@ -22,22 +22,21 @@
 *********************************************************************************/
 include('../../config.php');
 
-$page_title = "Fannie :: Member Tools";
-$header = "Import Member Contact Info";
+$page_title = "Fannie :: Product Tools";
+$header = "Import Products";
 
 include($FANNIE_ROOT.'src/header.html');
 
 include($FANNIE_ROOT.'src/csv_parser.php');
 include($FANNIE_ROOT.'src/tmp_dir.php');
 if (isset($_REQUEST['MAX_FILE_SIZE']) ){
-
 	// save new file
 	$tmpfile = $_FILES['upload']['tmp_name'];
 	$path_parts = pathinfo($_FILES['upload']['name']);
 	$outfile = tempnam(sys_get_temp_dir(),"MIC");
 	move_uploaded_file($tmpfile, $outfile);
 
-	echo '<form action="contact.php" method="post">';
+	echo '<form action="prod.php" method="post">';
 
 	echo '<i>Preview: Select which columns contain desired information</i><br />';
 	echo '<input type="checkbox" name="skip" /> First row contains headers (omit it)<br />';
@@ -50,49 +49,24 @@ if (isset($_REQUEST['MAX_FILE_SIZE']) ){
 
 	echo '<table cellspacing="0" cellpadding="4" border="1">';
 	echo '<tr>';
-	echo '<th>Member Number</th>';
+	echo '<th>UPC</th>';
 	for($i=0;$i<count($preview[0]);$i++)
-		echo '<td><input type="radio" name="memnum" value="'.$i.($i==0?'" checked':'"').' /></td>';
+		echo '<td><input type="radio" name="upc" value="'.$i.($i==0?'" checked':'"').' /></td>';
 	echo '</tr>';
 	echo '<tr>';
-	echo '<th>Street Address</th>';
+	echo '<th>Description</th>';
 	for($i=0;$i<count($preview[0]);$i++)
-		echo '<td><input type="radio" name="street" value="'.$i.'" /></td>';
+		echo '<td><input type="radio" name="desc" value="'.$i.($i==1?'" checked':'"').' /></td>';
 	echo '</tr>';
 	echo '<tr>';
-	echo '<th>2nd Address Line</th>';
+	echo '<th>Price</th>';
 	for($i=0;$i<count($preview[0]);$i++)
-		echo '<td><input type="radio" name="street2" value="'.$i.'" /></td>';
+		echo '<td><input type="radio" name="price" value="'.$i.($i==2?'" checked':'"').' /></td>';
 	echo '</tr>';
 	echo '<tr>';
-	echo '<th>City</th>';
+	echo '<th>Dept#</th>';
 	for($i=0;$i<count($preview[0]);$i++)
-		echo '<td><input type="radio" name="city" value="'.$i.'" /></td>';
-	echo '</tr>';
-	echo '<tr>';
-	echo '<th>State</th>';
-	for($i=0;$i<count($preview[0]);$i++)
-		echo '<td><input type="radio" name="state" value="'.$i.'" /></td>';
-	echo '</tr>';
-	echo '<tr>';
-	echo '<th>Zip</th>';
-	for($i=0;$i<count($preview[0]);$i++)
-		echo '<td><input type="radio" name="zip" value="'.$i.'" /></td>';
-	echo '</tr>';
-	echo '<tr>';
-	echo '<th>Phone #</th>';
-	for($i=0;$i<count($preview[0]);$i++)
-		echo '<td><input type="radio" name="ph1" value="'.$i.'" /></td>';
-	echo '</tr>';
-	echo '<tr>';
-	echo '<th>Alt. Phone #</th>';
-	for($i=0;$i<count($preview[0]);$i++)
-		echo '<td><input type="radio" name="ph2" value="'.$i.'" /></td>';
-	echo '</tr>';
-	echo '<tr>';
-	echo '<th>Email</th>';
-	for($i=0;$i<count($preview[0]);$i++)
-		echo '<td><input type="radio" name="email" value="'.$i.'" /></td>';
+		echo '<td><input type="radio" name="dept" value="'.$i.'" /></td>';
 	echo '</tr>';
 	foreach($preview as $p){
 		echo '<tr><td>&nbsp;</td>';
@@ -106,16 +80,21 @@ if (isset($_REQUEST['MAX_FILE_SIZE']) ){
 }
 else if (isset($_REQUEST['importbutton'])){
 	include($FANNIE_ROOT.'src/mysql_connect.php');
+	$defaults_table = array();
+	$defQ = "SELECT dept_no,dept_tax,dept_fs,dept_discount FROM departments";
+	$defR = $dbc->query($defQ);
+	while($defW = $dbc->fetch_row($defR)){
+		$defaults_table[$defW['dept_no']] = array(
+			'tax' => $defW['dept_tax'],
+			'fs' => $defW['dept_fs'],
+			'discount' => $defW['dept_discount']
+		);
+	}
 
-	$mn_index = $_REQUEST['memnum'];
-	$st_index = isset($_REQUEST['street'])?$_REQUEST['street']:False;
-	$st2_index = isset($_REQUEST['street2'])?$_REQUEST['street2']:False;
-	$city_index = isset($_REQUEST['city'])?$_REQUEST['city']:False;
-	$state_index = isset($_REQUEST['state'])?$_REQUEST['state']:False;
-	$zip_index = isset($_REQUEST['zip'])?$_REQUEST['zip']:False;
-	$ph_index = isset($_REQUEST['ph1'])?$_REQUEST['ph1']:False;
-	$ph2_index = isset($_REQUEST['ph2'])?$_REQUEST['ph2']:False;
-	$email_index = isset($_REQUEST['email'])?$_REQUEST['email']:False;
+	$upc_index = $_REQUEST['upc'];
+	$desc_index = $_REQUEST['desc'];
+	$price_index = $_REQUEST['price'];
+	$dept_index = isset($_REQUEST['dept'])?$_REQUEST['dept']:False;
 	$skip_one = isset($_REQUEST['skip'])?True:False;
 
 	$filename = base64_decode($_REQUEST['ufile']);
@@ -133,47 +112,50 @@ else if (isset($_REQUEST['importbutton'])){
 
 		// get info from file and member-type default settings
 		// if applicable
-		$cardno = $line[$mn_index];
-		$street = ($st_index !== False) ? $line[$st_index] : "";
-		$street2 = ($st2_index !== False) ? $line[$st2_index] : "";
-		$city = ($city_index !== False) ? $line[$city_index] : "";
-		$state = ($state_index !== False) ? $line[$state_index] : "";
-		$zip = ($zip_index !== False) ? $line[$zip_index] : "";
-		$ph1 = ($ph_index !== False) ? $line[$ph_index] : "";
-		$ph2 = ($ph2_index !== False) ? $line[$ph2_index] : "";
-		$email = ($email_index !== False) ? $line[$email_index] : "";
+		$upc = $line[$upc_index];
+		$desc = $line[$desc_index];
+		$price =  $line[$price_index];	
+		$dept = ($dept_index !== False) ? $line[$dept_index] : 0;
+		$tax = 0;
+		$fs = 0;
+		$discount = 1;
+		if ($dept_index !== False){
+			if (isset($defaults_table[$dept]['tax']))
+				$tax = $defaults_table[$dept]['tax'];
+			if (isset($defaults_table[$dept]['discount']))
+				$discount = $defaults_table[$dept]['discount'];
+			if (isset($defaults_table[$dept]['fs']))
+				$fs = $defaults_table[$dept]['fs'];
+		}
 
-		// combine multi-line addresses
-		$full_street = !empty($street2) ? $street."\n".$street2 : $street;
+		// upc cleanup
+		$upc = str_replace(" ","",$upc);
+		$upc = str_replace("-","",$upc);
+		$upc = str_pad($upc,13,'0',STR_PAD_LEFT);
 
-		$upQ = sprintf("UPDATE meminfo SET
-			street = %s,
-			city = %s,
-			state = %s,
-			zip = %s,
-			phone = %s,
-			email_1 = %s,
-			email_2 = %s
-			WHERE card_no=%d",
-			$dbc->escape($full_street),
-			$dbc->escape($city),
-			$dbc->escape($state),
-			$dbc->escape($zip),
-			$dbc->escape($ph1),
-			$dbc->escape($email),
-			$dbc->escape($ph2),
-			$cardno);
+		if (strlen($desc) > 35) $desc = substr($desc,0,35);		
 
-		echo "Imported contact info for member $cardno<br />";
-			
+		$insQ = sprintf("INSERT INTO products (upc,description,normal_price,
+			pricemethod,groupprice,quantity,special_price,specialpricemethod,
+			specialgroupprice,specialquantity,start_date,end_date,department,
+			size,tax,foodstamp,scale,scaleprice,mixmatchcode,modified,advertised,
+			tareweight,discount,discounttype,unitofmeasure,wicable,qttyEnforced,
+			idEnforced,cost,inUse,numflag,subdept,deposit,local) VALUES
+			(%s,%s,%.2f,0,.0,0,.0,0,.0,0,'1900-01-01','1900-01-01',%d,'',%d,%d,0,.0,
+			'',%s,1,.0,%d,0,'',0,0,0,.0,1,0,0,.0,0)",$dbc->escape($upc),
+			$dbc->escape($desc),$price,$dept,$tax,$fs,$dbc->now(),$discount);
+		$dbc->query($insQ);
+
 	}
+	echo "Loaded requested products";
 	fclose($fp);
 	unlink($filename);
 }
 else {
 ?>
-Upload a CSV file containing member numbers and address/phone/email.
-<form enctype="multipart/form-data" action="contact.php" method="post">
+Upload a CSV file containing product UPCs, descriptions, prices,
+and optional department numbers
+<form enctype="multipart/form-data" action="prod.php" method="post">
 <input type="hidden" name="MAX_FILE_SIZE" value="20971520" />
 Filename: <input type="file" id="file" name="upload" />
 <input type="submit" value="Upload File" />

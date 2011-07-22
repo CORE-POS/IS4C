@@ -103,6 +103,8 @@ else if (isset($_REQUEST['importbutton'])){
 			continue;
 		}
 
+		$line = csv_parser($line);
+
 		$cardno = $line[$mn_index];
 		$amt = $line[$amt_index];
 		$date = ($date_index !== False) ? $line[$date_index] : '0000-00-00';

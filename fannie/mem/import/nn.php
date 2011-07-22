@@ -109,6 +109,8 @@ else if (isset($_REQUEST['importbutton'])){
 			continue;
 		}
 
+		$line = csv_parser($line);
+
 		// get info from file and member-type default settings
 		// if applicable
 		$cardno = $line[$mn_index];

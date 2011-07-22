@@ -545,6 +545,21 @@ function DuplicateOrder($old_id,$from='CompleteSpecialOrder'){
 			WHERE order_id=%d AND trans_id=0",
 			$dbc->escape($user),$new_id);
 	$userR = $dbc->query($userQ);
+
+	$statusQ = "SELECT numflag FROM PendingSpecialOrder
+		WHERE order_id=$new_id";
+	$statusR = $dbc->query($statusQ);
+	$st = array_pop($dbc->fetch_row($statusR));
+	if ($st == 1){
+		$statusQ = sprintf("UPDATE SpecialOrderStatus SET status_flag=3,sub_status=%d
+			WHERE order_id=%d",time(),$new_id);
+		$dbc->query($statusQ);
+	}
+	else if ($st == 0){
+		$statusQ = sprintf("UPDATE SpecialOrderStatus SET status_flag=0,sub_status=%d
+			WHERE order_id=%d",time(),$new_id);
+		$dbc->query($statusQ);
+	}
 	
 	return $new_id;
 }
