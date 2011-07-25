@@ -246,7 +246,7 @@ function getVendorInfo($id){
 	$itemR = $dbc->query("SELECT COUNT(*) FROM vendorDepartments WHERE vendorID=$id");
 	$num = array_pop($dbc->fetch_row($itemR));
 	if ($num == 0)
-		$ret .= "This vendor's items are not arranged into departments";
+		$ret .= "<a href=\"vdepts.php?vid=$id\">This vendor's items are not yet arranged into departments</a>";
 	else {
 		$ret .= "This vendor's items are divided into ";
 		$ret .= $num." departments";

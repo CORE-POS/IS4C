@@ -41,7 +41,7 @@ $rp = $dbc->query("SELECT deptID,name FROM vendorDepartments
 while($rw = $dbc->fetch_row($rp))
 	$cats .= "<option value=$rw[0]>$rw[0] $rw[1]</option>";
 
-if ($cats == "") $cats = "<option>All</option>".$cats;
+if ($cats =="") $cats = "<option value=\"\">Select a department...</option><option>All</option>";
 else $cats = "<option value=\"\">Select a department...</option>".$cats;
 
 ?>
