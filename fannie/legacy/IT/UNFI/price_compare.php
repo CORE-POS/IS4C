@@ -45,7 +45,7 @@ if (isset($_GET['action'])){
 		 $sort = 0;
 		}
 		$out .=  "<td bgcolor=$bg><a href=http://key/queries/productTest.php?upc=$pupc>$pupc</td><td bgcolor=$bg>$pdesc</td><td bgcolor=$bg>$cost</td><td bgcolor=$bg id=pricefield$pupc><a href=\"\" onclick=\"editPrice('$pupc'); return false;\">$pprice</a></td>";
-		$out .=  "<td bgcolor=$bg>$ourMarg</td><td bgcolor=$bg><a href=\"\" onclick=\"editUnfiPrice('$upc'); return false;\">$uprice</a></td><td bgcolor=$bg>$unMarg</td><td bgcolor=$bg>$cat</td><td bgcolor=$bg>$sort</td><td bgcolor=$bg><input type=checkbox name=pricechange[] value=$pupc>UNFI";
+		$out .=  "<td bgcolor=$bg>$ourMarg</td><td bgcolor=$bg><a href=\"\" onclick=\"editUnfiPrice('$upc'); return false;\">$uprice</a></td><td bgcolor=$bg>$unMarg</td><td bgcolor=$bg>$cat</td><td bgcolor=$bg>$sort</td><td bgcolor=$bg><input type=checkbox name=pricechange[] id=\"check$pupc\" value=$pupc><label for=\"check$pupc\">UNFI</label>";
 		break;
 	case 'saveUnfiPrice':
 		$upc = $_GET['upc'];
@@ -103,7 +103,7 @@ echo "<a href=price_compare.php?excel=1&buyer=$buyID&filter=$filter>Dump to Exce
 
 //Connect to mysql server
 
-$mysql = new SQLManager('nexus.wfco-op.store','MYSQL','IS4C','root');
+$mysql = new SQLManager('mysql.wfco-op.store','MYSQL','IS4C','is4c','is4c');
 
 if($buyID == 99){
    $getCatQ = "SELECT unfi_cat FROM unfi_cat";
@@ -205,7 +205,7 @@ $strCat = $strCat . ")";
       if ($var == 1)
 	echo "checked ";
       echo "onclick=\"toggleVariable('$pupc');\" /></td>";
-      echo "<td bgcolor=$bg><input type=checkbox name=pricechange[] value=$pupc>UNFI";
+      echo "<td bgcolor=$bg><input type=checkbox name=pricechange[] id=\"check$pupc\" value=$pupc><label for=\"check$pupc\">UNFI</label>";
       echo "</tr>";
    }
 

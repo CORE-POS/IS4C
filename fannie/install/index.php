@@ -108,10 +108,17 @@ confset('FANNIE_SERVER_DBMS',"'$FANNIE_SERVER_DBMS'");
 if ($FANNIE_SERVER_DBMS == 'MYSQL'){
 	echo "<option value=MYSQL selected>MySQL</option>";
 	echo "<option value=MSSQL>SQL Server</option>";
+	echo "<option value=MYSQLI>MySQLi</option>";
+}
+else if ($FANNIE_SERVER_DBMS == 'MSSQL'){
+	echo "<option value=MYSQL>MySQL</option>";
+	echo "<option value=MSSQL selected>SQL Server</option>";
+	echo "<option value=MYSQLI>MySQLi</option>";
 }
 else {
 	echo "<option value=MYSQL>MySQL</option>";
-	echo "<option value=MSSQL selected>SQL Server</option>";
+	echo "<option value=MSSQL>SQL Server</option>";
+	echo "<option value=MYSQLI selected>MySQLi</option>";
 }
 ?>
 </select>
@@ -228,10 +235,15 @@ echo "<input type=text name=FANNIE_ARCHIVE_SERVER value=\"$FANNIE_ARCHIVE_SERVER
 if (!isset($FANNIE_ARCHIVE_DBMS)) $FANNIE_ARCHIVE_DBMS = 'MYSQL';
 if (isset($_REQUEST['FANNIE_ARCHIVE_DBMS'])) $FANNIE_ARCHIVE_DBMS = $_REQUEST['FANNIE_ARCHIVE_DBMS'];
 confset('FANNIE_ARCHIVE_DBMS',"'$FANNIE_ARCHIVE_DBMS'");
-if ($FANNIE_ARCHIVE_DBMS == 'MYSQL')
-	echo "<option value=MYSQL selected>MySQL</option><option value=MSSQL>SQL Server</option>";
-else
-	echo "<option value=MYSQL>MySQL</option><option value=MSSQL selected>SQL Server</option>";
+if ($FANNIE_ARCHIVE_DBMS == 'MYSQL'){
+	echo "<option value=MYSQL selected>MySQL</option><option value=MSSQL>SQL Server</option><option value=MYSQLI>MySQLi</option>";
+}
+else if ($FANNIE_ARCHIVE_DBMS == 'MSSQL'){
+	echo "<option value=MYSQL>MySQL</option><option selected value=MSSQL>SQL Server</option><option value=MYSQLI>MySQLi</option>";
+}
+else {
+	echo "<option value=MYSQL>MySQL</option><option value=MSSQL>SQL Server</option><option selected value=MYSQLI>MySQLi</option>";
+}
 ?>
 </select>
 <br />Archive DB username
@@ -368,10 +380,13 @@ for($i=0; $i<$FANNIE_NUM_LANES; $i++){
 	$conf .= "'type'=>'{$FANNIE_LANES[$i]['type']}',";
 	echo "Lane ".($i+1)." Database Type: <select name=LANE_TYPE_$i>";
 	if ($FANNIE_LANES[$i]['type'] == 'MYSQL'){
-		echo "<option value=MYSQL selected>MySQL</option><option value=MSSQL>SQL Server</option>";
+		echo "<option value=MYSQL selected>MySQL</option><option value=MSSQL>SQL Server</option><option value=MYSQLI>MySQLi</option>";
+	}
+	else if ($FANNIE_LANES[$i]['type'] == 'MSSQL'){
+		echo "<option value=MYSQL>MySQL</option><option selected value=MSSQL>SQL Server</option><option value=MYSQLI>MySQLi</option>";
 	}
 	else {
-		echo "<option value=MYSQL>MySQL</option><option selected value=MSSQL>SQL Server</option>";
+		echo "<option value=MYSQL>MySQL</option><option value=MSSQL>SQL Server</option><option selected value=MYSQLI>MySQLi</option>";
 	}
 	echo "</select><br />";
 

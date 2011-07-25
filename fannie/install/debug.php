@@ -130,34 +130,6 @@ else {
 	echo "<br />Full path is ".$FILEPATH.'logs/';
 }
 echo "<br />";
-if (is_writable($FILEPATH.'batches/CAP/tmp/'))
-	echo "<span style=\"color:green;\">Co+op Deals upload is writable</span>";
-else {
-	echo "<span style=\"color:red;\">Co+op Deals upload is not writeable</span>";
-	echo "<br />Full path is ".$FILEPATH.'batches/CAP/tmp/';
-}
-echo "<br />";
-if (is_writable($FILEPATH.'batches/UNFI/tmp/'))
-	echo "<span style=\"color:green;\">Vendor Pricing upload is writable</span>";
-else {
-	echo "<span style=\"color:red;\">Vendor Pricing upload is not writeable</span>";
-	echo "<br />Full path is ".$FILEPATH.'batches/UNFI/tmp/';
-}
-echo "<br />";
-if (is_writable($FILEPATH.'batches/xlsbatch/tmp/'))
-	echo "<span style=\"color:green;\">XLS Batch upload is writable</span>";
-else {
-	echo "<span style=\"color:red;\">XLS Batch upload is not writeable</span>";
-	echo "<br />Full path is ".$FILEPATH.'batches/xlsbatch/tmp/';
-}
-echo "<br />";
-if (is_writable($FILEPATH.'mem/import/tmp/'))
-	echo "<span style=\"color:green;\">Member Import upload is writable</span>";
-else {
-	echo "<span style=\"color:red;\">Member Import upload is not writeable</span>";
-	echo "<br />Full path is ".$FILEPATH.'mem/import/tmp/';
-}
-echo "<br />";
 ?>
 <hr />
 <input type=submit value="Refresh" />

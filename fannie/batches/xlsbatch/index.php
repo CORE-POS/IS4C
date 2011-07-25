@@ -27,6 +27,7 @@ $page_title = "Fannie -  Sales Batch";
 $header = "Upload Batch file";
 include($FANNIE_ROOT."src/header.html");
 include($FANNIE_ROOT."src/mysql_connect.php");
+include($FANNIE_ROOT."src/tmp_dir.php");
 
 $batchtypes = array();
 $typesQ = "select batchTypeID,typeDesc from batchType order by batchTypeID";
@@ -35,21 +36,13 @@ while ($typesW = $dbc->fetch_array($typesR))
 	$batchtypes[$typesW[0]] = $typesW[1];
 
 if (isset($_POST['MAX_FILE_SIZE'])){
-	/*
-	$dh = opendir("tmp/");
-	while (($file = readdir($dh)) !== false) {
-		if (!is_dir("tmp/".$file)) unlink("tmp/".$file);
-	}
-	closedir($dh);
-	*/
-
 	$tmpfile = $_FILES['upload']['tmp_name'];
 	$path_parts = pathinfo($_FILES['upload']['name']);
 	if ($path_parts['extension'] != "xls"){
 		echo "<b>Error: file doesn't seem to be an excel file</b>";
 	}
 	else {
-		$fn = "tmp/".$_FILES['upload']['name'];
+		$fn = tempnam(sys_get_temp_dir(),"XLB");
 		move_uploaded_file($tmpfile, $fn);
 
 		include($FANNIE_ROOT."src/Excel/reader.php");

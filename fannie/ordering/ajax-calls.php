@@ -22,6 +22,7 @@
 *********************************************************************************/
 include('../config.php');
 include($FANNIE_ROOT.'src/mysql_connect.php');
+include($FANNIE_ROOT.'src/tmp_dir.php');
 include($FANNIE_ROOT.'auth/login.php');
 
 $canEdit = false;
@@ -85,6 +86,18 @@ case 'saveCtC':
 		numflag=%d WHERE order_id=%d AND trans_id=0",
 		$_REQUEST['val'],$_REQUEST['orderID']);
 	$dbc->query($upQ);
+	if ($_REQUEST['val'] == 1){
+		$statusQ = sprintf("UPDATE SpecialOrderStatus SET status_flag=3,sub_status=%d
+			WHERE order_id=%d AND status_flag in (0,3)",
+			time(),$_REQUEST['orderID']);
+		$dbc->query($statusQ);
+	}
+	else if ($_REQUEST['val'] == 0){
+		$statusQ = sprintf("UPDATE SpecialOrderStatus SET status_flag=0,sub_status=%d
+			WHERE order_id=%d AND status_flag in (0,3)",
+			time(),$_REQUEST['orderID']);
+		$dbc->query($statusQ);
+	}
 	break;
 case 'savePrice':
 	$upQ = sprintf("UPDATE PendingSpecialOrder SET
@@ -303,12 +316,13 @@ case 'SplitOrder':
 	break;
 case 'UpdatePrint':
 	$user = $_REQUEST['user'];
-	$prints = unserialize(file_get_contents("/tmp/ordercache/$user.prints"));
+	$cachepath = sys_get_temp_dir()."/ordercache/";
+	$prints = unserialize(file_get_contents("{$cachepath}{$user}.prints"));
 	if (isset($prints[$_REQUEST['orderID']]))
 		unset($prints[$_REQUEST['orderID']]);
 	else
 		$prints[$_REQUEST['orderID']] = array();
-	$fp = fopen("/tmp/ordercache/$user.prints",'w');
+	$fp = fopen("{$cachepath}{$user}.prints",'w');
 	fwrite($fp,serialize($prints));
 	fclose($fp);
 	break;
@@ -340,7 +354,7 @@ function addUPC($orderID,$memNum,$upc,$num_cases=1){
 		$upc = str_pad($upc,13,'0',STR_PAD_LEFT);
 
 	$manualSKU = False;
-	if ($upc[0] == "+"){
+	if (isset($upc[0]) && $upc[0] == "+"){
 		$sku = substr($upc,1);
 		$upc = "zimbabwe";
 		$manualSKU = True;
@@ -375,9 +389,10 @@ function addUPC($orderID,$memNum,$upc,$num_cases=1){
 
 	$mempricing = False;
 	if ($memNum != 0 && !empty($memNum)){
-		$r = $dbc->query("SELECT type FROM custdata WHERE CardNo=$memNum");
+		$r = $dbc->query("SELECT type,memType FROM custdata WHERE CardNo=$memNum");
 		$w = $dbc->fetch_row($r);
 		if ($w['type'] == 'PC') $mempricing = True;
+		elseif($w['memType'] == 9) $mempricing = True;
 	}
 
 	$pdQ = "SELECT normal_price,special_price,department,discounttype,
@@ -530,6 +545,21 @@ function DuplicateOrder($old_id,$from='CompleteSpecialOrder'){
 			WHERE order_id=%d AND trans_id=0",
 			$dbc->escape($user),$new_id);
 	$userR = $dbc->query($userQ);
+
+	$statusQ = "SELECT numflag FROM PendingSpecialOrder
+		WHERE order_id=$new_id";
+	$statusR = $dbc->query($statusQ);
+	$st = array_pop($dbc->fetch_row($statusR));
+	if ($st == 1){
+		$statusQ = sprintf("UPDATE SpecialOrderStatus SET status_flag=3,sub_status=%d
+			WHERE order_id=%d",time(),$new_id);
+		$dbc->query($statusQ);
+	}
+	else if ($st == 0){
+		$statusQ = sprintf("UPDATE SpecialOrderStatus SET status_flag=0,sub_status=%d
+			WHERE order_id=%d",time(),$new_id);
+		$dbc->query($statusQ);
+	}
 	
 	return $new_id;
 }
@@ -542,7 +572,7 @@ function CreateEmptyOrder(){
 	$orderID = $dbc->insert_id();
 
 	$ins_array = genericRow($orderID);
-	$ins_array['numflag'] = 2;
+	$ins_array['numflag'] = 1;
 	$ins_array['mixMatch'] = $dbc->escape($user);
 	$dbc->smart_insert('PendingSpecialOrder',$ins_array);
 
@@ -555,7 +585,7 @@ function CreateEmptyOrder(){
 
 	$vals = array(
 		'order_id'=>$orderID,
-		'status_flag'=>0,
+		'status_flag'=>3,
 		'sub_status'=>time()
 	);
 	$dbc->smart_insert("SpecialOrderStatus",$vals);
@@ -752,11 +782,12 @@ function getCustomerForm($orderID,$memNum="0"){
 		onclick=\"validateAndHome();return false;\" />";
 	$username = checkLogin();
 	$prints = array();
-	if (file_exists("/tmp/ordercache/$username.prints")){
-		$prints = unserialize(file_get_contents("/tmp/ordercache/$username.prints"));
+	$cachepath = sys_get_temp_dir()."/ordercache/";
+	if (file_exists("{$cachepath}{$username}.prints")){
+		$prints = unserialize(file_get_contents("{$cachepath}{$username}.prints"));
 	}
 	else {
-		$fp = fopen("/tmp/ordercache/$username.prints",'w');
+		$fp = fopen("{$cachepath}{$username}.prints",'w');
 		fwrite($fp,serialize($prints));
 		fclose($fp);
 	}
@@ -776,7 +807,6 @@ function getCustomerForm($orderID,$memNum="0"){
 	$extra .= '</td><td align="right" valign="top">';
 	$extra .= '<b>Call to Confirm</b>: ';
 	$extra .= '<select id="ctcselect" onchange="saveCtC(this.value,'.$orderID.');">';
-	$extra .= '<option value="z"></option>';
 	if ($callback == 1){
 		$extra .= '<option value="1" selected>Yes</option>';	
 		$extra .= '<option value="0">No</option>';	
@@ -784,10 +814,6 @@ function getCustomerForm($orderID,$memNum="0"){
 	else if ($callback == 0){
 		$extra .= '<option value="1">Yes</option>';	
 		$extra .= '<option value="0" selected>No</option>';	
-	}
-	else {
-		$extra .= '<option value="1">Yes</option>';	
-		$extra .= '<option value="0">No</option>';	
 	}
 	$extra .= '</select><br />';	
 	$extra .= '<span id="confDateSpan">'.(!empty($confirm_date)?'Confirmed '.$confirm_date:'Not confirmed')."</span> ";
@@ -961,7 +987,7 @@ function getCustomerNonForm($orderID){
 	if ($dbc->num_rows($r) > 0)	
 		$confirm_date = array_pop($dbc->fetch_row($r));
 
-	$callback = 2;
+	$callback = 1;
 	$user = 'Unknown';
 	$q = "SELECT numflag,mixMatch FROM PendingSpecialOrder WHERE order_id=$orderID AND trans_id=0";
 	$r = $dbc->query($q);
@@ -1329,7 +1355,7 @@ function getItemNonForm($orderID){
 function reprice($oid,$tid,$reg=False){
 	global $dbc;
 
-	$query = sprintf("SELECT o.unitPrice,o.itemQtty,o.quantity,o.discounttype,c.type
+	$query = sprintf("SELECT o.unitPrice,o.itemQtty,o.quantity,o.discounttype,c.type,c.memType
 		FROM PendingSpecialOrder AS o LEFT JOIN custdata AS c ON
 		o.card_no=c.CardNo AND c.personNum=1
 		WHERE order_id=%d AND trans_id=%d",$oid,$tid);
@@ -1340,7 +1366,7 @@ function reprice($oid,$tid,$reg=False){
 	if ($reg)
 		$regPrice = $reg;
 	$total = $regPrice;
-	if ($row['type'] == 'PC' && $row['discounttype'] == 0){
+	if (($row['type'] == 'PC' || $row['memType'] == 9) && $row['discounttype'] == 0){
 		$total *= 0.85;
 	}
 

@@ -43,10 +43,10 @@ include 'header.html';
 <form name="memNum" id="memNum" method="post" action="memGen.php">
     <td width="1" align="right">&nbsp;</td>
     <td width="47" align="right" valign="middle"><font size="2" face="Papyrus, Verdana, Arial, Helvetica, sans-serif">Owner
-    #:</font></td>
+    # or UPC:</font></td>
     <td>
       		<font size="2"> <font face="Papyrus, Verdana, Arial, Helvetica, sans-serif">
-      		<input name="memNum" type="text" id="memNum_t" size="5" maxlength="8" />
+      		<input name="memNum" type="text" id="memNum_t" size="5" maxlength="12" />
       		</font></font>
     </td>
     <td width="82" valign="middle"><font size="2" face="Papyrus, Verdana, Arial, Helvetica, sans-serif">Last Name</font></td>

@@ -28,18 +28,13 @@ $header = "Import Member Names &amp; Numbers";
 include($FANNIE_ROOT.'src/header.html');
 
 include($FANNIE_ROOT.'src/csv_parser.php');
+include($FANNIE_ROOT.'src/tmp_dir.php');
 if (isset($_REQUEST['MAX_FILE_SIZE']) ){
-	// clean out old files
-	$dh = opendir("tmp/");
-	while (($file = readdir($dh)) !== false) {
-		if (!is_dir("tmp/".$file)) unlink("tmp/".$file);
-	}
-	closedir($dh);
-	
 	// save new file
 	$tmpfile = $_FILES['upload']['tmp_name'];
 	$path_parts = pathinfo($_FILES['upload']['name']);
-	move_uploaded_file($tmpfile, "tmp/info.csv");
+	$outfile = tempnam(sys_get_temp_dir(),"MIC");
+	move_uploaded_file($tmpfile, $outfile);
 
 	echo '<form action="nn.php" method="post">';
 
@@ -47,7 +42,7 @@ if (isset($_REQUEST['MAX_FILE_SIZE']) ){
 	echo '<input type="checkbox" name="skip" /> First row contains headers (omit it)<br />';
 
 	$preview = array();
-	$fp = fopen("tmp/info.csv","r");
+	$fp = fopen($outfile,"r");
 	while( ($line = fgets($fp)) !== False && count($preview) < 5)
 		$preview[] = csv_parser($line);
 	fclose($fp);
@@ -79,17 +74,18 @@ if (isset($_REQUEST['MAX_FILE_SIZE']) ){
 		echo '</tr>';
 	}
 	echo '</table><br />';
+	printf('<input type="hidden" name="ufile" value="%s" />',base64_encode($outfile));
 	echo '<input type="submit" value="Import Data" name="importbutton" />';
 	echo '</form>';
 }
 else if (isset($_REQUEST['importbutton'])){
 	include($FANNIE_ROOT.'src/mysql_connect.php');
 	$defaults_table = array();
-	$defQ = "SELECT memtype,cdtype,discount,staff,SSI from memdefaults";
+	$defQ = "SELECT memtype,cd_type,discount,staff,SSI from memdefaults";
 	$defR = $dbc->query($defQ);
 	while($defW = $dbc->fetch_row($defR)){
 		$defaults_table[$defW['memtype']] = array(
-			'type' => $defW['cdtype'],
+			'type' => $defW['cd_type'],
 			'discount' => $defW['discount'],
 			'staff' => $defW['staff'],
 			'SSI' => $defW['SSI']
@@ -102,7 +98,9 @@ else if (isset($_REQUEST['importbutton'])){
 	$t_index = isset($_REQUEST['typeID'])?$_REQUEST['typeID']:False;
 	$skip_one = isset($_REQUEST['skip'])?True:False;
 
-	$fp = fopen('tmp/info.csv','r');
+	$filename = base64_decode($_REQUEST['ufile']);
+
+	$fp = fopen($filename,'r');
 	echo "Results: <br />";
 	while( ($line = fgets($fp)) !== False ){
 		// skip header row
@@ -110,6 +108,8 @@ else if (isset($_REQUEST['importbutton'])){
 			$skip_one = False;
 			continue;
 		}
+
+		$line = csv_parser($line);
 
 		// get info from file and member-type default settings
 		// if applicable
@@ -166,13 +166,9 @@ else if (isset($_REQUEST['importbutton'])){
 		
 	}
 	fclose($fp);
+	unlink($filename);
 }
 else {
-	if (!is_writable("tmp/")){
-		echo "<h1>";
-		echo $FANNIE_ROOT."mem/import/tmp/ is not writable. Correct that first.";
-		echo "</h1>";
-	}
 ?>
 Upload a CSV file containing member numbers, names, and optionally types.
 <form enctype="multipart/form-data" action="nn.php" method="post">

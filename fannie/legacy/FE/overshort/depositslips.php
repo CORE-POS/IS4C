@@ -121,8 +121,8 @@ if (isset($_GET['startDate'])){
 			}
 			$str .= "\n";
 		}
-		$str2 = "TOTAL: $".sprintf("%.2f",$sum);
-		$str3 = "COUNT: ".count($acc);
+		$str2 = "TTL: ".sprintf("%.2f",$sum);
+		$str3 = "CT: ".count($acc);
 		array_push($counts,$sum);
 		$ckSum += $sum;
 	

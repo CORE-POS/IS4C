@@ -15,7 +15,7 @@ fannie/cache/cachefiles
 fannie/inventory/archive/*
 fannie/reports/Store-Specific/WFC/CCSettle/xmlcache/*.xml
 fannie/auth/shadowread/shadowread
-fannie/src/Credentials/*.php
+fannie/src/Credentials/*
 dist/deb/DEBS/*.deb
 dist/rpm/BUILD/*
 dist/rpm/RPMS/*

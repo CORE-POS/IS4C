@@ -42,21 +42,21 @@ include($FANNIE_ROOT.'src/header.html');
 
 $query1="SELECT ".$dbc->hour('tdate').", 
 sum(total)as Sales
-FROM dlog as d left join MasterSuperDepts as t
+FROM ".$FANNIE_TRANS_DB.$dbc->sep()."dlog as d left join MasterSuperDepts as t
 on d.department = t.dept_ID
-WHERE datediff(dd,getdate(),tDate)=0
-AND (trans_type ='I' OR Trans_type = 'D' or trans_type='M')
-AND t.superID > 0
+WHERE ".$dbc->datediff($dbc->now(),'tdate')."=0
+AND (trans_type ='I' OR trans_type = 'D' or trans_type='M')
+AND (t.superID > 0 or t.superID IS NULL)
 GROUP BY ".$dbc->hour('tdate')."
 order by ".$dbc->hour('tdate');
 if ($selected != -1){
 	$query1="SELECT ".$dbc->hour('tdate').", 
 	sum(total)as Sales,
 	sum(case when t.superID=$selected then total else 0 end) as prodSales
-	FROM dlog as d left join MasterSuperDepts as t
+	FROM ".$FANNIE_TRANS_DB.$dbc->sep()."dlog as d left join MasterSuperDepts as t
 	on d.department = t.dept_ID
-	WHERE datediff(dd,getdate(),tDate)=0
-	AND (trans_type ='I' OR Trans_type = 'D' or trans_type='M')
+	WHERE ".$dbc->datediff($dbc->now(),'tdate')."=0
+	AND (trans_type ='I' OR trans_type = 'D' or trans_type='M')
 	AND t.superID > 0
 	GROUP BY ".$dbc->hour('tdate')."
 	order by ".$dbc->hour('tdate');

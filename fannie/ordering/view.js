@@ -412,11 +412,6 @@ function validateAndHome(){
 		return false;
 	}
 
-	if ($('#ctcselect').val() == 'z'){
-		alert("Select a callback option");
-		return false;
-	}
-
 	var nD = $('#nDept').val();
 	var nT = $('#nText').val();
 	if (nT != "" && nD == 0)

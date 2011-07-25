@@ -280,6 +280,25 @@ function prefetch_result($memID,$lName,$fName,&$qd){
                AND PersonNum= 1",$memID);
 
     $result = $sql->query($query);
+    if ($sql->num_rows($result) == 0){
+	// alternative: try number as ID card UPC
+        $query = sprintf("SELECT card_no AS CardNo FROM
+		memberCards WHERE upc=%s",
+		$sql->escape(str_pad($memID,13,'0',STR_PAD_LEFT))
+	);
+	$result = $sql->query($query);
+	if ($sql->num_rows($result)==0){
+		// alt alt: try removing check digit
+		$query = sprintf("SELECT card_no AS CardNo FROM
+			memberCards WHERE upc=%s",
+			$sql->escape(str_pad(
+				substr($memID,0,strlen($memID)-1),
+				13,'0',STR_PAD_LEFT))
+		);
+		$result = $sql->query($query);
+
+	}
+    }
     return $result;
   }
 }

@@ -22,6 +22,7 @@
 *********************************************************************************/
 include('../config.php');
 include($FANNIE_ROOT.'src/mysql_connect.php');
+include($FANNIE_ROOT.'src/tmp_dir.php');
 
 if (isset($_REQUEST['toids'])){
 	define('FPDF_FONTPATH','font/');
@@ -158,8 +159,9 @@ else {
 	echo '<table cellspacing="0" cellpadding="4" border="1">';
 	include($FANNIE_ROOT.'auth/login.php');
 	$username = checkLogin();
-	if (file_exists("/tmp/ordercache/$username.prints")){
-		$prints = unserialize(file_get_contents("/tmp/ordercache/$username.prints"));
+	$cachepath = sys_get_temp_dir()."/ordercache/";
+	if (file_exists("{$cachepath}{$username}.prints")){
+		$prints = unserialize(file_get_contents("{$cachepath}{$username}.prints"));
 		foreach($prints as $oid=>$data){
 			if (!in_array($oid,$_REQUEST['oids']))
 				$_REQUEST['oids'][] = $oid;

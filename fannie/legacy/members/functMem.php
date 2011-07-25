@@ -603,7 +603,8 @@ function edit_work_status($query,$border,$bgcolor)
 }
 
 function log_info($name,$variable){
-  $logfile = "/tmp/loginfo.txt";
+  global $FANNIE_ROOT;
+  $logfile = $FANNIE_ROOT."logs/loginfo.txt";
   $log = fopen($logfile,"a");
   $message = "[".date('d-M-Y H:i:s')."] ".$name . ": ".$variable."\n";
   fwrite($log,$message);

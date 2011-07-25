@@ -20,18 +20,19 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
+include('../../config.php');
+include($FANNIE_ROOT.'src/tmp_dir.php');
 
 // handle the actual file upload
 if (isset($_REQUEST['MAX_FILE_SIZE'])){
 	$tmpfile = $_FILES['upload']['tmp_name'];
-	$fn = $_FILES['upload']['name'];
-	move_uploaded_file($tmpfile,'tmp/'.$fn);
+	$fn = tempnam(sys_get_temp_dir(),"VUP");
+	move_uploaded_file($tmpfile,$fn);
 	$id = $_REQUEST['vid'];
-	header("Location: update.php?vid=$id&filename=$fn&preview=yes");
+	header("Location: update.php?vid=$id&filename=".base64_encode($fn)."&preview=yes");
 	return;
 }
 
-include('../../config.php');
 $page_title = "Fannie : Update Vendor Catalog";
 $header = "Update Vendor Catalog";
 include($FANNIE_ROOT.'src/header.html');
@@ -44,7 +45,7 @@ include($FANNIE_ROOT.'src/csv_parser.php');
 
 // no vendor found, shouldn't happen
 if (!isset($_REQUEST['vid'])){
-	echo "<i>Error: no venodr selected</i>";
+	echo "<i>Error: no vendor selected</i>";
 	include($FANNIE_ROOT.'src/footer.html');
 	return;
 }
@@ -81,11 +82,11 @@ if (isset($_REQUEST['confirm'])){
 		}	
 	}
 	
-	$fn = $_REQUEST['filename'];
+	$fn = base64_decode($_REQUEST['filename']);
 	$vid = $_REQUEST['vid'];
 
 	$dbc->query(sprintf("DELETE FROM vendorItems WHERE vendorID=%d",$vid));		
-	$fp = fopen("tmp/$fn","r");
+	$fp = fopen($fn,"r");
 	$count = 0;
 	while(!feof($fp)){
 		$line = fgets($fp);
@@ -126,13 +127,14 @@ if (isset($_REQUEST['confirm'])){
 		$count++;
 	}
 	fclose($fp);
+	unlink($fn);
 
 	echo "Imported $count products into the vendor catalog";
 	echo "<p />";
 	echo "<a href=\"index.php\">Back to Vendors</a>";
 }
 elseif (isset($_REQUEST['preview'])){
-	$fn = $_REQUEST['filename'];	
+	$fn = $_REQUEST['filename'];
 	echo "<form action=update.php method=post>";
 	echo "<input type=hidden value=\"$fn\" name=filename />";
 	echo "<input type=hidden value=$vid name=vid />";
@@ -149,7 +151,8 @@ elseif (isset($_REQUEST['preview'])){
 
 	echo "<table cellspacing=0 cellpadding=4 border=1>";
 
-	$fp = fopen("tmp/$fn","r");
+	$fn = base64_decode($fn);
+	$fp = fopen($fn,"r");
 	$count = 0;
 	while(!feof($fp)){
 		$line = fgets($fp);

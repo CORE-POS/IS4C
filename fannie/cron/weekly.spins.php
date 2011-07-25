@@ -43,6 +43,7 @@ include('../config.php');
 include($FANNIE_ROOT.'src/SQLManager.php');
 include($FANNIE_ROOT.'src/tmp_dir.php');
 
+$tstamp = time();
 $week = date("W",$tstamp);
 $week--;
 if ($week == 0) $week = 52;

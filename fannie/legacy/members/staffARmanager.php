@@ -3,7 +3,7 @@ include('../../config.php');
 
 if (!class_exists("SQLManager")) require_once($FANNIE_ROOT."src/SQLManager.php");
 include('../db.php');
-$mysql = new SQLManager('nexus.wfco-op.store','MYSQL','payroll1','root');
+$mysql = new SQLManager('mysql.wfco-op.store','MYSQL','payroll1','root');
 
 /* delete is easy
  * just delete from staffID and staffAR
