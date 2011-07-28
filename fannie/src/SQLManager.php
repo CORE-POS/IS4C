@@ -570,6 +570,19 @@ class SQLManager {
 
 		return $ret;
 	}
+
+	/* compat layer; mimic functions of Brad's mysql class */
+	function get_result($host,$user,$pass,$data_base,$query){
+		return $this->query($query);
+	}
+
+	function aff_rows($result){
+		return $this->affected_rows($result);
+	}
+
+	// skipping fetch_cell on purpose; generic-db way would be slow as heck
+
+	/* end compat Brad's class */
 }
 
 ?>

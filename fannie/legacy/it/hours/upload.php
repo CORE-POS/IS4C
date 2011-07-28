@@ -61,6 +61,7 @@ if (isset($_POST["MAX_FILE_SIZE"])){
 		}
 		$fields = csv_parser($line);
 		if (count($fields) == 0) continue;
+		if (!isset($fields[$ADP_COL])) continue;
 
 		$adpID = ltrim($fields[$ADP_COL],"U8U");
 		if (!isset($rows[$adpID])){
