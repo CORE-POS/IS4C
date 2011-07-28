@@ -337,12 +337,12 @@ function canSaveAddress($orderID){
 		return False;
 	}
 	$row = $dbc->fetch_row($chk);
-	if ($row['card_no'] != 0) return False;
+	if ($row['card_no'] != 0 && False) return False;
 
 	$chk = $dbc->query(sprintf("SELECT card_no FROM SpecialOrderContact
 			WHERE card_no=%d",$orderID));
 	if ($dbc->num_rows($chk) == 0)
-		CreateContactRow($orderID);	
+		CreateContactRow($orderID);
 	return True;
 }
 
@@ -590,6 +590,8 @@ function CreateEmptyOrder(){
 	);
 	$dbc->smart_insert("SpecialOrderStatus",$vals);
 
+	CreateContactRow($orderID);
+
 	return $orderID;
 }
 
@@ -716,10 +718,35 @@ function getCustomerForm($orderID,$memNum="0"){
 		while($namesW = $dbc->fetch_row($namesR))
 			$names[$namesW['personNum']] = array($namesW['FirstName'],$namesW['LastName']);
 
-		$contactQ = sprintf("SELECT street,city,state,zip,phone,email_1,email_2
-				FROM meminfo WHERE card_no=%d",$memNum);
-		$contactR = $dbc->query($contactQ);
-		$contact_row = $dbc->fetch_row($contactR);
+		// load member contact info into SpecialOrderContact
+		// on first go so it can be edited separately
+		$testQ = "SELECT street FROM SpecialOrderContact WHERE card_no=".$orderID;
+		$testR = $dbc->query($testQ);
+		$testW = $dbc->fetch_row($testR);
+		if (empty($testW['street'])){
+			$contactQ = sprintf("SELECT street,city,state,zip,phone,email_1,email_2
+					FROM meminfo WHERE card_no=%d",$memNum);
+			$contactR = $dbc->query($contactQ);
+			$contact_row = $dbc->fetch_row($contactR);
+			
+			$upQ = sprintf("UPDATE SpecialOrderContact SET street=%s,city=%s,state=%s,zip=%s,
+					phone=%s,email_1=%s,email_2=%s WHERE card_no=%d",
+					$dbc->escape($contact_row['street']),
+					$dbc->escape($contact_row['city']),
+					$dbc->escape($contact_row['state']),
+					$dbc->escape($contact_row['zip']),
+					$dbc->escape($contact_row['phone']),
+					$dbc->escape($contact_row['email_1']),
+					$dbc->escape($contact_row['email_2']),
+					$orderID);
+			$upR = $dbc->query($upQ);
+		}
+		else {
+			$contactQ = sprintf("SELECT street,city,state,zip,phone,email_1,email_2
+					FROM SpecialOrderContact WHERE card_no=%d",$orderID);
+			$contactR = $dbc->query($contactQ);
+			$contact_row = $dbc->fetch_row($contactR);
+		}
 
 		$statusQ = sprintf("SELECT type FROM custdata WHERE CardNo=%d",$memNum);
 		$statusR = $dbc->query($statusQ);
@@ -989,7 +1016,7 @@ function getCustomerNonForm($orderID){
 
 	$callback = 1;
 	$user = 'Unknown';
-	$q = "SELECT numflag,mixMatch FROM PendingSpecialOrder WHERE order_id=$orderID AND trans_id=0";
+	$q = "SELECT numflag,mixMatch FROM CompleteSpecialOrder WHERE order_id=$orderID AND trans_id=0";
 	$r = $dbc->query($q);
 	if ($dbc->num_rows($r) > 0)
 		list($callback,$user) = $dbc->fetch_row($r);

@@ -126,7 +126,7 @@ function logout(){
   if (!$name){
     return true;
   }
-  setcookie('session_data','',time()+(60*40),'/');
+  setcookie('session_data','',time()+(60*600),'/');
   return true;
 }
 
@@ -367,6 +367,7 @@ function validateUserQuiet($auth,$sub='all'){
 // user is currently logged in
 // must be called prior to any output
 function refreshSession(){
+  return true;
   if (!isset($_COOKIE['session_data']))
     return false;
   setcookie('session_data',$_COOKIE['session_data'],time()+(60*40),'/');
@@ -391,7 +392,7 @@ function pose($username){
 	$session_data = array("name"=>$username,"session_id"=>$session_id);
 	$cookie_data = serialize($session_data);
 
-	setcookie('session_data',base64_encode($cookie_data),time()+(60*40),'/');
+	setcookie('session_data',base64_encode($cookie_data),time()+(60*600),'/');
 
 	return true;
 }

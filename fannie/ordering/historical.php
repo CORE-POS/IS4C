@@ -32,6 +32,8 @@ include($FANNIE_ROOT.'src/header.html');
 
 $status = array(
 	0 => "New",
+	3 => "New, Call",
+	1 => "Called/waiting",
 	2 => "Pending",
 	4 => "Placed",
 	5 => "Arrived",

@@ -22,7 +22,7 @@ function get_cache($type){
 
 	$key = md5($_SERVER['REQUEST_URI']);
 
-	if (file_exists($FANNIE_ROOT.'cache/cachefilesi/'.$type.'/'.$key))
+	if (file_exists($FANNIE_ROOT.'cache/cachefiles/'.$type.'/'.$key))
 		return file_get_contents($FANNIE_ROOT.'cache/cachefiles/'.$type.'/'.$key);
 	else
 		return False;

@@ -57,7 +57,9 @@ function memNumEntered(){
 	data: 'action=reloadMem&orderID='+oid+'&memNum='+cardno,
 	cache: false,
 	success: function(resp){
-		$('#customerDiv').html(resp);
+		var tmp = resp.split("`");
+		$('#customerDiv').html(tmp[0]);
+		$('#footerDiv').html(tmp[1]);
 	}
 	});
 }
