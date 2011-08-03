@@ -10,6 +10,8 @@ require($FANNIE_ROOT.'src/tmp_dir.php');
 $LC_COL=0;
 $LOCAL_COL=1;
 
+ini_set('auto_detect_line_endings',True);
+
 if (isset($_POST["MAX_FILE_SIZE"])){
 	$fn = sys_get_temp_dir()."/local_sheet.csv";
 	move_uploaded_file($_FILES['upload']['tmp_name'],$fn);
@@ -65,7 +67,6 @@ else if (isset($_POST['likecode'])){
 
 	echo "<b>Peforming updates</b><br />";
 	for ($i = 0; $i < count($likecodes); $i++){
-		$s = ($scales[$i] == "y") ? 1 : 0;
 		$lval = 0;
 		if ($local[$i] == '300') $lval = 1;
 		elseif ($local[$i] == 'S.C.') $lval = 2;
