@@ -39,13 +39,17 @@ if (isset($_POST["MAX_FILE_SIZE"])){
 		}
 		$row = $sql->fetch_array($r);
 
+		$local = 'No';
+		if (!empty($data[$LOCAL_COL]) && $data[$LOCAL_COL] == 1) $local = '300';
+		if (!empty($data[$LOCAL_COL]) && $data[$LOCAL_COL] == 2) $local = 'S.C.';
+
 		if (!empty($data[$LOCAL_COL]))
 			echo "<tr class=\"local\">";
 		else
 			echo "<tr>";
 		echo "<td>".$data[$LC_COL]."</td><input type=hidden name=likecode[] value=\"".$data[$LC_COL]."\" />";
 		echo "<td>".$row[0]."</td>";
-		echo "<td><input type=text size=5 name=local[] value=\"".(!empty($data[$LOCAL_COL])?'Yes':'No')."\" /></td>";
+		echo "<td><input type=text size=5 name=local[] value=\"".$local."\" /></td>";
 		echo "</tr>";
 	}
 	echo "</table>";
@@ -62,7 +66,9 @@ else if (isset($_POST['likecode'])){
 	echo "<b>Peforming updates</b><br />";
 	for ($i = 0; $i < count($likecodes); $i++){
 		$s = ($scales[$i] == "y") ? 1 : 0;
-		$lval = (strtolower($local[$i])=='yes')?1:0;
+		$lval = 0;
+		if ($local[$i] == '300') $lval = 1;
+		elseif ($local[$i] == 'S.C.') $lval = 2;
 		$q = "update products set local=".$lval."
 			from products as p left join upclike as u on p.upc=u.upc
 			where u.likecode=".$likecodes[$i];	
