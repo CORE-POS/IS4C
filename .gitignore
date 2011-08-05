@@ -21,3 +21,5 @@ dist/rpm/BUILD/*
 dist/rpm/RPMS/*
 dist/rpm/SOURCES/*
 dist/rpm/SRPMS/*
+fannie/pi_food_net
+fannie/pi_food_net/scalesDistro

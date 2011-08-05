@@ -139,7 +139,7 @@ function doLogin($name){
 	$session_data = array("name"=>$name,"session_id"=>$session_id);
 	$cookie_data = serialize($session_data);
 
-	setcookie('session_data',base64_encode($cookie_data),time()+(60*40),'/');
+	setcookie('session_data',base64_encode($cookie_data),time()+(60*600),'/');
 }
 
 function syncUserShadow($name){

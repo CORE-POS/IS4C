@@ -9,7 +9,7 @@ function catchange(){
 	else {
 		$.ajax({
 			url: 'ajax.php',
-			type: 'POST',
+			type: 'post',
 			dataType: 'text/html',
 			timeout: 1000,
 			data: 'vid='+vid+'&deptID='+did+'&action=getCategoryBrands',
@@ -57,11 +57,11 @@ function brandchange() {
 	else {
 		$.ajax({
 			url: 'ajax.php',
-			type: 'POST',
+			type: 'post',
 			dataType: 'text/html',
 			timeout: 1000,
 			data: 'vid='+vid+'&deptID='+did+'&brand='+brand+'&action=showCategoryItems',
-			error: function(){
+			error: function(e1){
 			alert('Error loading XML document');
 			},
 			success: function(resp){

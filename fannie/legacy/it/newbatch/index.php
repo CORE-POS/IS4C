@@ -711,7 +711,7 @@ if (!$user){
 	$user = validateUserQuiet('batches_audited');
 }
 if (!$user){
-	header("Location: {$FANNIE_ROOT}auth/ui/loginform.php?redirect={$FANNIE_ROOT}legacy/it/newbatch");
+	header("Location: {$FANNIE_URL}auth/ui/loginform.php?redirect={$FANNIE_URL}legacy/it/newbatch");
 	return;
 }
 

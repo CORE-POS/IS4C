@@ -42,7 +42,7 @@ while($w = $db->fetch_row($r)){
 		$date = date("F Y",mktime(0,0,0,$w['month'],1,$w['year']));
 	$score = '&nbsp;';
 	if (!empty($w['evalScore'])){
-		$score = ( ((int)$w[evalScore]) ^ ((int)$w['empID']) ) / 100.0;
+		$score = ( ((int)$w['evalScore']) ^ ((int)$w['empID']) ) / 100.0;
 	}
 	printf('<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>',
 		$w['name'],$w['adpID'],$date,(!empty($w['title'])?$w['title']:'&nbsp;'),$score);

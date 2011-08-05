@@ -56,7 +56,7 @@ if (isset($_REQUEST['toids'])){
 			CASE WHEN p.card_no=0 THEN t.last_name ELSE c.LastName END as name,
 			CASE WHEN p.card_no=0 THEN t.first_name ELSE c.FirstName END as fname,
 			CASE WHEN p.card_no=0 THEN t.phone ELSE m.phone END as phone,
-			discounttype
+			discounttype,quantity
 			FROM PendingSpecialOrder AS p
 			LEFT JOIN custdata AS c ON p.card_no=c.CardNo AND personNum=p.voided
 			LEFT JOIN meminfo AS m ON c.CardNo=m.card_no
@@ -98,7 +98,7 @@ if (isset($_REQUEST['toids'])){
 		$pdf->SetFont('Arial','','16');
 		$pdf->Cell(100,9,$w['description'],0,1,'C');
 		$pdf->SetX($x);
-		$pdf->Cell(100,9,"Cases: ".$w['ItemQtty'],0,1,'C');
+		$pdf->Cell(100,9,"Cases: ".$w['ItemQtty'].' - '.$w['quantity'],0,1,'C');
 		$pdf->SetX($x);
 		$pdf->SetFont('Arial','B','16');
 		$pdf->Cell(100,9,sprintf("Total: \$%.2f",$w['total']),0,1,'C');

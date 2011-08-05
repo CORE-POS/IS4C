@@ -58,7 +58,7 @@ function tableSync($table){
 
 	case 'departments':
 		foreach($FANNIE_LANES as $lane){
-			if(!$sql->add_connection($lane['host'],$lane['type'],$lane['op'],$lane['user'],$lane['pw']);
+			if(!$sql->add_connection($lane['host'],$lane['type'],$lane['op'],$lane['user'],$lane['pw']))
 				break;
 			
 			$sql->query("TRUNCATE TABLE departments","opdata");
@@ -77,7 +77,7 @@ function tableSync($table){
 
 	case 'employees':
 		foreach($FANNIE_LANES as $lane){
-			if(!$sql->add_connection($lane['host'],$lane['type'],$lane['op'],$lane['user'],$lane['pw']);
+			if(!$sql->add_connection($lane['host'],$lane['type'],$lane['op'],$lane['user'],$lane['pw']))
 				break;
 			$sql->query("TRUNCATE TABLE employees","opdata");
 
@@ -92,7 +92,7 @@ function tableSync($table){
 	case 'custdata':
 		$sql->query("exec master..xp_cmdshell 'dtsrun /S IS4CSERV\IS4CSERV /U {$FANNIE_SERVER_USER} /P {$FANNIE_SERVER_PW} /N CSV_custdata',no_output","WedgePOS");
 		foreach($FANNIE_LANES as $lane){
-			if(!$sql->add_connection($lane['host'],$lane['type'],$lane['op'],$lane['user'],$lane['pw']);
+			if(!$sql->add_connection($lane['host'],$lane['type'],$lane['op'],$lane['user'],$lane['pw']))
 				continue;
 
 			if (!is_readable('/pos/csvs/custdata.csv')) break;
@@ -114,7 +114,7 @@ function tableSync($table){
 
 	case 'valutec':
 		foreach($FANNIE_LANES as $lane){
-			if(!$sql->add_connection($lane['host'],$lane['type'],$lane['trans'],$lane['user'],$lane['pw']);
+			if(!$sql->add_connection($lane['host'],$lane['type'],$lane['trans'],$lane['user'],$lane['pw']))
 				break;
 
 			$sql->transfer("translog","select * from valutecRequest",
@@ -132,7 +132,7 @@ function tableSync($table){
 		break;
 	case 'efsnet':
 		foreach($FANNIE_LANES as $lane){
-			if(!$sql->add_connection($lane['host'],$lane['type'],$lane['trans'],$lane['user'],$lane['pw']);
+			if(!$sql->add_connection($lane['host'],$lane['type'],$lane['trans'],$lane['user'],$lane['pw']))
 				break;
 
 			$sql->transfer("translog","select * from efsnetRequest",
@@ -151,7 +151,7 @@ function tableSync($table){
 
 	case 'housecoupons':
 		foreach($FANNIE_LANES as $lane){
-			if(!$sql->add_connection($lane['host'],$lane['type'],$lane['trans'],$lane['user'],$lane['pw']);
+			if(!$sql->add_connection($lane['host'],$lane['type'],$lane['op'],$lane['user'],$lane['pw']))
 				break;
 			
 			$sql->query("TRUNCATE TABLE houseCoupons","opdata");
@@ -166,7 +166,7 @@ function tableSync($table){
 
 	case 'memcards':
 		foreach($FANNIE_LANES as $lane){
-			if(!$sql->add_connection($lane['host'],$lane['type'],$lane['trans'],$lane['user'],$lane['pw']);
+			if(!$sql->add_connection($lane['host'],$lane['type'],$lane['op'],$lane['user'],$lane['pw']))
 				break;
 			
 			$sql->query("TRUNCATE TABLE memberCards","opdata");
