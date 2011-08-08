@@ -9,11 +9,14 @@
 
 NAME=posdriver-sph
 
+mkdir -p /var/run/posdriver-sph
+
 start(){
 	echo "Starting $NAME"
-	if [ -z /var/run/posdriver-sph/pos.pid ]; then
+	if [ ! -f /var/run/posdriver-sph/pos.pid ]; then
+		echo "here"
 		cd /usr/share/it-core/is4c-nf/scale-drivers/drivers/NewMagellan
-		/usr/bin/sudo -u nobody mono pos.exe &> /var/run/posdriver-sph/pos.log &
+		mono pos.exe &> /var/run/posdriver-sph/pos.log &
 		echo $! > /var/run/posdriver-sph/pos.pid
 		RETVAL=$?
 		if [ $RETVAL = 0 ]; then
@@ -34,7 +37,8 @@ stop(){
 		MYPID=`cat /var/run/posdriver-sph/pos.pid`
 		kill $MYPID
 		RETVAL=$?
-		if [ $RETVAL = 1 ]; then
+		if [ $RETVAL = 0 ]; then
+			rm /var/run/posdriver-sph/pos.pid
 			success;
 		else
 			failure;

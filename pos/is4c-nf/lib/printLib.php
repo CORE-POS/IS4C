@@ -53,11 +53,9 @@ function writeLine($text) {
 		   instead 
 		*/
 		//if (is_writable($CORE_LOCAL->get("printerPort"))){
-		$fp = @fopen($CORE_LOCAL->get("printerPort"), "w");
-		if ($fp){
-			fwrite($fp, $text);
-			fclose($fp);
-		}
+		$fp = fopen($CORE_LOCAL->get("printerPort"), "w");
+		fwrite($fp, $text);
+		fclose($fp);
 	}
 }
 // --------------------------------------------------------------
@@ -92,6 +90,7 @@ function center($text, $linewidth) {
 function drawerKick() {
 
 		writeLine(chr(27).chr(112).chr(0).chr(48)."0");
+		//writeLine(chr(27).chr(112).chr(48).chr(55).chr(121));
 }
 
 // -------------------------------------------------------------

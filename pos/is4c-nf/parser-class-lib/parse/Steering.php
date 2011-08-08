@@ -88,8 +88,6 @@ class Steering extends Parser {
 			}
 			return True;
 		case "DDD":
-			if ($CORE_LOCAL->get("allowDDD") == False)
-				return False;
 			$CORE_LOCAL->set("adminRequest",$CORE_PATH."ajax-callbacks/ddd.php");
 			$CORE_LOCAL->set("adminLoginMsg","DDD these items?");
 			$CORE_LOCAL->set("adminRequestLevel","10");

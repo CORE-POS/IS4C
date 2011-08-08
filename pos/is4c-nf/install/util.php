@@ -1,7 +1,6 @@
 <?php
 
 function confsave($key,$value){
-	if (strlen($value)==0) return;
 	if (!is_writable('../ini.php')) return;
 
 	$fp = fopen('../ini.php','r');

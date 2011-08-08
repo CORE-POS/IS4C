@@ -132,7 +132,8 @@ chown apache:apache %{_datadir}/it-core/is4c-nf/ini.php
 chmod 644 %{_datadir}/it-core/is4c-nf/ini.php
 
 %post posdriver-sph
-chown nobody:nobody %{_localstatedir}/posdriver-sph
+chown apache:apache %{_datadir}/it-core/is4c-nf/scale-drivers/drivers/NewMagellan/ports.conf
+chmod -R 777 %{_datadir}/it-core/is4c-nf/scale-drivers/drivers/NewMagellan/ss-output
 
 %post posdriver-ssd
 chown nobody:nobody %{_localstatedir}/posdriver-ssd
