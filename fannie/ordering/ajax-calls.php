@@ -1213,7 +1213,9 @@ function editableItemList($orderID){
 		ORDER BY trans_id DESC";
 	$r = $dbc->query($q);
 	$num_rows = $dbc->num_rows($r);
+	$prev_id = 0;
 	while($w = $dbc->fetch_row($r)){
+		if ($w['trans_id'] == $prev_id) continue;
 		$ret .= sprintf('<tr>
 				<td>%s</td>
 				<td>%s</td>
@@ -1232,46 +1234,47 @@ function editableItemList($orderID){
 				$w['trans_id'],$w['quantity'],
 				$w['trans_id']
 			);
-			foreach($depts as $id=>$name){
-				$ret .= sprintf('<option value="%d" %s>%d %s</option>',
-					$id,
-					($id==$w['department']?'selected':''),
-					$id,$name);
-			}
-			$ret .= sprintf('</select></td>
-					<td>[<a href="" onclick="deleteID(%d,%d);return false;">X</a>]</td>
-					</tr>',
-					$orderID,$w['trans_id']
-			);
-			$ret .= '<tr>';
-			$ret .= sprintf('<td colspan="2" align="right">Unit Price: 
-				<input type="text" size="4" value="%.2f" id="unitp%d"
-				onchange="saveUnit($(this).val(),%d);" /></td>',
-				$w['unitPrice'],$w['trans_id'],$w['trans_id']);
-			$ret .= sprintf('<td>Supplier: <input type="text" value="%s" size="12" 
-					maxlength="26" onchange="saveVendor($(this).val(),%d);" 
-					/></td>',$w['mixMatch'],$w['trans_id']);
-			$ret .= '<td>Discount</td>';
-			if ($w['discounttype'] == 1 || $w['discounttype'] == 2)
-				$ret .= '<td id="discPercent'.$w['trans_id'].'">Sale</td>';
-			else if ($w['regPrice'] != $w['total']){
-				$ret .= sprintf('<td id="discPercent%d">%d%%</td>',$w['upc'],
-					round(100*(($w['regPrice']-$w['total'])/$w['regPrice'])));
-			}
-			else {
-				$ret .= '<td id="discPercent'.$w['upc'].'">0%</td>';
-			}
-			$ret .= sprintf('<td colspan="2">Printed: %s</td>',
-					($w['charflag']=='P'?'Yes':'No'));
-			if ($num_rows > 1){
-				$ret .= sprintf('<td colspan="2"><input type="submit" value="Split Item to New Order"
-					onclick="doSplit(%d,%d);return false;" /></td>',
-					$orderID,$w['trans_id']);
-			}
-			else
-				$ret .= '<td colspan="2"></td>';
-			$ret .= '</tr>';
-			$ret .= '<tr><td colspan="9"><span style="font-size:1;">&nbsp;</span></td></tr>';
+		foreach($depts as $id=>$name){
+			$ret .= sprintf('<option value="%d" %s>%d %s</option>',
+				$id,
+				($id==$w['department']?'selected':''),
+				$id,$name);
+		}
+		$ret .= sprintf('</select></td>
+				<td>[<a href="" onclick="deleteID(%d,%d);return false;">X</a>]</td>
+				</tr>',
+				$orderID,$w['trans_id']
+		);
+		$ret .= '<tr>';
+		$ret .= sprintf('<td colspan="2" align="right">Unit Price: 
+			<input type="text" size="4" value="%.2f" id="unitp%d"
+			onchange="saveUnit($(this).val(),%d);" /></td>',
+			$w['unitPrice'],$w['trans_id'],$w['trans_id']);
+		$ret .= sprintf('<td>Supplier: <input type="text" value="%s" size="12" 
+				maxlength="26" onchange="saveVendor($(this).val(),%d);" 
+				/></td>',$w['mixMatch'],$w['trans_id']);
+		$ret .= '<td>Discount</td>';
+		if ($w['discounttype'] == 1 || $w['discounttype'] == 2)
+			$ret .= '<td id="discPercent'.$w['trans_id'].'">Sale</td>';
+		else if ($w['regPrice'] != $w['total']){
+			$ret .= sprintf('<td id="discPercent%d">%d%%</td>',$w['upc'],
+				round(100*(($w['regPrice']-$w['total'])/$w['regPrice'])));
+		}
+		else {
+			$ret .= '<td id="discPercent'.$w['upc'].'">0%</td>';
+		}
+		$ret .= sprintf('<td colspan="2">Printed: %s</td>',
+				($w['charflag']=='P'?'Yes':'No'));
+		if ($num_rows > 1){
+			$ret .= sprintf('<td colspan="2"><input type="submit" value="Split Item to New Order"
+				onclick="doSplit(%d,%d);return false;" /></td>',
+				$orderID,$w['trans_id']);
+		}
+		else
+			$ret .= '<td colspan="2"></td>';
+		$ret .= '</tr>';
+		$ret .= '<tr><td colspan="9"><span style="font-size:1;">&nbsp;</span></td></tr>';
+		$prev_id=$w['trans_id'];
 	}
 	$ret .= '</table>';
 	return $ret;

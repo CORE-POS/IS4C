@@ -274,7 +274,7 @@ class BasicPage {
 			src="<?php echo $CORE_PATH; ?>js/poll-scale.js">
 		</script>
 		<?php
-		$this->add_onload_command("pollScale();\n");
+		$this->add_onload_command("pollScale('$CORE_PATH');\n");
 	}
 }
 

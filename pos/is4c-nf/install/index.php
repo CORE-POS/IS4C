@@ -58,9 +58,9 @@ if (function_exists('posix_getpwuid')){
 else
 	echo "PHP is (probably) running as: ".get_current_user()."<br />";
 if (is_writable('../ini.php'))
-	echo '<span style="color:green;"><i>ini.php</i> is writeable</span>';
+        echo '<span style="color:green;"><i>ini.php</i> is writeable</span>';
 else
-	echo '<span style="color:red;"><b>Error</b>: ini.php is not writeable</span>';
+        echo '<span style="color:red;"><b>Error</b>: ini.php is not writeable</span>';
 ?>
 <br />
 <?php
@@ -108,17 +108,10 @@ if(isset($_REQUEST['LANE_DBMS'])) $CORE_LOCAL->set('DBMS',$_REQUEST['LANE_DBMS']
 if ($CORE_LOCAL->get('DBMS') == 'mssql'){
 	echo "<option value=mysql>MySQL</option>";
 	echo "<option value=mssql selected>SQL Server</option>";
-	echo "<option value=mysqli>MySQLi</option>";
-}
-else if ($CORE_LOCAL->get('DBMS') == 'mysql'){
-	echo "<option value=mysql selected>MySQL</option>";
-	echo "<option value=mssql>SQL Server</option>";
-	echo "<option value=mysqli>MySQLi</option>";
 }
 else {
-	echo "<option value=mysql>MySQL</option>";
+	echo "<option value=mysql selected>MySQL</option>";
 	echo "<option value=mssql>SQL Server</option>";
-	echo "<option value=mysqli selected>MySQLi</option>";
 }
 confsave('DBMS',"'".$CORE_LOCAL->get('DBMS')."'");
 ?>
@@ -246,17 +239,10 @@ if (isset($_REQUEST['SERVER_TYPE'])) $CORE_LOCAL->set('mDBMS',$_REQUEST['SERVER_
 if ($CORE_LOCAL->get('mDBMS') == 'mssql'){
 	echo "<option value=mysql>MySQL</option>";
 	echo "<option value=mssql selected>SQL Server</option>";
-	echo "<option value=mysqli>MySQLi</option>";
-}
-else if ($CORE_LOCAL->get('mDBMS') == 'mysql'){
-	echo "<option value=mysql selected>MySQL</option>";
-	echo "<option value=mssql>SQL Server</option>";
-	echo "<option value=mysqli>MySQLi</option>";
 }
 else {
-	echo "<option value=mysql>MySQL</option>";
+	echo "<option value=mysql selected>MySQL</option>";
 	echo "<option value=mssql>SQL Server</option>";
-	echo "<option value=mysqli selected>MySQLi</option>";
 }
 confsave('mDBMS',"'".$CORE_LOCAL->get('mDBMS')."'");
 ?>

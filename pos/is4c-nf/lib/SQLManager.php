@@ -1,16 +1,16 @@
 <?php
 /*******************************************************************************
 
-    Copyright 2009 Whole Foods Co-op
+    Copyright 2007 Whole Foods Co-op 
 
-    This file is part of Fannie.
+    This file is part of IT CORE.
 
-    Fannie is free software; you can redistribute it and/or modify
+    IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    Fannie is distributed in the hope that it will be useful,
+    IT CORE is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
@@ -23,6 +23,12 @@
 
 /**************************************************
 CLASS INTERFACE
+
+Properties:
+rows - contains the number of rows from the last
+       query
+TYPE_MYSQL - type for MySQL (static)
+TYPE_MSSQL - type for Microsoft SQL Server (static)
 
 Methods:
 SQLManager(server, type, database, username, password[default: ''], persistent[default: False])
@@ -44,131 +50,225 @@ fetch_array(result_object, connection_identifer)
 	Returns the row array, using the default connection if no identifier is provided.
 
 **************************************************/
+
 $CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
 if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
 
 define('DEBUG_MYSQL_QUERIES',$CORE_PATH.'log/queries.log');
 define('DEBUG_SMART_INSERTS',$CORE_PATH.'log/smart_insert_errors.log');
 
-if (!function_exists("ADONewConnection")) include($CORE_PATH.'lib/adodb5/adodb.inc.php');
+$TYPE_MYSQL = 'MYSQL';
+$TYPE_MSSQL = 'MSSQL'; 
+$TYPE_PGSQL = 'PGSQL';
 
 class SQLManager {
 
 	var $connections;
+	var $db_types;
 	var $default_db;
+
+	var $TYPE_MYSQL = 'MYSQL';
+	var $TYPE_MSSQL = 'MSSQL'; 
+	var $TYPE_PGSQL = 'PGSQL';
 
 	function SQLManager($server,$type,$database,$username,$password='',$persistent=False){
 		$this->connections=array();
+		$this->db_types=array();
 		$this->default_db = $database;
-		$this->add_connection($server,$type,$database,$username,$password,$persistent);
+		$this->add_connection($server,strtoupper($type),
+				      $database,$username,$password,
+				      $persistent);
 	}
 
 	function add_connection($server,$type,$database,$username,$password='',$persistent=False){
-		$conn = ADONewConnection($type);
-		$conn->SetFetchMode(ADODB_FETCH_BOTH);
-		$ok = False;
 		if (isset($this->connections[$database])){
-			$ok = $conn->NConnect($server,$username,$password,$database);
+			$this->connections[$database] = $this->connect($server,
+				strtoupper($type),$username,$password,
+				$persistent,False);		
 		}
 		else {
-			if ($persistent)
-				$ok = $conn->PConnect($server,$username,$password,$database);
-			else
-				$ok = $conn->Connect($server,$username,$password,$database);
-		}
-		$this->connections[$database] = $conn;
+			$this->connections[$database] = $this->connect($server,
+				strtoupper($type),$username,$password,
+				$persistent,True);		
 
-		if (!$ok){
-			$conn = ADONewConnection($type);
-			$conn->SetFetchMode(ADODB_FETCH_BOTH);
-			$ok = $conn->Connect($server,$username,$password);
-			if ($ok){
-				$conn->Execute("CREATE DATABASE $database");
-				$conn->Execute("USE $database");
-				$this->connections[$database] = $conn;
-			}
-			else {
-				$this->connections[$database] = False;
-				return False;
-			}
 		}
-		return True;
+		$this->db_types[$database] = strtoupper($type);
+		$gotdb = $this->select_db($database,$database);
+		if (!$gotdb){
+                        if ($this->query("CREATE DATABASE $database")){
+                                $this->select_db($database,$database);
+                        }
+                        else {
+                                unset($this->db_types[$database]);
+                                $this->connections[$database] = False;
+                        }
+                }
+
+	}
+
+	function connect($server,$type,$username,$password,$persistent=False,$newlink=False){
+		switch($type){
+		case $this->TYPE_MYSQL:
+			if ($persistent)
+				return mysql_pconnect($server,$username,$password,$newlink);
+			else
+				return mysql_connect($server,$username,$password,$newlink);
+		case $this->TYPE_MSSQL:
+			if ($persistent)
+				return mssql_pconnect($server,$username,$password);
+			else
+				return mssql_connect($server,$username,$password);
+		case $this->TYPE_PGSQL:
+			$conStr = "host=".$server." user=".$username." password=".$password;
+			if ($persistent)
+				return pg_pconnect($conStr);
+			else
+				return pg_connect($conStr);
+		}	
+		return -1;
 	}
 
 	function db_close($which_connection=''){
-		$this->close($which_connection);
-	}
-
-	function close($which_connection=''){
 		if ($which_connection == '')
 			$which_connection=$this->default_db;
-		$con = $this->connections[$which_connection];
+		switch($this->db_types[$which_connection]){	
+		case $this->TYPE_MYSQL:
+			return mysql_close($this->connections[$which_connection]);	
+		case $this->TYPE_MSSQL:
+			return mssql_close($this->connections[$which_connection]);
+		case $this->TYPE_PGSQL:
+			return pg_close($this->connections[$which_connection]);
+		}
 		unset($this->connections[$which_connection]);
-
-		return $con->Close();
+		unset($this->db_types[$which_connection]);
+		return -1;
+	}
+	function select_db($db_name,$which_connection=''){
+		if ($which_connection == '')
+			$which_connection=$this->default_db;
+		switch($this->db_types[$which_connection]){	
+		case $this->TYPE_MYSQL:
+			return mysql_select_db($db_name,$this->connections[$which_connection]);	
+		case $this->TYPE_MSSQL:
+			return mssql_select_db($db_name,$this->connections[$which_connection]);
+		case $this->TYPE_PGSQL:
+			return True;
+		}
+		return -1;
 	}
 
 	function query($query_text,$which_connection=''){
-		global $QUERY_LOG;
 		if ($which_connection == '')
 			$which_connection=$this->default_db;
-		$con = $this->connections[$which_connection];
-
-		$ok = $con->Execute($query_text);
-		if (!$ok && DEBUG_MYSQL_QUERIES != "" && is_writable(DEBUG_MYSQL_QUERIES)){
-			$fp = fopen(DEBUG_MYSQL_QUERIES,"a");
-			fwrite($fp,date('r').": ".$query_text."\n\n");
-			fclose($fp);
-		}
-		else if (!$ok){
-			echo "Bad query: {$_SERVER['PHP_SELF']}: $query_text<br />";
-			echo $this->error($which_connection)."<br />";
-		}
-		return $ok;
-	}
-
-	function escape($query_text,$which_connection=''){
-		if ($which_connection == '')
-			$which_connection = $this->default_db;
-		return $this->connections[$which_connection]->qstr($query_text);
+		switch($this->db_types[$which_connection]){
+		case $this->TYPE_MYSQL:
+			$result = mysql_query($query_text,$this->connections[$which_connection]);
+			if (!$result && DEBUG_MYSQL_QUERIES != "" && is_writable(DEBUG_MYSQL_QUERIES)){
+				$fp = fopen(DEBUG_MYSQL_QUERIES,"a");
+				fwrite($fp,date('r').": ".$query_text."\n\n");
+				fclose($fp);
+			}
+			else if (!$result) echo $query_text."<hr />";
+			return $result;
+		case $this->TYPE_MSSQL:
+			$result = mssql_query($query_text,$this->connections[$which_connection]);
+			if (!$result && DEBUG_MYSQL_QUERIES != "" && is_writable(DEBUG_MYSQL_QUERIES)){
+				$fp = fopen(DEBUG_MYSQL_QUERIES,"a");
+				fwrite($fp,date('r').": ".$query_text."\n\n");
+				fclose($fp);
+			}
+			return $result;
+		case $this->TYPE_PGSQL:
+			return pg_query($this->connections[$which_connection],$query_text);
+		}	
+		return -1;
 	}
 	
 	function num_rows($result_object,$which_connection=''){
 		if ($which_connection == '')
 			$which_connection = $this->default_db;
-		return $result_object->RecordCount();
-	}
-	function data_seek($result_object,$rownum,$which_connection=''){
-		if ($which_connection == '')
-			$which_connection = $this->default_db;
-		return $result_object->Move((int)$rownum);
+		switch($this->db_types[$which_connection]){
+		case $this->TYPE_MYSQL:
+			return mysql_num_rows($result_object);
+		case $this->TYPE_MSSQL:
+			return mssql_num_rows($result_object);
+		case $this->TYPE_PGSQL:
+			return pg_num_rows($result_object);
+		}
+		return -1;
 	}
 	
 	function num_fields($result_object,$which_connection=''){
 		if ($which_connection == '')
 			$which_connection = $this->default_db;
-		return $result_object->FieldCount();
+		switch($this->db_types[$which_connection]){
+		case $this->TYPE_MYSQL:
+			return mysql_num_fields($result_object);
+		case $this->TYPE_MSSQL:
+			return mssql_num_fields($result_object);
+		case $this->TYPE_PGSQL:
+			return pg_num_fields($result_object);
+		}
+		return -1;
 	}
 
 	function fetch_array($result_object,$which_connection=''){
-		if (is_null($result_object)) return false;
-		if ($result_object === false) return false;
-
 		if ($which_connection == '')
 			$which_connection = $this->default_db;
-		$ret = $result_object->fields;
-		if ($result_object)
-			$result_object->MoveNext();
-		return $ret;
-	}
-
-	function fetch_object($result_object,$which_connection=''){
-		return $result_object->FetchNextObject(False);
+		switch($this->db_types[$which_connection]){
+		case $this->TYPE_MYSQL:
+			return mysql_fetch_array($result_object);
+		case $this->TYPE_MSSQL:
+			return mssql_fetch_array($result_object);
+		case $this->TYPE_PGSQL:
+			return pg_fetch_array($result_object);
+		}
+		return -1;
 	}
 	
 	/* compatibility */
 	function fetch_row($result_object,$which_connection=''){
 		return $this->fetch_array($result_object,$which_connection);
+	}
+
+	function fetch_field($result_object,$index,$which_connection=''){
+		if ($which_connection == '')
+			$which_connection = $this->default_db;
+		switch($this->db_types[$which_connection]){
+		case $this->TYPE_MYSQL:
+			return mysql_fetch_field($result_object,$index);
+		case $this->TYPE_MSSQL:
+			return mssql_fetch_field($result_object,$index);
+		}
+		return -1;
+	}
+
+	function field_type($result_object,$index,$which_connection=''){
+		if ($which_connection == '')
+			$which_connection = $this->default_db;
+		switch($this->db_types[$which_connection]){
+		case $this->TYPE_MYSQL:
+			return mysql_field_type($result_object,$index);
+		case $this->TYPE_MSSQL:
+			return mssql_field_type($result_object,$index);
+		case $this->TYPE_PGSQL:
+			return pg_field_type($result_object,$index);
+		}
+		return -1;
+	}
+
+	function close($which_connection=''){
+		if ($which_connection == '')
+			$which_connection = $this->default_db;
+		switch($this->db_types[$which_connection]){
+		case $this->TYPE_MYSQL:
+			return mysql_close($this->connections[$which_connection]);
+		case $this->TYPE_MSSQL:
+			return mssql_close($this->connections[$which_connection]);
+		case $this->TYPE_PGSQL:
+			return pg_close($this->connections[$which_connection]);
+		}
+		return -1;
 	}
 
 	function test($which_connection=''){
@@ -177,106 +277,6 @@ class SQLManager {
 
 		if ($this->connections[$which_connection]) return True;
 		else return False;
-	}
-
-	function now($which_connection=''){
-		if ($which_connection == '')
-			$which_connection = $this->default_db;
-		return $this->connections[$which_connection]->sysTimeStamp;
-	}
-
-	function datediff($date1,$date2,$which_connection=''){
-		if ($which_connection == '')
-			$which_connection = $this->default_db;
-		switch($this->connections[$which_connection]->databaseType){
-		case 'mysql':
-		case 'mysqli':
-			return "datediff($date1,$date2)";
-		case 'mssql':
-			return "datediff(dd,$date2,$date1)";
-		}
-	}
-
-	function monthdiff($date1,$date2,$which_connection=''){
-		if ($which_connection == '')
-			$which_connection = $this->default_db;
-		switch($this->connections[$which_connection]->databaseType){
-		case 'mysql':
-		case 'mysqli':
-			return "period_diff(date_format($date1, '%Y%m'), date_format($date2, '%Y%m'))";
-		case 'mssql':
-			return "datediff(mm,$date2,$date1)";
-		}	
-	}
-
-	function seconddiff($date1,$date2,$which_connection=''){
-		if ($which_connection == '')
-			$which_connection = $this->default_db;
-		switch($this->connections[$which_connection]->databaseType){
-		case 'mysql':
-		case 'mysqli':
-			return "TIMESTAMPDIFF(SECOND,$date1,$date2)";
-		case 'mssql':
-			return "datediff(ss,$date2,$date1)";
-		}	
-	}
-
-	// flip argument order by mysql vs mssql
-	function convert($expr,$type,$which_connection=''){
-		if ($which_connection == '')
-			$which_connection = $this->default_db;
-		switch($this->connections[$which_connection]->databaseType){
-		case 'mysql':
-		case 'mysqli':
-			return "CONVERT($expr,$type)";
-		case 'mssql':
-			return "CONVERT($type,$expr)";
-		}
-		return "";
-	}
-
-	// note: to swing variable number of args,
-	// connection is manadatory. use empty string
-	// for default connection
-	function concat(){
-		$args = func_get_args();
-		$ret = "";
-		$which_connection = $args[count($args)-1];
-		if ($which_connection == '')
-			$which_connection = $this->default_db;
-		switch($this->connections[$which_connection]->databaseType){
-		case 'mysql':
-		case 'mysqli':
-			$ret .= "CONCAT(";
-			for($i=0;$i<count($args)-1;$i++)
-				$ret .= $args[$i].",";	
-			$ret = rtrim($ret,",").")";
-			break;
-		case 'mssql':
-			for($i=0;$i<count($args)-1;$i++)
-				$ret .= $args[$i]."+";	
-			$ret = rtrim($ret,"+");
-			break;
-		}
-		return $ret;
-	}
-
-	function weekdiff($date1,$date2,$which_connection=''){
-		if ($which_connection == '')
-			$which_connection = $this->default_db;
-		switch($this->connections[$which_connection]->databaseType){
-		case 'mysql':
-		case 'mysqli':
-			return "week($date1) - week($date2)";
-		case 'mssql':
-			return "datediff(wk,$date2,$date1)";
-		}	
-	}
-
-	function fetch_field($result_object,$index,$which_connection=''){
-		if ($which_connection == '')
-			$which_connection = $this->default_db;
-		return $result_object->FetchField($index);
 	}
 
 	/* copy a table from one database to another, not necessarily on
@@ -298,7 +298,7 @@ class SQLManager {
 			"float4"=>1,"float8"=>1,"bit"=>1,"decimal"=>1,
 			"unknown"=>1);
 		$strings = array("varchar"=>1,"nvarchar"=>1,"string"=>1,
-			"char"=>1);
+				"char"=>1);
 		$dates = array("datetime"=>1);
 		$queries = array();
 
@@ -309,289 +309,259 @@ class SQLManager {
 				if ($row[$i] == "" && strstr(strtoupper($type),"INT"))
 					$row[$i] = 0;	
 				elseif ($row[$i] == "" && isset($unquoted[$type]))
-					$row[$i] = 0;
-				if (isset($dates[$type]))
-					$row[$i] = $this->cleanDateTime($row[$i]);
-				elseif (isset($strings[$type]))
-					$row[$i] = str_replace("'","''",$row[$i]);
+                                        $row[$i] = 0;
+                                if (isset($dates[$type])){
+					$clean = $this->cleanDateTime($row[$i]);
+                                        $row[$i] = ($clean!="")?$clean:$row[$i];
+				}
+                                elseif (isset($strings[$type]))
+                                        $row[$i] = str_replace("'","''",$row[$i]);
+
 				if (isset($unquoted[$type]))
 					$full_query .= $row[$i].",";
 				else
 					$full_query .= "'".$row[$i]."',";
 			}
 			$full_query = substr($full_query,0,strlen($full_query)-1).")";
-			array_push($queries,$full_query);
+			$queries[] = $full_query;
 		}
 
 		$ret = True;
+
 		foreach ($queries as $q){
-			if(!$this->query($q,$dest_db)) $ret = False;
+			if(!$this->query($q,$dest_db)){
+				$ret = False;
+				if (is_writable(DEBUG_MYSQL_QUERIES)){
+					$fp = fopen(DEBUG_MYSQL_QUERIES,"a");
+					fwrite($fp,$q."\n\n");
+					fclose($fp);
+				}
+			}
 		}
 
 		return $ret;
 	}
 
-	function field_type($result_object,$index,$which_connection=''){
-		if ($which_connection == '')
-			$which_connection = $this->default_db;
-		$fld = $result_object->FetchField($index);
-		return $fld->type;
-	}
-
-	function field_name($result_object,$index,$which_connection=''){
-		if ($which_connection == '')
-			$which_connection = $this->default_db;
-		$fld = $result_object->FetchField($index);
-		return $fld->name;
-	}
-
-	function dayofweek($field,$which_connection=''){
-		if ($which_connection == '')
-			$which_connection = $this->default_db;
-		$conn = $this->connections[$which_connection];
-		return $conn->SQLDate("w",$field);
-	}
-
-	function hour($field,$which_connection=''){
-		if ($which_connection == '')
-			$which_connection = $this->default_db;
-		$conn = $this->connections[$which_connection];
-		return $conn->SQLDate("H",$field);
-	}
-
-
 	function cleanDateTime($str){
 		$stdFmt = "/(\d\d\d\d)-(\d\d)-(\d\d) (\d+?):(\d\d):(\d\d)/";
-		if (preg_match($stdFmt,$str,$group))
-			return $str;	
+                if (preg_match($stdFmt,$str,$group))
+                        return $str;
 
                 $msqlFmt = "/(\w\w\w) (\d+) (\d\d\d\d) +(\d+?):(\d\d)(\w)M/";
 
-		$months = array(
-			"jan"=>"01",
-			"feb"=>"02",
-			"mar"=>"03",
-			"apr"=>"04",
-			"may"=>"05",
-			"jun"=>"06",
-			"jul"=>"07",
-			"aug"=>"08",
-			"sep"=>"09",
-			"oct"=>"10",
-			"nov"=>"11",
-			"dec"=>"12"
-		);
+                $months = array(
+                        "jan"=>"01",
+                        "feb"=>"02",
+                        "mar"=>"03",
+                        "apr"=>"04",
+                        "may"=>"05",
+                        "jun"=>"06",
+                        "jul"=>"07",
+                        "aug"=>"08",
+                        "sep"=>"09",
+                        "oct"=>"10",
+                        "nov"=>"11",
+                        "dec"=>"12"
+                );
 
-		$info = array(
-			"month" => 1,
-			"day" => 1,
-			"year" => 1900,
-			"hour" => 0,
-			"min" => 0
-		);
-		
-		if (preg_match($msqlFmt,$str,$group)){
-			$info["month"] = $months[strtolower($group[1])];
-			$info["day"] = $group[2];
-			$info["year"] = $group[3];
-			$info["hour"] = $group[4];
-			$info["min"] = $group[5];
-			if ($group[6] == "P")
-				$info["hour"] = ($info["hour"] + 12) % 24;
-		}
-
-		$ret = $info["year"]."-";
-		$ret .= str_pad($info["month"],2,"0",STR_PAD_LEFT)."-";
-		$ret .= str_pad($info["day"],2,"0",STR_PAD_LEFT)." ";
-		$ret .= str_pad($info["hour"],2,"0",STR_PAD_LEFT).":";
-		$ret .= str_pad($info["min"],2,"0",STR_PAD_LEFT);
+                $info = array(
+                        "month" => 1,
+                        "day" => 1,
+                        "year" => 1900,
+                        "hour" => 0,
+                        "min" => 0
+                );
+                
+                if (preg_match($msqlFmt,$str,$group)){
+                        $info["month"] = $months[strtolower($group[1])];
+                        $info["day"] = $group[2];
+                        $info["year"] = $group[3];
+                        $info["hour"] = $group[4];
+                        $info["min"] = $group[5];
+			if ($group[6] == "P" && $info["hour"] != "12")
+                                $info["hour"] = ($info["hour"] + 12) % 24;
+                        elseif($group[6] == "A" && $info["hour"] == "12")
+                                $info["hour"] = 0;
+                }
+                
+                $ret = $info["year"]."-";
+                $ret .= str_pad($info["month"],2,"0",STR_PAD_LEFT)."-";
+                $ret .= str_pad($info["day"],2,"0",STR_PAD_LEFT)." ";
+                $ret .= str_pad($info["hour"],2,"0",STR_PAD_LEFT).":";
+                $ret .= str_pad($info["min"],2,"0",STR_PAD_LEFT);
 		return $ret;
 	}
 
 	/* check whether the given table exists
-	   Return values:
-		True => table exists
-		False => table doesn't exist
-		-1 => Operation not supported for this database type
-	*/
-	function table_exists($table_name,$which_connection=''){
-		if ($which_connection == '')
-			$which_connection=$this->default_db;
-		$conn = $this->connections[$which_connection];
-		$cols = $conn->MetaColumns($table_name);
-		if ($cols === False) return False;
-		return True;
-	}
-
-	/* return the table's definition
-	   Return values:
-		array of (column name, column type) => table found
-		False => no such table
-		-1 => Operation not supported for this database type
-	*/
-	function table_definition($table_name,$which_connection=''){
-		if ($which_connection == '')
-			$which_connection=$this->default_db;
-		$conn = $this->connections[$which_connection];
-		$cols = $conn->MetaColumns($table_name);
-
-		$return = array();
-		if (is_array($cols)){
-			foreach($cols as $c)
-				$return[$c->name] = $c->type;
-			return $return;
-		}
-		return False;
-	}
-
-	function currency($which_connection=''){
-		if ($which_connection == '')
-			$which_connection=$this->default_db;
-		switch($this->connections[$which_connection]->databaseType){
-		case 'mysql':
-		case 'mysqli':
-			return 'decimal(10,2)';
-		case 'mssql':
-			return 'money';
-		}
-		return 'decimal(10,2)';
-	}
-
-	function add_select_limit($query,$int_limit,$which_connection=''){
-		if ($which_connection == '')
-			$which_connection=$this->default_db;
-		switch($this->connections[$which_connection]->databaseType){
-		case 'mysql':
-		case 'mysqli':
-			return sprintf("%s LIMIT %d",$query,$int_limit);
-		case 'mssql':
-			return str_ireplace("SELECT ","SELECT TOP $int_limit ",$query);
-		}
-	}
-
-	function sep($which_connection=''){
-		if ($which_connection == '')
-			$which_connection=$this->default_db;
-		switch($this->connections[$which_connection]->databaseType){
-		case 'mysql':
-		case 'mysqli':
-			return ".";
-		case 'mssql':
-			return ".dbo.";
-		}
-	}
-
-	function error($which_connection=''){
-		if ($which_connection == '')
-			$which_connection=$this->default_db;
-		$con = $this->connections[$which_connection];
-		return $con->ErrorMsg();
-	}
-
-	function insert_id($which_connection=''){
-		if ($which_connection == '')
-			$which_connection=$this->default_db;
-		$con = $this->connections[$which_connection];
-		return $con->Insert_ID();
-	}
-
-	function affected_rows($which_connection=''){
-		if ($which_connection == '')
-			$which_connection=$this->default_db;
-		$con = $this->connections[$which_connection];
-		return $con->Affected_Rows();
-	}
-
-	/* insert as much data as possible
-	 * $values is an associative array of column_name => column_value
-	 * Values are taken as is (i.e., you have to quote your strings)
-	 */
-	function smart_insert($table_name,$values,$which_connection=''){
+           Return values:
+                True => table exists
+                False => table doesn't exist
+                -1 => Operation not supported for this database type
+        */
+        function table_exists($table_name,$which_connection=''){
                 if ($which_connection == '')
                         $which_connection=$this->default_db;
+                switch($this->db_types[$which_connection]){
+                case $this->TYPE_MYSQL:
+			$result = $this->query("SHOW TABLES FROM $which_connection 
+						LIKE '$table_name'",$which_connection);
+                        if ($this->num_rows($result) > 0) return True;
+                        else return False;
+                case $this->TYPE_MSSQL:
+			$result = $this->query("SELECT name FROM sysobjects 
+						WHERE name LIKE '$table_name'",
+						$which_connection);
+                        if ($this->num_rows($result) > 0) return True;
+                        else return False;
+                }
+                return -1;
+        }
 
+	/* return the table's definition
+           Return values:
+	   	array of values => table found
+			array format: $return['column_name'] =
+					array('column_type', is_auto_increment)
+                False => no such table
+                -1 => Operation not supported for this database type
+        */
+        function table_definition($table_name,$which_connection=''){
+                if ($which_connection == '')
+                        $which_connection=$this->default_db;
+                switch($this->db_types[$which_connection]){
+                case $this->TYPE_MYSQL:
+                        $return = array();
+                        $result = $this->query("SHOW COLUMNS FROM $table_name",$which_connection);
+                        while($row = $this->fetch_row($result,$which_connection)){
+				$auto = False;
+				if (strstr($row[5],"auto_increment"))
+					$auto = True;
+                                $return[$row[0]] = array($row[1],$auto,$row[0]);
+			}
+                        if (count($return) == 0) return False;
+                        else return $return;
+                case $this->TYPE_MSSQL:
+                        $return = array();
+                        $result = $this->query("SELECT c.name,t.name,c.length,
+						CASE WHEN c.autoval IS NULL
+						THEN 0 ELSE 1 END AS auto
+                                                FROM syscolumns AS c
+                                                LEFT JOIN sysobjects AS o
+                                                ON c.id=o.id
+                                                LEFT JOIN systypes AS t
+                                                ON c.xtype=t.xtype
+                                                WHERE o.name='$table_name'",$which_connection);
+                        while($row = $this->fetch_row($result,$which_connection)){
+				$auto = False;
+				if ($row[3] == 1) $auto = True;
+				$return[$row[0]] = array($row[1]."(".$row[2].")",$auto,$row[0]);
+			}
+                        if (count($return) == 0) return False;
+                        else return $return;
+                }
+                return -1;
+        }
+
+	/* attempt to load an array of values
+	 * into the specified table
+	 * 	array format: $values['column_name'] = 'column_value'
+	 * If debugging is enabled, columns that couldn't be
+	 * written are noted
+	 */
+	function smart_insert($table_name,$values,$which_connection=''){
+		$OUTFILE = DEBUG_SMART_INSERTS;
+
+                if ($which_connection == '')
+                        $which_connection=$this->default_db;
 		$exists = $this->table_exists($table_name,$which_connection);
-
 		if (!$exists) return False;
 		if ($exists === -1) return -1;
 
 		$t_def = $this->table_definition($table_name,$which_connection);
 
+		$fp = -1;
+		$tstamp = date("r");
+		if ($OUTFILE != "" && is_writable($OUTFILE))
+			$fp = fopen($OUTFILE,"a");
+
 		$cols = "(";
 		$vals = "(";
 		foreach($values as $k=>$v){
-			if (isset($t_def[$k])){
-				if (stristr($t_def[$k],"money") ||
-				    stristr($t_def[$k],'decimal') ||
-				    stristr($t_def[$k],'float') ||
-				    stristr($t_def[$k],'double') )
-					$vals .= $v.",";
-				else
-					$vals .= "'".$v."',";
-				$col_name = $k;
-				if($this->connections[$which_connection]->databaseType == 'mssql')
-					$cols .= $col_name.",";
-				else
-					$cols .= "`".$col_name."`,";
+			//$k = strtoupper($k);
+			if (isset($t_def[$k]) && is_array($t_def[$k])){
+				if (!$t_def[$k][1]){
+					if (stristr($t_def[$k][0],"money") ||
+					    stristr($t_def[$k][0],'decimal') ||
+					    stristr($t_def[$k][0],'float') ||
+					    stristr($t_def[$k][0],'double') )
+						$vals .= $v.",";
+					else
+						$vals .= "'".$v."',";
+					$col_name = $t_def[$k][2];
+					if ($this->db_types[$which_connection] == $this->TYPE_MYSQL)
+						$cols .= "`".$col_name."`,";
+					else
+						$cols .= $col_name.",";
+				}
+				else {
+					if ($OUTFILE != "")
+						fwrite($fp,"$tstamp: Column $k in table $table_name
+							is auto_increment so your value
+							was omitted\n");
+				}
 			}
 			else {
-				echo "No column - $k";
-				// implication: column isn't in the table
+				if ($OUTFILE != '')
+					fwrite($fp,"$tstamp: Column $k not in table $table_name\n");
 			}
 		}
 		$cols = substr($cols,0,strlen($cols)-1).")";
 		$vals = substr($vals,0,strlen($vals)-1).")";
 		$insertQ = "INSERT INTO $table_name $cols VALUES $vals";
 
-		//echo $insertQ;
 		$ret = $this->query($insertQ,$which_connection);
+		if (!$ret && $OUTFILE != ""){
+			fwrite($fp,"$tstamp: $insertQ\n");
+		}
+		if ($OUTFILE != "" && is_writable($OUTFILE)) fclose($fp);
 
 		return $ret;
 	}
 
-	/* update as much data as possible
-	 * $values is an associative array of column_name => column_value
-	 * Values are taken as is (i.e., you have to quote your strings)
-	 * 
-	 * Caveat: There are a couple places this could break down
-	 * 1) If your WHERE clause requires a column that doesn't exist,
-	 *    the query will fail. No way around it. Auto-modifying 
-	 *    WHERE clauses seems like a terrible idea
-	 * 2) This only works with a single table. Updates involving joins
-	 *    are rare in the code base though.
-	 */
-	function smart_update($table_name,$values,$where_clause,$which_connection=''){
+	function datediff($date1,$date2,$which_connection=''){
                 if ($which_connection == '')
-                        $which_connection=$this->default_db;
+                        $which_connection = $this->default_db;
+                switch($this->db_types[$which_connection]){
+                case $this->TYPE_MYSQL:
+                        return "datediff($date1,$date2)";
+                case $this->TYPE_MSSQL:
+                        return "datediff(dd,$date2,$date1)";
+                }
+        }
 
-		$exists = $this->table_exists($table_name,$which_connection);
+	function now($which_connection=''){
+                if ($which_connection == '')
+                        $which_connection = $this->default_db;
+                switch($this->db_types[$which_connection]){
+                case $this->TYPE_MYSQL:
+                        return "now()";
+                case $this->TYPE_MSSQL:
+                        return "getdate()";
+                case $this->TYPE_PGSQL:
+                        return "now()";
+                }
+        }
 
-		if (!$exists) return False;
-		if ($exists === -1) return -1;
-
-		$t_def = $this->table_definition($table_name,$which_connection);
-
-		$sets = "";
-		foreach($values as $k=>$v){
-			if (isset($t_def[$k])){
-				$col_name = $k;
-				if($this->connections[$which_connection]->databaseType == 'mssql')
-					$sets .= $col_name;
-				else
-					$sets .= "`".$col_name."`";
-				$sets .= "=".$v.",";
-			}
-			else {
-				echo "No column - $k";
-				// implication: column isn't in the table
-			}
+	function escape($str,$which_connection=''){
+                if ($which_connection == '')
+                        $which_connection = $this->default_db;
+                switch($this->db_types[$which_connection]){
+		case $this->TYPE_MYSQL:
+			return mysql_real_escape_string($str);
+		case $this->TYPE_MSSQL:
+			return str_replace("'","''",$str);
 		}
-		$sets = rtrim($sets,",");
-		$upQ = "UPDATE $table_name SET $sets WHERE $where_clause";
-
-		$ret = $this->query($upQ,$which_connection);
-
-		return $ret;
+		return $str;
 	}
 }
 

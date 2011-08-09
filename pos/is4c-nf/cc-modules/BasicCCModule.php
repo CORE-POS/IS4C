@@ -124,7 +124,7 @@ class BasicCCModule {
 	var $GATEWAY;
 	var $SOAPACTION;
 	function curlSend($data=False,$type='POST',$xml=False){
-		global $CORE_PATH;
+		global $CORE_PATH,$CORE_LOCAL;
 		if($data && $type == 'GET')
 			$this->GATEWAY .= $data;
 
@@ -138,7 +138,8 @@ class BasicCCModule {
 		curl_setopt($curl_handle, CURLOPT_FRESH_CONNECT,true);
 		curl_setopt($curl_handle, CURLOPT_TIMEOUT,30);
 		//curl_setopt($curl_handle, CURLOPT_SSL_VERIFYPEER, 0);
-		curl_setopt($curl_handle, CURLOPT_CAINFO, LOCAL_CERT_PATH);
+		if($CORE_LOCAL->get("OS")=="win32")
+			curl_setopt($curl_handle, CURLOPT_CAINFO, LOCAL_CERT_PATH);
 		if ($type == 'SOAP'){
 			curl_setopt($curl_handle, CURLOPT_HTTPHEADER,
 				array("SOAPAction: ".$this->SOAPACTION,

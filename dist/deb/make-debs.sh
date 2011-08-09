@@ -68,10 +68,13 @@ else
 	echo "File not found: it-core-is4c-nf-$1-$2.noarch.rpm"
 fi
 
+# mono scale driver
+# Change apache user to www-data
 if [ -f ../rpm/RPMS/noarch/it-core-posdriver-sph-$1-$2.noarch.rpm ]; then
 	echo "Building it-core posdriver-sph package"
 	alien --keep-version --generate --scripts ../rpm/RPMS/noarch/it-core-posdriver-sph-$1-$2.noarch.rpm
 	cd it-core-posdriver-sph-$1/
+	sed -e "s/apache/www-data/g" --in-place="" debian/postinst
 	dpkg-buildpackage -d -b
 	cd ..
 	rm -rf it-core-posdriver-sph-$1/
@@ -80,6 +83,7 @@ else
 	echo "File not found: it-core-posdriver-sph-$1-$2.noarch.rpm"
 fi
 
+# ssd scale driver
 if [ -f ../rpm/RPMS/noarch/it-core-posdriver-ssd-$1-$2.noarch.rpm ]; then
 	echo "Building it-core posdriver-ssd package"
 	alien --keep-version --generate --scripts ../rpm/RPMS/noarch/it-core-posdriver-ssd-$1-$2.noarch.rpm

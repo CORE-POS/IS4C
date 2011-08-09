@@ -44,9 +44,9 @@ namespace SPH {
 
 public class SPH_Magellan_Scale : SerialPortHandler {
 	private bool got_weight;
-//private static String MAGELLAN_OUTPUT_FILE = "C:\\IT CORE\\scale-drivers/drivers/NewMagellan/scanner-scale.data";
-private static String MAGELLAN_OUTPUT_DIR = "C:\\is4c\\scale-drivers\\drivers\\NewMagellan\\ss-output";
-//private static String MAGELLAN_LOCK_FILE = "C:\\IT CORE\\scale-drivers/drivers/NewMagellan/scanner-scale.lock";
+private static String MAGELLAN_OUTPUT_FILE = "scale-drivers/drivers/NewMagellan/scanner-scale.data";
+private static String MAGELLAN_OUTPUT_DIR = "/usr/share/it-core/is4c-nf/scale-drivers/drivers/NewMagellan/ss-output/";
+private static String MAGELLAN_LOCK_FILE = "scale-drivers/drivers/NewMagellan/scanner-scale.lock";
 
 	public SPH_Magellan_Scale(string p) : base(p){
 		sp = new SerialPort();
@@ -142,15 +142,16 @@ private static String MAGELLAN_OUTPUT_DIR = "C:\\is4c\\scale-drivers\\drivers\\N
 		 *    (i.e., so they aren't read too early)
 		 */
 		int ticks = Environment.TickCount;
-		while(File.Exists(MAGELLAN_OUTPUT_DIR+"\\"+ticks))
+		char sep = System.IO.Path.DirectorySeparatorChar;
+		while(File.Exists(MAGELLAN_OUTPUT_DIR+sep+ticks))
 			ticks++;
 
-		TextWriter sw = new StreamWriter(MAGELLAN_OUTPUT_DIR+"\\tmp\\"+ticks);
+		TextWriter sw = new StreamWriter(MAGELLAN_OUTPUT_DIR+sep+"tmp"+sep+ticks);
 		sw = TextWriter.Synchronized(sw);
 		sw.WriteLine(s);
 		sw.Close();
-		File.Move(MAGELLAN_OUTPUT_DIR+"\\tmp\\"+ticks,
-			  MAGELLAN_OUTPUT_DIR+"\\"+ticks);
+		File.Move(MAGELLAN_OUTPUT_DIR+sep+"tmp"+sep+ticks,
+			  MAGELLAN_OUTPUT_DIR+sep+ticks);
 	}
 
 	private string ParseData(string s){
