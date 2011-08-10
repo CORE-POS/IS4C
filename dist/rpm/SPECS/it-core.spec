@@ -1,13 +1,13 @@
 Name: it-core
-Version: 0.1.0
-Release: 2011.07.08
+Version: 1.0.0
+Release: 2011.08.10
 Summary: IT CORE Point of Sale
 AutoReqProv: no
 Group:  Applications/Internet
 License: GPLv2       
 BuildArch: noarch
 URL: http://github.com/gohanman/IS4C           
-Source0: it-core-0.1.0.tar.gz
+Source0: it-core-1.0.0.tar.gz
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 #BuildRequires:  
@@ -158,7 +158,6 @@ chown nobody:nobody %{_localstatedir}/posdriver-ssd
 %{_datadir}/it-core/is4c-nf/WFC_VS_RELEASE
 %{_datadir}/it-core/is4c-nf/ajax-callbacks/
 %{_datadir}/it-core/is4c-nf/cc-modules/
-%{_datadir}/it-core/is4c-nf/documentation/
 %{_datadir}/it-core/is4c-nf/graphics/
 %{_datadir}/it-core/is4c-nf/gui-class-lib/
 %{_datadir}/it-core/is4c-nf/gui-modules/

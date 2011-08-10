@@ -1,19 +1,17 @@
 #!/bin/sh
 
-VERSION=0.1.0
+VERSION=1.0.0
 RELEASE=`date +%Y.%m.%d`
 
 git pull
 
 # build RPMs
 cd rpm
-if [ 1 == 0 ]; then
-	./setup-here.sh $VERSION
-	cd SPECS
-	sed -e "s/Release:.*/Release: $RELEASE/g" --in-place="" it-core.spec 
-	cd ..
-	rpmbuild -ba SPECS/it-core.spec
-fi
+./setup-here.sh $VERSION
+cd SPECS
+sed -e "s/Release:.*/Release: $RELEASE/g" --in-place="" it-core.spec 
+cd ..
+rpmbuild -ba SPECS/it-core.spec
 
 # build DEBs
 cd ../deb
