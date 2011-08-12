@@ -91,7 +91,9 @@ if (isset($_POST['MAX_FILE_SIZE'])){
 			echo "<tr>";
 			echo "<td>&nbsp;</td>";
 			for($j=1;$j<=$cols;$j++){
-				$dp = $sheet['cells'][$i][$j];
+				$dp = "";
+				if (isset($sheet['cells'][$i]) && isset($sheet['cells'][$i][$j]))
+					$dp = $sheet['cells'][$i][$j];
 				echo "<td><input type=hidden name=col{$j}[] value=\"$dp\" />";
 				echo (empty($dp)?'&nbsp;':$dp)."</td>";
 			}

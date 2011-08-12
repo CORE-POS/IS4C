@@ -4,7 +4,7 @@ if (isset($_GET['excel'])){
 	header("Content-Disposition: inline; filename=moffResults.xls");
   	header("Content-Description: PHP3 Generated Data");
   	header("Content-type: application/vnd.ms-excel; name='excel'");
-}
+   }
 ?>
 
 <html>
@@ -22,12 +22,12 @@ if (isset($_GET['excel'])){
 	if (!class_exists("SQLManager")) require_once($FANNIE_ROOT."src/SQLManager.php");
 	include('../../db.php');
 
-	$date = '2010-08-07';
-	$reg = 40;
+	$date = '2011-08-06';
+	$reg = "21,22";
 	require($FANNIE_ROOT.'src/select_dlog.php');
-	$dlog = select_dlog($date);
-	$dlog = str_replace("dlog","transarchive",$dlog);
-	$dlog = "trans_archive.dbo.transArchive201008";
+	$dlog = select_dtrans($date);
+	//$dlog = str_replace("dlog","transarchive",$dlog);
+	//$dlog = "trans_archive.dbo.transArchive201008";
 
 	$query = "SELECT DISTINCT t.upc, min(t.description), SUM(t.quantity),SUM(t.total),d.dept_name,s.salesCode,u.likeCode
 			  FROM $dlog as t 
@@ -35,11 +35,14 @@ if (isset($_GET['excel'])){
 			  LEFT JOIN deptSalesCodes as s on d.dept_no=s.dept_ID
 			  LEFT JOIN upcLike as u on t.upc=u.upc
 			  WHERE t.trans_type in ('I','D') and t.upc <> 'DISCOUNT' and
-			  datediff(dd,'$date',t.datetime) = 0 AND t.register_no = $reg
+			  datediff(dd,'$date',t.datetime) = 0 AND t.register_no
+                          in ( $reg )
 			  and trans_Status <> 'X'
+                          and emp_no <> 9999
 			  GROUP BY t.upc, d.dept_name,s.salesCode,u.likeCode
 			  ORDER BY t.upc";
 
+	//echo $query;
 	$result = $sql->query($query);
 
 	echo "<table border=1>\n"; //create table

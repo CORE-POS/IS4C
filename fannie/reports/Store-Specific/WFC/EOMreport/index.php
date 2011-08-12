@@ -128,7 +128,7 @@ if (!$output){
 
 	$query21 = "SELECT m.memdesc, COUNT(d.cust_ID)
 	FROM dheader d join custdata c on d.cust_ID = c.cardno join memtypeID m on c.memtype = m.memtypeID
-	WHERE datediff(mm,getdate(),proc_date)=-1 AND (cust_ID NOT BETWEEN 5500 and 5950 and cust_id < 9000) AND personnum = 1
+	WHERE datediff(mm,getdate(),proc_date)=-1 AND (cust_ID NOT BETWEEN 5500 and 5950) AND personnum = 1
 	GROUP BY m.memdesc";
 
 	$query20 = "SELECT   SUM(d.total) AS Sales 
