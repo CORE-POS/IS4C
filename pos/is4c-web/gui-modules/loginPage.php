@@ -44,7 +44,7 @@ class loginPage extends BasicPage {
 	function main_content(){
 		global $IS4C_PATH;
 		?>
-		<div id="loginTitle">IS4C Online Version 1.0<br />
+		<div id="loginTitle"><!--IS4C Online Version 1.0--><br />
 		<form action="<?php echo $_SERVER['PHP_SELF']; ?>" method="post">
 		<table cellspacing="4" cellpadding="4">
 		<tr>

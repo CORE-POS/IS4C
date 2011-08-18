@@ -85,7 +85,7 @@ function getUID($name){
 
   $sql = dbconnect();
   $name = $sql->escape($name);
-  $fetchQ = "select uid from users where name='$name'";
+  $fetchQ = "select uid from Users where name='$name'";
   $fetchR = $sql->query($fetchQ);
   if ($sql->num_rows($fetchR) == 0){
     return false;
@@ -100,7 +100,7 @@ function getRealName($name){
 
   $sql = dbconnect();
   $name = $sql->escape($name);
-  $fetchQ = "select real_name from users where name='$name'";
+  $fetchQ = "select real_name from Users where name='$name'";
   $fetchR = $sql->query($fetchQ);
   if ($sql->num_rows($fetchR) == 0){
     return false;
@@ -113,7 +113,7 @@ function getRealName($name){
 function getOwner($name){
 	$sql = dbconnect();
 	$name = $sql->escape($name);
-	$fetchQ = "select owner from users where name='$name'";
+	$fetchQ = "select owner from Users where name='$name'";
 	$fetchR = $sql->query($fetchQ);
 	if ($sql->num_rows($fetchR) == 0)
 		return false;
@@ -153,7 +153,7 @@ function doLogin($name){
 
 	$sql = dbconnect();
 	$name = $sql->escape($name);
-	$sessionQ = "update users set session_id = '$session_id' where name='$name'";
+	$sessionQ = "update Users set session_id = '$session_id' where name='$name'";
 	$sessionR = $sql->query($sessionQ);
 
 	$session_data = array("name"=>$name,"session_id"=>$session_id);

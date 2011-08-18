@@ -9,7 +9,7 @@ body {
 	font-size: small;
 	color: #191919;
 	text-align: center;
-	background-image: url(/git/IS4C/pos/is4c-web/src/images/mainBackground.gif);
+	background-image: url(/images/mainBackground.gif);
 	background-repeat: repeat-y;
 	background-position: center;
 	height:100%;
@@ -37,7 +37,7 @@ p {
 	margin-bottom: 10px;
 }
 .first{
-	background-image: url(/git/IS4C/pos/is4c-web/src/images/purpleleaf.gif);
+	background-image: url(/images/purpleleaf.gif);
 	background-repeat: no-repeat;
 	text-indent: 28px;}
 h1 {
@@ -113,11 +113,11 @@ h2.divClear {
 	
 }
 #index #divWrap {
-	background-image: url(/git/IS4C/pos/is4c-web/src/images/indexBackgroundTop.gif);
+	background-image: url(/images/indexBackgroundTop.gif);
 	background-repeat: no-repeat;
 }
 #divHeader{ /* heading image */
-	background-image: url(/git/IS4C/pos/is4c-web/src/images/insideBanner.jpg);
+	background-image: url(/images/insideBanner.jpg);
 	text-align: center;
 	height: 90px;
 	border: 2px solid #FFFFFF;
@@ -130,7 +130,7 @@ h2.divClear {
 	margin-top: 10px;
 }
 #divIndexBanner{ /* heading image */
-	background-image: url(/git/IS4C/pos/is4c-web/src/images/indexBanner.jpg);
+	background-image: url(/images/indexBanner.jpg);
 	text-align: center;
 	height: 150px;
 	background-color: #000000;
@@ -158,7 +158,7 @@ h2.divClear {
 
 /************************* secondary navigation **********************************/
 #navSecondary { 
-	background-image: url(/git/IS4C/pos/is4c-web/src/images/navbackground.gif);
+	background-image: url(/images/navbackground.gif);
 	background-repeat: no-repeat;
 	height: 30px;
 	clear: both;
@@ -263,7 +263,7 @@ h2.divClear {
 	border-top-width: 2px;
 	border-top-style: solid;
 	border-top-color: #000000;
-	background-image: url(/git/IS4C/pos/is4c-web/src/images/indexBackgroundBottom.gif);
+	background-image: url(/images/indexBackgroundBottom.gif);
 	background-repeat: repeat-x;
 	padding-right: 0px;
 	padding-left: 0px;
@@ -338,7 +338,7 @@ h2.divClear {
 }
 #divIndexNews p {
 	line-height: 1.6em;
-	background-image: url(/git/IS4C/pos/is4c-web/src/images/greyleaf.gif);
+	background-image: url(/images/greyleaf.gif);
 	background-repeat: no-repeat;
 	text-indent: 28px;
 }
