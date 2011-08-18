@@ -53,6 +53,7 @@ $q = "select username,note,stamp from memberNotes where cardno=$memNum order by 
 $r = $sql->query($q);
 while($w = $sql->fetch_array($r)){
 	$text = stripslashes($w[1]);
+	if (empty($text)) continue;
 	echo "<b>$w[2] - note added by $w[0]</b><br />";
 	echo "$text<br /><hr />";
 }

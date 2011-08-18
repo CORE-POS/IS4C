@@ -25,7 +25,7 @@
 //$dbc->query("exec custdataUpdateAll");
 
 // Run DTS to export server data to a CSV file
-$dbc->query("exec master..xp_cmdshell 'dtsrun /S IS4CSERV\IS4CSERV /U $FANNIE_SERVER_USER /P is4c /N CSV_custdata',no_output",$FANNIE_OP_DB);
+$dbc->query("exec master..xp_cmdshell 'dtsrun /S IS4CSERV\IS4CSERV /U $FANNIE_SERVER_USER /P $FANNIE_SERVER_PW /N CSV_custdata',no_output",$FANNIE_OP_DB);
 
 // on each MySQL lane, load the CSV file
 foreach($FANNIE_LANES as $lane){
@@ -43,6 +43,12 @@ foreach($FANNIE_LANES as $lane){
 		$dbc->query("LOAD DATA LOCAL INFILE '/pos/csvs/custdata.csv' INTO TABLE
 			custdata FIELDS TERMINATED BY ',' OPTIONALLY
 			ENCLOSED BY '\"' LINES TERMINATED BY '\\r\\n'",$lane['op']);
+		if ($lane['host'] != "129.103.2.16"){
+			$dbc->query("DELETE FROM custdata WHERE type NOT IN ('PC','REG')",$lane['op']);
+		}
+		else {
+			$dbc->query("DELETE FROM custdata WHERE type IN ('TERM')",$lane['op']);
+		}
 	}
 }
 
