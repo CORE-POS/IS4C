@@ -22,7 +22,7 @@ function auditPriceChange($sql,$uid,$upc,$price,$batchID){
 	$dept_sub = $row[2];
 
 	$subject = "Batch Update notification: ".$row[1];
-	$message .= "Batch $row[1] has been changed\n";
+	$message = "Batch $row[1] has been changed\n";
 	$message .= "Item $upc ($row[0]) has been added to the batch\n";	
 	$message .= "Sale Price: $".$price."\n";
 	$message .= "\n";
@@ -51,7 +51,7 @@ function auditPriceChangeLC($sql,$uid,$upc,$price,$batchID){
 	$dept_sub = array_pop($sql->fetch_row($deptR));
 
 	$subject = "Batch Update notification: ".$row[1];
-	$message .= "Batch $row[1] has been changed\n";
+	$message = "Batch $row[1] has been changed\n";
 	$message .= "Likecode $upc ($row[0]) has been added to the batch\n";	
 	$message .= "Sale price: $".$price."\n";
 	$message .= "\n";
@@ -90,7 +90,7 @@ function auditSavePrice($sql,$uid,$upc,$price,$batchID){
 		$dept_sub = $row[2];
 
 	$subject = "Batch Update notification: ".$row[1];
-	$message .= "Batch $row[1] has been changed\n";
+	$message = "Batch $row[1] has been changed\n";
 	$message .= "Item $upc ($row[0]) has been re-priced\n";	
 	$message .= "Sale Price: $".$price."\n";
 	$message .= "\n";
@@ -129,7 +129,7 @@ function auditDelete($sql,$uid,$upc,$batchID){
 		$dept_sub = $row[2];
 
 	$subject = "Batch Update notification: ".$row[1];
-	$message .= "Batch $row[1] has been changed\n";
+	$message = "Batch $row[1] has been changed\n";
 	$message .= "Item $upc ($row[0]) has been deleted from the batch\n";	
 	$message .= "\n";
 	$message .= "Go to the batch page:\n";

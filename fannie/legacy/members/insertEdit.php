@@ -267,11 +267,9 @@ $notetext = preg_replace("/\n/","<br />",$notetext);
 $notetext = preg_replace("/\'/","''",$notetext);
 $checkQ = "select * from memberNotes where note='$notetext' and cardno=$memNum";
 $checkR = $sql->query($checkQ);
-if ($notetext != ""){
-	if ($sql->num_rows($checkR) == 0){
-		$noteQ = "insert into memberNotes values ($memNum,'$notetext',getdate(),'$username')";
-		$noteR = $sql->query($noteQ);
-	}
+if ($sql->num_rows($checkR) == 0){
+	$noteQ = "insert into memberNotes values ($memNum,'$notetext',getdate(),'$username')";
+	$noteR = $sql->query($noteQ);
 }
 
 addressList($memNum);
