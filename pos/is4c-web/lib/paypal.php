@@ -32,6 +32,7 @@ define("PAYPAL_LIVE_URL","https://api-3t.paypal.com/nvp");
 define("PAYPAL_LIVE_RD","https://www.paypal.com/webscr");
 
 define("PAYPAL_NVP_VERSION",63);
+define("PAYPAL_LIVE",False);
 
 include_once($IS4C_PATH."lib/pp-api-credentials.php");
 if (!isset($IS4C_LOCAL)) include($IS4C_PATH."lib/LocalStorage/conf.php");
@@ -51,9 +52,9 @@ function argstring($arr){
 function pp_init_args($method){
 	$args = array(
 		'METHOD'	=> $method,
-		'USER'		=> PAYPAL_TEST_UID,
-		'PWD'		=> PAYPAL_TEST_PWD,
-		'SIGNATURE'	=> PAYPAL_TEST_KEY,
+		'USER'		=> (PAYPAL_LIVE ? PAYPAL_LIVE_UID : PAYPAL_TEST_UID),
+		'PWD'		=> (PAYPAL_LIVE ? PAYPAL_LIVE_PWD : PAYPAL_TEST_PWD),
+		'SIGNATURE'	=> (PAYPAL_LIVE ? PAYPAL_LIVE_KEY : PAYPAL_TEST_KEY),
 		'VERSION'	=> PAYPAL_NVP_VERSION,
 	);
 	return $args;
@@ -62,7 +63,7 @@ function pp_init_args($method){
 /* submit request to paypal nvp, return
    results as keyed array */
 function pp_do_curl($args){
-	$curl_handle = curl_init(PAYPAL_TEST_URL);
+	$curl_handle = curl_init((PAYPAL_LIVE ? PAYPAL_LIVE_URL : PAYPAL_TEST_URL));
 	curl_setopt($curl_handle,CURLOPT_POST,True);
 	curl_setopt($curl_handle,CURLOPT_POSTFIELDS,argstring($args));
 	curl_setopt($curl_handle, CURLOPT_HEADER, 0);
@@ -86,9 +87,10 @@ function pp_do_curl($args){
    Returns paypal token on success, False on failure
 */
 function SetExpressCheckout($amt,$tax=0,$email=""){
+	global $PAYPAL_URL_SUCCESS, $PAYPAL_URL_FAILURE;
 	$args = pp_init_args('SetExpressCheckout');
-	$args['RETURNURL'] = PAYPAL_URL_SUCCESS;
-	$args['CANCELURL'] = PAYPAL_URL_FAILURE;
+	$args['RETURNURL'] = $PAYPAL_URL_SUCCESS;
+	$args['CANCELURL'] = $PAYPAL_URL_FAILURE;
 	$args['PAYMENTREQUEST_0_AMT'] = $amt;
 	$args['PAYMENTREQUEST_0_TAXAMT'] = $tax;
 	$args['PAYMENTREQUEST_0_ITEMAMT'] = $amt - $tax;
@@ -98,7 +100,7 @@ function SetExpressCheckout($amt,$tax=0,$email=""){
 
 	$result = pp_do_curl($args);
 	if ($result['ACK'] == 'Success' && isset($result['TOKEN'])){
-		header("Location: ".PAYPAL_TEST_RD."?cmd=_express-checkout&token=".$result['TOKEN']);
+		header("Location: ".(PAYPAL_LIVE ? PAYPAL_LIVE_RD : PAYPAL_TEST_RD)."?cmd=_express-checkout&token=".$result['TOKEN']);
 		return $result['TOKEN'];
 	}
 	else return False;
