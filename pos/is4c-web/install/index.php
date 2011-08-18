@@ -21,6 +21,7 @@
 
 *********************************************************************************/
 
+//return;
 $IS4C_PATH = isset($IS4C_PATH)?$IS4C_PATH:"";
 if (empty($IS4C_PATH)){ while(!file_exists($IS4C_PATH."is4c.css")) $IS4C_PATH .= "../"; }
 
@@ -144,7 +145,7 @@ if (!class_exists('SQLManager'))
 if ($IS4C_LOCAL->get("DBMS") == "mysql")
 	$val = ini_set('mysql.connect_timeout',5);
 
-if (pinghost($IS4C_LOCAL->get('localhost')) == 1){
+if (pinghost($IS4C_LOCAL->get('localhost')) != 0){
 	$sql = new SQLManager($IS4C_LOCAL->get('localhost'),
 			$IS4C_LOCAL->get('DBMS'),
 			$IS4C_LOCAL->get('pDatabase'),
@@ -157,6 +158,9 @@ if (pinghost($IS4C_LOCAL->get('localhost')) == 1){
 		echo "<span style=\"color:green;\">Succeeded</span>";
 		create_op_dbs($sql,$IS4C_LOCAL->get('DBMS'));
 		$gotDBs++;
+		include('../lib/connect.php');
+		//include('../auth/utilities.php');
+		table_check();
 	}
 }
 else {
@@ -174,7 +178,7 @@ confsave('tDatabase',"'".$IS4C_LOCAL->get('tDatabase')."'");
 <br />
 Testing transational DB connection:
 <?php
-if(pinghost($IS4C_LOCAL->get('localhost')) == 1){
+if(pinghost($IS4C_LOCAL->get('localhost')) != 0){
 	$sql = new SQLManager($IS4C_LOCAL->get('localhost'),
 			$IS4C_LOCAL->get('DBMS'),
 			$IS4C_LOCAL->get('tDatabase'),
@@ -652,6 +656,39 @@ function create_op_dbs($db,$type){
 	if (!$db->table_exists('emailBlacklist',$name)){
 		$db->query($bl2Q);
 	}
+
+	$regQ = "CREATE TABLE registrations (
+		tdate datetime,
+		card_no int,
+		name varchar(150),
+		email varchar(150),
+		phone varchar(30),
+		guest_count int,
+		child_count int,
+		paid int
+		)";
+	if (!$db->table_exists("registrations",$name)){
+		$db->query($regQ);
+	}
+
+	$mealQ = "CREATE TABLE regMeals (
+		card_no int,
+		type varchar(5),
+		subtype smallint
+		)";
+	if (!$db->table_exists("regMeals",$name)){
+		$db->query($mealQ);
+	}
+
+	$tkQ = "CREATE TABLE tokenCache (
+		card_no int,
+		token varchar(25),
+		tdate datetime
+		)";
+	if (!$db->table_exists("tokenCache",$name)){
+		$db->query($tkQ);
+	}
+	
 }
 
 function create_trans_dbs($db,$type){

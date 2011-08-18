@@ -76,7 +76,10 @@ function truncate2($num) {
 // ----------pinghost($host /string)----------
 //
 // Given $host, pinghost() looks up that host name or IP address.
-// If it can connect function returned as true, else false.
+// Returns:
+//	1 if ping succeeds
+//	0 if ping fails
+//     -1 if ping is unavailable (disabling exec is common on hosting services)
 
 function pinghost($host)
 {
@@ -91,11 +94,12 @@ function pinghost($host)
 	}
 
 	$intConnected = 0;
+	$aPingReturn = array();
 	if ($IS4C_LOCAL->get("OS") == "win32") {
-		$pingReturn = exec("ping -n 1 $host", $aPingReturn);
+		$pingReturn = @exec("ping -n 1 $host", $aPingReturn);
 		$packetLoss = "(0% loss";
 	} else {
-		$pingReturn = exec("ping -c 1 $host", $aPingReturn);
+		$pingReturn = @exec("ping -c 1 $host", $aPingReturn);
 		$packetLoss = "1 received, 0% packet loss";
 	}
 
@@ -107,7 +111,7 @@ function pinghost($host)
 			break;
 			}
 	}
-	return $intConnected;
+	return (count($aPingReturn)>0 ? $intConnected : -1);
 }
 
 function win32() {

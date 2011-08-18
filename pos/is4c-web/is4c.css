@@ -25,3 +25,36 @@ div#browsearea {
 table#carttable td, th {
 	padding: 8px;
 }
+
+div.itemMain {
+	width: 400px;
+	float: left;
+}
+span.itemDesc {
+	font-size: 125%;
+	font-weight: bold;
+}
+span.itemBrand {
+	font-size: 90%;
+	font-style: italic;
+	margin-left: 10px;
+	margin-bottom: 20px;
+	display: block;
+}
+
+div.itemPrice {
+	width: 200px;
+	float: left;
+}
+span.itemPriceNormal {
+	font-size: 150%;
+	font-weight: bold;
+}
+span.itemPriceAddOn {
+	font-size: 90%;
+	font-style: italic;
+}
+
+div.itemCart {
+	clear: left;
+}

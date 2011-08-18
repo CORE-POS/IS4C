@@ -27,16 +27,13 @@ if (empty($IS4C_PATH)){ while(!file_exists($IS4C_PATH."is4c.css")) $IS4C_PATH .=
 
 define("PAYPAL_TEST_URL","https://api-3t.sandbox.paypal.com/nvp");
 define("PAYPAL_TEST_RD","https://www.sandbox.paypal.com/webscr");
-define("PAYPAL_TEST_UID","andy_1294773506_biz_api1.wholefoods.coop");
-define("PAYPAL_TEST_PWD","1294773513");
-define("PAYPAL_TEST_KEY","AHI.ownNeZJwzILhfLs6SZLW3SbqAKuVP7Hxz8cBbpG8hElkamxQIneS");
 
 define("PAYPAL_LIVE_URL","https://api-3t.paypal.com/nvp");
+define("PAYPAL_LIVE_RD","https://www.paypal.com/webscr");
 
-define("PAYPAL_URL_SUCCESS","http://key/git/IS4C/pos/is4c-web/gui-modules/confirm.php");
-define("PAYPAL_URL_FAILURE","http://key/git/IS4C/pos/is4c-web/gui-modules/cart.php");
 define("PAYPAL_NVP_VERSION",63);
 
+include_once($IS4C_PATH."lib/pp-api-credentials.php");
 if (!isset($IS4C_LOCAL)) include($IS4C_PATH."lib/LocalStorage/conf.php");
 
 /* utility to transform array to url-encoded
@@ -86,7 +83,7 @@ function pp_do_curl($args){
 /* Set up express checkout request
    NOTE: redirects to paypal on success
 
-   Returns True on success, False on failure
+   Returns paypal token on success, False on failure
 */
 function SetExpressCheckout($amt,$tax=0,$email=""){
 	$args = pp_init_args('SetExpressCheckout');
@@ -95,14 +92,16 @@ function SetExpressCheckout($amt,$tax=0,$email=""){
 	$args['PAYMENTREQUEST_0_AMT'] = $amt;
 	$args['PAYMENTREQUEST_0_TAXAMT'] = $tax;
 	$args['PAYMENTREQUEST_0_ITEMAMT'] = $amt - $tax;
+	$args['PAYMENTREQUEST_0_DESC'] = "WFC Purchase";
 	if (!empty($email))
 		$args['EMAIL'] = $email;
 
 	$result = pp_do_curl($args);
 	if ($result['ACK'] == 'Success' && isset($result['TOKEN'])){
 		header("Location: ".PAYPAL_TEST_RD."?cmd=_express-checkout&token=".$result['TOKEN']);
+		return $result['TOKEN'];
 	}
-	else var_dump($result);
+	else return False;
 }
 
 /* Collect user information from paypal. 

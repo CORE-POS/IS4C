@@ -75,9 +75,10 @@ class storefront extends BasicPage {
 
 		$dbc = pDataConnect();
 		$empno = getUID(checkLogin());
+		if ($empno===False) $empno=-999;
 	
 		$q = "SELECT p.upc,p.normal_price,
-			CASE WHEN p.discounttype IN (1,2) then p.special_price
+			CASE WHEN p.discounttype IN (1) then p.special_price
 				ELSE 0
 				END as sale_price,
 			u.description,u.brand,
@@ -105,26 +106,27 @@ class storefront extends BasicPage {
 		$r = $dbc->query($q);
 		while($w = $dbc->fetch_row($r)){
 			$ret .= sprintf('<tr><td>%s</td>
-					<td>%s</td>
+					<td><a href="item.php?upc=%s">%s</a></td>
 					<td>$%.2f</td>
 					<td>%s</td>',
 					$w['brand'],
-					$w['description'],
+					$w['upc'],$w['description'],
 					($w['sale_price']==0?$w['normal_price']:$w['sale_price']),
 					($w['sale_price']==0?'&nbsp;':'ON SALE!')
 			);
-			if ($w['inCart'] == 0){
+			if ($w['inCart'] == 0 && $empno != -999){
 					$ret .= sprintf('<td id="btn%s">
 						<input type="submit" value="Add to cart" onclick="addItem(\'%s\');" />
 						</td></tr>',
 						$w['upc'],$w['upc']);
 			}
-			else {
+			else if ($empno != -999){
 					$ret .= sprintf('<td id="btn%s">
 						<a href="cart.php">In Cart</a>
 						</td></tr>',
 						$w['upc']);
 			}
+			else $ret .= '<td></td></tr>';
 		}
 		$ret .= '</table>';
 		return $ret;
@@ -143,6 +145,8 @@ class storefront extends BasicPage {
 		while($w = $dbc->fetch_row($r)){
 			$sids[$w['superID']] = $w['super_name'];
 		}
+		if (count($sids)==1)
+			$super = array_pop(array_keys($sids));
 
 		if ($sub != -1 && $d != -1 && $super != -1){
 			// browsing subdept

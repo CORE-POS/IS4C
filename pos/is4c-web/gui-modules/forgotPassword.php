@@ -34,6 +34,7 @@ if (!function_exists('checkLogin')) include($IS4C_PATH.'auth/login.php');
 class forgotPassword extends BasicPage {
 
 	var $reset;
+	var $errors;
 
 	function js_content(){
 		?>
@@ -46,6 +47,7 @@ class forgotPassword extends BasicPage {
 	function main_content(){
 		global $IS4C_PATH;
 		if (!$this->reset){
+		echo $this->errors;
 		?>
 		<div id="loginTitle">Password Reset<br />
 		<form action="<?php echo $_SERVER['PHP_SELF']; ?>" method="post">
@@ -73,18 +75,19 @@ class forgotPassword extends BasicPage {
 	function preprocess(){
 		global $IS4C_PATH;
 		$this->reset = False;
+		$this->errors = '';
 
 		if (isset($_REQUEST['email'])){
 			if (!isEmail($_REQUEST['email'])){
-				echo '<div class="errorMsg">';
-				echo 'Not a valid e-mail address: '.$_REQUEST['email'];
-				echo '</div>';
+				$this->errors .= '<div class="errorMsg">';
+				$this->errors .= 'Not a valid e-mail address: '.$_REQUEST['email'];
+				$this->errors .= '</div>';
 				return True;
 			}
 			else if (!getUID($_REQUEST['email'])){
-				echo '<div class="errorMsg">';
-				echo 'No account found with e-mail address: '.$_REQUEST['email'];
-				echo '</div>';
+				$this->errors .= '<div class="errorMsg">';
+				$this->errors .= 'No account found with e-mail address: '.$_REQUEST['email'];
+				$this->errors .= '</div>';
 				return True;
 			}
 			else {
