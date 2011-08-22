@@ -87,7 +87,7 @@ class confirm extends BasicPage {
 		}
 		printf('<tr><th colspan="3" align="right">Subtotal</th>
 			<td>$%.2f</td><td>&nbsp;</td></tr>',$ttl);
-		$taxQ = "SELECT taxes FROM taxttl WHERE emp_no=$empno";
+		$taxQ = "SELECT taxes FROM taxTTL WHERE emp_no=$empno";
 		$taxR = $db->query($taxQ);
 		$taxes = round(array_pop($db->fetch_row($taxR)),2);
 		printf('<tr><th colspan="3" align="right">Taxes</th>
@@ -142,7 +142,7 @@ class confirm extends BasicPage {
 					$db = tDataConnect();
 					$email = checkLogin();
 					$empno = getUID($email);
-					$taxQ = "SELECT taxes FROM taxttl WHERE emp_no=$empno";
+					$taxQ = "SELECT taxes FROM taxTTL WHERE emp_no=$empno";
 					$taxR = $db->query($taxQ);
 					$taxes = round(array_pop($db->fetch_row($taxR)),2);
 					addtax($taxes);

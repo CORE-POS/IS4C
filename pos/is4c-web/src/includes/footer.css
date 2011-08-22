@@ -31,7 +31,7 @@ height: auto;}
 	width: 100%;
 	position: fixed;
 	background-color: transparent; /* necessary for background image to display properly in Safari */
-	background-image: url(/git/IS4C/pos/is4c-web/src/images/grass.gif);
+	background-image: url(../images/grass.gif);
 	background-repeat: no-repeat;
 	background-position: center 0;
 	left: 0px;

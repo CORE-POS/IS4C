@@ -73,7 +73,7 @@ class cart extends BasicPage {
 		}
 		printf('<tr><th colspan="4" align="right">Subtotal</th>
 			<td>$%.2f</td><td>&nbsp;</td></tr>',$ttl);
-		$taxQ = "SELECT taxes FROM taxttl WHERE emp_no=$empno";
+		$taxQ = "SELECT taxes FROM taxTTL WHERE emp_no=$empno";
 		$taxR = $db->query($taxQ);
 		$taxes = 0;
 		if ($db->num_rows($taxR) > 0)
@@ -129,7 +129,7 @@ class cart extends BasicPage {
 			$empno = getUID($email);
 			$sub = $dbc->query("SELECT sum(total) FROM cart WHERE emp_no=".$empno);
 			$sub = array_pop($dbc->fetch_row($sub));
-			$tax = $dbc->query("SELECT taxes FROM taxttl WHERE emp_no=$empno");
+			$tax = $dbc->query("SELECT taxes FROM taxTTL WHERE emp_no=$empno");
 			$tax = array_pop($dbc->fetch_row($tax));
 	
 			return SetExpressCheckout(round($sub+$tax,2),
