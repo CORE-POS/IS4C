@@ -85,12 +85,13 @@ class storefront extends BasicPage {
 			CASE WHEN l.upc IS NULL THEN 0 ELSE 1 END AS inCart
 			FROM products AS p INNER JOIN productUser
 			AS u ON p.upc=u.upc LEFT JOIN ".$IS4C_LOCAL->get("tDatabase").".localtemptrans
-			AS l ON p.upc=l.upc AND l.emp_no=$empno ";
+			AS l ON p.upc=l.upc AND l.emp_no=$empno 
+			LEFT JOIN productOrderLimits AS o ON p.upc=o.upc ";
 		if ($super != -1)
 			$q .= "INNER JOIN superdepts AS s ON p.department=s.dept_ID ";
 		if ($sub != -1)
 			$q .= "INNER JOIN subdepts AS b ON p.department=b.dept_ID ";
-		$q .= "WHERE p.inUse=1 ";
+		$q .= "WHERE p.inUse=1 AND (o.available IS NULL or o.available > 0) ";
 		if ($super != -1)
 			$q .= sprintf("AND s.superID=%d ",$super);
 		if ($d != -1)

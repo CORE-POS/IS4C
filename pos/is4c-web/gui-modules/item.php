@@ -57,9 +57,12 @@ class itemPage extends BasicPage {
 
 		$dbc = pDataConnect();
 		$q = sprintf("SELECT p.upc,p.normal_price,p.special_price,
-			p.discounttype,u.description,u.brand,u.long_text
+			p.discounttype,u.description,u.brand,u.long_text,
+			p.inUse,
+			CASE WHEN o.available IS NULL then 99 ELSE o.available END as available
 			FROM products AS p INNER JOIN productUser AS u
-			ON p.upc=u.upc WHERE p.upc='%s'",
+			ON p.upc=u.upc LEFT JOIN productOrderLimits AS o
+			ON p.upc=o.upc WHERE p.upc='%s'",
 			$dbc->escape($upc));
 		$r = $dbc->query($q);
 
@@ -89,7 +92,11 @@ class itemPage extends BasicPage {
 			printf('Owner price: $%.2f',$w['special_price']);
 		echo '</span>';
 		echo '<br /><br />';
-		if ($empno == -999){
+		if ($w['inUse'] == 0 || $w['available'] <= 0){
+			echo 'This product is expired, out of stock, or otherwise
+				no longer available to order';
+		}
+		else if ($empno == -999){
 			echo '<a href="loginPage.php">Login</a> or ';
 			echo '<a href="createAccount.php">Create an Account</a> ';
 			echo 'to add items to your cart.';
