@@ -31,10 +31,12 @@ elseif (isset($_REQUEST['addEntry'])){
 	$type = $_REQUEST['type'];
 	$pos = mysql_real_escape_string($_REQUEST['pos']);
 	$score = $_REQUEST['score'];	
+	$score = sprintf("%.2f",$score);
+	$score = str_replace(".","",$score);	
 
 	$q = sprintf("INSERT INTO evalScores (empID,evalType,evalScore,month,year,pos)
 		VALUES (%d,%d,%d,%d,%d,'%s')",$empID,$type,
-		( ((float)$score * 100) ^ $empID ),
+		$score,
 		$month,$year,$pos);
 	$r = $db->query($q);
 
@@ -121,11 +123,13 @@ function getHistory($id){
 	$ret = "<table cellspacing=0 cellpadding=4 border=1>";
 	$ret .= "<tr><th>Date</th><th>Type</th><th>Score</th><th>Position</th></tr>";
 	while($w = $db->fetch_row($r)){
+		$score = str_pad($w[3],3,'0');
+		$score = substr($score,0,strlen($score)-2).".".substr($score,-2);
 		$ret .= sprintf("<tr><td>%s</td><td>%s</td><td>%.2f</td><td>%s</td>
 				<td><a href=\"\" onclick=\"return delEntry(%d);\">[ X ]</a></tr>",
 			date("F Y",mktime(0,0,0,$w[0],1,$w[1])),
 			$w[2],
-			( ((int)$w[3]) ^ ((int)$id) ) / 100.0,
+			$score,
 			$w[4],$w[5]);
 	}
 	$ret .= "</table>";
