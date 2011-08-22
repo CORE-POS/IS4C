@@ -71,7 +71,7 @@ class storefront extends BasicPage {
 		$page = isset($_REQUEST['pg'])?((int)$_REQUEST['pg']):0;
 		$offset = $page*$limit;
 
-		$sort = "u.brand";
+		$sort = "u.brand,u.description";
 
 		$dbc = pDataConnect();
 		$empno = getUID(checkLogin());
@@ -90,7 +90,7 @@ class storefront extends BasicPage {
 			$q .= "INNER JOIN superdepts AS s ON p.department=s.dept_ID ";
 		if ($sub != -1)
 			$q .= "INNER JOIN subdepts AS b ON p.department=b.dept_ID ";
-		$q .= "WHERE 1=1 ";
+		$q .= "WHERE p.inUse=1 ";
 		if ($super != -1)
 			$q .= sprintf("AND s.superID=%d ",$super);
 		if ($d != -1)

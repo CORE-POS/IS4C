@@ -47,7 +47,7 @@ function login($name,$password,$testing=false){
 
   $sql = dbconnect();
   $name = $sql->escape($name);
-  $gatherQ = "select password,salt from users where name='$name'";
+  $gatherQ = "select password,salt from Users where name='$name'";
   $gatherR = $sql->query($gatherQ);
   if ($sql->num_rows($gatherR) == 0){
     return false;
@@ -168,7 +168,7 @@ function createLogin($name,$password,$fn="",$owner=0){
   table_check();
 
   $sql = dbconnect();
-  $checkQ = "select name from users where name='$name'";
+  $checkQ = "select name from Users where name='$name'";
   $checkR = $sql->query($checkQ);
   if ($sql->num_rows($checkR) != 0){
     return false;
@@ -177,7 +177,7 @@ function createLogin($name,$password,$fn="",$owner=0){
   $salt = time();
   $crypt_pass = crypt($password,$salt);
   
-  $addQ = sprintf("insert into users (name,password,salt,real_name,owner) 
+  $addQ = sprintf("insert into Users (name,password,salt,real_name,owner) 
 		values ('%s','%s','%s','%s',%d)",
 		$sql->escape($name),$sql->escape($crypt_pass),
 		$sql->escape($salt),$sql->escape($fn),$owner);
@@ -200,7 +200,7 @@ function deleteLogin($name){
   $delQ = "delete from userPrivs where uid=$uid";
   $delR = $sql->query($delQ);
 
-  $deleteQ = "delete from users where name='$name'";
+  $deleteQ = "delete from Users where name='$name'";
   $deleteR = $sql->query($deleteQ);
 
   $groupQ = "DELETE FROM userGroups WHERE name='$name'";
@@ -236,7 +236,7 @@ function checkLogin(){
   $sql = dbconnect();
   $name = $sql->escape($name);
   $session_id = $sql->escape($session_id);
-  $checkQ = "select * from users where name='$name' and session_id='$session_id'";
+  $checkQ = "select * from Users where name='$name' and session_id='$session_id'";
   $checkR = $sql->query($checkQ);
 
   if ($sql->num_rows($checkR) == 0){
@@ -254,7 +254,7 @@ function showUsers(){
   echo "<table cellspacing=2 cellpadding=2 border=1>";
   echo "<tr><th>Name</th><th>User ID</th></tr>";
   $sql = dbconnect();
-  $usersQ = "select name,uid from users order by name";
+  $usersQ = "select name,uid from Users order by name";
   $usersR = $sql->query($usersQ);
   while ($row = $sql->fetch_array($usersR)){
     echo "<tr>";
@@ -285,7 +285,7 @@ function changePassword($name,$oldpassword,$newpassword){
   $crypt_pass = crypt($newpassword,$salt);
 
   $name = $sql->escape($name);
-  $updateQ = "update users set password='$crypt_pass',salt='$salt' where name='$name'";
+  $updateQ = "update Users set password='$crypt_pass',salt='$salt' where name='$name'";
   $updateR = $sql->query($updateQ);
   
   return true;
@@ -297,7 +297,7 @@ function changeAnyPassword($name,$newpassword){
 
   $sql = dbconnect();
   $name = $sql->escape($name);
-  $updateQ = "update users set password='$crypt_pass',salt='$salt' where name='$name'";
+  $updateQ = "update Users set password='$crypt_pass',salt='$salt' where name='$name'";
   $updateR = $sql->query($updateQ);
 
   return true;
@@ -379,7 +379,7 @@ function pose($username){
 	$session_id = $session_data['session_id'];
 
 	$sql = dbconnect();
-	$sessionQ = "update users set session_id = '$session_id' where name='$username'";
+	$sessionQ = "update Users set session_id = '$session_id' where name='$username'";
 	$sessionR = $sql->query($sessionQ);
 
 	$session_data = array("name"=>$username,"session_id"=>$session_id);

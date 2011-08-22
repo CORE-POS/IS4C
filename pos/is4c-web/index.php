@@ -1,3 +1,3 @@
 <?php
-header('Location: gui-modules/loginPage.php');
+header('Location: gui-modules/storefront.php');
 ?>
