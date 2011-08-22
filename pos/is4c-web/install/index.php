@@ -21,7 +21,7 @@
 
 *********************************************************************************/
 
-//return;
+return;
 $IS4C_PATH = isset($IS4C_PATH)?$IS4C_PATH:"";
 if (empty($IS4C_PATH)){ while(!file_exists($IS4C_PATH."is4c.css")) $IS4C_PATH .= "../"; }
 
@@ -687,6 +687,24 @@ function create_op_dbs($db,$type){
 		)";
 	if (!$db->table_exists("tokenCache",$name)){
 		$db->query($tkQ);
+	}
+
+	$expQ = "CREATE TABLE productExpires (
+		upc bigint(13) unsigned zerofill NOT NULL,
+		expires datetime,
+		PRIMARY KEY (upc)
+		)";
+	if (!$db->table_exists("productExpires",$name)){
+		$db->query($expQ);
+	}
+
+	$limitQ = "CREATE TABLE productOrderLimits (
+		upc bigint(13) unsigned zerofill NOT NULL,
+		available int,
+		PRIMARY KEY (upc)
+		)";
+	if (!$db->table_exists("productOrderLimits",$name)){
+		$db->query($limitQ);
 	}
 	
 }

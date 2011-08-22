@@ -168,7 +168,7 @@ class SQLManager {
 				fwrite($fp,date('r').": ".$query_text."\n\n");
 				fclose($fp);
 			}
-			else if (!$result) echo $query_text;
+			//else if (!$result) echo $query_text;
 			return $result;
 		case $this->TYPE_MSSQL:
 			$result = mssql_query($query_text,$this->connections[$which_connection]);
