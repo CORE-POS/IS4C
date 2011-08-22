@@ -90,6 +90,7 @@ Load all the default tenders into the tenders table.<br />
 </html>
 <?php
 function loaddata($sql, $table){
+	global $FANNIE_ROOT;
 	if (file_exists("$table.sql")){
 		$fp = fopen("$table.sql","r");
 		while($line = fgets($fp)){
