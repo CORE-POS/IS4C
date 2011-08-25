@@ -40,6 +40,7 @@ $pCodes_lookup = array(
 $tender_pcode_lookup = array(
 	'CA' => 10110,
 	'CC' => 10120,
+	'AX' => 10120,
 	'RR' => 63380,
 	'CP' => 10740,
 	'GD' => 21205,
@@ -611,6 +612,42 @@ function display($date1,$date2,$excel=False){
 	$ret .= "</tr>";
 
 	$ret .= "<tr class=$classes[$c]>"; $c = ($c+1)%2;
+	$ret .= "<td>AMEX Fees</td><td>";
+	$ret .= $data['other']['axfees'][0];
+	$ret .= "</td>";
+	for ($i=0;$i<$num_days;$i++){
+		$ts = mktime(0,0,0,$sM,$sD+$i,$sY);
+		$ret .= "<td class=money>";
+		if (isset($data['other']['axfees'][1][$ts]) && $data['other']['axfees'][1][$ts] < 0){
+			if (!$excel){
+				$ret .= "<input type=text size=7 value=\"".(-1*$data['other']['axfees'][1][$ts])."\" ";
+				$ret .= "onchange=\"saveMisc(this.value,'axfees','$ts','sales');rb($ts);\" ";
+				$ret .= "style=\"text-align:right\" name=debit$ts />";
+			}
+			else 
+				$ret .= -1*$data['other']['axfees'][1][$ts];
+			$overshorts[$ts] += (-1*$data['other']['axfees'][1][$ts]);
+		}
+		else
+			$ret .= "&nbsp;";
+		$ret .= "</td><td class=money>";
+		if (isset($data['other']['axfees'][1][$ts]) && $data['other']['axfees'][1][$ts] >= 0){
+			if (!$excel){
+				$ret .= "<input type=text size=7 value=\"".$data['other']['axfees'][1][$ts]."\" ";
+				$ret .= "onchange=\"saveMisc(this.value,'axfees','$ts','sales');rb($ts);\" ";
+				$ret .= "style=\"text-align:right\" name=credit$ts />";
+			}
+			else 
+				$ret .= $data['other']['axfees'][1][$ts];
+			$overshorts[$ts] -= $data['other']['axfees'][1][$ts];
+		}
+		else
+			$ret .= "&nbsp;";
+		
+	}
+	$ret .= "</tr>";
+
+	$ret .= "<tr class=$classes[$c]>"; $c = ($c+1)%2;
 	$ret .= "<td>Change Buy</td><td>10120</td>";
 	for ($i=0;$i<$num_days-1;$i++)
 		$ret .= "<td>&nbsp;</td><td>&nbsp;</td>";
@@ -700,8 +737,13 @@ function fetch_data($date1,$date2){
 		if ($code == "CK") $code = "CA";
 		if ($code == "CA") $name = "Coin, Cash, and Checks";
 		if ($code == "EC") $code = "EF";
-		if ($code == "CC") $name = "Electronic Deposit (CC)";
-		if ($code == "EF") $name = "Electronic Deposit (EBT)";
+		if ($code == "CC") {
+			$name = "Electronic Deposit (CC)";
+		}
+		if ($code == "EF"){
+			$name = "Electronic Deposit (EBT)";
+			$data['tenders']['AX']['name'] = 'Electronic Deposit (AMEX)';
+		}
 
 		if (!isset($data['tenders'][$code]))
 			$data['tenders'][$code] = array();
@@ -711,6 +753,7 @@ function fetch_data($date1,$date2){
 
 		$data['tenders'][$code]['name'] = $name;
 		$data['tenders'][$code][$timestamp] += $tenderW[0];
+		//$data['tenders']['AX'][$timestamp] = 0;
 	}
 
 	$extraTenderQ = "select datepart(yy,tdate),datepart(mm,tdate),datepart(dd,tdate),
@@ -746,6 +789,7 @@ function fetch_data($date1,$date2){
 	$data['other']['misc0'] = array('',array());
 	$data['other']['misc1'] = array('',array());
 	$data['other']['misc2'] = array('',array());
+	$data['other']['axfees'] = array('63340',array());
 
 	$salesQ = "select datepart(yy,tdate),datepart(mm,tdate),datepart(dd,tdate),
 		CASE WHEN department = 991 then '991' when department=992 then '992' else convert(varchar,s.salesCode) end as pcode,
@@ -783,6 +827,8 @@ function fetch_data($date1,$date2){
 			$preTS = $timestamp;
 		}
 
+		if (!isset($data['other']['axfees'][1][$timestamp]))
+			$data['other']['axfees'][1][$timestamp] = 0;
 		$pcode = $salesW[3];	
 		if ($pcode == "422311"){
 			if (!isset($data['other']['misc1'][1][$timestamp]))
