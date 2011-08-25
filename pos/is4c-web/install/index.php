@@ -145,26 +145,21 @@ if (!class_exists('SQLManager'))
 if ($IS4C_LOCAL->get("DBMS") == "mysql")
 	$val = ini_set('mysql.connect_timeout',5);
 
-if (pinghost($IS4C_LOCAL->get('localhost')) != 0){
-	$sql = new SQLManager($IS4C_LOCAL->get('localhost'),
-			$IS4C_LOCAL->get('DBMS'),
-			$IS4C_LOCAL->get('pDatabase'),
-			$IS4C_LOCAL->get('localUser'),
-			$IS4C_LOCAL->get('localPass'));
-	if ($sql->connections[$IS4C_LOCAL->get('pDatabase')] == False){
-		echo "<span style=\"color:red;\">Failed</span>";
-	}
-	else {
-		echo "<span style=\"color:green;\">Succeeded</span>";
-		create_op_dbs($sql,$IS4C_LOCAL->get('DBMS'));
-		$gotDBs++;
-		include('../lib/connect.php');
-		//include('../auth/utilities.php');
-		table_check();
-	}
+$sql = db_test_connect($IS4C_LOCAL->get('localhost'),
+		$IS4C_LOCAL->get('DBMS'),
+		$IS4C_LOCAL->get('pDatabase'),
+		$IS4C_LOCAL->get('localUser'),
+		$IS4C_LOCAL->get('localPass'));
+if ($sql === False){
+	echo "<span style=\"color:red;\">Failed</span>";
 }
 else {
-	echo "<span style=\"color:red;\">Host appears to be down</span>";
+	echo "<span style=\"color:green;\">Succeeded</span>";
+	create_op_dbs($sql,$IS4C_LOCAL->get('DBMS'));
+	$gotDBs++;
+	include('../lib/connect.php');
+	//include('../auth/utilities.php');
+	table_check();
 }
 ?>
 <br />
@@ -178,48 +173,43 @@ confsave('tDatabase',"'".$IS4C_LOCAL->get('tDatabase')."'");
 <br />
 Testing transational DB connection:
 <?php
-if(pinghost($IS4C_LOCAL->get('localhost')) != 0){
-	$sql = new SQLManager($IS4C_LOCAL->get('localhost'),
-			$IS4C_LOCAL->get('DBMS'),
-			$IS4C_LOCAL->get('tDatabase'),
-			$IS4C_LOCAL->get('localUser'),
-			$IS4C_LOCAL->get('localPass'));
-	if ($sql->connections[$IS4C_LOCAL->get('tDatabase')] == False){
-		echo "<span style=\"color:red;\">Failed</span>";
-	}
-	else {
-		echo "<span style=\"color:green;\">Succeeded</span>";
-
-		/* Re-do tax rates here so changes affect the subsequent
-		 * ltt* view builds. 
-		 */
-		if (isset($_REQUEST['TAX_RATE']) && $sql->table_exists('taxrates')){
-			$queries = array();
-			for($i=0; $i<count($_REQUEST['TAX_RATE']); $i++){
-				$rate = $_REQUEST['TAX_RATE'][$i];
-				$desc = $_REQUEST['TAX_DESC'][$i];
-				if(is_numeric($rate)){
-					$desc = str_replace(" ","",$desc);
-					$queries[] = sprintf("INSERT INTO taxrates VALUES 
-						(%d,%f,'%s')",$i+1,$rate,$desc);
-				}
-				else if ($rate != ""){
-					echo "<br /><b>Error</b>: the given
-						tax rate, $rate, doesn't seem to
-						be a number.";
-				}
-				$sql->query("TRUNCATE TABLE taxrates");
-				foreach($queries as $q)
-					$sql->query($q);
-			}
-		}
-
-		create_trans_dbs($sql,$IS4C_LOCAL->get('DBMS'));
-		$gotDBs++;
-	}
+$sql = db_test_connect($IS4C_LOCAL->get('localhost'),
+		$IS4C_LOCAL->get('DBMS'),
+		$IS4C_LOCAL->get('tDatabase'),
+		$IS4C_LOCAL->get('localUser'),
+		$IS4C_LOCAL->get('localPass'));
+if ($sql === False){
+	echo "<span style=\"color:red;\">Failed</span>";
 }
 else {
-	echo "<span style=\"color:red;\">Host appears to be down</span>";
+	echo "<span style=\"color:green;\">Succeeded</span>";
+
+	/* Re-do tax rates here so changes affect the subsequent
+	 * ltt* view builds. 
+	 */
+	if (isset($_REQUEST['TAX_RATE']) && $sql->table_exists('taxrates')){
+		$queries = array();
+		for($i=0; $i<count($_REQUEST['TAX_RATE']); $i++){
+			$rate = $_REQUEST['TAX_RATE'][$i];
+			$desc = $_REQUEST['TAX_DESC'][$i];
+			if(is_numeric($rate)){
+				$desc = str_replace(" ","",$desc);
+				$queries[] = sprintf("INSERT INTO taxrates VALUES 
+					(%d,%f,'%s')",$i+1,$rate,$desc);
+			}
+			else if ($rate != ""){
+				echo "<br /><b>Error</b>: the given
+					tax rate, $rate, doesn't seem to
+					be a number.";
+			}
+			$sql->query("TRUNCATE TABLE taxrates");
+			foreach($queries as $q)
+				$sql->query($q);
+		}
+	}
+
+	create_trans_dbs($sql,$IS4C_LOCAL->get('DBMS'));
+	$gotDBs++;
 }
 
 ?>
@@ -273,21 +263,16 @@ confsave('mDatabase',"'".$IS4C_LOCAL->get('mDatabase')."'");
 <br />
 Testing server connection:
 <?php
-if(pinghost($IS4C_LOCAL->get("mServer")) == 1){
-	$sql = new SQLManager($IS4C_LOCAL->get('mServer'),
-			$IS4C_LOCAL->get('mDBMS'),
-			$IS4C_LOCAL->get('mDatabase'),
-			$IS4C_LOCAL->get('mUser'),
-			$IS4C_LOCAL->get('mPass'));
-	if ($sql->connections[$IS4C_LOCAL->get('mDatabase')] == False){
-		echo "<span style=\"color:red;\">Failed</span>";
-	}
-	else {
-		echo "<span style=\"color:green;\">Succeeded</span>";
-	}
+$sql = db_test_connect($IS4C_LOCAL->get('mServer'),
+		$IS4C_LOCAL->get('mDBMS'),
+		$IS4C_LOCAL->get('mDatabase'),
+		$IS4C_LOCAL->get('mUser'),
+		$IS4C_LOCAL->get('mPass'));
+if ($sql === False){
+	echo "<span style=\"color:red;\">Failed</span>";
 }
 else {
-	echo "<span style=\"color:red;\">Host appears to be down</span>";
+	echo "<span style=\"color:green;\">Succeeded</span>";
 }
 ?>
 <hr />

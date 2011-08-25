@@ -34,6 +34,9 @@ if (!function_exists('SetExpressCheckout')) include($IS4C_PATH.'lib/paypal.php')
 
 class cart extends BasicPage {
 
+
+	var $notices;
+
 	function js_content(){
 		?>
 		$(document).ready(function(){
@@ -49,7 +52,13 @@ class cart extends BasicPage {
 
 		$q = "SELECT * FROM cart WHERE emp_no=$empno";
 		$r = $db->query($q);
+
+		if (!PAYPAL_LIVE){
+			echo '<h2>This store is in test mode; orders will not be processed</h2>';
+		}
+
 		
+		echo '<blockquote><em>'.$this->notices.'</em></blockquote>';
 		echo '<form action="cart.php" method="post">';
 		echo "<table id=\"carttable\" cellspacing='0' cellpadding='4' border='1'>";
 		echo "<tr><th>&nbsp;</th><th>Item</th><th>Qty</th><th>Price</th>
@@ -82,12 +91,15 @@ class cart extends BasicPage {
 			<td>$%.2f</td><td>&nbsp;</td></tr>',$taxes);
 		printf('<tr><th colspan="4" align="right">Total</th>
 			<td>$%.2f</td><td>&nbsp;</td></tr>',$taxes+$ttl);
-		echo "</table><br />";
-		echo '<input type="submit" name="delbtn" value="Delete Selected Items" />';
+		echo '<tr><td colspan="6" valign="top">';
+		echo '<input type="submit" name="delbtn" style="" value="Delete Selected Items" />';
 		echo "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
 		echo '<input type="submit" name="qtybtn" value="Update Quantities" />';
 		echo "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
-		echo '<input type="submit" name="cobtn" value="Proceed to Checkout" />';
+		//echo '<input type="submit" name="cobtn" value="Proceed to Checkout" />';
+		echo '<input type="image" name="cobtn" height="30px;" style="vertical-align:bottom;" src="https://www.paypal.com/en_US/i/btn/btn_xpressCheckout.gif" />';
+		echo "</td></tr>";
+		echo "</table><br />";
 	}
 
 	function preprocess(){
@@ -106,6 +118,19 @@ class cart extends BasicPage {
 					$qty = number_format(round($_REQUEST['qtys'][$i]*4)/4,2);
 				if ($qty == $_REQUEST['orig'][$i]) continue;
 
+				$availQ = sprintf("SELECT available FROM productOrderLimits WHERE upc='%s'",
+						$upc);
+				$availR = $db->query($availQ);
+				$limit = 999;
+				if ($db->num_rows($availR) > 0)
+					$limit = array_pop($db->fetch_row($availR));
+				if ($qty > $limit && $qty > 0){
+					$qty = $limit;
+					if ($qty <= 0) $qty=1;
+					$this->notices = "Due to limited availability, requested quantity
+						cannot be provided";
+				}
+
 				$q1 = sprintf("DELETE FROM localtemptrans WHERE
 					upc='%s' AND emp_no=%d",$upc,$empno);
 				$db->query($q1);
@@ -123,7 +148,7 @@ class cart extends BasicPage {
 				}
 			}
 		}
-		if (isset($_REQUEST['cobtn'])){
+		if (isset($_REQUEST['cobtn_x'])){
 			$dbc = tDataConnect();
 			$email = checkLogin();
 			$empno = getUID($email);
