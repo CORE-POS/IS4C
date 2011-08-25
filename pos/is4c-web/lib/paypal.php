@@ -32,7 +32,7 @@ define("PAYPAL_LIVE_URL","https://api-3t.paypal.com/nvp");
 define("PAYPAL_LIVE_RD","https://www.paypal.com/webscr");
 
 define("PAYPAL_NVP_VERSION",63);
-define("PAYPAL_LIVE",False);
+define("PAYPAL_LIVE",True);
 
 include_once($IS4C_PATH."lib/pp-api-credentials.php");
 if (!isset($IS4C_LOCAL)) include($IS4C_PATH."lib/LocalStorage/conf.php");
@@ -95,6 +95,7 @@ function SetExpressCheckout($amt,$tax=0,$email=""){
 	$args['PAYMENTREQUEST_0_TAXAMT'] = $tax;
 	$args['PAYMENTREQUEST_0_ITEMAMT'] = $amt - $tax;
 	$args['PAYMENTREQUEST_0_DESC'] = "WFC Purchase";
+	$args['SOLUTIONTYPE'] = 'Sole';
 	if (!empty($email))
 		$args['EMAIL'] = $email;
 

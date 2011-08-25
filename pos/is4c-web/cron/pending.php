@@ -37,6 +37,12 @@ foreach($data as $upc=>$qty){
 	$r = $db2->query($q);
 }
 
+$endQ = "UPDATE products AS p INNER JOIN
+	productOrderLimits AS l ON p.upc=l.upc
+	SET p.inUse=0
+	WHERE l.available <= 0";
+$db2->query($endQ);
+
 ?>
 </body>
 </html>
