@@ -148,23 +148,18 @@ if (!class_exists('SQLManager'))
 if ($CORE_LOCAL->get("DBMS") == "mysql")
 	$val = ini_set('mysql.connect_timeout',5);
 
-if (pinghost($CORE_LOCAL->get('localhost')) == 1){
-	$sql = new SQLManager($CORE_LOCAL->get('localhost'),
-			$CORE_LOCAL->get('DBMS'),
-			$CORE_LOCAL->get('pDatabase'),
-			$CORE_LOCAL->get('localUser'),
-			$CORE_LOCAL->get('localPass'));
-	if ($sql->connections[$CORE_LOCAL->get('pDatabase')] == False){
-		echo "<span style=\"color:red;\">Failed</span>";
-	}
-	else {
-		echo "<span style=\"color:green;\">Succeeded</span>";
-		create_op_dbs($sql,$CORE_LOCAL->get('DBMS'));
-		$gotDBs++;
-	}
+$sql = db_test_connect($CORE_LOCAL->get('localhost'),
+		$CORE_LOCAL->get('DBMS'),
+		$CORE_LOCAL->get('pDatabase'),
+		$CORE_LOCAL->get('localUser'),
+		$CORE_LOCAL->get('localPass'));
+if ($sql === False){
+	echo "<span style=\"color:red;\">Failed</span>";
 }
 else {
-	echo "<span style=\"color:red;\">Host appears to be down</span>";
+	echo "<span style=\"color:green;\">Succeeded</span>";
+	create_op_dbs($sql,$CORE_LOCAL->get('DBMS'));
+	$gotDBs++;
 }
 ?>
 <br />
@@ -178,50 +173,44 @@ confsave('tDatabase',"'".$CORE_LOCAL->get('tDatabase')."'");
 <br />
 Testing transational DB connection:
 <?php
-if(pinghost($CORE_LOCAL->get('localhost')) == 1){
-	$sql = new SQLManager($CORE_LOCAL->get('localhost'),
-			$CORE_LOCAL->get('DBMS'),
-			$CORE_LOCAL->get('tDatabase'),
-			$CORE_LOCAL->get('localUser'),
-			$CORE_LOCAL->get('localPass'));
-	if ($sql->connections[$CORE_LOCAL->get('tDatabase')] == False){
-		echo "<span style=\"color:red;\">Failed</span>";
-	}
-	else {
-		echo "<span style=\"color:green;\">Succeeded</span>";
-
-		/* Re-do tax rates here so changes affect the subsequent
-		 * ltt* view builds. 
-		 */
-		if (isset($_REQUEST['TAX_RATE']) && $sql->table_exists('taxrates')){
-			$queries = array();
-			for($i=0; $i<count($_REQUEST['TAX_RATE']); $i++){
-				$rate = $_REQUEST['TAX_RATE'][$i];
-				$desc = $_REQUEST['TAX_DESC'][$i];
-				if(is_numeric($rate)){
-					$desc = str_replace(" ","",$desc);
-					$queries[] = sprintf("INSERT INTO taxrates VALUES 
-						(%d,%f,'%s')",$i+1,$rate,$desc);
-				}
-				else if ($rate != ""){
-					echo "<br /><b>Error</b>: the given
-						tax rate, $rate, doesn't seem to
-						be a number.";
-				}
-				$sql->query("TRUNCATE TABLE taxrates");
-				foreach($queries as $q)
-					$sql->query($q);
-			}
-		}
-
-		create_trans_dbs($sql,$CORE_LOCAL->get('DBMS'));
-		$gotDBs++;
-	}
+$sql = db_test_connect($CORE_LOCAL->get('localhost'),
+		$CORE_LOCAL->get('DBMS'),
+		$CORE_LOCAL->get('tDatabase'),
+		$CORE_LOCAL->get('localUser'),
+		$CORE_LOCAL->get('localPass'));
+if ($sql === False ){
+	echo "<span style=\"color:red;\">Failed</span>";
 }
 else {
-	echo "<span style=\"color:red;\">Host appears to be down</span>";
-}
+	echo "<span style=\"color:green;\">Succeeded</span>";
 
+	/* Re-do tax rates here so changes affect the subsequent
+	 * ltt* view builds. 
+	 */
+	if (isset($_REQUEST['TAX_RATE']) && $sql->table_exists('taxrates')){
+		$queries = array();
+		for($i=0; $i<count($_REQUEST['TAX_RATE']); $i++){
+			$rate = $_REQUEST['TAX_RATE'][$i];
+			$desc = $_REQUEST['TAX_DESC'][$i];
+			if(is_numeric($rate)){
+				$desc = str_replace(" ","",$desc);
+				$queries[] = sprintf("INSERT INTO taxrates VALUES 
+					(%d,%f,'%s')",$i+1,$rate,$desc);
+			}
+			else if ($rate != ""){
+				echo "<br /><b>Error</b>: the given
+					tax rate, $rate, doesn't seem to
+					be a number.";
+			}
+			$sql->query("TRUNCATE TABLE taxrates");
+			foreach($queries as $q)
+				$sql->query($q);
+		}
+	}
+
+	create_trans_dbs($sql,$CORE_LOCAL->get('DBMS'));
+	$gotDBs++;
+}
 ?>
 <br /><br />
 Server database host: 
@@ -273,22 +262,17 @@ confsave('mDatabase',"'".$CORE_LOCAL->get('mDatabase')."'");
 <br />
 Testing server connection:
 <?php
-if(pinghost($CORE_LOCAL->get("mServer")) == 1){
-	$sql = new SQLManager($CORE_LOCAL->get('mServer'),
-			$CORE_LOCAL->get('mDBMS'),
-			$CORE_LOCAL->get('mDatabase'),
-			$CORE_LOCAL->get('mUser'),
-			$CORE_LOCAL->get('mPass'));
-	if ($sql->connections[$CORE_LOCAL->get('mDatabase')] == False){
-		echo "<span style=\"color:red;\">Failed</span>";
-	}
-	else {
-		echo "<span style=\"color:green;\">Succeeded</span>";
-		create_min_server($sql,$CORE_LOCAL->get('mDBMS'));
-	}
+$sql = db_test_connect($CORE_LOCAL->get('mServer'),
+		$CORE_LOCAL->get('mDBMS'),
+		$CORE_LOCAL->get('mDatabase'),
+		$CORE_LOCAL->get('mUser'),
+		$CORE_LOCAL->get('mPass'));
+if ($sql === False){
+	echo "<span style=\"color:red;\">Failed</span>";
 }
 else {
-	echo "<span style=\"color:red;\">Host appears to be down</span>";
+	echo "<span style=\"color:green;\">Succeeded</span>";
+	create_min_server($sql,$CORE_LOCAL->get('mDBMS'));
 }
 ?>
 <hr />

@@ -126,7 +126,7 @@ class WFC_New_PDF extends FPDF
 	  }
 	  //Print text under barcode
 	  $this->SetFont('Arial','',8);
-	  $this->Text($x,$y+$h+11/$this->k,substr($barcode,-$len).' '.$this->tagdate);
+	  $this->Text($x,$y-$h+(17/$this->k),substr($barcode,-$len).' '.$this->tagdate);
     }
 }
 
@@ -168,9 +168,9 @@ foreach($data as $row){
    //Start laying out a label 
    $newUPC = $upc . $check; //add check digit to upc
    if (strlen($upc) <= 11)
-	$pdf->UPC_A($x+7,$y,$upc,7);  //generate barcode and place on label
+	$pdf->UPC_A($x+7,$y+4,$upc,7);  //generate barcode and place on label
    else
-	$pdf->EAN13($x+7,$y,$upc,7);  //generate barcode and place on label
+	$pdf->EAN13($x+7,$y+4,$upc,7);  //generate barcode and place on label
 
    // writing data
    // basically just set cursor position

@@ -186,12 +186,20 @@ else {
 			$oid);
 		$r = $dbc->query($q);
 		while($w = $dbc->fetch_row($r)){
-			printf('<tr><td>&nbsp;</td><td>%s (%d)</td><td>%d x %d</td>
+			if ($w['department']==0){
+				echo '<tr><td>&nbsp;</td>';
+				echo '<td colspan="4">';
+				echo 'No department set for: '.$w['description'];
+				echo '</td></tr>';
+			}
+			else {
+				printf('<tr><td>&nbsp;</td><td>%s (%d)</td><td>%d x %d</td>
 				<td>$%.2f</td>
 				<td><input type="checkbox" class="cbox" name="toids[]" value="%d:%d" /></td>
 				</tr>',
 				$w['description'],$w['department'],$w['ItemQtty'],$w['quantity'],
 				$w['total'],$w['trans_id'],$oid);
+			}
 		}
 	}
 	echo '</table>';

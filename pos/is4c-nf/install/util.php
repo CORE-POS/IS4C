@@ -37,4 +37,20 @@ function loaddata($sql, $table){
 	fclose($fp);
 }
 
+function db_test_connect($host,$type,$db,$user,$pw){
+        global $CORE_PATH;
+        if (!class_exists('SQLManager'))
+                include($CORE_PATH.'lib/SQLManager.php');
+        $sql = False;
+        try {
+                $sql = new SQLManager($host,$type,$db,$user,$pw);
+        }
+        catch(Exception $ex) {}
+
+        if ($sql === False || $sql->connections[$db] === False)
+                return False;
+        else
+                return $sql;
+}
+
 ?>
