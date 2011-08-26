@@ -29,6 +29,14 @@ $(document).ready(function(){
 	});
 });
 
+$(window).unload(function() {
+	$('#nText').change();
+	$(':input').each(function(){
+		$(this).change();
+	});
+});
+
+
 function confirmC(oid,tid){
 	var t = new Array();
 	t[7] = "Completed";
