@@ -47,11 +47,11 @@ require($FANNIE_ROOT.'src/tmp_dir.php');
 // where various information is stored
 $SKU = 1;
 $BRAND = 2;
-$DESCRIPTION = 6;
+$DESCRIPTION = 5;
 $QTY = 3;
 $SIZE1 = 4;
-$UPC = 15;
-$CATEGORY = 5;
+$UPC = 6;
+$CATEGORY = 22;
 $WHOLESALE = 9;
 $DISCOUNT = 9;
 
@@ -85,10 +85,8 @@ if ($PRICEFILE_USE_SPLITS){
 		
 		$truncateQ = "truncate table unfi_order";
 		$truncateR = $dbc->query($truncateQ);
-		/*
 		$delQ = "DELETE FROM vendorItems WHERE vendorID=$VENDOR_ID";
 		$delR = $dbc->query($delQ);
-		*/
 	}
 	else {
 		$filestoprocess = unserialize(base64_decode($_GET["filestoprocess"]));	
@@ -97,10 +95,8 @@ if ($PRICEFILE_USE_SPLITS){
 else {
 	$truncateQ = "truncate table unfi_order";
 	$truncateR = $dbc->query($truncateQ);
-	/*
 	$delQ = "DELETE FROM vendorItems WHERE vendorID=$VENDOR_ID";
 	$delR = $dbc->query($delQ);
-	*/
 	$filestoprocess[] = "unfi.csv";
 }
 
@@ -166,7 +162,6 @@ while(!feof($fp)){
 	$upR = $dbc->query($upQ);
 	// end $PRICEFILE_COST_TABLE cost tracking
 
-	$dbc->query("DELETE FROM vendorItems WHERE upc='$upc'");
 	$insQ = "INSERT INTO vendorItems (brand,sku,size,upc,units,cost,description,vendorDept,vendorID)
 			VALUES ('$brand',$sku,'$size','$upc',$qty,$net_cost,
 			'$description',$category,$VENDOR_ID)";

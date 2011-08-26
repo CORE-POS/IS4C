@@ -79,7 +79,11 @@ class SQLManager {
 			$conn->SetFetchMode(ADODB_FETCH_BOTH);
 			$ok = $conn->Connect($server,$username,$password);
 			if ($ok){
-				$conn->Execute("CREATE DATABASE $database");
+				$stillok = $conn->Execute("CREATE DATABASE $database");
+				if (!$stillok){
+					$this->connections[$database] = False;
+					return False;
+				}
 				$conn->Execute("USE $database");
 				$this->connections[$database] = $conn;
 			}
