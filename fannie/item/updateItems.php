@@ -71,8 +71,10 @@ if (isset($_REQUEST['doVolume']) && is_numeric($_REQUEST['vol_price']) && is_num
 	$up_array['quantity'] = $_REQUEST['vol_qtty'];
 }
 
-$sID = $dbc->query("SELECT superID FROM MasterSuperDepts WHERE dept_ID=".$up_array['department']);
-$sID = array_pop($dbc->fetch_row($sID));
+$sR = $dbc->query("SELECT superID FROM MasterSuperDepts WHERE dept_ID=".$up_array['department']);
+$sID = 0;
+if ($dbc->num_rows($sR) > 0)
+	$sID = array_pop($dbc->fetch_row($sR));
 
 $uid = 0;
 if (!$validatedUser && !$auditedUser && $logged_in){
@@ -113,7 +115,7 @@ if ($dbc->table_exists('prodExtra')){
 		$dbc->smart_insert('prodExtra',$arr);
 	}
 	else {
-		$dbc->smart_update('prodExtra',$arr,"WHERE upc='$upc'");
+		$dbc->smart_update('prodExtra',$arr,"upc='$upc'");
 	}
 }
 if ($dbc->table_exists("prodUpdate")){

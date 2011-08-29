@@ -1,0 +1,68 @@
+#!/bin/bash
+#
+# posdriver-sph Startup script for pos.exe
+#
+# chkconfig: - 80 20
+# description: runs pos.exe scale driver as a daemon
+
+. /etc/rc.d/init.d/functions
+
+NAME=posdriver-sph
+
+mkdir -p /var/run/posdriver-sph
+
+start(){
+	echo "Starting $NAME"
+	if [ ! -f /var/run/posdriver-sph/pos.pid ]; then
+		echo "here"
+		cd /usr/share/it-core/is4c-nf/scale-drivers/drivers/NewMagellan
+		mono pos.exe &> /var/run/posdriver-sph/pos.log &
+		echo $! > /var/run/posdriver-sph/pos.pid
+		RETVAL=$?
+		if [ $RETVAL = 0 ]; then
+			success;
+		else
+			failure;
+		fi
+	else
+		echo "$NAME is already running"
+		failure;
+	fi
+	echo
+}
+
+stop(){
+	echo "Stoping $NAME"
+	if [ -f /var/run/posdriver-sph/pos.pid ]; then
+		MYPID=`cat /var/run/posdriver-sph/pos.pid`
+		kill $MYPID
+		RETVAL=$?
+		if [ $RETVAL = 0 ]; then
+			rm /var/run/posdriver-sph/pos.pid
+			success;
+		else
+			failure;
+		fi
+	else
+		echo "$NAME is not running"
+	fi
+	echo
+}
+
+case "$1" in
+	start)
+		start
+		;;
+	stop)
+		stop
+		;;
+	restart)
+		stop
+		start
+		;;	
+	*)
+		echo $"Usage: $NAME {start|stop|restart}"
+		exit 1
+esac
+
+exit 0

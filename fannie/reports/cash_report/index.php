@@ -63,7 +63,7 @@ $query = "select
 	  SUM(CASE WHEN transinterval = 0 then 1 else transinterval END) / count(emp_no)  / 60 as minutes,
 	  SUM(Cancels) / count(emp_no) as cancels,
 	  MIN(proc_date)
-	  from cashperformday_cache
+	  from CashPerformDay_cache
 	  GROUP BY emp_no,".$dbc->weekdiff($dbc->now(),'proc_date').",year(proc_date)
 	  ORDER BY year(proc_date) desc,".$dbc->weekdiff($dbc->now(),'proc_date')." asc";
 }
@@ -78,7 +78,7 @@ $query = "select
           SUM(CASE WHEN transInterval = 0 THEN 1 ELSE transInterval END)/60 as minutes,
           SUM(cancels)as cancels,
           MIN(proc_date)
-          FROM cashperformday_cache
+          FROM CashPerformDay_cache
           WHERE emp_no = $emp_no
 	  GROUP BY emp_no,".$dbc->weekdiff($dbc->now(),'proc_date').",year(proc_date)
 	  ORDER BY year(proc_date) desc,".$dbc->weekdiff($dbc->now(),'proc_date')." asc";

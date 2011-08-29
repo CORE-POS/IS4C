@@ -183,7 +183,7 @@ if ($sub != ""){
 
 	$itemQ = "SELECT d.upc,p.description,sum(d.quantity)
 		FROM dlog_15 as d INNER JOIN products AS p
-		ON d.upc = p.upc INNER JOIN UNFI AS u
+		ON d.upc = p.upc INNER JOIN unfi AS u
 		ON p.upc = u.upc LEFT JOIN departments as t
 		ON d.department = t.dept_no
 		LEFT JOIN superdepts AS s ON s.dept_ID=t.dept_no

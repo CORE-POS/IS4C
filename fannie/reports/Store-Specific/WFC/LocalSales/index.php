@@ -46,7 +46,7 @@ if (isset($_REQUEST['submit'])){
 			FROM $dlog as t inner join departments as d
 			ON t.department=d.dept_no LEFT JOIN 
 			MasterSuperDepts AS s ON s.dept_ID=t.department
-			LEFT JOIN SuperDeptNames AS n ON s.superID=n.superID
+			LEFT JOIN superDeptNames AS n ON s.superID=n.superID
 			WHERE 
 			datetime BETWEEN '$d1 00:00:00' AND '$d2 23:59:59'
 			and trans_type = 'I'

@@ -27,7 +27,7 @@ include($FANNIE_ROOT.'src/select_dlog.php');
 
 if (isset($_REQUEST['deleteItem'])){
 	foreach($_REQUEST['deleteItem'] as $upc){
-		$delQ = sprintf("DELETE FROM Products WHERE
+		$delQ = sprintf("DELETE FROM products WHERE
 				upc='%s'",$upc);
 		$dbc->query($delQ);
 	}
@@ -66,7 +66,7 @@ if (isset($_REQUEST['deptStart'])){
 
 	$query = "SELECT p.upc,p.description,d.dept_no,
 		d.dept_name FROM products AS p LEFT JOIN
-		Departments AS d ON p.department=d.dept_no
+		departments AS d ON p.department=d.dept_no
 		WHERE p.upc NOT IN (select upc FROM $tempName)
 		AND p.department
 		BETWEEN $dept1 AND $dept2

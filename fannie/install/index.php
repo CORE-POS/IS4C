@@ -108,10 +108,17 @@ confset('FANNIE_SERVER_DBMS',"'$FANNIE_SERVER_DBMS'");
 if ($FANNIE_SERVER_DBMS == 'MYSQL'){
 	echo "<option value=MYSQL selected>MySQL</option>";
 	echo "<option value=MSSQL>SQL Server</option>";
+	echo "<option value=MYSQLI>MySQLi</option>";
+}
+else if ($FANNIE_SERVER_DBMS == 'MSSQL'){
+	echo "<option value=MYSQL>MySQL</option>";
+	echo "<option value=MSSQL selected>SQL Server</option>";
+	echo "<option value=MYSQLI>MySQLi</option>";
 }
 else {
 	echo "<option value=MYSQL>MySQL</option>";
-	echo "<option value=MSSQL selected>SQL Server</option>";
+	echo "<option value=MSSQL>SQL Server</option>";
+	echo "<option value=MYSQLI selected>MySQLi</option>";
 }
 ?>
 </select>
@@ -152,15 +159,17 @@ echo "<input type=text name=FANNIE_TRANS_DB value=\"$FANNIE_TRANS_DB\" />";
 $sql = db_test_connect($FANNIE_SERVER,$FANNIE_SERVER_DBMS,
 		$FANNIE_OP_DB,$FANNIE_SERVER_USER,
 		$FANNIE_SERVER_PW);
+$createdOps = False;
 if ($sql === False)
 	echo "<span style=\"color:red;\">Failed</span>";
 else {
 	echo "<span style=\"color:green;\">Succeeded</span>";
 	create_op_dbs($sql);
+	$createdOps = True;
 
 	// create auth tables later than the original
 	// setting in case db settings were wrong
-	if ($FANNIE_AUTH_ENABLED === True || $FANNIE_AUTH_ENABLED == 'Yes'){
+	if (isset($FANNIE_AUTH_ENABLED) && $FANNIE_AUTH_ENABLED === True){ 
 		include($FILEPATH.'auth/utilities.php');
 		table_check();
 	}
@@ -171,12 +180,17 @@ else {
 $sql = db_test_connect($FANNIE_SERVER,$FANNIE_SERVER_DBMS,
 		$FANNIE_TRANS_DB,$FANNIE_SERVER_USER,
 		$FANNIE_SERVER_PW);
+$createdTrans = False;
 if ($sql === False)
 	echo "<span style=\"color:red;\">Failed</span>";
 else {
 	echo "<span style=\"color:green;\">Succeeded</span>";
 	create_trans_dbs($sql);
 	create_dlogs($sql);
+	$createdTrans = True;
+}
+if ($createdOps && $createdTrans){
+	create_delayed_dbs();
 }
 ?>
 <hr />
@@ -221,10 +235,15 @@ echo "<input type=text name=FANNIE_ARCHIVE_SERVER value=\"$FANNIE_ARCHIVE_SERVER
 if (!isset($FANNIE_ARCHIVE_DBMS)) $FANNIE_ARCHIVE_DBMS = 'MYSQL';
 if (isset($_REQUEST['FANNIE_ARCHIVE_DBMS'])) $FANNIE_ARCHIVE_DBMS = $_REQUEST['FANNIE_ARCHIVE_DBMS'];
 confset('FANNIE_ARCHIVE_DBMS',"'$FANNIE_ARCHIVE_DBMS'");
-if ($FANNIE_ARCHIVE_DBMS == 'MYSQL')
-	echo "<option value=MYSQL selected>MySQL</option><option value=MSSQL>SQL Server</option>";
-else
-	echo "<option value=MYSQL>MySQL</option><option value=MSSQL selected>SQL Server</option>";
+if ($FANNIE_ARCHIVE_DBMS == 'MYSQL'){
+	echo "<option value=MYSQL selected>MySQL</option><option value=MSSQL>SQL Server</option><option value=MYSQLI>MySQLi</option>";
+}
+else if ($FANNIE_ARCHIVE_DBMS == 'MSSQL'){
+	echo "<option value=MYSQL>MySQL</option><option selected value=MSSQL>SQL Server</option><option value=MYSQLI>MySQLi</option>";
+}
+else {
+	echo "<option value=MYSQL>MySQL</option><option value=MSSQL>SQL Server</option><option selected value=MYSQLI>MySQLi</option>";
+}
 ?>
 </select>
 <br />Archive DB username
@@ -361,10 +380,13 @@ for($i=0; $i<$FANNIE_NUM_LANES; $i++){
 	$conf .= "'type'=>'{$FANNIE_LANES[$i]['type']}',";
 	echo "Lane ".($i+1)." Database Type: <select name=LANE_TYPE_$i>";
 	if ($FANNIE_LANES[$i]['type'] == 'MYSQL'){
-		echo "<option value=MYSQL selected>MySQL</option><option value=MSSQL>SQL Server</option>";
+		echo "<option value=MYSQL selected>MySQL</option><option value=MSSQL>SQL Server</option><option value=MYSQLI>MySQLi</option>";
+	}
+	else if ($FANNIE_LANES[$i]['type'] == 'MSSQL'){
+		echo "<option value=MYSQL>MySQL</option><option selected value=MSSQL>SQL Server</option><option value=MYSQLI>MySQLi</option>";
 	}
 	else {
-		echo "<option value=MYSQL>MySQL</option><option selected value=MSSQL>SQL Server</option>";
+		echo "<option value=MYSQL>MySQL</option><option value=MSSQL>SQL Server</option><option selected value=MYSQLI>MySQLi</option>";
 	}
 	echo "</select><br />";
 
@@ -559,10 +581,10 @@ function create_op_dbs($con){
 			'prodUpdateArchive','op');
 
 	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-			'ProdPriceHistory','op');
+			'prodPriceHistory','op');
 
 	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-			'ProdDepartmentHistory','op');
+			'prodDepartmentHistory','op');
 
 	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 			'batches','op');
@@ -610,10 +632,10 @@ function create_op_dbs($con){
 			'batchPriority','op');
 
 	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-			'UNFI','op');
+			'unfi','op');
 
 	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-			'UNFI_order','op');
+			'unfi_order','op');
 
 	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 			'unfi_diff','op');
@@ -709,17 +731,15 @@ function create_op_dbs($con){
 			'cronBackup','op');
 
 	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-			'expingMems','op');
+			'customReports','op');
 
 	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-			'expingMems_thisMonth','op');
+			'AdSaleDates','op');
 }
 
 function create_trans_dbs($con){
 	global $FANNIE_TRANS_DB, $FANNIE_SERVER_DBMS, $FANNIE_OP_DB;
 
-	$opstr = $FANNIE_OP_DB;
-	if ($FANNIE_SERVER_DBMS=="mssql") $opstr .= ".dbo";
 
 	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
 			'alog','trans');
@@ -813,125 +833,14 @@ function create_trans_dbs($con){
 		$con->query($total,$FANNIE_TRANS_DB);
 	}
 
-	$invSalesView = "CREATE VIEW InvSales AS
-		select datetime as inv_date,upc,quantity,total as price
-		FROM transarchive WHERE ".$con->monthdiff($con->now(),'datetime')." <= 1
-		AND scale=0 AND trans_status NOT IN ('X','R') 
-		AND trans_type = 'I' AND trans_subtype <> '0'
-		AND register_no <> 99 AND emp_no <> 9999";
-	if (!$con->table_exists("InvSales",$FANNIE_TRANS_DB)){
-		$con->query($invSalesView,$FANNIE_TRANS_DB);
-	}
-
-	$invRecentSales = "CREATE VIEW InvRecentSales AS
-		select t.upc, 
-		max(t.inv_date) as mostRecentOrder,
-		sum(CASE WHEN s.quantity IS NULL THEN 0 ELSE s.quantity END) as quantity,
-		sum(CASE WHEN s.price IS NULL THEN 0 ELSE s.price END) as price
-		from InvDeliveryTotals as t
-		left join InvSales as s
-		on t.upc=s.upc and
-		".$con->datediff('s.inv_date','t.inv_date')." >= 0
-		group by t.upc";
-	if (!$con->table_exists("InvRecentSales",$FANNIE_TRANS_DB)){
-		$con->query($invRecentSales,$FANNIE_TRANS_DB);
-	}
-
-	$invSales = "CREATE TABLE InvSalesArchive (
-		inv_date datetime,
-		upc varchar(13),
-		quantity int,
-		price float)";
-	if (!$con->table_exists('InvSalesArchive',$FANNIE_TRANS_DB)){
-		$con->query($invSales,$FANNIE_TRANS_DB);
-	}
-
-	$union = "CREATE VIEW InvSalesUnion AS
-		select upc,sum(quantity) as quantity,
-		sum(price) as price
-		FROM InvSales
-		WHERE ".$con->monthdiff($con->now(),'inv_date')." = 0
-		GROUP BY upc
-		UNION ALL
-		select upc,sum(quantity) as quantity,
-		sum(price) as price
-		FROM InvSalesArchive
-		GROUP BY upc";
-	if (!$con->table_exists("InvSalesUnion",$FANNIE_TRANS_DB)){
-		$con->query($union,$FANNIE_TRANS_DB);
-	}
-
-	$total = "CREATE VIEW InvSalesTotals AS
-		select upc,sum(quantity) as quantity,
-		sum(price) as price
-		FROM InvSalesUnion
-		GROUP BY upc";
-	if (!$con->table_exists("InvSalesTotals",$FANNIE_TRANS_DB)){
-		$con->query($total,$FANNIE_TRANS_DB);
-	}
-		
-	$adj = "CREATE TABLE InvAdjustments (
-		inv_date datetime,
-		upc varchar(13),
-		diff int)";
-	if (!$con->table_exists("InvAdjustments",$FANNIE_TRANS_DB)){
-		$con->query($adj,$FANNIE_TRANS_DB);
-	}
-
-	$adjTotal = "CREATE VIEW InvAdjustTotals AS
-		SELECT upc,sum(diff) as diff,max(inv_date) as inv_date
-		FROM InvAdjustments
-		GROUP BY upc";
-	if (!$con->table_exists("InvAdjustTotals",$FANNIE_TRANS_DB)){
-		$con->query($adjTotal,$FANNIE_TRANS_DB);
-	}
-
-	$inv = "CREATE VIEW Inventory AS
-		SELECT d.upc,
-		d.quantity AS OrderedQty,
-		CASE WHEN s.quantity IS NULL THEN 0
-			ELSE s.quantity END AS SoldQty,
-		CASE WHEN a.diff IS NULL THEN 0
-			ELSE a.diff END AS Adjustments,
-		CASE WHEN a.inv_date IS NULL THEN '1900-01-01'
-			ELSE a.inv_date END AS LastAdjustDate,
-		d.quantity - CASE WHEN s.quantity IS NULL
-			THEN 0 ELSE s.quantity END + CASE WHEN
-			a.diff IS NULL THEN 0 ELSE a.diff END
-			AS CurrentStock
-		FROM InvDeliveryTotals AS d
-		INNER JOIN $opstr.vendorItems AS v 
-		ON d.upc = v.upc
-		LEFT JOIN InvSalesTotals AS s
-		ON d.upc = s.upc LEFT JOIN
-		InvAdjustTotals AS a ON d.upc=a.upc";
-	if (!$con->table_exists("Inventory",$FANNIE_TRANS_DB)){
-		$con->query($inv,$FANNIE_TRANS_DB);
-	}
-
-	$cache = "CREATE TABLE InvCache (
-		upc varchar(13),
-		OrderedQty int,
-		SoldQty int,
-		Adjustments int,
-		LastAdjustDate datetime,
-		CurrentStock int)";
-	if (!$con->table_exists("InvCache",$FANNIE_TRANS_DB)){
-		$con->query($cache,$FANNIE_TRANS_DB);
-	}
 
 	
 	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
 			'ar_history_backup','trans');
 
 	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
-			'ar_history_today','trans');
-
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
 			'AR_EOM_Summary','trans');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
-			'AR_statementHistory','trans');
 }
 
 function create_dlogs($con){
@@ -1032,6 +941,139 @@ function create_dlogs($con){
 
 	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
 			'CashPerformDay_cache','trans');
+}
+
+function create_delayed_dbs(){
+	global $FANNIE_SERVER,$FANNIE_SERVER_DBMS,$FANNIE_SERVER_USER,$FANNIE_SERVER_PW,$FANNIE_OP_DB,$FANNIE_TRANS_DB;
+
+	$con = db_test_connect($FANNIE_SERVER,$FANNIE_SERVER_DBMS,
+		$FANNIE_OP_DB,$FANNIE_SERVER_USER,
+		$FANNIE_SERVER_PW);
+
+	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+			'expingMems','op');
+
+	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+			'expingMems_thisMonth','op');
+
+	$con = db_test_connect($FANNIE_SERVER,$FANNIE_SERVER_DBMS,
+		$FANNIE_TRANS_DB,$FANNIE_SERVER_USER,
+		$FANNIE_SERVER_PW);
+
+	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+			'ar_history_today','trans');
+
+	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+			'AR_statementHistory','trans');
+
+	$invSalesView = "CREATE VIEW InvSales AS
+		select datetime as inv_date,upc,quantity,total as price
+		FROM transarchive WHERE ".$con->monthdiff($con->now(),'datetime')." <= 1
+		AND scale=0 AND trans_status NOT IN ('X','R') 
+		AND trans_type = 'I' AND trans_subtype <> '0'
+		AND register_no <> 99 AND emp_no <> 9999";
+	if (!$con->table_exists("InvSales",$FANNIE_TRANS_DB)){
+		$con->query($invSalesView,$FANNIE_TRANS_DB);
+	}
+
+	$invRecentSales = "CREATE VIEW InvRecentSales AS
+		select t.upc, 
+		max(t.inv_date) as mostRecentOrder,
+		sum(CASE WHEN s.quantity IS NULL THEN 0 ELSE s.quantity END) as quantity,
+		sum(CASE WHEN s.price IS NULL THEN 0 ELSE s.price END) as price
+		from InvDeliveryTotals as t
+		left join InvSales as s
+		on t.upc=s.upc and
+		".$con->datediff('s.inv_date','t.inv_date')." >= 0
+		group by t.upc";
+	if (!$con->table_exists("InvRecentSales",$FANNIE_TRANS_DB)){
+		$con->query($invRecentSales,$FANNIE_TRANS_DB);
+	}
+
+	$invSales = "CREATE TABLE InvSalesArchive (
+		inv_date datetime,
+		upc varchar(13),
+		quantity int,
+		price float)";
+	if (!$con->table_exists('InvSalesArchive',$FANNIE_TRANS_DB)){
+		$con->query($invSales,$FANNIE_TRANS_DB);
+	}
+
+	$union = "CREATE VIEW InvSalesUnion AS
+		select upc,sum(quantity) as quantity,
+		sum(price) as price
+		FROM InvSales
+		WHERE ".$con->monthdiff($con->now(),'inv_date')." = 0
+		GROUP BY upc
+		UNION ALL
+		select upc,sum(quantity) as quantity,
+		sum(price) as price
+		FROM InvSalesArchive
+		GROUP BY upc";
+	if (!$con->table_exists("InvSalesUnion",$FANNIE_TRANS_DB)){
+		$con->query($union,$FANNIE_TRANS_DB);
+	}
+
+	$total = "CREATE VIEW InvSalesTotals AS
+		select upc,sum(quantity) as quantity,
+		sum(price) as price
+		FROM InvSalesUnion
+		GROUP BY upc";
+	if (!$con->table_exists("InvSalesTotals",$FANNIE_TRANS_DB)){
+		$con->query($total,$FANNIE_TRANS_DB);
+	}
+		
+	$adj = "CREATE TABLE InvAdjustments (
+		inv_date datetime,
+		upc varchar(13),
+		diff int)";
+	if (!$con->table_exists("InvAdjustments",$FANNIE_TRANS_DB)){
+		$con->query($adj,$FANNIE_TRANS_DB);
+	}
+
+	$adjTotal = "CREATE VIEW InvAdjustTotals AS
+		SELECT upc,sum(diff) as diff,max(inv_date) as inv_date
+		FROM InvAdjustments
+		GROUP BY upc";
+	if (!$con->table_exists("InvAdjustTotals",$FANNIE_TRANS_DB)){
+		$con->query($adjTotal,$FANNIE_TRANS_DB);
+	}
+
+	$opstr = $FANNIE_OP_DB;
+	if ($FANNIE_SERVER_DBMS=="mssql") $opstr .= ".dbo";
+	$inv = "CREATE VIEW Inventory AS
+		SELECT d.upc,
+		d.quantity AS OrderedQty,
+		CASE WHEN s.quantity IS NULL THEN 0
+			ELSE s.quantity END AS SoldQty,
+		CASE WHEN a.diff IS NULL THEN 0
+			ELSE a.diff END AS Adjustments,
+		CASE WHEN a.inv_date IS NULL THEN '1900-01-01'
+			ELSE a.inv_date END AS LastAdjustDate,
+		d.quantity - CASE WHEN s.quantity IS NULL
+			THEN 0 ELSE s.quantity END + CASE WHEN
+			a.diff IS NULL THEN 0 ELSE a.diff END
+			AS CurrentStock
+		FROM InvDeliveryTotals AS d
+		INNER JOIN $opstr.vendorItems AS v 
+		ON d.upc = v.upc
+		LEFT JOIN InvSalesTotals AS s
+		ON d.upc = s.upc LEFT JOIN
+		InvAdjustTotals AS a ON d.upc=a.upc";
+	if (!$con->table_exists("Inventory",$FANNIE_TRANS_DB)){
+		$con->query($inv,$FANNIE_TRANS_DB);
+	}
+
+	$cache = "CREATE TABLE InvCache (
+		upc varchar(13),
+		OrderedQty int,
+		SoldQty int,
+		Adjustments int,
+		LastAdjustDate datetime,
+		CurrentStock int)";
+	if (!$con->table_exists("InvCache",$FANNIE_TRANS_DB)){
+		$con->query($cache,$FANNIE_TRANS_DB);
+	}
 }
 
 function create_archive_dbs($con) {

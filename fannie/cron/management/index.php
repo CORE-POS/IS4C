@@ -22,6 +22,7 @@
 *********************************************************************************/
 include('../../config.php');
 include($FANNIE_ROOT.'src/mysql_connect.php');
+include($FANNIE_ROOT.'src/tmp_dir.php');
 include($FANNIE_ROOT.'auth/login.php');
 
 /* This is a very light wrapper around cron. The
@@ -61,7 +62,7 @@ if (isset($_REQUEST['enabled'])){
 		$tmpfn = tempnam(sys_get_temp_dir(),"");
 		$fp = fopen($tmpfn,"w");
 		if (isset($_REQUEST['email']) && !empty($_REQUEST['email']))
-			fwrite($fp,"EMAIL=".$_REQUEST['email']."\n");
+			fwrite($fp,"MAILTO=".$_REQUEST['email']."\n");
 		foreach($indexes as $i){
 			fprintf($fp,"%s %s %s %s %s %s\n",
 				$_REQUEST['min'][$i],
@@ -213,8 +214,8 @@ function read_crontab(){
 		if($line === false) continue;
 		$line = trim($line);
 		if ($line[0] == "#") continue;
-		if (substr($line,0,5) == "EMAIL")
-			$ret['email'] = substr($line,6);
+		if (substr($line,0,6) == "MAILTO")
+			$ret['email'] = substr($line,7);
 		$tmp = preg_split("/\s+/",$line,6);
 		if (count($tmp) == 6){
 			$sn = str_replace("cd {$FANNIE_ROOT}cron && php ./","",$tmp[5]);

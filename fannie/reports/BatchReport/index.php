@@ -156,7 +156,7 @@ else {
 	echo '<hr />';
 	
 	$batchQ = "SELECT b.batchID,batchName FROM batches as b
-		LEFT JOIN batchOwner as o ON b.batchID=o.batchID
+		LEFT JOIN batchowner as o ON b.batchID=o.batchID
 		WHERE 1=1
 		$filter1 $filter2	
 		ORDER BY b.batchID desc";

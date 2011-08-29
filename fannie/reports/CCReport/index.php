@@ -27,11 +27,11 @@ echo "<h3>Integrated CC Report for $date</h3>";
 $query = "SELECT q.datetime,q.laneno,q.cashierno,q.transno,q.amount,
 	q.PAN, datepart(yy,q.datetime),datepart(dd,q.datetime),
 	datepart(mm,q.datetime),r.xresultmessage
-	FROM efsnetrequest q LEFT JOIN efsnetresponse r
+	FROM efsnetRequest q LEFT JOIN efsnetResponse r
 	on r.date=q.date and r.cashierno=q.cashierno and 
 	r.transno=q.transno and r.laneno=q.laneno
 	and r.transid=q.transid
-	left join efsnetrequestmod m
+	left join efsnetRequestMod m
 	on m.date = q.date and m.cashierno=q.cashierno and
 	m.transno=q.transno and m.laneno=q.laneno
 	and m.transid=q.transid

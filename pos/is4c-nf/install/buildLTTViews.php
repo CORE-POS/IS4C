@@ -171,7 +171,7 @@ case when convert(l.runningTotal - s.transDiscount,decimal(10,2)) * .05 > 2.5 th
 else convert (l.runningTotal - s.transDiscount,decimal(10,2)) * .05 end as madCoupon,
 s.fsEligible as fsEligible,\n";
 
-$ratesQ = "select description,rate from taxRates order by rate desc";
+$ratesQ = "select description,rate from taxrates order by rate desc";
 $ratesR = $db->query($ratesQ);
 $desc =  array();
 $rates = array();
@@ -267,7 +267,7 @@ $createStr = "CREATE view lttsummary as
 	convert(numeric(10,2),sum(case when discountable = 7 then total else 0 end)) as scDiscountableTTL,
 	";	
 
-$taxRatesQ = "select id,description from taxRates order by id";
+$taxRatesQ = "select id,description from taxrates order by id";
 $taxRatesR = $db->query($taxRatesQ);
 while ($taxRatesW = $db->fetch_row($taxRatesR)){
 	$createStr .= "convert(numeric(10,2),sum(case when (trans_type = 'I' or trans_type = 'D') and tax = ".$taxRatesW[0]." and discountable = 0 then total else 0 end)) as noDiscTaxable".$taxRatesW[1].",";
@@ -317,7 +317,7 @@ $db->query($rpQ);
 
 $createStr = "CREATE VIEW lttsubtotals AS
 	select tdate,";
-$ratesQ = "select description,rate from taxRates";
+$ratesQ = "select description,rate from taxrates";
 $ratesR = $db->query($ratesQ);
 $desc = array();
 $rates = array();
@@ -390,7 +390,7 @@ case when convert(numeric(10,2),l.runningTotal - s.transDiscount) * .05 > 2.5 th
 else convert(numeric(10,2),l.runningTotal - s.transDiscount) * .05 end as madCoupon,
 s.fsEligible as fsEligible,";
 
-$ratesQ = "select description,rate from taxRates order by rate desc";
+$ratesQ = "select description,rate from taxrates order by rate desc";
 $ratesR = $db->query($ratesQ);
 $desc =  array();
 $rates = array();

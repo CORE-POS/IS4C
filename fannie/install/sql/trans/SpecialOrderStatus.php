@@ -24,7 +24,7 @@ $CREATE['trans.SpecialOrderStatus'] = "
 	CREATE TABLE SpecialOrderStatus (
 		order_id int,
 		status_flag int,
-		sub_status int,
+		sub_status bigint,
 		PRIMARY KEY (order_id)
 	)
 ";

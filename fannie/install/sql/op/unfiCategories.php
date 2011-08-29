@@ -9,11 +9,11 @@ Columns:
 	testing double
 
 Depends on:
-	UNFI_order
+	unfi_order
 
 Use:
 Margins for UNFI categories are used to
-calculate new SRPs for the table UNFI_order.
+calculate new SRPs for the table unfi_order.
 
 Deprecated. Use vendorDepartments instead.
 It's identical except not locked to one

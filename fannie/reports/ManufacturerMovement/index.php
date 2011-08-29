@@ -68,7 +68,7 @@ if (isset($_GET['date1'])){
 		  from $dlog as t left join products as p
 		  on t.upc=p.upc left join prodExtra as e on p.upc = e.upc
 		  left join departments as d on t.department = d.dept_no
-		  left join mastersuperdepts as s on d.dept_no = s.dept_ID
+		  left join MasterSuperDepts as s on d.dept_no = s.dept_ID
 		  where $type_condition
 		  and t.tdate between '$date1' and '$date2'
 		  group by $groupby,p.description,t.department,d.dept_name,s.superID

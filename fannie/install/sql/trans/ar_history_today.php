@@ -18,6 +18,8 @@ the current day. Combine with ar_history
 for a "live" view of account status
 */
 $dlist = ar_departments();
+if (strlen($dlist) <= 2)
+	$dlist = "(-999)";
 
 $CREATE['trans.ar_history_today'] = "
 	CREATE VIEW ar_history_today AS
@@ -30,4 +32,5 @@ $CREATE['trans.ar_history_today'] = "
 	AND ".$con->datediff($con->now(),'tdate')."=0
 	GROUP BY card_no,trans_num
 ";
+
 ?>

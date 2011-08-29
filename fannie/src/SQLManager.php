@@ -79,7 +79,11 @@ class SQLManager {
 			$conn->SetFetchMode(ADODB_FETCH_BOTH);
 			$ok = $conn->Connect($server,$username,$password);
 			if ($ok){
-				$conn->Execute("CREATE DATABASE $database");
+				$stillok = $conn->Execute("CREATE DATABASE $database");
+				if (!$stillok){
+					$this->connections[$database] = False;
+					return False;
+				}
 				$conn->Execute("USE $database");
 				$this->connections[$database] = $conn;
 			}
@@ -114,7 +118,6 @@ class SQLManager {
 		}
 		else if (!$ok){
 			echo "Bad query: {$_SERVER['PHP_SELF']}: $query_text<br />";
-			// adding mysql_error()
 			echo $this->error($which_connection)."<br />";
 		}
 		return $ok;
@@ -175,6 +178,7 @@ class SQLManager {
 			$which_connection = $this->default_db;
 		switch($this->connections[$which_connection]->databaseType){
 		case 'mysql':
+		case 'mysqli':
 			return "datediff($date1,$date2)";
 		case 'mssql':
 			return "datediff(dd,$date2,$date1)";
@@ -186,6 +190,7 @@ class SQLManager {
 			$which_connection = $this->default_db;
 		switch($this->connections[$which_connection]->databaseType){
 		case 'mysql':
+		case 'mysqli':
 			return "period_diff(date_format($date1, '%Y%m'), date_format($date2, '%Y%m'))";
 		case 'mssql':
 			return "datediff(mm,$date2,$date1)";
@@ -197,6 +202,7 @@ class SQLManager {
 			$which_connection = $this->default_db;
 		switch($this->connections[$which_connection]->databaseType){
 		case 'mysql':
+		case 'mysqli':
 			return "TIMESTAMPDIFF(SECOND,$date1,$date2)";
 		case 'mssql':
 			return "datediff(ss,$date2,$date1)";
@@ -209,6 +215,7 @@ class SQLManager {
 			$which_connection = $this->default_db;
 		switch($this->connections[$which_connection]->databaseType){
 		case 'mysql':
+		case 'mysqli':
 			return "CONVERT($expr,$type)";
 		case 'mssql':
 			return "CONVERT($type,$expr)";
@@ -227,6 +234,7 @@ class SQLManager {
 			$which_connection = $this->default_db;
 		switch($this->connections[$which_connection]->databaseType){
 		case 'mysql':
+		case 'mysqli':
 			$ret .= "CONCAT(";
 			for($i=0;$i<count($args)-1;$i++)
 				$ret .= $args[$i].",";	
@@ -246,6 +254,7 @@ class SQLManager {
 			$which_connection = $this->default_db;
 		switch($this->connections[$which_connection]->databaseType){
 		case 'mysql':
+		case 'mysqli':
 			return "week($date1) - week($date2)";
 		case 'mssql':
 			return "datediff(wk,$date2,$date1)";
@@ -427,6 +436,7 @@ class SQLManager {
 			$which_connection=$this->default_db;
 		switch($this->connections[$which_connection]->databaseType){
 		case 'mysql':
+		case 'mysqli':
 			return 'decimal(10,2)';
 		case 'mssql':
 			return 'money';
@@ -439,9 +449,22 @@ class SQLManager {
 			$which_connection=$this->default_db;
 		switch($this->connections[$which_connection]->databaseType){
 		case 'mysql':
+		case 'mysqli':
 			return sprintf("%s LIMIT %d",$query,$int_limit);
 		case 'mssql':
 			return str_ireplace("SELECT ","SELECT TOP $int_limit ",$query);
+		}
+	}
+
+	function sep($which_connection=''){
+		if ($which_connection == '')
+			$which_connection=$this->default_db;
+		switch($this->connections[$which_connection]->databaseType){
+		case 'mysql':
+		case 'mysqli':
+			return ".";
+		case 'mssql':
+			return ".dbo.";
 		}
 	}
 
@@ -487,10 +510,10 @@ class SQLManager {
 			if (isset($t_def[$k])){
 				$vals .= $v.",";
 				$col_name = $k;
-				if($this->connections[$which_connection]->databaseType == 'mysql')
-					$cols .= "`".$col_name."`,";
-				else
+				if($this->connections[$which_connection]->databaseType == 'mssql')
 					$cols .= $col_name.",";
+				else
+					$cols .= "`".$col_name."`,";
 			}
 			else {
 				echo "No column - $k";
@@ -533,10 +556,10 @@ class SQLManager {
 		foreach($values as $k=>$v){
 			if (isset($t_def[$k])){
 				$col_name = $k;
-				if($this->connections[$which_connection]->databaseType == 'mysql')
-					$sets .= "`".$col_name."`";
-				else
+				if($this->connections[$which_connection]->databaseType == 'mssql')
 					$sets .= $col_name;
+				else
+					$sets .= "`".$col_name."`";
 				$sets .= "=".$v.",";
 			}
 			else {
@@ -551,6 +574,19 @@ class SQLManager {
 
 		return $ret;
 	}
+
+	/* compat layer; mimic functions of Brad's mysql class */
+	function get_result($host,$user,$pass,$data_base,$query){
+		return $this->query($query);
+	}
+
+	function aff_rows($result){
+		return $this->affected_rows($result);
+	}
+
+	// skipping fetch_cell on purpose; generic-db way would be slow as heck
+
+	/* end compat Brad's class */
 }
 
 ?>

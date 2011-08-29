@@ -1,0 +1,64 @@
+#!/bin/bash
+#
+# posdriver-ssd Startup script for ssd
+#
+# chkconfig: - 80 20
+# description: runs ssd scale driver as a daemon
+
+. /etc/rc.d/init.d/functions
+
+NAME=posdriver-ssd
+
+start(){
+	echo "Starting $NAME"
+	if [ -z /var/run/posdriver-ssd/ssd.pid ]; then
+		cd /usr/share/it-core/is4c-nf/scale-drivers/drivers/rs232
+		/usr/bin/sudo -u nobody ssd &> /var/run/posdriver-ssd/ssd.log &
+		echo $! > /var/run/posdriver-ssd/ssd.pid
+		RETVAL=$?
+		if [ $RETVAL = 0 ]; then
+			success;
+		else
+			failure;
+		fi
+	else
+		echo "$NAME is already running"
+		failure;
+	fi
+	echo
+}
+
+stop(){
+	echo "Stoping $NAME"
+	if [ -f /var/run/posdriver-ssd/ssd.pid ]; then
+		MYPID=`cat /var/run/posdriver-ssd/ssd.pid`
+		kill $MYPID
+		RETVAL=$?
+		if [ $RETVAL = 1 ]; then
+			success;
+		else
+			failure;
+		fi
+	else
+		echo "$NAME is not running"
+	fi
+	echo
+}
+
+case "$1" in
+	start)
+		start
+		;;
+	stop)
+		stop
+		;;
+	restart)
+		stop
+		start
+		;;	
+	*)
+		echo $"Usage: $NAME {start|stop|restart}"
+		exit 1
+esac
+
+exit 0

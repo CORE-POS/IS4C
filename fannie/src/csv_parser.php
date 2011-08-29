@@ -23,7 +23,6 @@
 
 // takes a csv formated string and returns its elements as an array
 // optional args are quote character and separator character
-// trim new lines / carriage returns off the end of the string first if
 // you don't want them
 function csv_parser($input,$q="\"",$s=","){
 	$QUOTE_CHAR = $q;
@@ -37,6 +36,7 @@ function csv_parser($input,$q="\"",$s=","){
 	$ret[$cur] = "";
 	$quoted = false;
 	foreach ($input as $x){
+		if ($x == "\r" || $x == "\n") continue;
 		if ($x == $QUOTE_CHAR)
 			$quoted = !$quoted;
 		else if ($x == $SEPARATOR && !$quoted){

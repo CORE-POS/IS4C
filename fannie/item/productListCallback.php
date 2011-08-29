@@ -480,7 +480,7 @@ function deleteCheck(upc,description){
                         (CASE WHEN i.scale = 1 THEN 'X' ELSE '-' END) as WGHd,
                         (CASE WHEN i.local = 1 THEN 'X' ELSE '-' END) as local,
 			x.distributor
-                        FROM Products as i LEFT JOIN departments as d ON i.department = d.dept_no
+                        FROM products as i LEFT JOIN departments as d ON i.department = d.dept_no
 			LEFT JOIN taxrates AS t ON t.id = i.tax
 			LEFT JOIN prodExtra as x on i.upc = x.upc
                         WHERE i.department BETWEEN $deptStart AND $deptEnd 
@@ -495,7 +495,7 @@ function deleteCheck(upc,description){
                         (CASE WHEN i.scale = 1 THEN 'X' ELSE '-' END) as WGHd,
                         (CASE WHEN i.local = 1 THEN 'X' ELSE '-' END) as local,
 			x.distributor
-                        FROM Products as i LEFT JOIN superdepts as s ON i.department = s.dept_ID
+                        FROM products as i LEFT JOIN superdepts as s ON i.department = s.dept_ID
 			LEFT JOIN taxrates AS t ON t.id = i.tax
 			LEFT JOIN departments as d on i.department = d.dept_no
 			LEFT JOIN prodExtra as x on i.upc = x.upc
@@ -512,7 +512,7 @@ function deleteCheck(upc,description){
                         (CASE WHEN i.scale = 1 THEN 'X' ELSE '-' END) as WGHd,
                         (CASE WHEN i.local = 1 THEN 'X' ELSE '-' END) as local,
 			x.distributor
-                        FROM Products as i LEFT JOIN departments as d ON i.department = d.dept_no
+                        FROM products as i LEFT JOIN departments as d ON i.department = d.dept_no
 			LEFT JOIN prodExtra as x on i.upc = x.upc
 			LEFT JOIN taxrates AS t ON t.id = i.tax
 			WHERE $whereclause

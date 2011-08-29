@@ -21,7 +21,7 @@ $del = isset($_GET['delete'])?$_GET['delete']:'';
 if (!class_exists("SQLManager")) require_once($FANNIE_ROOT.'src/SQLManager.php');
 include('../db.php');
 
-$unfiQ = "SELECT DISTINCT * FROM VendorItems where upc = '$upc'";
+$unfiQ = "SELECT DISTINCT * FROM vendorItems where upc = '$upc'";
 //echo $unfiQ;
 
 $unfiR = $sql->query($unfiQ);
@@ -35,7 +35,7 @@ if (empty($price))
   $price = $prodW['normal_price'];
 
 if (!empty($batchID)){
-  $selBListQ = "select * from batchlist where upc='$upc' and batchID=$batchID";
+  $selBListQ = "select * from batchList where upc='$upc' and batchID=$batchID";
   $selBListR = $sql->query($selBListQ);
   $selBListN = $sql->num_rows($selBListR);
 
@@ -50,7 +50,7 @@ if (!empty($batchID)){
            //echo $insBItemQ;
            $insBItemR = $sql->query($insBItemQ);
         }else{
-           $upBItemQ = "UPDATE batchLIST SET salePrice=$price WHERE upc = '$upc' 
+           $upBItemQ = "UPDATE batchList SET salePrice=$price WHERE upc = '$upc' 
                      AND batchID = $batchID";
            //echo $upBItemQ;
            $upBItemR = $sql->query($upBItemQ);

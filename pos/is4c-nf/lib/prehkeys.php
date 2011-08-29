@@ -802,7 +802,7 @@ function ttl() {
 
 function peekItem(){
 	$db = tDataConnect();
-	$q = "SELECT description FROM localTempTrans ORDER BY trans_id DESC";
+	$q = "SELECT description FROM localtemptrans ORDER BY trans_id DESC";
 	$r = $db->query($q);
 	$w = $db->fetch_row($r);
 	return (isset($w['description'])?$w['description']:'');

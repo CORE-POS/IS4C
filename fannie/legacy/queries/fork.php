@@ -1,7 +1,8 @@
 <?php
 
 $args = $argv;
-include('/srv/www/htdocs/sql/SQLManager.php');
+include('/var/www/html/git/fannie/config.php');
+include('/var/www/html/git/fannie/src/SQLManager.php');
 $sql = 0;
 
 $pid = pcntl_fork();
@@ -29,7 +30,7 @@ else {
 	case 'laneUpdates':
 		if (count($args) < 3) exit(0);
 		$upc = $args[2];
-		include('/srv/www/htdocs/queries/laneUpdates.php');
+		include($FANNIE_ROOT.'legacy/queries/laneUpdates.php');
 		updateProductAllLanes($upc);
 		break;
 	case 'sync':
@@ -41,26 +42,26 @@ else {
 }
 
 function db(){
-	include('/srv/www/htdocs/db.php');
+	global $FANNIE_SERVER,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,$FANNIE_SERVER_USER,$FANNIE_SERVER_PW;
+	include('/var/www/html/git/fannie/legacy/db.php');
 	return $sql;
 }
 
 function tableSync($table){
-	global $sql;
+	global $sql,$FANNIE_LANES,$FANNIE_SERVER_USER,$FANNIE_SERVER_PW,$FANNIE_OP_DB,$FANNIE_ROOT;
 
-	$lanes = array("129.103.2.16","129.103.2.12","129.103.2.15","129.103.2.13","129.103.2.14","129.103.2.11");
 	switch(strtolower($table)){
 	case 'products':
-		include('/srv/www/htdocs/queries/laneUpdates.php');
+		include($FANNIE_ROOT.'legacy/queries/laneUpdates.php');
 		syncProductsAllLanes();
 		break;	
 
 	case 'departments':
-		foreach($lanes as $lane){
-			if(!$sql->add_connection($lane,'MYSQL','opdata','root','is4c'))
+		foreach($FANNIE_LANES as $lane){
+			if(!$sql->add_connection($lane['host'],$lane['type'],$lane['op'],$lane['user'],$lane['pw']))
 				break;
 			
-			$sql->query("TRUNCATE TABLE Departments","opdata");
+			$sql->query("TRUNCATE TABLE departments","opdata");
 			$sql->query("TRUNCATE TABLE subdepts","opdata");
 			
 			$selQ = "SELECT dept_no,dept_name,dept_tax,dept_fs,dept_limit,dept_minimum,
@@ -75,10 +76,10 @@ function tableSync($table){
 		break;
 
 	case 'employees':
-		foreach($lanes as $lane){
-			if(!$sql->add_connection($lane,'MYSQL','opdata','root','is4c'))
+		foreach($FANNIE_LANES as $lane){
+			if(!$sql->add_connection($lane['host'],$lane['type'],$lane['op'],$lane['user'],$lane['pw']))
 				break;
-			$sql->query("TRUNCATE TABLE Employees","opdata");
+			$sql->query("TRUNCATE TABLE employees","opdata");
 
 			$selQ = "SELECT emp_no,CashierPassword,AdminPassword,FirstName,
 				LastName,JobTitle,EmpActive,frontendsecurity,
@@ -89,9 +90,9 @@ function tableSync($table){
 		break;
 
 	case 'custdata':
-		$sql->query("exec master..xp_cmdshell 'dtsrun /S IS4CSERV\IS4CSERV /U sa /P is4c /N CSV_custdata',no_output","WedgePOS");
-		foreach($lanes as $lane){
-			if(!$sql->add_connection($lane,'MYSQL','opdata','root','is4c'))
+		$sql->query("exec master..xp_cmdshell 'dtsrun /S IS4CSERV\IS4CSERV /U {$FANNIE_SERVER_USER} /P {$FANNIE_SERVER_PW} /N CSV_custdata',no_output","WedgePOS");
+		foreach($FANNIE_LANES as $lane){
+			if(!$sql->add_connection($lane['host'],$lane['type'],$lane['op'],$lane['user'],$lane['pw']))
 				continue;
 
 			if (!is_readable('/pos/csvs/custdata.csv')) break;
@@ -102,7 +103,7 @@ function tableSync($table){
 				custdata FIELDS TERMINATED BY ',' OPTIONALLY
 				ENCLOSED BY '\"' LINES TERMINATED BY '\\r\\n'","opdata");
 
-			if ($lane != "129.103.2.16"){
+			if ($lane['host'] != "129.103.2.16"){
 				$sql->query("DELETE FROM custdata WHERE type NOT IN ('PC','REG')","opdata");
 			}
 			else {
@@ -112,8 +113,8 @@ function tableSync($table){
 		break;
 
 	case 'valutec':
-		foreach($lanes as $lane){
-			if(!$sql->add_connection($lane,'MYSQL','translog','root','is4c'))
+		foreach($FANNIE_LANES as $lane){
+			if(!$sql->add_connection($lane['host'],$lane['type'],$lane['trans'],$lane['user'],$lane['pw']))
 				break;
 
 			$sql->transfer("translog","select * from valutecRequest",
@@ -130,8 +131,8 @@ function tableSync($table){
 		}
 		break;
 	case 'efsnet':
-		foreach($lanes as $lane){
-			if(!$sql->add_connection($lane,'MYSQL','translog','root','is4c'))
+		foreach($FANNIE_LANES as $lane){
+			if(!$sql->add_connection($lane['host'],$lane['type'],$lane['trans'],$lane['user'],$lane['pw']))
 				break;
 
 			$sql->transfer("translog","select * from efsnetRequest",
@@ -149,8 +150,8 @@ function tableSync($table){
 		break;
 
 	case 'housecoupons':
-		foreach($lanes as $lane){
-			if(!$sql->add_connection($lane,'MYSQL','opdata','root','is4c'))
+		foreach($FANNIE_LANES as $lane){
+			if(!$sql->add_connection($lane['host'],$lane['type'],$lane['op'],$lane['user'],$lane['pw']))
 				break;
 			
 			$sql->query("TRUNCATE TABLE houseCoupons","opdata");
@@ -164,8 +165,8 @@ function tableSync($table){
 		break;
 
 	case 'memcards':
-		foreach($lanes as $lane){
-			if(!$sql->add_connection($lane,'MYSQL','opdata','root','is4c'))
+		foreach($FANNIE_LANES as $lane){
+			if(!$sql->add_connection($lane['host'],$lane['type'],$lane['op'],$lane['user'],$lane['pw']))
 				break;
 			
 			$sql->query("TRUNCATE TABLE memberCards","opdata");
@@ -183,15 +184,12 @@ function tableSync($table){
 			memDiscount,discountable,discounttype,voided,percentDiscount,
 			ItemQtty,volDiscType,volume,VolSpecial,mixMatch,matched,
 			memType,isStaff,numflag,charflag,card_no,trans_id";
-		$lanes = array('129.103.2.12');
-		foreach($lanes as $lane){
-			if(!$sql->add_connection($lane,'MYSQL','translog','root','is4c'))
-				break;
-			
-			$sql->transfer("translog","select * from dtrancleanup",
-					"WedgePOS","INSERT INTO transArchive ($dtcols)");
+		if(!$sql->add_connection("do this manually"));
 			break;
-		}
+			
+		$sql->transfer("translog","select * from dtrancleanup",
+				"WedgePOS","INSERT INTO transarchive ($dtcols)");
+		break;
 	}
 }
 

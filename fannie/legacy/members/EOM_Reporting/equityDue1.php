@@ -39,7 +39,7 @@ $query = "select m.card_no,c.firstname+' '+c.lastname,m.start_date,
 	s.stockPurchase,s.tdate,n.payments
 	from memDates as m left join
 	custdata as c on c.cardno=m.card_no and c.personnum=1
-	left join stockPurchases as s on m.card_no=s.card_no
+	left join stockpurchases as s on m.card_no=s.card_no
 	left join newBalanceStockToday_test as n on m.card_no=n.memnum
 	where datediff(mm,getdate(),dateadd(yy,2,m.start_date)) = 1
 	and c.type='PC' and n.payments < 100

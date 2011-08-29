@@ -19,6 +19,8 @@ The view's construction depends on Fannie's
 Equity Department configuration
 */
 $dlist = equity_departments();
+if (strlen($dlist) <= 2)
+	$dlist = "(-999)";
 
 $CREATE['trans.stockSumToday'] = "
 	CREATE VIEW stockSumToday AS
@@ -29,6 +31,3 @@ $CREATE['trans.stockSumToday'] = "
 		AND department IN $dlist
 		GROUP BY card_no
 ";
-
-if (empty($dlist))
-	$CREATE['trans.stockSumToday'] = "SELECT 1";

@@ -1,5 +1,8 @@
-function pollScale(){
-	$.ajax({url: '/ajax-callbacks/ajax-poll-scale.php',
+var SCALE_REL_PRE = "";
+
+function pollScale(rel_prefix){
+	SCALE_REL_PRE = rel_prefix;
+	$.ajax({url: SCALE_REL_PRE+'ajax-callbacks/ajax-poll-scale.php',
 		type: 'post',
 		cache: false,
 		dataType: 'json',
@@ -30,5 +33,5 @@ function scalePollSuccess(data){
 
 function rePoll(){
 	var timeout = 100;
-	setTimeout('pollScale()',timeout);
+	setTimeout("pollScale('"+SCALE_REL_PRE+"')",timeout);
 }

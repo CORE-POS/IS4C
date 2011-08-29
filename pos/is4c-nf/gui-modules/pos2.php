@@ -196,6 +196,8 @@ class pos2 extends BasicPage {
 				data: 'receiptType='+r_type,
 				cache: false,
 				success: function(data){
+				},
+				error: function(e1){
 				}
 			});
 		}

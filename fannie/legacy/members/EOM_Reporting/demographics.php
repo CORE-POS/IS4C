@@ -124,7 +124,7 @@ $patronageLQ = $sql->num_rows($sql->query($patronageLQQ));
 $yearQ = "select y.card_no,month_no,-1*total,
 	datediff(mm,m.start_date,getdate()) 
 	from YTD_Patronage_Speedup as y left join
-	memdates as m on y.card_no=m.card_no
+	memDates as m on y.card_no=m.card_no
 	where y.total <> 0
 	order by y.card_no";
 $yearR = $sql->query($yearQ);

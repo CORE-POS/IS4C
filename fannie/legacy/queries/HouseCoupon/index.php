@@ -112,7 +112,7 @@ function displayDefault(){
 function displayCoupon($cid){
 	global $sql,$depts;
 
-	$q1 = "SELECT * FROM HouseCoupons WHERE coupID=$cid";
+	$q1 = "SELECT * FROM houseCoupons WHERE coupID=$cid";
 	$r1 = $sql->query($q1);
 	$row = $sql->fetch_row($r1);
 
@@ -199,7 +199,7 @@ function displayCoupon($cid){
 		echo "<table cellspacing=0 cellpadding=4 border=1>
 		<tr><th colspan=4>Items</th></tr>";
 		$query = "SELECT h.upc,p.description,h.type FROM
-			houseCouponItems as h LEFT JOIN Products AS
+			houseCouponItems as h LEFT JOIN products AS
 			p ON h.upc = p.upc WHERE coupID=$cid";
 		$result = $sql->query($query);
 		while($row = $sql->fetch_row($result)){
@@ -228,7 +228,7 @@ function displayCoupon($cid){
 		echo "<table cellspacing=0 cellpadding=4 border=1>
 		<tr><th colspan=4>Items</th></tr>";
 		$query = "SELECT h.upc,d.dept_name,h.type FROM
-			houseCouponItems as h LEFT JOIN Departments as d
+			houseCouponItems as h LEFT JOIN departments as d
 			ON h.upc = d.dept_no WHERE coupID=$cid";
 		$result = $sql->query($query);
 		while($row = $sql->fetch_row($result)){

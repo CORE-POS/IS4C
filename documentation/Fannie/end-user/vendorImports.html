@@ -9,8 +9,17 @@ calculate pricing based on desired margins.
 <h1>Step 1: Create Vendor(s)</h1>
 To import vendor information, you need vendors.
 Select Item Maintenance =&gt; <i>Manage Vendors</i>
-from Fannie's left hand menu. Each vendor needs an
-associated <i>Load Script</i> to import with. Fannie
+from Fannie's left hand menu. In the drop down, choose <i>New vendor...</i>
+and give the vendor a name.
+<p />
+You can optionally enter a vendor's department scheme
+(e.g., UNFI's categories). This is to support vendor-specific
+margins. See <b>Calculating SRPs</b> below.
+<p />
+You can upload vendor CSVs here using the <i>Update catalog</i>
+link. This works OK for small vendors, but not so well for
+really large catalogs. Dedicated loading scripts work better
+in these cases. Fannie
 currently includes scripts for the following vendors:
 <ul>
 	<li>Eclectic Institute - <i>loadECLECTICprices.php</i></li>
@@ -24,6 +33,8 @@ currently includes scripts for the following vendors:
 	<li>UNFI - <i>loadUNFIprices.php</i></li>
 	<li>Vitamer - <i>loadVITAMERprices.php</i></li>
 </ul>
+You do have to type or copy/paste the name of the appropriate
+script manually. Sorry.
 These scripts are all designed around the spreadsheets WFC
 has received. I don't know if all these vendors use a consistent
 format. The bigger ones like UNFI probably do, but that's not a 

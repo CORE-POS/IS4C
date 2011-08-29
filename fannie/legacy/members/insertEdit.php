@@ -184,18 +184,17 @@ if (isset($discount) && isset($doDiscount))
 
 // update top name
 //echo "<br>";
-$custDataQ = "Update custData set firstname = $fName, lastname = $lName, blueline=$blueline where cardNo = $memNum and personnum = 1";
-//echo $custDataQ."<br>";
+$custdataQ = "Update custdata set firstname = $fName, lastname = $lName, blueline=$blueline where cardNo = $memNum and personnum = 1";
 $memNamesQ = "Update memNames set fname = $fName, lname = $lName where memNum = $memNum and personnum = 1";
 //echo $memNamesQ."<br>";
-$custDataR = $sql->query($custDataQ);
+$custdataR = $sql->query($custdataQ);
 $memNamesR = $sql->query($memNamesQ);
 
 // update other stuff
 if(isset($discList)){
   $discMstrQ = "UPDATE mbrmastr SET DiscountPerc = $disc, memType=$discList, DiscountType = $discList WHERE memNum = $memNum";
-  $discCORE = "UPDATE custData SET memdiscountlimit = $arLimit,memType = $discList,Discount = $disc,staff=$staff WHERE cardNo = $memNum";
-  $typeQ = "UPDATE custData set type = '$mem' where cardNo=$memNum and type <> 'INACT' and type <> 'TERM'";
+  $discCORE = "UPDATE custdata SET memdiscountlimit = $arLimit,memType = $discList,Discount = $disc,staff=$staff WHERE cardNo = $memNum";
+  $typeQ = "UPDATE custdata set type = '$mem' where cardNo=$memNum and type <> 'INACT' and type <> 'TERM'";
   $discRes1 = $sql->query($discMstrQ);
   $discRes2 = $sql->query($discCORE);
   $typeR = $sql->query($typeQ);
@@ -268,11 +267,9 @@ $notetext = preg_replace("/\n/","<br />",$notetext);
 $notetext = preg_replace("/\'/","''",$notetext);
 $checkQ = "select * from memberNotes where note='$notetext' and cardno=$memNum";
 $checkR = $sql->query($checkQ);
-if ($notetext != ""){
-	if ($sql->num_rows($checkR) == 0){
-		$noteQ = "insert into memberNotes values ($memNum,'$notetext',getdate(),'$username')";
-		$noteR = $sql->query($noteQ);
-	}
+if ($sql->num_rows($checkR) == 0){
+	$noteQ = "insert into memberNotes values ($memNum,'$notetext',getdate(),'$username')";
+	$noteR = $sql->query($noteQ);
 }
 
 addressList($memNum);

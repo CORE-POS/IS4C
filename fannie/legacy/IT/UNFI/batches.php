@@ -5,20 +5,20 @@ include($FANNIE_ROOT.'legacy/queries/funct1Mem.php');
 if (!class_exists("SQLManager")) require_once($FANNIE_ROOT."src/SQLManager.php");
 include('../../db.php');
 
-$batchID = $_GET['batchID'];
+$batchID = $_REQUEST['batchID'];
 //echo $batchID;
-if (isset($_GET['datechange']) && $_GET['datechange'] == "Change Dates"){
-  $batchID = $_GET['batchID'];
-  $startdate = $_GET['startdate'];
-  $enddate = $_GET['enddate'];
+if (isset($_REQUEST['datechange']) && $_REQUEST['datechange'] == "Change Dates"){
+  $batchID = $_REQUEST['batchID'];
+  $startdate = $_REQUEST['startdate'];
+  $enddate = $_REQUEST['enddate'];
   
   $dateQ = "update batchTest set startdate='$startdate',
             enddate='$enddate' where batchID=$batchID";
   $dateR = $sql->query($dateQ);
 }
-else if(isset($_GET['submit']) && $_GET['submit']=="submit"){
-   foreach ($_GET AS $key => $value) {
-     $batchID = $_GET['batchID'];
+else if(isset($_REQUEST['submit']) && $_REQUEST['submit']=="submit"){
+   foreach ($_REQUEST AS $key => $value) {
+     $batchID = $_REQUEST['batchID'];
      
      //echo "values".$key . ": ".$value . "<br>";
      if(substr($key,0,4) == 'sale'){
@@ -43,7 +43,7 @@ else if(isset($_GET['submit']) && $_GET['submit']=="submit"){
        $name = $matches[1];
        $price = $infoW[1];
        $delItmQ = "DELETE FROM batchListTest WHERE upc = '$upc1' and batchID = $batchID";
-       $delBarQ = "DELETE FROM newBar$name WHERE upc='$upc1' and normal_price=$price";
+       $delBarQ = "DELETE FROM shelftags WHERE upc='$upc1' and normal_price=$price";
        //echo $delBarQ."<br />";
        $delItmR = $sql->query($delItmQ);
        $delBarR = $sql->query($delBarQ);
@@ -57,22 +57,20 @@ $batchInfoW = $sql->fetch_array($batchInfoR);
 
 
 $selBItemsQ = "SELECT b.*,p.*  from batchListTest as b LEFT JOIN 
-               Products as p ON p.upc like '%'+rtrim(b.upc)+'%' WHERE batchID = $batchID 
+               products as p ON p.upc like '%'+rtrim(b.upc)+'%' WHERE batchID = $batchID 
                ORDER BY b.listID DESC";
 //echo $selBItemsQ;
 $selBItemsR = $sql->query($selBItemsQ);
 
-echo "<form action=batches.php method=GET>";
+echo "<form action=batches.php method=post>";
 echo "<table border=1>";
 echo "<tr><td>Batch Name: <font color=blue>$batchInfoW[3]</font></td>";
-echo "<form action=batches.php method=post>";
 echo "<td>Start Date: <input type=text name=startdate value=\"$batchInfoW[1]\" size=9></td>";
 echo "<td>End Date: <input type=text name=enddate value=\"$batchInfoW[2]\" size=9></td>";
 echo "<td><input type=submit value=\"Change Dates\" name=datechange></td></tr>";
 echo "<input type=hidden name=batchID value=$batchID>";
 echo "</form>";
 echo "<th>UPC<th>Description<th>Normal Price<th>UNFI SRP<th>Delete";
-echo "<form action=batches.php method=GET>";
 while($selBItemsW = $sql->fetch_array($selBItemsR)){
    $upc = $selBItemsW[1];
    $field = 'sale'.$upc;

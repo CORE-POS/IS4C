@@ -8,9 +8,9 @@ function allLanes($upc){
   $queryItem = '';
   if(is_numeric($upc)){
     $upc = str_pad($upc,13,0,STR_PAD_LEFT);
-    $queryItem = "SELECT * FROM Products WHERE upc = '$upc'";
+    $queryItem = "SELECT * FROM products WHERE upc = '$upc'";
   }else{
-    $queryItem = "SELECT * FROM Products WHERE description LIKE '%$upc%' ORDER BY description";
+    $queryItem = "SELECT * FROM products WHERE description LIKE '%$upc%' ORDER BY description";
   }
 
   for ($i = 0; $i < count($lanes); $i++){

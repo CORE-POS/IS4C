@@ -508,7 +508,7 @@ function add_household_member($cardNo,$person,$lastName,$firstName,$chargeOk){
 	
 	$blueLine = $cardNo . " " . $lastName;
 
-	$insCustQ = "INSERT INTO CustData VALUES(
+	$insCustQ = "INSERT INTO custdata VALUES(
 			'$CardNo',
 			'$person',
 			'$lastName',
@@ -543,7 +543,7 @@ function update_household_member($cardNo,$person,$lname,$fname,$chargeOK)
 	global $sql;
 	$blueLine = $cardNo . ' ' . $lname;
 
-        $updateCustQ = "UPDATE CustData SET lastName = '$lname', 
+        $updateCustQ = "UPDATE custdata SET lastName = '$lname', 
                         firstName = '$fname', chargeOK = $chargeOK,
                         blueLine = '$blueLine' WHERE cardno = $cardNo
                         and personnum = $person";
@@ -603,7 +603,8 @@ function edit_work_status($query,$border,$bgcolor)
 }
 
 function log_info($name,$variable){
-  $logfile = "/tmp/loginfo.txt";
+  global $FANNIE_ROOT;
+  $logfile = $FANNIE_ROOT."logs/loginfo.txt";
   $log = fopen($logfile,"a");
   $message = "[".date('d-M-Y H:i:s')."] ".$name . ": ".$variable."\n";
   fwrite($log,$message);

@@ -43,7 +43,7 @@ if (isset($_GET['type'])){
 	while ($marginW = $dbc->fetch_array($marginR))
 		$margins[$marginW[0]] = (float)$marginW[1];
 
-	$fetchQ = "select u.upcc, u.cat, p.cost from UNFI_order as u left join
+	$fetchQ = "select u.upcc, u.cat, p.cost from unfi_order as u left join
 		   prodExtra as p on p.upc=u.upc";
 	$fetchR = $dbc->query($fetchQ);
 	while ($fetchW = $dbc->fetch_array($fetchR)){
@@ -55,7 +55,7 @@ if (isset($_GET['type'])){
 		       substr($srp,strlen($srp)-1,strlen($srp)) != "9")
 			$srp+=.01;
 
-		$upQ = "update UNFI_order set wfc_srp=$srp where upcc='$fetchW[0]'";
+		$upQ = "update unfi_order set wfc_srp=$srp where upcc='$fetchW[0]'";
 		$upR = $dbc->query($upQ);
 	}
 

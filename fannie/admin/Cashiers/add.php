@@ -53,7 +53,7 @@ if (isset($_REQUEST['fname'])){
 	$idR = $dbc->query("SELECT max(emp_no)+1 FROM employees WHERE emp_no < 1000");
 	$emp_no = array_pop($dbc->fetch_row($idR));
 
-	$insQ = sprintf("INSERT INTO Employees (emp_no,CashierPassword,AdminPassword,FirstName,
+	$insQ = sprintf("INSERT INTO employees (emp_no,CashierPassword,AdminPassword,FirstName,
 			LastName,JobTitle,EmpActive,frontendsecurity,backendsecurity)
 			VALUES (%d,%d,%d,'%s','%s','',1,%d,%d)",$emp_no,$passwd,$passwd,
 			$fn,$ln,$fes,$fes);

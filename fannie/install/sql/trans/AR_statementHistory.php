@@ -23,6 +23,8 @@ statement PDFs. Legacy/WFC related; can
 normally be ignored
 */
 $dlist = ar_departments();
+if (strlen($dlist <= 2))
+	$dlist = "(-999)";
 $CREATE['trans.AR_statementHistory'] = "
 	CREATE VIEW AR_statementHistory AS
 

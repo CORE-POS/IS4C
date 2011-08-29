@@ -7,7 +7,7 @@ include('functMem.php');
 
 $query = "SELECT c.cardno,c.lastname+', '+c.firstname,m.start_date,c.balance,s.payments,
 		s.payments - c.balance
-		FROM custData as c LEFT JOIN newBalanceStockToday_test
+		FROM custdata as c LEFT JOIN newBalanceStockToday_test
 		AS s ON c.cardno = s.memnum LEFT JOIN memDates
 		AS m on c.cardno = m.card_no
 		WHERE c.personnum = 1 AND c.type = 'INACT'

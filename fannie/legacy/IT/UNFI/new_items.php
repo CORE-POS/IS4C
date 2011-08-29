@@ -11,8 +11,8 @@ if (isset($_GET["action"])){
 	switch($_GET["action"]){
 	case 'getBrands':
 		$cat = $_GET["catID"];
-		$q = "SELECT u.brand FROM VendorItems AS u
-		      LEFT JOIN Products AS p ON u.upc=p.upc
+		$q = "SELECT u.brand FROM vendorItems AS u
+		      LEFT JOIN products AS p ON u.upc=p.upc
 		      WHERE p.upc IS NULL AND u.vendorDept = $cat
 		      GROUP BY u.brand ORDER BY u.brand";
 		$r = $sql->query($q);
@@ -32,7 +32,7 @@ if (isset($_GET['cat'])){
 	if (isset($_GET["brands"]) && $_GET["brands"] != "")
 		$brand = " AND v.brand='".$_GET["brands"]."' ";
 
-	$mysql = new SQLManager('nexus.wfco-op.store','MYSQL','IS4C','root');
+	$mysql = new SQLManager('mysql.wfco-op.store','mysqli','IS4C','is4c','is4c');
 	$dsubs = " superID IN (";
 	$buyersR = $mysql->query("SELECT buyer FROM unfi_cat WHERE unfi_cat=$catID");
 	$buyers = array();
@@ -65,7 +65,7 @@ if (isset($_GET['cat'])){
 	$dataQ = "SELECT v.upc,brand,v.description,v.vendorDept,
 		s.srp,v.cost, 
 		v.size,v.units,v.sku FROM vendorItems AS v 
-		LEFT JOIN Products AS p ON v.upc = p.upc 
+		LEFT JOIN products AS p ON v.upc = p.upc 
 		left join vendorSRPs as s ON v.upc=s.upc AND v.vendorID=s.vendorID
 		WHERE p.upc IS NULL and v.vendorID=1
 		AND v.vendorDept=$catID $brand order by v.vendorDept,v.brand,v.description";
@@ -130,7 +130,7 @@ else if (isset($_POST["upc"])){
 			$fs = $taxfsW[1];
 		}		
 
-		$prodQ = "INSERT INTO Products (upc,description,normal_price,pricemethod,groupprice,quantity,
+		$prodQ = "INSERT INTO products (upc,description,normal_price,pricemethod,groupprice,quantity,
 			special_price,specialpricemethod,specialgroupprice,specialquantity,start_date,end_date,
 			department,size,tax,foodstamp,scale,mixmatchcode,modified,advertised,tareweight,
 			discount,discounttype,unitofmeasure,wicable,qttyEnforced,inUse,numflag,subdept,

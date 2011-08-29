@@ -25,7 +25,7 @@
 
    This script scans prodUpdate for instances
    where a product's price actually changed
-   and logs those into ProdPriceHistory.
+   and logs those into prodPriceHistory.
 
    This is just faster to deal with as prodUpdate
    ends up having a ton of entries.
@@ -61,7 +61,7 @@ while($w = $sql->fetch_row($r)){
 		$prevPrice = null;
 		$prevDate = null;
 		$chkR = $sql->query("SELECT modified,price FROM
-			ProdPriceHistory WHERE upc='$upc'
+			prodPriceHistory WHERE upc='$upc'
 			ORDER BY modified DESC");
 		if ($sql->num_rows($chkR) > 0){
 			$chk = $sql->fetch_row($chkR);
@@ -71,7 +71,7 @@ while($w = $sql->fetch_row($r)){
 	}
 	
 	if ($prevPrice != $w['price']){ // price changed
-		$ins = sprintf("INSERT INTO ProdPriceHistory
+		$ins = sprintf("INSERT INTO prodPriceHistory
 			(upc,modified,price,uid)
 			VALUES (%s,%s,%.2f,%d)",
 			$sql->escape($upc),

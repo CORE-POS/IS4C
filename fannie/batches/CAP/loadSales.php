@@ -25,6 +25,7 @@ include("../../config.php");
 
 require_once($FANNIE_ROOT.'src/mysql_connect.php');
 require($FANNIE_ROOT.'src/csv_parser.php');
+require($FANNIE_ROOT.'src/tmp_dir.php');
 
 try {
 	$dbc->query("DROP TABLE tempCapPrices");
@@ -32,14 +33,15 @@ try {
 catch(Exception $e){}
 $dbc->query("CREATE TABLE tempCapPrices (upc varchar(13), price decimal(10,2))");
 
-$SUB = 5;
-$UPC = 6;
-$SKU = 7;
-$PRICE = 21;
+$SUB = 2;
+$UPC = 3;
+$SKU = 4;
+$PRICE = 18;
 
 $datastarts = false;
 
-$fp = fopen("tmp/CAP.csv","r");
+$tpath = sys_get_temp_dir()."/vendorupload/";
+$fp = fopen($tpath."CAP.csv","r");
 while(!feof($fp)){
 	$line = fgets($fp);
 	$data = csv_parser($line);
@@ -70,6 +72,8 @@ while(!feof($fp)){
 	$insQ = "INSERT INTO tempCapPrices VALUES ('$upc',$price)";
 	$dbc->query($insQ);
 }
+fclose($fp);
+unlink($tpath."CAP.csv");
 
 $page_title = "Fannie - CAP sales";
 $header = "Upload Completed";

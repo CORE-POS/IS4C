@@ -111,7 +111,7 @@ if (empty($vol_qtty) || $vol_qtty == 0){
 
 $descript = $sql->escape($descript);
 
-$query = "UPDATE Products 
+$query = "UPDATE products 
 	SET description = $descript, 
 	normal_price=$price,
 	tax='$tax',
@@ -159,7 +159,7 @@ $extraR = $sql->query($extraQ);
 require('laneUpdates.php');
 updateProductAllLanes($upc);
 
-$query1 = "SELECT * FROM Products WHERE upc = '$upc'";
+$query1 = "SELECT * FROM products WHERE upc = '$upc'";
 $result1 = $sql->query($query1);
 $row = $sql->fetch_array($result1);
 //echo '<br>'.$query1;
@@ -310,9 +310,9 @@ if(!empty($likeCode)){
    }
    else if(!isset($update)){
 	//Update all like coded items to $upc
-	$likeQuery = "UPDATE Products SET normal_price = $price,department = '$dept',tax = '$tax',scale='$Scale',foodstamp='$FS',inUse='$inUse', modified = '$modDate' ,
+	$likeQuery = "UPDATE products SET normal_price = $price,department = '$dept',tax = '$tax',scale='$Scale',foodstamp='$FS',inUse='$inUse', modified = '$modDate' ,
 			pricemethod='$price_method',groupprice=$vol_price,quantity='$vol_qtty',local=$local
-                  FROM Products as p, upcLike as u WHERE u.upc = p.upc and u.likeCode = '$likeCode'";
+                  FROM products as p, upcLike as u WHERE u.upc = p.upc and u.likeCode = '$likeCode'";
 	
 	//echo $likeQuery;
 	$likeResult = $sql->query($likeQuery);
@@ -364,7 +364,7 @@ echo "<table>";
         echo "</tr>";
         echo "<tr>";
         $dept=$row[12];
-        $query2 = "SELECT * FROM Departments where dept_no = $dept";
+        $query2 = "SELECT * FROM departments where dept_no = $dept";
         $result2 = $sql->query($query2);
 	$row2 = $sql->fetch_array($result2);
 	echo "<td>";
