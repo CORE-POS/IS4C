@@ -49,7 +49,7 @@ function addProductAllLanes($upc){
 		$lane_table_def = $laneupdate_sql->table_definition('products',$FANNIE_LANES[$i]['op']);
 		$matching_columns = array();
 		foreach($lane_table_def as $k=>$v){
-			if (isset($server_cols[$k]) && $k != 'id') $matching_columns[] = $k;
+			if (isset($server_cols[$k])) $matching_columns[] = $k;
 		}
 
 		$selQ = "SELECT ";
