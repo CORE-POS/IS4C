@@ -73,7 +73,7 @@ echo '<br>Report run ' . $today. ' for ' . $repDate."<br />";
 $dlog = select_dlog($repDate);
 
 $tenderQ = "SELECT t.TenderName,-sum(d.total) as total, COUNT(d.total)
-FROM $dlog as d ,Tenders as t 
+FROM $dlog as d ,tenders as t 
 WHERE datediff(dd,getdate(),d.tDate) = $datediff 
 AND d.trans_status <>'X'  
 AND d.Trans_Subtype = t.TenderCode
@@ -195,7 +195,7 @@ echo tablify($voids,array(0,1,2),array("Original","Void","Total"),
 	     array($ALIGN_LEFT,$ALIGN_LEFT,$ALIGN_RIGHT|$TYPE_MONEY),2);
 
 $otherQ = "SELECT d.department,t.dept_name, -1*sum(total) as total 
-FROM $dlog as d join Departments as t ON d.department = t.dept_no
+FROM $dlog as d join departments as t ON d.department = t.dept_no
 WHERE datediff(dd,getdate(),tDate) = $datediff  
 AND (d.department >300)AND d.Department <> 0 AND 
 (d.register_no <> 20 or d.department = 703)
@@ -225,7 +225,7 @@ echo tablify($others,array(1,0,2,3),array("Account","Dept","Description","Amount
 	     array($ALIGN_LEFT,$ALIGN_LEFT,$ALIGN_LEFT,$ALIGN_RIGHT|$TYPE_MONEY),3);
 
 $equityQ = "SELECT d.card_no,t.dept_name, -1*sum(total) as total 
-FROM $dlog as d join Departments as t ON d.department = t.dept_no
+FROM $dlog as d join departments as t ON d.department = t.dept_no
 WHERE datediff(dd,getdate(),tDate) = $datediff
 AND (d.department IN(991,992))AND d.Department <> 0 and d.register_no <> 20
 GROUP BY d.card_no, t.dept_name ORDER BY d.card_no, t.dept_name";
@@ -259,7 +259,7 @@ echo tablify($ar_rows,array(1,2,3,4,5),array("Account","MemNum","Description","A
 
 $discQ = "SELECT     m.memDesc, -1*SUM(d.total) AS Discount,count(*) 
 FROM $dlog d INNER JOIN
-       custData c ON d.card_no = c.CardNo INNER JOIN
+       custdata c ON d.card_no = c.CardNo INNER JOIN
       memTypeID m ON c.memType = m.memTypeID
 WHERE     (DATEDIFF(dd, GETDATE(), d.tdate) = $datediff ) 
     AND (d.upc = 'DISCOUNT') AND c.personnum= 1

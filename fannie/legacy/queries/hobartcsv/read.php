@@ -59,7 +59,7 @@ while($line = fgets($fp)){
 	$checkQ = "select plu from scaleItems where plu='$temp'";
 	$checkR = $sql->query($checkQ);
 	if ($sql->num_rows($checkR) == 0){
-	  $addQ = "insert into scaleitems (plu,exceptionprice,class) values ('$temp',0,NULL)";
+	  $addQ = "insert into scaleItems (plu,exceptionprice,class) values ('$temp',0,NULL)";
 	  $addR = $sql->query($addQ);
 	}
     }

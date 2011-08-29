@@ -74,7 +74,7 @@ if (!isset($local)){
    $local = 0;
 }
 
-$del99Q = "DELETE FROM Products where upc = '$upc'";
+$del99Q = "DELETE FROM products where upc = '$upc'";
 //$del99R = $sql->query($del99Q,$db1);
 $delISR = $sql->query($del99Q);
 
@@ -144,7 +144,7 @@ $query1 = "INSERT INTO prodUpdate
 $result1 = $sql->query($query1);
 
 
-$query99 = "INSERT INTO Products
+$query99 = "INSERT INTO products
 		VALUES('$upc',$descript,$price,0,0.00,0,0.00,0,0.00,0,'','',$dept,0,$tax,$FS,$Scale,0,0,getdate(),0,0,$NoDisc,0,0,0,0,0,0.00,1,
 		0,0,0.00,$local)";
 //echo $query99;
@@ -176,7 +176,7 @@ if(isset($likeCode) && $likeCode > 0){
 	$insLikeCodeR = $sql->query($insLikeCode);
 }
 
-$query1 = "SELECT * FROM Products WHERE upc = '$upc'";
+$query1 = "SELECT * FROM products WHERE upc = '$upc'";
 $result1 = $sql->query($query1);
 $row = $sql->fetch_array($result1);
 //echo '<br>'.$query1;
@@ -196,7 +196,7 @@ echo "<table>";
         echo "</tr>";
         echo "<tr>";
         //$dept=$row[12];
-        $query2 = "SELECT * FROM Departments where dept_no = $dept";
+        $query2 = "SELECT * FROM departments where dept_no = $dept";
         $result2 = $sql->query($query2);
 	$num = $sql->num_rows($result2);
 	$row2 = $sql->fetch_array($result2);

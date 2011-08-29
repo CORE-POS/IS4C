@@ -20,7 +20,7 @@ Columns:
 
 Depends on:
 	products (table)
-	UNFI_order (table)
+	unfi_order (table)
 
 Use:
 Calculates SRPs and margins for the current
@@ -48,7 +48,7 @@ $CREATE['op.unfi_all'] = "
 		as unfi_margin,
 		case when u.wfc_srp > p.normal_price then 1 else 0 END as diff
 		from products as p 
-		right join UNFI_order as u 
+		right join unfi_order as u 
 		on left(u.upcc,13)=p.upc
 		where 
 		p.upc is not NULL
@@ -74,7 +74,7 @@ if ($dbms == 'MSSQL'){
 			as UNFI_margin,
 			case when u.wfc_srp > p.normal_price then 1 else 0 END as diff
 			from products as p 
-			right join UNFI_order as u 
+			right join unfi_order as u 
 			on left(u.upcc,13)=p.upc
 			where 
 			p.upc is not NULL

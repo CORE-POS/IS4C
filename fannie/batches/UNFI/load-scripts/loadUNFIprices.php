@@ -41,16 +41,17 @@
 include("../../../config.php");
 require($FANNIE_ROOT.'src/csv_parser.php');
 require($FANNIE_ROOT.'src/mysql_connect.php');
+require($FANNIE_ROOT.'src/tmp_dir.php');
 
 // the column number in the CSV file
 // where various information is stored
 $SKU = 1;
 $BRAND = 2;
-$DESCRIPTION = 6;
+$DESCRIPTION = 5;
 $QTY = 3;
 $SIZE1 = 4;
-$UPC = 15;
-$CATEGORY = 5;
+$UPC = 6;
+$CATEGORY = 22;
 $WHOLESALE = 9;
 $DISCOUNT = 9;
 
@@ -71,41 +72,38 @@ $PRICEFILE_USE_SPLITS = True;
 $filestoprocess = array();
 $i = 0;
 $fp = 0;
+$tpath = sys_get_temp_dir()."/vendorupload/";
 if ($PRICEFILE_USE_SPLITS){
 	if (!isset($_GET["filestoprocess"])){
-		system("split -l 2500 ../tmp/unfi.csv ../tmp/UNFISPLIT");
-		$dir = opendir("../tmp");
+		system("split -l 2500 {$tpath}unfi.csv {$tpath}UNFISPLIT");
+		$dir = opendir($tpath);
 		while ($current = readdir($dir)){
 			if (!strstr($current,"UNFISPLIT"))
 				continue;
 			$filestoprocess[$i++] = $current;
 		}
 		
-		$truncateQ = "truncate table UNFI_order";
+		$truncateQ = "truncate table unfi_order";
 		$truncateR = $dbc->query($truncateQ);
-		/*
 		$delQ = "DELETE FROM vendorItems WHERE vendorID=$VENDOR_ID";
 		$delR = $dbc->query($delQ);
-		*/
 	}
 	else {
 		$filestoprocess = unserialize(base64_decode($_GET["filestoprocess"]));	
 	}
 }
 else {
-	$truncateQ = "truncate table UNFI_order";
+	$truncateQ = "truncate table unfi_order";
 	$truncateR = $dbc->query($truncateQ);
-	/*
 	$delQ = "DELETE FROM vendorItems WHERE vendorID=$VENDOR_ID";
 	$delR = $dbc->query($delQ);
-	*/
 	$filestoprocess[] = "unfi.csv";
 }
 
 // remove one split from the list and process that
 $current = array_pop($filestoprocess);
 
-$fp = fopen("../tmp/$current",'r');
+$fp = fopen($tpath.$current,'r');
 while(!feof($fp)){
 	$line = fgets($fp);
 	/* csv parser takes a comma-separated line and returns its elements
@@ -133,7 +131,7 @@ while(!feof($fp)){
 		continue;
 
 	// don't repeat items
-	$checkQ = "SELECT upcc FROM UNFI_order WHERE upcc='$upc'";
+	$checkQ = "SELECT upcc FROM unfi_order WHERE upcc='$upc'";
 	$checkR = $dbc->query($checkQ);
 	if ($dbc->num_rows($checkR) > 0) continue;
 
@@ -164,8 +162,7 @@ while(!feof($fp)){
 	$upR = $dbc->query($upQ);
 	// end $PRICEFILE_COST_TABLE cost tracking
 
-	$dbc->query("DELETE FROM VendorItems WHERE upc='$upc'");
-	$insQ = "INSERT INTO VendorItems (brand,sku,size,upc,units,cost,description,vendorDept,vendorID)
+	$insQ = "INSERT INTO vendorItems (brand,sku,size,upc,units,cost,description,vendorDept,vendorID)
 			VALUES ('$brand',$sku,'$size','$upc',$qty,$net_cost,
 			'$description',$category,$VENDOR_ID)";
 	$insR = $dbc->query($insQ);
@@ -190,10 +187,10 @@ while(!feof($fp)){
 		$srp += 0.01;
 	// end margin calculations
 
-	// UNFI_order is what the UNFI price change page builds on,
+	// unfi_order is what the UNFI price change page builds on,
 	// that's why it's being populated here
 	// it's just a table containing all items in the current order
-	$insQ = "INSERT INTO UNFI_order (unfi_sku,brand,item_desc,pack,pack_size,upcc,cat,wholesale,
+	$insQ = "INSERT INTO unfi_order (unfi_sku,brand,item_desc,pack,pack_size,upcc,cat,wholesale,
 		 vd_cost,wfc_srp) VALUES ($sku,'$brand','$description',$qty,'$size','$upc',
 		 $category,$wholesale,$discount,$srp)";
 	$insR = $dbc->query($insQ);
@@ -226,44 +223,55 @@ if (count($filestoprocess) == 0){
 	// this stored procedure compensates for items ordered from
 	// UNFI under one UPC but sold in-store under a different UPC
 	// (mostly bulk items sold by PLU). All it does is update the
-	// upcc field in UNFI_order for the affected items
-	$pluQ1 = "UPDATE UNFI_order AS u
+	// upcc field in unfi_order for the affected items
+	$pluQ1 = "UPDATE unfi_order AS u
 		INNER JOIN UnfiToPLU AS p
 		ON u.unfi_sku = p.unfi_sku
 		SET u.upcc = p.wfc_plu";
-	$pluQ2 = "UPDATE prodExtra AS x
+	$pluQ2 = "UPDATE vendorItems AS u
+		INNER JOIN UnfiToPLU AS p
+		ON u.sku = p.unfi_sku
+		SET u.upc = p.wfc_plu
+		WHERE u.vendorID=".$VENDOR_ID;
+	$pluQ3 = "UPDATE prodExtra AS x
 		INNER JOIN UnfiToPLU AS p
 		ON x.upc=p.wfc_plu
-		INNER JOIN UNFI_order AS u
+		INNER JOIN unfi_order AS u
 		ON u.unfi_sku=p.unfi_sku
 		SET x.cost = u.vd_cost / u.pack";
 	if ($FANNIE_SERVER_DBMS == "MSSQL"){
-		$pluQ1 = "UPDATE UNFI_order SET upcc = p.wfc_plu
-			FROM UNFI_order AS u RIGHT JOIN
+		$pluQ1 = "UPDATE unfi_order SET upcc = p.wfc_plu
+			FROM unfi_order AS u RIGHT JOIN
 			UnfiToPLU AS p ON u.unfi_sku = p.unfi_sku
 			WHERE u.unfi_sku IS NOT NULL";
-		$pluQ2 = "UPDATE prodExtra
+		$pluQ2 = "UPDATE vendorItems SET upc = p.wfc_plu
+			FROM vendorItems AS u RIGHT JOIN
+			UnfiToPLU AS p ON u.sku = p.unfi_sku
+			WHERE u.sku IS NOT NULL
+			AND u.vendorID=".$VENDOR_ID;
+		$pluQ3 = "UPDATE prodExtra
 			SET cost = u.vd_cost / u.pack
 			FROM UnfiToPLU AS p LEFT JOIN
-			UNFI_order AS u ON p.unfi_sku = u.unfi_sku
+			unfi_order AS u ON p.unfi_sku = u.unfi_sku
 			LEFT JOIN prodExtra AS x
 			ON p.wfc_plu = x.upc";
 	}
 	$dbc->query($pluQ1);
 	$dbc->query($pluQ2);
+	$dbc->query($pluQ3);
 
 	echo "Finished processing UNFI price file<br />";
 	if ($PRICEFILE_USE_SPLITS){
 		echo "Files processed:<br />";
 		foreach (unserialize(base64_decode($_GET["processed"])) as $p){
 			echo $p."<br />";
-			unlink("../tmp/$p");
+			unlink($tpath.$p);
 		}
 		echo $current."<br />";
-		unlink("../tmp/$current");
+		unlink($tpath.$current);
 	}
 	else echo "unfi.csv<br />";
-	unlink("../tmp/unfi.csv");
+	unlink($tpath."unfi.csv");
 	
 	echo "<br />";
 	echo "<a href=../index.php>UNFI Pricing Home</a>";

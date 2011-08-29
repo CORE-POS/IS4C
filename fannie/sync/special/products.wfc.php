@@ -2,9 +2,9 @@
 /*******************************************************************************
 
     Copyright 2009 Whole Foods Co-op
-
+  
     This file is part of Fannie.
-
+  
     Fannie is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
@@ -25,7 +25,7 @@
 //$dbc->query("exec productsUpdateAll");
 
 // Run DTS to export server data to a CSV file
-$dbc->query("exec master..xp_cmdshell 'dtsrun /S IS4CSERV\IS4CSERV /U $FANNIE_SERVER_USER /P $FANNIE_SERVER_PASSWD /N CSV_products',no_output",$FANNIE_OP_DB);
+$dbc->query("exec master..xp_cmdshell 'dtsrun /S IS4CSERV\IS4CSERV /U $FANNIE_SERVER_USER /P $FANNIE_SERVER_PW /N CSV_products',no_output",$FANNIE_OP_DB);
 
 // on each MySQL lane, load the CSV file
 foreach($FANNIE_LANES as $lane){

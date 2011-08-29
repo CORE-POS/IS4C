@@ -3,7 +3,7 @@ include('../../../config.php');
 
 if (!class_exists("SQLManager")) require_once($FANNIE_ROOT."src/SQLManager.php");
 include('../../db.php');
-$mysql = new SQLManager('nexus.wfco-op.store','MYSQL','IS4C','root');
+$mysql = new SQLManager('mysql.wfco-op.store','MYSQL','IS4C','is4c','is4c');
 
 $unfi_cats = "(";
 $catQ = "select unfi_cat from unfi_cat where buyer=".$_POST["buyer"];

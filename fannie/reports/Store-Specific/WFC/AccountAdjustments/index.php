@@ -75,12 +75,12 @@ else {
 $dlog = select_dlog($date);
 
 $otherQ = "SELECT d.department,t.dept_name, sum(total) as total 
-	FROM $dlog as d join Departments as t ON d.department = t.dept_no
+	FROM $dlog as d join departments as t ON d.department = t.dept_no
 	WHERE $datediff  
 	AND (d.department >300)AND d.Department <> 0 AND d.register_no = 20
 	GROUP BY d.department, t.dept_name order by d.department";
 $stockQ = "SELECT d.card_no,t.dept_name, sum(total) as total 
-	FROM $dlog as d join Departments as t ON d.department = t.dept_no
+	FROM $dlog as d join departments as t ON d.department = t.dept_no
 	WHERE $datediff
 	AND (d.department IN(991,992))AND d.Department <> 0 and d.register_no = 20
 	GROUP BY d.card_no, t.dept_name ORDER BY d.card_no, t.dept_name";

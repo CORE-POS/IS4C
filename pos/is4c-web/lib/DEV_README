@@ -1,0 +1,7 @@
+Lib holds the PHP scripts containing
+nothing but functions. It is simply an organizational
+choice.
+
+gui-base.php also only has functions, but is left at the root level
+because it contains the main frameset the entire program runs
+through.

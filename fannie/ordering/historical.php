@@ -32,8 +32,11 @@ include($FANNIE_ROOT.'src/header.html');
 
 $status = array(
 	0 => "New",
+	3 => "New, Call",
+	1 => "Called/waiting",
 	2 => "Pending",
 	4 => "Placed",
+	5 => "Arrived",
 	7 => "Completed",
 	8 => "Canceled",
 	9 => "Inquiry"
@@ -196,7 +199,7 @@ function refilter(){
 	var f2 = $('#f_2').val();
 	var f3 = $('#f_3').val();
 
-	var loc = 'clearinghouse.php?f1='+f1+'&f2='+f2+'&f3='+f3;
+	var loc = 'historical.php?f1='+f1+'&f2='+f2+'&f3='+f3;
 	if ($('#cardno').length!=0)
 		loc += '&card_no='+$('#cardno').val();
 	if ($('#orderSetting').length!=0)

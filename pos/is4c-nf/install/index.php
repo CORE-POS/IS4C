@@ -58,9 +58,9 @@ if (function_exists('posix_getpwuid')){
 else
 	echo "PHP is (probably) running as: ".get_current_user()."<br />";
 if (is_writable('../ini.php'))
-	echo '<i>ini.php</i> is writeable';
+        echo '<span style="color:green;"><i>ini.php</i> is writeable</span>';
 else
-	echo '<b>Error</b>: ini.php is not writeable';
+        echo '<span style="color:red;"><b>Error</b>: ini.php is not writeable</span>';
 ?>
 <br />
 <?php
@@ -148,23 +148,18 @@ if (!class_exists('SQLManager'))
 if ($CORE_LOCAL->get("DBMS") == "mysql")
 	$val = ini_set('mysql.connect_timeout',5);
 
-if (pinghost($CORE_LOCAL->get('localhost')) == 1){
-	$sql = new SQLManager($CORE_LOCAL->get('localhost'),
-			$CORE_LOCAL->get('DBMS'),
-			$CORE_LOCAL->get('pDatabase'),
-			$CORE_LOCAL->get('localUser'),
-			$CORE_LOCAL->get('localPass'));
-	if ($sql->connections[$CORE_LOCAL->get('pDatabase')] == False){
-		echo "<span style=\"color:red;\">Failed</span>";
-	}
-	else {
-		echo "<span style=\"color:green;\">Succeeded</span>";
-		create_op_dbs($sql,$CORE_LOCAL->get('DBMS'));
-		$gotDBs++;
-	}
+$sql = db_test_connect($CORE_LOCAL->get('localhost'),
+		$CORE_LOCAL->get('DBMS'),
+		$CORE_LOCAL->get('pDatabase'),
+		$CORE_LOCAL->get('localUser'),
+		$CORE_LOCAL->get('localPass'));
+if ($sql === False){
+	echo "<span style=\"color:red;\">Failed</span>";
 }
 else {
-	echo "<span style=\"color:red;\">Host appears to be down</span>";
+	echo "<span style=\"color:green;\">Succeeded</span>";
+	create_op_dbs($sql,$CORE_LOCAL->get('DBMS'));
+	$gotDBs++;
 }
 ?>
 <br />
@@ -178,50 +173,44 @@ confsave('tDatabase',"'".$CORE_LOCAL->get('tDatabase')."'");
 <br />
 Testing transational DB connection:
 <?php
-if(pinghost($CORE_LOCAL->get('localhost')) == 1){
-	$sql = new SQLManager($CORE_LOCAL->get('localhost'),
-			$CORE_LOCAL->get('DBMS'),
-			$CORE_LOCAL->get('tDatabase'),
-			$CORE_LOCAL->get('localUser'),
-			$CORE_LOCAL->get('localPass'));
-	if ($sql->connections[$CORE_LOCAL->get('tDatabase')] == False){
-		echo "<span style=\"color:red;\">Failed</span>";
-	}
-	else {
-		echo "<span style=\"color:green;\">Succeeded</span>";
-
-		/* Re-do tax rates here so changes affect the subsequent
-		 * ltt* view builds. 
-		 */
-		if (isset($_REQUEST['TAX_RATE']) && $sql->table_exists('taxrates')){
-			$queries = array();
-			for($i=0; $i<count($_REQUEST['TAX_RATE']); $i++){
-				$rate = $_REQUEST['TAX_RATE'][$i];
-				$desc = $_REQUEST['TAX_DESC'][$i];
-				if(is_numeric($rate)){
-					$desc = str_replace(" ","",$desc);
-					$queries[] = sprintf("INSERT INTO taxrates VALUES 
-						(%d,%f,'%s')",$i+1,$rate,$desc);
-				}
-				else if ($rate != ""){
-					echo "<br /><b>Error</b>: the given
-						tax rate, $rate, doesn't seem to
-						be a number.";
-				}
-				$sql->query("TRUNCATE TABLE taxrates");
-				foreach($queries as $q)
-					$sql->query($q);
-			}
-		}
-
-		create_trans_dbs($sql,$CORE_LOCAL->get('DBMS'));
-		$gotDBs++;
-	}
+$sql = db_test_connect($CORE_LOCAL->get('localhost'),
+		$CORE_LOCAL->get('DBMS'),
+		$CORE_LOCAL->get('tDatabase'),
+		$CORE_LOCAL->get('localUser'),
+		$CORE_LOCAL->get('localPass'));
+if ($sql === False ){
+	echo "<span style=\"color:red;\">Failed</span>";
 }
 else {
-	echo "<span style=\"color:red;\">Host appears to be down</span>";
-}
+	echo "<span style=\"color:green;\">Succeeded</span>";
 
+	/* Re-do tax rates here so changes affect the subsequent
+	 * ltt* view builds. 
+	 */
+	if (isset($_REQUEST['TAX_RATE']) && $sql->table_exists('taxrates')){
+		$queries = array();
+		for($i=0; $i<count($_REQUEST['TAX_RATE']); $i++){
+			$rate = $_REQUEST['TAX_RATE'][$i];
+			$desc = $_REQUEST['TAX_DESC'][$i];
+			if(is_numeric($rate)){
+				$desc = str_replace(" ","",$desc);
+				$queries[] = sprintf("INSERT INTO taxrates VALUES 
+					(%d,%f,'%s')",$i+1,$rate,$desc);
+			}
+			else if ($rate != ""){
+				echo "<br /><b>Error</b>: the given
+					tax rate, $rate, doesn't seem to
+					be a number.";
+			}
+			$sql->query("TRUNCATE TABLE taxrates");
+			foreach($queries as $q)
+				$sql->query($q);
+		}
+	}
+
+	create_trans_dbs($sql,$CORE_LOCAL->get('DBMS'));
+	$gotDBs++;
+}
 ?>
 <br /><br />
 Server database host: 
@@ -273,22 +262,17 @@ confsave('mDatabase',"'".$CORE_LOCAL->get('mDatabase')."'");
 <br />
 Testing server connection:
 <?php
-if(pinghost($CORE_LOCAL->get("mServer")) == 1){
-	$sql = new SQLManager($CORE_LOCAL->get('mServer'),
-			$CORE_LOCAL->get('mDBMS'),
-			$CORE_LOCAL->get('mDatabase'),
-			$CORE_LOCAL->get('mUser'),
-			$CORE_LOCAL->get('mPass'));
-	if ($sql->connections[$CORE_LOCAL->get('mDatabase')] == False){
-		echo "<span style=\"color:red;\">Failed</span>";
-	}
-	else {
-		echo "<span style=\"color:green;\">Succeeded</span>";
-		create_min_server($sql,$CORE_LOCAL->get('mDBMS'));
-	}
+$sql = db_test_connect($CORE_LOCAL->get('mServer'),
+		$CORE_LOCAL->get('mDBMS'),
+		$CORE_LOCAL->get('mDatabase'),
+		$CORE_LOCAL->get('mUser'),
+		$CORE_LOCAL->get('mPass'));
+if ($sql === False){
+	echo "<span style=\"color:red;\">Failed</span>";
 }
 else {
-	echo "<span style=\"color:red;\">Host appears to be down</span>";
+	echo "<span style=\"color:green;\">Succeeded</span>";
+	create_min_server($sql,$CORE_LOCAL->get('mDBMS'));
 }
 ?>
 <hr />
@@ -979,6 +963,16 @@ function create_trans_dbs($db,$type){
 		$db->query($rplist,$name);
 	}
 
+	$taxQ = "CREATE TABLE taxrates (
+		id		int,
+		rate		float,
+		`description`	varchar(50))";
+	if ($type == 'mssql')
+		$taxQ = str_replace("`","",$taxQ);
+	if(!$db->table_exists('taxrates',$name)){
+		$db->query($taxQ,$name);
+	}
+
 	$screen = "CREATE view screendisplay as 
 		select 
 		CASE
@@ -1213,7 +1207,7 @@ function create_trans_dbs($db,$type){
 		from localtemptrans 
 		where (((discounttype = 4) and (unitPrice = regPrice)) or (trans_status = 'S')) 
 		group by register_no,emp_no,trans_no,upc,description,card_no having (sum(memDiscount) <> 0)";
-	if (!$db->table_exists('staffidiscountadd',$name)){
+	if (!$db->table_exists('staffdiscountadd',$name)){
 		$db->query($sAdd);
 	}
 
@@ -1297,15 +1291,6 @@ function create_trans_dbs($db,$type){
 		$db->query($caQ,$name);
 	}
 
-	$taxQ = "CREATE TABLE taxrates (
-		id		int,
-		rate		float,
-		`description`	varchar(50))";
-	if ($type == 'mssql')
-		$taxQ = str_replace("`","",$taxQ);
-	if(!$db->table_exists('taxrates',$name)){
-		$db->query($taxQ,$name);
-	}
 
 	/* lttsummary, lttsubtotals, and subtotals
 	 * always get rebuilt to account for tax rate
@@ -2010,14 +1995,14 @@ function create_trans_dbs($db,$type){
 		scale,
 		sum(unitprice) as unitprice, 
 		convert(sum(total),decimal(10,2)) as total,
-		sum(regPrice) as regPrice,tax,foodstamp,
+		sum(regPrice) as regPrice,tax,foodstamp,charflag,
 		case when trans_status='d' or scale=1 or trans_type='T' then trans_id else scale end as grouper
 	from localtemptrans
 	where description not like '** YOU SAVED %' and trans_status = 'M'
 	group by upc,description,trans_type,trans_subtype,discounttype,volume,
 		trans_status,
 		department,scale,case when voided=1 then 0 else voided end,
-		matched,tax,foodstamp,
+		matched,tax,foodstamp,charflag,
 		case when trans_status='d' or scale=1 or trans_type='T' then trans_id else scale end
 
 	union all
@@ -2027,14 +2012,14 @@ function create_trans_dbs($db,$type){
 		trans_status,
 		case when voided=1 then 0 else voided end as voided,
 		department,sum(quantity) as quantity,matched,min(trans_id) as trans_id,
-		scale,unitprice,convert(sum(total),decimal(10,2)) as total,regPrice,tax,foodstamp,
+		scale,unitprice,convert(sum(total),decimal(10,2)) as total,regPrice,tax,foodstamp,charflag,
 		case when trans_status='d' or scale=1 or trans_type='T' then trans_id else scale end as grouper
 	from localtemptrans
 	where description not like '** YOU SAVED %' and trans_status !='M'
 	group by upc,description,trans_type,trans_subtype,discounttype,volume,
 		trans_status,
 		department,scale,case when voided=1 then 0 else voided end,
-		unitprice,regPrice,matched,tax,foodstamp,
+		unitprice,regPrice,matched,tax,foodstamp,charflag,
 		case when trans_status='d' or scale=1 or trans_type='T' then trans_id else scale end
 
 	union all
@@ -2051,7 +2036,7 @@ function create_trans_dbs($db,$type){
 		department,0 as quantity,matched,min(trans_id)+1 as trans_id,
 		scale,0 as unitprice,
 		0 as total,
-		0 as regPrice,0 as tax,0 as foodstamp,
+		0 as regPrice,0 as tax,0 as foodstamp,charflag,
 		case when trans_status='d' or scale=1 then trans_id else scale end as grouper
 	from localtemptrans
 	where description not like '** YOU SAVED %' and (discounttype=1 or discounttype=2)
@@ -2069,14 +2054,14 @@ function create_trans_dbs($db,$type){
 			scale,
 			sum(unitprice) as unitprice, 
 			sum(total) as total,
-			sum(regPrice) as regPrice,tax,foodstamp,
+			sum(regPrice) as regPrice,tax,foodstamp,charflag,
 			case when trans_status='d' or scale=1 or trans_type='T' then trans_id else scale end as grouper
 		from localtemptrans
 		where description not like '** YOU SAVED %' and trans_status = 'M'
 		group by upc,description,trans_type,trans_subtype,discounttype,volume,
 			trans_status,
 			department,scale,case when voided=1 then 0 else voided end,
-			matched,tax,foodstamp,
+			matched,tax,foodstamp,charflag,
 			case when trans_status='d' or scale=1 or trans_type='T' then trans_id else scale end
 
 		union all
@@ -2086,14 +2071,14 @@ function create_trans_dbs($db,$type){
 			trans_status,
 			case when voided=1 then 0 else voided end as voided,
 			department,sum(quantity) as quantity,matched,min(trans_id) as trans_id,
-			scale,unitprice,sum(total) as total,regPrice,tax,foodstamp,
+			scale,unitprice,sum(total) as total,regPrice,tax,foodstamp,charflag,
 			case when trans_status='d' or scale=1 or trans_type='T' then trans_id else scale end as grouper
 		from localtemptrans
 		where description not like '** YOU SAVED %' and trans_status !='M'
 		group by upc,description,trans_type,trans_subtype,discounttype,volume,
 			trans_status,
 			department,scale,case when voided=1 then 0 else voided end,
-			unitprice,regPrice,matched,tax,foodstamp,
+			unitprice,regPrice,matched,tax,foodstamp,charflag,
 			case when trans_status='d' or scale=1 or trans_type='T' then trans_id else scale end
 
 		union all
@@ -2110,7 +2095,7 @@ function create_trans_dbs($db,$type){
 			department,0 as quantity,matched,min(trans_id)+1 as trans_id,
 			scale,0 as unitprice,
 			0 as total,
-			0 as regPrice,0 as tax,0 as foodstamp,
+			0 as regPrice,0 as tax,0 as foodstamp,charflag,
 			case when trans_status='d' or scale=1 then trans_id else scale end as grouper
 		from localtemptrans
 		where description not like '** YOU SAVED %' and (discounttype=1 or discounttype=2)
@@ -2134,6 +2119,8 @@ function create_trans_dbs($db,$type){
 			then 'Mbr special'
 		when trans_status = 'S'
 			then 'Staff special'
+		when charflag = 'SO'
+			then ''
 		when scale <> 0 and quantity <> 0 
 			then concat(convert(quantity,char),' @ ',convert(unitPrice,char))
 		when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity = 1
@@ -3079,7 +3066,7 @@ function create_trans_dbs($db,$type){
 		space(4)) as linetoprint,
 		emp_no,register_no,trans_no,
 		3 as sequence,null as dept_name,3 as ordered,'' as upc
-		from rp_lttSummary
+		from rp_lttsummary
 
 		union all
 
@@ -3173,7 +3160,7 @@ function create_trans_dbs($db,$type){
 		+ right((space(4) + ''), 4) as linetoprint,
 		emp_no,register_no,trans_no,
 		3 as sequence,null as dept_name,3 as ordered,'' as upc
-		from rp_lttSummary
+		from rp_lttsummary
 
 		union all
 

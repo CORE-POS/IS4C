@@ -29,7 +29,7 @@ if (isset($_GET['order'])) $order = $_GET['order'];
 $dataQ = "SELECT unfi_sku,wfc_plu,
 	CASE WHEN p.description IS NULL THEN '! None found' ELSE p.description
 	END as description FROM UnfiToPLU
-	AS u LEFT JOIN Products AS p ON u.wfc_plu=p.upc
+	AS u LEFT JOIN products AS p ON u.wfc_plu=p.upc
 	ORDER BY $order";
 $dataR = $sql->query($dataQ);
 

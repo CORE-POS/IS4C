@@ -21,6 +21,8 @@ if (isset($_GET['action'])){
 			$out .= arDisplays($subtype);
 		elseif($type == "upgrade")
 			$out .= upgradeDisplays($subtype);
+		elseif($type == "term")
+			$out .= termDisplays($subtype);
 		break;	
 	}
 	echo $out;
@@ -180,6 +182,35 @@ function upgradeDisplays($subtype){
 	return $ret;
 }
 
+function termDisplays($subtype){
+	global $sql;
+	$ret = "<form name=myform action=term.php method=post>";
+	$ret .= "<table cellpadding=0 cellspacing=4><tr><td>";
+	$ret .= "<select id=cardnos name=cardno[] multiple size=20>";
+	
+	$query = "select c.cardno,c.lastname from
+		custdata as c left join
+		suspensions as s on c.cardno=s.cardno
+		where 
+		c.personnum=1
+		and c.type IN ('INACT','INACT2')
+		and s.reasoncode & 64 <> 0
+		order by convert(int,c.cardno)";
+	$result = $sql->query($query);
+	while($row = $sql->fetch_row($result)){
+		$ret .= "<option value=".$row[0].">".$row[0]." - ".$row[1]."</option>";
+	}
+
+	
+	$ret .= "</select>";
+	$ret .= "</td><td valign=middle>";	
+	$ret .= "<input type=submit value=\"Select All\" onclick=\"selectall('cardnos'); return false;\" />";
+	$ret .= "<p />";
+	$ret .= "<input type=submit value=\"Generate Letters\" />";
+	$ret .= "</td></tr></table></form>";
+	return $ret;
+}
+
 function dueDisplays($subtype){
 	global $sql;
 	$ret = "<form action=due.php method=post>";
@@ -312,29 +343,33 @@ function arDisplays($subtype){
 	$query = "SELECT a.cardno, c.lastname
 		   FROM AR_EOM_Summary a 
 		   LEFT JOIN custdata as c on c.cardno=a.cardno and c.personnum=1
+		   LEFT JOIN suspensions as s ON c.cardno=s.cardno
 		   WHERE c.type not in ('TERM') and
 		   c.memtype <> 9 and a.twoMonthBalance > 1
 		   and c.Balance <> 0
+		   and s.memtype1 <> 2
 		   and a.lastMonthPayments < a.twoMonthBalance
 		   ORDER BY a.cardno";
 	if ($subtype == "business"){
 		$query = "SELECT a.cardno, c.lastname
 			   FROM AR_EOM_Summary a LEFT JOIN
 			   custdata as c on c.cardno=a.cardno and c.personnum=1
+			   LEFT JOIN suspensions as s ON c.cardno=s.cardno
 			   WHERE c.type not in ('TERM') and
-			   c.memtype = 2
+			   (c.memtype = 2 or s.memtype1 = 2)
 			   and (a.LastMonthBalance <> 0 or a.lastMonthCharges <> 0 or a.lastMonthPayments <> 0)
-			   ORDER BY a.cardno";
+			   ORDER BY convert(int,a.cardno)";
 	}
 	elseif($subtype == "allbusiness"){
 		$query = "SELECT c.cardno,c.lastname FROM
 			custdata AS c LEFT JOIN
 			newBalanceToday_cust n ON c.cardno=n.memnum
+			LEFT JOIN suspensions AS s ON c.cardno=s.cardno
 			WHERE c.type NOT IN ('TERM') AND
-			c.memtype = 2
+			(c.memtype = 2 or s.memtype1=2)
 			AND c.personnum=1
 			AND n.balance > 0
-			ORDER BY c.cardno";
+			ORDER BY convert(int,c.cardno)";
 	}
 
 	$result = $sql->query($query);
@@ -368,6 +403,7 @@ function arDisplays($subtype){
 <input type=radio name=type onchange="newType('due');" /> Equity Reminders 
 <input type=radio name=type onchange="newType('pastdue');" /> Equity Past Due 
 <input type=radio name=type onchange="newType('ar');" /> AR Notices
+<input type=radio name=type onchange="newType('term');" /> Term Letters
 <p />
 <div id=buttons></div>
 <div id=contents></div>

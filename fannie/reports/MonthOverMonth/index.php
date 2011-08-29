@@ -40,7 +40,7 @@ if (isset($_REQUEST['month1'])){
 			$where .= "'".str_pad($v,13,'0',STR_PAD_LEFT)."',";
 		$where = rtrim($where,",").")";
 		$select .= "t.upc,p.description";
-		$join = "LEFT JOIN Products AS p ON p.upc=t.upc";
+		$join = "LEFT JOIN products AS p ON p.upc=t.upc";
 	}
 	else {
 		$where .= sprintf("t.department BETWEEN %d AND %d",$_REQUEST['dept1'],

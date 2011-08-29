@@ -1,0 +1,942 @@
+<html>
+<head>
+	<title>Equipment Information</title>
+<style type="text/css">
+.item {
+	border-bottom: solid 1px black;
+	margin-bottom: 10px;
+	line-height: 1.3em;
+}
+.name {
+	text-size: 115%;
+	font-weight: bold;
+	color: #003399;
+}
+.date {
+	text-size: 90%;
+}
+.notes {
+	background-color: #bbbbbb;
+	padding: 5px;
+}
+.maintenance {
+	margin-left: 25px;
+}
+.indent {
+	margin-left: 30px;
+	display:none;
+}
+a {
+	color:blue;
+}
+.gone {
+	opacity: 0.5;
+}
+</style>
+<script type="text/javascript" src="/jquery.js">
+</script>
+</head>
+<body>
+<h3><a href="" onclick="$('#servers').toggle();return false;">Servers</a></h3>
+<div id="servers" class="indent">
+
+<div class="item">
+	<div class="name">Key</div>
+	<div class="date">Purchased: ? (Downtown Computer, I think)</div>
+	<div class="notes">
+	Everything Server. Currently in IT Office.
+	</div>
+</div>
+
+<div class="item">
+	<div class="name">IS4CSERV</div>
+	<div class="date">Purchased: ? (Downtown Computer, I think)</div>
+	<div class="notes">
+	POS Server. Currently in IT Office.<br />
+		<div class="maintenance">6/25/2008 - Added PCI SATA card, 160GB HDD to 
+		provide increased space for SQL backups</div>
+		<div class="maintenance">6/23/2009 - Added 1GB RAM (slots maxed)</div>
+	</div>
+</div>
+
+<div class="item">
+	<div class="name">Honeywell</div>
+	<div class="date">Purchased: Late 2005 from Great Lakes Alarm</div>
+	<div class="notes">
+	Security system DVR. Currently in the IT Office.
+	</div>
+</div>
+
+<div class="item">
+	<div class="name">MAS90</div>
+	<div class="date">Purchased: June 2007 from Dell</div>
+	<div class="vitals">
+	3 GHz Xeon, 2GB RAM, 75GB HDD (RAID-1?), Windows 2003 Server	
+	</div>
+	<div class="notes">
+	Server for MAS90 (also provides backend for ChefTec).
+	Currently in IT Office.
+		<div class="maintenance">5/24/2010 - Warranty extended through 5/30/2012</div>
+	</div>
+</div>
+
+<div class="item">
+	<div class="name">Nexus (Xserve)</div>
+	<div class="date">Purchased: Late 2005</div>	
+	<div class="serial">Serial: QP53810ARTQ</div>
+	<div class="vitals">
+	2 Ghz G5, 1GB RAM, 77GB HDD, 250GB external HDD
+	</div>
+	<div class="notes">
+	Server for internal jabber, MySQL, rsync backups.
+	Currently in the IT Office.
+	</div>
+</div>
+
+<div class="item">
+	<div class="name">Payroll Server</div>
+	<div class="date">Purchased: Maybe early 2004, source unknown</div>
+	<div class="vitals">
+	1.6 Ghz Sempron 2300, 480MB RAM, 75GB HDD, XP Pro
+	</div>
+	<div class="notes">
+	Connected to timeclock via cable. Periodically pulls
+	punch info and transmits it to ADP. Currently in
+	the IT Office.
+	</div>
+</div>
+
+<div class="item">
+	<div class="name">Passpoint</div>
+	<div class="date">Purchased: unknown date, likely from Downtown Computer</div>
+	<div class="vitals">
+	Semrpon 2300, 480MB RAM, 112GB HDD, Windows 2000
+	</div>
+	<div class="notes">
+	Connected to security system control board. Primarily used to issue
+	or revoke passcards. Currently in the IT Office.
+	</div>
+</div>
+
+</div> <!-- end servers -->
+
+<h3><a href="" onclick="$('#laptops').toggle();return false;">Laptops</a></h3>
+<div id="laptops" class="indent">
+
+<div class="item">
+	<div class="name">iBook G4 (#1)</div>
+	<div class="date">Purchased: Early 2005</div>
+	<div class="serial">Serial: 4H517404RCQ</div>
+	<div class="vitals">
+	1.2 Ghz G4, 768MB RAM, 28 GB HDD, Wifi
+	</div>
+	<div class="notes">
+	Currently unassigned.
+	</div>
+</div>
+
+<div class="item">
+	<div class="name">iBook G4 (#2)</div>
+	<div class="date">Purchased: Mid 2005</div>
+	<div class="serial">Serial: 4H535AHBSE7</div>
+	<div class="vitals">
+	1.33 Ghz G4, 512MB RAM, 37 GB HDD, Wifi
+	</div>
+	<div class="notes">
+	Currently unused.
+	</div>
+</div>
+
+<div class="item">
+	<div class="name">iBook G4 (#3)</div>
+	<div class="date">Purchased: Early 2005</div>
+	<div class="serial">Serial: 4H5177XWRCQ</div>
+	<div class="vitals">
+	1.2 Ghz G4, 768MB RAM, 28 GB HDD, Wifi
+	</div>
+	<div class="notes">
+	Currently assigned to Jill (PE).
+	</div>
+</div>
+
+<div class="item">
+	<div class="name">iBook G3 (#4)</div>
+	<div class="date">Purchased: Late 2003</div>
+	<div class="serial">Serial: UV3422U3MRR</div>
+	<div class="vitals">
+	800 Mhz G3, 384MB RAM, 37 GB HDD, Wifi
+	</div>
+	<div class="notes">
+	Currently assigned to Eriq.
+	</div>
+</div>
+
+<div class="item ">
+	<div class="name">iBook G4 (#5)</div>
+	<div class="date">Purchased: Early 2005</div>
+	<div class="serial">Serial: 4H51789CRCQ</div>
+	<div class="vitals">
+	1.2 Ghz G4, 768MB RAM, 28 GB HDD, Wifi
+	</div>
+	<div class="notes">
+	Currently assigned to Produce.
+	</div>
+</div>
+
+<div class="item gone">
+	<div class="name">iBook G4 (#6)</div>
+	<div class="date">Purchased: Late 2004</div>
+	<div class="serial">Serial: UV4473VNRCQ</div>
+	<div class="vitals">
+	1.2 Ghz G4, 768MB RAM, 28 GB HDD, Wifi
+	</div>
+	<div class="notes">
+	Sold to staff 10/04/2010.
+	</div>
+</div>
+
+<div class="item">
+	<div class="name">iBook G4 (#7)</div>
+	<div class="date">Purchased: Mid 2005</div>
+	<div class="serial">Serial: 4H5328G5SE7</div>
+	<div class="vitals">
+	1.33 Ghz G4, 1.5GB RAM, 37GB HDD, Wifi
+	</div>
+	<div class="notes">
+	Currently assigned to Kate.
+	</div>
+</div>
+
+<div class="item">
+	<div class="name">iBook G4 (#8)</div>
+	<div class="date">Purchased: Late 2005</div>
+	<div class="serial">Serial: 4H549B0KSE7</div>
+	<div class="vitals">
+	1.33 Ghz G4, 1GB RAM, 37GB HDD, Wifi
+	</div>
+	<div class="notes">
+	Currently unassigned.
+	</div>
+</div>
+
+<div class="item">
+	<div class="name">Powerbook G4 (17")</div>
+	<div class="date">Purchased: Early 2005</div>
+	<div class="serial">Serial: W85180F6RJ3</div>
+	<div class="vitals">
+	1.67 Ghz G4, 1GB RAM, 93 GB HDD, Wifi
+	</div>
+	<div class="notes">
+	Currently assigned to Andy. Laptop monitor is bad but stable.
+	</div>
+</div>
+
+<div class="item">
+	<div class="name">Macbook C2D #1</div>
+	<div class="date">Purchased: August 2008</div>
+	<div class="serial">Serial: W88337HV0P0</div>
+	<div class="vitals">
+	2.1 Ghz Core 2 Duo, 1GB RAM, 112GB HDD, OSX 10.5
+	</div>
+	<div class="notes">
+	Currently assigned to Briana. Two year warranty.
+	</div>
+</div>
+
+<div class="item">
+	<div class="name">Macbook C2D #2</div>
+	<div class="date">Purchased: August 2008</div>
+	<div class="serial">Serial: </div>
+	<div class="vitals">
+	2.1 Ghz Core 2 Duo, 1GB RAM, 112GB HDD, OSX 10.5
+	</div>
+	<div class="notes">
+	Currently assigned to Sharon. Two year warranty.
+	</div>
+</div>
+
+<div class="item">
+	<div class="name">Macbook C2D #3</div>
+	<div class="date">Purchased: Mid 2006 (Lease?)</div>
+	<div class="serial">Serial: 4H6260HMWE7</div>
+	<div class="vitals">
+	1.8 Ghz Core 2 Duo, 1GB RAM, 56GB HDD, OSX 10.4
+	</div>
+	<div class="notes">
+	Currently unassigned.
+	</div>
+</div>
+
+<div class="item">
+	<div class="name">Acer #1</div>
+	<div class="date">Purchased: January 2007 from CDW</div>
+	<div class="serial">Serial: LXTCJ0611363608E452500</div>
+	<div class="vitals">
+	1.66 Ghz Core Duo, 512MB RAM, 25(50)GB HDD, Wifi, XP Pro
+	</div>
+	<div class="notes">
+	Currently assigned to Dale. 3 year warranty.
+	</div>
+</div>
+
+<div class="item">
+	<div class="name">Acer #2</div>
+	<div class="date">Purchased: January 2007 from CDW</div>
+	<div class="serial">Serial: LXTCJ0611363608DE72500</div>
+	<div class="vitals">
+	1.66 Ghz Core Duo, 512MB RAM, 25(50)GB HDD, Wifi, XP Pro
+	</div>
+	<div class="notes">
+	Currently assigned to Michael (Produce). 3 year warranty.
+	</div>
+</div>
+
+<div class="item">
+	<div class="name">Vostro #1</div>
+	<div class="date">Purchased: 10/3/2008 from Dell</div>
+	<div class="serial">Service Tag: 7BWLVD1</div>
+	<div class="vitals">
+	1.7Ghz A64 X2, 1GB RAM, 75GB HDD, Wifi, XP
+	</div>
+	<div class="notes">
+	Currently assigned to Debbie. 3 year warranty.
+	</div>
+</div>
+
+<div class="item">
+	<div class="name">Vostro #2</div>
+	<div class="date">Purchased: 10/3/2008 from Dell</div>
+	<div class="serial">Service Tag: </div>
+	<div class="vitals">
+	1.7Ghz A64 X2, 1GB RAM, 75GB HDD, Wifi, XP
+	</div>
+	<div class="notes">
+	Currently assigned to Colleen. 3 year warranty.
+	</div>
+</div>
+
+<div class="item">
+	<div class="name">Spare PC Laptop / Survey Laptop </div>
+	<div class="date">Purchased: August 2009 from Dell</div>
+	<div class="vitals">
+	2.2 Ghz Celeron 900, 2GB RAM, 250 GB HDD, Wifi, Vista Home
+	</div>
+	<div class="notes">
+	Currently on office table for general use. 1 year warranty.
+	</div>
+</div>
+
+<div class="item">
+	<div class="name">Lenovo #1 </div>
+	<div class="date">Purchased: January 2010 from Citon</div>
+	<div class="serial">Serial: R8-XPFH8 09/10</div>
+	<div class="vitals">
+	2.1 Ghz C2D T6500, 3GB RAM, 250 GB HDD, Wifi, XP Pro
+	</div>
+	<div class="notes">
+	Currently assigned to Lisa. 3 year warranty.
+	</div>
+</div>
+
+<div class="item">
+	<div class="name">Lenovo #2 </div>
+	<div class="date">Purchased: January 2010 from Citon</div>
+	<div class="serial">Serial: R8-XPCL4 09/10</div>
+	<div class="vitals">
+	2.1 Ghz C2D T6500, 3GB RAM, 250 GB HDD, Wifi, XP Pro
+	</div>
+	<div class="notes">
+	Currently assigned to Raelynn. 3 year warranty.
+	</div>
+</div>
+
+<div class="item">
+	<div class="name">Vostro i3 #1 </div>
+	<div class="date">Purchased: August 2010 from Dell</div>
+	<div class="serial">Service Tag: D7685N1</div>
+	<div class="vitals">
+	2.4 Ghz Core i3, 4GB RAM, 285GB HDD, Win7 Pro (32)
+	</div>
+	<div class="notes">
+	Currently assigned to Shannon. 3 year warranty.
+	</div>
+</div>
+
+<div class="item">
+	<div class="name">Vostro i3 #2 </div>
+	<div class="date">Purchased: August 2010 from Dell</div>
+	<div class="serial">Service Tag: F7685N1</div>
+	<div class="vitals">
+	2.4 Ghz Core i3, 4GB RAM, 285GB HDD, Win7 Pro (32)
+	</div>
+	<div class="notes">
+	Currently assigned to Jill (P&amp;E). 3 year warranty.
+	</div>
+</div>
+
+<div class="item">
+	<div class="name">Vostro i3 #3 </div>
+	<div class="date">Purchased: August 2010 from Dell</div>
+	<div class="serial">Service Tag: C7685N1</div>
+	<div class="vitals">
+	2.4 Ghz Core i3, 4GB RAM, 285GB HDD, Win7 Pro (32)
+	</div>
+	<div class="notes">
+	Currently assigned to Chris. 3 year warranty.
+	</div>
+</div>
+
+</div> <!-- end laptops -->
+
+<h3><a href="" onclick="$('#desktops').toggle();return false;">Desktops</a></h3>
+<div id="desktops" class="indent">
+
+<div class="item">
+	<div class="name">Scan Genius PC </div>
+	<div class="date">Purchased: Unknown. Pre-2005 move.</div>
+	<div class="vitals">
+	866 Mhz P3, 256MB RAM, 19GB HDD, Windows 2000
+	</div>
+	<div class="notes">
+	Used for ordering via handhelds.
+	</div>
+</div>
+
+<div class="item gone">
+	<div class="name">iMac IM3 (Blue) </div>
+	<div class="date">Purchased: Mid 2000</div>
+	<div class="serial">Serial: YM034ASTJWQ</div>
+	<div class="vitals">
+	350 Mhz G3, 576MB RAM, 38 GB HDD
+	</div>
+	<div class="notes">
+	Currently unassigned.<br />
+		<div class="maintenance">4/10/2010 - Recycled. Retained RAM, HDD</div> 
+	</div>
+</div>
+
+<div class="item gone">
+	<div class="name">iMac IM4 (Blue) </div>
+	<div class="date">Purchased: Early 2001</div>
+	<div class="serial">Serial: YM11026ZKLX</div>
+	<div class="vitals">
+	400 Mhz G3, 384MB RAM, 75 GB HDD
+	</div>
+	<div class="notes">
+	Currently unassigned.<br />
+		<div class="maintenance">4/10/2010 - Recycled. Retained RAM, HDD</div> 
+	</div>
+</div>
+
+<div class="item gone">
+	<div class="name">iMac IM5 (Blue) </div>
+	<div class="date">Purchased: Mid 2002</div>
+	<div class="serial">Serial: YM221575MB6</div>
+	<div class="vitals">
+	500 Mhz G3, 384MB RAM, 20 GB HDD
+	</div>
+	<div class="notes">
+	Currently unassigned.<br />
+		<div class="maintenance">4/10/2010 - Recycled. Retained RAM, HDD</div> 
+	</div>
+</div>
+
+<div class="item gone">
+	<div class="name">iMac IM6 (White/Gray) </div>
+	<div class="date">Purchased: Early 2001</div>
+	<div class="serial">Serial: RN1151KVKM3</div>
+	<div class="vitals">
+	500 Mhz G3, 384MB RAM, 20 GB HDD
+	</div>
+	<div class="notes">
+	Currently unassigned.<br />
+		<div class="maintenance">4/10/2010 - Recycled. Retained RAM, HDD</div> 
+	</div>
+</div>
+
+<div class="item gone">
+	<div class="name">iMac IM7 (Blue) </div>
+	<div class="date">Purchased: Mid 2002</div>
+	<div class="serial">Serial: G8223970MB6</div>
+	<div class="vitals">
+	500 Mhz G3, 384MB RAM, 19 GB HDD
+	</div>
+	<div class="notes">
+	Currently unused.<br />
+		<div class="maintenance">4/10/2010 - Recycled. Retained RAM, HDD</div> 
+	</div>
+</div>
+
+<div class="item">
+	<div class="name">Mac Mini #1</div>
+	<div class="date">Purchased: Late 2005</div>
+	<div class="serial">Serial: G853738PTYV</div>
+	<div class="vitals">
+	1.25 Ghz G4, 512MB RAM, 37GB HDD
+	</div>
+	<div class="notes">
+	Currently in the Deli Kitchen.
+	</div>
+</div>
+
+<div class="item">
+	<div class="name">Mac Mini #2</div>
+	<div class="date">Purchased: Late 2005</div>
+	<div class="serial">Serial: G85372JTTYV</div>
+	<div class="vitals">
+	1.25 Ghz G4, 512MB RAM, 37GB HDD
+	</div>
+	<div class="notes">
+	Currently at CSC.
+	</div>
+</div>
+
+<div class="item">
+	<div class="name">Mac Mini #3</div>
+	<div class="date">Purchased: Late 2005</div>
+	<div class="serial">Serial: G85372JNTYV</div>
+	<div class="vitals">
+	1.25 Ghz G4, 512MB RAM, 37GB HDD
+	</div>
+	<div class="notes">
+	Currently in the Honey Closet.
+	</div>
+</div>
+
+<div class="item">
+	<div class="name">Flatscreen iMac #1 </div>
+	<div class="date">Purchased: Late 2006 (Lease?)</div>
+	<div class="serial">Serial: QP6381RQWRQ</div>
+	<div class="vitals">
+	1.8 Ghz Core 2 Duo, 1GB RAM, 150GB HDD, Wifi
+	</div>
+	<div class="notes">
+	Currently assigned to Alex/Jeff.
+	</div>
+</div>
+
+<div class="item">
+	<div class="name">Flatscreen iMac #2 </div>
+	<div class="date">Purchased: Late 2006 (Lease?)</div>
+	<div class="serial">Serial: QP6381QLWRQ</div>
+	<div class="vitals">
+	1.8 Ghz Core 2 Duo, 1GB RAM, 150GB HDD, Wifi
+	</div>
+	<div class="notes">
+	Currently assigned to Alyssa.
+	</div>
+</div>
+
+<div class="item">
+	<div class="name">Flatscreen iMac #3 </div>
+	<div class="date">Purchased: Late 2006 (Lease?)</div>
+	<div class="serial">Serial: </div>
+	<div class="vitals">
+	1.8 Ghz Core 2 Duo, 1GB RAM, 150GB HDD, Wifi
+	</div>
+	<div class="notes">
+	Currently assigned to Michael (FE).
+	</div>
+</div>
+
+<div class="item">
+	<div class="name">Dell Optiplex</div>
+	<div class="date">Purchased: ?</div>
+	<div class="vitals">
+	1.7 Ghz Celeron, 128MB RAM, 7GB HDD, Windows 2000
+	</div>
+	<div class="notes">
+	Old Healthnotes kiosk machine. Now running Sunnybeam
+	display. Currently located at CSC.
+	</div>
+</div>
+
+<div class="item">
+	<div class="name">eMachines T1300</div>
+	<div class="date">Purchased: ?</div>
+	<div class="vitals">
+	1.3 Ghz Celeron, 256MB RAM, 40GB HDD, XP Home
+	</div>
+	<div class="notes">
+	Currently in the Healthnotes kiosk.
+	</div>
+</div>
+
+<div class="item">
+	<div class="name">eMachines T2742</div>
+	<div class="date">Purchased: Probably early to mid 2004</div>
+	<div class="vitals">
+	2.7 Ghz Celeron, 256MB RAM, 37GB HDD, XP Home
+	</div>
+	<div class="notes">
+	Currently assigned to Amanda.
+	</div>
+</div>
+
+<div class="item">
+	<div class="name">HP s7320n</div>
+	<div class="date">Purchased: Probably early to mid 2006</div>
+	<div class="vitals">
+	1.6 Ghz Celeron, 1GB RAM, 178GB HDD, XP MCE
+	</div>
+	<div class="notes">
+	Currently assigned to Karen.
+	</div>
+</div>
+
+<div class="item">
+	<div class="name">Vostro 200 </div>
+	<div class="date">Purchased: 10/3/2008</div>
+	<div class="serial">Service Tag: CNBLVD1</div>
+	<div class="vitals">
+	1.6 Ghz Pentium Dual Core E2140, 1GB RAM, 75GB HD, XP Home
+	</div>
+	<div class="notes">
+	Currently assigned to Justin.
+	</div>
+</div>
+
+<div class="item">
+	<div class="name">Breakroom Vostro #1 </div>
+	<div class="date">Purchased: August 2009 from Dell</div>
+	<div class="vitals">
+	2.2 Ghz Celeron 450, 1GB RAM, 80 GB HDD, Vista Home, 17" LCD
+	</div>
+	<div class="notes">
+	Currently in the break room. 1 year warranty.
+	</div>
+</div>
+
+<div class="item">
+	<div class="name">Breakroom Vostro #2 </div>
+	<div class="date">Purchased: August 2009 from Dell</div>
+	<div class="vitals">
+	2.2 Ghz Celeron 450, 1GB RAM, 80 GB HDD, Vista Home
+	</div>
+	<div class="notes">
+	Currently in the break room. 1 year warranty.
+	</div>
+</div>
+
+<div class="item">
+	<div class="name">Breakroom Vostro #3 </div>
+	<div class="date">Purchased: August 2009 from Dell</div>
+	<div class="vitals">
+	2.2 Ghz Celeron 450, 1GB RAM, 80 GB HDD, Vista Home
+	</div>
+	<div class="notes">
+	Currently in the break room. 1 year warranty.
+	</div>
+</div>
+
+<div class="item">
+	<div class="name">Citon #1 </div>
+	<div class="date">Purchased: January 2010 from Citon</div>
+	<div class="serial">Serial: 0101U10A19724</div>
+	<div class="vitals">
+	2.8 Ghz Core Duo E6300, 3GB RAM, 160 GB HDD, XP Pro, 17" LCD
+	</div>
+	<div class="notes">
+	Currently assigned to Jesse. 1 year warranty.
+	</div>
+</div>
+
+<div class="item">
+	<div class="name">Citon #2 </div>
+	<div class="date">Purchased: January 2010 from Citon</div>
+	<div class="serial">Serial: 0101U10A19721</div>
+	<div class="vitals">
+	2.8 Ghz Core Duo E6300, 3GB RAM, 160 GB HDD, XP Pro, 17" LCD
+	</div>
+	<div class="notes">
+	Currently assigned to Jim. 1 year warranty.
+	</div>
+</div>
+
+<div class="item">
+	<div class="name">Citon #3 </div>
+	<div class="date">Purchased: January 2010 from Citon</div>
+	<div class="serial">Serial: 0101U10A19722</div>
+	<div class="vitals">
+	2.8 Ghz Core Duo E6300, 3GB RAM, 160 GB HDD, XP Pro, 17" LCD
+	</div>
+	<div class="notes">
+	Currently assigned to Jill (Merch). 1 year warranty.
+	</div>
+</div>
+
+<div class="item">
+	<div class="name">Citon #4 </div>
+	<div class="date">Purchased: January 2010 from Citon</div>
+	<div class="serial">Serial: 0101U10A19723</div>
+	<div class="vitals">
+	2.8 Ghz Core Duo E6300, 3GB RAM, 160 GB HDD, XP Pro, 17" LCD
+	</div>
+	<div class="notes">
+	Currently assigned to Joe. 1 year warranty.
+	</div>
+</div>
+
+</div> <!-- end desktops -->
+
+<h3><a href="" onclick="$('#lanes').toggle();return false;">Lanes</a></h3>
+<div id="lanes" class="indent">
+
+<div class="item">
+	<div class="name">Lane 1</div> 
+	<div class="date">Purchased: pre-2005 move (I think), probably from Downtown Computer</div>
+	<div class="vitals">
+	2.60 Ghz Celeron, 512MB RAM, 75GB HDD
+	</div>
+	<div class="notes">
+	Currently at Lane 1.<br />
+	</div>
+</div>
+
+<div class="item">
+	<div class="name">Lane 2</div> 
+	<div class="date">Purchased: pre-2005 move (I think), probably from Downtown Computer</div>
+	<div class="vitals">
+	2.60 Ghz Celeron, 512MB RAM, 75GB HDD
+	</div>
+	<div class="notes">
+	Currently at Lane 2.<br />
+		<div class="maintenance">Not original case &amp; power supply</div> 
+	</div>
+</div>
+
+<div class="item">
+	<div class="name">Lane 3</div> 
+	<div class="date">Purchased: September 2005 (I think), probably from Downtown Computer</div>
+	<div class="vitals">
+	2.66 Ghz Celeron, 512MB RAM, 75GB HDD
+	</div>
+	<div class="notes">
+	Currently at Lane 3.<br />
+	</div>
+</div>
+
+<div class="item">
+	<div class="name">Lane 4</div> 
+	<div class="date">Purchased: September 2005 (I think), probably from Downtown Computer</div>
+	<div class="vitals">
+	2.66 Ghz Celeron, 512MB RAM, 75GB HDD
+	</div>
+	<div class="notes">
+	Currently at Lane 4.<br />
+	</div>
+</div>
+
+<div class="item">
+	<div class="name">Lane 5</div> 
+	<div class="date">Purchased: September 2005 (I think), probably from Downtown Computer</div>
+	<div class="vitals">
+	2.66 Ghz Celeron, 512MB RAM, 75GB HDD
+	</div>
+	<div class="notes">
+	Currently at Lane 5.<br />
+	</div>
+</div>
+
+<div class="item">
+	<div class="name">Lane 6</div> 
+	<div class="date">Purchased: September 2005 (I think), probably from Downtown Computer</div>
+	<div class="vitals">
+	2.66 Ghz Celeron, 512MB RAM, 18GB HDD
+	</div>
+	<div class="notes">
+	Currently at CSC.<br />
+		<div class="maintenance">Not original case &amp; power supply</div> 
+		<div class="maintenance">Original HDD replaced</div> 
+	</div>
+</div>
+
+<div class="item">
+	<div class="name">Lane 99</div> 
+	<div class="date">Purchased: pre-2005 move (I think), probably from Downtown Computer</div>
+	<div class="vitals">
+	2.60 Ghz Celeron, 512MB RAM, 75GB HDD
+	</div>
+	<div class="notes">
+	Currently in the IT Office.<br />
+		<div class="maintenance">Dual video cards (from failed sunnyboy experiment)</div> 
+	</div>
+</div>
+
+</div> <!-- end lanes -->
+
+<h3><a href="" onclick="$('#monitors').toggle();return false;">Monitors</a></h3>
+<div id="monitors" class="indent">
+
+<div class="item">
+<div class="name">CTX PV5931TR 15" Touchscreen Monitor</div> 
+<div class="date">Purchased: 6/9/2009 (Newegg.com)</div>
+<div class="serial">Serial: RHH-91000125</div>
+<div class="notes">
+Currently at CSC
+</div>
+</div>
+
+<div class="item">
+<div class="name">Planar PT1510MX 15" Touch Screen LCD</div> 
+<div class="date">Purchased: 1/8/2010 (Tigerdirect.com)</div>
+<div class="notes">
+Currently in Healthnotes kiosk (replacement of original).
+</div>
+</div>
+
+<div class="item">
+<div class="name">HP L1506 15" Monitor</div>
+<div class="date">Purchased: 3/6/2009 (Newegg.com)</div>
+<div class="notes">
+Currently in FE
+</div>
+</div>
+
+</div> <!-- end monitors -->
+
+<h3><a href="" onclick="$('#printers').toggle();return false;">Printers</a></h3>
+<div id="printers" class="indent">
+
+<div class="item">
+	<div class="name">Brother HL-1440</div>
+	<div class="date">Purchased: Unknown. Pre-2005 move.</div>
+	<div class="notes">
+	Small black & white laser printer. 
+	Currently in the Healthnotes kiosk.
+	</div>
+</div>
+
+<div class="item gone">
+	<div class="name">Brother MFC-8840D</div>
+	<div class="date">Purchased: Unknown. Pre-2005 move.</div>
+	<div class="notes">
+	Small black & white laser MFC. Currently between Finance
+	and Sharon's office.
+	</div>
+</div>
+
+<div class="item">
+	<div class="name">Brother HL2170W B&amp;W Laser</div>
+	<div class="date">Purchased: 4/21/2008 (Newegg.com)</div>
+	<div class="notes">
+	Small footprint laser printer. Currently in the Deli
+	kitchen.
+	</div>
+</div>
+
+<div class="item">
+	<div class="name">Sharp MX1501N Copier</div>
+	<div class="date">Purchased: October 2009 from Integrated Office Solutions</div>
+	<div class="notes">
+	Primary printer/copier/fax. Currently in the Copy Room.
+	Five year parts/service contract.
+	</div>
+</div>
+
+<div class="item">
+	<div class="name">Brother MFC-7440N</div>
+	<div class="date">Purchased: September 2010 from newegg</div>
+	<div class="serial">Serial: E0N190230</div>
+	<div class="notes">
+	Small black & white laser MFC. Currently between Finance
+	and Sharon's office.
+	</div>
+</div>
+
+<div class="item">
+	<div class="name">HP DesignJet 111 (Roll)</div>
+	<div class="date">Purchased: September 2010 from HP</div>
+	<div class="serial">Serial: MY08C08002</div>
+	<div class="notes">
+	Large-format color inkjet. Located in front of window near
+	P &amp; E. Has JetDirect ethernet card installed.
+	</div>
+</div>
+
+</div> <!-- end printers -->
+
+<h3><a href="" onclick="$('#other').toggle();return false;">Other</a></h3>
+<div id="other" class="indent">
+
+<div class="item">
+<div class="name">APC BR900 UPS</div>
+<div class="date">Purchased: 1/21/2009 (Newegg.com)</div>
+<div class="notes">
+Providing power backup for key, IS4CSERV, minimal network.
+Currently in IT Office.
+</div>
+</div>
+
+</div> <!-- end other -->
+
+<h3><a href="" onclick="$('#networking').toggle();return false;">Networking</a></h3>
+<div id="networking" class="indent">
+
+<div class="item">
+	<div class="name">Rosewill 8-port 10/100 switch</div>
+	<div class="date">Purchased: 1/20/2009 (Newegg.com)</div>
+	<div class="notes">
+	Separate physical network for Verifone credit card machines
+	(PCI compliance). Currently in IT Office.
+	</div>
+</div>
+
+<div class="item">
+	<div class="name">Netgear JGS524 10/100 24-port switch</div>
+	<div class="date">Purchased: Unknown. Pre-2005 move.</div>
+	<div class="notes">
+	Network switch for POS network.
+	Currently in IT Office.
+	</div>
+</div>
+
+<div class="item">
+	<div class="name">Linksys EtherFast 10/100 24-port hub</div>
+	<div class="date">Purchased: Unknown. Pre-2005 move.</div>
+	<div class="notes">
+	Original controller for office network. Still in use, although
+	most equipment is hooked into the JFS524 instead.
+	Currently in IT Office.
+	</div>
+</div>
+
+<div class="item">
+	<div class="name">Netgear JFS524 10/100 24-port switch</div>
+	<div class="date">Purchased: 4/21/2008 (Newegg.com)</div>
+	<div class="notes">
+	Supplemented old office-network switch - old switch was also 24
+	but had bad ports. Currently in IT Office.
+	</div>
+</div>
+
+<div class="item">
+	<div class="name">Cisco PIX</div>
+	<div class="date">Unknown. Pre-2005 move.</div>
+	<div class="notes">
+	Hardware firewall between T1 and internal network. Currently
+	in the IT Office.
+	</div>
+</div>
+
+<div class="item">
+	<div class="name">Buffalo AirStation</div>
+	<div class="date">Unknown. Pre-2005 move.</div>
+	<div class="notes">
+	Primary office wifi router. Current in the IT Office.
+	</div>
+</div>
+
+<div class="item">
+	<div class="name">Linksys WRT-54GL Router</div>
+	<div class="date">Purchased: 11/12/2009 (Newegg.com)</div>
+	<div class="notes">
+	Extra wifi router. Expand office wifi range, increase stability.
+	Currently in IT Office.
+	</div>
+</div>
+
+</div> <!-- end networkinnetworking -->
+
+</body>
+</html>

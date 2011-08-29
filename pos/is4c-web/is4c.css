@@ -1,0 +1,59 @@
+div#loginTitle { text-align:center; }
+div#loginTitle table {
+	margin-left: auto;
+	margin-right: auto;
+}
+div#loginTitle table th {
+	text-align: right;
+}
+div#topMenuRunner li {
+	display:inline;
+	padding-left: 0.3em;
+	font-size: 85%;
+}
+div#sidebar {
+	float:left;
+	width:170px;
+	margin-right: 10px;
+}
+div#browsearea {
+	float:left;
+	width:520px;	
+}
+
+table#carttable td, th {
+	padding: 8px;
+}
+
+div.itemMain {
+	width: 400px;
+	float: left;
+}
+span.itemDesc {
+	font-size: 125%;
+	font-weight: bold;
+}
+span.itemBrand {
+	font-size: 90%;
+	font-style: italic;
+	margin-left: 10px;
+	margin-bottom: 20px;
+	display: block;
+}
+
+div.itemPrice {
+	width: 200px;
+	float: left;
+}
+span.itemPriceNormal {
+	font-size: 150%;
+	font-weight: bold;
+}
+span.itemPriceAddOn {
+	font-size: 90%;
+	font-style: italic;
+}
+
+div.itemCart {
+	clear: left;
+}

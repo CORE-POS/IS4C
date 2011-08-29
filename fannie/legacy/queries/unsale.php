@@ -31,7 +31,7 @@ else {
   
   // find the batchID(s) of active batches
   // containing the upc
-  $batchIDQ = "select b.batchID from batches as b, batchlist as l where
+  $batchIDQ = "select b.batchID from batches as b, batchList as l where
                b.batchID = l.batchID and l.upc = '$upc' and b.discounttype = $discounttype
                and datediff(dd,getdate(),b.startdate) < 1
                and datediff(dd,getdate(),b.enddate) > 0";

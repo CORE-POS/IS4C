@@ -22,6 +22,7 @@
 *********************************************************************************/
 include('../config.php');
 include($FANNIE_ROOT.'src/mysql_connect.php');
+include($FANNIE_ROOT.'src/tmp_dir.php');
 
 if (isset($_REQUEST['toids'])){
 	define('FPDF_FONTPATH','font/');
@@ -55,7 +56,7 @@ if (isset($_REQUEST['toids'])){
 			CASE WHEN p.card_no=0 THEN t.last_name ELSE c.LastName END as name,
 			CASE WHEN p.card_no=0 THEN t.first_name ELSE c.FirstName END as fname,
 			CASE WHEN p.card_no=0 THEN t.phone ELSE m.phone END as phone,
-			discounttype
+			discounttype,quantity
 			FROM PendingSpecialOrder AS p
 			LEFT JOIN custdata AS c ON p.card_no=c.CardNo AND personNum=p.voided
 			LEFT JOIN meminfo AS m ON c.CardNo=m.card_no
@@ -97,7 +98,7 @@ if (isset($_REQUEST['toids'])){
 		$pdf->SetFont('Arial','','16');
 		$pdf->Cell(100,9,$w['description'],0,1,'C');
 		$pdf->SetX($x);
-		$pdf->Cell(100,9,"Cases: ".$w['ItemQtty'],0,1,'C');
+		$pdf->Cell(100,9,"Cases: ".$w['ItemQtty'].' - '.$w['quantity'],0,1,'C');
 		$pdf->SetX($x);
 		$pdf->SetFont('Arial','B','16');
 		$pdf->Cell(100,9,sprintf("Total: \$%.2f",$w['total']),0,1,'C');
@@ -143,8 +144,29 @@ if (!isset($_REQUEST['oids'])){
 	echo "<i>No order(s) selected</i><br />";
 }
 else {
+	?>
+	<script type="text/javascript">
+	function toggleChecked(status){
+		$(".cbox").each( function() {
+			$(this).attr("checked",status);
+		});
+	}
+	</script>
+	<?php
 	echo '<form action="tagpdf.php" method="get">';
+	echo '<input type="checkbox" id="sa" onclick="toggleChecked(this.checked);" />';
+	echo '<label for="sa"><b>Select All</b></label>';
 	echo '<table cellspacing="0" cellpadding="4" border="1">';
+	include($FANNIE_ROOT.'auth/login.php');
+	$username = checkLogin();
+	$cachepath = sys_get_temp_dir()."/ordercache/";
+	if (file_exists("{$cachepath}{$username}.prints")){
+		$prints = unserialize(file_get_contents("{$cachepath}{$username}.prints"));
+		foreach($prints as $oid=>$data){
+			if (!in_array($oid,$_REQUEST['oids']))
+				$_REQUEST['oids'][] = $oid;
+		}
+	}
 	foreach($_REQUEST['oids'] as $oid){
 		$q = sprintf("SELECT min(datetime) as orderDate,sum(total) as value,
 			count(*)-1 as items,
@@ -164,12 +186,20 @@ else {
 			$oid);
 		$r = $dbc->query($q);
 		while($w = $dbc->fetch_row($r)){
-			printf('<tr><td>&nbsp;</td><td>%s (%d)</td><td>%d x %d</td>
+			if ($w['department']==0){
+				echo '<tr><td>&nbsp;</td>';
+				echo '<td colspan="4">';
+				echo 'No department set for: '.$w['description'];
+				echo '</td></tr>';
+			}
+			else {
+				printf('<tr><td>&nbsp;</td><td>%s (%d)</td><td>%d x %d</td>
 				<td>$%.2f</td>
-				<td><input type="checkbox" name="toids[]" value="%d:%d" /></td>
+				<td><input type="checkbox" class="cbox" name="toids[]" value="%d:%d" /></td>
 				</tr>',
 				$w['description'],$w['department'],$w['ItemQtty'],$w['quantity'],
 				$w['total'],$w['trans_id'],$oid);
+			}
 		}
 	}
 	echo '</table>';

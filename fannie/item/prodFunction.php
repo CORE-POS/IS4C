@@ -40,13 +40,13 @@ function itemParse($upc){
 	case 'UPC':
 		$upc = str_pad($upc,13,0,STR_PAD_LEFT);
 		$savedUPC = $upc;
-		$queryItem = "SELECT p.*,x.distributor,x.manufacturer FROM Products as p left join prodExtra as x on p.upc=x.upc WHERE p.upc = '$upc' or x.upc = '$upc'";
+		$queryItem = "SELECT p.*,x.distributor,x.manufacturer FROM products as p left join prodExtra as x on p.upc=x.upc WHERE p.upc = '$upc' or x.upc = '$upc'";
 		break;
 	case 'SKU':
-		$queryItem = "SELECT p.*,x.distributor,x.manufacturer FROM Products as p inner join vendorItems as v ON p.upc=v.upc left join prodExtra as x on p.upc=x.upc WHERE v.sku='$upc'";
+		$queryItem = "SELECT p.*,x.distributor,x.manufacturer FROM products as p inner join vendorItems as v ON p.upc=v.upc left join prodExtra as x on p.upc=x.upc WHERE v.sku='$upc'";
 		break;
 	case 'Brand Prefix':
-	      $queryItem = "SELECT p.*,x.distributor,x.manufacturer FROM Products as p left join prodExtra as x on p.upc=x.upc WHERE p.upc like '%$upc%' order by p.upc";
+	      $queryItem = "SELECT p.*,x.distributor,x.manufacturer FROM products as p left join prodExtra as x on p.upc=x.upc WHERE p.upc like '%$upc%' order by p.upc";
 		break;
 	}
     }else{
@@ -315,14 +315,14 @@ function itemParse($upc){
     		}
     }else{
         oneItem($upc);
-			//         	$likeCodeQ = "SELECT u.*,l.likeCodeDesc FROM upclike as u, likecodes as l 
+			//         	$likeCodeQ = "SELECT u.*,l.likeCodeDesc FROM upcLike as u, likeCodes as l 
 			//                       WHERE u.likecode = l.likecode and u.upc = '$upc'";
 			//         	//echo $likeCodeQ; 
 			// $likeCodeR = $dbc->query($likeCodeQ);
 			// $likeCodeRow= $dbc->fetch_row($likeCodeR);
 			//    			$likeCodeNum = $dbc->num_rows($likeCodeR);
 			// 
-			//    	 		$listCodeQ = "SELECT * from likecodes";
+			//    	 		$listCodeQ = "SELECT * from likeCodes";
 			//    	 		$listCodeR = $dbc->query($listCodeQ);
 			//    	 		$listCodeRow = $dbc->fetch_row($likeCodeR);
 

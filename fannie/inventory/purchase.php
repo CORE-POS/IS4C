@@ -24,6 +24,7 @@
 include('../config.php');
 require_once ($FANNIE_ROOT.'src/mysql_connect.php'); // Connect to the DB.
 include($FANNIE_ROOT.'src/EanUpc.php');
+include($FANNIE_ROOT.'src/tmp_dir.php');
 
 if (!isset($_REQUEST['save'])){
 	$page_title='Fannie - Purchase Orders';
@@ -36,9 +37,9 @@ if (isset($_REQUEST['oid'])){
 		d.vendorName,v.brand,v.description,
 		v.size,v.units
 		FROM PurchaseOrderItems AS p
-		LEFT JOIN Vendors AS d ON
+		LEFT JOIN vendors AS d ON
 		p.vendor_id=d.vendorID
-		LEFT JOIN VendorItems AS v ON
+		LEFT JOIN vendorItems AS v ON
 		v.upc=p.upc WHERE order_id = "
 		.((int)$_REQUEST['oid'])." 
 		ORDER BY p.upc";

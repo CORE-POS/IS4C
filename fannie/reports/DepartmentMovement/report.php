@@ -132,8 +132,8 @@
 				SUM(case when t.trans_status in ('M') then t.itemqtty else t.quantity end) as qty,
 				SUM(t.total),
 				d.dept_no,d.dept_name,s.superID,x.distributor
-			  FROM $dlog as t LEFT JOIN Products as p on t.upc = p.upc
-			  LEFT JOIN Departments as d on d.dept_no = t.department 
+			  FROM $dlog as t LEFT JOIN products as p on t.upc = p.upc
+			  LEFT JOIN departments as d on d.dept_no = t.department 
 			  LEFT JOIN superdepts AS s ON t.department = s.dept_ID
 			  LEFT JOIN prodExtra as x on t.upc = x.upc
 			  WHERE s.superID = $buyer
@@ -145,8 +145,8 @@
 				SUM(case when t.trans_status in ('M') then t.itemqtty else t.quantity end) as qty,
 				SUM(t.total),
 				d.dept_no,d.dept_name,s.superID,x.distributor
-			  FROM $dlog as t LEFT JOIN Products as p on t.upc = p.upc
-			  LEFT JOIN Departments as d on d.dept_no = t.department 
+			  FROM $dlog as t LEFT JOIN products as p on t.upc = p.upc
+			  LEFT JOIN departments as d on d.dept_no = t.department 
 			  LEFT JOIN MasterSuperDepts AS s ON t.department = s.dept_ID
 			  LEFT JOIN prodExtra as x on t.upc = x.upc
 			  WHERE t.trans_type in ('D','I','M') and
@@ -158,8 +158,8 @@
 				SUM(case when t.trans_status in ('M') then t.itemqtty else t.quantity end) as qty,
 				SUM(t.total),
 				d.dept_no,d.dept_name,s.superID,x.distributor
-			  FROM $dlog as t LEFT JOIN Products as p on t.upc = p.upc
-			  LEFT JOIN Departments as d on d.dept_no = t.department 
+			  FROM $dlog as t LEFT JOIN products as p on t.upc = p.upc
+			  LEFT JOIN departments as d on d.dept_no = t.department 
 			  LEFT JOIN MasterSuperDepts AS s ON t.department = s.dept_ID
 			  LEFT JOIN prodExtra as x on t.upc = x.upc
 			  WHERE t.trans_type in ('D','I','M') and s.superID <> 0 and
@@ -171,8 +171,8 @@
 				SUM(case when t.trans_status in ('M') then t.itemqtty else t.quantity end) as qty,
 				SUM(t.total),
 				d.dept_no,d.dept_name,s.superID,x.distributor
-			  FROM $dlog as t LEFT JOIN Products as p on t.upc = p.upc
-			  LEFT JOIN Departments as d on d.dept_no = t.department 
+			  FROM $dlog as t LEFT JOIN products as p on t.upc = p.upc
+			  LEFT JOIN departments as d on d.dept_no = t.department 
 			  LEFT JOIN MasterSuperDepts AS s ON t.department = s.dept_ID
 			  LEFT JOIN prodExtra as x on t.upc = x.upc
 			  WHERE t.department BETWEEN $deptStart AND $deptEnd
@@ -253,7 +253,7 @@
 		$query="";
 		if(isset($buyer) && $buyer>0){
 		 $query =  "SELECT $groupBy,SUM(quantity) as Qty, SUM(total) as Sales "
-                          ."FROM $dlog as t LEFT JOIN Departments as d on d.dept_no=t.department "
+                          ."FROM $dlog as t LEFT JOIN departments as d on d.dept_no=t.department "
 			  ."LEFT JOIN superdepts AS s ON s.dept_ID = t.department "
 			  ."WHERE s.superID=$buyer AND tDate >= '$date1a' AND tDate <= '$date2a' "
 			  ."AND trans_type in ('D','I','M')"
@@ -261,14 +261,14 @@
 		}
 		else if (isset($buyer) && $buyer == -1){
 		 $query =  "SELECT $groupBy,SUM(quantity) as Qty, SUM(total) as Sales "
-                          ."FROM $dlog as t LEFT JOIN Departments as d on d.dept_no=t.department "
+                          ."FROM $dlog as t LEFT JOIN departments as d on d.dept_no=t.department "
 			  ."WHERE tDate >= '$date1a' AND tDate <= '$date2a' "
 			  ."AND trans_type in ('D','I','M')"
 			  ."GROUP BY $groupBy ORDER BY $groupBy";
 		}
 		else if (isset($buyer) && $buyer == -2){
 		 $query =  "SELECT $groupBy,SUM(quantity) as Qty, SUM(total) as Sales "
-                          ."FROM $dlog as t LEFT JOIN Departments as d on d.dept_no=t.department "
+                          ."FROM $dlog as t LEFT JOIN departments as d on d.dept_no=t.department "
 			  ."LEFT JOIN MasterSuperDepts AS s ON s.dept_ID = t.department "
 			  ."WHERE tDate >= '$date1a' AND tDate <= '$date2a' "
 			  ."AND trans_type in ('D','I','M') and s.superID <> 0"
@@ -276,7 +276,7 @@
 		}
 		else {
 		 $query =  "SELECT $groupBy,SUM(quantity) as Qty, SUM(total) as Sales "
-                          ."FROM $dlog as t LEFT JOIN Departments as d on d.dept_no=t.department "
+                          ."FROM $dlog as t LEFT JOIN departments as d on d.dept_no=t.department "
 			  ."WHERE tDate >= '$date1a' AND tDate <= '$date2a' "
 			  ."AND trans_type in ('D','I','M') "
 			  ."AND t.department BETWEEN $deptStart AND $deptEnd "

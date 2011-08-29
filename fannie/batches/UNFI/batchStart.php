@@ -24,7 +24,7 @@
 include('../../config.php');
 include($FANNIE_ROOT.'src/mysql_connect.php');
 
-$res = $dbc->query("select superID,super_name from masterSuperDepts
+$res = $dbc->query("select superID,super_name from MasterSuperDepts
 	WHERE superID > 0
 	group by superID,super_name");
 $opts = "<option value=99 selected>All</option>";

@@ -51,8 +51,8 @@ if (isset($_GET['date1'])){
 		  from $dtrans as t inner join products as p
 		  on p.upc=t.upc
 		  left join departments as d on t.department = d.dept_no
-		  left join mastersuperdepts as s on d.dept_no = s.dept_ID
-		  left join scaleitems as c on t.upc=c.plu
+		  left join MasterSuperDepts as s on d.dept_no = s.dept_ID
+		  left join scaleItems as c on t.upc=c.plu
 		  where t.datetime between '$date1' and '$date2'
 		  and trans_status NOT IN ('X','Z','M') and register_no <> 99
 		  and emp_no <> 9999 and $where
@@ -122,7 +122,7 @@ $deptsQ = "select dept_no,dept_name from departments order by dept_no";
 $deptsR = $dbc->query($deptsQ);
 $deptsList = "";
 
-$deptSubQ = "SELECT superID,super_name FROM masterSuperDepts
+$deptSubQ = "SELECT superID,super_name FROM MasterSuperDepts
 		WHERE superID <> 0 
 		group by superID,super_name
 		ORDER BY superID";

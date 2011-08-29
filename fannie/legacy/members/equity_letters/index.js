@@ -59,6 +59,9 @@ function newType(mytype){
 	case 'upgrade':
 		showUpgrade();
 		break;
+	case 'term':
+		showTerm();
+		break;
 	}
 }
 
@@ -89,6 +92,17 @@ function showUpgrade(){
 	document.getElementById('buttons').innerHTML = b;
 
 	redisplay('upgrade','0month');
+}
+
+function showTerm(){
+	var b = "<b>Show</b>: ";
+	b += "<input type=radio name=buttons onchange=\"redisplay('upgrade','0month');\" checked /> This month";
+	b += "<input type=radio name=buttons onchange=\"redisplay('upgrade','1month');\" /> Last month";
+	b += "<input type=radio name=buttons onchange=\"redisplay('upgrade','2month');\" /> Two months ago";
+	b += "<input type=radio name=buttons onchange=\"redisplay('upgrade','all');\" /> All members";
+	document.getElementById('buttons').innerHTML = '';
+
+	redisplay('term','');
 }
 
 function showDue(){

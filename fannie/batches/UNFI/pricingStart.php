@@ -25,8 +25,8 @@ include('../../config.php');
 include($FANNIE_ROOT.'src/mysql_connect.php');
 
 $res = $dbc->query("SELECT s.superID,super_name
-		FROM UNFI_order AS u INNER JOIN
-		Products AS p ON u.upcc = p.upc
+		FROM unfi_order AS u INNER JOIN
+		products AS p ON u.upcc = p.upc
 		LEFT JOIN superdepts AS s ON
 		s.dept_ID = p.department
 		LEFT JOIN superDeptNames AS n

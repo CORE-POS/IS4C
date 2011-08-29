@@ -25,7 +25,7 @@
 
    This script scans prodUpdate for instances
    where a product's department actually changed
-   and logs those into ProdDepartmentHistory.
+   and logs those into prodDepartmentHistory.
 
    This is just faster to deal with as prodUpdate
    ends up having a ton of entries.
@@ -61,7 +61,7 @@ while($w = $sql->fetch_row($r)){
 		$prevDept = null;
 		$prevDate = null;
 		$chkR = $sql->query("SELECT modified,dept_ID FROM
-			ProdDepartmentHistory WHERE upc='$upc'
+			prodDepartmentHistory WHERE upc='$upc'
 			ORDER BY modified DESC");
 		if ($sql->num_rows($chkR) > 0){
 			$chk = $sql->fetch_row($chkR);
@@ -71,7 +71,7 @@ while($w = $sql->fetch_row($r)){
 	}
 	
 	if ($prevDept != $w['dept']){ // price changed
-		$ins = sprintf("INSERT INTO ProdDepartmentHistory
+		$ins = sprintf("INSERT INTO prodDepartmentHistory
 			(upc,modified,dept_ID,uid)
 			VALUES (%s,%s,%d,%d)",
 			$sql->escape($upc),
