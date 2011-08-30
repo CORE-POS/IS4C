@@ -212,7 +212,7 @@ function newVendor($name){
 }
 
 function getVendorInfo($id){
-	global $dbc;
+	global $dbc,$FANNIE_ROOT;
 	$ret = "";
 
 	$nameR = $dbc->query("SELECT vendorName FROM vendors WHERE vendorID=$id");
@@ -226,9 +226,19 @@ function getVendorInfo($id){
 	$ls = "";
 	if ($scriptR && $dbc->num_rows($scriptR) > 0)
 		$ls = array_pop($dbc->fetch_row($scriptR));
+	/*
 	$ret .= sprintf('<b>Load script</b>: <input type="text" value="%s" id="vscript" />
 		<input type="submit" value="Save" onclick="saveScript(%d); return false;" />
 		<p />',$ls,$id);
+	*/
+	$ret .= "<b>Load script</b>: <select id=\"vscript\" onchange=\"saveScript($id);\">";
+	$dh = opendir($FANNIE_ROOT.'batches/UNFI/load-scripts/');
+	while( ($file=readdir($dh)) !== False){
+		if ($file[0]==".") continue;
+		if (substr($file,-4) != ".php") continue;
+		$ret .= sprintf("<option %s>%s</option>",($ls==$file?'selected':''),$file);
+	}
+	$ret .= '</select><p />';
 
 	$itemR = $dbc->query("SELECT COUNT(*) FROM vendorItems WHERE vendorID=$id");
 	$num = array_pop($dbc->fetch_row($itemR));

@@ -27,6 +27,10 @@ include($FANNIE_ROOT.'src/tmp_dir.php');
 if (isset($_REQUEST['MAX_FILE_SIZE'])){
 	$tmpfile = $_FILES['upload']['tmp_name'];
 	$fn = tempnam(sys_get_temp_dir(),"VUP");
+	if ($_FILES['upload']['error'] != 0){
+		echo "Error uploading file (error code = ".$_FILES['upload']['error'].")";
+		exit;
+	}
 	move_uploaded_file($tmpfile,$fn);
 	$id = $_REQUEST['vid'];
 	header("Location: update.php?vid=$id&filename=".base64_encode($fn)."&preview=yes");

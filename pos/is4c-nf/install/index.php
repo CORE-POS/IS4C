@@ -459,8 +459,7 @@ function create_op_dbs($db,$type){
 	  `subdept` smallint(4) default NULL,
 	  `deposit` real default NULL,
 	  `local` int(11) default 0 NULL,
-	  `id` int(11) NOT NULL auto_increment,
-	  PRIMARY KEY  (`id`),
+	  `id` int(11) NOT NULL,
 	  KEY `upc` (`upc`),
 	  KEY `description` (`description`),
 	  KEY `normal_price` (`normal_price`)
@@ -501,7 +500,7 @@ function create_op_dbs($db,$type){
 		[subdept] [int] NULL ,
 		[deposit] [money] NULL ,
 		[local] [int] NULL ,
-		[id] [int] IDENTITY (1, 1) NOT NULL ,
+		[id] [int] NOT NULL ,
 		CONSTRAINT [PK_Products] PRIMARY KEY  CLUSTERED 
 		(
 			[upc]
