@@ -47,13 +47,13 @@ require($FANNIE_ROOT.'src/tmp_dir.php');
 // where various information is stored
 $SKU = 1;
 $BRAND = 2;
-$DESCRIPTION = 5;
+$DESCRIPTION = 6;
 $QTY = 3;
 $SIZE1 = 4;
-$UPC = 6;
-$CATEGORY = 22;
-$WHOLESALE = 9;
-$DISCOUNT = 9;
+$UPC = 14;
+$CATEGORY = 5;
+$REG_COST = 8;
+$NET_COST = 8;
 
 require($FANNIE_ROOT.'batches/UNFI/lib.php');
 $VENDOR_ID = getVendorID(basename($_SERVER['SCRIPT_FILENAME']));
@@ -124,10 +124,10 @@ while(!feof($fp)){
 	if ($upc == "0000000000000")
 		continue;
 	$category = $data[$CATEGORY];
-	$wholesale = trim($data[$WHOLESALE]);
-	$discount = trim($data[$DISCOUNT]);
+	$reg = trim($data[$REG_COST]);
+	$net = trim($data[$NET_COST]);
 	// can't process items w/o price (usually promos/samples anyway)
-	if (empty($wholesale) or empty($discount))
+	if (empty($reg) or empty($net))
 		continue;
 
 	// don't repeat items
@@ -140,30 +140,30 @@ while(!feof($fp)){
 	// occasional > $1,000 item
 	$brand = preg_replace("/\'/","",$brand);
 	$description = preg_replace("/\'/","",$description);
-	$wholesale = preg_replace("/\\\$/","",$wholesale);
-	$wholesale = preg_replace("/,/","",$wholesale);
-	$discount = preg_replace("/\\\$/","",$discount);
-	$discount = preg_replace("/,/","",$discount);
+	$reg = preg_replace("/\\\$/","",$reg);
+	$reg = preg_replace("/,/","",$reg);
+	$net = preg_replace("/\\\$/","",$net);
+	$net = preg_replace("/,/","",$net);
 
 	// skip the item if prices aren't numeric
 	// this will catch the 'label' line in the first CSV split
 	// since the splits get returned in file system order,
 	// we can't be certain *when* that chunk will come up
-	if (!is_numeric($wholesale) or !is_numeric($discount))
+	if (!is_numeric($reg) or !is_numeric($net))
 		continue;
 
 	// need unit cost, not case cost
-	$net_cost = $discount / $qty;
+	$reg_unit = $reg / $qty;
 
 	// set cost in $PRICEFILE_COST_TABLE
-	$upQ = "update prodExtra set cost=$net_cost where upc='$upc'";
+	$upQ = "update prodExtra set cost=$reg_unit where upc='$upc'";
 	$upR = $dbc->query($upQ);
-	$upQ = "update products set cost=$net_cost where upc='$upc'";
+	$upQ = "update products set cost=$reg_unit where upc='$upc'";
 	$upR = $dbc->query($upQ);
 	// end $PRICEFILE_COST_TABLE cost tracking
 
 	$insQ = "INSERT INTO vendorItems (brand,sku,size,upc,units,cost,description,vendorDept,vendorID)
-			VALUES ('$brand',$sku,'$size','$upc',$qty,$net_cost,
+			VALUES ('$brand',$sku,'$size','$upc',$qty,$reg_unit,
 			'$description',$category,$VENDOR_ID)";
 	$insR = $dbc->query($insQ);
 	// end general UNFI catalog queries
@@ -179,7 +179,7 @@ while(!feof($fp)){
 		$margin = array_pop($dbc->fetch_array($marginR));
 
 	// calculate a SRP from unit cost and desired margin
-	$srp = round($net_cost / (1 - $margin),2);
+	$srp = round($reg_unit / (1 - $margin),2);
 
 	// prices should end in 5 or 9, so add a cent until that's true
 	while (substr($srp,strlen($srp)-1,strlen($srp)) != "5" and
@@ -192,7 +192,7 @@ while(!feof($fp)){
 	// it's just a table containing all items in the current order
 	$insQ = "INSERT INTO unfi_order (unfi_sku,brand,item_desc,pack,pack_size,upcc,cat,wholesale,
 		 vd_cost,wfc_srp) VALUES ($sku,'$brand','$description',$qty,'$size','$upc',
-		 $category,$wholesale,$discount,$srp)";
+		 $category,$reg,$net,$srp)";
 	$insR = $dbc->query($insQ);
 }
 fclose($fp);
@@ -224,41 +224,43 @@ if (count($filestoprocess) == 0){
 	// UNFI under one UPC but sold in-store under a different UPC
 	// (mostly bulk items sold by PLU). All it does is update the
 	// upcc field in unfi_order for the affected items
-	$pluQ1 = "UPDATE unfi_order AS u
-		INNER JOIN UnfiToPLU AS p
-		ON u.unfi_sku = p.unfi_sku
-		SET u.upcc = p.wfc_plu";
-	$pluQ2 = "UPDATE vendorItems AS u
-		INNER JOIN UnfiToPLU AS p
-		ON u.sku = p.unfi_sku
-		SET u.upc = p.wfc_plu
-		WHERE u.vendorID=".$VENDOR_ID;
-	$pluQ3 = "UPDATE prodExtra AS x
-		INNER JOIN UnfiToPLU AS p
-		ON x.upc=p.wfc_plu
-		INNER JOIN unfi_order AS u
-		ON u.unfi_sku=p.unfi_sku
-		SET x.cost = u.vd_cost / u.pack";
-	if ($FANNIE_SERVER_DBMS == "MSSQL"){
-		$pluQ1 = "UPDATE unfi_order SET upcc = p.wfc_plu
-			FROM unfi_order AS u RIGHT JOIN
-			UnfiToPLU AS p ON u.unfi_sku = p.unfi_sku
-			WHERE u.unfi_sku IS NOT NULL";
-		$pluQ2 = "UPDATE vendorItems SET upc = p.wfc_plu
-			FROM vendorItems AS u RIGHT JOIN
-			UnfiToPLU AS p ON u.sku = p.unfi_sku
-			WHERE u.sku IS NOT NULL
-			AND u.vendorID=".$VENDOR_ID;
-		$pluQ3 = "UPDATE prodExtra
-			SET cost = u.vd_cost / u.pack
-			FROM UnfiToPLU AS p LEFT JOIN
-			unfi_order AS u ON p.unfi_sku = u.unfi_sku
-			LEFT JOIN prodExtra AS x
-			ON p.wfc_plu = x.upc";
+	if ($dbc->table_exists("UnfiToPLU"){
+		$pluQ1 = "UPDATE unfi_order AS u
+			INNER JOIN UnfiToPLU AS p
+			ON u.unfi_sku = p.unfi_sku
+			SET u.upcc = p.wfc_plu";
+		$pluQ2 = "UPDATE vendorItems AS u
+			INNER JOIN UnfiToPLU AS p
+			ON u.sku = p.unfi_sku
+			SET u.upc = p.wfc_plu
+			WHERE u.vendorID=".$VENDOR_ID;
+		$pluQ3 = "UPDATE prodExtra AS x
+			INNER JOIN UnfiToPLU AS p
+			ON x.upc=p.wfc_plu
+			INNER JOIN unfi_order AS u
+			ON u.unfi_sku=p.unfi_sku
+			SET x.cost = u.vd_cost / u.pack";
+		if ($FANNIE_SERVER_DBMS == "MSSQL"){
+			$pluQ1 = "UPDATE unfi_order SET upcc = p.wfc_plu
+				FROM unfi_order AS u RIGHT JOIN
+				UnfiToPLU AS p ON u.unfi_sku = p.unfi_sku
+				WHERE u.unfi_sku IS NOT NULL";
+			$pluQ2 = "UPDATE vendorItems SET upc = p.wfc_plu
+				FROM vendorItems AS u RIGHT JOIN
+				UnfiToPLU AS p ON u.sku = p.unfi_sku
+				WHERE u.sku IS NOT NULL
+				AND u.vendorID=".$VENDOR_ID;
+			$pluQ3 = "UPDATE prodExtra
+				SET cost = u.vd_cost / u.pack
+				FROM UnfiToPLU AS p LEFT JOIN
+				unfi_order AS u ON p.unfi_sku = u.unfi_sku
+				LEFT JOIN prodExtra AS x
+				ON p.wfc_plu = x.upc";
+		}
+		$dbc->query($pluQ1);
+		$dbc->query($pluQ2);
+		$dbc->query($pluQ3);
 	}
-	$dbc->query($pluQ1);
-	$dbc->query($pluQ2);
-	$dbc->query($pluQ3);
 
 	echo "Finished processing UNFI price file<br />";
 	if ($PRICEFILE_USE_SPLITS){
