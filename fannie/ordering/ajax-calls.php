@@ -155,6 +155,7 @@ case 'newQty':
 		$_REQUEST['qty'],$_REQUEST['orderID'],
 		$_REQUEST['transID']);
 	$dbc->query($upQ);
+	$info = reprice($_REQUEST['orderID'],$_REQUEST['transID']);
 	echo getItemForm($_REQUEST['orderID']);
 	break;
 case 'newDept':
@@ -460,7 +461,6 @@ function addUPC($orderID,$memNum,$upc,$num_cases=1){
 
 	$dbc->smart_insert('PendingSpecialOrder',$ins_array);
 	
-
 	return array($qtyReq,$ins_array['trans_id'],$ins_array['description']);
 }
 
@@ -1385,7 +1385,8 @@ function getItemNonForm($orderID){
 function reprice($oid,$tid,$reg=False){
 	global $dbc;
 
-	$query = sprintf("SELECT o.unitPrice,o.itemQtty,o.quantity,o.discounttype,c.type,c.memType
+	$query = sprintf("SELECT o.unitPrice,o.itemQtty,o.quantity,o.discounttype,
+		c.type,c.memType,o.regPrice,o.total
 		FROM PendingSpecialOrder AS o LEFT JOIN custdata AS c ON
 		o.card_no=c.CardNo AND c.personNum=1
 		WHERE order_id=%d AND trans_id=%d",$oid,$tid);
@@ -1398,6 +1399,11 @@ function reprice($oid,$tid,$reg=False){
 	$total = $regPrice;
 	if (($row['type'] == 'PC' || $row['memType'] == 9) && $row['discounttype'] == 0){
 		$total *= 0.85;
+	}
+
+	if ($row['unitPrice'] == 0 || $row['quantity'] == 0){
+		$regPrice = $row['regPrice'];
+		$total = $row['total'];
 	}
 
 	$query = sprintf("UPDATE PendingSpecialOrder SET

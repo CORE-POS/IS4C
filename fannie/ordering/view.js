@@ -181,7 +181,6 @@ function saveQty(new_qty,tid){
 	});
 }
 function saveUnit(new_unit,tid){
-	alert('hi');
 	var oid = $('#orderID').val();
 	$.ajax({
 	url: 'ajax-calls.php',
