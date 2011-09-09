@@ -80,6 +80,17 @@ function save2(newval,key1,key2){
 }
 
 function save3(newval,key1,key2,key3){
+	if (key2=='AX') {
+		var oldcc = document.getElementById('tender'+key3+'CC').value;
+		document.getElementById('tender'+key3+'CC').value = oldcc-newval;
+		save3(oldcc-newval,'tenders','CC',key3);
+		var fees = newval * 0.0315;
+		fees = Math.round(fees*100)/100;
+		document.getElementById('axfees'+key3).value = fees;
+		saveMisc(fees,'axfees',key3,'sales');
+		newval = newval-fees;
+		document.getElementById('tender'+key3+'AX').value = newval;
+	}
 	var datestr = document.getElementById('datestr').value;
 	phpSend('save3&datestr='+datestr+'&val='+newval+'&key1='+key1+'&key2='+key2+'&key3='+key3);
 }
