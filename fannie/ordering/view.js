@@ -31,9 +31,9 @@ $(document).ready(function(){
 
 $(window).unload(function() {
 	$('#nText').change();
-	$(':input').each(function(){
-		$(this).change();
-	});
+	//$(':input').each(function(){
+	//	$(this).change();
+	//});
 });
 
 

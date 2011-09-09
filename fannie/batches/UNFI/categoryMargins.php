@@ -59,8 +59,12 @@ if (isset($_POST["ids"])){
 		$tpercent = $testings[$i] / 100.0;	
 		$upQ = "update unfiCategories set margin=$percent,testing=$tpercent where categoryID=$ids[$i]";
 		$upR = $dbc->query($upQ);
+		$upQ = "update vendorDepartments SET margin=$percent,testing=$tpercent WHERE deptID=$ids[$i]
+			AND vendorID=1";
+		$upR = $dbc->query($upQ);
 	}
 	echo "<h3>Category Margins Updated</h3>";
+
 }
 
 $fetchQ = "select categoryID,name,margin,testing from unfiCategories order by categoryID";

@@ -54,6 +54,7 @@ $UPC = 14;
 $CATEGORY = 5;
 $REG_COST = 8;
 $NET_COST = 8;
+$SRP = 16;
 
 require($FANNIE_ROOT.'batches/UNFI/lib.php');
 $VENDOR_ID = getVendorID(basename($_SERVER['SCRIPT_FILENAME']));
@@ -86,6 +87,8 @@ if ($PRICEFILE_USE_SPLITS){
 		$truncateQ = "truncate table unfi_order";
 		$truncateR = $dbc->query($truncateQ);
 		$delQ = "DELETE FROM vendorItems WHERE vendorID=$VENDOR_ID";
+		$delR = $dbc->query($delQ);
+		$delQ = "DELETE FROM vendorSRPs WHERE vendorID=$VENDOR_ID";
 		$delR = $dbc->query($delQ);
 	}
 	else {
@@ -126,8 +129,9 @@ while(!feof($fp)){
 	$category = $data[$CATEGORY];
 	$reg = trim($data[$REG_COST]);
 	$net = trim($data[$NET_COST]);
+	$srp = trim($data[$SRP]);
 	// can't process items w/o price (usually promos/samples anyway)
-	if (empty($reg) or empty($net))
+	if (empty($reg) or empty($net) or empty($srp))
 		continue;
 
 	// don't repeat items
@@ -144,12 +148,14 @@ while(!feof($fp)){
 	$reg = preg_replace("/,/","",$reg);
 	$net = preg_replace("/\\\$/","",$net);
 	$net = preg_replace("/,/","",$net);
+	$srp = preg_replace("/\\\$/","",$srp);
+	$srp = preg_replace("/,/","",$srp);
 
 	// skip the item if prices aren't numeric
 	// this will catch the 'label' line in the first CSV split
 	// since the splits get returned in file system order,
 	// we can't be certain *when* that chunk will come up
-	if (!is_numeric($reg) or !is_numeric($net))
+	if (!is_numeric($reg) or !is_numeric($net) or !is_numeric($srp))
 		continue;
 
 	// need unit cost, not case cost
@@ -172,6 +178,7 @@ while(!feof($fp)){
 	// I'm calculating margins based on an in-house table of UNFI catagory ID #s
 	// and desired margins. Alternatively, SRP could be lifted right out
 	// of the CSV file
+	/*
 	$marginQ = "select margin from unfiCategories where categoryID = $category";
 	$marginR = $dbc->query($marginQ);
 	$margin = 0.45;
@@ -186,6 +193,7 @@ while(!feof($fp)){
 	       substr($srp,strlen($srp)-1,strlen($srp)) != "9")
 		$srp += 0.01;
 	// end margin calculations
+	*/
 
 	// unfi_order is what the UNFI price change page builds on,
 	// that's why it's being populated here
@@ -193,6 +201,10 @@ while(!feof($fp)){
 	$insQ = "INSERT INTO unfi_order (unfi_sku,brand,item_desc,pack,pack_size,upcc,cat,wholesale,
 		 vd_cost,wfc_srp) VALUES ($sku,'$brand','$description',$qty,'$size','$upc',
 		 $category,$reg,$net,$srp)";
+	$insR = $dbc->query($insQ);
+
+	$insQ = "INSERT INTO vendorSRPs (vendorID, upc, srp) VALUES
+		($VENDOR_ID,'$upc',$srp)";
 	$insR = $dbc->query($insQ);
 }
 fclose($fp);
@@ -224,7 +236,7 @@ if (count($filestoprocess) == 0){
 	// UNFI under one UPC but sold in-store under a different UPC
 	// (mostly bulk items sold by PLU). All it does is update the
 	// upcc field in unfi_order for the affected items
-	if ($dbc->table_exists("UnfiToPLU"){
+	if ($dbc->table_exists("UnfiToPLU")){
 		$pluQ1 = "UPDATE unfi_order AS u
 			INNER JOIN UnfiToPLU AS p
 			ON u.unfi_sku = p.unfi_sku

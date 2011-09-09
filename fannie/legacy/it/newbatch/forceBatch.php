@@ -1,6 +1,6 @@
 <?php
 function forceBatch($batchID){
-	global $sql;
+	global $sql,$FANNIE_ROOT;
 
 	$batchInfoQ = "SELECT * FROM batches WHERE batchID = $batchID";
 	$batchInfoR = $sql->query($batchInfoQ);
@@ -91,6 +91,23 @@ function forceBatch($batchID){
 
 	//$batchUpQ = "EXEC productsUpdateAll";
 	//$batchUpR = $sql->query($batchUpQ);
-	exec("php fork.php sync products");
+	if (!function_exists("updateProductAllLanes")) include($FANNIE_ROOT.'legacy/queries/laneUpdates.php');
+
+	$q = "SELECT upc FROM batchList WHERE batchID=".$batchID;
+	$r = $sql->query($q);
+	while($w = $sql->fetch_row($r)){
+		$upcs = array($w['upc']);
+		if (substr($w['upc'],0,2)=='LC'){
+			$upcs = array();
+			$lc = substr($w['upc'],2);
+			$q2 = "SELECT upc FROM upcLike WHERE likeCode=".$lc;
+			$r2 = $sql->query($q2);
+			while($w2 = $sql->fetch_row($r2))
+				$upcs[] = $w2['upc'];
+		}
+		foreach($upcs as $u){
+			updateProductAllLanes($u);
+		}
+	}
 }
 ?>
