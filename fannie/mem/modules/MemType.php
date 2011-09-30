@@ -65,7 +65,7 @@ class MemType extends MemberModule {
 	function SaveFormData($memNum){
 		$dbc = $this->db();
 
-		$mtype = isset($_REQUEST['MemberType_type']) ? $_REQUEST['MemberType_type'] : 0;
+		$mtype = isset($_REQUEST['MemType_type']) ? $_REQUEST['MemType_type'] : 0;
 		$q = sprintf("SELECT discount,staff,SSI,cd_type FROM memdefaults
 			WHERE memtype=%d",$mtype);
 		$r = $dbc->query($q);
