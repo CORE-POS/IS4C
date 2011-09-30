@@ -165,6 +165,23 @@ function forceBatch($batchID){
 
 	$forceR = $dbc->query($forceQ);
 	$forceLCR = $dbc->query($forceLCQ);
+
+	$q = "SELECT upc FROM batchList WHERE batchID=".$batchID;
+	$r = $dbc->query($q);
+	while($w = $dbc->fetch_row($r)){
+		$upcs = array($w['upc']);
+		if (substr($w['upc'],0,2)=='LC'){
+			$upcs = array();
+			$lc = substr($w['upc'],2);
+			$q2 = "SELECT upc FROM upcLike WHERE likeCode=".$lc;
+			$r2 = $dbc->query($q2);
+			while($w2 = $dbc->fetch_row($r2))
+				$upcs[] = $w2['upc'];
+		}
+		foreach($upcs as $u){
+			updateProductAllLanes($u);
+		}
+	}
 }
 
 ?>

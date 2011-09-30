@@ -273,7 +273,7 @@ function display($date1,$date2,$excel=False){
 				if (!$excel){
 					$ret .= "<input type=text size=7 value=\"".$v[$ts]."\" ";
 					$ret .= "onchange=\"save3(this.value,'tenders','$k','$ts');rb($ts);\" ";
-					$ret .= "style=\"text-align:right\" name=debit$ts />";
+					$ret .= "style=\"text-align:right\" name=debit$ts id=tender$ts$k />";
 				}
 				else 
 					$ret .= $v[$ts];
@@ -286,7 +286,7 @@ function display($date1,$date2,$excel=False){
 				if (!$excel){
 					$ret .= "<input type=text size=7 value=\"".(-1*$v[$ts])."\" ";
 					$ret .= "onchange=\"save3(this.value,'tenders','$k','$ts');rb($ts);\" ";
-					$ret .= "style=\"text-align:right\" name=credit$ts />";
+					$ret .= "style=\"text-align:right\" name=credit$ts id=tender$ts$k />";
 				}
 				else 
 					$ret .= -1*$v[$ts];
@@ -618,11 +618,11 @@ function display($date1,$date2,$excel=False){
 	for ($i=0;$i<$num_days;$i++){
 		$ts = mktime(0,0,0,$sM,$sD+$i,$sY);
 		$ret .= "<td class=money>";
-		if (isset($data['other']['axfees'][1][$ts]) && $data['other']['axfees'][1][$ts] < 0){
+		if (isset($data['other']['axfees'][1][$ts]) && $data['other']['axfees'][1][$ts] >= 0){
 			if (!$excel){
 				$ret .= "<input type=text size=7 value=\"".(-1*$data['other']['axfees'][1][$ts])."\" ";
 				$ret .= "onchange=\"saveMisc(this.value,'axfees','$ts','sales');rb($ts);\" ";
-				$ret .= "style=\"text-align:right\" name=debit$ts />";
+				$ret .= "style=\"text-align:right\" name=debit$ts id=axfees$ts />";
 			}
 			else 
 				$ret .= -1*$data['other']['axfees'][1][$ts];
@@ -631,11 +631,11 @@ function display($date1,$date2,$excel=False){
 		else
 			$ret .= "&nbsp;";
 		$ret .= "</td><td class=money>";
-		if (isset($data['other']['axfees'][1][$ts]) && $data['other']['axfees'][1][$ts] >= 0){
+		if (isset($data['other']['axfees'][1][$ts]) && $data['other']['axfees'][1][$ts] < 0){
 			if (!$excel){
 				$ret .= "<input type=text size=7 value=\"".$data['other']['axfees'][1][$ts]."\" ";
 				$ret .= "onchange=\"saveMisc(this.value,'axfees','$ts','sales');rb($ts);\" ";
-				$ret .= "style=\"text-align:right\" name=credit$ts />";
+				$ret .= "style=\"text-align:right\" name=credit$ts id=axfees$ts />";
 			}
 			else 
 				$ret .= $data['other']['axfees'][1][$ts];
