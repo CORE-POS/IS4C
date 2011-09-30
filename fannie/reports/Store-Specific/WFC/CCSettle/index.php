@@ -54,6 +54,7 @@ $totals = array(
 	"settled"=>0.0,
 	"Visa"=>0.0,
 	"MasterCard"=>0.0,
+	"American Express"=>0.0,
 	"Discover"=>0.0
 );
 $colors = array("one","two");

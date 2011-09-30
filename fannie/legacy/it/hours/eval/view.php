@@ -217,12 +217,12 @@ function addForm(){
 		$ret .= "<option value=$w[0]>$w[1]</option>";
 	}
 	$ret .= "</select></td>";
-	
+
 	$ret .= "<th>Score</th>";
 	$ret .= "<td><input type=text size=3 id=addscore /></td>";
 
 	$ret .= "<th>Pos.</th>";
-	$ret .= "<td><input type=text size=8 id=addpos value=Primary /></td>";
+	$ret .= "<td><input type=text size=18 id=addpos value=Primary /></td>";
 
 	$ret .= "<td><input type=submit id=addsub value=Add /></td>";
 
@@ -273,6 +273,7 @@ function showAddForm(){
 		success: function(data){
 			$('#workspace').html(data);
 			$('#addsub').click(addEntry);	
+			$('#addpos').val($('#empPositions').val());
 			$('#addmonth').focus();
 		}
 	});	
