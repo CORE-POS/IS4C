@@ -33,6 +33,7 @@ if ($user) {
 }
 
 include('../../src/mysql_connect.php');
+if (!function_exists("updateProductAllLanes")) include($FANNIE_ROOT.'item/laneUpdates.php');
 
 $batchtypes = array();
 $typesQ = "select batchTypeID,typeDesc from batchType order by batchTypeID";
