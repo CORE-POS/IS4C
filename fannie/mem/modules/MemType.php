@@ -67,7 +67,7 @@ class MemType extends MemberModule {
 
 		$mtype = isset($_REQUEST['MemberType_type']) ? $_REQUEST['MemberType_type'] : 0;
 		$q = sprintf("SELECT discount,staff,SSI,cd_type FROM memdefaults
-			WHERE memtype=%d",$typem);
+			WHERE memtype=%d",$mtype);
 		$r = $dbc->query($q);
 
 		$type='REG';
