@@ -134,7 +134,7 @@ function docurl($xml){
 	curl_setopt($curl_handle, CURLOPT_CONNECTTIMEOUT,15);
 	curl_setopt($curl_handle, CURLOPT_FAILONERROR,false);
 	curl_setopt($curl_handle, CURLOPT_FOLLOWLOCATION,false);
-	curl_setopt($curl_handle, CURLOPT_TIMEOUT,30);
+	curl_setopt($curl_handle, CURLOPT_TIMEOUT,60);
 	curl_setopt($curl_handle, CURLOPT_SSL_VERIFYPEER, 0);
 	curl_setopt($curl_handle, CURLOPT_HTTPHEADER, array("Content-type: text/xml"));
 	curl_setopt($curl_handle, CURLOPT_POSTFIELDS, $xml);
