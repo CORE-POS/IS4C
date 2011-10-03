@@ -24,12 +24,15 @@
 class Equity extends MemberModule {
 
 	function ShowEditForm($memNum){
-		global $FANNIE_URL;
+		global $FANNIE_URL,$FANNIE_TRANS_DB,$FANNIE_SERVER_DBMS;
+
+		$trans = $FANNIE_TRANS_DB;
+		if ($FANNIE_SERVER_DBMS == 'MSSQL') $trans .= ".dbo";
 
 		$dbc = $this->db();
 		
 		$infoQ = sprintf("SELECT payments
-				FROM newBalanceStockToday_test
+				FROM {$trans}.newBalanceStockToday_test
 				WHERE memnum=%d",$memNum);
 		$infoR = $dbc->query($infoQ);
 		$equity = 0;

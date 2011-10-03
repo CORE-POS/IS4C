@@ -27,6 +27,9 @@ include('../../src/header.html');
 
 require_once('../../src/mysql_connect.php');
 
+$trans = $FANNIE_TRANS_DB;
+if ($FANNIE_SERVER_DBMS == 'MSSQL') $trans .= ".dbo";
+
 if (isset($_REQUEST['send_email']) || isset($_REQUEST['skip_email']) || isset($_REQUEST['cardno'])){
 	$cns = isset($_REQUEST['cardno'])?$_REQUEST['cardno']:array();;
 	if (isset($_REQUEST['send_email'])){
@@ -55,7 +58,7 @@ if (isset($_REQUEST['send_email']) || isset($_REQUEST['skip_email']) || isset($_
 		   m.email_1,n.balance
 		   FROM meminfo AS m LEFT JOIN
 		   custdata as c on c.cardno=m.card_no and c.personnum=1
-		   LEFT JOIN newBalanceToday_cust AS n
+		   LEFT JOIN {$trans}.newBalanceToday_cust AS n
 		   ON m.card_no=n.memnum
 		   WHERE m.card_no=$cur";
 		$r = $dbc->query($q);
@@ -69,7 +72,9 @@ if (isset($_REQUEST['send_email']) || isset($_REQUEST['skip_email']) || isset($_
 		echo "<b>Message Preview</b>:<br />";
 		$bal = sprintf("%.2f",$w[3]);
 
-		$priorQ = "SELECT sum(charges) - sum(payments) FROM ar_history
+		$trans = $FANNIE_TRANS_DB;
+		if ($FANNIE_SERVER_DBMS=='MSSQL') $trans .= ".dbo";
+		$priorQ = "SELECT sum(charges) - sum(payments) FROM {$trans}.ar_history
 			WHERE datediff(dd,getdate(),tdate) < -90
 			AND card_no = $cur";
 		$priorR = $dbc->query($priorQ);
@@ -147,7 +152,7 @@ elseif (!isset($_REQUEST['cardno'])){
                            FROM 
                            custdata as c 
 			   LEFT JOIN meminfo AS i ON c.cardno=i.card_no
-			   LEFT JOIN newBalanceToday_cust AS n
+			   LEFT JOIN {$trans}.newBalanceToday_cust AS n
 			   ON c.cardno=n.memnum
                            WHERE c.type not in ('TERM') and
                            c.memtype = 2 AND c.personnum=1
