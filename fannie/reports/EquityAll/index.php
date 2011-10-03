@@ -9,8 +9,11 @@ $header = "Current Member Equity";
 $page_title = "Fannie :: Equity History";
 include($FANNIE_ROOT.'src/header.html');
 
+$trans = $FANNIE_TRANS_DB;
+if ($FANNIE_SERVER_DBMS=='MSSQL') $trans .= ".dbo";
+
 $q = "SELECT n.memnum,c.LastName,c.FirstName,n.payments
-	FROM newBalanceStockToday_test as n LEFT JOIN 
+	FROM {$trans}.newBalanceStockToday_test as n LEFT JOIN 
 	custdata AS c ON n.memnum=c.CardNo AND c.personNum=1
 	ORDER BY n.memnum";
 

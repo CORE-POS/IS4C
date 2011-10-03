@@ -25,6 +25,9 @@ $page_title='Fannie - Member Management Module';
 $header='Send Statements';
 include('../../src/header.html');
 
+$trans = $FANNIE_TRANS_DB;
+if ($FANNIE_SERVER_DBMS == 'MSSQL') $trans .= ".dbo";
+
 require_once('../../src/mysql_connect.php');
 
 if (isset($_REQUEST['send_email']) || isset($_REQUEST['skip_email']) || isset($_REQUEST['cardno'])){
@@ -52,7 +55,7 @@ if (isset($_REQUEST['send_email']) || isset($_REQUEST['skip_email']) || isset($_
 			FROM meminfo AS m LEFT JOIN
 			custdata AS c ON m.card_no=c.cardno
 			AND c.personnum=1 LEFT JOIN
-			newBalanceStockToday_test AS n
+			{$trans}.newBalanceStockToday_test AS n
 			on m.card_no = n.memnum
 			LEFT JOIN memDates AS d ON m.card_no=d.card_no
 			WHERE cardno = $cur";
@@ -105,7 +108,7 @@ elseif (!isset($_REQUEST['cardno'])){
 		datediff(mm,getdate(),m.end_date) as months_left from
 		memDates as m left join custdata as c
 		on m.card_no=c.cardno and c.personnum=1
-		left join newBalanceStockToday_test as n on
+		left join {$trans}.newBalanceStockToday_test as n on
 		m.card_no = n.memnum left join meminfo as i
 		on i.card_no=m.card_no
 		where datediff(mm,getdate(),m.end_date) BETWEEN 0 AND 2

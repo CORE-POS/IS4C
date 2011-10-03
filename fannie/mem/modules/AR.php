@@ -24,13 +24,16 @@
 class AR extends MemberModule {
 
 	function ShowEditForm($memNum){
-		global $FANNIE_URL;
+		global $FANNIE_URL,$FANNIE_TRANS_DB,$FANNIE_SERVER_DBMS;
+
+		$trans = $FANNIE_TRANS_DB;
+		if ($FANNIE_SERVER_DBMS == 'MSSQL') $trans .= ".dbo";
 
 		$dbc = $this->db();
 		
 		$infoQ = sprintf("SELECT c.memDiscountLimit,n.balance
 				FROM custdata AS c LEFT JOIN
-				newBalanceToday_cust AS n ON
+				{$trans}.newBalanceToday_cust AS n ON
 				c.CardNo=n.memnum
 				WHERE c.CardNo=%d AND c.personNum=1",$memNum);
 		$infoR = $dbc->query($infoQ);
