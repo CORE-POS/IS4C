@@ -23,8 +23,8 @@
 // A page to search the member base.
 $page_title='Fannie - Member Management Module';
 $header='Find A Member';
+include('../config.php');
 include('../src/header.html');
-include ('./includes/header.html');
 
 require_once('../src/mysql_connect.php');
 
