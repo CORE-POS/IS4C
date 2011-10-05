@@ -109,7 +109,7 @@ recreate_views($sql);
 // rebuild views that depend on ar & equity
 // department definitions
 function recreate_views($con){
-	global $FANNIE_TRANS_DB,$FANNIE_OP_DB;
+	global $FANNIE_TRANS_DB,$FANNIE_OP_DB,$FANNIE_SERVER_DBMS;
 
 	$con->query("DROP VIEW memIouToday",$FANNIE_TRANS_DB);
 	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
