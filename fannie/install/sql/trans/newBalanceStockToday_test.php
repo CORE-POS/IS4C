@@ -3,7 +3,7 @@
 View: newBalanceStockToday_test
 
 Columns:
-	card_no int
+	memnum int
 	payments (calculated)
 	startdate datetime
 
