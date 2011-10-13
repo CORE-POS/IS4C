@@ -21,7 +21,7 @@ CREATE VIEW expingMems as
 	m.city,
 	m.state,
 	m.zip,
-	n.card_no as memnum,
+	m.card_no as memnum,
 	n.payments,
 	n.startdate,
 	".$con->convert('d.end_date','char')." as enddate,
