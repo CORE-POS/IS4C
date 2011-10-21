@@ -188,8 +188,9 @@ function createVendorDepartment($vid,$did,$name){
 		return;
 	}
 
-	$insQ = sprintf("INSERT INTO vendorDepartments VALUES (%d,%d,
-		%s,0.00,0.00)",$vid,$did,$dbc->escape($name));
+	$insQ = sprintf("INSERT INTO vendorDepartments (vendorID,deptID,
+		name,margin,testing,posDeptID) VALUES (%d,%d,
+		%s,0.00,0.00,0)",$vid,$did,$dbc->escape($name));
 	$insR = $dbc->query($insQ);
 	
 	echo "Department created";
