@@ -29,7 +29,7 @@ require('../config.php');
 require_once($FANNIE_ROOT.'src/mysql_connect.php');
 
 
-$unfiQ = "SELECT DISTINCT * FROM UNFI where upc = '$upc'";
+$unfiQ = "SELECT DISTINCT * FROM vendorItems where upc = '$upc' ORDER BY vendorID";
 //echo $unfiQ;
 
 $unfiR = $dbc->query($unfiQ);
