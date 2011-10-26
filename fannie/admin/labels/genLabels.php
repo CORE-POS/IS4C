@@ -32,7 +32,8 @@ $data = array();
 if (isset($_REQUEST['id'])){
 	$query = "SELECT s.*,p.scale FROM shelftags AS s
 		INNER JOIN products AS p ON s.upc=p.upc
-		WHERE s.id=".$_REQUEST['id'];
+		WHERE s.id=".$_REQUEST['id']." ORDER BY
+		p.department,s.upc";
 	$result = $dbc->query($query);
 
 	while($row = $dbc->fetch_row($result)){
