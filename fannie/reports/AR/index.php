@@ -1,7 +1,7 @@
 <?php
 
 include('../../config.php');
-include($FANNIE_ROOT.'src/mysql_connect.php');
+include($FANNIE_ROOT.'src/trans_connect.php');
 
 $memNum = isset($_REQUEST['memNum'])?(int)$_REQUEST['memNum']:0;
 

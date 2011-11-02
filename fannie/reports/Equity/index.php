@@ -9,9 +9,12 @@ $header = "Equity History for Member $memNum";
 $page_title = "Fannie :: Equity History";
 include($FANNIE_ROOT.'src/header.html');
 
+$trans = $FANNIE_TRANS_DB;
+if ($FANNIE_SERVER_DBMS=='MSSQL') $trans .= ".dbo";
+
 $q = sprintf("select stockPurchase,trans_num,dept_name,
 		year(tdate),month(tdate),day(tdate)
-		from stockpurchases AS s LEFT JOIN
+		from {$trans}.stockpurchases AS s LEFT JOIN
 		departments AS d ON s.dept=d.dept_no
 		WHERE s.card_no=%d ORDER BY tdate DESC",$memNum);
 if ($memNum == 0){

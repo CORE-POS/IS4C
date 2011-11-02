@@ -44,6 +44,8 @@ else {
 	echo "</form><hr />";
 }
 
+$trans = $FANNIE_TRANS_DB;
+if ($FANNIE_SERVER_DBMS=='MSSQL') $trans .= ".dbo";
 $q = "SELECT c.cardno,
 		month(m.start_date),day(m.start_date),year(m.start_date),
 		month(m.end_date),day(m.end_date),year(m.end_date),
@@ -53,7 +55,7 @@ $q = "SELECT c.cardno,
 		CASE WHEN n.payments IS NULL THEN 0 ELSE n.payments END as equity
 	FROM custdata AS c LEFT JOIN memDates AS m
 	ON m.card_no = c.cardno 
-	LEFT JOIN newBalanceStockToday_test AS n
+	LEFT JOIN {$trans}.newBalanceStockToday_test AS n
 	ON m.card_no=n.memnum LEFT JOIN suspensions AS s
 	ON m.card_no=s.cardno LEFT JOIN reasoncodes AS r
 	ON s.reasonCode & r.mask <> 0

@@ -45,7 +45,8 @@ $query = "SELECT CardNo,
 	  LEFT JOIN memDates AS d
 	  ON c.cardno=d.card_no
           WHERE 
-          memType <>0
+          memType IN (1,3)
+	  AND c.Type='PC'
           AND (end_date > getdate() or end_date = '')
           AND ads_OK = 1
           AND PersonNum = 1

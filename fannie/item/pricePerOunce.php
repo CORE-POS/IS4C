@@ -35,7 +35,6 @@ function pricePerOunce($price,$sizeStr){
 				$num = "";
 			}
 			else {
-				echo $sizeStr[$i];
 				$inNum = 0;
 				$unit .= $sizeStr[$i];
 			}

@@ -100,3 +100,39 @@ foreach($tmp as $module){
 <hr />
 <input type=submit value="Re-run" />
 </form>
+<?php
+$sql = db_test_connect($FANNIE_SERVER,$FANNIE_SERVER_DBMS,
+		$FANNIE_TRANS_DB,$FANNIE_SERVER_USER,
+		$FANNIE_SERVER_PW);
+recreate_views($sql);
+
+// rebuild views that depend on ar & equity
+// department definitions
+function recreate_views($con){
+	global $FANNIE_TRANS_DB,$FANNIE_OP_DB,$FANNIE_SERVER_DBMS;
+
+	$con->query("DROP VIEW memIouToday",$FANNIE_TRANS_DB);
+	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+			'memIouToday','trans');
+
+	$con->query("DROP VIEW newBalanceToday_cust",$FANNIE_TRANS_DB);
+	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+			'newBalanceToday_cust','trans');
+
+	$con->query("DROP VIEW stockSumToday",$FANNIE_TRANS_DB);
+	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+			'stockSumToday','trans');
+
+	$con->query("DROP VIEW newBalanceStockToday_test",$FANNIE_TRANS_DB);
+	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+			'newBalanceStockToday_test','trans');
+
+	$con->query("DROP VIEW dheader",$FANNIE_TRANS_DB);
+	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+			'dheader','trans');
+
+	$con->query("DROP VIEW ar_history_today",$FANNIE_TRANS_DB);
+	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+			'ar_history_today','trans');
+}
+?>

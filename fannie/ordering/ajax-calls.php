@@ -373,12 +373,12 @@ function addUPC($orderID,$memNum,$upc,$num_cases=1){
 	$vendor_desc = (!is_numeric($upc)?$upc:"");
 	$srp = 0.00;
 	$vendor_upc = (!is_numeric($upc)?'0000000000000':"");
-	$caseQ = "SELECT units,vendorName,description,srp,i.upc FROM vendorItems as i
+	$caseQ = sprintf("SELECT units,vendorName,description,srp,i.upc FROM vendorItems as i
 			LEFT JOIN vendors AS v ON
 			i.vendorID=v.vendorID LEFT JOIN
 			vendorSRPs AS s ON i.upc=s.upc AND i.vendorID=s.vendorID
-		WHERE i.upc='$upc' OR i.sku='$sku' OR i.sku='0$sku'
-		ORDER BY i.vendorID";
+		WHERE i.upc=%s OR i.sku=%s OR i.sku=%s
+		ORDER BY i.vendorID",$dbc->escape($upc),$dbc->escape($sku),$dbc->escape('0'.$sku));
 	$caseR = $dbc->query($caseQ);
 	if ($dbc->num_rows($caseR) > 0)
 		list($caseSize,$vendor,$vendor_desc,$srp,$vendor_upc) = $dbc->fetch_row($caseR);
@@ -396,8 +396,8 @@ function addUPC($orderID,$memNum,$upc,$num_cases=1){
 		elseif($w['memType'] == 9) $mempricing = True;
 	}
 
-	$pdQ = "SELECT normal_price,special_price,department,discounttype,
-		description,discount FROM products WHERE upc='$upc'";
+	$pdQ = sprintf("SELECT normal_price,special_price,department,discounttype,
+		description,discount FROM products WHERE upc=%s",$dbc->escape($upc));
 	$pdR = $dbc->query($pdQ);
 	$qtyReq = False;
 	if ($dbc->num_rows($pdR) > 0){
@@ -427,11 +427,11 @@ function addUPC($orderID,$memNum,$upc,$num_cases=1){
 			$ins_array['total'] = $pdW['normal_price']*$caseSize*$num_cases;
 			$ins_array['regPrice'] = $pdW['normal_price']*$caseSize*$num_cases;
 			$ins_array['unitPrice'] = $pdW['normal_price'];
-			if ($pdW['discounttype'] == 1){
+			if ($pdW['discount'] != 0 && $pdW['discounttype'] == 1){
 				$ins_array['total'] = $pdW['special_price']*$caseSize*$num_cases;
 				$ins_array['unitPrice'] = $pdW['special_price'];
 			}
-			elseif ($mempricing){
+			elseif ($pdW['discount'] != 0 && $mempricing){
 				if ($pdW['discounttype'] == 2){
 					$ins_array['total'] = $pdW['special_price']*$caseSize*$num_cases;
 					$ins_array['unitPrice'] = $pdW['special_price'];
@@ -447,6 +447,7 @@ function addUPC($orderID,$memNum,$upc,$num_cases=1){
 		// use vendor SRP if applicable
 		$ins_array['regPrice'] = $srp*$caseSize*$num_cases;
 		$ins_array['total'] = $srp*$caseSize*$num_cases;
+		$ins_array['unitPrice'] = $srp;
 		if ($mempricing)
 			$ins_array['total'] *= 0.85;
 	}
@@ -466,6 +467,11 @@ function addUPC($orderID,$memNum,$upc,$num_cases=1){
 
 function CreateContactRow($orderID){
 	global $dbc;
+
+	$testQ = sprintf("SELECT card_no FROM SpecialOrderContact
+		WHERE card_no=%d",$orderID);
+	$testR = $dbc->query($testQ);
+	if ($dbc->num_rows($testR) > 0) return True;
 
 	$vals = array(
 		'card_no'=>$orderID,
@@ -1386,7 +1392,7 @@ function reprice($oid,$tid,$reg=False){
 	global $dbc;
 
 	$query = sprintf("SELECT o.unitPrice,o.itemQtty,o.quantity,o.discounttype,
-		c.type,c.memType,o.regPrice,o.total
+		c.type,c.memType,o.regPrice,o.total,o.discountable
 		FROM PendingSpecialOrder AS o LEFT JOIN custdata AS c ON
 		o.card_no=c.CardNo AND c.personNum=1
 		WHERE order_id=%d AND trans_id=%d",$oid,$tid);
@@ -1397,7 +1403,7 @@ function reprice($oid,$tid,$reg=False){
 	if ($reg)
 		$regPrice = $reg;
 	$total = $regPrice;
-	if (($row['type'] == 'PC' || $row['memType'] == 9) && $row['discounttype'] == 0){
+	if (($row['type'] == 'PC' || $row['memType'] == 9) && $row['discountable'] != 0 && $row['discounttype'] == 0){
 		$total *= 0.85;
 	}
 
