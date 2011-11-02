@@ -3,7 +3,7 @@
 View: newBalanceStockToday_test
 
 Columns:
-	card_no int
+	memnum int
 	payments (calculated)
 	startdate datetime
 
@@ -20,7 +20,7 @@ $names = qualified_names();
 $CREATE['trans.newBalanceStockToday_test'] = "
 	CREATE VIEW newBalanceStockToday_test AS
 		SELECT
-		m.card_no as card_no,
+		m.card_no as memnum,
 		case
 			when a.card_no is not null and b.card_no is not null
 			then a.totPayments + b.totPayments

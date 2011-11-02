@@ -35,6 +35,13 @@ if (isset($_POST['MAX_FILE_SIZE']) && $_REQUEST['vendorPage'] != ""){
 	}
 	closedir($dh);
 
+	if ($_FILES['upload']['error'] != UPLOAD_ERR_OK){
+		echo "Error uploading file<br />";
+		echo "Error code is: ".$_FILES['upload']['error'].'<br />';
+		echo '<a href="http://www.php.net/manual/en/features.file-upload.errors.php">Details</a>';
+		exit;
+	}
+
 	$tmpfile = $_FILES['upload']['tmp_name'];
 	$path_parts = pathinfo($_FILES['upload']['name']);
 	if ($path_parts['extension'] == "zip"){

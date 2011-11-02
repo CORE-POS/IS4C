@@ -6,6 +6,7 @@ include('../../db.php');
 
 require($FANNIE_ROOT.'src/csv_parser.php');
 require($FANNIE_ROOT.'src/tmp_dir.php');
+if (!function_exists("updateProductAllLanes")) include($FANNIE_ROOT.'legacy/queries/laneUpdates.php');
 
 $LC_COL=0;
 $PRICE_COL=1;
@@ -66,6 +67,11 @@ else if (isset($_POST['likecode'])){
 			where u.likecode=".$likecodes[$i];	
 		echo "Setting likecode #".$likecodes[$i]." to $".$prices[$i]."<br />";
 		$sql->query($q);
+
+		$q2 = "SELECT upc FROM upcLike WHERE likeCode=".$likecodes[$i];
+		$r2 = $sql->query($q2);
+		while($w2 = $sql->fetch_row($r2))
+			updateProductAllLanes($w2['upc']);
 	}
 }
 else{

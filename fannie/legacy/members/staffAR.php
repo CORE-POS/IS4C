@@ -25,24 +25,26 @@ if(!validateUserQuiet('staffar')){
               c.cardno,
               c.lastname,
               c.firstname,
-              c.balance as Ending_Balance
-              FROM custdata as c, staffID as a WHERE a.cardno = c.cardno
-              AND (c.memType = 9 OR c.memType = 3)
+              n.balance as Ending_Balance
+              FROM custdata as c INNER JOIN staffID as a ON a.cardno = c.cardno
+	      LEFT JOIN newBalanceToday_cust AS n ON c.CardNo=n.memnum
+              WHERE (c.memType = 9 OR c.memType = 3)
               and c.personnum = 1
               order by c.lastname";
 
       $result=$sql->query($query);
 
       $insARQ = "INSERT INTO staffAR
-                 SELECT
-                 c.cardno,
-                 c.lastname,
-                 c.firstname,
-                 c.balance as Ending_Balance
-                 FROM custdata as c, staffID as a WHERE a.cardno = c.cardno
-                 AND (c.memType = 9 OR c.memType = 3)
-                 and c.personnum = 1
-                order by c.lastname";
+	      SELECT
+              c.cardno,
+              c.lastname,
+              c.firstname,
+              n.balance as Ending_Balance
+              FROM custdata as c INNER JOIN staffID as a ON a.cardno = c.cardno
+	      LEFT JOIN newBalanceToday_cust AS n ON c.CardNo=n.memnum
+              WHERE (c.memType = 9 OR c.memType = 3)
+              and c.personnum = 1
+              order by c.lastname";
 
       $insARR = $sql->query($insARQ);
    }

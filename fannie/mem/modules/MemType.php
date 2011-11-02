@@ -61,6 +61,37 @@ class MemType extends MemberModule {
 		$ret .= "</table></fieldset>";
 		return $ret;
 	}
+
+	function SaveFormData($memNum){
+		$dbc = $this->db();
+
+		$mtype = isset($_REQUEST['MemType_type']) ? $_REQUEST['MemType_type'] : 0;
+		$q = sprintf("SELECT discount,staff,SSI,cd_type FROM memdefaults
+			WHERE memtype=%d",$mtype);
+		$r = $dbc->query($q);
+
+		$type='REG';
+		$discount=0;
+		$staff=0;
+		$SSI=0;
+		if ($dbc->num_rows($r) > 0){
+			$w = $dbc->fetch_row($r);
+			$type = $w['cd_type'];
+			$discount = $w['discount'];
+			$staff = $w['staff'];
+			$SSI = $w['SSI'];
+		}
+
+		$upQ = sprintf("UPDATE custdata SET Type=%s,staff=%d,SSI=%d,Discount=%d,
+			memType=%d WHERE CardNo=%d",$dbc->escape($type),$staff,$SSI,
+			$discount,$mtype,$memNum);
+		$upR = $dbc->query($upQ);
+
+		if ($upR === False )
+			return "Error: problem saving Member Type<br />";
+		else
+			return "";
+	}
 }
 
 ?>
