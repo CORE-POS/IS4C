@@ -105,30 +105,30 @@ if (isset($_GET['date1'])){
 	echo "</br>";
 
 	if (!isset($_GET['excel'])){
-		echo "<a href=movementProd.php?date1=$date1&date2=$date2&upc=$upc&sort=$sort&dir=$dir&excel=yes>Save</a> to Excel<br />";
+		echo "<a href=index.php?date1=$date1&date2=$date2&upc=$upc&sort=$sort&dir=$dir&excel=yes>Save</a> to Excel<br />";
 	}
 
 	echo "<table cellpadding=2 cellspacing=0 border=1>";
 	echo "<tr>";
 	if (!isset($_GET['excel'])){
 		if ($sort == "datepart(yy,t.tdate),datepart(mm,t.tdate),datepart(dd,t.tdate)"){
-			echo "<th><a href=movementProd.php?date1=".$date1."&date2=".$date2."&upc=".$upc."&sort=".$sort."&dir=".$otherdir.">Date</a></th>";
+			echo "<th><a href=index.php?date1=".$date1."&date2=".$date2."&upc=".$upc."&sort=".$sort."&dir=".$otherdir.">Date</a></th>";
 		}
 		else {
-			echo "<th><a href=movementProd.php?date1=".$date1."&date2=".$date2."&upc=".$upc."&sort=datepart(yy,t.tdate),datepart(mm,t.tdate),datepart(dd,t.tdate)&dir=ASC>Date</a></th>";
+			echo "<th><a href=index.php?date1=".$date1."&date2=".$date2."&upc=".$upc."&sort=datepart(yy,t.tdate),datepart(mm,t.tdate),datepart(dd,t.tdate)&dir=ASC>Date</a></th>";
 		}
 		echo "<th>UPC</th><th>Description</th>";
 		if ($sort == "sum(t.quantity)"){
-			echo "<th><a href=movementProd.php?date1=".$date1."&date2=".$date2."&upc=".$upc."&sort=".$sort."&dir=".$otherdir.">Qty</a></th>";
+			echo "<th><a href=index.php?date1=".$date1."&date2=".$date2."&upc=".$upc."&sort=".$sort."&dir=".$otherdir.">Qty</a></th>";
 		}
 		else {
-			echo "<th><a href=movementProd.php?date1=".$date1."&date2=".$date2."&upc=".$upc."&sort=sum(t.quantity)&dir=DESC>Qty</a></th>";
+			echo "<th><a href=index.php?date1=".$date1."&date2=".$date2."&upc=".$upc."&sort=sum(t.quantity)&dir=DESC>Qty</a></th>";
 		}
 		if ($sort == "sum(t.total)"){
-			echo "<th><a href=movementProd.php?date1=".$date1."&date2=".$date2."&upc=".$upc."&sort=".$sort."&dir=".$otherdir.">Sales</a></th>";
+			echo "<th><a href=index.php?date1=".$date1."&date2=".$date2."&upc=".$upc."&sort=".$sort."&dir=".$otherdir.">Sales</a></th>";
 		}
 		else {
-			echo "<th><a href=movementProd.php?date1=".$date1."&date2=".$date2."&upc=".$upc."&sort=sum(t.total)&dir=DESC>Sales</a></th>";
+			echo "<th><a href=index.php?date1=".$date1."&date2=".$date2."&upc=".$upc."&sort=sum(t.total)&dir=DESC>Sales</a></th>";
 		}
 	}
 	else {
