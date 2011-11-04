@@ -373,12 +373,12 @@ function addUPC($orderID,$memNum,$upc,$num_cases=1){
 	$vendor_desc = (!is_numeric($upc)?$upc:"");
 	$srp = 0.00;
 	$vendor_upc = (!is_numeric($upc)?'0000000000000':"");
-	$caseQ = sprintf("SELECT units,vendorName,description,srp,i.upc FROM vendorItems as i
+	$caseQ = "SELECT units,vendorName,description,srp,i.upc FROM vendorItems as i
 			LEFT JOIN vendors AS v ON
 			i.vendorID=v.vendorID LEFT JOIN
 			vendorSRPs AS s ON i.upc=s.upc AND i.vendorID=s.vendorID
-		WHERE i.upc=%s OR i.sku=%s OR i.sku=%s
-		ORDER BY i.vendorID",$dbc->escape($upc),$dbc->escape($sku),$dbc->escape('0'.$sku));
+		WHERE i.upc='$upc' OR i.sku='$sku' OR i.sku='0$sku'
+		ORDER BY i.vendorID";
 	$caseR = $dbc->query($caseQ);
 	if ($dbc->num_rows($caseR) > 0)
 		list($caseSize,$vendor,$vendor_desc,$srp,$vendor_upc) = $dbc->fetch_row($caseR);
@@ -396,8 +396,8 @@ function addUPC($orderID,$memNum,$upc,$num_cases=1){
 		elseif($w['memType'] == 9) $mempricing = True;
 	}
 
-	$pdQ = sprintf("SELECT normal_price,special_price,department,discounttype,
-		description,discount FROM products WHERE upc=%s",$dbc->escape($upc));
+	$pdQ = "SELECT normal_price,special_price,department,discounttype,
+		description,discount FROM products WHERE upc='$upc'";
 	$pdR = $dbc->query($pdQ);
 	$qtyReq = False;
 	if ($dbc->num_rows($pdR) > 0){

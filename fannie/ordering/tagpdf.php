@@ -55,7 +55,7 @@ if (isset($_REQUEST['toids'])){
 		$q = "SELECT ItemQtty,total,regPrice,p.card_no,description,department,
 			CASE WHEN p.card_no=0 THEN t.last_name ELSE c.LastName END as name,
 			CASE WHEN p.card_no=0 THEN t.first_name ELSE c.FirstName END as fname,
-			CASE WHEN t.phone is NULL THEN m.phone ELSE t.phone END as phone,
+			CASE WHEN p.card_no=0 THEN t.phone ELSE m.phone END as phone,
 			discounttype,quantity
 			FROM PendingSpecialOrder AS p
 			LEFT JOIN custdata AS c ON p.card_no=c.CardNo AND personNum=p.voided
