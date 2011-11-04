@@ -103,7 +103,7 @@ echo "<tr class=two><th>PTO Taken, YTD</th><td>$infoW[2]</td></tr>";
 echo "<tr class=one><th>PTO Remaining</th><td>".($infoW[1]-$infoW[2])."</td></tr>";
 echo "</tr></table>";
 
-$periodsQ = "select daysUsed,month(dstamp),year(dstamp) from salaryHours where empID=$empID order by dstamp";
+$periodsQ = "select daysUsed,month(dstamp),year(dstamp) from salaryHours where empID=$empID order by dstamp DESC";
 $periodsR = $sql->query($periodsQ);
 $class = array("one","two");
 $c = 0;
