@@ -236,6 +236,7 @@ class UPC extends Parser {
 
 		$upc = $row["upc"];
 		$row['numflag'] = isset($row["local"])?$row["local"]:0;
+		$row['description'] = str_replace("'","",$row['description']);
 
 		/* do tax shift */
 		$tax = $row['tax'];
