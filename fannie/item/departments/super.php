@@ -43,6 +43,7 @@ while($superW = $dbc->fetch_row($superR)){
 		$firstName = $superW[1];
 	}
 }
+if (empty($opts)) $opts .= "<option></option>";
 ?>
 <script src="<?php echo $FANNIE_URL; ?>src/jquery-1.2.6.min.js"
 	type="text/javascript"></script>

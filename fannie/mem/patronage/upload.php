@@ -1,0 +1,64 @@
+<?php
+include('../../config.php');
+
+require($FANNIE_ROOT.'src/csv_parser.php');
+require($FANNIE_ROOT.'src/mysql_connect.php');
+require($FANNIE_ROOT.'src/tmp_dir.php');
+
+include($FANNIE_ROOT.'src/header.html');
+
+if (isset($_POST["MAX_FILE_SIZE"])){
+	$filename = tempnam(sys_get_temp_dir(),'PRF');
+	move_uploaded_file($_FILES['upload']['tmp_name'],$filename);
+	
+	$pp = $_POST["pp"];
+
+	$fp = fopen($filename,"r");
+	$errors = False;
+	$queries = array();
+	while (!feof($fp)){
+		$line = fgets($fp);
+		$fields = csv_parser($line);
+		if (count($fields) == 0) continue;
+		if (!is_numeric($fields[0])) continue;
+		if (count($fields) < 8){
+			echo "Bad Record: $line";
+			$errors = True;
+			break;
+		}
+	
+		$q = sprintf("INSERT INTO patronage (cardno,purchase,discounts,rewards,net_purch,tot_pat,
+			cash_pat,equit_pat,FY) VALUES (%d,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%d)",
+			$fields[0],sanitize_xls_money($fields[1]),-1*sanitize_xls_money($fields[2]),
+			-1*sanitize_xls_money($fields[3]),sanitize_xls_money($fields[4]),
+			sanitize_xls_money($fields[5]),sanitize_xls_money($fields[6]),
+			sanitize_xls_money($fields[7]),$_REQUEST['fy']);
+		$queries[] = $q;
+	}
+	if (!$errors){
+		foreach($queries as $q)
+			$dbc->query($q);
+		echo "Patronage imported!";
+	}
+
+	fclose($fp);
+	unlink($filename);
+}
+else {
+?>
+
+<form enctype="multipart/form-data" action="upload.php" method="post">
+<input type="hidden" name="MAX_FILE_SIZE" value="2097152" />
+Fiscal Year: <input type=text name=fy /><p />
+</select><p />
+Filename: <input type="file" id="file" name="upload" />
+<input type="submit" value="Upload File" />
+</form>
+
+</body>
+</html>
+
+<?php
+}
+include($FANNIE_ROOT.'src/footer.html');
+?>

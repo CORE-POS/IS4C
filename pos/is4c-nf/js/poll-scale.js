@@ -25,7 +25,7 @@ function scalePollSuccess(data){
 		if (pagename == 'pos2.php' && data.scans){
 			var v = $('#reginput').val();
 			parseWrapper(v+data.scans);
-			return;
+			//return; // why is this here? scale needs to keep polling...
 		}
 	}
 	rePoll();
