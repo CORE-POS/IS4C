@@ -33,7 +33,7 @@ include($FANNIE_ROOT.'src/header.html');
 <li><a href="rewards.php">Calculate rewards</a></li>
 <li><a href="net.php">Update net purchases</a></li>
 <li><a href="report.php">Report of loaded info</a></li>
-<li>Upload rebates</li>
+<li><a href="upload.php">Upload rebates</a></li>
 </ul>
 <?php
 include($FANNIE_ROOT.'src/footer.html');

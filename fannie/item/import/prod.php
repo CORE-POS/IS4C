@@ -40,6 +40,7 @@ if (isset($_REQUEST['MAX_FILE_SIZE']) ){
 
 	echo '<i>Preview: Select which columns contain desired information</i><br />';
 	echo '<input type="checkbox" name="skip" /> First row contains headers (omit it)<br />';
+	echo '<input type="checkbox" name="checks" /> UPCs contain check digits<br />';
 
 	$preview = array();
 	$fp = fopen($outfile,"r");
@@ -131,6 +132,8 @@ else if (isset($_REQUEST['importbutton'])){
 		// upc cleanup
 		$upc = str_replace(" ","",$upc);
 		$upc = str_replace("-","",$upc);
+		if (isset($_REQUEST['checks']))
+			$upc = substr($upc,0,strlen($upc)-1);
 		$upc = str_pad($upc,13,'0',STR_PAD_LEFT);
 
 		if (strlen($desc) > 35) $desc = substr($desc,0,35);		
