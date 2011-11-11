@@ -42,14 +42,16 @@ class NewMagellan extends ScaleDriverWrapper {
 
 		/* replace port setting */
 		$fp = fopen($CORE_PATH."scale-drivers/drivers/NewMagellan/ports.conf","w");
-		foreach($lines as $l){
-			if (strstr($l,"SPH_Magellan_Scale") === False) fwrite($fp,$l);
-			else {
-				fwrite($fp,sprintf('%s SPH_Magellan_Scale',$portName));
-				fwrite($fp,"\n");
+		if ($fp){
+			foreach($lines as $l){
+				if (strstr($l,"SPH_Magellan_Scale") === False) fwrite($fp,$l);
+				else {
+					fwrite($fp,sprintf('%s SPH_Magellan_Scale',$portName));
+					fwrite($fp,"\n");
+				}
 			}
+			fclose($fp);
 		}
-		fclose($fp);
 	}
 
 	function SaveDirectoryConfiguration($absPath){
@@ -63,20 +65,22 @@ class NewMagellan extends ScaleDriverWrapper {
 
 		/* replace file location #defines */
 		$fp = fopen($CORE_PATH."scale-drivers/drivers/NewMagellan/SPH_Magellan_Scale.cs","w");
-		foreach($lines as $l){
-			if (strstr($l,"static String MAGELLAN_OUTPUT_FILE ") !== False){
-				fwrite($fp,sprintf('private static String MAGELLAN_OUTPUT_FILE = "%s";',
-					$absPath."scale-drivers/drivers/NewMagellan/scanner-scale.data"));
-				fwrite($fp,"\n");
+		if ($fp){
+			foreach($lines as $l){
+				if (strstr($l,"static String MAGELLAN_OUTPUT_FILE ") !== False){
+					fwrite($fp,sprintf('private static String MAGELLAN_OUTPUT_FILE = "%s";',
+						$absPath."scale-drivers/drivers/NewMagellan/scanner-scale.data"));
+					fwrite($fp,"\n");
+				}
+				elseif (strstr($l,"static String MAGELLAN_LOCK_FILE ") !== False){
+					fwrite($fp,sprintf('private static String MAGELLAN_LOCK_FILE = "%s";',
+						$absPath."scale-drivers/drivers/NewMagellan/scanner-scale.lock"));
+					fwrite($fp,"\n");
+				}
+				else fwrite($fp,$l);
 			}
-			elseif (strstr($l,"static String MAGELLAN_LOCK_FILE ") !== False){
-				fwrite($fp,sprintf('private static String MAGELLAN_LOCK_FILE = "%s";',
-					$absPath."scale-drivers/drivers/NewMagellan/scanner-scale.lock"));
-				fwrite($fp,"\n");
-			}
-			else fwrite($fp,$l);
+			fclose($fp);
 		}
-		fclose($fp);
 	}
 
 	function ReadFromScale(){

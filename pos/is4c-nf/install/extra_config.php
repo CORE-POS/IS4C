@@ -202,7 +202,6 @@ if ($CORE_LOCAL->get("scaleDriver") != ""){
 		$instance->SavePortConfiguration($CORE_LOCAL->get("scalePort"));
 		$abs_path = substr($_SERVER['PATH_TRANSLATED'],0,
 				strlen($_SERVER['PATH_TRANSLATED'])-strlen('install/extra_config.php')-1);
-		var_dump($abs_path);
 		$instance->SaveDirectoryConfiguration($abs_path);
 	}
 }
