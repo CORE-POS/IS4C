@@ -49,6 +49,14 @@ function csv_parser($input,$q="\"",$s=","){
 	return $ret;
 }
 
+function sanitize_xls_money($val){
+	$val = str_replace('$','',$val);
+	$val = str_replace(',','',$val);
+	$val = trim($val);
+	if ($val=='-') $val = 0;
+	return $val;
+}
+
 // testing
 /*
 $test = "asdf,1.0,\"asdf\",\"a,s,d,f\",5";
