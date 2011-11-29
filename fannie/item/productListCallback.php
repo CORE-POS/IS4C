@@ -24,6 +24,9 @@
 include('../config.php');
 include($FANNIE_ROOT.'src/mysql_connect.php');
 require('laneUpdates.php');
+include($FANNIE_ROOT.'auth/login.php');
+$canDeleteItems = validateUserQuiet('delete_items');
+
 $page_title = 'Fannie - Product List';
 $header = 'Product List';
 
@@ -607,8 +610,10 @@ function deleteCheck(upc,description){
 		    $enc = base64_encode($row[1]);
 			if (!isset($_GET['excel'])){
 				echo "<td align=center id=$row[0]upc><a href=itemMaint.php?upc=$row[0]>$row[0]</a>"; 
-				echo "<a href=\"\" onclick=\"deleteCheck('$row[0]','$enc'); return false;\">";
-				echo "<img src=\"{$FANNIE_URL}src/img/buttons/trash.png\" border=0 /></a>";
+				if ($canDeleteItems !== False){
+					echo "<a href=\"\" onclick=\"deleteCheck('$row[0]','$enc'); return false;\">";
+					echo "<img src=\"{$FANNIE_URL}src/img/buttons/trash.png\" border=0 /></a>";
+				}
 				echo "</td>\n";
 			}
 			else
