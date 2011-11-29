@@ -4,6 +4,7 @@
 #
 # chkconfig: - 80 20
 # description: runs pos.exe scale driver as a daemon
+# IMPORTANT: change path in line 19 to correct driver location!
 
 . /etc/rc.d/init.d/functions
 
