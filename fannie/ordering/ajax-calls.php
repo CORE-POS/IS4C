@@ -541,6 +541,7 @@ function DuplicateOrder($old_id,$from='CompleteSpecialOrder'){
 		FROM $from WHERE order_id=$old_id";	
 	$dbc->query($copyQ);
 
+	$dbc->query("DELETE FROM SpecialOrderContact WHERE card_no=$new_id");
 	$contactQ = "INSERT INTO SpecialOrderContact
 		SELECT $new_id,last_name,first_name,othlast_name,othfirst_name,
 		street,city,state,zip,phone,email_1,email_2,ads_OK FROM
