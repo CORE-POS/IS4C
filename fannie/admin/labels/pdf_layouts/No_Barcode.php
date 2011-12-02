@@ -1,7 +1,7 @@
 <?php
 /*******************************************************************************
 
-    Copyright 2009 Whole Foods Co-op
+    Copyright 2011 Whole Foods Co-op
 
     This file is part of Fannie.
 
@@ -28,7 +28,7 @@ require($FANNIE_ROOT.'src/fpdf/fpdf.php');
  has to go to Olivier for posting the script on the FPDF.org scripts
  webpage.****/
 
-class WFC_Old_PDF extends FPDF
+class No_Barcode_PDF extends FPDF
 {
    function EAN13($x,$y,$barcode,$h=16,$w=.35)
    {
@@ -122,9 +122,9 @@ class WFC_Old_PDF extends FPDF
     }
 }
 
-function WFC_Old($data,$offset=0){
+function No_Barcode($data,$offset=0){
 
-$pdf=new WFC_Old_PDF('P','mm','Letter'); //start new instance of PDF
+$pdf=new No_Barcode_PDF('P','mm','Letter'); //start new instance of PDF
 $pdf->Open(); //open new PDF Document
 $pdf->SetTopMargin(40);  //Set top margin of the page
 $pdf->SetLeftMargin(5);  //Set left margin of the page
@@ -134,13 +134,13 @@ $pdf->AddPage();  //Add a page
 //Set increment counters for rows 
 $i = 9;  //x location of barcode
 $j = 31; //y locaton of barcode
-$l = 26; //y location of size and price on label
+$l = 35; //y location of size and price on label
 $k = 25; //x location of date and price on label
 $m = 0;  //number of labels created
 $n = 18; //y location of description for label
-$r = 22; //y location of brand name for label
+$r = 31; //y location of brand name for label
 $p = 5;  //x location fields on label
-$t = 30; //y location of SKU and vendor info
+$t = 39; //y location of SKU and vendor info
 $u = 20; //x locaiton of vendor info for label
 $down = 30.5;
 
@@ -172,13 +172,13 @@ foreach($data as $row){
       $pdf->AddPage();
       $i = 9;
       $j = 31;
-      $l = 26;
+      $l = 35;
       $k = 25;
       $m = 0;
       $n = 18;
-      $r = 22;
+      $r = 31;
       $p = 5;  
-      $t = 30;
+      $t = 39;
       $u = 20;
    }
 
@@ -207,8 +207,11 @@ foreach($data as $row){
    $vendor = substr($row['vendor'],0,7);
    
    //Start laying out a label 
+   $pdf->SetFont('Arial','B',12);  //Set the font 
+   $pdf->SetXY($p,$n);
+   $pdf->MultiCell(41,5,$desc,0,'C');
    $pdf->SetFont('Arial','',8);  //Set the font 
-   $pdf->TEXT($p,$n,$desc);   //Add description to label
+   //$pdf->TEXT($p,$n,$desc);   //Add description to label
    $pdf->TEXT($p,$r,$brand);  //Add brand name to label
    $pdf->TEXT($p,$l,$size);  //Add size to label
    $pdf->SetXY($k+7,$t-3);
@@ -221,11 +224,6 @@ foreach($data as $row){
    $pdf->SetFont('Arial','B',24); //change font for price
    $pdf->TEXT($k,$l,$price);  //add price
 
-   $newUPC = $upc . $check; //add check digit to upc
-   if (strlen($upc) <= 11)
-	$pdf->UPC_A($i,$j,$upc,7);  //generate barcode and place on label
-   else
-	$pdf->EAN13($i,$j,$upc,7);  //generate barcode and place on label
 
    //increment counters    
    $i =$i+ 53;
