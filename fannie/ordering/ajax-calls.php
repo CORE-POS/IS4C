@@ -430,7 +430,7 @@ function addUPC($orderID,$memNum,$upc,$num_cases=1){
 		
 		// only calculate prices for items that exist in 
 		// vendorItems (i.e., have known case size)
-		if ($dbc->num_rows($caseR) > 0 || True){
+		if ($dbc->num_rows($caseR) > 0){
 			$ins_array['total'] = $pdW['normal_price']*$caseSize*$num_cases;
 			$ins_array['regPrice'] = $pdW['normal_price']*$caseSize*$num_cases;
 			$ins_array['unitPrice'] = $pdW['normal_price'];
@@ -438,12 +438,12 @@ function addUPC($orderID,$memNum,$upc,$num_cases=1){
 				$ins_array['total'] = $pdW['special_price']*$caseSize*$num_cases;
 				$ins_array['unitPrice'] = $pdW['special_price'];
 			}
-			elseif ($pdW['discount'] != 0 && $mempricing){
+			elseif ($mempricing){
 				if ($pdW['discounttype'] == 2){
 					$ins_array['total'] = $pdW['special_price']*$caseSize*$num_cases;
 					$ins_array['unitPrice'] = $pdW['special_price'];
 				}
-				else
+				elseif ($pdW['discount'] != 0)
 					$ins_array['total'] = $pdW['normal_price']*$caseSize*$num_cases*0.85;
 			}
 		}

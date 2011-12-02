@@ -285,7 +285,8 @@ function displayUI($dateStr){
 	$ret .= "<td id=safeCount2Total>$sum</td></tr>";
 	$actualTotal += $sum;
 
-	$pars = array("0.01"=>23,"0.05"=>50,"0.10"=>125,"0.25"=>610,"1.00"=>1000,"5.00"=>300,"10.00"=>500);
+	$pars = array("0.01"=>23,"0.05"=>50,"0.10"=>125,"0.25"=>610,"1.00"=>1028,"5.00"=>450,"10.00"=>650);
+	$parTTL = 0; foreach($pars as $k=>$v) $parTTL += $v;
 	$ret .= "<tr><th>Par Amounts</th>";
 	$ret .= "<td id=par0.01>".$pars['0.01']."</td>";
 	$ret .= "<td id=par0.05>".$pars['0.05']."</td>";
@@ -296,7 +297,7 @@ function displayUI($dateStr){
 	$ret .= "<td id=par5.00>".$pars['5.00']."</td>";
 	$ret .= "<td id=par10.00>".$pars['10.00']."</td>";
 	$ret .= "<td colspan=4>&nbsp;</td>";
-	$ret .= "<td>2608.00</td></tr>";
+	$ret .= sprintf("<td>%.2f</td></tr>",$parTTL);
 
 	$buyAmounts = array("0.01"=>0,"0.05"=>0,"0.10"=>0,"0.25"=>0,"1.00"=>0,"5.00"=>0,"10.00"=>0);
 	foreach ($buyAmounts as $k=>$v){

@@ -73,10 +73,11 @@ function itemParse($upc){
         noItem();
 	$data = array();
 	if (is_numeric($upc)){
-		$dataQ = "SELECT description,brand,cost/units as cost,vendorName,margin
+		$dataQ = "SELECT description,brand,cost/units as cost,vendorName,margin,i.vendorID
 			FROM vendorItems AS i LEFT JOIN vendors AS v ON i.vendorID=v.vendorID
 			LEFT JOIN vendorDepartments AS d ON i.vendorDept=d.deptID
 			WHERE upc='$upc'";
+		if (isset($_REQUEST['vid'])) $dataQ .= " AND i.vendorID=".((int)$_REQUEST['vid']);
 		$dataR = $dbc->query($dataQ);
 		if ($dbc->num_rows($dataR) > 0){
 			$data = $dbc->fetch_row($dataR);
@@ -86,16 +87,22 @@ function itemParse($upc){
 	}
         echo "<BODY onLoad='putFocus(0,1);'>";
         echo "<span style=\"color:red;\">Item not found.  You are creating a new one.  </span>";
-		if (@
+		/*
+		if (){
 			$_SESSION["popup"] == 1) {
 			$_SESSION["popup"] = 0;
 			echo "<a href='javascript: self.close ()'>close</a>";
 		} else {
 			echo "<a href='../item/itemMaint.php'><font size='-1'>cancel</font></a>";
 		}
+		*/
 	if (count($data) > 0){
 		echo "<br /><i>This product is in the ".$data['vendorName']." catalog. Values have
 			been filled in where possible</i><br />";
+		while($vendorW = $dbc->fetch_row($dataR)){
+			printf('This product is also in <a href="?upc=%s&vid=%d">%s</a><br />',
+				$upc,$vendorW['vendorID'],$vendorW['vendorName']);
+		}
 	}
 		echo "<form name=pickSubDepartment action=insertItem.php method=post>";
         echo "<div><table style=\"margin-bottom:5px;\" width=\"100%\" border=1 cellpadding=5 cellspacing=0>";
