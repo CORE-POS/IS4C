@@ -112,6 +112,8 @@ else if (isset($_REQUEST['makeTheBatch'])){
 
 	$upcs = $_REQUEST['col'.$upcCol];
 	$prices = $_REQUEST['col'.$priceCol];
+	for($i=0;$i<count($upcs);$i++)
+		$upcs[$i] = str_replace(" ","",$upcs[$i]);
 
 	$btype = $_REQUEST['btype'];
 	$date1 = $dbc->escape($_REQUEST['date1']);

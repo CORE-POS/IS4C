@@ -267,6 +267,8 @@ function createViews($dstr,$db){
 		d.itemQtty, 
 		d.memType,
 		d.staff,
+		d.numflag,
+		d.charflag,
 		d.card_no, 
 		d.trans_id,
 		concat(convert(d.emp_no,char), '-', convert(d.register_no,char), '-',
@@ -297,6 +299,8 @@ function createViews($dstr,$db){
 			d.itemQtty, 
 			d.memType,
 			d.isStaff,
+			d.numflag,
+			d.charflag,
 			d.card_no, 
 			d.trans_id,
 			(convert(varchar,d.emp_no) +  '-' + convert(varchar,d.register_no) + '-' + 

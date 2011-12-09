@@ -62,7 +62,7 @@ echo '<html>
 	<script type="text/javascript" src="'.$FANNIE_URL.'src/jquery/js/jquery-ui-1.8.1.custom.min.js">
 	</script>
 	</head>
-	<body>';
+	<body id="bodytag">';
 
 $status = array(
 	0 => "New, No Call",
@@ -152,7 +152,8 @@ else $order = 'min(datetime)';
 $q = "SELECT min(datetime) as orderDate,p.order_id,sum(total) as value,
 	count(*)-1 as items,status_flag,sub_status,
 	CASE WHEN MAX(p.card_no)=0 THEN MAX(t.last_name) ELSE MAX(c.LastName) END as name,
-	MIN(CASE WHEN trans_type='I' THEN charflag ELSE 'ZZZZ' END) as charflag
+	MIN(CASE WHEN trans_type='I' THEN charflag ELSE 'ZZZZ' END) as charflag,
+	MAX(p.card_no) AS card_no
 	FROM PendingSpecialOrder as p
 	LEFT JOIN SpecialOrderStatus as s ON p.order_id=s.order_id
 	LEFT JOIN SpecialOrderNotes as n ON n.order_id=p.order_id
@@ -270,14 +271,14 @@ foreach($orders as $w){
 	if (!isset($valid_ids[$w['order_id']])) continue;
 
 	$ret .= sprintf('<tr class="%s"><td><a href="view.php?orderID=%d&k=%s">%s</a></td>
-		<td>%s</td>
+		<td><a href="" onclick="applyMemNum(%d);return false;">%s</a></td>
 		<td style="font-size:75%%;">%s</td>
 		<td style="font-size:75%%;">%s</td>
 		<td align=center>%d (%.2f)</td>',
 		($w['charflag']=='P'?'arrived':'notarrived'),
 		$w['order_id'],$key,
 		array_shift(explode(' ',$w['orderDate'])),
-		$w['name'],
+		$w['card_no'],$w['name'],
 		(isset($items[$w['order_id']])?$items[$w['order_id']]:'&nbsp;'),
 		(isset($suppliers[$w['order_id']])?$suppliers[$w['order_id']]:'&nbsp;'),
 		$w['items'],$w['value']);
@@ -316,6 +317,12 @@ function refilter(){
 }
 function resort(o){
 	$('#orderSetting').val(o);
+	refilter();
+}
+function applyMemNum(n){
+	if ($('#cardno').length==0)	
+		$('#bodytag').append('<input type="hidden" id="cardno" />');
+	$('#cardno').val(n);
 	refilter();
 }
 function updateStatus(oid,val){

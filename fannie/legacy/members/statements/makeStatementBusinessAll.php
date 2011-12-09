@@ -65,6 +65,7 @@ $rowNum=0;
 while($selAddW = $sql->fetch_row($selAddR)){
    $pdf->AddPage();
    $pdf->SetFont('Arial','B','14');
+   $pdf->Ln(5);
    $pdf->Cell(20,10,'Whole Foods Community Co-op',0);
    $pdf->Image($FANNIE_ROOT.'legacy/images/WFCLogoCThru1.jpg',130,10,50,25);
    $pdf->Ln(5);
@@ -80,21 +81,27 @@ while($selAddW = $sql->fetch_row($selAddR)){
 
 
    //Member address
+   $pdf->SetX(15);
    $pdf->Cell(10,10,trim($selAddW[0]),0);
    $pdf->Ln(5);
+   $pdf->SetX(15);
    $pdf->Cell(50,10,trim($selAddW[1]),0);
    $pdf->Ln(5);
+   $pdf->SetX(15);
 
    if (strstr($selAddW[2],"\n") === False){
 	   $pdf->Cell(80,10,$selAddW[2],0);
 	   $pdf->Ln(5);
+	   $pdf->SetX(15);
    }
    else {
 	$pts = explode("\n",$selAddW[2]);
 	$pdf->Cell(80,10,$pts[0],0);
 	$pdf->Ln(5);
+	   $pdf->SetX(15);
 	$pdf->Cell(80,10,$pts[1],0);
 	$pdf->Ln(5);
+	   $pdf->SetX(15);
    }
    $pdf->Cell(90,10,$selAddW[4] . ', ' . $selAddW[5] . '   ' . $selAddW[6],0);
    $pdf->Ln(25);
