@@ -8,6 +8,7 @@ Columns:
 	memtype1 int
 	memtype2 varchar
 	reason text
+	suspDate datetime
 	mailflag int
 	discount int
 	chargelimit dbms currency
@@ -42,6 +43,7 @@ $CREATE['op.suspensions'] = "
 		type char(1),
 		memtype1 int,
 		memtype2 varchar(6),
+		suspDate datetime,
 		reason text,
 		mailflag int,
 		discount int,
