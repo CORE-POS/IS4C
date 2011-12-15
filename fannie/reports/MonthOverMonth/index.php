@@ -108,9 +108,11 @@ if (isset($_REQUEST['month1'])){
 	ob_end_clean();
 
 	if (isset($_REQUEST['excel'])){
-		include($FANNIE_ROOT.'src/ReportConvert/ArrayToXls.php');
+		//include($FANNIE_ROOT.'src/ReportConvert/ArrayToXls.php');
+		include($FANNIE_ROOT.'src/ReportConvert/ArrayToCsv.php');
 		include($FANNIE_ROOT.'src/ReportConvert/HtmlToArray.php');
-		$xls = ArrayToXls(HtmlToArray($str));
+		//$xls = ArrayToXls(HtmlToArray($str));
+		$xls = ArrayToCsv(HtmlToArray($str));
 
 		header('Content-Type: application/ms-excel');
 		header('Content-Disposition: attachment; filename="monthlyReport.xls"');

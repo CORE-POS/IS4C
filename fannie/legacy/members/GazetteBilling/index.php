@@ -31,6 +31,7 @@ $BILLING_MEMBER = array(
 	"1/5B/W" => 165,
 	"1/ 5B/W" => 165,
 	"1/2B/W" => 412.50,
+	"1/ 2B/W" => 412.50,
 	"A1FULL" => 56.25,
 	"A2FULL" => 56.25,
 	"B1FULL" => 63.75,
@@ -43,6 +44,7 @@ $BILLING_MEMBER = array(
 	"1/5FULL" => 225,
 	"1/ 5FULL" => 225,
 	"1/2FULL" => 562.50,
+	"1/ 2FULL" => 562.50,
 	"EFULL"  => 138.75,
 	"FFULL"  => 236.25,	
 	"GFULL"  => 236.25
@@ -62,6 +64,7 @@ $BILLING_NONMEMBER = array(
 	"1/5B/W" => 220,
 	"1/ 5B/W" => 220,
 	"1/2B/W" => 550,
+	"1/2 B/W" => 550,
 	"A1FULL" => 75,
 	"A2FULL" => 75,
 	"B1FULL" => 110,
@@ -73,6 +76,7 @@ $BILLING_NONMEMBER = array(
 	"1/5FULL" => 300,
 	"1/ 5FULL" => 300,
 	"1/2FULL" => 750,
+	"1/ 2FULL" => 750,
 	"EFULL"  => 300,
 	"FFULL"  => 750,
 	"CFULL"  => 135
@@ -183,7 +187,9 @@ else if (isset($_POST['MAX_FILE_SIZE'])){
 				$BILLING_NONMEMBER[$sz.$clr]*0.75:
 				$BILLING_NONMEMBER[$sz.$clr],
 				$row[0]);
-			if (!isset($BILLING_NONMEMBER[$sz.$clr])) var_dump($sz.$clr);
+			if (!isset($BILLING_NONMEMBER[$sz.$clr])){
+				var_dump($sz.$clr);
+			}
 		}
 	}
 	echo "</table>";

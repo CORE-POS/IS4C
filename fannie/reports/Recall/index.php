@@ -59,9 +59,11 @@ if (isset($_REQUEST['submit'])){
 	}
 	else {
 		include($FANNIE_ROOT.'src/ReportConvert/HtmlToArray.php');
-		include($FANNIE_ROOT.'src/ReportConvert/ArrayToXls.php');
+		//include($FANNIE_ROOT.'src/ReportConvert/ArrayToXls.php');
+		include($FANNIE_ROOT.'src/ReportConvert/ArrayToCsv.php');
 		$array = HtmlToArray($output);
-		$xls = ArrayToXls($array);
+		//$xls = ArrayToXls($array);
+		$xls = ArrayToCsv($array);
 		echo $xls;
 	}
 		

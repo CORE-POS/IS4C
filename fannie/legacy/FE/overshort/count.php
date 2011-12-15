@@ -202,6 +202,7 @@ function displayUI($dateStr){
 	$accountableTotal -= (168*$bags);
 
 	$fills = array('0.01'=>1,'0.05'=>2,'0.10'=>5,'0.25'=>10,'1.00'=>50,'5.00'=>50,'10.00'=>50);
+	$pars = array("0.01"=>23,"0.05"=>50,"0.10"=>125,"0.25"=>610,"1.00"=>1028,"5.00"=>450,"10.00"=>650);
 
 	$ret .= "<tr><th>Deposit Amount</th>";
 	$sum = 0;
@@ -218,7 +219,7 @@ function displayUI($dateStr){
 			$depositAmount[$d] = $holding['openSafeCount'][$d]+$holding['dropAmount'][$d];
 		}
 		else if ($d == '10.00'){
-			$val = $holding['changeOrder'][$d] + $holding['openSafeCount'][$d] + $holding['dropAmount'][$d] - 500 - (50*$bags);
+			$val = $holding['changeOrder'][$d] + $holding['openSafeCount'][$d] + $holding['dropAmount'][$d] - $pars['10.00'] - (50*$bags);
 			$val = round($val,2);
 			if ($val < 0) $val = 0;
 			$ret .= "<td id=depositAmount$d>".$val."</td>";
@@ -226,7 +227,7 @@ function displayUI($dateStr){
 			$depositAmount[$d] = $val;
 		}
 		else if ($d == '5.00'){
-			$val = $holding['changeOrder'][$d] + $holding['openSafeCount'][$d] + $holding['dropAmount'][$d] - 300 - (50*$bags);
+			$val = $holding['changeOrder'][$d] + $holding['openSafeCount'][$d] + $holding['dropAmount'][$d] - $pars['5.00'] - (50*$bags);
 			$val = round($val,2);
 			if ($val < 0) $val = 0;
 			$ret .= "<td id=depositAmount$d>".$val."</td>";
@@ -285,7 +286,6 @@ function displayUI($dateStr){
 	$ret .= "<td id=safeCount2Total>$sum</td></tr>";
 	$actualTotal += $sum;
 
-	$pars = array("0.01"=>23,"0.05"=>50,"0.10"=>125,"0.25"=>610,"1.00"=>1028,"5.00"=>450,"10.00"=>650);
 	$parTTL = 0; foreach($pars as $k=>$v) $parTTL += $v;
 	$ret .= "<tr><th>Par Amounts</th>";
 	$ret .= "<td id=par0.01>".$pars['0.01']."</td>";

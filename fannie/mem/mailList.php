@@ -28,6 +28,7 @@ include('../config.php');
 include($FANNIE_ROOT.'src/mysql_connect.php');
 include($FANNIE_ROOT.'src/ReportConvert/HtmlToArray.php');
 include($FANNIE_ROOT.'src/ReportConvert/ArrayToXls.php');
+include($FANNIE_ROOT.'src/ReportConvert/ArrayToCsv.php');
 
 $query = "SELECT CardNo, 
           LastName, 
@@ -76,7 +77,7 @@ while($row = $dbc->fetch_row($result)){
    $ret[] = $new;
 }
 
-//$array = HtmlToArray($output);
-$xls = ArrayToXls($ret);
+//$xls = ArrayToXls($ret);
+$xls = ArrayToCsv($ret);
 echo $xls;
 ?>
