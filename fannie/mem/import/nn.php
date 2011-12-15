@@ -143,7 +143,7 @@ else if (isset($_REQUEST['importbutton'])){
 			memType,staff,SSI,Purchases,NumberOfChecks,memCoupons,blueLine,Shown)
 			VALUES (%d,%d,%s,%s,0,0,%d,0,0,0,0,%s,%d,%d,%d,0,0,0,%s,1)",
 			$cardno,$pn,$dbc->escape($ln),$dbc->escape($fn),$discount,
-			$dbc->escape($type),$staff,$SSI,$dbc->escape($cardno." ".$ln));
+			$dbc->escape($type),$memtype,$staff,$SSI,$dbc->escape($cardno." ".$ln));
 		$insR = $dbc->query($insQ);
 
 		if ($insR === False){
