@@ -66,6 +66,21 @@ $delQ = "DELETE FROM PendingSpecialOrder
 $sql->query($delQ);
 // end auto-close
 
+// auto-close all after 60 days
+$subquery = "select p.order_id from PendingSpecialOrder as p
+	left join SpecialOrderStatus as s
+	on p.order_id=s.order_id
+	where p.trans_id=0 
+	and ".$sql->datediff($sql->now(),'datetime')." > 60";
+$copyQ = "INSERT INTO CompleteSpecialOrder
+	SELECT p.* FROM PendingSpecialOrder AS p
+	WHERE p.order_id IN ($subquery)";
+$sql->query($copyQ);
+$delQ = "DELETE FROM PendingSpecialOrder
+	WHERE order_id IN ($subquery)";
+$sql->query($delQ);
+// end auto-close
+
 $query = "SELECT mixMatch,matched FROM transarchive
 	WHERE charflag='SO' AND emp_no <> 9999 AND
 	register_no <> 99 AND trans_status NOT IN ('X','Z')
