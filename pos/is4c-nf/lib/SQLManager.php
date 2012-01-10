@@ -342,6 +342,66 @@ class SQLManager {
 		return $ret;
 	}
 
+	function transfer2($source_db,$select_query,$dest_db,$insert_query){
+		$result = $this->query($select_query,$source_db);
+		if (!$result) return False;
+
+		$num_fields = $this->num_fields($result,$source_db);
+
+		$unquoted = array("money"=>1,"real"=>1,"numeric"=>1,
+			"float4"=>1,"float8"=>1,"bit"=>1,"decimal"=>1,
+			"unknown"=>1);
+		$strings = array("varchar"=>1,"nvarchar"=>1,"string"=>1,
+				"char"=>1);
+		$dates = array("datetime"=>1);
+		$queries = array();
+
+		$values = "";
+		if($this->db_types[$dest_db]!=$this->TYPE_MSSQL)
+			$values .= " VALUES (";
+		while($row = $this->fetch_array($result,$source_db)){
+			if($this->db_types[$dest_db]!=$this->TYPE_MSSQL)
+				$values .= "(";
+			else
+				$values .= " SELECT ";
+			for ($i=0; $i<$num_fields; $i++){
+				$type = $this->field_type($result,$i,$source_db);
+				if ($row[$i] == "" && strstr(strtoupper($type),"INT"))
+					$row[$i] = 0;	
+				elseif ($row[$i] == "" && isset($unquoted[$type]))
+                                        $row[$i] = 0;
+                                if (isset($dates[$type])){
+					$clean = $this->cleanDateTime($row[$i]);
+                                        $row[$i] = ($clean!="")?$clean:$row[$i];
+				}
+                                elseif (isset($strings[$type]))
+                                        $row[$i] = str_replace("'","''",$row[$i]);
+
+				if (isset($unquoted[$type]))
+					$values .= $row[$i].",";
+				else
+					$values .= "'".$row[$i]."',";
+			}
+			// remove last comma
+			$values = substr($values,0,strlen($values)-1);
+			if ($this->db_types[$dest_db]!=$this->TYPE_MSSQL)
+				$values .= "),";
+			else
+				$values .= " UNION ALL ";
+		}
+		// remove last comma and close parens
+		// or remove last UNION ALL
+		if($this->db_types[$dest_db]!=$this->TYPE_MSSQL)
+			$values = substr($values,0,strlen($values)-1).")";
+		else
+			$values = substr($values,0,strlen($values)-11);
+
+		$full_query = $insert_query.$values;
+
+		return $this->query($full_query,$dest_db);
+	}
+
+
 	function cleanDateTime($str){
 		$stdFmt = "/(\d\d\d\d)-(\d\d)-(\d\d) (\d+?):(\d\d):(\d\d)/";
                 if (preg_match($stdFmt,$str,$group))

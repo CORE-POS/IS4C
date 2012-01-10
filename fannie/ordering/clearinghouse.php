@@ -63,6 +63,15 @@ echo '<html>
 	</script>
 	</head>
 	<body id="bodytag">';
+echo '<h3>'.$header.'</h3>';
+if (isset($_REQUEST['card_no'])){
+	printf('(<a href="clearinghouse.php?f1=%s&f2=%s&f3=%s&order=%s">Back to All Owners</a>)<br />',
+		(isset($_REQUEST['f1'])?$_REQUEST['f1']:''),	
+		(isset($_REQUEST['f2'])?$_REQUEST['f2']:''),	
+		(isset($_REQUEST['f3'])?$_REQUEST['f3']:''),	
+		(isset($_REQUEST['order'])?$_REQUEST['order']:'')
+	);
+}
 
 $status = array(
 	0 => "New, No Call",
