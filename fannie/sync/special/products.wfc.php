@@ -38,7 +38,7 @@ foreach($FANNIE_LANES as $lane){
 
 		if (!is_readable('/pos/csvs/products.csv')) break;
 		
-		$dbc->query("TRUNCATE TABLE Products",$lane['op']);
+		$dbc->query("TRUNCATE TABLE products",$lane['op']);
 
 		$dbc->query("LOAD DATA LOCAL INFILE '/pos/csvs/products.csv' INTO TABLE
 			products FIELDS TERMINATED BY ',' OPTIONALLY

@@ -60,7 +60,7 @@ $query = "select
 	  SUM(Rings) / count(emp_no) as rings,
 	  CONVERT(int,SUM(items)) / count(emp_no) as items,
 	  COUNT(Rings) / count(emp_no) as Trans,
-	  SUM(CASE WHEN transinterval = 0 then 1 else transinterval END) / count(emp_no)  / 60 as minutes,
+	  SUM(CASE WHEN transinterval = 0 then 1 when transinterval > 600 then 600 else transinterval END) / count(emp_no)  / 60 as minutes,
 	  SUM(Cancels) / count(emp_no) as cancels,
 	  MIN(proc_date)
 	  from CashPerformDay_cache
@@ -75,7 +75,7 @@ $query = "select
           SUM(Rings) as rings,
           CONVERT(int,SUM(items)) as items,
           COUNT(*) as TRANS,
-          SUM(CASE WHEN transInterval = 0 THEN 1 ELSE transInterval END)/60 as minutes,
+          SUM(CASE WHEN transInterval = 0 THEN 1 when transInterval > 600 then 600 ELSE transInterval END)/60 as minutes,
           SUM(cancels)as cancels,
           MIN(proc_date)
           FROM CashPerformDay_cache

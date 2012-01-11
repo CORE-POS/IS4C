@@ -430,7 +430,7 @@ function addUPC($orderID,$memNum,$upc,$num_cases=1){
 		
 		// only calculate prices for items that exist in 
 		// vendorItems (i.e., have known case size)
-		if ($dbc->num_rows($caseR) > 0){
+		if ($dbc->num_rows($caseR) > 0 || true){ // test always do this
 			$ins_array['total'] = $pdW['normal_price']*$caseSize*$num_cases;
 			$ins_array['regPrice'] = $pdW['normal_price']*$caseSize*$num_cases;
 			$ins_array['unitPrice'] = $pdW['normal_price'];

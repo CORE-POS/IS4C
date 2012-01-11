@@ -20,7 +20,7 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
-   header("Content-Disposition: inline; filename=mailingList.xls");
+   header("Content-Disposition: inline; filename=mailingList.csv");
    header("Content-Description: PHP3 Generated Data");
    header("Content-type: application/vnd.ms-excel; name='excel'");
 

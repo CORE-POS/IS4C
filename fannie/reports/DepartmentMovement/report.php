@@ -48,7 +48,7 @@
 
 	if(isset($_GET['excel'])){
 	  header('Content-Type: application/ms-excel');
-	  header('Content-Disposition: attachment; filename="movementReport.xls"');
+	  header('Content-Disposition: attachment; filename="movementReport.csv"');
 	}
 
 	ob_start();

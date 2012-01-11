@@ -430,7 +430,7 @@ function deleteCheck(upc,description){
 
 	if (isset($_GET['excel'])){
 	   header('Content-Type: application/ms-excel');
-	   header('Content-Disposition: attachment; filename="itemList.xls"');
+	   header('Content-Disposition: attachment; filename="itemList.csv"');
 	}
 
 	ob_start();
