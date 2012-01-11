@@ -25,7 +25,10 @@ $CREATE['op.vendorSRPs'] = "
 	create table vendorSRPs (
 		vendorID int,
 		upc varchar(13),
-		srp decimal(10,2)
+		srp decimal(10,2),
+		PRIMARY KEY (vendorID,upc),
+		INDEX(vendorID),
+		INDEX(upc)
 	)
 ";
 ?>

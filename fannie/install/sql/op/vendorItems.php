@@ -37,7 +37,10 @@ $CREATE['op.vendorItems'] = "
 		units int,
 		cost decimal(10,2),
 		vendorDept int,
-		vendorID int
+		vendorID int,
+		PRIMARY KEY (vendorID,upc),
+		INDEX(vendorID),
+		INDEX(upc)
 	)
 ";
 
