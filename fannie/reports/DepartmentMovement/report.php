@@ -242,7 +242,7 @@
 
 		while ($myrow = $dbc->fetch_row($result)) { //create array from query
 		
-		printf("<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>\n",$myrow[0], $myrow[1],$myrow[2],$myrow[3],$myrow[4],$myrow[5],$dept_subs[$myrow[6]],$myrow[7]==''?'&nbsp;':$myrow[7]);
+		printf("<tr><td>%s</td><td>%s</td><td>%.2f</td><td>%.2f</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>\n",$myrow[0], $myrow[1],$myrow[2],$myrow[3],$myrow[4],$myrow[5],$dept_subs[$myrow[6]],$myrow[7]==''?'&nbsp;':$myrow[7]);
 		//convert row information to strings, enter in table cells
 		
 		}
