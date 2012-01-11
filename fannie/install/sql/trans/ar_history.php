@@ -25,7 +25,8 @@ $CREATE['trans.ar_history'] = "
 		Charges decimal(10,2),
 		Payments decimal(10,2),
 		tdate datetime,
-		trans_num varchar(90)
+		trans_num varchar(90),
+		INDEX (card_no)
 	)
 ";
 if ($dbms == "MSSQL"){
