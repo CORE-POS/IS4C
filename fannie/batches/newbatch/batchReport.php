@@ -99,7 +99,7 @@ while($salesBatchW = $dbc->fetch_array($salesBatchR)){
       $rColor= '#ffffcc';
    }
 
-   echo "<tr bgcolor=$rColor><td width=120>$upc</td><td width=300>$desc</td><td width=50>$sales</td><td width=50 align=right>$qty</td></tr>";
+   echo "<tr bgcolor=$rColor><td width=120>$upc</td><td width=300>$desc</td><td width=50>$sales</td><td width=50 align=right>$qty</td><td>{$salesBatchW['total']}</td></tr>";
    $i++;
 }
 echo "</table>";

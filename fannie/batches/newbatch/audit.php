@@ -24,7 +24,7 @@
 $tos = array(	0=>"andy@wholefoods.coop",
 		1=>"jim@wholefoods.coop, lisa@wholefoods.coop",
 		2=>"jesse@wholefoods.coop, lisa@wholefoods.coop",
-		3=>"debbie@wholefoods.coop, mfudala@wholefoods.coop, justin@wholefoods.coop",
+		3=>"debbie@wholefoods.coop, aelliott@wholefoods.coop, justin@wholefoods.coop",
 		4=>"joeu@wholefoods.coop, lisa@wholefoods.coop",
 		5=>"jillhall@wholefoods.coop, lisa@wholefoods.coop",
 		6=>"michael@wholefoods.coop, alex@wholefoods.coop",
@@ -68,7 +68,7 @@ function auditPriceChangeLC($sql,$uid,$upc,$price,$batchID){
 	$row = $sql->fetch_row($result);
 	$deptQ = "select s.superID from products as p left join
 		upcLike as u on p.upc=u.upc left join
-		MasterSuperDepts AS s ON p.department=s.superID
+		MasterSuperDepts AS s ON p.department=s.dept_ID
 		where u.likecode=".substr($upc,2)."
 		group by s.superID order by count(*) desc";
 	$deptR = $sql->query($deptQ);

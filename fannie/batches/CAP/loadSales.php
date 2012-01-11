@@ -34,9 +34,9 @@ catch(Exception $e){}
 $dbc->query("CREATE TABLE tempCapPrices (upc varchar(13), price decimal(10,2))");
 
 $SUB = 2;
-$UPC = 4;
-$SKU = 3;
-$PRICE = 10;
+$UPC = 3;
+$SKU = 4;
+$PRICE = 18;
 
 $datastarts = false;
 
