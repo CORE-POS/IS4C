@@ -223,6 +223,19 @@ class SQLManager {
 		return "";
 	}
 
+	function locate($substr,$str,$which_connection=''){
+		if ($which_connection == '')
+			$which_connection = $this->default_db;
+		switch($this->connections[$which_connection]->databaseType){
+		case 'mysql':
+		case 'mysqli':
+			return "LOCATE($substr,$str)";
+		case 'mssql':
+			return "CHARINDEX($substr,$str)";
+		}
+		return "";
+	}
+
 	// note: to swing variable number of args,
 	// connection is manadatory. use empty string
 	// for default connection
