@@ -44,10 +44,10 @@ $sql = new SQLManager($FANNIE_SERVER,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
 
 $query = "INSERT INTO voidTransHistory
 	SELECT datetime,description,
-	".$con->concat(
-		$con->convert('emp_no','char'),"'-'",
-		$con->convert('register_no','char'),"'-'",
-		$con->convert('trans_no','char'),'')
+	".$sql->concat(
+		$sql->convert('emp_no','char'),"'-'",
+		$sql->convert('register_no','char'),"'-'",
+		$sql->convert('trans_no','char'),'')
 	.",
 	0
 	FROM transArchive WHERE trans_subtype='CM'

@@ -16,7 +16,8 @@ sake of humans they have names. Those go here.
 $CREATE['op.superDeptNames'] = "
 	CREATE TABLE superDeptNames (
 		superID int,
-		super_name varchar(50)
+		super_name varchar(50),
+		PRIMARY KEY (superID)
 	)
 ";
 ?>
