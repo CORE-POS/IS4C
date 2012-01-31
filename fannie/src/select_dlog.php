@@ -28,7 +28,7 @@
  *
 *****************************************************************************/
 if (!class_exists("SQLManager")) require_once("sql/SQLManager.php");
-function select_dlog($date, $enddate=""){
+function select_dlog($date, $enddate="",$unions=True){
   global $dbc,$FANNIE_TRANS_DB,$FANNIE_SERVER_DBMS,$FANNIE_ARCHIVE_DB;
 
   $dbconn = ($FANNIE_SERVER_DBMS=='MSSQL')?'.dbo.':'.';
@@ -107,8 +107,10 @@ function select_dlog($date, $enddate=""){
   $endstamp = mktime(0,0,0,$endmonth,1,$endyear);
   $startstamp = mktime(0,0,0,$month,1,$year);
   $data = "(select * from ";
+  $tables = array();
   while ($startstamp <= $endstamp){
 	$data .= $FANNIE_ARCHIVE_DB.$dbconn."dlog{$year}{$month} union all select * from ";
+	$tables[] = $FANNIE_ARCHIVE_DB.$dbconn."dlog{$year}{$month}";
 	$month += 1;
 	if ($month > 12){
 		$year += 1;
@@ -120,7 +122,31 @@ function select_dlog($date, $enddate=""){
   preg_match("/(.*) union all select \* from $/",$data,$matches);
   $data = $matches[1].")";
     
-  return $data;
+  if ($unions) return $data;
+  else return $tables;
+}
+
+function select_dlog_array($date,$enddate=""){
+	return select_dlog($date,$enddate,False);
+}
+
+function fixup_dquery($query,$table){
+	if (!is_array($table)){
+		return str_replace("__TRANS__",$table,$query);
+	}
+	$order = "";
+	$tmp = preg_split("/ORDER\s+BY/i",$query,NULL,PREG_SPLIT_NO_EMPTY);
+	if (count($tmp)==2){
+		$query = $tmp[0];
+		$order = " ORDER BY ".$tmp[1];
+	}
+	$ret = "";
+	for($i=0;$i<count($table);$i++){
+		$ret .= str_replace("__TRANS__",$table[$i],$query);
+		if($i<count($table)-1)
+			$ret .= " UNION ALL ";
+	}
+	return $ret.$order;
 }
 
 function select_dtrans($date, $enddate=""){
