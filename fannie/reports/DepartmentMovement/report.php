@@ -35,7 +35,7 @@
 	$dir = 'DESC';
 	if (isset($_GET['dir']))
 		$dir = $_GET['dir'];
-	$order = 'sum(t.total)';
+	$order = 'total';
 	if (isset($_GET['order']))
 		$order = $_GET['order'];
 	$revdir = 'ASC';
@@ -88,7 +88,7 @@
 		echo "<a href=report.php?excel=1&buyer=$buyer&deptStart=$deptStart&deptEnd=$deptEnd&date1=$date1&date2=$date2&sort=$sort&order=$order&dir=$dir>Save</a> to Excel<br />";
 	}
 	
-	$dlog = select_dlog($date1,$date2);
+	$dlog = select_dlog_array($date1,$date2);
 
 	$date2a = $date2 . " 23:59:59";
 	$date1a = $date1 . " 00:00:00";
@@ -130,9 +130,9 @@
 		if(isset($buyer) && $buyer > 0){
 		$query = "SELECT DISTINCT t.upc,p.description, 
 				SUM(case when t.trans_status in ('M') then t.itemqtty else t.quantity end) as qty,
-				SUM(t.total),
+				SUM(t.total) AS total,
 				d.dept_no,d.dept_name,s.superID,x.distributor
-			  FROM $dlog as t LEFT JOIN products as p on t.upc = p.upc
+			  FROM __TRANS__ as t LEFT JOIN products as p on t.upc = p.upc
 			  LEFT JOIN departments as d on d.dept_no = t.department 
 			  LEFT JOIN superdepts AS s ON t.department = s.dept_ID
 			  LEFT JOIN prodExtra as x on t.upc = x.upc
@@ -143,9 +143,9 @@
 		else if (isset($buyer) && $buyer == -1){
 		$query = "SELECT DISTINCT t.upc,p.description, 
 				SUM(case when t.trans_status in ('M') then t.itemqtty else t.quantity end) as qty,
-				SUM(t.total),
+				SUM(t.total) AS total,
 				d.dept_no,d.dept_name,s.superID,x.distributor
-			  FROM $dlog as t LEFT JOIN products as p on t.upc = p.upc
+			  FROM  __TRANS__ as t LEFT JOIN products as p on t.upc = p.upc
 			  LEFT JOIN departments as d on d.dept_no = t.department 
 			  LEFT JOIN MasterSuperDepts AS s ON t.department = s.dept_ID
 			  LEFT JOIN prodExtra as x on t.upc = x.upc
@@ -156,9 +156,9 @@
 		else if (isset($buyer) && $buyer == -2){
 		$query = "SELECT DISTINCT t.upc,p.description, 
 				SUM(case when t.trans_status in ('M') then t.itemqtty else t.quantity end) as qty,
-				SUM(t.total),
+				SUM(t.total) AS total,
 				d.dept_no,d.dept_name,s.superID,x.distributor
-			  FROM $dlog as t LEFT JOIN products as p on t.upc = p.upc
+			  FROM __TRANS__ as t LEFT JOIN products as p on t.upc = p.upc
 			  LEFT JOIN departments as d on d.dept_no = t.department 
 			  LEFT JOIN MasterSuperDepts AS s ON t.department = s.dept_ID
 			  LEFT JOIN prodExtra as x on t.upc = x.upc
@@ -169,9 +169,9 @@
 		else {
 		$query = "SELECT DISTINCT t.upc,p.description, 
 				SUM(case when t.trans_status in ('M') then t.itemqtty else t.quantity end) as qty,
-				SUM(t.total),
+				SUM(t.total) AS total,
 				d.dept_no,d.dept_name,s.superID,x.distributor
-			  FROM $dlog as t LEFT JOIN products as p on t.upc = p.upc
+			  FROM __TRANS__ as t LEFT JOIN products as p on t.upc = p.upc
 			  LEFT JOIN departments as d on d.dept_no = t.department 
 			  LEFT JOIN MasterSuperDepts AS s ON t.department = s.dept_ID
 			  LEFT JOIN prodExtra as x on t.upc = x.upc
@@ -179,6 +179,7 @@
 			  AND tDate >= '$date1a' AND tDate <= '$date2a' GROUP BY t.upc,p.description,
 			  d.dept_no,d.dept_name,s.superID,x.distributor ORDER BY $order $dir";
 		}
+		$query = fixup_dquery($query,$dlog);
 		$result = $dbc->query($query);
 		echo "<table border=1>\n"; //create table
 		echo "<tr>";
@@ -202,8 +203,8 @@
 			else
 				echo "DESC>Qty</a></td>";
 			echo "<td><a href=report.php?buyer=$buyer&deptStart=$deptStart&deptEnd=$deptEnd"
-			    ."&date1=$date1&date2=$date2&sort=$sort&order=sum(t.total)&dir=";
-			if ($order == "sum(t.total)")
+			    ."&date1=$date1&date2=$date2&sort=$sort&order=total&dir=";
+			if ($order == "total")
 				echo "$revdir>Sales</a></td>";
 			else
 				echo "DESC>Sales</a></td>";
