@@ -300,7 +300,8 @@ if (isset($_GET['action'])){
 			$upR = $dbc->query($upQ);
 		}
 		
-		$insQ = "insert into batchList values ('$upc',$id,$price,1)";
+		$insQ = "insert into batchList (upc,batchID,salePrice,active,pricemethod,quantity) 
+			values ('$upc',$id,$price,1,0,0)";
 		$insR = $dbc->query($insQ);
 		
 		$out .= addItemUPCInput('true');
