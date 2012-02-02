@@ -52,6 +52,8 @@ $QTY = 4;
 $SIZE = 5;
 $UPC = 1;
 $WHOLESALE = 9;
+$DEPT = 17;
+$SRP = 10;
 
 require($FANNIE_ROOT.'batches/UNFI/lib.php');
 $VENDOR_ID = getVendorID(basename($_SERVER['SCRIPT_FILENAME']));
@@ -82,6 +84,8 @@ if ($PRICEFILE_USE_SPLITS){
 		}
 		$cleanQ = "delete from vendorItems WHERE vendorID=$VENDOR_ID";
 		$dbc->query($cleanQ);
+		$cleanQ = "delete from vendorSRPs WHERE vendorID=$VENDOR_ID";
+		$dbc->query($cleanQ);
 	}
 	else {
 		$filestoprocess = unserialize(base64_decode($_GET["filestoprocess"]));	
@@ -90,6 +94,8 @@ if ($PRICEFILE_USE_SPLITS){
 else {
 	$filestoprocess[] = "unfi.csv";
 	$cleanQ = "delete from vendorItems where vendorID=$VENDOR_ID";
+	$dbc->query($cleanQ);
+	$cleanQ = "delete from vendorSRPs WHERE vendorID=$VENDOR_ID";
 	$dbc->query($cleanQ);
 }
 
@@ -106,7 +112,10 @@ while(!feof($fp)){
 	if (!isset($data[$UPC])) continue;
 
 	// grab data from appropriate columns
-	$upc = str_pad($data[$UPC],13,'0',STR_PAD_LEFT);
+	$upc = str_replace('-','',$data[$UPC]);
+	$upc = str_replace(' ','',$upc);
+	$upc = ltrim($upc,'0');
+	$upc = str_pad($upc,13,'0',STR_PAD_LEFT);
 	// zeroes isn't a real item, skip it
 	if ($upc == "0000000000000" || !is_numeric($upc))
 		continue;
@@ -117,6 +126,7 @@ while(!feof($fp)){
 	$size = strtoupper($data[$SIZE]);
 	$qty = $data[$QTY];
 	$net_cost = trim($data[$WHOLESALE]);
+	$dept = $data[$DEPT];
 	// can't process items w/o price (usually promos/samples anyway)
 	if (empty($net_cost))
 		continue;
@@ -131,11 +141,15 @@ while(!feof($fp)){
 	// if the item doesn't exist in the general vendor catalog table,
 	// add it. 
 	$insQ = sprintf("INSERT INTO vendorItems (brand,sku,size,upc,units,cost,description,vendorDept,vendorID)
-			VALUES (%s,%s,%s,%s,%d,%f,%s,NULL,%d)",$dbc->escape($brand),$dbc->escape($sku),
+			VALUES (%s,%s,%s,%s,%d,%f,%s,%d,%d)",$dbc->escape($brand),$dbc->escape($sku),
 			$dbc->escape($size),$dbc->escape($upc),$qty,$net_cost,$dbc->escape($description),
-			$VENDOR_ID);
+			$dept,$VENDOR_ID);
 	$insR = $dbc->query($insQ);
 
+	$srp = $data[$SRP];
+	$insQ = "INSERT INTO vendorSRPs (vendorID, upc, srp) VALUES
+		($VENDOR_ID,'$upc',$srp)";
+	$insR = $dbc->query($insQ);
 }
 fclose($fp);
 

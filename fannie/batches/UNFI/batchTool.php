@@ -89,6 +89,7 @@ else
 	$query .= " AND (x.distributor='UNFI' or x.distributor <> b.vendorName) ";
 
 $query .= " ORDER BY p.upc";
+//echo $query;
 
 $result = $dbc->query($query);
 
