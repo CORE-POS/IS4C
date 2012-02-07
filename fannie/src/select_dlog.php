@@ -230,5 +230,27 @@ function select_dtrans($date, $enddate=""){
     
   return $data;
 }
+
+// standard comparison function for query rows
+function standard_compare($v1,$v2){
+	global $STANDARD_COMPARE_ORDER,$STANDARD_COMPARE_DIRECTION;
+	if (strstr($STANDARD_COMPARE_ORDER,".")){
+		$STANDARD_COMPARE_ORDER = substr($STANDARD_COMPARE_ORDER,strpos($STANDARD_COMPARE_ORDER,".")+1);
+	}
+	$a = $v1[$STANDARD_COMPARE_ORDER];
+	$b = $v2[$STANDARD_COMPARE_ORDER];
+	if (is_numeric($a) && is_numeric($b)){
+		if ($STANDARD_COMPARE_DIRECTION == "ASC")
+			return ($a < $b) ? -1 : 1;
+		else
+			return ($a > $b) ? -1 : 1;
+	}
+	else{
+		if ($STANDARD_COMPARE_DIRECTION == "ASC")
+			return (strcmp($a,$b)<=0) ? -1 : 1;
+		else
+			return (strcmp($a,$b)>=0) ? -1 : 1;
+	}
+}
 /*--------------------------end select_dlog-------------------------------*/
 ?>

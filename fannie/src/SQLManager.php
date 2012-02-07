@@ -209,6 +209,18 @@ class SQLManager {
 		}	
 	}
 
+	function dateymd($date1,$which_connection=''){
+		if ($which_connection == '')
+			$which_connection = $this->default_db;
+		switch($this->connections[$which_connection]->databaseType){
+		case 'mysql':
+		case 'mysqli':
+			return "DATE_FORMAT($date1,'%Y%m%d')";
+		case 'mssql':
+			return "CONVERT(CHAR(11),$date1,112)";
+		}
+	}
+
 	// flip argument order by mysql vs mssql
 	function convert($expr,$type,$which_connection=''){
 		if ($which_connection == '')
@@ -348,8 +360,17 @@ class SQLManager {
 	function dayofweek($field,$which_connection=''){
 		if ($which_connection == '')
 			$which_connection = $this->default_db;
-		$conn = $this->connections[$which_connection];
-		return $conn->SQLDate("w",$field);
+		// ado is inconsistent
+		//$conn = $this->connections[$which_connection];
+		//return $conn->SQLDate("w",$field);
+		switch($this->connections[$which_connection]->databaseType){
+		case 'mysql':
+		case 'mysqli':
+			return "DATE_FORMAT($field,'%w')+1";
+		case 'mssql':
+			return "DATEPART(wk,$field)";
+		}
+		return false;
 	}
 
 	function hour($field,$which_connection=''){
