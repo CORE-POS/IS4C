@@ -312,7 +312,6 @@
 		}
 		//echo $query;
 		$query = fixup_dquery($query,$dlog);
-		echo $query;
 		$result = $dbc->query($query);	
 
 		$dtemp = explode("-",$date1);
