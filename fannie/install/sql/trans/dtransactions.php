@@ -200,11 +200,11 @@ $CREATE['trans.dtransactions'] = "
 	  `register_no` smallint(6) default NULL,
 	  `emp_no` smallint(6) default NULL,
 	  `trans_no` int(11) default NULL,
-	  `upc` varchar(255) default NULL,
-	  `description` varchar(255) default NULL,
-	  `trans_type` varchar(255) default NULL,
-	  `trans_subtype` varchar(255) default NULL,
-	  `trans_status` varchar(255) default NULL,
+	  `upc` varchar(13) default NULL,
+	  `description` varchar(30) default NULL,
+	  `trans_type` varchar(1) default NULL,
+	  `trans_subtype` varchar(2) default NULL,
+	  `trans_status` varchar(1) default NULL,
 	  `department` smallint(6) default NULL,
 	  `quantity` double default NULL,
 	  `scale` tinyint(4) default NULL,
@@ -230,8 +230,12 @@ $CREATE['trans.dtransactions'] = "
 	  `staff` tinyint(4) default NULL,
 	  `numflag` smallint(6) default 0 NULL,
 	  `charflag` varchar(2) default '' NULL,
-	  `card_no` varchar(255) default NULL,
-	  `trans_id` int(11) default NULL
+	  `card_no` varchar(12) default NULL,
+	  `trans_id` int(11) default NULL,
+	  INDEX(`datetime`),
+	  INDEX(`upc`),
+	  INDEX(`department`),
+	  INDEX(`card_no`)
 	)
 ";
 
