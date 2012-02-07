@@ -94,19 +94,20 @@
 	$date1a = $date1 . " 00:00:00";
 	//decide what the sort index is and translate from lay person to mySQL table label
 
+	$groupBy="";$alias="";
 	if($_GET['sort']=='Department'){
 		
-		$groupBy = "department,d.dept_name";
+		$groupBy = "department,dept_name";
 		$query1 = "department";
 		
 	}elseif($_GET['sort']=='Date') { 
 		
-		$groupBy = "CONVERT(CHAR(11),tDate,112)";
+		$groupBy = $dbc->dateymd('tdate');
+		$alias = "tdate";
 		$query1 = "CONVERT(CHAR(11),tDate,106)";
 
 	}elseif($_GET['sort']=='Weekday'){
 
-		$groupBy = $dbc->dayofweek("tdate");
 		$groupBy = $dbc->dayofweek("tdate").",CASE 
 			WHEN ".$dbc->dayofweek("tdate")."=1 THEN 'Sun'
 			WHEN ".$dbc->dayofweek("tdate")."=2 THEN 'Mon'
@@ -116,6 +117,7 @@
 			WHEN ".$dbc->dayofweek("tdate")."=6 THEN 'Fri'
 			WHEN ".$dbc->dayofweek("tdate")."=7 THEN 'Sat'
 			ELSE 'Err' END";
+		$alias = "DoW";
 	
 	}elseif($_GET['sort']=='PLU') {
 		
@@ -167,7 +169,7 @@
 			  d.dept_no,d.dept_name,s.superID,x.distributor ORDER BY $order $dir";
 		}
 		else {
-		$query = "SELECT DISTINCT t.upc,p.description, 
+		$query = "SELECT t.upc,p.description, 
 				SUM(case when t.trans_status in ('M') then t.itemqtty else t.quantity end) as qty,
 				SUM(t.total) AS total,
 				d.dept_no,d.dept_name,s.superID,x.distributor
@@ -177,10 +179,25 @@
 			  LEFT JOIN prodExtra as x on t.upc = x.upc
 			  WHERE t.department BETWEEN $deptStart AND $deptEnd
 			  AND tDate >= '$date1a' AND tDate <= '$date2a' GROUP BY t.upc,p.description,
-			  d.dept_no,d.dept_name,s.superID,x.distributor ORDER BY $order $dir";
+			  d.dept_no,d.dept_name,s.superID,x.distributor";
 		}
 		$query = fixup_dquery($query,$dlog);
 		$result = $dbc->query($query);
+
+		$rows = array();
+		while($row = $dbc->fetch_row($result)){
+			$key = $row['upc'].":".$row['description'].":".$row['dept_no'];
+			if (!isset($rows[$key]))
+				$rows[$key] = $row;
+			else{
+				$rows[$key]['total'] += $row['total'];	
+				$rows[$key]['qty'] += $row['qty'];
+			}
+		}
+		$STANDARD_COMPARE_ORDER = $order;
+		$STANDARD_COMPARE_DIRECTION = $dir;
+		uasort($rows,'standard_compare');
+
 		echo "<table border=1>\n"; //create table
 		echo "<tr>";
 		if (!isset($_GET['excel'])){
@@ -225,8 +242,8 @@
 				echo "$revdir>Sub dept</a></td>";
 			else
 				echo "ASC>Sub dept</a></td>";
-			echo "<td><a href=report.php?buyer=$buyer&deptStart=$deptStart&deptEnd=$deptEnd&date1=$date1&date2=$date2&sort=$sort&order=x.distributor&dir=";
-			if ($order = "x.distributor")
+			echo "<td><a href=report.php?buyer=$buyer&deptStart=$deptStart&deptEnd=$deptEnd&date1=$date1&date2=$date2&sort=$sort&order=distributor&dir=";
+			if ($order = "distributor")
 				echo "$revdir>Vendor</a></td>";
 			else
 				echo "ASC>Vendor</a></td>";
@@ -241,9 +258,10 @@
 		while($dsW = $dbc->fetch_row($dsR))
 			$dept_subs[$dsW[1]] = $dsW[0];
 
-		while ($myrow = $dbc->fetch_row($result)) { //create array from query
+		//while ($myrow = $dbc->fetch_row($result)) { //create array from query
+		foreach($rows as $myrow){
 		
-		printf("<tr><td>%s</td><td>%s</td><td>%.2f</td><td>%.2f</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>\n",$myrow[0], $myrow[1],$myrow[2],$myrow[3],$myrow[4],$myrow[5],$dept_subs[$myrow[6]],$myrow[7]==''?'&nbsp;':$myrow[7]);
+		printf("<tr><td>%s</td><td>%s</td><td>%.2f</td><td>%.2f</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>\n",$myrow['upc'], $myrow['description'],$myrow['qty'],$myrow['total'],$myrow['dept_no'],$myrow['dept_name'],$dept_subs[$myrow['superID']],$myrow['distributor']==''?'&nbsp;':$myrow[7]);
 		//convert row information to strings, enter in table cells
 		
 		}
@@ -252,45 +270,49 @@
 
 	}else{ //create alternate query if not sorting by PLU
 		$query="";
+		$item = (!empty($alias)) ? $groupBy." AS ".$alias : $groupBy;
+		$orderBy = (!empty($alias)) ? $alias : $groupBy;
 		if(isset($buyer) && $buyer>0){
-		 $query =  "SELECT $groupBy,SUM(quantity) as Qty, SUM(total) as Sales "
-                          ."FROM $dlog as t LEFT JOIN departments as d on d.dept_no=t.department "
+		 $query =  "SELECT $item,SUM(quantity) as Qty, SUM(total) as Sales "
+                          ."FROM __TRANS__ as t LEFT JOIN departments as d on d.dept_no=t.department "
 			  ."LEFT JOIN superdepts AS s ON s.dept_ID = t.department "
 			  ."WHERE s.superID=$buyer AND tDate >= '$date1a' AND tDate <= '$date2a' "
 			  ."AND trans_type in ('D','I','M')"
-			  ."GROUP BY $groupBy ORDER BY $groupBy";
+			  ."GROUP BY $groupBy ORDER BY $orderBy";
 		}
 		else if (isset($buyer) && $buyer == -1){
-		 $query =  "SELECT $groupBy,SUM(quantity) as Qty, SUM(total) as Sales "
-                          ."FROM $dlog as t LEFT JOIN departments as d on d.dept_no=t.department "
+		 $query =  "SELECT $item,SUM(quantity) as Qty, SUM(total) as Sales "
+                          ."FROM __TRANS__ as t LEFT JOIN departments as d on d.dept_no=t.department "
 			  ."WHERE tDate >= '$date1a' AND tDate <= '$date2a' "
 			  ."AND trans_type in ('D','I','M')"
-			  ."GROUP BY $groupBy ORDER BY $groupBy";
+			  ."GROUP BY $groupBy ORDER BY $orderBy";
 		}
 		else if (isset($buyer) && $buyer == -2){
-		 $query =  "SELECT $groupBy,SUM(quantity) as Qty, SUM(total) as Sales "
-                          ."FROM $dlog as t LEFT JOIN departments as d on d.dept_no=t.department "
+		 $query =  "SELECT $item,SUM(quantity) as Qty, SUM(total) as Sales "
+                          ."FROM __TRANS__as t LEFT JOIN departments as d on d.dept_no=t.department "
 			  ."LEFT JOIN MasterSuperDepts AS s ON s.dept_ID = t.department "
 			  ."WHERE tDate >= '$date1a' AND tDate <= '$date2a' "
 			  ."AND trans_type in ('D','I','M') and s.superID <> 0"
-			  ."GROUP BY $groupBy ORDER BY $groupBy";
+			  ."GROUP BY $groupBy ORDER BY $orderBy";
 		}
 		else {
-		 $query =  "SELECT $groupBy,SUM(quantity) as Qty, SUM(total) as Sales "
-                          ."FROM $dlog as t LEFT JOIN departments as d on d.dept_no=t.department "
+		 $query =  "SELECT $item,SUM(quantity) as Qty, SUM(total) as Sales "
+                          ."FROM __TRANS__ as t LEFT JOIN departments as d on d.dept_no=t.department "
 			  ."WHERE tDate >= '$date1a' AND tDate <= '$date2a' "
 			  ."AND trans_type in ('D','I','M') "
 			  ."AND t.department BETWEEN $deptStart AND $deptEnd "
-			  ."GROUP BY $groupBy ORDER BY $groupBy";
+			  ."GROUP BY $groupBy ORDER BY $orderBy";
 		}
 		if ($sort == "Weekday"){
 			$query = str_replace("as Sales",
 					"as Sales,
-					sum(quantity)/count(distinct(convert(char(11),tdate,112))),
-					sum(total)/count(distinct(convert(char(11),tdate,112)))",
+					sum(quantity)/count(distinct(".$dbc->dateymd('tdate').")) as avg_qty,
+					sum(total)/count(distinct(".$dbc->dateymd('tdate').")) as avg_ttl",
 					$query);
 		}
 		//echo $query;
+		$query = fixup_dquery($query,$dlog);
+		echo $query;
 		$result = $dbc->query($query);	
 
 		$dtemp = explode("-",$date1);
@@ -323,7 +345,10 @@
 			for ($i=0;$i<$dbc->num_fields($result);$i++){
 				echo "<td";
 				if ($i==0) echo " align=right";
-				echo ">".$myrow[$i]."</td>";
+				echo ">";
+				if (is_numeric($myrow[$i])) printf('%.2f',$myrow[$i]);
+				else echo $myrow[$i];
+				echo '</td>';
 			}
 			echo "</tr>";
 			$ts = mktime(0,0,0,date("n",$ts),date("j",$ts)+1,date("Y",$ts));

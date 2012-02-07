@@ -45,8 +45,9 @@ require($FANNIE_ROOT.'src/tmp_dir.php');
 
 // the column number in the CSV file
 // where various information is stored
-$SKU = 0;
+$SKU = 1;
 $BRAND = 2;
+<<<<<<< Updated upstream
 $DESCRIPTION = 3;
 $QTY = 4;
 $SIZE = 5;
@@ -54,6 +55,14 @@ $UPC = 1;
 $WHOLESALE = 9;
 $DEPT = 17;
 $SRP = 10;
+=======
+$DESCRIPTION = 6;
+$QTY = 3;
+$SIZE = 4;
+$UPC = 14;
+$WHOLESALE = 13;
+$SRP = 16;
+>>>>>>> Stashed changes
 
 require($FANNIE_ROOT.'batches/UNFI/lib.php');
 $VENDOR_ID = getVendorID(basename($_SERVER['SCRIPT_FILENAME']));
