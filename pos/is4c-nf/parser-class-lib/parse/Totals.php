@@ -59,7 +59,9 @@ class Totals extends Parser {
 		elseif ($str == "FTTL")
 			finalttl();
 		elseif ($str == "TL"){
-			ttl();
+			$chk = ttl();
+			if ($chk !== True)
+				$ret['main_frame'] = $chk;
 		}
 
 		if (!$ret['main_frame']){
