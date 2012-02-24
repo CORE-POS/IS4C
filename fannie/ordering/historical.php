@@ -255,6 +255,7 @@ $ret = sprintf('<table cellspacing="0" cellpadding="4" border="1">
 	base64_encode("status_flag")
 );
 $ret .= '</tr>';
+$key = "";
 foreach($orders as $w){
 	if (!isset($valid_ids[$w['order_id']])) continue;
 
