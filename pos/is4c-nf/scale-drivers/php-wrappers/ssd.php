@@ -82,11 +82,11 @@ class ssd extends ScaleDriverWrapper {
 		global $CORE_LOCAL,$CORE_PATH;
 
 		$scale_data = file_get_contents($CORE_PATH.'scale-drivers/drivers/rs232/scale');
-		$fp = open($CORE_PATH.'scale-drivers/drivers/rs232/scale','w');
+		$fp = fopen($CORE_PATH.'scale-drivers/drivers/rs232/scale','w');
 		fclose($fp);
 
 		$scan_data = file_get_contents($CORE_PATH.'scale-drivers/drivers/rs232/scanner');
-		$fp = open($CORE_PATH.'scale-drivers/drivers/rs232/scanner','w');
+		$fp = fopen($CORE_PATH.'scale-drivers/drivers/rs232/scanner','w');
 		fclose($fp);
 	
 		$scale_display = '';
