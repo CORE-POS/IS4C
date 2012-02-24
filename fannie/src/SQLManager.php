@@ -368,7 +368,7 @@ class SQLManager {
 		case 'mysqli':
 			return "DATE_FORMAT($field,'%w')+1";
 		case 'mssql':
-			return "DATEPART(wk,$field)";
+			return "DATEPART(dw,$field)";
 		}
 		return false;
 	}

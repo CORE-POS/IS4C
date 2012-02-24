@@ -76,6 +76,14 @@ while($w = $dbc->fetch_row($r)){
 	else {
 		$saveW['reason'] .= ", ".$w['reason'];
 	}
+	if ($saveW[3] == 1900)
+		$saveW['startdate'] = isset($_REQUEST['excel']) ? '' : '&nbsp;';
+	else
+		$saveW['startdate'] = sprintf("%d/%d/%d",$saveW[1],$saveW[2],$saveW[3]);
+	if ($saveW[6] == 1900)
+		$saveW['enddate'] = isset($_REQUEST['excel']) ? '' : '&nbsp;';
+	else
+		$saveW['enddate'] = sprintf("%d/%d/%d",$saveW[4],$saveW[5],$saveW[6]);
 }
 printRow($saveW);
 echo "</table>";
@@ -85,11 +93,11 @@ function printRow($arr){
 	$ph = isset($_REQUEST['excel'])?'':"&nbsp;";
 	if (count($arr) <= 1) return;
 	printf("<tr><td>%d</td><td>%s</td><td>%s</td>
-		<td>%d/%d/%d</td><td>%d/%d/%d</td>
+		<td>%s</td><td>%s</td>
 		<td>%.2f</td><td>%s</td></tr>",
 		$arr[0],$arr['firstname'],$arr['lastname'],
-		$arr[1],$arr[2],$arr[3],
-		$arr[4],$arr[5],$arr[6],
+		$arr['startdate'],
+		$arr['enddate'],
 		$arr['equity'],
 		($arr['isInactive']==1?'INACTIVE - '.$arr['reason']:$ph)
 	);
