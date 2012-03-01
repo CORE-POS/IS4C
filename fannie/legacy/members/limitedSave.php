@@ -115,7 +115,8 @@ if (isset($_REQUEST['cardUPC']) && is_numeric($_REQUEST['cardUPC'])){
 // update top name
 $custdataQ = "Update custdata set lastname = $lName, firstname = $fname, blueline=$blueline where cardNo = $memNum and personnum = 1";
 $memNamesQ = "Update memNames set lname = $lName, fname=$fname where memNum = $memNum and personnum = 1";
-$custdataR = $sql->query($custdataQ);
+add_second_server();
+$custdataR = $sql->query_all($custdataQ);
 //echo $memNamesQ."<br />";
 $memNamesR = $sql->query($memNamesQ);
 
@@ -124,7 +125,7 @@ for($i=0;$i<3;$i++){
 	if ($lnames[$i]=="''") $lnames[$i] = "";
 }
 for($i=0; $i<3; $i++){
-	$sql->query("DELETE FROM custdata WHERE cardno=$memNum and personnum=".($i+2));
+	$sql->query_all("DELETE FROM custdata WHERE cardno=$memNum and personnum=".($i+2));
 	$sql->query("DELETE FROM memnames WHERE memNum=$memNum and personnum=".($i+2));
 	if (is_array($fnames) && isset($fnames[$i]) && 
 	    is_array($lnames) && isset($lnames[$i]) &&
@@ -138,13 +139,13 @@ for($i=0; $i<3; $i++){
 				active,'%s' FROM memNames where memNum=%d and personnum=1",
 				$lnames[$i],$fnames[$i],
 				($i+2),($memNum.'.'.($i+2).'.1'),$memNum);
-		$sql->query($custQ);
+		$sql->query_all($custQ);
 		$sql->query($memQ);
 	}
 }
 
 $mbrQ =    "UPDATE mbrmastr SET zipCode = '$zip',phone ='$phone',address1='$address1',address2='$address2',city='$city',state='$state',notes='$phone2',emailaddress='$email'  WHERE memNum = $memNum";
-$result=$sql->query($mbrQ);
+//$result=$sql->query($mbrQ);
 
 $meminfoQ = sprintf("UPDATE meminfo SET street='%s',city='%s',state='%s',zip='%s',phone='%s',email_1='%s',email_2='%s'
 		WHERE card_no=%d",(!empty($address2)?"$address1\n$address2":$address1),
