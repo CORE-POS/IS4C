@@ -30,6 +30,23 @@ for the next day.
 The included task <b>nightly.dtrans.php</b> handles this rotation. Any other
 nightly tasks that examine or manipulate the current day's transactions need
 to know where that data is. 
+<h2>The Transaction Shuffle, Pt. 2</h2>
+Fannie supports an alternate archiving structure using partitions instead of
+monthly tables. This feature is experimental at the moment and only supported
+with MySQL. MySQL's performance with multiple monthly archive tables is very
+poor; this alternative addresses that problem. The structure changes to this:
+<ul>
+	<li><b>dtransactions</b> on the transaction database (default: is4c_trans)
+		contains today's transactions.</li>
+	<li><b>transarchive</b> on the transaction database (default: is4c_trans)
+		contains the previous 90 days' transactions.</li>
+	<li><b>bigArchive</b> on the archive database (default: trans_archive)
+		contains all transactions prior to the current day
+		and is partitioned by month</li>
+</ul>
+To use this alternative, select "partitions" instead of "tables" as the <i>Archive Method</i>
+on Fannie's install/config page. The same included task <b>nightly.dtrans.php</b>
+handles the rotation and creates new partitions as needed.
 <h2>Batches</h2>
 There are two related tasks here. <b>nightly.batch.php</b> takes all items
 off sale (resetting them to normal_price), then applies any current sales
