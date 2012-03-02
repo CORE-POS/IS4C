@@ -102,7 +102,27 @@ if ($FANNIE_ARCHIVE_REMOTE){
 else {
 	$sql = new SQLManager($FANNIE_SERVER,$FANNIE_SERVER_DBMS,$FANNIE_ARCHIVE_DB,
 			$FANNIE_SERVER_USER,$FANNIE_SERVER_PW);
-	if (!$sql->table_exists($table)){
+	if ($FANNIE_ARCHIVE_METHOD == "partitions" && $FANNIE_SERVER_DBMS == "MYSQL"){
+		// we're just partitioning
+		// make a new partition if it's a new month
+		if (date('j') == 1){
+			$p = "p".date("Ym"); 
+			$boundary = date("Y-m-d",mktime(0,0,0,date("n")+1,1,date("Y")));
+			// new partition named pYYYYMM
+			// ends on first day of next month
+			$newQ = sprintf("ALTER TABLE bigArchive ADD PARTITION 
+				(PARTITION %s 
+				VALUES LESS THAN (TO_DAYS('%s'))
+				)",$p,$boundary);
+			$newR = $sql->query($newQ);
+			if ($newR === false)
+				echo cron_msg("Error creating new partition $p");
+		}
+		// now just copy rows into the partitioned table
+		$loadQ = "INSERT INTO bigArchive SELECT * FROM {$FANNIE_TRANS_DB}.dtransactions";
+		$loadR = $sql->query($loadQ);	
+	}
+	else if (!$sql->table_exists($table)){
 		$query = "CREATE $table LIKE $FANNIE_TRANS_DB.dtransactions";
 		if ($FANNIE_SERVER_DBMS == 'MSSQL')
 			$query = "SELECT * INTO $table FROM $FANNIE_TRANS_DB.dbo.dtransactions";
