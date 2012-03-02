@@ -413,8 +413,8 @@ function addressForm($memNum)
 				}
 
                                 echo "<td bgcolor='FFFF33'>".$num.".</td>";
-                                echo "<td><input maxlength=25 type = text name=hhFname[] value='".$rowNames[1]."'></td>";
-                                echo "<td><input maxlength=25 type = text name=hhLname[] value='".$rowNames[0]."'></td>";
+                                echo "<td><input maxlength=25 type = text name=hhFname[] value=\"".$rowNames[1]."\"></td>";
+                                echo "<td><input maxlength=25 type = text name=hhLname[] value=\"".$rowNames[0]."\"></td>";
                         echo "</tr>";
                 }
 		echo "<tr>";
@@ -430,6 +430,7 @@ function addressForm($memNum)
 
 function alterReason($memNum,$reasonCode,$status=False){
 	global $sql;
+	add_second_server();
 
 	$username = checkLogin();
 	$uid = getUID($username);
@@ -443,7 +444,7 @@ function alterReason($memNum,$reasonCode,$status=False){
 		$insQ = "INSERT INTO suspension_history VALUES ('$username',getdate(),'','$memNum',$reasonCode)";
 		$insR = $sql->query($insQ);
 		if ($status){
-			$sql->query("UPDATE custdata SET type='$status' WHERE cardno=$memNum");
+			$sql->query_all("UPDATE custdata SET type='$status' WHERE cardno=$memNum");
 			if ($status == "TERM")
 				$sql->query("UPDATE suspensions SET type='T' WHERE cardno=$memNum");
 			else
@@ -454,6 +455,7 @@ function alterReason($memNum,$reasonCode,$status=False){
 
 function deactivate($memNum,$type,$reason,$reasonCode){
 	global $sql;
+	add_second_server();
 
   $username = checkLogin();
   $uid = getUID($username);
@@ -480,7 +482,7 @@ function deactivate($memNum,$type,$reason,$reasonCode){
     $mQ = "update meminfo set ads_OK=0 where card_no = $memNum";
     $cQ = "update custdata set memtype=0, type='TERM',chargeok=0,discount=0,memdiscountlimit=0 where cardno=$memNum";
     $mR = $sql->query($mQ);
-    $cR = $sql->query($cQ);
+    $cR = $sql->query_all($cQ);
   }elseif($type=='INACT' || $type=='INACT2'){
     $query = "select memtype,type,memDiscountLimit,discount from custdata where cardno=$memNum";
     $result = $sql->query($query);
@@ -501,12 +503,13 @@ function deactivate($memNum,$type,$reason,$reasonCode){
     $mQ = "update meminfo set ads_OK=0 where card_no = $memNum";
     $cQ = "update custdata set memtype=0, type='$type',chargeok=0,discount=0,memDiscountLimit=0 where cardno=$memNum";
     $mR = $sql->query($mQ);
-    $cR = $sql->query($cQ);
+    $cR = $sql->query_all($cQ);
   }
 }
 
 function activate($memNum){
 	global $sql;
+	add_second_server();
 
   $username = checkLogin();
   $uid = getUID($username);
@@ -521,13 +524,13 @@ function activate($memNum){
     $mQ = "update meminfo set ads_OK=$row[5] where card_no=$memNum";
     $cQ = "update custdata set memtype=$row[1], type='$row[2]',chargeok=1,discount=$row[3],memDiscountLimit=$row[4] where cardno=$memNum";
     $mR = $sql->query($mQ);
-    $cR = $sql->query($cQ);
+    $cR = $sql->query_all($cQ);
   }
   else if ($row[0] == 'X'){
-    $mQ = "update custdata set discount=$row[3], type='$row[2]', chargeOk = 1,
+    $cQ = "update custdata set discount=$row[3], type='$row[2]', chargeOk = 1,
            memtype = $row[1], memdiscountlimit = $row[4], memcoupons = 1
            where cardno=$memNum";
-    $mR = $sql->query($mQ);
+    $cR = $sql->query_all($cQ);
     $mQ = "update meminfo set ads_OK=$row[5] where card_no=$memNum";
     $mR = $sql->query($mQ);
   }

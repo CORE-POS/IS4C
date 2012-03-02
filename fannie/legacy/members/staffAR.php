@@ -76,18 +76,21 @@ if(!validateUserQuiet('staffar')){
       }
    }
    
-   $query = "SELECT * FROM staffAR order by lastName";
+   $query = "SELECT a.*,s.adpID FROM staffAR AS a LEFT JOIN
+	staffID AS s ON a.CardNo=s.cardno order by lastName";
    $result = $sql->query($query);
 
    echo "<form name=upStaffAR method=post action=staffAR.php>";
    echo "<table cellspacing=0 cellpadding=3>";
-   echo "<tr><th align=left>Mem#</th><th align=left>Lastname</th><th align=left>Firstname</th>";
+   echo "<tr><th align=left>Mem#</th><th align=left>ADP#</th><th align=left>Lastname</th><th align=left>Firstname</th>";
    echo "<th align=left>Current deduction</th><th align=left>Change deduction to</th></tr>";
    $sum = 0;
    $colors = array('#ffffff','#ffffaa');
    $c = 1;
    while($row = $sql->fetch_array($result)){
-      echo "<tr><td bgcolor=$colors[$c]>".$row['cardNo']."</td><td bgcolor=$colors[$c]>".$row['lastName']."</td>"
+      echo "<tr><td bgcolor=$colors[$c]>".$row['cardNo']."</td>"
+	  ."<td bgcolor=$colors[$c]>".$row['adpID']."</td>"
+	  ."<td bgcolor=$colors[$c]>".$row['lastName']."</td>"
 	  ."<td bgcolor=$colors[$c]>".$row['firstName']."</td>"
           ."<td bgcolor=$colors[$c]>".trim($row['adjust'])."</td>"
 	  ."<td bgcolor=$colors[$c]><input type=text name=".$row['cardNo']." value="

@@ -259,7 +259,7 @@ function checkstatus($num) {
 //---------------------------------------------------
 
 function tender($right, $strl) {
-	global $CORE_LOCAL;
+	global $CORE_LOCAL,$CORE_PATH;
 	$tender_upc = "";
 
 	$ret = array('main_frame'=>false,
@@ -390,20 +390,20 @@ function tender($right, $strl) {
 
 	if ($tender_code == "FS") {
 		$CORE_LOCAL->set("boxMsg","WFC no longer excepts paper foods stamps. Please choose a different tender type");
-		$ret['main_frame'] = '/gui-modules/boxMsg2.php';
+		$ret['main_frame'] = $CORE_PATH.'gui-modules/boxMsg2.php';
 		return $ret;
 	}
 	elseif ($tender_code == "CP" && $strl > $row["MaxAmount"] && $CORE_LOCAL->get("msgrepeat") == 0){
 		$CORE_LOCAL->set("boxMsg","$".$strl." is greater than coupon limit<P>"
 		."<FONT size='-1'>[clear] to cancel, [enter] to proceed</FONT>");
-		$ret['main_frame'] = '/gui-modules/boxMsg2.php';
+		$ret['main_frame'] = $CORE_PATH.'gui-modules/boxMsg2.php';
 		return $ret;
 	}
 	elseif ($strl > $row["MaxAmount"] && $CORE_LOCAL->get("msgrepeat") == 0){
 		$CORE_LOCAL->set("boxMsg","$".$strl." is greater than tender limit "
 		."for ".$row['TenderName']."<p>"
 		."<FONT size='-1'>[clear] to cancel, [enter] to proceed</FONT>");
-		$ret['main_frame'] = '/gui-modules/boxMsg2.php';
+		$ret['main_frame'] = $CORE_PATH.'gui-modules/boxMsg2.php';
 		return $ret;
 	}
 	elseif ($right == "GD" || $right == "TC"){
@@ -430,7 +430,7 @@ function tender($right, $strl) {
 		}
 		$CORE_LOCAL->set("boxMsg",$msg);
 		$CORE_LOCAL->set("endorseType","check");
-		$ret['main_frame'] = '/gui-modules/boxMsg2.php';
+		$ret['main_frame'] = $CORE_PATH.'gui-modules/boxMsg2.php';
 		return $ret;
 	}
 	elseif ($right == "TV" && $CORE_LOCAL->get("msgrepeat") == 0) {
@@ -443,7 +443,7 @@ function tender($right, $strl) {
 		}
 		$CORE_LOCAL->set("boxMsg",$msg);
 		$CORE_LOCAL->set("endorseType","check");
-		$ret['main_frame'] = '/gui-modules/boxMsg2.php';
+		$ret['main_frame'] = $CORE_PATH.'gui-modules/boxMsg2.php';
 		return $ret;
 	}
 	elseif ($right == "RC" && $CORE_LOCAL->get("msgrepeat") == 0) {
@@ -456,13 +456,13 @@ function tender($right, $strl) {
 		}
 		$CORE_LOCAL->set("boxMsg",$msg);
 		$CORE_LOCAL->set("endorseType","check");
-		$ret['main_frame'] = '/gui-modules/boxMsg2.php';
+		$ret['main_frame'] = $CORE_PATH.'gui-modules/boxMsg2.php';
 		return $ret;
 	}
 	elseif ($right == "TC" && $CORE_LOCAL->get("msgrepeat") == 0) {
 		$CORE_LOCAL->set("boxMsg","<B> insert gift certificate<B><BR>press [enter] to endorse<P><FONT size='-1'>[clear] to cancel</FONT>");
 		$CORE_LOCAL->set("endorseType","check");
-		$ret['main_frame'] = '/gui-modules/boxMsg2.php';
+		$ret['main_frame'] = $CORE_PATH.'gui-modules/boxMsg2.php';
 		return $ret;
 	}
 
@@ -668,12 +668,12 @@ function deptkey($price, $dept,$ret=array()) {
 
 			$CORE_LOCAL->set("boxMsg","$".$price." is greater than department limit<P>"
 					."<FONT size='-1'>[clear] to cancel, [enter] to proceed</FONT>");
-			$ret['main_frame'] = '/gui-modules/boxMsg2.php';
+			$ret['main_frame'] = $CORE_PATH.'gui-modules/boxMsg2.php';
 		}
 		elseif ($price < $deptmin && $CORE_LOCAL->get("msgrepeat") == 0) {
 			$CORE_LOCAL->set("boxMsg","$".$price." is lower than department minimum<P>"
 				."<FONT size='-1'>[clear] to cancel, [enter] to proceed</FONT>");
-			$ret['main_frame'] = '/gui-modules/boxMsg2.php';
+			$ret['main_frame'] = $CORE_PATH.'gui-modules/boxMsg2.php';
 		}
 		else {
 			if ($CORE_LOCAL->get("casediscount") > 0) {

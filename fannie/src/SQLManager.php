@@ -123,6 +123,14 @@ class SQLManager {
 		return $ok;
 	}
 
+	function query_all($query_text){
+		$ret = array();
+		foreach($this->connections as $db_name => $con){
+			$ret[$db_name] = $this->query($query_text,$db_name);
+		}
+		return $ret;
+	}
+
 	function escape($query_text,$which_connection=''){
 		if ($which_connection == '')
 			$which_connection = $this->default_db;
@@ -368,7 +376,7 @@ class SQLManager {
 		case 'mysqli':
 			return "DATE_FORMAT($field,'%w')+1";
 		case 'mssql':
-			return "DATEPART(wk,$field)";
+			return "DATEPART(dw,$field)";
 		}
 		return false;
 	}
