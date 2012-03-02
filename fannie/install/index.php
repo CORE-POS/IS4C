@@ -202,6 +202,21 @@ if (isset($_REQUEST['FANNIE_ARCHIVE_DB'])) $FANNIE_ARCHIVE_DB = $_REQUEST['FANNI
 confset('FANNIE_ARCHIVE_DB',"'$FANNIE_ARCHIVE_DB'");
 echo "<input type=text name=FANNIE_ARCHIVE_DB value=\"$FANNIE_ARCHIVE_DB\" />";
 ?>
+<br />Archive Method:
+<select name=FANNIE_ARCHIVE_METHOD>
+<?php
+if (!isset($FANNIE_ARCHIVE_METHOD)) $FANNIE_ARCHIVE_METHOD = 'tables';
+if (isset($_REQUEST['FANNIE_ARCHIVE_METHOD'])) $FANNIE_ARCHIVE_METHOD = $_REQUEST['FANNIE_ARCHIVE_METHOD'];
+if ($FANNIE_ARCHIVE_METHOD == 'tables'){
+	confset('FANNIE_ARCHIVE_METHOD',"'tables'");
+	echo "<option selected>tables</option><option>partitions</option>";
+}
+else{
+	confset('FANNIE_ARCHIVE_METHOD',"'partitions'");
+	echo "<option>tables</option><option selected>partitions</option>";
+}
+echo "</select><br />";
+?>
 <br />Use a different DB server for archives
 <select name=FANNIE_ARCHIVE_REMOTE>
 <?php

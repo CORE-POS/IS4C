@@ -29,7 +29,7 @@
 *****************************************************************************/
 if (!class_exists("SQLManager")) require_once("sql/SQLManager.php");
 function select_dlog($date, $enddate="",$unions=True){
-  global $dbc,$FANNIE_TRANS_DB,$FANNIE_SERVER_DBMS,$FANNIE_ARCHIVE_DB;
+  global $dbc,$FANNIE_TRANS_DB,$FANNIE_SERVER_DBMS,$FANNIE_ARCHIVE_DB,$FANNIE_ARCHIVE_METHOD;
 
   $dbconn = ($FANNIE_SERVER_DBMS=='MSSQL')?'.dbo.':'.';
 
@@ -37,6 +37,9 @@ function select_dlog($date, $enddate="",$unions=True){
   $diffR = $dbc->query($diffQ);
   $diffRow = $dbc->fetch_array($diffR);
   $daydiff = abs($diffRow['daydiff']);
+  if ($FANNIE_ARCHIVE_METHOD == "partitions"){
+    return ($daydiff == 0) ? "dlog" : "dlogBig";
+  }
 
   // parse out starting month and year
   $month=0;
@@ -150,7 +153,7 @@ function fixup_dquery($query,$table){
 }
 
 function select_dtrans($date, $enddate=""){
-  global $dbc,$FANNIE_TRANS_DB,$FANNIE_SERVER_DBMS,$FANNIE_ARCHIVE_DB;
+  global $dbc,$FANNIE_TRANS_DB,$FANNIE_SERVER_DBMS,$FANNIE_ARCHIVE_DB,$FANNIE_ARCHIVE_METHOD;
 
   $dbconn = ($FANNIE_SERVER_DBMS=='MSSQL')?'.dbo.':'.';
 
@@ -158,6 +161,9 @@ function select_dtrans($date, $enddate=""){
   $diffR = $dbc->query($diffQ);
   $diffRow = $dbc->fetch_array($diffR);
   $daydiff = abs($diffRow['daydiff']);
+  if ($FANNIE_ARCHIVE_METHOD == "partitions"){
+    return ($daydiff == 0) ? "dtransactions" : "bigArchive";
+  }
 
   // parse out starting month and year
   $array = explode("-",$date);
