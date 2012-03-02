@@ -1095,13 +1095,16 @@ function create_delayed_dbs(){
 }
 
 function create_archive_dbs($con) {
-	global $FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,$FANNIE_ARCHIVE_DB;
+	global $FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,$FANNIE_ARCHIVE_DB,$FANNIE_ARCHIVE_METHOD;
 
 	$dstr = date("Ym");
 	$archive = "transArchive".$dstr;
 	$dbconn = ".";
 	if ($FANNIE_SERVER_DBMS == "MSSQL")
 		$dbconn = ".dbo.";
+
+	if ($FANNIE_ARCHIVE_METHOD == "partitions")
+		$archive = "bigArchive";
 
 	$query = "CREATE TABLE $archive LIKE 
 		{$FANNIE_TRANS_DB}{$dbconn}dtransactions";
@@ -1111,6 +1114,17 @@ function create_archive_dbs($con) {
 	}
 	if (!$con->table_exists($archive,$FANNIE_ARCHIVE_DB)){
 		$con->query($query,$FANNIE_ARCHIVE_DB);
+		// create the first partition if needed
+		if ($FANNIE_ARCHIVE_METHOD == "partitions"){
+			$p = "p".date("Ym");
+			$limit = date("Y-m-d",mktime(0,0,0,date("n")+1,1,date("Y")));
+			$partQ = sprintf("ALTER TABLE `bigArchive` 
+				PARTITION BY RANGE(TO_DAYS(`datetime`)) 
+				(PARTITION %s 
+					VALUES LESS THAN (TO_DAYS('%s'))
+				)",$p,$limit);
+			$con->query($partR);
+		}
 	}
 
 	$dlogView = "select 
@@ -1159,12 +1173,14 @@ function create_archive_dbs($con) {
 			WHERE trans_status NOT IN ('D','X')";
 	}
 
-	if (!$con->table_exists("dlog".$dstr,$FANNIE_ARCHIVE_DB)){
-		$con->query("CREATE VIEW dlog$dstr AS $dlogView",
+	$dlog_view = ($FANNIE_ARCHIVE_METHOD != "partitions") ? "dlog".$dstr : "dlogBig";
+	if (!$con->table_exists($dlog_view,$FANNIE_ARCHIVE_DB)){
+		$con->query("CREATE VIEW $dlog_view AS $dlogView",
 			$FANNIE_ARCHIVE_DB);
 	}
 
-	$rp1Q = "CREATE  view rp_dt_receipt_$dstr as 
+	$rp_dt_view = ($FANNIE_ARCHIVE_METHOD != "partitions") ? "rp_dt_receipt_".$dstr : "rp_dt_receipt_big";
+	$rp1Q = "CREATE  view $rp_dt_view as 
 		select 
 		datetime,
 		register_no,
@@ -1216,10 +1232,10 @@ function create_archive_dbs($con) {
 		trans_id,
 		concat(convert(emp_no,char), '-', convert(register_no,char), '-', convert(trans_no,char)) as trans_num
 
-		from transArchive$dstr
+		from $archive
 		where voided <> 5 and UPC <> 'TAX' and UPC <> 'DISCOUNT'";
 	if ($FANNIE_SERVER_DBMS == 'MSSQL'){
-		$rp1Q = "CREATE  view rp_dt_receipt_$dstr as 
+		$rp1Q = "CREATE  view $rp_dt_view as 
 			select 
 			datetime,
 			register_no,
@@ -1271,14 +1287,15 @@ function create_archive_dbs($con) {
 			trans_id,
 			(convert(varchar,emp_no) +  '-' + convert(varchar,register_no) + '-' + convert(varchar,trans_no)) as trans_num
 
-			from transArchive$dstr
+			from $archive
 			where voided <> 5 and UPC <> 'TAX' and UPC <> 'DISCOUNT'";
 	}
-	if (!$con->table_exists("rp_dt_receipt_$dstr",$FANNIE_ARCHIVE_DB)){
+	if (!$con->table_exists($rp_dt_view,$FANNIE_ARCHIVE_DB)){
 		$con->query($rp1Q,$FANNIE_ARCHIVE_DB);
 	}
 
-	$rp2Q = "create  view rp_receipt_header_$dstr as
+	$rp_view = ($FANNIE_ARCHIVE_METHOD != "partitions") ? "rp_receipt_header_".$dstr : "rp_receipt_header_big";
+	$rp2Q = "create  view $rp_view as
 		select
 		datetime as dateTimeStamp,
 		card_no as memberID,
@@ -1294,10 +1311,10 @@ function create_archive_dbs($con) {
 		sum(case when upc = 'Discount' then total else 0 end) as transDiscount,
 		sum(case when trans_type = 'T' then -1 * total else 0 end) as tenderTotal
 
-		from transArchive$dstr
+		from $archive
 		group by register_no, emp_no, trans_no, card_no, datetime";
 	if ($FANNIE_SERVER_DBMS == 'MSSQL'){
-		$rp2Q = "create  view rp_receipt_header_$dstr as
+		$rp2Q = "create  view $rp_view as
 			select
 			datetime as dateTimeStamp,
 			card_no as memberID,
@@ -1313,10 +1330,10 @@ function create_archive_dbs($con) {
 			sum(case when upc = 'Discount' then total else 0 end) as transDiscount,
 			sum(case when trans_type = 'T' then -1 * total else 0 end) as tenderTotal
 
-			from transArchive$dstr
+			from $archive
 			group by register_no, emp_no, trans_no, card_no, datetime";
 	}
-	if (!$con->table_exists("rp_receipt_header_$dstr",$FANNIE_ARCHIVE_DB)){
+	if (!$con->table_exists($rp_view,$FANNIE_ARCHIVE_DB)){
 		$con->query($rp2Q,$FANNIE_ARCHIVE_DB);
 	}
 }
