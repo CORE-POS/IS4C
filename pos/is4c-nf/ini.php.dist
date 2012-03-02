@@ -1,4 +1,9 @@
 <?php
+/*
+	COPY / RENAME TO ini.php
+	MOSTLY SANE DEFAULTS
+*/
+
 /*******************************************************************************
 
     Copyright 2001, 2004 Wedge Community Co-op
@@ -38,27 +43,19 @@ $CORE_LOCAL->set("laneno",1);
 /************************************************************************************
 Data Connection Settings
 ************************************************************************************/
-/*
-$CORE_LOCAL["mServer"] = "nexus.wfco-op.store";
-$CORE_LOCAL["mDatabase"] = "wfc_pos";
-$CORE_LOCAL["mDBMS"] = "pgsql";	// type of central server database server. 
-				// Options: mssql, mysql, pgsql
-$CORE_LOCAL["mUser"] = "wfc_pos";
-$CORE_LOCAL["mPass"] = "CORE";
- */
 $CORE_LOCAL->set("mServer",'localhost');
 $CORE_LOCAL->set("mDatabase",'COREserver');
 $CORE_LOCAL->set("mDBMS",'mysql');
 				// Options: mssql, mysql, pgsql
-$CORE_LOCAL->set("mUser",'COREserver');
-$CORE_LOCAL->set("mPass",'coreserver');
+$CORE_LOCAL->set("mUser",'');
+$CORE_LOCAL->set("mPass",'');
 
 $CORE_LOCAL->set("DBMS",'mysql');
 $CORE_LOCAL->set("tDatabase",'translog');
 $CORE_LOCAL->set("pDatabase",'opdata');
 $CORE_LOCAL->set("localhost",'10.0.1.120');
-$CORE_LOCAL->set("localUser",'COREserver');
-$CORE_LOCAL->set("localPass",'coreserver');
+$CORE_LOCAL->set("localUser",'');
+$CORE_LOCAL->set("localPass",'');
 
 /***********************************************************************************
 Receipt & Printer Settings

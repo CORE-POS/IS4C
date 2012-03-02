@@ -88,7 +88,7 @@
 		echo "<a href=report.php?excel=1&buyer=$buyer&deptStart=$deptStart&deptEnd=$deptEnd&date1=$date1&date2=$date2&sort=$sort&order=$order&dir=$dir>Save</a> to Excel<br />";
 	}
 	
-	$dlog = select_dlog_array($date1,$date2);
+	$dlog = select_dlog($date1,$date2);
 
 	$date2a = $date2 . " 23:59:59";
 	$date1a = $date1 . " 00:00:00";
@@ -289,7 +289,7 @@
 		}
 		else if (isset($buyer) && $buyer == -2){
 		 $query =  "SELECT $item,SUM(quantity) as Qty, SUM(total) as Sales "
-                          ."FROM __TRANS__as t LEFT JOIN departments as d on d.dept_no=t.department "
+                          ."FROM __TRANS__ as t LEFT JOIN departments as d on d.dept_no=t.department "
 			  ."LEFT JOIN MasterSuperDepts AS s ON s.dept_ID = t.department "
 			  ."WHERE tDate >= '$date1a' AND tDate <= '$date2a' "
 			  ."AND trans_type in ('D','I','M') and s.superID <> 0"

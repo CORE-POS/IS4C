@@ -110,6 +110,18 @@ function pinghost($host)
 	return $intConnected;
 }
 
+function pingport($host,$dbms){
+	$port = ($dbms == 'mysql') ? 3306 : 1433;	
+	if (strstr($host,":"))
+		list($host,$port) = explode(":",$host);
+	$sock = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
+	socket_set_option($sock, SOL_SOCKET, SO_SNDTIMEO, array('sec' => 1, 'usec' => 0)); 
+	socket_set_block($sock);
+	$test = socket_connect($sock,$host,$port);
+	socket_close($sock);
+	return ($test ? 1 : 0);	
+}
+
 function win32() {
 	$winos = 0;
 	if (substr(PHP_OS, 0, 3) == "WIN") $winos = 1;

@@ -216,20 +216,16 @@ class pos2 extends BasicPage {
 		$this->add_onload_command("\$('#reginput').keydown(function(ev){
 					switch(ev.which){
 					case 33:
-						\$('#reginput').val('U11');
-						submitWrapper();
+						parseWrapper('U11');
 						break;
 					case 38:
-						\$('#reginput').val('U');
-						submitWrapper();
+						parseWrapper('U');
 						break;
 					case 34:
-						\$('#reginput').val('D11');
-						submitWrapper();
+						parseWrapper('D11');
 						break;
 					case 40:
-						\$('#reginput').val('D');
-						submitWrapper();
+						parseWrapper('D'();
 						break;
 					}
 				});\n");

@@ -187,7 +187,8 @@ if (isset($discount) && isset($doDiscount))
 $custdataQ = "Update custdata set firstname = $fName, lastname = $lName, blueline=$blueline where cardNo = $memNum and personnum = 1";
 $memNamesQ = "Update memNames set fname = $fName, lname = $lName where memNum = $memNum and personnum = 1";
 //echo $memNamesQ."<br>";
-$custdataR = $sql->query($custdataQ);
+add_second_server();
+$custdataR = $sql->query_all($custdataQ);
 $memNamesR = $sql->query($memNamesQ);
 
 // update other stuff
@@ -195,9 +196,9 @@ if(isset($discList)){
   $discMstrQ = "UPDATE mbrmastr SET DiscountPerc = $disc, memType=$discList, DiscountType = $discList WHERE memNum = $memNum";
   $discCORE = "UPDATE custdata SET memdiscountlimit = $arLimit,memType = $discList,Discount = $disc,staff=$staff WHERE cardNo = $memNum";
   $typeQ = "UPDATE custdata set type = '$mem' where cardNo=$memNum and type <> 'INACT' and type <> 'TERM'";
-  $discRes1 = $sql->query($discMstrQ);
-  $discRes2 = $sql->query($discCORE);
-  $typeR = $sql->query($typeQ);
+  //$discRes1 = $sql->query($discMstrQ);
+  $discRes2 = $sql->query_all($discCORE);
+  $typeR = $sql->query_all($typeQ);
 }
 
 $memDiscQ = "select memDiscountLimit,balance,type,memType,staff,SSI,discount,chargeOk,memCoupons from custdata where cardno=$memNum and personnum = 1";
@@ -219,7 +220,7 @@ $mcoup = $memDiscRow[8];
 
 $delCQ = "delete from custdata where cardno=$memNum and personnum > 1";
 $delMQ = "delete from memnames where memnum=$memNum and personnum > 1";
-$delCR = $sql->query($delCQ);
+$delCR = $sql->query_all($delCQ);
 $delMR = $sql->query($delMQ);
 
 $lnames = $_REQUEST['hhLname'];
@@ -240,14 +241,14 @@ for($i=0;$i<count($lnames);$i++){
 
 	$houseMemUpQ1 = "insert into memnames (lname,fname,memnum,personnum,charge,checks,active) values ($lname1,$fname1,$memNum,$count,$charge1,$checks1,1)";
 
-	$sql->query($houseCustUpQ1);
+	$sql->query_all($houseCustUpQ1);
 	$sql->query($houseMemUpQ1);
 
 	$count++;
 }
 
 $mbrQ =    "UPDATE mbrmastr SET zipCode = '$zip',phone ='$phone',address1='$address1',address2='$address2',arLimit=$arLimit,city='$city',state='$state',startdate='$startDate',enddate = '$enddate',notes='$phone2',emailaddress='$email'  WHERE memNum = $memNum";
-$result=$sql->query($mbrQ);
+//$result=$sql->query($mbrQ);
 $meminfoQ = sprintf("UPDATE meminfo SET street='%s',city='%s',state='%s',zip='%s',phone='%s',email_1='%s',email_2='%s'
 		WHERE card_no=%d",(!empty($address2)?"$address1\n$address2":$address1),
 			$city,$state,$zip,

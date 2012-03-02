@@ -289,11 +289,11 @@ function printitem($field2, $field3, $total, $field5, $trans_id=-1) {
 		$curID = $CORE_LOCAL->get("currentid");
 		$diff = $trans_id - $curID;
 		if ($diff > 0){
-			$onclick="onclick=\"\$('#reginput').val('D$diff');submitWrapper();\"";
+			$onclick="onclick=\"parseWrapper('D$diff');\"";
 		}
 		else if ($diff < 0){
 			$diff *= -1;
-			$onclick="onclick=\"\$('#reginput').val('U$diff');submitWrapper();\"";
+			$onclick="onclick=\"parseWrapper('U$diff');\"";
 		}
 	}	
 
@@ -326,11 +326,11 @@ function printitemcolor($color, $description, $comments, $total, $suffix,$trans_
 		$curID = $CORE_LOCAL->get("currentid");
 		$diff = $trans_id - $curID;
 		if ($diff > 0){
-			$onclick="onclick=\"\$('#reginput').val('D$diff');submitWrapper();\"";
+			$onclick="onclick=\"parseWrapper('D$diff');\"";
 		}
 		else if ($diff < 0){
 			$diff *= -1;
-			$onclick="onclick=\"\$('#reginput').val('U$diff');submitWrapper();\"";
+			$onclick="onclick=\"parseWrapper('U$diff');\"";
 		}
 	}	
 

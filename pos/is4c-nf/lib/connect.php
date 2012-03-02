@@ -27,7 +27,7 @@ if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= 
 if (!class_exists("SQLManager")) include($CORE_PATH."lib/SQLManager.php");
 
 if (!function_exists("setglobalflags")) include($CORE_PATH."lib/loadconfig.php");
-if (!function_exists("pinghost")) include($CORE_PATH."lib/lib.php");
+if (!function_exists("pingport")) include($CORE_PATH."lib/lib.php");
 if (!function_exists("wmdiscount")) include($CORE_PATH."lib/prehkeys.php");
 if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
 
@@ -172,7 +172,7 @@ function testremote() {
 	global $CORE_LOCAL;
 
 
-	$intConnected = pinghost($CORE_LOCAL->get("mServer"));
+	$intConnected = pingport($CORE_LOCAL->get("mServer"), $CORE_LOCAL->get("mDBMS"));
 	if ($intConnected == 1) {
 
 		uploadtoServer(); 

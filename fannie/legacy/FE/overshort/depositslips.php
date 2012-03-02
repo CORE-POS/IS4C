@@ -143,7 +143,7 @@ if (isset($_GET['startDate'])){
 		$pdf->MultiCell($width+($j==0?-1:$k),5,$str3,'R','L');
 	}
 
-	if ($num <= 6 && $pdf->PageNo() != 2) $pdf->AddPage();
+	if ($num <= 6 || $num > 10) $pdf->AddPage();
 
 	/* shift last box over a bit */
 	$width += 3;
