@@ -38,7 +38,7 @@ function select_dlog($date, $enddate="",$unions=True){
   $diffRow = $dbc->fetch_array($diffR);
   $daydiff = abs($diffRow['daydiff']);
   if ($FANNIE_ARCHIVE_METHOD == "partitions"){
-    return ($daydiff == 0) ? "dlog" : "dlogBig";
+    return ($daydiff == 0) ? $FANNIE_TRANS_DB.$dbconn."dlog" : $FANNIE_ARCHIVE_DB.$dbconn."dlogBig";
   }
 
   // parse out starting month and year
@@ -162,7 +162,7 @@ function select_dtrans($date, $enddate=""){
   $diffRow = $dbc->fetch_array($diffR);
   $daydiff = abs($diffRow['daydiff']);
   if ($FANNIE_ARCHIVE_METHOD == "partitions"){
-    return ($daydiff == 0) ? "dtransactions" : "bigArchive";
+    return ($daydiff == 0) ? $FANNIE_TRANS_DB.$dbconn."dtransactions" : $FANNIE_ARCHIVE_DB.$dbconn."bigArchive";
   }
 
   // parse out starting month and year
