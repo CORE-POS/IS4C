@@ -959,6 +959,9 @@ function create_dlogs($con){
 
 	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
 			'CashPerformDay_cache','trans');
+
+	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+			'houseCouponsThisMonth','trans');
 }
 
 function create_delayed_dbs(){
