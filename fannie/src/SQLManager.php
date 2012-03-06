@@ -617,6 +617,17 @@ class SQLManager {
 		return $ret;
 	}
 
+	/* alternative for DATEDIFF; datetime column $col equals day $dateStr */
+	function date_equals($col,$dateStr){
+		$dateStr = trim($dateStr,"'");
+		$seconds = strtotime($dateStr);
+		if ($seconds === False) $seconds = time();
+		$base = date("Y-m-d",$seconds);
+	
+		return sprintf("(%s BETWEEN '%s 00:00:00' AND '%s 23:59:59')",
+			$col,$base,$base);
+	}
+
 	/* compat layer; mimic functions of Brad's mysql class */
 	function get_result($host,$user,$pass,$data_base,$query){
 		return $this->query($query);

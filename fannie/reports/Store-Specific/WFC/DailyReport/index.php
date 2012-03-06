@@ -53,20 +53,15 @@ $today = date("m/j/y");
 // Calculate the previous day's date, old method just gave zero - Andy
 $repDate = date('m/j/y', mktime(0, 0, 0, date("m") , date("d") - 1, date("Y")));
 
-$datediff = -1;
+$dstr = date("Y-m-d",strtotime("yesterday"));
 if(isset($_GET['date'])){
    $repDate = $_GET['date'];
-   
-   $diffQ = "SELECT ".$dbc->datediff("'$repDate'",$dbc->now());
-   $diffR = $dbc->query($diffQ);
-
-   $diffW = $dbc->fetch_array($diffR);
-
-   $datediff = $diffW[0];
+   $t1 = strtotime($repDate);
+   if ($t1) $dstr = date("Y-m-d",$t1);
 }
 
 if (!isset($_GET['excel']))
-	echo "<br /><a href=index.php?date=$repDate&datediff=$datediff&excel=yes>Click here for Excel version</a>";
+	echo "<br /><a href=index.php?date=$repDate&excel=yes>Click here for Excel version</a>";
 
 echo '<br>Report run ' . $today. ' for ' . $repDate."<br />";
 
@@ -76,7 +71,7 @@ $TRANS = $FANNIE_SERVER_DBMS=='MSSQL' ? $FANNIE_TRANS_DB.'.dbo.' : $FANNIE_TRANS
 
 $tenderQ = "SELECT t.TenderName,-sum(d.total) as total, COUNT(d.total)
 FROM $dlog as d ,{$OP}tenders as t 
-WHERE ".$dbc->datediff('d.tDate',$dbc->now())." = $datediff 
+WHERE ".$dbc->date_equals('d.tdate',$dstr)." 
 AND d.trans_status <>'X'  
 AND d.Trans_Subtype = t.TenderCode
 and d.total <> 0
@@ -114,7 +109,7 @@ echo tablify($tenders,array(1,0,2,3),array("Account","Type","Amount","Count"),
 $pCodeQ = "SELECT s.salesCode,-1*sum(l.total) as total,min(l.department) 
 FROM $dlog as l 
 INNER JOIN {$OP}deptSalesCodes AS s ON l.department=s.dept_ID
-WHERE ".$dbc->datediff('l.tdate',$dbc->now())." = $datediff 
+WHERE ".$dbc->date_equals('l.tdate',$dstr)." 
 AND l.department < 600 AND l.department <> 0
 AND l.trans_type <>'T'
 GROUP BY s.salesCode
@@ -161,7 +156,7 @@ echo tablify($pCodes,array(0,1),array("pCode","Sales"),
 
 $saleSumQ = "SELECT -1*sum(l.total) as totalSales
 FROM $dlog as l
-WHERE ".$dbc->datediff('l.tdate',$dbc->now())." = $datediff 
+WHERE ".$dbc->date_equals('l.tdate',$dstr)." 
 AND l.department < 600 AND l.department <> 0
 AND l.trans_type <> 'T'";
 $saleSumR = $dbc->query($saleSumQ);
@@ -171,7 +166,7 @@ echo sprintf("%.2f<br />",array_pop($dbc->fetch_row($saleSumR)));
 $returnsQ = "SELECT s.salesCode,-1*sum(L.total)as returns
 FROM $dlog as L,deptSalesCodes as s
 WHERE s.dept_ID = L.department
-AND ".$dbc->datediff('L.tdate',$dbc->now())." = $datediff 
+AND ".$dbc->date_equals('L.tdate',$dstr)." 
 AND(trans_status = 'R')
 GROUP BY s.salesCode";
 $returnsR = $dbc->query($returnsQ);
@@ -187,7 +182,7 @@ echo tablify($returns,array(0,1),array("pCode","Sales"),
 $voidTransQ = "SELECT RIGHT(description,".
 		$dbc->locate("' '","REVERSE(description)")."-1),
 	       trans_num,-1*total from
-	       {$TRANS}voidTransHistory where ".$dbc->datediff('tdate',$dbc->now())." = $datediff";
+	       {$TRANS}voidTransHistory where ".$dbc->date_equals('tdate',$dstr); 
 $voidTransR = $dbc->query($voidTransQ);
 $voids = array();
 while($row = $dbc->fetch_row($voidTransR))
@@ -198,7 +193,7 @@ echo tablify($voids,array(0,1,2),array("Original","Void","Total"),
 
 $otherQ = "SELECT d.department,t.dept_name, -1*sum(total) as total 
 FROM $dlog as d left join departments as t ON d.department = t.dept_no
-WHERE ".$dbc->datediff('d.tdate',$dbc->now())." = $datediff 
+WHERE ".$dbc->date_equals('d.tdate',$dstr)." 
 AND d.department > 300 AND 
 (d.register_no <> 20 or d.department = 703)
 and d.department <> 610
@@ -228,7 +223,7 @@ echo tablify($others,array(1,0,2,3),array("Account","Dept","Description","Amount
 
 $equityQ = "SELECT d.card_no,t.dept_name, -1*sum(total) as total 
 FROM $dlog as d left join departments as t ON d.department = t.dept_no
-WHERE ".$dbc->datediff('d.tdate',$dbc->now())." = $datediff 
+WHERE ".$dbc->date_equals('d.tdate',$dstr)." 
 AND d.department IN(991,992) AND d.register_no <> 20
 GROUP BY d.card_no, t.dept_name ORDER BY d.card_no, t.dept_name";
 $equityR = $dbc->query($equityQ);
@@ -244,7 +239,7 @@ echo tablify($equityrows,array(1,2,3,4),array("Account","MemNum","Description","
 $arQ = "SELECT d.card_no,CASE WHEN d.department = 990 THEN 'AR PAYMENT' ELSE 'STORE CHARGE' END as description, 
 -1*sum(total) as total, count(card_no) as transactions 
 FROM $dlog as d 
-WHERE ".$dbc->datediff('d.tdate',$dbc->now())." = $datediff 
+WHERE ".$dbc->date_equals('d.tdate',$dstr)." 
 AND (d.department =990 OR d.trans_subtype = 'MI') and 
 (d.register_no <> 20 or d.department <> 990)
 GROUP BY d.card_no,d.department order by department,card_no";
@@ -262,7 +257,7 @@ $discQ = "SELECT     m.memDesc, -1*SUM(d.total) AS Discount,count(*)
 FROM $dlog d INNER JOIN
        custdata c ON d.card_no = c.CardNo INNER JOIN
       memTypeID m ON c.memType = m.memTypeID
-WHERE ".$dbc->datediff('d.tdate',$dbc->now())." = $datediff 
+WHERE ".$dbc->date_equals('d.tdate',$dstr)." 
     AND (d.upc = 'DISCOUNT') AND c.personnum= 1
 and total <> 0
 GROUP BY m.memDesc, d.upc ";
@@ -292,7 +287,7 @@ $deliTax*(sum(CASE WHEN d.tax = 2 THEN total ELSE 0 END)) as city_tax_Del,
 .065*(sum(total)) as state_tax,
 ((.01*(sum(CASE WHEN d.tax = 1 THEN total ELSE 0 END))) + ($deliTax*(sum(CASE WHEN d.tax = 2 THEN total ELSE 0 END))) + (.065*(sum(total)))) as total_tax 
 FROM $dlog as d 
-WHERE ".$dbc->datediff('d.tdate',$dbc->now())." = $datediff 
+WHERE ".$dbc->date_equals('d.tdate',$dstr)." 
 AND d.tax <> 0 
 GROUP BY d.tax ORDER BY d.tax DESC";
 $taxR = $dbc->query($taxQ);
@@ -306,7 +301,7 @@ echo tablify($taxes,array(0,1,2,3,4,5),array("&nbsp;","Taxable Sales","City Tax"
 
 $taxSumQ = "SELECT  -1*sum(total) as tax_collected
 FROM $dlog as d 
-WHERE ".$dbc->datediff('d.tdate',$dbc->now())." = $datediff 
+WHERE ".$dbc->date_equals('d.tdate',$dstr)." 
 AND (d.upc = 'tax')
 GROUP BY d.upc";
 $taxSumR = $dbc->query($taxSumQ);
@@ -320,7 +315,7 @@ $transQ = "select q.trans_num,sum(q.quantity) as items,transaction_type, sum(q.t
 	from $dlog as d
 	left join custdata as c on d.card_no = c.cardno
 	left join memtypeid as m on c.memtype = m.memtypeid
-	WHERE ".$dbc->datediff('d.tdate',$dbc->now())." = $datediff AND
+	WHERE ".$dbc->date_equals('d.tdate',$dstr)." AND 
 	trans_type in ('I','D')
 	and upc <> 'RRR'
 	and c.personnum=1

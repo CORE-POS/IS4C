@@ -10,7 +10,7 @@ function getProcessorInfo($dateStr){
 		LEFT JOIN efsnetResponse as r ON q.date=r.date
 		and q.cashierNo=r.cashierNo and q.laneNo=r.laneNo
 		and q.transNo=r.transNo and q.transID=r.transID
-		WHERE datediff(dd,q.datetime,%s)=0",$dbc->escape($dateStr));
+		WHERE ".$dbc->date_equals("q.datetime",$dbc->escape($dateStr));
 	$result = $dbc->query($query);
 	while($row = $dbc->fetch_row($result)){
 		$trans_stack[$row['refNum']] = array(

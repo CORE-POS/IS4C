@@ -23,7 +23,7 @@ if (isset($_GET['date'])){
   $q = "select datepart(hh,tdate) as hour,
         count(distinct trans_num)
         from $dlog where
-        datediff(dd,tdate,'$date') = 0
+        ".$dbc->date_equals('tdate',$date)."
         group by datepart(hh,tdate)
         order by datepart(hh,tdate)";
   $r = $dbc->query($q);

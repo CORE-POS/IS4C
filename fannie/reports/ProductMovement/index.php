@@ -80,8 +80,7 @@ if (isset($_GET['date1'])){
 			sum(t.total) from
 			$dlog as t
 			where upc = '$upc'
-			and datediff(dd,datetime,'$date1') <= 0
-			and datediff(dd,datetime,'$date2') >= 0
+			AND datetime BETWEEN '$date1 00:00:00' AND '$date2 23:59:59'
 			and emp_no <> 9999 and register_no <> 99
 			and trans_status <> 'X'
 			group by datepart(yy,datetime),datepart(mm,datetime),datepart(dd,datetime),upc

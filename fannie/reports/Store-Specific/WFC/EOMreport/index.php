@@ -4,7 +4,6 @@
 include('../../../../config.php');
 
 include($FANNIE_ROOT.'src/functions.php');
-//include('./datediff.php');
 include($FANNIE_ROOT.'cache/cache.php');
 
 if (isset($_GET["excel"])){
@@ -24,16 +23,16 @@ $year = date('Y');
 $month = date('n');
 $stamp = mktime(0,0,0,$month-1,1,$year);
 $dlog = "trans_archive.dbo.dlog".date("Ym",$stamp);
+$start = date("Y-m-01",$stamp);
+$end = date("Y-m-t",$stamp);
+$span = "'$start 00:00:00' AND '$end 23:59:59'";
 
 $output = get_cache("monthly");
 if (!$output){
 	ob_start();
 
-	$dateQ = "select min(tdate),max(tdate) from $dlog where datediff(mm,getdate(),tdate) = -1";
-	$dateR = $dbc->query($dateQ);
-	$dateW = $dbc->fetch_array($dateR);
-	$date = substr($dateW[0],0,strpos($dateW[0],":")-3);
-	$date1 = substr($dateW[1],0,strpos($dateW[1],":")-3);
+	$date = substr($start,0,strpos($start,":")-3);
+	$date1 = substr($end,0,strpos($end,":")-3);
 	echo ' for period <br>from: <b>'. $date . '</b> to: <b>' . $date1 . '</b><br>';
 
 	$query1="select t.department,
@@ -46,7 +45,7 @@ if (!$output){
 	ON s.dept_ID = d.dept_no	
 	LEFT JOIN deptSalesCodes AS c
 	ON c.dept_ID = d.dept_no
-	WHERE datediff(mm,getdate(),t.tDate) = -1
+	WHERE tdate BETWEEN $span
 	AND t.Department < 600
 	AND t.department <> 0
 	AND t.trans_type <> 'T'
@@ -57,7 +56,7 @@ if (!$output){
 	$query15 = "SELECT s.superID,sum(l.total) as total 
 	FROM $dlog as l left join departments as d on l.department = d.dept_no
 	LEFT JOIN MasterSuperDepts AS s ON d.dept_no=s.dept_ID
-	WHERE datediff(mm,getdate(),l.tDate) = -1 
+	WHERE l.tdate BETWEEN $span
 	AND l.department < 600 AND l.department <> 0
 	AND l.trans_type <> 'T'
 	GROUP BY s.superID
@@ -65,13 +64,13 @@ if (!$output){
 
 	$query16 = "SELECT sum(l.total) as totalSales
 	FROM $dlog as l 
-	WHERE datediff(mm,getdate(),l.tDate) = -1 
+	WHERE l.tdate BETWEEN $span
 	AND l.department < 600 AND l.department <> 0
 	AND l.trans_type <> 'T'";
 
 	$query2 = "SELECT t.TenderName,-sum(d.total) as total, COUNT(d.total)
 	FROM $dlog d ,tenders as t 
-	WHERE datediff(mm,getdate(),d.tDate) = -1 
+	WHERE d.tdate BETWEEN $span
 	AND d.trans_status <>'X'  
 	AND d.Trans_Subtype = t.TenderCode
 	and t.TenderName <> 'MAD Coupon'
@@ -82,7 +81,7 @@ if (!$output){
 	FROM $dlog as l left join MasterSuperDepts AS s ON
 	l.department = s.dept_ID LEFT JOIN deptSalesCodes AS c
 	ON l.department = c.dept_ID
-	WHERE datediff(mm,getdate(),l.tDate) = -1 
+	WHERE l.tdate BETWEEN $span
 	AND l.department < 600 AND l.department <> 0
 	AND l.trans_type <> 'T'
 	GROUP BY c.salesCode,s.superID
@@ -90,14 +89,14 @@ if (!$output){
 
 	$query4 = "SELECT sum(l.total) as totalSales
 	FROM $dlog as l 
-	WHERE datediff(mm,getdate(),l.tDate) = -1 
+	WHERE l.tdate BETWEEN $span
 	AND l.department < 600 AND l.department <> 0
 	AND l.trans_type <> 'T'";
 
 	$query5 = "SELECT d.department,t.dept_name, sum(total) as total 
 	FROM $dlog as d join departments as t ON d.department = t.dept_no
 	LEFT JOIN MasterSuperDepts AS m ON t.dept_no=m.dept_ID
-	WHERE datediff(mm,getdate(),d.tDate) = -1 
+	WHERE d.tdate BETWEEN $span
 	AND (d.department >300)AND d.Department <> 0
 	AND m.superID = 0
 	AND d.trans_type IN('I','D') and 
@@ -106,13 +105,13 @@ if (!$output){
 
 	$query6 = "SELECT d.card_no,t.dept_name, sum(total) as total 
 	FROM $dlog as d join departments  as t ON d.department = t.dept_no
-	WHERE datediff(mm,getdate(),d.tDate) = -1 
+	WHERE d.tdate BETWEEN $span
 	AND (d.department =991)AND d.Department <> 0
 	GROUP BY d.card_no, t.dept_name";
 
 	$query7 = "SELECT d.card_no,t.dept_name, sum(total) as total 
 	FROM $dlog as d join departments  as t ON d.department = t.dept_no
-	WHERE datediff(mm,getdate(),d.tDate) = -1 
+	WHERE d.tdate BETWEEN $span
 	AND (d.department =990)AND d.Department <> 0 and d.register_no <> 20
 	GROUP BY d.card_no, t.dept_name";
 
@@ -120,7 +119,7 @@ if (!$output){
 	FROM         $dlog d INNER JOIN
 			      custdata c ON d.card_no = c.CardNo INNER JOIN
 			      memTypeID m ON c.memType = m.memTypeID
-	WHERE datediff(mm,getdate(),d.tDate) = -1 
+	WHERE d.tdate BETWEEN $span
 	AND (d.department < 600) AND d.department <> 0 AND (c.personnum= 1 or c.personnum is null)
 	AND d.trans_type <> 'T'
 	GROUP BY m.memDesc
@@ -128,14 +127,14 @@ if (!$output){
 
 	$query21 = "SELECT m.memdesc, COUNT(d.cust_ID)
 	FROM dheader d join custdata c on d.cust_ID = c.cardno join memtypeID m on c.memtype = m.memtypeID
-	WHERE datediff(mm,getdate(),proc_date)=-1 AND (cust_ID NOT BETWEEN 5500 and 5950) AND personnum = 1
+	WHERE proc_date BETWEEN $span AND (cust_ID NOT BETWEEN 5500 and 5950) AND personnum = 1
 	GROUP BY m.memdesc";
 
 	$query20 = "SELECT   SUM(d.total) AS Sales 
 			FROM $dlog d LEFT JOIN
 			custdata c ON d.card_no = c.CardNo LEFT JOIN
 			memTypeID m ON c.memType = m.memTypeID
-			WHERE datediff(mm,getdate(),d.tDate) = -1 
+			WHERE d.tdate BETWEEN $span
 			AND (d.department < 600) AND d.department <> 0 
 			AND d.trans_type <> 'T'
 			AND (c.personnum= 1 or c.personnum is null)";
@@ -143,13 +142,13 @@ if (!$output){
 	$query12 = "SELECT d.salesCode,sum(L.total)as returns
 	FROM $dlog as L,deptSalesCodes as d
 	WHERE d.dept_ID = L.department
-	 AND datediff(mm,getdate(),L.tDate)=-1 
+	 AND L.tdate BETWEEN $span
 	AND(trans_status = 'R' OR upc LIKE '%dp606')
 	GROUP BY d.salesCode";
 
 	$query14 = "SELECT 'Total Sales', sum(l.total) as totalSales
 	FROM $dlog as l 
-	WHERE datediff(mm,getdate(),l.tDate) = -1 
+	WHERE l.tdate BETWEEN $span
 	AND l.department < 600 AND l.department <> 0
 	AND l.trans_status = 'R'";
 
@@ -157,7 +156,7 @@ if (!$output){
 	FROM         $dlog d INNER JOIN
 			      custdata c ON d.card_no = c.CardNo INNER JOIN
 			      memTypeID m ON c.memType = m.memTypeID
-	WHERE datediff(mm,getdate(),d.tDate) = -1 
+	WHERE d.tdate BETWEEN $span
 	AND (d.upc = 'DISCOUNT') AND c.personnum= 1
 	GROUP BY c.memType, m.memDesc, d.upc
 	ORDER BY c.memType";
@@ -166,19 +165,19 @@ if (!$output){
 	FROM         $dlog d INNER JOIN
 			      custdata c ON d.card_no = c.CardNo INNER JOIN
 			      memTypeID m ON c.memType = m.memTypeID
-	WHERE datediff(mm,getdate(),d.tDate) = -1 
+	WHERE d.tdate BETWEEN $span
 	AND (d.upc = 'DISCOUNT') AND c.personnum = 1
 	GROUP BY d.upc";
 
 	$queryMAD = "select 'MAD Coupon',sum(d.total),count(*) as discount
 	from $dlog as d
-	where datediff(mm,getdate(),tdate) = -1
+	where tdate BETWEEN $span
 	and trans_status <> 'X'
 	and trans_subtype = 'MA'";
 
 	$query11 = "SELECT  sum(total) as tax_collected
 	FROM $dlog as d 
-	WHERE datediff(mm,getdate(),d.tDate) = -1 
+	WHERE d.tdate BETWEEN $span
 	AND (d.upc = 'tax')
 	GROUP BY d.upc";
 
@@ -186,7 +185,7 @@ if (!$output){
 	(sum(l.total)-(sum(l.total)* CONVERT(money,m.margin))) as cost
 	FROM $dlog as l left join deptSalesCodes as d on l.department = d.dept_ID
 	LEFT JOIN deptMargin AS m ON m.dept_ID = l.department
-	WHERE datediff(mm,getdate(),tDate) = -1 
+	WHERE l.tdate BETWEEN $span
 	AND (l.department < 600 or l.department = 902) AND l.department <> 0
 	AND l.trans_type <> 'T'
 	AND card_no BETWEEN 5500 AND 5950
@@ -197,7 +196,7 @@ if (!$output){
 	(sum(l.total)-(sum(l.total)* CONVERT(money,m.margin))) as cost
 	FROM $dlog as l left join deptSalesCodes as d on l.department = d.dept_ID
 	LEFT JOIN deptMargin AS m ON m.dept_ID = l.department
-	WHERE datediff(mm,getdate(),tDate) = -1 
+	WHERE l.tdate BETWEEN $span
 	AND (l.department < 600 or l.department = 902) AND l.department <> 0
 	AND l.trans_type <> 'T'
 	AND card_no BETWEEN 5500 AND 5950
@@ -209,7 +208,7 @@ if (!$output){
 	from
 	transarchive as t
 	where upc = 'RRR'
-	and datediff(mm,getdate(),datetime) = -1 
+	and t.datetime BETWEEN $span
 	and emp_no <> 9999 and register_no <> 99
 	and trans_status <> 'X'";
 
