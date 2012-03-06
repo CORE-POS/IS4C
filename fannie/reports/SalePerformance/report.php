@@ -37,8 +37,8 @@ $q = "SELECT min(tdate) as weekStart,max(tdate) as weekEnd,
 	AS l ON d.upc=l.upc LEFT JOIN batches
 	as b ON b.batchID=l.batchID
 	WHERE l.batchID IN $bids
-	AND ".$dbc->datediff('b.startDate','d.tdate')." <= 0 
-	AND ".$dbc->datediff('b.endDate','d.tdate')." >= 0 
+	AND d.tdate >= b.startDate
+	AND d.tdate <= b.endDate
 	GROUP BY datepart(wk,tdate),batchName
 	ORDER BY batchName,min(tdate)";
 $r = $dbc->query($q);

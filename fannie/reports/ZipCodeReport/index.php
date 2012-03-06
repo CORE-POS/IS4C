@@ -63,8 +63,7 @@ if (isset($_GET['startDate'])){
 		from $dlog as d left join meminfo as m
 		on d.card_no = m.card_no 
 		where trans_type='I' $mem11Str
-		and datediff(dd,'$startDate',d.tdate) >= 0
-		and datediff(dd,'$endDate',d.tdate) <= 0
+		d.tdate BETWEEN '$startDate' AND '$endDate'
 		group by d.card_no,m.zip
 		order by sum(d.total) desc";
 	//echo $fetchQ."<br />";

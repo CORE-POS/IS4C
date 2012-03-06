@@ -35,7 +35,7 @@ $query = "SELECT q.datetime,q.laneno,q.cashierno,q.transno,q.amount,
 	on m.date = q.date and m.cashierno=q.cashierno and
 	m.transno=q.transno and m.laneno=q.laneno
 	and m.transid=q.transid
-	where datediff(dd,q.datetime,'$date')=0
+	where ".$dbc->date_equals('q.datetime',$date)." 
 	and q.laneno <> 99 and q.cashierno <> 9999
 	and m.transid is null
 	order by q.datetime,q.laneno,q.transno,q.cashierno";	

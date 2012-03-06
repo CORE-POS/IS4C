@@ -39,14 +39,19 @@ td.center {
 echo "<b>";
 $monthMinus = 1;
 if (isset($_GET["monthMinus"])) $monthMinus = $_GET["monthMinus"];
-echo strtoupper(date("F",strtotime("-$monthMinus month")));
+$stamp = strtotime("-$monthMinus month");
+echo strtoupper(date("F",$stamp));
 echo " ";
-echo date("Y",strtotime("-$monthMinus month"));
-$dlog = "trans_archive.dbo.dlog".date("Ym",strtotime("-$monthMinus month"));
+echo date("Y",$stamp);
+$dlog = "trans_archive.dbo.dlog".date("Ym",$stamp);
 echo " NABS</b><br />";
 if (!isset($_GET["excel"]))
 	echo "<a href=index.php?excel=yes&monthMinus=$monthMinus>Save to Excel</a>";
 echo "<p />";
+
+$start = date("Y-m-01",$stamp);
+$end = date("Y-m-t",$stamp);
+$span = "'$start 00:00:00' AND '$end 23:59:59'";
 
 $accounts = array();
 $accountQ = "SELECT CardNo from custdata WHERE memType=4 ORDER BY CardNo";
@@ -66,7 +71,7 @@ $totalQ = "select l.card_no,sum(l.total),
 	WHERE card_no IN $accountStr
 	and (l.department < 600 or l.department = 902)
 	and l.department <> 0 and l.trans_type <> 'T'
-	and datediff(mm,getdate(),tdate) = -$monthMinus
+	and tdate BETWEEN $span
 	GROUP BY card_no
 	ORDER BY card_no";
 $totalR = $dbc->query($totalQ);
@@ -92,7 +97,7 @@ $totalQ = "select d.salesCode,sum(l.total),
 	WHERE card_no IN $accountStr
 	and (l.department < 600 or l.department = 902)
 	and l.department <> 0 and l.trans_type <> 'T'
-	and datediff(mm,getdate(),tdate) = -$monthMinus
+	and tdate BETWEEN $span
 	GROUP BY d.salesCode,m.margin
 	ORDER BY d.salesCode";
 $totalR = $dbc->query($totalQ);
@@ -119,7 +124,7 @@ foreach ($accounts as $account){
 		WHERE card_no = $account
 		and (l.department < 600 or l.department = 902)
 		and l.department <> 0 and l.trans_type <> 'T'
-		and datediff(mm,getdate(),tdate) = -$monthMinus
+		and tdate BETWEEN $span
 		GROUP BY d.salesCode,m.margin
 		ORDER BY d.salesCode";
 	$totalR = $dbc->query($totalQ);

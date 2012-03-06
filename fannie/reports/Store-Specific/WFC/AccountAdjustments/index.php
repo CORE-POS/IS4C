@@ -57,36 +57,37 @@ if (!isset($_GET['excel'])){
 }
 echo "<br />";
 
-$datediff="";
+$ddiff="";
 if ($type=="daily"){
 	list($month,$day,$year) = explode("/",$date);
 	$date = str_pad($year,4,'20',STR_PAD_LEFT)."-".
 		str_pad($month,2,'0',STR_PAD_LEFT)."-".
 		str_pad($day,2,'0',STR_PAD_LEFT);
-	$datediff = " datediff(dd,'$date',tdate) = 0 ";
+	$ddiff = $dbc->date_equals('tdate',$date);
 }
 else {
 	list($month,$year) = explode("/",$date);
 	$date = str_pad($year,4,'20',STR_PAD_LEFT)."-".
 		str_pad($month,2,'0',STR_PAD_LEFT)."-01";
-	$datediff = " datediff(mm,'$date',tdate) = 0 ";
+	$date2 = date("Y-m-t",mktime(0,0,0,$month,1,$year));
+	$ddiff = " (tdate BETWEEN '$date 00:00:00' AND '$date2 23:59:59') ";
 }
 	
 $dlog = select_dlog($date);
 
 $otherQ = "SELECT d.department,t.dept_name, sum(total) as total 
 	FROM $dlog as d join departments as t ON d.department = t.dept_no
-	WHERE $datediff  
+	WHERE $ddiff  
 	AND (d.department >300)AND d.Department <> 0 AND d.register_no = 20
 	GROUP BY d.department, t.dept_name order by d.department";
 $stockQ = "SELECT d.card_no,t.dept_name, sum(total) as total 
 	FROM $dlog as d join departments as t ON d.department = t.dept_no
-	WHERE $datediff
+	WHERE $ddiff
 	AND (d.department IN(991,992))AND d.Department <> 0 and d.register_no = 20
 	GROUP BY d.card_no, t.dept_name ORDER BY d.card_no, t.dept_name";
 $arQ = "SELECT d.card_no,CASE WHEN d.department = 990 THEN 'AR PAYMENT' ELSE 'STORE CHARGE' END as description, 
 	sum(total) as total, count(card_no) as transactions FROM $dlog as d 
-	WHERE $datediff  
+	WHERE $ddiff  
 	AND (d.department =990 OR d.trans_subtype = 'MI') and d.register_no = 20 
 	GROUP BY d.card_no,d.department order by department,card_no";
 

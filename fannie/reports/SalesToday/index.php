@@ -39,12 +39,13 @@ while($row = $dbc->fetch_row($superR)){
 $page_title = "Fannie : Today's $name Sales";
 $header = "Today's $name Sales";
 include($FANNIE_ROOT.'src/header.html');
+$today = date("Y-m-d");
 
 $query1="SELECT ".$dbc->hour('tdate').", 
 sum(total)as Sales
 FROM ".$FANNIE_TRANS_DB.$dbc->sep()."dlog as d left join MasterSuperDepts as t
 on d.department = t.dept_ID
-WHERE ".$dbc->datediff($dbc->now(),'tdate')."=0
+WHERE ".$dbc->date_equals('tdate',$today)." 
 AND (trans_type ='I' OR trans_type = 'D' or trans_type='M')
 AND (t.superID > 0 or t.superID IS NULL)
 GROUP BY ".$dbc->hour('tdate')."
@@ -55,7 +56,7 @@ if ($selected != -1){
 	sum(case when t.superID=$selected then total else 0 end) as prodSales
 	FROM ".$FANNIE_TRANS_DB.$dbc->sep()."dlog as d left join MasterSuperDepts as t
 	on d.department = t.dept_ID
-	WHERE ".$dbc->datediff($dbc->now(),'tdate')."=0
+	WHERE ".$dbc->date_equals('tdate',$today)." 
 	AND (trans_type ='I' OR trans_type = 'D' or trans_type='M')
 	AND t.superID > 0
 	GROUP BY ".$dbc->hour('tdate')."

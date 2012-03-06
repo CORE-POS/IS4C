@@ -20,9 +20,8 @@ if (isset($_REQUEST['submit'])){
 		FROM $dlog AS d LEFT JOIN custdata AS c
 		ON c.cardno=d.card_no AND c.personnum=1
 		LEFT JOIN meminfo AS m ON m.card_no=c.cardno
-		WHERE d.upc=".$dbc->escape($upc)." AND ".
-		$dbc->datediff('tdate',$dbc->escape($date1))." >= 0 AND ".
-		$dbc->datediff('tdate',$dbc->escape($date2))." <= 0 
+		WHERE d.upc=".$dbc->escape($upc)." AND 
+		tdate BETWEEN '$date1 00:00:00' AND '$date2 23:59:59'	
 		GROUP BY d.card_no,c.firstname,c.lastname,m.street,m.city,
 		m.state,m.zip,m.phone,m.email_1,m.email_2
 		ORDER BY c.lastname,c.firstname";

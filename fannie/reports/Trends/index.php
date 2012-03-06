@@ -71,8 +71,7 @@ if (isset($_GET['type'])){
 			sum(d.quantity) as total 
 			from $dlog as d left join products as p on d.upc = p.upc
 			where d.department between $dept1 and $dept2
-			and ".$dbc->datediff('d.tdate',"'$date1'")." >= 0
-			and ".$dbc->datediff('d.tdate',"'$date2'")." <= 0
+			AND d.tdate BETWEEN '$date1 00:00:00' AND '$date2 23:59:59'
 			and trans_status <> 'M'
 			group by year(d.tdate),month(d.tdate),day(d.tdate),
 			d.upc,p.description
@@ -89,8 +88,7 @@ if (isset($_GET['type'])){
 				from $dlog as d left join products as p on d.upc = p.upc
 				left join prodExtra as x on p.upc = x.upc
 				where x.manufacturer = '$manufacturer' 
-				and ".$dbc->datediff('d.tdate',"'$date1'")." >= 0
-				and ".$dbc->datediff('d.tdate',"'$date2'")." <= 0
+				AND d.tdate BETWEEN '$date1 00:00:00' AND '$date2 23:59:59'
 				and trans_status <> 'M'
 				group by year(d.tdate),month(d.tdate),day(d.tdate),
 				d.upc,p.description

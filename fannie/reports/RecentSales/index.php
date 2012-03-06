@@ -39,16 +39,36 @@ else
 
 echo "<table><th>&nbsp;<th align=right>Qty<th align=right>Sales<tr>";
 
-$q = "SELECT sum(case when ".$dbc->datediff($dbc->now(),'tdate')."=1 AND trans_status<>'M' THEN quantity else 0 end) as qty1,
-	sum(case when ".$dbc->datediff($dbc->now(),'tdate')."=1 THEN total else 0 end) as total1,
-	sum(case when ".$dbc->datediff($dbc->now(),'tdate')."=2 AND trans_status<>'M' THEN quantity else 0 end) as qty2,
-	sum(case when ".$dbc->datediff($dbc->now(),'tdate')."=2 THEN total else 0 end) as total2,
-	sum(case when ".$dbc->datediff($dbc->now(),'tdate')."=3 AND trans_status<>'M' THEN quantity else 0 end) as qty3,
-	sum(case when ".$dbc->datediff($dbc->now(),'tdate')."=3 THEN total else 0 end) as total3,
-	sum(case when ".$dbc->weekdiff($dbc->now(),'tdate')."=0 AND trans_status<>'M' THEN quantity else 0 end) as qtywk0,
-	sum(case when ".$dbc->weekdiff($dbc->now(),'tdate')."=0 THEN total else 0 end) as totalwk0,
-	sum(case when ".$dbc->weekdiff($dbc->now(),'tdate')."=1 AND trans_status<>'M' THEN quantity else 0 end) as qtywk1,
-	sum(case when ".$dbc->weekdiff($dbc->now(),'tdate')."=1 THEN total else 0 end) as totalwk1
+$days = array();
+$stamp = strtotime('yesterday');
+for($i=1;$i<=3;$i++){
+	$days[$i] = date("Y-m-d",$stamp);
+	$stamp = mktime(0,0,0,date("n",$stamp),date("j",$stamp)-1,date("Y",$stamp));
+}
+
+$weeks[0] = array(date("Y-m-d",strtotime("monday this week")),
+		date("Y-m-d",strtotime("sunday this week")));
+$weeks[1] = array(date("Y-m-d",strtotime("monday last week")),
+		date("Y-m-d",strtotime("sunday last week")));
+
+$months[0] = array(date("Y-m-01"),date("Y-m-t"));
+$stamp = mktime(0,0,0,date("n")-1,1,date("Y"));
+$months[0] = array(date("Y-m-01",$stamp),date("Y-m-t",$stamp));
+
+$q = "SELECT sum(case when ".$dbc->date_equals('tdate',$days[1])." AND trans_status<>'M' THEN quantity else 0 end) as qty1,
+	sum(case when ".$dbc->date_equals('tdate',$days[1])." THEN total else 0 end) as total1,
+	sum(case when ".$dbc->date_equals('tdate',$days[2])." AND trans_status<>'M' THEN quantity else 0 end) as qty2,
+	sum(case when ".$dbc->date_equals('tdate',$days[2])." THEN total else 0 end) as total2,
+	sum(case when ".$dbc->date_equals('tdate',$days[3])." AND trans_status<>'M' THEN quantity else 0 end) as qty3,
+	sum(case when ".$dbc->date_equals('tdate',$days[3])." THEN total else 0 end) as total3,
+	sum(case when (tdate BETWEEN '{$weeks[0][0]} 00:00:00' AND 
+			'{$weeks[0][1]} 23:59:59') AND trans_status<>'M' THEN quantity else 0 end) as qtywk0,
+	sum(case when (tdate BETWEEN '{$weeks[0][0]} 00:00:00' AND
+			'{$weeks[0][1]} 23:59:59') THEN total else 0 end) as totalwk0,
+	sum(case when (tdate BETWEEN '{$weeks[1][0]} 00:00:00' AND
+			'{$weeks[1][1]} 23:59:59') AND trans_status<>'M' THEN quantity else 0 end) as qtywk1,
+	sum(case when (tdate BETWEEN '{$weeks[1][0]} 00:00:00' AND
+			'{$weeks[1][1]} 23:59:59') THEN total else 0 end) as totalwk1
 	FROM dlog_15 as d $where";
 $r = $dbc->query($q);
 $w = $dbc->fetch_row($r);

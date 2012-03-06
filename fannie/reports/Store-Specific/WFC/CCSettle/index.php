@@ -19,7 +19,7 @@ $q = "SELECT d.tdate,-d.total as total,d.trans_num,q.refNum,d.card_no
 	ON d.register_no=q.laneNo AND d.emp_no=q.cashierNo
 	AND d.trans_no = q.transNo and d.trans_id=q.transID
 	AND q.date=$y$m$d
-	WHERE ".$dbc->datediff('tdate',"'$date'")." = 0
+	WHERE ".$dbc->date_equals('tdate',"'$date'")." 
 	AND d.trans_subtype='CC'
 	ORDER BY $order";
 $r = $dbc->query($q);

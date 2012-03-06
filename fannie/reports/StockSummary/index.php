@@ -6,9 +6,9 @@ include($FANNIE_ROOT.'src/mysql_connect.php');
 $q = "select 
 	card_no,
 	lastname,firstname,type,
-	sum(case when datediff(dd,'2005-11-26',tdate) <= 0 then stockPurchase else 0 end) as unknown,
-	sum(case when datediff(dd,'2005-11-26',tdate) > 0 and dept=992 then stockPurchase else 0 end) as classA,
-	sum(case when datediff(dd,'2005-11-26',tdate) > 0 and dept=991 then stockPurchase else 0 end) as classB
+	sum(case when tdate <= '2005-11-26 23:59:59' <= 0 then stockPurchase else 0 end) as unknown,
+	sum(case when tdate > '2005-11-26 23:59:59' and dept=992 then stockPurchase else 0 end) as classA,
+	sum(case when tdate > '2005-11-26 23:59:59' and dept=991 then stockPurchase else 0 end) as classB
 	from stockpurchases as s
 	left join custdata as c
 	on s.card_no=c.cardno and c.personnum=1
