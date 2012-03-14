@@ -1,7 +1,7 @@
 <?php
 include('../../config.php');
 include($FANNIE_ROOT.'src/SQLManager.php');
-include('../db.php');
+include('../db2.php');
 
 include('memAddress.php');
 include('header.html');
@@ -21,7 +21,7 @@ if(isset($_GET['memNum'])){
 /* audit logging */
 $uid = getUID($username);
 $auditQ = "insert custUpdate select getdate(),$uid,1,* from custdata where cardno=$memID";
-$auditR = $sql->query($auditQ);
+//$auditR = $sql->query($auditQ);
 
 ?>
 <html>
@@ -106,19 +106,19 @@ for($i=0;$i<count($fnames);$i++)
 for($i=0;$i<count($lnames);$i++)
 	$lnames[$i] = $sql->escape($lnames[$i]);
 
-$sql->query(sprintf("DELETE FROM memberCards WHERE card_no=%d",$memNum));
+add_second_server();
+$sql->query_all(sprintf("DELETE FROM memberCards WHERE card_no=%d",$memNum));
 if (isset($_REQUEST['cardUPC']) && is_numeric($_REQUEST['cardUPC'])){
-	$sql->query(sprintf("INSERT INTO memberCards VALUES (%d,'%s')",
+	$sql->query_all(sprintf("INSERT INTO memberCards VALUES (%d,'%s')",
 		$memNum,str_pad($_REQUEST['cardUPC'],13,'0',STR_PAD_LEFT)));
 }
 
 // update top name
 $custdataQ = "Update custdata set lastname = $lName, firstname = $fname, blueline=$blueline where cardNo = $memNum and personnum = 1";
 $memNamesQ = "Update memNames set lname = $lName, fname=$fname where memNum = $memNum and personnum = 1";
-add_second_server();
 $custdataR = $sql->query_all($custdataQ);
 //echo $memNamesQ."<br />";
-$memNamesR = $sql->query($memNamesQ);
+//$memNamesR = $sql->query($memNamesQ);
 
 for($i=0;$i<3;$i++){
 	if ($fnames[$i]=="''") $fnames[$i] = "";
@@ -126,7 +126,7 @@ for($i=0;$i<3;$i++){
 }
 for($i=0; $i<3; $i++){
 	$sql->query_all("DELETE FROM custdata WHERE cardno=$memNum and personnum=".($i+2));
-	$sql->query("DELETE FROM memnames WHERE memNum=$memNum and personnum=".($i+2));
+	//$sql->query("DELETE FROM memnames WHERE memNum=$memNum and personnum=".($i+2));
 	if (is_array($fnames) && isset($fnames[$i]) && 
 	    is_array($lnames) && isset($lnames[$i]) &&
 	    !empty($lnames[$i]) && !empty($fnames[$i])){
@@ -143,7 +143,7 @@ for($i=0; $i<3; $i++){
 				$lnames[$i],$fnames[$i],
 				($i+2),($memNum.'.'.($i+2).'.1'),$memNum);
 		$sql->query_all($custQ);
-		$sql->query($memQ);
+		//$sql->query($memQ);
 	}
 }
 
@@ -154,12 +154,13 @@ $meminfoQ = sprintf("UPDATE meminfo SET street='%s',city='%s',state='%s',zip='%s
 		WHERE card_no=%d",(!empty($address2)?"$address1\n$address2":$address1),
 			$city,$state,$zip,
 			$phone,$email,$phone2,$memNum);
-$sql->query($meminfoQ);
+$sql->query_all($meminfoQ);
 
 // FIRE ALL UPDATE
 include('custUpdates.php');
 updateCustomerAllLanes($memNum);
 
+include('../db2.php');
 addressList($memNum);
 
 ?>

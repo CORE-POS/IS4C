@@ -2,7 +2,7 @@
 include('../../config.php');
 
 include($FANNIE_ROOT.'src/SQLManager.php');
-include('../db.php');
+include('../db2.php');
 
 include('memAddress.php');
 include('header.html');

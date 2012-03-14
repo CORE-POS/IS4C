@@ -38,8 +38,8 @@ include($FANNIE_ROOT.'src/SQLManager.php');
 set_time_limit(0);
 ini_set('memory_limit','256M');
 
-$sql = new SQLManager($FANNIE_SERVER,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
-		$FANNIE_SERVER_USER,$FANNIE_SERVER_PW);
+$sql = new SQLManager('129.103.2.2','MYSQL','is4c_trans',
+		'root',$FANNIE_SERVER_PW);
 
 // get balances that changed today
 $data = array();
