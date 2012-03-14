@@ -18,8 +18,8 @@ $LANE_NO = 30;
 $BILLING_MEMBER = array(
 	"1/20B/W" => 45.00, 
 	"1/15B/W" => 60.00,
-	"1/10B/W" => 90.00
-	"1/5B/W" => 187.50
+	"1/10B/W" => 90.00,
+	"1/5B/W" => 187.50,
 	"1/ 5B/W" => 187.50,
 	"1/2B/W" => 412.50,
 	"1/ 2B/W" => 412.50,
@@ -62,10 +62,12 @@ if (isset($_POST['cardnos'])){
 		$t_no = array_pop($sql->fetch_array($transR));
 		if ($t_no == "") $t_no = 1;
 		else $t_no++;
+		$desc = isset($_POST['desc'.$cardno]) ? $_POST['desc'.$cardno] : '';
+		$desc = substr($desc,0,24);
 
 		$insQ = "INSERT INTO dtransactions VALUES (
 			getdate(),$LANE_NO,$EMP_NO,$t_no,
-			'{$amt}DP703','Gazette Ad','D','','',703,
+			'{$amt}DP703','Gazette Ad {$desc}','D','','',703,
 			1.0,0,0,$amt,$amt,$amt,0,0,.0,.0,
 			0,0,0,NULL,0.0,0,0,.0,0,0,0,0,
 			0,'',$cardno,1)";
@@ -109,6 +111,9 @@ else if (isset($_POST['MAX_FILE_SIZE'])){
 		if ($clr[0] == "B") $clr = "B/W";
 		elseif($clr == "COLOR") $clr = "FULL";
 
+		$desc = "($sz, ".($clr=="FULL" ? "color" : "b&w");
+		$desc .= ((substr($data[$MEMBER],0,3)=="YES") ? ', owner' : '').")";
+
 		$searchQ = "SELECT m.card_no,c.lastname FROM
 			meminfo as m left join custdata as c
 			on m.card_no=c.cardno and c.personnum=1
@@ -144,6 +149,7 @@ else if (isset($_POST['MAX_FILE_SIZE'])){
 			printf("<tr><td>%d</td><td>%s</td>
 				<td>%s %s (%s)</td><td><input type=text 
 				size=5 name=billable%d value=%.2f /></td></tr>
+				<input type=hidden name=desc%d value=\"%s\" />
 				<input type=hidden name=cardnos[] value=%d />",
 				$row[0],$row[1],$data[$SIZE],
 				$data[$COLOR],
@@ -153,7 +159,7 @@ else if (isset($_POST['MAX_FILE_SIZE'])){
 				(substr($data[$MEMBER],0,3)=="YES")?
 				$BILLING_NONMEMBER[$sz.$clr]*0.75:
 				$BILLING_NONMEMBER[$sz.$clr],
-				$row[0]);
+				$row[0],$desc,$row[0]);
 			if (!isset($BILLING_NONMEMBER[$sz.$clr])){
 				var_dump($sz.$clr);
 			}
