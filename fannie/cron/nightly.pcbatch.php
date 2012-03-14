@@ -53,13 +53,25 @@ $chk_opt = array();
 
 /* change prices
 */
-$chk_vital[] = $sql->query("UPDATE products SET
+if ($FANNIE_SERVER_DBMS == "MYSQL"){
+	$chk_vital[] = $sql->query("UPDATE products AS p LEFT JOIN
+		batchList AS l ON l.upc=p.upc LEFT JOIN
+		batches AS b ON b.batchID=l.batchID
+		SET p.normal_price = l.salePrice
+		WHERE l.batchID=b.batchID AND l.upc=p.upc
+		AND l.upc NOT LIKE 'LC%'
+		AND b.discounttype = 0
+		AND ".$sql->datediff($sql->now(),'b.startDate')." = 0");
+}
+else {
+	$chk_vital[] = $sql->query("UPDATE products SET
 		normal_price = l.salePrice
 		FROM products AS p, batches AS b, batchList AS l
 		WHERE l.batchID=b.batchID AND l.upc=p.upc
 		AND l.upc NOT LIKE 'LC%'
-		AND b.discountType = 0
+		AND b.discounttype = 0
 		AND ".$sql->datediff($sql->now(),'b.startDate')." = 0");
+}
 
 /* log changes in prodUpdate */
 if ($sql->table_exists("prodUpdate")){
@@ -70,7 +82,7 @@ if ($sql->table_exists("prodUpdate")){
 		FROM products AS p, batches AS b, batchList AS l
 		WHERE l.batchID=b.batchID AND l.upc=p.upc
 		AND l.upc NOT LIKE 'LC%'
-		AND b.discountType = 0
+		AND b.discounttype = 0
 		AND ".$sql->datediff($sql->now(),'b.startDate')." = 0";
 	$chk_opt[] = $sql->query($upQ);
 }
@@ -79,13 +91,13 @@ if ($sql->table_exists("prodUpdate")){
    for char concatenation
 */
 if ($FANNIE_SERVER_DBMS == "MYSQL"){
-	$chk_vital[] = $sql->query("UPDATE products SET normal_price = l.salePrice
-		FROM products AS p LEFT JOIN
+	$chk_vital[] = $sql->query("UPDATE products AS p LEFT JOIN
 		likeCodeView AS v ON v.upc=p.upc LEFT JOIN
 		batchList AS l ON l.upc=concat('LC',convert(v.likeCode,char))
 		LEFT JOIN batches AS b ON b.batchID = l.batchID
+		SET p.normal_price = l.salePrice
 		WHERE l.upc LIKE 'LC%'
-		AND b.discountType = 0
+		AND b.discounttype = 0
 		AND ".$sql->datediff($sql->now(),'b.startDate')." = 0");
 
 	if ($sql->table_exists("prodUpdate")){
@@ -98,7 +110,7 @@ if ($FANNIE_SERVER_DBMS == "MYSQL"){
 			batchList AS l ON l.upc=concat('LC',convert(v.likeCode,char))
 			LEFT JOIN batches AS b ON b.batchID = l.batchID
 			WHERE l.upc LIKE 'LC%'
-			AND b.discountType = 0
+			AND b.discounttype = 0
 			AND ".$sql->datediff($sql->now(),'b.startDate')." = 0";
 		$chk_opt[] = $sql->query($upQ);
 	}
@@ -110,7 +122,7 @@ else {
 		batchList AS l ON l.upc='LC'+convert(varchar,v.likecode)
 		LEFT JOIN batches AS b ON b.batchID = l.batchID
 		WHERE l.upc LIKE 'LC%'
-		AND b.discountType = 0
+		AND b.discounttype = 0
 		AND ".$sql->datediff($sql->now(),'b.startDate')." = 0");
 
 	if ($sql->table_exists("prodUpdate")){
@@ -123,7 +135,7 @@ else {
 			batchList AS l ON l.upc='LC'+convert(varchar,v.likecode)
 			LEFT JOIN batches AS b ON b.batchID = l.batchID
 			WHERE l.upc LIKE 'LC%'
-			AND b.discountType = 0
+			AND b.discounttype = 0
 			AND ".$sql->datediff($sql->now(),'b.startDate')." = 0";
 		$chk_opt[] = $sql->query($upQ);
 	}
