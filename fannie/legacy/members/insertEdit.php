@@ -1,7 +1,7 @@
 <?php
 include('../../config.php');
 include($FANNIE_ROOT.'src/SQLManager.php');
-include('../db.php');
+include('../db2.php');
 
 include('memAddress.php');
 include('header.html');
@@ -18,12 +18,12 @@ if(isset($_GET['memNum'])){
 
 /* audit logging */
 $uid = getUID($username);
-$auditQ = "insert custUpdate select getdate(),$uid,1,
+$auditQ = "insert custUpdate select ".$sql->now().",$uid,1,
 	CardNo,personNum,LastName,FirstName,
 	CashBack,Balance,Discount,MemDiscountLimit,ChargeOK,
 	WriteChecks,StoreCoupons,Type,memType,staff,SSI,Purchases,
 	NumberOfChecks,memCoupons,blueLine,Shown,id from custdata where cardno=$memID";
-$auditR = $sql->query($auditQ);
+//$auditR = $sql->query($auditQ);
 
 ?>
 <html>
@@ -112,14 +112,15 @@ $enddate = $_POST['endDate'];
 $curDiscLimit = $_POST['curDiscLimit'];
 $mailflag = $_POST['mailflag'];
 
-$sql->query(sprintf("DELETE FROM memberCards WHERE card_no=%d",$memNum));
+add_second_server();
+$sql->query_all(sprintf("DELETE FROM memberCards WHERE card_no=%d",$memNum));
 if (isset($_REQUEST['cardUPC']) && is_numeric($_REQUEST['cardUPC'])){
-	$sql->query(sprintf("INSERT INTO memberCards VALUES (%d,'%s')",
+	$sql->query_all(sprintf("INSERT INTO memberCards VALUES (%d,'%s')",
 		$memNum,str_pad($_REQUEST['cardUPC'],13,'0',STR_PAD_LEFT)));
 }
 
-$sql->query("UPDATE meminfo SET ads_OK=$mailflag WHERE card_no=$memNum");
-$sql->query("UPDATE memContact SET pref=$mailflag WHERE card_no=$memNum");
+$sql->query_all("UPDATE meminfo SET ads_OK=$mailflag WHERE card_no=$memNum");
+$sql->query_all("UPDATE memContact SET pref=$mailflag WHERE card_no=$memNum");
 
 //echo $charge1."<br />".$charge2."<br />".$charge3."<br />".$checks1."<br />".$checks2."<br />".$checks3."<br />";
 $charge1=$charge2=$charge3=0;
@@ -187,9 +188,8 @@ if (isset($discount) && isset($doDiscount))
 $custdataQ = "Update custdata set firstname = $fName, lastname = $lName, blueline=$blueline where cardNo = $memNum and personnum = 1";
 $memNamesQ = "Update memNames set fname = $fName, lname = $lName where memNum = $memNum and personnum = 1";
 //echo $memNamesQ."<br>";
-add_second_server();
 $custdataR = $sql->query_all($custdataQ);
-$memNamesR = $sql->query($memNamesQ);
+//$memNamesR = $sql->query($memNamesQ);
 
 // update other stuff
 if(isset($discList)){
@@ -221,7 +221,7 @@ $mcoup = $memDiscRow[8];
 $delCQ = "delete from custdata where cardno=$memNum and personnum > 1";
 $delMQ = "delete from memnames where memnum=$memNum and personnum > 1";
 $delCR = $sql->query_all($delCQ);
-$delMR = $sql->query($delMQ);
+//$delMR = $sql->query($delMQ);
 
 $lnames = $_REQUEST['hhLname'];
 $fnames = $_REQUEST['hhFname'];
@@ -242,7 +242,7 @@ for($i=0;$i<count($lnames);$i++){
 	$houseMemUpQ1 = "insert into memnames (lname,fname,memnum,personnum,charge,checks,active) values ($lname1,$fname1,$memNum,$count,$charge1,$checks1,1)";
 
 	$sql->query_all($houseCustUpQ1);
-	$sql->query($houseMemUpQ1);
+	//$sql->query($houseMemUpQ1);
 
 	$count++;
 }
@@ -253,14 +253,15 @@ $meminfoQ = sprintf("UPDATE meminfo SET street='%s',city='%s',state='%s',zip='%s
 		WHERE card_no=%d",(!empty($address2)?"$address1\n$address2":$address1),
 			$city,$state,$zip,
 			$phone,$email,$phone2,$memNum);
-$sql->query($meminfoQ);
+$sql->query_all($meminfoQ);
 
 $datesQ = "UPDATE memDates SET start_date='$startDate',end_date='$enddate' WHERE card_no=$memNum";
-$sql->query($datesQ);
+$sql->query_all($datesQ);
 
 // FIRE ALL UPDATE
 include('custUpdates.php');
 updateCustomerAllLanes($memNum);
+include('../db2.php');
 
 /* general note handling */
 $notetext = $_POST['notetext'];
@@ -269,7 +270,7 @@ $notetext = preg_replace("/\'/","''",$notetext);
 $checkQ = "select * from memberNotes where note='$notetext' and cardno=$memNum";
 $checkR = $sql->query($checkQ);
 if ($sql->num_rows($checkR) == 0){
-	$noteQ = "insert into memberNotes values ($memNum,'$notetext',getdate(),'$username')";
+	$noteQ = "insert into memberNotes values ($memNum,'$notetext',".$sql->now().",'$username')";
 	$noteR = $sql->query($noteQ);
 }
 

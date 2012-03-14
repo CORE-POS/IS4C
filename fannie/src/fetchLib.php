@@ -9,7 +9,9 @@ function getFailedTrans($dateStr,$hour){
 		LEFT JOIN efsnetResponse as r ON q.date=r.date
 		and q.cashierNo=r.cashierNo and q.laneNo=r.laneNo
 		and q.transNo=r.transNo and q.transID=r.transID
-		WHERE datediff(dd,q.datetime,%s)=0 AND datepart(hh,q.datetime)=%d
+		WHERE ".
+		$sql->datediff('q.datetime',$sql->escape($dateStr))."=0 
+		AND ".$sql->hour('q.datetime')."=%d
 		AND r.httpCode <> 200",
 		$sql->escape($dateStr),$hour);
 	$response = $sql->query($query);

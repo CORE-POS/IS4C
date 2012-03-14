@@ -198,7 +198,7 @@ while($selAddW = $sql->fetch_row($selAddR)){
 	}
 	else $rowNum++;
 
-	if ($selTransW[5] == "Gazette Ad" || $selTransW[6] == "Gazette Ad")
+	if (strstr($selTransW[5],"Gazette Ad") || strstr($selTransW[6],"Gazette Ad"))
 		$gazette = True;	
 
       if($selTransN != 0){

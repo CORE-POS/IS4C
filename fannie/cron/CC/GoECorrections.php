@@ -40,8 +40,8 @@ include($FANNIE_ROOT.'src/fetchLib.php');
 
 set_time_limit(0);
 
-$sql = new SQLManager($FANNIE_SERVER,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-		$FANNIE_SERVER_USER,$FANNIE_SERVER_PW);
+$sql = new SQLManager('129.103.2.2','MYSQL','is4c_trans',
+		'root',$FANNIE_SERVER_PW);
 
 $stack = getFailedTrans(date("Y-m-d"),date("G")-1);
 

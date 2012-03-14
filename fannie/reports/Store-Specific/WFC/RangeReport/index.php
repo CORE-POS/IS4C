@@ -299,10 +299,9 @@ $taxSumR = $dbc->query($taxSumQ);
 echo "<br /><b><u>Actual Tax Collected</u></b><br />";
 echo sprintf("%.2f<br />",array_pop($dbc->fetch_row($taxSumR)));
 
-/*
 $transQ = "select q.trans_num,sum(q.quantity) as items,transaction_type, sum(q.total) from
 	(
-	select trans_num,card_no,quantity,total,
+	select tdate,trans_num,card_no,quantity,total,
         m.memdesc as transaction_type
 	from $dlog as d
 	left join custdata as c on d.card_no = c.cardno
@@ -312,7 +311,7 @@ $transQ = "select q.trans_num,sum(q.quantity) as items,transaction_type, sum(q.t
 	and upc <> 'RRR'
 	and c.personnum=1
 	) as q 
-	group by q.trans_num,q.transaction_type";
+	group by year(q.tdate),month(q.tdate),day(q.tdate),q.trans_num,q.transaction_type";
 $transR = $dbc->query($transQ);
 $transinfo = array("Member"=>array(0,0.0,0.0,0.0,0.0),
 		   "Non Member"=>array(0,0.0,0.0,0.0,0.0),
@@ -340,7 +339,6 @@ echo tablify($transinfo,array(0,1,2,3,4,5),
 	array("Type","Transactions","Items","Average items/transaction","$","$/transaction"),
 	array($ALIGN_LEFT,$ALIGN_RIGHT,$ALIGN_RIGHT|$TYPE_MONEY,$ALIGN_RIGHT|$TYPE_MONEY,
 		$ALIGN_RIGHT|$TYPE_MONEY,$ALIGN_RIGHT|$TYPE_MONEY));
-*/
 
 function tablify($data,$col_order,$col_headers,$formatting,$sum_col=-1){
 	$sum = 0;
