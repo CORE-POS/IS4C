@@ -23,16 +23,16 @@ whose balance has changed today
 $names = qualified_names();
 
 $CREATE['trans.memChargeBalance'] = "
-	CREATE VIEW memChargeBalance AS
-		SELECT   c.CardNo, 
-		(CASE when a.card_no is NULL then c.memDiscountLimit - c.Balance 
-			ELSE c.memDiscountLimit - (c.Balance -a.charges - a.payments)END) as availBal,
-		(CASE when a.card_no is NULL then c.Balance ELSE (c.Balance -a.charges - a.payments)END) as balance,
-		CASE WHEN a.card_no IS NULL THEN 0 ELSE 1 END AS mark
-		FROM {$names['op']}.custdata as c left outer join memIouToday as a ON c.CardNo = a.card_no
-		where c.personNum = 1
+	CREATE VIEW memChargeBalance as
+	SELECT   c.CardNo, 
+	(CASE when a.balance is NULL then c.memDiscountLimit
+		ELSE c.memDiscountLimit - a.balance END) as availBal,
+	(CASE when a.balance is NULL then 0 ELSE a.balance END) as balance,
+	CASE WHEN a.mark IS NULL THEN 0 ELSE a.mark END AS mark   
+	FROM {$names['op']}.custdata as c left join newBalanceToday_cust as a ON c.CardNo = a.memnum
+	where c.personNum = 1
 ";
 
-if (!$con->table_exists("memIouToday"))
+if (!$con->table_exists("newBalanceToday_cust"))
 	$CREATE['trans.memChargeBalance'] = "SELECT 1";
 ?>

@@ -928,6 +928,12 @@ function create_dlogs($con){
 			'ar_history','trans');
 
 	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+			'ar_history_sum','trans');
+
+	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+			'ar_sum_cache','trans');
+
+	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
 			'stockpurchases','trans');
 
 	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
@@ -961,7 +967,7 @@ function create_dlogs($con){
 			'CashPerformDay_cache','trans');
 
 	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
-			'houseCouponsThisMonth','trans');
+			'houseCouponThisMonth','trans');
 }
 
 function create_delayed_dbs(){

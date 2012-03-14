@@ -19,6 +19,6 @@ $CREATE['trans.houseCouponThisMonth'] = "
 	dlog_90_view
 	WHERE upc LIKE '00499999%'
 	AND ".$con->monthdiff($con->now(),'tdate')."=0
-	GROUP BY card_no,upc";
+	GROUP BY card_no,upc
 ";
 ?>

@@ -134,7 +134,7 @@
 				SUM(case when t.trans_status in ('M') then t.itemqtty else t.quantity end) as qty,
 				SUM(t.total) AS total,
 				d.dept_no,d.dept_name,s.superID,x.distributor
-			  FROM __TRANS__ as t LEFT JOIN products as p on t.upc = p.upc
+			  FROM $dlog as t LEFT JOIN products as p on t.upc = p.upc
 			  LEFT JOIN departments as d on d.dept_no = t.department 
 			  LEFT JOIN superdepts AS s ON t.department = s.dept_ID
 			  LEFT JOIN prodExtra as x on t.upc = x.upc
@@ -147,7 +147,7 @@
 				SUM(case when t.trans_status in ('M') then t.itemqtty else t.quantity end) as qty,
 				SUM(t.total) AS total,
 				d.dept_no,d.dept_name,s.superID,x.distributor
-			  FROM  __TRANS__ as t LEFT JOIN products as p on t.upc = p.upc
+			  FROM  $dlog as t LEFT JOIN products as p on t.upc = p.upc
 			  LEFT JOIN departments as d on d.dept_no = t.department 
 			  LEFT JOIN MasterSuperDepts AS s ON t.department = s.dept_ID
 			  LEFT JOIN prodExtra as x on t.upc = x.upc
@@ -160,7 +160,7 @@
 				SUM(case when t.trans_status in ('M') then t.itemqtty else t.quantity end) as qty,
 				SUM(t.total) AS total,
 				d.dept_no,d.dept_name,s.superID,x.distributor
-			  FROM __TRANS__ as t LEFT JOIN products as p on t.upc = p.upc
+			  FROM $dlog as t LEFT JOIN products as p on t.upc = p.upc
 			  LEFT JOIN departments as d on d.dept_no = t.department 
 			  LEFT JOIN MasterSuperDepts AS s ON t.department = s.dept_ID
 			  LEFT JOIN prodExtra as x on t.upc = x.upc
@@ -173,30 +173,17 @@
 				SUM(case when t.trans_status in ('M') then t.itemqtty else t.quantity end) as qty,
 				SUM(t.total) AS total,
 				d.dept_no,d.dept_name,s.superID,x.distributor
-			  FROM __TRANS__ as t LEFT JOIN products as p on t.upc = p.upc
+			  FROM $dlog as t LEFT JOIN products as p on t.upc = p.upc
 			  LEFT JOIN departments as d on d.dept_no = t.department 
 			  LEFT JOIN MasterSuperDepts AS s ON t.department = s.dept_ID
 			  LEFT JOIN prodExtra as x on t.upc = x.upc
 			  WHERE t.department BETWEEN $deptStart AND $deptEnd
 			  AND tDate >= '$date1a' AND tDate <= '$date2a' GROUP BY t.upc,p.description,
-			  d.dept_no,d.dept_name,s.superID,x.distributor";
+			  d.dept_no,d.dept_name,s.superID,x.distributor ORDER BY $order $dir";
 		}
-		$query = fixup_dquery($query,$dlog);
+		//$query = fixup_dquery($query,$dlog);
+		echo $query;
 		$result = $dbc->query($query);
-
-		$rows = array();
-		while($row = $dbc->fetch_row($result)){
-			$key = $row['upc'].":".$row['description'].":".$row['dept_no'];
-			if (!isset($rows[$key]))
-				$rows[$key] = $row;
-			else{
-				$rows[$key]['total'] += $row['total'];	
-				$rows[$key]['qty'] += $row['qty'];
-			}
-		}
-		$STANDARD_COMPARE_ORDER = $order;
-		$STANDARD_COMPARE_DIRECTION = $dir;
-		uasort($rows,'standard_compare');
 
 		echo "<table border=1>\n"; //create table
 		echo "<tr>";
@@ -258,8 +245,7 @@
 		while($dsW = $dbc->fetch_row($dsR))
 			$dept_subs[$dsW[1]] = $dsW[0];
 
-		//while ($myrow = $dbc->fetch_row($result)) { //create array from query
-		foreach($rows as $myrow){
+		while ($myrow = $dbc->fetch_row($result)) { //create array from query
 		
 		printf("<tr><td>%s</td><td>%s</td><td>%.2f</td><td>%.2f</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>\n",$myrow['upc'], $myrow['description'],$myrow['qty'],$myrow['total'],$myrow['dept_no'],$myrow['dept_name'],$dept_subs[$myrow['superID']],$myrow['distributor']==''?'&nbsp;':$myrow[7]);
 		//convert row information to strings, enter in table cells
@@ -274,7 +260,7 @@
 		$orderBy = (!empty($alias)) ? $alias : $groupBy;
 		if(isset($buyer) && $buyer>0){
 		 $query =  "SELECT $item,SUM(quantity) as Qty, SUM(total) as Sales "
-                          ."FROM __TRANS__ as t LEFT JOIN departments as d on d.dept_no=t.department "
+                          ."FROM $dlog as t LEFT JOIN departments as d on d.dept_no=t.department "
 			  ."LEFT JOIN superdepts AS s ON s.dept_ID = t.department "
 			  ."WHERE s.superID=$buyer AND tDate >= '$date1a' AND tDate <= '$date2a' "
 			  ."AND trans_type in ('D','I','M')"
@@ -282,14 +268,14 @@
 		}
 		else if (isset($buyer) && $buyer == -1){
 		 $query =  "SELECT $item,SUM(quantity) as Qty, SUM(total) as Sales "
-                          ."FROM __TRANS__ as t LEFT JOIN departments as d on d.dept_no=t.department "
+                          ."FROM $dlog as t LEFT JOIN departments as d on d.dept_no=t.department "
 			  ."WHERE tDate >= '$date1a' AND tDate <= '$date2a' "
 			  ."AND trans_type in ('D','I','M')"
 			  ."GROUP BY $groupBy ORDER BY $orderBy";
 		}
 		else if (isset($buyer) && $buyer == -2){
 		 $query =  "SELECT $item,SUM(quantity) as Qty, SUM(total) as Sales "
-                          ."FROM __TRANS__ as t LEFT JOIN departments as d on d.dept_no=t.department "
+                          ."FROM $dlog as t LEFT JOIN departments as d on d.dept_no=t.department "
 			  ."LEFT JOIN MasterSuperDepts AS s ON s.dept_ID = t.department "
 			  ."WHERE tDate >= '$date1a' AND tDate <= '$date2a' "
 			  ."AND trans_type in ('D','I','M') and s.superID <> 0"
@@ -297,7 +283,7 @@
 		}
 		else {
 		 $query =  "SELECT $item,SUM(quantity) as Qty, SUM(total) as Sales "
-                          ."FROM __TRANS__ as t LEFT JOIN departments as d on d.dept_no=t.department "
+                          ."FROM $dlog as t LEFT JOIN departments as d on d.dept_no=t.department "
 			  ."WHERE tDate >= '$date1a' AND tDate <= '$date2a' "
 			  ."AND trans_type in ('D','I','M') "
 			  ."AND t.department BETWEEN $deptStart AND $deptEnd "
@@ -310,8 +296,8 @@
 					sum(total)/count(distinct(".$dbc->dateymd('tdate').")) as avg_ttl",
 					$query);
 		}
-		//echo $query;
-		$query = fixup_dquery($query,$dlog);
+		echo $query;
+		//$query = fixup_dquery($query,$dlog);
 		$result = $dbc->query($query);	
 
 		$dtemp = explode("-",$date1);
