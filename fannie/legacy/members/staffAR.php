@@ -4,7 +4,7 @@ include('../../config.php');
 if (!class_exists("SQLManager")) require_once($FANNIE_ROOT."src/SQLManager.php");
 include($FANNIE_ROOT.'auth/login.php');
 
-include('../db.php');
+include('../db2.php');
 
 if(!validateUserQuiet('staffar')){
 ?>
@@ -17,34 +17,37 @@ if(!validateUserQuiet('staffar')){
    <div id=main><?php
    echo "<a href=\"{$FANNIE_URL}auth/ui/loginform.php?redirect={$FANNIE_URL}legacy/members/staffAR.php\">Click here</a> to login<p />";
 }else{
+
+  $sql->query("use is4c_trans");
+
   if(isset($_POST['recalc'])){
     $truncQ = "TRUNCATE TABLE staffAR";
     $truncR = $sql->query($truncQ);
 
     $query = "SELECT
-              c.cardno,
-              c.lastname,
-              c.firstname,
+              c.CardNo,
+              c.LastName,
+              c.FirstName,
               n.balance as Ending_Balance
-              FROM custdata as c INNER JOIN staffID as a ON a.cardno = c.cardno
+              FROM custdata as c INNER JOIN staffID as a ON a.cardNo = c.CardNo
 	      LEFT JOIN newBalanceToday_cust AS n ON c.CardNo=n.memnum
               WHERE (c.memType = 9 OR c.memType = 3)
-              and c.personnum = 1
-              order by c.lastname";
+              and c.personNum = 1
+              order by c.LastName";
 
       $result=$sql->query($query);
 
-      $insARQ = "INSERT INTO staffAR
+      $insARQ = "INSERT INTO staffAR (cardNo, lastName, firstName, adjust)
 	      SELECT
-              c.cardno,
-              c.lastname,
-              c.firstname,
+              c.CardNo,
+              c.LastName,
+              c.FirstName,
               n.balance as Ending_Balance
-              FROM custdata as c INNER JOIN staffID as a ON a.cardno = c.cardno
+              FROM is4c_op.custdata as c INNER JOIN staffID as a ON a.cardNo = c.CardNo
 	      LEFT JOIN newBalanceToday_cust AS n ON c.CardNo=n.memnum
               WHERE (c.memType = 9 OR c.memType = 3)
-              and c.personnum = 1
-              order by c.lastname";
+              and c.personNum = 1
+              order by c.LastName";
 
       $insARR = $sql->query($insARQ);
    }
@@ -77,7 +80,7 @@ if(!validateUserQuiet('staffar')){
    }
    
    $query = "SELECT a.*,s.adpID FROM staffAR AS a LEFT JOIN
-	staffID AS s ON a.CardNo=s.cardno order by lastName";
+	staffID AS s ON a.cardNo=s.cardno order by lastName";
    $result = $sql->query($query);
 
    echo "<form name=upStaffAR method=post action=staffAR.php>";

@@ -521,15 +521,17 @@ function receipt_to_table($query,$query2,$border,$bgcolor)
 {
 	global $dbc;
 	//echo $query2;
-    $result = $dbc->query($query2);
+        //$result = $dbc->query($query2);
 	$results = $dbc->query($query); 
 	$number_cols = $dbc->num_fields($results);
-	$number2_cols = $dbc->num_fields($result);
+	//$number2_cols = $dbc->num_fields($result);
 	//display query
 	//echo "<b>query: $query</b>";
 	//layout table header
-	$row2 = $dbc->fetch_row($result);
-	$emp_no = $row2[4];	
+	$row2 = $dbc->fetch_row($results);
+	$dbc->data_seek($results,0);
+	$emp_no = $row2['emp_no'];	
+	$trans_num = $row2['emp_no']."-".$row2['register_no']."-".$row2['trans_no'];
 	//echo $emp_no;
 	//$queryEmp = "SELECT * FROM employees where emp_no = $emp_no";
 	//$resEmp = $dbc->query($queryEmp,$db);
@@ -543,8 +545,8 @@ function receipt_to_table($query,$query2,$border,$bgcolor)
 	echo "<tr><td align=center colspan=4>$STORE</td></tr>";
 	echo "<tr><td align=center colspan=4>$PHONE</td></tr>";
 	echo "<tr><td align=center colspan=4>MEMBER OWNED SINCE 1970</td></tr>";
-	echo "<tr><td align=center colspan=4>$row2[0] &nbsp; &nbsp; $row2[2]</td></tr>";
-	echo "<tr><td align=center colspan=4>Cashier:&nbsp;$row2[4]</td></tr>";
+	echo "<tr><td align=center colspan=4>{$row2['datetime']} &nbsp; &nbsp; $trans_num</td></tr>";
+	echo "<tr><td align=center colspan=4>Cashier:&nbsp;$emp_no</td></tr>";
 	echo "<tr><td colspan=4>&nbsp;</td></tr>";
 	echo "<tr align left>\n";
 	/*for($i=0; $i<5; $i++)
@@ -562,7 +564,7 @@ function receipt_to_table($query,$query2,$border,$bgcolor)
 		echo "</td><td align=right>";
 		echo $row["total"];
 		echo "</td><td align=right>";
-		echo $row["status"];
+		echo $row["Status"];
 		echo "</td></tr>";	
 	} 
 	
@@ -570,7 +572,7 @@ function receipt_to_table($query,$query2,$border,$bgcolor)
 	echo "<tr><td colspan=4 align=center>--------------------------------------------------------</td></tr>";
 	echo "<tr><td colspan=4 align=center>Reprinted Transaction</td></tr>";
 	echo "<tr><td colspan=4 align=center>--------------------------------------------------------</td></tr>";
-	echo "<tr><td colspan=4 align=center>Member #: $row2[1]</td</tr>";
+	echo "<tr><td colspan=4 align=center>Member #: {$row2['memberID']}</td</tr>";
 	echo "</table>\n";
 
 

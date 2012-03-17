@@ -61,8 +61,10 @@ function save(){
 	var buyAmount = saveBuyAmount();
 	var dropAmount = saveDropAmount();
 	var depositAmount = saveDepositAmount();
+	var atmAmount = saveAtmAmount();
 
-	phpSend('save&date1='+date1+'&date2='+date2+'&changeOrder='+changeOrder+'&openSafeCount='+openSafeCount+'&closeSafeCount='+closeSafeCount+'&buyAmount='+buyAmount+'&dropAmount='+dropAmount+"&depositAmount="+depositAmount);
+	alert('save&date1='+date1+'&date2='+date2+'&changeOrder='+changeOrder+'&openSafeCount='+openSafeCount+'&closeSafeCount='+closeSafeCount+'&buyAmount='+buyAmount+'&dropAmount='+dropAmount+"&depositAmount="+depositAmount+'&atmAmount='+atmAmount);
+	phpSend('save&date1='+date1+'&date2='+date2+'&changeOrder='+changeOrder+'&openSafeCount='+openSafeCount+'&closeSafeCount='+closeSafeCount+'&buyAmount='+buyAmount+'&dropAmount='+dropAmount+"&depositAmount="+depositAmount+'&atmAmount='+atmAmount);
 }
 
 var denoms = Array('0.01','0.05','0.10','0.25','Junk','1.00','5.00','10.00','20.00','50.00','100.00','Checks');
@@ -75,6 +77,19 @@ function saveDepositAmount(){
 		if (i < denoms.length-1)
 			ret += "|";
 	}
+	return ret;
+}
+
+function saveAtmAmount(){
+	var ret = '';
+	if (document.getElementById('atmFill'))
+		ret += 'fill:'+document.getElementById('atmFill').value;
+	else
+		ret += 'fill:0';
+	if (document.getElementById('atmReject'))
+		ret += '|reject:'+document.getElementById('atmReject').value;
+	else
+		ret += '|reject:0';
 	return ret;
 }
 
@@ -208,6 +223,8 @@ function resumInputs(rowname){
 function resumRow(rowname){
 	var sum = 0;
 	for(var i=0; i < denoms.length; i++){
+		if (rowname == "depositAmount" && denoms[i] == "Checks")
+			continue;
 		if (document.getElementById(rowname+denoms[i]))
 			sum += Number(document.getElementById(rowname+denoms[i]).innerHTML);
 	}
@@ -230,6 +247,12 @@ function updateDepositAmount(d){
 		updateBuyAmount(d);
 		break;
 	case '20.00':
+		var val = Number(document.getElementById('cashInTills'+d).innerHTML);
+		val += Number(document.getElementById('dropAmount'+d).value);
+		val += Number(document.getElementById('atmReject').value);	
+		val -= Number(document.getElementById('atmFill').value);	
+		document.getElementById('depositAmount'+d).innerHTML=Math.round(val*100)/100;
+		break;
 	case '50.00':
 	case '100.00':
 	case 'Junk':
@@ -337,6 +360,10 @@ function updateBuyAmount(d){
 	}
 
 	resumRow('buyAmount');
+}
+
+function updateAtmAmounts(){
+	updateDepositAmount('20.00');
 }
 
 function denom_overage(overage){
