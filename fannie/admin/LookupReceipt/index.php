@@ -21,7 +21,7 @@
 
 *********************************************************************************/
 
-include('../../config.php');
+include('../../config2.php');
 include($FANNIE_ROOT.'src/mysql_connect.php');
 include($FANNIE_ROOT.'src/select_dlog.php');
 
@@ -57,7 +57,7 @@ if (isset($_GET["submit"])){
 	if ($date != "") $dlog = select_dlog($date);
 	$query = "SELECT year(tdate),month(tdate),day(tdate),emp_no,register_no,trans_no FROM $dlog WHERE ";
 	if ($date != "")
-		$query .= $dbc->datediff("'$date'",'tdate')."=0";
+		$query .= $dbc->date_equals('tdate',$date);
 	if ($card_no != ""){
 		if ($query[strlen($query)-1] != " ") $query .= " AND ";
 		$query .= "card_no='$card_no'";

@@ -4,7 +4,9 @@ include('../../../config.php');
 require($FANNIE_ROOT.'src/SQLManager.php');
 require($FANNIE_ROOT.'src/select_dlog.php');
 
-include('../../db.php');
+include('../../db2.php');
+$sql->query('use is4c_trans');
+add_second_server();
 
 $pCodes_lookup = array(
 	41201 => "DELI PREPARED FOODS",
@@ -77,7 +79,7 @@ if (isset($_GET["action"])){
 	switch($_GET["action"]){
 	case 'repull':
 		$datestr = $_GET['startDate']." ".$_GET['endDate'];
-		$sql->query("DELETE FROM dailyDebitCredit WHERE dateStr='$datestr'");
+		$sql->query_all("DELETE FROM dailyDebitCredit WHERE dateStr='$datestr'");
 		$out .= $_GET['startDate']."`".$_GET['endDate'];
 		break;
 	case 'dateinput':
@@ -112,7 +114,7 @@ if (isset($_GET["action"])){
 		$data = unserialize(array_pop($sql->fetch_row($dataR)));
 
 		$data[$k1][$k2] = $val;		
-		$sql->query(sprintf("UPDATE dailyDebitCredit SET phpData='%s' WHERE dateStr='%s'",
+		$sql->query_all(sprintf("UPDATE dailyDebitCredit SET phpData='%s' WHERE dateStr='%s'",
 				serialize($data),$datestr));
 		break;
 	case 'save3':
@@ -126,7 +128,7 @@ if (isset($_GET["action"])){
 		$data = unserialize(array_pop($sql->fetch_row($dataR)));
 
 		$data[$k1][$k2][$k3] = $val;		
-		$sql->query(sprintf("UPDATE dailyDebitCredit SET phpData='%s' WHERE dateStr='%s'",
+		$sql->query_all(sprintf("UPDATE dailyDebitCredit SET phpData='%s' WHERE dateStr='%s'",
 				serialize($data),$datestr));
 		break;
 	case 'save4':
@@ -141,7 +143,7 @@ if (isset($_GET["action"])){
 		$data = unserialize(array_pop($sql->fetch_row($dataR)));
 
 		$data[$k1][$k2][$k3][$k4] = $val;		
-		$sql->query(sprintf("UPDATE dailyDebitCredit SET phpData='%s' WHERE dateStr='%s'",
+		$sql->query_all(sprintf("UPDATE dailyDebitCredit SET phpData='%s' WHERE dateStr='%s'",
 				serialize($data),$datestr));
 		break;
 	case 'saveMisc':
@@ -159,7 +161,7 @@ if (isset($_GET["action"])){
 		elseif ($type == 'pcode')
 			$data['other'][$misc][0] = $val;
 
-		$sql->query(sprintf("UPDATE dailyDebitCredit SET phpData='%s' WHERE dateStr='%s'",
+		$sql->query_all(sprintf("UPDATE dailyDebitCredit SET phpData='%s' WHERE dateStr='%s'",
 				serialize($data),$datestr));
 		break;
 	}
@@ -189,7 +191,7 @@ function display($date1,$date2,$excel=False){
 		$data = fetch_data($date1,$date2);
 		$saveQ = sprintf("INSERT INTO dailyDebitCredit (dateStr, phpData) VALUES ('%s','%s')",
 				"$date1 $date2",serialize($data));
-		$saveR = $sql->query($saveQ);
+		$saveR = $sql->query_all($saveQ);
 	}
 	else {
 		$data = unserialize(array_pop($sql->fetch_row($dataR)));
@@ -234,7 +236,7 @@ function display($date1,$date2,$excel=False){
 	$ret .= "</tr>";	
 
 	$ret .= "<tr class=$classes[$c]>"; $c = ($c+1)%2;
-	$ret .= "<td>Cash/Check deposit</td><td>10120</td>";
+	$ret .= "<td>Cash deposit</td><td>10120</td>";
 	for ($i=0;$i<$num_days-1;$i++)
 		$ret .= "<td>&nbsp;</td><td>&nbsp;</td>";
 	$ret .= "<td class=money>";
@@ -248,6 +250,42 @@ function display($date1,$date2,$excel=False){
 		$ret .= (isset($data['other']['depositAmount'])?$data['other']['depositAmount']:'');
 	$overshorts[$endTS] += isset($data['other']['depositAmount'])?$data['other']['depositAmount']:0;
 	
+	$ret .= "</td>";
+	$ret .= "<td>&nbsp;</td>";
+	$ret .= "</tr>";
+
+	$ret .= "<tr class=$classes[$c]>"; $c = ($c+1)%2;
+	$ret .= "<td>Check deposit</td><td>10120</td>";
+	for ($i=0;$i<$num_days-1;$i++)
+		$ret .= "<td>&nbsp;</td><td>&nbsp;</td>";
+	$ret .= "<td class=money>";
+	if (!$excel){
+		$ret .= "<input type=text size=7 value=\"";
+		$ret .= (isset($data['other']['depositChecks'])?$data['other']['depositChecks']:'')."\"";
+		$ret .= " onchange=\"save2(this.value,'other','depositChecks');rb($endTS);\" ";
+		$ret .= "style=\"text-align:right\" name=debit$endTS />";
+	}
+	else
+		$ret .= (isset($data['other']['depositChecks'])?$data['other']['depositChecks']:'');
+
+	$ret .= "</td>";
+	$ret .= "<td>&nbsp;</td>";
+	$ret .= "</tr>";
+
+	$ret .= "<tr class=$classes[$c]>"; $c = ($c+1)%2;
+	$ret .= "<td>ATM Cash</td><td>10112</td>";
+	for ($i=0;$i<$num_days-1;$i++)
+		$ret .= "<td>&nbsp;</td><td>&nbsp;</td>";
+	$ret .= "<td class=money>";
+	if (!$excel){
+		$ret .= "<input type=text size=7 value=\"";
+		$ret .= (isset($data['other']['atmNet'])?$data['other']['atmNet']:'')."\"";
+		$ret .= " onchange=\"save2(this.value,'other','atmNet');rb($endTS);\" ";
+		$ret .= "style=\"text-align:right\" name=debit$endTS />";
+	}
+	else
+		$ret .= (isset($data['other']['atmNet'])?$data['other']['atmNet']:'');
+
 	$ret .= "</td>";
 	$ret .= "<td>&nbsp;</td>";
 	$ret .= "</tr>";
@@ -701,6 +739,7 @@ function fetch_data($date1,$date2){
 	);
 	$ret = "";
 	$dlog = select_dlog($date1,$date2);
+	$dlog = "trans_archive.dlogBig";
 
 	$pageOneQ = "select rowName,sum(amt) from dailyDeposit
 		WHERE dateStr = '$date1 $date2' and
@@ -711,15 +750,37 @@ function fetch_data($date1,$date2){
 		$data['other'][$pageOneW[0]] = $pageOneW[1];
 	}
 
+	$data['other']['depositChecks'] = 0;
+	$data['other']['atmNet'] = 0;
+	$pageOneQ2 = "select denomination,amt FROM dailyDeposit
+		WHERE dateStr = '$date1 $date2' and
+		rowName in ('depositAmount','atm')
+		and denomination in ('Checks','fill','reject')";
+	$pageOneR2 = $sql->query($pageOneQ2);
+	while($w = $sql->fetch_row($pageOneR2)){
+		switch(strtolower($w['denomination'])){
+			case 'checks':
+				$data['other']['depositChecks'] += $w['amt'];
+				$data['other']['depositAmount'] -= $w['amt'];
+				break;
+			case 'fill':
+				$data['other']['atmNet'] += $w['amt'];
+				break;
+			case 'reject':
+				$data['other']['atmNet'] -= $w['amt'];
+				break;
+		}
+	}
+
 	$tenderQ = "select sum(amt),
 		tender_type,tendername,
-		datepart(yy,date),datepart(mm,date),datepart(dd,date)
-		FROM dailyCounts as d left join tenders as t
+		YEAR(date),MONTH(date),DAY(date)
+		FROM dailyCounts as d left join is4c_op.tenders as t
 		on d.tender_type = t.tenderCode
 		WHERE date between '$date1 00:00:00' AND
 		'$date2 23:59:59'
 		group by
-		datepart(yy,date),datepart(mm,date),datepart(dd,date),
+		YEAR(date),MONTH(date),DAY(date),
 		tender_type,tendername order by tendername";
 	$tenderR = $sql->query($tenderQ);
 	while ($tenderW = $sql->fetch_row($tenderR)){
@@ -756,12 +817,12 @@ function fetch_data($date1,$date2){
 		//$data['tenders']['AX'][$timestamp] = 0;
 	}
 
-	$extraTenderQ = "select datepart(yy,tdate),datepart(mm,tdate),datepart(dd,tdate),
+	$extraTenderQ = "select YEAR(tdate),MONTH(tdate),DAY(tdate),
 			trans_subtype,sum(total)*-1 FROM $dlog as d
 			WHERE tdate between '$date1 00:00:00' AND
 			'$date2 23:59:59' and trans_subtype in ('MA','RR','PP')
 			group by
-			datepart(yy,tdate),datepart(mm,tdate),datepart(dd,tdate),
+			YEAR(tdate),MONTH(tdate),DAY(tdate),
 			trans_subtype";
 	$extraTenderR = $sql->query($extraTenderQ);
 	while($extraTenderW = $sql->fetch_row($extraTenderR)){
@@ -791,23 +852,23 @@ function fetch_data($date1,$date2){
 	$data['other']['misc2'] = array('',array());
 	$data['other']['axfees'] = array('63340',array());
 
-	$salesQ = "select datepart(yy,tdate),datepart(mm,tdate),datepart(dd,tdate),
-		CASE WHEN department = 991 then '991' when department=992 then '992' else convert(varchar,s.salesCode) end as pcode,
+	$salesQ = "select YEAR(tdate),MONTH(tdate),DAY(tdate),
+		CASE WHEN department = 991 then '991' when department=992 then '992' else convert(s.salesCode,char) end as pcode,
 		sum(total),trans_type
-		FROM $dlog as d left join departments as t on
+		FROM $dlog as d left join is4c_op.departments as t on
 		d.department = t.dept_no LEFT JOIN
-		deptSalesCodes AS s ON t.dept_no=s.dept_ID
+		is4c_op.deptSalesCodes AS s ON t.dept_no=s.dept_ID
 		WHERE tdate BETWEEN '$date1 00:00:00' AND
 		'$date2 23:59:59'
 		AND trans_subtype NOT IN ('CP','IC')
 		and trans_type not in ('S','T')
 		AND (register_no <> 20 or department=703)
 		GROUP BY 
-		datepart(yy,tdate),datepart(mm,tdate),datepart(dd,tdate),
+		YEAR(tdate),MONTH(tdate),DAY(tdate),
 		trans_type,
-		CASE WHEN department = 991 then '991' when department=992 then '992' else convert(varchar,s.SalesCode) end
+		CASE WHEN department = 991 then '991' when department=992 then '992' else convert(s.SalesCode,char) end
 		ORDER BY
-		CASE WHEN department = 991 then '991' when department=992 then '992' else convert(varchar,s.SalesCode) end";
+		CASE WHEN department = 991 then '991' when department=992 then '992' else convert(s.SalesCode,char) end";
 	$salesR = $sql->query($salesQ);
 	$preTS = 0;
 	while($salesW = $sql->fetch_row($salesR)){
@@ -861,11 +922,11 @@ function fetch_data($date1,$date2){
 		$data['other']['foundmoney'][$timestamp] = 0;
 	}
 
-	$discountQ = "select datepart(yy,tdate),datepart(mm,tdate),datepart(dd,tdate),
+	$discountQ = "select YEAR(tdate),MONTH(tdate),DAY(tdate),
 		memDesc,-sum(total)
-		from $dlog as d left join memtypeID as m on d.memtype=m.memtypeID
+		from $dlog as d left join is4c_op.memTypeID as m on d.memtype=m.memtypeID
 		where upc='DISCOUNT' and tdate between '$date1 00:00:00' and '$date2 23:59:59'
-		group by datepart(yy,tdate),datepart(mm,tdate),datepart(dd,tdate),
+		group by YEAR(tdate),MONTH(tdate),DAY(tdate),
 		memDesc";
 	$discountR = $sql->query($discountQ);
 	$data['other']['discount'] = array();

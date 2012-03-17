@@ -21,7 +21,7 @@
 
 *********************************************************************************/
 
-	include('../../config.php');
+	include('../../config2.php');
 	include($FANNIE_ROOT.'src/mysql_connect.php');
 	include($FANNIE_ROOT.'src/select_dlog.php');
 
@@ -182,7 +182,7 @@
 			  d.dept_no,d.dept_name,s.superID,x.distributor ORDER BY $order $dir";
 		}
 		//$query = fixup_dquery($query,$dlog);
-		echo $query;
+		//echo $query;
 		$result = $dbc->query($query);
 
 		echo "<table border=1>\n"; //create table
@@ -262,14 +262,14 @@
 		 $query =  "SELECT $item,SUM(quantity) as Qty, SUM(total) as Sales "
                           ."FROM $dlog as t LEFT JOIN departments as d on d.dept_no=t.department "
 			  ."LEFT JOIN superdepts AS s ON s.dept_ID = t.department "
-			  ."WHERE s.superID=$buyer AND tDate >= '$date1a' AND tDate <= '$date2a' "
-			  ."AND trans_type in ('D','I','M')"
+			  ."WHERE s.superID=$buyer AND tdate >= '$date1a' AND tdate <= '$date2a' "
+			  ."AND trans_type in ('D','I','M') "
 			  ."GROUP BY $groupBy ORDER BY $orderBy";
 		}
 		else if (isset($buyer) && $buyer == -1){
 		 $query =  "SELECT $item,SUM(quantity) as Qty, SUM(total) as Sales "
                           ."FROM $dlog as t LEFT JOIN departments as d on d.dept_no=t.department "
-			  ."WHERE tDate >= '$date1a' AND tDate <= '$date2a' "
+			  ."WHERE tdate >= '$date1a' AND tdate <= '$date2a' "
 			  ."AND trans_type in ('D','I','M')"
 			  ."GROUP BY $groupBy ORDER BY $orderBy";
 		}
@@ -277,14 +277,14 @@
 		 $query =  "SELECT $item,SUM(quantity) as Qty, SUM(total) as Sales "
                           ."FROM $dlog as t LEFT JOIN departments as d on d.dept_no=t.department "
 			  ."LEFT JOIN MasterSuperDepts AS s ON s.dept_ID = t.department "
-			  ."WHERE tDate >= '$date1a' AND tDate <= '$date2a' "
-			  ."AND trans_type in ('D','I','M') and s.superID <> 0"
+			  ."WHERE tdate >= '$date1a' AND tdate <= '$date2a' "
+			  ."AND trans_type in ('D','I','M') and s.superID <> 0 "
 			  ."GROUP BY $groupBy ORDER BY $orderBy";
 		}
 		else {
 		 $query =  "SELECT $item,SUM(quantity) as Qty, SUM(total) as Sales "
                           ."FROM $dlog as t LEFT JOIN departments as d on d.dept_no=t.department "
-			  ."WHERE tDate >= '$date1a' AND tDate <= '$date2a' "
+			  ."WHERE tdate >= '$date1a' AND tdate <= '$date2a' "
 			  ."AND trans_type in ('D','I','M') "
 			  ."AND t.department BETWEEN $deptStart AND $deptEnd "
 			  ."GROUP BY $groupBy ORDER BY $orderBy";
@@ -296,7 +296,7 @@
 					sum(total)/count(distinct(".$dbc->dateymd('tdate').")) as avg_ttl",
 					$query);
 		}
-		echo $query;
+		//echo $query;
 		//$query = fixup_dquery($query,$dlog);
 		$result = $dbc->query($query);	
 

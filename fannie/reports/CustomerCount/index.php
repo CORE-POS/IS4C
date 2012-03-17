@@ -21,7 +21,7 @@
 
 *********************************************************************************/
 
-include('../../config.php');
+include('../../config2.php');
 include($FANNIE_ROOT.'src/mysql_connect.php');
 include($FANNIE_ROOT.'src/select_dlog.php');
 
