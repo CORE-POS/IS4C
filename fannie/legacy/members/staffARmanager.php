@@ -2,7 +2,8 @@
 include('../../config.php');
 
 if (!class_exists("SQLManager")) require_once($FANNIE_ROOT."src/SQLManager.php");
-include('../db.php');
+include('../db2.php');
+$sql->query("use is4c_trans");
 
 /* delete is easy
  * just delete from staffID and staffAR
@@ -11,7 +12,7 @@ if (isset($_POST['remove'])){
 	$cardno = $_POST['cardno'];
 	$delQ = "delete from staffID where cardno=$cardno";
 	$delR = $sql->query($delQ);
-	$delQ = "delete from staffAR where cardno=$cardno";
+	$delQ = "delete from staffAR where cardNo=$cardno";
 	$delQ = $sql->query($delQ);
 	echo "Member #$cardno removed from staff AR<p />";
 }
@@ -25,7 +26,7 @@ if (isset($_POST['remove'])){
 if (isset($_POST['add'])){
 	$cardno = $_POST['cardno'];
 	
-	$namesQ = "select firstname,lastname from custdata where cardno=$cardno and personnum=1";
+	$namesQ = "select FirstName,LastName from is4c_op.custdata where CardNo=$cardno and personNum=1";
 	$namesR = $sql->query($namesQ);
 	$namesW = $sql->fetch_array($namesR);
 	$fname = $namesW[0];
@@ -68,13 +69,13 @@ if (isset($_POST['add'])){
 // add the correct balance for the cardno to staffAR
 function balance($cardno){
 	global $sql;
-	$balanceQ = "INSERT INTO staffAR
+	$balanceQ = "INSERT INTO staffAR (cardNo, lastName, firstName, adjust)
                  	SELECT
-                 	cardno,
-                 	lastname,
-                 	firstname,
-                 	balance as Ending_Balance
-                 	from custdata where cardno=$cardno and personnum=1";
+                 	CardNo,
+                 	LastName,
+                 	FirstName,
+                 	Balance as Ending_Balance
+                 	from is4c_op.custdata where CardNo=$cardno and personNum=1";
 	$balanceR = $sql->query($balanceQ);
 }
 

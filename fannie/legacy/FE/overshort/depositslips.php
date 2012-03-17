@@ -158,6 +158,7 @@ if (isset($_GET['startDate'])){
 	$pdf->MultiCell(55,5,$str,0,'C',1);
 	
 	$pdf->SetTextColor(0,0,0);
+	/*
 	$str = "";
 	for($i=0;$i<10 || $i < count($counts); $i++){
 		$str .= "Check # ".($i+1).":";
@@ -167,6 +168,7 @@ if (isset($_GET['startDate'])){
 	}
 	$pdf->SetX(($width+2)*4 + 5);
 	$pdf->MultiCell(55,7,$str,'LR','L');
+	*/
 
 	$dbstack = array('buyAmount'=>array(),
 			 'depositAmount'=>array());
@@ -194,8 +196,8 @@ if (isset($_GET['startDate'])){
 
 
 	$pdf->SetX(($width+2)*4 + 5);
-	$pdf->Cell(15,7,'Checks','L',0,'L');
-	$pdf->Cell(40,7,"\t$".sprintf('%.2f',$ckSum),'TBR',1);
+	//$pdf->Cell(15,7,'Checks','L',0,'L');
+	//$pdf->Cell(40,7,"\t$".sprintf('%.2f',$ckSum),'TBR',1);
 	$pdf->SetX(($width+2)*4 + 5);
 	$pdf->Cell(15,7,'Coin','L',0,'L');
 	$pdf->Cell(40,7,"\t$".sprintf('%.2f',$coin),'TBR',1);
@@ -207,7 +209,8 @@ if (isset($_GET['startDate'])){
 	$pdf->Cell(40,7,"\t$".sprintf('%.2f',$junk),'TBR',1);
 	$pdf->SetX(($width+2)*4 + 5);
 	$pdf->Cell(15,7,'Total','L',0,'L');
-	$pdf->Cell(40,7,"\t$".sprintf('%.2f',$junk+$cash+$coin+$ckSum),'TBR',1);
+	//$pdf->Cell(40,7,"\t$".sprintf('%.2f',$junk+$cash+$coin+$ckSum),'TBR',1);
+	$pdf->Cell(40,7,"\t$".sprintf('%.2f',$junk+$cash+$coin),'TBR',1);
 
 	$pdf->SetTextColor(255,255,255);
 	$pdf->SetX(($width+2)*4+5);

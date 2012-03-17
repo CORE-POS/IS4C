@@ -3,7 +3,9 @@ include('../../../config.php');
 
 require($FANNIE_ROOT.'src/SQLManager.php');
 require($FANNIE_ROOT.'src/select_dlog.php');
-include('../../db.php');
+include('../../db2.php');
+$sql->query("use is4c_trans");
+add_second_server();
 
 if (isset($_GET["action"])){
 	$out = $_GET["action"]."`";
@@ -31,6 +33,7 @@ function displayCashier($date,$empno){
 	global $sql;
 
 	$dlog = select_dlog($date);
+	$dlog = "trans_archive.dlogBig";
 
 	$tenders = array('CA','CK','CC','MI','GD','TC','EF','EC','CP','IC','SC');
 	$totals = array();
@@ -46,14 +49,14 @@ function displayCashier($date,$empno){
 
 
 	$totalsQ = "SELECT trans_subtype,-1*SUM(total) FROM $dlog WHERE emp_no = $empno
-		AND datediff(dd,tdate,'$date') = 0 AND trans_subtype IN $tClause
+		AND ".$sql->date_equals('tdate',$date)." AND trans_subtype IN $tClause
 		GROUP BY trans_subtype";
 	$totalsR = $sql->query($totalsQ);
 	while($totalsW = $sql->fetch_row($totalsR))
 		$totals[$totalsW[0]] = $totalsW[1];
 
-	$countsQ = "SELECT tender_type,amt FROM dailyCounts WHERE emp_no = $empno
-		AND datediff(dd,date,'$date') = 0";
+	$countsQ = "SELECT tender_type,amt FROM dailyCounts WHERE emp_no = $empno AND 
+		".$sql->date_equals('date',$date);
 	$countsR = $sql->query($countsQ);
 	while($countsW = $sql->fetch_row($countsR))
 		$counts[$countsW[0]] = $countsW[1];
@@ -90,7 +93,7 @@ function displayCashier($date,$empno){
 	$ret .= "<td id=countCK>".$counts['CK']."</td>";
 	$os = round($counts['CK'] - $totals['CK'],2);
 	$ret .= "<td id=osCK>$os</td>";
-	$checksQ = "select checks from dailyChecks where datediff(dd,date,'$date')=0 and emp_no=$empno";
+	$checksQ = "select checks from dailyChecks where ".$sql->date_equals('date',$date)." and emp_no=$empno";
 	$checksR = $sql->query($checksQ);
 	$checks = "";
 	while($checksW = $sql->fetch_row($checksR)){
@@ -273,25 +276,25 @@ function save($empno,$date,$tenders,$checks,$notes){
 	global $sql;
 	
 	$notes = str_replace("'","''",urldecode($notes));
-	$checkQ = "select emp_no from dailyNotes where datediff(dd,date,'$date')=0 and emp_no=$empno";
+	$checkQ = "select emp_no from dailyNotes where ".$sql->date_equals('date',$date)." and emp_no=$empno";
 	if ($sql->num_rows($sql->query($checkQ)) == 0){
 		$insQ = "INSERT INTO dailyNotes VALUES ('$date',$empno,'$notes')";
-		$sql->query($insQ);
+		$sql->query_all($insQ);
 	}
 	else {
-		$upQ = "UPDATE dailyNotes SET note='$notes' WHERE datediff(dd,date,'$date')=0 and emp_no=$empno";
-		$sql->query($upQ);
+		$upQ = "UPDATE dailyNotes SET note='$notes' WHERE ".$sql->date_equals('date',$date)." and emp_no=$empno";
+		$sql->query_all($upQ);
 	}	
 
-	$checkQ = "select id from dailyChecks where datediff(dd,date,'$date')=0 and emp_no=$empno";
+	$checkQ = "select id from dailyChecks where ".$sql->date_equals('date',$date)." and emp_no=$empno";
 	$checkR = $sql->query($checkQ);
 	if ($sql->num_rows($checkR) == 0){
 		$insQ = "INSERT INTO dailyChecks (date,emp_no,checks) VALUES ('$date',$empno,'$checks')";
-		$sql->query($insQ);
+		$sql->query_all($insQ);
 	}
 	else {
-		$upQ = "UPDATE dailyChecks SET checks='$checks' WHERE datediff(dd,date,'$date')=0 and emp_no=$empno";
-		$sql->query($upQ);
+		$upQ = "UPDATE dailyChecks SET checks='$checks' WHERE ".$sql->date_equals('date',$date)." and emp_no=$empno";
+		$sql->query_all($upQ);
 	}
 
 	$tarray = explode("|",$tenders);
@@ -303,14 +306,14 @@ function save($empno,$date,$tenders,$checks,$notes){
 		$tender = $temp[0];
 		$amt = $temp[1];
 
-		$checkQ = "SELECT emp_no FROM dailyCounts where datediff(dd,date,'$date')=0 and emp_no=$empno and tender_type='$tender'";
+		$checkQ = "SELECT emp_no FROM dailyCounts where ".$sql->date_equals('date',$date)." and emp_no=$empno and tender_type='$tender'";
 		if ($sql->num_rows($sql->query($checkQ)) == 0){
 			$insQ = "INSERT INTO dailyCounts VALUES ('$date',$empno,'$tender',$amt)";
-			$sql->query($insQ);
+			$sql->query_all($insQ);
 		}
 		else {
-			$upQ = "UPDATE dailyCounts SET amt=$amt WHERE datediff(dd,'$date',date)=0 and emp_no=$empno and tender_type='$tender'";
-			$sql->query($upQ);
+			$upQ = "UPDATE dailyCounts SET amt=$amt WHERE ".$sql->date_equals('date',$date)." and emp_no=$empno and tender_type='$tender'";
+			$sql->query_all($upQ);
 		}
 	}
 

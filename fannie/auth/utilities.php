@@ -31,13 +31,14 @@ having this as a separate function makes changing
 the database easier
 */
 function dbconnect(){
-	global $FANNIE_ROOT;
+	global $FANNIE_ROOT,$FANNIE_SERVER_PW;
 	$path = guesspath();
 	if (!class_exists("SQLManager")){
 		include($path."config.php");
 		include($path."src/SQLManager.php");
 	}
-	include($path."src/mysql_connect.php");
+	//include($path."src/mysql_connect.php");
+	$dbc = new SQLManager('129.103.2.2','MYSQL','is4c_op','root',$FANNIE_SERVER_PW);
 	return $dbc;
 }
 
@@ -81,7 +82,7 @@ function getUID($name){
   if (!auth_enabled()) return '0000';
 
   $sql = dbconnect();
-  $fetchQ = "select uid from users where name='$name'";
+  $fetchQ = "select uid from Users where name='$name'";
   $fetchR = $sql->query($fetchQ);
   if ($sql->num_rows($fetchR) == 0){
     return false;
@@ -95,7 +96,7 @@ function getNumUsers(){
   if (!auth_enabled()) return 9999;
 	
   $sql = dbconnect();
-  $fetchQ = "select uid from users";
+  $fetchQ = "select uid from Users";
   $fetchR = $sql->query($fetchQ);
 
   return $sql->num_rows($fetchR);
@@ -133,7 +134,7 @@ function doLogin($name){
 	$session_id = genSessID();	
 
 	$sql = dbconnect();
-	$sessionQ = "update users set session_id = '$session_id' where name='$name'";
+	$sessionQ = "update Users set session_id = '$session_id' where name='$name'";
 	$sessionR = $sql->query($sessionQ);
 
 	$session_data = array("name"=>$name,"session_id"=>$session_id);

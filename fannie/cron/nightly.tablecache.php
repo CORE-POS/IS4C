@@ -60,5 +60,12 @@ $chk = $sql->query("INSERT INTO batchMergeTable SELECT * FROM batchMergeLC");
 if ($chk === False)
 	echo cron_msg("Could not load data from batchMergeLC");
 
+$chk = $sql->query("TRUNCATE TABLE ar_sum_cache");
+if ($chk === False)
+	echo cron_msg("Could not truncate ar_sum_cache");
+$chk = $sql->query("INSERT INTO ar_sum_cache SELECT * FROM ar_history_sum");
+if ($chk === False)
+	echo cron_msg("Could not load data from ar_sum_cache");
+
 echo cron_msg("Success");
 ?>
