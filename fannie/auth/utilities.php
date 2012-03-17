@@ -81,7 +81,7 @@ function getUID($name){
   if (!auth_enabled()) return '0000';
 
   $sql = dbconnect();
-  $fetchQ = "select uid from users where name='$name'";
+  $fetchQ = "select uid from Users where name='$name'";
   $fetchR = $sql->query($fetchQ);
   if ($sql->num_rows($fetchR) == 0){
     return false;
@@ -95,7 +95,7 @@ function getNumUsers(){
   if (!auth_enabled()) return 9999;
 	
   $sql = dbconnect();
-  $fetchQ = "select uid from users";
+  $fetchQ = "select uid from Users";
   $fetchR = $sql->query($fetchQ);
 
   return $sql->num_rows($fetchR);
@@ -133,7 +133,7 @@ function doLogin($name){
 	$session_id = genSessID();	
 
 	$sql = dbconnect();
-	$sessionQ = "update users set session_id = '$session_id' where name='$name'";
+	$sessionQ = "update Users set session_id = '$session_id' where name='$name'";
 	$sessionR = $sql->query($sessionQ);
 
 	$session_data = array("name"=>$name,"session_id"=>$session_id);

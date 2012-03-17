@@ -43,13 +43,6 @@ set_time_limit(0);
 $sql = new SQLManager($FANNIE_SERVER,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 		$FANNIE_SERVER_USER,$FANNIE_SERVER_PW);
 
-$chk = $sql->query("TRUNCATE TABLE CashPerformDay_cache");
-if ($chk === False)
-	echo cron_msg("Could not truncate CashPerformDay_cache");
-$chk = $sql->query("INSERT INTO CashPerformDay_cache SELECT * FROM CashPerformDay");
-if ($chk === False)
-	echo cron_msg("Could not load data for CashPerformDay_cache");
-
 $chk = $sql->query("TRUNCATE TABLE batchMergeTable");
 if ($chk === False)
 	echo cron_msg("Could not truncate batchMergeTable");
@@ -59,6 +52,21 @@ if ($chk === False)
 $chk = $sql->query("INSERT INTO batchMergeTable SELECT * FROM batchMergeLC");
 if ($chk === False)
 	echo cron_msg("Could not load data from batchMergeLC");
+
+$sql->query("use $FANNIE_TRANS_DB");
+$chk = $sql->query("TRUNCATE TABLE CashPerformDay_cache");
+if ($chk === False)
+	echo cron_msg("Could not truncate CashPerformDay_cache");
+$chk = $sql->query("INSERT INTO CashPerformDay_cache SELECT * FROM CashPerformDay");
+if ($chk === False)
+	echo cron_msg("Could not load data for CashPerformDay_cache");
+
+$chk = $sql->query("TRUNCATE TABLE ar_sum_cache");
+if ($chk === False)
+	echo cron_msg("Could not truncate ar_sum_cache");
+$chk = $sql->query("INSERT INTO ar_sum_cache SELECT * FROM ar_history_sum");
+if ($chk === False)
+	echo cron_msg("Could not load data for ar_sum_cache");
 
 echo cron_msg("Success");
 ?>

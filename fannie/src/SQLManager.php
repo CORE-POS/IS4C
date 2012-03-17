@@ -110,7 +110,7 @@ class SQLManager {
 			$which_connection=$this->default_db;
 		$con = $this->connections[$which_connection];
 
-		$ok = $con->Execute($query_text);
+		$ok = (!is_object($con)) ? False : $con->Execute($query_text);
 		if (!$ok && is_writable($QUERY_LOG)){
 			$fp = fopen($QUERY_LOG,'a');
 			fputs($fp,$_SERVER['PHP_SELF'].": ".date('r').': '.$query_text."\n");

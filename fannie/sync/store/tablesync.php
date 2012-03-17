@@ -61,6 +61,7 @@ else {
 		include("special/$table.php");
 	}
 	else {
+		echo "Whoa! bail-out! multi-store not safe right now!";exit;
 		if (isset($_REQUEST['storeNum']) && $_REQUEST['storeNum']==="") unset($_REQUEST['storeNum']);
 
 		$start = isset($_REQUEST['storeNum']) ? $_REQUEST['storeNum'] : 0;

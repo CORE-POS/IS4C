@@ -45,7 +45,7 @@ function login($name,$password){
   }
 
   $sql = dbconnect();
-  $gatherQ = "select password,salt from users where name='$name'";
+  $gatherQ = "select password,salt from Users where name='$name'";
   $gatherR = $sql->query($gatherQ);
   if ($sql->num_rows($gatherR) == 0){
     return false;
@@ -131,7 +131,7 @@ function logout(){
 }
 
 /*
-logins are stored in a table called users
+logins are stored in a table called Users
 information in the table includes an alphanumeric
 user name, an alphanumeric password (stored in crypted form),
 the salt used to crypt the password (time of user creation),
@@ -153,7 +153,7 @@ function createLogin($name,$password){
   }
   
   $sql = dbconnect();
-  $checkQ = "select * from users where name='$name'";
+  $checkQ = "select * from Users where name='$name'";
   $checkR = $sql->query($checkQ);
   if ($sql->num_rows($checkR) != 0){
     return false;
@@ -164,20 +164,20 @@ function createLogin($name,$password){
   
   // generate unique user-id between 0001 and 9999
   // implicit assumption:  there are less than 10,000
-  // users currently in the database
+  // Users currently in the database
   $uid = '';
   srand($salt);
   while ($uid == ''){
     $newid = (rand() % 9998) + 1;
     $newid = str_pad($newid,4,'0',STR_PAD_LEFT);
-    $verifyQ = "select * from users where uid='$newid'";
+    $verifyQ = "select * from Users where uid='$newid'";
     $verifyR = $sql->query($verifyQ);
     if ($sql->num_rows($verifyR) == 0){
       $uid = $newid;
     }
   }
 
-  $addQ = "insert into users (name,uid,password,salt) values ('$name','$uid','$crypt_pass','$salt')";
+  $addQ = "insert into Users (name,uid,password,salt) values ('$name','$uid','$crypt_pass','$salt')";
   $addR = $sql->query($addQ);
 
   return true;
@@ -197,7 +197,7 @@ function deleteLogin($name){
   $delQ = "delete from userPrivs where uid=$uid";
   $delR = $sql->query($delQ);
 
-  $deleteQ = "delete from users where name='$name'";
+  $deleteQ = "delete from Users where name='$name'";
   $deleteR = $sql->query($deleteQ);
 
   $groupQ = "DELETE FROM userGroups WHERE name='$name'";
@@ -231,7 +231,7 @@ function checkLogin(){
   }
 
   $sql = dbconnect();
-  $checkQ = "select * from users where name='$name' and session_id='$session_id'";
+  $checkQ = "select * from Users where name='$name' and session_id='$session_id'";
   $checkR = $sql->query($checkQ);
 
   if ($sql->num_rows($checkR) == 0){
@@ -249,7 +249,7 @@ function showUsers(){
   echo "<table cellspacing=2 cellpadding=2 border=1>";
   echo "<tr><th>Name</th><th>User ID</th></tr>";
   $sql = dbconnect();
-  $usersQ = "select name,uid from users order by name";
+  $usersQ = "select name,uid from Users order by name";
   $usersR = $sql->query($usersQ);
   while ($row = $sql->fetch_array($usersR)){
     echo "<tr>";
@@ -266,7 +266,7 @@ name and password (thus creating a new session) rather
 than using checkLogin to verify the correct user is
 logged in.  This is nonstandard usage.  Normally checkLogin
 should be used to determine who (if anyone) is logged in
-(this way users don't have to constantly provide passwords)
+(this way Users don't have to constantly provide passwords)
 However, since the current password is provided, checking
 it is slightly more secure than checking a cookie
 */
@@ -285,7 +285,7 @@ function changePassword($name,$oldpassword,$newpassword){
   $salt = time();
   $crypt_pass = crypt($newpassword,$salt);
 
-  $updateQ = "update users set password='$crypt_pass',salt='$salt' where name='$name'";
+  $updateQ = "update Users set password='$crypt_pass',salt='$salt' where name='$name'";
   $updateR = $sql->query($updateQ);
   
   return true;
@@ -303,7 +303,7 @@ function changeAnyPassword($name,$newpassword){
   $salt = time();
   $crypt_pass = crypt($newpassword,$salt);
 
-  $updateQ = "update users set password='$crypt_pass',salt='$salt' where name='$name'";
+  $updateQ = "update Users set password='$crypt_pass',salt='$salt' where name='$name'";
   $updateR = $sql->query($updateQ);
 
   return true;
@@ -386,7 +386,7 @@ function pose($username){
 	$session_id = $session_data['session_id'];
 
 	$sql = dbconnect();
-	$sessionQ = "update users set session_id = '$session_id' where name='$username'";
+	$sessionQ = "update Users set session_id = '$session_id' where name='$username'";
 	$sessionR = $sql->query($sessionQ);
 
 	$session_data = array("name"=>$username,"session_id"=>$session_id);
