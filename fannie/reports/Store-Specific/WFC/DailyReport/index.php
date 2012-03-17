@@ -1,5 +1,5 @@
 <?php
-include('../../../../config.php');
+include('../../../../config2.php');
 
 include($FANNIE_ROOT.'src/mysql_connect.php');
 include($FANNIE_ROOT.'src/select_dlog.php');
@@ -65,7 +65,7 @@ if (!isset($_GET['excel']))
 
 echo '<br>Report run ' . $today. ' for ' . $repDate."<br />";
 
-$dlog = select_dlog($repDate);
+$dlog = select_dlog($dstr);
 $OP = $FANNIE_SERVER_DBMS=='MSSQL' ? $FANNIE_OP_DB.'.dbo.' : $FANNIE_OP_DB.'.';
 $TRANS = $FANNIE_SERVER_DBMS=='MSSQL' ? $FANNIE_TRANS_DB.'.dbo.' : $FANNIE_TRANS_DB.'.';
 

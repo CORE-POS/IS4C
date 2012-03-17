@@ -21,7 +21,8 @@ foreach(explode("/",$uri) as $x){
 	}
 }
 
-include($path.'config.php');
+if (!isset($FANNIE_SERVER))
+	include($path.'config.php');
 
 if (!class_exists("SQLManager"))
 	include($path.'src/SQLManager.php');

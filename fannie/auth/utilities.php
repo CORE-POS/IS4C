@@ -31,13 +31,14 @@ having this as a separate function makes changing
 the database easier
 */
 function dbconnect(){
-	global $FANNIE_ROOT;
+	global $FANNIE_ROOT,$FANNIE_SERVER_PW;
 	$path = guesspath();
 	if (!class_exists("SQLManager")){
 		include($path."config.php");
 		include($path."src/SQLManager.php");
 	}
-	include($path."src/mysql_connect.php");
+	//include($path."src/mysql_connect.php");
+	$dbc = new SQLManager('129.103.2.2','MYSQL','is4c_op','root',$FANNIE_SERVER_PW);
 	return $dbc;
 }
 

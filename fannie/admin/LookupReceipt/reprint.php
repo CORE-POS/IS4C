@@ -1,5 +1,5 @@
 <?php
-include('../../config.php');
+include('../../config2.php');
 include($FANNIE_ROOT.'src/mysql_connect.php');
 include($FANNIE_ROOT.'src/functions.php');
 
@@ -45,7 +45,7 @@ if(isset($_REQUEST['month'])){
 }
 
 function receiptHeader($date,$trans){
-   global $FANNIE_ARCHIVE_DB, $FANNIE_TRANS_DB, $FANNIE_SERVER_DBMS,$FANNIE_ARCHIVE_DBMS, $FANNIE_ARCHIVE_REMOTE;
+   global $dbc,$FANNIE_ARCHIVE_DB, $FANNIE_TRANS_DB, $FANNIE_SERVER_DBMS,$FANNIE_ARCHIVE_DBMS, $FANNIE_ARCHIVE_REMOTE, $FANNIE_ARCHIVE_METHOD;
    $dbconn = ($FANNIE_ARCHIVE_DBMS=='MSSQL')?'.dbo.':'.';
    if (!$FANNIE_ARCHIVE_REMOTE)
 	   $dbconn = ($FANNIE_SERVER_DBMS=='MSSQL')?'.dbo.':'.';
@@ -60,17 +60,20 @@ function receiptHeader($date,$trans){
    $reg_no = $transact[1];
    $head = $FANNIE_ARCHIVE_DB.$dbconn.'rp_receipt_header_'.$year.$month;
    $rp= $FANNIE_ARCHIVE_DB.$dbconn.'rp_dt_receipt_'.$year.$month;
+   if ($FANNIE_ARCHIVE_METHOD == 'partitions'){
+	$head = $FANNIE_ARCHIVE_DB.$dbconn.'rp_receipt_header_big';
+	$rp = $FANNIE_ARCHIVE_DB.$dbconn.'rp_dt_receipt_big';
+   }
 
    $queryHead = "SELECT * FROM $head WHERE "
-               ."day(datetimestamp) = '$day'"
-               ." AND month(datetimestamp) = '$month'"
+		.$dbc->date_equals('dateTimeStamp',"$year-$month-$day")
                ." and trans_num = '$trans' ";
    
-   $query1 = "SELECT description,comment,total,status FROM $rp"
-           ." WHERE day(datetime) = '$day' and month(datetime) = $month"
+   $query1 = "SELECT description,comment,total,Status,
+		datetime,register_no,emp_no,trans_no,memberID FROM $rp WHERE "
+		.$dbc->date_equals('datetime',"$year-$month-$day")
            ." and trans_num = '$trans'"
            ." ORDER BY trans_id";
-   //echo $query1;
    receipt_to_table($query1,$queryHead,0,'FFFFFF');
 }
 

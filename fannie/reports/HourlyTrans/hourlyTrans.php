@@ -1,6 +1,6 @@
 <?php
 
-require('../../config.php');
+require('../../config2.php');
 include($FANNIE_ROOT.'src/mysql_connect.php');
 
 $DAYS = array("","Sun","Mon","Tue","Wed","Thu","Fri","Sat");
@@ -51,14 +51,11 @@ else {
 	include($FANNIE_ROOT.'src/select_dlog.php');
 	$dlog = select_dlog($date1,$date2);
 
-	$group = "datepart(yy,tdate),datepart(mm,tdate),datepart(dd,tdate),datepart(hh,tdate)";
+	$group = "year(tdate),month(tdate),day(tdate),".$dbc->hour('tdate');
 
 	$query = "select 
-		datepart(yy,tdate),
-		datepart(mm,tdate),
-		datepart(dd,tdate),
-		datepart(hh,tdate),
-		min(datepart(dw,tdate)),
+		$group,
+		min(".$dbc->dayofweek('tdate')."),
 		count(distinct trans_num),
 		sum(case when trans_type in ('I','D') then total else 0 end)	
 		from $dlog as d
@@ -67,11 +64,8 @@ else {
 		order by $group";
 	if ($_REQUEST['sub'] != -1){
 		$query = "select 
-			datepart(yy,tdate),
-			datepart(mm,tdate),
-			datepart(dd,tdate),
-			datepart(hh,tdate),
-			min(datepart(dw,tdate)) as day,
+			$group,
+			min(".$dbc->dayofweek('tdate').") as day,
 			count(distinct trans_num),
 			sum(case when trans_type in ('I','D') then total else 0 end)	
 			from $dlog as d LEFT JOIN
