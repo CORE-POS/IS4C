@@ -88,7 +88,7 @@ if (isset($_REQUEST['submit1']) || isset($_REQUEST['submit2'])){
 		return;
 	}
 
-	$q = "SELECT firstname+' '+lastname FROM custdata WHERE cardno=$cn1 AND personnum=1";
+	$q = "SELECT FirstName,LastName FROM custdata WHERE CardNo=$cn1 AND personNum=1";
 	$r = $dbc->query($q);
 	if ($dbc->num_rows($r) == 0){
 		echo "<em>Error: no such member: $cn1</em>";
@@ -96,9 +96,10 @@ if (isset($_REQUEST['submit1']) || isset($_REQUEST['submit2'])){
 		echo "<a href=\"\" onclick=\"back(); return false;\">Back</a>";
 		return;
 	}
-	$name1 = array_pop($dbc->fetch_row($r));
+	$row = $dbc->fetch_row($r);
+	$name1 = $row[0].' '.$row[1];
 
-	$q = "SELECT firstname+' '+lastname FROM custdata WHERE cardno=$cn2 AND personnum=1";
+	$q = "SELECT FirstName,LastName FROM custdata WHERE CardNo=$cn2 AND personNum=1";
 	$r = $dbc->query($q);
 	if ($dbc->num_rows($r) == 0){
 		echo "<em>Error: no such member: $cn2</em>";
@@ -106,7 +107,8 @@ if (isset($_REQUEST['submit1']) || isset($_REQUEST['submit2'])){
 		echo "<a href=\"\" onclick=\"back(); return false;\">Back</a>";
 		return;
 	}
-	$name2 = array_pop($dbc->fetch_row($r));
+	$row = $dbc->fetch_row($r);
+	$name2 = $row[0].' '.$row[1];
 
 	if (isset($_REQUEST['submit1'])){
 		echo "<form action=\"corrections.php\" method=\"post\">";
@@ -164,6 +166,8 @@ if (isset($_REQUEST['submit1']) || isset($_REQUEST['submit2'])){
 		'card_no'=>'',
 		'trans_id'=>''	
 		);
+
+		$dbc->query("USE $FANNIE_TRANS_DB");
 
 		$dtrans['trans_no'] = getTransNo($CORRECTION_CASHIER,$CORRECTION_LANE);
 		$dtrans['trans_id'] = 1;

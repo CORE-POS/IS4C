@@ -74,7 +74,7 @@ if (isset($_GET['action'])){
 			start_date='1900-01-01',end_date='1900-01-01'
 			FROM products AS p LEFT JOIN
 			likeCodeView AS v ON v.upc=p.upc LEFT JOIN
-			batchList AS l ON l.upc='LC'+convert(varchar,v.likecode)
+			batchList AS l ON l.upc='LC'+convert(v.likeCode,char)
 			WHERE l.upc LIKE '%LC%'
 			AND l.batchID=$id";
 		$unsaleLCR = $sql->query($unsaleLCQ);
@@ -225,8 +225,8 @@ if (isset($_GET['action'])){
 		else {
 			$lc = substr($upc,2);
 			$unsaleQ = "update products set discounttype=0,special_price=0,start_date=0,end_date=0
-				from products as p, batches as b, upclike as u
-				where u.likecode=$lc and u.upc=p.upc and b.startdate=p.start_date and b.enddate=p.end_date
+				from products as p, batches as b, upcLike as u
+				where u.likeCode=$lc and u.upc=p.upc and b.startdate=p.start_date and b.enddate=p.end_date
 				and b.batchID=$id";
 			$unsaleR = $sql->query($unsaleQ);
 
@@ -335,8 +335,8 @@ if (isset($_GET['action'])){
 		$out .= "`";
 		
 		$likeQ = "select p.upc,p.description,p.normal_price,$saleprice
-			from products as p left join upclike as u on p.upc=u.upc
-			where u.likecode = $likecode order by p.upc desc";
+			from products as p left join upcLike as u on p.upc=u.upc
+			where u.likeCode = $likecode order by p.upc desc";
 		$likeR = $sql->query($likeQ);
 		while ($likeW = $sql->fetch_row($likeR)){
 			$out .= "<td><a href=/queries/productTest.php?upc=$likeW[0] target=_new$likeW[0]>$likeW[0]</a></td>";
@@ -412,7 +412,7 @@ function addItemLCInput($newtags=false){
 	$ret = "<form onsubmit=\"addItem(); return false;\">";
 	$ret .= "<b>Like code</b>: <input type=text id=addItemUPC size=4 value=1 /> ";
 	$ret .= "<select id=lcselect onchange=lcselect_util();>";
-	$lcQ = "select likecode,likecodeDesc from likecodes order by likecode";
+	$lcQ = "select likeCode,likeCodeDesc from likeCodes order by likeCode";
 	$lcR = $sql->query($lcQ);
 	while ($lcW = $sql->fetch_array($lcR))
 		$ret .= "<option value=$lcW[0]>$lcW[0] $lcW[1]</option>";
@@ -449,7 +449,7 @@ function addItemPriceInput($upc,$newtags=false){
 
 function addItemPriceLCInput($lc){
 	global $sql;
-	$fetchQ = "select likecodedesc from likecodes where likecode=$lc";
+	$fetchQ = "select likeCodeDesc from likeCodes where likeCode=$lc";
 	$fetchR = $sql->query($fetchQ);
 	$desc = array_pop($sql->fetch_array($fetchR));
 	
@@ -457,7 +457,7 @@ function addItemPriceLCInput($lc){
 	 * like code
 	 */
 	$fetchQ = "select top 1 p.normal_price from products as p
-			left join upclike as u on p.upc=u.upc and u.likecode=$lc
+			left join upcLike as u on p.upc=u.upc and u.likeCode=$lc
 			where u.upc is not null
 			group by p.normal_price
 			order by count(*) desc";
@@ -642,8 +642,8 @@ function showBatchDisplay($id,$orderby=' ORDER BY b.listID DESC'){
 			p.normal_price,b.salePrice,
 			b.quantity
 			from batchList as b left outer join products as p on
-			b.upc = p.upc left outer join likecodes as l on
-			b.upc = 'LC'+convert(varchar,l.likeCode)
+			b.upc = p.upc left outer join likeCodes as l on
+			b.upc = 'LC'+convert(l.likeCode,char)
 			where b.batchID = $id $orderby";
 	$fetchR = $sql->query($fetchQ);
 	
