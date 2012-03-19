@@ -4,6 +4,7 @@ include($FANNIE_ROOT.'src/fpdf/fpdf.php');
 
 if (!class_exists("SQLManager")) require_once($FANNIE_ROOT."src/SQLManager.php");
 include('../../db.php');
+$TRANS = $FANNIE_TRANS_DB. ($FANNIE_SERVER_DBMS == "MSSQL" ? 'dbo.' : '.');
 
 $cards = "(";
 if (isset($_POST["cardno"])){
@@ -17,25 +18,56 @@ if (isset($_POST["cardno"])){
 $cardsClause = " AND m.card_no IN $cards ";
 if ($cards == "(") $cardsClause = "";
 
-$selAddQ = "SELECT m.card_no, c.lastName,m.street, '',
-           m.City, m.State, m.zip,n.balance
+$selAddQ = "SELECT m.card_no, c.LastName,m.street, '',
+           m.city, m.state, m.zip,n.balance
            FROM 
            meminfo m 
-	   LEFT JOIN custdata as c on c.cardno=m.card_no and c.personnum=1
-	   LEFT JOIN newBalanceToday_cust as n ON m.card_no=n.memnum
-	   WHERE c.type not in ('TERM') and
-	   c.memtype IN (2,0)
+	   LEFT JOIN custdata as c on c.CardNo=m.card_no and c.personNum=1
+	   LEFT JOIN {$TRANS}newBalanceToday_cust as n ON m.card_no=n.memnum
+	   WHERE c.Type not in ('TERM') and
+	   c.memType IN (2,0)
 	   and n.balance > 0
 	   $cardsClause 
            ORDER BY m.card_no";
 $selAddR = $sql->query($selAddQ);
 
-$selTransQ = "SELECT card_no, charges, payments, 
-	convert(varchar(50),date,101), trans_num,description,dept_name  
-	FROM AR_statementHistory as m WHERE 1=1 $cardsClause
-	order by convert(int,card_no),date,trans_num,description,dept_name";
+$selTransQ = "SELECT card_no, CASE WHEN trans_subtype='MI' THEN -total ELSE 0 END as charges,
+	CASE WHEN department=990 then total ELSE 0 END as payments, tdate, trans_num,
+	'','',register_no,emp_no,trans_no FROM {$TRANS}dlog_90_view as m WHERE 1=1 $cardsClause
+	AND (department=990 OR trans_subtype='MI')
+	ORDER BY card_no, tdate, trans_num";
 $selTransR = $sql->query($selTransQ);
 $selTransN = $sql->num_rows($selTransR);
+
+$arRows = array();
+$trans_clause = "";
+while($w = $sql->fetch_row($selTransR)){
+	if (!isset($arRows[$w['card_no']]))
+		$arRows[$w['card_no']] = array();
+	$arRows[$w['card_no']][] = $w;
+	$date = explode(' ',$w['tdate']);
+	$rn = $w['register_no'];
+	$tn = $w['trans_no'];
+	$en = $w['emp_no'];
+	$trans_clause .= " (datediff('$date[0]',datetime)=0 AND register_no=$rn AND emp_no=$en AND trans_no=$tn) OR ";
+}
+$trans_clause = substr($trans_clause,0,strlen($trans_clause)-3);
+$q = "SELECT card_no,description,department,emp_no,register_no,trans_no 
+	FROM {$TRANS}transarchive
+	WHERE trans_type IN ('I','D') and emp_no <> 9999
+	AND register_no <> 99 AND trans_status <> 'X'
+	AND upc <> 'DISCOUNT'
+	AND ($trans_clause)";
+$details = array();
+$r = $sql->query($q);
+while($w = $sql->fetch_row($r)){
+	$tn = $w['emp_no']."-".$w['register_no']."-".$w['trans_no'];
+	if (!isset($details[$w['card_no']]))
+		$details[$w['card_no']] = array();
+	if (!isset($details[$w['card_no']][$tn]))
+		$details[$w['card_no']][$tn] = array();
+	$details[$w['card_no']][$tn][] = $w['description'];
+}
 
 $today= date("d-F-Y");
 $month = date("n");
@@ -141,7 +173,7 @@ while($selAddW = $sql->fetch_row($selAddR)){
 */
 
    $priorQ = "SELECT sum(charges) - sum(payments) FROM ar_history
-		WHERE datediff(dd,getdate(),tdate) < -90
+		WHERE ".$sql->datediff('tdate',$sql->now())." < -90
 		AND card_no = $selAddW[0]";
    $priorR = $sql->query($priorQ);
    $priorBalance = array_pop($sql->fetch_row($priorR));
@@ -191,68 +223,45 @@ while($selAddW = $sql->fetch_row($selAddR)){
    $isPayment = False;
 
    $lineitem="";
-   while($selTransW = $sql->fetch_row($selTransR)){
+   //while($selTransW = $sql->fetch_row($selTransR)){
+   foreach($arRows[$selAddW[0]] as $arRow){
+
+	/*
 	if ($selTransW[0] != $selAddW[0]){
 		$sql->data_seek($selTransR,$rowNum);
 		break;
 	}
 	else $rowNum++;
+	*/
 
-	if (strstr($selTransW[5],"Gazette Ad") || strstr($selTransW[6],"Gazette Ad"))
-		$gazette = True;	
 
-      if($selTransN != 0){
-	 $date = $selTransW[3];
-         $trans = $selTransW[4];
-         $charges = $selTransW[1];
-         $payment =  $selTransW[2];
+	$date = $arRow['tdate'];
+	$trans = $arRow['trans_num'];
+	$charges = $arRow['charges'];
+	$payment =  $arRow['payments'];
+
+	$detail = $details[$selAddW[0]][$trans];
+
+	if (strstr($detail[0],"Gazette Ad"))
+		$gazette = True;
+	$lineitem = (count($detail)==1) ? $detail[0] : '(multiple items)';
+	if ($lineitem == "ARPAYMEN") $lineitem  "Payment Received - Thank You";
+
       
-         //list($year, $month, $day) = split("-", $date);
-         //$date = date('M-d-Y', mktime(0, 0, 0, $month, $day, $year));
-     }
-      if ($date != $prevD || $trans != $prevT){
-		if (!empty($lineitem)){
-			$pdf->SetFontSize(10);
-			$pdf->Cell(30,8,'',0,0,'L');
-			$pdf->Cell(60,8,$lineitem,0,0,'L');
-			if ($pdf->GetY() > 265){
-				addBackPage($pdf);
-				$pdf->AddPage();
-			}
-			else
-				$pdf->Ln(5);
-			$pdf->SetFontSize(12);
-		}
-		$lineitem = "";
-		$prev = "";
-
-	      $pdf->Cell(20,8,'',0,0,'L');
-	      $pdf->Cell(60,8,$date,0,0,'L');
-	      //$pdf->Cell(40,8,date('M-d-Y',$date),0,0,'L');
-	      $pdf->Cell(55,8,$trans,0,0,'L');
-		if ($payment > $charges)
-		      $pdf->Cell(25,8,'$ ' . sprintf('%.2f',$payment-$charges),0,0,'L');
-		else
-		      $pdf->Cell(25,8,'$ ' . sprintf('(%.2f)',abs($payment-$charges)),0,0,'L');
-		if ($pdf->GetY() > 265){
-			addBackPage($pdf);
-			$pdf->AddPage();
-		}
-		else
-		      $pdf->Ln(5);
-
-      }
-      if ($selTransW[5] != "" && $selTransW[5] != $prev){
-        $lineitem = (empty($lineitem))?$selTransW[5]:'(Multiple items)';
-        $prev = $selTransW[5];
-      }
-      elseif ($selTransW[6] != "" && $selTransW[6] != $prev){
-        $lineitem = (empty($lineitem))?$selTransW[6]:'(Multiple items)';
-        $prev = $selTransW[6];
-      }
-      $prevD = $date;
-      $prevT = $trans;
-   }
+	$pdf->Cell(20,8,'',0,0,'L');
+	$pdf->Cell(60,8,$date,0,0,'L');
+	//$pdf->Cell(40,8,date('M-d-Y',$date),0,0,'L');
+	$pdf->Cell(55,8,$trans,0,0,'L');
+	if ($payment > $charges)
+	      $pdf->Cell(25,8,'$ ' . sprintf('%.2f',$payment-$charges),0,0,'L');
+	else
+	      $pdf->Cell(25,8,'$ ' . sprintf('(%.2f)',abs($payment-$charges)),0,0,'L');
+	if ($pdf->GetY() > 265){
+		addBackPage($pdf);
+		$pdf->AddPage();
+	}
+	else
+	      $pdf->Ln(5);
 	if (!empty($lineitem)){
 		$pdf->SetFontSize(10);
 		$pdf->Cell(30,8,'',0,0,'L');
@@ -265,6 +274,35 @@ while($selAddW = $sql->fetch_row($selAddR)){
 			$pdf->Ln(5);
 		$pdf->SetFontSize(12);
 	}
+
+   }
+	/*
+      if ($selTransW[5] != "" && $selTransW[5] != $prev){
+        $lineitem = (empty($lineitem))?$selTransW[5]:'(Multiple items)';
+        $prev = $selTransW[5];
+      }
+      elseif ($selTransW[6] != "" && $selTransW[6] != $prev){
+        $lineitem = (empty($lineitem))?$selTransW[6]:'(Multiple items)';
+        $prev = $selTransW[6];
+      }
+      $prevD = $date;
+      $prevT = $trans;
+	*/
+   //}
+	/*
+	if (!empty($lineitem)){
+		$pdf->SetFontSize(10);
+		$pdf->Cell(30,8,'',0,0,'L');
+		$pdf->Cell(60,8,$lineitem,0,0,'L');
+		if ($pdf->GetY() > 265){
+			addBackPage($pdf);
+			$pdf->AddPage();
+		}
+		else
+			$pdf->Ln(5);
+		$pdf->SetFontSize(12);
+	}
+	*/
 
    $pdf->Ln(15);
    $pdf->Cell(20,8,'');
