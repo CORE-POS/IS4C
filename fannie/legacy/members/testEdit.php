@@ -1,7 +1,7 @@
 <?php
 include('../../config.php');
 include($FANNIE_ROOT.'src/SQLManager.php');
-include('../db2.php');
+include('../db.php');
 
 include('memAddress.php');
 include('header.html');

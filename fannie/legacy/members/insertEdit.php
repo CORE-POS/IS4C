@@ -1,7 +1,7 @@
 <?php
 include('../../config.php');
 include($FANNIE_ROOT.'src/SQLManager.php');
-include('../db2.php');
+include('../db.php');
 
 include('memAddress.php');
 include('header.html');
@@ -261,7 +261,6 @@ $sql->query_all($datesQ);
 // FIRE ALL UPDATE
 include('custUpdates.php');
 updateCustomerAllLanes($memNum);
-include('../db2.php');
 
 /* general note handling */
 $notetext = $_POST['notetext'];

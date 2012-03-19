@@ -82,6 +82,7 @@ function addUPC(){
 	var cardno = $('#memNum').val();
 	var upc = $('#newupc').val();
 	var qty = $('#newcases').val();
+	alert('action=newUPC&orderID='+oid+'&memNum='+cardno+'&upc='+upc+'&cases='+qty);
 	$.ajax({
 	url: 'ajax-calls.php',
 	type: 'post',

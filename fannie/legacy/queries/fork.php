@@ -19,7 +19,7 @@ else {
 	fclose(STDERR);
 
 	$sql = db();
-	if (!isset($sql->connections['WedgePOS']) || $sql->connections['WedgePOS'] === False){
+	if (!isset($sql->connections[$FANNIE_SERVER_OP]) || $sql->connections[$FANNIE_SERVER_OP] === False){
 		echo "Dead main DB!\n";
 		exit(0);	
 	}

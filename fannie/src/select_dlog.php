@@ -40,6 +40,7 @@ function select_dlog($date, $enddate="",$unions=True){
   if ($FANNIE_ARCHIVE_METHOD == "partitions"){
     return ($daydiff == 0) ? $FANNIE_TRANS_DB.$dbconn."dlog" : $FANNIE_ARCHIVE_DB.$dbconn."dlogBig";
   }
+	else var_dump($FANNIE_ARCHIVE_METHOD);
 
   // parse out starting month and year
   $month=0;

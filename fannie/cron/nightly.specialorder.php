@@ -57,13 +57,21 @@ $subquery = "select p.order_id from PendingSpecialOrder as p
 	on p.order_id=s.order_id
 	where p.trans_id=0 and s.status_flag=1
 	and ".$sql->datediff($sql->now(),'datetime')." > 30";
-$copyQ = "INSERT INTO CompleteSpecialOrder
-	SELECT p.* FROM PendingSpecialOrder AS p
-	WHERE p.order_id IN ($subquery)";
-$sql->query($copyQ);
-$delQ = "DELETE FROM PendingSpecialOrder
-	WHERE order_id IN ($subquery)";
-$sql->query($delQ);
+$cwIDs = "(";
+$r = $sql->query($subquery);
+while($w = $sql->fetch_row($r)){
+	$cwIDs .= $w['order_id'].",";
+}
+$cwIDs = rtrim($cwIDs,",").")";
+if (strlen($cwIDs) > 2){
+	$copyQ = "INSERT INTO CompleteSpecialOrder
+		SELECT p.* FROM PendingSpecialOrder AS p
+		WHERE p.order_id IN $cwIDs";
+	$sql->query($copyQ);
+	$delQ = "DELETE FROM PendingSpecialOrder
+		WHERE order_id IN $cwIDs";
+	$sql->query($delQ);
+}
 // end auto-close
 
 // auto-close all after 60 days
@@ -72,13 +80,21 @@ $subquery = "select p.order_id from PendingSpecialOrder as p
 	on p.order_id=s.order_id
 	where p.trans_id=0 
 	and ".$sql->datediff($sql->now(),'datetime')." > 60";
-$copyQ = "INSERT INTO CompleteSpecialOrder
-	SELECT p.* FROM PendingSpecialOrder AS p
-	WHERE p.order_id IN ($subquery)";
-$sql->query($copyQ);
-$delQ = "DELETE FROM PendingSpecialOrder
-	WHERE order_id IN ($subquery)";
-$sql->query($delQ);
+$allIDs = "(";
+$r = $sql->query($subquery);
+while($w = $sql->fetch_row($r)){
+	$allIDs .= $w['order_id'].",";
+}
+$allIDs = rtrim($allIDs,",").")";
+if (strlen($allIDs) > 2){
+	$copyQ = "INSERT INTO CompleteSpecialOrder
+		SELECT p.* FROM PendingSpecialOrder AS p
+		WHERE p.order_id IN $allIDs";
+	$sql->query($copyQ);
+	$delQ = "DELETE FROM PendingSpecialOrder
+		WHERE order_id IN $allIDs";
+	$sql->query($delQ);
+}
 // end auto-close
 
 $query = "SELECT mixMatch,matched FROM transarchive
@@ -146,20 +162,21 @@ if (count($todo) > 0){
 }
 
 // remove "empty" orders from pending
-$cleanupQ = "SELECT p.order_id FROM PendingSpecialOrder 
+$cleanupQ = sprintf("SELECT p.order_id FROM PendingSpecialOrder 
 		AS p LEFT JOIN SpecialOrderNotes AS n
 		ON p.order_id=n.order_id
 		LEFT JOIN SpecialOrderStatus AS s
 		ON p.order_id=s.order_id
 		WHERE (n.order_id IS NULL
-		OR datalength(n.notes)=0)
+		OR %s(n.notes)=0)
 		OR p.order_id IN (
 		SELECT order_id FROM CompleteSpecialOrder
 		WHERE trans_id=0
 		GROUP BY order_id
 		)
 		GROUP BY p.order_id
-		HAVING MAX(trans_id)=0";
+		HAVING MAX(trans_id)=0",
+		($FANNIE_SERVER_DBMS=="MSSQL" ? 'datalength' : 'length'));
 $cleanupR = $sql->query($cleanupQ);
 $empty = "(";
 $clean=0;

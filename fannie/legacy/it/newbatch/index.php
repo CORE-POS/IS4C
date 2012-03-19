@@ -7,7 +7,6 @@ include('../../queries/barcode.php');
 include('laneUpdates.php');
 if (!class_exists("SQLManager")) require_once($FANNIE_ROOT."src/SQLManager.php");
 include('../../db.php');
-add_second_server();
 
 $batchtypes = array();
 $typesQ = "select batchTypeID,typeDesc from batchType order by batchTypeID";

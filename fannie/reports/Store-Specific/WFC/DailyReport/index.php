@@ -1,5 +1,5 @@
 <?php
-include('../../../../config2.php');
+include('../../../../config.php');
 
 include($FANNIE_ROOT.'src/mysql_connect.php');
 include($FANNIE_ROOT.'src/select_dlog.php');
@@ -314,7 +314,7 @@ $transQ = "select q.trans_num,sum(q.quantity) as items,transaction_type, sum(q.t
         m.memdesc as transaction_type
 	from $dlog as d
 	left join custdata as c on d.card_no = c.cardno
-	left join memtypeid as m on c.memtype = m.memtypeid
+	left join memTypeID as m on c.memtype = m.memTypeID
 	WHERE ".$dbc->date_equals('d.tdate',$dstr)." AND 
 	trans_type in ('I','D')
 	and upc <> 'RRR'
