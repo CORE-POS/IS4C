@@ -37,8 +37,7 @@ function dbconnect(){
 		include($path."config.php");
 		include($path."src/SQLManager.php");
 	}
-	//include($path."src/mysql_connect.php");
-	$dbc = new SQLManager('129.103.2.2','MYSQL','is4c_op','root',$FANNIE_SERVER_PW);
+	include($path."src/mysql_connect.php");
 	return $dbc;
 }
 

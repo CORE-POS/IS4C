@@ -4,7 +4,7 @@ include('../../config.php');
 if (!class_exists("SQLManager")) require_once($FANNIE_ROOT."src/SQLManager.php");
 include($FANNIE_ROOT.'auth/login.php');
 
-include('../db2.php');
+include('../db.php');
 
 if(!validateUserQuiet('staffar')){
 ?>

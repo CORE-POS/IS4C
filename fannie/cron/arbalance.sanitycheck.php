@@ -1,7 +1,7 @@
 <?php
 /*******************************************************************************
 
-    Copyright 2011 Whole Foods Co-op
+    Copyright 2012 Whole Foods Co-op
 
     This file is part of Fannie.
 
@@ -21,40 +21,32 @@
 
 *********************************************************************************/
 
-if (!chdir("CC")){
-	echo "Error: Can't find directory (CC)";
-	exit;
-}
-
-include('../../config.php');
-include($FANNIE_ROOT.'src/SQLManager.php');
-include($FANNIE_ROOT.'src/xmlData.php');
-include($FANNIE_ROOT.'src/fetchLib.php');
-
 /* HELP
 
-	Void GoE transactions from the previous
-	hour that had communication errors
+   arbalance.sanitycheck.php
+
+   Sync up custdata balance with live table
 
 */
+
+include('../config.php');
+include($FANNIE_ROOT.'src/SQLManager.php');
+include($FANNIE_ROOT.'src/cron_msg.php');
 
 set_time_limit(0);
 
 $sql = new SQLManager($FANNIE_SERVER,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
 		$FANNIE_SERVER_USER,$FANNIE_SERVER_PW);
 
-$stack = getFailedTrans(date("Y-m-d"),date("G")-1);
-
-$void_ids = array();
-foreach($stack as $refNum){
-	$vref = doquery(date("mdy"),$refNum);
-	if ($vref != False)
-		$void_ids[] = $vref;
+$query = "UPDATE {$FANNIE_OP_DB}.custdata AS c LEFT JOIN 
+	newBalanceToday_cust AS n ON c.CardNo=n.memnum
+	SET c.Balance = n.balance";
+if ($FANNIE_SERVER_DBMS == "MSSQL"){
+	$query = "UPDATE {$FANNIE_OP_DB}.dbo.custdata SET Balance = n.balance
+		FROM {$FANNIE_OP_DB}.dbo.custdata AS c LEFT JOIN
+		newBalanceToday_cust AS n ON c.CardNo=n.memnum";
 }
 
-if (count($void_ids) > 0){
-	dovoid($void_ids);
-}
-
+$sql->query($query);
 
 ?>

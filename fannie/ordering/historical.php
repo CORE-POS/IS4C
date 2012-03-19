@@ -23,6 +23,7 @@
 include('../config.php');
 include($FANNIE_ROOT.'src/mysql_connect.php');
 include($FANNIE_ROOT.'src/tmp_dir.php');
+$TRANS = ($FANNIE_SERVER_DBMS == "MSSQL") ? $FANNIE_TRANS_DB.".dbo." : $FANNIE_TRANS_DB.".";
 
 include($FANNIE_ROOT.'auth/login.php');
 $username = checkLogin();
@@ -80,7 +81,7 @@ while($w = $dbc->fetch_row($r))
 unset($assignments[0]); 
 
 $suppliers = array('');
-$q = "SELECT mixMatch FROM CompleteSpecialOrder WHERE trans_type='I'
+$q = "SELECT mixMatch FROM {$TRANS}CompleteSpecialOrder WHERE trans_type='I'
 	GROUP BY mixMatch ORDER BY mixMatch";
 $r = $dbc->query($q);
 while($w = $dbc->fetch_row($r)){
@@ -148,11 +149,11 @@ $q = "SELECT min(datetime) as orderDate,p.order_id,sum(total) as value,
 	CASE WHEN MAX(p.card_no)=0 THEN MAX(t.last_name) ELSE MAX(c.LastName) END as name,
 	MIN(CASE WHEN trans_type='I' THEN charflag ELSE 'ZZZZ' END) as charflag,
 	MAX(p.card_no) AS card_no
-	FROM CompleteSpecialOrder as p
-	LEFT JOIN SpecialOrderStatus as s ON p.order_id=s.order_id
-	LEFT JOIN SpecialOrderNotes as n ON n.order_id=p.order_id
+	FROM {$TRANS}CompleteSpecialOrder as p
+	LEFT JOIN {$TRANS}SpecialOrderStatus as s ON p.order_id=s.order_id
+	LEFT JOIN {$TRANS}SpecialOrderNotes as n ON n.order_id=p.order_id
 	LEFT JOIN custdata AS c ON c.CardNo=p.card_no AND personNum=p.voided
-	LEFT JOIN SpecialOrderContact as t on t.card_no=p.order_id
+	LEFT JOIN {$TRANS}SpecialOrderContact as t on t.card_no=p.order_id
 	$filterstring
 	GROUP BY p.order_id,status_flag,sub_status
 	HAVING count(*) > 1 OR
@@ -170,9 +171,9 @@ while($w = $dbc->fetch_row($r)){
 if ($f2 !== '' || $f3 !== ''){
 	$filter2 = ($f2!==''?sprintf("AND (m.superID IN (%s) OR n.superID IN (%s))",$f2,$f2):'');
 	$filter3 = ($f3!==''?sprintf("AND p.mixMatch=%s",$dbc->escape($f3)):'');
-	$q = "SELECT p.order_id FROM CompleteSpecialOrder AS p
+	$q = "SELECT p.order_id FROM {$TRANS}CompleteSpecialOrder AS p
 		LEFT JOIN MasterSuperDepts AS m ON p.department=m.dept_ID
-		LEFT JOIN SpecialOrderNotes AS n ON p.order_id=n.order_id
+		LEFT JOIN {$TRANS}SpecialOrderNotes AS n ON p.order_id=n.order_id
 		WHERE 1=1 $filter2 $filter3
 		GROUP BY p.order_id";
 	$r = $dbc->query($q);
@@ -181,8 +182,8 @@ if ($f2 !== '' || $f3 !== ''){
 		$valid_ids[$w['order_id']] = True;
 
 	if ($f2 !== '' && $f3 === ''){
-		$q2 = sprintf("SELECT s.order_id FROM SpecialOrderNotes AS s
-				INNER JOIN CompleteSpecialOrder AS p
+		$q2 = sprintf("SELECT s.order_id FROM {$TRANS}SpecialOrderNotes AS s
+				INNER JOIN {$TRANS}CompleteSpecialOrder AS p
 				ON p.order_id=s.order_id
 				WHERE s.superID IN (%s)
 				GROUP BY s.order_id",$f2);
@@ -197,7 +198,7 @@ foreach($valid_ids as $id=>$nonsense)
 	$oids .= $id.",";
 $oids = rtrim($oids,",").")";
 
-$itemsQ = "SELECT order_id,description,mixMatch FROM CompleteSpecialOrder WHERE order_id IN $oids
+$itemsQ = "SELECT order_id,description,mixMatch FROM {$TRANS}CompleteSpecialOrder WHERE order_id IN $oids
 	AND trans_id > 0";
 $itemsR = $dbc->query($itemsQ);
 $items = array();

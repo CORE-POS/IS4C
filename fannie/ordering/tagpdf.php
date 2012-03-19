@@ -23,6 +23,7 @@
 include('../config.php');
 include($FANNIE_ROOT.'src/mysql_connect.php');
 include($FANNIE_ROOT.'src/tmp_dir.php');
+$TRANS = ($FANNIE_SERVER_DBMS == "MSSQL") ? $FANNIE_TRANS_DB.".dbo." : $FANNIE_TRANS_DB.".";
 
 if (isset($_REQUEST['toids'])){
 	define('FPDF_FONTPATH','font/');
@@ -57,20 +58,20 @@ if (isset($_REQUEST['toids'])){
 			CASE WHEN p.card_no=0 THEN t.first_name ELSE c.FirstName END as fname,
 			CASE WHEN t.phone is NULL THEN m.phone ELSE t.phone END as phone,
 			discounttype,quantity
-			FROM PendingSpecialOrder AS p
+			FROM {$TRANS}PendingSpecialOrder AS p
 			LEFT JOIN custdata AS c ON p.card_no=c.CardNo AND personNum=p.voided
 			LEFT JOIN meminfo AS m ON c.CardNo=m.card_no
-			LEFT JOIN SpecialOrderContact AS t ON t.card_no=p.order_id
+			LEFT JOIN {$TRANS}SpecialOrderContact AS t ON t.card_no=p.order_id
 			WHERE trans_id=$tid AND p.order_id=$oid";
 		$r = $dbc->query($q);
 		$w = $dbc->fetch_row($r);
 
 		// flag item as "printed"
-		$q2 = "UPDATE PendingSpecialOrder SET charflag='P'
+		$q2 = "UPDATE {$TRANS}PendingSpecialOrder SET charflag='P'
 			WHERE trans_id=$tid AND order_id=$oid";
 		$r2 = $dbc->query($q2);
 
-		$q3 = "SELECT trans_id FROM PendingSpecialOrder WHERE
+		$q3 = "SELECT trans_id FROM {$TRANS}PendingSpecialOrder WHERE
 			trans_id > 0 AND order_id=$oid ORDER BY trans_id";
 		$r3 = $dbc->query($q3);
 		$o_count = 0;
@@ -171,9 +172,9 @@ else {
 		$q = sprintf("SELECT min(datetime) as orderDate,sum(total) as value,
 			count(*)-1 as items,
 			CASE WHEN MAX(p.card_no)=0 THEN MAX(t.last_name) ELSE MAX(c.LastName) END as name
-			FROM PendingSpecialOrder AS p
+			FROM {$TRANS}PendingSpecialOrder AS p
 			LEFT JOIN custdata AS c ON c.CardNo=p.card_no AND personNum=p.voided
-			LEFT JOIN SpecialOrderContact AS t ON t.card_no=p.order_id	
+			LEFT JOIN {$TRANS}SpecialOrderContact AS t ON t.card_no=p.order_id	
 			WHERE p.order_id=%d",$oid);
 		$r = $dbc->query($q);
 		$w = $dbc->fetch_row($r);
@@ -182,7 +183,7 @@ else {
 			$oid,$w['orderDate'],$w['name'],$w['value'],$w['items']);
 
 		$q = sprintf("SELECT description,department,quantity,ItemQtty,total,trans_id
-			FROM PendingSpecialOrder WHERE order_id=%d AND trans_id > 0",
+			FROM {$TRANS}PendingSpecialOrder WHERE order_id=%d AND trans_id > 0",
 			$oid);
 		$r = $dbc->query($q);
 		while($w = $dbc->fetch_row($r)){

@@ -5,8 +5,7 @@ $sql = $dbc;
 
 if (!function_exists('add_second_server')){
 	function add_second_server(){
-		global $sql,$FANNIE_SERVER_PW;
-		$sql->add_connection('129.103.2.2','MYSQL','is4c_op','root',$FANNIE_SERVER_PW);
+		return;
 	}
 }
 

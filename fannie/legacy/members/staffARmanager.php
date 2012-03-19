@@ -2,7 +2,7 @@
 include('../../config.php');
 
 if (!class_exists("SQLManager")) require_once($FANNIE_ROOT."src/SQLManager.php");
-include('../db2.php');
+include('../db.php');
 $sql->query("use is4c_trans");
 
 /* delete is easy

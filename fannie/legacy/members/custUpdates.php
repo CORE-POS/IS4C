@@ -4,7 +4,7 @@ include('../../config.php');
 include('../lanedefs.php');
 
 if (!class_exists("SQLManager")) require_once($FANNIE_ROOT.'src/SQLManager.php');
-include('../db2.php');
+include('../db.php');
 
 function addCustomerAllLanes($cardno){
 	global $lanes,$numlanes,$dbs,$sql,$types;

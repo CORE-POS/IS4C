@@ -1,6 +1,6 @@
 <?php
 
-require('../../config2.php');
+require('../../config.php');
 include($FANNIE_ROOT.'src/mysql_connect.php');
 
 $DAYS = array("","Sun","Mon","Tue","Wed","Thu","Fri","Sat");

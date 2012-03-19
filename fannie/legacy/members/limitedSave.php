@@ -1,7 +1,7 @@
 <?php
 include('../../config.php');
 include($FANNIE_ROOT.'src/SQLManager.php');
-include('../db2.php');
+include('../db.php');
 
 include('memAddress.php');
 include('header.html');
@@ -160,7 +160,6 @@ $sql->query_all($meminfoQ);
 include('custUpdates.php');
 updateCustomerAllLanes($memNum);
 
-include('../db2.php');
 addressList($memNum);
 
 ?>

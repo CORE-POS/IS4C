@@ -430,7 +430,6 @@ function addressForm($memNum)
 
 function alterReason($memNum,$reasonCode,$status=False){
 	global $sql;
-	add_second_server();
 
 	$username = checkLogin();
 	$uid = getUID($username);
@@ -456,7 +455,6 @@ function alterReason($memNum,$reasonCode,$status=False){
 
 function deactivate($memNum,$type,$reason,$reasonCode){
 	global $sql;
-	add_second_server();
 
   $username = checkLogin();
   $uid = getUID($username);
@@ -512,7 +510,6 @@ function deactivate($memNum,$type,$reason,$reasonCode){
 
 function activate($memNum){
 	global $sql;
-	add_second_server();
 
   $username = checkLogin();
   $uid = getUID($username);

@@ -14,7 +14,7 @@ if (!$user && !isset($_POST['action'])){
 }
 
 if (!class_exists("SQLManager")) require_once($FANNIE_ROOT."src/SQLManager.php");
-include('../db2.php');
+include('../db.php');
 
 $date = $_GET['date'];
 $emp_no = $_GET['emp_no'];

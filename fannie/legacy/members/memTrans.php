@@ -1,6 +1,7 @@
 <?php
 include('../../config.php');
 include($FANNIE_ROOT.'src/SQLManager.php');
+include($FANNIE_ROOT.'src/select_dlog.php');
 include('../db.php');
 include('functMem.php');
 include('headerTest.php');
@@ -9,6 +10,9 @@ $mem = $_GET['memID'];
 $col='#FFFF99';
 
 $my = isset($_GET['my'])?$_GET['my']:date('Ym');
+$start = date("Y-m-d",mktime(0,0,0,substr($my,4),1,substr($my,0,4)));
+$end = date("Y-m-t",mktime(0,0,0,substr($my,4),1,substr($my,0,4)));
+$table = select_dlog($start,$end);
 
 $query = "SELECT month(tdate),day(tdate),year(tdate),trans_num,
 	sum(case when trans_type='T' then -total else 0 end) as tenderTotal,
@@ -17,8 +21,9 @@ $query = "SELECT month(tdate),day(tdate),year(tdate),trans_num,
 	sum(case when department in (991,992) then total else 0 end) as stock,
 	sum(case when trans_subtype='MA' then total else 0 end) as madcoupon,
 	sum(case when upc='DISCOUNT' then total else 0 end) as discountTTL
-	FROM trans_archive.dbo.dlog$my
+	FROM $table as t
 	WHERE card_no=$mem
+	AND tdate BETWEEN '$start 00:00:00' AND '$end 23:59:59'
 	GROUP BY year(tdate),month(tdate),day(tdate),trans_num
 	ORDER BY year(tdate) DESC, month(tdate) DESC,
 	day(tdate) DESC";

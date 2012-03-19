@@ -21,7 +21,7 @@
 
 *********************************************************************************/
 
-include('../../config2.php');
+include('../../config.php');
 $header = "Hourly Sales Report";
 $page_title = "Fannie : Hourly Sales";
 include($FANNIE_ROOT.'src/header.html');

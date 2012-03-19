@@ -4,9 +4,8 @@ include('../../../config.php');
 require($FANNIE_ROOT.'src/SQLManager.php');
 require($FANNIE_ROOT.'src/select_dlog.php');
 
-include('../../db2.php');
+include('../../db.php');
 $sql->query('use is4c_trans');
-add_second_server();
 
 $pCodes_lookup = array(
 	41201 => "DELI PREPARED FOODS",

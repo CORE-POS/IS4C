@@ -2,9 +2,8 @@
 include('../../../config.php');
 
 require($FANNIE_ROOT.'src/SQLManager.php');
-include('../../db2.php');
+include('../../db.php');
 $sql->query("use is4c_trans");
-add_second_server();
 require($FANNIE_ROOT.'src/select_dlog.php');
 
 if (isset($_GET["action"])){

@@ -21,7 +21,7 @@
 
 *********************************************************************************/
 
-include('../../config2.php');
+include('../../config.php');
 include($FANNIE_ROOT.'src/mysql_connect.php');
 
 $deptsQ = "select dept_no,dept_name from departments order by dept_no";

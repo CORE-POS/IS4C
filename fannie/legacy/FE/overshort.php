@@ -14,8 +14,7 @@ if (!$user && !isset($_POST['action'])){
 }
 
 if (!class_exists("SQLManager")) require_once($FANNIE_ROOT."src/SQLManager.php");
-include('../db2.php');
-add_second_server();
+include('../db.php');
 $sql->query("USE is4c_trans");
 
 /* actions via POST are AJAX requests */
