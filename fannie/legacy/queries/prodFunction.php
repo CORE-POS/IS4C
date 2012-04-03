@@ -227,15 +227,13 @@ function itemParse($upc,$dupe='no',$description='',$prefix=false)
            echo "<td colspan=2><font size=+1 color=green>End Date: $rowItem[11]</font></td><tr>";
 	   $findBatchQ = "select batchName from batches as b, batchList as l
 			  where b.batchID = l.batchID and l.upc like '$upc'
-			  and datediff(dd,getdate(),b.startDate) <= 0
-			  and datediff(dd,getdate(),b.endDate) >= 0";
+			  AND now() BETWEEN b.startDate AND b.endDate";
 	   $findBatchR = $sql->query($findBatchQ);
 	   $batchName = ($sql->num_rows($findBatchR) == 0) ? "Unknown" :array_pop($sql->fetch_array($findBatchR));
 	   if ($batchName == "Unknown" && $likecode != ""){
 		$findBatchQ = "select batchName from batches as b, batchList as l
 				where b.batchID=l.batchID and l.upc = 'LC$likecode'
-				and datediff(dd,getdate(),b.startDate) <= 0
-				and datediff(dd,getdate(),b.endDate) >= 0";
+				  AND now() BETWEEN b.startDate AND b.endDate";
 		$findBatchR = $sql->query($findBatchQ);
 		$batchName = ($sql->num_rows($findBatchR) == 0) ? "Unknown" :array_pop($sql->fetch_array($findBatchR));
 	   }

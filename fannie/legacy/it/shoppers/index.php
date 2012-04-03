@@ -8,14 +8,14 @@ include('../../../config.php');
 if (!class_exists("SQLManager")) require_once($FANNIE_ROOT."src/SQLManager.php");
 include('../../db.php');
 
-$hourlyQ = "select datepart(yy,tdate),datepart(mm,tdate),datepart(dd,tdate),
-        datepart(hh,tdate),count(distinct trans_num) from dlog_15 where
-        datediff(dd,getdate(),tdate) >= -7
-		and datepart(hh,tdate) between 7 and 20
-        group by datepart(yy,tdate),datepart(mm,tdate),
-        datepart(dd,tdate),datepart(hh,tdate)
-        order by datepart(yy,tdate),datepart(mm,tdate),
-        datepart(dd,tdate),datepart(hh,tdate)";
+$hourlyQ = "select year(tdate),month(tdate),day(tdate),
+        hour(tdate),count(distinct trans_num) from dlog_15 where
+        ".$sql->datediff('tdate',$sql->now())." >= -7
+		and hour(tdate) between 7 and 20
+        group by year(tdate),month(tdate),
+        day(tdate),hour(tdate)
+        order by year(tdate),month(tdate),
+        day(tdate),hour(tdate)";
 $hourlyR = $sql->query($hourlyQ);
 
 echo "Customers per hour, last 7 days";

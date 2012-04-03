@@ -46,16 +46,18 @@ if (isset($_GET['action'])){
 }
 
 function loadReceipt($date,$trans_num){
-	global $sql;
+	global $sql,$FANNIE_OP_DB;
 	$dlog = select_dlog($date);
 	if (substr($trans_num,0,8) == "1001-30-"){
 		if ($dlog=="dlog_15")
 			$dlog = "dlog_90_view";
 	}
+	$sql->query("use $FANNIE_OP_DB");
 	$query = "select d.upc,d.trans_type,d.trans_subtype,d.trans_status,
 		  d.total,d.card_no,p.description from $dlog as d left join
 		  products as p on d.upc = p.upc 
-		  where datediff(dd,tdate,'$date') = 0 and trans_num='$trans_num'
+		  where tdate BETWEEN '$date 00:00:00' AND '$date 23:59:59'
+		  and trans_num='$trans_num'
 		  order by d.trans_id";
 	$result = $sql->query($query);
 	
@@ -132,27 +134,28 @@ function loadReceipt($date,$trans_num){
 }
 
 function void_receipt($target_date,$receipt_date,$trans_num,$card_no=0){
-	global $CARDNO,$MEMTYPE,$ISSTAFF,$TRANSNO,$DATESTR,$TRANS_ID,$TODAY_FLAG,$sql;
+	global $CARDNO,$MEMTYPE,$ISSTAFF,$TRANSNO,$DATESTR,$TRANS_ID,$TODAY_FLAG,$sql,$FANNIE_TRANS_DB;
+	$sql->query("use $FANNIE_TRANS_DB");
 
 	$emp_no = 1001;
 	$register_no = 30;
 
 	$TODAY_FLAG = 0;
-	$todayQ = "select datediff(dd,'$target_date',getdate())";
+	$todayQ = "select ".$sql->datediff("'$target_date'",$sql->now());
 	$todayR = $sql->query($todayQ);
 	if (array_pop($sql->fetch_array($todayR)) == 0){
 		$TODAY_FLAG = 1;
 	}
 
 	$dtrans = "transarchive";
-	$receiptTodayQ = "select datediff(dd,'$receipt_date',getdate())";
+	$receiptTodayQ = "select ".$sql->datediff("'$receipt_date'",$sql->now());
 	$receiptTodayR = $sql->query($receiptTodayQ);
 	if (array_pop($sql->fetch_array($receiptTodayR)) == 0){
 		$dtrans = "dtransactions";
 	}
 
-	$newTransNumQ = "select max(trans_no) from $dtrans where datediff(dd,'$target_date',datetime) = 0
-			 and emp_no = $emp_no and register_no = $register_no";
+	$newTransNumQ = "select max(trans_no) from dtransactions where 
+			 emp_no = $emp_no and register_no = $register_no";
 	$newTransNumR = $sql->query($newTransNumQ);
 	$TRANSNO = 0;
 	if ($sql->num_rows($newTransNumR) > 0)
@@ -170,10 +173,10 @@ function void_receipt($target_date,$receipt_date,$trans_num,$card_no=0){
 		total, regPrice, tax, foodstamp, discount, memDiscount,
 		discountable, discounttype, voided, PercentDiscount,
 		ItemQtty, volDiscType, volume, volSpecial, mixMatch,
-		matched, memType, isStaff, card_no, trans_id 
+		matched, memType, staff, card_no, trans_id 
 		from $dtrans where register_no = $old_reg
 		and emp_no = $old_emp and trans_no = $old_trans
-		and datediff(dd,datetime,'$receipt_date') = 0
+		and datetime BETWEEN '$receipt_date 00:00:00' AND '$receipt_date 23:59:59'
 		and trans_status <> 'X'
 		order by trans_id";
 	$result = $sql->query($query);

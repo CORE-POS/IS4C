@@ -20,7 +20,7 @@ if(isset($_GET['memNum'])){
 
 /* audit logging */
 $uid = getUID($username);
-$auditQ = "insert custUpdate select getdate(),$uid,1,* from custdata where cardno=$memID";
+$auditQ = "insert custUpdate select now(),$uid,1,* from custdata where cardno=$memID";
 //$auditR = $sql->query($auditQ);
 
 ?>

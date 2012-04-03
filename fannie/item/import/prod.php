@@ -138,6 +138,9 @@ else if (isset($_REQUEST['importbutton'])){
 
 		if (strlen($desc) > 35) $desc = substr($desc,0,35);		
 
+
+		$dbc->query("DELETE FROM products WHERE upc=".$dbc->escape($upc));
+
 		$insQ = sprintf("INSERT INTO products (upc,description,normal_price,
 			pricemethod,groupprice,quantity,special_price,specialpricemethod,
 			specialgroupprice,specialquantity,start_date,end_date,department,
@@ -148,7 +151,6 @@ else if (isset($_REQUEST['importbutton'])){
 			'',%s,1,.0,%d,0,'',0,0,0,.0,1,0,0,.0,0)",$dbc->escape($upc),
 			$dbc->escape($desc),$price,$dept,$tax,$fs,$dbc->now(),$discount);
 		$dbc->query($insQ);
-
 	}
 	echo "Loaded requested products";
 	fclose($fp);

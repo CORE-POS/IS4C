@@ -356,12 +356,12 @@ function display($date1,$date2,$excel=False){
 			$ret .= "<td class=money>";	
 			if (isset($v[$ts]) && $v[$ts] < 0){
 				if (!$excel){
-					$ret .= "<input type=text size=7 value=\"".(-1*$v[$ts])."\" ";
+					$ret .= "<input type=text size=7 value=\"".sprintf("%.2f",-1*$v[$ts])."\" ";
 					$ret .= " onchange=\"save3(this.value,'sales','$k','$ts');rb($ts);\" ";
 					$ret .= "style=\"text-align:right\" name=debit$ts />";
 				}
 				else 
-					$ret .= -1*$v[$ts];
+					$ret .= sprintf("%.2f",-1*$v[$ts]);
 				$overshorts[$ts] += -1*$v[$ts];
 			}
 			else
@@ -369,12 +369,12 @@ function display($date1,$date2,$excel=False){
 			$ret .= "</td><td class=money>";
 			if (isset($v[$ts]) && $v[$ts] >= 0){
 				if (!$excel){
-					$ret .= "<input type=text size=7 value=\"".$v[$ts]."\" ";
+					$ret .= "<input type=text size=7 value=\"".sprintf("%.2f",$v[$ts])."\" ";
 					$ret .= "onchange=\"save3(this.value,'sales','$k','$ts');rb($ts);\" ";
 					$ret .= "style=\"text-align:right\" name=credit$ts />";
 				}
 				else 
-					$ret .= $v[$ts];
+					$ret .= sprintf("%.2f",$v[$ts]);
 				$overshorts[$ts] -= $v[$ts];
 			}
 			else
@@ -432,7 +432,7 @@ function display($date1,$date2,$excel=False){
 		$ret .= "<td class=money>";
 		if (isset($data['other']['tax'][$ts]) && $data['other']['tax'][$ts] < 0){
 			if (!$excel){
-				$ret .= "<input type=text size=7 value=\"".(-1*$data['other']['tax'][$ts])."\" ";
+				$ret .= "<input type=text size=7 value=\"".sprintf("%.2f",-1*$data['other']['tax'][$ts])."\" ";
 				$ret .= "onchange=\"save3(this.value,'other','tax','$ts');rb($ts);\" ";
 				$ret .= "style=\"text-align:right\" name=debit$ts />";
 			}
@@ -445,7 +445,7 @@ function display($date1,$date2,$excel=False){
 		$ret .= "</td><td class=money>";
 		if (isset($data['other']['tax'][$ts]) && $data['other']['tax'][$ts] >= 0){
 			if (!$excel){
-				$ret .= "<input type=text size=7 value=\"".$data['other']['tax'][$ts]."\" ";
+				$ret .= "<input type=text size=7 value=\"".sprintf("%.2f",$data['other']['tax'][$ts])."\" ";
 				$ret .= "onchange=\"save3(this.value,'other','tax','$ts');rb($ts);\" ";
 				$ret .= "style=\"text-align:right\" name=credit$ts />";
 			}
@@ -1005,7 +1005,7 @@ a {
 <i>Or choose from calculated deposits</i><br />
 <select id=selectDate>
 <?php
-$res = $sql->query("SELECT dateStr FROM dailyDeposit GROUP BY dateStr ORDER BY CAST(SUBSTRING(dateStr,0,11) AS datetime) DESC");
+$res = $sql->query("SELECT dateStr FROM dailyDeposit GROUP BY dateStr ORDER BY dateStr DESC");
 while($row = $sql->fetch_row($res))
 	echo "<option>".$row[0]."</option>";	
 ?>

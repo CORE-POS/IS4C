@@ -50,6 +50,8 @@ $meminfoQ = "UPDATE meminfo AS m LEFT JOIN
 	    SET m.ads_OK=p.mailflag
 	    WHERE c.Type = 'INACT' and p.reasoncode IN (2,4,6)
 	    AND s.payments >= 100";
+echo $meminfoQ; exit;
+$sql->query($meminfoQ);
 
 $custQ = "UPDATE custdata AS c LEFT JOIN {$TRANS}newBalanceStockToday_test AS s
 	    ON c.CardNo=s.memnum LEFT JOIN suspensions AS p
@@ -58,6 +60,7 @@ $custQ = "UPDATE custdata AS c LEFT JOIN {$TRANS}newBalanceStockToday_test AS s
 	    c.memType=p.memtype1,c.Type=p.memtype2,chargeOk=1
 	    WHERE c.Type = 'INACT' and p.reasoncode IN (2,4,6)
 	    AND s.payments >= 100";
+$sql->query($custQ);
 
 $histQ = "insert into suspension_history
 	    select 'automatic',".$sql->now().",
@@ -66,15 +69,22 @@ $histQ = "insert into suspension_history
 	    custdata as c on s.cardno=c.CardNo
 	    and c.personNum=1
 	    where c.Type not in ('INACT','INACT2') and s.type='I'";
-echo $histQ;
+$sql->query($histQ);
 
-$clearQ = "delete from suspensions where cardno IN
-	    (
-	    select c.CardNo from
+$clearQ = "select c.CardNo from
 	    suspensions as s left join
 	    custdata as c on s.cardno=c.CardNo
 	    where c.Type not in ('INACT','INACT2') and s.type='I'
-	    AND c.personNum=1
-	    )";
+	    AND c.personNum=1";
+$clearR = $sql->query($clearQ);
+$cns = "(";
+while($clearW = $sql->fetch_row($clearR)){
+	$cns .= $clearW[0].",";
+}
+$cns = rtrim($cns,",").")";
+
+$delQ = "DELETE FROM suspensions WHERE cardno IN $cns";
+$delR = $sql->query($delQ);
+
 
 ?>

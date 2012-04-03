@@ -59,24 +59,46 @@ if (isset($_GET['action'])){
 	case 'deleteBatch':
 		$id = $_GET['id'];
 
-		$unsaleQ = "UPDATE products SET special_price=0,
+		$unsaleQ = "UPDATE products AS p LEFT JOIN batchList as b
+			ON p.upc=b.upc
+			SET special_price=0,
 			specialpricemethod=0,specialquantity=0,
-			specialgroupprice=0,discounttype=0,
+			specialgroupprice=0,p.discounttype=0,
 			start_date='1900-01-01',end_date='1900-01-01'
-			FROM products AS p, batchList as b
-			WHERE p.upc=b.upc AND b.upc NOT LIKE '%LC%'
+			WHERE b.upc NOT LIKE '%LC%'
 			AND b.batchID=$id";
+		if ($FANNIE_SERVER_DBMS=="MSSQL"){
+			$unsaleQ = "UPDATE products SET special_price=0,
+				specialpricemethod=0,specialquantity=0,
+				specialgroupprice=0,discounttype=0,
+				start_date='1900-01-01',end_date='1900-01-01'
+				FROM products AS p, batchList as b
+				WHERE p.upc=b.upc AND b.upc NOT LIKE '%LC%'
+				AND b.batchID=$id";
+		}
 		$unsaleR = $sql->query($unsaleQ);
 
-		$unsaleLCQ = "UPDATE products SET special_price=0,
-			specialpricemethod=0,specialquantity=0,
-			specialgroupprice=0,discounttype=0,
-			start_date='1900-01-01',end_date='1900-01-01'
-			FROM products AS p LEFT JOIN
+		$unsaleLCQ = "UPDATE products AS p LEFT JOIN
 			likeCodeView AS v ON v.upc=p.upc LEFT JOIN
-			batchList AS l ON l.upc='LC'+convert(v.likeCode,char)
+			batchList AS l ON l.upc=concat('LC',convert(v.likeCode,char))
+			SET special_price=0,
+			specialpricemethod=0,specialquantity=0,
+			specialgroupprice=0,p.discounttype=0,
+			start_date='1900-01-01',end_date='1900-01-01'
 			WHERE l.upc LIKE '%LC%'
 			AND l.batchID=$id";
+		if ($FANNIE_SERVER_DBMS=="MSSQL"){
+			$unsaleLCQ = "UPDATE products
+				SET special_price=0,
+				specialpricemethod=0,specialquantity=0,
+				specialgroupprice=0,discounttype=0,
+				start_date='1900-01-01',end_date='1900-01-01'
+				FROM products AS p LEFT JOIN
+				likeCodeView AS v ON v.upc=p.upc LEFT JOIN
+				batchList AS l ON l.upc='LC'+convert(varchar,v.likeCode)
+				WHERE l.upc LIKE '%LC%'
+				AND l.batchID=$id";
+		}
 		$unsaleLCR = $sql->query($unsaleLCQ);
 		
 		$delQ = "delete from batches where batchID=$id";
@@ -215,19 +237,30 @@ if (isset($_GET['action'])){
 
 		if (substr($upc,0,2) != 'LC'){
 			// take the item off sale if this batch is currently on sale
-			$unsaleQ = "update products set discounttype=0,special_price=0,start_date=0,end_date=0 
-				    from products as p, batches as b where
-				    p.upc='$upc' and b.batchID=$id and b.startdate=p.start_date and b.enddate=p.end_date";
+			$unsaleQ = "UPDATE products AS p LEFT JOIN batchList as b on p.upc=b.upc
+					set p.discounttype=0,special_price=0,start_date=0,end_date=0 
+				    WHERE p.upc='$upc' and b.batchID=$id";
+			if ($FANNIE_SERVER_DBMS == "MSSQL"){
+				$unsaleQ = "update products set discounttype=0,special_price=0,start_date=0,end_date=0 
+					    from products as p, batches as b where
+					    p.upc='$upc' and b.batchID=$id and b.startdate=p.start_date and b.enddate=p.end_date";
+			}
 			$unsaleR = $sql->query($unsaleQ);
 			
 			updateProductAllLanes($upc);
 		}
 		else {
 			$lc = substr($upc,2);
-			$unsaleQ = "update products set discounttype=0,special_price=0,start_date=0,end_date=0
-				from products as p, batches as b, upcLike as u
-				where u.likeCode=$lc and u.upc=p.upc and b.startdate=p.start_date and b.enddate=p.end_date
-				and b.batchID=$id";
+			$unsaleQ = "UPDATE products AS p LEFT JOIN upcLike as u on p.upc=u.upc
+					LEFT JOIN batchList as b ON b.upc=concat('LC',convert(u.likeCode,char))
+					set p.discounttype=0,special_price=0,start_date=0,end_date=0 
+				    WHERE u.likeCode='$lc' and b.batchID=$id";
+			if ($FANNIE_SERVER_DBMS == "MSSQL"){
+				$unsaleQ = "update products set discounttype=0,special_price=0,start_date=0,end_date=0
+					from products as p, batches as b, upcLike as u
+					where u.likeCode=$lc and u.upc=p.upc and b.startdate=p.start_date and b.enddate=p.end_date
+					and b.batchID=$id";
+			}
 			$unsaleR = $sql->query($unsaleQ);
 
 			exec("touch /pos/sync/scheduled/products");
@@ -456,11 +489,12 @@ function addItemPriceLCInput($lc){
 	/* get the most common price for items in a given
 	 * like code
 	 */
-	$fetchQ = "select top 1 p.normal_price from products as p
+	$fetchQ = "select p.normal_price from products as p
 			left join upcLike as u on p.upc=u.upc and u.likeCode=$lc
 			where u.upc is not null
 			group by p.normal_price
 			order by count(*) desc";
+	$fetchQ = $sql->add_select_limit($fetchQ,1);
 	$fetchR = $sql->query($fetchQ);
 	$normal_price = array_pop($sql->fetch_array($fetchR));
 	
@@ -565,22 +599,22 @@ function batchListDisplay($filter='',$mode='all'){
 		$fetchQ = "select b.batchName,b.batchType,b.startDate,b.endDate,b.batchID,
 			   o.owner from batches as b left outer join batchowner as o
 			   on b.batchID = o.batchID
-			   where datediff(dd,getdate(),b.startdate) > 0
+			   where ".$sql->datediff('b.startDate',$sql->now())." > 0
 			   order by b.batchID desc";
 		break;
 	case 'current':
 		$fetchQ = "select b.batchName,b.batchType,b.startDate,b.endDate,b.batchID,
 			   o.owner from batches as b left outer join batchowner as o
 			   on b.batchID = o.batchID
-			   where datediff(dd,getdate(),b.startdate) < 1
-			   and datediff(dd,getdate(),b.enddate) > 0
+			   where ".$sql->datediff('b.startDate',$sql->now())." < 1
+			   and ".$sql->datediff('b.endDate',$sql->now())." > 0
 			   order by b.batchID desc";
 		break;
 	case 'historical':
 		$fetchQ = "select b.batchName,b.batchType,b.startDate,b.endDate,b.batchID,
 			   o.owner from batches as b left outer join batchowner as o
 			   on b.batchID = o.batchID
-			   where datediff(dd,getdate(),b.enddate) <= 0
+			   where ".$sql->datediff('b.endDate',$sql->now())." <= 0
 			   order by b.batchID desc";
 		break;	
 	}
@@ -643,7 +677,7 @@ function showBatchDisplay($id,$orderby=' ORDER BY b.listID DESC'){
 			b.quantity
 			from batchList as b left outer join products as p on
 			b.upc = p.upc left outer join likeCodes as l on
-			b.upc = 'LC'+convert(l.likeCode,char)
+			b.upc = concat('LC',convert(l.likeCode,char))
 			where b.batchID = $id $orderby";
 	$fetchR = $sql->query($fetchQ);
 	

@@ -72,6 +72,8 @@ function select_to_table($query,$border,$bgcolor)
 			echo "><font size = 2>";
 			if(!isset($row[$i])) {//test for null value
 				echo "0.00";
+			}elseif (is_numeric($row[$i]) && strstr($row[$i],".")){
+				printf("%.2f",$row[$i]);
 			}else{
 				echo $row[$i];
 			}

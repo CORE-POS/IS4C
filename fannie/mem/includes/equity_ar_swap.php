@@ -222,7 +222,8 @@ function getTransNo($emp,$register){
 }
 
 function buildInsert($dtrans,$amount,$department,$cardno){
-	global $dbc;
+	global $dbc, $FANNIE_OP_DB,$FANNIE_SERVER_DBMS;
+	$OP = $FANNIE_OP_DB . ($FANNIE_SERVER_DBMS=='MSSQL'?'.dbo.':'.');
 	$dtrans['department'] = $department;
 	$dtrans['card_no'] = $cardno;
 	$dtrans['unitPrice'] = $amount;
@@ -234,11 +235,11 @@ function buildInsert($dtrans,$amount,$department,$cardno){
 	}
 	$dtrans['upc'] = abs($amount).'DP'.$department;
 
-	$q = "SELECT dept_name FROM departments WHERE dept_no=$department";
+	$q = "SELECT dept_name FROM {$OP}departments WHERE dept_no=$department";
 	$r = $dbc->query($q);
 	$dtrans['description'] = array_pop($dbc->fetch_row($r));
 
-	$q = "SELECT memType,staff FROM custdata WHERE cardno=$cardno";
+	$q = "SELECT memType,Staff FROM {$OP}custdata WHERE CardNo=$cardno";
 	$r = $dbc->query($q);
 	$w = $dbc->fetch_row($r);
 	$dtrans['memType'] = $w[0];

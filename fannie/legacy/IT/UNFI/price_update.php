@@ -22,7 +22,7 @@ $date = date('mjY');
 $batchName = "priceUpdate".$buyer.$date;
 
 $insBatchQ = "INSERT INTO batchTest(startDate,endDate,batchName,batchType,discounttype) 
-              VALUES(getdate(),getdate(),'$batchName',7,0)";
+              VALUES(now(),now(),'$batchName',7,0)";
 //echo $insBatchQ;
 $insBatchR = $sql->query($insBatchQ);
 

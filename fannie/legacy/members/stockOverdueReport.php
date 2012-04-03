@@ -54,7 +54,7 @@ $balanceQ = "SELECT s.memnum,s.payments,s.enddate,b.balance,
 		left join meminfo as m on s.memnum=m.card_no
 		WHERE c.personnum = 1 and c.type <> 'TERM'
 		and s.payments < 100 and
-		datediff(dd,getdate(),s.enddate) < -60
+		".$sql->datediff('s.enddate',$sql->now())." < -60
 		order by s.memnum";
 $balanceR = $sql->query($balanceQ);
 $balances = array();

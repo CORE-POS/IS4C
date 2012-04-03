@@ -38,7 +38,7 @@ $query = "select s.cardno,r.mask from
 	suspensions as s left join reasoncodes as r
 	on s.reasoncode & r.mask <> 0
 	where s.memtype2 = 'PC' and
-	datediff(mm,getdate(),s.suspDate) = -1
+	".$sql->monthdiff($sql->now(),'s.suspDate')." = 1
 	order by s.cardno";
 
 echo "<table border=1 cellpadding=4 cellspacing=0>\n";

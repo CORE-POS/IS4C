@@ -66,7 +66,7 @@ function forceBatch($batchID){
 			INNER JOIN likeCodeView AS v 
 			ON v.upc=p.upc
 			INNER JOIN batchList as l 
-			ON l.upc='LC'+convert(v.likecode,char)
+			ON l.upc=concat('LC',convert(v.likecode,char))
 			INNER JOIN batches AS b 
 			ON b.batchID=l.batchID
 			set p.special_price = l.salePrice,
@@ -137,7 +137,7 @@ function forceBatch($batchID){
 		$forceLCQ = "UPDATE products AS p
 			INNER JOIN upcLike AS v
 			ON v.upc=p.upc INNER JOIN
-			batchList as b on b.upc='LC'+convert(v.likecode,char)
+			batchList as b on b.upc=concat('LC',convert(v.likecode,char))
 			set p.normal_price = b.salePrice,
    			p.modified=curdate()
 			where b.batchID=$batchID";

@@ -22,7 +22,7 @@ echo $uoutput;
 $year = date('Y');
 $month = date('n');
 $stamp = mktime(0,0,0,$month-1,1,$year);
-$dlog = "trans_archive.dbo.dlog".date("Ym",$stamp);
+$dlog = "is4c_trans.dlog_90_view";
 $start = date("Y-m-01",$stamp);
 $end = date("Y-m-t",$stamp);
 $span = "'$start 00:00:00' AND '$end 23:59:59'";
@@ -125,9 +125,11 @@ if (!$output){
 	GROUP BY m.memDesc
 	ORDER BY m.memDesc";
 
-	$query21 = "SELECT m.memdesc, COUNT(d.cust_ID)
-	FROM dheader d join custdata c on d.cust_ID = c.cardno join memtypeID m on c.memtype = m.memtypeID
-	WHERE proc_date BETWEEN $span AND (cust_ID NOT BETWEEN 5500 and 5950) AND personnum = 1
+	$query21 = "SELECT m.memdesc, COUNT(d.card_no)
+	FROM is4c_trans.transarchive AS d join custdata c on d.card_no = c.CardNo join memTypeID m on c.memType = m.memTypeID
+	WHERE datetime BETWEEN $span AND (card_no NOT BETWEEN 5500 and 5950) AND personNum = 1
+	AND register_no<>99 and emp_no<>9999 AND trans_status NOT IN ('X','Z')
+	AND trans_id=1
 	GROUP BY m.memdesc";
 
 	$query20 = "SELECT   SUM(d.total) AS Sales 
@@ -182,7 +184,7 @@ if (!$output){
 	GROUP BY d.upc";
 
 	$query23="SELECT d.salesCode,sum(l.total) as total,card_no, 
-	(sum(l.total)-(sum(l.total)* CONVERT(money,m.margin))) as cost
+	(sum(l.total)-(sum(l.total) * m.margin)) as cost
 	FROM $dlog as l left join deptSalesCodes as d on l.department = d.dept_ID
 	LEFT JOIN deptMargin AS m ON m.dept_ID = l.department
 	WHERE l.tdate BETWEEN $span
@@ -193,7 +195,7 @@ if (!$output){
 	order by card_no,d.salesCode";
 
 	$query22="SELECT d.salesCode,sum(l.total) as total,
-	(sum(l.total)-(sum(l.total)* CONVERT(money,m.margin))) as cost
+	(sum(l.total)-(sum(l.total)* m.margin)) as cost
 	FROM $dlog as l left join deptSalesCodes as d on l.department = d.dept_ID
 	LEFT JOIN deptMargin AS m ON m.dept_ID = l.department
 	WHERE l.tdate BETWEEN $span
@@ -206,7 +208,7 @@ if (!$output){
 	$queryRRR = "
 	SELECT sum(case when volSpecial is null then 0 else volSpecial end) as qty
 	from
-	transarchive as t
+	is4c_trans.transarchive as t
 	where upc = 'RRR'
 	and t.datetime BETWEEN $span
 	and emp_no <> 9999 and register_no <> 99
@@ -293,7 +295,7 @@ if (!$output){
 	      <td width=120><u><font size=2><b>Deli Taxable</b></u></font></td>
 	      <td width=120><u><font size=2><b>Deli Tax</b></u></font></td></table>';
 	$queryCorrect = "select TaxableSales,TotalTax,StateTaxable,StateTax,CityTaxable,CityTax,DeliTaxable,DeliTax
-			from taxReport_corrected";
+			from is4c_trans.taxReport_corrected";
 	select_to_table($queryCorrect,0,'ffffff');
 	echo '<br>';
 	echo '<b>Actual Tax Collected</b>';

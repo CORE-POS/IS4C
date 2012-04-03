@@ -39,7 +39,7 @@ $CREATE['op.houseCoupons'] = "
 		endDate datetime,
 		`limit` smallint,
 		memberOnly smallint,
-		discoutType varchar(2),
+		discountType varchar(2),
 		discountValue double,
 		minType varchar(2),
 		minValue double,

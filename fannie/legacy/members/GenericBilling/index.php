@@ -87,7 +87,8 @@ function billingDisplay($cardno){
 }
 
 function bill($cardno,$amt,$desc){
-	global $sql,$EMP_NO,$LANE_NO;
+	global $sql,$EMP_NO,$LANE_NO,$FANNIE_TRANS_DB;
+	$sql->query("use $FANNIE_TRANS_DB");
 
 	$desc = str_replace("'","''",$desc);
 
@@ -99,14 +100,14 @@ function bill($cardno,$amt,$desc){
 	else $t_no++;
 
 	$insQ = "INSERT INTO dtransactions VALUES (
-		getdate(),$LANE_NO,$EMP_NO,$t_no,
+		".$sql->now().",$LANE_NO,$EMP_NO,$t_no,
 		'{$amt}DP703','$desc','D','','',703,
 		1.0,0,0.00,$amt,$amt,$amt,0,0,.0,.0,
 		0,0,0,NULL,0.0,0,0,.0,0,0,0,0,0,'',
 		$cardno,1)";
 	$amt *= -1;
 	$insQ2 = "INSERT INTO dtransactions VALUES (
-		getdate(),$LANE_NO,$EMP_NO,$t_no,
+		".$sql->now().",$LANE_NO,$EMP_NO,$t_no,
 		0,'InStore Charges','T','MI',0,0,
 		0.0,0,0.00,.0,$amt,.0,0,0,.0,.0,
 		0,0,0,NULL,0.0,0,0,.0,0,0,0,0,0,'',

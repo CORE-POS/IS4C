@@ -66,7 +66,7 @@ function forceBatch($batchID){
 			INNER JOIN likeCodeView AS v 
 			ON v.upc=p.upc
 			INNER JOIN batchList as l 
-			ON l.upc='LC'+convert(v.likecode,char)
+			ON l.upc=concat('LC',convert(v.likecode,char))
 			INNER JOIN batches AS b 
 			ON b.batchID=l.batchID
 			set p.special_price = l.salePrice,
@@ -130,16 +130,16 @@ function forceBatch($batchID){
 		      INNER JOIN batchList AS l
 		      ON l.upc=p.upc
 		      SET p.normal_price = l.salePrice,
-		      p.modified = curdate()
+		      p.modified = now()
 		      WHERE l.upc not like 'LC%'
 		      AND l.batchID = $batchID";
 
 		$forceLCQ = "UPDATE products AS p
 			INNER JOIN upcLike AS v
 			ON v.upc=p.upc INNER JOIN
-			batchList as b on b.upc='LC'+convert(v.likecode,char)
+			batchList as b on b.upc=concat('LC',convert(v.likecode,char))
 			set p.normal_price = b.salePrice,
-   			p.modified=curdate()
+   			p.modified=now()
 			where b.batchID=$batchID";
 
 		if ($FANNIE_SERVER_DBMS == 'MSSQL'){

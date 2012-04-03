@@ -45,7 +45,7 @@ $query = "select m.card_no,c.firstname+' '+c.lastname,z.start_date,
 	left join memDates as z ON m.card_no=z.card_no
 	where d.card_no is not null
 	and d.type = 'DEVELOPER'
-	and datediff(mm,getdate(),selectionDate) = 0
+	and ".$sql->monthdiff($sql->now(),'selectionDate')." = 0
 	order by m.card_no";
 
 echo "<table border=1 cellpadding=0 cellspacing=0>\n";

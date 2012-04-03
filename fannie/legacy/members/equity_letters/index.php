@@ -278,7 +278,7 @@ function pastDueDisplays($subtype){
 		on m.card_no=c.cardno and c.personnum=1
 		left join newBalanceStockToday_test as n on
 		m.card_no = n.memnum
-		where datediff(dd,getdate(),m.end_date) < 0
+		where ".$sql->monthdiff($sql->now(),'m.end_date')." > 0
 		AND c.type <> 'TERM' and c.type <> 'INACT2'
 		AND c.type <> 'REG' and n.payments < 100 order by m.card_no";
 	if ($subtype == "0month"){
@@ -343,25 +343,25 @@ function arDisplays($subtype){
 	$ret .= "<table cellpadding=0 cellspacing=4><tr><td>";
 	$ret .= "<select id=cardnos name=cardno[] multiple size=20>";
 
-	$query = "SELECT a.cardno, c.lastname
-		   FROM AR_EOM_Summary a 
-		   LEFT JOIN custdata as c on c.cardno=a.cardno and c.personnum=1
-		   LEFT JOIN suspensions as s ON c.cardno=s.cardno
-		   WHERE c.type not in ('TERM') and
-		   c.memtype <> 9 and a.twoMonthBalance > 1
+	$query = "SELECT a.cardno, c.LastName
+		   FROM {$TRANS}AR_EOM_Summary_cache a 
+		   LEFT JOIN custdata as c on c.CardNo=a.cardno and c.personNum=1
+		   LEFT JOIN suspensions as s ON a.cardno=s.cardno
+		   WHERE c.Type not in ('TERM') and
+		   c.memType <> 9 and a.twoMonthBalance > 1
 		   and c.Balance <> 0
 		   and s.memtype1 <> 2
 		   and a.lastMonthPayments < a.twoMonthBalance
 		   ORDER BY a.cardno";
 	if ($subtype == "business"){
-		$query = "SELECT a.cardno, c.lastname
-			   FROM AR_EOM_Summary a LEFT JOIN
-			   custdata as c on c.cardno=a.cardno and c.personnum=1
-			   LEFT JOIN suspensions as s ON c.cardno=s.cardno
-			   WHERE c.type not in ('TERM') and
-			   (c.memtype = 2 or s.memtype1 = 2)
+		$query = "SELECT a.cardno, c.LastName
+			   FROM {$TRANS}AR_EOM_Summary_cache a LEFT JOIN
+			   custdata as c on c.CardNo=a.cardno and c.personNum=1
+			   LEFT JOIN suspensions as s ON a.cardno=s.cardno
+			   WHERE c.Type not in ('TERM') and
+			   (c.memType = 2 or s.memtype1 = 2)
 			   and (a.LastMonthBalance <> 0 or a.lastMonthCharges <> 0 or a.lastMonthPayments <> 0)
-			   ORDER BY convert(int,a.cardno)";
+			   ORDER BY a.cardno";
 	}
 	elseif($subtype == "allbusiness"){
 		$query = "SELECT c.CardNo,c.LastName FROM

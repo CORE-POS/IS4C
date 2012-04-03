@@ -91,7 +91,7 @@ else {
 		echo $revertQ."<br />";
 
 		$uid=getUID($username);
-		$auditQ = "insert custUpdate select getdate(),$uid,1,* from custdata where cardno=$memID";
+		$auditQ = "insert custUpdate select now(),$uid,1,* from custdata where cardno=$memID";
 
 		$sql->query($auditQ);
 		$sql->query($revertQ);
@@ -127,7 +127,7 @@ else {
 
 
 		$uid=getUID($username);
-		$auditQ = "insert custUpdate select getdate(),$uid,1,* from custdata where cardno=$memID";
+		$auditQ = "insert custUpdate select now(),$uid,1,* from custdata where cardno=$memID";
 		$sql->query($auditQ);
 
 		foreach($upQs as $q)
@@ -135,7 +135,7 @@ else {
 
 	}
 
-	$fetchQ = "select getdate() as tdate,0,2 as optype,*,'current' from custdata where cardno=$memID 
+	$fetchQ = "select now() as tdate,0,2 as optype,*,'current' from custdata where cardno=$memID 
 		   union
 		   select c.*,u.name from custUpdate as c left join users as u on c.uid=u.uid where cardno=$memID order by tdate desc, personnum, optype desc";
 	$fetchR = $sql->query($fetchQ);

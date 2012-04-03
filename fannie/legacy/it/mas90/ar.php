@@ -8,22 +8,23 @@ $date = $_GET['date'];
 
 require($FANNIE_ROOT.'src/SQLManager.php');
 include('../../db.php');
+$sql->query("use $FANNIE_TRANS_DB");
 
 $SEP=",";
 $Q = "";
 $NL = "\r\n";
 
-$query = "select num from lastmasinvoice";
+$query = "select num from lastMasInvoice";
 $result = $sql->query($query);
 $INV_NUM = (int)array_pop($sql->fetch_array($result));
 
 $query = "select card_no,trans_num,
 	-1*total,
         case when trans_subtype='MI' then 'STORE CHARGE' ELSE 'PAYMENT RECEIVED' END,
-	datepart(yy,tdate),datepart(mm,tdate),datepart(dd,tdate),
+	year(tdate),month(tdate),day(tdate),
 	case when trans_subtype='MI' then 'CG' else 'PY' END
         from dlog_90_view
-        where datediff(dd,getdate(),tdate) = -1
+        where ".$sql->datediff($sql->now(),'tdate')." = 1
         and (trans_subtype='MI' or department=990)
 	and card_no <> 11
 	order by department,card_no";
@@ -31,10 +32,10 @@ if (isset($_GET['date'])){
 $query = "select card_no,trans_num,
 	-1*total,
         case when trans_subtype='MI' then 'STORE CHARGE' ELSE 'PAYMENT RECEIVED' END,
-	datepart(yy,tdate),datepart(mm,tdate),datepart(dd,tdate),
+	year(tdate),month(tdate),day(tdate),
 	case when trans_subtype='MI' then 'CG' else 'PY' END
         from dlog_90_view
-        where datediff(dd,'$date',tdate) = 0
+        where ".$sql->datediff("'$date'",'tdate')." = 0
         and (trans_subtype='MI' or department=990)
 	and card_no <> 11
 	order by department,card_no";
@@ -43,7 +44,7 @@ $query = "select card_no,trans_num,
 $result = $sql->query($query);
 
 while ($row = $sql->fetch_row($result)){
-	if ($INV_NUM <= 5000000) $INV_NUM=5000000;;
+	if ($INV_NUM <= 5000000) $INV_NUM=5000000;
 	echo "H".$SEP;
 	echo $INV_NUM.$SEP;
 	echo $row[0].$SEP;
@@ -58,6 +59,6 @@ while ($row = $sql->fetch_row($result)){
 }
 
 $INV_NUM--;
-$sql->query("update lastmasinvoice set num=$INV_NUM");
+$sql->query("update lastMasInvoice set num=$INV_NUM");
 
 ?>

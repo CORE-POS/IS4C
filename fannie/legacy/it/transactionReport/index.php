@@ -44,7 +44,7 @@ for ($datediff = -7 - $Dow; $datediff <= -1 - $DoW; $datediff++){
 		from dlog_15 as d
 		left join custdata as c on d.card_no = c.cardno
 		left join memtypeid as m on c.memtype = m.memtypeid
-		where datediff(dd,getdate(),tdate)=$datediff and trans_type='I'
+		where ".$sql->datediff('tdate',$sql->now())."=$datediff and trans_type='I'
 		) as q 
 		group by q.trans_num,q.transaction_type";
 	$transR = $sql->query($transQ);

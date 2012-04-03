@@ -47,6 +47,7 @@ set_time_limit(0);
 
 $sql = new SQLManager($FANNIE_SERVER,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 		$FANNIE_SERVER_USER,$FANNIE_SERVER_PW);
+$TRANS = $FANNIE_TRANS_DB.($FANNIE_SERVER_DBMS=="MSSQL" ? 'dbo.' : '.');
 
 // legacy, wfc table. probably go away eventually
 if ($sql->table_exists('mbrmaster')){
@@ -74,16 +75,17 @@ if ($sql->table_exists('mbrmaster')){
 }
 
 $miQ = "UPDATE meminfo AS m 
-	INNER JOIN newBalanceStockToday_test s
+	INNER JOIN {$TRANS}newBalanceStockToday_test s
 	ON m.card_no=s.memnum
 	INNER JOIN custdata AS c ON c.CardNo=s.memnum
 	LEFT JOIN memDates AS d ON d.card_no=s.memnum
 	SET m.ads_OK=1
-	WHERE d.start_date IS null AND s.payments > 0
+	WHERE (d.start_date IS null OR d.start_date = '0000-00-00 00:00:00')
+	AND s.payments > 0
 	AND c.Type='PC'";
 if ($FANNIE_SERVER_DBMS == 'MSSQL'){
 	$miQ = "UPDATE meminfo SET ads_OK=1
-		FROM newbalancestocktoday_test s
+		FROM {$TRANS}newbalancestocktoday_test s
 		left join meminfo m ON m.card_no=s.memnum
 		left join custdata as c on c.cardno=s.memnum
 		left join memDates as d on d.card_no=s.memnum
@@ -93,17 +95,18 @@ if ($FANNIE_SERVER_DBMS == 'MSSQL'){
 $sql->query($miQ);
 
 $mdQ = "UPDATE memDates AS d
-	INNER JOIN newbalancestocktoday_test AS s
+	INNER JOIN {$TRANS}newBalanceStockToday_test AS s
 	ON d.card_no=s.memnum
 	INNER JOIN custdata AS c ON c.CardNo=s.memnum
 	SET d.start_date=s.startdate,
 	d.end_date=DATE_ADD(s.startdate,INTERVAL 2 YEAR)
-	WHERE d.start_date IS NULL AND s.payments > 0
+	WHERE (d.start_date IS null OR d.start_date = '0000-00-00 00:00:00')
+	AND s.payments > 0
 	AND c.Type='PC'";
 if ($FANNIE_SERVER_DBMS == 'MSSQL'){
 	$mdQ = "UPDATE memDates SET start_date=s.startdate,
 		end_date=dateadd(yy,2,s.startdate)
-		FROM newbalancestocktoday_test s
+		FROM {$TRANS}newbalancestocktoday_test s
 		left join custdata as c on c.cardno=s.memnum
 		left join memDates as d on d.card_no=s.memnum
 		where d.start_date is null and s.payments > 0

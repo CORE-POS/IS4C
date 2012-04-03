@@ -87,6 +87,48 @@ if (isset($_GET['action'])){
 		break;
 	case 'deleteBatch':
 		$id = $_GET['id'];
+
+		$unsaleQ = "UPDATE products AS p LEFT JOIN batchList as b
+			ON p.upc=b.upc
+			SET special_price=0,
+			specialpricemethod=0,specialquantity=0,
+			specialgroupprice=0,discounttype=0,
+			start_date='1900-01-01',end_date='1900-01-01'
+			WHERE b.upc NOT LIKE '%LC%'
+			AND b.batchID=$id";
+		if ($FANNIE_SERVER_DBMS=="MSSQL"){
+			$unsaleQ = "UPDATE products SET special_price=0,
+				specialpricemethod=0,specialquantity=0,
+				specialgroupprice=0,discounttype=0,
+				start_date='1900-01-01',end_date='1900-01-01'
+				FROM products AS p, batchList as b
+				WHERE p.upc=b.upc AND b.upc NOT LIKE '%LC%'
+				AND b.batchID=$id";
+		}
+		$unsaleR = $sql->query($unsaleQ);
+
+		$unsaleLCQ = "UPDATE products AS p LEFT JOIN
+			likeCodeView AS v ON v.upc=p.upc LEFT JOIN
+			batchList AS l ON l.upc=concat('LC',convert(v.likeCode,char))
+			SET special_price=0,
+			specialpricemethod=0,specialquantity=0,
+			specialgroupprice=0,p.discounttype=0,
+			start_date='1900-01-01',end_date='1900-01-01'
+			WHERE l.upc LIKE '%LC%'
+			AND l.batchID=$id";
+		if ($FANNIE_SERVER_DBMS=="MSSQL"){
+			$unsaleLCQ = "UPDATE products
+				SET special_price=0,
+				specialpricemethod=0,specialquantity=0,
+				specialgroupprice=0,discounttype=0,
+				start_date='1900-01-01',end_date='1900-01-01'
+				FROM products AS p LEFT JOIN
+				likeCodeView AS v ON v.upc=p.upc LEFT JOIN
+				batchList AS l ON l.upc=concat('LC',convert(v.likeCode,char))
+				WHERE l.upc LIKE '%LC%'
+				AND l.batchID=$id";
+		}
+		$unsaleLCR = $sql->query($unsaleLCQ);
 		
 		$delQ = "delete from batches where batchID=$id";
 		$delR = $dbc->query($delQ);
@@ -222,19 +264,30 @@ if (isset($_GET['action'])){
 
 		if (substr($upc,0,2) != 'LC'){
 			// take the item off sale if this batch is currently on sale
-			$unsaleQ = "update products set discounttype=0,special_price=0,start_date=0,end_date=0 
-				    from products as p, batches as b where
-				    p.upc='$upc' and b.batchID=$id and b.startDate=p.start_date and b.endDate=p.end_date";
+			$unsaleQ = "UPDATE products AS p LEFT JOIN batchList as b on p.upc=b.upc
+					set p.discounttype=0,special_price=0,start_date=0,end_date=0 
+				    WHERE p.upc='$upc' and b.batchID=$id";
+			if ($FANNIE_SERVER_DBMS == "MSSQL"){
+				$unsaleQ = "update products set discounttype=0,special_price=0,start_date=0,end_date=0 
+					    from products as p, batches as b where
+					    p.upc='$upc' and b.batchID=$id and b.startDate=p.start_date and b.endDate=p.end_date";
+			}
 			$unsaleR = $dbc->query($unsaleQ);
 			
-			//updateProductAllLanes($upc);
+			updateProductAllLanes($upc);
 		}
 		else {
 			$lc = substr($upc,2);
-			$unsaleQ = "update products set discounttype=0,special_price=0,start_date=0,end_date=0
-				from products as p, batches as b, upcLike as u
-				where u.likecode=$lc and u.upc=p.upc and b.startDate=p.start_date and b.endDate=p.end_date
-				and b.batchID=$id";
+			$unsaleQ = "UPDATE products AS p LEFT JOIN upcLike as u on p.upc=u.upc
+					LEFT JOIN batchList as b ON b.upc=concat('LC',convert(u.likeCode,char))
+					set p.discounttype=0,special_price=0,start_date=0,end_date=0 
+				    WHERE u.likeCode='$lc' and b.batchID=$id";
+			if ($FANNIE_SERVER_DBMS == "MSSQL"){
+				$unsaleQ = "update products set discounttype=0,special_price=0,start_date=0,end_date=0
+					from products as p, batches as b, upcLike as u
+					where u.likecode=$lc and u.upc=p.upc and b.startDate=p.start_date and b.endDate=p.end_date
+					and b.batchID=$id";
+			}
 			$unsaleR = $dbc->query($unsaleQ);
 
 			//syncProductsAllLanes();
@@ -598,11 +651,12 @@ function addItemPriceLCInput($lc){
 	/* get the most common price for items in a given
 	 * like code
 	 */
-	$fetchQ = "select top 1 p.normal_price from products as p
+	$fetchQ = "select p.normal_price from products as p
 			left join upcLike as u on p.upc=u.upc and u.likecode=$lc
 			where u.upc is not null
 			group by p.normal_price
 			order by count(*) desc";
+	$fetchQ = $dbc->add_select_limit($fetchQ,1);
 	$fetchR = $dbc->query($fetchQ);
 	$normal_price = array_pop($dbc->fetch_array($fetchR));
 	
@@ -837,14 +891,14 @@ function showBatchDisplay($id,$orderby=' ORDER BY b.listID DESC'){
 	}
 	
 	$fetchQ = "select b.upc,
-			case when l.likecode is null then p.description
-			else l.likecodedesc end as description,
+			case when l.likeCode is null then p.description
+			else l.likeCodeDesc end as description,
 			p.normal_price,b.salePrice,
 			CASE WHEN c.upc IS NULL then 0 ELSE 1 END as isCut,
 			b.quantity,b.pricemethod
 			from batchList as b left join products as p on
 			b.upc = p.upc left join likeCodes as l on
-			b.upc = 'LC'+convert(l.likecode,char)
+			b.upc = concat('LC',convert(l.likeCode,char))
 			left join batchCutPaste as c ON
 			b.upc=c.upc AND b.batchID=c.batchID
 			where b.batchID = $id $orderby";
@@ -992,12 +1046,12 @@ function showPairedBatchDisplay($id,$name){
 	}
 
 	$fetchQ = "select b.upc,
-			case when l.likecode is null then p.description
-			else l.likecodedesc end as description,
+			case when l.likeCode is null then p.description
+			else l.likeCodeDesc end as description,
 			p.normal_price,b.salePrice
 			from batchList as b left join products as p on
 			b.upc = p.upc left join likeCodes as l on
-			b.upc = 'LC'+convert(l.likecode,char)
+			b.upc = concat('LC'+convert(l.likeCode,char))
 			where b.batchID = $id AND b.salePrice >= 0";
 	if ($FANNIE_SERVER_DBMS == "MSSQL"){
 		$fetchQ = "select b.upc,
@@ -1048,7 +1102,7 @@ function showPairedBatchDisplay($id,$name){
 			p.normal_price,b.salePrice
 			from batchList as b left join products as p on
 			b.upc = p.upc left join likeCodes as l on
-			b.upc = 'LC'+convert(l.likecode,char)
+			b.upc = concat('LC',convert(l.likecode,char))
 			where b.batchID = $id AND b.salePrice < 0";
 	if ($FANNIE_SERVER_DBMS == "MSSQL"){
 		$fetchQ = "select b.upc,

@@ -21,9 +21,11 @@ if (isset($_GET['startDate'])){
 		$dateClause = $start." ".$end;
 
 	include('../../db.php');
+	$sql->query("use $FANNIE_TRANS_DB");
+
+	/*
 	$query = "select checks from dailyChecks where
-		datediff(dd,date,'$start') <= 0 and
-		datediff(dd,date,'$end') >= 0
+		date BETWEN '$start 00:00:00' AND '$end 23:59:59'
 		order by case 
 	      when id >= 68 then id+1
 	      when id = 43 then 68
@@ -144,6 +146,7 @@ if (isset($_GET['startDate'])){
 	}
 
 	if ($num <= 6 || $num > 10) $pdf->AddPage();
+	*/
 
 	/* shift last box over a bit */
 	$width += 3;
@@ -196,8 +199,9 @@ if (isset($_GET['startDate'])){
 
 
 	$pdf->SetX(($width+2)*4 + 5);
-	//$pdf->Cell(15,7,'Checks','L',0,'L');
+	$pdf->Cell(15,7,'Checks','L',0,'L');
 	//$pdf->Cell(40,7,"\t$".sprintf('%.2f',$ckSum),'TBR',1);
+	$pdf->Cell(40,7,"",'TBR',1);
 	$pdf->SetX(($width+2)*4 + 5);
 	$pdf->Cell(15,7,'Coin','L',0,'L');
 	$pdf->Cell(40,7,"\t$".sprintf('%.2f',$coin),'TBR',1);

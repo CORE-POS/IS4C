@@ -137,12 +137,12 @@ else if (isset($_POST["upc"])){
 			deposit,local,idEnforced,scaleprice,cost) VALUES (
 			'$upcs[$i]','$descs[$i]',$prices[$i],0,0,0,
 			0,0,0,0,'1900-01-01','1900-01-01',
-			$depts[$i],0,$tax,$fs,0,0,getdate(),1,0,
+			$depts[$i],0,$tax,$fs,0,0,now(),1,0,
 			1,0,'lb',0,0,1,0,0,0.00,0,0,0,0.00)";
 
 		$upQ = "INSERT INTO prodUpdate (upc,description,price,dept,tax,fs,scale,likeCode,modified,[user],
 				forceQty,noDisc,inUse) VALUES ('$upcs[$i]','$descs[$i]',$prices[$i],$depts[$i],
-				$tax,$fs,0,0,getdate(),-2,0,1,1)";
+				$tax,$fs,0,0,now(),-2,0,1,1)";
 	
 		$xtraQ = "INSERT INTO prodExtra (upc,distributor,manufacturer,cost,margin,variable_pricing,location)
 			VALUES ('$upcs[$i]','UNFI','$brands[$i]',$costs[$i],0,0,'')";
@@ -156,10 +156,12 @@ else if (isset($_POST["upc"])){
 		$sql->query($upQ);
 		$sql->query($xtraQ);
 		$sql->query($barQ);
+
+		updateProductAllLanes($upcs[$i]);
 	}
 	echo "Pushing products to the lanes<br />";
 	flush();
-	syncProductsAllLanes();
+	//syncProductsAllLanes();
 	//exec("php fork.php sync products");
 	echo "<script type=text/javascript>window.top.location='new_items.php';</script>";
 }

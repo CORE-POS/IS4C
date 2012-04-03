@@ -208,8 +208,8 @@ function displayCashier($date,$empno){
 
 	$ret .= "<tr>";
 	$ret .= "<td>&nbsp;</td>";
-	$ret .= "<td id=posCP>".$totals['CP']."</td>";
-	$ret .= "<td><input type=text onchange=\"resumSheet();\"  size=5 id=countCP value=\"".$counts['CP']."\" /></td>";
+	$ret .= "<td id=posCP>".sprintf("%.2f",$totals['CP'])."</td>";
+	$ret .= "<td><input type=text onchange=\"resumSheet();\"  size=5 id=countCP value=\"".sprintf("%.2f",$counts['CP'])."\" /></td>";
 	$os = round($counts['CP'] - $totals['CP'],2);
 	$ret .= "<td id=osCP>$os</td>";
 
