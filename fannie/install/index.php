@@ -63,6 +63,21 @@ if (is_writable($FILEPATH.'config.php')){
 }
 else {
 	echo "<span style=\"color:red;\"><b>Error</b>: config.php is not writeable</span>";
+	echo "<blockquote>";
+	echo "config.php ({$FILEPATH}config.php) is Fannie's main configuration file.";
+	echo "<ul>";
+	echo "<li>If this file exists, ensure it is writable by the user running PHP (see above)";
+	echo "<li>If the file does not exist, copy config.dist.php ({$FILEPATH}config.dist.php) to config.php";
+	echo "<li>If neither file exists, create a new config.php ({$FILEPATH}config.php) containing:";
+	echo "</ul>";
+	echo "<pre style=\"font:fixed;background:#ccc;\">
+&lt;?php
+?&gt;
+	</pre>";
+	echo "</blockquote>";
+	echo '<input type="submit" value="Refresh this page" />';
+	echo "</form>";
+	exit;
 }
 ?>
 <br />

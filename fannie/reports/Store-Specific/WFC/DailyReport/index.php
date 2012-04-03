@@ -318,7 +318,7 @@ $transQ = "select q.trans_num,sum(q.quantity) as items,transaction_type, sum(q.t
 	WHERE ".$dbc->date_equals('d.tdate',$dstr)." AND 
 	trans_type in ('I','D')
 	and upc <> 'RRR'
-	and c.personnum=1
+	and c.personNum=1
 	) as q 
 	group by q.trans_num,q.transaction_type";
 $transR = $dbc->query($transQ);

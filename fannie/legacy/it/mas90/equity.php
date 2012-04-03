@@ -8,32 +8,33 @@ if (!isset($_GET['date'])){
 
 require($FANNIE_ROOT.'src/SQLManager.php');
 include('../../db.php');
+$sql->query("use $FANNIE_TRANS_DB");
 
 $SEP=",";
 $Q = "";
 $NL = "\r\n";
 
-$query = "select num from lastmasinvoice";
+$query = "select num from lastMasInvoice";
 $result = $sql->query($query);
 $INV_NUM = (int)array_pop($sql->fetch_array($result));
 
 $query = "select card_no,trans_num,
         total,
         case when department=991 then 'EQUITY B' else 'EQUITY A' END,
-        datepart(yy,tdate),datepart(mm,tdate),datepart(dd,tdate),
+	year(tdate),month(tdate),day(tdate),
         case when department=991 then 'EQB' else 'EQA' END
         from dlog_15
-        where datediff(dd,getdate(),tdate) = -1
+        where ".$sql->datediff($sql->now(),'tdate')." = 1
         and department in (991,992)
         order by department,card_no";
 if (isset($_GET['date'])){
 	$query = "select card_no,trans_num,
 		total,
 		case when department=991 then 'EQUITY B' else 'EQUITY A' END,
-		datepart(yy,tdate),datepart(mm,tdate),datepart(dd,tdate),
+		year(tdate),month(tdate),day(tdate),
 		case when department=991 then 'EQB' else 'EQA' END
 		from dlog_15
-		where datediff(dd,'$date',tdate) = 0
+		where ".$sql->datediff("'$date'",'tdate')." = 0
 		and department in (991,992)
 		order by department,card_no";
 }
@@ -55,6 +56,6 @@ while ($row = $sql->fetch_row($result)){
 }
 
 $INV_NUM--;
-$sql->query("update lastmasinvoice set num=$INV_NUM");
+$sql->query("update lastMasInvoice set num=$INV_NUM");
 
 ?>

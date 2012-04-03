@@ -84,7 +84,7 @@ if (isset($_REQUEST['submit1']) || isset($_REQUEST['submit2'])){
 	$cn = $_REQUEST['card_no'];
 
 	if (!isset($depts[$dept1])){
-		echo "<em>Error: department zdoesn't exist</em>";
+		echo "<em>Error: department doesn't exist</em>";
 		echo "<br /><br />";
 		echo "<a href=\"\" onclick=\"back(); return false;\">Back</a>";
 		return;
@@ -249,7 +249,8 @@ function buildComment($dtrans,$text){
 	return substr($query,0,strlen($query)-1).")";
 }
 function buildInsert($dtrans,$amount,$department,$cardno){
-	global $dbc;
+	global $dbc, $FANNIE_OP_DB,$FANNIE_SERVER_DBMS;
+	$OP = $FANNIE_OP_DB . ($FANNIE_SERVER_DBMS=='MSSQL'?'.dbo.':'.');
 	$dtrans['department'] = $department;
 	$dtrans['card_no'] = $cardno;
 	$dtrans['unitPrice'] = $amount;
@@ -261,11 +262,11 @@ function buildInsert($dtrans,$amount,$department,$cardno){
 	}
 	$dtrans['upc'] = abs($amount).'DP'.$department;
 
-	$q = "SELECT dept_name FROM departments WHERE dept_no=$department";
+	$q = "SELECT dept_name FROM {$OP}departments WHERE dept_no=$department";
 	$r = $dbc->query($q);
 	$dtrans['description'] = array_pop($dbc->fetch_row($r));
 
-	$q = "SELECT memType,staff FROM custdata WHERE cardno=$cardno";
+	$q = "SELECT memType,staff FROM {$OP}custdata WHERE CardNo=$cardno";
 	$r = $dbc->query($q);
 	$w = $dbc->fetch_row($r);
 	$dtrans['memType'] = $w[0];

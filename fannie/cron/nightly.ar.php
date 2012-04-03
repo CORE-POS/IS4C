@@ -61,4 +61,14 @@ $query = "INSERT INTO ar_history
 	AND (department IN $dlist OR trans_subtype='MI')";	
 $sql->query($query);
 
+/* turnover view/cache base tables for WFC end-of-month reports */
+if (date("j")==1 && $sql->table_exists("ar_history_backup")){
+	$sql->query("TRUNCATE TABLE ar_history_backup");
+	$sql->query("INSERT INTO ar_history_backup SELECT * FROM ar_history");
+	if ($sql->table_exists("AR_EOM_Summary") && $sql->table_exists("AR_EOM_Summary_cache")){
+		$sql->query("TRUNCATE TABLE AR_EOM_Summary_cache");
+		$sql->query("INSERT INTO AR_EOM_Summary_cache SELECT * FROM AR_EOM_Summary");
+	}
+}
+
 ?>

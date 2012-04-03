@@ -29,20 +29,19 @@ function unsale($batchID){
 		$unsale1Q = "update products as p
 		left join batchList as b ON p.upc=b.upc
 		set special_price=0,
-		discounttype=0,start_date='',end_date='',
+		p.discounttype=0,start_date='',end_date='',
 		specialpricemethod=0,specialquantity=0,
 		specialgroupprice=0
 		where b.batchID=".$batchID;
 
 		$unsale2Q = "update products as p left join
 				likeCodeView as v on v.upc=p.upc left join
-				batchList as l on l.upc='LC'+convert(v.likecode,char)
+				batchList as l on l.upc=concat('LC',convert(v.likeCode,char))
 				left join batches as b on b.batchID = l.batchID
 				set special_price=0,
-				discounttype=0,start_date='',end_date='',
+				p.discounttype=0,start_date='',end_date='',
 				specialpricemethod=0,specialquantity=0,
 				specialgroupprice=0
-				from products as p left join
 				where b.batchID=$batchID";
 		$sql->query($unsale1Q);
 		$sql->query($unsale2Q);

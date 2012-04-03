@@ -32,7 +32,7 @@ if (isset($_POST["MAX_FILE_SIZE"])){
 		if (!is_numeric($data[$LC_COL])) continue;
 
 		$q = "select l.likeCodeDesc
-			from likecodes as l where
+			from likeCodes as l where
 			l.likecode=".$data[$LC_COL]; 
 		$r = $sql->query($q);
 		if ($sql->num_rows($r) == 0){
@@ -70,8 +70,8 @@ else if (isset($_POST['likecode'])){
 		$lval = 0;
 		if ($local[$i] == '300') $lval = 1;
 		elseif ($local[$i] == 'S.C.') $lval = 2;
-		$q = "update products set local=".$lval."
-			from products as p left join upclike as u on p.upc=u.upc
+		$q = "update products as p left join upcLike as u on p.upc=u.upc
+			set local=$lval
 			where u.likecode=".$likecodes[$i];	
 		echo "Setting likecode #".$likecodes[$i]." to local =>".$local[$i]."<br />";
 		$sql->query($q);

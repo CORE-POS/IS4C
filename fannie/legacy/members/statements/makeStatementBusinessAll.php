@@ -195,7 +195,7 @@ while($selAddW = $sql->fetch_row($selAddR)){
    $pdf->Cell(25,8,'',0,0,'L',1);
    $pdf->Cell(25,8,'Amount',0,1,'L',1);
  
-   //$selTransQ = "SELECT * FROM ar_history WHERE datediff(mm,getdate(),tdate) = -1
+   //$selTransQ = "SELECT * FROM ar_history WHERE datediff(mm,now(),tdate) = -1
    //              AND card_no = $selAddW[0]";
 
    $prevD = "";
@@ -245,7 +245,7 @@ while($selAddW = $sql->fetch_row($selAddR)){
 	if (strstr($detail[0],"Gazette Ad"))
 		$gazette = True;
 	$lineitem = (count($detail)==1) ? $detail[0] : '(multiple items)';
-	if ($lineitem == "ARPAYMEN") $lineitem  "Payment Received - Thank You";
+	if ($lineitem == "ARPAYMEN") $lineitem = "Payment Received - Thank You";
 
       
 	$pdf->Cell(20,8,'',0,0,'L');

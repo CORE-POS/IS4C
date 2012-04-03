@@ -57,7 +57,7 @@ $batchInfoW = $sql->fetch_array($batchInfoR);
 
 
 $selBItemsQ = "SELECT b.*,p.*  from batchListTest as b LEFT JOIN 
-               products as p ON p.upc like '%'+rtrim(b.upc)+'%' WHERE batchID = $batchID 
+               products as p ON p.upc = b.upc WHERE batchID = $batchID 
                ORDER BY b.listID DESC";
 //echo $selBItemsQ;
 $selBItemsR = $sql->query($selBItemsQ);
@@ -76,8 +76,8 @@ while($selBItemsW = $sql->fetch_array($selBItemsR)){
    $field = 'sale'.$upc;
    $del = 'del'.$upc;
    //echo $del;
-   echo "<tr><td>$selBItemsW[1]</td><td>$selBItemsW[6]</td>";
-   echo "<td>$selBItemsW[7]</td><td>$selBItemsW[3]</td>";
+   echo "<tr><td>$selBItemsW[1]</td><td>{$selBItemsW['description']}</td>";
+   echo "<td>{$selBItemsW['normal_price']}</td><td>{$selBItemsW['salePrice']}</td>";
    echo "<input type=hidden name=upc value='$upc'>";
    echo "<td><input type=checkbox value=1 name=$del></td></tr>";
 }

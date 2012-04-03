@@ -13,7 +13,7 @@ SUM(CASE WHEN trans_status = '' and trans_type in ('I','D') then total else 0 en
 as memPurchases
 from dlog_90_view
 where card_no <> 11
-and datediff(mm,getdate(),tdate) = -1
+and ".$sql->monthdiff($sql->now(),'tdate')." = 1
 group by card_no
 having
 SUM(CASE WHEN trans_status = 'M' and trans_type in ('I','D') then total else 0 end) <> 0

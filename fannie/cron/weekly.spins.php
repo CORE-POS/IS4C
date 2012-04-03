@@ -81,7 +81,7 @@ if ($FANNIE_SERVER_DBMS == "MYSQL"){
 		on d.upc=p.upc
 		WHERE p.scale = 0
 		AND d.upc > '0000000999999'
-		AND week(tdate) = ".($week+1)."
+		AND week(tdate) = ".($week)."
 		group by d.upc, p.description";
 }
 

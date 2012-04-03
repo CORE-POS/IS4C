@@ -49,18 +49,18 @@ $dlog = select_dlog($startDate,$endDate);
 
 $query = "select 
 	m.card_no,
-	min(c.firstname),
-	min(c.lastname),
+	min(c.FirstName),
+	min(c.LastName),
 	min(m.city),
 	min(m.zip), 
-	datediff(mm,getdate(),d.tdate) as monthsAgo,
+	".$sql->monthdiff($sql->now(),'d.tdate')." as monthsAgo,
 	sum(CASE WHEN d.trans_type='T' THEN -1*d.total ELSE 0 END)
 	FROM $dlog AS d LEFT JOIN
 	meminfo AS m ON d.card_no = m.card_no LEFT JOIN 
-	custdata AS c ON d.card_no = c.cardno AND c.personnum = 1 
+	custdata AS c ON d.card_no = c.CardNo AND c.personNum = 1 
 	WHERE c.memType = 1 
-	GROUP BY m.card_no,datediff(mm,getdate(),d.tdate),d.trans_num
-	ORDER BY m.card_no,datediff(mm,getdate(),d.tdate) DESC";
+	GROUP BY m.card_no,".$sql->monthdiff($sql->now(),'d.tdate').",d.trans_num
+	ORDER BY m.card_no,".$sql->monthdiff($sql->now(),'d.tdate')." DESC";
 
 $backgrounds = array('#ffffcc','#ffffff');
 $b = 0;

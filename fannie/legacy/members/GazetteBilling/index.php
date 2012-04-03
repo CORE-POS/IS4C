@@ -54,6 +54,7 @@ if (isset($_POST['cardnos'])){
 		<i>Summary of charges</i><br />
 		<table cellspacing=0 cellpadding=3 border=1>
 		<tr><th>Account</th><th>Charge</th><th>Receipt #</th></tr>";
+	$sql->query("use $FANNIE_TRANS_DB");
 	foreach($_POST['cardnos'] as $cardno){
 		$amt = $_POST['billable'.$cardno];
 		$transQ = "SELECT MAX(trans_no) FROM dtransactions
@@ -66,14 +67,14 @@ if (isset($_POST['cardnos'])){
 		$desc = substr($desc,0,24);
 
 		$insQ = "INSERT INTO dtransactions VALUES (
-			getdate(),$LANE_NO,$EMP_NO,$t_no,
+			now(),$LANE_NO,$EMP_NO,$t_no,
 			'{$amt}DP703','Gazette Ad {$desc}','D','','',703,
 			1.0,0,0,$amt,$amt,$amt,0,0,.0,.0,
 			0,0,0,NULL,0.0,0,0,.0,0,0,0,0,
 			0,'',$cardno,1)";
 		$amt *= -1;
 		$insQ2 = "INSERT INTO dtransactions VALUES (
-			getdate(),$LANE_NO,$EMP_NO,$t_no,
+			now(),$LANE_NO,$EMP_NO,$t_no,
 			0,'InStore Charges','T','MI',0,0,
 			0.0,0,0,.0,$amt,.0,0,0,.0,.0,
 			0,0,0,NULL,0.0,0,0,.0,0,0,0,0,

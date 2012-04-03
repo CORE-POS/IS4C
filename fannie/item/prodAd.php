@@ -33,7 +33,9 @@ if (isset($_REQUEST['upc']) && isset($_REQUEST['ajax'])){
 	$q = "SELECT upc FROM productUser WHERE upc='$upc'";
 	$r = $dbc->query($q);
 	if ($dbc->num_rows($r) == 0){
-		$dbc->query(sprintf("INSERT INTO productUser VALUES ('%s',%s,%s,%s,NULL)",
+		$dbc->query(sprintf("INSERT INTO productUser 
+				(upc, description, brand, sizing, photo, long_text, enableOnline)
+				VALUES ('%s',%s,%s,%s,NULL,NULL,0)",
 			$upc,$dbc->escape($desc),$dbc->escape($brand),
 			$dbc->escape($size)));
 	}
@@ -187,7 +189,7 @@ function save(upc){
 
 	$q = "SELECT p.upc,u.description,p.description,
 		u.brand,u.sizing,u.photo
-		FROM productUser AS u RIGHT JOIN
+		FROM productUser AS u LEFT JOIN
 		products AS p ON u.upc=p.upc
 		WHERE (u.upc is not null
 		OR p.discounttype <> 0)
@@ -196,14 +198,10 @@ function save(upc){
 	// sales, current or starting within the week
 	if (isset($_REQUEST['sale'])){
 		$q = "SELECT p.upc,u.description,p.description,
-                u.brand,u.sizing,u.photo,b.startdate,b.enddate
+                u.brand,u.sizing,u.photo,p.start_date,p.end_date
                 FROM products AS p LEFT JOIN
                 productUser AS u ON u.upc=p.upc
-		LEFT JOIN batchList as l on p.upc=l.upc
-		LEFT JOIN batches AS b ON l.batchID=b.batchID
-                WHERE b.discounttype <> 0
-		AND ".$dbc->datediff('b.startDate',$dbc->now())." <= 7
-		AND ".$dbc->datediff('b.endDate',$dbc->now())." >= 0
+                WHERE p.discounttype <> 0
                 ORDER BY p.upc";
 	}
 

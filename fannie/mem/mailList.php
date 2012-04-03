@@ -42,15 +42,20 @@ $query = "SELECT CardNo,
           end_date
           FROM custdata AS c
 	  LEFT JOIN meminfo AS m
-	  ON c.cardno=m.card_no
+	  ON c.CardNo=m.card_no
 	  LEFT JOIN memDates AS d
-	  ON c.cardno=d.card_no
+	  ON c.CardNo=d.card_no
           WHERE 
           memType IN (1,3)
 	  AND c.Type='PC'
-          AND (end_date > getdate() or end_date = '')
+          AND (end_date > ".$dbc->now()." 
+		or end_date = '' 
+		or end_date is null
+		or end_date='1900-01-01 00:00:00'
+		or end_date='0000-00-00 00:00:00')
           AND ads_OK = 1
-          AND PersonNum = 1
+          AND personNum = 1
+	  AND LastName <> 'NEW MEMBER'
           order by m.card_no";
 
 //select_to_table($query,0,';#ffffff');

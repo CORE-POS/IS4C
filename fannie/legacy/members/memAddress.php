@@ -458,7 +458,7 @@ function deactivate($memNum,$type,$reason,$reasonCode){
 
   $username = checkLogin();
   $uid = getUID($username);
-  $auditQ = "insert custUpdate select getdate(),$uid,1,* from custdata where cardno=$memNum";
+  $auditQ = "insert custUpdate select now(),$uid,1,* from custdata where cardno=$memNum";
   //$auditR = $sql->query($auditQ);
 	
   if ($type == 'TERM'){
@@ -513,7 +513,7 @@ function activate($memNum){
 
   $username = checkLogin();
   $uid = getUID($username);
-  $auditQ = "insert custUpdate select getdate(),$uid,1,* from custdata where cardno=$memNum";
+  $auditQ = "insert custUpdate select now(),$uid,1,* from custdata where cardno=$memNum";
   //$auditR = $sql->query($auditQ);
 
   $query = "select type,memtype1,memtype2,discount,chargelimit,mailflag from suspensions where cardno=$memNum";

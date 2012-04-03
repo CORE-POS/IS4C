@@ -1,6 +1,7 @@
 <?php
 include('../../../../config.php');
 include($FANNIE_ROOT.'src/mysql_connect.php');
+include($FANNIE_ROOT.'cache/cache.php');
 
 if (isset($_GET['excel'])){
 	header('Content-Type: application/ms-excel');
@@ -43,85 +44,63 @@ $stamp = strtotime("-$monthMinus month");
 echo strtoupper(date("F",$stamp));
 echo " ";
 echo date("Y",$stamp);
-$dlog = "trans_archive.dbo.dlog".date("Ym",$stamp);
+$dlog = "is4c_trans.dlog_90_view";
+$dlog = "trans_archive.dlogBig";
 echo " NABS</b><br />";
 if (!isset($_GET["excel"]))
 	echo "<a href=index.php?excel=yes&monthMinus=$monthMinus>Save to Excel</a>";
 echo "<p />";
 
-$start = date("Y-m-01",$stamp);
-$end = date("Y-m-t",$stamp);
-$span = "'$start 00:00:00' AND '$end 23:59:59'";
+$output = get_cache("monthly");
+if (!$output){
+	ob_start();
 
-$accounts = array();
-$accountQ = "SELECT CardNo from custdata WHERE memType=4 ORDER BY CardNo";
-$accountR = $dbc->query($accountQ);
-while($accountW = $dbc->fetch_row($accountR))
-	$accounts[] = $accountW['CardNo'];
+	$start = date("Y-m-01",$stamp);
+	$end = date("Y-m-t",$stamp);
+	$span = "'$start 00:00:00' AND '$end 23:59:59'";
 
-$accountStr = "(";
-foreach($accounts as $a)
-	$accountStr .= $a.",";
-$accountStr = rtrim($accountStr,",").")";
+	$accounts = array();
+	$accountQ = "SELECT CardNo from custdata WHERE memType=4 ORDER BY CardNo";
+	$accountR = $dbc->query($accountQ);
+	while($accountW = $dbc->fetch_row($accountR))
+		$accounts[] = $accountW['CardNo'];
 
-echo "<b>Total by account</b>";
-$totalQ = "select l.card_no,sum(l.total),
-	(sum(l.total)-(sum(l.total*CONVERT(money,m.margin)))) as cost
-	FROM $dlog as l left join deptMargin as m on l.department = m.dept_ID
-	WHERE card_no IN $accountStr
-	and (l.department < 600 or l.department = 902)
-	and l.department <> 0 and l.trans_type <> 'T'
-	and tdate BETWEEN $span
-	GROUP BY card_no
-	ORDER BY card_no";
-$totalR = $dbc->query($totalQ);
-$data = array();
-while ($totalW=$dbc->fetch_row($totalR)){
-	if (!isset($data["$totalW[0]"])){
-		$data["$totalW[0]"] = array($totalW[1],$totalW[2]);
+	$accountStr = "(";
+	foreach($accounts as $a)
+		$accountStr .= $a.",";
+	$accountStr = rtrim($accountStr,",").")";
+
+	echo "<b>Total by account</b>";
+	$totalQ = "select l.card_no,sum(l.total),
+		(sum(l.total)-(sum(l.total*m.margin))) as cost
+		FROM $dlog as l left join deptMargin as m on l.department = m.dept_ID
+		WHERE card_no IN $accountStr
+		and (l.department < 600 or l.department = 902)
+		and l.department <> 0 and l.trans_type <> 'T'
+		and tdate BETWEEN $span
+		GROUP BY card_no
+		ORDER BY card_no";
+	$totalR = $dbc->query($totalQ);
+	$data = array();
+	while ($totalW=$dbc->fetch_row($totalR)){
+		if (!isset($data["$totalW[0]"])){
+			$data["$totalW[0]"] = array($totalW[1],$totalW[2]);
+		}
+		else {
+			$data["$totalW[0]"][0] += $totalW[1];
+			$data["$totalW[0]"][1] += $totalW[2];
+		}
 	}
-	else {
-		$data["$totalW[0]"][0] += $totalW[1];
-		$data["$totalW[0]"][1] += $totalW[2];
-	}
-}
-echo tablify($data,array(0,1,2),array("Account","Retail","Wholesale"),
-	array($ALIGN_LEFT,$ALIGN_RIGHT|$TYPE_MONEY,$ALIGN_RIGHT|$TYPE_MONEY),
-	2,array(1,2));
+	echo tablify($data,array(0,1,2),array("Account","Retail","Wholesale"),
+		array($ALIGN_LEFT,$ALIGN_RIGHT|$TYPE_MONEY,$ALIGN_RIGHT|$TYPE_MONEY),
+		2,array(1,2));
 
-echo "<br /><b>Total by pCode</b>";
-$totalQ = "select d.salesCode,sum(l.total),
-	(sum(l.total)-(sum(l.total)*CONVERT(money,m.margin))) as cost
-	FROM $dlog as l left join deptSalesCodes as d on l.department = d.dept_ID
-	left join deptMargin as m on l.department=m.dept_ID
-	WHERE card_no IN $accountStr
-	and (l.department < 600 or l.department = 902)
-	and l.department <> 0 and l.trans_type <> 'T'
-	and tdate BETWEEN $span
-	GROUP BY d.salesCode,m.margin
-	ORDER BY d.salesCode";
-$totalR = $dbc->query($totalQ);
-$data = array();
-while ($totalW=$dbc->fetch_row($totalR)){
-	if (empty($data["$totalW[0]"])){
-		$data["$totalW[0]"] = array($totalW[1],$totalW[2]);
-	}
-	else {
-		$data["$totalW[0]"][0] += $totalW[1];
-		$data["$totalW[0]"][1] += $totalW[2];
-	}
-}
-echo tablify($data,array(0,1,2),array("pCode","Retail","Wholesale"),
-	array($ALIGN_LEFT,$ALIGN_RIGHT|$TYPE_MONEY,$ALIGN_RIGHT|$TYPE_MONEY),
-	2,array(1,2));
-
-foreach ($accounts as $account){
-	echo "<br /><b>Total for $account</b>";
+	echo "<br /><b>Total by pCode</b>";
 	$totalQ = "select d.salesCode,sum(l.total),
-		(sum(l.total)-(sum(l.total)*CONVERT(money,m.margin))) as cost
+		(sum(l.total)-(sum(l.total)*m.margin)) as cost
 		FROM $dlog as l left join deptSalesCodes as d on l.department = d.dept_ID
 		left join deptMargin as m on l.department=m.dept_ID
-		WHERE card_no = $account
+		WHERE card_no IN $accountStr
 		and (l.department < 600 or l.department = 902)
 		and l.department <> 0 and l.trans_type <> 'T'
 		and tdate BETWEEN $span
@@ -131,17 +110,51 @@ foreach ($accounts as $account){
 	$data = array();
 	while ($totalW=$dbc->fetch_row($totalR)){
 		if (empty($data["$totalW[0]"])){
-			$data["$totalW[0]"] = array($totalW[1],$account,$totalW[2]);
+			$data["$totalW[0]"] = array($totalW[1],$totalW[2]);
 		}
 		else {
 			$data["$totalW[0]"][0] += $totalW[1];
-			$data["$totalW[0]"][2] += $totalW[2];
+			$data["$totalW[0]"][1] += $totalW[2];
 		}
 	}
-	echo tablify($data,array(0,1,2,3),array("pCode","Retail","Account","Wholesale"),
-		array($ALIGN_LEFT,$ALIGN_RIGHT|$TYPE_MONEY,$ALIGN_CENTER,$ALIGN_RIGHT|$TYPE_MONEY),
-		2,array(1,3));
+	echo tablify($data,array(0,1,2),array("pCode","Retail","Wholesale"),
+		array($ALIGN_LEFT,$ALIGN_RIGHT|$TYPE_MONEY,$ALIGN_RIGHT|$TYPE_MONEY),
+		2,array(1,2));
+
+	foreach ($accounts as $account){
+		echo "<br /><b>Total for $account</b>";
+		$totalQ = "select d.salesCode,sum(l.total),
+			(sum(l.total)-(sum(l.total)*m.margin)) as cost
+			FROM $dlog as l left join deptSalesCodes as d on l.department = d.dept_ID
+			left join deptMargin as m on l.department=m.dept_ID
+			WHERE card_no = $account
+			and (l.department < 600 or l.department = 902)
+			and l.department <> 0 and l.trans_type <> 'T'
+			and tdate BETWEEN $span
+			GROUP BY d.salesCode,m.margin
+			ORDER BY d.salesCode";
+		$totalR = $dbc->query($totalQ);
+		$data = array();
+		while ($totalW=$dbc->fetch_row($totalR)){
+			if (empty($data["$totalW[0]"])){
+				$data["$totalW[0]"] = array($totalW[1],$account,$totalW[2]);
+			}
+			else {
+				$data["$totalW[0]"][0] += $totalW[1];
+				$data["$totalW[0]"][2] += $totalW[2];
+			}
+		}
+		echo tablify($data,array(0,1,2,3),array("pCode","Retail","Account","Wholesale"),
+			array($ALIGN_LEFT,$ALIGN_RIGHT|$TYPE_MONEY,$ALIGN_CENTER,$ALIGN_RIGHT|$TYPE_MONEY),
+			2,array(1,3));
+	}
+
+	$output = ob_get_contents();
+	put_cache("monthly",$output);
+	ob_end_clean();
 }
+
+echo $output;
 
 function tablify($data,$col_order,$col_headers,$formatting,$sums=-1,$sum_cols=array()){
 	$sum = 0;

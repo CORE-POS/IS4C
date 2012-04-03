@@ -30,7 +30,7 @@ $query = "SELECT CardNo,
           WHERE 
           memType in (1,3)
 	  AND c.Type='PC'
-          AND (end_date > getdate() or end_date = '')
+          AND (end_date > now() or end_date = '')
           AND ads_OK = 1
           AND PersonNum = 1
           order by m.card_no";

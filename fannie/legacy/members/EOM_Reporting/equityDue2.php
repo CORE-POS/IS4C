@@ -34,15 +34,15 @@ $months = array(
 "Dec"=>"12",
 );
 
-$query = "select m.card_no,c.firstname+' '+c.lastname,m.start_date,
-	dateadd(yy,2,m.start_date) as endDate,
+$query = "select m.card_no,CONCAT(c.FirstName,' ',c.LastName),m.start_date,
+	DATE_ADD(m.start_date,INTERVAL 2 YEAR) as endDate,
 	s.stockPurchase,s.tdate,n.payments
 	from memDates as m left join
-	custdata as c on c.cardno=m.card_no and c.personnum=1
-	left join stockpurchases as s on m.card_no=s.card_no
-	left join newBalanceStockToday_test as n on m.card_no=n.memnum
-	where datediff(mm,getdate(),dateadd(yy,2,m.card_no)) = 0
-	and c.type='PC' and n.payments < 100
+	custdata as c on c.CardNo=m.card_no and c.personNum=1
+	left join is4c_trans.stockpurchases as s on m.card_no=s.card_no
+	left join is4c_trans.newBalanceStockToday_test as n on m.card_no=n.memnum
+	where ".$sql->monthdiff($sql->now(),'DATE_ADD(m.card_no,INTERVAL 2 YEAR)')." = 0
+	and c.Type='PC' and n.payments < 100
 	order by m.card_no,s.tdate";
 
 echo "<table border=1 cellpadding=0 cellspacing=0>\n";

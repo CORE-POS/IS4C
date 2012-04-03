@@ -24,17 +24,17 @@ $months = array(
 "Dec"=>"12",
 );
 
-$query = "select m.card_no,c.firstname+' '+c.lastname,z.start_date,
+$query = "select m.card_no,CONCAT(c.FirstName,' ',c.LastName),z.start_date,
 	m.zip,d.fiveMonthsAgo,d.fourMonthsAgo,
 	d.threeMonthsAgo
 	from meminfo as m left join
-	custdata as c on m.card_no=c.cardno
-	and c.personnum=1 left join
+	custdata as c on m.card_no=c.CardNo
+	and c.personNum=1 left join
 	Defectors as d on m.card_no = d.card_no
 	left join memDates AS z ON m.card_no=z.card_no
 	where d.card_no is not null
 	and d.type = 'DEFECTOR'
-	and datediff(mm,getdate(),selectionDate) = 0
+	and ".$sql->monthdiff($sql->now(),'selectionDate')." = 0
 	order by m.card_no";
 
 echo "<table border=1 cellpadding=0 cellspacing=0>\n";

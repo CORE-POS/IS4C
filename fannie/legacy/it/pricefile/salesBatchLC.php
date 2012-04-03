@@ -32,10 +32,10 @@ if (isset($_POST["MAX_FILE_SIZE"])){
 		if (!is_numeric($data[$LC_COL])) continue;
 
 		$q = "select l.likeCodeDesc,min(p.normal_price) from products as p
-			left join upclike as u on u.upc=p.upc 
-			left join likecodes as l on l.likecode=u.likecode where
-			u.likecode=".$data[$LC_COL]." group by
-			u.likecode, l.likeCodeDesc
+			left join upcLike as u on u.upc=p.upc 
+			left join likeCodes as l on l.likeCode=u.likeCode where
+			u.likeCode=".$data[$LC_COL]." group by
+			u.likeCode, l.likeCodeDesc
 			order by count(*) desc";
 		$r = $sql->query($q);
 		if ($sql->num_rows($r) == 0){
@@ -73,16 +73,18 @@ else if (isset($_POST['likecode'])){
 	$discount = $_POST["discount"];
 
 	echo "<b>Creating batch</b><br />";
-	$createQ = "insert into batches values ('$startDate','$endDate','$batchName',$batchType,$discount,0)";
+	$createQ = "insert into batches (startDate, endDate, batchName, batchType, discountType, priority) 
+		values ('$startDate','$endDate','$batchName',$batchType,$discount,0)";
 	$sql->query($createQ);
 	$batchID = $sql->insert_id();
 
-	$ownerQ = "insert into batchOwner values ($batchID,'Produce')";
+	$ownerQ = "insert into batchowner values ($batchID,'Produce')";
 	$sql->query($ownerQ);
 
 	echo "<b>Adding items</b><br />";
 	for ($i = 0; $i < count($likecodes); $i++){
-		$q = "insert into batchlist values ('LC".$likecodes[$i]."',$batchID,".$prices[$i].",1,0,0)";
+		$q = "insert into batchList (upc, batchID, salePrice, active, pricemethod, quantity) 
+			VALUES ('LC".$likecodes[$i]."',$batchID,".ltrim($prices[$i],'$').",1,0,0)";
 		echo "Setting likecode #".$likecodes[$i]." on sale for $".$prices[$i]."<br />";
 		$sql->query($q);
 	}

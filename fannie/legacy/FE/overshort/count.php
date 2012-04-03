@@ -203,6 +203,8 @@ function displayUI($dateStr){
 	$ret .= "<td>&nbsp;</td>";
 	$ret .= "</tr>";
 
+	$accountableTotal += ($holding['atm']['reject'] - $holding['atm']['fill']);
+	
 	$ret .= "<tr><th>Fill Amount</th>";
 	$ret .= "<td id=fill0.01>".(1*$bags)."</td>";
 	$ret .= "<td id=fill0.05>".(2*$bags)."</td>";

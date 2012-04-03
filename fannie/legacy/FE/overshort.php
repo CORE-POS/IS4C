@@ -446,7 +446,7 @@ if (isset($_POST['action'])){
 		$perCashierOSTotal += $os;
 	  }
 	  
-	  $output .= "<tr><td>&nbsp;</td><td>Coupons</td><td id=dlogCP$row[1]>$cpW[0]</td>";
+	  $output .= "<tr><td>&nbsp;</td><td>Coupons</td><td id=dlogCP$row[1]>".sprintF("%.2f",$cpW[0])."</td>";
       $fetchQ = "select amt from dailyCounts where date='$date' and emp_no=$row[1] and tender_type='CP'";
       $fetchR = $sql->query($fetchQ);
 	  if ($sql->num_rows($fetchR) == 0){

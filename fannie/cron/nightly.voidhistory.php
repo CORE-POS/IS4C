@@ -50,7 +50,7 @@ $query = "INSERT INTO voidTransHistory
 		$sql->convert('trans_no','char'),'')
 	.",
 	0
-	FROM transArchive WHERE trans_subtype='CM'
+	FROM transarchive WHERE trans_subtype='CM'
 	AND ".$sql->datediff('datetime',$sql->now())." = -1
 	AND description LIKE 'VOIDING TRANSACTION %-%-%'
 	AND register_no <> 99 AND emp_no <> 9999 AND trans_status <> 'X'";

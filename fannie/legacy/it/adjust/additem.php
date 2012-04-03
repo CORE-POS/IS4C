@@ -83,7 +83,7 @@ function addItem($strupc, $strdescription, $strtransType, $strtranssubType, $str
 	$strqinsert = "(datetime, register_no, emp_no, trans_no, upc, description, trans_type, "
 	            ."trans_subtype, trans_status, department, quantity, unitPrice, total, regPrice, scale, tax, "
 		      ."foodstamp, discount, memDiscount, discountable, discounttype, ItemQtty, volDiscType, volume, "
-		      ."VolSpecial, mixMatch, matched, voided, memType, isStaff, card_no, trans_id) "
+		      ."VolSpecial, mixMatch, matched, voided, memType, staff, card_no, trans_id) "
 		      ."values (" 
 		      ."'".$datetimestamp."', "
 		      .$intregisterno.", "
