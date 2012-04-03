@@ -11,9 +11,9 @@ function getFailedTrans($dateStr,$hour){
 		and q.transNo=r.transNo and q.transID=r.transID
 		WHERE ".
 		$sql->datediff('q.datetime',$sql->escape($dateStr))."=0 
-		AND ".$sql->hour('q.datetime')."=%d
+		AND %s=%d 
 		AND r.httpCode <> 200",
-		$sql->escape($dateStr),$hour);
+		$sql->hour("q.datetime"),$hour);
 	$response = $sql->query($query);
 	while($row = $sql->fetch_row($response))
 		$trans_stack[] = $row['refNum'];

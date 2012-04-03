@@ -392,7 +392,10 @@ function scaledisplaymsg($input=""){
 	// return early; all other cases simplified
 	// by resetting session "weight"
 	if (strlen($reginput) == 0) {
-		return number_format($CORE_LOCAL->get("weight"), 2)." lb";
+		if (is_numeric($CORE_LOCAL->get("weight")))
+			return number_format($CORE_LOCAL->get("weight"), 2)." lb";
+		else
+			return $CORE_LOCAL->get("weight")." lb";
 	}
 
 	$display_weight = "";
