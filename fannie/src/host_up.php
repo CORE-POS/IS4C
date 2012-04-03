@@ -26,7 +26,7 @@ function check_db_host($host,$dbms){
 	socket_set_option($sock, SOL_SOCKET, SO_SNDTIMEO, array('sec' => 1, 'usec' => 0)); 
 	socket_set_block($sock);
 	try {
-		$test = socket_connect($sock,$host,$port);
+		$test = @socket_connect($sock,$host,$port);
 	}
 	catch(Exception $ex) {}
 	socket_close($sock);
