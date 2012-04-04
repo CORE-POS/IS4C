@@ -28,7 +28,7 @@ $CREATE['trans.CashPerformDay_cache'] = "
 	trans_num varchar(25),
 	startTime datetime,
 	endTime datetime,
-	timeInterval int,
+	transInterval int,
 	items float,
 	rings int,
 	Cancels int,

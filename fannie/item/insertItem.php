@@ -129,7 +129,15 @@ if (isset($_REQUEST['likeCode']) && $_REQUEST['likeCode'] != -1){
 	$dbc->query($lcQ);	
 }
 // echo "<br>" .$query99. "<br>";
+
+/* since the item doesn't exist at all, just insert a master record */
 $resultI = $dbc->smart_insert('products',$ins_array);
+/* if we do persistent per-store records
+if ($FANNIE_STORE_ID != 0){
+	$ins_array['store_id'] = $FANNIE_STORE_ID;
+	$resultI = $dbc->smart_insert('products',$ins_array);
+}
+*/
 
 if ($dbc->table_exists('prodExtra')){
 	$pxarray = array(

@@ -60,6 +60,7 @@ $up_array['cost'] = $_REQUEST['cost'];
 $up_array['inUse'] = 1;
 $up_array['subdept'] = $_REQUEST['subdepartment'];
 $up_array['local'] = isset($_REQUEST['local'])?1:0;
+$up_array['store_id'] = isset($_REQUEST['store_id'])?$_REQUEST['store_id']:0;
 $up_array['numflag'] = 0;
 
 /* turn on volume pricing if specified, but don't
@@ -94,7 +95,27 @@ elseif ($auditedUser){
     audit($sID,$auditedUser,$upc,$descript,$price,$tax,$FS,$Scale,$NoDisc);
 }
 
-$dbc->smart_update('products',$up_array,"upc='$upc'");
+if ($up_array['store_id'] == $FANNIE_STORE_ID){
+	// record exists so update it
+	$dbc->smart_update('products',$up_array,"upc='$upc'");
+}
+else if($up_array['store_id']==0){
+	// only the HQ record exists and this is not HQ
+	// so it has to be an insert
+	$up_array['store_id'] = $FANNIE_STORE_ID;
+	$up_array['upc'] = $dbc->escape($_REQUEST['upc']);
+	$up_array['special_price'] = 0.00;
+	$up_array['specialpricemethod'] = 0;
+	$up_array['specialgroupprice'] = 0.00;
+	$up_array['specialquantity'] = 0;
+	$up_array['mixmatchcode'] = "'0'";
+	$up_array['discounttype'] = 0;
+	$up_array['start_date'] = "'1900-01-01'";
+	$up_array['end_date'] = "'1900-01-01'";
+	$up_array['numflag'] = 0;
+	$up_array['store_id'] = 0;
+	$dbc->smart_insert('products',$up_array);
+}
 
 if ($dbc->table_exists('prodExtra')){
 	$arr = array();
@@ -140,8 +161,8 @@ if(isset($_REQUEST['s_plu'])){
 	$s_plu = substr($_REQUEST['s_plu'],3,4);
 	$scale_array = array();
 	$scale_array['plu'] = $upc;
-	$scale_array['itemdesc'] = $ins_array['description'];
-	$scale_array['price'] = $ins_array['normal_price'];
+	$scale_array['itemdesc'] = $up_array['description'];
+	$scale_array['price'] = $up_array['normal_price'];
 	if (isset($_REQUEST['s_longdesc']) && !empty($_REQUEST['s_longdesc']))
 		$scale_array['itemdesc'] = $dbc->escape($_REQUEST['s_longdesc']);
 	$scale_array['tare'] = isset($_REQUEST['s_tare'])?$_REQUEST['s_tare']:0;
@@ -202,7 +223,8 @@ if (isset($_REQUEST['likeCode']) && $_REQUEST['likeCode'] != -1){
 		$upcsR = $dbc->query($upcsQ);
 		unset($up_array['description']);
 		while($upcsW = $dbc->fetch_row($upcsR)){
-			$dbc->smart_update('products',$up_array,"upc='$upcsW[0]'");
+			$dbc->smart_update('products',$up_array,
+				"upc='$upcsW[0]' AND store_id=$FANNIE_STORE_ID");
 			updateProductAllLanes($upcsW[0]);
 		}
 	}

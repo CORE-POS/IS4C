@@ -40,18 +40,38 @@ function itemParse($upc){
 	case 'UPC':
 		$upc = str_pad($upc,13,0,STR_PAD_LEFT);
 		$savedUPC = $upc;
-		$queryItem = "SELECT p.*,x.distributor,x.manufacturer FROM products as p left join prodExtra as x on p.upc=x.upc WHERE p.upc = '$upc' or x.upc = '$upc'";
+		$queryItem = "SELECT p.*,x.distributor,x.manufacturer 
+			FROM products as p left join 
+			prodExtra as x on p.upc=x.upc 
+			WHERE (p.upc = '$upc' or x.upc = '$upc')
+			AND p.store_id=0";
 		break;
 	case 'SKU':
-		$queryItem = "SELECT p.*,x.distributor,x.manufacturer FROM products as p inner join vendorItems as v ON p.upc=v.upc left join prodExtra as x on p.upc=x.upc WHERE v.sku='$upc'";
+		$queryItem = "SELECT p.*,x.distributor,x.manufacturer 
+			FROM products as p inner join 
+			vendorItems as v ON p.upc=v.upc 
+			left join prodExtra as x on p.upc=x.upc 
+			WHERE v.sku='$upc'
+			AND p.store_id=0";
 		break;
 	case 'Brand Prefix':
-	      $queryItem = "SELECT p.*,x.distributor,x.manufacturer FROM products as p left join prodExtra as x on p.upc=x.upc WHERE p.upc like '%$upc%' order by p.upc";
+	      $queryItem = "SELECT p.*,x.distributor,x.manufacturer 
+			FROM products as p left join 
+			prodExtra as x on p.upc=x.upc 
+			WHERE p.upc like '%$upc%' 
+			AND p.store_id=0
+			ORDER BY p.upc";
 		break;
 	}
     }else{
-        $queryItem = "SELECT * FROM products WHERE description LIKE '%$upc%' ORDER BY description";
+        $queryItem = "SELECT p.*,x.distributor,x.manufacturer 
+		FROM products AS p LEFT JOIN 
+		prodExtra AS x ON p.upc=x.upc
+		WHERE description LIKE '%$upc%' 
+		AND p.store_id=0
+		ORDER BY description";
     }
+    /* note: only search by HQ records (store_id=0) to avoid duplicates */
     $resultItem = $dbc->query($queryItem);
     $num = $dbc->num_rows($resultItem);
    
@@ -87,15 +107,6 @@ function itemParse($upc){
 	}
         echo "<BODY onLoad='putFocus(0,1);'>";
         echo "<span style=\"color:red;\">Item not found.  You are creating a new one.  </span>";
-		/*
-		if (){
-			$_SESSION["popup"] == 1) {
-			$_SESSION["popup"] = 0;
-			echo "<a href='javascript: self.close ()'>close</a>";
-		} else {
-			echo "<a href='../item/itemMaint.php'><font size='-1'>cancel</font></a>";
-		}
-		*/
 	if (count($data) > 0){
 		echo "<br /><i>This product is in the ".$data['vendorName']." catalog. Values have
 			been filled in where possible</i><br />";
@@ -321,17 +332,21 @@ function itemParse($upc){
 				else { echo "-- <font color=green>$" .$rowItem['special_price']. " onsale</font><br>"; }
     		}
     }else{
-        oneItem($upc);
-			//         	$likeCodeQ = "SELECT u.*,l.likeCodeDesc FROM upcLike as u, likeCodes as l 
-			//                       WHERE u.likecode = l.likecode and u.upc = '$upc'";
-			//         	//echo $likeCodeQ; 
-			// $likeCodeR = $dbc->query($likeCodeQ);
-			// $likeCodeRow= $dbc->fetch_row($likeCodeR);
-			//    			$likeCodeNum = $dbc->num_rows($likeCodeR);
-			// 
-			//    	 		$listCodeQ = "SELECT * from likeCodes";
-			//    	 		$listCodeR = $dbc->query($listCodeQ);
-			//    	 		$listCodeRow = $dbc->fetch_row($likeCodeR);
+		oneItem($upc);
+
+		if ($FANNIE_STORE_ID != 0){
+			/* if this isn't HQ, revise the lookup query to search
+			   for HQ records AND store records
+			   ordering by store_id descendings means we'll get the
+			   store record if there is one and the HQ record if
+			   there isn't */
+			$clause = sprintf("p.store_id IN (0,%d)",$FANNIE_STORE_ID);
+			$queryItem = str_replace("p.store_id=0",$clause,$queryItem);
+			if (strstr($queryItem, "ORDER BY"))
+				$queryItem = array_shift(explode("ORDER BY",$queryItem));
+			$queryItem .= " ORDER BY p.store_id DESC";
+			$resultItem = $dbc->query($queryItem);
+		}
 
 		$rowItem = $dbc->fetch_array($resultItem);
 		$upc = $rowItem['upc'];
@@ -365,7 +380,10 @@ function itemParse($upc){
 	if ($prevUPC) echo " <a style=\"font-size:85%;\" href=itemMaint.php?upc=$prevUPC>Previous</a>";
 	if ($nextUPC) echo " <a style=\"font-size:85%;\" href=itemMaint.php?upc=$nextUPC>Next</a>";
 	echo '</td>';
-        echo '<td colspan=2>&nbsp;</td></tr><tr><td><b>Description</b></td><td><input type=text size=30 value="' . $rowItem[1] . '" name=descript></td>'; 
+        echo '<td colspan=2>';
+	echo '<input type="hidden" name="store_id" value="'.$rowItem['store_id'].'" />';
+	echo ($rowItem['store_id']==0 ? 'Master' : 'Store').' record';
+	echo '</td></tr><tr><td><b>Description</b></td><td><input type=text size=30 value="' . $rowItem[1] . '" name=descript></td>'; 
         echo "<td><select onchange=\"if(this.value=='Price'){
 		document.getElementById('price2').style.display='none';
 		document.getElementById('price1').style.display='inline';
