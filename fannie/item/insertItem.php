@@ -121,6 +121,7 @@ $ins_array['local'] = isset($_REQUEST['local'])?1:0;
 $ins_array['start_date'] = "'1900-01-01'";
 $ins_array['end_date'] = "'1900-01-01'";
 $ins_array['numflag'] = 0;
+$ins_array['store_id'] = 0;
 
 if (isset($_REQUEST['likeCode']) && $_REQUEST['likeCode'] != -1){
 	$dbc->query("DELETE FROM upcLike WHERE upc='$upc'");
