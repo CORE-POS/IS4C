@@ -25,3 +25,5 @@ dist/rpm/SOURCES/*
 dist/rpm/SRPMS/*
 fannie/pi_food_net
 fannie/pi_food_net/scalesDistro
+*.dll
+*.exe

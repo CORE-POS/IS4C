@@ -425,7 +425,7 @@ function create_op_dbs($db,$type){
 	}
 
 	$prodQ = "CREATE TABLE `products` (
-	  `upc` bigint(13) unsigned zerofill default NULL,
+	  `upc` varchar(13) default NULL,
 	  `description` varchar(30) default NULL,
 	  `normal_price` real default NULL,
 	  `pricemethod` smallint(6) default NULL,
@@ -459,6 +459,7 @@ function create_op_dbs($db,$type){
 	  `subdept` smallint(4) default NULL,
 	  `deposit` real default NULL,
 	  `local` int(11) default 0 NULL,
+	  `store_id` smallint default 0,
 	  `id` int(11) NOT NULL,
 	  KEY `upc` (`upc`),
 	  KEY `description` (`description`),
@@ -500,6 +501,7 @@ function create_op_dbs($db,$type){
 		[subdept] [int] NULL ,
 		[deposit] [money] NULL ,
 		[local] [int] NULL ,
+		[store_id] [smallint] NULL,
 		[id] [int] NOT NULL ,
 		CONSTRAINT [PK_Products] PRIMARY KEY  CLUSTERED 
 		(
