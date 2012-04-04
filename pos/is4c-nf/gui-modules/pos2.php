@@ -225,7 +225,7 @@ class pos2 extends BasicPage {
 						parseWrapper('D11');
 						break;
 					case 40:
-						parseWrapper('D'();
+						parseWrapper('D');
 						break;
 					}
 				});\n");
