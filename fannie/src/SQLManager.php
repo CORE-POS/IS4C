@@ -236,6 +236,8 @@ class SQLManager {
 		switch($this->connections[$which_connection]->databaseType){
 		case 'mysql':
 		case 'mysqli':
+			if(strtoupper($type)=='INT')
+				$type='SIGNED';
 			return "CONVERT($expr,$type)";
 		case 'mssql':
 			return "CONVERT($type,$expr)";

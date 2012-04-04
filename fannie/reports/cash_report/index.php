@@ -47,7 +47,7 @@ Enter an employee number<br />
 /*
 first get the data from the database
 */
-include('../../src/mysql_connect.php');
+include('../../src/trans_connect.php');
 
 $emp_no = $_GET['emp_no'];
 
@@ -58,7 +58,7 @@ $query = "select
           ".$dbc->weekdiff($dbc->now(),'proc_date')." as week,
           year(proc_date) as year,
 	  SUM(Rings) / count(emp_no) as rings,
-	  CONVERT(int,SUM(items)) / count(emp_no) as items,
+	  ".$dbc->convert('SUM(items)','int')." / count(emp_no) as items,
 	  COUNT(Rings) / count(emp_no) as Trans,
 	  SUM(CASE WHEN transinterval = 0 then 1 when transinterval > 600 then 600 else transinterval END) / count(emp_no)  / 60 as minutes,
 	  SUM(Cancels) / count(emp_no) as cancels,
@@ -73,7 +73,7 @@ $query = "select
           ".$dbc->weekdiff($dbc->now(),'proc_date')." as week,
           year(proc_date) as year,
           SUM(Rings) as rings,
-          CONVERT(int,SUM(items)) as items,
+	  ".$dbc->convert('SUM(items)','int')." as items,
           COUNT(*) as TRANS,
           SUM(CASE WHEN transInterval = 0 THEN 1 when transInterval > 600 then 600 ELSE transInterval END)/60 as minutes,
           SUM(cancels)as cancels,

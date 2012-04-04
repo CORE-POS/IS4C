@@ -52,6 +52,24 @@ else {
 }
 ?>
 <br /><br />
+<b>Store ID</b>: 
+<?php
+if (!isset($FANNIE_STORE_ID)) $FANNIE_STORE_ID = 0;
+if (isset($_REQUEST['FANNIE_STORE_ID'])) $FANNIE_STORE_ID = $_REQUEST['FANNIE_STORE_ID'];
+confset('FANNIE_STORE_ID',"$FANNIE_STORE_ID");
+echo "<input type=text name=FANNIE_STORE_ID value=\"$FANNIE_STORE_ID\" size=3 />";
+?>
+<br />
+<?php
+/*
+	By convention store id #0 is HQ
+	I don't know if the rest of these settings are really
+	necessary, but I don't want to remove them yet
+	just in case
+*/
+if($FANNIE_STORE_ID == 0){
+?>
+
 <b>Other Stores</b>: 
 <?php
 if (!isset($FANNIE_NUM_STORES)) $FANNIE_NUM_STORES = 0;
@@ -134,31 +152,12 @@ for($i=0; $i<$FANNIE_NUM_STORES; $i++){
 		$conf .= ",";
 }
 confset('FANNIE_STORES',$conf);
+}
 
-echo "<br />";
-echo "<b>Master Store</b>: <select name=FANNIE_MASTER_STORE>";
-if (!isset($FANNIE_MASTER_STORE)) $FANNIE_MASTER_STORE = 0;
-if (isset($_REQUEST["FANNIE_MASTER_STORE"])) $FANNIE_MASTER_STORE = $_REQUEST['FANNIE_MASTER_STORE'];
-printf("<option value=\"me\" %s>This Store</option>",
-	('me'==$FANNIE_MASTER_STORE?'selected':'')
-);
-for($i = 0; $i < $FANNIE_NUM_STORES; $i++){
-	printf("<option value=%d %s>Store %d</option>",
-		$i,
-		($i==$FANNIE_MASTER_STORE && $FANNIE_MASTER_STORE != 'me'?'selected':''),
-		($i+1)
-	);
-}
-echo "</select>";
-if ($FANNIE_MASTER_STORE != "me" && $FANNIE_MASTER_STORE >= $FANNIE_NUM_STORES) $FANNIE_MASTER_STORE=0; // sanity
-confset('FANNIE_MASTER_STORE',"'$FANNIE_MASTER_STORE'");
-echo "<br />";
-echo "<b>Master Archive DB</b>: ";
-if (!isset($FANNIE_MASTER_ARCH_DB)) $FANNIE_MASTER_ARCH_DB = 'trans_archive';
-if (isset($_REQUEST['FANNIE_MASTER_ARCH_DB'])) $FANNIE_MASTER_ARCH_DB = $_REQUEST['FANNIE_MASTER_ARCH_DB'];
-printf('<input type="text" name="FANNIE_MASTER_ARCH_DB" value="%s" /><br />',$FANNIE_MASTER_ARCH_DB);
-confset('FANNIE_MASTER_ARCH_DB',"'$FANNIE_MASTER_ARCH_DB'");
-}
+?>
+
+<?php
+} // endif for HQ only settings
 ?>
 <hr />
 <input type=submit value="Re-run" />

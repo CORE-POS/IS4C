@@ -58,7 +58,8 @@ function addProductAllLanes($upc){
 			$selQ .= $col.",";
 			$ins .= $col.",";
 		}
-		$selQ = rtrim($selQ,",")." FROM products WHERE upc='$upc'";
+		$selQ = rtrim($selQ,",")." FROM products WHERE upc='$upc' ORDER BY store_id DESC";
+		$selQ = $laneupdate_sql->add_select_limit($selQ, 1, $FANNIE_OP_DB);
 		$ins = rtrim($ins,",").")";
 
 		$laneupdate_sql->transfer($FANNIE_OP_DB,$selQ,$FANNIE_LANES[$i]['op'],$ins);
