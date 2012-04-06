@@ -46,7 +46,7 @@ define('GOEMERCH_SETTLE_IMMEDIATE',True);
 define('GOEMERCH_ID','1264');
 define('GOEMERCH_PASSWD','password');
 define('GOEMERCH_GATEWAY_ID','a91c38c3-7d7f-4d29-acc7-927b4dca0dbe');
- */
+*/
 
 class GoEMerchant extends BasicCCModule {
 
@@ -76,7 +76,7 @@ class GoEMerchant extends BasicCCModule {
 			// use the card number to find the trans_id
 			$dbTrans = tDataConnect();
 			$today = date('Ymd');
-			$pan4 = substr($CORE_LOCAL->get("paycard_PAN"),-4);
+			$pan4 = substr($this->$trans_pan['pan'],-4);
 			$cashier = $CORE_LOCAL->get("CashierNo");
 			$lane = $CORE_LOCAL->get("laneno");
 			$trans = $CORE_LOCAL->get("transno");
@@ -106,14 +106,14 @@ class GoEMerchant extends BasicCCModule {
 
 		case PAYCARD_MODE_AUTH:
 			if( $validate) {
-				if( paycard_validNumber($CORE_LOCAL->get("paycard_PAN")) != 1) {
+				if( paycard_validNumber($this->trans_pan['pan']) != 1) {
 					paycard_reset();
 					$json['output'] = paycard_errBox(PAYCARD_TYPE_CREDIT,
 						"Invalid Card Number",
 						"Swipe again or type in manually",
 						"[clear] to cancel");
 					return $json;
-				} else if( paycard_accepted($CORE_LOCAL->get("paycard_PAN"), !paycard_live(PAYCARD_TYPE_CREDIT)) != 1) {
+				} else if( paycard_accepted($this->trans_pan['pan'],  !paycard_live(PAYCARD_TYPE_CREDIT)) != 1) {
 					paycard_reset();
 					$json['output'] = paycard_msgBox(PAYCARD_TYPE_CREDIT,
 						"Unsupported Card Type",
@@ -135,6 +135,7 @@ class GoEMerchant extends BasicCCModule {
 				$CORE_LOCAL->set("paycard_amount",$CORE_LOCAL->get("amtdue"));
 			$CORE_LOCAL->set("paycard_id",$CORE_LOCAL->get("LastID")+1); // kind of a hack to anticipate it this way..
 			$json['main_frame'] = $CORE_PATH.'gui-modules/paycardboxMsgAuth.php';
+			$json['output'] = '';
 			return $json;
 			break;
 		} // switch mode
@@ -568,14 +569,14 @@ class GoEMerchant extends BasicCCModule {
 		if ($mode == 'retail_sale' && !GOEMERCH_SETTLE_IMMEDIATE)
 			$mode = 'retail_auth';
 		$manual = ($CORE_LOCAL->get("paycard_manual") ? 1 : 0);
-		$cardPAN = $CORE_LOCAL->get("paycard_PAN");
+		$cardPAN = $this->trans_pan['pan'];
 		$cardPANmasked = paycard_maskPAN($cardPAN,0,4);
 		$cardIssuer = $CORE_LOCAL->get("paycard_issuer");
 		$cardExM = substr($CORE_LOCAL->get("paycard_exp"),0,2);
 		$cardExY = substr($CORE_LOCAL->get("paycard_exp"),2,2);
-		$cardTr1 = $CORE_LOCAL->get("paycard_tr1");
-		$cardTr2 = $CORE_LOCAL->get("paycard_tr2");
-		$cardTr3 = $CORE_LOCAL->get("paycard_tr3");
+		$cardTr1 = $this->trans_pan['tr1'];
+		$cardTr2 = $this->trans_pan['tr2'];
+		$cardTr3 = $this->trans_pan['tr3'];
 		$cardName = $CORE_LOCAL->get("paycard_name");
 		$refNum = $this->refnum($transID);
 		$live = 1;

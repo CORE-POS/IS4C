@@ -168,6 +168,9 @@ class Steering extends Parser {
 				$this->ret['main_frame'] = $CORE_PATH."gui-modules/mgrlogin.php";
 			}
 			return True;
+		case "CE":
+			$this->ret['main_frame'] = $CORE_PATH."gui-modules/paycardEntry.php";
+			return True;
 		}
 		return False;
 	}
