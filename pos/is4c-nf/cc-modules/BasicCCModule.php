@@ -290,6 +290,11 @@ class BasicCCModule {
 		return $errorCode;
 		}
 	}
+
+	var $trans_pan;
+	function setPAN($in){
+		$this->trans_pan = $in;
+	}
 }
 
 ?>
