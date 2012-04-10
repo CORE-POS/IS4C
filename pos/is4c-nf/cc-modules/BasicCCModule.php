@@ -137,7 +137,7 @@ class BasicCCModule {
 		curl_setopt($curl_handle, CURLOPT_FOLLOWLOCATION,false);
 		curl_setopt($curl_handle, CURLOPT_FRESH_CONNECT,true);
 		curl_setopt($curl_handle, CURLOPT_TIMEOUT,30);
-		//curl_setopt($curl_handle, CURLOPT_SSL_VERIFYPEER, 0);
+		curl_setopt($curl_handle, CURLOPT_SSL_VERIFYPEER, 1);
 		if($CORE_LOCAL->get("OS")=="win32")
 			curl_setopt($curl_handle, CURLOPT_CAINFO, LOCAL_CERT_PATH);
 		if ($type == 'SOAP'){
@@ -156,6 +156,9 @@ class BasicCCModule {
 		set_time_limit(60);
 
 		$response = curl_exec($curl_handle);
+
+		// request sent; get rid of PAN info
+		$this->setPAN(array());
 
 		if ($type == "SOAP"){
 			$response = str_replace("&lt;","<",$response);
@@ -291,7 +294,7 @@ class BasicCCModule {
 		}
 	}
 
-	private $trans_pan;
+	protected $trans_pan;
 	function setPAN($in){
 		$this->trans_pan = $in;
 	}

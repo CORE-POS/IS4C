@@ -424,6 +424,78 @@ function paycard_errBox($type, $title, $msg, $action) {
 	return xboxMsg("<b>".trim($title)."</b><p><font size=-1>".trim($msg)."<p>".trim($action)."</font>", $header);
 } // paycard_errBox()
 
+function paycard_db(){
+	global $CORE_LOCAL;
+	switch($CORE_LOCAL->get("DBMS")){
+	case 'mysql':
+		$con = mysql_connect("127.0.0.1",$CORE_LOCAL->get("localUser"),$CORE_LOCAL->get("localPass"));
+		if ($con===False) return False;
+		$test = mysql_select_db($CORE_LOCAL->get("tDatabase"),$con);
+		if ($test===False) return False;
+		return $con;
+		break;
+	case 'mssql':
+		$con = mssql_connect("127.0.0.1",$CORE_LOCAL->get("localUser"),$CORE_LOCAL->get("localPass"));
+		if ($con===False) return False;
+		$test = mssql_select_db($CORE_LOCAL->get("tDatabase"),$con);
+		if ($test===False) return False;
+		return $con;
+		break;
+	}
+	return False;
+}
+
+function paycard_db_query($query_text,$link){
+	global $CORE_LOCAL;
+	switch($CORE_LOCAL->get("DBMS")){
+	case 'mysql':
+		return mysql_query($query_text,$link);
+		break;
+	case 'mssql':
+		return mssql_query($query_text,$link);
+		break;
+	}
+	return False;
+}
+
+function paycard_db_num_rows($result){
+	global $CORE_LOCAL;
+	switch($CORE_LOCAL->get("DBMS")){
+	case 'mysql':
+		return mysql_num_rows($result);
+		break;
+	case 'mssql':
+		return mssql_num_rows($result);
+		break;
+	}
+	return False;
+}
+
+function paycard_db_fetch_row($result){
+	global $CORE_LOCAL;
+	switch($CORE_LOCAL->get("DBMS")){
+	case 'mysql':
+		return mysql_fetch_row($result);
+		break;
+	case 'mssql':
+		return mssql_fetch_row($result);
+		break;
+	}
+	return False;
+}
+
+function paycard_db_escape($str, $link){
+	global $CORE_LOCAL;
+	switch($CORE_LOCAL->get("DBMS")){
+	case 'mysql':
+		return mysql_real_escape_string($str, $link);
+		break;
+	case 'mssql':
+		return str_replace("'","''",$str);
+		break;
+	}
+	return $str;
+}
 
 /*
 summary of ISO standards for credit card magnetic stripe data tracks:
