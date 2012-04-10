@@ -28,7 +28,7 @@ ini_set('display_errors','1');
 
 if (!function_exists("addcomment")) include_once($CORE_PATH."lib/additem.php");
 if (!function_exists("array_to_json")) include_once($CORE_PATH."lib/array_to_json.php");
-if (!function_exists("paycard_reset")) include_once($CORE_PATH."lib/paycardLib.php");
+if (!function_exists("paycard_reset")) include_once($CORE_PATH."cc-modules/lib/paycardLib.php");
 if (!function_exists("sigTermObject")) include_once($CORE_PATH."lib/lib.php");
 if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
 

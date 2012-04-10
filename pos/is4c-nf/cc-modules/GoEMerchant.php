@@ -29,7 +29,7 @@ if (!class_exists("BasicCCModule")) include_once($CORE_PATH."cc-modules/BasicCCM
 if (!class_exists("xmlData")) include_once($CORE_PATH."lib/xmlData.php");
 if (!class_exists("Void")) include_once($CORE_PATH."parser-class-lib/parse/Void.php");
 if (!function_exists("truncate2")) include_once($CORE_PATH."lib/lib.php");
-if (!function_exists("paycard_reset")) include_once($CORE_PATH."lib/paycardLib.php");
+if (!function_exists("paycard_reset")) include_once($CORE_PATH."cc-modules/lib/paycardLib.php");
 if (!function_exists("tDataConnect")) include_once($CORE_PATH."lib/connect.php");
 if (!function_exists("tender")) include_once($CORE_PATH."lib/prehkeys.php");
 if (!function_exists("receipt")) include_once($CORE_PATH."lib/clientscripts.php");
@@ -296,7 +296,6 @@ class GoEMerchant extends BasicCCModule {
 		}
 	
 		// save the details
-		$CORE_LOCAL->set("paycard_PAN",$request['PAN']);
 		$CORE_LOCAL->set("paycard_amount",(($request['mode']=='retail_alone_credit') ? -1 : 1) * $request['amount']);
 		$CORE_LOCAL->set("paycard_id",$transID);
 		$CORE_LOCAL->set("paycard_trans",$cashier."-".$lane."-".$trans);
@@ -675,11 +674,6 @@ class GoEMerchant extends BasicCCModule {
 		$xml .= "</FIELDS>";
 		$xml .= "</TRANSACTION>";
 
-		$CORE_LOCAL->set("paycard_PAN",$cardPANmasked);
-		$CORE_LOCAL->set("paycard_tr1",False);
-		$CORE_LOCAL->set("paycard_tr2",False);
-		$CORE_LOCAL->set("paycard_tr3",False);
-
 		$this->GATEWAY = "https://secure.goemerchant.com/secure/gateway/xmlgateway.aspx";
 		return $this->curlSend($xml,'POST',True);
 	}
@@ -704,13 +698,13 @@ class GoEMerchant extends BasicCCModule {
 		$amountText = number_format(abs($amount), 2, '.', '');
 		$mode = 'void';
 		$manual = ($CORE_LOCAL->get("paycard_manual") ? 1 : 0);
-		$cardPAN = $CORE_LOCAL->get("paycard_PAN");
+		$cardPAN = $this->trans_pan['pan'];
 		$cardPANmasked = paycard_maskPAN($cardPAN,0,4);
 		$cardIssuer = $CORE_LOCAL->get("paycard_issuer");
 		$cardExM = substr($CORE_LOCAL->get("paycard_exp"),0,2);
 		$cardExY = substr($CORE_LOCAL->get("paycard_exp"),2,2);
-		$cardTr1 = $CORE_LOCAL->get("paycard_tr1");
-		$cardTr2 = $CORE_LOCAL->get("paycard_tr2");
+		$cardTr1 = $this->trans_pan['tr1'];
+		$cardTr2 = $this->trans_pan['tr2'];
 		$cardName = $CORE_LOCAL->get("paycard_name");
 		$refNum = $this->refnum($transID);
 		$live = 1;
@@ -767,11 +761,6 @@ class GoEMerchant extends BasicCCModule {
 		$xml .= "</FIELDS>";
 		$xml .= "</TRANSACTION>";
 
-		$CORE_LOCAL->set("paycard_PAN",$cardPANmasked);
-		$CORE_LOCAL->set("paycard_tr1",False);
-		$CORE_LOCAL->set("paycard_tr2",False);
-		$CORE_LOCAL->set("paycard_tr3",False);
-		
 		$this->GATEWAY = "https://secure.goemerchant.com/secure/gateway/xmlgateway.aspx";
 		return $this->curlSend($xml,'POST',True);
 	}

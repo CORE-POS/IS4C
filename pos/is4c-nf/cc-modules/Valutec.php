@@ -32,7 +32,7 @@ if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= 
 if (!class_exists("BasicCCModule")) include_once($CORE_PATH."cc-modules/BasicCCModule.php");
 
 if (!class_exists("xmlData")) include_once($CORE_PATH."lib/xmlData.php");
-if (!function_exists("paycard_reset")) include_once($CORE_PATH."lib/paycardLib.php");
+if (!function_exists("paycard_reset")) include_once($CORE_PATH."cc-modules/lib/paycardLib.php");
 if (!function_exists("receipt")) include_once($CORE_PATH."lib/clientscripts.php");
 if (!function_exists("deptkey")) include_once($CORE_PATH."lib/prehkeys.php");
 if (!function_exists("tDataConnect")) include_once($CORE_PATH."lib/connect.php");

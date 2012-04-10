@@ -32,7 +32,7 @@
 $CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
 if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
 
-if (!function_exists("paycard_errorText")) include_once($CORE_PATH."lib/paycardLib.php");
+if (!function_exists("paycard_errorText")) include_once($CORE_PATH."cc-modules/lib/paycardLib.php");
 if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
 
 define("LOCAL_CERT_PATH",$_SERVER['DOCUMENT_ROOT']."/cc-modules/cacert.pem");
@@ -121,8 +121,8 @@ class BasicCCModule {
 	 * Valid types: GET, POST, SOAP
 	 * Setting xml to True adds an content-type header
 	 */
-	var $GATEWAY;
-	var $SOAPACTION;
+	protected $GATEWAY;
+	protected $SOAPACTION;
 	function curlSend($data=False,$type='POST',$xml=False){
 		global $CORE_PATH,$CORE_LOCAL;
 		if($data && $type == 'GET')
@@ -222,7 +222,7 @@ class BasicCCModule {
 	// action is top level tag in the soap body
 	// Envelope attributes can be overridden by a subclass
 	// if needed
-	var $SOAP_ENVELOPE_ATTRS = array(
+	protected $SOAP_ENVELOPE_ATTRS = array(
 		"xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\"",
 		"xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"",
 		"xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\""
@@ -291,7 +291,7 @@ class BasicCCModule {
 		}
 	}
 
-	var $trans_pan;
+	private $trans_pan;
 	function setPAN($in){
 		$this->trans_pan = $in;
 	}

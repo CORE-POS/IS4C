@@ -27,7 +27,7 @@ if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= 
 include_once($CORE_PATH."ini.php");
 if (!function_exists("pDataConnect")) include($CORE_PATH."lib/connect.php");
 if (!function_exists("loadglobalvalues")) include($CORE_PATH."lib/loadconfig.php");
-if (!function_exists("paycard_reset")) include($CORE_PATH."lib/paycardLib.php");
+if (!function_exists("paycard_reset")) include($CORE_PATH."cc-modules/lib/paycardLib.php");
 if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
 
 // initiate_session();
