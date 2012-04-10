@@ -32,8 +32,6 @@
 
 $CORE_PATH = "../../";
 if (!function_exists("paycard_reset")) require_once("../lib/paycardLib.php");
-if (!function_exists("printfooter")) require_once("../../lib/drawscreen.php");
-if (!function_exists("sigTermObject")) require_once("../../lib/lib.php");
 if (!isset($CORE_LOCAL)) include("../../lib/LocalStorage/conf.php");
 $CORE_PATH = "../../";
 
@@ -98,6 +96,7 @@ class ProcessPage {
 		</div>
 		<?php
 		echo "<div id=\"footer\">";
+		if (!function_exists("printfooter")) require_once("../../lib/drawscreen.php");
 		echo printfooter();
 		echo "</div>";
 	}
@@ -116,9 +115,6 @@ class ProcessPage {
 				$CORE_LOCAL->set("togglefoodstamp",0);
 				$CORE_LOCAL->set("ccTermOut","resettotal:".
 					str_replace(".","",sprintf("%.2f",$CORE_LOCAL->get("amtdue"))));
-				$st = sigTermObject();
-				if (is_object($st))
-					$st->WriteToScale($CORE_LOCAL->get("ccTermOut"));
 				paycard_reset();
 				header("Location: ../../gui-modules/pos2.php");
 				return False;

@@ -25,14 +25,10 @@ $CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
 if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
 
 if (!class_exists("BasicCCModule")) include_once($CORE_PATH."cc-modules/BasicCCModule.php");
-
-if (!class_exists("xmlData")) include_once($CORE_PATH."lib/xmlData.php");
-if (!class_exists("Void")) include_once($CORE_PATH."parser-class-lib/parse/Void.php");
-if (!function_exists("truncate2")) include_once($CORE_PATH."lib/lib.php");
+if (!class_exists("xmlData")) include_once($CORE_PATH."cc-modules/lib/xmlData.php");
 if (!function_exists("paycard_reset")) include_once($CORE_PATH."cc-modules/lib/paycardLib.php");
-if (!function_exists("tDataConnect")) include_once($CORE_PATH."lib/connect.php");
-if (!function_exists("tender")) include_once($CORE_PATH."lib/prehkeys.php");
-if (!function_exists("receipt")) include_once($CORE_PATH."lib/clientscripts.php");
+
+
 if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
 
 define('GOEMERCH_ID','');
@@ -74,7 +70,7 @@ class GoEMerchant extends BasicCCModule {
 		switch( $CORE_LOCAL->get("paycard_mode")) {
 		case PAYCARD_MODE_VOID:
 			// use the card number to find the trans_id
-			$dbTrans = tDataConnect();
+			$dbTrans = paycard_db();
 			$today = date('Ymd');
 			$pan4 = substr($this->$trans_pan['pan'],-4);
 			$cashier = $CORE_LOCAL->get("CashierNo");
@@ -87,8 +83,8 @@ class GoEMerchant extends BasicCCModule {
 				$sql = str_replace("[","",$sql);
 				$sql = str_replace("]","",$sql);
 			}
-			$search = $dbTrans->query($sql);
-			$num = $dbTrans->num_rows($search);
+			$search = paycard_db_query($sql, $dbTrans);
+			$num = paycard_db_num_rows($search);
 			if( $num < 1) {
 				paycard_reset();
 				$json['output'] = paycard_msgBox(PAYCARD_TYPE_CREDIT,"Card Not Used",
@@ -100,7 +96,7 @@ class GoEMerchant extends BasicCCModule {
 					"That card number was used more than once in this transaction; select the payment and press VOID","[clear] to cancel");
 				return $json;
 			}
-			$payment = $dbTrans->fetch_array($search);
+			$payment = paycard_db_fetch_row($search);
 			return $this->paycard_void($payment['transID'],$lane,$trans,$json);
 			break;
 
@@ -163,7 +159,7 @@ class GoEMerchant extends BasicCCModule {
 		}
 	
 		// initialize
-		$dbTrans = tDataConnect();
+		$dbTrans = paycard_db();
 		$today = date('Ymd');
 		$cashier = $CORE_LOCAL->get("CashierNo");
 		$lane = $CORE_LOCAL->get("laneno");
@@ -179,8 +175,8 @@ class GoEMerchant extends BasicCCModule {
 			$sql = str_replace("[","",$sql);
 			$sql = str_replace("]","",$sql);
 		}
-		$search = $dbTrans->query($sql);
-		$num = $dbTrans->num_rows($search);
+		$search = paycard_db_query($sql, $dbTrans);
+		$num = paycard_db_num_rows($search);
 		if( $num < 1) {
 			paycard_reset();
 			$json['output'] = paycard_errBox(PAYCARD_TYPE_CREDIT,"Internal Error",
@@ -192,7 +188,7 @@ class GoEMerchant extends BasicCCModule {
 				"Card request not distinct, unable to void","[clear] to cancel");
 			return $json;
 		}
-		$request = $dbTrans->fetch_array($search);
+		$request = paycard_db_fetch_row($search);
 
 		// look up the response
 		$sql = "SELECT commErr,httpCode,validResponse,xResponseCode,
@@ -202,8 +198,8 @@ class GoEMerchant extends BasicCCModule {
 			$sql = str_replace("[","",$sql);
 			$sql = str_replace("]","",$sql);
 		}
-		$search = $dbTrans->query($sql);
-		$num = $dbTrans->num_rows($search);
+		$search = paycard_db_query($sql, $dbTrans);
+		$num = paycard_db_num_rows($search);
 		if( $num < 1) {
 			paycard_reset();
 			$json['output'] = paycard_errBox(PAYCARD_TYPE_CREDIT,"Internal Error",
@@ -215,7 +211,7 @@ class GoEMerchant extends BasicCCModule {
 				"Card response not distinct, unable to void","[clear] to cancel");
 			return $json;
 		}
-		$response = $dbTrans->fetch_array($search);
+		$response = paycard_db_fetch_row($search);
 
 		// look up any previous successful voids
 		$sql = "SELECT transID FROM efsnetRequestMod WHERE [date]=".$today." AND cashierNo=".$cashier." AND laneNo=".$lane." AND transNo=".$trans." AND transID=".$transID
@@ -224,8 +220,8 @@ class GoEMerchant extends BasicCCModule {
 			$sql = str_replace("[","",$sql);
 			$sql = str_replace("]","",$sql);
 		}
-		$search = $dbTrans->query($sql);
-		$voided = $dbTrans->num_rows($search);
+		$search = paycard_db_query($sql, $dbTrans);
+		$voided = paycard_db_num_rows($search);
 		if( $voided > 0) {
 			paycard_reset();
 			$json['output'] = paycard_errBox(PAYCARD_TYPE_CREDIT,"Unable to Void",
@@ -236,13 +232,13 @@ class GoEMerchant extends BasicCCModule {
 		// look up the transaction tender line-item
 		$sql = "SELECT trans_type,trans_subtype,trans_status,voided
 		       	FROM localtemptrans WHERE trans_id=" . $transID;
-		$search = $dbTrans->query($sql);
-		$num = $dbTrans->num_rows($search);
+		$search = paycard_db_query($sql, $dbTrans);
+		$num = paycard_db_num_rows($search);
 		if( $num < 1) {
 			$sql = "SELECT * FROM localtranstoday WHERE trans_id=".$transID." and emp_no=".$cashier
 				." and register_no=".$lane." and trans_no=".$trans;
-			$search = $dbTrans->query($sql);
-			$num = $dbTrans->num_rows($search);
+			$search = paycard_db_query($sql, $dbTrans);
+			$num = paycard_db_num_rows($search);
 			if ($num != 1){
 				paycard_reset();
 				$json['output'] = paycard_errBox(PAYCARD_TYPE_CREDIT,"Internal Error",
@@ -255,7 +251,7 @@ class GoEMerchant extends BasicCCModule {
 				"Transaction item not distinct, unable to void","[clear] to cancel");
 			return $json;
 		}
-		$lineitem = $dbTrans->fetch_array($search);
+		$lineitem = paycard_db_fetch_row($search);
 
 		// make sure the payment is applicable to void
 		if( $response['commErr'] != 0 || $response['httpCode'] != 200 || $response['validResponse'] != 1) {
@@ -383,13 +379,13 @@ class GoEMerchant extends BasicCCModule {
 		$sqlColumns .= ",validResponse";
 		$sqlValues .= sprintf(",%d",$validResponse);
 
-		$dbTrans = tDataConnect();
+		$dbTrans = paycard_db();
 		$sql = "INSERT INTO efsnetResponse (" . $sqlColumns . ") VALUES (" . $sqlValues . ")";
 		if ($CORE_LOCAL->get("DBMS") == "mysql"){
 			$sql = str_replace("[","",$sql);
 			$sql = str_replace("]","",$sql);
 		}
-		$dbTrans->query($sql);
+		paycard_db_query($sql, $dbTrans);
 
 		if( $authResult['curlErr'] != CURLE_OK || $authResult['curlHTTP'] != 200){
 			if ($authResult['curlHTTP'] == '0'){
@@ -474,13 +470,13 @@ class GoEMerchant extends BasicCCModule {
 		$sqlColumns .= ",validResponse";
 		$sqlValues .= sprintf(",%d",$validResponse);
 
-		$dbTrans = tDataConnect();
+		$dbTrans = paycard_db();
 		$sql = "INSERT INTO efsnetRequestMod (" . $sqlColumns . ") VALUES (" . $sqlValues . ")";
 		if ($CORE_LOCAL->get("DBMS") == "mysql"){
 			$sql = str_replace("[","",$sql);
 			$sql = str_replace("]","",$sql);
 		}
-		$dbTrans->query($sql);
+		paycard_db_query($sql, $dbTrans);
 
 		if( $authResult['curlErr'] != CURLE_OK || $authResult['curlHTTP'] != 200){
 			if ($authResult['curlHTTP'] == '0'){
@@ -509,12 +505,13 @@ class GoEMerchant extends BasicCCModule {
 	}
 
 	function cleanup($json){
-		global $CORE_LOCAL;
+		global $CORE_LOCAL, $CORE_PATH;
 		switch($CORE_LOCAL->get("paycard_mode")){
 		case PAYCARD_MODE_AUTH:
 			$CORE_LOCAL->set("ccTender",1); 
 			// cast to string. tender function expects string input
 			// numeric input screws up parsing on negative values > $0.99
+			if (!function_exists("tender")) include_once($CORE_PATH."lib/prehkeys.php");
 			$amt = "".($CORE_LOCAL->get("paycard_amount")*100);
 			tender("CC", $amt);
 			$CORE_LOCAL->set("boxMsg","<b>Approved</b><font size=-1><p>Please verify cardholder signature<p>[enter] to continue<br>\"rp\" to reprint slip<br>[void] to cancel and void</font>");
@@ -523,6 +520,7 @@ class GoEMerchant extends BasicCCModule {
 			}	
 			break;
 		case PAYCARD_MODE_VOID:
+			if (!class_exists("Void")) include_once($CORE_PATH."parser-class-lib/parse/Void.php");
 			$v = new Void();
 			$v->voidid($CORE_LOCAL->get("paycard_id"));
 			$CORE_LOCAL->set("boxMsg","<b>Voided</b><p><font size=-1>[enter] to continue<br>\"rp\" to reprint slip</font>");
@@ -550,7 +548,7 @@ class GoEMerchant extends BasicCCModule {
 	function send_auth(){
 		global $CORE_LOCAL;
 		// initialize
-		$dbTrans = tDataConnect();
+		$dbTrans = paycard_db();
 		if( !$dbTrans){
 			paycard_reset();
 			return $this->setErrorMsg(PAYCARD_ERR_NOSEND); // database error, nothing sent (ok to retry)
@@ -629,7 +627,7 @@ class GoEMerchant extends BasicCCModule {
 			"[date],cashierNo,laneNo,transNo,transID," .
 			"[datetime],refNum,live,mode,amount," .
 			"PAN,issuer,manual,name";
-		$fixedName = $dbTrans->escape($cardName);
+		$fixedName = paycard_db_escape($cardName, $dbTrans);
 		$sqlVals .= "," . // already defined some sent* values
 			sprintf("%d,%d,%d,%d,%d,",        $today, $cashierNo, $laneNo, $transNo, $transID) .
 			sprintf("'%s','%s',%d,'%s',%s,",  $now, $refNum, $live, $mode, $amountText) .
@@ -640,7 +638,7 @@ class GoEMerchant extends BasicCCModule {
 			$sql = str_replace("]","",$sql);
 		}
 
-		if( !$dbTrans->query($sql) ) {
+		if( !paycard_db_query($sql, $dbTrans) ) {
 			paycard_reset();
 			return $this->setErrorMsg(PAYCARD_ERR_NOSEND); // internal error, nothing sent (ok to retry)
 		}
@@ -681,7 +679,7 @@ class GoEMerchant extends BasicCCModule {
 	function send_void(){
 		global $CORE_LOCAL;
 		// initialize
-		$dbTrans = tDataConnect();
+		$dbTrans = paycard_db();
 		if( !$dbTrans){
 			paycard_reset();
 			return $this->setErrorMsg(PAYCARD_ERR_NOSEND);
@@ -739,12 +737,12 @@ class GoEMerchant extends BasicCCModule {
 			$sql = str_replace("[","",$sql);
 			$sql = str_replace("]","",$sql);
 		}
-		$result = $dbTrans->query($sql);
-		if( !$result || $dbTrans->num_rows($result) != 1){
+		$result = paycard_db_query($sql, $dbTrans);
+		if( !$result || paycard_db_num_rows($result) != 1){
 			paycard_reset();
 			return $this->setErrorMsg(PAYCARD_ERR_NOSEND); 
 		}
-		$res = $dbTrans->fetch_array($result);
+		$res = paycard_db_fetch_row($result);
 		$TransactionID = $res['xTransactionID'];
 
 		$xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
@@ -783,7 +781,6 @@ class GoEMerchant extends BasicCCModule {
 		$ref .= str_pad($transID,   3, "0", STR_PAD_LEFT);
 		return $ref;
 	}
-
 }
 
 ?>
