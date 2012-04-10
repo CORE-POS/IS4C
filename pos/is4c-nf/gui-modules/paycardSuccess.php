@@ -25,7 +25,7 @@ $CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
 if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
 
 if (!class_exists("BasicPage")) include_once($CORE_PATH."gui-class-lib/BasicPage.php");
-if (!function_exists("paycard_reset")) include_once($CORE_PATH."lib/paycardLib.php");
+if (!function_exists("paycard_reset")) include_once($CORE_PATH."cc-modules/lib/paycardLib.php");
 if (!function_exists("ttl")) include_once($CORE_PATH."lib/prehkeys.php");
 if (!function_exists("printfooterb")) include_once($CORE_PATH."lib/drawscreen.php");
 if (!function_exists("tDataConnect")) include_once($CORE_PATH."lib/connect.php");

@@ -169,7 +169,7 @@ class Steering extends Parser {
 			}
 			return True;
 		case "CE":
-			$this->ret['main_frame'] = $CORE_PATH."gui-modules/paycardEntry.php";
+			$this->ret['main_frame'] = $CORE_PATH."cc-modules/gui/ProcessPage.php";
 			return True;
 		}
 		return False;

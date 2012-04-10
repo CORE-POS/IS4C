@@ -21,7 +21,7 @@
 
 *********************************************************************************/
 if (!class_exists("MainFramePage")) include_once($_SESSION["INCLUDE_PATH"]."/gui-class-lib/MainFramePage.php");
-if (!function_exists("paycard_reset")) require_once($_SESSION["INCLUDE_PATH"]."/lib/paycardLib.php");
+if (!function_exists("paycard_reset")) require_once($_SESSION["INCLUDE_PATH"]."/cc-modules/lib/paycardLib.php");
 if (!function_exists("changeCurrentPage")) require_once($_SESSION["INCLUDE_PATH"]."/gui-base.php");
 if (!isset($CORE_LOCAL)) include($_SESSION["INCLUDE_PATH"]."/lib/LocalStorage/conf.php");
 

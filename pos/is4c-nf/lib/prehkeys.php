@@ -27,7 +27,7 @@ if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= 
 if (!function_exists("addItem")) include($CORE_PATH."lib/additem.php");
 if (!function_exists("truncate2")) include_once($CORE_PATH."lib/lib.php");
 if (!function_exists("lastpage")) include($CORE_PATH."lib/listitems.php");
-if (!function_exists("paycard_reset")) include($CORE_PATH."lib/paycardLib.php");
+if (!function_exists("paycard_reset")) include($CORE_PATH."cc-modules/lib/paycardLib.php");
 if (!function_exists("blueLine")) include($CORE_PATH."lib/session.php");
 if (!function_exists("boxMsgscreen")) include($CORE_PATH."lib/clientscripts.php");
 

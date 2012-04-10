@@ -29,7 +29,7 @@ if (!class_exists("BasicCCModule")) include_once($CORE_PATH."cc-modules/BasicCCM
 if (!class_exists("xmlData")) include_once($CORE_PATH."lib/xmlData.php");
 if (!class_exists("Void")) include_once($CORE_PATH."parser-class-lib/parse/Void.php");
 if (!function_exists("truncate2")) include_once($CORE_PATH."lib/lib.php");
-if (!function_exists("paycard_reset")) include_once($CORE_PATH."lib/paycardLib.php");
+if (!function_exists("paycard_reset")) include_once($CORE_PATH."cc-modules/lib/paycardLib.php");
 if (!function_exists("tDataConnect")) include_once($CORE_PATH."lib/connect.php");
 if (!function_exists("tender")) include_once($CORE_PATH."lib/prehkeys.php");
 if (!function_exists("receipt")) include_once($CORE_PATH."lib/clientscripts.php");
@@ -63,7 +63,7 @@ class AuthorizeDotNet extends BasicCCModule {
 			// use the card number to find the trans_id
 			$dbTrans = tDataConnect();
 			$today = date('Ymd');
-			$pan4 = substr($CORE_LOCAL->get("paycard_PAN"),-4);
+			$pan4 = substr($this->trans_pan['pan'],-4);
 			$cashier = $CORE_LOCAL->get("CashierNo");
 			$lane = $CORE_LOCAL->get("laneno");
 			$trans = $CORE_LOCAL->get("transno");
@@ -91,14 +91,14 @@ class AuthorizeDotNet extends BasicCCModule {
 
 		case PAYCARD_MODE_AUTH:
 			if( $validate) {
-				if( paycard_validNumber($CORE_LOCAL->get("paycard_PAN")) != 1) {
+				if( paycard_validNumber($this->trans_pan['pan']) != 1) {
 					paycard_reset();
 					$json['output'] = paycard_errBox(PAYCARD_TYPE_CREDIT,
 						"Invalid Card Number",
 						"Swipe again or type in manually",
 						"[clear] to cancel");
 					return $json;
-				} else if( paycard_accepted($CORE_LOCAL->get("paycard_PAN"), !paycard_live(PAYCARD_TYPE_CREDIT)) != 1) {
+				} else if( paycard_accepted($this->trans_pan['pan'], !paycard_live(PAYCARD_TYPE_CREDIT)) != 1) {
 					paycard_reset();
 					$json['output'] = paycard_msgBox(PAYCARD_TYPE_CREDIT,
 						"Unsupported Card Type",
@@ -268,7 +268,6 @@ class AuthorizeDotNet extends BasicCCModule {
 		}
 	
 		// save the details
-		$CORE_LOCAL->set("paycard_PAN",$request['PAN']);
 		$CORE_LOCAL->set("paycard_amount",(($request['mode']=='refund') ? -1 : 1) * $request['amount']);
 		$CORE_LOCAL->set("paycard_id",$transID);
 		$CORE_LOCAL->set("paycard_type",PAYCARD_TYPE_CREDIT);
@@ -541,13 +540,13 @@ class AuthorizeDotNet extends BasicCCModule {
 		$amountText = number_format(abs($amount), 2, '.', '');
 		$mode = (($amount < 0) ? 'refund' : 'tender');
 		$manual = ($CORE_LOCAL->get("paycard_manual") ? 1 : 0);
-		$cardPAN = $CORE_LOCAL->get("paycard_PAN");
+		$cardPAN = $this->trans_pan['pan'];
 		$cardPANmasked = paycard_maskPAN($cardPAN,0,4);
 		$cardIssuer = $CORE_LOCAL->get("paycard_issuer");
 		$cardExM = substr($CORE_LOCAL->get("paycard_exp"),0,2);
 		$cardExY = substr($CORE_LOCAL->get("paycard_exp"),2,2);
-		$cardTr1 = $CORE_LOCAL->get("paycard_tr1");
-		$cardTr2 = $CORE_LOCAL->get("paycard_tr2");
+		$cardTr1 = $this->trans_pan['tr1'];
+		$cardTr2 = $this->trans_pan['tr2'];
 		$cardName = $CORE_LOCAL->get("paycard_name");
 		$refNum = $this->refnum($transID);
 		$live = 1;
@@ -631,13 +630,13 @@ class AuthorizeDotNet extends BasicCCModule {
 		$amountText = number_format(abs($amount), 2, '.', '');
 		$mode = 'void';
 		$manual = ($CORE_LOCAL->get("paycard_manual") ? 1 : 0);
-		$cardPAN = $CORE_LOCAL->get("paycard_PAN");
+		$cardPAN = $this->trans_pan['pan'];
 		$cardPANmasked = paycard_maskPAN($cardPAN,0,4);
 		$cardIssuer = $CORE_LOCAL->get("paycard_issuer");
 		$cardExM = substr($CORE_LOCAL->get("paycard_exp"),0,2);
 		$cardExY = substr($CORE_LOCAL->get("paycard_exp"),2,2);
-		$cardTr1 = $CORE_LOCAL->get("paycard_tr1");
-		$cardTr2 = $CORE_LOCAL->get("paycard_tr2");
+		$cardTr1 = $this->trans_pan['tr1'];
+		$cardTr2 = $this->trans_pan['tr2'];
 		$cardName = $CORE_LOCAL->get("paycard_name");
 		$refNum = $this->refnum($transID);
 		$live = 1;
