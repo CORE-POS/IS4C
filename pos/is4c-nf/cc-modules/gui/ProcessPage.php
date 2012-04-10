@@ -31,8 +31,9 @@
  */
 
 $CORE_PATH = "../../";
+include_once("../lib/LS_Access.php");
+$CORE_LOCAL = new LS_Access();
 if (!function_exists("paycard_reset")) require_once("../lib/paycardLib.php");
-if (!isset($CORE_LOCAL)) include("../../lib/LocalStorage/conf.php");
 $CORE_PATH = "../../";
 
 class ProcessPage {

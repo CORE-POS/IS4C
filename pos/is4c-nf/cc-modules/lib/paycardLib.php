@@ -24,7 +24,10 @@
 $CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
 if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
 
-if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
+if (!isset($CORE_LOCAL)){
+	include($CORE_PATH."cc-modules/lib/LS_Access.php");
+	$CORE_LOCAL = new LS_Access();	
+}
 
 define('PAYCARD_MODE_BALANCE',   1);
 define('PAYCARD_MODE_AUTH',      2);
