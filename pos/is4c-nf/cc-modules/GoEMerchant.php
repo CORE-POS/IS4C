@@ -28,8 +28,10 @@ if (!class_exists("BasicCCModule")) include_once($CORE_PATH."cc-modules/BasicCCM
 if (!class_exists("xmlData")) include_once($CORE_PATH."cc-modules/lib/xmlData.php");
 if (!function_exists("paycard_reset")) include_once($CORE_PATH."cc-modules/lib/paycardLib.php");
 
-
-if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
+if (!isset($CORE_LOCAL)){
+	include($CORE_PATH."cc-modules/lib/LS_Access.php");
+	$CORE_LOCAL = new LS_Access();
+}
 
 define('GOEMERCH_ID','');
 define('GOEMERCH_PASSWD','');
