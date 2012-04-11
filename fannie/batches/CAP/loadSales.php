@@ -27,18 +27,63 @@ require_once($FANNIE_ROOT.'src/mysql_connect.php');
 require($FANNIE_ROOT.'src/csv_parser.php');
 require($FANNIE_ROOT.'src/tmp_dir.php');
 
+if (!isset($_REQUEST['upc_col'])){
+	$tpath = sys_get_temp_dir()."/vendorupload/";
+	$fp = fopen($tpath."CAP.csv","r");
+	echo '<h3>Select columns</h3>';
+	echo '<form action="loadSales.php" method="post">';
+	echo '<table cellpadding="4" cellspacing="0" border="1">';
+	$width = 0;
+	$table = "";
+	for($i=0;$i<5;$i++){
+		$line = fgets($fp);
+		$data = csv_parser($line);
+		$table .= '<tr><td>&nbsp;</td>';
+		$j=0;
+		foreach($data as $d){
+			$table .='<td>'.$d.'</td>';
+			$j++;
+		}
+		if ($j > $width) $width = $j;
+		$table .= '</tr>';
+	}
+	echo '<tr><th>UPC</th>';
+	for($i=0;$i<$width;$i++){
+		echo '<td><input type="radio" name="upc_col" value="'.$i.'" /></td>';
+	}
+	echo '</tr>';
+	echo '<tr><th>Price</th>';
+	for($i=0;$i<$width;$i++){
+		echo '<td><input type="radio" name="price_col" value="'.$i.'" /></td>';
+	}
+	echo '</tr>';
+	echo '<tr><th>SKU</th>';
+	for($i=0;$i<$width;$i++){
+		echo '<td><input type="radio" name="sku_col" value="'.$i.'" /></td>';
+	}
+	echo '</tr>';
+	echo '<tr><th>Sub</th>';
+	for($i=0;$i<$width;$i++){
+		echo '<td><input type="radio" name="sub_col" value="'.$i.'" /></td>';
+	}
+	echo '</tr>';
+	$table .= '</table>';
+	echo $table;
+	echo '<input type="submit" value="Continue" />';
+	echo '</form>';
+	exit;
+}
+
 try {
 	$dbc->query("DROP TABLE tempCapPrices");
 }
 catch(Exception $e){}
 $dbc->query("CREATE TABLE tempCapPrices (upc varchar(13), price decimal(10,2))");
 
-$SUB = 2;
-$UPC = 3;
-$SKU = 4;
-$PRICE = 18;
-
-$datastarts = false;
+$SUB = (isset($_REQUEST['sub_col'])) ? (int)$_REQUEST['sub_col'] : 2;
+$UPC = (isset($_REQUEST['upc_col'])) ? (int)$_REQUEST['upc_col'] : 3;
+$SKU = (isset($_REQUEST['sku_col'])) ? (int)$_REQUEST['sku_col'] : 4;
+$PRICE = (isset($_REQUEST['price_col'])) ? (int)$_REQUEST['price_col'] : 4;
 
 $tpath = sys_get_temp_dir()."/vendorupload/";
 $fp = fopen($tpath."CAP.csv","r");
@@ -47,11 +92,6 @@ while(!feof($fp)){
 	$data = csv_parser($line);
 	if (!is_array($data)) continue;
 	if (count($data) < 14) continue;
-
-	if (!$datastarts){
-		if (strstr($data[$UPC],'UPC') !== false ) $datastarts = True;
-		continue;
-	}
 
 	$upc = str_replace("-","",$data[$UPC]);
 	$upc = str_replace(" ","",$upc);
