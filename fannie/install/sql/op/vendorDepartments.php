@@ -30,7 +30,10 @@ $CREATE['op.vendorDepartments'] = "
 		name varchar(125),
 		margin float,
 		testing float,
-		posDeptID int
+		posDeptID int,
+		PRIMARY KEY (vendorID, deptID),
+		INDEX(deptID),
+		INDEX(vendorID)
 	)
 ";
 ?>

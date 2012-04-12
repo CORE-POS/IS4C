@@ -20,7 +20,8 @@ $CREATE['op.customReceipt'] = "
 	CREATE TABLE customReceipt (
 		text varchar(20),
 		seq int,
-		type varchar(20)
+		type varchar(20),
+		PRIMARY KEY (seq, type)
 	)
 ";
 ?>

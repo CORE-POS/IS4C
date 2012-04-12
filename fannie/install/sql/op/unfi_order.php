@@ -37,7 +37,8 @@ $CREATE['op.unfi_order'] = "
 		cat int,
 		wholesale double,
 		vd_cost double,
-		wfc_srp double
+		wfc_srp double,
+		PRIMARY KEY (upcc)
 	)
 ";
 ?>

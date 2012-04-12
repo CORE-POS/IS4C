@@ -37,7 +37,9 @@ $CREATE['op.shelftags'] = "
 		`size` varchar(50) default NULL,
 		`units` int(4) default NULL ,
 		`vendor` varchar(50) default NULL,
-		`pricePerUnit` varchar(50) default NULL
+		`pricePerUnit` varchar(50) default NULL,
+		PRIMARY KEY (`id`,`upc`),
+		INDEX (`id`)
 	)
 ";
 

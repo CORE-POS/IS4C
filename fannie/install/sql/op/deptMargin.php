@@ -16,7 +16,8 @@ department.
 $CREATE['op.deptMargin'] = "
 	CREATE TABLE deptMargin (
 		dept_ID int,
-		margin decimal(10,5)
+		margin decimal(10,5),
+		PRIMARY KeY (dept_ID)
 	)
 ";
 ?>

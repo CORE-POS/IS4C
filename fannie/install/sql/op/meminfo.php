@@ -51,7 +51,8 @@ $CREATE['op.meminfo'] = "
 	  `phone` varchar(30) default NULL,
 	  `email_1` varchar(50) default NULL,
 	  `email_2` varchar(50) default NULL,
-	  `ads_OK` tinyint(1) default '1'
+	  `ads_OK` tinyint(1) default '1',
+	  PRIMARY KEY (`card_no`)
 	)
 ";
 

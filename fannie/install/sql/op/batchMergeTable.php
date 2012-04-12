@@ -21,16 +21,17 @@ entries back into upcs which simplifies subsequent
 queries. At WFC batchList is also a bit large
 and slow to join against directly. 
 */
-$upc = "upc bigint(13) unsigned zerofill";
-if ($dbms == "MSSQL") $upc = "upc varchar(13)";
 
 $CREATE['op.batchMergeTable'] = "
 	CREATE TABLE batchMergeTable (
 		startDate datetime,
 		endDate datetime,
-		$upc,
+		upc varchar(13),
 		description varchar(30),
-		batchID int
+		batchID int,
+		PRIMARY KEY (batchID,upc),
+		INDEX (upc),
+		INDEX (batchID)
 	)
 ";
 

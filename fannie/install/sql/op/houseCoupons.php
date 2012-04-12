@@ -43,7 +43,8 @@ $CREATE['op.houseCoupons'] = "
 		discountValue double,
 		minType varchar(2),
 		minValue double,
-		department int
+		department int,
+		PRIMARY KEY (coupID)
 	)
 ";
 if ($dbms == "MSSQL")

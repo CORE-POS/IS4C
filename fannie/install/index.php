@@ -35,6 +35,8 @@ Necessities
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <a href="stores.php">Stores</a>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<a href="update.php">Updates</a>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <a href="sample_data/extra_data.php">Sample Data</a>
 <form action=index.php method=post>
 <h1>Fannie install checks</h1>
@@ -747,6 +749,9 @@ function create_op_dbs($con){
 
 	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 			'emailLog','op');
+
+	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+			'UpdateLog','op');
 
 	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 			'memberNotes','op');

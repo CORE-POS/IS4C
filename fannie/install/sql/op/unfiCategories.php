@@ -24,7 +24,8 @@ $CREATE['op.unfiCategories'] = "
 		categoryID int,
 		name varchar(50),
 		margin double,
-		testing double
+		testing double,
+		PRIMARY KEY (categoryID)
 	)
 ";
 ?>
