@@ -725,6 +725,9 @@ function create_op_dbs($con){
 			'vendorItems','op');
 
 	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+			'vendorSKUtoPLU','op');
+
+	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 			'vendorSRPs','op');
 
 	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
