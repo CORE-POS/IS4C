@@ -40,22 +40,26 @@ if (isset($_POST["start"])){
 
 	for($i=0;$i<count($upcs);$i++){
 		if(!isset($batchIDs[$names[$i]])){
-			$ins = sprintf("INSERT INTO batches (startDate,endDate,
-					batchName,batchType,discountType,priority) 
-					VALUES ('%s','%s',
-					'%s Coop Deals %s',1,1,0)",$start,$end,
-					$names[$i],$naming);
-			$dbc->query($ins);
-			$fetch = sprintf("SELECT max(batchID) from batches WHERE
-					batchName='%s Coop Deals %s'",$names[$i],$naming);
-			$fetch = $dbc->query($fetch);
-			$bID = array_pop($dbc->fetch_row($fetch));
+			$ins = array(
+			'startDate' => "'$start'",
+			'endDate' => "'$end'",
+			'batchName' => "'{$names[$i]} Coop Deals $naming'",
+			'batchType' => 1,
+			'discountType' => 1,	
+			'priority' => 0
+			);
+			$dbc->smart_insert('batches',$ins);
+			$bID = $dbc->insert_id();
 			$batchIDs[$names[$i]] = $bID;
 		}
 		$id = $batchIDs[$names[$i]];
-		$insQ = sprintf("INSERT INTO batchList (upc,batchID,salePrice,active)
-				VALUES ('%s',%d,%f,0)",$upcs[$i],$id,$prices[$i]);
-		$dbc->query($insQ);
+		$bl = array(
+		'upc' => "'{$upcs[$i]}'",
+		'batchID' => $id,
+		'salePrice' => sprintf("%.2f",$prices[$i]),
+		'active' => 0
+		);
+		$dbc->smart_insert('batchList',$bl);
 	}
 
 	echo "New sales batches have been created!<p />";
@@ -65,7 +69,7 @@ if (isset($_POST["start"])){
 }
 
 $query = "SELECT t.upc,p.description,t.price,
-        s.super_name as batch
+        CASE WHEN s.super_name IS NULL THEN 'sale' ELSE s.super_name END as batch
         FROM tempCapPrices as t
         INNER JOIN products AS p
         on t.upc = p.upc LEFT JOIN

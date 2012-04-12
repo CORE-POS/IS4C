@@ -32,6 +32,7 @@ if (!isset($_REQUEST['upc_col'])){
 	$fp = fopen($tpath."CAP.csv","r");
 	echo '<h3>Select columns</h3>';
 	echo '<form action="loadSales.php" method="post">';
+	echo '<input type="checkbox" name="rm_cds" checked /> Remove check digits';
 	echo '<table cellpadding="4" cellspacing="0" border="1">';
 	$width = 0;
 	$table = "";
@@ -84,9 +85,11 @@ $SUB = (isset($_REQUEST['sub_col'])) ? (int)$_REQUEST['sub_col'] : 2;
 $UPC = (isset($_REQUEST['upc_col'])) ? (int)$_REQUEST['upc_col'] : 3;
 $SKU = (isset($_REQUEST['sku_col'])) ? (int)$_REQUEST['sku_col'] : 4;
 $PRICE = (isset($_REQUEST['price_col'])) ? (int)$_REQUEST['price_col'] : 4;
+$rm_checks = (isset($_REQUEST['rm_cds'])) ? True : False;
 
 $tpath = sys_get_temp_dir()."/vendorupload/";
 $fp = fopen($tpath."CAP.csv","r");
+$do_skus = $dbc->table_exists("UnfiToPlu");
 while(!feof($fp)){
 	$line = fgets($fp);
 	$data = csv_parser($line);
@@ -95,13 +98,15 @@ while(!feof($fp)){
 
 	$upc = str_replace("-","",$data[$UPC]);
 	$upc = str_replace(" ","",$upc);
-	$upc = substr($upc,0,strlen($upc)-1);
+	if ($rm_checks)
+		$upc = substr($upc,0,strlen($upc)-1);
 	$upc = str_pad($upc,13,"0",STR_PAD_LEFT);
 
 	$lookup = $dbc->query("SELECT upc FROM products WHERE upc='$upc'");
 	if ($dbc->num_rows($lookup) == 0){
 		if ($data[$SUB] != "BULK") continue;
 		if ($data[$SKU] == "direct") continue;
+		if (!$do_skus) continue;
 		$sku = $data[$SKU];
 		$look2 = $dbc->query("SELECT wfc_plu FROM UnfiToPlu WHERE unfi_sku='$sku'");
 		if ($dbc->num_rows($look2) == 0) continue;
