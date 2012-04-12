@@ -48,7 +48,8 @@ $CREATE['op.suspensions'] = "
 		mailflag int,
 		discount int,
 		chargelimit ".$con->currency().",
-		reasoncode int
+		reasoncode int,
+		PRIMARY KEY (cardno)
 	)
 ";
 ?>

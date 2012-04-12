@@ -29,7 +29,7 @@ better solution.
 */
 $CREATE['op.prodExtra'] = "
 	CREATE TABLE `prodExtra` (
-		`upc` bigint(13) unsigned zerofill NOT NULL default '0000000000000',
+		`upc` varchar(13),
 		`distributor` varchar(100) default NULL,
 		`manufacturer` varchar(100) default NULL,
 		`cost` numeric(10,2) default NULL,

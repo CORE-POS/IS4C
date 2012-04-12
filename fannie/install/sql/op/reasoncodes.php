@@ -20,6 +20,7 @@ $CREATE['op.reasoncodes'] = "
 	CREATE TABLE reasoncodes (
 		textStr varchar(100),
 		mask int
+		PRIMARY KEY (mask)
 	)
 ";
 ?>

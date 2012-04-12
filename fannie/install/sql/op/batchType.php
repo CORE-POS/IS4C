@@ -20,7 +20,8 @@ $CREATE['op.batchType'] = "
 	CREATE TABLE batchType (
 		batchTypeID int,
 		typeDesc varchar(50),
-		discType int
+		discType int,
+		PRIMARY KEY (batchTypeID)
 	)
 ";
 ?>

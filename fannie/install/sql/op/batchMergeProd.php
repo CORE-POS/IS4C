@@ -21,7 +21,7 @@ $CREATE['op.batchMergeProd'] = "
 	CREATE VIEW batchMergeProd AS
 		SELECT b.startDate,b.endDate,p.upc,p.description,b.batchID
 		FROM batches AS b LEFT JOIN batchList AS l
-		ON b.batchID=l.batchID LEFT JOIN products AS p
+		ON b.batchID=l.batchID INNER JOIN products AS p
 		ON p.upc = l.upc
 ";
 ?>

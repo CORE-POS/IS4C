@@ -47,7 +47,7 @@ $CREATE['op.departments'] = "
 	  `dept_discount` tinyint(4) default NULL,
 	  `modified` datetime default NULL,
 	  `modifiedby` int(11) default NULL,
-	  KEY `dept_no` (`dept_no`),
+	  PRIMARY KEY (`dept_no`),
 	  KEY `dept_name` (`dept_name`)
 	);
 ";

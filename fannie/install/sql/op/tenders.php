@@ -38,7 +38,9 @@ $CREATE['op.tenders'] = "
 		ChangeMessage varchar(255),
 		MinAmount double,
 		MaxAmount double,
-		MaxRefund double
+		MaxRefund double,
+		PRIMARY KEY (TenderID),
+		INDEX (TenderCode)
 	)
 ";
 ?>

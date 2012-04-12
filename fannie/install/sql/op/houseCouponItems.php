@@ -20,7 +20,10 @@ $CREATE['op.houseCouponItems'] = "
 	CREATE TABLE houseCouponItems (
 		coupID int,
 		upc varchar(13),
-		type varchar(15)
+		type varchar(15),
+		PRIMARY KEY (coupID,upc),
+		INDEX (coupID),
+		INDEX (upc)
 	)
 ";
 ?>
