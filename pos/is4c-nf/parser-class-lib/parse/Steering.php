@@ -95,8 +95,17 @@ class Steering extends Parser {
 			$this->ret['main_frame'] = $CORE_PATH."gui-modules/adminlogin.php";
 			return True;
 		case 'MG':
+			if ($CORE_LOCAL->get("SecuritySR") > 20){
+				$CORE_LOCAL->set("adminRequest",$CORE_PATH."gui-modules/adminlist.php");
+				$CORE_LOCAL->set("adminRequestLevel",$CORE_LOCAL->get("SecuritySR"));
+				$CORE_LOCAL->set("adminLoginMsg","Login to suspend/resume transactions");
+				$CORE_LOCAL->set("away",1);
+				$this->ret['main_frame'] = $CORE_PATH."gui-modules/adminlogin.php";
+			}
+			else
+				$this->ret['main_frame'] = $CORE_PATH."gui-modules/adminlist.php";
+			
 			$CORE_LOCAL->set("away",1);
-			$this->ret['main_frame'] = $CORE_PATH."gui-modules/adminlist.php";
 			return True;
 		case 'RP':
 			if ($CORE_LOCAL->get("LastID") != "0")

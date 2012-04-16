@@ -76,6 +76,7 @@ convert(sum(case when upc = '0000000008005' then total else 0 end),decimal(10,2)
 convert(sum(case when upc = 'MEMCOUPON' then unitPrice else 0 end),decimal(10,2)) as memCoupon,
 (case when (max(percentDiscount) is null or max(percentDiscount) < 0) then 0.00 else max(convert(percentDiscount,decimal)) end) as percentDiscount,
 convert(sum(case when numflag=1 THEN total ELSE 0 END),decimal(10,2)) as localTotal,
+convert(sum(case when trans_status='V' THEN -total ELSE 0 END),decimal(10,2)) as voidTotal,
 max(trans_id) as LastID
 from localtemptrans\n";
 
@@ -229,7 +230,8 @@ $createStr .= "s.scDiscount,
 s.transDiscount,
 s.scTransDiscount,
 l.percentDiscount,
-l.localTotal
+l.localTotal,
+l.voidTotal
 from lttsummary l, lttsubtotals s where l.tdate = s.tdate\n";
 
 $db->query("DROP VIEW subtotals");
@@ -296,6 +298,7 @@ convert(numeric(10,2),sum(case when upc = '0000000008005' then total else 0 end)
 convert(numeric(10,2),sum(case when upc = 'MEMCOUPON' then unitPrice else 0 end)) as memCoupon,
 (case when (max(percentDiscount) is null or max(percentDiscount) < 0) then 0.00 else max(convert(numeric(10,2),percentDiscount)) end) as percentDiscount,
 convert(numeric(10,2),sum(case when numflag=1 then total else 0 end)) as localTotal,
+convert(numeric(10,2),sum(case when trans_status='V' then -total else 0 end)) as voidTotal,
 max(trans_id) as LastID
 from localtemptrans";
 
@@ -441,7 +444,8 @@ $createStr .= "s.scDiscount,
 s.transDiscount,
 s.scTransDiscount,
 l.percentDiscount,
-l.localTotal
+l.localTotal,
+l.voidTotal
 from lttsummary l, lttsubtotals s where l.tdate = s.tdate";
 
 $db->query("DROP VIEW subtotals");

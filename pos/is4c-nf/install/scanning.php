@@ -18,6 +18,8 @@ body {
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 Scanning Options
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<a href="security.php">Security</a>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <a href="extra_data.php">Sample Data</a>
 <form action=scanning.php method=post>
 Special handling modules for UPCs that aren't

@@ -46,6 +46,8 @@ Necessities
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <a href="scanning.php">Scanning Options</a>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<a href="security.php">Security</a>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <a href="extra_data.php">Sample Data</a>
 <form action=index.php method=post>
 <h1>IT CORE Install checks</h1>

@@ -82,6 +82,7 @@ function transReset() {
 	$CORE_LOCAL->set("couldhavesaved",0);
 	//$CORE_LOCAL->set("void",0);
 	$CORE_LOCAL->set("voided",0);
+	$CORE_LOCAL->set("voidTTL",0);
 	$CORE_LOCAL->set("tare",0);
 	$CORE_LOCAL->set("tenderamt",0);
 	$CORE_LOCAL->set("change",0);
@@ -158,6 +159,7 @@ function memberReset() {
 
 	$CORE_LOCAL->set("ar_paid",0);
 	$CORE_LOCAL->set("inactMem",0);
+	$CORE_LOCAL->set("memAge",date('Ymd'));
 }
 
 function blueLine($row) {

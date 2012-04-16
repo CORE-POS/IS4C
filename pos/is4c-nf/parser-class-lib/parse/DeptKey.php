@@ -44,7 +44,15 @@ class DeptKey extends Parser {
 		$ret = $this->default_json();
 
 		if ($CORE_LOCAL->get("refund")==1 && $CORE_LOCAL->get("refundComment") == ""){
-			$ret['main_frame'] = $CORE_PATH.'gui-modules/refundComment.php';
+			if ($CORE_LOCAL->get("SecurityRefund") > 20){
+				$CORE_LOCAL->set("adminRequest",$CORE_PATH."gui-modules/refundComment.php");
+				$CORE_LOCAL->set("adminRequestLevel",$CORE_LOCAL->get("SecurityRefund"));
+				$CORE_LOCAL->set("adminLoginMsg","Login to issue refund");
+				$CORE_LOCAL->set("away",1);
+				$ret['main_frame'] = $CORE_PATH."gui-modules/adminlogin.php";
+			}
+			else
+				$ret['main_frame'] = $CORE_PATH.'gui-modules/refundComment.php';
 			$CORE_LOCAL->set("refundComment",$CORE_LOCAL->get("strEntered"));
 		}
 		elseif ($CORE_LOCAL->get("warned") == 1 and ($CORE_LOCAL->get("warnBoxType") == "warnEquity" or $CORE_LOCAL->get("warnBoxType") == "warnAR")){
