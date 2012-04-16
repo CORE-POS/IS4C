@@ -47,6 +47,7 @@ class adminlogin extends NoInputPage {
 		if (isset($_REQUEST['reginput'])){
 			$passwd = $_REQUEST['reginput'];
 			if (strtoupper($passwd) == "CL"){
+				$CORE_LOCAL->set("refundComment","");
 				header("Location: {$CORE_PATH}gui-modules/pos2.php");
 				return False;	
 			}

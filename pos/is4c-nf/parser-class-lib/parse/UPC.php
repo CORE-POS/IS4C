@@ -55,7 +55,15 @@ class UPC extends Parser {
 
 		/* force cashiers to enter a comment on refunds */
 		if ($CORE_LOCAL->get("refund")==1 && $CORE_LOCAL->get("refundComment") == ""){
-			$ret['main_frame'] = $CORE_PATH.'gui-modules/refundComment.php';
+			if ($CORE_LOCAL->get("SecurityRefund") > 20){
+				$CORE_LOCAL->set("adminRequest",$CORE_PATH."gui-modules/refundComment.php");
+				$CORE_LOCAL->set("adminRequestLevel",$CORE_LOCAL->get("SecurityRefund"));
+				$CORE_LOCAL->set("adminLoginMsg","Login to issue refund");
+				$CORE_LOCAL->set("away",1);
+				$ret['main_frame'] = $CORE_PATH."gui-modules/adminlogin.php";
+			}
+			else
+				$ret['main_frame'] = $CORE_PATH.'gui-modules/refundComment.php';
 			$CORE_LOCAL->set("refundComment",$CORE_LOCAL->get("strEntered"));
 			return $ret;
 		}
@@ -94,7 +102,7 @@ class UPC extends Parser {
 			qttyEnforced,department,local,cost,tax,foodstamp,discount,
 			discounttype,specialpricemethod,special_price,groupprice,
 			pricemethod,quantity,specialgroupprice,specialquantity,
-			mixmatchcode
+			mixmatchcode,idEnforced
 		       	from products where upc = '".$upc."'";
 		$result = $db->query($query);
 		$num_rows = $db->num_rows($result);
@@ -137,6 +145,27 @@ class UPC extends Parser {
 					<br>Item not for sale
 					<br><font size=-1>[enter] to continue sale, [clear] to cancel</font>");
 				$ret['main_frame'] = $CORE_PATH."gui-modules/boxMsg2.php";
+				return $ret;
+			}
+		}
+
+		if ($row["idEnforced"] > 0){
+			$msg = $CORE_LOCAL->get("requestMsg");
+			if (is_numeric($msg) && strlen($msg)==8){
+				$CORE_LOCAL->set("memAge",$msg);
+				$CORE_LOCAL->set("requestMsg","");
+				$CORE_LOCAL->set("requestType","");
+			}
+
+			if ($CORE_LOCAL->get("memAge")=="")
+				$CORE_LOCAL->set("memAge",date('Ymd'));
+			$diff = time() - ((int)strtotime($CORE_LOCAL->get("memAge")));
+			$age = floor($diff / (365*60*60*24));
+			if ($age < $row['idEnforced']){
+				$current = date("m/d/y",strtotime($CORE_LOCAL->get("memAge")));
+				$CORE_LOCAL->set("requestType","customer age");
+				$CORE_LOCAL->set("requestMsg","Type customer birthdate YYYYMMDD<br />(current: $current)");
+				$ret['main_frame'] = $CORE_PATH.'gui-modules/requestInfo.php';
 				return $ret;
 			}
 		}
