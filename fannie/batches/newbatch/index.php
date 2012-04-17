@@ -433,11 +433,15 @@ if (isset($_GET['action'])){
 	case 'doPaste':
 		$uid = $_REQUEST['uid'];
 		$bid = $_REQUEST['batchID'];
-		$q = sprintf("UPDATE batchList SET batchID=%d WHERE listID IN
-			(SELECT listID FROM batchList as l INNER JOIN 
+		$q = sprintf("SELECT listID FROM batchList as l INNER JOIN 
 			batchCutPaste as b ON b.upc=l.upc AND b.batchID=l.batchID
-			WHERE b.uid=%d)",$bid,$uid);
-		$dbc->query($q);
+			WHERE b.uid=%d",$uid);
+		$r = $dbc->query($q);
+		while($w = $dbc->fetch_row($r)){
+			$upQ = sprintf("UPDATE batchList SET batchID=%d WHERE listID=%d",
+				$bid,$w['listID']);
+			$dbc->query($upQ);
+		}
 		$dbc->query(sprintf("DELETE FROM batchCutPaste WHERE uid=%d",$uid));
 		$out .= showBatchDisplay($bid);
 		break;
@@ -544,7 +548,7 @@ if (isset($_GET['action'])){
  * inputarea div
  */
 function newBatchInput(){
-	global $batchtypes, $FANNIE_URL, $FANNIE_MASTER_STORE;
+	global $batchtypes, $FANNIE_URL, $FANNIE_STORE_ID;
 
 	$ret = "<form onsubmit=\"newBatch(); return false;\">";
 	$ret .= "<table>";
@@ -564,8 +568,8 @@ function newBatchInput(){
 		$ret .= "<option>$o</option>";
 	$ret .= "</select></td>";
 	$ret .= "<td><select id=\"newBatchPriority\">";
-	$ret .= sprintf('<option value="%d">Default</option>',($FANNIE_MASTER_STORE=='me'?10:0));
-	$ret .= sprintf('<option value="%d">Override</option>',($FANNIE_MASTER_STORE=='me'?30:20));
+	$ret .= sprintf('<option value="%d">Default</option>',($FANNIE_STORE_ID!=0?10:0));
+	$ret .= sprintf('<option value="%d">Override</option>',($FANNIE_STORE_ID==0?15:5));
 	$ret .= "</select></td>";
 	$ret .= "<td><input type=submit value=Add /></td>";
 	$ret .= "</tr></table></form><br />";
