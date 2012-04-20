@@ -65,6 +65,22 @@ confsave('discountEnforced',$CORE_LOCAL->get('discountEnforced'));
 </select><br />
 If yes, members get a percentage discount as specified in custdata.
 <br />
+<b>Line Item Discount (member)</b>: 
+<?php
+if(isset($_REQUEST['LD_MEM'])) $CORE_LOCAL->set('LineItemDiscountMem',$_REQUEST['LD_MEM']);
+printf("<input type=text name=LD_MEM value=\"%f\" />",$CORE_LOCAL->get('LineItemDiscountMem'));
+confsave('LineItemDiscountMem',"'".$CORE_LOCAL->get('LineItemDiscountMem')."'");
+?>
+(percentage; 0.05 =&gt; 5%)
+<br />
+<b>Line Item Discount (non-member)</b>: 
+<?php
+if(isset($_REQUEST['LD_NONMEM'])) $CORE_LOCAL->set('LineItemDiscountNonMem',$_REQUEST['LD_NONMEM']);
+printf("<input type=text name=LD_NONMEM value=\"%f\" />",$CORE_LOCAL->get('LineItemDiscountNonMem'));
+confsave('LineItemDiscountNonMem',"'".$CORE_LOCAL->get('LineItemDiscountNonMem')."'");
+?>
+(percentage; 0.05 =&gt; 5%)
+<br />
 <b>Lock screen on idle</b>: <select name=LOCKSCREEN>
 <?php
 if (isset($_REQUEST['LOCKSCREEN'])) $CORE_LOCAL->set('lockScreen',$_REQUEST['LOCKSCREEN']);
