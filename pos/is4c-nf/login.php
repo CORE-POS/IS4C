@@ -28,6 +28,9 @@ if (!function_exists("pDataConnect")) include($CORE_PATH."lib/connect.php");
 if (!function_exists("initiate_session")) include($CORE_PATH."lib/session.php");
 if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
 
+$CORE_LOCAL->set("parse_chain",'');
+$CORE_LOCAL->set("preparse_chain",'');
+
 initiate_session();
 
 if ($CORE_LOCAL->get("SessionFirstRun") == "")

@@ -281,7 +281,8 @@ else {
 <h3>Tax</h3>
 <i>Provided tax rates are used to create database views. As such,
 descriptions should be DB-legal syntax (e.g., no spaces). A rate of
-0% with ID 0 is automatically included</i>
+0% with ID 0 is automatically included. Enter exact values - e.g.,
+0.05 to represent 5%.</i>
 <?php
 $rates = array();
 if($gotDBs == 2){
