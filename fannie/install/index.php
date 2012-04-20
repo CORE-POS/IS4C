@@ -454,6 +454,7 @@ confset('FANNIE_LANES',$conf);
 
 }
 ?>
+<a href="lane_config/">Edit Global Lane Configuration</a>
 <hr />
 <b>Color-Highlighted Logs</b>:
 <?php
@@ -881,6 +882,9 @@ function create_trans_dbs($con){
 
 	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
 			'AR_EOM_Summary','trans');
+
+	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+			'lane_config','trans');
 
 }
 
