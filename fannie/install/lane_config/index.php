@@ -40,6 +40,8 @@ Necessities
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <a href="security.php">Security</a>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<a href="text.php">Text Strings</a>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <form action=index.php method=post>
 <h1>IT CORE Install checks</h1>
 <h3>Basics</h3>

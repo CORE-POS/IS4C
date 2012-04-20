@@ -19,6 +19,8 @@ body {
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 Security
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<a href="text.php">Text Strings</a>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <form action=security.php method=post>
 <b>Cancel Transaction</b>: <select name=PRIV_CANCEL>
 <?php

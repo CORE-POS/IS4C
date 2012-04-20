@@ -226,27 +226,38 @@ function loaddata() {
 
 /* fetch customer receipt header & footer lines
  * use to be in ini.php and on the remote DB, doesn't
- * belong on either */
+ * belong on either 
+ */
 function customreceipt(){
 	global $CORE_LOCAL;
 
 	$db = pDataConnect(); 
-	$headerQ = "select text from customReceipt where type='header' order by seq";
+	$headerQ = "select text,type,seq from customReceipt order by seq";
 	$headerR = $db->query($headerQ);
-	$CORE_LOCAL->set("receiptHeaderCount",$db->num_rows($headerR));
-	for ($i = 1; $i <= $CORE_LOCAL->get("receiptHeaderCount"); $i++){
-		$headerW = $db->fetch_array($headerR);
-		$CORE_LOCAL->set("receiptHeader$i",$headerW[0]);
-	}
-	$footerQ = "select text from customReceipt where type='footer' order by seq";
-	$footerR = $db->query($footerQ);
-	$CORE_LOCAL->set("receiptFooterCount",$db->num_rows($footerR));
+	$counts = array();
+	while($headerW = $db->fetch_row($headerR)){
+		$typeStr = $headerW['type'];
+		$numeral = $headerW['seq']+1;
+		$text = $headerW['text'];
+		
+		// translation for really old data
+		if (strtolower($typeStr)=="header")
+			$typeStr = "receiptHeader";
+		elseif(strtolower($typeStr)=="footer")
+			$typeStr = "receiptFooter";
 
-	for ($i = 1; $i <= $CORE_LOCAL->get("receiptFooterCount"); $i++){
-		$footerW = $db->fetch_array($footerR);
-		$CORE_LOCAL->set("receiptFooter$i",$footerW[0]);
+		$CORE_LOCAL->set($typeStr.$numeral,$text);
+
+		if (!isset($counts[$typeStr]))
+			$counts[$typeStr] = 1;
+		else
+			$counts[$typeStr]++;
 	}
 	
+	foreach($counts as $key => $num){
+		$CORE_LOCAL->set($key."Count",$num);
+	}
+
 	$db->db_close();
 }
 

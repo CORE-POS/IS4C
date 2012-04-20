@@ -19,6 +19,8 @@ Additional Configuration
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <a href="security.php">Security</a>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<a href="text.php">Text Strings</a>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <form action=extra_config.php method=post>
 <b>Browser only</b>: <select name=BROWSER_ONLY>
 <?php
@@ -224,67 +226,6 @@ confsave('scaleDriver',"'".$CORE_LOCAL->get('scaleDriver')."'");
 <br />
 The name of your scale driver. Known good values include "ssd" and "NewMagellan".
 <hr />
-<b>Check endrosement</b>:<br />
-These lines get printed on the back of checks.<br />
-<?php
-if ($CORE_LOCAL->get('ckEndorse1')==="") $CORE_LOCAL->set('ckEndorse1','');
-if (isset($_REQUEST['CE1'])) $CORE_LOCAL->set('ckEndorse1',$_REQUEST['CE1']);
-printf("<input size=40 type=text name=CE1 value=\"%s\" />",$CORE_LOCAL->get('ckEndorse1'));
-confsave('ckEndorse1',"'".$CORE_LOCAL->get('ckEndorse1')."'");
-if ($CORE_LOCAL->get('ckEndorse2')==="") $CORE_LOCAL->set('ckEndorse2','');
-if (isset($_REQUEST['CE2'])) $CORE_LOCAL->set('ckEndorse2',$_REQUEST['CE2']);
-printf("<br /><input size=40 type=text name=CE2 value=\"%s\" />",$CORE_LOCAL->get('ckEndorse2'));
-confsave('ckEndorse2',"'".$CORE_LOCAL->get('ckEndorse2')."'");
-if ($CORE_LOCAL->get('ckEndorse3')==="") $CORE_LOCAL->set('ckEndorse3','');
-if (isset($_REQUEST['CE3'])) $CORE_LOCAL->set('ckEndorse3',$_REQUEST['CE3']);
-printf("<br /><input size=40 type=text name=CE3 value=\"%s\" />",$CORE_LOCAL->get('ckEndorse3'));
-confsave('ckEndorse3',"'".$CORE_LOCAL->get('ckEndorse3')."'");
-if ($CORE_LOCAL->get('ckEndorse4')==="") $CORE_LOCAL->set('ckEndorse4','');
-if (isset($_REQUEST['CE4'])) $CORE_LOCAL->set('ckEndorse4',$_REQUEST['CE4']);
-printf("<br /><input size=40 type=text name=CE4 value=\"%s\" />",$CORE_LOCAL->get('ckEndorse4'));
-confsave('ckEndorse4',"'".$CORE_LOCAL->get('ckEndorse4')."'");
-?>
-<hr />
-<b>Begin transaction message</b>:<br />
-<?php
-if ($CORE_LOCAL->get('welcomeMsg1')==="") $CORE_LOCAL->set('welcomeMsg1','welcome');
-if (isset($_REQUEST['WM1'])) $CORE_LOCAL->set('welcomeMsg1',$_REQUEST['WM1']);
-printf("<input size=40 type=text name=WM1 value=\"%s\" />",$CORE_LOCAL->get('welcomeMsg1'));
-confsave('welcomeMsg1',"'".$CORE_LOCAL->get('welcomeMsg1')."'");
-if ($CORE_LOCAL->get('welcomeMsg2')==="") $CORE_LOCAL->set('welcomeMsg2','');
-if (isset($_REQUEST['WM2'])) $CORE_LOCAL->set('welcomeMsg2',$_REQUEST['WM2']);
-printf("<br /><input size=40 type=text name=WM2 value=\"%s\" />",$CORE_LOCAL->get('welcomeMsg2'));
-confsave('welcomeMsg2',"'".$CORE_LOCAL->get('welcomeMsg2')."'");
-?>
-<hr />
-<b>End trnasaction message</b>:<br />
-<?php
-if ($CORE_LOCAL->get('farewellMsg1')==="") $CORE_LOCAL->set('farewellMsg1','thanks for shopping');
-if (isset($_REQUEST['FM1'])) $CORE_LOCAL->set('farewellMsg1',$_REQUEST['FM1']);
-printf("<input size=40 type=text name=FM1 value=\"%s\" />",$CORE_LOCAL->get('farewellMsg1'));
-confsave('farewellMsg1',"'".$CORE_LOCAL->get('farewellMsg1')."'");
-if ($CORE_LOCAL->get('farewellMsg2')==="") $CORE_LOCAL->set('farewellMsg2','');
-if (isset($_REQUEST['FM2'])) $CORE_LOCAL->set('farewellMsg2',$_REQUEST['FM2']);
-printf("<br /><input size=40 type=text name=FM2 value=\"%s\" />",$CORE_LOCAL->get('farewellMsg2'));
-confsave('farewellMsg2',"'".$CORE_LOCAL->get('farewellMsg2')."'");
-if ($CORE_LOCAL->get('farewellMsg3')==="") $CORE_LOCAL->set('farewellMsg3','');
-if (isset($_REQUEST['FM3'])) $CORE_LOCAL->set('farewellMsg3',$_REQUEST['FM3']);
-printf("<br /><input size=40 type=text name=FM3 value=\"%s\" />",$CORE_LOCAL->get('farewellMsg3'));
-confsave('farewellMsg3',"'".$CORE_LOCAL->get('farewellMsg3')."'");
-?>
-<hr />
-<b>Training transaction message</b>:<br />
-<?php
-if ($CORE_LOCAL->get('trainingMsg1')==="") $CORE_LOCAL->set('trainingMsg1','welcome to training mode');
-if (isset($_REQUEST['TM1'])) $CORE_LOCAL->set('trainingMsg1',$_REQUEST['TM1']);
-printf("<input size=40 type=text name=TM1 value=\"%s\" />",$CORE_LOCAL->get('trainingMsg1'));
-confsave('trainingMsg1',"'".$CORE_LOCAL->get('trainingMsg1')."'");
-if ($CORE_LOCAL->get('trainingMsg2')==="") $CORE_LOCAL->set('trainingMsg2','');
-if (isset($_REQUEST['TM2'])) $CORE_LOCAL->set('trainingMsg2',$_REQUEST['TM2']);
-printf("<br /><input size=40 type=text name=TM2 value=\"%s\" />",$CORE_LOCAL->get('trainingMsg2'));
-confsave('trainingMsg2',"'".$CORE_LOCAL->get('trainingMsg2')."'");
-?>
-<hr />
 <b>Alert Bar</b>:<br />
 <?php
 if ($CORE_LOCAL->get('alertBar')==="") $CORE_LOCAL->set('alertBar','Warning!');
@@ -392,32 +333,7 @@ foreach($mods as $m){
 confsave('RegisteredPaycardClasses',$CORE_LOCAL->get('RegisteredPaycardClasses'));
 ?>
 </select><br />
-<b>Charge slip lines</b>:<br />
-If running integrated credit cards, these lines get
-printed on the signature slips.<br />
-<?php
-if ($CORE_LOCAL->get('chargeSlip1')==="") $CORE_LOCAL->set('chargeSlip1','');
-if (isset($_REQUEST['CS1'])) $CORE_LOCAL->set('chargeSlip1',$_REQUEST['CS1']);
-printf("<input size=40 type=text name=CS1 value=\"%s\" />",$CORE_LOCAL->get('chargeSlip1'));
-confsave('chargeSlip1',"'".$CORE_LOCAL->get('chargeSlip1')."'");
-if ($CORE_LOCAL->get('chargeSlip2')==="") $CORE_LOCAL->set('chargeSlip2','');
-if (isset($_REQUEST['CS2'])) $CORE_LOCAL->set('chargeSlip2',$_REQUEST['CS2']);
-printf("<br /><input size=40 type=text name=CS2 value=\"%s\" />",$CORE_LOCAL->get('chargeSlip2'));
-confsave('chargeSlip2',"'".$CORE_LOCAL->get('chargeSlip2')."'");
-if ($CORE_LOCAL->get('chargeSlip3')==="") $CORE_LOCAL->set('chargeSlip3','');
-if (isset($_REQUEST['CS3'])) $CORE_LOCAL->set('chargeSlip3',$_REQUEST['CS3']);
-printf("<br /><input size=40 type=text name=CS3 value=\"%s\" />",$CORE_LOCAL->get('chargeSlip3'));
-confsave('chargeSlip3',"'".$CORE_LOCAL->get('chargeSlip3')."'");
-if ($CORE_LOCAL->get('chargeSlip4')==="") $CORE_LOCAL->set('chargeSlip4','');
-if (isset($_REQUEST['CS4'])) $CORE_LOCAL->set('chargeSlip4',$_REQUEST['CS4']);
-printf("<br /><input size=40 type=text name=CS4 value=\"%s\" />",$CORE_LOCAL->get('chargeSlip4'));
-confsave('chargeSlip4',"'".$CORE_LOCAL->get('chargeSlip4')."'");
-if ($CORE_LOCAL->get('chargeSlip5')==="") $CORE_LOCAL->set('chargeSlip5','');
-if (isset($_REQUEST['CS5'])) $CORE_LOCAL->set('chargeSlip5',$_REQUEST['CS5']);
-printf("<br /><input size=40 type=text name=CS5 value=\"%s\" />",$CORE_LOCAL->get('chargeSlip5'));
-confsave('chargeSlip5',"'".$CORE_LOCAL->get('chargeSlip5')."'");
-?>
-<br /><b>Signature Required Limit</b>:
+<b>Signature Required Limit</b>:
 <?php
 if (isset($_REQUEST['CCSigLimit'])) $CORE_LOCAL->set('CCSigLimit',$_REQUEST['CCSigLimit']);
 if ($CORE_LOCAL->get('CCSigLimit')=="") $CORE_LOCAL->set('CCSigLimit',0.00);

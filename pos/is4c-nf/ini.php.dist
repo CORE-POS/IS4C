@@ -68,38 +68,18 @@ $CORE_LOCAL->set("newReceipt",1);
 //$CORE_LOCAL->set("printerPort","/dev/lp0");
 $CORE_LOCAL->set("printerPort",'fakereceipt.txt');
 
-$CORE_LOCAL->set("receiptHeader1",'New Pioneer Food Co-op');
-$CORE_LOCAL->set("receiptHeader2",'319 - 338 - 9441');
-$CORE_LOCAL->set("receiptHeader3",'Keepin It Real Since 1971');
-
-$CORE_LOCAL->set("receiptFooter1",'Returns accepted with receipt');
-$CORE_LOCAL->set("receiptFooter2",'within 30 days of purchase');
-$CORE_LOCAL->set("receiptFooter3",'Visit us at www.newpi.coop');
-
-$CORE_LOCAL->set("ckEndorse1",'FOR DEPOSIT ONLY');
-$CORE_LOCAL->set("ckEndorse2",'TO MCCU');
-$CORE_LOCAL->set("ckEndorse3",'ACCOUNT #');
-$CORE_LOCAL->set("ckEndorse4",'NEW PIONEER FOOD CO-OP');
-
-$CORE_LOCAL->set("chargeSlip1",'NEW PIONEER FOOD CO-OP');
-$CORE_LOCAL->set("chargeSlip2",'NEW PI COPY');
-$CORE_LOCAL->set("chargeSlip3",'22 S. Van Buren St.');
-$CORE_LOCAL->set("chargeSlip4",'Iowa City, IA 52240');
-$CORE_LOCAL->set("chargeSlip5",'');
+$CORE_LOCAL->set("receiptHeaderCount",0);
+$CORE_LOCAL->set("receiptFooterCount",0);
+$CORE_LOCAL->set("ckEndorseCount",0);
+$CORE_LOCAL->set("chargeSlipCount",0);
 
 /***********************************************************************************
 Screen Message Settings
 ************************************************************************************/
 
-$CORE_LOCAL->set("welcomeMsg1",'welcome to the New Pi ');
-$CORE_LOCAL->set("welcomeMsg2",'Keepin It Real Since 1971');
-
-$CORE_LOCAL->set("trainingMsg1",'welcome to the New Pi Front End');
-$CORE_LOCAL->set("trainingMsg2",'training mode is on');
-
-$CORE_LOCAL->set("farewellMsg1",'Thanks for shopping at the New Pi');
-$CORE_LOCAL->set("farewellMsg2",'Returns accepted with receipt within 30 days');
-$CORE_LOCAL->set("farewellMsg3",'(319) 338 - 9441');
+$CORE_LOCAL->set("welcomeMsgCount",0);
+$CORE_LOCAL->set("trainingMsgCount",0);
+$CORE_LOCAL->set("farewellMsgCount",0);
 
 $CORE_LOCAL->set("alertBar",'New Pi - Alert');
 
