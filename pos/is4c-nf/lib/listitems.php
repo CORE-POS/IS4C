@@ -85,13 +85,11 @@ function printReceiptfooter($readOnly=False) {
 
 		$ret = drawitems($top_id, 7, 0);
 
-		$ret .= "<div class=\"farewellMsg\">"
-			.$CORE_LOCAL->get("farewellMsg1")
-			."<br />"
-			.$CORE_LOCAL->get("farewellMsg2")
-			."<br />"
-			.$CORE_LOCAL->get("farewellMsg3")
-			."</div>";
+		$ret .= "<div class=\"farewellMsg\">";
+		for($i=0;$i<=$CORE_LOCAL->get("farewellMsgCount");$i++){
+			$ret .= $CORE_LOCAL->get("farewellMsg".$i)."<br />";
+		}
+		$ret .= "</div>";
 		return $ret;
 	}
 }
@@ -114,12 +112,18 @@ function drawitems($top_item, $rows, $highlight) {
 
 	if ($rowCount == 0) {
 		$ret .= "<div class=\"centerOffset\">";
+		$msg_text = "";
 		if ($CORE_LOCAL->get("training") != 1) {
-			$ret .= plainmsg($CORE_LOCAL->get("welcomeMsg1")."<BR>".$CORE_LOCAL->get("welcomeMsg2"));
+			for($i=1; $i<=$CORE_LOCAL->get("welcomeMsgCount");$i++){
+				$msg_text .= $CORE_LOCAL->get("welcomeMsg".$i)."<br />";
+			}	
 		}
 		else {
-			$ret .= plainmsg($CORE_LOCAL->get("trainingMsg1")."<BR>".$CORE_LOCAL->get("trainingMsg2"));
+			for($i=1; $i<=$CORE_LOCAL->get("trainingMsgCount");$i++){
+				$msg_text .= $CORE_LOCAL->get("trainingMsg".$i)."<br />";
+			}	
 		}
+		$ret .= plainmsg($msg_text);
 		$ret .= "</div>";
 	}
 	else {

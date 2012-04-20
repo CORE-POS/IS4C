@@ -19,6 +19,8 @@ Scanning Options
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <a href="security.php">Security</a>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<a href="text.php">Text Strings</a>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <form action=scanning.php method=post>
 Special handling modules for UPCs that aren't
 products (e.g., coupons)<br />
