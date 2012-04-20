@@ -29,7 +29,7 @@ function confsave($key,$value){
 	fclose($fp);
 }
 
-function loaddata($sql, $table){
+function load_sample_data($sql, $table){
 	$fp = fopen("data/$table.sql","r");
 	while($line = fgets($fp)){
 		$sql->query("INSERT INTO $table VALUES $line");

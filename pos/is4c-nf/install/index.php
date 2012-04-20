@@ -48,6 +48,8 @@ Necessities
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <a href="security.php">Security</a>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<a href="upgrade-ini.php">Upgrade ini.php via server</a>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <a href="extra_data.php">Sample Data</a>
 <form action=index.php method=post>
 <h1>IT CORE Install checks</h1>
@@ -618,6 +620,14 @@ function create_op_dbs($db,$type){
 		)";
 	if (!$db->table_exists('unpaid_ar_today',$name)){
 		$db->query($uaQ,$name);
+	}
+
+	$lcQ = "CREATE TABLE lane_config (
+		modified datetime
+		)";
+	if (!$db->table_exists('lane_config',$name)){
+		$db->query($lcQ);
+		$db->query("INSERT INTO lane_config VALUES ('1900-01-01 00:00:00')");
 	}
 }
 

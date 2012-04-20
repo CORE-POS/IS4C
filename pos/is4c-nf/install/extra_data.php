@@ -34,25 +34,25 @@ $db = new SQLManager($CORE_LOCAL->get('localhost'),
 if (isset($_REQUEST['employees'])){
 	echo "Loading employees";
 	$db->query("TRUNCATE TABLE employees");
-	loaddata($db,'employees');	
+	load_sample_data($db,'employees');	
 }
 elseif(isset($_REQUEST['custdata'])){
 	echo "Loading custdata";
 	$db->query("TRUNCATE TABLE custdata");
-	loaddata($db,'custdata');
+	load_sample_data($db,'custdata');
 }
 elseif(isset($_REQUEST['products'])){
 	echo "Loading products";
 	$db->query("TRUNCATE TABLE products");
-	loaddata($db,'products');
+	load_sample_data($db,'products');
 }
 elseif(isset($_REQUEST['depts'])){
 	echo "Loading departments";
 	$db->query("TRUNCATE TABLE departments");
-	loaddata($db,'departments');
+	load_sample_data($db,'departments');
 	echo "<br />Loading subdepts";
 	$db->query("TRUNCATE TABLE subdepts");
-	loaddata($db,'subdepts');
+	load_sample_data($db,'subdepts');
 }
 ?>
 </i></blockquote>
