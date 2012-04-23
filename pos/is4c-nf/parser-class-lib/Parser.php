@@ -21,28 +21,117 @@
 
 *********************************************************************************/
 
+/**
+  @class Parser
+  The base module for parsing input
+
+  Parser objects are divided into
+  two varieties that behave slightly
+  differently. 
+
+  Modules in the preparse directory
+  are all checked for every input. These
+  modueles may modify the input string.
+
+  Modules in the parse are only checked
+  until one matches the input. Input processing
+  ceases and the matching module must decide
+  what to do next.
+*/
 class Parser {
 
+	/**
+	  Check whether the module handles this input
+	  @param $str The input string
+	  @return 
+	   - True The module handles this input.
+	     The parse method() will be called next.
+	   - False The module does not handle this input.
+	     The parse method() will not be called and
+	     processing will proceed to the next Parser module.
+
+	*/
 	function check($str){
 	
 	}
 
+	/**
+	  Deal with the input
+	  @param $str The input string
+	  @return mixed
+
+	  Preparse modules should return a string. This
+	  value will replace the input string for remaining
+	  parsing.
+
+	  Parse modules a keyed array: 
+	   - main_frame If set, change page to this URL
+	   - output HTML output to be displayed
+	   - target Javascript selector string describing which
+	     element should contain the output
+	   - redraw_footer True or False. Set to True if
+	     totals have changed.
+	   - receipt False or string type. Print a receipt with
+	     the given type.
+	   - scale Update the scale display and session variables
+	   - udpmsg False or string. Send a message to hardware
+	     device(s)
+	   - retry False or string. Try the input again shortly.
+
+	   The utility method default_json() provides an array
+	   with the proper keys and sane default values.
+	*/
 	function parse($str){
 
 	}
 
+	/**
+	  Make this module last
+	  @return True or False
+
+	  Modules are not run in any guaranteed order.
+	  Return True will force this module to be last.
+
+	  BE VERY VERY CAREFUL IF YOU OVERRIDE THIS.
+	  Quantity is the last preparse module and
+	  DefaultTender is the last parse module. Making
+	  your own module last will break one of these
+	  and probably make a mess.
+	*/
 	function isLast(){
 		return False;
 	}
 
+	/**
+	  Make this module first
+	  @return True or False
+
+	  Modules are not run in any guaranteed order.
+	  Return True will force this module to be first
+	  (or nearly first if multiple modules override
+	  this method)
+	*/
 	function isFirst(){
 		return False;
 	}
 
+	/**
+	  Display documentation
+	  @return A string describing the module
+	
+	  Ideally you should note what your module it does
+	  and what the input format is.
+	*/
 	function doc(){
 		return "Developer didn't document this module very well";
 	}
 
+	/**
+	  A return array for parse() with proper keys
+	  @return array
+	
+	  See parse() method
+	*/
 	function default_json(){
 		return array(
 			'main_frame'=>false,
@@ -57,6 +146,15 @@ class Parser {
 	}
 }
 
+/** @file */
+
+/**
+  Gather parse modules
+  @return array of Parser class names
+
+  Scan the parse directory for module files.
+  Return an array of available modules.
+*/
 function get_parse_chain(){
 	global $CORE_PATH;
 	$PARSEROOT = $CORE_PATH."parser-class-lib";
@@ -88,6 +186,13 @@ function get_parse_chain(){
 	return $parse_chain;
 }
 
+/**
+  Gather preparse modules
+  @return array of Parser class names
+
+  Scan the preparse directory for module files.
+  Return an array of available modules.
+*/
 function get_preparse_chain(){
 	global $CORE_PATH;
 
@@ -119,5 +224,28 @@ function get_preparse_chain(){
 
 	return $preparse_chain;
 }
+
+/**
+  @example HW_Parser.php
+
+  The first two lines are standard path detection. With a Parser
+  module something else <i>probably</i> set this already but
+  better safe than sorry.
+
+  The next block demonstrates standard include format
+  (check first, use detected path). 
+  $CORE_LOCAL is an important global containing session values
+
+  check() looks for input the module can handle. In this case
+  the module simply watches for the string "HW".
+
+  parse() demonstrates a couple options when the correct input
+  is detected. If a transaction is in progress, it displays
+  an error message. Otherwise, it sends the browser to
+  a different display script.
+
+  N.B. the HelloWorld display module is just an example; that
+  file does not exist in the gui-modules directory.
+*/
 
 ?>

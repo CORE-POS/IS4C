@@ -24,6 +24,15 @@
 $CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
 if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
 
+/** 
+  @file 
+  This file specifies the LocalStorage implemenation
+
+  Include this file to get a LocalStorage instance
+  in the variable $CORE_LOCAL.
+*/
+
+
 ini_set('display_errors',1);
 ini_set('error_log',$CORE_PATH."log/php-errors.log");
 

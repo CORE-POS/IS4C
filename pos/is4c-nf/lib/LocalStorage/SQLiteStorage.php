@@ -2,6 +2,14 @@
 
 if (!class_exists("LocalStorage")) include_once($_SESSION["INCLUDE_PATH"]."/lib/LocalStorage/LocalStorage.php");
 
+/**
+  @class SQLiteStorage
+  A LocalStorage implementation using SQLite
+
+  Mostly a sample of what an alternative might
+  look like. Performance is decidedly subpar.
+  Not recommended for production use.
+*/
 class SQLiteStorage extends LocalStorage {
 	var $db;
 	function SQLiteStorage(){

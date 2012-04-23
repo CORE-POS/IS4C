@@ -21,7 +21,8 @@
 
 *********************************************************************************/
 
-/* Group PriceMethod module
+/** 
+   @class GroupPM
    
    This module provides the simplest form of group price:
    each item is sold for the group price divided by the 

@@ -29,6 +29,15 @@ if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
 
 if (!function_exists('boxMsg')) include($CORE_PATH."lib/drawscreen.php");
 
+/**
+  @magicPLU
+
+  This module matches specific UPCs to a function
+  Only here for legacy support. Probably not a great
+  idea. Hardcoding a function to a UPC doesn't scale
+  very well. Keeping track of what every special PLU
+  does would get messy.
+*/
 class MagicPLU extends SpecialUPC {
 
 	function is_special($upc){

@@ -32,12 +32,22 @@ if (!function_exists('boxMsg')) include($CORE_PATH."lib/drawscreen.php");
 if (!function_exists('addItem')) include($CORE_PATH."lib/additem.php");
 if (!function_exists('lastpage')) include($CORE_PATH."lib/listitems.php");
 
-// special order upc format:
-// prefix orderID transID
-// 00454  xxxxxx  xx
-//
-// e.g., orderID #1, transID #1:
-// 0045400000101
+/**
+   @class SpecialOrder
+   WFC Electronic Special Orders
+
+   Special order upc format:
+   prefix orderID transID
+   00454  xxxxxx  xx
+  
+   e.g., orderID #1, transID #1:
+   0045400000101
+
+   These IDs are used to locate the
+   special order record in the 
+   PendingSpecialOrder table on
+   the server database
+*/
 
 class SpecialOrder extends SpecialUPC {
 

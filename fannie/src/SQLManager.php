@@ -21,44 +21,55 @@
 
 *********************************************************************************/
 
-/**************************************************
-CLASS INTERFACE
+/**
+ @class SQLManager
+ @brief A SQL abstraction layer
 
-Methods:
-SQLManager(server, type, database, username, password[default: ''], persistent[default: False])
-	Constructor. Creates the object and adds an initial connection to use as the
-	default. Future references to this connection can be made using the $database string.
-	Type should be one of the static database types, e.g. TYPE_MYSQL
-
-add_connection(server, type, database, username, password[d: ''], persistent[d: False])
-	Same as above, but this is not the default connection.
-
-select_db(database_name, connection_identifier)
-	Selects the given database, using the default connection if no identifier is provided.
-
-query(query_string, connection_identifier)
-	Issues the query and returns the result, using the default connection is no identifier 
-	is provided.
-
-fetch_array(result_object, connection_identifer)
-	Returns the row array, using the default connection if no identifier is provided.
-
-**************************************************/
+ Custom SQL abstraction based on ADOdb.
+ Provides some limited functionality for queries
+ across two servers that are useful for lane-server
+ communication
+*/
 $QUERY_LOG = $FANNIE_ROOT."logs/queries.log";
 
 if (!function_exists("ADONewConnection")) include($FANNIE_ROOT.'adodb5/adodb.inc.php');
 
 class SQLManager {
 
+	/** Array of connections **/
 	var $connections;
+	/** Default database connection */
 	var $default_db;
 
+	/** Constructor
+	    @param $server Database server host
+	    @param $type Database type. Most supported are
+	    'mysql' and 'mssql' but anything ADOdb supports
+	    will kind of work
+	    @param $database Database name
+	    @param $username Database username
+	    @param $password Database password
+	    @param $persistent Make persistent connection.
+	*/
 	function SQLManager($server,$type,$database,$username,$password='',$persistent=False){
 		$this->connections=array();
 		$this->default_db = $database;
 		$this->add_connection($server,$type,$database,$username,$password,$persistent);
 	}
 
+	/** Add another connection
+	    @param $server Database server host
+	    @param $type Database type. Most supported are
+	    'mysql' and 'mssql' but anything ADOdb supports
+	    will kind of work
+	    @param $database Database name
+	    @param $username Database username
+	    @param $password Database password
+	    @param $persistent Make persistent connection.
+
+	    When dealing with multiple connections, user the
+	    database name to distinguish which is to be used
+	*/
 	function add_connection($server,$type,$database,$username,$password='',$persistent=False){
 		$conn = ADONewConnection($type);
 		$conn->SetFetchMode(ADODB_FETCH_BOTH);
@@ -95,6 +106,12 @@ class SQLManager {
 		return True;
 	}
 
+	/**
+	  Close a database connection
+	  @param $which_connection
+	  If there are multiple connections, this is
+	  the database name for the connection you want to close
+	*/
 	function close($which_connection=''){
 		if ($which_connection == '')
 			$which_connection=$this->default_db;
@@ -104,6 +121,12 @@ class SQLManager {
 		return $con->Close();
 	}
 
+	/**
+	  Execute a query
+	  @param $query_text The query
+	  @param which_connection see method close
+	  @return A result object on success, False on failure
+	*/
 	function query($query_text,$which_connection=''){
 		global $QUERY_LOG;
 		if ($which_connection == '')
@@ -123,6 +146,13 @@ class SQLManager {
 		return $ok;
 	}
 
+	/**
+	  Execute a query on all connected databases
+	  @param $query_text The query
+	  @return An array keyed by database name. Entries
+	  will be result objects where queries succeeded
+	  and False where they failed
+	*/
 	function query_all($query_text){
 		$ret = array();
 		foreach($this->connections as $db_name => $con){
@@ -131,29 +161,63 @@ class SQLManager {
 		return $ret;
 	}
 
+	/**
+	  Escape a string for SQL-safety
+	  @param $query_text The string to escape
+	  @param $which_connection see method close()
+	  @return The escaped string
+
+	  Note that the return value will include start and
+	  end single quotes
+	*/
 	function escape($query_text,$which_connection=''){
 		if ($which_connection == '')
 			$which_connection = $this->default_db;
 		return $this->connections[$which_connection]->qstr($query_text);
 	}
 	
+	/**
+	  Get number of rows in a result set
+	  @param $result_object A result set
+	  @param $which_connection see method close()
+	  @return Integer number or False if there's an error
+	*/
 	function num_rows($result_object,$which_connection=''){
 		if ($which_connection == '')
 			$which_connection = $this->default_db;
 		return $result_object->RecordCount();
 	}
+
+	/**
+	  Move result cursor to specified record
+	  @param $result_object A result set
+	  @param $rownum The record index
+	  @param $which_connection see method close()
+	  @return True on success, False on failure
 	function data_seek($result_object,$rownum,$which_connection=''){
 		if ($which_connection == '')
 			$which_connection = $this->default_db;
 		return $result_object->Move((int)$rownum);
 	}
 	
+	/**
+	  Get number of fields in a result set
+	  @param $result_object A result set
+	  @param $which_connection see method close()
+	  @return Integer number or False if there's an error
+	*/
 	function num_fields($result_object,$which_connection=''){
 		if ($which_connection == '')
 			$which_connection = $this->default_db;
 		return $result_object->FieldCount();
 	}
 
+	/**
+	  Get next record from a result set
+	  @param $result_object A result set
+	  @param $which_connection see method close()
+	  @return An array of values
+	*/
 	function fetch_array($result_object,$which_connection=''){
 		if (is_null($result_object)) return false;
 		if ($result_object === false) return false;
@@ -166,21 +230,49 @@ class SQLManager {
 		return $ret;
 	}
 
+	/**
+	  Get next record from a result set but as an object
+	  @param $result_object A result set
+	  @param $which_connection see method close()
+	  @return An object with member containing values
+	*/
 	function fetch_object($result_object,$which_connection=''){
 		return $result_object->FetchNextObject(False);
 	}
 	
-	/* compatibility */
+	/**
+	  An alias for the method fetch_array()
+	*/
 	function fetch_row($result_object,$which_connection=''){
 		return $this->fetch_array($result_object,$which_connection);
 	}
 
+	/**
+	  Get the database's function for present time
+	  @param $which_connection see method close()
+	  @return The appropriate function
+
+	  For example, with MySQL this will return the
+	  string 'NOW()'.
+	*/
 	function now($which_connection=''){
 		if ($which_connection == '')
 			$which_connection = $this->default_db;
 		return $this->connections[$which_connection]->sysTimeStamp;
 	}
 
+	/**
+	  Get the database's date difference function
+	  @param $date1 First date
+	  @param $date2 Second date
+	  @param $which_connection see method close()
+	  @return The appropriate function
+
+	  Arguments are inverted for some databases to
+	  ensure consistent results. If $date1 is today
+	  and $date2 is yesterday, this method returns
+	  a SQL function that evaluates to 1.
+	*/
 	function datediff($date1,$date2,$which_connection=''){
 		if ($which_connection == '')
 			$which_connection = $this->default_db;
@@ -192,6 +284,19 @@ class SQLManager {
 			return "datediff(dd,$date2,$date1)";
 		}
 	}
+
+	/**
+	  Get the databases' month difference function
+	  @param $date1 First date
+	  @param $date2 Second date
+	  @param $which_connection see method close()
+	  @return The SQL expression
+
+	  Arguments are inverted for some databases to
+	  ensure consistent results. If $date1 is this month
+	  and $date2 is last month, this method returns
+	  a SQL expression that evaluates to 1.
+	*/
 
 	function monthdiff($date1,$date2,$which_connection=''){
 		if ($which_connection == '')
@@ -205,6 +310,15 @@ class SQLManager {
 		}	
 	}
 
+	/**
+	  Get the difference between two dates in seconds
+	  @param $date1 First date (or datetime)
+	  @param $date2 Second date (or datetime)
+	  @param $which_connection see method close()
+	  @return The SQL expression
+
+	  This method currently only suport MySQL and MSSQL
+	*/
 	function seconddiff($date1,$date2,$which_connection=''){
 		if ($which_connection == '')
 			$which_connection = $this->default_db;
@@ -217,6 +331,14 @@ class SQLManager {
 		}	
 	}
 
+	/**
+	  Get a date formatted YYYYMMDD
+	  @param $date1 The date (or datetime)
+	  @param $which_connection see method close()
+	  @return The SQL expression
+
+	  This method currently only supports MySQL and MSSQL
+	*/
 	function dateymd($date1,$which_connection=''){
 		if ($which_connection == '')
 			$which_connection = $this->default_db;
@@ -229,7 +351,16 @@ class SQLManager {
 		}
 	}
 
-	// flip argument order by mysql vs mssql
+	/**
+	  Get a SQL convert function
+	  @param $expr An SQL expression
+	  @param $type Convert to this SQL type
+	  @param $which_connection see method close()
+	  @return The SQL expression
+
+	  This method currently only supports MySQL and MSSQL
+
+	*/
 	function convert($expr,$type,$which_connection=''){
 		if ($which_connection == '')
 			$which_connection = $this->default_db;
@@ -245,6 +376,15 @@ class SQLManager {
 		return "";
 	}
 
+	/**
+	  Find index of a substring within a larger string
+	  @param $substr Search string (needle)
+	  @param $str Target string (haystack)
+	  @param $which_connection see method close()
+	  @return The SQL expression
+
+	  This method currently only supports MySQL and MSSQL
+	*/
 	function locate($substr,$str,$which_connection=''){
 		if ($which_connection == '')
 			$which_connection = $this->default_db;
@@ -258,9 +398,19 @@ class SQLManager {
 		return "";
 	}
 
-	// note: to swing variable number of args,
-	// connection is manadatory. use empty string
-	// for default connection
+	/**
+	  Concatenate strings
+	  @param Arbitrary; see below
+	  @return The SQL expression
+
+	  This function takes an arbitrary number of arguments
+	  and concatenates them. The last argument is the
+	  standard $which_connection but in this case it is
+	  not optional. You may pass the empty string to use
+	  the default database though.
+
+	  This method currently only supports MySQL and MSSQL
+	*/
 	function concat(){
 		$args = func_get_args();
 		$ret = "";
@@ -284,6 +434,15 @@ class SQLManager {
 		return $ret;
 	}
 
+	/**
+	  Get the differnces between two dates in weeks
+	  @param $date1 First date
+	  @param $date2 Second date
+	  @param $which_connection see method close()
+	  @return The SQL expression
+
+	  This method currently only supports MySQL and MSSQL
+	*/
 	function weekdiff($date1,$date2,$which_connection=''){
 		if ($which_connection == '')
 			$which_connection = $this->default_db;
@@ -296,20 +455,29 @@ class SQLManager {
 		}	
 	}
 
+	/**
+	  Get a column name by index
+	  @param $result_object A result set
+	  @param $index Integer index
+	  @param $which_connection see method close()
+	  @return The column name
+	*/
 	function fetch_field($result_object,$index,$which_connection=''){
 		if ($which_connection == '')
 			$which_connection = $this->default_db;
 		return $result_object->FetchField($index);
 	}
 
-	/* copy a table from one database to another, not necessarily on
-	   the same server or format
+	/** 
+	   Copy a table from one database to another, not necessarily on
+	   the same server or format.
 	
-	   $source_db is the database name of the source
-	   $select_query is the query that will get the data
-	   $dest_db is the database name of the destination
-	   $insert_query is the beginning of the query that will add the
-		data to the destination (specify everything up to VALUES)
+	   @param $source_db The database name of the source
+	   @param $select_query The query that will get the data
+	   @param $dest_db The database name of the destination
+	   @param $insert_query The beginning of the query that will add the
+		data to the destination (specify everything before VALUES)
+	   @return False if any record cannot be transfered, True otherwise
 	*/
 	function transfer($source_db,$select_query,$dest_db,$insert_query){
 		$result = $this->query($select_query,$source_db);
@@ -353,6 +521,13 @@ class SQLManager {
 		return $ret;
 	}
 
+	/**
+	  Get column type
+	  @param $result_object A result set
+	  @param $index Integer index
+	  @param $which_connection see method close()
+	  @return The column type
+	*/
 	function field_type($result_object,$index,$which_connection=''){
 		if ($which_connection == '')
 			$which_connection = $this->default_db;
@@ -360,6 +535,9 @@ class SQLManager {
 		return $fld->type;
 	}
 
+	/**
+	  Alias of method fetch_field()
+	*/
 	function field_name($result_object,$index,$which_connection=''){
 		if ($which_connection == '')
 			$which_connection = $this->default_db;
@@ -367,6 +545,14 @@ class SQLManager {
 		return $fld->name;
 	}
 
+	/**
+	  Get day of week number
+	  @param $field A date expression
+	  @param $which_connection see method close()
+	  @return The SQL expression
+
+	  This method currently only suport MySQL and MSSQL
+	*/
 	function dayofweek($field,$which_connection=''){
 		if ($which_connection == '')
 			$which_connection = $this->default_db;
@@ -383,6 +569,12 @@ class SQLManager {
 		return false;
 	}
 
+	/**
+	  Get the hour from a datetime
+	  @param $field A datetime expression
+	  @param $which_connection see method close()
+	  @return The SQL expression
+	*/
 	function hour($field,$which_connection=''){
 		if ($which_connection == '')
 			$which_connection = $this->default_db;
@@ -391,6 +583,13 @@ class SQLManager {
 	}
 
 
+	/**
+	  Reformat a datetime to YYYY-MM-DD HH:MM:SS
+	  @param $str A datetime string
+	  @return The reformatted string
+
+	  This is a utility method to support transfer()
+	*/
 	function cleanDateTime($str){
 		$stdFmt = "/(\d\d\d\d)-(\d\d)-(\d\d) (\d+?):(\d\d):(\d\d)/";
 		if (preg_match($stdFmt,$str,$group))
@@ -439,11 +638,14 @@ class SQLManager {
 		return $ret;
 	}
 
-	/* check whether the given table exists
-	   Return values:
-		True => table exists
-		False => table doesn't exist
-		-1 => Operation not supported for this database type
+	/** 
+	   Check whether the given table exists
+	   @param $table_name The table's name
+	   @param which_connection see method close
+	   @return
+	    - True The table exists
+	    - False The table doesn't exist
+	    - -1 Operation not supported for this database type
 	*/
 	function table_exists($table_name,$which_connection=''){
 		if ($which_connection == '')
@@ -454,11 +656,14 @@ class SQLManager {
 		return True;
 	}
 
-	/* return the table's definition
-	   Return values:
-		array of (column name, column type) => table found
-		False => no such table
-		-1 => Operation not supported for this database type
+	/**
+	   Get the table's definition
+	   @param $table_name The table's name
+	   @param which_connection see method close
+	   @return
+	    - Array of (column name, column type) table found
+	    - False No such table
+	    - -1 Operation not supported for this database type
 	*/
 	function table_definition($table_name,$which_connection=''){
 		if ($which_connection == '')
@@ -475,6 +680,11 @@ class SQLManager {
 		return False;
 	}
 
+	/**
+	  Get database's currency type
+	  @param which_connection see method close
+	  @return The SQL type
+	*/
 	function currency($which_connection=''){
 		if ($which_connection == '')
 			$which_connection=$this->default_db;
@@ -488,6 +698,14 @@ class SQLManager {
 		return 'decimal(10,2)';
 	}
 
+	/**
+	  Add row limit to a select query
+	  @param $query The select query
+	  @param $int_limit Max rows
+	  @param which_connection see method close
+
+	  This method currently only suport MySQL and MSSQL
+	*/
 	function add_select_limit($query,$int_limit,$which_connection=''){
 		if ($which_connection == '')
 			$which_connection=$this->default_db;
@@ -500,6 +718,11 @@ class SQLManager {
 		}
 	}
 
+	/**
+	  Get database scope separator
+	  @param which_connection see method close
+	  @return String separator
+	*/
 	function sep($which_connection=''){
 		if ($which_connection == '')
 			$which_connection=$this->default_db;
@@ -510,8 +733,14 @@ class SQLManager {
 		case 'mssql':
 			return ".dbo.";
 		}
+		return ".";
 	}
 
+	/**
+	  Get last error message
+	  @param which_connection see method close
+	  @return The message
+	*/
 	function error($which_connection=''){
 		if ($which_connection == '')
 			$which_connection=$this->default_db;
@@ -519,6 +748,11 @@ class SQLManager {
 		return $con->ErrorMsg();
 	}
 
+	/**
+	  Get auto incremented ID from last insert
+	  @param which_connection see method close
+	  @return The new ID value
+	*/
 	function insert_id($which_connection=''){
 		if ($which_connection == '')
 			$which_connection=$this->default_db;
@@ -526,6 +760,11 @@ class SQLManager {
 		return $con->Insert_ID();
 	}
 
+	/**
+	  Check how many rows the last query affected
+	  @param which_connection see method close
+	  @returns Number of rows
+	*/
 	function affected_rows($which_connection=''){
 		if ($which_connection == '')
 			$which_connection=$this->default_db;
@@ -533,9 +772,15 @@ class SQLManager {
 		return $con->Affected_Rows();
 	}
 
-	/* insert as much data as possible
-	 * $values is an associative array of column_name => column_value
-	 * Values are taken as is (i.e., you have to quote your strings)
+	/** 
+	  Insert as much data as possible
+	  @param $table_name Table to insert into
+	  @param $values An array of column name => column value
+	  @param which_connection see method close
+	  @return Same as INSERT via query() method
+
+	  This method polls the table to see which columns actually
+	  exist then inserts those values
 	 */
 	function smart_insert($table_name,$values,$which_connection=''){
                 if ($which_connection == '')
@@ -574,16 +819,23 @@ class SQLManager {
 		return $ret;
 	}
 
-	/* update as much data as possible
-	 * $values is an associative array of column_name => column_value
-	 * Values are taken as is (i.e., you have to quote your strings)
-	 * 
-	 * Caveat: There are a couple places this could break down
-	 * 1) If your WHERE clause requires a column that doesn't exist,
-	 *    the query will fail. No way around it. Auto-modifying 
-	 *    WHERE clauses seems like a terrible idea
-	 * 2) This only works with a single table. Updates involving joins
-	 *    are rare in the code base though.
+	/** 
+	  Update as much data as possible
+	  @param $table_name The table to update
+	  @param $values An array of column name => column value
+	  @param $where_clause The query WHERE clause
+	  @param which_connection see method close
+	  @return Same as an UPDATE via query() method
+	  
+	  This method checks which columns actually exist then
+	  updates those values
+
+	  Caveat: There are a couple places this could break down
+	   - If your WHERE clause requires a column that doesn't exist,
+	     the query will fail. No way around it. Auto-modifying 
+	     WHERE clauses seems like a terrible idea
+	   - This only works with a single table. Updates involving joins
+	     are rare in the code base though.
 	 */
 	function smart_update($table_name,$values,$where_clause,$which_connection=''){
                 if ($which_connection == '')
@@ -619,7 +871,15 @@ class SQLManager {
 		return $ret;
 	}
 
-	/* alternative for DATEDIFF; datetime column $col equals day $dateStr */
+	/** 
+	  See if a datetime is on a given date using BETWEEN	
+	  @param $col datetime expression
+	  @param $dateStr String date
+	  @return SQL BETWEEN comparision
+
+	  Which MySQL partitioning by date this is MUCH
+	  faster than using datediff($col,$dateStr)==0
+	*/
 	function date_equals($col,$dateStr){
 		$dateStr = trim($dateStr,"'");
 		$seconds = strtotime($dateStr);
