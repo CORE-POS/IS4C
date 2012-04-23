@@ -19,11 +19,11 @@ $cards .= ")";
 $selAddQ = "SELECT m.card_no,c.firstname,c.lastname,
 		m.street,'',m.city,m.state,
 		m.zip,n.payments,
-		convert(varchar,d.end_date,101)
+		d.end_date
 		FROM meminfo AS m LEFT JOIN
 		custdata AS c ON m.card_no=c.cardno
-		AND c.personnum=1 LEFT JOIN
-		newBalanceStockToday_test AS n
+		AND c.personNum=1 LEFT JOIN
+		is4c_trans.newBalanceStockToday_test AS n
 		on m.card_no = n.memnum LEFT JOIN
 		memDates AS d ON m.card_no=d.card_no
 		WHERE cardno IN $cards
@@ -125,7 +125,7 @@ stock. Equity stock can be purchased in any increment, at any time through ",
 		$classA,$remainingB);
 	$pdf->Write(5,str_replace("\n"," ",$txt));
 	$pdf->SetFont("Scala","B","12");
-	$pdf->Write(5,$endDate);
+	$pdf->Write(5,array_shift(explode(" ",$endDate)));
 	$pdf->SetFont("Scala","","12");
 	$pdf->Write(5,".\n");
 	$pdf->Ln(5);

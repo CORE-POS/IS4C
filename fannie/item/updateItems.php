@@ -63,6 +63,7 @@ $up_array['local'] = isset($_REQUEST['local'])?1:0;
 $up_array['store_id'] = isset($_REQUEST['store_id'])?$_REQUEST['store_id']:0;
 $up_array['numflag'] = 0;
 
+
 /* turn on volume pricing if specified, but don't
    alter pricemethod if it's already non-zero */
 if (isset($_REQUEST['doVolume']) && is_numeric($_REQUEST['vol_price']) && is_numeric($_REQUEST['vol_qtty'])){
@@ -70,6 +71,28 @@ if (isset($_REQUEST['doVolume']) && is_numeric($_REQUEST['vol_price']) && is_num
 	if ($up_array['pricemethod']==0) $up_array['pricemethod']=2;
 	$up_array['groupprice'] = $_REQUEST['vol_price'];
 	$up_array['quantity'] = $_REQUEST['vol_qtty'];
+}
+
+/* pull the current, HQ values for all the editable fields
+   and compare them to the submitted values
+   Store actual changes in the array $CHANGES
+*/
+$currentQ = "SELECT tax,foodstamp,scale,deposit,qttyEnforced,discount,normal_price,
+	description,pricemethod,groupprice,quantity,department,cost,subdept,local
+	FROM products WHERE upc='$upc' AND store_id=0";
+$currentR = $dbc->query($currentQ);
+$currentW = array();
+if ($dbc->num_rows($currentR) > 0)
+	$currentW = $dbc->fetch_row($currentR);
+$CHANGES = array();
+foreach($up_array as $column => $new_value){
+	if (!isset($currentW[$column])) continue; 
+	if ($currentW[$column] != trim($new_value,"'")){
+		$CHANGES[$column] = array(
+			'old' => $currentW[$column],
+			'new' => trim($new_value,"'")
+		);
+	}
 }
 
 $sR = $dbc->query("SELECT superID FROM MasterSuperDepts WHERE dept_ID=".$up_array['department']);
@@ -99,9 +122,10 @@ if ($up_array['store_id'] == $FANNIE_STORE_ID){
 	// record exists so update it
 	$dbc->smart_update('products',$up_array,"upc='$upc'");
 }
-else if($up_array['store_id']==0){
+else if($up_array['store_id']==0 && count($CHANGES) > 0){
 	// only the HQ record exists and this is not HQ
 	// so it has to be an insert
+	// only create a new record if changes really exist
 	$up_array['store_id'] = $FANNIE_STORE_ID;
 	$up_array['upc'] = $dbc->escape($_REQUEST['upc']);
 	$up_array['special_price'] = 0.00;
@@ -115,6 +139,23 @@ else if($up_array['store_id']==0){
 	$up_array['numflag'] = 0;
 	$up_array['store_id'] = 0;
 	$dbc->smart_insert('products',$up_array);
+}
+
+// apply HQ updates to non-HQ records
+// where the current value matches the old
+// HQ value
+if ($FANNIE_STORE_ID==0 && count($CHANGES) > 0){
+	foreach($CHANGES as $col => $values){
+		$v_old = is_numeric($values['old']) ? $values['old'] : $dbc->escape($values['old']);
+		$v_new = is_numeric($values['new']) ? $values['new'] : $dbc->escape($values['new']);
+		$upQ = sprintf("UPDATE products SET %s=%s,modified=%s
+			WHERE %s=%s AND upc=%s AND store_id > 0",
+			$col,$v_new,
+			$dbc->now(),
+			$col,$v_old,
+			$dbc->escape($upc));
+		$upR = $dbc->query($upQ);
+	}
 }
 
 if ($dbc->table_exists('prodExtra')){

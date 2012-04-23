@@ -302,14 +302,14 @@ echo sprintf("%.2f<br />",array_pop($dbc->fetch_row($taxSumR)));
 $transQ = "select q.trans_num,sum(q.quantity) as items,transaction_type, sum(q.total) from
 	(
 	select tdate,trans_num,card_no,quantity,total,
-        m.memdesc as transaction_type
+        m.memDesc as transaction_type
 	from $dlog as d
-	left join custdata as c on d.card_no = c.cardno
-	left join memtypeid as m on c.memtype = m.memtypeid
+	left join custdata as c on d.card_no = c.CardNo
+	left join memTypeID as m on c.memType = m.memTypeID
 	where tdate BETWEEN $ddiff and 
 	trans_type in ('I','D')
 	and upc <> 'RRR'
-	and c.personnum=1
+	and c.personNum=1
 	) as q 
 	group by year(q.tdate),month(q.tdate),day(q.tdate),q.trans_num,q.transaction_type";
 $transR = $dbc->query($transQ);
