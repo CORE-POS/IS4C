@@ -1,4 +1,4 @@
-<?php
+<?PHP
 /*******************************************************************************
 
     Copyright 2007,2010 Whole Foods Co-op
@@ -21,19 +21,17 @@
 
 *********************************************************************************/
 
-/* BasicPage
- *
- * This is the base class for all display scripts
- * When instantiated, it calls the following functions
- * in this order:
- *
- * preprocess()
- * if preprocess() returns True 
- *   head()
- *   body_tag()
- *   body_content()
- *
- * Any of these functions may be overriden by subclasses
+/** 
+
+ @class BasicPage
+  
+   This is the base class for all display scripts
+
+   Display scripts are not required to use this
+   base class but it does provide a lot of common
+   functionality for building HTML pages with standard
+   headers, footers, and styling. 
+
  */
 
 $CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
@@ -45,6 +43,14 @@ class BasicPage {
 
 	var $onload_commands;
 
+	/**
+	  Constructor
+
+	  The constructor automatically runs
+	  the preprocess and print_page methods
+	  (if applicable). Creating a new instance
+	  will output the entire page contents
+	*/
 	function BasicPage(){
 		$this->onload_commands = "";
 		if ($this->preprocess()){
@@ -55,18 +61,53 @@ class BasicPage {
 		}
 	}
 
+	/**
+	  Add output in the <head> section
+	  @return None
+
+	  This function should print anything that
+	  belongs inside the HTML head tags
+	*/
 	function head_content(){
 
 	}
 
+	/**
+	  Add output in the <body> section
+	  @return None
+
+	  This function should print anything that
+	  belongs inside the HTML body tags
+	*/
 	function body_content(){
 
 	}
 
+	/**
+	  Decide whether to display output
+	  @return True or False
+
+	  This is the first function called. It is typically
+	  used to check $_GET or $_POST variables. If the
+	  function returns True, the rest of the page will be
+	  printed. If the function returns False, there is no
+	  output. Usually this function returns False after 
+	  setting a redirect header to change to another page.
+	*/
 	function preprocess(){
 		return True;
 	}
 
+	/**
+	  Print HTML output
+	  @return None
+
+	  Print the page. This version includes the scale
+	  weight display as well as the head and body
+	  content from those methods. Javascript commands
+	  that have been requested via add_onload_command
+	  are all run on page load.
+	*/
 	function print_page(){
 		global $CORE_PATH;
 		?>
@@ -97,10 +138,30 @@ class BasicPage {
 		echo "</html>";
 	}
 
+	/**
+	  Add a javascript command to the queue
+	  @param $str A javascript command
+	  @return None
+	
+	  All queued commands are run once the page loads
+	  Note: JQuery is present
+	*/
 	function add_onload_command($str){
 		$this->onload_commands .= $str."\n";
 	}
 
+	/**
+	  Display the standard header with input box
+	  @param $action What the form does
+	  @return None
+
+	  The default action is for a page to POST
+	  back to itself. Any specified action will
+	  be included in the form tag exactly as is.
+	  You can pass "action=..." or "onsubmit=..."
+	  (or both) but $action should have one or the
+	  other attributes
+	*/
 	function input_header($action=""){
 		global $CORE_LOCAL,$CORE_PATH;
 		if (empty($action))
@@ -186,6 +247,10 @@ class BasicPage {
 		<?php
 	}
 
+	/**
+	  Display the standard header without input box
+	  @return None
+	*/
 	function noinput_header(){
 		global $CORE_LOCAL;
 		$this->add_onload_command("betterDate();\n");
@@ -254,6 +319,10 @@ class BasicPage {
 		<?php
 	}
 
+	/**
+	  Output the standard scale display box
+	  @return None
+	*/
 	function scale_box(){
 		?>
 		<div id="scalebox">
@@ -267,6 +336,13 @@ class BasicPage {
 		<?php
 	}
 
+	/**
+	  Read input from scale
+	  @return None
+
+	  Outputs the javascript used to poll for scale
+	  input and activates it on page load.
+	*/
 	function scanner_scale_polling($include_scans=True){
 		global $CORE_PATH;
 		?>
@@ -276,6 +352,40 @@ class BasicPage {
 		<?php
 		$this->add_onload_command("pollScale('$CORE_PATH');\n");
 	}
+
+	/**
+	  Print the standard footer
+	  @return None
+	*/
+	function footer(){
+		echo '<div id="footer">';
+		printfooter();
+		echo '</div>';
+	}
 }
+
+/**
+   @example HelloWorld.php
+
+  The first two line snippet is path detection. 
+  Every code file should start with these lines.
+
+  The next two lines demonstrate standard include format.
+  Check whether the needed class/function already exists
+  and use the detected path $CORE_PATH.
+
+  body_content() draws the page. Methods from BasicPage
+  provide the standard input box at the top and footer
+  at the bottom. boxMsg() is a utility function that
+  puts the 'Hello World' message in a standard message
+  box.
+
+  preprocess() handles input. In this case any form
+  input causes a redirect to the main display script.
+
+  Note the very last line creating an object. That's
+  necessary to actually display anything.
+
+*/
 
 ?>

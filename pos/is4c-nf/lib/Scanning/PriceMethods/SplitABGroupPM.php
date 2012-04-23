@@ -21,9 +21,10 @@
 
 *********************************************************************************/
 
-/* Split AB Group PriceMethod module
+/** 
+   @class SplitABGroupPM
    
-   The same as AB, but the discount gets
+   The same as ABGroupPM, but the discount gets
    split across two departments
  
    Splitting doesn't work with member/staff

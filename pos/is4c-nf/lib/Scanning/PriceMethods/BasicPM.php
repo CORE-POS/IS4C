@@ -21,7 +21,8 @@
 
 *********************************************************************************/
 
-/* Basic PriceMethod module
+/**
+   @class BasicPM
    
    This module just adds the item with the given
    quantity and price/discount information

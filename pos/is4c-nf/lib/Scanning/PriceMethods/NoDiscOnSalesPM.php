@@ -21,10 +21,12 @@
 
 *********************************************************************************/
 
-/* NoDiscOnSale PriceMethod module
+/** 
+   @class NoDiscOnSalePM
 
    A replacement for BasicPM. This disables
-   % discount for items that are on sale
+   transaction percent discount for items 
+   that are on sale
    
 */
 $CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";

@@ -31,6 +31,15 @@ if (!function_exists('pDataConnect')) include($CORE_PATH."lib/connect.php");
 if (!function_exists('boxMsg')) include($CORE_PATH."lib/drawscreen.php");
 if (!function_exists('memberID')) include($CORE_PATH."lib/prehkeys.php");
 
+/**
+  @class MemberCard
+  WFC barcoded member ID implementation
+
+  Checks for UPC prefix 0042363
+  (004, ASCII WFC)
+
+  Looks up member number via memberCards table
+*/
 class MemberCard extends SpecialUPC {
 
 	function is_special($upc){

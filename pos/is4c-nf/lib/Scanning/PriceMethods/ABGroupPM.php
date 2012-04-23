@@ -21,7 +21,8 @@
 
 *********************************************************************************/
 
-/* AB Group PriceMethod module
+/** 
+   @class ABGroupPM
    
    This module provides a group price where
    the customer must buy something from
