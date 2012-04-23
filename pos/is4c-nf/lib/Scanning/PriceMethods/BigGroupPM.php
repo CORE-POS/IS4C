@@ -21,9 +21,10 @@
 
 *********************************************************************************/
 
-/* Big Group Price Method
+/**
+  @class BigGroupPM
    
-  elaborate set matching; can require up to
+  Elaborate set matching; can require up to
   11 separate items
   Qualifying item(s) have a mixmatch code
   with a matching 'stem' plus '_qX'

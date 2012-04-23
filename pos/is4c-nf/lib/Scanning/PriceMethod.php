@@ -21,11 +21,33 @@
 
 *********************************************************************************/
 
+/**
+  @class PriceMethod
+  Base class for handling different price methods
+
+  These modules add an item to the transaction
+
+  The default case is to add an item with the
+  specified price (BasicPM) but other methods
+  with group deals, buy-one-get-one, etc can
+  get really convoluted. UPC parsing is easier
+  to follow with that code relegated to a module.
+
+  Stores can also swap out modules as needed and
+  rearrange them so products.pricemethod=X doesn't
+  need to mean the same thing at every store.
+*/
 class PriceMethod {
 
 	var $savedRow;
 	var $savedInfo;
 
+	/**
+	  Add the item to the transaction
+	  @param $row A product table record
+	  @param $quantity Scan quantity
+	  @param $priceObj A DiscountType object 
+	*/
 	function addItem($row,$quantity,$priceObj){
 		return true;
 	}

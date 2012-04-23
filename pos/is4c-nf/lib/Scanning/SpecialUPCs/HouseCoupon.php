@@ -32,6 +32,17 @@ if (!function_exists("getsubtotals")) include($CORE_PATH."lib/connect.php");
 if (!function_exists("lastpage")) include($CORE_PATH."lib/listitems.php");
 if (!function_exists("addhousecoupon")) include($CORE_PATH."lib/additem.php");
 
+/**
+  @class HouseCoupon
+  WFC style custom store coupons
+
+  This class looks for UPC prefix 00499999
+
+  The remainder of the UPC is an ID value
+  to look up requirement(s) and discount
+  via the houseCoupons and houseCouponItems
+  tables
+*/
 class HouseCoupon extends SpecialUPC {
 
 	function is_special($upc){

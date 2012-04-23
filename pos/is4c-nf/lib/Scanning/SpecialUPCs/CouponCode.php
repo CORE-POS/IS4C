@@ -33,6 +33,23 @@ if (!function_exists('lastpage')) include($CORE_PATH."lib/listitems.php");
 if (!function_exists('truncate2')) include($CORE_PATH."lib/lib.php");
 if (!function_exists('addcoupon')) include($CORE_PATH."lib/additem.php");
 
+/**
+  @class CouponCode
+  Handle standard manufacturer coupons
+
+  This module looks for UPCs with prefix
+   - 005 UPC-12 coupon 
+   - 099 EAN-13 coupon
+
+  It extracts the manufacturer prefix from
+  the UPC and validates that a matching item
+  is in the transaction
+
+  It looks up the coupon code to calculate
+  a discount value and adds the coupon to
+  the transaction
+*/
+
 class CouponCode extends SpecialUPC {
 
 var $ean;

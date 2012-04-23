@@ -21,13 +21,44 @@
 
 *********************************************************************************/
 
+/**
+  @class SpecialUPC
+  Handler module for non-product UPCs
+
+  If a scanned UPC does not correspond
+  to an entry in the products table, enabled
+  SpecialUPC modules can supplement processing.
+
+  CouponCode is the most universal example.
+*/
+
 class SpecialUPC {
 
+/**
+  Check function
+  @param $upc The UPC
+  @return
+   - True This module handles this UPC
+   - False This module doesn't handle this UPC
+*/
 function is_special($upc){
 
 	return false;
 }
 
+/**
+  Process the UPC
+  @param $upc The UPC
+  @param $json Keyed array
+  See the Parser class for array format
+  @return Keyed array
+  See the Parser class for array format
+
+  These modules supplement parsing to make
+  UPC handling more customizable. The module
+  will be invoked within a Paser object and
+  hence uses the same return format.
+*/
 function handle($upc,$json){
 
 }
