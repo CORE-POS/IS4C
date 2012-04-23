@@ -21,14 +21,31 @@
 
 *********************************************************************************/
 
-/*****************************************************************************
- *
- * select_dlog 
- * returns the smallest dlog containing the given date
- *
-*****************************************************************************/
 if (!class_exists("SQLManager")) require_once("sql/SQLManager.php");
-function select_dlog($date, $enddate="",$unions=True){
+
+/** 
+  @file 
+*/
+
+/** 
+ @brief Get an appropriate transaction view
+ @param $date a single date
+ @param $end_date a second date
+ @return A database table name
+
+ If called with a single argument, returns the smallest
+ available transaction view containing that day.
+
+ If called with two arguments, returns the smallest
+ available transaction view containing that date range.
+
+ Return value is fully qualified as db_name.table_name
+
+ This function differs from select_dtrans() by using
+ a dlog style view. The returned table will omit testing
+ and canceled transaction records.
+*/
+function select_dlog($date, $end_date="",$unions=True){
   global $dbc,$FANNIE_TRANS_DB,$FANNIE_SERVER_DBMS,$FANNIE_ARCHIVE_DB,$FANNIE_ARCHIVE_METHOD;
 
   $dbconn = ($FANNIE_SERVER_DBMS=='MSSQL')?'.dbo.':'.';
@@ -40,7 +57,6 @@ function select_dlog($date, $enddate="",$unions=True){
   if ($FANNIE_ARCHIVE_METHOD == "partitions"){
     return ($daydiff == 0) ? $FANNIE_TRANS_DB.$dbconn."dlog" : $FANNIE_ARCHIVE_DB.$dbconn."dlogBig";
   }
-	else var_dump($FANNIE_ARCHIVE_METHOD);
 
   // parse out starting month and year
   $month=0;
@@ -62,7 +78,7 @@ function select_dlog($date, $enddate="",$unions=True){
   
   // no end date, so give the smallest chunk
   // with the given day
-  if ($enddate == ''){ 
+  if ($end_date == ''){ 
 	if ($daydiff < 1){
 		return $FANNIE_TRANS_DB.$dbconn."dlog";
 	}
@@ -72,24 +88,24 @@ function select_dlog($date, $enddate="",$unions=True){
 	return $FANNIE_ARCHIVE_DB.$dbconn."dlog".$year.(str_pad($month,2,'0',STR_PAD_LEFT));
   }
   
-  // new - get enddate
-  $endarray = explode('-',$enddate);
+  // new - get end_date
+  $endarray = explode('-',$end_date);
   $endyear = $endarray[0];
   $endmonth = 0;
-  if ($endyear == $enddate){
-    $endarray = explode("/",$enddate);
+  if ($endyear == $end_date){
+    $endarray = explode("/",$end_date);
     $endmonth = $endarray[0];
     $endyear = $endarray[2];
   }
   else 
     $endmonth = $endarray[1];
-  if ($endmonth == $enddate){
+  if ($endmonth == $end_date){
     return "dlog";
   }
   if (strlen($endyear) < 4){
     $endyear = "20".$endyear;
   }
-  $diffQ = "select ".$dbc->datediff($dbc->now(),"'$enddate'")." as daydiff";
+  $diffQ = "select ".$dbc->datediff($dbc->now(),"'$end_date'")." as daydiff";
   $diffR = $dbc->query($diffQ);
   $diffRow = $dbc->fetch_array($diffR);
   $enddiff = abs($diffRow['daydiff']);
@@ -130,10 +146,13 @@ function select_dlog($date, $enddate="",$unions=True){
   else return $tables;
 }
 
-function select_dlog_array($date,$enddate=""){
-	return select_dlog($date,$enddate,False);
+/** @cond */
+function select_dlog_array($date,$end_date=""){
+	return select_dlog($date,$end_date,False);
 }
+/** @endcond */
 
+/** @cond */
 function fixup_dquery($query,$table){
 	if (!is_array($table)){
 		return str_replace("__TRANS__",$table,$query);
@@ -152,8 +171,23 @@ function fixup_dquery($query,$table){
 	}
 	return $ret.$order;
 }
+/** @endcond */
 
-function select_dtrans($date, $enddate=""){
+/** 
+ @brief Get an appropriate transaction table
+ @param $date a single date
+ @param $end_date a second date
+ @return A database table name
+
+ If called with a single argument, returns the smallest
+ available transaction table containing that day.
+
+ If called with two arguments, returns the smallest
+ available transaction table containing that date range.
+
+ Return value is fully qualified as db_name.table_name
+*/
+function select_dtrans($date, $end_date=""){
   global $dbc,$FANNIE_TRANS_DB,$FANNIE_SERVER_DBMS,$FANNIE_ARCHIVE_DB,$FANNIE_ARCHIVE_METHOD;
 
   $dbconn = ($FANNIE_SERVER_DBMS=='MSSQL')?'.dbo.':'.';
@@ -180,29 +214,29 @@ function select_dtrans($date, $enddate=""){
   
   // no end date, so give the smallest chunk
   // with the given day
-  if ($enddate == ''){ 
+  if ($end_date == ''){ 
 	if ($daydiff < 1){
 		return $FANNIE_TRANS_DB.$dbconn."dtransactions";
 	}
 	return $FANNIE_ARCHIVE_DB.$dbconn."transArchive".$year.(str_pad($month,2,'0',STR_PAD_LEFT));
   }
   
-  // new - get enddate
-  $endarray = explode('-',$enddate);
+  // new - get end_date
+  $endarray = explode('-',$end_date);
   $endmonth = $endarray[1];
   $endyear = $endarray[0];
-  if ($endyear == $enddate){
-    $endarray = explode("/",$enddate);
+  if ($endyear == $end_date){
+    $endarray = explode("/",$end_date);
     $endmonth = $endarray[0];
     $endyear = $endarray[2];
   }
-  if ($endmonth == $enddate){
+  if ($endmonth == $end_date){
     return "dtransactions";
   }
   if (strlen($endyear) < 4){
     $endyear = "20".$endyear;
   }
-  $diffQ = "select ".$dbc->datediff($dbc->now(),"'$enddate'")." as daydiff";
+  $diffQ = "select ".$dbc->datediff($dbc->now(),"'$end_date'")." as daydiff";
   $diffR = $dbc->query($diffQ);
   $diffRow = $dbc->fetch_array($diffR);
   $enddiff = abs($diffRow['daydiff']);
@@ -238,6 +272,7 @@ function select_dtrans($date, $enddate=""){
   return $data;
 }
 
+/** @cond */
 // standard comparison function for query rows
 function standard_compare($v1,$v2){
 	global $STANDARD_COMPARE_ORDER,$STANDARD_COMPARE_DIRECTION;
@@ -259,5 +294,5 @@ function standard_compare($v1,$v2){
 			return (strcmp($a,$b)>=0) ? -1 : 1;
 	}
 }
-/*--------------------------end select_dlog-------------------------------*/
+/** @endcond */
 ?>

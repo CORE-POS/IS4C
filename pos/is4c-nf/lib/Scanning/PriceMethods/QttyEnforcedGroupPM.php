@@ -20,7 +20,8 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
-/* Quantity-Enforced Group PriceMethod module
+/** 
+   @class QttyEnforcedGroupPM
    
    This module provides grouped sales where the
    customer is required to buy a "complete set"
