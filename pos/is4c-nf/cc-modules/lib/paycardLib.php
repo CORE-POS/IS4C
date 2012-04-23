@@ -29,6 +29,11 @@ if (!isset($CORE_LOCAL)){
 	$CORE_LOCAL = new LS_Access();	
 }
 
+/**
+ @file
+ @brief Defines constants and functions for card processing.
+*/
+
 define('PAYCARD_MODE_BALANCE',   1);
 define('PAYCARD_MODE_AUTH',      2);
 define('PAYCARD_MODE_VOID',      3); // for voiding tenders/credits, rung in as T
@@ -53,6 +58,15 @@ define('PAYCARD_ERR_CONTINUE',	-6);
 
 // identify payment card type, issuer and acceptance based on card number
 // individual functions are based on this one
+/**
+  Identify card based on number
+  @param $pan card number
+  @return array with keys:
+   - 'type' paycard type constant
+   - 'issuer' Vista, MasterCard, etc
+   - 'accepted' boolean, whether card is accepted
+   - 'test' boolean, whether number is a testing card
+*/
 function paycard_info($pan) {
 	$len = strlen($pan);
 	$iin = (int)substr($pan,0,7);
@@ -86,6 +100,18 @@ function paycard_info($pan) {
 
 
 // determine if we accept the card given the number; return 1 if yes, 0 if no
+/**
+  Check whether a given card is accepted
+  @param $pan the card number
+  @param $acceptTest boolean
+  @return 
+   - 1 if accepted
+   - 0 if not accepted
+
+  $acceptTest controls the behavior with
+  testing cards. True makes test cards
+  accepted.
+*/
 function paycard_accepted($pan, $acceptTest) {
 	$info = paycard_info($pan);
 	if( $info['test'] && $acceptTest)
@@ -94,7 +120,11 @@ function paycard_accepted($pan, $acceptTest) {
 } // paycard_accepted()
 
 
-// determine what kind of payment card the number belongs to (credit or gift, currently); return one of PAYCARD_TYPE_*
+/**
+  Determine card type
+  @param $pan the card number
+  @return a paycard type constant
+*/
 function paycard_type($pan) {
 	$info = paycard_info($pan);
 	return $info['type'];
@@ -102,13 +132,27 @@ function paycard_type($pan) {
 
 
 // determine who issued a payment card given the number; return the issuer as a string or "Unknown"
+/**
+  Get paycard issuer
+  @param $pan the card number
+  @return string issuer
+
+  Issuers include "Visa", "American Express", "MasterCard",
+  and "Discover". Unrecognized cards will return "Unknown".
+*/
 function paycard_issuer($pan) {
 	$info = paycard_info($pan);
 	return $info['issuer'];
 } // paycard_issuer()
 
 
-// determine if card transactions should be sent to the live or test platform; return 1 if live, 0 if test
+/**
+  Check whether paycards of a given type are enabled
+  @param $type is a paycard type constant
+  @return
+   - 1 if type is enabled
+   - 0 if type is disabled
+*/
 function paycard_live($type = PAYCARD_TYPE_UNKNOWN) {
 	global $CORE_LOCAL;
 
@@ -130,8 +174,9 @@ function paycard_live($type = PAYCARD_TYPE_UNKNOWN) {
 } // paycard_live()
 
 
-// reset all paycard related session variables; it's important to do this as soon as possible,
-// so we don't have the full card number or track data in memory any longer than necessary
+/**
+  Clear paycard variables from $CORE_LOCAL.
+*/
 function paycard_reset() {
 	global $CORE_LOCAL;
 
@@ -153,6 +198,12 @@ function paycard_reset() {
 	$CORE_LOCAL->set("paycard_cvv2",'');
 } // paycard_reset()
 
+/**
+  Clear card data variables from $CORE_LOCAL.
+
+  <b>Storing card data in $CORE_LOCAL is
+  not recommended</b>.
+*/
 function paycard_wipe_pan(){
 	global $CORE_LOCAL;
 	$CORE_LOCAL->set("paycard_tr1",false);
@@ -163,8 +214,13 @@ function paycard_wipe_pan(){
 }
 
 
-// run Luhn's Algorithm on the card number to make sure its check digit is correct
-// return 1 if it passes, 0 if not
+/**
+  Validate number using Luhn's Algorithm
+  @param $pan the card number
+  @return
+   - 1 if the number is valid
+   - 0 if the number is invalid
+*/
 function paycard_validNumber($pan) {
 /* Luhn Algorithm <en.wikipedia.org/wiki/Luhn_algorithm>
 1. Starting with the rightmost digit (which is the check digit) and moving left, double the value of every second digit.  For any
@@ -197,6 +253,15 @@ function paycard_validNumber($pan) {
 
 // determine if the expiration date (passed as a string, MMYY) is a valid date and is not in the past
 // return 1 if ok, error code < 0 if not
+/**
+  Validate expiration date
+  @param $exp expiration formatted MMYY
+  @return
+   - 1 if ok
+   - -1 if the argument is malformed
+   - -2 if the month is smarch-y
+   - -3 if the date is in the past
+*/
 function paycard_validExpiration($exp) {
 	// verify expiration format (MMYY)
 	if( strlen($exp) != 4 || !ctype_digit($exp))
@@ -220,8 +285,23 @@ function paycard_validExpiration($exp) {
 } // paycard_validExpiration()
 
 
-// decode the magnetic strip from a payment card and make sure its data is internally consistent
-// return an array if successful (including pan, exp, name, tr1, tr2, tr3) or an error code < 0 if not
+/**
+  Extract information from a magnetic stripe
+  @param $data the stripe data
+  @return An array with keys:
+   - 'pan' the card number
+   - 'exp' the expiration as MMYY
+   - 'name' the cardholder name
+   - 'tr1' data from track 1
+   - 'tr2' data from track 1
+   - 'tr3' data from track 1
+
+  Not all values will be found in every track.
+  Keys with no data will be set to False.
+  
+  If the data is really malformed, the return
+  will be an error code instead of an array.
+*/
 function paycard_magstripe($data) {
 	global $CORE_LOCAL;
 

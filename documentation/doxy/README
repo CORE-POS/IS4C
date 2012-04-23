@@ -1,0 +1,7 @@
+Run doxy in the top directory of the git repo
+to make pathing work.
+
+E.g.,
+
+doxygen documentation/doxy/config/is4c-nf.doxyfile
+doxygen documentation/doxy/config/fannie.doxyfile

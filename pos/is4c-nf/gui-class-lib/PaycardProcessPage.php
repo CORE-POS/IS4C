@@ -21,14 +21,19 @@
 
 *********************************************************************************/
 
-/* PaycardProcessPage
- *
- * Adds some javascript functions that are useful
- * for submitting a paycard request via ajax
- *
- * $this->action should be used to prevent form
- * re-submission after a request is sent
- *
+/** @class PaycardProcessPage
+
+    This class automatically includes the header and footer
+    and also defines some useful javascript functions
+
+    Normally the submit process looks like this:
+     - Cashier presses enter, POST-ing to the page
+     - In preprocess(), the included javascript function
+       paycard_submitWrapper() is queued using
+       BasicPage:add_onload_command()
+     - The $action property get set to something "safe"
+       like onsubmit="return false;" so that repeatedly
+       pressing enter won't cause multiple submits 
  */
 
 $CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
@@ -40,6 +45,11 @@ if (!function_exists('printfooter')) include($CORE_PATH.'lib/drawscreen.php');
 class PaycardProcessPage extends BasicPage {
 
 	var $onload_commands;
+
+	/**
+	   The input form action. See BasicPage::input_header()
+	   for format information
+	*/
 	var $action;
 
 	function PaycardProcessPage(){
@@ -47,6 +57,10 @@ class PaycardProcessPage extends BasicPage {
 		parent::BasicPage();
 	}
 
+	/**
+	   Include some paycard submission javascript functions.
+	   Automatically called during page print.
+	*/
 	function paycard_jscript_functions(){
 		global $CORE_PATH;
 		?>

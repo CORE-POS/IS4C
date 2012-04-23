@@ -31,6 +31,14 @@ if (!function_exists("paycard_reset")) include($CORE_PATH."cc-modules/lib/paycar
 if (!function_exists("blueLine")) include($CORE_PATH."lib/session.php");
 if (!function_exists("boxMsgscreen")) include($CORE_PATH."lib/clientscripts.php");
 
+/**
+  @file
+  @brief A horrible, horrible catch-all clutter of functions
+*/
+
+/**
+  Remove member number from current transaction
+*/
 function clearMember(){
 	global $CORE_LOCAL;
 
@@ -40,6 +48,19 @@ function clearMember(){
 	$CORE_LOCAL->set("ttlflag",0);	
 }
 
+/**
+  Set member number for transaction
+  @param $member_number CardNo from custdata
+  @return An array. See Parser::default_json()
+   for format.
+
+  This function will either assign the number
+  to the current transaction or return a redirect
+  request to get more input. If you want the
+  cashier to verify member name from a list, use
+  this function. If you want to force the number
+  to be set immediately, use setMember().
+*/
 function memberID($member_number) {
 	global $CORE_LOCAL,$CORE_PATH;
 
@@ -99,6 +120,14 @@ function memberID($member_number) {
 
 //-------------------------------------------------
 
+/**
+  Assign a member number to a transaction
+  @param $member CardNo from custdata
+  @param $personNumber personNum from custdata
+  @param $row a record from custdata
+
+  See memberID() for more information.
+*/
 function setMember($member, $personNumber, $row) {
 	global $CORE_LOCAL;
 
@@ -174,6 +203,15 @@ function setMember($member, $personNumber, $row) {
 
 }
 
+/**
+  Check if the member has overdue store charge balance
+  @param $cardno member number
+  @return True or False
+
+  The logic for what constitutes past due has to be built
+  into the unpaid_ar_today view. Without that this function
+  doesn't really do much.
+*/
 function check_unpaid_ar($cardno){
 	global $CORE_LOCAL;
 
@@ -215,6 +253,13 @@ function check_unpaid_ar($cardno){
 
 //-------------------------------------------------
 
+/**
+  Check if an item is voided or a refund
+  @param $num item trans_id in localtemptrans
+  @return None
+  All discovered info is set in $CORE_LOCAL variables
+  @todo fix the above nonsense
+*/
 function checkstatus($num) {
 	global $CORE_LOCAL;
 
@@ -258,6 +303,16 @@ function checkstatus($num) {
 
 //---------------------------------------------------
 
+/**
+  Add a tender to the transaction
+  @right tender amount in cents (100 = $1)
+  @strl tender code from tenders table
+  @return An array see Parser::default_json()
+   for format explanation.
+
+  This function will automatically end a transaction
+  if the amount due becomes <= zero.
+*/
 function tender($right, $strl) {
 	global $CORE_LOCAL,$CORE_PATH;
 	$tender_upc = "";
@@ -545,6 +600,14 @@ function tender($right, $strl) {
 
 //-------------------------------------------------------
 
+/**
+  Add an open ring to a department
+  @param $price amount in cents (100 = $1)
+  @param $dept POS department
+  @ret an array of return values
+  @returns An array. See Parser::default_json()
+   for format explanation.
+*/
 function deptkey($price, $dept,$ret=array()) {
 	global $CORE_LOCAL;
 
@@ -716,7 +779,20 @@ function deptkey($price, $dept,$ret=array()) {
 
 //-------------------------------------------------
 
-// return value: true on success, URL on failure
+/**
+  Total the transaction
+  @return
+   True - total successfully
+   String - URL
+
+  If ttl() returns a string, go to that URL for
+  more information on the error or to resolve the
+  problem. 
+
+  The most common error, by far, is no 
+  member number in which case the return value
+  is the member-entry page.
+*/
 function ttl() {
 	global $CORE_LOCAL,$CORE_PATH;
 
@@ -800,6 +876,10 @@ function ttl() {
 	return True;
 }
 
+/**
+  See what the last item in the transaction is currently
+  @return localtemptrans.description for the last item
+*/
 function peekItem(){
 	$db = tDataConnect();
 	$q = "SELECT description FROM localtemptrans ORDER BY trans_id DESC";
@@ -810,6 +890,12 @@ function peekItem(){
 
 //---------------------------------------
 
+/**
+  Add tax and transaction discount records.
+  This is called at the end of a transaction.
+  There's probably no other place where calling
+  this function is appropriate.
+*/
 function finalttl() {
 	global $CORE_LOCAL;
 	if ($CORE_LOCAL->get("percentDiscount") > 0) {
@@ -831,6 +917,9 @@ function finalttl() {
 
 //-------------------------------------------
 
+/**
+  Add foodstamp elgibile total record
+*/
 function fsEligible() {
 	global $CORE_LOCAL;
 	getsubtotals();
@@ -850,6 +939,16 @@ function fsEligible() {
 
 //------------------------------------------
 
+/**
+  Add a percent discount notification
+  @param $strl discount percentage
+  @param $json keyed array
+  @return An array see Parser::default_json()
+  @deprecated
+  Use discountnotify() instead. This just adds
+  hard-coded percentages and PLUs that likely
+  aren't applicable anywhere but the Wedge.
+*/
 function percentDiscount($strl,$json=array()) {
 	if ($strl == 10.01) $strl = 10;
 
@@ -883,6 +982,16 @@ function percentDiscount($strl,$json=array()) {
 
 //------------------------------------------
 
+/**
+  Check whether the current member has store
+  charge balance available.
+  @return
+   1 - Yes
+   0 - No
+
+  Sets current balance in $CORE_LOCAL as "balance".
+  Sets available balance in $CORE_LOCAL as "availBal".
+*/
 function chargeOk() {
 	global $CORE_LOCAL;
 
@@ -916,6 +1025,10 @@ function chargeOk() {
 
 //----------------------------------------------------------
 
+/**
+  Add WFC virtual coupon
+  @deprecated
+*/
 function madCoupon(){
 	getsubtotals();
 	addMadCoup();
@@ -923,12 +1036,21 @@ function madCoupon(){
 
 }
 
+/**
+  Add a comment
+  @deprecated
+  Use addcomment().
+*/
 function comment($comment){
 	addComment($comment);
 	lastpage();
 }
 //----------------------------------------------------------
 
+/**
+  Wedge staff charge related
+  @deprecated
+*/
 function staffCharge($arg,$json=array()) {
 	global $CORE_LOCAL;
 
@@ -969,6 +1091,10 @@ function staffCharge($arg,$json=array()) {
 
 }
 
+/**
+  End of Shift functionality isn't in use
+  @deprecated
+*/
 function endofShift($json) {
 	global $CORE_LOCAL;
 
@@ -986,6 +1112,12 @@ function endofShift($json) {
 }
 
 //---------------------------	WORKING MEMBER DISCOUNT	-------------------------- 
+/**
+  Add a working member discount
+  @deprecated
+  Do not use this. The memType structure in custdata
+  is a far better solution.
+*/
 function wmdiscount() {
 	global $CORE_LOCAL;
 

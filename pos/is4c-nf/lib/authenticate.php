@@ -20,6 +20,11 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
+
+/**
+  @file
+  @brief Functions for user authentication
+*/
  
 // session_cache_limiter('nocache');
 $CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
@@ -33,6 +38,18 @@ if (!function_exists("rePoll")) include($CORE_PATH."lib/lib.php");
 if (!function_exists("drawerKick")) include($CORE_PATH."lib/printLib.php");
 if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
 
+/**
+  Authenticate an employee by password
+  @param $password password from employee table
+  @param $activity activity identifier to log
+  @return True or False
+
+  If no one is currently logged in, any valid
+  password will be accepted. If someone is logged
+  in, then only passwords for that user <i>or</i>
+  a user with frontendsecurity >= 30 in the
+  employee table will be accepted.
+*/
 function authenticate($password,$activity=1){
 	global $CORE_LOCAL;
 
@@ -134,6 +151,12 @@ function authenticate($password,$activity=1){
 	return True;
 }
 
+/**
+  Authentication function for Wedge NoSale page
+  @param $password the password
+  @return True or False
+  @deprecated
+*/
 function nsauthenticate($password){
 	global $CORE_LOCAL;
 	$CORE_LOCAL->set("away",1);

@@ -28,7 +28,17 @@ if (!function_exists("receipt")) include($CORE_PATH."lib/clientscripts.php");
 if (!function_exists("getMatchingColumns")) include($CORE_PATH."lib/connect.php");
 if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
 
+/**
+  @file
+  @brief Functions related to suspend and resume transaction
+*/
 
+
+/**
+  Suspends the current transaction
+  If the remote server is available, it will be suspended
+  there. Otherwise it is suspended locally.
+*/
 function suspendorder() {
 	global $CORE_LOCAL;
 
@@ -61,6 +71,15 @@ function suspendorder() {
 	$db_a->close();
 }
 
+/**
+  Check whether there are suspended transactions
+  @return
+   - 1 Yes
+   - 0 No
+
+  This function ignores any transactions that
+  are not from the current day.
+*/
 function checksuspended() {
 	global $CORE_LOCAL;
 

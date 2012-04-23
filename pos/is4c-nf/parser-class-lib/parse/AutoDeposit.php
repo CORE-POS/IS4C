@@ -146,7 +146,9 @@ class AutoDeposit extends Parser {
 				<td>1034</td><td>Automatically add item 9999905</td>
 			</tr>
 			<tr>
-				<td colspan=2><i>This module is used to add items to a transaction automatically & conditionally. Our usage is for bottle deposits</td>
+				<td colspan=2><i>
+				This module is deprecated and disabled. Use the deposit field in the products table to tie deposit PLUs to items
+				</i></td>
 			</tr>
 			</table>";
 

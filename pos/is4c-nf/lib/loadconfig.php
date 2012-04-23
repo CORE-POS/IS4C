@@ -27,6 +27,14 @@ if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= 
 if (!function_exists("pDataConnect")) include($CORE_PATH."lib/connect.php");
 if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
 
+/**
+ @file
+ @brief Functions dealing with the globalvalues table
+*/
+
+/**
+  Read globalvalues settings into $CORE_LOCAL.
+*/
 function loadglobalvalues() {
 	global $CORE_LOCAL;
 
@@ -47,6 +55,11 @@ function loadglobalvalues() {
 	$db->close();
 }
 
+/**
+  Set new value in $CORE_LOCAL.
+  @param $param keycode
+  @param $val new value
+*/
 function loadglobalvalue($param,$val){
 	global $CORE_LOCAL;
 	switch(strtoupper($param)){
@@ -74,6 +87,11 @@ function loadglobalvalue($param,$val){
 	}
 }
 
+/**
+  Update setting in globalvalues table.
+  @param $param keycode
+  @param $value new value
+*/
 function setglobalvalue($param, $value) {
 	global $CORE_LOCAL;
 
@@ -89,6 +107,11 @@ function setglobalvalue($param, $value) {
 	$db->close();
 }
 
+/**
+  Update many settings in globalvalues table
+  and in $CORE_LOCAL
+  @param $arr An array of keys and values
+*/
 function setglobalvalues($arr){
 	$setStr = "";
 	foreach($arr as $param => $value){
@@ -107,6 +130,10 @@ function setglobalvalues($arr){
 	$db->close();
 }
 
+/**
+  Sets TTLFlag and FntlFlag in globalvalues table
+  @param $value value for both fields.
+*/
 function setglobalflags($value) {
 	$db = pDataConnect();
 

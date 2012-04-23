@@ -1,5 +1,8 @@
 <?php
 
+/**
+  A very generic parser class for XML data
+*/
 class xmlData {
 
 	var $parser;
@@ -7,6 +10,11 @@ class xmlData {
 	var $curTag;
 	var $valid;
 
+	/**
+	  Constructor
+	  Create parser from XML
+	  @param $str an XML string
+	*/
 	function xmlData($str){
 		$this->valid = False;
 		$this->parser = xml_parser_create();
@@ -17,6 +25,9 @@ class xmlData {
 		xml_parser_free($this->parser);
 	}
 
+	/**
+	  xml_parser callback for an opening tag
+	*/
 	function startTag($parser,$name,$attr){
 		$name = strtoupper($name);
 		if (isset($attr["KEY"]))
@@ -24,6 +35,9 @@ class xmlData {
 		$this->curTag = array("tag"=>$name,"attributes"=>$attr,"chardata"=>"");
 	}
 
+	/**
+	  xml_parser callback for a closing tag
+	*/
 	function endTag($parser,$name){
 		$name = $this->curTag["tag"];
 		if (!isset($this->DATA["$name"]))
@@ -32,10 +46,21 @@ class xmlData {
 		$this->valid = True;
 	}
 
+	/**
+	  xml_parser callback for data between tags
+	*/
 	function tagData($parser,$data){
 		$this->curTag["chardata"] = $data;
 	}
 
+	/**
+	  Get a value by tag name
+	  @param $tagname the tag name
+	  @return
+	   - string value if one tag has the given name
+	   - an array if multiple tags have the given name
+	   - False if no such tag
+	*/
 	function get($tagname){
 		$tagname = strtoupper($tagname);
 		if (!isset($this->DATA["$tagname"]))
@@ -55,8 +80,22 @@ class xmlData {
 		}
 	}
 
+	/**
+	  Check if at least some xml parsed successfully.
+	  @return True or False
+	*/
 	function isValid(){ return $this->valid; }
 
+	/**
+	  Get a value by tag name
+	  @param $tagname the tag name
+	  @return
+	   - String value if the tag exists
+	   - False if the tag doesn't exist
+
+	  This method works a tad more reliably
+	  than get().
+	*/
 	function get_first($tagname){
 		$tagname = strtoupper($tagname);
 		if (!isset($this->DATA["$tagname"]))
@@ -69,6 +108,12 @@ class xmlData {
 		}
 	}
 
+	/**
+	  Export XML content to an array
+	  @return an array
+	
+	  Debugging method
+	*/
 	function array_dump(){
 		$ret = array();
 		foreach ($this->DATA as $field=>$value){

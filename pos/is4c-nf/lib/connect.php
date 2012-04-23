@@ -21,6 +21,11 @@
 
 *********************************************************************************/
 
+/**
+  @file
+  @brief Functions related to the database
+*/
+
 $CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
 if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
 
@@ -38,8 +43,10 @@ if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
 
 ***********************************************************************************************/
 
-
-
+/**
+  Connect to the transaction database (local)
+  @return a SQLManager object
+*/
 function tDataConnect()
 {
 	global $CORE_LOCAL;
@@ -49,6 +56,10 @@ function tDataConnect()
 	return $sql;
 }
 
+/**
+  Connect to the operational database (local)
+  @return a SQLManager object
+*/
 function pDataConnect()
 {
 	global $CORE_LOCAL;
@@ -58,6 +69,10 @@ function pDataConnect()
 	return $sql;
 }
 
+/**
+  Connect to the remote server database
+  @return a SQLManager object
+*/
 function mDataConnect()
 {
 	global $CORE_LOCAL;
@@ -71,6 +86,10 @@ function mDataConnect()
 
 // getsubtotals() updates the values held in our session variables.
 
+/**
+  Load values from subtotals view into $CORE_LOCAL.
+  Essentially refreshes totals in the session.
+*/
 function getsubtotals() {
 	global $CORE_LOCAL;
 
@@ -146,6 +165,11 @@ function getsubtotals() {
 //
 // Given $CashierNo, gettransno() will look up the number of the most recent transaction.
 
+/**
+ Get the next transaction number for a given cashier
+ @param $CashierNo cashier number (emp_no in tables) 
+ @return integer transaction number
+*/
 function gettransno($CashierNo) {
 	global $CORE_LOCAL;
 
@@ -169,6 +193,14 @@ function gettransno($CashierNo) {
 
 // ------------------------------------------------------------------
 
+/**
+  See if the remote database is available
+  This function calls uploadtoServer() if
+  the initial test works.
+  @return integer 
+   - 1 server available
+   - 0 server down
+*/
 function testremote() {
 	global $CORE_LOCAL;
 
@@ -186,6 +218,24 @@ function testremote() {
 }
 
 // ------------------------------------------------------------------
+/**
+  Copy tables from the lane to the remote server
+  The following tables are copied:
+   - dtransactions
+   - alog
+   - suspended
+   - efsnetRequest
+   - efsnetResponse
+   - efsnetRequestMod
+
+  On success the local tables are truncated. The efsnet tables
+  are copied in the uploadCCdata() function but that gets called 
+  automatically.
+
+  @return
+   - 1 upload succeeded
+   - 0 upload failed
+*/
 function uploadtoServer()
 {
 	global $CORE_LOCAL;
@@ -256,12 +306,15 @@ function uploadtoServer()
 	return $uploaded;
 }
 
-/* get a list of columns that exist on the local db
-   and the server db for the given table
-   $connection should be a SQLManager object that's
-   already connected
-   if $table2 is provided, it match columns from
-   local.table_name against remote.table2
+/** 
+   Get a list of columns that exist on the local db
+   and the server db for the given table.
+   @param $connection a SQLManager object that's
+    already connected
+   @param $table_name the table
+   @param $table2 is provided, it match columns from
+    local.table_name against remote.table2
+   @return an array of column names
 */
 function getMatchingColumns($connection,$table_name,$table2=""){
 	global $CORE_LOCAL;
@@ -284,9 +337,12 @@ function getMatchingColumns($connection,$table_name,$table2=""){
 	return rtrim($ret,",");
 }
 
-/* get a list of columns in both tables
- * unlike getMatchingColumns, this compares tables
- * on the same database & server
+/** Get a list of columns in both tables.
+   @param $connection a SQLManager object that's
+    already connected
+   @param $table1 a database table
+   @param $table2 a database table
+   @return an array of column names common to both tables
  */
 function localMatchingColumns($connection,$table1,$table2){
 	$poll1 = $connection->table_definition($table1);
@@ -306,6 +362,10 @@ function localMatchingColumns($connection,$table1,$table2){
 	return rtrim($ret,",");
 }
 
+/**
+  Transfer credit card tables to the server.
+  See uploadtoServer().
+*/
 function uploadCCdata(){
 	global $CORE_LOCAL;
 

@@ -21,9 +21,12 @@
 
 *********************************************************************************/
 
-/* InputPage
- * 
- * Automatically add the header w/ input box
+/** @class InputPage
+
+    This class automatically adds the input header
+    and the footer. Any display script using this
+    class will POST form input to itself as that
+    is the default action inherited from BasicPage.
  */
 
 $CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";

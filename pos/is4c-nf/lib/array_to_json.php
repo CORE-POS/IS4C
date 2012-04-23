@@ -21,6 +21,16 @@
 
 *********************************************************************************/
  
+/**
+  @file
+  @brief Functions for JSON support in PHP < 5.3
+*/
+
+/**
+  Convert an array to a JSON string
+  @param $arr an array of values
+  @return A JSON string representing the array
+*/
 function array_to_json($arr){
 	$ret = "[";
 	for($i=0;$i<count($arr);$i++){
@@ -45,6 +55,11 @@ function array_to_json($arr){
 	return $ret;
 }
 
+/**
+  Convert a variable to a JSON string
+  @param $val a single variable
+  @return A JSON string representing the variable
+*/
 function encode_value_json($val){
 	if (is_array($val)) return array_to_json($val);
 	if (is_numeric($val)) return $val;
@@ -53,6 +68,13 @@ function encode_value_json($val){
 	else return '"'.addcslashes($val,"\\\"\r\n\t").'"';
 }
 
+/**
+  Remove newlines, carriage returns, and tabs
+  from the string (some browser don't like these
+  in JSON strings)
+  @str a string
+  @return the modified string
+*/
 function fixstring($str){
 	$str = str_replace("\n","",$str);
 	$str = str_replace("\r","",$str);
