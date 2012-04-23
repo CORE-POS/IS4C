@@ -28,14 +28,17 @@ if (!function_exists("printReceipt")) include($CORE_PATH."lib/printReceipt.php")
 if (!function_exists("mDataConnect")) include($CORE_PATH."lib/connect.php");
 if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
 
-/* Revised tender report function - andy - 9/6/07
- *
- * This tender report is based on a single tender tape view
- * rather than multiple views (e.g. ckTenders, ckTenderTotal, etc)
- * adding a new tender is mostly just a matter of adding it
- * to the $DESIRED_TENDERS array (exception being if you want
- * special handling in the tender tape view (e.g., three
- * tender types are actually compined under EBT)
+/** 
+ Print a tender report
+ 
+ This tender report is based on a single tender tape view
+ rather than multiple views (e.g. ckTenders, ckTenderTotal, etc)
+ adding a new tender is mostly just a matter of adding it
+ to the $DESIRED_TENDERS array (exception being if you want
+ special handling in the tender tape view (e.g., three
+ tender types are actually compined under EBT)
+
+ @todo Make $DESIRED_TENDERS configurable elsewhere
  */
 function tenderReport(){
 	global $CORE_LOCAL;

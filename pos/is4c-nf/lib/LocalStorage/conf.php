@@ -26,7 +26,7 @@ if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= 
 
 /** 
   @file 
-  This file specifies the LocalStorage implemenation
+  @brief This file specifies the LocalStorage implemenation
 
   Include this file to get a LocalStorage instance
   in the variable $CORE_LOCAL.

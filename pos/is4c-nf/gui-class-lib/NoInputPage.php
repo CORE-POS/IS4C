@@ -21,9 +21,14 @@
 
 *********************************************************************************/
 
-/* NoInputPage
- * 
- * Automatically add the header w/o input box
+/** @class NoInputPage
+
+    This class automatically adds the header and
+    and footer, but the header does not contain
+    an input form.
+
+    Normally pages using this class will define
+    their own form in body_content().
  */
 
 $CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";

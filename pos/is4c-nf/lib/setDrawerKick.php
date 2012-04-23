@@ -21,10 +21,23 @@
 
 *********************************************************************************/
 
-// Sets the $_SESSION["kick"] variable to control when the drawer opens ----- apbw 03/29/05 Drawer Kick Patch
-if (!isset($CORE_LOCAL)) include($_SERVER["DOCUMENT_ROOT"]."/lib/LocalStorage/conf.php");
+$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
+if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
+
+if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
+
+/**
+  @file
+  @brief Functions for opening the till drawer
+*/
 
 
+/**
+  Check whether drawer should open on this transaction
+  @return
+   - 1 open drawer
+   - 0 do not open
+*/
 function setDrawerKick()
 
 {
@@ -42,6 +55,18 @@ function setDrawerKick()
 	}							
 }
 
+/**
+  Variant check for when to open cash drawer
+  @return
+   - 1 open drawer
+   - 0 do not open
+
+  Opens on cash transactions, credit card
+  transactions > $25, and stamp sales.
+
+  @todo This functionality needs to be more modular
+  and customizable.
+*/
 function setDrawerKickLater()
 
 {

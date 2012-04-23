@@ -27,6 +27,17 @@ if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= 
 if (!function_exists("rePoll")) include($CORE_PATH."lib/lib.php");
 if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
 
+/**
+  @file
+  @brief Functions for drawing display elements
+*/
+
+/**
+  Print just the form from the regular footer
+  but entirely hidden.
+  @deprecated
+  Only used with the old VB scale driver
+*/
 function printfooterb() {
 	$ret = "<form name='hidden'>\n";
 	$ret .= "<input Type='hidden' name='alert' value='noBeep'>\n";
@@ -35,6 +46,14 @@ function printfooterb() {
 	return $ret;
 }
 
+/**
+  Get the standard footer with total and
+  amount(s) saved
+  @param $readOnly don't update any session info
+   This would be set when rendering a separate,
+   different customer display
+  @return A string of HTML
+*/
 function printfooter($readOnly=False) {
 	global $CORE_LOCAL;
 
@@ -193,14 +212,28 @@ function printfooter($readOnly=False) {
 
 //--------------------------------------------------------------------//
 
+/**
+   Wrap a message in a id="plainmsg" div
+   @param $strmsg the message
+   @return An HTML string
+*/
 function plainmsg($strmsg) {
-return "<div id=\"plainmsg\">$strmsg</div>";
-
+	return "<div id=\"plainmsg\">$strmsg</div>";
 }
 
 
 //-------------------------------------------------------------------//
 
+/**
+  Get a centered message box
+  @param $strmsg the message
+  @param $icon graphic icon file
+  @param $noBeep don't send a scale beep
+  @return An HTML string
+
+  This function will include the header
+  printheaderb(). 
+*/
 function msgbox($strmsg, $icon,$noBeep=False) {
 	global $CORE_LOCAL;
 
@@ -229,23 +262,50 @@ function msgbox($strmsg, $icon,$noBeep=False) {
 }
 //--------------------------------------------------------------------//
 
+/**
+  Get a centered message box with "crossD" graphic
+  @param $strmsg the message
+  @return An HTML string
+
+  An alias for msgbox().
+*/
 function xboxMsg($strmsg) {
 	global $CORE_PATH;
 	return msgbox($strmsg, $CORE_PATH."graphics/crossD.gif");
 }
 
+/**
+  Get a centered message box with "exclaimC" graphic
+  @param $strmsg the message
+  @param $header does nothing...
+  @param $noBeep don't beep scale
+  @return An HTML string
+
+  An alias for msgbox().
+*/
 function boxMsg($strmsg,$header="",$noBeep=False) {
 	global $CORE_PATH;
 	return msgbox($strmsg, $CORE_PATH."graphics/exclaimC.gif",$noBeep);
 }
 
+/**
+  Get a centered message box with input unknown message.
+  @return An HTML string
+
+  An alias for msgbox().
+*/
 function inputUnknown() {
 	global $CORE_PATH;
-	return msgbox("<B>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;input unknown</B>", $CORE_PATH."graphics/exclaimC.gif");
+	return msgbox("<b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;input unknown</b>", $CORE_PATH."graphics/exclaimC.gif");
 }
 
 //--------------------------------------------------------------------//
 
+/**
+  Get the standard header row with CASHIER
+  and MEMBER info
+  @return An HTML string
+*/
 function printheaderb() {
 	global $CORE_LOCAL;
 
@@ -281,6 +341,18 @@ function printheaderb() {
 
 //-------------------------------------------------------------------//
 
+/**
+  Get a transaction line item
+  @param $field2 typically description
+  @param $field3 comment section. Used for things
+   like "0.59@1.99" on weight items.
+  @param $total the right-hand number
+  @param $field5 flags after the number
+  @param $trans_id value from localtemptrans. Including
+   the trans_id makes the lines selectable via mouseclick
+   (or touchscreen).
+  @return An HTML string
+*/
 function printitem($field2, $field3, $total, $field5, $trans_id=-1) {
 	global $CORE_LOCAL;
 	
@@ -318,6 +390,19 @@ function printitem($field2, $field3, $total, $field5, $trans_id=-1) {
 
 //------------------------------------------------------------------//
 
+/**
+  Get a transaction line item in a specific color
+  @param $color is a hex color code (do not include a '#')
+  @param $description typically description
+  @param $comments comment section. Used for things
+   like "0.59@1.99" on weight items.
+  @param $total the right-hand number
+  @param $suffix flags after the number
+  @param $trans_id value from localtemptrans. Including
+   the trans_id makes the lines selectable via mouseclick
+   (or touchscreen).
+  @return An HTML string
+*/
 function printitemcolor($color, $description, $comments, $total, $suffix,$trans_id=-1) {
 	global $CORE_LOCAL;
 	
@@ -357,6 +442,19 @@ function printitemcolor($color, $description, $comments, $total, $suffix,$trans_
 
 //----------------------------------------------------------------//
 
+/**
+  Get a transaction line item in a specific color
+  @param $color is a hex color code (do not include a '#')
+  @param $description typically description
+  @param $comments comment section. Used for things
+   like "0.59@1.99" on weight items.
+  @param $total the right-hand number
+  @param $suffix flags after the number
+  @return An HTML string
+
+  This could probably be combined with printitemcolor(). They're
+  separate because no one has done that yet.
+*/
 function printitemcolorhilite($color, $description, $comments, $total, $suffix) {
 	if (strlen($total) > 0) {
 		$total = number_format($total, 2);
@@ -381,10 +479,30 @@ function printitemcolorhilite($color, $description, $comments, $total, $suffix) 
 
 //----------------------------------------------------------------//
 
+/**
+  Alias for printitemcolorhilite().
+*/
 function printItemHilite($description, $comments, $total, $suffix) {
-	return printItemColorHilite("004080", $description, $comments, $total, $suffix);
+	return printitemcolorhilite("004080", $description, $comments, $total, $suffix);
 }
 
+/**
+  Get the scale display box
+  @param $input message from scale
+  @return An HTML string
+ 
+  If $input is specified, weight information
+  in the session gets updated before returning
+  the current value.
+
+  Known input values are:
+   - S11WWWW where WWWW is weight in hundreths
+     (i.e., 1lb = 0100)
+   - S141 not settled on a weight yet
+   - S143 zero weight
+   - S145 an error condition
+   - S142 an error condition
+*/
 function scaledisplaymsg($input=""){
 	global $CORE_LOCAL;
 	$reginput = trim(strtoupper($input));

@@ -30,8 +30,17 @@ if (!function_exists("loadglobalvalues")) include($CORE_PATH."lib/loadconfig.php
 if (!function_exists("paycard_reset")) include($CORE_PATH."cc-modules/lib/paycardLib.php");
 if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
 
-// initiate_session();
+/**
+ @file
+ @brief Setup session variables
+*/
 
+/**
+  Populates $CORE_LOCAL with default values.
+  Short-hand for calling every other function
+  in this file. Normally called once on
+  startup.
+*/
 function initiate_session() {
 
 	system_init();
@@ -46,6 +55,12 @@ function initiate_session() {
 	customreceipt();
 }
 
+/**
+  Initialize system default values in
+  $CORE_LOCAL. Variables defined here
+  should always exist but won't be reset
+  to these values on a regular basis.
+*/
 function system_init() {
 	global $CORE_LOCAL;
 
@@ -71,6 +86,12 @@ function system_init() {
 	$CORE_LOCAL->set("search_or_list",0);
 }
 
+/**
+  Initialize transaction variable in $CORE_LOCAL.
+  This function is called after the end of every
+  transaction so these values will be the
+  the defaults every time.
+*/
 function transReset() {
 	global $CORE_LOCAL;
 
@@ -129,6 +150,11 @@ function transReset() {
 	$CORE_LOCAL->set("requestType","");
 }
 
+/**
+  Initialize print related variables in $CORE_LOCAL.
+  This function is called after the end of
+  every transaction.
+*/
 function printReset() {
 	global $CORE_LOCAL;
 
@@ -143,6 +169,11 @@ function printReset() {
 	$CORE_LOCAL->set("reprintNameLookup",0);
 }
 
+/**
+  Initialize member related variables in $CORE_LOCAL.
+  This function is called after the end of
+  every transaction.
+*/
 function memberReset() {
 	global $CORE_LOCAL;
 
@@ -162,6 +193,13 @@ function memberReset() {
 	$CORE_LOCAL->set("memAge",date('Ymd'));
 }
 
+/**
+  Get member information line for a given member
+  @param $row a record from custdata
+  @return string
+  @deprecated
+  Just define blueLine in custdata.
+*/
 function blueLine($row) {
 	$status = array('Non-Owner', 'Shareholder', 'Subscriber', 'Inactive', 'Refund', 'On Hold', 'Sister Org.', 'Other Co-ops');
 	if ($row["blueLine"]) {			// custom blueLine as defined by db
@@ -173,6 +211,16 @@ function blueLine($row) {
 	}
 }
 
+/**
+  If there are records in localtemptrans, get the 
+  member number and initialize $CORE_LOCAL member
+  variables.
+
+  The only time this function does anything is
+  in crash recovery - if a browser is closed and
+  re-opened or the computer is rebooted in the
+  middle of a transaction.
+*/
 function loaddata() {
 	global $CORE_LOCAL;
 	
@@ -224,9 +272,10 @@ function loaddata() {
 	}
 }
 
-/* fetch customer receipt header & footer lines
- * use to be in ini.php and on the remote DB, doesn't
- * belong on either 
+/** 
+   Fetch text fields from the customReceipt table
+   These fields are used for various messages that
+   invariably must be customized at every store.
  */
 function customreceipt(){
 	global $CORE_LOCAL;

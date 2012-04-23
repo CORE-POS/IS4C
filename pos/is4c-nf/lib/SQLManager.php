@@ -21,6 +21,14 @@
 
 *********************************************************************************/
 
+/**
+ @class SQLManager
+ Custom abstraction layer for SQL
+
+ Please see Fannie. It's the same class
+ and tons of documentation to reproduce here.
+*/
+
 /**************************************************
 CLASS INTERFACE
 

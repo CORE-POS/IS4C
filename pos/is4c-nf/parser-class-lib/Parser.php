@@ -146,7 +146,9 @@ class Parser {
 	}
 }
 
-/** @file */
+/** @file 
+    @brief Defines parser module and includes a couple utility functions
+*/
 
 /**
   Gather parse modules

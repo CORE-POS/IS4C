@@ -21,12 +21,23 @@
 
 *********************************************************************************/
 
-/*
- * Generic Credit Card processing module
- *
- * The idea here is to have a general module for
- * processing via HTTPS & curl
- *
+/**
+  @class BasicCCModule
+  Generic Credit Card processing module
+
+  All payment processing modules should descend
+  from this class. Required methods are:
+   - handlesType()
+   - doSend()
+   - cleanup()
+
+  Additionally, while they technically may be
+  omitted in the subclass, it is strongly 
+  recommended that module implement its own:
+   - entered()
+   - paycard_void()
+
+  The rest is utility methods that are often helpful.
  */
 
 $CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
@@ -41,9 +52,11 @@ if (!isset($CORE_LOCAL)){
 define("LOCAL_CERT_PATH",$_SERVER['DOCUMENT_ROOT']."/cc-modules/cacert.pem");
 
 class BasicCCModule {
-	/* constructor
-	 * takes no arguments
-	 * otherwise, do whatever you want here
+
+	/** 
+	  Constructor
+	  takes no arguments
+	  otherwise, do whatever you want here
 	 */
 	function BasicCCModule(){
 		
@@ -51,57 +64,92 @@ class BasicCCModule {
 
 	// BEGIN INTERFACE METHODS
 
-	/* handlesType($type)
-	 * $type is a constant as defined in paycardLib.php.
-	 * If you class can handle the given type, return
-	 * True
+	/** 
+	 Check whether module handles this paycard type
+	 @param $type the type
+	 @return True or False
+
+	 Type constants are defined in paycardLib.php.
 	 */
 	function handlesType($type){
 		return False;
 	}
 
-	/* entered($validate)
-	 * This function is called in paycardEntered()
-	 * [paycardEntered.php]. This function exists
-	 * to move all type-specific handling code out
-	 * of the paycard* files
+	/** 
+	 Set up transaction and validate if desired
+	 @param $validate boolean
+	 @param $json A keyed array
+	 @return An array see Parser::default_json()
+	  for formatting.
+
+	 This function typically does some validation
+	 and sets some values in the session. 
+
+	 If you have 'output' defined in the return
+	 array, that gets shown as an error message.
+	 If you set a URL in 'main_frame', POS
+	 might go there but it's not guaranteed.
 	 */
 	function entered($validate,$json=array()){
-		return False;
+		if(!isset($json['output'])) $json['output'] = '';
+		if(!isset($json['main_frame'])) $json['main_frame'] = False;
+		return $json;
 	}
 
-	/* doSend()
-	 * Process the paycard request and return
-	 * an error value as defined in paycardLib.php.
-	 *
-	 * On success, return PAYCARD_ERR_OK.
-	 * On failure, return anything else and set any
-	 * error messages to be displayed in
-	 * $CORE_LOCAL->["boxMsg"].
+	/** 
+	 Process the paycard request and return
+	 an error value as defined in paycardLib.php.
+	 @param $type paycard type 
+	 @return
+	 - On success, return PAYCARD_ERR_OK.
+	 - On failure, return anything else and set any
+	   error messages to be displayed in
+	   $CORE_LOCAL->["boxMsg"].
+
+	 This function should submit a request to the
+	 gateway and process the result. By convention
+	 credit card request and response info is stored
+	 in the efsnet* tables and gift card request and
+	 response info is stored in the valutec* tables.
+	
+	 <b>Do not store full card number when logging
+	 request and response info</b>.
 	 */
 	function doSend($type){
 		return $this->setErrorMsg(0);
 	}
 
-	/* cleanup()
-	 * This function is called when doSend() returns
-	 * PAYCARD_ERR_OK. (see paycardAuthorize.php)
-	 * I use it for tendering, printing
-	 * receipts, etc, but it's really only for code
-	 * cleanliness. You could leave this as is and
-	 * do all the everything inside doSend()
+	/**
+	  This function is called when doSend() returns
+	  PAYCARD_ERR_OK. 
+
+	  I use it for tendering, printing
+	  receipts, etc, but it's really only for code
+	  cleanliness. You could leave this as is and
+	  do all the everything inside doSend()
 	 */
 	function cleanup($json=array()){
 
 	}
 
-	/* paycard_void($transID)
-	 * Argument is trans_id to be voided
-	 * Again, this is for removing type-specific
-	 * code from paycard*.php files.
-	 */
-	function paycard_void($transID){
+	/**
+	 Validation and setup for void transactions
+	 @param $transID original transaction ID
+	 @param $laneNo original transaction laneNo value
+	 @param $transNo original transaction transNo value
+	 @param $json keyed array
+	 @return An array see Parser::default_json() for
+	  formatting
 
+	 This function is similar to entered(). Typically
+	 with a void there is additional validation to
+	 check the status of the original transaction before
+	 proceeding.
+	*/
+	function paycard_void($transID, $laneNo=-1, $transNo=-1, $json=array()){
+		if(!isset($json['output'])) $json['output'] = '';
+		if(!isset($json['main_frame'])) $json['main_frame'] = False;
+		return $json;
 	}
 
 	// END INTERFACE METHODS
@@ -112,20 +160,26 @@ class BasicCCModule {
 	// that implements the interface methods above
 	// will work modularly
 
-	/* curlSend($data,$type)
-	 * Send a curl request with the specified
-	 * POST data. The url should be specified in
-	 * $this->GATEWAY.
-	 * Passes an array containing curl error number,
-	 * curl error message, curl processing time, http
-	 * code, and response text to the handleResponse()
-	 * method
-	 *
-	 * Valid types: GET, POST, SOAP
-	 * Setting xml to True adds an content-type header
-	 */
 	protected $GATEWAY;
 	protected $SOAPACTION;
+
+	/**
+	 Send a curl request with the specified data.
+	 @param $data string of data
+	 @param $type 'GET', 'POST', or 'SOAP'
+	 @param $xml True or False
+	 @return integer error code
+	 
+	 The url should be specified in $this->GATEWAY.
+	 SOAP requests should aso set $this->$SOAPACTION.
+
+	 Data is usually a string of XML or an HTTP
+	 argument like key1=val1&key2=val2...
+	 Setting xml to True adds an content-type header
+
+	 This function calls the handleResponse method
+	 and returns the result of that call.
+	 */
 	function curlSend($data=False,$type='POST',$xml=False){
 		global $CORE_PATH,$CORE_LOCAL;
 		if($data && $type == 'GET')
@@ -183,18 +237,31 @@ class BasicCCModule {
 		return $this->handleResponse($funcReturn);
 	}
 
-	/* handleResponse($response)
-	 * Takes care of data fetched by
-	 * $this->curlSend()
+	/** 
+	 Processes data fetched by $this->curlSend()
+	 @param $response is a keyed array with:
+	  - curlErr cURL error code
+	  - curlErrText cURL error message
+	  - curlTime time spent fetching response
+	  - curlHTTP response HTTP code
+	  - response is the actual text result
+	 @return An error code. Constants are specified
+	  in paycardLib.php. PAYCARD_ERR_OK should be
+	  return on success.
 	 */
 	function handleResponse($response){
 		return False;
 	}
 
-	/* refnum($transID)
-	 * Create a reference number from
-	 * session variables. Taken straight from
-	 * efsnet.php
+	/**
+	 Create a reference number from
+	 session variables.
+	 @param $transID current trans_id in localtemptrans
+	 @return A string CCCCLLNNNIII where
+	  - CCCC is cashier number
+	  - LL is lane number
+	  - NNN is transaction number
+	  - III is transaction ID
 	 */
 	function refnum($transID){
 		global $CORE_LOCAL;
@@ -213,8 +280,10 @@ class BasicCCModule {
 		return $ref;
 	}
 
-	/* array2post($parray)
-	 * urlencodes the given array for use with curl
+	/** 
+	  urlencodes the given array for use with curl
+	  @param $parray keyed array
+	  @return formatted string
 	 */
 	function array2post($parray){
 		$postData = "";
@@ -224,15 +293,21 @@ class BasicCCModule {
 		return $postData;
 	}
 
-	// put objects into a soap envelope
-	// action is top level tag in the soap body
-	// Envelope attributes can be overridden by a subclass
-	// if needed
+	/**
+	  Envelope attributes for SOAP.
+	*/
 	protected $SOAP_ENVELOPE_ATTRS = array(
 		"xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\"",
 		"xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"",
 		"xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\""
 		);
+
+	/** Put objects into a soap envelope
+	  @param $action top level tag in the soap body
+	  @param $objs keyed array of values	
+	  @param $namespace include an xmlns attribute
+	  @return soap string
+	*/
 	function soapify($action,$objs,$namespace=""){
 		$ret = "<?xml version=\"1.0\"?>
 			<soap:Envelope";
@@ -259,21 +334,27 @@ class BasicCCModule {
 		return $ret;
 	}
 
-	// extract response from soap envelope
+	/**
+	  Extract response from a soap envelope
+	  @param $action is the top level tag in the soap body
+	  @param $soaptext is the full soap response
+	*/
 	function desoapify($action,$soaptext){
 		preg_match("/<$action.*?>(.*?)<\/$action>/s",
 			$soaptext,$groups);
 		return $groups[1];
 	}
 
-	/* setErrorMsg($errorCode)
-	 * Set $CORE_LOCAL->["boxMsg"] appropriately for
-	 * the given error code. I find this easier
-	 * than manually setting an appropriate message
-	 * every time I return a common error like
-	 * PAYCARD_ERR_NOSEND. I think everything but
-	 * PAYCARD_ERR_PROC can have one default message
-	 * assigned here
+	/** 
+	  @param $errorCode error code contstant from paycardLib.php
+
+	  Set $CORE_LOCAL->["boxMsg"] appropriately for
+	  the given error code. I find this easier
+	  than manually setting an appropriate message
+	  every time I return a common error like
+	  PAYCARD_ERR_NOSEND. I think everything but
+	  PAYCARD_ERR_PROC can have one default message
+	  assigned here
 	 */
 	function setErrorMsg($errorCode){
 		global $CORE_LOCAL;
@@ -298,6 +379,19 @@ class BasicCCModule {
 	}
 
 	protected $trans_pan;
+	/**
+	  Store card data in class member $trans_pan.
+	  @param $in is a keyed array:
+	  - pan is the card number
+	  - tr1 is magnetic stripe track 1, if available
+	  - tr2 is magnetic stripe track 2, if available
+	  - tr3 is magnetic stripe track 3, if available
+
+	  Recommended for credit card modules. Card data
+	  can be populated at the last possible moment
+	  before calling doSend and expunged again once
+	  the request has been submitted to the gateway.
+	*/
 	function setPAN($in){
 		$this->trans_pan = $in;
 	}

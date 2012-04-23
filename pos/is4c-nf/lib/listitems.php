@@ -28,6 +28,22 @@ if (!function_exists("getsubtotals")) include($CORE_PATH."lib/connect.php");
 if (!function_exists("printheaderb")) include($CORE_PATH."lib/drawscreen.php");
 if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
 
+/**
+ @file
+ @brief Functions for drawing the lines in the current transaction
+*/
+
+/**
+  Get the items currently on screen
+  @param $top_item is trans_id (localtemptrans)
+   of the first item to display
+  @param $highlight is the trans_id (localtemptrans)
+   of the currently selected item
+  @return An HTML string
+
+  If you just want to show the most recently
+  scanned items, use lastpage().
+*/
 function listitems($top_item, $highlight) {
 	global $CORE_LOCAL;
 
@@ -63,7 +79,17 @@ function listitems($top_item, $highlight) {
 }
 
 
+/**
+  Show some items and farewell message
+  @param $readOnly don't update totals
+  @return An HTML string
 
+  Show a few recent items and the 
+  "Thank you for shopping" messaging.
+
+  Yes, this function should be renamed. It
+  has nothing to do with receipts.
+*/
 function printReceiptfooter($readOnly=False) {
 	global $CORE_LOCAL;
 
@@ -96,6 +122,16 @@ function printReceiptfooter($readOnly=False) {
 
 
 
+/**
+  Get the currently displayed items
+  @param $top_item is the trans_id of the first item to display
+  @param $rows is the number of items to display
+  @param $highlight is the trans_id of the selected item
+  @return An HTML string
+
+  This function probably shouldn't be used directly.
+  Call listitems() or lastpage() instead.
+*/
 function drawitems($top_item, $rows, $highlight) {
 	global $CORE_LOCAL;
 
@@ -171,7 +207,15 @@ function drawitems($top_item, $rows, $highlight) {
 }
 
 
+/**
+  Get the currently displayed items
+  @param $readOnly don't update session
+  @return An HTML string
 
+  This will always display the most recently
+  scanned items. If you want a specific subset,
+  use listitems().
+*/
 function lastpage($readOnly=False) {
 	global $CORE_LOCAL;
 

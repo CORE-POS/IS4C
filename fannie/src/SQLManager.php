@@ -194,6 +194,7 @@ class SQLManager {
 	  @param $rownum The record index
 	  @param $which_connection see method close()
 	  @return True on success, False on failure
+	*/
 	function data_seek($result_object,$rownum,$which_connection=''){
 		if ($which_connection == '')
 			$which_connection = $this->default_db;
