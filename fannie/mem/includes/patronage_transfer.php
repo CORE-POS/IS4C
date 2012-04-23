@@ -48,7 +48,7 @@ if (isset($_REQUEST['submit1']) || isset($_REQUEST['submit2'])){
 
 	$dlog = select_dlog($date);
 	$q = "SELECT card_no FROM $dlog WHERE trans_num=".$dbc->escape($tn)." AND "
-		.$dbc->datediff($dbc->escape($date),'tdate')." = 0
+		.$dbc->date_equals('tdate',$dbc->escape($date))."
 		ORDER BY card_no DESC";
 	$r = $dbc->query($q);
 	if ($dbc->num_rows($r) == 0){
@@ -61,7 +61,7 @@ if (isset($_REQUEST['submit1']) || isset($_REQUEST['submit2'])){
 
 	$q = "SELECT SUM(CASE WHEN trans_type in ('I','M','D') then total else 0 END)
 		FROM $dlog WHERE trans_num=".$dbc->escape($tn)." AND "
-		.$dbc->datediff($dbc->escape($date),'tdate')." = 0";
+		.$dbc->date_equals('tdate',$dbc->escape($date));
 	$r = $dbc->query($q);
 	$amt = array_pop($dbc->fetch_row($r));
 

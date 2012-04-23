@@ -22,11 +22,15 @@
 *********************************************************************************/
 
 class update_20120412114913 extends UpdateObj {
+
 	protected $timestamp = '20120412114913';
+
 	protected $description = 'This update adds primary keys
 to many operational database tables that currently have no primary key.
 It also adds indexes to some of the tables.';
+
 	protected $author = 'Andy Theuninck (WFC)';
+
 	protected $queries = array(
 		'op' => array(
 			'ALTER TABLE batchBarcodes ADD PRIMARY KEY (batchID,upc)',

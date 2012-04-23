@@ -32,10 +32,6 @@
    This script should run daily. Because batch start
    and end dates are inclusive, scheduling the script
    after midnight will give the most sensible results.
-
-   THIS SCRIPT IS CURRENTLY DISABLED TO AVOID CONFLICTS
-   AT WFC. IF YOU WANT TO USE IT, REMOVE THE "exit"
-   LINE.
 */
 
 /* why is this file such a mess?
@@ -62,8 +58,34 @@ $sql->query("UPDATE products SET
 		specialquantity=0,
 		specialgroupprice=0,
 		discounttype=0,
+		numflag=numflag & ( ((1<<32)-1) ^ ((1<<10)-1) ),
 		start_date='1900-01-01',
 		end_date='1900-01-01'");
+
+/* hooray! bit-math! everyone loves bit-math!
+   the first 5 bits of products.numflag contain the batch type
+   the next 5 bits contain the batch priority
+   the remaining 22 bits aren't spoken for (yet)
+
+   priorities:
+   15	=> HQ High Priority
+	   (applies to all product records)
+   10	=> Store High Priority
+	   (applies to store records w/o HQ high priority)
+   5	=> HQ Normal Priority
+	   (applies to all records except store high priority)
+   0	=> Store Normal Priority
+	   (applies to store records not already on sale)
+*/
+$priority_clause = "";
+if ($FANNIE_STORE_ID==0){
+	$priority_clause = "(b.priority=15 
+		OR (b.priority >= ((p.numflag>>5)&0x1f) < 10))";
+}
+else {
+	$priority_clause = "(p.store_id=$FANNIE_STORE_ID
+		AND (b.priority >= ((p.numflag>>5)&0x1f) < 10))";
+}
 
 // resale things that should be on sale 
 if ($FANNIE_SERVER_DBMS == "MYSQL"){
@@ -82,6 +104,7 @@ if ($FANNIE_SERVER_DBMS == "MYSQL"){
 		p.start_date = b.startDate,
 		p.end_date = b.endDate,
 		p.discounttype = b.discounttype,
+		p.numflag=p.numflag | ((b.priority & 0x1f)<<5) | (b.batchType & 0x1f),
 		p.mixmatchcode = CASE 
 			WHEN l.pricemethod IN (3,4) AND l.salePrice >= 0 THEN convert(l.batchID,char)
 			WHEN l.pricemethod IN (3,4) AND l.salePrice < 0 THEN convert(-1*l.batchID,char)
@@ -101,6 +124,7 @@ if ($FANNIE_SERVER_DBMS == "MYSQL"){
 		p.specialquantity=l.quantity,
 		p.specialpricemethod=l.pricemethod,
 		p.discounttype = b.discounttype,
+		p.numflag=p.numflag | ((b.priority & 0x1f)<<5) | (b.batchType & 0x1f),
 		p.mixmatchcode = CASE 
 			WHEN l.pricemethod IN (3,4) AND l.salePrice >= 0 THEN convert(l.batchID,char)
 			WHEN l.pricemethod IN (3,4) AND l.salePrice < 0 THEN convert(-1*l.batchID,char)

@@ -33,8 +33,7 @@
  * Sets up a serial connection in the constructor
  *
  * Polls for data in Read(), writing responses back to the
- * device as needed and pushing data into the correct
- * WebBrowser frame
+ * device as needed 
  *
 *************************************************************/
 using System;
@@ -210,7 +209,7 @@ public class SPH_Ingenico_i6550 : SerialPortHandler {
 	private bool getting_signature;
 	private Signature sig_object;
 
-	private static String INGENICO_OUTPUT_DIR = "C:\\is4c\\scale-drivers\\drivers\\NewMagellan\\cc-output";
+	private static String INGENICO_OUTPUT_DIR = "cc-output";
 
 	public SPH_Ingenico_i6550(string p) : base(p){
 		last_message = null;
@@ -373,9 +372,6 @@ public class SPH_Ingenico_i6550 : SerialPortHandler {
 		}
 	}
 
-	// web page changed, check field for requests from POS
-	// FIELDS CHECKED:
-	// * ccTermOut
 	// 	VALUES:
 	// 	* total:xxx => new transaction amount
 	// 	* reset => start the transaction over
@@ -797,15 +793,16 @@ public class SPH_Ingenico_i6550 : SerialPortHandler {
 
 	private void PushOutput(string s){
 		int ticks = Environment.TickCount;
-		while(File.Exists(INGENICO_OUTPUT_DIR+"\\"+ticks))
+		char sep = System.IO.Path.DirectorySeparatorChar;
+		while(File.Exists(INGENICO_OUTPUT_DIR+sep+ticks))
 			ticks++;
 
-		TextWriter sw = new StreamWriter(INGENICO_OUTPUT_DIR+"\\tmp\\"+ticks);
+		TextWriter sw = new StreamWriter(INGENICO_OUTPUT_DIR+sep+"tmp"+sep+ticks);
 		sw = TextWriter.Synchronized(sw);
 		sw.WriteLine(s);
 		sw.Close();
-		File.Move(INGENICO_OUTPUT_DIR+"\\tmp\\"+ticks,
-			  INGENICO_OUTPUT_DIR+"\\"+ticks);
+		File.Move(INGENICO_OUTPUT_DIR+sep+"tmp"+sep+ticks,
+			  INGENICO_OUTPUT_DIR+sep+ticks);
 	}
 }
 
