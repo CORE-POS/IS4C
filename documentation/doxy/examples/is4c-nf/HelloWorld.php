@@ -32,4 +32,6 @@ class HelloWorld extends BasicPage {
 
 }
 
+new HelloWorld();
+
 ?>

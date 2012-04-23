@@ -382,7 +382,10 @@ class BasicPage {
 
   preprocess() handles input. In this case any form
   input causes a redirect to the main display script.
-  
+
+  Note the very last line creating an object. That's
+  necessary to actually display anything.
+
 */
 
 ?>
