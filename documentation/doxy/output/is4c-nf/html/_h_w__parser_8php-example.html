@@ -3,7 +3,7 @@
 <head>
 <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
-<title>CORE POS - IS4C: HelloWorld.php</title>
+<title>CORE POS - IS4C: HW_Parser.php</title>
 
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <link href="doxygen.css" rel="stylesheet" type="text/css" />
@@ -70,49 +70,50 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div>
 <div class="header">
   <div class="headertitle">
-<div class="title">HelloWorld.php</div>  </div>
+<div class="title">HW_Parser.php</div>  </div>
 </div><!--header-->
 <div class="contents">
-<p>The first two line snippet is path detection. Every code file should start with these lines.</p>
-<p>The next two lines demonstrate standard include format. Check whether the needed class/function already exists and use the detected path $CORE_PATH.</p>
-<p>body_content() draws the page. Methods from <a class="el" href="class_basic_page.html">BasicPage</a> provide the standard input box at the top and footer at the bottom. boxMsg() is a utility function that puts the 'Hello World' message in a standard message box.</p>
-<p>preprocess() handles input. In this case any form input causes a redirect to the main display script.</p>
-<p>Note the very last line creating an object. That's necessary to actually display anything.</p>
+<p>The first two lines are standard path detection. With a <a class="el" href="class_parser.html">Parser</a> module something else <em>probably</em> set this already but better safe than sorry.</p>
+<p>The next block demonstrates standard include format (check first, use detected path). $CORE_LOCAL is an important global containing session values</p>
+<p>check() looks for input the module can handle. In this case the module simply watches for the string "HW".</p>
+<p>parse() demonstrates a couple options when the correct input is detected. If a transaction is in progress, it displays an error message. Otherwise, it sends the browser to a different display script.</p>
+<p>N.B. the HelloWorld display module is just an example; that file does not exist in the gui-modules directory.</p>
 <div class="fragment"><pre class="fragment">&lt;?php
 
 $CORE_PATH = isset($CORE_PATH)?$CORE_PATH:<span class="stringliteral">&quot;&quot;</span>;
 <span class="keywordflow">if</span> (empty($CORE_PATH)){ <span class="keywordflow">while</span>(!file_exists($CORE_PATH.<span class="stringliteral">&quot;pos.css&quot;</span>)) $CORE_PATH .= <span class="stringliteral">&quot;../&quot;</span>; }
 
-<span class="keywordflow">if</span> (!class_exists(<span class="stringliteral">&#39;BasicPage&#39;</span>)) include($CORE_PATH.<span class="stringliteral">&#39;gui-class-lib/BasicPge.php&#39;</span>);
-<span class="keywordflow">if</span> (!function_exists(<span class="stringliteral">&#39;boxMsg&#39;</span>)) include($CORE_PATH.<span class="stringliteral">&#39;lib/drawscreen.php&#39;</span>);
+<span class="keywordflow">if</span> (!class_exists(<span class="stringliteral">&#39;Parser&#39;</span>)) include($CORE_PATH.<span class="stringliteral">&#39;parser-class-lib/Parser.php&#39;</span>);
+<span class="keywordflow">if</span> (!function_exists(<span class="stringliteral">&quot;boxMsg&quot;</span>)) include_once($CORE_PATH.<span class="stringliteral">&quot;lib/drawscreen.php&quot;</span>);
+<span class="keywordflow">if</span> (!isset($CORE_LOCAL)) include($CORE_PATH.<span class="stringliteral">&quot;lib/LocalStorage/conf.php&quot;</span>);
 
-<span class="keyword">class </span>HelloWorld <span class="keyword">extends</span> <a name="_a0"></a><a class="code" href="class_basic_page.html">BasicPage</a> {
+<span class="keyword">class </span>HW_Parser <span class="keyword">extends</span> <a name="_a0"></a><a class="code" href="class_parser.html">Parser</a> {
 
-        <span class="keyword">function</span> <a name="a1"></a><a class="code" href="class_basic_page.html#aee2a2ad1ee31315b1ec25ec350da566e">body_content</a>(){
-                $this-&gt;<a name="a2"></a><a class="code" href="class_basic_page.html#a65805fa802c839342148c4578de9ac89">input_header</a>();
+        <span class="keyword">function</span> <a name="a1"></a><a class="code" href="class_parser.html#a60676cdb6480984f56d6301150f49c3a">check</a>($str){
 
-                echo <span class="stringliteral">&#39;&lt;div class=&quot;baseHeight&quot;&gt;&#39;</span>;
-                echo boxMsg(<span class="stringliteral">&#39;&lt;b&gt;Hello World!&lt;/b&gt;&lt;br /&gt;</span>
-<span class="stringliteral">                        Enter anything to continue&#39;</span>);
-                echo <span class="stringliteral">&#39;&lt;/div&gt;&#39;</span>;
+                <span class="keywordflow">if</span> (strtoupper($str) == <span class="stringliteral">&quot;HW&quot;</span>)
+                        <span class="keywordflow">return</span> True;
 
-                $this-&gt;<a name="a3"></a><a class="code" href="class_basic_page.html#a5e8404e15989c0707139dea6561ba43c">footer</a>();
+                <span class="keywordflow">return</span> False;
+                
         }
 
-        <span class="keyword">function</span> <a name="a4"></a><a class="code" href="class_basic_page.html#a15d7f8acc78232fe0685448f49254768">preprocess</a>(){
-                global $CORE_PATH;
+        <span class="keyword">function</span> <a name="a2"></a><a class="code" href="class_parser.html#a70a383afd1dcac2569cd099d4edde14f">parse</a>($str){
+                global $CORE_LOCAL, $CORE_PATH;
 
-                <span class="keywordflow">if</span> (isset($_REQUEST[<span class="stringliteral">&#39;reginput&#39;</span>])){
-                        header(<span class="stringliteral">&quot;Location: {$CORE_PATH}gui-modules/pos2.php&quot;</span>);
-                        <span class="keywordflow">return</span> False;
+                $return_value = $this-&gt;<a name="a3"></a><a class="code" href="class_parser.html#a0076d421db25e8eb844d0ecc093688ad">default_json</a>();
+
+                <span class="keywordflow">if</span> ($CORE_LOCAL-&gt;get(<span class="stringliteral">&quot;LastID&quot;</span>) != <span class="stringliteral">&quot;0&quot;</span>){
+                        $return_value[<span class="stringliteral">&#39;output&#39;</span>] = boxMsg(<span class="stringliteral">&quot;transaction in progress&quot;</span>);
+                }
+                <span class="keywordflow">else</span> {
+                        $return_value[<span class="stringliteral">&#39;main_frame&#39;</span>] = $CORE_PATH.<span class="stringliteral">&#39;gui-modules/HelloWorld.php&#39;</span>;
                 }
 
-                <span class="keywordflow">return</span> True;
+                <span class="keywordflow">return</span> $return_value;
         }
 
 }
-
-<span class="keyword">new</span> HelloWorld();
 
 ?&gt;
 </pre></div> </div><!-- contents -->
