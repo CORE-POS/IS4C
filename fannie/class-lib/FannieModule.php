@@ -27,13 +27,22 @@
 */
 class FannieModule {
 
+	public $required = True;
+
+	public $description = "
+	Base class for all Fannie Modules.
+	Provides functions for registering
+	and loading other modules.
+	";
 
 	/**
 	  Called when module is enabled
 	  Automatically registers class
 	*/
 	function enable(){
-		register_symbols(__FILE__,null,__CLASS__);
+		$info = new ReflectionClass($this);
+		register_symbols($info->getFileName(),
+			$this->provided_functions(),$info->name);
 	}
 
 	/**
@@ -41,7 +50,8 @@ class FannieModule {
 	  Automatically unregisters class
 	*/
 	function disable(){
-		unregister_symbols(null,__CLASS__);
+		$info = new ReflectionClass($this);
+		unregister_symbols($this->provided_functions(),$info->name);
 	}
 
 	/**
@@ -50,160 +60,33 @@ class FannieModule {
 	function run_module(){
 
 	}
-}
 
-/**
-  @file
-  @brief Base fannie functions
-*/
-
-
-/**
-  Register available function(s) and class(es)
-  @param $file is the file providing the function(s) and/or class(es)
-  @param $functions is a function name or array of function names
-  @param $classes is a class name or array of class names
-*/
-function register_symbols($file, $functions=null, $classes=null){
-	global $FANNIE_SYMBOLS;
-
-	if (!is_null($functions)){
-		if (!is_array($functions))
-			$functions = array($functions);
-
-		if (!isset($FANNIE_SYMBOLS['functions']))
-			$FANNIE_SYMBOLS['functions'] = array();
-
-		foreach($functions as $f)
-			$FANNIE_SYMBOLS['functions'][$f] = $file;	
+	/**
+	  Get list of non-class functions
+	  this module provides
+	  @return array of function names
+	*/
+	function provided_functions(){
+		return array();
 	}
-
-	if (!is_null($classes)){
-		if (!is_array($classes))
-			$classes = array($classes);
-
-		if (!isset($FANNIE_SYMBOLS['classes']))
-			$FANNIE_SYMBOLS['classes'] = array();
-
-		foreach($classes as $c)
-			$FANNIE_SYMBOLS['classes'][$c] = $file;	
-	}
-
-	save_symbols();
 }
 
 /**
-  Unregister available function(s) and class(es)
-  @param $file is the file providing the function(s) and/or class(es)
-  @param $functions is a function name or array of function names
-  @param $classes is a class name or array of class names
+  @example SimpleHelloWorld.php
+  The most basic module possible.
+
+  The run_module() method is invoked to
+  let the module do whatever it's supposed 
+  to do. Most user-facing modules will use
+  likely use FanniePage or one of its
+  subclasses.
 */
-function unregister_symbols($functions=null, $classes=null){
-	global $FANNIE_SYMBOLS;
-
-	if (!is_null($functions)){
-		if (!is_array($functions))
-			$functions = array($functions);
-
-		if (!isset($FANNIE_SYMBOLS['functions']))
-			$FANNIE_SYMBOLS['functions'] = array();
-
-		foreach($functions as $f)
-			unset($FANNIE_SYMBOLS['functions'][$f]);
-	}
-
-	if (!is_null($classes)){
-		if (!is_array($classes))
-			$classes = array($classes);
-
-		if (!isset($FANNIE_SYMBOLS['classes']))
-			$FANNIE_SYMBOLS['classes'] = array();
-
-		foreach($classes as $c)
-			unset($FANNIE_SYMBOLS['classes'][$c]);
-	}
-
-	save_symbols();
-}
 
 /**
-  Write current symbols to Fannie config.php
+  @example FunctionLibrary.php
+  A module that provides functions.
 
-  Symbols are encoded and serialized to simplify
-  saving and quoting issues.
+  The class is portion of the module
+  is responsible for defining what functions
+  the module provides.
 */
-function save_symbols(){
-	global $FANNIE_SYMBOLS, $FANNIE_ROOT;
-
-	if (!is_array($FANNIE_SYMBOLS)) return False;	
-
-	$saveStr = base64_encode(serialize($FANNIE_SYMBOLS));
-	if (!function_exists('confset'))
-		include_once($FANNIE_ROOT.'install/util.php');
-	confset('FANNIE_SYMBOLS',"'$saveStr'");
-}
-
-/**
-  Decode symbols if needed
-*/
-function unpack_symbols(){
-	global $FANNIE_SYMBOLS;
-	
-	if (is_array($FANNIE_SYMBOLS)) return True;
-
-	$FANNIE_SYMBOLS = unserialize(base64_decode($FANNIE_SYMBOLS));
-
-	return True;
-}
-
-/**
-  Include the definition for a registered function
-  @param $function the function name
-  @return True or False
-*/
-function load_function($function){
-	global $FANNIE_SYMBOLS;
-
-	if (function_exists($function))
-		return True;
-
-	unpack_symbols();
-
-	if (isset($FANNIE_SYMBOLS['functions'][$function]))
-		include_once($FANNIE_SYMBOLS['functions'][$function]);
-
-	return function_exists($function) ? True : False;
-}
-
-/**
-  Include the definition for a registered class
-  @param $class the class name
-  @return True or False
-*/
-function load_class($class){
-	global $FANNIE_SYMBOLS;
-
-	if (class_exists($class))
-		return True;
-
-	unpack_symbols();
-
-	if (isset($FANNIE_SYMBOLS['classes'][$class]))
-		include_once($FANNIE_SYMBOLS['classes'][$class]);
-
-	return class_exists($class) ? True : False;
-}
-
-function use_module($module){
-	$find = load_class($module);
-	if (!$find)
-		return "Module $module not available";
-
-	$obj = new $module();
-	if (!is_object($obj))
-		return "Problem instantiating module $module";
-
-	$obj->run_module();
-}
-
-?>

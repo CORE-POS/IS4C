@@ -27,22 +27,16 @@
 */
 class FanniePage extends FannieModule {
 
-	private $title;
- 	private $header;
-	private $window_dressing;
-	private $onload_commands;
+	public $required = True;
 
-	/**
-	  Constructor
-	  @param $title Page window title
-	  @param $header Page displayed header
-	*/
-	function FanniePage($title, $header){
-		$this->title = $title;
-		$this->header = $header;	
-		$this->window_dressing = True;
-		$this->onload_commands = array();
-	}
+	public $description = "
+	Base class for creating HTML pages.
+	";
+
+	protected $title = 'Page window title';
+ 	protected $header = 'Page displayed header';
+	protected $window_dressing = True;
+	protected $onload_commands = array();
 
 	/**
 	  Toggle using menus
@@ -62,7 +56,7 @@ class FanniePage extends FannieModule {
 		$page_title = $this->title;
 		$header = $this->header;
 		include($FANNIE_ROOT.'src/header.html');
-		return ob_end_clean();
+		return ob_get_clean();
 
 	}
 
@@ -71,10 +65,10 @@ class FanniePage extends FannieModule {
 	  @return An HTML string
 	*/
 	function get_footer(){
-		global $FANNIE_ROOT;
+		global $FANNIE_ROOT, $FANNIE_AUTH_ENABLED, $FANNIE_URL;
 		ob_start();
 		include($FANNIE_ROOT.'src/footer.html');
-		return ob_end_clean();
+		return ob_get_clean();
 	}
 
 	/**
@@ -128,15 +122,15 @@ class FanniePage extends FannieModule {
 		if ($this->preprocess()){
 			
 			if ($this->window_dressing)
-				echo get_header();
+				echo $this->get_header();
 
-			echo body_content();
+			echo $this->body_content();
 
 			if ($this->window_dressing)
-				echo get_footer();
+				echo $this->get_footer();
 
 			echo '<script type="text/javascript">';
-			echo javascript_content();
+			echo $this->javascript_content();
 			echo "\n\$(document).ready(function(){\n";
 			foreach($this->onload_commands as $oc)
 				echo $oc."\n";
@@ -144,10 +138,63 @@ class FanniePage extends FannieModule {
 			echo '</script>';
 
 			echo '<style type="text/css">';
-			echo css_content();
+			echo $this->css_content();
 			echo '</style>';
 		}
 	}
+
+	/**
+	  Get a form tag with this module as the action
+	  @param $type form method (get or post)
+	  @return An HTML string
+	*/
+	function form_tag($type='post'){
+		global $FANNIE_URL;
+		$ret = sprintf('<form method="%s" action="%s">
+			<input type="hidden" name="m" value="%s" />',
+			$type, $FANNIE_URL.'modules/',
+			get_class($this)
+		);
+		return $ret;
+	}
+
+	/**
+	  Get the URL for this page
+	  @return A URL string
+	*/
+	function module_url(){
+		global $FANNIE_URL;
+		return $FANNIE_URL.'modules/?m='.get_class($this);
+	}
+
+	function provides_functions(){
+		return array(
+			'get_form_value'
+		);
+	}
 }
+
+/**
+  @file
+  @brief Functions provided by FanniePage
+*/
+
+/**
+  Safely fetch a form value
+  @param $name the field name
+  @param $default default value if the form value doesn't exist
+  @return The form value, if available, otherwise the default.
+*/
+function get_form_value($name, $default=''){
+	return (isset($_REQUEST[$name])) ? $_REQUEST[$name] : $default;
+}
+
+/**
+  @example BetterHelloWorld.php
+  Using FanniePage for this module means the header,
+  footer, and menu will be included. The body_content()
+  method defines what goes in the main content area
+  of the page. 
+*/
 
 ?>
