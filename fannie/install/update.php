@@ -38,6 +38,8 @@ echo '</head><body>';
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 Updates
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<a href="module_system">Modules</a>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <a href="sample_data/extra_data.php">Sample Data</a>
 <?php
 
