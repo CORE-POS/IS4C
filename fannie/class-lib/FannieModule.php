@@ -31,8 +31,6 @@ class FannieModule {
 
 	public $description = "
 	Base class for all Fannie Modules.
-	Provides functions for registering
-	and loading other modules.
 	";
 
 	/**
