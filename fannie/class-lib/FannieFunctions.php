@@ -231,8 +231,10 @@ function get_available_modules($dir, &$ret){
 
 		$class_name = substr($file,0,strlen($file)-4);
 		include_once(realpath($dir."/".$file));
-		if (class_exists($class_name))
-			$ret[$class_name] = realpath($dir."/".$file);
+		if (class_exists($class_name)){
+			if (is_subclass_of($class_name,'FannieModule') || $class_name=='FannieModule')
+				$ret[$class_name] = realpath($dir."/".$file);
+		}
 	}
 	closedir($dh);
 }
