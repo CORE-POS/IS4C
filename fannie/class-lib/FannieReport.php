@@ -33,8 +33,49 @@ class FannieReport extends FanniePage {
 	Class for creating downloadable reports
 	";
 
+	/**
+	  Many reports have two display modes:
+	  One is a form to allow user input(s)
+	  and the other shows the resulting report
+
+	  FannieReport provides separate methods
+	  for these two common display modes. You
+	  can change $mode to alter which display
+	  method is used.
+	  - Set $mode to 'form' to use report_form()
+	  = Set $mode to 'results' to use report_results()
+	*/
+	protected $mode = 'form';
+
 	private $downloadable = False;
 	private $headers = array();
+
+	function body_content(){
+		switch ($this->mode){
+		case 'results':
+			return $this->report_results();
+		case 'form':
+			return $this->report_form();
+		}
+	}
+
+	/**
+	  If the mode property is 'form', this
+	  function is called for main content
+	  @return An HTML string
+	*/
+	function report_form(){
+		return "";
+	}
+
+	/**
+	  If the mode property is 'results', this
+	  function is called for main content
+	  @return An HTML string
+	*/
+	function report_results(){
+		return "";
+	}
 
 	/**
 	  Send headers and remove extra HTML for download
@@ -94,7 +135,25 @@ class FannieReport extends FanniePage {
 */
 function get_sortable_table($dbc, $query, $columns, $url, $current, $nolinks=False){
 
-	$ret = '<table cellpadding="4" cellspacing="0" border="1">';
+	// apend current query string to URL
+	$url_args = empty($_POST) ? $_GET : $_POST;
+	unset($url_args['m']);
+	unset($url_args['order']);
+	$dir = isset($url_args['dir']) ? strtoupper($url_args['dir']) : 'ASC';
+	$otherdir = ($dir == "ASC") ? "DESC" : "ASC";
+	$queryString = "";
+	foreach($url_args as $key => $val)
+		$queryString .= $key."=".$val."&";
+	$queryString = rtrim($queryString,"&");
+
+	if (strstr($url,"?")) $url .= "&".$queryString;
+	else $url .= "?".$queryString;
+
+	$ret = '';
+	if (!$nolinks){
+		$ret .= sprintf('<a href="%s&excel=yes">Download Data</a><br />',$url);
+	}
+	$ret .= '<table cellpadding="4" cellspacing="0" border="1">';
 	$ret .= '<tr>';
 	foreach($columns as $title => $c_info){
 		if ($nolinks){
@@ -105,20 +164,7 @@ function get_sortable_table($dbc, $query, $columns, $url, $current, $nolinks=Fal
 
 		$sort_col = (isset($c_info['sort'])) ? $c_info['sort'] : $c_info['col'];
 
-		$url_args = empty($_POST) ? $_GET : $_POST;
-		unset($url_args['m']);
-		unset($url_args['order']);
-		$dir = isset($url_args['dir']) ? strtoupper($url_args['dir']) : 'ASC';
-		$otherdir = ($dir == "ASC") ? "DESC" : "ASC";
-
-		$queryString = "";
-		foreach($url_args as $key => $val)
-			$queryString .= $key."=".$val."&";
-
-		if (strstr($url,"?")) $url .= "&".$queryString;
-		else $url .= "?".$queryString;
-
-		$ret .= sprintf('<th><a href="%sorder=%s&dir=%s">%s</a></th>',
+		$ret .= sprintf('<th><a href="%s&order=%s&dir=%s">%s</a></th>',
 				$url, $sort_col,
 				($sort_col == $current ? $otherdir : 'ASC'),
 				$title
@@ -148,5 +194,45 @@ function get_sortable_table($dbc, $query, $columns, $url, $current, $nolinks=Fal
 
 	return $ret;
 }
+
+/**
+  @example SimpleReport.php
+  This is a an example of a typical report. Many
+  reports follow this general format with one
+  screen where a user can enter some values and
+  a second screen that shows the generated report.
+
+  The report_form() method creates the screen where a
+  user can enter report parameters. This method
+  should return an HTML string, but output buffering
+  can be used as shown if you want to include raw
+  HTML. Note the use of FanniePage::form_tag(). This
+  is ensures your module will receive the form input.
+
+  The report_results() method cretes the screen
+  where with the generated report. Like report_form(),
+  it returns an HTML string. This is by no means the
+  only way to generate results, but it demonstrates
+  some useful functions:
+  - <b>get_form_value</b> fetches input from $_GET or $_POST
+  and you don't have to worry about which. The second argument
+  sets a default value in case the form value doesn't exist.
+  - <b>op_connect</b> provides a database connection
+  - <b>get_sortable_table</b> builds an HTML table from
+  a query. The table can is sortable by the column headers.
+  $columns demonstrates how columns are defined and some of
+  the formatting options.
+  - FannieReport::Download() generates proper headers to
+  output the report as a downloadable file
+
+  The preprocess() function simply changes the mode
+  if a form submission is detected. Mode control which
+  of the above screens is shown. Disabling window_dressing
+  removes Fannie's normal header, menu, and footer. This is
+  useful with wide reports that have many columns and vital
+  if you're going to use FannieReport::Download(). Excel can
+  read a simple HTML table, but a full HTML page with CSS
+  styling and lots of divs won't work well.
+*/
 
 ?>

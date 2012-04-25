@@ -51,7 +51,7 @@ class LabelPDF extends FannieModule {
 	  Set offset (skip first X labels)
 	  @param $o number of labels to skip
 	*/
-	function set_offset($o){$this->offset=$d;}
+	function set_offset($o){$this->offset=$o;}
 
 	function run_module(){
 		$this->output_pdf();
@@ -96,7 +96,7 @@ class LabelPDF extends FannieModule {
 		   * increment through items in query
 		   */
 		   
-		foreach($data as $row){
+		foreach($this->data as $row){
 			/**
 			* check to see if we have made 32 labels.
 			* if we have start a new page....

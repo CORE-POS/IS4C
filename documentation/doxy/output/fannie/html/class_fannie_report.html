@@ -39,6 +39,12 @@
 <a href="class_fannie_report-members.html">List of all members.</a><table border="0" cellpadding="0" cellspacing="0">
 <tr><td></td></tr>
 <tr><td colspan="2"><br><h2>Public Member Functions</h2></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_fannie_report.html#c8b8902bd892ec1e5457f4c7fae52b30">body_content</a> ()</td></tr>
+
+<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_fannie_report.html#864352cfdcaa469a698548dc3473d363">report_form</a> ()</td></tr>
+
+<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_fannie_report.html#33fd2026b4a39596835186cbf42c0e43">report_results</a> ()</td></tr>
+
 <tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_fannie_report.html#52f52fdcf4b5aa1b60b89b4867a317c5">download</a> ($filename, $type)</td></tr>
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="anchor" name="f39816946017cdbe18b7476e034ae127"></a><!-- doxytag: member="FannieReport::provides_functions" ref="f39816946017cdbe18b7476e034ae127" args="()" -->
@@ -50,11 +56,39 @@
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><b>$description</b></td></tr>
 
+<tr><td colspan="2"><br><h2>Protected Attributes</h2></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_fannie_report.html#82276d3906346db03c549e01075558e2">$mode</a> = 'form'</td></tr>
+
 </table>
 <hr><a name="_details"></a><h2>Detailed Description</h2>
-Class for creating reports 
+Class for creating reports <dl compact><dt><b>Examples: </b></dt><dd>
+
+<p>
+<a class="el" href="_simple_report_8php-example.html#_a6">SimpleReport.php</a>.</dl>
 <p>
 <hr><h2>Member Function Documentation</h2>
+<a class="anchor" name="c8b8902bd892ec1e5457f4c7fae52b30"></a><!-- doxytag: member="FannieReport::body_content" ref="c8b8902bd892ec1e5457f4c7fae52b30" args="()" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">FannieReport::body_content           </td>
+          <td>(</td>
+          <td class="paramname">          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Define the main displayed content <dl compact><dt><b>Returns:</b></dt><dd>An HTML string </dd></dl>
+
+<p>
+Reimplemented from <a class="el" href="class_fannie_page.html#a75a80af2693663785366d6813770d10">FanniePage</a>.
+</div>
+</div><p>
 <a class="anchor" name="52f52fdcf4b5aa1b60b89b4867a317c5"></a><!-- doxytag: member="FannieReport::download" ref="52f52fdcf4b5aa1b60b89b4867a317c5" args="($filename, $type)" -->
 <div class="memitem">
 <div class="memproto">
@@ -89,7 +123,50 @@ Send headers and remove extra HTML for download <dl compact><dt><b>Parameters:</
 </td></tr>
   </table>
 </dl>
+<dl compact><dt><b>Examples: </b></dt><dd>
+<a class="el" href="_simple_report_8php-example.html#a13">SimpleReport.php</a>.</dl>
+</div>
+</div><p>
+<a class="anchor" name="864352cfdcaa469a698548dc3473d363"></a><!-- doxytag: member="FannieReport::report_form" ref="864352cfdcaa469a698548dc3473d363" args="()" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">FannieReport::report_form           </td>
+          <td>(</td>
+          <td class="paramname">          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
 
+<p>
+If the mode property is 'form', this function is called for main content <dl compact><dt><b>Returns:</b></dt><dd>An HTML string </dd></dl>
+<dl compact><dt><b>Examples: </b></dt><dd>
+<a class="el" href="_simple_report_8php-example.html#a7">SimpleReport.php</a>.</dl>
+</div>
+</div><p>
+<a class="anchor" name="33fd2026b4a39596835186cbf42c0e43"></a><!-- doxytag: member="FannieReport::report_results" ref="33fd2026b4a39596835186cbf42c0e43" args="()" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">FannieReport::report_results           </td>
+          <td>(</td>
+          <td class="paramname">          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+If the mode property is 'results', this function is called for main content <dl compact><dt><b>Returns:</b></dt><dd>An HTML string </dd></dl>
+<dl compact><dt><b>Examples: </b></dt><dd>
+<a class="el" href="_simple_report_8php-example.html#a9">SimpleReport.php</a>.</dl>
 </div>
 </div><p>
 <hr><h2>Member Data Documentation</h2>
@@ -113,9 +190,27 @@ Send headers and remove extra HTML for download <dl compact><dt><b>Parameters:</
 Reimplemented from <a class="el" href="class_fannie_page.html">FanniePage</a>.
 </div>
 </div><p>
+<a class="anchor" name="82276d3906346db03c549e01075558e2"></a><!-- doxytag: member="FannieReport::$mode" ref="82276d3906346db03c549e01075558e2" args="" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">FannieReport::$mode = 'form'<code> [protected]</code>          </td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Many reports have two display modes: One is a form to allow user input(s) and the other shows the resulting report<p>
+<a class="el" href="class_fannie_report.html">FannieReport</a> provides separate methods for these two common display modes. You can change $mode to alter which display method is used.<ul>
+<li>Set $mode to 'form' to use <a class="el" href="class_fannie_report.html#864352cfdcaa469a698548dc3473d363">report_form()</a> = Set $mode to 'results' to use <a class="el" href="class_fannie_report.html#33fd2026b4a39596835186cbf42c0e43">report_results()</a> </li></ul>
+
+</div>
+</div><p>
 <hr>The documentation for this class was generated from the following file:<ul>
 <li>fannie/class-lib/<a class="el" href="_fannie_report_8php.html">FannieReport.php</a></ul>
-<hr size="1"><address style="align: right;"><small>Generated on Tue Apr 24 15:42:12 2012 for CORE POS - Fannie by&nbsp;
+<hr size="1"><address style="align: right;"><small>Generated on Wed Apr 25 13:14:13 2012 for CORE POS - Fannie by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img src="doxygen.png" alt="doxygen" align="middle" border="0"></a> 1.4.7 </small></address>
 </body>

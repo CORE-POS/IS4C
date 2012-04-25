@@ -207,11 +207,12 @@ function use_module($module){
   Find all modules
   @param $dir directory to search
   @param $ret return value by reference
+  @param $base_class only modules with this parent class
 
   Upon return, $ret will contain an array
   of filenames keyed by class names
 */
-function get_available_modules($dir, &$ret){
+function get_available_modules($dir, &$ret, $base_class="FannieModule"){
 	if (!is_array($ret))
 		$ret = array();
 
@@ -222,7 +223,7 @@ function get_available_modules($dir, &$ret){
 		
 		// recurse through sub directories
 		if (is_dir(realpath($dir."/".$file))){
-			get_available_modules(realpath($dir."/".$file),$ret);
+			get_available_modules(realpath($dir."/".$file),$ret, $base_class);
 			continue;
 		}
 
@@ -232,7 +233,7 @@ function get_available_modules($dir, &$ret){
 		$class_name = substr($file,0,strlen($file)-4);
 		include_once(realpath($dir."/".$file));
 		if (class_exists($class_name)){
-			if (is_subclass_of($class_name,'FannieModule') || $class_name=='FannieModule')
+			if (is_subclass_of($class_name,$base_class) || $class_name==$base_class)
 				$ret[$class_name] = realpath($dir."/".$file);
 		}
 	}

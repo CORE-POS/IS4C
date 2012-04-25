@@ -37,6 +37,7 @@ class FanniePage extends FannieModule {
  	protected $header = 'Page displayed header';
 	protected $window_dressing = True;
 	protected $onload_commands = array();
+	protected $scripts = array();
 
 	/**
 	  Toggle using menus
@@ -101,6 +102,15 @@ class FanniePage extends FannieModule {
 	}
 
 	/**
+	  Add a script to the page using <script> tags
+	  @param $file_url the script URL
+	  @param $type the script type
+	*/
+	function add_script($file_url,$type="text/javascript"){
+		$this->scripts[$file_url] = $type;
+	}
+
+	/**
 	  Define any CSS needed
 	  @return A CSS string
 	*/
@@ -129,17 +139,30 @@ class FanniePage extends FannieModule {
 			if ($this->window_dressing)
 				echo $this->get_footer();
 
-			echo '<script type="text/javascript">';
-			echo $this->javascript_content();
-			echo "\n\$(document).ready(function(){\n";
-			foreach($this->onload_commands as $oc)
-				echo $oc."\n";
-			echo "}\n";
-			echo '</script>';
+			
+			$js_content = $this->javascript_content();
+			if (!empty($js_content) || !empty($this->onload_commands)){
+				echo '<script type="text/javascript">';
+				echo $js_content;
+				echo "\n\$(document).ready(function(){\n";
+				foreach($this->onload_commands as $oc)
+					echo $oc."\n";
+				echo "}\n";
+				echo '</script>';
+			}
+			
+			foreach($this->scripts as $s_url => $s_type){
+				printf('<script type="%s" src="%s"></script>',
+					$s_type, $s_url);
+				echo "\n";
+			}
 
-			echo '<style type="text/css">';
-			echo $this->css_content();
-			echo '</style>';
+			$page_css = $this->css_content();
+			if (!empty($page_css)){
+				echo '<style type="text/css">';
+				echo $page_css;
+				echo '</style>';
+			}
 		}
 	}
 
