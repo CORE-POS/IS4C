@@ -69,6 +69,10 @@ if (isset($_POST['MAX_FILE_SIZE'])){
 		printf("<b>Normalize prices</b>: <input type=checkbox name=normalize /><br />");
 		echo "<i>&nbsp;&nbsp;&nbsp;&nbsp;Normalize rounds up to nearest 5 or 9</i><br />";
 		echo "<br />";
+		printf("<b>Includes check digits</b>: <input type=checkbox name=has_checks /><br />");
+		echo "<i>&nbsp;&nbsp;&nbsp;&nbsp;UPCs have check digits</i><br />";
+		echo "<br />";
+		echo "<b>Data</b> (select appropriate columns)";
 		echo "<b>Data</b> (select appropriate columns)";
 
 		echo "<table cellspacing=0 cellpadding=4 border=1>";
@@ -150,6 +154,9 @@ else if (isset($_REQUEST['makeTheBatch'])){
 		}
 		
 		$upc = ($_REQUEST['ftype']=='UPCs')?str_pad($upcs[$i],13,'0',STR_PAD_LEFT):'LC'.$upcs[$i];
+		if (isset($_REQUEST['has_checks']) && $_REQUEST['ftype']=='UPCs')
+			$upc = '0'.substr($upc,0,12);
+
 		$q = sprintf("INSERT INTO batchList (upc,batchID,salePrice,active,pricemethod,quantity)
 			VALUES(%s,%d,%.2f,0,0,0)",$dbc->escape($upc),$id,$prices[$i]);
 		$dbc->query($q);
