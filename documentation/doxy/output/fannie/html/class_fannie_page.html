@@ -33,8 +33,9 @@
 <h1>FanniePage Class Reference</h1><!-- doxytag: class="FanniePage" --><!-- doxytag: inherits="FannieModule" --><p>Inheritance diagram for FanniePage:
 <p><center><img src="class_fannie_page.png" usemap="#FanniePage_map" border="0" alt=""></center>
 <map name="FanniePage_map">
-<area href="class_fannie_module.html" alt="FannieModule" shape="rect" coords="0,0,93,24">
+<area href="class_fannie_module.html" alt="FannieModule" shape="rect" coords="51,0,144,24">
 <area href="class_fannie_report.html" alt="FannieReport" shape="rect" coords="0,112,93,136">
+<area href="class_print_shelftags.html" alt="PrintShelftags" shape="rect" coords="103,112,196,136">
 </map>
 <a href="class_fannie_page-members.html">List of all members.</a><table border="0" cellpadding="0" cellspacing="0">
 <tr><td></td></tr>
@@ -50,6 +51,8 @@
 <tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_fannie_page.html#a75a80af2693663785366d6813770d10">body_content</a> ()</td></tr>
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_fannie_page.html#a4e9054f0129ed757f1162374804f3f4">javascript_content</a> ()</td></tr>
+
+<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_fannie_page.html#42707e9fbeab1b720190ba0b1d9b52d4">add_script</a> ($file_url, $type=&quot;text/javascript&quot;)</td></tr>
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_fannie_page.html#ebd6000290324e16036d06f011051ee8">css_content</a> ()</td></tr>
 
@@ -83,6 +86,9 @@
 <tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="anchor" name="fca0241639372f5bbe9e4404325211bf"></a><!-- doxytag: member="FanniePage::$onload_commands" ref="fca0241639372f5bbe9e4404325211bf" args="" -->
 &nbsp;</td><td class="memItemRight" valign="bottom"><b>$onload_commands</b> = array()</td></tr>
 
+<tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="anchor" name="35d2d924e6bb9b9d93f7234d2db39bcc"></a><!-- doxytag: member="FanniePage::$scripts" ref="35d2d924e6bb9b9d93f7234d2db39bcc" args="" -->
+&nbsp;</td><td class="memItemRight" valign="bottom"><b>$scripts</b> = array()</td></tr>
+
 </table>
 <hr><a name="_details"></a><h2>Detailed Description</h2>
 Class for drawing screens <dl compact><dt><b>Examples: </b></dt><dd>
@@ -111,6 +117,41 @@ Class for drawing screens <dl compact><dt><b>Examples: </b></dt><dd>
 Queue javascript commands to run on page load 
 </div>
 </div><p>
+<a class="anchor" name="42707e9fbeab1b720190ba0b1d9b52d4"></a><!-- doxytag: member="FanniePage::add_script" ref="42707e9fbeab1b720190ba0b1d9b52d4" args="($file_url, $type=&quot;text/javascript&quot;)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">FanniePage::add_script           </td>
+          <td>(</td>
+          <td class="paramtype">$&nbsp;</td>
+          <td class="paramname"> <em>file_url</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">$&nbsp;</td>
+          <td class="paramname"> <em>type</em> = <code>&quot;text/javascript&quot;</code></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td width="100%"></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Add a script to the page using &lt;script&gt; tags <dl compact><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>$file_url</em>&nbsp;</td><td>the script URL </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>$type</em>&nbsp;</td><td>the script type </td></tr>
+  </table>
+</dl>
+
+</div>
+</div><p>
 <a class="anchor" name="a75a80af2693663785366d6813770d10"></a><!-- doxytag: member="FanniePage::body_content" ref="a75a80af2693663785366d6813770d10" args="()" -->
 <div class="memitem">
 <div class="memproto">
@@ -128,7 +169,9 @@ Queue javascript commands to run on page load
 
 <p>
 Define the main displayed content <dl compact><dt><b>Returns:</b></dt><dd>An HTML string </dd></dl>
-<dl compact><dt><b>Examples: </b></dt><dd>
+
+<p>
+Reimplemented in <a class="el" href="class_fannie_report.html#c8b8902bd892ec1e5457f4c7fae52b30">FannieReport</a>, and <a class="el" href="class_print_shelftags.html#30c16a2723174ca8204c50f32029ca6c">PrintShelftags</a>.<dl compact><dt><b>Examples: </b></dt><dd>
 <a class="el" href="_better_hello_world_8php-example.html#a1">BetterHelloWorld.php</a>.</dl>
 </div>
 </div><p>
@@ -150,6 +193,8 @@ Define the main displayed content <dl compact><dt><b>Returns:</b></dt><dd>An HTM
 <p>
 Define any CSS needed <dl compact><dt><b>Returns:</b></dt><dd>A CSS string </dd></dl>
 
+<p>
+Reimplemented in <a class="el" href="class_print_shelftags.html#e390a87df29b307955edcc2476a169c4">PrintShelftags</a>.
 </div>
 </div><p>
 <a class="anchor" name="517d90f03fa855837eb94dacce7d39d8"></a><!-- doxytag: member="FanniePage::form_tag" ref="517d90f03fa855837eb94dacce7d39d8" args="($type='post')" -->
@@ -175,7 +220,8 @@ Get a form tag with this module as the action <dl compact><dt><b>Parameters:</b>
   </table>
 </dl>
 <dl compact><dt><b>Returns:</b></dt><dd>An HTML string </dd></dl>
-
+<dl compact><dt><b>Examples: </b></dt><dd>
+<a class="el" href="_simple_report_8php-example.html#a8">SimpleReport.php</a>.</dl>
 </div>
 </div><p>
 <a class="anchor" name="01700679d82ba51fa9e3928fe71ecf10"></a><!-- doxytag: member="FanniePage::get_footer" ref="01700679d82ba51fa9e3928fe71ecf10" args="()" -->
@@ -280,7 +326,8 @@ Define any javascript needed <dl compact><dt><b>Returns:</b></dt><dd>A javascrip
 
 <p>
 Get the URL for this page <dl compact><dt><b>Returns:</b></dt><dd>A URL string </dd></dl>
-
+<dl compact><dt><b>Examples: </b></dt><dd>
+<a class="el" href="_simple_report_8php-example.html#a12">SimpleReport.php</a>.</dl>
 </div>
 </div><p>
 <a class="anchor" name="2d504e8f61746ef2e5c05cbb90f0f336"></a><!-- doxytag: member="FanniePage::preprocess" ref="2d504e8f61746ef2e5c05cbb90f0f336" args="()" -->
@@ -303,6 +350,9 @@ Handle pre-display tasks such as input processing <dl compact><dt><b>Returns:</b
 <li>True if the page should be displayed</li><li>False to stop here</li></ul>
 </dd></dl>
 Common uses include redirecting to a different module and altering body content based on input 
+<p>
+Reimplemented in <a class="el" href="class_print_shelftags.html#b7aa244e615f05fdfb2a9826b5a70fae">PrintShelftags</a>.<dl compact><dt><b>Examples: </b></dt><dd>
+<a class="el" href="_simple_report_8php-example.html#a14">SimpleReport.php</a>.</dl>
 </div>
 </div><p>
 <a class="anchor" name="e6d0e04af83abc166275e1c746618d5f"></a><!-- doxytag: member="FanniePage::run_module" ref="e6d0e04af83abc166275e1c746618d5f" args="()" -->
@@ -349,7 +399,7 @@ Reimplemented from <a class="el" href="class_fannie_module.html">FannieModule</a
 </div><p>
 <hr>The documentation for this class was generated from the following file:<ul>
 <li>fannie/class-lib/<a class="el" href="_fannie_page_8php.html">FanniePage.php</a></ul>
-<hr size="1"><address style="align: right;"><small>Generated on Tue Apr 24 15:42:12 2012 for CORE POS - Fannie by&nbsp;
+<hr size="1"><address style="align: right;"><small>Generated on Wed Apr 25 13:14:13 2012 for CORE POS - Fannie by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img src="doxygen.png" alt="doxygen" align="middle" border="0"></a> 1.4.7 </small></address>
 </body>

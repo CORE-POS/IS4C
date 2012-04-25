@@ -29,25 +29,13 @@ class DepartmentMovement extends FannieReport {
 
 	protected $header = "Fannie : Department Movement";
 	protected $title = "Department Movement";
-	private $db_connection;
-	private $mode;
 
 	function preprocess(){
-		$this->mode = 'form';
 		if (isset($_REQUEST['submit'])){
 			$this->mode = 'results';
 			$this->window_dressing = False;
 		}
 		return True;
-	}
-
-	function body_content(){
-		switch ($this->mode){
-		case 'results':
-			return $this->report_results();
-		case 'form':
-			return $this->report_form();
-		}
 	}
 
 	function report_results(){
@@ -59,6 +47,7 @@ class DepartmentMovement extends FannieReport {
 		$sort = get_form_value('sort','PLU');
 		$order = get_form_value('order','total');
 		$dir = get_form_value('dir','DESC');
+		$excel = get_form_value('excel',False);
 		$otherdir = ($dir == "DESC") ? "ASC" : "DESC";
 		$dlog = select_dlog($start_date, $end_date);
 		
@@ -205,8 +194,23 @@ class DepartmentMovement extends FannieReport {
 			break;
 		}
 
-		$ret = get_sortable_table($dbc, $query, $columns, $this->module_url(), $order);
+		$ret = "Report summed by ".$sort."<br />";
+		$ret .= date("F d, Y")."<br />";
+		$ret .= "From ".$start_date." to ".$end_date."<br />";
+
+		$ret .= get_sortable_table($dbc, $query, $columns, $this->module_url(), $order, $excel);
 		$dbc->close();
+
+		/**
+		  Use download method to set headers
+		  Use conversion method to change HTML into CSV
+		*/
+		if ($excel){
+			$this->download('movementReport.csv','excel');
+			$arr = html_to_array($ret);
+			$csv = array_to_csv($arr);
+			$ret = $csv;
+		}
 
 		return $ret;
 	}

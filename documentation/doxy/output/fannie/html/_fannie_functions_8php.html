@@ -51,14 +51,14 @@
 <tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="anchor" name="02a1617ebe493ecf690244acb0ad2d24"></a><!-- doxytag: member="FannieFunctions.php::use_module" ref="02a1617ebe493ecf690244acb0ad2d24" args="($module)" -->
 &nbsp;</td><td class="memItemRight" valign="bottom"><b>use_module</b> ($module)</td></tr>
 
-<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="_fannie_functions_8php.html#f8643c7f212a30790b3ba526a69526e6">get_available_modules</a> ($dir, &amp;$ret)</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="_fannie_functions_8php.html#1d4d27107bc430f161cb879cb7c602c9">get_available_modules</a> ($dir, &amp;$ret, $base_class=&quot;FannieModule&quot;)</td></tr>
 
 </table>
 <hr><a name="_details"></a><h2>Detailed Description</h2>
 Base fannie functions. 
 <p>
 <hr><h2>Function Documentation</h2>
-<a class="anchor" name="f8643c7f212a30790b3ba526a69526e6"></a><!-- doxytag: member="FannieFunctions.php::get_available_modules" ref="f8643c7f212a30790b3ba526a69526e6" args="($dir, &amp;$ret)" -->
+<a class="anchor" name="1d4d27107bc430f161cb879cb7c602c9"></a><!-- doxytag: member="FannieFunctions.php::get_available_modules" ref="1d4d27107bc430f161cb879cb7c602c9" args="($dir, &amp;$ret, $base_class=&quot;FannieModule&quot;)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -72,7 +72,13 @@ Base fannie functions.
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">&amp;$&nbsp;</td>
-          <td class="paramname"> <em>ret</em></td><td>&nbsp;</td>
+          <td class="paramname"> <em>ret</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">$&nbsp;</td>
+          <td class="paramname"> <em>base_class</em> = <code>&quot;FannieModule&quot;</code></td><td>&nbsp;</td>
         </tr>
         <tr>
           <td></td>
@@ -87,7 +93,8 @@ Base fannie functions.
 Find all modules <dl compact><dt><b>Parameters:</b></dt><dd>
   <table border="0" cellspacing="2" cellpadding="0">
     <tr><td valign="top"></td><td valign="top"><em>$dir</em>&nbsp;</td><td>directory to search </td></tr>
-    <tr><td valign="top"></td><td valign="top"><em>$ret</em>&nbsp;</td><td>return value by reference</td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>$ret</em>&nbsp;</td><td>return value by reference </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>$base_class</em>&nbsp;</td><td>only modules with this parent class</td></tr>
   </table>
 </dl>
 Upon return, $ret will contain an array of filenames keyed by class names 
@@ -262,7 +269,7 @@ Unregister available function(s) and class(es) <dl compact><dt><b>Parameters:</b
 
 </div>
 </div><p>
-<hr size="1"><address style="align: right;"><small>Generated on Tue Apr 24 15:42:12 2012 for CORE POS - Fannie by&nbsp;
+<hr size="1"><address style="align: right;"><small>Generated on Wed Apr 25 13:14:13 2012 for CORE POS - Fannie by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img src="doxygen.png" alt="doxygen" align="middle" border="0"></a> 1.4.7 </small></address>
 </body>
