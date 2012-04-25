@@ -43,7 +43,24 @@ class DeptKey extends Parser {
 		$amt = $split[0];
 		$ret = $this->default_json();
 
-		if ($CORE_LOCAL->get("refund")==1 && $CORE_LOCAL->get("refundComment") == ""){
+		/**
+		  This "if" is the new addition to trigger the
+		  department select screen
+		*/
+		if (empty($split[1])){
+			// no department specified, just amount followed by DP
+			
+			// maintain refund if needed
+			if ($CORE_LOCAL->get("refund"))
+				$amt = "RF".$amt;
+
+			// save entered amount
+			$CORE_LOCAL->set("departmentAmount",$amt);
+
+			// go to the department select screen
+			$ret['main_frame'] = $CORE_PATH.'gui-modules/deptlist.php';
+		}
+		elseif ($CORE_LOCAL->get("refund")==1 && $CORE_LOCAL->get("refundComment") == ""){
 			if ($CORE_LOCAL->get("SecurityRefund") > 20){
 				$CORE_LOCAL->set("adminRequest",$CORE_PATH."gui-modules/refundComment.php");
 				$CORE_LOCAL->set("adminRequestLevel",$CORE_LOCAL->get("SecurityRefund"));
