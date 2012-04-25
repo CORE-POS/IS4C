@@ -105,7 +105,7 @@ if (isset($_GET['action'])){
 				WHERE p.upc=b.upc AND b.upc NOT LIKE '%LC%'
 				AND b.batchID=$id";
 		}
-		$unsaleR = $sql->query($unsaleQ);
+		$unsaleR = $dbc->query($unsaleQ);
 
 		$unsaleLCQ = "UPDATE products AS p LEFT JOIN
 			likeCodeView AS v ON v.upc=p.upc LEFT JOIN
@@ -128,7 +128,7 @@ if (isset($_GET['action'])){
 				WHERE l.upc LIKE '%LC%'
 				AND l.batchID=$id";
 		}
-		$unsaleLCR = $sql->query($unsaleLCQ);
+		$unsaleLCR = $dbc->query($unsaleLCQ);
 		
 		$delQ = "delete from batches where batchID=$id";
 		$delR = $dbc->query($delQ);
@@ -515,15 +515,15 @@ if (isset($_GET['action'])){
 		$delQ = sprintf("DELETE FROM batchBarcodes where batchID=%d",$_REQUEST['batchID']);
 		$dbc->query($delQ);
 		
-		$insQ = sprintf("INSERT INTO batchBarcodes
+		$selQ = sprintf("
 			select l.upc,p.description,l.salePrice, 
 			case when x.manufacturer is null then v.brand
-			else x.manufacturer end,
-			case when v.sku is null then '' else v.sku end,
-			case when v.size is null then '' else v.size end,
-			case when v.units is null then 1 else v.units end,
+			else x.manufacturer end as brand,
+			case when v.sku is null then '' else v.sku end as sku,
+			case when v.size is null then '' else v.size end as size,
+			case when v.units is null then 1 else v.units end as units,
 			case when x.distributor is null then z.vendorName
-			else x.distributor end,
+			else x.distributor end as vendor,
 			l.batchID
 			from batchList as l
 			inner join products as p on
@@ -534,8 +534,28 @@ if (isset($_GET['action'])){
 			l.upc=v.upc
 			left join vendors as z on
 			v.vendorID=z.vendorID
-			where batchID=%d",$_REQUEST['batchID']);
-		$dbc->query($insQ);
+			where batchID=%d ORDER BY l.upc",$_REQUEST['batchID']);
+		$selR = $dbc->query($selQ);
+		$upc = "";
+		while($selW = $dbc->fetch_row($selR)){
+			if ($upc != $selW['upc']){
+				$insQ = sprintf("INSERT INTO batchBarcodes
+					(upc,description,normal_price,brand,sku,size,units,vendor,batchID)
+					VALUES (%s,%s,%.2f,%s,%s,%s,%d,%s,%d)",
+					$dbc->escape($selW['upc']),
+					$dbc->escape($selW['description']),
+					$selW['salePrice'],
+					$dbc->escape($selW['brand']),
+					$dbc->escape($selW['sku']),
+					$dbc->escape($selW['size']),
+					$selW['units'],
+					$dbc->escape($selW['vendor']),
+					$selW['batchID']
+				);
+				$dbc->query($insQ);
+			}
+			$upc = $selW['upc'];
+		}
 		break;
 	}
 	
