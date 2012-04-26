@@ -33,7 +33,6 @@ if ($scaleDriver != "" && !class_exists($scaleDriver))
 if ($scaleDriver != "")
 	$sd = new $scaleDriver();
 
-
 if (is_object($sd))
 	$sd->ReadFromScale();	
 else

@@ -521,23 +521,24 @@ function scaledisplaymsg($input=""){
 	$CORE_LOCAL->set("scale",0);
 	$CORE_LOCAL->set("weight",0);
 
-	if (substr($reginput, 0, 3) == "S11") {
-		if (!substr($reginput, 3) || 
-		    !is_numeric(substr($reginput, 3))) {
+	$prefix = "NonsenseThatWillNotEverHappen";
+	if (substr($reginput, 0, 3) == "S11")
+		$prefix = "S11";
+	else if (substr($reginput,0,4)=="S144")	
+		$prefix = "S144";
+
+	if (strpos($reginput, $prefix) === 0){
+		$len = strlen($prefix);
+		if (!substr($reginput, $len) || 
+		    !is_numeric(substr($reginput, $len))) {
 			$display_weight = "_ _ _ _";
 		}
 		else {
-			$weight = number_format(substr($reginput, 3)/100, 2);
+			$weight = number_format(substr($reginput, $len)/100, 2);
 			$CORE_LOCAL->set("weight",$weight);
 			$display_weight = $weight." lb";
 			$CORE_LOCAL->set("scale",1);
 		}
-
-		/*
-		if ($CORE_LOCAL->get("SNR") == 1 && $weight > 0 ) {
-			clearbox();
-		}
-		 */
 	}
 	elseif (substr($reginput, 0, 4) == "S143") {
 		$display_weight = "0.00 lb";
