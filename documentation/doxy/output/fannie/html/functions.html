@@ -67,7 +67,8 @@
 Here is a list of all documented class members with links to the class documentation for each member:
 <p>
 <h3><a class="anchor" name="index_$">- $ -</a></h3><ul>
-<li>$connections
+<li>$advertised
+: <a class="el" href="class_fannie_cron.html#5b9f6fb21272a69dc90b97cbacd053db">FannieCron</a><li>$connections
 : <a class="el" href="class_s_q_l_manager.html#9fcdd35056da236ce14a7869663e80f9">SQLManager</a><li>$default_db
 : <a class="el" href="class_s_q_l_manager.html#11413368b2c6cd679a34f520cef18ed0">SQLManager</a><li>$mode
 : <a class="el" href="class_fannie_report.html#82276d3906346db03c549e01075558e2">FannieReport</a></ul>
@@ -86,7 +87,8 @@ Here is a list of all documented class members with links to the class documenta
 : <a class="el" href="class_s_q_l_manager.html#22953b32534128a042237491a612a009">SQLManager</a><li>close()
 : <a class="el" href="class_s_q_l_manager.html#028705274ece04e5cb5c958eed34ddce">SQLManager</a><li>concat()
 : <a class="el" href="class_s_q_l_manager.html#a4deb253c34adb28195b51e444e7df9b">SQLManager</a><li>convert()
-: <a class="el" href="class_s_q_l_manager.html#4df501bcb76f6f6f1206a5585a005713">SQLManager</a><li>css_content()
+: <a class="el" href="class_s_q_l_manager.html#4df501bcb76f6f6f1206a5585a005713">SQLManager</a><li>cron_msg()
+: <a class="el" href="class_fannie_cron.html#1de31a23cbb33b02c51145b1b28ac738">FannieCron</a><li>css_content()
 : <a class="el" href="class_print_shelftags.html#e390a87df29b307955edcc2476a169c4">PrintShelftags</a>, <a class="el" href="class_fannie_page.html#ebd6000290324e16036d06f011051ee8">FanniePage</a><li>currency()
 : <a class="el" href="class_s_q_l_manager.html#f60c4d8cbf9cbbc68291e294e53d5a2c">SQLManager</a></ul>
 <h3><a class="anchor" name="index_d">- d -</a></h3><ul>
@@ -115,7 +117,8 @@ Here is a list of all documented class members with links to the class documenta
 <h3><a class="anchor" name="index_g">- g -</a></h3><ul>
 <li>get_footer()
 : <a class="el" href="class_fannie_page.html#01700679d82ba51fa9e3928fe71ecf10">FanniePage</a><li>get_header()
-: <a class="el" href="class_fannie_page.html#0573eb367cf24de953a3ca1e717fc69e">FanniePage</a></ul>
+: <a class="el" href="class_fannie_page.html#0573eb367cf24de953a3ca1e717fc69e">FanniePage</a><li>get_job_directory()
+: <a class="el" href="class_fannie_cron.html#53eca158dd400b62695c8b5b958d0be9">FannieCron</a></ul>
 <h3><a class="anchor" name="index_h">- h -</a></h3><ul>
 <li>has_menus()
 : <a class="el" href="class_fannie_page.html#23cc94eae91fcee725a6ecb683527d8b">FanniePage</a><li>hour()
@@ -153,9 +156,10 @@ Here is a list of all documented class members with links to the class documenta
 <li>report_form()
 : <a class="el" href="class_fannie_report.html#864352cfdcaa469a698548dc3473d363">FannieReport</a><li>report_results()
 : <a class="el" href="class_fannie_report.html#33fd2026b4a39596835186cbf42c0e43">FannieReport</a><li>run_module()
-: <a class="el" href="class_label_p_d_f.html#ec492e4ed9ea5a7a02768dc5c53607ce">LabelPDF</a>, <a class="el" href="class_fannie_page.html#e6d0e04af83abc166275e1c746618d5f">FanniePage</a>, <a class="el" href="class_fannie_module.html#05f37787923f59bfe283d66c277b522e">FannieModule</a></ul>
+: <a class="el" href="class_label_p_d_f.html#ec492e4ed9ea5a7a02768dc5c53607ce">LabelPDF</a>, <a class="el" href="class_fannie_page.html#e6d0e04af83abc166275e1c746618d5f">FanniePage</a>, <a class="el" href="class_fannie_module.html#05f37787923f59bfe283d66c277b522e">FannieModule</a>, <a class="el" href="class_fannie_cron.html#518495688e19c5d7c9ebff0075a8007b">FannieCron</a></ul>
 <h3><a class="anchor" name="index_s">- s -</a></h3><ul>
-<li>seconddiff()
+<li>schedule_command()
+: <a class="el" href="class_fannie_cron.html#aedd87db5ecd414cab65d469cf5664ed">FannieCron</a><li>seconddiff()
 : <a class="el" href="class_s_q_l_manager.html#b0ed573c6c35a4b4da0f308a6edab022">SQLManager</a><li>sep()
 : <a class="el" href="class_s_q_l_manager.html#928d37b1849f7fddf1d684be4d721c49">SQLManager</a><li>set_data()
 : <a class="el" href="class_label_p_d_f.html#ff4386663f4989744b20b6fde9e1300d">LabelPDF</a><li>set_offset()
@@ -166,12 +170,13 @@ Here is a list of all documented class members with links to the class documenta
 <h3><a class="anchor" name="index_t">- t -</a></h3><ul>
 <li>table_definition()
 : <a class="el" href="class_s_q_l_manager.html#5f174ed43c5b0b96218e3a80e6c0da29">SQLManager</a><li>table_exists()
-: <a class="el" href="class_s_q_l_manager.html#0d8ddf602cdc5c30d860ebaf74b1a871">SQLManager</a><li>transfer()
+: <a class="el" href="class_s_q_l_manager.html#0d8ddf602cdc5c30d860ebaf74b1a871">SQLManager</a><li>task()
+: <a class="el" href="class_fannie_cron.html#b303a2a484edc9e45963d5bebd318e4a">FannieCron</a><li>transfer()
 : <a class="el" href="class_s_q_l_manager.html#bacaf6f18c2d7db7eadb8fad53f3df2a">SQLManager</a></ul>
 <h3><a class="anchor" name="index_w">- w -</a></h3><ul>
 <li>weekdiff()
 : <a class="el" href="class_s_q_l_manager.html#114f85d781cd2b9a0ee04e43a55f1e4e">SQLManager</a></ul>
-<hr size="1"><address style="align: right;"><small>Generated on Wed Apr 25 13:14:13 2012 for CORE POS - Fannie by&nbsp;
+<hr size="1"><address style="align: right;"><small>Generated on Thu Apr 26 12:39:03 2012 for CORE POS - Fannie by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img src="doxygen.png" alt="doxygen" align="middle" border="0"></a> 1.4.7 </small></address>
 </body>
