@@ -264,14 +264,18 @@ function uploadtoServer()
 		$CORE_LOCAL->get("mDatabase"),"insert into dtransactions ({$dt_matches})")){
 
 		$al_matches = getMatchingColumns($connect,"alog");
-		$al_my = ""; // interval is a mysql reserved word
+		// interval is a mysql reserved word
+		// so it needs to be escaped
+		$local_columns = $al_matches;
+		$server_columns = $al_matches;
 		if ($CORE_LOCAL->get("DBMS") == "mysql")
-			$al_my = str_replace("Interval","`Interval`",$al_matches);
+			$local_columns = str_replace("Interval","`Interval`",$al_matches);
+		if ($CORE_LOCAL->get("mDBMS") == "mysql")
+			$local_columns = str_replace("Interval","`Interval`",$al_matches);
 		$al_success = $connect->transfer($CORE_LOCAL->get("tDatabase"),
-			"select ".(empty($al_my)?$al_matches:$al_my)." from alog",
+			"select $local_columns FROM alog",
 			$CORE_LOCAL->get("mDatabase"),
-			"insert into alog ({$al_matches})");
-
+			"insert into alog ($server_columns)");
 
 		$su_matches = getMatchingColumns($connect,"suspended");
 		$su_success = $connect->transfer($CORE_LOCAL->get("tDatabase"),
