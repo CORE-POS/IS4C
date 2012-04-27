@@ -139,6 +139,11 @@ class FanniePage extends FannieModule {
 			if ($this->window_dressing)
 				echo $this->get_footer();
 
+			foreach($this->scripts as $s_url => $s_type){
+				printf('<script type="%s" src="%s"></script>',
+					$s_type, $s_url);
+				echo "\n";
+			}
 			
 			$js_content = $this->javascript_content();
 			if (!empty($js_content) || !empty($this->onload_commands)){
@@ -147,14 +152,8 @@ class FanniePage extends FannieModule {
 				echo "\n\$(document).ready(function(){\n";
 				foreach($this->onload_commands as $oc)
 					echo $oc."\n";
-				echo "}\n";
+				echo "});\n";
 				echo '</script>';
-			}
-			
-			foreach($this->scripts as $s_url => $s_type){
-				printf('<script type="%s" src="%s"></script>',
-					$s_type, $s_url);
-				echo "\n";
 			}
 
 			$page_css = $this->css_content();
