@@ -24,7 +24,6 @@
 require('../config.php');
 require($FANNIE_ROOT.'class-lib/FannieModule.php');
 require($FANNIE_ROOT.'class-lib/FannieFunctions.php');
-ini_set('display_errors',1);
 
 unpack_symbols();
 
@@ -49,7 +48,20 @@ foreach($FANNIE_SYMBOLS['classes'] as $class=>$file){
 	load_class($class);
 }
 
+/**
+  Web use: provide module name as ?m=<module name>
+*/
 $mod = isset($_REQUEST['m']) ? $_REQUEST['m'] : '';
+
+/**
+  CLI use: provide module name as -m<module name>
+*/
+if (empty($mod) && isset($argv)){
+	foreach($argv as $arg){
+		if (substr($arg,0,2) == '-m')
+			$mod = substr($arg,2);
+	}
+}
 
 if (empty($mod)){
 	echo '<b>Error</b>: no module specified';
