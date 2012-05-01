@@ -814,8 +814,9 @@ function create_trans_dbs($con){
 		inv_date datetime,
 		upc varchar(13),
 		vendor_id int,
-		quantity int,
-		price float)";
+		quantity double,
+		price float),
+		INDEX (upc)";
 	if (!$con->table_exists('InvDelivery',$FANNIE_TRANS_DB)){
 		$con->query($invCur,$FANNIE_TRANS_DB);
 	}
@@ -824,7 +825,7 @@ function create_trans_dbs($con){
 		inv_date datetime,
 		upc varchar(13),
 		vendor_id int,
-		quantity int,
+		quantity double,
 		price float)";
 	if (!$con->table_exists('InvDeliveryLM',$FANNIE_TRANS_DB)){
 		$con->query($invCur,$FANNIE_TRANS_DB);
@@ -834,8 +835,9 @@ function create_trans_dbs($con){
 		inv_date datetime,
 		upc varchar(13),
 		vendor_id int,
-		quantity int,
-		price float)";
+		quantity double,
+		price float),
+		INDEX(upc)";
 	if (!$con->table_exists('InvDeliveryArchive',$FANNIE_TRANS_DB)){
 		$con->query($invArc,$FANNIE_TRANS_DB);
 	}
@@ -1052,8 +1054,9 @@ function create_delayed_dbs(){
 	$invSales = "CREATE TABLE InvSalesArchive (
 		inv_date datetime,
 		upc varchar(13),
-		quantity int,
-		price float)";
+		quantity double,
+		price float,
+		INDEX(upc))";
 	if (!$con->table_exists('InvSalesArchive',$FANNIE_TRANS_DB)){
 		$con->query($invSales,$FANNIE_TRANS_DB);
 	}
@@ -1085,7 +1088,8 @@ function create_delayed_dbs(){
 	$adj = "CREATE TABLE InvAdjustments (
 		inv_date datetime,
 		upc varchar(13),
-		diff int)";
+		diff double,
+		INDEX(upc))";
 	if (!$con->table_exists("InvAdjustments",$FANNIE_TRANS_DB)){
 		$con->query($adj,$FANNIE_TRANS_DB);
 	}
