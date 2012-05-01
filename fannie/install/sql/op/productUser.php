@@ -13,7 +13,7 @@ Longer product descriptions for use in
 online webstore
 */
 $CREATE['op.productUser'] = "
-	CREATE TABLE productUser
+	CREATE TABLE productUser (
 		upc varchar(13), 
 		description varchar(255),
 		brand varchar(255),

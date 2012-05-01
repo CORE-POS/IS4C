@@ -19,7 +19,7 @@ most "SQL-y" way of doing things.
 $CREATE['op.reasoncodes'] = "
 	CREATE TABLE reasoncodes (
 		textStr varchar(100),
-		mask int
+		mask int,
 		PRIMARY KEY (mask)
 	)
 ";
