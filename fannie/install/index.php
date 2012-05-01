@@ -815,8 +815,8 @@ function create_trans_dbs($con){
 		upc varchar(13),
 		vendor_id int,
 		quantity double,
-		price float),
-		INDEX (upc)";
+		price float,
+		INDEX (upc))";
 	if (!$con->table_exists('InvDelivery',$FANNIE_TRANS_DB)){
 		$con->query($invCur,$FANNIE_TRANS_DB);
 	}
@@ -836,8 +836,8 @@ function create_trans_dbs($con){
 		upc varchar(13),
 		vendor_id int,
 		quantity double,
-		price float),
-		INDEX(upc)";
+		price float,
+		INDEX(upc))";
 	if (!$con->table_exists('InvDeliveryArchive',$FANNIE_TRANS_DB)){
 		$con->query($invArc,$FANNIE_TRANS_DB);
 	}
