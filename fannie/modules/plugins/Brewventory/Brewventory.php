@@ -50,11 +50,29 @@ class Brewventory extends FannieInventory {
 		</head>
 		<body>
 		<?php
+		vprintf('
+			<a href="%s">Home</a>
+			&nbsp;&nbsp;&nbsp;&nbsp;
+			<a href="%s&mode=view">View</a>
+			&nbsp;&nbsp;&nbsp;&nbsp;
+			<a href="%s&mode=receive">Add</a>
+			&nbsp;&nbsp;&nbsp;&nbsp;
+			<a href="%s&mode=sale">Use</a>
+			&nbsp;&nbsp;&nbsp;&nbsp;
+			<a href="%s&mode=adjust">Adjust</a>
+			&nbsp;&nbsp;&nbsp;&nbsp;
+			<a href="%s&mode=import">Import</a>
+			&nbsp;&nbsp;&nbsp;&nbsp;
+			',array_fill(0,6,$this->module_url()));
 		return ob_get_clean();
 	}
 
 	function get_footer(){
 		return "</body></html>";	
+	}
+
+	function adjust(){
+		return "";
 	}
 
 	function import(){
@@ -69,8 +87,95 @@ class Brewventory extends FannieInventory {
 		return ob_get_clean();
 	}
 
-	function view(){
-		$dbc = trans_connect();
+	function sale(){
+		ob_start();
+		echo str_replace('form ', 'form enctype="multipart/form-data" ',$this->form_tag());
+		?>
+		<h3>Use Single Ingredient</h3>
+		<p>
+		<b>Ingredient</b>: <input type="text" id="upc" name="upc" />
+		</p>
+		<p>
+		<b>lbs</b>: <input type="text" name="lbs" size="3" value="0" />
+		<b>ozs</b>: <input type="text" name="ozs" size="3" value="0" />
+		</p>
+		<input type="submit" name="sale_submit" value="Use Ingredient" />
+		<hr />
+		<h3>Upload Recipe</h3>
+		<input type="hidden" name="MAX_FILE_SIZE" value="2097152" />
+		BeerXML file: <input type="file" name="import_xml_file" />
+		<input type="submit" name="sale_recipe_submit" value="Upload" />
+		</form>
+		<?php
+		$this->add_onload_command(
+			sprintf("\$('#upc').autocomplete({source:'%s&LookUp=1'});",
+				$this->module_url())
+		);
+		return ob_get_clean();
+	}
+
+	function sale_confirm(){
+		if (!is_array($this->msgs)){
+			return "<b>Error</b>: no item(s) specified.";
+		}
+
+		$qty = $this->get_stock(array_keys($this->msgs));
+		$name = $this->get_names(array_keys($this->msgs));
+
+		$ret = $this->form_tag('post');
+		$ret .= '<table cellspacing="0" cellpadding="4" border="1">';
+		$ret .= '<tr><th>ID</th><th>Name</th><th>Amount</th><th>Decrease Inventory</th></tr>';
+		foreach($this->msgs as $upc => $info){
+			$start = '<tr>';
+			$line = '<td>'.$upc.'</td>';
+			$line .= '<td>'.(isset($name[$upc])?$name[$upc]:$info['name']).'</td>';
+			if (isset($info['yeast']))
+				$line .= sprintf('<td>%d</td>',$info['qty']);
+			else {
+				$weight = $this->kg_to_lb_oz($info['qty']);
+				$line .= sprintf('<td>%d lbs %.2f ozs</td>',$weight['lbs'],$weight['ozs']);
+			}
+			$line .= '<td><select name="decrement[]">';
+			if (!isset($name[$upc])){
+				$line .= '<option value="0">No. Ingredient unknown</option>';
+				$start = '<tr style="color:red;">';
+			}
+			else if (!isset($qty[$upc]) || $qty[$upc] <= 0){
+				$line .= '<option value="0">No. Ingredient not in stock</option>';
+				$start = '<tr style="color:blue;">';
+			}
+			else if ($info['qty'] <= $qty[$upc]){
+				$line .= '<option value="1">Yes. Ingredient in stock</option>';
+				$line .= '<option value="0">No. Skip this ingredient.</option>';
+				$start = '<tr style="color:green;">';
+			}
+			else {
+				$line .= '<option value="2">Yes. Stop at zero.</option>';
+				$line .= '<option value="1">Yes. Continue to negative amount.</option>';
+				$line .= '<option value="0">No. Skip this ingredient.</option>';
+				$start = '<tr style="color:green;">';
+			}
+			$line .= '</select></td>';
+			$line .= '</tr>';
+			$ret .= $start.$line;
+		}
+		$ret .= '</table>';
+		$ret .= '</form>';
+		return $ret;	
+	}
+
+	function get_stock($upcs=False){
+		$dbc = trans_connect();	
+
+		$where = "";
+		$ret = array();
+		if ($upcs && is_array($upcs) && count($upcs)>0){
+			$where = "WHERE d.upc IN (";
+			foreach($upcs as $upc)
+				$where .= $dbc->escape($upc).",";
+			$where = rtrim($where,",").")";
+		}
+
 		$upcQ = "SELECT d.upc,
 			SUM(d.quantity)
 			 - SUM(CASE WHEN s.quantity IS NULL THEN 0 ELSE s.quantity END) 
@@ -78,18 +183,42 @@ class Brewventory extends FannieInventory {
 			FROM InvDeliveryArchive AS d
 			LEFT JOIN InvSalesArchive AS s ON d.upc=s.upc
 			LEFT JOIN InvAdjustments AS a ON d.upc=a.upc
+			$where
 			GROUP BY d.upc";
 		$upcR = $dbc->query($upcQ);
-
-		$upcs = "(";
-		$qty = array();
 		while($upcW = $dbc->fetch_row($upcR)){
-			$upcs .= "'".$upcW['upc']."',";
-			$qty[$upcW['upc']] = $upcW['stock'];
+			$ret[$upcW['upc']] = $upcW['stock'];
+		}
+	
+		$dbc->close();
+		return $ret;
+	}
+
+	function get_names($upcs){
+		$dbc = op_connect();
+		$ret = array();
+		if ($upcs && is_array($upcs) && count($upcs)>0){
+			$where = "WHERE upc IN (";
+			foreach($upcs as $upc)
+				$where .= $dbc->escape($upc).",";
+			$where = rtrim($where,",").")";
+		}
+		$q = "SELECT upc,description FROM productUser ".$where;
+		$r = $dbc->query($q);
+		while($w = $dbc->fetch_row($r)){
+			$ret[$w['upc']] = $w['description'];	
+		}
+		$dbc->close();
+		return $ret;
+	}
+
+	function view(){
+		$qty = $this->get_stock();
+		$upcs = "(";
+		foreach($qty as $upc=>$amt){
+			$upcs .= "'".$upc."',";
 		}
 		$upcs = rtrim($upcs,",").")";
-		
-		$dbc->close();
 
 		$dbc = op_connect();
 		$query = "SELECT p.upc,p.mixmatchcode,u.*,x.*
@@ -191,7 +320,7 @@ class Brewventory extends FannieInventory {
 		</tr>
 		<?php
 		foreach($rows['yeasts'] as $yeasts){
-			$ttl = round($qty[$malts['upc']] * 2.20462262);
+			$ttl = round($qty[$yeasts['upc']] * 2.20462262);
 			printf('<tr><td>%s</td>
 				<td>%s</td>
 				<td>%s</td>
@@ -290,6 +419,18 @@ class Brewventory extends FannieInventory {
 		return $ret;
 	}
 
+	function kg_to_lb_oz($kgs){
+		$ttl = $kgs * 2.20462262;
+		$lbs = floor($ttl);
+		$ozs = ($ttl - $lbs) * 16;
+		if (sprintf('%.2f',$ozs)=='16.00'){
+			$lbs += 1;
+			$ozs -= 16.00;
+			if ($ozs < 0) $ozs=0.0;
+		}
+		return array('lbs'=>$lbs,'ozs'=>$ozs);
+	}
+
 	function preprocess(){
 		$this->mode = get_form_value('mode','menu');
 
@@ -323,8 +464,70 @@ class Brewventory extends FannieInventory {
 
 			echo '<p />';
 			printf('<a href="%s&mode=menu">Home</a>',$this->module_url());
+			unlink($filename);
 			return False;
 		}
+
+		/**
+		  Callback #1 for sale() display function
+		  Process uploaded file
+		*/
+		if (isset($_REQUEST['sale_recipe_submit'])){
+			$tmpfile = $_FILES['import_xml_file']['tmp_name'];
+			$filename = tempnam(sys_get_temp_dir(),'brewvenImport');
+			move_uploaded_file($tmpfile, $filename);
+
+			$bxml = new BeerXMLParser($filename);
+			$data = $bxml->get_data();
+
+			$this->msgs = array();
+		
+			foreach($data['Hops'] as $h){
+				$upc = $this->hash('hops',$h);
+				if (!isset($this->msgs[$upc]))
+					$this->msgs[$upc] = array('qty'=>0.0,'name'=>$h['name']);
+				$this->msgs[$upc]['qty'] += (isset($h['amount'])?$h['amount']:0.0);
+			}
+
+			foreach($data['Fermentables'] as $f){
+				$upc = $this->hash('malt',$f);
+				if (!isset($this->msgs[$upc]))
+					$this->msgs[$upc] = array('qty'=>0.0,'name'=>$f['name']);
+				$this->msgs[$upc]['qty'] += (isset($f['amount'])?$f['amount']:0.0);
+			}
+
+			foreach($data['Yeast'] as $y){
+				$upc = $this->hash('yeast',$y);
+				if (!isset($this->msgs[$upc]))
+					$this->msgs[$upc] = array('qty'=>0.0,'name'=>$y['name']);
+				$this->msgs[$upc]['qty'] += 1;
+				$this->msgs[$upc]['yeast'] = True;
+			}
+
+			foreach($data['Misc'] as $m){
+				$upc = $this->hash('misc',$m);
+				if (!isset($this->msgs[$upc]))
+					$this->msgs[$upc] = array('qty'=>0.0,'name'=>$m['name']);
+				$this->msgs[$upc]['qty'] += (isset($m['amount'])?$m['amount']:0.0);
+			}
+
+			$this->mode = "sale_confirm";
+
+			unlink($filename);
+			return True;
+		}
+
+		/**
+		  Callback #2 for sale() display function
+		  Process single ingredient
+		*/
+		if (isset($_REQUEST['sale_submit'])){
+			$upc = get_form_value('upc','');
+			$this->msgs = array($upc=>array('qty'=>0.0,'name'=>''));
+			$this->mode = "sale_confirm";
+			return True;
+		}
+		
 
 		/**
 		  Callback for receive() display function
@@ -514,7 +717,7 @@ class Brewventory extends FannieInventory {
 	private function add_misc($dbc, $misc_info){
 		$good_desc = $misc_info['name'];
 		$short_desc = substr($misc_info['name'],0,30);
-		$upc = $this->hash('misc', $malt_info);
+		$upc = $this->hash('misc', $misc_info);
 
 		$q = "SELECT upc FROM products WHERE upc=".$dbc->escape($upc);
 		$r = $dbc->query($q);
@@ -570,7 +773,7 @@ class Brewventory extends FannieInventory {
 	private function add_yeast($dbc, $yeast_info){
 		$good_desc = $yeast_info['name'];
 		$short_desc = substr($yeast_info['name'],0,30);
-		$upc = $this->hash('yeast', $malt_info);
+		$upc = $this->hash('yeast', $yeast_info);
 
 		$q = "SELECT upc FROM products WHERE upc=".$dbc->escape($upc);
 		$r = $dbc->query($q);
@@ -626,7 +829,7 @@ class Brewventory extends FannieInventory {
 	private function add_hops($dbc, $hop_info){
 		$good_desc = $hop_info['name'];
 		$short_desc = substr($hop_info['name'],0,30);
-		$upc = $this->hash('hops', $malt_info);
+		$upc = $this->hash('hops', $hop_info);
 
 		$q = "SELECT upc FROM products WHERE upc=".$dbc->escape($upc);
 		$r = $dbc->query($q);
