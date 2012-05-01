@@ -24,7 +24,7 @@ $CREATE['op.superdepts'] = "
 	CREATE TABLE superdepts (
 		superID int,
 		dept_ID int,
-		PRIMARY KEY (superID, dept_ID)
+		PRIMARY KEY (superID, dept_ID),
 		INDEX(superID),
 		INDEX(dept_ID)
 	)
