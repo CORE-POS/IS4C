@@ -54,6 +54,11 @@ echo '<hr />';
 if (!isset($FANNIE_SYMBOLS)) $FANNIE_SYMBOLS = array();
 unpack_symbols();
 
+function __autoload($class_name){
+	global $FANNIE_ROOT;
+	bootstrap_load($FANNIE_ROOT.'class-lib',$class_name);
+}
+
 // sanity checks
 if (!isset($FANNIE_SYMBOLS['functions']))
 	$FANNIE_SYMBOLS['functions'] = array();
