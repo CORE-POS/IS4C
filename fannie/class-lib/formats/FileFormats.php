@@ -45,11 +45,11 @@ class FileFormats extends FannieModule {
 	}
 }
 
-include(__DIR__.'/Excel/Spreadsheet_Excel_Reader.php');
-include(__DIR__.'/xmlData.php');
+include(dirname(__FILE__).'/Excel/Spreadsheet_Excel_Reader.php');
+include(dirname(__FILE__).'/xmlData.php');
 @include_once('System.php');
 if (class_exists('System'))
-	include(__DIR__.'/Excel/Spreadsheet_Excel_Writer.php');
+	include(dirname(__FILE__).'/Excel/Spreadsheet_Excel_Writer.php');
 
 // function sys_get_temp_dir doesn't exist in PHP < 5.2.1
 if ( !function_exists('sys_get_temp_dir')) {
