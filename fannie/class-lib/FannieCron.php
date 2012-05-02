@@ -49,7 +49,7 @@ class FannieCron extends FannieModule {
 	  @return string directory path
 	*/
 	function get_job_directory(){
-		return realpath(__DIR__.'/');
+		return realpath(dirname(__FILE__).'/');
 	}
 
 	function run_module(){

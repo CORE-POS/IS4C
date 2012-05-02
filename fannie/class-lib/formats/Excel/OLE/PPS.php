@@ -21,7 +21,7 @@
 
 
 require_once 'PEAR.php';
-require_once __DIR__.'/OLE.php';
+require_once dirname(__FILE__).'/OLE.php';
 
 /**
 * Class for creating PPS's for OLE containers

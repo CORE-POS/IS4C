@@ -23,7 +23,7 @@
  */
 
 require_once 'PEAR.php';
-require_once __DIR__.'/OLE.php';
+require_once dirname(__FILE__).'/OLE.php';
 
 /**
  * Stream wrapper for reading data stored in an OLE file. Implements methods

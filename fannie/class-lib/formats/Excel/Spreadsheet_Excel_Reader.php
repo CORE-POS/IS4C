@@ -25,7 +25,7 @@
 */
 
 
-require_once(__DIR__.'/oleread.inc');
+require_once(dirname(__FILE__).'/oleread.inc');
 
 define('SPREADSHEET_EXCEL_READER_BIFF8',             0x600);
 define('SPREADSHEET_EXCEL_READER_BIFF7',             0x500);

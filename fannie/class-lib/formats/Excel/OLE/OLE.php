@@ -222,7 +222,7 @@ class OLE extends PEAR
      */
     function getStream($blockIdOrPps)
     {
-        include_once __DIR__.'/ChainedBlockStream.php';
+        include_once dirname(__FILE__).'/ChainedBlockStream.php';
         static $isRegistered = false;
         if (!$isRegistered) {
             stream_wrapper_register('ole-chainedblockstream',
@@ -303,7 +303,7 @@ class OLE extends PEAR
             $type = $this->_readInt1($fh);
             switch ($type) {
             case OLE_PPS_TYPE_ROOT:
-                require_once __DIR__.'/PPS/Root.php';
+                require_once dirname(__FILE__).'/PPS/Root.php';
                 $pps = new OLE_PPS_Root(null, null, array());
                 $this->root = $pps;
                 break;
@@ -312,7 +312,7 @@ class OLE extends PEAR
                                    null, null, null, null, array());
                 break;
             case OLE_PPS_TYPE_FILE:
-                require_once __DIR__.'/PPS/File.php';
+                require_once dirname(__FILE__).'/PPS/File.php';
                 $pps = new OLE_PPS_File($name);
                 break;
             default:
