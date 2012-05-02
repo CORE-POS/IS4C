@@ -191,6 +191,33 @@ function load_class($class){
 	return class_exists($class) ? True : False;
 }
 
+/**
+  Helper function for initializing symbols
+  Tries to find a class in the given directory
+  @param $dir search directory
+  @param $class class name
+*/
+function bootstrap_load($dir,$class){
+	$dh = opendir($dir);
+	while($dh && ($file = readdir($dh)) !== False){
+		if ($file[0] == ".") continue;
+
+		if (is_dir(realpath($dir."/".$file))){
+			// recurse
+			if(bootstrap_load(realpath($dir."/".$file), $class))
+				return True;
+		}
+
+		if ($file == $class.".php"){
+			// found! return True
+			include_once(realpath($dir."/".$file));
+			return True;
+		}
+	}
+	closedir($dh);
+	return False;
+}
+
 function use_module($module){
 	$find = load_class($module);
 	if (!$find)

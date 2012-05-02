@@ -128,7 +128,9 @@ class Brewventory extends FannieInventory {
 		foreach($this->msgs as $upc => $info){
 			$start = '<tr>';
 			$line = '<td>'.$upc.'</td>';
+			$line .= sprintf('<input type="hidden" name="upc[]" value="%s" />',$upc);
 			$line .= '<td>'.(isset($name[$upc])?$name[$upc]:$info['name']).'</td>';
+			$line .= sprintf('<input type="hidden" name="amt[]" value="%f" />',$info['qty']);
 			if (isset($info['yeast']))
 				$line .= sprintf('<td>%d</td>',$info['qty']);
 			else {
@@ -160,6 +162,7 @@ class Brewventory extends FannieInventory {
 			$ret .= $start.$line;
 		}
 		$ret .= '</table>';
+		$ret .= '<input type="submit" name="submit_sale_confirm" value="Confirm" />';
 		$ret .= '</form>';
 		return $ret;	
 	}
@@ -430,6 +433,12 @@ class Brewventory extends FannieInventory {
 		}
 		return array('lbs'=>$lbs,'ozs'=>$ozs);
 	}
+	
+	function lb_oz_to_kg($lbs,$ozs){
+		$ttl = $lbs + ($ozs/16.0);
+		$kgs = $ttl * 0.45359237;
+		return $kgs;
+	}
 
 	function preprocess(){
 		$this->mode = get_form_value('mode','menu');
@@ -523,11 +532,45 @@ class Brewventory extends FannieInventory {
 		*/
 		if (isset($_REQUEST['sale_submit'])){
 			$upc = get_form_value('upc','');
-			$this->msgs = array($upc=>array('qty'=>0.0,'name'=>''));
+			$lbs = get_form_value('lbs',0.0);
+			$ozs = get_form_value('ozs',0.0);
+			$kgs = $this->lb_oz_to_kg($lbs,$ozs);
+			
+			$this->msgs = array($upc=>array('qty'=>$kgs,'name'=>''));
 			$this->mode = "sale_confirm";
 			return True;
 		}
-		
+
+		/**
+		  Callback for sale_confirm() display function
+		  Process single ingredient
+		*/
+		if (isset($_REQUEST['submit_sale_confirm'])){
+			$upcs = get_form_value('upc',array());	
+			$amts = get_form_value('amt',array());
+			$confirms = get_form_value('decrement',array());
+
+			for($i=0;$i<count($confirms);$i++){
+				if ($confirms[$i] == 0) continue; // skip
+
+				$upc = $upcs[$i];
+				$amt = $amts[$i];
+				if ($confirms[$i] == 2){ // stop at zero
+					$stock = $this->get_stock(array($upc));
+					if (isset($stock[$upc])) $amt = $stock[$upc];
+					else continue; // couldn't find current stock	
+				}
+
+				$dbc = trans_connect();
+				$q = sprintf("INSERT INTO InvSalesArchive (inv_date, upc, quantity, price)
+					VALUES (%s, %s, %f, 0.0)",$dbc->now(),$dbc->escape($upc),$amt);
+				$r = $dbc->query($q);
+				$dbc->close();
+			}
+
+			$this->mode = 'view';
+			return True;
+		}
 
 		/**
 		  Callback for receive() display function
@@ -910,6 +953,9 @@ class BeerXMLParser {
 		$file = file_get_contents($filename);
 		if (!$file) $this->data = False;
 		else {
+			// beersmith bad data correction
+                        $file = str_replace(chr(0x01),"",$file);
+
 			$xml_parser = xml_parser_create();
 			xml_set_object($xml_parser,$this);
 			xml_set_element_handler($xml_parser, "startElement", "endElement");
