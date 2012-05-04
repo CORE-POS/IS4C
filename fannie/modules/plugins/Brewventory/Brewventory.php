@@ -72,7 +72,60 @@ class Brewventory extends FannieInventory {
 	}
 
 	function adjust(){
-		return "";
+		ob_start();
+		if (!empty($this->msgs)){
+			echo '<blockquote><i>'.$this->msgs.'</i></blockquote>';
+			$this->msgs = "";
+		}
+		echo $this->form_tag();
+		?>
+		<p>
+		<b>Ingredient</b>: <input type="text" id="upc" name="upc" />
+		</p>
+		<input type="submit" name="adjust_submit" value="Enter Adjustment" />
+		</form>
+		<?php
+		$this->add_onload_command(
+			sprintf("\$('#upc').autocomplete({source:'%s&LookUp=1'});",
+				$this->module_url())
+		);
+		$this->add_onload_command("\$('#upc').focus();");
+
+		echo '<p />';
+		printf('<a href="%s&mode=menu">Home</a>',$this->module_url());
+		return ob_get_clean();
+	}
+
+	function adjust_confirm(){
+		$ret = $this->form_tag();
+
+		$upc = array_pop(array_keys($this->msgs));
+		$amt = $this->msgs[$upc];	
+
+		$dbc = op_connect();
+		$q = "SELECT description FROM productUser WHERE upc=".$dbc->escape($upc);
+		$r = $dbc->query($q);
+		$w = $dbc->fetch_row($r);
+		$dbc->close();
+
+		$ret .= '<h3>'.$w['description'].'</h3>';
+		$ret .= sprintf('<input type="hidden" name="upc" value="%s" />',$upc);
+		
+		$ret .= '<p><b>Listed stock</b>: ';
+		$pts = $this->kg_to_lb_oz($amt);
+		$ret .= sprintf("%d lbs %.2f ozs",$pts['lbs'],$pts['ozs']);
+		$ret .= '</p>';
+		$ret .= sprintf('<input type="hidden" name="amt" value="%s" />',$amt);
+
+		$ret .= '<p><b>Actual stock</b>: ';
+		$ret .= '<input type="text" name="lbs" size="3" />lbs ';
+		$ret .= '<input type="text" name="ozs" size="3" />ozs ';
+		$ret .= '</p>';
+		
+		$ret .= '<input type="submit" name="adjust_confirm_submit" value="Confirm Adjustment" />';
+		$ret .= '</form>';
+	
+		return $ret;
 	}
 
 	function import(){
@@ -614,6 +667,50 @@ class Brewventory extends FannieInventory {
 		}
 
 		/**
+		  Callback for adjust_confirm() display function
+		*/
+		if (isset($_REQUEST['adjust_confirm_submit'])){
+			$upc = get_form_value('upc','');
+			$lbs = get_form_value('lbs',0.0);
+			$ozs = get_form_value('ozs',0.0);
+			$amt = get_form_value('amt',0.0);
+
+			$newamt = $this->lb_oz_to_kg($lbs,$ozs);
+			$diff = $amt - $newamt;
+
+			$dbc = trans_connect();
+			$q = sprintf("INSERT INTO InvAdjustments (inv_date,upc,diff)
+				VALUES(%s, %s, %f)",$dbc->now(),$dbc->escape($upc),
+				$diff);
+			$r = $dbc->query($q);
+			$dbc->close();
+
+			$this->msgs = 'Adjustment saved';
+			$this->mode = 'adjust';
+			
+			return True;
+		}
+
+		/**
+		  Callback for adjust() display function
+		*/
+		if (isset($_REQUEST['adjust_submit'])){
+			$upc = get_form_value('upc','');
+
+			$current = $this->get_stock(array($upc));
+			if(!isset($current[$upc])){
+				$this->msgs = 'Item not in stock';
+				$this->mode = 'adjust';
+			}
+			else {
+				$this->msgs = $current;
+				$this->mode = 'adjust_confirm';
+			}
+
+			return True;
+		}
+
+		/**
 		  jQuery autocomplete callback
 		*/
 		if (isset($_REQUEST['LookUp']) && isset($_REQUEST['term'])){
@@ -921,9 +1018,15 @@ class Brewventory extends FannieInventory {
 	}
 
 	function css_content(){
+		global $FANNIE_URL;
 		ob_start();
 		?>
 		a { color:blue; }
+		body {
+			background-image: url(<?php echo $FANNIE_URL.'modules/plugins/Brewventory/bg.jpg'; ?>);
+			background-position: right top;
+			background-repeat: no-repeat;
+		}
 		<?php
 		return ob_get_clean();
 
