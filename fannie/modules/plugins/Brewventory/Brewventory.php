@@ -417,7 +417,7 @@ class Brewventory extends FannieInventory {
 		$ret .= sprintf('<li><a href="%s&mode=%s">%s</a>',
 				$this->module_url(),'adjust','Enter Adjustments');
 		$ret .= sprintf('<li><a href="%s&mode=%s">%s</a>',
-				$this->module_url(),'import','Import Definitions');
+				$this->module_url(),'import','Import Ingredient Definitions');
 		$ret .= '</ul>';
 		return $ret;
 	}
