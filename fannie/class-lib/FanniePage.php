@@ -172,11 +172,19 @@ class FanniePage extends FannieModule {
 	*/
 	function form_tag($type='post'){
 		global $FANNIE_URL;
-		$ret = sprintf('<form method="%s" action="%s">
-			<input type="hidden" name="m" value="%s" />',
-			$type, $FANNIE_URL.'modules/',
-			get_class($this)
-		);
+		if (basename($_SERVER['PHP_SELF'])==get_class($this).".php"){
+			$ret = sprintf('<form method="%s" action="%s">
+				<input type="hidden" name="m" value="%s" />',
+				$type, $_SERVER['PHP_SELF'],'none'
+			);
+		}
+		else {
+			$ret = sprintf('<form method="%s" action="%s">
+				<input type="hidden" name="m" value="%s" />',
+				$type, $FANNIE_URL.'modules/',
+				get_class($this)
+			);
+		}
 		return $ret;
 	}
 
@@ -186,7 +194,10 @@ class FanniePage extends FannieModule {
 	*/
 	function module_url(){
 		global $FANNIE_URL;
-		return $FANNIE_URL.'modules/?m='.get_class($this);
+		if (basename($_SERVER['PHP_SELF'])==get_class($this).".php")
+			return $_SERVER['PHP_SELF']."?m=none";
+		else
+			return $FANNIE_URL.'modules/?m='.get_class($this);
 	}
 
 	function provides_functions(){

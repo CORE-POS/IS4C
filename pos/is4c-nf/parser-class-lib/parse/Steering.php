@@ -180,6 +180,13 @@ class Steering extends Parser {
 		case "CE":
 			$this->ret['main_frame'] = $CORE_PATH."cc-modules/gui/ProcessPage.php";
 			return True;
+		case "PO":
+			$CORE_LOCAL->set("adminRequest",$CORE_PATH."gui-modules/priceOverride.php");
+			$CORE_LOCAL->set("adminRequestLevel","30");
+			$CORE_LOCAL->set("adminLoginMsg","Login to alter price");
+			$CORE_LOCAL->set("away",1);
+			$this->ret['main_frame'] = $CORE_PATH."gui-modules/adminlogin.php";
+			return True;
 		}
 		return False;
 	}
