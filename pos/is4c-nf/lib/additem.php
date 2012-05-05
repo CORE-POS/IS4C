@@ -565,6 +565,13 @@ function addtransDiscount() {
 	addItem("DISCOUNT", "Discount", "I", "", "", 0, 1, truncate2(-1 * $CORE_LOCAL->get("transDiscount")), truncate2(-1 * $CORE_LOCAL->get("transDiscount")), 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0);
 }
 
+/**
+  Add cash drop record
+*/
+function addCashDrop($ttl) {
+	addItem("DROP", "Cash Drop", "I", "", "X", 0, 1, truncate2(-1 * $amt), truncate2(-1 * $amt), 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0.00, 0, 'CD');
+}
+
 // ---------------------------- insert stamp in activitytemplog --------------------------------
 
 /**
