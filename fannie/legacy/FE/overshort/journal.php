@@ -266,6 +266,7 @@ function display($date1,$date2,$excel=False){
 	}
 	else
 		$ret .= (isset($data['other']['depositChecks'])?$data['other']['depositChecks']:'');
+	$overshorts[$endTS] += isset($data['other']['depositChecks'])?$data['other']['depositChecks']:0;
 
 	$ret .= "</td>";
 	$ret .= "<td>&nbsp;</td>";

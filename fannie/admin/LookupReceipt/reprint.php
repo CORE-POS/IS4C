@@ -69,6 +69,7 @@ function receiptHeader($date,$trans){
 		.$dbc->date_equals('dateTimeStamp',"$year-$month-$day")
                ." and trans_num = '$trans' ";
    
+   echo $query1;
    $query1 = "SELECT description,comment,total,Status,
 		datetime,register_no,emp_no,trans_no,memberID FROM $rp WHERE "
 		.$dbc->date_equals('datetime',"$year-$month-$day")

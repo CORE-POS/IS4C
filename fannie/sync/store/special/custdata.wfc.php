@@ -21,20 +21,3 @@
 
 *********************************************************************************/
 
-// Run DTS to export server data to a CSV file
-$ms = new SQLManager('129.103.2.10','MSSQL','WedgePOS','sa',$FANNIE_SERVER_PW);
-$ms->query("exec master..xp_cmdshell 'dtsrun /S IS4CSERV\IS4CSERV /U sa /P $FANNIE_SERVER_PW /N CSV_custdata',no_output",'WedgePOS');
-
-if (!is_readable('/pos/csvs/products.csv')) echo 'Problem exporting custdata table';
-else {
-	$dbc->add_connection($FANNIE_SERVER,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-		$FANNIE_SERVER_USER,$FANNIE_SERVER_PW);
-	$dbc->query("TRUNCATE TABLE custdata",$FANNIE_OP_DB);
-
-	$dbc->query("LOAD DATA LOCAL INFILE '/pos/csvs/custdata.csv' INTO TABLE
-		custdata FIELDS TERMINATED BY ',' OPTIONALLY
-		ENCLOSED BY '\"' LINES TERMINATED BY '\\r\\n'",$FANNIE_OP_DB);
-	echo "<li>custdata table synched</li>";
-}
-
-?>
