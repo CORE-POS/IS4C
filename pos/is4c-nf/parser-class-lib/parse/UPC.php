@@ -369,6 +369,11 @@ class UPC extends Parser {
 		/* output item list, update totals footer */
 		$ret['redraw_footer'] = True;
 		$ret['output'] = lastpage();
+
+		if ($prefetch['unitPrice']==0){
+			$ret['main_frame'] = $CORE_PATH.'gui-modules/priceOverride.php';
+		}
+
 		return $ret;
 	}
 
