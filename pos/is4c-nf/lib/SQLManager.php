@@ -98,7 +98,6 @@ class SQLManager {
 			$this->connections[$database] = $this->connect($server,
 				strtoupper($type),$username,$password,
 				$persistent,True);		
-
 		}
 		$this->db_types[$database] = strtoupper($type);
 		$gotdb = $this->select_db($database,$database);
