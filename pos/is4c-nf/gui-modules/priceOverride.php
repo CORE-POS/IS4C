@@ -55,12 +55,12 @@ class PriceOverride extends NoInputPage {
 		if (isset($_REQUEST['reginput'])){
 			$input = strtoupper($_REQUEST['reginput']);
 
-			if ($input == "CL"){
+			if ($input == "CL" && $this->price != '$0.00'){
 				// override canceled; go home
 				header("Location: {$CORE_PATH}gui-modules/pos2.php");
 				return False;
 			}
-			else if (is_numeric($input)){
+			else if (is_numeric($input) && $input != 0){
 				$cents = 0;
 				$dollars = 0;
 				if (strlen($input)==1 || strlen($input)==2)
