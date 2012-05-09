@@ -386,6 +386,11 @@ function create_op_dbs($db,$type){
 		$db->query($custDataQ,$name);
 	}
 
+	$cardsQ = "CREATE TABLE memberCards (upc VARCHAR(13),card_no INT, PRIMARY KEY(upc))";
+	if (!$db->table_exists('memberCards',$name)){
+		$db->query($cardsQ,$name);
+	}
+	
 	$deptQ = "CREATE TABLE departments (
 		dept_no smallint,
 		dept_name varchar(30),

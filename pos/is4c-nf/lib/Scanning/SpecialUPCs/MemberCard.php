@@ -35,15 +35,17 @@ if (!function_exists('memberID')) include($CORE_PATH."lib/prehkeys.php");
   @class MemberCard
   WFC barcoded member ID implementation
 
-  Checks for UPC prefix 0042363
-  (004, ASCII WFC)
+  Checks for UPC prefix specified
+  by memberUpcPrefix in $CORE_LOCAL.
 
   Looks up member number via memberCards table
 */
 class MemberCard extends SpecialUPC {
 
 	function is_special($upc){
-		if (substr($upc,0,8) == "00073021")
+		global $CORE_LOCAL;
+		$prefix = $CORE_LOCAL->get("memberUpcPrefix");
+		if (substr($upc,0,strlen($prefix)) == $prefix) 
 			return true;
 
 		return false;
