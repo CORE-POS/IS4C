@@ -57,6 +57,12 @@ $saveStr = rtrim($saveStr,",").")";
 confsave('SpecialUpcClasses',$saveStr);
 ?>
 </select><br />
+<b>Member Card UPC Prefix</b>:
+<?php
+if (isset($_REQUEST['memberUpcPrefix'])) $CORE_LOCAL->set('memberUpcPrefix',$_REQUEST['memberUpcPrefix']);
+printf("<input type=text name=memberUpcPrefix value=\"%s\" />",$CORE_LOCAL->get('memberUpcPrefix'));
+confsave('memberUpcPrefix',"'".$CORE_LOCAL->get('memberUpcPrefix')."'");
+?>
 <hr />
 Discount type modules control how sale prices
 are calculated.<br />
