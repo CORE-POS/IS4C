@@ -43,7 +43,7 @@ if (!function_exists('memberID')) include($CORE_PATH."lib/prehkeys.php");
 class MemberCard extends SpecialUPC {
 
 	function is_special($upc){
-		if (substr($upc,0,7) == "0042363")
+		if (substr($upc,0,7) == "0073021")
 			return true;
 
 		return false;
