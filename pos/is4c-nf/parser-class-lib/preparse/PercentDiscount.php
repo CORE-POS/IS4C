@@ -28,6 +28,7 @@ class PercentDiscount extends Parser {
 	var $remainder;
 	
 	function check($str){
+		global $CORE_LOCAL;
 		if (strstr($str,"DI")){
 			$split = explode("DI",$str);
 			if (is_numeric($split[0])){
