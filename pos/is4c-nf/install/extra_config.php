@@ -217,32 +217,59 @@ if ($CORE_LOCAL->get("scaleDriver") != ""){
 	else {
 		include('../scale-drivers/php-wrappers/'.$classname.'.php');
 		$instance = new $classname();
-		$instance->SavePortConfiguration($CORE_LOCAL->get("scalePort"));
-		$abs_path = substr($_SERVER['PATH_TRANSLATED'],0,
+		@$instance->SavePortConfiguration($CORE_LOCAL->get("scalePort"));
+		@$abs_path = substr($_SERVER['PATH_TRANSLATED'],0,
 				strlen($_SERVER['PATH_TRANSLATED'])-strlen('install/extra_config.php')-1);
-		$instance->SaveDirectoryConfiguration($abs_path);
+		@$instance->SaveDirectoryConfiguration($abs_path);
 	}
 }
 ?>
 <hr />
-<?php
-// sanity checks; should be populated by database
-confsave('ckEndorseCount',0);
-confsave('welcomeMsgCount',0);
-confsave('trainingMsgCount',0);
-confsave('farewellMsgCount',0);
-confsave('chargeSlipCount',0);
-confsave('receiptFooterCount',0);
-confsave('receiptHeaderCount',1);
-// first receipt header is required but should be overriden
-// via database
-confsave('receiptHeader1',"''");
-?>
 <b>Alert Bar</b>:<br />
 <?php
 if (isset($_REQUEST['ALERT'])) $CORE_LOCAL->set('alertBar',$_REQUEST['ALERT']);
 printf("<input size=40 type=text name=ALERT value=\"%s\" />",$CORE_LOCAL->get('alertBar'));
 confsave('alertBar',"'".$CORE_LOCAL->get('alertBar')."'");
+?>
+<br />
+<b>Footer Modules</b> (left to right):<br />
+<?php
+$footer_mods = array();
+// get current settings
+$current_mods = $CORE_LOCAL->get("FooterModules");
+// replace w/ form post if needed
+// fill in defaults if missing
+if (isset($_REQUEST['FOOTER_MODS'])) $current_mods = $_REQUEST['FOOTER_MODS'];
+elseif(!is_array($current_mods) || count($current_mods) != 5){
+	$current_mods = array(
+	'SavedOrCouldHave',
+	'TransPercentDiscount',
+	'MemSales',
+	'EveryoneSales',
+	'MultiTotal'
+	);
+}
+$dh = opendir('../lib/FooterBoxes/');
+while(False !== ($f = readdir($dh))){
+	if ($f == "." || $f == "..")
+		continue;
+	if (substr($f,-4) == ".php"){
+		$footer_mods[] = rtrim($f,".php");
+	}
+}
+for($i=0;$i<5;$i++){
+	echo '<select name="FOOTER_MODS[]">';
+	foreach($footer_mods as $fm){
+		printf('<option %s>%s</option>',
+			($current_mods[$i]==$fm?'selected':''),$fm);
+	}
+	echo '</select><br />';
+}
+$saveStr = "array(";
+foreach($current_mods as $m)
+	$saveStr .= "'".$m."',";
+$saveStr = rtrim($saveStr,",").")";
+confsave('FooterModules',$saveStr);
 ?>
 <hr />
 <b>Enable onscreen keys</b>: <select name=SCREENKEYS>
