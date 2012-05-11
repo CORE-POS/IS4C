@@ -145,17 +145,17 @@ function printfooter($readOnly=False) {
 		}
 		$dblyousaved = $CORE_LOCAL->get("yousaved");
 	}
+
+	$strperdiscount = "n/a";
 	if ($CORE_LOCAL->get("percentDiscount") != 0 || $CORE_LOCAL->get("memCouponTTL") > 0) {
 		$strperdiscount = number_format($CORE_LOCAL->get("transDiscount") + $CORE_LOCAL->get("memCouponTTL"), 2);
 	}
-	else {
-		$strperdiscount = "n/a";
-	}
+
+	$strmemSpecial = "n/a";
 	if ($CORE_LOCAL->get("isMember") == 1) {
 		$strmemSpecial = number_format($CORE_LOCAL->get("memSpecial"), 2);
-	} else {
-		$strmemSpecial = "n/a";
 	}
+
 	if (!$readOnly){
 		if ($CORE_LOCAL->get("End") == 1) {
 			rePoll();
@@ -175,8 +175,8 @@ function printfooter($readOnly=False) {
 
 	$ret .= "<tr class=\"values\">";
 	$ret .= "<td class=\"first\">".number_format($dblyousaved,2)."</td>";
-	$ret .= "<td class=\"reg\">".number_format((double)$strperdiscount,2)."</td>";
-	$ret .= "<td class=\"reg\">".number_format((double)$strmemSpecial,2)."</td>";
+	$ret .= "<td class=\"reg\">".$strperdiscount."</td>";
+	$ret .= "<td class=\"reg\">".$strmemSpecial."</td>";
 	$ret .= "<td class=\"reg\">".number_format($dbldiscounttotal,2)."</td>";
 	if ($CORE_LOCAL->get("ttlflag") == 1 && $CORE_LOCAL->get("End") != 1) {
 		if ($CORE_LOCAL->get("fntlflag") == 1) {
