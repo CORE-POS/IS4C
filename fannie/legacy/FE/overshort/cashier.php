@@ -44,7 +44,7 @@ function displayCashier($date,$empno){
 		$tClause .= "'$t',";
 	}
 	$tClause = substr($tClause,0,strlen($tClause)-1).")";
-	$counts["SCA"] = 168;
+	$counts["SCA"] = 0.00;
 
 
 	$totalsQ = "SELECT trans_subtype,-1*SUM(total) FROM $dlog WHERE emp_no = $empno
