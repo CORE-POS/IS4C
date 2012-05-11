@@ -47,7 +47,6 @@ function writeLine($text) {
 	global $CORE_LOCAL;
 
 	if ($CORE_LOCAL->get("print") != 0) {
-
 		/* check fails on LTP1: in PHP4
 		   suppress open errors and check result
 		   instead 
@@ -95,44 +94,46 @@ function drawerKick() {
 
 // -------------------------------------------------------------
 function printReceiptHeader($dateTimeStamp, $ref) {
-	global $CORE_LOCAL,$CORE_PATH;
+	global $CORE_LOCAL,$CORE_PATH, $PRINT_OBJ;
 
-//	writeLine(chr(27).chr(33).chr(5)); // Compress font	// apbw/tt old Wedge receipt printers Franking II
+	$receipt = $PRINT_OBJ->TextStyle(True);
 
-	$receipt = ""
-
-		/***** jqh 09/29/05 changes made for new receipt settings *****/
-		.chr(27).chr(33).chr(5);
-		$i = 2; // for headers below
-		if ($CORE_LOCAL->get("newReceipt")==1 && $CORE_LOCAL->get("store") != "wfc"){
-		 	$receipt.=biggerFont(centerBig($CORE_LOCAL->get("receiptHeader1")))."\n\n";
-		}
-		else if ($CORE_LOCAL->get("newReceipt")==1 && $CORE_LOCAL->get("store") == "wfc"){
-			$img = RenderBitmapFromFile($CORE_PATH."graphics/WFC_Logo.bmp");
-			$receipt .= $img."\n";
-			$i=45; // skip any headers that happen to be in the database
-			$receipt .= "\n";
-		}
-		else{
-			// zero-indexing the receipt header and footer list
-	 		$receipt.=biggerFont(centerBig($CORE_LOCAL->get("receiptHeader1")))."\n";
-		}
-		// and continuing on 
-		for (; $i <= $CORE_LOCAL->get("receiptHeaderCount"); $i++)
-			$receipt.=centerString($CORE_LOCAL->get("receiptHeader$i"))."\n";
-
+	$i = 2; // for headers below
+	if ($CORE_LOCAL->get("newReceipt")==1 && $CORE_LOCAL->get("store") != "wfc"){
+		$receipt .= $PRINT_OBJ->TextStyle(True, False, True);
+		$receipt .= $PRINT_OBJ->centerString($CORE_LOCAL->get("receiptHeader1"),True);
+		$receipt .= $PRINT_OBJ->TextStyle();
+		$receipt .= "\n\n";
+	}
+	else if ($CORE_LOCAL->get("newReceipt")==1 && $CORE_LOCAL->get("store") == "wfc"){
+		$img = $PRINT_OBJ->RenderBitmapFromFile($CORE_PATH."graphics/WFC_Logo.bmp");
+		$receipt .= $img."\n";
+		$i=4;
 		$receipt .= "\n";
-		$receipt .= "Cashier: ".$CORE_LOCAL->get("cashier")."\n\n";
+	}
+	else{
+		// zero-indexing the receipt header and footer list
+		$receipt .= $PRINT_OBJ->TextStyle(True, False, True);
+		$receipt .= $PRINT_OBJ->centerString($CORE_LOCAL->get("receiptHeader1"),True);
+		$receipt .= $PRINT_OBJ->TextStyle();
+		$receipt .= "\n";
+	}
 
-		$time = build_time($dateTimeStamp);
-		$time = str_replace(" ","     ",$time);
-		$spaces = 55 - strlen($time) - strlen($ref);
-		$receipt .= $time.str_repeat(' ',$spaces).$ref."\n";
+	// and continuing on 
+	for (; $i <= $CORE_LOCAL->get("receiptHeaderCount"); $i++){
+		$receipt .= $PRINT_OBJ->centerString($CORE_LOCAL->get("receiptHeader$i"));
+		$receipt .= "\n";
+	}
+
+	$receipt .= "\n";
+	$receipt .= "Cashier: ".$CORE_LOCAL->get("cashier")."\n\n";
+
+	$time = build_time($dateTimeStamp);
+	$time = str_replace(" ","     ",$time);
+	$spaces = 55 - strlen($time) - strlen($ref);
+	$receipt .= $time.str_repeat(' ',$spaces).$ref."\n";
 			
-		/***** jqh end change *****/
-	
 	return $receipt;
-
 }
 // -------------------------------------------------------------
 function promoMsg() {
@@ -149,11 +150,9 @@ function printChargeFooterCust($dateTimeStamp, $ref) {	// apbw 2/14/05 SCR
 	$date = build_time($dateTimeStamp);
 
 	$receipt = chr(27).chr(33).chr(5)."\n\n\n".centerString("C U S T O M E R   C O P Y")."\n"
-		   .centerString("................................................")."\n";
-	if ($CORE_LOCAL->get("chargeSlipCount") >= 1){
-		   $receipt .= centerString($CORE_LOCAL->get("chargeSlip1"))."\n\n";
-	}
-	$receipt .= "CUSTOMER CHARGE ACCOUNT\n"
+		   .centerString("................................................")."\n"
+		   .centerString($CORE_LOCAL->get("chargeSlip1"))."\n\n"
+		   ."CUSTOMER CHARGE ACCOUNT\n"
 		   ."Name: ".trim($CORE_LOCAL->get("ChgName"))."\n"		// changed by apbw 2/14/05 SCR
 		   ."Member Number: ".trim($CORE_LOCAL->get("memberID"))."\n"
 		   ."Date: ".$date."\n"
@@ -179,21 +178,11 @@ function printChargeFooterStore($dateTimeStamp, $ref) {	// apbw 2/14/05 SCR
 
 	$receipt = "\n\n\n\n\n\n\n"
 		   .chr(27).chr(105)
-		   .chr(27).chr(33).chr(5);		// apbw 3/18/05 
-		
-	if ($CORE_LOCAL->get("chargeSlipCount") >=2)
-		$receipt .= "\n".centerString($CORE_LOCAL->get("chargeSlip2"))."\n";
-	else
-		$receipt .= "\n\n";
-
-	$receipt .= centerString("................................................")."\n";
-
-	if ($CORE_LOCAL->get("chargeSlipCount") >=1)
-		$receipt .= centerString($CORE_LOCAL->get("chargeSlip1"))."\n\n";
-	else
-		$receipt .= "\n\n";	
-
-	$receipt .= "CUSTOMER CHARGE ACCOUNT\n"
+		   .chr(27).chr(33).chr(5)		// apbw 3/18/05 
+		   ."\n".centerString($CORE_LOCAL->get("chargeSlip2"))."\n"
+		   .centerString("................................................")."\n"
+		   .centerString($CORE_LOCAL->get("chargeSlip1"))."\n\n"
+		   ."CUSTOMER CHARGE ACCOUNT\n"
 		   ."Name: ".trim($CORE_LOCAL->get("ChgName"))."\n"		// changed by apbw 2/14/05 SCR
 		   ."Member Number: ".trim($CORE_LOCAL->get("memberID"))."\n"
 		   ."Date: ".$date."\n"
@@ -208,6 +197,8 @@ function printChargeFooterStore($dateTimeStamp, $ref) {	// apbw 2/14/05 SCR
 	$CORE_LOCAL->set("chargetender",0);	// apbw 2/14/05 SCR (moved up a line for Reprint patch on 3/10/05)
 
 	return $receipt;
+
+
 }
 
 function printCabCoupon($dateTimeStamp, $ref){
@@ -263,11 +254,12 @@ function frank() {
 	$ref = trim($CORE_LOCAL->get("memberID"))." ".trim($CORE_LOCAL->get("CashierNo"))." ".trim($CORE_LOCAL->get("laneno"))." ".trim($CORE_LOCAL->get("transno"));
 	$tender = "AMT: ".truncate2($CORE_LOCAL->get("tenderamt"))."  CHANGE: ".truncate2($CORE_LOCAL->get("change"));
 	$output = center_check($ref)."\n"
-		.center_check($date)."\n";
-	for($i=1;$i<=$CORE_LOCAL->get("ckEndorseCount");$i++){
-		$output .= center_check($CORE_LOCAL->get("ckEndorse".$i))."\n";
-	}
-	$output .= center_check($tender)."\n";
+		.center_check($date)."\n"
+		.center_check($CORE_LOCAL->get("ckEndorse1"))."\n"
+		.center_check($CORE_LOCAL->get("ckEndorse2"))."\n"
+		.center_check($CORE_LOCAL->get("ckEndorse3"))."\n"
+		.center_check($CORE_LOCAL->get("ckEndorse4"))."\n"
+		.center_check($tender)."\n";
 
 
 
@@ -348,14 +340,9 @@ function printCCFooter($dateTimeStamp, $ref) {
 
 			
 	$receipt = "\n".centerString("C U S T O M E R   C O P Y")."\n"
-		   .centerString("................................................")."\n";
-
-	if ($CORE_LOCAL->get("chargeSlipCount") >=1)
-		$receipt .= centerString($CORE_LOCAL->get("chargeSlip1"))."\n\n";
-	else
-		$receipt .= "\n\n";
-
-	$receipt .= centerString("Cardholder acknowledges receipt of goods/services")."\n"
+		   .centerString("................................................")."\n"
+               .centerString($CORE_LOCAL->get("chargeSlip1"))."\n\n"
+		   .centerString("Cardholder acknowledges receipt of goods/services")."\n"
                .centerString("in the amount shown and agrees to pay for them")."\n"
                .centerString("according to card issuer agreement.")."\n\n"
 		   ."CREDIT CARD CHARGE\n"
@@ -367,21 +354,17 @@ function printCCFooter($dateTimeStamp, $ref) {
 		   ."Charge Amount: $".number_format(-1*$CORE_LOCAL->get("ccTotal"), 2)."\n"  //changed 04/01/05 Tak & CvR
 		   .centerString("................................................")."\n"
 		   ."\n\n\n\n\n\n\n"
-		   .chr(27).chr(105);
+		   .chr(27).chr(105)
 
-	if ($CORE_LOCAL->get("chargeSlipCount") >=2)
-		$receipt .= centerString($CORE_LOCAL->get("chargeSlip2"))."\n";
-	else
-		$receipt .= "\n";
+	// writeLine($receipt1.chr(27).chr(105));
+	// writeLine(chr(27).chr(105));
 
-	$receipt .= centerString("................................................")."\n";
+	// $receipt2 =""
 
-	if ($CORE_LOCAL->get("chargeSlipCount") >=1)
-		$receipt .= centerString($CORE_LOCAL->get("chargeSlip1"))."\n\n";
-	else
-		$receipt .= "\n\n";
-
-	$receipt .= "CREDIT CARD CHARGE\n"
+		   .centerString($CORE_LOCAL->get("chargeSlip2"))."\n"
+		   .centerString("................................................")."\n"
+		   .centerString($CORE_LOCAL->get("chargeSlip1"))."\n\n"
+		   ."CREDIT CARD CHARGE\n"
 		   ."Name: ".trim($CORE_LOCAL->get("ccName"))."\n"
 		   ."Member Number: ".trim($CORE_LOCAL->get("memberID"))."\n"
 		   ."Date: ".$date."\n"
@@ -571,17 +554,15 @@ function printCCSigSlip($dateTimeStamp,$ref,$storeCopy=True,$rp=0){
 		if (!$storeCopy){
 			//$slip .= "CC".centerString("C U S T O M E R   C O P Y")."\n";	// "wedge copy"
 		}
-		else if ($CORE_LOCAL->get("chargeSlipCount") >= 2){
+		else {
 			$slip .= "CC".substr(centerString($CORE_LOCAL->get("chargeSlip2")),2)."\n";	// "wedge copy"
 		}
 		$slip .= centerString("................................................")."\n";
 		if ($storeCopy){
-			if ($CORE_LOCAL->get("chargeSlipCount") >= 1)
-				$slip .= centerString($CORE_LOCAL->get("chargeSlip1"))."\n"; // store name 
-			if ($CORE_LOCAL->get("chargeSlipCount") >= 4)
-				$slip .= centerString($CORE_LOCAL->get("chargeSlip3").", ".$CORE_LOCAL->get("chargeSlip4"))."\n"; // address
-			if ($CORE_LOCAL->get("chargeSlipCount") >= 5)
-				$slip .= centerString($CORE_LOCAL->get("chargeSlip5"))."\n";	// merchant code 
+			$slip .= centerString($CORE_LOCAL->get("chargeSlip1"))."\n"		// store name 
+				.centerString($CORE_LOCAL->get("chargeSlip3").", ".$CORE_LOCAL->get("chargeSlip4"))."\n"  // address
+				.centerString($CORE_LOCAL->get("chargeSlip5"))."\n"		// merchant code 
+				.centerString($CORE_LOCAL->get("receiptHeader2"))."\n\n";	// phone
 		}
 				
 		if ($storeCopy){
@@ -671,7 +652,7 @@ function localTTL(){
 }
 
 function receiptDetail($reprint=False,$trans_num='') { // put into its own function to make it easier to follow, and slightly modified for wider-spread use of joe's "new" receipt format --- apbw 7/3/2007
-	global $CORE_LOCAL;
+	global $CORE_LOCAL,$PRINT_OBJ;
 
 	$detail = "";
 	$empNo=0;$laneNo=0;$transNo=0;
@@ -682,7 +663,9 @@ function receiptDetail($reprint=False,$trans_num='') { // put into its own funct
 		$transNo = $temp[2];
 	}
 		
-	if ($CORE_LOCAL->get("newReceipt") == 0 ) {	// if old style has been specifically requested for a partial or reprint, use old format
+	if ($CORE_LOCAL->get("newReceipt") == 0 ) {
+		// if old style has been specifically requested 
+		// for a partial or reprint, use old format
 		$query="select linetoprint from receipt";
 		if ($reprint){
 			$query = "select linetoprint from rp_receipt
@@ -692,16 +675,14 @@ function receiptDetail($reprint=False,$trans_num='') { // put into its own funct
 		$db = tDataConnect();
 		$result = $db->query($query);
 		$num_rows = $db->num_rows($result);
-	// loop through the results to generate the items listing.
+		// loop through the results to generate the items listing.
 		for ($i = 0; $i < $num_rows; $i++) {
 			$row = $db->fetch_array($result);
 			$detail .= $row[0]."\n";
 		}
-
-	} else { // otherwise use new format 
-		/* $query = "select linetoprint,sequence,dept_name,ordered,numflag from receipt_reorder_unions_g "
-				." order by ordered, dept_name, case when ordered = 4 then '' else upc end, [sequence]";
-		 */
+	} 
+	else { 
+		// otherwise use new format 
 		$query = "select linetoprint,sequence,dept_name,ordered, 0 as [local] "
 			    ." from receipt_reorder_unions_g order by ordered,dept_name, " 
 			    ." case when ordered=4 then '' else upc end, [sequence]";
@@ -729,11 +710,11 @@ function receiptDetail($reprint=False,$trans_num='') { // put into its own funct
 				
 				if ($row['2']==''){
 					$detail .= "\n";
-				}else{
-					//$detail .= "-- ";
-					$detail .= boldFont();
+				}
+				else{
+					$detail .= $PRINT_OBJ->TextStyle(True,True);
 					$detail .= $row[2];
-					$detail .= normalFont();
+					$detail .= $PRINT_OBJ->TextStyle(True,False);
 					$detail .= "\n";
 				}
 			}
@@ -752,13 +733,15 @@ function receiptDetail($reprint=False,$trans_num='') { // put into its own funct
 				$detail .= $rowExempt[0]."\n";
 			}
 			else{
-				if ($CORE_LOCAL->get("promoMsg") == 1 && $row[4] == 1 ){ // '*' added to local items 8/15/2007 apbw for eat local challenge 
+				if ($CORE_LOCAL->get("promoMsg") == 1 && $row[4] == 1 ){ 
+					// '*' added to local items 8/15/2007 apbw for eat local challenge 
 					$detail .= '*'.$row[0]."\n";
 				} else {
-					if ( strpos($row[0]," TOTAL") ) { 		// if it's the grand total line . . .
-						$detail .= boldFont()  // change to bold font . . .
-						.$row[0]."\n" 			// write the line . . .
-						.normalFont(); 		// then change back to normal font.  11/4/07 apbw
+					if ( strpos($row[0]," TOTAL") ) { 		
+						// if it's the grand total line . . .
+						$detail .= $PRINT_OBJ->TextStyle(True,True);
+						$detail .= $row[0]."\n";
+						$detail .= $PRINT_OBJ->TextStyle(True,False);
 					} else {
 						$detail .= $row[0]."\n";
 					}
@@ -817,14 +800,12 @@ function printGCSlip($dateTimeStamp, $ref, $storeCopy=true, $rp=0) {
 			if( $rp != 0)
 				$slip .= chr(27).chr(33).chr(5).centerString("***    R E P R I N T    ***")."\n";
 			// store header
-			if ($CORE_LOCAL->get("chargeSlipCount") >= 2)
-				$slip .= "GC".substr(centerString($CORE_LOCAL->get("chargeSlip2")),2)."\n"; // "wedge copy"
-			$slip .= centerString("................................................")."\n";
-			if ($CORE_LOCAL->get("chargeSlipCount") >= 1)
-				$slip .= centerString($CORE_LOCAL->get("chargeSlip1"))."\n"; // store name 
-			if ($CORE_LOCAL->get("chargeSlipCount") >= 4)
-				$slip .= centerString($CORE_LOCAL->get("chargeSlip3").", ".$CORE_LOCAL->get("chargeSlip4"))."\n"; // address
-			$slip .= "\n";
+			$slip .= "GC".substr(centerString($CORE_LOCAL->get("chargeSlip2")),2)."\n"  // "wedge copy"
+					. centerString("................................................")."\n"
+					. centerString($CORE_LOCAL->get("chargeSlip1"))."\n"  // store name 
+					. centerString($CORE_LOCAL->get("chargeSlip3").", ".$CORE_LOCAL->get("chargeSlip4"))."\n"  // address
+					. centerString($CORE_LOCAL->get("receiptHeader2"))."\n"  // phone
+					. "\n";
 		} else {
 			if( $x == 0) {
 				if( $num > 1)  $slip .= centerString("------- C A R D H O L D E R   C O P I E S -------")."\n";
@@ -895,13 +876,11 @@ function printGCBalSlip() {
 	$bal = "$".number_format($tempArr["Balance"],2);
 	$pan = $CORE_LOCAL->get("paycard_PAN"); // no need to mask gift card numbers
 	$slip = normalFont()
-			.centerString(".................................................")."\n";
-	if ($CORE_LOCAL->get("chargeSlipCount") >= 1)
-		$slip .= centerString($CORE_LOCAL->get("chargeSlip1"))."\n"; // store name 
-	if ($CORE_LOCAL->get("chargeSlipCount") >= 4)
-		$slip .= centerString($CORE_LOCAL->get("chargeSlip3").", ".$CORE_LOCAL->get("chargeSlip4"))."\n"; // address
-
-	$slip .= 	"\n"
+			.centerString(".................................................")."\n"
+			.centerString($CORE_LOCAL->get("chargeSlip1"))."\n"		// store name 
+			.centerString($CORE_LOCAL->get("chargeSlip3").", ".$CORE_LOCAL->get("chargeSlip4"))."\n"  // address
+			.centerString($CORE_LOCAL->get("receiptHeader2"))."\n"	// phone
+			."\n"
 			."Gift Card Balance\n"
 			."Card: ".$pan."\n"
 			."Date: ".date('m/d/y h:i a')."\n"

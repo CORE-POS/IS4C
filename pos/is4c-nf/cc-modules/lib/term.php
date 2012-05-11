@@ -21,16 +21,16 @@
 
 *********************************************************************************/
 
-class LS_Access {
-
-	function get($str){
-		if (!isset($_SESSION["$str"])) return "";
-		return $_SESSION["$str"];
+function term_object(){
+	global $CORE_LOCAL,$CORE_PATH;
+	$termDriver = $CORE_LOCAL->get("SigCapture");
+	$td = 0;
+	if ($termDriver != "" && !class_exists($termDriver)){
+		include($CORE_PATH.'scale-drivers/php-wrappers/'.$termDriver.'.php');
+		$td = new $termDriver();
 	}
-
-	function set($k, $v){
-		$_SESSION["$k"] = $v;
-	}
+	if (is_object($td)) return $td;
+	return False;
 }
 
 ?>

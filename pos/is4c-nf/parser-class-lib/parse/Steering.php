@@ -104,7 +104,7 @@ class Steering extends Parser {
 			}
 			else
 				$this->ret['main_frame'] = $CORE_PATH."gui-modules/adminlist.php";
-			
+
 			$CORE_LOCAL->set("away",1);
 			return True;
 		case 'RP':
@@ -177,8 +177,12 @@ class Steering extends Parser {
 				$this->ret['main_frame'] = $CORE_PATH."gui-modules/mgrlogin.php";
 			}
 			return True;
-		case "CE":
-			$this->ret['main_frame'] = $CORE_PATH."cc-modules/gui/ProcessPage.php";
+		case "CC":
+			if ($CORE_LOCAL->get("ttlflag") != 1){
+				$this->ret['output'] = boxMsg("transaction must be totaled<br>before tender can be<br>accepted");
+			}
+			else
+				$this->ret['main_frame'] = $CORE_PATH."cc-modules/gui/ProcessPage.php";
 			return True;
 		case "PO":
 			$CORE_LOCAL->set("adminRequest",$CORE_PATH."gui-modules/priceOverride.php");

@@ -32,7 +32,6 @@ if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= 
   in the variable $CORE_LOCAL.
 */
 
-
 ini_set('display_errors',1);
 ini_set('error_log',$CORE_PATH."log/php-errors.log");
 

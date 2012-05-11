@@ -145,6 +145,12 @@ class paycardEntered extends Parser {
 			return $ret;
 		}
 
+		if ($CORE_LOCAL->get("paycard_type") == PAYCARD_TYPE_CREDIT){
+			paycard_reset();
+			$ret['main_frame'] = $CORE_PATH.'cc-modules/gui/ProcessPage.php';
+			return $ret;
+		}
+
 		foreach($CORE_LOCAL->get("RegisteredPaycardClasses") as $rpc){
 			if (!class_exists($rpc)) include_once($CORE_PATH."cc-modules/$rpc.php");
 			$myObj = new $rpc();

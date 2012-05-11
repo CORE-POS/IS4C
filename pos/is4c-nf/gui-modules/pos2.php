@@ -137,8 +137,9 @@ class pos2 extends BasicPage {
 						'target'=>'.baseHeight',
 						'output'=>inputUnknown());
 					$json = $arr;
-					if (is_object($sd))
+					if (is_object($sd)){
 						$sd->WriteToScale('errorBeep');
+					}
 				}
 			}
 		}
@@ -168,7 +169,7 @@ class pos2 extends BasicPage {
 		<script type="text/javascript">
 		function submitWrapper(){
 			var str = $('#reginput').val();
-			if (str.indexOf("tw") != -1 || str.indexOf("TW") != -1 || str.search(/^[0-9]+$/) == 0){
+			if (str.indexOf("tw") != -1 || str.indexOf("TW") != -1 || (str.search(/^[0-9]+$/) == 0 && str.length <= 13)){
 				$('#reginput').val('');
 				runParser(str,'<?php echo $CORE_PATH; ?>');
 				return false;

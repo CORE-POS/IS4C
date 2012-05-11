@@ -1,7 +1,7 @@
 <?php
 /*******************************************************************************
 
-    Copyright 2012 Whole Foods Co-op
+    Copyright 2010 Whole Foods Co-op.
 
     This file is part of IT CORE.
 
@@ -20,17 +20,21 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
+$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
+if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
 
-class LS_Access {
+if (!isset($CORE_LOCAL))
+	include($CORE_PATH.'lib/LocalStorage/conf.php');
 
-	function get($str){
-		if (!isset($_SESSION["$str"])) return "";
-		return $_SESSION["$str"];
-	}
+$termDriver = $CORE_LOCAL->get("SigCapture");
+$td = 0;
+if ($termDriver != "" && !class_exists($termDriver))
+	include($CORE_PATH.'scale-drivers/php-wrappers/'.$termDriver.'.php');
+$td = new $termDriver();
 
-	function set($k, $v){
-		$_SESSION["$k"] = $v;
-	}
+if (is_object($td)){
+	$res = $td->poll("poke");
+	var_dump($res);
 }
 
 ?>

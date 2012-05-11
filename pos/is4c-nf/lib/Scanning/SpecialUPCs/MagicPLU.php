@@ -30,7 +30,7 @@ if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
 if (!function_exists('boxMsg')) include($CORE_PATH."lib/drawscreen.php");
 
 /**
-  @magicPLU
+  @class MagicPLU
 
   This module matches specific UPCs to a function
   Only here for legacy support. Probably not a great

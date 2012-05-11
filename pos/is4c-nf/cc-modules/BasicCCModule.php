@@ -49,7 +49,7 @@ if (!isset($CORE_LOCAL)){
 	$CORE_LOCAL = new LS_Access();
 }
 
-define("LOCAL_CERT_PATH",$_SERVER['DOCUMENT_ROOT']."/cc-modules/cacert.pem");
+define("LOCAL_CERT_PATH","C:/is4c-nf/cc-modules/cacert.pem");
 
 class BasicCCModule {
 
