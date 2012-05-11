@@ -50,7 +50,6 @@ $meminfoQ = "UPDATE meminfo AS m LEFT JOIN
 	    SET m.ads_OK=p.mailflag
 	    WHERE c.Type = 'INACT' and p.reasoncode IN (2,4,6)
 	    AND s.payments >= 100";
-echo $meminfoQ; exit;
 $sql->query($meminfoQ);
 
 $custQ = "UPDATE custdata AS c LEFT JOIN {$TRANS}newBalanceStockToday_test AS s
