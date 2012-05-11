@@ -49,7 +49,6 @@ if (!function_exists('addcoupon')) include($CORE_PATH."lib/additem.php");
   a discount value and adds the coupon to
   the transaction
 */
-
 class CouponCode extends SpecialUPC {
 
 var $ean;

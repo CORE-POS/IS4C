@@ -33,7 +33,6 @@ if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
   @brief Functions related to suspend and resume transaction
 */
 
-
 /**
   Suspends the current transaction
   If the remote server is available, it will be suspended

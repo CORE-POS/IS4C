@@ -32,15 +32,20 @@
 
 $CORE_PATH = "../../";
 include_once("../lib/LS_Access.php");
+include_once("../lib/term.php");
 $CORE_LOCAL = new LS_Access();
 if (!function_exists("paycard_reset")) require_once("../lib/paycardLib.php");
+
+if (!function_exists("printfooter")) require_once("../../lib/drawscreen.php");
 $CORE_PATH = "../../";
 
 class ProcessPage {
 
 	var $errors;
+	var $td;
 
 	function ProcessPage(){
+		$this->td = term_object();
 		if ($this->preprocess()){
 			/* clear any POST data; only the preprocess() method
 			   should be able to access input */
@@ -54,7 +59,42 @@ class ProcessPage {
 	}
 
 	function head_content(){
-
+		/* simple background poll
+		 * check to see if device has data available
+		 * if so, submit form so data is collected on
+		 * next page load */
+		?>
+		<script type="text/javascript">
+		var xmlHttpReq = false;
+		function callbackf(){
+			if (self.xmlHttpReq.readyState == 4) {
+				if (xmlHttpReq.responseText=='yes'){
+					document.getElementById('reginput').value='';
+					document.getElementById('formlocal').submit();
+				}
+				else {
+					setTimeout('xmlhttpPost()',500);
+				}
+			}
+		}
+		<?php if (is_object($this->td)){ ?>
+		function xmlhttpPost() {
+			if (window.XMLHttpRequest) {
+				xmlHttpReq = new XMLHttpRequest();
+			}
+			else if (window.ActiveXObject) {
+				xmlHttpReq = new ActiveXObject("Microsoft.XMLHTTP");
+			}
+			xmlHttpReq.open('POST', 'ProcessPage.php', true);
+			xmlHttpReq.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+			xmlHttpReq.onreadystatechange = callbackf;
+			xmlHttpReq.send('poll=1');
+		}
+		<?php } else { ?>
+		function xmlhttpPost(){}
+		<?php } ?>
+		</script>
+		<?php
 	}
 
 	function body_content(){
@@ -70,7 +110,7 @@ class ProcessPage {
 		$due = $CORE_LOCAL->get("amtdue");
 		if (!empty($this->errors)){
 			if (is_array($this->errors)) echo $this->errors['output'];
-			else echo paycard_msgBox($type,$this->errors);
+			else echo paycard_msgBox($type,$this->errors,"","[clear] to cancel");
 		}
 		elseif( !is_numeric($amt) || abs($amt) < 0.005) {
 			echo paycard_msgBox($type,"Invalid Amount: $amt $due",
@@ -85,9 +125,9 @@ class ProcessPage {
 			echo paycard_msgBox($type,"Invalid Amount",
 				"Enter a lesser amount","[clear] to cancel");
 		} else if( $amt > 0) {
-			echo paycard_msgBox($type,"Tender ".paycard_moneyFormat($amt)."?","","[swipe] to continue if correct<br>Enter a different amount if incorrect<br>[clear] to cancel");
+			echo paycard_msgBox($type,"Tender ".paycard_moneyFormat($amt)."?","","[swipe] to continue if correct<br>[enter] to read from device<br>Enter a different amount if incorrect<br>[clear] to cancel");
 		} else if( $amt < 0) {
-			echo paycard_msgBox($type,"Refund ".paycard_moneyFormat($amt)."?","","[swipe] to continue if correct<br>Enter a different amount if incorrect<br>[clear] to cancel");
+			echo paycard_msgBox($type,"Refund ".paycard_moneyFormat($amt)."?","","[swipe] to continue if correct<br>[enter] to read from device<br>Enter a different amount if incorrect<br>[clear] to cancel");
 		} else {
 			echo paycard_errBox($type,"Invalid Entry",
 				"Enter a different amount","[clear] to cancel");
@@ -97,17 +137,36 @@ class ProcessPage {
 		</div>
 		<?php
 		echo "<div id=\"footer\">";
-		if (!function_exists("printfooter")) require_once("../../lib/drawscreen.php");
 		echo printfooter();
 		echo "</div>";
 	}
 
 	function preprocess(){
 		global $CORE_LOCAL;
+
+		// handle AJAX calls
+		if (isset($_REQUEST['poll'])){
+			$chk = "";
+			if (is_object($this->td)){
+				$chk = $this->td->poll("getmag");	
+			}
+			if (!empty($chk)) echo "yes";
+			else echo "no";
+			return False;
+		}
+
 		$this->errors = "";
 		// check for posts before drawing anything, so we can redirect
 		if(isset($_REQUEST['reginput'])) {
 			$input = $_REQUEST['reginput'];
+
+			if (strlen($input) == 0){
+				if (is_object($this->td)){
+					$res = $this->td->poll("getmag");
+					$input = $res;
+				}
+			}
+
 			// CL always exits
 			if( strtoupper($input) == "CL") {
 				$CORE_LOCAL->set("msgrepeat",0);
@@ -120,7 +179,7 @@ class ProcessPage {
 				header("Location: ../../gui-modules/pos2.php");
 				return False;
 			}
-			else if ($input[0] == "?" || strlen($input) >= 18){
+			else if (strlen($input)>0 && ($input[0] == "?" || strlen($input) >= 18)){
 				/* card data was entered
 				   extract the pan, expiration, and/or track data
 					
@@ -129,7 +188,7 @@ class ProcessPage {
 				   this script finishes executing
 				*/
 				$pan = array();
-				if ($input[0] != "?"){
+				if ($input[0] != "%" && $input[0] != ";" && $input[0] != "T"){
 					$CORE_LOCAL->set("paycard_manual",1);
 					if (!ctype_digit($input)){
 						$this->errors = "Entry unknown. Please enter data like:<br>
@@ -140,7 +199,7 @@ class ProcessPage {
 					$CORE_LOCAL->set("paycard_exp",substr($input,-4,4));
 				}
 				else {
-					$stripe = paycard_magstripe($card);
+					$stripe = paycard_magstripe($input);
 					if (!is_array($stripe)){
 						$this->errors = "Bad swipe. Please try again or type in manually";
 						return True;
@@ -179,6 +238,12 @@ class ProcessPage {
 				$json['main_frame'] = '../../gui-modules/paycardSuccess.php';
 				$json['receipt'] = false;
 				$result = $ccMod->doSend($CORE_LOCAL->get("paycard_mode"));
+				if (is_object($this->td)){
+					var_dump($CORE_LOCAL->get("ccTermOut"));
+					$this->td->WriteToScale($CORE_LOCAL->get("ccTermOut"));
+					$CORE_LOCAL->set("ccTermOut","");
+				}
+
 				if ($result == PAYCARD_ERR_OK){
 					$json = $ccMod->cleanup($json);
 					$CORE_LOCAL->set("strRemembered","");
@@ -193,11 +258,15 @@ class ProcessPage {
 				header("Location: ".$json['main_frame']);
 				return False;
 			}
-			else if( substr(strtoupper($input),-2) != "CL") {
+			else if(strlen($input) > 0 && substr(strtoupper($input),-2) != "CL") {
 				// any other input is an alternate amount
 				$CORE_LOCAL->set("paycard_amount","invalid");
-				if( is_numeric($input))
+				if(is_numeric($input)){
 					$CORE_LOCAL->set("paycard_amount",$input/100);
+					if (is_object($this->td)){
+						$this->td->WriteToScale("resettotal:".$input);
+					}	
+				}
 			}
 		} // end form post to self
 		else {
@@ -206,6 +275,9 @@ class ProcessPage {
 			$CORE_LOCAL->set("paycard_type",PAYCARD_TYPE_CREDIT);
 			$CORE_LOCAL->set("paycard_amount",$CORE_LOCAL->get("amtdue"));		
 			$CORE_LOCAL->set("paycard_manual",0);
+			if (is_object($this->td)){
+				$this->td->WriteToScale("total:".($CORE_LOCAL->get("paycard_amount")*100));
+			}
 		} 
 
 		return True;
@@ -221,7 +293,7 @@ class ProcessPage {
 		    href=\"../../pos.css\">";
 		$this->head_content();
 		echo "</head>";
-		echo "<body onload=\"betterDate();document.getElementById('reginput').focus();\">";
+		echo "<body onload=\"betterDate();setTimeout('xmlhttpPost()',500);document.getElementById('reginput').focus();\">";
 		echo "<div id=\"boundingBox\">";
 		$this->body_content();	
 		echo "</div>";

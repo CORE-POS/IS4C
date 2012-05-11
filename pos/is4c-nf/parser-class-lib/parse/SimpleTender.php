@@ -48,7 +48,7 @@ class SimpleTender extends Parser {
 			$this->stored_ret = tender("EF", 100 * $CORE_LOCAL->get("fsEligible"));
 			return True;
 		case "TB":
-		case "CC":
+		case "MCC":
 			/* if just CC is entered without an amount, assume 
 			 * the entire purchase will be CC. Throw up a 
 			 * proceed / cancel box, then do the tender */

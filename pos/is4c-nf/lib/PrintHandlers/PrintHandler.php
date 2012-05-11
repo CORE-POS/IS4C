@@ -1,27 +1,33 @@
 <?php
-/*
-ESCPOSPrintHandler.class.php
-version 1 (2009-09-25)
-author Alex Frase
+/**
+ @class PrintHandler
+ Generic print module
 
-Notes
-	Epson TM-H6000II prints 504 pixels per line;
-	42 columns with standard 12x24 font, 56 columns with alternate 9x17 font
+ This is working backwards from the
+ existing ESCPOS class. 
+ Work-in-progress.
 */
 
-class ESCPOSPrintHandler {
+class PrintHandler {
 	
+	/**
+	 Get printer tab
+	 @return string printer command
+	*/
 	function Tab() {
-		// "\t"
-		return "\x09";
+		return "\t";
 	}
 	
+	/**
+	  Get newlines
+	  @param $lines number of lines
+	  @return string printer command
+	*/
 	function LineFeed($lines=1) {
-		// one line: "\n"
-		if ($lines <= 1)
-			return "\x0A";
-		// multiple lines: ESC "d" num
-		return "\x1B\x64".chr( max(0, min(255, (int)$lines)) );
+		$ret = "\n";
+		for($i=1;$i<$lines;$i++)
+			$ret .= "\n";
+		return $ret;
 	}
 	
 	function PageFeed($reset=true) {
@@ -29,21 +35,18 @@ class ESCPOSPrintHandler {
 		return ($reset?"":"\x1B")."\x0C";
 	}
 	
+	/**
+	  Get carriage return
+	  @return string printer command
+	*/
 	function CarriageReturn() {
-		// "\r"
-		return "\x0D";
+		return "\r";
 	}
 	
 	function ClearPage() {
 		// CAN
 		return "\x18";
 	}
-	
-	// TODO: realtime status transmission;  DLE(\x10) EOT(\x04) n
-	
-	// TODO: realtime request to printer;  DLE(\x10) ENQ(\x05) n
-	
-	// TODO: realtime pulse;  DLE(\x10) DC4(\x14) 1 m t
 	
 	function CharacterSpacing($dots=0) {
 		// ESC " " space
@@ -104,10 +107,6 @@ class ESCPOSPrintHandler {
 			.chr( max(0, min(255, (int)($dots / 256))) )
 		);
 	} // GotoX()
-	
-	// TODO: enable downloadable character set;  ESC(\x1B) "%"(\x25) flag
-	
-	// TODO: define downloadable characters;  ESC(\x1B) "&"(\x26) 3(\x03) char0 char1 data
 	
 	/*
 	ESC/POS requires graphical bitmap data in columns, but BMP is rasterized in rows,
@@ -198,8 +197,6 @@ class ESCPOSPrintHandler {
 		);
 	} // InlineBitmap()
 	
-	// TODO: InlineBitmapFromFile()
-	
 	function Underline($dots=1) {
 		// ESC "-" size
 		return "\x1B\x2D".chr( max(0, min(2, $dots)) );
@@ -215,12 +212,6 @@ class ESCPOSPrintHandler {
 		// ESC "3" space
 		return "\x1B\x33".chr( max(0, min(255, $space)) );
 	}
-	
-	// TODO: return home;  ESC(\x1B) "<"(\x3C)
-	
-	// TODO: select peripheral device;  ESC(\x1B) "="(\x3D) n
-	
-	// TODO: delete downloadable characters;  ESC(\x1B) "?"(\x3F) char
 	
 	function Reset() {
 		// ESC "@"
@@ -239,9 +230,13 @@ class ESCPOSPrintHandler {
 		);
 	}
 	
+	/**
+	 Enable or disable bold font
+	 @param $on boolean enable
+	 @return string printer command
+	*/
 	function Bold($on=true) {
-		// ESC "E" bit
-		return "\x1B\x45".chr( $on ? 1 : 0 );
+		return "";
 	}
 	
 	function DoublePrint($on=true) {
@@ -363,10 +358,6 @@ class ESCPOSPrintHandler {
 		);
 	} // PaperRoll()
 	
-	// TODO: set paper out warning sensor;  ESC(\x1B) "c"(\x63) "3"(\x33) bitfield
-	
-	// TODO: set paper out stop sensor;  ESC(\x1B) "c"(\x63) "4"(\x34) bitfield
-	
 	function PanelButtons($on=true) {
 		// ESC "c" "5" flag
 		return "\x1B\x63\x35".chr( $on ? 0 : 1 );
@@ -376,10 +367,6 @@ class ESCPOSPrintHandler {
 		// ESC "e" 1
 		return "\x1B\x65\x01";
 	}
-	
-	// TODO: define macro;  ESC(\x1B) "g"(\x67) NUL(\x00) num lenLO lenHI data
-	
-	// TODO: run macro;  ESC(\x1B) "g"(\x67) num
 	
 	function DrawerKick($pin=2, $on=100, $off=100) {
 		// ESC "p" pin on off
@@ -409,38 +396,10 @@ class ESCPOSPrintHandler {
 		return "\x1B\x74".chr( max(0, min(255, $table)) );
 	}
 	
-	// TODO: send peripheral device status;  ESC(\x1B) "u"(\x75) ?
-	
-	// TODO: send paper sensor status;  ESC(\x1B) "v"(\x76) ?
-	
 	function UpsideDown($on=true) {
 		// ESC "{" flag
 		return "\x1B\x7B".chr( $on ? 1 : 0 );
 	}
-	
-	// TODO: paper forced feed;  FS(\x1C) "A"(\x41) ?
-	
-	// TODO: send bitmap file FS(\x1C) "B"(\x42) bitmap
-	
-	// TODO: pdf 417 aspect definition;  FS(\x1C) "C"(\x43) ?
-	
-	// TODO: pdf 417 ecc level definition FS(\x1C) "D"(\x44) ?
-	
-	// TODO: horz/vert bar in page mode FS(\x1C) "E"(\x45) dir lenLO lenHI width
-	
-	// TODO: set 2d barcode size;  FS(\x1C) "H"(\x48) zoom
-	
-	// TODO: paper forced return;  FS(\x1C) "R"(\x52) ?
-	
-	// TODO: store data;  FS(\x1C) "g"(\x67) "1"(\x31) \x00 aLO aML aMH aHI bLO bHI data; max memory address=1024
-	
-	// TODO: load data;  FS(\x1C) "g"(\x67) "2"(\x32) \x00 aLO aML aMH aHI bLO bHI; max memory address=1024
-	
-	// TODO: print 2d barcode FS(\x1C) "k"(\x6B) type lenLO lenHI data
-	
-	// TODO: print stored bitmap;  FS(\x1C) "p"(\x70) num bitfield
-	
-	// TODO: store bitmaps;  FS(\x1C) "q"(\x71) num [xLO xHI yLO yHI]{num}
 	
 	function CharacterZoom($horiz=1, $vert=1) {
 		// GS "!" zoom
@@ -458,8 +417,6 @@ class ESCPOSPrintHandler {
 		);
 	}
 	
-	// TODO: define downloadable image;  GS(\x1D) "*"(\x2A) x y data
-	
 	function Test($type=3, $paper=0) {
 		// GS "(" "A"
 		return ("\x1D\x28\x41\x02\x00"
@@ -467,12 +424,6 @@ class ESCPOSPrintHandler {
 			.chr( max(1, min(3, (int)$type)) )
 		);
 	}
-	
-	// TODO: edit NV memory;  GS(\x1D) "("(\x28) "C"(\x43) ...
-	
-	// TODO: toggle realtime command;  GS(\x1D) "("(\x28) "D"(\x44) ...
-	
-	// TODO: user startup commands;  GS(\x1D) "("(\x28) "E"(\x45) ...
 	
 	function Density($factor=1.0) {
 		// GS "(" "K" \x02 \x00 \x31 factor
@@ -494,22 +445,10 @@ class ESCPOSPrintHandler {
 		return "\x1D\x28\x4E\x02\x00\x30\x32";
 	}
 	
-	// TODO: print downloadable image;  GS(\x1D) "/"(\x2F) bitfield
-	
-	// TODO: toggle macro recording;  GS(\x1D) ":"(\x3A)
-	
 	function Invert($on=true) {
 		// GS "B" flag
 		return "\x1D\x42".chr( $on ? 1 : 0 );
 	}
-	
-	// TODO: set counter print mode;  GS(\x1D) "C"(\x43) "0"(\x30) digits align
-	
-	// TODO: set counter mode;  GS(\x1D) "C"(\x43) "1"(\x31) aLO aHI bLO bHI step repeat
-	
-	// TODO: set counter mode value;  GS(\x1D) "C"(\x43) "2"(\x32) vLO vHI
-	
-	// TODO: set counter mode;  GS(\x1D) "C"(\x43) ";"(\x3B) sa ";"(\x3B) sb ";"(\x3B) sn ";"(\x3B) sr ";"(\x3B) sc ";"(\x3B)
 	
 	function SpeedHigh() {
 		// GS "E" speed
@@ -532,8 +471,6 @@ class ESCPOSPrintHandler {
 			.chr( ($below ? 2 : 0) + ($above ? 1 : 0) )
 		);
 	}
-	
-	// TODO: send printer ID;  GS(\x1D) "I"(\x49) type
 	
 	function LeftMargin($dots=0) {
 		// GS "L" marginLO marginHI
@@ -589,16 +526,10 @@ class ESCPOSPrintHandler {
 		);
 	}
 	
-	// TODO: run macro;  GS(\x1D) "^"(\x5E) repeat delay mode
-	
-	// TODO: enable automatic status back;  GS(\x1D) "a"(\x61) bitfield
-	
 	function Smooth($on=true) {
 		// GS "b" flag
 		return "\x1D\x62".chr( $on ? 1 : 0 );
 	}
-	
-	// TODO: print counter;  GS(\x1D) "c"(\x63)
 	
 	function BarcodeHRIFont($font=0) {
 		// GS "f" font
@@ -673,8 +604,6 @@ class ESCPOSPrintHandler {
 		);
 	}
 	
-	// TODO: send status;  GS(\x1D) "r"(\x72) bitfield
-	
 	/*
 	Raster bitmaps may be up to 524280 pixels wide ((255+255*256)*8), and up to 2303 pixels tall (255+8*256).
 	Tall dots are 2 pixels tall, and wide dots are 2 pixels wide.
@@ -704,6 +633,10 @@ class ESCPOSPrintHandler {
 		return "\x1D\x77".chr( max(1, min(6, $scale)) );
 	}
 
+	/**
+	  Write output to device
+	  @param the output string
+	*/
 	function writeLine($text){
 		global $CORE_LOCAL;
 		if ($CORE_LOCAL->get("print") != 0) {
@@ -721,6 +654,11 @@ class ESCPOSPrintHandler {
 		}
 	}
 
+	/**
+	  Draw bitmap from file
+	  @param $fn a bitmap file
+	  @return printer command string
+	*/
 	function RenderBitmapFromFile($fn){
 		$slip = "";
 
@@ -748,6 +686,6 @@ class ESCPOSPrintHandler {
 
 		return $slip;
 	}
-	
-} // ESCPOSPrintHandler
+} 
 
+?>

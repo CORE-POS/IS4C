@@ -581,6 +581,7 @@ class Bitmap {
 } // Bitmap
 
 function RenderBitmapFromFile($fn){
+	global $PRINT_OBJ;
 	$slip = "";
 
 	$bmp = new Bitmap();
@@ -591,7 +592,7 @@ function RenderBitmapFromFile($fn){
 	$bmpHeight = $bmp->GetHeight();
 	$bmpRawBytes = (int)(($bmpWidth + 7)/8);
 
-	$printer = new ESCPOSPrintHandler();
+	$printer = $PRINT_OBJ;
 	$stripes = $printer->TransposeBitmapData($bmpData, $bmpWidth);
 	for($i=0; $i<count($stripes); $i++)
 		$stripes[$i] = $printer->InlineBitmap($stripes[$i], $bmpWidth);

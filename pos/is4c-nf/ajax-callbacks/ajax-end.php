@@ -31,6 +31,7 @@ include_once($CORE_PATH."lib/printLib.php");
 include_once($CORE_PATH."lib/printReceipt.php");
 include_once($CORE_PATH."lib/connect.php");
 include_once($CORE_PATH."lib/additem.php");
+include_once($CORE_PATH."cc-modules/lib/term.php");
 if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
 
 if ($CORE_LOCAL->get("End") == 1) {
@@ -63,6 +64,10 @@ if (strlen($receiptType) > 0) {
 		cleartemptrans($receiptType);
 	}
 }
+
+$td = term_object();
+if (is_object($td))
+	$td->WriteToScale("reset");
 
 echo "Done";
 

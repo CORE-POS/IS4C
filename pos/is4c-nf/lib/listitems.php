@@ -26,6 +26,7 @@ if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= 
 
 if (!function_exists("getsubtotals")) include($CORE_PATH."lib/connect.php");
 if (!function_exists("printheaderb")) include($CORE_PATH."lib/drawscreen.php");
+if (!function_exists("term_object")) include($CORE_PATH."cc-modules/lib/term.php");
 if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
 
 /**
@@ -77,6 +78,7 @@ function listitems($top_item, $highlight) {
 	return drawitems($top_item, 11, $highlight);
 	$CORE_LOCAL->set("currentid",$highlight);
 }
+
 
 
 /**
@@ -145,6 +147,7 @@ function drawitems($top_item, $rows, $highlight) {
 
 	$db->close();
 
+	$last_item = "";
 
 	if ($rowCount == 0) {
 		$ret .= "<div class=\"centerOffset\">";
@@ -200,11 +203,31 @@ function drawitems($top_item, $rows, $highlight) {
 				}				
 			}
 
+			if ($i==($num_rows-1) && !strstr(strtolower($description),'total') && !empty($description)){
+				$fixed_desc = str_replace(":"," ",$description);
+				if (strlen($fixed_desc) > 24){
+					$fixed_desc = substr($fixed_desc,0,24);
+				}
+				$fixed_price = sprintf('%.2f',$total);
+				$spaces = str_pad('',30-strlen($fixed_desc)-strlen($fixed_price),' ');
+				$last_item = $fixed_desc.$spaces.$fixed_price;
+			}
 		}
 		$db_range->close();
 	}
+
+	$td = term_object();
+	if (is_object($td) && !empty($last_item)){
+		$due = sprintf('%.2f',$CORE_LOCAL->get("amtdue"));
+		$dueline = 'Subtotal'
+			.str_pad('',22-strlen($due),' ')
+			.$due;
+		$td->WriteToScale("display:".$last_item.":".$dueline);
+	}
+
 	return $ret;
 }
+
 
 
 /**

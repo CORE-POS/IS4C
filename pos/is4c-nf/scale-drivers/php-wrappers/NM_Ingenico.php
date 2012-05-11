@@ -54,15 +54,31 @@ class NM_Ingenico extends ScaleDriverWrapper {
 		else echo "{}";
 	}
 
+	function poll($msg){
+		$res = udpPoke($msg);
+		return $res;
+	}
+
+	function getpath(){
+		global $CORE_PATH;
+		return $CORE_PATH.'scale-drivers/drivers/NewMagellan/';
+	}
+
 	/* just wraps UDP send because commands 
 	   ARE case-sensitive on the c# side */
 	function WriteToScale($str){
-		$str = strtolower($str);
+
+		if (strlen($str) > 8 && substr($str,0,8)=="display:"){}
+		else // don't change case on display messages
+			$str = strtolower($str);
+
 		if (substr($str,0,6) == "total:" && strlen($str) > 6)
 			udpSend($str);
 		elseif (substr($str,0,11) == "resettotal:" && strlen($str) > 11)
 			udpSend($str);
 		elseif (substr($str,0,9) == "approval:" && strlen($str) > 9)
+			udpSend($str);
+		elseif (substr($str,0,8) == "display:" && strlen($str) > 8)
 			udpSend($str);
 		elseif ($str == "reset")
 			udpSend($str);
