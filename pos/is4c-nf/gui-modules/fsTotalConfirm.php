@@ -73,9 +73,13 @@ class fsTotalConfirm extends NoInputPage {
 				$valid_input = True;
 			}
 			elseif (is_numeric($in)){
-				$CORE_LOCAL->set("strRemembered",$in.$this->tendertype);
-				$CORE_LOCAL->set("msgrepeat",1);
-				$valid_input = True;
+				if ($this->tendertype == 'EF' && $in > (100*$CORE_LOCAL->get("fsEligible")))
+					$valid_input = False;
+				else {
+					$CORE_LOCAL->set("strRemembered",$in.$this->tendertype);
+					$CORE_LOCAL->set("msgrepeat",1);
+					$valid_input = True;
+				}
 			}
 			elseif (strtoupper($in) == "CL"){
 				$CORE_LOCAL->set("strRemembered","");
