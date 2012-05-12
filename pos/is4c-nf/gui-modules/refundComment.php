@@ -52,7 +52,7 @@ class RefundComment extends NoInputPage {
 				$CORE_LOCAL->set("msgrepeat",1);
 				$CORE_LOCAL->set("refund",1);
 			}
-			header("Location: {$CORE_PATH}gui-modules/pos2.php");
+			$this->change_page($CORE_PATH."gui-modules/pos2.php");
 			return False;
 		}
 		return True;

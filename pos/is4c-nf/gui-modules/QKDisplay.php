@@ -101,6 +101,7 @@ class QKDisplay extends NoInputPage {
 		$this->offset = isset($_REQUEST['offset'])?$_REQUEST['offset']:0;
 
 		if (count($_POST) > 0){
+			$output = "";
 			if ($_REQUEST["clear"] == 0){
 				// submit process changes line break
 				// depending on platform
@@ -120,7 +121,7 @@ class QKDisplay extends NoInputPage {
 				return True;
 			}
 			else {
-				header("Location: {$CORE_PATH}gui-modules/pos2.php");
+				$this->change_page($CORE_PATH."gui-modules/pos2.php");
 			}
 			return False;
 		}

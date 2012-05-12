@@ -41,11 +41,11 @@ class nslogin extends NoInputPage {
 
 		if (isset($_REQUEST['reginput'])){
 			if (strtoupper($_REQUEST['reginput']) == "CL"){
-				header("Location: {$CORE_PATH}gui-modules/pos2.php");
+				$this->change_page($CORE_PATH."gui-modules/pos2.php");
 				return False;
 			}
 			elseif (nsauthenticate($_REQUEST['reginput'])){
-				header("Location: {$CORE_PATH}gui-modules/pos2.php");
+				$this->change_page($CORE_PATH."gui-modules/pos2.php");
 				return False;
 			}
 			else {

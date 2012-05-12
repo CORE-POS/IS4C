@@ -46,14 +46,14 @@ class qtty2 extends BasicPage {
 			$CORE_LOCAL->set("qttyvalid",0);
 			$CORE_LOCAL->set("quantity",0);
 			$CORE_LOCAL->set("msgrepeat",0);
-			header("Location: {$CORE_PATH}gui-modules/pos2.php");
+			$this->change_page($CORE_PATH."gui-modules/pos2.php");
 			return False;
 		}
 		elseif (is_numeric($qtty) && $qtty < 9999 && $qtty >= 0) {
 			$CORE_LOCAL->set("qttyvalid",1);
 			$CORE_LOCAL->set("strRemembered",$qtty."*".$CORE_LOCAL->get("item"));
 			$CORE_LOCAL->set("msgrepeat",1);
-			header("Location: {$CORE_PATH}gui-modules/pos2.php");
+			$this->change_page($CORE_PATH."gui-modules/pos2.php");
 			return False;
 		}
 

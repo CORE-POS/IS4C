@@ -39,14 +39,14 @@ class adminlist extends NoInputPage {
 
 		if (isset($_REQUEST['selectlist'])){
 			if (empty($_REQUEST['selectlist'])){
-				header("Location: {$CORE_PATH}gui-modules/pos2.php");
+				$this->change_page($CORE_PATH."gui-modules/pos2.php");
 				return False;
 			}
 			elseif ($_REQUEST['selectlist'] == 'SUSPEND'){
 				getsubtotals();
 				if ($CORE_LOCAL->get("LastID") == 0) {
 					$CORE_LOCAL->set("boxMsg","no transaction in progress");
-					header("Location: {$CORE_PATH}gui-modules/boxMsg2.php");
+					$this->change_page($CORE_PATH."gui-modules/boxMsg2.php");
 					return False;
 				}
 				else {
@@ -69,21 +69,21 @@ class adminlist extends NoInputPage {
 				getsubtotals();
 				if ($CORE_LOCAL->get("LastID") != 0) {
 					$CORE_LOCAL->set("boxMsg","transaction in progress");
-					header("Location: {$CORE_PATH}gui-modules/boxMsg2.php");
+					$this->change_page($CORE_PATH."gui-modules/boxMsg2.php");
 				}
 				elseif (checksuspended() == 0) {
 					$CORE_LOCAL->set("boxMsg","no suspended transaction");
 					$CORE_LOCAL->set("strRemembered","");
-					header("Location: {$CORE_PATH}gui-modules/boxMsg2.php");
+					$this->change_page($CORE_PATH."gui-modules/boxMsg2.php");
 				}
 				else {
-					header("Location: {$CORE_PATH}gui-modules/suspendedlist.php");
+					$this->change_page($CORE_PATH."gui-modules/suspendedlist.php");
 				}
 				return False;
 			}
 			else if ($_REQUEST['selectlist'] == 'TR'){
 				tenderReport();
-				header("Location: {$CORE_PATH}gui-modules/pos2.php");
+				$this->change_page($CORE_PATH."gui-modules/pos2.php");
 				return False;
 			}
 		}

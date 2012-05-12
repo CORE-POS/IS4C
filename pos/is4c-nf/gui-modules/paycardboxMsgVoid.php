@@ -48,7 +48,7 @@ class paycardboxMsgVoid extends BasicPage {
 				$CORE_LOCAL->set("endorseType","");
 				$CORE_LOCAL->set("togglefoodstamp",0);
 				$CORE_LOCAL->set("inputMasked",0);
-				header("Location: {$CORE_PATH}gui-modules/pos2.php");
+				$this->change_page($CORE_PATH."gui-modules/pos2.php");
 				return False;
 			}
 	
@@ -88,7 +88,7 @@ class paycardboxMsgVoid extends BasicPage {
 					$ret = $myObj->paycard_void($id);
 					if (isset($ret['output']) && !empty($ret['output'])){
 						$CORE_LOCAL->set("boxMsg",$ret['output']);
-						header("Location: {$CORE_PATH}gui-modules/boxMsg2.php");
+						$this->change_page($CORE_PATH."gui-modules/boxMsg2.php");
 						return False;
 					}
 					break;

@@ -34,7 +34,7 @@ class giftcardlist extends NoInputPage {
 		global $CORE_LOCAL,$CORE_PATH;
 		if (isset($_REQUEST["selectlist"])){
 			$CORE_LOCAL->set("prefix",$_REQUEST["selectlist"]);
-			header("Location: {$CORE_PATH}gui-modules/pos2.php");
+			$this->change_page($CORE_PATH."gui-modules/pos2.php");
 			return False;
 		}
 		return True;

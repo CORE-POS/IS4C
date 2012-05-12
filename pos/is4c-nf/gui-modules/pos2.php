@@ -145,7 +145,7 @@ class pos2 extends BasicPage {
 		}
 		$CORE_LOCAL->set("msgrepeat",0);
 		if (isset($json['main_frame']) && $json['main_frame'] != False){
-			header("Location: ".$json['main_frame']);
+			$this->change_page($json['main_frame']);
 			return False;
 		}
 		if (isset($json['output']) && !empty($json['output']))
