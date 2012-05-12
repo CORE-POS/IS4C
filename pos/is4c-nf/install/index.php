@@ -328,7 +328,7 @@ function create_op_dbs($db,$type){
 		Value real)";
 	if (!$db->table_exists('couponcodes',$name)){
 		$db->query($couponCodeQ,$name);
-		loaddata($db,'couponcodes');
+		load_sample_data($db,'couponcodes');
 	}
 
 	$custDataQ = "CREATE TABLE `custdata` (
@@ -432,7 +432,7 @@ function create_op_dbs($db,$type){
 		TaxExempt tinyint)";
 	if (!$db->table_exists('globalvalues',$name)){
 		$db->query($globalQ,$name);
-		loaddata($db,'globalvalues');
+		load_sample_data($db,'globalvalues');
 	}
 
 	$prodQ = "CREATE TABLE `products` (
@@ -544,7 +544,7 @@ function create_op_dbs($db,$type){
 		MaxRefund real)";
 	if(!$db->table_exists('tenders',$name)){
 		$db->query($tenderQ,$name);
-		loaddata($db,'tenders');
+		load_sample_data($db,'tenders');
 	}
 
 	$ccView = "CREATE VIEW chargecodeview AS
