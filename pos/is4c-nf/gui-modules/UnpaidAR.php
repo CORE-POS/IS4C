@@ -45,7 +45,7 @@ class UnpaidAR extends BasicPage {
 				if ($CORE_LOCAL->get('inactMem') == 1){
 					setMember($CORE_LOCAL->get("defaultNonMem"),1);
 				}
-				header("Location: {$CORE_PATH}gui-modules/pos2.php");
+				$this->change_page($CORE_PATH."gui-modules/pos2.php");
 				return False;
 			}
 			elseif ($dec == "" || strtoupper($dec) == "BQ"){
@@ -60,7 +60,7 @@ class UnpaidAR extends BasicPage {
 					$CORE_LOCAL->set("isMember",1);
 					ttl();
 				}
-				header("Location: {$CORE_PATH}gui-modules/pos2.php");
+				$this->change_page($CORE_PATH."gui-modules/pos2.php");
 				return False;
 			}
 		}

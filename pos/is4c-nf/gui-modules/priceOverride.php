@@ -45,7 +45,7 @@ class PriceOverride extends NoInputPage {
 		$r = $db->query($q);
 		if ($db->num_rows($r)==0){
 			// current record cannot be repriced
-			header("Location: {$CORE_PATH}gui-modules/pos2.php");
+			$this->change_page($CORE_PATH."gui-modules/pos2.php");
 			return False;
 		}
 		$w = $db->fetch_row($r);
@@ -57,7 +57,7 @@ class PriceOverride extends NoInputPage {
 
 			if ($input == "CL" && $this->price != '$0.00'){
 				// override canceled; go home
-				header("Location: {$CORE_PATH}gui-modules/pos2.php");
+				$this->change_page($CORE_PATH."gui-modules/pos2.php");
 				return False;
 			}
 			else if (is_numeric($input) && $input != 0){
@@ -76,7 +76,7 @@ class PriceOverride extends NoInputPage {
 					WHERE trans_id=%d",$ttl,$line_id);
 				$r = $db->query($q);	
 
-				header("Location: {$CORE_PATH}gui-modules/pos2.php");
+				$this->change_page($CORE_PATH."gui-modules/pos2.php");
 				return False;
 			}
 		}

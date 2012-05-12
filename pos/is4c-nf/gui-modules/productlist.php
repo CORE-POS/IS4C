@@ -48,7 +48,7 @@ class productlist extends NoInputPage {
 
 		// canceled
 		if (empty($entered)){
-			header("Location: {$CORE_PATH}gui-modules/pos2.php");
+			$this->change_page($CORE_PATH."gui-modules/pos2.php");
 			return False;
 		}
 
@@ -56,7 +56,7 @@ class productlist extends NoInputPage {
 		if (is_numeric($entered) && strlen($entered) == 13){
 			$CORE_LOCAL->set("msgrepeat",1);
 			$CORE_LOCAL->set("strRemembered",$entered);
-			header("Location: {$CORE_PATH}gui-modules/pos2.php");
+			$this->change_page($CORE_PATH."gui-modules/pos2.php");
 			return False;
 		}
 

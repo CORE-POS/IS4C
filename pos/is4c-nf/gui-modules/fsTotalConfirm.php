@@ -42,7 +42,7 @@ class fsTotalConfirm extends NoInputPage {
 			if ($choice == "EF"){
 				$chk = fsEligible();
 				if ($chk !== True){
-					header("Location: $chk");
+					$this->change_page($chk);
 					return False;
 				}
 				$this->tendertype = 'EF';
@@ -50,13 +50,13 @@ class fsTotalConfirm extends NoInputPage {
 			elseif ($choice == "EC"){
 				$chk = ttl();
 				if ($chk !== True){
-					header("Location: $chk");
+					$this->change_page($chk);
 					return False;
 				}
 				$this->tendertype = 'EC';
 			}
 			else if ($choice == ''){
-				header("Location: {$CORE_PATH}gui-modules/pos2.php");
+				$this->change_page($CORE_PATH."gui-modules/pos2.php");
 				return False;
 			}
 		}
@@ -88,7 +88,7 @@ class fsTotalConfirm extends NoInputPage {
 			}
 
 			if ($valid_input){
-				header("Location: {$CORE_PATH}gui-modules/pos2.php");
+				$this->change_page($CORE_PATH."gui-modules/pos2.php");
 				return False;
 			}
 		}	

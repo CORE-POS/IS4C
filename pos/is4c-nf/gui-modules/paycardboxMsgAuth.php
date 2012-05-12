@@ -50,7 +50,7 @@ class paycardboxMsgAuth extends PaycardProcessPage {
 				if (is_object($st))
 					$st->WriteToScale($CORE_LOCAL->get("ccTermOut"));
 				paycard_reset();
-				header("Location: {$CORE_PATH}gui-modules/pos2.php");
+				$this->change_page($CORE_PATH."gui-modules/pos2.php");
 				return False;
 			}
 			else if ($input == ""){

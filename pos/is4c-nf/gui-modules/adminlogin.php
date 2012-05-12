@@ -48,7 +48,7 @@ class adminlogin extends NoInputPage {
 			$passwd = $_REQUEST['reginput'];
 			if (strtoupper($passwd) == "CL"){
 				$CORE_LOCAL->set("refundComment","");
-				header("Location: {$CORE_PATH}gui-modules/pos2.php");
+				$this->change_page($CORE_PATH."gui-modules/pos2.php");
 				return False;	
 			}
 			else if (!is_numeric($passwd) || $passwd > 9999 || $passwd < 1){
@@ -65,7 +65,7 @@ class adminlogin extends NoInputPage {
 				$result = $db->query($query);
 				$num_rows = $db->num_rows($result);
 				if ($num_rows != 0) {
-					header("Location: ".$CORE_LOCAL->get("adminRequest"));
+					$this->change_page($CORE_LOCAL->get("adminRequest"));
 					return False;
 				}
 				else {

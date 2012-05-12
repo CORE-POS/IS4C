@@ -362,6 +362,31 @@ class BasicPage {
 		printfooter();
 		echo '</div>';
 	}
+
+	/**
+	  Go to a different page
+	  @param $url the new page URL
+
+	  Use this function instead of manual redirects
+	  to allow debug output.
+	*/
+	function change_page($url){
+		global $CORE_LOCAL;
+		if ($CORE_LOCAL->get("Debug_Redirects") == 1){
+			$stack = debug_backtrace();
+			printf('Follow redirect to <a href="%s">%s</a>',$url,$url);
+			echo '<hr />Stack:';
+			foreach($stack as $s){
+				echo '<ul><li>';
+				if(!empty($s['class'])) echo $s['class'].'::';
+				echo $s['function'].'()';
+				echo '<li>Line '.$s['line'].', '.$s['file'];
+			}
+			foreach($stack as $s) echo '</ul>';
+		}
+		else
+			header("Location: ".$url);
+	}
 }
 
 /**

@@ -46,7 +46,7 @@ class deptlist extends NoInputPage {
 				// user presses CL{enter}
 				// Redirect to main screen
 				$CORE_LOCAL->set("departmentAmount","0");	
-				header("Location: {$CORE_PATH}gui-modules/pos2.php");
+				$this->change_page($CORE_PATH."gui-modules/pos2.php");
 				return False;
 			}
 
@@ -57,7 +57,7 @@ class deptlist extends NoInputPage {
 				$input = $CORE_LOCAL->get("departmentAmount")."DP".$entered."0";
 				$CORE_LOCAL->set("msgrepeat",1);
 				$CORE_LOCAL->set("strRemembered",$input);
-				header("Location: {$CORE_PATH}gui-modules/pos2.php");
+				$this->change_page($CORE_PATH."gui-modules/pos2.php");
 				return False;
 			}
 		}

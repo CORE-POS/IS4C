@@ -69,7 +69,7 @@ class memlist extends NoInputPage {
 			$CORE_LOCAL->set("mirequested",0);
 			$CORE_LOCAL->set("scan","scan");
 			$CORE_LOCAL->set("reprintNameLookup",0);
-			header("Location: {$CORE_PATH}gui-modules/pos2.php");
+			$this->change_page($CORE_PATH."gui-modules/pos2.php");
 			return False;
 		}
 
@@ -99,9 +99,9 @@ class memlist extends NoInputPage {
 			setMember($row["CardNo"], $personNum,$row);
 			$CORE_LOCAL->set("scan","scan");
 			if ($entered != $CORE_LOCAL->get("defaultNonMem") && check_unpaid_ar($row["CardNo"]))
-				header("Location: {$CORE_PATH}gui-modules/UnpaidAR.php");
+				$this->change_page($CORE_PATH."gui-modules/UnpaidAR.php");
 			else
-				header("Location: {$CORE_PATH}gui-modules/pos2.php");
+				$this->change_page($CORE_PATH."gui-modules/pos2.php");
 			return False;
 		}
 

@@ -65,7 +65,7 @@ class undo extends NoInputPage {
 
 			// clear/cancel undo attempt
 			if ($trans_num == "" || $trans_num == "CL"){
-				header("Location: {$CORE_PATH}gui-modules/pos2.php");
+				$this->change_page($CORE_PATH."gui-modules/pos2.php");
 				return False;
 			}
 
@@ -221,7 +221,7 @@ class undo extends NoInputPage {
 			$CORE_LOCAL->set("CashierNo",$prevCashier);
 			$CORE_LOCAL->set("transno",gettransno($prevCashier));
 			
-			header("Location: {$CORE_PATH}gui-modules/undo_confirm.php");
+			$this->change_page($CORE_PATH."gui-modules/undo_confirm.php");
 			return False;
 		}
 		return True;

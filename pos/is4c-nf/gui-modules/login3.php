@@ -47,7 +47,7 @@ class login3 extends BasicPage {
 				$sd = scaleObject();
 				if (is_object($sd))
 					$sd->ReadReset();
-				header("Location: {$CORE_PATH}gui-modules/pos2.php");
+				$this->change_page($CORE_PATH."gui-modules/pos2.php");
 				return False;
 			}
 			else {

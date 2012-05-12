@@ -36,7 +36,7 @@ class rplist extends NoInputPage {
 		if (isset($_REQUEST['selectlist'])){
 			if (!empty($_REQUEST['selectlist']))
 				reprintReceipt($_REQUEST['selectlist']);
-			header("Location: {$CORE_PATH}gui-modules/pos2.php");
+			$this->change_page($CORE_PATH."gui-modules/pos2.php");
 			return False;
 		}
 		return True;

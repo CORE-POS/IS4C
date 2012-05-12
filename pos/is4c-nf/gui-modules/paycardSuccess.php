@@ -84,11 +84,11 @@ class paycardSuccess extends BasicPage {
 				$CORE_LOCAL->set("strRemembered","TO");
 				$CORE_LOCAL->set("msgrepeat",1);
 
-				header("Location: {$CORE_PATH}gui-modules/pos2.php");
+				$this->change_page($CORE_PATH."gui-modules/pos2.php");
 				return False;
 			}
 			else if ($mode == PAYCARD_MODE_AUTH && $input == "VD"){
-				header("Location: {$CORE_PATH}gui-modules/paycardboxMsgVoid.php");
+				$this->change_page($CORE_PATH."gui-modules/paycardboxMsgVoid.php");
 				return False;
 			}
 		}

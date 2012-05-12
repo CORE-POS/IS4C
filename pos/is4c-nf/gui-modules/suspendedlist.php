@@ -66,7 +66,7 @@ class suspendedlist extends NoInputPage {
 				$tmp = explode("::",$_REQUEST['selectlist']);
 				$this->doResume($tmp[0],$tmp[1],$tmp[2]);
 			}
-			header("Location: {$CORE_PATH}gui-modules/pos2.php");
+			$this->change_page($CORE_PATH."gui-modules/pos2.php");
 			return False;
 		}
 
@@ -103,7 +103,7 @@ class suspendedlist extends NoInputPage {
 		else {
 			$db_a->close();
 			$CORE_LOCAL->set("boxMsg","no suspended transaction");
-			header("Location: {$CORE_PATH}gui-modules/pos2.php");	
+			$this->change_page($CORE_PATH."gui-modules/pos2.php");	
 			return False;
 		}
 		return True;
