@@ -20,6 +20,8 @@ body {
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 Security
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<a href="debug.php">Debug</a>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <a href="extra_data.php">Sample Data</a>
 <form action=security.php method=post>
 <b>Cancel Transaction</b>: <select name=PRIV_CANCEL>
