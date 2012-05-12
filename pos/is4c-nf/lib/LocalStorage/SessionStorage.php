@@ -48,6 +48,7 @@ class SessionStorage extends LocalStorage {
 
 	function set($key,$val){
 		$_SESSION["$key"] = $val;
+		$this->debug($key,$val);
 	}
 }
 
