@@ -24,9 +24,6 @@
 $CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
 if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
 
-if (!function_exists("paycard_reset")) 
-	include(realpath(dirname(__FILE__)."/../cc-modules/lib/paycardLib.php"));
-
 /**
   @class PrehLib
   A horrible, horrible catch-all clutter of functions
@@ -554,7 +551,7 @@ static public function tender($right, $strl) {
 	}
 
 	if ($CORE_LOCAL->get("amtdue") <= 0.005) {
-		if ($CORE_LOCAL->get("paycard_mode") == PAYCARD_MODE_AUTH
+		if ($CORE_LOCAL->get("paycard_mode") == PaycardLib::PAYCARD_MODE_AUTH
 		    && ($right == "CC" || $right == "GD")){
 			$CORE_LOCAL->set("change",0);
 			$CORE_LOCAL->set("fntlflag",0);

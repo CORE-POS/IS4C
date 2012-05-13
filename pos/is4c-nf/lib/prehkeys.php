@@ -558,7 +558,7 @@ function tender($right, $strl) {
 	}
 
 	if ($CORE_LOCAL->get("amtdue") <= 0.005) {
-		if ($CORE_LOCAL->get("paycard_mode") == PAYCARD_MODE_AUTH
+		if ($CORE_LOCAL->get("paycard_mode") == PaycardLib::PAYCARD_MODE_AUTH
 		    && ($right == "CC" || $right == "GD")){
 			$CORE_LOCAL->set("change",0);
 			$CORE_LOCAL->set("fntlflag",0);

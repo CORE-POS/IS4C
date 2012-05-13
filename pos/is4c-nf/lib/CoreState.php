@@ -25,10 +25,6 @@ $CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
 if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
 
 include_once(realpath(dirname(__FILE__)."/../ini.php"));
-if (!function_exists("paycard_reset")) 
-	include(realpath(dirname(__FILE__)."/../cc-modules/lib/paycardLib.php"));
-if (!function_exists("term_object")) 
-	include(realpath(dirname(__FILE__)."/../cc-modules/lib/term.php"));
 
 /**
  @class CoreState
@@ -47,7 +43,7 @@ static public function initiate_session() {
 	self::memberReset();
 	self::transReset();
 	self::printReset();
-	paycard_reset();
+	PaycardLib::paycard_reset();
 
 	Database::getsubtotals();
 	Database::loadglobalvalues();
@@ -84,7 +80,7 @@ static public function system_init() {
         $CORE_LOCAL->set("ccRemoteServerUp",1);
 	$CORE_LOCAL->set("search_or_list",0);
 	$CORE_LOCAL->set("ccTermOut","idle");
-	$td = term_object();
+	$td = SigCapture::term_object();
 	if (is_object($td))
 		$td->WriteToScale("reset");
 }

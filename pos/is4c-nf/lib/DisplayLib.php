@@ -24,9 +24,6 @@
 $CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
 if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
 
-if (!function_exists("term_object"))
-	include(realpath(dirname(__FILE__)."/../cc-modules/lib/term.php"));
-
 /**
   @class DisplayLib
   Functions for drawing display elements
@@ -788,7 +785,7 @@ static public function drawitems($top_item, $rows, $highlight) {
 		$db_range->close();
 	}
 
-	$td = term_object();
+	$td = SigCapture::term_object();
 	if (is_object($td) && !empty($last_item)){
 		$due = sprintf('%.2f',$CORE_LOCAL->get("amtdue"));
 		$dueline = 'Subtotal'

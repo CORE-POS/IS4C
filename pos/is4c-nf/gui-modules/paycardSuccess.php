@@ -25,8 +25,6 @@ $CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
 if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
 
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
-if (!function_exists("paycard_reset")) 
-	include_once(realpath(dirname(__FILE__)."/../cc-modules/lib/paycardLib.php"));
 
 class paycardSuccess extends BasicPage {
 
@@ -76,14 +74,14 @@ class paycardSuccess extends BasicPage {
 					$this->sig_check(True);
 				}
 
-				paycard_reset();
+				PaycardLib::paycard_reset();
 				$CORE_LOCAL->set("strRemembered","TO");
 				$CORE_LOCAL->set("msgrepeat",1);
 
 				$this->change_page($CORE_PATH."gui-modules/pos2.php");
 				return False;
 			}
-			else if ($mode == PAYCARD_MODE_AUTH && $input == "VD"){
+			else if ($mode == PaycardLib::PAYCARD_MODE_AUTH && $input == "VD"){
 				$this->change_page($CORE_PATH."gui-modules/paycardboxMsgVoid.php");
 				return False;
 			}
@@ -174,8 +172,8 @@ class paycardSuccess extends BasicPage {
 		<?php
 		/*
 		$header = "Wedge - Payment Card";
-		if( $CORE_LOCAL->get("paycard_type") == PAYCARD_TYPE_CREDIT)     $header = "Wedge - Credit Card";
-		else if( $CORE_LOCAL->get("paycard_type") == PAYCARD_TYPE_GIFT)  $header = "Wedge - Gift Card";
+		if( $CORE_LOCAL->get("paycard_type") == PaycardLib::PAYCARD_TYPE_CREDIT)     $header = "Wedge - Credit Card";
+		else if( $CORE_LOCAL->get("paycard_type") == PaycardLib::PAYCARD_TYPE_GIFT)  $header = "Wedge - Gift Card";
 		else $CORE_LOCAL->set("boxMsg","Please verify cardholder signature");
 		 */
 		// show signature if available
@@ -202,13 +200,13 @@ class paycardSuccess extends BasicPage {
 		echo "</div>";
 
 		$rp_type = '';
-		if( $CORE_LOCAL->get("paycard_type") == PAYCARD_TYPE_GIFT) {
-			if( $CORE_LOCAL->get("paycard_mode") == PAYCARD_MODE_BALANCE) {
+		if( $CORE_LOCAL->get("paycard_type") == PaycardLib::PAYCARD_TYPE_GIFT) {
+			if( $CORE_LOCAL->get("paycard_mode") == PaycardLib::PAYCARD_MODE_BALANCE) {
 				$rp_type = "gcBalSlip";
 			} else {
 				$rp_type ="gcSlip";
 			}
-		} else if( $CORE_LOCAL->get("paycard_type") == PAYCARD_TYPE_CREDIT) {
+		} else if( $CORE_LOCAL->get("paycard_type") == PaycardLib::PAYCARD_TYPE_CREDIT) {
 			$rp_type = "ccSlip";
 		}
 		printf("<input type=\"hidden\" id=\"rp_type\" value=\"%s\" />",$rp_type);

@@ -25,8 +25,6 @@ $CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
 if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
 
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
-if (!function_exists("paycard_reset")) 
-	include_once(realpath(dirname(__FILE__)."/../cc-modules/lib/paycardLib.php"));
 
 class paycardboxMsgVoid extends BasicPage {
 
@@ -38,7 +36,7 @@ class paycardboxMsgVoid extends BasicPage {
 			$input = strtoupper(trim($_REQUEST['reginput']));
 			// CL always exits
 			if( $input == "CL") {
-				paycard_reset();
+				PaycardLib::paycard_reset();
 				$CORE_LOCAL->set("msgrepeat",1);
 				$CORE_LOCAL->set("strRemembered",'TO');
 				$CORE_LOCAL->set("toggletax",0);
@@ -51,7 +49,7 @@ class paycardboxMsgVoid extends BasicPage {
 	
 			$continue = false;
 			// when voiding tenders, the input must be an FEC's passcode
-			if( $CORE_LOCAL->get("paycard_mode") == PAYCARD_MODE_VOID && $input != "" && substr($input,-2) != "CL") {
+			if( $CORE_LOCAL->get("paycard_mode") == PaycardLib::PAYCARD_MODE_VOID && $input != "" && substr($input,-2) != "CL") {
 				$sql = "select emp_no, FirstName, LastName from employees" .
 					" where EmpActive=1 and frontendsecurity>=11 and AdminPassword=".(int)$input;
 				$db = Database::pDataConnect();
@@ -62,7 +60,7 @@ class paycardboxMsgVoid extends BasicPage {
 				}
 			}
 			// when voiding items, no code is necessary, only confirmation
-			if( $CORE_LOCAL->get("paycard_mode") != PAYCARD_MODE_VOID && $input == "")
+			if( $CORE_LOCAL->get("paycard_mode") != PaycardLib::PAYCARD_MODE_VOID && $input == "")
 				$continue = true;
 			// go?
 			if( $continue) {
@@ -73,7 +71,7 @@ class paycardboxMsgVoid extends BasicPage {
 			}
 			// if we're still here, display prompt again
 		} // post?
-		else if ($CORE_LOCAL->get("paycard_mode") == PAYCARD_MODE_AUTH){
+		else if ($CORE_LOCAL->get("paycard_mode") == PaycardLib::PAYCARD_MODE_AUTH){
 			// call paycard_void on first load to set up
 			// transaction and check for problems
 			$id = $CORE_LOCAL->get("paycard_id");
@@ -102,12 +100,12 @@ class paycardboxMsgVoid extends BasicPage {
 		$type = $CORE_LOCAL->get("paycard_type");
 		$mode = $CORE_LOCAL->get("paycard_mode");
 		$amt = $CORE_LOCAL->get("paycard_amount");
-		if( $mode == PAYCARD_MODE_VOIDITEM) {
-			echo paycard_msgBox($type,"Void " . paycard_moneyFormat($amt) . " Gift Card?","","[enter] to continue voiding<br>[clear] to cancel the void");
+		if( $mode == PaycardLib::PAYCARD_MODE_VOIDITEM) {
+			echo PaycardLib::paycard_msgBox($type,"Void " . PaycardLib::paycard_moneyFormat($amt) . " Gift Card?","","[enter] to continue voiding<br>[clear] to cancel the void");
 		} else if( $amt > 0) {
-			echo paycard_msgBox($type,"Void " . paycard_moneyFormat($amt) . " Payment?","Please enter password then","[enter] to continue voiding or<br>[clear] to cancel the void");
+			echo PaycardLib::paycard_msgBox($type,"Void " . PaycardLib::paycard_moneyFormat($amt) . " Payment?","Please enter password then","[enter] to continue voiding or<br>[clear] to cancel the void");
 		} else {
-			echo paycard_msgBox($type,"Void " . paycard_moneyFormat($amt) . " Refund?","Please enter password then","[enter] to continue voiding or<br>[clear] to cancel the void");
+			echo PaycardLib::paycard_msgBox($type,"Void " . PaycardLib::paycard_moneyFormat($amt) . " Refund?","Please enter password then","[enter] to continue voiding or<br>[clear] to cancel the void");
 		}
 		$CORE_LOCAL->set("msgrepeat",2);
 		?>

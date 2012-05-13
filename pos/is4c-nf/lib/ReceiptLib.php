@@ -24,9 +24,6 @@
 $CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
 if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
 
-if (!function_exists("paycard_moneyFormat")) 
-	include(realpath(dirname(__FILE__)."/../cc-modules/lib/paycardLib.php"));
-
 /**
   @class ReceiptLib
   Receipt functions
@@ -833,8 +830,8 @@ static public function printGCSlip($dateTimeStamp, $ref, $storeCopy=true, $rp=0)
 				$col1[] = "Authorization: ".$row['xAuthorizationCode'];
 				$col2[] = "";
 			}
-			$col1[] = self::boldFont()."Amount: ".paycard_moneyFormat($row['amount']).self::normalFont(); // bold ttls apbw 11/3/07
-			$col2[] = "New Balance: ".paycard_moneyFormat($row['xBalance']);
+			$col1[] = self::boldFont()."Amount: ".PaycardLib::paycard_moneyFormat($row['amount']).self::normalFont(); // bold ttls apbw 11/3/07
+			$col2[] = "New Balance: ".PaycardLib::paycard_moneyFormat($row['xBalance']);
 			$slip .= self::twoColumns($col1, $col2);
 		} else { // all-left layout
 			$slip .= $row['tranType']."\n"
@@ -849,8 +846,8 @@ static public function printGCSlip($dateTimeStamp, $ref, $storeCopy=true, $rp=0)
 			} else {
 				$slip .= "Authorization: ".$row['xAuthorizationCode']."\n";
 			}
-			$slip .= self::boldFont()."Amount: ".paycard_moneyFormat($row['amount']).self::normalFont()."\n" // bold ttls apbw 11/3/07
-					. "New Balance: ".paycard_moneyFormat($row['xBalance'])."\n";
+			$slip .= self::boldFont()."Amount: ".PaycardLib::paycard_moneyFormat($row['amount']).self::normalFont()."\n" // bold ttls apbw 11/3/07
+					. "New Balance: ".PaycardLib::paycard_moneyFormat($row['xBalance'])."\n";
 		}
 		// name/phone on activation only
 		if( $row['tranType'] == 'Gift Card Activation' && $storeCopy) {
