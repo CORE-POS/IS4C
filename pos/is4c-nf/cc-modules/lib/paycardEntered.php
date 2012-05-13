@@ -26,7 +26,10 @@ if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= 
 
 if (!class_exists("Parser")) include_once($CORE_PATH."parser-class-lib/Parser.php");
 if (!function_exists("paycard_reset")) include_once($CORE_PATH."cc-modules/lib/paycardLib.php");
-if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
+if (!isset($CORE_LOCAL)){
+	include($CORE_PATH."cc-modules/lib/LS_Access.php");
+	$CORE_LOCAL = new LS_Access();	
+}
 
 class paycardEntered extends Parser {
 	var $swipestr;

@@ -23,16 +23,6 @@
 $CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
 if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
 
-if (!class_exists("Parser")) include_once($CORE_PATH."parser-class-lib/Parser.php");
-if (!function_exists("addItem")) include($CORE_PATH."lib/additem.php");
-if (!function_exists("boxMsg")) include($CORE_PATH."lib/drawscreen.php");
-if (!function_exists("nullwrap")) include($CORE_PATH."lib/lib.php");
-if (!function_exists("setglobalvalue")) include_once($CORE_PATH."lib/loadconfig.php");
-if (!function_exists("boxMsgscreen")) include_once($CORE_PATH."lib/clientscripts.php");
-if (!function_exists("list_items")) include_once($CORE_PATH."lib/listitems.php");
-if (!function_exists("memberID")) include_once($CORE_PATH."lib/prehkeys.php");
-if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
-
 class UPC extends Parser {
 	function check($str){
 		if (is_numeric($str) && strlen($str) < 16)
@@ -92,12 +82,12 @@ class UPC extends Parser {
 		/* extract scale-sticker prices */
 		$scaleprice = 0;
 		if (substr($upc, 0, 3) == "002") {
-			$scaleprice = truncate2(substr($upc, -4)/100);
+			$scaleprice = MiscLib::truncate2(substr($upc, -4)/100);
 			$upc = substr($upc, 0, 8)."00000";
 			if ($upc == "0020006000000" || $upc == "0020010000000") $scaleprice *= -1;
 		}
 
-		$db = pDataConnect();
+		$db = Database::pDataConnect();
 		$query = "select inUse,upc,description,normal_price,scale,deposit,
 			qttyEnforced,department,local,cost,tax,foodstamp,discount,
 			discounttype,specialpricemethod,special_price,groupprice,
@@ -111,15 +101,13 @@ class UPC extends Parser {
 		if ($num_rows == 0){
 			$objs = $CORE_LOCAL->get("SpecialUpcClasses");
 			foreach($objs as $class_name){
-				if (!class_exists($class_name))
-					include($CORE_PATH.'lib/Scanning/SpecialUPCs/'.$class_name.'.php');
 				$instance = new $class_name();
 				if ($instance->is_special($upc)){
 					return $instance->handle($upc,$ret);
 				}
 			}
 			// no match; not a product, not special
-			$ret['output'] = boxMsg($upc."<br /><b>is not a valid item</b>");
+			$ret['output'] = DisplayLib::boxMsg($upc."<br /><b>is not a valid item</b>");
 			$ret['udpmsg'] = 'errorBeep';
 			return $ret; 
 		}
@@ -175,7 +163,7 @@ class UPC extends Parser {
 		   (can break db column if it doesn't fit
 		*/
 		if (strlen($row["normal_price"]) > 8){
-			$ret['output'] = boxMsg("$upc<br>Claims to be more than $100,000");
+			$ret['output'] = DisplayLib::boxMsg("$upc<br>Claims to be more than $100,000");
 			return $ret;
 		}
 
@@ -188,7 +176,7 @@ class UPC extends Parser {
 			$CORE_LOCAL->get("quantity") == 0 && substr($upc,0,3) != "002") {
 
 			$CORE_LOCAL->set("SNR",1);
-			$ret['output'] = boxMsg("please put item on scale");
+			$ret['output'] = DisplayLib::boxMsg("please put item on scale");
 			$CORE_LOCAL->set("wgtRequested",0);
 			$ret['retry'] = $CORE_LOCAL->get("strEntered");
 			return $ret;
@@ -202,7 +190,7 @@ class UPC extends Parser {
 				$quantity = $CORE_LOCAL->get("quantity") - $CORE_LOCAL->get("tare");
 
 			if ($quantity <= 0){
-				$ret['output'] = boxMsg("item weight must be greater than tare weight");
+				$ret['output'] = DisplayLib::boxMsg("item weight must be greater than tare weight");
 				return $ret;
 			}
 			$CORE_LOCAL->set("tare",0);
@@ -210,7 +198,7 @@ class UPC extends Parser {
 
 		/* non-scale items need integer quantities */	
 		if ($row["scale"] == 0 && (int) $CORE_LOCAL->get("quantity") != $CORE_LOCAL->get("quantity") ) {
-			$ret['output'] = boxMsg("fractional quantity cannot be accepted for this item");
+			$ret['output'] = DisplayLib::boxMsg("fractional quantity cannot be accepted for this item");
 			return $ret;
 		}
 
@@ -297,17 +285,15 @@ class UPC extends Parser {
 		*/
 
 		/* get discount object */
-		$discounttype = nullwrap($row["discounttype"]);
+		$discounttype = MiscLib::nullwrap($row["discounttype"]);
 		$DTClasses = $CORE_LOCAL->get("DiscountTypeClasses");
-		if (!class_exists($DTClasses[$discounttype]))
-			include($CORE_PATH."lib/Scanning/DiscountTypes/".$DTClasses[$discounttype].".php");
 		$DiscountObject = new $DTClasses[$discounttype];
 
 		/* add in sticker price and calculate a quantity
 		   if the item is stickered, scaled, and on sale */
 		if (substr($upc,0,3) == "002"){
 			if ($DiscountObject->isSale() && $scale == 1)
-				$quantity = truncate2($scaleprice / $row["normal_price"]);
+				$quantity = MiscLib::truncate2($scaleprice / $row["normal_price"]);
 			$row['normal_price'] = $scaleprice;
 		}
 
@@ -322,12 +308,10 @@ class UPC extends Parser {
 		*/
 
 		/* get price method object  & add item*/
-		$pricemethod = nullwrap($row["pricemethod"]);
+		$pricemethod = MiscLib::nullwrap($row["pricemethod"]);
 		if ($DiscountObject->isSale())
-			$pricemethod = nullwrap($row["specialpricemethod"]);
+			$pricemethod = MiscLib::nullwrap($row["specialpricemethod"]);
 		$PMClasses = $CORE_LOCAL->get("PriceMethodClasses");
-		if (!class_exists($PMClasses[$pricemethod]))
-			include($CORE_PATH."lib/Scanning/PriceMethods/".$PMClasses[$pricemethod].".php");
 		$PriceMethodObject = new $PMClasses[$pricemethod];
 		// prefetch: otherwise object members 
 		// pass out of scope in addItem()
@@ -364,11 +348,11 @@ class UPC extends Parser {
 		$CORE_LOCAL->set("quantity",0);
 		$CORE_LOCAL->set("itemPD",0);
 		$CORE_LOCAL->set("voided",0);
-		setglobalflags(0);
+		Database::setglobalflags(0);
 
 		/* output item list, update totals footer */
 		$ret['redraw_footer'] = True;
-		$ret['output'] = lastpage();
+		$ret['output'] = DisplayLib::lastpage();
 
 		if ($prefetch['unitPrice']==0){
 			$ret['main_frame'] = $CORE_PATH.'gui-modules/priceOverride.php';
@@ -382,7 +366,7 @@ class UPC extends Parser {
 
 		$upc = str_pad($upc,13,'0',STR_PAD_LEFT);
 
-		$db = pDataConnect();
+		$db = Database::pDataConnect();
 		$query = "select description,scale,tax,foodstamp,discounttype,
 			discount,department,normal_price
 		       	from products where upc='".$upc."'";
@@ -421,7 +405,7 @@ class UPC extends Parser {
 			$CORE_LOCAL->set("togglefoodstamp",0);
 		}
 
-		$discounttype = nullwrap($row["discounttype"]);
+		$discounttype = MiscLib::nullwrap($row["discounttype"]);
 		$discountable = $row["discount"];
 
 		$quantity = 1;
@@ -429,7 +413,7 @@ class UPC extends Parser {
 
 		$save_refund = $CORE_LOCAL->get("refund");
 
-		additem($upc,$description,"I"," "," ",$row["department"],
+		TransRecord::addItem($upc,$description,"I"," "," ",$row["department"],
 			$quantity,$row["normal_price"],
 			$quantity*$row["normal_price"],$row["normal_price"],
 			$scale,$tax,$foodstamp,0,0,$discountable,$discounttype,

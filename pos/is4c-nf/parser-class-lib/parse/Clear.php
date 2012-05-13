@@ -24,10 +24,6 @@
 $CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
 if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
 
-if (!class_exists("Parser")) include_once($CORE_PATH."parser-class-lib/Parser.php");
-if (!function_exists("addtare")) include_once($CORE_PATH."lib/additem.php");
-if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
-
 class Clear extends Parser {
 	function check($str){
 		if ($str == "CL")
@@ -47,7 +43,7 @@ class Clear extends Parser {
 		$CORE_LOCAL->set("refund",0);	
 		//$CORE_LOCAL->set("autoReprint",0);
 		if ($CORE_LOCAL->get("tare") > 0) 
-			addtare(0);
+			TransRecord::addTare(0);
 
 		$ret = $this->default_json();
 		$ret['main_frame'] = $CORE_PATH."gui-modules/pos2.php";

@@ -24,11 +24,7 @@
 $CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
 if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
 
-if (!class_exists("BasicPage")) include_once($CORE_PATH."gui-class-lib/BasicPage.php");
-if(!function_exists("boxMsg")) include($CORE_PATH."lib/drawscreen.php");
-if (!function_exists("deptkey")) include($CORE_PATH."lib/prehkeys.php");
-if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
-
+include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class UnpaidAR extends BasicPage {
 
@@ -43,7 +39,7 @@ class UnpaidAR extends BasicPage {
 
 			if (strtoupper($dec) == "CL"){
 				if ($CORE_LOCAL->get('inactMem') == 1){
-					setMember($CORE_LOCAL->get("defaultNonMem"),1);
+					PrehLib::setMember($CORE_LOCAL->get("defaultNonMem"),1);
 				}
 				$this->change_page($CORE_PATH."gui-modules/pos2.php");
 				return False;
@@ -53,12 +49,12 @@ class UnpaidAR extends BasicPage {
 				$CORE_LOCAL->set('warnBoxType','warnAR');
 				if (strtoupper($dec)=="BQ")
 					$amt = $CORE_LOCAL->get("balance");
-				deptkey($amt*100,9900,True);
+				PrehLib::deptkey($amt*100,9900,True);
 				$memtype = $CORE_LOCAL->get("memType");
 				$type = $CORE_LOCAL->get("Type");
 				if ($memtype == 1 || $memtype == 3 || $type == "INACT"){
 					$CORE_LOCAL->set("isMember",1);
-					ttl();
+					PrehLib::ttl();
 				}
 				$this->change_page($CORE_PATH."gui-modules/pos2.php");
 				return False;
@@ -76,12 +72,12 @@ class UnpaidAR extends BasicPage {
 
 		<?php
 		if ($amt == $CORE_LOCAL->get("balance")){
-			boxMsg(sprintf("Old A/R Balance: $%.2f<br />
+			DisplayLib::boxMsg(sprintf("Old A/R Balance: $%.2f<br />
 				[Enter] to pay balance now<br />
 				[Clear] to leave balance",$amt));
 		}
 		else {
-			boxMsg(sprintf("Old A/R Balance: $%.2f<br />
+			DisplayLib::boxMsg(sprintf("Old A/R Balance: $%.2f<br />
 				Total A/R Balance: $%.2f<br />
 				[Enter] to pay old balance<br />
 				[Balance] to pay the entire balance<br />
@@ -90,7 +86,7 @@ class UnpaidAR extends BasicPage {
 		}
 		echo "</div>";
 		echo "<div id=\"footer\">";
-		echo printfooter();
+		echo DisplayLib::printfooter();
 		echo "</div>";
 		$CORE_LOCAL->set("msgrepeat",2);
 		$CORE_LOCAL->set("beep","noBeep");

@@ -25,11 +25,9 @@
 $CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
 if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
 
-if (!class_exists("PaycardProcessPage")) include_once($CORE_PATH."gui-class-lib/PaycardProcessPage.php");
-if (!function_exists("paycard_reset")) require_once($CORE_PATH."cc-modules/lib/paycardLib.php");
-if (!function_exists("printfooter")) require_once($CORE_PATH."lib/drawscreen.php");
-if (!function_exists("sigTermObject")) require_once($CORE_PATH."lib/lib.php");
-if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
+include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
+if (!function_exists("paycard_reset")) 
+	include_once(realpath(dirname(__FILE__)."/../cc-modules/lib/paycardLib.php"));
 
 class paycardboxMsgAuth extends PaycardProcessPage {
 
@@ -46,7 +44,7 @@ class paycardboxMsgAuth extends PaycardProcessPage {
 				$CORE_LOCAL->set("togglefoodstamp",0);
 				$CORE_LOCAL->set("ccTermOut","resettotal:".
 					str_replace(".","",sprintf("%.2f",$CORE_LOCAL->get("amtdue"))));
-				$st = sigTermObject();
+				$st = MiscLib::sigTermObject();
 				if (is_object($st))
 					$st->WriteToScale($CORE_LOCAL->get("ccTermOut"));
 				paycard_reset();

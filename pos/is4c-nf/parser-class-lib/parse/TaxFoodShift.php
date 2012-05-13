@@ -24,10 +24,6 @@
 $CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
 if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
 
-if (!class_exists("Parser")) include_once($CORE_PATH."parser-class-lib/Parser.php");
-if (!function_exists("tDataConnect")) include_once($CORE_PATH."lib/connect.php");
-if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
-
 class TaxFoodShift extends Parser {
 
 	function check($str){
@@ -43,7 +39,7 @@ class TaxFoodShift extends Parser {
 		global $CORE_LOCAL;
 		$id = $CORE_LOCAL->get("currentid");
 
-		$db = tDataConnect();
+		$db = Database::tDataConnect();
 
 		$q = "SELECT trans_type,tax,foodstamp FROM localtemptrans WHERE trans_id=$id";
 		$r = $db->query($q);
@@ -68,7 +64,7 @@ class TaxFoodShift extends Parser {
 		$db->db_close();
 		
 		$ret = $this->default_json();
-		$ret['output'] = listitems($CORE_LOCAL->get("currenttopid"),$id);
+		$ret['output'] = DisplayLib::listitems($CORE_LOCAL->get("currenttopid"),$id);
 		return $ret; // maintain item cursor position
 	}
 

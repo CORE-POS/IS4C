@@ -26,8 +26,9 @@ if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= 
 
 ini_set('display_errors','1');
 
-include($CORE_PATH.'ini.php');
-include($CORE_PATH.'lib/lib.php');
+include(realpath(dirname(__FILE__).'/../lib/AutoLoader.php'));
+AutoLoader::LoadMap();
+include(realpath(dirname(__FILE__).'/../ini.php'));
 include('util.php');
 ?>
 <html>
@@ -149,8 +150,6 @@ confsave('pDatabase',"'".$CORE_LOCAL->get('pDatabase')."'");
 Testing Operation DB Connection:
 <?php
 $gotDBs = 0;
-if (!class_exists('SQLManager'))
-	include('../lib/SQLManager.php');
 if ($CORE_LOCAL->get("DBMS") == "mysql")
 	$val = ini_set('mysql.connect_timeout',5);
 

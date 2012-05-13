@@ -26,10 +26,7 @@ if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= 
 
 ini_set('display_errors','1');
 
-if (!class_exists("BasicPage")) include_once($CORE_PATH."gui-class-lib/BasicPage.php");
-if (!function_exists("authenticate")) include($CORE_PATH."lib/authenticate.php");
-if (!function_exists("scaleObject")) include($CORE_PATH."lib/lib.php");
-if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
+include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class login3 extends BasicPage {
 
@@ -43,8 +40,8 @@ class login3 extends BasicPage {
 		$this->img = $CORE_PATH."graphics/bluekey4.gif";
 		$this->msg = "please enter password";
 		if (isset($_REQUEST['reginput'])){
-			if (authenticate($_REQUEST['reginput'],4)){
-				$sd = scaleObject();
+			if (Authenticate::check_password($_REQUEST['reginput'],4)){
+				$sd = MiscLib::scaleObject();
 				if (is_object($sd))
 					$sd->ReadReset();
 				$this->change_page($CORE_PATH."gui-modules/pos2.php");
@@ -63,7 +60,7 @@ class login3 extends BasicPage {
 		global $CORE_LOCAL;
 		$style = "style=\"background: {$this->color};\"";
 		$this->input_header();
-		echo printheaderb();
+		echo DisplayLib::printheaderb();
 		?>
 		<div class="baseHeight">
 			<div class="colored centeredDisplay" <?php echo $style;?>>
@@ -74,11 +71,11 @@ class login3 extends BasicPage {
 			</div>
 		</div>
 		<?php
-		addactivity(3);
+		TransRecord::addactivity(3);
 		$CORE_LOCAL->set("scan","noScan");
-		getsubtotals();
+		Database::getsubtotals();
 		echo "<div id=\"footer\">";
-		echo printfooter();
+		echo DisplayLib::printfooter();
 		echo "</div>";
 	} // END true_body() FUNCTION
 

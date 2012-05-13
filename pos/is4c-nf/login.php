@@ -24,14 +24,14 @@
 $CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
 if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
 
-if (!function_exists("pDataConnect")) include($CORE_PATH."lib/connect.php");
-if (!function_exists("initiate_session")) include($CORE_PATH."lib/session.php");
-if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
+if (!class_exists("AutoLoader")) include($CORE_PATH."lib/AutoLoader.php");
 
 $CORE_LOCAL->set("parse_chain",'');
 $CORE_LOCAL->set("preparse_chain",'');
 
-initiate_session();
+AutoLoader::LoadMap();
+
+CoreState::initiate_session();
 
 if ($CORE_LOCAL->get("SessionFirstRun") == "")
 	$CORE_LOCAL->set("SessionFirstRun",1);

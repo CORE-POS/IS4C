@@ -24,18 +24,10 @@
 /**
   @file
   @brief Defines functions for adding records to the transaction
+  @deprecated See TransRecord
 */
 
 /*------------------------------------------------------------------------------
-additem.php is called by the following files:
-
-as include:
-	login3.php
-	authenticate3.php
-	prehkeys.php
-	upcscanned.php
-	authenticate.php
-
 additem.php is the bread and butter of IT CORE. addItem inserts the information
 stream for each item scanned, entered or transaction occurence into localtemptrans.
 Each of the above follows the following structure for entry into localtemptrans:

@@ -24,10 +24,7 @@
 $CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
 if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
 
-if (!class_exists("NoInputPage")) include_once($CORE_PATH."gui-class-lib/NoInputPage.php");
-if (!function_exists("tDataConnect")) include_once($CORE_PATH."lib/connect.php");
-if (!function_exists("tDataConnect")) include_once($CORE_PATH."lib/additem.php");
-if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
+include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class PriceOverride extends NoInputPage {
 
@@ -37,7 +34,7 @@ class PriceOverride extends NoInputPage {
 	function preprocess(){
 		global $CORE_LOCAL, $CORE_PATH;
 		$line_id = $CORE_LOCAL->get("currentid");
-		$db = tDataConnect();
+		$db = Database::tDataConnect();
 		
 		$q = "SELECT description,total FROM localtemptrans
 			WHERE trans_type IN ('I','D') AND trans_status = ''

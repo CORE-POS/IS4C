@@ -23,13 +23,10 @@
 $CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
 if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
 
-if (!isset($CORE_LOCAL))
-	include($CORE_PATH.'lib/LocalStorage/conf.php');
+include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 $scaleDriver = $CORE_LOCAL->get("scaleDriver");
 $sd = 0;
-if ($scaleDriver != "" && !class_exists($scaleDriver))
-	include($CORE_PATH.'scale-drivers/php-wrappers/'.$scaleDriver.'.php');
 if ($scaleDriver != "")
 	$sd = new $scaleDriver();
 

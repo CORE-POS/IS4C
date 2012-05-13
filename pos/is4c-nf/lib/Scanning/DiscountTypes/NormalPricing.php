@@ -23,8 +23,6 @@
 $CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
 if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
 
-if (!class_exists('DiscountType')) include($CORE_PATH.'lib/Scanning/DiscountType.php');
-
 class NormalPricing extends DiscountType {
 
 	function priceInfo($row,$quantity=1){

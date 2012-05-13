@@ -24,12 +24,9 @@
 $CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
 if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
 
-if (!class_exists("PaycardProcessPage")) include_once($CORE_PATH."gui-class-lib/PaycardProcessPage.php");
-if (!function_exists("paycard_reset")) include_once($CORE_PATH."cc-modules/lib/paycardLib.php");
-if (!function_exists("printfooter")) include_once($CORE_PATH."lib/drawscreen.php");
-if (!function_exists("pDataConnect")) include_once($CORE_PATH."lib/connect.php");
-if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
-
+include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
+if (!function_exists("paycard_reset")) 
+	include_once(realpath(dirname(__FILE__)."/../cc-modules/lib/paycardLib.php"));
 
 class paycardboxMsgVoid extends BasicPage {
 
@@ -57,7 +54,7 @@ class paycardboxMsgVoid extends BasicPage {
 			if( $CORE_LOCAL->get("paycard_mode") == PAYCARD_MODE_VOID && $input != "" && substr($input,-2) != "CL") {
 				$sql = "select emp_no, FirstName, LastName from employees" .
 					" where EmpActive=1 and frontendsecurity>=11 and AdminPassword=".(int)$input;
-				$db = pDataConnect();
+				$db = Database::pDataConnect();
 				$result = $db->query($sql);
 				if( $db->num_rows($result) > 0) {
 					$CORE_LOCAL->set("adminP",$input);
@@ -81,8 +78,6 @@ class paycardboxMsgVoid extends BasicPage {
 			// transaction and check for problems
 			$id = $CORE_LOCAL->get("paycard_id");
 			foreach($CORE_LOCAL->get("RegisteredPaycardClasses") as $rpc){
-				if (!class_exists($rpc)) 
-					include_once($_SESSION["INCLUDE_PATH"]."/cc-modules/$rpc.php");
 				$myObj = new $rpc();
 				if ($myObj->handlesType($CORE_LOCAL->get("paycard_type"))){
 					$ret = $myObj->paycard_void($id);

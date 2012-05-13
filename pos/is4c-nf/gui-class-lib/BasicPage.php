@@ -37,8 +37,6 @@
 $CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
 if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
 
-if (!function_exists('scaledisplaymsg')) include($CORE_PATH.'lib/drawscreen.php');
-
 class BasicPage {
 
 	var $onload_commands;
@@ -330,7 +328,7 @@ class BasicPage {
 			weight
 			</div>
 			<div id="scaleBottom">
-			<?php echo scaledisplaymsg(); ?>	
+			<?php echo DisplayLib::scaledisplaymsg(); ?>	
 			</div>
 		</div>
 		<?php
@@ -359,7 +357,7 @@ class BasicPage {
 	*/
 	function footer(){
 		echo '<div id="footer">';
-		printfooter();
+		DisplayLib::printfooter();
 		echo '</div>';
 	}
 

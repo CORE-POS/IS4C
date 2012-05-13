@@ -29,15 +29,9 @@ if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= 
  *
  */
 
-if (!class_exists("BasicCCModule")) include_once($CORE_PATH."cc-modules/BasicCCModule.php");
-if (!class_exists("xmlData")) include_once($CORE_PATH."cc-modules/lib/xmlData.php");
-if (!class_exists("Void")) include_once($CORE_PATH."parser-class-lib/parse/Void.php");
+if (!class_exists("AutoLoader")) include_once(realpath(dirname(__FILE__).'/../lib/AutoLoader.php'));
 
 if (!function_exists("paycard_reset")) include_once($CORE_PATH."cc-modules/lib/paycardLib.php");
-if (!function_exists("deptkey")) include_once($CORE_PATH."lib/prehkeys.php");
-if (!function_exists("tDataConnect")) include_once($CORE_PATH."lib/connect.php");
-
-if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
 
 define('MERCURY_TERMINAL_ID',"");
 define('MERCURY_PASSWORD',"");
@@ -75,7 +69,7 @@ class MercuryGift extends BasicCCModule {
 		// error checks based on processing mode
 		if( $CORE_LOCAL->get("paycard_mode") == PAYCARD_MODE_VOID) {
 			// use the card number to find the trans_id
-			$dbTrans = tDataConnect();
+			$dbTrans = Database::tDataConnect();
 			$today = date('Ymd'); // numeric date only, in an int field
 			$pan = $this->getPAN();
 			$cashier = $CORE_LOCAL->get("CashierNo");
@@ -186,7 +180,7 @@ class MercuryGift extends BasicCCModule {
 		case PAYCARD_MODE_ACTIVATE:
 			$CORE_LOCAL->set("autoReprint",1);
 			$ttl = $CORE_LOCAL->get("paycard_amount");
-			deptkey($ttl*100,9020);
+			PrehLib::deptkey($ttl*100,9020);
 			$resp = $CORE_LOCAL->get("paycard_response");	
 			$CORE_LOCAL->set("boxMsg","<b>Success</b><font size=-1><p>New card balance: $".$resp["Balance"]);
 				// reminder to void everything on testgift2, so that it remains inactive to test activations
@@ -194,7 +188,7 @@ class MercuryGift extends BasicCCModule {
 			break;
 		case PAYCARD_MODE_AUTH:
 			$CORE_LOCAL->set("autoReprint",1);
-			tender("GD", ($CORE_LOCAL->get("paycard_amount")*100));
+			PrehLib::tender("GD", ($CORE_LOCAL->get("paycard_amount")*100));
 			$resp = $CORE_LOCAL->get("paycard_response");
 			$CORE_LOCAL->set("boxMsg","<b>Approved</b><font size=-1><p>Used: $".$CORE_LOCAL->get("paycard_amount")."<br />New balance: $".$resp["Balance"]);
 			// reminder to void everything on testgift2, so that it remains inactive to test activations
@@ -229,7 +223,7 @@ class MercuryGift extends BasicCCModule {
 		}
 		
 		// initialize
-		$dbTrans = tDataConnect();
+		$dbTrans = Database::tDataConnect();
 		$today = date('Ymd');
 		$cashier = $CORE_LOCAL->get("CashierNo");
 		$lane = $CORE_LOCAL->get("laneno");
@@ -357,7 +351,7 @@ class MercuryGift extends BasicCCModule {
 	function send_auth($domain="w1.mercurypay.com"){
 		global $CORE_LOCAL;
 		// initialize
-		$dbTrans = tDataConnect();
+		$dbTrans = Database::tDataConnect();
 		if( !$dbTrans)
 			return $this->setErrorMsg(PAYCARD_ERR_NOSEND); // internal error, nothing sent (ok to retry)
 
@@ -452,7 +446,7 @@ class MercuryGift extends BasicCCModule {
 	function send_void($domain="w1.mercurypay.com"){
 		global $CORE_LOCAL;
 		// initialize
-		$dbTrans = tDataConnect();
+		$dbTrans = Database::tDataConnect();
 		if( !$dbTrans)
 			return $this->setErrorMsg(PAYCARD_ERR_NOSEND); // database error, nothing sent (ok to retry)
 
@@ -611,7 +605,7 @@ class MercuryGift extends BasicCCModule {
 		$xml = new xmlData($resp);
 
 		// initialize
-		$dbTrans = tDataConnect();
+		$dbTrans = Database::tDataConnect();
 		if( !$dbTrans)
 			return $this->setErrorMsg(PAYCARD_ERR_NOSEND); // internal error, nothing sent (ok to retry)
 
@@ -725,7 +719,7 @@ class MercuryGift extends BasicCCModule {
 		$xml = new xmlData($resp);
 
 		// initialize
-		$dbTrans = tDataConnect();
+		$dbTrans = DataBase::tDataConnect();
 		if( !$dbTrans)
 			return $this->setErrorMsg(PAYCARD_ERR_NOSEND); // database error, nothing sent (ok to retry)
 

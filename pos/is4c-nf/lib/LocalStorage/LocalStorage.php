@@ -52,10 +52,10 @@ class LocalStorage {
 	  Call this from your set method
 	*/
 	function debug(){
-		global $CORE_PATH;
 		if($this->get("Debug_CoreLocal") == 1){
 			$stack = debug_backtrace();
-			$fp = @fopen($CORE_PATH.'log/core_local.log','a');
+			$log = realpath(dirname(__FILE__).'/../../log/core_local.log');
+			$fp = @fopen($log,'a');
 			if ($fp){
 				foreach($stack as $s){
 					if ($s['function']=='set'&&$s['class']==get_class($this)){

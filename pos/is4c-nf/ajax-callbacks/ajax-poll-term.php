@@ -23,14 +23,12 @@
 $CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
 if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
 
-if (!isset($CORE_LOCAL))
-	include($CORE_PATH.'lib/LocalStorage/conf.php');
+include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 $termDriver = $CORE_LOCAL->get("SigCapture");
 $td = 0;
-if ($termDriver != "" && !class_exists($termDriver))
-	include($CORE_PATH.'scale-drivers/php-wrappers/'.$termDriver.'.php');
-$td = new $termDriver();
+if ($termDriver != "") 
+	$td = new $termDriver();
 
 if (is_object($td)){
 	$res = $td->poll("poke");

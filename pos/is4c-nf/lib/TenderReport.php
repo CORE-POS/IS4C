@@ -24,9 +24,11 @@
 $CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
 if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
 
-if (!function_exists("printReceipt")) include($CORE_PATH."lib/printReceipt.php");
-if (!function_exists("mDataConnect")) include($CORE_PATH."lib/connect.php");
-if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
+/**
+  @class TenderReport
+  Generate a tender report
+*/
+class TenderReport extends LibraryClass {
 
 /** 
  Print a tender report
@@ -40,7 +42,7 @@ if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
 
  @todo Make $DESIRED_TENDERS configurable elsewhere
  */
-function tenderReport(){
+static public function get(){
 	global $CORE_LOCAL;
 
 	$DESIRED_TENDERS = array("CK"=>"CHECK TENDERS",
@@ -57,7 +59,7 @@ function tenderReport(){
 				 "EQ"=>"EQUITY SALES"
 			 );
 
-	$db_a = mDataConnect();
+	$db_a = Database::mDataConnect();
 
 	$blank = "             ";
 	$fieldNames = "  ".substr("Time".$blank, 0, 13)
@@ -65,7 +67,7 @@ function tenderReport(){
 			.substr("Trans #".$blank, 0, 12)
 			.substr("Change".$blank, 0, 14)
 			.substr("Amount".$blank, 0, 14)."\n";
-	$ref = centerString(trim($CORE_LOCAL->get("CashierNo"))." ".trim($CORE_LOCAL->get("cashier"))." ".build_time(time()))."\n\n";
+	$ref = ReceiptLib::centerString(trim($CORE_LOCAL->get("CashierNo"))." ".trim($CORE_LOCAL->get("cashier"))." ".build_time(time()))."\n\n";
 	$receipt = "";
 
 	foreach(array_keys($DESIRED_TENDERS) as $tender_code){
@@ -81,10 +83,10 @@ function tenderReport(){
 		for ($i = 0; $i < strlen($DESIRED_TENDERS[$tender_code]); $i++)
 			$titleStr .= $DESIRED_TENDERS[$tender_code][$i]." ";
 		$titleStr = substr($titleStr,0,strlen($titleStr)-1);
-		$receipt .= centerString($titleStr)."\n";
+		$receipt .= ReceiptLib::centerString($titleStr)."\n";
 
 		$receipt .= $ref;
-		$receipt .=	centerString("------------------------------------------------------");
+		$receipt .=	ReceiptLib::centerString("------------------------------------------------------");
 
 		$query = "select tdate,register_no,trans_no,tender
 		       	from TenderTapeGeneric where emp_no=".$CORE_LOCAL->get("CashierNo").
@@ -98,7 +100,7 @@ function tenderReport(){
 		for ($i = 0; $i < $num_rows; $i++) {
 
 			$row = $db_a->fetch_array($result);
-			$timeStamp = timeStamp($row["tdate"]);
+			$timeStamp = self::timeStamp($row["tdate"]);
 			$receipt .= "  ".substr($timeStamp.$blank, 0, 13)
 				.substr($row["register_no"].$blank, 0, 9)
 				.substr($row["trans_no"].$blank, 0, 8)
@@ -106,20 +108,22 @@ function tenderReport(){
 				.substr($blank.number_format($row["tender"], 2), -14)."\n";
 			$sum += $row["tender"];
 		}
-		$receipt.= centerString("------------------------------------------------------");
+		$receipt.= ReceiptLib::centerString("------------------------------------------------------");
 
 		$receipt .= substr($blank.$blank.$blank.$blank."Total: ".$sum, -56)."\n";
 		$receipt .= str_repeat("\n", 8);
 		$receipt .= chr(27).chr(105);
 	}
 
-	writeLine($receipt.chr(27).chr(105));
+	ReceiptLib::writeLine($receipt.chr(27).chr(105));
 	$db_a->close();
 }
 
-function timeStamp($time) {
+static private function timeStamp($time) {
 
 	return strftime("%I:%M %p", strtotime($time));
+}
+
 }
 
 ?>

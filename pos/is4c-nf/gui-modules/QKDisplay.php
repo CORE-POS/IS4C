@@ -26,9 +26,7 @@ if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= 
 
 ini_set('display_errors','1');
 
-if (!class_exists("NoInputPage")) include_once($CORE_PATH."gui-class-lib/NoInputPage.php");
-if (!function_exists("tDataConnect")) include($CORE_PATH."lib/connect.php");
-if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
+include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class QKDisplay extends NoInputPage {
 
@@ -136,8 +134,8 @@ class QKDisplay extends NoInputPage {
 		echo "<div class=\"baseHeight\" style=\"border: solid 1px black;\">";
 		echo "<form action=\"".$_SERVER["PHP_SELF"]."\" method=\"post\">";
 
-		include($CORE_PATH."quickkeys/keys/"
-			.$CORE_LOCAL->get("qkNumber").".php");
+		include(realpath(dirname(__FILE__)."/../quickkeys/keys/"
+			.$CORE_LOCAL->get("qkNumber").".php"));
 
 		$num_pages = ceil(count($my_keys)/9.0);
 		$page = $this->offset % $num_pages;

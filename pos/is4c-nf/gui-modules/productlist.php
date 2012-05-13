@@ -24,9 +24,7 @@
 $CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
 if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
 
-if (!class_exists("NoInputPage")) include_once($CORE_PATH."gui-class-lib/NoInputPage.php");
-if (!function_exists("pDataConnect")) include($CORE_PATH."lib/connect.php");
-if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
+include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class productlist extends NoInputPage {
 
@@ -105,7 +103,7 @@ class productlist extends NoInputPage {
 			$this->boxSize = 15;
 		}
 
-		$sql = pDataConnect();
+		$sql = Database::pDataConnect();
 
 		$this->temp_result = $sql->query($query);
 		$this->temp_num_rows = $sql->num_rows($this->temp_result);
@@ -171,7 +169,7 @@ class productlist extends NoInputPage {
 				else $Scale = " ";
 
 				if (!$price) $price = "unKnown";
-				else $price = truncate2($price);
+				else $price = MiscLib::truncate2($price);
 
 				echo "<option value='".$row["upc"]."' ".$selected.">".$row["upc"]." -- ".$row["description"]
 					." ---- [".$price."] ".$Scale."\n";

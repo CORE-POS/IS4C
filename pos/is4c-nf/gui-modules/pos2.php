@@ -28,15 +28,7 @@ ini_set('display_errors','1');
  
 session_cache_limiter('nocache');
 
-if (!class_exists("BasicPage")) include_once($CORE_PATH."gui-class-lib/BasicPage.php");
-
-if (!function_exists("lastpage")) include($CORE_PATH."lib/listitems.php");
-if (!function_exists("printheaderb")) include($CORE_PATH."lib/drawscreen.php");
-if (!function_exists("tender")) include($CORE_PATH."lib/prehkeys.php");
-if (!function_exists("drawerKick")) include_once($CORE_PATH."lib/printLib.php");
-if (!function_exists("get_preparse_chain")) include_once($CORE_PATH."parser-class-lib/Parser.php");
-if (!function_exists('scaleObject')) include_once($CORE_PATH.'lib/lib.php');
-if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
+include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class pos2 extends BasicPage {
 
@@ -46,8 +38,8 @@ class pos2 extends BasicPage {
 		global $CORE_LOCAL,$CORE_PATH;
 		$this->display = "";
 
-		$sd = scaleObject();
-		//$st = sigTermObject();
+		$sd = MiscLib::scaleObject();
+		//$st = MiscLib::sigTermObject();
 
 		$entered = "";
 		if (isset($_REQUEST["reginput"])) {
@@ -68,7 +60,7 @@ class pos2 extends BasicPage {
 			/* this breaks the model a bit, but I'm putting
 			 * putting the CC parser first manually to minimize
 			 * code that potentially handles the PAN */
-			include_once($CORE_PATH."cc-modules/lib/paycardEntered.php");
+			include_once(realpath(dirname(__FILE__)."/../cc-modules/lib/paycardEntered.php"));
 			$pe = new paycardEntered();
 			if ($pe->check($entered)){
 				$valid = $pe->parse($entered);
@@ -88,11 +80,9 @@ class pos2 extends BasicPage {
 			 */
 			$parser_lib_path = $CORE_PATH."parser-class-lib/";
 			if (!is_array($CORE_LOCAL->get("preparse_chain")))
-				$CORE_LOCAL->set("preparse_chain",get_preparse_chain());
+				$CORE_LOCAL->set("preparse_chain",Parser::get_preparse_chain());
 
 			foreach ($CORE_LOCAL->get("preparse_chain") as $cn){
-				if (!class_exists("cn"))
-					include_once($parser_lib_path."preparse/".$cn.".php");
 				$p = new $cn();
 				if ($p->check($entered))
 					$entered = $p->parse($entered);
@@ -108,12 +98,10 @@ class pos2 extends BasicPage {
 				 * whether to call lastpage() [list the items on screen]
 				 */
 				if (!is_array($CORE_LOCAL->get("parse_chain")))
-					$CORE_LOCAL->set("parse_chain",get_parse_chain());
+					$CORE_LOCAL->set("parse_chain",Parser::get_parse_chain());
 
 				$result = False;
 				foreach ($CORE_LOCAL->get("parse_chain") as $cn){
-					if (!class_exists($cn))
-						include_once($parser_lib_path."parse/".$cn.".php");
 					$p = new $cn();
 					if ($p->check($entered)){
 						$result = $p->parse($entered);
@@ -135,7 +123,7 @@ class pos2 extends BasicPage {
 					$arr = array(
 						'main_frame'=>false,
 						'target'=>'.baseHeight',
-						'output'=>inputUnknown());
+						'output'=>DisplayLib::inputUnknown());
 					$json = $arr;
 					if (is_object($sd)){
 						$sd->WriteToScale('errorBeep');
@@ -255,9 +243,9 @@ class pos2 extends BasicPage {
 		}
 
 		if ($CORE_LOCAL->get("plainmsg") && strlen($CORE_LOCAL->get("plainmsg")) > 0) {
-			echo printheaderb();
+			echo DisplayLib::printheaderb();
 			echo "<div class=\"centerOffset\">";
-			echo plainmsg($CORE_LOCAL->get("plainmsg"));
+			echo DisplayLib::plainmsg($CORE_LOCAL->get("plainmsg"));
 			$CORE_LOCAL->set("plainmsg",0);
 			$CORE_LOCAL->set("msg",99);
 			echo "</div>";
@@ -265,15 +253,15 @@ class pos2 extends BasicPage {
 		elseif (!empty($this->display))
 			echo $this->display;
 		else
-			echo lastpage();
+			echo DisplayLib::lastpage();
 
 		echo "</div>"; // end base height
 
 		echo "<div id=\"footer\">";
 		if ($CORE_LOCAL->get("away") == 1)
-			echo printfooterb();
+			echo DisplayLib::printfooterb();
 		else
-			echo printfooter();
+			echo DisplayLib::printfooter();
 		echo "</div>";
 
 		$CORE_LOCAL->set("away",0);

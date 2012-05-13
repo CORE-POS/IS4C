@@ -26,11 +26,7 @@ if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= 
 
 ini_set('display_errors','1');
 
-if (!class_exists("NoInputPage")) include_once($CORE_PATH."gui-class-lib/NoInputPage.php");
-if (!function_exists("getsubtotals")) include($CORE_PATH."lib/connect.php");
-if (!function_exists("checksuspended")) include($CORE_PATH."lib/special.php");
-if (!function_exists("tenderReport")) include($CORE_PATH."lib/tenderReport.php");
-if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
+include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class adminlist extends NoInputPage {
 
@@ -43,7 +39,7 @@ class adminlist extends NoInputPage {
 				return False;
 			}
 			elseif ($_REQUEST['selectlist'] == 'SUSPEND'){
-				getsubtotals();
+				Database::getsubtotals();
 				if ($CORE_LOCAL->get("LastID") == 0) {
 					$CORE_LOCAL->set("boxMsg","no transaction in progress");
 					$this->change_page($CORE_PATH."gui-modules/boxMsg2.php");
@@ -52,7 +48,7 @@ class adminlist extends NoInputPage {
 				else {
 					// ajax call to end transaction
 					// and print receipt
-					suspendorder();
+					SuspendLib::suspendorder();
 					$this->add_onload_command("\$.ajax({
 						type:'post',
 						url:'{$CORE_PATH}ajax-callbacks/ajax-end.php',
@@ -66,12 +62,12 @@ class adminlist extends NoInputPage {
 				}
 			}
 			else if ($_REQUEST['selectlist'] == 'RESUME'){
-				getsubtotals();
+				Database::getsubtotals();
 				if ($CORE_LOCAL->get("LastID") != 0) {
 					$CORE_LOCAL->set("boxMsg","transaction in progress");
 					$this->change_page($CORE_PATH."gui-modules/boxMsg2.php");
 				}
-				elseif (checksuspended() == 0) {
+				elseif (SuspendLib::checksuspended() == 0) {
 					$CORE_LOCAL->set("boxMsg","no suspended transaction");
 					$CORE_LOCAL->set("strRemembered","");
 					$this->change_page($CORE_PATH."gui-modules/boxMsg2.php");
@@ -82,7 +78,7 @@ class adminlist extends NoInputPage {
 				return False;
 			}
 			else if ($_REQUEST['selectlist'] == 'TR'){
-				tenderReport();
+				TenderReport::get();
 				$this->change_page($CORE_PATH."gui-modules/pos2.php");
 				return False;
 			}

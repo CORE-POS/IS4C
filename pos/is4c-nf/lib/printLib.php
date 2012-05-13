@@ -27,8 +27,8 @@ if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= 
 if (!function_exists("truncate2")) include_once($CORE_PATH."lib/lib.php");
 if (!function_exists("chargeOK")) include_once($CORE_PATH."lib/prehkeys.php");
 
-if (!class_exists("ESCPOSPrintHandler")) include_once($CORE_PATH."lib/PrintHandlers/ESCPOSPrintHandler.class.php");
-if (!class_exists("Bitmap")) include_once($CORE_PATH."lib/Bitmap4.class.php");
+if (!class_exists("ESCPOSPrintHandler")) include_once($CORE_PATH."lib/PrintHandlers/ESCPOSPrintHandler.php");
+if (!class_exists("Bitmap")) include_once($CORE_PATH."lib/Bitmap.php");
 
 if (!isset($CORE_LOCAL)) include_once($CORE_PATH."lib/LocalStorage/conf.php");
 

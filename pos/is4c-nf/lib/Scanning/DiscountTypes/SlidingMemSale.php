@@ -23,11 +23,6 @@
 $CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
 if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
 
-if (!class_exists('DiscountType')) include($CORE_PATH.'lib/Scanning/DiscountType.php');
-if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
-
-if (!function_exists('adddiscount')) include($CORE_PATH.'lib/additem.php');
-
 class SlidingMemSale extends DiscountType {
 
 	function priceInfo($row,$quantity=1){
@@ -55,7 +50,7 @@ class SlidingMemSale extends DiscountType {
 		global $CORE_LOCAL;	
 		if ($CORE_LOCAL->get("isMember")){
 			$CORE_LOCAL->set("voided",2);
-			adddiscount($this->savedInfo['memDiscount'],
+			TransRecord::adddiscount($this->savedInfo['memDiscount'],
 				$this->savedRow['department']);
 		}
 	}

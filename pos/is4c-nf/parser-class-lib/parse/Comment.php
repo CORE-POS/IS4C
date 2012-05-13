@@ -23,10 +23,6 @@
 $CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
 if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
 
-if (!class_exists("Parser")) include_once($CORE_PATH."parser-class-lib/Parser.php");
-if (!function_exists("addcomment")) include_once($CORE_PATH."lib/additem.php");
-if (!function_exists("lastpage")) include_once($CORE_PATH."lib/listitems.php");
-
 class Comment extends Parser {
 	function check($str){
 		if (substr($str,0,2) == "CM")
@@ -36,9 +32,9 @@ class Comment extends Parser {
 
 	function parse($str){
 		$comment = substr($str,2);
-		addcomment($comment);
+		TransRecord::addcomment($comment);
 		$ret = $this->default_json();
-		$ret['output'] = lastpage();
+		$ret['output'] = DisplayLib::lastpage();
 		return $ret;
 	}
 

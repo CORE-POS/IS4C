@@ -34,6 +34,7 @@ if (!function_exists("boxMsgscreen")) include($CORE_PATH."lib/clientscripts.php"
 /**
   @file
   @brief A horrible, horrible catch-all clutter of functions
+  @deprecated see PrehLib
 */
 
 /**
