@@ -30,7 +30,7 @@ if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= 
  */
 if (!class_exists("AutoLoader")) include_once(realpath(dirname(__FILE__).'/../lib/AutoLoader.php'));
 
-if (!function_exists("paycard_reset")) include_once($CORE_PATH."cc-modules/lib/paycardLib.php");
+if (!function_exists("PaycardLib")) include_once($CORE_PATH."cc-modules/lib/paycardLib.php");
 
 class Valutec extends BasicCCModule {
 	var $temp;
@@ -42,7 +42,7 @@ class Valutec extends BasicCCModule {
 	 * True
 	 */
 	function handlesType($type){
-		if ($type == PAYCARD_TYPE_GIFT) return True;
+		if ($type == PaycardLib::PAYCARD_TYPE_GIFT) return True;
 		else return False;
 	}
 
@@ -56,12 +56,12 @@ class Valutec extends BasicCCModule {
 		global $CORE_LOCAL,$CORE_PATH;
 		// error checks based on card type
 		if( $CORE_LOCAL->get("gcIntegrate") != 1) { // credit card integration must be enabled
-			$json['output'] = paycard_errBox(PAYCARD_TYPE_GIFT,"Card Integration Disabled","Please process gift cards in standalone","[clear] to cancel");
+			$json['output'] = PaycardLib::paycard_errBox(PaycardLib::PAYCARD_TYPE_GIFT,"Card Integration Disabled","Please process gift cards in standalone","[clear] to cancel");
 			return $json;
 		}
 
 		// error checks based on processing mode
-		if( $CORE_LOCAL->get("paycard_mode") == PAYCARD_MODE_VOID) {
+		if( $CORE_LOCAL->get("paycard_mode") == PaycardLib::PAYCARD_MODE_VOID) {
 			// use the card number to find the trans_id
 			$dbTrans = Database::tDataConnect();
 			$today = date('Ymd'); // numeric date only, in an int field
@@ -78,10 +78,10 @@ class Valutec extends BasicCCModule {
 			$search = $dbTrans->query($sql);
 			$num = $dbTrans->num_rows($search);
 			if( $num < 1) {
-				$json['output'] = paycard_msgBox(PAYCARD_TYPE_GIFT,"Card Not Used","That card number was not used in this transaction","[clear] to cancel");
+				$json['output'] = PaycardLib::paycard_msgBox(PaycardLib::PAYCARD_TYPE_GIFT,"Card Not Used","That card number was not used in this transaction","[clear] to cancel");
 				return $json;
 			} else if( $num > 1) {
-				$json['output'] = paycard_msgBox(PAYCARD_TYPE_GIFT,"Multiple Uses","That card number was used more than once in this transaction; select the payment and press VOID","[clear] to cancel");
+				$json['output'] = PaycardLib::paycard_msgBox(PaycardLib::PAYCARD_TYPE_GIFT,"Multiple Uses","That card number was used more than once in this transaction; select the payment and press VOID","[clear] to cancel");
 				return $json;
 			}
 			$payment = $dbTrans->fetch_array($search);
@@ -90,12 +90,12 @@ class Valutec extends BasicCCModule {
 
 		// check card data for anything else
 		if( $validate) {
-			if( paycard_validNumber($CORE_LOCAL->get("paycard_PAN")) != 1) {
-				$json['output'] = paycard_errBox(PAYCARD_TYPE_GIFT,"Invalid Card Number",
+			if( PaycardLib::paycard_validNumber($CORE_LOCAL->get("paycard_PAN")) != 1) {
+				$json['output'] = PaycardLib::paycard_errBox(PaycardLib::PAYCARD_TYPE_GIFT,"Invalid Card Number",
 					"Swipe again or type in manually","[clear] to cancel");
 				return $json;
-			} else if( paycard_accepted($CORE_LOCAL->get("paycard_PAN"), !paycard_live(PAYCARD_TYPE_GIFT)) != 1) {
-				$json['output'] = paycard_msgBox(PAYCARD_TYPE_GIFT,"Unsupported Card Type",
+			} else if( PaycardLib::paycard_accepted($CORE_LOCAL->get("paycard_PAN"), !PaycardLib::paycard_live(PaycardLib::PAYCARD_TYPE_GIFT)) != 1) {
+				$json['output'] = PaycardLib::paycard_msgBox(PaycardLib::PAYCARD_TYPE_GIFT,"Unsupported Card Type",
 					"We cannot process " . $CORE_LOCAL->get("paycard_issuer") . " cards","[clear] to cancel");
 				return $json;
 			}
@@ -103,24 +103,24 @@ class Valutec extends BasicCCModule {
 
 		// other modes
 		switch( $CORE_LOCAL->get("paycard_mode")) {
-		case PAYCARD_MODE_AUTH:
+		case PaycardLib::PAYCARD_MODE_AUTH:
 			$CORE_LOCAL->set("paycard_amount",$CORE_LOCAL->get("amtdue"));
 			$CORE_LOCAL->set("paycard_id",$CORE_LOCAL->get("LastID")+1); // kind of a hack to anticipate it this way..
 			$json['main_frame'] = $CORE_PATH.'gui-modules/paycardboxMsgAuth.php';
 			return $json;
 	
-		case PAYCARD_MODE_ACTIVATE:
-		case PAYCARD_MODE_ADDVALUE:
+		case PaycardLib::PAYCARD_MODE_ACTIVATE:
+		case PaycardLib::PAYCARD_MODE_ADDVALUE:
 			$CORE_LOCAL->set("paycard_amount",0);
 			$CORE_LOCAL->set("paycard_id",$CORE_LOCAL->get("LastID")+1); // kind of a hack to anticipate it this way..
 			$json['main_frame'] = $CORE_PATH.'gui-modules/paycardboxMsgGift.php';
 			return $json;
 	
-		case PAYCARD_MODE_BALANCE:
+		case PaycardLib::PAYCARD_MODE_BALANCE:
 		// forbid balance check on testcard2, because it prevents voiding of anything before (like activation),
 		// and we want testcard2 to remain inactive so that we can use it to test activations
 			if( !strcasecmp($CORE_LOCAL->get("paycard_PAN"),"7018525757980004481")) { // == doesn't work because the string is numeric and very large, so PHP has trouble turning it into an (int) for comparison
-				$json['output'] = paycard_msgBox(PAYCARD_TYPE_GIFT,"Not Allowed",
+				$json['output'] = PaycardLib::paycard_msgBox(PaycardLib::PAYCARD_TYPE_GIFT,"Not Allowed",
 					"The second test gift card may not be Balance-Checked<br>Ask IT for details",
 					"[clear] to cancel");
 				return $json;
@@ -130,7 +130,7 @@ class Valutec extends BasicCCModule {
 		} // switch mode
 	
 		// if we're still here, it's an error
-		$json['output'] = paycard_errBox(PAYCARD_TYPE_GIFT,"Invalid Mode",
+		$json['output'] = PaycardLib::paycard_errBox(PaycardLib::PAYCARD_TYPE_GIFT,"Invalid Mode",
 			"This card type does not support that processing mode",
 			"[clear] to cancel");
 		return $json;
@@ -140,21 +140,21 @@ class Valutec extends BasicCCModule {
 	 * Process the paycard request and return
 	 * an error value as defined in paycardLib.php.
 	 *
-	 * On success, return PAYCARD_ERR_OK.
+	 * On success, return PaycardLib::PAYCARD_ERR_OK.
 	 * On failure, return anything else and set any
 	 * error messages to be displayed in
 	 * $CORE_LOCAL->["boxMsg"].
 	 */
 	function doSend($type){
 		switch($type){
-		case PAYCARD_MODE_ACTIVATE:
-		case PAYCARD_MODE_ADDVALUE:
-		case PAYCARD_MODE_AUTH: 
+		case PaycardLib::PAYCARD_MODE_ACTIVATE:
+		case PaycardLib::PAYCARD_MODE_ADDVALUE:
+		case PaycardLib::PAYCARD_MODE_AUTH: 
 			return $this->send_auth();
-		case PAYCARD_MODE_VOID:
-		case PAYCARD_MODE_VOIDITEM:
+		case PaycardLib::PAYCARD_MODE_VOID:
+		case PaycardLib::PAYCARD_MODE_VOIDITEM:
 			return $this->send_void();
-		case PAYCARD_MODE_BALANCE:
+		case PaycardLib::PAYCARD_MODE_BALANCE:
 			return $this->send_balance();
 		default:
 			return $this->setErrorMsg(0);
@@ -163,7 +163,7 @@ class Valutec extends BasicCCModule {
 
 	/* cleanup()
 	 * This function is called when doSend() returns
-	 * PAYCARD_ERR_OK. (see paycardAuthorize.php)
+	 * PaycardLib::PAYCARD_ERR_OK. (see paycardAuthorize.php)
 	 * I use it for tendering, printing
 	 * receipts, etc, but it's really only for code
 	 * cleanliness. You could leave this as is and
@@ -172,12 +172,12 @@ class Valutec extends BasicCCModule {
 	function cleanup($json){
 		global $CORE_LOCAL;
 		switch($CORE_LOCAL->get("paycard_mode")){
-		case PAYCARD_MODE_BALANCE:
+		case PaycardLib::PAYCARD_MODE_BALANCE:
 			$resp = $CORE_LOCAL->get("paycard_response");
 			$CORE_LOCAL->set("boxMsg","<b>Success</b><font size=-1><p>Gift card balance: $".$resp["Balance"]."<p>\"rp\" to print<br>[enter] to continue</font>");	
 			break;
-		case PAYCARD_MODE_ADDVALUE:
-		case PAYCARD_MODE_ACTIVATE:
+		case PaycardLib::PAYCARD_MODE_ADDVALUE:
+		case PaycardLib::PAYCARD_MODE_ACTIVATE:
 			$CORE_LOCAL->set("autoReprint",1);
 			$ttl = $CORE_LOCAL->get("paycard_amount");
 			PrehLib::deptkey($ttl*100,9020);
@@ -188,7 +188,7 @@ class Valutec extends BasicCCModule {
 				$CORE_LOCAL->set("boxMsg",$CORE_LOCAL->get("boxMsg")."<br><b>REMEMBER TO VOID THIS</b><br>(ask IT for details)");
 			$CORE_LOCAL->set("boxMsg",$CORE_LOCAL->get("boxMsg")."<p>[enter] to continue<br>\"rp\" to reprint slip</font>");
 			break;
-		case PAYCARD_MODE_AUTH:
+		case PaycardLib::PAYCARD_MODE_AUTH:
 			$CORE_LOCAL->set("autoReprint",1);
 			PrehLib::tender("GD", ($CORE_LOCAL->get("paycard_amount")*100));
 			$resp = $CORE_LOCAL->get("paycard_response");
@@ -198,8 +198,8 @@ class Valutec extends BasicCCModule {
 				$CORE_LOCAL->set("boxMsg",$CORE_LOCAL->get("boxMsg")."<br><b>REMEMBER TO VOID THIS</b><br>(ask IT for details)");
 			$CORE_LOCAL->set("boxMsg",$CORE_LOCAL->get("boxMsg")."<p>[enter] to continue<br>\"rp\" to reprint slip<br>[void] to cancel and void</font>");
 			break;
-		case PAYCARD_MODE_VOID:
-		case PAYCARD_MODE_VOIDITEM:
+		case PaycardLib::PAYCARD_MODE_VOID:
+		case PaycardLib::PAYCARD_MODE_VOIDITEM:
 			$CORE_LOCAL->set("autoReprint",1);
 			$v = new Void();
 			$v->voidid($CORE_LOCAL->get("paycard_id"));
@@ -219,7 +219,7 @@ class Valutec extends BasicCCModule {
 		global $CORE_LOCAL,$CORE_PATH;
 		// situation checking
 		if( $CORE_LOCAL->get("gcIntegrate") != 1) { // gift card integration must be enabled
-			$json['output'] = paycard_errBox(PAYCARD_TYPE_GIFT,"Card Integration Disabled",
+			$json['output'] = PaycardLib::paycard_errBox(PaycardLib::PAYCARD_TYPE_GIFT,"Card Integration Disabled",
 				"Please process gift cards in standalone","[clear] to cancel");
 			return $json;
 		}
@@ -240,11 +240,11 @@ class Valutec extends BasicCCModule {
 		$search = $dbTrans->query($sql);
 		$num = $dbTrans->num_rows($search);
 		if( $num < 1) {
-			$json['output'] = paycard_errBox(PAYCARD_TYPE_GIFT,"Internal Error",
+			$json['output'] = PaycardLib::paycard_errBox(PaycardLib::PAYCARD_TYPE_GIFT,"Internal Error",
 				"Card request not found, unable to void","[clear] to cancel");
 			return $json;
 		} else if( $num > 1) {
-			$json['output'] = paycard_errBox(PAYCARD_TYPE_GIFT,"Internal Error",
+			$json['output'] = PaycardLib::paycard_errBox(PaycardLib::PAYCARD_TYPE_GIFT,"Internal Error",
 				"Card request not distinct, unable to void","[clear] to cancel");
 			return $json;
 		}
@@ -261,11 +261,11 @@ class Valutec extends BasicCCModule {
 		$search = $dbTrans->query($sql);
 		$num = $dbTrans->num_rows($search);
 		if( $num < 1) {
-			$json['output'] = paycard_errBox(PAYCARD_TYPE_GIFT,"Internal Error",
+			$json['output'] = PaycardLib::paycard_errBox(PaycardLib::PAYCARD_TYPE_GIFT,"Internal Error",
 				"Card response not found, unable to void","[clear] to cancel");
 			return $json;
 		} else if( $num > 1) {
-			$json['output'] =paycard_errBox(PAYCARD_TYPE_GIFT,"Internal Error",
+			$json['output'] =PaycardLib::paycard_errBox(PaycardLib::PAYCARD_TYPE_GIFT,"Internal Error",
 				"Card response not distinct, unable to void","[clear] to cancel");
 			return $json;
 		}
@@ -285,11 +285,11 @@ class Valutec extends BasicCCModule {
 		$search = $dbTrans->query($sql);
 		$num = $dbTrans->num_rows($search);
 		if( $num < 1) {
-			$json['output'] = paycard_errBox(PAYCARD_TYPE_GIFT,"Internal Error",
+			$json['output'] = PaycardLib::paycard_errBox(PaycardLib::PAYCARD_TYPE_GIFT,"Internal Error",
 				"Transaction item not found, unable to void","[clear] to cancel");
 			return $json;
 		} else if( $num > 1) {
-			$json['output'] =paycard_errBox(PAYCARD_TYPE_GIFT,"Internal Error",
+			$json['output'] =PaycardLib::paycard_errBox(PaycardLib::PAYCARD_TYPE_GIFT,"Internal Error",
 				"Transaction item not distinct, unable to void","[clear] to cancel");
 			return $json;
 		}
@@ -298,32 +298,32 @@ class Valutec extends BasicCCModule {
 		// make sure the gift card transaction is applicable to void
 		if( !$response || $response['commErr'] != 0 || 
 		     $response['httpCode'] != 200 || $response['validResponse'] != 1) {
-			$json['output'] = paycard_msgBox(PAYCARD_TYPE_GIFT,"Unable to Void",
+			$json['output'] = PaycardLib::paycard_msgBox(PaycardLib::PAYCARD_TYPE_GIFT,"Unable to Void",
 				"Card transaction not successful","[clear] to cancel");
 			return $json;
 		} else if( $voided > 0) {
-			$json['output'] =paycard_errBox(PAYCARD_TYPE_GIFT,"Unable to Void",
+			$json['output'] =PaycardLib::paycard_errBox(PaycardLib::PAYCARD_TYPE_GIFT,"Unable to Void",
 				"Card transaction already voided","[clear] to cancel");
 			return $json;
-		} else if( $request['live'] != paycard_live(PAYCARD_TYPE_GIFT)) {
+		} else if( $request['live'] != PaycardLib::paycard_live(PaycardLib::PAYCARD_TYPE_GIFT)) {
 			// this means the transaction was submitted to the test platform, but we now think we're in live mode, or vice-versa
 			// I can't imagine how this could happen (short of serious $_SESSION corruption), but worth a check anyway.. --atf 7/26/07
-			$json['output'] = paycard_errBox(PAYCARD_TYPE_GIFT,"Unable to Void",
+			$json['output'] = PaycardLib::paycard_errBox(PaycardLib::PAYCARD_TYPE_GIFT,"Unable to Void",
 				"Processor platform mismatch","[clear] to cancel");
 			return $json;
 		} else if( $response['xAuthorized'] != 'true') {
-			$json['output'] = paycard_msgBox(PAYCARD_TYPE_GIFT,"Unable to Void",
+			$json['output'] = PaycardLib::paycard_msgBox(PaycardLib::PAYCARD_TYPE_GIFT,"Unable to Void",
 				"Card transaction not approved","[clear] to cancel");
 			return $json;
 		} else if( $response['xAuthorizationCode'] < 1) {
-			$json['output'] = paycard_errBox(PAYCARD_TYPE_GIFT,"Internal Error",
+			$json['output'] = PaycardLib::paycard_errBox(PaycardLib::PAYCARD_TYPE_GIFT,"Internal Error",
 				"Invalid authorization number","[clear] to cancel");
 			return $json;
 		}
 
 		// make sure the transaction line-item is applicable to void
 		if( $lineitem['trans_status'] == "V" || $lineitem['voided'] != 0) {
-			$json['output'] = paycard_errBox(PAYCARD_TYPE_GIFT,"Internal Error",
+			$json['output'] = PaycardLib::paycard_errBox(PaycardLib::PAYCARD_TYPE_GIFT,"Internal Error",
 				"Void records do not match","[clear] to cancel");
 			return $json;
 		}
@@ -335,11 +335,11 @@ class Valutec extends BasicCCModule {
 		else
 			$CORE_LOCAL->set("paycard_amount",$request['amount']);
 		$CORE_LOCAL->set("paycard_id",$transID);
-		$CORE_LOCAL->set("paycard_type",PAYCARD_TYPE_GIFT);
+		$CORE_LOCAL->set("paycard_type",PaycardLib::PAYCARD_TYPE_GIFT);
 		if( $lineitem['trans_type'] == "T" && $lineitem['trans_subtype'] == "GD") {
-			$CORE_LOCAL->set("paycard_mode",PAYCARD_MODE_VOID);
+			$CORE_LOCAL->set("paycard_mode",PaycardLib::PAYCARD_MODE_VOID);
 		} else {
-			$CORE_LOCAL->set("paycard_mode",PAYCARD_MODE_VOIDITEM);
+			$CORE_LOCAL->set("paycard_mode",PaycardLib::PAYCARD_MODE_VOIDITEM);
 		}
 	
 		// display FEC code box
@@ -354,7 +354,7 @@ class Valutec extends BasicCCModule {
 		// initialize
 		$dbTrans = Database::tDataConnect();
 		if( !$dbTrans)
-			return $this->setErrorMsg(PAYCARD_ERR_NOSEND); // internal error, nothing sent (ok to retry)
+			return $this->setErrorMsg(PaycardLib::PAYCARD_ERR_NOSEND); // internal error, nothing sent (ok to retry)
 
 		// prepare data for the request
 		$today = date('Ymd'); // numeric date only, it goes in an 'int' field as part of the primary key
@@ -368,10 +368,10 @@ class Valutec extends BasicCCModule {
 		$amountText = number_format(abs($amount), 2, '.', '');
 		$mode = "";
 		switch( $CORE_LOCAL->get("paycard_mode")) {
-		case PAYCARD_MODE_AUTH:      $mode = (($amount < 0) ? 'refund' : 'tender');  break;
-		case PAYCARD_MODE_ADDVALUE:  $mode = 'addvalue';  break;
-		case PAYCARD_MODE_ACTIVATE:  $mode = 'activate';  break;
-		default:  return $this->setErrorMsg(PAYCARD_ERR_NOSEND);
+		case PaycardLib::PAYCARD_MODE_AUTH:      $mode = (($amount < 0) ? 'refund' : 'tender');  break;
+		case PaycardLib::PAYCARD_MODE_ADDVALUE:  $mode = 'addvalue';  break;
+		case PaycardLib::PAYCARD_MODE_ACTIVATE:  $mode = 'activate';  break;
+		default:  return $this->setErrorMsg(PaycardLib::PAYCARD_ERR_NOSEND);
 		}
 		$termID = $this->getTermID();
 		$live = $this->isLive();
@@ -395,7 +395,7 @@ class Valutec extends BasicCCModule {
 			$sql = str_replace("]","",$sql);
 		}
 		if( !$dbTrans->query($sql)){
-			return $this->setErrorMsg(PAYCARD_ERR_NOSEND); // internal error, nothing sent (ok to retry)
+			return $this->setErrorMsg(PaycardLib::PAYCARD_ERR_NOSEND); // internal error, nothing sent (ok to retry)
 		}
                 
 		// assemble and send request
@@ -430,7 +430,7 @@ class Valutec extends BasicCCModule {
 		// initialize
 		$dbTrans = Database::tDataConnect();
 		if( !$dbTrans)
-			return $this->setErrorMsg(PAYCARD_ERR_NOSEND); // database error, nothing sent (ok to retry)
+			return $this->setErrorMsg(PaycardLib::PAYCARD_ERR_NOSEND); // database error, nothing sent (ok to retry)
 
 		// prepare data for the void request
 		$today = date('Ymd'); // numeric date only, it goes in an 'int' field as part of the primary key
@@ -458,7 +458,7 @@ class Valutec extends BasicCCModule {
 		}
 		$search = $dbTrans->query($sql);
 		if( !$search || $dbTrans->num_rows($search) != 1)
-			return PAYCARD_ERR_NOSEND; // database error, nothing sent (ok to retry)
+			return PaycardLib::PAYCARD_ERR_NOSEND; // database error, nothing sent (ok to retry)
 		$log = $dbTrans->fetch_array($search);
 		$authcode = $log['xAuthorizationCode'];
 		$this->temp = $authcode;
@@ -517,14 +517,14 @@ class Valutec extends BasicCCModule {
 	function handleResponse($authResult){
 		global $CORE_LOCAL;
 		switch($CORE_LOCAL->get("paycard_mode")){
-		case PAYCARD_MODE_AUTH:
-		case PAYCARD_MODE_ACTIVATE:
-		case PAYCARD_MODE_ADDVALUE:
+		case PaycardLib::PAYCARD_MODE_AUTH:
+		case PaycardLib::PAYCARD_MODE_ACTIVATE:
+		case PaycardLib::PAYCARD_MODE_ADDVALUE:
 			return $this->handleResponseAuth($authResult);
-		case PAYCARD_MODE_VOID:
-		case PAYCARD_MODE_VOIDITEM:
+		case PaycardLib::PAYCARD_MODE_VOID:
+		case PaycardLib::PAYCARD_MODE_VOIDITEM:
 			return $this->handleResponseVoid($authResult);
-		case PAYCARD_MODE_BALANCE:
+		case PaycardLib::PAYCARD_MODE_BALANCE:
 			return $this->handleResponseBalance($authResult);
 		}
 	}
@@ -536,7 +536,7 @@ class Valutec extends BasicCCModule {
 		// initialize
 		$dbTrans = Database::tDataConnect();
 		if( !$dbTrans)
-			return $this->setErrorMsg(PAYCARD_ERR_NOSEND); // internal error, nothing sent (ok to retry)
+			return $this->setErrorMsg(PaycardLib::PAYCARD_ERR_NOSEND); // internal error, nothing sent (ok to retry)
 
 		// prepare data for the request
 		$today = date('Ymd'); // numeric date only, it goes in an 'int' field as part of the primary key
@@ -583,7 +583,7 @@ class Valutec extends BasicCCModule {
                                         }       
                                 }      
 				elseif ($balance && $balance !== ""){
-					$errorMsg = "NSF, BAL: ".paycard_moneyFormat($balance);	
+					$errorMsg = "NSF, BAL: ".PaycardLib::paycard_moneyFormat($balance);	
 				}
 			}
 
@@ -618,14 +618,14 @@ class Valutec extends BasicCCModule {
 			if ($authResult['curlHTTP'] == '0'){
 					$CORE_LOCAL->set("boxMsg","No response from processor<br />
 								The transaction did not go through");
-					return PAYCARD_ERR_PROC;
+					return PaycardLib::PAYCARD_ERR_PROC;
 			}
-			return $this->setErrorMsg(PAYCARD_ERR_COMM);
+			return $this->setErrorMsg(PaycardLib::PAYCARD_ERR_COMM);
 		}
 
 		 // check for data errors (any failure to parse response XML or echo'd field mismatch
 		if( $validResponse != 1) {
-			return $this->setErrorMsg(PAYCARD_ERR_DATA); // invalid server response, we don't know if the transaction was processed (use carbon)
+			return $this->setErrorMsg(PaycardLib::PAYCARD_ERR_DATA); // invalid server response, we don't know if the transaction was processed (use carbon)
 		}
 
 		$amtUsed = $xml->get('CARDAMOUNTUSED');
@@ -648,12 +648,12 @@ class Valutec extends BasicCCModule {
 		// comm successful, check the Authorized, AuthorizationCode and ErrorMsg fields
 		if( $xml->get('AUTHORIZED') == 'true' && $xml->get('AUTHORIZATIONCODE') != '' && 
 			$xml->get_first('ERRORMSG') == '') {
-			return PAYCARD_ERR_OK; // authorization approved, no error
+			return PaycardLib::PAYCARD_ERR_OK; // authorization approved, no error
 		}
 
 		// the authorizor gave us some failure code
 		$CORE_LOCAL->set("boxMsg","Processor error: ".$errorMsg);
-		return PAYCARD_ERR_PROC; // authorization failed, response fields in $_SESSION["paycard_response"]
+		return PaycardLib::PAYCARD_ERR_PROC; // authorization failed, response fields in $_SESSION["paycard_response"]
 	}
 
 	function handleResponseVoid($vdResult){
@@ -663,7 +663,7 @@ class Valutec extends BasicCCModule {
 		// initialize
 		$dbTrans = Database::tDataConnect();
 		if( !$dbTrans)
-			return $this->setErrorMsg(PAYCARD_ERR_NOSEND); // database error, nothing sent (ok to retry)
+			return $this->setErrorMsg(PaycardLib::PAYCARD_ERR_NOSEND); // database error, nothing sent (ok to retry)
 
 		// prepare data for the void request
 		$today = date('Ymd'); // numeric date only, it goes in an 'int' field as part of the primary key
@@ -718,13 +718,13 @@ class Valutec extends BasicCCModule {
 			if ($authResult['curlHTTP'] == '0'){
 					$CORE_LOCAL->set("boxMsg","No response from processor<br />
 								The transaction did not go through");
-					return PAYCARD_ERR_PROC;
+					return PaycardLib::PAYCARD_ERR_PROC;
 			}
-			return $this->setErrorMsg(PAYCARD_ERR_COMM); // comm error, try again
+			return $this->setErrorMsg(PaycardLib::PAYCARD_ERR_COMM); // comm error, try again
 		}
 		// check for data errors (any failure to parse response XML or echo'd field mismatch)
 		if( $validResponse != 1) {
-			return $this->setErrorMsg(PAYCARD_ERR_DATA); // invalid server response, we don't know if the transaction was voided (use carbon)
+			return $this->setErrorMsg(PaycardLib::PAYCARD_ERR_DATA); // invalid server response, we don't know if the transaction was voided (use carbon)
 		}
 
 		// put the parsed response into $CORE_LOCAL so the caller, receipt printer, etc can get the data they need
@@ -737,12 +737,12 @@ class Valutec extends BasicCCModule {
 		// comm successful, check the Authorized, AuthorizationCode and ErrorMsg fields
 		if( $xml->get('AUTHORIZED') == 'true' && $xml->get('AUTHORIZATIONCODE') != '' 
 			&& $xml->get_first('ERRORMSG') == '') {
-			return PAYCARD_ERR_OK; // void successful, no error
+			return PaycardLib::PAYCARD_ERR_OK; // void successful, no error
 		}
 
 		// the authorizor gave us some failure code
 		$CORE_LOCAL->set("boxMsg","PROCESSOR ERROR: ".$xml->get_first("ERRORMSG"));
-		return PAYCARD_ERR_PROC; 
+		return PaycardLib::PAYCARD_ERR_PROC; 
 	}
 
 	function handleResponseBalance($balResult){
@@ -754,9 +754,9 @@ class Valutec extends BasicCCModule {
 			if ($authResult['curlHTTP'] == '0'){
 					$CORE_LOCAL->set("boxMsg","No response from processor<br />
 								The transaction did not go through");
-					return PAYCARD_ERR_PROC;
+					return PaycardLib::PAYCARD_ERR_PROC;
 			}
-			return $this->setErrorMsg(PAYCARD_ERR_COMM); // comm error, try again
+			return $this->setErrorMsg(PaycardLib::PAYCARD_ERR_COMM); // comm error, try again
 		}
 
 		$CORE_LOCAL->set("paycard_response",array());
@@ -774,12 +774,12 @@ class Valutec extends BasicCCModule {
                         && (!$xml->get('ERRORMSG') || $xml->get_first('ERRORMSG') == '')
                         && $xml->get('BALANCE')
 		) {
-			return PAYCARD_ERR_OK; // balance checked, no error
+			return PaycardLib::PAYCARD_ERR_OK; // balance checked, no error
 		}
 
 		// the authorizor gave us some failure code
 		$CORE_LOCAL->set("boxMsg","Processor error: ".$xml->get_first("ERRORMSG"));
-		return PAYCARD_ERR_PROC; // authorization failed, response fields in $_SESSION["paycard_response"]
+		return PaycardLib::PAYCARD_ERR_PROC; // authorization failed, response fields in $_SESSION["paycard_response"]
 	}
 
 	// generate a partially-daily-unique identifier number according to the gift card processor's limitations

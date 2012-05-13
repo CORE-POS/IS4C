@@ -25,8 +25,6 @@ $CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
 if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
 
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
-if (!function_exists("paycard_reset")) 
-	include_once(realpath(dirname(__FILE__)."/../cc-modules/lib/paycardLib.php"));
 
 class giftcardlist extends NoInputPage {
 

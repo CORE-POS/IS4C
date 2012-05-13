@@ -26,9 +26,6 @@ if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= 
 
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
-if (!function_exists("paycard_reset")) 
-	include_once(realpath(dirname(__FILE__)."/../cc-modules/lib/paycardLib.php"));
-
 // send the request
 $result = 0; // 0 is never returned, so we use it to make sure it changes
 $myObj = 0;
@@ -45,8 +42,8 @@ foreach($CORE_LOCAL->get("RegisteredPaycardClasses") as $rpc){
 $st = MiscLib::sigTermObject();
 
 $result = $myObj->doSend($CORE_LOCAL->get("paycard_mode"));
-if ($result == PAYCARD_ERR_OK){
-	paycard_wipe_pan();
+if ($result == PaycardLib::PAYCARD_ERR_OK){
+	PaycardLib::paycard_wipe_pan();
 	$json = $myObj->cleanup($json);
 	$CORE_LOCAL->set("strRemembered","");
 	$CORE_LOCAL->set("msgrepeat",0);
@@ -54,7 +51,7 @@ if ($result == PAYCARD_ERR_OK){
 		$st->WriteToScale($CORE_LOCAL->get("ccTermOut"));
 }
 else {
-	paycard_reset();
+	PaycardLib::paycard_reset();
 	$CORE_LOCAL->set("msgrepeat",0);
 	$json['main_frame'] = $CORE_PATH.'gui-modules/boxMsg2.php';
 	if (is_object($st))

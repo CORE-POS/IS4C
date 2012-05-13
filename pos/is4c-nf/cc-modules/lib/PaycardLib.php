@@ -25,36 +25,37 @@ $CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
 if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
 
 if (!isset($CORE_LOCAL)){
-	include($CORE_PATH."cc-modules/lib/LS_Access.php");
+	include(realpath(dirname(__FILE__)."/LS_Access.php"));
 	$CORE_LOCAL = new LS_Access();	
 }
 
 /**
- @file
+ @class PaycardLib
  @brief Defines constants and functions for card processing.
 */
 
-define('PAYCARD_MODE_BALANCE',   1);
-define('PAYCARD_MODE_AUTH',      2);
-define('PAYCARD_MODE_VOID',      3); // for voiding tenders/credits, rung in as T
-define('PAYCARD_MODE_ACTIVATE',  4);
-define('PAYCARD_MODE_ADDVALUE',  5);
-define('PAYCARD_MODE_VOIDITEM',  6); // for voiding sales/addvalues, rung in as I
-define('PAYCARD_MODE_CASHOUT',   7); // for cashing out a wedgecard
+class PaycardLib {
 
-define('PAYCARD_TYPE_UNKNOWN',   0);
-define('PAYCARD_TYPE_CREDIT',    1);
-define('PAYCARD_TYPE_GIFT',      2);
-define('PAYCARD_TYPE_STORE',     3);
+	const PAYCARD_MODE_BALANCE   	=1;
+	const PAYCARD_MODE_AUTH      	=2;
+	const PAYCARD_MODE_VOID      	=3; // for voiding tenders/credits, rung in as T
+	const PAYCARD_MODE_ACTIVATE  	=4;
+	const PAYCARD_MODE_ADDVALUE  	=5;
+	const PAYCARD_MODE_VOIDITEM  	=6; // for voiding sales/addvalues, rung in as I
+	const PAYCARD_MODE_CASHOUT   	=7; // for cashing out a wedgecard
 
-define('PAYCARD_ERR_OK',         1);
-define('PAYCARD_ERR_NOSEND',    -1);
-define('PAYCARD_ERR_COMM',      -2);
-define('PAYCARD_ERR_TIMEOUT',   -3);
-define('PAYCARD_ERR_DATA',      -4);
-define('PAYCARD_ERR_PROC',      -5);
-define('PAYCARD_ERR_CONTINUE',	-6);
+	const PAYCARD_TYPE_UNKNOWN   	=0;
+	const PAYCARD_TYPE_CREDIT    	=1;
+	const PAYCARD_TYPE_GIFT      	=2;
+	const PAYCARD_TYPE_STORE     	=3;
 
+	const PAYCARD_ERR_OK         	=1;
+	const PAYCARD_ERR_NOSEND    	=-1;
+	const PAYCARD_ERR_COMM      	=-2;
+	const PAYCARD_ERR_TIMEOUT   	=-3;
+	const PAYCARD_ERR_DATA      	=-4;
+	const PAYCARD_ERR_PROC      	=-5;
+	const PAYCARD_ERR_CONTINUE	=-6;
 
 // identify payment card type, issuer and acceptance based on card number
 // individual functions are based on this one
@@ -67,15 +68,15 @@ define('PAYCARD_ERR_CONTINUE',	-6);
    - 'accepted' boolean, whether card is accepted
    - 'test' boolean, whether number is a testing card
 */
-function paycard_info($pan) {
+static public function paycard_info($pan) {
 	$len = strlen($pan);
 	$iin = (int)substr($pan,0,7);
 	$issuer = "Unknown";
-	$type = PAYCARD_TYPE_UNKNOWN;
+	$type = self::PAYCARD_TYPE_UNKNOWN;
 	$accepted = false;
 	$test = false;
 	if( $len >= 13 && $len <= 16) {
-		$type = PAYCARD_TYPE_CREDIT;
+		$type = self::PAYCARD_TYPE_CREDIT;
 		if(      $iin>=3000000 && $iin<=3099999) { $issuer="Diners Club"; }
 		else if( $iin>=3400000 && $iin<=3499999) { $issuer="American Express"; }
 		else if( $iin>=3528000 && $iin<=3589999) { $issuer="JCB";        $accepted=true; } // Japan Credit Bureau, accepted via Discover
@@ -88,7 +89,7 @@ function paycard_info($pan) {
 		else if( $iin>=6221260 && $iin<=6229259) { $issuer="UnionPay";   $accepted=true; } // China UnionPay, accepted via Discover
 		else if( $iin>=6500000 && $iin<=6599999) { $issuer="Discover";   $accepted=true; }
 	} else if( $len == 19) {
-		$type = PAYCARD_TYPE_GIFT;
+		$type = self::PAYCARD_TYPE_GIFT;
 		if(      $iin>=7019208 && $iin<=7019208) { $issuer="Co-op Gift"; $accepted=true; } // NCGA gift cards
 		else if( $iin>=7018525 && $iin<=7018525) { $issuer="Valutec Gift"; $test=true; } // valutec test cards (linked to test merchant/terminal ID)
 		else if ($iin>=6050110 && $iin<=6050110) {
@@ -112,8 +113,8 @@ function paycard_info($pan) {
   testing cards. True makes test cards
   accepted.
 */
-function paycard_accepted($pan, $acceptTest) {
-	$info = paycard_info($pan);
+static public function paycard_accepted($pan, $acceptTest) {
+	$info = self::paycard_info($pan);
 	if( $info['test'] && $acceptTest)
 		return 1;
 	return ($info['accepted'] ? 1 : 0);
@@ -125,8 +126,8 @@ function paycard_accepted($pan, $acceptTest) {
   @param $pan the card number
   @return a paycard type constant
 */
-function paycard_type($pan) {
-	$info = paycard_info($pan);
+static public function paycard_type($pan) {
+	$info = self::paycard_info($pan);
 	return $info['type'];
 } // paycard_type()
 
@@ -140,8 +141,8 @@ function paycard_type($pan) {
   Issuers include "Visa", "American Express", "MasterCard",
   and "Discover". Unrecognized cards will return "Unknown".
 */
-function paycard_issuer($pan) {
-	$info = paycard_info($pan);
+static public function paycard_issuer($pan) {
+	$info = self::paycard_info($pan);
 	return $info['issuer'];
 } // paycard_issuer()
 
@@ -153,20 +154,20 @@ function paycard_issuer($pan) {
    - 1 if type is enabled
    - 0 if type is disabled
 */
-function paycard_live($type = PAYCARD_TYPE_UNKNOWN) {
+static public function paycard_live($type = self::PAYCARD_TYPE_UNKNOWN) {
 	global $CORE_LOCAL;
 
 	// these session vars require training mode no matter what card type
 	if( $CORE_LOCAL->get("training") != 0 || $CORE_LOCAL->get("CashierNo") == 9999)
 		return 0;
 	// special session vars for each card type
-	if( $type === PAYCARD_TYPE_CREDIT) {
+	if( $type === self::PAYCARD_TYPE_CREDIT) {
 		if( $CORE_LOCAL->get("ccLive") != 1)
 			return 0;
-	} else if( $type === PAYCARD_TYPE_GIFT) {
+	} else if( $type === self::PAYCARD_TYPE_GIFT) {
 		if( $CORE_LOCAL->get("training") == 1)
 			return 0;
-	} else if( $type === PAYCARD_TYPE_STORE) {
+	} else if( $type === self::PAYCARD_TYPE_STORE) {
 		if( $CORE_LOCAL->get("storecardLive") != 1)
 			return 0;
 	}
@@ -177,7 +178,7 @@ function paycard_live($type = PAYCARD_TYPE_UNKNOWN) {
 /**
   Clear paycard variables from $CORE_LOCAL.
 */
-function paycard_reset() {
+static public function paycard_reset() {
 	global $CORE_LOCAL;
 
 	// make sure this matches session.php!!!
@@ -204,7 +205,7 @@ function paycard_reset() {
   <b>Storing card data in $CORE_LOCAL is
   not recommended</b>.
 */
-function paycard_wipe_pan(){
+static public function paycard_wipe_pan(){
 	global $CORE_LOCAL;
 	$CORE_LOCAL->set("paycard_tr1",false);
 	$CORE_LOCAL->set("paycard_tr2",false);
@@ -221,7 +222,7 @@ function paycard_wipe_pan(){
    - 1 if the number is valid
    - 0 if the number is invalid
 */
-function paycard_validNumber($pan) {
+static public function paycard_validNumber($pan) {
 /* Luhn Algorithm <en.wikipedia.org/wiki/Luhn_algorithm>
 1. Starting with the rightmost digit (which is the check digit) and moving left, double the value of every second digit.  For any
   digits that thus become 10 or more, add their digits together as if casting out nines. For example, 1111 becomes 2121, while
@@ -262,7 +263,7 @@ function paycard_validNumber($pan) {
    - -2 if the month is smarch-y
    - -3 if the date is in the past
 */
-function paycard_validExpiration($exp) {
+static public function paycard_validExpiration($exp) {
 	// verify expiration format (MMYY)
 	if( strlen($exp) != 4 || !ctype_digit($exp))
 		return -1;
@@ -302,7 +303,7 @@ function paycard_validExpiration($exp) {
   If the data is really malformed, the return
   will be an error code instead of an array.
 */
-function paycard_magstripe($data) {
+static public function paycard_magstripe($data) {
 	global $CORE_LOCAL;
 
 	// initialize
@@ -409,7 +410,7 @@ function paycard_magstripe($data) {
 
 
 // return a card number with digits replaced by *s, except for some number of leading or tailing digits as requested
-function paycard_maskPAN($pan,$first,$last) {
+static public function paycard_maskPAN($pan,$first,$last) {
 	$mask = "";
 	// sanity check
 	$len = strlen($pan);
@@ -428,8 +429,8 @@ function paycard_maskPAN($pan,$first,$last) {
 } // paycard_maskPAN()
 
 
-// helper function to format money amounts pre-php5
-function paycard_moneyFormat($amt) {
+// helper static public function to format money amounts pre-php5
+static public function paycard_moneyFormat($amt) {
 	$sign = "";
 	if( $amt < 0) {
 		$sign = "-";
@@ -439,8 +440,8 @@ function paycard_moneyFormat($amt) {
 } // paycard_moneyFormat
 
 
-// helper function to build error messages
-function paycard_errorText($title, $code, $text, $retry, $standalone, $refuse, $carbon, $tellIT, $type) {
+// helper static public function to build error messages
+static public function paycard_errorText($title, $code, $text, $retry, $standalone, $refuse, $carbon, $tellIT, $type) {
 	global $CORE_LOCAL;
 
 	// pick the icon
@@ -463,7 +464,7 @@ function paycard_errorText($title, $code, $text, $retry, $standalone, $refuse, $
 	if( $retry)      { $opt .= ($opt ? ", or" : "") . " <b>retry</b>";                 }
 	if( $standalone) { $opt .= ($opt ? ", or" : "") . " process in <b>standalone</b>"; }
 	if( $carbon) {
-		if( $type == PAYCARD_TYPE_CREDIT) { $opt .= ($opt ? ", or" : "") . " take a <b>carbon</b>"; }
+		if( $type == self::PAYCARD_TYPE_CREDIT) { $opt .= ($opt ? ", or" : "") . " take a <b>carbon</b>"; }
 		else { $opt .= ($opt ? ", or" : "") . " process <b>manually</b>"; }
 	}
 	if( $opt)        { $opt = "Please " . $opt . "."; }
@@ -484,12 +485,12 @@ function paycard_errorText($title, $code, $text, $retry, $standalone, $refuse, $
 
 
 // display a paycard-related error due to cashier mistake
-function paycard_msgBox($type, $title, $msg, $action) {
+static public function paycard_msgBox($type, $title, $msg, $action) {
 	global $CORE_LOCAL;
 	$header = "IT CORE - Payment Card";
-	if( $CORE_LOCAL->get("paycard_type") == PAYCARD_TYPE_CREDIT)      $header = "Wedge - Credit Card";
-	else if( $CORE_LOCAL->get("paycard_type") == PAYCARD_TYPE_GIFT)   $header = "Wedge - Gift Card";
-	else if( $CORE_LOCAL->get("paycard_type") == PAYCARD_TYPE_STORE)  $header = "Wedge - Wedge Card";
+	if( $CORE_LOCAL->get("paycard_type") == self::PAYCARD_TYPE_CREDIT)      $header = "Wedge - Credit Card";
+	else if( $CORE_LOCAL->get("paycard_type") == self::PAYCARD_TYPE_GIFT)   $header = "Wedge - Gift Card";
+	else if( $CORE_LOCAL->get("paycard_type") == self::PAYCARD_TYPE_STORE)  $header = "Wedge - Wedge Card";
 	$boxmsg = "<span class=\"larger\">".trim($title)."</span><p />";
 	$boxmsg .= trim($msg)."<p />".trim($action);
 	return boxMsg($boxmsg,$header,True);
@@ -497,17 +498,17 @@ function paycard_msgBox($type, $title, $msg, $action) {
 
 
 // display a paycard-related error due to system, network or other non-cashier mistake
-function paycard_errBox($type, $title, $msg, $action) {
+static public function paycard_errBox($type, $title, $msg, $action) {
 	global $CORE_LOCAL;
 
 	$header = "Wedge - Payment Card";
-	if( $CORE_LOCAL->get("paycard_type") == PAYCARD_TYPE_CREDIT)      $header = "Wedge - Credit Card";
-	else if( $CORE_LOCAL->get("paycard_type") == PAYCARD_TYPE_GIFT)   $header = "Wedge - Gift Card";
-	else if( $CORE_LOCAL->get("paycard_type") == PAYCARD_TYPE_STORE)  $header = "Wedge - Wedge Card";
+	if( $CORE_LOCAL->get("paycard_type") == self::PAYCARD_TYPE_CREDIT)      $header = "Wedge - Credit Card";
+	else if( $CORE_LOCAL->get("paycard_type") == self::PAYCARD_TYPE_GIFT)   $header = "Wedge - Gift Card";
+	else if( $CORE_LOCAL->get("paycard_type") == self::PAYCARD_TYPE_STORE)  $header = "Wedge - Wedge Card";
 	return xboxMsg("<b>".trim($title)."</b><p><font size=-1>".trim($msg)."<p>".trim($action)."</font>", $header);
 } // paycard_errBox()
 
-function paycard_db(){
+static public function paycard_db(){
 	global $CORE_LOCAL;
 	switch($CORE_LOCAL->get("DBMS")){
 	case 'mysql':
@@ -528,7 +529,7 @@ function paycard_db(){
 	return False;
 }
 
-function paycard_db_query($query_text,$link){
+static public function paycard_db_query($query_text,$link){
 	global $CORE_LOCAL;
 	switch($CORE_LOCAL->get("DBMS")){
 	case 'mysql':
@@ -541,7 +542,7 @@ function paycard_db_query($query_text,$link){
 	return False;
 }
 
-function paycard_db_num_rows($result){
+static public function paycard_db_num_rows($result){
 	global $CORE_LOCAL;
 	switch($CORE_LOCAL->get("DBMS")){
 	case 'mysql':
@@ -554,7 +555,7 @@ function paycard_db_num_rows($result){
 	return False;
 }
 
-function paycard_db_fetch_row($result){
+static public function paycard_db_fetch_row($result){
 	global $CORE_LOCAL;
 	switch($CORE_LOCAL->get("DBMS")){
 	case 'mysql':
@@ -567,7 +568,7 @@ function paycard_db_fetch_row($result){
 	return False;
 }
 
-function paycard_db_escape($str, $link){
+static public function paycard_db_escape($str, $link){
 	global $CORE_LOCAL;
 	switch($CORE_LOCAL->get("DBMS")){
 	case 'mysql':
@@ -613,4 +614,7 @@ TRACK 3
 	format: {S}{C}{C}data{F}data{E}{V}
 	length: 107 characters
 */
+
+}
+
 ?>
