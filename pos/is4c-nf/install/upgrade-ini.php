@@ -1,14 +1,15 @@
 <?php
-include('../ini.php');
+include(realpath(dirname(__FILE__).'/../lib/AutoLoader.php'));
+AutoLoader::LoadMap();
+include(realpath(dirname(__FILE__).'/../ini.php'));
 include('util.php');
-include('../lib/connect.php');
 
 ini_set('display_errors','1');
 
 $SILENT = isset($_REQUEST['quiet']) ? True : False;
 
-$db_local = pDataConnect();
-$db_remote = mDataConnect();
+$db_local = Database::pDataConnect();
+$db_remote = Database::mDataConnect();
 
 $msgs = "";
 $upgrades = array();

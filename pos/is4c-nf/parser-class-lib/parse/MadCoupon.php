@@ -24,10 +24,6 @@
 $CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
 if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
 
-if (!class_exists("Parser")) include_once($CORE_PATH."parser-class-lib/Parser.php");
-if (!function_exists("madCoupon")) include_once($CORE_PATH."lib/prehkeys.php");
-if (!function_exists("lastpage")) include_once($CORE_PATH."lib/listitems.php");
-
 class MadCoupon extends Parser {
 	function check($str){
 		if ($str == "MA")
@@ -36,9 +32,9 @@ class MadCoupon extends Parser {
 	}
 
 	function parse($str){
-		madCoupon();
+		PrehLib::madCoupon();
 		$ret = $this->default_json();
-		$ret['output'] = lastpage();
+		$ret['output'] = DisplayLib::lastpage();
 		$ret['redraw_footer'] = True;
 		return $ret;
 	}

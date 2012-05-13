@@ -1,5 +1,7 @@
 <?php
-include('../ini.php');
+include(realpath(dirname(__FILE__).'/../lib/AutoLoader.php'));
+AutoLoader::LoadMap();
+include(realpath(dirname(__FILE__).'/../ini.php'));
 include('util.php');
 ?>
 <html>
@@ -51,7 +53,6 @@ else {
 	echo "<option value=30 >Admin only</option>";
 	echo "<option value=20 selected>All</option>";
 }
-var_dump($CORE_LOCAL->get("SecuritySR"));
 confsave('SecuritySR',$CORE_LOCAL->get("SecuritySR"));
 ?>
 </select><br />

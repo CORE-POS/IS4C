@@ -24,6 +24,7 @@
 /**
   @file
   @brief Functions related to the database
+  @deprecated see Database
 */
 
 $CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";

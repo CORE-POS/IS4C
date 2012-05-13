@@ -24,6 +24,7 @@
 /**
   @file
   @brief Functions for JSON support in PHP < 5.3
+  @deprecated See JsonLib
 */
 
 /**

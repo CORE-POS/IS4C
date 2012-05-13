@@ -24,10 +24,6 @@
 $CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
 if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
 
-if (!class_exists("Parser")) include_once($CORE_PATH."parser-class-lib/Parser.php");
-if (!function_exists("memberID")) include_once($CORE_PATH."lib/prehkeys.php");
-if (!function_exists("lastpage")) include_once($CORE_PATH."lib/listitems.php");
-
 class MemberID extends Parser {
 	function check($str){
 		if (substr($str,-2) == "ID")
@@ -37,16 +33,16 @@ class MemberID extends Parser {
 
 	function parse($str){
 		if ($str == "0ID"){
-			clearMember();
+			PrehLib::clearMember();
 			$ret = array("main_frame"=>false,
-				"output"=>lastpage(),
+				"output"=>DisplayLib::lastpage(),
 				"target"=>".baseHeight",
 				"redraw_footer"=>true
 			);
 			return $ret;
 		}
 		else{
-			$ret = memberID(substr($str,0,strlen($str)-2));
+			$ret = PrehLib::memberID(substr($str,0,strlen($str)-2));
 			return $ret;
 		}
 	}

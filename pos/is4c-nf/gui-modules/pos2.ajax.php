@@ -28,14 +28,7 @@ ini_set('display_errors','1');
  
 session_cache_limiter('nocache');
 
-if (!class_exists("BasicPage")) include_once($CORE_PATH."gui-class-lib/BasicPage.php");
-
-if (!function_exists("lastpage")) include($CORE_PATH."lib/listitems.php");
-if (!function_exists("printheaderb")) include($CORE_PATH."lib/drawscreen.php");
-if (!function_exists("tender")) include($CORE_PATH."lib/prehkeys.php");
-if (!function_exists("drawerKick")) include_once($CORE_PATH."lib/printLib.php");
-if (!function_exists("get_preparse_chain")) include_once($CORE_PATH."parser-class-lib/Parser.php");
-if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
+include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class pos2 extends BasicPage {
 
@@ -113,23 +106,23 @@ class pos2 extends BasicPage {
 		}
 
 		if ($CORE_LOCAL->get("plainmsg") && strlen($CORE_LOCAL->get("plainmsg")) > 0) {
-			echo printheaderb();
+			echo DisplayLib::printheaderb();
 			echo "<div class=\"centerOffset\">";
-			echo plainmsg($CORE_LOCAL->get("plainmsg"));
+			echo DisplayLib::plainmsg($CORE_LOCAL->get("plainmsg"));
 			$CORE_LOCAL->set("plainmsg",0);
 			$CORE_LOCAL->set("msg",99);
 			echo "</div>";
 		}
 		else
-			echo lastpage();
+			echo DisplayLib::lastpage();
 
 		echo "</div>"; // end base height
 
 		echo "<div id=\"footer\">";
 		if ($CORE_LOCAL->get("away") == 1)
-			echo printfooterb();
+			echo DisplayLib::printfooterb();
 		else
-			echo printfooter();
+			echo DisplayLib::printfooter();
 		echo "</div>";
 
 		$CORE_LOCAL->set("away",0);

@@ -23,9 +23,6 @@
 $CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
 if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
 
-if (!class_exists("Parser")) include_once($CORE_PATH."parser-class-lib/Parser.php");
-if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
-
 class ToggleReceipt extends Parser {
 	
 	function check($str){
@@ -35,6 +32,7 @@ class ToggleReceipt extends Parser {
 	}
 
 	function parse($str){
+		global $CORE_LOCAL;
 		$CORE_LOCAL->set("receiptToggle",0);
 		return substr($str,0,-2);
 	}

@@ -36,7 +36,12 @@ include_once("../lib/term.php");
 $CORE_LOCAL = new LS_Access();
 if (!function_exists("paycard_reset")) require_once("../lib/paycardLib.php");
 
-if (!function_exists("printfooter")) require_once("../../lib/drawscreen.php");
+if (!class_exists("LibraryClass")){ 
+	class LibraryClass {}
+}
+if (!class_exists("DisplayLib")){ 
+	require_once("../../lib/DisplayLib.php");
+}
 $CORE_PATH = "../../";
 
 class ProcessPage {
@@ -137,7 +142,7 @@ class ProcessPage {
 		</div>
 		<?php
 		echo "<div id=\"footer\">";
-		echo printfooter();
+		echo DisplayLib::printfooter();
 		echo "</div>";
 	}
 

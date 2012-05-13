@@ -24,13 +24,9 @@
 $CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
 if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
 
-if (!class_exists("BasicPage")) include_once($CORE_PATH."gui-class-lib/BasicPage.php");
-if (!function_exists("paycard_reset")) include_once($CORE_PATH."cc-modules/lib/paycardLib.php");
-if (!function_exists("ttl")) include_once($CORE_PATH."lib/prehkeys.php");
-if (!function_exists("printfooterb")) include_once($CORE_PATH."lib/drawscreen.php");
-if (!function_exists("tDataConnect")) include_once($CORE_PATH."lib/connect.php");
-if (!function_exists("udpSend")) include_once($CORE_PATH."lib/udpSend.php");
-if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
+include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
+if (!function_exists("paycard_reset")) 
+	include_once(realpath(dirname(__FILE__)."/../cc-modules/lib/paycardLib.php"));
 
 class paycardSuccess extends BasicPage {
 
@@ -63,7 +59,7 @@ class paycardSuccess extends BasicPage {
 				// it with last trans_id
 				if ($CORE_LOCAL->get("SigCapture") != "" && 
 				   $CORE_LOCAL->get("paycard_amount") >= $CORE_LOCAL->get("CCSigLimit")){
-					$db = tDataConnect();
+					$db = Database::tDataConnect();
 					if ($tender_id == 0) $tender_id = $CORE_LOCAL->get("LastID");
 					$sigQ = sprintf("INSERT INTO CapturedSignature VALUES
 							(%s,%d,%d,%d,%d,'%s','%s')",
@@ -113,9 +109,6 @@ class paycardSuccess extends BasicPage {
 		if ($CORE_LOCAL->get("SigCapture")=="") return False;
 
 		$deviceClass = $CORE_LOCAL->get("SigCapture");
-		if (!class_exists($deviceClass)){
-			include($CORE_PATH.'scale-drivers/php-wrappers/'.$deviceClass.'.php');
-		}
 		$device = new $deviceClass();
 		if (!is_object($device)) return False;
 
@@ -198,14 +191,14 @@ class paycardSuccess extends BasicPage {
 			$CORE_LOCAL->set("boxMsg",$msg);
 			$this->add_onload_command("setTimeout('getImg()',500);");
 		}
-		echo boxMsg($CORE_LOCAL->get("boxMsg"),"",True);
+		echo DisplayLib::boxMsg($CORE_LOCAL->get("boxMsg"),"",True);
 		$CORE_LOCAL->set("msgrepeat",2);
-		//udpSend('goodBeep');
+		//UdpComm::udpSend('goodBeep');
 		?>
 		</div>
 		<?php
 		echo "<div id=\"footer\">";
-		echo printfooter();
+		echo DisplayLib::printfooter();
 		echo "</div>";
 
 		$rp_type = '';

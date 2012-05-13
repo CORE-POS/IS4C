@@ -24,14 +24,16 @@
 $CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
 if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
 
-if (!class_exists("BasicCCModule")) include_once($CORE_PATH."cc-modules/BasicCCModule.php");
-if (!class_exists("xmlData")) include_once($CORE_PATH."cc-modules/lib/xmlData.php");
-if (!function_exists("paycard_reset")) include_once($CORE_PATH."cc-modules/lib/paycardLib.php");
+if (!class_exists("BasicCCModule")) include_once(realpath(dirname(__FILE__)."/BasicCCModule.php"));
+if (!class_exists("xmlData")) include_once(realpath(dirname(__FILE__)."/lib/xmlData.php"));
+if (!function_exists("paycard_reset")) include_once(realpath(dirname(__FILE__)."/lib/paycardLib.php"));
 
 if (!isset($CORE_LOCAL)){
-	include($CORE_PATH."cc-modules/lib/LS_Access.php");
+	include(realpath(dirname(__FILE__)."/lib/LS_Access.php"));
 	$CORE_LOCAL = new LS_Access();
 }
+
+if (!class_exists("AutoLoader")) include_once(realpath(dirname(__FILE__).'/../lib/AutoLoader.php'));
 
 define('AUTHDOTNET_LOGIN','6Jc5c8QcB');
 define('AUTHDOTNET_TRANS_KEY','68j46u5S3RL4CCbX');
@@ -494,12 +496,10 @@ class AuthorizeDotNet extends BasicCCModule {
 			// cast to string. tender function expects string input
 			// numeric input screws up parsing on negative values > $0.99
 			$amt = "".($CORE_LOCAL->get("paycard_amount")*100);
-			if (!function_exists("tender")) include_once($CORE_PATH."lib/prehkeys.php");
-			tender("CC", $amt);
+			PrehLib::tender("CC", $amt);
 			$CORE_LOCAL->set("boxMsg","<b>Approved</b><font size=-1><p>Please verify cardholder signature<p>[enter] to continue<br>\"rp\" to reprint slip<br>[clear] to cancel and void</font>");
 			break;
 		case PAYCARD_MODE_VOID:
-			if (!class_exists("Void")) include_once($CORE_PATH."parser-class-lib/parse/Void.php");
 			$v = new Void();
 			$v->voidid($CORE_LOCAL->get("paycard_id"));
 			$CORE_LOCAL->set("boxMsg","<b>Voided</b><p><font size=-1>[enter] to continue<br>\"rp\" to reprint slip</font>");

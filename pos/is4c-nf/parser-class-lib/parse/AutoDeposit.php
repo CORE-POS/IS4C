@@ -23,12 +23,6 @@
 $CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
 if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
 
-if (!class_exists("Parser")) include_once($CORE_PATH."parser-class-lib/Parser.php");
-if (!function_exists("additem")) include_once($CORE_PATH."lib/additem.php");
-if (!function_exists("pDataConnect")) include_once($CORE_PATH."lib/connect.php");
-if (!function_exists("nullwrap")) include_once($CORE_PATH."lib/lib.php");
-if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
-
 /*
  * This class is a bit of a hack
  * It doesn't change the input string and it relies on
@@ -61,7 +55,7 @@ class AutoDeposit extends Parser {
 	function process($upc){
 		global $CORE_LOCAL;
 
-		$db = pDataConnect();
+		$db = Database::pDataConnect();
 		$query = "select description,scale,tax,foodstamp,discounttype,
 			discount,department,normal_price
 		       	from products where upc='".$upc."'";
@@ -100,7 +94,7 @@ class AutoDeposit extends Parser {
 			$CORE_LOCAL->set("togglefoodstamp",0);
 		}
 
-		$discounttype = nullwrap($row["discounttype"]);
+		$discounttype = MiscLib::nullwrap($row["discounttype"]);
 		$discountable = $row["discount"];
 
 		$quantity = 1;
@@ -108,7 +102,7 @@ class AutoDeposit extends Parser {
 
 		$save_refund = $CORE_LOCAL->get("refund");
 
-		additem($upc,$description,"I"," "," ",$row["department"],
+		TransRecord::addItem($upc,$description,"I"," "," ",$row["department"],
 			$quantity,$row["normal_price"],
 			$quantity*$row["normal_price"],$row["normal_price"],
 			$scale,$tax,$foodstamp,0,0,$discountable,$discounttype,
