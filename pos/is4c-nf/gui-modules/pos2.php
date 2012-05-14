@@ -157,7 +157,7 @@ class pos2 extends BasicPage {
 		<script type="text/javascript">
 		function submitWrapper(){
 			var str = $('#reginput').val();
-			if (str.indexOf("tw") != -1 || str.indexOf("TW") != -1 || (str.search(/^[0-9]+$/) == 0 && str.length <= 13)){
+			if (str.indexOf("tw") != -1 || str.indexOf("TW") != -1 || (str.search(/^[0-9]+$/) == 0 && str.length <= 13) || str=='TFS'){
 				$('#reginput').val('');
 				runParser(str,'<?php echo $CORE_PATH; ?>');
 				return false;
@@ -216,6 +216,9 @@ class pos2 extends BasicPage {
 					case 40:
 						parseWrapper('D');
 						break;
+					case 9:
+						parseWrapper('TFS');
+						return false;
 					}
 				});\n");
 		/*

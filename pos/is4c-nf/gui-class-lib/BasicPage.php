@@ -393,9 +393,11 @@ class BasicPage {
   The first two line snippet is path detection. 
   Every code file should start with these lines.
 
-  The next two lines demonstrate standard include format.
-  Check whether the needed class/function already exists
-  and use the detected path $CORE_PATH.
+  AutoLoader.php should be included in any top level
+  scripts. If the URL in the browser address bar
+  is your script, it's a top level script. No other
+  includes are necessary. AutoLoader will include
+  other classes as needed. 
 
   body_content() draws the page. Methods from BasicPage
   provide the standard input box at the top and footer

@@ -716,7 +716,7 @@ static public function drawitems($top_item, $rows, $highlight) {
 
 	$db->close();
 
-	$last_item = "";
+	$last_item = array();
 
 	if ($rowCount == 0) {
 		$ret .= "<div class=\"centerOffset\">";
@@ -772,14 +772,14 @@ static public function drawitems($top_item, $rows, $highlight) {
 				}				
 			}
 
-			if ($i==($num_rows-1) && !strstr(strtolower($description),'total') && !empty($description)){
+			if (!strstr($description,'Subtotal')){
 				$fixed_desc = str_replace(":"," ",$description);
 				if (strlen($fixed_desc) > 24){
 					$fixed_desc = substr($fixed_desc,0,24);
 				}
-				$fixed_price = sprintf('%.2f',$total);
+				$fixed_price = empty($total)?'':sprintf('%.2f',$total);
 				$spaces = str_pad('',30-strlen($fixed_desc)-strlen($fixed_price),' ');
-				$last_item = $fixed_desc.$spaces.$fixed_price;
+				$last_item[] = $fixed_desc.$spaces.$fixed_price;
 			}
 		}
 		$db_range->close();
@@ -791,6 +791,15 @@ static public function drawitems($top_item, $rows, $highlight) {
 		$dueline = 'Subtotal'
 			.str_pad('',22-strlen($due),' ')
 			.$due;
+		$items = "";
+		$count = 0;
+		for($i=count($last_item)-1;$i>=0;$i--){
+			$items = ":".$last_item[$i].$items;
+			$count++;
+			if ($count >= 3) break;
+		}
+		for($i=$count;$i<3;$i++)
+			$items = ": ".$items;
 		$td->WriteToScale("display:".$last_item.":".$dueline);
 	}
 

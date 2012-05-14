@@ -51,6 +51,7 @@ class ProcessPage {
 
 	function ProcessPage(){
 		$this->td = SigCapture::term_object();
+		$this->errors = "";
 		if ($this->preprocess()){
 			/* clear any POST data; only the preprocess() method
 			   should be able to access input */
@@ -228,6 +229,12 @@ class ProcessPage {
 				}
 				if ($ccMod == null){
 					$this->errors = "Unknown or unsupported card type";
+					$fp = fopen('../../is4c-nf/badSwipeLog.log','a');
+					fwrite($fp,date('r').': type : '.$CORE_LOCAL->get("paycard_type")."\n");
+					fwrite($fp,'Read length: '.strlen($pan['pan'])."\n");
+					fwrite($fp,'Track 1: '.($pan['tr1']?'Yes':'No')."\n");
+					fwrite($fp,'Track 2: '.($pan['tr2']?'Yes':'No')."\n");
+					fclose($fp);
 					return True;
 				}
 				/* module performs additional validation */
@@ -298,7 +305,10 @@ class ProcessPage {
 		    href=\"../../pos.css\">";
 		$this->head_content();
 		echo "</head>";
-		echo "<body onload=\"betterDate();setTimeout('xmlhttpPost()',500);document.getElementById('reginput').focus();\">";
+		if(empty($this->errors))
+			echo "<body onload=\"betterDate();setTimeout('xmlhttpPost()',500);document.getElementById('reginput').focus();\">";
+		else
+			echo "<body onload=\"betterDate();\">";
 		echo "<div id=\"boundingBox\">";
 		$this->body_content();	
 		echo "</div>";

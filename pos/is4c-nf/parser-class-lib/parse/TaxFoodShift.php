@@ -46,19 +46,25 @@ class TaxFoodShift extends Parser {
 		if ($db->num_rows($r) == 0) return True; // shouldn't ever happen
 		$row = $db->fetch_row($r);
 
-		// 1. notax fs
-		// 2. regtax nofs
-		// 3. delitax nofs
-		$q = "";
-		if ($row['tax'] == 0 && $row['foodstamp'] == 1){
-			$q = "UPDATE localtemptrans set tax=1,foodstamp=0 WHERE trans_id=$id";
+		$q = "SELECT MAX(id) FROM taxrates";
+		$r = $db->query($q);
+		$tax_cap = 0;
+		if ($db->num_rows($r)>0){
+			$max = array_pop($db->fetch_row($r));
+			if (!empty($max)) $tax_cap = $max;
 		}
-		else if ($row['tax'] == 1 && $row['foodstamp'] == 0){
-			$q = "UPDATE localtemptrans set tax=2,foodstamp=0 WHERE trans_id=$id";
+		$db->query($q);	
+
+		$next_tax = $current['tax']+1;
+		$next_fs = 0;
+		if ($next_tax > $max){
+			$next_tax = 0;
+			$next_fs = 1;
 		}
-		else {
-			$q = "UPDATE localtemptrans set tax=0,foodstamp=1 WHERE trans_id=$id";
-		}
+
+		$q = "UPDATE localtemptrans 
+			set tax=$next_tax,foodstamp=$next_fs 
+			WHERE trans_id=$id";
 		$db->query($q);	
 		
 		$db->db_close();
