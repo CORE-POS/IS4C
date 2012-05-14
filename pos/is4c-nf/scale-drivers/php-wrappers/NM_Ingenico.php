@@ -23,11 +23,6 @@
 $CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
 if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
 
-if (!isset($CORE_LOCAL)) include($CORE_PATH.'lib/LocalStorage/conf.php');
-if (!class_exists("ScaleDriverWrapper")) include($CORE_PATH."scale-drivers/php-wrappers/ScaleDriverWrapper.php");
-if (!function_exists('array_to_json')) include($CORE_PATH.'lib/array_to_json.php');
-if (!function_exists('udpSend')) include($CORE_PATH.'lib/udpSend.php');
-
 class NM_Ingenico extends ScaleDriverWrapper {
 
 	function ReadFromScale(){
@@ -50,12 +45,12 @@ class NM_Ingenico extends ScaleDriverWrapper {
 		$output = array();
 		if (!empty($input)) $output['scans'] = $input;
 
-		if (!empty($output)) echo array_to_json($output);
+		if (!empty($output)) echo JsonLib::array_to_json($output);
 		else echo "{}";
 	}
 
 	function poll($msg){
-		$res = udpPoke($msg);
+		$res = UdpConn::udpPoke($msg);
 		return $res;
 	}
 
@@ -73,17 +68,17 @@ class NM_Ingenico extends ScaleDriverWrapper {
 			$str = strtolower($str);
 
 		if (substr($str,0,6) == "total:" && strlen($str) > 6)
-			udpSend($str);
+			UdpConn::udpSend($str);
 		elseif (substr($str,0,11) == "resettotal:" && strlen($str) > 11)
-			udpSend($str);
+			UdpConn::udpSend($str);
 		elseif (substr($str,0,9) == "approval:" && strlen($str) > 9)
-			udpSend($str);
+			UdpConn::udpSend($str);
 		elseif (substr($str,0,8) == "display:" && strlen($str) > 8)
-			udpSend($str);
+			UdpConn::udpSend($str);
 		elseif ($str == "reset")
-			udpSend($str);
+			UdpConn::udpSend($str);
 		elseif ($str == "sig")
-			udpSend($str);
+			UdpConn::udpSend($str);
 	}
 }
 

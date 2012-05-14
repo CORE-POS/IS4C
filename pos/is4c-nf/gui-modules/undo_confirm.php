@@ -24,13 +24,7 @@
 $CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
 if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
 
-if (!class_exists("BasicPage")) include_once($CORE_PATH."gui-class-lib/BasicPage.php");
-if (!class_exists("ScrollItems")) include_once($CORE_PATH."parser-class-lib/parse/ScrollItems.php");
-if (!function_exists("addItem")) include_once($CORE_PATH."lib/additem.php");
-if (!function_exists("setMember")) include_once($CORE_PATH."lib/prehkeys.php");
-if (!function_exists("printfooter")) include_once($CORE_PATH."lib/drawscreen.php");
-if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
-
+include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 /* wraps around an undone transaction to limit editing options
    CL cancels the attempt (wraps to input "CN")
@@ -47,7 +41,7 @@ class undo_confirm extends BasicPage {
 		<div class="baseHeight">
 		<?php 
 			if (empty($this->msg))
-				echo lastpage(); 
+				echo DisplayLib::lastpage(); 
 			else {
 				echo $this->msg;	
 			}
@@ -55,7 +49,7 @@ class undo_confirm extends BasicPage {
 		</div>
 		<?php
 		echo "<div id=\"footer\">";
-		echo printfooter();
+		echo DisplayLib::printfooter();
 		echo "</div>";
 		$this->add_onload_command("\$('#reginput').keyup(function(ev){
 					switch(ev.keyCode){
@@ -91,13 +85,13 @@ class undo_confirm extends BasicPage {
 				$CORE_LOCAL->set("runningTotal",0);
 				$CORE_LOCAL->set("msgrepeat",1);
 				$CORE_LOCAL->set("strRemembered","CN");
-				header("Location: {$CORE_PATH}gui-modules/pos2.php");
+				$this->change_page($CORE_PATH."gui-modules/pos2.php");
 				return False;
 				break;
 			case '':
 				$CORE_LOCAL->set("msgrepeat",1);
 				$CORE_LOCAL->set("strRemembered","0CA");
-				header("Location: {$CORE_PATH}gui-modules/pos2.php");
+				$this->change_page($CORE_PATH."gui-modules/pos2.php");
 				return False;
 				break;
 			case 'U':

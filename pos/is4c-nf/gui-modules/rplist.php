@@ -24,10 +24,7 @@
 $CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
 if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
 
-if (!class_exists("NoInputPage")) include_once($CORE_PATH."gui-class-lib/NoInputPage.php");
-if (!function_exists("tDataConnect")) include($CORE_PATH."lib/connect.php");
-if (!function_exists("reprintReceipt")) include($CORE_PATH."lib/reprint.php");
-if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
+include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class rplist extends NoInputPage {
 
@@ -35,8 +32,8 @@ class rplist extends NoInputPage {
 		global $CORE_PATH;
 		if (isset($_REQUEST['selectlist'])){
 			if (!empty($_REQUEST['selectlist']))
-				reprintReceipt($_REQUEST['selectlist']);
-			header("Location: {$CORE_PATH}gui-modules/pos2.php");
+				ReceiptLib::reprintReceipt($_REQUEST['selectlist']);
+			$this->change_page($CORE_PATH."gui-modules/pos2.php");
 			return False;
 		}
 		return True;
@@ -77,7 +74,7 @@ class rplist extends NoInputPage {
 		if ($CORE_LOCAL->get("DBMS") == "mysql" && $CORE_LOCAL->get("store") != "wfc")
 			$query = "select register_no,emp_no,trans_no,total from rp_list where register_no = ".$CORE_LOCAL->get("laneno")." and emp_no = ".$CORE_LOCAL->get("CashierNo")." order by trans_no desc";
 
-		$db = tDataConnect();
+		$db = Database::tDataConnect();
 		$result = $db->query($query);
 		$num_rows = $db->num_rows($result);
 		?>

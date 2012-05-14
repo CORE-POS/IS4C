@@ -34,6 +34,7 @@ if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
 /**
  @file
  @brief Setup session variables
+ @depreacted see CoreState
 */
 
 /**

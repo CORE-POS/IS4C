@@ -24,9 +24,7 @@
 $CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
 if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
 
-if (!class_exists("PaycardProcessPage")) include_once($CORE_PATH."gui-class-lib/PaycardProcessPage.php");
-if (!function_exists("paycard_reset")) include_once($CORE_PATH."cc-modules/lib/paycardLib.php");
-if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
+include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class paycardboxMsgGift extends PaycardProcessPage {
 
@@ -41,8 +39,8 @@ class paycardboxMsgGift extends PaycardProcessPage {
 				$CORE_LOCAL->set("toggletax",0);
 				$CORE_LOCAL->set("endorseType","");
 				$CORE_LOCAL->set("togglefoodstamp",0);
-				paycard_reset();
-				header("Location: {$CORE_PATH}gui-modules/pos2.php");
+				PaycardLib::paycard_reset();
+				$this->change_page($CORE_PATH."gui-modules/pos2.php");
 				return False;
 			}
 	
@@ -82,23 +80,23 @@ class paycardboxMsgGift extends PaycardProcessPage {
 		$mode = $CORE_LOCAL->get("paycard_mode");
 		$amt = $CORE_LOCAL->get("paycard_amount");
 		if( $amt == 0) {
-			if( $mode == PAYCARD_MODE_ACTIVATE)
-				echo paycard_msgBox($type,"Enter Activation Amount",
+			if( $mode == PaycardLib::PAYCARD_MODE_ACTIVATE)
+				echo PaycardLib::paycard_msgBox($type,"Enter Activation Amount",
 					"Enter the amount to put on the card",
 					"[clear] to cancel");
-			else if( $mode == PAYCARD_MODE_ADDVALUE)
-				echo paycard_msgBox($type,"Enter Add-Value Amount",
+			else if( $mode == PaycardLib::PAYCARD_MODE_ADDVALUE)
+				echo PaycardLib::paycard_msgBox($type,"Enter Add-Value Amount",
 					"Enter the amount to put on the card",
 					"[clear] to cancel");
 		} else if( !is_numeric($amt) || $amt < 0.005) {
-			echo paycard_msgBox($type,"Invalid Amount",
+			echo PaycardLib::paycard_msgBox($type,"Invalid Amount",
 				"Enter a positive amount to put on the card",
 				"[clear] to cancel");
-		} else if( $mode == PAYCARD_MODE_ACTIVATE) {
-			echo paycard_msgBox($type,"Activate ".paycard_moneyFormat($amt)."?","",
+		} else if( $mode == PaycardLib::PAYCARD_MODE_ACTIVATE) {
+			echo PaycardLib::paycard_msgBox($type,"Activate ".PaycardLib::paycard_moneyFormat($amt)."?","",
 				"[enter] to continue if correct<br>Enter a different amount if incorrect<br>[clear] to cancel");
-		} else if( $mode == PAYCARD_MODE_ADDVALUE) {
-			echo paycard_msgBox($type,"Add Value ".paycard_moneyFormat($amt)."?","",
+		} else if( $mode == PaycardLib::PAYCARD_MODE_ADDVALUE) {
+			echo PaycardLib::paycard_msgBox($type,"Add Value ".PaycardLib::paycard_moneyFormat($amt)."?","",
 				"[enter] to continue if correct<br>Enter a different amount if incorrect<br>[clear] to cancel");
 		}
 		$CORE_LOCAL->set("msgrepeat",2);

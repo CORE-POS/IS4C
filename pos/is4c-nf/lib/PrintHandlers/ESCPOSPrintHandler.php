@@ -1,6 +1,6 @@
 <?php
 /*
-ESCPOSPrintHandler.class.php
+ESCPOSPrintHandler
 version 1 (2009-09-25)
 author Alex Frase
 

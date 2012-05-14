@@ -25,11 +25,7 @@
 $CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
 if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
 
-if (!class_exists("PaycardProcessPage")) include_once($CORE_PATH."gui-class-lib/PaycardProcessPage.php");
-if (!function_exists("paycard_reset")) require_once($CORE_PATH."cc-modules/lib/paycardLib.php");
-if (!function_exists("printfooter")) require_once($CORE_PATH."lib/drawscreen.php");
-if (!function_exists("sigTermObject")) require_once($CORE_PATH."lib/lib.php");
-if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
+include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class paycardboxMsgAuth extends PaycardProcessPage {
 
@@ -46,11 +42,11 @@ class paycardboxMsgAuth extends PaycardProcessPage {
 				$CORE_LOCAL->set("togglefoodstamp",0);
 				$CORE_LOCAL->set("ccTermOut","resettotal:".
 					str_replace(".","",sprintf("%.2f",$CORE_LOCAL->get("amtdue"))));
-				$st = sigTermObject();
+				$st = MiscLib::sigTermObject();
 				if (is_object($st))
 					$st->WriteToScale($CORE_LOCAL->get("ccTermOut"));
-				paycard_reset();
-				header("Location: {$CORE_PATH}gui-modules/pos2.php");
+				PaycardLib::paycard_reset();
+				$this->change_page($CORE_PATH."gui-modules/pos2.php");
 				return False;
 			}
 			else if ($input == ""){
@@ -95,23 +91,23 @@ class paycardboxMsgAuth extends PaycardProcessPage {
 		$amt = $CORE_LOCAL->get("paycard_amount");
 		$due = $CORE_LOCAL->get("amtdue");
 		if( !is_numeric($amt) || abs($amt) < 0.005) {
-			echo paycard_msgBox($type,"Invalid Amount: $amt $due",
+			echo PaycardLib::paycard_msgBox($type,"Invalid Amount: $amt $due",
 				"Enter a different amount","[clear] to cancel");
 		} else if( $amt > 0 && $due < 0) {
-			echo paycard_msgBox($type,"Invalid Amount",
+			echo PaycardLib::paycard_msgBox($type,"Invalid Amount",
 				"Enter a negative amount","[clear] to cancel");
 		} else if( $amt < 0 && $due > 0) {
-			echo paycard_msgBox($type,"Invalid Amount",
+			echo PaycardLib::paycard_msgBox($type,"Invalid Amount",
 				"Enter a positive amount","[clear] to cancel");
 		} else if( abs($amt) > abs($due)) {
-			echo paycard_msgBox($type,"Invalid Amount",
+			echo PaycardLib::paycard_msgBox($type,"Invalid Amount",
 				"Enter a lesser amount","[clear] to cancel");
 		} else if( $amt > 0) {
-			echo paycard_msgBox($type,"Tender ".paycard_moneyFormat($amt)."?","","[enter] to continue if correct<br>Enter a different amount if incorrect<br>[clear] to cancel");
+			echo PaycardLib::paycard_msgBox($type,"Tender ".PaycardLib::paycard_moneyFormat($amt)."?","","[enter] to continue if correct<br>Enter a different amount if incorrect<br>[clear] to cancel");
 		} else if( $amt < 0) {
-			echo paycard_msgBox($type,"Refund ".paycard_moneyFormat($amt)."?","","[enter] to continue if correct<br>Enter a different amount if incorrect<br>[clear] to cancel");
+			echo PaycardLib::paycard_msgBox($type,"Refund ".PaycardLib::paycard_moneyFormat($amt)."?","","[enter] to continue if correct<br>Enter a different amount if incorrect<br>[clear] to cancel");
 		} else {
-			echo paycard_errBox($type,"Invalid Entry",
+			echo PaycardLib::paycard_errBox($type,"Invalid Entry",
 				"Enter a different amount","[clear] to cancel");
 		}
 		$CORE_LOCAL->set("msgrepeat",2);

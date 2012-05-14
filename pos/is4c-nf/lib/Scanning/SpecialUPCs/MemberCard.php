@@ -24,13 +24,6 @@
 $CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
 if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
 
-if (!class_exists("SpecialUPC")) include($CORE_PATH."lib/Scanning/SpecialUPC.php");
-if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
-
-if (!function_exists('pDataConnect')) include($CORE_PATH."lib/connect.php");
-if (!function_exists('boxMsg')) include($CORE_PATH."lib/drawscreen.php");
-if (!function_exists('memberID')) include($CORE_PATH."lib/prehkeys.php");
-
 /**
   @class MemberCard
   WFC barcoded member ID implementation
@@ -54,18 +47,18 @@ class MemberCard extends SpecialUPC {
 	function handle($upc,$json){
 		global $CORE_LOCAL,$CORE_PATH;
 
-		$db = pDataConnect();
+		$db = Database::pDataConnect();
 		$query = "select card_no from memberCards where upc='$upc'";
 		$result = $db->query($query);
 
 		if ($db->num_rows($result) < 1){
-			$json['output'] = boxMsg("Card not assigned");
+			$json['output'] = DisplayLib::boxMsg("Card not assigned");
 			return $json;
 		}
 
 		$row = $db->fetch_array($result);
 		$CORE_LOCAL->set("memberCardUsed",1);
-		$json = memberID($row[0]);
+		$json = PrehLib::memberID($row[0]);
 		return $json;
 	}
 }

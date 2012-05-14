@@ -37,8 +37,6 @@
 $CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
 if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
 
-if (!function_exists('scaledisplaymsg')) include($CORE_PATH.'lib/drawscreen.php');
-
 class BasicPage {
 
 	var $onload_commands;
@@ -330,7 +328,7 @@ class BasicPage {
 			weight
 			</div>
 			<div id="scaleBottom">
-			<?php echo scaledisplaymsg(); ?>	
+			<?php echo DisplayLib::scaledisplaymsg(); ?>	
 			</div>
 		</div>
 		<?php
@@ -359,8 +357,33 @@ class BasicPage {
 	*/
 	function footer(){
 		echo '<div id="footer">';
-		printfooter();
+		DisplayLib::printfooter();
 		echo '</div>';
+	}
+
+	/**
+	  Go to a different page
+	  @param $url the new page URL
+
+	  Use this function instead of manual redirects
+	  to allow debug output.
+	*/
+	function change_page($url){
+		global $CORE_LOCAL;
+		if ($CORE_LOCAL->get("Debug_Redirects") == 1){
+			$stack = debug_backtrace();
+			printf('Follow redirect to <a href="%s">%s</a>',$url,$url);
+			echo '<hr />Stack:';
+			foreach($stack as $s){
+				echo '<ul><li>';
+				if(!empty($s['class'])) echo $s['class'].'::';
+				echo $s['function'].'()';
+				echo '<li>Line '.$s['line'].', '.$s['file'];
+			}
+			foreach($stack as $s) echo '</ul>';
+		}
+		else
+			header("Location: ".$url);
 	}
 }
 

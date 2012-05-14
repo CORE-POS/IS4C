@@ -24,13 +24,6 @@
 $CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
 if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
 
-if (!class_exists("Parser")) include_once($CORE_PATH."parser-class-lib/Parser.php");
-if (!function_exists("addtare")) include_once($CORE_PATH."lib/additem.php");
-if (!function_exists("boxMsg")) include_once($CORE_PATH."lib/drawscreen.php");
-if (!function_exists("lastpage")) include_once($CORE_PATH."lib/listitems.php");
-if (!function_exists("truncate2")) include_once($CORE_PATH."lib/lib.php");
-if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
-
 class AutoTare extends Parser {
 	function check($str){
 		if (substr($str,-2) == "TW"){
@@ -50,12 +43,12 @@ class AutoTare extends Parser {
 			$left = 1;	
 
 		if (strlen($left) > 4)
-			$ret['output'] = boxMsg(truncate2($left/100)." tare not supported");
+			$ret['output'] = DisplayLib::boxMsg(MiscLib::truncate2($left/100)." tare not supported");
 		elseif ($left/100 > $CORE_LOCAL->get("weight") && $CORE_LOCAL->get("weight") > 0) 
-			$ret['output'] = boxMsg("Tare cannot be<BR>greater than item weight");
+			$ret['output'] = DisplayLib::boxMsg("Tare cannot be<BR>greater than item weight");
 		else {
-			addtare($left);
-			$ret['output'] = lastpage();
+			TransRecord::addTare($left);
+			$ret['output'] = DisplayLib::lastpage();
 		}
 
 		return $ret;

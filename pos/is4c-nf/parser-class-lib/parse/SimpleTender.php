@@ -23,12 +23,6 @@
 $CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
 if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
 
-if (!class_exists("Parser")) include_once($CORE_PATH."parser-class-lib/Parser.php");
-if (!function_exists("tender")) include_once($CORE_PATH."lib/prehkeys.php");
-if (!function_exists("boxMsg")) include_once($CORE_PATH."lib/drawscreen.php");
-if (!function_exists("boxMsgscreen")) include_once($CORE_PATH."lib/clientscripts.php");
-if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
-
 class SimpleTender extends Parser {
 	var $stored_ret;
 	function check($str){
@@ -36,16 +30,16 @@ class SimpleTender extends Parser {
 		$this->stored_ret = $this->default_json();
 		switch($str){
 		case "TA":
-			$this->stored_ret = tender("TA", 100 * $CORE_LOCAL->get("runningTotal"));
+			$this->stored_ret = PrehLib::tender("TA", 100 * $CORE_LOCAL->get("runningTotal"));
 			return True;
 		case "EC":
-			$this->stored_ret = tender("EC", 100 * $CORE_LOCAL->get("runningTotal"));
+			$this->stored_ret = PrehLib::tender("EC", 100 * $CORE_LOCAL->get("runningTotal"));
 			return True;
 		case "FS":
-			$this->stored_ret['output'] = boxMsg("EBT tender must specify amount");
+			$this->stored_ret['output'] = DisplayLib::boxMsg("EBT tender must specify amount");
 			return True;
 		case "EF":
-			$this->stored_ret = tender("EF", 100 * $CORE_LOCAL->get("fsEligible"));
+			$this->stored_ret = PrehLib::tender("EF", 100 * $CORE_LOCAL->get("fsEligible"));
 			return True;
 		case "TB":
 		case "MCC":
@@ -53,11 +47,11 @@ class SimpleTender extends Parser {
 			 * the entire purchase will be CC. Throw up a 
 			 * proceed / cancel box, then do the tender */
 			if ($CORE_LOCAL->get("LastID") == 0)
-				$this->stored_ret['output'] = boxMsg("no transaction in progress");
+				$this->stored_ret['output'] = DisplayLib::boxMsg("no transaction in progress");
 			elseif ($CORE_LOCAL->get("warned") == 1 and $CORE_LOCAL->get("warnBoxType")== "warnCC"){
 				$CORE_LOCAL->set("warnBoxType","");
 				$CORE_LOCAL->set("warned",0);
-				$this->stored_ret = tender("CC", "".$CORE_LOCAL->get("runningTotal") * 100);
+				$this->stored_ret = PrehLib::tender("CC", "".$CORE_LOCAL->get("runningTotal") * 100);
 			}
 			elseif ($CORE_LOCAL->get("ttlflag") == 1){
 				$CORE_LOCAL->set("warnBoxType","warnCC");
@@ -66,13 +60,13 @@ class SimpleTender extends Parser {
 				$this->stored_ret['main_frame'] = $CORE_PATH.'gui-modules/boxMsg2.php';
 			}
 			else 
-				$this->stored_ret['output'] = boxMsg("transaction must be totaled<br>before tender can be<br>accepted"); 
+				$this->stored_ret['output'] = DisplayLib::boxMsg("transaction must be totaled<br>before tender can be<br>accepted"); 
 			return True;
 		case "CK":
 			/* same as CC above but for CK
 			   set endorseType for check franking to work */
 			if ($CORE_LOCAL->get("LastID") == 0)
-				$this->stored_ret['output'] = boxMsg("no transaction in progress");
+				$this->stored_ret['output'] = DisplayLib::boxMsg("no transaction in progress");
 			elseif ($CORE_LOCAL->get("warned") == 1 and $CORE_LOCAL->get("warnBoxType") == "warnCK"){
 				$CORE_LOCAL->set("warnBoxType","");
 				$CORE_LOCAL->set("warned",0);
@@ -96,29 +90,29 @@ class SimpleTender extends Parser {
 				$this->stored_ret['main_frame'] = $CORE_PATH.'gui-modules/boxMsg2.php';
 			}
 			else 
-				$this->stored_ret['output'] = boxMsg("transaction must be totaled<br>before tender can be<br>accepted");
+				$this->stored_ret['output'] = DisplayLib::boxMsg("transaction must be totaled<br>before tender can be<br>accepted");
 			return True;
 		case "CX":
-			$this->stored_ret = tender("CX", $CORE_LOCAL->get("runningTotal") * 100);
+			$this->stored_ret = PrehLib::tender("CX", $CORE_LOCAL->get("runningTotal") * 100);
 			return True;
 		case "SC":
 			if ($CORE_LOCAL->get("LastID") == 0 ) 
-				$this->stored_ret['output'] = boxMsg("no transaction in progress");
+				$this->stored_ret['output'] = DisplayLib::boxMsg("no transaction in progress");
 			elseif ($CORE_LOCAL->get("ttlflag") == 1) 
-				$this->stored_ret = tender("SC", "".$CORE_LOCAL->get("runningTotal") * 100);
+				$this->stored_ret = PrehLib::tender("SC", "".$CORE_LOCAL->get("runningTotal") * 100);
 			else 
-				$this->stored_ret['output'] = boxMsg("transaction must be totaled<br>before tender can be<br>accepted"); 
+				$this->stored_ret['output'] = DisplayLib::boxMsg("transaction must be totaled<br>before tender can be<br>accepted"); 
 			return True;	
 		case "MI":
 			if ($CORE_LOCAL->get("LastID") == 0 ) 
-				$this->stored_ret['output'] = boxMsg("no transaction in progress");
+				$this->stored_ret['output'] = DisplayLib::boxMsg("no transaction in progress");
 			elseif ($CORE_LOCAL->get("ttlflag") == 1) 
-				$this->stored_ret = tender("MI", "".$CORE_LOCAL->get("runningTotal") * 100);
+				$this->stored_ret = PrehLib::tender("MI", "".$CORE_LOCAL->get("runningTotal") * 100);
 			elseif ($CORE_LOCAL->get("memberID") != "0" && $CORE_LOCAL->get("isStaff") == 1) {
-				$this->stored_ret = tender("MI", "".$CORE_LOCAL->get("runningTotal") * 100);
+				$this->stored_ret = PrehLib::tender("MI", "".$CORE_LOCAL->get("runningTotal") * 100);
 			}
 			elseif ($CORE_LOCAL->get("memberID") != "0" && $CORE_LOCAL->get("isStaff") == 0)
-				$this->stored_ret = xboxMsg("member ".$CORE_LOCAL->get("memberID")."<BR>is not authorized to make employee charges");
+				$this->stored_ret = DisplayLib::xboxMsg("member ".$CORE_LOCAL->get("memberID")."<BR>is not authorized to make employee charges");
 			else {
 				$CORE_LOCAL->set("mirequested",1);
 				$CORE_LOCAL->set("away",1);

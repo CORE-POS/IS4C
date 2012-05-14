@@ -23,10 +23,6 @@
 $CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
 if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
 
-if (!class_exists("Parser")) include_once($CORE_PATH."parser-class-lib/Parser.php");
-if (!function_exists("listitems")) include_once($CORE_PATH."lib/listitems.php");
-if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
-
 class ScrollItems extends Parser {
 	function check($str){
 		if ($str == "U" || $str == "D")
@@ -41,9 +37,9 @@ class ScrollItems extends Parser {
 		global $CORE_LOCAL;
 		$ret = $this->default_json();
 		if ($str == "U")
-			$ret["output"] = listitems($CORE_LOCAL->get("currenttopid"), $CORE_LOCAL->get("currentid") -1);
+			$ret["output"] = DisplayLib::listitems($CORE_LOCAL->get("currenttopid"), $CORE_LOCAL->get("currentid") -1);
 		elseif ($str == "D")
-			$ret["output"] = listitems($CORE_LOCAL->get("currenttopid"), $CORE_LOCAL->get("currentid") +1);
+			$ret["output"] = DisplayLib::listitems($CORE_LOCAL->get("currenttopid"), $CORE_LOCAL->get("currentid") +1);
 		else {
 			$change = (int)substr($str,1);
 			$curID = $CORE_LOCAL->get("currenttopid");
@@ -55,7 +51,7 @@ class ScrollItems extends Parser {
 			if ($newID == $curID || $newID == $curID+11)
 				$curID = $newID-5;
 			if ($curID < 1) $curID = 1;
-			$ret["output"] = listitems($curID, $newID);
+			$ret["output"] = DisplayLib::listitems($curID, $newID);
 		}
 		return $ret;
 	}

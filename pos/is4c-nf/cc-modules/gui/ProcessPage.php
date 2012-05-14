@@ -32,11 +32,16 @@
 
 $CORE_PATH = "../../";
 include_once("../lib/LS_Access.php");
-include_once("../lib/term.php");
+include_once("../lib/SigCapture.php");
 $CORE_LOCAL = new LS_Access();
-if (!function_exists("paycard_reset")) require_once("../lib/paycardLib.php");
+if (!class_exists("PaycardLib")) include_once("../lib/PaycardLib.php");
 
-if (!function_exists("printfooter")) require_once("../../lib/drawscreen.php");
+if (!class_exists("LibraryClass")){ 
+	class LibraryClass {}
+}
+if (!class_exists("DisplayLib")){ 
+	require_once("../../lib/DisplayLib.php");
+}
 $CORE_PATH = "../../";
 
 class ProcessPage {
@@ -45,7 +50,7 @@ class ProcessPage {
 	var $td;
 
 	function ProcessPage(){
-		$this->td = term_object();
+		$this->td = SigCapture::term_object();
 		if ($this->preprocess()){
 			/* clear any POST data; only the preprocess() method
 			   should be able to access input */
@@ -110,26 +115,26 @@ class ProcessPage {
 		$due = $CORE_LOCAL->get("amtdue");
 		if (!empty($this->errors)){
 			if (is_array($this->errors)) echo $this->errors['output'];
-			else echo paycard_msgBox($type,$this->errors,"","[clear] to cancel");
+			else echo PaycardLib::paycard_msgBox($type,$this->errors,"","[clear] to cancel");
 		}
 		elseif( !is_numeric($amt) || abs($amt) < 0.005) {
-			echo paycard_msgBox($type,"Invalid Amount: $amt $due",
+			echo PaycardLib::paycard_msgBox($type,"Invalid Amount: $amt $due",
 				"Enter a different amount","[clear] to cancel");
 		} else if( $amt > 0 && $due < 0) {
-			echo paycard_msgBox($type,"Invalid Amount",
+			echo PaycardLib::paycard_msgBox($type,"Invalid Amount",
 				"Enter a negative amount","[clear] to cancel");
 		} else if( $amt < 0 && $due > 0) {
-			echo paycard_msgBox($type,"Invalid Amount",
+			echo PaycardLib::paycard_msgBox($type,"Invalid Amount",
 				"Enter a positive amount","[clear] to cancel");
 		} else if( abs($amt) > abs($due)) {
-			echo paycard_msgBox($type,"Invalid Amount",
+			echo PaycardLib::paycard_msgBox($type,"Invalid Amount",
 				"Enter a lesser amount","[clear] to cancel");
 		} else if( $amt > 0) {
-			echo paycard_msgBox($type,"Tender ".paycard_moneyFormat($amt)."?","","[swipe] to continue if correct<br>[enter] to read from device<br>Enter a different amount if incorrect<br>[clear] to cancel");
+			echo PaycardLib::paycard_msgBox($type,"Tender ".PaycardLib::paycard_moneyFormat($amt)."?","","[swipe] to continue if correct<br>[enter] to read from device<br>Enter a different amount if incorrect<br>[clear] to cancel");
 		} else if( $amt < 0) {
-			echo paycard_msgBox($type,"Refund ".paycard_moneyFormat($amt)."?","","[swipe] to continue if correct<br>[enter] to read from device<br>Enter a different amount if incorrect<br>[clear] to cancel");
+			echo PaycardLib::paycard_msgBox($type,"Refund ".PaycardLib::paycard_moneyFormat($amt)."?","","[swipe] to continue if correct<br>[enter] to read from device<br>Enter a different amount if incorrect<br>[clear] to cancel");
 		} else {
-			echo paycard_errBox($type,"Invalid Entry",
+			echo PaycardLib::paycard_errBox($type,"Invalid Entry",
 				"Enter a different amount","[clear] to cancel");
 		}
 		$CORE_LOCAL->set("msgrepeat",2);
@@ -137,7 +142,7 @@ class ProcessPage {
 		</div>
 		<?php
 		echo "<div id=\"footer\">";
-		echo printfooter();
+		echo DisplayLib::printfooter();
 		echo "</div>";
 	}
 
@@ -175,7 +180,7 @@ class ProcessPage {
 				$CORE_LOCAL->set("togglefoodstamp",0);
 				$CORE_LOCAL->set("ccTermOut","resettotal:".
 					str_replace(".","",sprintf("%.2f",$CORE_LOCAL->get("amtdue"))));
-				paycard_reset();
+				PaycardLib::paycard_reset();
 				header("Location: ../../gui-modules/pos2.php");
 				return False;
 			}
@@ -199,7 +204,7 @@ class ProcessPage {
 					$CORE_LOCAL->set("paycard_exp",substr($input,-4,4));
 				}
 				else {
-					$stripe = paycard_magstripe($input);
+					$stripe = PaycardLib::paycard_magstripe($input);
 					if (!is_array($stripe)){
 						$this->errors = "Bad swipe. Please try again or type in manually";
 						return True;
@@ -211,8 +216,8 @@ class ProcessPage {
 					$CORE_LOCAL->set("paycard_exp",$stripe["exp"]);
 					$CORE_LOCAL->set("paycard_name",$stripe["name"]);
 				}
-				$CORE_LOCAL->set("paycard_type",paycard_type($pan['pan']));
-				$CORE_LOCAL->set("paycard_issuer",paycard_issuer($pan['pan']));
+				$CORE_LOCAL->set("paycard_type",PaycardLib::paycard_type($pan['pan']));
+				$CORE_LOCAL->set("paycard_issuer",PaycardLib::paycard_issuer($pan['pan']));
 				/* find the module for this card type */
 				$ccMod = null;
 				foreach($CORE_LOCAL->get("RegisteredPaycardClasses") as $rpc){
@@ -244,13 +249,13 @@ class ProcessPage {
 					$CORE_LOCAL->set("ccTermOut","");
 				}
 
-				if ($result == PAYCARD_ERR_OK){
+				if ($result == PaycardLib::PAYCARD_ERR_OK){
 					$json = $ccMod->cleanup($json);
 					$CORE_LOCAL->set("strRemembered","");
 					$CORE_LOCAL->set("msgrepeat",0);
 				}
 				else {
-					paycard_reset();
+					PaycardLib::paycard_reset();
 					$CORE_LOCAL->set("msgrepeat",0);
 					$json['main_frame'] = '../../gui-modules/boxMsg2.php';
 				}
@@ -270,9 +275,9 @@ class ProcessPage {
 			}
 		} // end form post to self
 		else {
-			paycard_reset();
-			$CORE_LOCAL->set("paycard_mode",PAYCARD_MODE_AUTH);
-			$CORE_LOCAL->set("paycard_type",PAYCARD_TYPE_CREDIT);
+			PaycardLib::paycard_reset();
+			$CORE_LOCAL->set("paycard_mode",PaycardLib::PAYCARD_MODE_AUTH);
+			$CORE_LOCAL->set("paycard_type",PaycardLib::PAYCARD_TYPE_CREDIT);
 			$CORE_LOCAL->set("paycard_amount",$CORE_LOCAL->get("amtdue"));		
 			$CORE_LOCAL->set("paycard_manual",0);
 			if (is_object($this->td)){

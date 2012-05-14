@@ -144,87 +144,80 @@ class Parser {
 			'retry'=>false
 			);
 	}
-}
+	/**
+	  Gather parse modules
+	  @return array of Parser class names
 
-/** @file 
-    @brief Defines parser module and includes a couple utility functions
-*/
+	  Scan the parse directory for module files.
+	  Return an array of available modules.
+	*/
+	static public function get_parse_chain(){
+		$PARSEROOT = realpath(dirname(__FILE__));
 
-/**
-  Gather parse modules
-  @return array of Parser class names
+		$parse_chain = array();
+		$first = "";
+		$dh = opendir($PARSEROOT."/parse");
+		while (False !== ($file=readdir($dh))){
+			if (is_file($PARSEROOT."/parse/".$file) &&
+			    substr($file,-4)==".php"){
 
-  Scan the parse directory for module files.
-  Return an array of available modules.
-*/
-function get_parse_chain(){
-	global $CORE_PATH;
-	$PARSEROOT = $CORE_PATH."parser-class-lib";
+				$classname = substr($file,0,strlen($file)-4);
+				if (!class_exists($classname))
+					include_once($PARSEROOT."/parse/".$file);
+				$instance = new $classname();
+				if ($instance->isLast())
+					array_push($parse_chain,$classname);
+				elseif ($instance->isFirst())
+					$first = $classname;
+				else
+					array_unshift($parse_chain,$classname);
 
-	$parse_chain = array();
-	$first = "";
-	$dh = opendir($PARSEROOT."/parse");
-	while (False !== ($file=readdir($dh))){
-		if (is_file($PARSEROOT."/parse/".$file) &&
-		    substr($file,-4)==".php"){
-
-			$classname = substr($file,0,strlen($file)-4);
-			if (!class_exists($classname))
-				include_once($PARSEROOT."/parse/".$file);
-			$instance = new $classname();
-			if ($instance->isLast())
-				array_push($parse_chain,$classname);
-			elseif ($instance->isFirst())
-				$first = $classname;
-			else
-				array_unshift($parse_chain,$classname);
-
+			}
 		}
+		closedir($dh);
+		if ($first != "")
+			array_unshift($parse_chain,$first);
+
+		return $parse_chain;
 	}
-	closedir($dh);
-	if ($first != "")
-		array_unshift($parse_chain,$first);
 
-	return $parse_chain;
-}
+	/**
+	  Gather preparse modules
+	  @return array of Parser class names
 
-/**
-  Gather preparse modules
-  @return array of Parser class names
+	  Scan the preparse directory for module files.
+	  Return an array of available modules.
+	*/
+	static public function get_preparse_chain(){
+		$PARSEROOT = realpath(dirname(__FILE__));
 
-  Scan the preparse directory for module files.
-  Return an array of available modules.
-*/
-function get_preparse_chain(){
-	global $CORE_PATH;
+		$preparse_chain = array();
+		$dh = opendir($PARSEROOT."/preparse");
+		$first = "";
+		while (False !== ($file=readdir($dh))){
+			if (is_file($PARSEROOT."/preparse/".$file) &&
+			    substr($file,-4)==".php"){
 
-	$PARSEROOT = $CORE_PATH."parser-class-lib";
+				$classname = substr($file,0,strlen($file)-4);
+				if (!class_exists($classname))
+					include_once($PARSEROOT."/preparse/".$file);
+				$instance = new $classname();
+				if ($instance->isLast())
+					array_push($preparse_chain,$classname);
+				elseif ($instance->isFirst())
+					$first = $classname;
+				else
+					array_unshift($preparse_chain,$classname);
 
-	$preparse_chain = array();
-	$dh = opendir($PARSEROOT."/preparse");
-	$first = "";
-	while (False !== ($file=readdir($dh))){
-		if (is_file($PARSEROOT."/preparse/".$file) &&
-		    substr($file,-4)==".php"){
-
-			$classname = substr($file,0,strlen($file)-4);
-			if (!class_exists($classname))
-				include_once($PARSEROOT."/preparse/".$file);
-			$instance = new $classname();
-			if ($instance->isLast())
-				array_push($preparse_chain,$classname);
-			elseif ($instance->isFirst())
-				$first = $classname;
-			else
-				array_unshift($preparse_chain,$classname);
-
+			}
 		}
-	}
-	closedir($dh);
-	if ($first != "")
-		array_unshift($preparse_chain,$first);
+		closedir($dh);
+		if ($first != "")
+			array_unshift($preparse_chain,$first);
 
-	return $preparse_chain;
+		return $preparse_chain;
+	}
+
 }
 
 /**
@@ -249,5 +242,6 @@ function get_preparse_chain(){
   N.B. the HelloWorld display module is just an example; that
   file does not exist in the gui-modules directory.
 */
+
 
 ?>
