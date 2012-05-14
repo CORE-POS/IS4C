@@ -21,9 +21,6 @@
 
 *********************************************************************************/
 
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
-
 if (!class_exists("BasicCCModule")) include_once(realpath(dirname(__FILE__)."/BasicCCModule.php"));
 if (!class_exists("xmlData")) include_once(realpath(dirname(__FILE__)."/lib/xmlData.php"));
 if (!class_exists("PaycardLib")) include_once(realpath(dirname(__FILE__)."/lib/paycardLib.php"));
@@ -118,7 +115,7 @@ class AuthorizeDotNet extends BasicCCModule {
 			//getsubtotals();
 			$CORE_LOCAL->set("paycard_amount",$CORE_LOCAL->get("amtdue"));
 			$CORE_LOCAL->set("paycard_id",$CORE_LOCAL->get("LastID")+1); // kind of a hack to anticipate it this way..
-			$json['main_frame'] = $CORE_PATH.'gui-modules/paycardboxMsgAuth.php';
+			$json['main_frame'] = MiscLib::base_url().'gui-modules/paycardboxMsgAuth.php';
 			return $json;
 			break;
 		} // switch mode
@@ -276,7 +273,7 @@ class AuthorizeDotNet extends BasicCCModule {
 	
 		// display FEC code box
 		$CORE_LOCAL->set("inputMasked",1);
-		$json['main_frame'] = $CORE_PATH.'gui-modules/paycardboxMsgVoid.php';
+		$json['main_frame'] = MiscLib::base_url().'gui-modules/paycardboxMsgVoid.php';
 		return $json;
 	}
 
@@ -489,7 +486,7 @@ class AuthorizeDotNet extends BasicCCModule {
 	}
 
 	function cleanup($json){
-		global $CORE_LOCAL, $CORE_PATH;
+		global $CORE_LOCAL;
 		switch($CORE_LOCAL->get("paycard_mode")){
 		case PaycardLib::PAYCARD_MODE_AUTH:
 			$CORE_LOCAL->set("ccTender",1); 

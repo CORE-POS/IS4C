@@ -20,9 +20,6 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
- // session_start(); 
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
 
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
@@ -34,7 +31,7 @@ class productlist extends NoInputPage {
 	var $boxSize;
 
 	function preprocess(){
-		global $CORE_LOCAL,$CORE_PATH;
+		global $CORE_LOCAL;
 
 		$entered = "";
 		if (isset($_REQUEST["search"]))
@@ -46,7 +43,7 @@ class productlist extends NoInputPage {
 
 		// canceled
 		if (empty($entered)){
-			$this->change_page($CORE_PATH."gui-modules/pos2.php");
+			$this->change_page($this->page_url."gui-modules/pos2.php");
 			return False;
 		}
 
@@ -54,7 +51,7 @@ class productlist extends NoInputPage {
 		if (is_numeric($entered) && strlen($entered) == 13){
 			$CORE_LOCAL->set("msgrepeat",1);
 			$CORE_LOCAL->set("strRemembered",$entered);
-			$this->change_page($CORE_PATH."gui-modules/pos2.php");
+			$this->change_page($this->page_url."gui-modules/pos2.php");
 			return False;
 		}
 

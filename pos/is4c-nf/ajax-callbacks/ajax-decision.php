@@ -21,9 +21,6 @@
 
 *********************************************************************************/
 
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
- 
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 $decision = isset($_REQUEST['input'])?strtoupper(trim($_REQUEST["input"])):'CL';
@@ -31,7 +28,7 @@ $decision = isset($_REQUEST['input'])?strtoupper(trim($_REQUEST["input"])):'CL';
 if ($CORE_LOCAL->get("requestType") != "" && strlen($decision) <= 0)
 	$decision = "CL";
 
-$ret = array('dest_page'=>$CORE_PATH.'gui-modules/pos2.php',
+$ret = array('dest_page'=>MiscLib::base_url().'gui-modules/pos2.php',
 		'endorse'=>false);
 
 if ($decision == "CL") {

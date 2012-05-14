@@ -21,15 +21,12 @@
 
 *********************************************************************************/
 
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
-
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class paycardboxMsgVoid extends BasicPage {
 
 	function preprocess(){
-		global $CORE_LOCAL,$CORE_PATH;
+		global $CORE_LOCAL;
 		$CORE_LOCAL->set("inputMasked",1);
 		// check for posts before drawing anything, so we can redirect
 		if( isset($_REQUEST['reginput'])) {
@@ -43,7 +40,7 @@ class paycardboxMsgVoid extends BasicPage {
 				$CORE_LOCAL->set("endorseType","");
 				$CORE_LOCAL->set("togglefoodstamp",0);
 				$CORE_LOCAL->set("inputMasked",0);
-				$this->change_page($CORE_PATH."gui-modules/pos2.php");
+				$this->change_page($this->page_url."gui-modules/pos2.php");
 				return False;
 			}
 	
@@ -81,7 +78,7 @@ class paycardboxMsgVoid extends BasicPage {
 					$ret = $myObj->paycard_void($id);
 					if (isset($ret['output']) && !empty($ret['output'])){
 						$CORE_LOCAL->set("boxMsg",$ret['output']);
-						$this->change_page($CORE_PATH."gui-modules/boxMsg2.php");
+						$this->change_page($this->page_url."gui-modules/boxMsg2.php");
 						return False;
 					}
 					break;

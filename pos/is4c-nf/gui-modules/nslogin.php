@@ -20,8 +20,6 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
 
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
@@ -32,18 +30,17 @@ class nslogin extends NoInputPage {
 	var $msg;
 
 	function preprocess(){
-		global $CORE_PATH;
 		$this->color ="#004080";
 		$this->heading = "enter manager password";
 		$this->msg = "confirm no sales";
 
 		if (isset($_REQUEST['reginput'])){
 			if (strtoupper($_REQUEST['reginput']) == "CL"){
-				$this->change_page($CORE_PATH."gui-modules/pos2.php");
+				$this->change_page($this->page_url."gui-modules/pos2.php");
 				return False;
 			}
 			elseif (Authenticate::ns_check_password($_REQUEST['reginput'])){
-				$this->change_page($CORE_PATH."gui-modules/pos2.php");
+				$this->change_page($this->page_url."gui-modules/pos2.php");
 				return False;
 			}
 			else {

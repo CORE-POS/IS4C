@@ -21,9 +21,6 @@
 
 *********************************************************************************/
 
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
-
 if (!class_exists("BasicCCModule")) include_once(realpath(dirname(__FILE__)."/BasicCCModule.php"));
 if (!class_exists("xmlData")) include_once(realpath(dirname(__FILE__)."/lib/xmlData.php"));
 if (!class_exists("PaycardLib")) include_once(realpath(dirname(__FILE__)."/lib/paycardLib.php"));
@@ -59,7 +56,7 @@ class GoEMerchant extends BasicCCModule {
 	}
 
 	function entered($validate,$json){
-		global $CORE_LOCAL,$CORE_PATH;
+		global $CORE_LOCAL;
 		// error checks based on card type
 		if( $CORE_LOCAL->get("CCintegrate") != 1) { // credit card integration must be enabled
 			PaycardLib::paycard_reset();
@@ -134,7 +131,7 @@ class GoEMerchant extends BasicCCModule {
 			if ($CORE_LOCAL->get("paycard_amount") == 0)
 				$CORE_LOCAL->set("paycard_amount",$CORE_LOCAL->get("amtdue"));
 			$CORE_LOCAL->set("paycard_id",$CORE_LOCAL->get("LastID")+1); // kind of a hack to anticipate it this way..
-			$json['main_frame'] = $CORE_PATH.'gui-modules/paycardboxMsgAuth.php';
+			$json['main_frame'] = MiscLib::base_url().'gui-modules/paycardboxMsgAuth.php';
 			$json['output'] = '';
 			return $json;
 			break;
@@ -149,7 +146,7 @@ class GoEMerchant extends BasicCCModule {
 	}
 
 	function paycard_void($transID,$laneNo=-1,$transNo=-1,$json=array()) {
-		global $CORE_LOCAL,$CORE_PATH;
+		global $CORE_LOCAL;
 		$this->voidTrans = "";
 		$this->voidRef = "";
 		// situation checking
@@ -305,7 +302,7 @@ class GoEMerchant extends BasicCCModule {
 	
 		// display FEC code box
 		$CORE_LOCAL->set("inputMasked",1);
-		$json['main_frame'] = $CORE_PATH.'gui-modules/paycardboxMsgVoid.php';
+		$json['main_frame'] = MiscLib::base_url().'gui-modules/paycardboxMsgVoid.php';
 		return $json;
 	}
 
@@ -509,7 +506,7 @@ class GoEMerchant extends BasicCCModule {
 	}
 
 	function cleanup($json){
-		global $CORE_LOCAL, $CORE_PATH;
+		global $CORE_LOCAL;
 		switch($CORE_LOCAL->get("paycard_mode")){
 		case PaycardLib::PAYCARD_MODE_AUTH:
 			$CORE_LOCAL->set("ccTender",1); 

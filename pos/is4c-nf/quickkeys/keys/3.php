@@ -1,8 +1,5 @@
 <?php
 
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
-
 $my_keys = array(
 	new quickkey("All\nEggs","QK7"),
 	new quickkey("All\nMilk","QK8"),

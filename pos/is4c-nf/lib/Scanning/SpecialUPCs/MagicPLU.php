@@ -21,9 +21,6 @@
 
 *********************************************************************************/
 
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
-
 /**
   @class MagicPLU
 
@@ -43,22 +40,23 @@ class MagicPLU extends SpecialUPC {
 	}
 
 	function handle($upc,$json){
-		global $CORE_LOCAL,$CORE_PATH;
+		global $CORE_LOCAL;
+		$my_url = MiscLib::base_url();
 
 		switch(ltrim($upc,'0')){
 		case '8006':
 			if ($CORE_LOCAL->get("memberID") == 0)
-				$json['main_frame'] = $CORE_PATH.'gui-modules/memlist.php';
+				$json['main_frame'] = $my_url.'gui-modules/memlist.php';
 			else if ($CORE_LOCAL->get("msgrepeat") == 0){
 				$CORE_LOCAL->set("endorseType","stock");
 				$CORE_LOCAL->set("tenderamt",$total);
 				$CORE_LOCAL->set("boxMsg","<B>".$total." stock payment</B><BR>insert form<BR>press [enter] to endorse<P><FONT size='-1'>[clear] to cancel</FONT>");
-				$ret["main_frame"] = $CORE_PATH."gui-modules/boxMsg2.php";
+				$ret["main_frame"] = $my_url."gui-modules/boxMsg2.php";
 			}
 			break;
 		case '8005':
 			if ($CORE_LOCAL->get("memberID") == 0)
-				$json['main_frame'] = $CORE_PATH.'gui-modules/memlist.php';
+				$json['main_frame'] = $my_url.'gui-modules/memlist.php';
 			elseif ($CORE_LOCAL->get("isMember") == 0)
 				$json['output'] = DisplayLib::boxMsg("<br />member discount not applicable");
 			elseif ($CORE_LOCAL->get("percentDiscount") > 0)

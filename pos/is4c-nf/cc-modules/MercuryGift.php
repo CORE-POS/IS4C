@@ -21,9 +21,6 @@
 
 *********************************************************************************/
 
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
-
 /*
  * Mercury Gift Card processing module
  *
@@ -31,7 +28,7 @@ if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= 
 
 if (!class_exists("AutoLoader")) include_once(realpath(dirname(__FILE__).'/../lib/AutoLoader.php'));
 
-if (!function_exists("PaycardLib")) include_once($CORE_PATH."cc-modules/lib/paycardLib.php");
+if (!function_exists("PaycardLib")) include_once(realpath(dirname(__FILE__)."/lib/paycardLib.php"));
 
 define('MERCURY_TERMINAL_ID',"");
 define('MERCURY_PASSWORD',"");
@@ -59,7 +56,7 @@ class MercuryGift extends BasicCCModule {
 	 * of the paycard* files
 	 */
 	function entered($validate,$json){
-		global $CORE_LOCAL,$CORE_PATH;
+		global $CORE_LOCAL;
 		// error checks based on card type
 		if( $CORE_LOCAL->get("gcIntegrate") != 1) { // credit card integration must be enabled
 			$json['output'] = PaycardLib::paycard_errBox(PaycardLib::PAYCARD_TYPE_GIFT,"Card Integration Disabled","Please process gift cards in standalone","[clear] to cancel");
@@ -112,18 +109,18 @@ class MercuryGift extends BasicCCModule {
 		case PaycardLib::PAYCARD_MODE_AUTH:
 			$CORE_LOCAL->set("paycard_amount",$CORE_LOCAL->get("amtdue"));
 			$CORE_LOCAL->set("paycard_id",$CORE_LOCAL->get("LastID")+1); // kind of a hack to anticipate it this way..
-			$json['main_frame'] = $CORE_PATH.'gui-modules/paycardboxMsgAuth.php';
+			$json['main_frame'] = MiscLib::base_url().'gui-modules/paycardboxMsgAuth.php';
 			return $json;
 	
 		case PaycardLib::PAYCARD_MODE_ACTIVATE:
 		case PaycardLib::PAYCARD_MODE_ADDVALUE:
 			$CORE_LOCAL->set("paycard_amount",0);
 			$CORE_LOCAL->set("paycard_id",$CORE_LOCAL->get("LastID")+1); // kind of a hack to anticipate it this way..
-			$json['main_frame'] = $CORE_PATH.'gui-modules/paycardboxMsgGift.php';
+			$json['main_frame'] = MiscLib::base_url().'gui-modules/paycardboxMsgGift.php';
 			return $json;
 	
 		case PaycardLib::PAYCARD_MODE_BALANCE:
-			$json['main_frame'] = $CORE_PATH.'gui-modules/paycardboxMsgBalance.php';
+			$json['main_frame'] = MiscLib::base_url().'gui-modules/paycardboxMsgBalance.php';
 			return $json;
 		} // switch mode
 	
@@ -214,7 +211,7 @@ class MercuryGift extends BasicCCModule {
 	 * code from paycard*.php files.
 	 */
 	function paycard_void($transID,$json=array()){
-		global $CORE_LOCAL,$CORE_PATH;
+		global $CORE_LOCAL;
 		// situation checking
 		if( $CORE_LOCAL->get("gcIntegrate") != 1) { // gift card integration must be enabled
 			$json['output'] = PaycardLib::paycard_errBox(PaycardLib::PAYCARD_TYPE_GIFT,"Card Integration Disabled",
@@ -342,7 +339,7 @@ class MercuryGift extends BasicCCModule {
 		}
 	
 		// display FEC code box
-		$json['main_frame'] = $CORE_PATH.'gui-modules/paycardboxMsgVoid.php';
+		$json['main_frame'] = MiscLib::base_url().'gui-modules/paycardboxMsgVoid.php';
 		return $json;
 	}
 

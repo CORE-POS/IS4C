@@ -21,14 +21,11 @@
 
 *********************************************************************************/
 
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
-
 /**
   @class ReceiptLib
   Receipt functions
 */
-class ReceiptLib {
+class ReceiptLib extends LibraryClass {
 
 	static private $PRINT_OBJ;
 
@@ -94,7 +91,7 @@ static public function drawerKick() {
 
 // -------------------------------------------------------------
 static public function printReceiptHeader($dateTimeStamp, $ref) {
-	global $CORE_LOCAL,$CORE_PATH;
+	global $CORE_LOCAL;
 
 	$receipt = self::$PRINT_OBJ->TextStyle(True);
 
@@ -106,7 +103,7 @@ static public function printReceiptHeader($dateTimeStamp, $ref) {
 		$receipt .= "\n\n";
 	}
 	else if ($CORE_LOCAL->get("newReceipt")==1 && $CORE_LOCAL->get("store") == "wfc"){
-		$img = self::$PRINT_OBJ->RenderBitmapFromFile($CORE_PATH."graphics/WFC_Logo.bmp");
+		$img = self::$PRINT_OBJ->RenderBitmapFromFile(MiscLib::base_url()."graphics/WFC_Logo.bmp");
 		$receipt .= $img."\n";
 		$i=4;
 		$receipt .= "\n";

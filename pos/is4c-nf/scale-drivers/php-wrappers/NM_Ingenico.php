@@ -20,16 +20,14 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
-
 class NM_Ingenico extends ScaleDriverWrapper {
 
 	function ReadFromScale(){
-		global $CORE_LOCAL,$CORE_PATH;
+		global $CORE_LOCAL;
+		$rel = MiscLib::base_url();
 
 		$input = "";
-		$readdir = $CORE_PATH.'scale-drivers/drivers/NewMagellan/cc-output';
+		$readdir = $rel.'scale-drivers/drivers/NewMagellan/cc-output';
 		$dh  = opendir($readdir);
 
 		while (false !== ($fn = readdir($dh))) {
@@ -55,8 +53,8 @@ class NM_Ingenico extends ScaleDriverWrapper {
 	}
 
 	function getpath(){
-		global $CORE_PATH;
-		return $CORE_PATH.'scale-drivers/drivers/NewMagellan/';
+		$rel = MiscLib::base_url();
+		return $rel.'scale-drivers/drivers/NewMagellan/';
 	}
 
 	/* just wraps UDP send because commands 

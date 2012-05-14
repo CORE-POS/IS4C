@@ -29,22 +29,19 @@
     is the default action inherited from BasicPage.
  */
 
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
-
 class InputPage extends BasicPage {
 
 	function print_page(){
-		global $CORE_PATH;
+		$my_url = $this->page_url;
 		?>
 		<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 		<html>
 		<?php
 		echo "<head>";
 		echo "<link rel=\"stylesheet\" type=\"text/css\"
-		    href=\"{$CORE_PATH}pos.css\">";
+		    href=\"{$my_url}pos.css\">";
 		echo "<script type=\"text/javascript\"
-			src=\"{$CORE_PATH}js/jquery.js\"></script>";
+			src=\"{$my_url}js/jquery.js\"></script>";
 		$this->head_content();
 		echo "</head>";
 		echo "<body>";

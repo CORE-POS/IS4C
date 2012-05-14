@@ -1,8 +1,5 @@
 <?php
 
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
-
 /**
   @class quickkey
   A class for building menus from buttons
@@ -22,11 +19,6 @@ if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= 
 
 /**
   @example 271828.php 
-  The first two lines are a sanity checks. 
-  $CORE_PATH <b>should</b> be defined 
-  already but it doesn't hurt to make
-  sure. These lines can be included as-is in every
-  menu definition file.
 
   $my_keys defines the menu. Pretty basic, but a couple notes:
    - Some button description include newlines. The text
@@ -71,7 +63,6 @@ class quickkey {
 	}
 
 	function display($id=""){
-		global $CORE_PATH;
 		$ret = sprintf("<form action=\"%s\" method=\"post\"
 			style=\"display:inline;\">",
 			$_SERVER["PHP_SELF"]);
@@ -92,7 +83,7 @@ class quickkey {
 				src=\"%s\" />
 				<input type=\"hidden\" name=\"%s\"
 				value=\"%s\" />",$id,$this->title,
-				$CORE_PATH.
+				MiscLib::base_url().
 				"quickkeys/imgs/".$this->img,
 				md5($this->title),
 				$this->output_text);

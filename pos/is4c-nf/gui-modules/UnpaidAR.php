@@ -21,15 +21,12 @@
 
 *********************************************************************************/
 
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
-
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class UnpaidAR extends BasicPage {
 
 	function preprocess(){
-		global $CORE_LOCAL,$CORE_PATH;
+		global $CORE_LOCAL;
 		if (isset($_REQUEST['reginput'])){
 			$dec = $_REQUEST['reginput'];
 			$amt = $CORE_LOCAL->get("old_ar_balance");
@@ -41,7 +38,7 @@ class UnpaidAR extends BasicPage {
 				if ($CORE_LOCAL->get('inactMem') == 1){
 					PrehLib::setMember($CORE_LOCAL->get("defaultNonMem"),1);
 				}
-				$this->change_page($CORE_PATH."gui-modules/pos2.php");
+				$this->change_page($this->page_url."gui-modules/pos2.php");
 				return False;
 			}
 			elseif ($dec == "" || strtoupper($dec) == "BQ"){
@@ -56,7 +53,7 @@ class UnpaidAR extends BasicPage {
 					$CORE_LOCAL->set("isMember",1);
 					PrehLib::ttl();
 				}
-				$this->change_page($CORE_PATH."gui-modules/pos2.php");
+				$this->change_page($this->page_url."gui-modules/pos2.php");
 				return False;
 			}
 		}

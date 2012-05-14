@@ -21,9 +21,6 @@
 
 *********************************************************************************/
 
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
-
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class undo extends NoInputPage {
@@ -53,7 +50,7 @@ class undo extends NoInputPage {
 	}
 
 	function preprocess(){
-		global $CORE_LOCAL,$CORE_PATH;
+		global $CORE_LOCAL;
 		$this->box_color = "#004080";
 		$this->msg = "Undo transaction";
 
@@ -62,7 +59,7 @@ class undo extends NoInputPage {
 
 			// clear/cancel undo attempt
 			if ($trans_num == "" || $trans_num == "CL"){
-				$this->change_page($CORE_PATH."gui-modules/pos2.php");
+				$this->change_page($this->page_url."gui-modules/pos2.php");
 				return False;
 			}
 
@@ -218,7 +215,7 @@ class undo extends NoInputPage {
 			$CORE_LOCAL->set("CashierNo",$prevCashier);
 			$CORE_LOCAL->set("transno",Database::gettransno($prevCashier));
 			
-			$this->change_page($CORE_PATH."gui-modules/undo_confirm.php");
+			$this->change_page($this->page_url."gui-modules/undo_confirm.php");
 			return False;
 		}
 		return True;

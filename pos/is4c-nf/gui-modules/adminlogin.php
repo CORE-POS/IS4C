@@ -28,9 +28,6 @@
  * variable
  */
 
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
-
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class adminlogin extends NoInputPage {
@@ -38,7 +35,7 @@ class adminlogin extends NoInputPage {
 	var $msg;
 
 	function preprocess(){
-		global $CORE_LOCAL,$CORE_PATH;
+		global $CORE_LOCAL;
 		$this->box_color="#004080";
 		$this->msg = "enter admin password";
 
@@ -46,7 +43,7 @@ class adminlogin extends NoInputPage {
 			$passwd = $_REQUEST['reginput'];
 			if (strtoupper($passwd) == "CL"){
 				$CORE_LOCAL->set("refundComment","");
-				$this->change_page($CORE_PATH."gui-modules/pos2.php");
+				$this->change_page($this->page_url."gui-modules/pos2.php");
 				return False;	
 			}
 			else if (!is_numeric($passwd) || $passwd > 9999 || $passwd < 1){

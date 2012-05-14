@@ -20,8 +20,6 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
 
 class Totals extends Parser {
 
@@ -34,16 +32,16 @@ class Totals extends Parser {
 	}
 
 	function parse($str){
-		global $CORE_LOCAL,$CORE_PATH;
+		global $CORE_LOCAL;
 		$ret = $this->default_json();
 		if ($str == "FNTL"){
-			$ret['main_frame'] = $CORE_PATH.'gui-modules/fsTotalConfirm.php';
+			$ret['main_frame'] = MiscLib::base_url().'gui-modules/fsTotalConfirm.php';
 		}
 		elseif ($str == "TETL"){
 			if ($CORE_LOCAL->get("requestType") == ""){
 				$CORE_LOCAL->set("requestType","tax exempt");
 				$CORE_LOCAL->set("requestMsg","Enter the tax exempt ID");
-				$ret['main_frame'] = $CORE_PATH.'gui-modules/requestInfo.php';
+				$ret['main_frame'] = MiscLib::base_url().'gui-modules/requestInfo.php';
 			}
 			else if ($CORE_LOCAL->get("requestType") == "tax exempt"){
 				TransRecord::addTaxExempt();

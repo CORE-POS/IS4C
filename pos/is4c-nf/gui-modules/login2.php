@@ -21,9 +21,6 @@
 
 *********************************************************************************/
 
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
-
 ini_set('display_errors','1');
 
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
@@ -34,7 +31,6 @@ class login2 extends BasicPage {
 	var $msg;
 
 	function preprocess(){
-		global $CORE_PATH;
 		$this->box_color = '#004080';
 		$this->msg = 'please enter your password';
 
@@ -44,7 +40,7 @@ class login2 extends BasicPage {
 				$sd = MiscLib::scaleObject();
 				if (is_object($sd))
 					$sd->ReadReset();
-				$this->change_page($CORE_PATH."gui-modules/pos2.php");
+				$this->change_page($this->page_url."gui-modules/pos2.php");
 				return False;
 			}
 			else {
@@ -67,7 +63,7 @@ class login2 extends BasicPage {
 	}
 
 	function body_content(){
-		global $CORE_LOCAL, $CORE_PATH;
+		global $CORE_LOCAL;
 		$this->add_onload_command("\$('#reginput').focus();\n
 					   \$('#scalebox').css('display','none');\n
 					   \$('body').css('background-image','none');\n");
@@ -100,10 +96,10 @@ class login2 extends BasicPage {
 				//echo "<a href='/bye.html' onclick=\"var cw=window.open('','Customer_Display'); cw.close()\" ";
 				echo "<a href=\"/bye.html\" ";
 			}
-			echo "onmouseover=\"document.exit.src='{$CORE_PATH}graphics/switchred2.gif';\" ";
-			echo "onmouseout=\"document.exit.src='{$CORE_PATH}graphics/switchblue2.gif';\">";
+			echo "onmouseover=\"document.exit.src='{$this->page_url}graphics/switchred2.gif';\" ";
+			echo "onmouseout=\"document.exit.src='{$this->page_url}graphics/switchblue2.gif';\">";
 			?>
-			<img name="exit" border="0" src="<?php echo $CORE_PATH; ?>graphics/switchblue2.gif" /></a>
+			<img name="exit" border="0" src="<?php echo $this->page_url; ?>graphics/switchblue2.gif" /></a>
 	
 		</div>
 		<form name="hidden">

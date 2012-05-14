@@ -21,9 +21,6 @@
 
 *********************************************************************************/
 
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
-
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class PriceOverride extends NoInputPage {
@@ -32,7 +29,7 @@ class PriceOverride extends NoInputPage {
 	var $price;
 
 	function preprocess(){
-		global $CORE_LOCAL, $CORE_PATH;
+		global $CORE_LOCAL;
 		$line_id = $CORE_LOCAL->get("currentid");
 		$db = Database::tDataConnect();
 		
@@ -42,7 +39,7 @@ class PriceOverride extends NoInputPage {
 		$r = $db->query($q);
 		if ($db->num_rows($r)==0){
 			// current record cannot be repriced
-			$this->change_page($CORE_PATH."gui-modules/pos2.php");
+			$this->change_page($this->page_url."gui-modules/pos2.php");
 			return False;
 		}
 		$w = $db->fetch_row($r);
@@ -54,7 +51,7 @@ class PriceOverride extends NoInputPage {
 
 			if ($input == "CL" && $this->price != '$0.00'){
 				// override canceled; go home
-				$this->change_page($CORE_PATH."gui-modules/pos2.php");
+				$this->change_page($this->page_url."gui-modules/pos2.php");
 				return False;
 			}
 			else if (is_numeric($input) && $input != 0){
@@ -73,7 +70,7 @@ class PriceOverride extends NoInputPage {
 					WHERE trans_id=%d",$ttl,$line_id);
 				$r = $db->query($q);	
 
-				$this->change_page($CORE_PATH."gui-modules/pos2.php");
+				$this->change_page($this->page_url."gui-modules/pos2.php");
 				return False;
 			}
 		}

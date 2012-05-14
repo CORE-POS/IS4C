@@ -20,22 +20,19 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
-
 class NewMagellan extends ScaleDriverWrapper {
 
 	function SavePortConfiguration($portName){
-		global $CORE_PATH;
+		$rel = MiscLib::base_url();
 
 		/* read in config file  */
-		$fp = fopen($CORE_PATH."scale-drivers/drivers/NewMagellan/ports.conf","r");
+		$fp = fopen($rel."scale-drivers/drivers/NewMagellan/ports.conf","r");
 		$lines = array();
 		while(!feof($fp)) $lines[] = fgets($fp);
 		fclose($fp);
 
 		/* replace port setting */
-		$fp = fopen($CORE_PATH."scale-drivers/drivers/NewMagellan/ports.conf","w");
+		$fp = fopen($rel."scale-drivers/drivers/NewMagellan/ports.conf","w");
 		if ($fp){
 			foreach($lines as $l){
 				if (strstr($l,"SPH_Magellan_Scale") === False) fwrite($fp,$l);
@@ -49,16 +46,16 @@ class NewMagellan extends ScaleDriverWrapper {
 	}
 
 	function SaveDirectoryConfiguration($absPath){
-		global $CORE_PATH;
+		$rel = MiscLib::base_url();
 
 		/* read in c# code file */
-		$fp = fopen($CORE_PATH."scale-drivers/drivers/NewMagellan/SPH_Magellan_Scale.cs","r");
+		$fp = fopen($rel."scale-drivers/drivers/NewMagellan/SPH_Magellan_Scale.cs","r");
 		$lines = array();
 		while(!feof($fp)) $lines[] = fgets($fp);
 		fclose($fp);
 
 		/* replace file location #defines */
-		$fp = fopen($CORE_PATH."scale-drivers/drivers/NewMagellan/SPH_Magellan_Scale.cs","w");
+		$fp = fopen($rel."scale-drivers/drivers/NewMagellan/SPH_Magellan_Scale.cs","w");
 		if ($fp){
 			foreach($lines as $l){
 				if (strstr($l,"static String MAGELLAN_OUTPUT_FILE ") !== False){
@@ -78,10 +75,11 @@ class NewMagellan extends ScaleDriverWrapper {
 	}
 
 	function ReadFromScale(){
-		global $CORE_LOCAL,$CORE_PATH;
+		global $CORE_LOCAL;
+		$rel = MiscLib::base_url();
 
-		$readfile = $CORE_PATH.'scale-drivers/drivers/NewMagellan/scanner-scale';
-		$readdir = $CORE_PATH.'scale-drivers/drivers/NewMagellan/ss-output';
+		$readfile = $rel.'scale-drivers/drivers/NewMagellan/scanner-scale';
+		$readdir = $rel.'scale-drivers/drivers/NewMagellan/ss-output';
 		$scale_display = "";
 		$scans = array();
 		/*
@@ -133,8 +131,8 @@ class NewMagellan extends ScaleDriverWrapper {
 	}
 
 	function ReadReset(){
-		global $CORE_PATH;
-		$readdir = $CORE_PATH.'scale-drivers/drivers/NewMagellan/ss-output';
+		$rel = MiscLib::base_url();
+		$readdir = $rel.'scale-drivers/drivers/NewMagellan/ss-output';
 		$dh  = opendir($readdir);
 		while (false !== ($fn = readdir($dh))) {
 			if (is_dir($readdir."/".$fn)) continue;

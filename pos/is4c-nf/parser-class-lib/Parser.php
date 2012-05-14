@@ -223,10 +223,6 @@ class Parser {
 /**
   @example HW_Parser.php
 
-  The first two lines are standard path detection. With a Parser
-  module something else <i>probably</i> set this already but
-  better safe than sorry.
-
   check() looks for input the module can handle. In this case
   the module simply watches for the string "HW".
 

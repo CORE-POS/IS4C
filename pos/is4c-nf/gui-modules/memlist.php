@@ -21,9 +21,6 @@
 
 *********************************************************************************/
 
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
-
 ini_set('display_errors','1');
 
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
@@ -36,7 +33,7 @@ class memlist extends NoInputPage {
 	var $db;
 
 	function preprocess(){
-		global $CORE_LOCAL,$CORE_PATH;
+		global $CORE_LOCAL;
 		$CORE_LOCAL->set("away",1);
 		$entered = "";
 		if ($CORE_LOCAL->get("idSearch") && strlen($CORE_LOCAL->get("idSearch")) > 0) {
@@ -65,7 +62,7 @@ class memlist extends NoInputPage {
 			$CORE_LOCAL->set("mirequested",0);
 			$CORE_LOCAL->set("scan","scan");
 			$CORE_LOCAL->set("reprintNameLookup",0);
-			$this->change_page($CORE_PATH."gui-modules/pos2.php");
+			$this->change_page($this->page_url."gui-modules/pos2.php");
 			return False;
 		}
 
@@ -95,9 +92,9 @@ class memlist extends NoInputPage {
 			PrehLib::setMember($row["CardNo"], $personNum,$row);
 			$CORE_LOCAL->set("scan","scan");
 			if ($entered != $CORE_LOCAL->get("defaultNonMem") && check_unpaid_ar($row["CardNo"]))
-				$this->change_page($CORE_PATH."gui-modules/UnpaidAR.php");
+				$this->change_page($this->page_url."gui-modules/UnpaidAR.php");
 			else
-				$this->change_page($CORE_PATH."gui-modules/pos2.php");
+				$this->change_page($this->page_url."gui-modules/pos2.php");
 			return False;
 		}
 
