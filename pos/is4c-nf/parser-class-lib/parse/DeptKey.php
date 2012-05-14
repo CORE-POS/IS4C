@@ -23,10 +23,6 @@
 $CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
 if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
 
-if (!class_exists("Parser")) include_once($CORE_PATH."parser-class-lib/Parser.php");
-if (!isset($CORE_LOCAL)) include_once($CORE_PATH."lib/LocalStorage/conf.php");
-if (!function_exists("deptkey")) include_once($CORE_PATH."lib/prehkeys.php");
-
 class DeptKey extends Parser {
 	function check($str){
 		if (strstr($str,"DP") && strlen($str) > 3 &&
@@ -97,7 +93,7 @@ class DeptKey extends Parser {
 		}
 		
 		if (!$ret['main_frame'])
-			$ret = deptkey($split[0],$split[1],$ret);
+			$ret = PrehLib::deptkey($split[0],$split[1],$ret);
 		return $ret;
 	}
 

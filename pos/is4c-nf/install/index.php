@@ -26,8 +26,9 @@ if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= 
 
 ini_set('display_errors','1');
 
-include($CORE_PATH.'ini.php');
-include($CORE_PATH.'lib/lib.php');
+include(realpath(dirname(__FILE__).'/../lib/AutoLoader.php'));
+AutoLoader::LoadMap();
+include(realpath(dirname(__FILE__).'/../ini.php'));
 include('util.php');
 ?>
 <html>
@@ -49,6 +50,8 @@ Necessities
 <a href="security.php">Security</a>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <a href="upgrade-ini.php">Upgrade ini.php via server</a>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<a href="debug.php">Debug</a>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <a href="extra_data.php">Sample Data</a>
 <form action=index.php method=post>
@@ -147,8 +150,6 @@ confsave('pDatabase',"'".$CORE_LOCAL->get('pDatabase')."'");
 Testing Operation DB Connection:
 <?php
 $gotDBs = 0;
-if (!class_exists('SQLManager'))
-	include('../lib/SQLManager.php');
 if ($CORE_LOCAL->get("DBMS") == "mysql")
 	$val = ini_set('mysql.connect_timeout',5);
 
@@ -328,7 +329,7 @@ function create_op_dbs($db,$type){
 		Value real)";
 	if (!$db->table_exists('couponcodes',$name)){
 		$db->query($couponCodeQ,$name);
-		loaddata($db,'couponcodes');
+		load_sample_data($db,'couponcodes');
 	}
 
 	$custDataQ = "CREATE TABLE `custdata` (
@@ -432,7 +433,7 @@ function create_op_dbs($db,$type){
 		TaxExempt tinyint)";
 	if (!$db->table_exists('globalvalues',$name)){
 		$db->query($globalQ,$name);
-		loaddata($db,'globalvalues');
+		load_sample_data($db,'globalvalues');
 	}
 
 	$prodQ = "CREATE TABLE `products` (
@@ -544,7 +545,7 @@ function create_op_dbs($db,$type){
 		MaxRefund real)";
 	if(!$db->table_exists('tenders',$name)){
 		$db->query($tenderQ,$name);
-		loaddata($db,'tenders');
+		load_sample_data($db,'tenders');
 	}
 
 	$ccView = "CREATE VIEW chargecodeview AS

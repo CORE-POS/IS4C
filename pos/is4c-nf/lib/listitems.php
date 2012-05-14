@@ -32,6 +32,7 @@ if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
 /**
  @file
  @brief Functions for drawing the lines in the current transaction
+ @deprecated see DisplayLib
 */
 
 /**

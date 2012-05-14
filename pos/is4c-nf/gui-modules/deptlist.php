@@ -24,9 +24,7 @@
 $CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
 if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
 
-if (!class_exists("NoInputPage")) include_once($CORE_PATH."gui-class-lib/NoInputPage.php");
-if (!function_exists("pDataConnect")) include($CORE_PATH."lib/connect.php");
-if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
+include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class deptlist extends NoInputPage {
 
@@ -46,7 +44,7 @@ class deptlist extends NoInputPage {
 				// user presses CL{enter}
 				// Redirect to main screen
 				$CORE_LOCAL->set("departmentAmount","0");	
-				header("Location: {$CORE_PATH}gui-modules/pos2.php");
+				$this->change_page($CORE_PATH."gui-modules/pos2.php");
 				return False;
 			}
 
@@ -57,7 +55,7 @@ class deptlist extends NoInputPage {
 				$input = $CORE_LOCAL->get("departmentAmount")."DP".$entered."0";
 				$CORE_LOCAL->set("msgrepeat",1);
 				$CORE_LOCAL->set("strRemembered",$input);
-				header("Location: {$CORE_PATH}gui-modules/pos2.php");
+				$this->change_page($CORE_PATH."gui-modules/pos2.php");
 				return False;
 			}
 		}
@@ -100,7 +98,7 @@ class deptlist extends NoInputPage {
 	*/
 	function body_content(){
 		global $CORE_LOCAL;
-		$db = pDataConnect();
+		$db = Database::pDataConnect();
 		$q = "SELECT dept_no,dept_name FROM departments ORDER BY dept_name";
 		$r = $db->query($q);
 

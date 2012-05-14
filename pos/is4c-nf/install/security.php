@@ -1,5 +1,7 @@
 <?php
-include('../ini.php');
+include(realpath(dirname(__FILE__).'/../lib/AutoLoader.php'));
+AutoLoader::LoadMap();
+include(realpath(dirname(__FILE__).'/../ini.php'));
 include('util.php');
 ?>
 <html>
@@ -19,6 +21,8 @@ body {
 <a href="scanning.php">Scanning Options</a>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 Security
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<a href="debug.php">Debug</a>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <a href="extra_data.php">Sample Data</a>
 <form action=security.php method=post>
@@ -49,7 +53,6 @@ else {
 	echo "<option value=30 >Admin only</option>";
 	echo "<option value=20 selected>All</option>";
 }
-var_dump($CORE_LOCAL->get("SecuritySR"));
 confsave('SecuritySR',$CORE_LOCAL->get("SecuritySR"));
 ?>
 </select><br />

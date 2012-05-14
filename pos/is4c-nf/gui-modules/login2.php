@@ -26,11 +26,7 @@ if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= 
 
 ini_set('display_errors','1');
 
-if (!class_exists("BasicPage")) include($CORE_PATH."gui-class-lib/BasicPage.php");
-if (!function_exists("authenticate")) include($CORE_PATH."lib/authenticate.php");
-if (!function_exists("testremote")) include($CORE_PATH."lib/connect.php");
-if (!function_exists("scaleObject")) include($CORE_PATH."lib/lib.php");
-if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
+include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class login2 extends BasicPage {
 
@@ -43,12 +39,12 @@ class login2 extends BasicPage {
 		$this->msg = 'please enter your password';
 
 		if (isset($_REQUEST['reginput'])){
-			if (authenticate($_REQUEST['reginput'])){
-				testremote();
-				$sd = scaleObject();
+			if (Authenticate::check_password($_REQUEST['reginput'])){
+				Database::testremote();
+				$sd = MiscLib::scaleObject();
 				if (is_object($sd))
 					$sd->ReadReset();
-				header("Location: {$CORE_PATH}gui-modules/pos2.php");
+				$this->change_page($CORE_PATH."gui-modules/pos2.php");
 				return False;
 			}
 			else {

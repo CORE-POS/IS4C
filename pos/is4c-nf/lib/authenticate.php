@@ -21,22 +21,15 @@
 
 *********************************************************************************/
 
-/**
-  @file
-  @brief Functions for user authentication
-*/
- 
-// session_cache_limiter('nocache');
 $CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
 if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
 
-include($CORE_PATH."ini.php");
-if (!function_exists("pDataConnect")) include($CORE_PATH."lib/connect.php");
-if (!function_exists("addactivity")) include($CORE_PATH."lib/additem.php");
-if (!function_exists("memberID")) include($CORE_PATH."lib/prehkeys.php");
-if (!function_exists("rePoll")) include($CORE_PATH."lib/lib.php");
-if (!function_exists("drawerKick")) include($CORE_PATH."lib/printLib.php");
-if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
+/**
+  @class Authenticate
+  Functions for user authentication
+*/
+class Authenticate extends LibraryClass {
+ 
 
 /**
   Authenticate an employee by password
@@ -50,11 +43,11 @@ if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
   a user with frontendsecurity >= 30 in the
   employee table will be accepted.
 */
-function authenticate($password,$activity=1){
+static public function check_password($password,$activity=1){
 	global $CORE_LOCAL;
 
 	$CORE_LOCAL->set("away",1);
-	rePoll();
+	MiscLib::rePoll();
 	$CORE_LOCAL->set("training",0);
 
 	$password = strtoupper($password);
@@ -68,7 +61,7 @@ function authenticate($password,$activity=1){
 	elseif ($password > 9999 || $password < 1) return False; // if password is greater than 4 digits or less than 1, not a valid password
 
 	$query_g = "select LoggedIn,CashierNo from globalvalues";
-	$db_g = pDataConnect();
+	$db_g = Database::pDataConnect();
 	$result_g = $db_g->query($query_g);
 	$row_g = $db_g->fetch_array($result_g);
 
@@ -81,8 +74,8 @@ function authenticate($password,$activity=1){
 		if ($num_rows_q > 0) {
 			$row_q = $db_g->fetch_array($result_q);
 
-			//testremote();
-			loadglobalvalues();
+			//Database::testremote();
+			Database::loadglobalvalues();
 
 			$transno = gettransno($row_q["emp_no"]);
 			$CORE_LOCAL->set("transno",$transno);
@@ -93,13 +86,13 @@ function authenticate($password,$activity=1){
 				"TransNo" => $transno,
 				"LoggedIn" => 1
 			);
-			setglobalvalues($globals);
+			Database::setglobalvalues($globals);
 
-			if ($transno == 1) addactivity($activity);
+			if ($transno == 1) TransRecord::addactivity($activity);
 			
 		} elseif ($password == 9999) {
-			loadglobalvalues();
-			$transno = gettransno(9999);
+			Database::loadglobalvalues();
+			$transno = Database::gettransno(9999);
 			$CORE_LOCAL->set("transno",$transno);
 			$CORE_LOCAL->set("training",1);
 
@@ -109,7 +102,7 @@ function authenticate($password,$activity=1){
 				"TransNo" => $transno,
 				"LoggedIn" => 1
 			);
-			setglobalvalues($globals);
+			Database::setglobalvalues($globals);
 		}
 		else return False;
 	}
@@ -129,12 +122,12 @@ function authenticate($password,$activity=1){
 
 		if ($num_rows_a > 0) {
 
-			loadglobalvalues();
+			Database::loadglobalvalues();
 			//testremote();
 		}
 		elseif ($row_g["CashierNo"] == "9999" && $password == "9999"){
-			loadglobalvalues();
-			//testremote();
+			Database::loadglobalvalues();
+			//Database::testremote();
 			$CORE_LOCAL->set("training",1);
 		}
 		else return False;
@@ -144,7 +137,7 @@ function authenticate($password,$activity=1){
 	
 	if ($CORE_LOCAL->get("LastID") != 0 && $CORE_LOCAL->get("memberID") != "0" && $CORE_LOCAL->get("memberID") != "") {
 		$CORE_LOCAL->set("unlock",1);
-		memberID($CORE_LOCAL->get("memberID"));
+		PrehLib::memberID($CORE_LOCAL->get("memberID"));
 	}
 	$CORE_LOCAL->set("inputMasked",0);
 
@@ -157,7 +150,7 @@ function authenticate($password,$activity=1){
   @return True or False
   @deprecated
 */
-function nsauthenticate($password){
+static public function ns_check_password($password){
 	global $CORE_LOCAL;
 	$CORE_LOCAL->set("away",1);
 
@@ -172,7 +165,7 @@ function nsauthenticate($password){
 	elseif (empty($password))
 		return False;
 
-	$db = pDataConnect();
+	$db = Database::pDataConnect();
 	$query2 = "select emp_no, FirstName, LastName from employees where empactive = 1 and "
 		."frontendsecurity >= 11 and (cashierpassword = ".$password." or adminpassword = "
 		.$password.")";
@@ -180,10 +173,12 @@ function nsauthenticate($password){
 	$num_row2 = $db->num_rows($result2);
 
 	if ($num_row2 > 0) {
-		drawerKick();
+		ReceiptLib::drawerKick();
 		return True;
 	}
 	return False;
 }
+
+} // end class Authenticate
 
 ?>

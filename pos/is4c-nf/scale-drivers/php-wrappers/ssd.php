@@ -23,11 +23,6 @@
 $CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
 if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
 
-if (!isset($CORE_LOCAL)) include($CORE_PATH.'lib/LocalStorage/conf.php');
-if (!class_exists("ScaleDriverWrapper")) include($CORE_PATH."scale-drivers/php-wrappers/ScaleDriverWrapper.php");
-if (!function_exists('scaledisplaymsg')) include($CORE_PATH.'lib/drawscreen.php');
-if (!function_exists('array_to_json')) include($CORE_PATH.'lib/array_to_json.php');
-
 class ssd extends ScaleDriverWrapper {
 
 	function SavePortConfiguration($portName){
@@ -92,7 +87,7 @@ class ssd extends ScaleDriverWrapper {
 		$scale_display = '';
 		$scans = array();
 		if ($scale_data !== False && !empty($scale_data))
-			$scale_display = scaledisplaymsg($scale_data);
+			$scale_display = DisplayLib::scaledisplaymsg($scale_data);
 		if ($scan_data !== False && !empty($scan_data))
 			$scans[] = $scan_data;
 
@@ -100,7 +95,7 @@ class ssd extends ScaleDriverWrapper {
 		if (!empty($scale_display)) $output['scale'] = $scale_display;
 		if (!empty($scans)) $output['scans'] = ltrim($scans[0],'0');
 
-		if (!empty($output)) echo array_to_json($output);
+		if (!empty($output)) echo JsonLib::array_to_json($output);
 		else echo "{}";
 	}
 

@@ -23,10 +23,7 @@
 $CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
 if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
 
-if (!class_exists("BasicPage")) include_once($CORE_PATH."gui-class-lib/BasicPage.php");
-if (!function_exists("udpSend")) include_once($CORE_PATH."lib/udpSend.php");
-if (!function_exists("printfooter")) include_once($CORE_PATH."lib/drawscreen.php");
-if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
+include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class qtty2 extends BasicPage {
 
@@ -46,14 +43,14 @@ class qtty2 extends BasicPage {
 			$CORE_LOCAL->set("qttyvalid",0);
 			$CORE_LOCAL->set("quantity",0);
 			$CORE_LOCAL->set("msgrepeat",0);
-			header("Location: {$CORE_PATH}gui-modules/pos2.php");
+			$this->change_page($CORE_PATH."gui-modules/pos2.php");
 			return False;
 		}
 		elseif (is_numeric($qtty) && $qtty < 9999 && $qtty >= 0) {
 			$CORE_LOCAL->set("qttyvalid",1);
 			$CORE_LOCAL->set("strRemembered",$qtty."*".$CORE_LOCAL->get("item"));
 			$CORE_LOCAL->set("msgrepeat",1);
-			header("Location: {$CORE_PATH}gui-modules/pos2.php");
+			$this->change_page($CORE_PATH."gui-modules/pos2.php");
 			return False;
 		}
 
@@ -65,7 +62,7 @@ class qtty2 extends BasicPage {
 	function body_content(){
 		global $CORE_LOCAL;
 		$this->input_header();
-		echo printheaderb();
+		echo DisplayLib::printheaderb();
 		$style = "style=\"background:{$this->box_color};\"";
 		?>
 		<div class="baseHeight">
@@ -82,9 +79,9 @@ class qtty2 extends BasicPage {
 		<?php
 		$CORE_LOCAL->set("msgrepeat",2);
 		$CORE_LOCAL->set("item",$CORE_LOCAL->get("strEntered"));
-		udpSend('errorBeep');
+		UdpComm::udpSend('errorBeep');
 		echo "<div id=\"footer\">";
-		echo printfooter();
+		echo DisplayLib::printfooter();
 		echo "</div>";
 	} // END true_body() FUNCTION
 }

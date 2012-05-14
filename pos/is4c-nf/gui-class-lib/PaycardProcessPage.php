@@ -39,9 +39,6 @@
 $CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
 if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
 
-if (!class_exists("BasicPage")) include($CORE_PATH.'gui-class-lib/BasicPage.php');
-if (!function_exists('printfooter')) include($CORE_PATH.'lib/drawscreen.php');
-
 class PaycardProcessPage extends BasicPage {
 
 	var $onload_commands;
@@ -117,7 +114,7 @@ class PaycardProcessPage extends BasicPage {
 		$this->input_header($this->action);
 		$this->body_content();	
 		echo "<div id=\"footer\">";
-		echo printfooter();
+		echo DisplayLib::printfooter();
 		echo "</div>";
 		echo "</div>";
 		$this->scale_box();

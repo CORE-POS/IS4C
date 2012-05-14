@@ -31,6 +31,7 @@ if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
 /**
   @file
   @brief Functions related to suspend and resume transaction
+  @deprecated see SuspendLib
 */
 
 /**

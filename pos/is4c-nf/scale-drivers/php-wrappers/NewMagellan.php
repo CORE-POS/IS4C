@@ -23,12 +23,6 @@
 $CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
 if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
 
-if (!isset($CORE_LOCAL)) include($CORE_PATH.'lib/LocalStorage/conf.php');
-if (!class_exists("ScaleDriverWrapper")) include($CORE_PATH."scale-drivers/php-wrappers/ScaleDriverWrapper.php");
-if (!function_exists('scaledisplaymsg')) include($CORE_PATH.'lib/drawscreen.php');
-if (!function_exists('array_to_json')) include($CORE_PATH.'lib/array_to_json.php');
-if (!function_exists('udpSend')) include($CORE_PATH.'lib/udpSend.php');
-
 class NewMagellan extends ScaleDriverWrapper {
 
 	function SavePortConfiguration($portName){
@@ -121,7 +115,7 @@ class NewMagellan extends ScaleDriverWrapper {
 			$line = rtrim($data,"\r\n");
 			if (empty($line)) continue;
 			if ($line[0] == 'S'){
-				$scale_display = scaledisplaymsg($line);
+				$scale_display = DisplayLib::scaledisplaymsg($line);
 			}
 			else {
 				$scans[] = $line;
@@ -134,7 +128,7 @@ class NewMagellan extends ScaleDriverWrapper {
 		if (!empty($scale_display)) $output['scale'] = $scale_display;
 		if (!empty($scans)) $output['scans'] = ltrim($scans[0],'0');
 
-		if (!empty($output)) echo array_to_json($output);
+		if (!empty($output)) echo JsonLib::array_to_json($output);
 		else echo "{}";
 	}
 
@@ -155,19 +149,19 @@ class NewMagellan extends ScaleDriverWrapper {
 	function WriteToScale($str){
 		switch(strtolower($str)){
 		case 'goodbeep':
-			udpSend('goodBeep');
+			UdpConn::udpSend('goodBeep');
 			break;
 		case 'errorbeep':
-			udpSend('errorBeep');
+			UdpConn::udpSend('errorBeep');
 			break;
 		case 'twopairs':
-			udpSend('twoPairs');
+			UdpConn::udpSend('twoPairs');
 			break;
 		case 'repoll':
-			udpSend('rePoll');
+			UdpConn::udpSend('rePoll');
 			break;
 		case 'wakeup':
-			udpSend('wakeup');
+			UdpConn::udpSend('wakeup');
 			break;
 		}
 	}

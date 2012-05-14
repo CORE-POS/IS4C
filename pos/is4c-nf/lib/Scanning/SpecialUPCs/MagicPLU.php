@@ -24,11 +24,6 @@
 $CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
 if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
 
-if (!class_exists("SpecialUPC")) include($CORE_PATH."lib/Scanning/SpecialUPC.php");
-if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
-
-if (!function_exists('boxMsg')) include($CORE_PATH."lib/drawscreen.php");
-
 /**
   @class MagicPLU
 
@@ -65,15 +60,15 @@ class MagicPLU extends SpecialUPC {
 			if ($CORE_LOCAL->get("memberID") == 0)
 				$json['main_frame'] = $CORE_PATH.'gui-modules/memlist.php';
 			elseif ($CORE_LOCAL->get("isMember") == 0)
-				$json['output'] = boxMsg("<br />member discount not applicable");
+				$json['output'] = DisplayLib::boxMsg("<br />member discount not applicable");
 			elseif ($CORE_LOCAL->get("percentDiscount") > 0)
-				$json['output'] = boxMsg($CORE_LOCAL->get("percentDiscount")."% discount already applied");
+				$json['output'] = DisplayLib::boxMsg($CORE_LOCAL->get("percentDiscount")."% discount already applied");
 			break;	
 		}
 
 		// magic plu, but other conditions not matched
 		if ($json['main_frame'] === false && empty($json['output']))
-			$json['output'] = boxMsg($upc."<br />is not a valid item");
+			$json['output'] = DisplayLib::boxMsg($upc."<br />is not a valid item");
 
 		return $json;
 	}

@@ -26,9 +26,7 @@ if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= 
 
 ini_set('display_errors','1');
 
-if (!class_exists("NoInputPage")) include_once($CORE_PATH."gui-class-lib/NoInputPage.php");
-if (!function_exists("ttl")) include_once($CORE_PATH."lib/prehkeys.php");
-if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
+include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class fsTotalConfirm extends NoInputPage {
 
@@ -40,23 +38,23 @@ class fsTotalConfirm extends NoInputPage {
 		if (isset($_REQUEST["selectlist"])){
 			$choice = $_REQUEST["selectlist"];
 			if ($choice == "EF"){
-				$chk = fsEligible();
+				$chk = PrehLib::fsEligible();
 				if ($chk !== True){
-					header("Location: $chk");
+					$this->change_page($chk);
 					return False;
 				}
 				$this->tendertype = 'EF';
 			}
 			elseif ($choice == "EC"){
-				$chk = ttl();
+				$chk = PrehLib::ttl();
 				if ($chk !== True){
-					header("Location: $chk");
+					$this->change_page($chk);
 					return False;
 				}
 				$this->tendertype = 'EC';
 			}
 			else if ($choice == ''){
-				header("Location: {$CORE_PATH}gui-modules/pos2.php");
+				$this->change_page($CORE_PATH."gui-modules/pos2.php");
 				return False;
 			}
 		}
@@ -88,7 +86,7 @@ class fsTotalConfirm extends NoInputPage {
 			}
 
 			if ($valid_input){
-				header("Location: {$CORE_PATH}gui-modules/pos2.php");
+				$this->change_page($CORE_PATH."gui-modules/pos2.php");
 				return False;
 			}
 		}	
