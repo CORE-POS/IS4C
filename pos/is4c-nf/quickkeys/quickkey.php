@@ -22,9 +22,9 @@ if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= 
 
 /**
   @example 271828.php 
-  The first three lines are sanity checks. Both 
-  $CORE_PATH and the quickkey class <b>should</b>
-  be defined already but it doesn't hurt to make
+  The first two lines are a sanity checks. 
+  $CORE_PATH <b>should</b> be defined 
+  already but it doesn't hurt to make
   sure. These lines can be included as-is in every
   menu definition file.
 

@@ -102,7 +102,7 @@ function printReceiptHeader($dateTimeStamp, $ref) {
 	if ($CORE_LOCAL->get("newReceipt")==1 && $CORE_LOCAL->get("store") != "wfc"){
 		$receipt .= $PRINT_OBJ->TextStyle(True, False, True);
 		$receipt .= $PRINT_OBJ->centerString($CORE_LOCAL->get("receiptHeader1"),True);
-		$receipt .= $PRINT_OBJ->TextStyle();
+		$receipt .= $PRINT_OBJ->TextStyle(True);
 		$receipt .= "\n\n";
 	}
 	else if ($CORE_LOCAL->get("newReceipt")==1 && $CORE_LOCAL->get("store") == "wfc"){
@@ -115,7 +115,7 @@ function printReceiptHeader($dateTimeStamp, $ref) {
 		// zero-indexing the receipt header and footer list
 		$receipt .= $PRINT_OBJ->TextStyle(True, False, True);
 		$receipt .= $PRINT_OBJ->centerString($CORE_LOCAL->get("receiptHeader1"),True);
-		$receipt .= $PRINT_OBJ->TextStyle();
+		$receipt .= $PRINT_OBJ->TextStyle(True);
 		$receipt .= "\n";
 	}
 

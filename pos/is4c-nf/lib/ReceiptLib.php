@@ -102,7 +102,7 @@ static public function printReceiptHeader($dateTimeStamp, $ref) {
 	if ($CORE_LOCAL->get("newReceipt")==1 && $CORE_LOCAL->get("store") != "wfc"){
 		$receipt .= self::$PRINT_OBJ->TextStyle(True, False, True);
 		$receipt .= self::$PRINT_OBJ->centerString($CORE_LOCAL->get("receiptHeader1"),True);
-		$receipt .= self::$PRINT_OBJ->TextStyle();
+		$receipt .= self::$PRINT_OBJ->TextStyle(True);
 		$receipt .= "\n\n";
 	}
 	else if ($CORE_LOCAL->get("newReceipt")==1 && $CORE_LOCAL->get("store") == "wfc"){
@@ -115,7 +115,7 @@ static public function printReceiptHeader($dateTimeStamp, $ref) {
 		// zero-indexing the receipt header and footer list
 		$receipt .= self::$PRINT_OBJ->TextStyle(True, False, True);
 		$receipt .= self::$PRINT_OBJ->centerString($CORE_LOCAL->get("receiptHeader1"),True);
-		$receipt .= self::$PRINT_OBJ->TextStyle();
+		$receipt .= self::$PRINT_OBJ->TextStyle(True);
 		$receipt .= "\n";
 	}
 
@@ -997,7 +997,7 @@ static public function printReceipt($arg1,$second=False) {
 				if ($CORE_LOCAL->get("newReceipt")==1){
 					$receipt .= self::$PRINT_OBJ->TextStyle(True,False,True);
 					$receipt .= self::$PRINT_OBJ->centerString("thank you - owner ".$member,True);
-					$receipt .= self::$PRINT_OBJ->TextStyle();
+					$receipt .= self::$PRINT_OBJ->TextStyle(True);
 					$receipt .= "\n\n";
 				}
 				else{
@@ -1009,7 +1009,7 @@ static public function printReceipt($arg1,$second=False) {
 				if ($CORE_LOCAL->get("newReceipt")==1){
 					$receipt .= self::$PRINT_OBJ->TextStyle(True,False,True);
 					$receipt .= self::$PRINT_OBJ->centerString("thank you",True);
-					$receipt .= self::$PRINT_OBJ->TextStyle();
+					$receipt .= self::$PRINT_OBJ->TextStyle(True);
 					$receipt .= "\n\n";
 				}
 				else{
