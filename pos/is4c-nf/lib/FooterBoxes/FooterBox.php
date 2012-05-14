@@ -61,4 +61,16 @@ class FooterBox {
 	}
 }
 
+/**
+  @example EgoFooter.php
+
+  Footer Box modules are pretty simple. The header_content()
+  method defines the label above the box and the 
+  display_content() method defines the box itself. If needed
+  you can define CSS via the class properties.
+
+  This module just shows a constant reminder about the
+  store's most critical department.
+*/
+
 ?>
