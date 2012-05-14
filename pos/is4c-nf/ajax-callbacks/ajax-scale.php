@@ -21,9 +21,6 @@
 
 *********************************************************************************/
 
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
-
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 $input = isset($_REQUEST['input'])?$_REQUEST['input']:'';

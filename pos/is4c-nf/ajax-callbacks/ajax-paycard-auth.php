@@ -21,16 +21,13 @@
 
 *********************************************************************************/
 
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
-
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 // send the request
 $result = 0; // 0 is never returned, so we use it to make sure it changes
 $myObj = 0;
 $json = array();
-$json['main_frame'] = $CORE_PATH.'gui-modules/paycardSuccess.php';
+$json['main_frame'] = MiscLib::base_url().'gui-modules/paycardSuccess.php';
 $json['receipt'] = false;
 foreach($CORE_LOCAL->get("RegisteredPaycardClasses") as $rpc){
 	$myObj = new $rpc();
@@ -53,7 +50,7 @@ if ($result == PaycardLib::PAYCARD_ERR_OK){
 else {
 	PaycardLib::paycard_reset();
 	$CORE_LOCAL->set("msgrepeat",0);
-	$json['main_frame'] = $CORE_PATH.'gui-modules/boxMsg2.php';
+	$json['main_frame'] = MiscLib::base_url().'gui-modules/boxMsg2.php';
 	if (is_object($st))
 		$st->WriteToScale($CORE_LOCAL->get("ccTermOut"));
 }

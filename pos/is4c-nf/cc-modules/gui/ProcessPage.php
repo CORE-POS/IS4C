@@ -30,7 +30,6 @@
  * exactly sure what scripts are included
  */
 
-$CORE_PATH = "../../";
 include_once("../lib/LS_Access.php");
 include_once("../lib/SigCapture.php");
 $CORE_LOCAL = new LS_Access();
@@ -42,7 +41,6 @@ if (!class_exists("LibraryClass")){
 if (!class_exists("DisplayLib")){ 
 	require_once("../../lib/DisplayLib.php");
 }
-$CORE_PATH = "../../";
 
 class ProcessPage {
 

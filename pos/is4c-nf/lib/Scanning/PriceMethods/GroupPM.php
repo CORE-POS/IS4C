@@ -31,9 +31,6 @@
    In most locations, this is pricemethod 1 or 2
 */
 
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
-
 class GroupPM extends PriceMethod {
 
 	function addItem($row,$quantity,$priceObj){

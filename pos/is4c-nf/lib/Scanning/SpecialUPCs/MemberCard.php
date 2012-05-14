@@ -21,9 +21,6 @@
 
 *********************************************************************************/
 
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
-
 /**
   @class MemberCard
   WFC barcoded member ID implementation
@@ -45,7 +42,7 @@ class MemberCard extends SpecialUPC {
 	}
 
 	function handle($upc,$json){
-		global $CORE_LOCAL,$CORE_PATH;
+		global $CORE_LOCAL;
 
 		$db = Database::pDataConnect();
 		$query = "select card_no from memberCards where upc='$upc'";

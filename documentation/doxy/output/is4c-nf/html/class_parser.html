@@ -45,6 +45,11 @@
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_parser.html#a25abc3d3a5407d364ef11cf11baa04a">default_json</a> ()</td></tr>
 
+<tr><td colspan="2"><br><h2>Static Public Member Functions</h2></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">static&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_parser.html#8600b8b07c25e9530080e84ed3108d16">get_parse_chain</a> ()</td></tr>
+
+<tr><td class="memItemLeft" nowrap align="right" valign="top">static&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_parser.html#3b169d07b1559b6ec10af12f6fc469af">get_preparse_chain</a> ()</td></tr>
+
 </table>
 <hr><a name="_details"></a><h2>Detailed Description</h2>
 The base module for parsing input<p>
@@ -53,7 +58,7 @@ Modules in the preparse directory are all checked for every input. These moduele
 Modules in the parse are only checked until one matches the input. Input processing ceases and the matching module must decide what to do next. <dl compact><dt><b>Examples: </b></dt><dd>
 
 <p>
-<a class="el" href="_h_w___parser_8php-example.html#_a10">HW_Parser.php</a>.</dl>
+<a class="el" href="_h_w___parser_8php-example.html#_a11">HW_Parser.php</a>.</dl>
 <p>
 <hr><h2>Member Function Documentation</h2>
 <a class="anchor" name="87bc1711b76c25ecb6294fbacd9ec7b1"></a><!-- doxytag: member="Parser::check" ref="87bc1711b76c25ecb6294fbacd9ec7b1" args="($str)" -->
@@ -82,7 +87,7 @@ Check whether the module handles this input <dl compact><dt><b>Parameters:</b></
 <li>True The module handles this input. The parse method() will be called next.</li><li>False The module does not handle this input. The parse method() will not be called and processing will proceed to the next <a class="el" href="class_parser.html">Parser</a> module. </li></ul>
 </dd></dl>
 <dl compact><dt><b>Examples: </b></dt><dd>
-<a class="el" href="_h_w___parser_8php-example.html#a11">HW_Parser.php</a>.</dl>
+<a class="el" href="_h_w___parser_8php-example.html#a12">HW_Parser.php</a>.</dl>
 </div>
 </div><p>
 <a class="anchor" name="a25abc3d3a5407d364ef11cf11baa04a"></a><!-- doxytag: member="Parser::default_json" ref="a25abc3d3a5407d364ef11cf11baa04a" args="()" -->
@@ -103,7 +108,7 @@ Check whether the module handles this input <dl compact><dt><b>Parameters:</b></
 <p>
 A return array for <a class="el" href="class_parser.html#5447ff56b59081bd0f7fb084c97568ff">parse()</a> with proper keys <dl compact><dt><b>Returns:</b></dt><dd>array</dd></dl>
 See <a class="el" href="class_parser.html#5447ff56b59081bd0f7fb084c97568ff">parse()</a> method <dl compact><dt><b>Examples: </b></dt><dd>
-<a class="el" href="_h_w___parser_8php-example.html#a13">HW_Parser.php</a>.</dl>
+<a class="el" href="_h_w___parser_8php-example.html#a14">HW_Parser.php</a>.</dl>
 </div>
 </div><p>
 <a class="anchor" name="ade38a4417a3f69cea58eb45b7d4766d"></a><!-- doxytag: member="Parser::doc" ref="ade38a4417a3f69cea58eb45b7d4766d" args="()" -->
@@ -124,6 +129,46 @@ See <a class="el" href="class_parser.html#5447ff56b59081bd0f7fb084c97568ff">pars
 <p>
 Display documentation <dl compact><dt><b>Returns:</b></dt><dd>A string describing the module</dd></dl>
 Ideally you should note what your module it does and what the input format is. 
+</div>
+</div><p>
+<a class="anchor" name="8600b8b07c25e9530080e84ed3108d16"></a><!-- doxytag: member="Parser::get_parse_chain" ref="8600b8b07c25e9530080e84ed3108d16" args="()" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">static Parser::get_parse_chain           </td>
+          <td>(</td>
+          <td class="paramname">          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"><code> [static]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Gather parse modules <dl compact><dt><b>Returns:</b></dt><dd>array of <a class="el" href="class_parser.html">Parser</a> class names</dd></dl>
+Scan the parse directory for module files. Return an array of available modules. 
+</div>
+</div><p>
+<a class="anchor" name="3b169d07b1559b6ec10af12f6fc469af"></a><!-- doxytag: member="Parser::get_preparse_chain" ref="3b169d07b1559b6ec10af12f6fc469af" args="()" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">static Parser::get_preparse_chain           </td>
+          <td>(</td>
+          <td class="paramname">          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"><code> [static]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Gather preparse modules <dl compact><dt><b>Returns:</b></dt><dd>array of <a class="el" href="class_parser.html">Parser</a> class names</dd></dl>
+Scan the preparse directory for module files. Return an array of available modules. 
 </div>
 </div><p>
 <a class="anchor" name="e00f0d01e49c4770044ebf293b3fdaa9"></a><!-- doxytag: member="Parser::isFirst" ref="e00f0d01e49c4770044ebf293b3fdaa9" args="()" -->
@@ -195,12 +240,12 @@ Parse modules a keyed array:<ul>
 <li>main_frame If set, change page to this URL</li><li>output HTML output to be displayed</li><li>target Javascript selector string describing which element should contain the output</li><li>redraw_footer True or False. Set to True if totals have changed.</li><li>receipt False or string type. Print a receipt with the given type.</li><li>scale Update the scale display and session variables</li><li>udpmsg False or string. Send a message to hardware device(s)</li><li>retry False or string. Try the input again shortly.</li></ul>
 <p>
 The utility method <a class="el" href="class_parser.html#a25abc3d3a5407d364ef11cf11baa04a">default_json()</a> provides an array with the proper keys and sane default values. <dl compact><dt><b>Examples: </b></dt><dd>
-<a class="el" href="_h_w___parser_8php-example.html#a12">HW_Parser.php</a>.</dl>
+<a class="el" href="_h_w___parser_8php-example.html#a13">HW_Parser.php</a>.</dl>
 </div>
 </div><p>
 <hr>The documentation for this class was generated from the following file:<ul>
-<li>pos/is4c-nf/parser-class-lib/<a class="el" href="_parser_8php.html">Parser.php</a></ul>
-<hr size="1"><address style="align: right;"><small>Generated on Fri May 11 14:34:37 2012 for CORE POS - IS4C by&nbsp;
+<li>pos/is4c-nf/parser-class-lib/Parser.php</ul>
+<hr size="1"><address style="align: right;"><small>Generated on Mon May 14 11:45:56 2012 for CORE POS - IS4C by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img src="doxygen.png" alt="doxygen" align="middle" border="0"></a> 1.4.7 </small></address>
 </body>

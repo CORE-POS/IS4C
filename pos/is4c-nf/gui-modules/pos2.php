@@ -21,9 +21,6 @@
 
 *********************************************************************************/
 
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
-
 ini_set('display_errors','1');
  
 session_cache_limiter('nocache');
@@ -35,7 +32,7 @@ class pos2 extends BasicPage {
 	var $display;
 
 	function preprocess(){
-		global $CORE_LOCAL,$CORE_PATH;
+		global $CORE_LOCAL;
 		$this->display = "";
 
 		$sd = MiscLib::scaleObject();
@@ -78,7 +75,7 @@ class pos2 extends BasicPage {
 			 * This chain should be used for checking prefixes/suffixes
 			 * to set up appropriate $CORE_LOCAL variables.
 			 */
-			$parser_lib_path = $CORE_PATH."parser-class-lib/";
+			$parser_lib_path = $this->page_url."parser-class-lib/";
 			if (!is_array($CORE_LOCAL->get("preparse_chain")))
 				$CORE_LOCAL->set("preparse_chain",Parser::get_preparse_chain());
 
@@ -151,15 +148,15 @@ class pos2 extends BasicPage {
 	}
 
 	function head_content(){
-		global $CORE_LOCAL,$CORE_PATH;
+		global $CORE_LOCAL;
 		?>
-		<script type="text/javascript" src="<?php echo $CORE_PATH; ?>js/ajax-parser.js"></script>
+		<script type="text/javascript" src="<?php echo $this->page_url; ?>js/ajax-parser.js"></script>
 		<script type="text/javascript">
 		function submitWrapper(){
 			var str = $('#reginput').val();
 			if (str.indexOf("tw") != -1 || str.indexOf("TW") != -1 || (str.search(/^[0-9]+$/) == 0 && str.length <= 13) || str=='TFS'){
 				$('#reginput').val('');
-				runParser(str,'<?php echo $CORE_PATH; ?>');
+				runParser(str,'<?php echo $this->page_url; ?>');
 				return false;
 			}
 			return true;
@@ -170,17 +167,17 @@ class pos2 extends BasicPage {
 		}
 		function lockScreen(){
 			$.ajax({
-				'url': '<?php echo $CORE_PATH; ?>ajax-callbacks/ajax-lock.php',
+				'url': '<?php echo $this->page_url; ?>ajax-callbacks/ajax-lock.php',
 				'type': 'get',
 				'cache': false,
 				'success': function(){
-					location = '<?php echo $CORE_PATH; ?>gui-modules/login3.php';
+					location = '<?php echo $this->page_url; ?>gui-modules/login3.php';
 				}
 			});
 		}
 		function receiptFetch(r_type){
 			$.ajax({
-				url: '<?php echo $CORE_PATH; ?>ajax-callbacks/ajax-end.php',
+				url: '<?php echo $this->page_url; ?>ajax-callbacks/ajax-end.php',
 				type: 'get',
 				data: 'receiptType='+r_type,
 				cache: false,

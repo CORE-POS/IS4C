@@ -33,8 +33,6 @@
    This is pricemethod 4 in earlier WFC releases
    and may not exist anywhere else.
 */
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
 
 class ABGroupPM extends PriceMethod {
 

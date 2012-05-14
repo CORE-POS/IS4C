@@ -21,9 +21,6 @@
 
 *********************************************************************************/
 
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
-
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class deptlist extends NoInputPage {
@@ -32,7 +29,7 @@ class deptlist extends NoInputPage {
 	  Input processing function
 	*/
 	function preprocess(){
-		global $CORE_LOCAL,$CORE_PATH;
+		global $CORE_LOCAL;
 
 		// a selection was made
 		if (isset($_REQUEST['search'])){
@@ -44,7 +41,7 @@ class deptlist extends NoInputPage {
 				// user presses CL{enter}
 				// Redirect to main screen
 				$CORE_LOCAL->set("departmentAmount","0");	
-				$this->change_page($CORE_PATH."gui-modules/pos2.php");
+				$this->change_page($this->page_url."gui-modules/pos2.php");
 				return False;
 			}
 
@@ -55,7 +52,7 @@ class deptlist extends NoInputPage {
 				$input = $CORE_LOCAL->get("departmentAmount")."DP".$entered."0";
 				$CORE_LOCAL->set("msgrepeat",1);
 				$CORE_LOCAL->set("strRemembered",$input);
-				$this->change_page($CORE_PATH."gui-modules/pos2.php");
+				$this->change_page($this->page_url."gui-modules/pos2.php");
 				return False;
 			}
 		}

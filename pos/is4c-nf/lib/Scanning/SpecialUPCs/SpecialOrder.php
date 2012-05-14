@@ -21,9 +21,6 @@
 
 *********************************************************************************/
 
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
-
 /**
    @class SpecialOrder
    WFC Electronic Special Orders
@@ -51,7 +48,7 @@ class SpecialOrder extends SpecialUPC {
 	}
 
 	function handle($upc,$json){
-		global $CORE_LOCAL,$CORE_PATH;
+		global $CORE_LOCAL;
 
 		$orderID = substr($upc,5,6);
 		$transID = substr($upc,11,2);

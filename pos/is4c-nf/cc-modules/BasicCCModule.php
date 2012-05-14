@@ -40,9 +40,6 @@
   The rest is utility methods that are often helpful.
  */
 
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
-
 if (!class_exists("PaycardLib")) include_once(realpath(dirname(__FILE__)."/lib/paycardLib.php"));
 if (!isset($CORE_LOCAL)){
 	include_once(realpath(dirname(__FILE__)."/lib/LS_Access.php"));
@@ -181,7 +178,7 @@ class BasicCCModule {
 	 and returns the result of that call.
 	 */
 	function curlSend($data=False,$type='POST',$xml=False){
-		global $CORE_PATH,$CORE_LOCAL;
+		global $CORE_LOCAL;
 		if($data && $type == 'GET')
 			$this->GATEWAY .= $data;
 

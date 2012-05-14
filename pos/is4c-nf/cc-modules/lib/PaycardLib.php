@@ -21,9 +21,6 @@
 
 *********************************************************************************/
 
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
-
 if (!isset($CORE_LOCAL)){
 	include(realpath(dirname(__FILE__)."/LS_Access.php"));
 	$CORE_LOCAL = new LS_Access();	
@@ -493,7 +490,7 @@ static public function paycard_msgBox($type, $title, $msg, $action) {
 	else if( $CORE_LOCAL->get("paycard_type") == self::PAYCARD_TYPE_STORE)  $header = "Wedge - Wedge Card";
 	$boxmsg = "<span class=\"larger\">".trim($title)."</span><p />";
 	$boxmsg .= trim($msg)."<p />".trim($action);
-	return boxMsg($boxmsg,$header,True);
+	return DisplayLib::boxMsg($boxmsg,$header,True);
 } // paycard_msgBox()
 
 
@@ -505,7 +502,7 @@ static public function paycard_errBox($type, $title, $msg, $action) {
 	if( $CORE_LOCAL->get("paycard_type") == self::PAYCARD_TYPE_CREDIT)      $header = "Wedge - Credit Card";
 	else if( $CORE_LOCAL->get("paycard_type") == self::PAYCARD_TYPE_GIFT)   $header = "Wedge - Gift Card";
 	else if( $CORE_LOCAL->get("paycard_type") == self::PAYCARD_TYPE_STORE)  $header = "Wedge - Wedge Card";
-	return xboxMsg("<b>".trim($title)."</b><p><font size=-1>".trim($msg)."<p>".trim($action)."</font>", $header);
+	return DisplayLib::xboxMsg("<b>".trim($title)."</b><p><font size=-1>".trim($msg)."<p>".trim($action)."</font>", $header);
 } // paycard_errBox()
 
 static public function paycard_db(){

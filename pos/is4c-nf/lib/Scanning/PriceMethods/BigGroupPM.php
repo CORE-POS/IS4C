@@ -36,8 +36,6 @@
   qualifying group as well as an item from
   the discount group. 
 */
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
 
 class BigGroupPM extends PriceMethod {
 

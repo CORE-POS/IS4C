@@ -21,10 +21,7 @@
 
 *********************************************************************************/
 
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
-
-if (!class_exists("AutoLoader")) include($CORE_PATH."lib/AutoLoader.php");
+if (!class_exists("AutoLoader")) include("lib/AutoLoader.php");
 
 $CORE_LOCAL->set("parse_chain",'');
 $CORE_LOCAL->set("preparse_chain",'');
@@ -36,6 +33,7 @@ CoreState::initiate_session();
 if ($CORE_LOCAL->get("SessionFirstRun") == "")
 	$CORE_LOCAL->set("SessionFirstRun",1);
 
-header("Location: {$CORE_PATH}gui-modules/login2.php");
+$my_url = MiscLib::base_url();
+header("Location: {$my_url}gui-modules/login2.php");
 ?>
 

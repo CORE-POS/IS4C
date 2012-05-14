@@ -21,9 +21,6 @@
 
 *********************************************************************************/
 
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
-
 ini_set('display_errors','1');
 
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
@@ -31,18 +28,18 @@ include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 class adminlist extends NoInputPage {
 
 	function preprocess(){
-		global $CORE_LOCAL,$CORE_PATH;
+		global $CORE_LOCAL;
 
 		if (isset($_REQUEST['selectlist'])){
 			if (empty($_REQUEST['selectlist'])){
-				$this->change_page($CORE_PATH."gui-modules/pos2.php");
+				$this->change_page($this->page_url."gui-modules/pos2.php");
 				return False;
 			}
 			elseif ($_REQUEST['selectlist'] == 'SUSPEND'){
 				Database::getsubtotals();
 				if ($CORE_LOCAL->get("LastID") == 0) {
 					$CORE_LOCAL->set("boxMsg","no transaction in progress");
-					$this->change_page($CORE_PATH."gui-modules/boxMsg2.php");
+					$this->change_page($this->page_url."gui-modules/boxMsg2.php");
 					return False;
 				}
 				else {
@@ -51,11 +48,11 @@ class adminlist extends NoInputPage {
 					SuspendLib::suspendorder();
 					$this->add_onload_command("\$.ajax({
 						type:'post',
-						url:'{$CORE_PATH}ajax-callbacks/ajax-end.php',
+						url:'{$this->page_url}ajax-callbacks/ajax-end.php',
 						cache: false,
 						data: 'receiptType=suspended',
 						success: function(data){
-							location='{$CORE_PATH}gui-modules/pos2.php';
+							location='{$this->page_url}gui-modules/pos2.php';
 						}
 						});");
 					return True;
@@ -65,21 +62,21 @@ class adminlist extends NoInputPage {
 				Database::getsubtotals();
 				if ($CORE_LOCAL->get("LastID") != 0) {
 					$CORE_LOCAL->set("boxMsg","transaction in progress");
-					$this->change_page($CORE_PATH."gui-modules/boxMsg2.php");
+					$this->change_page($this->page_url."gui-modules/boxMsg2.php");
 				}
 				elseif (SuspendLib::checksuspended() == 0) {
 					$CORE_LOCAL->set("boxMsg","no suspended transaction");
 					$CORE_LOCAL->set("strRemembered","");
-					$this->change_page($CORE_PATH."gui-modules/boxMsg2.php");
+					$this->change_page($this->page_url."gui-modules/boxMsg2.php");
 				}
 				else {
-					$this->change_page($CORE_PATH."gui-modules/suspendedlist.php");
+					$this->change_page($this->page_url."gui-modules/suspendedlist.php");
 				}
 				return False;
 			}
 			else if ($_REQUEST['selectlist'] == 'TR'){
 				TenderReport::get();
-				$this->change_page($CORE_PATH."gui-modules/pos2.php");
+				$this->change_page($this->page_url."gui-modules/pos2.php");
 				return False;
 			}
 		}

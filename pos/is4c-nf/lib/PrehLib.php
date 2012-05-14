@@ -21,9 +21,6 @@
 
 *********************************************************************************/
 
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
-
 /**
   @class PrehLib
   A horrible, horrible catch-all clutter of functions
@@ -56,7 +53,7 @@ static public function clearMember(){
   to be set immediately, use setMember().
 */
 static public function memberID($member_number) {
-	global $CORE_LOCAL,$CORE_PATH;
+	global $CORE_LOCAL;
 
 	$query = "select CardNo,personNum,LastName,FirstName,CashBack,Balance,Discount,
 		MemDiscountLimit,ChargeOk,WriteChecks,StoreCoupons,Type,memType,staff,
@@ -91,7 +88,7 @@ static public function memberID($member_number) {
 		if ($CORE_LOCAL->get("requestType") == ""){
 			$CORE_LOCAL->set("requestType","member gift");
 			$CORE_LOCAL->set("requestMsg","Card for which member?");
-			$ret['main_frame'] = $CORE_PATH."gui-modules/requestInfo.php";
+			$ret['main_frame'] = MiscLib::base_url()."gui-modules/requestInfo.php";
 			$CORE_LOCAL->set("strEntered","5607id");
 		}
 		else if ($CORE_LOCAL->get("requestType") == "member gift"){
@@ -107,7 +104,7 @@ static public function memberID($member_number) {
 	$CORE_LOCAL->set("memMsg","");
 
 	if (empty($ret['output']) && $ret['main_frame'] == false)
-		$ret['main_frame'] = $CORE_PATH."gui-modules/memlist.php";
+		$ret['main_frame'] = MiscLib::base_url()."gui-modules/memlist.php";
 
 	return $ret;
 }
@@ -308,7 +305,7 @@ static public function checkstatus($num) {
   if the amount due becomes <= zero.
 */
 static public function tender($right, $strl) {
-	global $CORE_LOCAL,$CORE_PATH;
+	global $CORE_LOCAL;
 	$tender_upc = "";
 
 	$ret = array('main_frame'=>false,
@@ -439,20 +436,20 @@ static public function tender($right, $strl) {
 
 	if ($tender_code == "FS") {
 		$CORE_LOCAL->set("boxMsg","WFC no longer excepts paper foods stamps. Please choose a different tender type");
-		$ret['main_frame'] = $CORE_PATH.'gui-modules/boxMsg2.php';
+		$ret['main_frame'] = MiscLib::base_url().'gui-modules/boxMsg2.php';
 		return $ret;
 	}
 	elseif ($tender_code == "CP" && $strl > $row["MaxAmount"] && $CORE_LOCAL->get("msgrepeat") == 0){
 		$CORE_LOCAL->set("boxMsg","$".$strl." is greater than coupon limit<P>"
 		."<FONT size='-1'>[clear] to cancel, [enter] to proceed</FONT>");
-		$ret['main_frame'] = $CORE_PATH.'gui-modules/boxMsg2.php';
+		$ret['main_frame'] = MiscLib::base_url().'gui-modules/boxMsg2.php';
 		return $ret;
 	}
 	elseif ($strl > $row["MaxAmount"] && $CORE_LOCAL->get("msgrepeat") == 0){
 		$CORE_LOCAL->set("boxMsg","$".$strl." is greater than tender limit "
 		."for ".$row['TenderName']."<p>"
 		."<FONT size='-1'>[clear] to cancel, [enter] to proceed</FONT>");
-		$ret['main_frame'] = $CORE_PATH.'gui-modules/boxMsg2.php';
+		$ret['main_frame'] = MiscLib::base_url().'gui-modules/boxMsg2.php';
 		return $ret;
 	}
 	elseif ($right == "GD" || $right == "TC"){
@@ -479,7 +476,7 @@ static public function tender($right, $strl) {
 		}
 		$CORE_LOCAL->set("boxMsg",$msg);
 		$CORE_LOCAL->set("endorseType","check");
-		$ret['main_frame'] = $CORE_PATH.'gui-modules/boxMsg2.php';
+		$ret['main_frame'] = MiscLib::base_url().'gui-modules/boxMsg2.php';
 		return $ret;
 	}
 	elseif ($right == "TV" && $CORE_LOCAL->get("msgrepeat") == 0) {
@@ -492,7 +489,7 @@ static public function tender($right, $strl) {
 		}
 		$CORE_LOCAL->set("boxMsg",$msg);
 		$CORE_LOCAL->set("endorseType","check");
-		$ret['main_frame'] = $CORE_PATH.'gui-modules/boxMsg2.php';
+		$ret['main_frame'] = MiscLib::base_url().'gui-modules/boxMsg2.php';
 		return $ret;
 	}
 	elseif ($right == "RC" && $CORE_LOCAL->get("msgrepeat") == 0) {
@@ -505,13 +502,13 @@ static public function tender($right, $strl) {
 		}
 		$CORE_LOCAL->set("boxMsg",$msg);
 		$CORE_LOCAL->set("endorseType","check");
-		$ret['main_frame'] = $CORE_PATH.'gui-modules/boxMsg2.php';
+		$ret['main_frame'] = MiscLib::base_url().'gui-modules/boxMsg2.php';
 		return $ret;
 	}
 	elseif ($right == "TC" && $CORE_LOCAL->get("msgrepeat") == 0) {
 		$CORE_LOCAL->set("boxMsg","<B> insert gift certificate<B><BR>press [enter] to endorse<P><FONT size='-1'>[clear] to cancel</FONT>");
 		$CORE_LOCAL->set("endorseType","check");
-		$ret['main_frame'] = $CORE_PATH.'gui-modules/boxMsg2.php';
+		$ret['main_frame'] = MiscLib::base_url().'gui-modules/boxMsg2.php';
 		return $ret;
 	}
 
@@ -725,12 +722,12 @@ static public function deptkey($price, $dept,$ret=array()) {
 
 			$CORE_LOCAL->set("boxMsg","$".$price." is greater than department limit<P>"
 					."<FONT size='-1'>[clear] to cancel, [enter] to proceed</FONT>");
-			$ret['main_frame'] = $CORE_PATH.'gui-modules/boxMsg2.php';
+			$ret['main_frame'] = MiscLib::base_url().'gui-modules/boxMsg2.php';
 		}
 		elseif ($price < $deptmin && $CORE_LOCAL->get("msgrepeat") == 0) {
 			$CORE_LOCAL->set("boxMsg","$".$price." is lower than department minimum<P>"
 				."<FONT size='-1'>[clear] to cancel, [enter] to proceed</FONT>");
-			$ret['main_frame'] = $CORE_PATH.'gui-modules/boxMsg2.php';
+			$ret['main_frame'] = MiscLib::base_url().'gui-modules/boxMsg2.php';
 		}
 		else {
 			if ($CORE_LOCAL->get("casediscount") > 0) {
@@ -788,10 +785,10 @@ static public function deptkey($price, $dept,$ret=array()) {
   is the member-entry page.
 */
 static public function ttl() {
-	global $CORE_LOCAL,$CORE_PATH;
+	global $CORE_LOCAL;
 
 	if ($CORE_LOCAL->get("memberID") == "0") {
-		return $CORE_PATH."gui-modules/memlist.php";
+		return MiscLib::base_url()."gui-modules/memlist.php";
 	}
 	else {
 		$mconn = Database::tDataConnect();
@@ -831,7 +828,7 @@ static public function ttl() {
 						$CORE_LOCAL->get("memChargeTotal"),
 						$CORE_LOCAL->get("balance")));
 				$CORE_LOCAL->set("strEntered","TL");
-				return $CORE_PATH."gui-modules/boxMsg2.php";
+				return MiscLib::base_url()."gui-modules/boxMsg2.php";
 			}
 		}
 		else {
@@ -919,7 +916,7 @@ static public function fsEligible() {
 	Database::getsubtotals();
 	if ($CORE_LOCAL->get("fsEligible") < 0 && False) {
 		$CORE_LOCAL->set("boxMsg","Foodstamp eligible amount inapplicable<P>Please void out earlier tender and apply foodstamp first");
-		return $CORE_PATH."gui-modules/boxMsg2.php";
+		return MiscLib::base_url()."gui-modules/boxMsg2.php";
 	}
 	else {
 		$CORE_LOCAL->set("fntlflag",1);

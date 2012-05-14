@@ -21,9 +21,6 @@
 
 *********************************************************************************/
 
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
-
 /**
   @class DisplayLib
   Functions for drawing display elements
@@ -53,7 +50,7 @@ static public function printfooterb() {
   @return A string of HTML
 */
 static public function printfooter($readOnly=False) {
-	global $CORE_LOCAL,$CORE_PATH;
+	global $CORE_LOCAL;
 
 	$FOOTER_MODULES = $CORE_LOCAL->get("FooterModules");
 	// use defaults if modules haven't been configured
@@ -315,8 +312,7 @@ static public function msgbox($strmsg, $icon,$noBeep=False) {
   An alias for msgbox().
 */
 static public function xboxMsg($strmsg) {
-	global $CORE_PATH;
-	return self::msgbox($strmsg, $CORE_PATH."graphics/crossD.gif");
+	return self::msgbox($strmsg, MiscLib::base_url()."graphics/crossD.gif");
 }
 
 /**
@@ -329,8 +325,7 @@ static public function xboxMsg($strmsg) {
   An alias for msgbox().
 */
 static public function boxMsg($strmsg,$header="",$noBeep=False) {
-	global $CORE_PATH;
-	return self::msgbox($strmsg, $CORE_PATH."graphics/exclaimC.gif",$noBeep);
+	return self::msgbox($strmsg, MiscLib::base_url()."graphics/exclaimC.gif",$noBeep);
 }
 
 /**
@@ -340,8 +335,7 @@ static public function boxMsg($strmsg,$header="",$noBeep=False) {
   An alias for msgbox().
 */
 static public function inputUnknown() {
-	global $CORE_PATH;
-	return self::msgbox("<b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;input unknown</b>", $CORE_PATH."graphics/exclaimC.gif");
+	return self::msgbox("<b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;input unknown</b>", MiscLib::base_url()."graphics/exclaimC.gif");
 }
 
 //--------------------------------------------------------------------//

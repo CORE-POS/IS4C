@@ -21,9 +21,6 @@
 
 *********************************************************************************/
 
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
-
 if (!class_exists("Parser")) 
 	include_once(realpath(dirname(__FILE__)."/../parser-class-lib/Parser.php"));
 if (!class_exists("PaycardLib")) 
@@ -79,7 +76,7 @@ class paycardEntered extends Parser {
 	}
 
 	function paycard_entered($mode,$card,$manual,$type){
-		global $CORE_LOCAL,$CORE_PATH;
+		global $CORE_LOCAL;
 		$ret = $this->default_json();
 		// initialize
 		$validate = true; // run Luhn's on PAN, check expiration date
@@ -152,12 +149,12 @@ class paycardEntered extends Parser {
 
 		if ($CORE_LOCAL->get("paycard_type") == PaycardLib::PAYCARD_TYPE_CREDIT){
 			PaycardLib::paycard_reset();
-			$ret['main_frame'] = $CORE_PATH.'cc-modules/gui/ProcessPage.php';
+			$ret['main_frame'] = MiscLib::base_url().'cc-modules/gui/ProcessPage.php';
 			return $ret;
 		}
 
 		foreach($CORE_LOCAL->get("RegisteredPaycardClasses") as $rpc){
-			if (!class_exists($rpc)) include_once($CORE_PATH."cc-modules/$rpc.php");
+			if (!class_exists($rpc)) include_once(MiscLib::base_url()."cc-modules/$rpc.php");
 			$myObj = new $rpc();
 			if ($myObj->handlesType($CORE_LOCAL->get("paycard_type")))
 				return $myObj->entered($validate,$ret);

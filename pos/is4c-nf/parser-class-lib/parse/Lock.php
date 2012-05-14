@@ -21,9 +21,6 @@
 
 *********************************************************************************/
 
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
-
 class Lock extends Parser {
 	function check($str){
 		if ($str == "LOCK")
@@ -32,10 +29,10 @@ class Lock extends Parser {
 	}
 
 	function parse($str){
-		global $CORE_LOCAL,$CORE_PATH;
+		global $CORE_LOCAL;
 		$CORE_LOCAL->set("inputMasked",1);
 		$ret = $this->default_json();
-		$ret['main_frame'] = $CORE_PATH.'gui-modules/login3.php';
+		$ret['main_frame'] = MiscLib::base_url().'gui-modules/login3.php';
 		return $ret;
 	}
 
