@@ -10,12 +10,14 @@ fi
 
 # --COMMENTS - - - - - - - - - - - - - - - - - - - -
 
+# 13May12 EL Change POSD from posdriver-ssd to posdriver2-ssd to be
+#             different from the git upstream version, WFC.
 # 14Apr12 EL Add swap for swapping in new versions of posdriver-ssd
 # 13Apr12 EL As wrapper for service posdriver-ssd
 
 # --CONSTANTS- - - - - - - - - - - - - - - - - - - -
 
-POSD=posdriver-ssd
+POSD=posdriver2-ssd
 
 # --VARIABLES- - - - - - - - - - - - - - - - - - - -
 
@@ -34,6 +36,6 @@ if [ "$1" = "swap" ] ; then
 	fi
 	exit
 else
-	sudo service posdriver-ssd $1
+	sudo service $POSD $1
 	exit
 fi
