@@ -27,9 +27,9 @@ if (!class_exists("Parser")) include_once($CORE_PATH."parser-class-lib/Parser.ph
 if (!isset($CORE_LOCAL)) include_once($CORE_PATH."lib/LocalStorage/conf.php");
 if (!function_exists("tender")) include_once($CORE_PATH."lib/prehkeys.php");
 
-class TenderKey extends Parser {
+class CheckKey extends Parser {
 	function check($str){
-		if (strstr($str,"TT") && strlen($str) > 3 &&
+		if (strstr($str,"CK") && strlen($str) > 3 &&
 		    substr($str,0,2) != "VD")
 			return True;
 		return False;
@@ -38,7 +38,7 @@ class TenderKey extends Parser {
 	function parse($str){
 		global $CORE_LOCAL,$CORE_PATH;
 
-		$split = explode("TT",$str);
+		$split = explode("CK",$str);
 		$tender = $split[1];
 		$amt = $split[0];
 		$ret = $this->default_json();
