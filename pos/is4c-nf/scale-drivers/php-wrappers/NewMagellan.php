@@ -77,6 +77,7 @@ class NewMagellan extends ScaleDriverWrapper {
 	function ReadFromScale(){
 		global $CORE_LOCAL;
 		$rel = MiscLib::base_url();
+		var_dump($rel);return;
 
 		$readfile = $rel.'scale-drivers/drivers/NewMagellan/scanner-scale';
 		$readdir = $rel.'scale-drivers/drivers/NewMagellan/ss-output';
@@ -106,7 +107,7 @@ class NewMagellan extends ScaleDriverWrapper {
 		}
 		*/
 		$dh  = opendir($readdir);
-		while (false !== ($fn = readdir($dh))) {
+		while ($dh && false !== ($fn = readdir($dh))) {
 			if (is_dir($readdir."/".$fn)) continue;
 			$data = file_get_contents($readdir."/".$fn);
 			unlink($readdir."/".$fn);
@@ -147,19 +148,19 @@ class NewMagellan extends ScaleDriverWrapper {
 	function WriteToScale($str){
 		switch(strtolower($str)){
 		case 'goodbeep':
-			UdpConn::udpSend('goodBeep');
+			UdpComm::udpSend('goodBeep');
 			break;
 		case 'errorbeep':
-			UdpConn::udpSend('errorBeep');
+			UdpComm::udpSend('errorBeep');
 			break;
 		case 'twopairs':
-			UdpConn::udpSend('twoPairs');
+			UdpComm::udpSend('twoPairs');
 			break;
 		case 'repoll':
-			UdpConn::udpSend('rePoll');
+			UdpComm::udpSend('rePoll');
 			break;
 		case 'wakeup':
-			UdpConn::udpSend('wakeup');
+			UdpComm::udpSend('wakeup');
 			break;
 		}
 	}
