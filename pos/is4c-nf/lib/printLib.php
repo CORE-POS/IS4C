@@ -111,6 +111,12 @@ function printReceiptHeader($dateTimeStamp, $ref) {
 		$i=4;
 		$receipt .= "\n";
 	}
+	else if ($CORE_LOCAL->get("newReceipt")==1 && ($CORE_LOCAL->get("store") == "harvest-cb" || $CORE_LOCAL->get("store") == "harvest-jp")){
+		$img = RenderBitmapFromFile($CORE_PATH."graphics/rcpt_hdr.bmp");
+		$receipt .= $img."\n";
+		$i=45; // skip any headers that happen to be in the database
+		$receipt .= "\n";
+	}
 	else{
 		// zero-indexing the receipt header and footer list
 		$receipt .= $PRINT_OBJ->TextStyle(True, False, True);
