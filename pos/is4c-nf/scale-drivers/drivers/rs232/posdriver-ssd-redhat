@@ -1,13 +1,13 @@
 #!/bin/bash
 #
-# posdriver-ssd Startup script for ssd
+# posdriver-ssd-redhat Startup script for ssd
 #
 # chkconfig: - 80 20
 # description: runs ssd scale driver as a daemon
 
 . /etc/rc.d/init.d/functions
 
-NAME=posdriver-ssd
+NAME=posdriver-ssd-redhat
 
 start(){
 	echo "Starting $NAME"
