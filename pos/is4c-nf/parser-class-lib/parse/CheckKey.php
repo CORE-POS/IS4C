@@ -78,7 +78,7 @@ class CheckKey extends Parser {
 		}
 
 		if (!$ret['main_frame'])
-			$ret = tender($split[0],$split[1],$ret);
+			$ret = tender($split[1],$split[0]);
 		return $ret;
 	}
 
