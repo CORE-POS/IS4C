@@ -199,7 +199,7 @@ function setMember($member, $personNumber, $row) {
 	if ($CORE_LOCAL->get("mirequested") == 1) {
 		$CORE_LOCAL->set("mirequested",0);
 		$CORE_LOCAL->set("runningTotal",$CORE_LOCAL->get("amtdue"));
-		tender("MI", $CORE_LOCAL->get("runningTotal") * 100);
+		tender("SC", $CORE_LOCAL->get("runningTotal") * 100);
 	}
 
 }
@@ -355,11 +355,11 @@ function tender($right, $strl) {
 
 	getsubtotals();
 
-	if ($CORE_LOCAL->get("ttlflag") == 1 && ($right == "CX" || $right == "MI")) {			// added ttlflag on 2/28/05 apbw 
+	if ($CORE_LOCAL->get("ttlflag") == 1 && ($right == "CX" || $right == "SC")) {			// added ttlflag on 2/28/05 apbw 
 
 		$charge_ok = chargeOk();
 		if ($right == "CX" && $charge_ok == 1 && strlen($CORE_LOCAL->get("memberID")) == 5 && substr($CORE_LOCAL->get("memberID"), 0, 1) == "5") $charge_ok = 1;
-		elseif ($right == "MI" && $charge_ok == 1) $charge_ok = 1;
+		elseif ($right == "SC" && $charge_ok == 1) $charge_ok = 1;
 		else $charge_ok = 0;
 	}
 
@@ -380,11 +380,11 @@ function tender($right, $strl) {
 		$ret['output'] = boxMsg("transaction must be totaled before tender can be accepted");
 		return $ret;
 	}
-	elseif (($right == "FS" || $right == "EF") && $CORE_LOCAL->get("fntlflag") == 0) {
-		$ret['output'] = boxMsg("eligble amount must be totaled before foodstamp tender can be accepted");
+	elseif (($right == "FS" || $right == "EB") && $CORE_LOCAL->get("fntlflag") == 0) {
+		$ret['output'] = boxMsg("eligible amount must be totaled before foodstamp tender can be accepted");
 		return $ret;
 	}
-	elseif ($right == "EF" && $CORE_LOCAL->get("fntlflag") == 1 && $CORE_LOCAL->get("fsEligible") + 10 <= $strl) {
+	elseif ($right == "EB" && $CORE_LOCAL->get("fntlflag") == 1 && $CORE_LOCAL->get("fsEligible") + 10 <= $strl) {
 		$ret['output'] = xboxMsg("Foodstamp tender cannot exceed elible amount by pver $10.00");
 		return $ret;
 	}
@@ -393,29 +393,29 @@ function tender($right, $strl) {
 		return $ret;
 	}
 	//alert customer that charge exceeds avail balance
-	elseif ($right == "MI" && $charge_ok == 0 && $CORE_LOCAL->get("availBal") < 0) {
+	elseif ($right == "SC" && $charge_ok == 0 && $CORE_LOCAL->get("availBal") < 0) {
 		$ret['output'] = xboxMsg("member ".$CORE_LOCAL->get("memberID")."<BR> has $" . $CORE_LOCAL->get("availBal") . " available.");
 		return $ret;
 	}
-	elseif ($right == "MI" && $charge_ok == 1 && $CORE_LOCAL->get("availBal") < 0) {
+	elseif ($right == "SC" && $charge_ok == 1 && $CORE_LOCAL->get("availBal") < 0) {
 		$ret['output'] = xboxMsg("member ".$CORE_LOCAL->get("memberID")."<BR>is overlimit");
 		return $ret;
 	}
-	elseif ($right == "MI" && $charge_ok == 0) {
+	elseif ($right == "SC" && $charge_ok == 0) {
 		$ret['output'] = xboxMsg("member ".$CORE_LOCAL->get("memberID")."<BR>is not authorized to make employee charges");
 		return $ret;
 	}
-	elseif ($right == "MI" && $charge_ok == 1 && ($CORE_LOCAL->get("availBal") + $CORE_LOCAL->get("memChargeTotal") - $strl) < 0) {
+	elseif ($right == "SC" && $charge_ok == 1 && ($CORE_LOCAL->get("availBal") + $CORE_LOCAL->get("memChargeTotal") - $strl) < 0) {
 		$ret['output'] = xboxMsg("member ".$CORE_LOCAL->get("memberID")."<br> bhas exceeded charge limit");
 		return $ret;
 	}
-	elseif ($right == "MI" && $charge_ok == 1 && (ABS($CORE_LOCAL->get("memChargeTotal"))+ $strl) >= ($CORE_LOCAL->get("availBal") + 0.005) && $CORE_LOCAL->get("store")=="WFC") {
+	elseif ($right == "SC" && $charge_ok == 1 && (ABS($CORE_LOCAL->get("memChargeTotal"))+ $strl) >= ($CORE_LOCAL->get("availBal") + 0.005) && $CORE_LOCAL->get("store")=="WFC") {
 		$memChargeRemain = $CORE_LOCAL->get("availBal");
 		$memChargeCommitted = $memChargeRemain + $CORE_LOCAL->get("memChargeTotal");
 		$ret['output'] = xboxMsg("available balance for charge <br>is only $" .$memChargeCommitted. ".<br><b><font size = 5>$" . number_format($memChargeRemain,2) . "</font></b><br>may still be used on this purchase.");
 		return $ret;
 	}
-	elseif(($right == "MI" || $right == "CX") && truncate2($CORE_LOCAL->get("amtdue")) < truncate2($strl)) {
+	elseif(($right == "SC" || $right == "CX") && truncate2($CORE_LOCAL->get("amtdue")) < truncate2($strl)) {
 		$ret['output'] = xboxMsg("charge tender exceeds purchase amount");
 		return $ret;
 	}
@@ -476,50 +476,52 @@ function tender($right, $strl) {
 	$ref = trim($CORE_LOCAL->get("CashierNo"))."-"
 		.trim($CORE_LOCAL->get("laneno"))."-"
 		.trim($CORE_LOCAL->get("transno"));
-	if ($right == "CK" && $CORE_LOCAL->get("msgrepeat") == 0) {
-		$msg = "<BR>insert check</B><BR>press [enter] to endorse<P><FONT size='-1'>[clear] to cancel</FONT>";
-		if ($CORE_LOCAL->get("LastEquityReference") == $ref){
-			$msg .= "<div style=\"background:#993300;color:#ffffff;
-				margin:3px;padding: 3px;\">
-				There was an equity sale on this transaction. Did it get
-				endorsed yet?</div>";
+	if($CORE_LOCAL->get("enableFranking") == 1) {
+		if ($right == "CK" && $CORE_LOCAL->get("msgrepeat") == 0) {
+			$msg = "<BR>insert check</B><BR>press [enter] to endorse<P><FONT size='-1'>[clear] to cancel</FONT>";
+			if ($CORE_LOCAL->get("LastEquityReference") == $ref){
+				$msg .= "<div style=\"background:#993300;color:#ffffff;
+					margin:3px;padding: 3px;\">
+					There was an equity sale on this transaction. Did it get
+					endorsed yet?</div>";
+			}
+			$CORE_LOCAL->set("boxMsg",$msg);
+			$CORE_LOCAL->set("endorseType","check");
+			$ret['main_frame'] = $CORE_PATH.'gui-modules/boxMsg2.php';
+			return $ret;
 		}
-		$CORE_LOCAL->set("boxMsg",$msg);
-		$CORE_LOCAL->set("endorseType","check");
-		$ret['main_frame'] = $CORE_PATH.'gui-modules/boxMsg2.php';
-		return $ret;
-	}
-	elseif ($right == "TV" && $CORE_LOCAL->get("msgrepeat") == 0) {
-		$msg = "<BR>insert travelers check</B><BR>press [enter] to endorse<P><FONT size='-1'>[clear] to cancel</FONT>";
-		if ($CORE_LOCAL->get("LastEquityReference") == $ref){
-			$msg .= "<div style=\"background:#993300;color:#ffffff;
-				margin:3px;padding: 3px;\">
-				There was an equity sale on this transaction. Did it get
-				endorsed yet?</div>";
+		elseif ($right == "TV" && $CORE_LOCAL->get("msgrepeat") == 0) {
+			$msg = "<BR>insert travelers check</B><BR>press [enter] to endorse<P><FONT size='-1'>[clear] to cancel</FONT>";
+			if ($CORE_LOCAL->get("LastEquityReference") == $ref){
+				$msg .= "<div style=\"background:#993300;color:#ffffff;
+					margin:3px;padding: 3px;\">
+					There was an equity sale on this transaction. Did it get
+					endorsed yet?</div>";
+			}
+			$CORE_LOCAL->set("boxMsg",$msg);
+			$CORE_LOCAL->set("endorseType","check");
+			$ret['main_frame'] = $CORE_PATH.'gui-modules/boxMsg2.php';
+			return $ret;
 		}
-		$CORE_LOCAL->set("boxMsg",$msg);
-		$CORE_LOCAL->set("endorseType","check");
-		$ret['main_frame'] = $CORE_PATH.'gui-modules/boxMsg2.php';
-		return $ret;
-	}
-	elseif ($right == "RC" && $CORE_LOCAL->get("msgrepeat") == 0) {
-		$msg = "<BR>insert rebate check</B><BR>press [enter] to endorse<P><FONT size='-1'>[clear] to cancel</FONT>";
-		if ($CORE_LOCAL->get("LastEquityReference") == $ref){
-			$msg .= "<div style=\"background:#993300;color:#ffffff;
-				margin:3px;padding: 3px;\">
-				There was an equity sale on this transaction. Did it get
-				endorsed yet?</div>";
+		elseif ($right == "RC" && $CORE_LOCAL->get("msgrepeat") == 0) {
+			$msg = "<BR>insert rebate check</B><BR>press [enter] to endorse<P><FONT size='-1'>[clear] to cancel</FONT>";
+			if ($CORE_LOCAL->get("LastEquityReference") == $ref){
+				$msg .= "<div style=\"background:#993300;color:#ffffff;
+					margin:3px;padding: 3px;\">
+					There was an equity sale on this transaction. Did it get
+					endorsed yet?</div>";
+			}
+			$CORE_LOCAL->set("boxMsg",$msg);
+			$CORE_LOCAL->set("endorseType","check");
+			$ret['main_frame'] = $CORE_PATH.'gui-modules/boxMsg2.php';
+			return $ret;
 		}
-		$CORE_LOCAL->set("boxMsg",$msg);
-		$CORE_LOCAL->set("endorseType","check");
-		$ret['main_frame'] = $CORE_PATH.'gui-modules/boxMsg2.php';
-		return $ret;
-	}
-	elseif ($right == "TC" && $CORE_LOCAL->get("msgrepeat") == 0) {
-		$CORE_LOCAL->set("boxMsg","<B> insert gift certificate<B><BR>press [enter] to endorse<P><FONT size='-1'>[clear] to cancel</FONT>");
-		$CORE_LOCAL->set("endorseType","check");
-		$ret['main_frame'] = $CORE_PATH.'gui-modules/boxMsg2.php';
-		return $ret;
+		elseif ($right == "TC" && $CORE_LOCAL->get("msgrepeat") == 0) {
+			$CORE_LOCAL->set("boxMsg","<B> insert gift certificate<B><BR>press [enter] to endorse<P><FONT size='-1'>[clear] to cancel</FONT>");
+			$CORE_LOCAL->set("endorseType","check");
+			$ret['main_frame'] = $CORE_PATH.'gui-modules/boxMsg2.php';
+			return $ret;
+		}
 	}
 
 	if ($tender_code == "TV")
@@ -532,17 +534,17 @@ function tender($right, $strl) {
 	$CORE_LOCAL->set("msgrepeat",0);
 	$CORE_LOCAL->set("TenderType",$tender_code);			/***added by apbw 2/1/05 SCR ***/
 
-	if ($CORE_LOCAL->get("TenderType") == "MI" || $CORE_LOCAL->get("TenderType") == "CX") { 	// apbw 2/28/05 SCR
+	if ($CORE_LOCAL->get("TenderType") == "SC" || $CORE_LOCAL->get("TenderType") == "CX") { 	// apbw 2/28/05 SCR
 		$CORE_LOCAL->set("chargetender",1);							// apbw 2/28/05 SCR
 	}													// apbw 2/28/05 SCR
 
 	getsubtotals();
 
-	if ($right == "FS" || $right == "EF") {
+	if ($right == "FS" || $right == "EB" || $right == "XE") {
 		addfsTaxExempt();
 	}
 
-	if ($right == "FS") {
+	if ($right == "FS" || $right == "EB") {
 		$fs = -1 * $CORE_LOCAL->get("fsEligible");
 		$fs_ones = (($fs * 100) - (($fs * 100) % 100))/100;
 		$fs_change = $fs - $fs_ones;
@@ -1086,7 +1088,7 @@ function staffCharge($arg,$json=array()) {
 			return $json;
 		}
 		$CORE_LOCAL->set("runningTotal",$CORE_LOCAL->get("amtdue"));
-		return tender("MI", $CORE_LOCAL->get("runningTotal") * 100);
+		return tender("SC", $CORE_LOCAL->get("runningTotal") * 100);
 
 	}
 
