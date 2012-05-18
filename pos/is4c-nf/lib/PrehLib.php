@@ -304,7 +304,7 @@ static public function checkstatus($num) {
   This function will automatically end a transaction
   if the amount due becomes <= zero.
 */
-static public function tender($right, $strl) {
+static public function classic_tender($right, $strl) {
 	global $CORE_LOCAL;
 	$tender_upc = "";
 
@@ -375,7 +375,7 @@ static public function tender($right, $strl) {
 		return $ret;
 	}
 	elseif (($right == "EB" || $right == "EF") && $CORE_LOCAL->get("fntlflag") == 1 && $CORE_LOCAL->get("fsEligible") + 10 <= $strl) {
-		$ret['output'] = DisplayLib::xboxMsg("Foodstamp tender cannot exceed eligible amount by pver $10.00");
+		$ret['output'] = DisplayLib::xboxMsg("Foodstamp tender cannot exceed eligible amount by over $10.00");
 		return $ret;
 	}
 	elseif ($right == "CX" && $charge_ok == 0) {
@@ -590,6 +590,111 @@ static public function tender($right, $strl) {
 	}
 	$ret['redraw_footer'] = true;
 	return $ret;
+}
+
+static public function modular_tender($right, $strl){
+	global $CORE_LOCAL;
+	$ret = array('main_frame'=>false,
+		'redraw_footer'=>false,
+		'target'=>'.baseHeight',
+		'output'=>"");
+
+	/* when processing as strings, weird things happen
+	 * in excess of 1000, so use floating point */
+	$strl .= ""; // force type to string
+	$mult = 1;
+	if ($strl[0] == "-"){
+		$mult = -1;
+		$strl = substr($strl,1,strlen($strl));
+	}
+	$dollars = (int)substr($strl,0,strlen($strl)-2);
+	$cents = ((int)substr($strl,-2))/100.0;
+	$strl = (double)($dollars+round($cents,2));
+	$strl *= $mult;
+
+	/**
+	  First use base module to check for error
+	  conditions common to all tenders
+	*/
+	$base_object = new TenderModule($right, $strl);
+	Database::getsubtotals();
+	$ec = $base_object->ErrorCheck();
+	if ($ec !== True){
+		$ret['output'] = $ec;
+		return $ret;
+	}
+	$pr = $base_object->PreReqCheck();
+	if ($pr !== True){
+		$ret['main_frame'] = $pr;
+		return $ret;
+	}
+
+	/**
+	  Get a tender-specific module if
+	  one has been configured
+	*/
+	$tender_object = 0;
+	$map = $CORE_LOCAL->get("TenderMap");
+	if (is_array($map) && isset($map[$right])){
+		$class = $map[$right];
+		$tender_object = new $class($right, $strl);
+	}
+	else {
+		$tender_object = $base_object;
+	}
+
+	if (!is_object($tender_object)){
+		$ret['output'] = DisplayLib::boxMsg('tender is misconfigured');
+		return $ret;
+	}
+	else if (get_class($tender_object) != 'TenderModule'){
+		/**
+		  Do tender-specific error checking and prereqs
+		*/
+		$ec = $tender_object->ErrorCheck();
+		if ($ec !== True){
+			$ret['output'] = $ec;
+			return $ret;
+		}
+		$pr = $tender_object->PreReqCheck();
+		if ($pr !== True){
+			$ret['main_frame'] = $pr;
+			return $ret;
+		}
+	}
+
+	// add the tender record
+	$tender_object->Add();
+	Database::getsubtotals();
+
+	// see if transaction has ended
+	if ($CORE_LOCAL->get("amtdue") <= 0.005) {
+
+		$CORE_LOCAL->set("change",-1 * $CORE_LOCAL->get("amtdue"));
+		$cash_return = $CORE_LOCAL->get("change");
+		TransRecord::addchange($cash_return);
+					
+		$CORE_LOCAL->set("End",1);
+		$CORE_LOCAL->set("beep","rePoll");
+		$CORE_LOCAL->set("receiptType","full");
+		$ret['receipt'] = 'full';
+		$ret['output'] = DisplayLib::printReceiptFooter();
+	}
+	else {
+		$CORE_LOCAL->set("change",0);
+		$CORE_LOCAL->set("fntlflag",0);
+		$chk = self::ttl();
+		if ($chk === True)
+			$ret['output'] = DisplayLib::lastpage();
+		else
+			$ret['main_frame'] = $chk;
+	}
+	$ret['redraw_footer'] = true;
+	return $ret;
+}
+
+static public function tender($right, $strl){
+	return self::modular_tender($right, $strl);
 }
 
 //-------------------------------------------------------

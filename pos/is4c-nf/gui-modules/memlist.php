@@ -91,7 +91,7 @@ class memlist extends NoInputPage {
 			$row = $db_a->fetch_array($result);
 			PrehLib::setMember($row["CardNo"], $personNum,$row);
 			$CORE_LOCAL->set("scan","scan");
-			if ($entered != $CORE_LOCAL->get("defaultNonMem") && check_unpaid_ar($row["CardNo"]))
+			if ($entered != $CORE_LOCAL->get("defaultNonMem") && PrehLib::check_unpaid_ar($row["CardNo"]))
 				$this->change_page($this->page_url."gui-modules/UnpaidAR.php");
 			else
 				$this->change_page($this->page_url."gui-modules/pos2.php");
