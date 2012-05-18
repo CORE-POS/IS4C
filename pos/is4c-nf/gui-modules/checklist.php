@@ -101,7 +101,7 @@ class tenderlist extends NoInputPage {
 	function body_content(){
 		global $CORE_LOCAL;
 		$db = pDataConnect();
-		$q = "SELECT TenderCode,TenderName FROM tenders ORDER BY TenderName";
+		$q = "SELECT TenderCode,TenderName FROM tenders WHERE TenderName LIKE '%check%' ORDER BY TenderName";
 		$r = $db->query($q);
 
 		echo "<div class=\"baseHeight\">"
