@@ -58,7 +58,7 @@ class CheckKey extends Parser {
 			$CORE_LOCAL->set("tenderTotal",$amt);
 
 			// go to the department select screen
-			$ret['main_frame'] = $CORE_PATH.'gui-modules/tenderlist.php';
+			$ret['main_frame'] = $CORE_PATH.'gui-modules/checklist.php';
 		}
 		elseif ($CORE_LOCAL->get("refund")==1 && $CORE_LOCAL->get("refundComment") == ""){
 			if ($CORE_LOCAL->get("SecurityRefund") > 20){
