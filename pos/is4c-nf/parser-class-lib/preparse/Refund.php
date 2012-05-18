@@ -50,6 +50,7 @@ class Refund extends Parser {
 			$remainder = "";
 		else {
 			$CORE_LOCAL->set("refund",1);
+			$CORE_LOCAL->set("beep","goodBeep");
 		}
 		return $remainder;
 	}
