@@ -76,26 +76,7 @@ class CheckKey extends Parser {
 			$CORE_LOCAL->set("warned",0);
 			$CORE_LOCAL->set("warnBoxType","");
 		}
-		// elseif ($tender == 991 || $dept == 992){
-		// 	$ref = trim($CORE_LOCAL->get("CashierNo"))."-"
-		// 		.trim($CORE_LOCAL->get("laneno"))."-"
-		// 		.trim($CORE_LOCAL->get("transno"));
-		// 	if ($CORE_LOCAL->get("LastEquityReference") != $ref){
-		// 		$CORE_LOCAL->set("warned",1);
-		// 		$CORE_LOCAL->set("warnBoxType","warnEquity");
-		// 		$CORE_LOCAL->set("endorseType","stock");
-		// 		$CORE_LOCAL->set("equityAmt",$price);
-		// 		$CORE_LOCAL->set("boxMsg","<b>Equity Sale</b><br>Insert paperwork and press<br><font size=-1>[enter] to continue, [clear] to cancel</font>");
-		// 		$ret['main_frame'] = $CORE_PATH.'gui-modules/boxMsg2.php';
-		// 	}
-		// }
-		// elseif ($dept == 990){
-		// 	$CORE_LOCAL->set("warned",1);
-		// 	$CORE_LOCAL->set("warnBoxType","warnAR");
-		// 	$CORE_LOCAL->set("boxMsg","<b>A/R Payment Sale</b><br>remember to retain you<br>reprinted receipt<br><font size=-1>[enter] to continue, [clear] to cancel</font>");
-		// 	$ret['main_frame'] = $CORE_PATH.'gui-modules/boxMsg2.php';
-		// }
-		
+
 		if (!$ret['main_frame'])
 			$ret = tender($split[0],$split[1],$ret);
 		return $ret;
