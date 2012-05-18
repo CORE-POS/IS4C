@@ -28,7 +28,7 @@ if (!class_exists("NoInputPage")) include_once($CORE_PATH."gui-class-lib/NoInput
 if (!function_exists("pDataConnect")) include($CORE_PATH."lib/connect.php");
 if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
 
-class deptlist extends NoInputPage {
+class tenderlist extends NoInputPage {
 
 	/**
 	  Input processing function
