@@ -29,7 +29,7 @@ if (!function_exists("tender")) include_once($CORE_PATH."lib/prehkeys.php");
 
 class CheckKey extends Parser {
 	function check($str){
-		if (strstr($str,"CK") && strlen($str) > 3 &&
+		if (strstr($str,"CQ") && strlen($str) > 3 &&
 		    substr($str,0,2) != "VD")
 			return True;
 		return False;
@@ -38,7 +38,7 @@ class CheckKey extends Parser {
 	function parse($str){
 		global $CORE_LOCAL,$CORE_PATH;
 
-		$split = explode("CK",$str);
+		$split = explode("CQ",$str);
 		$tender = $split[1];
 		$amt = $split[0];
 		$ret = $this->default_json();

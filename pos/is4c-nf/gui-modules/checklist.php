@@ -54,7 +54,7 @@ class checklist extends NoInputPage {
 				// built department input string and set it
 				// to be the next POS entry
 				// Redirect to main screen
-				$input = $CORE_LOCAL->get("tenderTotal")."CK".$entered."0";
+				$input = $CORE_LOCAL->get("tenderTotal")."CQ".$entered."0";
 				$CORE_LOCAL->set("msgrepeat",1);
 				$CORE_LOCAL->set("strRemembered",$input);
 				header("Location: {$CORE_PATH}gui-modules/pos2.php");
