@@ -22,6 +22,7 @@
 *********************************************************************************/
 
 class TenderKey extends Parser {
+
 	function check($str){
 		if (strstr($str,"TT") && strlen($str) > 3 &&
 		    substr($str,0,2) != "VD")
@@ -51,9 +52,9 @@ class TenderKey extends Parser {
 			// go to the department select screen
 			$ret['main_frame'] = $my_url.'gui-modules/tenderlist.php';
 		}
-		
+
 		if (!$ret['main_frame'])
-			$ret = PrehLib::tender($split[0],$split[1],$ret);
+			$ret = PrehLib::tender($split[1],$split[0]);
 		return $ret;
 	}
 

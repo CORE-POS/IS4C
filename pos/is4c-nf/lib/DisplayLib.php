@@ -188,17 +188,17 @@ static public function printfooter($readOnly=False) {
 
 	if (!$readOnly){
 		if ($CORE_LOCAL->get("End") == 1) {
-			rePoll();
+			MiscLib::rePoll();
 		}
 		if (strlen($CORE_LOCAL->get("endorseType")) > 0 || $CORE_LOCAL->get("waitforScale") == 1) {
 			$CORE_LOCAL->set("waitforScale",0);
 			$CORE_LOCAL->set("beep","noBeep");
 		}
 		if ($CORE_LOCAL->get("scale") == 0 && $CORE_LOCAL->get("SNR") == 1) {
-			rePoll();
+			MiscLib::rePoll();
 		}
 		if ($CORE_LOCAL->get("cashOverAmt") <> 0) {
-			twoPairs();
+			MiscLib::twoPairs();
 			$CORE_LOCAL->set("cashOverAmt",0);
 		}
 	}

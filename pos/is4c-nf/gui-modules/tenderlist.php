@@ -45,7 +45,7 @@ class tenderlist extends NoInputPage {
 				return False;
 			}
 
-			if (is_numeric($entered)){ 
+			if (!empty($entered)){ 
 				// built department input string and set it
 				// to be the next POS entry
 				// Redirect to main screen
@@ -95,7 +95,7 @@ class tenderlist extends NoInputPage {
 	*/
 	function body_content(){
 		global $CORE_LOCAL;
-		$db = pDataConnect();
+		$db = Database::pDataConnect();
 		$q = "SELECT TenderCode,TenderName FROM tenders ORDER BY TenderName";
 		$r = $db->query($q);
 

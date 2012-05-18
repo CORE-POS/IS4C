@@ -45,7 +45,7 @@ class checklist extends NoInputPage {
 				return False;
 			}
 
-			if (is_numeric($entered)){ 
+			if (!empty($entered)){ 
 				// built department input string and set it
 				// to be the next POS entry
 				// Redirect to main screen
