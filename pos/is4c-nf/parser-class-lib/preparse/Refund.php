@@ -51,7 +51,6 @@ class Refund extends Parser {
 		else {
 			$CORE_LOCAL->set("refund",1);
 		}
-		twoPairs();
 		return $remainder;
 	}
 
