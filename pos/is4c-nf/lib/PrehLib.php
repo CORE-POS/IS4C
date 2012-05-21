@@ -303,6 +303,8 @@ static public function checkstatus($num) {
 
   This function will automatically end a transaction
   if the amount due becomes <= zero.
+
+  @deprecated See PrehLib::modular_tender
 */
 static public function classic_tender($right, $strl) {
 	global $CORE_LOCAL;
@@ -592,6 +594,16 @@ static public function classic_tender($right, $strl) {
 	return $ret;
 }
 
+/**
+  Add a tender to the transaction
+  @right tender amount in cents (100 = $1)
+  @strl tender code from tenders table
+  @return An array see Parser::default_json()
+   for format explanation.
+
+  This function will automatically end a transaction
+  if the amount due becomes <= zero.
+*/
 static public function modular_tender($right, $strl){
 	global $CORE_LOCAL;
 	$ret = array('main_frame'=>false,
@@ -693,8 +705,16 @@ static public function modular_tender($right, $strl){
 	return $ret;
 }
 
+/**
+  Call the configured tender function, either
+  PrehLib::modular_tender or PrehLib::classic_tender
+*/
 static public function tender($right, $strl){
-	return self::modular_tender($right, $strl);
+	global $CORE_LOCAL;
+	if ($CORE_LOCAL->get("ModularTenders")==1)
+		return self::modular_tender($right, $strl);
+	else
+		return self::classic_tender($right, $strl);
 }
 
 //-------------------------------------------------------

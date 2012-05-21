@@ -311,6 +311,63 @@ Touchscreen keys and menus really don't need to appear on
 the customer-facing display. Experimental feature where one
 window always shows the item listing. Very alpha.
 <hr />
+<b>Modular Tenders</b>: <select name=MODTENDERS>
+<?php
+if(isset($_REQUEST['MODTENDERS'])) $CORE_LOCAL->set('ModularTenders',$_REQUEST['MODTENDERS']);
+if ($CORE_LOCAL->get('ModularTenders')){
+	echo "<option value=1 selected>Yes</option>";
+	echo "<option value=0 >No</option>";
+}
+else {
+	echo "<option value=1 >Yes</option>";
+	echo "<option value=0 selected>No</option>";
+}
+confsave('ModularTenders',"'".$CORE_LOCAL->get('ModularTenders')."'");
+?>
+</select><br />
+<?php
+$settings = $CORE_LOCAL->get("TenderMap");
+if (!is_array($settings)) $settings = array();
+if (isset($_REQUEST['TenderMapping'])){
+	$saveStr = "array(";
+	$settings = array();
+	foreach($_REQUEST['TenderMapping'] as $tm){
+		if($tm=="") continue;
+		list($code,$mod) = explode(":",$tm);
+		$settings[$code] = $mod;
+		$saveStr .= "'".$code."'=>'".$mod."',";
+	}
+	$saveStr = rtrim($saveStr,",").")";
+	confsave('TenderMap',$saveStr);
+}
+$mods = array();
+$dh = opendir('../lib/Tenders/');
+while(False !== ($f = readdir($dh))){
+	if ($f == "." || $f == ".." || $f == "TenderModule.php")
+		continue;
+	if (substr($f,-4) == ".php")
+		$mods[] = rtrim($f,".php");
+}
+$db = Database::pDataConnect();
+$res = $db->query("SELECT TenderCode, TenderName FROM tenders ORDER BY TenderName");
+?>
+<table cellspacing="0" cellpadding="4" border="1">
+<?php
+while($row = $db->fetch_row($res)){
+	printf('<tr><td>%s (%s)</td>',$row['TenderName'],$row['TenderCode']);
+	echo '<td><select name="TenderMapping[]">';
+	echo '<option value="">default</option>';
+	foreach($mods as $m){
+		printf('<option value="%s:%s" %s>%s</option>',
+			$row['TenderCode'],$m,
+			(isset($settings[$row['TenderCode']])&&$settings[$row['TenderCode']]==$m)?'selected':'',
+			$m);	
+	}
+	echo '</select></td></tr>';
+}
+?>
+</table>
+<hr />
 <i>Integrated card processing configuration is included for the sake
 of completeness. The modules themselves require individual configuration,
 too</i><br />

@@ -39,6 +39,9 @@ class TenderModule {
 	  Constructor
 	  @param $code two letter tender code
 	  @param $amt tender amount
+
+	  If you override this, be sure to call the
+	  parent constructor
 	*/
 	function TenderModule($code, $amt){
 		$this->tender_code = $code;
