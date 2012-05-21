@@ -55,6 +55,7 @@ class TenderKey extends Parser {
 
 		if (!$ret['main_frame'])
 			$ret = PrehLib::tender($split[1],$split[0]);
+			$ret = tender($split[1],$split[0]);
 		return $ret;
 	}
 
