@@ -11,5 +11,12 @@ errorBeep();
 rePoll();
 
 udpSend('twoPairs');
+function testBeep() {
+	$ret['udpmsg'] = 'errorBeep';
+	echo $ret;
+	return $ret;
+}
+
+testBeep();
 
 ?>
