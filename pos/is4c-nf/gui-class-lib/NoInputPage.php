@@ -31,34 +31,28 @@
     their own form in body_content().
  */
 
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
-
-if (!class_exists('BasicPage')) include($CORE_PATH.'gui-class-lib/BasicPage.php');
-if (!function_exists('printfooter')) include($CORE_PATH.'lib/drawscreen.php');
-
 class NoInputPage extends BasicPage {
 
 	function print_page(){
-		global $CORE_PATH;
+		$my_url = $this->page_url;
 		?>
 		<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 		<html>
 		<?php
 		echo "<head>";
 		echo "<link rel=\"stylesheet\" type=\"text/css\"
-		    href=\"{$CORE_PATH}pos.css\">";
+		    href=\"{$my_url}pos.css\">";
 		echo "<script type=\"text/javascript\"
-			src=\"{$CORE_PATH}js/jquery.js\"></script>";
+			src=\"{$my_url}js/jquery.js\"></script>";
 		$this->head_content();
 		echo "</head>";
 		echo "<body>";
 		echo "<div id=\"boundingBox\">";
 		$this->noinput_header();
-		echo printheaderb();
+		echo DisplayLib::printheaderb();
 		$this->body_content();	
 		echo "<div id=\"footer\">";
-		echo printfooter();
+		echo DisplayLib::printfooter();
 		echo "</div>";
 		echo "</div>";
 		$this->scale_box();

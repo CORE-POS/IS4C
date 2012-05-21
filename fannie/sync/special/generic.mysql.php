@@ -31,9 +31,11 @@
 include_once($FANNIE_ROOT.'src/temp_dir.php');
 $tempfile = tempnam(sys_get_temp_dir(),$table.".sql");
 exec("mysqldump -u $FANNIE_SERVER_USER -p$FANNIE_SERVER_PW -h $FANNIE_SERVER $FANNIE_OP_DB $table > $tempfile");
+$i=0;
 foreach($FANNIE_LANES as $lane){
 	exec("mysql -u {$lane['user']} -p{$lane['pw']} -h {$lane['host']} {$lane['op']} < $tempfile");
 	echo "<li>Lane ".($i+1)." completed successfully</li>";
+	$i++;
 }
 unlink($tempfile);
 

@@ -233,6 +233,46 @@ if (isset($_REQUEST['ALERT'])) $CORE_LOCAL->set('alertBar',$_REQUEST['ALERT']);
 printf("<input size=40 type=text name=ALERT value=\"%s\" />",$CORE_LOCAL->get('alertBar'));
 confsave('alertBar',"'".$CORE_LOCAL->get('alertBar')."'");
 ?>
+<br />
+<b>Footer Modules</b> (left to right):<br />
+<?php
+$footer_mods = array();
+// get current settings
+$current_mods = $CORE_LOCAL->get("FooterModules");
+// replace w/ form post if needed
+// fill in defaults if missing
+if (isset($_REQUEST['FOOTER_MODS'])) $current_mods = $_REQUEST['FOOTER_MODS'];
+elseif(!is_array($current_mods) || count($current_mods) != 5){
+	$current_mods = array(
+	'SavedOrCouldHave',
+	'TransPercentDiscount',
+	'MemSales',
+	'EveryoneSales',
+	'MultiTotal'
+	);
+}
+$dh = opendir($CORE_PATH.'lib/FooterBoxes/');
+while(False !== ($f = readdir($dh))){
+	if ($f == "." || $f == "..")
+		continue;
+	if (substr($f,-4) == ".php"){
+		$footer_mods[] = rtrim($f,".php");
+	}
+}
+for($i=0;$i<5;$i++){
+	echo '<select name="FOOTER_MODS[]">';
+	foreach($footer_mods as $fm){
+		printf('<option %s>%s</option>',
+			($current_mods[$i]==$fm?'selected':''),$fm);
+	}
+	echo '</select><br />';
+}
+$saveStr = "array(";
+foreach($current_mods as $m)
+	$saveStr .= "'".$m."',";
+$saveStr = rtrim($saveStr,",").")";
+confsave('FooterModules',$saveStr);
+?>
 <hr />
 <b>Enable onscreen keys</b>: <select name=SCREENKEYS>
 <?php

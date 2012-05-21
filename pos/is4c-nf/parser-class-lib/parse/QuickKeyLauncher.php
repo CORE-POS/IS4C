@@ -21,12 +21,6 @@
 
 *********************************************************************************/
 
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
-
-if (!class_exists("Parser")) include_once($CORE_PATH."parser-class-lib/Parser.php");
-if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
-
 class QuickKeyLauncher extends Parser {
 	
 	function check($str){
@@ -40,7 +34,7 @@ class QuickKeyLauncher extends Parser {
 	}
 
 	function parse($str){
-		global $CORE_LOCAL,$CORE_PATH;
+		global $CORE_LOCAL;
 		$tmp = explode("QK",$str);
 		if (count($tmp) == 2)
 			$CORE_LOCAL->set("qkInput",$tmp[0]);
@@ -49,7 +43,7 @@ class QuickKeyLauncher extends Parser {
 		$CORE_LOCAL->set("qkNumber",$tmp[count($tmp)-1]);
 		$CORE_LOCAL->set("qkCurrentId",$CORE_LOCAL->get("currentid"));
 		$ret = $this->default_json();
-		$ret['main_frame'] = $CORE_PATH.'gui-modules/QKDisplay.php';
+		$ret['main_frame'] = MiscLib::base_url().'gui-modules/QKDisplay.php';
 		return $ret;
 	}
 

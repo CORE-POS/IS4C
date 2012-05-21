@@ -33,12 +33,6 @@
    This is pricemethod 4 in earlier WFC releases
    and may not exist anywhere else.
 */
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
-
-if (!class_exists('PriceMethod')) include($CORE_PATH.'lib/Scanning/PriceMethod.php');
-if (!function_exists('addItem')) include($CORE_PATH.'lib/additem.php');
-if (!function_exists('truncate2')) include($CORE_PATH.'lib/lib.php');
 
 class ABGroupPM extends PriceMethod {
 
@@ -157,7 +151,7 @@ class ABGroupPM extends PriceMethod {
 			if($quantity != (int)$quantity) $sets = $quantity;
 			$quantity = $quantity - $sets;
 
-			addItem($row['upc'],
+			TransRecord::addItem($row['upc'],
 				$row['description'],
 				'I',
 				'',
@@ -165,13 +159,13 @@ class ABGroupPM extends PriceMethod {
 				$row['department'],
 				$sets,
 				$pricing['unitPrice'],
-				truncate2($sets*$pricing['unitPrice']),
+				MiscLib::truncate2($sets*$pricing['unitPrice']),
 				$pricing['regPrice'],
 				$row['scale'],
 				$row['tax'],
 				$row['foodstamp'],
-				($priceObj->isMemberSale() || $priceObj->isStaffSale()) ? 0 : truncate2($maxDiscount),
-				($priceObj->isMemberSale() || $priceObj->isStaffSale()) ? truncate2($maxDiscount) : 0,
+				($priceObj->isMemberSale() || $priceObj->isStaffSale()) ? 0 : MiscLib::truncate2($maxDiscount),
+				($priceObj->isMemberSale() || $priceObj->isStaffSale()) ? MiscLib::truncate2($maxDiscount) : 0,
 				$row['discount'],
 				$row['discounttype'],
 				$sets,
@@ -190,7 +184,7 @@ class ABGroupPM extends PriceMethod {
 		/* any remaining quantity added without
 		   grouping discount */
 		if ($quantity > 0){
-			addItem($row['upc'],
+			TransRecord::addItem($row['upc'],
 				$row['description'],
 				'I',
 				' ',
@@ -198,7 +192,7 @@ class ABGroupPM extends PriceMethod {
 				$row['department'],
 				$quantity,
 				$pricing['unitPrice'],
-				truncate2($pricing['unitPrice'] * $quantity),
+				MiscLib::truncate2($pricing['unitPrice'] * $quantity),
 				$pricing['regPrice'],
 				$row['scale'],
 				$row['tax'],

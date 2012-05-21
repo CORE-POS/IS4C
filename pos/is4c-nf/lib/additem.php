@@ -24,18 +24,10 @@
 /**
   @file
   @brief Defines functions for adding records to the transaction
+  @deprecated See TransRecord
 */
 
 /*------------------------------------------------------------------------------
-additem.php is called by the following files:
-
-as include:
-	login3.php
-	authenticate3.php
-	prehkeys.php
-	upcscanned.php
-	authenticate.php
-
 additem.php is the bread and butter of IT CORE. addItem inserts the information
 stream for each item scanned, entered or transaction occurence into localtemptrans.
 Each of the above follows the following structure for entry into localtemptrans:
@@ -563,6 +555,13 @@ function addDeposit($quantity, $deposit, $foodstamp) {
 function addtransDiscount() {
 	global $CORE_LOCAL;
 	addItem("DISCOUNT", "Discount", "I", "", "", 0, 1, truncate2(-1 * $CORE_LOCAL->get("transDiscount")), truncate2(-1 * $CORE_LOCAL->get("transDiscount")), 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0);
+}
+
+/**
+  Add cash drop record
+*/
+function addCashDrop($ttl) {
+	addItem("DROP", "Cash Drop", "I", "", "X", 0, 1, truncate2(-1 * $amt), truncate2(-1 * $amt), 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0.00, 0, 'CD');
 }
 
 // ---------------------------- insert stamp in activitytemplog --------------------------------

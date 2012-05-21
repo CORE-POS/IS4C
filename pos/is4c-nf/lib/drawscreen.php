@@ -25,11 +25,13 @@ $CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
 if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
 
 if (!function_exists("rePoll")) include($CORE_PATH."lib/lib.php");
+if (!class_exists("FooterBox")) include($CORE_PATH."lib/FooterBoxes/FooterBox.php");
 if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
 
 /**
   @file
   @brief Functions for drawing display elements
+  @deprecated see DisplayLib
 */
 
 /**
@@ -55,7 +57,27 @@ function printfooterb() {
   @return A string of HTML
 */
 function printfooter($readOnly=False) {
-	global $CORE_LOCAL;
+	global $CORE_LOCAL,$CORE_PATH;
+
+	$FOOTER_MODULES = $CORE_LOCAL->get("FooterModules");
+	// use defaults if modules haven't been configured
+	// properly
+	if (!is_array($FOOTER_MODULES) || count($FOOTER_MODULES) != 5){
+		$FOOTER_MODULES = array(
+		'SavedOrCouldHave',
+		'TransPercentDiscount',
+		'MemSales',
+		'EveryoneSales',
+		'MultiTotal'
+		);
+	}
+	
+	$modchain = array();
+	foreach($FOOTER_MODULES as $MOD){
+		if (!class_exists($MOD))
+			include($CORE_PATH.'lib/FooterBoxes/'.$MOD.'.php');
+		$modchain[] = new $MOD;
+	}
 
 	if (!$readOnly) {
 		$CORE_LOCAL->set("runningTotal",$CORE_LOCAL->get("amtdue"));
@@ -72,6 +94,7 @@ function printfooter($readOnly=False) {
 		$weight = "_ _ _ _";
 	}
 
+	/* 5/11/12
 	if (is_numeric($CORE_LOCAL->get("discounttotal"))) {
 		$dbldiscounttotal = number_format($CORE_LOCAL->get("discounttotal"), 2);
 	}
@@ -80,7 +103,9 @@ function printfooter($readOnly=False) {
 		if (!$readOnly)
 			$CORE_LOCAL->set("runningTotal",0);
 	}
+	*/
 
+	/*
 	if ($CORE_LOCAL->get("runningTotal") == "" && !$readOnly) {
 		$CORE_LOCAL->set("runningTotal",0);
 	}
@@ -98,11 +123,21 @@ function printfooter($readOnly=False) {
 	else {
 		$strpercentdisclabel = $CORE_LOCAL->get("percentDiscount")."% Discount";
 	}
-
-// -----------------------------------------------------------------------------------------------
+	*/
 
 	$ret = "<table>";
 	$ret .= "<tr class=\"heading\">";
+	$label = $modchain[0]->header_content();
+	$ret .= sprintf('<td class="first" style="%s">%s</td>',$modchain[0]->header_css,$label);
+	$label = $modchain[1]->header_content();
+	$ret .= sprintf('<td class="reg" style="%s">%s</td>',$modchain[1]->header_css,$label);
+	$label = $modchain[2]->header_content();
+	$ret .= sprintf('<td class="reg" style="%s">%s</td>',$modchain[2]->header_css,$label);
+	$label = $modchain[3]->header_content();
+	$ret .= sprintf('<td class="reg" style="%s">%s</td>',$modchain[3]->header_css,$label);
+	$label = $modchain[4]->header_content();
+	$ret .= sprintf('<td class="total" style="%s">%s</td>',$modchain[4]->header_css,$label);
+	/* 5/11/12
 	$ret .= "<td class=\"first\">$labelyousaved</td>";
 	$ret .= "<td class=\"reg\">$strpercentdisclabel</td>";
 	$ret .= "<td class=\"reg\">Mbr Special</td>";
@@ -120,9 +155,11 @@ function printfooter($readOnly=False) {
 	else {
 		$ret .= "<td class=\"total\">Total</td>";
 	}
+	*/
 	$ret .= "</tr>";
 
 	$special = $CORE_LOCAL->get("memSpecial") + $CORE_LOCAL->get("staffSpecial");
+	$dbldiscounttotal = number_format($CORE_LOCAL->get("discounttotal"), 2);
 	if ($CORE_LOCAL->get("isMember") == 1) {
 		$dblyousaved = number_format( $CORE_LOCAL->get("transDiscount") + $dbldiscounttotal + $special + $CORE_LOCAL->get("memCouponTTL"), 2);
 		if (!$readOnly){
@@ -145,17 +182,19 @@ function printfooter($readOnly=False) {
 		}
 		$dblyousaved = $CORE_LOCAL->get("yousaved");
 	}
+
+	/* 5/11/12
+	$strperdiscount = "n/a";
 	if ($CORE_LOCAL->get("percentDiscount") != 0 || $CORE_LOCAL->get("memCouponTTL") > 0) {
 		$strperdiscount = number_format($CORE_LOCAL->get("transDiscount") + $CORE_LOCAL->get("memCouponTTL"), 2);
 	}
-	else {
-		$strperdiscount = "n/a";
-	}
+
+	$strmemSpecial = "n/a";
 	if ($CORE_LOCAL->get("isMember") == 1) {
 		$strmemSpecial = number_format($CORE_LOCAL->get("memSpecial"), 2);
-	} else {
-		$strmemSpecial = "n/a";
 	}
+	*/
+
 	if (!$readOnly){
 		if ($CORE_LOCAL->get("End") == 1) {
 			rePoll();
@@ -174,9 +213,20 @@ function printfooter($readOnly=False) {
 	}
 
 	$ret .= "<tr class=\"values\">";
+	$box = $modchain[0]->display_content();
+	$ret .= sprintf('<td class="first" style="%s">%s</td>',$modchain[0]->display_css,$box);
+	$box = $modchain[1]->display_content();
+	$ret .= sprintf('<td class="reg" style="%s">%s</td>',$modchain[1]->display_css,$box);
+	$box = $modchain[2]->display_content();
+	$ret .= sprintf('<td class="reg" style="%s">%s</td>',$modchain[2]->display_css,$box);
+	$box = $modchain[3]->display_content();
+	$ret .= sprintf('<td class="reg" style="%s">%s</td>',$modchain[3]->display_css,$box);
+	$box = $modchain[4]->display_content();
+	$ret .= sprintf('<td class="total" style="%s">%s</td>',$modchain[4]->display_css,$box);
+	/* 5/11/12
 	$ret .= "<td class=\"first\">".number_format($dblyousaved,2)."</td>";
-	$ret .= "<td class=\"reg\">".number_format((double)$strperdiscount,2)."</td>";
-	$ret .= "<td class=\"reg\">".number_format((double)$strmemSpecial,2)."</td>";
+	$ret .= "<td class=\"reg\">".$strperdiscount."</td>";
+	$ret .= "<td class=\"reg\">".$strmemSpecial."</td>";
 	$ret .= "<td class=\"reg\">".number_format($dbldiscounttotal,2)."</td>";
 	if ($CORE_LOCAL->get("ttlflag") == 1 && $CORE_LOCAL->get("End") != 1) {
 		if ($CORE_LOCAL->get("fntlflag") == 1) {
@@ -191,6 +241,7 @@ function printfooter($readOnly=False) {
 	else {
 		$ret .= "<td class=\"total\">".number_format($CORE_LOCAL->get("runningTotal"), 2)."</td>";
 	}
+	*/
 	$ret .= "</tr>";
 	$ret .= "</table>";
 

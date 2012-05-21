@@ -21,18 +21,6 @@
 
 *********************************************************************************/
 
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
-
-if (!class_exists("SpecialUPC")) include($CORE_PATH."lib/Scanning/SpecialUPC.php");
-if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
-
-if (!function_exists('pDataConnect')) include($CORE_PATH."lib/connect.php");
-if (!function_exists('boxMsg')) include($CORE_PATH."lib/drawscreen.php");
-if (!function_exists('lastpage')) include($CORE_PATH."lib/listitems.php");
-if (!function_exists('truncate2')) include($CORE_PATH."lib/lib.php");
-if (!function_exists('addcoupon')) include($CORE_PATH."lib/additem.php");
-
 class DatabarCoupon extends SpecialUPC {
 
 	function is_special($upc){
@@ -197,7 +185,7 @@ class DatabarCoupon extends SpecialUPC {
 
 			$tstamp = mktime(23,59,59,$m,$d,$y);
 			if ($tstamp < time()){
-				$json['output'] = boxMsg("Coupon expired $m/$d/$y");
+				$json['output'] = DisplayLib::boxMsg("Coupon expired $m/$d/$y");
 				return $json;
 			}
 		}
@@ -214,7 +202,7 @@ class DatabarCoupon extends SpecialUPC {
 
 			$tstamp = mktime(0,0,0,$m,$d,$y);
 			if ($tstamp > time()){
-				$json['output'] = boxMsg("Coupon not valid until $m/$d/$y");
+				$json['output'] = DisplayLib::boxMsg("Coupon not valid until $m/$d/$y");
 				return $json;
 			}
 		}
@@ -315,7 +303,7 @@ class DatabarCoupon extends SpecialUPC {
 				return $json;
 			break;
 		default:
-			$json['output'] = boxMsg("Malformed coupon");
+			$json['output'] = DisplayLib::boxMsg("Malformed coupon");
 			return $json;
 		}
 
@@ -333,19 +321,19 @@ class DatabarCoupon extends SpecialUPC {
 		switch($misc['value_code']){
 		case '0': // value in cents
 		case '6':
-			$value = truncate2($val_arr['value'] / 100.00);
+			$value = MiscLib::truncate2($val_arr['value'] / 100.00);
 			break;
 		case '1': // free item
 			$value = $val_arr['price'];
 			break;
 		case '2': // multiple free items
-			$value = truncate2($val_arr['price'] * $val_arr['value']);
+			$value = MiscLib::truncate2($val_arr['price'] * $val_arr['value']);
 			break;
 		case '5': // percent off
-			$value = truncate2($val_arr['price'] * ($val_arr['value']/100.00));
+			$value = MiscLib::truncate2($val_arr['price'] * ($val_arr['value']/100.00));
 			break;
 		default:
-			$json['output'] = boxMsg("Error: bad coupon");
+			$json['output'] = DisplayLib::boxMsg("Error: bad coupon");
 			return $json;
 		}
 
@@ -378,8 +366,8 @@ class DatabarCoupon extends SpecialUPC {
 			$offer = substr($offer,0,$remaining);
 		$coupon_upc = $upc_start.$offer;
 
-		addcoupon($coupon_upc, $row['department'], -1*$value);
-		$json['output'] = lastpage();
+		TransRecord::addcoupon($coupon_upc, $row['department'], -1*$value);
+		$json['output'] = DisplayLib::lastpage();
 	
 		return $json;
 	}
@@ -397,7 +385,7 @@ class DatabarCoupon extends SpecialUPC {
 	   return true/false based on whether requirement is met
 	*/
 	function validateRequirement(&$req, &$json){
-		$db = tDataConnect();
+		$db = Database::tDataConnect();
 
 		/* simple case first; just wants total transaction value 
 		   no company prefixing
@@ -406,15 +394,15 @@ class DatabarCoupon extends SpecialUPC {
 			$q = "SELECT SUM(total) FROM localtemptrans WHERE
 				trans_type IN ('I','D','M')";
 			$r = $db->query($q);
-			$ttl_required = truncate2($req['value'] / 100.00);
+			$ttl_required = MiscLib::truncate2($req['value'] / 100.00);
 			if ($db->num_rows($r) == 0){
-				$json['output'] = boxMsg("Coupon requires transaction of at least \$$ttl_required");
+				$json['output'] = DisplayLib::boxMsg("Coupon requires transaction of at least \$$ttl_required");
 				return false;
 			}
 
 			$w = $dbc->fetch_row($r);
 			if ($w[0] < $ttl_required){
-				$json['output'] = boxMsg("Coupon requires transaction of at least \$$ttl_required");
+				$json['output'] = DisplayLib::boxMsg("Coupon requires transaction of at least \$$ttl_required");
 				return false;
 			}
 			return true;
@@ -432,7 +420,7 @@ class DatabarCoupon extends SpecialUPC {
 		$result = $db->query($query);
 
 		if ($db->num_rows($result) <= 0){
-			$json['output'] = boxMsg("Coupon requirements not met");
+			$json['output'] = DisplayLib::boxMsg("Coupon requirements not met");
 			return $false;
 		}
 		$row = $db->fetch_row($result);
@@ -446,9 +434,9 @@ class DatabarCoupon extends SpecialUPC {
 			if ($available_qty < $req['value']){
 				// Coupon requirement not met
 				if ($row['couponqtty'] > 0)
-					$json['output'] = boxMsg("Coupon already applied");
+					$json['output'] = DisplayLib::boxMsg("Coupon already applied");
 				else
-					$json['output'] = boxMsg("Coupon requires ".$req['value']." items");
+					$json['output'] = DisplayLib::boxMsg("Coupon requires ".$req['value']." items");
 				return false;
 			}
 			break;
@@ -457,17 +445,17 @@ class DatabarCoupon extends SpecialUPC {
 			if ($available_ttl < $req['value']){
 				// Coupon requirement not met
 				if ($row['couponqtty'] > 0)
-					$json['output'] = boxMsg("Coupon already applied");
+					$json['output'] = DisplayLib::boxMsg("Coupon already applied");
 				else
-					$json['output'] = boxMsg("Coupon requires ".$req['value']." items");
+					$json['output'] = DisplayLib::boxMsg("Coupon requires ".$req['value']." items");
 				return false;
 			}
 			break;
 		case '9':
-			$json['output'] = boxMsg("Tender coupon manually");
+			$json['output'] = DisplayLib::boxMsg("Tender coupon manually");
 			return false;
 		default:
-			$json['output'] = boxMsg("Error: bad coupon");
+			$json['output'] = DisplayLib::boxMsg("Error: bad coupon");
 			return false; 
 		}
 

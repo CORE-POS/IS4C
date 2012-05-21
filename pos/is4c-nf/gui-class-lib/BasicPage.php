@@ -1,4 +1,4 @@
-<?PHP
+<?php
 /*******************************************************************************
 
     Copyright 2007,2010 Whole Foods Co-op
@@ -34,14 +34,14 @@
 
  */
 
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
-
-if (!function_exists('scaledisplaymsg')) include($CORE_PATH.'lib/drawscreen.php');
-
 class BasicPage {
 
 	var $onload_commands;
+	/**
+	  Relative URL for POS root directory
+	  Pages often need this.
+	*/
+	var $page_url;
 
 	/**
 	  Constructor
@@ -53,6 +53,7 @@ class BasicPage {
 	*/
 	function BasicPage(){
 		$this->onload_commands = "";
+		$this->page_url = MiscLib::base_url();
 		if ($this->preprocess()){
 			ob_start();
 			$this->print_page();
@@ -109,16 +110,16 @@ class BasicPage {
 	  are all run on page load.
 	*/
 	function print_page(){
-		global $CORE_PATH;
+		$my_url = $this->page_url;
 		?>
 		<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 		<html>
 		<?php
 		echo "<head>";
 		echo "<link rel=\"stylesheet\" type=\"text/css\"
-		    href=\"{$CORE_PATH}/pos.css\">";
+		    href=\"{$my_url}/pos.css\">";
 		echo "<script type=\"text/javascript\"
-			src=\"{$CORE_PATH}/js/jquery.js\"></script>";
+			src=\"{$my_url}/js/jquery.js\"></script>";
 		$this->head_content();
 		echo "</head>";
 		echo "<body>";
@@ -163,7 +164,8 @@ class BasicPage {
 	  other attributes
 	*/
 	function input_header($action=""){
-		global $CORE_LOCAL,$CORE_PATH;
+		global $CORE_LOCAL;
+		$my_url = $this->page_url;
 		if (empty($action))
 			$action = "action=\"".$_SERVER['PHP_SELF']."\"";
 
@@ -216,21 +218,21 @@ class BasicPage {
 			<?php
 			if ($CORE_LOCAL->get("training") == 1) {
 				echo "<span class=\"text\">training </span>"
-				     ."<img src='{$CORE_PATH}graphics/BLUEDOT.GIF'>&nbsp;&nbsp;&nbsp;";
+				     ."<img src='{$my_url}graphics/BLUEDOT.GIF'>&nbsp;&nbsp;&nbsp;";
 			}
 			elseif ($CORE_LOCAL->get("standalone") == 0) {
-				echo "<img src='{$CORE_PATH}graphics/GREENDOT.GIF'>&nbsp;&nbsp;&nbsp;";
+				echo "<img src='{$my_url}graphics/GREENDOT.GIF'>&nbsp;&nbsp;&nbsp;";
 			}
 			else {
 				echo "<span class=\"text\">stand alone</span>"
-				     ."<img src='{$CORE_PATH}graphics/REDDOT.GIF'>&nbsp;&nbsp;&nbsp;";
+				     ."<img src='{$my_url}graphics/REDDOT.GIF'>&nbsp;&nbsp;&nbsp;";
 			}
 			if($CORE_LOCAL->get("CCintegrate") == 1 && 
 				$CORE_LOCAL->get("ccLive") == 1 && $CORE_LOCAL->get("training") == 0){
-			   echo "<img src='{$CORE_PATH}graphics/ccIn.gif'>&nbsp;";
+			   echo "<img src='{$my_url}graphics/ccIn.gif'>&nbsp;";
 			}elseif($CORE_LOCAL->get("CCintegrate") == 1 && 
 				($CORE_LOCAL->get("training") == 1 || $CORE_LOCAL->get("ccLive") == 0)){
-			   echo "<img src='{$CORE_PATH}graphics/ccTest.gif'>&nbsp;";
+			   echo "<img src='{$my_url}graphics/ccTest.gif'>&nbsp;";
 			}
 
 			echo "<span id=\"timeSpan\" class=\"time\">".$time."</span>\n";
@@ -253,6 +255,7 @@ class BasicPage {
 	*/
 	function noinput_header(){
 		global $CORE_LOCAL;
+		$my_url = $this->page_url;
 		$this->add_onload_command("betterDate();\n");
 		
 		$time = strftime("%m/%d/%y %I:%M %p", time());
@@ -293,21 +296,21 @@ class BasicPage {
 			<?php	
 			if ($CORE_LOCAL->get("training") == 1) {
 				echo "<span class=\"text\">training </span>"
-				     ."<img src='/graphics/BLUEDOT.GIF'>&nbsp;&nbsp;&nbsp;";
+				     ."<img src='{$my_url}graphics/BLUEDOT.GIF'>&nbsp;&nbsp;&nbsp;";
 			}
 			elseif ($CORE_LOCAL->get("standalone") == 0) {
-				echo "<img src='/graphics/GREENDOT.GIF'>&nbsp;&nbsp;&nbsp;";
+				echo "<img src='{$my_url}graphics/GREENDOT.GIF'>&nbsp;&nbsp;&nbsp;";
 			}
 			else {
 				echo "<span class=\"text\">stand alone</span>"
-				     ."<img src='/graphics/REDDOT.GIF'>&nbsp;&nbsp;&nbsp;";
+				     ."<img src='{$my_url}graphics/REDDOT.GIF'>&nbsp;&nbsp;&nbsp;";
 			}
 			if($CORE_LOCAL->get("CCintegrate") == 1 && 
 				$CORE_LOCAL->get("ccLive") == 1 && $CORE_LOCAL->get("training") == 0){
 			   echo "<img src='/graphics/ccIn.gif'>&nbsp;";
 			}elseif($CORE_LOCAL->get("CCintegrate") == 1 && 
 				($CORE_LOCAL->get("training") == 1 || $CORE_LOCAL->get("ccLive") == 0)){
-			   echo "<img src='/graphics/ccTest.gif'>&nbsp;";
+			   echo "<img src='{$my_url}graphics/ccTest.gif'>&nbsp;";
 			}
 
 			echo "<span id=\"timeSpan\" class=\"time\">".$time."</span>\n";
@@ -330,7 +333,7 @@ class BasicPage {
 			weight
 			</div>
 			<div id="scaleBottom">
-			<?php echo scaledisplaymsg(); ?>	
+			<?php echo DisplayLib::scaledisplaymsg(); ?>	
 			</div>
 		</div>
 		<?php
@@ -344,13 +347,12 @@ class BasicPage {
 	  input and activates it on page load.
 	*/
 	function scanner_scale_polling($include_scans=True){
-		global $CORE_PATH;
 		?>
 		<script type="text/javascript"
-			src="<?php echo $CORE_PATH; ?>js/poll-scale.js">
+			src="<?php echo $this->page_url; ?>js/poll-scale.js">
 		</script>
 		<?php
-		$this->add_onload_command("pollScale('$CORE_PATH');\n");
+		$this->add_onload_command("pollScale('".$this->page_url."');\n");
 	}
 
 	/**
@@ -359,24 +361,48 @@ class BasicPage {
 	*/
 	function footer(){
 		echo '<div id="footer">';
-		printfooter();
+		DisplayLib::printfooter();
 		echo '</div>';
+	}
+
+	/**
+	  Go to a different page
+	  @param $url the new page URL
+
+	  Use this function instead of manual redirects
+	  to allow debug output.
+	*/
+	function change_page($url){
+		global $CORE_LOCAL;
+		if ($CORE_LOCAL->get("Debug_Redirects") == 1){
+			$stack = debug_backtrace();
+			printf('Follow redirect to <a href="%s">%s</a>',$url,$url);
+			echo '<hr />Stack:';
+			foreach($stack as $s){
+				echo '<ul><li>';
+				if(!empty($s['class'])) echo $s['class'].'::';
+				echo $s['function'].'()';
+				echo '<li>Line '.$s['line'].', '.$s['file'];
+			}
+			foreach($stack as $s) echo '</ul>';
+		}
+		else
+			header("Location: ".$url);
 	}
 }
 
 /**
    @example HelloWorld.php
 
-  The first two line snippet is path detection. 
-  Every code file should start with these lines.
-
-  The next two lines demonstrate standard include format.
-  Check whether the needed class/function already exists
-  and use the detected path $CORE_PATH.
+  AutoLoader.php should be included in any top level
+  scripts. If the URL in the browser address bar
+  is your script, it's a top level script. No other
+  includes are necessary. AutoLoader will include
+  other classes as needed. 
 
   body_content() draws the page. Methods from BasicPage
   provide the standard input box at the top and footer
-  at the bottom. boxMsg() is a utility function that
+  at the bottom. DisplayLib::boxMsg() is a utility function that
   puts the 'Hello World' message in a standard message
   box.
 

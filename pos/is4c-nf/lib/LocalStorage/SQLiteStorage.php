@@ -47,6 +47,7 @@ class SQLiteStorage extends LocalStorage {
 			else
 				sqlite_query("UPDATE is4c_local SET valstr='$val' WHERE keystr='$key'",$this->db);
 		}
+		$this->debug();
 	}
 
 	function conn(){

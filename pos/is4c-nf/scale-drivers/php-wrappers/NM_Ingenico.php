@@ -20,21 +20,14 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
-
-if (!isset($CORE_LOCAL)) include($CORE_PATH.'lib/LocalStorage/conf.php');
-if (!class_exists("ScaleDriverWrapper")) include($CORE_PATH."scale-drivers/php-wrappers/ScaleDriverWrapper.php");
-if (!function_exists('array_to_json')) include($CORE_PATH.'lib/array_to_json.php');
-if (!function_exists('udpSend')) include($CORE_PATH.'lib/udpSend.php');
-
 class NM_Ingenico extends ScaleDriverWrapper {
 
 	function ReadFromScale(){
-		global $CORE_LOCAL,$CORE_PATH;
+		global $CORE_LOCAL;
+		$rel = MiscLib::base_url();
 
 		$input = "";
-		$readdir = $CORE_PATH.'scale-drivers/drivers/NewMagellan/cc-output';
+		$readdir = $rel.'scale-drivers/drivers/NewMagellan/cc-output';
 		$dh  = opendir($readdir);
 
 		while (false !== ($fn = readdir($dh))) {
@@ -50,24 +43,40 @@ class NM_Ingenico extends ScaleDriverWrapper {
 		$output = array();
 		if (!empty($input)) $output['scans'] = $input;
 
-		if (!empty($output)) echo array_to_json($output);
+		if (!empty($output)) echo JsonLib::array_to_json($output);
 		else echo "{}";
+	}
+
+	function poll($msg){
+		$res = UdpConn::udpPoke($msg);
+		return $res;
+	}
+
+	function getpath(){
+		$rel = MiscLib::base_url();
+		return $rel.'scale-drivers/drivers/NewMagellan/';
 	}
 
 	/* just wraps UDP send because commands 
 	   ARE case-sensitive on the c# side */
 	function WriteToScale($str){
-		$str = strtolower($str);
+
+		if (strlen($str) > 8 && substr($str,0,8)=="display:"){}
+		else // don't change case on display messages
+			$str = strtolower($str);
+
 		if (substr($str,0,6) == "total:" && strlen($str) > 6)
-			udpSend($str);
+			UdpConn::udpSend($str);
 		elseif (substr($str,0,11) == "resettotal:" && strlen($str) > 11)
-			udpSend($str);
+			UdpConn::udpSend($str);
 		elseif (substr($str,0,9) == "approval:" && strlen($str) > 9)
-			udpSend($str);
+			UdpConn::udpSend($str);
+		elseif (substr($str,0,8) == "display:" && strlen($str) > 8)
+			UdpConn::udpSend($str);
 		elseif ($str == "reset")
-			udpSend($str);
+			UdpConn::udpSend($str);
 		elseif ($str == "sig")
-			udpSend($str);
+			UdpConn::udpSend($str);
 	}
 }
 

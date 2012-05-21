@@ -21,26 +21,19 @@
 
 *********************************************************************************/
 
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
-
 ini_set('display_errors','1');
 
-if (!class_exists("BasicPage")) include_once($CORE_PATH."gui-class-lib/BasicPage.php");
-if(!function_exists("boxMsg")) include($CORE_PATH."lib/drawscreen.php");
-if (!function_exists("errorBeep")) include($CORE_PATH."lib/lib.php");
-if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
+include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class boxMsg2 extends BasicPage {
 
 	function head_content(){
-		global $CORE_PATH;
 		?>
 		<script type="text/javascript">
 		function submitWrapper(){
 			var str = $('#reginput').val();
 			$.ajax({
-				url: '<?php echo $CORE_PATH; ?>ajax-callbacks/ajax-decision.php',
+				url: '<?php echo $this->page_url; ?>ajax-callbacks/ajax-decision.php',
 				type: 'get',
 				data: 'input='+str,
 				dataType: 'json',
@@ -48,7 +41,7 @@ class boxMsg2 extends BasicPage {
 				success: function(data){
 					if (data.endorse){
 						$.ajax({
-							url: '<?php echo $CORE_PATH; ?>ajax-callbacks/ajax-endorse.php',
+							url: '<?php echo $this->page_url; ?>ajax-callbacks/ajax-endorse.php',
 							type: 'get',
 							cache: false,
 							success: function(){
@@ -74,15 +67,15 @@ class boxMsg2 extends BasicPage {
 		<div class="baseHeight">
 
 		<?php
-		echo boxMsg($CORE_LOCAL->get("boxMsg"));
+		echo DisplayLib::boxMsg($CORE_LOCAL->get("boxMsg"));
 		echo "</div>";
 		echo "<div id=\"footer\">";
-		echo printfooter();
+		echo DisplayLib::printfooter();
 		echo "</div>";
 		$CORE_LOCAL->set("boxMsg",'');
 		$CORE_LOCAL->set("msgrepeat",2);
 		if ($CORE_LOCAL->get("warned") == 0)
-		errorBeep();
+		MiscLib::errorBeep();
 	} // END body_content() FUNCTION
 }
 

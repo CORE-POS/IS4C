@@ -29,8 +29,8 @@ if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
 /**
   @file
   @brief Functions for opening the till drawer
+  @deprecated See ReceiptLib
 */
-
 
 /**
   Check whether drawer should open on this transaction

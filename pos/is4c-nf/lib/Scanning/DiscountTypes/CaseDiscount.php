@@ -20,13 +20,6 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
-
-if (!class_exists('DiscountType')) include($CORE_PATH.'lib/Scanning/DiscountType.php');
-if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
-
-if (!function_exists('addcdnotify')) include($CORE_PATH.'lib/additem.php');
 
 class CaseDiscount extends DiscountType {
 
@@ -56,8 +49,7 @@ class CaseDiscount extends DiscountType {
 	}
 
 	function addDiscountLine(){
-		global $CORE_LOCAL;
-		addcdnotify();
+		TransRecord::addcdnotify();
 	}
 
 	function isSale(){

@@ -1,10 +1,6 @@
 <?php
 
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
-
-if (!class_exists('BasicPage')) include($CORE_PATH.'gui-class-lib/BasicPge.php');
-if (!function_exists('boxMsg')) include($CORE_PATH.'lib/drawscreen.php');
+include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class HelloWorld extends BasicPage {
 
@@ -12,7 +8,7 @@ class HelloWorld extends BasicPage {
 		$this->input_header();
 
 		echo '<div class="baseHeight">';
-		echo boxMsg('<b>Hello World!</b><br />
+		echo DisplayLib::boxMsg('<b>Hello World!</b><br />
 			Enter anything to continue');
 		echo '</div>';
 
@@ -20,10 +16,8 @@ class HelloWorld extends BasicPage {
 	}
 
 	function preprocess(){
-		global $CORE_PATH;
-
 		if (isset($_REQUEST['reginput'])){
-			header("Location: {$CORE_PATH}gui-modules/pos2.php");
+			header("Location: {$this->page_url}gui-modules/pos2.php");
 			return False;
 		}
 

@@ -1,5 +1,7 @@
 <?php
-include('../ini.php');
+include(realpath(dirname(__FILE__).'/../lib/AutoLoader.php'));
+AutoLoader::LoadMap();
+include(realpath(dirname(__FILE__).'/../ini.php'));
 include('util.php');
 ?>
 <html>
@@ -19,6 +21,8 @@ body {
 Scanning Options
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <a href="security.php">Security</a>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<a href="debug.php">Debug</a>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <a href="extra_data.php">Sample Data</a>
 <form action=scanning.php method=post>

@@ -21,17 +21,12 @@
 
 *********************************************************************************/
 
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
-
-if (!class_exists("PaycardProcessPage")) include_once($CORE_PATH."gui-class-lib/PaycardProcessPage.php");
-if (!function_exists("paycard_reset")) include_once($CORE_PATH."cc-modules/lib/paycardLib.php");
-if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
+include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class paycardboxMsgBalance extends PaycardProcessPage {
 
 	function preprocess(){
-		global $CORE_LOCAL,$CORE_PATH;
+		global $CORE_LOCAL;
 		// check for posts before drawing anything, so we can redirect
 		if( isset($_REQUEST['reginput'])) {
 			$input = strtoupper(trim($_REQUEST['reginput']));
@@ -41,8 +36,8 @@ class paycardboxMsgBalance extends PaycardProcessPage {
 				$CORE_LOCAL->set("toggletax",0);
 				$CORE_LOCAL->set("endorseType","");
 				$CORE_LOCAL->set("togglefoodstamp",0);
-				paycard_reset();
-				header("Location: {$CORE_PATH}gui-modules/pos2.php");
+				PaycardLib::paycard_reset();
+				$this->change_page($this->page_url."gui-modules/pos2.php");
 				return False;
 			}
 	
@@ -61,7 +56,7 @@ class paycardboxMsgBalance extends PaycardProcessPage {
 		?>
 		<div class="baseHeight">
 		<?php
-		echo paycard_msgBox(PAYCARD_TYPE_GIFT,"Check Card Balance?",
+		echo PaycardLib::paycard_msgBox(PaycardLib::PAYCARD_TYPE_GIFT,"Check Card Balance?",
 			"If you proceed, you <b>cannot void</b> any previous action on this card!",
 			"[enter] to continue<br>[clear] to cancel");
 		$CORE_LOCAL->set("msgrepeat",2);
