@@ -523,12 +523,12 @@ function tender($right, $strl) {
 		}
 	}
 
-	// if ($tender_code == "TV")
-	// 	addItem($tender_upc, $tender_desc, "T", "CK", "", 0, 0, $unit_price, $tendered, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
-	// elseif ($tender_code == "RC"){
-	// 	addItem($tender_upc, $tender_desc, "T", "CK", "", 0, 0, $unit_price, $tendered, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
-	// }
-	// else
+	if ($tender_code == "TV")
+		addItem($tender_upc, $tender_desc, "T", "CK", "", 0, 0, $unit_price, $tendered, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+	elseif ($tender_code == "RC"){
+		addItem($tender_upc, $tender_desc, "T", "CK", "", 0, 0, $unit_price, $tendered, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+	}
+	else
 		addItem($tender_upc, $tender_desc, "T", $tender_code, "", 0, 0, $unit_price, $tendered, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 	$CORE_LOCAL->set("msgrepeat",0);
 	$CORE_LOCAL->set("TenderType",$tender_code);			/***added by apbw 2/1/05 SCR ***/
