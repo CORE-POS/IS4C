@@ -43,7 +43,36 @@ class LocalStorage {
 	  underlying mechanism can store.
 	*/
 	function set($key,$val){
+		debug($key);
+	}
 
+	/**
+	  Log state changes if debugging is enabled
+	  
+	  Call this from your set method
+	*/
+	function debug(){
+		if($this->get("Debug_CoreLocal") == 1){
+			$stack = debug_backtrace();
+			$log = realpath(dirname(__FILE__).'/../../log/core_local.log');
+			$fp = @fopen($log,'a');
+			if ($fp){
+				foreach($stack as $s){
+					if ($s['function']=='set'&&$s['class']==get_class($this)){
+						ob_start();
+						echo date('r').': Changed value for '.$s['args'][0]."\n";
+						echo 'New value: ';
+						print_r($s['args'][1]);
+						echo "\n"; 
+						echo 'Line '.$s['line'].', '.$s['file']."\n\n";
+						$out = ob_get_clean();
+						fwrite($fp,$out);
+						break;	
+					}
+				}
+				fclose($fp);
+			}
+		}
 	}
 }
 

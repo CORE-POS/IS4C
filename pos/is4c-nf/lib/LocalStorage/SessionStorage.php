@@ -21,9 +21,7 @@
 
 *********************************************************************************/
 
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-
-if (!class_exists("LocalStorage")) include_once($CORE_PATH."lib/LocalStorage/LocalStorage.php");
+if (!class_exists("LocalStorage")) include_once(realpath(dirname(__FILE__).'/LocalStorage.php'));
 
 /**
   @class SessionStorage
@@ -48,6 +46,7 @@ class SessionStorage extends LocalStorage {
 
 	function set($key,$val){
 		$_SESSION["$key"] = $val;
+		$this->debug($key,$val);
 	}
 }
 

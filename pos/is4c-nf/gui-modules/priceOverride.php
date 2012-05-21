@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <?php
 /*******************************************************************************
 
@@ -21,13 +22,7 @@
 
 *********************************************************************************/
 
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
-
-if (!class_exists("NoInputPage")) include_once($CORE_PATH."gui-class-lib/NoInputPage.php");
-if (!function_exists("tDataConnect")) include_once($CORE_PATH."lib/connect.php");
-if (!function_exists("tDataConnect")) include_once($CORE_PATH."lib/additem.php");
-if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
+include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class PriceOverride extends NoInputPage {
 
@@ -35,17 +30,17 @@ class PriceOverride extends NoInputPage {
 	var $price;
 
 	function preprocess(){
-		global $CORE_LOCAL, $CORE_PATH;
+		global $CORE_LOCAL;
 		$line_id = $CORE_LOCAL->get("currentid");
-		$db = tDataConnect();
-
+		$db = Database::tDataConnect();
+		
 		$q = "SELECT description,total FROM localtemptrans
 			WHERE trans_type IN ('I','D') AND trans_status = ''
 			AND trans_id=".((int)$line_id);
 		$r = $db->query($q);
 		if ($db->num_rows($r)==0){
 			// current record cannot be repriced
-			header("Location: {$CORE_PATH}gui-modules/pos2.php");
+			$this->change_page($this->page_url."gui-modules/pos2.php");
 			return False;
 		}
 		$w = $db->fetch_row($r);
@@ -57,7 +52,7 @@ class PriceOverride extends NoInputPage {
 
 			if ($input == "CL" && $this->price != '$0.00'){
 				// override canceled; go home
-				header("Location: {$CORE_PATH}gui-modules/pos2.php");
+				$this->change_page($this->page_url."gui-modules/pos2.php");
 				return False;
 			}
 			else if (is_numeric($input) && $input != 0){
@@ -71,19 +66,19 @@ class PriceOverride extends NoInputPage {
 				}
 				$ttl = ((int)$dollars) + ((int)$cents / 100.0);
 				$ttl = number_format($ttl,2);
-
+				
 				$q = sprintf("UPDATE localtemptrans SET total=%.2f, charflag='PO'
 					WHERE trans_id=%d",$ttl,$line_id);
 				$r = $db->query($q);	
 
-				header("Location: {$CORE_PATH}gui-modules/pos2.php");
+				$this->change_page($this->page_url."gui-modules/pos2.php");
 				return False;
 			}
 		}
 
 		return True;
 	}
-
+	
 	function body_content() {
 		global $CORE_LOCAL;
 		?>

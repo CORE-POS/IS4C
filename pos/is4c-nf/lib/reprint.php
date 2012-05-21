@@ -30,10 +30,15 @@ if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= 
 
 if (!function_exists("pDataConnect")) include($CORE_PATH."lib/connect.php");
 if (!function_exists("writeLine")) include($CORE_PATH."lib/printLib.php");
+if (!class_exists("ESCPOSPrintHandler")) include_once($CORE_PATH."lib/PrintHandlers/ESCPOSPrintHandler.php");
 if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
 
+$PRINT_OBJ;
+
 function reprintReceipt($trans_num=""){
-	global $CORE_LOCAL;
+	global $CORE_LOCAL, $PRINT_OBJ;
+
+	$PRINT_OBJ = new ESCPOSPrintHandler();
 
 	if (strlen($trans_num) >= 1) {
 		$title = chr(27).chr(33).chr(5).centerString("***    R E P R I N T    ***")."\n\n\n";

@@ -1,5 +1,7 @@
 <?php
-include('../ini.php');
+include(realpath(dirname(__FILE__).'/../lib/AutoLoader.php'));
+AutoLoader::LoadMap();
+include(realpath(dirname(__FILE__).'/../ini.php'));
 include('util.php');
 ?>
 <html>
@@ -19,6 +21,8 @@ Additional Configuration
 <a href="scanning.php">Scanning Options</a>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <a href="security.php">Security</a>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<a href="debug.php">Debug</a>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <a href="extra_data.php">Sample Data</a>
 <form action=extra_config.php method=post>
@@ -217,32 +221,59 @@ if ($CORE_LOCAL->get("scaleDriver") != ""){
 	else {
 		include('../scale-drivers/php-wrappers/'.$classname.'.php');
 		$instance = new $classname();
-		$instance->SavePortConfiguration($CORE_LOCAL->get("scalePort"));
-		$abs_path = substr($_SERVER['PATH_TRANSLATED'],0,
+		@$instance->SavePortConfiguration($CORE_LOCAL->get("scalePort"));
+		@$abs_path = substr($_SERVER['PATH_TRANSLATED'],0,
 				strlen($_SERVER['PATH_TRANSLATED'])-strlen('install/extra_config.php')-1);
-		$instance->SaveDirectoryConfiguration($abs_path);
+		@$instance->SaveDirectoryConfiguration($abs_path);
 	}
 }
 ?>
 <hr />
-<?php
-// sanity checks; should be populated by database
-confsave('ckEndorseCount',0);
-confsave('welcomeMsgCount',0);
-confsave('trainingMsgCount',0);
-confsave('farewellMsgCount',0);
-confsave('chargeSlipCount',0);
-confsave('receiptFooterCount',0);
-confsave('receiptHeaderCount',1);
-// first receipt header is required but should be overriden
-// via database
-confsave('receiptHeader1',"''");
-?>
 <b>Alert Bar</b>:<br />
 <?php
 if (isset($_REQUEST['ALERT'])) $CORE_LOCAL->set('alertBar',$_REQUEST['ALERT']);
 printf("<input size=40 type=text name=ALERT value=\"%s\" />",$CORE_LOCAL->get('alertBar'));
 confsave('alertBar',"'".$CORE_LOCAL->get('alertBar')."'");
+?>
+<br />
+<b>Footer Modules</b> (left to right):<br />
+<?php
+$footer_mods = array();
+// get current settings
+$current_mods = $CORE_LOCAL->get("FooterModules");
+// replace w/ form post if needed
+// fill in defaults if missing
+if (isset($_REQUEST['FOOTER_MODS'])) $current_mods = $_REQUEST['FOOTER_MODS'];
+elseif(!is_array($current_mods) || count($current_mods) != 5){
+	$current_mods = array(
+	'SavedOrCouldHave',
+	'TransPercentDiscount',
+	'MemSales',
+	'EveryoneSales',
+	'MultiTotal'
+	);
+}
+$dh = opendir('../lib/FooterBoxes/');
+while(False !== ($f = readdir($dh))){
+	if ($f == "." || $f == "..")
+		continue;
+	if (substr($f,-4) == ".php"){
+		$footer_mods[] = rtrim($f,".php");
+	}
+}
+for($i=0;$i<5;$i++){
+	echo '<select name="FOOTER_MODS[]">';
+	foreach($footer_mods as $fm){
+		printf('<option %s>%s</option>',
+			($current_mods[$i]==$fm?'selected':''),$fm);
+	}
+	echo '</select><br />';
+}
+$saveStr = "array(";
+foreach($current_mods as $m)
+	$saveStr .= "'".$m."',";
+$saveStr = rtrim($saveStr,",").")";
+confsave('FooterModules',$saveStr);
 ?>
 <hr />
 <b>Enable onscreen keys</b>: <select name=SCREENKEYS>
@@ -279,6 +310,63 @@ confsave('CustomerDisplay',$CORE_LOCAL->get('CustomerDisplay'));
 Touchscreen keys and menus really don't need to appear on
 the customer-facing display. Experimental feature where one
 window always shows the item listing. Very alpha.
+<hr />
+<b>Modular Tenders</b>: <select name=MODTENDERS>
+<?php
+if(isset($_REQUEST['MODTENDERS'])) $CORE_LOCAL->set('ModularTenders',$_REQUEST['MODTENDERS']);
+if ($CORE_LOCAL->get('ModularTenders')){
+	echo "<option value=1 selected>Yes</option>";
+	echo "<option value=0 >No</option>";
+}
+else {
+	echo "<option value=1 >Yes</option>";
+	echo "<option value=0 selected>No</option>";
+}
+confsave('ModularTenders',"'".$CORE_LOCAL->get('ModularTenders')."'");
+?>
+</select><br />
+<?php
+$settings = $CORE_LOCAL->get("TenderMap");
+if (!is_array($settings)) $settings = array();
+if (isset($_REQUEST['TenderMapping'])){
+	$saveStr = "array(";
+	$settings = array();
+	foreach($_REQUEST['TenderMapping'] as $tm){
+		if($tm=="") continue;
+		list($code,$mod) = explode(":",$tm);
+		$settings[$code] = $mod;
+		$saveStr .= "'".$code."'=>'".$mod."',";
+	}
+	$saveStr = rtrim($saveStr,",").")";
+	confsave('TenderMap',$saveStr);
+}
+$mods = array();
+$dh = opendir('../lib/Tenders/');
+while(False !== ($f = readdir($dh))){
+	if ($f == "." || $f == ".." || $f == "TenderModule.php")
+		continue;
+	if (substr($f,-4) == ".php")
+		$mods[] = rtrim($f,".php");
+}
+$db = Database::pDataConnect();
+$res = $db->query("SELECT TenderCode, TenderName FROM tenders ORDER BY TenderName");
+?>
+<table cellspacing="0" cellpadding="4" border="1">
+<?php
+while($row = $db->fetch_row($res)){
+	printf('<tr><td>%s (%s)</td>',$row['TenderName'],$row['TenderCode']);
+	echo '<td><select name="TenderMapping[]">';
+	echo '<option value="">default</option>';
+	foreach($mods as $m){
+		printf('<option value="%s:%s" %s>%s</option>',
+			$row['TenderCode'],$m,
+			(isset($settings[$row['TenderCode']])&&$settings[$row['TenderCode']]==$m)?'selected':'',
+			$m);	
+	}
+	echo '</select></td></tr>';
+}
+?>
+</table>
 <hr />
 <i>Integrated card processing configuration is included for the sake
 of completeness. The modules themselves require individual configuration,

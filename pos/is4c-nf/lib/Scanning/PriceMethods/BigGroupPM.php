@@ -36,12 +36,6 @@
   qualifying group as well as an item from
   the discount group. 
 */
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
-
-if (!class_exists('PriceMethod')) include($CORE_PATH.'lib/Scanning/PriceMethod.php');
-if (!function_exists('addItem')) include($CORE_PATH.'lib/additem.php');
-if (!function_exists('truncate2')) include($CORE_PATH.'lib/lib.php');
 
 class BigGroupPM extends PriceMethod {
 
@@ -90,15 +84,15 @@ class BigGroupPM extends PriceMethod {
 		if ($sets > 0){
 			if ($priceObj->isSale()){
 				if ($priceObj->isMemberSale() || $priceObj->isStaffSale())
-					$pricing['memDiscount'] = truncate2($row['specialgroupprice'] * $quantity);
+					$pricing['memDiscount'] = MiscLib::truncate2($row['specialgroupprice'] * $quantity);
 				else
-					$pricing['discount'] = truncate2($row['specialgroupprice'] * $quantity);
+					$pricing['discount'] = MiscLib::truncate2($row['specialgroupprice'] * $quantity);
 			}
 			else {
 				$pricing['unitPrice'] = $pricing['unitPrice'] - $row['specialgroupprice'];
 			}
 
-			addItem($row['upc'],
+			TransRecord::addItem($row['upc'],
 				$row['description'],
 				'I',
 				' ',
@@ -106,7 +100,7 @@ class BigGroupPM extends PriceMethod {
 				$row['department'],
 				$quantity,
 				$pricing['unitPrice'],
-				truncate2($pricing['unitPrice'] * $quantity),
+				MiscLib::truncate2($pricing['unitPrice'] * $quantity),
 				$pricing['regPrice'],
 				$row['scale'],
 				$row['tax'],
@@ -129,7 +123,7 @@ class BigGroupPM extends PriceMethod {
 		}
 		else {
 			// not a new set, treat as a regular item
-			addItem($row['upc'],
+			TransRecord::addItem($row['upc'],
 				$row['description'],
 				'I',
 				' ',
@@ -137,7 +131,7 @@ class BigGroupPM extends PriceMethod {
 				$row['department'],
 				$quantity,
 				$pricing['unitPrice'],
-				truncate2($pricing['unitPrice'] * $quantity),
+				MiscLib::truncate2($pricing['unitPrice'] * $quantity),
 				$pricing['regPrice'],
 				$row['scale'],
 				$row['tax'],

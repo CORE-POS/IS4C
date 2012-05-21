@@ -21,13 +21,7 @@
 
 *********************************************************************************/
 
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
-
-if (!class_exists("NoInputPage")) include_once($CORE_PATH."gui-class-lib/NoInputPage.php");
-if (!function_exists("addItem")) include_once($CORE_PATH."lib/additem.php");
-if (!function_exists("setMember")) include_once($CORE_PATH."lib/prehkeys.php");
-if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
+include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class undo extends NoInputPage {
 	var $box_color;
@@ -56,7 +50,7 @@ class undo extends NoInputPage {
 	}
 
 	function preprocess(){
-		global $CORE_LOCAL,$CORE_PATH;
+		global $CORE_LOCAL;
 		$this->box_color = "#004080";
 		$this->msg = "Undo transaction";
 
@@ -65,7 +59,7 @@ class undo extends NoInputPage {
 
 			// clear/cancel undo attempt
 			if ($trans_num == "" || $trans_num == "CL"){
-				header("Location: {$CORE_PATH}gui-modules/pos2.php");
+				$this->change_page($this->page_url."gui-modules/pos2.php");
 				return False;
 			}
 
@@ -99,7 +93,7 @@ class undo extends NoInputPage {
 			$query = "";
 			if ($register_no == $CORE_LOCAL->get("laneno")){
 				// look up transation locally
-				$db = tDataConnect();
+				$db = Database::tDataConnect();
 				$query = "select upc, description, trans_type, trans_subtype,
 					trans_status, department, quantity, scale, unitPrice,
 					total, regPrice, tax, foodstamp, discount, memDiscount,
@@ -120,7 +114,7 @@ class undo extends NoInputPage {
 			}
 			else {
 				// look up transaction remotely
-				$db = mDataConnect();
+				$db = Database::mDataConnect();
 				$query = "select upc, description, trans_type, trans_subtype,
 					trans_status, department, quantity, Scale, unitPrice,
 					total, regPrice, tax, foodstamp, discount, memDiscount,
@@ -145,49 +139,49 @@ class undo extends NoInputPage {
 			/* change the cashier to the original transaction's cashier */
 			$prevCashier = $CORE_LOCAL->get("CashierNo");
 			$CORE_LOCAL->set("CashierNo",$emp_no);
-			$CORE_LOCAL->set("transno",gettransno($emp_no));	
+			$CORE_LOCAL->set("transno",Database::gettransno($emp_no));	
 
 			/* rebuild the transaction, line by line, in reverse */
 			$card_no = 0;
-			addcomment("VOIDING TRANSACTION $trans_num");
+			TransRecord::addcomment("VOIDING TRANSACTION $trans_num");
 			while ($row = $db->fetch_array($result)){
 				$card_no = $row["card_no"];
 
 				if ($row["upc"] == "TAX"){
-					//addTax();
+					//TransRecord::addtax();
 				}
 				elseif ($row["trans_type"] ==  "T"){
 					if ($row["description"] == "Change")
-						addchange(-1*$row["total"]);
+						TransRecord::addchange(-1*$row["total"]);
 					elseif ($row["description"] == "FS Change")
-						addfsones(-1*$row["total"]);
+						TransRecord::addfsones(-1*$row["total"]);
 					else
-						addtender($row["description"],$row["trans_subtype"],-1*$row["total"]);
+						TransRecord::addtender($row["description"],$row["trans_subtype"],-1*$row["total"]);
 				}
 				elseif (strstr($row["description"],"** YOU SAVED")){
 					$temp = explode("$",$row["description"]);
-					adddiscount(substr($temp[1],0,-3),$row["department"]);
+					TransRecord::adddiscount(substr($temp[1],0,-3),$row["department"]);
 				}
 				elseif ($row["upc"] == "FS Tax Exempt")
-					addfsTaxExempt();
+					TransRecord::addfsTaxExempt();
 				elseif (strstr($row["description"],"% Discount Applied")){
 					$temp = explode("%",$row["description"]);	
-					discountnotify(substr($temp[0],3));
+					TransRecord::discountnotify(substr($temp[0],3));
 				}
 				elseif ($row["description"] == "** Order is Tax Exempt **")
-					addTaxExempt();
+					TransRecord::addTaxExempt();
 				elseif ($row["description"] == "** Tax Excemption Reversed **")
-					reverseTaxExempt();
+					TransRecord::reverseTaxExempt();
 				elseif ($row["description"] == " * Manufacturers Coupon")
-					addCoupon($row["upc"],$row["department"],-1*$row["total"]);
+					TransRecord::addCoupon($row["upc"],$row["department"],-1*$row["total"]);
 				elseif (strstr($row["description"],"** Tare Weight")){
 					$temp = explode(" ",$row["description"]);
-					addTare($temp[3]*100);
+					TransRecord::addTare($temp[3]*100);
 				}
 				elseif ($row["upc"] == "MAD Coupon")
-					addMadCoup();
+					TransRecord::addMadCoup();
 				elseif ($row["upc"] == "DISCOUNT"){
-					//addTransDiscount();
+					//TransRecord::addTransDiscount();
 				}
 				elseif ($row["trans_status"] != "M" && $row["upc"] != "0" &&
 					(is_numeric($row["upc"]) || strstr($row["upc"],"DP"))) {
@@ -197,7 +191,7 @@ class undo extends NoInputPage {
 					$row["memDiscount"] *= -1;
 					$row["quantity"] *= -1;
 					$row["ItemQtty"] *= -1;
-					addItem($row["upc"],$row["description"],$row["trans_type"],$row["trans_subtype"],
+					TransRecord::addItem($row["upc"],$row["description"],$row["trans_type"],$row["trans_subtype"],
 						$row["trans_status"],$row["department"],$row["quantity"],
 						$row["unitPrice"],$row["total"],$row["regPrice"],
 						$row["Scale"],$row["tax"],$row["foodstamp"],$row["discount"],
@@ -207,21 +201,21 @@ class undo extends NoInputPage {
 				}
 			}
 
-			$op = pDataConnect();
+			$op = Database::pDataConnect();
 			$query = "select CardNo,personNum,LastName,FirstName,CashBack,Balance,Discount,
 				MemDiscountLimit,ChargeOk,WriteChecks,StoreCoupons,Type,memType,staff,
 				SSI,Purchases,NumberOfChecks,memCoupons,blueLine,Shown,id from custdata 
 				where CardNo = '".$card_no."'";
 			$res = $op->query($query);
 			$row = $op->fetch_row($res);
-			setMember($card_no,1,$row);
+			PrehLib::setMember($card_no,1,$row);
 			$CORE_LOCAL->set("autoReprint",0);
 
 			/* restore the logged in cashier */
 			$CORE_LOCAL->set("CashierNo",$prevCashier);
-			$CORE_LOCAL->set("transno",gettransno($prevCashier));
+			$CORE_LOCAL->set("transno",Database::gettransno($prevCashier));
 			
-			header("Location: {$CORE_PATH}gui-modules/undo_confirm.php");
+			$this->change_page($this->page_url."gui-modules/undo_confirm.php");
 			return False;
 		}
 		return True;

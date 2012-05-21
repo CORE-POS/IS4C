@@ -20,12 +20,8 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
- // session_start(); 
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
 
-if (!function_exists("tDataConnect")) include($CORE_PATH."lib/connect.php");
-if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
+include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 $CORE_LOCAL->set("away",1);
 
@@ -36,7 +32,7 @@ $CORE_LOCAL->set("away",1);
  * be pulled out in later reports
  */
 
-$db = tDataConnect();
+$db = Database::tDataConnect();
 $query = "UPDATE localtemptrans SET trans_status='Z'";
 $db->query($query);
 $query = "INSERT INTO dtransactions SELECT * from localtemptrans";
@@ -51,7 +47,7 @@ $CORE_LOCAL->set("End",2);
 
 $_REQUEST['receiptType'] = 'ddd';
 ob_start();
-include($CORE_PATH.'ajax-callbacks/ajax-end.php');
-header("Location: {$CORE_PATH}gui-modules/pos2.php");
+include(realpath(dirname(__FILE__).'/ajax-end.php'));
+header("Location: ".MiscLib::base_url()."gui-modules/pos2.php");
 
 ?>

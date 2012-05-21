@@ -20,12 +20,8 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
 
-if (!class_exists("NoInputPage")) include_once($CORE_PATH."gui-class-lib/NoInputPage.php");
-if (!function_exists("nsauthenticate")) include($CORE_PATH."lib/authenticate.php");
-if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
+include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class nslogin extends NoInputPage {
 
@@ -34,18 +30,17 @@ class nslogin extends NoInputPage {
 	var $msg;
 
 	function preprocess(){
-		global $CORE_PATH;
 		$this->color ="#004080";
 		$this->heading = "enter manager password";
 		$this->msg = "confirm no sales";
 
 		if (isset($_REQUEST['reginput'])){
 			if (strtoupper($_REQUEST['reginput']) == "CL"){
-				header("Location: {$CORE_PATH}gui-modules/pos2.php");
+				$this->change_page($this->page_url."gui-modules/pos2.php");
 				return False;
 			}
-			elseif (nsauthenticate($_REQUEST['reginput'])){
-				header("Location: {$CORE_PATH}gui-modules/pos2.php");
+			elseif (Authenticate::ns_check_password($_REQUEST['reginput'])){
+				$this->change_page($this->page_url."gui-modules/pos2.php");
 				return False;
 			}
 			else {

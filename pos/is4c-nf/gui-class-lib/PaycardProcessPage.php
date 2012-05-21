@@ -36,12 +36,6 @@
        pressing enter won't cause multiple submits 
  */
 
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
-
-if (!class_exists("BasicPage")) include($CORE_PATH.'gui-class-lib/BasicPage.php');
-if (!function_exists('printfooter')) include($CORE_PATH.'lib/drawscreen.php');
-
 class PaycardProcessPage extends BasicPage {
 
 	var $onload_commands;
@@ -62,17 +56,16 @@ class PaycardProcessPage extends BasicPage {
 	   Automatically called during page print.
 	*/
 	function paycard_jscript_functions(){
-		global $CORE_PATH;
 		?>
 		<script type="text/javascript">
 		function paycard_submitWrapper(){
-			$.ajax({url: '<?php echo $CORE_PATH; ?>ajax-callbacks/ajax-paycard-auth.php',
+			$.ajax({url: '<?php echo $this->page_url; ?>ajax-callbacks/ajax-paycard-auth.php',
 				cache: false,
 				type: 'post',
 				dataType: 'json',
 				success: function(data){
 					if (data.receipt){
-						$.ajax({url: '<?php echo $CORE_PATH; ?>ajax-callbacks/ajax-end.php',
+						$.ajax({url: '<?php echo $this->page_url; ?>ajax-callbacks/ajax-end.php',
 							cache: false,
 							type: 'post',
 							data: 'receiptType='+data.receipt,
@@ -99,16 +92,16 @@ class PaycardProcessPage extends BasicPage {
 	}
 
 	function print_page(){
-		global $CORE_PATH;
+		$my_url = $this->page_url;
 		?>
 		<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 		<html>
 		<?php
 		echo "<head>";
 		echo "<link rel=\"stylesheet\" type=\"text/css\"
-		    href=\"{$CORE_PATH}pos.css\">";
+		    href=\"{$my_url}pos.css\">";
 		echo "<script type=\"text/javascript\"
-			src=\"{$CORE_PATH}js/jquery.js\"></script>";
+			src=\"{$my_url}js/jquery.js\"></script>";
 		$this->paycard_jscript_functions();
 		$this->head_content();
 		echo "</head>";
@@ -117,7 +110,7 @@ class PaycardProcessPage extends BasicPage {
 		$this->input_header($this->action);
 		$this->body_content();	
 		echo "<div id=\"footer\">";
-		echo printfooter();
+		echo DisplayLib::printfooter();
 		echo "</div>";
 		echo "</div>";
 		$this->scale_box();

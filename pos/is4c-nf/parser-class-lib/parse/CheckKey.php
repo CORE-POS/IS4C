@@ -20,12 +20,6 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
-
-if (!class_exists("Parser")) include_once($CORE_PATH."parser-class-lib/Parser.php");
-if (!isset($CORE_LOCAL)) include_once($CORE_PATH."lib/LocalStorage/conf.php");
-if (!function_exists("tender")) include_once($CORE_PATH."lib/prehkeys.php");
 
 class CheckKey extends Parser {
 	function check($str){
@@ -36,7 +30,8 @@ class CheckKey extends Parser {
 	}
 
 	function parse($str){
-		global $CORE_LOCAL,$CORE_PATH;
+		global $CORE_LOCAL;
+		$my_url = MiscLib::base_url();
 
 		$split = explode("CQ",$str);
 		$tender = $split[1];
@@ -50,35 +45,15 @@ class CheckKey extends Parser {
 		if (empty($split[1])){
 			// no department specified, just amount followed by DP
 			
-			// maintain refund if needed
-			if ($CORE_LOCAL->get("refund"))
-				$amt = "RF".$amt;
-
 			// save entered amount
 			$CORE_LOCAL->set("tenderTotal",$amt);
 
 			// go to the department select screen
-			$ret['main_frame'] = $CORE_PATH.'gui-modules/checklist.php';
-		}
-		elseif ($CORE_LOCAL->get("refund")==1 && $CORE_LOCAL->get("refundComment") == ""){
-			if ($CORE_LOCAL->get("SecurityRefund") > 20){
-				$CORE_LOCAL->set("adminRequest",$CORE_PATH."gui-modules/refundComment.php");
-				$CORE_LOCAL->set("adminRequestLevel",$CORE_LOCAL->get("SecurityRefund"));
-				$CORE_LOCAL->set("adminLoginMsg","Login to issue refund");
-				$CORE_LOCAL->set("away",1);
-				$ret['main_frame'] = $CORE_PATH."gui-modules/adminlogin.php";
-			}
-			else
-				$ret['main_frame'] = $CORE_PATH.'gui-modules/refundComment.php';
-			$CORE_LOCAL->set("refundComment",$CORE_LOCAL->get("strEntered"));
-		}
-		elseif ($CORE_LOCAL->get("warned") == 1 and ($CORE_LOCAL->get("warnBoxType") == "warnEquity" or $CORE_LOCAL->get("warnBoxType") == "warnAR")){
-			$CORE_LOCAL->set("warned",0);
-			$CORE_LOCAL->set("warnBoxType","");
+			$ret['main_frame'] = $my_url.'gui-modules/checklist.php';
 		}
 
 		if (!$ret['main_frame'])
-			$ret = tender($split[1],$split[0]);
+			$ret = PrehLib::tender($split[1],$split[0]);
 		return $ret;
 	}
 

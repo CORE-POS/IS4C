@@ -136,6 +136,9 @@ class ContactInfo extends MemberModule {
 				<input type="text" name="ContactInfo_state" size="2" />
 				<b>Zip</b>:
 				<input type="text" name="ContactInfo_zip" size="5" />
+				<br /><br />
+				<b>Email</b>: 
+				<input type="text" name="ContactInfo_email" size="15" />
 				</p>';
 	}
 
@@ -148,6 +151,7 @@ class ContactInfo extends MemberModule {
 		$city = isset($_REQUEST['ContactInfo_city'])?$_REQUEST['ContactInfo_city']:"";
 		$state = isset($_REQUEST['ContactInfo_state'])?$_REQUEST['ContactInfo_state']:"";
 		$zip = isset($_REQUEST['ContactInfo_zip'])?$_REQUEST['ContactInfo_zip']:"";
+		$email = isset($_REQUEST['ContactInfo_email'])?$_REQUEST['ContactInfo_email']:"";
 
 		$where = "";
 		if (!empty($fn)){
@@ -173,6 +177,10 @@ class ContactInfo extends MemberModule {
 		if (!empty($zip)){
 			$where .= sprintf(" AND zip LIKE %s",
 					$dbc->escape("%".$zip."%"));
+		}
+		if (!empty($email)){
+			$where .= sprintf(" AND email_1 LIKE %s",
+					$dbc->escape("%".$email."%"));
 		}
 
 		$ret = array();

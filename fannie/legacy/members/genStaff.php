@@ -4,7 +4,7 @@ include('../../config.php');
 include($FANNIE_ROOT.'src/SQLManager.php');
 include('../db.php');
 
-$query = "SELECT MAX(card_no) FROM meminfo WHERE card_no < 5500";
+$query = "SELECT MAX(card_no) FROM meminfo WHERE card_no BETWEEN 5500 AND 5600";
 $result = $sql->query($query);
 $row = $sql->fetch_array($result);
 
@@ -13,7 +13,6 @@ $numBegin= $row[0] + 1;
 $numEnd = $numBegin + 20;
 echo $row[0] . "<br>";
 echo $numEnd . "<br>";
-
 
 FOR($numStart=$numBegin;$numStart<$numEnd+1;$numStart++){
 	$query1 = "INSERT INTO mbrmastr VALUES($numStart,'','','','','DULUTH','MN','','',20,80,'00/00/0000',0,0,1,0,0,'','',0,3,'','','P',1,'',0,0,0,0,0,'',0,'00/00/0000',0,0,0,0,'00/00/0000','00/00/0000','','',0,0,0,1,1,0,0,'00/00/0000',0,0,0,0,0,0,0,1,'00/00/0000',0,'00/00/0000',0,0,0,0,0,0,'',0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,'',0,0,0,0,0,0,0,0,'00/00/0000','',0)";

@@ -46,17 +46,16 @@ $meminfoQ = "UPDATE meminfo AS m LEFT JOIN
 	    custdata AS c ON m.card_no=c.CardNo
 	    LEFT JOIN {$TRANS}newBalanceToday_cust AS s
 	    ON c.cardno=s.memnum LEFT JOIN suspensions AS p
-	    ON c.cardno=p.cardno LEFT JOIN {$TRANS}AR_EOM_Summary AS a
+	    ON c.cardno=p.cardno LEFT JOIN {$TRANS}AR_EOM_Summary_cache AS a
 	    ON m.card_no=a.cardno
 	    SET m.ads_OK=p.mailflag
 	    WHERE c.Type = 'INACT' and p.reasoncode IN (1)
 	    AND s.balance < a.twoMonthBalance";
-echo $meminfoQ;exit;
 $sql->query($meminfoQ);
 
 $custQ = "UPDATE custdata AS c LEFT JOIN {$TRANS}newBalanceToday_cust AS s
 	    ON c.CardNo=s.memnum LEFT JOIN suspensions AS p
-	    ON c.CardNo=p.cardno LEFT JOIN {$TRANS}AR_EOM_Summary AS a
+	    ON c.CardNo=p.cardno LEFT JOIN {$TRANS}AR_EOM_Summary_cache AS a
 	    ON c.CardNo=a.cardno
 	    SET c.Discount=p.discount,c.memDiscountLimit=p.chargelimit,
 	    c.memType=p.memtype1,c.Type=p.memtype2,chargeOk=1

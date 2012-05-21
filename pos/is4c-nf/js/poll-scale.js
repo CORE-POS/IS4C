@@ -21,8 +21,8 @@ function scalePollSuccess(data){
 			$('#scaleBottom').html(data.scale);	
 		}
 		var URL = location.href;
-		// var pagename = URL.substring(URL.lastIndexOf('/') + 1);
-		// if (pagename == 'pos2.php' && data.scans){
+		//var pagename = URL.substring(URL.lastIndexOf('/') + 1);
+		//if (pagename == 'pos2.php' && data.scans){
 		if ($('#reginput').length != 0 && data.scans){
 			var v = $('#reginput').val();
 			parseWrapper(v+data.scans);

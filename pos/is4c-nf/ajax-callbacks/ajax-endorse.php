@@ -20,16 +20,8 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
 
-include_once($CORE_PATH."ini.php");
-include_once($CORE_PATH."lib/session.php");
-include_once($CORE_PATH."lib/printLib.php");
-include_once($CORE_PATH."lib/printReceipt.php");
-include_once($CORE_PATH."lib/connect.php");
-include_once($CORE_PATH."lib/prehkeys.php");
-if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
+include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 $endorseType = $CORE_LOCAL->get("endorseType");
 
@@ -39,19 +31,19 @@ if (strlen($endorseType) > 0) {
 	switch ($endorseType) {
 
 		case "check":
-			frank();
+			ReceiptLib::frank();
 			break;
 
 		case "giftcert":
-			frankgiftcert();
+			ReceiptLib::frankgiftcert();
 			break;
 
 		case "stock":
-			frankstock();
+			ReceiptLib::frankstock();
 			break;
 
 		case "classreg":
-			frankclassreg();
+			ReceiptLib::frankclassreg();
 			break;
 
 		default:

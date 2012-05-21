@@ -21,16 +21,9 @@
 
 *********************************************************************************/
 
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
-
 ini_set('display_errors','1');
 
-if (!class_exists("NoInputPage")) include_once($CORE_PATH."gui-class-lib/NoInputPage.php");
-if (!function_exists("pDataConnect")) include($CORE_PATH."lib/connect.php");
-if (!function_exists("setMember")) include($CORE_PATH."lib/prehkeys.php");
-if (!function_exists("printfooter")) include($CORE_PATH."lib/drawscreen.php");
-if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
+include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class memlist extends NoInputPage {
 
@@ -40,7 +33,7 @@ class memlist extends NoInputPage {
 	var $db;
 
 	function preprocess(){
-		global $CORE_LOCAL,$CORE_PATH;
+		global $CORE_LOCAL;
 		$CORE_LOCAL->set("away",1);
 		$entered = "";
 		if ($CORE_LOCAL->get("idSearch") && strlen($CORE_LOCAL->get("idSearch")) > 0) {
@@ -69,12 +62,12 @@ class memlist extends NoInputPage {
 			$CORE_LOCAL->set("mirequested",0);
 			$CORE_LOCAL->set("scan","scan");
 			$CORE_LOCAL->set("reprintNameLookup",0);
-			header("Location: {$CORE_PATH}gui-modules/pos2.php");
+			$this->change_page($this->page_url."gui-modules/pos2.php");
 			return False;
 		}
 
 		$memberID = $entered;
-		$db_a = pDataConnect();
+		$db_a = Database::pDataConnect();
 
 		$query = "select CardNo,personNum,LastName,FirstName,CashBack,Balance,Discount,
 			MemDiscountLimit,ChargeOk,WriteChecks,StoreCoupons,Type,memType,staff,
@@ -96,12 +89,12 @@ class memlist extends NoInputPage {
 			||
 		    (is_numeric($entered) && is_numeric($personNum) && $selected_name) ){
 			$row = $db_a->fetch_array($result);
-			setMember($row["CardNo"], $personNum,$row);
+			PrehLib::setMember($row["CardNo"], $personNum,$row);
 			$CORE_LOCAL->set("scan","scan");
-			if ($entered != $CORE_LOCAL->get("defaultNonMem") && check_unpaid_ar($row["CardNo"]))
-				header("Location: {$CORE_PATH}gui-modules/UnpaidAR.php");
+			if ($entered != $CORE_LOCAL->get("defaultNonMem") && PrehLib::check_unpaid_ar($row["CardNo"]))
+				$this->change_page($this->page_url."gui-modules/UnpaidAR.php");
 			else
-				header("Location: {$CORE_PATH}gui-modules/pos2.php");
+				$this->change_page($this->page_url."gui-modules/pos2.php");
 			return False;
 		}
 
