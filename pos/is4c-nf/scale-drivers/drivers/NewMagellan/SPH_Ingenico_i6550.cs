@@ -33,7 +33,7 @@
  * Sets up a serial connection in the constructor
  *
  * Polls for data in Read(), writing responses back to the
- * device as needed 
+ * device as needed
  *
 *************************************************************/
 using System;
@@ -200,20 +200,24 @@ public class Signature {
 }
 
 public class SPH_Ingenico_i6550 : SerialPortHandler {
-	private const int application_id = 1;
-	private const int parameter_id = 1;
+	private const int application_id = 230;
+	private const int parameter_id = 230;
 	private const bool VERBOSE = true;
 	private byte[] last_message;
 	private string terminal_serial_number;
 	private string pos_trans_no;
 	private bool getting_signature;
 	private Signature sig_object;
+	private string output_mag;
+	private string output_sigfile;
 
 	private static String INGENICO_OUTPUT_DIR = "cc-output";
 
 	public SPH_Ingenico_i6550(string p) : base(p){
 		last_message = null;
 		getting_signature = false;	
+		output_mag = "";
+		output_sigfile = "";
 
 		sp = new SerialPort();
 		sp.PortName = this.port;
@@ -226,7 +230,10 @@ public class SPH_Ingenico_i6550 : SerialPortHandler {
 		sp.ReadTimeout = 500;
 		
 		sp.Open();
+
+		ConfirmedWrite(GetLRC(OfflineMessage()));
 		ConfirmedWrite(GetLRC(OnlineMessage()));
+		HandleMsg("reset");
 	}
 
 	private void ByteWrite(byte[] b){
@@ -240,7 +247,8 @@ public class SPH_Ingenico_i6550 : SerialPortHandler {
 		if (VERBOSE)
 			System.Console.WriteLine("Tried to write");
 
-		while(last_message != null)
+		int count=0;
+		while(last_message != null && count++ < 5)
 			Thread.Sleep(10);
 		last_message = b;
 		ByteWrite(b);
@@ -351,7 +359,7 @@ public class SPH_Ingenico_i6550 : SerialPortHandler {
 			else if (status == 6){
 				ConfirmedWrite(GetLRC(GetVariableMessage("000712")));
 			}
-			else {
+			else if (status == 10){
 				Thread.Sleep(500);
 				ConfirmedWrite(GetLRC(StatusRequestMessage()));
 			}
@@ -394,6 +402,8 @@ public class SPH_Ingenico_i6550 : SerialPortHandler {
 		else if (msg == "reset"){
 			last_message = null;
 			getting_signature = false;
+			output_mag = "";
+			output_sigfile = "";
 			ByteWrite(GetLRC(HardResetMessage())); // force, no matter what
 			ConfirmedWrite(GetLRC(SetPaymentTypeMessage("2")));
 
@@ -403,6 +413,8 @@ public class SPH_Ingenico_i6550 : SerialPortHandler {
 		else if (!getting_signature && msg.Length > 11 && msg.Substring(0,11) == "resettotal:"){
 			ConfirmedWrite(GetLRC(HardResetMessage()));
 			ConfirmedWrite(GetLRC(SetPaymentTypeMessage("2")));
+			output_mag = "";
+			output_sigfile = "";
 
 			if (VERBOSE)
 				System.Console.WriteLine("Sent reset");
@@ -430,10 +442,28 @@ public class SPH_Ingenico_i6550 : SerialPortHandler {
 			last_message = null;
 			ConfirmedWrite(GetLRC(StatusRequestMessage()));
 		}
-		else if (msg == "poke"){
+		else if (msg == "getmag" && output_mag != ""){
+			if (VERBOSE)
+				System.Console.WriteLine(output_mag);
 			UdpClient u = new UdpClient("127.0.0.1",9451);
-			Byte[] sendb = Encoding.ASCII.GetBytes("hi there");
+			Byte[] sendb = System.Text.Encoding.ASCII.GetBytes(output_mag);
 			u.Send(sendb, sendb.Length);
+		}
+		else if (msg == "getsig" && output_sigfile != ""){
+			UdpClient u = new UdpClient("127.0.0.1",9451);
+			Byte[] sendb = System.Text.Encoding.ASCII.GetBytes(output_sigfile);
+			u.Send(sendb, sendb.Length);
+		}
+		else if (!getting_signature && msg.Length > 8 && msg.Substring(0,8) == "display:"){
+			string[] lines = msg.Split(new Char[]{':'});
+			if (lines.Length==5){
+				if (VERBOSE)
+					System.Console.WriteLine(lines[1]);
+				ConfirmedWrite(GetLRC(SetVariableMessage("000112",lines[1])));
+				ConfirmedWrite(GetLRC(SetVariableMessage("000113",lines[2])));
+				ConfirmedWrite(GetLRC(SetVariableMessage("000114",lines[3])));
+				ConfirmedWrite(GetLRC(SetVariableMessage("000104",lines[4])));
+			}
 		}
 
 		if (VERBOSE)
@@ -452,6 +482,7 @@ public class SPH_Ingenico_i6550 : SerialPortHandler {
 		msg[2] = 0x31;
 		msg[3] = 0x2e;
 
+		/*
 		msg[4] = (application_id >> 24) & 0xff;
 		msg[5] = (application_id >> 16) & 0xff;
 		msg[6] = (application_id >> 8) & 0xff;
@@ -461,8 +492,35 @@ public class SPH_Ingenico_i6550 : SerialPortHandler {
 		msg[9] = (parameter_id >> 16) & 0xff;
 		msg[10] = (parameter_id >> 8) & 0xff;
 		msg[11] = parameter_id & 0xff;
+		*/
+		msg[4] = 0x30;
+		msg[5] = 0x30;
+		msg[6] = 0x30;
+		msg[7] = 0x30;
+		msg[8] = 0x30;
+		msg[9] = 0x30;
+		msg[10] = 0x30;
+		msg[11] = 0x30;
 
 		msg[12] = 0x3; // ETX
+
+		return msg;
+	}
+
+	private byte[] OfflineMessage(){
+		byte[] msg = new byte[9];
+		msg[0] = 0x2; // STX
+
+		msg[1] = 0x30; // Offline Code
+		msg[2] = 0x30;
+		msg[3] = 0x2e;
+
+		msg[4] = 0x30;
+		msg[5] = 0x30;
+		msg[6] = 0x30;
+		msg[7] = 0x30;
+
+		msg[8] = 0x3; // ETX
 
 		return msg;
 	}
@@ -484,7 +542,7 @@ public class SPH_Ingenico_i6550 : SerialPortHandler {
 		byte[] msg = new byte[5];
 		msg[0] = 0x2; // STX
 
-		msg[1] = 0x31; // Reset Code
+		msg[1] = 0x31; // Status Code
 		msg[2] = 0x31;
 		msg[3] = 0x2e;
 
@@ -574,6 +632,36 @@ public class SPH_Ingenico_i6550 : SerialPortHandler {
 		return msg;
 	}
 
+	// again var_code should have length 6
+	private byte[] SetVariableMessage(string var_code, string var_value){
+		System.Text.ASCIIEncoding enc = new System.Text.ASCIIEncoding();
+
+		byte[] valbytes = enc.GetBytes(var_value);
+		byte[] msg = new byte[12 + valbytes.Length + 1]; 
+
+		msg[0] = 0x2; // STX
+		msg[1] = 0x32; // set var code
+		msg[2] = 0x38;
+		msg[3] = 0x2e;
+
+		msg[4] = 0x39; // no response
+		msg[5] = 0x31; // constant
+
+		byte[] tmp = enc.GetBytes(var_code);
+		for(int i=0; i<tmp.Length;i++)
+			msg[i+6] = tmp[i];
+
+		for(int i=0; i<valbytes.Length;i++)
+			msg[i+12] = valbytes[i];
+
+		msg[msg.Length-1] = 0x3; //ETX
+
+		if (VERBOSE)
+			System.Console.WriteLine("Sent: "+enc.GetString(msg));
+
+		return msg;
+	}
+
 	private byte[] AuthMessage(string approval_code){
 		System.Text.ASCIIEncoding enc = new System.Text.ASCIIEncoding();
 		string display_message = "Thank You!";
@@ -624,6 +712,44 @@ public class SPH_Ingenico_i6550 : SerialPortHandler {
 		return msg;
 	}
 
+	// write DFS configuration values
+	private byte[] ConfigWriteMessage(string group_num, string index_num, string val){
+		System.Text.ASCIIEncoding enc = new System.Text.ASCIIEncoding();
+		byte[] gb = enc.GetBytes(group_num);
+		byte[] ib = enc.GetBytes(index_num);
+		byte[] vb = enc.GetBytes(val);
+
+		byte[] msg = new byte[4 + gb.Length + ib.Length + vb.Length + 2];
+
+		msg[0] = 0x2; // STX
+		msg[1] = 0x30; // Write Code
+		msg[2] = 0x30;
+		msg[3] = 0x2e;
+
+		int pos = 4;
+
+		// write group
+		for(int i=0; i<gb.Length; i++)
+			msg[pos++] = gb[i];
+
+		msg[pos++] = 0x1d; // ASII GS delimiter
+
+		// write index
+		for(int i=0; i<ib.Length; i++)
+			msg[pos++] = ib[i];
+
+		// write value
+		msg[pos++] = 0x1d; // ASII GS delimiter
+
+		for(int i=0; i<vb.Length; i++)
+			msg[pos++] = vb[i];
+
+		msg[msg.Length-2] = 0x1c; // ASCII FS delimiter
+
+		msg[msg.Length-1] = 0x3; // ETX
+		return msg;
+	}
+
 	private void ParseSigLengthMessage(int status, byte[] msg){
 		if (status == 2){
 			int num_blocks = 0;
@@ -663,9 +789,11 @@ public class SPH_Ingenico_i6550 : SerialPortHandler {
 			// signature capture complete
 			string sigfile="";
 			try{
-			sigfile = sig_object.BuildImage(INGENICO_OUTPUT_DIR+"\\sig");
+			char sep = System.IO.Path.DirectorySeparatorChar;
+			sigfile = sig_object.BuildImage(INGENICO_OUTPUT_DIR+sep+"sig");
 			}catch(Exception e){
-				System.Console.WriteLine(e);
+				if (VERBOSE)
+					System.Console.WriteLine(e);
 			}
 			getting_signature = false;
 			PushOutput(sigfile);
@@ -792,6 +920,9 @@ public class SPH_Ingenico_i6550 : SerialPortHandler {
 	}
 
 	private void PushOutput(string s){
+		if (s.Contains("?")) output_mag = s;	
+		else output_sigfile = s;
+		/*
 		int ticks = Environment.TickCount;
 		char sep = System.IO.Path.DirectorySeparatorChar;
 		while(File.Exists(INGENICO_OUTPUT_DIR+sep+ticks))
@@ -803,6 +934,7 @@ public class SPH_Ingenico_i6550 : SerialPortHandler {
 		sw.Close();
 		File.Move(INGENICO_OUTPUT_DIR+sep+"tmp"+sep+ticks,
 			  INGENICO_OUTPUT_DIR+sep+ticks);
+		*/
 	}
 }
 

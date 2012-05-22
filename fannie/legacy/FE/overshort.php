@@ -46,7 +46,8 @@ if (isset($_POST['action'])){
     $date = $_POST['arg'];
     require($FANNIE_ROOT."src/select_dlog.php");
     $dlog = select_dlog($date);
-    $dlog = "trans_archive.dlogBig";
+    if ($dlog != "is4c_trans.dlog")
+	    $dlog = "trans_archive.dlogBig";
     /* determine who worked that day (and their first names) */
     $empsQ = "select e.firstname,d.emp_no from $dlog as d,is4c_op.employees as e where
               ".$sql->date_equals('d.tdate',$date)." and trans_type='T' and d.emp_no = e.emp_no

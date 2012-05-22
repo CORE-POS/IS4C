@@ -28,11 +28,13 @@ include_once($CORE_PATH."ini.php");
 if (!function_exists("pDataConnect")) include($CORE_PATH."lib/connect.php");
 if (!function_exists("loadglobalvalues")) include($CORE_PATH."lib/loadconfig.php");
 if (!function_exists("paycard_reset")) include($CORE_PATH."cc-modules/lib/paycardLib.php");
+if (!function_exists("term_object")) include($CORE_PATH."cc-modules/lib/term.php");
 if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
 
 /**
  @file
  @brief Setup session variables
+ @depreacted see CoreState
 */
 
 /**
@@ -42,7 +44,6 @@ if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
   startup.
 */
 function initiate_session() {
-
 	system_init();
 	memberReset();
 	transReset();
@@ -82,8 +83,11 @@ function system_init() {
 	$CORE_LOCAL->set("away",0);
 	$CORE_LOCAL->set("waitforScale",0);
         $CORE_LOCAL->set("ccRemoteServerUp",1);
-	$CORE_LOCAL->set("ccTermOut","idle");
 	$CORE_LOCAL->set("search_or_list",0);
+	$CORE_LOCAL->set("ccTermOut","idle");
+	$td = term_object();
+	if (is_object($td))
+		$td->WriteToScale("reset");
 }
 
 /**

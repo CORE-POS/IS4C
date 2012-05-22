@@ -28,19 +28,14 @@
  * variable
  */
 
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
-
-if (!class_exists("NoInputPage")) include_once($CORE_PATH."gui-class-lib/NoInputPage.php");
-if (!function_exists("pDataConnect")) include_once($CORE_PATH."lib/connect.php");
-if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
+include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class adminlogin extends NoInputPage {
 	var $box_color;
 	var $msg;
 
 	function preprocess(){
-		global $CORE_LOCAL,$CORE_PATH;
+		global $CORE_LOCAL;
 		$this->box_color="#004080";
 		$this->msg = "enter admin password";
 
@@ -48,7 +43,7 @@ class adminlogin extends NoInputPage {
 			$passwd = $_REQUEST['reginput'];
 			if (strtoupper($passwd) == "CL"){
 				$CORE_LOCAL->set("refundComment","");
-				header("Location: {$CORE_PATH}gui-modules/pos2.php");
+				$this->change_page($this->page_url."gui-modules/pos2.php");
 				return False;	
 			}
 			else if (!is_numeric($passwd) || $passwd > 9999 || $passwd < 1){
@@ -61,11 +56,11 @@ class adminlogin extends NoInputPage {
 					.$CORE_LOCAL->get("adminRequestLevel")
 					." and (CashierPassword = ".$passwd
 					." or AdminPassword = ".$passwd.")";
-				$db = pDataConnect();
+				$db = Database::pDataConnect();
 				$result = $db->query($query);
 				$num_rows = $db->num_rows($result);
 				if ($num_rows != 0) {
-					header("Location: ".$CORE_LOCAL->get("adminRequest"));
+					$this->change_page($CORE_LOCAL->get("adminRequest"));
 					return False;
 				}
 				else {

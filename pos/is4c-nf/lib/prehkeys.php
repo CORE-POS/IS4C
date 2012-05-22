@@ -34,6 +34,7 @@ if (!function_exists("boxMsgscreen")) include($CORE_PATH."lib/clientscripts.php"
 /**
   @file
   @brief A horrible, horrible catch-all clutter of functions
+  @deprecated see PrehLib
 */
 
 /**
@@ -354,11 +355,11 @@ function tender($right, $strl) {
 
 	getsubtotals();
 
-	if ($CORE_LOCAL->get("ttlflag") == 1 && ($right == "CX" || $right == "SC")) {			// added ttlflag on 2/28/05 apbw 
+	if ($CORE_LOCAL->get("ttlflag") == 1 && ($right == "CX" || $right == "SC" || $right == "MI")) {
 
 		$charge_ok = chargeOk();
 		if ($right == "CX" && $charge_ok == 1 && strlen($CORE_LOCAL->get("memberID")) == 5 && substr($CORE_LOCAL->get("memberID"), 0, 1) == "5") $charge_ok = 1;
-		elseif ($right == "SC" && $charge_ok == 1) $charge_ok = 1;
+		elseif (($right == "SC" || $right == "MI") && $charge_ok == 1) $charge_ok = 1;
 		else $charge_ok = 0;
 	}
 
@@ -379,12 +380,12 @@ function tender($right, $strl) {
 		$ret['output'] = boxMsg("transaction must be totaled before tender can be accepted");
 		return $ret;
 	}
-	elseif (($right == "FS" || $right == "EB") && $CORE_LOCAL->get("fntlflag") == 0) {
+	elseif (($right == "FS" || $right == "EF" || $right == "EB") && $CORE_LOCAL->get("fntlflag") == 0) {
 		$ret['output'] = boxMsg("eligible amount must be totaled before foodstamp tender can be accepted");
 		return $ret;
 	}
-	elseif ($right == "EB" && $CORE_LOCAL->get("fntlflag") == 1 && $CORE_LOCAL->get("fsEligible") + 10 <= $strl) {
-		$ret['output'] = xboxMsg("Foodstamp tender cannot exceed elible amount by pver $10.00");
+	elseif (($right == "EB" || $right == "EF") && $CORE_LOCAL->get("fntlflag") == 1 && $CORE_LOCAL->get("fsEligible") + 10 <= $strl) {
+		$ret['output'] = xboxMsg("Foodstamp tender cannot exceed eligible amount by pver $10.00");
 		return $ret;
 	}
 	elseif ($right == "CX" && $charge_ok == 0) {
@@ -392,29 +393,29 @@ function tender($right, $strl) {
 		return $ret;
 	}
 	//alert customer that charge exceeds avail balance
-	elseif ($right == "SC" && $charge_ok == 0 && $CORE_LOCAL->get("availBal") < 0) {
+	elseif (($right == "MI" || $right == "SC") && $charge_ok == 0 && $CORE_LOCAL->get("availBal") < 0) {
 		$ret['output'] = xboxMsg("member ".$CORE_LOCAL->get("memberID")."<BR> has $" . $CORE_LOCAL->get("availBal") . " available.");
 		return $ret;
 	}
-	elseif ($right == "SC" && $charge_ok == 1 && $CORE_LOCAL->get("availBal") < 0) {
+	elseif (($right == "MI" || $right == "SC") && $charge_ok == 1 && $CORE_LOCAL->get("availBal") < 0) {
 		$ret['output'] = xboxMsg("member ".$CORE_LOCAL->get("memberID")."<BR>is overlimit");
 		return $ret;
 	}
-	elseif ($right == "SC" && $charge_ok == 0) {
+	elseif (($right == "MI" || $right == "SC") && $charge_ok == 0) {
 		$ret['output'] = xboxMsg("member ".$CORE_LOCAL->get("memberID")."<BR>is not authorized to make employee charges");
 		return $ret;
 	}
-	elseif ($right == "SC" && $charge_ok == 1 && ($CORE_LOCAL->get("availBal") + $CORE_LOCAL->get("memChargeTotal") - $strl) < 0) {
+	elseif (($right == "MI" || $right == "SC") && $charge_ok == 1 && ($CORE_LOCAL->get("availBal") + $CORE_LOCAL->get("memChargeTotal") - $strl) < 0) {
 		$ret['output'] = xboxMsg("member ".$CORE_LOCAL->get("memberID")."<br> bhas exceeded charge limit");
 		return $ret;
 	}
-	elseif ($right == "SC" && $charge_ok == 1 && (ABS($CORE_LOCAL->get("memChargeTotal"))+ $strl) >= ($CORE_LOCAL->get("availBal") + 0.005) && $CORE_LOCAL->get("store")=="WFC") {
+	elseif (($right == "MI" || $right == "SC") && $charge_ok == 1 && (ABS($CORE_LOCAL->get("memChargeTotal"))+ $strl) >= ($CORE_LOCAL->get("availBal") + 0.005) && $CORE_LOCAL->get("store")=="WFC") {
 		$memChargeRemain = $CORE_LOCAL->get("availBal");
 		$memChargeCommitted = $memChargeRemain + $CORE_LOCAL->get("memChargeTotal");
 		$ret['output'] = xboxMsg("available balance for charge <br>is only $" .$memChargeCommitted. ".<br><b><font size = 5>$" . number_format($memChargeRemain,2) . "</font></b><br>may still be used on this purchase.");
 		return $ret;
 	}
-	elseif(($right == "SC" || $right == "CX") && truncate2($CORE_LOCAL->get("amtdue")) < truncate2($strl)) {
+	elseif(($right == "SC" || $right == "CX" || $right == "MI") && truncate2($CORE_LOCAL->get("amtdue")) < truncate2($strl)) {
 		$ret['output'] = xboxMsg("charge tender exceeds purchase amount");
 		return $ret;
 	}
@@ -523,23 +524,24 @@ function tender($right, $strl) {
 		}
 	}
 
-	if ($tender_code == "TV")
-		addItem($tender_upc, $tender_desc, "T", "CK", "", 0, 0, $unit_price, $tendered, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
-	elseif ($tender_code == "RC"){
-		addItem($tender_upc, $tender_desc, "T", "CK", "", 0, 0, $unit_price, $tendered, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
-	}
-	else
+	// if ($tender_code == "TV")
+	// 	addItem($tender_upc, $tender_desc, "T", "CK", "", 0, 0, $unit_price, $tendered, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+	// elseif ($tender_code == "RC"){
+	// 	addItem($tender_upc, $tender_desc, "T", "CK", "", 0, 0, $unit_price, $tendered, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+	// }
+	// else
 		addItem($tender_upc, $tender_desc, "T", $tender_code, "", 0, 0, $unit_price, $tendered, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 	$CORE_LOCAL->set("msgrepeat",0);
 	$CORE_LOCAL->set("TenderType",$tender_code);			/***added by apbw 2/1/05 SCR ***/
 
-	if ($CORE_LOCAL->get("TenderType") == "SC" || $CORE_LOCAL->get("TenderType") == "CX") { 	// apbw 2/28/05 SCR
+	if ($CORE_LOCAL->get("TenderType") == "SC" || $CORE_LOCAL->get("TenderType") == "CX"
+	  || $CORE_LOCAL->get("TenderType") == "MI" ) {
 		$CORE_LOCAL->set("chargetender",1);							// apbw 2/28/05 SCR
 	}													// apbw 2/28/05 SCR
 
 	getsubtotals();
 
-	if ($right == "FS" || $right == "EB" || $right == "XE") {
+	if ($right == "FS" || $right == "EB" || $right == "XE" || $right == "EF") {
 		addfsTaxExempt();
 	}
 
@@ -559,7 +561,7 @@ function tender($right, $strl) {
 	}
 
 	if ($CORE_LOCAL->get("amtdue") <= 0.005) {
-		if ($CORE_LOCAL->get("paycard_mode") == PAYCARD_MODE_AUTH
+		if ($CORE_LOCAL->get("paycard_mode") == PaycardLib::PAYCARD_MODE_AUTH
 		    && ($right == "CC" || $right == "GD")){
 			$CORE_LOCAL->set("change",0);
 			$CORE_LOCAL->set("fntlflag",0);

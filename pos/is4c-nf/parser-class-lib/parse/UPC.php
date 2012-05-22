@@ -20,18 +20,6 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
-
-if (!class_exists("Parser")) include_once($CORE_PATH."parser-class-lib/Parser.php");
-if (!function_exists("addItem")) include($CORE_PATH."lib/additem.php");
-if (!function_exists("boxMsg")) include($CORE_PATH."lib/drawscreen.php");
-if (!function_exists("nullwrap")) include($CORE_PATH."lib/lib.php");
-if (!function_exists("setglobalvalue")) include_once($CORE_PATH."lib/loadconfig.php");
-if (!function_exists("boxMsgscreen")) include_once($CORE_PATH."lib/clientscripts.php");
-if (!function_exists("list_items")) include_once($CORE_PATH."lib/listitems.php");
-if (!function_exists("memberID")) include_once($CORE_PATH."lib/prehkeys.php");
-if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
 
 class UPC extends Parser {
 	function check($str){
@@ -50,20 +38,21 @@ class UPC extends Parser {
 	}
 
 	function upcscanned($entered) {
-		global $CORE_LOCAL,$CORE_PATH;
+		global $CORE_LOCAL;
+		$my_url = MiscLib::base_url();
 		$ret = $this->default_json();
 
 		/* force cashiers to enter a comment on refunds */
 		if ($CORE_LOCAL->get("refund")==1 && $CORE_LOCAL->get("refundComment") == ""){
 			if ($CORE_LOCAL->get("SecurityRefund") > 20){
-				$CORE_LOCAL->set("adminRequest",$CORE_PATH."gui-modules/refundComment.php");
+				$CORE_LOCAL->set("adminRequest",$my_url."gui-modules/refundComment.php");
 				$CORE_LOCAL->set("adminRequestLevel",$CORE_LOCAL->get("SecurityRefund"));
 				$CORE_LOCAL->set("adminLoginMsg","Login to issue refund");
 				$CORE_LOCAL->set("away",1);
-				$ret['main_frame'] = $CORE_PATH."gui-modules/adminlogin.php";
+				$ret['main_frame'] = $my_url."gui-modules/adminlogin.php";
 			}
 			else
-				$ret['main_frame'] = $CORE_PATH.'gui-modules/refundComment.php';
+				$ret['main_frame'] = $my_url.'gui-modules/refundComment.php';
 			$CORE_LOCAL->set("refundComment",$CORE_LOCAL->get("strEntered"));
 			return $ret;
 		}
@@ -92,12 +81,12 @@ class UPC extends Parser {
 		/* extract scale-sticker prices */
 		$scaleprice = 0;
 		if (substr($upc, 0, 3) == "002") {
-			$scaleprice = truncate2(substr($upc, -4)/100);
+			$scaleprice = MiscLib::truncate2(substr($upc, -4)/100);
 			$upc = substr($upc, 0, 8)."00000";
 			if ($upc == "0020006000000" || $upc == "0020010000000") $scaleprice *= -1;
 		}
 
-		$db = pDataConnect();
+		$db = Database::pDataConnect();
 		$query = "select inUse,upc,description,normal_price,scale,deposit,
 			qttyEnforced,department,local,cost,tax,foodstamp,discount,
 			discounttype,specialpricemethod,special_price,groupprice,
@@ -111,16 +100,16 @@ class UPC extends Parser {
 		if ($num_rows == 0){
 			$objs = $CORE_LOCAL->get("SpecialUpcClasses");
 			foreach($objs as $class_name){
-				if (!class_exists($class_name))
-					include($CORE_PATH.'lib/Scanning/SpecialUPCs/'.$class_name.'.php');
 				$instance = new $class_name();
 				if ($instance->is_special($upc)){
 					return $instance->handle($upc,$ret);
 				}
 			}
 			// no match; not a product, not special
+			$ret['output'] = DisplayLib::boxMsg($upc."<br /><b>is not a valid item</b>");
+			$ret['udpmsg'] = 'errorBeep';
 			$ret['output'] = boxMsg($upc."<br /><b>is not a valid item</b>");
-	     	$ret['udpmsg'] = 'errorBeep';
+			$ret['udpmsg'] = 'errorBeep';
 			return $ret; 
 		}
 
@@ -145,7 +134,7 @@ class UPC extends Parser {
 				$CORE_LOCAL->set("boxMsg","<b>".$row["upc"]." - ".$row["description"]."</b>
 					<br>Item not for sale
 					<br><font size=-1>[enter] to continue sale, [clear] to cancel</font>");
-				$ret['main_frame'] = $CORE_PATH."gui-modules/boxMsg2.php";
+				$ret['main_frame'] = $my_url."gui-modules/boxMsg2.php";
 				return $ret;
 			}
 		}
@@ -166,7 +155,7 @@ class UPC extends Parser {
 				$current = date("m/d/y",strtotime($CORE_LOCAL->get("memAge")));
 				$CORE_LOCAL->set("requestType","customer age");
 				$CORE_LOCAL->set("requestMsg","Type customer birthdate YYYYMMDD<br />(current: $current)");
-				$ret['main_frame'] = $CORE_PATH.'gui-modules/requestInfo.php';
+				$ret['main_frame'] = $my_url.'gui-modules/requestInfo.php';
 				return $ret;
 			}
 		}
@@ -175,7 +164,7 @@ class UPC extends Parser {
 		   (can break db column if it doesn't fit
 		*/
 		if (strlen($row["normal_price"]) > 8){
-			$ret['output'] = boxMsg("$upc<br>Claims to be more than $100,000");
+			$ret['output'] = DisplayLib::boxMsg("$upc<br>Claims to be more than $100,000");
 			return $ret;
 		}
 
@@ -188,7 +177,7 @@ class UPC extends Parser {
 			$CORE_LOCAL->get("quantity") == 0 && substr($upc,0,3) != "002") {
 
 			$CORE_LOCAL->set("SNR",1);
-			$ret['output'] = boxMsg("please put item on scale");
+			$ret['output'] = DisplayLib::boxMsg("please put item on scale");
 			$CORE_LOCAL->set("wgtRequested",0);
 			$ret['retry'] = $CORE_LOCAL->get("strEntered");
 			return $ret;
@@ -202,7 +191,7 @@ class UPC extends Parser {
 				$quantity = $CORE_LOCAL->get("quantity") - $CORE_LOCAL->get("tare");
 
 			if ($quantity <= 0){
-				$ret['output'] = boxMsg("item weight must be greater than tare weight");
+				$ret['output'] = DisplayLib::boxMsg("item weight must be greater than tare weight");
 				return $ret;
 			}
 			$CORE_LOCAL->set("tare",0);
@@ -210,7 +199,7 @@ class UPC extends Parser {
 
 		/* non-scale items need integer quantities */	
 		if ($row["scale"] == 0 && (int) $CORE_LOCAL->get("quantity") != $CORE_LOCAL->get("quantity") ) {
-			$ret['output'] = boxMsg("fractional quantity cannot be accepted for this item");
+			$ret['output'] = DisplayLib::boxMsg("fractional quantity cannot be accepted for this item");
 			return $ret;
 		}
 
@@ -218,7 +207,7 @@ class UPC extends Parser {
 		   entry page if one wasn't provided */
 		$qttyEnforced = $row["qttyEnforced"];
 		if (($qttyEnforced == 1) && ($CORE_LOCAL->get("multiple") == 0) && ($CORE_LOCAL->get("msgrepeat") == 0)) {
-			$ret['main_frame'] = $CORE_PATH."gui-modules/qtty2.php";
+			$ret['main_frame'] = $my_url."gui-modules/qtty2.php";
 			return $ret;
 		}
 		else
@@ -237,7 +226,7 @@ class UPC extends Parser {
 			$CORE_LOCAL->set("boxMsg","<b>".$total." gift certificate</b><br />
 				insert document<br />press [enter] to endorse
 				<p><font size='-1'>[clear] to cancel</font>");
-			$ret["main_frame"] = $CORE_PATH."gui-modules/boxMsg2.php";
+			$ret["main_frame"] = $my_url."gui-modules/boxMsg2.php";
 			return $ret;
 		}
 
@@ -250,7 +239,7 @@ class UPC extends Parser {
 			$CORE_LOCAL->set("boxMsg","<b>".$total." class registration</b><br />
 				insert form<br />press [enter] to endorse
 				<p><font size='-1'>[clear] to cancel</font>");
-			$ret["main_frame"] = $CORE_PATH."gui-modules/boxMsg2.php";
+			$ret["main_frame"] = $my_url."gui-modules/boxMsg2.php";
 			return $ret;
 		}
 
@@ -297,17 +286,15 @@ class UPC extends Parser {
 		*/
 
 		/* get discount object */
-		$discounttype = nullwrap($row["discounttype"]);
+		$discounttype = MiscLib::nullwrap($row["discounttype"]);
 		$DTClasses = $CORE_LOCAL->get("DiscountTypeClasses");
-		if (!class_exists($DTClasses[$discounttype]))
-			include($CORE_PATH."lib/Scanning/DiscountTypes/".$DTClasses[$discounttype].".php");
 		$DiscountObject = new $DTClasses[$discounttype];
 
 		/* add in sticker price and calculate a quantity
 		   if the item is stickered, scaled, and on sale */
 		if (substr($upc,0,3) == "002"){
 			if ($DiscountObject->isSale() && $scale == 1)
-				$quantity = truncate2($scaleprice / $row["normal_price"]);
+				$quantity = MiscLib::truncate2($scaleprice / $row["normal_price"]);
 			$row['normal_price'] = $scaleprice;
 		}
 
@@ -322,12 +309,10 @@ class UPC extends Parser {
 		*/
 
 		/* get price method object  & add item*/
-		$pricemethod = nullwrap($row["pricemethod"]);
+		$pricemethod = MiscLib::nullwrap($row["pricemethod"]);
 		if ($DiscountObject->isSale())
-			$pricemethod = nullwrap($row["specialpricemethod"]);
+			$pricemethod = MiscLib::nullwrap($row["specialpricemethod"]);
 		$PMClasses = $CORE_LOCAL->get("PriceMethodClasses");
-		if (!class_exists($PMClasses[$pricemethod]))
-			include($CORE_PATH."lib/Scanning/PriceMethods/".$PMClasses[$pricemethod].".php");
 		$PriceMethodObject = new $PMClasses[$pricemethod];
 		// prefetch: otherwise object members 
 		// pass out of scope in addItem()
@@ -364,17 +349,16 @@ class UPC extends Parser {
 		$CORE_LOCAL->set("quantity",0);
 		$CORE_LOCAL->set("itemPD",0);
 		$CORE_LOCAL->set("voided",0);
-		setglobalflags(0);
+		Database::setglobalflags(0);
 
 		/* output item list, update totals footer */
 		$ret['redraw_footer'] = True;
-		$ret['output'] = lastpage();
-		
-		/* price override: no products w/ normal_price = 0 */
+		$ret['output'] = DisplayLib::lastpage();
+
 		if ($prefetch['unitPrice']==0){
-			$ret['main_frame'] = $CORE_PATH.'gui-modules/priceOverride.php';
+			$ret['main_frame'] = $my_url.'gui-modules/priceOverride.php';
 		}
-		
+
 		return $ret;
 	}
 
@@ -383,7 +367,7 @@ class UPC extends Parser {
 
 		$upc = str_pad($upc,13,'0',STR_PAD_LEFT);
 
-		$db = pDataConnect();
+		$db = Database::pDataConnect();
 		$query = "select description,scale,tax,foodstamp,discounttype,
 			discount,department,normal_price
 		       	from products where upc='".$upc."'";
@@ -422,7 +406,7 @@ class UPC extends Parser {
 			$CORE_LOCAL->set("togglefoodstamp",0);
 		}
 
-		$discounttype = nullwrap($row["discounttype"]);
+		$discounttype = MiscLib::nullwrap($row["discounttype"]);
 		$discountable = $row["discount"];
 
 		$quantity = 1;
@@ -430,7 +414,7 @@ class UPC extends Parser {
 
 		$save_refund = $CORE_LOCAL->get("refund");
 
-		additem($upc,$description,"I"," "," ",$row["department"],
+		TransRecord::addItem($upc,$description,"I"," "," ",$row["department"],
 			$quantity,$row["normal_price"],
 			$quantity*$row["normal_price"],$row["normal_price"],
 			$scale,$tax,$foodstamp,0,0,$discountable,$discounttype,

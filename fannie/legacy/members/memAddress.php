@@ -5,7 +5,7 @@ include_once($FANNIE_ROOT.'auth/login.php');
 function addressList($memNum)
 {
 	global $sql,$FANNIE_URL;
-	$custQ = "SELECT * FROM custdata where cardno = $memNum and personnum= 1";
+	$custQ = "SELECT * FROM custdata where CardNo = $memNum and personnum= 1";
 	$custR = $sql->query($custQ);
         $custN = $sql->num_rows($custR);
         $custW = $sql->fetch_row($custR);
@@ -201,7 +201,7 @@ function addressList($memNum)
 function addressForm($memNum)
 {
 	global $sql;
-  $typeQ = "select * from custdata where cardno = $memNum and personnum = 1";
+  $typeQ = "select * from custdata where CardNo = $memNum and personNum = 1";
   $typeR = $sql->query($typeQ);
   $typeRow = $sql->fetch_array($typeR);
         $type = trim($typeRow['memType']," ");
@@ -547,7 +547,7 @@ function activate($memNum){
 function addressFormLimited($memNum)
 {
 	global $sql;
-  $typeQ = "select * from custdata where cardno = $memNum and personnum = 1";
+  $typeQ = "select * from custdata where CardNo = $memNum and personNum = 1";
   $typeR = $sql->query($typeQ);
   $typeRow = $sql->fetch_array($typeR);
         $type = trim($typeRow['memType']," ");

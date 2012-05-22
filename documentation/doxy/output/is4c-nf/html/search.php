@@ -376,7 +376,7 @@ main();
 
 
 ?>
-<hr size="1"><address style="align: right;"><small>Generated on Mon Apr 23 14:29:09 2012 for CORE POS - IS4C by&nbsp;
+<hr size="1"><address style="align: right;"><small>Generated on Mon May 21 10:55:52 2012 for CORE POS - IS4C by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img src="doxygen.png" alt="doxygen" align="middle" border="0"></a> 1.4.7 </small></address>
 </body>

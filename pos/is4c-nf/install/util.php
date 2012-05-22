@@ -38,9 +38,6 @@ function load_sample_data($sql, $table){
 }
 
 function db_test_connect($host,$type,$db,$user,$pw){
-        global $CORE_PATH;
-        if (!class_exists('SQLManager'))
-                include($CORE_PATH.'lib/SQLManager.php');
         $sql = False;
         try {
                 $sql = new SQLManager($host,$type,$db,$user,$pw);

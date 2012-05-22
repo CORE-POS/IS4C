@@ -44,9 +44,7 @@ namespace SPH {
 
 public class SPH_Magellan_Scale : SerialPortHandler {
 	private bool got_weight;
-private static String MAGELLAN_OUTPUT_FILE = "scale-drivers/drivers/NewMagellan/scanner-scale.data";
 private static String MAGELLAN_OUTPUT_DIR = "ss-output/";
-private static String MAGELLAN_LOCK_FILE = "scale-drivers/drivers/NewMagellan/scanner-scale.lock";
 
 	public SPH_Magellan_Scale(string p) : base(p){
 		sp = new SerialPort();
@@ -120,17 +118,6 @@ private static String MAGELLAN_LOCK_FILE = "scale-drivers/drivers/NewMagellan/sc
 	}
 
 	private void PushOutput(string s){
-		/*
-		while (File.Exists(MAGELLAN_LOCK_FILE)){
-			Thread.Sleep(50);
-		}
-		File.Create(MAGELLAN_LOCK_FILE).Dispose();
-		StreamWriter sw = File.AppendText(MAGELLAN_OUTPUT_FILE);
-		sw.WriteLine(s);
-		sw.Close();
-		//File.Delete(MAGELLAN_LOCK_FILE);
-		*/
-
 		/* trying to maintain thread safety between
 		 * two apps in different languages....
 		 *

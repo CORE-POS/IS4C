@@ -29,13 +29,6 @@
 
    In most locations, this is pricemethod 1 or 2
 */
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
-
-if (!class_exists('PriceMethod')) include($CORE_PATH.'lib/Scanning/PriceMethod.php');
-if (!function_exists('addItem')) include($CORE_PATH.'lib/additem.php');
-if (!function_exists('tDataConnect')) include($CORE_PATH.'lib/connect.php');
-if (!function_exists('truncate2')) include($CORE_PATH.'lib/lib.php');
 
 class QttyEnforcedGroupPM extends PriceMethod {
 
@@ -71,7 +64,7 @@ class QttyEnforcedGroupPM extends PriceMethod {
 				$discount = 0;
 			}
 
-			addItem($row['upc'],
+			TransRecord::addItem($row['upc'],
 				$row['description'],
 				'I',
 				'',
@@ -79,7 +72,7 @@ class QttyEnforcedGroupPM extends PriceMethod {
 				$row['department'],
 				$new_sets * $groupQty,
 				$pricing['unitPrice'],
-				truncate2($pricing['unitPrice'] * $quantity),
+				MiscLib::truncate2($pricing['unitPrice'] * $quantity),
 				$pricing['regPrice'],
 				$row['scale'],
 				$row['tax'],
@@ -121,7 +114,7 @@ class QttyEnforcedGroupPM extends PriceMethod {
 					."localtemptrans where trans_status<>'R' AND "
 					."upc = '".$upc."' group by upc";
 			}
-			$dbt = tDataConnect();
+			$dbt = Database::tDataConnect();
 			$resultt = $dbt->query($queryt);
 			$num_rowst = $dbt->num_rows($resultt);
 
@@ -144,7 +137,7 @@ class QttyEnforcedGroupPM extends PriceMethod {
 					$discount = 0;
 				}
 
-				addItem($row['upc'],
+				TransRecord::addItem($row['upc'],
 					$row['description'],
 					'I',
 					'',
@@ -181,7 +174,7 @@ class QttyEnforcedGroupPM extends PriceMethod {
 		/* any remaining quantity added without
 		   grouping discount */
 		if ($quantity > 0){
-			addItem($row['upc'],
+			TransRecord::addItem($row['upc'],
 				$row['description'],
 				'I',
 				' ',
@@ -189,7 +182,7 @@ class QttyEnforcedGroupPM extends PriceMethod {
 				$row['department'],
 				$quantity,
 				$pricing['unitPrice'],
-				truncate2($pricing['unitPrice'] * $quantity),
+				MiscLib::truncate2($pricing['unitPrice'] * $quantity),
 				$pricing['regPrice'],
 				$row['scale'],
 				$row['tax'],
