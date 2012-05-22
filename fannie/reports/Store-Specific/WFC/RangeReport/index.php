@@ -75,6 +75,7 @@ echo '<br>Report run ' . $today. ' for ' . $repDate." to ".$repDate2."<br />";
 
 $dlog = select_dlog($repDate,$repDate2);
 //var_dump($dlog);
+$dlog = "trans_archive.dlogBig";
 
 $tenderQ = "SELECT t.TenderName,-sum(d.total) as total, COUNT(d.total)
 

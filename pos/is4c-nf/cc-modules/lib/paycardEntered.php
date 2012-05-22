@@ -21,12 +21,14 @@
 
 *********************************************************************************/
 
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
-
-if (!class_exists("Parser")) include_once($CORE_PATH."parser-class-lib/Parser.php");
-if (!function_exists("paycard_reset")) include_once($CORE_PATH."cc-modules/lib/paycardLib.php");
-if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
+if (!class_exists("Parser")) 
+	include_once(realpath(dirname(__FILE__)."/../parser-class-lib/Parser.php"));
+if (!class_exists("PaycardLib")) 
+	include_once(realpath(dirname(__FILE__)."/paycardLib.php"));
+if (!isset($CORE_LOCAL)){
+	include_once(realpath(dirname(__FILE__)."/LS_Access.php"));
+	$CORE_LOCAL = new LS_Access();	
+}
 
 class paycardEntered extends Parser {
 	var $swipestr;
@@ -36,19 +38,19 @@ class paycardEntered extends Parser {
 	function check($str){
 		if (substr($str,-1,1) == "?"){
 			$this->swipestr = $str;
-			$this->swipetype = PAYCARD_TYPE_UNKNOWN;
+			$this->swipetype = PaycardLib::PAYCARD_TYPE_UNKNOWN;
 			$this->manual = False;
 			return True;
 		}
 		elseif (is_numeric($str) && strlen($str) >= 16){
 			$this->swipestr = $str;
-			$this->swipetype = PAYCARD_TYPE_UNKNOWN;
+			$this->swipetype = PaycardLib::PAYCARD_TYPE_UNKNOWN;
 			$this->manual = True;
 			return True;
 		}
 		elseif (is_numeric(substr($str,2)) && strlen($str) >= 18){
 			$this->swipestr = $str;
-			$this->swipetype = PAYCARD_TYPE_UNKNOWN;
+			$this->swipetype = PaycardLib::PAYCARD_TYPE_UNKNOWN;
 			$this->manual = True;
 			return True;
 		}
@@ -59,37 +61,37 @@ class paycardEntered extends Parser {
 		$ret = array();
 		$str = $this->swipestr;
 		if( substr($str,0,2) == "PV") {
-			$ret = $this->paycard_entered(PAYCARD_MODE_BALANCE, substr($str,2), $this->manual, $this->swipetype);
+			$ret = $this->paycard_entered(PaycardLib::PAYCARD_MODE_BALANCE, substr($str,2), $this->manual, $this->swipetype);
 		} else if( substr($str,0,2) == "AV") {
-			$ret = $this->paycard_entered(PAYCARD_MODE_ADDVALUE, substr($str,2), $this->manual, $this->swipetype);
+			$ret = $this->paycard_entered(PaycardLib::PAYCARD_MODE_ADDVALUE, substr($str,2), $this->manual, $this->swipetype);
 		} else if( substr($str,0,2) == "AC") {
-			$ret = $this->paycard_entered(PAYCARD_MODE_ACTIVATE, substr($str,2), $this->manual, $this->swipetype);
+			$ret = $this->paycard_entered(PaycardLib::PAYCARD_MODE_ACTIVATE, substr($str,2), $this->manual, $this->swipetype);
 		} else {
-			$ret = $this->paycard_entered(PAYCARD_MODE_AUTH, $str, $this->manual, $this->swipetype);
+			$ret = $this->paycard_entered(PaycardLib::PAYCARD_MODE_AUTH, $str, $this->manual, $this->swipetype);
 		}
 		// if successful, paycard_entered() redirects to a confirmation page and exit()s; if we're still here, there was an error, so reset all data
 		if ($ret['main_frame'] == false)
-			paycard_reset();
+			PaycardLib::paycard_reset();
 		return $ret;
 	}
 
 	function paycard_entered($mode,$card,$manual,$type){
-		global $CORE_LOCAL,$CORE_PATH;
+		global $CORE_LOCAL;
 		$ret = $this->default_json();
 		// initialize
 		$validate = true; // run Luhn's on PAN, check expiration date
-		paycard_reset();
+		PaycardLib::paycard_reset();
 		$CORE_LOCAL->set("paycard_mode",$mode);
 		$CORE_LOCAL->set("paycard_manual",($manual ? 1 : 0));
 
 		// error checks based on transaction
-		if( $mode == PAYCARD_MODE_AUTH) {
+		if( $mode == PaycardLib::PAYCARD_MODE_AUTH) {
 			if( $CORE_LOCAL->get("ttlflag") != 1) { // must subtotal before running card
-				$ret['output'] = paycard_msgBox($type,"No Total",
+				$ret['output'] = PaycardLib::paycard_msgBox($type,"No Total",
 					"Transaction must be totaled before tendering or refunding","[clear] to cancel");
 				return $ret;
 			} else if( abs($CORE_LOCAL->get("amtdue")) < 0.005) { // can't tender for more than due
-				$ret['output'] = paycard_msgBox($type,"No Total",
+				$ret['output'] = PaycardLib::paycard_msgBox($type,"No Total",
 					"Nothing to tender or refund","[clear] to cancel");
 				return $ret;
 			}
@@ -105,15 +107,15 @@ class paycardEntered extends Parser {
 		if( $CORE_LOCAL->get("paycard_manual")) {
 			// make sure it's numeric
 			if( !ctype_digit($card) || strlen($card) < 18) { // shortest known card # is 14 digits, plus MMYY
-				$ret['output'] = paycard_msgBox($type,"Manual Entry Unknown",
+				$ret['output'] = PaycardLib::paycard_msgBox($type,"Manual Entry Unknown",
 					"Please enter card data like:<br>CCCCCCCCCCCCCCCCMMYY","[clear] to cancel");
 				return $ret;
 			}
 			// split up input (and check for the Concord test card)
-			if ($type == PAYCARD_TYPE_UNKNOWN){
-				$type = paycard_type($card);
+			if ($type == PaycardLib::PAYCARD_TYPE_UNKNOWN){
+				$type = PaycardLib::paycard_type($card);
 			}
-			if( $type == PAYCARD_TYPE_GIFT) {
+			if( $type == PaycardLib::PAYCARD_TYPE_GIFT) {
 				$CORE_LOCAL->set("paycard_PAN",$card); // our gift cards have no expiration date or conf code
 			} else {
 				$CORE_LOCAL->set("paycard_PAN",substr($card,0,-4));
@@ -121,9 +123,9 @@ class paycardEntered extends Parser {
 			}
 		} else {
 			// swiped magstripe (reference to ISO format at end of this file)
-			$stripe = paycard_magstripe($card);
+			$stripe = PaycardLib::paycard_magstripe($card);
 			if( !is_array($stripe)) {
-				$ret['output'] = paycard_errBox($type,$CORE_LOCAL->get("paycard_manual")."Card Data Invalid","Please swipe again or type in manually","[clear] to cancel");
+				$ret['output'] = PaycardLib::paycard_errBox($type,$CORE_LOCAL->get("paycard_manual")."Card Data Invalid","Please swipe again or type in manually","[clear] to cancel");
 				return $ret;
 			}
 			$CORE_LOCAL->set("paycard_PAN",$stripe["pan"]);
@@ -135,24 +137,30 @@ class paycardEntered extends Parser {
 		} // manual/swiped
 
 		// determine card issuer and type
-		$CORE_LOCAL->set("paycard_type",paycard_type($CORE_LOCAL->get("paycard_PAN")));
-		$CORE_LOCAL->set("paycard_issuer",paycard_issuer($CORE_LOCAL->get("paycard_PAN")));
+		$CORE_LOCAL->set("paycard_type",PaycardLib::paycard_type($CORE_LOCAL->get("paycard_PAN")));
+		$CORE_LOCAL->set("paycard_issuer",PaycardLib::paycard_issuer($CORE_LOCAL->get("paycard_PAN")));
 	
 		// if we knew the type coming in, make sure it agrees
-		if( $type != PAYCARD_TYPE_UNKNOWN && $type != $CORE_LOCAL->get("paycard_type")) {
-			$ret['output'] = paycard_msgBox($type,"Type Mismatch",
+		if( $type != PaycardLib::PAYCARD_TYPE_UNKNOWN && $type != $CORE_LOCAL->get("paycard_type")) {
+			$ret['output'] = PaycardLib::paycard_msgBox($type,"Type Mismatch",
 				"Card number does not match card type","[clear] to cancel");
 			return $ret;
 		}
 
+		if ($CORE_LOCAL->get("paycard_type") == PaycardLib::PAYCARD_TYPE_CREDIT){
+			PaycardLib::paycard_reset();
+			$ret['main_frame'] = MiscLib::base_url().'cc-modules/gui/ProcessPage.php';
+			return $ret;
+		}
+
 		foreach($CORE_LOCAL->get("RegisteredPaycardClasses") as $rpc){
-			if (!class_exists($rpc)) include_once($CORE_PATH."cc-modules/$rpc.php");
+			if (!class_exists($rpc)) include_once(MiscLib::base_url()."cc-modules/$rpc.php");
 			$myObj = new $rpc();
 			if ($myObj->handlesType($CORE_LOCAL->get("paycard_type")))
 				return $myObj->entered($validate,$ret);
 		}
 
-		$ret['output'] = paycard_errBox(PAYCARD_TYPE_UNKNOWN,"Unknown Card Type ".$CORE_LOCAL->get("paycard_type"),"","[clear] to cancel");
+		$ret['output'] = PaycardLib::paycard_errBox(PaycardLib::PAYCARD_TYPE_UNKNOWN,"Unknown Card Type ".$CORE_LOCAL->get("paycard_type"),"","[clear] to cancel");
 		return $ret;
 	}
 

@@ -21,14 +21,6 @@
 
 *********************************************************************************/
 
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
-
-if (!class_exists("Parser")) include_once($CORE_PATH."parser-class-lib/Parser.php");
-if (!function_exists("percentDiscount")) include_once($CORE_PATH."lib/prehkeys.php");
-if (!function_exists("boxMsg")) include_once($CORE_PATH."lib/drawscreen.php");
-if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
-
 class StackableDiscount extends Parser {
 	var $ret;
 	function check($str){
@@ -39,16 +31,16 @@ class StackableDiscount extends Parser {
 			if (!is_numeric($strl)) 
 				return False;
 			elseif ($CORE_LOCAL->get("tenderTotal") != 0) 
-				$this->ret['output'] = boxMsg("discount not applicable after tender");
+				$this->ret['output'] = DisplayLib::boxMsg("discount not applicable after tender");
 			elseif ($strl > 50) 
-				$this->ret['output'] = boxMsg("discount exceeds maximum");
+				$this->ret['output'] = DisplayLib::boxMsg("discount exceeds maximum");
 			elseif ($strl <= 0) 
-				$this->ret['output'] = boxMsg("discount must be greater than zero");
+				$this->ret['output'] = DisplayLib::boxMsg("discount must be greater than zero");
 			elseif ($strl <= 50 and $strl > 0) {
 				$existingPD = $CORE_LOCAL->get("percentDiscount");
 				$stackablePD = $strl;
 				$equivalentPD = ($existingPD + $stackablePD);								//	sum discounts
-				$this->ret = percentDiscount($equivalentPD,$this->ret);
+				$this->ret = PrehLib::percentDiscount($equivalentPD,$this->ret);
 			}
 			else 
 				return False;

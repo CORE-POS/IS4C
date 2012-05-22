@@ -147,7 +147,7 @@ Constructor takes no arguments otherwise, do whatever you want here
 <div class="memdoc">
 
 <p>
-This function is called when <a class="el" href="class_basic_c_c_module.html#c564dbb28b4fe7164c03e0ef8590a7fb">doSend()</a> returns PAYCARD_ERR_OK.<p>
+This function is called when <a class="el" href="class_basic_c_c_module.html#c564dbb28b4fe7164c03e0ef8590a7fb">doSend()</a> returns PaycardLib::PAYCARD_ERR_OK.<p>
 I use it for tendering, printing receipts, etc, but it's really only for code cleanliness. You could leave this as is and do all the everything inside <a class="el" href="class_basic_c_c_module.html#c564dbb28b4fe7164c03e0ef8590a7fb">doSend()</a> 
 </div>
 </div><p>
@@ -248,13 +248,13 @@ Extract response from a soap envelope <dl compact><dt><b>Parameters:</b></dt><dd
 <div class="memdoc">
 
 <p>
-Process the paycard request and return an error value as defined in <a class="el" href="paycard_lib_8php.html">paycardLib.php</a>. <dl compact><dt><b>Parameters:</b></dt><dd>
+Process the paycard request and return an error value as defined in paycardLib.php. <dl compact><dt><b>Parameters:</b></dt><dd>
   <table border="0" cellspacing="2" cellpadding="0">
     <tr><td valign="top"></td><td valign="top"><em>$type</em>&nbsp;</td><td>paycard type </td></tr>
   </table>
 </dl>
 <dl compact><dt><b>Returns:</b></dt><dd><ul>
-<li>On success, return PAYCARD_ERR_OK.</li><li>On failure, return anything else and set any error messages to be displayed in $CORE_LOCAL-&gt;["boxMsg"].</li></ul>
+<li>On success, return PaycardLib::PAYCARD_ERR_OK.</li><li>On failure, return anything else and set any error messages to be displayed in $CORE_LOCAL-&gt;["boxMsg"].</li></ul>
 </dd></dl>
 This function should submit a request to the gateway and process the result. By convention credit card request and response info is stored in the efsnet* tables and gift card request and response info is stored in the valutec* tables.<p>
 <b>Do not store full card number when logging request and response info</b>. 
@@ -321,7 +321,7 @@ Processes data fetched by $this-&gt;<a class="el" href="class_basic_c_c_module.h
 </td></tr>
   </table>
 </dl>
-<dl compact><dt><b>Returns:</b></dt><dd>An error code. Constants are specified in <a class="el" href="paycard_lib_8php.html">paycardLib.php</a>. PAYCARD_ERR_OK should be return on success. </dd></dl>
+<dl compact><dt><b>Returns:</b></dt><dd>An error code. Constants are specified in paycardLib.php. PaycardLib::PAYCARD_ERR_OK should be return on success. </dd></dl>
 
 </div>
 </div><p>
@@ -348,7 +348,7 @@ Check whether module handles this paycard type <dl compact><dt><b>Parameters:</b
   </table>
 </dl>
 <dl compact><dt><b>Returns:</b></dt><dd>True or False</dd></dl>
-Type constants are defined in <a class="el" href="paycard_lib_8php.html">paycardLib.php</a>. 
+Type constants are defined in paycardLib.php. 
 </div>
 </div><p>
 <a class="anchor" name="4bd58b901a7803bde7ee88c107f40110"></a><!-- doxytag: member="BasicCCModule::paycard_void" ref="4bd58b901a7803bde7ee88c107f40110" args="($transID, $laneNo=-1, $transNo=-1, $json=array())" -->
@@ -448,10 +448,10 @@ Create a reference number from session variables. <dl compact><dt><b>Parameters:
 <p>
 <dl compact><dt><b>Parameters:</b></dt><dd>
   <table border="0" cellspacing="2" cellpadding="0">
-    <tr><td valign="top"></td><td valign="top"><em>$errorCode</em>&nbsp;</td><td>error code contstant from <a class="el" href="paycard_lib_8php.html">paycardLib.php</a></td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>$errorCode</em>&nbsp;</td><td>error code contstant from paycardLib.php</td></tr>
   </table>
 </dl>
-Set $CORE_LOCAL-&gt;["boxMsg"] appropriately for the given error code. I find this easier than manually setting an appropriate message every time I return a common error like PAYCARD_ERR_NOSEND. I think everything but PAYCARD_ERR_PROC can have one default message assigned here 
+Set $CORE_LOCAL-&gt;["boxMsg"] appropriately for the given error code. I find this easier than manually setting an appropriate message every time I return a common error like PaycardLib::PAYCARD_ERR_NOSEND. I think everything but PaycardLib::PAYCARD_ERR_PROC can have one default message assigned here 
 </div>
 </div><p>
 <a class="anchor" name="b43c446a9302435ad93f7007fccae80e"></a><!-- doxytag: member="BasicCCModule::setPAN" ref="b43c446a9302435ad93f7007fccae80e" args="($in)" -->
@@ -547,7 +547,7 @@ Put objects into a soap envelope <dl compact><dt><b>Parameters:</b></dt><dd>
 </div><p>
 <hr>The documentation for this class was generated from the following file:<ul>
 <li>pos/is4c-nf/cc-modules/BasicCCModule.php</ul>
-<hr size="1"><address style="align: right;"><small>Generated on Mon Apr 23 14:29:09 2012 for CORE POS - IS4C by&nbsp;
+<hr size="1"><address style="align: right;"><small>Generated on Mon May 21 10:55:52 2012 for CORE POS - IS4C by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img src="doxygen.png" alt="doxygen" align="middle" border="0"></a> 1.4.7 </small></address>
 </body>

@@ -30,6 +30,7 @@ if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
 /**
   @file
   @brief A collection of very basic functions with nowhere else to go.
+  @deprecated See MiscLib
 */
 
 // These functions have been translated from lib.asp by Brandon on 07.13.03.

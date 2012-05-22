@@ -21,16 +21,6 @@
 
 *********************************************************************************/
 
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
-
-if (!class_exists("Parser")) include_once($CORE_PATH."parser-class-lib/Parser.php");
-if (!function_exists("tDataConnect")) include_once($CORE_PATH."lib/connect.php");
-if (!function_exists("boxMsg")) include($CORE_PATH."lib/drawscreen.php");
-if (!function_exists("lastpage")) include_once($CORE_PATH."lib/listitems.php");
-if (!function_exists("adddiscount")) include_once($CORE_PATH."lib/additem.php");
-if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
-
 class LineItemDiscount extends Parser {
 
 	/* Parse module matches input LD */
@@ -41,7 +31,7 @@ class LineItemDiscount extends Parser {
 	}
 
 	function parse($str){
-		global $CORE_LOCAL,$CORE_PATH;
+		global $CORE_LOCAL;
 
 		$ret = $this->default_json();
 
@@ -49,26 +39,26 @@ class LineItemDiscount extends Parser {
 		$transID = $CORE_LOCAL->get("currentid");
 
 		// get info about the current item
-		$db = tDataConnect();
+		$db = Database::tDataConnect();
 		$q = "SELECT trans_type,discounttype,department,regPrice,quantity 
 			FROM localtemptrans WHERE trans_id=".((int)$transID);
 		$r = $db->query($q);
 
 		if ($db->num_rows($r) == 0){
 			// this shouldn't happen unless there's some weird session problem
-			$ret['output'] = boxMsg("Item not found");
+			$ret['output'] = DisplayLib::boxMsg("Item not found");
 		}
 		else {
 			$w = $db->fetch_row($r);
 			if ($w['trans_type'] != 'I' && $w['trans_type'] != 'D'){
 				// only items & open rings are discountable
-				$ret['output'] = boxMsg("Line is not discountable");
+				$ret['output'] = DisplayLib::boxMsg("Line is not discountable");
 			}
 			else if ($w['discounttype'] != 0){
 				// for simplicity, sale items cannot be discounted
 				// this also prevents using this function more than
 				// once on a single item
-				$ret['output'] = boxMsg("Item already discounted");
+				$ret['output'] = DisplayLib::boxMsg("Item already discounted");
 			}
 			else {
 				// discount is simply the total times the 
@@ -95,13 +85,13 @@ class LineItemDiscount extends Parser {
 				$discR = $db->query($discQ);
 
 				// add notification line for nonMem discount
-				adddiscount($w['regPrice']*$w['quantity']*$CORE_LOCAL->get("LineItemDiscountNonMem"),
+				TransRecord::adddiscount($w['regPrice']*$w['quantity']*$CORE_LOCAL->get("LineItemDiscountNonMem"),
 					$w['department']);
 
 				// footer should be redrawn since savings and totals
 				// have changed. Output is the list of items
 				$ret['redraw_footer'] = True;
-				$ret['output'] = lastpage();
+				$ret['output'] = DisplayLib::lastpage();
 			}
 		}
 

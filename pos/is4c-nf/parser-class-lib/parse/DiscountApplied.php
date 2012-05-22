@@ -20,13 +20,6 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
-
-if (!class_exists("Parser")) include_once($CORE_PATH."parser-class-lib/Parser.php");
-if (!function_exists("percentDiscount")) include_once($CORE_PATH."lib/prehkeys.php");
-if (!function_exists("boxMsg")) include_once($CORE_PATH."lib/drawscreen.php");
-if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
 
 class DiscountApplied extends Parser {
 	var $ret;
@@ -36,21 +29,21 @@ class DiscountApplied extends Parser {
 		if (substr($str,-2) == "DA"){
 			$strl = substr($str,0,strlen($str)-2);
 			if (substr($str,0,2) == "VD")
-				$this->ret = percentDiscount(0,$this->ret);
+				$this->ret = PrehLib::percentDiscount(0,$this->ret);
 			elseif (!is_numeric($strl)) 
 				return False;
 			elseif ($CORE_LOCAL->get("tenderTotal") != 0) 
-				$this->ret['output'] = boxMsg("discount not applicable after tender");
+				$this->ret['output'] = DisplayLib::boxMsg("discount not applicable after tender");
 			elseif ($strl > 50) 
-				$this->ret['output'] = boxMsg("discount exceeds maximum");
+				$this->ret['output'] = DisplayLib::boxMsg("discount exceeds maximum");
 			elseif ($strl <= 0) 
-				$this->ret['output'] = boxMsg("discount must be greater than zero");
+				$this->ret['output'] = DisplayLib::boxMsg("discount must be greater than zero");
 			elseif ($strl == 15 && $CORE_LOCAL->get("isStaff") == 0 && (substr($CORE_LOCAL->get("memberID"), 0, 1) != "9" || strlen($CORE_LOCAL->get("memberID")) != 6)) 
-				$this->ret['output'] = boxMsg("Staff discount not applicable");
+				$this->ret['output'] = DisplayLib::boxMsg("Staff discount not applicable");
 			elseif ($strl == 10 && $CORE_LOCAL->get("isMember") == 0) 
-				$this->ret['output'] = boxMsg("Member discount not applicable");
+				$this->ret['output'] = DisplayLib::boxMsg("Member discount not applicable");
 			elseif ($strl <= 50 and $strl > 0) 
-				$this->ret = percentDiscount($strl,$this->ret);
+				$this->ret = PrehLib::percentDiscount($strl,$this->ret);
 			else 
 				return False;
 			return True;

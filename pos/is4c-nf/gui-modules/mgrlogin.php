@@ -21,30 +21,22 @@
 
 *********************************************************************************/
 
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
-
 ini_set('display_errors','1');
 
-if (!class_exists("NoInputPage")) include_once($CORE_PATH."gui-class-lib/NoInputPage.php");
-if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
-if (!function_exists("array_to_json")) include($CORE_PATH."lib/array_to_json.php");
-if (!function_exists("pDataConnect")) include($CORE_PATH."lib/connect.php");
-if (!function_exists("udpSend")) include($CORE_PATH."lib/udpSend.php");
+include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class mgrlogin extends NoInputPage {
 
 	function preprocess(){
 		if (isset($_REQUEST['input'])){
 			$arr = $this->mgrauthenticate($_REQUEST['input']);
-			echo array_to_json($arr);
+			echo JsonLib::array_to_json($arr);
 			return False;
 		}
 		return True;
 	}
 
 	function head_content(){
-		global $CORE_PATH;
 		?>
 		<script type="text/javascript">
 		function submitWrapper(){
@@ -61,17 +53,17 @@ class mgrlogin extends NoInputPage {
 				success: function(data){
 					if (data.cancelOrder){
 						$.ajax({
-							url: '<?php echo $CORE_PATH; ?>ajax-callbacks/ajax-end.php',
+							url: '<?php echo $this->page_url; ?>ajax-callbacks/ajax-end.php',
 							type: 'get',
 							data: 'receiptType=cancelled',
 							cache: false,
 							success: function(data2){
-								location = '<?php echo $CORE_PATH; ?>gui-modules/pos2.php';
+								location = '<?php echo $this->page_url; ?>gui-modules/pos2.php';
 							}
 						});
 					}
 					else if (data.giveUp){
-						location = '<?php echo $CORE_PATH; ?>gui-modules/pos2.php';
+						location = '<?php echo $this->page_url; ?>gui-modules/pos2.php';
 					}
 					else {
 						$('div.colored').css('background',data.color);
@@ -137,7 +129,7 @@ class mgrlogin extends NoInputPage {
 			return $ret;
 		}
 
-		$db = pDataConnect();
+		$db = Database::pDataConnect();
 		$priv = sprintf("%d",$CORE_LOCAL->get("SecurityCancel"));
 		$query = "select emp_no, FirstName, LastName from employees where EmpActive = 1 and frontendsecurity >= $priv "
 		."and (CashierPassword = ".$password." or AdminPassword = ".$password.")";
@@ -159,7 +151,7 @@ class mgrlogin extends NoInputPage {
 		$CORE_LOCAL->set("msg",2);
 		$CORE_LOCAL->set("plainmsg","transaction cancelled");
 		$CORE_LOCAL->set("beep","rePoll");
-		udpSend("rePoll");
+		UdpComm::udpSend("rePoll");
 		$CORE_LOCAL->set("ccTermOut","reset");
 		$CORE_LOCAL->set("receiptType","cancelled");
 	}

@@ -21,17 +21,6 @@
 
 *********************************************************************************/
 
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
-
-if (!class_exists("SpecialUPC")) include($CORE_PATH."lib/Scanning/SpecialUPC.php");
-if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
-
-if (!function_exists('mDataConnect')) include($CORE_PATH."lib/connect.php");
-if (!function_exists('boxMsg')) include($CORE_PATH."lib/drawscreen.php");
-if (!function_exists('addItem')) include($CORE_PATH."lib/additem.php");
-if (!function_exists('lastpage')) include($CORE_PATH."lib/listitems.php");
-
 /**
    @class SpecialOrder
    WFC Electronic Special Orders
@@ -59,17 +48,17 @@ class SpecialOrder extends SpecialUPC {
 	}
 
 	function handle($upc,$json){
-		global $CORE_LOCAL,$CORE_PATH;
+		global $CORE_LOCAL;
 
 		$orderID = substr($upc,5,6);
 		$transID = substr($upc,11,2);
 
 		if ((int)$transID === 0){
-			$json['output'] = boxMsg("Not a valid order");
+			$json['output'] = DisplayLib::boxMsg("Not a valid order");
 			return $json;
 		}
 
-		$db = mDataConnect();
+		$db = Database::mDataConnect();
 		$query = sprintf("SELECT upc,description,department,
 				quantity,unitPrice,total,regPrice,d.dept_tax,d.dept_fs,ItemQtty
 				FROM PendingSpecialOrder as p LEFT JOIN
@@ -79,15 +68,15 @@ class SpecialOrder extends SpecialUPC {
 		$result = $db->query($query);
 
 		if ($db->num_rows($result) != 1){
-			$json['output'] = boxMsg("Order not found");
+			$json['output'] = DisplayLib::boxMsg("Order not found");
 			return $json;
 		}
 
 		$row = $db->fetch_array($result);
-		addItem($row['upc'],$row['description'],'I','','',$row['department'],$row['quantity'],
+		TransRecord::addItem($row['upc'],$row['description'],'I','','',$row['department'],$row['quantity'],
 			$row['unitPrice'],$row['total'],$row['regPrice'],0,$row['dept_tax'],
 			$row['dept_fs'],0.00,0.00,0,0,$row['ItemQtty'],0,0,0,$orderID,$transID,0,0.00,0,'SO');
-		$json['output'] = lastpage();
+		$json['output'] = DisplayLib::lastpage();
 
 		return $json;
 	}

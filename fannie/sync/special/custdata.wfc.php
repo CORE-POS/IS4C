@@ -21,28 +21,14 @@
 
 *********************************************************************************/
 
-// fire DTS packages to sync MSSQL lanes with server
-//$dbc->query("exec custdataUpdateAll");
-
-// Run DTS to export server data to a CSV file
-$dbc->query("exec master..xp_cmdshell 'dtsrun /S IS4CSERV\IS4CSERV /U $FANNIE_SERVER_USER /P $FANNIE_SERVER_PW /N CSV_custdata',no_output",$FANNIE_OP_DB);
+include($FANNIE_ROOT.'sync/special/generic.mysql.php');
 
 // on each MySQL lane, load the CSV file
 foreach($FANNIE_LANES as $lane){
-
-	if ($lane['type'] != 'MYSQL') continue;
-
-	$dbc->add_connection($lane['host'],$lane['type'],$lane['op'],
+	$dbc = new SQLManager($lane['host'],$lane['type'],$lane['op'],
 			$lane['user'],$lane['pw']);
 	if ($dbc->connections[$lane['op']] !== False){
 
-		if (!is_readable('/pos/csvs/custdata.csv')) break;
-		
-		$dbc->query("TRUNCATE TABLE custdata",$lane['op']);
-
-		$dbc->query("LOAD DATA LOCAL INFILE '/pos/csvs/custdata.csv' INTO TABLE
-			custdata FIELDS TERMINATED BY ',' OPTIONALLY
-			ENCLOSED BY '\"' LINES TERMINATED BY '\\r\\n'",$lane['op']);
 		if ($lane['host'] != "129.103.2.16"){
 			$dbc->query("DELETE FROM custdata WHERE type NOT IN ('PC','REG')",$lane['op']);
 		}

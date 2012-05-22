@@ -21,17 +21,12 @@
 
 *********************************************************************************/
 
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
-
-if (!class_exists("NoInputPage")) include_once($CORE_PATH."gui-class-lib/NoInputPage.php");
-if (!function_exists("addcomment")) include_once($CORE_PATH."lib/additem.php");
-if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
+include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class RefundComment extends NoInputPage {
 
 	function preprocess(){
-		global $CORE_LOCAL,$CORE_PATH;
+		global $CORE_LOCAL;
 		if (isset($_REQUEST["selectlist"])){
 			$input = $_REQUEST["selectlist"];
 			if ($input == "CL"){
@@ -47,12 +42,12 @@ class RefundComment extends NoInputPage {
 				$CORE_LOCAL->set("strRemembered",$CORE_LOCAL->get("refundComment"));
 				// add comment calls additem(), which wipes
 				// out refundComment; save it
-				addcomment("RF: ".$input);
+				TransRecord::addcomment("RF: ".$input);
 				$CORE_LOCAL->set("refundComment",$CORE_LOCAL->get("strRemembered"));
 				$CORE_LOCAL->set("msgrepeat",1);
 				$CORE_LOCAL->set("refund",1);
 			}
-			header("Location: {$CORE_PATH}gui-modules/pos2.php");
+			$this->change_page($this->page_url."gui-modules/pos2.php");
 			return False;
 		}
 		return True;

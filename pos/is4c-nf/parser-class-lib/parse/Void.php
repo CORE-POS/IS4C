@@ -20,17 +20,6 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
-
-if (!class_exists("Parser")) include_once($CORE_PATH."parser-class-lib/Parser.php");
-if (!function_exists("tDataConnect")) include_once($CORE_PATH."lib/connect.php");
-if (!function_exists("boxMsg")) include_once($CORE_PATH."lib/drawscreen.php");
-if (!function_exists("lastpage")) include_once($CORE_PATH."lib/listitems.php");
-if (!function_exists("checkstatus")) include_once($CORE_PATH."lib/prehkeys.php");
-if (!function_exists("addItem")) include_once($CORE_PATH."lib/additem.php");
-if (!function_exists("nullwrap")) include_once($CORE_PATH."lib/lib.php");
-if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
 
 class Void extends Parser {
 	function check($str){
@@ -45,31 +34,31 @@ class Void extends Parser {
 		if (strlen($str) > 2)
 			$ret['output'] = $this->voidupc(substr($str,2));
 		elseif ($CORE_LOCAL->get("currentid") == 0) 
-			$ret['output'] = boxMsg("No Item on Order");
+			$ret['output'] = DisplayLib::boxMsg("No Item on Order");
 		else {
 			$str = $CORE_LOCAL->get("currentid");
 
-			checkstatus($str);
+			PrehLib::checkstatus($str);
 
 			if ($CORE_LOCAL->get("voided") == 2) {
 				$ret['output'] = $this->voiditem($str -1);
 			}
 			elseif ($CORE_LOCAL->get("voided") == 3 || $CORE_LOCAL->get("voided") == 6 || $CORE_LOCAL->get("voided") == 8) 
-				$ret['output'] = boxMsg("Cannot void this entry");
+				$ret['output'] = DisplayLib::boxMsg("Cannot void this entry");
 			elseif ($CORE_LOCAL->get("voided") == 4 || $CORE_LOCAL->get("voided") == 5) 
-				percentDiscount(0);
+				PrehLib::percentDiscount(0);
 			elseif ($CORE_LOCAL->get("voided") == 10) {
-				reverseTaxExempt();
+				TransRecord::reverseTaxExempt();
 			}
 			elseif ($CORE_LOCAL->get("transstatus") == "V") {
-				$ret['output'] = boxMsg("Item already voided");
+				$ret['output'] = DisplayLib::boxMsg("Item already voided");
 				$CORE_LOCAL->set("transstatus","");
 			}
 			else 
 				$ret['output'] = $this->voiditem($str);
 		}
 		if (empty($ret['output'])){
-			$ret['output'] = lastpage();
+			$ret['output'] = DisplayLib::lastpage();
 			$ret['redraw_footer'] = True;
 			$ret['udpmsg'] = 'goodBeep';
 		}
@@ -86,17 +75,17 @@ class Void extends Parser {
 			$query = "select upc, quantity, ItemQtty, foodstamp, total, voided, charflag from localtemptrans where "
 				."trans_id = ".$item_num;
 
-			$db = tDataConnect();
+			$db = Database::tDataConnect();
 			$result = $db->query($query);
 			$num_rows = $db->num_rows($result);
 
-			if ($num_rows == 0) return boxMsg("Item not found");
+			if ($num_rows == 0) return DisplayLib::boxMsg("Item not found");
 			else {
 				$row = $db->fetch_array($result);
 
 				if ((!$row["upc"] || strlen($row["upc"]) < 1) && $row["voided"] == 1) 
 
-					return boxMsg("Item already voided");
+					return DisplayLib::boxMsg("Item already voided");
 				elseif (!$row["upc"] || strlen($row["upc"]) < 1 || $row['charflag'] == 'SO') 
 					return $this->voidid($item_num);
 				elseif ($CORE_LOCAL->get("discounttype") == 3) 
@@ -116,7 +105,7 @@ class Void extends Parser {
 			foodstamp,discounttype,total,cost,description,trans_type,
 			department,regPrice,tax,volDiscType,volume,mixMatch,matched
 		       	from localtemptrans where trans_id = ".$item_num;
-		$db = tDataConnect();
+		$db = Database::tDataConnect();
 		$result = $db->query($query);
 		$row = $db->fetch_array($result);
 
@@ -133,7 +122,7 @@ class Void extends Parser {
 		$memDiscount = -1 * $row["memDiscount"];
 		$discountable = $row["discountable"];
 		$unitPrice = $row["unitPrice"];
-		$scale = nullwrap($row["scale"]);
+		$scale = MiscLib::nullwrap($row["scale"]);
 		$cost = isset($row["cost"])?-1*$row["cost"]:0;
 		$numflag = isset($row["numflag"])?$row["numflag"]:0;
 		$charflag = isset($row["charflag"])?$row["charflag"]:0;
@@ -143,22 +132,22 @@ class Void extends Parser {
 		$foodstamp = 0;
 		if ($row["foodstamp"] != 0) $foodstamp = 1;
 
-		$discounttype = nullwrap($row["discounttype"]);
+		$discounttype = MiscLib::nullwrap($row["discounttype"]);
 
 		if ($CORE_LOCAL->get("tenderTotal") < 0 && $foodstamp = 1 && (-1 * $total) > $CORE_LOCAL->get("fsEligible")) {
-			return boxMsg("Item already paid for");
+			return DisplayLib::boxMsg("Item already paid for");
 		}
 		elseif ($CORE_LOCAL->get("tenderTotal") < 0 && (-1 * $total) > $CORE_LOCAL->get("runningTotal") - $CORE_LOCAL->get("taxTotal")) {
-			return boxMsg("Item already paid for");
+			return DisplayLib::boxMsg("Item already paid for");
 		}
 
 		$update = "update localtemptrans set voided = 1 where trans_id = ".$item_num;
 		$db->query($update);
-		addItem($upc, $row["description"], $row["trans_type"], $row["trans_subtype"], "V", $row["department"], $quantity, $unitPrice, $total, $row["regPrice"], $scale, $row["tax"], $foodstamp, $discount, $memDiscount, $discountable, $discounttype, $quantity, $row["volDiscType"], $row["volume"], $VolSpecial, $mm, $matched, 1, $cost, $numflag, $charflag);
+		TransRecord::addItem($upc, $row["description"], $row["trans_type"], $row["trans_subtype"], "V", $row["department"], $quantity, $unitPrice, $total, $row["regPrice"], $scale, $row["tax"], $foodstamp, $discount, $memDiscount, $discountable, $discounttype, $quantity, $row["volDiscType"], $row["volume"], $VolSpecial, $mm, $matched, 1, $cost, $numflag, $charflag);
 		if ($row["trans_type"] != "T") {
 			$CORE_LOCAL->set("ttlflag",0);
 		}
-		else ttl();
+		else PrehLib::ttl();
 
 		return "";
 	}
@@ -205,9 +194,9 @@ class Void extends Parser {
 			}
 		}
 
-		if ($upc == "stop") return inputUnknown();
+		if ($upc == "stop") return DisplayLib::inputUnknown();
 
-		$db = tDataConnect();
+		$db = Database::tDataConnect();
 
 		$query = "select sum(ItemQtty) as voidable, sum(quantity) as vquantity, max(scale) as scale, "
 			."max(volDiscType) as volDiscType from localtemptrans where upc = '".$upc
@@ -235,7 +224,7 @@ class Void extends Parser {
 		$result = $db->query($query);
 		$num_rows = $db->num_rows($result);
 		if ($num_rows == 0 ){
-			return boxMsg("Item $upc not found");
+			return DisplayLib::boxMsg("Item $upc not found");
 		}
 
 		$row = $db->fetch_array($result);
@@ -246,24 +235,24 @@ class Void extends Parser {
 		}
 
 		$volDiscType = $row["volDiscType"];
-		$voidable = nullwrap($row["voidable"]);
+		$voidable = MiscLib::nullwrap($row["voidable"]);
 
 		$VolSpecial = 0;
 		$volume = 0;
-		$scale = nullwrap($row["scale"]);
+		$scale = MiscLib::nullwrap($row["scale"]);
 
-		if ($voidable == 0 && $quantity == 1) return boxMsg("Item already voided");
-		elseif ($voidable == 0 && $quantity > 1) return boxMsg("Items already voided");
-		elseif ($scale == 1 && $quantity < 0) return boxMsg("tare weight cannot be greater than item weight");
+		if ($voidable == 0 && $quantity == 1) return DisplayLib::boxMsg("Item already voided");
+		elseif ($voidable == 0 && $quantity > 1) return DisplayLib::boxMsg("Items already voided");
+		elseif ($scale == 1 && $quantity < 0) return DisplayLib::boxMsg("tare weight cannot be greater than item weight");
 		elseif ($voidable < $quantity && $row["scale"] == 1) {
 			$message = "Void request exceeds<BR>weight of item rung in<P><B>You can void up to "
 				.$row["voidable"]." lb</B>";
-			return boxMsg($message);
+			return DisplayLib::boxMsg($message);
 		}
 		elseif ($voidable < $quantity) {
 			$message = "Void request exceeds<BR>number of items rung in<P><B>You can void up to "
 				.$row["voidable"]."</B>";
-			return boxMsg($message);
+			return DisplayLib::boxMsg($message);
 		}
 
 		unset($result);
@@ -301,9 +290,9 @@ class Void extends Parser {
 		$row = $db->fetch_array($result);
 
 		$ItemQtty = $row["ItemQtty"];
-		$foodstamp = nullwrap($row["foodstamp"]);
-		$discounttype = nullwrap($row["discounttype"]);
-		$mixMatch = nullwrap($row["mixMatch"]);
+		$foodstamp = MiscLib::nullwrap($row["foodstamp"]);
+		$discounttype = MiscLib::nullwrap($row["discounttype"]);
+		$mixMatch = MiscLib::nullwrap($row["mixMatch"]);
 		$cost = isset($row["cost"])?-1*$row["cost"]:0;
 		$numflag = isset($row["numflag"])?$row["numflag"]:0;
 		$charflag = isset($row["charflag"])?$row["charflag"]:0;
@@ -315,7 +304,7 @@ class Void extends Parser {
 		elseif ((($CORE_LOCAL->get("isMember") == 1 && $row["discounttype"] == 2) || 
 		    ($CORE_LOCAL->get("isStaff") != 0 && $row["discounttype"] == 4)) && 
 		    ($row["unitPrice"] == $row["regPrice"])) {
-			$db_p = pDataConnect();
+			$db_p = Database::pDataConnect();
 			$query_p = "select special_price from products where upc = '".$upc."'";
 			$result_p = $db_p->query($query_p);
 			$row_p = $db_p->fetch_array($result_p);
@@ -333,16 +322,16 @@ class Void extends Parser {
 
 		//----------------------mix match---------------------
 		if ($volDiscType >= 1 && $volDiscType != 3) {
-			$db_mm = tDataConnect();
+			$db_mm = Database::tDataConnect();
 			$query_mm = "select sum(ItemQtty) as mmqtty from localtemptrans "
 				    ."where mixMatch = ".$mixMatch;
 					
 			$result_mm = $db_mm->query($query_mm);
 			$row_mm = $db_mm->fetch_array($result_mm);
 	
-			$mmqtty = nullwrap($row_mm["mmqtty"]);
+			$mmqtty = MiscLib::nullwrap($row_mm["mmqtty"]);
 	
-			$db_pq = pDataConnect();
+			$db_pq = Database::pDataConnect();
 			$query_pq = "select normal_price,groupprice,quantity,specialquantity,
 				specialgroupprice
 			       	from products where upc = '".$upc."'";
@@ -350,11 +339,11 @@ class Void extends Parser {
 			$row_pq = $db_pq->fetch_array($result_pq);
 	
 			$unitPrice = $row_pq["normal_price"];
-			$VolSpecial = nullwrap($row_pq["groupprice"]);
-			$volume = nullwrap($row_pq["quantity"]);
+			$VolSpecial = MiscLib::nullwrap($row_pq["groupprice"]);
+			$volume = MiscLib::nullwrap($row_pq["quantity"]);
 			if ($discounttype == 1) {
-				$volume = nullwrap($row_pq['specialquantity']);
-				$VolSpecial = nullwrap($row_pq["specialgroupprice"]);
+				$volume = MiscLib::nullwrap($row_pq['specialquantity']);
+				$VolSpecial = MiscLib::nullwrap($row_pq["specialgroupprice"]);
 			}
 					
 			$volmulti = (int) ($quantity/$volume);
@@ -367,12 +356,12 @@ class Void extends Parser {
 			}
 
 			if ($volmulti > 0) {
-				addItem($upc, $row["description"], $row["trans_type"], $row["trans_subtype"], "V", $row["department"], -1* $volmulti, $VolSpecial, -1 * $volmulti * $VolSpecial, $VolSpecial, 0, $row["tax"], $foodstamp, $discount, $memDiscount, $discountable, $discounttype, -1 * $volmulti * $volume, $volDiscType, $volume, $VolSpecial, $mixMatch, -1 * $volume * $volmulti, 1, $cost, $numflag, $charflag);
+				TransRecord::addItem($upc, $row["description"], $row["trans_type"], $row["trans_subtype"], "V", $row["department"], -1* $volmulti, $VolSpecial, -1 * $volmulti * $VolSpecial, $VolSpecial, 0, $row["tax"], $foodstamp, $discount, $memDiscount, $discountable, $discounttype, -1 * $volmulti * $volume, $volDiscType, $volume, $VolSpecial, $mixMatch, -1 * $volume * $volmulti, 1, $cost, $numflag, $charflag);
 				$quantity = $vmremainder;
 			}
 			if ($vmremainder > $mmremainder) {
 				$voladj = $row["VolSpecial"] - ($unitPrice * ($volume - 1));
-				addItem($upc, $row["description"], $row["trans_type"], $row["trans_subtype"], "V", $row["department"], -1, $voladj, -1 * $voladj, $voladj, 0, $row["tax"], $foodstamp, $discount, $memDiscount, $discountable, $discounttype, -1, $volDiscType, $volume, $VolSpecial, $mixMatch, -1 * $volume, 1, $cost, $numflag, $charflag);
+				TransRecord::addItem($upc, $row["description"], $row["trans_type"], $row["trans_subtype"], "V", $row["department"], -1, $voladj, -1 * $voladj, $voladj, 0, $row["tax"], $foodstamp, $discount, $memDiscount, $discountable, $discounttype, -1, $volDiscType, $volume, $VolSpecial, $mixMatch, -1 * $volume, 1, $cost, $numflag, $charflag);
 				$quantity = $quantity - 1;
 			}
 		}
@@ -382,27 +371,27 @@ class Void extends Parser {
 	
 		$CardNo = $CORE_LOCAL->get("memberID");
 		
-		$discounttype = nullwrap($row["discounttype"]);
+		$discounttype = MiscLib::nullwrap($row["discounttype"]);
 		if ($discounttype == 3) 
 			$quantity = -1 * $ItemQtty;
 
 		if ($CORE_LOCAL->get("tenderTotal") < 0 && $foodstamp == 1 && 
 		   (-1 * $total) > $CORE_LOCAL->get("fsEligible")) {
-			return boxMsg("Item already paid for");
+			return DisplayLib::boxMsg("Item already paid for");
 		}
 		elseif ($CORE_LOCAL->get("tenderTotal") < 0 && (-1 * $total) > 
 			$CORE_LOCAL->get("runningTotal") - $CORE_LOCAL->get("taxTotal")) {
-			return boxMsg("Item already paid for");
+			return DisplayLib::boxMsg("Item already paid for");
 		}
 		elseif ($quantity != 0) {
-			addItem($upc, $row["description"], $row["trans_type"], $row["trans_subtype"], "V", $row["department"], $quantity, $unitPrice, $total, $row["regPrice"], $scale, $row["tax"], $foodstamp, $discount, $memDiscount, $discountable, $discounttype, $quantity, $volDiscType, $volume, $VolSpecial, $mixMatch, 0, 1, $cost, $numflag, $charflag);
+			TransRecord::addItem($upc, $row["description"], $row["trans_type"], $row["trans_subtype"], "V", $row["department"], $quantity, $unitPrice, $total, $row["regPrice"], $scale, $row["tax"], $foodstamp, $discount, $memDiscount, $discountable, $discounttype, $quantity, $volDiscType, $volume, $VolSpecial, $mixMatch, 0, 1, $cost, $numflag, $charflag);
 
 			if ($row["trans_type"] != "T") {
 				$CORE_LOCAL->set("ttlflag",0);
 				$CORE_LOCAL->set("discounttype",0);
 			}
 
-			$db = pDataConnect();
+			$db = Database::pDataConnect();
 			$chk = $db->query("SELECT deposit FROM products WHERE upc='$upc'");
 			if ($db->num_rows($chk) > 0){
 				$dpt = array_pop($db->fetch_row($chk));

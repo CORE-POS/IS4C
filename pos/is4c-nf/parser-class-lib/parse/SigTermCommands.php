@@ -21,13 +21,6 @@
 
 *********************************************************************************/
 
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
-
-if (!class_exists("Parser")) include_once($_SESSION["INCLUDE_PATH"]."/parser-class-lib/Parser.php");
-if (!function_exists("rePoll")) include_once($_SESSION["INCLUDE_PATH"]."/lib/lib.php");
-if (!isset($CORE_LOCAL)) include($_SESSION["INCLUDE_PATH"]."/lib/LocalStorage/conf.php");
-
 class SigTermCommands extends Parser {
 
 	function check($str){
@@ -44,11 +37,11 @@ class SigTermCommands extends Parser {
 	}
 
 	function parse($str){
-		global $CORE_PATH,$CORE_LOCAL;
+		global $CORE_LOCAL;
 		$ret = $this->default_json();
 		$ret['udpmsg'] = $CORE_LOCAL->get("ccTermOut");
 		if ($ret['udpmsg'] == "sig")
-			$ret['main_frame'] = $CORE_PATH.'gui-modules/paycardSignature.php';
+			$ret['main_frame'] = MiscLib::base_url().'gui-modules/paycardSignature.php';
 		return $ret;
 	}
 

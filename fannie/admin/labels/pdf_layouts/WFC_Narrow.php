@@ -124,7 +124,7 @@ class WFC_Narrow_PDF extends FPDF
 
 function WFC_Narrow($data,$offset=0){
 
-$pdf=new WFC_Narrow_PDF(); //start new instance of PDF
+$pdf=new WFC_Narrow_PDF('P','mm','Letter'); //start new instance of PDF
 $pdf->Open(); //open new PDF Document
 $pdf->SetTopMargin(40);  //Set top margin of the page
 $pdf->SetLeftMargin(4);  //Set left margin of the page
@@ -132,46 +132,45 @@ $pdf->SetRightMargin(0);  //Set the right margin of the page
 $pdf->AddPage();  //Add a page
 
 //Set increment counters for rows 
-$i = 2;  //x location of barcode
-$j = 35; //y locaton of barcode
-$l = 34; //y location of size and price on label
-$k = 4; //x location of date and price on label
+$i = 6;  //x location of barcode
+$j = 31; //y locaton of barcode
+$l = 30; //y location of size and price on label
+$k = 8; //x location of date and price on label
 $m = 0;  //number of labels created
-$n = 22; //y location of description for label
-$r = 28; //y location of date for label
-$p = 2;  //x location fields on label
-$t = 32; //y location of SKU and vendor info
-$u = 20; //x locaiton of vendor info for label
-$down = 30.6;
+$n = 18; //y location of description for label
+$r = 24; //y location of date for label
+$p = 6;  //x location fields on label
+$t = 28; //y location of SKU and vendor info
+$u = 24; //x locaiton of vendor info for label
+$down = 31.0;
 
 //cycle through result array of query
 foreach($data as $row){
    //If $m == 32 add a new page and reset all counters..
    if($m == 32){
       $pdf->AddPage();
-      $i = 2;
-      $j = 35;
-      $l = 34;
-      $k = 4;
-      $m = 0;
-      $n = 22;
-      $p = 2;  
-      $q = 24;
-      $r = 28;
-      $t = 32;
-      $u = 20;
+	$i = 6;  //x location of barcode
+	$j = 31; //y locaton of barcode
+	$l = 30; //y location of size and price on label
+	$k = 8; //x location of date and price on label
+	$m = 0;  //number of labels created
+	$n = 18; //y location of description for label
+	$r = 24; //y location of date for label
+	$p = 6;  //x location fields on label
+	$t = 28; //y location of SKU and vendor info
+	$u = 24; //x locaiton of vendor info for label
    }
 
    //If $i > 175, start a new line of labels
    if($i > 175){
-      $i = 2;
+      $i = 6;
       $j = $j + $down;
-      $k = 4;
+      $k = 8;
       $l = $l + $down;
       $n = $n + $down;
       $r = $r + $down;
-      $p = 2;
-      $u = 20;
+      $p = 6;
+      $u = 24;
       $t = $t + $down;
    }
    $price = $row['normal_price'];

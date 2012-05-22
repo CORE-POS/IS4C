@@ -53,6 +53,13 @@ if (!isset($_REQUEST['createMems'])){
 	echo '<br /><br />';
 	echo '<b>How Many</b>: <input size="4" type="text" name="num" value="40" />';
 	echo '<br /><br />';
+	echo '<b>Name</b>: <input type="text" name="name" value="NEW MEMBER" />';
+	echo '<br /><br />';
+	echo '<input type="checkbox" onclick="$(\'#sdiv\').toggle();$(\'#start\').val(\'\');" /> Specify first number';
+	echo '<div id="sdiv" style="display:none;">';
+	echo '<b>Start</b>: <input type="text" size="5" name="start" id="start" />';
+	echo '</div>';
+	echo '<br /><br />';
 	echo '<input type="submit" name="createMems" value="Create Members" />';
 	echo '</form>';
 }
@@ -66,6 +73,10 @@ elseif (isset($_REQUEST['num']) && $_REQUEST['num'] <= 0){
 	echo "<i>'How Many' needs to be positive</i>";
 }
 else {
+	$name = isset($_REQUEST['name']) ? $_REQUEST['name'] : 'NEW MEMBER';
+	$manual_start = isset($_REQUEST['start']) ? $_REQUEST['start'] : False;
+	if (!is_numeric($manual_start)) $manual_start = False;
+
 	/* going to create memberships
 	   part of the insert arrays can
 	   be prepopulated */
@@ -86,7 +97,7 @@ else {
 
 	$custdata = array(
 	'personNum'=>1,
-	'LastName'=>"'NEW MEMBER'",
+	'LastName'=>$dbc->escape($name),
 	'FirstName'=>"''",
 	'CashBack'=>999.99,
 	'Balance'=>0,
@@ -97,7 +108,7 @@ else {
 	'Purchases'=>0,
 	'NumberOfChecks'=>999,
 	'memCoupons'=>0,
-	'blueLine'=>"'NEW MEMBER'",
+	'blueLine'=>$dbc->escape($name),
 	'Shown'=>1
 	);
 
@@ -125,6 +136,9 @@ else {
 		if (!empty($numW[0])) $start = $numW[0]+1;
 	}
 
+	if ($manual_start)
+		$start = (int)$manual_start;
+
 	$end = $start + $_REQUEST['num'] - 1;
 
 	echo "<b>Starting number</b>: $start<br />";
@@ -132,6 +146,12 @@ else {
 	for($i=$start; $i<=$end; $i++){
 		$custdata['CardNo'] = $dbc->escape($i);
 		$meminfo['card_no'] = $i;
+
+		// skip if record already exists
+		$chkQ = sprintf("SELECT CardNo FROM custdata WHERE CardNo=%d",$i);
+		$chkR = $dbc->query($chkQ);
+		if ($dbc->num_rows($chkR) > 0) continue;
+
 		$dbc->smart_insert('custdata',$custdata);
 		$dbc->smart_insert('meminfo',$meminfo);
 		$dbc->query(sprintf("INSERT INTO memDates VALUES (%s,NULL,NULL)",
@@ -144,4 +164,3 @@ else {
 include($FANNIE_ROOT.'src/footer.html');
 
 ?>
-@

@@ -24,6 +24,7 @@
 /**
   @file
   @brief Functions related to the database
+  @deprecated see Database
 */
 
 $CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
@@ -271,7 +272,7 @@ function uploadtoServer()
 		if ($CORE_LOCAL->get("DBMS") == "mysql")
 			$local_columns = str_replace("Interval","`Interval`",$al_matches);
 		if ($CORE_LOCAL->get("mDBMS") == "mysql")
-			$local_columns = str_replace("Interval","`Interval`",$al_matches);
+			$server_columns = str_replace("Interval","`Interval`",$al_matches);
 		$al_success = $connect->transfer($CORE_LOCAL->get("tDatabase"),
 			"select $local_columns FROM alog",
 			$CORE_LOCAL->get("mDatabase"),

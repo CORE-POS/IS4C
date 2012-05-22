@@ -21,16 +21,10 @@
 
 *********************************************************************************/
 
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
-
-if (!isset($CORE_LOCAL))
-	include($CORE_PATH.'lib/LocalStorage/conf.php');
-if (!function_exists('scaledisplaymsg'))
-	include($CORE_PATH.'lib/drawscreen.php');
+include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 $input = isset($_REQUEST['input'])?$_REQUEST['input']:'';
-$display = scaledisplaymsg($input);
+$display = DisplayLib::scaledisplaymsg($input);
 
 echo $display;
 

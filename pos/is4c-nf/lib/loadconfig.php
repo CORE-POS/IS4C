@@ -30,6 +30,7 @@ if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
 /**
  @file
  @brief Functions dealing with the globalvalues table
+ @deprecated See Database
 */
 
 /**

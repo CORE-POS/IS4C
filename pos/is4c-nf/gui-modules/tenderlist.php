@@ -21,12 +21,7 @@
 
 *********************************************************************************/
 
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
-
-if (!class_exists("NoInputPage")) include_once($CORE_PATH."gui-class-lib/NoInputPage.php");
-if (!function_exists("pDataConnect")) include($CORE_PATH."lib/connect.php");
-if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
+include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class tenderlist extends NoInputPage {
 
@@ -34,7 +29,7 @@ class tenderlist extends NoInputPage {
 	  Input processing function
 	*/
 	function preprocess(){
-		global $CORE_LOCAL,$CORE_PATH;
+		global $CORE_LOCAL;
 
 		// a selection was made
 		if (isset($_REQUEST['search'])){
@@ -46,18 +41,18 @@ class tenderlist extends NoInputPage {
 				// user presses CL{enter}
 				// Redirect to main screen
 				$CORE_LOCAL->set("tenderTotal","0");	
-				header("Location: {$CORE_PATH}gui-modules/pos2.php");
+				$this->change_page($this->page_url."gui-modules/pos2.php");
 				return False;
 			}
 
-			if (is_numeric($entered)){ 
+			if (!empty($entered)){ 
 				// built department input string and set it
 				// to be the next POS entry
 				// Redirect to main screen
 				$input = $CORE_LOCAL->get("tenderTotal")."TT".$entered;
 				$CORE_LOCAL->set("msgrepeat",1);
 				$CORE_LOCAL->set("strRemembered",$input);
-				header("Location: {$CORE_PATH}gui-modules/pos2.php");
+				$this->change_page($this->page_url."gui-modules/pos2.php");
 				return False;
 			}
 		}
@@ -100,7 +95,7 @@ class tenderlist extends NoInputPage {
 	*/
 	function body_content(){
 		global $CORE_LOCAL;
-		$db = pDataConnect();
+		$db = Database::pDataConnect();
 		$q = "SELECT TenderCode,TenderName FROM tenders ORDER BY TenderName";
 		$r = $db->query($q);
 

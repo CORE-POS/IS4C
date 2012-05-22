@@ -121,7 +121,13 @@ function billingDisplay(){
 }
 
 function bill($amt,$desc,$dept,$tender){
-	global $dbc,$EMP_NO,$LANE_NO,$CARD_NO;
+	global $dbc,$EMP_NO,$LANE_NO,$CARD_NO, $FANNIE_TRANS_DB;
+
+	$tnQ = "SELECT TenderName FROM tenders WHERE TenderCode=".$dbc->escape($tender);
+	$tnR = $dbc->query($tnQ);
+	$tn = array_pop($dbc->fetch_array($tnR));
+
+	$dbc->query("use $FANNIE_TRANS_DB");
 
 	$transQ = "SELECT MAX(trans_no) FROM dtransactions
 		WHERE emp_no=$EMP_NO AND register_no=$LANE_NO";
@@ -129,10 +135,6 @@ function bill($amt,$desc,$dept,$tender){
 	$t_no = array_pop($dbc->fetch_array($transR));
 	if ($t_no == "") $t_no = 1;
 	else $t_no++;
-
-	$tnQ = "SELECT TenderName FROM tenders WHERE TenderCode=".$dbc->escape($tender);
-	$tnR = $dbc->query($tnQ);
-	$tn = array_pop($dbc->fetch_array($tnR));
 
 	$insQ = sprintf("INSERT INTO dtransactions VALUES (
 		%s,$LANE_NO,$EMP_NO,$t_no,

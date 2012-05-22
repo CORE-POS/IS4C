@@ -23,13 +23,17 @@ function udpSend($msg,$port=9450){
   send the response on (port+1).
 */
 function udpPoke($msg,$port=9450){
+	$socket = stream_socket_server("udp://127.0.0.1:".($port+1), 
+		$errno, $errstr, STREAM_SERVER_BIND);	
 	udpSend($msg,$port);
-	$recv = socket_create(AF_INET, SOCK_DGRAM, SOL_UDP);
-	socket_bind($recv,'127.0.0.1',$port+1);
-	$from='';
-	$buf='';
-	$port=0;
-	sock_recvfrom($recv,$buf,256,0,$from,$port);	
+	$read = array($socket);
+	$write = null;
+	$except = null;
+	$ready = stream_select($read,$write,$except,0,500);
+	$buf = "";
+	if ($ready > 0)
+		$buf = stream_socket_recvfrom($socket, 1024, 0, $peer);
+	stream_socket_shutdown($socket,STREAM_SHUT_RDWR);
 	return $buf;
 }
 
