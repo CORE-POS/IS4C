@@ -44,6 +44,7 @@ class UPC extends Parser {
 
 		/* force cashiers to enter a comment on refunds */
 		if ($CORE_LOCAL->get("refund")==1 && $CORE_LOCAL->get("refundComment") == ""){
+			$ret['udpmsg'] = 'twoPairs';
 			if ($CORE_LOCAL->get("SecurityRefund") > 20){
 				$CORE_LOCAL->set("adminRequest",$my_url."gui-modules/refundComment.php");
 				$CORE_LOCAL->set("adminRequestLevel",$CORE_LOCAL->get("SecurityRefund"));
