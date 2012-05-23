@@ -74,7 +74,7 @@ static public function check_password($password,$activity=1){
 			//Database::testremote();
 			Database::loadglobalvalues();
 
-			$transno = gettransno($row_q["emp_no"]);
+			$transno = Database::gettransno($row_q["emp_no"]);
 			$CORE_LOCAL->set("transno",$transno);
 
 			$globals = array(
