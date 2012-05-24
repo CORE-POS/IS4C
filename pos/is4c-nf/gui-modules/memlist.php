@@ -81,6 +81,12 @@ class memlist extends NoInputPage {
 		$result = $db_a->query($query);
 		$num_rows = $db_a->num_rows($result);
 
+		// if theres only 1 match don't show the memlist
+		if ($num_rows == 1) {
+			$selected_name = True;
+			$personNum = 1;
+		}
+
 		// if there's on result and either
 		// a. it's the default nonmember account or
 		// b. it's been confirmed in the select box
