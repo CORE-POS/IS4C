@@ -97,6 +97,8 @@ function shadow_login($name,$passwd){
  */
 function ldap_login($name,$passwd){
 	global $FANNIE_LDAP_SERVER, $FANNIE_LDAP_PORT, $FANNIE_LDAP_DN, $FANNIE_LDAP_SEARCH_FIELD, $FANNIE_LDAP_UID_FIELD, $FANNIE_LDAP_RN_FIELD;
+	if (!isAlphanumeric($name))
+		return false;
 	if ($passwd == "") return false;
 
 	$conn = ldap_connect($FANNIE_LDAP_SERVER,$FANNIE_LDAP_PORT);
