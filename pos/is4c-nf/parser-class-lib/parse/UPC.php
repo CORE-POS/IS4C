@@ -108,7 +108,7 @@ class UPC extends Parser {
 			}
 			// no match; not a product, not special
 			$ret['output'] = DisplayLib::boxMsg($upc."<br /><b>is not a valid item</b>");
-			$ret['udpmsg'] = 'errorBeep';
+
 			return $ret; 
 		}
 
