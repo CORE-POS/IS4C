@@ -178,6 +178,7 @@ class UPC extends Parser {
 			$CORE_LOCAL->set("SNR",1);
 			$ret['output'] = DisplayLib::boxMsg("please put item on scale");
 			$CORE_LOCAL->set("wgtRequested",0);
+			$CORE_LOCAL->set("warned",1);
 			$ret['retry'] = $CORE_LOCAL->get("strEntered");
 			return $ret;
 		}
