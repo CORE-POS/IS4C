@@ -180,11 +180,10 @@ class UPC extends Parser {
 			$CORE_LOCAL->set("wgtRequested",0);
 			$CORE_LOCAL->set("warned",1);
 			$ret['retry'] = $CORE_LOCAL->get("strEntered");
-			$CORE_LOCAL->set("warned",0);
 			
 			return $ret;
 		}
-
+		$CORE_LOCAL->set("warned",0);
 		/* got a scale weight, make sure the tare
 		   is valid */
 		if ($scale != 0 and substr($upc,0,3) != "002"){
