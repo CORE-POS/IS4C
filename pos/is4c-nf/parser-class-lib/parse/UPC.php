@@ -180,6 +180,8 @@ class UPC extends Parser {
 			$CORE_LOCAL->set("wgtRequested",0);
 			$CORE_LOCAL->set("warned",1);
 			$ret['retry'] = $CORE_LOCAL->get("strEntered");
+			$CORE_LOCAL->set("warned",0);
+			
 			return $ret;
 		}
 
