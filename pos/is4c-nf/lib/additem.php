@@ -163,7 +163,7 @@ function addItem($strupc, $strdescription, $strtransType, $strtranssubType, $str
 		'emp_no'	=> $intempno,
 		'trans_no'	=> nullwrap($inttransno),
 		'upc'		=> nullwrap($strupc),
-		'description'	=> $strdescription,
+		'description'	=> $db->escape($strdescription),
 		'trans_type'	=> nullwrap($strtransType),
 		'trans_subtype'	=> nullwrap($strtranssubType),
 		'trans_status'	=> nullwrap($strtransstatus),
