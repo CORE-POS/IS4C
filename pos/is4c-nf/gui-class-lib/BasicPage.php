@@ -389,6 +389,17 @@ class BasicPage {
 		else
 			header("Location: ".$url);
 	}
+
+	function default_parsewrapper_js($input="reginput",$form="formlocal"){
+	?>
+	<script type="text/javascript">
+	function parseWrapper(str){
+		$('#<?php echo $input; ?>').val(str);
+		$('#<?php echo $form; ?>').submit();
+	}
+	</script>
+	<?php
+	}
 }
 
 /**

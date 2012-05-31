@@ -78,6 +78,7 @@ class mgrlogin extends NoInputPage {
 		}
 		</script>
 		<?php
+		$this->default_parsewrapper_js();
 	}
 
 	function body_content(){
@@ -90,7 +91,8 @@ class mgrlogin extends NoInputPage {
 		<span class="larger">
 		confirm cancellation
 		</span><br />
-		<form name="form" method="post" autocomplete="off" onsubmit="return submitWrapper();">
+		<form name="form" id="formlocal" method="post" 
+			autocomplete="off" onsubmit="return submitWrapper();">
 		<input type="password" name="reginput" tabindex="0" 
 			onblur="$('#reginput').focus();" id="reginput" />
 		</form>
