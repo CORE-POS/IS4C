@@ -22,22 +22,38 @@
 *********************************************************************************/
 
 class NormalPricing extends DiscountType {
+	var $percent_discount;
 
 	function priceInfo($row,$quantity=1){
+		global $CORE_LOCAL;
 		$ret = array();
 		if (is_array($this->savedInfo))
 			return $this->savedInfo;
 
+		$this->percent_discount = 0;
 		$ret["regPrice"] = $row['normal_price'];
 		$ret["unitPrice"] = $row['normal_price'];
 		$ret['discount'] = 0;
 		$ret['memDiscount'] = 0;
+		if ($CORE_LOCAL->get("itemPD") > 0){
+			$discount = $row['normal_price'] * (($CORE_LOCAL->get("itemPD")/100));
+			$ret["unitPrice"] = $row['normal_price'] - $discount;
+			$ret["discount"] = $discount;
+			$this->percent_discount = $discount;
+		}
+		else if ($CORE_LOCAL->get("itemDiscount") > 0){
+			$discount = $row['normal_price'] * (($CORE_LOCAL->get("itemDiscount")/100));
+			$ret["unitPrice"] = $row['normal_price'] - $discount;
+			$ret["discount"] = $discount;
+			$this->percent_discount = $discount;
+		}
 
 		return $ret;
 	}
 
 	function addDiscountLine(){
-
+		if ($this->percent_discount != 0)
+			TransRecord::adddiscount($this->percent_discount,0);
 	}
 
 	function isSale(){

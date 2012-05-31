@@ -72,6 +72,10 @@ class adminlogin extends NoInputPage {
 		return True;
 	}
 
+	function head_content(){
+		$this->default_parsewrapper_js();
+	}
+
 	function body_content(){
 		global $CORE_LOCAL;
 		$heading = $CORE_LOCAL->get("adminLoginMsg");
@@ -82,7 +86,8 @@ class adminlogin extends NoInputPage {
 		<span class="larger">
 		<?php echo $heading ?>
 		</span><br />
-		<form name="form" method="post" autocomplete="off" action="<?php echo $_SERVER['PHP_SELF']; ?>">
+		<form name="form" id="formlocal" method="post" 
+			autocomplete="off" action="<?php echo $_SERVER['PHP_SELF']; ?>">
 		<input type="password" id="reginput" name="reginput" tabindex="0" onblur="$('#reginput').focus();" />
 		</form>
 		<p />

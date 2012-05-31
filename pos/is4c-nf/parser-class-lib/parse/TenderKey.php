@@ -24,7 +24,7 @@
 class TenderKey extends Parser {
 
 	function check($str){
-		if (strstr($str,"TT") && strlen($str) > 3 &&
+		if (strstr($str,"TT") && strlen($str) >= 3 &&
 		    substr($str,0,2) != "VD")
 			return True;
 		return False;
