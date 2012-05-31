@@ -318,7 +318,7 @@ class UPC extends Parser {
 		// prefetch: otherwise object members 
 		// pass out of scope in addItem()
 		$prefetch = $DiscountObject->priceInfo($row,$quantity);
-		$PriceMethodObject->addItem($row, $quantity, $DiscountObject);	
+		$PriceMethodObject->addItem($row, $quantity, $DiscountObject);
 
 		/* add discount notifications lines, if applicable */
 		$DiscountObject->addDiscountLine();
@@ -349,6 +349,7 @@ class UPC extends Parser {
 		$CORE_LOCAL->set("fntlflag",0);
 		$CORE_LOCAL->set("quantity",0);
 		$CORE_LOCAL->set("itemPD",0);
+		$CORE_LOCAL->set("itemDiscount",0);
 		$CORE_LOCAL->set("voided",0);
 		Database::setglobalflags(0);
 
