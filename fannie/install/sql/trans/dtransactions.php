@@ -235,7 +235,8 @@ $CREATE['trans.dtransactions'] = "
 	  INDEX(`datetime`),
 	  INDEX(`upc`),
 	  INDEX(`department`),
-	  INDEX(`card_no`)
+	  INDEX(`card_no`),
+	  INDEX(`trans_type`)
 	)
 ";
 
