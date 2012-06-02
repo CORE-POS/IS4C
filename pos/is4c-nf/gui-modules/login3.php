@@ -52,6 +52,10 @@ class login3 extends BasicPage {
 		return True;
 	}
 
+	function head_content(){
+		$this->default_parsewrapper_js();
+	}
+
 	function body_content(){
 		global $CORE_LOCAL;
 		$style = "style=\"background: {$this->color};\"";
