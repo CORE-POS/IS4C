@@ -68,8 +68,8 @@ else if (isset($_POST['likecode'])){
 	echo "<b>Peforming updates</b><br />";
 	for ($i = 0; $i < count($likecodes); $i++){
 		$lval = 0;
-		if ($local[$i] == '300') $lval = 1;
-		elseif ($local[$i] == 'S.C.') $lval = 2;
+		if ($local[$i] == '300') $lval = 2;
+		elseif ($local[$i] == 'S.C.') $lval = 1;
 		$q = "update products as p left join upcLike as u on p.upc=u.upc
 			set local=$lval
 			where u.likecode=".$likecodes[$i];	

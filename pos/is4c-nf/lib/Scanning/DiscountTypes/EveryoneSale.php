@@ -48,6 +48,17 @@ class EveryoneSale extends DiscountType {
 		$ret['discount'] = ($ret['regPrice'] - $row['special_price']) * $quantity;
 		$ret['memDiscount'] = 0;
 
+		if ($CORE_LOCAL->get("itemPD") > 0){
+			$discount = $row['special_price'] * (($CORE_LOCAL->get("itemPD")/100));
+			$ret["unitPrice"] = $row['special_price'] - $discount;
+			$ret["discount"] += ($discount * $quantity);
+		}
+		else if ($CORE_LOCAL->get("itemDiscount") > 0){
+			$discount = $row['special_price'] * (($CORE_LOCAL->get("itemDiscount")/100));
+			$ret["unitPrice"] = $row['special_price'] - $discount;
+			$ret["discount"] += ($discount * $quantity);
+		}
+
 		$this->savedRow = $row;
 		$this->savedInfo = $ret;
 		return $ret;

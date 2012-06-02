@@ -156,7 +156,7 @@ static public function addItem($strupc, $strdescription, $strtransType, $strtran
 		'emp_no'	=> $intempno,
 		'trans_no'	=> MiscLib::nullwrap($inttransno),
 		'upc'		=> MiscLib::nullwrap($strupc),
-		'description'	=> $strdescription,
+		'description'	=> $db->escape($strdescription),
 		'trans_type'	=> MiscLib::nullwrap($strtransType),
 		'trans_subtype'	=> MiscLib::nullwrap($strtranssubType),
 		'trans_status'	=> MiscLib::nullwrap($strtransstatus),

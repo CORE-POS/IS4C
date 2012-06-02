@@ -115,6 +115,7 @@ function reprintReceipt($trans_num=""){
 
 		// The Nitty Gritty:
 		$member = "Member ".trim($CORE_LOCAL->get("memberID"));
+		if ($member == 0) $member = $CORE_LOCAL->get("defaultNonMem");
 		$your_discount = $CORE_LOCAL->get("transDiscount") + $CORE_LOCAL->get("memCouponTTL");
 
 		if ($CORE_LOCAL->get("transDiscount") + $CORE_LOCAL->get("memCouponTTL") + $CORE_LOCAL->get("specials") > 0) {
@@ -152,8 +153,10 @@ function reprintReceipt($trans_num=""){
 				    .number_format($CORE_LOCAL->get("couldhavesaved"), 2))."\n";
 		}
 
-		$receipt .= centerString("Returns accepted with receipt")."\n"
-			.centerString("within 30 days of purchase.")."\n\n\n";
+		for ($i = 1; $i <= $CORE_LOCAL->get("receiptFooterCount"); $i++){
+			$receipt .= $PRINT_OBJ->centerString($CORE_LOCAL->get("receiptFooter$i"));
+			$receipt .= "\n";
+		}
 
 
 		if ($CORE_LOCAL->get("chargetender") != 0 ) {			// apbw 03/10/05 Reprint patch

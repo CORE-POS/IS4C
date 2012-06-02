@@ -108,7 +108,7 @@ class UPC extends Parser {
 			}
 			// no match; not a product, not special
 			$ret['output'] = DisplayLib::boxMsg($upc."<br /><b>is not a valid item</b>");
-			$ret['udpmsg'] = 'errorBeep';
+
 			return $ret; 
 		}
 
@@ -178,10 +178,12 @@ class UPC extends Parser {
 			$CORE_LOCAL->set("SNR",1);
 			$ret['output'] = DisplayLib::boxMsg("please put item on scale");
 			$CORE_LOCAL->set("wgtRequested",0);
+			$CORE_LOCAL->set("warned",1);
 			$ret['retry'] = $CORE_LOCAL->get("strEntered");
+			
 			return $ret;
 		}
-
+		$CORE_LOCAL->set("warned",0);
 		/* got a scale weight, make sure the tare
 		   is valid */
 		if ($scale != 0 and substr($upc,0,3) != "002"){
@@ -316,7 +318,7 @@ class UPC extends Parser {
 		// prefetch: otherwise object members 
 		// pass out of scope in addItem()
 		$prefetch = $DiscountObject->priceInfo($row,$quantity);
-		$PriceMethodObject->addItem($row, $quantity, $DiscountObject);	
+		$PriceMethodObject->addItem($row, $quantity, $DiscountObject);
 
 		/* add discount notifications lines, if applicable */
 		$DiscountObject->addDiscountLine();
@@ -347,6 +349,7 @@ class UPC extends Parser {
 		$CORE_LOCAL->set("fntlflag",0);
 		$CORE_LOCAL->set("quantity",0);
 		$CORE_LOCAL->set("itemPD",0);
+		$CORE_LOCAL->set("itemDiscount",0);
 		$CORE_LOCAL->set("voided",0);
 		Database::setglobalflags(0);
 

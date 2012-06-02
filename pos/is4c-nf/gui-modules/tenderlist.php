@@ -80,6 +80,10 @@ class tenderlist extends NoInputPage {
 				(prevKey == 108 || prevKey == 76) ){ //CL<enter>
 					$('#search option:selected').val('');
 				}
+				else if ( (prevPrevKey == 116 || prevPrevKey == 84) &&
+				(prevKey == 116 || prevKey == 84) ){ //TT<enter>
+					$('#search option:selected').val('');
+				}
 				$('#selectform').submit();
 			}
 			prevPrevKey = prevKey;
