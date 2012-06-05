@@ -305,7 +305,7 @@ class BasicCCModule {
 	  @param $namespace include an xmlns attribute
 	  @return soap string
 	*/
-	function soapify($action,$objs,$namespace=""){
+	function soapify($action,$objs,$namespace="",$encode_tags=True){
 		$ret = "<?xml version=\"1.0\"?>
 			<soap:Envelope";
 		foreach ($this->SOAP_ENVELOPE_ATTRS as $attr){
@@ -319,8 +319,10 @@ class BasicCCModule {
 		$ret .= ">\n";
 		foreach($objs as $key=>$value){
 			$ret .= "<".$key.">";
-			$value = str_replace("<","&lt;",$value);
-			$value = str_replace(">","&gt;",$value);
+			if ($encode_tags){
+				$value = str_replace("<","&lt;",$value);
+				$value = str_replace(">","&gt;",$value);
+			}
 			$ret .= $value;
 			$ret .= "</".$key.">\n";
 		}
