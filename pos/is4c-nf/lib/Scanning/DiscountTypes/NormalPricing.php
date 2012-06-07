@@ -52,7 +52,7 @@ class NormalPricing extends DiscountType {
 
 	function addDiscountLine(){
 		global $CORE_LOCAL;
-		if ($this->saved_info['discount'] != 0){
+		if (isset($this->savedInfo) && $this->savedInfo['discount'] != 0){
 			$CORE_LOCAL->set("voided",2);
 			TransRecord::adddiscount($this->savedInfo['discount'],
 					$this->savedRow['department']);
