@@ -53,6 +53,10 @@ class nslogin extends NoInputPage {
 		return True;
 	}
 
+	function head_content(){
+		$this->default_parsewrapper_js('reginput','nsform');
+	}
+
 	function body_content(){
 		global $CORE_LOCAL;
 		$style = "style=\"background:{$this->color};\"";
