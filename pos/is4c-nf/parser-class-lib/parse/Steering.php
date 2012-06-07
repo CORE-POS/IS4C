@@ -182,6 +182,17 @@ class Steering extends Parser {
 			$CORE_LOCAL->set("away",1);
 			$this->ret['main_frame'] = $my_url."gui-modules/adminlogin.php";
 			return True;
+		case "HC":
+			$module = new HostedCheckout();
+			$test = $module->entered(False,array());
+			var_dump($test);
+			if (isset($test['main_frame']))
+				$this->ret['main_frame'] = $test['main_frame'];
+			elseif (isset($test['output']))
+				$this->ret['output'] = $test['output'];
+			else
+				$this->ret['output'] = DisplayLib::boxMsg("processor error");
+			return True;
 		}
 		return False;
 	}

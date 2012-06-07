@@ -153,8 +153,8 @@ static public function setMember($member, $personNumber, $row) {
 
 	$conn2 = Database::tDataConnect();
 	$memquery = "update localtemptrans set card_no = '".$member."',
-	      				memType = ".$CORE_LOCAL->get("memType").",
-					staff = ".$CORE_LOCAL->get("isStaff");
+	      				memType = ".sprintf("%d",$CORE_LOCAL->get("memType")).",
+					staff = ".sprintf("%d",$CORE_LOCAL->get("isStaff"));
 	if ($CORE_LOCAL->get("DBMS") == "mssql" && $CORE_LOCAL->get("store") == "wfc")
 		$memquery = str_replace("staff","isStaff",$memquery);
 
