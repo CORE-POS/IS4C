@@ -170,6 +170,7 @@ function saveData($id,$name,$depts){
 	if ($id == -1){
 		$resp = $dbc->query("SELECT max(superID)+1 FROM superdepts");
 		$id = array_pop($dbc->fetch_row($resp));
+		if (empty($id)) $id = 1;
 	}
 	else {
 		$dbc->query("DELETE FROM superdepts WHERE superID=$id");
