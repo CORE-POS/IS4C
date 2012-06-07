@@ -24,9 +24,9 @@ if (isset($_GET['startDate'])){
 	$sql->query("use $FANNIE_TRANS_DB");
 
 	$query = "select checks from dailyChecks where
-		date BETWEN '$start 00:00:00' AND '$end 23:59:59'
-		order by case 
-	      when id >= 68 then id+1
+		date BETWEEN '$start' AND '$end'
+		order by 
+	      case when id >= 68 then id+1
 	      when id = 43 then 68
 	      else id end";
 	$result = $sql->query($query);

@@ -45,8 +45,14 @@ class qtty2 extends BasicPage {
 			return False;
 		}
 		elseif (is_numeric($qtty) && $qtty < 9999 && $qtty >= 0) {
+			$input_string = $CORE_LOCAL->get("item");
+			$plu = "";
+			while(!empty($input_string) && is_numeric($input_string[strlen($input_string)-1])){
+				$plu = $input_string[strlen($input_string)-1] . $plu;
+				$input_string = substr($input_string,0,strlen($input_string)-1);
+			}
 			$CORE_LOCAL->set("qttyvalid",1);
-			$CORE_LOCAL->set("strRemembered",$qtty."*".$CORE_LOCAL->get("item"));
+			$CORE_LOCAL->set("strRemembered",$input_string.$qtty."*".$plu);
 			$CORE_LOCAL->set("msgrepeat",1);
 			$this->change_page($this->page_url."gui-modules/pos2.php");
 			return False;
