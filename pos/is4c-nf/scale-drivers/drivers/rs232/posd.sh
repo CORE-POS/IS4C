@@ -11,13 +11,13 @@ fi
 # --COMMENTS - - - - - - - - - - - - - - - - - - - -
 
 # 13May12 EL Change POSD from posdriver-ssd to posdriver2-ssd to be
-#             different from the git upstream version, WFC.
+# different from the git upstream version, WFC.
 # 14Apr12 EL Add swap for swapping in new versions of posdriver-ssd
 # 13Apr12 EL As wrapper for service posdriver-ssd
 
 # --CONSTANTS- - - - - - - - - - - - - - - - - - - -
 
-POSD=posdriver2-ssd
+POSD=posdriver2-ssd-debian
 
 # --VARIABLES- - - - - - - - - - - - - - - - - - - -
 

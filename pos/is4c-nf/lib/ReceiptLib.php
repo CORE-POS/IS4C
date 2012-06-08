@@ -21,17 +21,11 @@
 
 *********************************************************************************/
 
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
-
-if (!function_exists("paycard_moneyFormat")) 
-	include(realpath(dirname(__FILE__)."/../cc-modules/lib/paycardLib.php"));
-
 /**
   @class ReceiptLib
   Receipt functions
 */
-class ReceiptLib {
+class ReceiptLib extends LibraryClass {
 
 	static private $PRINT_OBJ;
 
@@ -97,7 +91,7 @@ static public function drawerKick() {
 
 // -------------------------------------------------------------
 static public function printReceiptHeader($dateTimeStamp, $ref) {
-	global $CORE_LOCAL,$CORE_PATH;
+	global $CORE_LOCAL;
 
 	$receipt = self::$PRINT_OBJ->TextStyle(True);
 
@@ -105,11 +99,11 @@ static public function printReceiptHeader($dateTimeStamp, $ref) {
 	if ($CORE_LOCAL->get("newReceipt")==1 && $CORE_LOCAL->get("store") != "wfc"){
 		$receipt .= self::$PRINT_OBJ->TextStyle(True, False, True);
 		$receipt .= self::$PRINT_OBJ->centerString($CORE_LOCAL->get("receiptHeader1"),True);
-		$receipt .= self::$PRINT_OBJ->TextStyle();
+		$receipt .= self::$PRINT_OBJ->TextStyle(True);
 		$receipt .= "\n\n";
 	}
 	else if ($CORE_LOCAL->get("newReceipt")==1 && $CORE_LOCAL->get("store") == "wfc"){
-		$img = self::$PRINT_OBJ->RenderBitmapFromFile($CORE_PATH."graphics/WFC_Logo.bmp");
+		$img = self::$PRINT_OBJ->RenderBitmapFromFile(MiscLib::base_url()."graphics/WFC_Logo.bmp");
 		$receipt .= $img."\n";
 		$i=4;
 		$receipt .= "\n";
@@ -118,7 +112,7 @@ static public function printReceiptHeader($dateTimeStamp, $ref) {
 		// zero-indexing the receipt header and footer list
 		$receipt .= self::$PRINT_OBJ->TextStyle(True, False, True);
 		$receipt .= self::$PRINT_OBJ->centerString($CORE_LOCAL->get("receiptHeader1"),True);
-		$receipt .= self::$PRINT_OBJ->TextStyle();
+		$receipt .= self::$PRINT_OBJ->TextStyle(True);
 		$receipt .= "\n";
 	}
 
@@ -833,8 +827,8 @@ static public function printGCSlip($dateTimeStamp, $ref, $storeCopy=true, $rp=0)
 				$col1[] = "Authorization: ".$row['xAuthorizationCode'];
 				$col2[] = "";
 			}
-			$col1[] = self::boldFont()."Amount: ".paycard_moneyFormat($row['amount']).self::normalFont(); // bold ttls apbw 11/3/07
-			$col2[] = "New Balance: ".paycard_moneyFormat($row['xBalance']);
+			$col1[] = self::boldFont()."Amount: ".PaycardLib::paycard_moneyFormat($row['amount']).self::normalFont(); // bold ttls apbw 11/3/07
+			$col2[] = "New Balance: ".PaycardLib::paycard_moneyFormat($row['xBalance']);
 			$slip .= self::twoColumns($col1, $col2);
 		} else { // all-left layout
 			$slip .= $row['tranType']."\n"
@@ -849,8 +843,8 @@ static public function printGCSlip($dateTimeStamp, $ref, $storeCopy=true, $rp=0)
 			} else {
 				$slip .= "Authorization: ".$row['xAuthorizationCode']."\n";
 			}
-			$slip .= self::boldFont()."Amount: ".paycard_moneyFormat($row['amount']).self::normalFont()."\n" // bold ttls apbw 11/3/07
-					. "New Balance: ".paycard_moneyFormat($row['xBalance'])."\n";
+			$slip .= self::boldFont()."Amount: ".PaycardLib::paycard_moneyFormat($row['amount']).self::normalFont()."\n" // bold ttls apbw 11/3/07
+					. "New Balance: ".PaycardLib::paycard_moneyFormat($row['xBalance'])."\n";
 		}
 		// name/phone on activation only
 		if( $row['tranType'] == 'Gift Card Activation' && $storeCopy) {
@@ -1000,7 +994,7 @@ static public function printReceipt($arg1,$second=False) {
 				if ($CORE_LOCAL->get("newReceipt")==1){
 					$receipt .= self::$PRINT_OBJ->TextStyle(True,False,True);
 					$receipt .= self::$PRINT_OBJ->centerString("thank you - owner ".$member,True);
-					$receipt .= self::$PRINT_OBJ->TextStyle();
+					$receipt .= self::$PRINT_OBJ->TextStyle(True);
 					$receipt .= "\n\n";
 				}
 				else{
@@ -1012,7 +1006,7 @@ static public function printReceipt($arg1,$second=False) {
 				if ($CORE_LOCAL->get("newReceipt")==1){
 					$receipt .= self::$PRINT_OBJ->TextStyle(True,False,True);
 					$receipt .= self::$PRINT_OBJ->centerString("thank you",True);
-					$receipt .= self::$PRINT_OBJ->TextStyle();
+					$receipt .= self::$PRINT_OBJ->TextStyle(True);
 					$receipt .= "\n\n";
 				}
 				else{
@@ -1211,6 +1205,7 @@ static public function reprintReceipt($trans_num=""){
 
 		// The Nitty Gritty:
 		$member = "Member ".trim($CORE_LOCAL->get("memberID"));
+		if ($member == 0) $member = $CORE_LOCAL->get("defaultNonMem");
 		$your_discount = $CORE_LOCAL->get("transDiscount") + $CORE_LOCAL->get("memCouponTTL");
 
 		if ($CORE_LOCAL->get("transDiscount") + $CORE_LOCAL->get("memCouponTTL") + $CORE_LOCAL->get("specials") > 0) {
@@ -1248,8 +1243,10 @@ static public function reprintReceipt($trans_num=""){
 				    .number_format($CORE_LOCAL->get("couldhavesaved"), 2))."\n";
 		}
 
-		$receipt .= self::centerString("Returns accepted with receipt")."\n"
-			.self::centerString("within 30 days of purchase.")."\n\n\n";
+		for ($i = 1; $i <= $CORE_LOCAL->get("receiptFooterCount"); $i++){
+			$receipt .= self::$PRINT_OBJ->centerString($CORE_LOCAL->get("receiptFooter$i"));
+			$receipt .= "\n";
+		}
 
 
 		if ($CORE_LOCAL->get("chargetender") != 0 ) {			// apbw 03/10/05 Reprint patch

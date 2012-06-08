@@ -21,9 +21,6 @@
 
 *********************************************************************************/
 
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
-
 /* 
  * This class is for any input designed to set processing
  * to an alternate gui module. That's how the particular
@@ -36,7 +33,8 @@ class Steering extends Parser {
 	var $ret;
 
 	function check($str){
-		global $CORE_LOCAL,$CORE_PATH;
+		global $CORE_LOCAL;
+		$my_url = MiscLib::base_url();
 		
 		$this->dest_input_page = "";
 		$this->dest_main_page = "";
@@ -49,13 +47,13 @@ class Steering extends Parser {
 			if ($CORE_LOCAL->get("LastID") != "0")
 				$this->ret['output'] = boxMsg("transaction in progress");
 			else {
-				$this->ret['main_frame'] = $CORE_PATH."gui-modules/cablist.php";
+				$this->ret['main_frame'] = $my_url."gui-modules/cablist.php";
 			}
 			return True;
 		case "PV":
 			$CORE_LOCAL->set("pvsearch","");
 			$CORE_LOCAL->set("away",1);
-			$this->ret['main_frame'] = $CORE_PATH."gui-modules/productlist.php";
+			$this->ret['main_frame'] = $my_url."gui-modules/productlist.php";
 			return True;
 		/*
 		case "PV2":
@@ -73,30 +71,30 @@ class Steering extends Parser {
 			if ($CORE_LOCAL->get("LastID") != "0")
 				$this->ret['output'] = DisplayLib::boxMsg("transaction in progress");
 			else {
-				$CORE_LOCAL->set("adminRequest",$CORE_PATH."gui-modules/undo.php");
+				$CORE_LOCAL->set("adminRequest",$my_url."gui-modules/undo.php");
 				$CORE_LOCAL->set("adminRequestLevel","30");
 				$CORE_LOCAL->set("adminLoginMsg","Login to void transactions");
 				$CORE_LOCAL->set("away",1);
-				$this->ret['main_frame'] = $CORE_PATH."gui-modules/adminlogin.php";
+				$this->ret['main_frame'] = $my_url."gui-modules/adminlogin.php";
 			}
 			return True;
 		case "DDD":
-			$CORE_LOCAL->set("adminRequest",$CORE_PATH."ajax-callbacks/ddd.php");
+			$CORE_LOCAL->set("adminRequest",$my_url."ajax-callbacks/ddd.php");
 			$CORE_LOCAL->set("adminLoginMsg","DDD these items?");
 			$CORE_LOCAL->set("adminRequestLevel","10");
 			$CORE_LOCAL->set("away",1);
-			$this->ret['main_frame'] = $CORE_PATH."gui-modules/adminlogin.php";
+			$this->ret['main_frame'] = $my_url."gui-modules/adminlogin.php";
 			return True;
 		case 'MG':
 			if ($CORE_LOCAL->get("SecuritySR") > 20){
-				$CORE_LOCAL->set("adminRequest",$CORE_PATH."gui-modules/adminlist.php");
+				$CORE_LOCAL->set("adminRequest",$my_url."gui-modules/adminlist.php");
 				$CORE_LOCAL->set("adminRequestLevel",$CORE_LOCAL->get("SecuritySR"));
 				$CORE_LOCAL->set("adminLoginMsg","Login to suspend/resume transactions");
 				$CORE_LOCAL->set("away",1);
-				$this->ret['main_frame'] = $CORE_PATH."gui-modules/adminlogin.php";
+				$this->ret['main_frame'] = $my_url."gui-modules/adminlogin.php";
 			}
 			else
-				$this->ret['main_frame'] = $CORE_PATH."gui-modules/adminlist.php";
+				$this->ret['main_frame'] = $my_url."gui-modules/adminlist.php";
 
 			$CORE_LOCAL->set("away",1);
 			return True;
@@ -117,14 +115,14 @@ class Steering extends Parser {
 				if ($num_rows == 0) 
 					$this->ret['output'] = DisplayLib::boxMsg("no receipt found");
 				else {
-					$this->ret['main_frame'] = $CORE_PATH."gui-modules/rplist.php";
+					$this->ret['main_frame'] = $my_url."gui-modules/rplist.php";
 				}
 			}				
 			return True;
 		case 'ID':
 			$CORE_LOCAL->set("away",1);
 			$CORE_LOCAL->set("search_or_list",1);
-			$this->ret['main_frame'] = $CORE_PATH."gui-modules/memlist.php";
+			$this->ret['main_frame'] = $my_url."gui-modules/memlist.php";
 			return True;
 		case 'SO':
 			if ($CORE_LOCAL->get("LastID") != 0) 
@@ -136,7 +134,7 @@ class Steering extends Parser {
 				$CORE_LOCAL->set("training",0);
 				$CORE_LOCAL->set("gui-scale","no");
 				$CORE_LOCAL->set("away",1);
-				$this->ret['main_frame'] = $CORE_PATH."gui-modules/login2.php";
+				$this->ret['main_frame'] = $my_url."gui-modules/login2.php";
 			}
 			return True;
 		case 'NS':
@@ -144,12 +142,12 @@ class Steering extends Parser {
 				$this->ret['output'] = DisplayLib::boxMsg("Transaction in Progress");
 			else {
 				$CORE_LOCAL->set("away",1);
-				$this->ret['main_frame'] = $CORE_PATH."gui-modules/nslogin.php";
+				$this->ret['main_frame'] = $my_url."gui-modules/nslogin.php";
 			}
 			return True;
 		case 'GD':
 			$CORE_LOCAL->set("msgrepeat",0);
-			$this->ret['main_frame'] = $CORE_PATH."gui-modules/giftcardlist.php";
+			$this->ret['main_frame'] = $my_url."gui-modules/giftcardlist.php";
 			return True;
 		/*
 		case 'CCM':
@@ -167,7 +165,7 @@ class Steering extends Parser {
 			}
 			else {
 				$CORE_LOCAL->set("away",1);
-				$this->ret['main_frame'] = $CORE_PATH."gui-modules/mgrlogin.php";
+				$this->ret['main_frame'] = $my_url."gui-modules/mgrlogin.php";
 			}
 			return True;
 		case "CC":
@@ -175,14 +173,25 @@ class Steering extends Parser {
 				$this->ret['output'] = DisplayLib::boxMsg("transaction must be totaled<br>before tender can be<br>accepted");
 			}
 			else
-				$this->ret['main_frame'] = $CORE_PATH."cc-modules/gui/ProcessPage.php";
+				$this->ret['main_frame'] = $my_url."cc-modules/gui/ProcessPage.php";
 			return True;
 		case "PO":
-			$CORE_LOCAL->set("adminRequest",$CORE_PATH."gui-modules/priceOverride.php");
+			$CORE_LOCAL->set("adminRequest",$my_url."gui-modules/priceOverride.php");
 			$CORE_LOCAL->set("adminRequestLevel","30");
 			$CORE_LOCAL->set("adminLoginMsg","Login to alter price");
 			$CORE_LOCAL->set("away",1);
-			$this->ret['main_frame'] = $CORE_PATH."gui-modules/adminlogin.php";
+			$this->ret['main_frame'] = $my_url."gui-modules/adminlogin.php";
+			return True;
+		case "HC":
+			$module = new HostedCheckout();
+			$test = $module->entered(False,array());
+			var_dump($test);
+			if (isset($test['main_frame']))
+				$this->ret['main_frame'] = $test['main_frame'];
+			elseif (isset($test['output']))
+				$this->ret['output'] = $test['output'];
+			else
+				$this->ret['output'] = DisplayLib::boxMsg("processor error");
 			return True;
 		}
 		return False;

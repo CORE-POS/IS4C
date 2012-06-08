@@ -21,19 +21,15 @@
 
 *********************************************************************************/
 
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
-
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class rplist extends NoInputPage {
 
 	function preprocess(){
-		global $CORE_PATH;
 		if (isset($_REQUEST['selectlist'])){
 			if (!empty($_REQUEST['selectlist']))
 				ReceiptLib::reprintReceipt($_REQUEST['selectlist']);
-			$this->change_page($CORE_PATH."gui-modules/pos2.php");
+			$this->change_page($this->page_url."gui-modules/pos2.php");
 			return False;
 		}
 		return True;

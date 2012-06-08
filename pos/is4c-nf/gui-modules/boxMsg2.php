@@ -21,9 +21,6 @@
 
 *********************************************************************************/
 
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
-
 ini_set('display_errors','1');
 
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
@@ -31,13 +28,12 @@ include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 class boxMsg2 extends BasicPage {
 
 	function head_content(){
-		global $CORE_PATH;
 		?>
 		<script type="text/javascript">
 		function submitWrapper(){
 			var str = $('#reginput').val();
 			$.ajax({
-				url: '<?php echo $CORE_PATH; ?>ajax-callbacks/ajax-decision.php',
+				url: '<?php echo $this->page_url; ?>ajax-callbacks/ajax-decision.php',
 				type: 'get',
 				data: 'input='+str,
 				dataType: 'json',
@@ -45,7 +41,7 @@ class boxMsg2 extends BasicPage {
 				success: function(data){
 					if (data.endorse){
 						$.ajax({
-							url: '<?php echo $CORE_PATH; ?>ajax-callbacks/ajax-endorse.php',
+							url: '<?php echo $this->page_url; ?>ajax-callbacks/ajax-endorse.php',
 							type: 'get',
 							cache: false,
 							success: function(){

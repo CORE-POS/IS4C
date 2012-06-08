@@ -21,16 +21,21 @@
 
 *********************************************************************************/
 
-function term_object(){
-	global $CORE_LOCAL,$CORE_PATH;
+class SigCapture {
+
+static public function term_object(){
+	global $CORE_LOCAL;
 	$termDriver = $CORE_LOCAL->get("SigCapture");
 	$td = 0;
 	if ($termDriver != "" && !class_exists($termDriver)){
-		include($CORE_PATH.'scale-drivers/php-wrappers/'.$termDriver.'.php');
+		include(realpath(dirname(__FILE__).
+			'/../scale-drivers/php-wrappers/'.$termDriver.'.php'));
 		$td = new $termDriver();
 	}
 	if (is_object($td)) return $td;
 	return False;
+}
+
 }
 
 ?>

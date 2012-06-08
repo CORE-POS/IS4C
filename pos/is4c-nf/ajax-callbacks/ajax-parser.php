@@ -21,9 +21,6 @@
 
 *********************************************************************************/
 
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
-
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 $sd = MiscLib::scaleObject();
@@ -70,7 +67,7 @@ if ($entered != ""){
 	 * This chain should be used for checking prefixes/suffixes
 	 * to set up appropriate $CORE_LOCAL variables.
 	 */
-	$parser_lib_path = $CORE_PATH."parser-class-lib/";
+	$parser_lib_path = MiscLib::base_url()."parser-class-lib/";
 	if (!is_array($CORE_LOCAL->get("preparse_chain")))
 		$CORE_LOCAL->set("preparse_chain",Parser::get_preparse_chain());
 

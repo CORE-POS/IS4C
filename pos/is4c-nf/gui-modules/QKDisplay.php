@@ -21,9 +21,6 @@
 
 *********************************************************************************/
 
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
-
 ini_set('display_errors','1');
 
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
@@ -33,7 +30,6 @@ class QKDisplay extends NoInputPage {
 	var $offset;
 
 	function head_content(){
-		global $CORE_PATH;
 		?>
 		<script type="text/javascript" >
 		var prevKey = -1;
@@ -64,11 +60,11 @@ class QKDisplay extends NoInputPage {
 			}
 			else if (jsKey == 33 || jsKey == 38){
 				location = 
-					'<?php echo $CORE_PATH; ?>gui-modules/QKDisplay.php?offset=<?php echo ($this->offset - 1)?>';
+					'<?php echo $this->page_url; ?>gui-modules/QKDisplay.php?offset=<?php echo ($this->offset - 1)?>';
 			}
 			else if (jsKey == 34 || jsKey == 40){
 				location = 
-					'<?php echo $CORE_PATH; ?>gui-modules/QKDisplay.php?offset=<?php echo ($this->offset + 1)?>';
+					'<?php echo $this->page_url; ?>gui-modules/QKDisplay.php?offset=<?php echo ($this->offset + 1)?>';
 			}
 			prevPrevKey = prevKey;
 			prevKey = jsKey;
@@ -94,7 +90,7 @@ class QKDisplay extends NoInputPage {
 	} // END head() FUNCTION
 
 	function preprocess(){
-		global $CORE_LOCAL,$CORE_PATH;
+		global $CORE_LOCAL;
 
 		$this->offset = isset($_REQUEST['offset'])?$_REQUEST['offset']:0;
 
@@ -119,7 +115,7 @@ class QKDisplay extends NoInputPage {
 				return True;
 			}
 			else {
-				$this->change_page($CORE_PATH."gui-modules/pos2.php");
+				$this->change_page($this->page_url."gui-modules/pos2.php");
 			}
 			return False;
 		}
@@ -127,7 +123,7 @@ class QKDisplay extends NoInputPage {
 	} // END preprocess() FUNCTION
 
 	function body_content(){
-		global $CORE_LOCAL,$CORE_PATH;
+		global $CORE_LOCAL;
 
 		$this->add_onload_command("setSelected(7);");
 
@@ -149,7 +145,7 @@ class QKDisplay extends NoInputPage {
 					if ($num_pages > 1 && $count == 3){
 						echo "<div class=\"qkArrowBox\">";
 						echo "<input type=submit value=Up class=qkArrow 
-							onclick=\"location='{$CORE_PATH}gui-modules/QKDisplay.php?offset=".($page-1)."'; return false;\" />";
+							onclick=\"location='{$this->page_url}gui-modules/QKDisplay.php?offset=".($page-1)."'; return false;\" />";
 						echo "</div>";
 					}
 					echo "</div>";
@@ -165,7 +161,7 @@ class QKDisplay extends NoInputPage {
 		if ($num_pages > 1){
 			echo "<div class=\"qkArrowBox\">";
 			echo "<input type=submit value=Down class=qkArrow 
-				onclick=\"location='{$CORE_PATH}gui-modules/QKDisplay.php?offset=".($page+1)."'; return false;\" />";
+				onclick=\"location='{$this->page_url}gui-modules/QKDisplay.php?offset=".($page+1)."'; return false;\" />";
 			echo "</div>";
 
 		}

@@ -20,8 +20,6 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
 
 class DeptKey extends Parser {
 	function check($str){
@@ -32,7 +30,8 @@ class DeptKey extends Parser {
 	}
 
 	function parse($str){
-		global $CORE_LOCAL,$CORE_PATH;
+		global $CORE_LOCAL;
+		$my_url = MiscLib::base_url();
 
 		$split = explode("DP",$str);
 		$dept = $split[1];
@@ -54,18 +53,18 @@ class DeptKey extends Parser {
 			$CORE_LOCAL->set("departmentAmount",$amt);
 
 			// go to the department select screen
-			$ret['main_frame'] = $CORE_PATH.'gui-modules/deptlist.php';
+			$ret['main_frame'] = $my_url.'gui-modules/deptlist.php';
 		}
 		elseif ($CORE_LOCAL->get("refund")==1 && $CORE_LOCAL->get("refundComment") == ""){
 			if ($CORE_LOCAL->get("SecurityRefund") > 20){
-				$CORE_LOCAL->set("adminRequest",$CORE_PATH."gui-modules/refundComment.php");
+				$CORE_LOCAL->set("adminRequest",$my_url."gui-modules/refundComment.php");
 				$CORE_LOCAL->set("adminRequestLevel",$CORE_LOCAL->get("SecurityRefund"));
 				$CORE_LOCAL->set("adminLoginMsg","Login to issue refund");
 				$CORE_LOCAL->set("away",1);
-				$ret['main_frame'] = $CORE_PATH."gui-modules/adminlogin.php";
+				$ret['main_frame'] = $my_url."gui-modules/adminlogin.php";
 			}
 			else
-				$ret['main_frame'] = $CORE_PATH.'gui-modules/refundComment.php';
+				$ret['main_frame'] = $my_url.'gui-modules/refundComment.php';
 			$CORE_LOCAL->set("refundComment",$CORE_LOCAL->get("strEntered"));
 		}
 		elseif ($CORE_LOCAL->get("warned") == 1 and ($CORE_LOCAL->get("warnBoxType") == "warnEquity" or $CORE_LOCAL->get("warnBoxType") == "warnAR")){
@@ -82,14 +81,14 @@ class DeptKey extends Parser {
 				$CORE_LOCAL->set("endorseType","stock");
 				$CORE_LOCAL->set("equityAmt",$price);
 				$CORE_LOCAL->set("boxMsg","<b>Equity Sale</b><br>Insert paperwork and press<br><font size=-1>[enter] to continue, [clear] to cancel</font>");
-				$ret['main_frame'] = $CORE_PATH.'gui-modules/boxMsg2.php';
+				$ret['main_frame'] = $my_url.'gui-modules/boxMsg2.php';
 			}
 		}
 		elseif ($dept == 990){
 			$CORE_LOCAL->set("warned",1);
 			$CORE_LOCAL->set("warnBoxType","warnAR");
 			$CORE_LOCAL->set("boxMsg","<b>A/R Payment Sale</b><br>remember to retain you<br>reprinted receipt<br><font size=-1>[enter] to continue, [clear] to cancel</font>");
-			$ret['main_frame'] = $CORE_PATH.'gui-modules/boxMsg2.php';
+			$ret['main_frame'] = $my_url.'gui-modules/boxMsg2.php';
 		}
 		
 		if (!$ret['main_frame'])

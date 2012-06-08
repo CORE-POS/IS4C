@@ -59,11 +59,8 @@ fetch_array(result_object, connection_identifer)
 
 **************************************************/
 
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
-
-define('DEBUG_MYSQL_QUERIES',$CORE_PATH.'log/queries.log');
-define('DEBUG_SMART_INSERTS',$CORE_PATH.'log/smart_insert_errors.log');
+define('DEBUG_MYSQL_QUERIES',realpath(dirname(__FILE__).'/../log/queries.log'));
+define('DEBUG_SMART_INSERTS',realpath(dirname(__FILE__).'/../log/smart_insert_errors.log'));
 
 $TYPE_MYSQL = 'MYSQL';
 $TYPE_MSSQL = 'MSSQL'; 

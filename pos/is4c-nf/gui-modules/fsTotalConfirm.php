@@ -21,9 +21,6 @@
 
 *********************************************************************************/
 
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
-
 ini_set('display_errors','1');
 
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
@@ -33,7 +30,7 @@ class fsTotalConfirm extends NoInputPage {
 	var $tendertype;
 
 	function preprocess(){
-		global $CORE_PATH,$CORE_LOCAL;
+		global $CORE_LOCAL;
 		$this->tendertype = "";
 		if (isset($_REQUEST["selectlist"])){
 			$choice = $_REQUEST["selectlist"];
@@ -54,7 +51,7 @@ class fsTotalConfirm extends NoInputPage {
 				$this->tendertype = 'EC';
 			}
 			else if ($choice == ''){
-				$this->change_page($CORE_PATH."gui-modules/pos2.php");
+				$this->change_page($this->page_url."gui-modules/pos2.php");
 				return False;
 			}
 		}
@@ -86,7 +83,7 @@ class fsTotalConfirm extends NoInputPage {
 			}
 
 			if ($valid_input){
-				$this->change_page($CORE_PATH."gui-modules/pos2.php");
+				$this->change_page($this->page_url."gui-modules/pos2.php");
 				return False;
 			}
 		}	

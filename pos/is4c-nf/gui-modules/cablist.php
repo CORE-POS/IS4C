@@ -21,15 +21,11 @@
 
 *********************************************************************************/
 
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
-
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class cablist extends NoInputPage {
 
 	function head_content(){
-		global $CORE_PATH;
 		?>
 		<script type="text/javascript" >
 		var prevKey = -1;
@@ -54,17 +50,17 @@ class cablist extends NoInputPage {
 			var ref = $('#selectlist').val();
 			if (ref != ""){
 				$.ajax({
-					url: '<?php echo $CORE_PATH; ?>ajax-callbacks/ajax-cabreceipt.php',
+					url: '<?php echo $this->page_url; ?>ajax-callbacks/ajax-cabreceipt.php',
 					type: 'get',
 					cache: false,
 					data: 'input='+ref,
 					success: function(){
-						location='<?php echo $CORE_PATH; ?>gui-modules/pos2.php';
+						location='<?php echo $this->page_url; ?>gui-modules/pos2.php';
 					}
 				});
 			}
 			else {
-				location='<?php echo $CORE_PATH; ?>gui-modules/pos2.php';
+				location='<?php echo $this->page_url; ?>gui-modules/pos2.php';
 			}
 
 			return false;

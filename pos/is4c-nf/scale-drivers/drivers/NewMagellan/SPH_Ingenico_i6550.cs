@@ -456,11 +456,13 @@ public class SPH_Ingenico_i6550 : SerialPortHandler {
 		}
 		else if (!getting_signature && msg.Length > 8 && msg.Substring(0,8) == "display:"){
 			string[] lines = msg.Split(new Char[]{':'});
-			if (lines.Length==3){
+			if (lines.Length==5){
 				if (VERBOSE)
 					System.Console.WriteLine(lines[1]);
-				ConfirmedWrite(GetLRC(SetVariableMessage("000114",lines[1])));
-				ConfirmedWrite(GetLRC(SetVariableMessage("000104",lines[2])));
+				ConfirmedWrite(GetLRC(SetVariableMessage("000112",lines[1])));
+				ConfirmedWrite(GetLRC(SetVariableMessage("000113",lines[2])));
+				ConfirmedWrite(GetLRC(SetVariableMessage("000114",lines[3])));
+				ConfirmedWrite(GetLRC(SetVariableMessage("000104",lines[4])));
 			}
 		}
 

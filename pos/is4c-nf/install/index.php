@@ -21,9 +21,6 @@
 
 *********************************************************************************/
 
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
-
 ini_set('display_errors','1');
 
 include(realpath(dirname(__FILE__).'/../lib/AutoLoader.php'));
@@ -393,6 +390,12 @@ function create_op_dbs($db,$type){
 		$db->query($cardsQ,$name);
 	}
 
+	$cardsViewQ = "CREATE VIEW memberCardsView AS 
+		SELECT CONCAT(" . $CORE_LOCAL->get('memberUpcPrefix') . ",c.CardNo) as upc, c.CardNo as card_no FROM custdata c";
+	if (!$db->table_exists('memberCardsView',$name)){
+		$db->query($cardsViewQ,$name);
+	}
+	
 	$deptQ = "CREATE TABLE departments (
 		dept_no smallint,
 		dept_name varchar(30),

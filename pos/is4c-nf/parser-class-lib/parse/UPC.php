@@ -20,8 +20,6 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
 
 class UPC extends Parser {
 	function check($str){
@@ -40,20 +38,22 @@ class UPC extends Parser {
 	}
 
 	function upcscanned($entered) {
-		global $CORE_LOCAL,$CORE_PATH;
+		global $CORE_LOCAL;
+		$my_url = MiscLib::base_url();
 		$ret = $this->default_json();
 
 		/* force cashiers to enter a comment on refunds */
 		if ($CORE_LOCAL->get("refund")==1 && $CORE_LOCAL->get("refundComment") == ""){
+			$ret['udpmsg'] = 'twoPairs';
 			if ($CORE_LOCAL->get("SecurityRefund") > 20){
-				$CORE_LOCAL->set("adminRequest",$CORE_PATH."gui-modules/refundComment.php");
+				$CORE_LOCAL->set("adminRequest",$my_url."gui-modules/refundComment.php");
 				$CORE_LOCAL->set("adminRequestLevel",$CORE_LOCAL->get("SecurityRefund"));
 				$CORE_LOCAL->set("adminLoginMsg","Login to issue refund");
 				$CORE_LOCAL->set("away",1);
-				$ret['main_frame'] = $CORE_PATH."gui-modules/adminlogin.php";
+				$ret['main_frame'] = $my_url."gui-modules/adminlogin.php";
 			}
 			else
-				$ret['main_frame'] = $CORE_PATH.'gui-modules/refundComment.php';
+				$ret['main_frame'] = $my_url.'gui-modules/refundComment.php';
 			$CORE_LOCAL->set("refundComment",$CORE_LOCAL->get("strEntered"));
 			return $ret;
 		}
@@ -108,7 +108,7 @@ class UPC extends Parser {
 			}
 			// no match; not a product, not special
 			$ret['output'] = DisplayLib::boxMsg($upc."<br /><b>is not a valid item</b>");
-			$ret['udpmsg'] = 'errorBeep';
+
 			return $ret; 
 		}
 
@@ -133,7 +133,7 @@ class UPC extends Parser {
 				$CORE_LOCAL->set("boxMsg","<b>".$row["upc"]." - ".$row["description"]."</b>
 					<br>Item not for sale
 					<br><font size=-1>[enter] to continue sale, [clear] to cancel</font>");
-				$ret['main_frame'] = $CORE_PATH."gui-modules/boxMsg2.php";
+				$ret['main_frame'] = $my_url."gui-modules/boxMsg2.php";
 				return $ret;
 			}
 		}
@@ -154,7 +154,7 @@ class UPC extends Parser {
 				$current = date("m/d/y",strtotime($CORE_LOCAL->get("memAge")));
 				$CORE_LOCAL->set("requestType","customer age");
 				$CORE_LOCAL->set("requestMsg","Type customer birthdate YYYYMMDD<br />(current: $current)");
-				$ret['main_frame'] = $CORE_PATH.'gui-modules/requestInfo.php';
+				$ret['main_frame'] = $my_url.'gui-modules/requestInfo.php';
 				return $ret;
 			}
 		}
@@ -178,10 +178,12 @@ class UPC extends Parser {
 			$CORE_LOCAL->set("SNR",1);
 			$ret['output'] = DisplayLib::boxMsg("please put item on scale");
 			$CORE_LOCAL->set("wgtRequested",0);
+			$CORE_LOCAL->set("warned",1);
 			$ret['retry'] = $CORE_LOCAL->get("strEntered");
+			
 			return $ret;
 		}
-
+		$CORE_LOCAL->set("warned",0);
 		/* got a scale weight, make sure the tare
 		   is valid */
 		if ($scale != 0 and substr($upc,0,3) != "002"){
@@ -206,7 +208,7 @@ class UPC extends Parser {
 		   entry page if one wasn't provided */
 		$qttyEnforced = $row["qttyEnforced"];
 		if (($qttyEnforced == 1) && ($CORE_LOCAL->get("multiple") == 0) && ($CORE_LOCAL->get("msgrepeat") == 0)) {
-			$ret['main_frame'] = $CORE_PATH."gui-modules/qtty2.php";
+			$ret['main_frame'] = $my_url."gui-modules/qtty2.php";
 			return $ret;
 		}
 		else
@@ -225,7 +227,7 @@ class UPC extends Parser {
 			$CORE_LOCAL->set("boxMsg","<b>".$total." gift certificate</b><br />
 				insert document<br />press [enter] to endorse
 				<p><font size='-1'>[clear] to cancel</font>");
-			$ret["main_frame"] = $CORE_PATH."gui-modules/boxMsg2.php";
+			$ret["main_frame"] = $my_url."gui-modules/boxMsg2.php";
 			return $ret;
 		}
 
@@ -238,7 +240,7 @@ class UPC extends Parser {
 			$CORE_LOCAL->set("boxMsg","<b>".$total." class registration</b><br />
 				insert form<br />press [enter] to endorse
 				<p><font size='-1'>[clear] to cancel</font>");
-			$ret["main_frame"] = $CORE_PATH."gui-modules/boxMsg2.php";
+			$ret["main_frame"] = $my_url."gui-modules/boxMsg2.php";
 			return $ret;
 		}
 
@@ -316,7 +318,7 @@ class UPC extends Parser {
 		// prefetch: otherwise object members 
 		// pass out of scope in addItem()
 		$prefetch = $DiscountObject->priceInfo($row,$quantity);
-		$PriceMethodObject->addItem($row, $quantity, $DiscountObject);	
+		$PriceMethodObject->addItem($row, $quantity, $DiscountObject);
 
 		/* add discount notifications lines, if applicable */
 		$DiscountObject->addDiscountLine();
@@ -347,6 +349,7 @@ class UPC extends Parser {
 		$CORE_LOCAL->set("fntlflag",0);
 		$CORE_LOCAL->set("quantity",0);
 		$CORE_LOCAL->set("itemPD",0);
+		$CORE_LOCAL->set("itemDiscount",0);
 		$CORE_LOCAL->set("voided",0);
 		Database::setglobalflags(0);
 
@@ -355,7 +358,7 @@ class UPC extends Parser {
 		$ret['output'] = DisplayLib::lastpage();
 
 		if ($prefetch['unitPrice']==0){
-			$ret['main_frame'] = $CORE_PATH.'gui-modules/priceOverride.php';
+			$ret['main_frame'] = $my_url.'gui-modules/priceOverride.php';
 		}
 
 		return $ret;

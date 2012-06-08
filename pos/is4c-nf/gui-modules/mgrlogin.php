@@ -21,9 +21,6 @@
 
 *********************************************************************************/
 
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
-
 ini_set('display_errors','1');
 
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
@@ -40,7 +37,6 @@ class mgrlogin extends NoInputPage {
 	}
 
 	function head_content(){
-		global $CORE_PATH;
 		?>
 		<script type="text/javascript">
 		function submitWrapper(){
@@ -57,17 +53,17 @@ class mgrlogin extends NoInputPage {
 				success: function(data){
 					if (data.cancelOrder){
 						$.ajax({
-							url: '<?php echo $CORE_PATH; ?>ajax-callbacks/ajax-end.php',
+							url: '<?php echo $this->page_url; ?>ajax-callbacks/ajax-end.php',
 							type: 'get',
 							data: 'receiptType=cancelled',
 							cache: false,
 							success: function(data2){
-								location = '<?php echo $CORE_PATH; ?>gui-modules/pos2.php';
+								location = '<?php echo $this->page_url; ?>gui-modules/pos2.php';
 							}
 						});
 					}
 					else if (data.giveUp){
-						location = '<?php echo $CORE_PATH; ?>gui-modules/pos2.php';
+						location = '<?php echo $this->page_url; ?>gui-modules/pos2.php';
 					}
 					else {
 						$('div.colored').css('background',data.color);
@@ -82,6 +78,7 @@ class mgrlogin extends NoInputPage {
 		}
 		</script>
 		<?php
+		$this->default_parsewrapper_js();
 	}
 
 	function body_content(){
@@ -94,7 +91,8 @@ class mgrlogin extends NoInputPage {
 		<span class="larger">
 		confirm cancellation
 		</span><br />
-		<form name="form" method="post" autocomplete="off" onsubmit="return submitWrapper();">
+		<form name="form" id="formlocal" method="post" 
+			autocomplete="off" onsubmit="return submitWrapper();">
 		<input type="password" name="reginput" tabindex="0" 
 			onblur="$('#reginput').focus();" id="reginput" />
 		</form>
