@@ -230,6 +230,9 @@ case 'saveZip':
 	break;
 case 'savePh':
 	if (canSaveAddress($orderID) == True){
+		printf("UPDATE {$TRANS}SpecialOrderContact
+			SET phone=%s WHERE card_no=%d",
+			$dbc->escape($_REQUEST['ph']),$orderID);
 		$dbc->query(sprintf("UPDATE {$TRANS}SpecialOrderContact
 			SET phone=%s WHERE card_no=%d",
 			$dbc->escape($_REQUEST['ph']),$orderID));
@@ -737,10 +740,10 @@ function getCustomerForm($orderID,$memNum="0"){
 
 		// load member contact info into SpecialOrderContact
 		// on first go so it can be edited separately
-		$testQ = "SELECT street FROM {$TRANS}SpecialOrderContact WHERE card_no=".$orderID;
+		$testQ = "SELECT street,phone FROM {$TRANS}SpecialOrderContact WHERE card_no=".$orderID;
 		$testR = $dbc->query($testQ);
 		$testW = $dbc->fetch_row($testR);
-		if (empty($testW['street'])){
+		if (empty($testW['street']) && empty($testW['phone'])){
 			$contactQ = sprintf("SELECT street,city,state,zip,phone,email_1,email_2
 					FROM meminfo WHERE card_no=%d",$memNum);
 			$contactR = $dbc->query($contactQ);
