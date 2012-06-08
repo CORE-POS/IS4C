@@ -228,7 +228,7 @@ function displayUI($dateStr){
 	foreach($denoms as $d){
 		if ($d == 'Checks'){
 			$ret .= "<td id=depositAmount$d>".$osCounts['CK']."</td>";
-			//$sum += $osCounts['CK'];
+			$sum += $osCounts['CK'];
 			$depositAmount['Checks'] = $osCounts['CK'];
 		}
 		else if ($d == '100.00' || $d == '50.00' || $d == 'Junk'){
@@ -295,7 +295,7 @@ function displayUI($dateStr){
 	}
 	$ret .= "<td id=depositAmountTotal>$sum</td></tr>";
 	$buyAmountTotal += $sum;
-	$accountableTotal -= ($sum + $osCounts['CK']);
+	$accountableTotal -= $sum;
 	
 	$ret .= "<tr><th>Close Safe Count</th>";
 	$sum = 0;
