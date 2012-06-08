@@ -21,12 +21,6 @@
 
 *********************************************************************************/
 
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
-
-if (!function_exists("paycard_reset")) 
-	include(realpath(dirname(__FILE__)."/../cc-modules/lib/paycardLib.php"));
-
 /**
   @class PrehLib
   A horrible, horrible catch-all clutter of functions
@@ -59,7 +53,7 @@ static public function clearMember(){
   to be set immediately, use setMember().
 */
 static public function memberID($member_number) {
-	global $CORE_LOCAL,$CORE_PATH;
+	global $CORE_LOCAL;
 
 	$query = "select CardNo,personNum,LastName,FirstName,CashBack,Balance,Discount,
 		MemDiscountLimit,ChargeOk,WriteChecks,StoreCoupons,Type,memType,staff,
@@ -94,7 +88,7 @@ static public function memberID($member_number) {
 		if ($CORE_LOCAL->get("requestType") == ""){
 			$CORE_LOCAL->set("requestType","member gift");
 			$CORE_LOCAL->set("requestMsg","Card for which member?");
-			$ret['main_frame'] = $CORE_PATH."gui-modules/requestInfo.php";
+			$ret['main_frame'] = MiscLib::base_url()."gui-modules/requestInfo.php";
 			$CORE_LOCAL->set("strEntered","5607id");
 		}
 		else if ($CORE_LOCAL->get("requestType") == "member gift"){
@@ -110,7 +104,7 @@ static public function memberID($member_number) {
 	$CORE_LOCAL->set("memMsg","");
 
 	if (empty($ret['output']) && $ret['main_frame'] == false)
-		$ret['main_frame'] = $CORE_PATH."gui-modules/memlist.php";
+		$ret['main_frame'] = MiscLib::base_url()."gui-modules/memlist.php";
 
 	return $ret;
 }
@@ -159,8 +153,8 @@ static public function setMember($member, $personNumber, $row) {
 
 	$conn2 = Database::tDataConnect();
 	$memquery = "update localtemptrans set card_no = '".$member."',
-	      				memType = ".$CORE_LOCAL->get("memType").",
-					staff = ".$CORE_LOCAL->get("isStaff");
+	      				memType = ".sprintf("%d",$CORE_LOCAL->get("memType")).",
+					staff = ".sprintf("%d",$CORE_LOCAL->get("isStaff"));
 	if ($CORE_LOCAL->get("DBMS") == "mssql" && $CORE_LOCAL->get("store") == "wfc")
 		$memquery = str_replace("staff","isStaff",$memquery);
 
@@ -195,7 +189,7 @@ static public function setMember($member, $personNumber, $row) {
 	if ($CORE_LOCAL->get("mirequested") == 1) {
 		$CORE_LOCAL->set("mirequested",0);
 		$CORE_LOCAL->set("runningTotal",$CORE_LOCAL->get("amtdue"));
-		self::tender("MI", $CORE_LOCAL->get("runningTotal") * 100);
+		self::tender("SC", $CORE_LOCAL->get("runningTotal") * 100);
 	}
 
 }
@@ -309,9 +303,11 @@ static public function checkstatus($num) {
 
   This function will automatically end a transaction
   if the amount due becomes <= zero.
+
+  @deprecated See PrehLib::modular_tender
 */
-static public function tender($right, $strl) {
-	global $CORE_LOCAL,$CORE_PATH;
+static public function classic_tender($right, $strl) {
+	global $CORE_LOCAL;
 	$tender_upc = "";
 
 	$ret = array('main_frame'=>false,
@@ -351,11 +347,11 @@ static public function tender($right, $strl) {
 
 	Database::getsubtotals();
 
-	if ($CORE_LOCAL->get("ttlflag") == 1 && ($right == "CX" || $right == "MI")) {			// added ttlflag on 2/28/05 apbw 
+	if ($CORE_LOCAL->get("ttlflag") == 1 && ($right == "CX" || $right == "SC" || $right == "MI")) {
 
 		$charge_ok = self::chargeOk();
 		if ($right == "CX" && $charge_ok == 1 && strlen($CORE_LOCAL->get("memberID")) == 5 && substr($CORE_LOCAL->get("memberID"), 0, 1) == "5") $charge_ok = 1;
-		elseif ($right == "MI" && $charge_ok == 1) $charge_ok = 1;
+		elseif (($right == "SC" || $right == "MI") && $charge_ok == 1) $charge_ok = 1;
 		else $charge_ok = 0;
 	}
 
@@ -376,12 +372,12 @@ static public function tender($right, $strl) {
 		$ret['output'] = DisplayLib::boxMsg("transaction must be totaled before tender can be accepted");
 		return $ret;
 	}
-	elseif (($right == "FS" || $right == "EF") && $CORE_LOCAL->get("fntlflag") == 0) {
-		$ret['output'] = DisplayLib::boxMsg("eligble amount must be totaled before foodstamp tender can be accepted");
+	elseif (($right == "FS" || $right == "EF" || $right == "EB") && $CORE_LOCAL->get("fntlflag") == 0) {
+		$ret['output'] = DisplayLib::boxMsg("eligible amount must be totaled before foodstamp tender can be accepted");
 		return $ret;
 	}
-	elseif ($right == "EF" && $CORE_LOCAL->get("fntlflag") == 1 && $CORE_LOCAL->get("fsEligible") + 10 <= $strl) {
-		$ret['output'] = DisplayLib::xboxMsg("Foodstamp tender cannot exceed elible amount by pver $10.00");
+	elseif (($right == "EB" || $right == "EF") && $CORE_LOCAL->get("fntlflag") == 1 && $CORE_LOCAL->get("fsEligible") + 10 <= $strl) {
+		$ret['output'] = DisplayLib::xboxMsg("Foodstamp tender cannot exceed eligible amount by over $10.00");
 		return $ret;
 	}
 	elseif ($right == "CX" && $charge_ok == 0) {
@@ -389,29 +385,29 @@ static public function tender($right, $strl) {
 		return $ret;
 	}
 	//alert customer that charge exceeds avail balance
-	elseif ($right == "MI" && $charge_ok == 0 && $CORE_LOCAL->get("availBal") < 0) {
+	elseif (($right == "MI" || $right == "SC") && $charge_ok == 0 && $CORE_LOCAL->get("availBal") < 0) {
 		$ret['output'] = DisplayLib::xboxMsg("member ".$CORE_LOCAL->get("memberID")."<BR> has $" . $CORE_LOCAL->get("availBal") . " available.");
 		return $ret;
 	}
-	elseif ($right == "MI" && $charge_ok == 1 && $CORE_LOCAL->get("availBal") < 0) {
+	elseif (($right == "MI" || $right == "SC") && $charge_ok == 1 && $CORE_LOCAL->get("availBal") < 0) {
 		$ret['output'] = DisplayLib::xboxMsg("member ".$CORE_LOCAL->get("memberID")."<BR>is overlimit");
 		return $ret;
 	}
-	elseif ($right == "MI" && $charge_ok == 0) {
+	elseif (($right == "MI" || $right == "SC") && $charge_ok == 0) {
 		$ret['output'] = DisplayLib::xboxMsg("member ".$CORE_LOCAL->get("memberID")."<BR>is not authorized to make employee charges");
 		return $ret;
 	}
-	elseif ($right == "MI" && $charge_ok == 1 && ($CORE_LOCAL->get("availBal") + $CORE_LOCAL->get("memChargeTotal") - $strl) < 0) {
+	elseif (($right == "MI" || $right == "SC") && $charge_ok == 1 && ($CORE_LOCAL->get("availBal") + $CORE_LOCAL->get("memChargeTotal") - $strl) < 0) {
 		$ret['output'] = DisplayLib::xboxMsg("member ".$CORE_LOCAL->get("memberID")."<br> bhas exceeded charge limit");
 		return $ret;
 	}
-	elseif ($right == "MI" && $charge_ok == 1 && (ABS($CORE_LOCAL->get("memChargeTotal"))+ $strl) >= ($CORE_LOCAL->get("availBal") + 0.005) && $CORE_LOCAL->get("store")=="WFC") {
+	elseif (($right == "MI" || $right == "SC") && $charge_ok == 1 && (ABS($CORE_LOCAL->get("memChargeTotal"))+ $strl) >= ($CORE_LOCAL->get("availBal") + 0.005) && $CORE_LOCAL->get("store")=="WFC") {
 		$memChargeRemain = $CORE_LOCAL->get("availBal");
 		$memChargeCommitted = $memChargeRemain + $CORE_LOCAL->get("memChargeTotal");
 		$ret['output'] = DisplayLib::xboxMsg("available balance for charge <br>is only $" .$memChargeCommitted. ".<br><b><font size = 5>$" . number_format($memChargeRemain,2) . "</font></b><br>may still be used on this purchase.");
 		return $ret;
 	}
-	elseif(($right == "MI" || $right == "CX") && MiscLib::truncate2($CORE_LOCAL->get("amtdue")) < MiscLib::truncate2($strl)) {
+	elseif(($right == "MI" || $right == "CX" || $right == "MI") && MiscLib::truncate2($CORE_LOCAL->get("amtdue")) < MiscLib::truncate2($strl)) {
 		$ret['output'] = DisplayLib::xboxMsg("charge tender exceeds purchase amount");
 		return $ret;
 	}
@@ -442,20 +438,20 @@ static public function tender($right, $strl) {
 
 	if ($tender_code == "FS") {
 		$CORE_LOCAL->set("boxMsg","WFC no longer excepts paper foods stamps. Please choose a different tender type");
-		$ret['main_frame'] = $CORE_PATH.'gui-modules/boxMsg2.php';
+		$ret['main_frame'] = MiscLib::base_url().'gui-modules/boxMsg2.php';
 		return $ret;
 	}
 	elseif ($tender_code == "CP" && $strl > $row["MaxAmount"] && $CORE_LOCAL->get("msgrepeat") == 0){
 		$CORE_LOCAL->set("boxMsg","$".$strl." is greater than coupon limit<P>"
 		."<FONT size='-1'>[clear] to cancel, [enter] to proceed</FONT>");
-		$ret['main_frame'] = $CORE_PATH.'gui-modules/boxMsg2.php';
+		$ret['main_frame'] = MiscLib::base_url().'gui-modules/boxMsg2.php';
 		return $ret;
 	}
 	elseif ($strl > $row["MaxAmount"] && $CORE_LOCAL->get("msgrepeat") == 0){
 		$CORE_LOCAL->set("boxMsg","$".$strl." is greater than tender limit "
 		."for ".$row['TenderName']."<p>"
 		."<FONT size='-1'>[clear] to cancel, [enter] to proceed</FONT>");
-		$ret['main_frame'] = $CORE_PATH.'gui-modules/boxMsg2.php';
+		$ret['main_frame'] = MiscLib::base_url().'gui-modules/boxMsg2.php';
 		return $ret;
 	}
 	elseif ($right == "GD" || $right == "TC"){
@@ -472,50 +468,52 @@ static public function tender($right, $strl) {
 	$ref = trim($CORE_LOCAL->get("CashierNo"))."-"
 		.trim($CORE_LOCAL->get("laneno"))."-"
 		.trim($CORE_LOCAL->get("transno"));
-	if ($right == "CK" && $CORE_LOCAL->get("msgrepeat") == 0) {
-		$msg = "<BR>insert check</B><BR>press [enter] to endorse<P><FONT size='-1'>[clear] to cancel</FONT>";
-		if ($CORE_LOCAL->get("LastEquityReference") == $ref){
-			$msg .= "<div style=\"background:#993300;color:#ffffff;
-				margin:3px;padding: 3px;\">
-				There was an equity sale on this transaction. Did it get
-				endorsed yet?</div>";
+	if($CORE_LOCAL->get("enableFranking") == 1) {
+		if ($right == "CK" && $CORE_LOCAL->get("msgrepeat") == 0) {
+			$msg = "<BR>insert check</B><BR>press [enter] to endorse<P><FONT size='-1'>[clear] to cancel</FONT>";
+			if ($CORE_LOCAL->get("LastEquityReference") == $ref){
+				$msg .= "<div style=\"background:#993300;color:#ffffff;
+					margin:3px;padding: 3px;\">
+					There was an equity sale on this transaction. Did it get
+					endorsed yet?</div>";
+			}
+			$CORE_LOCAL->set("boxMsg",$msg);
+			$CORE_LOCAL->set("endorseType","check");
+			$ret['main_frame'] = MiscLib::base_url().'gui-modules/boxMsg2.php';
+			return $ret;
 		}
-		$CORE_LOCAL->set("boxMsg",$msg);
-		$CORE_LOCAL->set("endorseType","check");
-		$ret['main_frame'] = $CORE_PATH.'gui-modules/boxMsg2.php';
-		return $ret;
-	}
-	elseif ($right == "TV" && $CORE_LOCAL->get("msgrepeat") == 0) {
-		$msg = "<BR>insert travelers check</B><BR>press [enter] to endorse<P><FONT size='-1'>[clear] to cancel</FONT>";
-		if ($CORE_LOCAL->get("LastEquityReference") == $ref){
-			$msg .= "<div style=\"background:#993300;color:#ffffff;
-				margin:3px;padding: 3px;\">
-				There was an equity sale on this transaction. Did it get
-				endorsed yet?</div>";
+		elseif ($right == "TV" && $CORE_LOCAL->get("msgrepeat") == 0) {
+			$msg = "<BR>insert travelers check</B><BR>press [enter] to endorse<P><FONT size='-1'>[clear] to cancel</FONT>";
+			if ($CORE_LOCAL->get("LastEquityReference") == $ref){
+				$msg .= "<div style=\"background:#993300;color:#ffffff;
+					margin:3px;padding: 3px;\">
+					There was an equity sale on this transaction. Did it get
+					endorsed yet?</div>";
+			}
+			$CORE_LOCAL->set("boxMsg",$msg);
+			$CORE_LOCAL->set("endorseType","check");
+			$ret['main_frame'] = MiscLib::base_url().'gui-modules/boxMsg2.php';
+			return $ret;
 		}
-		$CORE_LOCAL->set("boxMsg",$msg);
-		$CORE_LOCAL->set("endorseType","check");
-		$ret['main_frame'] = $CORE_PATH.'gui-modules/boxMsg2.php';
-		return $ret;
-	}
-	elseif ($right == "RC" && $CORE_LOCAL->get("msgrepeat") == 0) {
-		$msg = "<BR>insert rebate check</B><BR>press [enter] to endorse<P><FONT size='-1'>[clear] to cancel</FONT>";
-		if ($CORE_LOCAL->get("LastEquityReference") == $ref){
-			$msg .= "<div style=\"background:#993300;color:#ffffff;
-				margin:3px;padding: 3px;\">
-				There was an equity sale on this transaction. Did it get
-				endorsed yet?</div>";
+		elseif ($right == "RC" && $CORE_LOCAL->get("msgrepeat") == 0) {
+			$msg = "<BR>insert rebate check</B><BR>press [enter] to endorse<P><FONT size='-1'>[clear] to cancel</FONT>";
+			if ($CORE_LOCAL->get("LastEquityReference") == $ref){
+				$msg .= "<div style=\"background:#993300;color:#ffffff;
+					margin:3px;padding: 3px;\">
+					There was an equity sale on this transaction. Did it get
+					endorsed yet?</div>";
+			}
+			$CORE_LOCAL->set("boxMsg",$msg);
+			$CORE_LOCAL->set("endorseType","check");
+			$ret['main_frame'] = MiscLib::base_url().'gui-modules/boxMsg2.php';
+			return $ret;
 		}
-		$CORE_LOCAL->set("boxMsg",$msg);
-		$CORE_LOCAL->set("endorseType","check");
-		$ret['main_frame'] = $CORE_PATH.'gui-modules/boxMsg2.php';
-		return $ret;
-	}
-	elseif ($right == "TC" && $CORE_LOCAL->get("msgrepeat") == 0) {
-		$CORE_LOCAL->set("boxMsg","<B> insert gift certificate<B><BR>press [enter] to endorse<P><FONT size='-1'>[clear] to cancel</FONT>");
-		$CORE_LOCAL->set("endorseType","check");
-		$ret['main_frame'] = $CORE_PATH.'gui-modules/boxMsg2.php';
-		return $ret;
+		elseif ($right == "TC" && $CORE_LOCAL->get("msgrepeat") == 0) {
+			$CORE_LOCAL->set("boxMsg","<B> insert gift certificate<B><BR>press [enter] to endorse<P><FONT size='-1'>[clear] to cancel</FONT>");
+			$CORE_LOCAL->set("endorseType","check");
+			$ret['main_frame'] = MiscLib::base_url().'gui-modules/boxMsg2.php';
+			return $ret;
+		}
 	}
 
 	if ($tender_code == "TV")
@@ -528,13 +526,14 @@ static public function tender($right, $strl) {
 	$CORE_LOCAL->set("msgrepeat",0);
 	$CORE_LOCAL->set("TenderType",$tender_code);			/***added by apbw 2/1/05 SCR ***/
 
-	if ($CORE_LOCAL->get("TenderType") == "MI" || $CORE_LOCAL->get("TenderType") == "CX") { 	// apbw 2/28/05 SCR
+	if ($CORE_LOCAL->get("TenderType") == "SC" || $CORE_LOCAL->get("TenderType") == "CX"
+	  || $CORE_LOCAL->get("TenderType") == "MI" ) {
 		$CORE_LOCAL->set("chargetender",1);							// apbw 2/28/05 SCR
 	}													// apbw 2/28/05 SCR
 
 	Database::getsubtotals();
 
-	if ($right == "FS" || $right == "EF") {
+	if ($right == "FS" || $right == "EB" || $right == "XE" || $right == "EF") {
 		TransRecord::addfsTaxExempt();
 	}
 
@@ -554,7 +553,7 @@ static public function tender($right, $strl) {
 	}
 
 	if ($CORE_LOCAL->get("amtdue") <= 0.005) {
-		if ($CORE_LOCAL->get("paycard_mode") == PAYCARD_MODE_AUTH
+		if ($CORE_LOCAL->get("paycard_mode") == PaycardLib::PAYCARD_MODE_AUTH
 		    && ($right == "CC" || $right == "GD")){
 			$CORE_LOCAL->set("change",0);
 			$CORE_LOCAL->set("fntlflag",0);
@@ -593,6 +592,129 @@ static public function tender($right, $strl) {
 	}
 	$ret['redraw_footer'] = true;
 	return $ret;
+}
+
+/**
+  Add a tender to the transaction
+  @right tender amount in cents (100 = $1)
+  @strl tender code from tenders table
+  @return An array see Parser::default_json()
+   for format explanation.
+
+  This function will automatically end a transaction
+  if the amount due becomes <= zero.
+*/
+static public function modular_tender($right, $strl){
+	global $CORE_LOCAL;
+	$ret = array('main_frame'=>false,
+		'redraw_footer'=>false,
+		'target'=>'.baseHeight',
+		'output'=>"");
+
+	/* when processing as strings, weird things happen
+	 * in excess of 1000, so use floating point */
+	$strl .= ""; // force type to string
+	$mult = 1;
+	if ($strl[0] == "-"){
+		$mult = -1;
+		$strl = substr($strl,1,strlen($strl));
+	}
+	$dollars = (int)substr($strl,0,strlen($strl)-2);
+	$cents = ((int)substr($strl,-2))/100.0;
+	$strl = (double)($dollars+round($cents,2));
+	$strl *= $mult;
+
+	/**
+	  First use base module to check for error
+	  conditions common to all tenders
+	*/
+	$base_object = new TenderModule($right, $strl);
+	Database::getsubtotals();
+	$ec = $base_object->ErrorCheck();
+	if ($ec !== True){
+		$ret['output'] = $ec;
+		return $ret;
+	}
+	$pr = $base_object->PreReqCheck();
+	if ($pr !== True){
+		$ret['main_frame'] = $pr;
+		return $ret;
+	}
+
+	/**
+	  Get a tender-specific module if
+	  one has been configured
+	*/
+	$tender_object = 0;
+	$map = $CORE_LOCAL->get("TenderMap");
+	if (is_array($map) && isset($map[$right])){
+		$class = $map[$right];
+		$tender_object = new $class($right, $strl);
+	}
+	else {
+		$tender_object = $base_object;
+	}
+
+	if (!is_object($tender_object)){
+		$ret['output'] = DisplayLib::boxMsg('tender is misconfigured');
+		return $ret;
+	}
+	else if (get_class($tender_object) != 'TenderModule'){
+		/**
+		  Do tender-specific error checking and prereqs
+		*/
+		$ec = $tender_object->ErrorCheck();
+		if ($ec !== True){
+			$ret['output'] = $ec;
+			return $ret;
+		}
+		$pr = $tender_object->PreReqCheck();
+		if ($pr !== True){
+			$ret['main_frame'] = $pr;
+			return $ret;
+		}
+	}
+
+	// add the tender record
+	$tender_object->Add();
+	Database::getsubtotals();
+
+	// see if transaction has ended
+	if ($CORE_LOCAL->get("amtdue") <= 0.005) {
+
+		$CORE_LOCAL->set("change",-1 * $CORE_LOCAL->get("amtdue"));
+		$cash_return = $CORE_LOCAL->get("change");
+		TransRecord::addchange($cash_return);
+					
+		$CORE_LOCAL->set("End",1);
+		$CORE_LOCAL->set("beep","rePoll");
+		$CORE_LOCAL->set("receiptType","full");
+		$ret['receipt'] = 'full';
+		$ret['output'] = DisplayLib::printReceiptFooter();
+	}
+	else {
+		$CORE_LOCAL->set("change",0);
+		$CORE_LOCAL->set("fntlflag",0);
+		$chk = self::ttl();
+		if ($chk === True)
+			$ret['output'] = DisplayLib::lastpage();
+		else
+			$ret['main_frame'] = $chk;
+	}
+	$ret['redraw_footer'] = true;
+	return $ret;
+}
+
+/**
+  Call the configured tender function, either
+  PrehLib::modular_tender or PrehLib::classic_tender
+*/
+static public function tender($right, $strl){
+	global $CORE_LOCAL;
+	if ($CORE_LOCAL->get("ModularTenders")==1)
+		return self::modular_tender($right, $strl);
+	else
+		return self::classic_tender($right, $strl);
 }
 
 //-------------------------------------------------------
@@ -728,12 +850,12 @@ static public function deptkey($price, $dept,$ret=array()) {
 
 			$CORE_LOCAL->set("boxMsg","$".$price." is greater than department limit<P>"
 					."<FONT size='-1'>[clear] to cancel, [enter] to proceed</FONT>");
-			$ret['main_frame'] = $CORE_PATH.'gui-modules/boxMsg2.php';
+			$ret['main_frame'] = MiscLib::base_url().'gui-modules/boxMsg2.php';
 		}
 		elseif ($price < $deptmin && $CORE_LOCAL->get("msgrepeat") == 0) {
 			$CORE_LOCAL->set("boxMsg","$".$price." is lower than department minimum<P>"
 				."<FONT size='-1'>[clear] to cancel, [enter] to proceed</FONT>");
-			$ret['main_frame'] = $CORE_PATH.'gui-modules/boxMsg2.php';
+			$ret['main_frame'] = MiscLib::base_url().'gui-modules/boxMsg2.php';
 		}
 		else {
 			if ($CORE_LOCAL->get("casediscount") > 0) {
@@ -791,10 +913,10 @@ static public function deptkey($price, $dept,$ret=array()) {
   is the member-entry page.
 */
 static public function ttl() {
-	global $CORE_LOCAL,$CORE_PATH;
+	global $CORE_LOCAL;
 
 	if ($CORE_LOCAL->get("memberID") == "0") {
-		return $CORE_PATH."gui-modules/memlist.php";
+		return MiscLib::base_url()."gui-modules/memlist.php";
 	}
 	else {
 		$mconn = Database::tDataConnect();
@@ -834,7 +956,7 @@ static public function ttl() {
 						$CORE_LOCAL->get("memChargeTotal"),
 						$CORE_LOCAL->get("balance")));
 				$CORE_LOCAL->set("strEntered","TL");
-				return $CORE_PATH."gui-modules/boxMsg2.php";
+				return MiscLib::base_url()."gui-modules/boxMsg2.php";
 			}
 		}
 		else {
@@ -922,7 +1044,7 @@ static public function fsEligible() {
 	Database::getsubtotals();
 	if ($CORE_LOCAL->get("fsEligible") < 0 && False) {
 		$CORE_LOCAL->set("boxMsg","Foodstamp eligible amount inapplicable<P>Please void out earlier tender and apply foodstamp first");
-		return $CORE_PATH."gui-modules/boxMsg2.php";
+		return MiscLib::base_url()."gui-modules/boxMsg2.php";
 	}
 	else {
 		$CORE_LOCAL->set("fntlflag",1);
@@ -1082,7 +1204,7 @@ static public function staffCharge($arg,$json=array()) {
 			return $json;
 		}
 		$CORE_LOCAL->set("runningTotal",$CORE_LOCAL->get("amtdue"));
-		return self::tender("MI", $CORE_LOCAL->get("runningTotal") * 100);
+		return self::tender("SC", $CORE_LOCAL->get("runningTotal") * 100);
 
 	}
 

@@ -20,8 +20,6 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
 
 class EveryoneSale extends DiscountType {
 
@@ -49,6 +47,17 @@ class EveryoneSale extends DiscountType {
 
 		$ret['discount'] = ($ret['regPrice'] - $row['special_price']) * $quantity;
 		$ret['memDiscount'] = 0;
+
+		if ($CORE_LOCAL->get("itemPD") > 0){
+			$discount = $row['special_price'] * (($CORE_LOCAL->get("itemPD")/100));
+			$ret["unitPrice"] = $row['special_price'] - $discount;
+			$ret["discount"] += ($discount * $quantity);
+		}
+		else if ($CORE_LOCAL->get("itemDiscount") > 0){
+			$discount = $row['special_price'] * (($CORE_LOCAL->get("itemDiscount")/100));
+			$ret["unitPrice"] = $row['special_price'] - $discount;
+			$ret["discount"] += ($discount * $quantity);
+		}
 
 		$this->savedRow = $row;
 		$this->savedInfo = $ret;

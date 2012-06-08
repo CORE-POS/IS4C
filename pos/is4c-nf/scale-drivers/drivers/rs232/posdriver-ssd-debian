@@ -1,0 +1,224 @@
+#!/bin/bash
+#
+# posdriver-ssd-debian Startup script for ssd
+#
+# chkconfig: - 80 20
+# description: runs ssd scale driver as a daemon
+
+# --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - -
+#
+# 16May12 EL Remove some of the superseded, commented code.
+# 13May12 EL Change name to posdriver2-ssd to not conflict with upstream version.
+# 8Apr12 EL Get PID of the ssd process after startup and record as ssdp.pid.
+# Add killing of the process to "stop"
+# Add "clean" option to rm ssdp.pid if process is gone in
+# order to allow start.
+# Add "status" option to show pid and ssdp.pid.
+# ? Is something needed to prevent multiple starts,
+# i.e. check if daemon already running before starting another?
+# 7Apr12 EL In "start" change the location of the driver.
+# What do "success" and "failure" do? Added functions for them.
+# In start(), changed initial test from -z to ! -f
+
+# --CONSTANTS - - - - - - - - - - - - - - - - - - - - - - - - -
+
+NAME=posdriver-ssd-debian
+DHOME=/var/run/${NAME}
+KILL=/bin/kill
+
+# --FUNCTIONS - - - - - - - - - - - - - - - - - - - - - - - - -
+
+function noop()
+{
+	NOOP=""
+}
+function failure()
+{
+	echo "failure";
+}
+function success()
+{
+	echo "success";
+}
+
+# Make the directory to contain the posdriver2-ssd pid and log
+# if it doesn't exist, which it doesn't to begin with.
+# It apparently does not survive reboot.
+function makelogdir ()
+{
+	if [ ! -d $DHOME ]; then
+		#echo "Would make: $DHOME";
+		/usr/bin/sudo mkdir -p $DHOME
+		RETVAL=$?
+		if [ "$RETVAL" = "0" ]; then
+			echo "Made: $DHOME";
+			success;
+		else
+			echo "Could not make: ${DHOME} : $RETVAL";
+			failure;
+			exit 1;
+		fi
+	else
+		echo "${DHOME} (already) exists."
+		#echo "${DHOME} does not need to be created."
+	fi
+
+	# makelogdir
+}
+
+start(){
+	echo "Starting $NAME"
+	if [ ! -f ${DHOME}/ssdp.pid ]; then
+
+		# Make the directory where the PID and log files are kept if it
+		# doesn't exist.
+		makelogdir
+
+		# Start the driver in the background as user nobody.
+		/usr/bin/sudo -u nobody /var/www/IS4C/pos/is4c-nf/scale-drivers/drivers/rs232/ssd &> ${DHOME}/ssd.log &
+		# Store the PID of the startup process.
+		MYPID=$!
+		echo $MYPID > ${DHOME}/ssd.pid
+		RETVAL=$?
+		if [ "$RETVAL" = "0" ]; then
+			echo "Started: $NAME as PID: ${MYPID}"
+			# See if the ssd process is actually running.
+			# It is not the same pid as the startup returned,
+			# and the startup process is no longer alive.
+			# Apparently takes a bit of time for the daemon to start, or be known to ps.
+			sleep 2
+			MYPIDP=`/bin/ps --no-headers -C ssd -o pid=`
+			if [ "$MYPIDP" ] ; then
+				echo "Running: $NAME as PIDP: ${MYPIDP}"
+				echo "$MYPIDP" > ${DHOME}/ssdp.pid
+				success;
+			else
+				echo "$NAME PIDP: >${MYPIDP}< is not running."
+				failure;
+			fi
+		else
+			echo "Could not start: ${NAME} : $RETVAL"
+			failure;
+		fi
+	else
+		echo "$NAME is already running"
+		failure;
+	fi
+	echo
+
+	# start
+}
+
+stop(){
+	echo "Stopping $NAME"
+	# Look for the pid of the actual daemon, not the startup process.
+	if [ -f ${DHOME}/ssdp.pid ]; then
+		MYPIDP=`cat ${DHOME}/ssdp.pid`
+		# This works but reports "No such process" - why?
+		#kill $MYPIDP
+		$KILL `cat ${DHOME}/ssdp.pid`
+		RETVAL=$?
+		# In bash, quoting and " = " vs. -eq don't seem to matter.
+		if [ "$RETVAL" = "0" ]; then
+			# EL: Added rm.
+			rm ${DHOME}/ssdp.pid
+			RETVAL=$?
+			if [ "$RETVAL" = "0" ]; then
+				echo "Killed ${MYPIDP} and rm'd ${DHOME}/ssdp.pid"
+				success;
+			else
+				echo "Killed ${MYPIDP} but could not rm ${DHOME}/ssdp.pid"
+				failure;
+			fi
+		else
+			echo "Could not kill ${MYPIDP} because: >$RETVAL<"
+			failure;
+		fi
+	else
+		echo "$NAME is not running"
+	fi
+	echo
+	# stop
+}
+
+clean(){
+
+	echo "Cleaning $NAME"
+	MYPIDP=`/bin/ps --no-headers -C ssd -o pid=`
+	if [ -z "$MYPIDP" ] ; then
+		if [ -f ${DHOME}/ssdp.pid ]; then
+			rm ${DHOME}/ssdp.pid
+			RETVAL=$?
+			if [ "$RETVAL" = "0" ]; then
+				echo "ssd is not running. rm'd ${DHOME}/ssdp.pid"
+				noop;
+			else
+				echo "Could not rm ${DHOME}/ssdp.pid"
+				echo "Since ssd is not running normal start should be possible."
+				noop;
+			fi
+		else
+			echo "ssd is not running. No ${DHOME}/ssdp.pid to rm."
+		fi
+	else
+		printf "The ssd is still running >${MYPIDP}< so did not rm ${DHOME}/ssdp.pid which "
+		if [ -f ${DHOME}/ssdp.pid ]; then
+			printf "does"
+		else
+			printf "does not"
+		fi
+		echo " exist."
+		noop;
+	fi
+
+	# clean
+}
+
+status(){
+
+	echo "Status of $NAME"
+
+	MYPIDP=`/bin/ps --no-headers -C ssd -o pid=`
+	if [ "$MYPIDP" ] ; then
+		echo "The ssd is running as >${MYPIDP}<"
+	else
+		echo "The ssd is not running."
+	fi
+	makelogdir;
+	if [ -f ${DHOME}/ssdp.pid ]; then
+		MYPIDF=`cat ${DHOME}/ssdp.pid`
+		printf "${DHOME}/ssdp.pid exists and contains: >${MYPIDF}<\n"
+		if [ "$MYPIDP" != "$MYPIDF" ] ; then
+			printf "*** Alert: They don't agree!\n";
+		fi
+	else
+		echo "${DHOME}/ssdp.pid does not exist."
+	fi
+
+	# status
+}
+
+case "$1" in
+	start)
+		start
+		;;
+	stop)
+		stop
+		;;
+	restart)
+		stop
+		sleep 2
+		start
+		;;
+	clean)
+		clean
+		;;
+	status)
+		status
+		;;
+	*)
+		echo $"Usage: $NAME {start|stop|restart|clean|status}"
+		exit 1
+esac
+
+exit 0

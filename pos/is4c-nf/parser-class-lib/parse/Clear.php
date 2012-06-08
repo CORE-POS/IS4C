@@ -21,9 +21,6 @@
 
 *********************************************************************************/
 
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
-
 class Clear extends Parser {
 	function check($str){
 		if ($str == "CL")
@@ -32,7 +29,7 @@ class Clear extends Parser {
 	}
 
 	function parse($str){
-		global $CORE_LOCAL,$CORE_PATH;
+		global $CORE_LOCAL;
 
 		$CORE_LOCAL->set("msgrepeat",0);
 		$CORE_LOCAL->set("strendered","");
@@ -46,7 +43,7 @@ class Clear extends Parser {
 			TransRecord::addTare(0);
 
 		$ret = $this->default_json();
-		$ret['main_frame'] = $CORE_PATH."gui-modules/pos2.php";
+		$ret['main_frame'] = MiscLib::base_url()."gui-modules/pos2.php";
 		return $ret;
 	}
 

@@ -21,6 +21,11 @@
 
 *********************************************************************************/
 
+/**
+ @class LS_Access
+ Alternate for LocalStorage to
+ simplify auditing cc-handling code
+*/
 class LS_Access {
 
 	function get($str){

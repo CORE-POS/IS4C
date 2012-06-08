@@ -20,8 +20,6 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
 
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
@@ -31,7 +29,7 @@ class qtty2 extends BasicPage {
 	var $msg;
 
 	function preprocess(){
-		global $CORE_PATH,$CORE_LOCAL;
+		global $CORE_LOCAL;
 
 		$this->box_color="#004080";
 		$this->msg = "quantity required";
@@ -43,14 +41,20 @@ class qtty2 extends BasicPage {
 			$CORE_LOCAL->set("qttyvalid",0);
 			$CORE_LOCAL->set("quantity",0);
 			$CORE_LOCAL->set("msgrepeat",0);
-			$this->change_page($CORE_PATH."gui-modules/pos2.php");
+			$this->change_page($this->page_url."gui-modules/pos2.php");
 			return False;
 		}
 		elseif (is_numeric($qtty) && $qtty < 9999 && $qtty >= 0) {
+			$input_string = $CORE_LOCAL->get("item");
+			$plu = "";
+			while(!empty($input_string) && is_numeric($input_string[strlen($input_string)-1])){
+				$plu = $input_string[strlen($input_string)-1] . $plu;
+				$input_string = substr($input_string,0,strlen($input_string)-1);
+			}
 			$CORE_LOCAL->set("qttyvalid",1);
-			$CORE_LOCAL->set("strRemembered",$qtty."*".$CORE_LOCAL->get("item"));
+			$CORE_LOCAL->set("strRemembered",$input_string.$qtty."*".$plu);
 			$CORE_LOCAL->set("msgrepeat",1);
-			$this->change_page($CORE_PATH."gui-modules/pos2.php");
+			$this->change_page($this->page_url."gui-modules/pos2.php");
 			return False;
 		}
 

@@ -20,12 +20,11 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
 
 class NormalPricing extends DiscountType {
 
 	function priceInfo($row,$quantity=1){
+		global $CORE_LOCAL;
 		$ret = array();
 		if (is_array($this->savedInfo))
 			return $this->savedInfo;
@@ -34,12 +33,30 @@ class NormalPricing extends DiscountType {
 		$ret["unitPrice"] = $row['normal_price'];
 		$ret['discount'] = 0;
 		$ret['memDiscount'] = 0;
+		if ($CORE_LOCAL->get("itemPD") > 0){
+			$discount = $row['normal_price'] * (($CORE_LOCAL->get("itemPD")/100));
+			$ret["unitPrice"] = $row['normal_price'] - $discount;
+			$ret["discount"] = $discount * $quantity;
+		}
+		else if ($CORE_LOCAL->get("itemDiscount") > 0){
+			$discount = $row['normal_price'] * (($CORE_LOCAL->get("itemDiscount")/100));
+			$ret["unitPrice"] = $row['normal_price'] - $discount;
+			$ret["discount"] = $discount * $quantity;
+		}
+
+		$this->savedRow = $row;
+		$this->savedInfo = $ret;
 
 		return $ret;
 	}
 
 	function addDiscountLine(){
-
+		global $CORE_LOCAL;
+		if (isset($this->savedInfo) && $this->savedInfo['discount'] != 0){
+			$CORE_LOCAL->set("voided",2);
+			TransRecord::adddiscount($this->savedInfo['discount'],
+					$this->savedRow['department']);
+		}
 	}
 
 	function isSale(){

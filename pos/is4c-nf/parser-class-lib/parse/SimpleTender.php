@@ -20,13 +20,12 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
 
 class SimpleTender extends Parser {
 	var $stored_ret;
 	function check($str){
-		global $CORE_LOCAL,$CORE_PATH;
+		global $CORE_LOCAL;
+		$my_url = MiscLib::base_url();
 		$this->stored_ret = $this->default_json();
 		switch($str){
 		case "TA":
@@ -57,7 +56,7 @@ class SimpleTender extends Parser {
 				$CORE_LOCAL->set("warnBoxType","warnCC");
 				$CORE_LOCAL->set("warned",1);
 				$CORE_LOCAL->set("boxMsg","<BR>charge $".$CORE_LOCAL->get("runningTotal")." to credit card</B><BR>press [enter] to continue<P><FONT size='-1'>[clear] to cancel</FONT>");
-				$this->stored_ret['main_frame'] = $CORE_PATH.'gui-modules/boxMsg2.php';
+				$this->stored_ret['main_frame'] = $my_url.'gui-modules/boxMsg2.php';
 			}
 			else 
 				$this->stored_ret['output'] = DisplayLib::boxMsg("transaction must be totaled<br>before tender can be<br>accepted"); 
@@ -87,7 +86,7 @@ class SimpleTender extends Parser {
 				$CORE_LOCAL->set("strEntered",$CORE_LOCAL->get("runningTotal")*100);
 				$CORE_LOCAL->set("tenderamt",$CORE_LOCAL->get("runningTotal"));
 				$CORE_LOCAL->set("strEntered",$CORE_LOCAL->get("strEntered")."CK");
-				$this->stored_ret['main_frame'] = $CORE_PATH.'gui-modules/boxMsg2.php';
+				$this->stored_ret['main_frame'] = $my_url.'gui-modules/boxMsg2.php';
 			}
 			else 
 				$this->stored_ret['output'] = DisplayLib::boxMsg("transaction must be totaled<br>before tender can be<br>accepted");
@@ -117,7 +116,7 @@ class SimpleTender extends Parser {
 				$CORE_LOCAL->set("mirequested",1);
 				$CORE_LOCAL->set("away",1);
 				$CORE_LOCAL->set("search_or_list",1);
-				$this->stored_ret['main_frame'] = $CORE_PATH.'gui-modules/memlist.php';
+				$this->stored_ret['main_frame'] = $my_url.'gui-modules/memlist.php';
 			}
 			return True;
 		}

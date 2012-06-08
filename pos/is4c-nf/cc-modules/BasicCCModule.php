@@ -40,10 +40,7 @@
   The rest is utility methods that are often helpful.
  */
 
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
-
-if (!function_exists("paycard_errorText")) include_once(realpath(dirname(__FILE__)."/lib/paycardLib.php"));
+if (!class_exists("PaycardLib")) include_once(realpath(dirname(__FILE__)."/lib/paycardLib.php"));
 if (!isset($CORE_LOCAL)){
 	include_once(realpath(dirname(__FILE__)."/lib/LS_Access.php"));
 	$CORE_LOCAL = new LS_Access();
@@ -101,7 +98,7 @@ class BasicCCModule {
 	 an error value as defined in paycardLib.php.
 	 @param $type paycard type 
 	 @return
-	 - On success, return PAYCARD_ERR_OK.
+	 - On success, return PaycardLib::PAYCARD_ERR_OK.
 	 - On failure, return anything else and set any
 	   error messages to be displayed in
 	   $CORE_LOCAL->["boxMsg"].
@@ -121,7 +118,7 @@ class BasicCCModule {
 
 	/**
 	  This function is called when doSend() returns
-	  PAYCARD_ERR_OK. 
+	  PaycardLib::PAYCARD_ERR_OK. 
 
 	  I use it for tendering, printing
 	  receipts, etc, but it's really only for code
@@ -181,7 +178,7 @@ class BasicCCModule {
 	 and returns the result of that call.
 	 */
 	function curlSend($data=False,$type='POST',$xml=False){
-		global $CORE_PATH,$CORE_LOCAL;
+		global $CORE_LOCAL;
 		if($data && $type == 'GET')
 			$this->GATEWAY .= $data;
 
@@ -246,7 +243,7 @@ class BasicCCModule {
 	  - curlHTTP response HTTP code
 	  - response is the actual text result
 	 @return An error code. Constants are specified
-	  in paycardLib.php. PAYCARD_ERR_OK should be
+	  in paycardLib.php. PaycardLib::PAYCARD_ERR_OK should be
 	  return on success.
 	 */
 	function handleResponse($response){
@@ -308,7 +305,7 @@ class BasicCCModule {
 	  @param $namespace include an xmlns attribute
 	  @return soap string
 	*/
-	function soapify($action,$objs,$namespace=""){
+	function soapify($action,$objs,$namespace="",$encode_tags=True){
 		$ret = "<?xml version=\"1.0\"?>
 			<soap:Envelope";
 		foreach ($this->SOAP_ENVELOPE_ATTRS as $attr){
@@ -322,8 +319,10 @@ class BasicCCModule {
 		$ret .= ">\n";
 		foreach($objs as $key=>$value){
 			$ret .= "<".$key.">";
-			$value = str_replace("<","&lt;",$value);
-			$value = str_replace(">","&gt;",$value);
+			if ($encode_tags){
+				$value = str_replace("<","&lt;",$value);
+				$value = str_replace(">","&gt;",$value);
+			}
 			$ret .= $value;
 			$ret .= "</".$key.">\n";
 		}
@@ -352,27 +351,27 @@ class BasicCCModule {
 	  the given error code. I find this easier
 	  than manually setting an appropriate message
 	  every time I return a common error like
-	  PAYCARD_ERR_NOSEND. I think everything but
-	  PAYCARD_ERR_PROC can have one default message
+	  PaycardLib::PAYCARD_ERR_NOSEND. I think everything but
+	  PaycardLib::PAYCARD_ERR_PROC can have one default message
 	  assigned here
 	 */
 	function setErrorMsg($errorCode){
 		global $CORE_LOCAL;
 		switch ($errorCode){
-		case PAYCARD_ERR_NOSEND:
-			$CORE_LOCAL->set("boxMsg",paycard_errorText("Internal Error",$errorCode,"",1,1,0,0,1,$CORE_LOCAL->get("paycard_type")));
+		case PaycardLib::PAYCARD_ERR_NOSEND:
+			$CORE_LOCAL->set("boxMsg",PaycardLib::paycard_errorText("Internal Error",$errorCode,"",1,1,0,0,1,$CORE_LOCAL->get("paycard_type")));
 			break;
-		case PAYCARD_ERR_COMM:
-			$CORE_LOCAL->set("boxMsg",paycard_errorText("Communication Error",$errorCode,"",1,1,0,0,0,$CORE_LOCAL->get("paycard_type")));
+		case PaycardLib::PAYCARD_ERR_COMM:
+			$CORE_LOCAL->set("boxMsg",PaycardLib::paycard_errorText("Communication Error",$errorCode,"",1,1,0,0,0,$CORE_LOCAL->get("paycard_type")));
 			break;
-		case PAYCARD_ERR_TIMEOUT:
-			$CORE_LOCAL->set("boxMsg",paycard_errorText("Timeout Error",$errorCode,"",0,0,0,1,0,$CORE_LOCAL->get("paycard_type")));
+		case PaycardLib::PAYCARD_ERR_TIMEOUT:
+			$CORE_LOCAL->set("boxMsg",PaycardLib::paycard_errorText("Timeout Error",$errorCode,"",0,0,0,1,0,$CORE_LOCAL->get("paycard_type")));
 			break;
-		case PAYCARD_ERR_DATA:
-			$CORE_LOCAL->set("boxMsg",paycard_errorText("System Error",$errorCode,"",0,0,0,1,1,$CORE_LOCAL->get("paycard_type")));
+		case PaycardLib::PAYCARD_ERR_DATA:
+			$CORE_LOCAL->set("boxMsg",PaycardLib::paycard_errorText("System Error",$errorCode,"",0,0,0,1,1,$CORE_LOCAL->get("paycard_type")));
 			break;
 		default:
-			$CORE_LOCAL->set("boxMsg",paycard_errorText("Internal Error",$errorCode,"",1,1,0,0,1,$CORE_LOCAL->get("paycard_type")));
+			$CORE_LOCAL->set("boxMsg",PaycardLib::paycard_errorText("Internal Error",$errorCode,"",1,1,0,0,1,$CORE_LOCAL->get("paycard_type")));
 			break;
 		return $errorCode;
 		}

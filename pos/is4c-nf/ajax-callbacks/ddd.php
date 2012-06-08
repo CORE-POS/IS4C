@@ -20,9 +20,6 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
- // session_start(); 
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
 
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
@@ -51,6 +48,6 @@ $CORE_LOCAL->set("End",2);
 $_REQUEST['receiptType'] = 'ddd';
 ob_start();
 include(realpath(dirname(__FILE__).'/ajax-end.php'));
-header("Location: {$CORE_PATH}gui-modules/pos2.php");
+header("Location: ".MiscLib::base_url()."gui-modules/pos2.php");
 
 ?>

@@ -21,9 +21,6 @@
 
 *********************************************************************************/
 
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
-
 ini_set('display_errors','1');
  
 session_cache_limiter('nocache');
@@ -33,25 +30,25 @@ include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 class pos2 extends BasicPage {
 
 	function head_content(){
-		global $CORE_LOCAL,$CORE_PATH;
+		global $CORE_LOCAL;
 		?>
-		<script type="text/javascript" src="<?php echo $CORE_PATH; ?>js/ajax-parser.js"></script>
+		<script type="text/javascript" src="<?php echo $this->page_url; ?>js/ajax-parser.js"></script>
 		<script type="text/javascript">
 		function submitWrapper(){
 			var str = $('#reginput').val();
-			runParser(str,'<?php echo $CORE_PATH; ?>');
+			runParser(str,'<?php echo $this->page_url; ?>');
 			return false;
 		}
 		function parseWrapper(str){
-			runParser(str,'<?php echo $CORE_PATH; ?>');
+			runParser(str,'<?php echo $this->page_url; ?>');
 		}
 		function lockScreen(){
 			$.ajax({
-				'url': '<?php echo $CORE_PATH; ?>ajax-callbacks/ajax-lock.php',
+				'url': '<?php echo $this->page_url; ?>ajax-callbacks/ajax-lock.php',
 				'type': 'get',
 				'cache': false,
 				'success': function(){
-					location = '<?php echo $CORE_PATH; ?>gui-modules/login3.php';
+					location = '<?php echo $this->page_url; ?>gui-modules/login3.php';
 				}
 			});
 		}

@@ -62,9 +62,13 @@
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_basic_page.html#a0f017b08319a9d14e90b5838b167d4b">footer</a> ()</td></tr>
 
+<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_basic_page.html#4219c762df75bf546a42b88e5cca7f0b">change_page</a> ($url)</td></tr>
+
 <tr><td colspan="2"><br><h2>Public Attributes</h2></td></tr>
 <tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="anchor" name="ba97543c661ecc85710059404e88e1df"></a><!-- doxytag: member="BasicPage::$onload_commands" ref="ba97543c661ecc85710059404e88e1df" args="" -->
 &nbsp;</td><td class="memItemRight" valign="bottom"><b>$onload_commands</b></td></tr>
+
+<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_basic_page.html#afa2398dc905db015caf1dac06821df6">$page_url</a></td></tr>
 
 </table>
 <hr><a name="_details"></a><h2>Detailed Description</h2>
@@ -72,7 +76,7 @@ This is the base class for all display scripts<p>
 Display scripts are not required to use this base class but it does provide a lot of common functionality for building HTML pages with standard headers, footers, and styling. <dl compact><dt><b>Examples: </b></dt><dd>
 
 <p>
-<a class="el" href="_hello_world_8php-example.html#_a4">HelloWorld.php</a>.</dl>
+<a class="el" href="_hello_world_8php-example.html#_a5">HelloWorld.php</a>.</dl>
 <p>
 <hr><h2>Member Function Documentation</h2>
 <a class="anchor" name="8e93b43fbcd2079eed207a0cedc13ae8"></a><!-- doxytag: member="BasicPage::add_onload_command" ref="8e93b43fbcd2079eed207a0cedc13ae8" args="($str)" -->
@@ -142,6 +146,31 @@ This function should print anything that belongs inside the HTML body tags <dl c
 <a class="el" href="_hello_world_8php-example.html#a6">HelloWorld.php</a>.</dl>
 </div>
 </div><p>
+<a class="anchor" name="4219c762df75bf546a42b88e5cca7f0b"></a><!-- doxytag: member="BasicPage::change_page" ref="4219c762df75bf546a42b88e5cca7f0b" args="($url)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">BasicPage::change_page           </td>
+          <td>(</td>
+          <td class="paramtype">$&nbsp;</td>
+          <td class="paramname"> <em>url</em>          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Go to a different page <dl compact><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>$url</em>&nbsp;</td><td>the new page URL</td></tr>
+  </table>
+</dl>
+Use this function instead of manual redirects to allow debug output. 
+</div>
+</div><p>
 <a class="anchor" name="a0f017b08319a9d14e90b5838b167d4b"></a><!-- doxytag: member="BasicPage::footer" ref="a0f017b08319a9d14e90b5838b167d4b" args="()" -->
 <div class="memitem">
 <div class="memproto">
@@ -160,7 +189,7 @@ This function should print anything that belongs inside the HTML body tags <dl c
 <p>
 Print the standard footer <dl compact><dt><b>Returns:</b></dt><dd>None </dd></dl>
 <dl compact><dt><b>Examples: </b></dt><dd>
-<a class="el" href="_hello_world_8php-example.html#a8">HelloWorld.php</a>.</dl>
+<a class="el" href="_hello_world_8php-example.html#a9">HelloWorld.php</a>.</dl>
 </div>
 </div><p>
 <a class="anchor" name="e6842a4c5b0face5141a2f505aae0fe1"></a><!-- doxytag: member="BasicPage::head_content" ref="e6842a4c5b0face5141a2f505aae0fe1" args="()" -->
@@ -248,7 +277,7 @@ Display the standard header without input box <dl compact><dt><b>Returns:</b></d
 <p>
 Decide whether to display output <dl compact><dt><b>Returns:</b></dt><dd>True or False</dd></dl>
 This is the first function called. It is typically used to check $_GET or $_POST variables. If the function returns True, the rest of the page will be printed. If the function returns False, there is no output. Usually this function returns False after setting a redirect header to change to another page. <dl compact><dt><b>Examples: </b></dt><dd>
-<a class="el" href="_hello_world_8php-example.html#a9">HelloWorld.php</a>.</dl>
+<a class="el" href="_hello_world_8php-example.html#a10">HelloWorld.php</a>.</dl>
 </div>
 </div><p>
 <a class="anchor" name="66a9d7400a222fc1fa2639a25bb4b429"></a><!-- doxytag: member="BasicPage::print_page" ref="66a9d7400a222fc1fa2639a25bb4b429" args="()" -->
@@ -314,9 +343,25 @@ Read input from scale <dl compact><dt><b>Returns:</b></dt><dd>None</dd></dl>
 Outputs the javascript used to poll for scale input and activates it on page load. 
 </div>
 </div><p>
+<hr><h2>Member Data Documentation</h2>
+<a class="anchor" name="afa2398dc905db015caf1dac06821df6"></a><!-- doxytag: member="BasicPage::$page_url" ref="afa2398dc905db015caf1dac06821df6" args="" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">BasicPage::$page_url          </td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Relative URL for POS root directory Pages often need this. 
+</div>
+</div><p>
 <hr>The documentation for this class was generated from the following file:<ul>
 <li>pos/is4c-nf/gui-class-lib/BasicPage.php</ul>
-<hr size="1"><address style="align: right;"><small>Generated on Fri May 11 14:34:37 2012 for CORE POS - IS4C by&nbsp;
+<hr size="1"><address style="align: right;"><small>Generated on Mon May 21 10:55:52 2012 for CORE POS - IS4C by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img src="doxygen.png" alt="doxygen" align="middle" border="0"></a> 1.4.7 </small></address>
 </body>

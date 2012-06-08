@@ -21,9 +21,6 @@
 
 *********************************************************************************/
 
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
-
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class suspendedlist extends NoInputPage {
@@ -56,7 +53,7 @@ class suspendedlist extends NoInputPage {
 	} // END head() FUNCTION
 
 	function preprocess(){
-		global $CORE_LOCAL,$CORE_PATH;
+		global $CORE_LOCAL;
 
 		/* form submitted */
 		if (isset($_REQUEST['selectlist'])){
@@ -64,7 +61,7 @@ class suspendedlist extends NoInputPage {
 				$tmp = explode("::",$_REQUEST['selectlist']);
 				$this->doResume($tmp[0],$tmp[1],$tmp[2]);
 			}
-			$this->change_page($CORE_PATH."gui-modules/pos2.php");
+			$this->change_page($this->page_url."gui-modules/pos2.php");
 			return False;
 		}
 
@@ -101,7 +98,7 @@ class suspendedlist extends NoInputPage {
 		else {
 			$db_a->close();
 			$CORE_LOCAL->set("boxMsg","no suspended transaction");
-			$this->change_page($CORE_PATH."gui-modules/pos2.php");	
+			$this->change_page($this->page_url."gui-modules/pos2.php");	
 			return False;
 		}
 		return True;

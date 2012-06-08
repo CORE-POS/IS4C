@@ -27,6 +27,23 @@
 */
 class MiscLib extends LibraryClass {
 
+/**
+  Path detection. Find the relative URL for 
+  POS root.
+  @param $check_file file to search for
+  @return A relative URL with trailing slash
+*/
+static public function base_url($check_file="pos.css"){
+	$ret = "";
+	$cutoff = 0;
+	while($cutoff < 20 && !file_exists($ret.$check_file)){
+		$ret .= "../";
+		$cutoff++;
+	}
+	if ($cutoff >= 20) return False;
+	else return $ret;	
+}
+
 // These functions have been translated from lib.asp by Brandon on 07.13.03.
 // The "/blah" notation in the function heading indicates the Type of argument that should be given.
 
@@ -184,7 +201,7 @@ static public function win32() {
   found this returns zero
 */
 static public function scaleObject(){
-	global $CORE_LOCAL, $CORE_PATH;
+	global $CORE_LOCAL;
 	$scaleDriver = $CORE_LOCAL->get("scaleDriver");
 	$sd = 0;
 	if ($scaleDriver != ""){
@@ -204,7 +221,7 @@ static public function scaleObject(){
   Signature capture support is very alpha.
 */
 static public function sigTermObject(){
-	global $CORE_LOCAL, $CORE_PATH;
+	global $CORE_LOCAL;
 	$termDriver = $CORE_LOCAL->get("termDriver");
 	$st = 0;
 	if ($termDriver != ""){  

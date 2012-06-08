@@ -81,7 +81,13 @@ $query = "SELECT superID,super_name FROM superDeptNames
 	GROUP BY superID,super_name
 	ORDER BY superID";
 $result = $dbc->query($query);
-while($row = $dbc->fetch_row($result)){
+$rows = array();
+while($row = $dbc->fetch_row($result))
+	$rows[] = $row;
+if (count($rows)==0){
+	$rows[] = array(0,'All Tags');
+}
+foreach($rows as $row){
 	printf("<tr><td>%s barcodes</td><td><a href=\"\" onclick=\"goToPage('%d');return false;\">
 		Print</a></td><td><a href=\"dumpBarcodes.php?id=%d\">Clear</a></td>
 		<td><a href=\"edit.php?id=%d\"><img src=\"{$FANNIE_URL}src/img/buttons/b_edit.png\"

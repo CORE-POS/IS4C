@@ -21,17 +21,12 @@
 
 *********************************************************************************/
 
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
-
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
-if (!function_exists("paycard_reset")) 
-	include_once(realpath(dirname(__FILE__)."/../cc-modules/lib/paycardLib.php"));
 
 class paycardSuccess extends BasicPage {
 
 	function preprocess(){
-		global $CORE_LOCAL,$CORE_PATH;
+		global $CORE_LOCAL;
 
 		/* ajax poll to check for sig img */
 		if (isset($_REQUEST['poll'])){
@@ -76,15 +71,15 @@ class paycardSuccess extends BasicPage {
 					$this->sig_check(True);
 				}
 
-				paycard_reset();
+				PaycardLib::paycard_reset();
 				$CORE_LOCAL->set("strRemembered","TO");
 				$CORE_LOCAL->set("msgrepeat",1);
 
-				$this->change_page($CORE_PATH."gui-modules/pos2.php");
+				$this->change_page($this->page_url."gui-modules/pos2.php");
 				return False;
 			}
-			else if ($mode == PAYCARD_MODE_AUTH && $input == "VD"){
-				$this->change_page($CORE_PATH."gui-modules/paycardboxMsgVoid.php");
+			else if ($mode == PaycardLib::PAYCARD_MODE_AUTH && $input == "VD"){
+				$this->change_page($this->page_url."gui-modules/paycardboxMsgVoid.php");
 				return False;
 			}
 		}
@@ -104,7 +99,7 @@ class paycardSuccess extends BasicPage {
 	}
 
 	function sig_check($clear=False){
-		global $CORE_LOCAL,$CORE_PATH;
+		global $CORE_LOCAL;
 
 		if ($CORE_LOCAL->get("SigCapture")=="") return False;
 
@@ -124,13 +119,12 @@ class paycardSuccess extends BasicPage {
 	}
 
 	function head_content(){
-		global $CORE_PATH;
 		?>
 		<script type="text/javascript">
 		function submitWrapper(){
 			var str = $('#reginput').val();
 			if (str.toUpperCase() == 'RP'){
-				$.ajax({url: '<?php echo $CORE_PATH; ?>ajax-callbacks/ajax-end.php',
+				$.ajax({url: '<?php echo $this->page_url; ?>ajax-callbacks/ajax-end.php',
 					cache: false,
 					type: 'post',
 					data: 'receiptType='+$('#rp_type').val(),
@@ -167,15 +161,15 @@ class paycardSuccess extends BasicPage {
 	}
 
 	function body_content(){
-		global $CORE_LOCAL,$CORE_PATH;
-		$this->input_header("onsubmit=\"return submitWrapper();\" action=\"{$CORE_PATH}gui-modules/paycardSuccess.php\"");
+		global $CORE_LOCAL;
+		$this->input_header("onsubmit=\"return submitWrapper();\" action=\"{$this->page_url}gui-modules/paycardSuccess.php\"");
 		?>
 		<div class="baseHeight">
 		<?php
 		/*
 		$header = "Wedge - Payment Card";
-		if( $CORE_LOCAL->get("paycard_type") == PAYCARD_TYPE_CREDIT)     $header = "Wedge - Credit Card";
-		else if( $CORE_LOCAL->get("paycard_type") == PAYCARD_TYPE_GIFT)  $header = "Wedge - Gift Card";
+		if( $CORE_LOCAL->get("paycard_type") == PaycardLib::PAYCARD_TYPE_CREDIT)     $header = "Wedge - Credit Card";
+		else if( $CORE_LOCAL->get("paycard_type") == PaycardLib::PAYCARD_TYPE_GIFT)  $header = "Wedge - Gift Card";
 		else $CORE_LOCAL->set("boxMsg","Please verify cardholder signature");
 		 */
 		// show signature if available
@@ -202,13 +196,13 @@ class paycardSuccess extends BasicPage {
 		echo "</div>";
 
 		$rp_type = '';
-		if( $CORE_LOCAL->get("paycard_type") == PAYCARD_TYPE_GIFT) {
-			if( $CORE_LOCAL->get("paycard_mode") == PAYCARD_MODE_BALANCE) {
+		if( $CORE_LOCAL->get("paycard_type") == PaycardLib::PAYCARD_TYPE_GIFT) {
+			if( $CORE_LOCAL->get("paycard_mode") == PaycardLib::PAYCARD_MODE_BALANCE) {
 				$rp_type = "gcBalSlip";
 			} else {
 				$rp_type ="gcSlip";
 			}
-		} else if( $CORE_LOCAL->get("paycard_type") == PAYCARD_TYPE_CREDIT) {
+		} else if( $CORE_LOCAL->get("paycard_type") == PaycardLib::PAYCARD_TYPE_CREDIT) {
 			$rp_type = "ccSlip";
 		}
 		printf("<input type=\"hidden\" id=\"rp_type\" value=\"%s\" />",$rp_type);

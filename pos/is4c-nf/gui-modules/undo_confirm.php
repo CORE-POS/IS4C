@@ -21,9 +21,6 @@
 
 *********************************************************************************/
 
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
-
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 /* wraps around an undone transaction to limit editing options
@@ -76,7 +73,7 @@ class undo_confirm extends BasicPage {
 	}
 
 	function preprocess(){
-		global $CORE_LOCAL,$CORE_PATH;
+		global $CORE_LOCAL;
 		$this->msg = "";
 		if (isset($_REQUEST['reginput'])){
 			switch(strtoupper($_REQUEST['reginput'])){
@@ -85,13 +82,13 @@ class undo_confirm extends BasicPage {
 				$CORE_LOCAL->set("runningTotal",0);
 				$CORE_LOCAL->set("msgrepeat",1);
 				$CORE_LOCAL->set("strRemembered","CN");
-				$this->change_page($CORE_PATH."gui-modules/pos2.php");
+				$this->change_page($this->page_url."gui-modules/pos2.php");
 				return False;
 				break;
 			case '':
 				$CORE_LOCAL->set("msgrepeat",1);
 				$CORE_LOCAL->set("strRemembered","0CA");
-				$this->change_page($CORE_PATH."gui-modules/pos2.php");
+				$this->change_page($this->page_url."gui-modules/pos2.php");
 				return False;
 				break;
 			case 'U':

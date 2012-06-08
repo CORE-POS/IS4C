@@ -92,7 +92,7 @@ function printReceipt($arg1,$second=False) {
 				if ($CORE_LOCAL->get("newReceipt")==1){
 					$receipt .= $PRINT_OBJ->TextStyle(True,False,True);
 					$receipt .= $PRINT_OBJ->centerString("thank you - owner ".$member,True);
-					$receipt .= $PRINT_OBJ->TextStyle();
+					$receipt .= $PRINT_OBJ->TextStyle(True);
 					$receipt .= "\n\n";
 				}
 				else{
@@ -104,7 +104,7 @@ function printReceipt($arg1,$second=False) {
 				if ($CORE_LOCAL->get("newReceipt")==1){
 					$receipt .= $PRINT_OBJ->TextStyle(True,False,True);
 					$receipt .= $PRINT_OBJ->centerString("thank you",True);
-					$receipt .= $PRINT_OBJ->TextStyle();
+					$receipt .= $PRINT_OBJ->TextStyle(True);
 					$receipt .= "\n\n";
 				}
 				else{

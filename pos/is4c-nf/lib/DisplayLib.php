@@ -21,12 +21,6 @@
 
 *********************************************************************************/
 
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
-
-if (!function_exists("term_object"))
-	include(realpath(dirname(__FILE__)."/../cc-modules/lib/term.php"));
-
 /**
   @class DisplayLib
   Functions for drawing display elements
@@ -56,7 +50,7 @@ static public function printfooterb() {
   @return A string of HTML
 */
 static public function printfooter($readOnly=False) {
-	global $CORE_LOCAL,$CORE_PATH;
+	global $CORE_LOCAL;
 
 	$FOOTER_MODULES = $CORE_LOCAL->get("FooterModules");
 	// use defaults if modules haven't been configured
@@ -194,17 +188,17 @@ static public function printfooter($readOnly=False) {
 
 	if (!$readOnly){
 		if ($CORE_LOCAL->get("End") == 1) {
-			rePoll();
+			MiscLib::rePoll();
 		}
 		if (strlen($CORE_LOCAL->get("endorseType")) > 0 || $CORE_LOCAL->get("waitforScale") == 1) {
 			$CORE_LOCAL->set("waitforScale",0);
 			$CORE_LOCAL->set("beep","noBeep");
 		}
 		if ($CORE_LOCAL->get("scale") == 0 && $CORE_LOCAL->get("SNR") == 1) {
-			rePoll();
+			MiscLib::rePoll();
 		}
 		if ($CORE_LOCAL->get("cashOverAmt") <> 0) {
-			twoPairs();
+			MiscLib::twoPairs();
 			$CORE_LOCAL->set("cashOverAmt",0);
 		}
 	}
@@ -318,8 +312,7 @@ static public function msgbox($strmsg, $icon,$noBeep=False) {
   An alias for msgbox().
 */
 static public function xboxMsg($strmsg) {
-	global $CORE_PATH;
-	return self::msgbox($strmsg, $CORE_PATH."graphics/crossD.gif");
+	return self::msgbox($strmsg, MiscLib::base_url()."graphics/crossD.gif");
 }
 
 /**
@@ -332,8 +325,7 @@ static public function xboxMsg($strmsg) {
   An alias for msgbox().
 */
 static public function boxMsg($strmsg,$header="",$noBeep=False) {
-	global $CORE_PATH;
-	return self::msgbox($strmsg, $CORE_PATH."graphics/exclaimC.gif",$noBeep);
+	return self::msgbox($strmsg, MiscLib::base_url()."graphics/exclaimC.gif",$noBeep);
 }
 
 /**
@@ -343,8 +335,7 @@ static public function boxMsg($strmsg,$header="",$noBeep=False) {
   An alias for msgbox().
 */
 static public function inputUnknown() {
-	global $CORE_PATH;
-	return self::msgbox("<b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;input unknown</b>", $CORE_PATH."graphics/exclaimC.gif");
+	return self::msgbox("<b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;input unknown</b>", MiscLib::base_url()."graphics/exclaimC.gif");
 }
 
 //--------------------------------------------------------------------//
@@ -719,7 +710,7 @@ static public function drawitems($top_item, $rows, $highlight) {
 
 	$db->close();
 
-	$last_item = "";
+	$last_item = array();
 
 	if ($rowCount == 0) {
 		$ret .= "<div class=\"centerOffset\">";
@@ -775,25 +766,34 @@ static public function drawitems($top_item, $rows, $highlight) {
 				}				
 			}
 
-			if ($i==($num_rows-1) && !strstr(strtolower($description),'total') && !empty($description)){
+			if (!strstr($description,'Subtotal')){
 				$fixed_desc = str_replace(":"," ",$description);
 				if (strlen($fixed_desc) > 24){
 					$fixed_desc = substr($fixed_desc,0,24);
 				}
-				$fixed_price = sprintf('%.2f',$total);
+				$fixed_price = empty($total)?'':sprintf('%.2f',$total);
 				$spaces = str_pad('',30-strlen($fixed_desc)-strlen($fixed_price),' ');
-				$last_item = $fixed_desc.$spaces.$fixed_price;
+				$last_item[] = $fixed_desc.$spaces.$fixed_price;
 			}
 		}
 		$db_range->close();
 	}
 
-	$td = term_object();
+	$td = SigCapture::term_object();
 	if (is_object($td) && !empty($last_item)){
 		$due = sprintf('%.2f',$CORE_LOCAL->get("amtdue"));
 		$dueline = 'Subtotal'
 			.str_pad('',22-strlen($due),' ')
 			.$due;
+		$items = "";
+		$count = 0;
+		for($i=count($last_item)-1;$i>=0;$i--){
+			$items = ":".$last_item[$i].$items;
+			$count++;
+			if ($count >= 3) break;
+		}
+		for($i=$count;$i<3;$i++)
+			$items = ": ".$items;
 		$td->WriteToScale("display:".$last_item.":".$dueline);
 	}
 

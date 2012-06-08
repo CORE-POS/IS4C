@@ -223,14 +223,6 @@ class Parser {
 /**
   @example HW_Parser.php
 
-  The first two lines are standard path detection. With a Parser
-  module something else <i>probably</i> set this already but
-  better safe than sorry.
-
-  The next block demonstrates standard include format
-  (check first, use detected path). 
-  $CORE_LOCAL is an important global containing session values
-
   check() looks for input the module can handle. In this case
   the module simply watches for the string "HW".
 

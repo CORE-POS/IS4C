@@ -21,9 +21,6 @@
 
 *********************************************************************************/
 
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
-
 ini_set('display_errors','1');
 
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
@@ -35,25 +32,28 @@ class login3 extends BasicPage {
 	var $msg;
 
 	function preprocess(){
-		global $CORE_PATH;
 		$this->color = "#004080";
-		$this->img = $CORE_PATH."graphics/bluekey4.gif";
+		$this->img = $this->page_url."graphics/bluekey4.gif";
 		$this->msg = "please enter password";
 		if (isset($_REQUEST['reginput'])){
 			if (Authenticate::check_password($_REQUEST['reginput'],4)){
 				$sd = MiscLib::scaleObject();
 				if (is_object($sd))
 					$sd->ReadReset();
-				$this->change_page($CORE_PATH."gui-modules/pos2.php");
+				$this->change_page($this->page_url."gui-modules/pos2.php");
 				return False;
 			}
 			else {
 				$this->color = "#800000";
-				$this->img = $CORE_PATH."graphics/redkey4.gif";
+				$this->img = $this->page_url."graphics/redkey4.gif";
 				$this->msg = "password invalid, please re-enter";
 			}
 		}
 		return True;
+	}
+
+	function head_content(){
+		$this->default_parsewrapper_js();
 	}
 
 	function body_content(){

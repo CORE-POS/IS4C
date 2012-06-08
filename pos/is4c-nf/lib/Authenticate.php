@@ -21,9 +21,6 @@
 
 *********************************************************************************/
 
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
-
 /**
   @class Authenticate
   Functions for user authentication
@@ -77,7 +74,7 @@ static public function check_password($password,$activity=1){
 			//Database::testremote();
 			Database::loadglobalvalues();
 
-			$transno = gettransno($row_q["emp_no"]);
+			$transno = Database::gettransno($row_q["emp_no"]);
 			$CORE_LOCAL->set("transno",$transno);
 
 			$globals = array(
