@@ -111,7 +111,10 @@ if (isset($_GET['startDate'])){
 	$str1 = "WFC #$num\n";
 	$real = $num;
 	if ($num % 7 == 0 && $num > 0) $pdf->AddPage();
-	if ($num > 6) $real = ($num%7)+1;
+	if ($num > 6){
+		$real = ($num%6);
+		if ($real == 0) $real = 6;
+	}
 
 	if (count($acc) > 0){
 		$sum = 0;
