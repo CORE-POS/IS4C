@@ -84,6 +84,8 @@ case 'saveDesc':
 	$dbc->query($upQ);
 	break;
 case 'saveCtC':
+	if (sprintf("%d",$_REQUEST['val']) == "2") 
+		break; // don't save with no selection
 	$upQ = sprintf("UPDATE {$TRANS}PendingSpecialOrder SET
 		numflag=%d WHERE order_id=%d AND trans_id=0",
 		$_REQUEST['val'],$_REQUEST['orderID']);
@@ -854,6 +856,7 @@ function getCustomerForm($orderID,$memNum="0"){
 	$extra .= '</td><td align="right" valign="top">';
 	$extra .= '<b>Call to Confirm</b>: ';
 	$extra .= '<select id="ctcselect" onchange="saveCtC(this.value,'.$orderID.');">';
+	$extra .= '<option value="2"></option>';
 	if ($callback == 1){
 		$extra .= '<option value="1" selected>Yes</option>';	
 		$extra .= '<option value="0">No</option>';	
