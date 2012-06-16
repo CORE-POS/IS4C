@@ -998,7 +998,7 @@ static public function printReceipt($arg1,$second=False) {
 					$receipt .= "\n\n";
 				}
 				else{
-					$receipt .= self::$PRINT_OBJ->centerString("Thank You - ".$member."!!!");
+					$receipt .= self::$PRINT_OBJ->centerString("Thank You - ".$member);
 					$receipt .= "\n";
 				}
 			}
@@ -1010,7 +1010,7 @@ static public function printReceipt($arg1,$second=False) {
 					$receipt .= "\n\n";
 				}
 				else{
-					$receipt .= self::$PRINT_OBJ->centerString("Thank You!!!");
+					$receipt .= self::$PRINT_OBJ->centerString("Thank You!");
 					$receipt .= "\n";
 				}
 			}
@@ -1224,10 +1224,10 @@ static public function reprintReceipt($trans_num=""){
 		$receipt .= "\n";
 	
 		if (trim($CORE_LOCAL->get("memberID")) != $CORE_LOCAL->get("defaultNonMem")) {
-			$receipt .= self::centerString("Thank You - ".$member."!!!")."\n";
+			$receipt .= self::centerString("Thank You - ".$member)."\n";
 		}
 		else {
-			$receipt .= self::centerString("Thank You!!!")."\n";
+			$receipt .= self::centerString("Thank You!")."\n";
 		}
 
 		if ($CORE_LOCAL->get("yousaved") > 0) {
