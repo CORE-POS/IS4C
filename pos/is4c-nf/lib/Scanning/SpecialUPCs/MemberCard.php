@@ -45,7 +45,7 @@ class MemberCard extends SpecialUPC {
 		global $CORE_LOCAL;
 
 		$db = Database::pDataConnect();
-		$query = "select card_no from memberCardsView where upc='$upc'";
+		$query = "select card_no from memberCards where upc='$upc'";
 		$result = $db->query($query);
 
 		if ($db->num_rows($result) < 1){
