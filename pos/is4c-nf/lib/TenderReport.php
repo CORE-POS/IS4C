@@ -21,7 +21,7 @@
 
 *********************************************************************************/
 $CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (!function_exists("build_time")) include_once($CORE_PATH."lib/ReceiptLib.php");
+if (!function_exists("build_time")) include_once($CORE_PATH."lib/TenderReport.php");
 
 /**
   @class TenderReport
