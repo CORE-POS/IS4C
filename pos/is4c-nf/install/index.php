@@ -980,7 +980,7 @@ function create_trans_dbs($db,$type){
 		register_no,
 		emp_no,
 		trans_no,
-		sum(CASE WHEN trans_type = 'T' THEN -1*total ELSE total END) as total
+		sum(CASE WHEN trans_type = 'T' THEN -1*total ELSE 0 END) as total
 		from localtranstoday
 		GROUP BY register_no,emp_no,trans_no";
 	if (!$db->table_exists('rp_list',$name)){
