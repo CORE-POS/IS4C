@@ -1205,7 +1205,7 @@ static public function reprintReceipt($trans_num=""){
 
 		// The Nitty Gritty:
 		$member = "Member ".trim($CORE_LOCAL->get("memberID"));
-		if ($member == 0) $member = $CORE_LOCAL->get("defaultNonMem");
+		// if ($member == 0) $member = $CORE_LOCAL->get("defaultNonMem");
 		$your_discount = $CORE_LOCAL->get("transDiscount") + $CORE_LOCAL->get("memCouponTTL");
 
 		if ($CORE_LOCAL->get("transDiscount") + $CORE_LOCAL->get("memCouponTTL") + $CORE_LOCAL->get("specials") > 0) {
