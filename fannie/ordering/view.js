@@ -421,6 +421,12 @@ function validateAndHome(){
 		return false;
 	}
 
+	var CtC = $('#ctcselect').val();
+	if (CtC == 2){
+		alert("Choose Call to Confirm option");
+		return false;
+	}
+
 	var nD = $('#nDept').val();
 	var nT = $('#nText').val();
 	if (nT != "" && nD == 0)
