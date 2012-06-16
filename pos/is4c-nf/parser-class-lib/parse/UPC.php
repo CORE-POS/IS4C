@@ -140,7 +140,7 @@ class UPC extends Parser {
 
 		if ($row["idEnforced"] > 0){
 			$msg = $CORE_LOCAL->get("requestMsg");
-			if (is_numeric($msg) && strlen($msg)==8){
+			if ((is_numeric($msg) && strlen($msg)==8) || $msg == 1){
 				$CORE_LOCAL->set("memAge",$msg);
 				$CORE_LOCAL->set("requestMsg","");
 				$CORE_LOCAL->set("requestType","");
