@@ -105,6 +105,9 @@ static public function memberID($member_number) {
 
 	if (empty($ret['output']) && $ret['main_frame'] == false)
 		$ret['main_frame'] = MiscLib::base_url()."gui-modules/memlist.php";
+	
+	$CORE_LOCAL->set("beep","goodBeep");
+	$ret['udpmsg'] = 'goodBeep';
 
 	return $ret;
 }
