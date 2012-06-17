@@ -5,10 +5,14 @@
 # Refer to: Epson Technical Guide "Opening the drawer kickout"
 # https://docs.google.com/a/westendfood.coop/file/d/1Q1QhwLa_2ujCBfL-ikLrO10hYMkCf_Jqjy27G6O0Nl-m6dkN1ln-5Kr11v-U/edit
 
+# --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - -
+#
+# 24May12 Bug: quoted assignment of SCROLL.
+
 # --VARIALBLES and --CONSTANTS - - - - - - - - - - - - - - - - -
 
 # Scroll printer paper so you can see the message.
-SCROLL=\n\n\n\n\n\n\n\n
+SCROLL="\n\n\n\n\n\n\n\n"
 PRINTER=/dev/lp0
 
 # Use pin 2
