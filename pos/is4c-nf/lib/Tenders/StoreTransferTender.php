@@ -38,9 +38,6 @@ class StoreTransferTender extends TenderModule {
 		if(MiscLib::truncate2($CORE_LOCAL->get("amtdue")) < MiscLib::truncate2($this->amount)) {
 			return DisplayLib::xboxMsg("store transfer exceeds purchase amount");
 		}
-		
-		$CORE_LOCAL->set("away",1);
-		$this->ret['main_frame'] = $my_url."gui-modules/mgrlogin.php";
 
 		return True;
 	}
@@ -51,7 +48,10 @@ class StoreTransferTender extends TenderModule {
 	*/
 	function PreReqCheck(){
 		global $CORE_LOCAL;
-		$CORE_LOCAL->set("storetransfer",1);
+		$CORE_LOCAL->set("away",1);
+		$this->ret['main_frame'] = $my_url."gui-modules/mgrlogin.php";
+		
+		$CORE_LOCAL->set("transfertender",1);
 		return True;
 	}
 }
