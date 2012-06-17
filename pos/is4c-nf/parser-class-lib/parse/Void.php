@@ -258,14 +258,14 @@ class Void extends Parser {
 		unset($result);
 		//----------------------Void Item------------------
 			$query_upc = "select ItemQtty,foodstamp,discounttype,mixMatch,cost,
-				numflag,charflag,unitPrice,discounttype,regPrice,discount,
+				numflag,charflag,unitPrice,total,discounttype,regPrice,discount,
 				memDiscount,discountable,description,trans_type,trans_subtype,
 				department,tax,VolSpecial
 				from localtemptrans where upc = '".$upc."' and unitPrice = "
 			     .$scaleprice." and trans_id=$item_num";
 		if ($CORE_LOCAL->get("discounttype") == 3) {
 			$query_upc = "select ItemQtty,foodstamp,discounttype,mixMatch,cost,
-				numflag,charflag,unitPrice,discounttype,regPrice,discount,
+				numflag,charflag,unitPrice,total,discounttype,regPrice,discount,
 				memDiscount,discountable,description,trans_type,trans_subtype,
 				department,tax,VolSpecial
 				from localtemptrans where upc = '".$upc
@@ -274,7 +274,7 @@ class Void extends Parser {
 		}
 		elseif ($deliflag == 0) {
 			$query_upc = "select ItemQtty,foodstamp,discounttype,mixMatch,cost,
-				numflag,charflag,unitPrice,discounttype,regPrice,discount,
+				numflag,charflag,unitPrice,total,discounttype,regPrice,discount,
 				memDiscount,discountable,description,trans_type,trans_subtype,
 				department,tax,VolSpecial
 			       	from localtemptrans where upc = '".$upc
@@ -368,6 +368,7 @@ class Void extends Parser {
 	
 		$quantity = -1 * $quantity;
 		$total = $quantity * $unitPrice;
+		if ($row_pq['normal_price'] == 0) $total = $quantity * $row['total'];
 	
 		$CardNo = $CORE_LOCAL->get("memberID");
 		
