@@ -94,8 +94,8 @@ class productlist extends NoInputPage {
 		if (!is_numeric($entered)) {
 			$query = "select upc, description, normal_price, special_price, "
 				."advertised, scale from products where "
-				."description like '".$entered."%' "
-				."and inUse='1' "
+				."description like '%".$entered."%' "
+				."and upc LIKE ('0000000%') and inUse='1' "
 				."order by description";
 			$this->boxSize = 15;
 		}
