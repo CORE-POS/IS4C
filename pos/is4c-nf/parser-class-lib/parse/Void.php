@@ -368,7 +368,7 @@ class Void extends Parser {
 	
 		$quantity = -1 * $quantity;
 		$total = $quantity * $unitPrice;
-		if ($row_pq['normal_price'] == 0) $total = $quantity * $row['total'];
+		if ($row['unitPrice'] == 0) $total = $quantity * $row['total'];
 	
 		$CardNo = $CORE_LOCAL->get("memberID");
 		
