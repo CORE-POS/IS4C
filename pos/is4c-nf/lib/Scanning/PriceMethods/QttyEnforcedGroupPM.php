@@ -112,7 +112,7 @@ class QttyEnforcedGroupPM extends PriceMethod {
 				$mixMatch = 0;
 				$queryt = "select sum(ItemQtty - matched) as mmqtty from "
 					."localtemptrans where trans_status<>'R' AND "
-					."upc = '".$upc."' group by upc";
+					."upc = '".$row['upc']."' group by upc";
 			}
 			$dbt = Database::tDataConnect();
 			$resultt = $dbt->query($queryt);
