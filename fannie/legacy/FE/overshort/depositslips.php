@@ -36,15 +36,16 @@ if (isset($_GET['startDate'])){
 	$width = 30;
 	$i = 0;
 	$num = 1;
-	$breakon = 0;
+	$breakon = 1;
 	while($row = $sql->fetch_row($result)){
 		$real = $num;
-		if ($num % 7 == 0 && $num > 0 && $num != $breakon){
+		if (($num-1) % 6 == 0 && $num > 0 && $num != $breakon){
 			$pdf->AddPage();
 			$breakon = $num;
 		}
 		if ($num > 6){
-			$real = ($num%7)+1;
+			$real = ($num%6);
+			if ($real == 0) $real = 6;
 		}
 		$vals = explode(",",$row[0]);
 
@@ -110,7 +111,10 @@ if (isset($_GET['startDate'])){
 	$str1 = "WFC #$num\n";
 	$real = $num;
 	if ($num % 7 == 0 && $num > 0) $pdf->AddPage();
-	if ($num > 6) $real = ($num%7)+1;
+	if ($num > 6){
+		$real = ($num%6);
+		if ($real == 0) $real = 6;
+	}
 
 	if (count($acc) > 0){
 		$sum = 0;
@@ -196,8 +200,8 @@ if (isset($_GET['startDate'])){
 
 	$pdf->SetX(($width+2)*4 + 5);
 	$pdf->Cell(15,7,'Checks','L',0,'L');
-	//$pdf->Cell(40,7,"\t$".sprintf('%.2f',$ckSum),'TBR',1);
-	$pdf->Cell(40,7,"",'TBR',1);
+	$pdf->Cell(40,7,"\t$".sprintf('%.2f',$ckSum),'TBR',1);
+	//$pdf->Cell(40,7,"",'TBR',1);
 	$pdf->SetX(($width+2)*4 + 5);
 	$pdf->Cell(15,7,'Coin','L',0,'L');
 	$pdf->Cell(40,7,"\t$".sprintf('%.2f',$coin),'TBR',1);
@@ -209,8 +213,7 @@ if (isset($_GET['startDate'])){
 	$pdf->Cell(40,7,"\t$".sprintf('%.2f',$junk),'TBR',1);
 	$pdf->SetX(($width+2)*4 + 5);
 	$pdf->Cell(15,7,'Total','L',0,'L');
-	//$pdf->Cell(40,7,"\t$".sprintf('%.2f',$junk+$cash+$coin+$ckSum),'TBR',1);
-	$pdf->Cell(40,7,"\t$".sprintf('%.2f',$junk+$cash+$coin),'TBR',1);
+	$pdf->Cell(40,7,"\t$".sprintf('%.2f',$junk+$cash+$coin+$ckSum),'TBR',1);
 
 	$pdf->SetTextColor(255,255,255);
 	$pdf->SetX(($width+2)*4+5);

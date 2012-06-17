@@ -84,6 +84,8 @@ case 'saveDesc':
 	$dbc->query($upQ);
 	break;
 case 'saveCtC':
+	if (sprintf("%d",$_REQUEST['val']) == "2") 
+		break; // don't save with no selection
 	$upQ = sprintf("UPDATE {$TRANS}PendingSpecialOrder SET
 		numflag=%d WHERE order_id=%d AND trans_id=0",
 		$_REQUEST['val'],$_REQUEST['orderID']);
@@ -230,6 +232,9 @@ case 'saveZip':
 	break;
 case 'savePh':
 	if (canSaveAddress($orderID) == True){
+		printf("UPDATE {$TRANS}SpecialOrderContact
+			SET phone=%s WHERE card_no=%d",
+			$dbc->escape($_REQUEST['ph']),$orderID);
 		$dbc->query(sprintf("UPDATE {$TRANS}SpecialOrderContact
 			SET phone=%s WHERE card_no=%d",
 			$dbc->escape($_REQUEST['ph']),$orderID));
@@ -737,10 +742,10 @@ function getCustomerForm($orderID,$memNum="0"){
 
 		// load member contact info into SpecialOrderContact
 		// on first go so it can be edited separately
-		$testQ = "SELECT street FROM {$TRANS}SpecialOrderContact WHERE card_no=".$orderID;
+		$testQ = "SELECT street,phone FROM {$TRANS}SpecialOrderContact WHERE card_no=".$orderID;
 		$testR = $dbc->query($testQ);
 		$testW = $dbc->fetch_row($testR);
-		if (empty($testW['street'])){
+		if (empty($testW['street']) && empty($testW['phone'])){
 			$contactQ = sprintf("SELECT street,city,state,zip,phone,email_1,email_2
 					FROM meminfo WHERE card_no=%d",$memNum);
 			$contactR = $dbc->query($contactQ);
@@ -851,6 +856,7 @@ function getCustomerForm($orderID,$memNum="0"){
 	$extra .= '</td><td align="right" valign="top">';
 	$extra .= '<b>Call to Confirm</b>: ';
 	$extra .= '<select id="ctcselect" onchange="saveCtC(this.value,'.$orderID.');">';
+	$extra .= '<option value="2"></option>';
 	if ($callback == 1){
 		$extra .= '<option value="1" selected>Yes</option>';	
 		$extra .= '<option value="0">No</option>';	
