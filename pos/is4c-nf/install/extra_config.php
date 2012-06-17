@@ -133,6 +133,15 @@ else {
 confsave('memlistNonMember',$CORE_LOCAL->get('memlistNonMember'));
 ?>
 </select>
+<br />
+<b>Bottle Return Department number</b>: 
+<?php
+if(isset($_REQUEST['BOTTLE_RET'])) $CORE_LOCAL->set('BottleReturnDept',$_REQUEST['BOTTLE_RET']);
+printf("<input type=text name=BOTTLE_RET value=\"%s\" />",$CORE_LOCAL->get('BottleReturnDept'));
+confsave('BottleReturnDept',"'".$CORE_LOCAL->get('BottleReturnDept')."'");
+?>
+<br />
+Add a BOTTLE RETURN item to your products table with a normal_price of 0, IS4C will prompt for Bottle Return amt. and then make it a negative value.
 <hr />
 <b>Allow members to write checks over purchase amount</b>: <select name=OVER>
 <?php
