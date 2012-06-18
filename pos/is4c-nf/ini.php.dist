@@ -125,4 +125,5 @@ $CORE_LOCAL->set("PriceMethodCount",3);
 $CORE_LOCAL->set("PriceMethodClasses",array('BasicPM','GroupPM','QttyEnforcedGroupPM'));
 $CORE_LOCAL->set("enableFranking",0);
 $CORE_LOCAL->set("BottleReturnDept",'');
+$CORE_LOCAL->set("ReceiptHeaderImage",'');
 ?>
