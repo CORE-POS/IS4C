@@ -142,6 +142,16 @@ confsave('BottleReturnDept',"'".$CORE_LOCAL->get('BottleReturnDept')."'");
 ?>
 <br />
 Add a BOTTLE RETURN item to your products table with a normal_price of 0, IS4C will prompt for Bottle Return amt. and then make it a negative value.
+<br />
+<b>Lock Screen Timeout</b>:
+<?php
+if(isset($_REQUEST['TIMEOUT'])) $CORE_LOCAL->set('timeout',$_REQUEST['TIMEOUT']);
+else $CORE_LOCAL->set('timeout',180000);
+printf("<input type=text name=TIMEOUT value=\"%s\" />",$CORE_LOCAL->get('timeout'));
+confsave('timeout',"'".$CORE_LOCAL->get('timeout')."'");
+?>
+<br />
+Enter timeout in milliseconds. Default: 180000 (3 minutes)
 <hr />
 <b>Allow members to write checks over purchase amount</b>: <select name=OVER>
 <?php

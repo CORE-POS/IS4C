@@ -126,4 +126,5 @@ $CORE_LOCAL->set("PriceMethodClasses",array('BasicPM','GroupPM','QttyEnforcedGro
 $CORE_LOCAL->set("enableFranking",0);
 $CORE_LOCAL->set("BottleReturnDept",'');
 $CORE_LOCAL->set("ReceiptHeaderImage",'');
+$CORE_LOCAL->set("timeout",180000);
 ?>
