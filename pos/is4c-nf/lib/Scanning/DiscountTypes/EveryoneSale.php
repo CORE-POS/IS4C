@@ -24,6 +24,7 @@
 class EveryoneSale extends DiscountType {
 
 	function priceInfo($row,$quantity=1){
+		global $CORE_LOCAL;
 		if (is_array($this->savedInfo))
 			return $this->savedInfo;
 

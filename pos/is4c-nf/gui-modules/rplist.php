@@ -90,7 +90,7 @@ class rplist extends NoInputPage {
 			echo $selected;
 			echo ">lane ".substr(100 + $row["register_no"], -2)." Cashier ".substr(100 + $row["emp_no"], -2)
 				." #".$row["trans_no"]." -- $".
-				sprintf("\$%.2f",$row["total"]);
+				sprintf($row["total"]);
 			$selected = "";
 		}
 		$db->db_close();

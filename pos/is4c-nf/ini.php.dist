@@ -25,8 +25,10 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-if (!isset($CORE_LOCAL))
-	require_once(realpath(dirname(__FILE__)."/lib/LocalStorage/conf.php"));
+if (!isset($CORE_LOCAL))
+
+	require_once(realpath(dirname(__FILE__)."/lib/LocalStorage/conf.php"));
+
 
 /************************************************************************************
 General Settings
@@ -121,4 +123,7 @@ $CORE_LOCAL->set("DiscountTypeCount",5);
 $CORE_LOCAL->set("DiscountTypeClasses",array('NormalPricing','EveryoneSale','MemberSale','CaseDiscount','StaffSale'));
 $CORE_LOCAL->set("PriceMethodCount",3);
 $CORE_LOCAL->set("PriceMethodClasses",array('BasicPM','GroupPM','QttyEnforcedGroupPM'));
+$CORE_LOCAL->set("enableFranking",0);
+$CORE_LOCAL->set("BottleReturnDept",'');
+$CORE_LOCAL->set("ReceiptHeaderImage",'');
 ?>

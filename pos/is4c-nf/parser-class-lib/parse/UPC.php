@@ -140,7 +140,7 @@ class UPC extends Parser {
 
 		if ($row["idEnforced"] > 0){
 			$msg = $CORE_LOCAL->get("requestMsg");
-			if (is_numeric($msg) && strlen($msg)==8){
+			if ((is_numeric($msg) && strlen($msg)==8) || $msg == 1){
 				$CORE_LOCAL->set("memAge",$msg);
 				$CORE_LOCAL->set("requestMsg","");
 				$CORE_LOCAL->set("requestType","");
@@ -151,6 +151,7 @@ class UPC extends Parser {
 			$diff = time() - ((int)strtotime($CORE_LOCAL->get("memAge")));
 			$age = floor($diff / (365*60*60*24));
 			if ($age < $row['idEnforced']){
+				$ret['udpmsg'] = 'twoPairs';
 				$current = date("m/d/y",strtotime($CORE_LOCAL->get("memAge")));
 				$CORE_LOCAL->set("requestType","customer age");
 				$CORE_LOCAL->set("requestMsg","Type customer birthdate YYYYMMDD<br />(current: $current)");

@@ -21,6 +21,11 @@
 
 *********************************************************************************/
 
+$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
+if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
+
+if (!function_exists("build_time")) include_once($CORE_PATH."lib/ReceiptLib.php");
+
 /**
   @class TenderReport
   Generate a tender report
@@ -64,7 +69,7 @@ static public function get(){
 			.substr("Trans #".$blank, 0, 12)
 			.substr("Change".$blank, 0, 14)
 			.substr("Amount".$blank, 0, 14)."\n";
-	$ref = ReceiptLib::centerString(trim($CORE_LOCAL->get("CashierNo"))." ".trim($CORE_LOCAL->get("cashier"))." ".build_time(time()))."\n\n";
+	$ref = ReceiptLib::centerString(trim($CORE_LOCAL->get("CashierNo"))." ".trim($CORE_LOCAL->get("cashier"))." ".ReceiptLib::build_time(time()))."\n\n";
 	$receipt = "";
 
 	foreach(array_keys($DESIRED_TENDERS) as $tender_code){
