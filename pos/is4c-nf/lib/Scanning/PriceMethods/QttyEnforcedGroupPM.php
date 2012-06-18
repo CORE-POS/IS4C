@@ -92,6 +92,7 @@ class QttyEnforcedGroupPM extends PriceMethod {
 				(isset($row['numflag']) ? $row['numflag'] : 0),
 				(isset($row['charflag']) ? $row['charflag'] : '')
 			);
+			TransRecord::adddiscount($discount,$row['department']);
 
 			$quantity = $quantity - ($new_sets * $groupQty);
 			if ($quantity < 0) $quantity = 0;
