@@ -53,10 +53,9 @@ class StoreTransferTender extends TenderModule {
 		if ($CORE_LOCAL->get("transfertender") != 1){
 			$CORE_LOCAL->set("adminRequestLevel","30");
 			$CORE_LOCAL->set("adminLoginMsg","Login for store transfer");
-			$CORE_LOCAL->set("adminRequest",$my_url."gui-modules/pos2.php");
-
-			$CORE_LOCAL->set("msgrepeat",1);
-			$CORE_LOCAL->set("strRemembered",($this->amount*100).$this->tender_code);
+			$tenderStr = ($this->amount*100).$this->tender_code;
+			$CORE_LOCAL->set("adminRequest",
+				$my_url."gui-modules/pos2.php?reginput=".$tenderStr);
 
 			$CORE_LOCAL->set("away",1);
 			$CORE_LOCAL->set("transfertender",1);
