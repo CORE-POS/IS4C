@@ -92,7 +92,7 @@ class UPC extends Parser {
 			qttyEnforced,department,local,cost,tax,foodstamp,discount,
 			discounttype,specialpricemethod,special_price,groupprice,
 			pricemethod,quantity,specialgroupprice,specialquantity,
-			mixmatchcode,idEnforced
+			mixmatchcode,idEnforced,tareweight
 		       	from products where upc = '".$upc."'";
 		$result = $db->query($query);
 		$num_rows = $db->num_rows($result);
@@ -158,6 +158,12 @@ class UPC extends Parser {
 				$ret['main_frame'] = $my_url.'gui-modules/requestInfo.php';
 				return $ret;
 			}
+		}
+
+		if ($row['tareweight'] > 0){
+			$peek = PrehLib::peekItem();
+			if (strstr($peek,"** Tare Weight") === False)
+				TransRecord::addTare($row['tareweight']*100);
 		}
 
 		/* sanity check - ridiculous price 
