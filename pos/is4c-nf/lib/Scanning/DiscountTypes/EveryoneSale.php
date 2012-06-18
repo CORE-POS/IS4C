@@ -67,9 +67,11 @@ class EveryoneSale extends DiscountType {
 
 	function addDiscountLine(){
 		global $CORE_LOCAL;	
-		$CORE_LOCAL->set("voided",2);
-		TransRecord::adddiscount($this->savedInfo['discount'],
-			$this->savedRow['department']);
+		if ($this->savedInfo['discount'] != 0){
+			$CORE_LOCAL->set("voided",2);
+			TransRecord::adddiscount($this->savedInfo['discount'],
+				$this->savedRow['department']);
+		}
 	}
 
 	function isSale(){
