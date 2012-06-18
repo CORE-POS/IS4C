@@ -97,10 +97,18 @@ static public function printReceiptHeader($dateTimeStamp, $ref) {
 
 	$i = 2; // for headers below
 	if ($CORE_LOCAL->get("newReceipt")==1 && $CORE_LOCAL->get("store") != "wfc"){
-		$receipt .= self::$PRINT_OBJ->TextStyle(True, False, True);
-		$receipt .= self::$PRINT_OBJ->centerString($CORE_LOCAL->get("receiptHeader1"),True);
-		$receipt .= self::$PRINT_OBJ->TextStyle(True);
-		$receipt .= "\n\n";
+		if ($CORE_LOCAL->get("newReceipt")==1 && $CORE_LOCAL->get("ReceiptHeaderImage") != ""){
+			$img = self::$PRINT_OBJ->RenderBitmapFromFile(MiscLib::base_url()."graphics/" . $CORE_LOCAL->get("ReceiptHeaderImage"));
+			$receipt .= $img."\n";
+			$i=4;
+			$receipt .= "\n";
+		} 
+		else {
+			$receipt .= self::$PRINT_OBJ->TextStyle(True, False, True);
+			$receipt .= self::$PRINT_OBJ->centerString($CORE_LOCAL->get("receiptHeader1"),True);
+			$receipt .= self::$PRINT_OBJ->TextStyle(True);
+			$receipt .= "\n\n";
+		}
 	}
 	else if ($CORE_LOCAL->get("newReceipt")==1 && $CORE_LOCAL->get("store") == "wfc"){
 		$img = self::$PRINT_OBJ->RenderBitmapFromFile(MiscLib::base_url()."graphics/WFC_Logo.bmp");
