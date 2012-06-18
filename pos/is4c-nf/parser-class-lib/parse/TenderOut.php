@@ -60,7 +60,7 @@ class TenderOut extends Parser {
 		} else {
 			$CORE_LOCAL->set("change",0);
 			$CORE_LOCAL->set("fntlflag",0);
-			ttl();
+			PrehLib::ttl();
 			$ret['output'] = DisplayLib::lastpage();
 		}
 		return $ret;
