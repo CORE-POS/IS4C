@@ -116,6 +116,8 @@ class memlist extends NoInputPage {
 		$this->add_onload_command("\$('#search').focus();\n");
 		if ($this->temp_num_rows > 0)
 			$this->add_onload_command("\$('#search').keypress(processkeypress);\n");
+		else
+			$this->default_parsewrapper_js('search','selectform');
 		?>
 		<script type="text/javascript">
 		var prevKey = -1;
