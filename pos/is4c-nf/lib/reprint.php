@@ -134,10 +134,10 @@ function reprintReceipt($trans_num=""){
 		$receipt .= "\n";
 	
 		if (trim($CORE_LOCAL->get("memberID")) != $CORE_LOCAL->get("defaultNonMem")) {
-			$receipt .= centerString("Thank You - ".$member."!!!")."\n";
+			$receipt .= centerString("Thank You - ".$member)."\n";
 		}
 		else {
-			$receipt .= centerString("Thank You!!!")."\n";
+			$receipt .= centerString("Thank You!")."\n";
 		}
 
 		if ($CORE_LOCAL->get("yousaved") > 0) {

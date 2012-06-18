@@ -95,12 +95,20 @@ static public function printReceiptHeader($dateTimeStamp, $ref) {
 
 	$receipt = self::$PRINT_OBJ->TextStyle(True);
 
-	$i = 2; // for headers below
+	$i = $CORE_LOCAL->get("receiptHeaderCount") - 1; // for headers below
 	if ($CORE_LOCAL->get("newReceipt")==1 && $CORE_LOCAL->get("store") != "wfc"){
-		$receipt .= self::$PRINT_OBJ->TextStyle(True, False, True);
-		$receipt .= self::$PRINT_OBJ->centerString($CORE_LOCAL->get("receiptHeader1"),True);
-		$receipt .= self::$PRINT_OBJ->TextStyle(True);
-		$receipt .= "\n\n";
+		if ($CORE_LOCAL->get("ReceiptHeaderImage") != ""){
+			$img = self::$PRINT_OBJ->RenderBitmapFromFile(MiscLib::base_url()."graphics/" . $CORE_LOCAL->get("ReceiptHeaderImage"));
+			$receipt .= $img."\n";
+			$i=4;
+			$receipt .= "\n";
+		} 
+		else {
+			$receipt .= self::$PRINT_OBJ->TextStyle(True, False, True);
+			$receipt .= self::$PRINT_OBJ->centerString($CORE_LOCAL->get("receiptHeader1"),True);
+			$receipt .= self::$PRINT_OBJ->TextStyle(True);
+			$receipt .= "\n\n";
+		}
 	}
 	else if ($CORE_LOCAL->get("newReceipt")==1 && $CORE_LOCAL->get("store") == "wfc"){
 		$img = self::$PRINT_OBJ->RenderBitmapFromFile(MiscLib::base_url()."graphics/WFC_Logo.bmp");
@@ -998,7 +1006,7 @@ static public function printReceipt($arg1,$second=False) {
 					$receipt .= "\n\n";
 				}
 				else{
-					$receipt .= self::$PRINT_OBJ->centerString("Thank You - ".$member."!!!");
+					$receipt .= self::$PRINT_OBJ->centerString("Thank You - ".$member);
 					$receipt .= "\n";
 				}
 			}
@@ -1010,7 +1018,7 @@ static public function printReceipt($arg1,$second=False) {
 					$receipt .= "\n\n";
 				}
 				else{
-					$receipt .= self::$PRINT_OBJ->centerString("Thank You!!!");
+					$receipt .= self::$PRINT_OBJ->centerString("Thank You!");
 					$receipt .= "\n";
 				}
 			}
@@ -1205,7 +1213,7 @@ static public function reprintReceipt($trans_num=""){
 
 		// The Nitty Gritty:
 		$member = "Member ".trim($CORE_LOCAL->get("memberID"));
-		if ($member == 0) $member = $CORE_LOCAL->get("defaultNonMem");
+		// if ($member == 0) $member = $CORE_LOCAL->get("defaultNonMem");
 		$your_discount = $CORE_LOCAL->get("transDiscount") + $CORE_LOCAL->get("memCouponTTL");
 
 		if ($CORE_LOCAL->get("transDiscount") + $CORE_LOCAL->get("memCouponTTL") + $CORE_LOCAL->get("specials") > 0) {
@@ -1224,10 +1232,10 @@ static public function reprintReceipt($trans_num=""){
 		$receipt .= "\n";
 	
 		if (trim($CORE_LOCAL->get("memberID")) != $CORE_LOCAL->get("defaultNonMem")) {
-			$receipt .= self::centerString("Thank You - ".$member."!!!")."\n";
+			$receipt .= self::centerString("Thank You - ".$member)."\n";
 		}
 		else {
-			$receipt .= self::centerString("Thank You!!!")."\n";
+			$receipt .= self::centerString("Thank You!")."\n";
 		}
 
 		if ($CORE_LOCAL->get("yousaved") > 0) {
