@@ -42,7 +42,10 @@ class adminlogin extends NoInputPage {
 		if (isset($_REQUEST['reginput'])){
 			$passwd = $_REQUEST['reginput'];
 			if (strtoupper($passwd) == "CL"){
+				// clear state variables on clear
 				$CORE_LOCAL->set("refundComment","");
+				$CORE_LOCAL->set("transfertender",0);
+				$CORE_LOCAL->set("msgrepeat",0);
 				$this->change_page($this->page_url."gui-modules/pos2.php");
 				return False;	
 			}
