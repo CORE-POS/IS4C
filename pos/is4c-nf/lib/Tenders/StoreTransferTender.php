@@ -48,11 +48,24 @@ class StoreTransferTender extends TenderModule {
 	*/
 	function PreReqCheck(){
 		global $CORE_LOCAL;
-		$CORE_LOCAL->set("away",1);
-		$this->ret['main_frame'] = $my_url."gui-modules/mgrlogin.php";
-		
-		$CORE_LOCAL->set("transfertender",1);
-		return True;
+		$my_url = MiscLib::base_url();
+
+		if ($CORE_LOCAL->get("transfertender") != 1){
+			$CORE_LOCAL->set("adminRequestLevel","30");
+			$CORE_LOCAL->set("adminLoginMsg","Login for store transfer");
+			$CORE_LOCAL->set("adminRequest",$my_url."gui-modules/pos2.php");
+
+			$CORE_LOCAL->set("msgrepeat",1);
+			$CORE_LOCAL->set("strRemembered",($this->amount*100).$this->tender_code);
+
+			$CORE_LOCAL->set("away",1);
+			$CORE_LOCAL->set("transfertender",1);
+			return $my_url."gui-modules/adminlogin.php";
+		}
+		else {
+			$CORE_LOCAL->set("transfertender",0);
+			return True;
+		}
 	}
 }
 
