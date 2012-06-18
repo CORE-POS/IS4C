@@ -209,6 +209,7 @@ var $ean;
 		$value = MiscLib::truncate2($value);
 		TransRecord::addcoupon($upc, $dept, $value, $foodstamp);
 		$json['output'] = DisplayLib::lastpage();
+		$json['redraw_footer'] = True;
 		return $json;
 	}
 
