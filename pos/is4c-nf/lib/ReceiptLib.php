@@ -95,7 +95,7 @@ static public function printReceiptHeader($dateTimeStamp, $ref) {
 
 	$receipt = self::$PRINT_OBJ->TextStyle(True);
 
-	$i = $CORE_LOCAL->get("receiptHeaderCount") - 1; // for headers below
+	$i = 2; // for headers below
 	if ($CORE_LOCAL->get("newReceipt")==1 && $CORE_LOCAL->get("store") != "wfc"){
 		if ($CORE_LOCAL->get("ReceiptHeaderImage") != ""){
 			$img = self::$PRINT_OBJ->RenderBitmapFromFile(MiscLib::base_url()."graphics/" . $CORE_LOCAL->get("ReceiptHeaderImage"));
