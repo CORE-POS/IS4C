@@ -200,8 +200,8 @@ if ($CORE_LOCAL->get("scaleDriver") != ""){
 		include('../scale-drivers/php-wrappers/'.$classname.'.php');
 		$instance = new $classname();
 		$instance->SavePortConfiguration($CORE_LOCAL->get("scalePort"));
-		$abs_path = substr($_SERVER['PATH_TRANSLATED'],0,
-				strlen($_SERVER['PATH_TRANSLATED'])-strlen('install/extra_config.php')-1);
+		$abs_path = substr($_SERVER['SCRIPT_FILENAME'],0,
+				strlen($_SERVER['SCRIPT_FILENAME'])-strlen('install/extra_config.php')-1);
 		$instance->SaveDirectoryConfiguration($abs_path);
 	}
 }
@@ -236,7 +236,7 @@ printf("<br /><input size=40 type=text name=RF3 value=\"%s\" />",$CORE_LOCAL->ge
 confsave('receiptFooter3',"'".$CORE_LOCAL->get('receiptFooter3')."'");
 ?>
 <hr />
-<b>Check endrosement</b>:<br />
+<b>Check endorsement</b>:<br />
 These lines get printed on the back of checks.<br />
 <?php
 if (isset($_REQUEST['CE1'])) $CORE_LOCAL->set('ckEndorse1',$_REQUEST['CE1']);
