@@ -280,10 +280,10 @@ static public function addtax() {
   <i>negative</i> amounts. 
 */
 static public function addtender($strtenderdesc, $strtendercode, $dbltendered) {
-	self::addItem($strdescription => $strtenderdesc,
-                  $strtransType => "T",
-				  $strtranssubType => $strtendercode,
-				  $dbltotal => $dbltendered );
+	self::addItem(array("strdescription" => $strtenderdesc,
+                        "strtransType" => "T",
+				        "strtranssubType" => $strtendercode,
+				        "dbltotal" => $dbltendered ) );
 }
 
 //_______________________________end addtender()
@@ -297,10 +297,10 @@ static public function addtender($strtenderdesc, $strtendercode, $dbltendered) {
 static public function addcomment($comment) {
 	if (strlen($comment) > 30)
 		$comment = substr($comment,0,30);
-	self::addItem($strdescription => $comment,
-                  $strtransType => "C",
-                  $strtranssubType => "CM",
-                  $strtransstatus => "D" );
+	self::addItem(array("strdescription" => $comment,
+                        "strtransType" => "C",
+                        "strtranssubType" => "CM",
+                        "strtransstatus" => "D" ) );
 }
 
 
@@ -311,11 +311,11 @@ static public function addcomment($comment) {
   @param $dblcashreturn the change amount
 */
 static public function addchange($dblcashreturn) {
-	self::addItem($strdescription => "Change",
-				  $strtransType => "T",
-                  $strtranssubType => "CA",
-				  $dbltotal => $dblcashreturn,
-				  $intvoided => 8 );
+	self::addItem(array("strdescription" => "Change",
+				        "strtransType" => "T",
+                        "strtranssubType" => "CA",
+				        "dbltotal" => $dblcashreturn,
+				        "intvoided" => 8 ) );
 }
 
 //_______________________________end addchange()
@@ -332,11 +332,11 @@ static public function addchange($dblcashreturn) {
 */
 static public function addfsones($intfsones) {
 //	self::addItem("", "FS Change", "T", "FS", "", 0, 0, 0, $intfsones, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8);
-	self::addItem($strdescription => "FS Change",
-                  $strtransType => "T",
-                  $strtranssubType => "FS",
-				  $dbltotal => $intfsones,
-				  $intvoided => 8 );
+	self::addItem(array("strdescription" => "FS Change",
+                        "strtransType" => "T",
+                        "strtranssubType" => "FS",
+				        "dbltotal" => $intfsones,
+				        "intvoided" => 8 ) );
 }
 
 //_______________________________end addfsones()
@@ -433,9 +433,9 @@ static public function discountnotify($discPct) {
 	if ($discPct == 10.01) {
 		$discPct = 10;
 	}
-	self::addItem($strdescription => ("** " . $discPct . "% Discount Applied **"),
-		  		  $strtransstatus => "D",
-				  $intvoided => 4);
+	self::addItem(array("strdescription" => ("** " . $discPct . "% Discount Applied **"),
+		  		        "strtransstatus" => "D",
+				        "intvoided" => 4) );
 }
 
 //_____________________________end discountnotify()
@@ -453,10 +453,10 @@ static public function addTaxExempt() {
 
 	$CORE_LOCAL->set("TaxExempt",1);
 //  self::addItem("", "** Order is Tax Exempt **", "", "", "D", 0, 0, 0, 0, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10);
-	self::addItem($strdescription => "** Order is Tax Exempt **",
-		  		  $strtransstatus => "D",
-				  $inttax => 9,
-				  $intvoided => 10);
+	self::addItem(array("strdescription" => "** Order is Tax Exempt **",
+		  		        "strtransstatus" => "D",
+				        "inttax" => 9,
+				        "intvoided" => 10) );
 	Database::setglobalvalue("TaxExempt", 1);
 }
 
@@ -472,10 +472,10 @@ static public function reverseTaxExempt() {
 	global $CORE_LOCAL;
 //  self::addItem("", "** Order is Tax Exempt **",    "", "", "D", 0, 0, 0, 0, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10);  FOR COMPARISON
 //	self::addItem("", "** Tax Exemption Reversed **", "", "", "D", 0, 0, 0, 0, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10);
-	self::addItem($strdescription => "** Tax Exemption Reversed **",
-		  		  $strtransstatus => "D",
-				  $inttax => 9,
-				  $intvoided => 10);
+	self::addItem(array("strdescription" => "** Tax Exemption Reversed **",
+		  		        "strtransstatus" => "D",
+				        "inttax" => 9,
+				        "intvoided" => 10 ) );
 	$CORE_LOCAL->set("TaxExempt", 0);
 	Datbase::setglobalvalue("TaxExempt", 0);
 }
@@ -572,9 +572,9 @@ static public function addTare($dbltare) {
 	global $CORE_LOCAL;
 	$CORE_LOCAL->set("tare",$dbltare/100);
 //	self::addItem("", "** Tare Weight ".$CORE_LOCAL->get("tare")." **", "", "", "D", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6);
-	self::addItem($strdescription => ("** Tare Weight " . $CORE_LOCAL->get("tare") . " **"),
-                  $strtranstatus => "D",
-				  $intvoided => 6);
+	self::addItem(array("strdescription" => ("** Tare Weight " . $CORE_LOCAL->get("tare") . " **"),
+                        "strtranstatus" => "D",
+				        "intvoided" => 6 ) );
 }
 
 //___________________________end addTare()
