@@ -380,7 +380,7 @@ if (isset($_REQUEST['TR_LIST'])){
 		if($dt=="") continue;
 		list($code2,$name2) = explode(":",$dt);
 		$settings2[$code2] = $name2;
-		$saveStr2 .= "'".$code2."'=>'".$name2."',";
+		$saveStr2 .= "'".$code2."'=>'".addslashes($name2)."',";
 	}
 	$saveStr2 = rtrim($saveStr2,",").")";
 	confsave('TRDesiredTenders',$saveStr2);
@@ -403,8 +403,8 @@ while($row = $db->fetch_row($res)){
 	}
 	echo '</select></td>';
 	echo "<td><input type=checkbox name=\"TR_LIST[]\" ";
-	printf("value='%s:%s'",$row['TenderCode'],$row['TenderName']);
-	if (in_array($row['TenderCode']), $settings2[]) echo " selected";
+	echo 'value="'.$row['TenderCode'].':'.$row['TenderName'].'"';
+	if (array_key_exists($row['TenderCode'], $settings2)) echo " selected";
 	echo "></td></tr>";
 }
 ?>
