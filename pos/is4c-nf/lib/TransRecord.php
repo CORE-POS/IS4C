@@ -256,10 +256,15 @@ static public function addItem($strupc = '',
 */
 static public function addtax() {
 	global $CORE_LOCAL;
-	self::addItem($strupc => "TAX",
+/*  self::addItem($strupc => "TAX",
                   $strdescription => "Tax",
                   $strtransType => "A",
 				  $dbltotal => $CORE_LOCAL->get("taxTotal") );
+*/
+	self::addItem(array("strupc" => "TAX",
+                        "strdescription" => "Tax",
+                        "strtransType" => "A",
+				        "dbltotal" => $CORE_LOCAL->get("taxTotal") ) );
 }
 
 //________________________________end addtax()
