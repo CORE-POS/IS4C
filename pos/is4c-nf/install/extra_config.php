@@ -390,8 +390,8 @@ $res = $db->query("SELECT TenderCode, TenderName FROM tenders ORDER BY TenderNam
 ?>
 <table cellspacing="0" cellpadding="4" border="1">
 <?php
+echo "<thead><tr><th>Tender Name</th><th>Map To</th><th>Tender Rpt</th></tr></thead><tbody>\n";
 while($row = $db->fetch_row($res)){
-	echo "<thead><tr><th>Tender Name</th><th>Map To</th><th>Tender Rpt</th></tr></thead><tbody>\n";
 	printf('<tr><td>%s (%s)</td>',$row['TenderName'],$row['TenderCode']);
 	echo '<td><select name="TenderMapping[]">';
 	echo '<option value="">default</option>';
