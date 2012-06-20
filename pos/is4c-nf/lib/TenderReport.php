@@ -47,19 +47,6 @@ class TenderReport extends LibraryClass {
 static public function get(){
 	global $CORE_LOCAL;
 
-	// $DESIRED_TENDERS = array("CK"=>"CHECK TENDERS",
-	// 			 "CC"=>"CREDIT CARD TENDERS",
-	// 			 "GD"=>"GIFT CARD TENDERS",
-	// 			 "TC"=>"GIFT CERT TENDERS",
-	// 			 "MI"=>"STORE CHARGE TENDERS",
-	// 			 "EF"=>"EBT CARD TENDERS",
-	// 			 "CP"=>"COUPONS TENDERED",
-	// 			 "IC"=>"INSTORE COUPONS TENDERED",
-	// 			 "ST"=>"STAMP BOOKS SOLD",
-	// 			 "BP"=>"BUS PASSES SOLD",
-	// 			 "AR"=>"AR PAYMENTS",
-	// 			 "EQ"=>"EQUITY SALES"
-	// 		 );
 	$DESIRED_TENDERS = $CORE_LOCAL->get("TRDesiredTenders");
 	
 	$db_a = Database::mDataConnect();
