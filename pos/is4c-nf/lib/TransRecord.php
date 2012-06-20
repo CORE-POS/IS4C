@@ -264,7 +264,7 @@ static public function addtax() {
 	self::addItem(array('strupc' => "TAX",
                         'strdescription' => "Tax",
                         'strtransType' => "A",
-				        'dbltotal' => $CORE_LOCAL->get("taxTotal") ) );
+				        'dbltotal' => (double)$CORE_LOCAL->get("taxTotal") ) );
 }
 
 //________________________________end addtax()
@@ -311,10 +311,20 @@ static public function addcomment($comment) {
   @param $dblcashreturn the change amount
 */
 static public function addchange($dblcashreturn) {
+/* this (from above) works 
+	self::addItem(array('strdescription' => $strtenderdesc,
+                        'strtransType' => "T",
+				        'strtranssubType' => $strtendercode,
+				        'dbltotal' => $dbltendered ) );
+
+    next call leads to:
+Warning: strlen() expects parameter 1 to be string, array given
+in /pos/CORE/IS4C/pos/is4c-nf/lib/MiscLib.php on line 91 
+*/
 	self::addItem(array('strdescription' => "Change",
 				        'strtransType' => "T",
                         'strtranssubType' => "CA",
-				        'dbltotal' => $dblcashreturn,
+				        'dbltotal' => (double)$dblcashreturn,
 				        'intvoided' => 8 ) );
 }
 
