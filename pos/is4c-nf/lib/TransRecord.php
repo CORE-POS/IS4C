@@ -256,17 +256,14 @@ static public function addItem($strupc = '',
 */
 static public function addtax() {
 	global $CORE_LOCAL;
-/*  self::addItem($strupc => "TAX",
-                  $strdescription => "Tax",
-                  $strtransType => "A",
-				  $dbltotal => $CORE_LOCAL->get("taxTotal") );
-*/
-	self::addItem(array('strupc' => "TAX",
+	self::addItem("TAX", "Tax", "A", "", "", 0, 0, 0, $CORE_LOCAL->get("taxTotal"), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+/*
+    self::addItem(array('strupc' => "TAX",
                         'strdescription' => "Tax",
                         'strtransType' => "A",
 				        'dbltotal' => (double)$CORE_LOCAL->get("taxTotal") ) );
 }
-
+*/
 //________________________________end addtax()
 
 
@@ -311,6 +308,9 @@ static public function addcomment($comment) {
   @param $dblcashreturn the change amount
 */
 static public function addchange($dblcashreturn) {
+
+	self::addItem("", "Change", "T", "CA", "", 0, 0, 0, $dblcashreturn, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8);
+
 /* this (from above) works 
 	self::addItem(array('strdescription' => $strtenderdesc,
                         'strtransType' => "T",
@@ -320,14 +320,13 @@ static public function addchange($dblcashreturn) {
     next call leads to:
 Warning: strlen() expects parameter 1 to be string, array given
 in /pos/CORE/IS4C/pos/is4c-nf/lib/MiscLib.php on line 91 
-*/
 	self::addItem(array('strdescription' => "Change",
 				        'strtransType' => "T",
                         'strtranssubType' => "CA",
 				        'dbltotal' => (double)$dblcashreturn,
 				        'intvoided' => 8 ) );
 }
-
+*/
 //_______________________________end addchange()
 
 
