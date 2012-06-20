@@ -97,7 +97,33 @@ signs in
   fewer arguments and adds a specific type of record.
   All such functions should be in this file.
 */
-static public function addItem($strupc, $strdescription, $strtransType, $strtranssubType, $strtransstatus, $intdepartment, $dblquantity, $dblunitPrice, $dbltotal, $dblregPrice, $intscale, $inttax, $intfoodstamp, $dbldiscount, $dblmemDiscount, $intdiscountable, $intdiscounttype, $dblItemQtty, $intvolDiscType, $intvolume, $dblVolSpecial, $intmixMatch, $intmatched, $intvoided, $cost=0, $numflag=0, $charflag='') {
+static public function addItem($strupc = '', 
+							   $strdescription,
+							   $strtransType,
+							   $strtranssubType = '',
+							   $strtransstatus = '',
+							   $intdepartment = 0,
+							   $dblquantity = 0,
+							   $dblunitPrice = 0,
+							   $dbltotal = 0,
+							   $dblregPrice = 0,
+							   $intscale = 0,
+							   $inttax = 0,
+							   $intfoodstamp = 0,
+							   $dbldiscount = 0,
+							   $dblmemDiscount = 0,
+							   $intdiscountable = 0,
+							   $intdiscounttype = 0,
+							   $dblItemQtty = 0,
+							   $intvolDiscType = 0,
+							   $intvolume = 0,
+							   $dblVolSpecial = 0,
+							   $intmixMatch = 0,
+							   $intmatched = 0,
+							   $intvoided = 0,
+							   $cost = 0,
+							   $numflag = 0,
+							   $charflag = '' ) {
 	global $CORE_LOCAL;
 	//$dbltotal = MiscLib::truncate2(str_replace(",", "", $dbltotal)); replaced by apbw 7/27/05 with the next 4 lines -- to fix thousands place errors
 
@@ -107,15 +133,15 @@ static public function addItem($strupc, $strdescription, $strtransType, $strtran
 	$dblunitPrice = number_format($dblunitPrice, 2, '.', '');
 
 	if ($CORE_LOCAL->get("refund") == 1) {
-		$dblquantity = (-1 * $dblquantity);
-		$dbltotal = (-1 * $dbltotal);
-		$dbldiscount = (-1 * $dbldiscount);
+		$dblquantity    = (-1 * $dblquantity);
+		$dbltotal       = (-1 * $dbltotal);
+		$dbldiscount    = (-1 * $dbldiscount);
 		$dblmemDiscount = (-1 * $dblmemDiscount);
 
 		if ($strtransstatus != "V" && $strtransstatus != "D") $strtransstatus = "R" ;	// edited by apbw 6/04/05 to correct voiding of refunded items
 
-		$CORE_LOCAL->set("refund",0);
-		$CORE_LOCAL->set("refundComment","");
+		$CORE_LOCAL->set("refund",        0 );
+		$CORE_LOCAL->set("refundComment", "");
 	}
 
 	/* Nothing in the code can set $_SESSION["void"] to 1
@@ -129,11 +155,11 @@ static public function addItem($strupc, $strdescription, $strtransType, $strtran
 
 
 	$intregisterno = $CORE_LOCAL->get("laneno");
-	$intempno = $CORE_LOCAL->get("CashierNo");
-	$inttransno = $CORE_LOCAL->get("transno");
-	$strCardNo = $CORE_LOCAL->get("memberID");
-	$memType = $CORE_LOCAL->get("memType");
-	$staff = $CORE_LOCAL->get("isStaff");
+	$intempno      = $CORE_LOCAL->get("CashierNo");
+	$inttransno    = $CORE_LOCAL->get("transno");
+	$strCardNo     = $CORE_LOCAL->get("memberID");
+	$memType       = $CORE_LOCAL->get("memType");
+	$staff         = $CORE_LOCAL->get("isStaff");
 
 	$db = Database::tDataConnect();
 
@@ -146,7 +172,7 @@ static public function addItem($strupc, $strdescription, $strtransType, $strtran
 
 	// this session variable never gets used
 	//$_SESSION["datetimestamp"] = $datetimestamp;
-	$CORE_LOCAL->set("LastID",$CORE_LOCAL->get("LastID") + 1);
+	$CORE_LOCAL->set("LastID", $CORE_LOCAL->get("LastID") + 1);
 	
 	$trans_id = $CORE_LOCAL->get("LastID");
 
@@ -186,34 +212,36 @@ static public function addItem($strupc, $strdescription, $strtransType, $strtran
 		'charflag'	=> $charflag,
 		'card_no'	=> (string)$strCardNo
 		);
-	if ($CORE_LOCAL->get("DBMS") == "mssql" && $CORE_LOCAL->get("store") == "wfc"){
+	if (($CORE_LOCAL->get("DBMS") == "mssql") &&
+    	($CORE_LOCAL->get("store") == "wfc")){
 		unset($values["staff"]);
 		$values["isStaff"] = MiscLib::nullwrap($staff);
 	}
 
-	$db->smart_insert("localtemptrans",$values);
+	$db->smart_insert("localtemptrans", $values);
 	$db->close();
 
-	if ($strtransType == "I" || $strtransType == "D") {
-		$CORE_LOCAL->set("beep","goodBeep");
+	if (($strtransType == "I") ||
+    	($strtransType == "D")) {
+		$CORE_LOCAL->set("beep", "goodBeep");
 		if ($intscale == 1) {
-			$CORE_LOCAL->set("screset","rePoll");
+			$CORE_LOCAL->set("screset", "rePoll");
 		}
 		elseif ($CORE_LOCAL->get("weight") != 0) {
-			$CORE_LOCAL->set("screset","rePoll");
+			$CORE_LOCAL->set("screset", "rePoll");
 		}
-		$CORE_LOCAL->set("repeatable",1);
+		$CORE_LOCAL->set("repeatable", 1);
 	}
 	
-	$CORE_LOCAL->set("msgrepeat",0);
-	$CORE_LOCAL->set("toggletax",0);
-	$CORE_LOCAL->set("togglefoodstamp",0);
-	$CORE_LOCAL->set("SNR",0);
-	$CORE_LOCAL->set("wgtRequested",0);
-	$CORE_LOCAL->set("nd",0);
+	$CORE_LOCAL->set("msgrepeat", 0);
+	$CORE_LOCAL->set("toggletax", 0);
+	$CORE_LOCAL->set("togglefoodstamp", 0);
+	$CORE_LOCAL->set("SNR", 0);
+	$CORE_LOCAL->set("wgtRequested", 0);
+	$CORE_LOCAL->set("nd", 0);
 
-	$CORE_LOCAL->set("ccAmtEntered",0);
-	$CORE_LOCAL->set("ccAmt",0);
+	$CORE_LOCAL->set("ccAmtEntered", 0);
+	$CORE_LOCAL->set("ccAmt", 0);
 
 }
 
@@ -228,8 +256,10 @@ static public function addItem($strupc, $strdescription, $strtransType, $strtran
 */
 static public function addtax() {
 	global $CORE_LOCAL;
-
-	self::addItem("TAX", "Tax", "A", "", "", 0, 0, 0, $CORE_LOCAL->get("taxTotal"), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+	self::addItem($strupc => "TAX",
+                  $strdescription => "Tax",
+                  $strtransType => "A",
+				  $dbltotal => $CORE_LOCAL->get("taxTotal") );
 }
 
 //________________________________end addtax()
@@ -245,7 +275,10 @@ static public function addtax() {
   <i>negative</i> amounts. 
 */
 static public function addtender($strtenderdesc, $strtendercode, $dbltendered) {
-	self::addItem("", $strtenderdesc, "T", $strtendercode, "", 0, 0, 0, $dbltendered, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+	self::addItem($strdescription => $strtenderdesc,
+                  $strtransType => "T",
+				  $strtranssubType => $strtendercode,
+				  $dbltotal => $dbltendered );
 }
 
 //_______________________________end addtender()
@@ -259,7 +292,10 @@ static public function addtender($strtenderdesc, $strtendercode, $dbltendered) {
 static public function addcomment($comment) {
 	if (strlen($comment) > 30)
 		$comment = substr($comment,0,30);
-	self::addItem("",$comment, "C", "CM", "D", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+	self::addItem($strdescription => $comment,
+                  $strtransType => "C",
+                  $strtranssubType => "CM",
+                  $strtransstatus => "D" );
 }
 
 
@@ -270,7 +306,11 @@ static public function addcomment($comment) {
   @param $dblcashreturn the change amount
 */
 static public function addchange($dblcashreturn) {
-	self::addItem("", "Change", "T", "CA", "", 0, 0, 0, $dblcashreturn, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8);
+	self::addItem($strdescription => "Change",
+				  $strtransType => "T",
+                  $strtranssubType => "CA",
+				  $dbltotal => $dblcashreturn,
+				  $intvoided => 8 );
 }
 
 //_______________________________end addchange()
@@ -286,7 +326,12 @@ static public function addchange($dblcashreturn) {
   in your area before using this.
 */
 static public function addfsones($intfsones) {
-	self::addItem("", "FS Change", "T", "FS", "", 0, 0, 0, $intfsones, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8);
+//	self::addItem("", "FS Change", "T", "FS", "", 0, 0, 0, $intfsones, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8);
+	self::addItem($strdescription => "FS Change",
+                  $strtransType => "T",
+                  $strtranssubType => "FS",
+				  $dbltotal => $intfsones,
+				  $intvoided => 8 );
 }
 
 //_______________________________end addfsones()
@@ -366,14 +411,26 @@ static public function addfsTaxExempt() {
 //------------------------------ insert 'discount applied' line --------------------------------
 
 /**
-  Add a information record showing transaction percent discount
-  @param $strl the percentage
+  Add a information record showing transaction-wide percent discount
+  @param $discPct the percentage
+ 
 */
-static public function discountnotify($strl) {
+static public function discountnotify($discPct) {
+/*
 	if ($strl == 10.01) {
-		$strL = 10;
+		$strl = 10;       // DHermann 20jun12: was strL -- 'if' is for odd WFC value?
 	}
-	self::addItem("", "** ".$strl."% Discount Applied **", "", "", "D", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4);
+*/
+
+//  DHermann 20jun12: starting rewrite ...
+//	self::addItem("", "** ".$strl."% Discount Applied **", "", "", "D", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4);
+	
+	if ($discPct == 10.01) {
+		$discPct = 10;
+	}
+	self::addItem($strdescription => ("** " . $discPct . "% Discount Applied **"),
+		  		  $strtransstatus => "D",
+				  $intvoided => 4);
 }
 
 //_____________________________end discountnotify()
@@ -389,8 +446,12 @@ static public function discountnotify($strl) {
 static public function addTaxExempt() {
 	global $CORE_LOCAL;
 
-	self::addItem("", "** Order is Tax Exempt **", "", "", "D", 0, 0, 0, 0, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10);
 	$CORE_LOCAL->set("TaxExempt",1);
+//  self::addItem("", "** Order is Tax Exempt **", "", "", "D", 0, 0, 0, 0, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10);
+	self::addItem($strdescription => "** Order is Tax Exempt **",
+		  		  $strtransstatus => "D",
+				  $inttax => 9,
+				  $intvoided => 10);
 	Database::setglobalvalue("TaxExempt", 1);
 }
 
@@ -404,8 +465,13 @@ static public function addTaxExempt() {
 */
 static public function reverseTaxExempt() {
 	global $CORE_LOCAL;
-	self::addItem("", "** Tax Exemption Reversed **", "", "", "D", 0, 0, 0, 0, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10);
-	$CORE_LOCAL->set("TaxExempt",0);
+//  self::addItem("", "** Order is Tax Exempt **",    "", "", "D", 0, 0, 0, 0, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10);  FOR COMPARISON
+//	self::addItem("", "** Tax Exemption Reversed **", "", "", "D", 0, 0, 0, 0, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10);
+	self::addItem($strdescription => "** Tax Exemption Reversed **",
+		  		  $strtransstatus => "D",
+				  $inttax => 9,
+				  $intvoided => 10);
+	$CORE_LOCAL->set("TaxExempt", 0);
 	Datbase::setglobalvalue("TaxExempt", 0);
 }
 
@@ -468,10 +534,42 @@ static public function additemdiscount($intdepartment, $dbltotal) {
   @param $dbltare the tare weight. The weight
   gets divided by 100, so an argument of 5 gives tare 0.05
 */
+/*
+static public function addItem($strupc = '', 
+							   $strdescription,
+							   $strtransType,
+							   $strtranssubType = '',
+							   $strtransstatus = '',
+							   $intdepartment = 0,
+							   $dblquantity = 0,
+							   $dblunitPrice = 0,
+							   $dbltotal = 0,
+							   $dblregPrice = 0,
+							   $intscale = 0,
+							   $inttax = 0,
+							   $intfoodstamp = 0,
+							   $dbldiscount = 0,
+							   $dblmemDiscount = 0,
+							   $intdiscountable = 0,
+							   $intdiscounttype = 0,
+							   $dblItemQtty = 0,
+							   $intvolDiscType = 0,
+							   $intvolume = 0,
+							   $dblVolSpecial = 0,
+							   $intmixMatch = 0,
+							   $intmatched = 0,
+							   $intvoided = 0,
+							   $cost = 0,
+							   $numflag = 0,
+							   $charflag = '' ) {
+*/
 static public function addTare($dbltare) {
 	global $CORE_LOCAL;
 	$CORE_LOCAL->set("tare",$dbltare/100);
-	self::addItem("", "** Tare Weight ".$CORE_LOCAL->get("tare")." **", "", "", "D", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6);
+//	self::addItem("", "** Tare Weight ".$CORE_LOCAL->get("tare")." **", "", "", "D", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6);
+	self::addItem($strdescription => ("** Tare Weight " . $CORE_LOCAL->get("tare") . " **"),
+                  $strtranstatus => "D",
+				  $intvoided => 6);
 }
 
 //___________________________end addTare()
