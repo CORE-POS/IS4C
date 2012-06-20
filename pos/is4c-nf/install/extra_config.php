@@ -391,7 +391,7 @@ $res = $db->query("SELECT TenderCode, TenderName FROM tenders ORDER BY TenderNam
 <table cellspacing="0" cellpadding="4" border="1">
 <?php
 while($row = $db->fetch_row($res)){
-	echo "<tr><th>Tender Name</th><th>Map To</th><th>Tender Rpt</th></tr>\n";
+	echo "<thead><tr><th>Tender Name</th><th>Map To</th><th>Tender Rpt</th></tr></thead><tbody>\n";
 	printf('<tr><td>%s (%s)</td>',$row['TenderName'],$row['TenderCode']);
 	echo '<td><select name="TenderMapping[]">';
 	echo '<option value="">default</option>';
@@ -405,7 +405,7 @@ while($row = $db->fetch_row($res)){
 	echo "<td><input type=checkbox name=\"TR_LIST[]\" ";
 	echo 'value="'.$row['TenderCode'].':'.$row['TenderName'].'"';
 	if (array_key_exists($row['TenderCode'], $settings2)) echo " CHECKED";
-	echo "></td></tr>";
+	echo "></td></tr></tbody>";
 }
 ?>
 </table>
