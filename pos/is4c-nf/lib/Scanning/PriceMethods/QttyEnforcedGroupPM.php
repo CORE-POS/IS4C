@@ -57,7 +57,7 @@ class QttyEnforcedGroupPM extends PriceMethod {
 		/* add complete sets */
 		if ($new_sets > 0){
 			/* discount for complete set */
-			$discount = ($pricing['unitPrice']*$groupQty) - $groupPrice;
+			$discount = $new_sets * (($pricing['unitPrice']*$groupQty) - $groupPrice);
 			$memDiscount = 0;
 			if ($priceObj->isMemberSale() || $priceObj->isStaffSale()){
 				$memDiscount = $discount;
