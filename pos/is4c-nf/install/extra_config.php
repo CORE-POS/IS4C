@@ -403,7 +403,7 @@ while($row = $db->fetch_row($res)){
 	echo '</select></td>';
 	echo "<td><input type=checkbox name=\"TR_LIST[]\" ";
 	echo 'value="'.$row['TenderCode'].':'.$row['TenderName'].'"';
-	if (array_key_exists($row['TenderCode'], $settings2)) echo " selected";
+	if (array_key_exists($row['TenderCode'], $settings2)) echo " CHECKED";
 	echo "></td></tr>";
 }
 ?>
