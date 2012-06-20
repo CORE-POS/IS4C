@@ -380,7 +380,7 @@ if (isset($_REQUEST['TR_LIST'])){
 		if($dt=="") continue;
 		list($code2,$name2) = explode(":",$dt);
 		$settings2[$code2] = $name2;
-		$saveStr2 .= "'".$code2."'=>'".$name2."',";
+		$saveStr2 .= "'".$code2."'=>'".addslashes($name2)."',";
 	}
 	$saveStr2 = rtrim($saveStr2,",").")";
 	confsave('TRDesiredTenders',$saveStr2);
