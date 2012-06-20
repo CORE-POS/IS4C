@@ -367,28 +367,12 @@ while(False !== ($f = readdir($dh))){
 	if (substr($f,-4) == ".php")
 		$mods[] = rtrim($f,".php");
 }
-//  Tender Report: Desired tenders column
-$settings2 = $CORE_LOCAL->get("TRDesiredTenders");
-if (!is_array($settings2)) $settings2 = array();
-if (isset($_REQUEST['TR_LIST'])){
-	$saveStr2 = "array(";
-	$settings2 = array();
-	foreach($_REQUEST['TR_LIST'] as $dt){
-		if($dt=="") continue;
-		list($code2,$mod2) = explode(":",$dt);
-		$settings2[$code2] = $mod2;
-		$saveStr2 .= "'".$code2."'=>'".$mod2."',";
-	}
-	$saveStr2 = rtrim($saveStr2,",").")";
-	confsave('TRDesiredTenders',$saveStr2);
-} //end TR desired tenders
 $db = Database::pDataConnect();
 $res = $db->query("SELECT TenderCode, TenderName FROM tenders ORDER BY TenderName");
 ?>
 <table cellspacing="0" cellpadding="4" border="1">
 <?php
 while($row = $db->fetch_row($res)){
-	echo "<tr><th>Tender Name</th><th>Map To</th><th>Tender Rpt</th></tr>\n";
 	printf('<tr><td>%s (%s)</td>',$row['TenderName'],$row['TenderCode']);
 	echo '<td><select name="TenderMapping[]">';
 	echo '<option value="">default</option>';
@@ -398,15 +382,10 @@ while($row = $db->fetch_row($res)){
 			(isset($settings[$row['TenderCode']])&&$settings[$row['TenderCode']]==$m)?'selected':'',
 			$m);	
 	}
-	echo '</select></td>';
-	echo "<td><input type=checkbox name=\"TR_LIST[]\" value=1";
-	if (in_array($row['TenderCode']), $settings2[]) echo " selected";
-	echo "></td></tr>";
+	echo '</select></td></tr>';
 }
 ?>
 </table>
-<br />
-
 <hr />
 <i>Integrated card processing configuration is included for the sake
 of completeness. The modules themselves require individual configuration,
