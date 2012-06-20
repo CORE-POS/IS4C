@@ -344,6 +344,9 @@ else {
 confsave('ModularTenders',"'".$CORE_LOCAL->get('ModularTenders')."'");
 ?>
 </select><br />
+<b>Tender Mapping</b>:<br />
+Map custom tenders to IS4Cs expected tenders<br />
+Tender Rpt. column: Include the checked tenders in the Tender Report (available via Mgrs. Menu [MG])<br />
 <?php
 $settings = $CORE_LOCAL->get("TenderMap");
 if (!is_array($settings)) $settings = array();
@@ -367,6 +370,24 @@ while(False !== ($f = readdir($dh))){
 	if (substr($f,-4) == ".php")
 		$mods[] = rtrim($f,".php");
 }
+<<<<<<< HEAD
+=======
+//  Tender Report: Desired tenders column
+$settings2 = $CORE_LOCAL->get("TRDesiredTenders");
+if (!is_array($settings2)) $settings2 = array();
+if (isset($_REQUEST['TR_LIST'])){
+	$saveStr2 = "array(";
+	$settings2 = array();
+	foreach($_REQUEST['TR_LIST'] as $dt){
+		if($dt=="") continue;
+		list($code2,$name2) = explode(":",$dt);
+		$settings2[$code2] = $name2;
+		$saveStr2 .= "'".$code2."'=>'".$name2."',";
+	}
+	$saveStr2 = rtrim($saveStr2,",").")";
+	confsave('TRDesiredTenders',$saveStr2);
+} //end TR desired tenders
+>>>>>>> 798ea3f48228286c0f561351918f5621a68f5ba3
 $db = Database::pDataConnect();
 $res = $db->query("SELECT TenderCode, TenderName FROM tenders ORDER BY TenderName");
 ?>
@@ -382,7 +403,15 @@ while($row = $db->fetch_row($res)){
 			(isset($settings[$row['TenderCode']])&&$settings[$row['TenderCode']]==$m)?'selected':'',
 			$m);	
 	}
+<<<<<<< HEAD
 	echo '</select></td></tr>';
+=======
+	echo '</select></td>';
+	echo "<td><input type=checkbox name=\"TR_LIST[]\" ";
+	printf("value=\"%s:%s\"",$row['TenderCode'],$row['TenderName']);
+	if (in_array($row['TenderCode']), $settings2[]) echo " selected";
+	echo "></td></tr>";
+>>>>>>> 798ea3f48228286c0f561351918f5621a68f5ba3
 }
 ?>
 </table>
