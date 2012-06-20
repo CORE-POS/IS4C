@@ -344,6 +344,9 @@ else {
 confsave('ModularTenders',"'".$CORE_LOCAL->get('ModularTenders')."'");
 ?>
 </select><br />
+<b>Tender Mapping</b>:<br />
+Map custom tenders to IS4Cs expected tenders<br />
+Tender Rpt. column: Include the checked tenders in the Tender Report (available via Mgrs. Menu [MG])<br />
 <?php
 $settings = $CORE_LOCAL->get("TenderMap");
 if (!is_array($settings)) $settings = array();
@@ -375,9 +378,9 @@ if (isset($_REQUEST['TR_LIST'])){
 	$settings2 = array();
 	foreach($_REQUEST['TR_LIST'] as $dt){
 		if($dt=="") continue;
-		list($code2,$mod2) = explode(":",$dt);
-		$settings2[$code2] = $mod2;
-		$saveStr2 .= "'".$code2."'=>'".$mod2."',";
+		list($code2,$name2) = explode(":",$dt);
+		$settings2[$code2] = $name2;
+		$saveStr2 .= "'".$code2."'=>'".$name2."',";
 	}
 	$saveStr2 = rtrim($saveStr2,",").")";
 	confsave('TRDesiredTenders',$saveStr2);
@@ -399,7 +402,8 @@ while($row = $db->fetch_row($res)){
 			$m);	
 	}
 	echo '</select></td>';
-	echo "<td><input type=checkbox name=\"TR_LIST[]\" value=1";
+	echo "<td><input type=checkbox name=\"TR_LIST[]\" ";
+	printf("value=\"%s:%s\"",$row['TenderCode'],$row['TenderName']);
 	if (in_array($row['TenderCode']), $settings2[]) echo " selected";
 	echo "></td></tr>";
 }
