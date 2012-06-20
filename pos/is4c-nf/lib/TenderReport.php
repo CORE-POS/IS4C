@@ -41,8 +41,6 @@ class TenderReport extends LibraryClass {
  to the $DESIRED_TENDERS array (exception being if you want
  special handling in the tender tape view (e.g., three
  tender types are actually compined under EBT)
-
- @todo Make $DESIRED_TENDERS configurable elsewhere
  */
 static public function get(){
 	global $CORE_LOCAL;
