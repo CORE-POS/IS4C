@@ -46,7 +46,13 @@ static public function get(){
 	global $CORE_LOCAL;
 
 	$DESIRED_TENDERS = $CORE_LOCAL->get("TRDesiredTenders");
-	
+	$itemize = (($CORE_LOCAL->get("store") == "harvest-cb") && (
+		in_array("PE",$DESIRED_TENDERS) || 
+		in_array("BU",$DESIRED_TENDERS) ||
+		in_array("EL",$DESIRED_TENDERS) ||
+		in_array("PY",$DESIRED_TENDERS) ||
+		in_array("TV",$DESIRED_TENDERS)) ? 1 : 0;
+		
 	$db_a = Database::mDataConnect();
 
 	$blank = "             ";
@@ -58,8 +64,7 @@ static public function get(){
 	$ref = ReceiptLib::centerString(trim($CORE_LOCAL->get("CashierNo"))." ".trim($CORE_LOCAL->get("cashier"))." ".ReceiptLib::build_time(time()))."\n\n";
 	$receipt = "";
 
-	foreach(array_keys($DESIRED_TENDERS) as $tender_code){
-		$itemize = (($CORE_LOCAL->get("store") == "harvest-cb") && ($tender_code != "PE" || $tender_code != "BU" || $tender_code != "EL" || $tender_code != "PY" || $tender_code != "TV")) ? 1 : 0; 
+	foreach(array_keys($DESIRED_TENDERS) as $tender_code){ 
 		$query = "select tdate from TenderTapeGeneric where emp_no=".$CORE_LOCAL->get("CashierNo").
 			" and trans_subtype = '".$tender_code."' order by tdate";
 		$result = $db_a->query($query);
