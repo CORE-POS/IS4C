@@ -82,7 +82,7 @@ static public function get(){
 		$result = $db_a->query($query);
 		$num_rows = $db_a->num_rows($result);
 
-		if ($CORE_LOCAL->get("store") == "harvest-cb" && ($tender_code == "PE" || "BU" || "EL" || "PY" || "TV")) {
+		if ($CORE_LOCAL->get("store") == "harvest-cb" && ($tender_code != "PE" || "BU" || "EL" || "PY" || "TV")) {
 			$receipt .= "";
 		} 
 		else {
