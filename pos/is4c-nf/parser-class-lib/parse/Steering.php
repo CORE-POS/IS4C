@@ -99,8 +99,13 @@ class Steering extends Parser {
 			$CORE_LOCAL->set("away",1);
 			return True;
 		case 'RP':
-			if ($CORE_LOCAL->get("LastID") != "0")
-				$this->ret['output'] = DisplayLib::boxMsg("transaction in progress");
+			if ($CORE_LOCAL->get("LastID") != "0"){
+				//$this->ret['output'] = DisplayLib::boxMsg("transaction in progress");
+				$tr = $CORE_LOCAL->get("receiptToggle");
+				if ($tr == 1) $CORE_LOCAL->set("receiptToggle",0);
+				else $CORE_LOCAL->set("receiptToggle",1);
+				$this->ret['main_frame'] = $my_url."gui-modules/pos2.php";
+			}
 			else {
 				$query = "select register_no, emp_no, trans_no, "
 					."sum((case when trans_type = 'T' then -1 * total else 0 end)) as total "

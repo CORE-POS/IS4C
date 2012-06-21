@@ -1131,6 +1131,7 @@ static public function printReceipt($arg1,$second=False) {
 	}
 	
 	$receipt = "";
+	$CORE_LOCAL->set("receiptToggle",1);
 }
 
 static public function reprintReceipt($trans_num=""){
