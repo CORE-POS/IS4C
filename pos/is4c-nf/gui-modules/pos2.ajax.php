@@ -59,7 +59,8 @@ class pos2 extends BasicPage {
 	function body_content(){
 		global $CORE_LOCAL;
 		$this->input_header('onsubmit="return submitWrapper();"');
-		$this->add_onload_command("setTimeout('lockScreen()', ".$CORE_LOCAL->get("timeout").");\n");
+		if ($CORE_LOCAL->get("timeout") != "")
+			$this->add_onload_command("setTimeout('lockScreen()', ".$CORE_LOCAL->get("timeout").");\n");
 		$this->add_onload_command("\$('#reginput').keydown(function(ev){
 					switch(ev.keyCode){
 					case 33:
