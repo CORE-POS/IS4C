@@ -147,7 +147,7 @@ static public function addItem($strupc, $strdescription, $strtransType, $strtran
 	// this session variable never gets used
 	//$_SESSION["datetimestamp"] = $datetimestamp;
 	$CORE_LOCAL->set("LastID",$CORE_LOCAL->get("LastID") + 1);
-	
+
 	$trans_id = $CORE_LOCAL->get("LastID");
 
 	$values = array(
@@ -204,7 +204,7 @@ static public function addItem($strupc, $strdescription, $strtransType, $strtran
 		}
 		$CORE_LOCAL->set("repeatable",1);
 	}
-	
+
 	$CORE_LOCAL->set("msgrepeat",0);
 	$CORE_LOCAL->set("toggletax",0);
 	$CORE_LOCAL->set("togglefoodstamp",0);
@@ -488,7 +488,7 @@ static public function addMadCoup() {
 
 	$madCoup = -1 * $CORE_LOCAL->get("madCoup");
 	self::addItem("MAD Coupon", "Member Appreciation Coupon", "I", "CP", "C", 0, 1, $madCoup, $madCoup, $madCoup, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 17);
-		
+
 }
 
 /**
@@ -537,7 +537,7 @@ static public function addDeposit($quantity, $deposit, $foodstamp) {
 		$dept = 42;
 	}
 	self::addItem("DEPOSIT" * $chardeposit, "Deposit", "I", "", "", $dept, $quantity, $deposit, $total, $deposit, 0, 0, $foodstamp, 0, 0, 0, 0, $quantity, 0, 0, 0, 0, 0, 0);
-		
+
 }
 
 // ----------------------------- insert transaction discount -----------------------------------
@@ -598,7 +598,7 @@ static public function addactivity($activity) {
 
 		$interval = strtotime($row["rightNow"]) - strtotime($row["maxDateTime"]);
 	}
-		
+
 	//$_SESSION["datetimestamp"] = strftime("%Y-%m-%d %H:%M:%S", $timeNow);
 	$datetimestamp = strftime("%Y-%m-%d %H:%M:%S", $timeNow);
 
