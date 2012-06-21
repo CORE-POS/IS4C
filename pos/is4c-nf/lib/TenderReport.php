@@ -46,13 +46,7 @@ static public function get(){
 	global $CORE_LOCAL;
 
 	$DESIRED_TENDERS = $CORE_LOCAL->get("TRDesiredTenders");
-	$itemize = (($CORE_LOCAL->get("store") == "harvest-cb") && (
-		in_array("PE",$DESIRED_TENDERS) || 
-		in_array("BU",$DESIRED_TENDERS) ||
-		in_array("EL",$DESIRED_TENDERS) ||
-		in_array("PY",$DESIRED_TENDERS) ||
-		in_array("TV",$DESIRED_TENDERS)) ? 1 : 0;
-		
+
 	$db_a = Database::mDataConnect();
 
 	$blank = "             ";
@@ -92,7 +86,8 @@ static public function get(){
 		$sum = 0;
 
 		for ($i = 0; $i < $num_rows; $i++) {
-
+			if (($CORE_LOCAL->get("store") == "harvest-cb") && ($tender_code == "PE" || $tender_code == "BU" || $tender_code == "EL" || $tender_code == "PY" || $tender_code == "TV")) $itemize = 1;
+			else $itemize = 0;
 			$row = $db_a->fetch_array($result);
 			$timeStamp = self::timeStamp($row["tdate"]);
 			if ($itemize == 1) {
