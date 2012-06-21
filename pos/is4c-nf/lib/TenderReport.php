@@ -82,7 +82,7 @@ static public function get(){
 		$result = $db_a->query($query);
 		$num_rows = $db_a->num_rows($result);
 
-		if ($CORE_LOCAL->get("store") == "harvet-cb" && ($tender_code == "PE" || "BU" || "EL" || "PY" || "TV")) {
+		if ($CORE_LOCAL->get("store") == "harvest-cb" && ($tender_code == "PE" || "BU" || "EL" || "PY" || "TV")) {
 			$receipt .= "";
 		} 
 		else {
@@ -104,8 +104,8 @@ static public function get(){
 		$receipt.= ReceiptLib::centerString("------------------------------------------------------");
 
 //		$receipt .= substr($blank.$blank.$blank.$blank."Total: ".$sum, -56)."\n";
-		$receipt .= substr($blank.$blank.$blank."Count :".$num_rows."  Total: ".$sum, -56)."\n";
-		$receipt .= str_repeat("\n", 5);
+		$receipt .= substr($blank.$blank.$blank."Count: ".$num_rows."  Total: ".$sum, -56)."\n";
+		$receipt .= str_repeat("\n", 3);
 //		$receipt .= chr(27).chr(105);
 	}
 
