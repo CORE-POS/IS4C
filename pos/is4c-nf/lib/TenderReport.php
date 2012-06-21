@@ -59,7 +59,7 @@ static public function get(){
 	$receipt = "";
 
 	foreach(array_keys($DESIRED_TENDERS) as $tender_code){
-		$itemize = ($CORE_LOCAL->get("store") == "harvest-cb" && ($tender_code != "PE" || "BU" || "EL" || "PY" || "TV"))?1:0; 
+		$itemize = (($CORE_LOCAL->get("store") == "harvest-cb") && ($tender_code != "PE" || $tender_code != "BU" || $tender_code != "EL" || $tender_code != "PY" || $tender_code != "TV")) ? 1 : 0; 
 		$query = "select tdate from TenderTapeGeneric where emp_no=".$CORE_LOCAL->get("CashierNo").
 			" and trans_subtype = '".$tender_code."' order by tdate";
 		$result = $db_a->query($query);
