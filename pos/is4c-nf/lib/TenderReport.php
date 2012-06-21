@@ -59,6 +59,7 @@ static public function get(){
 	$receipt = "";
 
 	foreach(array_keys($DESIRED_TENDERS) as $tender_code){
+		$itemize = ($CORE_LOCAL->get("store") == "harvest-cb" && ($tender_code != "PE" || "BU" || "EL" || "PY" || "TV"))?1:0; 
 		$query = "select tdate from TenderTapeGeneric where emp_no=".$CORE_LOCAL->get("CashierNo").
 			" and trans_subtype = '".$tender_code."' order by tdate";
 		$result = $db_a->query($query);
@@ -74,38 +75,35 @@ static public function get(){
 		$receipt .= ReceiptLib::centerString($titleStr)."\n";
 
 		$receipt .= $ref;
-		$receipt .=	ReceiptLib::centerString("------------------------------------------------------");
+		if ($itemize == 1) $receipt .=	ReceiptLib::centerString("------------------------------------------------------");
 
 		$query = "select tdate,register_no,trans_no,tender
 		       	from TenderTapeGeneric where emp_no=".$CORE_LOCAL->get("CashierNo").
 			" and trans_subtype = '".$tender_code."' order by tdate";
 		$result = $db_a->query($query);
 		$num_rows = $db_a->num_rows($result);
+		
+		if ($itemize == 1) $receipt .= $fieldNames;
+		$sum = 0;
 
-		if ($CORE_LOCAL->get("store") == "harvest-cb" && ($tender_code != "PE" || "BU" || "EL" || "PY" || "TV")) {
-			$receipt .= "";
-		} 
-		else {
-			$receipt .= $fieldNames;
-			$sum = 0;
+		for ($i = 0; $i < $num_rows; $i++) {
 
-			for ($i = 0; $i < $num_rows; $i++) {
-
-				$row = $db_a->fetch_array($result);
-				$timeStamp = self::timeStamp($row["tdate"]);
+			$row = $db_a->fetch_array($result);
+			$timeStamp = self::timeStamp($row["tdate"]);
+			if ($itemize == 1) {
 				$receipt .= "  ".substr($timeStamp.$blank, 0, 13)
-					.substr($row["register_no"].$blank, 0, 9)
-					.substr($row["trans_no"].$blank, 0, 8)
-					.substr($blank.number_format("0", 2), -10)
-					.substr($blank.number_format($row["tender"], 2), -14)."\n";
-				$sum += $row["tender"];
+				.substr($row["register_no"].$blank, 0, 9)
+				.substr($row["trans_no"].$blank, 0, 8)
+				.substr($blank.number_format("0", 2), -10)
+				.substr($blank.number_format($row["tender"], 2), -14)."\n";
 			}
+			$sum += $row["tender"];
 		}
+		
 		$receipt.= ReceiptLib::centerString("------------------------------------------------------");
 
-//		$receipt .= substr($blank.$blank.$blank.$blank."Total: ".$sum, -56)."\n";
 		$receipt .= substr($blank.$blank.$blank."Count: ".$num_rows."  Total: ".$sum, -56)."\n";
-		$receipt .= str_repeat("\n", 3);
+		$receipt .= str_repeat("\n", 4);
 //		$receipt .= chr(27).chr(105);
 	}
 
