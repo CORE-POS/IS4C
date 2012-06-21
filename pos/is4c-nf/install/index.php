@@ -3400,57 +3400,6 @@ function create_min_server($db,$type){
 		$db->query($efsrqm,$name);
 	}
 
-	$dlogView = "select 
-		`dtranstoday`.`datetime` AS `tdate`,
-		`dtranstoday`.`register_no` AS `register_no`,
-		`dtranstoday`.`emp_no` AS `emp_no`,
-		`dtranstoday`.`trans_no` AS `trans_no`,
-		`dtranstoday`.`upc` AS `upc`,
-		`dtranstoday`.`trans_type` AS `trans_type`,
-		`dtranstoday`.`trans_subtype` AS `trans_subtype`,
-		`dtranstoday`.`trans_status` AS `trans_status`,
-		`dtranstoday`.`department` AS `department`,
-		`dtranstoday`.`quantity` AS `quantity`,
-		`dtranstoday`.`unitPrice` AS `unitPrice`,
-		`dtranstoday`.`total` AS `total`,
-		`dtranstoday`.`tax` AS `tax`,
-		`dtranstoday`.`foodstamp` AS `foodstamp`,
-		`dtranstoday`.`ItemQtty` AS `itemQtty`,
-		`dtranstoday`.`card_no` AS `card_no`,
-		`dtranstoday`.`trans_id` AS `trans_id` 
-		from `dtranstoday` 
-		where 
-		((`dtranstoday`.`trans_status` <> 'D') 
-		and 
-		(`dtranstoday`.`trans_status` <> 'X'))
-		AND datediff(`dtranstoday`.`datetime`,curdate()) = 0";
-	if ($type == 'MSSQL'){
-		$dlogView = "SELECT
-			datetime AS tdate,
-			register_no,
-			emp_no,
-			trans_no,
-			upc,
-			trans_type,
-			trans_subtype,
-			trans_status,
-			department,
-			quantity,
-			unitPrice,
-			total,
-			tax,
-			foodstamp,
-			ItemQtty,
-			card_no,
-			trans_id
-			FROM dtranstoday
-			WHERE trans_status NOT IN ('D','X')
-			AND datediff(dd,getdate(),datetime)=0";
-	}
-	if (!$db->table_exists('dlog_today',$name)){
-		$db->query('CREATE VIEW dlog_today AS '.$dlogView,$name);
-	}
-
 	$ttG = "CREATE view TenderTapeGeneric
 		as
 		select 
@@ -3467,7 +3416,7 @@ function create_min_server($db,$type){
 		     ELSE
 			-1 * total
 		END AS tender
-		from dlog_today
+		from dlog
 		where datediff(tdate, curdate()) = 0
 		and trans_subtype not in ('0','')";
 	if (!$db->table_exists("TenderTapeGeneric",$name)){
