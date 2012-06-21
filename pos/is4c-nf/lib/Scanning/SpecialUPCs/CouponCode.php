@@ -207,6 +207,7 @@ var $ean;
 		}
 
 		$value = MiscLib::truncate2($value);
+		$json['udpmsg'] = 'goodBeep';
 		TransRecord::addcoupon($upc, $dept, $value, $foodstamp);
 		$json['output'] = DisplayLib::lastpage();
 		$json['redraw_footer'] = True;

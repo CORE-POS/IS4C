@@ -142,6 +142,16 @@ confsave('BottleReturnDept',"'".$CORE_LOCAL->get('BottleReturnDept')."'");
 ?>
 <br />
 Add a BOTTLE RETURN item to your products table with a normal_price of 0, IS4C will prompt for Bottle Return amt. and then make it a negative value.
+<br />
+<b>Lock Screen Timeout</b>:
+<?php
+if(isset($_REQUEST['TIMEOUT'])) $CORE_LOCAL->set('timeout',$_REQUEST['TIMEOUT']);
+else $CORE_LOCAL->set('timeout',180000);
+printf("<input type=text name=TIMEOUT value=\"%s\" />",$CORE_LOCAL->get('timeout'));
+confsave('timeout',"'".$CORE_LOCAL->get('timeout')."'");
+?>
+<br />
+Enter timeout in milliseconds. Default: 180000 (3 minutes)
 <hr />
 <b>Allow members to write checks over purchase amount</b>: <select name=OVER>
 <?php
@@ -334,6 +344,9 @@ else {
 confsave('ModularTenders',"'".$CORE_LOCAL->get('ModularTenders')."'");
 ?>
 </select><br />
+<b>Tender Mapping</b>:<br />
+Map custom tenders to IS4Cs expected tenders<br />
+Tender Rpt. column: Include the checked tenders in the Tender Report (available via Mgrs. Menu [MG])<br />
 <?php
 $settings = $CORE_LOCAL->get("TenderMap");
 if (!is_array($settings)) $settings = array();
@@ -357,11 +370,27 @@ while(False !== ($f = readdir($dh))){
 	if (substr($f,-4) == ".php")
 		$mods[] = rtrim($f,".php");
 }
+//  Tender Report: Desired tenders column
+$settings2 = $CORE_LOCAL->get("TRDesiredTenders");
+if (!is_array($settings2)) $settings2 = array();
+if (isset($_REQUEST['TR_LIST'])){
+	$saveStr2 = "array(";
+	$settings2 = array();
+	foreach($_REQUEST['TR_LIST'] as $dt){
+		if($dt=="") continue;
+		list($code2,$name2) = explode(":",$dt);
+		$settings2[$code2] = $name2;
+		$saveStr2 .= "'".$code2."'=>'".addslashes($name2)."',";
+	}
+	$saveStr2 = rtrim($saveStr2,",").")";
+	confsave('TRDesiredTenders',$saveStr2);
+} //end TR desired tenders
 $db = Database::pDataConnect();
 $res = $db->query("SELECT TenderCode, TenderName FROM tenders ORDER BY TenderName");
 ?>
 <table cellspacing="0" cellpadding="4" border="1">
 <?php
+echo "<thead><tr><th>Tender Name</th><th>Map To</th><th>Tender Rpt</th></tr></thead><tbody>\n";
 while($row = $db->fetch_row($res)){
 	printf('<tr><td>%s (%s)</td>',$row['TenderName'],$row['TenderCode']);
 	echo '<td><select name="TenderMapping[]">';
@@ -372,10 +401,16 @@ while($row = $db->fetch_row($res)){
 			(isset($settings[$row['TenderCode']])&&$settings[$row['TenderCode']]==$m)?'selected':'',
 			$m);	
 	}
-	echo '</select></td></tr>';
+	echo '</select></td>';
+	echo "<td><input type=checkbox name=\"TR_LIST[]\" ";
+	echo 'value="'.$row['TenderCode'].':'.$row['TenderName'].'"';
+	if (array_key_exists($row['TenderCode'], $settings2)) echo " CHECKED";
+	echo "></td></tr></tbody>";
 }
 ?>
 </table>
+<br />
+
 <hr />
 <i>Integrated card processing configuration is included for the sake
 of completeness. The modules themselves require individual configuration,
