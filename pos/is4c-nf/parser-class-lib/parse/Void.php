@@ -257,7 +257,7 @@ class Void extends Parser {
 
 		unset($result);
 		//----------------------Void Item------------------
-			$query_upc = "select ItemQtty,foodstamp,discounttype,mixMatch,cost,
+		$query_upc = "select ItemQtty,foodstamp,discounttype,mixMatch,cost,
 				numflag,charflag,unitPrice,total,discounttype,regPrice,discount,
 				memDiscount,discountable,description,trans_type,trans_subtype,
 				department,tax,VolSpecial
@@ -369,6 +369,7 @@ class Void extends Parser {
 		$quantity = -1 * $quantity;
 		$total = $quantity * $unitPrice;
 		if ($row['unitPrice'] == 0) $total = $quantity * $row['total'];
+		else if ($row['total'] != $total) $total = -1*$row['total'];
 	
 		$CardNo = $CORE_LOCAL->get("memberID");
 		
