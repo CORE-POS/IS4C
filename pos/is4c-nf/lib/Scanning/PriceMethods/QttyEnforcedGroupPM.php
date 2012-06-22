@@ -56,8 +56,21 @@ class QttyEnforcedGroupPM extends PriceMethod {
 
 		/* add complete sets */
 		if ($new_sets > 0){
+
+			$percentDiscount = 0;
+			if (!$priceObj->isSale() && $pricing['unitPrice'] != $row['normal_price']){
+				$percentDiscount = ($row['normal_price'] - $pricing['unitPrice']) / $row['normal_price'];
+				$groupPrice *= (1 - $percentDiscount);
+			}
+			else if ($priceObj->isSale() && $pricing['unitPrice'] != $row['special_price']){
+				$percentDiscount = ($row['special_price'] - $pricing['unitPrice']) / 100;
+				$groupPrice *= (1 - $percentDiscount);
+			}
+
 			/* discount for complete set */
 			$discount = $new_sets * (($pricing['unitPrice']*$groupQty) - $groupPrice);
+			$total = ($new_sets* $groupQty * $pricing['unitPrice']) - $discount;
+			$unit = $total / ($new_sets * $groupQty);
 			$memDiscount = 0;
 			if ($priceObj->isMemberSale() || $priceObj->isStaffSale()){
 				$memDiscount = $discount;
@@ -71,8 +84,8 @@ class QttyEnforcedGroupPM extends PriceMethod {
 				'',
 				$row['department'],
 				$new_sets * $groupQty,
-				$pricing['unitPrice'],
-				MiscLib::truncate2(($pricing['unitPrice'] * $quantity) - $discount),
+				MiscLib::truncate2($unit),
+				MiscLib::truncate2($total),
 				$pricing['regPrice'],
 				$row['scale'],
 				$row['tax'],
@@ -92,6 +105,10 @@ class QttyEnforcedGroupPM extends PriceMethod {
 				(isset($row['numflag']) ? $row['numflag'] : 0),
 				(isset($row['charflag']) ? $row['charflag'] : '')
 			);
+
+			if ($percentDiscount != 0){
+				$discount -= $pricing['discount'];
+			}
 			TransRecord::adddiscount($discount,$row['department']);
 
 			$quantity = $quantity - ($new_sets * $groupQty);
@@ -145,7 +162,7 @@ class QttyEnforcedGroupPM extends PriceMethod {
 					'',
 					$row['department'],
 					1,
-					$pricing['unitPrice'],
+					$pricing['unitPrice'] - $discount,
 					$pricing['unitPrice'] - $discount,
 					$pricing['regPrice'],
 					$row['scale'],
