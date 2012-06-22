@@ -63,7 +63,7 @@ class QttyEnforcedGroupPM extends PriceMethod {
 				$groupPrice *= (1 - $percentDiscount);
 			}
 			else if ($priceObj->isSale() && $pricing['unitPrice'] != $row['special_price']){
-				$percentDiscount = ($row['special_price'] - $pricing['unitPrice']) / 100;
+				$percentDiscount = ($row['special_price'] - $pricing['unitPrice']) / $row['special_price'];
 				$groupPrice *= (1 - $percentDiscount);
 			}
 
