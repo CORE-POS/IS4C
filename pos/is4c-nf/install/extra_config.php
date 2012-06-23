@@ -109,6 +109,7 @@ confsave('defaultNonMem',"'".$CORE_LOCAL->get('defaultNonMem')."'");
 <br />
 Normally a single account number is used for most if not all non-member
 transactions. Specify that account number here.
+<br />
 <b>Visiting Member #</b>: 
 <?php
 if(isset($_REQUEST['VISMEM'])) $CORE_LOCAL->set('visitingMem',$_REQUEST['VISMEM']);
@@ -213,6 +214,14 @@ confsave('printerPort',"'".$CORE_LOCAL->get('printerPort')."'");
 <br />
 Path to the printer. Common ports are LPT1: (windows) and /dev/lp0 (linux).
 Can also print to a text file if it's just a regular file name.
+<br />
+<b>Email Receipt Sender</b>:
+<?php
+if(isset($_REQUEST['emailReceiptFrom'])) $CORE_LOCAL->set('emailReceiptFrom',$_REQUEST['emailReceiptFrom']);
+printf("<input type=text name=emailReceiptFrom value=\"%s\" />",$CORE_LOCAL->get('emailReceiptFrom'));
+confsave('emailReceiptFrom',"'".$CORE_LOCAL->get('emailReceiptFrom')."'");
+?>
+<br />
 <hr />
 <b>Scanner/scale port</b>:
 <?php
