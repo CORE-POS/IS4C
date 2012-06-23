@@ -53,7 +53,7 @@ function printReceipt($arg1,$second=False) {
   turn off staff charge receipt printing if toggled - apbw 2/1/05 
   ---------------------------------------------------------------- */
 
-	// $noreceipt = ($CORE_LOCAL->get("receiptToggle")==1 ? 0 : 1);
+	$noreceipt = ($CORE_LOCAL->get("receiptToggle")==1 ? 0 : 1);
 	
 	$dateTimeStamp = time();		// moved by apbw 2/15/05 SCR
 
