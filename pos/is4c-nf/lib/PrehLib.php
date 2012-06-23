@@ -984,10 +984,15 @@ static public function ttl() {
 			$st->WriteToScale($CORE_LOCAL->get("ccTermOut"));
 		*/
 		//}
-
+		if($CORE_LOCAL->get("memberID") != $CORE_LOCAL->get("defaultNonMem")) {
+			$memline = " #" . $CORE_LOCAL->get("memberID");
+		} 
+		else {
+			$memline = "";
+		}
 		$peek = self::peekItem();
 		if (substr($peek,0,9) != "Subtotal "){
-			TransRecord::addItem("", "Subtotal ".MiscLib::truncate2($CORE_LOCAL->get("subtotal")).", Tax ".MiscLib::truncate2($CORE_LOCAL->get("taxTotal")), "C", "", "D", 0, 0, $amtDue, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3);
+			TransRecord::addItem("", "Subtotal ".MiscLib::truncate2($CORE_LOCAL->get("subtotal")).", Tax ".MiscLib::truncate2($CORE_LOCAL->get("taxTotal")).$memline, "C", "", "D", 0, 0, $amtDue, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3);
 		}
 	
 		if ($CORE_LOCAL->get("fntlflag") == 1) {
