@@ -272,7 +272,7 @@ function tender($right, $strl) {
 		return $ret;
 	}
 	elseif ($strl > 999999){
-	       $ret['output'] =	xboxMsg("tender amount of ".truncate2($strl/100)."<BR>exceeds allowable limit");
+	       $ret['output'] =	xboxMsg("Tender amount of ".truncate2($strl/100)."<BR>exceeds allowable limit");
 	       return $ret;
 	}
 	elseif ($right == "WT"){
@@ -280,20 +280,20 @@ function tender($right, $strl) {
 	       return $ret;
 	}
 	elseif ($right == "CK" && $CORE_LOCAL->get("ttlflag") == 1 && ($CORE_LOCAL->get("isMember") != 0 || $CORE_LOCAL->get("isStaff") != 0) && (($strl/100 - $CORE_LOCAL->get("amtdue") - 0.005) > $CORE_LOCAL->get("dollarOver")) && ($CORE_LOCAL->get("cashOverLimit") == 1)){
-		$ret['output'] = boxMsg("member or staff check tender cannot 
+		$ret['output'] = boxMsg("Member or staff check tender cannot 
 			exceed total purchase by over $".$CORE_LOCAL->get("dollarOver"));
 		return $ret;
 	}
 	elseif ((($right == "CC" || $right == "TB" || $right == "GD") && $strl/100 > ($CORE_LOCAL->get("amtdue") + 0.005)) && $CORE_LOCAL->get("amtdue") >= 0){ 
-		$ret['output'] = xboxMsg("tender cannot exceed purchase amount");
+		$ret['output'] = xboxMsg("Tender cannot exceed purchase amount");
 		return $ret;
 	}
 	elseif($right == "EC" && $strl/100 > $CORE_LOCAL->get("amtdue")){
-		$ret['output'] = xboxMsg("no cash back with EBT cash tender");
+		$ret['output'] = xboxMsg("No cash back with EBT cash tender");
 		return $ret;
 	}
 	elseif($right == "CK" && $CORE_LOCAL->get("ttlflag") == 1 && $CORE_LOCAL->get("isMember") == 0 and $CORE_LOCAL->get("isStaff") == 0 && ($strl/100 - $CORE_LOCAL->get("amtdue") - 0.005) > 5){ 
-		$ret['output'] = xboxMsg("non-member check tender cannot exceed total purchase by over $5.00");
+		$ret['output'] = xboxMsg("Non-member check tender cannot exceed total purchase by over $5.00");
 		return $ret;
 	}
 
@@ -321,11 +321,11 @@ function tender($right, $strl) {
 	$strl *= $mult;
 
 	if ($CORE_LOCAL->get("ttlflag") == 0) {
-		$ret['output'] = boxMsg("transaction must be totaled before tender can be accepted");
+		$ret['output'] = boxMsg("Transaction must be totaled before tender can be accepted");
 		return $ret;
 	}
 	elseif (($right == "FS" || $right == "EF") && $CORE_LOCAL->get("fntlflag") == 0) {
-		$ret['output'] = boxMsg("eligble amount must be totaled before foodstamp tender can be accepted");
+		$ret['output'] = boxMsg("Eligble amount must be totaled before foodstamp tender can be accepted");
 		return $ret;
 	}
 	elseif ($right == "EF" && $CORE_LOCAL->get("fntlflag") == 1 && $CORE_LOCAL->get("fsEligible") + 10 <= $strl) {
@@ -333,34 +333,34 @@ function tender($right, $strl) {
 		return $ret;
 	}
 	elseif ($right == "CX" && $charge_ok == 0) {
-		$ret['output'] = xboxMsg("member ".$CORE_LOCAL->get("memberID")."<BR>is not authorized<BR>to make corporate charges");
+		$ret['output'] = xboxMsg("Member ".$CORE_LOCAL->get("memberID")."<BR>is not authorized<BR>to make corporate charges");
 		return $ret;
 	}
 	//alert customer that charge exceeds avail balance
 	elseif ($right == "MI" && $charge_ok == 0 && $CORE_LOCAL->get("availBal") < 0) {
-		$ret['output'] = xboxMsg("member ".$CORE_LOCAL->get("memberID")."<BR> has $" . $CORE_LOCAL->get("availBal") . " available.");
+		$ret['output'] = xboxMsg("Member ".$CORE_LOCAL->get("memberID")."<BR> has $" . $CORE_LOCAL->get("availBal") . " available.");
 		return $ret;
 	}
 	elseif ($right == "MI" && $charge_ok == 1 && $CORE_LOCAL->get("availBal") < 0) {
-		$ret['output'] = xboxMsg("member ".$CORE_LOCAL->get("memberID")."<BR>is overlimit");
+		$ret['output'] = xboxMsg("Member ".$CORE_LOCAL->get("memberID")."<BR>is overlimit");
 		return $ret;
 	}
 	elseif ($right == "MI" && $charge_ok == 0) {
-		$ret['output'] = xboxMsg("member ".$CORE_LOCAL->get("memberID")."<BR>is not authorized to make employee charges");
+		$ret['output'] = xboxMsg("Member ".$CORE_LOCAL->get("memberID")."<BR>is not authorized to make employee charges");
 		return $ret;
 	}
 	elseif ($right == "MI" && $charge_ok == 1 && ($CORE_LOCAL->get("availBal") + $CORE_LOCAL->get("memChargeTotal") - $strl) < 0) {
-		$ret['output'] = xboxMsg("member ".$CORE_LOCAL->get("memberID")."<br> bhas exceeded charge limit");
+		$ret['output'] = xboxMsg("Member ".$CORE_LOCAL->get("memberID")."<br> bhas exceeded charge limit");
 		return $ret;
 	}
 	elseif ($right == "MI" && $charge_ok == 1 && (ABS($CORE_LOCAL->get("memChargeTotal"))+ $strl) >= ($CORE_LOCAL->get("availBal") + 0.005) && $CORE_LOCAL->get("store")=="WFC") {
 		$memChargeRemain = $CORE_LOCAL->get("availBal");
 		$memChargeCommitted = $memChargeRemain + $CORE_LOCAL->get("memChargeTotal");
-		$ret['output'] = xboxMsg("available balance for charge <br>is only $" .$memChargeCommitted. ".<br><b><font size = 5>$" . number_format($memChargeRemain,2) . "</font></b><br>may still be used on this purchase.");
+		$ret['output'] = xboxMsg("Available balance for charge <br>is only $" .$memChargeCommitted. ".<br><b><font size = 5>$" . number_format($memChargeRemain,2) . "</font></b><br>may still be used on this purchase.");
 		return $ret;
 	}
 	elseif(($right == "MI" || $right == "CX") && truncate2($CORE_LOCAL->get("amtdue")) < truncate2($strl)) {
-		$ret['output'] = xboxMsg("charge tender exceeds purchase amount");
+		$ret['output'] = xboxMsg("Charge tender exceeds purchase amount");
 		return $ret;
 	}
 
@@ -942,7 +942,7 @@ function staffCharge($arg,$json=array()) {
 	$row = $pConn->fetch_array($result);
 
 	if ($num_rows == 0) {
-		$json['output'] = xboxMsg("unable to authenticate staff ".$staffID);
+		$json['output'] = xboxMsg("Unable to authenticate staff ".$staffID);
 		$CORE_LOCAL->set("isStaff",0);			// apbw 03/05/05 SCR
 		return $json;
 	}
