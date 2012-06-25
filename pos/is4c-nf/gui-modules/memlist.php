@@ -34,6 +34,12 @@ class memlist extends NoInputPage {
 
 	function preprocess(){
 		global $CORE_LOCAL;
+
+		// set variable ahead of time
+		// so we know if lookup found no one
+		// vs. lookup didn't happen
+		$this->temp_num_rows = -1;
+
 		$CORE_LOCAL->set("away",1);
 		$entered = "";
 		if ($CORE_LOCAL->get("idSearch") && strlen($CORE_LOCAL->get("idSearch")) > 0) {
@@ -160,9 +166,12 @@ class memlist extends NoInputPage {
 		if ($num_rows < 1){
 			echo "
 			<div class=\"colored centeredDisplay\">
-				<span class=\"larger\">
-				no match found<br />next search or member number
-				</span>
+				<span class=\"larger\">";
+			if ($num_rows == -1)
+				echo "member search<br />enter member number or name";
+			else
+				echo "no match found<br />next search or member number";
+			echo "</span>
 				<input type=\"text\" name=\"search\" size=\"15\"
 			       	onblur=\"\$('#search').focus();\" id=\"search\" />
 				<br />
