@@ -24,15 +24,21 @@
 class ToggleReceipt extends Parser {
 	
 	function check($str){
-		if (substr($str,-2) == "NR")
+		if ($str == "NR")
 			return True;
 		return False;
 	}
 
 	function parse($str){
 		global $CORE_LOCAL;
-		$CORE_LOCAL->set("receiptToggle",0);
-		return substr($str,0,-2);
+		$rt = $CORE_LOCAL->get("receiptToggle");
+		if ($rt == 1)
+			$CORE_LOCAL->set("receiptToggle",0);
+		else
+			$CORE_LOCAL->set("receiptToggle",1);
+		$ret = $this->default_json();
+		$ret['output'] = DisplayLib::lastpage();
+		return $ret;
 	}
 
 	function doc(){
@@ -41,10 +47,9 @@ class ToggleReceipt extends Parser {
 				<th>Input</th><th>Result</th>
 			</tr>
 			<tr>
-				<td><i>anyting<i>NR</td>
-				<td>Disable receipt printing. <i>
-				Anything</i> really does mean
-				what it says</td>
+				<td>NR</td>
+				<td>Disable receipt printing. 
+				</td>
 			</tr>
 			</table>";
 	}
