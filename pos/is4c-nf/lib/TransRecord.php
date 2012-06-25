@@ -111,7 +111,7 @@ static public function addItem($strupc, $strdescription, $strtransType, $strtran
 		$dbltotal = (-1 * $dbltotal);
 		$dbldiscount = (-1 * $dbldiscount);
 		$dblmemDiscount = (-1 * $dblmemDiscount);
-
+		$CORE_LOCAL->set("percentDiscount", 0);
 		if ($strtransstatus != "V" && $strtransstatus != "D") $strtransstatus = "R" ;	// edited by apbw 6/04/05 to correct voiding of refunded items
 
 		$CORE_LOCAL->set("refund",0);
