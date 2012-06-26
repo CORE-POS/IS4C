@@ -116,6 +116,9 @@ static public function addItem($strupc, $strdescription, $strtransType, $strtran
 
 		$CORE_LOCAL->set("refund",0);
 		$CORE_LOCAL->set("refundComment","");
+
+		if ($CORE_LOCAL->get("refundDiscountable")==0)
+			$intdiscountable = 0;
 	}
 
 	/* Nothing in the code can set $_SESSION["void"] to 1
@@ -471,7 +474,11 @@ static public function additemdiscount($intdepartment, $dbltotal) {
 static public function addTare($dbltare) {
 	global $CORE_LOCAL;
 	$CORE_LOCAL->set("tare",$dbltare/100);
+	$rf = $CORE_LOCAL->get("refund");
+	$rc = $CORE_LOCAL->get("refundComment");
 	self::addItem("", "** Tare Weight ".$CORE_LOCAL->get("tare")." **", "", "", "D", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6);
+	$CORE_LOCAL->set("refund",$rf);
+	$CORE_LOCAL->set("refundComment",$rc);
 }
 
 //___________________________end addTare()
