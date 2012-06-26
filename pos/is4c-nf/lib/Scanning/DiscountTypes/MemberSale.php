@@ -44,11 +44,6 @@ class MemberSale extends DiscountType {
 			$ret["unitPrice"] -= $discount;
 			$ret["discount"] += ($discount * $quantity);
 		}
-		else if ($CORE_LOCAL->get("itemDiscount") > 0){
-			$discount = $ret['unitPrice'] * (($CORE_LOCAL->get("itemDiscount")/100));
-			$ret["unitPrice"] -= $discount;
-			$ret["discount"] += ($discount * $quantity);
-		}
 
 		$this->savedRow = $row;
 		$this->savedInfo = $ret;

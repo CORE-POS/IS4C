@@ -356,7 +356,6 @@ class UPC extends Parser {
 		$CORE_LOCAL->set("fntlflag",0);
 		$CORE_LOCAL->set("quantity",0);
 		$CORE_LOCAL->set("itemPD",0);
-		$CORE_LOCAL->set("itemDiscount",0);
 		$CORE_LOCAL->set("voided",0);
 		Database::setglobalflags(0);
 
