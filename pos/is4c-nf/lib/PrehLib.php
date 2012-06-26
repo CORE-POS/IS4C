@@ -991,7 +991,7 @@ static public function ttl() {
 			$memline = "";
 		}
 		$peek = self::peekItem();
-		if (substr($peek,0,9) != "Subtotal "){
+		if (True || substr($peek,0,9) != "Subtotal "){
 			TransRecord::addItem("", "Subtotal ".MiscLib::truncate2($CORE_LOCAL->get("subtotal")).", Tax ".MiscLib::truncate2($CORE_LOCAL->get("taxTotal")).$memline, "C", "", "D", 0, 0, $amtDue, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3);
 		}
 	
