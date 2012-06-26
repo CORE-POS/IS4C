@@ -69,6 +69,23 @@ confsave('discountEnforced',$CORE_LOCAL->get('discountEnforced'));
 </select><br />
 If yes, members get a percentage discount as specified in custdata.
 <br />
+<b>Discounts on refunds</b>: <select name=RDISCOUNTS>
+<?php
+if(isset($_REQUEST['RDISCOUNTS'])) $CORE_LOCAL->set('refundDiscountable',$_REQUEST['RDISCOUNTS']);
+if ($CORE_LOCAL->get("refundDiscountable")==="") $CORE_LOCAL->set("refundDiscountable",0);
+if ($CORE_LOCAL->get("refundDiscountable") == 1){
+	echo "<option value=1 selected>Yes</option>";
+	echo "<option value=0 >No</option>";
+}
+else {
+	echo "<option value=1>Yes</option>";
+	echo "<option value=0 selected>No</option>";
+}
+confsave('refundDiscountable',$CORE_LOCAL->get('refundDiscountable'));
+?>
+</select><br />
+If yes, percent discount is applied to refunds
+<br />
 <b>Line Item Discount (member)</b>: 
 <?php
 if(isset($_REQUEST['LD_MEM'])) $CORE_LOCAL->set('LineItemDiscountMem',$_REQUEST['LD_MEM']);
