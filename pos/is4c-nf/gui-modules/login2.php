@@ -60,6 +60,7 @@ class login2 extends BasicPage {
 		}
 		</script>
 		<?php
+		$this->default_parsewrapper_js();
 	}
 
 	function body_content(){
@@ -77,7 +78,7 @@ class login2 extends BasicPage {
 		<div id="loginCenter">
 		<div class="box" style="background:<?php echo $this->box_color; ?>;" >
 				<b>log in</b>
-				<form name="form" method="post" autocomplete="off" 
+				<form id="formlocal" name="form" method="post" autocomplete="off" 
 					action="<?php echo $_SERVER['PHP_SELF']; ?>">
 				<input type="password" name="reginput" size="20" tabindex="0" 
 					onblur="$('#reginput').focus();" id="reginput" >
