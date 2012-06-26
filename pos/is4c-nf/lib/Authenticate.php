@@ -86,6 +86,8 @@ static public function check_password($password,$activity=1){
 			Database::setglobalvalues($globals);
 
 			if ($transno == 1) TransRecord::addactivity($activity);
+
+			ReceiptLib::drawerKick();
 			
 		} elseif ($password == 9999) {
 			Database::loadglobalvalues();
