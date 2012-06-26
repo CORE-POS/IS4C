@@ -343,7 +343,10 @@ static public function addStaffCoffeeDiscount() {
   @param $department associated department
 */
 static public function adddiscount($dbldiscount,$department) {
+	global $CORE_LOCAL;
 	$strsaved = "** YOU SAVED $".MiscLib::truncate2($dbldiscount)." **";
+	if ($CORE_LOCAL->get("itemPD") > 0)
+		$strsaved = "** YOU SAVED ".$CORE_LOCAL->get("itemPD")."% **";
 	self::addItem("", $strsaved, "I", "", "D", $department, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2);
 }
 
