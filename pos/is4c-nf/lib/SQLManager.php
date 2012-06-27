@@ -616,6 +616,28 @@ class SQLManager {
                 }
         }
 
+	function dayofweek($col,$which_connection=''){
+                if ($which_connection == '')
+                        $which_connection = $this->default_db;
+                switch($this->db_types[$which_connection]){
+                case $this->TYPE_MYSQL:
+                        return "dayofweek($col)";
+                case $this->TYPE_MSSQL:
+                        return "datepart(dw,$col)";
+                }
+	}
+
+	function curtime($which_connection=''){
+                if ($which_connection == '')
+                        $which_connection = $this->default_db;
+                switch($this->db_types[$which_connection]){
+                case $this->TYPE_MYSQL:
+                        return "curtime()";
+                case $this->TYPE_MSSQL:
+                        return "getdate()";
+                }
+	}
+
 	function escape($str,$which_connection=''){
                 if ($which_connection == '')
                         $which_connection = $this->default_db;
