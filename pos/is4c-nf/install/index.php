@@ -538,6 +538,20 @@ function create_op_dbs($db,$type){
 		$db->query($promoQ,$name);
 	}
 
+	$drQ = "CREATE TABLE dateRestrict (
+                upc varchar(13),
+                dept_ID int,
+                restrict_date date default null,
+                restrict_dow smallint default null,
+                restrict_start time default null,
+                restrict_end time default null,
+                INDEX (upc),
+                INDEX (dept_ID)
+        )";
+	if (!$db->table_exists('dateRestrict',$name)){
+		$db->query($drQ);
+	}
+
 	$tenderQ = "CREATE TABLE tenders (
 		TenderID smallint,
 		TenderCode varchar(255),
