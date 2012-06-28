@@ -736,7 +736,7 @@ static public function deptkey($price, $dept,$ret=array()) {
 	$intvoided = 0;
 
 	if ($CORE_LOCAL->get("quantity") == 0 && $CORE_LOCAL->get("multiple") == 0) {
-			$CORE_LOCAL->set("quantity",1);
+		$CORE_LOCAL->set("quantity",1);
 	}
 		
 	if (!is_numeric($dept) || !is_numeric($price) || strlen($price) < 1 || strlen($dept) < 2) {
