@@ -107,7 +107,7 @@ class UPC extends Parser {
 				}
 			}
 			// no match; not a product, not special
-			$ret['output'] = DisplayLib::boxMsg($upc."<br /><b>is not a valid item</b>");
+			$ret['output'] = DisplayLib::boxMsg($upc."<br /><b>"._("is not a valid item")."</b>");
 
 			return $ret; 
 		}
@@ -131,8 +131,8 @@ class UPC extends Parser {
 				$CORE_LOCAL->set("warnBoxType","inUse");
 				$CORE_LOCAL->set("strEntered",$row["upc"]);
 				$CORE_LOCAL->set("boxMsg","<b>".$row["upc"]." - ".$row["description"]."</b>
-					<br>Item not for sale
-					<br><font size=-1>[enter] to continue sale, [clear] to cancel</font>");
+					<br />"._("Item not for sale")."
+					<br /><font size=-1>"._("enter to continue sale").", "._("clear to cancel")."</font>");
 				$ret['main_frame'] = $my_url."gui-modules/boxMsg2.php";
 				return $ret;
 			}
@@ -159,7 +159,7 @@ class UPC extends Parser {
 				)";
 			$restrictR = $db->query($restrictQ);
 			if ($db->num_rows($restrictR) > 0){
-				$CORE_LOCAL->set("boxMsg","product cannot be sold right now");
+				$CORE_LOCAL->set("boxMsg",_("product cannot be sold right now"));
 				$ret['main_frame'] = $my_url."gui-modules/boxMsg2.php";
 				return $ret;
 			}
@@ -195,7 +195,7 @@ class UPC extends Parser {
 		   (can break db column if it doesn't fit
 		*/
 		if (strlen($row["normal_price"]) > 8){
-			$ret['output'] = DisplayLib::boxMsg("$upc<br>Claims to be more than $100,000");
+			$ret['output'] = DisplayLib::boxMsg("$upc<br />"._("Claims to be more than $100,000"));
 			return $ret;
 		}
 
@@ -208,7 +208,7 @@ class UPC extends Parser {
 			$CORE_LOCAL->get("quantity") == 0 && substr($upc,0,3) != "002") {
 
 			$CORE_LOCAL->set("SNR",1);
-			$ret['output'] = DisplayLib::boxMsg("please put item on scale");
+			$ret['output'] = DisplayLib::boxMsg(_("please put item on scale"));
 			$CORE_LOCAL->set("wgtRequested",0);
 			$CORE_LOCAL->set("warned",1);
 			$ret['retry'] = $CORE_LOCAL->get("strEntered");
@@ -224,7 +224,7 @@ class UPC extends Parser {
 				$quantity = $CORE_LOCAL->get("quantity") - $CORE_LOCAL->get("tare");
 
 			if ($quantity <= 0){
-				$ret['output'] = DisplayLib::boxMsg("item weight must be greater than tare weight");
+				$ret['output'] = DisplayLib::boxMsg(_("item weight must be greater than tare weight"));
 				return $ret;
 			}
 			$CORE_LOCAL->set("tare",0);
@@ -232,7 +232,7 @@ class UPC extends Parser {
 
 		/* non-scale items need integer quantities */	
 		if ($row["scale"] == 0 && (int) $CORE_LOCAL->get("quantity") != $CORE_LOCAL->get("quantity") ) {
-			$ret['output'] = DisplayLib::boxMsg("fractional quantity cannot be accepted for this item");
+			$ret['output'] = DisplayLib::boxMsg(_("fractional quantity cannot be accepted for this item"));
 			return $ret;
 		}
 
@@ -257,8 +257,8 @@ class UPC extends Parser {
 			$CORE_LOCAL->set("endorseType","giftcert");
 			$CORE_LOCAL->set("tenderamt",$total);
 			$CORE_LOCAL->set("boxMsg","<b>".$total." gift certificate</b><br />
-				insert document<br />press [enter] to endorse
-				<p><font size='-1'>[clear] to cancel</font>");
+				"._("insert document")."<br />"._("press enter to endorse")."
+				<p><font size='-1'>"._("clear to cancel")."</font>");
 			$ret["main_frame"] = $my_url."gui-modules/boxMsg2.php";
 			return $ret;
 		}
@@ -270,8 +270,8 @@ class UPC extends Parser {
 			$CORE_LOCAL->set("endorseType","classreg");
 			$CORE_LOCAL->set("tenderamt",$total);
 			$CORE_LOCAL->set("boxMsg","<b>".$total." class registration</b><br />
-				insert form<br />press [enter] to endorse
-				<p><font size='-1'>[clear] to cancel</font>");
+				"._("insert form")."<br />"._("press enter to endorse")."
+				<p><font size='-1'>"._("clear to cancel")."</font>");
 			$ret["main_frame"] = $my_url."gui-modules/boxMsg2.php";
 			return $ret;
 		}

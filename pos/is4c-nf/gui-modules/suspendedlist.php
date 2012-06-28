@@ -97,7 +97,7 @@ class suspendedlist extends NoInputPage {
 		}
 		else {
 			$db_a->close();
-			$CORE_LOCAL->set("boxMsg","no suspended transaction");
+			$CORE_LOCAL->set("boxMsg",_("no suspended transaction"));
 			$this->change_page($this->page_url."gui-modules/pos2.php");	
 			return False;
 		}

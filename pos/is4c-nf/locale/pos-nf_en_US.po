@@ -1,0 +1,199 @@
+# English translations for is package.
+# Copyright (C) 2012 THE is'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the is package.
+# Andy Theuninck <andy@wholefoods.coop>, 2012.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: is 4c-nf\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2012-06-28 13:35-0500\n"
+"PO-Revision-Date: 2012-06-28 12:42-0500\n"
+"Last-Translator: Andy Theuninck <andy@wholefoods.coop>\n"
+"Language-Team: English\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=ASCII\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: lib/PrehLib.php:322 parser-class-lib/parse/SimpleTender.php:49
+#: parser-class-lib/parse/SimpleTender.php:70
+#: parser-class-lib/parse/SimpleTender.php:104
+#: parser-class-lib/parse/SimpleTender.php:114 gui-modules/adminlist.php:41
+msgid "no transaction in progress"
+msgstr "No transction in progress"
+
+#: lib/PrehLib.php:330
+msgid "WIC tender not applicable"
+msgstr ""
+
+#: lib/PrehLib.php:334
+msgid ""
+"member or staff check tender cannot \n"
+"\t\t\texceed total purchase by over $"
+msgstr "Member or staff check tender cannot exceed total purchase by over $"
+
+#: lib/PrehLib.php:339
+msgid "tender cannot exceed purchase amount"
+msgstr "Tender cannot exceed purchase amount"
+
+#: lib/PrehLib.php:343
+msgid "no cash back with EBT cash tender"
+msgstr "No cash back with EBT cash tender"
+
+#: lib/PrehLib.php:347
+msgid "non-member check tender cannot exceed total purchase by over $5.00"
+msgstr "Non-member check tender cannot exceed total purchase by over $5.00"
+
+#: lib/PrehLib.php:375
+msgid "transaction must be totaled before tender can be accepted"
+msgstr "Transaction must be totaled before tender can be accepted"
+
+#: lib/PrehLib.php:379
+msgid "eligible amount must be totaled before foodstamp tender can be accepted"
+msgstr ""
+"Eligible amount must be totaled before foodstamp tender can be accepted"
+
+#: lib/PrehLib.php:383
+msgid "Foodstamp tender cannot exceed eligible amount by over $10.00"
+msgstr "Foodstamp tender cannot exceed eligible amount by over $10.00"
+
+#: lib/PrehLib.php:396
+msgid "is overlimit"
+msgstr "is overlimit"
+
+#: lib/PrehLib.php:400 parser-class-lib/parse/SimpleTender.php:122
+msgid "is not authorized to make employee charges"
+msgstr "is not authorized to make employee charges"
+
+#: lib/PrehLib.php:404
+msgid "has exceeded charge limit"
+msgstr ""
+
+#: lib/PrehLib.php:414
+msgid "charge tender exceeds purchase amount"
+msgstr "Charge tender exceeds purchase amount"
+
+#: lib/PrehLib.php:443
+msgid ""
+"WFC no longer excepts paper foods stamps. Please choose a different tender "
+"type"
+msgstr ""
+
+#: lib/PrehLib.php:448
+msgid "is greater than coupon limit"
+msgstr ""
+
+#: lib/PrehLib.php:449 lib/PrehLib.php:456 lib/PrehLib.php:855
+#: lib/PrehLib.php:860 parser-class-lib/parse/UPC.php:135
+#: parser-class-lib/parse/UPC.php:261 parser-class-lib/parse/UPC.php:274
+#: parser-class-lib/parse/SimpleTender.php:80
+msgid "clear to cancel"
+msgstr "[clear] to cancel"
+
+#: lib/PrehLib.php:449 lib/PrehLib.php:456 lib/PrehLib.php:855
+#: lib/PrehLib.php:860
+msgid "enter to proceed"
+msgstr "[enter] to proceed"
+
+#: lib/PrehLib.php:454
+msgid "is greater than tender limit"
+msgstr ""
+
+#: lib/PrehLib.php:662
+msgid "tender is misconfigured"
+msgstr "Tender is misconfigured"
+
+#: lib/PrehLib.php:776
+#, fuzzy
+msgid "department unknown"
+msgstr "Input unknown"
+
+#: lib/PrehLib.php:791
+msgid "no item found in"
+msgstr "No item found in"
+
+#: lib/PrehLib.php:797
+msgid "coupon amount greater than department total"
+msgstr "Coupon amount greater than department total"
+
+#: lib/PrehLib.php:854
+msgid "is greater than department limit"
+msgstr ""
+
+#: lib/PrehLib.php:859
+msgid "is lower than department minimum"
+msgstr ""
+
+#: lib/DisplayLib.php:339 test.php:7
+msgid "input unknown"
+msgstr "Input unknown"
+
+#: parser-class-lib/parse/UPC.php:110
+msgid "is not a valid item"
+msgstr ""
+
+#: parser-class-lib/parse/UPC.php:134
+msgid "Item not for sale"
+msgstr ""
+
+#: parser-class-lib/parse/UPC.php:135
+msgid "enter to continue sale"
+msgstr "[enter] to continue sale"
+
+#: parser-class-lib/parse/UPC.php:162
+msgid "product cannot be sold right now"
+msgstr "product cannot be sold right now"
+
+#: parser-class-lib/parse/UPC.php:198
+msgid "Claims to be more than $100,000"
+msgstr ""
+
+#: parser-class-lib/parse/UPC.php:211
+msgid "please put item on scale"
+msgstr "Please put item on scale"
+
+#: parser-class-lib/parse/UPC.php:227
+msgid "item weight must be greater than tare weight"
+msgstr "Item weight must be greater than tare weight"
+
+#: parser-class-lib/parse/UPC.php:235
+msgid "fractional quantity cannot be accepted for this item"
+msgstr "Fractional quantity cannot be accepted for this item"
+
+#: parser-class-lib/parse/UPC.php:260
+msgid "insert document"
+msgstr "Insert document"
+
+#: parser-class-lib/parse/UPC.php:260 parser-class-lib/parse/UPC.php:273
+#: parser-class-lib/parse/SimpleTender.php:80
+msgid "press enter to endorse"
+msgstr "Press [enter] to endorse"
+
+#: parser-class-lib/parse/UPC.php:273
+msgid "insert form"
+msgstr "Insert form"
+
+#: parser-class-lib/parse/SimpleTender.php:38
+msgid "EBT tender must specify amount"
+msgstr ""
+
+#: parser-class-lib/parse/SimpleTender.php:62
+#: parser-class-lib/parse/SimpleTender.php:95
+#: parser-class-lib/parse/SimpleTender.php:108
+msgid "transaction must be totaled"
+msgstr "Transaction must be totaled"
+
+#: parser-class-lib/parse/SimpleTender.php:63
+#: parser-class-lib/parse/SimpleTender.php:96
+#: parser-class-lib/parse/SimpleTender.php:109
+msgid "before tender can be accepted"
+msgstr ""
+
+#: gui-modules/suspendedlist.php:100 gui-modules/adminlist.php:68
+msgid "no suspended transaction"
+msgstr "No suspended transaction"
+
+#: gui-modules/adminlist.php:64
+msgid "transaction in progress"
+msgstr "Transaction in progress"

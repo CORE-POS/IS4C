@@ -38,7 +38,7 @@ class adminlist extends NoInputPage {
 			elseif ($_REQUEST['selectlist'] == 'SUSPEND'){
 				Database::getsubtotals();
 				if ($CORE_LOCAL->get("LastID") == 0) {
-					$CORE_LOCAL->set("boxMsg","no transaction in progress");
+					$CORE_LOCAL->set("boxMsg",_("no transaction in progress"));
 					$this->change_page($this->page_url."gui-modules/boxMsg2.php");
 					return False;
 				}
@@ -61,11 +61,11 @@ class adminlist extends NoInputPage {
 			else if ($_REQUEST['selectlist'] == 'RESUME'){
 				Database::getsubtotals();
 				if ($CORE_LOCAL->get("LastID") != 0) {
-					$CORE_LOCAL->set("boxMsg","transaction in progress");
+					$CORE_LOCAL->set("boxMsg",_("transaction in progress"));
 					$this->change_page($this->page_url."gui-modules/boxMsg2.php");
 				}
 				elseif (SuspendLib::checksuspended() == 0) {
-					$CORE_LOCAL->set("boxMsg","no suspended transaction");
+					$CORE_LOCAL->set("boxMsg",_("no suspended transaction"));
 					$CORE_LOCAL->set("strRemembered","");
 					$this->change_page($this->page_url."gui-modules/boxMsg2.php");
 				}
