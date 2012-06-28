@@ -34,7 +34,7 @@ class Void extends Parser {
 		if (strlen($str) > 2)
 			$ret['output'] = $this->voidupc(substr($str,2));
 		elseif ($CORE_LOCAL->get("currentid") == 0) 
-			$ret['output'] = DisplayLib::boxMsg("No Item on Order");
+			$ret['output'] = DisplayLib::boxMsg(_("No Item on Order"));
 		else {
 			$str = $CORE_LOCAL->get("currentid");
 
@@ -44,14 +44,14 @@ class Void extends Parser {
 				$ret['output'] = $this->voiditem($str -1);
 			}
 			elseif ($CORE_LOCAL->get("voided") == 3 || $CORE_LOCAL->get("voided") == 6 || $CORE_LOCAL->get("voided") == 8) 
-				$ret['output'] = DisplayLib::boxMsg("Cannot void this entry");
+				$ret['output'] = DisplayLib::boxMsg(_("Cannot void this entry"));
 			elseif ($CORE_LOCAL->get("voided") == 4 || $CORE_LOCAL->get("voided") == 5) 
 				PrehLib::percentDiscount(0);
 			elseif ($CORE_LOCAL->get("voided") == 10) {
 				TransRecord::reverseTaxExempt();
 			}
 			elseif ($CORE_LOCAL->get("transstatus") == "V") {
-				$ret['output'] = DisplayLib::boxMsg("Item already voided");
+				$ret['output'] = DisplayLib::boxMsg(_("Item already voided"));
 				$CORE_LOCAL->set("transstatus","");
 			}
 			else 
@@ -79,13 +79,13 @@ class Void extends Parser {
 			$result = $db->query($query);
 			$num_rows = $db->num_rows($result);
 
-			if ($num_rows == 0) return DisplayLib::boxMsg("Item not found");
+			if ($num_rows == 0) return DisplayLib::boxMsg(_("Item not found"));
 			else {
 				$row = $db->fetch_array($result);
 
 				if ((!$row["upc"] || strlen($row["upc"]) < 1) && $row["voided"] == 1) 
 
-					return DisplayLib::boxMsg("Item already voided");
+					return DisplayLib::boxMsg(_("Item already voided"));
 				elseif (!$row["upc"] || strlen($row["upc"]) < 1 || $row['charflag'] == 'SO') 
 					return $this->voidid($item_num);
 				elseif ($CORE_LOCAL->get("discounttype") == 3) 
@@ -224,7 +224,7 @@ class Void extends Parser {
 		$result = $db->query($query);
 		$num_rows = $db->num_rows($result);
 		if ($num_rows == 0 ){
-			return DisplayLib::boxMsg("Item $upc not found");
+			return DisplayLib::boxMsg(_("Item not found").": ".$upc);
 		}
 
 		$row = $db->fetch_array($result);
@@ -241,17 +241,17 @@ class Void extends Parser {
 		$volume = 0;
 		$scale = MiscLib::nullwrap($row["scale"]);
 
-		if ($voidable == 0 && $quantity == 1) return DisplayLib::boxMsg("Item already voided");
-		elseif ($voidable == 0 && $quantity > 1) return DisplayLib::boxMsg("Items already voided");
-		elseif ($scale == 1 && $quantity < 0) return DisplayLib::boxMsg("tare weight cannot be greater than item weight");
+		if ($voidable == 0 && $quantity == 1) return DisplayLib::boxMsg(_("Item already voided"));
+		elseif ($voidable == 0 && $quantity > 1) return DisplayLib::boxMsg(_("Items already voided"));
+		elseif ($scale == 1 && $quantity < 0) return DisplayLib::boxMsg(_("tare weight cannot be greater than item weight"));
 		elseif ($voidable < $quantity && $row["scale"] == 1) {
-			$message = "Void request exceeds<BR>weight of item rung in<P><B>You can void up to "
-				.$row["voidable"]." lb</B>";
+			$message = _("Void request exceeds")."<br />"._("weight of item rung in")."<p><b>".
+				sprintf(_("You can void up to %.2f lb"),$row['voidable'])."</b>";
 			return DisplayLib::boxMsg($message);
 		}
 		elseif ($voidable < $quantity) {
-			$message = "Void request exceeds<BR>number of items rung in<P><B>You can void up to "
-				.$row["voidable"]."</B>";
+			$message = _("Void request exceeds")."<br />"._("number of items rung in")."<p><b>".
+				sprintf(_("You can void up to %d"),$row['voidable'])."</b>";
 			return DisplayLib::boxMsg($message);
 		}
 
@@ -379,11 +379,11 @@ class Void extends Parser {
 
 		if ($CORE_LOCAL->get("tenderTotal") < 0 && $foodstamp == 1 && 
 		   (-1 * $total) > $CORE_LOCAL->get("fsEligible")) {
-			return DisplayLib::boxMsg("Item already paid for");
+			return DisplayLib::boxMsg(_("Item already paid for"));
 		}
 		elseif ($CORE_LOCAL->get("tenderTotal") < 0 && (-1 * $total) > 
 			$CORE_LOCAL->get("runningTotal") - $CORE_LOCAL->get("taxTotal")) {
-			return DisplayLib::boxMsg("Item already paid for");
+			return DisplayLib::boxMsg(_("Item already paid for"));
 		}
 		elseif ($quantity != 0) {
 			TransRecord::addItem($upc, $row["description"], $row["trans_type"], $row["trans_subtype"], "V", $row["department"], $quantity, $unitPrice, $total, $row["regPrice"], $scale, $row["tax"], $foodstamp, $discount, $memDiscount, $discountable, $discounttype, $quantity, $volDiscType, $volume, $VolSpecial, $mixMatch, 0, 1, $cost, $numflag, $charflag);

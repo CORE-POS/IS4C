@@ -33,7 +33,9 @@ class BalanceCheck extends Parser {
 		$ret = $this->default_json();
 		PrehLib::chargeOk();
 		$memChargeCommitted=$CORE_LOCAL->get("availBal") - $CORE_LOCAL->get("memChargeTotal");
-		$ret['output'] = DisplayLib::boxMsg("Member #". $CORE_LOCAL->get("memberID")."<br />Current AR balance is " . $CORE_LOCAL->get("balance") . "<br />Available AR balance is ".$CORE_LOCAL->get("availBal"). "</b>","",True);
+		$ret['output'] = DisplayLib::boxMsg(_("Member")." #". $CORE_LOCAL->get("memberID")."<br />".
+					_("Current AR balance is")." " . $CORE_LOCAL->get("balance") . "<br />".
+					_("Available AR balance is")." ".$CORE_LOCAL->get("availBal"). "</b>","",True);
 		return $ret;
 	}
 

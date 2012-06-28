@@ -168,9 +168,9 @@ class memlist extends NoInputPage {
 			<div class=\"colored centeredDisplay\">
 				<span class=\"larger\">";
 			if ($num_rows == -1)
-				echo "member search<br />enter member number or name";
+				echo _("member search")."<br />"._("enter member number or name");
 			else
-				echo "no match found<br />next search or member number";
+				echo _("no match found")."<br />"._("next search or member number");
 			echo "</span>
 				<input type=\"text\" name=\"search\" size=\"15\"
 			       	onblur=\"\$('#search').focus();\" id=\"search\" />
@@ -202,7 +202,7 @@ class memlist extends NoInputPage {
 			}
 			echo "</select></div>"
 				."<div class=\"listboxText centerOffset\">"
-				."use arrow keys to navigate<p>[clear] to cancel</div>"
+				._("use arrow keys to navigate")."<p>"._("clear to cancel")."</div>"
 				."<div class=\"clear\"></div>";
 		}
 		echo "</form></div>";

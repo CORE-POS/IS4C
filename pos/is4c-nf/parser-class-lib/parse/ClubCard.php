@@ -67,15 +67,15 @@ class ClubCard extends Parser {
 			$intdiscounttype = MiscLib::nullwrap($row["discounttype"]);
 
 			if ($row["voided"] == 20) {
-				DisplayLib::boxMsg("Discount already taken");
+				DisplayLib::boxMsg(_("Discount already taken"));
 			} elseif ($row["trans_type"] == "T" or $row["trans_status"] == "D" or $row["trans_status"] == "V" or $row["trans_status"] == "C") {
 				DisplayLib::boxMsg("Item cannot be discounted");
 			} elseif (strncasecmp($strDescription, "Club Card", 9) == 0 ) {		//----- edited by abpw 2/15/05 -----
-				DisplayLib::boxMsg("Item cannot be discounted");
+				DisplayLib::boxMsg(_("Item cannot be discounted"));
 			} elseif ($CORE_LOCAL->get("tenderTotal") < 0 and $intFoodStamp == 1 and (-1 * $dblTotal) > $CORE_LOCAL->get("fsEligible")) {
-				DisplayLib::boxMsg("Item already paid for");
+				DisplayLib::boxMsg(_("Item already paid for"));
 			} elseif ($CORE_LOCAL->get("tenderTotal") < 0 and (-1 * $dblTotal) > ($CORE_LOCAL->get("runningTotal") - $CORE_LOCAL->get("taxTotal"))) {
-				DisplayLib::boxMsg("Item already paid for");
+				DisplayLib::boxMsg(_("Item already paid for"));
 			} 
 			else {
 				// --- added partial item desc to club card description - apbw 2/15/05 --- 

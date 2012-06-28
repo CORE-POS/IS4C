@@ -49,7 +49,7 @@ class MemberCard extends SpecialUPC {
 		$result = $db->query($query);
 
 		if ($db->num_rows($result) < 1){
-			$json['output'] = DisplayLib::boxMsg("Card not assigned");
+			$json['output'] = DisplayLib::boxMsg(_("Card not assigned"));
 			return $json;
 		}
 

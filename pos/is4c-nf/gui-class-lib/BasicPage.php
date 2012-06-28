@@ -217,7 +217,7 @@ class BasicPage {
 			<div class="notices <?php echo ($CORE_LOCAL->get("training")==1?'training':''); ?>">
 			<?php
 			if ($CORE_LOCAL->get("training") == 1) {
-				echo "<span class=\"text\">training </span>"
+				echo "<span class=\"text\">"._("training")." </span>"
 				     ."<img src='{$my_url}graphics/BLUEDOT.GIF'>&nbsp;&nbsp;&nbsp;";
 			}
 			elseif ($CORE_LOCAL->get("standalone") == 0) {
@@ -301,7 +301,7 @@ class BasicPage {
 			<div class="notices">
 			<?php	
 			if ($CORE_LOCAL->get("training") == 1) {
-				echo "<span class=\"text\">training </span>"
+				echo "<span class=\"text\">"._("training")." </span>"
 				     ."<img src='{$my_url}graphics/BLUEDOT.GIF'>&nbsp;&nbsp;&nbsp;";
 			}
 			elseif ($CORE_LOCAL->get("standalone") == 0) {
@@ -336,7 +336,7 @@ class BasicPage {
 		?>
 		<div id="scalebox">
 			<div id="scaleTop"> 
-			weight
+			<?php echo _("weight"); ?>
 			</div>
 			<div id="scaleBottom">
 			<?php echo DisplayLib::scaledisplaymsg(); ?>	

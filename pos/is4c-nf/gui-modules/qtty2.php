@@ -32,7 +32,7 @@ class qtty2 extends BasicPage {
 		global $CORE_LOCAL;
 
 		$this->box_color="#004080";
-		$this->msg = "quantity required";
+		$this->msg = _("quantity required");
 
 		if (!isset($_REQUEST['reginput'])) return True;
 
@@ -59,7 +59,7 @@ class qtty2 extends BasicPage {
 		}
 
 		$this->box_color="#800000";
-		$this->msg = "invalid quantity";
+		$this->msg = _("invalid quantity");
 		return True;
 	}
 
@@ -75,7 +75,7 @@ class qtty2 extends BasicPage {
 		<?php echo $this->msg ?>
 		</span><br />
 		<p />
-		enter number or [clear] to cancel
+		<?php echo _("enter number or clear to cancel"); ?>
 		<p />
 		</div>
 		</div>
