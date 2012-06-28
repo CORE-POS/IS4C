@@ -35,12 +35,7 @@ include_once("../lib/SigCapture.php");
 $CORE_LOCAL = new LS_Access();
 if (!class_exists("PaycardLib")) include_once("../lib/PaycardLib.php");
 
-if (!class_exists("LibraryClass")){ 
-	class LibraryClass {}
-}
-if (!class_exists("DisplayLib")){ 
-	require_once("../../lib/DisplayLib.php");
-}
+include("../../lib/AutoLoader.php");
 
 class ProcessPage {
 
