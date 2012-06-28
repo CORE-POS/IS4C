@@ -36,7 +36,7 @@ class StoreTransferTender extends TenderModule {
 		global $CORE_LOCAL;
 
 		if(MiscLib::truncate2($CORE_LOCAL->get("amtdue")) < MiscLib::truncate2($this->amount)) {
-			return DisplayLib::xboxMsg("store transfer exceeds purchase amount");
+			return DisplayLib::xboxMsg(_("store transfer exceeds purchase amount"));
 		}
 
 		return True;
@@ -52,7 +52,7 @@ class StoreTransferTender extends TenderModule {
 
 		if ($CORE_LOCAL->get("transfertender") != 1){
 			$CORE_LOCAL->set("adminRequestLevel","30");
-			$CORE_LOCAL->set("adminLoginMsg","Login for store transfer");
+			$CORE_LOCAL->set("adminLoginMsg",_("Login for store transfer"));
 			$tenderStr = ($this->amount*100).$this->tender_code;
 			$CORE_LOCAL->set("adminRequest",
 				$my_url."gui-modules/pos2.php?reginput=".$tenderStr);

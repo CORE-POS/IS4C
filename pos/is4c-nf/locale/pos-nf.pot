@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-06-28 13:35-0500\n"
+"POT-Creation-Date: 2012-06-28 15:31-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -20,7 +20,10 @@ msgstr ""
 #: parser-class-lib/parse/SimpleTender.php:70
 #: parser-class-lib/parse/SimpleTender.php:104
 #: parser-class-lib/parse/SimpleTender.php:114 gui-modules/adminlist.php:41
-#: lib/PrehLib.php:322 parser-class-lib/parse/SimpleTender.php:49
+#: lib/Tenders/TenderModule.php:81 parser-class-lib/parse/TenderOut.php:35
+#: lib/PrehLib.php:322 lib/Tenders/TenderModule.php:81
+#: parser-class-lib/parse/TenderOut.php:35
+#: parser-class-lib/parse/SimpleTender.php:49
 #: parser-class-lib/parse/SimpleTender.php:70
 #: parser-class-lib/parse/SimpleTender.php:104
 #: parser-class-lib/parse/SimpleTender.php:114 gui-modules/adminlist.php:41
@@ -37,27 +40,35 @@ msgid ""
 "\t\t\texceed total purchase by over $"
 msgstr "Member or staff check tender cannot exceed total purchase by over $"
 
-#: lib/PrehLib.php:339 lib/PrehLib.php:339
+#: lib/PrehLib.php:339 lib/Tenders/GiftCardTender.php:38
+#: lib/Tenders/CreditCardTender.php:38 lib/PrehLib.php:339
+#: lib/Tenders/GiftCardTender.php:38 lib/Tenders/CreditCardTender.php:38
 msgid "tender cannot exceed purchase amount"
 msgstr "Tender cannot exceed purchase amount"
 
-#: lib/PrehLib.php:343 lib/PrehLib.php:343
+#: lib/PrehLib.php:343 lib/Tenders/FoodstampTender.php:40 lib/PrehLib.php:343
+#: lib/Tenders/FoodstampTender.php:40
 msgid "no cash back with EBT cash tender"
 msgstr "No cash back with EBT cash tender"
 
-#: lib/PrehLib.php:347 lib/PrehLib.php:347
+#: lib/PrehLib.php:347 lib/Tenders/CheckTender.php:41
+#: lib/Tenders/CheckTender.php:40 lib/PrehLib.php:347
+#: lib/Tenders/CheckTender.php:40
 msgid "non-member check tender cannot exceed total purchase by over $5.00"
 msgstr "Non-member check tender cannot exceed total purchase by over $5.00"
 
-#: lib/PrehLib.php:375 lib/PrehLib.php:375
+#: lib/PrehLib.php:375 lib/Tenders/TenderModule.php:87 lib/PrehLib.php:375
+#: lib/Tenders/TenderModule.php:87
 msgid "transaction must be totaled before tender can be accepted"
 msgstr "Transaction must be totaled before tender can be accepted"
 
-#: lib/PrehLib.php:379 lib/PrehLib.php:379
+#: lib/PrehLib.php:379 lib/Tenders/FoodstampTender.php:37 lib/PrehLib.php:379
+#: lib/Tenders/FoodstampTender.php:37
 msgid "eligible amount must be totaled before foodstamp tender can be accepted"
 msgstr "Eligible amount must be totaled before foodstamp tender can be accepted"
 
-#: lib/PrehLib.php:383 lib/PrehLib.php:383
+#: lib/PrehLib.php:383 lib/Tenders/FoodstampTender.php:43 lib/PrehLib.php:383
+#: lib/Tenders/FoodstampTender.php:43
 msgid "Foodstamp tender cannot exceed eligible amount by over $10.00"
 msgstr "Foodstamp tender cannot exceed eligible amount by over $10.00"
 
@@ -74,7 +85,8 @@ msgstr "is not authorized to make employee charges"
 msgid "has exceeded charge limit"
 msgstr ""
 
-#: lib/PrehLib.php:414 lib/PrehLib.php:414
+#: lib/PrehLib.php:414 lib/Tenders/StoreChargeTender.php:51
+#: lib/PrehLib.php:414 lib/Tenders/StoreChargeTender.php:51
 msgid "charge tender exceeds purchase amount"
 msgstr "Charge tender exceeds purchase amount"
 
@@ -89,17 +101,28 @@ msgstr ""
 #: lib/PrehLib.php:449 lib/PrehLib.php:456 lib/PrehLib.php:855
 #: lib/PrehLib.php:860 parser-class-lib/parse/UPC.php:135
 #: parser-class-lib/parse/UPC.php:261 parser-class-lib/parse/UPC.php:274
-#: parser-class-lib/parse/SimpleTender.php:80 lib/PrehLib.php:449
-#: lib/PrehLib.php:456 lib/PrehLib.php:855 lib/PrehLib.php:860
+#: parser-class-lib/parse/SimpleTender.php:80 lib/Tenders/TenderModule.php:105
+#: lib/Tenders/CheckTender.php:63 lib/Tenders/GiftCertificateTender.php:55
+#: gui-modules/memlist.php:205 gui-modules/deptlist.php:123
+#: gui-modules/productlist.php:180 gui-modules/rplist.php:105
+#: gui-modules/suspendedlist.php:130 gui-modules/tenderlist.php:124
+#: gui-modules/adminlist.php:126 lib/Tenders/CheckTender.php:62
+#: lib/PrehLib.php:449 lib/PrehLib.php:456 lib/PrehLib.php:855
+#: lib/PrehLib.php:860 lib/Tenders/TenderModule.php:105
+#: lib/Tenders/CheckTender.php:62 lib/Tenders/GiftCertificateTender.php:55
 #: parser-class-lib/parse/UPC.php:135 parser-class-lib/parse/UPC.php:261
 #: parser-class-lib/parse/UPC.php:274
-#: parser-class-lib/parse/SimpleTender.php:80
+#: parser-class-lib/parse/SimpleTender.php:80 gui-modules/memlist.php:205
+#: gui-modules/deptlist.php:123 gui-modules/productlist.php:180
+#: gui-modules/rplist.php:105 gui-modules/suspendedlist.php:130
+#: gui-modules/tenderlist.php:124 gui-modules/adminlist.php:126
 msgid "clear to cancel"
 msgstr "[clear] to cancel"
 
 #: lib/PrehLib.php:449 lib/PrehLib.php:456 lib/PrehLib.php:855
-#: lib/PrehLib.php:860 lib/PrehLib.php:449 lib/PrehLib.php:456
-#: lib/PrehLib.php:855 lib/PrehLib.php:860
+#: lib/PrehLib.php:860 lib/Tenders/TenderModule.php:105 lib/PrehLib.php:449
+#: lib/PrehLib.php:456 lib/PrehLib.php:855 lib/PrehLib.php:860
+#: lib/Tenders/TenderModule.php:105
 msgid "enter to proceed"
 msgstr "[enter] to proceed"
 
@@ -131,7 +154,7 @@ msgstr ""
 msgid "is lower than department minimum"
 msgstr ""
 
-#: lib/DisplayLib.php:339 test.php:7 lib/DisplayLib.php:339 test.php:7
+#: lib/DisplayLib.php:339 test.php:7 lib/DisplayLib.php:339
 msgid "input unknown"
 msgstr "Input unknown"
 
@@ -149,7 +172,7 @@ msgstr "[enter] to continue sale"
 
 #: parser-class-lib/parse/UPC.php:162 parser-class-lib/parse/UPC.php:162
 msgid "product cannot be sold right now"
-msgstr ""
+msgstr "Product cannot be sold right now"
 
 #: parser-class-lib/parse/UPC.php:198 parser-class-lib/parse/UPC.php:198
 msgid "Claims to be more than $100,000"
@@ -172,7 +195,9 @@ msgid "insert document"
 msgstr "Insert document"
 
 #: parser-class-lib/parse/UPC.php:260 parser-class-lib/parse/UPC.php:273
-#: parser-class-lib/parse/SimpleTender.php:80
+#: parser-class-lib/parse/SimpleTender.php:80 lib/Tenders/CheckTender.php:62
+#: lib/Tenders/GiftCertificateTender.php:54 lib/Tenders/CheckTender.php:61
+#: lib/Tenders/CheckTender.php:61 lib/Tenders/GiftCertificateTender.php:54
 #: parser-class-lib/parse/UPC.php:260 parser-class-lib/parse/UPC.php:273
 #: parser-class-lib/parse/SimpleTender.php:80
 msgid "press enter to endorse"
@@ -190,6 +215,8 @@ msgstr ""
 #: parser-class-lib/parse/SimpleTender.php:62
 #: parser-class-lib/parse/SimpleTender.php:95
 #: parser-class-lib/parse/SimpleTender.php:108
+#: parser-class-lib/parse/Steering.php:178
+#: parser-class-lib/parse/Steering.php:178
 #: parser-class-lib/parse/SimpleTender.php:62
 #: parser-class-lib/parse/SimpleTender.php:95
 #: parser-class-lib/parse/SimpleTender.php:108
@@ -199,6 +226,8 @@ msgstr "Transaction must be totaled"
 #: parser-class-lib/parse/SimpleTender.php:63
 #: parser-class-lib/parse/SimpleTender.php:96
 #: parser-class-lib/parse/SimpleTender.php:109
+#: parser-class-lib/parse/Steering.php:179
+#: parser-class-lib/parse/Steering.php:179
 #: parser-class-lib/parse/SimpleTender.php:63
 #: parser-class-lib/parse/SimpleTender.php:96
 #: parser-class-lib/parse/SimpleTender.php:109
@@ -213,3 +242,564 @@ msgstr "No suspended transaction"
 #: gui-modules/adminlist.php:64 gui-modules/adminlist.php:64
 msgid "transaction in progress"
 msgstr "Transaction in progress"
+
+#: lib/FooterBoxes/EveryoneSales.php:30 lib/FooterBoxes/EveryoneSales.php:30
+msgid "Special"
+msgstr ""
+
+#: lib/FooterBoxes/SavedOrCouldHave.php:32
+#: lib/FooterBoxes/SavedOrCouldHave.php:32
+msgid "You Saved"
+msgstr ""
+
+#: lib/FooterBoxes/SavedOrCouldHave.php:34
+#: lib/FooterBoxes/SavedOrCouldHave.php:34
+msgid "Could Have Saved"
+msgstr ""
+
+#: lib/FooterBoxes/TransPercentDiscount.php:32
+#: lib/FooterBoxes/TransPercentDiscount.php:34
+#: lib/FooterBoxes/TransPercentDiscount.php:32
+#: lib/FooterBoxes/TransPercentDiscount.php:34
+msgid "% Discount"
+msgstr ""
+
+#: lib/FooterBoxes/MultiTotal.php:34 lib/FooterBoxes/MultiTotal.php:34
+msgid "fs Amount Due"
+msgstr ""
+
+#: lib/FooterBoxes/MultiTotal.php:38 lib/FooterBoxes/MultiTotal.php:38
+msgid "Amount Due"
+msgstr ""
+
+#: lib/FooterBoxes/MultiTotal.php:43 lib/FooterBoxes/MultiTotal.php:43
+msgid "Change"
+msgstr ""
+
+#: lib/FooterBoxes/MultiTotal.php:47 lib/FooterBoxes/MultiTotal.php:47
+msgid "Total"
+msgstr ""
+
+#: lib/FooterBoxes/MemSales.php:30 lib/FooterBoxes/MemSales.php:30
+msgid "Mbr Special"
+msgstr ""
+
+#: lib/Scanning/SpecialUPCs/HouseCoupon.php:66
+#: lib/Scanning/SpecialUPCs/HouseCoupon.php:66
+msgid "coupon not found"
+msgstr "Coupon not found"
+
+#: lib/Scanning/SpecialUPCs/HouseCoupon.php:72
+#: lib/Scanning/SpecialUPCs/HouseCoupon.php:72
+msgid "coupon expired"
+msgstr "Coupon expired"
+
+#: lib/Scanning/SpecialUPCs/HouseCoupon.php:87
+#: lib/Scanning/SpecialUPCs/HouseCoupon.php:87
+msgid "coupon already applied"
+msgstr "Coupon already applied"
+
+#: lib/Scanning/SpecialUPCs/HouseCoupon.php:96
+#: lib/Scanning/SpecialUPCs/HouseCoupon.php:96
+msgid "Member only coupon"
+msgstr ""
+
+#: lib/Scanning/SpecialUPCs/HouseCoupon.php:97
+#: lib/Scanning/SpecialUPCs/HouseCoupon.php:97
+msgid "Apply member number first"
+msgstr ""
+
+#: lib/Scanning/SpecialUPCs/HouseCoupon.php:108
+#: lib/Scanning/SpecialUPCs/HouseCoupon.php:108
+msgid "Coupon already used"
+msgstr ""
+
+#: lib/Scanning/SpecialUPCs/HouseCoupon.php:109
+#: lib/Scanning/SpecialUPCs/HouseCoupon.php:109
+msgid "on this membership"
+msgstr ""
+
+#: lib/Scanning/SpecialUPCs/HouseCoupon.php:129
+#: lib/Scanning/SpecialUPCs/HouseCoupon.php:145
+#: lib/Scanning/SpecialUPCs/HouseCoupon.php:161
+#: lib/Scanning/SpecialUPCs/HouseCoupon.php:177
+#: lib/Scanning/SpecialUPCs/HouseCoupon.php:208
+#: lib/Scanning/SpecialUPCs/HouseCoupon.php:218
+#: lib/Scanning/SpecialUPCs/HouseCoupon.php:228
+#: lib/Scanning/SpecialUPCs/HouseCoupon.php:129
+#: lib/Scanning/SpecialUPCs/HouseCoupon.php:145
+#: lib/Scanning/SpecialUPCs/HouseCoupon.php:161
+#: lib/Scanning/SpecialUPCs/HouseCoupon.php:177
+#: lib/Scanning/SpecialUPCs/HouseCoupon.php:208
+#: lib/Scanning/SpecialUPCs/HouseCoupon.php:218
+#: lib/Scanning/SpecialUPCs/HouseCoupon.php:228
+msgid "coupon requirements not met"
+msgstr "Coupon requirements not met"
+
+#: lib/Scanning/SpecialUPCs/HouseCoupon.php:236
+#: lib/Scanning/SpecialUPCs/HouseCoupon.php:236
+msgid "unknown minimum type"
+msgstr "Unknown minimum type"
+
+#: lib/Scanning/SpecialUPCs/SpecialOrder.php:57
+#: lib/Scanning/SpecialUPCs/SpecialOrder.php:57
+msgid "Not a valid order"
+msgstr ""
+
+#: lib/Scanning/SpecialUPCs/SpecialOrder.php:71
+#: lib/Scanning/SpecialUPCs/SpecialOrder.php:71
+msgid "Order not found"
+msgstr ""
+
+#: lib/Scanning/SpecialUPCs/MemberCard.php:52
+#: lib/Scanning/SpecialUPCs/MemberCard.php:52
+msgid "Card not assigned"
+msgstr ""
+
+#: lib/Scanning/SpecialUPCs/CouponCode.php:69
+#: lib/Scanning/SpecialUPCs/CouponCode.php:69
+msgid "coupon type unknown"
+msgstr "Coupon type unknown"
+
+#: lib/Scanning/SpecialUPCs/CouponCode.php:69
+#: lib/Scanning/SpecialUPCs/CouponCode.php:69
+msgid "enter coupon manually"
+msgstr "Enter coupon manually"
+
+#: lib/Scanning/SpecialUPCs/CouponCode.php:136
+#: lib/Scanning/SpecialUPCs/CouponCode.php:136
+msgid "product not found"
+msgstr "Product not found"
+
+#: lib/Scanning/SpecialUPCs/CouponCode.php:136
+#: lib/Scanning/SpecialUPCs/CouponCode.php:136
+msgid "in transaction"
+msgstr ""
+
+#: lib/Scanning/SpecialUPCs/CouponCode.php:164
+#: lib/Scanning/SpecialUPCs/CouponCode.php:164
+msgid "Coupon already applied"
+msgstr ""
+
+#: lib/Scanning/SpecialUPCs/CouponCode.php:164
+#: lib/Scanning/SpecialUPCs/CouponCode.php:164
+msgid "for this item"
+msgstr ""
+
+#: lib/Scanning/SpecialUPCs/CouponCode.php:170
+#: lib/Scanning/SpecialUPCs/CouponCode.php:170
+#, php-format
+msgid "coupon requires %d items"
+msgstr "Coupon requires %d items"
+
+#: lib/Scanning/SpecialUPCs/CouponCode.php:171
+#: lib/Scanning/SpecialUPCs/CouponCode.php:171
+#, php-format
+msgid "there are only %d item(s)"
+msgstr "There are only %d item(s)"
+
+#: lib/Scanning/SpecialUPCs/CouponCode.php:171
+#: lib/Scanning/SpecialUPCs/CouponCode.php:171
+msgid "in this transaction"
+msgstr ""
+
+#: lib/DisplayLib.php:365 lib/DisplayLib.php:365
+msgid "M E M B E R"
+msgstr ""
+
+#: lib/DisplayLib.php:371 lib/DisplayLib.php:371
+msgid "C A S H I E R"
+msgstr ""
+
+#: lib/SuspendLib.php:59 lib/SuspendLib.php:59
+msgid "transaction suspended"
+msgstr "Transaction suspended"
+
+#: lib/Tenders/StoreChargeTender.php:39 lib/Tenders/StoreChargeTender.php:43
+#: lib/Tenders/StoreChargeTender.php:39 lib/Tenders/StoreChargeTender.php:43
+msgid "member"
+msgstr "Member"
+
+#: lib/Tenders/StoreChargeTender.php:40 lib/Tenders/StoreChargeTender.php:40
+msgid "is not authorized"
+msgstr ""
+
+#: lib/Tenders/StoreChargeTender.php:40 lib/Tenders/StoreChargeTender.php:40
+msgid "to make charges"
+msgstr ""
+
+#: lib/Tenders/StoreChargeTender.php:43 lib/Tenders/StoreChargeTender.php:43
+msgid "is over limit"
+msgstr ""
+
+#: lib/Tenders/StoreChargeTender.php:48 lib/Tenders/StoreChargeTender.php:48
+msgid "available balance for charge"
+msgstr "Available balance for charge"
+
+#: lib/Tenders/StoreChargeTender.php:48 lib/Tenders/StoreChargeTender.php:48
+msgid "is only $"
+msgstr ""
+
+#: lib/Tenders/DisabledTender.php:34 lib/Tenders/DisabledTender.php:34
+msgid "tender disabled"
+msgstr "Tender disabled"
+
+#: lib/Tenders/TenderModule.php:84 lib/Tenders/TenderModule.php:84
+msgid "tender amount of"
+msgstr "Tender amount of"
+
+#: lib/Tenders/TenderModule.php:84 lib/Tenders/TenderModule.php:84
+msgid "exceeds allowable limit"
+msgstr ""
+
+#: lib/Tenders/TenderModule.php:103 lib/Tenders/TenderModule.php:103
+msgid "is greater than tender limit for"
+msgstr ""
+
+#: lib/Tenders/CheckTender.php:62 lib/Tenders/GiftCertificateTender.php:54
+#: lib/Tenders/CheckTender.php:61 lib/Tenders/CheckTender.php:61
+#: lib/Tenders/GiftCertificateTender.php:54
+msgid "insert"
+msgstr "Insert"
+
+#: lib/Tenders/StoreTransferTender.php:39
+#: lib/Tenders/StoreTransferTender.php:39
+msgid "store transfer exceeds purchase amount"
+msgstr "Store transfer exceeds purchase amount"
+
+#: lib/Tenders/StoreTransferTender.php:55
+#: lib/Tenders/StoreTransferTender.php:55
+msgid "Login for store transfer"
+msgstr ""
+
+#: parser-class-lib/parse/BalanceCheck.php:36
+#: parser-class-lib/parse/BalanceCheck.php:36
+msgid "Member"
+msgstr ""
+
+#: parser-class-lib/parse/BalanceCheck.php:37
+#: parser-class-lib/parse/BalanceCheck.php:37
+msgid "Current AR balance is"
+msgstr ""
+
+#: parser-class-lib/parse/BalanceCheck.php:38
+#: parser-class-lib/parse/BalanceCheck.php:38
+msgid "Available AR balance is"
+msgstr ""
+
+#: parser-class-lib/parse/Steering.php:76
+#: parser-class-lib/parse/Steering.php:76
+msgid "Login to void transactions"
+msgstr ""
+
+#: parser-class-lib/parse/Steering.php:92
+#: parser-class-lib/parse/Steering.php:92
+msgid "Login to suspend/resume transactions"
+msgstr ""
+
+#: parser-class-lib/parse/Steering.php:134
+#: parser-class-lib/parse/Steering.php:147
+#: parser-class-lib/parse/Steering.php:134
+#: parser-class-lib/parse/Steering.php:147
+msgid "Transaction in Progress"
+msgstr ""
+
+#: parser-class-lib/parse/Steering.php:169 gui-modules/mgrlogin.php:154
+#: parser-class-lib/parse/Steering.php:169 gui-modules/mgrlogin.php:154
+msgid "transaction cancelled"
+msgstr "Transaction cancelled"
+
+#: parser-class-lib/parse/Steering.php:187
+#: parser-class-lib/parse/Steering.php:187
+msgid "Login to alter price"
+msgstr ""
+
+#: parser-class-lib/parse/Steering.php:200
+#: parser-class-lib/parse/Steering.php:200
+msgid "processor error"
+msgstr "Processor error"
+
+#: parser-class-lib/parse/Void.php:37 parser-class-lib/parse/ItemPD.php:35
+#: parser-class-lib/parse/Void.php:37 parser-class-lib/parse/ItemPD.php:35
+msgid "No Item on Order"
+msgstr ""
+
+#: parser-class-lib/parse/Void.php:47 parser-class-lib/parse/Void.php:47
+msgid "Cannot void this entry"
+msgstr ""
+
+#: parser-class-lib/parse/Void.php:54 parser-class-lib/parse/Void.php:88
+#: parser-class-lib/parse/Void.php:244 parser-class-lib/parse/Void.php:54
+#: parser-class-lib/parse/Void.php:88 parser-class-lib/parse/Void.php:244
+msgid "Item already voided"
+msgstr ""
+
+#: parser-class-lib/parse/Void.php:82 parser-class-lib/parse/Void.php:227
+#: parser-class-lib/parse/ItemPD.php:64 parser-class-lib/parse/ItemPD.php:130
+#: parser-class-lib/parse/LineItemDiscount.php:49
+#: parser-class-lib/parse/Void.php:82 parser-class-lib/parse/Void.php:227
+#: parser-class-lib/parse/ItemPD.php:64 parser-class-lib/parse/ItemPD.php:130
+#: parser-class-lib/parse/LineItemDiscount.php:49
+msgid "Item not found"
+msgstr ""
+
+#: parser-class-lib/parse/Void.php:245 parser-class-lib/parse/Void.php:245
+msgid "Items already voided"
+msgstr ""
+
+#: parser-class-lib/parse/Void.php:246 parser-class-lib/parse/Void.php:246
+msgid "tare weight cannot be greater than item weight"
+msgstr "Tare weight cannot be greater than item weight"
+
+#: parser-class-lib/parse/Void.php:248 parser-class-lib/parse/Void.php:253
+#: parser-class-lib/parse/Void.php:248 parser-class-lib/parse/Void.php:253
+msgid "Void request exceeds"
+msgstr ""
+
+#: parser-class-lib/parse/Void.php:248 parser-class-lib/parse/Void.php:248
+msgid "weight of item rung in"
+msgstr ""
+
+#: parser-class-lib/parse/Void.php:249 parser-class-lib/parse/Void.php:249
+#, php-format
+msgid "You can void up to %.2f lb"
+msgstr ""
+
+#: parser-class-lib/parse/Void.php:253 parser-class-lib/parse/Void.php:253
+msgid "number of items rung in"
+msgstr ""
+
+#: parser-class-lib/parse/Void.php:254 parser-class-lib/parse/Void.php:254
+#, php-format
+msgid "You can void up to %d"
+msgstr ""
+
+#: parser-class-lib/parse/Void.php:382 parser-class-lib/parse/Void.php:386
+#: parser-class-lib/parse/ClubCard.php:76
+#: parser-class-lib/parse/ClubCard.php:78 parser-class-lib/parse/Void.php:382
+#: parser-class-lib/parse/Void.php:386 parser-class-lib/parse/ClubCard.php:76
+#: parser-class-lib/parse/ClubCard.php:78
+msgid "Item already paid for"
+msgstr ""
+
+#: parser-class-lib/parse/DiscountApplied.php:36
+#: parser-class-lib/parse/StackableDiscount.php:34
+#: parser-class-lib/parse/DiscountApplied.php:36
+#: parser-class-lib/parse/StackableDiscount.php:34
+msgid "discount not applicable after tender"
+msgstr "Discount not applicable after tender"
+
+#: parser-class-lib/parse/DiscountApplied.php:38
+#: parser-class-lib/parse/StackableDiscount.php:36
+#: parser-class-lib/parse/DiscountApplied.php:38
+#: parser-class-lib/parse/StackableDiscount.php:36
+msgid "discount exceeds maximum"
+msgstr "Discount exceeds maximum"
+
+#: parser-class-lib/parse/DiscountApplied.php:40
+#: parser-class-lib/parse/StackableDiscount.php:38
+#: parser-class-lib/parse/DiscountApplied.php:40
+#: parser-class-lib/parse/StackableDiscount.php:38
+msgid "discount must be greater than zero"
+msgstr "Discount must be greater than zero"
+
+#: parser-class-lib/parse/DiscountApplied.php:42
+#: parser-class-lib/parse/DiscountApplied.php:42
+msgid "Staff discount not applicable"
+msgstr ""
+
+#: parser-class-lib/parse/DiscountApplied.php:44
+#: parser-class-lib/parse/DiscountApplied.php:44
+msgid "Member discount not applicable"
+msgstr ""
+
+#: parser-class-lib/parse/UPC.php:51 parser-class-lib/parse/DeptKey.php:62
+#: parser-class-lib/parse/UPC.php:51 parser-class-lib/parse/DeptKey.php:62
+msgid "Login to issue refund"
+msgstr ""
+
+#: parser-class-lib/parse/ClubCard.php:70
+#: parser-class-lib/parse/ClubCard.php:70
+msgid "Discount already taken"
+msgstr ""
+
+#: parser-class-lib/parse/ClubCard.php:74
+#: parser-class-lib/parse/ClubCard.php:74
+msgid "Item cannot be discounted"
+msgstr ""
+
+#: parser-class-lib/parse/CaseDiscMsgs.php:38
+#: parser-class-lib/parse/CaseDiscMsgs.php:38
+#, php-format
+msgid "% case discount invalid"
+msgstr ""
+
+#: parser-class-lib/parse/CaseDiscMsgs.php:40
+#: parser-class-lib/parse/CaseDiscMsgs.php:40
+msgid "case discount not applicable to staff"
+msgstr "Case discount not applicable to staff"
+
+#: parser-class-lib/parse/CaseDiscMsgs.php:42
+#: parser-class-lib/parse/CaseDiscMsgs.php:42
+msgid "hit 10% key to apply case discount for member"
+msgstr "Hit 10% key to apply case discount for member"
+
+#: parser-class-lib/parse/LineItemDiscount.php:55
+#: parser-class-lib/parse/LineItemDiscount.php:55
+msgid "Line is not discountable"
+msgstr ""
+
+#: parser-class-lib/parse/LineItemDiscount.php:61
+#: parser-class-lib/parse/LineItemDiscount.php:61
+msgid "Item already discounted"
+msgstr ""
+
+#: parser-class-lib/parse/AutoTare.php:43
+#: parser-class-lib/parse/AutoTare.php:43
+msgid "tare not supported"
+msgstr "Tare not supported"
+
+#: parser-class-lib/parse/AutoTare.php:45
+#: parser-class-lib/parse/AutoTare.php:45
+msgid "Tare cannot be"
+msgstr ""
+
+#: parser-class-lib/parse/AutoTare.php:45
+#: parser-class-lib/parse/AutoTare.php:45
+msgid "greater than item weight"
+msgstr ""
+
+#: gui-modules/nslogin.php:34 gui-modules/nslogin.php:34
+msgid "enter manager password"
+msgstr "Enter manager password"
+
+#: gui-modules/nslogin.php:35 gui-modules/nslogin.php:35
+msgid "confirm no sales"
+msgstr "Confirm no sales"
+
+#: gui-modules/nslogin.php:48 gui-modules/mgrlogin.php:116
+#: gui-modules/nslogin.php:48 gui-modules/mgrlogin.php:116
+msgid "re-enter manager password"
+msgstr "Re-enter manager password"
+
+#: gui-modules/nslogin.php:49 gui-modules/nslogin.php:49
+msgid "invalid password"
+msgstr "Invalid password"
+
+#: gui-modules/adminlogin.php:40 gui-modules/adminlogin.php:40
+msgid "enter admin password"
+msgstr "Enter admin password"
+
+#: gui-modules/adminlogin.php:54 gui-modules/adminlogin.php:71
+#: gui-modules/adminlogin.php:54 gui-modules/adminlogin.php:71
+msgid "re-enter admin password"
+msgstr "Re-enter admin password"
+
+#: gui-modules/memlist.php:171 gui-modules/memlist.php:171
+msgid "member search"
+msgstr "Member Search"
+
+#: gui-modules/memlist.php:171 gui-modules/memlist.php:171
+msgid "enter member number or name"
+msgstr "Enter member number or name"
+
+#: gui-modules/memlist.php:173 gui-modules/productlist.php:148
+#: gui-modules/memlist.php:173 gui-modules/productlist.php:148
+msgid "no match found"
+msgstr "No match found"
+
+#: gui-modules/memlist.php:173 gui-modules/memlist.php:173
+msgid "next search or member number"
+msgstr "Next search or member number"
+
+#: gui-modules/memlist.php:205 gui-modules/rplist.php:103
+#: gui-modules/suspendedlist.php:130 gui-modules/memlist.php:205
+#: gui-modules/rplist.php:103 gui-modules/suspendedlist.php:130
+msgid "use arrow keys to navigate"
+msgstr "Use arrow keys to navigate"
+
+#: gui-modules/login2.php:35 gui-modules/login2.php:35
+msgid "please enter your password"
+msgstr "Please enter your password"
+
+#: gui-modules/login2.php:48 gui-modules/login3.php:49
+#: gui-modules/login2.php:48 gui-modules/login3.php:49
+msgid "password invalid, please re-enter"
+msgstr "Password invalid, please re-enter"
+
+#: gui-modules/login2.php:76 gui-modules/login2.php:76
+msgid "W E L C O M E"
+msgstr ""
+
+#: gui-modules/login2.php:80 gui-modules/login2.php:80
+msgid "log in"
+msgstr "Log In"
+
+#: gui-modules/login2.php:91 gui-modules/login2.php:91
+msgid "EXIT"
+msgstr ""
+
+#: gui-modules/login3.php:37 gui-modules/login3.php:37
+msgid "please enter password"
+msgstr "Please enter password"
+
+#: gui-modules/qtty2.php:35 gui-modules/qtty2.php:35
+msgid "quantity required"
+msgstr "Quantity required"
+
+#: gui-modules/qtty2.php:62 gui-modules/qtty2.php:62
+msgid "invalid quantity"
+msgstr "Invalid quantity"
+
+#: gui-modules/qtty2.php:78 gui-modules/qtty2.php:78
+msgid "enter number or clear to cancel"
+msgstr "Enter number or [clear] to cancel"
+
+#: gui-modules/productlist.php:148 gui-modules/productlist.php:148
+msgid "next search or enter upc"
+msgstr "Next search or enter UPC"
+
+#: gui-modules/rplist.php:104 gui-modules/rplist.php:104
+msgid "enter to reprint receipt"
+msgstr "Enter to reprint receipt"
+
+#: gui-modules/mgrlogin.php:92 gui-modules/mgrlogin.php:92
+msgid "confirm cancellation"
+msgstr "Confirm cancellation"
+
+#: gui-modules/mgrlogin.php:100 gui-modules/mgrlogin.php:100
+msgid "please enter manager password"
+msgstr "Please enter manager password"
+
+#: gui-modules/mgrlogin.php:115 gui-modules/mgrlogin.php:115
+msgid "password invalid"
+msgstr "Password Invalid"
+
+#: gui-modules/adminlist.php:116 gui-modules/adminlist.php:116
+msgid "administrative tasks"
+msgstr "Administrative Tasks"
+
+#: gui-modules/adminlist.php:121 gui-modules/adminlist.php:121
+msgid "Suspend Transaction"
+msgstr ""
+
+#: gui-modules/adminlist.php:122 gui-modules/adminlist.php:122
+msgid "Resume Transaction"
+msgstr ""
+
+#: gui-modules/adminlist.php:123 gui-modules/adminlist.php:123
+msgid "Tender Reports"
+msgstr ""
+
+#: gui-class-lib/BasicPage.php:220 gui-class-lib/BasicPage.php:304
+#: gui-class-lib/BasicPage.php:220 gui-class-lib/BasicPage.php:304
+msgid "training"
+msgstr ""
+
+#: gui-class-lib/BasicPage.php:339 gui-class-lib/BasicPage.php:339
+msgid "weight"
+msgstr ""
+
+#: lib/Tenders/CheckTender.php:37 lib/Tenders/CheckTender.php:37
+msgid "member or staff check tender cannot exceed total purchase by over $"
+msgstr "Member or staff check tender cannot exceed total purchase by over $"

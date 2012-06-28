@@ -127,7 +127,7 @@ class suspendedlist extends NoInputPage {
 
 		echo "</select>\n</form>\n</div>\n"
 			."<div class=\"listboxText centerOffset\">"
-			."use arrow keys to navigate<br />[clear] to cancel</div>\n"
+			._("use arrow keys to navigate")."<br />"._("clear to cancel")."</div>\n"
 			."<div class=\"clear\"></div>";
 		echo "</div>";
 		$CORE_LOCAL->set("scan","noScan");

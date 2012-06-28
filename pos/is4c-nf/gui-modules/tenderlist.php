@@ -121,7 +121,7 @@ class tenderlist extends NoInputPage {
 			."</form>"
 			."</div>"
 			."<div class=\"listboxText centerOffset\">"
-			."[Clear] to Cancel</div>"
+			._("clear to cancel")."</div>"
 			."<div class=\"clear\"></div>";
 		echo "</div>";
 

@@ -362,13 +362,13 @@ static public function printheaderb() {
 	$ret = '
 	<div id="headerb">
 		<div class="left">
-			<span class="bigger">M E M B E R &nbsp;&nbsp;</span>
+			<span class="bigger">'._("M E M B E R").' &nbsp;&nbsp;</span>
 			<span class="smaller">
 			'.$strmemberID.'
 			</span>
 		</div>
 		<div class="right">
-			<span class="bigger">C A S H I E R &nbsp;&nbsp;</span>
+			<span class="bigger">'._("C A S H I E R").' &nbsp;&nbsp;</span>
 			<span class="smaller">
 			'.$CORE_LOCAL->get("cashier").'
 			</span>

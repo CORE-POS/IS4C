@@ -32,7 +32,7 @@ class TenderOut extends Parser {
 		global $CORE_LOCAL;
 		if ($CORE_LOCAL->get("LastID") == 0){
 			$ret = $this->default_json();
-			$ret['output'] = DisplayLib::boxMsg("no transaction in progress");
+			$ret['output'] = DisplayLib::boxMsg(_("no transaction in progress"));
 			return $ret;
 		}
 		else {

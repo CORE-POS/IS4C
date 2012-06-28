@@ -113,17 +113,17 @@ class adminlist extends NoInputPage {
 		?>
 		<div class="baseHeight">
 		<div class="centeredDisplay colored">
-			<span class="larger">administrative tasks</span>
+			<span class="larger"><?php echo _("administrative tasks"); ?></span>
 			<br />
 		<form id="selectform" method="post" action="<?php echo $_SERVER['PHP_SELF']; ?>">
 		<select name="selectlist" id="selectlist" onblur="$('#selectlist').focus();">
 		<option value=''>
-		<option value='SUSPEND'>1. Suspend Transaction
-		<option value='RESUME'>2. Resume Transaction
-		<option value='TR'>3. Tender Reports
+		<option value='SUSPEND'>1. <?php echo _("Suspend Transaction"); ?>
+		<option value='RESUME'>2. <?php echo _("Resume Transaction"); ?>
+		<option value='TR'>3. <?php echo _("Tender Reports"); ?>
 		</select>
 		</form>
-		<span class="smaller">[clear] to cancel</span>
+		<span class="smaller"><?php echo _("clear to cancel"); ?></span>
 		<p />
 		</div>
 		</div>
