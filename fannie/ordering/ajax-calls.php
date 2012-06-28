@@ -594,7 +594,7 @@ function CreateEmptyOrder(){
 	$orderID = $dbc->insert_id();
 
 	$ins_array = genericRow($orderID);
-	$ins_array['numflag'] = 1;
+	$ins_array['numflag'] = 2;
 	$ins_array['mixMatch'] = $dbc->escape($user);
 	$dbc->smart_insert("{$TRANS}PendingSpecialOrder",$ins_array);
 
@@ -802,7 +802,7 @@ function getCustomerForm($orderID,$memNum="0"){
 	if ($dbc->num_rows($r) > 0)	
 		$confirm_date = array_pop($dbc->fetch_row($r));
 
-	$callback = 1;
+	$callback = 2;
 	$user = 'Unknown';
 	$orderDate = "";
 	$q = "SELECT datetime,numflag,mixMatch FROM {$TRANS}PendingSpecialOrder WHERE order_id=$orderID AND trans_id=0";
@@ -864,6 +864,10 @@ function getCustomerForm($orderID,$memNum="0"){
 	else if ($callback == 0){
 		$extra .= '<option value="1">Yes</option>';	
 		$extra .= '<option value="0" selected>No</option>';	
+	}
+	else {
+		$extra .= '<option value="1">Yes</option>';	
+		$extra .= '<option value="0">No</option>';	
 	}
 	$extra .= '</select><br />';	
 	$extra .= '<span id="confDateSpan">'.(!empty($confirm_date)?'Confirmed '.$confirm_date:'Not confirmed')."</span> ";
