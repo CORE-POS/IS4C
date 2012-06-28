@@ -139,6 +139,31 @@ class UPC extends Parser {
 		}
 
 		if ($row["idEnforced"] > 0){
+
+			$restrictQ = "SELECT upc,dept_ID FROM dateRestrict WHERE
+				( upc='{$row['upc']}' AND
+				  ( ".$db->datediff($db->now(),'restrict_date')."=0 OR
+				    ".$db->dayofweek($db->now())."=restrict_dow
+				  ) AND
+				  ( (restrict_start IS NULL AND restrict_end IS NULL) OR
+				    ".$db->curtime()." BETWEEN restrict_start AND restrict_end
+				  )
+			 	) OR 
+				( dept_ID='{$row['department']}' AND
+				  ( ".$db->datediff($db->now(),'restrict_date')."=0 OR
+				    ".$db->dayofweek($db->now())."=restrict_dow
+				  ) AND
+				  ( (restrict_start IS NULL AND restrict_end IS NULL) OR
+				    ".$db->curtime()." BETWEEN restrict_start AND restrict_end
+				  )
+				)";
+			$restrictR = $db->query($restrictQ);
+			if ($db->num_rows($restrictR) > 0){
+				$CORE_LOCAL->set("boxMsg","product cannot be sold right now");
+				$ret['main_frame'] = $my_url."gui-modules/boxMsg2.php";
+				return $ret;
+			}
+
 			$msg = $CORE_LOCAL->get("requestMsg");
 			if ((is_numeric($msg) && strlen($msg)==8) || $msg == 1){
 				$CORE_LOCAL->set("memAge",$msg);
