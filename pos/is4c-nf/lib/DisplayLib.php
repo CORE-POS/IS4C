@@ -335,7 +335,8 @@ static public function boxMsg($strmsg,$header="",$noBeep=False) {
   An alias for msgbox().
 */
 static public function inputUnknown() {
-	return self::msgbox("<b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;input unknown</b>", MiscLib::base_url()."graphics/exclaimC.gif");
+	return self::msgbox("<b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+			"._("input unknown")."</b>", MiscLib::base_url()."graphics/exclaimC.gif");
 }
 
 //--------------------------------------------------------------------//

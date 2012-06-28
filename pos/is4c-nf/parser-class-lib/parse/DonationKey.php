@@ -23,7 +23,7 @@
 
 class DonationKey extends Parser {
 	function check($str){
-		if ($str == "RU")
+		if ($str == "RU" || substr($str,-2)=="RU")
 			return True;
 		return False;
 	}
@@ -31,11 +31,17 @@ class DonationKey extends Parser {
 	function parse($str){
 		global $CORE_LOCAL;
 		$ret = $this->default_json();
-		Database::getsubtotals();
-		$ttl = $CORE_LOCAL->get("runningTotal");	
-		$next = ceil($ttl);
-		$amt = ($ttl == $next) ? 1.00 : $next - $ttl;
-		$ret = PrehLib::deptkey($amt*100, 7010, $ret);
+		if ($str == "RU"){
+			Database::getsubtotals();
+			$ttl = $CORE_LOCAL->get("runningTotal");	
+			$next = ceil($ttl);
+			$amt = ($ttl == $next) ? 1.00 : $next - $ttl;
+			$ret = PrehLib::deptkey($amt*100, 7010, $ret);
+		}
+		else {
+			$amt = substr($str,0,strlen($str)-2);
+			$ret = PrehLib::deptkey($amt, 7010, $ret);
+		}
 		return $ret;
 	}
 
