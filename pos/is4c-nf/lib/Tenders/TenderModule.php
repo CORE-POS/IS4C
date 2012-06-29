@@ -78,13 +78,13 @@ class TenderModule {
 		global $CORE_LOCAL;
 
 		if ($CORE_LOCAL->get("LastID") == 0){
-			return DisplayLib::boxMsg("No transaction in progress");
+			return DisplayLib::boxMsg(_("no transaction in progress"));
 		}
 		elseif ($this->amount > 9999.99){
-			return DisplayLib::boxMsg("tender amount of ".$this->amount."<br />exceeds allowable limit");
+			return DisplayLib::boxMsg(_("tender amount of")." ".$this->amount."<br />"._("exceeds allowable limit"));
 		}
 		elseif ($CORE_LOCAL->get("ttlflag") == 0) {
-			return DisplayLib::boxMsg("transaction must be totaled before tender can be accepted");
+			return DisplayLib::boxMsg(_("transaction must be totaled before tender can be accepted"));
 		}
 		else if ($this->name_string === ""){
 			return DisplayLib::inputUnknown();
@@ -100,9 +100,9 @@ class TenderModule {
 	function PreReqCheck(){
 		global $CORE_LOCAL;
 		if ($this->amount > $this->max_limit && $CORE_LOCAL->get("msgrepeat") == 0){
-			$CORE_LOCAL->set("boxMsg","$".$this->amount." is greater than tender limit "
-			."for ".$row['TenderName']."<p>"
-			."<font size='-1'>[clear] to cancel, [enter] to proceed</font>");
+			$CORE_LOCAL->set("boxMsg","$".$this->amount." "._("is greater than tender limit for")
+			." ".$row['TenderName']."<p>"
+			."<font size='-1'>"._("clear to cancel").", "._("enter to proceed")."</font>");
 			return MiscLib::base_url().'gui-modules/boxMsg2.php';
 		}
 

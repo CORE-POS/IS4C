@@ -32,7 +32,7 @@ class login2 extends BasicPage {
 
 	function preprocess(){
 		$this->box_color = '#004080';
-		$this->msg = 'please enter your password';
+		$this->msg = _('please enter your password');
 
 		if (isset($_REQUEST['reginput'])){
 			if (Authenticate::check_password($_REQUEST['reginput'])){
@@ -45,7 +45,7 @@ class login2 extends BasicPage {
 			}
 			else {
 				$this->box_color = '#800000';
-				$this->msg = 'password invalid, please re-enter';
+				$this->msg = _('password invalid, please re-enter');
 			}
 		}
 
@@ -73,11 +73,11 @@ class login2 extends BasicPage {
 			<div class="name">I S 4 C</div>
 			<div class="version">P H P &nbsp; D E V E L O P M E N T
 			&nbsp; V E R S I O N &nbsp; 2 .0 .0 (beta)</div>
-			<div class="welcome">W E L C O M E</div>
+			<div class="welcome"><?php echo _("W E L C O M E"); ?></div>
 		</div>
 		<div id="loginCenter">
 		<div class="box" style="background:<?php echo $this->box_color; ?>;" >
-				<b>log in</b>
+				<b><?php echo _("log in"); ?></b>
 				<form id="formlocal" name="form" method="post" autocomplete="off" 
 					action="<?php echo $_SERVER['PHP_SELF']; ?>">
 				<input type="password" name="reginput" size="20" tabindex="0" 
@@ -88,7 +88,7 @@ class login2 extends BasicPage {
 			</div>	
 		</div>
 		<div id="loginExit">
-			EXIT
+			<?php echo _("EXIT"); ?>
 			<?php
 			if ($CORE_LOCAL->get("browserOnly") == 1) {
 				echo "<a href=\"\" onclick=\"window.top.close();\" ";

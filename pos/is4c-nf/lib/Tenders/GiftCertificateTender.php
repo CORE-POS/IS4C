@@ -51,8 +51,8 @@ class GiftCertificateTender extends TenderModule {
 			.trim($CORE_LOCAL->get("transno"));
 		// check endorsing
 		if ($CORE_LOCAL->get("msgrepeat") == 0){
-			$msg = "<br />insert ".$this->name_string."<br />press [enter] to endorse";
-			$msg .= "<p><font size='-1'>[clear] to cancel</font></p>";
+			$msg = "<br />"._("insert")." ".$this->name_string."<br />"._("press enter to endorse");
+			$msg .= "<p><font size='-1'>"._("clear to cancel")."</font></p>";
 			if ($CORE_LOCAL->get("LastEquityReference") == $ref){
 				$msg .= "<div style=\"background:#993300;color:#ffffff;
 					margin:3px;padding: 3px;\">

@@ -29,9 +29,9 @@ class SavedOrCouldHave extends FooterBox {
 	function header_content(){
 		global $CORE_LOCAL;
 		if ($CORE_LOCAL->get("isMember") == 1)
-			return "You Saved";
+			return _("You Saved");
 		else
-			return "Could Have Saved";
+			return _("Could Have Saved");
 	}
 
 	function display_content(){

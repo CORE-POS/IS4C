@@ -145,7 +145,7 @@ class productlist extends NoInputPage {
 		$db = $this->temp_db;
 
 		if ($num_rows == 0) {
-			$this->productsearchbox("no match found<br />next search or enter upc");
+			$this->productsearchbox(_("no match found")."<br />"._("next search or enter upc"));
 		}
 		else {
 			$this->add_onload_command("\$('#search').keypress(processkeypress);\n");
@@ -177,7 +177,7 @@ class productlist extends NoInputPage {
 				."</form>"
 				."</div>"
 				."<div class=\"listboxText centerOffset\">"
-				."[Clear] to Cancel</div>"
+				._("clear to cancel")."</div>"
 				."<div class=\"clear\"></div>";
 			echo "</div>";
 		}

@@ -73,7 +73,7 @@ class Steering extends Parser {
 			else {
 				$CORE_LOCAL->set("adminRequest",$my_url."gui-modules/undo.php");
 				$CORE_LOCAL->set("adminRequestLevel","30");
-				$CORE_LOCAL->set("adminLoginMsg","Login to void transactions");
+				$CORE_LOCAL->set("adminLoginMsg",_("Login to void transactions"));
 				$CORE_LOCAL->set("away",1);
 				$this->ret['main_frame'] = $my_url."gui-modules/adminlogin.php";
 			}
@@ -89,7 +89,7 @@ class Steering extends Parser {
 			if ($CORE_LOCAL->get("SecuritySR") > 20){
 				$CORE_LOCAL->set("adminRequest",$my_url."gui-modules/adminlist.php");
 				$CORE_LOCAL->set("adminRequestLevel",$CORE_LOCAL->get("SecuritySR"));
-				$CORE_LOCAL->set("adminLoginMsg","Login to suspend/resume transactions");
+				$CORE_LOCAL->set("adminLoginMsg",_("Login to suspend/resume transactions"));
 				$CORE_LOCAL->set("away",1);
 				$this->ret['main_frame'] = $my_url."gui-modules/adminlogin.php";
 			}
@@ -131,7 +131,7 @@ class Steering extends Parser {
 			return True;
 		case 'SO':
 			if ($CORE_LOCAL->get("LastID") != 0) 
-				$this->ret['output'] = DisplayLib::boxMsg("Transaction in Progress");
+				$this->ret['output'] = DisplayLib::boxMsg(_("Transaction in Progress"));
 			else {
 				Database::setglobalvalue("LoggedIn", 0);
 				$CORE_LOCAL->set("LoggedIn",0);
@@ -144,7 +144,7 @@ class Steering extends Parser {
 			return True;
 		case 'NS':
 			if ($CORE_LOCAL->get("LastID") != 0) 
-				$this->ret['output'] = DisplayLib::boxMsg("Transaction in Progress");
+				$this->ret['output'] = DisplayLib::boxMsg(_("Transaction in Progress"));
 			else {
 				$CORE_LOCAL->set("away",1);
 				$this->ret['main_frame'] = $my_url."gui-modules/nslogin.php";
@@ -166,7 +166,7 @@ class Steering extends Parser {
 				$CORE_LOCAL->set("msg",2);
 				$this->ret['receipt'] = 'cancelled';
 				$this->ret['output'] = DisplayLib::printheaderb();
-				$this->ret['output'] .= DisplayLib::plainmsg("transaction cancelled");
+				$this->ret['output'] .= DisplayLib::plainmsg(_("transaction cancelled"));
 			}
 			else {
 				$CORE_LOCAL->set("away",1);
@@ -175,7 +175,8 @@ class Steering extends Parser {
 			return True;
 		case "CC":
 			if ($CORE_LOCAL->get("ttlflag") != 1){
-				$this->ret['output'] = DisplayLib::boxMsg("transaction must be totaled<br>before tender can be<br>accepted");
+				$this->ret['output'] = DisplayLib::boxMsg(_("transaction must be totaled")."<br />".
+					_("before tender can be accepted"));
 			}
 			else
 				$this->ret['main_frame'] = $my_url."cc-modules/gui/ProcessPage.php";
@@ -183,7 +184,7 @@ class Steering extends Parser {
 		case "PO":
 			$CORE_LOCAL->set("adminRequest",$my_url."gui-modules/priceOverride.php");
 			$CORE_LOCAL->set("adminRequestLevel","30");
-			$CORE_LOCAL->set("adminLoginMsg","Login to alter price");
+			$CORE_LOCAL->set("adminLoginMsg",_("Login to alter price"));
 			$CORE_LOCAL->set("away",1);
 			$this->ret['main_frame'] = $my_url."gui-modules/adminlogin.php";
 			return True;
@@ -196,7 +197,7 @@ class Steering extends Parser {
 			elseif (isset($test['output']))
 				$this->ret['output'] = $test['output'];
 			else
-				$this->ret['output'] = DisplayLib::boxMsg("processor error");
+				$this->ret['output'] = DisplayLib::boxMsg(_("processor error"));
 			return True;
 		}
 		return False;
