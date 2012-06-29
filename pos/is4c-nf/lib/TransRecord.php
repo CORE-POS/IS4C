@@ -345,8 +345,10 @@ static public function addStaffCoffeeDiscount() {
 static public function adddiscount($dbldiscount,$department) {
 	global $CORE_LOCAL;
 	$strsaved = "** YOU SAVED $".MiscLib::truncate2($dbldiscount)." **";
-	if ($CORE_LOCAL->get("itemPD") > 0)
-		$strsaved = "** YOU SAVED ".$CORE_LOCAL->get("itemPD")."% **";
+	if ($CORE_LOCAL->get("itemPD") > 0){
+		$strsaved = sprintf("** YOU SAVED \$%.2f (%d%%) **",
+			$dbldiscount,$CORE_LOCAL->get("itemPD"));
+	}
 	self::addItem("", $strsaved, "I", "", "D", $department, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2);
 }
 
