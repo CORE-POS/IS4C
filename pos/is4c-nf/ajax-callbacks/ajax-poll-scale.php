@@ -30,7 +30,7 @@ $scaleDriver = $CORE_LOCAL->get("scaleDriver");
 $sd = 0;
 if ($scaleDriver != "" && !class_exists($scaleDriver))
 	include($CORE_PATH.'scale-drivers/php-wrappers/'.$scaleDriver.'.php');
-	$sd = new $scaleDriver();
+$sd = new $scaleDriver();
 
 if (is_object($sd))
 	$sd->ReadFromScale();	

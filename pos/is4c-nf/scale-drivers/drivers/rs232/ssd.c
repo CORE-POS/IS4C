@@ -51,44 +51,39 @@
 #include <signal.h>
 
 int scannerFD = 0;
-int num, n;
-char chout[16];
-char serialBuffer[16];
-char preBuffer[16];
-char scannerInput[12];
-char scaleInput[9];
-char scaleBuffer[9] = "000000000";
-struct termios options;
-char serialInput;
+int bytes_read;
+char serialBuffer[512];
+int zeroed = 0;
+char lastWeight[9] = "\0\0\0\0\0\0\0\0\0";
 
-char config_file	[1024]	= 	"ssd.conf";
-char serial_port	[1024]	= 	"/dev/ttyS0";
-char scanner_file	[1024]	=	"scanner";
-char scale_file		[1024]	= 	"scale";
-char log_file		[1024]	= 	"ssd.log";
-char pid_file		[1024]	= 	"ssd.pid";
+struct termios options;
+
+char default_config_file	[1024]	= 	"ssd.conf";
+char default_serial_port	[1024]	= 	"/dev/ttyS0";
+char default_scanner_file	[1024]	=	"scanner";
+char default_scale_file		[1024]	= 	"scale";
+char default_log_file		[1024]	= 	"ssd.log";
+char default_pid_file		[1024]	= 	"ssd.pid";
 
 FILE *fp_scanner;
 FILE *fp_scale;
 FILE *fp_log;
 FILE *fp_pid;
 
-int in_buffer = 0;
-int i;
-int q = 0;
+int q = 0;	// Serial number of scanner/scale read
+int w = 0;	// Timer for re-weigh request
 
 
-
-void read_config_file(char *loc)
+void read_default_config_file(char *loc)
 {
 	FILE *fp_conf;
 	char line[1024];
 	char *option;
 	char *value;
 
-	if (loc != NULL) strcpy(config_file, loc);
+	if (loc != NULL) strcpy(default_config_file, loc);
 
-	fp_conf = fopen(config_file, "r");
+	fp_conf = fopen(default_config_file, "r");
 	if (fp_conf == NULL) return;
 
 	while (fgets(line, 1024, fp_conf) != NULL) {
@@ -96,22 +91,22 @@ void read_config_file(char *loc)
 		value = strtok(NULL, "\n");
 
 		if (strcmp(option, "ConfFile") == 0) {
-			strcpy(config_file, value);
+			strcpy(default_config_file, value);
 		}
 		else if (strcmp(option, "SerialPort") == 0) {
-			strcpy(serial_port, value);
+			strcpy(default_serial_port, value);
 		}
 		else if (strcmp(option, "ScannerFile") == 0) {
-			strcpy(scanner_file, value);
+			strcpy(default_scanner_file, value);
 		}
 		else if (strcmp(option, "ScaleFile") == 0) {
-			strcpy(scale_file, value);
+			strcpy(default_scale_file, value);
 		}
 		else if (strcmp(option, "LogFile") == 0) {
-			strcpy(log_file, value);
+			strcpy(default_log_file, value);
 		}
 		else if (strcmp(option, "PIDFile") == 0) {
-			strcpy(pid_file, value);
+			strcpy(default_pid_file, value);
 		}
 	}
 	fclose(fp_conf);
@@ -120,7 +115,7 @@ void read_config_file(char *loc)
 
 void log_message(char *message)
 {
-	fp_log = fopen(log_file, "a");
+	fp_log = fopen(default_log_file, "a");
 	fprintf(fp_log, message);
 	fclose(fp_log);
 }
@@ -143,27 +138,33 @@ int connect_scanner(void)
 {
 	if (scannerFD) return scannerFD;
 
-	scannerFD = open(serial_port, O_RDWR | O_NOCTTY | O_NDELAY);
+	scannerFD = open(default_serial_port, O_RDWR | O_NOCTTY | O_NDELAY);
 	if (scannerFD == -1) {
-		fp_log = fopen(log_file, "a");
-		fprintf(fp_log, "connect_scanner(): Unable to open %s - %s\n", serial_port, strerror(errno));
+		fp_log = fopen(default_log_file, "a");
+		fprintf(fp_log, "connect_scanner(): Unable to open %s - %s\n", default_serial_port, strerror(errno));
 		fclose(fp_log);
 	}
 	return scannerFD;
 }
 
+void write_scanner(const char *msg)
+{
+	if (!scannerFD) connect_scanner();
+
+	write(scannerFD, msg, strlen(msg));
+	write(scannerFD, "\r", 2);
+/*
+	log_message("Sent: '");
+	log_message(msg);
+	log_message("'\n");
+*/
+}
 
 void start_scanner(void)
 {
-	/* Enable scale, request status fields, give a confirm beep. */
-	write(scannerFD, "S00\r", 5);		/* Hard reset */
-	write(scannerFD, "S01\r", 5);		/* Enable */
-	write(scannerFD, "S03\r", 5);		/* Scanner status */
-	write(scannerFD, "S04\r", 5);		/* Scanner switch read */
-	write(scannerFD, "S13\r", 5);		/* Scale status */
-	write(scannerFD, "S23\r", 5);		/* Display status */
-	write(scannerFD, "S336\r", 6);		/* Send status to host */
-	write(scannerFD, "S334\r", 6);		/* Good beep tone */
+	write_scanner("S00");	/* Hard reset */
+	write_scanner("S01");	/* Enable */
+	write_scanner("S334");	/* Good beep tone */
 
 	log_message("Scanner started.\n");
 }
@@ -171,7 +172,7 @@ void start_scanner(void)
 
 void stop_scanner(void)
 {
-	write(scannerFD, "S335\r", 6);	     /* Power down */
+	write_scanner("S335");	     /* Power down */
 	log_message("Scanner stopped.\n");
 }
 
@@ -180,7 +181,7 @@ void handle_HUP(int signo /*, siginfo_t *info, void *context */)
 {
 	log_message("Received SIGHUP - rereading config, restarting scanner.\n");
 	stop_scanner();
-	read_config_file(NULL);
+	read_default_config_file(NULL);
 	start_scanner();
 }
 
@@ -201,7 +202,7 @@ void handle_CONT(int signo /*, siginfo_t *info, void *context */)
 
 void handle_XFSZ(int signo /*, siginfo_t *info, void *context */)
 {
-	fp_log = fopen(log_file, "w");
+	fp_log = fopen(default_log_file, "w");
 	fprintf(fp_log, "Received XFSZ - restarting log file.\n");
 	fclose(fp_log);
 }
@@ -213,7 +214,7 @@ int main(int argc, char *argv[])
 	pid_t pid, sid;
 
 	/* Specify command-line specified config file if possible; otherwise NULL specifies compiled default */
-	read_config_file(argc > 1? argv[1] : NULL);
+	read_default_config_file(argc > 1? argv[1] : NULL);
 
 	/* Fork off the parent process */
 	pid = fork();
@@ -233,7 +234,7 @@ int main(int argc, char *argv[])
 	/* Open any logs here */
 
 	/* Log our pid */
-	fp_pid = fopen(pid_file, "w");
+	fp_pid = fopen(default_pid_file, "w");
 	fprintf(fp_pid, "%d", getpid());
 	fclose(fp_pid);
 
@@ -261,6 +262,7 @@ int main(int argc, char *argv[])
 	close(STDOUT_FILENO);
 	close(STDERR_FILENO);
 
+	log_message("\n\nStarting up.\n");
 	connect_scanner();
 	start_scanner();
 
@@ -290,82 +292,101 @@ int main(int argc, char *argv[])
 	/* Set the new options for the port */
 /*  tcsetattr(scannerFD, TCSANOW, &options);  */
 
-	n = 0;
-	num = 0;
-
-	write(scannerFD, "S11\r", 5);
-	write(scannerFD, "S14\r", 5);
+	log_message("Activating scale.\n");
+	write_scanner("S14");
 
 	while (1) {
-		in_buffer = read(scannerFD, &chout, 1); /* Read character from ABU */
-		if (in_buffer != -1) {	/* if data is present in the serial port buffer */
+		bytes_read = read(scannerFD, serialBuffer, 512);
+		if (bytes_read > 0) {
 
-			if (chout[0] == 'S') {
-				num = 0;
+			/* received message */
+			strtok(serialBuffer, "\n");
+/*
+			log_message("Received: '");
+			log_message(serialBuffer);
+			log_message("'\n");
+*/
+			/**************** process scanned data ****************/
+			if (strncmp(serialBuffer, "S0", 2) == 0) {
+				/*for (i=0; i<17; i++) {
+					scannerInput[i] = serialBuffer[i+4];
+				}*/
+				fp_scanner = fopen(default_scanner_file, "w");
+				fprintf(fp_scanner, "%s\n", serialBuffer+4);
+				fclose(fp_scanner);
+				fp_log = fopen(default_log_file, "a");
+				fprintf(fp_log, "%d Scanned: %s\n", q++, serialBuffer+4);
+				fclose(fp_log);
 			}
 
-			serialBuffer[num] = chout[0];
-			num++;
-
-			if (chout[0] == '\n' && num > 2) {
-				serialBuffer[num] = '\0';
-
-				/**************** process scanned data ****************/
-				if (serialBuffer[1] == '0') {
-					for (i=0; i<17; i++) {
-						scannerInput[i] = serialBuffer[i+4];
-					}
-					fp_scanner = fopen(scanner_file, "w");
-					fprintf(fp_scanner, "%s\n", scannerInput);
-					fclose(fp_scanner);		
-					fp_log = fopen(log_file, "a");
-					fprintf(fp_log, "%d Scanned: %s", q++, serialBuffer);
+			/**************** process weight data ******************/
+			else if (strncmp(serialBuffer, "S11", 3) == 0) {
+				log_message("Scale at stable non-zero weight (request).\n");
+				zeroed = 0;
+				if (strncmp(serialBuffer+3, lastWeight, 5) != 0) {
+					fp_scale = fopen(default_scale_file, "w");
+					fprintf(fp_scale, "%s\n", serialBuffer);
+					fclose(fp_scale);
+					fp_log = fopen(default_log_file, "a");
+					fprintf(fp_log, "%d Weighed: %s", q++, serialBuffer);
 					fclose(fp_log);
+					strcpy(lastWeight, serialBuffer+3);
 				}
-
-				/**************** process weight data ******************/
-				else if (serialBuffer[1] == '1') {
-
-					if (serialBuffer[2] == '1') {
-						write(scannerFD, "S14\r", 5);
-					}
-
-					else if (serialBuffer[2] == '4' && serialBuffer[3] == '3') {
-						write(scannerFD, "S11\r", 5);
-						if (strcmp(scaleBuffer, serialBuffer) != 0) {
-							fp_scale = fopen(scale_file, "w");
-							fprintf(fp_scale, "%s\n", serialBuffer);
-							fclose(fp_scale);		
-							fp_log = fopen(log_file, "a");
-							fprintf(fp_log, "%d Weighed: %s", q++, serialBuffer);
-							fclose(fp_log);
-						}
-					}
-
-					else if (serialBuffer[2] == '4') {
-						write(scannerFD, "S14\r", 5);		
-						if (strcmp(scaleBuffer, serialBuffer) != 0) {
-							fp_scale = fopen(scale_file, "w");
-							fprintf(fp_scale, "%s\n", serialBuffer);
-							fclose(fp_scale);
-							fp_log = fopen(log_file, "a");
-							fprintf(fp_log, "%d Weighed: %s", q++, serialBuffer);
-							fclose(fp_log);
-						}
-					}
-
-					for (i=0; i<10; i++) {
-						scaleBuffer[i] = serialBuffer[i];
-					}	
-
-				}	/* weight data processing ends */
-
-			}	/* end of line data processing ends */
+			}
+			else if (strncmp(serialBuffer, "S140", 4) == 0) {
+				log_message("Scale not ready.\n");
+				zeroed = 0;
+			}
+			else if (strncmp(serialBuffer, "S141", 4) == 0) {
+				log_message("~");	/* scale unstable */
+				zeroed = 0;
+			}
+			else if (strncmp(serialBuffer, "S142", 4) == 0) {
+				log_message("Scale over capacity.\n");
+				zeroed = 0;
+			}
+			else if (strncmp(serialBuffer, "S143", 4) == 0) {
+				if (!zeroed) {
+					log_message("\nScale at stable zero weight.\n");
+					fp_scale = fopen(default_scale_file, "w");
+					fprintf(fp_scale, "%s\n", serialBuffer);
+					fclose(fp_scale);
+					strcpy(lastWeight, serialBuffer+4);
+					zeroed = 1;
+					write_scanner("S11");
+				}
+			}
+			else if (strncmp(serialBuffer, "S144", 4) == 0) {
+				zeroed = 0;
+				if (strncmp(serialBuffer+4, lastWeight, 5) != 0) {
+					log_message("\nScale at stable non-zero weight (monitor).\n");
+					fp_scale = fopen(default_scale_file, "w");
+					fprintf(fp_scale, "%s\n", serialBuffer);
+					fclose(fp_scale);
+					fp_log = fopen(default_log_file, "a");
+					fprintf(fp_log, "%d Weighed: %s (was %s)", q++, serialBuffer, lastWeight);
+					fclose(fp_log);
+					strcpy(lastWeight, serialBuffer+4);
+				}
+				else {
+					log_message(".");
+				}
+			}
+			else if (strncmp(serialBuffer, "S145", 4) == 0) {
+				log_message("\nScale is under zero.\n");
+				zeroed = 0;
+			}
 
 		}	/* non-empty buffer data processing ends */
 
-		in_buffer = -1;
-		usleep(1);
+		/* If scale was zeroed there's an S11 request pending; relax. Otherwise, wait a bit longer and explicitly retrigger S14. */
+		if (zeroed) {
+			usleep(10000);
+		}
+		else {
+			usleep(100000);
+			write_scanner("S14");
+		}
 	}
 
 	close(scannerFD);
