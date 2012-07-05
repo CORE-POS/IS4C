@@ -33,6 +33,9 @@ class ssd extends ScaleDriverWrapper {
 	function SavePortConfiguration($portName){
 		global $CORE_PATH;
 
+		if (!file_exists($CORE_PATH."scale-drivers/drivers/rs232/ssd.conf")) return;
+
+
 		/* read in config file */
 		$fp = fopen($CORE_PATH."scale-drivers/drivers/rs232/ssd.conf","r");
 		$lines = array();
@@ -53,6 +56,9 @@ class ssd extends ScaleDriverWrapper {
 
 	function SaveDirectoryConfiguration($absPath){
 		global $CORE_PATH;
+
+		if (!file_exists($CORE_PATH."scale-drivers/drivers/rs232/ssd.conf")) return;
+
 
 		/* read in config file */
 		$fp = fopen($CORE_PATH."scale-drivers/drivers/rs232/ssd.conf","r");
