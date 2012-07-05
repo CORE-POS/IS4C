@@ -55,6 +55,35 @@ class EveryoneSale extends DiscountType {
 			$ret["discount"] += ($discount * $quantity);
 		}
 
+		// enforce per-transaction limit
+		if ($row['specialquantity'] > 0){
+			$tdb = Database::tDataConnect();
+			$chkQ = "SELECT sum(ItemQtty) FROM
+				localtemptrans WHERE upc='{$row['upc']}'";
+			if (strlen($row['mixmatchcode'])>0 && $row['mixmatchcode'][0]=='b')
+				$chkQ .= " OR mixMatch='{$row['mixmatchcode']}'";
+			$chkR = $tdb->query($chkQ);
+			$prevSales = 0;
+			if ($tdb->num_rows($chkR) > 0){
+				$prevSales = array_pop($tdb->fetch_row($chkR));
+			}
+
+			if ($prevSales >= $row['specialquantity']){
+				// already sold the limit; use non-sale price
+				$ret['unitPrice'] = $row['normal_price'];
+				$ret['discount'] = 0;
+			}
+			else if ( ($prevSales+$quantity) > $row['specialquantity'] ){
+				// this multiple qty ring will pass the limit
+				// set discount based on appropriate quantity
+				// and adjust unitPrice so total comes out correctly
+				$discountQty = $row['specialquantity'] - $prevSales;
+				$ret['discount'] = ($ret['regPrice'] - $row['special_price']) * $discountQty;
+				$total = ($ret['regPrice'] * $quantity) - $ret['discount'];
+				$ret['unitPrice'] = MiscLib::truncate2($total / $quantity);
+			}
+		}
+
 		$this->savedRow = $row;
 		$this->savedInfo = $ret;
 		return $ret;
