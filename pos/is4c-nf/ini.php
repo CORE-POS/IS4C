@@ -32,7 +32,7 @@ General Settings
 
 $CORE_LOCAL->set("OS",'other');
 $CORE_LOCAL->set("browserOnly",1);
-$CORE_LOCAL->set("store",'NewPI');
+$CORE_LOCAL->set("store",'George Street Co-op');
 /* Lane # moved to ini-local.php */
 
 /************************************************************************************
@@ -40,6 +40,7 @@ Data Connection Settings
 ************************************************************************************/
 
 /* All moved to ini-local.php */
+
 
 /***********************************************************************************
 Receipt & Printer Settings
@@ -50,40 +51,40 @@ $CORE_LOCAL->set("newReceipt",1);
 
 /* PrinterPort moved to ini-local.php */
 
-$CORE_LOCAL->set("receiptHeader1",'New Pioneer Food Co-op');
-$CORE_LOCAL->set("receiptHeader2",'319 - 338 - 9441');
-$CORE_LOCAL->set("receiptHeader3",'Keepin It Real Since 1971');
+$CORE_LOCAL->set("receiptHeader1",'George Street Co-op');
+$CORE_LOCAL->set("receiptHeader2",'732-247-8280');
+$CORE_LOCAL->set("receiptHeader3",'Healthy food - Healthy planet - Cooperation');
 
-$CORE_LOCAL->set("receiptFooter1",'Returns accepted with receipt');
-$CORE_LOCAL->set("receiptFooter2",'within 30 days of purchase');
-$CORE_LOCAL->set("receiptFooter3",'Visit us at www.newpi.coop');
+$CORE_LOCAL->set("receiptFooter1",'Store credit within 30 days with receipt');
+$CORE_LOCAL->set("receiptFooter2",'Visit us at www.georgestreetcoop.com');
+$CORE_LOCAL->set("receiptFooter3",'');
 
 $CORE_LOCAL->set("ckEndorse1",'FOR DEPOSIT ONLY');
-$CORE_LOCAL->set("ckEndorse2",'TO MCCU');
+$CORE_LOCAL->set("ckEndorse2",'TO NEW MILLENNIUM BANK');
 $CORE_LOCAL->set("ckEndorse3",'ACCOUNT #');
-$CORE_LOCAL->set("ckEndorse4",'NEW PIONEER FOOD CO-OP');
+$CORE_LOCAL->set("ckEndorse4",'GEORGE STREET CO-OP');
 
-$CORE_LOCAL->set("chargeSlip1",'NEW PIONEER FOOD CO-OP');
-$CORE_LOCAL->set("chargeSlip2",'NEW PI COPY');
-$CORE_LOCAL->set("chargeSlip3",'22 S. Van Buren St.');
-$CORE_LOCAL->set("chargeSlip4",'Iowa City, IA 52240');
+$CORE_LOCAL->set("chargeSlip1",'GEORGE STREET CO-OP');
+$CORE_LOCAL->set("chargeSlip2",'GEORGE STREET CO-OP COPY');
+$CORE_LOCAL->set("chargeSlip3",'89 Morris Street');
+$CORE_LOCAL->set("chargeSlip4",'New Brunswick, NJ 08901');
 $CORE_LOCAL->set("chargeSlip5",'');
 
 /***********************************************************************************
 Screen Message Settings
 ************************************************************************************/
 
-$CORE_LOCAL->set("welcomeMsg1",'welcome to the New Pi ');
-$CORE_LOCAL->set("welcomeMsg2",'Keepin It Real Since 1971');
+$CORE_LOCAL->set("welcomeMsg1",'Welcome to George Street Co-op!');
+$CORE_LOCAL->set("welcomeMsg2",'Healthy food - Healthy planet - Cooperation');
 
-$CORE_LOCAL->set("trainingMsg1",'welcome to the New Pi Front End');
-$CORE_LOCAL->set("trainingMsg2",'training mode is on');
+$CORE_LOCAL->set("trainingMsg1",'Welcome to the IS4C Point of Sale system!');
+$CORE_LOCAL->set("trainingMsg2",'*** TRAINING MODE IS ON ***');
 
-$CORE_LOCAL->set("farewellMsg1",'Thanks for shopping at the New Pi');
-$CORE_LOCAL->set("farewellMsg2",'Returns accepted with receipt within 30 days');
-$CORE_LOCAL->set("farewellMsg3",'(319) 338 - 9441');
+$CORE_LOCAL->set("farewellMsg1",'Thanks for shopping at George Street Co-op');
+$CORE_LOCAL->set("farewellMsg2",'Store credit within 30 days with receipt');
+$CORE_LOCAL->set("farewellMsg3",'732-247-8280');
 
-$CORE_LOCAL->set("alertBar",'New Pi - Alert');
+$CORE_LOCAL->set("alertBar",'Alert');
 
 /***********************************************************************************
 Credit Card
@@ -91,8 +92,8 @@ Credit Card
 
 $CORE_LOCAL->set("CCintegrate",1);
 $CORE_LOCAL->set("gcIntegrate",1);
-$CORE_LOCAL->set("ccLive",1); 			// credit card integration live or testing. live = 1, testing = 0
-$CORE_LOCAL->set("RegisteredPaycardClasses",array('MercuryGift','GoEMerchant'));
+$CORE_LOCAL->set("ccLive",1); // credit card integration live or testing. live = 1, testing = 0
+$CORE_LOCAL->set("RegisteredPaycardClasses",array('GoEMerchant','AuthorizeDotNet'));
 
 /***********************************************************************************
 Other Settings
@@ -104,26 +105,26 @@ $CORE_LOCAL->set("ddNotify",0);
 $CORE_LOCAL->set("promoMsg",0);
 
 $CORE_LOCAL->set("memlistNonMember",0);
-$CORE_LOCAL->set("cashOverLimit",1);
+$CORE_LOCAL->set("cashOverLimit",0);
 $CORE_LOCAL->set("dollarOver",50);
 $CORE_LOCAL->set("defaultNonMem",'11');
 
 if ($CORE_LOCAL->get("inputMasked") == "")
-	$CORE_LOCAL->set("inputMasked",0);
+$CORE_LOCAL->set("inputMasked",0);
 
-$CORE_LOCAL->set("SCReceipt",1);			/***staff charge receipt - print default for each lane--apbw 1/31/05***/
+$CORE_LOCAL->set("SCReceipt",1);/***staff charge receipt - print default for each lane--apbw 1/31/05***/
 $CORE_LOCAL->set("CustomerDisplay",0);
 $CORE_LOCAL->set("touchscreen",False);
 
 //$CORE_LOCAL->set("SigCapture",'COM1');
 $CORE_LOCAL->set("SigCapture",'');
-$CORE_LOCAL->set("visitingMem",'');
+$CORE_LOCAL->set("visitingMem",'55');
 /* ScalePort moved to ini-local.php */
-$CORE_LOCAL->set("scaleDriver",'');
+$CORE_LOCAL->set("scaleDriver",'ssd');
 $CORE_LOCAL->set("CCSigLimit",0);
-$CORE_LOCAL->set("SpecialUpcClasses",array());
+$CORE_LOCAL->set("SpecialUpcClasses",array('CouponCode','HouseCoupon','MemberCard','SpecialOrder'));
 $CORE_LOCAL->set("DiscountTypeCount",5);
-$CORE_LOCAL->set("DiscountTypeClasses",array('NormalPricing','EveryoneSale','MemberSale','CaseDiscount','StaffSale'));
+$CORE_LOCAL->set("DiscountTypeClasses",array('NormalPricing','PercentMemSale','PercentMemSale','PercentMemSale','PercentMemSale'));
 $CORE_LOCAL->set("PriceMethodCount",3);
 $CORE_LOCAL->set("PriceMethodClasses",array('BasicPM','GroupPM','QttyEnforcedGroupPM'));
 
