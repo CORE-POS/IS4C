@@ -33,32 +33,13 @@ General Settings
 $CORE_LOCAL->set("OS",'other');
 $CORE_LOCAL->set("browserOnly",1);
 $CORE_LOCAL->set("store",'NewPI');
-$CORE_LOCAL->set("laneno",1);
+/* Lane # moved to ini-local.php */
 
 /************************************************************************************
 Data Connection Settings
 ************************************************************************************/
-/*
-$CORE_LOCAL["mServer"] = "nexus.wfco-op.store";
-$CORE_LOCAL["mDatabase"] = "wfc_pos";
-$CORE_LOCAL["mDBMS"] = "pgsql";	// type of central server database server. 
-				// Options: mssql, mysql, pgsql
-$CORE_LOCAL["mUser"] = "wfc_pos";
-$CORE_LOCAL["mPass"] = "CORE";
- */
-$CORE_LOCAL->set("mServer",'localhost');
-$CORE_LOCAL->set("mDatabase",'COREserver');
-$CORE_LOCAL->set("mDBMS",'mysql');
-				// Options: mssql, mysql, pgsql
-$CORE_LOCAL->set("mUser",'COREserver');
-$CORE_LOCAL->set("mPass",'coreserver');
 
-$CORE_LOCAL->set("DBMS",'mysql');
-$CORE_LOCAL->set("tDatabase",'translog');
-$CORE_LOCAL->set("pDatabase",'opdata');
-$CORE_LOCAL->set("localhost",'10.0.1.120');
-$CORE_LOCAL->set("localUser",'COREserver');
-$CORE_LOCAL->set("localPass",'coreserver');
+/* All moved to ini-local.php */
 
 /***********************************************************************************
 Receipt & Printer Settings
@@ -67,9 +48,7 @@ Receipt & Printer Settings
 $CORE_LOCAL->set("print",1);
 $CORE_LOCAL->set("newReceipt",1);
 
-//$CORE_LOCAL->set("printerPort","LPT1:");
-//$CORE_LOCAL->set("printerPort","/dev/lp0");
-$CORE_LOCAL->set("printerPort",'fakereceipt.txt');
+/* PrinterPort moved to ini-local.php */
 
 $CORE_LOCAL->set("receiptHeader1",'New Pioneer Food Co-op');
 $CORE_LOCAL->set("receiptHeader2",'319 - 338 - 9441');
@@ -139,7 +118,7 @@ $CORE_LOCAL->set("touchscreen",False);
 //$CORE_LOCAL->set("SigCapture",'COM1');
 $CORE_LOCAL->set("SigCapture",'');
 $CORE_LOCAL->set("visitingMem",'');
-$CORE_LOCAL->set("scalePort",'');
+/* ScalePort moved to ini-local.php */
 $CORE_LOCAL->set("scaleDriver",'');
 $CORE_LOCAL->set("CCSigLimit",0);
 $CORE_LOCAL->set("SpecialUpcClasses",array());
@@ -147,4 +126,7 @@ $CORE_LOCAL->set("DiscountTypeCount",5);
 $CORE_LOCAL->set("DiscountTypeClasses",array('NormalPricing','EveryoneSale','MemberSale','CaseDiscount','StaffSale'));
 $CORE_LOCAL->set("PriceMethodCount",3);
 $CORE_LOCAL->set("PriceMethodClasses",array('BasicPM','GroupPM','QttyEnforcedGroupPM'));
+
+
+@include_once($CORE_PATH.'ini-local.php');
 ?>
