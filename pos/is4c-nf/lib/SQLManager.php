@@ -603,6 +603,17 @@ class SQLManager {
                 }
         }
 
+	function yeardiff($date1,$date2,$which_connection=''){
+                if ($which_connection == '')
+                        $which_connection = $this->default_db;
+                switch($this->db_types[$which_connection]){
+                case $this->TYPE_MYSQL:
+                        return "DATE_FORMAT(FROM_DAYS(DATEDIFF($date1,$date2)), '%Y')+0";
+                case $this->TYPE_MSSQL:
+                        return "datediff(yy,$date2,$date1)";
+                }
+	}
+
 	function now($which_connection=''){
                 if ($which_connection == '')
                         $which_connection = $this->default_db;
