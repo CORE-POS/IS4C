@@ -181,7 +181,7 @@ class memlist extends NoInputPage {
 		else {
 			echo "<div class=\"listbox\">"
 				."<select name=\"search\" size=\"15\" "
-				."onblur=\"\$('#search').focus()\" id=\"search\">";
+				."onblur=\"\$('#search').focus();\" ondblclick=\"document.forms['selectform'].submit();\" id=\"search\">";
 
 			$selectFlag = 0;
 			if (!is_numeric($entered) && $CORE_LOCAL->get("memlistNonMember") == 1) {
