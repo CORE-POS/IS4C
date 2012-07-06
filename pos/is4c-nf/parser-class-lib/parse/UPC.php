@@ -164,6 +164,16 @@ class UPC extends Parser {
 				return $ret;
 			}
 
+			if ($CORE_LOCAL->get("cashierAge") < 18 && $CORE_LOCAL->get("cashierAgeOverride") != 1){
+				$CORE_LOCAL->set("adminRequest",$my_url."gui-modules/pos2.php");
+				$CORE_LOCAL->set("adminRequestLevel",30);
+				$CORE_LOCAL->set("adminLoginMsg",_("Login to approve sale"));
+				$CORE_LOCAL->set("away",1);
+				$CORE_LOCAL->set("cashierAgeOverride",2);
+				$ret['main_frame'] = $my_url."gui-modules/adminlogin.php";
+				return $ret;
+			}
+
 			$msg = $CORE_LOCAL->get("requestMsg");
 			if ((is_numeric($msg) && strlen($msg)==8) || $msg == 1){
 				$CORE_LOCAL->set("memAge",$msg);

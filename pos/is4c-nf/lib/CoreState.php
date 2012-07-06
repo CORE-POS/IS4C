@@ -140,6 +140,7 @@ static public function transReset() {
 	$CORE_LOCAL->set("ccType","");
 	$CORE_LOCAL->set("troutd","");
 	$CORE_LOCAL->set("ouxWait",0);
+	$CORE_LOCAL->set("cashierAgeOverride",0);
 	
 	$CORE_LOCAL->set("warned",0);
 	$CORE_LOCAL->set("warnBoxType","");
