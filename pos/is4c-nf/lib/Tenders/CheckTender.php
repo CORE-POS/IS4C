@@ -36,7 +36,7 @@ class CheckTender extends TenderModule {
 		if ( ($CORE_LOCAL->get("isMember") != 0 || $CORE_LOCAL->get("isStaff") != 0) && (($this->amount - $CORE_LOCAL->get("amtdue") - 0.005) > $CORE_LOCAL->get("dollarOver")) && ($CORE_LOCAL->get("cashOverLimit") == 1)){
 			return DisplayLib::boxMsg(_("member or staff check tender cannot exceed total purchase by over $").$CORE_LOCAL->get("dollarOver"));
 		}
-		else if( $CORE_LOCAL->get("isMember") == 0 and $CORE_LOCAL->get("isStaff") == 0 && ($strl - $CORE_LOCAL->get("amtdue") - 0.005) > 5){ 
+		else if( $CORE_LOCAL->get("isMember") == 0 and $CORE_LOCAL->get("isStaff") == 0 && ($this->amount - $CORE_LOCAL->get("amtdue") - 0.005) > 5){ 
 			$ret['output'] = DisplayLib::xboxMsg(_('non-member check tender cannot exceed total purchase by over $5.00'));
 		}
 		return True;

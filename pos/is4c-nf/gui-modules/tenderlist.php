@@ -49,7 +49,7 @@ class tenderlist extends NoInputPage {
 				// built department input string and set it
 				// to be the next POS entry
 				// Redirect to main screen
-				$input = $CORE_LOCAL->get("tenderTotal")."TT".$entered;
+				$input = $CORE_LOCAL->get("tenderTotal").$entered;
 				$CORE_LOCAL->set("msgrepeat",1);
 				$CORE_LOCAL->set("strRemembered",$input);
 				$this->change_page($this->page_url."gui-modules/pos2.php");
@@ -120,8 +120,14 @@ class tenderlist extends NoInputPage {
 		echo "</select>"
 			."</form>"
 			."</div>"
-			."<div class=\"listboxText centerOffset\">"
-			._("clear to cancel")."</div>"
+			."<div class=\"listboxText centerOffset\">";
+		if ($CORE_LOCAL->get("tenderTotal") >= 0)
+			echo _("tendering").' $';
+		else
+			echo _("refunding").' $';
+		printf('%.2f',abs($CORE_LOCAL->get("tenderTotal"))/100);
+		echo '<br />';
+		echo _("clear to cancel")."</div>"
 			."<div class=\"clear\"></div>";
 		echo "</div>";
 
