@@ -12,6 +12,7 @@ Columns:
 	EmpActive int
 	frontendsecurity int
 	backendsecurity int
+	birthdate datetime
 	
 
 Depends on:
@@ -38,6 +39,7 @@ $CREATE['op.employees'] = "
 		EmpActive tinyint,
 		frontendsecurity smallint,
 		backendsecurity smallint,
+		birthdate datetime,
 		PRIMARY KEY (emp_no))
 ";
 ?>
