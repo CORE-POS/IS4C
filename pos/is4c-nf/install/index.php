@@ -429,6 +429,7 @@ function create_op_dbs($db,$type){
 		EmpActive tinyint,
 		frontendsecurity smallint,
 		backendsecurity smallint,
+		birthdate datetime,
 		PRIMARY KEY (emp_no))";
 	if (!$db->table_exists('employees',$name)){
 		$db->query($empQ,$name);
