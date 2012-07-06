@@ -12,6 +12,10 @@ function check_writeable($filename){
 
 function confsave($key,$value){
 
+	// exit early if page isn't a form submit (i.e. user didn't press save)
+	if ($_SERVER['REQUEST_METHOD'] !== 'POST')
+		return;
+
 	$fp = fopen('../ini-local.php','r');
 	$lines = array();
 	$found_local = False;
