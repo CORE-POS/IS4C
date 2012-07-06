@@ -32,7 +32,7 @@ include('util.php');
 ?>
 <html>
 <head>
-<title>IT CORE Lane Installation</title>
+<title>IT CORE Lane Installation: Necessities</title>
 <style type="text/css">
 body {
 	line-height: 1.5em;
@@ -40,6 +40,7 @@ body {
 </style>
 </head>
 <body>
+
 Necessities
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <a href="extra_config.php">Additional Configuration</a>
@@ -47,29 +48,20 @@ Necessities
 <a href="scanning.php">Scanning Options</a>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <a href="extra_data.php">Sample Data</a>
+
+<h2>IT CORE Lane Installation: Necessities</h2>
+
 <form action=index.php method=post>
-<h1>IT CORE Install checks</h1>
-<h3>Basics</h3>
 <?php
+check_writeable('../ini.php');
+check_writeable('../ini-local.php');
+
 if (function_exists('posix_getpwuid')){
 	$chk = posix_getpwuid(posix_getuid());
 	echo "PHP is running as: ".$chk['name']."<br />";
 }
 else
 	echo "PHP is (probably) running as: ".get_current_user()."<br />";
-
-if (!file_exists('../ini.php'))
-        echo '<span style="color:red;"><b>Warning</b>: ini.php does not exist</span><br />';
-elseif (is_writable('../ini.php'))
-        echo '<span style="color:green;"><i>ini.php</i> is writeable</span><br />';
-else
-        echo '<span style="color:red;"><b>Error</b>: ini.php is not writeable</span><br />';
-if (!file_exists('../ini-local.php'))
-        echo '<span style="color:red;"><b>Warning</b>: ini-local.php does not exist</span><br />';
-elseif (is_writable('../ini-local.php'))
-        echo '<span style="color:green;"><i>ini-local.php</i> is writeable</span><br />';
-else
-        echo '<span style="color:red;"><b>Error</b>: ini-local.php is not writeable</span><br />';
 
 if (!function_exists("socket_create")){
 	echo '<b>Warning</b>: PHP socket extension is not enabled. NewMagellan will not work quite right';
