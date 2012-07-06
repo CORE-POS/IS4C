@@ -78,10 +78,39 @@ function receiptHeader($date,$trans){
    receipt_to_table($query1,$queryHead,0,'FFFFFF');
 }
 
+function ccInfo($date1, $transNum){
+	global $dbc,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB;
+	$dbconn = ($FANNIE_SERVER_DBMS=='MSSQL')?'.dbo.':'.';
+
+	$dateInt = str_replace("-","",$date1);
+	list($emp,$reg,$trans) = explode("-",$transNum);
+
+	$query = "SELECT mode, amount, PAN, 
+		CASE WHEN manual=1 THEN 'keyed' ELSE 'swiped' END AS entryMethod, 
+		issuer, xResultMessage, xApprovalNumber, xTransactionID, name
+		FROM {$FANNIE_TRANS_DB}{$dbconn}efsnetRequest AS q LEFT JOIN 
+		{$FANNIE_TRANS_DB}{$dbconn}efsnetResponse AS r
+		ON q.refNum=r.refNum  WHERE q.date={$dateInt} AND
+		q.cashierNo={$emp} AND q.laneNo={$reg} AND q.transNo={$trans}";
+	$result = $dbc->query($query);
+	while ($row = $dbc->fetch_row($result)){
+		echo "<hr />";
+		echo '<i>610 E 4th St<br />Duluth, MN 55805</i><br />';
+		echo "Card: ".$row['issuer'].' '.$row['PAN'].'<br />';
+		echo "Name: ".$row['name'].'<br />';
+		echo "Entry Method: ".$row['entryMethod'].'<br />';
+		echo "Sequence Number: ".$row['xTransactionID'].'<br />';
+		echo "Authorization: ".$row['xResultMessage'].'<br />';
+		echo '<b>Amount</b>: '.sprintf('$%.2f',$row['amount']).'<br />';
+	}
+}
+
 $border = 0;
 //$color = #000000
 
-if ($_REQUEST['receipt'])
+if ($_REQUEST['receipt']){
 	receiptHeader($date1,$transNum);
+	ccInfo($date1, $transNum);
+}
 
 ?>
