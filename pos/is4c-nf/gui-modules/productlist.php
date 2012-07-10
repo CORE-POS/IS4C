@@ -155,7 +155,7 @@ class productlist extends NoInputPage {
 				."<form name=\"selectform\" method=\"post\" action=\"{$_SERVER['PHP_SELF']}\""
 				." id=\"selectform\">"
 				."<select name=\"search\" id=\"search\" "
-				."size=".$this->boxSize." onblur=\"\$('#search').focus();\">";
+				."size=".$this->boxSize." onblur=\"\$('#search').focus();\" ondblclick=\"document.forms['selectform'].submit();\">";
 
 			$selected = "selected";
 			for ($i = 0; $i < $num_rows; $i++) {

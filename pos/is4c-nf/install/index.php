@@ -62,13 +62,20 @@ if (function_exists('posix_getpwuid')){
 }
 else
 	echo "PHP is (probably) running as: ".get_current_user()."<br />";
-if (is_writable('../ini.php'))
-        echo '<span style="color:green;"><i>ini.php</i> is writeable</span>';
+
+if (!file_exists('../ini.php'))
+        echo '<span style="color:red;"><b>Warning</b>: ini.php does not exist</span><br />';
+elseif (is_writable('../ini.php'))
+        echo '<span style="color:green;"><i>ini.php</i> is writeable</span><br />';
 else
-        echo '<span style="color:red;"><b>Error</b>: ini.php is not writeable</span>';
-?>
-<br />
-<?php
+        echo '<span style="color:red;"><b>Error</b>: ini.php is not writeable</span><br />';
+if (!file_exists('../ini-local.php'))
+        echo 'Not using an ini-local.php<br />';
+elseif (is_writable('../ini-local.php'))
+        echo '<span style="color:green;"><i>ini-local.php</i> is writeable</span><br />';
+else
+        echo '<span style="color:red;"><b>Error</b>: ini-local.php is not writeable</span><br />';
+
 if (!function_exists("socket_create")){
 	echo '<b>Warning</b>: PHP socket extension is not enabled. NewMagellan will not work quite right';
 }
@@ -422,6 +429,7 @@ function create_op_dbs($db,$type){
 		EmpActive tinyint,
 		frontendsecurity smallint,
 		backendsecurity smallint,
+		birthdate datetime,
 		PRIMARY KEY (emp_no))";
 	if (!$db->table_exists('employees',$name)){
 		$db->query($empQ,$name);

@@ -45,6 +45,8 @@ class adminlogin extends NoInputPage {
 				// clear state variables on clear
 				$CORE_LOCAL->set("refundComment","");
 				$CORE_LOCAL->set("transfertender",0);
+				if ($CORE_LOCAL->get("cashierAgeOverride")==2)
+					$CORE_LOCAL->set("cashierAgeOverride",0);
 				$CORE_LOCAL->set("msgrepeat",0);
 				$this->change_page($this->page_url."gui-modules/pos2.php");
 				return False;	
@@ -63,6 +65,8 @@ class adminlogin extends NoInputPage {
 				$result = $db->query($query);
 				$num_rows = $db->num_rows($result);
 				if ($num_rows != 0) {
+					if ($CORE_LOCAL->get("cashierAgeOverride")==2)
+						$CORE_LOCAL->set("cashierAgeOverride",1);
 					$this->change_page($CORE_LOCAL->get("adminRequest"));
 					return False;
 				}
