@@ -63,6 +63,7 @@ $double_lookup = array(
 	991 => array('Class B Equity',31110),
 	992 => array('Class A Equity',31100),
 	700 => array('Totes',63320),
+	701 => array('Donations','31130'),
 	703 => array('Old Misc.',42230),
 	902 => array('Gift Card Sales',21205),
 	800 => array('IT Corrections',''),
