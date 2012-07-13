@@ -27,6 +27,8 @@ class TenderKey extends Parser {
 		if (strstr($str,"TT") && strlen($str) >= 3 &&
 		    substr($str,0,2) != "VD")
 			return True;
+		else if ($str == "TT")
+			return True;
 		return False;
 	}
 
@@ -34,27 +36,14 @@ class TenderKey extends Parser {
 		global $CORE_LOCAL;
 		$my_url = MiscLib::base_url();
 
-		$split = explode("TT",$str);
-		$tender = $split[1];
-		$amt = $split[0];
+		$amt = substr($str,0,strlen($str)-2);
+		if ($amt === "")
+			$amt = 100*$CORE_LOCAL->get("amtdue");
 		$ret = $this->default_json();
 
-		/**
-		  This "if" is the new addition to trigger the
-		  department select screen
-		*/
-		if (empty($split[1])){
-			// no department specified, just amount followed by DP
-			
-			// save entered amount
-			$CORE_LOCAL->set("tenderTotal",$amt);
+		$CORE_LOCAL->set("tenderTotal",$amt);
+		$ret['main_frame'] = $my_url.'gui-modules/tenderlist.php';
 
-			// go to the department select screen
-			$ret['main_frame'] = $my_url.'gui-modules/tenderlist.php';
-		}
-
-		if (!$ret['main_frame'])
-			$ret = PrehLib::tender($split[1],$split[0]);
 		return $ret;
 	}
 

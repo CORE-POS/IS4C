@@ -272,7 +272,7 @@ static public function addcomment($comment) {
   Add a change record (a special type of tender record)
   @param $dblcashreturn the change amount
 */
-static public function addchange($dblcashreturn,$strtendercode) {
+static public function addchange($dblcashreturn,$strtendercode='CA') {
 	global $CORE_LOCAL;
 	self::addItem("", "Change", "T", $strtendercode, "", 0, 0, 0, $dblcashreturn, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8);
 }

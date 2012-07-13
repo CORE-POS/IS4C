@@ -119,11 +119,13 @@ class memlist extends NoInputPage {
 
 	function head_content(){
 		global $CORE_LOCAL;
-		$this->add_onload_command("\$('#search').focus();\n");
-		if ($this->temp_num_rows > 0)
+		if ($this->temp_num_rows > 0){
 			$this->add_onload_command("\$('#search').keypress(processkeypress);\n");
-		else
-			$this->default_parsewrapper_js('search','selectform');
+			$this->add_onload_command("\$('#search').focus();\n");
+		} else {
+			$this->default_parsewrapper_js('reginput','selectform');
+			$this->add_onload_command("\$('#reginput').focus();\n");
+		}
 		?>
 		<script type="text/javascript">
 		var prevKey = -1;
@@ -173,7 +175,7 @@ class memlist extends NoInputPage {
 				echo _("no match found")."<br />"._("next search or member number");
 			echo "</span>
 				<input type=\"text\" name=\"search\" size=\"15\"
-			       	onblur=\"\$('#search').focus();\" id=\"search\" />
+			       	onblur=\"\$('#reginput').focus();\" id=\"reginput\" />
 				<br />
 				press [enter] to cancel
 			</div>";
