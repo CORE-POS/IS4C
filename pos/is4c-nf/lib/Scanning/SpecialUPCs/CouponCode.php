@@ -70,6 +70,14 @@ var $ean;
 			return $json;
 		}
 
+		$query2 = "SELECT reason FROM disableCoupon WHERE upc='$upc'";
+		$result2 = $db->query($query2);
+		if ($db->num_rows($result2) > 0){
+			$reason = array_pop($db->fetch_row($result2));
+			$json['output'] = DisplayLib::boxMsg(_("coupon disabled")."<br />".$reason);
+			return $json;
+		}
+
 		$row = $db->fetch_array($result);
 		$value = $row["Value"];
 		$qty = $row["Qty"];
