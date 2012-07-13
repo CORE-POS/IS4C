@@ -611,6 +611,15 @@ function create_op_dbs($db,$type){
 		$db->query($custRpt,$name);
 	}
 
+	$dCoup = "CREATE TABLE disableCoupon (
+		upc varchar(13),
+		reason text,
+		PRIMARY KEY (upc)
+		)";
+	if(!$db->table_exists('disableCoupon',$name)){
+		$db->query($dCoup,$name);
+	}
+
 	$houseCoup = "CREATE TABLE houseCoupons (
 		coupID int,
 		endDate datetime,
