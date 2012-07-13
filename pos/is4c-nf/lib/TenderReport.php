@@ -102,7 +102,7 @@ static public function get(){
 		
 		$receipt.= ReceiptLib::centerString("------------------------------------------------------");
 
-		$receipt .= substr($blank.$blank.$blank."Count: ".$num_rows."  Total: ".$sum, -56)."\n";
+		$receipt .= substr($blank.$blank.$blank."Count: ".$num_rows."  Total: ".number_format($sum,2), -56)."\n";
 		$receipt .= str_repeat("\n", 4);
 //		$receipt .= chr(27).chr(105);
 	}
