@@ -78,7 +78,7 @@ static public function get(){
 
 		$query = "select tdate,register_no,trans_no,tender
 		       	from TenderTapeGeneric where emp_no=".$CORE_LOCAL->get("CashierNo").
-			" and trans_subtype = '".$tender_code."' order by tdate";
+			" and tender_code = '".$tender_code."' order by tdate";
 		$result = $db_a->query($query);
 		$num_rows = $db_a->num_rows($result);
 		
