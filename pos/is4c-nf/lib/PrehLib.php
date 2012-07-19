@@ -687,7 +687,8 @@ static public function modular_tender($right, $strl){
 
 		$CORE_LOCAL->set("change",-1 * $CORE_LOCAL->get("amtdue"));
 		$cash_return = $CORE_LOCAL->get("change");
-		TransRecord::addchange($cash_return,$right);
+		$change_type = ($CORE_LOCAL->get("ChangeType") != $right) ? $CORE_LOCAL->get("ChangeType") : $right;
+		TransRecord::addchange($cash_return,$change_type);
 					
 		$CORE_LOCAL->set("End",1);
 		$CORE_LOCAL->set("beep","rePoll");
