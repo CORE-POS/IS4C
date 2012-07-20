@@ -1290,8 +1290,12 @@ static public function setDrawerKick()
 // 	apbw 05/03/05 KickFix added !=0 criteria
 
 	if ($CORE_LOCAL->get("chargeTotal") == $CORE_LOCAL->get("tenderTotal") && $CORE_LOCAL->get("chargeTotal") != 0 && $CORE_LOCAL->get("tenderTotal") != 0 ) {	
-		//$_SESSION["kick"] = 0; 						
-		return 0;
+		if (in_array($CORE_LOCAL->get("TenderType"),$CORE_LOCAL->get("DrawerKickMedia"))) {
+			return 1;
+		} else {
+			//$_SESSION["kick"] = 0; 						
+			return 0;
+		}
 	} else {						
 		//$_SESSION["kick"] = 1;	
 		return 1;

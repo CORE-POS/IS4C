@@ -128,6 +128,7 @@ $CORE_LOCAL->set("BottleReturnDept",'');
 $CORE_LOCAL->set("ReceiptHeaderImage",'');
 $CORE_LOCAL->set("timeout",180000);
 $CORE_LOCAL->set("TRDesiredTenders",array());
+$CORE_LOCAL->set("DrawerKickMedia", array());
 
 @include_once(dirname(__FILE__).'/ini-local.php');
 ?>
