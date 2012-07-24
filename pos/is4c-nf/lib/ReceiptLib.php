@@ -950,10 +950,13 @@ static public function printReceipt($arg1,$second=False) {
 
 	self::$PRINT_OBJ = new ESCPOSPrintHandler();
 
-	$dokick = self::setDrawerKickLater();
+	$kicker_class = ($CORE_LOCAL->get("kickerModule")=="") ? 'Kicker' : $CORE_LOCAL->get('kickerModule');
+	$kicker_obj = new $kicker_class();
+	if (!is_object($kicker_object)) $kicker_object = new Kicker();
+	$dokick = $kicker_obj->doKick();
 	$receipt = "";
 
-	if ($arg1 == "full" and $dokick != 0) {	// ---- apbw 03/29/05 Drawer Kick Patch
+	if ($arg1 == "full" && $dokick) {	// ---- apbw 03/29/05 Drawer Kick Patch
 		$kick_cmd = self::$PRINT_OBJ->DrawerKick(2,48*2,30*2);
 		self::$PRINT_OBJ->writeLine($kick_cmd);
 		//self:::writeLine(chr(27).chr(112).chr(0).chr(48)."0");
@@ -1280,6 +1283,7 @@ static public function reprintReceipt($trans_num=""){
   @return
    - 1 open drawer
    - 0 do not open
+  @deprecated use Kicker modules
 */
 static public function setDrawerKick()
 
@@ -1311,8 +1315,7 @@ static public function setDrawerKick()
   Opens on cash transactions, credit card
   transactions > $25, and stamp sales.
 
-  @todo This functionality needs to be more modular
-  and customizable.
+  @deprecated use Kicker modules
 */
 static public function setDrawerKickLater()
 

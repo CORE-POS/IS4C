@@ -79,12 +79,12 @@ function confsave($key,$value,$prefer_local=False){
 		$append_path = $path_local;
 	}
 	if ($append_path === $path_global) {
-		$new_global = preg_replace("|(?>)?\s*$|", "\n".$new_setting, $orig_global,
+		$new_global = preg_replace("|(\?>)?\s*$|", $new_setting.'?>', $orig_global,
 						1, $found_global);
 		$added_global = file_put_contents($append_path, $new_global);
 	}
 	else {
-		$new_local = preg_replace("|(?>)?\s*$|", "\n".$new_setting, $orig_local,
+		$new_local = preg_replace("|(\?>)?\s*$|", $new_setting.'?>', $orig_local,
 						1, $found_local);
 		$added_local = file_put_contents($append_path, $new_local);
 	}
