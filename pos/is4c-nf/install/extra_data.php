@@ -6,7 +6,7 @@ include('util.php');
 ?>
 <html>
 <head>
-<title>Load optional data</title>
+<title>IT CORE Lane Installation: Sample data</title>
 <style type="text/css">
 body {
 	line-height: 1.5em;
@@ -14,6 +14,7 @@ body {
 </style>
 </head>
 <body>
+	
 <a href="index.php">Necessities</a>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <a href="extra_config.php">Additional Configuration</a>
@@ -21,7 +22,9 @@ body {
 <a href="scanning.php">Scanning Options</a>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 Sample Data
-<br />
+
+<h2>IT CORE Lane Installation: Sample Data</h2>
+
 <form action=extra_data.php method=post>
 <blockquote><i>
 <?php
