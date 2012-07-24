@@ -1,67 +1,97 @@
 <?php
 
-function confsave($key,$value){
-	if (!is_writable('../ini.php')) return;
+function check_writeable($filename){
+	$basename = basename($filename);
+	if (!file_exists($filename))
+			echo "<span style=\"color:red;\"><b>Warning</b>: $basename does not exist</span><br />";
+	elseif (is_writable($filename))
+			echo "<span style=\"color:green;\">$basename is writeable</span><br />";
+	else
+			echo "<span style=\"color:red;\"><b>Warning</b>: $basename is not writeable</span><br />";
+}
 
-	/**
-	  ini.php vs ini-local.php
+function confsave($key,$value,$prefer_local=False){
 
-	  Check ini-local.php first. If the setting
-	  is found there, update the value. Check ini.php
-	  next. If the setting was not in ini-local.php,
-	  update or add it in ini.php.
+	// do nothing if page isn't a form submit (i.e. user didn't press save)
+	if ($_SERVER['REQUEST_METHOD'] !== 'POST')
+		return NULL;
+
+	/*
+	Attempt to update settings in both ini.php and ini-local.php.
+	If found in both, return False if (and only if) ini-local.php
+	couldn't be set to the correct value. If not found in either,
+	add to whichever is writeable; if both writeable, respect the
+	$prefer_local setting. If neither is writeable, return False.
 	*/
 
-	$found_local = False;
-	if (is_writable('../ini-local.php')){
-		$fp = fopen('../ini-local.php','r');
-		$lines = array();
-		while($line = fgets($fp)){
-			if (strpos($line,'$CORE_LOCAL->set("'.$key.'"') === 0){
-				$lines[] = sprintf("\$CORE_LOCAL->set(\"%s\",%s);\n",
-						$key,$value);
-				$found_local = True;
-			}
-			else{
-				$lines[] = $line;
-			}
-		}
-		fclose($fp);
+	$path_global = '../ini.php';
+	$path_local = '../ini-local.php';
 
-		if ($found_local) {
-			$fp = fopen('../ini-local.php','w');
-			foreach($lines as $line)
-				fwrite($fp,$line);
-			fclose($fp);
+	$writeable_global = is_writable($path_global);
+	$writeable_local = is_writable($path_local);
+
+	if (!$writeable_global && !$writeable_local)
+		return False;
+
+	$found_global = $found_local = False;
+	$written_global = $written_local = False;
+	$added_global = $added_local = False;
+
+	$orig_setting = '|\$CORE_LOCAL->set\([\'"]'.$key.'[\'"],\s*(.+)\);[\r\n]|';
+	$new_setting = "\$CORE_LOCAL->set('{$key}',{$value});\n";
+
+	$orig_global = file_get_contents($path_global);
+	$orig_local = file_get_contents($path_local);
+
+	$new_global = preg_replace($orig_setting, $new_setting, $orig_global,
+					-1, $found_global);
+	$new_local = preg_replace($orig_setting, $new_setting, $orig_local,
+					-1, $found_local);
+
+	if ($found_global) {
+		preg_match($orig_setting, $orig_global, $matches);
+		if ($matches[1] === $value)	// found with exact same value
+			$written_global = True;	// no need to bother rewriting it
+		elseif ($writeable_global)
+			$written_global = file_put_contents($path_global, $new_global);
+	}
+
+	if ($found_local) {
+		preg_match($orig_setting, $orig_local, $matches);
+		if ($matches[1] === $value)	// found with exact same value
+			$written_local = True;	// no need to bother rewriting it
+		elseif ($writeable_local) {
+			$written_local = file_put_contents($path_local, $new_local);
 		}
 	}
 
-	$fp = fopen('../ini.php','r');
-	$lines = array();
-	while($line = fgets($fp)){
-		if (strpos($line,'$CORE_LOCAL->set("'.$key.'"') === 0){
-			$lines[] = sprintf("\$CORE_LOCAL->set(\"%s\",%s);\n",
-					$key,$value);
-			$found = True;
-		}
-		elseif (strpos($line,'?>') === 0 && !$found){
-			$lines[] = sprintf("\$CORE_LOCAL->set(\"%s\",%s);\n",
-					$key,$value);
-			$lines[] = "?>\n";
-		}
-		else{
-			$lines[] = $line;
-		}
-	}
-	fclose($fp);
+	if ($found_local && !$written_local)
+		return False;	// ini-local.php is overriding ini.php with bad data!
+	if ($written_global || $written_local)
+		return True;	// successfully written somewhere relevant
 
-	if (!$found_local) {
-		$fp = fopen('../ini.php','w');
-		foreach($lines as $line)
-			fwrite($fp,$line);
-		fclose($fp);
+	if (!$found_global && !$found_local) {
+		$append_path = ($prefer_local? $path_local : $path_global);
+		$append_path = ($writeable_local? $append_path : $path_global);
+		$append_path = ($writeable_global? $append_path : $path_local);
 	}
+	elseif (!$found_local && $writeable_local) {
+		$append_path = $path_local;
+	}
+	if ($append_path === $path_global) {
+		$new_global = preg_replace("|(?>)?\s*$|", "\n".$new_setting, $orig_global,
+						1, $found_global);
+		$added_global = file_put_contents($append_path, $new_global);
+	}
+	else {
+		$new_local = preg_replace("|(?>)?\s*$|", "\n".$new_setting, $orig_local,
+						1, $found_local);
+		$added_local = file_put_contents($append_path, $new_local);
+	}
+	if ($added_global || $added_local)
+		return True;	// successfully appended somewhere relevant
 
+	return False;	// didn't manage to write anywhere!
 }
 
 function load_sample_data($sql, $table){
