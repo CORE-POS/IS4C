@@ -247,6 +247,29 @@ printf("<input type=text name=emailReceiptFrom value=\"%s\" />",$CORE_LOCAL->get
 confsave('emailReceiptFrom',"'".$CORE_LOCAL->get('emailReceiptFrom')."'");
 ?>
 <br />
+<b>Drawer Behavior Module</b>:
+<?php
+$kmods = array();
+$dh = opendir('../lib/Kickers/');
+while(False !== ($f = readdir($dh))){
+	if ($f == "." || $f == "..")
+		continue;
+	if (substr($f,-4) == ".php"){
+		$kmods[] = rtrim($f,".php");
+	}
+}
+if(isset($_REQUEST['kickerModule'])) $CORE_LOCAL->set('kickerModule',$_REQUEST['kickerModule']);
+if ($CORE_LOCAL->get('kickerModule')=='') $CORE_LOCAL->set('kickerModule','Kicker');
+echo '<select name="kickerModule">';
+foreach($kmods as $k){
+	printf('<option %s>%s</option>',
+		($CORE_LOCAL->get('kickerModule')==$k?'selected':''),
+		$k);
+}
+echo '</select>';
+confsave('kickerModule',"'".$CORE_LOCAL->get('kickerModule')."'");
+?>
+<br />
 <hr />
 <b>Scanner/scale port</b>:
 <?php
