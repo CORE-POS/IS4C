@@ -41,7 +41,7 @@ function confsave($key,$value,$prefer_local=False){
 	$new_setting = "\$CORE_LOCAL->set('{$key}',{$value});\n";
 
 	$orig_global = file_get_contents($path_global);
-	$orig_local = file_get_contents($path_local);
+	$orig_local = $writeable_local ? file_get_contents($path_local) : '';
 
 	$new_global = preg_replace($orig_setting, $new_setting, $orig_global,
 					-1, $found_global);
