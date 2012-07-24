@@ -9,6 +9,7 @@ Columns:
 
 Depends on:
 	custdata (table)
+	custAvailablePrefs (table)
 
 Use:
 Store customer-specific preferences
