@@ -240,7 +240,7 @@ function dueDisplays($subtype){
 			on m.card_no=c.CardNo and c.personNum=1
 			left join {$TRANS}newBalanceStockToday_test as n on
 			m.card_no = n.memnum
-			where ".$sql->monthdiff($sql->now(),'m.end_date')." = 1
+			where ".$sql->monthdiff($sql->now(),'m.end_date')." = -1
 			and c.Type NOT IN ('REG','TERM','INACT2') and n.payments < 100 order by m.card_no";
 	}
 	elseif ($subtype == "2month"){
@@ -249,7 +249,7 @@ function dueDisplays($subtype){
 			on m.card_no=c.CardNo and c.personNum=1
 			left join {$TRANS}newBalanceStockToday_test as n on
 			m.card_no = n.memnum
-			where ".$sql->monthdiff($sql->now(),'m.end_date')." = 2
+			where ".$sql->monthdiff($sql->now(),'m.end_date')." = -2
 			and c.Type NOT IN ('REG','TERM','INACT2') and n.payments < 100 order by m.card_no";
 	}
 
