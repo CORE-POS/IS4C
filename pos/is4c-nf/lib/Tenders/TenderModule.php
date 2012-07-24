@@ -56,6 +56,7 @@ class TenderModule {
 		if ($db->num_rows($result) > 0){
 			$row = $db->fetch_array($result);
 			$this->name_string = $row['TenderName'];
+			$this->change_type = $row['TenderType'];
 			$this->change_string = $row['ChangeMessage'];
 			$this->min_limit = $row['MinAmount'];
 			$this->max_limit = $row['MaxAmount'];
@@ -108,6 +109,7 @@ class TenderModule {
 
 		if ($this->amount - $CORE_LOCAL->get("amtdue") > 0) {
 			$CORE_LOCAL->set("change",$this->amount - $CORE_LOCAL->get("amtdue"));
+			$CORE_LOCAL->set("ChangeType", $this->change_type);
 		}
 		else {
 			$CORE_LOCAL->set("change",0);

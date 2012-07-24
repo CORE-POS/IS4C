@@ -48,7 +48,8 @@ class TenderOut extends Parser {
 			$CORE_LOCAL->set("change",-1 * $CORE_LOCAL->get("amtdue"));
 			$cash_return = $CORE_LOCAL->get("change");
 			if ($asTender != "FS") {
-				TransRecord::addchange($cash_return,$asTender);
+				$change_type = ($CORE_LOCAL->get("ChangeType") != $right) ? $CORE_LOCAL->get("ChangeType") : $right;
+				TransRecord::addchange($cash_return,$change_type);
 			}
 			if ($asTender == "CK" && $cash_return > 0) {
 				$CORE_LOCAL->set("cashOverAmt",1); // apbw/cvr 3/5/05 cash back beep
