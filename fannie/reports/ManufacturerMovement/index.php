@@ -23,7 +23,6 @@
 
 include('../../config.php');
 include($FANNIE_ROOT.'src/mysql_connect.php');
-include($FANNIE_ROOT.'src/select_dlog.php');
 
 if (isset($_GET['date1'])){
 
@@ -48,7 +47,7 @@ if (isset($_GET['date1'])){
 	// EACH one has to be sorted in the right direction
 	$fixedsort = preg_replace("/\),/",") $dir, ",$sort);
 
-	$dlog = select_dlog($date1,$date2);
+	$sumTable = $FANNIE_ARCHIVE_DB.$dbc->sep()."sumUpcSalesByDay";
 
 	if (isset($_GET['excel'])){
 	  header('Content-Type: application/ms-excel');
@@ -63,15 +62,15 @@ if (isset($_GET['date1'])){
 	$manu = urlencode($manu);
 
 	$query = "select t.upc,p.description,
-		  sum(case when t.trans_status IN ('M') then t.itemqtty else t.quantity end) as qty,
-		  sum(t.total),t.department,d.dept_name,s.superID
-		  from $dlog as t left join products as p
+		  t.quantity as qty,
+		  sum(t.total),d.dept_no,d.dept_name,s.superID
+		  from $sumTable as t left join products as p
 		  on t.upc=p.upc left join prodExtra as e on p.upc = e.upc
-		  left join departments as d on t.department = d.dept_no
+		  left join departments as d on p.department = d.dept_no
 		  left join MasterSuperDepts as s on d.dept_no = s.dept_ID
 		  where $type_condition
 		  and t.tdate between '$date1' and '$date2'
-		  group by $groupby,p.description,t.department,d.dept_name,s.superID
+		  group by $groupby,p.description,d.dept_no,d.dept_name,s.superID
 		  order by $fixedsort $dir";
 	$headers = array(7);
 	$date1 = $_GET['date1'];
@@ -97,8 +96,8 @@ if (isset($_GET['date1'])){
 			$headers[3] .= "$otherdir>Sales</a>";
 		else
 			$headers[3] .= "DESC>Sales</a>";
-		$headers[4] = "<a href=index.php?date1=$date1&date2=$date2&manu=$manu&type=$type&groupby=$groupby&sort=t.department&dir=";
-		if ($sort == 't.department')
+		$headers[4] = "<a href=index.php?date1=$date1&date2=$date2&manu=$manu&type=$type&groupby=$groupby&sort=d.dept_no&dir=";
+		if ($sort == 'd.dept_no')
 			$headers[4] .= "$otherdir>Dept</a>";
 		else
 			$headers[4] .= "ASC>Dept</a>";
@@ -126,7 +125,7 @@ if (isset($_GET['date1'])){
 	if ($groupby == "year(t.tdate),month(t.tdate),day(t.tdate)"){
 		$query = "select $groupby,sum(t.quantity),sum(t.total)
 		  	  from products as p left join prodExtra as e on p.upc = e.upc
-			  left join $dlog as t on p.upc = t.upc
+			  left join $sumTable as t on p.upc = t.upc
 			  where $type_condition
 			  and t.tdate between '$date1' and '$date2'
 			  group by $groupby
@@ -146,11 +145,11 @@ if (isset($_GET['date1'])){
 
 		$headerCount = 3;	
 	}
-	else if ($groupby == "t.department"){
-		$query = "select t.department,d.dept_name,sum(t.quantity),sum(t.total),s.superID
+	else if ($groupby == "d.dept_no"){
+		$query = "select d.dept_no,d.dept_name,sum(t.quantity),sum(t.total),s.superID
 		  	  from products as p left join prodExtra as e on p.upc = e.upc
-			  left join $dlog as t on p.upc = t.upc
-			  left join departments as d on t.department = d.dept_no
+			  left join $sumTable as t on p.upc = t.upc
+			  left join departments as d on p.department = d.dept_no
 			  left join MasterSuperDepts as s on d.dept_no=s.dept_ID
 			  where $type_condition
 			  and t.tdate between '$date1' and '$date2'
@@ -180,7 +179,7 @@ if (isset($_GET['date1'])){
 	switch($groupby){
 	case 't.upc':
 		echo 'UPC'; break;
-	case 't.department':
+	case 'd.dept_no':
 		echo 'department'; break;
 	default:
 		echo 'date'; break;
@@ -270,7 +269,7 @@ here to create Excel Report</font></a></td>
 		<td><select name=groupby>
 		<option value="t.upc">UPC</option>
 		<option value="year(t.tdate),month(t.tdate),day(t.tdate)">Date</option>
-		<option value="t.department">Department</option>
+		<option value="d.dept_no">Department</option>
 		</select></td>
 		</tr>
 		<td> <input type=submit name=submit value="Submit"> </td>

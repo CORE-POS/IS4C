@@ -69,13 +69,14 @@ $bnEnd = strtotime($bEnd);
 $bnEnd = date('Y-m-d',$bnEnd);
 
 $dlog = select_dlog($bnStart,$bnEnd);
+$sumTable = $FANNIE_ARCHIVE_DB.$dbc->sep().'sumUpcSalesByDay';
 
 if(!isset($_GET['excel'])){
    echo "<p class=excel><a href=batchReport.php?batchID=$batchID&excel=1&startDate=$bnStart&endDate=$bnEnd>Click here for Excel version</a></p>";
 }
 
-$salesBatchQ ="select d.upc, b.description, sum(d.total) as sales, sum(CASE WHEN trans_status='M' then 0 else d.quantity END) as quantity
-         FROM $dlog as d left join batchMergeTable as b
+$salesBatchQ ="select d.upc, b.description, sum(d.total) as sales, sum(quantity) as quantity
+         FROM $sumTable as d left join batchMergeTable as b
          ON d.upc = b.upc
          WHERE d.tdate BETWEEN '$bStart' and '$bEnd' 
          AND b.batchID = $batchID 
