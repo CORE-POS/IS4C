@@ -90,6 +90,8 @@
 	
 	$dlog = select_dlog($date1,$date2);
 	$sumTable = $FANNIE_ARCHIVE_DB.$dbc->sep()."sumRingSalesByDay";
+	if (substr($dlog,-4)=="dlog")
+		$sumTable = $FANNIE_ARCHIVE_DB.$dbc->sep()."vRingSalesToday";
 
 	$date2a = $date2 . " 23:59:59";
 	$date1a = $date1 . " 00:00:00";
@@ -180,7 +182,7 @@
 			  d.dept_no,d.dept_name,s.superID,x.distributor ORDER BY $order $dir";
 		}
 		//$query = fixup_dquery($query,$dlog);
-		//echo $query;
+		echo $query;
 		$result = $dbc->query($query);
 
 		echo "<table border=1>\n"; //create table
@@ -255,6 +257,8 @@
 	}else{ //create alternate query if not sorting by PLU
 		$query="";
 		$sumTable = $FANNIE_ARCHIVE_DB.$dbc->sep()."sumDeptSalesByDay";
+		if (substr($dlog,-4)=="dlog")
+			$sumTable = $FANNIE_ARCHIVE_DB.$dbc->sep()."vDeptSalesToday";
 		$item = (!empty($alias)) ? $groupBy." AS ".$alias : $groupBy;
 		$orderBy = (!empty($alias)) ? $alias : $groupBy;
 		if(isset($buyer) && $buyer>0){
