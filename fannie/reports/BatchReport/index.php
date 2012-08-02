@@ -62,21 +62,23 @@ if (isset($_REQUEST['batchID'])){
 	echo "<p><font color=black>From: </font> $bStart <font color=black>to: </font> $bEnd</p>";
 
 	$dlog = select_dlog($bStart,$bEnd);
+	$sumTable = $FANNIE_ARCHIVE_DB.$dbc->sep()."sumUpcSalesByDay";
 
 	if(!isset($_GET['excel'])){
 	   echo "<p class=excel><a href=batchReport.php?batchID=$batchID&excel=1&startDate=$bStart&endDate=$bEnd>Click here for Excel version</a></p>";
 	}
 
+	/*
 	$bStart .= " 00:00:00";
 	$bEnd .= " 23:59:59";
+	*/
 
 	$salesBatchQ ="select d.upc, b.description, sum(d.total) as sales, 
-		 sum(case when d.trans_status in ('M','V') then d.itemQtty else d.quantity end) as quantity
-		 FROM $dlog as d left join batchMergeTable as b
+		 sum(d.quantity) as quantity
+		 FROM $sumTable as d left join batchMergeTable as b
 		 ON d.upc = b.upc
 		 WHERE d.tdate BETWEEN '$bStart' and '$bEnd' 
 		 AND b.batchID IN $batchID 
-		 AND d.trans_status <> 'M'
 		 GROUP BY d.upc, b.description
 		 ORDER BY d.upc";
 

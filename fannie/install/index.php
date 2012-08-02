@@ -1399,6 +1399,19 @@ function create_archive_dbs($con) {
 	if (!$con->table_exists($rp_view,$FANNIE_ARCHIVE_DB)){
 		$con->query($rp2Q,$FANNIE_ARCHIVE_DB);
 	}
+
+	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_ARCHIVE_DB,
+			'sumUpcSalesByDay','arch');
+	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_ARCHIVE_DB,
+			'sumRingSalesByDay','arch');
+	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_ARCHIVE_DB,
+			'sumDeptSalesByDay','arch');
+	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_ARCHIVE_DB,
+			'sumMemSalesByDay','arch');
+	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_ARCHIVE_DB,
+			'sumMemTypeSalesByDay','arch');
+	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_ARCHIVE_DB,
+			'sumTendersByDay','arch');
 }
 
 ?>

@@ -148,7 +148,71 @@ else {
 		else
 			echo cron_msg("Success archiving dtransactions");
 	}
+
+	/* summary table stuff */
+
+	if ($sql->table_exists("sumUpcSalesByDay") && $FANNIE_SERVER_DBMS=="MYSQL"){	
+		$sql->query("INSERT INTO sumUpcSalesByDay
+			SELECT DATE(tdate) AS tdate, upc,
+			CONVERT(SUM(total),DECIMAL(10,2)) as total,
+			CONVERT(SUM(CASE WHEN trans_status='M' THEN itemQtty ELSE quantity END),DECIMAL(10,2)) as qty
+			FROM $FANNIE_TRANS_DB.dlog WHERE
+			trans_type IN ('I') AND upc <> '0'
+			GROUP BY DATE(tdate), upc");
+	}
+	if ($sql->table_exists("sumRingSalesByDay") && $FANNIE_SERVER_DBMS=="MYSQL"){	
+		$sql->query("INSERT INTO sumRingSalesByDay
+			SELECT DATE(tdate) AS tdate, upc, department,
+			CONVERT(SUM(total),DECIMAL(10,2)) as total,
+			CONVERT(SUM(CASE WHEN trans_status='M' THEN itemQtty ELSE quantity END),DECIMAL(10,2)) as qty
+			FROM $FANNIE_TRANS_DB.dlog WHERE
+			trans_type IN ('I','D') AND upc <> '0'
+			GROUP BY DATE(tdate), upc, department");
+	}
+	if ($sql->table_exists("sumDeptSalesByDay") && $FANNIE_SERVER_DBMS=="MYSQL"){	
+		$sql->query("INSERT INTO sumDeptSalesByDay
+			SELECT DATE(tdate) AS tdate, department,
+			CONVERT(SUM(total),DECIMAL(10,2)) as total,
+			CONVERT(SUM(CASE WHEN trans_status='M' THEN itemQtty ELSE quantity END),DECIMAL(10,2)) as qty
+			FROM $FANNIE_TRANS_DB.dlog WHERE
+			trans_type IN ('I','D') 
+			GROUP BY DATE(tdate), department");
+	}
+	if ($sql->table_exists("sumMemSalesByDay") && $FANNIE_SERVER_DBMS=="MYSQL"){	
+		$sql->query("INSERT INTO sumMemSalesByDay
+			SELECT DATE(tdate) AS tdate, card_no,
+			CONVERT(SUM(total),DECIMAL(10,2)) as total,
+			CONVERT(SUM(CASE WHEN trans_status='M' THEN itemQtty ELSE quantity END),DECIMAL(10,2)) as qty,
+			COUNT(DISTINCT trans_num) AS transCount
+			FROM $FANNIE_TRANS_DB.dlog WHERE
+			trans_type IN ('I','D')
+			GROUP BY DATE(tdate), card_no");
+	}
+	if ($sql->table_exists("sumMemTypeSalesByDay") && $FANNIE_SERVER_DBMS=="MYSQL"){	
+		$sql->query("INSERT INTO sumMemTypeSalesByDay
+			SELECT DATE(tdate) AS tdate, c.memType,
+			CONVERT(SUM(total),DECIMAL(10,2)) as total,
+			CONVERT(SUM(CASE WHEN trans_status='M' THEN itemQtty ELSE quantity END),DECIMAL(10,2)) as qty,
+			COUNT(DISTINCT trans_num) AS transCount
+			FROM $FANNIE_TRANS_DB.dlog AS d LEFT JOIN
+			$FANNIE_OP_DB.custdata AS c ON d.card_no=c.CardNo
+			AND c.personNum=1 WHERE
+			trans_type IN ('I','D')
+			AND upc <> 'RRR' AND card_no <> 0
+			GROUP BY DATE(tdate), c.memType");
+	}
+	if ($sql->table_exists("sumTendersByDay") && $FANNIE_SERVER_DBMS=="MYSQL"){	
+		$sql->query("INSERT INTO sumTendersByDay
+			SELECT DATE(tdate) AS tdate, trans_subtype,
+			CONVERT(SUM(total),DECIMAL(10,2)) as total,
+			COUNT(*) AS quantity
+			FROM $FANNIE_TRANS_DB.dlog WHERE
+			trans_type IN ('T')
+			AND total <> 0
+			GROUP BY DATE(tdate), trans_subtype");
+	}
 }
+
 
 
 /* drop dtransactions data */

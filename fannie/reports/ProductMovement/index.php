@@ -48,7 +48,7 @@ if (isset($_GET['date1'])){
 	$fixedsort = preg_replace("/\),/",") $dir, ",$sort);
 
 	$dlog = select_dlog($date1,$date2);
-
+	$sumTable = $FANNIE_ARCHIVE_DB.$dbc->sep()."sumUpcSalesByDay";
 
 	if (isset($_GET['excel'])){
 	  header('Content-Type: application/ms-excel');
@@ -57,11 +57,9 @@ if (isset($_GET['date1'])){
 
 	$query = "select month(t.tdate),day(t.tdate),year(t.tdate),
 		  t.upc,p.description,
-		       sum(case when t.trans_status in ('M') then t.itemqtty 
-		           else t.quantity end) 
-		  qty,
+		  t.quantity as qty,
 		  sum(t.total) from
-		  $dlog as t left join products as p on t.upc = p.upc 
+		  $sumTable as t left join products as p on t.upc = p.upc 
 		  where t.upc = '$upc' AND
 		  tdate BETWEEN '$date1 00:00:00' AND '$date2 23:59:59'
 		  group by year(t.tdate),month(t.tdate),day(t.tdate),
