@@ -211,6 +211,18 @@ else {
 			AND total <> 0
 			GROUP BY DATE(tdate), trans_subtype");
 	}
+	if ($sql->table_exists("sumDiscountsByDay") && $FANNIE_SERVER_DBMS=="MYSQL"){	
+		$sql->query("INSERT INTO sumDiscountsByDay
+			SELECT DATE(tdate) AS tdate, c.memType,
+			CONVERT(SUM(total),DECIMAL(10,2)) as total,
+			COUNT(DISTINCT trans_num) AS transCount
+			FROM $FANNIE_TRANS_DB.dlog AS d LEFT JOIN
+			$FANNIE_OP_DB.custdata AS c ON d.card_no=c.CardNo
+			AND c.personNum=1 WHERE
+			trans_type IN ('S') AND total <> 0
+			AND upc = 'DISCOUNT' AND card_no <> 0
+			GROUP BY DATE(tdate), c.memType");
+	}
 }
 
 

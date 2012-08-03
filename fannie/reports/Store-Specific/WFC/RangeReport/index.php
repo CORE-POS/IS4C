@@ -76,13 +76,13 @@ echo '<br>Report run ' . $today. ' for ' . $repDate." to ".$repDate2."<br />";
 $dlog = select_dlog($repDate,$repDate2);
 //var_dump($dlog);
 $dlog = "trans_archive.dlogBig";
+$ARCH = $FANNIE_SERVER_DBMS=='MSSQL' ? $FANNIE_ARCHIVE_DB.'.dbo.' : $FANNIE_ARCHIVE_DB.'.';
 
-$tenderQ = "SELECT t.TenderName,-sum(d.total) as total, COUNT(d.total)
+$tenderQ = "SELECT t.TenderName,-sum(d.total) as total, SUM(d.quantity)
 
-FROM $dlog as d ,tenders as t 
+FROM {$ARCH}sumTendersByDay as d ,tenders as t 
 WHERE d.tdate BETWEEN $ddiff 
-AND d.trans_status <>'X'  
-AND d.Trans_Subtype = t.TenderCode
+AND d.tender_code = t.TenderCode
 and d.total <> 0
 GROUP BY t.TenderName";
 $tenderR = $dbc->query($tenderQ);
@@ -115,12 +115,11 @@ echo tablify($tenders,array(1,0,2,3),array("Account","Type","Amount","Count"),
 	     array($ALIGN_LEFT,$ALIGN_LEFT,$ALIGN_RIGHT|$TYPE_MONEY,$ALIGN_RIGHT),2);
 
 
-$pCodeQ = "SELECT s.salesCode,-1*sum(l.total) as total,min(l.department) 
-FROM $dlog as l join departments as d on l.department = d.dept_no
+$pCodeQ = "SELECT s.salesCode,-1*sum(l.total) as total,min(l.dept_ID) 
+FROM {$ARCH}sumDeptSalesByDay as l join departments as d on l.dept_ID = d.dept_no
 LEFT JOIN deptSalesCodes AS s ON d.dept_no=s.dept_ID
 WHERE tdate BETWEEN $ddiff
-AND l.department < 600 AND l.department <> 0
-AND l.trans_type <>'T'
+AND l.dept_ID < 600 AND l.dept_ID <> 0
 GROUP BY s.salesCode
 order by s.salesCode";
 $pCodeR = $dbc->query($pCodeQ);
@@ -164,10 +163,9 @@ echo tablify($pCodes,array(0,1),array("pCode","Sales"),
 	     array($ALIGN_LEFT,$ALIGN_RIGHT|$TYPE_MONEY),1);
 
 $saleSumQ = "SELECT -1*sum(l.total) as totalSales
-FROM $dlog as l
+FROM {$ARCH}sumDeptSalesByDay as l
 WHERE tdate BETWEEN $ddiff  
-AND l.department < 600 AND l.department <> 0
-AND l.trans_type <> 'T'";
+AND l.dept_ID < 600 AND l.dept_ID <> 0";
 $saleSumR = $dbc->query($saleSumQ);
 echo "<br /><b><u>Total Sales</u></b><br />";
 echo sprintf("%.2f<br />",array_pop($dbc->fetch_row($saleSumR)));
@@ -204,14 +202,13 @@ echo tablify($voids,array(0,1,2),array("Original","Void","Total"),
 	     array($ALIGN_LEFT,$ALIGN_LEFT,$ALIGN_RIGHT|$TYPE_MONEY),2);
 */
 
-$otherQ = "SELECT d.department,t.dept_name, -1*sum(total) as total 
-FROM $dlog as d join departments as t ON d.department = t.dept_no
+$otherQ = "SELECT d.dept_ID,t.dept_name, -1*sum(total) as total 
+FROM {$ARCH}sumDeptSalesByDay as d join departments as t ON d.dept_ID = t.dept_no
 WHERE tdate BETWEEN $ddiff  
-AND (d.department >300)AND d.Department <> 0 AND 
-(d.register_no <> 20 or d.department = 703)
-and d.department <> 610
-and d.department not between 500 and 599
-GROUP BY d.department, t.dept_name order by d.department";
+AND (d.dept_ID >300)AND d.dept_ID <> 0 
+and d.dept_ID <> 610
+and d.dept_ID not between 500 and 599
+GROUP BY d.dept_ID, t.dept_name order by d.dept_ID";
 $otherR = $dbc->query($otherQ);
 $others = array("600"=>array("64410","SUPPLIES",0.0),
 		"604"=>array("&nbsp;","MISC PO",0.0),
@@ -300,36 +297,27 @@ $taxSumR = $dbc->query($taxSumQ);
 echo "<br /><b><u>Actual Tax Collected</u></b><br />";
 echo sprintf("%.2f<br />",array_pop($dbc->fetch_row($taxSumR)));
 
-$transQ = "select q.trans_num,sum(q.quantity) as items,transaction_type, sum(q.total) from
-	(
-	select tdate,trans_num,card_no,quantity,total,
-        m.memDesc as transaction_type
-	from $dlog as d
-	left join custdata as c on d.card_no = c.CardNo
-	left join memTypeID as m on c.memType = m.memTypeID
-	where tdate BETWEEN $ddiff and 
-	trans_type in ('I','D')
-	and upc <> 'RRR'
-	and c.personNum=1
-	) as q 
-	group by year(q.tdate),month(q.tdate),day(q.tdate),q.trans_num,q.transaction_type";
+$transQ = "SELECT SUM(d.total),SUM(d.quantity),SUM(d.transCount),m.memdesc
+	FROM {$ARCH}sumMemTypeSalesByDay as d LEFT JOIN
+	memTypeID as m ON m.memTypeID=d.memType
+	WHERE d.tdate BETWEEN $ddiff
+	GROUP BY d.memType, m.memdesc";
 $transR = $dbc->query($transQ);
 $transinfo = array("Member"=>array(0,0.0,0.0,0.0,0.0),
 		   "Non Member"=>array(0,0.0,0.0,0.0,0.0),
 		   "Staff Member"=>array(0,0.0,0.0,0.0,0.0),
 		   "Staff NonMem"=>array(0,0.0,0.0,0.0,0.0));
 while($row = $dbc->fetch_array($transR)){
-	if (!isset($transinfo[$row[2]])) continue;
-	$transinfo[$row[2]][0] += 1;
-	$transinfo[$row[2]][1] += $row[1];
-	$transinfo[$row[2]][3] += $row[3];
+	if (!isset($transinfo[$row[3]])) continue;
+	$transinfo[$row[3]] = array($row[2],$row[1],
+		round($row[1]/$row[2],2),$row[0],
+		round($row[0]/$row[2],2)
+	);
 }
 $tSum = 0;
 $tItems = 0;
 $tDollars = 0;
 foreach(array_keys($transinfo) as $k){
-	$transinfo[$k][2] = round($transinfo[$k][1]/$transinfo[$k][0],2);
-	$transinfo[$k][4] = round($transinfo[$k][3]/$transinfo[$k][0],2);
 	$tSum += $transinfo[$k][0];
 	$tItems += $transinfo[$k][1];
 	$tDollars += $transinfo[$k][3];
