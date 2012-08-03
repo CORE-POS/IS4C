@@ -56,6 +56,9 @@ static public function suspendorder() {
 		$result = $db_a->query($query);
 	}
 
+	/* ensure the cancel happens */
+	$cancelR = $db_a->query("UPDATE localtemptrans SET trans_status='X'");
+
 	$CORE_LOCAL->set("plainmsg",_("transaction suspended"));
 	$CORE_LOCAL->set("msg",2);
 	$recall_line = $CORE_LOCAL->get("standalone")." ".$CORE_LOCAL->get("laneno")." ".$cashier_no." ".$trans_no;
