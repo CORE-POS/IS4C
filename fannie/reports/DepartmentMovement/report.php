@@ -182,7 +182,7 @@
 			  d.dept_no,d.dept_name,s.superID,x.distributor ORDER BY $order $dir";
 		}
 		//$query = fixup_dquery($query,$dlog);
-		echo $query;
+		//echo $query;
 		$result = $dbc->query($query);
 
 		echo "<table border=1>\n"; //create table

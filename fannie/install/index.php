@@ -1416,6 +1416,8 @@ function create_archive_dbs($con) {
 			'sumMemTypeSalesByDay','arch');
 	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_ARCHIVE_DB,
 			'sumTendersByDay','arch');
+	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_ARCHIVE_DB,
+			'sumDiscountsByDay','arch');
 }
 
 ?>
