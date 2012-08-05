@@ -35,39 +35,53 @@ at the checkout. Column meaning may not be quite identical
 across stores.
 
 [Probably] The Same Everywhere:
-CardNo is the member's number. This identifies them.
-personNum is for stores that allow more than one person per
-membership. personNum starts at 1. The combination (CardNo,
-personNum) should be unique for each record. FirstName and
-LastName are what they sound like. Discount gives the member
-a percentage discount on purchases. Type identifies whether
-the record is for an actual member. If Type is 'PC', the
-person is considered a member at the register. This is a 
-little confusing, but not everyone in the table has to be
-a member. blueLine is displayed on the checkout screen
-when the member's number is entered.
+- CardNo is the member's number. This identifies them.
+- personNum is for stores that allow more than one person per membership.
+  personNum starts at 1.
+	The combination (CardNo, personNum) should be unique for each record.
+- FirstName what it sounds like.
+- LastName what it sounds like.
+- Discount gives the member a percentage discount on purchases.
+- Type identifies whether the record is for an actual member.
+  If Type is 'PC', the person is considered a member at the register.
+	This is a little confusing, but not everyone in the table has to be
+   a member.
+- blueLine is displayed on the checkout screen when the member's number is entered.
+- id just provides a guaranteed-unique row identifier.
 
 [Probably] Just For Organizing:
-staff identifies someone as an employee. memType allows
-a little more nuance than just member yes/no. I think SSI
-is there because of a historic senior citizen discount 
-somewhere. The register is mostly unaware of these settings,
+The register is mostly unaware of these settings,
 but they can be used on the backend for consistency checks
-e.g., make sure all staff members have the appropriate
-percent discount
+e.g., make sure all staff members have the appropriate percent discount
+- staff identifies someone as an employee. Value: 1?
+- memType allows a little more nuance than just member yes/no.
+  FK to memtype.memtype
+- SSI probably because of a historic senior citizen discount.
+  (Sounds like it is obsolete or at least not used.)
 
 WFC Specific:
-Some members have store charge accounts. Balance is their
-store charge balance as of the start of the day, and
-MemDiscountLimit is their charge account limit. memCoupons
-indicates how many virtual coupons (tender MA) are available.
+- Balance is a store charge balance as of the start of the day,
+   if the person has one.
+	 Some records are for organizations, esp vendors,
+	 that have charge accounts.
+- MemDiscountLimit is their charge account limit.
+- memCoupons indicates how many virtual coupons (tender MA) are available.
 
 [Probably] Ignored:
-To the best of my knowledge, CashBack, ChargeOk, WriteChecks,
-StoreCoupons, Purchases, NumberOfChecks, and Shown have
-no meaning on the front or back end.
+To the best of my (Andy's) knowledge, these have no meaning on the front or back end.
+- CashBack
+- ChargeOk
+- WriteChecks
+- StoreCoupons
+- Purchases
+- NumberOfChecks
+- Shown
 
-id just provides a guaranteed-unique row identifier.
+--COMMENTS - - - - - - - - - - - - - - - - - - - -
+
+26Jun12 EL Reformatted Use section
+epoch   AT Original notes by Andy Theuninck.
+
 */
 $CREATE['op.custdata'] = "
 	CREATE TABLE `custdata` (
