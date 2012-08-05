@@ -89,7 +89,7 @@ class mgrlogin extends NoInputPage {
 		<div class="baseHeight">
 		<div class="colored centeredDisplay" <?php echo $style; ?>>
 		<span class="larger">
-		confirm cancellation
+		<?php echo _("confirm cancellation"); ?>
 		</span><br />
 		<form name="form" id="formlocal" method="post" 
 			autocomplete="off" onsubmit="return submitWrapper();">
@@ -97,7 +97,7 @@ class mgrlogin extends NoInputPage {
 			onblur="$('#reginput').focus();" id="reginput" />
 		</form>
 		<p />
-		<span id="localmsg">please enter manager password</span>
+		<span id="localmsg"><?php echo _("please enter manager password"); ?></span>
 		<p />
 		</div>
 		</div>
@@ -112,8 +112,8 @@ class mgrlogin extends NoInputPage {
 		$ret = array(
 			'cancelOrder'=>false,
 			'color'=>'#800000',
-			'msg'=>'password invalid',
-			'heading'=>'re-enter manager password',
+			'msg'=>_('password invalid'),
+			'heading'=>_('re-enter manager password'),
 			'giveUp'=>false
 		);
 
@@ -151,7 +151,7 @@ class mgrlogin extends NoInputPage {
 		global $CORE_LOCAL;
 
 		$CORE_LOCAL->set("msg",2);
-		$CORE_LOCAL->set("plainmsg","transaction cancelled");
+		$CORE_LOCAL->set("plainmsg",_("transaction cancelled"));
 		$CORE_LOCAL->set("beep","rePoll");
 		UdpComm::udpSend("rePoll");
 		$CORE_LOCAL->set("ccTermOut","reset");

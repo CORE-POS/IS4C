@@ -6,7 +6,7 @@ include('util.php');
 ?>
 <html>
 <head>
-<title>Scanning options</title>
+<title>IT CORE Lane Installation: Scanning options</title>
 <style type="text/css">
 body {
 	line-height: 1.5em;
@@ -14,6 +14,7 @@ body {
 </style>
 </head>
 <body>
+	
 <a href="index.php">Necessities</a>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <a href="extra_config.php">Additional Configuration</a>
@@ -25,6 +26,13 @@ Scanning Options
 <a href="debug.php">Debug</a>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <a href="extra_data.php">Sample Data</a>
+
+<h2>IT CORE Lane Installation: Scanning Options</h2>
+
+<?php
+check_writeable('../ini.php');
+check_writeable('../ini-local.php');
+?>
 <form action=scanning.php method=post>
 Special handling modules for UPCs that aren't
 products (e.g., coupons)<br />

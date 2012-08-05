@@ -54,7 +54,7 @@ class LocalStorage {
 	function debug(){
 		if($this->get("Debug_CoreLocal") == 1){
 			$stack = debug_backtrace();
-			$log = realpath(dirname(__FILE__).'/../../log/core_local.log');
+			$log = realpath(dirname(__FILE__).'/../../log/').'/core_local.log';
 			$fp = @fopen($log,'a');
 			if ($fp){
 				foreach($stack as $s){

@@ -48,7 +48,7 @@ class UPC extends Parser {
 			if ($CORE_LOCAL->get("SecurityRefund") > 20){
 				$CORE_LOCAL->set("adminRequest",$my_url."gui-modules/refundComment.php");
 				$CORE_LOCAL->set("adminRequestLevel",$CORE_LOCAL->get("SecurityRefund"));
-				$CORE_LOCAL->set("adminLoginMsg","Login to issue refund");
+				$CORE_LOCAL->set("adminLoginMsg",_("Login to issue refund"));
 				$CORE_LOCAL->set("away",1);
 				$ret['main_frame'] = $my_url."gui-modules/adminlogin.php";
 			}
@@ -92,7 +92,7 @@ class UPC extends Parser {
 			qttyEnforced,department,local,cost,tax,foodstamp,discount,
 			discounttype,specialpricemethod,special_price,groupprice,
 			pricemethod,quantity,specialgroupprice,specialquantity,
-			mixmatchcode,idEnforced
+			mixmatchcode,idEnforced,tareweight
 		       	from products where upc = '".$upc."'";
 		$result = $db->query($query);
 		$num_rows = $db->num_rows($result);
@@ -107,7 +107,7 @@ class UPC extends Parser {
 				}
 			}
 			// no match; not a product, not special
-			$ret['output'] = DisplayLib::boxMsg($upc."<br /><b>is not a valid item</b>");
+			$ret['output'] = DisplayLib::boxMsg($upc."<br /><b>"._("is not a valid item")."</b>");
 
 			return $ret; 
 		}
@@ -131,16 +131,51 @@ class UPC extends Parser {
 				$CORE_LOCAL->set("warnBoxType","inUse");
 				$CORE_LOCAL->set("strEntered",$row["upc"]);
 				$CORE_LOCAL->set("boxMsg","<b>".$row["upc"]." - ".$row["description"]."</b>
-					<br>Item not for sale
-					<br><font size=-1>[enter] to continue sale, [clear] to cancel</font>");
+					<br />"._("Item not for sale")."
+					<br /><font size=-1>"._("enter to continue sale").", "._("clear to cancel")."</font>");
 				$ret['main_frame'] = $my_url."gui-modules/boxMsg2.php";
 				return $ret;
 			}
 		}
 
 		if ($row["idEnforced"] > 0){
+
+			$restrictQ = "SELECT upc,dept_ID FROM dateRestrict WHERE
+				( upc='{$row['upc']}' AND
+				  ( ".$db->datediff($db->now(),'restrict_date')."=0 OR
+				    ".$db->dayofweek($db->now())."=restrict_dow
+				  ) AND
+				  ( (restrict_start IS NULL AND restrict_end IS NULL) OR
+				    ".$db->curtime()." BETWEEN restrict_start AND restrict_end
+				  )
+			 	) OR 
+				( dept_ID='{$row['department']}' AND
+				  ( ".$db->datediff($db->now(),'restrict_date')."=0 OR
+				    ".$db->dayofweek($db->now())."=restrict_dow
+				  ) AND
+				  ( (restrict_start IS NULL AND restrict_end IS NULL) OR
+				    ".$db->curtime()." BETWEEN restrict_start AND restrict_end
+				  )
+				)";
+			$restrictR = $db->query($restrictQ);
+			if ($db->num_rows($restrictR) > 0){
+				$CORE_LOCAL->set("boxMsg",_("product cannot be sold right now"));
+				$ret['main_frame'] = $my_url."gui-modules/boxMsg2.php";
+				return $ret;
+			}
+
+			if ($CORE_LOCAL->get("cashierAge") < 18 && $CORE_LOCAL->get("cashierAgeOverride") != 1){
+				$CORE_LOCAL->set("adminRequest",$my_url."gui-modules/pos2.php");
+				$CORE_LOCAL->set("adminRequestLevel",30);
+				$CORE_LOCAL->set("adminLoginMsg",_("Login to approve sale"));
+				$CORE_LOCAL->set("away",1);
+				$CORE_LOCAL->set("cashierAgeOverride",2);
+				$ret['main_frame'] = $my_url."gui-modules/adminlogin.php";
+				return $ret;
+			}
+
 			$msg = $CORE_LOCAL->get("requestMsg");
-			if (is_numeric($msg) && strlen($msg)==8){
+			if ((is_numeric($msg) && strlen($msg)==8) || $msg == 1){
 				$CORE_LOCAL->set("memAge",$msg);
 				$CORE_LOCAL->set("requestMsg","");
 				$CORE_LOCAL->set("requestType","");
@@ -151,6 +186,7 @@ class UPC extends Parser {
 			$diff = time() - ((int)strtotime($CORE_LOCAL->get("memAge")));
 			$age = floor($diff / (365*60*60*24));
 			if ($age < $row['idEnforced']){
+				$ret['udpmsg'] = 'twoPairs';
 				$current = date("m/d/y",strtotime($CORE_LOCAL->get("memAge")));
 				$CORE_LOCAL->set("requestType","customer age");
 				$CORE_LOCAL->set("requestMsg","Type customer birthdate YYYYMMDD<br />(current: $current)");
@@ -159,11 +195,17 @@ class UPC extends Parser {
 			}
 		}
 
+		if ($row['tareweight'] > 0){
+			$peek = PrehLib::peekItem();
+			if (strstr($peek,"** Tare Weight") === False)
+				TransRecord::addTare($row['tareweight']*100);
+		}
+
 		/* sanity check - ridiculous price 
 		   (can break db column if it doesn't fit
 		*/
 		if (strlen($row["normal_price"]) > 8){
-			$ret['output'] = DisplayLib::boxMsg("$upc<br>Claims to be more than $100,000");
+			$ret['output'] = DisplayLib::boxMsg("$upc<br />"._("Claims to be more than $100,000"));
 			return $ret;
 		}
 
@@ -176,7 +218,7 @@ class UPC extends Parser {
 			$CORE_LOCAL->get("quantity") == 0 && substr($upc,0,3) != "002") {
 
 			$CORE_LOCAL->set("SNR",1);
-			$ret['output'] = DisplayLib::boxMsg("please put item on scale");
+			$ret['output'] = DisplayLib::boxMsg(_("please put item on scale"));
 			$CORE_LOCAL->set("wgtRequested",0);
 			$CORE_LOCAL->set("warned",1);
 			$ret['retry'] = $CORE_LOCAL->get("strEntered");
@@ -192,7 +234,7 @@ class UPC extends Parser {
 				$quantity = $CORE_LOCAL->get("quantity") - $CORE_LOCAL->get("tare");
 
 			if ($quantity <= 0){
-				$ret['output'] = DisplayLib::boxMsg("item weight must be greater than tare weight");
+				$ret['output'] = DisplayLib::boxMsg(_("item weight must be greater than tare weight"));
 				return $ret;
 			}
 			$CORE_LOCAL->set("tare",0);
@@ -200,7 +242,7 @@ class UPC extends Parser {
 
 		/* non-scale items need integer quantities */	
 		if ($row["scale"] == 0 && (int) $CORE_LOCAL->get("quantity") != $CORE_LOCAL->get("quantity") ) {
-			$ret['output'] = DisplayLib::boxMsg("fractional quantity cannot be accepted for this item");
+			$ret['output'] = DisplayLib::boxMsg(_("fractional quantity cannot be accepted for this item"));
 			return $ret;
 		}
 
@@ -225,8 +267,8 @@ class UPC extends Parser {
 			$CORE_LOCAL->set("endorseType","giftcert");
 			$CORE_LOCAL->set("tenderamt",$total);
 			$CORE_LOCAL->set("boxMsg","<b>".$total." gift certificate</b><br />
-				insert document<br />press [enter] to endorse
-				<p><font size='-1'>[clear] to cancel</font>");
+				"._("insert document")."<br />"._("press enter to endorse")."
+				<p><font size='-1'>"._("clear to cancel")."</font>");
 			$ret["main_frame"] = $my_url."gui-modules/boxMsg2.php";
 			return $ret;
 		}
@@ -238,8 +280,8 @@ class UPC extends Parser {
 			$CORE_LOCAL->set("endorseType","classreg");
 			$CORE_LOCAL->set("tenderamt",$total);
 			$CORE_LOCAL->set("boxMsg","<b>".$total." class registration</b><br />
-				insert form<br />press [enter] to endorse
-				<p><font size='-1'>[clear] to cancel</font>");
+				"._("insert form")."<br />"._("press enter to endorse")."
+				<p><font size='-1'>"._("clear to cancel")."</font>");
 			$ret["main_frame"] = $my_url."gui-modules/boxMsg2.php";
 			return $ret;
 		}
@@ -349,7 +391,6 @@ class UPC extends Parser {
 		$CORE_LOCAL->set("fntlflag",0);
 		$CORE_LOCAL->set("quantity",0);
 		$CORE_LOCAL->set("itemPD",0);
-		$CORE_LOCAL->set("itemDiscount",0);
 		$CORE_LOCAL->set("voided",0);
 		Database::setglobalflags(0);
 

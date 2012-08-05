@@ -52,7 +52,7 @@ class TaxFoodShift extends Parser {
 		}
 		$db->query($q);	
 
-		$next_tax = $current['tax']+1;
+		$next_tax = $row['tax']+1;
 		$next_fs = 0;
 		if ($next_tax > $max){
 			$next_tax = 0;

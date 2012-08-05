@@ -66,7 +66,15 @@ var $ean;
 		$num_rows = $db->num_rows($result);
 
 		if ($num_rows == 0) {
-			$json['output'] = DisplayLib::boxMsg("coupon type unknown<br>please enter coupon<br>manually");
+			$json['output'] = DisplayLib::boxMsg(_("coupon type unknown")."<br />"._("enter coupon manually"));
+			return $json;
+		}
+
+		$query2 = "SELECT reason FROM disableCoupon WHERE upc='$upc'";
+		$result2 = $db->query($query2);
+		if ($db->num_rows($result2) > 0){
+			$reason = array_pop($db->fetch_row($result2));
+			$json['output'] = DisplayLib::boxMsg(_("coupon disabled")."<br />".$reason);
 			return $json;
 		}
 
@@ -133,7 +141,7 @@ var $ean;
 
 		/* no item w/ matching manufacturer */
 		if ($num_rows == 0){
-			$json['output'] = DisplayLib::boxMsg("product not found<br />in transaction");
+			$json['output'] = DisplayLib::boxMsg(_("product not found")."<br />"._("in transaction"));
 			return $json;
 		}
 
@@ -161,13 +169,14 @@ var $ean;
 
 		/* every line has maximum coupons applied */
 		if (count($available) == 0) {
-			$json['output'] = DisplayLib::boxMsg("Coupon already applied<br />for this item");
+			$json['output'] = DisplayLib::boxMsg(_("Coupon already applied")."<br />"._("for this item"));
 			return $json;
 		}
 
 		/* insufficient number of matching items */
 		if ($qty > $act_qty) {
-			$json['output'] = DisplayLib::boxMsg("coupon requires ".$qty."items<br />there are only ".$act_qty." item(s)<br />in this transaction");
+			$json['output'] = DisplayLib::boxMsg(sprintf(_("coupon requires %d items"),$qty)."<br />".
+						sprintf(_("there are only %d item(s)"),$act_qty)."<br />"._("in this transaction"));
 			return $json;
 		}
 		
@@ -207,8 +216,10 @@ var $ean;
 		}
 
 		$value = MiscLib::truncate2($value);
+		$json['udpmsg'] = 'goodBeep';
 		TransRecord::addcoupon($upc, $dept, $value, $foodstamp);
 		$json['output'] = DisplayLib::lastpage();
+		$json['redraw_footer'] = True;
 		return $json;
 	}
 

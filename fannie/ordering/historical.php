@@ -139,10 +139,11 @@ if (isset($_REQUEST['card_no']) && is_numeric($_REQUEST['card_no'])){
 		$filterstring .= sprintf(" AND p.card_no=%d",$_REQUEST['card_no']);
 	printf('<input type="hidden" id="cardno" value="%d" />',$_REQUEST['card_no']);
 }
+$page = isset($_REQUEST['page'])?$_REQUEST['page']:1;
 $order = isset($_REQUEST['order'])?$_REQUEST['order']:'';
 printf('<input type="hidden" id="orderSetting" value="%s" />',$order);
 if ($order !== '') $order = base64_decode($order);
-else $order = 'min(datetime)';
+else $order = 'min(datetime) desc';
 
 $q = "SELECT min(datetime) as orderDate,p.order_id,sum(total) as value,
 	count(*)-1 as items,status_flag,sub_status,
@@ -156,8 +157,11 @@ $q = "SELECT min(datetime) as orderDate,p.order_id,sum(total) as value,
 	LEFT JOIN {$TRANS}SpecialOrderContact as t on t.card_no=p.order_id
 	$filterstring
 	GROUP BY p.order_id,status_flag,sub_status
-	HAVING count(*) > 1 OR
-	SUM(CASE WHEN notes LIKE '' THEN 0 ELSE 1 END) > 0
+	HAVING (count(*) > 1 OR
+		SUM(CASE WHEN notes LIKE '' THEN 0 ELSE 1 END) > 0
+		)
+	AND ".$dbc->monthdiff($dbc->now(),'min(datetime)')." >= ".(($page-1)*3)."
+	AND ".$dbc->monthdiff($dbc->now(),'min(datetime)')." < ".($page*3)."
 	ORDER BY $order";
 $r = $dbc->query($q);
 
@@ -279,6 +283,23 @@ foreach($orders as $w){
 	$ret .= " <span id=\"statusdate{$w['order_id']}\">".($w['sub_status']==0?'No Date':date('m/d/Y',$w['sub_status']))."</span></td></tr>";
 }
 $ret .= "</table>";
+
+$url = $_SERVER['REQUEST_URI'];
+if (!strstr($url,"page=")){
+	if (substr($url,-4)==".php")
+		$url .= "?page=".$page;
+	else
+		$url .= "&page=".$page;
+}
+if ($page > 1){
+	$prev = $page-1;
+	$prev_url = preg_replace('/page=\d+/','page='.$prev,$url);
+	$ret .= sprintf('<a href="%s">Previous</a>&nbsp;&nbsp;||&nbsp;&nbsp;',
+			$prev_url);
+}
+$next = $page+1;
+$next_url = preg_replace('/page=\d+/','page='.$next,$url);
+$ret .= sprintf('<a href="%s">Next</a>',$next_url);
 
 echo $ret;
 ?>

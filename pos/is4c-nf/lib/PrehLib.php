@@ -105,6 +105,9 @@ static public function memberID($member_number) {
 
 	if (empty($ret['output']) && $ret['main_frame'] == false)
 		$ret['main_frame'] = MiscLib::base_url()."gui-modules/memlist.php";
+	
+	$CORE_LOCAL->set("beep","goodBeep");
+	$ret['udpmsg'] = 'goodBeep';
 
 	return $ret;
 }
@@ -296,8 +299,8 @@ static public function checkstatus($num) {
 
 /**
   Add a tender to the transaction
-  @right tender amount in cents (100 = $1)
-  @strl tender code from tenders table
+  @right tender code from tenders table
+  @strl tender amount in cents (100 = $1)
   @return An array see Parser::default_json()
    for format explanation.
 
@@ -316,32 +319,32 @@ static public function classic_tender($right, $strl) {
 		'output'=>"");
 
 	if ($CORE_LOCAL->get("LastID") == 0){
-		$ret['output'] = DisplayLib::boxMsg("No transaction in progress");
+		$ret['output'] = DisplayLib::boxMsg(_("no transaction in progress"));
 		return $ret;
 	}
 	elseif ($strl > 999999){
-	       $ret['output'] =	DisplayLib::xboxMsg("tender amount of ".MiscLib::truncate2($strl/100)."<BR>exceeds allowable limit");
+	       $ret['output'] =	DisplayLib::xboxMsg("tender amount of ".MiscLib::truncate2($strl/100)."<br />exceeds allowable limit");
 	       return $ret;
 	}
 	elseif ($right == "WT"){
-	       $ret['output'] =	DisplayLib::xboxMsg("WIC tender not applicable");
+	       $ret['output'] =	DisplayLib::xboxMsg(_("WIC tender not applicable"));
 	       return $ret;
 	}
 	elseif ($right == "CK" && $CORE_LOCAL->get("ttlflag") == 1 && ($CORE_LOCAL->get("isMember") != 0 || $CORE_LOCAL->get("isStaff") != 0) && (($strl/100 - $CORE_LOCAL->get("amtdue") - 0.005) > $CORE_LOCAL->get("dollarOver")) && ($CORE_LOCAL->get("cashOverLimit") == 1)){
-		$ret['output'] = DisplayLib::boxMsg("member or staff check tender cannot 
-			exceed total purchase by over $".$CORE_LOCAL->get("dollarOver"));
+		$ret['output'] = DisplayLib::boxMsg(_("member or staff check tender cannot 
+			exceed total purchase by over $").$CORE_LOCAL->get("dollarOver"));
 		return $ret;
 	}
 	elseif ((($right == "CC" || $right == "TB" || $right == "GD") && $strl/100 > ($CORE_LOCAL->get("amtdue") + 0.005)) && $CORE_LOCAL->get("amtdue") >= 0){ 
-		$ret['output'] = DisplayLib::xboxMsg("tender cannot exceed purchase amount");
+		$ret['output'] = DisplayLib::xboxMsg(_("tender cannot exceed purchase amount"));
 		return $ret;
 	}
 	elseif($right == "EC" && $strl/100 > $CORE_LOCAL->get("amtdue")){
-		$ret['output'] = DisplayLib::xboxMsg("no cash back with EBT cash tender");
+		$ret['output'] = DisplayLib::xboxMsg(_("no cash back with EBT cash tender"));
 		return $ret;
 	}
 	elseif($right == "CK" && $CORE_LOCAL->get("ttlflag") == 1 && $CORE_LOCAL->get("isMember") == 0 and $CORE_LOCAL->get("isStaff") == 0 && ($strl/100 - $CORE_LOCAL->get("amtdue") - 0.005) > 5){ 
-		$ret['output'] = DisplayLib::xboxMsg("non-member check tender cannot exceed total purchase by over $5.00");
+		$ret['output'] = DisplayLib::xboxMsg(_("non-member check tender cannot exceed total purchase by over $5.00"));
 		return $ret;
 	}
 
@@ -369,36 +372,36 @@ static public function classic_tender($right, $strl) {
 	$strl *= $mult;
 
 	if ($CORE_LOCAL->get("ttlflag") == 0) {
-		$ret['output'] = DisplayLib::boxMsg("transaction must be totaled before tender can be accepted");
+		$ret['output'] = DisplayLib::boxMsg(_("transaction must be totaled before tender can be accepted"));
 		return $ret;
 	}
 	elseif (($right == "FS" || $right == "EF" || $right == "EB") && $CORE_LOCAL->get("fntlflag") == 0) {
-		$ret['output'] = DisplayLib::boxMsg("eligible amount must be totaled before foodstamp tender can be accepted");
+		$ret['output'] = DisplayLib::boxMsg(_("eligible amount must be totaled before foodstamp tender can be accepted"));
 		return $ret;
 	}
 	elseif (($right == "EB" || $right == "EF") && $CORE_LOCAL->get("fntlflag") == 1 && $CORE_LOCAL->get("fsEligible") + 10 <= $strl) {
-		$ret['output'] = DisplayLib::xboxMsg("Foodstamp tender cannot exceed eligible amount by over $10.00");
+		$ret['output'] = DisplayLib::xboxMsg(_("Foodstamp tender cannot exceed eligible amount by over $10.00"));
 		return $ret;
 	}
 	elseif ($right == "CX" && $charge_ok == 0) {
-		$ret['output'] = DisplayLib::xboxMsg("member ".$CORE_LOCAL->get("memberID")."<BR>is not authorized<BR>to make corporate charges");
+		$ret['output'] = DisplayLib::xboxMsg("member ".$CORE_LOCAL->get("memberID")."<br />is not authorized<br />to make corporate charges");
 		return $ret;
 	}
 	//alert customer that charge exceeds avail balance
 	elseif (($right == "MI" || $right == "SC") && $charge_ok == 0 && $CORE_LOCAL->get("availBal") < 0) {
-		$ret['output'] = DisplayLib::xboxMsg("member ".$CORE_LOCAL->get("memberID")."<BR> has $" . $CORE_LOCAL->get("availBal") . " available.");
+		$ret['output'] = DisplayLib::xboxMsg("member ".$CORE_LOCAL->get("memberID")."<br /> has $" . $CORE_LOCAL->get("availBal") . " available.");
 		return $ret;
 	}
 	elseif (($right == "MI" || $right == "SC") && $charge_ok == 1 && $CORE_LOCAL->get("availBal") < 0) {
-		$ret['output'] = DisplayLib::xboxMsg("member ".$CORE_LOCAL->get("memberID")."<BR>is overlimit");
+		$ret['output'] = DisplayLib::xboxMsg("member ".$CORE_LOCAL->get("memberID")."<br /> "._("is overlimit"));
 		return $ret;
 	}
 	elseif (($right == "MI" || $right == "SC") && $charge_ok == 0) {
-		$ret['output'] = DisplayLib::xboxMsg("member ".$CORE_LOCAL->get("memberID")."<BR>is not authorized to make employee charges");
+		$ret['output'] = DisplayLib::xboxMsg("member ".$CORE_LOCAL->get("memberID")."<br /> "._("is not authorized to make employee charges"));
 		return $ret;
 	}
 	elseif (($right == "MI" || $right == "SC") && $charge_ok == 1 && ($CORE_LOCAL->get("availBal") + $CORE_LOCAL->get("memChargeTotal") - $strl) < 0) {
-		$ret['output'] = DisplayLib::xboxMsg("member ".$CORE_LOCAL->get("memberID")."<br> bhas exceeded charge limit");
+		$ret['output'] = DisplayLib::xboxMsg("member ".$CORE_LOCAL->get("memberID")."<br /> "._("has exceeded charge limit"));
 		return $ret;
 	}
 	elseif (($right == "MI" || $right == "SC") && $charge_ok == 1 && (ABS($CORE_LOCAL->get("memChargeTotal"))+ $strl) >= ($CORE_LOCAL->get("availBal") + 0.005) && $CORE_LOCAL->get("store")=="WFC") {
@@ -408,7 +411,7 @@ static public function classic_tender($right, $strl) {
 		return $ret;
 	}
 	elseif(($right == "MI" || $right == "CX" || $right == "MI") && MiscLib::truncate2($CORE_LOCAL->get("amtdue")) < MiscLib::truncate2($strl)) {
-		$ret['output'] = DisplayLib::xboxMsg("charge tender exceeds purchase amount");
+		$ret['output'] = DisplayLib::xboxMsg(_("charge tender exceeds purchase amount"));
 		return $ret;
 	}
 
@@ -437,20 +440,20 @@ static public function classic_tender($right, $strl) {
 	$unit_price = 0;
 
 	if ($tender_code == "FS") {
-		$CORE_LOCAL->set("boxMsg","WFC no longer excepts paper foods stamps. Please choose a different tender type");
+		$CORE_LOCAL->set("boxMsg",_("WFC no longer excepts paper foods stamps. Please choose a different tender type"));
 		$ret['main_frame'] = MiscLib::base_url().'gui-modules/boxMsg2.php';
 		return $ret;
 	}
 	elseif ($tender_code == "CP" && $strl > $row["MaxAmount"] && $CORE_LOCAL->get("msgrepeat") == 0){
-		$CORE_LOCAL->set("boxMsg","$".$strl." is greater than coupon limit<P>"
-		."<FONT size='-1'>[clear] to cancel, [enter] to proceed</FONT>");
+		$CORE_LOCAL->set("boxMsg","$".$strl." "._("is greater than coupon limit")."<p>"
+		."<font size='-1'>"._("clear to cancel").", "._("enter to proceed")."</font>");
 		$ret['main_frame'] = MiscLib::base_url().'gui-modules/boxMsg2.php';
 		return $ret;
 	}
 	elseif ($strl > $row["MaxAmount"] && $CORE_LOCAL->get("msgrepeat") == 0){
-		$CORE_LOCAL->set("boxMsg","$".$strl." is greater than tender limit "
+		$CORE_LOCAL->set("boxMsg","$".$strl." "._("is greater than tender limit")." "
 		."for ".$row['TenderName']."<p>"
-		."<FONT size='-1'>[clear] to cancel, [enter] to proceed</FONT>");
+		."<font size='-1'>"._("clear to cancel").", "._("enter to proceed")."</font>");
 		$ret['main_frame'] = MiscLib::base_url().'gui-modules/boxMsg2.php';
 		return $ret;
 	}
@@ -547,7 +550,7 @@ static public function classic_tender($right, $strl) {
 		}
 
 		if ($fs_change > 0) {
-			TransRecord::addchange($fs_change);
+			TransRecord::addchange($fs_change,$CORE_LOCAL->get("TenderType"));
 		}
 		Database::getsubtotals();
 	}
@@ -569,7 +572,7 @@ static public function classic_tender($right, $strl) {
 		$cash_return = $CORE_LOCAL->get("change");
 
 		if ($right != "FS") {
-			TransRecord::addchange($cash_return);
+			TransRecord::addchange($cash_return,$CORE_LOCAL->get("TenderType"));
 		}
 
 		if ($right == "CK" && $cash_return > 0) 
@@ -656,7 +659,7 @@ static public function modular_tender($right, $strl){
 	}
 
 	if (!is_object($tender_object)){
-		$ret['output'] = DisplayLib::boxMsg('tender is misconfigured');
+		$ret['output'] = DisplayLib::boxMsg(_('tender is misconfigured'));
 		return $ret;
 	}
 	else if (get_class($tender_object) != 'TenderModule'){
@@ -684,7 +687,8 @@ static public function modular_tender($right, $strl){
 
 		$CORE_LOCAL->set("change",-1 * $CORE_LOCAL->get("amtdue"));
 		$cash_return = $CORE_LOCAL->get("change");
-		TransRecord::addchange($cash_return);
+		$change_type = ($CORE_LOCAL->get("ChangeType") != $right) ? $CORE_LOCAL->get("ChangeType") : $right;
+		TransRecord::addchange($cash_return,$change_type);
 					
 		$CORE_LOCAL->set("End",1);
 		$CORE_LOCAL->set("beep","rePoll");
@@ -733,7 +737,7 @@ static public function deptkey($price, $dept,$ret=array()) {
 	$intvoided = 0;
 
 	if ($CORE_LOCAL->get("quantity") == 0 && $CORE_LOCAL->get("multiple") == 0) {
-			$CORE_LOCAL->set("quantity",1);
+		$CORE_LOCAL->set("quantity",1);
 	}
 		
 	if (!is_numeric($dept) || !is_numeric($price) || strlen($price) < 1 || strlen($dept) < 2) {
@@ -770,7 +774,7 @@ static public function deptkey($price, $dept,$ret=array()) {
 
 	$num_rows = $db->num_rows($result);
 	if ($num_rows == 0) {
-		$ret['output'] = DisplayLib::boxMsg("department unknown");
+		$ret['output'] = DisplayLib::boxMsg(_("department unknown"));
 		$ret['udpmsg'] = 'errorBeep';
 		$CORE_LOCAL->set("quantity",1);
 	}
@@ -785,13 +789,13 @@ static public function deptkey($price, $dept,$ret=array()) {
 
 		$num_rows2 = $db2->num_rows($result2);
 		if ($num_rows2 == 0) {
-			$ret['output'] = DisplayLib::boxMsg("no item found in<BR>".$row["dept_name"]);
+			$ret['output'] = DisplayLib::boxMsg(_("no item found in")."<br />".$row["dept_name"]);
 			$ret['udpmsg'] = 'errorBeep';
 		}
 		else {
 			$row2 = $db2->fetch_array($result2);
 			if ($price > $row2["total"]) {
-				$ret['output'] = DisplayLib::boxMsg("coupon amount greater than department total");
+				$ret['output'] = DisplayLib::boxMsg(_("coupon amount greater than department total"));
 				$ret['udpmsg'] = 'errorBeep';
 			}
 			else {
@@ -848,13 +852,13 @@ static public function deptkey($price, $dept,$ret=array()) {
 
 		if ($price > $deptmax && $CORE_LOCAL->get("msgrepeat") == 0) {
 
-			$CORE_LOCAL->set("boxMsg","$".$price." is greater than department limit<P>"
-					."<FONT size='-1'>[clear] to cancel, [enter] to proceed</FONT>");
+			$CORE_LOCAL->set("boxMsg","$".$price." "._("is greater than department limit")."<p>"
+					."<font size='-1'>"._("clear to cancel").", "._("enter to proceed")."</font>");
 			$ret['main_frame'] = MiscLib::base_url().'gui-modules/boxMsg2.php';
 		}
 		elseif ($price < $deptmin && $CORE_LOCAL->get("msgrepeat") == 0) {
-			$CORE_LOCAL->set("boxMsg","$".$price." is lower than department minimum<P>"
-				."<FONT size='-1'>[clear] to cancel, [enter] to proceed</FONT>");
+			$CORE_LOCAL->set("boxMsg","$".$price." "._("is lower than department minimum")."<p>"
+				."<font size='-1'>"._("clear to cancel").", "._("enter to proceed")."</font>");
 			$ret['main_frame'] = MiscLib::base_url().'gui-modules/boxMsg2.php';
 		}
 		else {
@@ -981,10 +985,15 @@ static public function ttl() {
 			$st->WriteToScale($CORE_LOCAL->get("ccTermOut"));
 		*/
 		//}
-
+		if($CORE_LOCAL->get("memberID") != $CORE_LOCAL->get("defaultNonMem")) {
+			$memline = " #" . $CORE_LOCAL->get("memberID");
+		} 
+		else {
+			$memline = "";
+		}
 		$peek = self::peekItem();
-		if (substr($peek,0,9) != "Subtotal "){
-			TransRecord::addItem("", "Subtotal ".MiscLib::truncate2($CORE_LOCAL->get("subtotal")).", Tax ".MiscLib::truncate2($CORE_LOCAL->get("taxTotal")), "C", "", "D", 0, 0, $amtDue, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3);
+		if (True || substr($peek,0,9) != "Subtotal "){
+			TransRecord::addItem("", "Subtotal ".MiscLib::truncate2($CORE_LOCAL->get("subtotal")).", Tax ".MiscLib::truncate2($CORE_LOCAL->get("taxTotal")).$memline, "C", "", "D", 0, 0, $amtDue, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3);
 		}
 	
 		if ($CORE_LOCAL->get("fntlflag") == 1) {

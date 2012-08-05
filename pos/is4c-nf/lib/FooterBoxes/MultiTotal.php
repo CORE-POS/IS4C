@@ -31,20 +31,20 @@ class MultiTotal extends FooterBox {
 		if ( $CORE_LOCAL->get("ttlflag") == 1 and $CORE_LOCAL->get("End") != 1 ) {
 			if ($CORE_LOCAL->get("fntlflag") == 1){
 				$this->header_css .= "background:#800080;";
-				return "fs Amount Due";
+				return _("fs Amount Due");
 			}
 			else {
 				$this->header_css .= "background:#800000;";
-				return "Amount Due";
+				return _("Amount Due");
 			}
 		}
 		elseif ($CORE_LOCAL->get("ttlflag") == 1  and $CORE_LOCAL->get("End") == 1 ) {
 			$this->header_css .= "background:#004080;";
-			return "Change";
+			return _("Change");
 		}	
 		else {
 			$this->header_css .= "background:#000000;";
-			return "Total";
+			return _("Total");
 		}
 	}
 

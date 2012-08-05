@@ -32,7 +32,7 @@ class TenderOut extends Parser {
 		global $CORE_LOCAL;
 		if ($CORE_LOCAL->get("LastID") == 0){
 			$ret = $this->default_json();
-			$ret['output'] = DisplayLib::boxMsg("no transaction in progress");
+			$ret['output'] = DisplayLib::boxMsg(_("no transaction in progress"));
 			return $ret;
 		}
 		else {
@@ -48,7 +48,8 @@ class TenderOut extends Parser {
 			$CORE_LOCAL->set("change",-1 * $CORE_LOCAL->get("amtdue"));
 			$cash_return = $CORE_LOCAL->get("change");
 			if ($asTender != "FS") {
-				TransRecord::addchange($cash_return);
+				$change_type = ($CORE_LOCAL->get("ChangeType") != $right) ? $CORE_LOCAL->get("ChangeType") : $right;
+				TransRecord::addchange($cash_return,$change_type);
 			}
 			if ($asTender == "CK" && $cash_return > 0) {
 				$CORE_LOCAL->set("cashOverAmt",1); // apbw/cvr 3/5/05 cash back beep
@@ -60,7 +61,7 @@ class TenderOut extends Parser {
 		} else {
 			$CORE_LOCAL->set("change",0);
 			$CORE_LOCAL->set("fntlflag",0);
-			ttl();
+			PrehLib::ttl();
 			$ret['output'] = DisplayLib::lastpage();
 		}
 		return $ret;

@@ -577,6 +577,9 @@ function create_op_dbs($con){
 			'deptSalesCodes','op');
 
 	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+			'dateRestrict','op');
+
+	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 			'subdepts','op');
 
 	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
@@ -694,6 +697,12 @@ function create_op_dbs($con){
 			'custdataBackup','op');
 
 	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+			'custAvailablePrefs','op');
+
+	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+			'custPreferences','op');
+
+	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 			'meminfo','op');
 
 	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
@@ -722,6 +731,9 @@ function create_op_dbs($con){
 
 	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 			'houseCouponItems','op');
+
+	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+			'disableCoupon','op');
 	
 	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 			'productMargin','op');
@@ -892,6 +904,9 @@ function create_trans_dbs($con){
 
 	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
 			'AR_EOM_Summary','trans');
+
+	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+			'AR_EOM_Summary_cache','trans');
 
 	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
 			'lane_config','trans');
@@ -1384,6 +1399,25 @@ function create_archive_dbs($con) {
 	if (!$con->table_exists($rp_view,$FANNIE_ARCHIVE_DB)){
 		$con->query($rp2Q,$FANNIE_ARCHIVE_DB);
 	}
+
+	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_ARCHIVE_DB,
+			'sumUpcSalesByDay','arch');
+	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_ARCHIVE_DB,
+			'sumRingSalesByDay','arch');
+	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_ARCHIVE_DB,
+			'vRingSalesToday','arch');
+	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_ARCHIVE_DB,
+			'sumDeptSalesByDay','arch');
+	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_ARCHIVE_DB,
+			'vDeptSalesToday','arch');
+	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_ARCHIVE_DB,
+			'sumMemSalesByDay','arch');
+	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_ARCHIVE_DB,
+			'sumMemTypeSalesByDay','arch');
+	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_ARCHIVE_DB,
+			'sumTendersByDay','arch');
+	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_ARCHIVE_DB,
+			'sumDiscountsByDay','arch');
 }
 
 ?>

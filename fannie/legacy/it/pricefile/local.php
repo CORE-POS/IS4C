@@ -42,8 +42,8 @@ if (isset($_POST["MAX_FILE_SIZE"])){
 		$row = $sql->fetch_array($r);
 
 		$local = 'No';
-		if (!empty($data[$LOCAL_COL]) && $data[$LOCAL_COL] == 1) $local = '300';
-		if (!empty($data[$LOCAL_COL]) && $data[$LOCAL_COL] == 2) $local = 'S.C.';
+		if (!empty($data[$LOCAL_COL]) && $data[$LOCAL_COL] == 2) $local = '300';
+		if (!empty($data[$LOCAL_COL]) && $data[$LOCAL_COL] == 1) $local = 'S.C.';
 
 		if (!empty($data[$LOCAL_COL]))
 			echo "<tr class=\"local\">";
