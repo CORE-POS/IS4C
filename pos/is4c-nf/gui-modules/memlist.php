@@ -34,6 +34,12 @@ class memlist extends NoInputPage {
 
 	function preprocess(){
 		global $CORE_LOCAL;
+
+		// set variable ahead of time
+		// so we know if lookup found no one
+		// vs. lookup didn't happen
+		$this->temp_num_rows = -1;
+
 		$CORE_LOCAL->set("away",1);
 		$entered = "";
 		if ($CORE_LOCAL->get("idSearch") && strlen($CORE_LOCAL->get("idSearch")) > 0) {
@@ -113,9 +119,13 @@ class memlist extends NoInputPage {
 
 	function head_content(){
 		global $CORE_LOCAL;
-		$this->add_onload_command("\$('#search').focus();\n");
-		if ($this->temp_num_rows > 0)
+		if ($this->temp_num_rows > 0){
 			$this->add_onload_command("\$('#search').keypress(processkeypress);\n");
+			$this->add_onload_command("\$('#search').focus();\n");
+		} else {
+			$this->default_parsewrapper_js('reginput','selectform');
+			$this->add_onload_command("\$('#reginput').focus();\n");
+		}
 		?>
 		<script type="text/javascript">
 		var prevKey = -1;
@@ -158,11 +168,14 @@ class memlist extends NoInputPage {
 		if ($num_rows < 1){
 			echo "
 			<div class=\"colored centeredDisplay\">
-				<span class=\"larger\">
-				no match found<br />next search or member number
-				</span>
+				<span class=\"larger\">";
+			if ($num_rows == -1)
+				echo _("member search")."<br />"._("enter member number or name");
+			else
+				echo _("no match found")."<br />"._("next search or member number");
+			echo "</span>
 				<input type=\"text\" name=\"search\" size=\"15\"
-			       	onblur=\"\$('#search').focus();\" id=\"search\" />
+			       	onblur=\"\$('#reginput').focus();\" id=\"reginput\" />
 				<br />
 				press [enter] to cancel
 			</div>";
@@ -170,7 +183,7 @@ class memlist extends NoInputPage {
 		else {
 			echo "<div class=\"listbox\">"
 				."<select name=\"search\" size=\"15\" "
-				."onblur=\"\$('#search').focus()\" id=\"search\">";
+				."onblur=\"\$('#search').focus();\" ondblclick=\"document.forms['selectform'].submit();\" id=\"search\">";
 
 			$selectFlag = 0;
 			if (!is_numeric($entered) && $CORE_LOCAL->get("memlistNonMember") == 1) {
@@ -191,7 +204,7 @@ class memlist extends NoInputPage {
 			}
 			echo "</select></div>"
 				."<div class=\"listboxText centerOffset\">"
-				."use arrow keys to navigate<p>[clear] to cancel</div>"
+				._("use arrow keys to navigate")."<p>"._("clear to cancel")."</div>"
 				."<div class=\"clear\"></div>";
 		}
 		echo "</form></div>";

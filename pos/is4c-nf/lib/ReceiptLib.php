@@ -97,10 +97,18 @@ static public function printReceiptHeader($dateTimeStamp, $ref) {
 
 	$i = 2; // for headers below
 	if ($CORE_LOCAL->get("newReceipt")==1 && $CORE_LOCAL->get("store") != "wfc"){
-		$receipt .= self::$PRINT_OBJ->TextStyle(True, False, True);
-		$receipt .= self::$PRINT_OBJ->centerString($CORE_LOCAL->get("receiptHeader1"),True);
-		$receipt .= self::$PRINT_OBJ->TextStyle(True);
-		$receipt .= "\n\n";
+		if ($CORE_LOCAL->get("ReceiptHeaderImage") != ""){
+			$img = self::$PRINT_OBJ->RenderBitmapFromFile(MiscLib::base_url()."graphics/" . $CORE_LOCAL->get("ReceiptHeaderImage"));
+			$receipt .= $img."\n";
+			$i=4;
+			$receipt .= "\n";
+		} 
+		else {
+			$receipt .= self::$PRINT_OBJ->TextStyle(True, False, True);
+			$receipt .= self::$PRINT_OBJ->centerString($CORE_LOCAL->get("receiptHeader1"),True);
+			$receipt .= self::$PRINT_OBJ->TextStyle(True);
+			$receipt .= "\n\n";
+		}
 	}
 	else if ($CORE_LOCAL->get("newReceipt")==1 && $CORE_LOCAL->get("store") == "wfc"){
 		$img = self::$PRINT_OBJ->RenderBitmapFromFile(MiscLib::base_url()."graphics/WFC_Logo.bmp");
@@ -942,10 +950,13 @@ static public function printReceipt($arg1,$second=False) {
 
 	self::$PRINT_OBJ = new ESCPOSPrintHandler();
 
-	$dokick = self::setDrawerKickLater();
+	$kicker_class = ($CORE_LOCAL->get("kickerModule")=="") ? 'Kicker' : $CORE_LOCAL->get('kickerModule');
+	$kicker_obj = new $kicker_class();
+	if (!is_object($kicker_object)) $kicker_object = new Kicker();
+	$dokick = $kicker_obj->doKick();
 	$receipt = "";
 
-	if ($arg1 == "full" and $dokick != 0) {	// ---- apbw 03/29/05 Drawer Kick Patch
+	if ($arg1 == "full" && $dokick) {	// ---- apbw 03/29/05 Drawer Kick Patch
 		$kick_cmd = self::$PRINT_OBJ->DrawerKick(2,48*2,30*2);
 		self::$PRINT_OBJ->writeLine($kick_cmd);
 		//self:::writeLine(chr(27).chr(112).chr(0).chr(48)."0");
@@ -998,7 +1009,7 @@ static public function printReceipt($arg1,$second=False) {
 					$receipt .= "\n\n";
 				}
 				else{
-					$receipt .= self::$PRINT_OBJ->centerString("Thank You - ".$member."!!!");
+					$receipt .= self::$PRINT_OBJ->centerString("Thank You - ".$member);
 					$receipt .= "\n";
 				}
 			}
@@ -1010,7 +1021,7 @@ static public function printReceipt($arg1,$second=False) {
 					$receipt .= "\n\n";
 				}
 				else{
-					$receipt .= self::$PRINT_OBJ->centerString("Thank You!!!");
+					$receipt .= self::$PRINT_OBJ->centerString("Thank You!");
 					$receipt .= "\n";
 				}
 			}
@@ -1123,6 +1134,7 @@ static public function printReceipt($arg1,$second=False) {
 	}
 	
 	$receipt = "";
+	$CORE_LOCAL->set("receiptToggle",1);
 }
 
 static public function reprintReceipt($trans_num=""){
@@ -1205,7 +1217,7 @@ static public function reprintReceipt($trans_num=""){
 
 		// The Nitty Gritty:
 		$member = "Member ".trim($CORE_LOCAL->get("memberID"));
-		if ($member == 0) $member = $CORE_LOCAL->get("defaultNonMem");
+		// if ($member == 0) $member = $CORE_LOCAL->get("defaultNonMem");
 		$your_discount = $CORE_LOCAL->get("transDiscount") + $CORE_LOCAL->get("memCouponTTL");
 
 		if ($CORE_LOCAL->get("transDiscount") + $CORE_LOCAL->get("memCouponTTL") + $CORE_LOCAL->get("specials") > 0) {
@@ -1224,10 +1236,10 @@ static public function reprintReceipt($trans_num=""){
 		$receipt .= "\n";
 	
 		if (trim($CORE_LOCAL->get("memberID")) != $CORE_LOCAL->get("defaultNonMem")) {
-			$receipt .= self::centerString("Thank You - ".$member."!!!")."\n";
+			$receipt .= self::centerString("Thank You - ".$member)."\n";
 		}
 		else {
-			$receipt .= self::centerString("Thank You!!!")."\n";
+			$receipt .= self::centerString("Thank You!")."\n";
 		}
 
 		if ($CORE_LOCAL->get("yousaved") > 0) {
@@ -1271,6 +1283,7 @@ static public function reprintReceipt($trans_num=""){
   @return
    - 1 open drawer
    - 0 do not open
+  @deprecated use Kicker modules
 */
 static public function setDrawerKick()
 
@@ -1281,8 +1294,12 @@ static public function setDrawerKick()
 // 	apbw 05/03/05 KickFix added !=0 criteria
 
 	if ($CORE_LOCAL->get("chargeTotal") == $CORE_LOCAL->get("tenderTotal") && $CORE_LOCAL->get("chargeTotal") != 0 && $CORE_LOCAL->get("tenderTotal") != 0 ) {	
-		//$_SESSION["kick"] = 0; 						
-		return 0;
+		if (in_array($CORE_LOCAL->get("TenderType"),$CORE_LOCAL->get("DrawerKickMedia"))) {
+			return 1;
+		} else {
+			//$_SESSION["kick"] = 0; 						
+			return 0;
+		}
 	} else {						
 		//$_SESSION["kick"] = 1;	
 		return 1;
@@ -1298,8 +1315,7 @@ static public function setDrawerKick()
   Opens on cash transactions, credit card
   transactions > $25, and stamp sales.
 
-  @todo This functionality needs to be more modular
-  and customizable.
+  @deprecated use Kicker modules
 */
 static public function setDrawerKickLater()
 

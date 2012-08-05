@@ -14,6 +14,7 @@ if (isset($_GET["action"])){
 		$q = "SELECT u.brand FROM vendorItems AS u
 		      LEFT JOIN products AS p ON u.upc=p.upc
 		      WHERE p.upc IS NULL AND u.vendorDept = $cat
+		      AND u.vendorID=1
 		      GROUP BY u.brand ORDER BY u.brand";
 		$r = $sql->query($q);
 		$out .= "<option value=\"\">----------</option>";

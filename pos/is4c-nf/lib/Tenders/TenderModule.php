@@ -56,6 +56,7 @@ class TenderModule {
 		if ($db->num_rows($result) > 0){
 			$row = $db->fetch_array($result);
 			$this->name_string = $row['TenderName'];
+			$this->change_type = $row['TenderType'];
 			$this->change_string = $row['ChangeMessage'];
 			$this->min_limit = $row['MinAmount'];
 			$this->max_limit = $row['MaxAmount'];
@@ -78,13 +79,13 @@ class TenderModule {
 		global $CORE_LOCAL;
 
 		if ($CORE_LOCAL->get("LastID") == 0){
-			return DisplayLib::boxMsg("No transaction in progress");
+			return DisplayLib::boxMsg(_("no transaction in progress"));
 		}
 		elseif ($this->amount > 9999.99){
-			return DisplayLib::boxMsg("tender amount of ".$this->amount."<br />exceeds allowable limit");
+			return DisplayLib::boxMsg(_("tender amount of")." ".$this->amount."<br />"._("exceeds allowable limit"));
 		}
 		elseif ($CORE_LOCAL->get("ttlflag") == 0) {
-			return DisplayLib::boxMsg("transaction must be totaled before tender can be accepted");
+			return DisplayLib::boxMsg(_("transaction must be totaled before tender can be accepted"));
 		}
 		else if ($this->name_string === ""){
 			return DisplayLib::inputUnknown();
@@ -100,14 +101,15 @@ class TenderModule {
 	function PreReqCheck(){
 		global $CORE_LOCAL;
 		if ($this->amount > $this->max_limit && $CORE_LOCAL->get("msgrepeat") == 0){
-			$CORE_LOCAL->set("boxMsg","$".$this->amount." is greater than tender limit "
-			."for ".$row['TenderName']."<p>"
-			."<font size='-1'>[clear] to cancel, [enter] to proceed</font>");
+			$CORE_LOCAL->set("boxMsg","$".$this->amount." "._("is greater than tender limit for")
+			." ".$row['TenderName']."<p>"
+			."<font size='-1'>"._("clear to cancel").", "._("enter to proceed")."</font>");
 			return MiscLib::base_url().'gui-modules/boxMsg2.php';
 		}
 
 		if ($this->amount - $CORE_LOCAL->get("amtdue") > 0) {
 			$CORE_LOCAL->set("change",$this->amount - $CORE_LOCAL->get("amtdue"));
+			$CORE_LOCAL->set("ChangeType", $this->change_type);
 		}
 		else {
 			$CORE_LOCAL->set("change",0);

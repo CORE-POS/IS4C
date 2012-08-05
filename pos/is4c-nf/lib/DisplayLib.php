@@ -335,7 +335,8 @@ static public function boxMsg($strmsg,$header="",$noBeep=False) {
   An alias for msgbox().
 */
 static public function inputUnknown() {
-	return self::msgbox("<b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;input unknown</b>", MiscLib::base_url()."graphics/exclaimC.gif");
+	return self::msgbox("<b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+			"._("input unknown")."</b>", MiscLib::base_url()."graphics/exclaimC.gif");
 }
 
 //--------------------------------------------------------------------//
@@ -361,13 +362,13 @@ static public function printheaderb() {
 	$ret = '
 	<div id="headerb">
 		<div class="left">
-			<span class="bigger">M E M B E R &nbsp;&nbsp;</span>
+			<span class="bigger">'._("M E M B E R").' &nbsp;&nbsp;</span>
 			<span class="smaller">
 			'.$strmemberID.'
 			</span>
 		</div>
 		<div class="right">
-			<span class="bigger">C A S H I E R &nbsp;&nbsp;</span>
+			<span class="bigger">'._("C A S H I E R").' &nbsp;&nbsp;</span>
 			<span class="smaller">
 			'.$CORE_LOCAL->get("cashier").'
 			</span>

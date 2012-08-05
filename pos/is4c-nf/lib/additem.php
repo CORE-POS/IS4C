@@ -123,6 +123,9 @@ function addItem($strupc, $strdescription, $strtransType, $strtranssubType, $str
 
 		$CORE_LOCAL->set("refund",0);
 		$CORE_LOCAL->set("refundComment","");
+
+		if ($CORE_LOCAL->get("refundDiscountable")==0)
+			$intdiscountable = 0;
 	}
 
 	/* Nothing in the code can set $_SESSION["void"] to 1

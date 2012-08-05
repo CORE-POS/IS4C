@@ -116,6 +116,9 @@ static public function addItem($strupc, $strdescription, $strtransType, $strtran
 
 		$CORE_LOCAL->set("refund",0);
 		$CORE_LOCAL->set("refundComment","");
+
+		if ($CORE_LOCAL->get("refundDiscountable")==0)
+			$intdiscountable = 0;
 	}
 
 	/* Nothing in the code can set $_SESSION["void"] to 1
@@ -147,7 +150,7 @@ static public function addItem($strupc, $strdescription, $strtransType, $strtran
 	// this session variable never gets used
 	//$_SESSION["datetimestamp"] = $datetimestamp;
 	$CORE_LOCAL->set("LastID",$CORE_LOCAL->get("LastID") + 1);
-	
+
 	$trans_id = $CORE_LOCAL->get("LastID");
 
 	$values = array(
@@ -204,7 +207,7 @@ static public function addItem($strupc, $strdescription, $strtransType, $strtran
 		}
 		$CORE_LOCAL->set("repeatable",1);
 	}
-	
+
 	$CORE_LOCAL->set("msgrepeat",0);
 	$CORE_LOCAL->set("toggletax",0);
 	$CORE_LOCAL->set("togglefoodstamp",0);
@@ -269,8 +272,9 @@ static public function addcomment($comment) {
   Add a change record (a special type of tender record)
   @param $dblcashreturn the change amount
 */
-static public function addchange($dblcashreturn) {
-	self::addItem("", "Change", "T", "CA", "", 0, 0, 0, $dblcashreturn, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8);
+static public function addchange($dblcashreturn,$strtendercode='CA') {
+	global $CORE_LOCAL;
+	self::addItem("", "Change", "T", $strtendercode, "", 0, 0, 0, $dblcashreturn, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8);
 }
 
 //_______________________________end addchange()
@@ -340,7 +344,12 @@ static public function addStaffCoffeeDiscount() {
   @param $department associated department
 */
 static public function adddiscount($dbldiscount,$department) {
+	global $CORE_LOCAL;
 	$strsaved = "** YOU SAVED $".MiscLib::truncate2($dbldiscount)." **";
+	if ($CORE_LOCAL->get("itemPD") > 0){
+		$strsaved = sprintf("** YOU SAVED \$%.2f (%d%%) **",
+			$dbldiscount,$CORE_LOCAL->get("itemPD"));
+	}
 	self::addItem("", $strsaved, "I", "", "D", $department, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2);
 }
 
@@ -471,7 +480,11 @@ static public function additemdiscount($intdepartment, $dbltotal) {
 static public function addTare($dbltare) {
 	global $CORE_LOCAL;
 	$CORE_LOCAL->set("tare",$dbltare/100);
+	$rf = $CORE_LOCAL->get("refund");
+	$rc = $CORE_LOCAL->get("refundComment");
 	self::addItem("", "** Tare Weight ".$CORE_LOCAL->get("tare")." **", "", "", "D", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6);
+	$CORE_LOCAL->set("refund",$rf);
+	$CORE_LOCAL->set("refundComment",$rc);
 }
 
 //___________________________end addTare()
@@ -488,7 +501,7 @@ static public function addMadCoup() {
 
 	$madCoup = -1 * $CORE_LOCAL->get("madCoup");
 	self::addItem("MAD Coupon", "Member Appreciation Coupon", "I", "CP", "C", 0, 1, $madCoup, $madCoup, $madCoup, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 17);
-		
+
 }
 
 /**
@@ -537,7 +550,7 @@ static public function addDeposit($quantity, $deposit, $foodstamp) {
 		$dept = 42;
 	}
 	self::addItem("DEPOSIT" * $chardeposit, "Deposit", "I", "", "", $dept, $quantity, $deposit, $total, $deposit, 0, 0, $foodstamp, 0, 0, 0, 0, $quantity, 0, 0, 0, 0, 0, 0);
-		
+
 }
 
 // ----------------------------- insert transaction discount -----------------------------------
@@ -598,7 +611,7 @@ static public function addactivity($activity) {
 
 		$interval = strtotime($row["rightNow"]) - strtotime($row["maxDateTime"]);
 	}
-		
+
 	//$_SESSION["datetimestamp"] = strftime("%Y-%m-%d %H:%M:%S", $timeNow);
 	$datetimestamp = strftime("%Y-%m-%d %H:%M:%S", $timeNow);
 

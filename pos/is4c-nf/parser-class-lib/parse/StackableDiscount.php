@@ -31,11 +31,11 @@ class StackableDiscount extends Parser {
 			if (!is_numeric($strl)) 
 				return False;
 			elseif ($CORE_LOCAL->get("tenderTotal") != 0) 
-				$this->ret['output'] = DisplayLib::boxMsg("discount not applicable after tender");
+				$this->ret['output'] = DisplayLib::boxMsg(_("discount not applicable after tender"));
 			elseif ($strl > 50) 
-				$this->ret['output'] = DisplayLib::boxMsg("discount exceeds maximum");
+				$this->ret['output'] = DisplayLib::boxMsg(_("discount exceeds maximum"));
 			elseif ($strl <= 0) 
-				$this->ret['output'] = DisplayLib::boxMsg("discount must be greater than zero");
+				$this->ret['output'] = DisplayLib::boxMsg(_("discount must be greater than zero"));
 			elseif ($strl <= 50 and $strl > 0) {
 				$existingPD = $CORE_LOCAL->get("percentDiscount");
 				$stackablePD = $strl;
