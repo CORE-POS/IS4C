@@ -6,7 +6,7 @@ include('util.php');
 ?>
 <html>
 <head>
-<title>Extra configuration options</title>
+<title>IT CORE Lane Installation: Additional Configuration</title>
 <style type="text/css">
 body {
 	line-height: 1.5em;
@@ -25,6 +25,14 @@ Additional Configuration
 <a href="debug.php">Debug</a>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <a href="extra_data.php">Sample Data</a>
+
+<h2>IT CORE Lane Installation: Additional Configuration</h2>
+
+<?php
+check_writeable('../ini.php');
+check_writeable('../ini-local.php');
+?>
+
 <form action=extra_config.php method=post>
 <b>Browser only</b>: <select name=BROWSER_ONLY>
 <?php
@@ -237,6 +245,29 @@ Can also print to a text file if it's just a regular file name.
 if(isset($_REQUEST['emailReceiptFrom'])) $CORE_LOCAL->set('emailReceiptFrom',$_REQUEST['emailReceiptFrom']);
 printf("<input type=text name=emailReceiptFrom value=\"%s\" />",$CORE_LOCAL->get('emailReceiptFrom'));
 confsave('emailReceiptFrom',"'".$CORE_LOCAL->get('emailReceiptFrom')."'");
+?>
+<br />
+<b>Drawer Behavior Module</b>:
+<?php
+$kmods = array();
+$dh = opendir('../lib/Kickers/');
+while(False !== ($f = readdir($dh))){
+	if ($f == "." || $f == "..")
+		continue;
+	if (substr($f,-4) == ".php"){
+		$kmods[] = rtrim($f,".php");
+	}
+}
+if(isset($_REQUEST['kickerModule'])) $CORE_LOCAL->set('kickerModule',$_REQUEST['kickerModule']);
+if ($CORE_LOCAL->get('kickerModule')=='') $CORE_LOCAL->set('kickerModule','Kicker');
+echo '<select name="kickerModule">';
+foreach($kmods as $k){
+	printf('<option %s>%s</option>',
+		($CORE_LOCAL->get('kickerModule')==$k?'selected':''),
+		$k);
+}
+echo '</select>';
+confsave('kickerModule',"'".$CORE_LOCAL->get('kickerModule')."'");
 ?>
 <br />
 <hr />
