@@ -337,6 +337,10 @@ static public function frankclassreg() {
 
 //----------------------------------Credit Card footer----by CvR
 
+/**
+  @deprecated
+  Not called, ccTotal session var has been removed
+*/
 static public function printCCFooter($dateTimeStamp, $ref) {
 	global $CORE_LOCAL;
 
@@ -989,10 +993,9 @@ static public function printReceipt($arg1,$second=False) {
 
 			$receipt .= self::receiptDetail();
 			$member = "Member ".trim($CORE_LOCAL->get("memberID"));
-			$your_discount = $CORE_LOCAL->get("transDiscount") + $CORE_LOCAL->get("memCouponTTL");
+			$your_discount = $CORE_LOCAL->get("transDiscount");
 
 			if ($CORE_LOCAL->get("transDiscount") + 
-			   $CORE_LOCAL->get("memCouponTTL") + 
 			   $CORE_LOCAL->get("specials") > 0 ) {
 				$receipt .= 'TODAY YOU SAVED = $'.
 					number_format($your_discount + $CORE_LOCAL->get("specials"),2).
@@ -1198,7 +1201,7 @@ static public function reprintReceipt($trans_num=""){
 		$connID->close();
 
 		if ($CORE_LOCAL->get("isMember") == 1) {
-			$CORE_LOCAL->set("yousaved",number_format( $CORE_LOCAL->get("transDiscount") + $CORE_LOCAL->get("discounttotal") + $CORE_LOCAL->get("memSpecial") + $CORE_LOCAL->get("memCouponTTL"), 2));
+			$CORE_LOCAL->set("yousaved",number_format( $CORE_LOCAL->get("transDiscount") + $CORE_LOCAL->get("discounttotal") + $CORE_LOCAL->get("memSpecial"), 2));
 			$CORE_LOCAL->set("couldhavesaved",0);
 			$CORE_LOCAL->set("specials",number_format($CORE_LOCAL->get("discounttotal") + $CORE_LOCAL->get("memSpecial"), 2));
 		}
@@ -1218,9 +1221,9 @@ static public function reprintReceipt($trans_num=""){
 		// The Nitty Gritty:
 		$member = "Member ".trim($CORE_LOCAL->get("memberID"));
 		// if ($member == 0) $member = $CORE_LOCAL->get("defaultNonMem");
-		$your_discount = $CORE_LOCAL->get("transDiscount") + $CORE_LOCAL->get("memCouponTTL");
+		$your_discount = $CORE_LOCAL->get("transDiscount");
 
-		if ($CORE_LOCAL->get("transDiscount") + $CORE_LOCAL->get("memCouponTTL") + $CORE_LOCAL->get("specials") > 0) {
+		if ($CORE_LOCAL->get("transDiscount") + $CORE_LOCAL->get("specials") > 0) {
 			$receipt .= "\n".self::centerString("------------------ YOUR SAVINGS -------------------")."\n";
 
 			if ($your_discount > 0) {

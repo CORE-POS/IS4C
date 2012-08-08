@@ -232,7 +232,40 @@ static public function addItem($strupc, $strdescription, $strtransType, $strtran
 static public function addtax() {
 	global $CORE_LOCAL;
 
-	self::addItem("TAX", "Tax", "A", "", "", 0, 0, 0, $CORE_LOCAL->get("taxTotal"), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+	if (True){
+		self::addItem("TAX", "Tax", "A", "", "", 0, 0, 0, $CORE_LOCAL->get("taxTotal"), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+		return;
+	}
+
+	/* line-item taxes in transaction
+	   intentionally disabled for now
+	*/
+
+	$db = Database::tDataConnect();
+	$q = "SELECT id, description, taxTotal, fsTaxable, fsTaxTotal, foodstampTender, taxrate
+		FROM taxView ORDER BY taxrate DESC";
+	$r = $db->query($q);
+
+	$fsTenderAvailable = null;
+	while($w = $db->fetch_row($r)){
+		if ($fsTenderAvailable === null) $fsTenderAvailable = (double)$w['foodstampTender'];
+		
+		// whole amount purchased w/ foodstamps; exempt all fsTax
+		if ($fsTenderAvailable >= $w['fsTaxable']){
+			$w['taxTotal'] -= $w['fsTaxTotal'];
+			$fsTenderAvailable -= $w['fsTaxable'];
+		}
+		// partial; exempt proportionally
+		else if ($fsTenderAvailable > 0 && $fsTenderAvailable < $w['fsTaxable']){
+			$exempt = $fsTenderAvailable * $w['taxrate'];
+			$w['taxTotal'] -= $exempt;
+			$fsTenderAvailable = 0.00;
+		}
+
+		self::addItem("TAX", substr($w['description']." Tax",0,35), "A", "", "", 0, 0, 0, 
+			MiscLib::truncate2($w['taxTotal']), 0, 0, $w['id'], 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+	}
+
 }
 
 //________________________________end addtax()
