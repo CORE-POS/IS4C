@@ -7,7 +7,7 @@ pos/is4c-web/ini.php
 pos/is4c-web/lib/pp-api-credentials.php
 fannie/reports/cash_report/image_area/*
 fannie/config.php
-fannie/logs/*.log*
+fannie/logs/*
 pos/is4c-nf/scale-drivers/drivers/rs232/ssd
 */tmp/*
 fannie/item/images/done/*
@@ -27,5 +27,5 @@ fannie/pi_food_net
 fannie/pi_food_net/scalesDistro
 *.dll
 *.exe
-
 fannie/INSTALL
+README
