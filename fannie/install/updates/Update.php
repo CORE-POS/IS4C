@@ -100,7 +100,7 @@ class UpdateObj {
 		}
 
 		$db->query("USE $FANNIE_ARCHIVE_DB");
-		foreach ($this->queries['trans'] as $q){
+		foreach ($this->queries['archive'] as $q){
 			$try = $db->query($q);
 			if ($try){
 				$ret .= sprintf('<li><span style="color:green;" onclick="$(\'#qs%d\').toggle();">Query succeeded</span>
