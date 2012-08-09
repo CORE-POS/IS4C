@@ -38,13 +38,6 @@ include($FANNIE_ROOT.'src/mysql_connect.php');
 $selected = (isset($_GET['super']))?$_GET['super']:-1;
 $name = "";
 
-// dbc has already been created in mysql_connect.php
-//$dbc = new SQLManager($FANNIE_SERVER,'MYSQL',$FANNIE_OP_DB, 'root',$FANNIE_SERVER_PW);
-//  6Aug12 EL Why does it have these obsolete values?
-// $dbc = new SQLManager('129.103.2.2','MYSQL','is4c_op', 'root',$FANNIE_SERVER_PW);
-// This is a config value now, don't change it. is4c_trans is obsolete anyway.
-// $FANNIE_TRANS_DB = 'is4c_trans';
-
 $superR = $dbc->query("SELECT superID,super_name FROM MasterSuperDepts ORDER BY super_name");
 $supers = array();
 $supers[-1] = "All";
