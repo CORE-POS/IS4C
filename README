@@ -1,9 +1,7 @@
-IS4C - For the West End Food Co-op, Toronto, Ontario, Canada.
+IS4C - The POS, the backend, the movie, the book, reporting system
 
-Forked from:
- Andy Theuninck's fork for the Whole Food Coop, Duluth, Minnesota, USA,
- of the original by Wedge Community Coop, Minneapolis, Minnesota, USA
+This is development branch is based off WFC's release. Up to date code can be found on github.
 
-Up to date code can be found on github.
+Whereas the FLOSS-POS project is a fork of this project, the reposity here should aim to complete the currently available code. The feature set may be more limited, but hopefully robust enough to have a clear upgrade path to any future versions of IS4C/FLOSS-POS/???
 
 See the INSTALL file for installation instructions.
