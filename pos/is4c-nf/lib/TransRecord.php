@@ -487,7 +487,7 @@ static public function addCoupon($strupc, $intdepartment, $dbltotal, $foodstamp=
   @param $dbltotal coupon amount (should be negative)
 */
 static public function addhousecoupon($strupc, $intdepartment, $dbltotal) {
-	self::addItem($strupc, " * WFC Coupon", "I", "IC", "C", $intdepartment, 1, $dbltotal, $dbltotal, $dbltotal, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0);
+	self::addItem($strupc, " * Store Coupon", "I", "IC", "C", $intdepartment, 1, $dbltotal, $dbltotal, $dbltotal, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0);
 }
 
 /**

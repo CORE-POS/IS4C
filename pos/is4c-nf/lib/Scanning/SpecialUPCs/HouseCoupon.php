@@ -331,7 +331,7 @@ class HouseCoupon extends SpecialUPC {
 			$value = $infoW["discountValue"];
 			break;
 		case "%": // percent discount on all items
-			getsubtotals();
+			Database::getsubtotals();
 			$value = $infoW["discountValue"]*$CORE_LOCAL->get("discountableTotal");
 			break;
 		}
@@ -340,6 +340,7 @@ class HouseCoupon extends SpecialUPC {
 		
 		TransRecord::addhousecoupon($upc,$dept,-1*$value);
 		$json['output'] = DisplayLib::lastpage();
+		$json['udpmsg'] = 'goodBeep';
 		return $json;
 	}
 
