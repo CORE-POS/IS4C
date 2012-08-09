@@ -45,9 +45,18 @@ elseif(isset($_REQUEST['depts'])){
 	echo "Loading departments";
 	$db->query("TRUNCATE TABLE departments");
 	loaddata($db,'departments');
+	/* subdepts sample data is of questionable use
 	echo "<br />Loading subdepts";
 	$db->query("TRUNCATE TABLE subdepts");
 	loaddata($db,'subdepts');
+	*/
+}
+elseif (isset($_REQUEST['superdepts'])){
+	echo "Loadintg super departments";
+	$db->query("TRUNCATE TABLE superdepts");
+	loaddata($db,'superdepts');
+	$db->query("TRUNCATE TABLE superDeptNames");
+	loaddata($db,'superDeptNames');
 }
 elseif (isset($_REQUEST['tenders'])){
 	echo "Loadintg tenders";
@@ -75,27 +84,25 @@ Stuff to sell. There's a lot of sample data. I think this might
 be the Wedge's or at least a snapshot of it.<br />
 <input type=submit name=products value="Load sample products" />
 <hr />
-<b>Departments</b> &amp; <b>Subdepts</b><br />
-Products get categorized into departments &amp; subdepartments.
+<b>Departments</b> <br />
+Products get categorized into departments .
 You can also ring amounts directly to a department. Not needed,
 strictly speaking, for a basic lane (Ring up items, total, 
 accept tender, provide change).<br />
 <input type=submit name=depts value="Load sample departments" />
-<hr />
-<b>Tenders</b>:
-Load all the default tenders into the tenders table.<br />
-<input type=submit name=tenders value="Load default tenders" />
 <hr />
 <b>Super Department Names</b> and <b>Super Department Links</b><br />
 Super Departments are tags for grouping Departments.
 A Department can have more than one.
 Here is rudimentary set that agrees with the Products sample data.
 Can also used to group the domains of Buyers.
-<br />Use them with e.g. the <a href="/IS4C/fannie/item/productList.php">Product List report/tool</a>
+<br />Use them with e.g. the <a href="../../fannie/item/productList.php">Product List report/tool</a>
 <br />
-<input type=submit name=superDeptNames value="Load sample super department names" />
-<br />
-<input type=submit name=superdepts value="Load sample super department links" />
+<input type=submit name=superdepts value="Load sample super departments" />
+<hr />
+<b>Tenders</b>:
+Load all the default tenders into the tenders table.<br />
+<input type=submit name=tenders value="Load default tenders" />
 </form>
 </body>
 </html>
