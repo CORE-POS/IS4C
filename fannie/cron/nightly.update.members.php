@@ -29,6 +29,7 @@
 
  'Z --COMMENTZ { - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+  7Aug12 EL Enable email, to me at gmail.
  13Jul12 EL -> Try doing dbConn2 as add_connection. It may be necessary.
                It is important that the databases for each conn have different names.
                See nightly.dtrans.php for example, but it isn't clear how you distinguish the two.
@@ -513,13 +514,14 @@ function dieHere($msg="") {
 
 	$subject = "PoS: Error: Update IS4C members";
 	$message = "$msg";
+echo "$message\n";
 	//$message = "Added: $insertCount  Updated: $updateCount\n";
 	$adminString = implode(" ", $admins);
 
-	// $lastLine = exec("echo \"$message\" | mail -s \"$subject\" $adminString");
-	echo "Not ready to email: $msg\n";
+	$lastLine = exec("echo \"$message\" | mail -s \"$subject\" $adminString");
+	// echo "Not ready to email: $msg\n";
 	// Ordinary success returns nothing, or "".
-	//echo "from mailing: {$lastLine}\n";
+	echo "from mailing: {$lastLine}\n";
 
 	if ( $dbConn ) {
 		// Warning: mysqli::close(): Couldn't fetch mysqli in /home/parkdale/is4c/updateMembers.php on line next
@@ -644,7 +646,7 @@ $memberIdOffset = 4000;
 $writeIS4C = 1;
 
 // People to whom news is mailed.
-$admins = array("ericlee@sympatico.ca");
+$admins = array("el66gr@gmail.com");
 
 // --constants } - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -737,7 +739,7 @@ $updateStockpurchases = "";
 $is4cOp = "";
 
 // Controls some monitoring and info.
-$debug = 0;
+$debug = 1;
 
 // --variables } - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -830,7 +832,7 @@ dieHere("After fm");
 */
 
 // Little tests of civicrm connection.
-if (0) {
+if (1) {
 
 	$selectCivi = "SELECT id, contact_id from civicrm_membership LIMIT 5;";
 	$civim = $dbConn->query("$selectCivi");
@@ -928,7 +930,7 @@ $dbConn2->SetFetchMode(ADODB_FETCH_ASSOC);
 
 
 // Little tests of is4c connection.
-if (0) {
+if (1) {
 
 	$selectIs4c = "SELECT CardNo, LastName from custdata LIMIT 5;";
 	$customers = $dbConn2->query("$selectIs4c");
@@ -1473,11 +1475,13 @@ $subject = "PoS: Update IS4C members: added $insertCount";
 $message = "Added: $insertCount  Updated: $updateCount\n";
 $adminString = implode(" ", $admins);
 
-if ( $debug == 1) 
+if ( $debug == 1) {
 	echo "Not ready to email. subject: $subject  message: $message\n";
-//$lastLine = exec("echo \"$message\" | mail -s \"$subject\" $adminString");
-// Ordinary success returns nothing, or "".
-//echo "from mailing: {$lastLine}\n";
+} else {
+	$lastLine = exec("echo \"$message\" | mail -s \"$subject\" $adminString");
+	// Ordinary success returns nothing, or "".
+	echo "from mailing: {$lastLine}\n";
+}
 
 $now = date("Ymd_M H:i:s e");
 $writeOK = fwrite($logger, "$now $message");
