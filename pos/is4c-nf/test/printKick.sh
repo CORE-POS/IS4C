@@ -5,11 +5,17 @@
 # Refer to: Epson Technical Guide "Opening the drawer kickout"
 # https://docs.google.com/a/westendfood.coop/file/d/1Q1QhwLa_2ujCBfL-ikLrO10hYMkCf_Jqjy27G6O0Nl-m6dkN1ln-5Kr11v-U/edit
 
+# --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+#  7Jun12 EL ESC as a var.
+# 24May12 EL Bug: quoted assignment of SCROLL.
+
 # --VARIALBLES and --CONSTANTS - - - - - - - - - - - - - - - - -
 
 # Scroll printer paper so you can see the message.
-SCROLL=\n\n\n\n\n\n\n\n
+SCROLL="\n\n\n\n\n\n\n\n"
 PRINTER=/dev/lp0
+ESC="\x1B"
 
 # Use pin 2
 P2=0
@@ -31,6 +37,6 @@ T2=z
 
 printf "Open sesame!" > $PRINTER
 
-printf "\x1Bp${P2}${T1}${T2}" > $PRINTER
+printf "${ESC}${P2}${T1}${T2}" > $PRINTER
 
 printf "${SCROLL}" > $PRINTER
