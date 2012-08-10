@@ -108,6 +108,7 @@ class UPC extends Parser {
 			}
 			// no match; not a product, not special
 			$ret['output'] = DisplayLib::boxMsg($upc."<br /><b>"._("is not a valid item")."</b>");
+			TransRecord::addQueued($upc,'BAD SCAN',0,'BS');
 
 			return $ret; 
 		}
