@@ -220,6 +220,40 @@ static public function addItem($strupc, $strdescription, $strtransType, $strtran
 
 }
 
+/**
+  Add a item, but not until the end of the transaction
+  Use this for records that shouldn't be displayed
+*/
+static public function addQueued($upc, $description, $numflag=0, $charflag=''){
+	global $CORE_LOCAL;
+	$queue = $CORE_LOCAL->get("infoRecordQueue");	
+	if (!is_array($queue)) $queue = array();
+	$queue[] = array('upc'=>$upc,'description'=>$description,
+			'numflag'=>$numflag,'charflag'=>$charflag);
+	$CORE_LOCAL->set("infoRecordQueue", $queue);
+}
+
+/**
+   Add records queued by TransRecord::addQueued
+   to the current transaction then clear the queue.
+   Records get trans_type C, trans_status D 
+*/
+static public function emptyQueue(){
+	global $CORE_LOCAL;
+	$queue = $CORE_LOCAL->get("infoRecordQueue");	
+	if (!is_array($queue)) $queue = array();
+	foreach($queue as $record){
+		if (!isset($record['upc']) || !isset($record['description']) ||
+		    !isset($record['numflag']) || !isset($record['charflag'])){
+			continue; //skip incomplete
+		}
+		self::addItem($record['upc'], $record['description'], "C", "", "D", 
+			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+			0, $record['numflag'], $record['charflag']);
+	}
+	$CORE_LOCAL->set("infoRecordQueue",array());
+}
+
 //________________________________end addItem()
 
 
