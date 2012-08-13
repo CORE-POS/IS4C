@@ -74,7 +74,12 @@ confset('FANNIE_AR_DEPARTMENTS',"'$FANNIE_AR_DEPARTMENTS'");
 printf("<input type=\"text\" name=\"FANNIE_AR_DEPARTMENTS\" value=\"%s\" />",$FANNIE_AR_DEPARTMENTS);
 ?>
 <hr />
-<b>Enabled modules</b><br />
+The Member editing interface displayed after you select a member at:
+<br /><a href="/IS4C/fannie/mem/search.php" target="_mem">/IS4C/fannie/mem/search.php</a>
+<br />consists of fields grouped in several sections, called modules, listed below.
+<br />The enabled (active) ones are selected/highlighted.
+<br />
+<br /><b>Available Modules</b> <br />
 <?php
 if (!isset($FANNIE_MEMBER_MODULES)) $FANNIE_MEMBER_MODULES = array();
 if (isset($_REQUEST['FANNIE_MEMBER_MODULES'])){
@@ -102,6 +107,8 @@ foreach($tmp as $module){
 }
 ?>
 </select><br />
+Click or ctrl-Click or shift-Click to select/deselect modules for enablement.
+<br /><br />
 <a href="memModDisplay.php">Adjust Module Display Order</a>
 <hr />
 <input type=submit value="Re-run" />

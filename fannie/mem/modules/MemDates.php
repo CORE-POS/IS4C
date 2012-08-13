@@ -35,8 +35,9 @@ class MemDates extends MemberModule {
 		$infoW = $dbc->fetch_row($infoR);
 
 		$ret = "<script type=\"text/javascript\"
-			src=\"{$FANNIE_URL}src/CalendarControl.js\"
-			</script>";
+			src=\"{$FANNIE_URL}src/CalendarControl.js\">
+			</script>\n";
+
 		$ret .= "<fieldset><legend>Membership Dates</legend>";
 		$ret .= "<table class=\"MemFormTable\" 
 			border=\"0\">";
@@ -50,8 +51,8 @@ class MemDates extends MemberModule {
 				maxlength="10" value="%s" onclick="showCalendarControl(this);"
 				/></td></tr>',$infoW['end_date']);	
 
-
 		$ret .= "</table></fieldset>";
+
 		return $ret;
 	}
 
