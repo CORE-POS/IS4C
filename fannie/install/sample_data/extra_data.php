@@ -36,6 +36,14 @@ elseif(isset($_REQUEST['custdata'])){
 	$db->query("TRUNCATE TABLE custdata");
 	loaddata($db,'custdata');
 }
+elseif(isset($_REQUEST['memtype'])){
+	echo "Loading memtype";
+	$db->query("TRUNCATE TABLE memtype");
+	loaddata($db,'memtype');
+	echo "Loading memdefaults";
+	$db->query("TRUNCATE TABLE memdefaults");
+	loaddata($db,'memdefaults');
+}
 elseif(isset($_REQUEST['products'])){
 	echo "Loading products";
 	$db->query("TRUNCATE TABLE products");
@@ -69,6 +77,8 @@ included logins are '56' and '7000'.<br />
 Customer data is the membership information. Sample data includes
 a bunch of members and default non-member 11.<br />
 <input type=submit name=custdata value="Load sample customers" />
+<br />
+<input type=submit name=memtype value="Load sample member types" />
 <hr />
 <b>Products</b><br />
 Stuff to sell. There's a lot of sample data. I think this might
