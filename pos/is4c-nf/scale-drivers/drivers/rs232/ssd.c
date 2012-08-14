@@ -218,7 +218,7 @@ int main(void) {
 										/* Starting from the 5th byte of the raw scan
 												copy up to 17 chars into the scanner buffer. E.g.
 												Of: S08F789678545021, copy 789678545021 to the scanner buffer.
-										/*
+										*/
 										for (i = 0; i < 17; i++) {
 											scannerInput[i] = serialBuffer[i+4];
 										}
