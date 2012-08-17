@@ -144,11 +144,67 @@ x               Add Product List and Tool to Item Maint submenu0
 	<div class="menuwrapper">
 	<div class="submenu level0" style="width:155px;top:-28;left:135px;">
 		<ul style="">
-			<li><a href="<?php echo $path; ?>admin/Cashiers/">Cashier Management Menu</a></li>
-			<li><a href="<?php echo $path; ?>mem/index.php">Member Management Menu</a></li>
-			<li><a href="<?php echo $path; ?>mem/statements/">E-mail Statements Menu</a></li>
+			<li><a href="<?php echo $path; ?>admin/Cashiers/">Cashier Management &gt;&gt;</a>
+				<div class="menuwrapper">
+					<div class="submenu level1" style="width:195px;top:-28px;left:135px;">
+					<ul style="">
+					<li><a href="<?php echo $path; ?>admin/Cashiers/add.php">Add a new cashier</a></li>
+					<li><a href="<?php echo $path; ?>admin/Cashiers/view.php">View/edit cashiers</a></li>
+					<li><a href="<?php echo $path; ?>reports/cash_report/">Cashier performance report</a></li>
+					</ul>
+					</div><!-- /#submenu -->
+				</div><!-- /#menuwrapper -->
+			</li>
+			<li><a href="<?php echo $path; ?>mem/index.php">Member Management &gt;&gt;</a>
+				<div class="menuwrapper">
+					<div class="submenu level1" style="width:195px;top:-28px;left:135px;">
+					<ul style="">
+					<li><a href="<?php echo $path; ?>mem/search.php">View/Edit Members</a></li>
+					<li><a href="<?php echo $path; ?>mem/types.php">Manage Member Types</a></li>
+					<li><a href="<?php echo $path; ?>mem/new.php">View/Create New Members</a></li>
+					<li><a href="<?php echo $path; ?>mem/numbers/">Print Member Stickers</a></li>
+					<li><a href="<?php echo $path; ?>mem/import/">Import Member Information &gt;&gt;</a>
+						<div class="menuwrapper">
+							<div class="submenu level2" style="width:155px;top:-28;left:135px;">
+							<ul style="">
+								<li><a href="<?php echo $path; ?>mem/import/nn.php">Names &amp; Numbers</a></li>
+								<li><a href="<?php echo $path; ?>mem/import/contact.php">Contact Information</a></li>
+								<li><a href="<?php echo $path; ?>mem/import/equity.php">Existing Equity</a></li>
+							</ul>
+							</div><!-- /#submenu -->
+						</div><!-- /#menuwrapper -->
+					</li>
+					</ul>
+					</div><!-- /#submenu -->
+				</div><!-- /#menuwrapper -->
+			</li>
+			<li><a href="<?php echo $path; ?>mem/statements/">E-mail Statements &gt;&gt;</a>
+				<div class="menuwrapper">
+					<div class="submenu level1" style="width:195px;top:-28px;left:135px;">
+					<ul style="">
+					<li><a href="<?php echo $path; ?>mem/statements/indvAR.php">AR (Member)</a></li>
+					<li><a href="<?php echo $path; ?>mem/statements/busAR.php">AR (Business EOM)</a></li>
+					<li><a href="<?php echo $path; ?>mem/statements/busAR.php">AR (Business Any Balance)</a></li>
+					<li><a href="<?php echo $path; ?>mem/statements/equity.php">Equity</a></li>
+					<li><a href="<?php echo $path; ?>mem/statements/history.php">Sent E-mail History</a></li>
+					</ul>
+					</div><!-- /#submenu -->
+				</div><!-- /#menuwrapper -->
+			</li>
 			<li><a href="<?php echo $path; ?>admin/Tenders/">Tenders</a></li>
-			<li><a href="<?php echo $path; ?>ordering/">Special Orders Menu</a></li>
+			<li><a href="<?php echo $path; ?>ordering/">Special Orders &gt;&gt;</a>
+				<div class="menuwrapper">
+					<div class="submenu level1" style="width:195px;top:-28px;left:135px;">
+					<ul style="">
+						<li><a href="<?php echo $path; ?>ordering/view.php">Create Order</a></li>
+						<li><a href="<?php echo $path; ?>ordering/clearinghouse.php">Review Active Orders</a></li>
+						<li><a href="<?php echo $path; ?>ordering/historical.php">Review Old Orders</a></li>
+						<li><a href="<?php echo $path; ?>ordering/receivingReport.php">Receiving Report</a></li>
+						<li><a href="<?php echo $path; ?>ordering/muzak.php">Muzak</a></li>
+					</ul>
+					</div><!-- /#submenu -->
+				</div><!-- /#menuwrapper -->
+			</li>
 	<!--	<li><a href="<?php echo $path; ?>admin/charges.php">Staff Charges</a></li>
 				<li><a href="<?php echo $path; ?>admin/volunteers.php">Volunteer Hours</a></li>-->	
 			<li><a href="<?php echo $path; ?>admin/labels/">Print Shelftags</a></li>
