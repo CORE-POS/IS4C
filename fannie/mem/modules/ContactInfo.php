@@ -23,7 +23,7 @@
 
 class ContactInfo extends MemberModule {
 
-	function ShowEditForm($memNum){
+	function ShowEditForm($memNum, $country="US"){
 		$dbc = $this->db();
 		
 		$infoQ = sprintf("SELECT CardNo,FirstName,LastName,
@@ -33,6 +33,18 @@ class ContactInfo extends MemberModule {
 				WHERE c.personNum=1 AND CardNo=%d",$memNum);
 		$infoR = $dbc->query($infoQ);
 		$infoW = $dbc->fetch_row($infoR);
+
+		$labels = array();
+		switch ($country) {
+			case "US":
+				$labels['state'] = "State";
+				$labels['zip'] = "Zip";
+				break;
+			case "CA":
+				$labels['state'] = "Province";
+				$labels['zip'] = "Postal Code";
+				break;
+		}
 
 		$ret = "<fieldset><legend>Contact Info</legend>";
 		$ret .= "<table class=\"MemFormTable\" 
@@ -60,10 +72,10 @@ class ContactInfo extends MemberModule {
 		$ret .= "<th>City</th>";
 		$ret .= sprintf('<td><input name="ContactInfo_city" maxlength="20"
 				value="%s" size="15" /></td>',$infoW['city']);
-		$ret .= "<th>State</th>";
+		$ret .= "<th>{$labels['state']}</th>";
 		$ret .= sprintf('<td><input name="ContactInfo_state" maxlength="2"
 				value="%s" size="2" /></td>',$infoW['state']);
-		$ret .= "<th>Zip</th>";
+		$ret .= "<th>{$labels['zip']}</th>";
 		$ret .= sprintf('<td><input name="ContactInfo_zip" maxlength="10"
 				value="%s" size="5" /></td></tr>',$infoW['zip']);
 
@@ -122,24 +134,35 @@ class ContactInfo extends MemberModule {
 
 	function HasSearch(){ return True; }
 
-	function ShowSearchForm(){
-		return '<p><b>First Name</b>: <input type="text" name="ContactInfo_fn"
-				size="10" /> &nbsp;&nbsp;&nbsp; <b>Last Name</b>: 
-				<input type="text" name="ContactInfo_ln" size="10" />
+	function ShowSearchForm($country="US"){
+		$labels = array();
+		switch ($country) {
+			case "US":
+				$labels['state'] = "State";
+				$labels['zip'] = "Zip";
+				break;
+			case "CA":
+				$labels['state'] = "Province";
+				$labels['zip'] = "Postal Code";
+				break;
+		}
+		return "<p><b>First Name</b>: <input type='text' name='ContactInfo_fn'
+				size='10' /> &nbsp;&nbsp;&nbsp; <b>Last Name</b>: 
+				<input type='text' name='ContactInfo_ln' size='10' />
 				<br /><br />
 				<b>Address</b>: 
-				<input type="text" name="ContactInfo_addr" size="15" />
+				<input type='text' name='ContactInfo_addr' size='15' />
 				<br /><br />
 				<b>City</b>: 
-				<input type="text" name="ContactInfo_city" size="8" />
-				<b>State</b>:
-				<input type="text" name="ContactInfo_state" size="2" />
-				<b>Zip</b>:
-				<input type="text" name="ContactInfo_zip" size="5" />
+				<input type='text' name='ContactInfo_city' size='8' />
+				<b>{$labels['state']}</b>:
+				<input type='text' name='ContactInfo_state' size='2' />
+				<b>{$labels['zip']}</b>:
+				<input type='text' name='ContactInfo_zip' size='5' />
 				<br /><br />
 				<b>Email</b>: 
-				<input type="text" name="ContactInfo_email" size="15" />
-				</p>';
+				<input type='text' name='ContactInfo_email' size='15' />
+				</p>";
 	}
 
 	function GetSearchResults(){
