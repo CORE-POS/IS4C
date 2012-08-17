@@ -39,6 +39,8 @@ if ($decision == "CL") {
 	$CORE_LOCAL->set("endorseType","");
 	$CORE_LOCAL->set("warned",0);
 	$CORE_LOCAL->set("warnBoxType","");
+	$CORE_LOCAL->set("requestType","");
+	$CORE_LOCAL->set("requestMsg","");
 }
 elseif (strlen($decision) > 0) {
 
