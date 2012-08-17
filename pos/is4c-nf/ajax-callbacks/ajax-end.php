@@ -63,6 +63,8 @@ echo "Done";
 function cleartemptrans($type) {
 	global $CORE_LOCAL;
 
+	TransRecord::emptyQueue();
+
 	// make sure transno advances even if something
 	// wacky happens with the db shuffling
 	Database::loadglobalvalues();	

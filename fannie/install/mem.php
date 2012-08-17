@@ -82,7 +82,7 @@ The Member editing interface displayed after you select a member at:
 <br />
 <br /><b>Available Modules</b> <br />
 <?php
-if (!isset($FANNIE_MEMBER_MODULES)) $FANNIE_MEMBER_MODULES = array();
+if (!isset($FANNIE_MEMBER_MODULES)) $FANNIE_MEMBER_MODULES = array('ContactInfo');
 if (isset($_REQUEST['FANNIE_MEMBER_MODULES'])){
 	$FANNIE_MEMBER_MODULES = array();
 	foreach($_REQUEST['FANNIE_MEMBER_MODULES'] as $m)
