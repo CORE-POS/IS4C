@@ -18,8 +18,6 @@
     in the file license.txt along with IT CORE; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-********************************************************************************
-
    This is the preliminary daemon that effectively acts as part of the
    driver for the single cable Magellan scanner scale on the Linux platform.
    The settings for the serial port communication parameters are
@@ -41,6 +39,7 @@
 
 /* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+ *  5Aug12 EL Resolve conflict from merge from CORE.  Hope I didn't wreck it.
  * 18Apr12 EL This file must be writable by Apache/PHP because
  *             the lane Install page, Extra Config section:
  * http://localhost/IS4C/pos/is4c-nf/install/extra_config.php
@@ -71,6 +70,7 @@
 #include <string.h>
 #include <termios.h> /* POSIX terminal control definitions */
 #include <ctype.h>
+/* is signal.h needed? */
 
 #define SSD_SERIAL_PORT "/dev/ttyS0"
 //
@@ -218,7 +218,7 @@ int main(void) {
 										/* Starting from the 5th byte of the raw scan
 												copy up to 17 chars into the scanner buffer. E.g.
 												Of: S08F789678545021, copy 789678545021 to the scanner buffer.
-										/*
+										*/
 										for (i = 0; i < 17; i++) {
 											scannerInput[i] = serialBuffer[i+4];
 										}
@@ -320,4 +320,6 @@ int main(void) {
 
     close(mainfd);
     exit(EXIT_SUCCESS);
+
+
 }

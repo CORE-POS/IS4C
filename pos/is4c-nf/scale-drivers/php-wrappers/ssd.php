@@ -25,18 +25,20 @@ class ssd extends ScaleDriverWrapper {
 	function SavePortConfiguration($portName){
 		$rel = MiscLib::base_url();
 
-		/* read in c code file */
-		$fp = fopen($rel."scale-drivers/drivers/rs232/ssd.c","r");
+		if (!file_exists($rel."scale-drivers/drivers/rs232/ssd.conf")) return;
+
+		/* read in config file */
+		$fp = fopen($rel."scale-drivers/drivers/rs232/ssd.conf","r");
 		$lines = array();
 		while(!feof($fp)) $lines[] = fgets($fp);
 		fclose($fp);
 
-		/* replace SSD_SERIAL_PORT definition */
-		$fp = fopen($rel."scale-drivers/drivers/rs232/ssd.c","w");
+		/* replace SerialPort config */
+		$fp = fopen($rel."scale-drivers/drivers/rs232/ssd.conf","w");
 		foreach($lines as $l){
-			if (strstr($l,"#define SSD_SERIAL_PORT ") === False) fwrite($fp,$l);
+			if (strstr($l,"SerialPort ") === False) fwrite($fp,$l);
 			else {
-				fwrite($fp,sprintf('#define SSD_SERIAL_PORT "%s"',$portName));
+				fwrite($fp,sprintf('SerialPort %s',$portName));
 				fwrite($fp,"\n");
 			}
 		}
@@ -46,22 +48,25 @@ class ssd extends ScaleDriverWrapper {
 	function SaveDirectoryConfiguration($absPath){
 		$rel = MiscLib::base_url();
 
-		/* read in c code file */
-		$fp = fopen($rel."scale-drivers/drivers/rs232/ssd.c","r");
+		if (!file_exists($rel."scale-drivers/drivers/rs232/ssd.conf")) return;
+
+		/* read in config file */
+		$fp = fopen($rel."scale-drivers/drivers/rs232/ssd.conf","r");
+
 		$lines = array();
 		while(!feof($fp)) $lines[] = fgets($fp);
 		fclose($fp);
 
-		/* replace file location #defines */
-		$fp = fopen($rel."scale-drivers/drivers/rs232/ssd.c","w");
+		/* replace file location config */
+		$fp = fopen($rel."scale-drivers/drivers/rs232/ssd.conf","w");
 		foreach($lines as $l){
-			if (strstr($l,"#define SCALE_OUTPUT_FILE ") !== False){
-				fwrite($fp,sprintf('#define SCALE_OUTPUT_FILE "%s"',
+			if (strstr($l,"ScannerFile ") !== False){
+				fwrite($fp,sprintf('ScannerFile %s',
 					$absPath."scale-drivers/drivers/rs232/scale"));
 				fwrite($fp,"\n");
 			}
-			elseif (strstr($l,"#define SCANNER_OUTPUT_FILE ") !== False){
-				fwrite($fp,sprintf('#define SCANNER_OUTPUT_FILE "%s"',
+			elseif (strstr($l,"ScaleFile ") !== False){
+				fwrite($fp,sprintf('ScaleFile %s',
 					$absPath."scale-drivers/drivers/rs232/scanner"));
 				fwrite($fp,"\n");
 			}

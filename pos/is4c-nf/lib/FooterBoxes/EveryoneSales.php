@@ -27,7 +27,7 @@ class EveryoneSales extends FooterBox {
 	var $display_css = "font-weight:bold;font-size:110%;color:#808080;";
 
 	function header_content(){
-		return "Special";
+		return _("Special");
 	}
 
 	function display_content(){

@@ -24,15 +24,36 @@ $page_title = 'Fannie - Admin Tools';
 $header = 'Admin Tools';
 include('../src/header.html');
 ?>
+<!-- 10Aug12 EL Added other options from the navbar flyout. -->
 
-<a href="mem/find_member.php"><font size=4>Membership Management</font></a></br>
-	Access membership database
+<!-- 10Aug12 EL Was to mem/find_member.php, which doesn't exist. -->
+<a href="../mem/index.php"><font size=4>Membership Management</font></a></br>
+Utilities for managing membership database
 </br></br>
-<a href="LookupReceipt"><font size=4>Transaction Look-up</font></a></br>
-	Search transaction history and reprint receipts
+
+			<a href="Cashiers/"><font size=4>Cashier Management</font></a></br>
+Utilities for managing cashier database and cashier reports
 </br></br>
+
+<a href="../mem/statements/"><font size=4>E-mail Statements</font></a></br>
+Create and send statements of amount due and equity
+</br></br>
+
+<a href="Tenders/"><font size=4>Tenders</font></a></br>
+ Maintain the tenders (types of payment) list
+</br></br>
+
+<a href="../ordering/"><font size=4>Special Orders</font></a></br>
+Manage specail orders
+</br></br>
+
 <a href="labels"><font size=4>Generate Shelftags</font></a><br>
 	Create and print shelftag batches
+</br></br>
+
+<a href="LookupReceipt"><font size=4>Transaction Look-up</font></a></br>
+	Search transaction history and reprint receipts
+
 <!--<a href="/admin/volunteers.php"><font size=4>Volunteer Hours</font></a></br>
 	Enter volunteer hours worked
 </br></br>

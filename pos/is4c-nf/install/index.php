@@ -19,6 +19,7 @@
     in the file license.txt along with IT CORE; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
+	DHermann test
 *********************************************************************************/
 
 ini_set('display_errors','1');
@@ -30,7 +31,7 @@ include('util.php');
 ?>
 <html>
 <head>
-<title>IT CORE Lane Installation</title>
+<title>IT CORE Lane Installation: Necessities</title>
 <style type="text/css">
 body {
 	line-height: 1.5em;
@@ -38,6 +39,7 @@ body {
 </style>
 </head>
 <body>
+
 Necessities
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <a href="extra_config.php">Additional Configuration</a>
@@ -51,23 +53,21 @@ Necessities
 <a href="debug.php">Debug</a>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <a href="extra_data.php">Sample Data</a>
+
+<h2>IT CORE Lane Installation: Necessities</h2>
+
 <form action=index.php method=post>
-<h1>IT CORE Install checks</h1>
-<h3>Basics</h3>
 <?php
+check_writeable('../ini.php');
+check_writeable('../ini-local.php');
+
 if (function_exists('posix_getpwuid')){
 	$chk = posix_getpwuid(posix_getuid());
 	echo "PHP is running as: ".$chk['name']."<br />";
 }
 else
 	echo "PHP is (probably) running as: ".get_current_user()."<br />";
-if (is_writable('../ini.php'))
-        echo '<span style="color:green;"><i>ini.php</i> is writeable</span>';
-else
-        echo '<span style="color:red;"><b>Error</b>: ini.php is not writeable</span>';
-?>
-<br />
-<?php
+
 if (!function_exists("socket_create")){
 	echo '<b>Warning</b>: PHP socket extension is not enabled. NewMagellan will not work quite right';
 }
@@ -421,6 +421,7 @@ function create_op_dbs($db,$type){
 		EmpActive tinyint,
 		frontendsecurity smallint,
 		backendsecurity smallint,
+		birthdate datetime,
 		PRIMARY KEY (emp_no))";
 	if (!$db->table_exists('employees',$name)){
 		$db->query($empQ,$name);
@@ -537,6 +538,20 @@ function create_op_dbs($db,$type){
 		$db->query($promoQ,$name);
 	}
 
+	$drQ = "CREATE TABLE dateRestrict (
+                upc varchar(13),
+                dept_ID int,
+                restrict_date date default null,
+                restrict_dow smallint default null,
+                restrict_start time default null,
+                restrict_end time default null,
+                INDEX (upc),
+                INDEX (dept_ID)
+        )";
+	if (!$db->table_exists('dateRestrict',$name)){
+		$db->query($drQ);
+	}
+
 	$tenderQ = "CREATE TABLE tenders (
 		TenderID smallint,
 		TenderCode varchar(255),
@@ -586,6 +601,15 @@ function create_op_dbs($db,$type){
 		)";
 	if(!$db->table_exists('customReceipt',$name)){
 		$db->query($custRpt,$name);
+	}
+
+	$dCoup = "CREATE TABLE disableCoupon (
+		upc varchar(13),
+		reason text,
+		PRIMARY KEY (upc)
+		)";
+	if(!$db->table_exists('disableCoupon',$name)){
+		$db->query($dCoup,$name);
 	}
 
 	$houseCoup = "CREATE TABLE houseCoupons (
@@ -980,7 +1004,7 @@ function create_trans_dbs($db,$type){
 		register_no,
 		emp_no,
 		trans_no,
-		sum(CASE WHEN trans_type = 'T' THEN -1*total ELSE total END) as total
+		sum(CASE WHEN trans_type = 'T' THEN -1*total ELSE 0 END) as total
 		from localtranstoday
 		GROUP BY register_no,emp_no,trans_no";
 	if (!$db->table_exists('rp_list',$name)){
@@ -1321,6 +1345,37 @@ function create_trans_dbs($db,$type){
 	 * changes */
 	include('buildLTTViews.php');
 	buildLTTViews($db,$type);
+
+	$tvQ = "CREATE VIEW taxView AS
+		SELECT 
+		r.id,
+		r.description,
+		CONVERT(SUM(CASE 
+			WHEN l.trans_type IN ('I','D') AND discountable=0 THEN total 
+			WHEN l.trans_type IN ('I','D') AND discountable<>0 THEN total * ((100-s.percentDiscount)/100)
+			ELSE 0 END
+		) * r.rate, DECIMAL(10,2)) as taxTotal,
+		CONVERT(SUM(CASE 
+			WHEN l.trans_type IN ('I','D') AND discountable=0 AND foodstamp=1 THEN total 
+			WHEN l.trans_type IN ('I','D') AND discountable<>0 AND foodstamp=1 THEN total * ((100-s.percentDiscount)/100)
+			ELSE 0 END
+		), DECIMAL(10,2)) as fsTaxable,
+		CONVERT(SUM(CASE 
+			WHEN l.trans_type IN ('I','D') AND discountable=0 AND foodstamp=1 THEN total 
+			WHEN l.trans_type IN ('I','D') AND discountable<>0 AND foodstamp=1 THEN total * ((100-s.percentDiscount)/100)
+			ELSE 0 END
+		) * r.rate, DECIMAL(10,2)) as fsTaxTotal,
+		-1*MAX(fsTendered) as foodstampTender,
+		MAX(r.rate) as taxrate
+		FROM
+		taxrates AS r 
+		LEFT JOIN localtemptrans AS l
+		ON r.id=l.tax
+		JOIN lttsummary AS s
+		GROUP BY r.id,r.description";
+	if(!$db->table_exists('taxView',$name)){
+		$db->query($tvQ,$name);
+	}
 
 	$lttR = "CREATE view ltt_receipt as 
 		select
@@ -3399,57 +3454,6 @@ function create_min_server($db,$type){
 		$db->query($efsrqm,$name);
 	}
 
-	$dlogView = "select 
-		`dtranstoday`.`datetime` AS `tdate`,
-		`dtranstoday`.`register_no` AS `register_no`,
-		`dtranstoday`.`emp_no` AS `emp_no`,
-		`dtranstoday`.`trans_no` AS `trans_no`,
-		`dtranstoday`.`upc` AS `upc`,
-		`dtranstoday`.`trans_type` AS `trans_type`,
-		`dtranstoday`.`trans_subtype` AS `trans_subtype`,
-		`dtranstoday`.`trans_status` AS `trans_status`,
-		`dtranstoday`.`department` AS `department`,
-		`dtranstoday`.`quantity` AS `quantity`,
-		`dtranstoday`.`unitPrice` AS `unitPrice`,
-		`dtranstoday`.`total` AS `total`,
-		`dtranstoday`.`tax` AS `tax`,
-		`dtranstoday`.`foodstamp` AS `foodstamp`,
-		`dtranstoday`.`ItemQtty` AS `itemQtty`,
-		`dtranstoday`.`card_no` AS `card_no`,
-		`dtranstoday`.`trans_id` AS `trans_id` 
-		from `dtranstoday` 
-		where 
-		((`dtranstoday`.`trans_status` <> 'D') 
-		and 
-		(`dtranstoday`.`trans_status` <> 'X'))
-		AND datediff(`dtranstoday`.`datetime`,curdate()) = 0";
-	if ($type == 'MSSQL'){
-		$dlogView = "SELECT
-			datetime AS tdate,
-			register_no,
-			emp_no,
-			trans_no,
-			upc,
-			trans_type,
-			trans_subtype,
-			trans_status,
-			department,
-			quantity,
-			unitPrice,
-			total,
-			tax,
-			foodstamp,
-			ItemQtty,
-			card_no,
-			trans_id
-			FROM dtranstoday
-			WHERE trans_status NOT IN ('D','X')
-			AND datediff(dd,getdate(),datetime)=0";
-	}
-	if (!$db->table_exists('dlog_today',$name)){
-		$db->query('CREATE VIEW dlog_today AS '.$dlogView,$name);
-	}
-
 	$ttG = "CREATE view TenderTapeGeneric
 		as
 		select 
@@ -3466,7 +3470,7 @@ function create_min_server($db,$type){
 		     ELSE
 			-1 * total
 		END AS tender
-		from dlog_today
+		from dlog
 		where datediff(tdate, curdate()) = 0
 		and trans_subtype not in ('0','')";
 	if (!$db->table_exists("TenderTapeGeneric",$name)){

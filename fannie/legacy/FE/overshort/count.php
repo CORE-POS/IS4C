@@ -220,7 +220,7 @@ function displayUI($dateStr){
 	$accountableTotal -= (168*$bags);
 
 	$fills = array('0.01'=>1,'0.05'=>2,'0.10'=>5,'0.25'=>10,'1.00'=>50,'5.00'=>50,'10.00'=>50);
-	$pars = array("0.01"=>40,"0.05"=>80,"0.10"=>250,"0.25"=>750,"1.00"=>1630,"5.00"=>500,"10.00"=>750);
+	$pars = array("0.01"=>40,"0.05"=>60,"0.10"=>200,"0.25"=>700,"1.00"=>1300,"5.00"=>300,"10.00"=>400);
 
 	$ret .= "<tr class=\"color\"><th>Deposit Amount</th>";
 	$sum = 0;
@@ -228,7 +228,7 @@ function displayUI($dateStr){
 	foreach($denoms as $d){
 		if ($d == 'Checks'){
 			$ret .= "<td id=depositAmount$d>".$osCounts['CK']."</td>";
-			//$sum += $osCounts['CK'];
+			$sum += $osCounts['CK'];
 			$depositAmount['Checks'] = $osCounts['CK'];
 		}
 		else if ($d == '100.00' || $d == '50.00' || $d == 'Junk'){
@@ -295,7 +295,7 @@ function displayUI($dateStr){
 	}
 	$ret .= "<td id=depositAmountTotal>$sum</td></tr>";
 	$buyAmountTotal += $sum;
-	$accountableTotal -= ($sum + $osCounts['CK']);
+	$accountableTotal -= $sum;
 	
 	$ret .= "<tr><th>Close Safe Count</th>";
 	$sum = 0;

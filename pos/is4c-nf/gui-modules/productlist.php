@@ -94,8 +94,8 @@ class productlist extends NoInputPage {
 		if (!is_numeric($entered)) {
 			$query = "select upc, description, normal_price, special_price, "
 				."advertised, scale from products where "
-				."description like '".$entered."%' "
-				."and inUse='1' "
+				."description like '%".$entered."%' "
+				."and upc LIKE ('0000000%') and inUse='1' "
 				."order by description";
 			$this->boxSize = 15;
 		}
@@ -145,7 +145,7 @@ class productlist extends NoInputPage {
 		$db = $this->temp_db;
 
 		if ($num_rows == 0) {
-			$this->productsearchbox("no match found<br />next search or enter upc");
+			$this->productsearchbox(_("no match found")."<br />"._("next search or enter upc"));
 		}
 		else {
 			$this->add_onload_command("\$('#search').keypress(processkeypress);\n");
@@ -155,7 +155,7 @@ class productlist extends NoInputPage {
 				."<form name=\"selectform\" method=\"post\" action=\"{$_SERVER['PHP_SELF']}\""
 				." id=\"selectform\">"
 				."<select name=\"search\" id=\"search\" "
-				."size=".$this->boxSize." onblur=\"\$('#search').focus();\">";
+				."size=".$this->boxSize." onblur=\"\$('#search').focus();\" ondblclick=\"document.forms['selectform'].submit();\">";
 
 			$selected = "selected";
 			for ($i = 0; $i < $num_rows; $i++) {
@@ -177,7 +177,7 @@ class productlist extends NoInputPage {
 				."</form>"
 				."</div>"
 				."<div class=\"listboxText centerOffset\">"
-				."[Clear] to Cancel</div>"
+				._("clear to cancel")."</div>"
 				."<div class=\"clear\"></div>";
 			echo "</div>";
 		}

@@ -89,6 +89,9 @@
 	}
 	
 	$dlog = select_dlog($date1,$date2);
+	$sumTable = $FANNIE_ARCHIVE_DB.$dbc->sep()."sumRingSalesByDay";
+	if (substr($dlog,-4)=="dlog")
+		$sumTable = $FANNIE_ARCHIVE_DB.$dbc->sep()."vRingSalesToday";
 
 	$date2a = $date2 . " 23:59:59";
 	$date1a = $date1 . " 00:00:00";
@@ -97,14 +100,12 @@
 	$groupBy="";$alias="";
 	if($_GET['sort']=='Department'){
 		
-		$groupBy = "department,dept_name";
-		$query1 = "department";
+		$groupBy = "t.dept_ID,dept_name";
 		
 	}elseif($_GET['sort']=='Date') { 
 		
 		$groupBy = $dbc->dateymd('tdate');
 		$alias = "tdate";
-		$query1 = "CONVERT(CHAR(11),tDate,106)";
 
 	}elseif($_GET['sort']=='Weekday'){
 
@@ -122,7 +123,6 @@
 	}elseif($_GET['sort']=='PLU') {
 		
 		$groupBy = "upc";
-		$query1 = "description";
 	}
 	
 	$sort = $_GET['sort'];
@@ -130,55 +130,55 @@
 	if($sort == "PLU"){
 		$query = "";
 		if(isset($buyer) && $buyer > 0){
-		$query = "SELECT DISTINCT t.upc,p.description, 
-				SUM(case when t.trans_status in ('M') then t.itemqtty else t.quantity end) as qty,
+		$query = "SELECT t.upc,p.description, 
+				SUM(t.quantity) as qty,
 				SUM(t.total) AS total,
 				d.dept_no,d.dept_name,s.superID,x.distributor
-			  FROM $dlog as t LEFT JOIN products as p on t.upc = p.upc
-			  LEFT JOIN departments as d on d.dept_no = t.department 
-			  LEFT JOIN superdepts AS s ON t.department = s.dept_ID
+			  FROM $sumTable as t LEFT JOIN products as p on t.upc = p.upc
+			  LEFT JOIN departments as d on d.dept_no = t.dept 
+			  LEFT JOIN superdepts AS s ON t.dept = s.dept_ID
 			  LEFT JOIN prodExtra as x on t.upc = x.upc
 			  WHERE s.superID = $buyer
-			  AND tDate >= '$date1a' AND tDate <= '$date2a' GROUP BY t.upc,p.description,
+			  AND tdate >= '$date1' AND tdate <= '$date2' GROUP BY t.upc,p.description,
 			  d.dept_no,d.dept_name,s.superID,x.distributor ORDER BY $order $dir";
 		}
 		else if (isset($buyer) && $buyer == -1){
-		$query = "SELECT DISTINCT t.upc,p.description, 
-				SUM(case when t.trans_status in ('M') then t.itemqtty else t.quantity end) as qty,
+		$query = "SELECT t.upc,p.description, 
+				SUM(t.quantity) as qty,
 				SUM(t.total) AS total,
 				d.dept_no,d.dept_name,s.superID,x.distributor
-			  FROM  $dlog as t LEFT JOIN products as p on t.upc = p.upc
-			  LEFT JOIN departments as d on d.dept_no = t.department 
-			  LEFT JOIN MasterSuperDepts AS s ON t.department = s.dept_ID
+			  FROM  $sumTable as t LEFT JOIN products as p on t.upc = p.upc
+			  LEFT JOIN departments as d on d.dept_no = t.dept 
+			  LEFT JOIN MasterSuperDepts AS s ON t.dept = s.dept_ID
 			  LEFT JOIN prodExtra as x on t.upc = x.upc
-			  WHERE t.trans_type in ('D','I','M') and
-			  tDate >= '$date1a' AND tDate <= '$date2a' GROUP BY t.upc,p.description,
+			  WHERE 
+			  tdate >= '$date1' AND tdate <= '$date2' GROUP BY t.upc,p.description,
 			  d.dept_no,d.dept_name,s.superID,x.distributor ORDER BY $order $dir";
 		}
 		else if (isset($buyer) && $buyer == -2){
-		$query = "SELECT DISTINCT t.upc,p.description, 
-				SUM(case when t.trans_status in ('M') then t.itemqtty else t.quantity end) as qty,
+		$query = "SELECT t.upc,p.description, 
+				SUM(quantity) as qty,
 				SUM(t.total) AS total,
 				d.dept_no,d.dept_name,s.superID,x.distributor
-			  FROM $dlog as t LEFT JOIN products as p on t.upc = p.upc
-			  LEFT JOIN departments as d on d.dept_no = t.department 
-			  LEFT JOIN MasterSuperDepts AS s ON t.department = s.dept_ID
+			  FROM $sumTable as t LEFT JOIN products as p on t.upc = p.upc
+			  LEFT JOIN departments as d on d.dept_no = t.dept 
+			  LEFT JOIN MasterSuperDepts AS s ON t.dept = s.dept_ID
 			  LEFT JOIN prodExtra as x on t.upc = x.upc
-			  WHERE t.trans_type in ('D','I','M') and s.superID <> 0 and
-			  tDate >= '$date1a' AND tDate <= '$date2a' GROUP BY t.upc,p.description,
+			  WHERE s.superID <> 0 and
+			  tdate >= '$date1' AND tdate <= '$date2' GROUP BY t.upc,p.description,
 			  d.dept_no,d.dept_name,s.superID,x.distributor ORDER BY $order $dir";
 		}
 		else {
 		$query = "SELECT t.upc,p.description, 
-				SUM(case when t.trans_status in ('M') then t.itemqtty else t.quantity end) as qty,
+				SUM(t.quantity) as qty,
 				SUM(t.total) AS total,
 				d.dept_no,d.dept_name,s.superID,x.distributor
-			  FROM $dlog as t LEFT JOIN products as p on t.upc = p.upc
-			  LEFT JOIN departments as d on d.dept_no = t.department 
-			  LEFT JOIN MasterSuperDepts AS s ON t.department = s.dept_ID
+			  FROM $sumTable as t LEFT JOIN products as p on t.upc = p.upc
+			  LEFT JOIN departments as d on d.dept_no = t.dept 
+			  LEFT JOIN MasterSuperDepts AS s ON t.dept = s.dept_ID
 			  LEFT JOIN prodExtra as x on t.upc = x.upc
-			  WHERE t.department BETWEEN $deptStart AND $deptEnd
-			  AND tDate >= '$date1a' AND tDate <= '$date2a' GROUP BY t.upc,p.description,
+			  WHERE t.dept BETWEEN $deptStart AND $deptEnd
+			  AND tdate >= '$date1' AND tdate <= '$date2' GROUP BY t.upc,p.description,
 			  d.dept_no,d.dept_name,s.superID,x.distributor ORDER BY $order $dir";
 		}
 		//$query = fixup_dquery($query,$dlog);
@@ -256,37 +256,37 @@
 
 	}else{ //create alternate query if not sorting by PLU
 		$query="";
+		$sumTable = $FANNIE_ARCHIVE_DB.$dbc->sep()."sumDeptSalesByDay";
+		if (substr($dlog,-4)=="dlog")
+			$sumTable = $FANNIE_ARCHIVE_DB.$dbc->sep()."vDeptSalesToday";
 		$item = (!empty($alias)) ? $groupBy." AS ".$alias : $groupBy;
 		$orderBy = (!empty($alias)) ? $alias : $groupBy;
 		if(isset($buyer) && $buyer>0){
 		 $query =  "SELECT $item,SUM(quantity) as Qty, SUM(total) as Sales "
-                          ."FROM $dlog as t LEFT JOIN departments as d on d.dept_no=t.department "
-			  ."LEFT JOIN superdepts AS s ON s.dept_ID = t.department "
-			  ."WHERE s.superID=$buyer AND tdate >= '$date1a' AND tdate <= '$date2a' "
-			  ."AND trans_type in ('D','I','M') "
+                          ."FROM $sumTable as t LEFT JOIN departments as d on d.dept_no=t.dept_ID "
+			  ."LEFT JOIN superdepts AS s ON s.dept_ID = t.dept_ID "
+			  ."WHERE s.superID=$buyer AND tdate >= '$date1' AND tdate <= '$date2' "
 			  ."GROUP BY $groupBy ORDER BY $orderBy";
 		}
 		else if (isset($buyer) && $buyer == -1){
 		 $query =  "SELECT $item,SUM(quantity) as Qty, SUM(total) as Sales "
-                          ."FROM $dlog as t LEFT JOIN departments as d on d.dept_no=t.department "
-			  ."WHERE tdate >= '$date1a' AND tdate <= '$date2a' "
-			  ."AND trans_type in ('D','I','M')"
+                          ."FROM $sumTable as t LEFT JOIN departments as d on d.dept_no=t.dept_ID "
+			  ."WHERE tdate >= '$date1' AND tdate <= '$date2' "
 			  ."GROUP BY $groupBy ORDER BY $orderBy";
 		}
 		else if (isset($buyer) && $buyer == -2){
 		 $query =  "SELECT $item,SUM(quantity) as Qty, SUM(total) as Sales "
-                          ."FROM $dlog as t LEFT JOIN departments as d on d.dept_no=t.department "
-			  ."LEFT JOIN MasterSuperDepts AS s ON s.dept_ID = t.department "
-			  ."WHERE tdate >= '$date1a' AND tdate <= '$date2a' "
-			  ."AND trans_type in ('D','I','M') and s.superID <> 0 "
+                          ."FROM $sumTable as t LEFT JOIN departments as d on d.dept_no=t.dept_ID "
+			  ."LEFT JOIN MasterSuperDepts AS s ON s.dept_ID = t.dept_ID "
+			  ."WHERE tdate >= '$date1' AND tdate <= '$date2' "
+			  ."AND s.superID <> 0 "
 			  ."GROUP BY $groupBy ORDER BY $orderBy";
 		}
 		else {
 		 $query =  "SELECT $item,SUM(quantity) as Qty, SUM(total) as Sales "
-                          ."FROM $dlog as t LEFT JOIN departments as d on d.dept_no=t.department "
-			  ."WHERE tdate >= '$date1a' AND tdate <= '$date2a' "
-			  ."AND trans_type in ('D','I','M') "
-			  ."AND t.department BETWEEN $deptStart AND $deptEnd "
+                          ."FROM $sumTable as t LEFT JOIN departments as d on d.dept_no=t.dept_ID "
+			  ."WHERE tdate >= '$date1' AND tdate <= '$date2' "
+			  ."AND t.dept_ID BETWEEN $deptStart AND $deptEnd "
 			  ."GROUP BY $groupBy ORDER BY $orderBy";
 		}
 		if ($sort == "Weekday"){
@@ -331,7 +331,8 @@
 				echo "<td";
 				if ($i==0) echo " align=right";
 				echo ">";
-				if (is_numeric($myrow[$i])) printf('%.2f',$myrow[$i]);
+				if (is_numeric($myrow[$i]) && $myrow[$i] != floor($myrow[$i])) 
+					printf('%.2f',$myrow[$i]);
 				else echo $myrow[$i];
 				echo '</td>';
 			}

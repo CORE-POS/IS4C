@@ -1,7 +1,7 @@
 <?php
 /*******************************************************************************
 
-    Copyright 2007 Whole Foods Co-op
+    Copyright 2012 Whole Foods Co-op
 
     This file is part of IT CORE.
 
@@ -21,32 +21,29 @@
 
 *********************************************************************************/
 
-class ToggleReceipt extends Parser {
-	
-	function check($str){
-		if (substr($str,-2) == "NR")
-			return True;
-		return False;
-	}
+/**
+  @class Kicker
+  Base class for opening cash drawer
 
-	function parse($str){
+*/
+class Kicker {
+
+	/**
+	  Determine whether to open the drawer
+	  @return boolean
+	*/
+	function doKick(){
 		global $CORE_LOCAL;
-		$CORE_LOCAL->set("receiptToggle",0);
-		return substr($str,0,-2);
-	}
 
-	function doc(){
-		return "<table cellspacing=0 cellpadding=3 border=1>
-			<tr>
-				<th>Input</th><th>Result</th>
-			</tr>
-			<tr>
-				<td><i>anyting<i>NR</td>
-				<td>Disable receipt printing. <i>
-				Anything</i> really does mean
-				what it says</td>
-			</tr>
-			</table>";
+		if ($CORE_LOCAL->get("chargeTotal") == $CORE_LOCAL->get("tenderTotal") && $CORE_LOCAL->get("chargeTotal") != 0 && $CORE_LOCAL->get("tenderTotal") != 0 ) {	
+			if (in_array($CORE_LOCAL->get("TenderType"),$CORE_LOCAL->get("DrawerKickMedia"))) {
+				return True;
+			} else {
+				return False;
+			}
+		}
+
+		return False;
 	}
 }
 

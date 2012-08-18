@@ -60,7 +60,7 @@ class ESCPOSPrintHandler {
 	 and centerBig() functions. 
 	*/
 	function centerString($text,$big=false){
-		$width = ($big) ? 30 : 59;
+		$width = ($big) ? 58 : 59;
 
 		$blank = str_repeat(" ", $width);
 		$text = trim($text);

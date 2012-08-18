@@ -697,7 +697,7 @@ function addItemPriceLCInput($lc){
 
 function newTagInput($upc,$price,$id){
 	global $dbc;
-	$unfiQ = "select brand,sku,size,upc,units,cost,description,depart from UNFI where upc = '$upc'";
+	$unfiQ = "select brand,sku,size,upc,units,cost,description,depart from unfi where upc = '$upc'";
 	$unfiR = $dbc->query($unfiQ);
 	$unfiN = $dbc->num_rows($unfiR);
 	

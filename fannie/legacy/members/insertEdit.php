@@ -62,7 +62,7 @@ $auditQ = "insert custUpdate select ".$sql->now().",$uid,1,
 	<a href="memARTrans.php?memID=<?php echo $memID; ?>">
 		<img src="../images/AR.gif" width="72" height="16" border="0" />
 	</a>
-	<a href="memControl.php">
+	<a href="memControl.php?memID=<?php echo $memID ?>">
 		<img src="../images/control.gif" width="72" height="16" border="0" />
 	</a>
 	<a href="memTrans.php?memID=<?php echo $memID; ?>">

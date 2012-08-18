@@ -46,19 +46,19 @@ class LineItemDiscount extends Parser {
 
 		if ($db->num_rows($r) == 0){
 			// this shouldn't happen unless there's some weird session problem
-			$ret['output'] = DisplayLib::boxMsg("Item not found");
+			$ret['output'] = DisplayLib::boxMsg(_("Item not found"));
 		}
 		else {
 			$w = $db->fetch_row($r);
 			if ($w['trans_type'] != 'I' && $w['trans_type'] != 'D'){
 				// only items & open rings are discountable
-				$ret['output'] = DisplayLib::boxMsg("Line is not discountable");
+				$ret['output'] = DisplayLib::boxMsg(_("Line is not discountable"));
 			}
 			else if ($w['discounttype'] != 0){
 				// for simplicity, sale items cannot be discounted
 				// this also prevents using this function more than
 				// once on a single item
-				$ret['output'] = DisplayLib::boxMsg("Item already discounted");
+				$ret['output'] = DisplayLib::boxMsg(_("Item already discounted"));
 			}
 			else {
 				// discount is simply the total times the 

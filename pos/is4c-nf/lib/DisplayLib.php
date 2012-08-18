@@ -152,7 +152,7 @@ static public function printfooter($readOnly=False) {
 	$special = $CORE_LOCAL->get("memSpecial") + $CORE_LOCAL->get("staffSpecial");
 	$dbldiscounttotal = number_format($CORE_LOCAL->get("discounttotal"), 2);
 	if ($CORE_LOCAL->get("isMember") == 1) {
-		$dblyousaved = number_format( $CORE_LOCAL->get("transDiscount") + $dbldiscounttotal + $special + $CORE_LOCAL->get("memCouponTTL"), 2);
+		$dblyousaved = number_format( $CORE_LOCAL->get("transDiscount") + $dbldiscounttotal + $special, 2);
 		if (!$readOnly){
 			$CORE_LOCAL->set("yousaved",$dblyousaved);
 			$CORE_LOCAL->set("couldhavesaved",0);
@@ -176,8 +176,8 @@ static public function printfooter($readOnly=False) {
 
 	/* 5/11/12
 	$strperdiscount = "n/a";
-	if ($CORE_LOCAL->get("percentDiscount") != 0 || $CORE_LOCAL->get("memCouponTTL") > 0) {
-		$strperdiscount = number_format($CORE_LOCAL->get("transDiscount") + $CORE_LOCAL->get("memCouponTTL"), 2);
+	if ($CORE_LOCAL->get("percentDiscount") != 0) {
+		$strperdiscount = number_format($CORE_LOCAL->get("transDiscount"), 2);
 	}
 
 	$strmemSpecial = "n/a";
@@ -335,7 +335,8 @@ static public function boxMsg($strmsg,$header="",$noBeep=False) {
   An alias for msgbox().
 */
 static public function inputUnknown() {
-	return self::msgbox("<b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;input unknown</b>", MiscLib::base_url()."graphics/exclaimC.gif");
+	return self::msgbox("<b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+			"._("input unknown")."</b>", MiscLib::base_url()."graphics/exclaimC.gif");
 }
 
 //--------------------------------------------------------------------//
@@ -361,13 +362,13 @@ static public function printheaderb() {
 	$ret = '
 	<div id="headerb">
 		<div class="left">
-			<span class="bigger">M E M B E R &nbsp;&nbsp;</span>
+			<span class="bigger">'._("M E M B E R").' &nbsp;&nbsp;</span>
 			<span class="smaller">
 			'.$strmemberID.'
 			</span>
 		</div>
 		<div class="right">
-			<span class="bigger">C A S H I E R &nbsp;&nbsp;</span>
+			<span class="bigger">'._("C A S H I E R").' &nbsp;&nbsp;</span>
 			<span class="smaller">
 			'.$CORE_LOCAL->get("cashier").'
 			</span>

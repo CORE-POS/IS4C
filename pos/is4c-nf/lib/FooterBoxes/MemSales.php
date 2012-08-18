@@ -27,7 +27,7 @@ class MemSales extends FooterBox {
 	var $display_css = "font-weight:bold;font-size:110%;color:#808080;";
 
 	function header_content(){
-		return "Mbr Special";
+		return _("Mbr Special");
 	}
 
 	function display_content(){

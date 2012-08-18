@@ -236,22 +236,24 @@ if (count($filestoprocess) == 0){
 	// UNFI under one UPC but sold in-store under a different UPC
 	// (mostly bulk items sold by PLU). All it does is update the
 	// upcc field in unfi_order for the affected items
-	if ($dbc->table_exists("UnfiToPLU")){
+	if ($dbc->table_exists("vendorSKUtoPLU")){
 		$pluQ1 = "UPDATE unfi_order AS u
-			INNER JOIN UnfiToPLU AS p
-			ON u.unfi_sku = p.unfi_sku
-			SET u.upcc = p.wfc_plu";
+			INNER JOIN vendorSKUtoPLU AS p
+			ON u.unfi_sku = p.sku
+			SET u.upcc = p.upc
+			WHERE p.vendorID=".$VENDOR_ID;
 		$pluQ2 = "UPDATE vendorItems AS u
-			INNER JOIN UnfiToPLU AS p
-			ON u.sku = p.unfi_sku
-			SET u.upc = p.wfc_plu
+			INNER JOIN vendorSKUtoPLU AS p
+			ON u.sku = p.sku
+			SET u.upc = p.upc
 			WHERE u.vendorID=".$VENDOR_ID;
 		$pluQ3 = "UPDATE prodExtra AS x
-			INNER JOIN UnfiToPLU AS p
-			ON x.upc=p.wfc_plu
+			INNER JOIN vendorSKUtoPLU AS p
+			ON x.upc=p.upc
 			INNER JOIN unfi_order AS u
-			ON u.unfi_sku=p.unfi_sku
-			SET x.cost = u.vd_cost / u.pack";
+			ON u.unfi_sku=p.sku
+			SET x.cost = u.vd_cost / u.pack
+			WHERE p.vendorID=".$VENDOR_ID;
 		if ($FANNIE_SERVER_DBMS == "MSSQL"){
 			$pluQ1 = "UPDATE unfi_order SET upcc = p.wfc_plu
 				FROM unfi_order AS u RIGHT JOIN
