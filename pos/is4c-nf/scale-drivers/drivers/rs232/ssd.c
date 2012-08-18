@@ -74,10 +74,10 @@
 
 #define SSD_SERIAL_PORT "/dev/ttyS0"
 //
-#define SCALE_OUTPUT_FILE "/var/www/IS4C/pos/is4c-nf/scale-drivers/drivers/rs232/scale"
+#define SCALE_OUTPUT_FILE "scale-drivers/drivers/rs232/scale"
 //Restore this if the install page removes the path.
 //define SCALE_OUTPUT_FILE "/var/www/IS4C/pos/is4c-nf/scale-drivers/drivers/rs232/scale"
-#define SCANNER_OUTPUT_FILE "/var/www/IS4C/pos/is4c-nf/scale-drivers/drivers/rs232/scanner"
+#define SCANNER_OUTPUT_FILE "scale-drivers/drivers/rs232/scanner"
 //
 //Restore this if the install page removes the path.
 //define SCANNER_OUTPUT_FILE "/var/www/IS4C/pos/is4c-nf/scale-drivers/drivers/rs232/scanner"
