@@ -43,7 +43,7 @@ function login($name,$password){
   if (!isAlphanumeric($name)){
     return false;
   }
-  if ($passwd == "") return false;
+  if ($password == "") return false;
 
   $sql = dbconnect();
   $gatherQ = "select password,salt from Users where name='$name'";

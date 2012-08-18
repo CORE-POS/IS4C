@@ -31,7 +31,13 @@ include($FANNIE_ROOT.'src/SQLManager.php');
 
 /* HELP
 
-   This script activates members with equity paid in full
+   This script activates members with store-charge account (ar) up-to-date
+*/
+
+/* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - -
+ *
+ * 17Jun12 EL Fix HELP to make it appropriate to this program.
+ *             Was a copy of reactivate.equity.php.
 */
 
 set_time_limit(0);

@@ -29,6 +29,10 @@ $header = "Find Member";
 
 $searchButton = isset($_REQUEST['doSearch'])?True:False;
 
+$country = isset($FANNIE_COUNTRY)?$FANNIE_COUNTRY:"US";
+//$country = isset($_ENV['LANG'])?substr($_ENV['LANG'],3,2):"US";
+
+
 if (!$searchButton){
 	include($FANNIE_ROOT.'src/header.html');
 
@@ -38,7 +42,7 @@ if (!$searchButton){
 		include('modules/'.$mm.'.php');
 		$instance = new $mm();
 		if ($instance->HasSearch()){
-			echo $instance->ShowSearchForm();
+			echo $instance->ShowSearchForm($country);
 		}
 	}
 	echo '<hr />';

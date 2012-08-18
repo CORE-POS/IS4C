@@ -1,5 +1,12 @@
 <link rel="stylesheet" href="<?php echo $path; ?>src/style.css" type="text/css" media="screen" title="no title" charset="utf-8">
 
+<!-- 10Aug12 EL Add Manage Batch Types to Sales Batches submenu0
+.               Add "and Tool" to "Product List"
+x               Add Product List and Tool to Item Maint submenu0
+.               Add submenu1 for Products to Item Maint submenu0
+.               Add submenu1 for Departments to Item Maint submenu0
+-->
+
 <div class="" style="width:140px;z-index:999999;position:relative;">
 <ul id="css_menu_root">
 
@@ -8,8 +15,25 @@
 	<div class="menuwrapper">
 	<div class="submenu level0" style="width:155px;top:-28px;left:135px;">
 		<ul style="">
-			<li><a href="<?php echo $path; ?>item/itemMaint.php">Add/change Products</a></li>
-			<li><a href="<?php echo $path; ?>item/departments/">Manage Departments</a></li>
+			<li><a href="<?php echo $path; ?>item/itemMaint.php" title="item or brand">Manage Products &gt;&gt;</a>
+				<div class="menuwrapper">
+					<div class="submenu level1" style="width:195px;top:-28px;left:135px;">
+					<ul style="">
+					<li><a href="<?php echo $path; ?>item/itemMaint.php">By UPC/SKU or Brand prefix</a></li>
+					<li><a href="<?php echo $path; ?>item/productList.php" title="List and edit">Product List and Tool</a></li>
+					</ul>
+					</div>
+				</div></li>
+			<li><a href="<?php echo $path; ?>item/departments/">Manage Departments &gt;&gt;</a>
+				<div class="menuwrapper">
+					<div class="submenu level1" style="width:155px;top:-28px;left:135px;">
+					<ul style="">
+					<li><a href="<?php echo $path; ?>item/departments/super.php">Super Departments</a></li>
+					<li><a href="<?php echo $path; ?>item/departments/dept.php">Departments</a></li>
+					<li><a href="<?php echo $path; ?>item/departments/sub.php">Sub Departments</a></li>
+					</ul>
+					</div>
+				</div></li>
 			<li><a href="<?php echo $path; ?>item/likecodes/">Manage Likecodes</a></li>
 			<li><a href="<?php echo $path; ?>item/vendors/">Manage Vendors</a></li>
 			<li><a href="<?php echo $path; ?>modules/plugins/HouseCoupon/HouseCoupon.php">Store Coupons</a></li>
@@ -27,6 +51,7 @@
 	<div class="submenu level0" style="width:155px;top:-28px;left:135px;">
 		<ul style="">
 			<li><a href="<?php echo $path; ?>batches/newbatch/">Sales Batches</a></li>
+			<li><a href="<?php echo $path; ?>batches/types.php">Manage Batch Types</a></li>
 			<li><a href="<?php echo $path; ?>batches/CAP/">Co+op Deals Sales</a></li>
 			<li><a href="<?php echo $path; ?>batches/UNFI/">Vendor Pricing</a></li>
 		</ul>
@@ -38,24 +63,24 @@
 </div>
 
 <li style="width:100%;" class="menu0">
-	<a href="<?php echo $path; ?>reports/index.php">Reports</a>
+	<a href="<?php echo $path; ?>reports/index.php" title="Click for notes on reports">Reports</a>
 	<div class="menuwrapper">
 	<div class="submenu level0" style="width:155px;top:-28px;left:135px;">
 		<ul style="">
 			<li><a href=""><span class="imea imeam">Movement &gt;&gt;</a>
 				<div class="menuwrapper">
-				<div class="submenu level1" style="width:155px;top:-28px;left:135px;">
-				<ul style="">
-				<li><a href="<?php echo $path; ?>reports/DepartmentMovement">Department Movement</a></li>
-				<li><a href="<?php echo $path; ?>reports/ManufacturerMovement/">Manufacturer Movement</a></li>
-				<li><a href="<?php echo $path; ?>reports/ProductMovement/">Item Movement</a></li>
-				<li><a href="<?php echo $path; ?>reports/Correlated/">Correlated Movement</a></li>
-				<li><a href="<?php echo $path; ?>reports/NonMovement/">Non-Movement</a></li>
-				<li><a href="<?php echo $path; ?>reports/Trends/">Trends</a></li>
-				<li><a href="<?php echo $path; ?>reports/MonthOverMonth/">Monthly Movement</a></li>
-				<li><a href="<?php echo $path; ?>reports/MovementPrice/">Movement by Price</a></li>
-				</ul>
-				</div>
+					<div class="submenu level1" style="width:155px;top:-28px;left:135px;">
+					<ul style="">
+					<li><a href="<?php echo $path; ?>reports/DepartmentMovement">Department Movement</a></li>
+					<li><a href="<?php echo $path; ?>reports/ManufacturerMovement/">Manufacturer Movement</a></li>
+					<li><a href="<?php echo $path; ?>reports/ProductMovement/">Item Movement</a></li>
+					<li><a href="<?php echo $path; ?>reports/Correlated/">Correlated Movement</a></li>
+					<li><a href="<?php echo $path; ?>reports/NonMovement/">Non-Movement</a></li>
+					<li><a href="<?php echo $path; ?>reports/Trends/">Trends</a></li>
+					<li><a href="<?php echo $path; ?>reports/MonthOverMonth/">Monthly Movement</a></li>
+					<li><a href="<?php echo $path; ?>reports/MovementPrice/">Movement by Price</a></li>
+					</ul>
+					</div>
 				</div>
 			<li><a href="">Sales &gt;&gt;</a>
 				<div class="menuwrapper">
@@ -68,7 +93,7 @@
 				</ul>
 				</div>
 				</div>
-			<li><a href="<?php echo $path; ?>item/productList.php">Product List</a></li>
+			<li><a href="<?php echo $path; ?>item/productList.php">Product List and Tool</a></li>
 			<li><a href="<?php echo $path; ?>reports/PriceHistory/">Price History Report</a></li>
 			<li><a href="<?php echo $path; ?>reports/DepartmentSettings/">Department Settings</a></li>
 			<li><a href="<?php echo $path; ?>reports/OpenRings/">Open Rings</a></li>
@@ -119,11 +144,67 @@
 	<div class="menuwrapper">
 	<div class="submenu level0" style="width:155px;top:-28;left:135px;">
 		<ul style="">
-			<li><a href="<?php echo $path; ?>admin/Cashiers/">Cashier Management</a></li>
-			<li><a href="<?php echo $path; ?>mem/index.php">Member Management</a></li>
-			<li><a href="<?php echo $path; ?>mem/statements/">E-mail Statements</a></li>
+			<li><a href="<?php echo $path; ?>admin/Cashiers/">Cashier Management &gt;&gt;</a>
+				<div class="menuwrapper">
+					<div class="submenu level1" style="width:195px;top:-28px;left:135px;">
+					<ul style="">
+					<li><a href="<?php echo $path; ?>admin/Cashiers/add.php">Add a new cashier</a></li>
+					<li><a href="<?php echo $path; ?>admin/Cashiers/view.php">View/edit cashiers</a></li>
+					<li><a href="<?php echo $path; ?>reports/cash_report/">Cashier performance report</a></li>
+					</ul>
+					</div><!-- /#submenu -->
+				</div><!-- /#menuwrapper -->
+			</li>
+			<li><a href="<?php echo $path; ?>mem/index.php">Member Management &gt;&gt;</a>
+				<div class="menuwrapper">
+					<div class="submenu level1" style="width:195px;top:-28px;left:135px;">
+					<ul style="">
+					<li><a href="<?php echo $path; ?>mem/search.php">View/Edit Members</a></li>
+					<li><a href="<?php echo $path; ?>mem/types.php">Manage Member Types</a></li>
+					<li><a href="<?php echo $path; ?>mem/new.php">View/Create New Members</a></li>
+					<li><a href="<?php echo $path; ?>mem/numbers/">Print Member Stickers</a></li>
+					<li><a href="<?php echo $path; ?>mem/import/">Import Member Information &gt;&gt;</a>
+						<div class="menuwrapper">
+							<div class="submenu level2" style="width:155px;top:-28;left:135px;">
+							<ul style="">
+								<li><a href="<?php echo $path; ?>mem/import/nn.php">Names &amp; Numbers</a></li>
+								<li><a href="<?php echo $path; ?>mem/import/contact.php">Contact Information</a></li>
+								<li><a href="<?php echo $path; ?>mem/import/equity.php">Existing Equity</a></li>
+							</ul>
+							</div><!-- /#submenu -->
+						</div><!-- /#menuwrapper -->
+					</li>
+					</ul>
+					</div><!-- /#submenu -->
+				</div><!-- /#menuwrapper -->
+			</li>
+			<li><a href="<?php echo $path; ?>mem/statements/">E-mail Statements &gt;&gt;</a>
+				<div class="menuwrapper">
+					<div class="submenu level1" style="width:195px;top:-28px;left:135px;">
+					<ul style="">
+					<li><a href="<?php echo $path; ?>mem/statements/indvAR.php">AR (Member)</a></li>
+					<li><a href="<?php echo $path; ?>mem/statements/busAR.php">AR (Business EOM)</a></li>
+					<li><a href="<?php echo $path; ?>mem/statements/busAR.php">AR (Business Any Balance)</a></li>
+					<li><a href="<?php echo $path; ?>mem/statements/equity.php">Equity</a></li>
+					<li><a href="<?php echo $path; ?>mem/statements/history.php">Sent E-mail History</a></li>
+					</ul>
+					</div><!-- /#submenu -->
+				</div><!-- /#menuwrapper -->
+			</li>
 			<li><a href="<?php echo $path; ?>admin/Tenders/">Tenders</a></li>
-			<li><a href="<?php echo $path; ?>ordering/">Special Orders</a></li>
+			<li><a href="<?php echo $path; ?>ordering/">Special Orders &gt;&gt;</a>
+				<div class="menuwrapper">
+					<div class="submenu level1" style="width:195px;top:-28px;left:135px;">
+					<ul style="">
+						<li><a href="<?php echo $path; ?>ordering/view.php">Create Order</a></li>
+						<li><a href="<?php echo $path; ?>ordering/clearinghouse.php">Review Active Orders</a></li>
+						<li><a href="<?php echo $path; ?>ordering/historical.php">Review Old Orders</a></li>
+						<li><a href="<?php echo $path; ?>ordering/receivingReport.php">Receiving Report</a></li>
+						<li><a href="<?php echo $path; ?>ordering/muzak.php">Muzak</a></li>
+					</ul>
+					</div><!-- /#submenu -->
+				</div><!-- /#menuwrapper -->
+			</li>
 	<!--	<li><a href="<?php echo $path; ?>admin/charges.php">Staff Charges</a></li>
 				<li><a href="<?php echo $path; ?>admin/volunteers.php">Volunteer Hours</a></li>-->	
 			<li><a href="<?php echo $path; ?>admin/labels/">Print Shelftags</a></li>
@@ -138,6 +219,8 @@
 </div>
 
 </ul>
+<!-- 10Aug12 EL Added -->
+Click the headings for more/other options.
 </div>
 
 <!--  *Note: This script is required for scripted add on support and IE 6 sub menu functionality.

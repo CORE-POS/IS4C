@@ -33,15 +33,15 @@ class DiscountApplied extends Parser {
 			elseif (!is_numeric($strl)) 
 				return False;
 			elseif ($CORE_LOCAL->get("tenderTotal") != 0) 
-				$this->ret['output'] = DisplayLib::boxMsg("discount not applicable after tender");
+				$this->ret['output'] = DisplayLib::boxMsg(_("discount not applicable after tender"));
 			elseif ($strl > 50) 
-				$this->ret['output'] = DisplayLib::boxMsg("discount exceeds maximum");
+				$this->ret['output'] = DisplayLib::boxMsg(_("discount exceeds maximum"));
 			elseif ($strl <= 0) 
-				$this->ret['output'] = DisplayLib::boxMsg("discount must be greater than zero");
+				$this->ret['output'] = DisplayLib::boxMsg(_("discount must be greater than zero"));
 			elseif ($strl == 15 && $CORE_LOCAL->get("isStaff") == 0 && (substr($CORE_LOCAL->get("memberID"), 0, 1) != "9" || strlen($CORE_LOCAL->get("memberID")) != 6)) 
-				$this->ret['output'] = DisplayLib::boxMsg("Staff discount not applicable");
+				$this->ret['output'] = DisplayLib::boxMsg(_("Staff discount not applicable"));
 			elseif ($strl == 10 && $CORE_LOCAL->get("isMember") == 0) 
-				$this->ret['output'] = DisplayLib::boxMsg("Member discount not applicable");
+				$this->ret['output'] = DisplayLib::boxMsg(_("Member discount not applicable"));
 			elseif ($strl <= 50 and $strl > 0) 
 				$this->ret = PrehLib::percentDiscount($strl,$this->ret);
 			else 

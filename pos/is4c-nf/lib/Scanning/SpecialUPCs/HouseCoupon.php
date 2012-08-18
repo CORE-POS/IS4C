@@ -63,13 +63,13 @@ class HouseCoupon extends SpecialUPC {
 		}
 		$infoR = $db->query($infoQ);
 		if ($db->num_rows($infoR) == 0){
-			$json['output'] =  DisplayLib::boxMsg("coupon not found");
+			$json['output'] =  DisplayLib::boxMsg(_("coupon not found"));
 			return $json;
 		}
 		$infoW = $db->fetch_row($infoR);
 		if ($infoW["expired"] < 0){
 			$expired = substr($infoW["endDate"],0,strrpos($infoW["endDate"]," "));
-			$json['output'] =  DisplayLib::boxMsg("coupon expired ".$expired);
+			$json['output'] =  DisplayLib::boxMsg(_("coupon expired")." ".$expired);
 			return $json;
 		}
 
@@ -84,7 +84,7 @@ class HouseCoupon extends SpecialUPC {
 		$limitR = $transDB->query($limitQ);
 		$times_used = array_pop($transDB->fetch_row($limitR));
 		if ($times_used >= $infoW["limit"]){
-			$json['output'] =  DisplayLib::boxMsg("coupon already applied");
+			$json['output'] =  DisplayLib::boxMsg(_("coupon already applied"));
 			return $json;
 		}
 
@@ -93,7 +93,8 @@ class HouseCoupon extends SpecialUPC {
 		if ($infoW["memberOnly"] == 1 and 
 		   ($CORE_LOCAL->get("memberID") == "0" or $CORE_LOCAL->get("isMember") != 1)
 		   ){
-			$json['output'] = DisplayLib::boxMsg("Member only coupon<br>Apply member number first");
+			$json['output'] = DisplayLib::boxMsg(_("Member only coupon")."<br />".
+						_("Apply member number first"));
 			return $json;
 		}
 		else if ($infoW["memberOnly"] == 1 && $CORE_LOCAL->get("standalone")==0){
@@ -104,7 +105,8 @@ class HouseCoupon extends SpecialUPC {
 			if ($mDB->num_rows($mR) > 0){
 				$uses = array_pop($mDB->fetch_row($mR));
 				if ($infoW["limit"] >= $uses){
-					$json['output'] = DisplayLib::boxMsg("Coupon already used<br />on this membership");
+					$json['output'] = DisplayLib::boxMsg(_("Coupon already used")."<br />".
+								_("on this membership"));
 					return $json;
 				}
 			}
@@ -124,7 +126,7 @@ class HouseCoupon extends SpecialUPC {
 			$minR = $transDB->query($minQ);
 			$validQtty = array_pop($transDB->fetch_row($minR));
 			if ($validQtty < $infoW["minValue"]){
-				$json['output'] = DisplayLib::boxMsg("coupon requirements not met");
+				$json['output'] = DisplayLib::boxMsg(_("coupon requirements not met"));
 				return $json;
 			}
 			break;
@@ -140,7 +142,7 @@ class HouseCoupon extends SpecialUPC {
 			$minR = $transDB->query($minQ);
 			$validQtty = array_pop($transDB->fetch_row($minR));
 			if ($validQtty <= $infoW["minValue"]){
-				$json['output'] = DisplayLib::boxMsg("coupon requirements not met");
+				$json['output'] = DisplayLib::boxMsg(_("coupon requirements not met"));
 				return $json;
 			}
 			break;
@@ -156,7 +158,7 @@ class HouseCoupon extends SpecialUPC {
 			$minR = $transDB->query($minQ);
 			$validQtty = array_pop($transDB->fetch_row($minR));
 			if ($validQtty < $infoW["minValue"]){
-				$json['output'] = DisplayLib::boxMsg("coupon requirements not met");
+				$json['output'] = DisplayLib::boxMsg(_("coupon requirements not met"));
 				return $json;
 			}
 			break;
@@ -172,7 +174,7 @@ class HouseCoupon extends SpecialUPC {
 			$minR = $transDB->query($minQ);
 			$validQtty = array_pop($transDB->fetch_row($minR));
 			if ($validQtty <= $infoW["minValue"]){
-				$json['output'] = DisplayLib::boxMsg("coupon requirements not met");
+				$json['output'] = DisplayLib::boxMsg(_("coupon requirements not met"));
 				return $json;
 			}
 			break;
@@ -203,7 +205,7 @@ class HouseCoupon extends SpecialUPC {
 			$validQtty2 = array_pop($transDB->fetch_row($min2R));
 
 			if ($validQtty < $infoW["minValue"] || $validQtty2 <= 0){
-				$json['output'] = DisplayLib::boxMsg("coupon requirements not met");
+				$json['output'] = DisplayLib::boxMsg(_("coupon requirements not met"));
 				return $json;
 			}
 			break;
@@ -213,7 +215,7 @@ class HouseCoupon extends SpecialUPC {
 			$minR = $transDB->query($minQ);
 			$validAmt = array_pop($transDB->fetch_row($minR));
 			if ($validAmt < $infoW["minValue"]){
-				$json['output'] = DisplayLib::boxMsg("coupon requirements not met");
+				$json['output'] = DisplayLib::boxMsg(_("coupon requirements not met"));
 				return $json;
 			}
 			break;
@@ -223,7 +225,7 @@ class HouseCoupon extends SpecialUPC {
 			$minR = $transDB->query($minQ);
 			$validAmt = array_pop($transDB->fetch_row($minR));
 			if ($validAmt <= $infoW["minValue"]){
-				$json['output'] = DisplayLib::boxMsg("coupon requirements not met");
+				$json['output'] = DisplayLib::boxMsg(_("coupon requirements not met"));
 				return $json;
 			}
 			break;
@@ -231,7 +233,7 @@ class HouseCoupon extends SpecialUPC {
 		case ' ':
 			break;
 		default:
-			$json['output'] = DisplayLib::boxMsg("unknown minimum type ".$infoW["minType"]);
+			$json['output'] = DisplayLib::boxMsg(_("unknown minimum type")." ".$infoW["minType"]);
 			return $json;
 		}
 
@@ -329,7 +331,7 @@ class HouseCoupon extends SpecialUPC {
 			$value = $infoW["discountValue"];
 			break;
 		case "%": // percent discount on all items
-			getsubtotals();
+			Database::getsubtotals();
 			$value = $infoW["discountValue"]*$CORE_LOCAL->get("discountableTotal");
 			break;
 		}
@@ -338,6 +340,7 @@ class HouseCoupon extends SpecialUPC {
 		
 		TransRecord::addhousecoupon($upc,$dept,-1*$value);
 		$json['output'] = DisplayLib::lastpage();
+		$json['udpmsg'] = 'goodBeep';
 		return $json;
 	}
 

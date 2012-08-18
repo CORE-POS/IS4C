@@ -90,7 +90,7 @@ class rplist extends NoInputPage {
 			echo $selected;
 			echo ">lane ".substr(100 + $row["register_no"], -2)." Cashier ".substr(100 + $row["emp_no"], -2)
 				." #".$row["trans_no"]." -- $".
-				sprintf("\$%.2f",$row["total"]);
+				sprintf($row["total"]);
 			$selected = "";
 		}
 		$db->db_close();
@@ -100,7 +100,9 @@ class rplist extends NoInputPage {
 		</form>
 		</div>
 		<div class="listboxText centerOffset">
-		use arrow keys to navigate<br />[enter] to reprint receipt<br />[clear] to cancel
+		<?php echo _("use arrow keys to navigate"); ?><br />
+		<?php echo _("enter to reprint receipt"); ?><br />
+		<?php echo _("clear to cancel"); ?>
 		</div>
 		<div class="clear"></div>
 		</div>

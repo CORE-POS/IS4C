@@ -38,7 +38,7 @@ class PercentDiscount extends Parser {
 			$split = explode("PD",$str);	
 			if (is_numeric($split[0]) && strlen($split[1]) > 0){
 				$this->remainder = $split[1];
-				$CORE_LOCAL->set("itemDiscount",(int)$split[0]);
+				$CORE_LOCAL->set("itemPD",(int)$split[0]);
 				return True;
 			}
 		}

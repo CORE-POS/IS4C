@@ -32,7 +32,7 @@ class ItemPD extends Parser {
 		global $CORE_LOCAL;
 		$ret = $this->default_json();
 		if ($CORE_LOCAL->get("currentid") == 0) 
-			$ret['output'] = DisplayLib::boxMsg("No Item on Order");
+			$ret['output'] = DisplayLib::boxMsg(_("No Item on Order"));
 		else {
 			$str = $CORE_LOCAL->get("currentid");
 			$pd = substr($str,0,strlen($str)-2);
@@ -61,7 +61,7 @@ class ItemPD extends Parser {
 			$result = $db->query($query);
 			$num_rows = $db->num_rows($result);
 
-			if ($num_rows == 0) return DisplayLib::boxMsg("Item not found");
+			if ($num_rows == 0) return DisplayLib::boxMsg(_("Item not found"));
 			else {
 				$row = $db->fetch_array($result);
 
@@ -127,7 +127,7 @@ class ItemPD extends Parser {
 		$result = $db->query($query);
 		$num_rows = $db->num_rows($result);
 		if ($num_rows == 0 ){
-			return DisplayLib::boxMsg("Item $upc not found");
+			return DisplayLib::boxMsg(_("Item not found").": ".$upc);
 		}
 
 		$row = $db->fetch_array($result);

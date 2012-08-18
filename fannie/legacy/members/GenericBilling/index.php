@@ -42,7 +42,7 @@ function regularDisplay(){
 		ORDER BY cardno";
 	$numsR = $sql->query($numsQ);
 	while($numsW = $sql->fetch_row($numsR)){
-		if ($_REQUEST['memnum'] == trim($numsW[0]))
+		if ($value == trim($numsW[0]))
 			printf("<option value=%d selected>%d %s</option>",$numsW[0],$numsW[0],$numsW[1]);	
 		else
 			printf("<option value=%d>%d %s</option>",$numsW[0],$numsW[0],$numsW[1]);	
@@ -55,10 +55,10 @@ function regularDisplay(){
 function billingDisplay($cardno){
 	global $sql;
 
-	$query = "SELECT c.cardno,c.lastname,n.balance
+	$query = "SELECT c.CardNo,c.LastName,n.balance
 		FROM custdata AS c LEFT JOIN
-		newBalanceToday_cust AS n ON c.cardno=n.memnum
-		WHERE c.cardno=$cardno AND c.personnum=1";
+		is4c_trans.newBalanceToday_cust AS n ON c.CardNo=n.memnum
+		WHERE c.CardNo=$cardno AND c.personNum=1";
 	$result = $sql->query($query);
 	$row = $sql->fetch_row($result);
 

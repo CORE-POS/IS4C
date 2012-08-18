@@ -30,21 +30,19 @@ $CREATE['trans.TenderTapeGeneric'] = "
 	CREATE view TenderTapeGeneric
 		as
 		select 
-		tdate, 
+		max(tdate) as tdate, 
 		emp_no, 
 		register_no,
 		trans_no,
 		CASE WHEN trans_subtype = 'CP' AND upc LIKE '%MAD%' THEN ''
 		     WHEN trans_subtype IN ('EF','EC','TA') THEN 'EF'
 		     ELSE trans_subtype
-		END AS trans_subtype,
-		CASE WHEN trans_subtype = 'ca' THEN
-		CASE WHEN total >= 0 THEN total ELSE 0 END
-		     ELSE
-			-1 * total
-		END AS tender
+		END AS tender_code,
+		-1 * sum(total)
 		from dlog
 		where ".$con->datediff($con->now(),'tdate')."= 0
 		and trans_subtype not in ('0','')
+		GROUP BY emp_no, register_no, trans_no,
+		tender_code
 ";
 ?>

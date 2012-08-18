@@ -55,16 +55,19 @@ static public function check_password($password,$activity=1){
 	if ($password == "TRAINING") $password = 9999; // if password is training, change to '9999'
 
 	if (!is_numeric($password)) return False; // if password is non-numeric, not a valid password
-	elseif ($password > 9999 || $password < 1) return False; // if password is greater than 4 digits or less than 1, not a valid password
+	elseif ($password < 1) return False; // if password is less than 1, not a valid password
 
 	$query_g = "select LoggedIn,CashierNo from globalvalues";
 	$db_g = Database::pDataConnect();
 	$result_g = $db_g->query($query_g);
 	$row_g = $db_g->fetch_array($result_g);
+	$password = $db_g->escape($password);
 
 	if ($row_g["LoggedIn"] == 0) {
-		$query_q = "select emp_no, FirstName, LastName from employees where EmpActive = 1 "
-			."and CashierPassword = ".$password;
+		$query_q = "select emp_no, FirstName, LastName, "
+			.$db_g->yeardiff($db_g->now(),'birthdate')." as age "
+			."from employees where EmpActive = 1 "
+			."and CashierPassword = '".$password."'";
 		$result_q = $db_g->query($query_q);
 		$num_rows_q = $db_g->num_rows($result_q);
 
@@ -76,6 +79,8 @@ static public function check_password($password,$activity=1){
 
 			$transno = Database::gettransno($row_q["emp_no"]);
 			$CORE_LOCAL->set("transno",$transno);
+			if (!is_numeric($row_q["age"])) $row_q["age"]=0;
+			$CORE_LOCAL->set("cashierAge",$row_q["age"]);
 
 			$globals = array(
 				"CashierNo" => $row_q["emp_no"],
@@ -86,12 +91,15 @@ static public function check_password($password,$activity=1){
 			Database::setglobalvalues($globals);
 
 			if ($transno == 1) TransRecord::addactivity($activity);
+
+			ReceiptLib::drawerKick();
 			
 		} elseif ($password == 9999) {
 			Database::loadglobalvalues();
 			$transno = Database::gettransno(9999);
 			$CORE_LOCAL->set("transno",$transno);
 			$CORE_LOCAL->set("training",1);
+			$CORE_LOCAL->set("cashierAge",0);
 
 			$globals = array(
 				"CashierNo" => 9999,

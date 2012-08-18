@@ -6,7 +6,7 @@ include('util.php');
 ?>
 <html>
 <head>
-<title>Extra configuration options</title>
+<title>IT CORE Lane Installation: Additional Configuration</title>
 <style type="text/css">
 body {
 	line-height: 1.5em;
@@ -25,6 +25,14 @@ Additional Configuration
 <a href="debug.php">Debug</a>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <a href="extra_data.php">Sample Data</a>
+
+<h2>IT CORE Lane Installation: Additional Configuration</h2>
+
+<?php
+check_writeable('../ini.php');
+check_writeable('../ini-local.php');
+?>
+
 <form action=extra_config.php method=post>
 <b>Browser only</b>: <select name=BROWSER_ONLY>
 <?php
@@ -69,6 +77,23 @@ confsave('discountEnforced',$CORE_LOCAL->get('discountEnforced'));
 </select><br />
 If yes, members get a percentage discount as specified in custdata.
 <br />
+<b>Discounts on refunds</b>: <select name=RDISCOUNTS>
+<?php
+if(isset($_REQUEST['RDISCOUNTS'])) $CORE_LOCAL->set('refundDiscountable',$_REQUEST['RDISCOUNTS']);
+if ($CORE_LOCAL->get("refundDiscountable")==="") $CORE_LOCAL->set("refundDiscountable",0);
+if ($CORE_LOCAL->get("refundDiscountable") == 1){
+	echo "<option value=1 selected>Yes</option>";
+	echo "<option value=0 >No</option>";
+}
+else {
+	echo "<option value=1>Yes</option>";
+	echo "<option value=0 selected>No</option>";
+}
+confsave('refundDiscountable',$CORE_LOCAL->get('refundDiscountable'));
+?>
+</select><br />
+If yes, percent discount is applied to refunds
+<br />
 <b>Line Item Discount (member)</b>: 
 <?php
 if(isset($_REQUEST['LD_MEM'])) $CORE_LOCAL->set('LineItemDiscountMem',$_REQUEST['LD_MEM']);
@@ -109,6 +134,7 @@ confsave('defaultNonMem',"'".$CORE_LOCAL->get('defaultNonMem')."'");
 <br />
 Normally a single account number is used for most if not all non-member
 transactions. Specify that account number here.
+<br />
 <b>Visiting Member #</b>: 
 <?php
 if(isset($_REQUEST['VISMEM'])) $CORE_LOCAL->set('visitingMem',$_REQUEST['VISMEM']);
@@ -133,6 +159,25 @@ else {
 confsave('memlistNonMember',$CORE_LOCAL->get('memlistNonMember'));
 ?>
 </select>
+<br />
+<b>Bottle Return Department number</b>: 
+<?php
+if(isset($_REQUEST['BOTTLE_RET'])) $CORE_LOCAL->set('BottleReturnDept',$_REQUEST['BOTTLE_RET']);
+printf("<input type=text name=BOTTLE_RET value=\"%s\" />",$CORE_LOCAL->get('BottleReturnDept'));
+confsave('BottleReturnDept',"'".$CORE_LOCAL->get('BottleReturnDept')."'");
+?>
+<br />
+Add a BOTTLE RETURN item to your products table with a normal_price of 0, IS4C will prompt for Bottle Return amt. and then make it a negative value.
+<br />
+<b>Lock Screen Timeout</b>:
+<?php
+if(isset($_REQUEST['TIMEOUT'])) $CORE_LOCAL->set('timeout',$_REQUEST['TIMEOUT']);
+else $CORE_LOCAL->set('timeout',180000);
+printf("<input type=text name=TIMEOUT value=\"%s\" />",$CORE_LOCAL->get('timeout'));
+confsave('timeout',"'".$CORE_LOCAL->get('timeout')."'");
+?>
+<br />
+Enter timeout in milliseconds. Default: 180000 (3 minutes)
 <hr />
 <b>Allow members to write checks over purchase amount</b>: <select name=OVER>
 <?php
@@ -194,6 +239,37 @@ confsave('printerPort',"'".$CORE_LOCAL->get('printerPort')."'");
 <br />
 Path to the printer. Common ports are LPT1: (windows) and /dev/lp0 (linux).
 Can also print to a text file if it's just a regular file name.
+<br />
+<b>Email Receipt Sender</b>:
+<?php
+if(isset($_REQUEST['emailReceiptFrom'])) $CORE_LOCAL->set('emailReceiptFrom',$_REQUEST['emailReceiptFrom']);
+printf("<input type=text name=emailReceiptFrom value=\"%s\" />",$CORE_LOCAL->get('emailReceiptFrom'));
+confsave('emailReceiptFrom',"'".$CORE_LOCAL->get('emailReceiptFrom')."'");
+?>
+<br />
+<b>Drawer Behavior Module</b>:
+<?php
+$kmods = array();
+$dh = opendir('../lib/Kickers/');
+while(False !== ($f = readdir($dh))){
+	if ($f == "." || $f == "..")
+		continue;
+	if (substr($f,-4) == ".php"){
+		$kmods[] = rtrim($f,".php");
+	}
+}
+if(isset($_REQUEST['kickerModule'])) $CORE_LOCAL->set('kickerModule',$_REQUEST['kickerModule']);
+if ($CORE_LOCAL->get('kickerModule')=='') $CORE_LOCAL->set('kickerModule','Kicker');
+echo '<select name="kickerModule">';
+foreach($kmods as $k){
+	printf('<option %s>%s</option>',
+		($CORE_LOCAL->get('kickerModule')==$k?'selected':''),
+		$k);
+}
+echo '</select>';
+confsave('kickerModule',"'".$CORE_LOCAL->get('kickerModule')."'");
+?>
+<br />
 <hr />
 <b>Scanner/scale port</b>:
 <?php
@@ -222,8 +298,8 @@ if ($CORE_LOCAL->get("scaleDriver") != ""){
 		include('../scale-drivers/php-wrappers/'.$classname.'.php');
 		$instance = new $classname();
 		@$instance->SavePortConfiguration($CORE_LOCAL->get("scalePort"));
-		@$abs_path = substr($_SERVER['PATH_TRANSLATED'],0,
-				strlen($_SERVER['PATH_TRANSLATED'])-strlen('install/extra_config.php')-1);
+		@$abs_path = substr($_SERVER['SCRIPT_FILENAME'],0,
+				strlen($_SERVER['SCRIPT_FILENAME'])-strlen('install/extra_config.php')-1);
 		@$instance->SaveDirectoryConfiguration($abs_path);
 	}
 }
@@ -325,6 +401,9 @@ else {
 confsave('ModularTenders',"'".$CORE_LOCAL->get('ModularTenders')."'");
 ?>
 </select><br />
+<b>Tender Mapping</b>:<br />
+Map custom tenders to IS4Cs expected tenders<br />
+Tender Rpt. column: Include the checked tenders in the Tender Report (available via Mgrs. Menu [MG])<br />
 <?php
 $settings = $CORE_LOCAL->get("TenderMap");
 if (!is_array($settings)) $settings = array();
@@ -348,11 +427,27 @@ while(False !== ($f = readdir($dh))){
 	if (substr($f,-4) == ".php")
 		$mods[] = rtrim($f,".php");
 }
+//  Tender Report: Desired tenders column
+$settings2 = $CORE_LOCAL->get("TRDesiredTenders");
+if (!is_array($settings2)) $settings2 = array();
+if (isset($_REQUEST['TR_LIST'])){
+	$saveStr2 = "array(";
+	$settings2 = array();
+	foreach($_REQUEST['TR_LIST'] as $dt){
+		if($dt=="") continue;
+		list($code2,$name2) = explode(":",$dt);
+		$settings2[$code2] = $name2;
+		$saveStr2 .= "'".$code2."'=>'".addslashes($name2)."',";
+	}
+	$saveStr2 = rtrim($saveStr2,",").")";
+	confsave('TRDesiredTenders',$saveStr2);
+} //end TR desired tenders
 $db = Database::pDataConnect();
 $res = $db->query("SELECT TenderCode, TenderName FROM tenders ORDER BY TenderName");
 ?>
 <table cellspacing="0" cellpadding="4" border="1">
 <?php
+echo "<thead><tr><th>Tender Name</th><th>Map To</th><th>Tender Rpt</th></tr></thead><tbody>\n";
 while($row = $db->fetch_row($res)){
 	printf('<tr><td>%s (%s)</td>',$row['TenderName'],$row['TenderCode']);
 	echo '<td><select name="TenderMapping[]">';
@@ -363,10 +458,16 @@ while($row = $db->fetch_row($res)){
 			(isset($settings[$row['TenderCode']])&&$settings[$row['TenderCode']]==$m)?'selected':'',
 			$m);	
 	}
-	echo '</select></td></tr>';
+	echo '</select></td>';
+	echo "<td><input type=checkbox name=\"TR_LIST[]\" ";
+	echo 'value="'.$row['TenderCode'].':'.$row['TenderName'].'"';
+	if (array_key_exists($row['TenderCode'], $settings2)) echo " CHECKED";
+	echo "></td></tr></tbody>";
 }
 ?>
 </table>
+<br />
+
 <hr />
 <i>Integrated card processing configuration is included for the sake
 of completeness. The modules themselves require individual configuration,

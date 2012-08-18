@@ -36,18 +36,19 @@ class StoreChargeTender extends TenderModule {
 		$charge_ok = PrehLib::chargeOk();
 	
 		if ($charge_ok == 0){
-			return DisplayLib::boxMsg("member ".$CORE_LOCAL->get("memberID")."<br />is not authorized<br />to make charges");
+			return DisplayLib::boxMsg(_("member")." ".$CORE_LOCAL->get("memberID")."<br />".
+				_("is not authorized")."<br />"._("to make charges"));
 		}
 		else if ($CORE_LOCAL->get("availBal") < 0){
-			return DisplayLib::boxMsg("member ".$CORE_LOCAL->get("memberID")."<br />is over limit");
+			return DisplayLib::boxMsg(_("member")." ".$CORE_LOCAL->get("memberID")."<br />"._("is over limit"));
 		}
 		elseif ((abs($CORE_LOCAL->get("memChargeTotal"))+ $this->amount) >= ($CORE_LOCAL->get("availBal") + 0.005)){
 			$memChargeRemain = $CORE_LOCAL->get("availBal");
 			$memChargeCommitted = $memChargeRemain + $CORE_LOCAL->get("memChargeTotal");
-			return DisplayLib::xboxMsg("available balance for charge <br>is only \$" .$memChargeCommitted);
+			return DisplayLib::xboxMsg(_("available balance for charge")."<br />"._("is only \$").$memChargeCommitted);
 		}
 		elseif(MiscLib::truncate2($CORE_LOCAL->get("amtdue")) < MiscLib::truncate2($this->amount)) {
-			return DisplayLib::xboxMsg("charge tender exceeds purchase amount");
+			return DisplayLib::xboxMsg(_("charge tender exceeds purchase amount"));
 		}
 
 		return True;

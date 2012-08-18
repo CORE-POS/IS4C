@@ -84,6 +84,8 @@ case 'saveDesc':
 	$dbc->query($upQ);
 	break;
 case 'saveCtC':
+	if (sprintf("%d",$_REQUEST['val']) == "2") 
+		break; // don't save with no selection
 	$upQ = sprintf("UPDATE {$TRANS}PendingSpecialOrder SET
 		numflag=%d WHERE order_id=%d AND trans_id=0",
 		$_REQUEST['val'],$_REQUEST['orderID']);
@@ -230,6 +232,9 @@ case 'saveZip':
 	break;
 case 'savePh':
 	if (canSaveAddress($orderID) == True){
+		printf("UPDATE {$TRANS}SpecialOrderContact
+			SET phone=%s WHERE card_no=%d",
+			$dbc->escape($_REQUEST['ph']),$orderID);
 		$dbc->query(sprintf("UPDATE {$TRANS}SpecialOrderContact
 			SET phone=%s WHERE card_no=%d",
 			$dbc->escape($_REQUEST['ph']),$orderID));
@@ -589,7 +594,7 @@ function CreateEmptyOrder(){
 	$orderID = $dbc->insert_id();
 
 	$ins_array = genericRow($orderID);
-	$ins_array['numflag'] = 1;
+	$ins_array['numflag'] = 2;
 	$ins_array['mixMatch'] = $dbc->escape($user);
 	$dbc->smart_insert("{$TRANS}PendingSpecialOrder",$ins_array);
 
@@ -737,10 +742,10 @@ function getCustomerForm($orderID,$memNum="0"){
 
 		// load member contact info into SpecialOrderContact
 		// on first go so it can be edited separately
-		$testQ = "SELECT street FROM {$TRANS}SpecialOrderContact WHERE card_no=".$orderID;
+		$testQ = "SELECT street,phone FROM {$TRANS}SpecialOrderContact WHERE card_no=".$orderID;
 		$testR = $dbc->query($testQ);
 		$testW = $dbc->fetch_row($testR);
-		if (empty($testW['street'])){
+		if (empty($testW['street']) && empty($testW['phone'])){
 			$contactQ = sprintf("SELECT street,city,state,zip,phone,email_1,email_2
 					FROM meminfo WHERE card_no=%d",$memNum);
 			$contactR = $dbc->query($contactQ);
@@ -797,7 +802,7 @@ function getCustomerForm($orderID,$memNum="0"){
 	if ($dbc->num_rows($r) > 0)	
 		$confirm_date = array_pop($dbc->fetch_row($r));
 
-	$callback = 1;
+	$callback = 2;
 	$user = 'Unknown';
 	$orderDate = "";
 	$q = "SELECT datetime,numflag,mixMatch FROM {$TRANS}PendingSpecialOrder WHERE order_id=$orderID AND trans_id=0";
@@ -851,6 +856,7 @@ function getCustomerForm($orderID,$memNum="0"){
 	$extra .= '</td><td align="right" valign="top">';
 	$extra .= '<b>Call to Confirm</b>: ';
 	$extra .= '<select id="ctcselect" onchange="saveCtC(this.value,'.$orderID.');">';
+	$extra .= '<option value="2"></option>';
 	if ($callback == 1){
 		$extra .= '<option value="1" selected>Yes</option>';	
 		$extra .= '<option value="0">No</option>';	
@@ -858,6 +864,10 @@ function getCustomerForm($orderID,$memNum="0"){
 	else if ($callback == 0){
 		$extra .= '<option value="1">Yes</option>';	
 		$extra .= '<option value="0" selected>No</option>';	
+	}
+	else {
+		$extra .= '<option value="1">Yes</option>';	
+		$extra .= '<option value="0">No</option>';	
 	}
 	$extra .= '</select><br />';	
 	$extra .= '<span id="confDateSpan">'.(!empty($confirm_date)?'Confirmed '.$confirm_date:'Not confirmed')."</span> ";

@@ -96,7 +96,7 @@ function printReceipt($arg1,$second=False) {
 					$receipt .= "\n\n";
 				}
 				else{
-					$receipt .= $PRINT_OBJ->centerString("Thank You - ".$member."!!!");
+					$receipt .= $PRINT_OBJ->centerString("Thank You - ".$member);
 					$receipt .= "\n";
 				}
 			}
@@ -108,7 +108,7 @@ function printReceipt($arg1,$second=False) {
 					$receipt .= "\n\n";
 				}
 				else{
-					$receipt .= $PRINT_OBJ->centerString("Thank You!!!");
+					$receipt .= $PRINT_OBJ->centerString("Thank You!");
 					$receipt .= "\n";
 				}
 			}
