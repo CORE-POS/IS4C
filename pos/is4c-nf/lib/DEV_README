@@ -5,3 +5,4 @@ choice.
 gui-base.php also only has functions, but is left at the root level
 because it contains the main frameset the entire program runs
 through.
+Note: 18Aug2012 EL gui-base.php no longer exists, at or below root.
