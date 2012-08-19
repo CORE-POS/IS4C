@@ -65,9 +65,11 @@ class login2 extends BasicPage {
 
 	function body_content(){
 		global $CORE_LOCAL;
-		$this->add_onload_command("\$('#reginput').focus();\n
-					   \$('#scalebox').css('display','none');\n
-					   \$('body').css('background-image','none');\n");
+		// 18Agu12 EL Add separately for readability of source.
+		$this->add_onload_command("\$('#reginput').focus();");
+		$this->add_onload_command("\$('#scalebox').css('display','none');");
+		$this->add_onload_command("\$('body').css('background-image','none');");
+
 		?>
 		<div id="loginTopBar">
 			<div class="name">I S 4 C</div>
