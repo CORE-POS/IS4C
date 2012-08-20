@@ -3,6 +3,10 @@
 		<title>Writing a Parser object</title>
 	</head>
 	<body>
+	<div style="text-align:center;margin-bottom:10px;font-size:80%;">
+	updated as of: August 20, 2012<br />
+	last author: Andy Theuninck
+	</div>
 	<h3>Quick Parsing Primer</h3>
 	Parsing currently happens in ajax-callbacks/ajax-parser.php. Two arrays of parser objects
 	are automatically built from the files in parser-class-lib/preparse and parser-class-lib/parse.
@@ -28,8 +32,8 @@
 		}
 
 		function parse($str){
-			global $IS4C_LOCAL;
-			$IS4C_LOCAL->set("toggletax",1);
+			global $CORE_LOCAL;
+			$CORE_LOCAL->set("toggletax",1);
 			return substr($str,3);
 		}
 	}
@@ -66,9 +70,8 @@
 		}
 
 		function parse($str){
-			global $IS4C_PATH;
 			$return_value = $this->default_json();
-			$return_value['main_frame'] = $IS4C_PATH."gui-modules/CabDisplay.php";	
+			$return_value['main_frame'] = MiscLib::base_url()."gui-modules/CabDisplay.php";	
 			return $return_value;
 		}
 	}
@@ -84,7 +87,7 @@
 
 		function parse($str){
 			$return_value = $this->default_json();
-			$return_value['output'] = boxMsg("Printing Receipt");
+			$return_value['output'] = DisplayLib::boxMsg("Printing Receipt");
 			$return_value['receipt'] = "partial";
 			return $return_value;
 		}
