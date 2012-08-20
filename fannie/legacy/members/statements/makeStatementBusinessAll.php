@@ -172,7 +172,7 @@ while($selAddW = $sql->fetch_row($selAddR)){
    $pdf->Ln(20);
 */
 
-   $priorQ = "SELECT sum(charges) - sum(payments) FROM ar_history
+   $priorQ = "SELECT sum(charges) - sum(payments) FROM is4c_trans.ar_history
 		WHERE ".$sql->datediff('tdate',$sql->now())." < -90
 		AND card_no = $selAddW[0]";
    $priorR = $sql->query($priorQ);
