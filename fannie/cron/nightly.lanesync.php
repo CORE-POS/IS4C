@@ -49,6 +49,11 @@ curl_setopt($custdata, CURLOPT_RETURNTRANSFER, True);
 $r2 = curl_exec($custdata);
 curl_close($custdata);
 
+$memcards = curl_init($url."?tablename=&othertable=memberCards");
+curl_setopt($memcards, CURLOPT_RETURNTRANSFER, True);
+$r2 = curl_exec($memcards);
+curl_close($memcards);
+
 $employees = curl_init($url."?tablename=employees&othertable=");
 curl_setopt($employees, CURLOPT_RETURNTRANSFER, True);
 $r3 = curl_exec($employees);
