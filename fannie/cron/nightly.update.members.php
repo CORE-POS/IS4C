@@ -514,7 +514,6 @@ function dieHere($msg="") {
 
 	$subject = "PoS: Error: Update IS4C members";
 	$message = "$msg";
-echo "$message\n";
 	//$message = "Added: $insertCount  Updated: $updateCount\n";
 	$adminString = implode(" ", $admins);
 
@@ -739,7 +738,7 @@ $updateStockpurchases = "";
 $is4cOp = "";
 
 // Controls some monitoring and info.
-$debug = 1;
+$debug = 0;
 
 // --variables } - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -832,7 +831,7 @@ dieHere("After fm");
 */
 
 // Little tests of civicrm connection.
-if (1) {
+if (0) {
 
 	$selectCivi = "SELECT id, contact_id from civicrm_membership LIMIT 5;";
 	$civim = $dbConn->query("$selectCivi");
@@ -930,7 +929,7 @@ $dbConn2->SetFetchMode(ADODB_FETCH_ASSOC);
 
 
 // Little tests of is4c connection.
-if (1) {
+if (0) {
 
 	$selectIs4c = "SELECT CardNo, LastName from custdata LIMIT 5;";
 	$customers = $dbConn2->query("$selectIs4c");

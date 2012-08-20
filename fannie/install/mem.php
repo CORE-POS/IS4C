@@ -74,7 +74,13 @@ confset('FANNIE_AR_DEPARTMENTS',"'$FANNIE_AR_DEPARTMENTS'");
 printf("<input type=\"text\" name=\"FANNIE_AR_DEPARTMENTS\" value=\"%s\" />",$FANNIE_AR_DEPARTMENTS);
 ?>
 <hr />
-<b>Enabled modules</b><br />
+<b>Membership Information Modules</b> <br />
+The Member editing interface displayed after you select a member at:
+<br /><a href="/IS4C/fannie/mem/search.php" target="_mem">/IS4C/fannie/mem/search.php</a>
+<br />consists of fields grouped in several sections, called modules, listed below.
+<br />The enabled (active) ones are selected/highlighted.
+<br />
+<br /><b>Available Modules</b> <br />
 <?php
 if (!isset($FANNIE_MEMBER_MODULES)) $FANNIE_MEMBER_MODULES = array('ContactInfo','MemType');
 if (isset($_REQUEST['FANNIE_MEMBER_MODULES'])){
@@ -102,7 +108,60 @@ foreach($tmp as $module){
 }
 ?>
 </select><br />
+Click or ctrl-Click or shift-Click to select/deselect modules for enablement.
+<br /><br />
 <a href="memModDisplay.php">Adjust Module Display Order</a>
+
+<hr />
+<b>Locale</b> <br />
+Set the Country and Language where Fannie will run.
+<br />If these are not set in Fannie configuration but are set in the Linux environment the environment values will be used as
+defaults that can be overridden by settings here.
+
+<br /><b>Country</b> <br />
+<?php
+// If the var doesn't exist in config.php assign a default value.
+if (!isset($FANNIE_COUNTRY)) $FANNIE_COUNTRY = "";
+// If the form var is set assign it to the local copy of the config var.
+if (isset($_REQUEST['FANNIE_COUNTRY'])) $FANNIE_COUNTRY = $_REQUEST['FANNIE_COUNTRY'];
+// Change or add the local copy to the config file.
+confset('FANNIE_COUNTRY',"'$FANNIE_COUNTRY'");
+if ( !isset($FANNIE_COUNTRY) && isset($_ENV['LANG']) ) {
+	$FANNIE_COUNTRY = substr($_ENV['LANG'],3,2);
+}
+?>
+<select name="FANNIE_COUNTRY" size='1'>
+<?php
+//Use I18N country codes.
+$countries = array("US"=>"USA", "CA"=>"Canada");
+foreach (array_keys($countries) as $key) {
+	printf("<option value='%s' %s>%s</option>", $key, (($FANNIE_COUNTRY == $key)?'selected':''), $countries["$key"]);
+}
+?>
+</select>
+
+<br /><b>Language</b> <br />
+<?php
+// If the var doesn't exist in config.php assign a default value.
+if (!isset($FANNIE_LANGUAGE)) $FANNIE_LANGUAGE = "";
+// If the form var is set assign it to the local copy of the config var.
+if (isset($_REQUEST['FANNIE_LANGUAGE'])) $FANNIE_LANGUAGE = $_REQUEST['FANNIE_LANGUAGE'];
+// Change or add the local copy to the config file.
+confset('FANNIE_LANGUAGE',"'$FANNIE_LANGUAGE'");
+if ( !isset($FANNIE_LANGUAGE) && isset($_ENV['LANG']) ) {
+	$FANNIE_LANGUAGE = substr($_ENV['LANG'],0,2);
+}
+?>
+<select name="FANNIE_LANGUAGE" size='1'>
+<?php
+//Use I18N language codes.
+$langs = array("en"=>"English", "fr"=>"French", "sp"=>"Spanish");
+foreach (array_keys($langs) as $key) {
+	printf("<option value='%s' %s>%s</option>", $key, (($FANNIE_LANGUAGE == $key)?'selected':''), $langs["$key"]);
+}
+?>
+</select><br />
+
 <hr />
 <input type=submit value="Re-run" />
 </form>

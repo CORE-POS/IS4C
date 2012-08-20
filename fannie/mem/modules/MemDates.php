@@ -50,8 +50,8 @@ class MemDates extends MemberModule {
 				maxlength="10" value="%s" onclick="showCalendarControl(this);"
 				/></td></tr>',$infoW['end_date']);	
 
-
 		$ret .= "</table></fieldset>";
+
 		return $ret;
 	}
 

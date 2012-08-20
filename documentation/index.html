@@ -1,19 +1,30 @@
-<html>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-	<title>CORE-POS/IS4C Master Documentation ToC</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>CORE-POS/IS4C Master Documentation ToC</title>
+<script type="text/javascript" src="/IS4C/pos/is4c-nf/js/jquery.js"></script>
+<style type="text/css">
+/* Lists */
+.detail {
+	display: block;
+}
+</style>
 </head>
 <body>
 <div style="text-align:center;">
 	<h2>CORE-POS/IS4C Master Documentation ToC</h2>
 Rudimentary ToC to /IS4C/documentation
 </br>and links to some <a href="#other">other</a> resources
-<br />as of: August 12, 2012
+<br />as of: August 19, 2012
 </div>
 
 <p>You are here: Documentation Top
 </p>
 
 <p>All links open in new tabs</p>
+<input type="Button" value="Show Details" onClick="$('.detail').css('display','block');" />
+<input type="Button" value="Hide Details" onClick="$('.detail').css('display','none');" />
 
 <ul>
 
@@ -34,22 +45,77 @@ Rudimentary ToC to /IS4C/documentation
 	<li><a href="Fannie/index.html" target="_Fannie">Fannie/Backend</a>
 	</br>Configuration and Development.  See IT below for installation and maintenance.
 	</br>You should be familiar with the IT materials before developing.
+	<br />Much of the following is also at the Techhub wiki: <a href="http://techhub.coop/media/index.php?title=Fannie_4_Developers" target="_Fannie_th_wiki">Fannie 4 Developers</a>
 		<ul>
-			<li><a href="Fannie/developer/index.html" target="_Fdev">developer</a>
+			<li><a href="Fannie/developer/index.html" target="_Fdev">Developer Menu</a>
 				<ul>
-					<li><a href="Fannie/developer/auth.html" target="_Fd_auth">auth</a></li>
-					<li><a href="Fannie/developer/cron.html" target="_Fd_cron">cron</a></li>
-					<li><a href="Fannie/developer/db-creation.html" target="_Fd_dbc">db-creation</a></li>
-					<li><a href="Fannie/developer/framework.html" target="_Fd_dbc">framework</a></li>
-					<li><a href="Fannie/developer/get-going.html" target="_Fd_dbc">get-going</a></li>
-					<li><a href="Fannie/developer/installation.html" target="_Fd_dbc">Installation</a></li>
+					<li><a href="Fannie/developer/installation.html" target="_Fd_installation">Installation</a>
+						<ul id="" class="detail">
+							<li>Pre-requisites</li>
+							<li>Installing Fannie
+								<ul id="" class="detail">
+									<li>Where to put it</li>
+									<li>.../install/index.php: The installation/configuration page</li>
+								</ul>
+							</li>
+						</ul>
+					</li>
+					<li><a href="Fannie/developer/framework.html" target="_Fd_framework">Framework Requirements/Theory</a>
+						<ul id="" class="detail">
+							<li>[On rules]</li>
+							<li>One configuration file</li>
+							<li>Database Best Practices</li>
+						</ul>
+					</li>
+					<li><a href="Fannie/developer/auth.html" target="_Fd_auth">Authentication System</a>
+						<ul id="" class="detail">
+							<li>[The current situation]</li>
+							<li>Authenticating users</li>
+							<li>Permissions</li>
+							<li>Groups</li>
+							<li>Tying it all together</li>
+							<li>Installation</li>
+							<li>Drawbacks and/or Gotchas</li>
+						</ul>
+					</li>
+					<li><a href="Fannie/developer/cron.html" target="_Fd_cron">Scheduled Tasks (cron jobs)</a></li>
+						<ul id="" class="detail">
+							<li>[Overview]</li>
+							<li>Example</li>
+						</ul>
+					</li>
+					<li><a href="Fannie/developer/db-creation.html" target="_Fd_dbc">Creating Tables and Views</a>
+						<ul id="" class="detail">
+							<li>[It is done in install/index.php]</li>
+						</ul>
+					</li>
+					<li><a href="Fannie/developer/db-altaltaltereation.html" target="_Fd_dba">Altering Tables and Views</a>
+						<ul id="" class="detail">
+							<li>[Using the install/updates directory</li>
+						</ul>
+					</li>
+					<li><a href="/IS4C/fannie/install/sql/magic-doc.php" target="_Fd_agdd">Auto-Generated Database Documentation</a>
+						<ul id="" class="detail">
+							<li>Links to per-table Help</li>
+							<li>core_op</li>
+							<li>core_trans</li>
+						</ul>
+					</li>
+					<li><a href="/phpmyadmin/" target="_Fd_phpmyadmin">phpMyAdmin</a></li>
+					<li><a href="Fannie/developer/get-going.html" target="_Fd_gg">Dive In</a>
+						<ul id="" class="detail">
+							<li>Grab the config</li>
+							<li>Need a database connection?</li>
+							<li>Want a skin?</li>
+						</ul>
+					</li>
 				</ul>
 			</li>
 			<li><a href="Fannie/end-user/index.html" target="_Fend-user">end-user</a>
 				<ul>
-					<li><a href="Fannie/end-user/auth-classes.html" target="_Fe_authc">auth</a></li>
+					<li><a href="Fannie/end-user/auth-classes.html" target="_Fe_authc">auth classes</a> - What does this show?</li>
 					<li><a href="Fannie/end-user/batches.html" target="_Fe_batches">Sale Batches</a>
-						<ul>
+						<ul id="" class="detail">
 							<li>Batch Types</li>
 							<li>Creating Sales Batches (Batches for Sales)</li>
 							<li>Price Change Batches</li>
@@ -57,17 +123,30 @@ Rudimentary ToC to /IS4C/documentation
 							<li>Add limit</li>
 							<li>The <i>Cut</i> option</li>
 							<li><a href="Fannie/end-user/speciality-batches.html" target="_Fe_sb">Specialty Batch Tools</a>
-						<ul>
-							<li>Co+op Deals, i.e. Flyer Prices</li>
-							<li>Vendor Pricing</li>
-						</ul>
+								<ul id="" class="detail">
+									<li>Co+op Deals, i.e. Flyer Prices</li>
+									<li>Vendor Pricing</li>
+								</ul>
 							</li>
 						</ul>
 					</li>
-					<li><a href="Fannie/end-user/data-loading.html" target="_Fe_dl">data-loading</a></li>
-					<li><a href="Fannie/end-user/departments.html" target="_Fe_departments">departments</a></li>
+					<li><a href="Fannie/end-user/data-loading.html" target="_Fe_dl">Data Loading</a>
+						<ul id="" class="detail">
+							<li>Members</li>
+							<li>Employees</li>
+							<li>Tenders</li>
+							<li>Tax Rates</li>
+						</ul>
+					</li>
+					<li><a href="Fannie/end-user/departments.html" target="_Fe_departments">Departments</a>
+						<ul id="" class="detail">
+							<li>Departments</li>
+							<li>Super Departments</li>
+							<li>Sub Departments</li>
+						</ul>
+					</li>
 					<li><a href="Fannie/end-user/members.html" target="_Fe_members">Members</a>
-						<ul>
+						<ul id="" class="detail">
 							<li>Membership Types</li>
 							<li>Membership-related Settings</li>
 							<li>Importing Existing Memberships</li>
@@ -75,10 +154,31 @@ Rudimentary ToC to /IS4C/documentation
 							<li>Back to Importing Data</li>
 						</ul>
 					</li>
-					<li><a href="Fannie/end-user/pricing.html" target="_Fe_pricing">pricing</a></li>
+					<li><a href="Fannie/end-user/pricing.html" target="_Fe_pricing">Product and Price Management</a>
+						<ul id="" class="detail">
+							<li>How do I add an item to POS?</li>
+							<li>That's tedious. How do I import a bunch of items?</li>
+							<li>How do I add two items with the same UPC?</li>
+							<li>How do I change an item's price?</li>
+							<li>How do I find an item without the UPC?</li>
+							<li>Why isn't my item the same price at all lanes?</li>
+							<li>Why does the item I entered say "not found" at the lanes</li>
+							<li>Why does an item ring up with "w/ volume adjust" messages?</li>
+							<li>How do I put an item on sale?</li>
+							<li>How do I take an item off sale?</li>
+							<li>Why does an item show a message about not being for sale?</li>
+							<li>Why is the lane saying "place item on scale"?</li>
+							<li>Why isn't the lane weighing an item?</li>
+							<li>How do I enter variable-weight, pre-stickered items such as from a Hobart deli scale?</li>
+							<li>How do I put a variable-weight, pre-stickered item on sale?</li>
+							<li>How do I ensure an item is not discounted?</li>
+							<li>How do I require the cashier to enter a quantity for an item?</li>
+							<li>How do I pull price updates from a spreadsheet my vendor sent?</li>
+						</ul>
+					</li>
 					<li><a href="Fannie/end-user/speciality-batches.html" target="_Fe_sb">Specialty Batch Tools</a>
-					<li><a href="Fannie/end-user/vendorImports.html" target="_Fe_vi">vendorImports</a>
-						<ul>
+					<li><a href="Fannie/end-user/vendorImports.html" target="_Fe_vi">Import Vendor Data</a>
+						<ul id="" class="detail">
 							<li>Step 1: Create Vendor(s)</li>
 							<li>Step 2: Change the spreadsheet to a CSV</li>
 							<li>Step 3: Upload the file</li>
@@ -96,19 +196,88 @@ Rudimentary ToC to /IS4C/documentation
 		<ul>
 			<li><a href="IS4C/developer/index.html" target="_ISdev">developer</a>
 				<ul>
-					<li><a href="IS4C/developer/framework.html" target="_ISd_framework">framework</a></li>
-					<li><a href="IS4C/developer/get-going.html" target="_ISd_gg">get-going</a></li>
-					<li><a href="IS4C/developer/howto-cc.html" target="_ISd_cc">howto-cc</a></li>
-					<li><a href="IS4C/developer/howto-gs1.html" target="_ISd_gs1">howto-gs1</a></li>
-					<li><a href="IS4C/developer/howto-gui.html" target="_ISd_gui">howto-gui</a></li>
-					<li><a href="IS4C/developer/howto-newmagellan.html" target="_ISd_newmag">howto-newmagellan</a></li>
-					<li><a href="IS4C/developer/howto-parse.html" target="_ISd_parse">howto-parse</a></li>
-					<li><a href="IS4C/developer/howto-scale.html" target="_ISd_scale">howto-scale</a></li>
-					<li><a href="IS4C/developer/howto-scanning.html" target="_ISd_scanramework">howto-scanning</a></li>
-					<li><a href="IS4C/developer/installation.html" target="_ISd_installation">installation</a></li>
+							<li>DEV_README's at and under IS4C/pos/is4c-nf:
+							<br />"This branch of IS4C is a fairly large overhaul from
+							the original code base. These DEV_README files provide some
+							insight into why I made certain changes." Andy Theuninck
+							<ul id="" class="detail">
+								<li><a href="/IS4C/pos/is4c-nf/DEV_README" target="_ISd_DR">Overview</a></li>
+								<li><a href="/IS4C/pos/is4c-nf/gui-class-lib/DEV_README" target="_ISd_DRgcl">gui-class-lib</a></li>
+								<li><a href="/IS4C/pos/is4c-nf/gui-modules/DEV_README" target="_ISd_DRgm">gui-modules</a></li>
+								<li><a href="/IS4C/pos/is4c-nf/lib/DEV_README" target="_ISd_DRlib">lib</a></li>
+								<li><a href="/IS4C/pos/is4c-nf/parser-class-lib/DEV_README" target="_ISd_DRpcl">parser-class-lib</a></li>
+							</ul>
+							</li>
+					<li><a href="IS4C/developer/installation.html" target="_ISd_installation">Installation</a></li>
+					<li><a href="IS4C/developer/framework.html" target="_ISd_framework">Framework</a>
+						<ul id="" class="detail">
+							<li>Install-anywhere</li>
+							<li>Modular Parsing</li>
+							<li>Classes for UI</li>
+							<li>Modular Paycards</li>
+							<li>Hardware Flexibility</li>
+							<li>Database Best Practices</li>
+						</ul>
+					</li>
+					<li><a href="IS4C/developer/get-going.html" target="_ISd_gg">Dive In - another ToC to this list</a></li>
+					<li><a href="IS4C/developer/howto-cc.html" target="_ISd_cc">Integrate Paycards: Credit, Debit, Gift, etc.</a>
+					<!-- This Button works.  Don't want to do it this way now. -->
+					<!-- input type="Button" value="Details" onClick="$('#_ISd_cc').css('display','block');" / -->
+						<ul id="_ISd_cc" class="detail">
+							<li>Primer: Credit Cards</li>
+							<li>Primer: Gift Cards</li>
+							<li>BasicCCModule Class</li>
+							<li>What's Going to Go Wrong?</li>
+						</ul>
+					</li>
+					<li><a href="IS4C/developer/howto-gui.html" target="_ISd_gui">How Pages are Generated; HowTo New Page</a>
+						<ul id="" class="detail">
+							<li>How a page is generated: class BasicPage</li>
+							<li>Variant (child) classes: InputPage, NoInputPage, PaycardProcessPage</li>
+						</ul>
+					</li>
+					<li><a href="IS4C/developer/howto-parse.html" target="_ISd_parse">How PoS Input is Processed (Parsed); HowTo New Input</a>
+					</li>
+						<ul id="" class="detail">
+							<li>Quick Parsing Primer</li>
+							<li>Preparse Objects</li>
+							<li>Parse Objects</li>
+							<li>Testing</li>
+						</ul>
+					</li>
+					<li><a href="IS4C/developer/howto-scale.html" target="_ISd_scale">Scanner/Scale Drivers</a>
+						<ul id="" class="detail">
+							<li>Class ScaleDriverWrapper and its methods</li>
+						</ul>
+					</li>
+					<li><a href="IS4C/developer/howto-newmagellan.html" target="_ISd_newmag">The NewMagellan scanner/scale driver</a>
+						<ul id="" class="detail">
+							<li>How it works</li>
+						</ul>
+					</li>
+					<li><a href="IS4C/developer/howto-gs1.html" target="_ISd_gs1">GS1 Barcodes</a>
+						<ul id="" class="detail">
+							<li>Scale Drivers</li>
+							<li>Data Storage</li>
+						</ul>
+					</li>
+					<li><a href="IS4C/developer/howto-scanning.html" target="_ISd_scan">Modular Handling of UPC's</a>
+						<ul id="" class="detail">
+							<li>Special UPC's: membership cards, coupons, etc.</li>
+							<li>Discount Types: e.g. for all, members, staff</li>
+							<li>Price Methods: group sales</li>
+						</ul>
+					</li>
+					<li><a href="IS4C/developer/i18n.html" target="_ISd_i18n">Internationalization with gettext</a>
+						<ul id="" class="detail">
+							<li>In PHP</li>
+							<li>Creating and managing language files</li>
+						</ul>
+					</li>
 				</ul>
 			</li>
-			<li><a href="IS4C/end-user/index.html" target="_ISend-user">end-user</a>
+			<li><a href="IS4C/end-user/index.html" target="_ISend-user">end-user</a> i.e. Front-end or Cashier
+			<br />Much of the following is also at the Techhub wiki: <a href="http://techhub.coop/media/index.php?title=Point_of_Sale_4_Users" target="_Lane_th_wiki">Point of Sale 4 Users</a>
 				<ul>
 					<li><a href="IS4C/end-user/basics.html" target="_ISe_basics">basics</a></li>
 					<li><a href="IS4C/end-user/commands.html" target="_ISe_commands">commands</a></li>
@@ -131,15 +300,26 @@ Rudimentary ToC to /IS4C/documentation
 
 			<li><a href="IT/Database_Administrator/index.html" target="_ITdev">Database Administrator</a>
 				<ul>
-					<li><a href="IT/Database_Administrator/backup.html" target="_ITd_backup">Backups</a></li>
+					<li><a href="IT/Database_Administrator/backup.html" target="_ITd_backup">Backups</a>
+						<ul id="" class="detail">
+							<li>Backup Basics</li>
+							<li>Configuration</li>
+							<li>Restoring a Backup</li>
+						</ul>
+					</li>
 					<li><a href="IT/Database_Administrator/core_op_ERD_PDF.pdf" target="_ITd_op_pdf">Diagram of core_op database (PDF)</a></li>
 					<li><a href="IT/Database_Administrator/core_trans_ERD_PDF.pdf" target="_ITd_trans_pdf">Diagram of core_trans database (PDF)</a></li>
-					<li><a href="IT/Database_Administrator/flow.html" target="_ITd_flow">Data flow between lane and fannie/backend</a></li>
+					<li><a href="IT/Database_Administrator/flow.html" target="_ITd_flow">Data flow between lane and fannie/backend</a>
+						<ul id="" class="detail">
+							<li>Lane to Server Data: dtransactions and alog</li>
+							<li>Server to Lane Data: products, custdata, etc.</li>
+							<li>Lane to Server to Lane Data: suspend and resume</li>
+						</ul>
+					</li>
 					<li><a href="IT/Database_Administrator/newreports.html" target="_ITd_newreports">Creating New Reports (ad hoc reporting)</a></li>
-					<li><a href="IT/Database_Administrator/backup.html" target="_ITd_backup">Backups</a></li>
 					<li><a href="IT/Database_Administrator/Server_is4c_op_database_layout.pdf" target="_ITd_op_2010_pdf">Diagram of core_op database, April 2010 (PDF)</a></li>
 					<li><a href="IT/Database_Administrator/nightly.html" target="_ITd_nightly">Automated Maintenance Jobs (cron)</a>
-						<ul>
+						<ul id="" class="detail">
 							<li>Generally see the Maintenance and Reporting System: <a href="/IS4C/fannie/cron/management/" target="_mrst">Scheduled Tasks</a></li>
 							<li>The Transaction Shuffle - Transfer of transaction data</li>
 							<li>Batches - How Sale Prices and Price Changes are implemented
@@ -158,7 +338,7 @@ Rudimentary ToC to /IS4C/documentation
 			</li>
 
 			<li><a href="IT/Hardware/index.html" target="_ITend-user">Hardware</a>
-				<ul>
+				<ul id="" class="detail">
 					<li>Lane machine (computer)</li>
 					<li>Backend server machine(s)</li>
 					<li>Label-printing scales (Deli/Bulk/Prepack/Etc)</li>
@@ -173,7 +353,7 @@ Rudimentary ToC to /IS4C/documentation
 			</li>
 
 			<li><a href="IT/Security/index.html" target="_ITend-user">Security</a>
-				<ul>
+				<ul id="" class="detail">
 					<li>Firewall(s)</li>
 					<li>Front End Authentication</li>
 					<li>Back End Authentication</li>
@@ -189,7 +369,7 @@ Rudimentary ToC to /IS4C/documentation
 	</li>
 
 	<li><a href="Packaging/index.html" target="_pkg">Packaging</a>
-		<ul>
+		<ul id="" class="detail">
 			<li><a href="Packaging/building.html" target="_bld">Building Packages from source</a></li>
 			<li><a href="install-rpm.html" target="_inst_rpm">Installing from RPMs</a></li>
 			<li><a href="install-deb.html" target="_inst_deb">Installing from DEBs</a></li>
@@ -209,6 +389,11 @@ Rudimentary ToC to /IS4C/documentation
 	</br>Especially the Fannie and Lane installation threads
 	</li>
 
+	<li>The Techhub wiki: <a href="http://techhub.coop/media/index.php?title=Fannie_4_Developers" target="_Fannie_th_wiki">Fannie 4 Developers</a>
+	<br />Much of the same content as the Fannie Developer above, but also some newer installation material from the Techhub Forum</li>
+
+	<li>The Techhub wiki: <a href="http://techhub.coop/media/index.php?title=Point_of_Sale_4_Users" target="_Lane_th_wiki">Point of Sale 4 Users</a></li>
+
 	<li><a href="http://www.wedge.coop/is4c/bb/" target="_oth_github">CORE-POS/IS4C Issues at github</a>
 
 	<li><a href="http://www.wedge.coop/is4c/" target="_wdg_home">At The Wedge IS4C website</a>
@@ -225,7 +410,7 @@ Rudimentary ToC to /IS4C/documentation
 
 <!-- Bits for vim editing buffers.
 "u
-						<ul>
+						<ul id="" class="detail">
 						</ul>
 "l
 							<li>
