@@ -61,8 +61,8 @@ class Suspension extends MemberModule {
 			$ret .= "<th>Reason</th>";
 			$ret .= "<td>$reason</td></tr>";
 		}
-		$ret .= "<tr><td><a href=\"\" title=\"Action not available yet.\">History</a></td>";
-		$ret .= "<td><a href=\"\" title=\"Action not available yet.\">Change Status</a></td></tr>";
+		$ret .= "<tr><td><a href=\"{$FANNIE_URL}reports/SuspensionHistory/index.php?memNum=$memNum\">History</a></td>";
+		$ret .= "<td><a href=\"{$FANNIE_URL}mem/status.php?memID=$memNum\">Change Status</a></td></tr>";
 
 		$ret .= "</table></fieldset>";
 		return $ret;
