@@ -53,9 +53,9 @@ $CORE_LOCAL->set("DBMS",      'mysql');
 $CORE_LOCAL->set("tDatabase", 'translog');
 $CORE_LOCAL->set("pDatabase", 'opdata');
                 // Harvest test lane 18jun12
-$CORE_LOCAL->set("localhost", '192.168.0.87');
-$CORE_LOCAL->set("localUser", 'root');
-$CORE_LOCAL->set("localPass", '581mass');
+$CORE_LOCAL->set("localhost", '');
+$CORE_LOCAL->set("localUser", '');
+$CORE_LOCAL->set("localPass", '');
 
 /***********************************************************************************
 Receipt & Printer Settings
