@@ -40,13 +40,16 @@ function confsave($key,$value,$prefer_local=False){
 	$orig_setting = '|\$CORE_LOCAL->set\([\'"]'.$key.'[\'"],\s*(.+)\);[\r\n]|';
 	$new_setting = "\$CORE_LOCAL->set('{$key}',{$value});\n";
 
-	$orig_global = file_get_contents($path_global);
-	$orig_local = file_get_contents($path_local);
-
-	$new_global = preg_replace($orig_setting, $new_setting, $orig_global,
-					-1, $found_global);
-	$new_local = preg_replace($orig_setting, $new_setting, $orig_local,
-					-1, $found_local);
+	if ($writeable_global) {
+		$orig_global = file_get_contents($path_global);
+		$new_global = preg_replace($orig_setting, $new_setting, $orig_global,
+						-1, $found_global);
+	}
+	if ($writeable_local) {
+		$orig_local = file_get_contents($path_local);
+		$new_local = preg_replace($orig_setting, $new_setting, $orig_local,
+						-1, $found_local);
+	}
 
 	if ($found_global) {
 		preg_match($orig_setting, $orig_global, $matches);
