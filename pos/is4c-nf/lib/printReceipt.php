@@ -42,7 +42,7 @@ function printReceipt($arg1,$second=False) {
 
 
 	if ($arg1 == "full" and $dokick != 0) {	// ---- apbw 03/29/05 Drawer Kick Patch
-		writeLine(chr(27).chr(112).chr(0).chr(48)."0");
+		drawerKick();
 	}
 
 /* --------------------------------------------------------------
