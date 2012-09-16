@@ -288,7 +288,7 @@ if($gotDBs == 2){
 			$CORE_LOCAL->get('localUser'),
 			$CORE_LOCAL->get('localPass'));
 	$ratesR = $sql->query("SELECT id,rate,description FROM taxrates ORDER BY id");
-	if (is_object($ratesR)) {
+	if (!is_int($ratesR)) {
 		while($row=$sql->fetch_row($ratesR))
 			$rates[] = array($row[0],$row[1],$row[2]);
 	}
