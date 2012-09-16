@@ -54,6 +54,7 @@ function writeLine($text) {
 		*/
 		//if (is_writable($CORE_LOCAL->get("printerPort"))){
 		$fp = fopen($CORE_LOCAL->get("printerPort"), "w");
+		fwrite(chr(33).'='.chr(1)); // printer only (bypass pole display)
 		fwrite($fp, $text);
 		fclose($fp);
 	}
