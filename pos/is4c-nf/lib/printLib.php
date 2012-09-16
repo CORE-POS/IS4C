@@ -88,9 +88,7 @@ function center($text, $linewidth) {
 }
 // -------------------------------------------------------------
 function drawerKick() {
-
-		writeLine(chr(27).chr(112).chr(0).chr(48)."0");
-		//writeLine(chr(27).chr(112).chr(48).chr(55).chr(121));
+	writeLine(chr(27).chr(112).chr(0).chr(250).chr(0));
 }
 
 // -------------------------------------------------------------
