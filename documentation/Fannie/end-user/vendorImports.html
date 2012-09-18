@@ -3,10 +3,12 @@
 	<title>Import Vendor Pricing</title>
 </head>
 <body>
+<!-- 19Aug12 EL Change <h1> to <h2> and add whitespace for source readability -->
 This document discusses how to import spreadsheets of
 vendor pricing info. This information is used to
 calculate pricing based on desired margins.
-<h1>Step 1: Create Vendor(s)</h1>
+
+<h2>Step 1: Create Vendor(s)</h2>
 To import vendor information, you need vendors.
 Select Item Maintenance =&gt; <i>Manage Vendors</i>
 from Fannie's left hand menu. In the drop down, choose <i>New vendor...</i>
@@ -39,14 +41,16 @@ These scripts are all designed around the spreadsheets WFC
 has received. I don't know if all these vendors use a consistent
 format. The bigger ones like UNFI probably do, but that's not a 
 guarantee.
-<h1>Step 2: Change the spreadsheet to a CSV</h1>
+
+<h2>Step 2: Change the spreadsheet to a CSV</h2>
 Fannie doesn't speak Excel, at least in this case. Open the file,
 and use Save As to change the format to CSV (if you get more than
 one CSV option, look for one mentioning Windows to get correct
 line-endings). If the file is larger than a couple MBs, you may
 need to compress it to avoid upload limits. Use the utility of your
 choose to zip it.
-<h1>Step 3: Upload the file</h1>
+
+<h2>Step 3: Upload the file</h2>
 Select Sales Batches =&gt; <i>Vendor Pricing</i> from Fannie's left
 hand menu. On the next page choose <i>Upload Price Sheet</i>. Choose
 the correct vendor from the drop down menu, then upload your CSV
@@ -57,7 +61,8 @@ is weird voodoo to avoid memory/CPU limits on old hardware, and part of
 it is dealing with partial pricing files. Many vendors only include
 changed items in the file; updating items one at a time rather than
 dumping all info and rebuilding essentially doubles execution time</i>.
-<h1>Step 4: Calculate SRPs</h1>
+
+<h2>Step 4: Calculate SRPs</h2>
 Return to the Vendor Pricing menu via Fannie's menu (Sales Batches
 =&gt; Vendor Pricing) and choose <i>Recalculate SRPs</i>. Select the
 vendor, then click recalculate.
@@ -70,7 +75,8 @@ departments aren't used for this vendor, Fannie uses the POS department
 margin setting. See <a href="departments.php">departments</a> for
 instructions on defining department margins.
 <p />
-<h1>Step 5: Create a Price Change Batch</h1>
+
+<h2>Step 5: Create a Price Change Batch</h2>
 Return to the Vendor Pricing menu via Fannie's menu (Sales Batches
 =&gt; Vendor Pricing) and choose <i>Create Price Change Batch</i>. 
 Select the vendor and optionally super department. <i>All</i> is fine
@@ -91,7 +97,8 @@ Clicking <i>Add</i> will put that item into the price change batch
 with the listed SRP. You can also adjust the calculated SRPs by
 click on them. Click <i>Del</i> to remove an item from the price
 change batch if it was added by mistake.
-<h1>Step 6: Apply new prices</h1>
+
+<h2>Step 6: Apply new prices</h2>
 Go to the batch tool (<i>Sales Batches</i> in Fannie's left hand menu)
 and either manually force your price change batch or give it
 a start date for a later, automated applicatio.
