@@ -3,6 +3,14 @@ include(realpath(dirname(__FILE__).'/../lib/AutoLoader.php'));
 AutoLoader::LoadMap();
 include(realpath(dirname(__FILE__).'/../ini.php'));
 include('util.php');
+
+/* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+	13Sep2012 Eric Lee Add some notes about enabling Special UPCs
+	             Member Card UPC Prefix
+
+*/
+
 ?>
 <html>
 <head>
@@ -34,9 +42,10 @@ check_writeable('../ini.php');
 check_writeable('../ini-local.php');
 ?>
 <form action=scanning.php method=post>
-Special handling modules for UPCs that aren't
-products (e.g., coupons)<br />
-<b>Special UPCs</b>:<br />
+<p style="margin-bottom: 0.0em;"><b>Special handling modules for UPCs that aren't products</b> (e.g., coupons, member cards)>
+<br /><b>Special UPCs</b>:
+<br />Click or ctrl-Click or shift-Click to select/deselect modules for enablement.
+</p>
 <select multiple size=10 name=SPECIAL_UPC_MODS[]>
 <?php
 if (isset($_REQUEST['SPECIAL_UPC_MODS'])) $CORE_LOCAL->set('SpecialUpcClasses',$_REQUEST['SPECIAL_UPC_MODS']);
@@ -68,13 +77,19 @@ foreach($CORE_LOCAL->get("SpecialUpcClasses") as $r){
 $saveStr = rtrim($saveStr,",").")";
 confsave('SpecialUpcClasses',$saveStr);
 ?>
-</select><br />
-<b>Member Card UPC Prefix</b>:
+</select>
+<p><b>Member Card UPC Prefix</b>:
 <?php
 if (isset($_REQUEST['memberUpcPrefix'])) $CORE_LOCAL->set('memberUpcPrefix',$_REQUEST['memberUpcPrefix']);
 printf("<input type=text name=memberUpcPrefix value=\"%s\" />",$CORE_LOCAL->get('memberUpcPrefix'));
 confsave('memberUpcPrefix',"'".$CORE_LOCAL->get('memberUpcPrefix')."'");
 ?>
+<br />Pad the number represented by the barcode with zeros on the left to 13 digits.
+If there is a checkdigit and it is removed in the scanning add another zero on the left.
+The digits from the first to the end of the number that is the same for all Member Cards constitute the Prefix.
+<br />The MemberCard option above must be enabled and the memberCards table populated;
+its upc values must start like the Prefix.
+</p>
 <hr />
 Discount type modules control how sale prices
 are calculated.<br />
