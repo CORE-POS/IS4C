@@ -21,6 +21,12 @@
 
 *********************************************************************************/
 
+/* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+	18Sep2012 Eric Lee In setMember support for not displaying subtotal.
+
+*/
+
 /**
   @class PrehLib
   A horrible, horrible catch-all clutter of functions
@@ -186,7 +192,15 @@ static public function setMember($member, $personNumber, $row) {
 		$CORE_LOCAL->set("staffSpecial",0);
 	}
 
-	self::ttl();
+	// 16Sep12 Eric Lee Allow  not append Subtotal at this point.
+	if ( $CORE_LOCAL->get("member_subtotal") === False ) {
+		$noop = "";
+	} elseif ( $CORE_LOCAL->get("member_subtotal") === True ) {
+		self::ttl();
+	} elseif ( $CORE_LOCAL->get("member_subtotal") == NULL ) {
+		self::ttl();
+	}
+
 	$CORE_LOCAL->set("unlock",0);
 
 	if ($CORE_LOCAL->get("mirequested") == 1) {
