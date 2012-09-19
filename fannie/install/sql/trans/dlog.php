@@ -18,6 +18,10 @@ Columns:
 	tax int
 	foodstamp int
 	ItemQtty double
+	memType int
+	staff int
+	numflag int
+	charflag int
 	card_no int
 	trans_id int
 
@@ -48,6 +52,10 @@ $CREATE['trans.dlog'] = "
 		tax,
 		foodstamp,
 		ItemQtty,
+		memType,
+		staff,
+		numflag,
+		charflag,
 		card_no,
 		trans_id,
 		".$con->concat(

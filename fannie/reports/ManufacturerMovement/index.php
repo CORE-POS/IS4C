@@ -62,7 +62,7 @@ if (isset($_GET['date1'])){
 	$manu = urlencode($manu);
 
 	$query = "select t.upc,p.description,
-		  t.quantity as qty,
+		  sum(t.quantity) as qty,
 		  sum(t.total),d.dept_no,d.dept_name,s.superID
 		  from $sumTable as t left join products as p
 		  on t.upc=p.upc left join prodExtra as e on p.upc = e.upc

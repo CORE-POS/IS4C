@@ -62,7 +62,8 @@ $sql = new SQLManager($FANNIE_SERVER,$FANNIE_SERVER_DBMS,
 	$FANNIE_TRANS_DB,$FANNIE_SERVER_USER,$FANNIE_SERVER_PW);
 
 $dataQ = "SELECT d.upc as upc, p.description as description,
-	sum(d.quantity) as quantity,sum(d.total) as dollars,
+	sum(CASE WHEN d.quantity <> d.ItemQtty AND d.ItemQtty <> 0 THEN d.quantity*d.ItemQtty ELSE d.quantity END) as quantity,
+	sum(d.total) as dollars,
 	'$lastDay' as lastDay
 	FROM dlog_90_view as d inner join 
 	{$FANNIE_OP_DB}.dbo.products as p
@@ -74,7 +75,8 @@ $dataQ = "SELECT d.upc as upc, p.description as description,
 // mysql handles week # differently by default
 if ($FANNIE_SERVER_DBMS == "MYSQL"){
 	$dataQ = "SELECT d.upc as upc, p.description as description,
-		sum(d.quantity) as quantity,sum(d.total) as dollars,
+		sum(CASE WHEN d.quantity <> d.ItemQtty AND d.ItemQtty <> 0 THEN d.quantity*d.ItemQtty ELSE d.quantity END) as quantity,
+		sum(d.total) as dollars,
 		'$lastDay' as lastDay
 		FROM dlog_90_view as d inner join 
 		{$FANNIE_OP_DB}.products as p

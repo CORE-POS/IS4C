@@ -1,9 +1,0 @@
-gui-class-lib
-----------------------------------------
-
-These classes provide a standardized setup 
-for writing a gui-module. All gui-modules
-implement BasicPage or one of its subclasses.
-
-The primary goal here is added consistency
-and easy extensibility.

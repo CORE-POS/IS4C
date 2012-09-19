@@ -2,6 +2,10 @@
 <head><title>Scanning UPCs</title>
 </head>
 <body>
+	<div style="text-align:center;margin-bottom:10px;font-size:80%;">
+	updated as of: August 20, 2012<br />
+	last author: Andy Theuninck
+	</div>
 The UPC <a href="howto-parse.html">parser module</a> is currently
 hard to trace through and should probably be more flexible. I think
 it should [eventually] be modular in three ways: handle special
@@ -42,8 +46,7 @@ class WackyPLU extends SpecialUPC {
 	}
 	
 	function handle($upc,$json){
-		global $IS4C_PATH;
-		$json['main_frame'] = $IS4C_PATH.'gui-modules/memlist.php';
+		$json['main_frame'] = MiscLib::base_url().'gui-modules/memlist.php';
 		return $json;
 	}
 }

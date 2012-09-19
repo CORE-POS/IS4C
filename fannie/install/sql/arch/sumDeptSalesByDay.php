@@ -1,11 +1,11 @@
 <?php
 /*
-Table: sumUpcSalesByDay
+Table: sumDeptSalesByDay
 
 Columns:
 	tdate date
-	upc varchar
-	total currency,
+	dept_ID int
+	total currency
 	quantity double
 
 Depends on:
@@ -15,16 +15,16 @@ Use:
 Summary table. Stores per-day sales
 by UPC
 */
-$CREATE['arch.sumUpcSalesByDay'] = "
-	CREATE TABLE alog (
+$CREATE['arch.sumDeptSalesByDay'] = "
+	CREATE TABLE sumDeptSalesByDay (
 	tdate date,
-	upc varchar(13),
+	dept_ID int,
 	total decimal(10,2),
 	quantity decimal(10,2),
-	PRIMARY KEY (tdate, upc)
+	PRIMARY KEY (tdate, dept_ID)
 	)
 ";
 if ($dbms == 'MSSQL'){
-	$CREATE['arch.sumUpcSalesByDay'] = str_replace(" date"," datetime",$CREATE['arch.sumUpcSalesByDay']);
+	$CREATE['arch.sumDeptSalesByDay'] = str_replace(" date"," datetime",$CREATE['arch.sumDeptSalesByDay']);
 }
 ?>

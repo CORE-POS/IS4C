@@ -29,7 +29,7 @@ if(!validateUserQuiet('staffar')){
               c.LastName,
               c.FirstName,
               n.balance as Ending_Balance
-              FROM custdata as c INNER JOIN staffID as a ON a.cardNo = c.CardNo
+              FROM is4c_op.custdata as c INNER JOIN staffID as a ON a.cardNo = c.CardNo
 	      LEFT JOIN newBalanceToday_cust AS n ON c.CardNo=n.memnum
               WHERE (c.memType = 9 OR c.memType = 3)
               and c.personNum = 1
