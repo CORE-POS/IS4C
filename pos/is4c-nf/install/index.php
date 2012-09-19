@@ -22,6 +22,15 @@
 	DHermann test
 *********************************************************************************/
 
+/* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+	18Sep2012 Eric Lee Definitions of views ltt_receipt and receipt for store WEFC_Toronto
+                      Canadian receipt format requirements.
+                     Drop and re-create those views.
+                      Use WEFC_Toronto-specific vars develop_ltt_receipt, etc.
+
+*/
+
 ini_set('display_errors','1');
 
 include(realpath(dirname(__FILE__).'/../lib/AutoLoader.php'));
@@ -669,6 +678,18 @@ function create_trans_dbs($db,$type){
 	global $CORE_LOCAL;
 	$name = $CORE_LOCAL->get('tDatabase');
 
+	if ( $CORE_LOCAL->get('store') == "WEFC_Toronto" ) {
+		// Controls ltt_receipt and receipt
+		$develop_ltt_receipt = 0;
+		//$develop_receipt = 0;
+
+		$develop_screendisplay = 0;
+
+		// Controls rp_ltt_receipt and rp_receipt
+		$develop_rp_ltt_receipt = 0;
+		//$develop_rp_receipt = 0;
+	}
+
 	$actQ = "CREATE TABLE activities (
 		Activity tinyint,
 		Description varchar(15))";
@@ -1021,106 +1042,216 @@ function create_trans_dbs($db,$type){
 		$db->query($taxQ,$name);
 	}
 
-	$screen = "CREATE view screendisplay as 
-		select 
-		CASE
-		WHEN (voided = 5 or voided = 11 or voided = 17 or trans_type = 'T')
-			THEN ''
-		ELSE
-			l.description
-		END
-		as description,
-		CASE
-		WHEN(discounttype = 3 and trans_status = 'V')
-			THEN CONCAT(ItemQtty,' /',UnitPrice)
-		WHEN (voided = 5)
-			THEN 'Discount'
-		WHEN (trans_status = 'M')
-			THEN 'Mbr special'
-		WHEN (trans_status = 'S')
-			THEN 'Staff special'
-		WHEN (scale <> 0 and quantity <> 0)
-			THEN CONCAT( quantity,' @ ',unitPrice)
-		WHEN (SUBSTRING(upc, 1, 3) = '002')
-			THEN CONCAT( itemQtty,' @ ',regPrice)
-		WHEN (abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity = 1)
-			THEN CONCAT(volume,' for ',unitPrice)
-		WHEN (abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity <> 1)
-			THEN CONCAT(Quantity,' @ ',Volume,' for ',unitPrice)
-		WHEN (abs(itemQtty) > 1 and discounttype = 3)
-			THEN CONCAT(ItemQtty,' /',UnitPrice)
-		WHEN (abs(itemQtty) > 1)
-			THEN CONCAT(quantity,' @ ',unitPrice)	
-		WHEN (voided = 3)
-			THEN 'Total '
-		WHEN (voided = 5)
-			THEN 'Discount '
-		WHEN (voided = 7)
-			THEN ''
-		WHEN (voided = 11 or voided = 17)
-			THEN upc
-		WHEN (matched > 0)
-			THEN '1 w/ vol adj'
-		WHEN (trans_type = 'T')
-			THEN l.description
-		ELSE
-			''
-		END
-		as comment,
-		CASE
-		WHEN (voided = 3 or voided = 5 or voided = 7 or voided = 11 or voided = 17)
-			THEN unitPrice
-		WHEN (trans_status = 'D')
-			THEN ''
-		ELSE
-			total
-		END
-		as total,
-		CASE
-		WHEN (trans_status = 'V')
-			THEN 'VD'
-		WHEN (trans_status = 'R')
-			THEN 'RF'
-		WHEN (trans_status = 'C')
-			THEN 'MC'
-		WHEN (tax = 1 and foodstamp <> 0)
-			THEN 'TF'
-		WHEN (tax = 1 and foodstamp = 0)
-			THEN 'T' 
-		WHEN (tax > 1 and foodstamp <> 0)
-			THEN CONCAT(LEFT(t.description,1),'F')
-		WHEN (tax > 1 and foodstamp = 0)
-			THEN LEFT(t.description,1)
-		WHEN (tax = 0 and foodstamp <> 0)
-			THEN 'F'
-		WHEN (tax = 0 and foodstamp = 0)
-			THEN ''
-		ELSE
-			''
-		END
-		as status,
-		CASE
-		WHEN (trans_status = 'V' or trans_type = 'T' or trans_status = 'R' or trans_status = 'C' or trans_status = 'M' or voided = 17 or trans_status = 'J')
-			THEN '800000'
-		WHEN ((discounttype <> 0 and (matched > 0 or volDiscType=0)) or voided = 2 or voided = 6 or voided = 4 or voided = 5 or voided = 10 or voided = 22)
-			THEN '408080'
-		WHEN (voided = 3 or voided = 11)
-			THEN '000000'
-		WHEN (voided = 7)
-			THEN '800080'
-		ELSE
-			'004080'
-		END
-		as lineColor,
-		discounttype,
-		trans_type,
-		trans_status,
-		voided,
-		trans_id
-		from localtemptrans as l
-		left join taxrates as t
-		on l.tax = t.id
-		order by trans_id";
+	if ( $CORE_LOCAL->get('store') == "WEFC_Toronto" ) {
+
+		$screen = "CREATE view screendisplay as 
+			select 
+			CASE
+			WHEN (voided = 5 or voided = 11 or voided = 17 or trans_type = 'T')
+				THEN ''
+			ELSE
+				l.description
+			END
+			as description,
+			CASE
+			WHEN(discounttype = 3 and trans_status = 'V')
+				THEN CONCAT(ItemQtty,' /',UnitPrice)
+			WHEN (voided = 5)
+				THEN 'Discount'
+			WHEN (trans_status = 'M')
+				THEN 'Mbr special'
+			WHEN (trans_status = 'S')
+				THEN 'Staff special'
+			WHEN (scale <> 0 and quantity <> 0)
+				THEN CONCAT( quantity, ' lb @ $', unitPrice, '/lb')
+			WHEN (SUBSTRING(upc, 1, 3) = '002')
+				THEN CONCAT( itemQtty,' @ ',regPrice)
+			WHEN (abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity = 1)
+				THEN CONCAT(volume,' for ',unitPrice)
+			WHEN (abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity <> 1)
+				THEN CONCAT(Quantity,' @ ',Volume,' for ',unitPrice)
+			WHEN (abs(itemQtty) > 1 and discounttype = 3)
+				THEN CONCAT(ItemQtty,' /',UnitPrice)
+			WHEN (abs(itemQtty) > 1)
+				THEN CONCAT(quantity,' @ ',unitPrice)	
+			WHEN (voided = 3)
+				THEN 'Total '
+			WHEN (voided = 5)
+				THEN 'Discount '
+			WHEN (voided = 7)
+				THEN ''
+			WHEN (voided = 11 or voided = 17)
+				THEN upc
+			WHEN (matched > 0)
+				THEN '1 w/ vol adj'
+			WHEN (trans_type = 'T')
+				THEN l.description
+			ELSE
+				''
+			END
+			as comment,
+			CASE
+			WHEN (voided = 3 or voided = 5 or voided = 7 or voided = 11 or voided = 17)
+				THEN unitPrice
+			WHEN (trans_status = 'D')
+				THEN ''
+			ELSE
+				total
+			END
+			as total,
+			CASE
+			WHEN (trans_status = 'V')
+				THEN 'VD'
+			WHEN (trans_status = 'R')
+				THEN 'RF'
+			WHEN (trans_status = 'C')
+				THEN 'MC'
+			WHEN (tax = 1 and foodstamp <> 0)
+				THEN 'TF'
+			WHEN (tax = 1 and foodstamp = 0)
+				THEN 'T' 
+			WHEN (tax > 1 and foodstamp <> 0)
+				THEN CONCAT(LEFT(t.description,1),'F')
+			WHEN (tax > 1 and foodstamp = 0)
+				THEN LEFT(t.description,1)
+			WHEN (tax = 0 and foodstamp <> 0)
+				THEN 'F'
+			WHEN (tax = 0 and foodstamp = 0)
+				THEN ''
+			ELSE
+				''
+			END
+			as status,
+			CASE
+			WHEN (trans_status = 'V' or trans_type = 'T' or trans_status = 'R' or trans_status = 'C' or trans_status = 'M' or voided = 17 or trans_status = 'J')
+				THEN '800000'
+			WHEN ((discounttype <> 0 and (matched > 0 or volDiscType=0)) or voided = 2 or voided = 6 or voided = 4 or voided = 5 or voided = 10 or voided = 22)
+				THEN '408080'
+			WHEN (voided = 3 or voided = 11)
+				THEN '000000'
+			WHEN (voided = 7)
+				THEN '800080'
+			ELSE
+				'004080'
+			END
+			as lineColor,
+			discounttype,
+			trans_type,
+			trans_status,
+			voided,
+			trans_id
+			from localtemptrans as l
+			left join taxrates as t
+			on l.tax = t.id
+			order by trans_id";
+
+	// screendisplay for WEFC_Toronto
+	} else {
+
+		$screen = "CREATE view screendisplay as 
+			select 
+			CASE
+			WHEN (voided = 5 or voided = 11 or voided = 17 or trans_type = 'T')
+				THEN ''
+			ELSE
+				l.description
+			END
+			as description,
+			CASE
+			WHEN(discounttype = 3 and trans_status = 'V')
+				THEN CONCAT(ItemQtty,' /',UnitPrice)
+			WHEN (voided = 5)
+				THEN 'Discount'
+			WHEN (trans_status = 'M')
+				THEN 'Mbr special'
+			WHEN (trans_status = 'S')
+				THEN 'Staff special'
+			WHEN (scale <> 0 and quantity <> 0)
+				THEN CONCAT( quantity,' @ ',unitPrice)
+			WHEN (SUBSTRING(upc, 1, 3) = '002')
+				THEN CONCAT( itemQtty,' @ ',regPrice)
+			WHEN (abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity = 1)
+				THEN CONCAT(volume,' for ',unitPrice)
+			WHEN (abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity <> 1)
+				THEN CONCAT(Quantity,' @ ',Volume,' for ',unitPrice)
+			WHEN (abs(itemQtty) > 1 and discounttype = 3)
+				THEN CONCAT(ItemQtty,' /',UnitPrice)
+			WHEN (abs(itemQtty) > 1)
+				THEN CONCAT(quantity,' @ ',unitPrice)	
+			WHEN (voided = 3)
+				THEN 'Total '
+			WHEN (voided = 5)
+				THEN 'Discount '
+			WHEN (voided = 7)
+				THEN ''
+			WHEN (voided = 11 or voided = 17)
+				THEN upc
+			WHEN (matched > 0)
+				THEN '1 w/ vol adj'
+			WHEN (trans_type = 'T')
+				THEN l.description
+			ELSE
+				''
+			END
+			as comment,
+			CASE
+			WHEN (voided = 3 or voided = 5 or voided = 7 or voided = 11 or voided = 17)
+				THEN unitPrice
+			WHEN (trans_status = 'D')
+				THEN ''
+			ELSE
+				total
+			END
+			as total,
+			CASE
+			WHEN (trans_status = 'V')
+				THEN 'VD'
+			WHEN (trans_status = 'R')
+				THEN 'RF'
+			WHEN (trans_status = 'C')
+				THEN 'MC'
+			WHEN (tax = 1 and foodstamp <> 0)
+				THEN 'TF'
+			WHEN (tax = 1 and foodstamp = 0)
+				THEN 'T' 
+			WHEN (tax > 1 and foodstamp <> 0)
+				THEN CONCAT(LEFT(t.description,1),'F')
+			WHEN (tax > 1 and foodstamp = 0)
+				THEN LEFT(t.description,1)
+			WHEN (tax = 0 and foodstamp <> 0)
+				THEN 'F'
+			WHEN (tax = 0 and foodstamp = 0)
+				THEN ''
+			ELSE
+				''
+			END
+			as status,
+			CASE
+			WHEN (trans_status = 'V' or trans_type = 'T' or trans_status = 'R' or trans_status = 'C' or trans_status = 'M' or voided = 17 or trans_status = 'J')
+				THEN '800000'
+			WHEN ((discounttype <> 0 and (matched > 0 or volDiscType=0)) or voided = 2 or voided = 6 or voided = 4 or voided = 5 or voided = 10 or voided = 22)
+				THEN '408080'
+			WHEN (voided = 3 or voided = 11)
+				THEN '000000'
+			WHEN (voided = 7)
+				THEN '800080'
+			ELSE
+				'004080'
+			END
+			as lineColor,
+			discounttype,
+			trans_type,
+			trans_status,
+			voided,
+			trans_id
+			from localtemptrans as l
+			left join taxrates as t
+			on l.tax = t.id
+			order by trans_id";
+
+	// screendisplay not for WEFC_Toronto
+	}
+
 	if ($type == 'mssql'){
 		$screen = "CREATE view screendisplay as 
 			select 
@@ -1216,6 +1347,15 @@ function create_trans_dbs($db,$type){
 			trans_id
 			from localtemptrans
 			order by trans_id";
+	}
+
+
+	if ( $CORE_LOCAL->get('store') == "WEFC_Toronto" ) {
+		if ( $develop_screendisplay == 1 ) {
+			if ($db->table_exists('screendisplay',$name)) {
+				$db->query("DROP VIEW screendisplay",$name);
+			}
+		}
 	}
 	if (!$db->table_exists('screendisplay',$name)){
 		$db->query($screen,$name);
@@ -1377,54 +1517,113 @@ function create_trans_dbs($db,$type){
 		$db->query($tvQ,$name);
 	}
 
-	$lttR = "CREATE view ltt_receipt as 
-		select
-		description,
-		case 
-			when voided = 5 
-				then 'Discount'
-			when trans_status = 'M'
-				then 'Mbr special'
-			when trans_status = 'S'
-				then 'Staff special'
-			when scale <> 0 and quantity <> 0 
-				then concat(quantity, ' @ ', unitPrice)
-			when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity = 1
-				then concat(volume, ' /', unitPrice)
-			when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity <> 1
-				then concat(Quantity, ' @ ', Volume, ' /', unitPrice)
-			when abs(itemQtty) > 1 and discounttype = 3
-				then concat(ItemQtty, ' /', UnitPrice)
-			when abs(itemQtty) > 1
-				then concat(quantity, ' @ ', unitPrice)	
-			when matched > 0
-				then '1 w/ vol adj'
-			else ''
-		end
-		as comment,
-		total,
-		case 
-			when trans_status = 'V' 
-				then 'VD'
-			when trans_status = 'R'
-				then 'RF'
-			when tax <> 0 and foodstamp <> 0
-				then 'TF'
-			when tax <> 0 and foodstamp = 0
-				then 'T' 
-			when tax = 0 and foodstamp <> 0
-				then 'F'
-			when tax = 0 and foodstamp = 0
-				then '' 
-		end
-		as Status,
-		trans_type,
-		unitPrice,
-		voided,
-		trans_id
-		from localtemptrans
-		where voided <> 5 and UPC <> 'TAX' and UPC <> 'DISCOUNT'
-		order by trans_id";
+	if ( $CORE_LOCAL->get('store') == "WEFC_Toronto" ) {
+
+		//'a
+		$lttR = "CREATE view ltt_receipt as 
+			select
+			description,
+			case 
+				when voided = 5 
+					then 'Discount'
+				when trans_status = 'M'
+					then 'Mbr special'
+				when trans_status = 'S'
+					then 'Staff special'
+				when scale <> 0 and quantity <> 0 
+					then concat(quantity, ' lb @ $', unitPrice, '/lb')
+				when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity = 1
+					then concat(volume, ' /', unitPrice)
+				when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity <> 1
+					then concat(Quantity, ' @ ', Volume, ' /', unitPrice)
+				when abs(itemQtty) > 1 and discounttype = 3
+					then concat(ItemQtty, ' /', UnitPrice)
+				when abs(itemQtty) > 1
+					then concat(quantity, ' @ ', unitPrice)	
+				when matched > 0
+					then '1 w/ vol adj'
+				else ''
+			end
+			as comment,
+			total,
+			case 
+				when trans_status = 'V' 
+					then 'VD'
+				when trans_status = 'R'
+					then 'RF'
+				when tax <> 0 and foodstamp <> 0
+					then 'TF'
+				when tax <> 0 and foodstamp = 0
+					then 'T' 
+				when tax = 0 and foodstamp <> 0
+					then 'F'
+				when tax = 0 and foodstamp = 0
+					then '' 
+			end
+			as Status,
+			trans_type,
+			unitPrice,
+			voided,
+			trans_id
+			from localtemptrans
+			where voided <> 5 and UPC <> 'TAX' and UPC <> 'DISCOUNT'
+			order by trans_id";
+
+	// ltt_receipt, WEFC_Toronto
+	} else {
+
+		$lttR = "CREATE view ltt_receipt as 
+			select
+			description,
+			case 
+				when voided = 5 
+					then 'Discount'
+				when trans_status = 'M'
+					then 'Mbr special'
+				when trans_status = 'S'
+					then 'Staff special'
+				when scale <> 0 and quantity <> 0 
+					then concat(quantity, ' @ ', unitPrice)
+				when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity = 1
+					then concat(volume, ' /', unitPrice)
+				when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity <> 1
+					then concat(Quantity, ' @ ', Volume, ' /', unitPrice)
+				when abs(itemQtty) > 1 and discounttype = 3
+					then concat(ItemQtty, ' /', UnitPrice)
+				when abs(itemQtty) > 1
+					then concat(quantity, ' @ ', unitPrice)	
+				when matched > 0
+					then '1 w/ vol adj'
+				else ''
+			end
+			as comment,
+			total,
+			case 
+				when trans_status = 'V' 
+					then 'VD'
+				when trans_status = 'R'
+					then 'RF'
+				when tax <> 0 and foodstamp <> 0
+					then 'TF'
+				when tax <> 0 and foodstamp = 0
+					then 'T' 
+				when tax = 0 and foodstamp <> 0
+					then 'F'
+				when tax = 0 and foodstamp = 0
+					then '' 
+			end
+			as Status,
+			trans_type,
+			unitPrice,
+			voided,
+			trans_id
+			from localtemptrans
+			where voided <> 5 and UPC <> 'TAX' and UPC <> 'DISCOUNT'
+			order by trans_id";
+
+	// ltt_receipt, not WEFC_Toronto
+	}
+
 	if($type == 'mssql'){
 		$lttR = "CREATE view ltt_receipt as 
 			select
@@ -1475,43 +1674,96 @@ function create_trans_dbs($db,$type){
 			where voided <> 5 and UPC <> 'TAX' and UPC <> 'DISCOUNT'
 			order by trans_id";
 	}
-	if(!$db->table_exists('ltt_receipt',$name)){
+
+	if ( $CORE_LOCAL->get('store') == "WEFC_Toronto" ) {
+		if ( $develop_ltt_receipt == 1 ) {
+			if ($db->table_exists('ltt_receipt',$name)) {
+				$db->query("DROP VIEW ltt_receipt",$name);
+			}
+		}
+	}
+
+	if (!$db->table_exists('ltt_receipt',$name)){
 		$db->query($lttR,$name);
 	}
 
-	$rV = "CREATE view receipt as
-		select
-		case 
-			when trans_type = 'T'
-				then 	concat(right( concat(space(44), upper(rtrim(Description)) ), 44) 
-					, right(concat( space(8), format(-1 * Total, 2)), 8) 
+	if ( $CORE_LOCAL->get('store') == "WEFC_Toronto" ) {
+
+		// See the default value of linetoprint: description 30->22, comment 13->21.
+		$rV = "CREATE view receipt as
+			select
+			case 
+				when trans_type = 'T'
+					then 	concat(right( concat(space(44), upper(rtrim(Description)) ), 44) 
+						, right(concat( space(8), format(-1 * Total, 2)), 8) 
+						, right(concat(space(4), status), 4))
+				when voided = 3 
+					then 	concat(left(concat(Description, space(30)), 30) 
+						, space(9) 
+						, 'TOTAL' 
+						, right(concat(space(8), format(UnitPrice, 2)), 8))
+				when voided = 2
+					then 	description
+				when voided = 4
+					then 	description
+				when voided = 6
+					then 	description
+				when voided = 7 or voided = 17
+					then 	concat(left(concat(Description, space(30)), 30) 
+						, space(14) 
+						, right(concat(space(8), format(UnitPrice, 2)), 8) 
+						, right(concat(space(4), status), 4))
+				else
+					concat(left(concat(Description, space(22)), 22)
+					, ' ' 
+					, left(concat(Comment, space(21)), 21) 
+					, right(concat(space(8), format(Total, 2)), 8) 
 					, right(concat(space(4), status), 4))
-			when voided = 3 
-				then 	concat(left(concat(Description, space(30)), 30) 
-					, space(9) 
-					, 'TOTAL' 
-					, right(concat(space(8), format(UnitPrice, 2)), 8))
-			when voided = 2
-				then 	description
-			when voided = 4
-				then 	description
-			when voided = 6
-				then 	description
-			when voided = 7 or voided = 17
-				then 	concat(left(concat(Description, space(30)), 30) 
-					, space(14) 
-					, right(concat(space(8), format(UnitPrice, 2)), 8) 
+			end
+			as linetoprint
+			from ltt_receipt
+			order by trans_id";
+
+	// receipt, WEFC_Toronto
+	} else {
+
+		$rV = "CREATE view receipt as
+			select
+			case 
+				when trans_type = 'T'
+					then 	concat(right( concat(space(44), upper(rtrim(Description)) ), 44) 
+						, right(concat( space(8), format(-1 * Total, 2)), 8) 
+						, right(concat(space(4), status), 4))
+				when voided = 3 
+					then 	concat(left(concat(Description, space(30)), 30) 
+						, space(9) 
+						, 'TOTAL' 
+						, right(concat(space(8), format(UnitPrice, 2)), 8))
+				when voided = 2
+					then 	description
+				when voided = 4
+					then 	description
+				when voided = 6
+					then 	description
+				when voided = 7 or voided = 17
+					then 	concat(left(concat(Description, space(30)), 30) 
+						, space(14) 
+						, right(concat(space(8), format(UnitPrice, 2)), 8) 
+						, right(concat(space(4), status), 4))
+				else
+					concat(left(concat(Description, space(30)), 30)
+					, ' ' 
+					, left(concat(Comment, space(13)), 13) 
+					, right(concat(space(8), format(Total, 2)), 8) 
 					, right(concat(space(4), status), 4))
-			else
-				concat(left(concat(Description, space(30)), 30)
-				, ' ' 
-				, left(concat(Comment, space(13)), 13) 
-				, right(concat(space(8), format(Total, 2)), 8) 
-				, right(concat(space(4), status), 4))
-		end
-		as linetoprint
-		from ltt_receipt
-		order by trans_id";
+			end
+			as linetoprint
+			from ltt_receipt
+			order by trans_id";
+
+	// receipt, not WEFC_Toronto
+	}
+
 	if($type == 'mssql'){
 		$rV = "CREATE  view receipt as
 		select top 100 percent
@@ -1550,7 +1802,16 @@ function create_trans_dbs($db,$type){
 		from ltt_receipt
 		order by sequence";
 	}
-	if(!$db->table_exists('receipt',$name)){
+
+	if ( $CORE_LOCAL->get('store') == "WEFC_Toronto" ) {
+		// receipt depends on ltt_receipt
+		if ( $develop_ltt_receipt == 1 ) {
+			if ($db->table_exists('receipt',$name)) {
+				$db->query("DROP VIEW receipt",$name);
+			}
+		}
+	}
+	if (!$db->table_exists('receipt',$name)){
 		$db->query($rV,$name);
 	}
 
@@ -1598,57 +1859,118 @@ function create_trans_dbs($db,$type){
 		$db->query($rpheader,$name);
 	}
 
-	$rplttR = "CREATE view rp_ltt_receipt as 
-		select
-		register_no,
-		emp_no,
-		trans_no,
-		description,
-		case 
-			when voided = 5 
-				then 'Discount'
-			when trans_status = 'M'
-				then 'Mbr special'
-			when trans_status = 'S'
-				then 'Staff special'
-			when scale <> 0 and quantity <> 0 
-				then concat(quantity, ' @ ', unitPrice)
-			when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity = 1
-				then concat(volume, ' /', unitPrice)
-			when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity <> 1
-				then concat(Quantity, ' @ ', Volume, ' /', unitPrice)
-			when abs(itemQtty) > 1 and discounttype = 3
-				then concat(ItemQtty, ' /', UnitPrice)
-			when abs(itemQtty) > 1
-				then concat(quantity, ' @ ', unitPrice)	
-			when matched > 0
-				then '1 w/ vol adj'
-			else ''
-		end
-		as comment,
-		total,
-		case 
-			when trans_status = 'V' 
-				then 'VD'
-			when trans_status = 'R'
-				then 'RF'
-			when tax <> 0 and foodstamp <> 0
-				then 'TF'
-			when tax <> 0 and foodstamp = 0
-				then 'T' 
-			when tax = 0 and foodstamp <> 0
-				then 'F'
-			when tax = 0 and foodstamp = 0
-				then '' 
-		end
-		as Status,
-		trans_type,
-		unitPrice,
-		voided,
-		trans_id
-		from localtranstoday
-		where voided <> 5 and UPC <> 'TAX' and UPC <> 'DISCOUNT'
-		order by emp_no, trans_no, trans_id";
+	if ( $CORE_LOCAL->get('store') == "WEFC_Toronto" ) {
+
+		$rplttR = "CREATE view rp_ltt_receipt as 
+			select
+			register_no,
+			emp_no,
+			trans_no,
+			description,
+			case 
+				when voided = 5 
+					then 'Discount'
+				when trans_status = 'M'
+					then 'Mbr special'
+				when trans_status = 'S'
+					then 'Staff special'
+				when scale <> 0 and quantity <> 0 
+					then concat(quantity, ' lb @ $', unitPrice, '/lb')
+				when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity = 1
+					then concat(volume, ' /', unitPrice)
+				when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity <> 1
+					then concat(Quantity, ' @ ', Volume, ' /', unitPrice)
+				when abs(itemQtty) > 1 and discounttype = 3
+					then concat(ItemQtty, ' /', UnitPrice)
+				when abs(itemQtty) > 1
+					then concat(quantity, ' @ ', unitPrice)	
+				when matched > 0
+					then '1 w/ vol adj'
+				else ''
+			end
+			as comment,
+			total,
+			case 
+				when trans_status = 'V' 
+					then 'VD'
+				when trans_status = 'R'
+					then 'RF'
+				when tax <> 0 and foodstamp <> 0
+					then 'TF'
+				when tax <> 0 and foodstamp = 0
+					then 'T' 
+				when tax = 0 and foodstamp <> 0
+					then 'F'
+				when tax = 0 and foodstamp = 0
+					then '' 
+			end
+			as Status,
+			trans_type,
+			unitPrice,
+			voided,
+			trans_id
+			from localtranstoday
+			where voided <> 5 and UPC <> 'TAX' and UPC <> 'DISCOUNT'
+			order by emp_no, trans_no, trans_id";
+
+	// rp_ltt_receipt for WEFC_Toronto
+	} else {
+
+		$rplttR = "CREATE view rp_ltt_receipt as 
+			select
+			register_no,
+			emp_no,
+			trans_no,
+			description,
+			case 
+				when voided = 5 
+					then 'Discount'
+				when trans_status = 'M'
+					then 'Mbr special'
+				when trans_status = 'S'
+					then 'Staff special'
+				when scale <> 0 and quantity <> 0 
+					then concat(quantity, ' @ ', unitPrice)
+				when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity = 1
+					then concat(volume, ' /', unitPrice)
+				when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity <> 1
+					then concat(Quantity, ' @ ', Volume, ' /', unitPrice)
+				when abs(itemQtty) > 1 and discounttype = 3
+					then concat(ItemQtty, ' /', UnitPrice)
+				when abs(itemQtty) > 1
+					then concat(quantity, ' @ ', unitPrice)	
+				when matched > 0
+					then '1 w/ vol adj'
+				else ''
+			end
+			as comment,
+			total,
+			case 
+				when trans_status = 'V' 
+					then 'VD'
+				when trans_status = 'R'
+					then 'RF'
+				when tax <> 0 and foodstamp <> 0
+					then 'TF'
+				when tax <> 0 and foodstamp = 0
+					then 'T' 
+				when tax = 0 and foodstamp <> 0
+					then 'F'
+				when tax = 0 and foodstamp = 0
+					then '' 
+			end
+			as Status,
+			trans_type,
+			unitPrice,
+			voided,
+			trans_id
+			from localtranstoday
+			where voided <> 5 and UPC <> 'TAX' and UPC <> 'DISCOUNT'
+			order by emp_no, trans_no, trans_id";
+
+	// rp_ltt_receipt not WEFC_Toronto
+	}
+
 	if($type == 'mssql'){
 		$rplttR = "CREATE view rp_ltt_receipt as 
 			select
@@ -1702,46 +2024,100 @@ function create_trans_dbs($db,$type){
 			where voided <> 5 and UPC <> 'TAX' and UPC <> 'DISCOUNT'
 			order by emp_no, trans_no, trans_id";
 	}
+
+	if ( $CORE_LOCAL->get('store') == "WEFC_Toronto" ) {
+		if ( $develop_rp_ltt_receipt == 1 ) {
+			if ($db->table_exists('rp_ltt_receipt',$name)) {
+				$db->query("DROP VIEW rp_ltt_receipt",$name);
+			}
+		}
+	}
 	if(!$db->table_exists('rp_ltt_receipt',$name)){
 		$db->query($rplttR,$name);
 	}
 
-	$rprV = "CREATE view rp_receipt  as
-		select
-		register_no,
-		emp_no,
-		trans_no,
-		case 
-			when trans_type = 'T'
-				then 	concat(right( concat(space(44), upper(rtrim(Description)) ), 44) 
-					, right(concat( space(8), format(-1 * Total, 2)), 8) 
+	if ( $CORE_LOCAL->get('store') == "WEFC_Toronto" ) {
+		// See the default value of linetoprint: description 30->22, comment 13->21.
+		$rprV = "CREATE view rp_receipt  as
+			select
+			register_no,
+			emp_no,
+			trans_no,
+			case 
+				when trans_type = 'T'
+					then 	concat(right( concat(space(44), upper(rtrim(Description)) ), 44) 
+						, right(concat( space(8), format(-1 * Total, 2)), 8) 
+						, right(concat(space(4), status), 4))
+				when voided = 3 
+					then 	concat(left(concat(Description, space(30)), 30) 
+						, space(9) 
+						, 'TOTAL' 
+						, right(concat(space(8), format(UnitPrice, 2)), 8))
+				when voided = 2
+					then 	description
+				when voided = 4
+					then 	description
+				when voided = 6
+					then 	description
+				when voided = 7 or voided = 17
+					then 	concat(left(concat(Description, space(30)), 30) 
+						, space(14) 
+						, right(concat(space(8), format(UnitPrice, 2)), 8) 
+						, right(concat(space(4), status), 4))
+				else
+					concat(left(concat(Description, space(22)), 22)
+					, ' ' 
+					, left(concat(Comment, space(21)), 21) 
+					, right(concat(space(8), format(Total, 2)), 8) 
 					, right(concat(space(4), status), 4))
-			when voided = 3 
-				then 	concat(left(concat(Description, space(30)), 30) 
-					, space(9) 
-					, 'TOTAL' 
-					, right(concat(space(8), format(UnitPrice, 2)), 8))
-			when voided = 2
-				then 	description
-			when voided = 4
-				then 	description
-			when voided = 6
-				then 	description
-			when voided = 7 or voided = 17
-				then 	concat(left(concat(Description, space(30)), 30) 
-					, space(14) 
-					, right(concat(space(8), format(UnitPrice, 2)), 8) 
+			end
+			as linetoprint,
+			trans_id
+			from rp_ltt_receipt";
+
+	// rp_receipt for WEFC_Toronto
+	} else {
+
+		$rprV = "CREATE view rp_receipt  as
+			select
+			register_no,
+			emp_no,
+			trans_no,
+			case 
+				when trans_type = 'T'
+					then 	concat(right( concat(space(44), upper(rtrim(Description)) ), 44) 
+						, right(concat( space(8), format(-1 * Total, 2)), 8) 
+						, right(concat(space(4), status), 4))
+				when voided = 3 
+					then 	concat(left(concat(Description, space(30)), 30) 
+						, space(9) 
+						, 'TOTAL' 
+						, right(concat(space(8), format(UnitPrice, 2)), 8))
+				when voided = 2
+					then 	description
+				when voided = 4
+					then 	description
+				when voided = 6
+					then 	description
+				when voided = 7 or voided = 17
+					then 	concat(left(concat(Description, space(30)), 30) 
+						, space(14) 
+						, right(concat(space(8), format(UnitPrice, 2)), 8) 
+						, right(concat(space(4), status), 4))
+				else
+					concat(left(concat(Description, space(30)), 30)
+					, ' ' 
+					, left(concat(Comment, space(13)), 13) 
+					, right(concat(space(8), format(Total, 2)), 8) 
 					, right(concat(space(4), status), 4))
-			else
-				concat(left(concat(Description, space(30)), 30)
-				, ' ' 
-				, left(concat(Comment, space(13)), 13) 
-				, right(concat(space(8), format(Total, 2)), 8) 
-				, right(concat(space(4), status), 4))
-		end
-		as linetoprint,
-		trans_id
-		from rp_ltt_receipt";
+			end
+			as linetoprint,
+			trans_id
+			from rp_ltt_receipt";
+
+	// rp_receipt not WEFC_Toronto
+	}
+
 	if($type == 'mssql'){
 		$rprV = "CREATE view rp_receipt  as
 		select
@@ -1779,6 +2155,15 @@ function create_trans_dbs($db,$type){
 		as linetoprint,
 		trans_id
 		from rp_ltt_receipt";
+	}
+
+	// This depends on rp_ltt_receipt
+	if ( $CORE_LOCAL->get('store') == "WEFC_Toronto" ) {
+		if ( $develop_rp_ltt_receipt == 1 ) {
+			if ($db->table_exists('rp_receipt',$name)) {
+				$db->query("DROP VIEW rp_receipt",$name);
+			}
+		}
 	}
 	if(!$db->table_exists('rp_receipt',$name)){
 		$db->query($rprV);

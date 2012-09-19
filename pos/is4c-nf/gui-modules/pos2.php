@@ -21,6 +21,13 @@
 
 *********************************************************************************/
 
+/* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+	18Sep2012 Eric Lee Added CORE_LOCAL[store]-based option to change style of items.
+	                    Needed for expanded comments for scaled items.
+
+*/
+
 ini_set('display_errors','1');
  
 session_cache_limiter('nocache');
@@ -192,6 +199,14 @@ class pos2 extends BasicPage {
 			submitWrapper();
 		}
 		</script>
+		<?php
+		if ( $CORE_LOCAL->get('store') == "WEFC_Toronto" ) {
+			echo "<style type='text/css'>
+			div.item .desc { width:45%;}
+			div.item .comments { width:33%;}
+			</style>\n";
+		}
+		?>
 		<?php
 	}
 
