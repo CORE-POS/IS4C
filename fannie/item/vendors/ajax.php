@@ -21,6 +21,13 @@
 
 *********************************************************************************/
 
+
+/* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+	 7Sep2012 Eric Lee In getVendorInfo() display VendorID on successful lookup.
+
+*/
+
 include('../../config.php');
 include($FANNIE_ROOT.'src/mysql_connect.php');
 
@@ -220,7 +227,7 @@ function getVendorInfo($id){
 	if ($dbc->num_rows($nameR) < 1)
 		$ret .= "<b>Name</b>: Unknown";
 	else
-		$ret .= "<b>Name</b>: ".array_pop($dbc->fetch_row($nameR));
+		$ret .= "<b>Id</b>: $id &nbsp; <b>Name</b>: ".array_pop($dbc->fetch_row($nameR));
 	$ret .= "<p />";
 
 	$scriptR = $dbc->query("SELECT loadScript FROM vendorLoadScripts WHERE vendorID=$id");

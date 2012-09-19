@@ -29,6 +29,8 @@
 
  'Z --COMMENTZ { - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+ 29Aug12 EL Set memberIdOffset to 0 from 4000. Note that clearIS4C() will need different params now
+ 							or maybe need to work differently.
   7Aug12 EL Enable email, to me at gmail.
  13Jul12 EL -> Try doing dbConn2 as add_connection. It may be necessary.
                It is important that the databases for each conn have different names.
@@ -639,7 +641,7 @@ $logFile = "../logs/updateMembers.log";
 $version = 1;
 
 // test: 4000  production: 0
-$memberIdOffset = 4000;
+$memberIdOffset = 0;
 
 // Whether to clear or write anything to IS4C
 $writeIS4C = 1;
