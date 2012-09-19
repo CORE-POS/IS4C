@@ -22,7 +22,7 @@ if(isset($_REQUEST['month'])){
     }
     $day = $_GET['day'];
     $year = $_GET['year'];
-    $date1 = $year."-".$month."-".$day;
+    $date1 = $year."-".$month."-".str_pad($day,2,'0',STR_PAD_LEFT);
 }elseif(isset($_REQUEST['date'])){
    $date = $_REQUEST['date'];
    $tmp = explode("-",$date);

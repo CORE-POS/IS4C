@@ -8,6 +8,9 @@
 <a href="#change_log">Revised: 2Sep2012</a>
 </div>
 <p />
+	<div style="text-align:center;margin-bottom:10px;font-size:80%;">
+	</div>
+>>>>>>> upstream/master
 IS4C/Fannie organizes items into departments. You'll need at least one, but
 putting all items in a single department isn't ideal. Separating items into
 departments allows better reporting options as well as data normalization
@@ -55,11 +58,15 @@ the range will prompt the cashier to confirm.</li>
 you want here to roll out custom reporting.</li>
 </ul>
 <h2>Super Departments</h2>
-Super Departments provide a categorization tier above departments. They are optional.
-For example, you might want to group a number of departments as "Grocery" or "Produce".
+Super Departments provide a categorization tier above departments. 
 Whether you need super departments and how to arrange them depends a lot on
 your staff structure. They're used primarily in back end tools to help an employee
 narrow in on the group of departments they normally deal with.
+They are techncially optional;
+however, WFC uses them extensively and some tools may still mistakenly assume that super departments
+are in use. Creating a single super department containing all your departments should alleviate
+these kind of problems if you need a particular tool to work ASAP.
+For example, you might want to group a number of departments as "Grocery" or "Produce".
 <p />
 Super Departments are created/managed by selecting Item Maintaince =&gt; Manage Departments,
 then <i>Manage Super Departments</i>. Select "Create" from the drop down to make a new one,
@@ -77,8 +84,9 @@ add/remove sub departments as needed.
 <pre>
 
 <a name="change_log">Change Log:</a>
- 2Sep12 EL Add notes about tables that extend departments.
-           Add H1 title, revision date, change log.
+ 2Sep12 Eric Lee Add notes about tables that extend departments.
+                  Add H1 title, revision date, change log.
+20Aug12 Andy Theuninck
 
 
 
