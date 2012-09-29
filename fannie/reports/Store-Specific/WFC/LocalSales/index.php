@@ -32,8 +32,9 @@ if (isset($_REQUEST['submit'])){
 	$dlog = select_dlog($d1,$d2);
 
 	if (isset($_REQUEST['excel'])){
-		header("Content-Disposition: inline; filename=customers_{$d1}_{$d2}.xls");
+		header("Content-Disposition: inline; filename=local_{$d1}_{$d2}.xls");
 		header("Content-type: application/vnd.ms-excel; name='excel'");
+		ob_start();
 	}
 	else{
 		printf("<a href=index.php?date1=%s&date2=%s&submit=yes&excel=yes>Save to Excel</a>",
@@ -41,8 +42,8 @@ if (isset($_REQUEST['submit'])){
 	}
 
 	$sales = "SELECT t.department,d.dept_name,s.superID,n.super_name,
-			sum(case when numflag in (1,2) then total else 0 end) as localSales,
-			sum(case when numflag = 2 then total else 0 end) as scSales,
+			sum(case when numflag = 2 then total else 0 end) as localSales,
+			sum(case when numflag = 1 then total else 0 end) as scSales,
 			sum(total) as allSales
 			FROM $dlog as t inner join departments as d
 			ON t.department=d.dept_no LEFT JOIN 
@@ -72,7 +73,7 @@ if (isset($_REQUEST['submit'])){
 					$sname,$slocal,100*($slocal/$sttl),
 					$sc,100*($sc/$sttl),$sttl);
 			}
-			printf('<tr><th colspan=2>%s</th><th>Local</th><th>%%</th>
+			printf('<tr><th colspan=2>%s</th><th>300mi</th><th>%%</th>
 				<th>SC</th><th>%%</th><th>Dept TTL</th></tr>',
 				(isset($_REQUEST['excel'])?'':'&nbsp;'));
 			$sID = $row['superID'];
@@ -105,6 +106,15 @@ if (isset($_REQUEST['submit'])){
 
 	echo '</table>';
 
+	if (isset($_REQUEST['excel'])){
+		include($FANNIE_ROOT.'src/ReportConvert/HtmlToArray.php');
+		include($FANNIE_ROOT.'src/ReportConvert/ArrayToXls.php');
+		$output = ob_get_contents();
+		ob_end_clean();
+		$array = HtmlToArray($output);
+		$xls = ArrayToXls($array);
+		echo $xls;
+	}
 			
 }
 else {

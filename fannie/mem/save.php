@@ -30,6 +30,8 @@ $header = "Member $memNum";
 
 include($FANNIE_ROOT.'src/header.html');
 
+$country = isset($FANNIE_COUNTRY)?$FANNIE_COUNTRY:"US";
+
 if ($memNum !== False){
 	foreach($FANNIE_MEMBER_MODULES as $mm){
 		include('modules/'.$mm.'.php');
@@ -43,7 +45,7 @@ if ($memNum !== False){
 	foreach($FANNIE_MEMBER_MODULES as $mm){
 		$instance = new $mm();
 		echo '<div style="float:left;">';
-		echo $instance->ShowEditForm($memNum);
+		echo $instance->ShowEditForm($memNum, $country);
 		echo '</div>';
 	}
 	echo '<div style="clear:left;"></div>';

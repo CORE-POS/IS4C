@@ -3,8 +3,12 @@
 		<title>Framework</title>
 	</head>
 	<body>
+	<div style="text-align:center;margin-bottom:10px;font-size:80%;">
+	updated as of: August 20, 2012<br />
+	last author: Andy Theuninck
+	</div>
 		<h3>Install-anywhere</h3>
-		IS4C searches for the file "is4c.css" to find the top of the current installation. Sample code for this is at the top of nearly every file. Using $IS4C_PATH in this manner will make side-by-side installations and testing easier.	
+		IS4C should be able to function without any specific path requirements. For the most part, the AutoLoader class takes care of this. Include that file using a relative path and you should be all set.
 		<h3>Modular Parsing</h3>
 		All parsing is done by two arrays of parser objects. All parser objects have the same base class. Adding and removing them is as simple as dropping a file in the appropriate directory: parser-class-lib/parse or parser-class-lib/preparse. Note that class name and file name should match.
 		<h3>Classes for UI</h3>

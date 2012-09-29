@@ -23,6 +23,14 @@
 
 class Notes extends MemberModule {
 
+	/* 15Aug12 flathat Formerly populated the input with the last note.  History link not coded.
+	 *         When the Save function added the populated note was re-added each time.
+	 *          Old code commented.
+	 *         Now: Populates a table, initially hidden, of historical notes under the input,
+	 *               which is left empty.
+	 *              History button is displayed iff history and un-hides the list of notes.
+	 *              NoHistory button re-hides the list of notes.
+	*/
 	function ShowEditForm($memNum){
 		global $FANNIE_URL;
 
@@ -34,25 +42,84 @@ class Notes extends MemberModule {
 
 		$note = "";
 		$date = "";
+		/*
 		if ($dbc->num_rows($infoR) > 0){
 			$infoW = $dbc->fetch_row($infoR);
 			$note = str_replace("<br />","\n",$infoW['note']);
 			$date = $infoW['stamp'];
 		}
+		*/
 
 		$ret = "<fieldset><legend>Notes</legend>";
-		$ret .= "<table class=\"MemFormTable\" 
-			border=\"0\">";
 
+		$ret .= "<table class=\"MemFormTable\" border=\"0\">";
 		$ret .= "<tr><th>Additional Notes</th>";
-		$ret .= "<td><a href=\"\">History</a></td></tr>";
+//		$ret .= "<td><a href=\"\">History</a></td></tr>";
+		$ret .= "<td> ";
+		if ($dbc->num_rows($infoR) > 0){
+			$ret .= "<input type=\"button\" value=\"History\" id=\"historyButton\"
+				style=\"display:block;\"
+				onclick=\"
+					tb = document.getElementById('noteHistory'); tb.style.display='block';
+					nhb = document.getElementById('noHistoryButton'); nhb.style.display='block';
+					hb = document.getElementById('historyButton'); hb.style.display='none';
+					\"
+				/>";
+			$ret .= "<input type=\"button\" value=\"NoHistory\" id=\"noHistoryButton\"
+				style=\"display:none;\"
+				onclick=\"
+					tb = document.getElementById('noteHistory'); tb.style.display='none';
+					hb = document.getElementById('historyButton'); hb.style.display='block';
+					nhb = document.getElementById('noHistoryButton'); nhb.style.display='none';
+					\"
+				/>";
+		}
+		$ret .= "</td></tr>\n";
 		$ret .= "<tr><td colspan=\"2\"><textarea name=\"Notes_text\" rows=\"4\" cols=\"25\">";
-		$ret .= $note;
+//		$ret .= $note;
 		$ret .= "</textarea></td></tr>";
+		$ret .= "</table>\n";
 
-		$ret .= "</table></fieldset>";
+		$ret .= "<table id=\"noteHistory\" class=\"MemFormTable\" border=\"0\" style=\"display:none;\">";
+		while (	$infoW = $dbc->fetch_row($infoR) ) {
+			$note = str_replace("<br />","\n",$infoW['note']);
+			$date = $infoW['stamp'];
+			$ret .= "<tr><td>$date</td><td>$note</td></tr>\n";
+		}
+		$ret .= "</table>\n";
+
+		$ret .= "</fieldset>\n";
 		return $ret;
 	}
+
+	/* 15Aug12 EL Did not previously exist.
+	 *            Value for username is dummy as currently no login.
+	*/
+	function SaveFormData($memNum){
+
+		if ( $_REQUEST['Notes_text'] == "" ) {
+			return "";
+		}
+
+		$dbc = $this->db();
+
+		$insertNote = sprintf("INSERT into memberNotes
+				(cardno, note, stamp, username)
+				VALUES (%d, %s, %s, %s)",
+				$memNum,
+				$dbc->escape($_REQUEST['Notes_text']),
+				$dbc->now(),
+				"'Admin'");
+
+		$test1 = $dbc->query($insertNote);
+
+		if ($test1 === False )
+			return "Error: problem saving Notes<br />";
+		else
+			return "";
+	}
+
+// Notes
 }
 
 ?>

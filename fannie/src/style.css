@@ -314,6 +314,14 @@ div.level0 li:hover div.level1 {
 	display: block;
 }
 
+div.level1 li div.level2 {
+	display: none;
+}
+
+div.level1 li:hover div.level2 {
+	display: block;
+}
+
 .MemFormTable th {
 	text-align: right;
 	background: #330066;

@@ -23,14 +23,25 @@
 
 /* HELP
 
-   nightly.equity.php
+   nightly.ar.php
 
-   Copies equity transaction information
-   for the previous day from dlog_15 into
-   stockpurchases.
+   Copies AR transaction information:
+   - trans_subtype='MI'
+   - department = 990
+   for the previous day from dlog_15 into ar_history.
 
-   Should be run after dtransaction rotation
+   turnover view/cache base tables for WFC end-of-month reports
+	 i.e. empty ar_history_backup and copy ar_history to it.
+	      empty AR_EOM_Summary_cache and copy ar_EOM_Summary to it.
+
+   Should be run after dtransaction rotation (nightly.dtrans.php)
    and after midnight.
+*/
+
+/* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+	 14Jun12 EL Comments partly updated from original comments which were just a
+	             copy of the ones in nightly.equity.php
 
 */
 

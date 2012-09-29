@@ -20,6 +20,11 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
+/* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+ *
+ * 14Jun12 EL Fix h1 page name, was "Fannie Membership"
+*/
+
 ini_set('display_errors','1');
 include('../../config.php'); 
 include('../util.php');
@@ -41,7 +46,7 @@ Modules
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <a href="../sample_data/extra_data.php">Sample Data</a>
 <form action=index.php method=post>
-<h1>Fannie Membership Settings</h1>
+<h1>Fannie Module System</h1>
 <?php
 if (is_writable('../../config.php')){
 	echo "<span style=\"color:green;\"><i>config.php</i> is writeable</span>";

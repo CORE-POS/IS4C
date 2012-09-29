@@ -4,6 +4,8 @@ $CORE_PATH="../../pos/is4c-nf/";
 print_docs("../../pos/is4c-nf/parser-class-lib/preparse/");
 print_docs("../../pos/is4c-nf/parser-class-lib/parse/");
 
+class Parser {
+}
 
 function print_docs($dir){
 	global $CORE_PATH;

@@ -1,0 +1,209 @@
+The contents of the directories are the files that constitute
+the IS4C  scanner scale driver for *nix
+
+# --COMMENTS { - - - - - - - - - - - - - - - - - - - - - - -
+#
+# 17Aug12 EL cp -p ssd.c ssd_wefc.c , and add to flathat repo, hopefully will protect.
+#             ssd.c seems to constantly be getting overwritten in git pulls.
+# 16May12 EL git merge of what was Andy's origin and is now upstream overwrote
+#             the executable, not to mention ssd.c, scale and scanner.
+#             Don't merge upstream[again] until you figure out how to protect those.
+#             merge of WEFC fork s/b OK.
+#  7Apr12 EL Added notes about what I did: # EL done:
+
+# --comments } - - - - - - - - - - - - - - - - - - - - - - -
+
+The different kinds of files are:
+
+SOURCE FILES
+-----------------------------------------
+
+scannerscale.c and ssd.c are source files in C.
+scannerscale.c is the original program that sets communication
+parameters for the serial port to communicate with the
+scanner scale.
+
+ssd.c applies the necessary wrappers on
+# EL "scannerscale*" does not exist.
+scannerscale.c to turn it into a daemon. When compiled,
+scannerscale.c therefore becomes a child process of ssd.c
+
+To compile ssd.c on my system (Slackware):
+# gcc ssd.c -o ssd
+#EL Results:
+posadmin@lane3:SSD$ cp -p ssd ssd_orig
+posadmin@lane3:SSD$ make clean
+rm ssd
+posadmin@lane3:SSD$ make
+gcc -o ssd ssd.c
+posadmin@lane3:SSD$ ls -l ss*
+-rwxr-xr-x 1 posadmin posadmin 12111 2012-04-07 18:24 ssd
+-rw-r--r-- 1 posadmin posadmin  7667 2012-03-31 00:30 ssd.c
+-rw-r--r-- 1 posadmin posadmin 10441 2012-03-31 00:30 ssd_orig
+#EL Later discovered that locations of scanner and scale files
+#   were wrong, fixed and re-compiled.
+
+#EL Reformatted:
+Incoming data from the scanner-scale is then written to either the file:
+"scanner" or
+"scale"
+depending on the prefix of the character strings.
+#EL new:
+# These two must be writable by the Apache/PHP user (www-data)
+# EL done:
+#chmod 666 scanner scale
+
+COMPILED EXECUTABLE
+-----------------------------------------
+
+There is only one.
+ssd.c is compiled as ssd, which runs as a daemon
+and should be set to start up at boot time in
+production.
+
+For Slackware, the process I follow is to make a soft link first:
+
+# ln -s /pos/is4c/rs232/ssd /etc/rc.d/rc.ssd
+# EL: The above path is outdated and not Ubuntu:
+# sudo ln -s /var/www/IS4C/pos/is4c-nf/scale-drivers/drivers/rs232 /etc/init.d/rc.ssd
+# EL: mschersten does the above in a different way.
+#     Is it applicable here?
+#EL: symlink approach does not work. Complains: "too many levels of symlink" when you
+# try to run it.
+# mschersten style, for ssd:
+# copies driver startup service, fixes path to driver, and runs it on boot
+#sudo cp /var/www/IS4C/pos/is4c-nf/scale-drivers/drivers/rs232/posdriver-ssd /etc/init.d/posdriver-ssd
+# EL done:
+sudo cp posdriver-ssd /etc/init.d/posdriver-ssd
+# Should then be able to:
+# sudo service posdriver-ssd start|stop|restart|clean|status
+#  Yes.
+#  After this? goodBeep no longer gets a beep.
+#  Restarted. goodBeep restored
+#  Ran ssd again, goodBeep gone.
+#
+# Did this in the version here.
+#sudo sed -i 's^/usr/share/it-core/^/var/www/IS4C/pos/^' /etc/init.d/posdriver-ssd
+#EL done:
+# What does it actually do? Puts start and stop instructions in /etc/rc?.d
+sudo rcconf --on posdriver-ssd
+#EL restart.  Is everything still there, scan still work? Yes!
+#EL Apr8:19:30  weighing not configured yet.
+#EL Apr8:19:30  goodBeep does not work.
+
+Afterwards, add the following to either:
+[/etc/]rc.local
+# EL This also exists and has been changed more recently:
+[/etc/init.d/]rc.local
+or
+# Does not exist on ubuntu.
+rc.M
+
+#EL: And then run this? Or reboot to start it?
+#    Or: service rc.ssd start
+/etc/init.d/rc.ssd
+#/etc/rc.d/rc.ssd
+
+
+SHELL SCRIPTS
+-----------------------------------------
+
+goodBeep, errorBeep, wakeup, rePoll and twoPairs
+are shell scripts that send signals to the
+scanner scale. They are invoked by the php scripts
+on an "as needed" basis.
+
+setport sets the serial port communication
+parameters so that they are compatible with
+the factory default settings for the Magellan
+scanner scale. It is not necessary to run
+setport when ssd is running, and setport is mainly
+used for testing.
+
+As these files are invoked by php, and therefore
+run from Apache, write permission for /dev/ttyS0
+has to be set accordingly before they will work.
+(On a related note, as a reminder, 
+write permission for /dev/lp0 
+also has to be set properly before the system
+can print receipts)
+
+# EL done:
+# This is adequate for the beep tests:
+# sudo chmod 666 /dev/ttyS0 /dev/lp0
+# mschersten uses:
+# sudo chmod 777 /dev/ttyS0 /devlp0
+# EL However, as mschersten notes, these changes are reverted
+# on reboot, so, under Ubuntu anyway:
+# See: /etc/udev/rules.d/README, and then:
+# creates a file to open permissions on /dev/lp0 upon startup
+# What does mschersten achieve with this elaborate syntax?
+#  The sudo has to be in the second part of the command.
+# EL done:
+#echo 'KERNEL=="ttyS0",MODE=="0666"' | sudo tee /etc/udev/rules.d/serial-port.rules > /dev/null
+#echo 'KERNEL=="lp0",MODE=="0666"' | sudo tee /etc/udev/rules.d/parallel-port.rules > /dev/null
+# Cannot:
+#sudo echo 'KERNEL=="ttyS0",MODE=="0666"' > /etc/udev/rules.d/serial-port.rules
+#sudo echo 'KERNEL=="lp0",MODE=="0666"' > /etc/udev/rules.d/parallel-port.rules
+#because the redirect is in a separate, non-sudo shell.
+# Then restart to see that the perms stick. Try goodBeep
+#  Yes, they stick. goodBeep works (again).
+
+
+goodBeep = One beep. 
+called whenever a record is inserted into localtemptrans
+to indicate a good scan. The scanner scale, by factory default,
+also gives a "good scan beep" when an item is successfully
+scanned. The Wedge disables the default factory beep because
+IS4C does not consider an item as scanned if is is not entered 
+into localtemptrans.
+WFC has decided to  keep the factory beep, so that a fully 
+successful scan results in two beeps.
+
+errorBeep = A series of 3 beeps in quick succession,
+usually called in association with error screens.
+
+twoPairs = two sets of two quick beeps
+Used to call attention to cash over amount
+
+wakeup = sends scale status signals to initiate
+responses from the scanner scale. Called 
+manually when the string "wakeup" is entered into 
+the input form, usually by a hotkey.
+
+rePoll = similar to wakeup. Sends only one
+signal, and is called by php as needed.
+
+*** check that all scripts are made executable ***
+
+# EL added and done:
+#chmod 755 goodBeep errorBeep wakeup rePoll twoPairs
+# EL added and done:
+# EL Also remove ^M from these, esp in #!/bin/sh,
+#     which will prevent them from executing.
+#    In vi: :s/ctrlVctrlM//
+# Beeping commands tested OK!
+
+DATA FILES
+--------------------------------------------
+
+scanner stores the last scanned input that
+has not been processed by IS4C.
+
+scale stores the last weight input
+
+These are read and processed by the file 
+/pos/is4c/chkserial.php
+"scanner" is cleared every time it is read by chkserial.php,
+but the record in "scale" 
+persists, and is regulated only by ssd.
+
+IMPORTANT
+-----------------------------------------------
+To re-emphasize: Write permission for /dev/ttyS0 [and /dev/lp0]
+has to be set properly:
+# EL noted and done above.
+before the shell scripts (and therefore the scanner scale)
+will work properly with IS4C.
+
+Last updated: Dec 8, 2005
