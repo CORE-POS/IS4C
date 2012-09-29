@@ -1,0 +1,4588 @@
+./nightly.dtrans.php: Fri, 22 Jun 2012 10:00:01 -0400: CREATE transArchive00 LIKE core_trans.dtransactions
+./nightly.dtrans.php: Fri, 22 Jun 2012 10:00:01 -0400: INSERT INTO transArchive00 SELECT * FROM core_trans.dtransactions
+./nightly.dtrans.php: Fri, 22 Jun 2012 10:00:01 -0400: CREATE  view dlog00 as
+		select 
+		d.datetime as tdate, 
+		d.register_no, 
+		d.emp_no, 
+		d.trans_no, 
+		d.upc, 
+		CASE WHEN (d.trans_subtype IN ('CP','IC') OR d.upc like('%000000052')) then 'T' 
+			WHEN d.upc = 'DISCOUNT' then 'S' else d.trans_type end as trans_type, 
+		CASE WHEN d.upc = 'MAD Coupon' THEN 'MA' ELSe 
+		   case when d.upc like('%00000000052') then 'RR' else d.trans_subtype end end as trans_subtype, 
+		d.trans_status, 
+		d.department, 
+		d.quantity, 
+		d.unitPrice, 
+		d.total, 
+		d.tax, 
+		d.foodstamp, 
+		d.itemQtty, 
+		d.memType,
+		d.staff,
+		d.numflag,
+		d.charflag,
+		d.card_no, 
+		d.trans_id,
+		concat(convert(d.emp_no,char), '-', convert(d.register_no,char), '-',
+		convert(d.trans_no,char)) as trans_num
+
+		from transArchive00 as d
+		where d.trans_status not in ('D','X','Z') and d.emp_no not in (9999,56) and d.register_no  <> 99
+./nightly.dtrans.php: Fri, 22 Jun 2012 10:00:01 -0400: CREATE  view rp_dt_receipt_00 as 
+		select 
+		datetime,
+		register_no,
+		emp_no,
+		trans_no,
+		description,
+		case 
+			when voided = 5 
+				then 'Discount'
+			when trans_status = 'M'
+				then 'Mbr special'
+			when scale <> 0 and quantity <> 0 
+				then concat(convert(quantity,char), ' @ ', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity = 1
+				then concat(convert(volume,char), ' /', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity <> 1
+				then concat(convert(Quantity,char), ' @ ', convert(Volume,char), ' /', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and discounttype = 3
+				then concat(convert(ItemQtty,char), ' /', convert(UnitPrice,char))
+			when abs(itemQtty) > 1
+				then concat(convert(quantity,char), ' @ ', convert(unitPrice,char))	
+			when matched > 0
+				then '1 w/ vol adj'
+			else ''
+				
+		end
+		as comment,
+			total,
+
+		case 
+			when trans_status = 'V' 
+				then 'VD'
+			when trans_status = 'R'
+				then 'RF'
+			when tax <> 0 and foodstamp <> 0
+				then 'TF'
+			when tax <> 0 and foodstamp = 0
+				then 'T' 
+			when tax = 0 and foodstamp <> 0
+				then 'F'
+			when tax = 0 and foodstamp = 0
+				then '' 
+		end
+		as Status,
+		trans_type,
+		card_no as memberID,
+		unitPrice,
+		voided,
+		trans_id,
+		concat(convert(emp_no,char), '-', convert(register_no,char), '-', convert(trans_no,char)) as trans_num
+
+		from transArchive00
+		where voided <> 5 and UPC <> 'TAX' and UPC <> 'DISCOUNT'
+./nightly.dtrans.php: Fri, 22 Jun 2012 10:00:01 -0400: create  view rp_receipt_header_00 as
+		select
+		datetime as dateTimeStamp,
+		card_no as memberID,
+		concat(convert(emp_no,char), '-', convert(register_no,char), '-', convert(trans_no,char)) as trans_num,
+		register_no,
+		emp_no,
+		trans_no,
+		convert(sum(case when discounttype = 1 then discount else 0 end),decimal(10,2)) as discountTTL,
+		convert(sum(case when discounttype = 2 then memDiscount else 0 end),decimal(10,2)) as memSpecial,
+		convert(sum(case when upc = '0000000008005' then total else 0 end),decimal(10,2)) as couponTotal,
+		convert(sum(case when upc = 'MEMCOUPON' then unitPrice else 0 end),decimal(10,2)) as memCoupon,
+		abs(sum(case when trans_subtype = 'MI' or trans_subtype = 'CX' then total else 0 end)) as chargeTotal,
+		sum(case when upc = 'Discount' then total else 0 end) as transDiscount,
+		sum(case when trans_type = 'T' then -1 * total else 0 end) as tenderTotal
+
+		from transArchive00
+		group by register_no, emp_no, trans_no, card_no, datetime
+./nightly.dtrans.php: Sat, 23 Jun 2012 01:10:01 -0400: CREATE transArchive00 LIKE core_trans.dtransactions
+./nightly.dtrans.php: Sat, 23 Jun 2012 01:10:01 -0400: INSERT INTO transArchive00 SELECT * FROM core_trans.dtransactions
+./nightly.dtrans.php: Sat, 23 Jun 2012 01:10:01 -0400: CREATE  view dlog00 as
+		select 
+		d.datetime as tdate, 
+		d.register_no, 
+		d.emp_no, 
+		d.trans_no, 
+		d.upc, 
+		CASE WHEN (d.trans_subtype IN ('CP','IC') OR d.upc like('%000000052')) then 'T' 
+			WHEN d.upc = 'DISCOUNT' then 'S' else d.trans_type end as trans_type, 
+		CASE WHEN d.upc = 'MAD Coupon' THEN 'MA' ELSe 
+		   case when d.upc like('%00000000052') then 'RR' else d.trans_subtype end end as trans_subtype, 
+		d.trans_status, 
+		d.department, 
+		d.quantity, 
+		d.unitPrice, 
+		d.total, 
+		d.tax, 
+		d.foodstamp, 
+		d.itemQtty, 
+		d.memType,
+		d.staff,
+		d.numflag,
+		d.charflag,
+		d.card_no, 
+		d.trans_id,
+		concat(convert(d.emp_no,char), '-', convert(d.register_no,char), '-',
+		convert(d.trans_no,char)) as trans_num
+
+		from transArchive00 as d
+		where d.trans_status not in ('D','X','Z') and d.emp_no not in (9999,56) and d.register_no  <> 99
+./nightly.dtrans.php: Sat, 23 Jun 2012 01:10:01 -0400: CREATE  view rp_dt_receipt_00 as 
+		select 
+		datetime,
+		register_no,
+		emp_no,
+		trans_no,
+		description,
+		case 
+			when voided = 5 
+				then 'Discount'
+			when trans_status = 'M'
+				then 'Mbr special'
+			when scale <> 0 and quantity <> 0 
+				then concat(convert(quantity,char), ' @ ', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity = 1
+				then concat(convert(volume,char), ' /', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity <> 1
+				then concat(convert(Quantity,char), ' @ ', convert(Volume,char), ' /', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and discounttype = 3
+				then concat(convert(ItemQtty,char), ' /', convert(UnitPrice,char))
+			when abs(itemQtty) > 1
+				then concat(convert(quantity,char), ' @ ', convert(unitPrice,char))	
+			when matched > 0
+				then '1 w/ vol adj'
+			else ''
+				
+		end
+		as comment,
+			total,
+
+		case 
+			when trans_status = 'V' 
+				then 'VD'
+			when trans_status = 'R'
+				then 'RF'
+			when tax <> 0 and foodstamp <> 0
+				then 'TF'
+			when tax <> 0 and foodstamp = 0
+				then 'T' 
+			when tax = 0 and foodstamp <> 0
+				then 'F'
+			when tax = 0 and foodstamp = 0
+				then '' 
+		end
+		as Status,
+		trans_type,
+		card_no as memberID,
+		unitPrice,
+		voided,
+		trans_id,
+		concat(convert(emp_no,char), '-', convert(register_no,char), '-', convert(trans_no,char)) as trans_num
+
+		from transArchive00
+		where voided <> 5 and UPC <> 'TAX' and UPC <> 'DISCOUNT'
+./nightly.dtrans.php: Sat, 23 Jun 2012 01:10:01 -0400: create  view rp_receipt_header_00 as
+		select
+		datetime as dateTimeStamp,
+		card_no as memberID,
+		concat(convert(emp_no,char), '-', convert(register_no,char), '-', convert(trans_no,char)) as trans_num,
+		register_no,
+		emp_no,
+		trans_no,
+		convert(sum(case when discounttype = 1 then discount else 0 end),decimal(10,2)) as discountTTL,
+		convert(sum(case when discounttype = 2 then memDiscount else 0 end),decimal(10,2)) as memSpecial,
+		convert(sum(case when upc = '0000000008005' then total else 0 end),decimal(10,2)) as couponTotal,
+		convert(sum(case when upc = 'MEMCOUPON' then unitPrice else 0 end),decimal(10,2)) as memCoupon,
+		abs(sum(case when trans_subtype = 'MI' or trans_subtype = 'CX' then total else 0 end)) as chargeTotal,
+		sum(case when upc = 'Discount' then total else 0 end) as transDiscount,
+		sum(case when trans_type = 'T' then -1 * total else 0 end) as tenderTotal
+
+		from transArchive00
+		group by register_no, emp_no, trans_no, card_no, datetime
+/IS4C/fannie/reports/CustomerCount/index.php: Sun, 24 Jun 2012 00:19:02 -0400: SELECT year(tdate) as year, month(tdate) as month,
+			day(tdate) as day,max(memType) as memType,trans_num
+			FROM trans_archive.dlog201206 as t
+			WHERE 
+			tDate BETWEEN '2012-06-01 00:00:00' AND '2012-06-24 23:59:59'
+			and trans_type in ('I','D')
+			AND upc <> 'RRR'
+			group by year(tdate),month(tdate),day(tdate),trans_num
+			order by year(tdate),month(tdate),day(tdate),max(memType)
+./nightly.dtrans.php: Sun, 24 Jun 2012 01:10:01 -0400: CREATE transArchive00 LIKE core_trans.dtransactions
+./nightly.dtrans.php: Sun, 24 Jun 2012 01:10:01 -0400: INSERT INTO transArchive00 SELECT * FROM core_trans.dtransactions
+./nightly.dtrans.php: Sun, 24 Jun 2012 01:10:01 -0400: CREATE  view dlog00 as
+		select 
+		d.datetime as tdate, 
+		d.register_no, 
+		d.emp_no, 
+		d.trans_no, 
+		d.upc, 
+		CASE WHEN (d.trans_subtype IN ('CP','IC') OR d.upc like('%000000052')) then 'T' 
+			WHEN d.upc = 'DISCOUNT' then 'S' else d.trans_type end as trans_type, 
+		CASE WHEN d.upc = 'MAD Coupon' THEN 'MA' ELSe 
+		   case when d.upc like('%00000000052') then 'RR' else d.trans_subtype end end as trans_subtype, 
+		d.trans_status, 
+		d.department, 
+		d.quantity, 
+		d.unitPrice, 
+		d.total, 
+		d.tax, 
+		d.foodstamp, 
+		d.itemQtty, 
+		d.memType,
+		d.staff,
+		d.numflag,
+		d.charflag,
+		d.card_no, 
+		d.trans_id,
+		concat(convert(d.emp_no,char), '-', convert(d.register_no,char), '-',
+		convert(d.trans_no,char)) as trans_num
+
+		from transArchive00 as d
+		where d.trans_status not in ('D','X','Z') and d.emp_no not in (9999,56) and d.register_no  <> 99
+./nightly.dtrans.php: Sun, 24 Jun 2012 01:10:01 -0400: CREATE  view rp_dt_receipt_00 as 
+		select 
+		datetime,
+		register_no,
+		emp_no,
+		trans_no,
+		description,
+		case 
+			when voided = 5 
+				then 'Discount'
+			when trans_status = 'M'
+				then 'Mbr special'
+			when scale <> 0 and quantity <> 0 
+				then concat(convert(quantity,char), ' @ ', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity = 1
+				then concat(convert(volume,char), ' /', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity <> 1
+				then concat(convert(Quantity,char), ' @ ', convert(Volume,char), ' /', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and discounttype = 3
+				then concat(convert(ItemQtty,char), ' /', convert(UnitPrice,char))
+			when abs(itemQtty) > 1
+				then concat(convert(quantity,char), ' @ ', convert(unitPrice,char))	
+			when matched > 0
+				then '1 w/ vol adj'
+			else ''
+				
+		end
+		as comment,
+			total,
+
+		case 
+			when trans_status = 'V' 
+				then 'VD'
+			when trans_status = 'R'
+				then 'RF'
+			when tax <> 0 and foodstamp <> 0
+				then 'TF'
+			when tax <> 0 and foodstamp = 0
+				then 'T' 
+			when tax = 0 and foodstamp <> 0
+				then 'F'
+			when tax = 0 and foodstamp = 0
+				then '' 
+		end
+		as Status,
+		trans_type,
+		card_no as memberID,
+		unitPrice,
+		voided,
+		trans_id,
+		concat(convert(emp_no,char), '-', convert(register_no,char), '-', convert(trans_no,char)) as trans_num
+
+		from transArchive00
+		where voided <> 5 and UPC <> 'TAX' and UPC <> 'DISCOUNT'
+./nightly.dtrans.php: Sun, 24 Jun 2012 01:10:01 -0400: create  view rp_receipt_header_00 as
+		select
+		datetime as dateTimeStamp,
+		card_no as memberID,
+		concat(convert(emp_no,char), '-', convert(register_no,char), '-', convert(trans_no,char)) as trans_num,
+		register_no,
+		emp_no,
+		trans_no,
+		convert(sum(case when discounttype = 1 then discount else 0 end),decimal(10,2)) as discountTTL,
+		convert(sum(case when discounttype = 2 then memDiscount else 0 end),decimal(10,2)) as memSpecial,
+		convert(sum(case when upc = '0000000008005' then total else 0 end),decimal(10,2)) as couponTotal,
+		convert(sum(case when upc = 'MEMCOUPON' then unitPrice else 0 end),decimal(10,2)) as memCoupon,
+		abs(sum(case when trans_subtype = 'MI' or trans_subtype = 'CX' then total else 0 end)) as chargeTotal,
+		sum(case when upc = 'Discount' then total else 0 end) as transDiscount,
+		sum(case when trans_type = 'T' then -1 * total else 0 end) as tenderTotal
+
+		from transArchive00
+		group by register_no, emp_no, trans_no, card_no, datetime
+./nightly.dtrans.php: Mon, 25 Jun 2012 01:10:01 -0400: CREATE transArchive00 LIKE core_trans.dtransactions
+./nightly.dtrans.php: Mon, 25 Jun 2012 01:10:01 -0400: INSERT INTO transArchive00 SELECT * FROM core_trans.dtransactions
+./nightly.dtrans.php: Mon, 25 Jun 2012 01:10:01 -0400: CREATE  view dlog00 as
+		select 
+		d.datetime as tdate, 
+		d.register_no, 
+		d.emp_no, 
+		d.trans_no, 
+		d.upc, 
+		CASE WHEN (d.trans_subtype IN ('CP','IC') OR d.upc like('%000000052')) then 'T' 
+			WHEN d.upc = 'DISCOUNT' then 'S' else d.trans_type end as trans_type, 
+		CASE WHEN d.upc = 'MAD Coupon' THEN 'MA' ELSe 
+		   case when d.upc like('%00000000052') then 'RR' else d.trans_subtype end end as trans_subtype, 
+		d.trans_status, 
+		d.department, 
+		d.quantity, 
+		d.unitPrice, 
+		d.total, 
+		d.tax, 
+		d.foodstamp, 
+		d.itemQtty, 
+		d.memType,
+		d.staff,
+		d.numflag,
+		d.charflag,
+		d.card_no, 
+		d.trans_id,
+		concat(convert(d.emp_no,char), '-', convert(d.register_no,char), '-',
+		convert(d.trans_no,char)) as trans_num
+
+		from transArchive00 as d
+		where d.trans_status not in ('D','X','Z') and d.emp_no not in (9999,56) and d.register_no  <> 99
+./nightly.dtrans.php: Mon, 25 Jun 2012 01:10:01 -0400: CREATE  view rp_dt_receipt_00 as 
+		select 
+		datetime,
+		register_no,
+		emp_no,
+		trans_no,
+		description,
+		case 
+			when voided = 5 
+				then 'Discount'
+			when trans_status = 'M'
+				then 'Mbr special'
+			when scale <> 0 and quantity <> 0 
+				then concat(convert(quantity,char), ' @ ', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity = 1
+				then concat(convert(volume,char), ' /', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity <> 1
+				then concat(convert(Quantity,char), ' @ ', convert(Volume,char), ' /', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and discounttype = 3
+				then concat(convert(ItemQtty,char), ' /', convert(UnitPrice,char))
+			when abs(itemQtty) > 1
+				then concat(convert(quantity,char), ' @ ', convert(unitPrice,char))	
+			when matched > 0
+				then '1 w/ vol adj'
+			else ''
+				
+		end
+		as comment,
+			total,
+
+		case 
+			when trans_status = 'V' 
+				then 'VD'
+			when trans_status = 'R'
+				then 'RF'
+			when tax <> 0 and foodstamp <> 0
+				then 'TF'
+			when tax <> 0 and foodstamp = 0
+				then 'T' 
+			when tax = 0 and foodstamp <> 0
+				then 'F'
+			when tax = 0 and foodstamp = 0
+				then '' 
+		end
+		as Status,
+		trans_type,
+		card_no as memberID,
+		unitPrice,
+		voided,
+		trans_id,
+		concat(convert(emp_no,char), '-', convert(register_no,char), '-', convert(trans_no,char)) as trans_num
+
+		from transArchive00
+		where voided <> 5 and UPC <> 'TAX' and UPC <> 'DISCOUNT'
+./nightly.dtrans.php: Mon, 25 Jun 2012 01:10:01 -0400: create  view rp_receipt_header_00 as
+		select
+		datetime as dateTimeStamp,
+		card_no as memberID,
+		concat(convert(emp_no,char), '-', convert(register_no,char), '-', convert(trans_no,char)) as trans_num,
+		register_no,
+		emp_no,
+		trans_no,
+		convert(sum(case when discounttype = 1 then discount else 0 end),decimal(10,2)) as discountTTL,
+		convert(sum(case when discounttype = 2 then memDiscount else 0 end),decimal(10,2)) as memSpecial,
+		convert(sum(case when upc = '0000000008005' then total else 0 end),decimal(10,2)) as couponTotal,
+		convert(sum(case when upc = 'MEMCOUPON' then unitPrice else 0 end),decimal(10,2)) as memCoupon,
+		abs(sum(case when trans_subtype = 'MI' or trans_subtype = 'CX' then total else 0 end)) as chargeTotal,
+		sum(case when upc = 'Discount' then total else 0 end) as transDiscount,
+		sum(case when trans_type = 'T' then -1 * total else 0 end) as tenderTotal
+
+		from transArchive00
+		group by register_no, emp_no, trans_no, card_no, datetime
+./nightly.dtrans.php: Tue, 26 Jun 2012 01:10:01 -0400: CREATE transArchive00 LIKE core_trans.dtransactions
+./nightly.dtrans.php: Tue, 26 Jun 2012 01:10:01 -0400: INSERT INTO transArchive00 SELECT * FROM core_trans.dtransactions
+./nightly.dtrans.php: Tue, 26 Jun 2012 01:10:01 -0400: CREATE  view dlog00 as
+		select 
+		d.datetime as tdate, 
+		d.register_no, 
+		d.emp_no, 
+		d.trans_no, 
+		d.upc, 
+		CASE WHEN (d.trans_subtype IN ('CP','IC') OR d.upc like('%000000052')) then 'T' 
+			WHEN d.upc = 'DISCOUNT' then 'S' else d.trans_type end as trans_type, 
+		CASE WHEN d.upc = 'MAD Coupon' THEN 'MA' ELSe 
+		   case when d.upc like('%00000000052') then 'RR' else d.trans_subtype end end as trans_subtype, 
+		d.trans_status, 
+		d.department, 
+		d.quantity, 
+		d.unitPrice, 
+		d.total, 
+		d.tax, 
+		d.foodstamp, 
+		d.itemQtty, 
+		d.memType,
+		d.staff,
+		d.numflag,
+		d.charflag,
+		d.card_no, 
+		d.trans_id,
+		concat(convert(d.emp_no,char), '-', convert(d.register_no,char), '-',
+		convert(d.trans_no,char)) as trans_num
+
+		from transArchive00 as d
+		where d.trans_status not in ('D','X','Z') and d.emp_no not in (9999,56) and d.register_no  <> 99
+./nightly.dtrans.php: Tue, 26 Jun 2012 01:10:01 -0400: CREATE  view rp_dt_receipt_00 as 
+		select 
+		datetime,
+		register_no,
+		emp_no,
+		trans_no,
+		description,
+		case 
+			when voided = 5 
+				then 'Discount'
+			when trans_status = 'M'
+				then 'Mbr special'
+			when scale <> 0 and quantity <> 0 
+				then concat(convert(quantity,char), ' @ ', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity = 1
+				then concat(convert(volume,char), ' /', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity <> 1
+				then concat(convert(Quantity,char), ' @ ', convert(Volume,char), ' /', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and discounttype = 3
+				then concat(convert(ItemQtty,char), ' /', convert(UnitPrice,char))
+			when abs(itemQtty) > 1
+				then concat(convert(quantity,char), ' @ ', convert(unitPrice,char))	
+			when matched > 0
+				then '1 w/ vol adj'
+			else ''
+				
+		end
+		as comment,
+			total,
+
+		case 
+			when trans_status = 'V' 
+				then 'VD'
+			when trans_status = 'R'
+				then 'RF'
+			when tax <> 0 and foodstamp <> 0
+				then 'TF'
+			when tax <> 0 and foodstamp = 0
+				then 'T' 
+			when tax = 0 and foodstamp <> 0
+				then 'F'
+			when tax = 0 and foodstamp = 0
+				then '' 
+		end
+		as Status,
+		trans_type,
+		card_no as memberID,
+		unitPrice,
+		voided,
+		trans_id,
+		concat(convert(emp_no,char), '-', convert(register_no,char), '-', convert(trans_no,char)) as trans_num
+
+		from transArchive00
+		where voided <> 5 and UPC <> 'TAX' and UPC <> 'DISCOUNT'
+./nightly.dtrans.php: Tue, 26 Jun 2012 01:10:01 -0400: create  view rp_receipt_header_00 as
+		select
+		datetime as dateTimeStamp,
+		card_no as memberID,
+		concat(convert(emp_no,char), '-', convert(register_no,char), '-', convert(trans_no,char)) as trans_num,
+		register_no,
+		emp_no,
+		trans_no,
+		convert(sum(case when discounttype = 1 then discount else 0 end),decimal(10,2)) as discountTTL,
+		convert(sum(case when discounttype = 2 then memDiscount else 0 end),decimal(10,2)) as memSpecial,
+		convert(sum(case when upc = '0000000008005' then total else 0 end),decimal(10,2)) as couponTotal,
+		convert(sum(case when upc = 'MEMCOUPON' then unitPrice else 0 end),decimal(10,2)) as memCoupon,
+		abs(sum(case when trans_subtype = 'MI' or trans_subtype = 'CX' then total else 0 end)) as chargeTotal,
+		sum(case when upc = 'Discount' then total else 0 end) as transDiscount,
+		sum(case when trans_type = 'T' then -1 * total else 0 end) as tenderTotal
+
+		from transArchive00
+		group by register_no, emp_no, trans_no, card_no, datetime
+./nightly.dtrans.php: Wed, 27 Jun 2012 01:10:02 -0400: CREATE transArchive00 LIKE core_trans.dtransactions
+./nightly.dtrans.php: Wed, 27 Jun 2012 01:10:02 -0400: INSERT INTO transArchive00 SELECT * FROM core_trans.dtransactions
+./nightly.dtrans.php: Wed, 27 Jun 2012 01:10:02 -0400: CREATE  view dlog00 as
+		select 
+		d.datetime as tdate, 
+		d.register_no, 
+		d.emp_no, 
+		d.trans_no, 
+		d.upc, 
+		CASE WHEN (d.trans_subtype IN ('CP','IC') OR d.upc like('%000000052')) then 'T' 
+			WHEN d.upc = 'DISCOUNT' then 'S' else d.trans_type end as trans_type, 
+		CASE WHEN d.upc = 'MAD Coupon' THEN 'MA' ELSe 
+		   case when d.upc like('%00000000052') then 'RR' else d.trans_subtype end end as trans_subtype, 
+		d.trans_status, 
+		d.department, 
+		d.quantity, 
+		d.unitPrice, 
+		d.total, 
+		d.tax, 
+		d.foodstamp, 
+		d.itemQtty, 
+		d.memType,
+		d.staff,
+		d.numflag,
+		d.charflag,
+		d.card_no, 
+		d.trans_id,
+		concat(convert(d.emp_no,char), '-', convert(d.register_no,char), '-',
+		convert(d.trans_no,char)) as trans_num
+
+		from transArchive00 as d
+		where d.trans_status not in ('D','X','Z') and d.emp_no not in (9999,56) and d.register_no  <> 99
+./nightly.dtrans.php: Wed, 27 Jun 2012 01:10:02 -0400: CREATE  view rp_dt_receipt_00 as 
+		select 
+		datetime,
+		register_no,
+		emp_no,
+		trans_no,
+		description,
+		case 
+			when voided = 5 
+				then 'Discount'
+			when trans_status = 'M'
+				then 'Mbr special'
+			when scale <> 0 and quantity <> 0 
+				then concat(convert(quantity,char), ' @ ', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity = 1
+				then concat(convert(volume,char), ' /', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity <> 1
+				then concat(convert(Quantity,char), ' @ ', convert(Volume,char), ' /', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and discounttype = 3
+				then concat(convert(ItemQtty,char), ' /', convert(UnitPrice,char))
+			when abs(itemQtty) > 1
+				then concat(convert(quantity,char), ' @ ', convert(unitPrice,char))	
+			when matched > 0
+				then '1 w/ vol adj'
+			else ''
+				
+		end
+		as comment,
+			total,
+
+		case 
+			when trans_status = 'V' 
+				then 'VD'
+			when trans_status = 'R'
+				then 'RF'
+			when tax <> 0 and foodstamp <> 0
+				then 'TF'
+			when tax <> 0 and foodstamp = 0
+				then 'T' 
+			when tax = 0 and foodstamp <> 0
+				then 'F'
+			when tax = 0 and foodstamp = 0
+				then '' 
+		end
+		as Status,
+		trans_type,
+		card_no as memberID,
+		unitPrice,
+		voided,
+		trans_id,
+		concat(convert(emp_no,char), '-', convert(register_no,char), '-', convert(trans_no,char)) as trans_num
+
+		from transArchive00
+		where voided <> 5 and UPC <> 'TAX' and UPC <> 'DISCOUNT'
+./nightly.dtrans.php: Wed, 27 Jun 2012 01:10:02 -0400: create  view rp_receipt_header_00 as
+		select
+		datetime as dateTimeStamp,
+		card_no as memberID,
+		concat(convert(emp_no,char), '-', convert(register_no,char), '-', convert(trans_no,char)) as trans_num,
+		register_no,
+		emp_no,
+		trans_no,
+		convert(sum(case when discounttype = 1 then discount else 0 end),decimal(10,2)) as discountTTL,
+		convert(sum(case when discounttype = 2 then memDiscount else 0 end),decimal(10,2)) as memSpecial,
+		convert(sum(case when upc = '0000000008005' then total else 0 end),decimal(10,2)) as couponTotal,
+		convert(sum(case when upc = 'MEMCOUPON' then unitPrice else 0 end),decimal(10,2)) as memCoupon,
+		abs(sum(case when trans_subtype = 'MI' or trans_subtype = 'CX' then total else 0 end)) as chargeTotal,
+		sum(case when upc = 'Discount' then total else 0 end) as transDiscount,
+		sum(case when trans_type = 'T' then -1 * total else 0 end) as tenderTotal
+
+		from transArchive00
+		group by register_no, emp_no, trans_no, card_no, datetime
+./nightly.dtrans.php: Thu, 28 Jun 2012 01:10:01 -0400: CREATE transArchive00 LIKE core_trans.dtransactions
+./nightly.dtrans.php: Thu, 28 Jun 2012 01:10:01 -0400: INSERT INTO transArchive00 SELECT * FROM core_trans.dtransactions
+./nightly.dtrans.php: Thu, 28 Jun 2012 01:10:01 -0400: CREATE  view dlog00 as
+		select 
+		d.datetime as tdate, 
+		d.register_no, 
+		d.emp_no, 
+		d.trans_no, 
+		d.upc, 
+		CASE WHEN (d.trans_subtype IN ('CP','IC') OR d.upc like('%000000052')) then 'T' 
+			WHEN d.upc = 'DISCOUNT' then 'S' else d.trans_type end as trans_type, 
+		CASE WHEN d.upc = 'MAD Coupon' THEN 'MA' ELSe 
+		   case when d.upc like('%00000000052') then 'RR' else d.trans_subtype end end as trans_subtype, 
+		d.trans_status, 
+		d.department, 
+		d.quantity, 
+		d.unitPrice, 
+		d.total, 
+		d.tax, 
+		d.foodstamp, 
+		d.itemQtty, 
+		d.memType,
+		d.staff,
+		d.numflag,
+		d.charflag,
+		d.card_no, 
+		d.trans_id,
+		concat(convert(d.emp_no,char), '-', convert(d.register_no,char), '-',
+		convert(d.trans_no,char)) as trans_num
+
+		from transArchive00 as d
+		where d.trans_status not in ('D','X','Z') and d.emp_no not in (9999,56) and d.register_no  <> 99
+./nightly.dtrans.php: Thu, 28 Jun 2012 01:10:01 -0400: CREATE  view rp_dt_receipt_00 as 
+		select 
+		datetime,
+		register_no,
+		emp_no,
+		trans_no,
+		description,
+		case 
+			when voided = 5 
+				then 'Discount'
+			when trans_status = 'M'
+				then 'Mbr special'
+			when scale <> 0 and quantity <> 0 
+				then concat(convert(quantity,char), ' @ ', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity = 1
+				then concat(convert(volume,char), ' /', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity <> 1
+				then concat(convert(Quantity,char), ' @ ', convert(Volume,char), ' /', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and discounttype = 3
+				then concat(convert(ItemQtty,char), ' /', convert(UnitPrice,char))
+			when abs(itemQtty) > 1
+				then concat(convert(quantity,char), ' @ ', convert(unitPrice,char))	
+			when matched > 0
+				then '1 w/ vol adj'
+			else ''
+				
+		end
+		as comment,
+			total,
+
+		case 
+			when trans_status = 'V' 
+				then 'VD'
+			when trans_status = 'R'
+				then 'RF'
+			when tax <> 0 and foodstamp <> 0
+				then 'TF'
+			when tax <> 0 and foodstamp = 0
+				then 'T' 
+			when tax = 0 and foodstamp <> 0
+				then 'F'
+			when tax = 0 and foodstamp = 0
+				then '' 
+		end
+		as Status,
+		trans_type,
+		card_no as memberID,
+		unitPrice,
+		voided,
+		trans_id,
+		concat(convert(emp_no,char), '-', convert(register_no,char), '-', convert(trans_no,char)) as trans_num
+
+		from transArchive00
+		where voided <> 5 and UPC <> 'TAX' and UPC <> 'DISCOUNT'
+./nightly.dtrans.php: Thu, 28 Jun 2012 01:10:01 -0400: create  view rp_receipt_header_00 as
+		select
+		datetime as dateTimeStamp,
+		card_no as memberID,
+		concat(convert(emp_no,char), '-', convert(register_no,char), '-', convert(trans_no,char)) as trans_num,
+		register_no,
+		emp_no,
+		trans_no,
+		convert(sum(case when discounttype = 1 then discount else 0 end),decimal(10,2)) as discountTTL,
+		convert(sum(case when discounttype = 2 then memDiscount else 0 end),decimal(10,2)) as memSpecial,
+		convert(sum(case when upc = '0000000008005' then total else 0 end),decimal(10,2)) as couponTotal,
+		convert(sum(case when upc = 'MEMCOUPON' then unitPrice else 0 end),decimal(10,2)) as memCoupon,
+		abs(sum(case when trans_subtype = 'MI' or trans_subtype = 'CX' then total else 0 end)) as chargeTotal,
+		sum(case when upc = 'Discount' then total else 0 end) as transDiscount,
+		sum(case when trans_type = 'T' then -1 * total else 0 end) as tenderTotal
+
+		from transArchive00
+		group by register_no, emp_no, trans_no, card_no, datetime
+./nightly.dtrans.php: Fri, 29 Jun 2012 01:10:02 -0400: CREATE transArchive00 LIKE core_trans.dtransactions
+./nightly.dtrans.php: Fri, 29 Jun 2012 01:10:02 -0400: INSERT INTO transArchive00 SELECT * FROM core_trans.dtransactions
+./nightly.dtrans.php: Fri, 29 Jun 2012 01:10:02 -0400: CREATE  view dlog00 as
+		select 
+		d.datetime as tdate, 
+		d.register_no, 
+		d.emp_no, 
+		d.trans_no, 
+		d.upc, 
+		CASE WHEN (d.trans_subtype IN ('CP','IC') OR d.upc like('%000000052')) then 'T' 
+			WHEN d.upc = 'DISCOUNT' then 'S' else d.trans_type end as trans_type, 
+		CASE WHEN d.upc = 'MAD Coupon' THEN 'MA' ELSe 
+		   case when d.upc like('%00000000052') then 'RR' else d.trans_subtype end end as trans_subtype, 
+		d.trans_status, 
+		d.department, 
+		d.quantity, 
+		d.unitPrice, 
+		d.total, 
+		d.tax, 
+		d.foodstamp, 
+		d.itemQtty, 
+		d.memType,
+		d.staff,
+		d.numflag,
+		d.charflag,
+		d.card_no, 
+		d.trans_id,
+		concat(convert(d.emp_no,char), '-', convert(d.register_no,char), '-',
+		convert(d.trans_no,char)) as trans_num
+
+		from transArchive00 as d
+		where d.trans_status not in ('D','X','Z') and d.emp_no not in (9999,56) and d.register_no  <> 99
+./nightly.dtrans.php: Fri, 29 Jun 2012 01:10:02 -0400: CREATE  view rp_dt_receipt_00 as 
+		select 
+		datetime,
+		register_no,
+		emp_no,
+		trans_no,
+		description,
+		case 
+			when voided = 5 
+				then 'Discount'
+			when trans_status = 'M'
+				then 'Mbr special'
+			when scale <> 0 and quantity <> 0 
+				then concat(convert(quantity,char), ' @ ', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity = 1
+				then concat(convert(volume,char), ' /', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity <> 1
+				then concat(convert(Quantity,char), ' @ ', convert(Volume,char), ' /', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and discounttype = 3
+				then concat(convert(ItemQtty,char), ' /', convert(UnitPrice,char))
+			when abs(itemQtty) > 1
+				then concat(convert(quantity,char), ' @ ', convert(unitPrice,char))	
+			when matched > 0
+				then '1 w/ vol adj'
+			else ''
+				
+		end
+		as comment,
+			total,
+
+		case 
+			when trans_status = 'V' 
+				then 'VD'
+			when trans_status = 'R'
+				then 'RF'
+			when tax <> 0 and foodstamp <> 0
+				then 'TF'
+			when tax <> 0 and foodstamp = 0
+				then 'T' 
+			when tax = 0 and foodstamp <> 0
+				then 'F'
+			when tax = 0 and foodstamp = 0
+				then '' 
+		end
+		as Status,
+		trans_type,
+		card_no as memberID,
+		unitPrice,
+		voided,
+		trans_id,
+		concat(convert(emp_no,char), '-', convert(register_no,char), '-', convert(trans_no,char)) as trans_num
+
+		from transArchive00
+		where voided <> 5 and UPC <> 'TAX' and UPC <> 'DISCOUNT'
+./nightly.dtrans.php: Fri, 29 Jun 2012 01:10:02 -0400: create  view rp_receipt_header_00 as
+		select
+		datetime as dateTimeStamp,
+		card_no as memberID,
+		concat(convert(emp_no,char), '-', convert(register_no,char), '-', convert(trans_no,char)) as trans_num,
+		register_no,
+		emp_no,
+		trans_no,
+		convert(sum(case when discounttype = 1 then discount else 0 end),decimal(10,2)) as discountTTL,
+		convert(sum(case when discounttype = 2 then memDiscount else 0 end),decimal(10,2)) as memSpecial,
+		convert(sum(case when upc = '0000000008005' then total else 0 end),decimal(10,2)) as couponTotal,
+		convert(sum(case when upc = 'MEMCOUPON' then unitPrice else 0 end),decimal(10,2)) as memCoupon,
+		abs(sum(case when trans_subtype = 'MI' or trans_subtype = 'CX' then total else 0 end)) as chargeTotal,
+		sum(case when upc = 'Discount' then total else 0 end) as transDiscount,
+		sum(case when trans_type = 'T' then -1 * total else 0 end) as tenderTotal
+
+		from transArchive00
+		group by register_no, emp_no, trans_no, card_no, datetime
+./nightly.dtrans.php: Sat, 30 Jun 2012 01:10:02 -0400: CREATE transArchive00 LIKE core_trans.dtransactions
+./nightly.dtrans.php: Sat, 30 Jun 2012 01:10:02 -0400: INSERT INTO transArchive00 SELECT * FROM core_trans.dtransactions
+./nightly.dtrans.php: Sat, 30 Jun 2012 01:10:02 -0400: CREATE  view dlog00 as
+		select 
+		d.datetime as tdate, 
+		d.register_no, 
+		d.emp_no, 
+		d.trans_no, 
+		d.upc, 
+		CASE WHEN (d.trans_subtype IN ('CP','IC') OR d.upc like('%000000052')) then 'T' 
+			WHEN d.upc = 'DISCOUNT' then 'S' else d.trans_type end as trans_type, 
+		CASE WHEN d.upc = 'MAD Coupon' THEN 'MA' ELSe 
+		   case when d.upc like('%00000000052') then 'RR' else d.trans_subtype end end as trans_subtype, 
+		d.trans_status, 
+		d.department, 
+		d.quantity, 
+		d.unitPrice, 
+		d.total, 
+		d.tax, 
+		d.foodstamp, 
+		d.itemQtty, 
+		d.memType,
+		d.staff,
+		d.numflag,
+		d.charflag,
+		d.card_no, 
+		d.trans_id,
+		concat(convert(d.emp_no,char), '-', convert(d.register_no,char), '-',
+		convert(d.trans_no,char)) as trans_num
+
+		from transArchive00 as d
+		where d.trans_status not in ('D','X','Z') and d.emp_no not in (9999,56) and d.register_no  <> 99
+./nightly.dtrans.php: Sat, 30 Jun 2012 01:10:02 -0400: CREATE  view rp_dt_receipt_00 as 
+		select 
+		datetime,
+		register_no,
+		emp_no,
+		trans_no,
+		description,
+		case 
+			when voided = 5 
+				then 'Discount'
+			when trans_status = 'M'
+				then 'Mbr special'
+			when scale <> 0 and quantity <> 0 
+				then concat(convert(quantity,char), ' @ ', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity = 1
+				then concat(convert(volume,char), ' /', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity <> 1
+				then concat(convert(Quantity,char), ' @ ', convert(Volume,char), ' /', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and discounttype = 3
+				then concat(convert(ItemQtty,char), ' /', convert(UnitPrice,char))
+			when abs(itemQtty) > 1
+				then concat(convert(quantity,char), ' @ ', convert(unitPrice,char))	
+			when matched > 0
+				then '1 w/ vol adj'
+			else ''
+				
+		end
+		as comment,
+			total,
+
+		case 
+			when trans_status = 'V' 
+				then 'VD'
+			when trans_status = 'R'
+				then 'RF'
+			when tax <> 0 and foodstamp <> 0
+				then 'TF'
+			when tax <> 0 and foodstamp = 0
+				then 'T' 
+			when tax = 0 and foodstamp <> 0
+				then 'F'
+			when tax = 0 and foodstamp = 0
+				then '' 
+		end
+		as Status,
+		trans_type,
+		card_no as memberID,
+		unitPrice,
+		voided,
+		trans_id,
+		concat(convert(emp_no,char), '-', convert(register_no,char), '-', convert(trans_no,char)) as trans_num
+
+		from transArchive00
+		where voided <> 5 and UPC <> 'TAX' and UPC <> 'DISCOUNT'
+./nightly.dtrans.php: Sat, 30 Jun 2012 01:10:02 -0400: create  view rp_receipt_header_00 as
+		select
+		datetime as dateTimeStamp,
+		card_no as memberID,
+		concat(convert(emp_no,char), '-', convert(register_no,char), '-', convert(trans_no,char)) as trans_num,
+		register_no,
+		emp_no,
+		trans_no,
+		convert(sum(case when discounttype = 1 then discount else 0 end),decimal(10,2)) as discountTTL,
+		convert(sum(case when discounttype = 2 then memDiscount else 0 end),decimal(10,2)) as memSpecial,
+		convert(sum(case when upc = '0000000008005' then total else 0 end),decimal(10,2)) as couponTotal,
+		convert(sum(case when upc = 'MEMCOUPON' then unitPrice else 0 end),decimal(10,2)) as memCoupon,
+		abs(sum(case when trans_subtype = 'MI' or trans_subtype = 'CX' then total else 0 end)) as chargeTotal,
+		sum(case when upc = 'Discount' then total else 0 end) as transDiscount,
+		sum(case when trans_type = 'T' then -1 * total else 0 end) as tenderTotal
+
+		from transArchive00
+		group by register_no, emp_no, trans_no, card_no, datetime
+./nightly.dtrans.php: Sun, 01 Jul 2012 01:10:02 -0400: CREATE transArchive00 LIKE core_trans.dtransactions
+./nightly.dtrans.php: Sun, 01 Jul 2012 01:10:02 -0400: INSERT INTO transArchive00 SELECT * FROM core_trans.dtransactions
+./nightly.dtrans.php: Sun, 01 Jul 2012 01:10:02 -0400: CREATE  view dlog00 as
+		select 
+		d.datetime as tdate, 
+		d.register_no, 
+		d.emp_no, 
+		d.trans_no, 
+		d.upc, 
+		CASE WHEN (d.trans_subtype IN ('CP','IC') OR d.upc like('%000000052')) then 'T' 
+			WHEN d.upc = 'DISCOUNT' then 'S' else d.trans_type end as trans_type, 
+		CASE WHEN d.upc = 'MAD Coupon' THEN 'MA' ELSe 
+		   case when d.upc like('%00000000052') then 'RR' else d.trans_subtype end end as trans_subtype, 
+		d.trans_status, 
+		d.department, 
+		d.quantity, 
+		d.unitPrice, 
+		d.total, 
+		d.tax, 
+		d.foodstamp, 
+		d.itemQtty, 
+		d.memType,
+		d.staff,
+		d.numflag,
+		d.charflag,
+		d.card_no, 
+		d.trans_id,
+		concat(convert(d.emp_no,char), '-', convert(d.register_no,char), '-',
+		convert(d.trans_no,char)) as trans_num
+
+		from transArchive00 as d
+		where d.trans_status not in ('D','X','Z') and d.emp_no not in (9999,56) and d.register_no  <> 99
+./nightly.dtrans.php: Sun, 01 Jul 2012 01:10:02 -0400: CREATE  view rp_dt_receipt_00 as 
+		select 
+		datetime,
+		register_no,
+		emp_no,
+		trans_no,
+		description,
+		case 
+			when voided = 5 
+				then 'Discount'
+			when trans_status = 'M'
+				then 'Mbr special'
+			when scale <> 0 and quantity <> 0 
+				then concat(convert(quantity,char), ' @ ', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity = 1
+				then concat(convert(volume,char), ' /', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity <> 1
+				then concat(convert(Quantity,char), ' @ ', convert(Volume,char), ' /', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and discounttype = 3
+				then concat(convert(ItemQtty,char), ' /', convert(UnitPrice,char))
+			when abs(itemQtty) > 1
+				then concat(convert(quantity,char), ' @ ', convert(unitPrice,char))	
+			when matched > 0
+				then '1 w/ vol adj'
+			else ''
+				
+		end
+		as comment,
+			total,
+
+		case 
+			when trans_status = 'V' 
+				then 'VD'
+			when trans_status = 'R'
+				then 'RF'
+			when tax <> 0 and foodstamp <> 0
+				then 'TF'
+			when tax <> 0 and foodstamp = 0
+				then 'T' 
+			when tax = 0 and foodstamp <> 0
+				then 'F'
+			when tax = 0 and foodstamp = 0
+				then '' 
+		end
+		as Status,
+		trans_type,
+		card_no as memberID,
+		unitPrice,
+		voided,
+		trans_id,
+		concat(convert(emp_no,char), '-', convert(register_no,char), '-', convert(trans_no,char)) as trans_num
+
+		from transArchive00
+		where voided <> 5 and UPC <> 'TAX' and UPC <> 'DISCOUNT'
+./nightly.dtrans.php: Sun, 01 Jul 2012 01:10:02 -0400: create  view rp_receipt_header_00 as
+		select
+		datetime as dateTimeStamp,
+		card_no as memberID,
+		concat(convert(emp_no,char), '-', convert(register_no,char), '-', convert(trans_no,char)) as trans_num,
+		register_no,
+		emp_no,
+		trans_no,
+		convert(sum(case when discounttype = 1 then discount else 0 end),decimal(10,2)) as discountTTL,
+		convert(sum(case when discounttype = 2 then memDiscount else 0 end),decimal(10,2)) as memSpecial,
+		convert(sum(case when upc = '0000000008005' then total else 0 end),decimal(10,2)) as couponTotal,
+		convert(sum(case when upc = 'MEMCOUPON' then unitPrice else 0 end),decimal(10,2)) as memCoupon,
+		abs(sum(case when trans_subtype = 'MI' or trans_subtype = 'CX' then total else 0 end)) as chargeTotal,
+		sum(case when upc = 'Discount' then total else 0 end) as transDiscount,
+		sum(case when trans_type = 'T' then -1 * total else 0 end) as tenderTotal
+
+		from transArchive00
+		group by register_no, emp_no, trans_no, card_no, datetime
+./nightly.dtrans.php: Mon, 02 Jul 2012 01:10:02 -0400: CREATE transArchive00 LIKE core_trans.dtransactions
+./nightly.dtrans.php: Mon, 02 Jul 2012 01:10:02 -0400: INSERT INTO transArchive00 SELECT * FROM core_trans.dtransactions
+./nightly.dtrans.php: Mon, 02 Jul 2012 01:10:02 -0400: CREATE  view dlog00 as
+		select 
+		d.datetime as tdate, 
+		d.register_no, 
+		d.emp_no, 
+		d.trans_no, 
+		d.upc, 
+		CASE WHEN (d.trans_subtype IN ('CP','IC') OR d.upc like('%000000052')) then 'T' 
+			WHEN d.upc = 'DISCOUNT' then 'S' else d.trans_type end as trans_type, 
+		CASE WHEN d.upc = 'MAD Coupon' THEN 'MA' ELSe 
+		   case when d.upc like('%00000000052') then 'RR' else d.trans_subtype end end as trans_subtype, 
+		d.trans_status, 
+		d.department, 
+		d.quantity, 
+		d.unitPrice, 
+		d.total, 
+		d.tax, 
+		d.foodstamp, 
+		d.itemQtty, 
+		d.memType,
+		d.staff,
+		d.numflag,
+		d.charflag,
+		d.card_no, 
+		d.trans_id,
+		concat(convert(d.emp_no,char), '-', convert(d.register_no,char), '-',
+		convert(d.trans_no,char)) as trans_num
+
+		from transArchive00 as d
+		where d.trans_status not in ('D','X','Z') and d.emp_no not in (9999,56) and d.register_no  <> 99
+./nightly.dtrans.php: Mon, 02 Jul 2012 01:10:02 -0400: CREATE  view rp_dt_receipt_00 as 
+		select 
+		datetime,
+		register_no,
+		emp_no,
+		trans_no,
+		description,
+		case 
+			when voided = 5 
+				then 'Discount'
+			when trans_status = 'M'
+				then 'Mbr special'
+			when scale <> 0 and quantity <> 0 
+				then concat(convert(quantity,char), ' @ ', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity = 1
+				then concat(convert(volume,char), ' /', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity <> 1
+				then concat(convert(Quantity,char), ' @ ', convert(Volume,char), ' /', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and discounttype = 3
+				then concat(convert(ItemQtty,char), ' /', convert(UnitPrice,char))
+			when abs(itemQtty) > 1
+				then concat(convert(quantity,char), ' @ ', convert(unitPrice,char))	
+			when matched > 0
+				then '1 w/ vol adj'
+			else ''
+				
+		end
+		as comment,
+			total,
+
+		case 
+			when trans_status = 'V' 
+				then 'VD'
+			when trans_status = 'R'
+				then 'RF'
+			when tax <> 0 and foodstamp <> 0
+				then 'TF'
+			when tax <> 0 and foodstamp = 0
+				then 'T' 
+			when tax = 0 and foodstamp <> 0
+				then 'F'
+			when tax = 0 and foodstamp = 0
+				then '' 
+		end
+		as Status,
+		trans_type,
+		card_no as memberID,
+		unitPrice,
+		voided,
+		trans_id,
+		concat(convert(emp_no,char), '-', convert(register_no,char), '-', convert(trans_no,char)) as trans_num
+
+		from transArchive00
+		where voided <> 5 and UPC <> 'TAX' and UPC <> 'DISCOUNT'
+./nightly.dtrans.php: Mon, 02 Jul 2012 01:10:02 -0400: create  view rp_receipt_header_00 as
+		select
+		datetime as dateTimeStamp,
+		card_no as memberID,
+		concat(convert(emp_no,char), '-', convert(register_no,char), '-', convert(trans_no,char)) as trans_num,
+		register_no,
+		emp_no,
+		trans_no,
+		convert(sum(case when discounttype = 1 then discount else 0 end),decimal(10,2)) as discountTTL,
+		convert(sum(case when discounttype = 2 then memDiscount else 0 end),decimal(10,2)) as memSpecial,
+		convert(sum(case when upc = '0000000008005' then total else 0 end),decimal(10,2)) as couponTotal,
+		convert(sum(case when upc = 'MEMCOUPON' then unitPrice else 0 end),decimal(10,2)) as memCoupon,
+		abs(sum(case when trans_subtype = 'MI' or trans_subtype = 'CX' then total else 0 end)) as chargeTotal,
+		sum(case when upc = 'Discount' then total else 0 end) as transDiscount,
+		sum(case when trans_type = 'T' then -1 * total else 0 end) as tenderTotal
+
+		from transArchive00
+		group by register_no, emp_no, trans_no, card_no, datetime
+./nightly.dtrans.php: Tue, 03 Jul 2012 01:10:01 -0400: CREATE transArchive00 LIKE core_trans.dtransactions
+./nightly.dtrans.php: Tue, 03 Jul 2012 01:10:01 -0400: INSERT INTO transArchive00 SELECT * FROM core_trans.dtransactions
+./nightly.dtrans.php: Tue, 03 Jul 2012 01:10:01 -0400: CREATE  view dlog00 as
+		select 
+		d.datetime as tdate, 
+		d.register_no, 
+		d.emp_no, 
+		d.trans_no, 
+		d.upc, 
+		CASE WHEN (d.trans_subtype IN ('CP','IC') OR d.upc like('%000000052')) then 'T' 
+			WHEN d.upc = 'DISCOUNT' then 'S' else d.trans_type end as trans_type, 
+		CASE WHEN d.upc = 'MAD Coupon' THEN 'MA' ELSe 
+		   case when d.upc like('%00000000052') then 'RR' else d.trans_subtype end end as trans_subtype, 
+		d.trans_status, 
+		d.department, 
+		d.quantity, 
+		d.unitPrice, 
+		d.total, 
+		d.tax, 
+		d.foodstamp, 
+		d.itemQtty, 
+		d.memType,
+		d.staff,
+		d.numflag,
+		d.charflag,
+		d.card_no, 
+		d.trans_id,
+		concat(convert(d.emp_no,char), '-', convert(d.register_no,char), '-',
+		convert(d.trans_no,char)) as trans_num
+
+		from transArchive00 as d
+		where d.trans_status not in ('D','X','Z') and d.emp_no not in (9999,56) and d.register_no  <> 99
+./nightly.dtrans.php: Tue, 03 Jul 2012 01:10:01 -0400: CREATE  view rp_dt_receipt_00 as 
+		select 
+		datetime,
+		register_no,
+		emp_no,
+		trans_no,
+		description,
+		case 
+			when voided = 5 
+				then 'Discount'
+			when trans_status = 'M'
+				then 'Mbr special'
+			when scale <> 0 and quantity <> 0 
+				then concat(convert(quantity,char), ' @ ', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity = 1
+				then concat(convert(volume,char), ' /', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity <> 1
+				then concat(convert(Quantity,char), ' @ ', convert(Volume,char), ' /', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and discounttype = 3
+				then concat(convert(ItemQtty,char), ' /', convert(UnitPrice,char))
+			when abs(itemQtty) > 1
+				then concat(convert(quantity,char), ' @ ', convert(unitPrice,char))	
+			when matched > 0
+				then '1 w/ vol adj'
+			else ''
+				
+		end
+		as comment,
+			total,
+
+		case 
+			when trans_status = 'V' 
+				then 'VD'
+			when trans_status = 'R'
+				then 'RF'
+			when tax <> 0 and foodstamp <> 0
+				then 'TF'
+			when tax <> 0 and foodstamp = 0
+				then 'T' 
+			when tax = 0 and foodstamp <> 0
+				then 'F'
+			when tax = 0 and foodstamp = 0
+				then '' 
+		end
+		as Status,
+		trans_type,
+		card_no as memberID,
+		unitPrice,
+		voided,
+		trans_id,
+		concat(convert(emp_no,char), '-', convert(register_no,char), '-', convert(trans_no,char)) as trans_num
+
+		from transArchive00
+		where voided <> 5 and UPC <> 'TAX' and UPC <> 'DISCOUNT'
+./nightly.dtrans.php: Tue, 03 Jul 2012 01:10:01 -0400: create  view rp_receipt_header_00 as
+		select
+		datetime as dateTimeStamp,
+		card_no as memberID,
+		concat(convert(emp_no,char), '-', convert(register_no,char), '-', convert(trans_no,char)) as trans_num,
+		register_no,
+		emp_no,
+		trans_no,
+		convert(sum(case when discounttype = 1 then discount else 0 end),decimal(10,2)) as discountTTL,
+		convert(sum(case when discounttype = 2 then memDiscount else 0 end),decimal(10,2)) as memSpecial,
+		convert(sum(case when upc = '0000000008005' then total else 0 end),decimal(10,2)) as couponTotal,
+		convert(sum(case when upc = 'MEMCOUPON' then unitPrice else 0 end),decimal(10,2)) as memCoupon,
+		abs(sum(case when trans_subtype = 'MI' or trans_subtype = 'CX' then total else 0 end)) as chargeTotal,
+		sum(case when upc = 'Discount' then total else 0 end) as transDiscount,
+		sum(case when trans_type = 'T' then -1 * total else 0 end) as tenderTotal
+
+		from transArchive00
+		group by register_no, emp_no, trans_no, card_no, datetime
+./nightly.dtrans.php: Wed, 04 Jul 2012 01:10:01 -0400: CREATE transArchive00 LIKE core_trans.dtransactions
+./nightly.dtrans.php: Wed, 04 Jul 2012 01:10:01 -0400: INSERT INTO transArchive00 SELECT * FROM core_trans.dtransactions
+./nightly.dtrans.php: Wed, 04 Jul 2012 01:10:01 -0400: CREATE  view dlog00 as
+		select 
+		d.datetime as tdate, 
+		d.register_no, 
+		d.emp_no, 
+		d.trans_no, 
+		d.upc, 
+		CASE WHEN (d.trans_subtype IN ('CP','IC') OR d.upc like('%000000052')) then 'T' 
+			WHEN d.upc = 'DISCOUNT' then 'S' else d.trans_type end as trans_type, 
+		CASE WHEN d.upc = 'MAD Coupon' THEN 'MA' ELSe 
+		   case when d.upc like('%00000000052') then 'RR' else d.trans_subtype end end as trans_subtype, 
+		d.trans_status, 
+		d.department, 
+		d.quantity, 
+		d.unitPrice, 
+		d.total, 
+		d.tax, 
+		d.foodstamp, 
+		d.itemQtty, 
+		d.memType,
+		d.staff,
+		d.numflag,
+		d.charflag,
+		d.card_no, 
+		d.trans_id,
+		concat(convert(d.emp_no,char), '-', convert(d.register_no,char), '-',
+		convert(d.trans_no,char)) as trans_num
+
+		from transArchive00 as d
+		where d.trans_status not in ('D','X','Z') and d.emp_no not in (9999,56) and d.register_no  <> 99
+./nightly.dtrans.php: Wed, 04 Jul 2012 01:10:01 -0400: CREATE  view rp_dt_receipt_00 as 
+		select 
+		datetime,
+		register_no,
+		emp_no,
+		trans_no,
+		description,
+		case 
+			when voided = 5 
+				then 'Discount'
+			when trans_status = 'M'
+				then 'Mbr special'
+			when scale <> 0 and quantity <> 0 
+				then concat(convert(quantity,char), ' @ ', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity = 1
+				then concat(convert(volume,char), ' /', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity <> 1
+				then concat(convert(Quantity,char), ' @ ', convert(Volume,char), ' /', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and discounttype = 3
+				then concat(convert(ItemQtty,char), ' /', convert(UnitPrice,char))
+			when abs(itemQtty) > 1
+				then concat(convert(quantity,char), ' @ ', convert(unitPrice,char))	
+			when matched > 0
+				then '1 w/ vol adj'
+			else ''
+				
+		end
+		as comment,
+			total,
+
+		case 
+			when trans_status = 'V' 
+				then 'VD'
+			when trans_status = 'R'
+				then 'RF'
+			when tax <> 0 and foodstamp <> 0
+				then 'TF'
+			when tax <> 0 and foodstamp = 0
+				then 'T' 
+			when tax = 0 and foodstamp <> 0
+				then 'F'
+			when tax = 0 and foodstamp = 0
+				then '' 
+		end
+		as Status,
+		trans_type,
+		card_no as memberID,
+		unitPrice,
+		voided,
+		trans_id,
+		concat(convert(emp_no,char), '-', convert(register_no,char), '-', convert(trans_no,char)) as trans_num
+
+		from transArchive00
+		where voided <> 5 and UPC <> 'TAX' and UPC <> 'DISCOUNT'
+./nightly.dtrans.php: Wed, 04 Jul 2012 01:10:01 -0400: create  view rp_receipt_header_00 as
+		select
+		datetime as dateTimeStamp,
+		card_no as memberID,
+		concat(convert(emp_no,char), '-', convert(register_no,char), '-', convert(trans_no,char)) as trans_num,
+		register_no,
+		emp_no,
+		trans_no,
+		convert(sum(case when discounttype = 1 then discount else 0 end),decimal(10,2)) as discountTTL,
+		convert(sum(case when discounttype = 2 then memDiscount else 0 end),decimal(10,2)) as memSpecial,
+		convert(sum(case when upc = '0000000008005' then total else 0 end),decimal(10,2)) as couponTotal,
+		convert(sum(case when upc = 'MEMCOUPON' then unitPrice else 0 end),decimal(10,2)) as memCoupon,
+		abs(sum(case when trans_subtype = 'MI' or trans_subtype = 'CX' then total else 0 end)) as chargeTotal,
+		sum(case when upc = 'Discount' then total else 0 end) as transDiscount,
+		sum(case when trans_type = 'T' then -1 * total else 0 end) as tenderTotal
+
+		from transArchive00
+		group by register_no, emp_no, trans_no, card_no, datetime
+./nightly.dtrans.php: Thu, 05 Jul 2012 01:10:02 -0400: CREATE transArchive00 LIKE core_trans.dtransactions
+./nightly.dtrans.php: Thu, 05 Jul 2012 01:10:02 -0400: INSERT INTO transArchive00 SELECT * FROM core_trans.dtransactions
+./nightly.dtrans.php: Thu, 05 Jul 2012 01:10:02 -0400: CREATE  view dlog00 as
+		select 
+		d.datetime as tdate, 
+		d.register_no, 
+		d.emp_no, 
+		d.trans_no, 
+		d.upc, 
+		CASE WHEN (d.trans_subtype IN ('CP','IC') OR d.upc like('%000000052')) then 'T' 
+			WHEN d.upc = 'DISCOUNT' then 'S' else d.trans_type end as trans_type, 
+		CASE WHEN d.upc = 'MAD Coupon' THEN 'MA' ELSe 
+		   case when d.upc like('%00000000052') then 'RR' else d.trans_subtype end end as trans_subtype, 
+		d.trans_status, 
+		d.department, 
+		d.quantity, 
+		d.unitPrice, 
+		d.total, 
+		d.tax, 
+		d.foodstamp, 
+		d.itemQtty, 
+		d.memType,
+		d.staff,
+		d.numflag,
+		d.charflag,
+		d.card_no, 
+		d.trans_id,
+		concat(convert(d.emp_no,char), '-', convert(d.register_no,char), '-',
+		convert(d.trans_no,char)) as trans_num
+
+		from transArchive00 as d
+		where d.trans_status not in ('D','X','Z') and d.emp_no not in (9999,56) and d.register_no  <> 99
+./nightly.dtrans.php: Thu, 05 Jul 2012 01:10:02 -0400: CREATE  view rp_dt_receipt_00 as 
+		select 
+		datetime,
+		register_no,
+		emp_no,
+		trans_no,
+		description,
+		case 
+			when voided = 5 
+				then 'Discount'
+			when trans_status = 'M'
+				then 'Mbr special'
+			when scale <> 0 and quantity <> 0 
+				then concat(convert(quantity,char), ' @ ', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity = 1
+				then concat(convert(volume,char), ' /', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity <> 1
+				then concat(convert(Quantity,char), ' @ ', convert(Volume,char), ' /', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and discounttype = 3
+				then concat(convert(ItemQtty,char), ' /', convert(UnitPrice,char))
+			when abs(itemQtty) > 1
+				then concat(convert(quantity,char), ' @ ', convert(unitPrice,char))	
+			when matched > 0
+				then '1 w/ vol adj'
+			else ''
+				
+		end
+		as comment,
+			total,
+
+		case 
+			when trans_status = 'V' 
+				then 'VD'
+			when trans_status = 'R'
+				then 'RF'
+			when tax <> 0 and foodstamp <> 0
+				then 'TF'
+			when tax <> 0 and foodstamp = 0
+				then 'T' 
+			when tax = 0 and foodstamp <> 0
+				then 'F'
+			when tax = 0 and foodstamp = 0
+				then '' 
+		end
+		as Status,
+		trans_type,
+		card_no as memberID,
+		unitPrice,
+		voided,
+		trans_id,
+		concat(convert(emp_no,char), '-', convert(register_no,char), '-', convert(trans_no,char)) as trans_num
+
+		from transArchive00
+		where voided <> 5 and UPC <> 'TAX' and UPC <> 'DISCOUNT'
+./nightly.dtrans.php: Thu, 05 Jul 2012 01:10:02 -0400: create  view rp_receipt_header_00 as
+		select
+		datetime as dateTimeStamp,
+		card_no as memberID,
+		concat(convert(emp_no,char), '-', convert(register_no,char), '-', convert(trans_no,char)) as trans_num,
+		register_no,
+		emp_no,
+		trans_no,
+		convert(sum(case when discounttype = 1 then discount else 0 end),decimal(10,2)) as discountTTL,
+		convert(sum(case when discounttype = 2 then memDiscount else 0 end),decimal(10,2)) as memSpecial,
+		convert(sum(case when upc = '0000000008005' then total else 0 end),decimal(10,2)) as couponTotal,
+		convert(sum(case when upc = 'MEMCOUPON' then unitPrice else 0 end),decimal(10,2)) as memCoupon,
+		abs(sum(case when trans_subtype = 'MI' or trans_subtype = 'CX' then total else 0 end)) as chargeTotal,
+		sum(case when upc = 'Discount' then total else 0 end) as transDiscount,
+		sum(case when trans_type = 'T' then -1 * total else 0 end) as tenderTotal
+
+		from transArchive00
+		group by register_no, emp_no, trans_no, card_no, datetime
+./nightly.dtrans.php: Fri, 06 Jul 2012 01:10:01 -0400: CREATE transArchive00 LIKE core_trans.dtransactions
+./nightly.dtrans.php: Fri, 06 Jul 2012 01:10:01 -0400: INSERT INTO transArchive00 SELECT * FROM core_trans.dtransactions
+./nightly.dtrans.php: Fri, 06 Jul 2012 01:10:01 -0400: CREATE  view dlog00 as
+		select 
+		d.datetime as tdate, 
+		d.register_no, 
+		d.emp_no, 
+		d.trans_no, 
+		d.upc, 
+		CASE WHEN (d.trans_subtype IN ('CP','IC') OR d.upc like('%000000052')) then 'T' 
+			WHEN d.upc = 'DISCOUNT' then 'S' else d.trans_type end as trans_type, 
+		CASE WHEN d.upc = 'MAD Coupon' THEN 'MA' ELSe 
+		   case when d.upc like('%00000000052') then 'RR' else d.trans_subtype end end as trans_subtype, 
+		d.trans_status, 
+		d.department, 
+		d.quantity, 
+		d.unitPrice, 
+		d.total, 
+		d.tax, 
+		d.foodstamp, 
+		d.itemQtty, 
+		d.memType,
+		d.staff,
+		d.numflag,
+		d.charflag,
+		d.card_no, 
+		d.trans_id,
+		concat(convert(d.emp_no,char), '-', convert(d.register_no,char), '-',
+		convert(d.trans_no,char)) as trans_num
+
+		from transArchive00 as d
+		where d.trans_status not in ('D','X','Z') and d.emp_no not in (9999,56) and d.register_no  <> 99
+./nightly.dtrans.php: Fri, 06 Jul 2012 01:10:01 -0400: CREATE  view rp_dt_receipt_00 as 
+		select 
+		datetime,
+		register_no,
+		emp_no,
+		trans_no,
+		description,
+		case 
+			when voided = 5 
+				then 'Discount'
+			when trans_status = 'M'
+				then 'Mbr special'
+			when scale <> 0 and quantity <> 0 
+				then concat(convert(quantity,char), ' @ ', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity = 1
+				then concat(convert(volume,char), ' /', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity <> 1
+				then concat(convert(Quantity,char), ' @ ', convert(Volume,char), ' /', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and discounttype = 3
+				then concat(convert(ItemQtty,char), ' /', convert(UnitPrice,char))
+			when abs(itemQtty) > 1
+				then concat(convert(quantity,char), ' @ ', convert(unitPrice,char))	
+			when matched > 0
+				then '1 w/ vol adj'
+			else ''
+				
+		end
+		as comment,
+			total,
+
+		case 
+			when trans_status = 'V' 
+				then 'VD'
+			when trans_status = 'R'
+				then 'RF'
+			when tax <> 0 and foodstamp <> 0
+				then 'TF'
+			when tax <> 0 and foodstamp = 0
+				then 'T' 
+			when tax = 0 and foodstamp <> 0
+				then 'F'
+			when tax = 0 and foodstamp = 0
+				then '' 
+		end
+		as Status,
+		trans_type,
+		card_no as memberID,
+		unitPrice,
+		voided,
+		trans_id,
+		concat(convert(emp_no,char), '-', convert(register_no,char), '-', convert(trans_no,char)) as trans_num
+
+		from transArchive00
+		where voided <> 5 and UPC <> 'TAX' and UPC <> 'DISCOUNT'
+./nightly.dtrans.php: Fri, 06 Jul 2012 01:10:01 -0400: create  view rp_receipt_header_00 as
+		select
+		datetime as dateTimeStamp,
+		card_no as memberID,
+		concat(convert(emp_no,char), '-', convert(register_no,char), '-', convert(trans_no,char)) as trans_num,
+		register_no,
+		emp_no,
+		trans_no,
+		convert(sum(case when discounttype = 1 then discount else 0 end),decimal(10,2)) as discountTTL,
+		convert(sum(case when discounttype = 2 then memDiscount else 0 end),decimal(10,2)) as memSpecial,
+		convert(sum(case when upc = '0000000008005' then total else 0 end),decimal(10,2)) as couponTotal,
+		convert(sum(case when upc = 'MEMCOUPON' then unitPrice else 0 end),decimal(10,2)) as memCoupon,
+		abs(sum(case when trans_subtype = 'MI' or trans_subtype = 'CX' then total else 0 end)) as chargeTotal,
+		sum(case when upc = 'Discount' then total else 0 end) as transDiscount,
+		sum(case when trans_type = 'T' then -1 * total else 0 end) as tenderTotal
+
+		from transArchive00
+		group by register_no, emp_no, trans_no, card_no, datetime
+./nightly.dtrans.php: Sat, 07 Jul 2012 01:10:02 -0400: CREATE transArchive00 LIKE core_trans.dtransactions
+./nightly.dtrans.php: Sat, 07 Jul 2012 01:10:02 -0400: INSERT INTO transArchive00 SELECT * FROM core_trans.dtransactions
+./nightly.dtrans.php: Sat, 07 Jul 2012 01:10:02 -0400: CREATE  view dlog00 as
+		select 
+		d.datetime as tdate, 
+		d.register_no, 
+		d.emp_no, 
+		d.trans_no, 
+		d.upc, 
+		CASE WHEN (d.trans_subtype IN ('CP','IC') OR d.upc like('%000000052')) then 'T' 
+			WHEN d.upc = 'DISCOUNT' then 'S' else d.trans_type end as trans_type, 
+		CASE WHEN d.upc = 'MAD Coupon' THEN 'MA' ELSe 
+		   case when d.upc like('%00000000052') then 'RR' else d.trans_subtype end end as trans_subtype, 
+		d.trans_status, 
+		d.department, 
+		d.quantity, 
+		d.unitPrice, 
+		d.total, 
+		d.tax, 
+		d.foodstamp, 
+		d.itemQtty, 
+		d.memType,
+		d.staff,
+		d.numflag,
+		d.charflag,
+		d.card_no, 
+		d.trans_id,
+		concat(convert(d.emp_no,char), '-', convert(d.register_no,char), '-',
+		convert(d.trans_no,char)) as trans_num
+
+		from transArchive00 as d
+		where d.trans_status not in ('D','X','Z') and d.emp_no not in (9999,56) and d.register_no  <> 99
+./nightly.dtrans.php: Sat, 07 Jul 2012 01:10:02 -0400: CREATE  view rp_dt_receipt_00 as 
+		select 
+		datetime,
+		register_no,
+		emp_no,
+		trans_no,
+		description,
+		case 
+			when voided = 5 
+				then 'Discount'
+			when trans_status = 'M'
+				then 'Mbr special'
+			when scale <> 0 and quantity <> 0 
+				then concat(convert(quantity,char), ' @ ', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity = 1
+				then concat(convert(volume,char), ' /', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity <> 1
+				then concat(convert(Quantity,char), ' @ ', convert(Volume,char), ' /', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and discounttype = 3
+				then concat(convert(ItemQtty,char), ' /', convert(UnitPrice,char))
+			when abs(itemQtty) > 1
+				then concat(convert(quantity,char), ' @ ', convert(unitPrice,char))	
+			when matched > 0
+				then '1 w/ vol adj'
+			else ''
+				
+		end
+		as comment,
+			total,
+
+		case 
+			when trans_status = 'V' 
+				then 'VD'
+			when trans_status = 'R'
+				then 'RF'
+			when tax <> 0 and foodstamp <> 0
+				then 'TF'
+			when tax <> 0 and foodstamp = 0
+				then 'T' 
+			when tax = 0 and foodstamp <> 0
+				then 'F'
+			when tax = 0 and foodstamp = 0
+				then '' 
+		end
+		as Status,
+		trans_type,
+		card_no as memberID,
+		unitPrice,
+		voided,
+		trans_id,
+		concat(convert(emp_no,char), '-', convert(register_no,char), '-', convert(trans_no,char)) as trans_num
+
+		from transArchive00
+		where voided <> 5 and UPC <> 'TAX' and UPC <> 'DISCOUNT'
+./nightly.dtrans.php: Sat, 07 Jul 2012 01:10:02 -0400: create  view rp_receipt_header_00 as
+		select
+		datetime as dateTimeStamp,
+		card_no as memberID,
+		concat(convert(emp_no,char), '-', convert(register_no,char), '-', convert(trans_no,char)) as trans_num,
+		register_no,
+		emp_no,
+		trans_no,
+		convert(sum(case when discounttype = 1 then discount else 0 end),decimal(10,2)) as discountTTL,
+		convert(sum(case when discounttype = 2 then memDiscount else 0 end),decimal(10,2)) as memSpecial,
+		convert(sum(case when upc = '0000000008005' then total else 0 end),decimal(10,2)) as couponTotal,
+		convert(sum(case when upc = 'MEMCOUPON' then unitPrice else 0 end),decimal(10,2)) as memCoupon,
+		abs(sum(case when trans_subtype = 'MI' or trans_subtype = 'CX' then total else 0 end)) as chargeTotal,
+		sum(case when upc = 'Discount' then total else 0 end) as transDiscount,
+		sum(case when trans_type = 'T' then -1 * total else 0 end) as tenderTotal
+
+		from transArchive00
+		group by register_no, emp_no, trans_no, card_no, datetime
+./nightly.dtrans.php: Sun, 08 Jul 2012 01:10:01 -0400: CREATE transArchive00 LIKE core_trans.dtransactions
+./nightly.dtrans.php: Sun, 08 Jul 2012 01:10:01 -0400: INSERT INTO transArchive00 SELECT * FROM core_trans.dtransactions
+./nightly.dtrans.php: Sun, 08 Jul 2012 01:10:01 -0400: CREATE  view dlog00 as
+		select 
+		d.datetime as tdate, 
+		d.register_no, 
+		d.emp_no, 
+		d.trans_no, 
+		d.upc, 
+		CASE WHEN (d.trans_subtype IN ('CP','IC') OR d.upc like('%000000052')) then 'T' 
+			WHEN d.upc = 'DISCOUNT' then 'S' else d.trans_type end as trans_type, 
+		CASE WHEN d.upc = 'MAD Coupon' THEN 'MA' ELSe 
+		   case when d.upc like('%00000000052') then 'RR' else d.trans_subtype end end as trans_subtype, 
+		d.trans_status, 
+		d.department, 
+		d.quantity, 
+		d.unitPrice, 
+		d.total, 
+		d.tax, 
+		d.foodstamp, 
+		d.itemQtty, 
+		d.memType,
+		d.staff,
+		d.numflag,
+		d.charflag,
+		d.card_no, 
+		d.trans_id,
+		concat(convert(d.emp_no,char), '-', convert(d.register_no,char), '-',
+		convert(d.trans_no,char)) as trans_num
+
+		from transArchive00 as d
+		where d.trans_status not in ('D','X','Z') and d.emp_no not in (9999,56) and d.register_no  <> 99
+./nightly.dtrans.php: Sun, 08 Jul 2012 01:10:01 -0400: CREATE  view rp_dt_receipt_00 as 
+		select 
+		datetime,
+		register_no,
+		emp_no,
+		trans_no,
+		description,
+		case 
+			when voided = 5 
+				then 'Discount'
+			when trans_status = 'M'
+				then 'Mbr special'
+			when scale <> 0 and quantity <> 0 
+				then concat(convert(quantity,char), ' @ ', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity = 1
+				then concat(convert(volume,char), ' /', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity <> 1
+				then concat(convert(Quantity,char), ' @ ', convert(Volume,char), ' /', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and discounttype = 3
+				then concat(convert(ItemQtty,char), ' /', convert(UnitPrice,char))
+			when abs(itemQtty) > 1
+				then concat(convert(quantity,char), ' @ ', convert(unitPrice,char))	
+			when matched > 0
+				then '1 w/ vol adj'
+			else ''
+				
+		end
+		as comment,
+			total,
+
+		case 
+			when trans_status = 'V' 
+				then 'VD'
+			when trans_status = 'R'
+				then 'RF'
+			when tax <> 0 and foodstamp <> 0
+				then 'TF'
+			when tax <> 0 and foodstamp = 0
+				then 'T' 
+			when tax = 0 and foodstamp <> 0
+				then 'F'
+			when tax = 0 and foodstamp = 0
+				then '' 
+		end
+		as Status,
+		trans_type,
+		card_no as memberID,
+		unitPrice,
+		voided,
+		trans_id,
+		concat(convert(emp_no,char), '-', convert(register_no,char), '-', convert(trans_no,char)) as trans_num
+
+		from transArchive00
+		where voided <> 5 and UPC <> 'TAX' and UPC <> 'DISCOUNT'
+./nightly.dtrans.php: Sun, 08 Jul 2012 01:10:01 -0400: create  view rp_receipt_header_00 as
+		select
+		datetime as dateTimeStamp,
+		card_no as memberID,
+		concat(convert(emp_no,char), '-', convert(register_no,char), '-', convert(trans_no,char)) as trans_num,
+		register_no,
+		emp_no,
+		trans_no,
+		convert(sum(case when discounttype = 1 then discount else 0 end),decimal(10,2)) as discountTTL,
+		convert(sum(case when discounttype = 2 then memDiscount else 0 end),decimal(10,2)) as memSpecial,
+		convert(sum(case when upc = '0000000008005' then total else 0 end),decimal(10,2)) as couponTotal,
+		convert(sum(case when upc = 'MEMCOUPON' then unitPrice else 0 end),decimal(10,2)) as memCoupon,
+		abs(sum(case when trans_subtype = 'MI' or trans_subtype = 'CX' then total else 0 end)) as chargeTotal,
+		sum(case when upc = 'Discount' then total else 0 end) as transDiscount,
+		sum(case when trans_type = 'T' then -1 * total else 0 end) as tenderTotal
+
+		from transArchive00
+		group by register_no, emp_no, trans_no, card_no, datetime
+./nightly.dtrans.php: Mon, 09 Jul 2012 01:10:01 -0400: CREATE transArchive00 LIKE core_trans.dtransactions
+./nightly.dtrans.php: Mon, 09 Jul 2012 01:10:01 -0400: INSERT INTO transArchive00 SELECT * FROM core_trans.dtransactions
+./nightly.dtrans.php: Mon, 09 Jul 2012 01:10:01 -0400: CREATE  view dlog00 as
+		select 
+		d.datetime as tdate, 
+		d.register_no, 
+		d.emp_no, 
+		d.trans_no, 
+		d.upc, 
+		CASE WHEN (d.trans_subtype IN ('CP','IC') OR d.upc like('%000000052')) then 'T' 
+			WHEN d.upc = 'DISCOUNT' then 'S' else d.trans_type end as trans_type, 
+		CASE WHEN d.upc = 'MAD Coupon' THEN 'MA' ELSe 
+		   case when d.upc like('%00000000052') then 'RR' else d.trans_subtype end end as trans_subtype, 
+		d.trans_status, 
+		d.department, 
+		d.quantity, 
+		d.unitPrice, 
+		d.total, 
+		d.tax, 
+		d.foodstamp, 
+		d.itemQtty, 
+		d.memType,
+		d.staff,
+		d.numflag,
+		d.charflag,
+		d.card_no, 
+		d.trans_id,
+		concat(convert(d.emp_no,char), '-', convert(d.register_no,char), '-',
+		convert(d.trans_no,char)) as trans_num
+
+		from transArchive00 as d
+		where d.trans_status not in ('D','X','Z') and d.emp_no not in (9999,56) and d.register_no  <> 99
+./nightly.dtrans.php: Mon, 09 Jul 2012 01:10:01 -0400: CREATE  view rp_dt_receipt_00 as 
+		select 
+		datetime,
+		register_no,
+		emp_no,
+		trans_no,
+		description,
+		case 
+			when voided = 5 
+				then 'Discount'
+			when trans_status = 'M'
+				then 'Mbr special'
+			when scale <> 0 and quantity <> 0 
+				then concat(convert(quantity,char), ' @ ', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity = 1
+				then concat(convert(volume,char), ' /', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity <> 1
+				then concat(convert(Quantity,char), ' @ ', convert(Volume,char), ' /', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and discounttype = 3
+				then concat(convert(ItemQtty,char), ' /', convert(UnitPrice,char))
+			when abs(itemQtty) > 1
+				then concat(convert(quantity,char), ' @ ', convert(unitPrice,char))	
+			when matched > 0
+				then '1 w/ vol adj'
+			else ''
+				
+		end
+		as comment,
+			total,
+
+		case 
+			when trans_status = 'V' 
+				then 'VD'
+			when trans_status = 'R'
+				then 'RF'
+			when tax <> 0 and foodstamp <> 0
+				then 'TF'
+			when tax <> 0 and foodstamp = 0
+				then 'T' 
+			when tax = 0 and foodstamp <> 0
+				then 'F'
+			when tax = 0 and foodstamp = 0
+				then '' 
+		end
+		as Status,
+		trans_type,
+		card_no as memberID,
+		unitPrice,
+		voided,
+		trans_id,
+		concat(convert(emp_no,char), '-', convert(register_no,char), '-', convert(trans_no,char)) as trans_num
+
+		from transArchive00
+		where voided <> 5 and UPC <> 'TAX' and UPC <> 'DISCOUNT'
+./nightly.dtrans.php: Mon, 09 Jul 2012 01:10:01 -0400: create  view rp_receipt_header_00 as
+		select
+		datetime as dateTimeStamp,
+		card_no as memberID,
+		concat(convert(emp_no,char), '-', convert(register_no,char), '-', convert(trans_no,char)) as trans_num,
+		register_no,
+		emp_no,
+		trans_no,
+		convert(sum(case when discounttype = 1 then discount else 0 end),decimal(10,2)) as discountTTL,
+		convert(sum(case when discounttype = 2 then memDiscount else 0 end),decimal(10,2)) as memSpecial,
+		convert(sum(case when upc = '0000000008005' then total else 0 end),decimal(10,2)) as couponTotal,
+		convert(sum(case when upc = 'MEMCOUPON' then unitPrice else 0 end),decimal(10,2)) as memCoupon,
+		abs(sum(case when trans_subtype = 'MI' or trans_subtype = 'CX' then total else 0 end)) as chargeTotal,
+		sum(case when upc = 'Discount' then total else 0 end) as transDiscount,
+		sum(case when trans_type = 'T' then -1 * total else 0 end) as tenderTotal
+
+		from transArchive00
+		group by register_no, emp_no, trans_no, card_no, datetime
+./nightly.dtrans.php: Tue, 10 Jul 2012 01:10:01 -0400: CREATE transArchive00 LIKE core_trans.dtransactions
+./nightly.dtrans.php: Tue, 10 Jul 2012 01:10:01 -0400: INSERT INTO transArchive00 SELECT * FROM core_trans.dtransactions
+./nightly.dtrans.php: Tue, 10 Jul 2012 01:10:01 -0400: CREATE  view dlog00 as
+		select 
+		d.datetime as tdate, 
+		d.register_no, 
+		d.emp_no, 
+		d.trans_no, 
+		d.upc, 
+		CASE WHEN (d.trans_subtype IN ('CP','IC') OR d.upc like('%000000052')) then 'T' 
+			WHEN d.upc = 'DISCOUNT' then 'S' else d.trans_type end as trans_type, 
+		CASE WHEN d.upc = 'MAD Coupon' THEN 'MA' ELSe 
+		   case when d.upc like('%00000000052') then 'RR' else d.trans_subtype end end as trans_subtype, 
+		d.trans_status, 
+		d.department, 
+		d.quantity, 
+		d.unitPrice, 
+		d.total, 
+		d.tax, 
+		d.foodstamp, 
+		d.itemQtty, 
+		d.memType,
+		d.staff,
+		d.numflag,
+		d.charflag,
+		d.card_no, 
+		d.trans_id,
+		concat(convert(d.emp_no,char), '-', convert(d.register_no,char), '-',
+		convert(d.trans_no,char)) as trans_num
+
+		from transArchive00 as d
+		where d.trans_status not in ('D','X','Z') and d.emp_no not in (9999,56) and d.register_no  <> 99
+./nightly.dtrans.php: Tue, 10 Jul 2012 01:10:01 -0400: CREATE  view rp_dt_receipt_00 as 
+		select 
+		datetime,
+		register_no,
+		emp_no,
+		trans_no,
+		description,
+		case 
+			when voided = 5 
+				then 'Discount'
+			when trans_status = 'M'
+				then 'Mbr special'
+			when scale <> 0 and quantity <> 0 
+				then concat(convert(quantity,char), ' @ ', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity = 1
+				then concat(convert(volume,char), ' /', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity <> 1
+				then concat(convert(Quantity,char), ' @ ', convert(Volume,char), ' /', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and discounttype = 3
+				then concat(convert(ItemQtty,char), ' /', convert(UnitPrice,char))
+			when abs(itemQtty) > 1
+				then concat(convert(quantity,char), ' @ ', convert(unitPrice,char))	
+			when matched > 0
+				then '1 w/ vol adj'
+			else ''
+				
+		end
+		as comment,
+			total,
+
+		case 
+			when trans_status = 'V' 
+				then 'VD'
+			when trans_status = 'R'
+				then 'RF'
+			when tax <> 0 and foodstamp <> 0
+				then 'TF'
+			when tax <> 0 and foodstamp = 0
+				then 'T' 
+			when tax = 0 and foodstamp <> 0
+				then 'F'
+			when tax = 0 and foodstamp = 0
+				then '' 
+		end
+		as Status,
+		trans_type,
+		card_no as memberID,
+		unitPrice,
+		voided,
+		trans_id,
+		concat(convert(emp_no,char), '-', convert(register_no,char), '-', convert(trans_no,char)) as trans_num
+
+		from transArchive00
+		where voided <> 5 and UPC <> 'TAX' and UPC <> 'DISCOUNT'
+./nightly.dtrans.php: Tue, 10 Jul 2012 01:10:01 -0400: create  view rp_receipt_header_00 as
+		select
+		datetime as dateTimeStamp,
+		card_no as memberID,
+		concat(convert(emp_no,char), '-', convert(register_no,char), '-', convert(trans_no,char)) as trans_num,
+		register_no,
+		emp_no,
+		trans_no,
+		convert(sum(case when discounttype = 1 then discount else 0 end),decimal(10,2)) as discountTTL,
+		convert(sum(case when discounttype = 2 then memDiscount else 0 end),decimal(10,2)) as memSpecial,
+		convert(sum(case when upc = '0000000008005' then total else 0 end),decimal(10,2)) as couponTotal,
+		convert(sum(case when upc = 'MEMCOUPON' then unitPrice else 0 end),decimal(10,2)) as memCoupon,
+		abs(sum(case when trans_subtype = 'MI' or trans_subtype = 'CX' then total else 0 end)) as chargeTotal,
+		sum(case when upc = 'Discount' then total else 0 end) as transDiscount,
+		sum(case when trans_type = 'T' then -1 * total else 0 end) as tenderTotal
+
+		from transArchive00
+		group by register_no, emp_no, trans_no, card_no, datetime
+./nightly.dtrans.php: Wed, 11 Jul 2012 01:10:02 -0400: CREATE transArchive00 LIKE core_trans.dtransactions
+./nightly.dtrans.php: Wed, 11 Jul 2012 01:10:02 -0400: INSERT INTO transArchive00 SELECT * FROM core_trans.dtransactions
+./nightly.dtrans.php: Wed, 11 Jul 2012 01:10:02 -0400: CREATE  view dlog00 as
+		select 
+		d.datetime as tdate, 
+		d.register_no, 
+		d.emp_no, 
+		d.trans_no, 
+		d.upc, 
+		CASE WHEN (d.trans_subtype IN ('CP','IC') OR d.upc like('%000000052')) then 'T' 
+			WHEN d.upc = 'DISCOUNT' then 'S' else d.trans_type end as trans_type, 
+		CASE WHEN d.upc = 'MAD Coupon' THEN 'MA' ELSe 
+		   case when d.upc like('%00000000052') then 'RR' else d.trans_subtype end end as trans_subtype, 
+		d.trans_status, 
+		d.department, 
+		d.quantity, 
+		d.unitPrice, 
+		d.total, 
+		d.tax, 
+		d.foodstamp, 
+		d.itemQtty, 
+		d.memType,
+		d.staff,
+		d.numflag,
+		d.charflag,
+		d.card_no, 
+		d.trans_id,
+		concat(convert(d.emp_no,char), '-', convert(d.register_no,char), '-',
+		convert(d.trans_no,char)) as trans_num
+
+		from transArchive00 as d
+		where d.trans_status not in ('D','X','Z') and d.emp_no not in (9999,56) and d.register_no  <> 99
+./nightly.dtrans.php: Wed, 11 Jul 2012 01:10:02 -0400: CREATE  view rp_dt_receipt_00 as 
+		select 
+		datetime,
+		register_no,
+		emp_no,
+		trans_no,
+		description,
+		case 
+			when voided = 5 
+				then 'Discount'
+			when trans_status = 'M'
+				then 'Mbr special'
+			when scale <> 0 and quantity <> 0 
+				then concat(convert(quantity,char), ' @ ', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity = 1
+				then concat(convert(volume,char), ' /', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity <> 1
+				then concat(convert(Quantity,char), ' @ ', convert(Volume,char), ' /', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and discounttype = 3
+				then concat(convert(ItemQtty,char), ' /', convert(UnitPrice,char))
+			when abs(itemQtty) > 1
+				then concat(convert(quantity,char), ' @ ', convert(unitPrice,char))	
+			when matched > 0
+				then '1 w/ vol adj'
+			else ''
+				
+		end
+		as comment,
+			total,
+
+		case 
+			when trans_status = 'V' 
+				then 'VD'
+			when trans_status = 'R'
+				then 'RF'
+			when tax <> 0 and foodstamp <> 0
+				then 'TF'
+			when tax <> 0 and foodstamp = 0
+				then 'T' 
+			when tax = 0 and foodstamp <> 0
+				then 'F'
+			when tax = 0 and foodstamp = 0
+				then '' 
+		end
+		as Status,
+		trans_type,
+		card_no as memberID,
+		unitPrice,
+		voided,
+		trans_id,
+		concat(convert(emp_no,char), '-', convert(register_no,char), '-', convert(trans_no,char)) as trans_num
+
+		from transArchive00
+		where voided <> 5 and UPC <> 'TAX' and UPC <> 'DISCOUNT'
+./nightly.dtrans.php: Wed, 11 Jul 2012 01:10:02 -0400: create  view rp_receipt_header_00 as
+		select
+		datetime as dateTimeStamp,
+		card_no as memberID,
+		concat(convert(emp_no,char), '-', convert(register_no,char), '-', convert(trans_no,char)) as trans_num,
+		register_no,
+		emp_no,
+		trans_no,
+		convert(sum(case when discounttype = 1 then discount else 0 end),decimal(10,2)) as discountTTL,
+		convert(sum(case when discounttype = 2 then memDiscount else 0 end),decimal(10,2)) as memSpecial,
+		convert(sum(case when upc = '0000000008005' then total else 0 end),decimal(10,2)) as couponTotal,
+		convert(sum(case when upc = 'MEMCOUPON' then unitPrice else 0 end),decimal(10,2)) as memCoupon,
+		abs(sum(case when trans_subtype = 'MI' or trans_subtype = 'CX' then total else 0 end)) as chargeTotal,
+		sum(case when upc = 'Discount' then total else 0 end) as transDiscount,
+		sum(case when trans_type = 'T' then -1 * total else 0 end) as tenderTotal
+
+		from transArchive00
+		group by register_no, emp_no, trans_no, card_no, datetime
+./nightly.dtrans.php: Thu, 12 Jul 2012 01:10:02 -0400: CREATE transArchive00 LIKE core_trans.dtransactions
+./nightly.dtrans.php: Thu, 12 Jul 2012 01:10:02 -0400: INSERT INTO transArchive00 SELECT * FROM core_trans.dtransactions
+./nightly.dtrans.php: Thu, 12 Jul 2012 01:10:02 -0400: CREATE  view dlog00 as
+		select 
+		d.datetime as tdate, 
+		d.register_no, 
+		d.emp_no, 
+		d.trans_no, 
+		d.upc, 
+		CASE WHEN (d.trans_subtype IN ('CP','IC') OR d.upc like('%000000052')) then 'T' 
+			WHEN d.upc = 'DISCOUNT' then 'S' else d.trans_type end as trans_type, 
+		CASE WHEN d.upc = 'MAD Coupon' THEN 'MA' ELSe 
+		   case when d.upc like('%00000000052') then 'RR' else d.trans_subtype end end as trans_subtype, 
+		d.trans_status, 
+		d.department, 
+		d.quantity, 
+		d.unitPrice, 
+		d.total, 
+		d.tax, 
+		d.foodstamp, 
+		d.itemQtty, 
+		d.memType,
+		d.staff,
+		d.numflag,
+		d.charflag,
+		d.card_no, 
+		d.trans_id,
+		concat(convert(d.emp_no,char), '-', convert(d.register_no,char), '-',
+		convert(d.trans_no,char)) as trans_num
+
+		from transArchive00 as d
+		where d.trans_status not in ('D','X','Z') and d.emp_no not in (9999,56) and d.register_no  <> 99
+./nightly.dtrans.php: Thu, 12 Jul 2012 01:10:02 -0400: CREATE  view rp_dt_receipt_00 as 
+		select 
+		datetime,
+		register_no,
+		emp_no,
+		trans_no,
+		description,
+		case 
+			when voided = 5 
+				then 'Discount'
+			when trans_status = 'M'
+				then 'Mbr special'
+			when scale <> 0 and quantity <> 0 
+				then concat(convert(quantity,char), ' @ ', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity = 1
+				then concat(convert(volume,char), ' /', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity <> 1
+				then concat(convert(Quantity,char), ' @ ', convert(Volume,char), ' /', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and discounttype = 3
+				then concat(convert(ItemQtty,char), ' /', convert(UnitPrice,char))
+			when abs(itemQtty) > 1
+				then concat(convert(quantity,char), ' @ ', convert(unitPrice,char))	
+			when matched > 0
+				then '1 w/ vol adj'
+			else ''
+				
+		end
+		as comment,
+			total,
+
+		case 
+			when trans_status = 'V' 
+				then 'VD'
+			when trans_status = 'R'
+				then 'RF'
+			when tax <> 0 and foodstamp <> 0
+				then 'TF'
+			when tax <> 0 and foodstamp = 0
+				then 'T' 
+			when tax = 0 and foodstamp <> 0
+				then 'F'
+			when tax = 0 and foodstamp = 0
+				then '' 
+		end
+		as Status,
+		trans_type,
+		card_no as memberID,
+		unitPrice,
+		voided,
+		trans_id,
+		concat(convert(emp_no,char), '-', convert(register_no,char), '-', convert(trans_no,char)) as trans_num
+
+		from transArchive00
+		where voided <> 5 and UPC <> 'TAX' and UPC <> 'DISCOUNT'
+./nightly.dtrans.php: Thu, 12 Jul 2012 01:10:02 -0400: create  view rp_receipt_header_00 as
+		select
+		datetime as dateTimeStamp,
+		card_no as memberID,
+		concat(convert(emp_no,char), '-', convert(register_no,char), '-', convert(trans_no,char)) as trans_num,
+		register_no,
+		emp_no,
+		trans_no,
+		convert(sum(case when discounttype = 1 then discount else 0 end),decimal(10,2)) as discountTTL,
+		convert(sum(case when discounttype = 2 then memDiscount else 0 end),decimal(10,2)) as memSpecial,
+		convert(sum(case when upc = '0000000008005' then total else 0 end),decimal(10,2)) as couponTotal,
+		convert(sum(case when upc = 'MEMCOUPON' then unitPrice else 0 end),decimal(10,2)) as memCoupon,
+		abs(sum(case when trans_subtype = 'MI' or trans_subtype = 'CX' then total else 0 end)) as chargeTotal,
+		sum(case when upc = 'Discount' then total else 0 end) as transDiscount,
+		sum(case when trans_type = 'T' then -1 * total else 0 end) as tenderTotal
+
+		from transArchive00
+		group by register_no, emp_no, trans_no, card_no, datetime
+./nightly.dtrans.php: Fri, 13 Jul 2012 01:10:01 -0400: CREATE transArchive00 LIKE core_trans.dtransactions
+./nightly.dtrans.php: Fri, 13 Jul 2012 01:10:01 -0400: INSERT INTO transArchive00 SELECT * FROM core_trans.dtransactions
+./nightly.dtrans.php: Fri, 13 Jul 2012 01:10:01 -0400: CREATE  view dlog00 as
+		select 
+		d.datetime as tdate, 
+		d.register_no, 
+		d.emp_no, 
+		d.trans_no, 
+		d.upc, 
+		CASE WHEN (d.trans_subtype IN ('CP','IC') OR d.upc like('%000000052')) then 'T' 
+			WHEN d.upc = 'DISCOUNT' then 'S' else d.trans_type end as trans_type, 
+		CASE WHEN d.upc = 'MAD Coupon' THEN 'MA' ELSe 
+		   case when d.upc like('%00000000052') then 'RR' else d.trans_subtype end end as trans_subtype, 
+		d.trans_status, 
+		d.department, 
+		d.quantity, 
+		d.unitPrice, 
+		d.total, 
+		d.tax, 
+		d.foodstamp, 
+		d.itemQtty, 
+		d.memType,
+		d.staff,
+		d.numflag,
+		d.charflag,
+		d.card_no, 
+		d.trans_id,
+		concat(convert(d.emp_no,char), '-', convert(d.register_no,char), '-',
+		convert(d.trans_no,char)) as trans_num
+
+		from transArchive00 as d
+		where d.trans_status not in ('D','X','Z') and d.emp_no not in (9999,56) and d.register_no  <> 99
+./nightly.dtrans.php: Fri, 13 Jul 2012 01:10:01 -0400: CREATE  view rp_dt_receipt_00 as 
+		select 
+		datetime,
+		register_no,
+		emp_no,
+		trans_no,
+		description,
+		case 
+			when voided = 5 
+				then 'Discount'
+			when trans_status = 'M'
+				then 'Mbr special'
+			when scale <> 0 and quantity <> 0 
+				then concat(convert(quantity,char), ' @ ', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity = 1
+				then concat(convert(volume,char), ' /', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity <> 1
+				then concat(convert(Quantity,char), ' @ ', convert(Volume,char), ' /', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and discounttype = 3
+				then concat(convert(ItemQtty,char), ' /', convert(UnitPrice,char))
+			when abs(itemQtty) > 1
+				then concat(convert(quantity,char), ' @ ', convert(unitPrice,char))	
+			when matched > 0
+				then '1 w/ vol adj'
+			else ''
+				
+		end
+		as comment,
+			total,
+
+		case 
+			when trans_status = 'V' 
+				then 'VD'
+			when trans_status = 'R'
+				then 'RF'
+			when tax <> 0 and foodstamp <> 0
+				then 'TF'
+			when tax <> 0 and foodstamp = 0
+				then 'T' 
+			when tax = 0 and foodstamp <> 0
+				then 'F'
+			when tax = 0 and foodstamp = 0
+				then '' 
+		end
+		as Status,
+		trans_type,
+		card_no as memberID,
+		unitPrice,
+		voided,
+		trans_id,
+		concat(convert(emp_no,char), '-', convert(register_no,char), '-', convert(trans_no,char)) as trans_num
+
+		from transArchive00
+		where voided <> 5 and UPC <> 'TAX' and UPC <> 'DISCOUNT'
+./nightly.dtrans.php: Fri, 13 Jul 2012 01:10:01 -0400: create  view rp_receipt_header_00 as
+		select
+		datetime as dateTimeStamp,
+		card_no as memberID,
+		concat(convert(emp_no,char), '-', convert(register_no,char), '-', convert(trans_no,char)) as trans_num,
+		register_no,
+		emp_no,
+		trans_no,
+		convert(sum(case when discounttype = 1 then discount else 0 end),decimal(10,2)) as discountTTL,
+		convert(sum(case when discounttype = 2 then memDiscount else 0 end),decimal(10,2)) as memSpecial,
+		convert(sum(case when upc = '0000000008005' then total else 0 end),decimal(10,2)) as couponTotal,
+		convert(sum(case when upc = 'MEMCOUPON' then unitPrice else 0 end),decimal(10,2)) as memCoupon,
+		abs(sum(case when trans_subtype = 'MI' or trans_subtype = 'CX' then total else 0 end)) as chargeTotal,
+		sum(case when upc = 'Discount' then total else 0 end) as transDiscount,
+		sum(case when trans_type = 'T' then -1 * total else 0 end) as tenderTotal
+
+		from transArchive00
+		group by register_no, emp_no, trans_no, card_no, datetime
+nightly.update.members.php: Fri, 13 Jul 2012 19:44:40 -0400: SELECT id, contact_d from civicrm_membership LIMIT 10;
+nightly.update.members.php: Fri, 13 Jul 2012 19:46:55 -0400: SELECT id, contact_d from civicrm_membership LIMIT 10;
+./nightly.dtrans.php: Sat, 14 Jul 2012 01:10:01 -0400: CREATE transArchive00 LIKE core_trans.dtransactions
+./nightly.dtrans.php: Sat, 14 Jul 2012 01:10:01 -0400: INSERT INTO transArchive00 SELECT * FROM core_trans.dtransactions
+./nightly.dtrans.php: Sat, 14 Jul 2012 01:10:01 -0400: CREATE  view dlog00 as
+		select 
+		d.datetime as tdate, 
+		d.register_no, 
+		d.emp_no, 
+		d.trans_no, 
+		d.upc, 
+		CASE WHEN (d.trans_subtype IN ('CP','IC') OR d.upc like('%000000052')) then 'T' 
+			WHEN d.upc = 'DISCOUNT' then 'S' else d.trans_type end as trans_type, 
+		CASE WHEN d.upc = 'MAD Coupon' THEN 'MA' ELSe 
+		   case when d.upc like('%00000000052') then 'RR' else d.trans_subtype end end as trans_subtype, 
+		d.trans_status, 
+		d.department, 
+		d.quantity, 
+		d.unitPrice, 
+		d.total, 
+		d.tax, 
+		d.foodstamp, 
+		d.itemQtty, 
+		d.memType,
+		d.staff,
+		d.numflag,
+		d.charflag,
+		d.card_no, 
+		d.trans_id,
+		concat(convert(d.emp_no,char), '-', convert(d.register_no,char), '-',
+		convert(d.trans_no,char)) as trans_num
+
+		from transArchive00 as d
+		where d.trans_status not in ('D','X','Z') and d.emp_no not in (9999,56) and d.register_no  <> 99
+./nightly.dtrans.php: Sat, 14 Jul 2012 01:10:01 -0400: CREATE  view rp_dt_receipt_00 as 
+		select 
+		datetime,
+		register_no,
+		emp_no,
+		trans_no,
+		description,
+		case 
+			when voided = 5 
+				then 'Discount'
+			when trans_status = 'M'
+				then 'Mbr special'
+			when scale <> 0 and quantity <> 0 
+				then concat(convert(quantity,char), ' @ ', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity = 1
+				then concat(convert(volume,char), ' /', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity <> 1
+				then concat(convert(Quantity,char), ' @ ', convert(Volume,char), ' /', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and discounttype = 3
+				then concat(convert(ItemQtty,char), ' /', convert(UnitPrice,char))
+			when abs(itemQtty) > 1
+				then concat(convert(quantity,char), ' @ ', convert(unitPrice,char))	
+			when matched > 0
+				then '1 w/ vol adj'
+			else ''
+				
+		end
+		as comment,
+			total,
+
+		case 
+			when trans_status = 'V' 
+				then 'VD'
+			when trans_status = 'R'
+				then 'RF'
+			when tax <> 0 and foodstamp <> 0
+				then 'TF'
+			when tax <> 0 and foodstamp = 0
+				then 'T' 
+			when tax = 0 and foodstamp <> 0
+				then 'F'
+			when tax = 0 and foodstamp = 0
+				then '' 
+		end
+		as Status,
+		trans_type,
+		card_no as memberID,
+		unitPrice,
+		voided,
+		trans_id,
+		concat(convert(emp_no,char), '-', convert(register_no,char), '-', convert(trans_no,char)) as trans_num
+
+		from transArchive00
+		where voided <> 5 and UPC <> 'TAX' and UPC <> 'DISCOUNT'
+./nightly.dtrans.php: Sat, 14 Jul 2012 01:10:01 -0400: create  view rp_receipt_header_00 as
+		select
+		datetime as dateTimeStamp,
+		card_no as memberID,
+		concat(convert(emp_no,char), '-', convert(register_no,char), '-', convert(trans_no,char)) as trans_num,
+		register_no,
+		emp_no,
+		trans_no,
+		convert(sum(case when discounttype = 1 then discount else 0 end),decimal(10,2)) as discountTTL,
+		convert(sum(case when discounttype = 2 then memDiscount else 0 end),decimal(10,2)) as memSpecial,
+		convert(sum(case when upc = '0000000008005' then total else 0 end),decimal(10,2)) as couponTotal,
+		convert(sum(case when upc = 'MEMCOUPON' then unitPrice else 0 end),decimal(10,2)) as memCoupon,
+		abs(sum(case when trans_subtype = 'MI' or trans_subtype = 'CX' then total else 0 end)) as chargeTotal,
+		sum(case when upc = 'Discount' then total else 0 end) as transDiscount,
+		sum(case when trans_type = 'T' then -1 * total else 0 end) as tenderTotal
+
+		from transArchive00
+		group by register_no, emp_no, trans_no, card_no, datetime
+./nightly.dtrans.php: Sun, 15 Jul 2012 01:10:02 -0400: CREATE transArchive00 LIKE core_trans.dtransactions
+./nightly.dtrans.php: Sun, 15 Jul 2012 01:10:02 -0400: INSERT INTO transArchive00 SELECT * FROM core_trans.dtransactions
+./nightly.dtrans.php: Sun, 15 Jul 2012 01:10:02 -0400: CREATE  view dlog00 as
+		select 
+		d.datetime as tdate, 
+		d.register_no, 
+		d.emp_no, 
+		d.trans_no, 
+		d.upc, 
+		CASE WHEN (d.trans_subtype IN ('CP','IC') OR d.upc like('%000000052')) then 'T' 
+			WHEN d.upc = 'DISCOUNT' then 'S' else d.trans_type end as trans_type, 
+		CASE WHEN d.upc = 'MAD Coupon' THEN 'MA' ELSe 
+		   case when d.upc like('%00000000052') then 'RR' else d.trans_subtype end end as trans_subtype, 
+		d.trans_status, 
+		d.department, 
+		d.quantity, 
+		d.unitPrice, 
+		d.total, 
+		d.tax, 
+		d.foodstamp, 
+		d.itemQtty, 
+		d.memType,
+		d.staff,
+		d.numflag,
+		d.charflag,
+		d.card_no, 
+		d.trans_id,
+		concat(convert(d.emp_no,char), '-', convert(d.register_no,char), '-',
+		convert(d.trans_no,char)) as trans_num
+
+		from transArchive00 as d
+		where d.trans_status not in ('D','X','Z') and d.emp_no not in (9999,56) and d.register_no  <> 99
+./nightly.dtrans.php: Sun, 15 Jul 2012 01:10:02 -0400: CREATE  view rp_dt_receipt_00 as 
+		select 
+		datetime,
+		register_no,
+		emp_no,
+		trans_no,
+		description,
+		case 
+			when voided = 5 
+				then 'Discount'
+			when trans_status = 'M'
+				then 'Mbr special'
+			when scale <> 0 and quantity <> 0 
+				then concat(convert(quantity,char), ' @ ', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity = 1
+				then concat(convert(volume,char), ' /', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity <> 1
+				then concat(convert(Quantity,char), ' @ ', convert(Volume,char), ' /', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and discounttype = 3
+				then concat(convert(ItemQtty,char), ' /', convert(UnitPrice,char))
+			when abs(itemQtty) > 1
+				then concat(convert(quantity,char), ' @ ', convert(unitPrice,char))	
+			when matched > 0
+				then '1 w/ vol adj'
+			else ''
+				
+		end
+		as comment,
+			total,
+
+		case 
+			when trans_status = 'V' 
+				then 'VD'
+			when trans_status = 'R'
+				then 'RF'
+			when tax <> 0 and foodstamp <> 0
+				then 'TF'
+			when tax <> 0 and foodstamp = 0
+				then 'T' 
+			when tax = 0 and foodstamp <> 0
+				then 'F'
+			when tax = 0 and foodstamp = 0
+				then '' 
+		end
+		as Status,
+		trans_type,
+		card_no as memberID,
+		unitPrice,
+		voided,
+		trans_id,
+		concat(convert(emp_no,char), '-', convert(register_no,char), '-', convert(trans_no,char)) as trans_num
+
+		from transArchive00
+		where voided <> 5 and UPC <> 'TAX' and UPC <> 'DISCOUNT'
+./nightly.dtrans.php: Sun, 15 Jul 2012 01:10:02 -0400: create  view rp_receipt_header_00 as
+		select
+		datetime as dateTimeStamp,
+		card_no as memberID,
+		concat(convert(emp_no,char), '-', convert(register_no,char), '-', convert(trans_no,char)) as trans_num,
+		register_no,
+		emp_no,
+		trans_no,
+		convert(sum(case when discounttype = 1 then discount else 0 end),decimal(10,2)) as discountTTL,
+		convert(sum(case when discounttype = 2 then memDiscount else 0 end),decimal(10,2)) as memSpecial,
+		convert(sum(case when upc = '0000000008005' then total else 0 end),decimal(10,2)) as couponTotal,
+		convert(sum(case when upc = 'MEMCOUPON' then unitPrice else 0 end),decimal(10,2)) as memCoupon,
+		abs(sum(case when trans_subtype = 'MI' or trans_subtype = 'CX' then total else 0 end)) as chargeTotal,
+		sum(case when upc = 'Discount' then total else 0 end) as transDiscount,
+		sum(case when trans_type = 'T' then -1 * total else 0 end) as tenderTotal
+
+		from transArchive00
+		group by register_no, emp_no, trans_no, card_no, datetime
+./nightly.dtrans.php: Mon, 16 Jul 2012 01:10:01 -0400: CREATE transArchive00 LIKE core_trans.dtransactions
+./nightly.dtrans.php: Mon, 16 Jul 2012 01:10:01 -0400: INSERT INTO transArchive00 SELECT * FROM core_trans.dtransactions
+./nightly.dtrans.php: Mon, 16 Jul 2012 01:10:01 -0400: CREATE  view dlog00 as
+		select 
+		d.datetime as tdate, 
+		d.register_no, 
+		d.emp_no, 
+		d.trans_no, 
+		d.upc, 
+		CASE WHEN (d.trans_subtype IN ('CP','IC') OR d.upc like('%000000052')) then 'T' 
+			WHEN d.upc = 'DISCOUNT' then 'S' else d.trans_type end as trans_type, 
+		CASE WHEN d.upc = 'MAD Coupon' THEN 'MA' ELSe 
+		   case when d.upc like('%00000000052') then 'RR' else d.trans_subtype end end as trans_subtype, 
+		d.trans_status, 
+		d.department, 
+		d.quantity, 
+		d.unitPrice, 
+		d.total, 
+		d.tax, 
+		d.foodstamp, 
+		d.itemQtty, 
+		d.memType,
+		d.staff,
+		d.numflag,
+		d.charflag,
+		d.card_no, 
+		d.trans_id,
+		concat(convert(d.emp_no,char), '-', convert(d.register_no,char), '-',
+		convert(d.trans_no,char)) as trans_num
+
+		from transArchive00 as d
+		where d.trans_status not in ('D','X','Z') and d.emp_no not in (9999,56) and d.register_no  <> 99
+./nightly.dtrans.php: Mon, 16 Jul 2012 01:10:01 -0400: CREATE  view rp_dt_receipt_00 as 
+		select 
+		datetime,
+		register_no,
+		emp_no,
+		trans_no,
+		description,
+		case 
+			when voided = 5 
+				then 'Discount'
+			when trans_status = 'M'
+				then 'Mbr special'
+			when scale <> 0 and quantity <> 0 
+				then concat(convert(quantity,char), ' @ ', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity = 1
+				then concat(convert(volume,char), ' /', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity <> 1
+				then concat(convert(Quantity,char), ' @ ', convert(Volume,char), ' /', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and discounttype = 3
+				then concat(convert(ItemQtty,char), ' /', convert(UnitPrice,char))
+			when abs(itemQtty) > 1
+				then concat(convert(quantity,char), ' @ ', convert(unitPrice,char))	
+			when matched > 0
+				then '1 w/ vol adj'
+			else ''
+				
+		end
+		as comment,
+			total,
+
+		case 
+			when trans_status = 'V' 
+				then 'VD'
+			when trans_status = 'R'
+				then 'RF'
+			when tax <> 0 and foodstamp <> 0
+				then 'TF'
+			when tax <> 0 and foodstamp = 0
+				then 'T' 
+			when tax = 0 and foodstamp <> 0
+				then 'F'
+			when tax = 0 and foodstamp = 0
+				then '' 
+		end
+		as Status,
+		trans_type,
+		card_no as memberID,
+		unitPrice,
+		voided,
+		trans_id,
+		concat(convert(emp_no,char), '-', convert(register_no,char), '-', convert(trans_no,char)) as trans_num
+
+		from transArchive00
+		where voided <> 5 and UPC <> 'TAX' and UPC <> 'DISCOUNT'
+./nightly.dtrans.php: Mon, 16 Jul 2012 01:10:01 -0400: create  view rp_receipt_header_00 as
+		select
+		datetime as dateTimeStamp,
+		card_no as memberID,
+		concat(convert(emp_no,char), '-', convert(register_no,char), '-', convert(trans_no,char)) as trans_num,
+		register_no,
+		emp_no,
+		trans_no,
+		convert(sum(case when discounttype = 1 then discount else 0 end),decimal(10,2)) as discountTTL,
+		convert(sum(case when discounttype = 2 then memDiscount else 0 end),decimal(10,2)) as memSpecial,
+		convert(sum(case when upc = '0000000008005' then total else 0 end),decimal(10,2)) as couponTotal,
+		convert(sum(case when upc = 'MEMCOUPON' then unitPrice else 0 end),decimal(10,2)) as memCoupon,
+		abs(sum(case when trans_subtype = 'MI' or trans_subtype = 'CX' then total else 0 end)) as chargeTotal,
+		sum(case when upc = 'Discount' then total else 0 end) as transDiscount,
+		sum(case when trans_type = 'T' then -1 * total else 0 end) as tenderTotal
+
+		from transArchive00
+		group by register_no, emp_no, trans_no, card_no, datetime
+./nightly.dtrans.php: Tue, 17 Jul 2012 01:10:01 -0400: CREATE transArchive00 LIKE core_trans.dtransactions
+./nightly.dtrans.php: Tue, 17 Jul 2012 01:10:01 -0400: INSERT INTO transArchive00 SELECT * FROM core_trans.dtransactions
+./nightly.dtrans.php: Tue, 17 Jul 2012 01:10:01 -0400: CREATE  view dlog00 as
+		select 
+		d.datetime as tdate, 
+		d.register_no, 
+		d.emp_no, 
+		d.trans_no, 
+		d.upc, 
+		CASE WHEN (d.trans_subtype IN ('CP','IC') OR d.upc like('%000000052')) then 'T' 
+			WHEN d.upc = 'DISCOUNT' then 'S' else d.trans_type end as trans_type, 
+		CASE WHEN d.upc = 'MAD Coupon' THEN 'MA' ELSe 
+		   case when d.upc like('%00000000052') then 'RR' else d.trans_subtype end end as trans_subtype, 
+		d.trans_status, 
+		d.department, 
+		d.quantity, 
+		d.unitPrice, 
+		d.total, 
+		d.tax, 
+		d.foodstamp, 
+		d.itemQtty, 
+		d.memType,
+		d.staff,
+		d.numflag,
+		d.charflag,
+		d.card_no, 
+		d.trans_id,
+		concat(convert(d.emp_no,char), '-', convert(d.register_no,char), '-',
+		convert(d.trans_no,char)) as trans_num
+
+		from transArchive00 as d
+		where d.trans_status not in ('D','X','Z') and d.emp_no not in (9999,56) and d.register_no  <> 99
+./nightly.dtrans.php: Tue, 17 Jul 2012 01:10:01 -0400: CREATE  view rp_dt_receipt_00 as 
+		select 
+		datetime,
+		register_no,
+		emp_no,
+		trans_no,
+		description,
+		case 
+			when voided = 5 
+				then 'Discount'
+			when trans_status = 'M'
+				then 'Mbr special'
+			when scale <> 0 and quantity <> 0 
+				then concat(convert(quantity,char), ' @ ', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity = 1
+				then concat(convert(volume,char), ' /', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity <> 1
+				then concat(convert(Quantity,char), ' @ ', convert(Volume,char), ' /', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and discounttype = 3
+				then concat(convert(ItemQtty,char), ' /', convert(UnitPrice,char))
+			when abs(itemQtty) > 1
+				then concat(convert(quantity,char), ' @ ', convert(unitPrice,char))	
+			when matched > 0
+				then '1 w/ vol adj'
+			else ''
+				
+		end
+		as comment,
+			total,
+
+		case 
+			when trans_status = 'V' 
+				then 'VD'
+			when trans_status = 'R'
+				then 'RF'
+			when tax <> 0 and foodstamp <> 0
+				then 'TF'
+			when tax <> 0 and foodstamp = 0
+				then 'T' 
+			when tax = 0 and foodstamp <> 0
+				then 'F'
+			when tax = 0 and foodstamp = 0
+				then '' 
+		end
+		as Status,
+		trans_type,
+		card_no as memberID,
+		unitPrice,
+		voided,
+		trans_id,
+		concat(convert(emp_no,char), '-', convert(register_no,char), '-', convert(trans_no,char)) as trans_num
+
+		from transArchive00
+		where voided <> 5 and UPC <> 'TAX' and UPC <> 'DISCOUNT'
+./nightly.dtrans.php: Tue, 17 Jul 2012 01:10:01 -0400: create  view rp_receipt_header_00 as
+		select
+		datetime as dateTimeStamp,
+		card_no as memberID,
+		concat(convert(emp_no,char), '-', convert(register_no,char), '-', convert(trans_no,char)) as trans_num,
+		register_no,
+		emp_no,
+		trans_no,
+		convert(sum(case when discounttype = 1 then discount else 0 end),decimal(10,2)) as discountTTL,
+		convert(sum(case when discounttype = 2 then memDiscount else 0 end),decimal(10,2)) as memSpecial,
+		convert(sum(case when upc = '0000000008005' then total else 0 end),decimal(10,2)) as couponTotal,
+		convert(sum(case when upc = 'MEMCOUPON' then unitPrice else 0 end),decimal(10,2)) as memCoupon,
+		abs(sum(case when trans_subtype = 'MI' or trans_subtype = 'CX' then total else 0 end)) as chargeTotal,
+		sum(case when upc = 'Discount' then total else 0 end) as transDiscount,
+		sum(case when trans_type = 'T' then -1 * total else 0 end) as tenderTotal
+
+		from transArchive00
+		group by register_no, emp_no, trans_no, card_no, datetime
+num2.php: Wed, 18 Jul 2012 01:03:54 -0400: SELECT CardNo, LastName from custdata LIMIT 5;
+./nightly.dtrans.php: Wed, 18 Jul 2012 01:10:01 -0400: CREATE transArchive00 LIKE core_trans.dtransactions
+./nightly.dtrans.php: Wed, 18 Jul 2012 01:10:01 -0400: INSERT INTO transArchive00 SELECT * FROM core_trans.dtransactions
+./nightly.dtrans.php: Wed, 18 Jul 2012 01:10:01 -0400: CREATE  view dlog00 as
+		select 
+		d.datetime as tdate, 
+		d.register_no, 
+		d.emp_no, 
+		d.trans_no, 
+		d.upc, 
+		CASE WHEN (d.trans_subtype IN ('CP','IC') OR d.upc like('%000000052')) then 'T' 
+			WHEN d.upc = 'DISCOUNT' then 'S' else d.trans_type end as trans_type, 
+		CASE WHEN d.upc = 'MAD Coupon' THEN 'MA' ELSe 
+		   case when d.upc like('%00000000052') then 'RR' else d.trans_subtype end end as trans_subtype, 
+		d.trans_status, 
+		d.department, 
+		d.quantity, 
+		d.unitPrice, 
+		d.total, 
+		d.tax, 
+		d.foodstamp, 
+		d.itemQtty, 
+		d.memType,
+		d.staff,
+		d.numflag,
+		d.charflag,
+		d.card_no, 
+		d.trans_id,
+		concat(convert(d.emp_no,char), '-', convert(d.register_no,char), '-',
+		convert(d.trans_no,char)) as trans_num
+
+		from transArchive00 as d
+		where d.trans_status not in ('D','X','Z') and d.emp_no not in (9999,56) and d.register_no  <> 99
+./nightly.dtrans.php: Wed, 18 Jul 2012 01:10:01 -0400: CREATE  view rp_dt_receipt_00 as 
+		select 
+		datetime,
+		register_no,
+		emp_no,
+		trans_no,
+		description,
+		case 
+			when voided = 5 
+				then 'Discount'
+			when trans_status = 'M'
+				then 'Mbr special'
+			when scale <> 0 and quantity <> 0 
+				then concat(convert(quantity,char), ' @ ', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity = 1
+				then concat(convert(volume,char), ' /', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity <> 1
+				then concat(convert(Quantity,char), ' @ ', convert(Volume,char), ' /', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and discounttype = 3
+				then concat(convert(ItemQtty,char), ' /', convert(UnitPrice,char))
+			when abs(itemQtty) > 1
+				then concat(convert(quantity,char), ' @ ', convert(unitPrice,char))	
+			when matched > 0
+				then '1 w/ vol adj'
+			else ''
+				
+		end
+		as comment,
+			total,
+
+		case 
+			when trans_status = 'V' 
+				then 'VD'
+			when trans_status = 'R'
+				then 'RF'
+			when tax <> 0 and foodstamp <> 0
+				then 'TF'
+			when tax <> 0 and foodstamp = 0
+				then 'T' 
+			when tax = 0 and foodstamp <> 0
+				then 'F'
+			when tax = 0 and foodstamp = 0
+				then '' 
+		end
+		as Status,
+		trans_type,
+		card_no as memberID,
+		unitPrice,
+		voided,
+		trans_id,
+		concat(convert(emp_no,char), '-', convert(register_no,char), '-', convert(trans_no,char)) as trans_num
+
+		from transArchive00
+		where voided <> 5 and UPC <> 'TAX' and UPC <> 'DISCOUNT'
+./nightly.dtrans.php: Wed, 18 Jul 2012 01:10:01 -0400: create  view rp_receipt_header_00 as
+		select
+		datetime as dateTimeStamp,
+		card_no as memberID,
+		concat(convert(emp_no,char), '-', convert(register_no,char), '-', convert(trans_no,char)) as trans_num,
+		register_no,
+		emp_no,
+		trans_no,
+		convert(sum(case when discounttype = 1 then discount else 0 end),decimal(10,2)) as discountTTL,
+		convert(sum(case when discounttype = 2 then memDiscount else 0 end),decimal(10,2)) as memSpecial,
+		convert(sum(case when upc = '0000000008005' then total else 0 end),decimal(10,2)) as couponTotal,
+		convert(sum(case when upc = 'MEMCOUPON' then unitPrice else 0 end),decimal(10,2)) as memCoupon,
+		abs(sum(case when trans_subtype = 'MI' or trans_subtype = 'CX' then total else 0 end)) as chargeTotal,
+		sum(case when upc = 'Discount' then total else 0 end) as transDiscount,
+		sum(case when trans_type = 'T' then -1 * total else 0 end) as tenderTotal
+
+		from transArchive00
+		group by register_no, emp_no, trans_no, card_no, datetime
+./nightly.dtrans.php: Thu, 19 Jul 2012 01:10:02 -0400: CREATE transArchive00 LIKE core_trans.dtransactions
+./nightly.dtrans.php: Thu, 19 Jul 2012 01:10:02 -0400: INSERT INTO transArchive00 SELECT * FROM core_trans.dtransactions
+./nightly.dtrans.php: Thu, 19 Jul 2012 01:10:02 -0400: CREATE  view dlog00 as
+		select 
+		d.datetime as tdate, 
+		d.register_no, 
+		d.emp_no, 
+		d.trans_no, 
+		d.upc, 
+		CASE WHEN (d.trans_subtype IN ('CP','IC') OR d.upc like('%000000052')) then 'T' 
+			WHEN d.upc = 'DISCOUNT' then 'S' else d.trans_type end as trans_type, 
+		CASE WHEN d.upc = 'MAD Coupon' THEN 'MA' ELSe 
+		   case when d.upc like('%00000000052') then 'RR' else d.trans_subtype end end as trans_subtype, 
+		d.trans_status, 
+		d.department, 
+		d.quantity, 
+		d.unitPrice, 
+		d.total, 
+		d.tax, 
+		d.foodstamp, 
+		d.itemQtty, 
+		d.memType,
+		d.staff,
+		d.numflag,
+		d.charflag,
+		d.card_no, 
+		d.trans_id,
+		concat(convert(d.emp_no,char), '-', convert(d.register_no,char), '-',
+		convert(d.trans_no,char)) as trans_num
+
+		from transArchive00 as d
+		where d.trans_status not in ('D','X','Z') and d.emp_no not in (9999,56) and d.register_no  <> 99
+./nightly.dtrans.php: Thu, 19 Jul 2012 01:10:02 -0400: CREATE  view rp_dt_receipt_00 as 
+		select 
+		datetime,
+		register_no,
+		emp_no,
+		trans_no,
+		description,
+		case 
+			when voided = 5 
+				then 'Discount'
+			when trans_status = 'M'
+				then 'Mbr special'
+			when scale <> 0 and quantity <> 0 
+				then concat(convert(quantity,char), ' @ ', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity = 1
+				then concat(convert(volume,char), ' /', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity <> 1
+				then concat(convert(Quantity,char), ' @ ', convert(Volume,char), ' /', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and discounttype = 3
+				then concat(convert(ItemQtty,char), ' /', convert(UnitPrice,char))
+			when abs(itemQtty) > 1
+				then concat(convert(quantity,char), ' @ ', convert(unitPrice,char))	
+			when matched > 0
+				then '1 w/ vol adj'
+			else ''
+				
+		end
+		as comment,
+			total,
+
+		case 
+			when trans_status = 'V' 
+				then 'VD'
+			when trans_status = 'R'
+				then 'RF'
+			when tax <> 0 and foodstamp <> 0
+				then 'TF'
+			when tax <> 0 and foodstamp = 0
+				then 'T' 
+			when tax = 0 and foodstamp <> 0
+				then 'F'
+			when tax = 0 and foodstamp = 0
+				then '' 
+		end
+		as Status,
+		trans_type,
+		card_no as memberID,
+		unitPrice,
+		voided,
+		trans_id,
+		concat(convert(emp_no,char), '-', convert(register_no,char), '-', convert(trans_no,char)) as trans_num
+
+		from transArchive00
+		where voided <> 5 and UPC <> 'TAX' and UPC <> 'DISCOUNT'
+./nightly.dtrans.php: Thu, 19 Jul 2012 01:10:02 -0400: create  view rp_receipt_header_00 as
+		select
+		datetime as dateTimeStamp,
+		card_no as memberID,
+		concat(convert(emp_no,char), '-', convert(register_no,char), '-', convert(trans_no,char)) as trans_num,
+		register_no,
+		emp_no,
+		trans_no,
+		convert(sum(case when discounttype = 1 then discount else 0 end),decimal(10,2)) as discountTTL,
+		convert(sum(case when discounttype = 2 then memDiscount else 0 end),decimal(10,2)) as memSpecial,
+		convert(sum(case when upc = '0000000008005' then total else 0 end),decimal(10,2)) as couponTotal,
+		convert(sum(case when upc = 'MEMCOUPON' then unitPrice else 0 end),decimal(10,2)) as memCoupon,
+		abs(sum(case when trans_subtype = 'MI' or trans_subtype = 'CX' then total else 0 end)) as chargeTotal,
+		sum(case when upc = 'Discount' then total else 0 end) as transDiscount,
+		sum(case when trans_type = 'T' then -1 * total else 0 end) as tenderTotal
+
+		from transArchive00
+		group by register_no, emp_no, trans_no, card_no, datetime
+./nightly.dtrans.php: Fri, 20 Jul 2012 01:10:01 -0400: CREATE transArchive00 LIKE core_trans.dtransactions
+./nightly.dtrans.php: Fri, 20 Jul 2012 01:10:01 -0400: INSERT INTO transArchive00 SELECT * FROM core_trans.dtransactions
+./nightly.dtrans.php: Fri, 20 Jul 2012 01:10:01 -0400: CREATE  view dlog00 as
+		select 
+		d.datetime as tdate, 
+		d.register_no, 
+		d.emp_no, 
+		d.trans_no, 
+		d.upc, 
+		CASE WHEN (d.trans_subtype IN ('CP','IC') OR d.upc like('%000000052')) then 'T' 
+			WHEN d.upc = 'DISCOUNT' then 'S' else d.trans_type end as trans_type, 
+		CASE WHEN d.upc = 'MAD Coupon' THEN 'MA' ELSe 
+		   case when d.upc like('%00000000052') then 'RR' else d.trans_subtype end end as trans_subtype, 
+		d.trans_status, 
+		d.department, 
+		d.quantity, 
+		d.unitPrice, 
+		d.total, 
+		d.tax, 
+		d.foodstamp, 
+		d.itemQtty, 
+		d.memType,
+		d.staff,
+		d.numflag,
+		d.charflag,
+		d.card_no, 
+		d.trans_id,
+		concat(convert(d.emp_no,char), '-', convert(d.register_no,char), '-',
+		convert(d.trans_no,char)) as trans_num
+
+		from transArchive00 as d
+		where d.trans_status not in ('D','X','Z') and d.emp_no not in (9999,56) and d.register_no  <> 99
+./nightly.dtrans.php: Fri, 20 Jul 2012 01:10:01 -0400: CREATE  view rp_dt_receipt_00 as 
+		select 
+		datetime,
+		register_no,
+		emp_no,
+		trans_no,
+		description,
+		case 
+			when voided = 5 
+				then 'Discount'
+			when trans_status = 'M'
+				then 'Mbr special'
+			when scale <> 0 and quantity <> 0 
+				then concat(convert(quantity,char), ' @ ', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity = 1
+				then concat(convert(volume,char), ' /', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity <> 1
+				then concat(convert(Quantity,char), ' @ ', convert(Volume,char), ' /', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and discounttype = 3
+				then concat(convert(ItemQtty,char), ' /', convert(UnitPrice,char))
+			when abs(itemQtty) > 1
+				then concat(convert(quantity,char), ' @ ', convert(unitPrice,char))	
+			when matched > 0
+				then '1 w/ vol adj'
+			else ''
+				
+		end
+		as comment,
+			total,
+
+		case 
+			when trans_status = 'V' 
+				then 'VD'
+			when trans_status = 'R'
+				then 'RF'
+			when tax <> 0 and foodstamp <> 0
+				then 'TF'
+			when tax <> 0 and foodstamp = 0
+				then 'T' 
+			when tax = 0 and foodstamp <> 0
+				then 'F'
+			when tax = 0 and foodstamp = 0
+				then '' 
+		end
+		as Status,
+		trans_type,
+		card_no as memberID,
+		unitPrice,
+		voided,
+		trans_id,
+		concat(convert(emp_no,char), '-', convert(register_no,char), '-', convert(trans_no,char)) as trans_num
+
+		from transArchive00
+		where voided <> 5 and UPC <> 'TAX' and UPC <> 'DISCOUNT'
+./nightly.dtrans.php: Fri, 20 Jul 2012 01:10:01 -0400: create  view rp_receipt_header_00 as
+		select
+		datetime as dateTimeStamp,
+		card_no as memberID,
+		concat(convert(emp_no,char), '-', convert(register_no,char), '-', convert(trans_no,char)) as trans_num,
+		register_no,
+		emp_no,
+		trans_no,
+		convert(sum(case when discounttype = 1 then discount else 0 end),decimal(10,2)) as discountTTL,
+		convert(sum(case when discounttype = 2 then memDiscount else 0 end),decimal(10,2)) as memSpecial,
+		convert(sum(case when upc = '0000000008005' then total else 0 end),decimal(10,2)) as couponTotal,
+		convert(sum(case when upc = 'MEMCOUPON' then unitPrice else 0 end),decimal(10,2)) as memCoupon,
+		abs(sum(case when trans_subtype = 'MI' or trans_subtype = 'CX' then total else 0 end)) as chargeTotal,
+		sum(case when upc = 'Discount' then total else 0 end) as transDiscount,
+		sum(case when trans_type = 'T' then -1 * total else 0 end) as tenderTotal
+
+		from transArchive00
+		group by register_no, emp_no, trans_no, card_no, datetime
+./nightly.dtrans.php: Sat, 21 Jul 2012 01:10:01 -0400: CREATE transArchive00 LIKE core_trans.dtransactions
+./nightly.dtrans.php: Sat, 21 Jul 2012 01:10:01 -0400: INSERT INTO transArchive00 SELECT * FROM core_trans.dtransactions
+./nightly.dtrans.php: Sat, 21 Jul 2012 01:10:01 -0400: CREATE  view dlog00 as
+		select 
+		d.datetime as tdate, 
+		d.register_no, 
+		d.emp_no, 
+		d.trans_no, 
+		d.upc, 
+		CASE WHEN (d.trans_subtype IN ('CP','IC') OR d.upc like('%000000052')) then 'T' 
+			WHEN d.upc = 'DISCOUNT' then 'S' else d.trans_type end as trans_type, 
+		CASE WHEN d.upc = 'MAD Coupon' THEN 'MA' ELSe 
+		   case when d.upc like('%00000000052') then 'RR' else d.trans_subtype end end as trans_subtype, 
+		d.trans_status, 
+		d.department, 
+		d.quantity, 
+		d.unitPrice, 
+		d.total, 
+		d.tax, 
+		d.foodstamp, 
+		d.itemQtty, 
+		d.memType,
+		d.staff,
+		d.numflag,
+		d.charflag,
+		d.card_no, 
+		d.trans_id,
+		concat(convert(d.emp_no,char), '-', convert(d.register_no,char), '-',
+		convert(d.trans_no,char)) as trans_num
+
+		from transArchive00 as d
+		where d.trans_status not in ('D','X','Z') and d.emp_no not in (9999,56) and d.register_no  <> 99
+./nightly.dtrans.php: Sat, 21 Jul 2012 01:10:01 -0400: CREATE  view rp_dt_receipt_00 as 
+		select 
+		datetime,
+		register_no,
+		emp_no,
+		trans_no,
+		description,
+		case 
+			when voided = 5 
+				then 'Discount'
+			when trans_status = 'M'
+				then 'Mbr special'
+			when scale <> 0 and quantity <> 0 
+				then concat(convert(quantity,char), ' @ ', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity = 1
+				then concat(convert(volume,char), ' /', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity <> 1
+				then concat(convert(Quantity,char), ' @ ', convert(Volume,char), ' /', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and discounttype = 3
+				then concat(convert(ItemQtty,char), ' /', convert(UnitPrice,char))
+			when abs(itemQtty) > 1
+				then concat(convert(quantity,char), ' @ ', convert(unitPrice,char))	
+			when matched > 0
+				then '1 w/ vol adj'
+			else ''
+				
+		end
+		as comment,
+			total,
+
+		case 
+			when trans_status = 'V' 
+				then 'VD'
+			when trans_status = 'R'
+				then 'RF'
+			when tax <> 0 and foodstamp <> 0
+				then 'TF'
+			when tax <> 0 and foodstamp = 0
+				then 'T' 
+			when tax = 0 and foodstamp <> 0
+				then 'F'
+			when tax = 0 and foodstamp = 0
+				then '' 
+		end
+		as Status,
+		trans_type,
+		card_no as memberID,
+		unitPrice,
+		voided,
+		trans_id,
+		concat(convert(emp_no,char), '-', convert(register_no,char), '-', convert(trans_no,char)) as trans_num
+
+		from transArchive00
+		where voided <> 5 and UPC <> 'TAX' and UPC <> 'DISCOUNT'
+./nightly.dtrans.php: Sat, 21 Jul 2012 01:10:01 -0400: create  view rp_receipt_header_00 as
+		select
+		datetime as dateTimeStamp,
+		card_no as memberID,
+		concat(convert(emp_no,char), '-', convert(register_no,char), '-', convert(trans_no,char)) as trans_num,
+		register_no,
+		emp_no,
+		trans_no,
+		convert(sum(case when discounttype = 1 then discount else 0 end),decimal(10,2)) as discountTTL,
+		convert(sum(case when discounttype = 2 then memDiscount else 0 end),decimal(10,2)) as memSpecial,
+		convert(sum(case when upc = '0000000008005' then total else 0 end),decimal(10,2)) as couponTotal,
+		convert(sum(case when upc = 'MEMCOUPON' then unitPrice else 0 end),decimal(10,2)) as memCoupon,
+		abs(sum(case when trans_subtype = 'MI' or trans_subtype = 'CX' then total else 0 end)) as chargeTotal,
+		sum(case when upc = 'Discount' then total else 0 end) as transDiscount,
+		sum(case when trans_type = 'T' then -1 * total else 0 end) as tenderTotal
+
+		from transArchive00
+		group by register_no, emp_no, trans_no, card_no, datetime
+./nightly.dtrans.php: Sun, 22 Jul 2012 01:10:02 -0400: CREATE transArchive00 LIKE core_trans.dtransactions
+./nightly.dtrans.php: Sun, 22 Jul 2012 01:10:02 -0400: INSERT INTO transArchive00 SELECT * FROM core_trans.dtransactions
+./nightly.dtrans.php: Sun, 22 Jul 2012 01:10:02 -0400: CREATE  view dlog00 as
+		select 
+		d.datetime as tdate, 
+		d.register_no, 
+		d.emp_no, 
+		d.trans_no, 
+		d.upc, 
+		CASE WHEN (d.trans_subtype IN ('CP','IC') OR d.upc like('%000000052')) then 'T' 
+			WHEN d.upc = 'DISCOUNT' then 'S' else d.trans_type end as trans_type, 
+		CASE WHEN d.upc = 'MAD Coupon' THEN 'MA' ELSe 
+		   case when d.upc like('%00000000052') then 'RR' else d.trans_subtype end end as trans_subtype, 
+		d.trans_status, 
+		d.department, 
+		d.quantity, 
+		d.unitPrice, 
+		d.total, 
+		d.tax, 
+		d.foodstamp, 
+		d.itemQtty, 
+		d.memType,
+		d.staff,
+		d.numflag,
+		d.charflag,
+		d.card_no, 
+		d.trans_id,
+		concat(convert(d.emp_no,char), '-', convert(d.register_no,char), '-',
+		convert(d.trans_no,char)) as trans_num
+
+		from transArchive00 as d
+		where d.trans_status not in ('D','X','Z') and d.emp_no not in (9999,56) and d.register_no  <> 99
+./nightly.dtrans.php: Sun, 22 Jul 2012 01:10:02 -0400: CREATE  view rp_dt_receipt_00 as 
+		select 
+		datetime,
+		register_no,
+		emp_no,
+		trans_no,
+		description,
+		case 
+			when voided = 5 
+				then 'Discount'
+			when trans_status = 'M'
+				then 'Mbr special'
+			when scale <> 0 and quantity <> 0 
+				then concat(convert(quantity,char), ' @ ', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity = 1
+				then concat(convert(volume,char), ' /', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity <> 1
+				then concat(convert(Quantity,char), ' @ ', convert(Volume,char), ' /', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and discounttype = 3
+				then concat(convert(ItemQtty,char), ' /', convert(UnitPrice,char))
+			when abs(itemQtty) > 1
+				then concat(convert(quantity,char), ' @ ', convert(unitPrice,char))	
+			when matched > 0
+				then '1 w/ vol adj'
+			else ''
+				
+		end
+		as comment,
+			total,
+
+		case 
+			when trans_status = 'V' 
+				then 'VD'
+			when trans_status = 'R'
+				then 'RF'
+			when tax <> 0 and foodstamp <> 0
+				then 'TF'
+			when tax <> 0 and foodstamp = 0
+				then 'T' 
+			when tax = 0 and foodstamp <> 0
+				then 'F'
+			when tax = 0 and foodstamp = 0
+				then '' 
+		end
+		as Status,
+		trans_type,
+		card_no as memberID,
+		unitPrice,
+		voided,
+		trans_id,
+		concat(convert(emp_no,char), '-', convert(register_no,char), '-', convert(trans_no,char)) as trans_num
+
+		from transArchive00
+		where voided <> 5 and UPC <> 'TAX' and UPC <> 'DISCOUNT'
+./nightly.dtrans.php: Sun, 22 Jul 2012 01:10:02 -0400: create  view rp_receipt_header_00 as
+		select
+		datetime as dateTimeStamp,
+		card_no as memberID,
+		concat(convert(emp_no,char), '-', convert(register_no,char), '-', convert(trans_no,char)) as trans_num,
+		register_no,
+		emp_no,
+		trans_no,
+		convert(sum(case when discounttype = 1 then discount else 0 end),decimal(10,2)) as discountTTL,
+		convert(sum(case when discounttype = 2 then memDiscount else 0 end),decimal(10,2)) as memSpecial,
+		convert(sum(case when upc = '0000000008005' then total else 0 end),decimal(10,2)) as couponTotal,
+		convert(sum(case when upc = 'MEMCOUPON' then unitPrice else 0 end),decimal(10,2)) as memCoupon,
+		abs(sum(case when trans_subtype = 'MI' or trans_subtype = 'CX' then total else 0 end)) as chargeTotal,
+		sum(case when upc = 'Discount' then total else 0 end) as transDiscount,
+		sum(case when trans_type = 'T' then -1 * total else 0 end) as tenderTotal
+
+		from transArchive00
+		group by register_no, emp_no, trans_no, card_no, datetime
+./nightly.dtrans.php: Mon, 23 Jul 2012 01:10:01 -0400: CREATE transArchive00 LIKE core_trans.dtransactions
+./nightly.dtrans.php: Mon, 23 Jul 2012 01:10:01 -0400: INSERT INTO transArchive00 SELECT * FROM core_trans.dtransactions
+./nightly.dtrans.php: Mon, 23 Jul 2012 01:10:01 -0400: CREATE  view dlog00 as
+		select 
+		d.datetime as tdate, 
+		d.register_no, 
+		d.emp_no, 
+		d.trans_no, 
+		d.upc, 
+		CASE WHEN (d.trans_subtype IN ('CP','IC') OR d.upc like('%000000052')) then 'T' 
+			WHEN d.upc = 'DISCOUNT' then 'S' else d.trans_type end as trans_type, 
+		CASE WHEN d.upc = 'MAD Coupon' THEN 'MA' ELSe 
+		   case when d.upc like('%00000000052') then 'RR' else d.trans_subtype end end as trans_subtype, 
+		d.trans_status, 
+		d.department, 
+		d.quantity, 
+		d.unitPrice, 
+		d.total, 
+		d.tax, 
+		d.foodstamp, 
+		d.itemQtty, 
+		d.memType,
+		d.staff,
+		d.numflag,
+		d.charflag,
+		d.card_no, 
+		d.trans_id,
+		concat(convert(d.emp_no,char), '-', convert(d.register_no,char), '-',
+		convert(d.trans_no,char)) as trans_num
+
+		from transArchive00 as d
+		where d.trans_status not in ('D','X','Z') and d.emp_no not in (9999,56) and d.register_no  <> 99
+./nightly.dtrans.php: Mon, 23 Jul 2012 01:10:01 -0400: CREATE  view rp_dt_receipt_00 as 
+		select 
+		datetime,
+		register_no,
+		emp_no,
+		trans_no,
+		description,
+		case 
+			when voided = 5 
+				then 'Discount'
+			when trans_status = 'M'
+				then 'Mbr special'
+			when scale <> 0 and quantity <> 0 
+				then concat(convert(quantity,char), ' @ ', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity = 1
+				then concat(convert(volume,char), ' /', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity <> 1
+				then concat(convert(Quantity,char), ' @ ', convert(Volume,char), ' /', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and discounttype = 3
+				then concat(convert(ItemQtty,char), ' /', convert(UnitPrice,char))
+			when abs(itemQtty) > 1
+				then concat(convert(quantity,char), ' @ ', convert(unitPrice,char))	
+			when matched > 0
+				then '1 w/ vol adj'
+			else ''
+				
+		end
+		as comment,
+			total,
+
+		case 
+			when trans_status = 'V' 
+				then 'VD'
+			when trans_status = 'R'
+				then 'RF'
+			when tax <> 0 and foodstamp <> 0
+				then 'TF'
+			when tax <> 0 and foodstamp = 0
+				then 'T' 
+			when tax = 0 and foodstamp <> 0
+				then 'F'
+			when tax = 0 and foodstamp = 0
+				then '' 
+		end
+		as Status,
+		trans_type,
+		card_no as memberID,
+		unitPrice,
+		voided,
+		trans_id,
+		concat(convert(emp_no,char), '-', convert(register_no,char), '-', convert(trans_no,char)) as trans_num
+
+		from transArchive00
+		where voided <> 5 and UPC <> 'TAX' and UPC <> 'DISCOUNT'
+./nightly.dtrans.php: Mon, 23 Jul 2012 01:10:01 -0400: create  view rp_receipt_header_00 as
+		select
+		datetime as dateTimeStamp,
+		card_no as memberID,
+		concat(convert(emp_no,char), '-', convert(register_no,char), '-', convert(trans_no,char)) as trans_num,
+		register_no,
+		emp_no,
+		trans_no,
+		convert(sum(case when discounttype = 1 then discount else 0 end),decimal(10,2)) as discountTTL,
+		convert(sum(case when discounttype = 2 then memDiscount else 0 end),decimal(10,2)) as memSpecial,
+		convert(sum(case when upc = '0000000008005' then total else 0 end),decimal(10,2)) as couponTotal,
+		convert(sum(case when upc = 'MEMCOUPON' then unitPrice else 0 end),decimal(10,2)) as memCoupon,
+		abs(sum(case when trans_subtype = 'MI' or trans_subtype = 'CX' then total else 0 end)) as chargeTotal,
+		sum(case when upc = 'Discount' then total else 0 end) as transDiscount,
+		sum(case when trans_type = 'T' then -1 * total else 0 end) as tenderTotal
+
+		from transArchive00
+		group by register_no, emp_no, trans_no, card_no, datetime
+./nightly.dtrans.php: Tue, 24 Jul 2012 01:10:01 -0400: CREATE transArchive00 LIKE core_trans.dtransactions
+./nightly.dtrans.php: Tue, 24 Jul 2012 01:10:01 -0400: INSERT INTO transArchive00 SELECT * FROM core_trans.dtransactions
+./nightly.dtrans.php: Tue, 24 Jul 2012 01:10:01 -0400: CREATE  view dlog00 as
+		select 
+		d.datetime as tdate, 
+		d.register_no, 
+		d.emp_no, 
+		d.trans_no, 
+		d.upc, 
+		CASE WHEN (d.trans_subtype IN ('CP','IC') OR d.upc like('%000000052')) then 'T' 
+			WHEN d.upc = 'DISCOUNT' then 'S' else d.trans_type end as trans_type, 
+		CASE WHEN d.upc = 'MAD Coupon' THEN 'MA' ELSe 
+		   case when d.upc like('%00000000052') then 'RR' else d.trans_subtype end end as trans_subtype, 
+		d.trans_status, 
+		d.department, 
+		d.quantity, 
+		d.unitPrice, 
+		d.total, 
+		d.tax, 
+		d.foodstamp, 
+		d.itemQtty, 
+		d.memType,
+		d.staff,
+		d.numflag,
+		d.charflag,
+		d.card_no, 
+		d.trans_id,
+		concat(convert(d.emp_no,char), '-', convert(d.register_no,char), '-',
+		convert(d.trans_no,char)) as trans_num
+
+		from transArchive00 as d
+		where d.trans_status not in ('D','X','Z') and d.emp_no not in (9999,56) and d.register_no  <> 99
+./nightly.dtrans.php: Tue, 24 Jul 2012 01:10:01 -0400: CREATE  view rp_dt_receipt_00 as 
+		select 
+		datetime,
+		register_no,
+		emp_no,
+		trans_no,
+		description,
+		case 
+			when voided = 5 
+				then 'Discount'
+			when trans_status = 'M'
+				then 'Mbr special'
+			when scale <> 0 and quantity <> 0 
+				then concat(convert(quantity,char), ' @ ', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity = 1
+				then concat(convert(volume,char), ' /', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity <> 1
+				then concat(convert(Quantity,char), ' @ ', convert(Volume,char), ' /', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and discounttype = 3
+				then concat(convert(ItemQtty,char), ' /', convert(UnitPrice,char))
+			when abs(itemQtty) > 1
+				then concat(convert(quantity,char), ' @ ', convert(unitPrice,char))	
+			when matched > 0
+				then '1 w/ vol adj'
+			else ''
+				
+		end
+		as comment,
+			total,
+
+		case 
+			when trans_status = 'V' 
+				then 'VD'
+			when trans_status = 'R'
+				then 'RF'
+			when tax <> 0 and foodstamp <> 0
+				then 'TF'
+			when tax <> 0 and foodstamp = 0
+				then 'T' 
+			when tax = 0 and foodstamp <> 0
+				then 'F'
+			when tax = 0 and foodstamp = 0
+				then '' 
+		end
+		as Status,
+		trans_type,
+		card_no as memberID,
+		unitPrice,
+		voided,
+		trans_id,
+		concat(convert(emp_no,char), '-', convert(register_no,char), '-', convert(trans_no,char)) as trans_num
+
+		from transArchive00
+		where voided <> 5 and UPC <> 'TAX' and UPC <> 'DISCOUNT'
+./nightly.dtrans.php: Tue, 24 Jul 2012 01:10:01 -0400: create  view rp_receipt_header_00 as
+		select
+		datetime as dateTimeStamp,
+		card_no as memberID,
+		concat(convert(emp_no,char), '-', convert(register_no,char), '-', convert(trans_no,char)) as trans_num,
+		register_no,
+		emp_no,
+		trans_no,
+		convert(sum(case when discounttype = 1 then discount else 0 end),decimal(10,2)) as discountTTL,
+		convert(sum(case when discounttype = 2 then memDiscount else 0 end),decimal(10,2)) as memSpecial,
+		convert(sum(case when upc = '0000000008005' then total else 0 end),decimal(10,2)) as couponTotal,
+		convert(sum(case when upc = 'MEMCOUPON' then unitPrice else 0 end),decimal(10,2)) as memCoupon,
+		abs(sum(case when trans_subtype = 'MI' or trans_subtype = 'CX' then total else 0 end)) as chargeTotal,
+		sum(case when upc = 'Discount' then total else 0 end) as transDiscount,
+		sum(case when trans_type = 'T' then -1 * total else 0 end) as tenderTotal
+
+		from transArchive00
+		group by register_no, emp_no, trans_no, card_no, datetime
+./nightly.dtrans.php: Wed, 25 Jul 2012 01:10:01 -0400: CREATE transArchive00 LIKE core_trans.dtransactions
+./nightly.dtrans.php: Wed, 25 Jul 2012 01:10:01 -0400: INSERT INTO transArchive00 SELECT * FROM core_trans.dtransactions
+./nightly.dtrans.php: Wed, 25 Jul 2012 01:10:01 -0400: CREATE  view dlog00 as
+		select 
+		d.datetime as tdate, 
+		d.register_no, 
+		d.emp_no, 
+		d.trans_no, 
+		d.upc, 
+		CASE WHEN (d.trans_subtype IN ('CP','IC') OR d.upc like('%000000052')) then 'T' 
+			WHEN d.upc = 'DISCOUNT' then 'S' else d.trans_type end as trans_type, 
+		CASE WHEN d.upc = 'MAD Coupon' THEN 'MA' ELSe 
+		   case when d.upc like('%00000000052') then 'RR' else d.trans_subtype end end as trans_subtype, 
+		d.trans_status, 
+		d.department, 
+		d.quantity, 
+		d.unitPrice, 
+		d.total, 
+		d.tax, 
+		d.foodstamp, 
+		d.itemQtty, 
+		d.memType,
+		d.staff,
+		d.numflag,
+		d.charflag,
+		d.card_no, 
+		d.trans_id,
+		concat(convert(d.emp_no,char), '-', convert(d.register_no,char), '-',
+		convert(d.trans_no,char)) as trans_num
+
+		from transArchive00 as d
+		where d.trans_status not in ('D','X','Z') and d.emp_no not in (9999,56) and d.register_no  <> 99
+./nightly.dtrans.php: Wed, 25 Jul 2012 01:10:01 -0400: CREATE  view rp_dt_receipt_00 as 
+		select 
+		datetime,
+		register_no,
+		emp_no,
+		trans_no,
+		description,
+		case 
+			when voided = 5 
+				then 'Discount'
+			when trans_status = 'M'
+				then 'Mbr special'
+			when scale <> 0 and quantity <> 0 
+				then concat(convert(quantity,char), ' @ ', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity = 1
+				then concat(convert(volume,char), ' /', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity <> 1
+				then concat(convert(Quantity,char), ' @ ', convert(Volume,char), ' /', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and discounttype = 3
+				then concat(convert(ItemQtty,char), ' /', convert(UnitPrice,char))
+			when abs(itemQtty) > 1
+				then concat(convert(quantity,char), ' @ ', convert(unitPrice,char))	
+			when matched > 0
+				then '1 w/ vol adj'
+			else ''
+				
+		end
+		as comment,
+			total,
+
+		case 
+			when trans_status = 'V' 
+				then 'VD'
+			when trans_status = 'R'
+				then 'RF'
+			when tax <> 0 and foodstamp <> 0
+				then 'TF'
+			when tax <> 0 and foodstamp = 0
+				then 'T' 
+			when tax = 0 and foodstamp <> 0
+				then 'F'
+			when tax = 0 and foodstamp = 0
+				then '' 
+		end
+		as Status,
+		trans_type,
+		card_no as memberID,
+		unitPrice,
+		voided,
+		trans_id,
+		concat(convert(emp_no,char), '-', convert(register_no,char), '-', convert(trans_no,char)) as trans_num
+
+		from transArchive00
+		where voided <> 5 and UPC <> 'TAX' and UPC <> 'DISCOUNT'
+./nightly.dtrans.php: Wed, 25 Jul 2012 01:10:01 -0400: create  view rp_receipt_header_00 as
+		select
+		datetime as dateTimeStamp,
+		card_no as memberID,
+		concat(convert(emp_no,char), '-', convert(register_no,char), '-', convert(trans_no,char)) as trans_num,
+		register_no,
+		emp_no,
+		trans_no,
+		convert(sum(case when discounttype = 1 then discount else 0 end),decimal(10,2)) as discountTTL,
+		convert(sum(case when discounttype = 2 then memDiscount else 0 end),decimal(10,2)) as memSpecial,
+		convert(sum(case when upc = '0000000008005' then total else 0 end),decimal(10,2)) as couponTotal,
+		convert(sum(case when upc = 'MEMCOUPON' then unitPrice else 0 end),decimal(10,2)) as memCoupon,
+		abs(sum(case when trans_subtype = 'MI' or trans_subtype = 'CX' then total else 0 end)) as chargeTotal,
+		sum(case when upc = 'Discount' then total else 0 end) as transDiscount,
+		sum(case when trans_type = 'T' then -1 * total else 0 end) as tenderTotal
+
+		from transArchive00
+		group by register_no, emp_no, trans_no, card_no, datetime
+./nightly.dtrans.php: Thu, 26 Jul 2012 01:10:02 -0400: CREATE transArchive00 LIKE core_trans.dtransactions
+./nightly.dtrans.php: Thu, 26 Jul 2012 01:10:02 -0400: INSERT INTO transArchive00 SELECT * FROM core_trans.dtransactions
+./nightly.dtrans.php: Thu, 26 Jul 2012 01:10:02 -0400: CREATE  view dlog00 as
+		select 
+		d.datetime as tdate, 
+		d.register_no, 
+		d.emp_no, 
+		d.trans_no, 
+		d.upc, 
+		CASE WHEN (d.trans_subtype IN ('CP','IC') OR d.upc like('%000000052')) then 'T' 
+			WHEN d.upc = 'DISCOUNT' then 'S' else d.trans_type end as trans_type, 
+		CASE WHEN d.upc = 'MAD Coupon' THEN 'MA' ELSe 
+		   case when d.upc like('%00000000052') then 'RR' else d.trans_subtype end end as trans_subtype, 
+		d.trans_status, 
+		d.department, 
+		d.quantity, 
+		d.unitPrice, 
+		d.total, 
+		d.tax, 
+		d.foodstamp, 
+		d.itemQtty, 
+		d.memType,
+		d.staff,
+		d.numflag,
+		d.charflag,
+		d.card_no, 
+		d.trans_id,
+		concat(convert(d.emp_no,char), '-', convert(d.register_no,char), '-',
+		convert(d.trans_no,char)) as trans_num
+
+		from transArchive00 as d
+		where d.trans_status not in ('D','X','Z') and d.emp_no not in (9999,56) and d.register_no  <> 99
+./nightly.dtrans.php: Thu, 26 Jul 2012 01:10:02 -0400: CREATE  view rp_dt_receipt_00 as 
+		select 
+		datetime,
+		register_no,
+		emp_no,
+		trans_no,
+		description,
+		case 
+			when voided = 5 
+				then 'Discount'
+			when trans_status = 'M'
+				then 'Mbr special'
+			when scale <> 0 and quantity <> 0 
+				then concat(convert(quantity,char), ' @ ', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity = 1
+				then concat(convert(volume,char), ' /', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity <> 1
+				then concat(convert(Quantity,char), ' @ ', convert(Volume,char), ' /', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and discounttype = 3
+				then concat(convert(ItemQtty,char), ' /', convert(UnitPrice,char))
+			when abs(itemQtty) > 1
+				then concat(convert(quantity,char), ' @ ', convert(unitPrice,char))	
+			when matched > 0
+				then '1 w/ vol adj'
+			else ''
+				
+		end
+		as comment,
+			total,
+
+		case 
+			when trans_status = 'V' 
+				then 'VD'
+			when trans_status = 'R'
+				then 'RF'
+			when tax <> 0 and foodstamp <> 0
+				then 'TF'
+			when tax <> 0 and foodstamp = 0
+				then 'T' 
+			when tax = 0 and foodstamp <> 0
+				then 'F'
+			when tax = 0 and foodstamp = 0
+				then '' 
+		end
+		as Status,
+		trans_type,
+		card_no as memberID,
+		unitPrice,
+		voided,
+		trans_id,
+		concat(convert(emp_no,char), '-', convert(register_no,char), '-', convert(trans_no,char)) as trans_num
+
+		from transArchive00
+		where voided <> 5 and UPC <> 'TAX' and UPC <> 'DISCOUNT'
+./nightly.dtrans.php: Thu, 26 Jul 2012 01:10:02 -0400: create  view rp_receipt_header_00 as
+		select
+		datetime as dateTimeStamp,
+		card_no as memberID,
+		concat(convert(emp_no,char), '-', convert(register_no,char), '-', convert(trans_no,char)) as trans_num,
+		register_no,
+		emp_no,
+		trans_no,
+		convert(sum(case when discounttype = 1 then discount else 0 end),decimal(10,2)) as discountTTL,
+		convert(sum(case when discounttype = 2 then memDiscount else 0 end),decimal(10,2)) as memSpecial,
+		convert(sum(case when upc = '0000000008005' then total else 0 end),decimal(10,2)) as couponTotal,
+		convert(sum(case when upc = 'MEMCOUPON' then unitPrice else 0 end),decimal(10,2)) as memCoupon,
+		abs(sum(case when trans_subtype = 'MI' or trans_subtype = 'CX' then total else 0 end)) as chargeTotal,
+		sum(case when upc = 'Discount' then total else 0 end) as transDiscount,
+		sum(case when trans_type = 'T' then -1 * total else 0 end) as tenderTotal
+
+		from transArchive00
+		group by register_no, emp_no, trans_no, card_no, datetime
+./nightly.dtrans.php: Fri, 27 Jul 2012 01:10:01 -0400: CREATE transArchive00 LIKE core_trans.dtransactions
+./nightly.dtrans.php: Fri, 27 Jul 2012 01:10:01 -0400: INSERT INTO transArchive00 SELECT * FROM core_trans.dtransactions
+./nightly.dtrans.php: Fri, 27 Jul 2012 01:10:01 -0400: CREATE  view dlog00 as
+		select 
+		d.datetime as tdate, 
+		d.register_no, 
+		d.emp_no, 
+		d.trans_no, 
+		d.upc, 
+		CASE WHEN (d.trans_subtype IN ('CP','IC') OR d.upc like('%000000052')) then 'T' 
+			WHEN d.upc = 'DISCOUNT' then 'S' else d.trans_type end as trans_type, 
+		CASE WHEN d.upc = 'MAD Coupon' THEN 'MA' ELSe 
+		   case when d.upc like('%00000000052') then 'RR' else d.trans_subtype end end as trans_subtype, 
+		d.trans_status, 
+		d.department, 
+		d.quantity, 
+		d.unitPrice, 
+		d.total, 
+		d.tax, 
+		d.foodstamp, 
+		d.itemQtty, 
+		d.memType,
+		d.staff,
+		d.numflag,
+		d.charflag,
+		d.card_no, 
+		d.trans_id,
+		concat(convert(d.emp_no,char), '-', convert(d.register_no,char), '-',
+		convert(d.trans_no,char)) as trans_num
+
+		from transArchive00 as d
+		where d.trans_status not in ('D','X','Z') and d.emp_no not in (9999,56) and d.register_no  <> 99
+./nightly.dtrans.php: Fri, 27 Jul 2012 01:10:01 -0400: CREATE  view rp_dt_receipt_00 as 
+		select 
+		datetime,
+		register_no,
+		emp_no,
+		trans_no,
+		description,
+		case 
+			when voided = 5 
+				then 'Discount'
+			when trans_status = 'M'
+				then 'Mbr special'
+			when scale <> 0 and quantity <> 0 
+				then concat(convert(quantity,char), ' @ ', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity = 1
+				then concat(convert(volume,char), ' /', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity <> 1
+				then concat(convert(Quantity,char), ' @ ', convert(Volume,char), ' /', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and discounttype = 3
+				then concat(convert(ItemQtty,char), ' /', convert(UnitPrice,char))
+			when abs(itemQtty) > 1
+				then concat(convert(quantity,char), ' @ ', convert(unitPrice,char))	
+			when matched > 0
+				then '1 w/ vol adj'
+			else ''
+				
+		end
+		as comment,
+			total,
+
+		case 
+			when trans_status = 'V' 
+				then 'VD'
+			when trans_status = 'R'
+				then 'RF'
+			when tax <> 0 and foodstamp <> 0
+				then 'TF'
+			when tax <> 0 and foodstamp = 0
+				then 'T' 
+			when tax = 0 and foodstamp <> 0
+				then 'F'
+			when tax = 0 and foodstamp = 0
+				then '' 
+		end
+		as Status,
+		trans_type,
+		card_no as memberID,
+		unitPrice,
+		voided,
+		trans_id,
+		concat(convert(emp_no,char), '-', convert(register_no,char), '-', convert(trans_no,char)) as trans_num
+
+		from transArchive00
+		where voided <> 5 and UPC <> 'TAX' and UPC <> 'DISCOUNT'
+./nightly.dtrans.php: Fri, 27 Jul 2012 01:10:01 -0400: create  view rp_receipt_header_00 as
+		select
+		datetime as dateTimeStamp,
+		card_no as memberID,
+		concat(convert(emp_no,char), '-', convert(register_no,char), '-', convert(trans_no,char)) as trans_num,
+		register_no,
+		emp_no,
+		trans_no,
+		convert(sum(case when discounttype = 1 then discount else 0 end),decimal(10,2)) as discountTTL,
+		convert(sum(case when discounttype = 2 then memDiscount else 0 end),decimal(10,2)) as memSpecial,
+		convert(sum(case when upc = '0000000008005' then total else 0 end),decimal(10,2)) as couponTotal,
+		convert(sum(case when upc = 'MEMCOUPON' then unitPrice else 0 end),decimal(10,2)) as memCoupon,
+		abs(sum(case when trans_subtype = 'MI' or trans_subtype = 'CX' then total else 0 end)) as chargeTotal,
+		sum(case when upc = 'Discount' then total else 0 end) as transDiscount,
+		sum(case when trans_type = 'T' then -1 * total else 0 end) as tenderTotal
+
+		from transArchive00
+		group by register_no, emp_no, trans_no, card_no, datetime
+./nightly.dtrans.php: Sat, 28 Jul 2012 01:10:02 -0400: CREATE transArchive00 LIKE core_trans.dtransactions
+./nightly.dtrans.php: Sat, 28 Jul 2012 01:10:02 -0400: INSERT INTO transArchive00 SELECT * FROM core_trans.dtransactions
+./nightly.dtrans.php: Sat, 28 Jul 2012 01:10:02 -0400: CREATE  view dlog00 as
+		select 
+		d.datetime as tdate, 
+		d.register_no, 
+		d.emp_no, 
+		d.trans_no, 
+		d.upc, 
+		CASE WHEN (d.trans_subtype IN ('CP','IC') OR d.upc like('%000000052')) then 'T' 
+			WHEN d.upc = 'DISCOUNT' then 'S' else d.trans_type end as trans_type, 
+		CASE WHEN d.upc = 'MAD Coupon' THEN 'MA' ELSe 
+		   case when d.upc like('%00000000052') then 'RR' else d.trans_subtype end end as trans_subtype, 
+		d.trans_status, 
+		d.department, 
+		d.quantity, 
+		d.unitPrice, 
+		d.total, 
+		d.tax, 
+		d.foodstamp, 
+		d.itemQtty, 
+		d.memType,
+		d.staff,
+		d.numflag,
+		d.charflag,
+		d.card_no, 
+		d.trans_id,
+		concat(convert(d.emp_no,char), '-', convert(d.register_no,char), '-',
+		convert(d.trans_no,char)) as trans_num
+
+		from transArchive00 as d
+		where d.trans_status not in ('D','X','Z') and d.emp_no not in (9999,56) and d.register_no  <> 99
+./nightly.dtrans.php: Sat, 28 Jul 2012 01:10:02 -0400: CREATE  view rp_dt_receipt_00 as 
+		select 
+		datetime,
+		register_no,
+		emp_no,
+		trans_no,
+		description,
+		case 
+			when voided = 5 
+				then 'Discount'
+			when trans_status = 'M'
+				then 'Mbr special'
+			when scale <> 0 and quantity <> 0 
+				then concat(convert(quantity,char), ' @ ', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity = 1
+				then concat(convert(volume,char), ' /', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity <> 1
+				then concat(convert(Quantity,char), ' @ ', convert(Volume,char), ' /', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and discounttype = 3
+				then concat(convert(ItemQtty,char), ' /', convert(UnitPrice,char))
+			when abs(itemQtty) > 1
+				then concat(convert(quantity,char), ' @ ', convert(unitPrice,char))	
+			when matched > 0
+				then '1 w/ vol adj'
+			else ''
+				
+		end
+		as comment,
+			total,
+
+		case 
+			when trans_status = 'V' 
+				then 'VD'
+			when trans_status = 'R'
+				then 'RF'
+			when tax <> 0 and foodstamp <> 0
+				then 'TF'
+			when tax <> 0 and foodstamp = 0
+				then 'T' 
+			when tax = 0 and foodstamp <> 0
+				then 'F'
+			when tax = 0 and foodstamp = 0
+				then '' 
+		end
+		as Status,
+		trans_type,
+		card_no as memberID,
+		unitPrice,
+		voided,
+		trans_id,
+		concat(convert(emp_no,char), '-', convert(register_no,char), '-', convert(trans_no,char)) as trans_num
+
+		from transArchive00
+		where voided <> 5 and UPC <> 'TAX' and UPC <> 'DISCOUNT'
+./nightly.dtrans.php: Sat, 28 Jul 2012 01:10:02 -0400: create  view rp_receipt_header_00 as
+		select
+		datetime as dateTimeStamp,
+		card_no as memberID,
+		concat(convert(emp_no,char), '-', convert(register_no,char), '-', convert(trans_no,char)) as trans_num,
+		register_no,
+		emp_no,
+		trans_no,
+		convert(sum(case when discounttype = 1 then discount else 0 end),decimal(10,2)) as discountTTL,
+		convert(sum(case when discounttype = 2 then memDiscount else 0 end),decimal(10,2)) as memSpecial,
+		convert(sum(case when upc = '0000000008005' then total else 0 end),decimal(10,2)) as couponTotal,
+		convert(sum(case when upc = 'MEMCOUPON' then unitPrice else 0 end),decimal(10,2)) as memCoupon,
+		abs(sum(case when trans_subtype = 'MI' or trans_subtype = 'CX' then total else 0 end)) as chargeTotal,
+		sum(case when upc = 'Discount' then total else 0 end) as transDiscount,
+		sum(case when trans_type = 'T' then -1 * total else 0 end) as tenderTotal
+
+		from transArchive00
+		group by register_no, emp_no, trans_no, card_no, datetime
+./nightly.dtrans.php: Sun, 29 Jul 2012 01:10:02 -0400: CREATE transArchive00 LIKE core_trans.dtransactions
+./nightly.dtrans.php: Sun, 29 Jul 2012 01:10:02 -0400: INSERT INTO transArchive00 SELECT * FROM core_trans.dtransactions
+./nightly.dtrans.php: Sun, 29 Jul 2012 01:10:02 -0400: CREATE  view dlog00 as
+		select 
+		d.datetime as tdate, 
+		d.register_no, 
+		d.emp_no, 
+		d.trans_no, 
+		d.upc, 
+		CASE WHEN (d.trans_subtype IN ('CP','IC') OR d.upc like('%000000052')) then 'T' 
+			WHEN d.upc = 'DISCOUNT' then 'S' else d.trans_type end as trans_type, 
+		CASE WHEN d.upc = 'MAD Coupon' THEN 'MA' ELSe 
+		   case when d.upc like('%00000000052') then 'RR' else d.trans_subtype end end as trans_subtype, 
+		d.trans_status, 
+		d.department, 
+		d.quantity, 
+		d.unitPrice, 
+		d.total, 
+		d.tax, 
+		d.foodstamp, 
+		d.itemQtty, 
+		d.memType,
+		d.staff,
+		d.numflag,
+		d.charflag,
+		d.card_no, 
+		d.trans_id,
+		concat(convert(d.emp_no,char), '-', convert(d.register_no,char), '-',
+		convert(d.trans_no,char)) as trans_num
+
+		from transArchive00 as d
+		where d.trans_status not in ('D','X','Z') and d.emp_no not in (9999,56) and d.register_no  <> 99
+./nightly.dtrans.php: Sun, 29 Jul 2012 01:10:02 -0400: CREATE  view rp_dt_receipt_00 as 
+		select 
+		datetime,
+		register_no,
+		emp_no,
+		trans_no,
+		description,
+		case 
+			when voided = 5 
+				then 'Discount'
+			when trans_status = 'M'
+				then 'Mbr special'
+			when scale <> 0 and quantity <> 0 
+				then concat(convert(quantity,char), ' @ ', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity = 1
+				then concat(convert(volume,char), ' /', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity <> 1
+				then concat(convert(Quantity,char), ' @ ', convert(Volume,char), ' /', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and discounttype = 3
+				then concat(convert(ItemQtty,char), ' /', convert(UnitPrice,char))
+			when abs(itemQtty) > 1
+				then concat(convert(quantity,char), ' @ ', convert(unitPrice,char))	
+			when matched > 0
+				then '1 w/ vol adj'
+			else ''
+				
+		end
+		as comment,
+			total,
+
+		case 
+			when trans_status = 'V' 
+				then 'VD'
+			when trans_status = 'R'
+				then 'RF'
+			when tax <> 0 and foodstamp <> 0
+				then 'TF'
+			when tax <> 0 and foodstamp = 0
+				then 'T' 
+			when tax = 0 and foodstamp <> 0
+				then 'F'
+			when tax = 0 and foodstamp = 0
+				then '' 
+		end
+		as Status,
+		trans_type,
+		card_no as memberID,
+		unitPrice,
+		voided,
+		trans_id,
+		concat(convert(emp_no,char), '-', convert(register_no,char), '-', convert(trans_no,char)) as trans_num
+
+		from transArchive00
+		where voided <> 5 and UPC <> 'TAX' and UPC <> 'DISCOUNT'
+./nightly.dtrans.php: Sun, 29 Jul 2012 01:10:02 -0400: create  view rp_receipt_header_00 as
+		select
+		datetime as dateTimeStamp,
+		card_no as memberID,
+		concat(convert(emp_no,char), '-', convert(register_no,char), '-', convert(trans_no,char)) as trans_num,
+		register_no,
+		emp_no,
+		trans_no,
+		convert(sum(case when discounttype = 1 then discount else 0 end),decimal(10,2)) as discountTTL,
+		convert(sum(case when discounttype = 2 then memDiscount else 0 end),decimal(10,2)) as memSpecial,
+		convert(sum(case when upc = '0000000008005' then total else 0 end),decimal(10,2)) as couponTotal,
+		convert(sum(case when upc = 'MEMCOUPON' then unitPrice else 0 end),decimal(10,2)) as memCoupon,
+		abs(sum(case when trans_subtype = 'MI' or trans_subtype = 'CX' then total else 0 end)) as chargeTotal,
+		sum(case when upc = 'Discount' then total else 0 end) as transDiscount,
+		sum(case when trans_type = 'T' then -1 * total else 0 end) as tenderTotal
+
+		from transArchive00
+		group by register_no, emp_no, trans_no, card_no, datetime
+./nightly.dtrans.php: Mon, 30 Jul 2012 01:10:02 -0400: CREATE transArchive00 LIKE core_trans.dtransactions
+./nightly.dtrans.php: Mon, 30 Jul 2012 01:10:02 -0400: INSERT INTO transArchive00 SELECT * FROM core_trans.dtransactions
+./nightly.dtrans.php: Mon, 30 Jul 2012 01:10:02 -0400: CREATE  view dlog00 as
+		select 
+		d.datetime as tdate, 
+		d.register_no, 
+		d.emp_no, 
+		d.trans_no, 
+		d.upc, 
+		CASE WHEN (d.trans_subtype IN ('CP','IC') OR d.upc like('%000000052')) then 'T' 
+			WHEN d.upc = 'DISCOUNT' then 'S' else d.trans_type end as trans_type, 
+		CASE WHEN d.upc = 'MAD Coupon' THEN 'MA' ELSe 
+		   case when d.upc like('%00000000052') then 'RR' else d.trans_subtype end end as trans_subtype, 
+		d.trans_status, 
+		d.department, 
+		d.quantity, 
+		d.unitPrice, 
+		d.total, 
+		d.tax, 
+		d.foodstamp, 
+		d.itemQtty, 
+		d.memType,
+		d.staff,
+		d.numflag,
+		d.charflag,
+		d.card_no, 
+		d.trans_id,
+		concat(convert(d.emp_no,char), '-', convert(d.register_no,char), '-',
+		convert(d.trans_no,char)) as trans_num
+
+		from transArchive00 as d
+		where d.trans_status not in ('D','X','Z') and d.emp_no not in (9999,56) and d.register_no  <> 99
+./nightly.dtrans.php: Mon, 30 Jul 2012 01:10:02 -0400: CREATE  view rp_dt_receipt_00 as 
+		select 
+		datetime,
+		register_no,
+		emp_no,
+		trans_no,
+		description,
+		case 
+			when voided = 5 
+				then 'Discount'
+			when trans_status = 'M'
+				then 'Mbr special'
+			when scale <> 0 and quantity <> 0 
+				then concat(convert(quantity,char), ' @ ', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity = 1
+				then concat(convert(volume,char), ' /', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity <> 1
+				then concat(convert(Quantity,char), ' @ ', convert(Volume,char), ' /', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and discounttype = 3
+				then concat(convert(ItemQtty,char), ' /', convert(UnitPrice,char))
+			when abs(itemQtty) > 1
+				then concat(convert(quantity,char), ' @ ', convert(unitPrice,char))	
+			when matched > 0
+				then '1 w/ vol adj'
+			else ''
+				
+		end
+		as comment,
+			total,
+
+		case 
+			when trans_status = 'V' 
+				then 'VD'
+			when trans_status = 'R'
+				then 'RF'
+			when tax <> 0 and foodstamp <> 0
+				then 'TF'
+			when tax <> 0 and foodstamp = 0
+				then 'T' 
+			when tax = 0 and foodstamp <> 0
+				then 'F'
+			when tax = 0 and foodstamp = 0
+				then '' 
+		end
+		as Status,
+		trans_type,
+		card_no as memberID,
+		unitPrice,
+		voided,
+		trans_id,
+		concat(convert(emp_no,char), '-', convert(register_no,char), '-', convert(trans_no,char)) as trans_num
+
+		from transArchive00
+		where voided <> 5 and UPC <> 'TAX' and UPC <> 'DISCOUNT'
+./nightly.dtrans.php: Mon, 30 Jul 2012 01:10:02 -0400: create  view rp_receipt_header_00 as
+		select
+		datetime as dateTimeStamp,
+		card_no as memberID,
+		concat(convert(emp_no,char), '-', convert(register_no,char), '-', convert(trans_no,char)) as trans_num,
+		register_no,
+		emp_no,
+		trans_no,
+		convert(sum(case when discounttype = 1 then discount else 0 end),decimal(10,2)) as discountTTL,
+		convert(sum(case when discounttype = 2 then memDiscount else 0 end),decimal(10,2)) as memSpecial,
+		convert(sum(case when upc = '0000000008005' then total else 0 end),decimal(10,2)) as couponTotal,
+		convert(sum(case when upc = 'MEMCOUPON' then unitPrice else 0 end),decimal(10,2)) as memCoupon,
+		abs(sum(case when trans_subtype = 'MI' or trans_subtype = 'CX' then total else 0 end)) as chargeTotal,
+		sum(case when upc = 'Discount' then total else 0 end) as transDiscount,
+		sum(case when trans_type = 'T' then -1 * total else 0 end) as tenderTotal
+
+		from transArchive00
+		group by register_no, emp_no, trans_no, card_no, datetime
+./nightly.dtrans.php: Tue, 31 Jul 2012 01:10:01 -0400: CREATE transArchive00 LIKE core_trans.dtransactions
+./nightly.dtrans.php: Tue, 31 Jul 2012 01:10:01 -0400: INSERT INTO transArchive00 SELECT * FROM core_trans.dtransactions
+./nightly.dtrans.php: Tue, 31 Jul 2012 01:10:01 -0400: CREATE  view dlog00 as
+		select 
+		d.datetime as tdate, 
+		d.register_no, 
+		d.emp_no, 
+		d.trans_no, 
+		d.upc, 
+		CASE WHEN (d.trans_subtype IN ('CP','IC') OR d.upc like('%000000052')) then 'T' 
+			WHEN d.upc = 'DISCOUNT' then 'S' else d.trans_type end as trans_type, 
+		CASE WHEN d.upc = 'MAD Coupon' THEN 'MA' ELSe 
+		   case when d.upc like('%00000000052') then 'RR' else d.trans_subtype end end as trans_subtype, 
+		d.trans_status, 
+		d.department, 
+		d.quantity, 
+		d.unitPrice, 
+		d.total, 
+		d.tax, 
+		d.foodstamp, 
+		d.itemQtty, 
+		d.memType,
+		d.staff,
+		d.numflag,
+		d.charflag,
+		d.card_no, 
+		d.trans_id,
+		concat(convert(d.emp_no,char), '-', convert(d.register_no,char), '-',
+		convert(d.trans_no,char)) as trans_num
+
+		from transArchive00 as d
+		where d.trans_status not in ('D','X','Z') and d.emp_no not in (9999,56) and d.register_no  <> 99
+./nightly.dtrans.php: Tue, 31 Jul 2012 01:10:01 -0400: CREATE  view rp_dt_receipt_00 as 
+		select 
+		datetime,
+		register_no,
+		emp_no,
+		trans_no,
+		description,
+		case 
+			when voided = 5 
+				then 'Discount'
+			when trans_status = 'M'
+				then 'Mbr special'
+			when scale <> 0 and quantity <> 0 
+				then concat(convert(quantity,char), ' @ ', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity = 1
+				then concat(convert(volume,char), ' /', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity <> 1
+				then concat(convert(Quantity,char), ' @ ', convert(Volume,char), ' /', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and discounttype = 3
+				then concat(convert(ItemQtty,char), ' /', convert(UnitPrice,char))
+			when abs(itemQtty) > 1
+				then concat(convert(quantity,char), ' @ ', convert(unitPrice,char))	
+			when matched > 0
+				then '1 w/ vol adj'
+			else ''
+				
+		end
+		as comment,
+			total,
+
+		case 
+			when trans_status = 'V' 
+				then 'VD'
+			when trans_status = 'R'
+				then 'RF'
+			when tax <> 0 and foodstamp <> 0
+				then 'TF'
+			when tax <> 0 and foodstamp = 0
+				then 'T' 
+			when tax = 0 and foodstamp <> 0
+				then 'F'
+			when tax = 0 and foodstamp = 0
+				then '' 
+		end
+		as Status,
+		trans_type,
+		card_no as memberID,
+		unitPrice,
+		voided,
+		trans_id,
+		concat(convert(emp_no,char), '-', convert(register_no,char), '-', convert(trans_no,char)) as trans_num
+
+		from transArchive00
+		where voided <> 5 and UPC <> 'TAX' and UPC <> 'DISCOUNT'
+./nightly.dtrans.php: Tue, 31 Jul 2012 01:10:01 -0400: create  view rp_receipt_header_00 as
+		select
+		datetime as dateTimeStamp,
+		card_no as memberID,
+		concat(convert(emp_no,char), '-', convert(register_no,char), '-', convert(trans_no,char)) as trans_num,
+		register_no,
+		emp_no,
+		trans_no,
+		convert(sum(case when discounttype = 1 then discount else 0 end),decimal(10,2)) as discountTTL,
+		convert(sum(case when discounttype = 2 then memDiscount else 0 end),decimal(10,2)) as memSpecial,
+		convert(sum(case when upc = '0000000008005' then total else 0 end),decimal(10,2)) as couponTotal,
+		convert(sum(case when upc = 'MEMCOUPON' then unitPrice else 0 end),decimal(10,2)) as memCoupon,
+		abs(sum(case when trans_subtype = 'MI' or trans_subtype = 'CX' then total else 0 end)) as chargeTotal,
+		sum(case when upc = 'Discount' then total else 0 end) as transDiscount,
+		sum(case when trans_type = 'T' then -1 * total else 0 end) as tenderTotal
+
+		from transArchive00
+		group by register_no, emp_no, trans_no, card_no, datetime
+./nightly.dtrans.php: Wed, 01 Aug 2012 01:10:02 -0400: CREATE transArchive00 LIKE core_trans.dtransactions
+./nightly.dtrans.php: Wed, 01 Aug 2012 01:10:02 -0400: INSERT INTO transArchive00 SELECT * FROM core_trans.dtransactions
+./nightly.dtrans.php: Wed, 01 Aug 2012 01:10:02 -0400: CREATE  view dlog00 as
+		select 
+		d.datetime as tdate, 
+		d.register_no, 
+		d.emp_no, 
+		d.trans_no, 
+		d.upc, 
+		CASE WHEN (d.trans_subtype IN ('CP','IC') OR d.upc like('%000000052')) then 'T' 
+			WHEN d.upc = 'DISCOUNT' then 'S' else d.trans_type end as trans_type, 
+		CASE WHEN d.upc = 'MAD Coupon' THEN 'MA' ELSe 
+		   case when d.upc like('%00000000052') then 'RR' else d.trans_subtype end end as trans_subtype, 
+		d.trans_status, 
+		d.department, 
+		d.quantity, 
+		d.unitPrice, 
+		d.total, 
+		d.tax, 
+		d.foodstamp, 
+		d.itemQtty, 
+		d.memType,
+		d.staff,
+		d.numflag,
+		d.charflag,
+		d.card_no, 
+		d.trans_id,
+		concat(convert(d.emp_no,char), '-', convert(d.register_no,char), '-',
+		convert(d.trans_no,char)) as trans_num
+
+		from transArchive00 as d
+		where d.trans_status not in ('D','X','Z') and d.emp_no not in (9999,56) and d.register_no  <> 99
+./nightly.dtrans.php: Wed, 01 Aug 2012 01:10:02 -0400: CREATE  view rp_dt_receipt_00 as 
+		select 
+		datetime,
+		register_no,
+		emp_no,
+		trans_no,
+		description,
+		case 
+			when voided = 5 
+				then 'Discount'
+			when trans_status = 'M'
+				then 'Mbr special'
+			when scale <> 0 and quantity <> 0 
+				then concat(convert(quantity,char), ' @ ', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity = 1
+				then concat(convert(volume,char), ' /', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity <> 1
+				then concat(convert(Quantity,char), ' @ ', convert(Volume,char), ' /', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and discounttype = 3
+				then concat(convert(ItemQtty,char), ' /', convert(UnitPrice,char))
+			when abs(itemQtty) > 1
+				then concat(convert(quantity,char), ' @ ', convert(unitPrice,char))	
+			when matched > 0
+				then '1 w/ vol adj'
+			else ''
+				
+		end
+		as comment,
+			total,
+
+		case 
+			when trans_status = 'V' 
+				then 'VD'
+			when trans_status = 'R'
+				then 'RF'
+			when tax <> 0 and foodstamp <> 0
+				then 'TF'
+			when tax <> 0 and foodstamp = 0
+				then 'T' 
+			when tax = 0 and foodstamp <> 0
+				then 'F'
+			when tax = 0 and foodstamp = 0
+				then '' 
+		end
+		as Status,
+		trans_type,
+		card_no as memberID,
+		unitPrice,
+		voided,
+		trans_id,
+		concat(convert(emp_no,char), '-', convert(register_no,char), '-', convert(trans_no,char)) as trans_num
+
+		from transArchive00
+		where voided <> 5 and UPC <> 'TAX' and UPC <> 'DISCOUNT'
+./nightly.dtrans.php: Wed, 01 Aug 2012 01:10:02 -0400: create  view rp_receipt_header_00 as
+		select
+		datetime as dateTimeStamp,
+		card_no as memberID,
+		concat(convert(emp_no,char), '-', convert(register_no,char), '-', convert(trans_no,char)) as trans_num,
+		register_no,
+		emp_no,
+		trans_no,
+		convert(sum(case when discounttype = 1 then discount else 0 end),decimal(10,2)) as discountTTL,
+		convert(sum(case when discounttype = 2 then memDiscount else 0 end),decimal(10,2)) as memSpecial,
+		convert(sum(case when upc = '0000000008005' then total else 0 end),decimal(10,2)) as couponTotal,
+		convert(sum(case when upc = 'MEMCOUPON' then unitPrice else 0 end),decimal(10,2)) as memCoupon,
+		abs(sum(case when trans_subtype = 'MI' or trans_subtype = 'CX' then total else 0 end)) as chargeTotal,
+		sum(case when upc = 'Discount' then total else 0 end) as transDiscount,
+		sum(case when trans_type = 'T' then -1 * total else 0 end) as tenderTotal
+
+		from transArchive00
+		group by register_no, emp_no, trans_no, card_no, datetime
+./nightly.dtrans.php: Thu, 02 Aug 2012 01:10:01 -0400: CREATE transArchive00 LIKE core_trans.dtransactions
+./nightly.dtrans.php: Thu, 02 Aug 2012 01:10:01 -0400: INSERT INTO transArchive00 SELECT * FROM core_trans.dtransactions
+./nightly.dtrans.php: Thu, 02 Aug 2012 01:10:01 -0400: CREATE  view dlog00 as
+		select 
+		d.datetime as tdate, 
+		d.register_no, 
+		d.emp_no, 
+		d.trans_no, 
+		d.upc, 
+		CASE WHEN (d.trans_subtype IN ('CP','IC') OR d.upc like('%000000052')) then 'T' 
+			WHEN d.upc = 'DISCOUNT' then 'S' else d.trans_type end as trans_type, 
+		CASE WHEN d.upc = 'MAD Coupon' THEN 'MA' ELSe 
+		   case when d.upc like('%00000000052') then 'RR' else d.trans_subtype end end as trans_subtype, 
+		d.trans_status, 
+		d.department, 
+		d.quantity, 
+		d.unitPrice, 
+		d.total, 
+		d.tax, 
+		d.foodstamp, 
+		d.itemQtty, 
+		d.memType,
+		d.staff,
+		d.numflag,
+		d.charflag,
+		d.card_no, 
+		d.trans_id,
+		concat(convert(d.emp_no,char), '-', convert(d.register_no,char), '-',
+		convert(d.trans_no,char)) as trans_num
+
+		from transArchive00 as d
+		where d.trans_status not in ('D','X','Z') and d.emp_no not in (9999,56) and d.register_no  <> 99
+./nightly.dtrans.php: Thu, 02 Aug 2012 01:10:01 -0400: CREATE  view rp_dt_receipt_00 as 
+		select 
+		datetime,
+		register_no,
+		emp_no,
+		trans_no,
+		description,
+		case 
+			when voided = 5 
+				then 'Discount'
+			when trans_status = 'M'
+				then 'Mbr special'
+			when scale <> 0 and quantity <> 0 
+				then concat(convert(quantity,char), ' @ ', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity = 1
+				then concat(convert(volume,char), ' /', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity <> 1
+				then concat(convert(Quantity,char), ' @ ', convert(Volume,char), ' /', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and discounttype = 3
+				then concat(convert(ItemQtty,char), ' /', convert(UnitPrice,char))
+			when abs(itemQtty) > 1
+				then concat(convert(quantity,char), ' @ ', convert(unitPrice,char))	
+			when matched > 0
+				then '1 w/ vol adj'
+			else ''
+				
+		end
+		as comment,
+			total,
+
+		case 
+			when trans_status = 'V' 
+				then 'VD'
+			when trans_status = 'R'
+				then 'RF'
+			when tax <> 0 and foodstamp <> 0
+				then 'TF'
+			when tax <> 0 and foodstamp = 0
+				then 'T' 
+			when tax = 0 and foodstamp <> 0
+				then 'F'
+			when tax = 0 and foodstamp = 0
+				then '' 
+		end
+		as Status,
+		trans_type,
+		card_no as memberID,
+		unitPrice,
+		voided,
+		trans_id,
+		concat(convert(emp_no,char), '-', convert(register_no,char), '-', convert(trans_no,char)) as trans_num
+
+		from transArchive00
+		where voided <> 5 and UPC <> 'TAX' and UPC <> 'DISCOUNT'
+./nightly.dtrans.php: Thu, 02 Aug 2012 01:10:01 -0400: create  view rp_receipt_header_00 as
+		select
+		datetime as dateTimeStamp,
+		card_no as memberID,
+		concat(convert(emp_no,char), '-', convert(register_no,char), '-', convert(trans_no,char)) as trans_num,
+		register_no,
+		emp_no,
+		trans_no,
+		convert(sum(case when discounttype = 1 then discount else 0 end),decimal(10,2)) as discountTTL,
+		convert(sum(case when discounttype = 2 then memDiscount else 0 end),decimal(10,2)) as memSpecial,
+		convert(sum(case when upc = '0000000008005' then total else 0 end),decimal(10,2)) as couponTotal,
+		convert(sum(case when upc = 'MEMCOUPON' then unitPrice else 0 end),decimal(10,2)) as memCoupon,
+		abs(sum(case when trans_subtype = 'MI' or trans_subtype = 'CX' then total else 0 end)) as chargeTotal,
+		sum(case when upc = 'Discount' then total else 0 end) as transDiscount,
+		sum(case when trans_type = 'T' then -1 * total else 0 end) as tenderTotal
+
+		from transArchive00
+		group by register_no, emp_no, trans_no, card_no, datetime
+./nightly.dtrans.php: Fri, 03 Aug 2012 01:10:01 -0400: CREATE transArchive00 LIKE core_trans.dtransactions
+./nightly.dtrans.php: Fri, 03 Aug 2012 01:10:01 -0400: INSERT INTO transArchive00 SELECT * FROM core_trans.dtransactions
+./nightly.dtrans.php: Fri, 03 Aug 2012 01:10:01 -0400: CREATE  view dlog00 as
+		select 
+		d.datetime as tdate, 
+		d.register_no, 
+		d.emp_no, 
+		d.trans_no, 
+		d.upc, 
+		CASE WHEN (d.trans_subtype IN ('CP','IC') OR d.upc like('%000000052')) then 'T' 
+			WHEN d.upc = 'DISCOUNT' then 'S' else d.trans_type end as trans_type, 
+		CASE WHEN d.upc = 'MAD Coupon' THEN 'MA' ELSe 
+		   case when d.upc like('%00000000052') then 'RR' else d.trans_subtype end end as trans_subtype, 
+		d.trans_status, 
+		d.department, 
+		d.quantity, 
+		d.unitPrice, 
+		d.total, 
+		d.tax, 
+		d.foodstamp, 
+		d.itemQtty, 
+		d.memType,
+		d.staff,
+		d.numflag,
+		d.charflag,
+		d.card_no, 
+		d.trans_id,
+		concat(convert(d.emp_no,char), '-', convert(d.register_no,char), '-',
+		convert(d.trans_no,char)) as trans_num
+
+		from transArchive00 as d
+		where d.trans_status not in ('D','X','Z') and d.emp_no not in (9999,56) and d.register_no  <> 99
+./nightly.dtrans.php: Fri, 03 Aug 2012 01:10:01 -0400: CREATE  view rp_dt_receipt_00 as 
+		select 
+		datetime,
+		register_no,
+		emp_no,
+		trans_no,
+		description,
+		case 
+			when voided = 5 
+				then 'Discount'
+			when trans_status = 'M'
+				then 'Mbr special'
+			when scale <> 0 and quantity <> 0 
+				then concat(convert(quantity,char), ' @ ', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity = 1
+				then concat(convert(volume,char), ' /', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity <> 1
+				then concat(convert(Quantity,char), ' @ ', convert(Volume,char), ' /', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and discounttype = 3
+				then concat(convert(ItemQtty,char), ' /', convert(UnitPrice,char))
+			when abs(itemQtty) > 1
+				then concat(convert(quantity,char), ' @ ', convert(unitPrice,char))	
+			when matched > 0
+				then '1 w/ vol adj'
+			else ''
+				
+		end
+		as comment,
+			total,
+
+		case 
+			when trans_status = 'V' 
+				then 'VD'
+			when trans_status = 'R'
+				then 'RF'
+			when tax <> 0 and foodstamp <> 0
+				then 'TF'
+			when tax <> 0 and foodstamp = 0
+				then 'T' 
+			when tax = 0 and foodstamp <> 0
+				then 'F'
+			when tax = 0 and foodstamp = 0
+				then '' 
+		end
+		as Status,
+		trans_type,
+		card_no as memberID,
+		unitPrice,
+		voided,
+		trans_id,
+		concat(convert(emp_no,char), '-', convert(register_no,char), '-', convert(trans_no,char)) as trans_num
+
+		from transArchive00
+		where voided <> 5 and UPC <> 'TAX' and UPC <> 'DISCOUNT'
+./nightly.dtrans.php: Fri, 03 Aug 2012 01:10:01 -0400: create  view rp_receipt_header_00 as
+		select
+		datetime as dateTimeStamp,
+		card_no as memberID,
+		concat(convert(emp_no,char), '-', convert(register_no,char), '-', convert(trans_no,char)) as trans_num,
+		register_no,
+		emp_no,
+		trans_no,
+		convert(sum(case when discounttype = 1 then discount else 0 end),decimal(10,2)) as discountTTL,
+		convert(sum(case when discounttype = 2 then memDiscount else 0 end),decimal(10,2)) as memSpecial,
+		convert(sum(case when upc = '0000000008005' then total else 0 end),decimal(10,2)) as couponTotal,
+		convert(sum(case when upc = 'MEMCOUPON' then unitPrice else 0 end),decimal(10,2)) as memCoupon,
+		abs(sum(case when trans_subtype = 'MI' or trans_subtype = 'CX' then total else 0 end)) as chargeTotal,
+		sum(case when upc = 'Discount' then total else 0 end) as transDiscount,
+		sum(case when trans_type = 'T' then -1 * total else 0 end) as tenderTotal
+
+		from transArchive00
+		group by register_no, emp_no, trans_no, card_no, datetime
+./nightly.dtrans.php: Sat, 04 Aug 2012 01:10:01 -0400: CREATE transArchive00 LIKE core_trans.dtransactions
+./nightly.dtrans.php: Sat, 04 Aug 2012 01:10:01 -0400: INSERT INTO transArchive00 SELECT * FROM core_trans.dtransactions
+./nightly.dtrans.php: Sat, 04 Aug 2012 01:10:01 -0400: CREATE  view dlog00 as
+		select 
+		d.datetime as tdate, 
+		d.register_no, 
+		d.emp_no, 
+		d.trans_no, 
+		d.upc, 
+		CASE WHEN (d.trans_subtype IN ('CP','IC') OR d.upc like('%000000052')) then 'T' 
+			WHEN d.upc = 'DISCOUNT' then 'S' else d.trans_type end as trans_type, 
+		CASE WHEN d.upc = 'MAD Coupon' THEN 'MA' ELSe 
+		   case when d.upc like('%00000000052') then 'RR' else d.trans_subtype end end as trans_subtype, 
+		d.trans_status, 
+		d.department, 
+		d.quantity, 
+		d.unitPrice, 
+		d.total, 
+		d.tax, 
+		d.foodstamp, 
+		d.itemQtty, 
+		d.memType,
+		d.staff,
+		d.numflag,
+		d.charflag,
+		d.card_no, 
+		d.trans_id,
+		concat(convert(d.emp_no,char), '-', convert(d.register_no,char), '-',
+		convert(d.trans_no,char)) as trans_num
+
+		from transArchive00 as d
+		where d.trans_status not in ('D','X','Z') and d.emp_no not in (9999,56) and d.register_no  <> 99
+./nightly.dtrans.php: Sat, 04 Aug 2012 01:10:01 -0400: CREATE  view rp_dt_receipt_00 as 
+		select 
+		datetime,
+		register_no,
+		emp_no,
+		trans_no,
+		description,
+		case 
+			when voided = 5 
+				then 'Discount'
+			when trans_status = 'M'
+				then 'Mbr special'
+			when scale <> 0 and quantity <> 0 
+				then concat(convert(quantity,char), ' @ ', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity = 1
+				then concat(convert(volume,char), ' /', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity <> 1
+				then concat(convert(Quantity,char), ' @ ', convert(Volume,char), ' /', convert(unitPrice,char))
+			when abs(itemQtty) > 1 and discounttype = 3
+				then concat(convert(ItemQtty,char), ' /', convert(UnitPrice,char))
+			when abs(itemQtty) > 1
+				then concat(convert(quantity,char), ' @ ', convert(unitPrice,char))	
+			when matched > 0
+				then '1 w/ vol adj'
+			else ''
+				
+		end
+		as comment,
+			total,
+
+		case 
+			when trans_status = 'V' 
+				then 'VD'
+			when trans_status = 'R'
+				then 'RF'
+			when tax <> 0 and foodstamp <> 0
+				then 'TF'
+			when tax <> 0 and foodstamp = 0
+				then 'T' 
+			when tax = 0 and foodstamp <> 0
+				then 'F'
+			when tax = 0 and foodstamp = 0
+				then '' 
+		end
+		as Status,
+		trans_type,
+		card_no as memberID,
+		unitPrice,
+		voided,
+		trans_id,
+		concat(convert(emp_no,char), '-', convert(register_no,char), '-', convert(trans_no,char)) as trans_num
+
+		from transArchive00
+		where voided <> 5 and UPC <> 'TAX' and UPC <> 'DISCOUNT'
+./nightly.dtrans.php: Sat, 04 Aug 2012 01:10:01 -0400: create  view rp_receipt_header_00 as
+		select
+		datetime as dateTimeStamp,
+		card_no as memberID,
+		concat(convert(emp_no,char), '-', convert(register_no,char), '-', convert(trans_no,char)) as trans_num,
+		register_no,
+		emp_no,
+		trans_no,
+		convert(sum(case when discounttype = 1 then discount else 0 end),decimal(10,2)) as discountTTL,
+		convert(sum(case when discounttype = 2 then memDiscount else 0 end),decimal(10,2)) as memSpecial,
+		convert(sum(case when upc = '0000000008005' then total else 0 end),decimal(10,2)) as couponTotal,
+		convert(sum(case when upc = 'MEMCOUPON' then unitPrice else 0 end),decimal(10,2)) as memCoupon,
+		abs(sum(case when trans_subtype = 'MI' or trans_subtype = 'CX' then total else 0 end)) as chargeTotal,
+		sum(case when upc = 'Discount' then total else 0 end) as transDiscount,
+		sum(case when trans_type = 'T' then -1 * total else 0 end) as tenderTotal
+
+		from transArchive00
+		group by register_no, emp_no, trans_no, card_no, datetime

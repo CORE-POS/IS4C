@@ -21,6 +21,9 @@
 
 *********************************************************************************/
 
+/* 17Aug12 flathat Add titles to un-coded "History" and "Change Status" links.
+*/
+
 class Suspension extends MemberModule {
 
 	function ShowEditForm($memNum){
@@ -58,8 +61,8 @@ class Suspension extends MemberModule {
 			$ret .= "<th>Reason</th>";
 			$ret .= "<td>$reason</td></tr>";
 		}
-		$ret .= "<tr><td><a href=\"\">History</a></td>";
-		$ret .= "<td><a href=\"\">Change Status</a></td></tr>";
+		$ret .= "<tr><td><a href=\"{$FANNIE_URL}reports/SuspensionHistory/index.php?memNum=$memNum\">History</a></td>";
+		$ret .= "<td><a href=\"{$FANNIE_URL}mem/status.php?memID=$memNum\">Change Status</a></td></tr>";
 
 		$ret .= "</table></fieldset>";
 		return $ret;
