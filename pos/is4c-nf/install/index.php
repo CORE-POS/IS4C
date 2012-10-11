@@ -1346,6 +1346,37 @@ function create_trans_dbs($db,$type){
 	include('buildLTTViews.php');
 	buildLTTViews($db,$type);
 
+	$tvQ = "CREATE VIEW taxView AS
+		SELECT 
+		r.id,
+		r.description,
+		CONVERT(SUM(CASE 
+			WHEN l.trans_type IN ('I','D') AND discountable=0 THEN total 
+			WHEN l.trans_type IN ('I','D') AND discountable<>0 THEN total * ((100-s.percentDiscount)/100)
+			ELSE 0 END
+		) * r.rate, DECIMAL(10,2)) as taxTotal,
+		CONVERT(SUM(CASE 
+			WHEN l.trans_type IN ('I','D') AND discountable=0 AND foodstamp=1 THEN total 
+			WHEN l.trans_type IN ('I','D') AND discountable<>0 AND foodstamp=1 THEN total * ((100-s.percentDiscount)/100)
+			ELSE 0 END
+		), DECIMAL(10,2)) as fsTaxable,
+		CONVERT(SUM(CASE 
+			WHEN l.trans_type IN ('I','D') AND discountable=0 AND foodstamp=1 THEN total 
+			WHEN l.trans_type IN ('I','D') AND discountable<>0 AND foodstamp=1 THEN total * ((100-s.percentDiscount)/100)
+			ELSE 0 END
+		) * r.rate, DECIMAL(10,2)) as fsTaxTotal,
+		-1*MAX(fsTendered) as foodstampTender,
+		MAX(r.rate) as taxrate
+		FROM
+		taxrates AS r 
+		LEFT JOIN localtemptrans AS l
+		ON r.id=l.tax
+		JOIN lttsummary AS s
+		GROUP BY r.id,r.description";
+	if(!$db->table_exists('taxView',$name)){
+		$db->query($tvQ,$name);
+	}
+
 	$lttR = "CREATE view ltt_receipt as 
 		select
 		description,

@@ -37,9 +37,11 @@ class NoInputPage extends BasicPage {
 		$my_url = $this->page_url;
 		?>
 		<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-		<html>
+		<html xmlns="http://www.w3.org/1999/xhtml">
 		<?php
 		echo "<head>";
+		// 18Aug12 EL Add content/charset.
+		echo "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" />\n";
 		echo "<link rel=\"stylesheet\" type=\"text/css\"
 		    href=\"{$my_url}pos.css\">";
 		echo "<script type=\"text/javascript\"
@@ -57,14 +59,15 @@ class NoInputPage extends BasicPage {
 		echo "</div>";
 		$this->scale_box();
 		$this->scanner_scale_polling(false);
-		echo "</body>";
 		if (!empty($this->onload_commands)){
-			echo "<script type=\"text/javascript\">\n";
+			echo "\n<script type=\"text/javascript\">\n";
 			echo "\$(document).ready(function(){\n";
 			echo $this->onload_commands;
 			echo "});\n";
 			echo "</script>\n";
 		}
+		// 18Aug12 EL Moved after ready-script.
+		echo "</body>\n";
 		print "</html>";
 	}
 

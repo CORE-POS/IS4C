@@ -93,7 +93,7 @@ $patronageLMQ = "select d.card_no from $dlog_lm as d LEFT JOIN
 		suspensions as s on s.cardno=d.card_no
 		WHERE c.personNum=1 and (c.memType=1 or s.memtype1=1)
 		AND register_no <> 30
-		AND tdate BETWEEN $lm_span
+		AND (tdate BETWEEN $lm_span)
 		GROUP BY d.card_no";
 $patronageLM = $sql->num_rows($sql->query($patronageLMQ));
 

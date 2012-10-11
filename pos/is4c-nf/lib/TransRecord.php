@@ -220,6 +220,40 @@ static public function addItem($strupc, $strdescription, $strtransType, $strtran
 
 }
 
+/**
+  Add a item, but not until the end of the transaction
+  Use this for records that shouldn't be displayed
+*/
+static public function addQueued($upc, $description, $numflag=0, $charflag=''){
+	global $CORE_LOCAL;
+	$queue = $CORE_LOCAL->get("infoRecordQueue");	
+	if (!is_array($queue)) $queue = array();
+	$queue[] = array('upc'=>$upc,'description'=>$description,
+			'numflag'=>$numflag,'charflag'=>$charflag);
+	$CORE_LOCAL->set("infoRecordQueue", $queue);
+}
+
+/**
+   Add records queued by TransRecord::addQueued
+   to the current transaction then clear the queue.
+   Records get trans_type C, trans_status D 
+*/
+static public function emptyQueue(){
+	global $CORE_LOCAL;
+	$queue = $CORE_LOCAL->get("infoRecordQueue");	
+	if (!is_array($queue)) $queue = array();
+	foreach($queue as $record){
+		if (!isset($record['upc']) || !isset($record['description']) ||
+		    !isset($record['numflag']) || !isset($record['charflag'])){
+			continue; //skip incomplete
+		}
+		self::addItem($record['upc'], $record['description'], "C", "", "D", 
+			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+			0, $record['numflag'], $record['charflag']);
+	}
+	$CORE_LOCAL->set("infoRecordQueue",array());
+}
+
 //________________________________end addItem()
 
 
@@ -232,7 +266,40 @@ static public function addItem($strupc, $strdescription, $strtransType, $strtran
 static public function addtax() {
 	global $CORE_LOCAL;
 
-	self::addItem("TAX", "Tax", "A", "", "", 0, 0, 0, $CORE_LOCAL->get("taxTotal"), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+	if (True){
+		self::addItem("TAX", "Tax", "A", "", "", 0, 0, 0, $CORE_LOCAL->get("taxTotal"), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+		return;
+	}
+
+	/* line-item taxes in transaction
+	   intentionally disabled for now
+	*/
+
+	$db = Database::tDataConnect();
+	$q = "SELECT id, description, taxTotal, fsTaxable, fsTaxTotal, foodstampTender, taxrate
+		FROM taxView ORDER BY taxrate DESC";
+	$r = $db->query($q);
+
+	$fsTenderAvailable = null;
+	while($w = $db->fetch_row($r)){
+		if ($fsTenderAvailable === null) $fsTenderAvailable = (double)$w['foodstampTender'];
+		
+		// whole amount purchased w/ foodstamps; exempt all fsTax
+		if ($fsTenderAvailable >= $w['fsTaxable']){
+			$w['taxTotal'] -= $w['fsTaxTotal'];
+			$fsTenderAvailable -= $w['fsTaxable'];
+		}
+		// partial; exempt proportionally
+		else if ($fsTenderAvailable > 0 && $fsTenderAvailable < $w['fsTaxable']){
+			$exempt = $fsTenderAvailable * $w['taxrate'];
+			$w['taxTotal'] -= $exempt;
+			$fsTenderAvailable = 0.00;
+		}
+
+		self::addItem("TAX", substr($w['description']." Tax",0,35), "A", "", "", 0, 0, 0, 
+			MiscLib::truncate2($w['taxTotal']), 0, 0, $w['id'], 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+	}
+
 }
 
 //________________________________end addtax()
@@ -454,7 +521,7 @@ static public function addCoupon($strupc, $intdepartment, $dbltotal, $foodstamp=
   @param $dbltotal coupon amount (should be negative)
 */
 static public function addhousecoupon($strupc, $intdepartment, $dbltotal) {
-	self::addItem($strupc, " * WFC Coupon", "I", "IC", "C", $intdepartment, 1, $dbltotal, $dbltotal, $dbltotal, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0);
+	self::addItem($strupc, " * Store Coupon", "I", "IC", "C", $intdepartment, 1, $dbltotal, $dbltotal, $dbltotal, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0);
 }
 
 /**

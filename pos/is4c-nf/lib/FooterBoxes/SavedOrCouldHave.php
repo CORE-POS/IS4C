@@ -41,7 +41,6 @@ class SavedOrCouldHave extends FooterBox {
 
 		if ($CORE_LOCAL->get("isMember") == 1){
 			return number_format($CORE_LOCAL->get("transDiscount") +
-				$CORE_LOCAL->get("memCouponTTL") +
 				$saleTTL + $memSaleTTL, 2);	
 		}
 		else
