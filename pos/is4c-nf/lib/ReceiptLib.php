@@ -660,8 +660,87 @@ static public function localTTL(){
 	return $str."\n";
 }
 
+static public function receiptFromBuilders($reprint=False,$trans_num=''){
+	global $CORE_LOCAL;
+
+	$empNo=0;$laneNo=0;$transNo=0;
+	if ($reprint){
+		$temp = explode("-",$trans_num);
+		$empNo= $temp[0];
+		$laneNo = $temp[1];
+		$transNo = $temp[2];
+	}
+
+	// read records from transaction database
+	$query = "SELECT * FROM localtemptrans ORDER BY trans_id";
+	if ($reprint){
+		$query = sprintf("SELECT * FROM localtranstoday WHERE
+			emp_no=%d AND register_no=%d AND trans_no=%d
+			ORDER BY trans_id",$empNo,$laneNo,$transNo);
+	}
+	$sql = Database::tDataConnect();
+	$result = $sql->query($query);
+	$recordset = array();
+	while($row = $sql->fetch_row($result))
+		$recordset[] = $row;
+	$sql->close();
+
+	// load module configuration
+	$FILTER_MOD = $CORE_LOCAL->get("RBFilter");
+	if($FILTER_MOD=="") $FILTER_MOD = "DefaultReceiptFilter";
+	$SORT_MOD = $CORE_LOCAL->get("RBSort");
+	if($SORT_MOD=="") $SORT_MOD = "DefaultReceiptSort";
+	$TAG_MOD = $CORE_LOCAL->get("RBTag");
+	if($TAG_MOD=="") $TAG_MOD = "DefaultReceiptTag";
+	$TYPE_MAP = $CORE_LOCAL->get("RBFormatMap");
+	if (!is_array($TYPE_MAP)){
+		$TYPE_MAP = array(
+			'item' => 'ItemFormat',
+			'tender' => 'TenderFormat',
+			'total' => 'TotalFormat',
+			'other' => 'OtherFormat'
+		);
+	}
+
+	$f = new $FILTER_MOD();
+	$recordset = $f->filter($recordset);
+
+	$s = new $SORT_MOD();
+	$recordset = $s->sort($recordset);
+
+	$t = new $TAG_MOD();
+	$recordset = $t->tag($recordset);
+
+	$ret = "";
+	foreach($recordset as $record){
+		$type = $record['tag'];
+		if(!isset($TYPE_MAP[$type])) continue;
+
+		$class = $TYPE_MAP[$type];
+		$obj = new $class();
+
+		$line = $obj->format($record);
+
+		if($obj->is_bold){
+			$ret .= self::$PRINT_OBJ->TextStyle(True,True);
+			$ret .= $line;
+			$ret .= self::$PRINT_OBJ->TextStyle(True,False);
+			$ret .= "\n";
+		}
+		else {
+			$ret .= $line;
+			$ret .= "\n";
+		}
+	}
+
+	return $ret;
+}
+
 static public function receiptDetail($reprint=False,$trans_num='') { // put into its own function to make it easier to follow, and slightly modified for wider-spread use of joe's "new" receipt format --- apbw 7/3/2007
 	global $CORE_LOCAL;
+
+	if ($CORE_LOCAL->get("newReceipt") == 2)
+		return self::receiptFromBuilders($reprint,$trans_num);
 
 	$detail = "";
 	$empNo=0;$laneNo=0;$transNo=0;
@@ -943,12 +1022,12 @@ static public function twoColumns($col1, $col2) {
 	return $text;
 }
 
-// ----------------------------------------------------------- 
-// printReceipt.php is the main page for printing receipts.  
-// It invokes the following functions from other pages:  
-// -----------------------------------------------------------
-
-
+/**
+  generates a receipt string
+  @param $arg1 string receipt type
+  @param $second boolean indicating it's a second receipt
+  @return string receipt content
+*/
 static public function printReceipt($arg1,$second=False) {
 	global $CORE_LOCAL;
 
@@ -1131,13 +1210,11 @@ static public function printReceipt($arg1,$second=False) {
 			
 	if ($receipt !== ""){
 		$receipt = $receipt."\n\n\n\n\n\n\n";
-		//$receipt .= self::$PRINT_OBJ->LineFeed(7);
-
-		self::$PRINT_OBJ->writeLine($receipt.chr(27).chr(105));
+		$receipt .= chr(27).chr(105);
 	}
 	
-	$receipt = "";
 	$CORE_LOCAL->set("receiptToggle",1);
+	return $receipt;
 }
 
 static public function reprintReceipt($trans_num=""){
