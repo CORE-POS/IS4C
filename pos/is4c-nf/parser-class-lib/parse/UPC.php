@@ -110,7 +110,7 @@ class UPC extends Parser {
 			
 			// if ($CORE_LOCAL->get("requestType")!="badscan"){
 			// 	$CORE_LOCAL->set("requestType","badscan");
-			// 	$CORE_LOCAL->set("requestMsg",_("not a valid item").'<br />'._("enter description"));
+			// 	$CORE_LOCAL->set("requestMsg",_("Item Not Found!").'<br />'._("Please Enter Product Information").'<br />'._("(Example: Description, Brand, Size)"));
 			// 	$ret['main_frame'] = $my_url.'gui-modules/requestInfo.php';
 			// 	return $ret;
 			// }
