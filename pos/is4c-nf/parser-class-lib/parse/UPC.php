@@ -108,19 +108,24 @@ class UPC extends Parser {
 			}
 			// no match; not a product, not special
 			
-			if ($CORE_LOCAL->get("requestType")!="badscan"){
-				$CORE_LOCAL->set("requestType","badscan");
-				$CORE_LOCAL->set("requestMsg",_("not a valid item").'<br />'._("enter description"));
-				$ret['main_frame'] = $my_url.'gui-modules/requestInfo.php';
-				return $ret;
-			}
-			else {
-				$ret['output'] = DisplayLib::lastpage();
-				TransRecord::addQueued($upc,$CORE_LOCAL->get("requestMsg"),0,'BS');
-				$CORE_LOCAL->set("requestMsg","");
-				$CORE_LOCAL->set("requestType","");
-				return $ret; 
-			}
+			// if ($CORE_LOCAL->get("requestType")!="badscan"){
+			// 	$CORE_LOCAL->set("requestType","badscan");
+			// 	$CORE_LOCAL->set("requestMsg",_("Item Not Found!").'<br />'._("Please Enter Product Information").'<br />'._("(Example: Description, Brand, Size)"));
+			// 	$ret['main_frame'] = $my_url.'gui-modules/requestInfo.php';
+			// 	return $ret;
+			// }
+			// else {
+			// 	$ret['output'] = DisplayLib::lastpage();
+			// 	TransRecord::addQueued($upc,$CORE_LOCAL->get("requestMsg"),0,'BS');
+			// 	$CORE_LOCAL->set("requestMsg","");
+			// 	$CORE_LOCAL->set("requestType","");
+			// 	return $ret; 
+			// }
+			TransRecord::addQueued($upc,'BADSCAN');
+			$CORE_LOCAL->set("boxMsg",_("not a valid item"));
+			$ret['udpmsg'] = 'errorBeep';
+			$ret['main_frame'] = $my_url."gui-modules/boxMsg2.php";
+			return $ret;
 
 		}
 
