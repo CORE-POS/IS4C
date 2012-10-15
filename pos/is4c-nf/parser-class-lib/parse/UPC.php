@@ -122,7 +122,7 @@ class UPC extends Parser {
 			// 	return $ret; 
 			// }
 			TransRecord::addQueued($upc,'BADSCAN');
-			$CORE_LOCAL->set("boxMsg",_("not a valid item"));
+			$CORE_LOCAL->set("boxMsg",_("Item Not Found!"));
 			$ret['udpmsg'] = 'errorBeep';
 			$ret['main_frame'] = $my_url."gui-modules/boxMsg2.php";
 			return $ret;
@@ -176,7 +176,7 @@ class UPC extends Parser {
 				)";
 			$restrictR = $db->query($restrictQ);
 			if ($db->num_rows($restrictR) > 0){
-				$CORE_LOCAL->set("boxMsg",_("product cannot be sold right now"));
+				$CORE_LOCAL->set("boxMsg",_("Product Cannot Be Sold Right Now"));
 				$ret['main_frame'] = $my_url."gui-modules/boxMsg2.php";
 				return $ret;
 			}
@@ -235,7 +235,7 @@ class UPC extends Parser {
 			$CORE_LOCAL->get("quantity") == 0 && substr($upc,0,3) != "002") {
 
 			$CORE_LOCAL->set("SNR",1);
-			$ret['output'] = DisplayLib::boxMsg(_("please put item on scale"));
+			$ret['output'] = DisplayLib::boxMsg(_("Please Place Item On Scale"));
 			$CORE_LOCAL->set("wgtRequested",0);
 			$CORE_LOCAL->set("warned",1);
 			$ret['retry'] = $CORE_LOCAL->get("strEntered");
@@ -251,7 +251,7 @@ class UPC extends Parser {
 				$quantity = $CORE_LOCAL->get("quantity") - $CORE_LOCAL->get("tare");
 
 			if ($quantity <= 0){
-				$ret['output'] = DisplayLib::boxMsg(_("item weight must be greater than tare weight"));
+				$ret['output'] = DisplayLib::boxMsg(_("Item Weight Must Be Greater Than Tare Weight"));
 				return $ret;
 			}
 			$CORE_LOCAL->set("tare",0);
@@ -259,7 +259,7 @@ class UPC extends Parser {
 
 		/* non-scale items need integer quantities */	
 		if ($row["scale"] == 0 && (int) $CORE_LOCAL->get("quantity") != $CORE_LOCAL->get("quantity") ) {
-			$ret['output'] = DisplayLib::boxMsg(_("fractional quantity cannot be accepted for this item"));
+			$ret['output'] = DisplayLib::boxMsg(_("Fractional Quantity Cannot Be Accepted For This Item"));
 			return $ret;
 		}
 
