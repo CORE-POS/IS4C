@@ -319,32 +319,32 @@ static public function classic_tender($right, $strl) {
 		'output'=>"");
 
 	if ($CORE_LOCAL->get("LastID") == 0){
-		$ret['output'] = DisplayLib::boxMsg(_("no transaction in progress"));
+		$ret['output'] = DisplayLib::boxMsg(_("No Transaction In Progress"));
 		return $ret;
 	}
 	elseif ($strl > 999999){
-	       $ret['output'] =	DisplayLib::xboxMsg("tender amount of ".MiscLib::truncate2($strl/100)."<br />exceeds allowable limit");
+	       $ret['output'] =	DisplayLib::xboxMsg("Tender Amount Of ".MiscLib::truncate2($strl/100)."<br />Exceeds Allowable Limit");
 	       return $ret;
 	}
 	elseif ($right == "WT"){
-	       $ret['output'] =	DisplayLib::xboxMsg(_("WIC tender not applicable"));
+	       $ret['output'] =	DisplayLib::xboxMsg(_("WIC Tender Not Applicable"));
 	       return $ret;
 	}
 	elseif ($right == "CK" && $CORE_LOCAL->get("ttlflag") == 1 && ($CORE_LOCAL->get("isMember") != 0 || $CORE_LOCAL->get("isStaff") != 0) && (($strl/100 - $CORE_LOCAL->get("amtdue") - 0.005) > $CORE_LOCAL->get("dollarOver")) && ($CORE_LOCAL->get("cashOverLimit") == 1)){
-		$ret['output'] = DisplayLib::boxMsg(_("member or staff check tender cannot 
-			exceed total purchase by over $").$CORE_LOCAL->get("dollarOver"));
+		$ret['output'] = DisplayLib::boxMsg(_("Member or Staff Check Tender Cannot 
+			Exceed Total Purchase by Over $").$CORE_LOCAL->get("dollarOver"));
 		return $ret;
 	}
 	elseif ((($right == "CC" || $right == "TB" || $right == "GD") && $strl/100 > ($CORE_LOCAL->get("amtdue") + 0.005)) && $CORE_LOCAL->get("amtdue") >= 0){ 
-		$ret['output'] = DisplayLib::xboxMsg(_("tender cannot exceed purchase amount"));
+		$ret['output'] = DisplayLib::xboxMsg(_("Tender Cannot Exceed Purchase Amount"));
 		return $ret;
 	}
 	elseif($right == "EC" && $strl/100 > $CORE_LOCAL->get("amtdue")){
-		$ret['output'] = DisplayLib::xboxMsg(_("no cash back with EBT cash tender"));
+		$ret['output'] = DisplayLib::xboxMsg(_("No Cash Back With EBT Cash Tender"));
 		return $ret;
 	}
 	elseif($right == "CK" && $CORE_LOCAL->get("ttlflag") == 1 && $CORE_LOCAL->get("isMember") == 0 and $CORE_LOCAL->get("isStaff") == 0 && ($strl/100 - $CORE_LOCAL->get("amtdue") - 0.005) > 5){ 
-		$ret['output'] = DisplayLib::xboxMsg(_("non-member check tender cannot exceed total purchase by over $5.00"));
+		$ret['output'] = DisplayLib::xboxMsg(_("Non-Member Check Tender Cannot Exceed Total Purchase by Over $5.00"));
 		return $ret;
 	}
 
@@ -372,15 +372,15 @@ static public function classic_tender($right, $strl) {
 	$strl *= $mult;
 
 	if ($CORE_LOCAL->get("ttlflag") == 0) {
-		$ret['output'] = DisplayLib::boxMsg(_("transaction must be totaled before tender can be accepted"));
+		$ret['output'] = DisplayLib::boxMsg(_("Transaction Must Be Totaled Before Tender Can Be Accepted"));
 		return $ret;
 	}
 	elseif (($right == "FS" || $right == "EF" || $right == "EB") && $CORE_LOCAL->get("fntlflag") == 0) {
-		$ret['output'] = DisplayLib::boxMsg(_("eligible amount must be totaled before foodstamp tender can be accepted"));
+		$ret['output'] = DisplayLib::boxMsg(_("Eligible Amount Must Be Totaled Before Foodstamp Tender Can Be Accepted"));
 		return $ret;
 	}
 	elseif (($right == "EB" || $right == "EF") && $CORE_LOCAL->get("fntlflag") == 1 && $CORE_LOCAL->get("fsEligible") + 10 <= $strl) {
-		$ret['output'] = DisplayLib::xboxMsg(_("Foodstamp tender cannot exceed eligible amount by over $10.00"));
+		$ret['output'] = DisplayLib::xboxMsg(_("Foodstamp Tender Cannot Exceed Eligible Amount By Over $10.00"));
 		return $ret;
 	}
 	elseif ($right == "CX" && $charge_ok == 0) {
@@ -411,7 +411,7 @@ static public function classic_tender($right, $strl) {
 		return $ret;
 	}
 	elseif(($right == "MI" || $right == "CX" || $right == "MI") && MiscLib::truncate2($CORE_LOCAL->get("amtdue")) < MiscLib::truncate2($strl)) {
-		$ret['output'] = DisplayLib::xboxMsg(_("charge tender exceeds purchase amount"));
+		$ret['output'] = DisplayLib::xboxMsg(_("Charge Tender Exceeds Purchase Amount"));
 		return $ret;
 	}
 
@@ -774,7 +774,7 @@ static public function deptkey($price, $dept,$ret=array()) {
 
 	$num_rows = $db->num_rows($result);
 	if ($num_rows == 0) {
-		$ret['output'] = DisplayLib::boxMsg(_("department unknown"));
+		$ret['output'] = DisplayLib::boxMsg(_("Department Unknown"));
 		$ret['udpmsg'] = 'errorBeep';
 		$CORE_LOCAL->set("quantity",1);
 	}
@@ -795,7 +795,7 @@ static public function deptkey($price, $dept,$ret=array()) {
 		else {
 			$row2 = $db2->fetch_array($result2);
 			if ($price > $row2["total"]) {
-				$ret['output'] = DisplayLib::boxMsg(_("coupon amount greater than department total"));
+				$ret['output'] = DisplayLib::boxMsg(_("Coupon Amount Greater Than Department Total"));
 				$ret['udpmsg'] = 'errorBeep';
 			}
 			else {
@@ -1102,7 +1102,7 @@ static public function percentDiscount($strl,$json=array()) {
 				$json['main_frame'] = $chk;
 			$json['output'] = DisplayLib::lastpage();
 		}
-		else $json['output'] = DisplayLib::xboxMsg("10% discount already applied");
+		else $json['output'] = DisplayLib::xboxMsg("10% Discount Already Applied");
 		$db->close();
 	}
 	return $json;
