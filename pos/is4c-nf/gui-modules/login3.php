@@ -34,7 +34,7 @@ class login3 extends BasicPage {
 	function preprocess(){
 		$this->color = "#004080";
 		$this->img = $this->page_url."graphics/bluekey4.gif";
-		$this->msg = _("please enter password");
+		$this->msg = _("Please Enter Password");
 		if (isset($_REQUEST['reginput'])){
 			if (Authenticate::check_password($_REQUEST['reginput'],4)){
 				$sd = MiscLib::scaleObject();
@@ -46,7 +46,7 @@ class login3 extends BasicPage {
 			else {
 				$this->color = "#800000";
 				$this->img = $this->page_url."graphics/redkey4.gif";
-				$this->msg = _("password invalid, please re-enter");
+				$this->msg = _("Password Invalid, Please Re-Enter");
 			}
 		}
 		return True;
