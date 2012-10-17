@@ -38,7 +38,7 @@ class adminlist extends NoInputPage {
 			elseif ($_REQUEST['selectlist'] == 'SUSPEND'){
 				Database::getsubtotals();
 				if ($CORE_LOCAL->get("LastID") == 0) {
-					$CORE_LOCAL->set("boxMsg",_("no transaction in progress"));
+					$CORE_LOCAL->set("boxMsg",_("No Transaction In Progress"));
 					$this->change_page($this->page_url."gui-modules/boxMsg2.php");
 					return False;
 				}
@@ -61,11 +61,11 @@ class adminlist extends NoInputPage {
 			else if ($_REQUEST['selectlist'] == 'RESUME'){
 				Database::getsubtotals();
 				if ($CORE_LOCAL->get("LastID") != 0) {
-					$CORE_LOCAL->set("boxMsg",_("transaction in progress"));
+					$CORE_LOCAL->set("boxMsg",_("Transaction In Progress"));
 					$this->change_page($this->page_url."gui-modules/boxMsg2.php");
 				}
 				elseif (SuspendLib::checksuspended() == 0) {
-					$CORE_LOCAL->set("boxMsg",_("no suspended transaction"));
+					$CORE_LOCAL->set("boxMsg",_("No Suspended Transaction"));
 					$CORE_LOCAL->set("strRemembered","");
 					$this->change_page($this->page_url."gui-modules/boxMsg2.php");
 				}
@@ -113,7 +113,7 @@ class adminlist extends NoInputPage {
 		?>
 		<div class="baseHeight">
 		<div class="centeredDisplay colored">
-			<span class="larger"><?php echo _("administrative tasks"); ?></span>
+			<span class="larger"><?php echo _("Administrative Tasks"); ?></span>
 			<br />
 		<form id="selectform" method="post" action="<?php echo $_SERVER['PHP_SELF']; ?>">
 		<select name="selectlist" id="selectlist" onblur="$('#selectlist').focus();">
@@ -123,7 +123,7 @@ class adminlist extends NoInputPage {
 		<option value='TR'>3. <?php echo _("Tender Reports"); ?>
 		</select>
 		</form>
-		<span class="smaller"><?php echo _("clear to cancel"); ?></span>
+		<span class="smaller"><?php echo _("Clear To Cancel"); ?></span>
 		<p />
 		</div>
 		</div>

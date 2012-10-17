@@ -37,7 +37,7 @@ class adminlogin extends NoInputPage {
 	function preprocess(){
 		global $CORE_LOCAL;
 		$this->box_color="#004080";
-		$this->msg = _("enter admin password");
+		$this->msg = _("Enter Admin Password");
 
 		if (isset($_REQUEST['reginput'])){
 			$passwd = $_REQUEST['reginput'];
@@ -53,7 +53,7 @@ class adminlogin extends NoInputPage {
 			}
 			else if (!is_numeric($passwd) || $passwd > 9999 || $passwd < 1){
 				$this->box_color="#800000";
-				$this->msg = _("re-enter admin password");
+				$this->msg = _("Re-enter Admin Password");
 			}
 			else {
 				$query = "select emp_no, FirstName, LastName from employees 
@@ -72,7 +72,7 @@ class adminlogin extends NoInputPage {
 				}
 				else {
 					$this->box_color="#800000";
-					$this->msg = _("re-enter admin password");
+					$this->msg = _("Re-enter Admin Password");
 				}
 			}
 		}

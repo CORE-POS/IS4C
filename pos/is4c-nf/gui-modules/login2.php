@@ -32,7 +32,7 @@ class login2 extends BasicPage {
 
 	function preprocess(){
 		$this->box_color = '#004080';
-		$this->msg = _('please enter your password');
+		$this->msg = _('Please Enter Your Password');
 
 		if (isset($_REQUEST['reginput'])){
 			if (Authenticate::check_password($_REQUEST['reginput'])){
