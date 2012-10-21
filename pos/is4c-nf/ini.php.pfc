@@ -36,26 +36,26 @@ General Settings
 
 $CORE_LOCAL->set("OS",          'other');
 $CORE_LOCAL->set("browserOnly", 1);
-$CORE_LOCAL->set("store",       'harvest-cb');
+$CORE_LOCAL->set("store",       'pfc');
 $CORE_LOCAL->set("laneno",      1);
 
 /************************************************************************************
 Data Connection Settings
 ************************************************************************************/
 $CORE_LOCAL->set("mServer",   'localhost');
-$CORE_LOCAL->set("mDatabase", 'COREserver');
+$CORE_LOCAL->set("mDatabase", 'core_log');
 $CORE_LOCAL->set("mDBMS",     'mysql');
 				// Options: mssql, mysql, pgsql
-$CORE_LOCAL->set("mUser",     '');
-$CORE_LOCAL->set("mPass",     '');
+$CORE_LOCAL->set("mUser",     'is4cserver');
+$CORE_LOCAL->set("mPass",     'is4cserver');
 
 $CORE_LOCAL->set("DBMS",      'mysql');
 $CORE_LOCAL->set("tDatabase", 'translog');
 $CORE_LOCAL->set("pDatabase", 'opdata');
                 // Harvest test lane 18jun12
-$CORE_LOCAL->set("localhost", '192.168.0.87');
-$CORE_LOCAL->set("localUser", 'root');
-$CORE_LOCAL->set("localPass", '581mass');
+$CORE_LOCAL->set("localhost", '127.0.0.1');
+$CORE_LOCAL->set("localUser", 'is4clane');
+$CORE_LOCAL->set("localPass", 'is4clane');
 
 /***********************************************************************************
 Receipt & Printer Settings
@@ -81,7 +81,7 @@ $CORE_LOCAL->set("welcomeMsgCount",  0);
 $CORE_LOCAL->set("trainingMsgCount", 0);
 $CORE_LOCAL->set("farewellMsgCount", 0);
 
-$CORE_LOCAL->set("alertBar", 'New Pi - Alert');
+$CORE_LOCAL->set("alertBar", 'PFC - Alert');
 
 /***********************************************************************************
 Credit Card
