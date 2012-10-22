@@ -42,6 +42,13 @@ class UPC extends Parser {
 		$my_url = MiscLib::base_url();
 		$ret = $this->default_json();
 
+		/* begin change */
+		if ($CORE_LOCAL->get("memberID")=="0"){
+			$ret['main_frame'] = $my_url.'gui-modules/memlist.php';
+			return $ret;
+		}
+		/* end change */
+
 		/* force cashiers to enter a comment on refunds */
 		if ($CORE_LOCAL->get("refund")==1 && $CORE_LOCAL->get("refundComment") == ""){
 			$ret['udpmsg'] = 'twoPairs';

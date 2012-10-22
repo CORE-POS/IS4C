@@ -31,26 +31,34 @@ if ($CORE_LOCAL->get("End") == 1) {
 $receiptType = isset($_REQUEST['receiptType'])?$_REQUEST['receiptType']:'';
 
 if (strlen($receiptType) > 0) {
+
+	$receiptContent = array();
 	
 	if ($receiptType != "none")
-		ReceiptLib::printReceipt($receiptType);
+		$receiptContent[] = ReceiptLib::printReceipt($receiptType);
 
 	if ($CORE_LOCAL->get("ccCustCopy") == 1){
 		$CORE_LOCAL->set("ccCustCopy",0);
-		ReceiptLib::printReceipt($receiptType);
+		$receiptContent[] = ReceiptLib::printReceipt($receiptType);
 	}
 	elseif ($receiptType == "ccSlip"){
 		// don't mess with reprints
 	}
 	elseif ($CORE_LOCAL->get("autoReprint") == 1){
 		$CORE_LOCAL->set("autoReprint",0);
-		ReceiptLib::printReceipt($receiptType,True);
+		$receiptContent[] = ReceiptLib::printReceipt($receiptType,True);
 	}
 
 	if ($CORE_LOCAL->get("End") >= 1 || $receiptType == "cancelled"
 		|| $receiptType == "suspended"){
 		$CORE_LOCAL->set("End",0);
 		cleartemptrans($receiptType);
+	}
+
+	$PRINT_OBJ = new ESCPOSPrintHandler();
+	foreach($receiptContent as $receipt){
+		if(!empty($receipt))
+			$PRINT_OBJ->writeLine($receipt);
 	}
 }
 

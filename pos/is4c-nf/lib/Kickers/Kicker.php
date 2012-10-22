@@ -34,16 +34,17 @@ class Kicker {
 	*/
 	function doKick(){
 		global $CORE_LOCAL;
+		$db = Database::tDataConnect();
 
-		if ($CORE_LOCAL->get("chargeTotal") == $CORE_LOCAL->get("tenderTotal") && $CORE_LOCAL->get("chargeTotal") != 0 && $CORE_LOCAL->get("tenderTotal") != 0 ) {	
-			if (in_array($CORE_LOCAL->get("TenderType"),$CORE_LOCAL->get("DrawerKickMedia"))) {
-				return True;
-			} else {
-				return False;
-			}
-		}
+		$query = "select trans_id from localtemptrans where 
+			(trans_subtype = 'CA' and total <> 0)";
 
-		return False;
+		$result = $db->query($query);
+		$num_rows = $db->num_rows($result);
+		$db->close();
+
+		return ($num_rows > 0) ? True : False;
+
 	}
 }
 
