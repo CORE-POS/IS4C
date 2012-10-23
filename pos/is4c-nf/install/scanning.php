@@ -25,6 +25,8 @@ Scanning Options
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <a href="debug.php">Debug</a>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<a href="plugins.php">Plugins</a>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <a href="extra_data.php">Sample Data</a>
 
 <h2>IT CORE Lane Installation: Scanning Options</h2>
@@ -41,14 +43,7 @@ products (e.g., coupons)<br />
 <?php
 if (isset($_REQUEST['SPECIAL_UPC_MODS'])) $CORE_LOCAL->set('SpecialUpcClasses',$_REQUEST['SPECIAL_UPC_MODS']);
 
-$mods = array();
-$dh = opendir('../lib/Scanning/SpecialUPCs');
-while(False !== ($f = readdir($dh))){
-	if ($f == "." || $f == "..")
-		continue;
-	if (substr($f,-4) == ".php")
-		$mods[] = rtrim($f,".php");
-}
+$mods = AutoLoader::ListModules('SpecialUPC');
 
 foreach($mods as $m){
 	$selected = "";
@@ -69,12 +64,6 @@ $saveStr = rtrim($saveStr,",").")";
 confsave('SpecialUpcClasses',$saveStr);
 ?>
 </select><br />
-<b>Member Card UPC Prefix</b>:
-<?php
-if (isset($_REQUEST['memberUpcPrefix'])) $CORE_LOCAL->set('memberUpcPrefix',$_REQUEST['memberUpcPrefix']);
-printf("<input type=text name=memberUpcPrefix value=\"%s\" />",$CORE_LOCAL->get('memberUpcPrefix'));
-confsave('memberUpcPrefix',"'".$CORE_LOCAL->get('memberUpcPrefix')."'");
-?>
 <hr />
 Discount type modules control how sale prices
 are calculated.<br />
@@ -100,15 +89,7 @@ if (!is_array($CORE_LOCAL->get('DiscountTypeClasses'))){
 			'StaffSale'			
 		));
 }
-$discounts = array();
-$dh = opendir('../lib/Scanning/DiscountTypes');
-while(False !== ($f = readdir($dh))){
-	if ($f == "." || $f == "..")
-		continue;
-	if (substr($f,-4) == ".php"){
-		$discounts[] = rtrim($f,".php");
-	}
-}
+$discounts = AutoLoader::ListModules('DiscountType');
 $dt_conf = $CORE_LOCAL->get("DiscountTypeClasses");
 for($i=0;$i<$CORE_LOCAL->get('DiscountTypeCount');$i++){
 	echo "[$i] => ";
@@ -156,15 +137,7 @@ if (!is_array($CORE_LOCAL->get('PriceMethodClasses'))){
 			'QttyEnforcedGroupPM'
 		));
 }
-$pms = array();
-$dh = opendir('../lib/Scanning/PriceMethods');
-while(False !== ($f = readdir($dh))){
-	if ($f == "." || $f == "..")
-		continue;
-	if (substr($f,-4) == ".php"){
-		$pms[] = rtrim($f,".php");
-	}
-}
+$pms = AutoLoader::ListModules('PriceMethod');
 $pm_conf = $CORE_LOCAL->get("PriceMethodClasses");
 for($i=0;$i<$CORE_LOCAL->get('PriceMethodCount');$i++){
 	echo "[$i] => ";

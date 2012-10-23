@@ -40,13 +40,17 @@
 <tr><td colspan="2"><br><h2>Static Public Member Functions</h2></td></tr>
 <tr><td class="memItemLeft" nowrap align="right" valign="top">static&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_trans_record.html#1f1c9164509c47eacc4025fdeaa913db">addItem</a> ($strupc, $strdescription, $strtransType, $strtranssubType, $strtransstatus, $intdepartment, $dblquantity, $dblunitPrice, $dbltotal, $dblregPrice, $intscale, $inttax, $intfoodstamp, $dbldiscount, $dblmemDiscount, $intdiscountable, $intdiscounttype, $dblItemQtty, $intvolDiscType, $intvolume, $dblVolSpecial, $intmixMatch, $intmatched, $intvoided, $cost=0, $numflag=0, $charflag='')</td></tr>
 
+<tr><td class="memItemLeft" nowrap align="right" valign="top">static&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_trans_record.html#178c64e887a1a2c27bb6f1bd03a10576">addQueued</a> ($upc, $description, $numflag=0, $charflag='')</td></tr>
+
+<tr><td class="memItemLeft" nowrap align="right" valign="top">static&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_trans_record.html#d917ef4a2467b8365cf0d7df18395cd9">emptyQueue</a> ()</td></tr>
+
 <tr><td class="memItemLeft" nowrap align="right" valign="top">static&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_trans_record.html#7a815a320db9fe2d25cdeddef7a70597">addtax</a> ()</td></tr>
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top">static&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_trans_record.html#c687cb86bbd81bac8dac426e6c7f7293">addtender</a> ($strtenderdesc, $strtendercode, $dbltendered)</td></tr>
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top">static&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_trans_record.html#48a8ef9d770612cd8b13d3aa6da85422">addcomment</a> ($comment)</td></tr>
 
-<tr><td class="memItemLeft" nowrap align="right" valign="top">static&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_trans_record.html#e41ec4285e7e1d6f526c2e3c742cb1cf">addchange</a> ($dblcashreturn)</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">static&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_trans_record.html#d6cadce0fbaafa4b85b54eba80dbc781">addchange</a> ($dblcashreturn, $strtendercode='CA')</td></tr>
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top">static&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_trans_record.html#7ead81366fdb8ef3b8fd9c3414b91cc7">addfsones</a> ($intfsones)</td></tr>
 
@@ -157,7 +161,7 @@ Add cash drop record
 Add an informational record noting case discount $CORE_LOCAL setting "casediscount" controls the percentage shown 
 </div>
 </div><p>
-<a class="anchor" name="e41ec4285e7e1d6f526c2e3c742cb1cf"></a><!-- doxytag: member="TransRecord::addchange" ref="e41ec4285e7e1d6f526c2e3c742cb1cf" args="($dblcashreturn)" -->
+<a class="anchor" name="d6cadce0fbaafa4b85b54eba80dbc781"></a><!-- doxytag: member="TransRecord::addchange" ref="d6cadce0fbaafa4b85b54eba80dbc781" args="($dblcashreturn, $strtendercode='CA')" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -165,9 +169,18 @@ Add an informational record noting case discount $CORE_LOCAL setting "casediscou
           <td class="memname">static TransRecord::addchange           </td>
           <td>(</td>
           <td class="paramtype">$&nbsp;</td>
-          <td class="paramname"> <em>dblcashreturn</em>          </td>
-          <td>&nbsp;)&nbsp;</td>
-          <td width="100%"><code> [static]</code></td>
+          <td class="paramname"> <em>dblcashreturn</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">$&nbsp;</td>
+          <td class="paramname"> <em>strtendercode</em> = <code>'CA'</code></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td width="100%"><code> [static]</code></td>
         </tr>
       </table>
 </div>
@@ -288,7 +301,7 @@ Add a manufacturer coupon record <dl compact><dt><b>Parameters:</b></dt><dd>
 <div class="memdoc">
 
 <p>
-Add a deposit <dl compact><dt><b><a class="el" href="deprecated.html#_deprecated000040">Deprecated:</a></b></dt><dd>Use deposit column in products table </dd></dl>
+Add a deposit <dl compact><dt><b><a class="el" href="deprecated.html#_deprecated000019">Deprecated:</a></b></dt><dd>Use deposit column in products table </dd></dl>
 
 </div>
 </div><p>
@@ -343,7 +356,7 @@ Add a "YOU SAVED" record to the transaction. This is just informational and will
 <div class="memdoc">
 
 <p>
-Add end of shift record <dl compact><dt><b><a class="el" href="deprecated.html#_deprecated000036">Deprecated:</a></b></dt><dd></dd></dl>
+Add end of shift record <dl compact><dt><b><a class="el" href="deprecated.html#_deprecated000015">Deprecated:</a></b></dt><dd></dd></dl>
 
 </div>
 </div><p>
@@ -693,8 +706,49 @@ Add a line-item discount <dl compact><dt><b>Parameters:</b></dt><dd>
 <div class="memdoc">
 
 <p>
-Add WFC virtual coupon <dl compact><dt><b><a class="el" href="deprecated.html#_deprecated000039">Deprecated:</a></b></dt><dd></dd></dl>
+Add WFC virtual coupon <dl compact><dt><b><a class="el" href="deprecated.html#_deprecated000018">Deprecated:</a></b></dt><dd></dd></dl>
 
+</div>
+</div><p>
+<a class="anchor" name="178c64e887a1a2c27bb6f1bd03a10576"></a><!-- doxytag: member="TransRecord::addQueued" ref="178c64e887a1a2c27bb6f1bd03a10576" args="($upc, $description, $numflag=0, $charflag='')" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">static TransRecord::addQueued           </td>
+          <td>(</td>
+          <td class="paramtype">$&nbsp;</td>
+          <td class="paramname"> <em>upc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">$&nbsp;</td>
+          <td class="paramname"> <em>description</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">$&nbsp;</td>
+          <td class="paramname"> <em>numflag</em> = <code>0</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">$&nbsp;</td>
+          <td class="paramname"> <em>charflag</em> = <code>''</code></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td width="100%"><code> [static]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Add a item, but not until the end of the transaction Use this for records that shouldn't be displayed 
 </div>
 </div><p>
 <a class="anchor" name="57dbb53eae02b66a91ecab53cf3082cf"></a><!-- doxytag: member="TransRecord::addscDiscount" ref="57dbb53eae02b66a91ecab53cf3082cf" args="()" -->
@@ -713,7 +767,7 @@ Add WFC virtual coupon <dl compact><dt><b><a class="el" href="deprecated.html#_d
 <div class="memdoc">
 
 <p>
-Add Wedge deli discount <dl compact><dt><b><a class="el" href="deprecated.html#_deprecated000037">Deprecated:</a></b></dt><dd></dd></dl>
+Add Wedge deli discount <dl compact><dt><b><a class="el" href="deprecated.html#_deprecated000016">Deprecated:</a></b></dt><dd></dd></dl>
 
 </div>
 </div><p>
@@ -733,7 +787,7 @@ Add Wedge deli discount <dl compact><dt><b><a class="el" href="deprecated.html#_
 <div class="memdoc">
 
 <p>
-Add Wedge coffee discount <dl compact><dt><b><a class="el" href="deprecated.html#_deprecated000038">Deprecated:</a></b></dt><dd></dd></dl>
+Add Wedge coffee discount <dl compact><dt><b><a class="el" href="deprecated.html#_deprecated000017">Deprecated:</a></b></dt><dd></dd></dl>
 
 </div>
 </div><p>
@@ -911,6 +965,25 @@ Add a information record showing transaction percent discount <dl compact><dt><b
 
 </div>
 </div><p>
+<a class="anchor" name="d917ef4a2467b8365cf0d7df18395cd9"></a><!-- doxytag: member="TransRecord::emptyQueue" ref="d917ef4a2467b8365cf0d7df18395cd9" args="()" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">static TransRecord::emptyQueue           </td>
+          <td>(</td>
+          <td class="paramname">          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"><code> [static]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Add records queued by <a class="el" href="class_trans_record.html#178c64e887a1a2c27bb6f1bd03a10576">TransRecord::addQueued</a> to the current transaction then clear the queue. Records get trans_type C, trans_status D 
+</div>
+</div><p>
 <a class="anchor" name="43ad2616fc3f5aca34ff843733beffae"></a><!-- doxytag: member="TransRecord::reverseTaxExempt" ref="43ad2616fc3f5aca34ff843733beffae" args="()" -->
 <div class="memitem">
 <div class="memproto">
@@ -932,7 +1005,7 @@ Add record to undo tax exemption
 </div><p>
 <hr>The documentation for this class was generated from the following file:<ul>
 <li>pos/is4c-nf/lib/TransRecord.php</ul>
-<hr size="1"><address style="align: right;"><small>Generated on Mon May 21 10:55:52 2012 for CORE POS - IS4C by&nbsp;
+<hr size="1"><address style="align: right;"><small>Generated on Tue Oct 23 14:30:34 2012 for CORE POS - IS4C by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img src="doxygen.png" alt="doxygen" align="middle" border="0"></a> 1.4.7 </small></address>
 </body>
