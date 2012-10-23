@@ -24,6 +24,8 @@ body {
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 Debug
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<a href="plugins.php">Plugins</a>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <a href="extra_data.php">Sample Data</a>
 <hr />
 <b>Logs</b><br />
