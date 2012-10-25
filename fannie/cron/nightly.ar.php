@@ -72,6 +72,12 @@ $query = "INSERT INTO ar_history
 	AND (department IN $dlist OR trans_subtype='MI')";	
 $sql->query($query);
 
+$sql->query("TRUNCATE TABLE ar_history_sum");
+$query = "INSERT INTO ar_history_sum
+	SELECT card_no,SUM(charges),SUM(payments),SUM(charges)-SUM(payments)
+	FROM ar_history GROUP BY card_no";
+$sql->query($query);
+
 /* turnover view/cache base tables for WFC end-of-month reports */
 if (date("j")==1 && $sql->table_exists("ar_history_backup")){
 	$sql->query("TRUNCATE TABLE ar_history_backup");
