@@ -42,6 +42,12 @@ class paycardEntered extends Parser {
 			$this->manual = False;
 			return True;
 		}
+		elseif (substr($str,0,8) == "02E60080" || substr($str,0,7)=="2E60080"){
+			$this->swipestr = $str;
+			$this->swipetype = PaycardLib::PAYCARD_TYPE_ENCRYPTED;
+			$this->manual = False;
+			return True;
+		}
 		elseif (is_numeric($str) && strlen($str) >= 16){
 			$this->swipestr = $str;
 			$this->swipetype = PaycardLib::PAYCARD_TYPE_UNKNOWN;
@@ -121,7 +127,14 @@ class paycardEntered extends Parser {
 				$CORE_LOCAL->set("paycard_PAN",substr($card,0,-4));
 				$CORE_LOCAL->set("paycard_exp",substr($card,-4,4));
 			}
-		} else {
+		} 
+		else if ($type == PaycardLib::PAYCARD_TYPE_ENCRYPTED){
+			// add leading zero back to fix hex encoding, if needed
+			if (substr($card,0,7)=="2E60080")
+				$card = "0".$card;
+			$CORE_LOCAL->set("paycard_PAN",$card);
+		} 
+		else {
 			// swiped magstripe (reference to ISO format at end of this file)
 			$stripe = PaycardLib::paycard_magstripe($card);
 			if( !is_array($stripe)) {

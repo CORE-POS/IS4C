@@ -45,6 +45,7 @@ class PaycardLib {
 	const PAYCARD_TYPE_CREDIT    	=1;
 	const PAYCARD_TYPE_GIFT      	=2;
 	const PAYCARD_TYPE_STORE     	=3;
+	const PAYCARD_TYPE_ENCRYPTED   	=4;
 
 	const PAYCARD_ERR_OK         	=1;
 	const PAYCARD_ERR_NOSEND    	=-1;
@@ -92,6 +93,10 @@ static public function paycard_info($pan) {
 		else if ($iin>=6050110 && $iin<=6050110) {
 			$issuer="Co-Plus Gift Card"; $accepted=true;
 		}
+	}
+	else if (substr($pan,0,8) == "02E60080"){
+		$type = self::PAYCARD_TYPE_ENCRYPTED;
+		$accepted = true;
 	}
 	return array('type'=>$type, 'issuer'=>$issuer, 'accepted'=>$accepted, 'test'=>$test);
 } // paycard_info()
