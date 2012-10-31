@@ -54,7 +54,7 @@ $susQ = "INSERT INTO suspensions
 	c.memDiscountLimit,1
 	from meminfo as m left join
 	custdata as c on c.CardNo=m.card_no and c.personNum=1
-	left join {$TRANS}newBalanceToday_cust as n on m.card_no=n.memnum
+	left join {$TRANS}ar_live_balance as n on m.card_no=n.card_no
 	left join {$TRANS}AR_EOM_Summary AS a ON a.cardno=m.card_no
 	where a.twoMonthBalance <= n.balance
 	AND a.lastMonthPayments < a.twoMonthBalance
@@ -69,7 +69,7 @@ $histQ = "INSERT INTO suspension_history
 	    m.card_no,1
 	    from meminfo as m left join
 	    custdata as c on c.CardNo=m.card_no and c.personNum=1
-	    left join {$TRANS}newBalanceToday_cust as n on m.card_no=n.memnum
+	    left join {$TRANS}ar_live_balance as n on m.card_no=n.card_no
 	    left join {$TRANS}AR_EOM_Summary AS a ON a.cardno=m.card_no
 	    where a.twoMonthBalance <= n.balance
 	    AND a.lastMonthPayments < a.twoMonthBalance

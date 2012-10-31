@@ -176,13 +176,13 @@ recreate_views($sql);
 function recreate_views($con){
 	global $FANNIE_TRANS_DB,$FANNIE_OP_DB,$FANNIE_SERVER_DBMS;
 
-	$con->query("DROP VIEW memIouToday",$FANNIE_TRANS_DB);
+	$con->query("DROP VIEW ar_history_today_sum",$FANNIE_TRANS_DB);
 	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
-			'memIouToday','trans');
+			'ar_history_today_sum','trans');
 
-	$con->query("DROP VIEW newBalanceToday_cust",$FANNIE_TRANS_DB);
+	$con->query("DROP VIEW ar_live_balance",$FANNIE_TRANS_DB);
 	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
-			'newBalanceToday_cust','trans');
+			'ar_live_balance','trans');
 
 	$con->query("DROP VIEW stockSumToday",$FANNIE_TRANS_DB);
 	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,

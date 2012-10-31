@@ -49,7 +49,7 @@ function addressList($memNum)
 	$row2 = $sql->fetch_row($stockResult);
 		
 	//$query3 = "SELECT * FROM newBalanceToday WHERE memnum = $memNum";
-        $query3 = "SELECT * FROM is4c_trans.newBalanceToday_cust WHERE memnum= $memNum";
+        $query3 = "SELECT * FROM is4c_trans.ar_live_balance WHERE card_no= $memNum";
 	$arResult = $sql->query($query3);
 	$row3 = $sql->fetch_row($arResult);
 
@@ -166,7 +166,7 @@ function addressList($memNum)
                         echo "<td bgcolor='FFFF33'>Charge Limit: </td>";
                         echo "<td>" . $custW['MemDiscountLimit'] . "</td>";
                         echo "<td bgcolor='FFFF33'>Current Balance: </td>";
-                        echo "<td>" . $row3[5] . "</td>";
+                        echo "<td>" . $row3['balance'] . "</td>";
 		echo "</tr>";
                echo "<tr bgcolor='FFFF33'><td colspan=6></td></tr>";
                 echo "<tr>";
@@ -233,7 +233,7 @@ function addressForm($memNum)
         $stockResult = $sql->query($query2);
         $row2 = $sql->fetch_row($stockResult);
 
-        $query3 = "SELECT * FROM is4c_trans.newBalanceToday_cust WHERE memnum = $memNum";
+        $query3 = "SELECT * FROM is4c_trans.ar_live_balance WHERE card_no = $memNum";
         $arResult = $sql->query($query3);
         $row3 = $sql->fetch_row($arResult);
 
@@ -374,7 +374,7 @@ function addressForm($memNum)
                         echo "<td bgcolor='FFFF33'>Charge Limit: </td>";
                         echo "<td><input name=chargeLimit value='" . $typeRow['MemDiscountLimit'] . "'></td>";
                         echo "<td bgcolor='FFFF33'>Current Balance: </td>";
-                        echo "<td>" . $row3[5] . "</td>";
+                        echo "<td>" . $row3['balance'] . "</td>";
                 echo "</tr>";
         	echo "<tr bgcolor='006633'><td colspan=5></td></tr>";
 		echo "<tr>";

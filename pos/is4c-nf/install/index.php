@@ -52,6 +52,8 @@ Necessities
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <a href="debug.php">Debug</a>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<a href="plugins.php">Plugins</a>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <a href="extra_data.php">Sample Data</a>
 
 <h2>IT CORE Lane Installation: Necessities</h2>
@@ -1039,7 +1041,7 @@ function create_trans_dbs($db,$type){
 			THEN 'Mbr special'
 		WHEN (trans_status = 'S')
 			THEN 'Staff special'
-		WHEN (scale <> 0 and quantity <> 0)
+		WHEN (scale <> 0 and quantity <> 0 and unitPrice <> 0.01)
 			THEN CONCAT( quantity,' @ ',unitPrice)
 		WHEN (SUBSTRING(upc, 1, 3) = '002')
 			THEN CONCAT( itemQtty,' @ ',regPrice)
@@ -1852,6 +1854,16 @@ function create_trans_dbs($db,$type){
 		)";
 	if(!$db->table_exists('efsnetRequestMod',$name)){
 		$db->query($efsrqm,$name);
+	}
+
+	$etq = "CREATE TABLE efsnetTokens (
+			expireDay datetime, 
+			refNum varchar(50),
+			token varchar(100),
+			PRIMARY KEY (refNum)
+		)";
+	if(!$db->table_exists('efsnetTokens',$name)){
+		$db->query($etq,$name);
 	}
 
 	$vrq = "CREATE TABLE valutecRequest (

@@ -1,0 +1,43 @@
+<html>
+	<head>
+		<title>Writing a Plugin</title>
+	</head>
+	<body>
+	<div style="text-align:center;margin-bottom:10px;font-size:80%;">
+	updated as of: October 23, 2012<br />
+	last author: Andy Theuninck
+	</div>
+	
+	The current version of IS4C has many areas of functionality that
+	are extensible via modules. The structure, however, is very rigid.
+	Class files for a given area of functionality (e.g., parsing) have
+	to be placed in a specific directory. This is not conducive to 3rd
+	party development; their additions end up scattered throughout the
+	the upstream version. Plugins attempt to address this issue.
+
+	<p />
+
+	A plugin is a self-contained collection of modules. It consists of:
+	<ol>
+	<li>A directory under "plugins" (for example, <i>MyPlugin</i>
+	<li>A file with the same name containing a Plugin subclass of the same name
+	    (for example, a file <i>MyPlugin.php</i> containing the class <i>MyPlugin</i>)
+	<li>As many other modules as needed
+	</ol>
+
+	The actual Plugin module contains metadata about the plugin. It specifies any
+	settings that should be exposed to the user and provides hooks to take action
+	when the plugin is enabled or disabled. The additional modules provided by the
+	plugin are identified by base class. When a plugin is enabled, these additional
+	modules automatically appear as new options in appropriate sections of IS4C's
+	configuration. Class names should match file names, but
+	otherwise file and directory structure is entirely up to the developer.
+
+	<p />
+
+	Doxygen documentation is available for the Plugin class. The included MemberCard 
+	plugin is a decent illustrative example. It provides one module (a special UPC handler)
+	and uses the plugin system to expose the necessary prefix setting.
+
+	</body>
+</html>
