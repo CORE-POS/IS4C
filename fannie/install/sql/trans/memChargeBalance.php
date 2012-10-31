@@ -10,7 +10,7 @@ Columns:
 
 Depends on:
 	core_op.custdata (table)
-	memIouToday (view)
+	ar_live_balance (view)
 
 Use:
 This view lists real-time store charge
@@ -29,10 +29,10 @@ $CREATE['trans.memChargeBalance'] = "
 		ELSE c.memDiscountLimit - a.balance END) as availBal,
 	(CASE when a.balance is NULL then 0 ELSE a.balance END) as balance,
 	CASE WHEN a.mark IS NULL THEN 0 ELSE a.mark END AS mark   
-	FROM {$names['op']}.custdata as c left join newBalanceToday_cust as a ON c.CardNo = a.memnum
+	FROM {$names['op']}.custdata as c left join ar_live_balance as a ON c.CardNo = a.card_no
 	where c.personNum = 1
 ";
 
-if (!$con->table_exists("newBalanceToday_cust"))
+if (!$con->table_exists("ar_live_balance"))
 	$CREATE['trans.memChargeBalance'] = "SELECT 1";
 ?>

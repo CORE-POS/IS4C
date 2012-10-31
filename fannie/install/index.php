@@ -791,6 +791,9 @@ function create_op_dbs($con){
 
 	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 			'AdSaleDates','op');
+
+	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+			'custReceiptMessage','op');
 }
 
 function create_trans_dbs($con){
@@ -971,19 +974,13 @@ function create_dlogs($con){
 			'rp_receipt_header_90','trans');
 
 	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
-			'memIouToday','trans');
-
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
-			'newBalanceToday_cust','trans');
+			'ar_live_balance','trans');
 
 	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
 			'ar_history','trans');
 
 	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
 			'ar_history_sum','trans');
-
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
-			'ar_sum_cache','trans');
 
 	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
 			'stockpurchases','trans');
@@ -1041,6 +1038,9 @@ function create_delayed_dbs(){
 
 	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
 			'ar_history_today','trans');
+
+	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+			'ar_history_today_sum','trans');
 
 	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
 			'AR_statementHistory','trans');

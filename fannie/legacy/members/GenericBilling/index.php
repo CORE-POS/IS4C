@@ -57,7 +57,7 @@ function billingDisplay($cardno){
 
 	$query = "SELECT c.CardNo,c.LastName,n.balance
 		FROM custdata AS c LEFT JOIN
-		is4c_trans.newBalanceToday_cust AS n ON c.CardNo=n.memnum
+		is4c_trans.ar_live_balance AS n ON c.CardNo=n.card_no
 		WHERE c.CardNo=$cardno AND c.personNum=1";
 	$result = $sql->query($query);
 	$row = $sql->fetch_row($result);

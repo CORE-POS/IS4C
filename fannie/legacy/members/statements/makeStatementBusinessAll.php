@@ -23,7 +23,7 @@ $selAddQ = "SELECT m.card_no, c.LastName,m.street, '',
            FROM 
            meminfo m 
 	   LEFT JOIN custdata as c on c.CardNo=m.card_no and c.personNum=1
-	   LEFT JOIN {$TRANS}newBalanceToday_cust as n ON m.card_no=n.memnum
+	   LEFT JOIN {$TRANS}ar_live_balance as n ON m.card_no=n.card_no
 	   WHERE c.Type not in ('TERM') and
 	   c.memType IN (2,0)
 	   and n.balance > 0
