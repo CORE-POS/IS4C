@@ -58,8 +58,8 @@ if (isset($_REQUEST['send_email']) || isset($_REQUEST['skip_email']) || isset($_
 		   m.email_1,n.balance
 		   FROM meminfo AS m LEFT JOIN
 		   custdata as c on c.cardno=m.card_no and c.personnum=1
-		   LEFT JOIN {$trans}.newBalanceToday_cust AS n
-		   ON m.card_no=n.memnum
+		   LEFT JOIN {$trans}.ar_live_balance AS n
+		   ON m.card_no=n.card_no
 		   WHERE m.card_no=$cur";
 		$r = $dbc->query($q);
 		$w = $dbc->fetch_row($r);
@@ -152,8 +152,8 @@ elseif (!isset($_REQUEST['cardno'])){
                            FROM 
                            custdata as c 
 			   LEFT JOIN meminfo AS i ON c.cardno=i.card_no
-			   LEFT JOIN {$trans}.newBalanceToday_cust AS n
-			   ON c.cardno=n.memnum
+			   LEFT JOIN {$trans}.ar_live_balance AS n
+			   ON c.cardno=n.card_no
                            WHERE c.type not in ('TERM') and
                            c.memtype = 2 AND c.personnum=1
 			   and n.balance > 0	

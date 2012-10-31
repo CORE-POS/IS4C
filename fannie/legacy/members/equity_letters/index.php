@@ -366,7 +366,7 @@ function arDisplays($subtype){
 	elseif($subtype == "allbusiness"){
 		$query = "SELECT c.CardNo,c.LastName FROM
 			custdata AS c LEFT JOIN
-			{$TRANS}newBalanceToday_cust n ON c.CardNo=n.memnum
+			{$TRANS}ar_live_balance n ON c.CardNo=n.card_no
 			LEFT JOIN suspensions AS s ON c.cardno=s.CardNo
 			WHERE c.Type NOT IN ('TERM') AND
 			(c.memType = 2 or s.memtype1=2)

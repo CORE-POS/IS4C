@@ -42,6 +42,6 @@ $CREATE['trans.ar_live_balance'] = "
 	where c.personNum=1
 ";
 
-if (!$con->table_exists("memIouToday"))
-	$CREATE['trans.newBalanceStockToday_cust'] = "SELECT 1";
+if (!$con->table_exists("ar_history_today_sum"))
+	$CREATE['trans.ar_live_balance'] = "SELECT 1";
 ?>
