@@ -21,6 +21,17 @@
 
 *********************************************************************************/
 
+
+/* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+	* 22Sep2012 Eric Lee Annotate, esp re cURL.
+	*           http://curl.haxx.se/
+	*           http://ca.php.net/manual/en/function.curl-setopt.php
+	*           See www-data's crontab for where error reports go, e.g.
+	*            30 1 * * * cd /var/www/IS4C/fannie/cron && php ./nightly.lanesync.php >> /var/www/IS4C/fannie/logs/dayend.log
+
+*/
+
 /* HELP
 
    nightly.lanesync.php
@@ -39,16 +50,26 @@ set_time_limit(0);
 
 $url = "http://".php_uname('n').$FANNIE_URL."/sync/tablesync.php";
 
+// curl_init():
+//  Initializes a new session and return a cURL handle for use with the curl_setopt(), curl_exec(), and curl_close() functions.
 $products = curl_init($url."?tablename=products&othertable=");
+/* CURLOPT_RETURNTRANSFER:
+	* TRUE to return the transfer as a string of the return value of curl_exec() instead of outputting it out directly.
+*/
 curl_setopt($products, CURLOPT_RETURNTRANSFER, True);
+// r1 is apparently never used.
 $r1 = curl_exec($products);
+echo "Result of tablesync of products: >{$r1}<";
 curl_close($products);
+
+// Other tables are done the same way, except as noted.
 
 $custdata = curl_init($url."?tablename=custdata&othertable=");
 curl_setopt($custdata, CURLOPT_RETURNTRANSFER, True);
 $r2 = curl_exec($custdata);
 curl_close($custdata);
 
+// Note use of othertable.
 $memcards = curl_init($url."?tablename=&othertable=memberCards");
 curl_setopt($memcards, CURLOPT_RETURNTRANSFER, True);
 $r2 = curl_exec($memcards);

@@ -1,11 +1,11 @@
 <?php
 /*
-Table: ar_history
+View: AR_EOM_Summary
 
 Columns:
 	card_no int
 	memName varchar
-	priorBalance money
+	priorBalance money   - 4 months ago
 	threeMonthCharges money
 	threeMonthPayments money
 	threeMonthBalance money
@@ -18,11 +18,27 @@ Columns:
 
 Depends on:
 	ar_history_backup (table)
+	core_op.custdata (table)
 
 Use:
 View of customer start/end AR balances
-over past few months
+ over past few months
+Is refreshed monthly.
+
+Maintained:
+ar_history_backup is populated
+ on the first of each month
+ by cron/nightly.ar.php
+
 */
+
+
+/* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+	* 24Oct2012 Eric Lee In docs, Fix Table:, Enhance: Depends on:, Add Maintained:
+
+*/
+
 $names = qualified_names();
 $CREATE['trans.AR_EOM_Summary'] = "
 	CREATE VIEW AR_EOM_Summary AS

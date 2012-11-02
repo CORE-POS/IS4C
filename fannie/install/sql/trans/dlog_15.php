@@ -29,7 +29,18 @@ This is just a look-up table. It contains the
 past 15 days worth of dlog entries. For reports
 on data within that time frame, it's faster to
 use this small table.
+
+Maintenance:
+Truncated and populated by cron/nightly.dtrans.php
 */
+
+
+/* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+	* 23Oct2012 Eric Lee Added Maintenance section to comments.
+
+*/
+
 $CREATE['trans.dlog_15'] = "
 	CREATE TABLE dlog_15 (`tdate` datetime default NULL,
           `register_no` smallint(6) default NULL,
