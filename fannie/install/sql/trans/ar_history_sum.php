@@ -12,9 +12,21 @@ Depends on:
 	ar_history (view)
 	custdata (table)
 
+Depended on by:
+  Snapshot table derived from this: ar_sum_cache
+
 Use:
-Sum of all charges and payments per customer
+  Summary of all charges and payments per customer
+  (One row per customer.)
+
 */
+
+/* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+	* 24Oct2012 Eric Lee Add comments Depended on by:
+
+*/
+
 $names = qualified_names();
 
 $CREATE['trans.ar_history_sum'] = "

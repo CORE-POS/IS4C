@@ -31,12 +31,19 @@ include($FANNIE_ROOT.'src/SQLManager.php');
 
 /* HELP
 
-   This script activates members with store-charge account (ar) up-to-date
+   This script activates members with store-charge account (ar)
+   up-to-date, i.e.
+   newBalanceToday.balance < AR_EOM_Summary_cache.twoMonthBalance
+
+   When/how-often can/should it be run? Daily?
+
 */
 
 /* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - -
  *
- * 17Jun12 EL Fix HELP to make it appropriate to this program.
+ * 18Oct12 EL Keep this comment block from appearing in the Help popup.
+ *             Reformat first SQL statement.
+ * 17Jun12 EL Fix Help to make it appropriate to this program.
  *             Was a copy of reactivate.equity.php.
 */
 
@@ -48,15 +55,14 @@ $sql = new SQLManager($FANNIE_SERVER,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 
 $TRANS = $FANNIE_TRANS_DB . ($FANNIE_SERVER_DBMS=="MSSQL" ? 'dbo.' : '.');
 
-$meminfoQ = "UPDATE meminfo AS m LEFT JOIN
-	    custdata AS c ON m.card_no=c.CardNo
-	    LEFT JOIN {$TRANS}newBalanceToday_cust AS s
-	    ON c.cardno=s.memnum LEFT JOIN suspensions AS p
-	    ON c.cardno=p.cardno LEFT JOIN {$TRANS}AR_EOM_Summary_cache AS a
-	    ON m.card_no=a.cardno
+$meminfoQ = "UPDATE meminfo                    AS m
+				LEFT JOIN custdata                     AS c ON m.card_no=c.CardNo
+				LEFT JOIN {$TRANS}newBalanceToday_cust AS s ON c.cardno=s.memnum
+				LEFT JOIN suspensions                  AS p ON c.cardno=p.cardno
+				LEFT JOIN {$TRANS}AR_EOM_Summary_cache AS a ON m.card_no=a.cardno
 	    SET m.ads_OK=p.mailflag
 	    WHERE c.Type = 'INACT' and p.reasoncode IN (1)
-	    AND s.balance < a.twoMonthBalance";
+				AND s.balance < a.twoMonthBalance";
 $sql->query($meminfoQ);
 
 $custQ = "UPDATE custdata AS c LEFT JOIN {$TRANS}newBalanceToday_cust AS s

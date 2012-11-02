@@ -67,7 +67,8 @@ $query = "INSERT INTO ar_history
 	CASE WHEN trans_subtype='MI' THEN -total ELSE 0 END AS charges,
 	CASE WHEN department IN $dlist THEN total ELSE 0 END as payments,
 	tdate,trans_num
-	FROM dlog_15 WHERE "
+	FROM dlog_15
+	WHERE "
 	.$sql->datediff($sql->now(),'tdate')." = 1
 	AND (department IN $dlist OR trans_subtype='MI')";	
 $sql->query($query);

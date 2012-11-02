@@ -12,8 +12,21 @@ Depends on:
 	ar_history_sum (view)
 
 Use:
-Sum of all charges and payments per customer
+  Summary of all charges and payments per customer
+  Same content as ar_history_sum
+
+Maintained:
+  Truncated and populated by from ar_history_sum
+   by nightly.tablecache.php
+
 */
+
+/* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+	* 24Oct2012 Eric Lee Add comments: Maintained:
+
+*/
+
 $CREATE['trans.ar_sum_cache'] = "
 	CREATE TABLE ar_sum_cache (
 	card_no INT,
