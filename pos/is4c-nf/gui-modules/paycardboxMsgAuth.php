@@ -43,6 +43,10 @@ class paycardboxMsgAuth extends PaycardProcessPage {
 				if (is_object($st))
 					$st->WriteToScale($CORE_LOCAL->get("ccTermOut"));
 				PaycardLib::paycard_reset();
+				$CORE_LOCAL->set("CachePanEncBlock","");
+				$CORE_LOCAL->set("CachePinEncBlock","");
+				$CORE_LOCAL->set("CacheCardType","");
+				UdpComm::udpSend("termReset");
 				$this->change_page($this->page_url."gui-modules/pos2.php");
 				return False;
 			}
@@ -100,7 +104,10 @@ class paycardboxMsgAuth extends PaycardProcessPage {
 			echo PaycardLib::paycard_msgBox($type,"Invalid Amount",
 				"Enter a lesser amount","[clear] to cancel");
 		} else if( $amt > 0) {
-			echo PaycardLib::paycard_msgBox($type,"Tender ".PaycardLib::paycard_moneyFormat($amt)."?","","[enter] to continue if correct<br>Enter a different amount if incorrect<br>[clear] to cancel");
+			$msg = "Tender ".PaycardLib::paycard_moneyFormat($amt);
+			if ($CORE_LOCAL->get("CacheCardType") != "")
+				$msg .= " as ".$CORE_LOCAL->get("CacheCardType");
+			echo PaycardLib::paycard_msgBox($type,$msg."?","","[enter] to continue if correct<br>Enter a different amount if incorrect<br>[clear] to cancel");
 		} else if( $amt < 0) {
 			echo PaycardLib::paycard_msgBox($type,"Refund ".PaycardLib::paycard_moneyFormat($amt)."?","","[enter] to continue if correct<br>Enter a different amount if incorrect<br>[clear] to cancel");
 		} else {
