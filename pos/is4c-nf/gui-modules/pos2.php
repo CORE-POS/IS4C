@@ -194,8 +194,7 @@ class pos2 extends BasicPage {
 			});
 		}
 		function inputRetry(str){
-			$('#reginput').val(str);
-			submitWrapper();
+			parseWrapper(str);
 		}
 		</script>
 		<?php
