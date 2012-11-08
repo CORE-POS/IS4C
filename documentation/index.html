@@ -20,7 +20,12 @@
 	<h2>CORE-POS/IS4C Master Documentation ToC</h2>
 Rudimentary ToC to /IS4C/documentation
 </br>and links to some <a href="#other">other</a> resources
-<br />as of: August 19, 2012
+<!--
+.8Nov12 EL New doc about installing ss under NewMagellan.
+20Oct12 EL Add Fannie > End User > House Coupons section and link to explainify.
+.          In Fannie > Dev add links to Auth API, Auth README
+-->
+<br />as of: November 8, 2012
 </div>
 
 <p>You are here: Documentation Top
@@ -80,6 +85,23 @@ Rudimentary ToC to /IS4C/documentation
 							<li>Installation</li>
 							<li>Drawbacks and/or Gotchas</li>
 						</ul>
+						<ul id="">
+							<li><a href="../fannie/auth/doc/index.html" target="_Fd_auth_api_doc">Auth Module API Documentation</a>
+								<ul id="" class="detail">
+									<li>Requirements</li>
+									<li>API</li>
+									<li>Usage</li>
+								</ul>
+							</li>
+							<li><a href="../fannie/auth/README.php" target="_Fd_auth_readme">Andy's Fannie Authentication Module README</a>
+								<ul id="" class="detail">
+									<li>Disabling Authentication</li>
+									<li>Installation / Setup</li>
+								</ul>
+							</li>
+							<li><a href="Fannie/end-user/auth-classes.html" target="_Fd_authc">auth classes</a>
+									- List of scripts that require specific authorizations if authentication is enabled.</li>
+						</ul>
 					</li>
 					<li><a href="Fannie/developer/cron.html" target="_Fd_cron">Scheduled Tasks (cron jobs)</a></li>
 						<ul id="" class="detail">
@@ -115,23 +137,7 @@ Rudimentary ToC to /IS4C/documentation
 			</li>
 			<li><a href="Fannie/end-user/index.html" target="_Fend-user">end-user</a>
 				<ul>
-					<li><a href="Fannie/end-user/auth-classes.html" target="_Fe_authc">auth classes</a> - List of scripts that require specific authorizations if authentication is enabled.</li>
-					<li><a href="Fannie/end-user/batches.html" target="_Fe_batches">Sale Batches</a>
-						<ul id="" class="detail">
-							<li>Batch Types</li>
-							<li>Creating Sales Batches (Batches for Sales)</li>
-							<li>Price Change Batches</li>
-							<li>Likecodes</li>
-							<li>Add limit</li>
-							<li>The <i>Cut</i> option</li>
-							<li><a href="Fannie/end-user/speciality-batches.html" target="_Fe_sb">Specialty Batch Tools</a>
-								<ul id="" class="detail">
-									<li>Co+op Deals, i.e. Flyer Prices</li>
-									<li>Vendor Pricing</li>
-								</ul>
-							</li>
-						</ul>
-					</li>
+
 					<li><a href="Fannie/end-user/data-loading.html" target="_Fe_dl">Data Loading</a>
 						<ul id="" class="detail">
 							<li>Members</li>
@@ -147,6 +153,88 @@ Rudimentary ToC to /IS4C/documentation
 							<li>Sub Departments</li>
 						</ul>
 					</li>
+					<li>House Coupons
+						<ul id="">
+							<li><a href="../fannie/modules/plugins/HouseCoupon/explainify.html" target="_Fe_hc_explain">Explanation of terms and options</a>
+								<ul id="" class="detail">
+									<li>Simple ones</li>
+									<li>Required Purchases</li>
+									<li>Disount Types</li>
+								</ul>
+							</li>
+						</ul>
+					</li>
+
+					<li><a href="Fannie/end-user/members.html" target="_Fe_members">Members</a>
+						<ul id="" class="detail">
+							<li>Membership Types</li>
+							<li>Membership-related Settings</li>
+							<li><a href="Fannie/end-user/auth-classes.html" target="_Fd_authc">auth classes</a>
+									- List of scripts that require specific authorizations if authentication is enabled.</li>
+						</ul>
+					</li>
+					<li><a href="Fannie/developer/cron.html" target="_Fd_cron">Scheduled Tasks (cron jobs)</a></li>
+						<ul id="" class="detail">
+							<li>[Overview]</li>
+							<li>Example</li>
+						</ul>
+					</li>
+					<li><a href="Fannie/developer/db-creation.html" target="_Fd_dbc">Creating Tables and Views</a>
+						<ul id="" class="detail">
+							<li>[It is done in install/index.php]</li>
+						</ul>
+					</li>
+					<li><a href="Fannie/developer/db-alteration.html" target="_Fd_dba">Altering Tables and Views</a>
+						<ul id="" class="detail">
+							<li>[Using the install/updates directory</li>
+						</ul>
+					</li>
+					<li><a href="../fannie/install/sql/magic-doc.php" target="_Fd_agdd">Auto-Generated Database Documentation</a>
+						<ul id="" class="detail">
+							<li>Links to per-table Help</li>
+							<li>core_op</li>
+							<li>core_trans</li>
+						</ul>
+					</li>
+					<li><a href="Fannie/developer/get-going.html" target="_Fd_gg">Dive In</a>
+						<ul id="" class="detail">
+							<li>Grab the config</li>
+							<li>Need a database connection?</li>
+							<li>Want a skin?</li>
+						</ul>
+					</li>
+				</ul>
+			</li>
+			<li><a href="Fannie/end-user/index.html" target="_Fend-user">end-user</a>
+				<ul>
+
+					<li><a href="Fannie/end-user/data-loading.html" target="_Fe_dl">Data Loading</a>
+						<ul id="" class="detail">
+							<li>Members</li>
+							<li>Employees</li>
+							<li>Tenders</li>
+							<li>Tax Rates</li>
+						</ul>
+					</li>
+					<li><a href="Fannie/end-user/departments.html" target="_Fe_departments">Departments</a>
+						<ul id="" class="detail">
+							<li>Departments</li>
+							<li>Super Departments</li>
+							<li>Sub Departments</li>
+						</ul>
+					</li>
+					<li>House Coupons
+						<ul id="">
+							<li><a href="../fannie/modules/plugins/HouseCoupon/explainify.html" target="_Fe_hc_explain">Explanation of terms and options</a>
+								<ul id="" class="detail">
+									<li>Simple ones</li>
+									<li>Required Purchases</li>
+									<li>Disount Types</li>
+								</ul>
+							</li>
+						</ul>
+					</li>
+
 					<li><a href="Fannie/end-user/members.html" target="_Fe_members">Members</a>
 						<ul id="" class="detail">
 							<li>Membership Types</li>
@@ -178,7 +266,26 @@ Rudimentary ToC to /IS4C/documentation
 							<li>How do I pull price updates from a spreadsheet my vendor sent?</li>
 						</ul>
 					</li>
+
+					<li><a href="Fannie/end-user/batches.html" target="_Fe_batches">Sale Batches</a>
+						<ul id="" class="detail">
+							<li>Batch Types</li>
+							<li>Creating Sales Batches (Batches for Sales)</li>
+							<li>Price Change Batches</li>
+							<li>Likecodes</li>
+							<li>Add limit</li>
+							<li>The <i>Cut</i> option</li>
+							<li><a href="Fannie/end-user/speciality-batches.html" target="_Fe_sb">Specialty Batch Tools</a>
+								<ul id="" class="detail">
+									<li>Co+op Deals, i.e. Flyer Prices</li>
+									<li>Vendor Pricing</li>
+								</ul>
+							</li>
+						</ul>
+					</li>
+
 					<li><a href="Fannie/end-user/speciality-batches.html" target="_Fe_sb">Specialty Batch Tools</a>
+
 					<li><a href="Fannie/end-user/vendorImports.html" target="_Fe_vi">Import Vendor Data</a>
 						<ul id="" class="detail">
 							<li>Step 1: Create Vendor(s)</li>
@@ -244,6 +351,11 @@ Rudimentary ToC to /IS4C/documentation
 						<ul id="" class="detail">
 							<li>How it works</li>
 						</ul>
+					</li>
+					<li><a href="IS4C/developer/howto-newmagellan-2.html" target="_ISd_newmag2">Install scanner/scale under the NewMagellan driver</a>
+						<!-- ul id="" class="detail">
+							<li>How it works</li>
+						</ul -->
 					</li>
 					<li><a href="IS4C/developer/howto-gs1.html" target="_ISd_gs1">GS1 Barcodes</a>
 						<ul id="" class="detail">
