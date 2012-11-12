@@ -20,7 +20,7 @@ if (!validateUserQuiet('view_all_hours')){
 	   is in that department
 	*/
 	$validated = false;
-	$depts = array(11,12,13,20,30,40,41,50,60);
+	$depts = array(11,12,13,20,21,30,40,41,50,60);
 	foreach ($depts as $d){
 		if (validateUserQuiet('view_all_hours',$d)){
 			$checkQ = "select department from employees where empID=".$empID;

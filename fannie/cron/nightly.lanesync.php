@@ -54,6 +54,11 @@ curl_setopt($memcards, CURLOPT_RETURNTRANSFER, True);
 $r2 = curl_exec($memcards);
 curl_close($memcards);
 
+$crm = curl_init($url."?tablename=&othertable=custReceiptMessage");
+curl_setopt($crm, CURLOPT_RETURNTRANSFER, True);
+$r2 = curl_exec($crm);
+curl_close($crm);
+
 $employees = curl_init($url."?tablename=employees&othertable=");
 curl_setopt($employees, CURLOPT_RETURNTRANSFER, True);
 $r3 = curl_exec($employees);

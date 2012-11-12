@@ -50,10 +50,12 @@ if (isset($_REQUEST['date1'])){
 			WHERE (d.trans_type IN ('I','D','S')
 			OR (d.trans_type='T' AND d.trans_subtype IN ('MA','IC')))	
 			AND d.total <> 0
-			AND (s.memtype1 IN %s OR c.memType IN %s)",
+			AND (s.memtype1 IN %s OR c.memType IN %s)
+			AND d.tdate BETWEEN '%s 00:00:00' AND '%s 23:59:59'",
 			$dlog,$FANNIE_OP_DB,$dbc->sep(),
 			$FANNIE_OP_DB,$dbc->sep(),
-			$mtype,$mtype);
+			$mtype,$mtype,
+			$_REQUEST['date1'],$_REQUEST['date2']);
 	$dbc->query($insQ);
 
 	echo '<i>Patronage working table created</i>';
@@ -72,7 +74,7 @@ else {
 	echo '</tr><tr><th>End Date</th>';
 	echo '<td><input type="text" name="date2" onfocus="showCalendarControl(this);" />';
 	echo '</tr><tr><td colspan="2"><b>Member Type</b>:<br />';
-	$typeQ = "SELECT memtype,memDesc FROM memtype ORDER BY memtype";
+	$typeQ = "SELECT memtype,memDesc FROM ".$FANNIE_OP_DB.$dbc->sep()."memtype ORDER BY memtype";
 	$typeR = $dbc->query($typeQ);
 	while($typeW = $dbc->fetch_row($typeR)){
 		printf('<input type="checkbox" value="%d" name="mtype[]"
