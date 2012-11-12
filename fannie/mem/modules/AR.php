@@ -33,8 +33,8 @@ class AR extends MemberModule {
 		
 		$infoQ = sprintf("SELECT c.memDiscountLimit,n.balance
 				FROM custdata AS c LEFT JOIN
-				{$trans}.newBalanceToday_cust AS n ON
-				c.CardNo=n.memnum
+				{$trans}.ar_live_balance AS n ON
+				c.CardNo=n.card_no
 				WHERE c.CardNo=%d AND c.personNum=1",$memNum);
 		$infoR = $dbc->query($infoQ);
 		$infoW = $dbc->fetch_row($infoR);

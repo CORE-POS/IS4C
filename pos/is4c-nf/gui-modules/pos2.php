@@ -156,7 +156,9 @@ class pos2 extends BasicPage {
 			var str = $('#reginput').val();
 			if (str.indexOf("tw") != -1 || str.indexOf("TW") != -1 || (str.search(/^[0-9]+$/) == 0 && str.length <= 13) || str=='TFS'){
 				$('#reginput').val('');
+				clearTimeout(screenLockVar);
 				runParser(str,'<?php echo $this->page_url; ?>');
+				enableScreenLock();
 				return false;
 			}
 			return true;
@@ -164,6 +166,10 @@ class pos2 extends BasicPage {
 		function parseWrapper(str){
 			$('#reginput').val(str);
 			$('#formlocal').submit();
+		}
+		var screenLockVar;
+		function enableScreenLock(){
+			screenLockVar = setTimeout('lockScreen()', <?php echo $CORE_LOCAL->get("timeout") ?>);
 		}
 		function lockScreen(){
 			$.ajax({
@@ -188,8 +194,7 @@ class pos2 extends BasicPage {
 			});
 		}
 		function inputRetry(str){
-			$('#reginput').val(str);
-			submitWrapper();
+			parseWrapper(str);
 		}
 		</script>
 		<?php
@@ -199,7 +204,7 @@ class pos2 extends BasicPage {
 		global $CORE_LOCAL;
 		$this->input_header('action="pos2.php" onsubmit="return submitWrapper();"');
 		if ($CORE_LOCAL->get("timeout") != "")
-			$this->add_onload_command("setTimeout('lockScreen()', ".$CORE_LOCAL->get("timeout").");\n");
+			$this->add_onload_command("enableScreenLock();\n");
 		$this->add_onload_command("\$('#reginput').keydown(function(ev){
 					switch(ev.which){
 					case 33:

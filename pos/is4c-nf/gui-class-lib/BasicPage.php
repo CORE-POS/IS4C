@@ -57,8 +57,7 @@ class BasicPage {
 		if ($this->preprocess()){
 			ob_start();
 			$this->print_page();
-			while (ob_get_level() > 0)
-				ob_end_flush();
+			ob_end_flush();
 		}
 	}
 
@@ -239,10 +238,16 @@ class BasicPage {
 			}
 			if($CORE_LOCAL->get("CCintegrate") == 1 && 
 				$CORE_LOCAL->get("ccLive") == 1 && $CORE_LOCAL->get("training") == 0){
-			   echo "<img src='{$my_url}graphics/ccIn.gif'>&nbsp;";
+			   if ($CORE_LOCAL->get("CachePanEncBlock")=="")
+				   echo "<img src='{$my_url}graphics/ccIn.gif'>&nbsp;";
+			   else
+				   echo "<img src='{$my_url}graphics/ccInLit.gif'>&nbsp;";
 			}elseif($CORE_LOCAL->get("CCintegrate") == 1 && 
 				($CORE_LOCAL->get("training") == 1 || $CORE_LOCAL->get("ccLive") == 0)){
-			   echo "<img src='{$my_url}graphics/ccTest.gif'>&nbsp;";
+			   if ($CORE_LOCAL->get("CachePanEncBlock")=="")
+				   echo "<img src='{$my_url}graphics/ccTest.gif'>&nbsp;";
+			   else
+				   echo "<img src='{$my_url}graphics/ccTestLit.gif'>&nbsp;";
 			}
 
 			echo "<span id=\"timeSpan\" class=\"time\">".$time."</span>\n";
