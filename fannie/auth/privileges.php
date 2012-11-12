@@ -72,6 +72,54 @@ function addAuth($name,$auth_class,$sub_start='all',$sub_end='all'){
   return true;
 }
 
+function createClass($name, $notes){
+	if (!isAlphanumeric($name) ){
+		return false;
+	}
+
+	if (!validateUser('admin')){
+		return false;
+	}
+
+	$sql = dbconnect();
+	$checkQ = "select * from userKnownPrivs where auth_class='$name'";
+	$checkR = $sql->query($checkQ);
+	if ($sql->num_rows($checkR) != 0){
+		return false;
+	}
+
+	$notes = str_replace("\n","<br />",$notes);
+	$insQ = sprintf("INSERT INTO userKnownPrivs (auth_class, notes)
+			VALUES (%s, %s)", $sql->escape($name),
+			$sql->escape($notes));
+	$insR = $sql->query($insQ);
+	return true;
+}
+
+function deleteClass($name){
+	if (!isAlphanumeric($name) ){
+		return false;
+	}
+
+	if (!validateUser('admin')){
+		return false;
+	}
+
+	$sql = dbconnect();
+
+	$q1 = sprintf("DELETE FROM userKnownPrivs WHERE auth_class=%s",
+		$sql->escape($name));
+	$r1 = $sql->query($q1);
+
+	$q2 = sprintf("DELETE FROM userPrivs WHERE auth_class=%s",
+		$sql->escape($name));
+	$r2 = $sql->query($q2);
+
+	$q3 = sprintf("DELETE FROM userGroupPrivs WHERE auth=%s",
+		$sql->escape($name));
+	$r3 = $sql->query($q3);
+}
+
 function deleteAuth($name,$auth_class){
   if (!isAlphanumeric($name) or !isAlphanumeric($auth_class)){
     return false;
@@ -120,6 +168,63 @@ function showAuths($name){
   }
   echo "</table>";
   return true;
+}
+
+function showClasses(){
+  if (!validateUser('admin')){
+    return false;
+  }
+
+  echo "Showing authorization classes";
+  echo "<table cellspacing=0 cellpadding=4 border=1><tr>";
+  echo "<th>Authorization class</th><th>Notes</th>";
+  echo "</tr>";
+  $sql = dbconnect();
+  $fetchQ = "select auth_class,notes from userKnownPrivs order by auth_class";
+  $fetchR = $sql->query($fetchQ);
+  while ($row = $sql->fetch_array($fetchR)){
+    echo "<tr>";
+    echo "<td>$row[0]</td><td>".(empty($row[1])?'&nbsp;':$row[1])."</td>";
+    echo "</tr>";
+  }
+  echo "</table>";
+  return true;
+}
+
+function getAuthNotes($name){
+	$sql = dbconnect();
+	$q = sprintf("SELECT notes FROM userKnownPrivs WHERE auth_class=%s",
+		$sql->escape($name));
+	$r = $sql->query($q);
+	if ($sql->num_rows($r) == 0) return "";
+	$w = $sql->fetch_row($r);
+	return str_replace("<br />","\n",$w['notes']);
+}
+
+function updateAuthNotes($name,$notes){
+	if (!validateUser('admin')){
+		return false;
+	}
+	$sql = dbconnect();
+	$notes = str_replace("\n","<br />",$notes);
+	$q = sprintf("UPDATE userKnownPrivs SET notes=%s WHERE auth_class=%s",
+		$sql->escape($notes),$sql->escape($name));
+	$r = $sql->query($q);
+	return true;
+}
+
+function getAuthList(){
+	$sql = dbconnect();
+	$ret = array();
+	$result = $sql->query("SELECT auth_class FROM userKnownPrivs ORDER BY auth_class");
+	while($row = $sql->fetch_Row($result))
+		$ret[] = $row['auth_class'];
+
+	if (!in_array('admin',$ret)){
+		$ret[] = 'admin';
+		sort($ret);
+	}
+	return $ret;
 }
 
 /*
