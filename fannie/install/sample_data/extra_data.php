@@ -79,6 +79,11 @@ elseif (isset($_REQUEST['tenders'])){
 	$db->query("TRUNCATE TABLE tenders");
 	loaddata($db,'tenders');
 }
+elseif (isset($_REQUEST['authentication'])){
+	echo "Loadintg authentication info";
+	$db->query("TRUNCATE TABLE userKnownPrivs");
+	loaddata($db,'userKnownPrivs');
+}
 ?>
 </i></blockquote>
 Some sample data is available to get a test lane
@@ -121,6 +126,11 @@ Can also used to group the domains of Buyers.
 <b>Tenders</b>:
 Load all the default tenders into the tenders table.<br />
 <input type=submit name=tenders value="Load default tenders" />
+<hr />
+<b>Authentication</b>:
+Load information about currently defined authorization classes<br />
+<input type=submit name=authentication value="Load auth info" />
+<hr />
 </form>
 </body>
 </html>
