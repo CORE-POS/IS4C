@@ -211,6 +211,13 @@ function table_check(){
 			sub_end varchar(50)
 			)");
 	}
+	if (!$sql->table_exists('userKnownPrivs')){
+		$sql->query("CREATE TABLE userKnownPrivs (
+			auth_class varchar(50),
+			notes text,
+			PRIMARY KEY (auth_class)
+			)");
+	}
 	if (!$sql->table_exists('userGroups')){
 		$sql->query("CREATE TABLE userGroups (
 			gid int,

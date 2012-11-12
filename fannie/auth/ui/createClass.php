@@ -1,7 +1,7 @@
 <?php
 /*******************************************************************************
 
-    Copyright 2009 Whole Foods Co-op
+    Copyright 2012 Whole Foods Co-op
 
     This file is part of Fannie.
 
@@ -23,8 +23,8 @@
 
 require('../login.php');
 $path = guesspath();
-$page_title = 'Fannie : Auth : Delete Group';
-$header = 'Fannie : Auth : Delete Group';
+$page_title = 'Fannie : Auth : Add Authorization Class';
+$header = 'Fannie : Auth : Add Authorization Class';
 
 include($path."src/header.html");
 
@@ -32,40 +32,31 @@ if (!validateUser('admin')){
   return;
 }
 
-if (isset($_POST['yes'])){
+if (isset($_POST['name']) && !empty($_POST['name'])){
   $name = $_POST['name'];
-  $success = deleteGroup($name);
-  if (!$success){
-    echo "<a href=menu.php>Main menu</a>  |  <a href=deleteGroup.php>Try again</a>?";
+  $notes = $_POST['notes'];
+  if (empty($notes)){
+    echo "Notes are required. Document your work.<p />";
+    echo "<a href=menu.php>Main menu</a>  |  <a href=createClass.php>Try again</a>?";
     return;
   }
-  echo "Group $name deleted<p />";
+  $success = createClass($name,$notes);
+  if (!$success){
+    echo "Unable to create class.  Perhaps '$name' is already in use<p />";
+    echo "<a href=menu.php>Main menu</a>  |  <a href=createClass.php>Try again</a>?";
+    return;
+  }
+  echo "Class '$name' created succesfully<p />";
   echo "<a href=menu.php>Main menu</a>";
 }
-else if (isset($_POST['warn'])){
-  $name = $_POST['name'];
-  echo "Are you sure you want to delete group '$name'?<p />";
-  echo "<table cellspacing=3 cellpadding=3><tr>";
-  echo "<td><form action=deleteGroup.php method=post>";
-  echo "<input type=submit name=yes value=Yes>";
-  echo "<input type=hidden name=name value=$name>";
-  echo "</form</td>";
-  echo "<td><form action=menu.php method=post>";
-  echo "<input type=submit name=no value=No>";
-  echo "</form></td></tr></table>";
-}
 else {
-  echo "<form action=deleteGroup.php method=post>";
-echo "Group name:<select name=name>";
-foreach(getGroupList() as $uid => $name)
-	echo "<option>".$name."</option>";
-echo "</select>";
-  echo "<input type=hidden name=warn value=warn>";
-echo '&nbsp;&nbsp;&nbsp;<input type="submit" value="Delete" />';
-  echo "</form>";
-  echo "<p /><a href=menu.php>Main menu</a>";
+  echo "<form action=createClass.php method=post>";
+  echo "<table cellspacing=4 cellpadding=4>";
+  echo "<tr><td>Class Name:</td><td><input type=text name=name></td></tr>";
+  echo "<tr><td>Notes:</td><td><textarea rows=10 cols=50 name=notes></textarea></td></tr>";
+  echo "<tr><td><input type=submit value=Create></td><td><input type=reset value=Reset></td></tr>";
+  echo "</table</form>";
 }
 
 include($path."src/footer.html");
 ?>
-

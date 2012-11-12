@@ -72,8 +72,14 @@ else {
   echo "same class (e.g., multiple sub-class ranges) you should edit in SQL<p />";
   echo "<form method=post action=deleteAuth.php>";
   echo "<table cellspacing=3 cellpadding=3>";
-  echo "<tr><td>Username:</td><td><input type=text name=name></td></tr>";
-  echo "<tr><td>Authorization class</td><td><input type=text name=class></td></tr>";
+  echo "<tr><td>Username:</td><td><select name=name>";
+  foreach(getUserList() as $uid => $name)
+	echo "<option>".$name."</option>";
+  echo "</select></td></tr>";
+  echo "<tr><td>Authorization class:</td><td><select name=class>";
+  foreach(getAuthList() as $name)
+	echo "<option>".$name."</option>";
+  echo "</select></td></tr>";
   echo "<tr><td><input type=submit value=Delete></td><td><input type=reset value=Reset></td></tr>";
   echo "<input type=hidden value=warn name=warn>";
   echo "</table></form>";

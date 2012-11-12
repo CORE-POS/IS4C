@@ -23,8 +23,8 @@
 
 require('../login.php');
 $path = guesspath();
-$page_title = 'Fannie : Auth : Delete Group';
-$header = 'Fannie : Auth : Delete Group';
+$page_title = 'Fannie : Auth : Delete Authorization Class';
+$header = 'Fannie : Auth : Delete Authorization Class';
 
 include($path."src/header.html");
 
@@ -34,19 +34,15 @@ if (!validateUser('admin')){
 
 if (isset($_POST['yes'])){
   $name = $_POST['name'];
-  $success = deleteGroup($name);
-  if (!$success){
-    echo "<a href=menu.php>Main menu</a>  |  <a href=deleteGroup.php>Try again</a>?";
-    return;
-  }
-  echo "Group $name deleted<p />";
+  $success = deleteClass($name);
+  echo "Class '$name' deleted<p />";
   echo "<a href=menu.php>Main menu</a>";
 }
 else if (isset($_POST['warn'])){
   $name = $_POST['name'];
-  echo "Are you sure you want to delete group '$name'?<p />";
+  echo "Are you sure you want to delete class '$name'?<p />";
   echo "<table cellspacing=3 cellpadding=3><tr>";
-  echo "<td><form action=deleteGroup.php method=post>";
+  echo "<td><form action=deleteClass.php method=post>";
   echo "<input type=submit name=yes value=Yes>";
   echo "<input type=hidden name=name value=$name>";
   echo "</form</td>";
@@ -55,17 +51,16 @@ else if (isset($_POST['warn'])){
   echo "</form></td></tr></table>";
 }
 else {
-  echo "<form action=deleteGroup.php method=post>";
-echo "Group name:<select name=name>";
-foreach(getGroupList() as $uid => $name)
+  echo "<form action=deleteClass.php method=post>";
+echo "Class:<select name=name>";
+foreach(getAuthList() as $uid => $name)
 	echo "<option>".$name."</option>";
 echo "</select>";
-  echo "<input type=hidden name=warn value=warn>";
 echo '&nbsp;&nbsp;&nbsp;<input type="submit" value="Delete" />';
+  echo "<input type=hidden name=warn value=warn>";
   echo "</form>";
   echo "<p /><a href=menu.php>Main menu</a>";
 }
 
 include($path."src/footer.html");
 ?>
-

@@ -1,7 +1,7 @@
 <?php
 /*******************************************************************************
 
-    Copyright 2009 Whole Foods Co-op
+    Copyright 2012 Whole Foods Co-op
 
     This file is part of Fannie.
 
@@ -23,35 +23,20 @@
 
 require('../login.php');
 $path = guesspath();
-$page_title = 'Fannie : Auth : Pose';
-$header = 'Fannie : Auth : Pose';
+$page_title = 'Fannie : Auth : View Users';
+$header = 'Fannie : Auth : View Users';
 
-$name = checkLogin();
-if (validateUserQuiet('admin')){
-	if (isset($_POST["newname"])){
-		pose($_POST["newname"]);
-		header("Location: menu.php");
-		return;
-	}
-	else {
-		include($path."src/header.html");
-?>
-<form method=post action=pose.php>
-<?php
-echo "Username:<select name=name>";
-foreach(getUserList() as $uid => $name)
-	echo "<option>".$name."</option>";
-echo "</select>";
-echo '&nbsp;&nbsp;&nbsp;<input type="submit" value="Pose" />';
-?>
-</form>
-<?php
-		include($path."src/footer.html");
-	}
+include($path."src/header.html");
+
+if (!validateUser('admin')){
+  return;
 }
-else {
-	include($path."src/header.html");
-	echo "You aren't authorized to use this feature";
-	include($path."src/footer.html");
-}
+
+showClasses();
+
+?>
+<p />
+<a href=menu.php>Main menu</a>
+<?php
+include($path."src/footer.html");
 ?>

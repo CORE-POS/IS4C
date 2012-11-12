@@ -53,6 +53,8 @@ function login($name,$password){
   }
   if ($password == "") return false;
 
+  table_check();
+
   $sql = dbconnect();
   $gatherQ = "select password,salt from Users where name='$name'";
   $gatherR = $sql->query($gatherQ);
@@ -276,6 +278,15 @@ function showUsers(){
     echo "</tr>";
   }
   echo "</table>";
+}
+
+function getUserList(){
+	$sql = dbconnect();
+	$ret = array();
+	$result = $sql->query("SELECT name,uid FROM Users ORDER BY name");
+	while($row = $sql->fetch_row($result))
+		$ret[$row['uid']] = $row['name'];
+	return $ret;
 }
 
 /* 
