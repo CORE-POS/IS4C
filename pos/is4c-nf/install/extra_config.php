@@ -534,6 +534,50 @@ printf("<br /><input size=4 type=text name=SigCapture value=\"%s\" />",$CORE_LOC
 confsave('SigCapture',"'".$CORE_LOCAL->get('SigCapture')."'");
 ?>
 <i>(blank for none)</i>
+<h3 style="margin-bottom: 0.25em;">Various: </h3>
+This group was started in order to handle variations as options rather than per-coop code variations.
+<h4 style="margin: 0.25em 0.0em 0.25em 0.0em;">Related to transactions:</h4>
+
+<!-- Normal/default Yes/True -->
+<b>Member ID trigger subtotal</b>:
+<?php
+// Get the value from the latest submit, if it existed, into the core_local array ...
+if (array_key_exists('MEMBER_SUBTOTAL', $_REQUEST)){
+	$CORE_LOCAL->set('member_subtotal',($_REQUEST['MEMBER_SUBTOTAL']==1)?True:False);
+}
+// ... or from CORE_LOCAL if it is known ...
+elseif ( $CORE_LOCAL->get("member_subtotal") === False ) {
+		$noop = "";
+}
+elseif ( $CORE_LOCAL->get("member_subtotal") === True ) {
+		$noop = "";
+}
+// ... or set the default value ...
+elseif ( $CORE_LOCAL->get("member_subtotal") == NULL ) {
+		$CORE_LOCAL->set('member_subtotal', True);
+}
+// ... or complain (unexpected actual values such as 0 or 1). 
+else {
+	echo "<br />Current value of 'member_subtotal' unrecognized.";
+}
+echo "<select name='MEMBER_SUBTOTAL'>";
+// Display current, or default, value.
+if ($CORE_LOCAL->get('member_subtotal')){
+	echo "<option value='1' selected>Yes</option>";
+	echo "<option value='0' >No</option>";
+	// Save current, or default, value.  After submit, this will be the new value.
+	confsave('member_subtotal', 'True');
+}
+else {
+	echo "<option value='1' >Yes</option>";
+	echo "<option value='0' selected>No</option>";
+	// Save current, or default, value.  After submit, this will be the new value.
+	confsave('member_subtotal', 'False');
+}
+?>
+</select>
+<br />Should the entry of a Member ID trigger display of a subtotal of the transaction?
+<br />
 <hr />
 <input type=submit value="Save Changes" />
 </form>

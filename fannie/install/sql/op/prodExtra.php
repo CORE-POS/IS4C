@@ -18,7 +18,8 @@ Depends on:
 	products (table)
 
 Use:
-Don't.
+Don't add to it.
+As of 20Oct2012 it is still used by item/productList.php.
 
 Deprecated. This mess dates back to trying to stay
 lock-step with the Wedge's products table (which didn't

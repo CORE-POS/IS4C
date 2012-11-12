@@ -3,6 +3,14 @@ include(realpath(dirname(__FILE__).'/../lib/AutoLoader.php'));
 AutoLoader::LoadMap();
 include(realpath(dirname(__FILE__).'/../ini.php'));
 include('util.php');
+
+/* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+	13Sep2012 Eric Lee Add some notes about enabling Special UPCs
+	             Member Card UPC Prefix
+
+*/
+
 ?>
 <html>
 <head>
@@ -36,9 +44,10 @@ check_writeable('../ini.php');
 check_writeable('../ini-local.php');
 ?>
 <form action=scanning.php method=post>
-Special handling modules for UPCs that aren't
-products (e.g., coupons)<br />
-<b>Special UPCs</b>:<br />
+<p style="margin-bottom: 0.0em;"><b>Special handling modules for UPCs that aren't products</b> (e.g., coupons, member cards)>
+<br /><b>Special UPCs</b>:
+<br />Click or ctrl-Click or shift-Click to select/deselect modules for enablement.
+</p>
 <select multiple size=10 name=SPECIAL_UPC_MODS[]>
 <?php
 if (isset($_REQUEST['SPECIAL_UPC_MODS'])) $CORE_LOCAL->set('SpecialUpcClasses',$_REQUEST['SPECIAL_UPC_MODS']);

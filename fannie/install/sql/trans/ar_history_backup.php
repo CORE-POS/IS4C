@@ -13,9 +13,25 @@ Depends on:
 	dlog (view)
 	ar_history (table)
 
+Depended on by:
+View AR_EOM_Summary;
+ which is the source for table AR_EOM_Summary_cache
+
 Use:
 Stores an extra copy of ar_history
+
+Maintenance:
+cron/nightly.ar.php, after updating ar_history,
+ truncates and then appends all of ar_history
+
 */
+
+/* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+	* 22Oct2012 Eric Lee Add Maintenance: section, add Depended on by:
+
+*/
+
 $CREATE['trans.ar_history_backup'] = "
 	CREATE TABLE ar_history_backup (
 		card_no int,

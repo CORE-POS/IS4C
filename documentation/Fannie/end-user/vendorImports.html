@@ -3,14 +3,15 @@
 	<title>Import Vendor Pricing</title>
 </head>
 <body>
-	<div style="text-align:center;margin-bottom:10px;font-size:80%;">
-	updated as of: August 20, 2012<br />
-	last author: Andy Theuninck
-	</div>
-<!-- 19Aug12 EL Change <h1> to <h2> and add whitespace for source readability -->
-This document discusses how to import spreadsheets of
+<div style="text-align:center;">
+<h1>Import Vendor Pricing</h1>
+<a href="#change_log">Revised: 2Sep2012</a>
+</div>
+
+<p> This document discusses how to import spreadsheets of
 vendor pricing info. This information is used to
 calculate pricing based on desired margins.
+</p>
 
 <h2>Step 1: Create Vendor(s)</h2>
 To import vendor information, you need vendors.
@@ -76,8 +77,9 @@ department settings. You can load vendor's department numbering
 scheme (e.g., UNFI's categories) and assign these margin percentages.
 This is currently a manual process to nag your DBA about. If vendor
 departments aren't used for this vendor, Fannie uses the POS department
-margin setting. See <a href="departments.php">departments</a> for
-instructions on defining department margins.
+margin setting. See <a href="departments.html">departments</a> for
+instructions on defining department margins [2Sep2012 it does not in
+fact have instructions about that].
 <p />
 
 <h2>Step 5: Create a Price Change Batch</h2>
@@ -105,6 +107,28 @@ change batch if it was added by mistake.
 <h2>Step 6: Apply new prices</h2>
 Go to the batch tool (<i>Sales Batches</i> in Fannie's left hand menu)
 and either manually force your price change batch or give it
-a start date for a later, automated applicatio.
+a start date for a later, automated application.
+
+<pre>
+
+<a name="change_log">Change Log:</a>
+
+ 2Sep12 EL Fix link to departments page and add note about it.
+           Add H1 title, revision date, change log.
+20Aug12 Andy Theuninck
+19Aug12 Eric Lee Change h1 to h2 and add whitespace for source readability
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+
 </body>
 </html>

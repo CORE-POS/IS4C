@@ -1,11 +1,30 @@
 #!/bin/bash
 #
+### BEGIN INIT INFO
+# Provides:          sph
+# Required-Start:    $local_fs
+# Required-Stop:     $local_fs
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Start/stop sph scanner-scale driver
+### END INIT INFO
+#
 # posdriver-sph Startup script for pos.exe
 #
 # chkconfig: - 80 20
 # description: runs pos.exe scale driver as a daemon
-# IMPORTANT: change path in line 19 to correct driver location!
+# IMPORTANT: change path in start() to correct driver location!
 
+# --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+#
+#  2Nov2012 EL Add LSB header, needed to start at boot.
+#              Also needs: update-rc.d podriver-sph defaults
+# 26Oct2012 Eric Lee Change path to driver.
+#                    For Debian systems, posdriver-sph-debian may be better.
+
+# --MAIN - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+# This doesn't exist in Ubuntu 10.04 at least in this location.
 . /etc/rc.d/init.d/functions
 
 NAME=posdriver-sph
@@ -16,7 +35,8 @@ start(){
 	echo "Starting $NAME"
 	if [ ! -f /var/run/posdriver-sph/pos.pid ]; then
 		echo "here"
-		cd /usr/share/it-core/is4c-nf/scale-drivers/drivers/NewMagellan
+		cd /var/www/IS4C/pos/is4c-nf/scale-drivers/drivers/NewMagellan
+		#cd /usr/share/it-core/is4c-nf/scale-drivers/drivers/NewMagellan
 		mono pos.exe &> /var/run/posdriver-sph/pos.log &
 		echo $! > /var/run/posdriver-sph/pos.pid
 		RETVAL=$?

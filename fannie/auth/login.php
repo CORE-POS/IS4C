@@ -27,6 +27,14 @@ all functions return true on success, false on failure
 unless otherwise noted
 */
 
+
+/* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+	* 10Nov12 Eric Lee Add FANNIE_AUTH_ENABLED test in createLogin per intent(?)
+	*                   in first-user call from install/auth.php.
+
+*/
+
 require_once('groups.php');
 
 /*
@@ -145,6 +153,8 @@ a session id is also stored in this table, but that is created
 when the user actually logs in
 */
 function createLogin($name,$password){
+	// 10Nov12 EL Add FANNIE_AUTH_ENABLED
+	global $FANNIE_AUTH_ENABLED;
   if (!isAlphanumeric($name) ){
     //echo 'failed alphanumeric';
     return false;
@@ -153,10 +163,13 @@ function createLogin($name,$password){
   if (init_check())
     table_check();
 
-  if (!validateUser('admin')){
-    return false;
+	// 10Nov12 EL Add FANNIE_AUTH_ENABLED test per intent in first-user call from auth.php.
+	if ( $FANNIE_AUTH_ENABLED ) {
+		if (!validateUser('admin')){
+			return false;
+		}
   }
-  
+
   $sql = dbconnect();
   $checkQ = "select * from Users where name='$name'";
   $checkR = $sql->query($checkQ);
