@@ -205,14 +205,6 @@ class pos2 extends BasicPage {
 		}
 		</script>
 		<?php
-		if ( $CORE_LOCAL->get('store') == "WEFC_Toronto" ) {
-			echo "<style type='text/css'>
-			div.item .desc { width:45%;}
-			div.item .comments { width:33%;}
-			</style>\n";
-		}
-		?>
-		<?php
 	}
 
 	function body_content(){
