@@ -44,6 +44,11 @@ class NoInputPage extends BasicPage {
 		echo "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" />\n";
 		echo "<link rel=\"stylesheet\" type=\"text/css\"
 		    href=\"{$my_url}pos.css\">";
+		// include store css file if it exists
+		if (file_exists(dirname(__FILE__).'/../store.css')){
+			echo "<link rel=\"stylesheet\" type=\"text/css\"
+			    href=\"{$my_url}/store.css\">";
+		}
 		echo "<script type=\"text/javascript\"
 			src=\"{$my_url}js/jquery.js\"></script>";
 		$this->head_content();
