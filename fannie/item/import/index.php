@@ -31,6 +31,7 @@ include($FANNIE_ROOT.'src/header.html');
 <li><a href="dept.php">Departments</a></li>
 <li><a href="subdept.php">Subdepartments</a></li>
 <li><a href="prod.php">Products</a></li>
+<li><a href="uploadAnyFile.php">Upload a file</a></li>
 </ul>
 <?php
 include($FANNIE_ROOT.'src/footer.html');

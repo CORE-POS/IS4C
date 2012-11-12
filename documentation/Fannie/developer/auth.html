@@ -3,9 +3,14 @@
 	<title>Authentication System</title>
 </head>
 <body>
+<!-- --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+. 10Nov2012 Eric Lee Update Installation section to refer to $INSTALL/auth.php .
+-->
+	<h2 style="text-align:center;">Authentication System</h2>
 	<div style="text-align:center;margin-bottom:10px;font-size:80%;">
 	updated as of: August 20, 2012<br />
-	last author: Andy Theuninck
+	last author: Eric Lee<br />
+	original author: Andy Theuninck
 	</div>
 The backend eventually needs access controls.
 In my opinion, the "backendsecurity" column
@@ -90,6 +95,18 @@ This sends the user to a login form, if needed, and once they
 enter a valid username and password brings them right
 back to what they were doing.
 <h3>Installation</h3>
+<ul>
+	<li>In the Authentication section ("tab") of the Fannie Install page
+	select "Yes" for Authentican Enabled and click "Re-run".</li>
+	<li>After that, if no Users have been entered yet there will be input boxes for
+	Username and Password for an initial one with "admin" privileges. Click "Re-run".
+	</li>
+	<li>These credentials will let you log in to the Authentication interface at FANNIE/auth/ui/
+	<br />However other protected pages may still be closed to a user who only has "admin" privileges.
+	</li>
+</ul>
+<div style="background:#DEDEDE;">
+12Nov12 EL This procedure may have been superseded by the above:</br>
 The auth packages uses itself to check who can edit users,
 permissions, etc so there's a little backdoor for initial
 installation. 
@@ -101,6 +118,7 @@ installation.
 access to manage the auth package.</li>
 <li>Delete the init.php file created in step one.</li>
 </ol>
+</div>
 <h3>Drawbacks and/or Gotchas</h3>
 Just stuff to be aware of. Some can probably be fixed, some are inherent.
 <ul>
