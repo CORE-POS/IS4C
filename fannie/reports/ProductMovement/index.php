@@ -69,20 +69,20 @@ if (isset($_GET['date1'])){
 		if ($dlog == "dlog_90_view" || $dlog=="dlog_15")
 			$dlog = "transarchive";
 		else {
-			list($y,$m,$d) = explode("-",$date1);
-			$dlog = "trans_archive.dbo.transArchive".$y.$m;
+			$dlog = "trans_archive.bigArchive";
 		}
 
-		$query = "select datepart(mm,datetime),datepart(dd,datetime),datepart(yy,datetime),
-			upc,'RRR',sum(case when volSpecial is null then 0 else volSpecial end) as qty,
+		$query = "select MONTH(datetime),DAY(datetime),YEAR(datetime),
+			upc,'RRR',sum(case when volSpecial is null or volSpecial > 9999 then 0 else volSpecial end) as qty,
 			sum(t.total) from
 			$dlog as t
-			where upc = '$upc'
+			where upc IN ('rrr','000000000052')
 			AND datetime BETWEEN '$date1 00:00:00' AND '$date2 23:59:59'
 			and emp_no <> 9999 and register_no <> 99
 			and trans_status <> 'X'
-			group by datepart(yy,datetime),datepart(mm,datetime),datepart(dd,datetime),upc
-			order by datepart(mm,datetime),datepart(dd,datetime)";
+			GROUP BY YEAR(datetime),MONTH(datetime),DAY(datetime)
+			ORDER BY YEAR(datetime),MONTH(datetime),DAY(datetime)";
+			
 	}
 	//echo $query;
 	$result = $dbc->query($query);

@@ -32,6 +32,8 @@ include($FANNIE_ROOT."src/header.html");
 if (isset($_POST["start"])){
 	$start = $_POST["start"];
 	$end = $_POST["end"];
+	$b_start = $_POST["bstart"];
+	$b_end = $_POST["bend"];
 	$naming = $_POST["naming"];
 	$upcs = $_POST["upc"];
 	$prices = $_POST["price"];
@@ -41,13 +43,24 @@ if (isset($_POST["start"])){
 	for($i=0;$i<count($upcs);$i++){
 		if(!isset($batchIDs[$names[$i]])){
 			$ins = array(
-			'startDate' => "'$start'",
-			'endDate' => "'$end'",
-			'batchName' => "'{$names[$i]} Coop Deals $naming'",
+			'batchName' => "'{$names[$i]} $naming'",
 			'batchType' => 1,
-			'discountType' => 1,	
+			'discountType' => 1,
 			'priority' => 0
 			);
+			if (substr($names[$i],-2) == " A"){
+				$ins['startDate'] = "'".$start."'";
+				$ins['endDate'] = "'".$end."'";
+			}
+			elseif (substr($names[$i],-2) == " B"){
+				$ins['startDate'] = "'".$b_start."'";
+				$ins['endDate'] = "'".$b_end."'";
+			}
+			else{
+				$ins['startDate'] = "'".$start."'";
+				$ins['endDate'] = "'".$b_end."'";
+			}
+	
 			$dbc->smart_insert('batches',$ins);
 			$bID = $dbc->insert_id();
 			$batchIDs[$names[$i]] = $bID;
@@ -69,7 +82,8 @@ if (isset($_POST["start"])){
 }
 
 $query = "SELECT t.upc,p.description,t.price,
-        CASE WHEN s.super_name IS NULL THEN 'sale' ELSE s.super_name END as batch
+        CASE WHEN s.super_name IS NULL THEN 'sale' ELSE s.super_name END as batch,
+	t.abtpr as subbatch
         FROM tempCapPrices as t
         INNER JOIN products AS p
         on t.upc = p.upc LEFT JOIN
@@ -84,20 +98,24 @@ echo "<form action=review.php method=post>
 <table cellpadding=4 cellspacing=0 border=1>
 <tr><th>UPC</th><th>Desc</th><th>Sale Price</th><th>Batch</th></tr>";
 while($row = $dbc->fetch_row($result)){
-	printf("<tr><td>%s</td><td>%s</td><td>%.2f</td><td>%s</tr>",
-		$row[0],$row[1],$row[2],$row[3]);
+	printf("<tr><td>%s</td><td>%s</td><td>%.2f</td><td>%s Co-op Deals %s</tr>",
+		$row[0],$row[1],$row[2],$row[3],$row[4]);
 	printf("<input type=hidden name=upc[] value=\"%s\" />
 		<input type=hidden name=price[] value=\"%s\" />
-		<input type=hidden name=batch[] value=\"%s\" />",
-		$row[0],$row[2],$row[3]);
+		<input type=hidden name=batch[] value=\"%s Co-op Deals %s\" />",
+		$row[0],$row[2],$row[3],$row[4]);
 }
 echo "</table><p />
 <table cellpadding=4 cellspacing=0><tr>
-<td><b>Start</b></td><td><input type=text name=start onclick=\"showCalendarControl(this);\" /></td>
+<td><b>A Start</b></td><td><input type=text name=start onclick=\"showCalendarControl(this);\" /></td>
 </tr><tr>
-<td><b>End</b></td><td><input type=text name=end onclick=\"showCalendarControl(this);\" /></td>
+<td><b>A End</b></td><td><input type=text name=end onclick=\"showCalendarControl(this);\" /></td>
 </tr><tr>
-<td><b>Batch Naming</b></td><td><input type=text name=naming /></td>
+<td><b>B Start</b></td><td><input type=text name=bstart onclick=\"showCalendarControl(this);\" /></td>
+</tr><tr>
+<td><b>B End</b></td><td><input type=text name=bend onclick=\"showCalendarControl(this);\" /></td>
+</tr><tr>
+<td><b>Month</b></td><td><input type=text name=naming /></td>
 </tr></table>
 <input type=submit value=\"Create Batch(es)\" />
 </form>";
