@@ -22,7 +22,7 @@
 *********************************************************************************/
 
 /**
-  @class MemberCard
+  @class MemberBarcode
   WFC barcoded member ID implementation
 
   Checks for UPC prefix specified
@@ -30,7 +30,7 @@
 
   Looks up member number via memberCards table
 */
-class MemberCard extends SpecialUPC {
+class MemberBarcode extends SpecialUPC {
 
 	function is_special($upc){
 		global $CORE_LOCAL;

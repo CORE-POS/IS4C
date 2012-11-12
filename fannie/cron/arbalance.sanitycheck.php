@@ -39,12 +39,12 @@ $sql = new SQLManager($FANNIE_SERVER,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
 		$FANNIE_SERVER_USER,$FANNIE_SERVER_PW);
 
 $query = "UPDATE {$FANNIE_OP_DB}.custdata AS c LEFT JOIN 
-	newBalanceToday_cust AS n ON c.CardNo=n.memnum
+	ar_live_balance AS n ON c.CardNo=n.card_no
 	SET c.Balance = n.balance";
 if ($FANNIE_SERVER_DBMS == "MSSQL"){
 	$query = "UPDATE {$FANNIE_OP_DB}.dbo.custdata SET Balance = n.balance
 		FROM {$FANNIE_OP_DB}.dbo.custdata AS c LEFT JOIN
-		newBalanceToday_cust AS n ON c.CardNo=n.memnum";
+		ar_live_balance AS n ON c.CardNo=n.card_no";
 }
 
 $sql->query($query);

@@ -24,6 +24,8 @@ Additional Configuration
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <a href="debug.php">Debug</a>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<a href="plugins.php">Plugins</a>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <a href="extra_data.php">Sample Data</a>
 
 <h2>IT CORE Lane Installation: Additional Configuration</h2>
@@ -217,11 +219,18 @@ confsave('print',$CORE_LOCAL->get("print"));
 <b>Use new receipt</b>: <select name=NEWRECEIPT>
 <?php
 if (isset($_REQUEST['NEWRECEIPT'])) $CORE_LOCAL->set('newReceipt',$_REQUEST['NEWRECEIPT']);
-if ($CORE_LOCAL->get("newReceipt") == 1){
+if ($CORE_LOCAL->get("newReceipt") == 2){
+	echo "<option value=2 selected>PHP (even newer)</option>";
+	echo "<option value=1>Yes</option>";
+	echo "<option value=0>No</option>";
+}
+elseif ($CORE_LOCAL->get("newReceipt") == 1){
+	echo "<option value=2>PHP (even newer)</option>";
 	echo "<option value=1 selected>Yes</option>";
 	echo "<option value=0>No</option>";
 }
 else {
+	echo "<option value=2>PHP (even newer)</option>";
 	echo "<option value=1 >Yes</option>";
 	echo "<option value=0 selected>No</option>";
 }
@@ -249,15 +258,7 @@ confsave('emailReceiptFrom',"'".$CORE_LOCAL->get('emailReceiptFrom')."'");
 <br />
 <b>Drawer Behavior Module</b>:
 <?php
-$kmods = array();
-$dh = opendir('../lib/Kickers/');
-while(False !== ($f = readdir($dh))){
-	if ($f == "." || $f == "..")
-		continue;
-	if (substr($f,-4) == ".php"){
-		$kmods[] = rtrim($f,".php");
-	}
-}
+$kmods = AutoLoader::ListModules('Kicker',True);
 if(isset($_REQUEST['kickerModule'])) $CORE_LOCAL->set('kickerModule',$_REQUEST['kickerModule']);
 if ($CORE_LOCAL->get('kickerModule')=='') $CORE_LOCAL->set('kickerModule','Kicker');
 echo '<select name="kickerModule">';
@@ -329,14 +330,7 @@ elseif(!is_array($current_mods) || count($current_mods) != 5){
 	'MultiTotal'
 	);
 }
-$dh = opendir('../lib/FooterBoxes/');
-while(False !== ($f = readdir($dh))){
-	if ($f == "." || $f == "..")
-		continue;
-	if (substr($f,-4) == ".php"){
-		$footer_mods[] = rtrim($f,".php");
-	}
-}
+$footer_mods = AutoLoader::ListModules('FooterBox');
 for($i=0;$i<5;$i++){
 	echo '<select name="FOOTER_MODS[]">';
 	foreach($footer_mods as $fm){
@@ -419,14 +413,7 @@ if (isset($_REQUEST['TenderMapping'])){
 	$saveStr = rtrim($saveStr,",").")";
 	confsave('TenderMap',$saveStr);
 }
-$mods = array();
-$dh = opendir('../lib/Tenders/');
-while(False !== ($f = readdir($dh))){
-	if ($f == "." || $f == ".." || $f == "TenderModule.php")
-		continue;
-	if (substr($f,-4) == ".php")
-		$mods[] = rtrim($f,".php");
-}
+$mods = AutoLoader::ListModules('TenderModule');
 //  Tender Report: Desired tenders column
 $settings2 = $CORE_LOCAL->get("TRDesiredTenders");
 if (!is_array($settings2)) $settings2 = array();

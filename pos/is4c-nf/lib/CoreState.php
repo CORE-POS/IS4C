@@ -77,9 +77,6 @@ static public function system_init() {
         $CORE_LOCAL->set("ccRemoteServerUp",1);
 	$CORE_LOCAL->set("search_or_list",0);
 	$CORE_LOCAL->set("ccTermOut","idle");
-	$td = SigCapture::term_object();
-	if (is_object($td))
-		$td->WriteToScale("reset");
 }
 
 /**
@@ -145,6 +142,10 @@ static public function transReset() {
 	$CORE_LOCAL->set("warned",0);
 	$CORE_LOCAL->set("warnBoxType","");
 	$CORE_LOCAL->set("requestType","");
+
+	$CORE_LOCAL->set("CachePanEncBlock","");
+	$CORE_LOCAL->set("CachePinEncBlock","");
+	$CORE_LOCAL->set("CacheCardType","");
 }
 
 /**

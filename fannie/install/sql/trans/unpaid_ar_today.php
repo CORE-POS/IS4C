@@ -29,10 +29,10 @@ $CREATE['trans.unpaid_ar_today'] = "
 		end as recent_payments,
 	case when m.card_no is null then 0 else 1 end as mark
 	from unpaid_ar_balances as u
-	left join memIouToday as m
+	left join ar_history_today_sum as m
 	on u.card_no=m.card_no
 ";
 
-if (!$con->table_exists("memIouToday"))
+if (!$con->table_exists("ar_history_today_sum"))
 	$CREATE['trans.unpaid_ar_today'] = "SELECT 1";
 ?>
