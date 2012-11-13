@@ -21,18 +21,32 @@
 
 *********************************************************************************/
 
-class ManufacturerCoupon extends PreParser {
+class QuickMenuLauncher extends Parser {
 	
 	function check($str){
-		if (substr($str,0,2) == "MC")
-			return True;
+		if (strstr($str,"QM")){
+			$tmp = explode("QM",$str);
+			$ct = count($tmp);
+			if ($ct <= 2 && is_numeric($tmp[$ct-1]))
+				return True;
+		}
 		return False;
 	}
 
 	function parse($str){
 		global $CORE_LOCAL;
-		$CORE_LOCAL->set("mfcoupon",1);
-		return substr($str,2);
+		$tmp = explode("QM",$str);
+		if (count($tmp) == 2)
+			$CORE_LOCAL->set("qmInput",$tmp[0]);
+		else
+			$CORE_LOCAL->set("qmInput","");
+		$CORE_LOCAL->set("qmNumber",$tmp[count($tmp)-1]);
+		$CORE_LOCAL->set("qmCurrentId",$CORE_LOCAL->get("currentid"));
+		$ret = $this->default_json();
+
+		$plugin_info = new QuickMenus();
+		$ret['main_frame'] = $plugin_info->plugin_url().'/QMDisplay.php';
+		return $ret;
 	}
 
 	function doc(){
@@ -41,9 +55,10 @@ class ManufacturerCoupon extends PreParser {
 				<th>Input</th><th>Result</th>
 			</tr>
 			<tr>
-				<td>MC<i>item</i></td>
-				<td>Set manufacturer coupon flag for <i>item</i>.
-				<i>Item</i> should be a UPC.
+				<td><i>anything</i>QM<i>number</i></td>
+				<td>
+				Go to quick menu with the given number.
+				Save any provided input.
 				</td>
 			</tr>
 			</table>";

@@ -43,7 +43,9 @@ class QuickKeyLauncher extends Parser {
 		$CORE_LOCAL->set("qkNumber",$tmp[count($tmp)-1]);
 		$CORE_LOCAL->set("qkCurrentId",$CORE_LOCAL->get("currentid"));
 		$ret = $this->default_json();
-		$ret['main_frame'] = MiscLib::base_url().'gui-modules/QKDisplay.php';
+
+		$plugin_info = new QuickKeys();
+		$ret['main_frame'] = $plugin_info->plugin_url().'/QKDisplay.php';
 		return $ret;
 	}
 

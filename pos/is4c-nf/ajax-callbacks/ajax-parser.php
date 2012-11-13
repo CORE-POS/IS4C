@@ -69,7 +69,7 @@ if ($entered != ""){
 	 */
 	$parser_lib_path = MiscLib::base_url()."parser-class-lib/";
 	if (!is_array($CORE_LOCAL->get("preparse_chain")))
-		$CORE_LOCAL->set("preparse_chain",Parser::get_preparse_chain());
+		$CORE_LOCAL->set("preparse_chain",PreParser::get_preparse_chain());
 
 	foreach ($CORE_LOCAL->get("preparse_chain") as $cn){
 		$p = new $cn();

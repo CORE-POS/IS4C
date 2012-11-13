@@ -23,7 +23,7 @@
 
 ini_set('display_errors','1');
 
-include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
+include_once(dirname(__FILE__).'/../../lib/AutoLoader.php');
 
 class QKDisplay extends NoInputPage {
 
@@ -60,11 +60,11 @@ class QKDisplay extends NoInputPage {
 			}
 			else if (jsKey == 33 || jsKey == 38){
 				location = 
-					'<?php echo $this->page_url; ?>gui-modules/QKDisplay.php?offset=<?php echo ($this->offset - 1)?>';
+					'<?php echo $this->plugin_url; ?>QKDisplay.php?offset=<?php echo ($this->offset - 1)?>';
 			}
 			else if (jsKey == 34 || jsKey == 40){
 				location = 
-					'<?php echo $this->page_url; ?>gui-modules/QKDisplay.php?offset=<?php echo ($this->offset + 1)?>';
+					'<?php echo $this->plugin_url; ?>QKDisplay.php?offset=<?php echo ($this->offset + 1)?>';
 			}
 			prevPrevKey = prevKey;
 			prevKey = jsKey;
@@ -89,8 +89,11 @@ class QKDisplay extends NoInputPage {
 		<?php
 	} // END head() FUNCTION
 
+	var $plugin_url;
 	function preprocess(){
 		global $CORE_LOCAL;
+		$plugin_info = new QuickKeys();
+		$this->plugin_url = $plugin_info->plugin_url().'/';
 
 		$this->offset = isset($_REQUEST['offset'])?$_REQUEST['offset']:0;
 
@@ -130,7 +133,7 @@ class QKDisplay extends NoInputPage {
 		echo "<div class=\"baseHeight\" style=\"border: solid 1px black;\">";
 		echo "<form action=\"".$_SERVER["PHP_SELF"]."\" method=\"post\">";
 
-		include(realpath(dirname(__FILE__)."/../quickkeys/keys/"
+		include(realpath(dirname(__FILE__)."/quickkeys/keys/"
 			.$CORE_LOCAL->get("qkNumber").".php"));
 
 		$num_pages = ceil(count($my_keys)/9.0);
@@ -145,7 +148,7 @@ class QKDisplay extends NoInputPage {
 					if ($num_pages > 1 && $count == 3){
 						echo "<div class=\"qkArrowBox\">";
 						echo "<input type=submit value=Up class=qkArrow 
-							onclick=\"location='{$this->page_url}gui-modules/QKDisplay.php?offset=".($page-1)."'; return false;\" />";
+							onclick=\"location='{$this->plugin_url}QKDisplay.php?offset=".($page-1)."'; return false;\" />";
 						echo "</div>";
 					}
 					echo "</div>";
@@ -161,7 +164,7 @@ class QKDisplay extends NoInputPage {
 		if ($num_pages > 1){
 			echo "<div class=\"qkArrowBox\">";
 			echo "<input type=submit value=Down class=qkArrow 
-				onclick=\"location='{$this->page_url}gui-modules/QKDisplay.php?offset=".($page+1)."'; return false;\" />";
+				onclick=\"location='{$this->plugin_url}QKDisplay.php?offset=".($page+1)."'; return false;\" />";
 			echo "</div>";
 
 		}
@@ -174,6 +177,7 @@ class QKDisplay extends NoInputPage {
 
 }
 
-new QKDisplay();
+if (basename($_SERVER['PHP_SELF']) == basename(__FILE__))
+	new QKDisplay();
 
 ?>

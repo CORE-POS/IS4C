@@ -96,8 +96,11 @@ class AutoLoader extends LibraryClass {
 			$map = Plugin::PluginMap($path,$map);
 			break;
 		case 'Parser':
-			$path = realpath(dirname(__FILE__).'/../parser-class-lib/preparse');
 			$path = realpath(dirname(__FILE__).'/../parser-class-lib/parse');
+			$map = Plugin::PluginMap($path,$map);
+			break;
+		case 'PreParser':
+			$path = realpath(dirname(__FILE__).'/../parser-class-lib/preparse');
 			$map = Plugin::PluginMap($path,$map);
 			break;
 		case 'PriceMethod':

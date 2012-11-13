@@ -21,7 +21,7 @@
 
 *********************************************************************************/
 
-class PercentDiscount extends Parser {
+class PercentDiscount extends PreParser {
 	var $remainder;
 	
 	function check($str){

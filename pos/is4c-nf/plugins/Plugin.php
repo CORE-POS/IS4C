@@ -62,7 +62,8 @@ class Plugin {
 	  Get a URL for the plugin's directory	
 	*/
 	public function plugin_url(){
-		return MiscLib::base_url().'plugins'.basename(dirname(__FILE__));
+		$info = new ReflectionClass($this);
+		return MiscLib::base_url().'plugins/'.basename(dirname($info->getFileName()));
 	}
 	
 	/**
