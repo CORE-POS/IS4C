@@ -1,7 +1,7 @@
 <?php
 /*******************************************************************************
 
-    Copyright 2007 Whole Foods Co-op
+    Copyright 2012 Whole Foods Co-op
 
     This file is part of IT CORE.
 
@@ -22,15 +22,15 @@
 *********************************************************************************/
 
 /**
-  @class Parser
-  The base module for parsing input
+  @class PreParser
+  The base module for preparsing input
 
-  Enabled Parser modules are checked
-  until one matches the input. Input processing
-  ceases and the matching module must decide
-  what to do next.
+  Preparse modules
+  are all checked for every input. These
+  modueles may modify the input string.
+
 */
-class Parser {
+class PreParser {
 
 	/**
 	  Check whether the module handles this input
@@ -52,44 +52,13 @@ class Parser {
 	  @param $str The input string
 	  @return mixed
 
-	  Parse modules a keyed array: 
-	   - main_frame If set, change page to this URL
-	   - output HTML output to be displayed
-	   - target Javascript selector string describing which
-	     element should contain the output
-	   - redraw_footer True or False. Set to True if
-	     totals have changed.
-	   - receipt False or string type. Print a receipt with
-	     the given type.
-	   - scale Update the scale display and session variables
-	   - udpmsg False or string. Send a message to hardware
-	     device(s)
-	   - retry False or string. Try the input again shortly.
+	  Preparse modules should return a string. This
+	  value will replace the input string for remaining
+	  parsing.
 
-	   The utility method default_json() provides an array
-	   with the proper keys and sane default values.
 	*/
 	function parse($str){
 
-	}
-
-	/**
-	  A return array for parse() with proper keys
-	  @return array
-	
-	  See parse() method
-	*/
-	function default_json(){
-		return array(
-			'main_frame'=>false,
-			'target'=>'.baseHeight',
-			'output'=>false,
-			'redraw_footer'=>false,
-			'receipt'=>false,
-			'scale'=>false,
-			'udpmsg'=>false,
-			'retry'=>false
-			);
 	}
 
 	/**
@@ -134,61 +103,45 @@ class Parser {
 	}
 
 	/**
-	  Gather parse modules
+	  Gather preparse modules
 	  @return array of Parser class names
 
-	  Scan the parse directory for module files.
+	  Scan the preparse directory for module files.
 	  Return an array of available modules.
 	*/
-	static public function get_parse_chain(){
+	static public function get_preparse_chain(){
 
-		return AutoLoader::ListModules('Parser');
+		return AutoLoader::ListModules('PreParser');
 
 		$PARSEROOT = realpath(dirname(__FILE__));
 
-		$parse_chain = array();
+		$preparse_chain = array();
+		$dh = opendir($PARSEROOT."/preparse");
 		$first = "";
-		$dh = opendir($PARSEROOT."/parse");
 		while (False !== ($file=readdir($dh))){
-			if (is_file($PARSEROOT."/parse/".$file) &&
+			if (is_file($PARSEROOT."/preparse/".$file) &&
 			    substr($file,-4)==".php"){
 
 				$classname = substr($file,0,strlen($file)-4);
 				if (!class_exists($classname))
-					include_once($PARSEROOT."/parse/".$file);
+					include_once($PARSEROOT."/preparse/".$file);
 				$instance = new $classname();
 				if ($instance->isLast())
-					array_push($parse_chain,$classname);
+					array_push($preparse_chain,$classname);
 				elseif ($instance->isFirst())
 					$first = $classname;
 				else
-					array_unshift($parse_chain,$classname);
+					array_unshift($preparse_chain,$classname);
 
 			}
 		}
 		closedir($dh);
 		if ($first != "")
-			array_unshift($parse_chain,$first);
+			array_unshift($preparse_chain,$first);
 
-		return $parse_chain;
+		return $preparse_chain;
 	}
 
 }
-
-/**
-  @example HW_Parser.php
-
-  check() looks for input the module can handle. In this case
-  the module simply watches for the string "HW".
-
-  parse() demonstrates a couple options when the correct input
-  is detected. If a transaction is in progress, it displays
-  an error message. Otherwise, it sends the browser to
-  a different display script.
-
-  N.B. the HelloWorld display module is just an example; that
-  file does not exist in the gui-modules directory.
-*/
-
 
 ?>

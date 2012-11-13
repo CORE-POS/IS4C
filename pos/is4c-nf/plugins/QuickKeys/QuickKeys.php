@@ -1,7 +1,7 @@
 <?php
 /*******************************************************************************
 
-    Copyright 2007 Whole Foods Co-op
+    Copyright 2012 Whole Foods Co-op
 
     This file is part of IT CORE.
 
@@ -21,33 +21,17 @@
 
 *********************************************************************************/
 
-class ManufacturerCoupon extends PreParser {
-	
-	function check($str){
-		if (substr($str,0,2) == "MC")
-			return True;
-		return False;
+class QuickKeys extends Plugin {
+
+	public $plugin_settings = array(
+	);
+
+	public function plugin_enable(){
+
 	}
 
-	function parse($str){
-		global $CORE_LOCAL;
-		$CORE_LOCAL->set("mfcoupon",1);
-		return substr($str,2);
+	public function plugin_disable(){
+
 	}
 
-	function doc(){
-		return "<table cellspacing=0 cellpadding=3 border=1>
-			<tr>
-				<th>Input</th><th>Result</th>
-			</tr>
-			<tr>
-				<td>MC<i>item</i></td>
-				<td>Set manufacturer coupon flag for <i>item</i>.
-				<i>Item</i> should be a UPC.
-				</td>
-			</tr>
-			</table>";
-	}
 }
-
-?>
