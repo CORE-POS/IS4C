@@ -143,6 +143,63 @@ static public function getsubtotals() {
 
 }
 
+static public function LineItemTaxes(){
+	$db = Database::tDataConnect();
+	$q = "SELECT id, description, taxTotal, fsTaxable, fsTaxTotal, foodstampTender, taxrate
+		FROM taxView ORDER BY taxrate DESC";
+	$r = $db->query($q);
+	$taxRows = array();
+	$fsTenderTTL = 0.00;
+	while ($w = $db->fetch_row($r)){
+		$taxRows[] = $w;
+		$fsTenderTTL = $w['foodstampTender'];
+	}
+	$db->close();
+
+	// loop through line items and deal with
+	// foodstamp tax exemptions
+	for($i=0;$i<count($taxRows);$i++){
+		if($fsTenderTTL <= 0.005) continue;
+		
+		if (abs($fsTenderTTL - $taxRows[$i]['fsTaxable']) < 0.005){
+			// CASE 1:
+			//	Available foodstamp tender matches foodstamp taxable total
+			//	Decrement line item tax by foodstamp tax total
+			//	No FS tender left, so exemption ends
+			$taxRows[$i]['taxTotal'] = MiscLib::truncate2($taxRows[$i]['taxTotal'] - $taxRows[$i]['fsTaxTotal']);
+			$fsTenderTTL = 0;
+		}
+		else if ($fsTenderTTL > $taxRows[$i]['fsTaxable']){
+			// CASE 2:
+			//	Available foodstamp tender exeeds foodstamp taxable total
+			//	Decrement line item tax by foodstamp tax total
+			//	Decrement foodstamp tender total to reflect amount not yet applied
+			$taxRows[$i]['taxTotal'] = MiscLib::truncate2($taxRows[$i]['taxTotal'] - $taxRows[$i]['fsTaxTotal']);
+			$fsTenderTTL = MiscLib::truncate2($fsTenderTTL - $taxRows[$i]['fsTaxable']);;
+		}
+		else {
+			// CASE 3:
+			//	Available foodstamp tender is less than foodstamp taxable total
+			//	Decrement line item tax proprotionally to foodstamp tender available
+			//	No FS tender left, so exemption ends
+			$percentageApplied = $fsTenderTTL / $taxRows[$i]['fsTaxable'];
+			$exemption = $taxRows[$i]['fsTaxTotal'] * $percentageApplied;
+			$taxRows[$i]['taxTotal'] = MiscLib::truncate2($taxRows[$i]['taxTotal'] - $exemption);
+			$fsTenderTTL = 0;
+		}
+	}
+	
+	$ret = array();
+	foreach($taxRows as $tr){
+		$ret[] = array(
+			'rate_id' => $tr['id'],
+			'description' => $tr['description'],
+			'amount' => $tr['taxTotal']
+		);
+	}
+	return $ret;
+}
+
 // ----------gettransno($CashierNo /int)----------
 //
 // Given $CashierNo, gettransno() will look up the number of the most recent transaction.
