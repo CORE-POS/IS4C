@@ -1351,7 +1351,7 @@ function create_trans_dbs($db,$type){
 	$tvQ = "CREATE VIEW taxView AS
 		SELECT 
 		r.id,
-		r.description,
+		MAX(r.description) as description,
 		CONVERT(SUM(CASE 
 			WHEN l.trans_type IN ('I','D') AND discountable=0 THEN total 
 			WHEN l.trans_type IN ('I','D') AND discountable<>0 THEN total * ((100-s.percentDiscount)/100)
@@ -1367,14 +1367,15 @@ function create_trans_dbs($db,$type){
 			WHEN l.trans_type IN ('I','D') AND discountable<>0 AND foodstamp=1 THEN total * ((100-s.percentDiscount)/100)
 			ELSE 0 END
 		) * r.rate, DECIMAL(10,2)) as fsTaxTotal,
-		-1*MAX(fsTendered) as foodstampTender,
+		-1*MAX(s.fsTendered) as foodstampTender,
 		MAX(r.rate) as taxrate
 		FROM
-		taxrates AS r 
-		LEFT JOIN localtemptrans AS l
+		localtemptrans AS l
+		INNER JOIN taxrates AS r 
 		ON r.id=l.tax
-		JOIN lttsummary AS s
-		GROUP BY r.id,r.description";
+		JOIN lttsummary as s
+		GROUP BY r.id";
+	$db->query("DROP VIEW taxView");
 	if(!$db->table_exists('taxView',$name)){
 		$db->query($tvQ,$name);
 	}

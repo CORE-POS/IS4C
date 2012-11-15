@@ -224,12 +224,13 @@ static public function addItem($strupc, $strdescription, $strtransType, $strtran
   Add a item, but not until the end of the transaction
   Use this for records that shouldn't be displayed
 */
-static public function addQueued($upc, $description, $numflag=0, $charflag=''){
+static public function addQueued($upc, $description, $numflag=0, $charflag='',$regPrice=0){
 	global $CORE_LOCAL;
 	$queue = $CORE_LOCAL->get("infoRecordQueue");	
 	if (!is_array($queue)) $queue = array();
 	$queue[] = array('upc'=>$upc,'description'=>$description,
-			'numflag'=>$numflag,'charflag'=>$charflag);
+			'numflag'=>$numflag,'charflag'=>$charflag,
+			'regPrice'=>$regPrice);
 	$CORE_LOCAL->set("infoRecordQueue", $queue);
 }
 
@@ -244,11 +245,12 @@ static public function emptyQueue(){
 	if (!is_array($queue)) $queue = array();
 	foreach($queue as $record){
 		if (!isset($record['upc']) || !isset($record['description']) ||
-		    !isset($record['numflag']) || !isset($record['charflag'])){
+		    !isset($record['numflag']) || !isset($record['charflag']) ||
+		    !isset($record['regPrice'])){
 			continue; //skip incomplete
 		}
 		self::addItem($record['upc'], $record['description'], "C", "", "D", 
-			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+			0, 0, 0, 0, $record['regPrice'], 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 			0, $record['numflag'], $record['charflag']);
 	}
 	$CORE_LOCAL->set("infoRecordQueue",array());

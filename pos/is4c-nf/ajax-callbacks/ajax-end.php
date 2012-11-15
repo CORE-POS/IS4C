@@ -26,6 +26,10 @@ include_once(realpath(dirname(__FILE__).'/../lib/AutoLoader.php'));
 if ($CORE_LOCAL->get("End") == 1) {
 	TransRecord::addtransDiscount();
 	TransRecord::addTax();
+	$taxes = Database::LineItemTaxes();
+	foreach($taxes as $tax){
+		TransRecord::addQueued('TAXLINEITEM',$tax['description'],$tax['rate_id'],'',$tax['amount']);
+	}
 }
 
 $receiptType = isset($_REQUEST['receiptType'])?$_REQUEST['receiptType']:'';
