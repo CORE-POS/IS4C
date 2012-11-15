@@ -47,7 +47,6 @@ function confsave($key,$value,$prefer_local=False){
 					-1, $found_global);
 	$new_local = preg_replace($orig_setting, $new_setting, $orig_local,
 					-1, $found_local);
-
 	if ($found_global) {
 		preg_match($orig_setting, $orig_global, $matches);
 		if ($matches[1] === $value)	// found with exact same value
