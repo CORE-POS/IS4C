@@ -909,9 +909,6 @@ function create_trans_dbs($con){
 			'AR_EOM_Summary','trans');
 
 	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
-			'AR_EOM_Summary_cache','trans');
-
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
 			'lane_config','trans');
 
 }
