@@ -14,8 +14,7 @@ Depends on:
 	ar_history (table)
 
 Depended on by:
-View AR_EOM_Summary;
- which is the source for table AR_EOM_Summary_cache
+Table AR_EOM_Summary
 
 Use:
 Stores an extra copy of ar_history
