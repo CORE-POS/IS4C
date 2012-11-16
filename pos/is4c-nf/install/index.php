@@ -2569,12 +2569,12 @@ function create_trans_dbs($db,$type){
 	select 
 	concat(
 	lpad('CURRENT AMOUNT DUE',44,' '),
-	lpad(convert(subtotal,char),8,' '),
+	lpad(convert(runningTotal-transDiscount,char),8,' '),
 	space(4) ) as linetoprint,
 	5 as sequence,
 	null as dept_name,
 	5 as ordered,'' as upc
-	from subtotals where runningtotal <> 0 ";
+	from subtotals where runningTotal <> 0 ";
 
 	if($type == 'mssql'){
 		$unionsG = "CREATE view receipt_reorder_unions_g as
