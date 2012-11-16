@@ -106,7 +106,8 @@ function getGID($group){
     return false;
   $sql = dbconnect();
 
-  $gidQ = "select top 1 gid from userGroups where name='$group'";
+  $gidQ = "select gid from userGroups where name='$group'";
+  $gidQ = $sql->add_select_limit($gidQ,1); 
   $gidR = $sql->query($gidQ);
 
   if ($sql->num_rows($gidR) == 0)
@@ -185,9 +186,14 @@ function syncUserLDAP($name,$uid,$fullname){
 }
 
 function auth_enabled(){
-	$path = guesspath();
-	include($path."config.php");
-	return $FANNIE_AUTH_ENABLED;
+	global $FANNIE_AUTH_ENABLED;
+	if (!isset($FANNIE_AUTH_ENABLED)){
+		$path = guesspath();
+		include($path."config.php");
+		return $FANNIE_AUTH_ENABLED;
+	}
+	else
+		return $FANNIE_AUTH_ENABLED;
 }
 
 function table_check(){
