@@ -25,15 +25,7 @@
   @class Parser
   The base module for parsing input
 
-  Parser objects are divided into
-  two varieties that behave slightly
-  differently. 
-
-  Modules in the preparse directory
-  are all checked for every input. These
-  modueles may modify the input string.
-
-  Modules in the parse are only checked
+  Enabled Parser modules are checked
   until one matches the input. Input processing
   ceases and the matching module must decide
   what to do next.
@@ -60,10 +52,6 @@ class Parser {
 	  @param $str The input string
 	  @return mixed
 
-	  Preparse modules should return a string. This
-	  value will replace the input string for remaining
-	  parsing.
-
 	  Parse modules a keyed array: 
 	   - main_frame If set, change page to this URL
 	   - output HTML output to be displayed
@@ -83,6 +71,25 @@ class Parser {
 	*/
 	function parse($str){
 
+	}
+
+	/**
+	  A return array for parse() with proper keys
+	  @return array
+	
+	  See parse() method
+	*/
+	function default_json(){
+		return array(
+			'main_frame'=>false,
+			'target'=>'.baseHeight',
+			'output'=>false,
+			'redraw_footer'=>false,
+			'receipt'=>false,
+			'scale'=>false,
+			'udpmsg'=>false,
+			'retry'=>false
+			);
 	}
 
 	/**
@@ -127,24 +134,6 @@ class Parser {
 	}
 
 	/**
-	  A return array for parse() with proper keys
-	  @return array
-	
-	  See parse() method
-	*/
-	function default_json(){
-		return array(
-			'main_frame'=>false,
-			'target'=>'.baseHeight',
-			'output'=>false,
-			'redraw_footer'=>false,
-			'receipt'=>false,
-			'scale'=>false,
-			'udpmsg'=>false,
-			'retry'=>false
-			);
-	}
-	/**
 	  Gather parse modules
 	  @return array of Parser class names
 
@@ -152,6 +141,9 @@ class Parser {
 	  Return an array of available modules.
 	*/
 	static public function get_parse_chain(){
+
+		return AutoLoader::ListModules('Parser');
+
 		$PARSEROOT = realpath(dirname(__FILE__));
 
 		$parse_chain = array();
@@ -179,43 +171,6 @@ class Parser {
 			array_unshift($parse_chain,$first);
 
 		return $parse_chain;
-	}
-
-	/**
-	  Gather preparse modules
-	  @return array of Parser class names
-
-	  Scan the preparse directory for module files.
-	  Return an array of available modules.
-	*/
-	static public function get_preparse_chain(){
-		$PARSEROOT = realpath(dirname(__FILE__));
-
-		$preparse_chain = array();
-		$dh = opendir($PARSEROOT."/preparse");
-		$first = "";
-		while (False !== ($file=readdir($dh))){
-			if (is_file($PARSEROOT."/preparse/".$file) &&
-			    substr($file,-4)==".php"){
-
-				$classname = substr($file,0,strlen($file)-4);
-				if (!class_exists($classname))
-					include_once($PARSEROOT."/preparse/".$file);
-				$instance = new $classname();
-				if ($instance->isLast())
-					array_push($preparse_chain,$classname);
-				elseif ($instance->isFirst())
-					$first = $classname;
-				else
-					array_unshift($preparse_chain,$classname);
-
-			}
-		}
-		closedir($dh);
-		if ($first != "")
-			array_unshift($preparse_chain,$first);
-
-		return $preparse_chain;
 	}
 
 }

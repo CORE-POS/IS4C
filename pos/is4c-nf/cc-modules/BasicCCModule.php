@@ -341,7 +341,7 @@ class BasicCCModule {
 	function desoapify($action,$soaptext){
 		preg_match("/<$action.*?>(.*?)<\/$action>/s",
 			$soaptext,$groups);
-		return $groups[1];
+		return isset($groups[1]) ? $groups[1] : "";
 	}
 
 	/** 

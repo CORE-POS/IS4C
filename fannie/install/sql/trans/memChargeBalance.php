@@ -10,16 +10,29 @@ Columns:
 
 Depends on:
 	core_op.custdata (table)
-	ar_live_balance (view)
+	ar_live_balance (view of t.dtransactions -> .v.dlog)
+
+Depended on by:
+  newBalanceToday_cust
 
 Use:
 This view lists real-time store charge
-balances by membership. This view
-gets pushed to the lanes as a table
-to speed things up
+ balances by membership.
+This view gets pushed to the lanes as a table
+ to speed things up
 The "mark" column indicates an account
-whose balance has changed today
+ whose balance has changed today
+
 */
+
+/* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+	* 24Oct12 EL Fix ...
+	* 24Oct2012 Eric Lee Comments, add Depended on by:
+	*                    Code style.
+
+*/
+
 $names = qualified_names();
 
 $CREATE['trans.memChargeBalance'] = "

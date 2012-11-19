@@ -44,13 +44,18 @@ else {
   echo "Welcome $name<p />";
   echo "<ul>";
   if ($options == 'all'){
+    echo "<li><a href=viewClasses.php>View authorization classes</a></li>";
+    echo "<li><a href=createClass.php>Create authorization class</a></li>";
+    echo "<li><a href=editClassNotes.php>Edit authorization class</a></li>";
+    echo "<li><a href=deleteClass.php>Delete authorization class</a></li>";
+    echo "<br />";
     echo "<li><a href=viewUsers.php>View users</a></li>";
     echo "<li><a href=createUser.php>Create user</a></li>";
     if (!$FANNIE_AUTH_SHADOW && !$FANNIE_AUTH_LDAP)
 	echo "<li><a href=resetUserPassword.php>Reset user password</a></li>";
     echo "<li><a href=deleteUser.php>Delete user</a></li>";
-    echo "<li><a href=viewAuths.php>View authorizations</a></li>";
-    echo "<li><a href=addAuth.php>Add new authorization</a></li>";
+    echo "<li><a href=viewAuths.php>View a user's authorizations</a></li>";
+    echo "<li><a href=addAuth.php>Add new authorization to a user</a></li>";
     echo "<li><a href=deleteAuth.php>Delete user's authorizations</a></li>";
     echo "<br />";
     echo "<li><a href=addGroup.php>Add a Group</a></li>";

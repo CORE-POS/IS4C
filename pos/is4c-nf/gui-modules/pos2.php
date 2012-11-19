@@ -21,6 +21,13 @@
 
 *********************************************************************************/
 
+/* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+	18Sep2012 Eric Lee Added CORE_LOCAL[store]-based option to change style of items.
+	                    Needed for expanded comments for scaled items.
+
+*/
+
 ini_set('display_errors','1');
  
 session_cache_limiter('nocache');
@@ -77,7 +84,7 @@ class pos2 extends BasicPage {
 			 */
 			$parser_lib_path = $this->page_url."parser-class-lib/";
 			if (!is_array($CORE_LOCAL->get("preparse_chain")))
-				$CORE_LOCAL->set("preparse_chain",Parser::get_preparse_chain());
+				$CORE_LOCAL->set("preparse_chain",PreParser::get_preparse_chain());
 
 			foreach ($CORE_LOCAL->get("preparse_chain") as $cn){
 				$p = new $cn();
@@ -194,8 +201,7 @@ class pos2 extends BasicPage {
 			});
 		}
 		function inputRetry(str){
-			$('#reginput').val(str);
-			submitWrapper();
+			parseWrapper(str);
 		}
 		</script>
 		<?php

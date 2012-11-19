@@ -2,7 +2,7 @@
   Andy's Fannie Authentication Module
 =========================================
 
-This collection of functions is authenticates 
+This collection of functions authenticates 
 users and assigns them privileges either
 individually or in groups. Authentication can
 be done via SQL, *nix shadow passwords, or
@@ -27,6 +27,8 @@ from a security standpoint.
 =========================================
      Installation / Setup
 =========================================
+See $IS4C/documentation/Fannie/developer/auth.html
+ for a possibly different procedure.
 1. Create a file $FANNIE/auth/init.php
    This gives you all options without logging in.
 2. Go to $FANNIE/auth/ui/menu.php and create

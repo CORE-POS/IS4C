@@ -118,8 +118,24 @@ else {
 			if ($newR === false)
 				echo cron_msg("Error creating new partition $p");
 		}
+		
 		// now just copy rows into the partitioned table
 		$loadQ = "INSERT INTO bigArchive SELECT * FROM {$FANNIE_TRANS_DB}.dtransactions";
+
+		// data warehousing option; tag records with an ID
+		// referencing dedicated date table
+		/*
+		$columns = $sql->table_definition("bigArchive");
+		if (isset($columns['date_id']) && $sql->table_exists("warehouse_date")){
+			$loadQ = "INSERT INTO bigArchive 
+				SELECT t.*,d.date_id FROM 
+				{$FANNIE_TRANS_DB}.dtransactions AS t
+				LEFT JOIN warehouse_date AS d ON
+				YEAR(t.datetime)=d.year AND
+				MONTH(t.datetime)=d.month AND
+				DAY(t.datetime)=d.day";
+		}
+		*/
 		$loadR = $sql->query($loadQ);	
 	}
 	else if (!$sql->table_exists($table)){
@@ -155,7 +171,8 @@ else {
 		$sql->query("INSERT INTO sumUpcSalesByDay
 			SELECT DATE(tdate) AS tdate, upc,
 			CONVERT(SUM(total),DECIMAL(10,2)) as total,
-			CONVERT(SUM(CASE WHEN trans_status='M' THEN itemQtty ELSE quantity END),DECIMAL(10,2)) as qty
+			CONVERT(SUM(CASE WHEN trans_status='M' THEN itemQtty 
+				WHEN unitPrice=0.01 THEN 1 ELSE quantity END),DECIMAL(10,2)) as qty
 			FROM $FANNIE_TRANS_DB.dlog WHERE
 			trans_type IN ('I') AND upc <> '0'
 			GROUP BY DATE(tdate), upc");
@@ -164,7 +181,8 @@ else {
 		$sql->query("INSERT INTO sumRingSalesByDay
 			SELECT DATE(tdate) AS tdate, upc, department,
 			CONVERT(SUM(total),DECIMAL(10,2)) as total,
-			CONVERT(SUM(CASE WHEN trans_status='M' THEN itemQtty ELSE quantity END),DECIMAL(10,2)) as qty
+			CONVERT(SUM(CASE WHEN trans_status='M' THEN itemQtty 
+				WHEN unitPrice=0.01 THEN 1 ELSE quantity END),DECIMAL(10,2)) as qty
 			FROM $FANNIE_TRANS_DB.dlog WHERE
 			trans_type IN ('I','D') AND upc <> '0'
 			GROUP BY DATE(tdate), upc, department");
@@ -173,7 +191,8 @@ else {
 		$sql->query("INSERT INTO sumDeptSalesByDay
 			SELECT DATE(tdate) AS tdate, department,
 			CONVERT(SUM(total),DECIMAL(10,2)) as total,
-			CONVERT(SUM(CASE WHEN trans_status='M' THEN itemQtty ELSE quantity END),DECIMAL(10,2)) as qty
+			CONVERT(SUM(CASE WHEN trans_status='M' THEN itemQtty 
+				WHEN unitPrice=0.01 THEN 1 ELSE quantity END),DECIMAL(10,2)) as qty
 			FROM $FANNIE_TRANS_DB.dlog WHERE
 			trans_type IN ('I','D') 
 			GROUP BY DATE(tdate), department");
@@ -182,7 +201,8 @@ else {
 		$sql->query("INSERT INTO sumMemSalesByDay
 			SELECT DATE(tdate) AS tdate, card_no,
 			CONVERT(SUM(total),DECIMAL(10,2)) as total,
-			CONVERT(SUM(CASE WHEN trans_status='M' THEN itemQtty ELSE quantity END),DECIMAL(10,2)) as qty,
+			CONVERT(SUM(CASE WHEN trans_status='M' THEN itemQtty 
+				WHEN unitPrice=0.01 THEN 1 ELSE quantity END),DECIMAL(10,2)) as qty,
 			COUNT(DISTINCT trans_num) AS transCount
 			FROM $FANNIE_TRANS_DB.dlog WHERE
 			trans_type IN ('I','D')
@@ -192,7 +212,8 @@ else {
 		$sql->query("INSERT INTO sumMemTypeSalesByDay
 			SELECT DATE(tdate) AS tdate, c.memType,
 			CONVERT(SUM(total),DECIMAL(10,2)) as total,
-			CONVERT(SUM(CASE WHEN trans_status='M' THEN itemQtty ELSE quantity END),DECIMAL(10,2)) as qty,
+			CONVERT(SUM(CASE WHEN trans_status='M' THEN itemQtty 
+				WHEN unitPrice=0.01 THEN 1 ELSE quantity END),DECIMAL(10,2)) as qty,
 			COUNT(DISTINCT trans_num) AS transCount
 			FROM $FANNIE_TRANS_DB.dlog AS d LEFT JOIN
 			$FANNIE_OP_DB.custdata AS c ON d.card_no=c.CardNo

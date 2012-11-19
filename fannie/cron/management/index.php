@@ -25,6 +25,13 @@ include($FANNIE_ROOT.'src/mysql_connect.php');
 include($FANNIE_ROOT.'src/tmp_dir.php');
 include($FANNIE_ROOT.'auth/login.php');
 
+
+/* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+	* 17Oct2012 Eric Lee Add note about Help under Command links Help tooltip in Command.
+
+*/
+
 /* This is a very light wrapper around cron. The
    interface replicates a crontab file, so you do
    have to understand how one works
@@ -104,10 +111,12 @@ if (!is_writable($FANNIE_ROOT.'logs/dayend.log')){
 	echo "<i>Warning: dayend.log ({$FANNIE_ROOT}logs/dayend.log)
 		is not writable. Logging task results may
 		not work</i>";
-	echo "<br /><br />";
 }
 else
-	echo "Default logging will be to {$FANNIE_ROOT}logs/dayend.log<br /><br />";
+	echo "Default logging will be to {$FANNIE_ROOT}logs/dayend.log";
+
+echo "<br />Click the 'Command' link for popup Help.";
+echo "<br /><br />";
 
 $jobs = scan_scripts($FANNIE_ROOT.'cron',array());
 $tab = read_crontab();
@@ -115,7 +124,7 @@ $tab = read_crontab();
 echo "<form action=\"{$_SERVER['PHP_SELF']}\" method=\"post\">";
 echo "<b>E-mail address</b>: <input name=\"email\" value=\"{$tab['email']}\" /><br />";
 echo "<table cellspacing=\"0\" cellpadding=\"4\" border=\"1\">";
-echo "<tr><th>Enabled</th><th>Min</th><th>Hour</th><th>Day</th><th>Month</th><th>Wkdy</th><th>Command</th></tr>";
+echo "<tr><th>Enabled</th><th>Min</th><th>Hour</th><th>Day</th><th>Month</th><th>Wkdy</th><th>Command/Help</th></tr>";
 $i = 0;
 foreach($jobs as $job){
 	$shortname = substr($job,strlen($FANNIE_ROOT."cron/"));
@@ -132,7 +141,7 @@ foreach($jobs as $job){
 		<td><input type="text" size="2" name="month[]" value="%s" /></td>
 		<td><input type="text" size="2" name="wkdy[]" value="%s" /></td>
 		<td><input type="hidden" name="cmd[]" value="%s" />
-		<a href="" onclick="window.open(\'help.php?fn=%s\',\'Help\',\'height=200,width=500,scrollbars=1\');return false;">%s</a></td>
+		<a href="" onclick="window.open(\'help.php?fn=%s\',\'Help\',\'height=200,width=500,scrollbars=1\');return false;" title="Help">%s</a></td>
 		</tr>',
 		(isset($tab['jobs'][$shortname])?'checked':''),$i,
 		(isset($tab['jobs'][$shortname])?$tab['jobs'][$shortname]['min']:'0'),

@@ -47,7 +47,6 @@ function confsave($key,$value,$prefer_local=False){
 					-1, $found_global);
 	$new_local = preg_replace($orig_setting, $new_setting, $orig_local,
 					-1, $found_local);
-
 	if ($found_global) {
 		preg_match($orig_setting, $orig_global, $matches);
 		if ($matches[1] === $value)	// found with exact same value
@@ -105,7 +104,13 @@ function load_sample_data($sql, $table){
 function db_test_connect($host,$type,$db,$user,$pw){
         $sql = False;
         try {
-                $sql = new SQLManager($host,$type,$db,$user,$pw);
+		if ($type == 'mysql')
+			ini_set('mysql.connect_timeout',1);
+		elseif ($type == 'mssql')
+			ini_set('mssql.connect_timeout',1);
+		ob_start();
+                $sql = @ new SQLManager($host,$type,$db,$user,$pw);
+		ob_end_clean();
         }
         catch(Exception $ex) {}
 
@@ -113,6 +118,32 @@ function db_test_connect($host,$type,$db,$user,$pw){
                 return False;
         else
                 return $sql;
+}
+
+function db_structure_modify($sql, $struct_name, $query, $errors=array()){
+	ob_start();
+	$try = @$sql->query($query);
+	ob_end_clean();
+	if ($try === False){
+		if (stristr($query, "DROP ") && stristr($query,"VIEW ")){
+			/* suppress unimportant errors
+			$errors[] = array(
+			'struct' => $struct_name,
+			'query' => $query,
+			'important' => False
+			);
+			*/
+		}
+		else {
+			$errors[] = array(
+			'struct'=>$struct_name,
+			'query'=>$query,
+			'details'=>$sql->error(),
+			'important'=>True
+			);
+		}
+	}
+	return $errors;
 }
 
 ?>

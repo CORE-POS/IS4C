@@ -25,7 +25,7 @@ if (strlen($dlist) <= 2)
 $CREATE['trans.stockSumToday'] = "
 	CREATE VIEW stockSumToday AS
 		SELECT card_no,
-		CASE WHEN department IN $dlist THEN total ELSE 0 END AS totPayments,
+		SUM(CASE WHEN department IN $dlist THEN total ELSE 0 END) AS totPayments,
 		MIN(tdate) AS startdate
 		FROM dlog WHERE ".$con->datediff($con->now(),'tdate')." = 0
 		AND department IN $dlist

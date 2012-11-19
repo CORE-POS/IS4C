@@ -58,6 +58,11 @@ if (!isset($_REQUEST['upc_col'])){
 		echo '<td><input type="radio" name="price_col" value="'.$i.'" /></td>';
 	}
 	echo '</tr>';
+	echo '<tr><th>A/B/TPR</th>';
+	for($i=0;$i<$width;$i++){
+		echo '<td><input type="radio" name="abt_col" value="'.$i.'" /></td>';
+	}
+	echo '</tr>';
 	echo '<tr><th>SKU</th>';
 	for($i=0;$i<$width;$i++){
 		echo '<td><input type="radio" name="sku_col" value="'.$i.'" /></td>';
@@ -79,11 +84,12 @@ try {
 	$dbc->query("DROP TABLE tempCapPrices");
 }
 catch(Exception $e){}
-$dbc->query("CREATE TABLE tempCapPrices (upc varchar(13), price decimal(10,2))");
+$dbc->query("CREATE TABLE tempCapPrices (upc varchar(13), price decimal(10,2), abtpr varchar(3))");
 
 $SUB = (isset($_REQUEST['sub_col'])) ? (int)$_REQUEST['sub_col'] : 2;
 $UPC = (isset($_REQUEST['upc_col'])) ? (int)$_REQUEST['upc_col'] : 3;
 $SKU = (isset($_REQUEST['sku_col'])) ? (int)$_REQUEST['sku_col'] : 4;
+$ABT = (isset($_REQUEST['abt_col'])) ? (int)$_REQUEST['abt_col'] : 1;
 $PRICE = (isset($_REQUEST['price_col'])) ? (int)$_REQUEST['price_col'] : 4;
 $rm_checks = (isset($_REQUEST['rm_cds'])) ? True : False;
 
@@ -114,8 +120,17 @@ while(!feof($fp)){
 	}
 
 	$price = trim($data[$PRICE],"\$");
-	$insQ = "INSERT INTO tempCapPrices VALUES ('$upc',$price)";
-	$dbc->query($insQ);
+	$abt = array();
+	if (strstr($data[$ABT],"A"))
+		$abt[] = "A";
+	if (strstr($data[$ABT],"B"))
+		$abt[] = "B";
+	if (strstr($data[$ABT],"TPR"))
+		$abt[] = "TPR";
+	foreach($abt as $type){
+		$insQ = "INSERT INTO tempCapPrices VALUES ('$upc',$price,'$type')";
+		$dbc->query($insQ);
+	}
 }
 fclose($fp);
 unlink($tpath."CAP.csv");

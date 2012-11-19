@@ -21,8 +21,21 @@
 
 *********************************************************************************/
 
+/**
+  Plugin class
+
+  Plugins are collections of modules. Each collection should
+  contain one module that subclasses 'Plugin'. This module
+  provides meta-information about the plugin like settings
+  and enable/disable hooks
+*/
 class Plugin {
 
+	/**
+	  Desired settings. These are automatically exposed
+	  on the 'Plugins' area of the install page and
+	  written to ini.php
+	*/
 	public $plugin_settings = array(
 	'example1' => array('default'=>'','label'=>'Setting #1',
 			'description'=>'Text goes here'),
@@ -49,7 +62,8 @@ class Plugin {
 	  Get a URL for the plugin's directory	
 	*/
 	public function plugin_url(){
-		return MiscLib::base_url().'plugins'.basename(dirname(__FILE__));
+		$info = new ReflectionClass($this);
+		return MiscLib::base_url().'plugins/'.basename(dirname($info->getFileName()));
 	}
 	
 	/**

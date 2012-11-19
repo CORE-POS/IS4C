@@ -21,7 +21,7 @@
 
 *********************************************************************************/
 
-class Quantity extends Parser {
+class Quantity extends PreParser {
 	
 	function check($str){
 		if (strstr($str,"*"))

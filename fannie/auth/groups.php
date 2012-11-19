@@ -229,6 +229,16 @@ function showGroups(){
   return true;
 }
 
+function getGroupList(){
+	$sql = dbconnect();
+	$ret = array();
+	$result = $sql->query("SELECT name,gid FROM userGroups 
+			GROUP BY name,gid ORDER BY name");
+	while($row = $sql->fetch_row($result))
+		$ret[$row['gid']] = $row['name'];
+	return $ret;
+}
+
 /* detailGroup(groupname)
    prints out all the users and authorizations in
    the given group
