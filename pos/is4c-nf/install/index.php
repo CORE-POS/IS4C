@@ -1212,6 +1212,7 @@ function create_trans_dbs($db,$type){
 		from localtemptrans as l
 		left join taxrates as t
 		on l.tax = t.id
+		WHERE trans_type <> 'L'
 		order by trans_id";
 	if ($type == 'mssql'){
 		$screen = "CREATE view screendisplay as 
@@ -1307,8 +1308,10 @@ function create_trans_dbs($db,$type){
 			voided,
 			trans_id
 			from localtemptrans
+			WHERE trans_type <> 'L'
 			order by trans_id";
 	}
+	$errors = db_structure_modify($db,'screendisplay','DROP VIEW screendisplay',$errors);
 	if (!$db->table_exists('screendisplay',$name)){
 		$errors = db_structure_modify($db,'screendisplay',$screen,$errors);
 	}
@@ -1516,6 +1519,7 @@ function create_trans_dbs($db,$type){
 		trans_id
 		from localtemptrans
 		where voided <> 5 and UPC <> 'TAX' and UPC <> 'DISCOUNT'
+		AND trans_type <> 'L'
 		order by trans_id";
 	if($type == 'mssql'){
 		$lttR = "CREATE view ltt_receipt as 
@@ -1565,8 +1569,10 @@ function create_trans_dbs($db,$type){
 			trans_id
 			from localtemptrans
 			where voided <> 5 and UPC <> 'TAX' and UPC <> 'DISCOUNT'
+			AND trans_type <> 'L'
 			order by trans_id";
 	}
+	$errors = db_structure_modify($db,'ltt_receipt','DROP VIEW ltt_receipt',$errors);
 	if(!$db->table_exists('ltt_receipt',$name)){
 		$errors = db_structure_modify($db,'ltt_receipt',$lttR,$errors);
 	}
@@ -1740,6 +1746,7 @@ function create_trans_dbs($db,$type){
 		trans_id
 		from localtranstoday
 		where voided <> 5 and UPC <> 'TAX' and UPC <> 'DISCOUNT'
+		AND trans_type <> 'L'
 		order by emp_no, trans_no, trans_id";
 	if($type == 'mssql'){
 		$rplttR = "CREATE view rp_ltt_receipt as 
@@ -1792,8 +1799,10 @@ function create_trans_dbs($db,$type){
 			trans_id
 			from localtranstoday
 			where voided <> 5 and UPC <> 'TAX' and UPC <> 'DISCOUNT'
+			AND trans_type <> 'L'
 			order by emp_no, trans_no, trans_id";
 	}
+	$errors = db_structure_modify($db,'rp_ltt_receipt','DROP VIEW rp_ltt_receipt',$errors);
 	if(!$db->table_exists('rp_ltt_receipt',$name)){
 		$errors = db_structure_modify($db,'rp_ltt_receipt',$rplttR,$errors);
 	}
@@ -2197,6 +2206,7 @@ function create_trans_dbs($db,$type){
 		case when trans_status='d' or scale=1 or trans_type='T' then trans_id else scale end as grouper
 	from localtemptrans
 	where description not like '** YOU SAVED %' and trans_status !='M'
+	AND trans_type <> 'L'
 	group by upc,description,trans_type,trans_subtype,discounttype,volume,
 		trans_status,
 		department,scale,case when voided=1 then 0 else voided end,
@@ -2221,6 +2231,7 @@ function create_trans_dbs($db,$type){
 		case when trans_status='d' or scale=1 then trans_id else scale end as grouper
 	from localtemptrans
 	where description not like '** YOU SAVED %' and (discounttype=1 or discounttype=2)
+	AND trans_type <> 'L'
 	group by upc,description,trans_type,trans_subtype,discounttype,volume,
 		department,scale,matched,
 		case when trans_status='d' or scale=1 then trans_id else scale end
@@ -2256,6 +2267,7 @@ function create_trans_dbs($db,$type){
 			case when trans_status='d' or scale=1 or trans_type='T' then trans_id else scale end as grouper
 		from localtemptrans
 		where description not like '** YOU SAVED %' and trans_status !='M'
+		AND trans_type <> 'L'
 		group by upc,description,trans_type,trans_subtype,discounttype,volume,
 			trans_status,
 			department,scale,case when voided=1 then 0 else voided end,
@@ -2280,11 +2292,13 @@ function create_trans_dbs($db,$type){
 			case when trans_status='d' or scale=1 then trans_id else scale end as grouper
 		from localtemptrans
 		where description not like '** YOU SAVED %' and (discounttype=1 or discounttype=2)
+		AND trans_type <> 'L'
 		group by upc,description,trans_type,trans_subtype,discounttype,volume,
 			department,scale,matched,
 			case when trans_status='d' or scale=1 then trans_id else scale end
 		having convert(money,sum(quantity*regprice-quantity*unitprice))<>0";
 	}
+	$errors = db_structure_modify($db,'ltt_grouped','DROP VIEW ltt_grouped',$errors);
 	if(!$db->table_exists('ltt_grouped',$name)){
 		$errors = db_structure_modify($db,'ltt_grouped',$lttG,$errors);
 	}
@@ -2350,6 +2364,7 @@ function create_trans_dbs($db,$type){
 	from ltt_grouped
 	where voided <> 5 and UPC <> 'TAX' and UPC <> 'DISCOUNT'
 	and not (trans_status='M' and total=convert('0.00',decimal(10,2)))
+	AND trans_type <> 'L'
 
 	union
 
@@ -2436,6 +2451,7 @@ function create_trans_dbs($db,$type){
 		from ltt_grouped
 		where voided <> 5 and UPC <> 'TAX' and UPC <> 'DISCOUNT'
 		and not (trans_status='M' and total=convert(money,'0.00'))
+		AND trans_type <> 'L'
 
 		union
 
@@ -2468,6 +2484,7 @@ function create_trans_dbs($db,$type){
 		'' as trans_subtype
 		from ".$CORE_LOCAL->get('pDatabase').".dbo.promoMsgsView";
 	}
+	$errors = db_structure_modify($db,'ltt_receipt_reorder_g','DROP VIEW ltt_receipt_reorder_g',$errors);
 	if(!$db->table_exists('ltt_receipt_reorder_g',$name)){
 		$errors = db_structure_modify($db,'ltt_receipt_reorder_g',$lttreorderG,$errors);
 	}
@@ -2777,6 +2794,7 @@ function create_trans_dbs($db,$type){
 			case when trans_status='d' or scale=1 or trans_type='T' then trans_id else scale end as grouper
 		from localtranstoday
 		where description not like '** YOU SAVED %' and trans_status !='M'
+		AND trans_type <> 'L'
 		group by register_no,emp_no,trans_no,card_no,
 			upc,description,trans_type,trans_subtype,discounttype,volume,
 			trans_status,
@@ -2803,6 +2821,7 @@ function create_trans_dbs($db,$type){
 			case when trans_status='d' or scale=1 then trans_id else scale end as grouper
 		from localtranstoday
 		where description not like '** YOU SAVED %' and (discounttype=1 or discounttype=2)
+		AND trans_type <> 'L'
 		group by register_no,emp_no,trans_no,card_no,
 			upc,description,trans_type,trans_subtype,discounttype,volume,
 			department,scale,matched,
@@ -2842,6 +2861,7 @@ function create_trans_dbs($db,$type){
 			case when trans_status='d' or scale=1 or trans_type='T' then trans_id else scale end as grouper
 		from localtranstoday
 		where description not like '** YOU SAVED %' and trans_status !='M'
+		AND trans_type <> 'L'
 		group by register_no,emp_no,trans_no,card_no,
 			upc,description,trans_type,trans_subtype,discounttype,volume,
 			trans_status,
@@ -2868,12 +2888,14 @@ function create_trans_dbs($db,$type){
 			case when trans_status='d' or scale=1 then trans_id else scale end as grouper
 		from localtranstoday
 		where description not like '** YOU SAVED %' and (discounttype=1 or discounttype=2)
+		AND trans_type <> 'L'
 		group by register_no,emp_no,trans_no,card_no,
 			upc,description,trans_type,trans_subtype,discounttype,volume,
 			department,scale,matched,
 			case when trans_status='d' or scale=1 then trans_id else scale end
 		having convert(money,sum(quantity*regprice-quantity*unitprice))<>0";
 	}	
+	$errors = db_structure_modify($db,'rp_ltt_grouped','DROP VIEW rp_ltt_grouped',$errors);
 	if(!$db->table_exists('rp_ltt_grouped',$name)){
 		$errors = db_structure_modify($db,'rp_ltt_grouped',$rplttG,$errors);
 	}
@@ -2930,6 +2952,7 @@ function create_trans_dbs($db,$type){
 		from rp_ltt_grouped
 		where voided <> 5 and UPC <> 'TAX' and UPC <> 'DISCOUNT'
 		and not (trans_status='M' and total=convert('0.00',decimal))
+		AND trans_type <> 'L'
 
 		union
 
@@ -3016,6 +3039,7 @@ function create_trans_dbs($db,$type){
 		from rp_ltt_grouped
 		where voided <> 5 and UPC <> 'TAX' and UPC <> 'DISCOUNT'
 		and not (trans_status='M' and total=convert(money,'0.00'))
+		AND trans_type <> 'L'
 
 		union
 
@@ -3050,8 +3074,9 @@ function create_trans_dbs($db,$type){
 		'' as trans_subtype
 		from ".$CORE_LOCAL->get('pDatabase').".dbo.promoMsgsView";
 	}	
+	$errors = db_structure_modify($db,'rp_ltt_receipt_reorder_g','DROP VIEW rp_ltt_receipt_reorder_g',$errors);
 	if(!$db->table_exists("rp_ltt_receipt_reorder_g",$name)){
-		$errors = db_structure_modify($db,'rp_ltt_receipt_rerder_g',$rpreorderG,$errors);
+		$errors = db_structure_modify($db,'rp_ltt_receipt_reorder_g',$rpreorderG,$errors);
 	}
 	
 	$rpG = "CREATE    view rp_receipt_reorder_g as

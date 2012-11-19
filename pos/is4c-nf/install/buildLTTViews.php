@@ -64,7 +64,7 @@ convert(sum(case when foodstamp = 1 and discountable <> 0 then total else 0 end)
 convert(sum(case when numflag=1 THEN total ELSE 0 END),decimal(10,2)) as localTotal,
 convert(sum(case when trans_status='V' THEN -total ELSE 0 END),decimal(10,2)) as voidTotal,
 max(trans_id) as LastID
-from localtemptrans\n";
+from localtemptrans WHERE trans_type <> 'L'\n";
 
 $errors = db_structure_modify($db,'lttsummary','DROP VIEW lttsummary',$errors);
 $errors = db_structure_modify($db,'lttsummary',$createStr,$errors);
@@ -251,7 +251,7 @@ convert(numeric(10,2),sum(case when foodstamp = 1 and discountable <> 0 then tot
 convert(numeric(10,2),sum(case when numflag=1 then total else 0 end)) as localTotal,
 convert(numeric(10,2),sum(case when trans_status='V' then -total else 0 end)) as voidTotal,
 max(trans_id) as LastID
-from localtemptrans";
+from localtemptrans WHERE trans_type <> 'L'";
 
 $db->query("DROP VIEW lttsummary");
 $db->query($createStr);
