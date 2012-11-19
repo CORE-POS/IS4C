@@ -123,7 +123,9 @@ class UPC extends Parser {
 				return $ret; 
 			}
 			*/
-			TransRecord::addQueued($upc,'BADSCAN');
+			//TransRecord::addQueued($upc,'BADSCAN');
+			$opts = array('upc'=>$upc,'description'=>'BADSCAN');
+			TransRecord::add_log_record($opts);
 			$CORE_LOCAL->set("boxMsg",_("not a valid item"));
 			$ret['udpmsg'] = 'errorBeep';
 			$ret['main_frame'] = $my_url."gui-modules/boxMsg2.php";

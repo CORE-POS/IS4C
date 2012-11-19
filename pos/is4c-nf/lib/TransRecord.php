@@ -704,6 +704,58 @@ static public function addactivity($activity) {
 
 }
 
+/**
+  Add a log entry to the transaction table.
+  Log records do not appear onscreen on on receipts.
+
+  @param $opts keyed array. Currently valid keys are:
+   - upc
+   - description
+   - department
+   - numflag
+   - charflag
+   - amount1
+   - amount2
+
+  All keys are optional and will be left blank or zero if
+  omitted. Log records have trans_status 'X', trans_type 'L',
+  and trans_subtype 'OG'. Amount1 and Amount2 are reflected in
+  total and regPrice (respectively). The other values go in the
+  correspondingly named columns.
+*/
+static public function add_log_record($opts){
+	if (!is_array($opts)) $opts = array();
+	$upc = isset($opts['upc']) ? $opts['upc'] : '';
+	$desc = isset($opts['description']) ? $opts['description'] : '';
+	$dept = isset($opts['department']) ? $opts['department'] : 0;
+	$nflag = isset($opts['numflag']) ? $opts['numflag'] : 0;
+	$cflag = isset($opts['charflag']) ? $opts['charflag'] : '';
+	$total = isset($opts['amount1']) ? $opts['amount1'] : 0;
+	$regPrice = isset($opts['amount2']) ? $opts['amount2'] : 0;
+	
+	self::addItem($upc, $desc, 'L', 'OG', 'X', $dept, 
+		0, // quantity
+		0, // unitPrice 
+		$total, 
+		$regPrice, 
+		0, // scale 
+		0, // tax 
+		0, //foodstamp
+		0, //discount
+		0, //memDiscount 
+		0, //discountable
+		0, //discounttype
+		0, //ItemQtty
+		0, //volDiscType
+		0, //volume
+		0, //VolSpecial
+		'', //mixMatch
+		0, //matched
+		0, //voided
+		0, //cost 
+		$nflag, $cflag);
+}
+
 // ------------------------------------------------------------------------
 
 
