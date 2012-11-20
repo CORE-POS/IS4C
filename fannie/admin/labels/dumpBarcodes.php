@@ -40,8 +40,9 @@ if($checkNoN == 0){
    if(isset($_GET['submit']) && $_GET['submit']==1){
       echo "<body bgcolor='669933'>";
       
-      $deleteQ = "DELETE FROM shelftags WHERE id=$id";
-	echo $deleteQ;
+      $deleteQ = "UPDATE shelftags SET id=-1*id WHERE id=$id";
+      if ($id == 0)
+	      $deleteQ = "UPDATE shelftags SET id=-999 WHERE id=0";
       $deleteR = $dbc->query($deleteQ);
       echo "Barcode table cleared <a href='index.php'>Click here to continue</a>";
    }else{

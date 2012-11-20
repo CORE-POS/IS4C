@@ -660,6 +660,77 @@ class SQLManager {
 		}
 		return $str;
 	}
+
+	function error($which_connection=''){
+                if ($which_connection == '')
+                        $which_connection = $this->default_db;
+                switch($this->db_types[$which_connection]){
+		case $this->TYPE_MYSQL:
+			return mysql_error();
+		case $this->TYPE_MSSQL:
+			return mssql_get_last_message();
+		}
+		return 'unknown error';
+	}
+
+	/**
+	  Concatenate strings
+	  @param Arbitrary; see below
+	  @return The SQL expression
+
+	  This function takes an arbitrary number of arguments
+	  and concatenates them. The last argument is the
+	  standard $which_connection but in this case it is
+	  not optional. You may pass the empty string to use
+	  the default database though.
+
+	  This method currently only supports MySQL and MSSQL
+	*/
+	function concat(){
+		$args = func_get_args();
+		$ret = "";
+		$which_connection = $args[count($args)-1];
+		if ($which_connection == '')
+			$which_connection = $this->default_db;
+		switch($this->db_types[$which_connection]){
+		case $this->TYPE_MYSQL:
+			$ret .= "CONCAT(";
+			for($i=0;$i<count($args)-1;$i++)
+				$ret .= $args[$i].",";	
+			$ret = rtrim($ret,",").")";
+			break;
+		case $this->TYPE_MSSQL:
+			for($i=0;$i<count($args)-1;$i++)
+				$ret .= $args[$i]."+";	
+			$ret = rtrim($ret,"+");
+			break;
+		}
+		return $ret;
+	}
+
+	/**
+	  Get a SQL convert function
+	  @param $expr An SQL expression
+	  @param $type Convert to this SQL type
+	  @param $which_connection see method close()
+	  @return The SQL expression
+
+	  This method currently only supports MySQL and MSSQL
+
+	*/
+	function convert($expr,$type,$which_connection=''){
+		if ($which_connection == '')
+			$which_connection = $this->default_db;
+		switch($this->db_types[$which_connection]){
+		case $this->TYPE_MYSQL:
+			if(strtoupper($type)=='INT')
+				$type='SIGNED';
+			return "CONVERT($expr,$type)";
+		case $this->TYPE_MSSQL:
+			return "CONVERT($type,$expr)";
+		}
+		return "";
+	}
 }
 
 ?>

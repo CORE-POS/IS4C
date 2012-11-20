@@ -31,12 +31,19 @@ include($FANNIE_ROOT.'src/SQLManager.php');
 
 /* HELP
 
-   This script de-activates members with store-charge account (ar) in arrears.
+   This script de-activates members with store-charge account (ar)
+    in arrears, i.e.
+   AR_EOM_Summary.twoMonthBalance <= newBalanceToday_cust.balance
+
+   When/how-often can/should it be run? Daily?
+
 */
 
 /* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - -
  *
- * 17Jun12 EL Fix HELP to make it appropriate to this program.
+ * 18Oct12 EL Keep this comment block from appearing in the Help popup.
+ *             Reformat SQL statements.
+ * 17Jun12 EL Fix Help to make it appropriate to this program.
  *             Was a copy of reactivate.equity.php.
 */
 
@@ -79,17 +86,16 @@ $histQ = "INSERT INTO suspension_history
 	    WHERE s.cardno=m.card_no)";
 $sql->query($histQ);
 
-$custQ = "UPDATE custdata as c LEFT JOIN
-	    suspensions as s on c.CardNo=s.cardno
-	    SET c.type='INACT',memType=0,c.Discount=0,
-	    memDiscountLimit=0
-	    where c.type='PC' and s.cardno is not null";
+$custQ = "UPDATE custdata AS c
+	LEFT JOIN suspensions AS s ON c.CardNo=s.cardno
+	SET c.type='INACT',memType=0,c.Discount=0,memDiscountLimit=0
+	WHERE c.type='PC' AND s.cardno is not null";
 $sql->query($custQ);
 
-$memQ = "UPDATE meminfo as m LEFT JOIN
-    suspensions as s ON m.card_no=s.cardno
+$memQ = "UPDATE meminfo AS m
+		LEFT JOIN suspensions AS s ON m.card_no=s.cardno
     SET ads_OK=0
-    where s.cardno is not null";
+    WHERE s.cardno is not null";
 $sql->query($memQ);
 
 ?>

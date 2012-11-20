@@ -21,7 +21,7 @@
 
 *********************************************************************************/
 
-class ManufacturerCoupon extends Parser {
+class ManufacturerCoupon extends PreParser {
 	
 	function check($str){
 		if (substr($str,0,2) == "MC")

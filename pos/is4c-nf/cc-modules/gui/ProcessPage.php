@@ -52,8 +52,7 @@ class ProcessPage {
 			if(isset($_REQUEST['reginput'])) unset($_REQUEST['reginput']);
 			ob_start();
 			$this->print_page();
-			while (ob_get_level() > 0)
-				ob_end_flush();
+			ob_end_flush();
 		}
 	}
 

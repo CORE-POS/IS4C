@@ -49,5 +49,6 @@ $_REQUEST['receiptType'] = 'ddd';
 ob_start();
 include(realpath(dirname(__FILE__).'/ajax-end.php'));
 header("Location: ".MiscLib::base_url()."gui-modules/pos2.php");
+ob_end_clean();
 
 ?>

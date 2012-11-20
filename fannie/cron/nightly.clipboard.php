@@ -30,6 +30,9 @@
    on sales batch to another. The table must be truncated
    periodically or old data will linger indefinitely.	
 
+   It also clears stale, deleted shelftags from the
+   shelftags table. Entries hang around with a negative
+   id for recovery in the case of mistakes.
 */
 
 include('../config.php');
@@ -46,5 +49,11 @@ if ($chk === false)
 	echo cron_msg("Error clearing batch clipboard");
 else
 	echo cron_msg("Cleared batch clipboard");
+
+$chk2 = $sql->query("DELETE FROM shelftags WHERE id < 0");
+if ($chk2 === false)
+	echo cron_msg("Error clearing deleted sheltags");
+else
+	echo cron_msg("Cleared deleted shelftags");
 
 ?>

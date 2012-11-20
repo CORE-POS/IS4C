@@ -1,7 +1,7 @@
 <?php
 /*******************************************************************************
 
-    Copyright 2007 Whole Foods Co-op
+    Copyright 2012 Whole Foods Co-op
 
     This file is part of IT CORE.
 
@@ -21,29 +21,21 @@
 
 *********************************************************************************/
 
-class QuickKeyLauncher extends Parser {
-	
+class PriceCheckParser extends Parser {
 	function check($str){
-		if (strstr($str,"QK")){
-			$tmp = explode("QK",$str);
-			$ct = count($tmp);
-			if ($ct <= 2 && is_numeric($tmp[$ct-1]))
-				return True;
-		}
+		if ($str == "PC")
+			return True;
+		else if (substr($str,0,2)=="PC" && is_numeric(substr($str,2)))
+			return True;
 		return False;
 	}
 
 	function parse($str){
-		global $CORE_LOCAL;
-		$tmp = explode("QK",$str);
-		if (count($tmp) == 2)
-			$CORE_LOCAL->set("qkInput",$tmp[0]);
-		else
-			$CORE_LOCAL->set("qkInput","");
-		$CORE_LOCAL->set("qkNumber",$tmp[count($tmp)-1]);
-		$CORE_LOCAL->set("qkCurrentId",$CORE_LOCAL->get("currentid"));
 		$ret = $this->default_json();
-		$ret['main_frame'] = MiscLib::base_url().'gui-modules/QKDisplay.php';
+		$plugin_info = new PriceCheck();
+		$ret['main_frame'] = $plugin_info->plugin_url().'/PriceCheckPage.php';
+		if (strlen($str)>2)
+			$ret['main_frame'] .= "?upc=".substr($str,2);
 		return $ret;
 	}
 
@@ -53,14 +45,16 @@ class QuickKeyLauncher extends Parser {
 				<th>Input</th><th>Result</th>
 			</tr>
 			<tr>
-				<td><i>anything</i>QK<i>number</i></td>
-				<td>
-				Go to quick key with the given number.
-				Save any provided input.
-				</td>
+				<td>PC</td>
+				<td>Do a price check</td>
+			</tr>
+			<tr>
+				<td>PC<UPC></td>
+				<td>Price check the specified UPC</td>
 			</tr>
 			</table>";
 	}
+
 }
 
 ?>

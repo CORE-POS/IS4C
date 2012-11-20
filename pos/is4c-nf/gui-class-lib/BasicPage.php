@@ -57,8 +57,7 @@ class BasicPage {
 		if ($this->preprocess()){
 			ob_start();
 			$this->print_page();
-			while (ob_get_level() > 0)
-				ob_end_flush();
+			ob_end_flush();
 		}
 	}
 
@@ -120,6 +119,11 @@ class BasicPage {
 		echo "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" />\n";
 		echo "<link rel=\"stylesheet\" type=\"text/css\"
 		    href=\"{$my_url}/pos.css\">";
+		// include store css file if it exists
+		if (file_exists(dirname(__FILE__).'/../store.css')){
+			echo "<link rel=\"stylesheet\" type=\"text/css\"
+			    href=\"{$my_url}/store.css\">";
+		}
 		echo "<script type=\"text/javascript\"
 			src=\"{$my_url}/js/jquery.js\"></script>";
 		$this->head_content();
@@ -239,10 +243,16 @@ class BasicPage {
 			}
 			if($CORE_LOCAL->get("CCintegrate") == 1 && 
 				$CORE_LOCAL->get("ccLive") == 1 && $CORE_LOCAL->get("training") == 0){
-			   echo "<img src='{$my_url}graphics/ccIn.gif'>&nbsp;";
+			   if ($CORE_LOCAL->get("CachePanEncBlock")=="")
+				   echo "<img src='{$my_url}graphics/ccIn.gif'>&nbsp;";
+			   else
+				   echo "<img src='{$my_url}graphics/ccInLit.gif'>&nbsp;";
 			}elseif($CORE_LOCAL->get("CCintegrate") == 1 && 
 				($CORE_LOCAL->get("training") == 1 || $CORE_LOCAL->get("ccLive") == 0)){
-			   echo "<img src='{$my_url}graphics/ccTest.gif'>&nbsp;";
+			   if ($CORE_LOCAL->get("CachePanEncBlock")=="")
+				   echo "<img src='{$my_url}graphics/ccTest.gif'>&nbsp;";
+			   else
+				   echo "<img src='{$my_url}graphics/ccTestLit.gif'>&nbsp;";
 			}
 
 			echo "<span id=\"timeSpan\" class=\"time\">".$time."</span>\n";

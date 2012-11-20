@@ -21,7 +21,7 @@
 
 *********************************************************************************/
 
-class ToggleTaxFSDisc extends Parser {
+class ToggleTaxFSDisc extends PreParser {
 	var $tfd;
 	var $remainder;
 

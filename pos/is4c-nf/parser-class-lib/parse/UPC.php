@@ -42,13 +42,6 @@ class UPC extends Parser {
 		$my_url = MiscLib::base_url();
 		$ret = $this->default_json();
 
-		/* begin change */
-		if ($CORE_LOCAL->get("memberID")=="0"){
-			$ret['main_frame'] = $my_url.'gui-modules/memlist.php';
-			return $ret;
-		}
-		/* end change */
-
 		/* force cashiers to enter a comment on refunds */
 		if ($CORE_LOCAL->get("refund")==1 && $CORE_LOCAL->get("refundComment") == ""){
 			$ret['udpmsg'] = 'twoPairs';
@@ -115,25 +108,28 @@ class UPC extends Parser {
 			}
 			// no match; not a product, not special
 			
-			// if ($CORE_LOCAL->get("requestType")!="badscan"){
-			// 	$CORE_LOCAL->set("requestType","badscan");
-			// 	$CORE_LOCAL->set("requestMsg",_("Item Not Found!").'<br />'._("Please Enter Product Information").'<br />'._("(Example: Brand, Description, Size)"));
-			// 	$ret['main_frame'] = $my_url.'gui-modules/requestInfo.php';
-			// 	return $ret;
-			// }
-			// else {
-			// 	$ret['output'] = DisplayLib::lastpage();
-			// 	TransRecord::addQueued($upc,$CORE_LOCAL->get("requestMsg"),0,'BS');
-			// 	$CORE_LOCAL->set("requestMsg","");
-			// 	$CORE_LOCAL->set("requestType","");
-			// 	return $ret; 
-			// }
-			TransRecord::addQueued($upc,'BADSCAN');
-			$CORE_LOCAL->set("boxMsg",_("Item Not Found!"));
+			/*
+			if ($CORE_LOCAL->get("requestType")!="badscan"){
+				$CORE_LOCAL->set("requestType","badscan");
+				$CORE_LOCAL->set("requestMsg",_("not a valid item").'<br />'._("enter description"));
+				$ret['main_frame'] = $my_url.'gui-modules/requestInfo.php';
+				return $ret;
+			}
+			else {
+				$ret['output'] = DisplayLib::lastpage();
+				TransRecord::addQueued($upc,$CORE_LOCAL->get("requestMsg"),0,'BS');
+				$CORE_LOCAL->set("requestMsg","");
+				$CORE_LOCAL->set("requestType","");
+				return $ret; 
+			}
+			*/
+			//TransRecord::addQueued($upc,'BADSCAN');
+			$opts = array('upc'=>$upc,'description'=>'BADSCAN');
+			TransRecord::add_log_record($opts);
+			$CORE_LOCAL->set("boxMsg",_("not a valid item"));
 			$ret['udpmsg'] = 'errorBeep';
 			$ret['main_frame'] = $my_url."gui-modules/boxMsg2.php";
 			return $ret;
-
 		}
 
 		/* product exists
@@ -183,7 +179,7 @@ class UPC extends Parser {
 				)";
 			$restrictR = $db->query($restrictQ);
 			if ($db->num_rows($restrictR) > 0){
-				$CORE_LOCAL->set("boxMsg",_("Product Cannot Be Sold Right Now"));
+				$CORE_LOCAL->set("boxMsg",_("product cannot be sold right now"));
 				$ret['main_frame'] = $my_url."gui-modules/boxMsg2.php";
 				return $ret;
 			}
@@ -242,7 +238,7 @@ class UPC extends Parser {
 			$CORE_LOCAL->get("quantity") == 0 && substr($upc,0,3) != "002") {
 
 			$CORE_LOCAL->set("SNR",1);
-			$ret['output'] = DisplayLib::boxMsg(_("Please Place Item On Scale"));
+			$ret['output'] = DisplayLib::boxMsg(_("please put item on scale"));
 			$CORE_LOCAL->set("wgtRequested",0);
 			$CORE_LOCAL->set("warned",1);
 			$ret['retry'] = $CORE_LOCAL->get("strEntered");
@@ -258,7 +254,7 @@ class UPC extends Parser {
 				$quantity = $CORE_LOCAL->get("quantity") - $CORE_LOCAL->get("tare");
 
 			if ($quantity <= 0){
-				$ret['output'] = DisplayLib::boxMsg(_("Item Weight Must Be Greater Than Tare Weight"));
+				$ret['output'] = DisplayLib::boxMsg(_("item weight must be greater than tare weight"));
 				return $ret;
 			}
 			$CORE_LOCAL->set("tare",0);
@@ -266,7 +262,7 @@ class UPC extends Parser {
 
 		/* non-scale items need integer quantities */	
 		if ($row["scale"] == 0 && (int) $CORE_LOCAL->get("quantity") != $CORE_LOCAL->get("quantity") ) {
-			$ret['output'] = DisplayLib::boxMsg(_("Fractional Quantity Cannot Be Accepted For This Item"));
+			$ret['output'] = DisplayLib::boxMsg(_("fractional quantity cannot be accepted for this item"));
 			return $ret;
 		}
 

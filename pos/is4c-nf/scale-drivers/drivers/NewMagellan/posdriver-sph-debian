@@ -1,0 +1,292 @@
+#!/bin/bash
+#
+### BEGIN INIT INFO
+# Provides:          sph
+# Required-Start:    $local_fs
+# Required-Stop:     $local_fs
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Start/stop sph scanner-scale driver
+### END INIT INFO
+#
+# posdriver-sph-debian Startup script for sph / pos.exe
+
+# --FUNCTIONALITY- - - - - - - - - - - - - - - - - - - - - - -
+
+# + Service start/stop script for pos.exe
+# + This must be installed in /etc/init.d
+#   After copying to /etc/init.d:
+#   sudo update-rc.d posdriver-sph-debian defaults
+#   Consider using posd.sh to install it.
+
+# --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - -
+#
+#  2Nov12 EL Remove chkconfig-line
+#            Add checking start-at-boot to status.
+# 28Oct12 EL Add LSB header, needed to start at boot.
+#            Add chmod 666 serial port at start().
+# 
+# 27Oct12 EL cd to driver home for start(); it assumes you are there.
+#            Display log after start, which can show errors.
+# 26Oct12 EL Adapt from ../rs232/posdriver-ssd-debian for sph / pos.exe
+#            "ssd" changed to "sph" in some cases and "pos.exe" in others.
+#            var DHOME for where the driver is.
+#            get_pidp() because the technique used to check for ssd
+#             won't work; pos.exe is an argument to cli.
+#            You might want to use posd.sh to install and manage this.
+#
+# 8Apr12 EL Get PID of the ssd process after startup and record as ssdp.pid.
+#            Add killing of the process to "stop"
+#            Add "clean" option to rm ssdp.pid if process is gone in
+#             order to allow start.
+#            Add "status" option to show pid and ssdp.pid.
+#            Added functions success() and failure().
+#            In start(), changed initial test from -z to ! -f
+#            Build on original posdriver-ssd
+
+# --CONSTANTS - - - - - - - - - - - - - - - - - - - - - - - - -
+
+NAME=posdriver-sph-debian
+LHOME=/var/run/${NAME}
+KILL=/bin/kill
+DHOME=/var/www/IS4C/pos/is4c-nf/scale-drivers/drivers/NewMagellan
+
+# --FUNCTIONS - - - - - - - - - - - - - - - - - - - - - - - - -
+
+function noop()
+{
+	NOOP=""
+}
+function failure()
+{
+	echo "failure";
+}
+function success()
+{
+	echo "success";
+}
+
+# Make the directory to contain the posdriver-sph pid and log
+# if it doesn't exist, which it doesn't to begin with.
+# It apparently does not survive reboot.
+function makelogdir ()
+{
+	if [ ! -d $LHOME ]; then
+		mkdir -p $LHOME
+		RETVAL=$?
+		if [ "$RETVAL" = "0" ]; then
+			echo "Made log home: $LHOME";
+			success;
+		else
+			echo "Could not make log home: ${LHOME} : $RETVAL";
+			failure;
+			exit 1;
+		fi
+	else
+		echo "Log home: ${LHOME} (already) exists."
+		#echo "${LHOME} does not need to be created."
+	fi
+
+# makelogdir
+}
+
+# Get the pid of the driver process, if the driver started.
+function get_mypidp() {
+	OWNER=
+	MYPIDP=
+	REST=
+	BUF=`ps -ef | grep "pos.exe" | grep -v grep`
+	if [ "$BUF" != "" ] ; then
+		echo "$BUF" > /tmp/buf.txt
+		read OWNER MYPIDP REST <  /tmp/buf.txt
+	fi
+}
+
+start(){
+	echo "Starting $NAME"
+	if [ ! -f ${LHOME}/sphp.pid ]; then
+
+		# Make the directory where the PID and log files are kept if it
+		# doesn't exist.
+		makelogdir
+
+		# Driver assumes you are in it's home.
+		cd $DHOME
+
+		# Be sure the port is writable
+		chmod 666 /dev/ttyS0
+
+		# Start the driver in the background
+		mono pos.exe &> ${LHOME}/pos.log &
+		# Store the PID of the startup process.
+		MYPID=$!
+		echo $MYPID > ${LHOME}/sph.pid
+		RETVAL=$?
+		if [ "$RETVAL" = "0" ]; then
+			echo "Started: $NAME as PID: ${MYPID}"
+			# See if the pos.exe process is actually running.
+			# It is not the same pid as the startup returned,
+			# and the startup process is no longer alive.
+			# Apparently takes a bit of time for the daemon to start, or be known to ps.
+			sleep 2
+			get_mypidp
+			if [ "$MYPIDP" ] ; then
+				echo "Running: $NAME as PIDP: ${MYPIDP}"
+				echo "$MYPIDP" > ${LHOME}/sphp.pid
+				success;
+				echo "At startup, ${LHOME}/pos.log shows:"
+				cat ${LHOME}/pos.log
+				echo "--End of log"
+			else
+				echo "$NAME PIDP: >${MYPIDP}< is not running."
+				echo "At failure to startup, ${LHOME}/pos.log shows:"
+				cat ${LHOME}/pos.log
+				echo "--End of log"
+				failure;
+			fi
+		else
+			echo "Could not start: ${NAME} : $RETVAL"
+			echo "At failure to startup, ${LHOME}/pos.log shows:"
+			cat ${LHOME}/pos.log
+			echo "--End of log"
+			failure;
+		fi
+	else
+		echo "$NAME is already running"
+		failure;
+	fi
+	echo
+
+	# start
+}
+
+stop(){
+	echo "Stopping $NAME"
+	# Look for the pid of the actual daemon, not the startup process.
+	if [ -f ${LHOME}/sphp.pid ]; then
+		MYPIDP=`cat ${LHOME}/sphp.pid`
+		# This works but reports "No such process" - why?
+		#kill $MYPIDP
+		$KILL `cat ${LHOME}/sphp.pid`
+		RETVAL=$?
+		# In bash, quoting and " = " vs. -eq don't seem to matter.
+		if [ "$RETVAL" = "0" ]; then
+			# EL: Added rm.
+			rm ${LHOME}/sphp.pid
+			RETVAL=$?
+			if [ "$RETVAL" = "0" ]; then
+				echo "Killed ${MYPIDP} and rm'd ${LHOME}/sphp.pid"
+				success;
+			else
+				echo "Killed ${MYPIDP} but could not rm ${LHOME}/sphp.pid"
+				failure;
+			fi
+		else
+			echo "Could not kill ${MYPIDP} because: >$RETVAL<"
+			failure;
+		fi
+	else
+		echo "$NAME is not running"
+	fi
+	echo
+	# stop
+}
+
+clean(){
+
+	echo "Cleaning $NAME"
+	get_mypidp
+	if [ -z "$MYPIDP" ] ; then
+		if [ -f ${LHOME}/sphp.pid ]; then
+			rm ${LHOME}/sphp.pid
+			RETVAL=$?
+			if [ "$RETVAL" = "0" ]; then
+				echo "pos.exe is not running. rm'd ${LHOME}/sphp.pid"
+				noop;
+			else
+				echo "Could not rm ${LHOME}/sphp.pid"
+				echo "Since pos.exe is not running normal start should be possible."
+				noop;
+			fi
+		else
+			echo "pos.exe is not running. No ${LHOME}/sphp.pid to rm."
+		fi
+	else
+		printf "The pos.exe is still running >${MYPIDP}< so did not rm ${LHOME}/sphp.pid which "
+		if [ -f ${LHOME}/sphp.pid ]; then
+			printf "does"
+		else
+			printf "does not"
+		fi
+		echo " exist."
+		noop;
+	fi
+
+	# clean
+}
+
+status(){
+
+	echo "Status of ${NAME}:"
+
+	get_mypidp
+	if [ "$MYPIDP" ] ; then
+		echo "The pos.exe is running as >${MYPIDP}<"
+	else
+		echo "The pos.exe is not running."
+		if [ -f ${LHOME}/pos.log ]; then
+			echo "At not running, ${LHOME}/pos.log of:"
+			ls -l ${LHOME}/pos.log
+			echo "shows head:"
+			head -5 ${LHOME}/pos.log
+			echo "shows tail:"
+			tail -5 ${LHOME}/pos.log
+			echo "--End of log"
+		else
+			echo "No ${LHOME}/pos.log to show."
+		fi
+	fi
+	makelogdir;
+	if [ -f ${LHOME}/sphp.pid ]; then
+		MYPIDF=`cat ${LHOME}/sphp.pid`
+		printf "${LHOME}/sphp.pid exists and contains: >${MYPIDF}<\n"
+		if [ "$MYPIDP" != "$MYPIDF" ] ; then
+			printf "*** Alert: They don't agree!\n";
+		fi
+	else
+		echo "${LHOME}/sphp.pid does not exist."
+	fi
+	INRC=`ls /etc/rc3.d/S* | grep $NAME`
+	if [ "$INRC" ] ; then
+		echo "$NAME should start at boot."
+	else
+		echo "$NAME not expected to start at boot."
+	fi
+
+	# status
+}
+
+case "$1" in
+	start)
+		start
+		;;
+	stop)
+		stop
+		;;
+	restart)
+		stop
+		sleep 2
+		start
+		;;
+	clean)
+		clean
+		;;
+	status)
+		status
+		;;
+	*)
+		echo $"Usage: $NAME {start|stop|restart|clean|status}"
+		exit 1
+esac
+
+exit 0
