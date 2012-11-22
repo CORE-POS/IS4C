@@ -14,27 +14,13 @@ body {
 </style>
 </head>
 <body>
-	
-<a href="index.php">Necessities</a>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<a href="extra_config.php">Additional Configuration</a>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<a href="scanning.php">Scanning Options</a>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<a href="security.php">Security</a>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<a href="debug.php">Debug</a>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-Plugins
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<a href="extra_data.php">Sample Data</a>
+<?php include('tabs.php'); ?>
+<div id="wrapper">
+<h2>IT CORE Lane Installation: Plugins</h2>
 
-<h2>IT CORE Lane Installation: Scanning Options</h2>
+<div class="alert"><?php check_writeable('../ini.php'); ?></div>
+<div class="alert"><?php check_writeable('../ini-local.php'); ?></div>
 
-<?php
-check_writeable('../ini.php');
-check_writeable('../ini-local.php');
-?>
 <form action=plugins.php method=post>
 <b>Available plugins</b>:<br />
 <select name="PLUGINLIST[]" size="10" multiple>
@@ -103,5 +89,6 @@ foreach($obj->plugin_settings as $field => $info){
 <hr />
 <input type=submit name=psubmit value="Save Changes" />
 </form>
+</div> <!--	wrapper -->
 </body>
 </html>

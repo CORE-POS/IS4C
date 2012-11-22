@@ -14,21 +14,12 @@ body {
 </style>
 </head>
 <body>
-<a href="index.php">Necessities</a>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<a href="extra_config.php">Additional Configuration</a>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<a href="scanning.php">Scanning Options</a>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-Security
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<a href="debug.php">Debug</a>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<a href="plugins.php">Plugins</a>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<a href="extra_data.php">Sample Data</a>
+<?php include('tabs.php'); ?>
+<div id="wrapper">
+<h2>IT CORE Lane Installation: Security</h2>
 <form action=security.php method=post>
-<b>Cancel Transaction</b>: <select name=PRIV_CANCEL>
+<table id="install" border=0 cellspacing=0 cellpadding=4><tr><td>
+<b>Cancel Transaction</b>: </td><td><select name=PRIV_CANCEL>
 <?php
 if(isset($_REQUEST['PRIV_CANCEL'])) $CORE_LOCAL->set('SecurityCancel',$_REQUEST['PRIV_CANCEL']);
 if ($CORE_LOCAL->get("SecurityCancel")=="") $CORE_LOCAL->set("SecurityCancel",20);
@@ -42,8 +33,8 @@ else {
 }
 confsave('SecurityCancel',$CORE_LOCAL->get("SecurityCancel"));
 ?>
-</select><br />
-<b>Suspend/Resume</b>: <select name=PRIV_SR>
+</select></td></tr><tr><td>
+<b>Suspend/Resume</b>: </td><td><select name=PRIV_SR>
 <?php
 if(isset($_REQUEST['PRIV_SR'])) $CORE_LOCAL->set('SecuritySR',$_REQUEST['PRIV_SR']);
 if ($CORE_LOCAL->get("SecuritySR")=="") $CORE_LOCAL->set("SecuritySR",20);
@@ -57,8 +48,8 @@ else {
 }
 confsave('SecuritySR',$CORE_LOCAL->get("SecuritySR"));
 ?>
-</select><br />
-<b>Refund Item</b>: <select name=PRIV_REFUND>
+</select></td></tr><tr><td>
+<b>Refund Item</b>: </td><td><select name=PRIV_REFUND>
 <?php
 if(isset($_REQUEST['PRIV_REFUND'])) $CORE_LOCAL->set('SecurityRefund',$_REQUEST['PRIV_REFUND']);
 if ($CORE_LOCAL->get("SecurityRefund")=="") $CORE_LOCAL->set("SecurityRefund",20);
@@ -72,17 +63,19 @@ else {
 }
 confsave('SecurityRefund',$CORE_LOCAL->get("SecurityRefund"));
 ?>
-</select><br />
-<b>Void Limit</b>:
+</select></td></tr><tr><td>
+<b>Void Limit</b>:</td><td>
 <?php
 if (isset($_REQUEST['VOIDLIMIT'])) $CORE_LOCAL->set('VoidLimit',$_REQUEST['VOIDLIMIT']);
 if ($CORE_LOCAL->get("VoidLimit")=="") $CORE_LOCAL->set("VoidLimit",0);
 printf("<input type=text name=VOIDLIMIT value=\"%s\" />",$CORE_LOCAL->get('VoidLimit'));
 confsave('VoidLimit',"'".$CORE_LOCAL->get('VoidLimit')."'");
 ?> (in dollars, per transaction. Zero for unlimited).
-<br />
+</td></tr><tr><td colspan=2>
 <hr />
-<input type=submit value="Save Changes" />
+<input type=submit name=secsubmit value="Save Changes" />
+</td></tr></table>
 </form>
+</div> <!--	wrapper -->
 </body>
 </html>

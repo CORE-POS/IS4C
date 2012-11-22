@@ -14,20 +14,9 @@ body {
 </style>
 </head>
 <body>
-<a href="index.php">Necessities</a>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<a href="extra_config.php">Additional Configuration</a>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<a href="scanning.php">Scanning Options</a>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<a href="security.php">Security</a>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-Debug
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<a href="plugins.php">Plugins</a>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<a href="extra_data.php">Sample Data</a>
-<hr />
+<?php include('tabs.php'); ?>
+<div id="wrapper">
+<h2>IT CORE Lane Installation: Debug Settings</h2>
 <b>Logs</b><br />
 <?php 
 if (!is_writable('../log')) {
@@ -84,7 +73,8 @@ trace is also included. There are some javascript-based URL changes that
 this won't catch, but your browser surely has a fancy javascript console
 available for those. If not, find a better browser.
 <hr />
-<input type=submit value="Save Changes" />
+<input type=dsubmit value="Save Changes" />
 </form>
+</div> <!--	wrapper -->
 </body>
 </html>
