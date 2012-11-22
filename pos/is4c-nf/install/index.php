@@ -146,7 +146,7 @@ $sql = db_test_connect($CORE_LOCAL->get('localhost'),
 		$CORE_LOCAL->get('localUser'),
 		$CORE_LOCAL->get('localPass'));
 if ($sql === False){
-	echo "<span style=\"color:red;\">Failed</span>";
+	echo "<span class='fail'>Failed</span>";
 	echo '<div class="db_hints" style="margin-left:25px;">';
 	if (!function_exists('socket_create')){
 		echo '<i>Try enabling PHP\'s socket extension in php.ini for better diagnostics</i>';
@@ -163,7 +163,8 @@ if ($sql === False){
 	echo '</div>';
 }
 else {
-	echo "<span style=\"color:green;\">Succeeded</span>";
+	echo "<span class='success'>Succeeded</span><br />";
+	echo "<textarea rows=3 cols=80>";
 	$opErrors = create_op_dbs($sql,$CORE_LOCAL->get('DBMS'));
 	$gotDBs++;
 	if (!empty($opErrors)){
@@ -183,6 +184,7 @@ else {
 		}
 		echo '</div>';
 	}
+	echo "</textarea>";
 }
 ?>
 </td></tr><tr><td>
@@ -202,7 +204,7 @@ $sql = db_test_connect($CORE_LOCAL->get('localhost'),
 		$CORE_LOCAL->get('localUser'),
 		$CORE_LOCAL->get('localPass'));
 if ($sql === False ){
-	echo "<span style=\"color:red;\">Failed</span>";
+	echo "<span class='fail'>Failed</span>";
 	echo '<div class="db_hints" style="margin-left:25px;">';
 	echo '<i>If both connections failed, see above. If just this one
 		is failing, it\'s probably an issue of database user 
@@ -210,7 +212,9 @@ if ($sql === False ){
 	echo '</div>';
 }
 else {
-	echo "<span style=\"color:green;\">Succeeded</span>";
+	echo "<span class='success'>Succeeded</span><br />";
+	echo "<textarea rows=3 cols=80>";
+	
 
 	/* Re-do tax rates here so changes affect the subsequent
 	 * ltt* view builds. 
@@ -255,6 +259,7 @@ else {
 		}
 		echo '</div>';
 	}
+	echo "</textarea>";
 }
 ?>
 </td></tr><tr><td>
@@ -313,7 +318,7 @@ $sql = db_test_connect($CORE_LOCAL->get('mServer'),
 		$CORE_LOCAL->get('mUser'),
 		$CORE_LOCAL->get('mPass'));
 if ($sql === False){
-	echo "<span style=\"color:red;\">Failed</span>";
+	echo "<span class='fail'>Failed</span>";
 	echo '<div class="db_hints" style="margin-left:25px;">';
 	if (!function_exists('socket_create')){
 		echo '<i>Try enabling PHP\'s socket extension in php.ini for better diagnostics</i>';
@@ -330,7 +335,8 @@ if ($sql === False){
 	echo '</div>';
 }
 else {
-	echo "<span style=\"color:green;\">Succeeded</span>";
+	echo "<span class='success'>Succeeded</span><br />";
+	echo "<textarea rows=3 cols=80>";
 	$sErrors = create_min_server($sql,$CORE_LOCAL->get('mDBMS'));
 	if (!empty($sErrors)){
 		echo '<div class="db_create_errors" style="border: solid 1px red;padding:5px;">';
@@ -349,6 +355,7 @@ else {
 		}
 		echo '</div>';
 	}
+	echo "</textarea>";
 }
 ?>
 </td></tr><tr><td colspan=2 class="tblHeader">
