@@ -139,7 +139,7 @@ else {
 		$loadR = $sql->query($loadQ);	
 	}
 	else if (!$sql->table_exists($table)){
-		$query = "CREATE $table LIKE $FANNIE_TRANS_DB.dtransactions";
+		$query = "CREATE TABLE $table LIKE $FANNIE_TRANS_DB.dtransactions";
 		if ($FANNIE_SERVER_DBMS == 'MSSQL')
 			$query = "SELECT * INTO $table FROM $FANNIE_TRANS_DB.dbo.dtransactions";
 		$chk1 = $sql->query($query,$FANNIE_ARCHIVE_DB);
