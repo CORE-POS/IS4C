@@ -120,7 +120,7 @@ function db_test_connect($host,$type,$db,$user,$pw){
                 return $sql;
 }
 
-function db_structure_modify($sql, $struct_name, $query, $errors=array()){
+function db_structure_modify($sql, $struct_name, $query, &$errors=array()){
 	ob_start();
 	$try = @$sql->query($query);
 	ob_end_clean();
