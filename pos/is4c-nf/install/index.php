@@ -37,6 +37,7 @@ body {
 	line-height: 1.5em;
 }
 </style>
+<script type="text/javascript" src="../js/jquery.js"></script>
 </head>
 <body>
 <?php include('tabs.php'); ?>
@@ -164,7 +165,7 @@ if ($sql === False){
 }
 else {
 	echo "<span class='success'>Succeeded</span><br />";
-	echo "<textarea rows=3 cols=80>";
+	//echo "<textarea rows=3 cols=80>";
 	$opErrors = create_op_dbs($sql,$CORE_LOCAL->get('DBMS'));
 	$gotDBs++;
 	if (!empty($opErrors)){
@@ -184,7 +185,7 @@ else {
 		}
 		echo '</div>';
 	}
-	echo "</textarea>";
+	//echo "</textarea>";
 }
 ?>
 </td></tr><tr><td>
@@ -213,7 +214,7 @@ if ($sql === False ){
 }
 else {
 	echo "<span class='success'>Succeeded</span><br />";
-	echo "<textarea rows=3 cols=80>";
+	//echo "<textarea rows=3 cols=80>";
 	
 
 	/* Re-do tax rates here so changes affect the subsequent
@@ -259,7 +260,7 @@ else {
 		}
 		echo '</div>';
 	}
-	echo "</textarea>";
+	//echo "</textarea>";
 }
 ?>
 </td></tr><tr><td>
@@ -336,7 +337,7 @@ if ($sql === False){
 }
 else {
 	echo "<span class='success'>Succeeded</span><br />";
-	echo "<textarea rows=3 cols=80>";
+	//echo "<textarea rows=3 cols=80>";
 	$sErrors = create_min_server($sql,$CORE_LOCAL->get('mDBMS'));
 	if (!empty($sErrors)){
 		echo '<div class="db_create_errors" style="border: solid 1px red;padding:5px;">';
@@ -355,7 +356,7 @@ else {
 		}
 		echo '</div>';
 	}
-	echo "</textarea>";
+	//echo "</textarea>";
 }
 ?>
 </td></tr><tr><td colspan=2 class="tblHeader">
@@ -398,12 +399,14 @@ printf("<tr><td>(Add)</td><td><input type=text name=TAX_RATE[] value=\"\" /></td
 function create_op_dbs($db,$type){
 	global $CORE_LOCAL;
 	$name = $CORE_LOCAL->get('pDatabase');
+	$errors = array();
 
 	$chargeCodeQ = "CREATE TABLE chargecode (
 		staffID varchar(4),
 		chargecode varchar(6))";
 	if (!$db->table_exists('chargecode',$name)){
 		$db->query($chargeCodeQ,$name);
+		db_structure_modify($db,'chargecode',$chargeCodeQ,$errors);
 	}
 
 	$couponCodeQ = "CREATE TABLE couponcodes (
@@ -411,7 +414,7 @@ function create_op_dbs($db,$type){
 		Qty int,
 		Value real)";
 	if (!$db->table_exists('couponcodes',$name)){
-		$db->query($couponCodeQ,$name);
+		db_structure_modify($db,'couponcodes',$couponCodeQ,$errors);
 		load_sample_data($db,'couponcodes');
 	}
 
@@ -467,19 +470,19 @@ function create_op_dbs($db,$type){
 		) ON [PRIMARY]";
 	}
 	if (!$db->table_exists('custdata',$name)){
-		$db->query($custDataQ,$name);
+		db_structure_modify($db,'custdata',$custDataQ,$errors);
 	}
 
 	$cardsQ = "CREATE TABLE memberCards (upc VARCHAR(13),card_no INT,
 			PRIMARY KEY(upc))";
 	if (!$db->table_exists('memberCards',$name)){
-		$db->query($cardsQ,$name);
+		db_structure_modify($db,'memberCards',$cardsQ,$errors);
 	}
 
 	$cardsViewQ = "CREATE VIEW memberCardsView AS 
 		SELECT CONCAT(" . $CORE_LOCAL->get('memberUpcPrefix') . ",c.CardNo) as upc, c.CardNo as card_no FROM custdata c";
 	if (!$db->table_exists('memberCardsView',$name)){
-		$db->query($cardsViewQ,$name);
+		db_structure_modify($db,'memberCardsView',$cardsViewQ,$errors);
 	}
 	
 	$deptQ = "CREATE TABLE departments (
@@ -494,7 +497,7 @@ function create_op_dbs($db,$type){
 		modifiedby int,
 		PRIMARY KEY (dept_no))";
 	if (!$db->table_exists('departments',$name)){
-		$db->query($deptQ,$name);
+		db_structure_modify($db,'departments',$deptQ,$errors);
 	}
 
 	$empQ = "CREATE TABLE employees (
@@ -510,7 +513,7 @@ function create_op_dbs($db,$type){
 		birthdate datetime,
 		PRIMARY KEY (emp_no))";
 	if (!$db->table_exists('employees',$name)){
-		$db->query($empQ,$name);
+		db_structure_modify($db,'employees',$empQ,$errors);
 	}
 
 	$globalQ = "CREATE TABLE globalvalues (
@@ -522,7 +525,7 @@ function create_op_dbs($db,$type){
 		FntlFlag tinyint,
 		TaxExempt tinyint)";
 	if (!$db->table_exists('globalvalues',$name)){
-		$db->query($globalQ,$name);
+		db_structure_modify($db,'globalvalues',$globalQ,$errors);
 		load_sample_data($db,'globalvalues');
 	}
 
@@ -612,7 +615,7 @@ function create_op_dbs($db,$type){
 		) ON [PRIMARY]";
 	}
 	if (!$db->table_exists('products',$name)){
-		$db->query($prodQ,$name);
+		db_structure_modify($db,'products',$prodQ,$errors);
 	}
 
 	$promoQ = "CREATE TABLE promomsgs (
@@ -621,7 +624,7 @@ function create_op_dbs($db,$type){
 		promoMsg varchar(50),
 		sequence tinyint)";
 	if (!$db->table_exists('promomsgs',$name)){
-		$db->query($promoQ,$name);
+		db_structure_modify($db,'promomsgs',$promoQ,$errors);
 	}
 
 	$drQ = "CREATE TABLE dateRestrict (
@@ -635,7 +638,7 @@ function create_op_dbs($db,$type){
                 INDEX (dept_ID)
         )";
 	if (!$db->table_exists('dateRestrict',$name)){
-		$db->query($drQ);
+		db_structure_modify($db,'dateRestrict',$drQ,$errors);
 	}
 
 	$tenderQ = "CREATE TABLE tenders (
@@ -648,7 +651,7 @@ function create_op_dbs($db,$type){
 		MaxAmount real,
 		MaxRefund real)";
 	if(!$db->table_exists('tenders',$name)){
-		$db->query($tenderQ,$name);
+		db_structure_modify($db,'tenders',$tenderQ,$errors);
 		load_sample_data($db,'tenders');
 	}
 
@@ -657,7 +660,7 @@ function create_op_dbs($db,$type){
 		FROM chargecode AS c, custdata AS d
 		WHERE c.staffID = d.CardNo";
 	if (!$db->table_exists('chargecodeview',$name)){
-		$db->query($ccView,$name);
+		db_structure_modify($db,'chargecodeview',$ccView,$errors);
 	}
 
 	$subQ = "CREATE TABLE subdepts (
@@ -665,7 +668,7 @@ function create_op_dbs($db,$type){
 		subdept_name varchar(30),
 		dept_ID smallint)";
 	if(!$db->table_exists('subdepts',$name)){
-		$db->query($subQ,$name);
+		db_structure_modify($db,'subdepts',$subQ,$errors);
 	}
 
 	$pmV = "CREATE view promoMsgsView as
@@ -677,7 +680,7 @@ function create_op_dbs($db,$type){
 		$db->datediff($db->now(),'endDate')." >= 0
 		order by sequence";
 	if(!$db->table_exists('promoMsgsView',$name)){
-		$db->query($pmV,$name);
+		db_structure_modify($db,'promoMsgsView',$pmV,$errors);
 	}
 
 	$custRpt = "CREATE TABLE customReceipt (
@@ -686,7 +689,7 @@ function create_op_dbs($db,$type){
 		type varchar(20)
 		)";
 	if(!$db->table_exists('customReceipt',$name)){
-		$db->query($custRpt,$name);
+		db_structure_modify($db,'customReceipt',$custRpt,$errors);
 	}
 
 	$dCoup = "CREATE TABLE disableCoupon (
@@ -695,7 +698,7 @@ function create_op_dbs($db,$type){
 		PRIMARY KEY (upc)
 		)";
 	if(!$db->table_exists('disableCoupon',$name)){
-		$db->query($dCoup,$name);
+		db_structure_modify($db,'disableCoupon',$dCoup,$errors);
 	}
 
 	$houseCoup = "CREATE TABLE houseCoupons (
@@ -711,7 +714,7 @@ function create_op_dbs($db,$type){
 	if ($type == 'mssql')
 		$houseCoup = str_replace("`","",$houseCoup);
 	if(!$db->table_exists('houseCoupons',$name)){
-		$db->query($houseCoup,$name);
+		db_structure_modify($db,'houseCoupons',$houseCoup,$errors);
 	}
 
 	$hciQ = "CREATE TABLE houseCouponItems (
@@ -719,7 +722,7 @@ function create_op_dbs($db,$type){
 		upc varchar(13),
 		type varchar(15))";
 	if(!$db->table_exists('houseCouponItems',$name)){
-		$db->query($hciQ,$name);
+		db_structure_modify($db,'houseCouponItems',$hciQ,$errors);
 	}
 
 	$mcV = "CREATE view memchargebalance as
@@ -729,7 +732,7 @@ function create_op_dbs($db,$type){
 		c.Balance as balance
 		FROM custdata AS c WHERE personNum = 1";
 	if (!$db->table_exists('memchargebalance',$name)){
-		$db->query($mcV,$name);
+		db_structure_modify($db,'memchargebalance',$mcV,$errors);
 	}
 
 	$uaQ = "CREATE TABLE unpaid_ar_today (
@@ -739,27 +742,29 @@ function create_op_dbs($db,$type){
 		primary key (card_no)
 		)";
 	if (!$db->table_exists('unpaid_ar_today',$name)){
-		$db->query($uaQ,$name);
+		db_structure_modify($db,'unpaid_ar_today',$uaQ,$errors);
 	}
 
 	$lcQ = "CREATE TABLE lane_config (
 		modified datetime
 		)";
 	if (!$db->table_exists('lane_config',$name)){
-		$db->query($lcQ);
+		db_structure_modify($db,'lane_config',$lcQ,$errors);
 		$db->query("INSERT INTO lane_config VALUES ('1900-01-01 00:00:00')");
 	}
+	return $errors;
 }
 
 function create_trans_dbs($db,$type){
 	global $CORE_LOCAL;
 	$name = $CORE_LOCAL->get('tDatabase');
+	$errors = array();
 
 	$actQ = "CREATE TABLE activities (
 		Activity tinyint,
 		Description varchar(15))";
 	if (!$db->table_exists('activities',$name)){
-		$db->query($actQ,$name);
+		db_structure_modify($db,'activities',$actQ,$errors);
 	}
 
 	$alogQ = "CREATE TABLE activitylog (
@@ -774,17 +779,17 @@ function create_trans_dbs($db,$type){
 		$alogQ = str_replace("`","",$alogQ);
 	}
 	if (!$db->table_exists('activitylog',$name)){
-		$db->query($alogQ,$name);
+		db_structure_modify($db,'activitylog',$alogQ,$errors);
 	}
 
 	$atempQ = str_replace("activitylog","activitytemplog",$alogQ);
 	if (!$db->table_exists('activitytemplog',$name)){
-		$db->query($atempQ,$name);
+		db_structure_modify($db,'activitytemplog',$atempQ,$errors);
 	}
 
 	$alogQ = str_replace("activitylog","alog",$alogQ);
 	if (!$db->table_exists('alog',$name)){
-		$db->query($alogQ,$name);
+		db_structure_modify($db,'alog',$alogQ,$errors);
 	}
 
 	$dtransQ = "CREATE TABLE `dtransactions` (
@@ -865,27 +870,27 @@ function create_trans_dbs($db,$type){
 		) ON [PRIMARY]";
 	}
 	if (!$db->table_exists('dtransactions',$name)){
-		$db->query($dtransQ,$name);
+		db_structure_modify($db,'dtransactions',$dtransQ,$errors);
 	}
 
 	$ltQ = str_replace("dtransactions","localtrans",$dtransQ);
 	if (!$db->table_exists('localtrans',$name)){
-		$db->query($ltQ,$name);
+		db_structure_modify($db,'localtrans',$ltQ,$errors);
 	}
 
 	$ltaQ = str_replace("dtransactions","localtransarchive",$dtransQ);
 	if (!$db->table_exists('localtransarchive',$name)){
-		$db->query($ltaQ,$name);
+		db_structure_modify($db,'localtransarchive',$ltaQ,$errors);
 	}
 
 	$susQ = str_replace("dtransactions","suspended",$dtransQ);
 	if (!$db->table_exists('suspended',$name)){
-		$db->query($susQ,$name);
+		db_structure_modify($db,'suspended',$susQ,$errors);
 	}
 
 	$ltodayQ = str_replace("dtransactions","localtrans_today",$dtransQ);
 	if(!$db->table_exists('localtrans_today',$name)){
-		$db->Query($ltodayQ,$name);
+		db_structure_modify($db,'localtrans_today',$ltodayQ,$errors);
 	}
 
 	$lttQ = "CREATE TABLE `localtemptrans` (
@@ -967,7 +972,7 @@ function create_trans_dbs($db,$type){
 		) ON [PRIMARY]";
 	}
 	if (!$db->table_exists('localtemptrans',$name)){
-		$db->query($lttQ,$name);
+		db_structure_modify($db,'localtemptrans',$lttQ,$errors);
 	}
 
 	$failQ = "CREATE TABLE failedscans (
@@ -977,7 +982,7 @@ function create_trans_dbs($db,$type){
 		trans_no int,
 		fdate datetime)";
 	if(!$db->table_exists('failedscans',$name)){
-		$db->query($failQ,$name);
+		db_structure_modify($db,'failedscans',$failQ,$errors);
 	}
 
 	$lttoday = "CREATE VIEW localtranstoday AS
@@ -985,7 +990,7 @@ function create_trans_dbs($db,$type){
 		.$db->datediff($db->now(),'datetime')
 		." = 0";
 	if (!$db->table_exists('localtranstoday',$name)){
-		$db->query($lttoday,$name);
+		db_structure_modify($db,'localtranstoday',$lttoday,$errors);
 	}
 
 	$mAdd = "CREATE VIEW memdiscountadd AS
@@ -1031,7 +1036,7 @@ function create_trans_dbs($db,$type){
 		having 
 		sum(memDiscount)<> 0";
 	if(!$db->table_exists('memdiscountadd',$name)){
-		$db->query($mAdd,$name);
+		db_structure_modify($db,'memdiscountadd',$mAdd,$errors);
 	}
 
 	$mRem = "CREATE view memdiscountremove as
@@ -1082,7 +1087,7 @@ function create_trans_dbs($db,$type){
 		sum(case when (discounttype = 2 and unitPrice <> regPrice) then -1 * memDiscount 
 		else memDiscount end)<> 0";
 	if(!$db->table_exists('memdiscountremove',$name)){
-		$db->query($mRem,$name);
+		db_structure_modify($db,'memdiscountremove',$mRem,$errors);
 	}
 
 	$rplist = "CREATE VIEW rp_list AS
@@ -1094,7 +1099,7 @@ function create_trans_dbs($db,$type){
 		from localtranstoday
 		GROUP BY register_no,emp_no,trans_no";
 	if (!$db->table_exists('rp_list',$name)){
-		$db->query($rplist,$name);
+		db_structure_modify($db,'rp_list',$rplist,$errors);
 	}
 
 	$taxQ = "CREATE TABLE taxrates (
@@ -1104,7 +1109,7 @@ function create_trans_dbs($db,$type){
 	if ($type == 'mssql')
 		$taxQ = str_replace("`","",$taxQ);
 	if(!$db->table_exists('taxrates',$name)){
-		$db->query($taxQ,$name);
+		db_structure_modify($db,'taxrates',$taxQ,$errors);
 	}
 
 	$screen = "CREATE view screendisplay as 
@@ -1301,11 +1306,12 @@ function create_trans_dbs($db,$type){
 			voided,
 			trans_id
 			from localtemptrans
+			WHERE trans_type <> 'L'
 			order by trans_id";
 	}
 	if (!$db->table_exists('screendisplay',$name)){
-		$db->query($screen,$name);
-		echo mysql_error();
+		db_structure_modify($db,'screendisplay','DROP VIEW screendisplay',$errors);
+		db_structure_modify($db,'screendisplay',$screen,$errors);
 	}
 
 	$sAdd = "CREATE VIEW staffdiscountadd AS
@@ -1342,7 +1348,7 @@ function create_trans_dbs($db,$type){
 		where (((discounttype = 4) and (unitPrice = regPrice)) or (trans_status = 'S')) 
 		group by register_no,emp_no,trans_no,upc,description,card_no having (sum(memDiscount) <> 0)";
 	if (!$db->table_exists('staffdiscountadd',$name)){
-		$db->query($sAdd);
+		db_structure_modify($db,'staffdiscountadd',$sAdd,$errors);
 	}
 
 	$sRem = "CREATE view staffdiscountremove as
@@ -1394,7 +1400,7 @@ function create_trans_dbs($db,$type){
 		else memDiscount end)<> 0";
 
 	if(!$db->table_exists('staffdiscountremove',$name)){
-		$db->query($sRem,$name);
+		db_structure_modify($db,'staffdiscountremove',$sRem,$errors);
 	}
 
 	$slist = "CREATE VIEW suspendedlist AS
@@ -1406,14 +1412,14 @@ function create_trans_dbs($db,$type){
 		WHERE ".$db->datediff('datetime',$db->now())." = 0
 		GROUP BY register_no,emp_no,trans_no";	
 	if(!$db->table_exists('suspendedlist',$name)){
-		$db->query($slist,$name);
+		db_structure_modify($db,'suspendedlist',$slist,$errors);
 	}
 
 	$stoday = "CREATE VIEW suspendedtoday AS
 		SELECT * FROM suspended
 		WHERE ".$db->datediff('datetime',$db->now())." = 0";
 	if(!$db->table_exists('suspendedtoday',$name)){
-		$db->query($stoday,$name);
+		db_structure_modify($db,'suspendedtoday',$stoday,$errors);
 	}
 
 	$caQ = "CREATE TABLE couponApplied (
@@ -1422,7 +1428,7 @@ function create_trans_dbs($db,$type){
 			quantity	float,
 			trans_id	int)";
 	if(!$db->table_exists('couponApplied',$name)){
-		$db->query($caQ,$name);
+		db_structure_modify($db,'couponApplied',$caQ,$errors);
 	}
 
 
@@ -1430,7 +1436,7 @@ function create_trans_dbs($db,$type){
 	 * always get rebuilt to account for tax rate
 	 * changes */
 	include('buildLTTViews.php');
-	buildLTTViews($db,$type);
+	$errors = buildLTTViews($db,$type,$errors);
 
 	$tvQ = "CREATE VIEW taxView AS
 		SELECT 
@@ -1458,9 +1464,11 @@ function create_trans_dbs($db,$type){
 		LEFT JOIN localtemptrans AS l
 		ON r.id=l.tax
 		JOIN lttsummary AS s
+		WHERE trans_type <> 'L'
 		GROUP BY r.id,r.description";
 	if(!$db->table_exists('taxView',$name)){
-		$db->query($tvQ,$name);
+		db_structure_modify($db,'taxView','DROP VIEW taxView',$errors);
+		db_structure_modify($db,'taxView',$tvQ,$errors);
 	}
 
 	$lttR = "CREATE view ltt_receipt as 
@@ -1510,6 +1518,7 @@ function create_trans_dbs($db,$type){
 		trans_id
 		from localtemptrans
 		where voided <> 5 and UPC <> 'TAX' and UPC <> 'DISCOUNT'
+		AND trans_type <> 'L'
 		order by trans_id";
 	if($type == 'mssql'){
 		$lttR = "CREATE view ltt_receipt as 
@@ -1559,10 +1568,11 @@ function create_trans_dbs($db,$type){
 			trans_id
 			from localtemptrans
 			where voided <> 5 and UPC <> 'TAX' and UPC <> 'DISCOUNT'
+			AND trans_type <> 'L'
 			order by trans_id";
 	}
 	if(!$db->table_exists('ltt_receipt',$name)){
-		$db->query($lttR,$name);
+		db_structure_modify($db,'ltt_receipt',$lttR,$errors);
 	}
 
 	$rV = "CREATE view receipt as
@@ -1637,7 +1647,7 @@ function create_trans_dbs($db,$type){
 		order by sequence";
 	}
 	if(!$db->table_exists('receipt',$name)){
-		$db->query($rV,$name);
+		db_structure_modify($db,'receipt',$rV,$errors);
 	}
 
 	$rpheader = "CREATE VIEW rp_receipt_header AS
@@ -1658,6 +1668,7 @@ function create_trans_dbs($db,$type){
 		sum(case when upc = 'Discount' then total else 0 end) as transDiscount,
 		sum(case when trans_type = 'T' then -1 * total else 0 end) as tenderTotal
 		from localtranstoday
+		WHERE trans_type <> 'L'
 		group by register_no, emp_no, trans_no, card_no";
 	if($type == 'mssql'){
 		$rpheader = "CREATE view rp_receipt_header as
@@ -1678,10 +1689,11 @@ function create_trans_dbs($db,$type){
 		sum(case when upc = 'Discount' then total else 0 end) as transDiscount,
 		sum(case when trans_type = 'T' then -1 * total else 0 end) as tenderTotal
 		from localtranstoday
+		WHERE trans_type <> 'L'
 		group by register_no, emp_no, trans_no, card_no";
 	}
 	if(!$db->table_exists('rp_receipt_header',$name)){
-		$db->query($rpheader,$name);
+		db_structure_modify($db,'rp_receipt_header',$rpheader,$errors);
 	}
 
 	$rplttR = "CREATE view rp_ltt_receipt as 
@@ -1734,6 +1746,7 @@ function create_trans_dbs($db,$type){
 		trans_id
 		from localtranstoday
 		where voided <> 5 and UPC <> 'TAX' and UPC <> 'DISCOUNT'
+		AND trans_type <> 'L'
 		order by emp_no, trans_no, trans_id";
 	if($type == 'mssql'){
 		$rplttR = "CREATE view rp_ltt_receipt as 
@@ -1786,10 +1799,11 @@ function create_trans_dbs($db,$type){
 			trans_id
 			from localtranstoday
 			where voided <> 5 and UPC <> 'TAX' and UPC <> 'DISCOUNT'
+			AND trans_type <> 'L'
 			order by emp_no, trans_no, trans_id";
 	}
 	if(!$db->table_exists('rp_ltt_receipt',$name)){
-		$db->query($rplttR,$name);
+		db_structure_modify($db,'rp_ltt_receipt',$rplttR,$errors);
 	}
 
 	$rprV = "CREATE view rp_receipt  as
@@ -1867,7 +1881,7 @@ function create_trans_dbs($db,$type){
 		from rp_ltt_receipt";
 	}
 	if(!$db->table_exists('rp_receipt',$name)){
-		$db->query($rprV);
+		db_structure_modify($db,'rp_receipt',$rprV,$errors);
 	}
 
 	$efsrq = "CREATE TABLE efsnetRequest (
@@ -1891,7 +1905,7 @@ function create_trans_dbs($db,$type){
 		sentTr2 tinyint 
 		)";
 	if(!$db->table_exists('efsnetRequest',$name)){
-		$db->query($efsrq,$name);
+		db_structure_modify($db,'efsnetRequest',$efsrq,$errors);
 	}
 
 	$efsrp = "CREATE TABLE efsnetResponse (
@@ -1913,7 +1927,7 @@ function create_trans_dbs($db,$type){
 		xApprovalNumber varchar (20)
 		)";
 	if(!$db->table_exists('efsnetResponse',$name)){
-		$db->query($efsrp,$name);
+		db_structure_modify($db,'efsnetResponse',$efsrp,$errors);
 	}
 
 	$efsrqm = "CREATE TABLE efsnetRequestMod (
@@ -1937,7 +1951,7 @@ function create_trans_dbs($db,$type){
 		xResultMessage varchar(100)
 		)";
 	if(!$db->table_exists('efsnetRequestMod',$name)){
-		$db->query($efsrqm,$name);
+		db_structure_modify($db,'efsnetRequestMod',$efsrqm,$errors);
 	}
 
 	$etq = "CREATE TABLE efsnetTokens (
@@ -1947,7 +1961,7 @@ function create_trans_dbs($db,$type){
 			PRIMARY KEY (refNum)
 		)";
 	if(!$db->table_exists('efsnetTokens',$name)){
-		$db->query($etq,$name);
+		db_structure_modify($db,'efsnetTokens',$etq,$errors);
 	}
 
 	$vrq = "CREATE TABLE valutecRequest (
@@ -1966,7 +1980,7 @@ function create_trans_dbs($db,$type){
 		manual tinyint
 		)";
 	if(!$db->table_exists('valutecRequest',$name)){
-		$db->query($vrq,$name);
+		db_structure_modify($db,'valutecRequest',$vrq,$errors);
 	}
 
 	$vrp = "CREATE TABLE valutecResponse (
@@ -1987,7 +2001,7 @@ function create_trans_dbs($db,$type){
 		xErrorMsg varchar(100)
 		)";
 	if(!$db->table_exists('valutecResponse',$name)){
-		$db->query($vrp,$name);
+		db_structure_modify($db,'valutecResponse',$vrp,$errors);
 	}
 
 	$vrqm = "CREATE TABLE valutecRequestMod (
@@ -2009,7 +2023,7 @@ function create_trans_dbs($db,$type){
 		xErrorMsg varchar(100)
 		)";
 	if(!$db->table_exists('valutecRequestMod',$name)){
-		$db->query($vrqm,$name);
+		db_structure_modify($db,'valutecRequestMod',$vrqm,$errors);
 	}
 
 	$ccV = "CREATE view ccReceiptView 
@@ -2083,7 +2097,7 @@ function create_trans_dbs($db,$type){
 		  (m.xResponseCode=0 or m.xResultMessage like '%APPROVE%')
 		  and m.mode='void'";
 	if(!$db->table_exists('ccReceiptView',$name)){
-		$db->query($ccV,$name);
+		db_structure_modify($db,'ccReceiptView',$ccV,$errors);
 	}
 
 	$gcV = "CREATE VIEW gcReceiptView
@@ -2143,7 +2157,7 @@ function create_trans_dbs($db,$type){
 		where m.validResponse=1 and (m.xAuthorized='true' 
 		or m.xAuthorized='Appro') and m.mode='void'";
 	if(!$db->table_exists('gcReceiptView',$name)){
-		$db->query($gcV,$name);
+		db_structure_modify($db,'gcReceiptView',$gcV,$errors);
 	}
 
 	$sigCaptureTable = "CREATE TABLE CapturedSignature (
@@ -2158,7 +2172,7 @@ function create_trans_dbs($db,$type){
 		$sigCaptureTable = str_replace("blob","image",$sigCaptureTable);
 	}
 	if (!$db->table_exists("CapturedSignature")){
-		$db->query($sigCaptureTable,$name);
+		db_structure_modify($db,'CapturedSignature',$sigCaptureTable,$errors);
 	}
 
 	$lttG = "CREATE  view ltt_grouped as
@@ -2191,6 +2205,7 @@ function create_trans_dbs($db,$type){
 		case when trans_status='d' or scale=1 or trans_type='T' then trans_id else scale end as grouper
 	from localtemptrans
 	where description not like '** YOU SAVED %' and trans_status !='M'
+	AND trans_type <> 'L'
 	group by upc,description,trans_type,trans_subtype,discounttype,volume,
 		trans_status,
 		department,scale,case when voided=1 then 0 else voided end,
@@ -2215,6 +2230,7 @@ function create_trans_dbs($db,$type){
 		case when trans_status='d' or scale=1 then trans_id else scale end as grouper
 	from localtemptrans
 	where description not like '** YOU SAVED %' and (discounttype=1 or discounttype=2)
+	AND trans_type <> 'L'
 	group by upc,description,trans_type,trans_subtype,discounttype,volume,
 		department,scale,matched,
 		case when trans_status='d' or scale=1 then trans_id else scale end
@@ -2250,6 +2266,7 @@ function create_trans_dbs($db,$type){
 			case when trans_status='d' or scale=1 or trans_type='T' then trans_id else scale end as grouper
 		from localtemptrans
 		where description not like '** YOU SAVED %' and trans_status !='M'
+		AND trans_type <> 'L'
 		group by upc,description,trans_type,trans_subtype,discounttype,volume,
 			trans_status,
 			department,scale,case when voided=1 then 0 else voided end,
@@ -2274,13 +2291,14 @@ function create_trans_dbs($db,$type){
 			case when trans_status='d' or scale=1 then trans_id else scale end as grouper
 		from localtemptrans
 		where description not like '** YOU SAVED %' and (discounttype=1 or discounttype=2)
+		AND trans_type <> 'L'
 		group by upc,description,trans_type,trans_subtype,discounttype,volume,
 			department,scale,matched,
 			case when trans_status='d' or scale=1 then trans_id else scale end
 		having convert(money,sum(quantity*regprice-quantity*unitprice))<>0";
 	}
 	if(!$db->table_exists('ltt_grouped',$name)){
-		$db->query($lttG,$name);
+		db_structure_modify($db,'ltt_grouped',$lttG,$errors);
 	}
 
 
@@ -2343,6 +2361,7 @@ function create_trans_dbs($db,$type){
 	trans_subtype
 	from ltt_grouped
 	where voided <> 5 and UPC <> 'TAX' and UPC <> 'DISCOUNT'
+	AND trans_type <> 'L'
 	and not (trans_status='M' and total=convert('0.00',decimal(10,2)))
 
 	union
@@ -2429,6 +2448,7 @@ function create_trans_dbs($db,$type){
 		trans_subtype
 		from ltt_grouped
 		where voided <> 5 and UPC <> 'TAX' and UPC <> 'DISCOUNT'
+		AND trans_type <> 'L'
 		and not (trans_status='M' and total=convert(money,'0.00'))
 
 		union
@@ -2463,7 +2483,7 @@ function create_trans_dbs($db,$type){
 		from ".$CORE_LOCAL->get('pDatabase').".dbo.promoMsgsView";
 	}
 	if(!$db->table_exists('ltt_receipt_reorder_g',$name)){
-		$db->query($lttreorderG,$name);
+		db_structure_modify($db,'ltt_receipt_reorder_g',$lttreorderG,$errors);
 	}
 
 	$reorderG = "CREATE   view receipt_reorder_g as
@@ -2570,7 +2590,7 @@ function create_trans_dbs($db,$type){
 			order by sequence";
 	}
 	if(!$db->table_exists('receipt_reorder_g',$name)){
-		$db->query($reorderG,$name);
+		db_structure_modify($db,'receipt_reorder_g',$reorderG,$errors);
 	}
 
 
@@ -2650,12 +2670,12 @@ function create_trans_dbs($db,$type){
 	select 
 	concat(
 	lpad('CURRENT AMOUNT DUE',44,' '),
-	lpad(convert(subtotal,char),8,' '),
+	lpad(convert(runningTotal-transDiscount,char),8,' '),
 	space(4) ) as linetoprint,
 	5 as sequence,
 	null as dept_name,
 	5 as ordered,'' as upc
-	from subtotals where runningtotal <> 0 ";
+	from subtotals where runningTotal <> 0 ";
 
 	if($type == 'mssql'){
 		$unionsG = "CREATE view receipt_reorder_unions_g as
@@ -2735,7 +2755,7 @@ function create_trans_dbs($db,$type){
 		from subtotals where runningtotal <> 0 ";
 	}
 	if(!$db->table_exists('receipt_reorder_unions_g',$name)){
-		$db->query($unionsG);
+		db_structure_modify($db,'receipt_reorder_unions_g',$unionsG,$errors);
 	}
 
 	$rplttG = "CREATE     view rp_ltt_grouped as
@@ -2771,6 +2791,7 @@ function create_trans_dbs($db,$type){
 			case when trans_status='d' or scale=1 or trans_type='T' then trans_id else scale end as grouper
 		from localtranstoday
 		where description not like '** YOU SAVED %' and trans_status !='M'
+		AND trans_type <> 'L'
 		group by register_no,emp_no,trans_no,card_no,
 			upc,description,trans_type,trans_subtype,discounttype,volume,
 			trans_status,
@@ -2797,6 +2818,7 @@ function create_trans_dbs($db,$type){
 			case when trans_status='d' or scale=1 then trans_id else scale end as grouper
 		from localtranstoday
 		where description not like '** YOU SAVED %' and (discounttype=1 or discounttype=2)
+		AND trans_type <> 'L'
 		group by register_no,emp_no,trans_no,card_no,
 			upc,description,trans_type,trans_subtype,discounttype,volume,
 			department,scale,matched,
@@ -2836,6 +2858,7 @@ function create_trans_dbs($db,$type){
 			case when trans_status='d' or scale=1 or trans_type='T' then trans_id else scale end as grouper
 		from localtranstoday
 		where description not like '** YOU SAVED %' and trans_status !='M'
+		AND trans_type <> 'L'
 		group by register_no,emp_no,trans_no,card_no,
 			upc,description,trans_type,trans_subtype,discounttype,volume,
 			trans_status,
@@ -2862,6 +2885,7 @@ function create_trans_dbs($db,$type){
 			case when trans_status='d' or scale=1 then trans_id else scale end as grouper
 		from localtranstoday
 		where description not like '** YOU SAVED %' and (discounttype=1 or discounttype=2)
+		AND trans_type <> 'L'
 		group by register_no,emp_no,trans_no,card_no,
 			upc,description,trans_type,trans_subtype,discounttype,volume,
 			department,scale,matched,
@@ -2869,7 +2893,7 @@ function create_trans_dbs($db,$type){
 		having convert(money,sum(quantity*regprice-quantity*unitprice))<>0";
 	}	
 	if(!$db->table_exists('rp_ltt_grouped',$name)){
-		$db->query($rplttG,$name);
+		db_structure_modify($db,'rp_ltt_grouped',$rplttG,$errors);
 	}
 
 	$rpreorderG = "CREATE    view rp_ltt_receipt_reorder_g as
@@ -2923,6 +2947,7 @@ function create_trans_dbs($db,$type){
 		trans_subtype
 		from rp_ltt_grouped
 		where voided <> 5 and UPC <> 'TAX' and UPC <> 'DISCOUNT'
+		AND trans_type <> 'L'
 		and not (trans_status='M' and total=convert('0.00',decimal))
 
 		union
@@ -3009,6 +3034,7 @@ function create_trans_dbs($db,$type){
 		trans_subtype
 		from rp_ltt_grouped
 		where voided <> 5 and UPC <> 'TAX' and UPC <> 'DISCOUNT'
+		AND trans_type <> 'L'
 		and not (trans_status='M' and total=convert(money,'0.00'))
 
 		union
@@ -3045,7 +3071,7 @@ function create_trans_dbs($db,$type){
 		from ".$CORE_LOCAL->get('pDatabase').".dbo.promoMsgsView";
 	}	
 	if(!$db->table_exists("rp_ltt_receipt_reorder_g",$name)){
-		$db->query($rpreorderG,$name);
+		db_structure_modify($db,'rp_ltt_receipt_reorder_g',$rpreorderG,$errors);
 	}
 	
 	$rpG = "CREATE    view rp_receipt_reorder_g as
@@ -3165,7 +3191,7 @@ function create_trans_dbs($db,$type){
 		order by register_no,emp_no,trans_no,card_no,sequence";
 	}
 	if(!$db->table_exists('rp_receipt_reorder_g',$name)){
-		$db->query($rpG,$name);
+		db_structure_modify($db,'rp_receipt_reorder_g',$rpG,$errors);
 	}
 
 	$rpunionsG = "CREATE     view rp_receipt_reorder_unions_g as
@@ -3257,13 +3283,13 @@ function create_trans_dbs($db,$type){
 		select 
 		concat(
 		lpad('CURRENT AMOUNT DUE',44,' '),
-		lpad(convert(subtotal,char),8,' '),
+		lpad(convert(runningTotal-transDiscount,char),8,' '),
 		space(4)) as linetoprint,
 		emp_no,register_no,trans_no,
 		5 as sequence,
 		null as dept_name,
 		5 as ordered,'' as upc
-		from rp_subtotals where runningtotal <> 0 ";
+		from rp_subtotals where runningTotal <> 0 ";
 	if($type == 'mssql'){
 		$rpunionsG = "CREATE view rp_receipt_reorder_unions_g as
 		select linetoprint,
@@ -3359,13 +3385,16 @@ function create_trans_dbs($db,$type){
 		from rp_subtotals where runningtotal <> 0"; 
 	}
 	if(!$db->table_exists('rp_receipt_reorder_unions_g',$name)){
-		$db->query($rpunionsG,$name);
+		db_structure_modify($db,'rp_receipt_reorder_unions_g',$rpunionsG,$errors);
 	}
+
+	return $errors;
 }
 
 function create_min_server($db,$type){
 	global $CORE_LOCAL;
 	$name = $CORE_LOCAL->get('mDatabase');
+	$errors = array();
 
 	$dtransQ = "CREATE TABLE `dtransactions` (
 	  `datetime` datetime default NULL,
@@ -3446,17 +3475,51 @@ function create_min_server($db,$type){
 	}
 	if (!$db->table_exists("dtransactions",$name)){
 		$db->query($dtransQ,$name);
+		db_structure_modify($db,'dtransactions',$dtransQ,$errors);
 	}
 
 	$susQ = str_replace("dtransactions","suspended",$dtransQ);
 	if(!$db->table_exists("suspended",$name)){
-		$db->query($susQ,$name);
+		db_structure_modify($db,'suspended',$susQ,$errors);
 	}
 
-	$todayQ = str_replace("dtransactions","dtranstoday",$dtransQ);
-	if(!$db->table_exists("dtranstoday",$name)){
-		$db->query($todayQ,$name);
+	$dlogQ = "CREATE VIEW dlog AS
+		SELECT
+		datetime AS tdate,
+		register_no,
+		emp_no,
+		trans_no,
+		upc,
+		CASE WHEN (trans_subtype IN ('CP','IC') OR upc like('%000000052')) then 'T' WHEN upc = 'DISCOUNT' then 'S' else trans_type end as trans_type,
+		CASE WHEN upc = 'MAD Coupon' THEN 'MA' 
+		   WHEN upc like('%00000000052') THEN 'RR' ELSE trans_subtype END as trans_subtype,
+		trans_status,
+		department,
+		quantity,
+		unitPrice,
+		total,
+		tax,
+		foodstamp,
+		ItemQtty,
+		memType,
+		staff,
+		numflag,
+		charflag,
+		card_no,
+		trans_id,
+		".$db->concat(
+			$db->convert('emp_no','char'),"'-'",
+			$db->convert('register_no','char'),"'-'",
+			$db->convert('trans_no','char'),'')
+		." as trans_num
+		FROM dtransactions
+		WHERE trans_status NOT IN ('D','X','Z')
+		AND emp_no <> 9999 and register_no <> 99";
+	if(!$db->table_exists("dlog",$name)){
+		$errors = db_structure_modify($db,'dlog',$dlogQ,$errors);
 	}
+
+	
 
 	$alogQ = "CREATE TABLE alog (
 		`datetime` datetime,
@@ -3470,14 +3533,14 @@ function create_min_server($db,$type){
 		$alogQ = str_replace("`","",$alogQ);
 	}
 	if(!$db->table_exists("alog",$name)){
-		$db->query($alogQ,$name);
+		db_structure_modify($db,'alog',$alogQ,$errors);
 	}
 
 	$susToday = "CREATE VIEW suspendedtoday AS
 		SELECT * FROM suspended WHERE "
 		.$db->datediff($db->now(),'datetime')." = 0";
 	if (!$db->table_exists("suspendedtoday",$name)){
-		$db->query($susToday,$name);
+		db_structure_modify($db,'suspendedtoday',$susToday,$errors);
 	}
 
 	$efsrq = "CREATE TABLE efsnetRequest (
@@ -3501,7 +3564,7 @@ function create_min_server($db,$type){
 		sentTr2 tinyint 
 		)";
 	if(!$db->table_exists('efsnetRequest',$name)){
-		$db->query($efsrq,$name);
+		db_structure_modify($db,'efsnetRequest',$efsrq,$errors);
 	}
 
 	$efsrp = "CREATE TABLE efsnetResponse (
@@ -3523,7 +3586,7 @@ function create_min_server($db,$type){
 		xApprovalNumber varchar (20)
 		)";
 	if(!$db->table_exists('efsnetResponse',$name)){
-		$db->query($efsrp,$name);
+		db_structure_modify($db,'efsnetResponse',$efsrp,$errors);
 	}
 
 	$efsrqm = "CREATE TABLE efsnetRequestMod (
@@ -3547,7 +3610,7 @@ function create_min_server($db,$type){
 		xResultMessage varchar(100)
 		)";
 	if(!$db->table_exists('efsnetRequestMod',$name)){
-		$db->query($efsrqm,$name);
+		db_structure_modify($db,'efsnetRequestMod',$efsrqm,$errors);
 	}
 
 	$ttG = "CREATE view TenderTapeGeneric
@@ -3570,8 +3633,10 @@ function create_min_server($db,$type){
 		where datediff(tdate, curdate()) = 0
 		and trans_subtype not in ('0','')";
 	if (!$db->table_exists("TenderTapeGeneric",$name)){
-		$db->query($ttG,$name);
+		db_structure_modify($db,'TenderTapeGeneric',$ttG,$errors);
 	}
+
+	return $errors;
 }
 
 ?>
