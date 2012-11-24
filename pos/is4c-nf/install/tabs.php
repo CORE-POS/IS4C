@@ -1,4 +1,4 @@
-<link rel="stylesheet" href="install.css" />
+<link rel="stylesheet" href="../css/install.css" />
 <div class="invertedshiftdown">
     <ul>
         <li><a href="index.php">NECESSITIES</a></li>

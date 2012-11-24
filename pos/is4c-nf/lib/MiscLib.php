@@ -33,7 +33,7 @@ class MiscLib extends LibraryClass {
   @param $check_file file to search for
   @return A relative URL with trailing slash
 */
-static public function base_url($check_file="pos.css"){
+static public function base_url($check_file="css/pos.css"){
 	$ret = "";
 	$cutoff = 0;
 	while($cutoff < 20 && !file_exists($ret.$check_file)){
