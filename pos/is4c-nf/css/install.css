@@ -37,6 +37,17 @@ h2 { padding-top:8px; }
 	width: 82%;
 }
 
+.tblSection {
+	border:2px solid #666;
+	border-radius:28px;
+	margin:12px;
+}
+
+.tblSection h3 {
+	background: #eee;
+	font-size: 1.5em
+}
+
 .tblHeader {
 	border-top: #eee 2px solid;
 	padding: 8px 0 16px 0;
@@ -48,6 +59,34 @@ h2 { padding-top:8px; }
 }
 .submitBtn input {
 	font-size:1.4em;
+}
+
+input[type="text"] {
+	/*font-size:1.3em;*/
+	/*float:left;*/
+}
+.noteTxt {
+	color:#666;
+	display: block;
+	font-size:14px;
+	line-height: 1.1em;
+	position: relative;
+	top:-33px;
+	float:right;
+	width:auto;
+	background: whiteSmoke;
+	padding: 10px;
+	max-width: 66%;
+}
+
+.spacer {
+	display: block;
+	float: left;
+}
+
+.pre {
+	font-weight:bolder;
+	font-family:monaco, monospace;
 }
 /*********************************
  * INSTALLER MENU TAB STYLES
@@ -107,3 +146,8 @@ padding-top: 9px; /*Flip default padding-top value with padding-bottom */
 padding-bottom: 5px; /*Flip default padding-bottom value with padding-top*/
 color: white;
 }
+
+
+/***************************
+ *	Switch stuff
+ ***************************/

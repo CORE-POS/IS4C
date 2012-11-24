@@ -1,17 +1,15 @@
+<!DOCTYPE html>
+<html>
 <?php
 include(realpath(dirname(__FILE__).'/../lib/AutoLoader.php'));
 AutoLoader::LoadMap();
 include(realpath(dirname(__FILE__).'/../ini.php'));
 include('util.php');
 ?>
-<html>
 <head>
 <title>IT CORE Lane Installation: Additional Configuration</title>
-<style type="text/css">
-body {
-	line-height: 1.5em;
-}
-</style>
+<link rel="stylesheet" href="../css/toggle-switch.css" type="text/css" />
+<script type="text/javascript" src="../js/jquery.js"></script>
 </head>
 <body>
 <?php include('tabs.php'); ?>
@@ -21,25 +19,22 @@ body {
 <div class="alert"><?php check_writeable('../ini.php'); ?></div>
 <div class="alert"><?php check_writeable('../ini-local.php'); ?></div>
 
+<form action=extra_config.php method=post>
 <table id="install" border=0 cellspacing=0 cellpadding=4>
 <tr><td colspan=2 class="tblHeader"><h3>General Settings</h3></td></tr>
 <tr><td style="width: 30%;">
-<form action=extra_config.php method=post>
-<b>Browser only</b>: </td><td><select name=BROWSER_ONLY>
+</td><td>
 <?php
 if (isset($_REQUEST['BROWSER_ONLY'])) $CORE_LOCAL->set('browserOnly',$_REQUEST['BROWSER_ONLY']);
-if ($CORE_LOCAL->get('browserOnly') == 1){
-	echo "<option value=1 selected>Yes</option>";
-	echo "<option value=0>No</option>";
-}
-else{
-	echo "<option value=1>Yes</option>";
-	echo "<option value=0 selected>No</option>";
-}
+else $CORE_LOCAL->set('browserOnly',0);
+echo "<fieldset class='toggle'>\n<input type='checkbox' name='BROWSER_ONLY' id='browser'";
+if ($CORE_LOCAL->get('browserOnly') == 1) echo " value='1' checked />";
+else echo " value='0' />";
+echo "\n<label for='browser' onclick=''>Browser only: </label>\n
+	<span class='toggle-button'></span></fieldset>";
 confsave('browserOnly',$CORE_LOCAL->get('browserOnly'));
 ?>
-</select></td></tr><tr><td colspan=2>
-<p>If Yes, the "exit" button on the login screen attempts to close the window.</p>
+<span class='noteTxt'>If Yes, the "exit" button on the login screen attempts to close the window.</span>
 </td></tr><tr><td>
 <b>Store</b>:</td><td>
 <?php
@@ -47,43 +42,33 @@ if (isset($_REQUEST['STORE'])) $CORE_LOCAL->set('store',$_REQUEST['STORE']);
 printf("<input type=text name=STORE value=\"%s\" />",$CORE_LOCAL->get('store'));
 confsave('store',"'".$CORE_LOCAL->get('store')."'");
 ?>
-</td></tr><tr><td colspan=2>
-<p>In theory, any hard-coded, store specific sequences should be blocked
-off based on the store setting. Adherence to this principle is less than
-ideal.</p>
+<span class='noteTxt'>In theory, any hard-coded, store specific sequences should be blocked
+off based on the store setting. Adherence to this principle is less than ideal.</span>
 </td></tr><tr><td>
-<b>Discounts enabled</b>: </td><td><select name=DISCOUNTS>
+</td><td>
 <?php
 if(isset($_REQUEST['DISCOUNTS'])) $CORE_LOCAL->set('discountEnforced',$_REQUEST['DISCOUNTS']);
-if ($CORE_LOCAL->get("discountEnforced") == 1){
-	echo "<option value=1 selected>Yes</option>";
-	echo "<option value=0 >No</option>";
-}
-else {
-	echo "<option value=1>Yes</option>";
-	echo "<option value=0 selected>No</option>";
-}
+else $CORE_LOCAL->set('discountEnforced',0);
+echo "<fieldset class='toggle'>\n<input type='checkbox' name='DISCOUNTS' id='discounts'";
+if ($CORE_LOCAL->get("discountEnforced") == 1) echo " value='1' checked";
+else echo " value='0'";
+echo " />\n<label for='discounts' onclick=''>Discounts Enabled: </label>\n
+	<span class='toggle-button'></span></fieldset>";
 confsave('discountEnforced',$CORE_LOCAL->get('discountEnforced'));
 ?>
-</select></td></tr><tr><td colspan=2>
-<p>If yes, members get a percentage discount as specified in custdata.</p>
-</td></tr><tr><td>
-<b>Discounts on refunds</b>:</td><td> <select name=RDISCOUNTS>
+<span class='noteTxt'>If yes, members get a percentage discount as specified in custdata.</span>
+</td></tr><tr><td></td><td> 
 <?php
 if(isset($_REQUEST['RDISCOUNTS'])) $CORE_LOCAL->set('refundDiscountable',$_REQUEST['RDISCOUNTS']);
-if ($CORE_LOCAL->get("refundDiscountable")==="") $CORE_LOCAL->set("refundDiscountable",0);
-if ($CORE_LOCAL->get("refundDiscountable") == 1){
-	echo "<option value=1 selected>Yes</option>";
-	echo "<option value=0 >No</option>";
-}
-else {
-	echo "<option value=1>Yes</option>";
-	echo "<option value=0 selected>No</option>";
-}
+else $CORE_LOCAL->set('refundDiscountable',0);
+echo "<fieldset class='toggle'>\n<input type='checkbox' name='RDISCOUNTS' id='rdiscounts'";
+if ($CORE_LOCAL->get("refundDiscountable") == 1) echo " value='1' checked";
+else echo " value='0'";
+echo " />\n<label for='rdiscounts' onclick=''>Discounts on refunds: </label>\n
+	<span class='toggle-button'></span></fieldset>";
 confsave('refundDiscountable',$CORE_LOCAL->get('refundDiscountable'));
 ?>
-</select></td></tr><tr><td colspan=2>
-<p>If yes, percent discount is applied to refunds</p>
+<span class='noteTxt'>If yes, percent discount is applied to refunds</span>
 </td></tr><tr><td>
 <b>Line Item Discount (member)</b>: </td><td>
 <?php
@@ -101,29 +86,14 @@ confsave('LineItemDiscountNonMem',"'".$CORE_LOCAL->get('LineItemDiscountNonMem')
 ?>
 (percentage; 0.05 =&gt; 5%)
 </td></tr><tr><td>
-<b>Lock screen on idle</b>: </td><td><select name=LOCKSCREEN>
-<?php
-if (isset($_REQUEST['LOCKSCREEN'])) $CORE_LOCAL->set('lockScreen',$_REQUEST['LOCKSCREEN']);
-if ($CORE_LOCAL->get("lockScreen") == 1){
-	echo "<option value=1 selected>Yes</option>";
-	echo "<option value=0 >No</option>";
-}
-else {
-	echo "<option value=1>Yes</option>";
-	echo "<option value=0 selected>No</option>";
-}
-confsave('lockScreen',$CORE_LOCAL->get('lockScreen'));
-?>
-</select></td></tr><tr><td>
 <b>Default Non-member #</b>: </td><td>
 <?php
 if(isset($_REQUEST['NONMEM'])) $CORE_LOCAL->set('defaultNonMem',$_REQUEST['NONMEM']);
 printf("<input type=text name=NONMEM value=\"%s\" />",$CORE_LOCAL->get('defaultNonMem'));
 confsave('defaultNonMem',"'".$CORE_LOCAL->get('defaultNonMem')."'");
 ?>
-</td></tr><tr><td colspan=2>
-<p>Normally a single account number is used for most if not all non-member
-transactions. Specify that account number here.</p>
+<span class='noteTxt'>Normally a single account number is used for most if not all non-member
+transactions. Specify that account number here.</span>
 </td></tr><tr><td>
 <b>Visiting Member #</b>: </td><td>
 <?php
@@ -131,24 +101,20 @@ if(isset($_REQUEST['VISMEM'])) $CORE_LOCAL->set('visitingMem',$_REQUEST['VISMEM'
 printf("<input type=text name=VISMEM value=\"%s\" />",$CORE_LOCAL->get('visitingMem'));
 confsave('visitingMem',"'".$CORE_LOCAL->get('visitingMem')."'");
 ?>
-</td></tr><tr><td colspan=2>
-<p>This account provides members of other co-ops with member pricing
-but no other benefits. Leave blank to disable.</p>
-</td></tr><tr><td>
-<b>Show non-member account in searches</b>: </td><td><select name=SHOW_NONMEM>
+<span class='noteTxt'>This account provides members of other co-ops with member pricing
+but no other benefits. Leave blank to disable.</span>
+</td></tr><tr><td></td><td>
 <?php
-if(isset($_REQUEST['SHOW_NONMEM'])) $CORE_LOCAL->set('memlistNonMember',$_REQUEST['SHOW_NONMEM']);
-if ($CORE_LOCAL->get("memlistNonMember") == 1){
-	echo "<option value=1 selected>Yes</option>";
-	echo "<option value=0 >No</option>";
-}
-else {
-	echo "<option value=1>Yes</option>";
-	echo "<option value=0 selected>No</option>";
-}
+if (isset($_REQUEST['SHOW_NONMEM'])) $CORE_LOCAL->set('memlistNonMember',$_REQUEST['SHOW_NONMEM']);
+else $CORE_LOCAL->set('memlistNonMember',0);
+echo "<fieldset class='toggle'>\n<input type='checkbox' name='SHOW_NONMEM' id='shownonmem'";
+if ($CORE_LOCAL->get("memlistNonMember") == 1) echo " value='1' checked";
+else echo " value='0'";
+echo " />\n<label for='shownonmem' onclick=''>Show non-member: </label>\n
+	<span class='toggle-button'></span></fieldset>";
 confsave('memlistNonMember',$CORE_LOCAL->get('memlistNonMember'));
 ?>
-</select>
+<span class='noteTxt'>Display non-member acct. in member searches?</span>
 </td></tr><tr><td>
 <b>Bottle Return Department number</b>: </td><td>
 <?php
@@ -156,24 +122,20 @@ if(isset($_REQUEST['BOTTLE_RET'])) $CORE_LOCAL->set('BottleReturnDept',$_REQUEST
 printf("<input type=text name=BOTTLE_RET value=\"%s\" />",$CORE_LOCAL->get('BottleReturnDept'));
 confsave('BottleReturnDept',"'".$CORE_LOCAL->get('BottleReturnDept')."'");
 ?>
-</td></tr><tr><td colspan=2>
-<p>Add a BOTTLE RETURN item to your products table with a normal_price of 0, IS4C will prompt for Bottle Return amt. and then make it a negative value.</p>
+<span class='noteTxt'>Add a BOTTLE RETURN item to your products table with a normal_price of 0, IS4C will prompt for Bottle Return amt. and then make it a negative value.</span>
 </td></tr>
 
 
 <tr><td colspan=2 class="tblHeader">
-<h3>Hardware Settings</h3></td></tr><tr><td>
-<b>Enable receipts</b>: </td><td><select name=PRINT>
+<h3>Hardware Settings</h3></td></tr><tr><td></td><td>
 <?php
-if(isset($_REQUEST['PRINT'])) $CORE_LOCAL->set('print',$_REQUEST['PRINT']);
-if ($CORE_LOCAL->get("print") == 1){
-	echo "<option value=1 selected>Yes</option>";
-	echo "<option value=0>No</option>";
-}
-else {
-	echo "<option value=1 >Yes</option>";
-	echo "<option value=0 selected>No</option>";
-}
+if (isset($_REQUEST['PRINT'])) $CORE_LOCAL->set('print',$_REQUEST['PRINT']);
+else $CORE_LOCAL->set('print',0);
+echo "<fieldset class='toggle'>\n<input type='checkbox' name='PRINT' id='printing'";
+if ($CORE_LOCAL->get("print") == 1) echo " value='1' checked";
+else echo " value='0'";
+echo " />\n<label for='printing' onclick=''>Enable receipts: </label>\n
+	<span class='toggle-button'></span></fieldset>";
 confsave('print',$CORE_LOCAL->get("print"));
 ?>
 </select></td></tr><tr><td>
@@ -197,18 +159,31 @@ else {
 }
 confsave('newReceipt',$CORE_LOCAL->get("newReceipt"));
 ?>
-</select></td></tr><tr><td colspan=2>
-<p>The new receipt groups items by category; the old one just lists
-them in order.</p></td></tr><tr><td>
-<b>Printer port</b>:</td><td>
+</select>
+<span class='noteTxt'>The new receipt groups items by category; the old one just lists
+them in order.</span></td></tr><tr><td>
+<b>Printer port</b>:<br />
 <?php
 if(isset($_REQUEST['PPORT'])) $CORE_LOCAL->set('printerPort',$_REQUEST['PPORT']);
-printf("<input type=text name=PPORT value=\"%s\" />",$CORE_LOCAL->get('printerPort'));
+
+?>
+</td><td>
+
+<input type="radio" name=PPORT value="/dev/lp0" id="div-lp0"
+	<?php if($CORE_LOCAL->get('printerPort')=="/dev/lp0") echo "checked"; ?> /><label for="div-lp0">/dev/lp0 (*nix)</label><br />
+<input type="radio" name=PPORT value="/dev/usb/lp0" id="div-usb-lp0"
+	<?php if($CORE_LOCAL->get('printerPort')=="/dev/usb/lp0") echo "checked"; ?> /><label for="div-usb-lp0">/dev/usb/lp0 (*nix)</label><br />
+<input type="radio" name=PPORT value="LPT1:" id="lpt1-"
+	<?php if($CORE_LOCAL->get('printerPort')=="LPT:") echo "checked"; ?> /><label for="lpt1-">LPT1: (windows)</label><br />
+<input type="radio" name=PPORT value="fakereceipt.txt" id="fakercpt"
+	<?php if($CORE_LOCAL->get('printerPort')=="fakereceipt.txt") echo "checked"; ?> /><label for="fakercpt">fakereceipt.txt</label><br />
+<input type="radio" name=PPORT value="other" /><input type=text name="otherpport"></input><br />
+
+<?php
 confsave('printerPort',"'".$CORE_LOCAL->get('printerPort')."'");
 ?>
-</td></tr><tr><td colspan=2>
-<p>Path to the printer. Common ports are LPT1: (windows) and /dev/lp0 (linux).
-Can also print to a text file if it's just a regular file name.</p>
+<span class='noteTxt' style="top:-120px;"> <?php printf("<p>Current value: <span class='pre'>%s</span></p>",$CORE_LOCAL->get('printerPort')); ?>
+<br />Path to the printer. Select from common values, or enter a custom path.  Some ubuntu distros might put your USB printer at /dev/usblp0</span>
 </td></tr><tr><td>
 <b>Email Receipt Sender</b>:</td><td>
 <?php
@@ -277,6 +252,19 @@ confsave('alertBar',"'".$CORE_LOCAL->get('alertBar')."'");
 ?>
 </td></tr>
 <tr><td>
+</td><td>
+<?php
+if (isset($_REQUEST['LOCKSCREEN'])) $CORE_LOCAL->set('lockScreen',$_REQUEST['LOCKSCREEN']);
+else $CORE_LOCAL->set('lockScreen',0);
+echo "<fieldset class='toggle'>\n<input type='checkbox' name='LOCKSCREEN' id='lockscreen'";
+if ($CORE_LOCAL->get("lockScreen") == 1) echo " value='1' checked";
+else echo " value='0'";
+echo " />\n<label for='lockscreen' onclick=''>Lock screen on idle: </label>\n
+	<span class='toggle-button'></span></fieldset>";
+confsave('lockScreen',$CORE_LOCAL->get('lockScreen'));
+?>
+</td></tr>
+<tr><td>
 <b>Lock Screen Timeout</b>:</td><td>
 <?php
 if(isset($_REQUEST['TIMEOUT'])) $CORE_LOCAL->set('timeout',$_REQUEST['TIMEOUT']);
@@ -284,8 +272,7 @@ else $CORE_LOCAL->set('timeout',180000);
 printf("<input type=text name=TIMEOUT value=\"%s\" />",$CORE_LOCAL->get('timeout'));
 confsave('timeout',"'".$CORE_LOCAL->get('timeout')."'");
 ?>
-</td></tr><tr><td colspan=2>
-<p>Enter timeout in milliseconds. Default: 180000 (3 minutes)</p>
+<span class='noteTxt'>Enter timeout in milliseconds. Default: 180000 (3 minutes)</span>
 </td></tr>
 <tr><td>
 <b>Footer Modules</b> (left to right):</td><td>
@@ -588,3 +575,47 @@ else {
 </div> <!--	wrapper -->
 </body>
 </html>
+<script type="text/javascript">
+$('#browser').change(function(){
+     if($(this).attr('checked')){
+          $(this).val('1');
+     }else{
+          $(this).val('0');
+     }
+});
+$('#discounts').change(function(){
+     if($(this).attr('checked')){
+          $(this).val('1');
+     }else{
+          $(this).val('0');
+     }
+});
+$('#rdiscounts').change(function(){
+     if($(this).attr('checked')){
+          $(this).val('1');
+     }else{
+          $(this).val('0');
+     }
+});
+$('#lockscreen').change(function(){
+     if($(this).attr('checked')){
+          $(this).val('1');
+     }else{
+          $(this).val('0');
+     }
+});
+$('#printing').change(function(){
+     if($(this).attr('checked')){
+          $(this).val('1');
+     }else{
+          $(this).val('0');
+     }
+});
+$('#shownonmem').change(function(){
+     if($(this).attr('checked')){
+          $(this).val('1');
+     }else{
+          $(this).val('0');
+     }
+});
+</script>
