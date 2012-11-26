@@ -1217,6 +1217,7 @@ function create_trans_dbs($db,$type){
 		from localtemptrans as l
 		left join taxrates as t
 		on l.tax = t.id
+		WHERE trans_type <> 'L'
 		order by trans_id";
 	if ($type == 'mssql'){
 		$screen = "CREATE view screendisplay as 
@@ -1315,8 +1316,8 @@ function create_trans_dbs($db,$type){
 			WHERE trans_type <> 'L'
 			order by trans_id";
 	}
+	db_structure_modify($db,'screendisplay','DROP VIEW screendisplay',$errors);
 	if (!$db->table_exists('screendisplay',$name)){
-		db_structure_modify($db,'screendisplay','DROP VIEW screendisplay',$errors);
 		db_structure_modify($db,'screendisplay',$screen,$errors);
 	}
 
