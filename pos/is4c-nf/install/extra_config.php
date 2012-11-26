@@ -26,7 +26,7 @@ include('util.php');
 </td><td>
 <?php
 if (isset($_REQUEST['BROWSER_ONLY'])) $CORE_LOCAL->set('browserOnly',$_REQUEST['BROWSER_ONLY']);
-else $CORE_LOCAL->get('browserOnly');
+else $CORE_LOCAL->set('browserOnly',0);
 echo "<fieldset class='toggle'>\n<input type='checkbox' name='BROWSER_ONLY' id='browser'";
 if ($CORE_LOCAL->get('browserOnly') == 1) echo " value='1' checked />";
 else echo " value='0' />";
@@ -48,7 +48,7 @@ off based on the store setting. Adherence to this principle is less than ideal.<
 </td><td>
 <?php
 if(isset($_REQUEST['DISCOUNTS'])) $CORE_LOCAL->set('discountEnforced',$_REQUEST['DISCOUNTS']);
-else $CORE_LOCAL->get('discountEnforced');
+else $CORE_LOCAL->set('discountEnforced',0);
 echo "<fieldset class='toggle'>\n<input type='checkbox' name='DISCOUNTS' id='discounts'";
 if ($CORE_LOCAL->get("discountEnforced") == 1) echo " value='1' checked";
 else echo " value='0'";
@@ -60,7 +60,7 @@ confsave('discountEnforced',$CORE_LOCAL->get('discountEnforced'));
 </td></tr><tr><td></td><td> 
 <?php
 if(isset($_REQUEST['RDISCOUNTS'])) $CORE_LOCAL->set('refundDiscountable',$_REQUEST['RDISCOUNTS']);
-else $CORE_LOCAL->get('refundDiscountable');
+else $CORE_LOCAL->set('refundDiscountable',0);
 echo "<fieldset class='toggle'>\n<input type='checkbox' name='RDISCOUNTS' id='rdiscounts'";
 if ($CORE_LOCAL->get("refundDiscountable") == 1) echo " value='1' checked";
 else echo " value='0'";
@@ -106,7 +106,7 @@ but no other benefits. Leave blank to disable.</span>
 </td></tr><tr><td></td><td>
 <?php
 if (isset($_REQUEST['SHOW_NONMEM'])) $CORE_LOCAL->set('memlistNonMember',$_REQUEST['SHOW_NONMEM']);
-else $CORE_LOCAL->get('memlistNonMember');
+else $CORE_LOCAL->set('memlistNonMember',0);
 echo "<fieldset class='toggle'>\n<input type='checkbox' name='SHOW_NONMEM' id='shownonmem'";
 if ($CORE_LOCAL->get("memlistNonMember") == 1) echo " value='1' checked";
 else echo " value='0'";
@@ -130,7 +130,7 @@ confsave('BottleReturnDept',"'".$CORE_LOCAL->get('BottleReturnDept')."'");
 <h3>Hardware Settings</h3></td></tr><tr><td></td><td>
 <?php
 if (isset($_REQUEST['PRINT'])) $CORE_LOCAL->set('print',$_REQUEST['PRINT']);
-else $CORE_LOCAL->get('print');
+else $CORE_LOCAL->set('print',0);
 echo "<fieldset class='toggle'>\n<input type='checkbox' name='PRINT' id='printing'";
 if ($CORE_LOCAL->get("print") == 1) echo " value='1' checked";
 else echo " value='0'";
@@ -255,7 +255,7 @@ confsave('alertBar',"'".$CORE_LOCAL->get('alertBar')."'");
 </td><td>
 <?php
 if (isset($_REQUEST['LOCKSCREEN'])) $CORE_LOCAL->set('lockScreen',$_REQUEST['LOCKSCREEN']);
-else $CORE_LOCAL->get('lockScreen');
+else $CORE_LOCAL->set('lockScreen',0);
 echo "<fieldset class='toggle'>\n<input type='checkbox' name='LOCKSCREEN' id='lockscreen'";
 if ($CORE_LOCAL->get("lockScreen") == 1) echo " value='1' checked";
 else echo " value='0'";
@@ -268,7 +268,7 @@ confsave('lockScreen',$CORE_LOCAL->get('lockScreen'));
 <b>Lock Screen Timeout</b>:</td><td>
 <?php
 if(isset($_REQUEST['TIMEOUT'])) $CORE_LOCAL->set('timeout',$_REQUEST['TIMEOUT']);
-else $CORE_LOCAL->get('timeout');
+else $CORE_LOCAL->set('timeout',180000);
 printf("<input type=text name=TIMEOUT value=\"%s\" />",$CORE_LOCAL->get('timeout'));
 confsave('timeout',"'".$CORE_LOCAL->get('timeout')."'");
 ?>

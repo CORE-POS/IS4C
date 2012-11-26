@@ -134,8 +134,9 @@ printf("<input type=text name=LANE_OP_DB value=\"%s\" />",
 	$CORE_LOCAL->get('pDatabase'));
 confsave('pDatabase',"'".$CORE_LOCAL->get('pDatabase')."'");
 ?>
-</td></tr><tr><td>
-Testing Operation DB Connection:</td><td>
+</td></tr><tr><td colspan=2>
+<div class="noteTxt">
+Testing operational DB Connection:
 <?php
 $gotDBs = 0;
 if ($CORE_LOCAL->get("DBMS") == "mysql")
@@ -188,6 +189,7 @@ else {
 	//echo "</textarea>";
 }
 ?>
+</div> <!-- noteTxt -->
 </td></tr><tr><td>
 Lane transaction DB:</td><td>
 <?php
@@ -196,8 +198,9 @@ printf("<input type=text name=LANE_TRANS_DB value=\"%s\" />",
 	$CORE_LOCAL->get('tDatabase'));
 confsave('tDatabase',"'".$CORE_LOCAL->get('tDatabase')."'");
 ?>
-</td></tr><tr><td>
-Testing transactional DB connection:</td><td>
+</td></tr><tr><td colspan=2>
+<div class="noteTxt">
+Testing transactional DB connection:
 <?php
 $sql = db_test_connect($CORE_LOCAL->get('localhost'),
 		$CORE_LOCAL->get('DBMS'),
@@ -263,6 +266,7 @@ else {
 	//echo "</textarea>";
 }
 ?>
+</div> <!-- noteTxt -->
 </td></tr><tr><td>
 Server database host: </td><td>
 <?php
@@ -310,8 +314,9 @@ printf("<input type=text name=SERVER_DB value=\"%s\" />",
 	$CORE_LOCAL->get('mDatabase'));
 confsave('mDatabase',"'".$CORE_LOCAL->get('mDatabase')."'");
 ?>
-</td></tr><tr><td>
-Testing server connection:</td><td>
+</td></tr><tr><td colspan=2>
+<div class="noteTxt">
+Testing server connection:
 <?php
 $sql = db_test_connect($CORE_LOCAL->get('mServer'),
 		$CORE_LOCAL->get('mDBMS'),
@@ -359,6 +364,7 @@ else {
 	//echo "</textarea>";
 }
 ?>
+</div>  <!-- noteTxt -->
 </td></tr><tr><td colspan=2 class="tblHeader">
 <h3>Tax</h3></td></tr>
 <tr><td colspan=2>
