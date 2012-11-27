@@ -31,6 +31,9 @@ class MemberCard extends Plugin {
 		)
 	);
 
+	public $plugin_description = 'Allows UPC based membercards. Set a prefix, load data into
+				      the memberCards table, then just scan barcodes to use.';
+
 	public function plugin_enable(){
 
 	}
