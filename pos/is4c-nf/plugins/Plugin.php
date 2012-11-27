@@ -44,6 +44,8 @@ class Plugin {
 		)
 	);
 
+	public $plugin_description = 'This author didn\'t provide anything. Shame!';
+
 	/**
 	  Callback. Triggered when plugin is enabled
 	*/

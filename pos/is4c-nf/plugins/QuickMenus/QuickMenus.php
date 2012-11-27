@@ -26,6 +26,11 @@ class QuickMenus extends Plugin {
 	public $plugin_settings = array(
 	);
 
+	public $plugin_description = 'A plugin for building menus. Menus are defined in numbered
+				      PHP files within the plugin. Type "Q<" followed by the menu
+				      number to launch that menu. QuickMenus render options as a
+				      scrolling list.';
+
 	public function plugin_enable(){
 
 	}
