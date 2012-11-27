@@ -34,7 +34,8 @@ class PriceCheckPage extends NoInputPage {
 
 		$this->upc = "";
 		$this->found = False;
-		$this->pricing = array('sale'=>False,'price'=>'','memPrice'=>'');
+		$this->pricing = array('sale'=>False,'price'=>'','memPrice'=>'',
+			'description','department');
 
 		if (isset($_REQUEST['reginput']) && strtoupper($_REQUEST['reginput'])=="CL"){
 			// cancel
@@ -77,6 +78,8 @@ class PriceCheckPage extends NoInputPage {
 						($info['unitPrice']-$info['memDiscount']),
 						($row['scale']>0?' /lb':''));
 				}
+				$this->pricing['description'] = $row['description'];
+				$this->pricing['department'] = $row['department'];
 			}
 
 			// user hit enter and there is a valid UPC present
@@ -114,10 +117,12 @@ class PriceCheckPage extends NoInputPage {
 				$this->upc = "";
 			}
 			else {
-				$info = _("Price").": ".$this->pricing['price'];
+				$info = $this->pricing['description'].' :: '.$this->pricing['department'].'<br />';
+				$info .= _("Price").": ".$this->pricing['price'];
 				if (!empty($this->pricing['memPrice'])){
 					$info .= "<br />("._("Member Price").": ".$this->pricing['memPrice'].")";
 				}
+				
 				$inst = array(
 					_("[scan] another item"),
 					_("[enter] to ring this item"),

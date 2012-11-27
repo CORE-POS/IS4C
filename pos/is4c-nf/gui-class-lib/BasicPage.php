@@ -118,7 +118,7 @@ class BasicPage {
 		// 18Aug12 EL Add content/charset.
 		echo "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" />\n";
 		echo "<link rel=\"stylesheet\" type=\"text/css\"
-		    href=\"{$my_url}/pos.css\">";
+		    href=\"{$my_url}/css/pos.css\">";
 		// include store css file if it exists
 		if (file_exists(dirname(__FILE__).'/../store.css')){
 			echo "<link rel=\"stylesheet\" type=\"text/css\"

@@ -294,7 +294,7 @@ class ProcessPage {
 		<?php
 		echo "<head>";
 		echo "<link rel=\"stylesheet\" type=\"text/css\"
-		    href=\"../../pos.css\">";
+		    href=\"../../css/pos.css\">";
 		$this->head_content();
 		echo "</head>";
 		if(empty($this->errors))
