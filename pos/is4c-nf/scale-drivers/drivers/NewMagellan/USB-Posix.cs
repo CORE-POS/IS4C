@@ -12,7 +12,8 @@ public class USBWrapper_Posix : USBWrapper {
 	 * @return open read/write FileStream
 	 */
 	public override FileStream GetUSBHandle(string filename, int report_size){ 
-		return new FileStream(filename, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None, report_size, true);
+		if (!File.Exists(filename)) return null;
+		return new FileStream(filename, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None, report_size, FileOptions.Asynchronous);
 	}
 
 	public override void CloseUSBHandle(){ }

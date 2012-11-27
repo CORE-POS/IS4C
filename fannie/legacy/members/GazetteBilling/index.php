@@ -100,7 +100,6 @@ else if (isset($_POST['MAX_FILE_SIZE'])){
 		$data = csv_parser($line);
 
 		if (!isset($data[$PHONE])) continue;
-		if (!is_numeric($data[$PHONE][0])) continue;
 
 		$ph = $data[$PHONE];
 		if (strstr($ph," OR "))
@@ -121,7 +120,7 @@ else if (isset($_POST['MAX_FILE_SIZE'])){
 			left join suspensions as s on
 			m.card_no = s.cardno
 			WHERE (c.memtype = 2 or s.memtype1 = 2)
-			and (m.phone='$ph' OR m.email_2='$ph'
+			and (m.phone='$ph' OR m.email_1='$ph' OR m.email_2='$ph'
 			or c.lastname=$cn)";
 		$searchR = $sql->query($searchQ);
 
@@ -132,7 +131,7 @@ else if (isset($_POST['MAX_FILE_SIZE'])){
 				on m.card_no=c.cardno and c.personnum=1
 				WHERE c.memtype = 2
 				AND c.lastname like '$tmp[0]%' and
-				(m.phone='$ph' OR m.email_2='$ph')";
+				(m.phone='$ph' OR m.email_1='$ph' OR m.email_2='$ph')";
 			$searchR = $sql->query($searchQ);
 		}
 		
