@@ -418,7 +418,7 @@ class UPC extends Parser {
 		$ret['redraw_footer'] = True;
 		$ret['output'] = DisplayLib::lastpage();
 
-		if ($prefetch['unitPrice']==0){
+		if ($prefetch['unitPrice']==0 && $discounttype == 0){
 			$ret['main_frame'] = $my_url.'gui-modules/priceOverride.php';
 		}
 
