@@ -12,6 +12,8 @@ body {
 	line-height: 1.5em;
 }
 </style>
+<link rel="stylesheet" href="../css/toggle-switch.css" type="text/css" />
+<script type="text/javascript" src="../js/jquery.js"></script>
 </head>
 <body>
 <?php include('tabs.php'); ?>
@@ -21,9 +23,10 @@ body {
 <div class="alert"><?php check_writeable('../ini.php'); ?></div>
 <div class="alert"><?php check_writeable('../ini-local.php'); ?></div>
 
+<table id="install" border=0 cellspacing=0 cellpadding=4>
+
 <form action=plugins.php method=post>
 <b>Available plugins</b>:<br />
-<select name="PLUGINLIST[]" size="10" multiple>
 <?php
 if (isset($_REQUEST['PLUGINLIST']) || isset($_REQUEST['psubmit'])){
 	$oldset = $CORE_LOCAL->get('PluginList');
@@ -47,17 +50,51 @@ $type_check = $CORE_LOCAL->get('PluginList');
 if (!is_array($type_check)) $CORE_LOCAL->set('PluginList',array());
 
 $mods = AutoLoader::ListModules('Plugin');
+sort($mods);
 
 foreach($mods as $m){
-	$selected = "";
+	$enabled = False;
+	$instance = new $m();
 	foreach($CORE_LOCAL->get("PluginList") as $r){
 		if ($r == $m){
-			$selected = "selected";
+			$enabled = True;
 			break;
 		}
 	}
-	echo "<option $selected>$m</option>";
+	echo '<tr><td colspan="2" style="height:1px;"><hr /></td></tr>';
+	echo '<tr><td style="width:10em;"></td>
+		<td style="width:25em;">'."\n";
+	echo '<fieldset class="toggle">'."\n";
+	printf('<input name="PLUGINLIST[]" id="plugin_%s" type="checkbox" %s
+		value="%s" /><label onclick="" for="plugin_%s">%s</label>',
+		$m, ($enabled?'checked':''),$m, $m, $m);
+	echo "\n".'<span class="toggle-button"></span></fieldset>'."\n";
+	printf('<span class="noteTxt">%s</span>',$instance->plugin_description);
+	echo '</td></tr>'."\n";
+
+	if ($enabled && empty($instance->plugin_settings)){
+		echo '<tr><td colspan="2"><i>No settings required</i></td></tr>';	
+	}
+	else if ($enabled){
+		echo '<tr><td colspan="2" style="margin-bottom: 0px; height:auto;">';
+		foreach($instance->plugin_settings as $field => $info){
+			$form_id = $m.'_'.$field;
+			if (isset($_REQUEST[$form_id])) 
+				$CORE_LOCAL->set($field,$_REQUEST[$form_id]);
+			if ($CORE_LOCAL->get($field) === "") 
+				$CORE_LOCAL->set($field,isset($info['default'])?$info['default']:'');
+			echo '<b>'.(isset($info['label'])?$info['label']:$field).'</b>: ';
+			printf('<input type="text" name="%s" value="%s" />',
+				$form_id,$CORE_LOCAL->get($field));
+			if (isset($info['description'])) 
+				echo '<span class="noteTxt">'.$info['description'].'</span>';
+			confsave($field,"'".$CORE_LOCAL->get($field)."'");
+		}
+		echo '</td></tr>';
+	}
+
 }
+echo '</table>';
 
 $saveStr = "array(";
 foreach($CORE_LOCAL->get("PluginList") as $r){
@@ -66,26 +103,6 @@ foreach($CORE_LOCAL->get("PluginList") as $r){
 $saveStr = rtrim($saveStr,",").")";
 confsave('PluginList',$saveStr);
 ?>
-</select><br />
-<?php foreach($CORE_LOCAL->get('PluginList') as $plugin_class) {
-$obj = new $plugin_class();
-if (!empty($obj->plugin_settings)){
-	echo '<hr />';
-	echo '<h3>Settings for plugin: '.$plugin_class.'</h3>';
-}
-foreach($obj->plugin_settings as $field => $info){
-	$form_id = $plugin_class.'_'.$field;
-	if (isset($_REQUEST[$form_id])) $CORE_LOCAL->set($field,$_REQUEST[$form_id]);
-	if ($CORE_LOCAL->get($field) === "") 
-		$CORE_LOCAL->set($field,isset($info['default'])?$info['default']:'');
-	echo '<b>'.(isset($info['label'])?$info['label']:$field).'</b>: ';
-	printf('<input type="text" name="%s" value="%s" />',$form_id,$CORE_LOCAL->get($field));
-	echo '<br />';
-	if (isset($info['description'])) echo $info['description'].'<br />';
-	confsave($field,"'".$CORE_LOCAL->get($field)."'");
-}
-
-} ?>
 <hr />
 <input type=submit name=psubmit value="Save Changes" />
 </form>

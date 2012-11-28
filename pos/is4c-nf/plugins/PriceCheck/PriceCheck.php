@@ -26,6 +26,9 @@ class PriceCheck extends Plugin {
 	public $plugin_settings = array(
 	);
 
+	public $plugin_description = 'Check an item\'s price without ringing it. Type "PC" to
+				      and then scan an item or hit enter to use this feature.';
+
 	public function plugin_enable(){
 
 	}
