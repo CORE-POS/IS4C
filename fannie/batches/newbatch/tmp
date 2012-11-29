@@ -1,0 +1,24 @@
+select b.upc,
+case when l.likeCode is null then p.description
+else l.likeCodeDesc end as description,
+p.normal_price,b.salePrice,
+CASE WHEN c.upc IS NULL then 0 ELSE 1 END as isCut,
+b.quantity,b.pricemethod
+from batchList as b left join products as p on
+b.upc = p.upc left join likeCodes as l on
+b.upc = concat('LC',convert(l.likeCode,char))
+left join batchCutPaste as c ON
+b.upc=c.upc AND b.batchID=c.batchID
+where b.batchID = 2927  ORDER BY b.listID DESC;
+
+select b.upc,
+p.description,
+p.normal_price,b.salePrice,
+CASE WHEN c.upc IS NULL then 0 ELSE 1 END as isCut,
+b.quantity,b.pricemethod
+from batchList as b left join products as p on
+b.upc = p.upc 
+left join likeCodes as l on b.upc=concat('LC',convert(l.likeCode,char))
+left join batchCutPaste as c ON
+b.upc=c.upc AND b.batchID=c.batchID
+where b.batchID = 2927  ORDER BY b.listID DESC;
