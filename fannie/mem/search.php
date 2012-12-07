@@ -25,7 +25,8 @@ include('MemberModule.php');
 include($FANNIE_ROOT.'src/mysql_connect.php');
 
 $page_title = "Fannie :: Find Member";
-$header = "Find Member";
+// 5Dec12 EL Howto note in header.
+$header = "Find Members<p style='font-family:arial; font-size:0.7em; margin:0.0em 0em 0em 1.5em;'>Enter criteria to find one member or a list members from which to choose.</p>";
 
 $searchButton = isset($_REQUEST['doSearch'])?True:False;
 
