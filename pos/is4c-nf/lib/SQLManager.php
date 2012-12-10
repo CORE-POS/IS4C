@@ -275,6 +275,48 @@ class SQLManager {
 		return -1;
 	}
 
+	function start_transaction($which_connection=''){
+		if ($which_connection == '')
+			$which_connection = $this->default_db;
+		switch($this->db_types[$which_connection]){
+		case $this->TYPE_MYSQL:
+			return $this->query("START TRANSACTION",($this->connections[$which_connection]);
+		case $this->TYPE_MSSQL:
+			return $this->query("BEGIN TRANSACTION tr1",($this->connections[$which_connection]);
+		case $this->TYPE_PGSQL:
+			return $this->query("START TRANSACTION",($this->connections[$which_connection]);
+		}
+		return -1;
+	}
+
+	function commit_transaction($which_connection=''){
+		if ($which_connection == '')
+			$which_connection = $this->default_db;
+		switch($this->db_types[$which_connection]){
+		case $this->TYPE_MYSQL:
+			return $this->query("COMMIT",($this->connections[$which_connection]);
+		case $this->TYPE_MSSQL:
+			return $this->query("COMMIT TRANSACTION tr1",($this->connections[$which_connection]);
+		case $this->TYPE_PGSQL:
+			return $this->query("COMMIT",($this->connections[$which_connection]);
+		}
+		return -1;
+	}
+
+	function rollback_transaction($which_connection=''){
+		if ($which_connection == '')
+			$which_connection = $this->default_db;
+		switch($this->db_types[$which_connection]){
+		case $this->TYPE_MYSQL:
+			return $this->query("ROLLBACK",($this->connections[$which_connection]);
+		case $this->TYPE_MSSQL:
+			return $this->query("ROLLBACK TRANSACTION tr1",($this->connections[$which_connection]);
+		case $this->TYPE_PGSQL:
+			return $this->query("ROLLBACK",($this->connections[$which_connection]);
+		}
+		return -1;
+	}
+
 	function test($which_connection=''){
 		if ($which_connection=='')
 			$which_connection=$this->default_db;
@@ -332,6 +374,8 @@ class SQLManager {
 
 		$ret = True;
 
+		$this->start_transaction($dest_db);
+
 		foreach ($queries as $q){
 			if(!$this->query($q,$dest_db)){
 				$ret = False;
@@ -342,6 +386,11 @@ class SQLManager {
 				}
 			}
 		}
+
+		if ($ret === True)
+			$this->commit_transaction($dest_db);
+		else
+			$this->rollback_transaction($dest_db);
 
 		return $ret;
 	}
