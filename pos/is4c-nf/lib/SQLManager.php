@@ -280,11 +280,11 @@ class SQLManager {
 			$which_connection = $this->default_db;
 		switch($this->db_types[$which_connection]){
 		case $this->TYPE_MYSQL:
-			return $this->query("START TRANSACTION",($this->connections[$which_connection]);
+			return $this->query("START TRANSACTION",$this->connections[$which_connection]);
 		case $this->TYPE_MSSQL:
-			return $this->query("BEGIN TRANSACTION tr1",($this->connections[$which_connection]);
+			return $this->query("BEGIN TRANSACTION tr1",$this->connections[$which_connection]);
 		case $this->TYPE_PGSQL:
-			return $this->query("START TRANSACTION",($this->connections[$which_connection]);
+			return $this->query("START TRANSACTION",$this->connections[$which_connection]);
 		}
 		return -1;
 	}
@@ -294,11 +294,11 @@ class SQLManager {
 			$which_connection = $this->default_db;
 		switch($this->db_types[$which_connection]){
 		case $this->TYPE_MYSQL:
-			return $this->query("COMMIT",($this->connections[$which_connection]);
+			return $this->query("COMMIT",$this->connections[$which_connection]);
 		case $this->TYPE_MSSQL:
-			return $this->query("COMMIT TRANSACTION tr1",($this->connections[$which_connection]);
+			return $this->query("COMMIT TRANSACTION tr1",$this->connections[$which_connection]);
 		case $this->TYPE_PGSQL:
-			return $this->query("COMMIT",($this->connections[$which_connection]);
+			return $this->query("COMMIT",$this->connections[$which_connection]);
 		}
 		return -1;
 	}
@@ -308,11 +308,11 @@ class SQLManager {
 			$which_connection = $this->default_db;
 		switch($this->db_types[$which_connection]){
 		case $this->TYPE_MYSQL:
-			return $this->query("ROLLBACK",($this->connections[$which_connection]);
+			return $this->query("ROLLBACK",$this->connections[$which_connection]);
 		case $this->TYPE_MSSQL:
-			return $this->query("ROLLBACK TRANSACTION tr1",($this->connections[$which_connection]);
+			return $this->query("ROLLBACK TRANSACTION tr1",$this->connections[$which_connection]);
 		case $this->TYPE_PGSQL:
-			return $this->query("ROLLBACK",($this->connections[$which_connection]);
+			return $this->query("ROLLBACK",$this->connections[$which_connection]);
 		}
 		return -1;
 	}
