@@ -275,6 +275,10 @@ class SQLManager {
 		return -1;
 	}
 
+	/**
+	  Start a SQL transaction
+	  Nexted transactions not supported on MSSQL
+	*/
 	function start_transaction($which_connection=''){
 		if ($which_connection == '')
 			$which_connection = $this->default_db;
@@ -289,6 +293,9 @@ class SQLManager {
 		return -1;
 	}
 
+	/**
+	  Commit an SQL transaction
+	*/
 	function commit_transaction($which_connection=''){
 		if ($which_connection == '')
 			$which_connection = $this->default_db;
@@ -303,6 +310,9 @@ class SQLManager {
 		return -1;
 	}
 
+	/**
+	  Rollback an SQL transaction
+	*/
 	function rollback_transaction($which_connection=''){
 		if ($which_connection == '')
 			$which_connection = $this->default_db;

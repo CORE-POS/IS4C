@@ -84,8 +84,9 @@ class login2 extends BasicPage {
 					action="<?php echo $_SERVER['PHP_SELF']; ?>">
 				<input type="password" name="reginput" size="20" tabindex="0" 
 					onblur="$('#reginput').focus();" id="reginput" >
-				<p />
+				<p>
 				<?php echo $this->msg ?>
+				</p>
 				</form>
 			</div>	
 		</div>
@@ -102,7 +103,7 @@ class login2 extends BasicPage {
 			echo "onmouseover=\"document.exit.src='{$this->page_url}graphics/switchred2.gif';\" ";
 			echo "onmouseout=\"document.exit.src='{$this->page_url}graphics/switchblue2.gif';\">";
 			?>
-			<img name="exit" border="0" src="<?php echo $this->page_url; ?>graphics/switchblue2.gif" /></a>
+			<img id="exit" style="border:0;" alt="Exit" src="<?php echo $this->page_url; ?>graphics/switchblue2.gif" /></a>
 	
 		</div>
 		<form name="hidden">
