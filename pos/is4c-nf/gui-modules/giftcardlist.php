@@ -79,8 +79,9 @@ class giftcardlist extends NoInputPage {
 		<option value="PV">Balance
 		</select>
 		</form>
+		<p>
 		<span class="smaller">[clear] to cancel</span>
-		<p />
+		</p>
 		</div>
 		</div>
 		<?php

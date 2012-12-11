@@ -74,9 +74,9 @@ class qtty2 extends BasicPage {
 		<span class="larger">
 		<?php echo $this->msg ?>
 		</span><br />
-		<p />
+		<p>
 		<?php echo _("enter number or clear to cancel"); ?>
-		<p />
+		</p> 
 		</div>
 		</div>
 

@@ -143,8 +143,9 @@ class fsTotalConfirm extends NoInputPage {
 			<input type="hidden" name="tendertype" value="<?php echo $this->tendertype?>" />
 		<?php } ?>
 		</form>
+		<p>
 		<span class="smaller">[clear] to cancel</span>
-		<p />
+		</p>
 		</div>
 		</div>
 		<?php
