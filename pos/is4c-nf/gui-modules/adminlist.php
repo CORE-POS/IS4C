@@ -123,8 +123,9 @@ class adminlist extends NoInputPage {
 		<option value='TR'>3. <?php echo _("Tender Reports"); ?>
 		</select>
 		</form>
+		<p>
 		<span class="smaller"><?php echo _("clear to cancel"); ?></span>
-		<p />
+		</p>
 		</div>
 		</div>
 		<?php

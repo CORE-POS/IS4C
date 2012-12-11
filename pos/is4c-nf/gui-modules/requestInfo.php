@@ -76,9 +76,9 @@ class requestInfo extends NoInputPage {
 		<form name="form" method="post" autocomplete="off" onsubmit="return submitWrapper();">
 		<input type="text" id="reginput" name='input' tabindex="0" onblur="$('#input').focus()" />
 		</form>
-		<p />
+		<p>
 		<?php echo $CORE_LOCAL->get("requestMsg") ?>
-		<p />
+		</p>
 		</div>
 		</div>
 
