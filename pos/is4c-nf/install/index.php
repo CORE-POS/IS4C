@@ -723,6 +723,18 @@ function create_op_dbs($db,$type){
 		db_structure_modify($db,'houseCoupons',$houseCoup,$errors);
 	}
 
+	$hvQ = "CREATE TABLE houseVirtualCoupons (
+		card_no int,
+		coupID int,
+		description varchar(100),
+		start_date datetime,
+		end_date datetime,
+		PRIMARY KEY (card_no, coupID)
+		)";
+	if(!$db->table_exists('houseVirtualCoupons',$name)){
+		db_structure_modify($db,'houseVirtualCoupons',$hvQ,$errors);
+	}
+
 	$hciQ = "CREATE TABLE houseCouponItems (
 		coupID int,
 		upc varchar(13),
