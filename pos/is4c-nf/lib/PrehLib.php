@@ -188,6 +188,9 @@ static public function setMember($member, $personNumber, $row) {
 
 	$conn2->query($memquery);
 
+	$opts = array('upc'=>'MEMENTRY','description'=>'CARDNO IN NUMFLAG','numflag'=>$member);
+	TransRecord::add_log_record($opts);
+
 	if ($CORE_LOCAL->get("isStaff") == 0) {
 		$CORE_LOCAL->set("staffSpecial",0);
 	}
