@@ -733,7 +733,7 @@ static public function add_log_record($opts){
 	$total = isset($opts['amount1']) ? $opts['amount1'] : 0;
 	$regPrice = isset($opts['amount2']) ? $opts['amount2'] : 0;
 	
-	self::addItem($upc, $desc, 'L', 'OG', 'X', $dept, 
+	self::addItem($upc, $desc, 'L', 'OG', 'D', $dept, 
 		0, // quantity
 		0, // unitPrice 
 		$total, 
