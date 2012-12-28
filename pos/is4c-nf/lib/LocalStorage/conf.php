@@ -29,7 +29,6 @@
   in the variable $CORE_LOCAL.
 */
 
-ini_set('display_errors',1);
 $elog = realpath(dirname(__FILE__).'/../../log/php-errors.log');
 ini_set('error_log',$elog);
 
