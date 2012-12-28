@@ -142,7 +142,24 @@ class Parser {
 	*/
 	static public function get_parse_chain(){
 
-		return AutoLoader::ListModules('Parser');
+		$set = AutoLoader::ListModules('Parser');
+
+		$parse_chain = array();
+		$first = "";
+		foreach($set as $classname){	
+			$instance = new $classname();
+			if ($instance->isLast()){
+				array_push($parse_chain,$classname);
+			}
+			elseif ($instance->isFirst())
+				$first = $classname;
+			else
+				array_unshift($parse_chain,$classname);
+		}
+		if ($first != "")
+			array_unshift($parse_chain,$first);
+
+		return $parse_chain;
 
 		$PARSEROOT = realpath(dirname(__FILE__));
 
@@ -157,8 +174,9 @@ class Parser {
 				if (!class_exists($classname))
 					include_once($PARSEROOT."/parse/".$file);
 				$instance = new $classname();
-				if ($instance->isLast())
+				if ($instance->isLast()){
 					array_push($parse_chain,$classname);
+				}
 				elseif ($instance->isFirst())
 					$first = $classname;
 				else
