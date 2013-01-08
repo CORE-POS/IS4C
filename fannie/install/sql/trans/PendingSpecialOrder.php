@@ -57,7 +57,7 @@ $CREATE['trans.PendingSpecialOrder'] = "
 	  `staff` tinyint(4) default NULL,
 	  `numflag` smallint(6) default 0 NULL,
 	  `charflag` varchar(2) default '' NULL,
-	  `card_no` varchar(255) default NULL,
+	  `card_no` int(11) default NULL,
 	  `trans_id` int(11) default NULL
 	)
 ";
