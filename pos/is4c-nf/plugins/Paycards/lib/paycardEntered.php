@@ -21,8 +21,6 @@
 
 *********************************************************************************/
 
-if (!class_exists("Parser")) 
-	include_once(realpath(dirname(__FILE__)."/../parser-class-lib/Parser.php"));
 if (!class_exists("PaycardLib")) 
 	include_once(realpath(dirname(__FILE__)."/paycardLib.php"));
 if (!isset($CORE_LOCAL)){

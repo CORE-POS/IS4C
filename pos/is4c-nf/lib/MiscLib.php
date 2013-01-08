@@ -177,7 +177,7 @@ static public function pingport($host,$dbms){
 	socket_set_block($sock);
 	$test = socket_connect($sock,$host,$port);
 	socket_close($sock);
-	return ($test ? 1 : 0);	
+	return ($test ? 1 : 0);
 }
 
 /**

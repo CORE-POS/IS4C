@@ -117,8 +117,10 @@ static public function paycard_info($pan) {
 */
 static public function paycard_accepted($pan, $acceptTest) {
 	$info = self::paycard_info($pan);
+	/*
 	if( $info['test'] && $acceptTest)
 		return 1;
+	 */
 	return ($info['accepted'] ? 1 : 0);
 } // paycard_accepted()
 
@@ -561,7 +563,7 @@ static public function paycard_db_fetch_row($result){
 	global $CORE_LOCAL;
 	switch($CORE_LOCAL->get("DBMS")){
 	case 'mysql':
-		return mysql_fetch_row($result);
+		return mysql_fetch_array($result);
 		break;
 	case 'mssql':
 		return mssql_fetch_row($result);

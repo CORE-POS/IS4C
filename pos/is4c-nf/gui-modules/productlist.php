@@ -198,7 +198,7 @@ class productlist extends NoInputPage {
 			</span>
 			<form action="<?php echo $_SERVER['PHP_SELF']; ?>" method="post" autocomplete="off">
 			<input type="text" name="search" size="15" id="search"
-				onblur="$('#search).focus();" />
+				onblur="$('#search').focus();" />
 			</form>
 			press [enter] to cancel
 			</div>

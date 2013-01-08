@@ -21,6 +21,7 @@
 
 *********************************************************************************/
 
+ini_set('display_errors','Off');
 include_once(realpath(dirname(__FILE__).'/../lib/AutoLoader.php'));
 
 if ($CORE_LOCAL->get("End") == 1) {

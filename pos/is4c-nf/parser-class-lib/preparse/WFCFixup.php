@@ -1,7 +1,7 @@
 <?php
 /*******************************************************************************
 
-    Copyright 2010 Whole Foods Co-op.
+    Copyright 2007 Whole Foods Co-op
 
     This file is part of IT CORE.
 
@@ -21,16 +21,42 @@
 
 *********************************************************************************/
 
-ini_set('display_errors','Off');
-include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
+class WFCFixup extends PreParser {
+	var $remainder;
+	
+	function check($str){
+		global $CORE_LOCAL;
+		if (substr($str,-3) == "QK9"){
+			$this->remainder = str_replace("QK9","QM9",$str);
+			return True;
+		}
+		elseif (substr($str,-4) == "QK10"){
+			$this->remainder = str_replace("QK10","QM10",$str);
+			return True;
+		}
+		return False;
+	}
 
-$termDriver = $CORE_LOCAL->get("SigCapture");
-$td = 0;
-if ($termDriver != "") 
-	$td = new $termDriver();
+	function parse($str){
+		return $this->remainder;
+	}
 
-if (is_object($td)){
-	$res = $td->poll("poke");
+	function doc(){
+		return "<table cellspacing=0 cellpadding=3 border=1>
+			<tr>
+				<th>Input</th><th>Result</th>
+			</tr>
+			<tr>
+				<td><i>discount</i>DI<i>item</i></td>
+				<td>Set a percent discount <i>discount</i>
+				for just one item <i>item</i></td>
+			</tr>
+			<tr>
+				<td><i>discount</i>PD<i>item</i></td>
+				<td>Same as DI above</td>
+			</tr>
+			</table>";
+	}
 }
 
 ?>

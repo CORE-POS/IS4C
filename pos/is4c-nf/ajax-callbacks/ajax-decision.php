@@ -21,6 +21,7 @@
 
 *********************************************************************************/
 
+ini_set('display_errors','Off');
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 $decision = isset($_REQUEST['input'])?strtoupper(trim($_REQUEST["input"])):'CL';

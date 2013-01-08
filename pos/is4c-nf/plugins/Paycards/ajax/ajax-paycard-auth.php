@@ -21,14 +21,19 @@
 
 *********************************************************************************/
 
+if (basename($_SERVER['PHP_SELF']) != basename(__FILE__)){
+	return;
+}
+
 ini_set('display_errors','Off');
-include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
+include_once(dirname(__FILE__).'/../../../lib/AutoLoader.php');
 
 // send the request
 $result = 0; // 0 is never returned, so we use it to make sure it changes
 $myObj = 0;
 $json = array();
-$json['main_frame'] = MiscLib::base_url().'gui-modules/paycardSuccess.php';
+$plugin_info = new Paycards();
+$json['main_frame'] = $plugin_info->plugin_url().'/gui/paycardSuccess.php';
 $json['receipt'] = false;
 foreach($CORE_LOCAL->get("RegisteredPaycardClasses") as $rpc){
 	$myObj = new $rpc();

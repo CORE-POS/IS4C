@@ -22,7 +22,7 @@
 
 *********************************************************************************/
 
-include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
+include_once(dirname(__FILE__).'/../../../lib/AutoLoader.php');
 
 class paycardboxMsgAuth extends PaycardProcessPage {
 
@@ -121,4 +121,5 @@ class paycardboxMsgAuth extends PaycardProcessPage {
 	}
 }
 
-new paycardboxMsgAuth();
+if (basename($_SERVER['PHP_SELF']) == basename(__FILE__))
+	new paycardboxMsgAuth();

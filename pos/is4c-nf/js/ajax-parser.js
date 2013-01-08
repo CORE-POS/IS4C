@@ -14,7 +14,6 @@ function runParser(input_str,rel_prefix){
 }
 
 function parserError(xml_ro,st,err){
-
 }
 
 function parserHandler(data,status_str,xml_ro){

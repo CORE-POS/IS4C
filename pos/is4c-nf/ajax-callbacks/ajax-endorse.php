@@ -21,6 +21,7 @@
 
 *********************************************************************************/
 
+ini_set('display_errors','Off');
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 $endorseType = $CORE_LOCAL->get("endorseType");
