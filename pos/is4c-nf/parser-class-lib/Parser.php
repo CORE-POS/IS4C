@@ -160,35 +160,6 @@ class Parser {
 			array_unshift($parse_chain,$first);
 
 		return $parse_chain;
-
-		$PARSEROOT = realpath(dirname(__FILE__));
-
-		$parse_chain = array();
-		$first = "";
-		$dh = opendir($PARSEROOT."/parse");
-		while (False !== ($file=readdir($dh))){
-			if (is_file($PARSEROOT."/parse/".$file) &&
-			    substr($file,-4)==".php"){
-
-				$classname = substr($file,0,strlen($file)-4);
-				if (!class_exists($classname))
-					include_once($PARSEROOT."/parse/".$file);
-				$instance = new $classname();
-				if ($instance->isLast()){
-					array_push($parse_chain,$classname);
-				}
-				elseif ($instance->isFirst())
-					$first = $classname;
-				else
-					array_unshift($parse_chain,$classname);
-
-			}
-		}
-		closedir($dh);
-		if ($first != "")
-			array_unshift($parse_chain,$first);
-
-		return $parse_chain;
 	}
 
 }

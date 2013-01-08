@@ -1,7 +1,7 @@
 <?php
 /*******************************************************************************
 
-    Copyright 2010 Whole Foods Co-op.
+    Copyright 2012 Whole Foods Co-op
 
     This file is part of IT CORE.
 
@@ -21,16 +21,17 @@
 
 *********************************************************************************/
 
-ini_set('display_errors','Off');
-include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
+class Paycards extends Plugin {
 
-$termDriver = $CORE_LOCAL->get("SigCapture");
-$td = 0;
-if ($termDriver != "") 
-	$td = new $termDriver();
+	public $plugin_settings = array(
+	);
 
-if (is_object($td)){
-	$res = $td->poll("poke");
+	public function plugin_enable(){
+
+	}
+
+	public function plugin_disable(){
+
+	}
+
 }
-
-?>

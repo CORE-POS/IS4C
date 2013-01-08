@@ -24,6 +24,7 @@
 ini_set('display_errors','1');
 
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
+AutoLoader::LoadMap();
 
 class login2 extends BasicPage {
 
@@ -74,7 +75,7 @@ class login2 extends BasicPage {
 		<div id="loginTopBar">
 			<div class="name">I S 4 C</div>
 			<div class="version">P H P &nbsp; D E V E L O P M E N T
-			&nbsp; V E R S I O N &nbsp; 2 .0 .0 (beta)</div>
+			&nbsp; V E R S I O N &nbsp; 2 .0 .0</div>
 			<div class="welcome"><?php echo _("W E L C O M E"); ?></div>
 		</div>
 		<div id="loginCenter">
@@ -103,7 +104,7 @@ class login2 extends BasicPage {
 			echo "onmouseover=\"document.exit.src='{$this->page_url}graphics/switchred2.gif';\" ";
 			echo "onmouseout=\"document.exit.src='{$this->page_url}graphics/switchblue2.gif';\">";
 			?>
-			<img id="exit" style="border:0;" alt="Exit" src="<?php echo $this->page_url; ?>graphics/switchblue2.gif" /></a>
+			<img id="exit" style="border:0;" alt="exit"  src="<?php echo $this->page_url; ?>graphics/switchblue2.gif" /></a>
 	
 		</div>
 		<form name="hidden">

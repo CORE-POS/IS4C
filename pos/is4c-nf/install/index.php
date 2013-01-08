@@ -1590,6 +1590,7 @@ function create_trans_dbs($db,$type){
 			AND trans_type <> 'L'
 			order by trans_id";
 	}
+	db_structure_modify($db,'ltt_receipt','DROP VIEW ltt_receipt',$errors);
 	if(!$db->table_exists('ltt_receipt',$name)){
 		db_structure_modify($db,'ltt_receipt',$lttR,$errors);
 	}
@@ -1821,6 +1822,7 @@ function create_trans_dbs($db,$type){
 			AND trans_type <> 'L'
 			order by emp_no, trans_no, trans_id";
 	}
+	db_structure_modify($db,'rp_ltt_receipt','DROP VIEW rp_ltt_receipt',$errors);
 	if(!$db->table_exists('rp_ltt_receipt',$name)){
 		db_structure_modify($db,'rp_ltt_receipt',$rplttR,$errors);
 	}
@@ -2316,6 +2318,7 @@ function create_trans_dbs($db,$type){
 			case when trans_status='d' or scale=1 then trans_id else scale end
 		having convert(money,sum(quantity*regprice-quantity*unitprice))<>0";
 	}
+	db_structure_modify($db,'ltt_grouped','DROP VIEW ltt_grouped',$errors);
 	if(!$db->table_exists('ltt_grouped',$name)){
 		db_structure_modify($db,'ltt_grouped',$lttG,$errors);
 	}
@@ -2501,6 +2504,7 @@ function create_trans_dbs($db,$type){
 		'' as trans_subtype
 		from ".$CORE_LOCAL->get('pDatabase').".dbo.promoMsgsView";
 	}
+	db_structure_modify($db,'ltt_receipt_reorder_g','DROP VIEW ltt_receipt_reorder_g',$errors);
 	if(!$db->table_exists('ltt_receipt_reorder_g',$name)){
 		db_structure_modify($db,'ltt_receipt_reorder_g',$lttreorderG,$errors);
 	}
@@ -2911,6 +2915,7 @@ function create_trans_dbs($db,$type){
 			case when trans_status='d' or scale=1 then trans_id else scale end
 		having convert(money,sum(quantity*regprice-quantity*unitprice))<>0";
 	}	
+	db_structure_modify($db,'rp_ltt_grouped','DROP VIEW rp_ltt_grouped',$errors);
 	if(!$db->table_exists('rp_ltt_grouped',$name)){
 		db_structure_modify($db,'rp_ltt_grouped',$rplttG,$errors);
 	}
@@ -3089,6 +3094,7 @@ function create_trans_dbs($db,$type){
 		'' as trans_subtype
 		from ".$CORE_LOCAL->get('pDatabase').".dbo.promoMsgsView";
 	}	
+	db_structure_modify($db,'rp_ltt_receipt_reorder_g','DROP VIEW rp_ltt_receipt_reorder_g',$errors);
 	if(!$db->table_exists("rp_ltt_receipt_reorder_g",$name)){
 		db_structure_modify($db,'rp_ltt_receipt_reorder_g',$rpreorderG,$errors);
 	}

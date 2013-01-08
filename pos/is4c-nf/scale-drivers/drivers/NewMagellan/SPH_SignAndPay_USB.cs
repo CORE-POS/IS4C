@@ -86,6 +86,7 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
 		long_length = 0;
 		long_pos = 0;
 		ack_counter = 0;
+		usb_fs = null;
 		
 		#if MONO
 		usb_devicefile = p;
@@ -104,14 +105,19 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
 		usb_port = new USBWrapper_Win32();
 		usb_report_size = 65;
 		#endif
-		usb_fs = usb_port.GetUSBHandle(usb_devicefile,usb_report_size);
-		if (usb_fs == null)
-			System.Console.WriteLine("No device");
-		else
-			System.Console.WriteLine("USB device found");
-		SendReport(BuildCommand(LcdSetBacklightTimeout(0)));
-		SetStateStart();
+		while(usb_fs == null){
+			usb_fs = usb_port.GetUSBHandle(usb_devicefile,usb_report_size);
+			if (usb_fs == null){
+				System.Console.WriteLine("No device");
+				System.Threading.Thread.Sleep(5000);
+			}
+			else
+				System.Console.WriteLine("USB device found");
+			
+		}
+		//SendReport(BuildCommand(LcdSetBacklightTimeout(0)));
 		ReRead();
+		SetStateStart();
 		//SetStateCardType();
 	}
 
@@ -126,7 +132,6 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
 		SendReport(BuildCommand(LcdTextColor(0,0,0)));
 		SendReport(BuildCommand(LcdTextBackgroundColor(0xff,0xff,0xff)));
 		SendReport(BuildCommand(LcdTextBackgroundMode(false)));
-		SendReport(BuildCommand(LcdDrawText("andy is awesome",5,5)));
 		SendReport(BuildCommand(LcdDrawText("swipe card",75,100)));
 
 		current_state = STATE_START_TRANSACTION;
@@ -241,6 +246,7 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
 		System.Console.WriteLine("");
 		*/
 
+
 		int report_length = input[1] & (0x80-1);
 
 		/*
@@ -325,13 +331,13 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
 			long_pos = 0;
 			long_buffer = null;
 		}
+
 		
 		ReRead();
 	}
 
 	private void HandleDeviceMessage(byte[] msg){
 		System.Console.Write("DMSG: {0}: ",current_state);
-		if (msg == null) System.Console.WriteLine("NULL!");
 		foreach(byte b in msg)
 			System.Console.Write("{0:x} ",b);
 		System.Console.WriteLine();
@@ -389,7 +395,7 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
 			if (msg.Length == 1 && msg[0] == 0x6){
 				ack_counter++;
 				System.Console.WriteLine(ack_counter);
-				if (ack_counter == 2)
+				if (ack_counter == 1)
 					SetStateGetManualExp();
 			}
 			else if (msg.Length == 3 && msg[0] == 0x15){
@@ -408,17 +414,18 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
 			}
 			break;
 		case STATE_MANUAL_CVV:
-			if (msg.Length > 63 && msg[0] == 0x80 && msg[1] == 0x1f){
+			if (msg.Length > 63 && msg[0] == 0x80){
 				string block = FixupCardBlock(msg);
 				PushOutput("PANCACHE:"+block);
 				SetStateCardType();
 			}
+
 			else if (msg.Length == 3 && msg[0] == 0x15){
 				SetStateStart();
 			}
 			break;
 		case STATE_START_TRANSACTION:
-			if (msg.Length > 63 && msg[0] == 0x80 && msg[1] == 0x1f){
+			if (msg.Length > 63 && msg[0] == 0x80 ){
 				string block = FixupCardBlock(msg);
 				PushOutput("PANCACHE:"+block);
 				SetStateCardType();
@@ -440,6 +447,7 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
 	private string FixupCardBlock(byte[] data){
 		string hex = BitConverter.ToString(data).Replace("-","");
 		hex = "02E600"+hex+"XXXX03";
+		System.Console.WriteLine(hex);
 		return hex;
 	}
 
@@ -553,13 +561,12 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
 				for(int j=0;j<usb_report_size;j++){
 					if (j % 16 == 0 && j > 0)
 						System.Console.WriteLine("");
-					System.Console.Write("{0:x} ",report[j]);
+					System.Console.Write(report[j]+" ");
 				}
 				System.Console.WriteLine("");
 				*/
 
 				usb_fs.Write(report,0,usb_report_size);
-				System.Threading.Thread.Sleep(50);
 
 				for(int j=0;j<usb_report_size;j++) report[j] = 0;
 				size=0;
@@ -573,11 +580,10 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
 		for(int i=0;i<usb_report_size;i++){
 			if (i % 16 == 0 && i > 0)
 				System.Console.WriteLine("");
-			System.Console.Write("{0:x} ",report[i]);
+			System.Console.Write(report[i]+" ");
 		}
 		System.Console.WriteLine("");
 		*/
-
 		usb_fs.Write(report,0,usb_report_size);
 		System.Threading.Thread.Sleep(50);
 	}
@@ -1315,6 +1321,7 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
 	private byte[] ResetDevice(){
 		return new byte[7]{0x78, 0x46, 0x0a, 0x49, 0x52, 0x46, 0x57};
 	}
+
 }
 
 }

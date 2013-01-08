@@ -56,10 +56,11 @@ class PaycardProcessPage extends BasicPage {
 	   Automatically called during page print.
 	*/
 	function paycard_jscript_functions(){
+		$plugin_info = new Paycards();
 		?>
 		<script type="text/javascript">
 		function paycard_submitWrapper(){
-			$.ajax({url: '<?php echo $this->page_url; ?>ajax-callbacks/ajax-paycard-auth.php',
+			$.ajax({url: '<?php echo $plugin_info->plugin_url(); ?>/ajax/ajax-paycard-auth.php',
 				cache: false,
 				type: 'post',
 				dataType: 'json',
@@ -98,15 +99,11 @@ class PaycardProcessPage extends BasicPage {
 		<html>
 		<?php
 		echo "<head>";
+		echo "<title>COREPOS</title>";
 		// 18Aug12 EL Add content/charset.
 		echo "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" />\n";
 		echo "<link rel=\"stylesheet\" type=\"text/css\"
-		    href=\"{$my_url}css/pos.css\">";
-		// include store css file if it exists
-		if (file_exists(dirname(__FILE__).'/../store.css')){
-			echo "<link rel=\"stylesheet\" type=\"text/css\"
-			    href=\"{$my_url}/store.css\">";
-		}
+		    href=\"{$my_url}pos.css\">";
 		echo "<script type=\"text/javascript\"
 			src=\"{$my_url}js/jquery.js\"></script>";
 		$this->paycard_jscript_functions();

@@ -46,7 +46,7 @@ if (!isset($CORE_LOCAL)){
 	$CORE_LOCAL = new LS_Access();
 }
 
-define("LOCAL_CERT_PATH","C:/is4c-nf/cc-modules/cacert.pem");
+define("LOCAL_CERT_PATH",realpath(dirname(__FILE__)).'/cacert.pem');
 
 class BasicCCModule {
 
@@ -191,7 +191,7 @@ class BasicCCModule {
 		curl_setopt($curl_handle, CURLOPT_FOLLOWLOCATION,false);
 		curl_setopt($curl_handle, CURLOPT_FRESH_CONNECT,true);
 		curl_setopt($curl_handle, CURLOPT_TIMEOUT,30);
-		curl_setopt($curl_handle, CURLOPT_SSL_VERIFYPEER, 1);
+		curl_setopt($curl_handle, CURLOPT_SSL_VERIFYPEER, 0);
 		if($CORE_LOCAL->get("OS")=="win32")
 			curl_setopt($curl_handle, CURLOPT_CAINFO, LOCAL_CERT_PATH);
 		if ($type == 'SOAP'){

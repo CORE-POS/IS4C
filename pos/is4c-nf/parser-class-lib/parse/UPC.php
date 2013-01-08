@@ -126,8 +126,8 @@ class UPC extends Parser {
 			//TransRecord::addQueued($upc,'BADSCAN');
 			$opts = array('upc'=>$upc,'description'=>'BADSCAN');
 			TransRecord::add_log_record($opts);
-			$CORE_LOCAL->set("boxMsg",_("not a valid item"));
-			$ret['udpmsg'] = 'errorBeep';
+			$CORE_LOCAL->set("boxMsg",$upc." "._("not a valid item"));
+			//$ret['udpmsg'] = 'errorBeep'; // 12/12/12 this seems to stack with DisplayLib::msgbox
 			$ret['main_frame'] = $my_url."gui-modules/boxMsg2.php";
 			return $ret;
 		}

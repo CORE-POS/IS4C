@@ -146,6 +146,10 @@ static public function transReset() {
 	$CORE_LOCAL->set("CachePanEncBlock","");
 	$CORE_LOCAL->set("CachePinEncBlock","");
 	$CORE_LOCAL->set("CacheCardType","");
+	$CORE_LOCAL->set("paycard_voiceauthcode","");
+	$CORE_LOCAL->set("ebt_authcode","");
+	$CORE_LOCAL->set("ebt_vnum","");
+	$CORE_LOCAL->set("paycard_keyed",False);
 }
 
 /**

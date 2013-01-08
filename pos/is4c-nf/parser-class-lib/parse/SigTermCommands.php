@@ -27,10 +27,12 @@ class SigTermCommands extends Parser {
 		global $CORE_LOCAL;
 		if ($str == "TERMMANUAL"){
 			UdpComm::udpSend("termManual");
+			$CORE_LOCAL->set("paycard_keyed",True);
 			return True;
 		}
 		elseif ($str == "TERMRESET"){
 			UdpComm::udpSend("termReset");
+			$CORE_LOCAL->set("paycard_keyed",False);
 			return True;
 		}
 		elseif ($str == "CCFROMCACHE"){
@@ -42,6 +44,18 @@ class SigTermCommands extends Parser {
 		}
 		else if (substr($str,0,9) == "PINCACHE:"){
 			$CORE_LOCAL->set("CachePinEncBlock",substr($str,9));
+			return True;
+		}
+		else if (substr($str,0,6) == "VAUTH:"){
+			$CORE_LOCAL->set("paycard_voiceauthcode",substr($str,6));
+			return True;
+		}
+		else if (substr($str,0,8) == "EBTAUTH:"){
+			$CORE_LOCAL->set("ebt_authcode",substr($str,8));
+			return True;
+		}
+		else if (substr($str,0,5) == "EBTV:"){
+			$CORE_LOCAL->set("ebt_vnum",substr($str,5));
 			return True;
 		}
 		else if ($str == "TERMCLEARALL"){

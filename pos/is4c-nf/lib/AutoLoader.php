@@ -184,9 +184,11 @@ else {
 }
 
 /** internationalization */
+/*
 setlocale(LC_MESSAGES, "en_US.UTF-8");
 bindtextdomain("pos-nf",realpath(dirname(__FILE__).'/../locale'));
 bind_textdomain_codeset("pos-nf","UTF-8");
 textdomain("pos-nf");
+ */
 
 ?>
