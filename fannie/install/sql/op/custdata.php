@@ -96,7 +96,7 @@ Maintenance:
 */
 $CREATE['op.custdata'] = "
 	CREATE TABLE `custdata` (
-	  `CardNo` int(8) default NULL,
+	  `CardNo` int(11) default NULL,
 	  `personNum` tinyint(4) NOT NULL default '1',
 	  `LastName` varchar(30) default NULL,
 	  `FirstName` varchar(30) default NULL,

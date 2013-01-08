@@ -425,7 +425,7 @@ function create_op_dbs($db,$type){
 	}
 
 	$custDataQ = "CREATE TABLE `custdata` (
-	  `CardNo` int(8) default NULL,
+	  `CardNo` int(11) default NULL,
 	  `personNum` tinyint(4) NOT NULL default '1',
 	  `LastName` varchar(30) default NULL,
 	  `FirstName` varchar(30) default NULL,
@@ -845,7 +845,7 @@ function create_trans_dbs($db,$type){
 	  `staff` tinyint(4) default NULL,
 	  `numflag` smallint(6) default 0 NULL,
 	  `charflag` varchar(2) default '' NULL,
-	  `card_no` varchar(255) default NULL,
+	  `card_no` int(11) default NULL,
 	  `trans_id` int(11) default NULL
 	)";
 	if ($type == 'mssql'){
@@ -946,7 +946,7 @@ function create_trans_dbs($db,$type){
 	  `staff` tinyint(4) default 0,
 	  `numflag` smallint(6) default 0,
 	  `charflag` varchar(2) default '',
-	  `card_no` varchar(255) default NULL,
+	  `card_no` int(11) default NULL,
 	  `trans_id` int(11) NOT NULL auto_increment,
 	  PRIMARY KEY  (`trans_id`)
 	)";
