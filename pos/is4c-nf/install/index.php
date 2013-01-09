@@ -425,7 +425,7 @@ function create_op_dbs($db,$type){
 	}
 
 	$custDataQ = "CREATE TABLE `custdata` (
-	  `CardNo` int(8) default NULL,
+	  `CardNo` int(11) default NULL,
 	  `personNum` tinyint(4) NOT NULL default '1',
 	  `LastName` varchar(30) default NULL,
 	  `FirstName` varchar(30) default NULL,
@@ -723,6 +723,18 @@ function create_op_dbs($db,$type){
 		db_structure_modify($db,'houseCoupons',$houseCoup,$errors);
 	}
 
+	$hvQ = "CREATE TABLE houseVirtualCoupons (
+		card_no int,
+		coupID int,
+		description varchar(100),
+		start_date datetime,
+		end_date datetime,
+		PRIMARY KEY (card_no, coupID)
+		)";
+	if(!$db->table_exists('houseVirtualCoupons',$name)){
+		db_structure_modify($db,'houseVirtualCoupons',$hvQ,$errors);
+	}
+
 	$hciQ = "CREATE TABLE houseCouponItems (
 		coupID int,
 		upc varchar(13),
@@ -833,7 +845,7 @@ function create_trans_dbs($db,$type){
 	  `staff` tinyint(4) default NULL,
 	  `numflag` smallint(6) default 0 NULL,
 	  `charflag` varchar(2) default '' NULL,
-	  `card_no` varchar(255) default NULL,
+	  `card_no` int(11) default NULL,
 	  `trans_id` int(11) default NULL
 	)";
 	if ($type == 'mssql'){
@@ -934,7 +946,7 @@ function create_trans_dbs($db,$type){
 	  `staff` tinyint(4) default 0,
 	  `numflag` smallint(6) default 0,
 	  `charflag` varchar(2) default '',
-	  `card_no` varchar(255) default NULL,
+	  `card_no` int(11) default NULL,
 	  `trans_id` int(11) NOT NULL auto_increment,
 	  PRIMARY KEY  (`trans_id`)
 	)";
@@ -1578,6 +1590,7 @@ function create_trans_dbs($db,$type){
 			AND trans_type <> 'L'
 			order by trans_id";
 	}
+	db_structure_modify($db,'ltt_receipt','DROP VIEW ltt_receipt',$errors);
 	if(!$db->table_exists('ltt_receipt',$name)){
 		db_structure_modify($db,'ltt_receipt',$lttR,$errors);
 	}
@@ -1809,6 +1822,7 @@ function create_trans_dbs($db,$type){
 			AND trans_type <> 'L'
 			order by emp_no, trans_no, trans_id";
 	}
+	db_structure_modify($db,'rp_ltt_receipt','DROP VIEW rp_ltt_receipt',$errors);
 	if(!$db->table_exists('rp_ltt_receipt',$name)){
 		db_structure_modify($db,'rp_ltt_receipt',$rplttR,$errors);
 	}
@@ -2304,6 +2318,7 @@ function create_trans_dbs($db,$type){
 			case when trans_status='d' or scale=1 then trans_id else scale end
 		having convert(money,sum(quantity*regprice-quantity*unitprice))<>0";
 	}
+	db_structure_modify($db,'ltt_grouped','DROP VIEW ltt_grouped',$errors);
 	if(!$db->table_exists('ltt_grouped',$name)){
 		db_structure_modify($db,'ltt_grouped',$lttG,$errors);
 	}
@@ -2489,6 +2504,7 @@ function create_trans_dbs($db,$type){
 		'' as trans_subtype
 		from ".$CORE_LOCAL->get('pDatabase').".dbo.promoMsgsView";
 	}
+	db_structure_modify($db,'ltt_receipt_reorder_g','DROP VIEW ltt_receipt_reorder_g',$errors);
 	if(!$db->table_exists('ltt_receipt_reorder_g',$name)){
 		db_structure_modify($db,'ltt_receipt_reorder_g',$lttreorderG,$errors);
 	}
@@ -2899,6 +2915,7 @@ function create_trans_dbs($db,$type){
 			case when trans_status='d' or scale=1 then trans_id else scale end
 		having convert(money,sum(quantity*regprice-quantity*unitprice))<>0";
 	}	
+	db_structure_modify($db,'rp_ltt_grouped','DROP VIEW rp_ltt_grouped',$errors);
 	if(!$db->table_exists('rp_ltt_grouped',$name)){
 		db_structure_modify($db,'rp_ltt_grouped',$rplttG,$errors);
 	}
@@ -3077,6 +3094,7 @@ function create_trans_dbs($db,$type){
 		'' as trans_subtype
 		from ".$CORE_LOCAL->get('pDatabase').".dbo.promoMsgsView";
 	}	
+	db_structure_modify($db,'rp_ltt_receipt_reorder_g','DROP VIEW rp_ltt_receipt_reorder_g',$errors);
 	if(!$db->table_exists("rp_ltt_receipt_reorder_g",$name)){
 		db_structure_modify($db,'rp_ltt_receipt_reorder_g',$rpreorderG,$errors);
 	}

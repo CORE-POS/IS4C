@@ -88,7 +88,7 @@ class memlist extends NoInputPage {
 		$num_rows = $db_a->num_rows($result);
 
 		// if theres only 1 match don't show the memlist
-		if ($num_rows == 1) {
+		if ($num_rows == 1 && $CORE_LOCAL->get("verifyName")==0) {
 			$selected_name = True;
 			$personNum = 1;
 		}

@@ -142,9 +142,9 @@ class PriceCheckPage extends NoInputPage {
 			onblur="$('#reginput').focus();" id="reginput" />
 		<input type="hidden" name="upc" value="<?php echo $this->upc; ?>" />
 		</form>
-		<p />
+		<p>
 		<span id="localmsg"><?php foreach($inst as $i) echo $i."<br />" ?></span>
-		<p />
+		</p>
 		</div>
 		</div>
 		<?php

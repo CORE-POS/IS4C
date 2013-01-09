@@ -64,10 +64,10 @@ class login3 extends BasicPage {
 		?>
 		<div class="baseHeight">
 			<div class="colored centeredDisplay" <?php echo $style;?>>
-			<img src='<?php echo $this->img ?>' />
-			<p />
+			<img alt="key" src='<?php echo $this->img ?>' />
+			<p>
 			<?php echo $this->msg ?>
-			<p />
+			</p>
 			</div>
 		</div>
 		<?php

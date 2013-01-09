@@ -21,6 +21,7 @@
 
 *********************************************************************************/
 
+ini_set('display_errors','Off');
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 $sd = MiscLib::scaleObject();
@@ -49,6 +50,7 @@ if ($entered != ""){
 	/* this breaks the model a bit, but I'm putting
 	 * putting the CC parser first manually to minimize
 	 * code that potentially handles the PAN */
+	/*
 	include_once(realpath(dirname(__FILE__)."/../cc-modules/lib/paycardEntered.php"));
 	$pe = new paycardEntered();
 	if ($pe->check($entered)){
@@ -57,6 +59,7 @@ if ($entered != ""){
 		$CORE_LOCAL->set("strEntered","");
 		$json = $valid;
 	}
+	 */
 
 	$CORE_LOCAL->set("quantity",0);
 	$CORE_LOCAL->set("multiple",0);

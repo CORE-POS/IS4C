@@ -142,31 +142,20 @@ class Parser {
 	*/
 	static public function get_parse_chain(){
 
-		return AutoLoader::ListModules('Parser');
-
-		$PARSEROOT = realpath(dirname(__FILE__));
+		$set = AutoLoader::ListModules('Parser');
 
 		$parse_chain = array();
 		$first = "";
-		$dh = opendir($PARSEROOT."/parse");
-		while (False !== ($file=readdir($dh))){
-			if (is_file($PARSEROOT."/parse/".$file) &&
-			    substr($file,-4)==".php"){
-
-				$classname = substr($file,0,strlen($file)-4);
-				if (!class_exists($classname))
-					include_once($PARSEROOT."/parse/".$file);
-				$instance = new $classname();
-				if ($instance->isLast())
-					array_push($parse_chain,$classname);
-				elseif ($instance->isFirst())
-					$first = $classname;
-				else
-					array_unshift($parse_chain,$classname);
-
+		foreach($set as $classname){	
+			$instance = new $classname();
+			if ($instance->isLast()){
+				array_push($parse_chain,$classname);
 			}
+			elseif ($instance->isFirst())
+				$first = $classname;
+			else
+				array_unshift($parse_chain,$classname);
 		}
-		closedir($dh);
 		if ($first != "")
 			array_unshift($parse_chain,$first);
 

@@ -175,6 +175,10 @@ private static String MAGELLAN_OUTPUT_DIR = "ss-output/";
 			sp.Write("S11\r");
 			return "S145";
 		}
+		else if (s.Substring(0,3) == "S14"){
+			sp.Write("S11\r");
+			return s;
+		}
 		else if (s.Substring(0,4) == "S08A" ||
 			 s.Substring(0,4) == "S08F")
 			return s.Substring(4);

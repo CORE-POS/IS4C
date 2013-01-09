@@ -97,9 +97,9 @@ class adminlogin extends NoInputPage {
 			autocomplete="off" action="<?php echo $_SERVER['PHP_SELF']; ?>">
 		<input type="password" id="reginput" name="reginput" tabindex="0" onblur="$('#reginput').focus();" />
 		</form>
-		<p />
+		<p>
 		<?php echo $this->msg ?>
-		<p />
+		</p>
 		</div>
 		</div>
 		<?php
