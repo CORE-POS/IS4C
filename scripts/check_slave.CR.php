@@ -22,12 +22,12 @@
  * Change related value below
  * **************************
  */
-    $host = "localhost";
-    $user = "slave_user";
-    $pass = "581mass";
-    $mailto = "joelbrock@gmail.com"; // Your email address
+    $host = "";
+    $user = "";
+    $pass = "";
+    $mailto = ""; // Your email address(es)
     $mailsubject = "[".gethostname()."] SLAVE REPLICATION ALERT";
-    $mailfrom = "IS@harvest.coop";
+    $mailfrom = "";
  
 /* ******************************************
  * No need to change anything below this line
