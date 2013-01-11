@@ -2053,7 +2053,9 @@ function create_trans_dbs($db,$type){
 		  (case r.mode
 		    when 'tender' then 'Credit Card Purchase'
 		    when 'retail_sale' then 'Credit Card Purchase'
+		    when 'Credit_Sale' then 'Credit Card Purchase'
 		    when 'retail_alone_credit' then 'Credit Card Refund'
+		    when 'Credit_Return' then 'Credit Card Refund'
 		    when 'refund' then 'Credit Card Refund'
 		    else ''
 		  end) as tranType,
@@ -2086,7 +2088,9 @@ function create_trans_dbs($db,$type){
 		  (case r.mode
 		    when 'tender' then 'Credit Card Purchase CANCELED'
 		    when 'retail_sale' then 'Credit Card Purchase CANCELLED'
+		    when 'Credit_Sale' then 'Credit Card Purchase CANCELLED'
 		    when 'retail_alone_credit' then 'Credit Card Refund CANCELLED'
+		    when 'Credit_Return' then 'Credit Card Refund CANCELLED'
 		    when 'refund' then 'Credit Card Refund CANCELED'
 		    else ''
 		  end) as tranType,
