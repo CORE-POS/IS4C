@@ -230,12 +230,16 @@ class FannieReportPage extends FanniePage {
 		case 'html':
 			$this->add_css_file($FANNIE_URL.'src/jquery/themes/blue/style.css');
 			$ret .= sprintf('<html><head></head><body>
-				<a href="%s&excel=xls">Download XLS</a>
+				<a href="%s%sexcel=xls">Download XLS</a>
 				&nbsp;&nbsp;&nbsp;&nbsp;
-				<a href="%s&excel=csv">Download CSV</a>
+				<a href="%s%sexcel=csv">Download CSV</a>
 				<table id="mySortableTable" cellspacing="0" 
 				cellpadding="4" border="1" class="tablesorter">',
-				$_SERVER['REQUEST_URI'],$_SERVER['REQUEST_URI']);
+				$_SERVER['REQUEST_URI'],
+				(strstr($_SERVER['REQUEST_URI'],'?') ===False ? '?' : '&'),
+				$_SERVER['REQUEST_URI'],
+				(strstr($_SERVER['REQUEST_URI'],'?') ===False ? '?' : '&')
+			);
 			break;
 		case 'csv':
 		case 'xls':
@@ -323,6 +327,7 @@ class FannieReportPage extends FanniePage {
 	  Javascript sorting utility requires header rows to be <th> tags
 	*/
 	function html_line($row, $header=False){
+		global $FANNIE_URL;
 		$ret = "<tr>";
 		$tag = $header ? 'th' : 'td';
 		for($i=0;$i<count($row);$i){
@@ -330,7 +335,12 @@ class FannieReportPage extends FanniePage {
 			while(isset($row[$i+$span]) && $row[$i+$span] === null && ($i+$span)<count($row)){
 				$span++;
 			}
-			if ($row[$i] === "") $row[$i] = '&nbsp;';
+			if ($row[$i] === "" || $row[$i] === null) $row[$i] = '&nbsp;';
+			elseif (is_numeric($row[$i]) && strlen($row[$i]) == 13){
+				// auto-link UPCs to edit tool
+				$row[$i] = sprintf('<a href="%sitem/itemMaint.php?upc=%s">%s</a>',
+					$FANNIE_URL,$row[$i],$row[$i]);
+			}
 			$ret .= '<'.$tag.' colspan="'.$span.'">'.$row[$i].'</'.$tag.'>';
 			$i += $span;
 		}
