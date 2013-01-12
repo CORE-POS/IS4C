@@ -22,7 +22,19 @@
  * Change related value below
  * **************************
  */
-    $host = "";
+    $host = array(
+        // "cr-1" => "192.168.0.81",
+        // "cr-2" => "192.168.0.82",
+        // "cr-3" => "192.168.0.83",
+        // "cr-4" => "192.168.0.84",
+        // "cr-5" => "192.168.0.85",
+        "cr-test" => "192.168.0.87"
+        // "jp-1" => "192.168.100.81",
+        // "jp-2" => "192.168.100.82",
+        // "jp-3" => "192.168.100.83",
+        // "jp-4" => "192.168.100.84",
+        // "jp-5" => "192.168.100.85"
+        );
     $user = "";
     $pass = "";
     $mailto = ""; // Your email address(es)
@@ -32,7 +44,9 @@
 /* ******************************************
  * No need to change anything below this line
  * ******************************************
- */ $mailmessage = "BAD: ".$err_msg."\n";
+*/
+foreach ($host as $key => $value) {
+    
     $mailheaders = "From:" . $mailfrom;
     error_reporting(E_ALL);
     header("Content-Type: text/plain"); # Not HTML
@@ -84,6 +98,7 @@
             list($field, $expr, $err_msg) = $data;
             $var = $status[$field];
             $val = eval("return $expr;");
+            $mailmessage = "BAD: " . gethostname() . " replication failed.\nReason: " . $err_msg;
             if(!$val) {
                 mail($mailto,$mailsubject,$mailmessage,$mailheaders);
                 $epic_fail = true;
@@ -94,4 +109,5 @@
     if(!$epic_fail) {
         print "OK: Checks all completed successfully\n";
     }
+}
 ?>
