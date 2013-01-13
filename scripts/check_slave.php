@@ -28,31 +28,32 @@
         // "cr-3" => "192.168.0.83",
         // "cr-4" => "192.168.0.84",
         // "cr-5" => "192.168.0.85",
-        "cr-test" => "192.168.0.87"
         // "jp-1" => "192.168.100.81",
         // "jp-2" => "192.168.100.82",
         // "jp-3" => "192.168.100.83",
         // "jp-4" => "192.168.100.84",
-        // "jp-5" => "192.168.100.85"
+        // "jp-5" => "192.168.100.85",
+        "cr-test" => "192.168.0.87"
         );
     $user = "";
     $pass = "";
-    $mailto = ""; // Your email address(es)
-    $mailsubject = "[".gethostname()."] SLAVE REPLICATION ALERT";
+    $mailto = "";
     $mailfrom = "";
  
 /* ******************************************
  * No need to change anything below this line
  * ******************************************
 */
+
+error_reporting(E_ALL);
+header("Content-Type: text/plain"); # Not HTML
 foreach ($host as $key => $value) {
     
+    $mailsubject = "[".$key."] SLAVE REPLICATION ALERT";
     $mailheaders = "From:" . $mailfrom;
-    error_reporting(E_ALL);
-    header("Content-Type: text/plain"); # Not HTML
     $sql = "SHOW SLAVE STATUS";
     $skip_file = 'skip_alerts';
-    $link = mysql_connect($host, $user, $pass, null);
+    $link = mysql_connect($value, $user, $pass, null);
  
     if($link)
         $result = mysql_query($sql, $link);
@@ -92,22 +93,25 @@ foreach ($host as $key => $value) {
     $epic_fail = false;
     if(is_file($skip_file))
         $epic_fail = false;
-    else
-    {
+    else {
+        $mailmessage = "";
+        $val1 = 0;
         foreach($tests as $test_name => $data) {
             list($field, $expr, $err_msg) = $data;
             $var = $status[$field];
             $val = eval("return $expr;");
-            $mailmessage = "BAD: " . gethostname() . " replication failed.\nReason: " . $err_msg;
-            if(!$val) {
-                mail($mailto,$mailsubject,$mailmessage,$mailheaders);
-                $epic_fail = true;
-            }
+            $val1 = (!$val) ? $val1 + 1 : $val1 - 1;
+            $mailmessage .= "BAD: " . $key . " replication failed. Reason: " . $err_msg . "\n";
+        }
+        if ($val1 > 0) {
+            mail($mailto,$mailsubject,$mailmessage,$mailheaders);
+            print $mailmessage . "\n";
+            $epic_fail = true;
         }
     }
  
     if(!$epic_fail) {
-        print "OK: Checks all completed successfully\n";
+        print "OK: Checks all completed successfully on [".$key."]\n";
     }
 }
 ?>
