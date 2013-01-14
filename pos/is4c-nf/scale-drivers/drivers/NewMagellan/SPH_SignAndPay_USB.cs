@@ -115,9 +115,9 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
 				System.Console.WriteLine("USB device found");
 			
 		}
-		//SendReport(BuildCommand(LcdSetBacklightTimeout(0)));
-		ReRead();
+		SendReport(BuildCommand(LcdSetBacklightTimeout(0)));
 		SetStateStart();
+		ReRead();
 		//SetStateCardType();
 	}
 
@@ -252,8 +252,9 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
 		/*
 		 * Bit 7 turned on means a multi-report message
 		 */
-		if ( (input[1] & 0x80) != 0)
+		if ( (input[1] & 0x80) != 0){
 			read_continues = true;
+		}
 
 		byte[] data = null;
 		if (report_length > 3 && (long_pos > 0 || input[2] == 0x02)){ // protcol messages
