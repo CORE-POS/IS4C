@@ -21,6 +21,13 @@
 
 *********************************************************************************/
 
+
+/* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+	*  4Jan2013 Eric Lee Add unmark option to allow an update to be run again.
+
+*/
+
 include('../config.php');
 include('updates/Update.php');
 
@@ -48,6 +55,7 @@ $updateID = isset($_REQUEST['u']) ? $_REQUEST['u'] : '';
 switch($action){
 	case 'view':
 	case 'mark':
+	case 'unmark':
 		if (empty($updateID)){
 			echo 'No update specified!';
 			echo '<a href="update.php">Back</a>';
@@ -70,9 +78,13 @@ switch($action){
 		echo $obj->HtmlInfo();
 		if ($action=='mark')
 			$obj->SetStatus(True);
+		if ($action=='unmark')
+			$obj->SetStatus(False);
 		if (!$obj->CheckStatus()){
 			printf('<a href="update.php?action=apply&u=%s">Apply Update</a><br />',$updateID);
 			printf('<a href="update.php?action=mark&u=%s">Mark Update Complete</a><br />',$updateID);
+		} else {
+			printf('<a href="update.php?action=unmark&u=%s" title="This does not un-do the Update. Not all Updates can be re-run.">Un-mark Update (so it can be run again)</a><br />',$updateID);
 		}
 		echo '<a href="update.php">Back to List of Updates</a>';
 		echo "<hr />";
@@ -106,7 +118,12 @@ switch($action){
 If not, you can make corrections in your database and refresh this page to try again or just make
 alterations directly";
 		echo '<br /><br />';	
-		printf('<a href="update.php?action=mark&u=%s">Manually Mark Update Complete</a><br />',$updateID);
+		if ( !$obj->CheckStatus() ) {
+			printf('<a href="update.php?action=mark&u=%s">Manually Mark Update $updateID Complete</a><br />',$updateID);
+		} else {
+			echo "Update $updateID has been Marked Complete.<br />";
+			printf('<a href="update.php?action=unmark&u=%s" title="This does not un-do the Update. Not all Updates can be re-run.">Un-mark Update (so it can be run again)</a><br />',$updateID);
+		}
 		echo '<a href="update.php">Back to List of Updates</a>';
 		break;
 	case 'list':
@@ -122,7 +139,7 @@ alterations directly";
 		}
 		sort($updates);
 
-		// check for new vs. finished
+		// check for new vs. finished and put in separate arrays.
 		$new = array();
 		$done = array();
 		foreach($updates as $u){
