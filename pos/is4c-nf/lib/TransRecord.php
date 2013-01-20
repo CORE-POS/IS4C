@@ -21,6 +21,13 @@
 
 *********************************************************************************/
 
+
+/* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+	* 19Jan2013 Eric Lee Fix typo "Datbase" in reverseTaxExempt
+
+*/
+
 /**
   @class TransRecord
   Defines functions for adding records to the transaction
