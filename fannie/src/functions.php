@@ -21,6 +21,15 @@
 
 *********************************************************************************/
 
+
+/* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+	* 20Jan2013 Eric Lee In receipt_to_table() support per-coop header text
+	*            hopefully pending use of CORE_LOCAL[receiptHeader*]
+	*            via $FANNIE/install/lane_config/ini.php and table core_trans.lane_config
+
+*/
+
 require_once('mysql_connect.php');
 
 // -----------------------------------------------------------------
@@ -522,6 +531,7 @@ function like_to_table($query,$border,$bgcolor)
 function receipt_to_table($query,$query2,$border,$bgcolor)
 {
 	global $dbc;
+	global $FANNIE_COOP_ID;
 	//echo $query2;
         //$result = $dbc->query($query2);
 	$results = $dbc->query($query); 
@@ -541,12 +551,44 @@ function receipt_to_table($query,$query2,$border,$bgcolor)
 	//echo $rowEmp[4];
 	
 	//echo $query2;
-	$STORE = "W H O L E &nbsp; F O O D S &nbsp; C O - O P";
-	$PHONE = "218-728-0884";
+
+	/* 20Jan13 EL The way I would like to do this.
+	 * Or perhaps get from core_trans.lane_config
+	if ( $CORE_LOCAL->get("receiptHeaderCount") > 0 ) {
+		$receiptHeader = "";
+		$c = $CORE_LOCAL->get("receiptHeaderCount");
+		for ( $i=1; $i <= $c; $i++ ) {
+			$h = "receiptHeader$i";
+			$receiptHeader .= ("<tr><td align=center colspan=4>" . $CORE_LOCAL->get("$h") . "</td></tr>\n");
+		}
+	}
+	*/
+
+	$receiptHeader = "";
+
+	if ( isset($FANNIE_COOP_ID) ) {
+		switch ($FANNIE_COOP_ID) {
+
+			case "WEFC_Toronto":
+				$receiptHeader .= ("<tr><td align=center colspan=4>" . "W E S T &nbsp; E N D &nbsp; F O O D &nbsp; C O - O P" . "</td></tr>\n");
+				$receiptHeader .= ("<tr><td align=center colspan=4>" . "416-533-6363" . "</td></tr>\n");
+				$receiptHeader .= ("<tr><td align=center colspan=4>" . "Local food for local tastes" . "</td></tr>\n");
+				break;
+
+			default:
+				$receiptHeader .= ("<tr><td align=center colspan=4>" . "FANNIE_COOP_ID >{$FANNIE_COOP_ID}<" . "</td></tr>\n");
+
+		}
+	}
+
+	if ( $receiptHeader == "" ) {
+		$receiptHeader .= ("<tr><td align=center colspan=4>" . "W H O L E &nbsp; F O O D S &nbsp; C O - O P" . "</td></tr>\n");
+		$receiptHeader .= ("<tr><td align=center colspan=4>" . "218-728-0884" . "</td></tr>\n");
+		$receiptHeader .= ("<tr><td align=center colspan=4>" . "MEMBER OWNED SINCE 1970" . "</td></tr>\n");
+	}
+
 	echo "<table border = $border bgcolor=$bgcolor>\n";
-	echo "<tr><td align=center colspan=4>$STORE</td></tr>";
-	echo "<tr><td align=center colspan=4>$PHONE</td></tr>";
-	echo "<tr><td align=center colspan=4>MEMBER OWNED SINCE 1970</td></tr>";
+	echo "{$receiptHeader}\n";
 	echo "<tr><td align=center colspan=4>{$row2['datetime']} &nbsp; &nbsp; $trans_num</td></tr>";
 	echo "<tr><td align=center colspan=4>Cashier:&nbsp;$emp_no</td></tr>";
 	echo "<tr><td colspan=4>&nbsp;</td></tr>";
@@ -640,7 +682,7 @@ function select_star_from($table)
 	} echo "</table>\n";
 }
 */
-/* ------------------------------end select_start_from-----------------0-------*/
+/* ------------------------------end select_star_from--------------------------*/
 
 /* ------------------------------start select_where_equal----------------------*/
 /* creates a table using a SELECT WHERE syntax (SELECT * FROM transmemhead WHERE memNum = '175')
