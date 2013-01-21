@@ -21,6 +21,15 @@
 
 *********************************************************************************/
 
+
+/* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+	* 20Jan2013 Eric Lee In receipt_to_table() support per-coop header text
+	*            hopefully pending use of CORE_LOCAL[receiptHeader*]
+	*            via $FANNIE/install/lane_config/ini.php and table core_trans.lane_config
+
+*/
+
 require_once('mysql_connect.php');
 
 // -----------------------------------------------------------------
@@ -530,6 +539,18 @@ function receipt_to_table($query,$query2,$border,$bgcolor)
 	$emp_no = $row2['emp_no'];	
 	$trans_num = $row2['emp_no']."-".$row2['register_no']."-".$row2['trans_no'];
 
+	/* 20Jan13 EL The way I would like to do this.
+	 * Or perhaps get from core_trans.lane_config
+	if ( $CORE_LOCAL->get("receiptHeaderCount") > 0 ) {
+		$receiptHeader = "";
+		$c = $CORE_LOCAL->get("receiptHeaderCount");
+		for ( $i=1; $i <= $c; $i++ ) {
+			$h = "receiptHeader$i";
+			$receiptHeader .= ("<tr><td align=center colspan=4>" . $CORE_LOCAL->get("$h") . "</td></tr>\n");
+		}
+	}
+	*/
+
 	$receiptHeader = "";
 
 	if ( isset($FANNIE_COOP_ID) ) {
@@ -648,7 +669,7 @@ function select_star_from($table)
 	} echo "</table>\n";
 }
 */
-/* ------------------------------end select_start_from-----------------0-------*/
+/* ------------------------------end select_star_from--------------------------*/
 
 /* ------------------------------start select_where_equal----------------------*/
 /* creates a table using a SELECT WHERE syntax (SELECT * FROM transmemhead WHERE memNum = '175')
