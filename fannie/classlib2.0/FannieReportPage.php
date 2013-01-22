@@ -297,7 +297,7 @@ class FannieReportPage extends FanniePage {
 			$this->add_script($FANNIE_URL.'src/jquery/js/jquery.js');
 			$this->add_script($FANNIE_URL.'src/jquery/jquery.tablesorter.js');
 			$sort = sprintf('[[%d,%d]]',$this->sort_column,$this->sort_direction);
-			$this->add_onload_command("\$('#mySortableTable').tablesorter({sortList: $sort});");
+			$this->add_onload_command("\$('#mySortableTable').tablesorter({sortList: $sort, widgets: ['zebra']});");
 			break;
 		case 'csv':
 			header('Content-Type: application/ms-excel');
@@ -315,6 +315,21 @@ class FannieReportPage extends FanniePage {
 			break;
 		}
 
+		return $ret;
+	}
+
+	/**
+	   Convert keyed array to numerical
+	   indexes and maintain order
+	*/
+	function dekey_array($arr){
+		$ret = array();
+		foreach($arr as $outer_key => $row){
+			$record = array();
+			foreach($row as $key => $val)
+				$record[] = $val;
+			$ret[] = $record;
+		}
 		return $ret;
 	}
 

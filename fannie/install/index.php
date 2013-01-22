@@ -607,6 +607,9 @@ function create_op_dbs($con){
 			'prodExtra','op');
 
 	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+			'prodPhysicalLocation','op');
+
+	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 			'productUser','op');
 
 	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
@@ -1414,6 +1417,8 @@ function create_archive_dbs($con) {
 			'sumTendersByDay','arch');
 	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_ARCHIVE_DB,
 			'sumDiscountsByDay','arch');
+	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_ARCHIVE_DB,
+			'reportDataCache','arch');
 }
 
 ?>
