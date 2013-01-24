@@ -20,6 +20,7 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
+header('Location: CustomerCountReport.php');
 
 include('../../config.php');
 include($FANNIE_ROOT.'src/mysql_connect.php');
@@ -44,7 +45,7 @@ if (isset($_REQUEST['submit'])){
 			day(tdate) as day,max(memType) as memType,trans_num
 			FROM $dlog as t
 			WHERE 
-			tDate BETWEEN '$d1 00:00:00' AND '$d2 23:59:59'
+			tdate BETWEEN '$d1 00:00:00' AND '$d2 23:59:59'
 			and trans_type in ('I','D')
 			AND upc <> 'RRR'
 			group by year(tdate),month(tdate),day(tdate),trans_num

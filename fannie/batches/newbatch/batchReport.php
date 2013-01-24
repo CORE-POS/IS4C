@@ -21,12 +21,15 @@
 
 *********************************************************************************/
 
+include('../../config.php');
 include('../../src/mysql_connect.php');
 include('../../src/select_dlog.php');
 
 $batchID = 1;
 if (isset($_GET['batchID']))
 	$batchID = $_GET['batchID'];
+
+header('Location: '.$FANNIE_URL.'reports/BatchReport/BatchReport.php?batchID[]='.$batchID);
 
 $batchInfoQ = "SELECT batchName,startDate,endDate FROM batches where batchID = $batchID";
 $batchInfoR = $dbc->query($batchInfoQ);
