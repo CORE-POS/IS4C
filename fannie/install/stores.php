@@ -55,6 +55,18 @@ else {
 	echo "<span style=\"color:red;\"><b>Error</b>: config.php is not writeable</span>";
 }
 ?>
+<hr />
+<b>Co-op</b>
+<br />Use this to identify code that is specific to your co-op.
+<br />Particularly important if you plan to contribute to the CORE IT code base.
+<br />Try to use a code that will not be confused with any other, e.g. "WEFC_Toronto" instead of "WEFC".
+<br />Co-op ID:
+<?php
+if (!isset($FANNIE_COOP_ID)) $FANNIE_COOP_ID = '';
+if (isset($_REQUEST['FANNIE_COOP_ID'])) $FANNIE_COOP_ID=$_REQUEST['FANNIE_COOP_ID'];
+confset('FANNIE_COOP_ID',"'$FANNIE_COOP_ID'");
+printf("<input type=\"text\" name=\"FANNIE_COOP_ID\" value=\"%s\" />",$FANNIE_COOP_ID);
+?>
 <br /><br />
 <b>Store ID</b>: 
 <?php
