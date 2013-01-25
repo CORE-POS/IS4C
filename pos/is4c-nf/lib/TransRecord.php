@@ -484,7 +484,7 @@ static public function reverseTaxExempt() {
 	global $CORE_LOCAL;
 	self::addItem("", "** Tax Exemption Reversed **", "", "", "D", 0, 0, 0, 0, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10);
 	$CORE_LOCAL->set("TaxExempt",0);
-	Datbase::setglobalvalue("TaxExempt", 0);
+	Database::setglobalvalue("TaxExempt", 0);
 }
 
 //_____________________________end reverseTaxExempt()
