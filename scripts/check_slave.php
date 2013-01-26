@@ -58,7 +58,7 @@ foreach ($host as $key => $value) {
     if($link)
         $result = mysql_query($sql, $link);
     else {
-        printf("BAD: Connection Failed %s", mysql_error());
+        printf("[".$key."] BAD: Connection Failed %s", mysql_error());
         mysql_close($link);
         return;
     }
@@ -66,7 +66,7 @@ foreach ($host as $key => $value) {
     if($result)
         $status = mysql_fetch_assoc($result);
     else {
-        printf("BAD: Query failed - %s\n", mysql_error($link));
+        printf("[".$key."] BAD: Query failed - %s\n", mysql_error($link));
         mysql_close($link);
         return;
     }
@@ -101,17 +101,30 @@ foreach ($host as $key => $value) {
             $var = $status[$field];
             $val = eval("return $expr;");
             $val1 = (!$val) ? $val1 + 1 : $val1 - 1;
-            $mailmessage .= "BAD: " . $key . " replication failed. Reason: " . $err_msg . "\n";
+            // $mailmessage .= "BAD: " . $key . " replication failed. Reason: " . $err_msg . "\n";
+            print "[".$key."] BAD: Slave failure detected.  Attempting RESET." 
         }
+        $val2 = 0;
         if ($val1 > 0) {
-            mail($mailto,$mailsubject,$mailmessage,$mailheaders);
-            print $mailmessage . "\n";
-            $epic_fail = true;
+            $reset = "mysql -u".$user." -p".$pass." -h ".$host." -e \"slave stop;reset slave;slave start\"";
+            exec($reset);
+            foreach($tests as $test_name => $data) {
+                list($field, $expr, $err_msg) = $data;
+                $var = $status[$field];
+                $val = eval("return $expr;");
+                $val2 = (!$val) ? $val2 + 1 : $val2 - 1;
+                $mailmessage .= "[".$key."] BAD: Replication failed. Reason: " . $err_msg . "\n";
+            }
+            if ($val2 > 0) {
+                mail($mailto,$mailsubject,$mailmessage,$mailheaders);
+                print $mailmessage . "\n";
+                $epic_fail = true;
+            }
         }
     }
  
     if(!$epic_fail) {
-        print "OK: Checks all completed successfully on [".$key."]\n";
+        print "[".$key."] OK: Checks all completed successfully.\n";
     }
 }
 ?>
