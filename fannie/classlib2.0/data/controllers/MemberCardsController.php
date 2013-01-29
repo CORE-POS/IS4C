@@ -1,7 +1,7 @@
 <?php
 /*******************************************************************************
 
-    Copyright 2010 Whole Foods Co-op, Duluth, MN
+    Copyright 2013 Whole Foods Co-op
 
     This file is part of Fannie.
 
@@ -21,37 +21,39 @@
 
 *********************************************************************************/
 
-class MemberModule {
+/**
+  @class MemberCardsController
 
-	function db(){
-		global $dbc,$FANNIE_ROOT,$FANNIE_OP_DB;
-		if (!isset($dbc)) include_once($FANNIE_ROOT.'classlib2.0/data/FannieDB.php');
-		return FannieDB::get($FANNIE_OP_DB);
-	}
+*/
 
-	function ShowEditForm($memNum){
+if (!class_exists('FannieDB'))
+	include(dirname(__FILE__).'/../FannieDB.php');
 
-	}
-
-	function SaveFormData($memNum){
-
-	}
-
-	function HasSearch(){
-		return False;
-	}
-
-	function ShowSearchForm(){
-
-	}
-
-	function GetSearchResults(){
-
-	}
+class MemberCardsController {
 	
-	function RunCron(){
+	/**
+	  Update memberCards record for an account
+	  @param $card_no the member number
+	  @param $upc the barcode
+	*/
+	public static function update($card_no,$upc){
+		global $FANNIE_OP_DB;
+		$dbc = FannieDB::get($FANNIE_OP_DB);
+	
+		$delP = $dbc->prepare_statement("DELETE FROM memberCards WHERE card_no=?");
+		$delR = $dbc->exec_statement($delP,array($card_no));
 
+		/** don't create entry w/o UPC */
+		if ($upc != ''){
+			$upc = str_pad($upc,13,'0',STR_PAD_LEFT);
+			$insP = $dbc->prepare_statement("INSERT INTO memberCards (card_no, upc)
+					VALUES (?, ?)");
+			$insR = $dbc->exec_statement($insP,array($card_no,$upc));
+			return $insR;
+		}
+		else return $delR;
 	}
+
 }
 
 ?>

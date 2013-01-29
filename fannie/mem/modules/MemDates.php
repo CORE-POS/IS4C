@@ -56,14 +56,12 @@ class MemDates extends MemberModule {
 	}
 
 	function SaveFormData($memNum){
+		global $FANNIE_ROOT;
 		$dbc = $this->db();
+		if (!class_exists("MemDatesController"))
+			include($FANNIE_ROOT.'classlib2.0/data/controllers/MemDatesController.php');
 		
-		$start = !empty($_REQUEST['MemDates_start'])?$dbc->escape($_REQUEST['MemDates_start']):'NULL';
-		$end = !empty($_REQUEST['MemDates_end'])?$dbc->escape($_REQUEST['MemDates_end']):'NULL';
-		
-		$saveQ = sprintf("UPDATE memDates SET start_date=%s,end_date=%s
-				WHERE card_no=%d",$start,$end,$memNum);
-		$test = $dbc->query($saveQ);
+		$test = MemDatesController::update($memNum,$_REQUEST['MemDates_start'],$_REQUEST['MemDates_end']);
 
 		if ($test === False)
 			return "Error: problem saving start/end dates<br />";

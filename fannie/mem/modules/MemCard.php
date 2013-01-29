@@ -71,9 +71,11 @@ class MemCard extends MemberModule {
 	// Return "" on success or an error message.
 	function SaveFormData($memNum){
 
-		global $FANNIE_MEMBER_UPC_PREFIX;
+		global $FANNIE_MEMBER_UPC_PREFIX, $FANNIE_ROOT;
 
 		$dbc = $this->db();
+		if (!class_exists("MemberCardsController"))
+			include($FANNIE_ROOT.'classlib2.0/data/controllers/MemberCardsController.php');
 
 		$prefix = isset($FANNIE_MEMBER_UPC_PREFIX) ? $FANNIE_MEMBER_UPC_PREFIX : "";
 		$plen = strlen($prefix);
@@ -85,6 +87,11 @@ class MemCard extends MemberModule {
 			$form_upc = sprintf("{$prefix}%0{$clen}d", $form_upc);
 		}
 
+		if (MemberCardsController::update($memNum, $form_upc))	
+			return 'Error: problem saving Member Card<br />';
+		else
+			return '';
+
 		//Is there already a memberCards record for this member?
 		$infoQ = sprintf("SELECT upc
 				FROM memberCards
@@ -93,56 +100,6 @@ class MemCard extends MemberModule {
 		$infoR = $dbc->query($infoQ);
 		if ( $infoR === false ) {
 			return "Error: problem checking for Member Card<br />";
-		}
-
-		//If yes:
-		if ( $dbc->num_rows($infoR) > 0 ) {
-			$infoW = $dbc->fetch_row($infoR);
-			$db_upc = "{$infoW['upc']}";
-			// If the formitem is the same as the db item, do nothing.
-			if ( $form_upc == $db_upc ) {
-				1;
-			}
-			// If the formitem is not "", update.
-			elseif ( $form_upc != "" ) {
-				$upQ = sprintf("UPDATE memberCards SET upc = %s WHERE card_no = %d",
-								$dbc->escape("$form_upc"), $memNum);
-				$upR = $dbc->query($upQ);
-				if ( $upR === false ) {
-					return "Error: problem saving Member Card<br />";
-				} else {
-					return "";
-				}
-			}
-			// If the formitem is "", delete.
-			else {
-				$upQ = sprintf("DELETE FROM memberCards WHERE card_no = %d",
-								$memNum);
-				$upR = $dbc->query($upQ);
-				if ( $upR === false ) {
-					return "Error: problem deleteing Member Card<br />";
-				} else {
-					return "";
-				}
-			}
-		}
-		//If no:
-		else {
-			// If the formitem is not "", insert.
-			if ( $form_upc != "" ) {
-				$upQ = sprintf("INSERT INTO memberCards (card_no, upc) VALUES (%d, %s)",
-								$memNum, $dbc->escape("$form_upc"));
-				$upR = $dbc->query($upQ);
-				if ( $upR === false ) {
-					return "Error: problem adding Member Card<br />";
-				} else {
-					return "";
-				}
-			}
-			// If the formitem is "", do nothing.
-			else {
-				return "";
-			}
 		}
 
 	// saveFormData
