@@ -21,6 +21,14 @@
 
 *********************************************************************************/
 
+/* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+	* 17Oct2012 Eric Lee Change comments, which were identical to those in
+	*                     UpdateCustBalance.php .
+	*                    Change variable name $balance to $payment
+
+*/
+
 if (!chdir("LanePush")){
 	echo "Error: Can't find directory (lane push)";
 	exit;
@@ -29,10 +37,13 @@ if (!chdir("LanePush")){
 include('../../config.php');
 include($FANNIE_ROOT.'src/SQLManager.php');
 
+
 /* HELP
 
-   This script updates custdata balances based on
-   activity today
+   This script updates unpaid_ar_today.recent_payments
+	 based on activity today
+
+	 When or how often should it be run?
 */
 
 set_time_limit(0);
@@ -41,7 +52,7 @@ ini_set('memory_limit','256M');
 $sql = new SQLManager($FANNIE_SERVER,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
 		$FANNIE_SERVER_USER,$FANNIE_SERVER_PW);
 
-// get balances that changed today
+// get today's AR payments
 $data = array();
 $fetchQ = "SELECT card_no,recent_payments FROM unpaid_ar_today WHERE mark=1";
 $fetchR = $sql->query($fetchQ);
@@ -49,7 +60,7 @@ while($fetchW = $sql->fetch_row($fetchR))
 	$data[$fetchW['card_no']] = $fetchW['recent_payments'];
 
 $errors = False;
-// connect to each lane and update balances
+// connect to each lane and update payments
 foreach($FANNIE_LANES as $lane){
 	$db = new SQLManager($lane['host'],$lane['type'],$lane['op'],$lane['user'],$lane['pw']);
 
@@ -59,9 +70,9 @@ foreach($FANNIE_LANES as $lane){
 		continue;
 	}
 
-	foreach($data as $cn => $bal){
+	foreach($data as $cn => $payment){
 		$upQ = sprintf("UPDATE unpaid_ar_today SET recent_payments=%.2f WHERE card_no=%d",
-				$bal,$cn);
+				$payment,$cn);
 		$db->query($upQ);
 	}
 }

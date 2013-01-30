@@ -29,6 +29,12 @@
 
  'Z --COMMENTZ { - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+ 13Oct12 EL Ignore member card number 0; assigned in Civi when member edited and
+              member_card_number2_21 is not assigned a real value.
+  3Oct12 EL Get member card number from civicrm_value_identification_and_cred_5.member_card_number2_21
+.            and populate memberCard.
+ 29Aug12 EL Set memberIdOffset to 0 from 4000. Note that clearIS4C() will need different params now
+ 							or maybe need to work differently.
   7Aug12 EL Enable email, to me at gmail.
  13Jul12 EL -> Try doing dbConn2 as add_connection. It may be necessary.
                It is important that the databases for each conn have different names.
@@ -154,7 +160,7 @@ Is this, directly from ADODB, available here?  What does the include in SQLManag
 
 // Clear the test records from the IS4C tables.
 // CardNo or card_no range between 4000 and 6000
-function clearIS4C($low = 4000, $high = 6000) {
+function clearIS4C($low = 417, $high = 1500) {
 
 	global $dbConn2;
 	global $is4cTables;
@@ -164,8 +170,8 @@ function clearIS4C($low = 4000, $high = 6000) {
 
 	foreach ($is4cTables as $table_desc) {
 		list($db, $table, $cn) = explode("|", $table_desc);
-		$clearWhere = "$cn = 4471";
-		//$clearWhere = "$cn BETWEEN $low AND $high;";
+		//$clearWhere = "$cn = 4471";
+		$clearWhere = "$cn BETWEEN $low AND $high;";
 		$query = "DELETE FROM $table WHERE ${clearWhere};";
 //echo "$query\n";
 		if ( TRUE && $db == "core_op" ) {
@@ -225,6 +231,44 @@ function searchIS4C($member) {
 // searchIS4C
 }
 
+// #'t
+function searchIS4C2($member) {
+
+	global $dbConn2;
+
+	$is4cOp = array();
+	$sel = "SELECT c.CardNo as cCard,
+	i.card_no as iCard,
+	t.card_no as tCard,
+	d.card_no as dCard,
+	r.card_no as rCard
+	FROM custdata c
+LEFT JOIN meminfo i ON c.CardNo = i.card_no
+LEFT JOIN memContact t ON c.CardNo = t.card_no
+LEFT JOIN memDates d ON c.CardNo = d.card_no
+LEFT JOIN memberCards r ON c.CardNo = r.card_no
+	WHERE c.CardNo = ${member};";
+	$rslt = $dbConn2->query("$sel");
+	if ( $dbConn2->errno ) {
+		$msg = sprintf("Error: DQL failed: %s\n", $dbConn2->error);
+		$is4cOp[] = array($msg);
+		return($is4cOp);
+	}
+
+	while ( $row = $dbConn2->fetch_row($rslt) ) {
+		$is4cOp['custdata'] = "update";
+		$is4cOp['meminfo'] = ( $row[iCard] != "" ) ? "update" : "insert";
+		$is4cOp['memContact'] = ( $row[tCard] != "" ) ? "update" : "insert";
+		$is4cOp['memDates'] = ( $row[dCard] != "" ) ? "update" : "insert";
+		$is4cOp['memberCards'] = ( $row[rCard] != "" ) ? "update" : "insert";
+		break;
+	}
+
+	return($is4cOp);
+
+// searchIS4C2
+}
+
 // Insert the records for this Individual, Household or Organization.
 // Return "OK" if all OK or abort returning message on any error.
 function insertToIS4C() {
@@ -252,6 +296,7 @@ function insertToIS4C() {
 		foreach ($insertCustdata as $statement) {
 			if ( $debug == 1) 
 				echo $statement, "\n";
+//continue;
 			$rslt = $dbConn2->query("$statement");
 			if ( 1 && $dbConn2->errno ) {
 				return(sprintf("Error: Insert failed: %s\n", $dbConn2->error));
@@ -267,6 +312,7 @@ function insertToIS4C() {
 		if ( $statement != "" ) {
 			if ( $debug == 1) 
 				echo $statement, "\n";
+//continue;
 			$rslt = $dbConn2->query("$statement");
 			if ( 1 && $dbConn2->errno ) {
 				return(sprintf("Error: Insert failed: %s\n", $dbConn2->error));
@@ -308,6 +354,7 @@ function updateIS4C() {
 		foreach ($updateCustdata as $statement) {
 			if ( $debug == 1) 
 				echo $statement, "\n";
+//continue;
 			$rslt = $dbConn2->query("$statement");
 			if ( 1 && $dbConn2->errno ) {
 				return(sprintf("Error: Update failed: %s\n", $dbConn2->error));
@@ -323,6 +370,7 @@ function updateIS4C() {
 		if ( $statement != "" ) {
 			if ( $debug == 1) 
 				echo $statement, "\n";
+//continue;
 			$rslt = $dbConn2->query("$statement");
 			if ( 1 && $dbConn2->errno ) {
 				return(sprintf("Error: Update failed: %s\n", $dbConn2->error));
@@ -388,6 +436,34 @@ function clearWorkVars() {
 	foreach ($flds as $field) {
 		$stockpurchases[$field] = "";
 	}
+
+	global $insertCustdata;
+	global $insertMeminfo;
+	global $insertMemContact;
+	global $insertMemDates;
+	global $insertMemberCards;
+	global $insertStockpurchases;
+
+	global $updateCustdata;
+	global $updateMeminfo;
+	global $updateMemContact;
+	global $updateMemDates;
+	global $updateMemberCards;
+	global $updateStockpurchases;
+
+	$insertCustdata = array();
+	$insertMeminfo = "";
+	$insertMemContact = "";
+	$insertMemDates = "";
+	$insertMemberCards = "";
+	$insertStockpurchases = "";
+
+	$updateCustdata = array();
+	$updateMeminfo = "";
+	$updateMemContact = "";
+	$updateMemDates = "";
+	$updateMemberCards = "";
+	$updateStockpurchases = "";
 
 // clearWorkVars
 }
@@ -639,13 +715,18 @@ $logFile = "../logs/updateMembers.log";
 $version = 1;
 
 // test: 4000  production: 0
-$memberIdOffset = 4000;
+$memberIdOffset = 0;
 
 // Whether to clear or write anything to IS4C
 $writeIS4C = 1;
 
+// Controls some monitoring and info.
+$debug = 0;
+
 // People to whom news is mailed.
 $admins = array("el66gr@gmail.com");
+
+$is4cTableNames = array('custdata', 'meminfo', 'memContact', 'memDates', 'memberCards', 'stockpurchases');
 
 // --constants } - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -705,7 +786,7 @@ $memDates = array(
 // Member Card barcode lookup.
 $memberCards = array(
 	"card_no" => "",
-	"x" => ""
+	"upc" => ""
 	);
 // in core_trans
 $stockpurchases = array(
@@ -735,10 +816,8 @@ $updateMemberCards = "";
 $updateStockpurchases = "";
 
 // insert or update
-$is4cOp = "";
-
-// Controls some monitoring and info.
-$debug = 0;
+$is4cOp = array();
+//$is4cOp = "";
 
 // --variables } - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -1020,12 +1099,14 @@ c.id as contact_id
 ,r.receive_date
 ,r.payment_instrument_id as cpi
 ,r.is_pay_later as cipl
+,v.member_card_number2_21 as mcard
 FROM
 civicrm_membership m INNER JOIN civicrm_contact c ON c.id = m.contact_id
 LEFT JOIN civicrm_email e ON m.contact_id = e.contact_id
 LEFT JOIN civicrm_address a ON m.contact_id = a.contact_id
 LEFT JOIN civicrm_phone p ON m.contact_id = p.contact_id
 LEFT JOIN civicrm_contribution r ON m.contact_id = r.contact_id
+LEFT JOIN civicrm_value_identification_and_cred_5 v ON m.contact_id = v.entity_id
 WHERE $selWhere
 ORDER BY c.id, r.contribution_type_id
 $selLimit;";
@@ -1083,7 +1164,7 @@ while ( $row = $dbConn->fetch_row($members) ) {
 	/* For the first record for each member (same contact_id):
 		 o If there is data for the previous member, update or insert it and clear the working vars.
 		 Assume that the name and contact-point data is equally good in all rows.
-		 + Compose the member-number for custdata.CardNo from m.id = member_id + 4000
+		 + Compose the member-number for custdata.CardNo from m.id = member_id + memberIdOffset
 		 + For Household or if first_name contains " and "
 			 o Try to parse/compose separate first and last names
 	*/
@@ -1093,7 +1174,7 @@ while ( $row = $dbConn->fetch_row($members) ) {
 
 //echo "To DML is4cOp >${is4cOp}< CardNo >$custdata[CardNo]<\n";
 			// Is the op for the just-finished member to be insert or update?
-			if ( $is4cOp == "insert" ) {
+			if ( True || $is4cOp1 == "insert" ) {
 				// Insert the records for this Individual, Household or Organization.
 				$resultString = insertToIS4C();
 				if ( $resultString != "OK" ) {
@@ -1101,28 +1182,30 @@ while ( $row = $dbConn->fetch_row($members) ) {
 					//$dbConn2->close();
 					dieHere("$resultString");
 				}
-				$insertCount++;
+				//$insertCount++;
 			}
 			// update existing members.
-			elseif ( $is4cOp == "update" ) {
-				// Why pass the list?  The updates will be of the records in $custdata.
+			if ( True || $is4cOp1 == "update" ) {
 				$resultString = updateIS4C();
 				if ( $resultString != "OK" ) {
 					//$dbConn->close();
 					//$dbConn2->close();
 					dieHere("$resultString");
 				}
-				$updateCount++;
+				//$updateCount++;
 			}
+			/*
 			else {
 				//$dbConn->close();
 				//$dbConn2->close();
 				dieHere("Unknown is4cOp >${is4cOp}< CardNo >$custdata[CardNo]<\n");
 			}
+			*/
 
 			// Each IS4C table is represented by an assoc array.
 			clearWorkVars();
-			$is4cOp = "";
+			$is4cOp = array();
+			$is4cOp1 = "";
 			$customers = array();
 
 		}
@@ -1134,7 +1217,7 @@ while ( $row = $dbConn->fetch_row($members) ) {
 		*/
 		$custdata[CardNo] = $row[member_id] + $memberIdOffset;
 
-		// Is this member already in IS4C?
+		// #'sIs this member already in IS4C?
 		$customers = searchIS4C($custdata[CardNo]);
 		// Error is in [0][0]
 		// Is waiting to process the error here worth it?
@@ -1145,10 +1228,23 @@ while ( $row = $dbConn->fetch_row($members) ) {
 			// A: braces are needed.
 			dieHere("{$customers[0][0]}");
 		}
+		// Decide where the operation to each IS4C table will be update or insert.
+		//  There is another test of whether there is anything to add/change.
+		$is4cOp = array();
 		if ( count($customers) == 0 ) {
-			$is4cOp = "insert";
+			$is4cOp1 = "insert";
+			foreach ($is4cTableNames as $table) {
+				$is4cOp["$table"] = "insert";
+			}
+			$insertCount++;
 		} else {
-			$is4cOp = "update";
+			$is4cOp1 = "update";
+			// Find out wether the operation to each table will be insert or update.
+			$is4cOp = searchIS4C2($custdata[CardNo]);
+			if ( preg_match("/^Error/", $is4cOp[0][0]) ) {
+				dieHere("{$is4cOp[0][0]}");
+			}
+			$updateCount++;
 		}
 
 		// This lets autoincrement do its thing.
@@ -1215,7 +1311,7 @@ while ( $row = $dbConn->fetch_row($members) ) {
 			$custdata[blueLine] = "\"$custdata[CardNo] $custdata[LastName]";
 
 			// Is this premature?  Contribution recordds not examined.
-			if ( $is4cOp == "insert" ) {
+			if ( $is4cOp[custdata] == "insert" ) {
 				// $insertCustdata is an array of statements to execute later.
 				$insertCustdata[$i] = "INSERT INTO custdata (
 CardNo,
@@ -1239,7 +1335,7 @@ $custdata[memType],
 '$custdata[id]'
 );";
 			}
-			elseif ( $is4cOp == "update" ) {
+			elseif ( $is4cOp[custdata] == "update" ) {
 				// $updateCustdata is an array of statements to execute later.
 				$updateCustdata[$i] = "UPDATE custdata SET 
 LastName = '$custdata[LastName]'
@@ -1251,7 +1347,7 @@ personNum = $custdata[personNum]
 ;";
 			}
 			else {
-				// echo "Bad is4cOp >{$is4cOp}<\n";
+				echo "Bad is4cOp >{$is4cOp[custdata]}<\n";
 				1;
 			}
 
@@ -1280,7 +1376,7 @@ personNum = $custdata[personNum]
 		// What should the source for this be?
 		$meminfo[ads_OK] = "1";
 
-		if ( $is4cOp == "insert" ) {
+		if ( $is4cOp[meminfo] == "insert" ) {
 			// Compose the insert statement.
 			$insertMeminfo = "INSERT INTO meminfo (
 card_no
@@ -1325,6 +1421,7 @@ WHERE card_no = $meminfo[card_no]
 			 May change if expiry implemented, so code.
 		*/
 		if ( $row[start_date] != "" ) {
+
 			$memDates[card_no] = $custdata[CardNo];
 			// Civi is date, IS4C is datetime
 			//   The time part is set to 00:00:00
@@ -1334,7 +1431,7 @@ WHERE card_no = $meminfo[card_no]
 				$memDates[end_date] = $row[end_date];
 			}
 
-			if ( $is4cOp == "insert" ) {
+			if ( $is4cOp[memDates] == "insert" ) {
 				// Compose the insert statement.
 				$insertMemDates = "INSERT INTO memDates (
 card_no
@@ -1378,7 +1475,7 @@ WHERE card_no = $memDates[card_no]
 				$memContact[pref] = 2;
 			}
 
-			if ( $is4cOp == "insert" ) {
+			if ( $is4cOp[memContact] == "insert" ) {
 				// Compose the insert statement.
 				$insertMemContact = "INSERT INTO memContact (
 card_no
@@ -1390,7 +1487,7 @@ $memContact[card_no]
 );";
 
 			} else {
-				// Compose the insert statement.
+				// Compose the update statement.
 				$updateMemContact = "UPDATE memContact SET
 pref = '$memContact[pref]'
 WHERE card_no = $memContact[card_no]
@@ -1398,6 +1495,34 @@ WHERE card_no = $memContact[card_no]
 			}
 
 		// memContact, do or not.
+		}
+
+		/* #'m memberCards
+		*/
+		if ( $row[mcard] != "" && $row[mcard] != "0" ) {
+
+			$memberCards[card_no] = $custdata[CardNo];
+			$memberCards[upc] = sprintf("00401229%05d", $row[mcard]);
+
+			if ( $is4cOp[memberCards] == "insert" ) {
+				// Compose the insert statement.
+				$insertMemberCards = "INSERT INTO memberCards (
+card_no
+,upc
+)
+VALUES (
+$memberCards[card_no]
+, '$memberCards[upc]'
+);";
+			} else {
+				// Compose the update statement.
+				$updateMemberCards = "UPDATE memberCards SET
+upc = '$memberCards[upc]'
+WHERE card_no = $memberCards[card_no]
+;";
+			}
+
+		// memberCards, if anything to record.
 		}
 
 		/* stockpurchases
@@ -1426,9 +1551,10 @@ WHERE card_no = $memContact[card_no]
 
 // Do the last Civi row.
 if ( $writeIS4C ) {
+
 //echo "To DML is4cOp >${is4cOp}< CardNo >$custdata[CardNo]<\n";
 	// Is the op for the just-finished member to be insert or update?
-	if ( $is4cOp == "insert" ) {
+	if ( True || $is4cOp1 == "insert" ) {
 		// Insert the records for this Individual, Household or Organization.
 		$resultString = insertToIS4C();
 		if ( $resultString != "OK" ) {
@@ -1436,24 +1562,28 @@ if ( $writeIS4C ) {
 			//$dbConn2->close();
 			dieHere("$resultString");
 		}
-		$insertCount++;
+		//$insertCount++;
 	}
 	// update existing members.
-	elseif ( $is4cOp == "update" ) {
-		// Why pass the list?  The updates will be of the records in $custdata.
+	if ( True || $is4cOp1 == "update" ) {
 		$resultString = updateIS4C();
 		if ( $resultString != "OK" ) {
 			//$dbConn->close();
 			//$dbConn2->close();
 			dieHere("$resultString");
 		}
-		$updateCount++;
+		//$updateCount++;
 	}
+
+	/*
 	else {
 		//$dbConn->close();
 		//$dbConn2->close();
-		dieHere("Unknown is4cOp >${is4cOp}< CardNo >$custdata[CardNo]<\n");
+		dieHere("Unknown is4cOp1 >${is4cOp1}< CardNo >$custdata[CardNo]<\n");
 	}
+	*/
+
+// The last Civi row.
 }
 
 if ( $debug == 1) 

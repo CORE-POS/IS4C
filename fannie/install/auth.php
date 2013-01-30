@@ -20,6 +20,15 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
+
+
+/* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+	* 10Nov2012 Eric Lee Add include ../auth/login.php
+	*                    Fix closing of Authentication Enabled select.
+
+*/
+
 ini_set('display_errors','1');
 ?>
 <?php 
@@ -69,8 +78,12 @@ else{
 	confset('FANNIE_AUTH_ENABLED','False');
 	echo "<option>Yes</option><option selected>No</option>";
 }
+//10Nov12 EL New location for </select>
+echo "</select><br />";
 if ($FANNIE_AUTH_ENABLED){
 	include("../auth/utilities.php");
+	//10Nov12 EL Added include login.php
+	include("../auth/login.php");
 	table_check(); // create user tables
 
 	// if no users exist, offer to create one
@@ -82,17 +95,21 @@ if ($FANNIE_AUTH_ENABLED){
 			if ($success){
 				echo "<i>User ".$_REQUEST['newuser']." created</i><br />";
 				$success = addAuth($_REQUEST['newuser'],'admin');
-				if ($success)
+				if ($success) {
 					echo "<i>User ".$_REQUEST['newuser']." is an admin</i><br />";
-				else
+					// 10Nov12 EL Added these notes to the person installing.
+					echo "You can use these credentials at the <a href='../auth/ui/' target='_aui'>Authentication Interface</a></br />";
+					echo " Other protected pages may require different credentials.<br />";
+				} else {
 					echo "<b>Error making user an admin</b><br />";
+				}
 			}
 			else 
 				echo "<b>Error creating initial user</b><br />";
-			$FANNIE_AUTH_ENABLED = True;
+			$FANNIE_AUTH_ENABLED = True; // toggle enforce error checking
 		}
 		if (!$success){
-			echo "<i>No users defined. To create an initial admin user,
+			echo "<br /><i>No users defined. To create an initial admin user,
 				enter a username and password below</i><br />";
 			echo 'Username: <input type="text" name="newuser" /><br />';
 			echo 'Password: <input type="password" name="newpass" /><br />';
@@ -100,7 +117,9 @@ if ($FANNIE_AUTH_ENABLED){
 	}
 }
 ?>
+<!-- 10Nov12 EL Formerly.
 </select>
+-->
 <hr />
 <b>Allow shadow logins</b>
 <select name=FANNIE_AUTH_SHADOW>

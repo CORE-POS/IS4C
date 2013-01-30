@@ -32,7 +32,8 @@ if (isset($_GET['upc'])){
 	$where = sprintf("WHERE upc='%s'",str_pad($_GET['upc'],13,'0',STR_PAD_LEFT));
 }
 else if (isset($_GET['likecode'])){
-	$where = "LEFT JOIN upcLike AS u ON d.upc=u.upc WHERE u.likecode=".$_GET['likecode'];
+	$where = sprintf("LEFT JOIN %s%supcLike AS u ON d.upc=u.upc WHERE u.likecode=%d",
+		$FANNIE_OP_DB,$dbc->sop(),$_GET['likecode']);
 }
 else
 	exit;

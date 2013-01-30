@@ -20,6 +20,13 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
+
+/* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+	*  6Dec2012 Eric Lee Add FANNIE_MEMBER_UPC_PREFIX
+
+*/
+
 ini_set('display_errors','1');
 include('../config.php'); 
 include('util.php');
@@ -58,7 +65,7 @@ confset('FANNIE_NAMES_PER_MEM',$FANNIE_NAMES_PER_MEM);
 echo "<input type=text size=3 name=FANNIE_NAMES_PER_MEM value=\"$FANNIE_NAMES_PER_MEM\" />";
 ?>
 <hr />
-<b>Equity/Store Charge</b>:
+<b>Equity/Store Charge</b>
 <br />Equity Department(s): 
 <?php
 if (!isset($FANNIE_EQUITY_DEPARTMENTS)) $FANNIE_EQUITY_DEPARTMENTS = '';
@@ -111,6 +118,16 @@ foreach($tmp as $module){
 Click or ctrl-Click or shift-Click to select/deselect modules for enablement.
 <br /><br />
 <a href="memModDisplay.php">Adjust Module Display Order</a>
+
+<hr />
+<b>Member Cards</b>
+<br />Member Card UPC Prefix: 
+<?php
+if (!isset($FANNIE_MEMBER_UPC_PREFIX)) $FANNIE_MEMBER_UPC_PREFIX = '';
+if (isset($_REQUEST['FANNIE_MEMBER_UPC_PREFIX'])) $FANNIE_MEMBER_UPC_PREFIX=$_REQUEST['FANNIE_MEMBER_UPC_PREFIX'];
+confset('FANNIE_MEMBER_UPC_PREFIX',"'$FANNIE_MEMBER_UPC_PREFIX'");
+printf("<input type=\"text\" name=\"FANNIE_MEMBER_UPC_PREFIX\" value=\"%s\" />",$FANNIE_MEMBER_UPC_PREFIX);
+?>
 
 <hr />
 <b>Locale</b> <br />

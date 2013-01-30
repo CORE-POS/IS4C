@@ -135,7 +135,7 @@ function displayUI($dateStr){
 		if ($d == 'Checks') 
 			$ret .= "<td>&nbsp;</td>";
 		else{
-			$ret .= "<td><input size=4 type=text id=safeCount1$d value=".$holding['openSafeCount'][$d];
+			$ret .= "<td><input size=4 type=text id=\"safeCount1$d\" value=".$holding['openSafeCount'][$d];
 			$ret .= " onchange=\"updateOpenSafeCount('$d');\" /></td>";
 			$sum += $holding['openSafeCount'][$d];
 		}
@@ -340,11 +340,11 @@ function displayUI($dateStr){
 		$buyAmounts['1.00'] -= 1;
 		$overage += 1;
 	}
-	while($buyAmounts['5.00'] % 50 != 0){ 
+	while($buyAmounts['5.00'] % 5 == 0 && $buyAmounts['5.00'] % 50 != 0){ 
 		$buyAmounts['5.00'] -= 5;
 		$overage += 5;
 	}
-	while($buyAmounts['10.00'] % 50 != 0){ 
+	while($buyAmounts['10.00'] % 10 == 0 && $buyAmounts['10.00'] % 50 != 0){ 
 		$buyAmounts['10.00'] -= 10;
 		$overage += 10;
 	}

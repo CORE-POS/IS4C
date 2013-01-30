@@ -86,6 +86,7 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
 		long_length = 0;
 		long_pos = 0;
 		ack_counter = 0;
+		usb_fs = null;
 		
 		#if MONO
 		usb_devicefile = p;
@@ -104,14 +105,19 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
 		usb_port = new USBWrapper_Win32();
 		usb_report_size = 65;
 		#endif
-		usb_fs = usb_port.GetUSBHandle(usb_devicefile,usb_report_size);
-		if (usb_fs == null)
-			System.Console.WriteLine("No device");
-		else
-			System.Console.WriteLine("USB device found");
-		//SendReport(BuildCommand(LcdSetBacklightTimeout(0)));
-		ReRead();
+		while(usb_fs == null){
+			usb_fs = usb_port.GetUSBHandle(usb_devicefile,usb_report_size);
+			if (usb_fs == null){
+				System.Console.WriteLine("No device");
+				System.Threading.Thread.Sleep(5000);
+			}
+			else
+				System.Console.WriteLine("USB device found");
+			
+		}
+		SendReport(BuildCommand(LcdSetBacklightTimeout(0)));
 		SetStateStart();
+		ReRead();
 		//SetStateCardType();
 	}
 
@@ -126,7 +132,6 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
 		SendReport(BuildCommand(LcdTextColor(0,0,0)));
 		SendReport(BuildCommand(LcdTextBackgroundColor(0xff,0xff,0xff)));
 		SendReport(BuildCommand(LcdTextBackgroundMode(false)));
-		SendReport(BuildCommand(LcdDrawText("andy is awesome",5,5)));
 		SendReport(BuildCommand(LcdDrawText("swipe card",75,100)));
 
 		current_state = STATE_START_TRANSACTION;
@@ -247,8 +252,9 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
 		/*
 		 * Bit 7 turned on means a multi-report message
 		 */
-		if ( (input[1] & 0x80) != 0)
+		if ( (input[1] & 0x80) != 0){
 			read_continues = true;
+		}
 
 		byte[] data = null;
 		if (report_length > 3 && (long_pos > 0 || input[2] == 0x02)){ // protcol messages
@@ -390,7 +396,7 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
 			if (msg.Length == 1 && msg[0] == 0x6){
 				ack_counter++;
 				System.Console.WriteLine(ack_counter);
-				if (ack_counter == 2)
+				if (ack_counter == 1)
 					SetStateGetManualExp();
 			}
 			else if (msg.Length == 3 && msg[0] == 0x15){
@@ -409,17 +415,18 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
 			}
 			break;
 		case STATE_MANUAL_CVV:
-			if (msg.Length > 63 && msg[0] == 0x80 && msg[1] == 0x1f){
+			if (msg.Length > 63 && msg[0] == 0x80){
 				string block = FixupCardBlock(msg);
 				PushOutput("PANCACHE:"+block);
 				SetStateCardType();
 			}
+
 			else if (msg.Length == 3 && msg[0] == 0x15){
 				SetStateStart();
 			}
 			break;
 		case STATE_START_TRANSACTION:
-			if (msg.Length > 63 && msg[0] == 0x80 && msg[1] == 0x1f){
+			if (msg.Length > 63 && msg[0] == 0x80 ){
 				string block = FixupCardBlock(msg);
 				PushOutput("PANCACHE:"+block);
 				SetStateCardType();
@@ -441,6 +448,7 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
 	private string FixupCardBlock(byte[] data){
 		string hex = BitConverter.ToString(data).Replace("-","");
 		hex = "02E600"+hex+"XXXX03";
+		System.Console.WriteLine(hex);
 		return hex;
 	}
 
@@ -1314,6 +1322,7 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
 	private byte[] ResetDevice(){
 		return new byte[7]{0x78, 0x46, 0x0a, 0x49, 0x52, 0x46, 0x57};
 	}
+
 }
 
 }

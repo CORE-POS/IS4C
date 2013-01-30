@@ -17,7 +17,9 @@ $CREATE['trans.ccReceiptView'] = "
 	CREATE VIEW ccReceiptView AS 
 	SELECT (case when (r.mode = 'tender') then 'Credit Card Purchase' 
 		when (r.mode = 'retail_sale') then 'Credit Card Purchase' 
+		when (r.mode = 'Credit_Sale') then 'Credit Card Purchase' 
 		when (r.mode = 'retail_credit_alone') then 'Credit Card Refund' 
+		when (r.mode = 'Credit_Return') then 'Credit Card Refund' 
 		when (r.mode = 'refund') then 'Credit Card Refund' 
 		else '' end) AS tranType,
 	(case when (r.mode = 'refund' or r.mode='retail_credit_alone') then (-(1) * r.amount) else r.amount end) AS amount,
@@ -47,7 +49,9 @@ $CREATE['trans.ccReceiptView'] = "
 	select 
 	(case when (r.mode = 'tender') then 'Credit Card Purchase CANCELED' 
 	when (r.mode = 'retail_sale') then 'Credit Card Purchase CANCELLED' 
+	when (r.mode = 'Credit_Sale') then 'Credit Card Purchase CANCELLED' 
 	when (r.mode = 'retail_credit_alone') then 'Credit Card Refund CANCELLED' 
+	when (r.mode = 'Credit_Return') then 'Credit Card Refund CANCELLED' 
 	when (r.mode = 'refund') then 'Credit Card Refund CANCELED' 
 	else '' end) AS tranType,
 	(case when (r.mode = 'refund' or r.mode='retail_credit_alone') then r.amount else (-(1) * r.amount) end) AS amount,

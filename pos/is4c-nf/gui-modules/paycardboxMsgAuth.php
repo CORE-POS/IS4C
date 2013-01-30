@@ -74,7 +74,7 @@ class paycardboxMsgAuth extends PaycardProcessPage {
 		if( !is_numeric($amt) || abs($amt) < 0.005) {
 		} else if( $amt > 0 && $due < 0) {
 		} else if( $amt < 0 && $due > 0) {
-		} else if( abs($amt) > abs($due)) {
+		} else if( abs($amt) > abs($due) && $CORE_LOCAL->get("CacheCardType") != "DEBIT" && $CORE_LOCAL->get("CacheCardType") != "EBTCASH") {
 		} else {
 			return True;
 		}
@@ -100,7 +100,7 @@ class paycardboxMsgAuth extends PaycardProcessPage {
 		} else if( $amt < 0 && $due > 0) {
 			echo PaycardLib::paycard_msgBox($type,"Invalid Amount",
 				"Enter a positive amount","[clear] to cancel");
-		} else if( abs($amt) > abs($due)) {
+		} else if( abs($amt) > abs($due) && $CORE_LOCAL->get("CacheCardType") != "DEBIT" && $CORE_LOCAL->get("CacheCardType") != "EBTCASH") {
 			echo PaycardLib::paycard_msgBox($type,"Invalid Amount",
 				"Enter a lesser amount","[clear] to cancel");
 		} else if( $amt > 0) {

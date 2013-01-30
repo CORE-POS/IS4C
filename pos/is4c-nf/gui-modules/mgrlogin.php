@@ -96,9 +96,9 @@ class mgrlogin extends NoInputPage {
 		<input type="password" name="reginput" tabindex="0" 
 			onblur="$('#reginput').focus();" id="reginput" />
 		</form>
-		<p />
+		<p>
 		<span id="localmsg"><?php echo _("please enter manager password"); ?></span>
-		<p />
+		</p>
 		</div>
 		</div>
 		<?php

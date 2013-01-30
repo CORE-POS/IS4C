@@ -20,7 +20,6 @@
 
 *********************************************************************************/
 
-
 /*************************************************************
  * SPH_Magellan_Scale
  * 	SerialPortHandler implementation for the magellan scale
@@ -34,6 +33,12 @@
  * Sends beep requests to the scale in PageLoaded(Uri) as
  * determined by frame #1
 *************************************************************/
+
+/* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+	* 27Oct2012 Eric Lee Added Code 39 handling to ParseData()
+
+*/
 
 using System;
 using System.IO;
@@ -170,6 +175,10 @@ private static String MAGELLAN_OUTPUT_DIR = "ss-output/";
 			sp.Write("S11\r");
 			return "S145";
 		}
+		else if (s.Substring(0,3) == "S14"){
+			sp.Write("S11\r");
+			return s;
+		}
 		else if (s.Substring(0,4) == "S08A" ||
 			 s.Substring(0,4) == "S08F")
 			return s.Substring(4);
@@ -177,6 +186,8 @@ private static String MAGELLAN_OUTPUT_DIR = "ss-output/";
 			return this.ExpandUPCE(s.Substring(4));
 		else if (s.Substring(0,4) == "S08R")
 			return "GS1~"+s.Substring(3);
+		else if (s.Substring(0,5) == "S08B1")
+			return s.Substring(5);
 		else
 			return s;
 

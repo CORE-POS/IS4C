@@ -194,4 +194,17 @@ if (strlen($empty) > 2){
 	$delR = $sql->query($delQ);
 }
 
+/* blueLine flagging disabled
+$q = "SELECT card_no,count(*) FROM PendingSpecialOrder as p LEFT JOIN
+	SpecialOrderStatus AS s ON p.order_id=s.order_id
+	WHERE s.status_flag=5 AND trans_id > 0 
+	GROUP BY card_no";
+$r = $sql->query($q);
+while($w = $sql->fetch_row($r)){
+	$upQ = "UPDATE {$FANNIE_OP_DB}.custdata SET blueLine=CONCAT(blueLine, ' SO({$w[1]})')
+		WHERE CardNo={$w[0]}";
+	$upR = $sql->query($upQ);
+}
+*/
+
 ?>

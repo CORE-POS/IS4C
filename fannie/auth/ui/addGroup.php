@@ -41,8 +41,13 @@ if (isset($_GET['group'])){
 }
 else {
   echo "<form method=get action=addGroup.php>";
-  echo "Group name: <input type=text name=group /><Br /> ";
-  echo "First user: <input type=text name=user /><br />";
+  echo '<table>';
+  echo "<tr><th>Group name</th><td><input type=text name=group /></td></tr>";
+echo "<tr><th>Username</th><td><select name=name>";
+foreach(getUserList() as $uid => $name)
+	echo "<option>".$name."</option>";
+echo "</select></td></tr>";
+  echo '</table>';
   echo "<input type=submit value=Submit /></form>";  
 }
 ?>

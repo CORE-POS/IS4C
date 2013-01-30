@@ -1,0 +1,306 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<title>Installing NewMagellan Scanner/Scale Driver</title>
+</head>
+<style type="text/css">
+li {
+	margin-bottom:0.8em;
+}
+ul.inner li.inner {
+	margin-bottom:0.0em;
+}
+</style>
+<body>
+<div style="text-align:center;">
+<h2>Installing NewMagellan Scanner/Scale Driver</h2>
+</div>
+
+	<div style="text-align:center;margin-bottom:10px;font-size:80%;">
+	updated as of: November 8, 2012<br />
+	original author: Eric Lee
+	</div>
+
+<!--
+<h3>Section</h3>
+Text
+-->
+
+<p>This describes setting up (installing, configuring), under Linux,
+the software that
+supports a Magellan scanner/scale
+that IS4C is communicating with through the <tt>NewMagellan</tt> driver.
+It assumes the physical installation is done and also the lane level
+port and driver (NewMagellan) choices at <tt>http://laneX.foo.coop/IS4C/pos/is4c-nf/install/extra_config.php</tt>
+have been made.
+</p>
+
+<p>If, after that is done, everything is fine,
+that is both scanned barcodes and weights are appearing in your PoS transactions,
+then you need read no further.
+</p>
+
+<p>
+However, if this is a new installation,
+you need to learn about compiling and starting the driver,
+which is not started by default,
+and, for a production (not test) environment, about running it in the background
+and starting it at bootup.
+</p>
+
+<p>
+This document describes how to do those things and offers some tips about solving
+problems at this level.
+<!--But if things are not working, try the following.-->
+</p>
+
+<ol>
+	<li>Open a terminal window and go to where the NewMagellan driver resides, possibly:
+	<br /><tt>$ cd /var/www/IS4C/pos/is4c-nf/scale-drivers/drivers/NewMagellan</tt>
+	</li>
+
+	<li>Make sure the serial port you named can be written to by the driver and Apache/PHP.
+	<br /><tt>$ sudo chmod 666 /dev/ttyS0</tt>
+	</li>
+
+	<li>See that data is getting from the scanner-scale to the serial port:
+	<br /><tt>$ cat /dev/ttyS0</tt>
+	<br />Then scan a barcode.  The number should appear, with a prefix e.g. <tt>S08A</tt>
+	if the scanner has been programmed to supply them.  The whole string might then be:
+	<br /><tt>S08A03120044618</tt>, with checkdigit already removed.
+	<br />If nothing appears then check that the scanner-scale is connected to the correct
+	serial port and that your configuration names that port.
+	<br />If you want to get a weight response at this level
+	you first have to send the scale a weigh-request.  In another terminal window:
+	<br /><tt>$ echo -e "S11\r" > /dev/ttyS0</tt>
+	<br />and then put something on the scale.
+	If it weighs 0.23 lb you will see something like:
+	<br /><tt>S110023
+	</tt>
+	<br />It will be superimposed on the previous output if you are under Linux
+	and the scanner-scale terminates its output with a Carriage Return (<tt>\r</tt>):
+	<br /><tt>S11002320044618</tt>
+	<br />Type <tt>Ctrl-C</tt> to stop display from the serial port.
+	Note that the driver will not have access to what the scanner-scale is sending as long
+	as this <tt>cat</tt> is getting it first.
+	</li>
+
+	<li>You can do further experiments at the level of communicating directly with the
+	serial port using this utility:
+	<br /><tt>$ sscom.sh</tt>
+	<br />(that is still a work in progress).
+	</li>
+
+	<li>Make sure the directory ss-output and everthing in it is writable by the driver:
+	<br /><tt>$ sudo chmod -R 777 ss-output</tt>
+	</li>
+
+	<li>Check the assignment of MAGELLAN_OUTPUT_DIR in SPH_Magellan_Scales.cs
+	<br /><tt>$ grep MAGELLAN_OUTPUT_DIR SPH_Magellan_Scales.cs
+	</tt>
+	<br />
+It should be <tt>ss-output/</tt>, the same as the directory above.
+
+If it isn't, open SPH_Magellan_Scales.cs in a text editor and change it. Note the trailing slash.
+	</li>
+
+	<li>Compile the driver, <tt>pos.exe</tt>:
+<br /><tt>
+$ make clean
+<br />
+$ make
+	</tt>
+	This has to be done once for any Linux installation even if <tt>pos.exe</tt> already exists
+	and you haven't changed any of the source <tt>(*.cs)</tt> files.
+	</li>
+
+	<li>Check that the <tt>mono</tt> program is available:
+	<br /><tt>$ which mono
+	<br /># Should report something like
+	<br />/usr/bin/mono
+	</tt>
+	<br />If <tt>which</tt> finds nothing, then install <tt>mono</tt>:
+	<br /><tt>
+	$ sudo apt-get install mono-devel
+	<br /># or
+	<br />$ sudo apt-get install build-essential
+	</tt>
+	</li>
+
+	<li>Run the driver in the foreground:
+	<br /><tt>
+$ sudo mono pos.exe
+	</tt>
+	<br />If it starts OK it will immediately write to the terminal:
+	<br /><tt>Reading serial data
+	</tt>
+	<br />and there may be another line of scale or scanner data such as
+	<br /><tt>
+S110000
+	</tt>
+	</li>
+
+	<li>
+Now scan a barcode. It should be echoed to the window running pos.exe. E.g.:
+	<br /><tt>
+03120044618
+	</tt>
+	</li>
+
+	<li>
+Then put something on the scale. Expect to see something like:
+	<br /><tt>
+S110023
+	</tt>
+	<br />
+where "23" is the weight, 23/100ths of a pound in this case.
+	<br /> Remove the thing from the scale and two more lines will probably appear:
+	<br /><tt>
+S141
+	<br />
+S1100000
+	</tt>
+<br />the second indicating the scale is back to zero.
+<br />(These "S" codes are from an SL384 but I'm pretty sure they are the same for
+other Magellan-series scanner/scales.)
+	</li>
+
+	<li>
+To stop the driver: type <tt>Ctrl-C</tt>
+	</li>
+
+	<li>You can run the driver in the foreground and use the PoS at the same time.
+The items you scan and weigh will appear
+in the transaction in the usual way as well as being written to the screen.
+	</li>
+
+	<li>Still no joy? Try searching the techhub forum for <tt>NewMagellan</tt>
+	<br />If that doesn't help post to the forum yourself.
+	</li>
+
+	<li>
+A second attempt to run the driver in the foreground may get a message like:
+	<pre>$ sudo mono pos.exe
+
+Unhandled Exception: System.NullReferenceException: Object reference not set to an instance of an object
+  at System.TermInfoDriver.CheckWindowDimensions () [0x00000] 
+  at System.TermInfoDriver.get_WindowWidth () [0x00000] 
+  at System.TermInfoDriver.IncrementX () [0x00000] 
+  at System.TermInfoDriver.IsSpecialKey (ConsoleKeyInfo key) [0x00000] 
+  at System.TermInfoDriver.IsSpecialKey (Char c) [0x00000] 
+  at System.IO.CStreamWriter.Write (System.Char[] buffer, Int32 index, Int32 count) [0x00000] 
+  at System.IO.CStreamWriter.Write (System.Char[] val) [0x00000] 
+  at System.IO.CStreamWriter.Write (System.String val) [0x00000] 
+  at System.IO.TextWriter.WriteLine (System.String value) [0x00000] 
+  at System.IO.SynchronizedWriter.WriteLine (System.String value) [0x00000] 
+  at System.Console.WriteLine (System.String value) [0x00000] 
+  at SPH.SPH_Magellan_Scale.Read () [0x00000]</pre>
+I don't know what to do about this.
+Running it again gets the same message.
+<br />
+You can try: Start the driver in the background (see below), do a couple scans, stop it;
+then running it in foreground may work again.
+	</li>
+
+	<li>Running the driver in the background.
+In order to not have a terminal window open while the lane is running
+you can run the driver in the background<!--with the output going to a log file-->.
+In Linux this is called running as a daemon.
+You will also likely want the convenience of having the daemon started
+automatically when the computer boots and stopped when it is shut down.
+
+There are two wrapper scripts for this in the NewMagellan directory:
+<ul class="inner">
+	<li class="inner"><tt>posdriver-sph-debian</tt><br />for Ubuntu and other Debian-derived Linuxes
+	<li class="inner"><tt>posdriver-sph</tt><br />for other flavours
+</ul>
+
+	<!-- br />
+Each of these scripts has a Linux Standard Base Specification (LSB) header
+that contains the details of startup/shutdown behaviour.
+-->
+
+The script needs to be copied to <tt>/etc/init.d</tt>
+so the startup and shutdown processes will be able to find it.
+	<br /><tt>$ sudo cp <em>script-name</em> /etc/init.d
+	</tt>
+
+	<br />After that, tell startup/shutdown about it:
+	<br /><tt>$ sudo update-rc.d <em>script-name</em> defaults
+	</tt>
+	<br />A daemon installed this way is called a service.
+	</li>
+
+	<li>The script <tt>posd.sh</tt> can be used to manage the service,
+	including installing, starting, stopping and installing new versions
+	and cleaning up after crashes or failures.
+	<br /><tt>$ posd.sh -h
+	<br />Usage: posd.sh stop|start|restart|status|clean|swap|remove|install
+	</tt>
+	<br />Edit its variable <tt>POSD</tt> to refer to the service script you are using:
+	<br /><tt>
+	POSD=posdriver-sph-debian
+<br /># or
+<br />POSD=posdriver-sph
+	</tt>
+	<br />If you change the driver <tt>(pos.exe)</tt> you need to
+	stop and start the service.
+	<br /><tt>
+	</tt>
+	</li>
+
+</ol>
+
+<h4>Some notes on what the driver is doing behind the scenes:</h4>
+<ul>
+
+	<li>Open another terminal window and cd to the ss-ouput directory.
+	<br /><tt>$ls -l</tt> will show something like:
+	<pre>-rwxrwxrwx 1 nobody   nogroup     8 2012-10-27 17:14 13930410
+-rw-r--r-- 1 root     root        8 2012-10-27 17:34 15184740
+-rw-r--r-- 1 root     root       12 2012-10-27 17:35 15206202
+-rw-r--r-- 1 root     root       12 2012-10-27 17:35 15210526
+-rw-r--r-- 1 root     root        8 2012-10-27 17:35 15216206
+-rw-r--r-- 1 root     root        5 2012-10-27 17:35 15217402</pre>
+Each file contains output like that echoed to the screen
+when the driver is running in the foreground.
+	</li>
+
+	<li>While the driver is running in the background,
+scan and scale events are also logged to
+a file named in the driver start script, e.g. posdriver-sph, for example:
+	<br /><tt>
+/var/run/posdriver-sph/sph.log
+	</tt>
+	<br />
+You can watch this as it accumulates with:
+	<br /><pre>
+$ tail -f /var/run/posdriver-sph/sph.log
+Reading serial data
+S110000
+Received: rePoll
+S110000
+03120044618
+Received: goodBeep
+S110024
+Received: goodBeep
+S141
+S110000
+85794100187 </pre>
+<tt>Ctrl-C</tt> to stop the display.
+	</li>
+</ul>
+<!-- Bits for vim editing buffers.
+"l
+	<li>
+	<br /><tt>
+	</tt>
+	</li>
+"r
+	<br />
+"t
+	<br /><tt>
+	</tt>
+-->
+</html>
+

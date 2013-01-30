@@ -21,7 +21,7 @@
 
 *********************************************************************************/
 
-class Refund extends Parser {
+class Refund extends PreParser {
 	
 	function check($str){
 		if (substr($str,0,2) == "RF")

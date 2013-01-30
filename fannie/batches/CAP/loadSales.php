@@ -27,7 +27,8 @@ require_once($FANNIE_ROOT.'src/mysql_connect.php');
 require($FANNIE_ROOT.'src/csv_parser.php');
 require($FANNIE_ROOT.'src/tmp_dir.php');
 
-if (!isset($_REQUEST['upc_col'])){
+$columns = array('UPC'=>7,'Price'=>23,'SKU'=>8,'Sub'=>6,'A/B/T'=>5);
+if (!isset($_REQUEST['col_select'])){
 	$tpath = sys_get_temp_dir()."/vendorupload/";
 	$fp = fopen($tpath."CAP.csv","r");
 	echo '<h3>Select columns</h3>';
@@ -39,7 +40,7 @@ if (!isset($_REQUEST['upc_col'])){
 	for($i=0;$i<5;$i++){
 		$line = fgets($fp);
 		$data = csv_parser($line);
-		$table .= '<tr><td>&nbsp;</td>';
+		//$table .= '<tr><td>&nbsp;</td>';
 		$j=0;
 		foreach($data as $d){
 			$table .='<td>'.$d.'</td>';
@@ -48,6 +49,7 @@ if (!isset($_REQUEST['upc_col'])){
 		if ($j > $width) $width = $j;
 		$table .= '</tr>';
 	}
+	/* old method using radio buttons
 	echo '<tr><th>UPC</th>';
 	for($i=0;$i<$width;$i++){
 		echo '<td><input type="radio" name="upc_col" value="'.$i.'" /></td>';
@@ -56,6 +58,11 @@ if (!isset($_REQUEST['upc_col'])){
 	echo '<tr><th>Price</th>';
 	for($i=0;$i<$width;$i++){
 		echo '<td><input type="radio" name="price_col" value="'.$i.'" /></td>';
+	}
+	echo '</tr>';
+	echo '<tr><th>A/B/TPR</th>';
+	for($i=0;$i<$width;$i++){
+		echo '<td><input type="radio" name="abt_col" value="'.$i.'" /></td>';
 	}
 	echo '</tr>';
 	echo '<tr><th>SKU</th>';
@@ -68,10 +75,36 @@ if (!isset($_REQUEST['upc_col'])){
 		echo '<td><input type="radio" name="sub_col" value="'.$i.'" /></td>';
 	}
 	echo '</tr>';
+	*/
+	echo '<tr>';
+	for ($i=0;$i<$width;$i++){
+		echo '<td><select class="columnSelector" name="col_select[]">';
+		echo '<option>(ignore)</option>';
+		foreach($columns as $label=>$default){
+			printf('<option %s>%s</option>',
+				($i==$default?'selected':''),$label);
+		}
+		echo '</td>';
+	}
+	echo '</tr>';
 	$table .= '</table>';
 	echo $table;
 	echo '<input type="submit" value="Continue" />';
 	echo '</form>';
+	echo '<script type="text/javascript" src="'.$FANNIE_URL.'src/jquery/jquery.js"></script>';
+	echo '<script type="text/javascript">';
+?>
+	$(document).ready(function(){
+		$('.columnSelector').change(function(){
+			var myElem = this;
+			$('.columnSelector').each(function(i){
+				if (this != myElem && $(this).val() == $('*:focus').val())
+					$(this).val('(ignore)');
+			});
+		});
+	});
+<?php
+	echo '</script>';
 	exit;
 }
 
@@ -79,12 +112,37 @@ try {
 	$dbc->query("DROP TABLE tempCapPrices");
 }
 catch(Exception $e){}
-$dbc->query("CREATE TABLE tempCapPrices (upc varchar(13), price decimal(10,2))");
+$dbc->query("CREATE TABLE tempCapPrices (upc varchar(13), price decimal(10,2), abtpr varchar(3))");
 
+$SUB = $columns['Sub'];
+$UPC = $columns['UPC'];
+$SKU = $columns['SKU'];
+$PRICE = $columns['Price'];
+$ABT = $columns['A/B/T'];
+$i=0;
+foreach($_REQUEST['col_select'] as $opt){
+	switch($opt){
+	case 'Sub':
+		$SUB = $i; break;	
+	case 'UPC':
+		$UPC = $i; break;	
+	case 'SKU':
+		$SKU = $i; break;	
+	case 'Price':
+		$PRICE = $i; break;	
+	case 'A/B/T':
+		$ABT = $i; break;	
+	}
+	$i++;
+}
+
+/* old method using radio buttons
 $SUB = (isset($_REQUEST['sub_col'])) ? (int)$_REQUEST['sub_col'] : 2;
 $UPC = (isset($_REQUEST['upc_col'])) ? (int)$_REQUEST['upc_col'] : 3;
 $SKU = (isset($_REQUEST['sku_col'])) ? (int)$_REQUEST['sku_col'] : 4;
+$ABT = (isset($_REQUEST['abt_col'])) ? (int)$_REQUEST['abt_col'] : 1;
 $PRICE = (isset($_REQUEST['price_col'])) ? (int)$_REQUEST['price_col'] : 4;
+*/
 $rm_checks = (isset($_REQUEST['rm_cds'])) ? True : False;
 
 $tpath = sys_get_temp_dir()."/vendorupload/";
@@ -114,8 +172,17 @@ while(!feof($fp)){
 	}
 
 	$price = trim($data[$PRICE],"\$");
-	$insQ = "INSERT INTO tempCapPrices VALUES ('$upc',$price)";
-	$dbc->query($insQ);
+	$abt = array();
+	if (strstr($data[$ABT],"A"))
+		$abt[] = "A";
+	if (strstr($data[$ABT],"B"))
+		$abt[] = "B";
+	if (strstr($data[$ABT],"TPR"))
+		$abt[] = "TPR";
+	foreach($abt as $type){
+		$insQ = "INSERT INTO tempCapPrices VALUES ('$upc',$price,'$type')";
+		$dbc->query($insQ);
+	}
 }
 fclose($fp);
 unlink($tpath."CAP.csv");

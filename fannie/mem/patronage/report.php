@@ -26,6 +26,8 @@ include($FANNIE_ROOT.'src/mysql_connect.php');
 $page_title = "Fannie :: Patronage Tools";
 $header = "Working Copy Report";
 
+ob_start();
+
 if (!isset($_REQUEST['excel'])){
 	include($FANNIE_ROOT.'src/header.html');
 	echo '<a href="index.php">Patronage Menu</a>';
@@ -35,7 +37,7 @@ if (!isset($_REQUEST['excel'])){
 }
 else {
 	header('Content-Type: application/ms-excel');
-	header('Content-Disposition: attachment; filename="patronage-draft.xls"');
+	header('Content-Disposition: attachment; filename="patronage-draft.csv"');
 }
 
 $q = "SELECT p.cardno,c.LastName,c.FirstName,c.Type,
@@ -69,4 +71,20 @@ echo '</table>';
 
 if (!isset($_REQUEST['excel']))
 	include($FANNIE_ROOT.'src/footer.html');
+
+$output = ob_get_contents();
+ob_end_clean();
+
+if (!isset($_REQUEST['excel'])){
+	echo $output;
+}
+else {
+	include($FANNIE_ROOT.'src/ReportConvert/HtmlToArray.php');
+	//include($FANNIE_ROOT.'src/ReportConvert/ArrayToXls.php');
+	include($FANNIE_ROOT.'src/ReportConvert/ArrayToCsv.php');
+	$array = HtmlToArray($output);
+	//$xls = ArrayToXls($array);
+	$xls = ArrayToCsv($array);
+	echo $xls;
+}
 ?>

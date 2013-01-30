@@ -21,7 +21,7 @@
 
 *********************************************************************************/
 
-class CaseDiscount extends Parser {
+class CaseDiscount extends PreParser {
 	
 	function check($str){
 		// force quantity == 1
