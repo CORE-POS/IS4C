@@ -23,6 +23,8 @@
 
 if (!class_exists('FanniePlugin'))
 	include($FANNIE_ROOT.'classlib2.0/FanniePlugin.php');
+if (!function_exists('createClass'))
+	include($FANNIE_ROOT.'auth/login.php');
 
 /**
 */
@@ -62,6 +64,21 @@ class TimesheetPlugin extends FanniePlugin {
 		foreach($errors as $e){
 			if ($e === True) continue;
 			echo 'TimesheetPlugin error: '.$e.'<br />';
+		}
+	}
+
+	public function plugin_enable(){
+		ob_start();
+		$try = createClass('timesheet_access',
+			'Grants user permission to use the
+			 Timesheet plugin');
+		ob_end_clean();
+		if ($try === False){
+			echo 'Failed to create authentication class.
+				Make sure authentication is enabled in
+				Fannie and you\'re logged in as an admin
+				then try turning Timesheet on and off
+				again';
 		}
 	}
 }

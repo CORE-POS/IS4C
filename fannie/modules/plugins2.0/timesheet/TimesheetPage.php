@@ -5,10 +5,9 @@ include($FANNIE_ROOT.'classlib2.0/data/FannieDB.php');
 
 $ts_db = FannieDB::get($FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']);
 
-if (ini_get('session.auto_start') == 0);
-	session_start();
-
 class TimesheetPage extends FanniePage {
+
+	protected $auth_classes = array('timesheet_access');
 
 	private $display_func;
 	private $errors;
@@ -25,8 +24,9 @@ class TimesheetPage extends FanniePage {
 
 		$max = ($_GET['max']) ? 10 : 10;  // Max number of entries.
 
-		if ($_GET['login'] == 1 || $_GET['logout'] == 1 || $_SESSION['logged_in'] == True){
-			include("includes/passwd.php");
+		if (!$this->current_user && $_GET['login'] == 1 ){
+			$this->login_redirect();
+			return False;
 		}
 
 		if (isset($_POST['submitted'])) { // If the form has been submitted.
@@ -175,7 +175,7 @@ class TimesheetPage extends FanniePage {
 	}
 
 	function body_content(){
-		global $ts_db, $FANNIE_OP_DB;
+		global $ts_db, $FANNIE_OP_DB, $FANNIE_URL, $FANNIE_PLUGIN_SETTINGS;
 		include ('./includes/header.html');
 		/**
 		  if preprocess() changed the setting for display_func 
@@ -190,7 +190,7 @@ class TimesheetPage extends FanniePage {
 		echo "<body onLoad='putFocus(0,0);'>";
 		echo '<form action="'.$_SERVER['PHP_SELF'].'" method="POST" name="timesheet" id="timesheet">';
 		echo '<table border=0 cellpadding=4><tr>';
-		if ($_SESSION['logged_in'] == True) {
+		if ($this->current_user){
 			echo '<td><p>Name: <select name="emp_no">
 				<option value="error">Select staff member</option>' . "\n";
 		
@@ -223,8 +223,8 @@ class TimesheetPage extends FanniePage {
 			<button name="submit" type="submit">Submit</button>
 			<input type="hidden" name="submitted" value="TRUE" /></td></tr>
 			</table></form>';	
-		if ($_SESSION['logged_in'] == True) {
-			echo "<div class='log_btn'><a href='" . $_SERVER["PHP_SELF"] . "?logout=1'>logout</a></div>";
+		if ($this->current_user){
+			echo "<div class='log_btn'><a href='" . $FANNIE_URL . "auth/ui/loginform.php?logout=1'>logout</a></div>";
 		} else {
 			echo "<div class='log_btn'><a href='" . $_SERVER["PHP_SELF"] . "?login=1'>login</a></div>";  //   class='loginbox'
 		}
