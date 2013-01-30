@@ -19,7 +19,7 @@ if (isset($_POST['submitted'])) { // If the form has been submitted.
 		include ('./includes/header.html');
 		$emp_no = $_POST['emp_no'];
 		$date = $_POST['date'];
-		$query = "DELETE FROM is4c_log.timesheet WHERE emp_no=$emp_no AND date='$date'";
+		$query = "DELETE FROM {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.timesheet WHERE emp_no=$emp_no AND date='$date'";
 		$result = mysql_query($query, $db_master);
 		if ($result) {
 		    echo '<p>The day has been removed from your timesheet.</p>';
@@ -68,13 +68,13 @@ if (isset($_POST['submitted'])) { // If the form has been submitted.
             $successcount = 0;
                 for ($i = 1; $i <= $entrycount; $i++) {
                     if (is_numeric($ID[$i])) {
-                        $query = "UPDATE is4c_log.timesheet SET hours={$hours[$i]},area={$area[$i]}
+                        $query = "UPDATE {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.timesheet SET hours={$hours[$i]},area={$area[$i]}
                             WHERE emp_no=$emp_no AND date='$date' AND ID={$ID[$i]}";
                         // echo $query;
                         $result = mysql_query($query);
                         if ($result) {$successcount++;} else {echo '<p>Query: ' . $query . '</p><p>MySQL Error: ' . mysql_error() . '</p>';}
                     } elseif ($ID[$i] == 'insert') {
-                        $query = "INSERT INTO is4c_log.timesheet (emp_no, hours, area, date, periodID)
+                        $query = "INSERT INTO {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.timesheet (emp_no, hours, area, tdate, periodID)
                             VALUES ($emp_no, {$hours[$i]}, {$area[$i]}, '$date', $periodID)";
                         $result = mysql_query($query);
                         if ($result) {$successcount++;} else {echo '<p>Query: ' . $query . '</p><p>MySQL Error: ' . mysql_error() . '</p>';}
@@ -119,7 +119,7 @@ if (isset($_POST['submitted'])) { // If the form has been submitted.
 	$periodID = $_GET['periodID'];
 
 	// Make sure we're in a valid pay period.       
-	$query = "SELECT DATEDIFF(CURDATE(), DATE(periodEnd)) FROM is4c_log.payperiods WHERE periodID = $periodID";
+	$query = "SELECT DATEDIFF(CURDATE(), DATE(periodEnd)) FROM {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.payperiods WHERE periodID = $periodID";
 	$result = mysql_query($query, $db_master);
 	list($datediff) = mysql_fetch_row($result);
 
@@ -151,7 +151,7 @@ if (isset($_POST['submitted'])) { // If the form has been submitted.
 
 		for ($i = 1; $i <= $max; $i++) {
 			$inc = $i - 1;
-			$query = "SELECT hours, area, ID FROM ".DB_LOGNAME.".timesheet WHERE emp_no = $emp_no AND date = '$date' ORDER BY ID ASC LIMIT ".$inc.",1";
+			$query = "SELECT hours, area, ID FROM ".$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase'].".timesheet WHERE emp_no = $emp_no AND tdate = '$date' ORDER BY ID ASC LIMIT ".$inc.",1";
 			// echo $query;
 			$result = mysql_query($query);
 			$num = mysql_num_rows($result);
@@ -167,7 +167,7 @@ if (isset($_POST['submitted'])) { // If the form has been submitted.
 			}
 
 			echo "<tr><td align='right'><input type='text' name='hours" . $i . "' value='$hours' size=6></input></td>";
-			$query = "SELECT IF(NiceName='', ShiftName, NiceName), ShiftID FROM " . DB_LOGNAME . ".shifts WHERE visible=true ORDER BY ShiftOrder ASC";
+			$query = "SELECT IF(NiceName='', ShiftName, NiceName), ShiftID FROM " . $FANNIE_PLUGIN_SETTINGS['TimesheetDatabase'] . ".shifts WHERE visible=true ORDER BY ShiftOrder ASC";
 			$result = mysql_query($query);
 			echo '<td><select name="area' . $i . '" id="area' . $i . '"><option>Please select an area of work.</option>';
 			while ($row = mysql_fetch_row($result)) {

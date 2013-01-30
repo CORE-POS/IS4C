@@ -8,11 +8,11 @@ $ft = 40;
 
 echo "<form action='report_wages.php' method=GET>";
 
-$currentQ = "SELECT periodID FROM is4c_log.payperiods WHERE now() BETWEEN periodStart AND periodEnd";
+$currentQ = "SELECT periodID FROM {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.payperiods WHERE now() BETWEEN periodStart AND periodEnd";
 $currentR = mysql_query($currentQ);
 list($ID) = mysql_fetch_row($currentR);
 
-$query = "SELECT date_format(periodStart, '%M %D, %Y') as periodStart, date_format(periodEnd, '%M %D, %Y') as periodEnd, periodID FROM is4c_log.payperiods WHERE periodStart < now() ORDER BY periodID DESC";
+$query = "SELECT date_format(periodStart, '%M %D, %Y') as periodStart, date_format(periodEnd, '%M %D, %Y') as periodEnd, periodID FROM {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.payperiods WHERE periodStart < now() ORDER BY periodID DESC";
 $result = mysql_query($query);
 
 echo '<p>Starting Pay Period: <select name="period">
@@ -41,11 +41,11 @@ if ($_GET['Export'] == 'export') {
 	
 	// BEGIN TITLE
 	// 
-	$query1 = "SELECT date_format(periodStart, '%M %D, %Y') as periodStart, periodID FROM is4c_log.payperiods WHERE periodID = $periodID";
+	$query1 = "SELECT date_format(periodStart, '%M %D, %Y') as periodStart, periodID FROM {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.payperiods WHERE periodID = $periodID";
 	$result1 = mysql_query($query1);
 	$periodStart = mysql_fetch_row($result1);
 
-	$query2 = "SELECT date_format(periodEnd, '%M %D, %Y') as periodEnd, periodID FROM is4c_log.payperiods WHERE periodID = $end";
+	$query2 = "SELECT date_format(periodEnd, '%M %D, %Y') as periodEnd, periodID FROM {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.payperiods WHERE periodID = $end";
 	$result2 = mysql_query($query2);
 	$periodEnd = mysql_fetch_row($result2);
 	
@@ -63,7 +63,7 @@ if ($_GET['Export'] == 'export') {
 	// END TITLE
 	
 	$query = "SELECT s.ShiftID as id, IF(s.NiceName='', s.ShiftName, s.NiceName) as area
-		FROM (SELECT ShiftID, NiceName, ShiftName, ShiftOrder FROM ".DB_LOGNAME.".shifts WHERE visible = 1 AND ShiftID <> 31) s 
+		FROM (SELECT ShiftID, NiceName, ShiftName, ShiftOrder FROM ".$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase'].".shifts WHERE visible = 1 AND ShiftID <> 31) s 
 		GROUP BY s.ShiftID ORDER BY s.ShiftOrder";
 	// echo $query;
 	$result = mysql_query($query);
@@ -76,9 +76,9 @@ if ($_GET['Export'] == 'export') {
 		echo "<tr><td>".$row['id']."</td><td>".$row['area']."</td><td align='right'>";
 
 		// if ($row['id'] != "31") {
-			$query1 = "SELECT SUM(t.hours) as total FROM ". DB_LOGNAME.".timesheet t WHERE t.periodID >= $periodID AND t.periodID <= $end AND t.area = " . $row['id'];			
+			$query1 = "SELECT SUM(t.hours) as total FROM ". $FANNIE_PLUGIN_SETTINGS['TimesheetDatabase'].".timesheet t WHERE t.periodID >= $periodID AND t.periodID <= $end AND t.area = " . $row['id'];			
 		// } else {			
-			// $query1 = "SELECT SUM(t.vacation) as total FROM ". DB_LOGNAME.".timesheet t WHERE t.periodID >= $periodID AND t.periodID <= $end AND t.area = " . $row['id'];
+			// $query1 = "SELECT SUM(t.vacation) as total FROM ". $FANNIE_PLUGIN_SETTINGS['TimesheetDatabase'].".timesheet t WHERE t.periodID >= $periodID AND t.periodID <= $end AND t.area = " . $row['id'];
 		// }
 		
 		// echo $query1;
@@ -95,7 +95,7 @@ if ($_GET['Export'] == 'export') {
 		// 	$totArray[] = $t;
 		// }
 		
-		$query2 = "SELECT SUM(e.pay_rate) as agg FROM ".DB_NAME.".employees e, ".DB_LOGNAME.".timesheet t WHERE t.emp_no = e.emp_no AND t.periodID >= $periodID AND t.periodID <= $end AND t.area = " . $row['id'];
+		$query2 = "SELECT SUM(e.pay_rate) as agg FROM ".$FANNIE_OP_DB.".employees e, ".$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase'].".timesheet t WHERE t.emp_no = e.emp_no AND t.periodID >= $periodID AND t.periodID <= $end AND t.area = " . $row['id'];
 		// echo $query2;
 		$result2 = mysql_query($query2);
 		$totAgg = mysql_fetch_row($result2);
@@ -133,8 +133,8 @@ if ($_GET['Export'] == 'export') {
 		$empQ = "SELECT emp_no FROM employees WHERE EmpActive = 1";
 		$empR = mysql_query($empQ);
 		while ($row = mysql_fetch_array($empR)) {
-			$weekoneQ = "SELECT ROUND(SUM(hours), 2) FROM is4c_log.timesheet AS t
-		        INNER JOIN is4c_log.payperiods AS p ON (p.periodID = t.periodID)
+			$weekoneQ = "SELECT ROUND(SUM(hours), 2) FROM {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.timesheet AS t
+		        INNER JOIN {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.payperiods AS p ON (p.periodID = t.periodID)
 		        WHERE t.emp_no = " . $row['emp_no'] . "
 		        AND t.periodID = $v
 		        AND t.area <> 31
@@ -142,8 +142,8 @@ if ($_GET['Export'] == 'export') {
 		        AND t.date < DATE(date_add(p.periodStart, INTERVAL 7 day))";
 
 		    $weektwoQ = "SELECT ROUND(SUM(hours), 2)
-		        FROM is4c_log.timesheet AS t
-		        INNER JOIN is4c_log.payperiods AS p
+		        FROM {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.timesheet AS t
+		        INNER JOIN {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.payperiods AS p
 		        ON (p.periodID = t.periodID)
 		        WHERE t.emp_no = " . $row['emp_no'] . "
 		        AND t.periodID = $v
@@ -175,7 +175,7 @@ if ($_GET['Export'] == 'export') {
 	// 	END OVERTIME
 	
 	//	PTO REQUESTED
-	$ptoQ = "SELECT SUM(t.hours) as total FROM ". DB_LOGNAME.".timesheet t WHERE t.periodID >= $periodID AND t.periodID <= $end AND t.area = 31";
+	$ptoQ = "SELECT SUM(t.hours) as total FROM ". $FANNIE_PLUGIN_SETTINGS['TimesheetDatabase'].".timesheet t WHERE t.periodID >= $periodID AND t.periodID <= $end AND t.area = 31";
 	$ptoR = mysql_query($ptoQ);
 	$pto = mysql_fetch_row($ptoR);
 	$PTOREQ = number_format($pto[0],2);
@@ -186,7 +186,7 @@ if ($_GET['Export'] == 'export') {
 	$empQ = "SELECT emp_no FROM employees WHERE EmpActive = 1 AND JobTitle = 'STAFF'";
 	$empR = mysql_query($empQ);
 	while ($row = mysql_fetch_array($empR)) {
-		$nonPTOtotalq = "SELECT SUM(hours) FROM ".DB_LOGNAME.".timesheet WHERE periodID >= $periodID AND periodID <= $end AND area <> 31 AND emp_no = ".$row['emp_no'];
+		$nonPTOtotalq = "SELECT SUM(hours) FROM ".$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase'].".timesheet WHERE periodID >= $periodID AND periodID <= $end AND area <> 31 AND emp_no = ".$row['emp_no'];
 		$nonPTOtotalr = mysql_query($nonPTOtotalq);
 		$nonPTOtotal = mysql_fetch_row($nonPTOtotalr);
 		$ptoAcc = $nonPTOtotal[0] * 0.075;

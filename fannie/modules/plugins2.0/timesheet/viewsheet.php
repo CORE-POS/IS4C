@@ -28,10 +28,10 @@ if ((isset($_POST['submitted']) && is_numeric($_POST['period'])) || (is_numeric(
                 date_format(p.periodStart, '%M %D, %Y'),
                 date_format(p.periodEnd, '%M %D, %Y'),
                 t.date
-            FROM is4c_log.timesheet AS t
+            FROM {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.timesheet AS t
                 INNER JOIN is4c_op.employees AS e
                 ON (t.emp_no = e.emp_no)
-                INNER JOIN is4c_log.payperiods AS p
+                INNER JOIN {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.payperiods AS p
                 ON (t.periodID = p.periodID)
             WHERE t.emp_no = $emp_no
             AND t.area <> 31
@@ -39,13 +39,13 @@ if ((isset($_POST['submitted']) && is_numeric($_POST['period'])) || (is_numeric(
 	    AND (t.vacation IS NULL OR t.vacation = 0)
             GROUP BY t.date";
 
-        $periodQ = "SELECT periodStart, periodEnd FROM is4c_log.payperiods WHERE periodID = $periodID";
+        $periodQ = "SELECT periodStart, periodEnd FROM {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.payperiods WHERE periodID = $periodID";
         $periodR = mysql_query($periodQ, $db_master);
         list($periodStart, $periodEnd) = mysql_fetch_row($periodR);
 
         $weekoneQ = "SELECT ROUND(SUM(hours), 2)
-            FROM is4c_log.timesheet AS t
-            INNER JOIN is4c_log.payperiods AS p
+            FROM {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.timesheet AS t
+            INNER JOIN {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.payperiods AS p
             ON (p.periodID = t.periodID)
             WHERE t.emp_no = $emp_no
             AND t.periodID = $periodID
@@ -54,8 +54,8 @@ if ((isset($_POST['submitted']) && is_numeric($_POST['period'])) || (is_numeric(
             AND t.date < DATE(date_add(p.periodStart, INTERVAL 7 day))";
 
         $weektwoQ = "SELECT ROUND(SUM(hours), 2)
-            FROM is4c_log.timesheet AS t
-            INNER JOIN is4c_log.payperiods AS p
+            FROM {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.timesheet AS t
+            INNER JOIN {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.payperiods AS p
             ON (p.periodID = t.periodID)
             WHERE t.emp_no = $emp_no
             AND t.periodID = $periodID
@@ -63,7 +63,7 @@ if ((isset($_POST['submitted']) && is_numeric($_POST['period'])) || (is_numeric(
             AND t.date >= DATE(date_add(p.periodStart, INTERVAL 7 day)) AND t.date <= DATE(p.periodEnd)";
 
         $vacationQ = "SELECT ROUND(hours, 2), ID
-            FROM is4c_log.timesheet AS t
+            FROM {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.timesheet AS t
             WHERE t.emp_no = $emp_no
             AND t.periodID = $periodID
             AND t.area = 31";
@@ -193,11 +193,11 @@ if ((isset($_POST['submitted']) && is_numeric($_POST['period'])) || (is_numeric(
         if (is_numeric($_POST['vacationID']) && is_numeric($_POST['period'])) {
             $vacaID = (int) $_POST['vacationID'];
             $perID = (int) $_POST['period'];
-            $vacaQ = "UPDATE is4c_log.timesheet SET date = '$date', vacation = $vaca WHERE ID = $vacaID";
+            $vacaQ = "UPDATE {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.timesheet SET date = '$date', vacation = $vaca WHERE ID = $vacaID";
 
         } elseif ($_POST['vacationID'] == 'insert' && is_numeric($_POST['period'])) {
             $perID = (int) $_POST['period'];
-            $vacaQ = "INSERT INTO is4c_log.timesheet (emp_no, hours, area, vacation, date, periodID)
+            $vacaQ = "INSERT INTO {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.timesheet (emp_no, hours, area, vacation, date, periodID)
                 VALUES ($emp, $vaca, 31, $vaca, '$date', $perID)";
         }
 
@@ -264,11 +264,11 @@ if ((isset($_POST['submitted']) && is_numeric($_POST['period'])) || (is_numeric(
 	} else {
 		echo "<p>Employee Number*: <input type='text' name='emp_no' size=4 autocomplete='off' /></p>";
 	}
-    $currentQ = "SELECT periodID FROM is4c_log.payperiods WHERE now() BETWEEN periodStart AND periodEnd";
+    $currentQ = "SELECT periodID FROM {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.payperiods WHERE now() BETWEEN periodStart AND periodEnd";
     $currentR = mysql_query($currentQ, $db_master);
     list($ID) = mysql_fetch_row($currentR);
 
-    $query = "SELECT date_format(periodStart, '%M %D, %Y'), date_format(periodEnd, '%M %D, %Y'), periodID FROM is4c_log.payperiods WHERE periodStart < now() ORDER BY periodID DESC";
+    $query = "SELECT date_format(periodStart, '%M %D, %Y'), date_format(periodEnd, '%M %D, %Y'), periodID FROM {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.payperiods WHERE periodStart < now() ORDER BY periodID DESC";
     $result = mysql_query($query, $db_master);
 
     echo '<p>Pay Period: <select name="period">

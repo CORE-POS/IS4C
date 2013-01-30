@@ -6,7 +6,7 @@
 <body>
 <?php # payrolldetail.php - Gives a detailed view of a selected employee in a given pay period.
 
-mysql_select_db('is4c_log');
+mysql_select_db('{$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}');
 
 
 if (is_numeric($_GET['periodID']) && is_numeric($_GET['emp_no'])) { // If submitted.
@@ -19,10 +19,10 @@ if (is_numeric($_GET['periodID']) && is_numeric($_GET['emp_no'])) { // If submit
             date_format(p.periodStart, '%M %D, %Y'),
             date_format(p.periodEnd, '%M %D, %Y'),
             t.date
-        FROM is4c_log.timesheet AS t
+        FROM {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.timesheet AS t
             INNER JOIN is4c_op.employees AS e
             ON (t.emp_no = e.emp_no)
-            INNER JOIN is4c_log.payperiods AS p
+            INNER JOIN {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.payperiods AS p
             ON (t.periodID = p.periodID)
         WHERE t.emp_no = $emp_no
         AND t.periodID = $periodID
@@ -30,8 +30,8 @@ if (is_numeric($_GET['periodID']) && is_numeric($_GET['emp_no'])) { // If submit
         GROUP BY t.date";
     
     $weekoneQ = "SELECT ROUND(SUM(TIMESTAMPDIFF(MINUTE, t.time_in, t.time_out))/60, 2)
-        FROM is4c_log.timesheet AS t
-        INNER JOIN is4c_log.payperiods AS p
+        FROM {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.timesheet AS t
+        INNER JOIN {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.payperiods AS p
         ON (p.periodID = t.periodID)
         WHERE t.emp_no = $emp_no
         AND t.periodID = $periodID
@@ -40,8 +40,8 @@ if (is_numeric($_GET['periodID']) && is_numeric($_GET['emp_no'])) { // If submit
         AND t.date < DATE(date_add(p.periodStart, INTERVAL 7 day))";
     
     $weektwoQ = "SELECT ROUND(SUM(TIMESTAMPDIFF(MINUTE, t.time_in, t.time_out))/60, 2)
-        FROM is4c_log.timesheet AS t
-        INNER JOIN is4c_log.payperiods AS p
+        FROM {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.timesheet AS t
+        INNER JOIN {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.payperiods AS p
         ON (p.periodID = t.periodID)
         WHERE t.emp_no = $emp_no
         AND t.periodID = $periodID
@@ -49,7 +49,7 @@ if (is_numeric($_GET['periodID']) && is_numeric($_GET['emp_no'])) { // If submit
         AND t.date >= DATE(date_add(p.periodStart, INTERVAL 7 day)) AND t.date <= DATE(p.periodEnd)";
         
     $vacationQ = "SELECT ROUND(vacation, 2)
-        FROM is4c_log.timesheet AS t
+        FROM {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.timesheet AS t
         WHERE t.emp_no = $emp_no
         AND t.periodID = $periodID
         AND t.area = 13";
