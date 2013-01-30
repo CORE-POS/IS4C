@@ -2,9 +2,9 @@
 include('../../../config.php');
 // $periodID = $_GET['period'];
 $periodID = $_SESSION['periodID'];
-// $dates = mysql_query("SELECT * FROM is4c_log.payperiods WHERE periodID = $periodID");
+// $dates = mysql_query("SELECT * FROM {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.payperiods WHERE periodID = $periodID");
 
-$perDatesQ = "SELECT * FROM ".DB_LOGNAME.".payperiods WHERE periodID = $periodID";
+$perDatesQ = "SELECT * FROM ".$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase'].".payperiods WHERE periodID = $periodID";
 $perDatesR = mysql_query($perDatesQ);
 $perDates = mysql_fetch_array($perDatesR);
 
@@ -14,9 +14,9 @@ header("Content-Disposition: attachment; filename=$fn.csv");
 header("Pragma: no-cache");
 header("Expires: 0");
 
-$dumpQ = "SELECT t.date, e.emp_no, e.LastName, e.FirstName, t.area, SUM(t.hours) AS hours 
-	FROM (SELECT emp_no,FirstName, LastName FROM ".DB_NAME.".employees WHERE empActive = 1) e 
-	LEFT JOIN ".DB_LOGNAME.".timesheet t ON e.emp_no = t.emp_no 
+$dumpQ = "SELECT t.tdate, e.emp_no, e.LastName, e.FirstName, t.area, SUM(t.hours) AS hours 
+	FROM (SELECT emp_no,FirstName, LastName FROM ".$FANNIE_OP_DB.".employees WHERE empActive = 1) e 
+	LEFT JOIN ".$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase'].".timesheet t ON e.emp_no = t.emp_no 
 	AND t.periodID = $periodID GROUP BY e.emp_no";
 
 $result = mysql_query($dumpQ);
@@ -26,7 +26,7 @@ echo "TC\n00001\n";	//	surepay-specific
 $br = ",";
 	
 while ($row = mysql_fetch_assoc($result)) {
-	$nonPTOtotalq = "SELECT SUM(hours) FROM ".DB_LOGNAME.".timesheet WHERE periodID = $periodID AND area <> 31 AND emp_no = " . $row['emp_no'];
+	$nonPTOtotalq = "SELECT SUM(hours) FROM ".$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase'].".timesheet WHERE periodID = $periodID AND area <> 31 AND emp_no = " . $row['emp_no'];
 	$nonPTOtotalr = mysql_query($nonPTOtotalq);
 	$nonPTOtotal = mysql_fetch_row($nonPTOtotalr);
 	
@@ -37,26 +37,26 @@ while ($row = mysql_fetch_assoc($result)) {
 	
 	if ($hours > 0) {
         $weekoneQ = "SELECT ROUND(SUM(hours), 2)
-            FROM is4c_log.timesheet AS t
-            INNER JOIN is4c_log.payperiods AS p
+            FROM {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.timesheet AS t
+            INNER JOIN {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.payperiods AS p
             ON (p.periodID = t.periodID)
             WHERE t.emp_no = " . $row['emp_no'] . "
             AND t.periodID = $periodID
             AND t.area <> 31
-            AND t.date >= DATE(p.periodStart)
-            AND t.date < DATE(date_add(p.periodStart, INTERVAL 7 day))";
+            AND t.tdate >= DATE(p.periodStart)
+            AND t.tdate < DATE(date_add(p.periodStart, INTERVAL 7 day))";
 
         $weektwoQ = "SELECT ROUND(SUM(hours), 2)
-            FROM is4c_log.timesheet AS t
-            INNER JOIN is4c_log.payperiods AS p
+            FROM {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.timesheet AS t
+            INNER JOIN {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.payperiods AS p
             ON (p.periodID = t.periodID)
             WHERE t.emp_no = " . $row['emp_no'] . "
             AND t.periodID = $periodID
             AND t.area <> 31
-            AND t.date >= DATE(date_add(p.periodStart, INTERVAL 7 day)) AND t.date <= DATE(p.periodEnd)";
+            AND t.tdate >= DATE(date_add(p.periodStart, INTERVAL 7 day)) AND t.tdate <= DATE(p.periodEnd)";
 
         $vacationQ = "SELECT ROUND(SUM(hours), 2)
-            FROM is4c_log.timesheet AS t
+            FROM {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.timesheet AS t
             WHERE t.emp_no = " . $row['emp_no'] . "
             AND t.periodID = $periodID
             AND t.area = 31";

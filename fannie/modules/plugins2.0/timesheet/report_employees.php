@@ -9,11 +9,11 @@ include('./includes/header.html');
 
 echo "<form action='report_employees.php' method=GET>";
 
-$currentQ = "SELECT periodID FROM is4c_log.payperiods WHERE now() BETWEEN periodStart AND periodEnd";
+$currentQ = "SELECT periodID FROM {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.payperiods WHERE now() BETWEEN periodStart AND periodEnd";
 $currentR = mysql_query($currentQ);
 list($ID) = mysql_fetch_row($currentR);
 
-$query = "SELECT date_format(periodStart, '%M %D, %Y') as periodStart, date_format(periodEnd, '%M %D, %Y') as periodEnd, periodID FROM is4c_log.payperiods WHERE periodStart < now() ORDER BY periodID DESC";
+$query = "SELECT date_format(periodStart, '%M %D, %Y') as periodStart, date_format(periodEnd, '%M %D, %Y') as periodEnd, periodID FROM {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.payperiods WHERE periodStart < now() ORDER BY periodID DESC";
 $result = mysql_query($query);
 
 echo '<p>Starting Pay Period: <select name="period">
@@ -41,16 +41,16 @@ if ($_GET['run'] == 'run') {
 	
 	$namesq = "SELECT e.emp_no, e.FirstName, e.LastName, e.pay_rate, JobTitle FROM employees e WHERE e.empActive = 1 ORDER BY e.LastName";
 	$namesr = mysql_query($namesq);
-	$areasq = "SELECT ShiftName, ShiftID FROM ".DB_LOGNAME.".shifts WHERE visible = 1 AND ShiftID <> 31 ORDER BY ShiftOrder";
+	$areasq = "SELECT ShiftName, ShiftID FROM ".$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase'].".shifts WHERE visible = 1 AND ShiftID <> 31 ORDER BY ShiftOrder";
 	$areasr = mysql_query($areasq);
 	
 
 
-	$query1 = "SELECT date_format(periodStart, '%M %D, %Y') as periodStart, periodID as pid FROM is4c_log.payperiods WHERE periodID = $periodID";
+	$query1 = "SELECT date_format(periodStart, '%M %D, %Y') as periodStart, periodID as pid FROM {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.payperiods WHERE periodID = $periodID";
 	$result1 = mysql_query($query1);
 	$periodStart = mysql_fetch_row($result1);
 
-	$query2 = "SELECT date_format(periodEnd, '%M %D, %Y') as periodEnd, periodID as pid FROM is4c_log.payperiods WHERE periodID = $end";
+	$query2 = "SELECT date_format(periodEnd, '%M %D, %Y') as periodEnd, periodID as pid FROM {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.payperiods WHERE periodID = $end";
 	$result2 = mysql_query($query2);
 	$periodEnd = mysql_fetch_row($result2);
 	
@@ -76,7 +76,7 @@ if ($_GET['run'] == 'run') {
 	$PTOnew = array();
 	while ($row = mysql_fetch_assoc($namesr)) {
 		
-		$totalq = "SELECT SUM(hours) FROM ".DB_LOGNAME.".timesheet WHERE periodID >= $periodID AND periodID <= $end AND emp_no = ".$row['emp_no'];
+		$totalq = "SELECT SUM(hours) FROM ".$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase'].".timesheet WHERE periodID >= $periodID AND periodID <= $end AND emp_no = ".$row['emp_no'];
 		$totalr = mysql_query($totalq);
 		$total = mysql_fetch_row($totalr);
 		$color = ($total[0] > (80 * $periodct)) ? "FF0000" : "000000";
@@ -85,12 +85,12 @@ if ($_GET['run'] == 'run') {
 		//
 		//	LABOR DEPARTMENT TOTALS
 		
-		// $areasq = "SELECT ShiftName, ShiftID FROM ".DB_LOGNAME.".shifts WHERE visible = 1 ORDER BY ShiftOrder";
+		// $areasq = "SELECT ShiftName, ShiftID FROM ".$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase'].".shifts WHERE visible = 1 ORDER BY ShiftOrder";
 		$areasr = mysql_query($areasq);
 		while ($areas = mysql_fetch_array($areasr)) {
 			$emp_no = $row['emp_no'];
 			$area = $areas[1];
-			$depttotq = "SELECT SUM(t.hours) FROM is4c_log.timesheet t WHERE t.periodID >= $periodID AND t.periodID <= $end AND t.emp_no = $emp_no AND t.area = $area";
+			$depttotq = "SELECT SUM(t.hours) FROM {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.timesheet t WHERE t.periodID >= $periodID AND t.periodID <= $end AND t.emp_no = $emp_no AND t.area = $area";
 			// echo $depttotq;
 			$depttotr = mysql_query($depttotq);
 			$depttot = mysql_fetch_row($depttotr);
@@ -103,8 +103,8 @@ if ($_GET['run'] == 'run') {
 		//	OVERTIME
 		// 
 		foreach ($p as $v) {
-			$weekoneQ = "SELECT ROUND(SUM(hours), 2) FROM is4c_log.timesheet AS t
-		        INNER JOIN is4c_log.payperiods AS p ON (p.periodID = t.periodID)
+			$weekoneQ = "SELECT ROUND(SUM(hours), 2) FROM {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.timesheet AS t
+		        INNER JOIN {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.payperiods AS p ON (p.periodID = t.periodID)
 		        WHERE t.emp_no = " . $row['emp_no'] . "
 		        AND t.periodID = $v
 		        AND t.area <> 31
@@ -112,8 +112,8 @@ if ($_GET['run'] == 'run') {
 		        AND t.date < DATE(date_add(p.periodStart, INTERVAL 7 day))";
 
 		    $weektwoQ = "SELECT ROUND(SUM(hours), 2)
-		        FROM is4c_log.timesheet AS t
-		        INNER JOIN is4c_log.payperiods AS p
+		        FROM {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.timesheet AS t
+		        INNER JOIN {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.payperiods AS p
 		        ON (p.periodID = t.periodID)
 		        WHERE t.emp_no = " . $row['emp_no'] . "
 		        AND t.periodID = $v
@@ -142,7 +142,7 @@ if ($_GET['run'] == 'run') {
 
 		//
 		//	PTO USED
-		$usedQ = "SELECT SUM(hours) FROM ".DB_LOGNAME.".timesheet WHERE periodID >= $periodID AND periodID <= $end AND emp_no = ".$row['emp_no']." AND area = 31";
+		$usedQ = "SELECT SUM(hours) FROM ".$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase'].".timesheet WHERE periodID >= $periodID AND periodID <= $end AND emp_no = ".$row['emp_no']." AND area = 31";
 		$usedR = mysql_query($usedQ);
 		$ptoused = mysql_fetch_row($usedR);
 		$PTOuse = (!$ptoused[0]) ? 0 : number_format($ptoused[0],2);
@@ -150,7 +150,7 @@ if ($_GET['run'] == 'run') {
 		
 		//
 		//	PTO CALC
-		$nonPTOtotalq = "SELECT SUM(hours) FROM ".DB_LOGNAME.".timesheet WHERE periodID >= $periodID AND periodID <= $end AND area <> 31 AND emp_no = ".$row['emp_no'];
+		$nonPTOtotalq = "SELECT SUM(hours) FROM ".$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase'].".timesheet WHERE periodID >= $periodID AND periodID <= $end AND area <> 31 AND emp_no = ".$row['emp_no'];
 		$nonPTOtotalr = mysql_query($nonPTOtotalq);
 		$nonPTOtotal = mysql_fetch_row($nonPTOtotalr);
 		$ptoAcc = ($row['JobTitle'] == 'STAFF') ? $nonPTOtotal[0] * 0.075 : 0;
@@ -168,7 +168,7 @@ if ($_GET['run'] == 'run') {
 	$areasr = mysql_query($areasq);
 	$TOT = array();
 	while ($areas = mysql_fetch_array($areasr)) {
-		$query = "SELECT ROUND(SUM(t.hours),2) FROM is4c_log.timesheet t 
+		$query = "SELECT ROUND(SUM(t.hours),2) FROM {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.timesheet t 
 			WHERE t.periodID BETWEEN $periodID AND $end
 			AND t.area = " . $areas[1];
 		// echo $query;
@@ -179,7 +179,7 @@ if ($_GET['run'] == 'run') {
 		$TOT[] = $tot;
 	}
 
-	$ptoq = "SELECT ROUND(SUM(t.hours),2) FROM is4c_log.timesheet t 
+	$ptoq = "SELECT ROUND(SUM(t.hours),2) FROM {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.timesheet t 
 		WHERE t.periodID BETWEEN $periodID AND $end
 		AND t.area = 31";
 	$ptor = mysql_query($ptoq);

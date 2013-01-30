@@ -5,11 +5,11 @@ include('./includes/header.html');
 
 echo "<form action='export.php' method=GET>";
 
-$currentQ = "SELECT periodID FROM is4c_log.payperiods WHERE now() BETWEEN periodStart AND periodEnd";
+$currentQ = "SELECT periodID FROM {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.payperiods WHERE now() BETWEEN periodStart AND periodEnd";
 $currentR = mysql_query($currentQ);
 list($ID) = mysql_fetch_row($currentR);
 
-$query = "SELECT date_format(periodStart, '%M %D, %Y') as periodStart, date_format(periodEnd, '%M %D, %Y') as periodEnd, periodID FROM is4c_log.payperiods WHERE periodStart < now() ORDER BY periodID DESC";
+$query = "SELECT date_format(periodStart, '%M %D, %Y') as periodStart, date_format(periodEnd, '%M %D, %Y') as periodEnd, periodID FROM {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.payperiods WHERE periodStart < now() ORDER BY periodID DESC";
 $result = mysql_query($query);
 
 echo '<p>Pay Period: <select name="period">
@@ -25,13 +25,13 @@ echo '</select><button value="run" name="Run">Run</button></p></form>';
 if ($_GET['Run'] == 'run' || $_GET['export'] == 'export') {
 	$periodID = $_GET['period'];
 	$_SESSION['periodID'] = $periodID;
-	$perDatesQ = "SELECT * FROM ".DB_LOGNAME.".payperiods WHERE periodID = $periodID";
+	$perDatesQ = "SELECT * FROM ".$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase'].".payperiods WHERE periodID = $periodID";
 	$perDatesR = mysql_query($perDatesQ);
 	$perDates = mysql_fetch_array($perDatesR);
 
 	$dumpQ = "SELECT t.date, e.emp_no, e.LastName, e.FirstName, t.area, SUM(t.hours) AS hours 
-		FROM (SELECT emp_no,FirstName, LastName FROM ".DB_NAME.".employees WHERE empActive = 1) e 
-		LEFT JOIN ".DB_LOGNAME.".timesheet t ON e.emp_no = t.emp_no 
+		FROM (SELECT emp_no,FirstName, LastName FROM ".$FANNIE_OP_DB.".employees WHERE empActive = 1) e 
+		LEFT JOIN ".$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase'].".timesheet t ON e.emp_no = t.emp_no 
 		AND t.periodID = $periodID GROUP BY e.emp_no";
 	
 	$result = mysql_query($dumpQ);
@@ -45,7 +45,7 @@ if ($_GET['Run'] == 'run' || $_GET['export'] == 'export') {
 	$br = ",";
 		
 	while ($row = mysql_fetch_assoc($result)) {
-		$nonPTOtotalq = "SELECT SUM(hours) FROM ".DB_LOGNAME.".timesheet WHERE periodID = $periodID AND area <> 31 AND emp_no = " . $row['emp_no'];
+		$nonPTOtotalq = "SELECT SUM(hours) FROM ".$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase'].".timesheet WHERE periodID = $periodID AND area <> 31 AND emp_no = " . $row['emp_no'];
 		$nonPTOtotalr = mysql_query($nonPTOtotalq);
 		$nonPTOtotal = mysql_fetch_row($nonPTOtotalr);
 		
@@ -56,8 +56,8 @@ if ($_GET['Run'] == 'run' || $_GET['export'] == 'export') {
 		
 		if ($hours > 0) {
 	        $weekoneQ = "SELECT ROUND(SUM(hours), 2)
-	            FROM is4c_log.timesheet AS t
-	            INNER JOIN is4c_log.payperiods AS p
+	            FROM {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.timesheet AS t
+	            INNER JOIN {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.payperiods AS p
 	            ON (p.periodID = t.periodID)
 	            WHERE t.emp_no = " . $row['emp_no'] . "
 	            AND t.periodID = $periodID
@@ -66,8 +66,8 @@ if ($_GET['Run'] == 'run' || $_GET['export'] == 'export') {
 	            AND t.date < DATE(date_add(p.periodStart, INTERVAL 7 day))";
 
 	        $weektwoQ = "SELECT ROUND(SUM(hours), 2)
-	            FROM is4c_log.timesheet AS t
-	            INNER JOIN is4c_log.payperiods AS p
+	            FROM {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.timesheet AS t
+	            INNER JOIN {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.payperiods AS p
 	            ON (p.periodID = t.periodID)
 	            WHERE t.emp_no = " . $row['emp_no'] . "
 	            AND t.periodID = $periodID
@@ -75,7 +75,7 @@ if ($_GET['Run'] == 'run' || $_GET['export'] == 'export') {
 	            AND t.date >= DATE(date_add(p.periodStart, INTERVAL 7 day)) AND t.date <= DATE(p.periodEnd)";
 
 	        $vacationQ = "SELECT ROUND(SUM(hours), 2)
-	            FROM is4c_log.timesheet AS t
+	            FROM {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.timesheet AS t
 	            WHERE t.emp_no = " . $row['emp_no'] . "
 	            AND t.periodID = $periodID
 	            AND t.area = 31";

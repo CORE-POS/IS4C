@@ -24,7 +24,7 @@ return false;
 <body>';
 
 
-mysql_select_db('is4c_log');
+mysql_select_db('{$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}');
 
 
 if (isset($_POST['submitted']) && is_numeric($_POST['period'])) { // If submitted.
@@ -36,10 +36,10 @@ if (isset($_POST['submitted']) && is_numeric($_POST['period'])) { // If submitte
             date_format(p.periodEnd, '%M %D, %Y'),
             e.card_no,
 	    e.LastName
-        FROM is4c_log.timesheet AS t
+        FROM {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.timesheet AS t
             INNER JOIN is4c_op.employees AS e
             ON (t.emp_no = e.emp_no)
-            INNER JOIN is4c_log.payperiods AS p
+            INNER JOIN {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.payperiods AS p
             ON (t.periodID = p.periodID)
         WHERE t.periodID = $periodID
             AND t.area NOT IN (13, 14)
@@ -48,7 +48,7 @@ if (isset($_POST['submitted']) && is_numeric($_POST['period'])) { // If submitte
 
     $result = mysql_query($query, $db_master)
 OR DIE ("query error" . mysql_error ());
-    $periodQ = "SELECT periodStart, periodEnd FROM is4c_log.payperiods WHERE periodID = $periodID";
+    $periodQ = "SELECT periodStart, periodEnd FROM {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.payperiods WHERE periodID = $periodID";
     $periodR = mysql_query($periodQ, $db_master);
     list($periodStart, $periodEnd) = mysql_fetch_row($periodR);
 
@@ -114,8 +114,8 @@ OR DIE ("query error" . mysql_error ());
 
 
             $weekoneQ = "SELECT ROUND(SUM(TIMESTAMPDIFF(MINUTE, t.time_in, t.time_out))/60, 2)
-                FROM is4c_log.timesheet AS t
-                INNER JOIN is4c_log.payperiods AS p
+                FROM {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.timesheet AS t
+                INNER JOIN {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.payperiods AS p
                 ON (p.periodID = t.periodID)
                 WHERE t.emp_no = $emp_no
                 AND t.periodID = $periodID
@@ -124,8 +124,8 @@ OR DIE ("query error" . mysql_error ());
                 AND t.area NOT IN (31)";
 
             $weektwoQ = "SELECT ROUND(SUM(TIMESTAMPDIFF(MINUTE, t.time_in, t.time_out))/60, 2)
-                FROM is4c_log.timesheet AS t
-                INNER JOIN is4c_log.payperiods AS p
+                FROM {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.timesheet AS t
+                INNER JOIN {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.payperiods AS p
                 ON (p.periodID = t.periodID)
                 WHERE t.emp_no = $emp_no
                 AND t.periodID = $periodID
@@ -133,16 +133,16 @@ OR DIE ("query error" . mysql_error ());
                 AND t.area NOT IN (31)";
 
             $vacationQ = "SELECT ROUND(vacation, 2)
-                FROM is4c_log.timesheet AS t
-                INNER JOIN is4c_log.payperiods AS p
+                FROM {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.timesheet AS t
+                INNER JOIN {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.payperiods AS p
                 ON (p.periodID = t.periodID)
                 WHERE t.emp_no = $emp_no
                 AND t.periodID = $periodID
                 AND t.area = 31";
 
             $oncallQ = "SELECT ROUND(SUM(TIMESTAMPDIFF(MINUTE, t.time_in, t.time_out))/60, 2)
-                FROM is4c_log.timesheet AS t
-                INNER JOIN is4c_log.payperiods AS p
+                FROM {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.timesheet AS t
+                INNER JOIN {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.payperiods AS p
                 ON (p.periodID = t.periodID)
                 WHERE t.emp_no = $emp_no
                 AND t.periodID = $periodID
@@ -150,7 +150,7 @@ OR DIE ("query error" . mysql_error ());
 
 	    if ($yearStart == $yearEnd) {
 		$houseChargeQ = "SELECT ROUND(SUM(d.total),2)
-		    FROM is4c_log.trans_$yearStart AS d
+		    FROM {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.trans_$yearStart AS d
 		    WHERE d.datetime BETWEEN '$periodStart' AND '$periodEnd'
 		    AND d.trans_subtype = 'MI'
 		    AND d.card_no = $cn
@@ -160,14 +160,14 @@ OR DIE ("query error" . mysql_error ());
 		    FROM (";
 
 		$houseChargeQ .= "SELECT ROUND(SUM(d.total),2) AS Total
-		    FROM is4c_log.trans_$yearStart AS d
+		    FROM {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.trans_$yearStart AS d
 		    WHERE d.datetime BETWEEN '$periodStart' AND '$periodEnd'
 		    AND d.trans_subtype = 'MI'
 		    AND d.card_no = $cn
 		    AND d.emp_no <> 9999 AND d.trans_status <> 'X'";
 
 		$houseChargeQ .= " UNION ALL SELECT ROUND(SUM(d.total),2) AS Total
-		    FROM is4c_log.trans_$yearEnd AS d
+		    FROM {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.trans_$yearEnd AS d
 		    WHERE d.datetime BETWEEN '$periodStart' AND '$periodEnd'
 		    AND d.trans_subtype = 'MI'
 		    AND d.card_no = $cn
@@ -264,11 +264,11 @@ OR DIE ("query error" . mysql_error ());
     $query = "SELECT FirstName, emp_no FROM employees WHERE EmpActive=1 ORDER BY FirstName ASC";
     $result = mysql_query($query, $db_master);
     echo '<form action="payroll.php" method="POST">';
-    $currentQ = "SELECT periodID-1 FROM is4c_log.payperiods WHERE now() BETWEEN periodStart AND periodEnd";
+    $currentQ = "SELECT periodID-1 FROM {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.payperiods WHERE now() BETWEEN periodStart AND periodEnd";
     $currentR = mysql_query($currentQ, $db_master);
     list($ID) = mysql_fetch_row($currentR);
 
-    $query = "SELECT DATE_FORMAT(periodStart, '%M %D, %Y'), DATE_FORMAT(periodEnd, '%M %D, %Y'), periodID FROM is4c_log.payperiods WHERE periodStart < now()";
+    $query = "SELECT DATE_FORMAT(periodStart, '%M %D, %Y'), DATE_FORMAT(periodEnd, '%M %D, %Y'), periodID FROM {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.payperiods WHERE periodStart < now()";
     $result = mysql_query($query, $db_master);
 
     echo '<p>Pay Period: <select name="period">
