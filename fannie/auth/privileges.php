@@ -77,14 +77,14 @@ function createClass($name, $notes){
 		return false;
 	}
 
-	if (!validateUser('admin')){
-		return false;
-	}
-
 	$sql = dbconnect();
 	$checkQ = "select * from userKnownPrivs where auth_class='$name'";
 	$checkR = $sql->query($checkQ);
 	if ($sql->num_rows($checkR) != 0){
+		return true;
+	}
+
+	if (!validateUser('admin')){
 		return false;
 	}
 
@@ -93,7 +93,7 @@ function createClass($name, $notes){
 			VALUES (%s, %s)", $sql->escape($name),
 			$sql->escape($notes));
 	$insR = $sql->query($insQ);
-	return true;
+	return ($insR) ? true : false;
 }
 
 function deleteClass($name){
@@ -118,6 +118,7 @@ function deleteClass($name){
 	$q3 = sprintf("DELETE FROM userGroupPrivs WHERE auth=%s",
 		$sql->escape($name));
 	$r3 = $sql->query($q3);
+	return true;
 }
 
 function deleteAuth($name,$auth_class){
