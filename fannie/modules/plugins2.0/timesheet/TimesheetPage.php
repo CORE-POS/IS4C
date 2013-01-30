@@ -156,7 +156,7 @@ class TimesheetPage extends FanniePage {
 	function success_content(){
 		echo "<div id='alert'><h1>Success!</h1>";
 		echo '<p>If you like, you may <a href="'.$_SERVER['PHP_SELF'].'">add more hours</a> 
-			or you can <a href="./viewsheet.php">edit hours</a>.</p></div>';
+			or you can <a href="./ViewsheetPage.php">edit hours</a>.</p></div>';
 	}
 
 	function error_content(){
@@ -168,7 +168,7 @@ class TimesheetPage extends FanniePage {
 	}
 
 	function body_content(){
-		global $ts_db;
+		global $ts_db, $FANNIE_OP_DB;
 		include ('./includes/header.html');
 		/**
 		  if preprocess() changed the setting for display_func 

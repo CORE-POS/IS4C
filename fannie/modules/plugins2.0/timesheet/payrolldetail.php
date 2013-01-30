@@ -20,7 +20,7 @@ if (is_numeric($_GET['periodID']) && is_numeric($_GET['emp_no'])) { // If submit
             date_format(p.periodEnd, '%M %D, %Y'),
             t.date
         FROM {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.timesheet AS t
-            INNER JOIN is4c_op.employees AS e
+            INNER JOIN {$FANNIE_OP_DB}.employees AS e
             ON (t.emp_no = e.emp_no)
             INNER JOIN {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.payperiods AS p
             ON (t.periodID = p.periodID)
@@ -80,7 +80,7 @@ if (is_numeric($_GET['periodID']) && is_numeric($_GET['emp_no'])) { // If submit
                 echo '<table><tr><th>Date</th><th>Total Hours Worked</th><th></th></tr>';
             }
             if ($row[0] > 24) {$fontopen = '<font color="red">'; $fontclose = '</font>';} else {$fontopen = NULL; $fontclose = NULL;}
-            echo "<tr><td>$row[1]</td><td>$fontopen$row[0]$fontclose</td><td><a target=\"_blank\" href=\"editdate.php?emp_no=$emp_no&periodID=$periodID&date=$row[6]\">(Edit)</a></td></tr>";
+            echo "<tr><td>$row[1]</td><td>$fontopen$row[0]$fontclose</td><td><a target=\"_blank\" href=\"EditTimesheetDatePage.php?emp_no=$emp_no&periodID=$periodID&date=$row[6]\">(Edit)</a></td></tr>";
             $first = FALSE;
             $periodHours += $row[0];
         }
