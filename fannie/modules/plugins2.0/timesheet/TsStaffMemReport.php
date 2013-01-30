@@ -4,15 +4,18 @@ include($FANNIE_ROOT.'classlib2.0/FanniePage.php');
 include($FANNIE_ROOT.'classlib2.0/data/FannieDB.php');
 
 $ts_db = FannieDB::get($FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']);
-//	FULL TIME: Number of hours per week
-$ft = 40;
+
+if (ini_get('session.auto_start') == 0);
+	session_start();
 
 class TsStaffMemReport extends FanniePage {
 
 	function preprocess(){
 		$this->title = "Timeclock - Staff Member Totals Report";
 		$this->header = "Timeclock - Staff Member Totals Report";
-		if ($_GET['login'] == 1 || $_SESSION['logged_in'] == True) include("/pos/fannie/src/passwd.php");
+		if ($_GET['login'] == 1 || $_GET['logout'] == 1 || $_SESSION['logged_in'] == True){
+			include("includes/passwd.php");
+		}
 		return True;
 	}
 
@@ -29,6 +32,9 @@ class TsStaffMemReport extends FanniePage {
 
 	function body_content(){
 		global $ts_db, $FANNIE_OP_DB, $FANNIE_PLUGIN_SETTINGS;
+		include ('./includes/header.html');
+		//	FULL TIME: Number of hours per week
+		$ft = 40;
 		echo '<form action="'.$_SERVER['PHP_SELF'].'" method=GET>';
 		$stored = ($_COOKIE['timesheet']) ? $_COOKIE['timesheet'] : '';
 		if ($_SESSION['logged_in'] == True) {

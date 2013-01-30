@@ -132,10 +132,12 @@ class EditTimesheetDatePage extends FanniePage {
 	}
 
 	function delete_msg(){
+		include ('./includes/header.html');
 		echo '<p>The day has been removed from your timesheet.</p>';
 	}
 
 	function error_content(){
+		include ('./includes/header.html');
 		echo '<p><font color="red">The following error(s) occurred:</font></p>';
 		foreach ($this->errors AS $message) {
 			echo "<p> - $message</p>";
@@ -145,6 +147,7 @@ class EditTimesheetDatePage extends FanniePage {
         
 	function body_content(){
 		global $ts_db, $FANNIE_OP_DB, $FANNIE_PLUGIN_SETTINGS;
+		include ('./includes/header.html');
 		if ($this->display_func == 'ts_error')
 			return $this->error_content();
 		elseif ($this->display_func == 'ts_delete_msg')
