@@ -5,6 +5,9 @@ include($FANNIE_ROOT.'classlib2.0/data/FannieDB.php');
 
 $ts_db = FannieDB::get($FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']);
 
+if (ini_get('session.auto_start') == 0);
+	session_start();
+
 class TimesheetPage extends FanniePage {
 
 	private $display_func;
@@ -22,7 +25,9 @@ class TimesheetPage extends FanniePage {
 
 		$max = ($_GET['max']) ? 10 : 10;  // Max number of entries.
 
-		if ($_GET['login'] == 1 || $_SESSION['logged_in'] == True) include("/pos/fannie/src/passwd.php");
+		if ($_GET['login'] == 1 || $_GET['logout'] == 1 || $_SESSION['logged_in'] == True){
+			include("includes/passwd.php");
+		}
 
 		if (isset($_POST['submitted'])) { // If the form has been submitted.
 			// Validate the data.
@@ -154,12 +159,14 @@ class TimesheetPage extends FanniePage {
 	}
 
 	function success_content(){
+		include ('./includes/header.html');
 		echo "<div id='alert'><h1>Success!</h1>";
 		echo '<p>If you like, you may <a href="'.$_SERVER['PHP_SELF'].'">add more hours</a> 
 			or you can <a href="./ViewsheetPage.php">edit hours</a>.</p></div>';
 	}
 
 	function error_content(){
+		include ('./includes/header.html');
 		echo '<div id="alert"><p><font color="red">The following error(s) occurred:</font></p>';
 		foreach ($this->errors AS $message) {
 			echo "<p> - $message</p>";

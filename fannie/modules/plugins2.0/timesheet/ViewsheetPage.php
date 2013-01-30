@@ -5,6 +5,9 @@ include($FANNIE_ROOT.'classlib2.0/data/FannieDB.php');
 
 $ts_db = FannieDB::get($FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']);
 
+if (ini_get('session.auto_start') == 0);
+	session_start();
+
 class ViewsheetPage extends FanniePage {
 
 	private $errors;
@@ -13,7 +16,9 @@ class ViewsheetPage extends FanniePage {
 	function preprocess(){
 		global $ts_db, $FANNIE_PLUGIN_SETTINGS, $FANNIE_OP_DB;
 
-		if ($_GET['login'] == 1 || $_SESSION['logged_in'] == True) include("/pos/fannie/src/passwd.php");
+		if ($_GET['login'] == 1 || $_GET['logout'] == 1 || $_SESSION['logged_in'] == True){
+			include("includes/passwd.php");
+		}
 		// $loggedin = (isset($_COOKIE['verify'])) ? True : False;
 
 		$this->header = 'Timesheet Management' . $_GET['login'];
@@ -94,6 +99,7 @@ class ViewsheetPage extends FanniePage {
 	}
 
 	function error_contents(){
+		include ('./includes/header.html');
 		echo "<br /><br /><h1>The following errors occurred:</h1><ul>";
 
 		foreach ($this->errors as $msg) {
@@ -104,6 +110,7 @@ class ViewsheetPage extends FanniePage {
 
 	function show_sheet($emp_no, $periodID){
 		global $ts_db, $FANNIE_PLUGIN_SETTINGS, $FANNIE_OP_DB;
+		include ('./includes/header.html');
 
 		$ft = 40;
 
@@ -255,6 +262,7 @@ class ViewsheetPage extends FanniePage {
 
 	function body_content(){
 		global $ts_db, $FANNIE_OP_DB, $FANNIE_PLUGIN_SETTINGS;
+		include ('./includes/header.html');
 
 		if ($this->display_func == 'ts_error')
 			return $this->error_contents();

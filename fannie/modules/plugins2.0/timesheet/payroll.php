@@ -37,7 +37,7 @@ if (isset($_POST['submitted']) && is_numeric($_POST['period'])) { // If submitte
             e.card_no,
 	    e.LastName
         FROM {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.timesheet AS t
-            INNER JOIN is4c_op.employees AS e
+            INNER JOIN {$FANNIE_OP_DB}.employees AS e
             ON (t.emp_no = e.emp_no)
             INNER JOIN {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.payperiods AS p
             ON (t.periodID = p.periodID)
