@@ -5,16 +5,16 @@ include($FANNIE_ROOT.'classlib2.0/data/FannieDB.php');
 
 $ts_db = FannieDB::get($FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']);
 
-if (ini_get('session.auto_start') == 0);
-	session_start();
-
 class TsStaffMemReport extends FanniePage {
+
+	protected $auth_classes = array('timesheet_access');
 
 	function preprocess(){
 		$this->title = "Timeclock - Staff Member Totals Report";
 		$this->header = "Timeclock - Staff Member Totals Report";
-		if ($_GET['login'] == 1 || $_GET['logout'] == 1 || $_SESSION['logged_in'] == True){
-			include("includes/passwd.php");
+		if (!$this->current_user && $_GET['login'] == 1 ){
+			$this->login_redirect();
+			return False;
 		}
 		return True;
 	}
@@ -31,7 +31,7 @@ class TsStaffMemReport extends FanniePage {
 	}
 
 	function body_content(){
-		global $ts_db, $FANNIE_OP_DB, $FANNIE_PLUGIN_SETTINGS;
+		global $ts_db, $FANNIE_OP_DB, $FANNIE_PLUGIN_SETTINGS, $FANNIE_URL;
 		include ('./includes/header.html');
 		//	FULL TIME: Number of hours per week
 		$ft = 40;
@@ -279,8 +279,8 @@ class TsStaffMemReport extends FanniePage {
 	
 		} // end 'run' button 
 
-		if ($_SESSION['logged_in'] == True) {
-			echo "<div class='log_btn'><a href='" . $_SERVER["PHP_SELF"] . "?logout=1'>logout</a></div>";
+		if ($this->current_user){
+			echo "<div class='log_btn'><a href='" . $FANNIE_URL . "auth/ui/loginform.php?logout=1'>logout</a></div>";
 		} else {
 			echo "<div class='log_btn'><a href='" . $_SERVER["PHP_SELF"] . "?login=1'>login</a></div>";  //   class='loginbox'
 		}
