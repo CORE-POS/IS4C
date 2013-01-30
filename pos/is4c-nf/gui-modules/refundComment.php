@@ -107,8 +107,9 @@ class RefundComment extends NoInputPage {
 		}
 		?>
 		</form>
+		<p>
 		<span class="smaller">[clear] to cancel</span>
-		<p />
+		</p>
 		</div>
 		</div>	
 		<?php

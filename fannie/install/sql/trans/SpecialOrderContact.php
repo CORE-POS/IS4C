@@ -25,7 +25,7 @@ into card_no.
 
 $CREATE['trans.SpecialOrderContact'] = "
 	CREATE TABLE `SpecialOrderContact` (
-	  `card_no` smallint(5) default NULL,
+	  `card_no` int(11) default NULL,
 	  `last_name` varchar(30) default NULL,
 	  `first_name` varchar(30) default NULL,
 	  `othlast_name` varchar(30) default NULL,
@@ -44,7 +44,7 @@ $CREATE['trans.SpecialOrderContact'] = "
 if ($dbms == "MSSQL"){
 	$CREATE['trans.SpecialOrderContact'] = "
 		CREATE TABLE SpecialOrderContact (
-		  card_no smallint ,
+		  card_no int ,
 		  last_name varchar(30) ,
 		  first_name varchar(30) ,
 		  othlast_name varchar(30) ,

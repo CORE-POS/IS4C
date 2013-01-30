@@ -54,20 +54,28 @@ class pos2 extends BasicPage {
 
 		$json = array();
 		if ($entered != ""){
-			/* this breaks the model a bit, but I'm putting
-			 * putting the CC parser first manually to minimize
-			 * code that potentially handles the PAN */
-			include_once(realpath(dirname(__FILE__)."/../cc-modules/lib/paycardEntered.php"));
-			$pe = new paycardEntered();
-			if ($pe->check($entered)){
-				$valid = $pe->parse($entered);
-				$entered = "PAYCARD";
-				$CORE_LOCAL->set("strEntered","");
-				$json = $valid;
-			}
 
-			$CORE_LOCAL->set("quantity",0);
-			$CORE_LOCAL->set("multiple",0);
+			if (in_array("Paycards",$CORE_LOCAL->get("PluginList"))){
+				/* this breaks the model a bit, but I'm putting
+				 * putting the CC parser first manually to minimize
+				 * code that potentially handles the PAN */
+				/*
+				if($CORE_LOCAL->get("store")=="wfc" && substr($entered,0,9) == "PANCACHE:"){
+					$entered = substr($entered,9);
+					$CORE_LOCAL->set("CachePanEncBlock",$entered);
+				}
+				 */
+				$pe = new paycardEntered();
+				if ($pe->check($entered)){
+					$valid = $pe->parse($entered);
+					$entered = "PAYCARD";
+					$CORE_LOCAL->set("strEntered","");
+					$json = $valid;
+				}
+
+				$CORE_LOCAL->set("quantity",0);
+				$CORE_LOCAL->set("multiple",0);
+			}
 
 			/* FIRST PARSE CHAIN:
 			 * Objects belong in the first parse chain if they
@@ -77,7 +85,7 @@ class pos2 extends BasicPage {
 			 */
 			$parser_lib_path = $this->page_url."parser-class-lib/";
 			if (!is_array($CORE_LOCAL->get("preparse_chain")))
-				$CORE_LOCAL->set("preparse_chain",Parser::get_preparse_chain());
+				$CORE_LOCAL->set("preparse_chain",PreParser::get_preparse_chain());
 
 			foreach ($CORE_LOCAL->get("preparse_chain") as $cn){
 				$p = new $cn();
@@ -154,7 +162,8 @@ class pos2 extends BasicPage {
 		<script type="text/javascript">
 		function submitWrapper(){
 			var str = $('#reginput').val();
-			if (str.indexOf("tw") != -1 || str.indexOf("TW") != -1 || (str.search(/^[0-9]+$/) == 0 && str.length <= 13) || str=='TFS'){
+			if (str.indexOf("tw") != -1 || str.indexOf("TW") != -1 || (str.search(/^[0-9]+$/) == 0 && str.length <= 13) || str=='TFS'
+			    || str == 'U' || str == 'D'){
 				$('#reginput').val('');
 				clearTimeout(screenLockVar);
 				runParser(str,'<?php echo $this->page_url; ?>');

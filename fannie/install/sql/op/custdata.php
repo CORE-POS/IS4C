@@ -60,32 +60,43 @@ e.g., make sure all staff members have the appropriate percent discount
   (Sounds like it is obsolete or at least not used.)
 
 WFC Specific:
+- ChargeOk=1 if member may run a store charge balance; =0 may not.
+- MemDiscountLimit is their store charge account limit.
 - Balance is a store charge balance as of the start of the day,
    if the person has one.
 	 Some records are for organizations, esp vendors,
 	 that have charge accounts.
-- MemDiscountLimit is their charge account limit.
+	 Is updated from newBalanceToday_cust by cronjob arbalance.sanitycheck.php
 - memCoupons indicates how many virtual coupons (tender MA) are available.
 
 [Probably] Ignored:
 To the best of my (Andy's) knowledge, these have no meaning on the front or back end.
 - CashBack
-- ChargeOk
 - WriteChecks
 - StoreCoupons
 - Purchases
 - NumberOfChecks
 - Shown
 
---COMMENTS - - - - - - - - - - - - - - - - - - - -
+Maintenance:
+- Single edit: fannie/mem/search.php
+- Single add: fannie/mem/new.php
+- Batch import: fannie/mem/import/*.php
+- custdata.Balance is updated from newBalanceToday_cust by cronjob arbalance.sanitycheck.php
 
-26Jun12 EL Reformatted Use section
-epoch   AT Original notes by Andy Theuninck.
+*/
+/*--COMMENTS - - - - - - - - - - - - - - - - - - - -
+
+ * 22Oct12 EL Comment about cron update of Balance.
+ *         EL Comment about ChargeOK
+ *         EL Maintenance section in comments.
+ * 26Jun12 Eric Lee Reformatted Use section
+ * epoch   AT Original notes by Andy Theuninck.
 
 */
 $CREATE['op.custdata'] = "
 	CREATE TABLE `custdata` (
-	  `CardNo` int(8) default NULL,
+	  `CardNo` int(11) default NULL,
 	  `personNum` tinyint(4) NOT NULL default '1',
 	  `LastName` varchar(30) default NULL,
 	  `FirstName` varchar(30) default NULL,

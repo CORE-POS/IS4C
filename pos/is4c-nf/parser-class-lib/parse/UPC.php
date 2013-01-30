@@ -42,13 +42,6 @@ class UPC extends Parser {
 		$my_url = MiscLib::base_url();
 		$ret = $this->default_json();
 
-		/* begin change */
-		if ($CORE_LOCAL->get("memberID")=="0"){
-			$ret['main_frame'] = $my_url.'gui-modules/memlist.php';
-			return $ret;
-		}
-		/* end change */
-
 		/* force cashiers to enter a comment on refunds */
 		if ($CORE_LOCAL->get("refund")==1 && $CORE_LOCAL->get("refundComment") == ""){
 			$ret['udpmsg'] = 'twoPairs';
@@ -130,9 +123,11 @@ class UPC extends Parser {
 				return $ret; 
 			}
 			*/
-			TransRecord::addQueued($upc,'BADSCAN');
-			$CORE_LOCAL->set("boxMsg",_("not a valid item"));
-			$ret['udpmsg'] = 'errorBeep';
+			//TransRecord::addQueued($upc,'BADSCAN');
+			$opts = array('upc'=>$upc,'description'=>'BADSCAN');
+			TransRecord::add_log_record($opts);
+			$CORE_LOCAL->set("boxMsg",$upc." "._("not a valid item"));
+			//$ret['udpmsg'] = 'errorBeep'; // 12/12/12 this seems to stack with DisplayLib::msgbox
 			$ret['main_frame'] = $my_url."gui-modules/boxMsg2.php";
 			return $ret;
 		}
@@ -423,7 +418,7 @@ class UPC extends Parser {
 		$ret['redraw_footer'] = True;
 		$ret['output'] = DisplayLib::lastpage();
 
-		if ($prefetch['unitPrice']==0){
+		if ($prefetch['unitPrice']==0 && $discounttype == 0){
 			$ret['main_frame'] = $my_url.'gui-modules/priceOverride.php';
 		}
 

@@ -22,7 +22,7 @@ $selAddQ = "SELECT m.card_no, a.memName,m.street, '',
            m.City, m.State, m.zip,
 	   a.TwoMonthBalance,a.LastMonthCharges,
 	   a.LastMonthPayments,a.LastMonthBalance
-           FROM {$TRANS}AR_EOM_Summary_cache a LEFT JOIN
+           FROM {$TRANS}AR_EOM_Summary a LEFT JOIN
            meminfo m ON a.cardno = m.card_no
 	   LEFT JOIN custdata as c on c.CardNo=a.cardno and c.personNum=1
 	   WHERE c.type not in ('TERM') and

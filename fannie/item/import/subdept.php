@@ -20,10 +20,14 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
+/* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+	 4Sep2012 Eric Lee Change $header to Sub-Departments.
+	          Add some notes to the initial page.
+*/
 include('../../config.php');
 
 $page_title = "Fannie :: Product Tools";
-$header = "Import Departments";
+$header = "Import Sub-Departments";
 
 include($FANNIE_ROOT.'src/header.html');
 
@@ -116,6 +120,8 @@ else {
 ?>
 Upload a CSV file containing subdept numbers, names, and what department
 number they belong to.
+<br />A preview helps you to choose and map CSV fields to the database.
+<br />The uploaded file will be deleted after the load.
 <form enctype="multipart/form-data" action="subdept.php" method="post">
 <input type="hidden" name="MAX_FILE_SIZE" value="20971520" />
 Filename: <input type="file" id="file" name="upload" />

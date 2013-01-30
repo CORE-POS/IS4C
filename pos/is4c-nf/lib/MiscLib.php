@@ -33,7 +33,7 @@ class MiscLib extends LibraryClass {
   @param $check_file file to search for
   @return A relative URL with trailing slash
 */
-static public function base_url($check_file="pos.css"){
+static public function base_url($check_file="css/pos.css"){
 	$ret = "";
 	$cutoff = 0;
 	while($cutoff < 20 && !file_exists($ret.$check_file)){
@@ -177,7 +177,7 @@ static public function pingport($host,$dbms){
 	socket_set_block($sock);
 	$test = socket_connect($sock,$host,$port);
 	socket_close($sock);
-	return ($test ? 1 : 0);	
+	return ($test ? 1 : 0);
 }
 
 /**

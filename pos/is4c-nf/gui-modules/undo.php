@@ -39,9 +39,9 @@ class undo extends NoInputPage {
 		<form name="form" method='post' autocomplete="off" action="<?php echo $_SERVER["PHP_SELF"]; ?>">
 		<input type="text" name="reginput" id="reginput" tabindex="0" onblur="($'#reginput').focus();" >
 		</form>
-		<p />
+		<p>
 		Enter transaction number<br />[clear to cancel]
-		<p />
+		</p>
 		</div>
 		</div>
 		<?php

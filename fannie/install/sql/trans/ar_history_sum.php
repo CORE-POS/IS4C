@@ -9,10 +9,17 @@ Columns:
 	balance dbms currency
 
 Depends on:
-	ar_history (view)
+	ar_history (table)
 
 Use:
-Sum of all charges and payments per customer
+  Summary of all charges and payments per customer
+  (One row per customer.)
+
+*/
+/* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+	* 24Oct2012 Eric Lee Add comments Depended on by:
+
 */
 
 $CREATE['trans.ar_history_sum'] = "

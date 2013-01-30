@@ -21,6 +21,13 @@
 
 *********************************************************************************/
 
+/* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+	* 18Jan2013 Eric Lee Extended lookup to productUser.description, with Andy's help.
+	*                    Very slow unless products.upc has been changed to VARCHAR(13).
+
+*/
+
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class productlist extends NoInputPage {
@@ -91,16 +98,29 @@ class productlist extends NoInputPage {
 		$query = "select upc, description, normal_price, special_price, advertised, scale from products where "
 			."upc = '".$entered."' AND inUse  = '1'";
 		$this->boxSize = 3;
+		$sql = Database::pDataConnect();
 		if (!is_numeric($entered)) {
 			$query = "select upc, description, normal_price, special_price, "
 				."advertised, scale from products where "
 				."description like '%".$entered."%' "
-				."and upc LIKE ('0000000%') and inUse='1' "
+				."and upc LIKE ('0000000%') "
+				."and inUse='1' "
 				."order by description";
+			if ($sql->table_exists("productUser")){
+				$query = "SELECT p.upc,
+                   CASE WHEN u.description IS NULL THEN p.description
+                   ELSE u.description END as description,
+										p.normal_price, p.special_price, p.advertised, p.scale
+                   FROM products AS p
+									 	LEFT JOIN productUser AS u ON p.upc=u.upc
+									 WHERE (p.description LIKE '%$entered%' OR
+										 u.description LIKE '%$entered%')
+									 AND p.upc LIKE ('0000000%')
+									 AND p.inUse='1'
+									 ORDER BY description";
+			}
 			$this->boxSize = 15;
 		}
-
-		$sql = Database::pDataConnect();
 
 		$this->temp_result = $sql->query($query);
 		$this->temp_num_rows = $sql->num_rows($this->temp_result);
@@ -198,7 +218,7 @@ class productlist extends NoInputPage {
 			</span>
 			<form action="<?php echo $_SERVER['PHP_SELF']; ?>" method="post" autocomplete="off">
 			<input type="text" name="search" size="15" id="search"
-				onblur="$('#search).focus();" />
+				onblur="$('#search').focus();" />
 			</form>
 			press [enter] to cancel
 			</div>

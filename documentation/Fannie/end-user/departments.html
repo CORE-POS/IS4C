@@ -3,10 +3,14 @@
 	<title>Departments</title>
 </head>
 <body>
+<div style="text-align:center;">
+<h1>Departments</h1>
+<a href="#change_log">Revised: 2Sep2012</a>
+</div>
+<p />
 	<div style="text-align:center;margin-bottom:10px;font-size:80%;">
-	updated as of: August 20, 2012<br />
-	last author: Andy Theuninck
 	</div>
+>>>>>>> upstream/master
 IS4C/Fannie organizes items into departments. You'll need at least one, but
 putting all items in a single department isn't ideal. Separating items into
 departments allows better reporting options as well as data normalization
@@ -49,8 +53,8 @@ transaction-level discounts (equity or gift card purchases are good examples
 of departments that should not receive any discounts).</li>
 <li><i>Min</i> and <i>Max</i> are soft limits for open rings. Amounts outside 
 the range will prompt the cashier to confirm.</li>
-<li><i>Margin</i> is used to calculate pricing (if item cost is available)</li>
-<li><i>Sales Code</i> is yet another way of grouping departments. Plug whatever
+<li><i>Margin</i>  (table <tt>departmentMargin</tt>) is used to calculate pricing (if item cost is available)</li>
+<li><i>Sales Code</i> (table <tt>departmentSalesCodes</tt>) is yet another way of grouping departments. Plug whatever
 you want here to roll out custom reporting.</li>
 </ul>
 <h2>Super Departments</h2>
@@ -76,5 +80,24 @@ Whether you wnat or need these is again dependent on your organization.
 Sub Departments are created/managed by selecting Item Maintaince =&gt; Manage Departments,
 then <i>Manage Sub Departments</i>. Choose a department from the drop down, then
 add/remove sub departments as needed.
+
+<pre>
+
+<a name="change_log">Change Log:</a>
+ 2Sep12 Eric Lee Add notes about tables that extend departments.
+                  Add H1 title, revision date, change log.
+20Aug12 Andy Theuninck
+
+
+
+
+
+
+
+
+
+
+
+</pre>
 </body>
 </html>

@@ -94,37 +94,33 @@ class ContactInfo extends MemberModule {
 	}
 
 	function SaveFormData($memNum){
+		global $FANNIE_ROOT;
 		$dbc = $this->db();
+		if (!class_exists("MeminfoController"))
+			include($FANNIE_ROOT.'classlib2.0/data/controllers/MeminfoController.php');
+		if (!class_exists("CustdataController"))
+			include($FANNIE_ROOT.'classlib2.0/data/controllers/CustdataController.php');
 
-		$saveQ  = sprintf("UPDATE meminfo SET
-			street=%s,
-			city=%s,
-			state=%s,
-			zip=%s,
-			phone=%s,
-			email_1=%s,
-			email_2=%s,
-			ads_OK=%d
-			WHERE card_no=%d",
-			$dbc->escape(!empty($_REQUEST['ContactInfo_addr2']) ?
-				$_REQUEST['ContactInfo_addr1']."\n".$_REQUEST['ContactInfo_addr2'] :
-				$_REQUEST['ContactInfo_addr1']),
-			$dbc->escape($_REQUEST['ContactInfo_city']),
-			$dbc->escape($_REQUEST['ContactInfo_state']),
-			$dbc->escape($_REQUEST['ContactInfo_zip']),
-			$dbc->escape($_REQUEST['ContactInfo_ph1']),
-			$dbc->escape($_REQUEST['ContactInfo_email']),
-			$dbc->escape($_REQUEST['ContactInfo_ph2']),
-			(isset($_REQUEST['ContactInfo_mail']) ? 1 : 0),
-			$memNum);
-		$test1 = $dbc->query($saveQ);
+		$MI_FIELDS = array(
+			'street' => $_REQUEST['ContactInfo_addr1'],
+			'city' => $_REQUEST['ContactInfo_city'],
+			'state' => $_REQUEST['ContactInfo_state'],
+			'zip' => $_REQUEST['ContactInfo_zip'],
+			'phone' => $_REQUEST['ContactInfo_ph1'],
+			'email_2' => $_REQUEST['ContactInfo_ph2'],
+			'email_1' => $_REQUEST['ContactInfo_email'],
+			'ads_OK' => ($_REQUEST['ContactInfo_mail'] ? 1 : 0)
+		);
+		if (!empty($_REQUEST['ContactInfo_addr2']))
+			$MI_FIELDS['street'] .= "\n".$_REQUEST['ContactInfo_addr2'];
+		$test1 = MeminfoController::update($memNum, $MI_FIELDS);
 
-		$saveQ = sprintf("UPDATE custdata SET firstname=%s,
-				lastname=%s WHERE cardno=%d AND personnum=1",
-				$dbc->escape($_REQUEST['ContactInfo_fn']),
-				$dbc->escape($_REQUEST['ContactInfo_ln']),
-				$memNum);
-		$test2 = $dbc->query($saveQ);
+		$CUST_FIELDS = array(
+			'personNum' => array(1),
+			'FirstName' => array($_REQUEST['ContactInfo_fn']),
+			'LastName' => array($_REQUEST['ContactInfo_ln'])
+		);
+		$test2 = CustdataController::update($memNum, $CUST_FIELDS);
 
 		if ($test1 === False || $test2 === False)
 			return "Error: problem saving Contact Information<br />";

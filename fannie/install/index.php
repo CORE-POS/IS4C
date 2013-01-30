@@ -20,6 +20,14 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
+
+
+/* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+	*  5Dec2012 Eric Lee Added table memContactPrefs
+
+*/
+
 ini_set('display_errors','1');
 ?>
 <?php 
@@ -124,20 +132,17 @@ if (isset($_REQUEST['FANNIE_SERVER_DBMS'])){
 	$FANNIE_SERVER_DBMS = $_REQUEST['FANNIE_SERVER_DBMS'];
 }
 confset('FANNIE_SERVER_DBMS',"'$FANNIE_SERVER_DBMS'");
-if ($FANNIE_SERVER_DBMS == 'MYSQL'){
-	echo "<option value=MYSQL selected>MySQL</option>";
-	echo "<option value=MSSQL>SQL Server</option>";
-	echo "<option value=MYSQLI>MySQLi</option>";
-}
-else if ($FANNIE_SERVER_DBMS == 'MSSQL'){
-	echo "<option value=MYSQL>MySQL</option>";
-	echo "<option value=MSSQL selected>SQL Server</option>";
-	echo "<option value=MYSQLI>MySQLi</option>";
-}
-else {
-	echo "<option value=MYSQL>MySQL</option>";
-	echo "<option value=MSSQL>SQL Server</option>";
-	echo "<option value=MYSQLI selected>MySQLi</option>";
+$supportedTypes = array(
+	'MYSQL' => 'MySQL',
+	'MSSQL' => 'MSSQL',
+	'MYSQLI' => 'MySQLi',
+	'PDO_MYSQL' => 'PDO MySQL'
+);
+foreach ($supportedTypes as $val=>$label){
+	printf('<option value="%s" %s>%s</option>',
+		$val,
+		($FANNIE_SERVER_DBMS == $val)?'selected':'',
+		$label);
 }
 ?>
 </select>
@@ -413,14 +418,11 @@ for($i=0; $i<$FANNIE_NUM_LANES; $i++){
 	if (isset($_REQUEST["LANE_TYPE_$i"])) $FANNIE_LANES[$i]['type'] = $_REQUEST["LANE_TYPE_$i"];
 	$conf .= "'type'=>'{$FANNIE_LANES[$i]['type']}',";
 	echo "Lane ".($i+1)." Database Type: <select name=LANE_TYPE_$i>";
-	if ($FANNIE_LANES[$i]['type'] == 'MYSQL'){
-		echo "<option value=MYSQL selected>MySQL</option><option value=MSSQL>SQL Server</option><option value=MYSQLI>MySQLi</option>";
-	}
-	else if ($FANNIE_LANES[$i]['type'] == 'MSSQL'){
-		echo "<option value=MYSQL>MySQL</option><option selected value=MSSQL>SQL Server</option><option value=MYSQLI>MySQLi</option>";
-	}
-	else {
-		echo "<option value=MYSQL>MySQL</option><option value=MSSQL>SQL Server</option><option selected value=MYSQLI>MySQLi</option>";
+	foreach ($supportedTypes as $val=>$label){
+		printf('<option value="%s" %s>%s</option>',
+			$val,
+			($FANNIE_LANES[$i]['type'] == $val)?'selected':'',
+			$label);
 	}
 	echo "</select><br />";
 
@@ -613,6 +615,9 @@ function create_op_dbs($con){
 			'prodExtra','op');
 
 	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+			'prodPhysicalLocation','op');
+
+	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 			'productUser','op');
 
 	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
@@ -721,6 +726,9 @@ function create_op_dbs($con){
 			'memContact','op');
 
 	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+			'memContactPrefs','op');
+
+	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 			'tenders','op');
 
 	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
@@ -728,6 +736,9 @@ function create_op_dbs($con){
 
 	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 			'houseCoupons','op');
+
+	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+			'houseVirtualCoupons','op');
 
 	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 			'houseCouponItems','op');
@@ -907,9 +918,6 @@ function create_trans_dbs($con){
 
 	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
 			'AR_EOM_Summary','trans');
-
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
-			'AR_EOM_Summary_cache','trans');
 
 	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
 			'lane_config','trans');
@@ -1420,6 +1428,8 @@ function create_archive_dbs($con) {
 			'sumTendersByDay','arch');
 	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_ARCHIVE_DB,
 			'sumDiscountsByDay','arch');
+	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_ARCHIVE_DB,
+			'reportDataCache','arch');
 }
 
 ?>

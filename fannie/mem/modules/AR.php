@@ -59,12 +59,13 @@ class AR extends MemberModule {
 	}
 
 	function SaveFormData($memNum){
+		global $FANNIE_ROOT;
 		$dbc = $this->db();
+		if (!class_exists("CustdataController"))
+			include($FANNIE_ROOT.'classlib2.0/data/controllers/CustdataController.php');
 
-		$saveQ = sprintf("UPDATE custdata SET memDiscountLimit=%f
-				WHERE CardNo=%d",$_REQUEST['AR_limit'],
-				$memNum);
-		$test = $dbc->query($saveQ);
+		$test = CustdataController::update($memNum,
+				array('MemDiscountLimit' => $_REQUEST['AR_limit']));
 		
 		if ($test === False)
 			return 'Error: Problme saving A/R limit<br />';

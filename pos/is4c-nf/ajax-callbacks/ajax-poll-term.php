@@ -21,6 +21,7 @@
 
 *********************************************************************************/
 
+ini_set('display_errors','Off');
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 $termDriver = $CORE_LOCAL->get("SigCapture");

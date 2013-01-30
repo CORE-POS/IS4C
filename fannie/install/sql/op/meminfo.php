@@ -3,7 +3,7 @@
 Table: meminfo
 
 Columns:
-	card_no smallint
+	card_no int
 	last_name varchar
 	first_name varchar
 	othlast_name varchar
@@ -63,7 +63,7 @@ epoch   AT Original notes by Andy Theuninck.
 */
 $CREATE['op.meminfo'] = "
 	CREATE TABLE `meminfo` (
-	  `card_no` smallint(5) default NULL,
+	  `card_no` int(11) default NULL,
 	  `last_name` varchar(30) default NULL,
 	  `first_name` varchar(30) default NULL,
 	  `othlast_name` varchar(30) default NULL,
@@ -83,7 +83,7 @@ $CREATE['op.meminfo'] = "
 if ($dbms == "MSSQL"){
 	$CREATE['op.meminfo'] = "
 		CREATE TABLE meminfo (
-		  card_no smallint ,
+		  card_no int ,
 		  last_name varchar(30) ,
 		  first_name varchar(30) ,
 		  othlast_name varchar(30) ,

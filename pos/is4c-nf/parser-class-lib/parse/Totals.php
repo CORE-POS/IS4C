@@ -21,11 +21,18 @@
 
 *********************************************************************************/
 
+/* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+	* 13Jan2013 Eric Lee Added MTL for Ontario Meal Tax Rebate
+
+*/
+
 class Totals extends Parser {
 
 	function check($str){
 		if ($str == "FNTL" || $str == "TETL" ||
 		    $str == "FTTL" || $str == "TL" ||
+				$str == "MTL" ||
 		    substr($str,0,2) == "FN")
 			return True;
 		return False;
@@ -53,6 +60,11 @@ class Totals extends Parser {
 			PrehLib::finalttl();
 		elseif ($str == "TL"){
 			$chk = PrehLib::ttl();
+			if ($chk !== True)
+				$ret['main_frame'] = $chk;
+		}
+		elseif ($str == "MTL"){
+			$chk = PrehLib::omtr_ttl();
 			if ($chk !== True)
 				$ret['main_frame'] = $chk;
 		}

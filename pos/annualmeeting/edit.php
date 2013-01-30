@@ -69,7 +69,7 @@ while($w = $db->fetch_row($r))
 
 $cn = (int)$_REQUEST['cn'];
 
-$q = "SELECT name,guest_count,child_count,paid,checked_in
+$q = "SELECT name,guest_count,child_count,1 as paid,checked_in
 	FROM registrations WHERE card_no=".$cn;
 $r = $db->query($q);
 $regW = $db->fetch_row($r);
@@ -114,9 +114,9 @@ function reCalc(){
 	<?php foreach ($adult as $a){
 	echo '<tr><th>Adult Meal</th><td><select name="am[]">';
 	if ($a[1]==1) 
-		echo '<option value="1" selected>Chicken</option><option value="2">Ratatouille</option>';
+		echo '<option value="1" selected>Chicken</option><option value="2">Curry</option>';
 	else
-		echo '<option value="1">Chicken</option><option value="2" selected>Ratatouille</option>';
+		echo '<option value="1">Chicken</option><option value="2" selected>Curry</option>';
 	echo '</select></td></tr>';
 	} ?>
 	<?php foreach ($kids as $k){
@@ -126,7 +126,7 @@ function reCalc(){
 	} ?>
 	<tr><td colspan="2" align="center">Additional Meals</td></tr>
 	<tr><th>Chicken</th><td><input type="text" name="chicken" id="chicken" value="0" onchange="reCalc(); "/></td></tr>
-	<tr><th>Ratatouille</th><td><input type="text" name="veg" id="veg" onchange="reCalc();" value="0" /></td></tr>
+	<tr><th>Curry</th><td><input type="text" name="veg" id="veg" onchange="reCalc();" value="0" /></td></tr>
 	<tr><th>Spaghetti</th><td><input type="text" name="kids" value="0" /></td></tr>
 	<tr><td colspan="2">&nbsp;</td></tr>
 	<tr><th>Amount Due</th><td id="amtdue">$<?php echo ($regW['paid']==1?0:20*$regW['guest_count']); ?></td></tr>

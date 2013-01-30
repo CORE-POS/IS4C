@@ -20,6 +20,9 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
+/* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+	 4Sep2012 Eric Lee Add some notes to the initial page.
+*/
 include('../../config.php');
 
 $page_title = "Fannie :: Product Tools";
@@ -141,6 +144,8 @@ else {
 Upload a CSV file containing departments numbers, descriptions, margins,
 and optional tax/foodstamp settings. Unless you know better, use zero and
 one for tax and foodstamp columns.
+<br />A preview helps you to choose and map CSV fields to the database.
+<br />The uploaded file will be deleted after the load.
 <form enctype="multipart/form-data" action="dept.php" method="post">
 <input type="hidden" name="MAX_FILE_SIZE" value="20971520" />
 Filename: <input type="file" id="file" name="upload" />

@@ -21,6 +21,12 @@
 
 *********************************************************************************/
 
+/* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+	* 13Jan2013 Eric Lee Added changeLttTaxCode(From, To);
+
+*/
+
 /**
   @class Database
   Functions related to the database
@@ -143,6 +149,63 @@ static public function getsubtotals() {
 
 }
 
+static public function LineItemTaxes(){
+	$db = Database::tDataConnect();
+	$q = "SELECT id, description, taxTotal, fsTaxable, fsTaxTotal, foodstampTender, taxrate
+		FROM taxView ORDER BY taxrate DESC";
+	$r = $db->query($q);
+	$taxRows = array();
+	$fsTenderTTL = 0.00;
+	while ($w = $db->fetch_row($r)){
+		$taxRows[] = $w;
+		$fsTenderTTL = $w['foodstampTender'];
+	}
+	$db->close();
+
+	// loop through line items and deal with
+	// foodstamp tax exemptions
+	for($i=0;$i<count($taxRows);$i++){
+		if($fsTenderTTL <= 0.005) continue;
+		
+		if (abs($fsTenderTTL - $taxRows[$i]['fsTaxable']) < 0.005){
+			// CASE 1:
+			//	Available foodstamp tender matches foodstamp taxable total
+			//	Decrement line item tax by foodstamp tax total
+			//	No FS tender left, so exemption ends
+			$taxRows[$i]['taxTotal'] = MiscLib::truncate2($taxRows[$i]['taxTotal'] - $taxRows[$i]['fsTaxTotal']);
+			$fsTenderTTL = 0;
+		}
+		else if ($fsTenderTTL > $taxRows[$i]['fsTaxable']){
+			// CASE 2:
+			//	Available foodstamp tender exeeds foodstamp taxable total
+			//	Decrement line item tax by foodstamp tax total
+			//	Decrement foodstamp tender total to reflect amount not yet applied
+			$taxRows[$i]['taxTotal'] = MiscLib::truncate2($taxRows[$i]['taxTotal'] - $taxRows[$i]['fsTaxTotal']);
+			$fsTenderTTL = MiscLib::truncate2($fsTenderTTL - $taxRows[$i]['fsTaxable']);;
+		}
+		else {
+			// CASE 3:
+			//	Available foodstamp tender is less than foodstamp taxable total
+			//	Decrement line item tax proprotionally to foodstamp tender available
+			//	No FS tender left, so exemption ends
+			$percentageApplied = $fsTenderTTL / $taxRows[$i]['fsTaxable'];
+			$exemption = $taxRows[$i]['fsTaxTotal'] * $percentageApplied;
+			$taxRows[$i]['taxTotal'] = MiscLib::truncate2($taxRows[$i]['taxTotal'] - $exemption);
+			$fsTenderTTL = 0;
+		}
+	}
+	
+	$ret = array();
+	foreach($taxRows as $tr){
+		$ret[] = array(
+			'rate_id' => $tr['id'],
+			'description' => $tr['description'],
+			'amount' => $tr['taxTotal']
+		);
+	}
+	return $ret;
+}
+
 // ----------gettransno($CashierNo /int)----------
 //
 // Given $CashierNo, gettransno() will look up the number of the most recent transaction.
@@ -245,6 +308,10 @@ static public function uploadtoServer()
 	if ($connect->transfer($CORE_LOCAL->get("tDatabase"),
 		"select {$dt_matches} from dtransactions",
 		$CORE_LOCAL->get("mDatabase"),"insert into dtransactions ({$dt_matches})")){
+	
+		// Moved up
+		$connect->query("truncate table dtransactions",
+			$CORE_LOCAL->get("tDatabase"));
 
 		$al_matches = self::getMatchingColumns($connect,"alog");
 		// interval is a mysql reserved word
@@ -266,8 +333,10 @@ static public function uploadtoServer()
 			$CORE_LOCAL->get("mDatabase"),
 			"insert into suspended ({$su_matches})");
 
+		/* Move up
 		$connect->query("truncate table dtransactions",
 			$CORE_LOCAL->get("tDatabase"));
+		*/
 		if ($al_success){
 			$connect->query("truncate table alog",
 				$CORE_LOCAL->get("tDatabase"));
@@ -501,6 +570,68 @@ static public function setglobalflags($value) {
 
 	$db->query("update globalvalues set TTLFlag = ".$value.", FntlFlag = ".$value);
 	$db->close();
+}
+
+/**
+  Change one tax code in all items of localtemptrans to a different one.
+  Parameters are the names of the taxes, as in taxrates.description
+  @param $fromName The name of the tax changed from.
+  @param $fromName The name of the tax changed to.
+*/
+static public function changeLttTaxCode($fromName, $toName) {
+
+	$msg = "";
+	$pfx = "changeLttTaxCode ";
+	$pfx = "";
+	if ( $fromName == "" ) {
+		$msg = "{$pfx}fromName is empty";
+		return msg;
+	} else {
+		if ( $toName == "" ) {
+			$msg = "{$pfx}toName is empty";
+			return msg;
+		}
+	}
+
+	$db = self::tDataConnect();
+
+	// Get the codes for the names provided.
+	$query = "SELECT id FROM taxrates WHERE description = '$fromName'";
+	$result = $db->query($query);
+	$row = $db->fetch_row($result);
+	if ( $row ) {
+		$fromId = $row['id'];
+	} else {
+		$msg = "{$pfx}fromName: >{$fromName}< not known.";
+		return $msg;
+	}
+	$query = "SELECT id FROM taxrates WHERE description = '$toName'";
+	$result = $db->query($query);
+	$row = $db->fetch_row($result);
+	if ( $row ) {
+		$toId = $row['id'];
+	} else {
+		$msg = "{$pfx}toName: >{$toName}< not known.";
+		return $msg;
+	}
+
+	// Change the values.
+	$query = "UPDATE localtemptrans set tax = $toId WHERE tax = $fromId";
+	$result = $db->query($query);
+	/* Complains that errno is undefined in SQLManager.
+	if ( $db->errno ) {
+		return "{$pfx}UPDATE error: " . $db->error;
+	}
+	*/
+	if ( !$result ) {
+		return "UPDATE false";
+	}
+
+	$db->close();
+
+	return True;
+
+// changeLttTaxCode
 }
 
 } // end Database class

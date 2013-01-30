@@ -90,11 +90,11 @@ function reCalc(){
 	<tr><th>Name</th><td><input type="text" name="name" value="<?php echo $regW['name']; ?>" /></td></tr>
 	<tr><th>Owner Meal</th><td><select name="am[]">
 	<option value="0"></option>
-	<option value="1" selected>Chicken</option><option value="2">Ratatouille</option>
+	<option value="1" selected>Chicken</option><option value="2">Curry</option>
 	</select></td></tr>
 	<tr><td colspan="2" align="center">Additional Meals</td></tr>
 	<tr><th>Chicken</th><td><input type="text" name="chicken" id="chicken" value="0" onchange="reCalc(); "/></td></tr>
-	<tr><th>Ratatouille</th><td><input type="text" name="veg" id="veg" onchange="reCalc();" value="0" /></td></tr>
+	<tr><th>Curry</th><td><input type="text" name="veg" id="veg" onchange="reCalc();" value="0" /></td></tr>
 	<tr><th>Spaghetti</th><td><input type="text" name="kids" value="0" /></td></tr>
 	<tr><td colspan="2">&nbsp;</td></tr>
 	<tr><th>Amount Due</th><td id="amtdue">$0</td></tr>

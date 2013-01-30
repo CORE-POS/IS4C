@@ -4586,3 +4586,27 @@ num2.php: Wed, 18 Jul 2012 01:03:54 -0400: SELECT CardNo, LastName from custdata
 
 		from transArchive00
 		group by register_no, emp_no, trans_no, card_no, datetime
+nightly.specialorder.php: Fri, 07 Sep 2012 13:06:01 -0500: UPDATE is4c_op.custdata SET blueLine=CONCAT(blueLine, ' SO(10)')
+		WHERE CardNo=
+wfc/warehouse.datetable.php: Tue, 16 Oct 2012 11:01:25 -0500: CREATE TABLE warehouse_date (
+	date_id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+	year TINYINT UNSIGNED DEFAULT 0,
+	month TINYINT UNSIGNED DEFAULT 0,
+	day TINYINT UNSIGNED DEFAULT 0,
+	week_no TINYINT UNSIGNED DEFAULT 0,
+	weekday_no TINYINT UNSIGNED DEFAULT 0,
+	quarter TINYINT UNSIGNED DEFAULT 0,
+	fiscal_year TINYINT UNSIGNED DEFAULT 0,
+	PRIMARY KEY date_id
+)
+wfc/warehouse.datetable.php: Tue, 16 Oct 2012 11:02:06 -0500: CREATE TABLE warehouse_date (
+	date_id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+	year TINYINT UNSIGNED DEFAULT 0,
+	month TINYINT UNSIGNED DEFAULT 0,
+	day TINYINT UNSIGNED DEFAULT 0,
+	week_no TINYINT UNSIGNED DEFAULT 0,
+	weekday_no TINYINT UNSIGNED DEFAULT 0,
+	quarter TINYINT UNSIGNED DEFAULT 0,
+	fiscal_year TINYINT UNSIGNED DEFAULT 0,
+	PRIMARY KEY date_id
+)

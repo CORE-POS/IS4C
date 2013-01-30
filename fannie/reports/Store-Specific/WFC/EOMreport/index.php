@@ -126,10 +126,10 @@ if (!$output){
 	ORDER BY m.memDesc";
 
 	$query21 = "SELECT m.memdesc, COUNT(d.card_no)
-	FROM is4c_trans.transarchive AS d join custdata c on d.card_no = c.CardNo join memTypeID m on c.memType = m.memTypeID
-	WHERE datetime BETWEEN $span AND (card_no NOT BETWEEN 5500 and 5950) AND personNum = 1
+	FROM is4c_trans.transarchive AS d left join memTypeID m on d.memType = m.memTypeID
+	WHERE datetime BETWEEN $span AND (d.memType <> 4)
 	AND register_no<>99 and emp_no<>9999 AND trans_status NOT IN ('X','Z')
-	AND trans_id=1
+	AND trans_id=1 AND upc <> 'RRR'
 	GROUP BY m.memdesc";
 
 	$query20 = "SELECT   SUM(d.total) AS Sales 
@@ -206,7 +206,9 @@ if (!$output){
 	order by d.salesCode";
 
 	$queryRRR = "
-	SELECT sum(case when volSpecial is null then 0 else volSpecial end) as qty
+	SELECT sum(case when volSpecial is null then 0 
+		when volSpecial > 100 then 1
+		else volSpecial end) as qty
 	from
 	is4c_trans.transarchive as t
 	where upc = 'RRR'
