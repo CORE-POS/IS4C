@@ -5,10 +5,9 @@ include($FANNIE_ROOT.'classlib2.0/data/FannieDB.php');
 
 $ts_db = FannieDB::get($FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']);
 
-if (ini_get('session.auto_start') == 0);
-	session_start();
-
 class ViewsheetPage extends FanniePage {
+
+	protected $auth_classes = array('timesheet_access');
 
 	private $errors;
 	private $display_func;
@@ -16,8 +15,9 @@ class ViewsheetPage extends FanniePage {
 	function preprocess(){
 		global $ts_db, $FANNIE_PLUGIN_SETTINGS, $FANNIE_OP_DB;
 
-		if ($_GET['login'] == 1 || $_GET['logout'] == 1 || $_SESSION['logged_in'] == True){
-			include("includes/passwd.php");
+		if (!$this->current_user && $_GET['login'] == 1 ){
+			$this->login_redirect();
+			return False;
 		}
 		// $loggedin = (isset($_COOKIE['verify'])) ? True : False;
 
@@ -261,7 +261,7 @@ class ViewsheetPage extends FanniePage {
 	}
 
 	function body_content(){
-		global $ts_db, $FANNIE_OP_DB, $FANNIE_PLUGIN_SETTINGS;
+		global $ts_db, $FANNIE_OP_DB, $FANNIE_PLUGIN_SETTINGS, $FANNIE_URL;
 		include ('./includes/header.html');
 
 		if ($this->display_func == 'ts_error')
@@ -307,8 +307,8 @@ class ViewsheetPage extends FanniePage {
 		echo '<button name="submit" type="submit">Submit</button>
 		<input type="hidden" name="submitted" value="TRUE" />
 		</form>';
-		if ($_SESSION['logged_in'] == True) {
-			echo "<div class='log_btn'><a href='" . $_SERVER["PHP_SELF"] . "?logout=1'>Logout</a></div>";
+		if ($this->current_user){
+			echo "<div class='log_btn'><a href='" . $FANNIE_URL . "auth/ui/loginform.php?logout=1'>logout</a></div>";
 		} 
 		else {
 			echo "<div class='log_btn'><a href='" . $_SERVER["PHP_SELF"] . "?login=1'>Login</a></div>"; 	//	 class='loginbox'
