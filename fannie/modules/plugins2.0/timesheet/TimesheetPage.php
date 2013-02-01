@@ -194,7 +194,10 @@ class TimesheetPage extends FanniePage {
 			echo '<td><p>Name: <select name="emp_no">
 				<option value="error">Select staff member</option>' . "\n";
 		
-			$query = "SELECT FirstName, IF(LastName='','',CONCAT(SUBSTR(LastName,1,1),\".\")), emp_no FROM ".$FANNIE_OP_DB.".employees where EmpActive=1 ORDER BY FirstName ASC";
+			$query = "SELECT FirstName, 
+				CASE WHEN LastName='' OR LastName IS NULL THEN ''
+				ELSE ".$ts_db->concat('LEFT(LastName,1)',"'.'")." END,
+				emp_no FROM ".$FANNIE_OP_DB.".employees where EmpActive=1 ORDER BY FirstName ASC";
 			$result = $ts_db->query($query);
 			while ($row = $ts_db->fetch_array($result)) {
 				echo "<option value=\"$row[2]\">$row[0] $row[1]</option>\n";
