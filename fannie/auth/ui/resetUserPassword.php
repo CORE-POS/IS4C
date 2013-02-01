@@ -56,7 +56,10 @@ if (isset($_GET['name'])){
 }
 else {
   echo "<form method=get action=resetUserPassword.php>";
-  echo "User name: <input type=text name=name /><br />";
+  echo "User name: <select name=name>";
+  foreach(getUserList() as $uid => $name)
+	echo "<option>".$name."</option>";
+  echo '</select> ';
   echo "<input type=submit value=Submit /></form>";  
 }
 echo '<p />';
