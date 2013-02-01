@@ -20,6 +20,14 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
+
+
+/* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+	*  5Dec2012 Eric Lee Added table memContactPrefs
+
+*/
+
 ini_set('display_errors','1');
 ?>
 <?php 
@@ -37,7 +45,7 @@ Necessities
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <a href="update.php">Updates</a>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<a href="module_system">Modules</a>
+<a href="plugins.php">Plugins</a>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <a href="sample_data/extra_data.php">Sample Data</a>
 <form action=index.php method=post>
@@ -718,6 +726,9 @@ function create_op_dbs($con){
 			'memContact','op');
 
 	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+			'memContactPrefs','op');
+
+	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 			'tenders','op');
 
 	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
@@ -1183,7 +1194,7 @@ function create_archive_dbs($con) {
 				(PARTITION %s 
 					VALUES LESS THAN (TO_DAYS('%s'))
 				)",$p,$limit);
-			$con->query($partR);
+			$con->query($partQ);
 		}
 	}
 

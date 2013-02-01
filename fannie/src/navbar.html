@@ -1,5 +1,9 @@
 <!-- --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+     18Jan13 EL Add Synchronize > ProductUser. Not WEFC_Toronto-specific.
+      3Jan13 EL Add Sales > General Costs. Not WEFC_Toronto-specific.
+     10Oct12 EL Add memberCards to Sync flyout
+.               Add Section for WEFC Toronto utilities.
       4Sep12 EL Access to the item/import utilities:
 .               Add Import Products item to submenu level0
 .               Add Products item to submenu level1
@@ -123,6 +127,7 @@ x               Add Product List and Tool to Item Maint submenu0
 				<div class="submenu level1" style="width:155px;top:-28px;left:135px;">
 				<ul style="">
 				<li><a href="<?php echo $path; ?>reports/GeneralSales/">General Sales Report</a></li>
+				<li><a href="<?php echo $path; ?>reports/GeneralCosts/">General Costs Report</a></li>
 				<li><a href="<?php echo $path; ?>reports/SalesToday/">Today's Sales</a></li>
 				<li><a href="<?php echo $path; ?>reports/HourlySales/">Store Hourly Sales Report</a></li>
 				<li><a href="<?php echo $path; ?>reports/HourlySales/hourlySalesDept.php">Department Hourly Sales Report</a></li>
@@ -162,7 +167,9 @@ x               Add Product List and Tool to Item Maint submenu0
 	<div class="submenu level0" style="width:145px;top:-28px;left:135px;">
 		<ul style="">
 			<li><a href="<?php echo $path; ?>sync/tablesync.php?tablename=products">Products</a></li>
+			<li><a href="<?php echo $path; ?>sync/tablesync.php?tablename=productUser">ProductUser</a></li>
 			<li><a href="<?php echo $path; ?>sync/tablesync.php?tablename=custdata">Membership</a></li>
+			<li><a href="<?php echo $path; ?>sync/tablesync.php?tablename=memberCards">Member Cards</a></li>
 			<li><a href="<?php echo $path; ?>sync/tablesync.php?tablename=employees">Employees</a></li>
 			<li><a href="<?php echo $path; ?>sync/tablesync.php?tablename=departments">Departments</a></li>
 			<li><a href="<?php echo $path; ?>sync/tablesync.php?tablename=subdepts">Sub-Departments</a></li>
@@ -253,6 +260,24 @@ x               Add Product List and Tool to Item Maint submenu0
 <div class="sub">
 	Administrative functions, etc.
 </div>
+
+<!-- Better to include based on existence of per_coop/$store -->
+<!--
+<li  style="width:100%;"><a href="<?php echo $path; ?>per_coop/WEFC_Toronto/index.php">WEFC Toronto</a>
+	<div class="menuwrapper">
+	<div class="submenu level0" style="width:145px;top:-28px;left:135px;">
+		<ul style="">
+			<li><a href="<?php echo $path; ?>item/import/uploadAnyFile.php">Upload Any File</a></li>
+			<li><a href="<?php echo $path; ?>item/departments/loadWEFCTorontoDepts.php">Load Departments</a></li>
+			<li><a href="<?php echo $path; ?>item/import/loadWEFCTorontoProducts.php">Load Products</a></li>
+		</ul>
+	</div>
+	</div>
+</li>
+<div class="sub">
+	WEFC Toronto utilities
+</div>
+-->
 
 </ul>
 <!-- 10Aug12 EL Added -->

@@ -34,6 +34,7 @@ ini_set('display_errors','1');
 <?php 
 include('../config.php'); 
 include('util.php');
+include('db.php');
 ?>
 <a href="index.php">Necessities</a>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
@@ -45,7 +46,7 @@ Authentication
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <a href="update.php">Updates</a>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<a href="module_system">Modules</a>
+<a href="plugins.php">Plugins</a>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <a href="sample_data/extra_data.php">Sample Data</a>
 <form action=auth.php method=post>
@@ -94,12 +95,21 @@ if ($FANNIE_AUTH_ENABLED){
 			$success = createLogin($_REQUEST['newuser'],$_REQUEST['newpass']);
 			if ($success){
 				echo "<i>User ".$_REQUEST['newuser']." created</i><br />";
+				$FANNIE_AUTH_ENABLED = True; // toggle enforce error checking
 				$success = addAuth($_REQUEST['newuser'],'admin');
 				if ($success) {
 					echo "<i>User ".$_REQUEST['newuser']." is an admin</i><br />";
 					// 10Nov12 EL Added these notes to the person installing.
 					echo "You can use these credentials at the <a href='../auth/ui/' target='_aui'>Authentication Interface</a></br />";
 					echo " Other protected pages may require different credentials.<br />";
+
+					// populate known privileges table automatically
+					if (!class_exists('FannieDB'))
+						include($FANNIE_ROOT.'classlib2.0/data/FannieDB.php');
+					$db = FannieDB::get($FANNIE_OP_DB);
+					loaddata($db, 'userKnownPrivs');
+
+
 				} else {
 					echo "<b>Error making user an admin</b><br />";
 				}
@@ -114,6 +124,9 @@ if ($FANNIE_AUTH_ENABLED){
 			echo 'Username: <input type="text" name="newuser" /><br />';
 			echo 'Password: <input type="password" name="newpass" /><br />';
 		}
+	}
+	else {
+		echo "You can manage users and groups via the <a href='../auth/ui/' target='_aui'>Authentication Interface</a></br />";
 	}
 }
 ?>
@@ -137,13 +150,28 @@ else{
 echo "</select><br />";
 if (!file_exists("../auth/shadowread/shadowread")){
 	echo "<span style=\"color:red;\"><b>Error</b>: shadowread utility does not exist</span>";
+	echo "<blockquote>";
+	echo "shadowread lets Fannie authenticate users agaist /etc/shadow. To create it:";
+	echo "<pre style=\"font:fixed;background:#ccc;\">
+cd ".realpath('../auth/shadowread')."
+make
+	</pre>";
+	echo "</blockquote>";
 }
 else {
 	$perms = fileperms("../auth/shadowread/shadowread");
 	if ($perms == 0104755)
 		echo "<span style=\"color:green;\">shadowread utility has proper permissions</span>";
-	else
+	else{
 		echo "<span style=\"color:red;\"><b>Warning</b>: shadowread utility has incorrect permissions</span>";
+		echo "<blockquote>";
+		echo "shadowread needs setuid permission. To fix it: ";
+		echo "<pre style=\"font:fixed;background:#ccc;\">
+cd ".realpath('../auth/shadowread')."
+sudo make install
+		</pre>";
+		echo "</blockquote>";
+	}
 }
 ?>
 <hr />

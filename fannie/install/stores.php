@@ -20,6 +20,12 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
+
+/* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+	*  6Dec2012 Eric Lee Add FANNIE_COOP_ID
+
+*/
 ini_set('display_errors','1');
 ?>
 <?php 
@@ -36,7 +42,7 @@ Stores
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <a href="update.php">Updates</a>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<a href="module_system">Modules</a>
+<a href="plugins.php">Plugins</a>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <a href="sample_data/extra_data.php">Sample Data</a>
 <form action=stores.php method=post>
@@ -55,15 +61,31 @@ else {
 	echo "<span style=\"color:red;\"><b>Error</b>: config.php is not writeable</span>";
 }
 ?>
-<br /><br />
-<b>Store ID</b>: 
+
+<hr />
+<b>Co-op</b>
+<br />Use this to identify code that is specific to your co-op.
+<br />Particularly important if you plan to contribute to the CORE IT code base.
+<br />Try to use a code that will not be confused with any other, e.g. "WEFC_Toronto" instead of "WEFC".
+<br />Co-op ID: 
+<?php
+if (!isset($FANNIE_COOP_ID)) $FANNIE_COOP_ID = '';
+if (isset($_REQUEST['FANNIE_COOP_ID'])) $FANNIE_COOP_ID=$_REQUEST['FANNIE_COOP_ID'];
+confset('FANNIE_COOP_ID',"'$FANNIE_COOP_ID'");
+printf("<input type=\"text\" name=\"FANNIE_COOP_ID\" value=\"%s\" />",$FANNIE_COOP_ID);
+?>
+
+<hr />
+<b>Stores</b>
+<p style="margin:0.0em 0em 0.4em 0em;"><b>Store ID</b>: 
 <?php
 if (!isset($FANNIE_STORE_ID)) $FANNIE_STORE_ID = 0;
 if (isset($_REQUEST['FANNIE_STORE_ID'])) $FANNIE_STORE_ID = $_REQUEST['FANNIE_STORE_ID'];
 confset('FANNIE_STORE_ID',"$FANNIE_STORE_ID");
 echo "<input type=text name=FANNIE_STORE_ID value=\"$FANNIE_STORE_ID\" size=3 />";
 ?>
-<br />
+ &nbsp; By convention store id #0 is HQ.
+</p>
 <?php
 /*
 	By convention store id #0 is HQ

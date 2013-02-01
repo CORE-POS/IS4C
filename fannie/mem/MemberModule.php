@@ -24,9 +24,9 @@
 class MemberModule {
 
 	function db(){
-		global $dbc,$FANNIE_ROOT;
-		if (!isset($dbc)) include_once($FANNIE_ROOT.'src/mysql_connect.php');
-		return $dbc;
+		global $dbc,$FANNIE_ROOT,$FANNIE_OP_DB;
+		if (!isset($dbc)) include_once($FANNIE_ROOT.'classlib2.0/data/FannieDB.php');
+		return FannieDB::get($FANNIE_OP_DB);
 	}
 
 	function ShowEditForm($memNum){
