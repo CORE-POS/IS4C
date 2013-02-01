@@ -79,15 +79,15 @@ foreach ($host as $key => $value) {
         'test_slave_io_thread' => array('Slave_IO_Running', "\$var === 'Yes'",
                                         'Slave IO Thread is not running'),
         'test_slave_sql_thread' => array('Slave_SQL_Running', "\$var === 'Yes'",
-                                        'Slave SQL Thread is not running'),
-        'test_last_err' => array('Last_Errno', "\$var == 0",
-                                 "Error encountered during replication - "
-                                 .$status['Last_Error']),
-        'test_master_status' => array('Seconds_Behind_Master', "isset(\$var)",
-                                        'Unknown master status (Seconds_Behind_Master IS NULL)'),
-        'test_slave_lag' => array('Seconds_Behind_Master',
-                                  "\$var < \$slave_lag_threshold",
-                                  "Slave is ${status['Seconds_Behind_Master']}s behind master (threshold=$slave_lag_threshold)")
+                                        'Slave SQL Thread is not running')
+//        'test_last_err' => array('Last_Errno', "\$var == 0",
+//                                 "Error encountered during replication - "
+//                                 .$status['Last_Error']),
+//        'test_master_status' => array('Seconds_Behind_Master', "isset(\$var)",
+//                                        'Unknown master status (Seconds_Behind_Master IS NULL)'),
+//        'test_slave_lag' => array('Seconds_Behind_Master',
+//                                  "\$var < \$slave_lag_threshold",
+//                                  "Slave is ${status['Seconds_Behind_Master']}s behind master (threshold=$slave_lag_threshold)")
     );
  
     $epic_fail = false;
@@ -102,19 +102,26 @@ foreach ($host as $key => $value) {
             $val = eval("return $expr;");
             $val1 = (!$val) ? $val1 + 1 : $val1 - 1;
             // $mailmessage .= "BAD: " . $key . " replication failed. Reason: " . $err_msg . "\n";
-            print "[".$key."] BAD: Slave failure detected.  Attempting RESET." 
+        //print $val1."\n";
         }
-        $val2 = 0;
         if ($val1 > 0) {
-            $reset = "mysql -u".$user." -p".$pass." -h ".$host." -e \"slave stop;reset slave;slave start\"";
-            exec($reset);
-            foreach($tests as $test_name => $data) {
-                list($field, $expr, $err_msg) = $data;
-                $var = $status[$field];
-                $val = eval("return $expr;");
-                $val2 = (!$val) ? $val2 + 1 : $val2 - 1;
-                $mailmessage .= "[".$key."] BAD: Replication failed. Reason: " . $err_msg . "\n";
-            }
+            print "[".$key."] BAD: Slave failure detected.  Attempting RESET.\n"; 
+            $reset = "mysql -u".$user." -p".$pass." -h ".$value." -e \"slave stop;reset slave;slave start\"";
+            exec($reset, $output, $result);
+        if ($result <> 0) {
+        print "[".$key."] BAD: RESET FAILED :-( \n";
+        } else {
+        print "[".$key."] RESET Successful.\n";
+                sleep(3);
+            $val2 = 0;
+                foreach($tests as $test_name => $data) {
+                    list($field, $expr, $err_msg) = $data;
+                    $var = $status[$field];
+                    $val = eval("return $expr;");
+                    $val1 = (!$val) ? $val1 + 1 : $val1 - 1;
+                    $mailmessage .= "[".$key."] BAD: Replication failed. Reason: " . $err_msg . "\n";
+                }
+        }
             if ($val2 > 0) {
                 mail($mailto,$mailsubject,$mailmessage,$mailheaders);
                 print $mailmessage . "\n";
@@ -126,5 +133,11 @@ foreach ($host as $key => $value) {
     if(!$epic_fail) {
         print "[".$key."] OK: Checks all completed successfully.\n";
     }
+}
+
+function reset_slave($host_ip) {
+    $reset = "mysql -u".$user." -p".$pass." -h ".$host_ip." -e \"slave stop;reset slave;slave start\"";
+    exec($reset, $output, $result);
+    $ret = ($result > 0) ? true : false;
 }
 ?>
