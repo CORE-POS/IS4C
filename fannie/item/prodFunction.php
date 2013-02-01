@@ -659,6 +659,11 @@ function itemParse($upc){
 			MarginFS($rowItem['upc'],$rowItem['cost'],$rowItem['department']);
 			echo "</fieldset>";
 
+			echo "<br /><fieldset id=flagsfs>";
+			echo "<legend>Flags</legend>";
+			FlagsByUPC($rowItem['upc']);
+			echo "</fieldset>";
+
 			echo '<fieldset id="lanefs">';
 			echo '<legend>Lane Status</legend>';
 			include('prodAllLanes.php');
@@ -713,6 +718,30 @@ function likedtotable($query,$border,$bgcolor)
                         echo "</td>\n";
                 } echo "</tr>\n";
         } echo "</table>\n";
+}
+
+function FlagsByUPC($upc){
+	global $dbc;
+	$q = "SELECT f.description,
+		f.bit_number,
+		(1<<(f.bit_number-1)) & p.numflag AS flagIsSet
+		FROM products AS p, prodFlags AS f
+		WHERE p.upc=?";
+	$p = $dbc->prepare_statement($q);
+	$r = $dbc->exec_statement($p,array($upc));
+	echo '<table>';
+	$i=0;
+	while($w = $dbc->fetch_row($r)){
+		if ($i==0) echo '<tr>';
+		if ($i != 0 && $i % 2 == 0) echo '</tr><tr>';
+		printf('<td><input type="checkbox" name="flags[]" value="%d" %s /></td>
+			<td>%s</td>',$w['bit_number'],
+			($w['flagIsSet']==0 ? '' : 'checked'),
+			$w['description']
+		);
+		$i++;
+	}
+	echo '</tr></table>';
 }
 
 function noItem()
