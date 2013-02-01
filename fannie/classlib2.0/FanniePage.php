@@ -165,6 +165,11 @@ class FanniePage {
 				return True;
 			}
 		}
+		$try = checkLogin();
+		if ($try && empty($this->auth_classes)){
+			$this->current_user = $try;
+			return True;
+		}
 		return False;
 	}
 
