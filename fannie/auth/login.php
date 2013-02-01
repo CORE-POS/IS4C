@@ -321,6 +321,7 @@ function changePassword($name,$oldpassword,$newpassword){
 }
 
 function changeAnyPassword($name,$newpassword){
+  $sql = dbconnect();
   if (!validateUser('admin')){
     return false;
   }
