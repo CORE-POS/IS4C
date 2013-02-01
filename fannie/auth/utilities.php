@@ -101,6 +101,19 @@ function getNumUsers(){
   return $sql->num_rows($fetchR);
 }
 
+function getNumAdmins(){
+	$sql = dbconnect();
+	if ($sql->table_exists('userPrivs')){
+		$q = "SELECT COUNT(*) FROM userPrivs WHERE auth_class='admin'";
+		$r = $sql->query($q);
+		if ($sql->num_rows($r) > 0)
+			return array_pop($sql->fetch_row($r));
+		else
+			return 0;
+	}
+	return 0;
+}
+
 function getGID($group){
   if (!isAlphaNumeric($group))
     return false;

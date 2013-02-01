@@ -57,14 +57,18 @@ function addAuth($name,$auth_class,$sub_start='all',$sub_end='all'){
     return $uid;
   }
 
-	/* 10Nov12 EL Add FANNIE_AUTH_ENABLED test per intent of create-first-user
-	 *             call from auth.php to skip validation check.
-	 *             auth_enabled() does not return the correct value.
-	*/
-	if ( $FANNIE_AUTH_ENABLED ) {
-		if (!validateUser('admin')){
-			return false;
-		}
+  /* 10Nov12 EL Add FANNIE_AUTH_ENABLED test per intent of create-first-user
+   *             call from auth.php to skip validation check.
+   *             auth_enabled() does not return the correct value.
+  */
+  if ( $FANNIE_AUTH_ENABLED ) {
+	if ($auth_class == 'admin' && getNumAdmins() == 0){
+		// skip validation check in
+		// this instance
+	}
+	elseif (!validateUser('admin')){
+		return false;
+	}
   }
 
   $addQ = "insert into userPrivs values ('$uid','$auth_class','$sub_start','$sub_end')";
