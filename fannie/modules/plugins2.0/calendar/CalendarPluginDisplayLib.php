@@ -369,9 +369,9 @@ class CalendarPluginDisplayLib {
 
 		$db = CalendarPluginDB::get();
 		$name = array_pop(
-			$sql->fetch_row(
-				$sql->exec_statement(
-					$sql->prepare_statement('SELECT name FROM calendars
+			$db->fetch_row(
+				$db->exec_statement(
+					$db->prepare_statement('SELECT name FROM calendars
 								WHERE calendarID=?'),
 					array($calID)
 				)
@@ -382,25 +382,32 @@ class CalendarPluginDisplayLib {
 		$ret .= "<p>Name: <input type=text size=15 id=prefName value=\"$name\" />";
 		$ret .= "</p><hr />";
 
-		$userP = $db->prepare_statement("SELECT uid,real_name FROM "
+		$userP = $db->prepare_statement("SELECT uid,real_name,name FROM "
 					.$FANNIE_OP_DB.$db->sep()."Users 
-					WHERE uid<>? order by real_name");
+					WHERE uid<>? order by name,real_name");
 		$userR = $db->exec_statement($userP,array($uid));
 		$userOpts = array();
-		while ($userW = $db->fetch_row($userR))
-			$userOpts[$userW[0]] = "<option value=\"$userW[0]\">$userW[1]</option>";
+		while ($userW = $db->fetch_row($userR)){
+			$name = $userW['real_name'];
+			if ($name == '') $name = $userW['name'];
+			else if ($name == 'Array') $name = $userW['name'];
+			$userOpts[$userW['uid']] = "<option value=\"{$userW['uid']}\">{$name}</option>";
+		}
 
 		$ret .= "<p>Users who can view this calendar (<i>left</i>):";
 		$ret .= "<table><tr>";
-		$viewP = $db->prepare_statement("SELECT p.uid,u.real_name FROM permissions as p
+		$viewP = $db->prepare_statement("SELECT p.uid,u.real_name,u.name FROM permissions as p
 			  LEFT JOIN ".$FANNIE_OP_DB.$db->sep()."Users as u on p.uid=u.uid
 			  WHERE p.calendarID=?
 			  AND p.classID = 1");
 		$viewR = $db->exec_statement($viewP,array($calID));
 		$ret .= "<td><select id=prefViewers multiple size=10 style=\"min-width:50px\">";
 		while($viewW = $db->fetch_row($viewR)){
-			if ($viewW[0] == -1) $viewW[1] = "Everyone";
-			$ret .= "<option value=$viewW[0]>$viewW[1]</option>";
+			$name = $userW['real_name'];
+			if ($viewW[0] == -1) $name = "Everyone";
+			elseif ($name == '') $name = $userW['name'];
+			else if ($name == 'Array') $name = $userW['name'];
+			$ret .= "<option value=$viewW[0]>$name</option>";
 		}
 		$ret .= "</select></td>";
 		$ret .= "<td><input type=submit value=\"<<\" onclick=\"select_add('prefViewers2','prefViewers');\" /><p />";
@@ -415,15 +422,18 @@ class CalendarPluginDisplayLib {
 
 		$ret .= "<p>Users who can write on this calendar (<i>left</i>):";
 		$ret .= "<table><tr>";
-		$viewP = $db->prepare_statement("SELECT p.uid,u.real_name FROM permissions as p
+		$viewP = $db->prepare_statement("SELECT p.uid,u.real_name,u.name FROM permissions as p
 			  LEFT JOIN ".$FANNIE_OP_DB.$db->sep()."Users as u on p.uid=u.uid
 			  WHERE p.calendarID=?
 			  AND p.classID = 2");
 		$viewR = $db->exec_statement($viewP,array($calID));
 		$ret .= "<td><select id=prefWriters multiple size=10 style=\"min-width:50px\">";
 		while($viewW = $db->fetch_row($viewR)){
-			if ($viewW[0] == -1) $viewW[1] = "Everyone";
-			$ret .= "<option value=$viewW[0]>$viewW[1]</option>";
+			$name = $userW['real_name'];
+			if ($viewW[0] == -1) $name = "Everyone";
+			elseif ($name == '') $name = $userW['name'];
+			else if ($name == 'Array') $name = $userW['name'];
+			$ret .= "<option value=$viewW[0]>$name</option>";
 		}
 		$ret .= "</select></td>";
 		$ret .= "<td><input type=submit value=\"<<\" onclick=\"select_add('prefWriters2','prefWriters');\" /><p />";
