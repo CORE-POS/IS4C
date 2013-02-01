@@ -1194,7 +1194,7 @@ function create_archive_dbs($con) {
 				(PARTITION %s 
 					VALUES LESS THAN (TO_DAYS('%s'))
 				)",$p,$limit);
-			$con->query($partR);
+			$con->query($partQ);
 		}
 	}
 
