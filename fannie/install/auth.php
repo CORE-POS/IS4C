@@ -94,6 +94,7 @@ if ($FANNIE_AUTH_ENABLED){
 			$success = createLogin($_REQUEST['newuser'],$_REQUEST['newpass']);
 			if ($success){
 				echo "<i>User ".$_REQUEST['newuser']." created</i><br />";
+				$FANNIE_AUTH_ENABLED = True; // toggle enforce error checking
 				$success = addAuth($_REQUEST['newuser'],'admin');
 				if ($success) {
 					echo "<i>User ".$_REQUEST['newuser']." is an admin</i><br />";
@@ -114,6 +115,9 @@ if ($FANNIE_AUTH_ENABLED){
 			echo 'Username: <input type="text" name="newuser" /><br />';
 			echo 'Password: <input type="password" name="newpass" /><br />';
 		}
+	}
+	else {
+		echo "You can manage users and groups via the <a href='../auth/ui/' target='_aui'>Authentication Interface</a></br />";
 	}
 }
 ?>
