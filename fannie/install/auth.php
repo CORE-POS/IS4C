@@ -34,6 +34,7 @@ ini_set('display_errors','1');
 <?php 
 include('../config.php'); 
 include('util.php');
+include('db.php');
 ?>
 <a href="index.php">Necessities</a>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
@@ -101,6 +102,14 @@ if ($FANNIE_AUTH_ENABLED){
 					// 10Nov12 EL Added these notes to the person installing.
 					echo "You can use these credentials at the <a href='../auth/ui/' target='_aui'>Authentication Interface</a></br />";
 					echo " Other protected pages may require different credentials.<br />";
+
+					// populate known privileges table automatically
+					if (!class_exists('FannieDB'))
+						include($FANNIE_ROOT.'classlib2.0/data/FannieDB.php');
+					$db = FannieDB::get($FANNIE_OP_DB);
+					loaddata($db, 'userKnownPrivs');
+
+
 				} else {
 					echo "<b>Error making user an admin</b><br />";
 				}

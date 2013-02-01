@@ -2,6 +2,7 @@
 include('../../config.php');
 if(!class_exists('SQLManager'))
 	include($FANNIE_ROOT.'src/SQLManager.php');
+include('../db.php');
 ?>
 <html>
 <head>
@@ -134,24 +135,3 @@ Load information about currently defined authorization classes<br />
 </form>
 </body>
 </html>
-<?php
-function loaddata($sql, $table){
-	global $FANNIE_ROOT;
-	if (file_exists("$table.sql")){
-		$fp = fopen("$table.sql","r");
-		while($line = fgets($fp)){
-			$sql->query("INSERT INTO $table VALUES $line");
-		}
-		fclose($fp);
-	}
-	else if (file_exists("$table.csv")){
-		$sql->query("LOAD DATA LOCAL INFILE
-			'{$FANNIE_ROOT}install/sample_data/$table.csv'
-			INTO TABLE $table
-			FIELDS TERMINATED BY ','
-			ESCAPED BY '\\\\'
-			OPTIONALLY ENCLOSED BY '\"'
-			LINES TERMINATED BY '\\r\\n'");
-	}
-}
-?>

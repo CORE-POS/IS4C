@@ -104,4 +104,24 @@ function qualified_names(){
 	return $ret;
 }
 
+function loaddata($sql, $table){
+	global $FANNIE_ROOT;
+	if (file_exists("{$FANNIE_ROOT}install/sample_data/$table.sql")){
+		$fp = fopen("{$FANNIE_ROOT}install/sample_data/$table.sql","r");
+		while($line = fgets($fp)){
+			$sql->query("INSERT INTO $table VALUES $line");
+		}
+		fclose($fp);
+	}
+	else if (file_exists("{$FANNIE_ROOT}install/sample_data/$table.csv")){
+		$sql->query("LOAD DATA LOCAL INFILE
+			'{$FANNIE_ROOT}install/sample_data/$table.csv'
+			INTO TABLE $table
+			FIELDS TERMINATED BY ','
+			ESCAPED BY '\\\\'
+			OPTIONALLY ENCLOSED BY '\"'
+			LINES TERMINATED BY '\\r\\n'");
+	}
+}
+
 ?>
