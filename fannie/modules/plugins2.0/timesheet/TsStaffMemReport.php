@@ -62,7 +62,7 @@ class TsStaffMemReport extends FanniePage {
 		$query = "SELECT date_format(periodStart, '%M %D, %Y') as periodStart, 
 			date_format(periodEnd, '%M %D, %Y') as periodEnd, periodID 
 			FROM {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.payperiods 
-			WHERE periodStart < now() ORDER BY periodID DESC";
+			WHERE periodStart < ".$ts_db->now()." ORDER BY periodID DESC";
 		$result = $ts_db->query($query);
 
 		echo '<p>Starting Pay Period: <select name="period">
@@ -120,7 +120,7 @@ class TsStaffMemReport extends FanniePage {
 				}
 
 				$firstppR = $ts_db->query("SELECT MIN(periodID) FROM {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.payperiods 
-					WHERE YEAR(periodStart) = YEAR(CURDATE())");
+					WHERE YEAR(periodStart) = YEAR(".$ts_db->now().")");
 				$firstpp = $ts_db->fetch_row($firstppR);
 				$y = array();
 				for ($i = $firstpp[0]; $i <= $periodEnd[1]; $i++) {
