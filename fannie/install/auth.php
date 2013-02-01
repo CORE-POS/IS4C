@@ -138,7 +138,7 @@ echo "</select><br />";
 if (!file_exists("../auth/shadowread/shadowread")){
 	echo "<span style=\"color:red;\"><b>Error</b>: shadowread utility does not exist</span>";
 	echo "<blockquote>";
-	echo "shadowread lets Fannie authenticate users agaist /etc/shadow. To create it:"
+	echo "shadowread lets Fannie authenticate users agaist /etc/shadow. To create it:";
 	echo "<pre style=\"font:fixed;background:#ccc;\">
 cd ".realpath('../auth/shadowread')."
 make
