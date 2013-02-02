@@ -2,6 +2,7 @@
 require_once('../../../config.php');
 include($FANNIE_ROOT.'classlib2.0/FanniePage.php');
 include($FANNIE_ROOT.'classlib2.0/data/FannieDB.php');
+include($FANNIE_ROOT.'classlib2.0/lib/FormLib.php');
 
 $ts_db = FannieDB::get($FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']);
 
@@ -37,8 +38,8 @@ class PayrollSummaryPage extends FanniePage {
 	function body_content(){
 		global $ts_db, $FANNIE_OP_DB, $FANNIE_PLUGIN_SETTINGS;
 		include ('./includes/header.html');
-		$submitted = get_form_value('submitted','');
-		$periodID = get_form_value('period','');
+		$submitted = FormLib::get_form_value('submitted','');
+		$periodID = FormLib::get_form_value('period','');
 		if (!empty($submitted) && is_numeric($period)) { // If submitted.
 			$periodID = $_POST['period'];
 			$query = "SELECT ROUND(SUM(TIMESTAMPDIFF(MINUTE, t.time_in, t.time_out))/60, 2),
