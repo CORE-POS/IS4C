@@ -24,6 +24,7 @@
 include('../config.php');
 include($FANNIE_ROOT.'classlib2.0/FanniePage.php');
 include($FANNIE_ROOT.'classlib2.0/data/FannieDB.php');
+include($FANNIE_ROOT.'classlib2.0/lib/FormLib.php');
 
 class ItemFlags extends FanniePage {
 	
@@ -36,8 +37,8 @@ class ItemFlags extends FanniePage {
 		$this->msgs = array();
 		$db = FannieDB::get($FANNIE_OP_DB);
 
-		if (get_form_value('addBtn') !== ''){
-			$desc = get_form_value('new');			
+		if (FormLib::get_form_value('addBtn') !== ''){
+			$desc = FormLib::get_form_value('new');			
 			if (empty($desc)) $msgs[] = 'Error: no new description given';
 			else {
 				$bit=1;
@@ -55,9 +56,9 @@ class ItemFlags extends FanniePage {
 				}
 			}
 		}
-		elseif (get_form_value('updateBtn') !== ''){
-			$ids = get_form_value('mask',array());
-			$descs = get_form_value('desc',array());
+		elseif (FormLib::get_form_value('updateBtn') !== ''){
+			$ids = FormLib::get_form_value('mask',array());
+			$descs = FormLib::get_form_value('desc',array());
 			$upP = $db->prepare_statement("UPDATE prodFlags SET description=? WHERE bit_number=?");
 			for($i=0;$i<count($ids);$i++){
 				if (isset($descs[$i]) && !empty($descs[$i])){
@@ -65,8 +66,8 @@ class ItemFlags extends FanniePage {
 				}
 			}
 		}
-		elseif (get_form_value('delBtn') !== ''){
-			$ids = get_form_value('del',array());
+		elseif (FormLib::get_form_value('delBtn') !== ''){
+			$ids = FormLib::get_form_value('del',array());
 			$delP = $db->prepare_statement("DELETE FROM prodFlags WHERE bit_number=?");
 			foreach($ids as $id)
 				$db->exec_statement($delP,array($id));

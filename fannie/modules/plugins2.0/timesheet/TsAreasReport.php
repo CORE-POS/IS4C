@@ -2,6 +2,7 @@
 require_once('../../../config.php');
 include($FANNIE_ROOT.'classlib2.0/FanniePage.php');
 include($FANNIE_ROOT.'classlib2.0/data/FannieDB.php');
+include($FANNIE_ROOT.'classlib2.0/lib/FormLib.php');
 
 $ts_db = FannieDB::get($FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']);
 
@@ -41,8 +42,8 @@ class TsAreasReport extends FanniePage {
 
 		echo '</select>&nbsp;&nbsp;<button value="export" name="Export">Run</button></p></form>';
 
-		if (get_form_value('Export') == 'export') {
-			$periodID = get_form_value('period',0);
+		if (FormLib::get_form_value('Export') == 'export') {
+			$periodID = FormLib::get_form_value('period',0);
 	
 			$query = "SELECT s.ShiftID as id, 
 				CASE WHEN s.NiceName='' OR s.NiceName IS NULL THEN s.ShiftName

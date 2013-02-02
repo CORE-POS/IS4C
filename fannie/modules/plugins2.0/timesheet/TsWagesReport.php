@@ -2,6 +2,7 @@
 require_once('../../../config.php');
 include($FANNIE_ROOT.'classlib2.0/FanniePage.php');
 include($FANNIE_ROOT.'classlib2.0/data/FannieDB.php');
+include($FANNIE_ROOT.'classlib2.0/lib/FormLib.php');
 
 $ts_db = FannieDB::get($FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']);
 
@@ -53,9 +54,9 @@ class TsWagesReport extends FanniePage {
 		}
 		echo '</select><button value="export" name="Export">Export</button></p></form>';
 
-		if (get_form_value('Export') == 'export') {
-			$periodID = get_form_value('period',0);
-			$end = get_form_value('end',$periodID);
+		if (FormLib::get_form_value('Export') == 'export') {
+			$periodID = FormLib::get_form_value('period',0);
+			$end = FormLib::get_form_value('end',$periodID);
 			if ($end == 0) $end = $periodID;
 			
 			// BEGIN TITLE

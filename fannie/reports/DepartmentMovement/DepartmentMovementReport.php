@@ -25,6 +25,7 @@ include('../../config.php');
 include($FANNIE_ROOT.'src/mysql_connect.php');
 include($FANNIE_ROOT.'src/select_dlog.php');
 include($FANNIE_ROOT.'classlib2.0/FannieReportPage.php');
+include($FANNIE_ROOT.'classlib2.0/lib/FormLib.php');
 
 class DepartmentMovementReport extends FannieReportPage {
 
@@ -85,12 +86,12 @@ class DepartmentMovementReport extends FannieReportPage {
 	*/
 	function fetch_report_data(){
 		global $dbc, $FANNIE_ARCHIVE_DB;
-		$date1 = get_form_value('date1',date('Y-m-d'));
-		$date2 = get_form_value('date2',date('Y-m-d'));
-		$deptStart = get_form_value('deptStart','');
-		$deptEnd = get_form_value('deptEnd','');
-		$buyer = get_form_value('buyer','');
-		$groupby = get_form_value('sort','PLU');
+		$date1 = FormLib::get_form_value('date1',date('Y-m-d'));
+		$date2 = FormLib::get_form_value('date2',date('Y-m-d'));
+		$deptStart = FormLib::get_form_value('deptStart','');
+		$deptEnd = FormLib::get_form_value('deptEnd','');
+		$buyer = FormLib::get_form_value('buyer','');
+		$groupby = FormLib::get_form_value('sort','PLU');
 
 		/**
 		  Build a WHERE condition for later.
@@ -235,7 +236,7 @@ class DepartmentMovementReport extends FannieReportPage {
 			  The Department and Weekday datasets are both four
 			  columns wide so I have to resort to form parameters
 			*/
-			if (get_form_value('sort')=='Weekday'){
+			if (FormLib::get_form_value('sort')=='Weekday'){
 				$this->report_headers = array('Day','Day','Qty','$');
 				$this->sort_column = 0;
 				$this->sort_direction = 0;

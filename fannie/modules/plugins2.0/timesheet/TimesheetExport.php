@@ -2,6 +2,7 @@
 require_once('../../../config.php');
 include($FANNIE_ROOT.'classlib2.0/FannieReportPage.php');
 include($FANNIE_ROOT.'classlib2.0/data/FannieDB.php');
+include($FANNIE_ROOT.'classlib2.0/lib/FormLib.php');
 
 $ts_db = FannieDB::get($FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']);
 
@@ -12,7 +13,7 @@ class TimesheetExport extends FannieReportPage {
 		$this->header = "TimeclockExport";
 		$this->report_cache = 'none';
 
-		if (get_form_value('Run') == 'run'){
+		if (FormLib::get_form_value('Run') == 'run'){
 			/**
 			  Form submission occurred
 
@@ -63,7 +64,7 @@ class TimesheetExport extends FannieReportPage {
 
 	function fetch_report_data(){
 		global $ts_db, $FANNIE_PLUGIN_SETTINGS, $FANNIE_OP_DB;
-		$periodID = get_form_value('period',0);
+		$periodID = FormLib::get_form_value('period',0);
 		$_SESSION['periodID'] = $periodID;
 		$perDatesQ = "SELECT * FROM ".$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase'].".payperiods WHERE periodID = $periodID";
 		$perDatesR = $ts_db->query($perDatesQ);

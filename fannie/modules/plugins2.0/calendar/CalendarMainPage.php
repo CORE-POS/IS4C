@@ -26,6 +26,8 @@ if (!class_exists('FanniePage'))
 	include($FANNIE_ROOT.'classlib2.0/FanniePage.php');
 if (!class_exists('CalendarPlugin'))
 	include(dirname(__FILE__).'/CalendarPlugin.php');
+if (!class_exists('FormLib'))
+	include($FANNIE_ROOT.'classlib2.0/lib/FormLib.php');
 if (!function_exists('getUID'))
 	include($FANNIE_ROOT.'auth/login.php');
 include('CalendarPluginDisplayLib.php');
@@ -45,7 +47,7 @@ class CalendarMainPage extends FanniePage {
 		$this->add_script($plugin->plugin_url().'/javascript/calendar.js');
 		$this->add_script($plugin->plugin_url().'/javascript/ajax.js');
 
-		$view = get_form_value('view','index');
+		$view = FormLib::get_form_value('view','index');
 		if ($view == 'month') 
 			$this->window_dressing = False;
 		else
@@ -58,28 +60,28 @@ class CalendarMainPage extends FanniePage {
 	}
 	
 	function body_content(){
-		$view = get_form_value('view','index');
+		$view = FormLib::get_form_value('view','index');
 		switch ($view){
 		case 'month':
 			$editable = True;
 
-			$year = get_form_value('year',date('Y'));
-			$month = get_form_value('month',date('n'));
-			$calID = get_form_value('calID',0);
+			$year = FormLib::get_form_value('year',date('Y'));
+			$month = FormLib::get_form_value('month',date('n'));
+			$calID = FormLib::get_form_value('calID',0);
 
 			echo CalendarPluginDisplayLib::monthView($calID,$month,$year,$this->uid);
 			break;
 		case 'prefs':
-			$calID = get_form_value('calID','');
+			$calID = FormLib::get_form_value('calID','');
 			echo CalendarPluginDisplayLib::prefsView($calID,$this->uid);
 			break;
 		case 'overlays':
 			echo CalendarPluginDisplayLib::overlaysView($this->uid);
 			break;
 		case 'showoverlay':
-			$cals = get_form_value('cals');
-			$start = get_form_value('startdate');
-			$end = get_form_value('enddate');
+			$cals = FormLib::get_form_value('cals');
+			$start = FormLib::get_form_value('startdate');
+			$end = FormLib::get_form_value('enddate');
 			echo CalendarPluginDisplayLib::showoverlayView($cals,$startdate,$enddate);
 			break;
 		case 'index':

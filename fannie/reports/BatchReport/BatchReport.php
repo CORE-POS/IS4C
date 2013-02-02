@@ -25,6 +25,7 @@ include('../../config.php');
 include($FANNIE_ROOT.'src/mysql_connect.php');
 include($FANNIE_ROOT.'src/select_dlog.php');
 include($FANNIE_ROOT.'classlib2.0/FannieReportPage.php');
+include($FANNIE_ROOT.'classlib2.0/lib/FormLib.php');
 
 class BatchReport extends FannieReportPage {
 
@@ -65,14 +66,14 @@ class BatchReport extends FannieReportPage {
 
 	function fetch_report_data(){
 		global $dbc, $FANNIE_ARCHIVE_DB;
-		$bStart = get_form_value('start','');
-		$bEnd = get_form_value('end','');
+		$bStart = FormLib::get_form_value('start','');
+		$bEnd = FormLib::get_form_value('end','');
 
 		/**
 		  Assemble argument array and appropriate string
 		  for an IN clause in a prepared statement
 		*/
-		$batchID = get_form_value('batchID','0');
+		$batchID = FormLib::get_form_value('batchID','0');
 		$inArgs = array();
 		$inClause = '(';
 		foreach($batchID as $bID){
@@ -153,8 +154,8 @@ class BatchReport extends FannieReportPage {
 	function form_content(){
 		global $dbc;
 
-		$filter1 = get_form_value('btype','');
-		$filter2 = get_form_value('owner','');
+		$filter1 = FormLib::get_form_value('btype','');
+		$filter2 = FormLib::get_form_value('owner','');
 
 		$ownerQ = "SELECT super_name FROM superDeptNames WHERE superID > 0
 			ORDER BY superID";

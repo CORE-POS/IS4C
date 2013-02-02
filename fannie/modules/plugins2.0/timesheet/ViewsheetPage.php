@@ -2,6 +2,7 @@
 require_once('../../../config.php');
 include($FANNIE_ROOT.'classlib2.0/FanniePage.php');
 include($FANNIE_ROOT.'classlib2.0/data/FannieDB.php');
+include($FANNIE_ROOT.'classlib2.0/lib/FormLib.php');
 
 $ts_db = FannieDB::get($FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']);
 
@@ -26,21 +27,21 @@ class ViewsheetPage extends FanniePage {
 		$this->errors = array();
 		$this->display_func = '';
 
-		$emp_no = get_form_value('emp_no','');
-		$periodID = get_form_value('period','');
-		$submitted = get_form_value('submitted',False);
-		$addvaca = get_form_value('addvaca',False);
+		$emp_no = FormLib::get_form_value('emp_no','');
+		$periodID = FormLib::get_form_value('period','');
+		$submitted = FormLib::get_form_value('submitted',False);
+		$addvaca = FormLib::get_form_value('addvaca',False);
 
 		if ($submitted && $emp_no && is_numeric($emp_no) && $periodID && is_numeric($periodID)) {
 			$this->display_func = 'ts_show';
 		}
 		elseif (isset($_POST['addvaca'])) {
 			$errors = array();
-			$emp = get_form_value('emp','');
+			$emp = FormLib::get_form_value('emp','');
 			$date = date('Y-m-d');
-			$vaca = get_form_value('vaca',0);
-			$vacaID = get_form_value('vacationID','');
-			$perID = get_form_value('period','');
+			$vaca = FormLib::get_form_value('vaca',0);
+			$vacaID = FormLib::get_form_value('vacationID','');
+			$perID = FormLib::get_form_value('period','');
 			if (is_numeric($vaca)){
 				$vaca = (float) $vaca;
 
@@ -267,7 +268,7 @@ class ViewsheetPage extends FanniePage {
 		if ($this->display_func == 'ts_error')
 			return $this->error_contents();
 		elseif ($this->display_func == 'ts_show')
-			return $this->show_sheet(get_form_value('emp_no'),get_form_value('period'));
+			return $this->show_sheet(FormLib::get_form_value('emp_no'),FormLib::get_form_value('period'));
 
 		echo "<body onLoad='putFocus(0,0);'>";
 		$query = "SELECT FirstName, LastName, emp_no FROM {$FANNIE_OP_DB}.employees where EmpActive=1 ORDER BY FirstName ASC";
