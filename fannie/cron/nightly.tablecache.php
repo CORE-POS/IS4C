@@ -61,5 +61,10 @@ $chk = $sql->query("INSERT INTO CashPerformDay_cache SELECT * FROM CashPerformDa
 if ($chk === False)
 	echo cron_msg("Could not load data for CashPerformDay_cache");
 
+$sql->query("USE ".$FANNIE_ARCHIVE_DB);
+if ($sql->table_exists("reportDataCache")){
+	$sql->query("DELETE FROM reportDataCache WHERE expires < ".$sql->now());
+}
+
 echo cron_msg("Success");
 ?>

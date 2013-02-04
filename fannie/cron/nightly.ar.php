@@ -121,10 +121,10 @@ if (date("j")==1 && $sql->table_exists("ar_history_backup")){
 
 	SUM(CASE WHEN ".$sql->monthdiff('a.tdate',$sql->now())." <= -1
 	THEN charges ELSE 0 END)
-	- SUM(CASE WHEN ".$sql->monthdiff('a.tdate',$sql())." <= -1
+	- SUM(CASE WHEN ".$sql->monthdiff('a.tdate',$sql->now())." <= -1
 	THEN payments ELSE 0 END) AS lastMonthBalance
 
-	FROM ar_history_backup AS a LEFT JOIN"
+	FROM ar_history_backup AS a LEFT JOIN "
 	.$FANNIE_OP_DB.$sql->sep()."custdata AS c 
 	ON a.card_no=c.CardNo AND c.personNum=1
 	GROUP BY c.CardNo,c.LastName,c.FirstName";
