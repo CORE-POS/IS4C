@@ -223,19 +223,4 @@ class FanniePage {
 	}
 }
 
-/**
-  @file
-  @brief Functions provided by FanniePage
-*/
-
-/**
-  Safely fetch a form value
-  @param $name the field name
-  @param $default default value if the form value doesn't exist
-  @return The form value, if available, otherwise the default.
-*/
-function get_form_value($name, $default=''){
-	return (isset($_REQUEST[$name])) ? $_REQUEST[$name] : $default;
-}
-
 ?>

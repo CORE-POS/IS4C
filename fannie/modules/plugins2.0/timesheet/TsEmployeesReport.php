@@ -2,6 +2,7 @@
 require_once('../../../config.php');
 include($FANNIE_ROOT.'classlib2.0/FanniePage.php');
 include($FANNIE_ROOT.'classlib2.0/data/FannieDB.php');
+include($FANNIE_ROOT.'classlib2.0/lib/FormLib.php');
 
 $ts_db = FannieDB::get($FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']);
 
@@ -51,9 +52,9 @@ class TsEmployeesReport extends FanniePage {
 			echo ">(" . $row['periodStart'] . " - " . $row['periodEnd'] . ")</option>";
 		}
 		echo '</select><button value="run" name="run">Run</button></p></form>';
-		if (get_form_value('run') == 'run') {
-			$periodID = get_form_value('period',0);
-			$end = get_form_value('end',$periodID);
+		if (FormLib::get_form_value('run') == 'run') {
+			$periodID = FormLib::get_form_value('period',0);
+			$end = FormLib::get_form_value('end',$periodID);
 			if ($end == 0) $end = $periodID;
 	
 			$namesq = "SELECT e.emp_no, e.FirstName, e.LastName, e.pay_rate, JobTitle 

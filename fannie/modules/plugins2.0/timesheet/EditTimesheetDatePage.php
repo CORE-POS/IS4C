@@ -2,6 +2,7 @@
 require_once('../../../config.php');
 include($FANNIE_ROOT.'classlib2.0/FanniePage.php');
 include($FANNIE_ROOT.'classlib2.0/data/FannieDB.php');
+include($FANNIE_ROOT.'classlib2.0/lib/FormLib.php');
 
 $ts_db = FannieDB::get($FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']);
 
@@ -20,11 +21,11 @@ class EditTimesheetDatePage extends FanniePage {
 		$this->errors = array();
 		$this->display_func = '';	
 
-		$submit = get_form_value('submit','');
-		$submitted = get_form_value('submitted','');
-		$emp_no = get_form_value('emp_no','');
-		$date = get_form_value('date','');
-		$periodID = get_form_value('periodID','');
+		$submit = FormLib::get_form_value('submit','');
+		$submitted = FormLib::get_form_value('submitted','');
+		$emp_no = FormLib::get_form_value('emp_no','');
+		$date = FormLib::get_form_value('date','');
+		$periodID = FormLib::get_form_value('periodID','');
 		if (empty($submitted) && empty($emp_no)){
 			$this->errors[] = 'You have found this page mistakenly.';
 		}
@@ -153,9 +154,9 @@ class EditTimesheetDatePage extends FanniePage {
 		elseif ($this->display_func == 'ts_delete_msg')
 			return $this->delete_msg();
 
-		$emp_no = get_form_value('emp_no','');
-		$date = get_form_value('date','');
-		$periodID = get_form_value('periodID','');
+		$emp_no = FormLib::get_form_value('emp_no','');
+		$date = FormLib::get_form_value('date','');
+		$periodID = FormLib::get_form_value('periodID','');
 
 		$query = "SELECT CONCAT(FirstName,' ',LastName) FROM {$FANNIE_OP_DB}.employees where emp_no=$emp_no";
 		$result = $ts_db->query($query);
