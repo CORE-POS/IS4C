@@ -270,11 +270,11 @@ class DepartmentMovementReport extends FannieReportPage {
 
 	function report_description_content(){
 		$ret = array();
-		$ret[] = "Movement from ".get_form_value('date1','')." to ".get_form_value('date2','');
-		$ret[] = "Summed by ".get_form_value('sort','');
-		$buyer = get_form_value('buyer','');
+		$ret[] = "Movement from ".FormLib::get_form_value('date1','')." to ".FormLib::get_form_value('date2','');
+		$ret[] = "Summed by ".FormLib::get_form_value('sort','');
+		$buyer = FormLib::get_form_value('buyer','');
 		if ($buyer === '0'){
-			$ret[] = "Department ".get_form_value('deptStart','').' to '.get_form_value('deptEnd','');
+			$ret[] = "Department ".FormLib::get_form_value('deptStart','').' to '.FormLib::get_form_value('deptEnd','');
 		}
 		return $ret;
 	}
