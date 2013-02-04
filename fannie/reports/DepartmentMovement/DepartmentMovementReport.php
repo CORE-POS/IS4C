@@ -32,7 +32,7 @@ class DepartmentMovementReport extends FannieReportPage {
 		/**
 		  Set the page header and title, enable caching
 		*/
-		$this->report_cache = 'day';
+		$this->report_cache = 'none';
 		$this->title = "Fannie : Department Movement";
 		$this->header = "Department Movement";
 
@@ -125,6 +125,7 @@ class DepartmentMovementReport extends FannieReportPage {
 		  Build an appropriate query depending on the grouping option
 		*/
 		$query = "";
+		$superTable = ($buyer !== "" && $buyer > 0) ? 'superdepts' : 'MasterSuperDepts';
 		switch($groupby){
 		case 'PLU':
 			$query = "SELECT t.upc,p.description, 
@@ -133,7 +134,7 @@ class DepartmentMovementReport extends FannieReportPage {
 				  d.dept_no,d.dept_name,s.superID,x.distributor
 				  FROM $sumTable as t LEFT JOIN products as p on t.upc = p.upc
 				  LEFT JOIN departments as d on d.dept_no = t.dept 
-				  LEFT JOIN superdepts AS s ON t.dept = s.dept_ID
+				  LEFT JOIN $superTable AS s ON t.dept = s.dept_ID
 				  LEFT JOIN prodExtra as x on t.upc = x.upc
 				  WHERE $filter_condition
 				  AND tdate >= '$date1 00:00:00' AND tdate <= '$date2 23:59:59' 
@@ -143,7 +144,7 @@ class DepartmentMovementReport extends FannieReportPage {
 		case 'Department':
 			$query =  "SELECT t.dept_ID,d.dept_name,SUM(t.quantity) as Qty, SUM(total) as Sales 
 				FROM $sumTable as t LEFT JOIN departments as d on d.dept_no=t.dept_ID 
-				LEFT JOIN superdepts AS s ON s.dept_ID = t.dept_ID 
+				LEFT JOIN $superTable AS s ON s.dept_ID = t.dept_ID 
 				WHERE $filter_condition
 				AND tdate >= '$date1 00:00:00' AND tdate <= '$date2 23:59:59' 
 				GROUP BY t.dept_ID,d.dept_name ORDER BY SUM(total) DESC";
@@ -151,7 +152,7 @@ class DepartmentMovementReport extends FannieReportPage {
 		case 'Date':
 			$query =  "SELECT year(tdate),month(tdate),day(tdate),SUM(t.quantity) as Qty, SUM(total) as Sales 
 				FROM $sumTable as t LEFT JOIN departments as d on d.dept_no=t.dept_ID 
-				LEFT JOIN superdepts AS s ON s.dept_ID = t.dept_ID 
+				LEFT JOIN $superTable AS s ON s.dept_ID = t.dept_ID 
 				WHERE $filter_condition
 				AND tdate >= '$date1 00:00:00' AND tdate <= '$date2 23:59:59' 
 				GROUP BY year(tdate),month(tdate),day(tdate) 
@@ -169,7 +170,7 @@ class DepartmentMovementReport extends FannieReportPage {
 				ELSE 'Err' END";
 			$query =  "SELECT $cols,SUM(t.quantity) as Qty, SUM(total) as Sales 
 				FROM $sumTable as t LEFT JOIN departments as d on d.dept_no=t.dept_ID 
-				LEFT JOIN superdepts AS s ON s.dept_ID = t.dept_ID 
+				LEFT JOIN $superTable AS s ON s.dept_ID = t.dept_ID 
 				WHERE $filter_condition
 				AND tdate >= '$date1 00:00:00' AND tdate <= '$date2 23:59:59' 
 				GROUP BY $cols
@@ -264,6 +265,17 @@ class DepartmentMovementReport extends FannieReportPage {
 			return array('Total',$sumQty,$sumSales);
 			break;
 		}
+	}
+
+	function report_description_content(){
+		$ret = array();
+		$ret[] = "Movement from ".get_form_value('date1','')." to ".get_form_value('date2','');
+		$ret[] = "Summed by ".get_form_value('sort','');
+		$buyer = get_form_value('buyer','');
+		if ($buyer === '0'){
+			$ret[] = "Department ".get_form_value('deptStart','').' to '.get_form_value('deptEnd','');
+		}
+		return $ret;
 	}
 
 	function form_content(){

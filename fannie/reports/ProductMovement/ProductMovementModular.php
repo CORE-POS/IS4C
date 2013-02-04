@@ -34,7 +34,7 @@ class ProductMovementModular extends FannieReportPage {
 		*/
 		$this->title = "Fannie : Product Movement";
 		$this->header = "Product Movement Report";
-		$this->report_cache = 'day';
+		$this->report_cache = 'none';
 
 		if (isset($_REQUEST['date1'])){
 			/**
@@ -83,7 +83,7 @@ class ProductMovementModular extends FannieReportPage {
 			  t.upc,p.description
 			  order by year(t.tdate),month(t.tdate),day(t.tdate)";
 	
-		if (strtolower($upc) == "rrr"){
+		if (strtolower($upc) == "rrr" || $upc == "0000000000052"){
 			if ($dlog == "dlog_90_view" || $dlog=="dlog_15")
 				$dlog = "transarchive";
 			else {
@@ -91,10 +91,11 @@ class ProductMovementModular extends FannieReportPage {
 			}
 
 			$query = "select MONTH(datetime),DAY(datetime),YEAR(datetime),
-				upc,'RRR',sum(case when volSpecial is null or volSpecial > 9999 then 0 else volSpecial end) as qty,
+				upc,'RRR',
+				sum(case when upc <> 'rrr' then quantity when volSpecial is null or volSpecial > 9999 then 0 else volSpecial end) as qty,
 				sum(t.total) from
 				$dlog as t
-				where upc IN ('rrr','000000000052')
+				where upc = '$upc'
 				AND datetime BETWEEN '$date1 00:00:00' AND '$date2 23:59:59'
 				and emp_no <> 9999 and register_no <> 99
 				and trans_status <> 'X'
