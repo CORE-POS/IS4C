@@ -31,6 +31,39 @@ class CoopDealsUploadPage extends FannieUploadPage {
 	public $title = "Fannie - Co+op Deals sales";
 	public $header = "Upload Co+op Deals file";
 
+	protected $preview_opts = array(
+		'upc' => array(
+			'name' => 'upc',
+			'display_name' => 'UPC',
+			'default' => 7,
+			'required' => True
+		),
+		'price' => array(
+			'name' => 'price',
+			'display_name' => 'Sale Price',
+			'default' => 24,
+			'required' => True
+		),
+		'abt' => array(
+			'name' => 'abt',
+			'display_name' => 'A/B/TPR',
+			'default' => 5,
+			'required' => True
+		),
+		'sku' => array(
+			'name' => 'sku',
+			'display_name' => 'SKU',
+			'default' => 8,
+			'required' => False
+		),
+		'sub' => array(
+			'name' => 'sub',
+			'display_name' => 'Sub',
+			'default' => 6,
+			'required' => False
+		)
+	);
+
 	function process_file($linedata){
 		global $FANNIE_OP_DB;
 		$dbc = FannieDB::get($FANNIE_OP_DB);
