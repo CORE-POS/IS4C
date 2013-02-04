@@ -71,6 +71,8 @@ class FannieUploadPage extends FanniePage {
 
 	protected $error_details = 'n/a';
 
+	protected $use_splits = False;
+
 	/**
 	  Handle pre-display tasks such as input processing
 	  @return
@@ -80,7 +82,7 @@ class FannieUploadPage extends FanniePage {
 	function preprocess(){
 		global $FANNIE_URL;
 
-		$col_select = FormLib::get_form_value('col_select','');
+		$col_select = FormLib::get_form_value('cs','');
 
 		if (isset($_FILES[$this->upload_field_name])){
 			/* file upload submitted */
@@ -98,7 +100,7 @@ class FannieUploadPage extends FanniePage {
 			
 			/* column selections submitted */
 			for($i=0;$i<count($col_select);$i++){
-				if ($col_select[$i] != '(ignore)')
+				if ($col_select[$i] !== '')
 					$this->preview_selections[$col_select[$i]] = $i;
 			}
 			$chk_required = True;
@@ -111,13 +113,67 @@ class FannieUploadPage extends FanniePage {
 			}
 
 			if ($chk_required == True){
-				$try = $this->process_file($this->file_to_array());
+
+				$try = False;
+				if ($this->use_splits){
+					/* break file into pieces */
+					$files = FormLib::get_form_value('f');
+					if ($files === ''){
+						$tempdir = dirname($this->upload_file_name);
+						if (!is_dir($tempdir.'/splits'))
+							mkdir($tempdir.'/splits');
+						$orig = escapeshellarg($this->upload_file_name);
+						$new = escapeshellarg($tempdir.'/splits/csvUNFISPLIT');
+						system("split -l 2500 $orig $new");
+						$dir = opendir($tempdir.'/splits');
+						while ($current = readdir($dir)){
+							if (!strstr($current,"UNFISPLIT"))
+								continue;
+							$files[$i++] = $current;
+						}
+						closedir($dir);
+						unlink($this->upload_file_name);
+						$this->split_start();
+					}
+
+					if (!is_array($files)){
+						$this->error_detail = 'Split problem';
+						$this->content_function = 'results_content';
+					}
+					else {
+						/* process one file */
+						$this->upload_file_name = sys_get_temp_dir().'/fannie/splits/'.array_pop($files);									
+						$try = $this->process_file($this->file_to_array());
+						unlink($this->upload_file_name);
+						if ($try && count($files) > 0){
+							/* if more remain, redirect back to self */
+							$url = $_SERVER['PHP_SELF'].'?';
+							foreach($files as $f)
+								$url .= 'f[]='.$f.'&';
+							foreach($col_select as $c)
+								$url .= 'cs[]='.$c.'&';
+							$url = rtrim($url,'&');
+							header('Location: '.$url);
+							return False;
+						}
+						else if ($try && count($files) == 0){
+							/* finished; call cleanup function */
+							$this->split_end();
+						}
+					}
+				}
+				else {
+					$try = $this->process_file($this->file_to_array());
+				}
+
 				if ($try){
-					unlink($this->upload_file_name);
 					$this->content_function = 'results_content';
 				}
 				else
 					$this->content_function = 'processing_error';
+
+				if (file_exists($this->upload_file_name))
+					unlink($this->upload_file_name);
 			}
 			else {
 				$this->content_function = 'basic_preview';
@@ -234,6 +290,26 @@ class FannieUploadPage extends FanniePage {
 	}
 
 	/**
+	  Called before processing split files
+	  process_file() will be called multiple times
+	  so anything that should only happen once
+	  goes here instead.
+	*/
+	function split_start(){
+
+	}
+
+	/**
+	  Called after processing all split files
+	  process_file() will be called multiple times
+	  so anything that should only happen once
+	  goes here instead.
+	*/
+	function split_end(){
+
+	}
+
+	/**
 	  Display if there is an upload error
 	  @return An HTML string
 	*/
@@ -345,8 +421,8 @@ class FannieUploadPage extends FanniePage {
 		/* draw select boxes for each column */
 		$ret .= '<tr>';
 		for ($i=0;$i<$width;$i++){
-			$ret .= '<td><select class="columnSelector" name="col_select[]">';
-			$ret .= '<option>(ignore)</option>';
+			$ret .= '<td><select class="columnSelector" name="cs[]">';
+			$ret .= '<option value="">(ignore)</option>';
 			foreach($this->preview_opts as $key => $info){
 				$ret .= sprintf('<option value="%s" %s>%s</option>',
 					$info['name'],
@@ -375,7 +451,7 @@ class FannieUploadPage extends FanniePage {
 				var myElem = this;
 				$('.columnSelector').each(function(i){
 					if (this != myElem && $(this).val() == $('*:focus').val())
-						$(this).val('(ignore)');
+						$(this).val('');
 				});
 			});
 		});
