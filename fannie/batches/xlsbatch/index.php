@@ -134,7 +134,16 @@ else if (isset($_REQUEST['makeTheBatch'])){
 	$idQ = sprintf("SELECT max(batchID) FROM batches WHERE batchName=%s",$bname);
 	$id = array_pop($dbc->fetch_row($dbc->query($idQ)));
 
+	$upcChk = $dbc->prepare_statement("SELECT upc FROM products WHERE upc=?");
 	for($i=0;$i<count($upcs);$i++){
+		if (isset($upcs[$i])){
+			$upcs[$i] = str_replace(" ","",$upcs[$i]);	
+			$upcs[$i] = str_replace("-","",$upcs[$i]);	
+		}
+		if (isset($prices[$i])){
+			$prices[$i] = trim($prices[$i],' ');
+			$prices[$i] = trim($prices[$i],'$');
+		}
 		if(!is_numeric($upcs[$i])){
 			echo "<i>Omitting item. Identifier {$upcs[$i]} isn't a number</i><br />";
 			continue;
@@ -156,6 +165,11 @@ else if (isset($_REQUEST['makeTheBatch'])){
 		$upc = ($_REQUEST['ftype']=='UPCs')?str_pad($upcs[$i],13,'0',STR_PAD_LEFT):'LC'.$upcs[$i];
 		if (isset($_REQUEST['has_checks']) && $_REQUEST['ftype']=='UPCs')
 			$upc = '0'.substr($upc,0,12);
+
+		if ($_REQUEST['ftype'] == 'UPCs'){
+			$chkR = $dbc->exec_statement($upcChk, array($upc));
+			if ($dbc->num_rows($chkR) ==  0) continue;
+		}	
 
 		$q = sprintf("INSERT INTO batchList (upc,batchID,salePrice,active,pricemethod,quantity)
 			VALUES(%s,%d,%.2f,0,0,0)",$dbc->escape($upc),$id,$prices[$i]);
