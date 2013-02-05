@@ -24,6 +24,8 @@ if (isset($_GET['action'])){
 			$out .= upgradeDisplays($subtype);
 		elseif($type == "term")
 			$out .= termDisplays($subtype);
+		elseif($type == "paidinfull")
+			$out .= paidInFullDisplays($subtype);
 		break;	
 	}
 	echo $out;
@@ -44,6 +46,8 @@ elseif (isset($_GET['excel'])){
 		$opts = arDisplays($subtype); break;
 	case "upgrade":
 		$opts = upgradeDisplays($subtype); break;
+	case "paidinfull":
+		$opts = paidInFullDisplays($subtype);break;
 	}
 
 	$opts = preg_replace("/.*?<select.*?>/","",$opts);
@@ -113,6 +117,8 @@ function welcomeDisplays($subtype){
 	$ret .= "<p />";
 	$ret .= "<input type=submit value=\"Generate Letters\" onclick=\"document.myform.action='welcome.php';\" />";
 	$ret .= "<p />";
+	$ret .= "<input type=submit value=\"Generate Postcards\" onclick=\"document.myform.action='postcards.php';\" />";
+	$ret .= "<p />";
 	$ret .= "<input type=submit value=\"Generate Cards\" onclick=\"document.myform.action='newcards.php';\" />";
 	$ret .= "</td></tr></table></form>";
 	return $ret;
@@ -178,7 +184,72 @@ function upgradeDisplays($subtype){
 	$ret .= "<p />";
 	$ret .= "<input type=submit value=\"Generate Letters\" onclick=\"document.myform.action='upgrade.php';\" />";
 	$ret .= "<p />";
+	$ret .= "<input type=submit value=\"Generate Postcards\" onclick=\"document.myform.action='postcards.php';\" />";
+	$ret .= "<p />";
 	$ret .= "<input type=submit value=\"Generate Cards\" onclick=\"document.myform.action='newcards.php';\" />";
+	$ret .= "</td></tr></table></form>";
+	return $ret;
+}
+
+function paidInFullDisplays($subtype){
+	global $sql,$TRANS;
+	$ret = "<form name=myform action=postcards.php method=post>";
+	$ret .= "<table cellpadding=0 cellspacing=4><tr><td>";
+	$ret .= "<select id=cardnos name=cardno[] multiple size=20>";
+	
+	$query = "select n.memnum,c.LastName from
+		custdata as c
+		LEFT JOIN {$TRANS}newBalanceStockToday_test as n
+		on c.CardNo = n.memnum LEFT JOIN
+		{$TRANS}memEquitySpan as e on e.card_no = c.CardNo
+		where n.payments >= 100 
+		AND c.personNum=1
+		and c.Type = 'PC' order by n.memnum";
+	if ($subtype == "1month"){
+		$query = "select n.memnum,c.LastName from
+			custdata as c
+			LEFT JOIN {$TRANS}newBalanceStockToday_test as n
+			on c.CardNo = n.memnum LEFT JOIN
+			{$TRANS}memEquitySpan as e on e.card_no = c.CardNo
+			where n.payments >= 100 
+			AND c.personNum=1
+			and ".$sql->monthdiff($sql->now(),'e.latestPurchase')." = 1
+			and c.Type = 'PC' order by n.memnum";
+	}
+	elseif ($subtype == "0month"){
+		$query = "select n.memnum,c.LastName from
+			custdata as c
+			LEFT JOIN {$TRANS}newBalanceStockToday_test as n
+			on c.CardNo = n.memnum LEFT JOIN
+			{$TRANS}memEquitySpan as e on e.card_no = c.CardNo
+			where n.payments >= 100 
+			AND c.personNum=1
+			and ".$sql->monthdiff($sql->now(),'e.latestPurchase')." = 0
+			and c.Type = 'PC' order by n.memnum";
+	}
+	elseif ($subtype == "2month"){
+		$query = "select n.memnum,c.LastName from
+			custdata as c
+			LEFT JOIN {$TRANS}newBalanceStockToday_test as n
+			on c.CardNo = n.memnum LEFT JOIN
+			{$TRANS}memEquitySpan as e on e.card_no = c.CardNo
+			where n.payments >= 100 
+			AND c.personNum=1
+			and ".$sql->monthdiff($sql->now(),'e.latestPurchase')." = 2
+			and c.Type = 'PC' order by n.memnum";
+	}
+
+	$result = $sql->query($query);
+	while($row = $sql->fetch_row($result)){
+		$ret .= "<option value=".$row[0].">".$row[0]." - ".$row[1]."</option>";
+	}
+
+	
+	$ret .= "</select>";
+	$ret .= "</td><td valign=middle>";	
+	$ret .= "<input type=submit value=\"Select All\" onclick=\"selectall('cardnos'); return false;\" />";
+	$ret .= "<p />";
+	$ret .= "<input type=submit value=\"Generate Postcards\" onclick=\"document.myform.action='postcards.php';\" />";
 	$ret .= "</td></tr></table></form>";
 	return $ret;
 }
@@ -214,7 +285,7 @@ function termDisplays($subtype){
 
 function dueDisplays($subtype){
 	global $sql, $TRANS;
-	$ret = "<form action=due.php method=post>";
+	$ret = "<form name=myform action=due.php method=post>";
 	$ret .= "<table cellpadding=0 cellspacing=4><tr><td>";
 	$ret .= "<select id=cardnos name=cardno[] multiple size=20>";
 
@@ -263,13 +334,15 @@ function dueDisplays($subtype){
 	$ret .= "<input type=submit value=\"Select All\" onclick=\"selectall('cardnos'); return false;\" />";
 	$ret .= "<p />";
 	$ret .= "<input type=submit value=\"Generate Letters\" />";
+	$ret .= "<p />";
+	$ret .= "<input type=submit value=\"Generate Postcards\" onclick=\"document.myform.action='postcards.php';\" />";
 	$ret .= "</td></tr></table></form>";
 	return $ret;
 }
 
 function pastDueDisplays($subtype){
 	global $sql,$TRANS;
-	$ret = "<form action=pastdue.php method=post>";
+	$ret = "<form name=myform action=pastdue.php method=post>";
 	$ret .= "<table cellpadding=0 cellspacing=4><tr><td>";
 	$ret .= "<select id=cardnos name=cardno[] multiple size=20>";
 
@@ -328,6 +401,8 @@ function pastDueDisplays($subtype){
 	$ret .= "<input type=submit value=\"Select All\" onclick=\"selectall('cardnos'); return false;\" />";
 	$ret .= "<p />";
 	$ret .= "<input type=submit value=\"Generate Letters\" />";
+	$ret .= "<p />";
+	$ret .= "<input type=submit value=\"Generate Postcards\" onclick=\"document.myform.action='postcards.php';\" />";
 	$ret .= "</td></tr></table></form>";
 	return $ret;
 }
@@ -386,11 +461,10 @@ function arDisplays($subtype){
 	$ret .= "<p />";
 	$ret .= "<input type=submit value=\"Generate Letters\" />";
 	$ret .= "<p />";
-	$ret .= "<input type=submit value=\"Save as List\" />";
+	$ret .= "<input type=submit value=\"Save as List\" onclick=\"doExcel(); return false;\"/>";
 	$ret .= "</td></tr></table></form>";
 	return $ret;
 }
-
 
 ?>
 
@@ -399,12 +473,13 @@ function arDisplays($subtype){
 	<title>Member Letter Portal</title>
 <script type="text/javascript" src="index.js"></script>
 </head>
-<body onload="document.getElementById('first').checked=true; newType('welcome');">
+<body onload="document.getElementById('first').checked=true; newType('paidinfull');">
 <b>Type</b>:
-<input type=radio id=first name=type onchange="newType('welcome');" checked /> Welcome Letters
-<input type=radio name=type onchange="newType('upgrade');" /> Upgrade Letters 
+<!--<input type=radio id=first name=type onchange="newType('welcome');" checked /> Welcome Letters-->
+<!--<input type=radio name=type onchange="newType('upgrade');" /> Upgrade Letters -->
+<input type=radio id=first name=type onchange="newType('paidinfull');" /> Paid In Full 
 <input type=radio name=type onchange="newType('due');" /> Equity Reminders 
-<input type=radio name=type onchange="newType('pastdue');" /> Equity Past Due 
+<!--<input type=radio name=type onchange="newType('pastdue');" /> Equity Past Due -->
 <input type=radio name=type onchange="newType('ar');" /> AR Notices
 <input type=radio name=type onchange="newType('term');" /> Term Letters
 <p />
