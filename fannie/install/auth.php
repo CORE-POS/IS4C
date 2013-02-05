@@ -107,7 +107,9 @@ if ($FANNIE_AUTH_ENABLED){
 					if (!class_exists('FannieDB'))
 						include($FANNIE_ROOT.'classlib2.0/data/FannieDB.php');
 					$db = FannieDB::get($FANNIE_OP_DB);
+					ob_start(); // don't care about primary key errors
 					loaddata($db, 'userKnownPrivs');
+					ob_end_clean();
 
 
 				} else {
