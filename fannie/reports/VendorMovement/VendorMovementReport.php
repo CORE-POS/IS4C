@@ -30,7 +30,7 @@ include($FANNIE_ROOT.'classlib2.0/lib/FormLib.php');
 class VendorMovementReport extends FannieReportPage {
 
 	function preprocess(){
-		$this->report_cache = 'day';
+		$this->report_cache = 'none';
 		$this->title = "Fannie : Vendor Movement";
 		$this->header = "Vendor Movement Report";
 
@@ -58,8 +58,6 @@ class VendorMovementReport extends FannieReportPage {
 
 		$dlog = select_dlog($date1,$date2);
 		$sumTable = $FANNIE_ARCHIVE_DB.$dbc->sep()."sumUpcSalesByDay";
-
-		$type_condition = sprintf("e.manufacturer like %s",$dbc->escape('%'.$manu.'%'));
 
 		$query = "";
 		switch($groupby){
