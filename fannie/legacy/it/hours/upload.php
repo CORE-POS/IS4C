@@ -94,6 +94,9 @@ if (isset($_POST["MAX_FILE_SIZE"])){
 			else
 				$rows[$adpID]['alt'] += $hours;
 			break;
+		case 'REGRT2':
+			$rows[$adpID]['alt'] += $hours;
+			break;
 		case 'OVTIME':
 			$rows[$adpID]['overtime'] += $hours;
 			break;
