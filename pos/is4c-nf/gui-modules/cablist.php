@@ -107,7 +107,7 @@ class cablist extends NoInputPage {
 			having sum((case when trans_type='T' THEN -1*total ELSE 0 end)) >= 30
 			order by trans_no desc";
 
-			$db = Databse::tDataConnect();
+			$db = Database::tDataConnect();
 			$result = $db->query($query);
 		}
 
@@ -145,7 +145,7 @@ class cablist extends NoInputPage {
 		<div class="clear"></div>
 		</div>
 
-		<?
+		<?php
 		$CORE_LOCAL->set("scan","noScan");
 	} // END body_content() FUNCTION
 }
