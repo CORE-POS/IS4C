@@ -47,6 +47,8 @@ Necessities
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <a href="plugins.php">Plugins</a>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<a href="menu.php">Menu</a>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <a href="sample_data/extra_data.php">Sample Data</a>
 <form action=index.php method=post>
 <h1>Fannie install checks</h1>
@@ -613,6 +615,9 @@ function create_op_dbs($con){
 
 	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 			'prodExtra','op');
+
+	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+			'prodFlags','op');
 
 	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 			'prodPhysicalLocation','op');

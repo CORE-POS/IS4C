@@ -57,8 +57,9 @@ if (!is_array($FANNIE_PLUGIN_SETTINGS)) $FANNIE_PLUGIN_SETTINGS = array();
 //sort($mods);
 /** no autoloading functionality in Fannie yet
     hardcoded lists will go away eventually */
-$mods = array('TimesheetPlugin');
+$mods = array('TimesheetPlugin','CalendarPlugin');
 include('../modules/plugins2.0/timesheet/TimesheetPlugin.php');
+include('../modules/plugins2.0/calendar/CalendarPlugin.php');
 
 if (isset($_REQUEST['PLUGINLIST']) || isset($_REQUEST['psubmit'])){
 	$oldset = $FANNIE_PLUGIN_LIST;

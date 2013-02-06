@@ -24,7 +24,7 @@ if (!validateUserQuiet('memgen')){
 	echo "<a href={$FANNIE_URL}auth/ui/loginform.php?redirect={$FANNIE_URL}legacy/members>Login</a> to create owner numbers</a>";
 }
 else {
-	echo "<a href=genNums.php>Create Owner Numbers</a>";
+	echo "<a href=/git/fannie/mem/new.php>Create Owner Numbers</a>";
 }
 echo "<br /><a href={$FANNIE_URL}mem/numbers/>Print Owner Stickers</a>";
 ?>

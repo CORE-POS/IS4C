@@ -45,7 +45,7 @@ class Steering extends Parser {
 			
 		case 'CAB':
 			if ($CORE_LOCAL->get("LastID") != "0")
-				$this->ret['output'] = boxMsg("transaction in progress");
+				$this->ret['output'] = DisplayLib::boxMsg("transaction in progress");
 			else {
 				$this->ret['main_frame'] = $my_url."gui-modules/cablist.php";
 			}

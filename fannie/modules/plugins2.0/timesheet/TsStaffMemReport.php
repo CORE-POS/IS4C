@@ -2,6 +2,7 @@
 require_once('../../../config.php');
 include($FANNIE_ROOT.'classlib2.0/FanniePage.php');
 include($FANNIE_ROOT.'classlib2.0/data/FannieDB.php');
+include($FANNIE_ROOT.'classlib2.0/lib/FormLib.php');
 
 $ts_db = FannieDB::get($FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']);
 
@@ -84,9 +85,9 @@ class TsStaffMemReport extends FanniePage {
 			echo ">(" . $row['periodStart'] . " - " . $row['periodEnd'] . ")</option>";
 		}
 		echo '</select><button value="run" name="run">Run</button></p></form>';
-		if (get_form_value('run','') == 'run') {
+		if (FormLib::get_form_value('run','') == 'run') {
 	
-			$emp_no = get_form_value('emp_no',0);
+			$emp_no = FormLib::get_form_value('emp_no',0);
 			$namesq = "SELECT e.emp_no, e.FirstName, e.LastName, e.pay_rate, JobTitle 
 				FROM employees e WHERE e.emp_no = ". $_GET['emp_no'] ." AND e.empActive = 1";
 			$namesr = $ts_db->query($namesq);
@@ -100,8 +101,8 @@ class TsStaffMemReport extends FanniePage {
 		
 				setcookie("timesheet", $emp_no, time()+60*3);
 		
-				$periodID = get_form_value('period',0);
-				$end = get_form_value('end',$periodID);
+				$periodID = FormLib::get_form_value('period',0);
+				$end = FormLib::get_form_value('end',$periodID);
 				if ($end == 0) $end = $periodID;
 
 				$query1 = "SELECT date_format(periodStart, '%M %D, %Y') as periodStart, periodID as pid 

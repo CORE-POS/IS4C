@@ -165,6 +165,11 @@ class FanniePage {
 				return True;
 			}
 		}
+		$try = checkLogin();
+		if ($try && empty($this->auth_classes)){
+			$this->current_user = $try;
+			return True;
+		}
 		return False;
 	}
 
@@ -216,21 +221,6 @@ class FanniePage {
 			}
 		}
 	}
-}
-
-/**
-  @file
-  @brief Functions provided by FanniePage
-*/
-
-/**
-  Safely fetch a form value
-  @param $name the field name
-  @param $default default value if the form value doesn't exist
-  @return The form value, if available, otherwise the default.
-*/
-function get_form_value($name, $default=''){
-	return (isset($_REQUEST[$name])) ? $_REQUEST[$name] : $default;
 }
 
 ?>

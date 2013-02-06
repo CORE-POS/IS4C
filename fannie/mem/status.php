@@ -23,6 +23,10 @@
 include('../config.php');
 include($FANNIE_ROOT.'src/mysql_connect.php');
 include_once($FANNIE_ROOT.'auth/login.php');
+if (!validateUserQuiet('editmembers')){
+	header("Location: {$FANNIE_URL}auth/ui/loginform.php?redirect={$FANNIE_URL}mem/");
+	exit;
+}
 
 $header = "Customer Status";
 $page_title = "Fannie :: Customer Status";
@@ -143,7 +147,7 @@ function deactivate_account($cardno, $reason, $type){
 		$cdR = $dbc->query($cdQ);
 		$cdW = $dbc->fetch_row($cdR);	
 
-		$now = date('Y-m-d h:i:s');
+		$now = date('Y-m-d H:i:s');
 		$insQ = sprintf("INSERT INTO suspensions (cardno, type, memtype1,
 			memtype2, reason, suspDate, mailflag, discount, chargelimit,
 			reasoncode) VALUES (%d,%s,%d,%s,'',%s,%d,%d,%.2f,%d)",

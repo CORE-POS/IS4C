@@ -109,8 +109,8 @@ class QMDisplay extends NoInputPage {
 			onblur="$(\'#ddQKselect\').focus();" >';
 		$i=1;
 		foreach($my_menu as $label => $value){
-			printf('<option value="%s" %s>%s</option>',$value,
-				($i==1?'selected':''),$label);
+			printf('<option value="%s" %s>%d. %s</option>',$value,
+				($i==1?'selected':''),$i,$label);
 			$i++;
 		}
 		echo '</select>';
