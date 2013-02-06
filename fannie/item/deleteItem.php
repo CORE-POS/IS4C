@@ -21,6 +21,7 @@
 
 *********************************************************************************/
 include('../config.php');
+require_once($FANNIE_ROOT.'classlib2.0/data/controllers/ProductsController.php');
 
 include($FANNIE_ROOT.'auth/login.php');
 $name = checkLogin();
@@ -72,9 +73,10 @@ if (isset($_REQUEST['upc']) && !isset($_REQUEST['deny'])){
 	}
 	else if (isset($_REQUEST['confirm'])){
 		$plu = substr($upc,3,4);
+		ProductsController::delete($upc);
 		$upc = $dbc->escape($upc);
-		$delQ = sprintf("DELETE FROM products WHERE upc=%s",$upc);
-		$dbc->query($delQ);
+		//$delQ = sprintf("DELETE FROM products WHERE upc=%s",$upc);
+		//$dbc->query($delQ);
 		$delxQ = sprintf("DELETE FROM prodExtra WHERE upc=%s",$upc);
 		$dbc->query($delxQ);
 		if ($dbc->table_exists("scaleItems")){
