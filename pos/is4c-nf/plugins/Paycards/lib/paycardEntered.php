@@ -164,7 +164,7 @@ class paycardEntered extends Parser {
 			if ($CORE_LOCAL->get('fntlflag') == 0){
 				/* try to automatically do fs total */
 				$try = PrehLib::fsEligible();
-				if ($try !== 'True'){
+				if ($try !== True){
 					$ret['output'] = PaycardLib::paycard_msgBox($type,"Type Mismatch",
 						"Foodstamp eligible amount inapplicable","[clear] to cancel");
 					return $ret;
