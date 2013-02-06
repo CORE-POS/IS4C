@@ -162,7 +162,11 @@ class paycardEntered extends Parser {
 		$CORE_LOCAL->set("paycard_amount",$CORE_LOCAL->get("amtdue"));
 		if ($type == 'EBTFOOD'){
 			if ($CORE_LOCAL->get('fntlflag') == 0){
-				$ret['output'] = PaycardLib::paycard_msgBox(_("eligible amount must be totaled before foodstamp tender can be accepted"));
+				$ret['output'] = PaycardLib::paycard_msgBox(
+					$type, 'FS Total',
+					_("eligible amount must be totaled before foodstamp tender can be accepted"),
+					'[clear] to cancel'
+				);
 				return $ret;
 			}
 			else{
