@@ -22,6 +22,7 @@
 *********************************************************************************/
 include('../config.php');
 require_once('../src/mysql_connect.php');
+require_once($FANNIE_ROOT.'classlib2.0/data/controllers/ProductsController.php');
 
 require_once('../auth/login.php');
 $validatedUser = validateUserQuiet('pricechange');
@@ -43,7 +44,7 @@ $up_array['deposit'] = isset($_REQUEST['deposit'])?$_REQUEST['deposit']:0;
 $up_array['qttyEnforced'] = isset($_REQUEST['QtyFrc'])?1:0;
 $up_array['discount'] = isset($_REQUEST['NoDisc'])?0:1;
 $up_array['normal_price'] = isset($_REQUEST['price'])?$_REQUEST['price']:0;
-$up_array['description'] = $dbc->escape($_REQUEST['descript']);
+$up_array['description'] = isset($_REQUEST['descript'])?$_REQUEST['descript']:'';
 $up_array['pricemethod'] = 0;
 $up_array['groupprice'] = 0.00;
 $up_array['quantity'] = 0;
@@ -78,28 +79,6 @@ if (isset($_REQUEST['doVolume']) && is_numeric($_REQUEST['vol_price']) && is_num
 	$up_array['quantity'] = $_REQUEST['vol_qtty'];
 }
 
-/* pull the current, HQ values for all the editable fields
-   and compare them to the submitted values
-   Store actual changes in the array $CHANGES
-*/
-$currentQ = "SELECT tax,foodstamp,scale,deposit,qttyEnforced,discount,normal_price,
-	description,pricemethod,groupprice,quantity,department,cost,subdept,local
-	FROM products WHERE upc='$upc' AND store_id=0";
-$currentR = $dbc->query($currentQ);
-$currentW = array();
-if ($dbc->num_rows($currentR) > 0)
-	$currentW = $dbc->fetch_row($currentR);
-$CHANGES = array();
-foreach($up_array as $column => $new_value){
-	if (!isset($currentW[$column])) continue; 
-	if ($currentW[$column] != trim($new_value,"'")){
-		$CHANGES[$column] = array(
-			'old' => $currentW[$column],
-			'new' => trim($new_value,"'")
-		);
-	}
-}
-
 $sR = $dbc->query("SELECT superID FROM MasterSuperDepts WHERE dept_ID=".$up_array['department']);
 $sID = 0;
 if ($dbc->num_rows($sR) > 0)
@@ -123,45 +102,8 @@ elseif ($auditedUser){
     audit($sID,$auditedUser,$upc,$descript,$price,$tax,$FS,$Scale,$NoDisc);
 }
 
-if ($up_array['store_id'] == $FANNIE_STORE_ID){
-	// record exists so update it
-	$dbc->smart_update('products',$up_array,"upc='$upc'");
-}
-else if($up_array['store_id']==0 && count($CHANGES) > 0){
-	// only the HQ record exists and this is not HQ
-	// so it has to be an insert
-	// only create a new record if changes really exist
-	$up_array['store_id'] = $FANNIE_STORE_ID;
-	$up_array['upc'] = $dbc->escape($_REQUEST['upc']);
-	$up_array['special_price'] = 0.00;
-	$up_array['specialpricemethod'] = 0;
-	$up_array['specialgroupprice'] = 0.00;
-	$up_array['specialquantity'] = 0;
-	$up_array['mixmatchcode'] = "'0'";
-	$up_array['discounttype'] = 0;
-	$up_array['start_date'] = "'1900-01-01'";
-	$up_array['end_date'] = "'1900-01-01'";
-	$up_array['numflag'] = 0;
-	$up_array['store_id'] = 0;
-	$dbc->smart_insert('products',$up_array);
-}
-
-// apply HQ updates to non-HQ records
-// where the current value matches the old
-// HQ value
-if ($FANNIE_STORE_ID==0 && count($CHANGES) > 0){
-	foreach($CHANGES as $col => $values){
-		$v_old = is_numeric($values['old']) ? $values['old'] : $dbc->escape($values['old']);
-		$v_new = is_numeric($values['new']) ? $values['new'] : $dbc->escape($values['new']);
-		$upQ = sprintf("UPDATE products SET %s=%s,modified=%s
-			WHERE %s=%s AND upc=%s AND store_id > 0",
-			$col,$v_new,
-			$dbc->now(),
-			$col,$v_old,
-			$dbc->escape($upc));
-		$upR = $dbc->query($upQ);
-	}
-}
+//$dbc->smart_update('products',$up_array,"upc='$upc'");
+ProductsController::update($upc, $up_array);
 
 if ($dbc->table_exists('prodExtra')){
 	$arr = array();
@@ -185,29 +127,11 @@ if ($dbc->table_exists('prodExtra')){
 		$dbc->smart_update('prodExtra',$arr,"upc='$upc'");
 	}
 }
-if ($dbc->table_exists("prodUpdate")){
-	$puarray = array(
-	'upc' => $dbc->escape($upc),
-	'description' => $up_array['description'],
-	'price' => $up_array['normal_price'],
-	'dept' => $up_array['department'],
-	'tax' => $up_array['tax'],
-	'fs' => $up_array['foodstamp'],
-	'scale' => $up_array['scale'],
-	'likeCode' => isset($_REQUEST['likeCode'])?$_REQUEST['likeCode']:0,
-	'modified' => $dbc->now(),
-	'user' => $uid,
-	'forceQty' => $up_array['qttyEnforced'],
-	'noDisc' => $up_array['discount'],
-	'inUse' => $up_array['inUse']
-	);
-	$dbc->smart_insert('prodUpdate',$puarray);
-}
 if(isset($_REQUEST['s_plu'])){
 	$s_plu = substr($_REQUEST['s_plu'],3,4);
 	$scale_array = array();
 	$scale_array['plu'] = $upc;
-	$scale_array['itemdesc'] = $up_array['description'];
+	$scale_array['itemdesc'] = $dbc->escape($up_array['description']);
 	$scale_array['price'] = $up_array['normal_price'];
 	if (isset($_REQUEST['s_longdesc']) && !empty($_REQUEST['s_longdesc']))
 		$scale_array['itemdesc'] = $dbc->escape($_REQUEST['s_longdesc']);
@@ -269,8 +193,9 @@ if (isset($_REQUEST['likeCode']) && $_REQUEST['likeCode'] != -1){
 		$upcsR = $dbc->query($upcsQ);
 		unset($up_array['description']);
 		while($upcsW = $dbc->fetch_row($upcsR)){
-			$dbc->smart_update('products',$up_array,
-				"upc='$upcsW[0]' AND store_id=$FANNIE_STORE_ID");
+			ProductsController::update($upcsW[0], $up_array);
+			//$dbc->smart_update('products',$up_array,
+			//	"upc='$upcsW[0]' AND store_id=$FANNIE_STORE_ID");
 			updateProductAllLanes($upcsW[0]);
 		}
 	}
