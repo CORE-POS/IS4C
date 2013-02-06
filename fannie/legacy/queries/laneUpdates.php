@@ -58,6 +58,7 @@ function rowRelease(){
 function syncProductsAllLanes(){
 	global $FANNIE_ROOT,$FANNIE_SERVER,$FANNIE_SERVER_USER,$FANNIE_SERVER_PW,$FANNIE_OP_DB,$FANNIE_LANES;
 	ob_start();
+	$table = 'products';
 	include($FANNIE_ROOT.'sync/special/products.php');
 	ob_end_clean();
 }

@@ -207,6 +207,15 @@ class FannieReportPage extends FanniePage {
 	}
 
 	/**
+	  Extra, non-tabular information prepended to
+	  reports
+	  @return array of strings
+	*/
+	function report_description_content(){
+		return array();
+	}
+
+	/**
 	  Get the report data
 	  @return a two dimensional array
 
@@ -230,18 +239,22 @@ class FannieReportPage extends FanniePage {
 		case 'html':
 			$this->add_css_file($FANNIE_URL.'src/jquery/themes/blue/style.css');
 			$ret .= sprintf('<html><head></head><body>
-				<a href="%s%sexcel=xls">Download XLS</a>
+				<a href="%s%sexcel=xls">Download Excel</a>
 				&nbsp;&nbsp;&nbsp;&nbsp;
-				<a href="%s%sexcel=csv">Download CSV</a>
-				<table id="mySortableTable" cellspacing="0" 
-				cellpadding="4" border="1" class="tablesorter">',
+				<a href="%s%sexcel=csv">Download CSV</a>',
 				$_SERVER['REQUEST_URI'],
 				(strstr($_SERVER['REQUEST_URI'],'?') ===False ? '?' : '&'),
 				$_SERVER['REQUEST_URI'],
 				(strstr($_SERVER['REQUEST_URI'],'?') ===False ? '?' : '&')
 			);
+			foreach($this->report_description_content() as $line)
+				$ret .= '<br />'.$line;
+			$ret .= '<table id="mySortableTable" cellspacing="0" 
+				cellpadding="4" border="1" class="tablesorter">';
 			break;
 		case 'csv':
+			foreach($this->report_description_content() as $line)
+				$ret .= $this->csv_line(array($line));
 		case 'xls':
 			break;
 		}
@@ -307,6 +320,8 @@ class FannieReportPage extends FanniePage {
 			$xlsdata = $data;
 			if (!empty($headers)) array_unshift($xlsdata,$headers);
 			if (!empty($footers)) array_push($xlsdata,$footers);
+			foreach($this->report_description_content() as $line)
+				array_unshift($xlsdata,array($line));
 			if (!function_exists('ArrayToXls'))
 				include_once($FANNIE_ROOT.'src/ReportConvert/ArrayToXls.php');
 			$ret = ArrayToXls($xlsdata);

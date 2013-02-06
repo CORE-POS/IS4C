@@ -62,6 +62,7 @@ if (isset($_REQUEST['submit'])){
 	$sttl = 0;
 	$slocal = 0;
 	$sc = 0;
+	$master_totals = array(0,0,0);
 	echo '<table cellspacing="0" cellpadding="4" border="1">';
 	while($row = $dbc->fetch_row($result)){
 		if ($sID != $row['superID']){
@@ -96,6 +97,9 @@ if (isset($_REQUEST['submit'])){
 		$slocal += $row['localSales'];
 		$sc += $row['scSales'];
 		$sttl += $row['allSales'];
+		$master_totals[0] += $row['localSales'];
+		$master_totals[1] += $row['scSales'];
+		$master_totals[2] += $row['allSales'];
 	}
 	printf('<tr><th>Ttl</th><th>%s</th>
 		<th>$%.2f</th><th>%.2f%%</th>
@@ -103,6 +107,15 @@ if (isset($_REQUEST['submit'])){
 		<th>$%.2f</th></tr>',
 		$sname,$slocal,100*($slocal/$sttl),
 		$sc,100*($sc/$sttl),$sttl);
+
+	printf('<tr><td colspan=7>&nbsp;</td></tr>
+		<tr><th>Ttl</th><th>Store</th>
+		<th>$%.2f</th><th>%.2f%%</th>
+		<th>$%.2f</th><th>%.2f%%</th>
+		<th>$%.2f</th></tr>',
+		$master_totals[0],100*($master_totals[0]/$master_totals[2]),
+		$master_totals[1],100*($master_totals[1]/$master_totals[2]),
+		$master_totals[2]);
 
 	echo '</table>';
 

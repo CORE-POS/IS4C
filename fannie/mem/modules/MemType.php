@@ -63,29 +63,31 @@ class MemType extends MemberModule {
 	}
 
 	function SaveFormData($memNum){
+		global $FANNIE_ROOT;
 		$dbc = $this->db();
+		if (!class_exists("CustdataController"))
+			include($FANNIE_ROOT.'classlib2.0/data/controllers/CustdataController.php');
 
 		$mtype = isset($_REQUEST['MemType_type']) ? $_REQUEST['MemType_type'] : 0;
 		$q = sprintf("SELECT discount,staff,SSI,cd_type FROM memdefaults
 			WHERE memtype=%d",$mtype);
 		$r = $dbc->query($q);
 
-		$type='REG';
-		$discount=0;
-		$staff=0;
-		$SSI=0;
+		$CUST_FIELDS = array();
+		$CUST_FIELDS['memType'] = $mtype;
+		$CUST_FIELDS['Type'] = 'REG';
+		$CUST_FIELDS['Staff'] = 0;
+		$CUST_FIELDS['Discount'] = 0;
+		$CUST_FIELDS['SSI'] = 0;
 		if ($dbc->num_rows($r) > 0){
 			$w = $dbc->fetch_row($r);
-			$type = $w['cd_type'];
-			$discount = $w['discount'];
-			$staff = $w['staff'];
-			$SSI = $w['SSI'];
+			$CUST_FIELDS['Type'] = $w['cd_type'];
+			$CUST_FIELDS['Discount'] = $w['discount'];
+			$CUST_FIELDS['Staff'] = $w['staff'];
+			$CUST_FIELDS['SSI'] = $w['SSI'];
 		}
 
-		$upQ = sprintf("UPDATE custdata SET Type=%s,staff=%d,SSI=%d,Discount=%d,
-			memType=%d WHERE CardNo=%d",$dbc->escape($type),$staff,$SSI,
-			$discount,$mtype,$memNum);
-		$upR = $dbc->query($upQ);
+		$upR = CustdataController::update($memNum, $CUST_FIELDS);
 
 		if ($upR === False )
 			return "Error: problem saving Member Type<br />";

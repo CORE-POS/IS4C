@@ -1,0 +1,5 @@
+I don't like the module structure initially implemented here.
+Fannie's class-lib will eventually be deprecated and replaced
+with classlib2.0. The structure will have more in common with
+the lane's class and plugin usage. It's a better structure
+and consistency is good.

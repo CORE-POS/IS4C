@@ -21,6 +21,9 @@
 
 *********************************************************************************/
 
+if (!function_exists('validateUserQuiet'))
+	include($FANNIE_ROOT.'auth/login.php');
+
 /**
   @class FanniePage
   Class for drawing screens
@@ -32,6 +35,13 @@ class FanniePage {
 	public $description = "
 	Base class for creating HTML pages.
 	";
+
+	/** force users to login immediately */
+	protected $must_authenticate = False;
+	/** name of the logged in user (or False is no one is logged in) */
+	protected $current_user = False;
+	/** list of either auth_class(es) or array(auth_class, start, end) tuple(s) */
+	protected $auth_classes = array();
 
 	protected $title = 'Page window title';
  	protected $header = 'Page displayed header';
@@ -131,10 +141,47 @@ class FanniePage {
 	}
 
 	/**
+	  Send user to login page
+	*/
+	function login_redirect(){
+		global $FANNIE_URL;
+		$redirect = $_SERVER['REQUEST_URI'];
+		$url = $FANNIE_URL.'auth/ui/loginform.php';
+		header('Location: '.$url.'?redirect='.$redirect);
+	}
+
+	/**
+	  Check if the user is logged in
+	*/
+	function check_auth(){
+		foreach($this->auth_classes as $class){
+			$try = False;
+			if (is_array($class) && count($class) == 3)
+				$try = validateUserQuiet($class[0],$class[1],$class[2]);
+			else
+				$try = validateUserQuiet($class);
+			if ($try){
+				$this->current_user = $try;
+				return True;
+			}
+		}
+		$try = checkLogin();
+		if ($try && empty($this->auth_classes)){
+			$this->current_user = $try;
+			return True;
+		}
+		return False;
+	}
+
+	/**
 	  Check for input and display the page
 	*/
 	function draw_page(){
-		if ($this->preprocess()){
+
+		if (!$this->check_auth() && $this->must_authenticate){
+			$this->login_redirect();
+		}
+		elseif ($this->preprocess()){
 			
 			if ($this->window_dressing)
 				echo $this->get_header();
@@ -174,21 +221,6 @@ class FanniePage {
 			}
 		}
 	}
-}
-
-/**
-  @file
-  @brief Functions provided by FanniePage
-*/
-
-/**
-  Safely fetch a form value
-  @param $name the field name
-  @param $default default value if the form value doesn't exist
-  @return The form value, if available, otherwise the default.
-*/
-function get_form_value($name, $default=''){
-	return (isset($_REQUEST[$name])) ? $_REQUEST[$name] : $default;
 }
 
 ?>

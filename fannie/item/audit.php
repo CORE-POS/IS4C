@@ -34,15 +34,15 @@ function audit($dept_sub,$uid,$upc,$desc,$price,$tax,$fs,$scale,$discount,$likec
 	global $FANNIE_URL;
 	$hostname = "key";
 	$tos = array(	0=>"andy",
-			1=>"jim, lisa",
-			2=>"jesse, lisa",
-			3=>"debbie, eric, justin, vicky",
-			4=>"joeu, lisa",
-			5=>"jillhall, lisa",
+			1=>"jim, lisa, meales",
+			2=>"jesse, lisa, meales",
+			3=>"debbie, aelliott, justin",
+			4=>"joeu, lisa, meales",
+			5=>"jillhall, lisa, meales",
 			6=>"michael",
 			7=>"shannon",
-			8=>"jesse, lisa",
-			9=>"raelynn, lisa"
+			8=>"jesse, lisa, meales",
+			9=>"meales, lisa"
 	);	
 	$taxes = array("NoTax","Reg","Deli");
 

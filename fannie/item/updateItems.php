@@ -62,7 +62,12 @@ $up_array['subdept'] = $_REQUEST['subdepartment'];
 $up_array['local'] = isset($_REQUEST['local'])?1:0;
 $up_array['store_id'] = isset($_REQUEST['store_id'])?$_REQUEST['store_id']:0;
 $up_array['numflag'] = 0;
-
+if (isset($_REQUEST['flags']) && is_array($_REQUEST['flags'])){
+	foreach($_REQUEST['flags'] as $f){
+		if ($f != (int)$f) continue;
+		$up_array['numflag'] = $up_array['numflag'] | (1 << ($f-1));
+	}
+}
 
 /* turn on volume pricing if specified, but don't
    alter pricemethod if it's already non-zero */

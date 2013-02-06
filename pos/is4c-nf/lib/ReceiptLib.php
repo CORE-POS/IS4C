@@ -529,7 +529,7 @@ static public function printCCSigSlip($dateTimeStamp,$ref,$storeCopy=True,$rp=0)
 	}
 	// query database for cc receipt info 
 	$query = "select ".$limit." tranType, amount, PAN, entryMethod, issuer, xResultMessage, xApprovalNumber, xTransactionID, name, "
-		." datetime from ccReceiptView where [date]=".date('Ymd',$dateTimeStamp)
+		." datetime from ccReceiptView where date=".date('Ymd',$dateTimeStamp)
 		." and cashierNo = ".$emp." and laneNo = ".$reg
 		." and transNo = ".$trans ." ".$idclause
 		." order by datetime, cashierNo, laneNo, transNo, xTransactionID, transID ".$sort.", sortorder ".$sort;
@@ -1194,7 +1194,6 @@ static public function printReceipt($arg1,$second=False) {
 		} /***** jqh end big if statement change *****/
 	}
 	else {
-		$receipt = self::chargeBalance($receipt);
 	}
 
 	/* --------------------------------------------------------------

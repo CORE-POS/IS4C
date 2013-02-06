@@ -26,9 +26,10 @@ $path = guesspath();
 $page_title = 'Fannie : Auth : Change Password';
 $header = 'Fannie : Auth : Change Password';
 
+include($path."src/header.html");
+
 $name = checkLogin();
 if (!$name){
-  echo "<html><body bgcolor=cabb1e>";
   echo "Somehow you ended up logged out.  <a href=loginform.php>Login</a>?";
 }
 else {
@@ -38,13 +39,11 @@ else {
     $newpass1 = $_POST['newpass1'];
     $newpass2 = $_POST['newpass2'];
     if ($newpass1 != $newpass2){
-      echo "<html><body bgcolor=cabb1e>";
       echo "Passwords don't match<p />";
       echo "<a href=changepass.php>Try again</a> | <a href=menu.php>Main menu</a>";
     }
     else {
       $success = changePassword($name,$oldpass,$newpass1);
-      echo "<html><body bgcolor=cabb1e>";
       if (!$success){
 	echo "Password change failed.  Ensure the old password is correct and that the new password is alphanumeric<p />";
 	echo "<a href=changepass.php>Try again</a> | <a href=menu.php>Main menu</a>";
@@ -56,7 +55,6 @@ else {
     }
   }
   else {
-    echo "<html><body bgcolor=cabb1e>";
     echo "<form action=changepass.php method=post>";
     echo "<table cellspacing=2 cellpadding=2";
     echo "<tr><td>Username:</td><td>$name <input type=hidden name=name value=$name></td></tr>";
@@ -68,7 +66,6 @@ else {
   }
 }
 
-?>
+include($path."src/footer.html");
 
-</body>
-</html>
+?>

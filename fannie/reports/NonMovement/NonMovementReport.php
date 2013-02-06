@@ -25,16 +25,35 @@ include('../../config.php');
 include($FANNIE_ROOT.'src/mysql_connect.php');
 include($FANNIE_ROOT.'src/select_dlog.php');
 include($FANNIE_ROOT.'classlib2.0/FannieReportPage.php');
+include($FANNIE_ROOT.'classlib2.0/lib/FormLib.php');
 
 class NonMovementReport extends FannieReportPage {
 
 	function preprocess(){
+		global $dbc;
 		/**
 		  Set the page header and title, enable caching
 		*/
 		$this->title = "Fannie: Non-Movement";
 		$this->header = "Non-Movement Report";
-		$this->report_cache = 'day';
+		$this->report_cache = 'none';
+
+		if (isset($_REQUEST['deleteItem'])){
+			$upc = get_form_value('deleteItem','');
+			$upc = str_pad($upc,13,'0',STR_PAD_LEFT);
+
+			$query = "DELETE FROM products WHERE upc=?";
+			$queryP = $dbc->prepare_statement($query);
+			$dbc->exec_statement($queryP, array($upc));
+
+			$query = "DELETE FROM productUser WHERE upc=?";
+			$queryP = $dbc->prepare_statement($query);
+			$dbc->exec_statement($queryP, array($upc));
+
+			$query = "DELETE FROM prodExtra WHERE upc=?";
+			$queryP = $dbc->prepare_statement($query);
+			$dbc->exec_statement($queryP, array($upc));
+		}
 
 		if (isset($_REQUEST['date1'])){
 			/**
@@ -45,7 +64,7 @@ class NonMovementReport extends FannieReportPage {
 			*/
 			$this->content_function = "report_content";
 			$this->has_menus(False);
-			$this->report_headers = array('UPC','Description','Dept#','Dept');
+			$this->report_headers = array('UPC','Description','Dept#','Dept','');
 		
 			/**
 			  Check if a non-html format has been requested
@@ -65,10 +84,10 @@ class NonMovementReport extends FannieReportPage {
 
 	function fetch_report_data(){
 		global $dbc, $FANNIE_ARCHIVE_DB;
-		$date1 = get_form_value('date1',date('Y-m-d'));
-		$date2 = get_form_value('date2',date('Y-m-d'));
-		$dept1 = get_form_value('deptStart',0);
-		$dept2 = get_form_value('deptEnd',0);
+		$date1 = FormLib::get_form_value('date1',date('Y-m-d'));
+		$date2 = FormLib::get_form_value('date2',date('Y-m-d'));
+		$dept1 = FormLib::get_form_value('deptStart',0);
+		$dept2 = FormLib::get_form_value('deptEnd',0);
 
 		$tempName = "TempNoMove";
 		$dlog = select_dlog($date1,$date2);
@@ -106,6 +125,14 @@ class NonMovementReport extends FannieReportPage {
 			$record[] = $row[1];
 			$record[] = $row[2];
 			$record[] = $row[3];
+			if ($this->report_format == 'html'){
+				$record[] = sprintf('<a href="%s&deleteItem=%s" 
+					onclick="return confirm(\'Delete %s %s?\');">
+					Delete this item</a>',$_SERVER['REQUEST_URI'],$row[0],
+					$row[0],$row[1]);
+			}
+			else
+				$record[] = '';
 			$ret[] = $record;
 		}
 

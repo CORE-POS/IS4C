@@ -57,14 +57,18 @@ function addAuth($name,$auth_class,$sub_start='all',$sub_end='all'){
     return $uid;
   }
 
-	/* 10Nov12 EL Add FANNIE_AUTH_ENABLED test per intent of create-first-user
-	 *             call from auth.php to skip validation check.
-	 *             auth_enabled() does not return the correct value.
-	*/
-	if ( $FANNIE_AUTH_ENABLED ) {
-		if (!validateUser('admin')){
-			return false;
-		}
+  /* 10Nov12 EL Add FANNIE_AUTH_ENABLED test per intent of create-first-user
+   *             call from auth.php to skip validation check.
+   *             auth_enabled() does not return the correct value.
+  */
+  if ( $FANNIE_AUTH_ENABLED ) {
+	if ($auth_class == 'admin' && getNumAdmins() == 0){
+		// skip validation check in
+		// this instance
+	}
+	elseif (!validateUser('admin')){
+		return false;
+	}
   }
 
   $addQ = "insert into userPrivs values ('$uid','$auth_class','$sub_start','$sub_end')";
@@ -77,14 +81,14 @@ function createClass($name, $notes){
 		return false;
 	}
 
-	if (!validateUser('admin')){
-		return false;
-	}
-
 	$sql = dbconnect();
 	$checkQ = "select * from userKnownPrivs where auth_class='$name'";
 	$checkR = $sql->query($checkQ);
 	if ($sql->num_rows($checkR) != 0){
+		return true;
+	}
+
+	if (!validateUser('admin')){
 		return false;
 	}
 
@@ -93,7 +97,7 @@ function createClass($name, $notes){
 			VALUES (%s, %s)", $sql->escape($name),
 			$sql->escape($notes));
 	$insR = $sql->query($insQ);
-	return true;
+	return ($insR) ? true : false;
 }
 
 function deleteClass($name){
@@ -118,6 +122,7 @@ function deleteClass($name){
 	$q3 = sprintf("DELETE FROM userGroupPrivs WHERE auth=%s",
 		$sql->escape($name));
 	$r3 = $sql->query($q3);
+	return true;
 }
 
 function deleteAuth($name,$auth_class){

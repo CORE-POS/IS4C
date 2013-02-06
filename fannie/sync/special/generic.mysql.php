@@ -28,8 +28,9 @@
 
 // mysql version probably looks like this (not tested):
 // could use some error checking on connection/success, obviously
-include_once($FANNIE_ROOT.'src/temp_dir.php');
+include_once($FANNIE_ROOT.'src/tmp_dir.php');
 $tempfile = tempnam(sys_get_temp_dir(),$table.".sql");
+if (empty($table)) return;
 exec("mysqldump -u $FANNIE_SERVER_USER -p$FANNIE_SERVER_PW -h $FANNIE_SERVER $FANNIE_OP_DB $table > $tempfile");
 $i=0;
 foreach($FANNIE_LANES as $lane){
