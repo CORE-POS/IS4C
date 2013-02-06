@@ -123,6 +123,7 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
 		OpenDevice();
 		waiting_for_data = true;
 		SendReport(BuildCommand(LcdSetBacklightTimeout(0)));
+		//SendReport(BuildCommand(EnableAudio()));
 		SetStateStart();
 		ReRead();
 		//SetStateCardType();
@@ -363,6 +364,7 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
 		switch(current_state){
 		case STATE_SELECT_CARD_TYPE:
 			if (msg.Length == 4 && msg[0] == 0x7a){
+				SendReport(BuildCommand(DoBeep()));
 				if (msg[1] == BUTTON_CREDIT){
 					PushOutput("TERM:Credit");
 					SetStateWaitForCashier();
@@ -385,6 +387,7 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
 			break;
 		case STATE_SELECT_EBT_TYPE:
 			if (msg.Length == 4 && msg[0] == 0x7a){
+				SendReport(BuildCommand(DoBeep()));
 				if (msg[1] == BUTTON_EBT_FOOD){
 					PushOutput("TERM:EbtFood");
 					SetStateGetPin();
@@ -417,7 +420,7 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
 				if (ack_counter == 1)
 					SetStateGetManualExp();
 			}
-			else if (false && msg.Length == 3 && msg[0] == 0x15){
+			else if (msg.Length == 3 && msg[0] == 0x15){
 				SetStateStart();
 			}
 			break;
@@ -445,6 +448,7 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
 			break;
 		case STATE_START_TRANSACTION:
 			if (msg.Length > 63 && msg[0] == 0x80 ){
+				SendReport(BuildCommand(DoBeep()));
 				string block = FixupCardBlock(msg);
 				PushOutput("PANCACHE:"+block);
 				SetStateCardType();
@@ -1341,6 +1345,31 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
 
 	private byte[] ResetDevice(){
 		return new byte[7]{0x78, 0x46, 0x0a, 0x49, 0x52, 0x46, 0x57};
+	}
+
+	private byte[] EnableAudio(){
+		return new byte[4]{0x7b, 0x46, 0x1, 0x1};
+	}
+	
+	private byte[] DoBeep(){
+		return new byte[7]{0x7b, 0x46, 0x02, 0xff, 0x0, 0xff, 0};
+	}
+
+	private byte[] GetAmount(){
+		byte[] ret = new byte[];
+		int pos = 0;
+
+		// command head
+		ret[pos++] = 0x75;
+		ret[pos++] = 0x46;
+		ret[pos++] = 0x23;
+		
+		// min length
+		ret[pos++] = 1;
+		// max length
+		ret[pos++] = 2;
+
+		// serious manual translation breakdown occurs here
 	}
 
 }
