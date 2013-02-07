@@ -34,11 +34,11 @@ class FannieWebService {
 		$info = new ReflectionClass($this);
 		if (basename($_SERVER['PHP_SELF']) == basename($info->getFileName())){
 			$output = $this->run();
-			$render_func = 'render_'.strtolower($type);
+			$render_func = 'render_'.strtolower($this->type);
 			if (method_exists($this, $render_func))
 				echo $this->$render_func($output);
 			else
-				echo $this->render_html($output);
+				echo $this->render_plain($output);
 		}
 	}
 
