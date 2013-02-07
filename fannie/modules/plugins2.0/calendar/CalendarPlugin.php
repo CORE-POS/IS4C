@@ -21,8 +21,8 @@
 
 *********************************************************************************/
 
-if (!class_exists('FanniePlugin'))
-	include($FANNIE_ROOT.'classlib2.0/FanniePlugin.php');
+include_once(dirname(__FILE__).'/../../../config.php');
+if (!class_exists('FanniePlugin')) include($FANNIE_ROOT.'classlib2.0/FanniePlugin.php');
 
 /**
 */
