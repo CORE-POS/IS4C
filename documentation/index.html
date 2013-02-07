@@ -68,75 +68,78 @@ Rudimentary ToC to /IS4C/documentation
 							</li>
 						</ul>
 					</li>
-					<li><a href="Fannie/developer/framework.html" target="_Fd_framework">Framework Requirements/Theory</a>
+					<li><a href="Fannie/developer/index.html" target="_Fd_gg">Dive In</a>
 						<ul id="" class="detail">
-							<li>[On rules]</li>
-							<li>One configuration file</li>
-							<li>Database Best Practices</li>
+							<li><b>New Developers should start with the Plugin docs</b></li>
 						</ul>
 					</li>
-					<li><a href="Fannie/developer/auth.html" target="_Fd_auth">Authentication System</a>
-						<ul id="" class="detail">
-							<li>[The current situation]</li>
-							<li>Authenticating users</li>
-							<li>Permissions</li>
-							<li>Groups</li>
-							<li>Tying it all together</li>
-							<li>Installation</li>
-							<li>Drawbacks and/or Gotchas</li>
-						</ul>
-						<ul id="">
-							<li><a href="../fannie/auth/doc/index.html" target="_Fd_auth_api_doc">Auth Module API Documentation</a>
-								<ul id="" class="detail">
-									<li>Requirements</li>
-									<li>API</li>
-									<li>Usage</li>
-								</ul>
+					<li><a href="Fannie/developer/plugins/index.html" target="_Fplugindev">Plugin Developer</a>
+					</li>
+					<li><a href="Fannie/developer/index-core.html" target="_Fcpdev">CORE Project Developer</a>
+						<ul>	
+						<li><a href="Fannie/developer/framework.html" target="_Fd_framework">Framework Requirements/Theory</a>
+							<ul id="" class="detail">
+								<li>[On rules]</li>
+								<li>One configuration file</li>
+								<li>Database Best Practices</li>
+							</ul>
+						</li>
+						<li><a href="Fannie/developer/auth.html" target="_Fd_auth">Authentication System</a>
+							<ul id="" class="detail">
+								<li>[The current situation]</li>
+								<li>Authenticating users</li>
+								<li>Permissions</li>
+								<li>Groups</li>
+								<li>Tying it all together</li>
+								<li>Installation</li>
+								<li>Drawbacks and/or Gotchas</li>
+							</ul>
+							<ul id="">
+								<li><a href="../fannie/auth/doc/index.html" target="_Fd_auth_api_doc">Auth Module API Documentation</a>
+									<ul id="" class="detail">
+										<li>Requirements</li>
+										<li>API</li>
+										<li>Usage</li>
+									</ul>
 							</li>
-							<li><a href="../fannie/auth/README.php" target="_Fd_auth_readme">Andy's Fannie Authentication Module README</a>
-								<ul id="" class="detail">
-									<li>Disabling Authentication</li>
-									<li>Installation / Setup</li>
-								</ul>
-							</li>
-							<li><a href="Fannie/end-user/auth-classes.html" target="_Fd_authc">auth classes</a>
-									- List of scripts that require specific authorizations if authentication is enabled.</li>
+								<li><a href="../fannie/auth/README.php" target="_Fd_auth_readme">Andy's Fannie Authentication Module README</a>
+									<ul id="" class="detail">
+										<li>Disabling Authentication</li>
+										<li>Installation / Setup</li>
+									</ul>
+								</li>
+								<li><a href="Fannie/end-user/auth-classes.html" target="_Fd_authc">auth classes</a>
+										- List of scripts that require specific authorizations if authentication is enabled.</li>
+							</ul>
+						</li>
+						<li><a href="Fannie/developer/cron.html" target="_Fd_cron">Scheduled Tasks (cron jobs)</a></li>
+							<ul id="" class="detail">
+								<li>[Overview]</li>
+								<li>Example</li>
+							</ul>
+						</li>
+						<li><a href="Fannie/developer/db-creation.html" target="_Fd_dbc">Creating Tables and Views</a>
+							<ul id="" class="detail">
+								<li>[It is done in install/index.php]</li>
+							</ul>
+						</li>
+						<li><a href="Fannie/developer/db-alteration.html" target="_Fd_dba">Altering Tables and Views</a>
+							<ul id="" class="detail">
+								<li>[Using the install/updates directory</li>
+							</ul>
+						</li>
+						<li><a href="../fannie/install/sql/magic-doc.php" target="_Fd_agdd">Auto-Generated Database Documentation</a>
+							<ul id="" class="detail">
+								<li>Links to per-table Help</li>
+								<li>core_op</li>
+								<li>core_trans</li>
+							</ul>
+						</li>
 						</ul>
 					</li>
-					<li><a href="Fannie/developer/cron.html" target="_Fd_cron">Scheduled Tasks (cron jobs)</a></li>
-						<ul id="" class="detail">
-							<li>[Overview]</li>
-							<li>Example</li>
-						</ul>
-					</li>
-					<li><a href="Fannie/developer/db-creation.html" target="_Fd_dbc">Creating Tables and Views</a>
-						<ul id="" class="detail">
-							<li>[It is done in install/index.php]</li>
-						</ul>
-					</li>
-					<li><a href="Fannie/developer/db-alteration.html" target="_Fd_dba">Altering Tables and Views</a>
-						<ul id="" class="detail">
-							<li>[Using the install/updates directory</li>
-						</ul>
-					</li>
-					<li><a href="../fannie/install/sql/magic-doc.php" target="_Fd_agdd">Auto-Generated Database Documentation</a>
-						<ul id="" class="detail">
-							<li>Links to per-table Help</li>
-							<li>core_op</li>
-							<li>core_trans</li>
-						</ul>
-					</li>
-					<li><a href="Fannie/developer/get-going.html" target="_Fd_gg">Dive In</a>
-						<ul id="" class="detail">
-							<li>Grab the config</li>
-							<li>Need a database connection?</li>
-							<li>Want a skin?</li>
-						</ul>
-					</li>
-				</ul>
-			</li>
-			<li><a href="Fannie/end-user/index.html" target="_Fend-user">end-user</a>
-				<ul>
+				</li>
+				<li><a href="Fannie/end-user/index.html" target="_Fend-user">end-user</a>
+					<ul>
 
 					<li><a href="Fannie/end-user/data-loading.html" target="_Fe_dl">Data Loading</a>
 						<ul id="" class="detail">
