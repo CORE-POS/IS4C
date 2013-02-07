@@ -33,8 +33,9 @@ class ProductsController {
 	  New records are created automatically as needed
 	  @param $upc the upc
 	  @param $fields array of column names and values
+	  @param $update_only don't add if the product doesn't exist
 	*/
-	public static function update($upc,$fields){
+	public static function update($upc,$fields, $update_only=False){
 		global $FANNIE_OP_DB;
 		$dbc = FannieDB::get($FANNIE_OP_DB);
 		if (!is_numeric($upc) || $upc != ((int)$upc))
@@ -45,7 +46,7 @@ class ProductsController {
 		$chkP = $dbc->prepare_statement("SELECT upc FROM products WHERE upc=?");
 		$chkR = $dbc->exec_statement($chkP, array($upc));
 		if ($dbc->num_rows($chkR) == 0)
-			return self::add($upc,$fields);
+			return ($update_only===False ? self::add($upc,$fields) : True);
 
 		$updateQ = "UPDATE products SET ";
 		$updateArgs = array();
