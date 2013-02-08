@@ -23,10 +23,10 @@
 
 // set a variable in the config file
 function confset($key, $value){
-	global $FILEPATH;
+	$FILEPATH = realpath(dirname(__FILE__).'/../');
 	$lines = array();
 	$found = False;
-	$fp = fopen($FILEPATH.'config.php','r');
+	$fp = fopen($FILEPATH.'/config.php','r');
 	while($line = fgets($fp)){
 		if (strpos($line,"\$$key ") === 0){
 			$lines[] = "\$$key = $value;\n";
