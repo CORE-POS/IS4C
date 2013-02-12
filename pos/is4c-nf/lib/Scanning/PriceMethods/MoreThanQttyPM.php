@@ -69,16 +69,27 @@ class MoreThanQttyPM extends PriceMethod {
 		if ($num_rowst > 0){
 			$rowt = $dbt->fetch_array($resultt);
 			$trans_qty = floor($rowt['mmqtty']);
+			$undisc_ttl = $rowt['unDiscountedTotal'];
 		}
-
-		$trans_qty += $quantity;
 
 		/* if purchases exceed then requirement, apply
 		   the discount */
 		if ($trans_qty >= $groupQty){
 			$discountAmt = $pricing['unitPrice'] * $groupPrice;
-			$pricing['discount'] = $discountAmt;
-			$pricing['unitPrice'] -= $discountAmt;
+
+			if ( ($trans_qty - $quantity) < $groupQty){
+				/* this ring puts us over the threshold.
+				   extra math to account for discount on
+				   previously rung items */
+				$totalDiscount = ($undisc_ttl * $groupPrice) + ($discountAmt * $quantity);
+				$actualTotal = ($pricing['unitPrice']*$quantity) - $totalDiscount;
+				$pricing['discount'] = $totalDiscount;
+				$pricing['unitPrice'] = $actualTotal / $quantity;
+			}
+			else {
+				$pricing['discount'] = $discountAmt * $quantity;
+				$pricing['unitPrice'] -= $discountAmt;
+			}
 		}
 	
 		TransRecord::addItem($row['upc'],
