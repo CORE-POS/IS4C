@@ -77,11 +77,9 @@ class MoreThanQttyPM extends PriceMethod {
 		if ($num_rowst > 0){
 			$rowt = $dbt->fetch_array($resultt);
 			$trans_qty = floor($rowt['mmqtty']);
-			$undisc_ttl = $row['unDiscountedTotal'];
+			$undisc_ttl = $rowt['unDiscountedTotal'];
 		}
 		/* include the items in this ring */
-		$trans_qty += $quantity;
-
 		$trans_qty += $quantity;
 
 		/* if purchases exceed then requirement, apply
@@ -93,7 +91,7 @@ class MoreThanQttyPM extends PriceMethod {
 				/* this ring puts us over the threshold.
 				   extra math to account for discount on
 				   previously rung items */
-				$totalDiscount = ($undisc_ttl * $groupPrice) + ($discountAmount * $quantity);
+				$totalDiscount = ($undisc_ttl * $groupPrice) + ($discountAmt * $quantity);
 				$actualTotal = ($pricing['unitPrice']*$quantity) - $totalDiscount;
 				$pricing['discount'] = $totalDiscount;
 				$pricing['unitPrice'] = $actualTotal / $quantity;
