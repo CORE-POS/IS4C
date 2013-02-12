@@ -82,6 +82,8 @@ class MoreThanQttyPM extends PriceMethod {
 		/* include the items in this ring */
 		$trans_qty += $quantity;
 
+		$trans_qty += $quantity;
+
 		/* if purchases exceed then requirement, apply
 		   the discount */
 		if ($trans_qty >= $groupQty){
