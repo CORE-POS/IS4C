@@ -76,10 +76,10 @@ static public function paycard_info($pan) {
 	if( $len >= 13 && $len <= 16) {
 		$type = self::PAYCARD_TYPE_CREDIT;
 		if(      $iin>=3000000 && $iin<=3099999) { $issuer="Diners Club"; }
-		else if( $iin>=3400000 && $iin<=3499999) { $issuer="American Express"; }
+		else if( $iin>=3400000 && $iin<=3499999) { $issuer="American Express"; $accepted=true; }
 		else if( $iin>=3528000 && $iin<=3589999) { $issuer="JCB";        $accepted=true; } // Japan Credit Bureau, accepted via Discover
 		else if( $iin>=3600000 && $iin<=3699999) { $issuer="MasterCard"; $accepted=true; } // Diners Club issued as MC in the US
-		else if( $iin>=3700000 && $iin<=3799999) { $issuer="American Express"; }
+		else if( $iin>=3700000 && $iin<=3799999) { $issuer="American Express"; $accepted=true; }
 		else if( $iin>=3800000 && $iin<=3899999) { $issuer="Diners Club"; } // might be obsolete?
 		else if( $iin>=4000000 && $iin<=4999999) { $issuer="Visa";       $accepted=true; }
 		else if( $iin>=5100000 && $iin<=5599999) { $issuer="MasterCard"; $accepted=true; }
