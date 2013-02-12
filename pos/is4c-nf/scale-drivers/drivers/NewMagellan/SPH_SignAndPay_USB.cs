@@ -581,6 +581,7 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
 			if (i > 0 && i % 63 == 0){
 				report[size_field] = 63 | 0x80;
 
+				/*
 				for(int j=0;j<usb_report_size;j++){
 					if (j % 16 == 0 && j > 0)
 						System.Console.WriteLine("");
@@ -588,6 +589,7 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
 				}
 				System.Console.WriteLine("");
 				System.Console.WriteLine("");
+				*/
 
 				usb_fs.Write(report,0,usb_report_size);
 				System.Threading.Thread.Sleep(100);
@@ -601,6 +603,7 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
 
 		report[size_field] = (byte)size;
 
+		/*
 		for(int i=0;i<usb_report_size;i++){
 			if (i % 16 == 0 && i > 0)
 				System.Console.WriteLine("");
@@ -608,6 +611,7 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
 		}
 		System.Console.WriteLine("");
 		System.Console.WriteLine("");
+		*/
 
 		usb_fs.Write(report,0,usb_report_size);
 		System.Threading.Thread.Sleep(100);

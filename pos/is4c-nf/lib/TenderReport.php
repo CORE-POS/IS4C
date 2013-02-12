@@ -21,11 +21,6 @@
 
 *********************************************************************************/
 
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."css/pos.css")) $CORE_PATH .= "../"; }
-
-if (!function_exists("build_time")) include_once($CORE_PATH."lib/ReceiptLib.php");
-
 /**
   @class TenderReport
   Generate a tender report
