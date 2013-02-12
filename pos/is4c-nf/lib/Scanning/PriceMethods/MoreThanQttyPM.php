@@ -49,15 +49,22 @@ class MoreThanQttyPM extends PriceMethod {
 		}
 
 		/* count items in the transaction
-		   from the given group */
+		   from the given group 
+
+		   Also note the total of items already
+		   rung in that did not receive a discount
+		*/
 		$mixMatch  = $row["mixmatchcode"];
 		$queryt = "select sum(ItemQtty) as mmqtty, 
+			sum(CASE WHEN discount=0 THEN total ELSE 0 END) as unDiscountedTotal,
 			mixMatch from localtemptrans 
 			where trans_status <> 'R' AND 
 			mixMatch = '".$mixMatch."' group by mixMatch";
 		if (!$mixMatch || $mixMatch == '0') {
 			$mixMatch = 0;
-			$queryt = "select sum(ItemQtty) as mmqtty from "
+			$queryt = "select sum(ItemQtty) as mmqtty, 
+				sum(CASE WHEN discount=0 THEN total ELSE 0 END) as unDiscountedTotal,
+				from "
 				."localtemptrans where trans_status<>'R' AND "
 				."upc = '".$row['upc']."' group by upc";
 		}
@@ -66,10 +73,14 @@ class MoreThanQttyPM extends PriceMethod {
 		$num_rowst = $dbt->num_rows($resultt);
 
 		$trans_qty = 0;
+		$undisc_ttl = 0;
 		if ($num_rowst > 0){
 			$rowt = $dbt->fetch_array($resultt);
 			$trans_qty = floor($rowt['mmqtty']);
+			$undisc_ttl = $row['unDiscountedTotal'];
 		}
+		/* include the items in this ring */
+		$trans_qty += $quantity;
 
 		$trans_qty += $quantity;
 
@@ -77,10 +88,23 @@ class MoreThanQttyPM extends PriceMethod {
 		   the discount */
 		if ($trans_qty >= $groupQty){
 			$discountAmt = $pricing['unitPrice'] * $groupPrice;
-			$pricing['discount'] = $discountAmt;
-			$pricing['unitPrice'] -= $discountAmt;
+
+			if ( ($trans_qty - $quantity) < $groupQty){
+				/* this ring puts us over the threshold.
+				   extra math to account for discount on
+				   previously rung items */
+				$totalDiscount = ($undisc_ttl * $groupPrice) + ($discountAmount * $quantity);
+				$actualTotal = ($pricing['unitPrice']*$quantity) - $totalDiscount;
+				$pricing['discount'] = $totalDiscount;
+				$pricing['unitPrice'] = $actualTotal / $quantity;
+			}
+			else {
+				$pricing['discount'] = $discountAmt * $quantity;
+				$pricing['unitPrice'] -= $discountAmt;
+			}
 		}
 	
+		/* add the item */
 		TransRecord::addItem($row['upc'],
 			$row['description'],
 			'I',
