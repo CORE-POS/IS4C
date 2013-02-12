@@ -59,12 +59,13 @@ class pos2 extends BasicPage {
 				/* this breaks the model a bit, but I'm putting
 				 * putting the CC parser first manually to minimize
 				 * code that potentially handles the PAN */
-				/*
+
 				if($CORE_LOCAL->get("store")=="wfc" && substr($entered,0,9) == "PANCACHE:"){
+					/* cashier-facing device behavior; run card immetidately */
 					$entered = substr($entered,9);
 					$CORE_LOCAL->set("CachePanEncBlock",$entered);
 				}
-				 */
+
 				$pe = new paycardEntered();
 				if ($pe->check($entered)){
 					$valid = $pe->parse($entered);
