@@ -385,6 +385,22 @@ else {
 confsave('ModularTenders',"'".$CORE_LOCAL->get('ModularTenders')."'");
 ?>
 </select></td></tr><tr><td>
+<b>Tender Report</b>:</td>
+<td><select name="TENDERREPORTMOD">
+<?php
+if(isset($_REQUEST['TENDERREPORTMOD'])) $CORE_LOCAL->set('TenderReportMod',$_REQUEST['TENDERREPORTMOD']);
+if($CORE_LOCAL->get('TenderReportMod')=='') $CORE_LOCAL->set('TenderReportMod','DefaultTenderReport');
+$mods = AutoLoader::ListModules('TenderReport');
+sort($mods);
+foreach($mods as $mod){
+	printf('<option %s>%s</option>',
+		($CORE_LOCAL->get('TenderReportMod') == $mod ? 'selected' : ''),
+		$mod
+	);
+}
+confsave('TenderReportMod',"'".$CORE_LOCAL->get('TenderReportMod')."'");
+?>
+</select></td></tr><tr><td>
 <b>Tender Mapping</b>:<br />
 <p>Map custom tenders to IS4Cs expected tenders Tender Rpt. column: Include the checked tenders 
 	in the Tender Report (available via Mgrs. Menu [MG])</p></td><td>
