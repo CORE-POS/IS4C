@@ -41,6 +41,8 @@ class fsTotalConfirm extends NoInputPage {
 					return False;
 				}
 				$this->tendertype = 'EF';
+				$this->change_page($this->page_url."gui-modules/pos2.php");
+				return False;
 			}
 			elseif ($choice == "EC"){
 				$chk = PrehLib::ttl();
@@ -49,6 +51,8 @@ class fsTotalConfirm extends NoInputPage {
 					return False;
 				}
 				$this->tendertype = 'EC';
+				$this->change_page($this->page_url."gui-modules/pos2.php");
+				return False;
 			}
 			else if ($choice == ''){
 				$this->change_page($this->page_url."gui-modules/pos2.php");
