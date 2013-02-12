@@ -71,9 +71,11 @@ class MoreThanQttyPM extends PriceMethod {
 			$trans_qty = floor($rowt['mmqtty']);
 		}
 
+		$trans_qty += $quantity;
+
 		/* if purchases exceed then requirement, apply
 		   the discount */
-		if ($trans_qty > $groupQty){
+		if ($trans_qty >= $groupQty){
 			$discountAmt = $pricing['unitPrice'] * $groupPrice;
 			$pricing['discount'] = $discountAmt;
 			$pricing['unitPrice'] -= $discountAmt;

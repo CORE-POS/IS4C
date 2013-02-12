@@ -125,6 +125,18 @@ class TenderModule {
 			"", 0, 0, 0, -1*$this->amount, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 	}
 
+	/**
+	  What type should be used for change records associated with this tender.
+	  @return string tender code
+
+	  Most common override will probably be "return $this->tender_code;" to
+	  give change records a the same code as the tender rather than giving
+	  change as cash.
+	*/
+	function ChangeType(){
+		return "CA";
+	}
+
 }
 
 ?>
