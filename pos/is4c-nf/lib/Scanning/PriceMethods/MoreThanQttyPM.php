@@ -82,8 +82,6 @@ class MoreThanQttyPM extends PriceMethod {
 		/* include the items in this ring */
 		$trans_qty += $quantity;
 
-		$trans_qty += $quantity;
-
 		/* if purchases exceed then requirement, apply
 		   the discount */
 		if ($trans_qty >= $groupQty){
@@ -93,7 +91,7 @@ class MoreThanQttyPM extends PriceMethod {
 				/* this ring puts us over the threshold.
 				   extra math to account for discount on
 				   previously rung items */
-				$totalDiscount = ($undisc_ttl * $groupPrice) + ($discountAmount * $quantity);
+				$totalDiscount = ($undisc_ttl * $groupPrice) + ($discountAmt * $quantity);
 				$actualTotal = ($pricing['unitPrice']*$quantity) - $totalDiscount;
 				$pricing['discount'] = $totalDiscount;
 				$pricing['unitPrice'] = $actualTotal / $quantity;
