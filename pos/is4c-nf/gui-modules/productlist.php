@@ -23,6 +23,7 @@
 
 /* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+	* 11Feb2013 EL Support argument from initial PV command: PVAPPLES.
 	* 18Jan2013 Eric Lee Extended lookup to productUser.description, with Andy's help.
 	*                    Very slow unless products.upc has been changed to VARCHAR(13).
 
@@ -43,6 +44,8 @@ class productlist extends NoInputPage {
 		$entered = "";
 		if (isset($_REQUEST["search"]))
 			$entered = strtoupper(trim($_REQUEST["search"]));
+		elseif ($CORE_LOCAL->get("pvsearch") != "")
+			$entered = strtoupper(trim($CORE_LOCAL->get("pvsearch")));
 		else{
 			$this->temp_num_rows = 0;
 			return True;
