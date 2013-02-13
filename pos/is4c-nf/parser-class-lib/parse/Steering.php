@@ -21,6 +21,11 @@
 
 *********************************************************************************/
 
+/* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+ *
+ * 11Feb2013 Eric Lee Support argument to PV. See also gui-modules/productlist.php
+*/
+
 /* 
  * This class is for any input designed to set processing
  * to an alternate gui module. That's how the particular
@@ -41,6 +46,11 @@ class Steering extends Parser {
 		$this->dest_scale = False;
 		$this->ret = $this->default_json();
 
+		if ( substr($str,0,2) == "PV" ) {
+			$pvsearch = substr($str,2);
+			$str = "PV";
+		}
+
 		switch($str){
 			
 		case 'CAB':
@@ -51,7 +61,8 @@ class Steering extends Parser {
 			}
 			return True;
 		case "PV":
-			$CORE_LOCAL->set("pvsearch","");
+			$CORE_LOCAL->set("pvsearch","$pvsearch");
+			//$CORE_LOCAL->set("pvsearch","");
 			$CORE_LOCAL->set("away",1);
 			$this->ret['main_frame'] = $my_url."gui-modules/productlist.php";
 			return True;
