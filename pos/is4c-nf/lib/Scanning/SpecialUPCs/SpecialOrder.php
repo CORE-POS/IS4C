@@ -77,6 +77,8 @@ class SpecialOrder extends SpecialUPC {
 			$row['unitPrice'],$row['total'],$row['regPrice'],0,$row['dept_tax'],
 			$row['dept_fs'],0.00,0.00,0,0,$row['ItemQtty'],0,0,0,$orderID,$transID,0,0.00,0,'SO');
 		$json['output'] = DisplayLib::lastpage();
+		$json['udpmsg'] = 'goodBeep';
+		$json['redraw_footer'] = True;
 
 		return $json;
 	}
