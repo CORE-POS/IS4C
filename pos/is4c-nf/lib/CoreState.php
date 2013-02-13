@@ -142,6 +142,7 @@ static public function transReset() {
 	$CORE_LOCAL->set("warned",0);
 	$CORE_LOCAL->set("warnBoxType","");
 	$CORE_LOCAL->set("requestType","");
+	$CORE_LOCAL->set("lastWeight",0.00);
 
 	$CORE_LOCAL->set("CachePanEncBlock","");
 	$CORE_LOCAL->set("CachePinEncBlock","");

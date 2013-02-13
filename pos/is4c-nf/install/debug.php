@@ -73,7 +73,7 @@ trace is also included. There are some javascript-based URL changes that
 this won't catch, but your browser surely has a fancy javascript console
 available for those. If not, find a better browser.
 <hr />
-<input type=dsubmit value="Save Changes" />
+<input type=submit value="Save Changes" />
 </form>
 </div> <!--	wrapper -->
 </body>
