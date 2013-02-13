@@ -201,6 +201,13 @@ class UnfiUploadPage extends FannieUploadPage {
 		global $FANNIE_OP_DB;
 		$dbc = FannieDB::get($FANNIE_OP_DB);
 
+		$idR = $dbc->query("SELECT vendorID FROM vendors WHERE vendorName='UNFI' ORDER BY vendorID");
+		if ($dbc->num_rows($idR) == 0){
+			$this->error_details = 'Cannot find vendor';
+			return False;
+		}
+		$VENDOR_ID = array_pop($dbc->fetch_row($idR));
+
 		$dbc->query("DELETE FROM vendorItems WHERE vendorID=".((int)$VENDOR_ID));
 		$dbc->query("DELETE FROM vendorSRPs WHERE vendorID=".((int)$VENDOR_ID));
 		$dbc->query("TRUNCATE TABLE unfi_order");
