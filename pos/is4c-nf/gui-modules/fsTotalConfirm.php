@@ -40,6 +40,10 @@ class fsTotalConfirm extends NoInputPage {
 					$this->change_page($chk);
 					return False;
 				}
+				// 13Feb13 Andy
+				// Disable option to enter tender here by returning immediately	
+				// to pos2.php. Should be conigurable or have secondary
+				// functionality removed entirely
 				$this->tendertype = 'EF';
 				$this->change_page($this->page_url."gui-modules/pos2.php");
 				return False;
@@ -50,6 +54,8 @@ class fsTotalConfirm extends NoInputPage {
 					$this->change_page($chk);
 					return False;
 				}
+				// 13Feb13 Andy
+				// Disabled option; see above
 				$this->tendertype = 'EC';
 				$this->change_page($this->page_url."gui-modules/pos2.php");
 				return False;

@@ -48,7 +48,6 @@ class mgrlogin extends NoInputPage {
 				cache: false,
 				dataType: 'json',
 				error: function(data,st,xmlro){
-					alert(st);
 				},
 				success: function(data){
 					if (data.cancelOrder){
