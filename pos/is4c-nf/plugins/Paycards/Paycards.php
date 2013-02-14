@@ -23,7 +23,18 @@
 
 class Paycards extends Plugin {
 
+	public $description = 'Plugin for integrated payment cards';
+
 	public $plugin_settings = array(
+		'PaycardsCashierFacing' => array(
+		'label' => 'Mode',
+		'description' => 'Who is swiping the card?',
+		'default' => 1,
+		'options' => array(
+			'Cashier' => 1,
+			'Customer' => 0
+			)
+		)
 	);
 
 	public function plugin_enable(){
