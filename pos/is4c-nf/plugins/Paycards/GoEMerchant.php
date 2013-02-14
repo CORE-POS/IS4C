@@ -530,7 +530,7 @@ class GoEMerchant extends BasicCCModule {
 			break;	
 		}
 		$CORE_LOCAL->set("ccCustCopy",0);
-		if ($CORE_LOCAL->get("SigCapture") == "" && $CORE_LOCAL->get("paycard_amount") > $CORE_LOCAL->get("CCSigLimit"))
+		if ($CORE_LOCAL->get("paycard_amount") > $CORE_LOCAL->get("CCSigLimit") || $CORE_LOCAL->get("paycard_amount") < 0)
 			$json['receipt'] = "ccSlip";
 		return $json;
 	}
