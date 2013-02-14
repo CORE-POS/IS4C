@@ -1,0 +1,34 @@
+<html>
+<head>
+	<title>The AutoLoader</title>
+</head>
+<body>
+<div style="text-align:center;">
+<h1>The AutoLoader</h1>
+<!--
+14Feb13 AT Doc first written
+-->
+<br />as of: February 14, 2013
+</div>
+<p>
+The AutoLoader is the backbone of the POS module system.
+It's responsible for discovering and including all the
+available modules. There are a few things to be aware of
+when interacting with this system:
+</p>
+<ul>
+	<li>The name of your module's class <b>must</b> match the file's name. If
+	you create a class named <b>MyNewModule</b> it needs to go in a file named
+	<b>MyNewModule.php</b>. The AutoLoader will not find the module correctly
+	if the class and file names do not correspond.</li>
+	<li>Modules are identified via inheritence. If your module's class does not
+	<b>extend</b> one of the base module AutoLoader won't find it.</li>
+	<li>Modules located inside plugins are only loaded if that plugin is enabled.</li>
+	<li>AutoLoader::ListModules($base_class) will return a list of all modules that
+	implement a specified base class. This list is ordered such that all
+	plugin-provided modules are at the front of the list before any of the modules
+	that are included by default. Plugins can often use this fact to override
+	default behavior.</li>
+</ul>
+</body>
+</html>
