@@ -1108,18 +1108,6 @@ function create_trans_dbs($db,$type){
 		db_structure_modify($db,'memdiscountremove',$mRem,$errors);
 	}
 
-	$rplist = "CREATE VIEW rp_list AS
-		SELECT min(datetime) as time,
-		register_no,
-		emp_no,
-		trans_no,
-		sum(CASE WHEN trans_type = 'T' THEN -1*total ELSE 0 END) as total
-		from localtranstoday
-		GROUP BY register_no,emp_no,trans_no";
-	if (!$db->table_exists('rp_list',$name)){
-		db_structure_modify($db,'rp_list',$rplist,$errors);
-	}
-
 	$taxQ = "CREATE TABLE taxrates (
 		id		int,
 		rate		float,
