@@ -92,8 +92,15 @@ static public function check_password($password,$activity=1){
 
 			if ($transno == 1) TransRecord::addactivity($activity);
 
-			// 13Feb13 Andy temporary fix; not desired behavior here
-			if ($CORE_LOCAL->get("store") != "wfc") ReceiptLib::drawerKick();
+			/**
+			  Use Kicker object to determine whether the drawer should open
+			  The first line is just a failsafe in case the setting has not
+			  been configured.
+			*/
+			$kicker_class = ($CORE_LOCAL->get("kickerModule")=="") ? 'Kicker' : $CORE_LOCAL->get('kickerModule');
+			$kicker_object = new $kicker_class();
+			if ($kicker_object->kickOnSignIn())
+				ReceiptLib::drawerKick();
 			
 		} elseif ($password == 9999) {
 			Database::loadglobalvalues();
