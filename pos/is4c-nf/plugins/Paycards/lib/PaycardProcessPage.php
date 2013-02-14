@@ -65,15 +65,22 @@ class PaycardProcessPage extends BasicPage {
 				type: 'post',
 				dataType: 'json',
 				success: function(data){
+					var destination = data.main_frame;
 					if (data.receipt){
 						$.ajax({url: '<?php echo $this->page_url; ?>ajax-callbacks/ajax-end.php',
 							cache: false,
 							type: 'post',
 							data: 'receiptType='+data.receipt,
-							success: function(data){}
+							error: function(){
+								location = destination;
+							},
+							success: function(data){
+								location = destination;
+							}
 						});
 					}
-					location = data.main_frame;
+					else
+						location = destination;
 				}
 			});
 			paycard_processingDisplay();
