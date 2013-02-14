@@ -73,7 +73,7 @@ static public function get(){
 	$itemize = 0;
 	foreach(array_keys($DESIRED_TENDERS) as $tender_code){ 
 		$query = "select tdate from TenderTapeGeneric where emp_no=".$CORE_LOCAL->get("CashierNo").
-			" and ".($CORE_LOCAL->get("store")=="wfc"?'trans_subtype':'tender_code').
+			" and trans_subtype ".
 			" = '".$tender_code."' order by tdate";
 		$result = $db_a->query($query);
 		$num_rows = $db_a->num_rows($result);
@@ -92,20 +92,17 @@ static public function get(){
 
 		$query = "select tdate,register_no,trans_no,tender
 		       	from TenderTapeGeneric where emp_no=".$CORE_LOCAL->get("CashierNo").
-			" and ".($CORE_LOCAL->get("store")=="wfc"?'trans_subtype':'tender_code').
+			" and trans_subtype ".
 			" = '".$tender_code."' order by tdate";
 		$result = $db_a->query($query);
 		$num_rows = $db_a->num_rows($result);
 
-		if ($CORE_LOCAL->get("store") == "wfc") $itemize=1;
+		$itemize = 1;
 		
 		if ($itemize == 1) $receipt .= $fieldNames;
 		$sum = 0;
 
 		for ($i = 0; $i < $num_rows; $i++) {
-			if (($CORE_LOCAL->get("store") == "harvest-cb") && ($tender_code == "PE" || $tender_code == "BU" || $tender_code == "EL" || $tender_code == "PY" || $tender_code == "TV")) $itemize = 1;
-			elseif ($CORE_LOCAL->get("store") == "wfc") $itemize=1;
-			else $itemize = 0;
 			$row = $db_a->fetch_array($result);
 			$timeStamp = self::timeStamp($row["tdate"]);
 			if ($itemize == 1) {
@@ -123,9 +120,7 @@ static public function get(){
 		$receipt .= substr($blank.$blank.$blank."Count: ".$num_rows."  Total: ".number_format($sum,2), -56)."\n";
 		$receipt .= str_repeat("\n", 4);
 
-		// cut was commented out for non-wfc
-		if ($CORE_LOCAL->get("store") == "wfc") 
-			$receipt .= chr(27).chr(105);
+		$receipt .= chr(27).chr(105);
 	}
 
 	$db_a->close();
