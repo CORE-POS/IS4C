@@ -1032,6 +1032,8 @@ static public function printReceipt($arg1,$second=False) {
 
 	self::$PRINT_OBJ = new ESCPOSPrintHandler();
 
+	/**
+	  Moved to ajax-end.php to avoid hanging on printer errors
 	$kicker_class = ($CORE_LOCAL->get("kickerModule")=="") ? 'Kicker' : $CORE_LOCAL->get('kickerModule');
 	$kicker_object = new $kicker_class();
 	if (!is_object($kicker_object)) $kicker_object = new Kicker();
@@ -1043,6 +1045,7 @@ static public function printReceipt($arg1,$second=False) {
 		self::$PRINT_OBJ->writeLine($kick_cmd);
 		//self:::writeLine(chr(27).chr(112).chr(0).chr(48)."0");
 	}
+	*/
 
 /* --------------------------------------------------------------
   turn off staff charge receipt printing if toggled - apbw 2/1/05 
