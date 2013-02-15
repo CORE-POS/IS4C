@@ -89,7 +89,7 @@ Credit Card
 
 $CORE_LOCAL->set("CCintegrate", 1);
 $CORE_LOCAL->set("gcIntegrate", 1);
-$CORE_LOCAL->set("ccLive",      1); 	// credit card integration live or testing. live = 1, testing = 0
+$CORE_LOCAL->set("ccLive",      1); 
 $CORE_LOCAL->set("RegisteredPaycardClasses", array('MercuryGift', 'GoEMerchant'));
 
 /***********************************************************************************
@@ -98,18 +98,12 @@ Other Settings
 
 $CORE_LOCAL->set("discountEnforced", 1);
 $CORE_LOCAL->set("lockScreen", 1);
-$CORE_LOCAL->set("ddNotify", 0); 
-$CORE_LOCAL->set("promoMsg", 0);
 
 $CORE_LOCAL->set("memlistNonMember", 0);
 $CORE_LOCAL->set("cashOverLimit", 1);
 $CORE_LOCAL->set("dollarOver", 50);
 $CORE_LOCAL->set("defaultNonMem", '11');
 
-if ($CORE_LOCAL->get("inputMasked") == "")
-	$CORE_LOCAL->set("inputMasked", 0);
-
-$CORE_LOCAL->set("SCReceipt", 1);			/***staff charge receipt - print default for each lane--apbw 1/31/05***/
 $CORE_LOCAL->set("CustomerDisplay", 0);
 $CORE_LOCAL->set("touchscreen", False);
 
