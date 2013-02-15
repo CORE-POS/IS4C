@@ -40,12 +40,16 @@ class SessionStorage extends LocalStorage {
 	}
 
 	function get($key){
+		if ($this->is_immutable($key)) return $this->immutables[$key];
 		if (!isset($_SESSION["$key"])) return "";
 		return $_SESSION["$key"];
 	}
 
-	function set($key,$val){
-		$_SESSION["$key"] = $val;
+	function set($key,$val,$immutable=False){
+		if ($immutable)
+			$this->immutable_set($key,$val);
+		else
+			$_SESSION["$key"] = $val;
 		$this->debug($key,$val);
 	}
 }
