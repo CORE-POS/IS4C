@@ -195,8 +195,12 @@ class pos2 extends BasicPage {
 				url: '<?php echo $this->page_url; ?>ajax-callbacks/ajax-end.php',
 				type: 'get',
 				data: 'receiptType='+r_type,
+				dataType: 'json',
 				cache: false,
 				success: function(data){
+					if (data.sync){
+						ajaxTransactionSync('<?php echo $this->page_url; ?>');
+					}
 				},
 				error: function(e1){
 				}
