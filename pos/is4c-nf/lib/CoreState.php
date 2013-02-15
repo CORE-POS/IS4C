@@ -77,6 +77,19 @@ static public function system_init() {
         $CORE_LOCAL->set("ccRemoteServerUp",1);
 	$CORE_LOCAL->set("search_or_list",0);
 	$CORE_LOCAL->set("ccTermOut","idle");
+	$CORE_LOCAL->set("inputMasked",0);
+
+	/**
+	  These variables used to be in ini.php
+	  but aren't actually configurable. They
+	  probably don't do anything at this time,
+	  although bits of legacy functionality may
+	  be present that could be fixed. In that
+	  case they should probably go back to
+	  ini.php
+	*/
+	$CORE_LOCAL->set("ddNotify",0); 
+	$CORE_LOCAL->set("promoMsg",0);
 }
 
 /**

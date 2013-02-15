@@ -40,6 +40,7 @@ class MemcacheStorage extends LocalStorage {
 	}
 
 	function get($key){
+		if ($this->is_immutable($key)) return $this->immutables[$key];
 		$val = $this->con->get($key);
 		if ($val === False){
 			$exists = $this->con->replace($key,False);
@@ -49,8 +50,11 @@ class MemcacheStorage extends LocalStorage {
 		return $val;
 	}
 
-	function set($key,$val){
-		$this->con->set($key,$val);
+	function set($key,$val,$immutable=False){
+		if ($immutable)
+			$this->immutable_set($key,$val);
+		else
+			$this->con->set($key,$val);
 		$this->debug($key,$val);
 	}
 }
