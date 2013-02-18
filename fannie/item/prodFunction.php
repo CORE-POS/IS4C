@@ -23,6 +23,10 @@
 
 *********************************************************************************/
 //	TODO -- Add javascript for batcher product entry popup window		~joel 2007-08-21
+/* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  * 18Feb2013 Eric Lee In itemParse add FANNIE_STORE_ID to globals.
+*/
+
 
 include_once('../src/mysql_connect.php');
 include_once('../auth/login.php');
@@ -30,6 +34,7 @@ include_once('ajax.php');
 
 function itemParse($upc){
     global $dbc,$FANNIE_URL;
+    global $FANNIE_STORE_ID;
 
     $logged_in = checkLogin();
 
