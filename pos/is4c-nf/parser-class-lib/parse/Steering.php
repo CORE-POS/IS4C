@@ -135,10 +135,20 @@ class Steering extends Parser {
 			else {
 				Database::setglobalvalue("LoggedIn", 0);
 				$CORE_LOCAL->set("LoggedIn",0);
-				ReceiptLib::drawerKick();
 				$CORE_LOCAL->set("training",0);
 				$CORE_LOCAL->set("gui-scale","no");
 				$CORE_LOCAL->set("away",1);
+
+				/**
+				  Use Kicker object to determine whether the drawer should open
+				  The first line is just a failsafe in case the setting has not
+				  been configured.
+				*/
+				$kicker_class = ($CORE_LOCAL->get("kickerModule")=="") ? 'Kicker' : $CORE_LOCAL->get('kickerModule');
+				$kicker_object = new $kicker_class();
+				if ($kicker_object->kickOnSignOut())
+					ReceiptLib::drawerKick();
+
 				$this->ret['main_frame'] = $my_url."gui-modules/login2.php";
 			}
 			return True;
