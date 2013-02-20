@@ -43,7 +43,7 @@ public class Magellan : DelegateForm {
 	private UDPMsgBox u;
 
 	// read deisred modules from config file
-	public Magellan(){
+	public Magellan(int verbosity){
 		ArrayList conf = ReadConfig();
 		sph = new SerialPortHandler[conf.Count];
 		for(int i = 0; i < conf.Count; i++){
@@ -54,6 +54,7 @@ public class Magellan : DelegateForm {
 
 			sph[i] = (SerialPortHandler)Activator.CreateInstance(t, new Object[]{ port });
 			sph[i].SetParent(this);
+			sph[i].SetVerbose(verbosity);
 		}
 		FinishInit();
 	}
@@ -140,8 +141,18 @@ public class Magellan : DelegateForm {
 		return al;
 	}
 
-	static public void Main(){
-		Magellan m = new Magellan();
+	static public void Main(string[] args){
+		int verbosity = 0;
+		for(int i=0;i<args.Length;i++){
+			if (args[i] == "-v"){
+				verbosity = 1;	
+				if (i+1 < args.Length){
+					try { verbosity = Int32.Parse(args[i+1]); }
+					catch{}
+				}
+			}
+		}
+		Magellan m = new Magellan(verbosity);
 		bool exiting = false;
 		while(!exiting){
 			string user_in = System.Console.ReadLine();

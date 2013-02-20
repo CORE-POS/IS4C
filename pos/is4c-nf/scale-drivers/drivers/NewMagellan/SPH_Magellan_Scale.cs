@@ -100,15 +100,19 @@ private static String MAGELLAN_OUTPUT_DIR = "ss-output/";
 
 	override public void Read(){
 		string buffer = "";
-		System.Console.WriteLine("Reading serial data");
+		if (this.verbose_mode > 0)
+			System.Console.WriteLine("Reading serial data");
 		sp.Write("S14\r");
 		while(SPH_Running){
 			try {
 				int b = sp.ReadByte();
 				if (b == 13){
+					if (this.verbose_mode > 0)
+						System.Console.WriteLine("RECV FROM SCALE: "+buffer);
 					buffer = this.ParseData(buffer);
 					if (buffer != null){
-						System.Console.WriteLine(buffer);
+						if (this.verbose_mode > 0)
+							System.Console.WriteLine("PASS TO POS: "+buffer);
 						this.PushOutput(buffer);
 					}
 					buffer = "";
