@@ -772,14 +772,6 @@ static public function deptkey($price, $dept,$ret=array()) {
 	$price = $price/100;
 	$dept = $dept/10;
 
-	/* auto reprint on ar  */
-	if ($dept == 990){
-		$CORE_LOCAL->set("autoReprint",1);
-	}
-	/* auto reprint on gift card sales */
-	if ($dept == 902)
-		$CORE_LOCAL->set("autoReprint",1);
-	
 	if ($CORE_LOCAL->get("casediscount") > 0 && $CORE_LOCAL->get("casediscount") <= 100) {
 		$case_discount = (100 - $CORE_LOCAL->get("casediscount"))/100;
 		$price = $case_discount * $price;
