@@ -92,7 +92,8 @@ static public function check_password($password,$activity=1){
 
 			if ($transno == 1) TransRecord::addactivity($activity);
 
-			ReceiptLib::drawerKick();
+			// 13Feb13 Andy temporary fix; not desired behavior here
+			if ($CORE_LOCAL->get("store") != "wfc") ReceiptLib::drawerKick();
 			
 		} elseif ($password == 9999) {
 			Database::loadglobalvalues();
@@ -142,7 +143,9 @@ static public function check_password($password,$activity=1){
 	
 	if ($CORE_LOCAL->get("LastID") != 0 && $CORE_LOCAL->get("memberID") != "0" && $CORE_LOCAL->get("memberID") != "") {
 		$CORE_LOCAL->set("unlock",1);
-		PrehLib::memberID($CORE_LOCAL->get("memberID"));
+		/* not sure why this is here; andy 13Feb13 */
+		/* don't want to clear member info via this call */
+		//PrehLib::memberID($CORE_LOCAL->get("memberID"));
 	}
 	$CORE_LOCAL->set("inputMasked",0);
 

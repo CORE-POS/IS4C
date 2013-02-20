@@ -280,6 +280,31 @@ class pos2 extends BasicPage {
 			echo DisplayLib::printfooter();
 		echo "</div>";
 
+		if ($CORE_LOCAL->get("touchscreen") === True){
+			echo '<div style="text-align: center;">
+			<input type="submit" value="Items"
+				class="quick_button"
+				style="margin: 0 10px 0 0;"
+				onclick="parseWrapper(\'QK0\');" />
+			<input type="submit" value="Total"
+				class="quick_button"
+				style="margin: 0 10px 0 0;"
+				onclick="parseWrapper(\'QK4\');" />
+			<input type="submit" value="Tender"
+				class="quick_button"
+				style="margin: 0 10px 0 0;"
+				onclick="parseWrapper(\'QK2\');" />
+			<input type="submit" value="Member"
+				class="quick_button"
+				style="margin: 0 10px 0 0;"
+				onclick="parseWrapper(\'QK5\');" />
+			<input type="submit" value="Misc"
+				class="quick_button"
+				style="margin: 0 10px 0 0;"
+				onclick="parseWrapper(\'QK6\');" />
+			</div>';
+		}
+
 		$CORE_LOCAL->set("away",0);
 	} // END body_content() FUNCTION
 }

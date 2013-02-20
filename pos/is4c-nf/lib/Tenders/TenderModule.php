@@ -102,7 +102,7 @@ class TenderModule {
 		global $CORE_LOCAL;
 		if ($this->amount > $this->max_limit && $CORE_LOCAL->get("msgrepeat") == 0){
 			$CORE_LOCAL->set("boxMsg","$".$this->amount." "._("is greater than tender limit for")
-			." ".$row['TenderName']."<p>"
+			." ".$this->name_string."<p>"
 			."<font size='-1'>"._("clear to cancel").", "._("enter to proceed")."</font>");
 			return MiscLib::base_url().'gui-modules/boxMsg2.php';
 		}

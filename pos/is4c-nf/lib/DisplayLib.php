@@ -349,6 +349,7 @@ static public function inputUnknown() {
 static public function printheaderb() {
 	global $CORE_LOCAL;
 
+	$strmemberID = "";
 	if ($CORE_LOCAL->get("memberID") == "0") {
 		$strmemberID = "";
 	}

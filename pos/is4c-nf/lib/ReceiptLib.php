@@ -1056,7 +1056,9 @@ static public function printReceipt($arg1,$second=False) {
 
 	$ref = trim($CORE_LOCAL->get("CashierNo"))."-".trim($CORE_LOCAL->get("laneno"))."-".trim($CORE_LOCAL->get("transno"));
 
-	if ($noreceipt != 1){ 		// moved by apbw 2/15/05 SCR
+	$ignoreNR = array("ccSlip");
+
+	if ($noreceipt != 1 || in_array($arg1,$ignoreNR)){
 		$receipt = self::printReceiptHeader($dateTimeStamp, $ref);
 
 		if ($second){
@@ -1211,7 +1213,8 @@ static public function printReceipt($arg1,$second=False) {
 		$receipt .= chr(27).chr(105);
 	}
 	
-	$CORE_LOCAL->set("receiptToggle",1);
+	if (!in_array($arg1,$ignoreNR))
+		$CORE_LOCAL->set("receiptToggle",1);
 	return $receipt;
 }
 
