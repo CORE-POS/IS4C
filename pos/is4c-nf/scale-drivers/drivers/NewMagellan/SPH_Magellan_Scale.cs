@@ -166,6 +166,7 @@ private static String MAGELLAN_OUTPUT_DIR = "ss-output/";
 		}
 		else if(s.Substring(0,4) == "S143"){
 			sp.Write("S11\r");
+			got_weight = false;
 			return "S110000";
 		}
 		else if(s.Substring(0,4) == "S144"){
