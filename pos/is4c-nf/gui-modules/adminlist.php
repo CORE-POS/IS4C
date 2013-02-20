@@ -51,7 +51,21 @@ class adminlist extends NoInputPage {
 						url:'{$this->page_url}ajax-callbacks/ajax-end.php',
 						cache: false,
 						data: 'receiptType=suspended',
+						dataType: 'json',
 						success: function(data){
+							\$.ajax({
+							type:'post',
+							url:'{$this->page_url}ajax-callbacks/ajax-transaction-sync.php',
+							cache: false,
+							success: function(data){
+								location='{$this->page_url}gui-modules/pos2.php';
+							},
+							error: function(e1){
+								location='{$this->page_url}gui-modules/pos2.php';
+							}
+							});
+						},
+						error: function(e1){
 							location='{$this->page_url}gui-modules/pos2.php';
 						}
 						});");
@@ -75,7 +89,7 @@ class adminlist extends NoInputPage {
 				return False;
 			}
 			else if ($_REQUEST['selectlist'] == 'TR'){
-				TenderReport::printReport();
+				TenderReport::get();
 				$this->change_page($this->page_url."gui-modules/pos2.php");
 				return False;
 			}
@@ -85,6 +99,7 @@ class adminlist extends NoInputPage {
 
 	function head_content(){
 		?>
+		<script type="text/javascript" src="<?php echo $this->page_url; ?>js/ajax-parser.js"></script>
 		<script type="text/javascript" >
 		var prevKey = -1;
 		var prevPrevKey = -1;

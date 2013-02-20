@@ -35,9 +35,18 @@ if ($CORE_LOCAL->get("End") == 1) {
 
 $receiptType = isset($_REQUEST['receiptType'])?$_REQUEST['receiptType']:'';
 
+$yesSync = JsonLib::array_to_json(array('sync'=>True));
+$noSync = JsonLib::array_to_json(array('sync'=>False));
+$output = $noSync;
+
 if (strlen($receiptType) > 0) {
 
 	$receiptContent = array();
+
+	$kicker_class = ($CORE_LOCAL->get("kickerModule")=="") ? 'Kicker' : $CORE_LOCAL->get('kickerModule');
+	$kicker_object = new $kicker_class();
+	if (!is_object($kicker_object)) $kicker_object = new Kicker();
+	$dokick = $kicker_object->doKick();
 	
 	if ($receiptType != "none")
 		$receiptContent[] = ReceiptLib::printReceipt($receiptType);
@@ -58,9 +67,14 @@ if (strlen($receiptType) > 0) {
 		|| $receiptType == "suspended"){
 		$CORE_LOCAL->set("End",0);
 		cleartemptrans($receiptType);
+		$output = $yesSync;
 	}
 
 	$PRINT_OBJ = new ESCPOSPrintHandler();
+	if ($receiptType == "full" && $dokick){
+		$kick_cmd = $PRINT_OBJ->DrawerKick(2,48*2,30*2);
+		$PRINT_OBJ->writeLine($kick_cmd);
+	}
 	foreach($receiptContent as $receipt){
 		if(!empty($receipt))
 			$PRINT_OBJ->writeLine($receipt);
@@ -71,7 +85,7 @@ $td = SigCapture::term_object();
 if (is_object($td))
 	$td->WriteToScale("reset");
 
-echo "Done";
+echo $output;
 
 function cleartemptrans($type) {
 	global $CORE_LOCAL;
@@ -96,8 +110,11 @@ function cleartemptrans($type) {
 
 	$db->close();
 
+	/**
+	  Moved to separate ajax call (ajax-transaction-sync.php)
 	if ($CORE_LOCAL->get("testremote")==0)
 		Database::testremote(); 
+	*/
 
 	if ($CORE_LOCAL->get("TaxExempt") != 0) {
 		$CORE_LOCAL->set("TaxExempt",0);
