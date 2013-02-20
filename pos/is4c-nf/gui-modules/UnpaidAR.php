@@ -46,7 +46,7 @@ class UnpaidAR extends BasicPage {
 				$CORE_LOCAL->set('warnBoxType','warnAR');
 				if (strtoupper($dec)=="BQ")
 					$amt = $CORE_LOCAL->get("balance");
-				PrehLib::deptkey($amt*100,9900,True);
+				PrehLib::deptkey($amt*100,9900);
 				$memtype = $CORE_LOCAL->get("memType");
 				$type = $CORE_LOCAL->get("Type");
 				if ($memtype == 1 || $memtype == 3 || $type == "INACT"){
