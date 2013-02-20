@@ -1,0 +1,75 @@
+<html>
+<head>
+<title>Fannie Plugins</title>
+</head>
+<body>
+<h1>Create a Page</h1>
+User-facing pages can be constructed easily using the FanniePage class
+(or one of its specialized subclasses). A basic page definition looks like
+this:
+<pre style="background:#ccc; padding:3px;">
+include_once(dirname(__FILE__).'/../../../config.php');
+if (!class_exists('FanniePage')) include($FANNIE_ROOT.'classlib2.0/FanniePage.php');
+
+class CalendarMainPage extends FanniePage {
+}
+if (basename($_SERVER['PHP_SELF']) == basename(__FILE__)){
+	$obj = new CalendarMainPage();
+	$obj->draw_page();
+}
+</pre>
+<p>
+As in the plugin definition, the global configuration file and API class definition
+are included then a subclass is defined. In compliance with naming conventions
+this particular file should be named CalendarMainPage.php. The last lines will
+print the page but only if this file is called directly. Blocking off the draw_page()
+call with this if statement makes it safe for other developers to include() this
+file if they want to reuse or extends our class.
+</p>
+<p>
+FanniePage is designed to let developers easily maintain consistent look and feel
+without repeating lots of code as well as tie into lots of different sections of the
+page. A subclass may override any of the following:
+<ul>
+	<li>Members
+	<ul>
+		<li><b>title</b> [string] is displayed in the window's title bar.
+		<li><b>header</b> [string] at the top of Fannie's main, righthand section.
+		<li><b>window_dressing</b> [bool] indicates whether or not to include Fannie's header,
+			footer, and menu. True means these should be included.
+	</ul>
+	</li>
+	<li>Methods
+	<ul>
+		<li><b>preprocess()</b> [returns bool] is the very first method called. If it returns
+			True, the rest of the page will be drawn. If it returns False, nothing else
+			runs. This function is typically used to process form input. 
+		<li><b>body_content()</b> [returns string] draws the main content of the page.
+		<li><b>javascript_content()</b> [returns string] defines any custom javascript.
+			&lt;script&gt; tags should not be included; they're added automatically.
+		<li><b>css_content()</b> [returns string] defines any custom CSS.
+			&lt;style&gt; tags should not be included; they're added automatically.
+	</ul>
+	</li>
+</ul>
+</p>
+<p>FanniePage also includes some helper methods. They are not meant to be overriden but can be
+useful in the above methods or any additional custom methods.</p>
+<ul>
+	<li><b>add_script($file_url [string], $type [string])</b> include a script file. The 
+		$type argument is optional. If omitted, the type is assumed to be
+		"text/javascript".
+	<li><b>add_css_file($file_url [string])</b> include a stylesheet file.
+	<li><b>add_onload_command($str [string])</b> runs the javascript command $str when the page
+		loads. The method can be called multiple times. The commands will all run in the
+		order that they're added.
+</ul>
+<p>
+URL best practices: like filesystem paths, no assumptions should be made about where Fannie is installed.
+To get a URL to somewhere within your plugin, create an instance of your plugin definition class then
+call its <i>plugin_url()</i> method. This returns the URL of the directory containing your plugin.
+To reference a URL somewhere else in Fannie, use the global configuration variable $FANNIE_URL. It points
+to the directory containing Fannie. 
+</p>
+</body>
+</html>

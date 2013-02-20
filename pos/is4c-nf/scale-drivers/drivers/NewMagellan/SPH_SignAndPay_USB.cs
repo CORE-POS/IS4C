@@ -109,11 +109,14 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
 		while(usb_fs == null){
 			usb_fs = usb_port.GetUSBHandle(usb_devicefile,usb_report_size);
 			if (usb_fs == null){
-				System.Console.WriteLine("No device");
+				if (this.verbose_mode > 0)
+					System.Console.WriteLine("No device");
 				System.Threading.Thread.Sleep(5000);
 			}
-			else
-				System.Console.WriteLine("USB device found");
+			else { 
+				if (this.verbose_mode > 0)
+					System.Console.WriteLine("USB device found");
+			}
 			
 		}
 
@@ -123,6 +126,7 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
 		OpenDevice();
 		waiting_for_data = true;
 		SendReport(BuildCommand(LcdSetBacklightTimeout(0)));
+		//SendReport(BuildCommand(EnableAudio()));
 		SetStateStart();
 		ReRead();
 		//SetStateCardType();
@@ -233,7 +237,8 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
 			usb_fs.EndRead(iar);
 		}
 		catch (Exception ex){
-			System.Console.WriteLine(ex);
+			if (this.verbose_mode > 0)
+				System.Console.WriteLine(ex);
 		}
 
 		int msg_sum = 0;
@@ -247,21 +252,23 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
 			input = temp_in;
 		}
 		if (msg_sum == 0) {
-			System.Console.WriteLine("bailing");
+			if (this.verbose_mode > 0)
+				System.Console.WriteLine("bailing");
 			waiting_for_data = false;
 		}
 
 		/* Data received, as bytes
-		System.Console.WriteLine("");
-		System.Console.WriteLine("IN BYTES:");
-		for(int i=0;i<input.Length;i++){
-			if (i>0 && i %16==0) System.Console.WriteLine("");
-			System.Console.Write("{0:x} ",input[i]);
-		}
-		System.Console.WriteLine("");
-		System.Console.WriteLine("");
 		*/
-
+		if (this.verbose_mode > 1){
+			System.Console.WriteLine("");
+			System.Console.WriteLine("IN BYTES:");
+			for(int i=0;i<input.Length;i++){
+				if (i>0 && i %16==0) System.Console.WriteLine("");
+				System.Console.Write("{0:x} ",input[i]);
+			}
+			System.Console.WriteLine("");
+			System.Console.WriteLine("");
+		}
 
 		int report_length = input[1] & (0x80-1);
 
@@ -317,12 +324,12 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
 				}
 			}
 
-			/*
-			System.Console.Write("Received: ");
-			foreach(byte b in data)
-				System.Console.Write((char)b);
-			System.Console.WriteLine("");
-			*/
+			if (this.verbose_mode > 1){
+				System.Console.Write("Received: ");
+				foreach(byte b in data)
+					System.Console.Write((char)b);
+				System.Console.WriteLine("");
+			}
 		}
 		else if (report_length > 3){ // non-protcol messages
 			data = new byte[report_length];
@@ -333,10 +340,12 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
 
 		if ( (input[1] & 0x80) == 0){
 			if (long_buffer != null){
-				System.Console.Write("Big Msg: ");
-				foreach(byte b in long_buffer)
-					System.Console.Write((char)b);
-				System.Console.WriteLine("");
+				if (this.verbose_mode > 0){
+					System.Console.Write("Big Msg: ");
+					foreach(byte b in long_buffer)
+						System.Console.Write((char)b);
+					System.Console.WriteLine("");
+				}
 
 				HandleDeviceMessage(long_buffer);
 			}
@@ -355,14 +364,20 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
 	}
 
 	private void HandleDeviceMessage(byte[] msg){
-		System.Console.Write("DMSG: {0}: ",current_state);
+		if (this.verbose_mode > 0)
+			System.Console.Write("DMSG: {0}: ",current_state);
+
 		if (msg == null) return;
-		foreach(byte b in msg)
-			System.Console.Write("{0:x} ",b);
-		System.Console.WriteLine();
+
+		if (this.verbose_mode > 0){
+			foreach(byte b in msg)
+				System.Console.Write("{0:x} ",b);
+			System.Console.WriteLine();
+		}
 		switch(current_state){
 		case STATE_SELECT_CARD_TYPE:
 			if (msg.Length == 4 && msg[0] == 0x7a){
+				SendReport(BuildCommand(DoBeep()));
 				if (msg[1] == BUTTON_CREDIT){
 					PushOutput("TERM:Credit");
 					SetStateWaitForCashier();
@@ -385,6 +400,7 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
 			break;
 		case STATE_SELECT_EBT_TYPE:
 			if (msg.Length == 4 && msg[0] == 0x7a){
+				SendReport(BuildCommand(DoBeep()));
 				if (msg[1] == BUTTON_EBT_FOOD){
 					PushOutput("TERM:EbtFood");
 					SetStateGetPin();
@@ -413,18 +429,20 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
 		case STATE_MANUAL_PAN:
 			if (msg.Length == 1 && msg[0] == 0x6){
 				ack_counter++;
-				System.Console.WriteLine(ack_counter);
+				if (this.verbose_mode > 0)
+					System.Console.WriteLine(ack_counter);
 				if (ack_counter == 1)
 					SetStateGetManualExp();
 			}
-			else if (false && msg.Length == 3 && msg[0] == 0x15){
+			else if (msg.Length == 3 && msg[0] == 0x15){
 				SetStateStart();
 			}
 			break;
 		case STATE_MANUAL_EXP:
 			if (msg.Length == 1 && msg[0] == 0x6){
 				ack_counter++;
-				System.Console.WriteLine(ack_counter);
+				if (this.verbose_mode > 0)
+					System.Console.WriteLine(ack_counter);
 				if (ack_counter == 2)
 					SetStateGetManualCVV();
 			}
@@ -445,12 +463,15 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
 			break;
 		case STATE_START_TRANSACTION:
 			if (msg.Length > 63 && msg[0] == 0x80 ){
+				SendReport(BuildCommand(DoBeep()));
 				string block = FixupCardBlock(msg);
 				PushOutput("PANCACHE:"+block);
 				SetStateCardType();
 			}
-			else if (msg.Length > 1)
-				System.Console.WriteLine(msg.Length+" "+msg[0]+" "+msg[1]);
+			else if (msg.Length > 1){
+				if (this.verbose_mode > 0)
+					System.Console.WriteLine(msg.Length+" "+msg[0]+" "+msg[1]);
+			}
 			break;
 		default:
 			break;
@@ -466,7 +487,8 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
 	private string FixupCardBlock(byte[] data){
 		string hex = BitConverter.ToString(data).Replace("-","");
 		hex = "02E600"+hex+"XXXX03";
-		System.Console.WriteLine(hex);
+		if (this.verbose_mode > 0)
+			System.Console.WriteLine(hex);
 		return hex;
 	}
 
@@ -558,14 +580,16 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
 	 * Write to device in formatted reports
 	 */
 	private void SendReport(byte[] data){
-		System.Console.WriteLine("Full Report "+data.Length);
-		for(int j=0;j<data.Length;j++){
-			if (j % 16 == 0 && j > 0)
-				System.Console.WriteLine("");
-			System.Console.Write("{0:x} ",data[j]);
+		if (this.verbose_mode > 0){
+			System.Console.WriteLine("Full Report "+data.Length);
+			for(int j=0;j<data.Length;j++){
+				if (j % 16 == 0 && j > 0)
+					System.Console.WriteLine("");
+				System.Console.Write("{0:x} ",data[j]);
+			}
+			System.Console.WriteLine("");
+			System.Console.WriteLine("");
 		}
-		System.Console.WriteLine("");
-		System.Console.WriteLine("");
 
 		byte[] report = new byte[usb_report_size];
 		int size_field = (usb_report_size == 65) ? 1 : 0;
@@ -577,13 +601,15 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
 			if (i > 0 && i % 63 == 0){
 				report[size_field] = 63 | 0x80;
 
-				for(int j=0;j<usb_report_size;j++){
-					if (j % 16 == 0 && j > 0)
-						System.Console.WriteLine("");
-					System.Console.Write("{0:x} ", report[j]);
+				if (this.verbose_mode > 1){
+					for(int j=0;j<usb_report_size;j++){
+						if (j % 16 == 0 && j > 0)
+							System.Console.WriteLine("");
+						System.Console.Write("{0:x} ", report[j]);
+					}
+					System.Console.WriteLine("");
+					System.Console.WriteLine("");
 				}
-				System.Console.WriteLine("");
-				System.Console.WriteLine("");
 
 				usb_fs.Write(report,0,usb_report_size);
 				System.Threading.Thread.Sleep(100);
@@ -597,13 +623,15 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
 
 		report[size_field] = (byte)size;
 
-		for(int i=0;i<usb_report_size;i++){
-			if (i % 16 == 0 && i > 0)
-				System.Console.WriteLine("");
-			System.Console.Write("{0:x} ", report[i]);
+		if (this.verbose_mode > 1){
+			for(int i=0;i<usb_report_size;i++){
+				if (i % 16 == 0 && i > 0)
+					System.Console.WriteLine("");
+				System.Console.Write("{0:x} ", report[i]);
+			}
+			System.Console.WriteLine("");
+			System.Console.WriteLine("");
 		}
-		System.Console.WriteLine("");
-		System.Console.WriteLine("");
 
 		usb_fs.Write(report,0,usb_report_size);
 		System.Threading.Thread.Sleep(100);
@@ -1343,6 +1371,32 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
 		return new byte[7]{0x78, 0x46, 0x0a, 0x49, 0x52, 0x46, 0x57};
 	}
 
+	private byte[] EnableAudio(){
+		return new byte[4]{0x7b, 0x46, 0x1, 0x1};
+	}
+	
+	private byte[] DoBeep(){
+		return new byte[7]{0x7b, 0x46, 0x02, 0xff, 0x0, 0xff, 0};
+	}
+
+	/*
+	private byte[] GetAmount(){
+		byte[] ret = new byte[];
+		int pos = 0;
+
+		// command head
+		ret[pos++] = 0x75;
+		ret[pos++] = 0x46;
+		ret[pos++] = 0x23;
+		
+		// min length
+		ret[pos++] = 1;
+		// max length
+		ret[pos++] = 2;
+
+		// serious manual translation breakdown occurs here
+	}
+	*/
 }
 
 }

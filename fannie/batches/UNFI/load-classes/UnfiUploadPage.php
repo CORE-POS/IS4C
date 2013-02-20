@@ -26,6 +26,8 @@ if (!class_exists('FannieUploadPage'))
 	include_once($FANNIE_ROOT.'classlib2.0/FannieUploadPage.php');
 if (!class_exists('FannieDB'))
 	include_once($FANNIE_ROOT.'classlib2.0/data/FannieDB.php');
+if (!class_exists('ProductsController'))
+	include_once($FANNIE_ROOT.'classlib2.0/data/controllers/ProductsController.php');
 
 class UnfiUploadPage extends FannieUploadPage {
 
@@ -113,7 +115,6 @@ class UnfiUploadPage extends FannieUploadPage {
 		$SRP = $this->get_column_index('srp');
 
 		$extraP = $dbc->prepare_statement("update prodExtra set cost=? where upc=?");
-		$prodP = $dbc->prepare_statement("update products set cost=? where upc=?");
 		$itemP = $dbc->prepare_statement("INSERT INTO vendorItems 
 					(brand,sku,size,upc,units,cost,description,vendorDept,vendorID)
 					VALUES (?,?,?,?,?,?,?,?,?)");
@@ -174,7 +175,7 @@ class UnfiUploadPage extends FannieUploadPage {
 
 			// set cost in $PRICEFILE_COST_TABLE
 			$dbc->exec_statement($extraP, array($reg_unit,$upc));
-			$dbc->exec_statement($prodP, array($reg_unit,$upc));
+			ProductsController::update($upc, array('cost'=>$reg_unit), True);
 			// end $PRICEFILE_COST_TABLE cost tracking
 
 			$args = array($brand,($sku===False?'':$sku),($size===False?'':$size),
@@ -199,6 +200,13 @@ class UnfiUploadPage extends FannieUploadPage {
 	function split_start(){
 		global $FANNIE_OP_DB;
 		$dbc = FannieDB::get($FANNIE_OP_DB);
+
+		$idR = $dbc->query("SELECT vendorID FROM vendors WHERE vendorName='UNFI' ORDER BY vendorID");
+		if ($dbc->num_rows($idR) == 0){
+			$this->error_details = 'Cannot find vendor';
+			return False;
+		}
+		$VENDOR_ID = array_pop($dbc->fetch_row($idR));
 
 		$dbc->query("DELETE FROM vendorItems WHERE vendorID=".((int)$VENDOR_ID));
 		$dbc->query("DELETE FROM vendorSRPs WHERE vendorID=".((int)$VENDOR_ID));

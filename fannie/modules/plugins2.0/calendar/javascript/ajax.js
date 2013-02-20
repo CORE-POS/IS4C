@@ -17,7 +17,7 @@ var http = createRequestObject();
  *    tack on more arguments as needed with '&' and '='
  *    */
 function phpSend(action) {
-    http.open('get', 'ajax.php?action='+action);
+    http.open('get', 'CalendarAjax.php?action='+action);
     http.onreadystatechange = handleResponse;
     http.send(null);
 }

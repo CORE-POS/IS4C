@@ -31,22 +31,30 @@
 			   'op', 'trans', or 'arch'
 */
 function create_if_needed($con,$dbms,$db_name,$table_name,$stddb){
-	if ($con->table_exists($table_name,$db_name)) return;
+	$ret = array('db'=>$db_name,'struct'=>$table_name,'error'=>0,'error_msg'=>'');
+	if ($con->table_exists($table_name,$db_name)) return $ret;
 	
-	$fn = "sql/$stddb/$table_name.php";
+	$fn = dirname(__FILE__)."/sql/$stddb/$table_name.php";
 	if (!file_exists($fn)){
-		echo "<i>Error: no create file for $stddb.$table_name.
+		$ret['error_msg'] = "<i>Error: no create file for $stddb.$table_name.
 			File should be: $fn</i><br />";
-		return;
+		$ret['error'] = 1;
+		return $ret;
 	}
 
 	include($fn);
 	if (!isset($CREATE["$stddb.$table_name"])){
-		echo "<i>Error: file $fn doesn't have a valid \$CREATE</i><br />";
-		return;
+		$ret['error_msg'] = "<i>Error: file $fn doesn't have a valid \$CREATE</i><br />";
+		$ret['error'] = 2;
+		return $ret;
 	}
 
-	$con->query($CREATE["$stddb.$table_name"],$db_name);
+	$result = $con->query($CREATE["$stddb.$table_name"],$db_name);
+	if ($result === False){
+		$ret['error_msg'] = $con->error($db_name);
+		$ret['error'] = 3;
+	}
+	return $ret;
 }
 
 /* query to create another table with the same

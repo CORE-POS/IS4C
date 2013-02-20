@@ -49,7 +49,7 @@ while($rw = $dbc->fetch_row($rp)){
 	type="text/javascript"></script>
 <script src="index.js" type="text/javascript"></script>
 <div id="vendorarea">
-<select size="2" onchange="vendorchange();" id=vendorselect>
+<select onchange="vendorchange();" id=vendorselect>
 <?php echo $vendors; ?>
 </select>
 </div>
