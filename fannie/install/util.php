@@ -41,7 +41,7 @@ function confset($key, $value){
 	}
 	fclose($fp);
 
-	$fp = fopen($FILEPATH.'config.php','w');
+	$fp = fopen($FILEPATH.'/config.php','w');
 	foreach($lines as $line)
 		fwrite($fp,$line);
 	fclose($fp);
