@@ -338,10 +338,10 @@ class DepartmentMovementReport extends FannieReportPage {
 		       </td>
 		            <td>
 		             <p>
-		               <input type=text size=25 name=date1 onfocus="this.value='';showCalendarControl(this);">
+		               <input type=text id=date1 name=date1 onfocus="this.value='';showCalendarControl(this);">
 		               </p>
 		               <p>
-		                <input type=text size=25 name=date2 onfocus="this.value='';showCalendarControl(this);">
+		                <input type=text id=date2 name=date2 onfocus="this.value='';showCalendarControl(this);">
 		         </p>
 		       </td>
 
@@ -354,9 +354,10 @@ class DepartmentMovementReport extends FannieReportPage {
 			<option>Department</option>
 			<option>Weekday</option>
 			</select> </td>
-			<td colspan=2>Date format is YYYY-MM-DD</br>(e.g. 2004-04-01 = April 1, 2004)
-			                        </td>
-				</tr>
+			<td colspan=2 rowspan=2>
+			<?php echo FormLib::date_range_picker(); ?>	                        
+			</td>
+		</tr>
 		<tr> 
 			<td> <input type=submit name=submit value="Submit"> </td>
 			<td> <input type=reset name=reset value="Start Over"> </td>
