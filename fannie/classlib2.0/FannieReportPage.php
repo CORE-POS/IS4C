@@ -58,6 +58,17 @@ class FannieReportPage extends FanniePage {
 	protected $report_cache = 'none';
 
 	/**
+	  Allow for reports that contain multiple separate tables of data
+	*/
+	protected $multi_report_mode = False;
+	protected $multi_counter = 1;
+
+	/**
+	  Option to enable/disable javascript sorting
+	*/
+	protected $sortable = True;
+
+	/**
 	  Which column to sort by default
 	*/
 	protected $sort_column = 0;
@@ -121,9 +132,35 @@ class FannieReportPage extends FanniePage {
 			$data = $this->fetch_report_data();
 			$this->freshen_cache($data);
 		}
-		$footers = $this->calculate_footers($data);
-		$output = $this->render_data($data,$this->report_headers,
-				$footers,$this->report_format);
+		$output = '';
+		if ($this->multi_report_mode && $this->report_format != 'xls'){
+			foreach($data as $report_data){
+				$footers = $this->calculate_footers($report_data);
+				$output .= $this->render_data($report_data,$this->report_headers,
+						$footers,$this->report_format);
+				$output .= '<br />';
+			}
+		}
+		elseif ($this->multi_report_mode && $this->report_format == 'xls'){
+			/**
+			  For XLS ouput, re-assemble multiple reports into a single
+			  long dataset.
+			*/
+			$xlsdata = array();
+			foreach($data as $report_data){
+				if (!empty($this->report_headers)) $xlsdata[] = $this->report_headers();
+				foreach($report_data as $line) $xlsdata[] = $line;
+				$footers = $this->calculate_footers($report_data);
+				if (!empty($footers)) $xlsdata[] = $footers;
+				$xlsdata[] = array('');
+			}
+			$output = $this->render_data($xlsdata,array(),array(),'xls');
+		}
+		else {
+			$footers = $this->calculate_footers($data);
+			$output = $this->render_data($data,$this->report_headers,
+					$footers,$this->report_format);
+		}
 		echo $output;
 	}
 
@@ -220,6 +257,11 @@ class FannieReportPage extends FanniePage {
 	  @return a two dimensional array
 
 	  Actual SQL queries go here!
+
+	  If using multi_report_mode, this should
+	  return an array of two dimensional arrays
+	  where each two dimensional arrays contains
+	  a report's data.
 	*/
 	function fetch_report_data(){
 
@@ -237,20 +279,24 @@ class FannieReportPage extends FanniePage {
 		$ret = "";
 		switch(strtolower($format)){
 		case 'html':
-			$this->add_css_file($FANNIE_URL.'src/jquery/themes/blue/style.css');
-			$ret .= sprintf('<html><head></head><body>
-				<a href="%s%sexcel=xls">Download Excel</a>
-				&nbsp;&nbsp;&nbsp;&nbsp;
-				<a href="%s%sexcel=csv">Download CSV</a>',
-				$_SERVER['REQUEST_URI'],
-				(strstr($_SERVER['REQUEST_URI'],'?') ===False ? '?' : '&'),
-				$_SERVER['REQUEST_URI'],
-				(strstr($_SERVER['REQUEST_URI'],'?') ===False ? '?' : '&')
-			);
-			foreach($this->report_description_content() as $line)
-				$ret .= '<br />'.$line;
-			$ret .= '<table id="mySortableTable" cellspacing="0" 
-				cellpadding="4" border="1" class="tablesorter">';
+			if ($this->multi_counter == 1){
+				$this->add_css_file($FANNIE_URL.'src/jquery/themes/blue/style.css');
+				$ret .= sprintf('<html><head></head><body>
+					<a href="%s%sexcel=xls">Download Excel</a>
+					&nbsp;&nbsp;&nbsp;&nbsp;
+					<a href="%s%sexcel=csv">Download CSV</a>',
+					$_SERVER['REQUEST_URI'],
+					(strstr($_SERVER['REQUEST_URI'],'?') ===False ? '?' : '&'),
+					$_SERVER['REQUEST_URI'],
+					(strstr($_SERVER['REQUEST_URI'],'?') ===False ? '?' : '&')
+				);
+				foreach($this->report_description_content() as $line)
+					$ret .= '<br />'.$line;
+			}
+			$class = 'mySortableTable';
+			if ($this->sortable) $class .= ' tablesorter';
+			$ret .= '<table class="'.$class.'" cellspacing="0" 
+				cellpadding="4" border="1">';
 			break;
 		case 'csv':
 			foreach($this->report_description_content() as $line)
@@ -310,7 +356,8 @@ class FannieReportPage extends FanniePage {
 			$this->add_script($FANNIE_URL.'src/jquery/js/jquery.js');
 			$this->add_script($FANNIE_URL.'src/jquery/jquery.tablesorter.js');
 			$sort = sprintf('[[%d,%d]]',$this->sort_column,$this->sort_direction);
-			$this->add_onload_command("\$('#mySortableTable').tablesorter({sortList: $sort, widgets: ['zebra']});");
+			if ($this->sortable)
+				$this->add_onload_command("\$('.mySortableTable').tablesorter({sortList: $sort, widgets: ['zebra']});");
 			break;
 		case 'csv':
 			header('Content-Type: application/ms-excel');
@@ -330,6 +377,7 @@ class FannieReportPage extends FanniePage {
 			break;
 		}
 
+		$this->multi_counter++;
 		return $ret;
 	}
 
