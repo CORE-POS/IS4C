@@ -24,6 +24,7 @@
 include('../../config.php');
 include($FANNIE_ROOT.'src/mysql_connect.php');
 include($FANNIE_ROOT.'src/select_dlog.php');
+include($FANNIE_ROOT.'classlib2.0/lib/FormLib.php');
 
 if (isset($_REQUEST['submit'])){
 	$d1 = $_REQUEST['date1'];
@@ -140,10 +141,13 @@ while($lastMonday == "" || $lastSunday == ""){
 <table cellspacing=4 cellpadding=4>
 <tr>
 <th>Start Date</th>
-<td><input type=text name=date1 onclick="showCalendarControl(this);" value="<?php echo $lastMonday; ?>" /></td>
+<td><input type=text id=date1 name=date1 onclick="showCalendarControl(this);" value="<?php echo $lastMonday; ?>" /></td>
+<td rowspan="2">
+<?php echo FormLib::date_range_picker(); ?>
+</td>
 </tr><tr>
 <th>End Date</th>
-<td><input type=text name=date2 onclick="showCalendarControl(this);" value="<?php echo $lastSunday; ?>" /></td>
+<td><input type=text id=date2 name=date2 onclick="showCalendarControl(this);" value="<?php echo $lastSunday; ?>" /></td>
 </tr><tr>
 <td colspan=2><select name=dept>
 <option value=0>Use department settings at time of sale</option>
