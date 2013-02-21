@@ -164,31 +164,25 @@ class ManufacturerMovementReport extends FannieReportPage {
 <form method = "get" action="ManufacturerMovementReport.php">
 	<table border="0" cellspacing="0" cellpadding="5">
 		<tr> 
-			<td> <p><b>Manufacturer</b></p>
-			<p><b>Type</b></p>
-			</td>
-			<td><p>
+			<th>Manufacturer</th>
+			<td>
 			<input type=text name=manu id=manu  />
-			</p>
-			<p>
-			<input type=radio name=type value=name checked />Name 
-			<input type=radio name=type value=prefix />UPC Prefix
-			</p>
 			</td>
-
-			 <td>
-			<p><b>Date Start</b> </p>
-		         <p><b>End</b></p>
-		       </td>
-		            <td>
-		             <p>
-		               <input type=text size=25 name=date1 onfocus="this.value='';showCalendarControl(this);">
-		               </p>
-		               <p>
-		                <input type=text size=25 name=date2 onfocus="this.value='';showCalendarControl(this);">
-		         </p>
-		       </td>
-
+			<th>Date Start</th>
+			<td>
+			<input type=text size=14 id=date1 name=date1 onfocus="this.value='';showCalendarControl(this);">
+			</td>
+		</tr>
+		<tr>
+			<th>Type</th>
+			<td>
+			<input type=radio name=type value=name id="rdoName" checked /><label for="rdoName">Name</label> 
+			<input type=radio name=type value=prefix id="rdoPre" /><label for="rdoPre">UPC Prefix</label>
+			</td>
+			<th>End</th>
+			<td>
+		        <input type=text size=14 id=date2 name=date2 onfocus="this.value='';showCalendarControl(this);">
+			</td>
 		</tr>
 		<tr>
 		<td><b>Sum report by</b></td>
@@ -197,11 +191,17 @@ class ManufacturerMovementReport extends FannieReportPage {
 		<option value="date">Date</option>
 		<option value="dept">Department</option>
 		</select></td>
+		<td rowspan="2" colspan="2">
+		<?php echo FormLib::date_range_picker(); ?>
+		</td>
 		</tr>
+		<tr>
+		<td><input type=checkbox name=excel value=xls id="excel" /> 
+		<label for="excel">Excel</label></td>
+		</tr>
+		<tr>
 		<td> <input type=submit name=submit value="Submit"> </td>
-		<td> <input type=reset name=reset value="Start Over"> 
-		<input type=checkbox name=excel value=xls /> Excel </td>
-		<td>&nbsp;</td>
+		<td> <input type=reset name=reset value="Start Over"> </td>
 		</tr>
 	</table>
 </form>
