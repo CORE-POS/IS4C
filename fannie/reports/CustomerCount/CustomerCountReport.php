@@ -143,13 +143,21 @@ class CustomerCountReport extends FannieReportPage {
 <form action=CustomerCountReport.php method=get>
 <table cellspacing=4 cellpadding=4>
 <tr>
-<th>Start Date</th>
-<td><input type=text name=date1 onclick="showCalendarControl(this);" value="<?php echo $lastMonday; ?>" /></td>
-</tr><tr>
-<th>End Date</th>
-<td><input type=text name=date2 onclick="showCalendarControl(this);" value="<?php echo $lastSunday; ?>" /></td>
-</tr><tr>
-<td>Excel <input type=checkbox name=excel value=xls /></td>
+	<th>Start Date</th>
+	<td><input type=text id=date1 name=date1 onclick="showCalendarControl(this);" value="<?php echo $lastMonday; ?>" /></td>
+	<td rowspan="4">
+	<?php echo FormLib::date_range_picker(); ?>
+	</td>
+</tr>
+<tr>
+	<th>End Date</th>
+	<td><input type=text id=date2 name=date2 onclick="showCalendarControl(this);" value="<?php echo $lastSunday; ?>" /></td>
+</tr>
+<tr>
+	<td>
+	<label for="excel">Excel</label>
+	<input type=checkbox name=excel id="excel" value=xls />
+	</td>
 <td><input type=submit name=submit value="Submit" /></td>
 </tr>
 </table>
