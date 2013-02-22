@@ -22,6 +22,8 @@
 *********************************************************************************/
 
 include_once(dirname(__FILE__).'/../../classlib2.0/item/ItemModule.php');
+include_once(dirname(__FILE__).'/../../classlib2.0/lib/FormLib.php');
+include_once(dirname(__FILE__).'/../../classlib2.0/data/controllers/ProductsController.php');
 
 class ItemFlagsModule extends ItemModule {
 
@@ -63,6 +65,17 @@ class ItemFlagsModule extends ItemModule {
 
 		$ret .= '</fieldset>';
 		return $ret;
+	}
+
+	function SaveFormData($upc){
+		$flags = FormLib::get_form_value('flags',array());
+		if (!is_array($flags)) return False;
+		$numflag = 0;	
+		foreach($flags as $f){
+			if ($f != (int)$f) continue;
+			$numflag = $numflag | (1 << ($f-1));
+		}
+		return ProductsController::update($upc,array('numflag'=>$numflag),True);
 	}
 }
 
