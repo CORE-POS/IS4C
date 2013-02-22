@@ -49,6 +49,8 @@ function confsave($key,$value,$prefer_local=False){
 					-1, $found_local);
 	if ($found_global) {
 		preg_match($orig_setting, $orig_global, $matches);
+		if ($key == 'discountEnforced')
+			var_dump($value);
 		if ($matches[1] === $value.', True') // found with exact same value
 			$written_global = True;	// no need to bother rewriting it
 		elseif ($writeable_global)

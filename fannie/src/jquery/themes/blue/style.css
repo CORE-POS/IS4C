@@ -1,3 +1,5 @@
+@media screen {
+
 /* tables */
 table.tablesorter {
 	font-family:arial;
@@ -36,4 +38,6 @@ table.tablesorter thead tr .headerSortDown {
 }
 table.tablesorter thead tr .headerSortDown, table.tablesorter thead tr .headerSortUp {
 background-color: #8dbdd8;
+}
+
 }
