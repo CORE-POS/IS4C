@@ -40,7 +40,7 @@ Optional logs:
 <form action=debug.php method=post>
 <b>Log State Changes</b>: <select name=DEBUG_STATE>
 <?php
-if(isset($_REQUEST['DEBUG_STATE'])) $CORE_LOCAL->set('Debug_CoreLocal',$_REQUEST['DEBUG_STATE']);
+if(isset($_REQUEST['DEBUG_STATE'])) $CORE_LOCAL->set('Debug_CoreLocal',$_REQUEST['DEBUG_STATE'],True);
 if ($CORE_LOCAL->get("Debug_CoreLocal") == 1){
 	echo "<option value=1 selected>Yes</option>";
 	echo "<option value=0>No</option>";
@@ -56,7 +56,7 @@ See optional logs above.
 <hr />
 <b>Show Page Changes</b>: <select name=DEBUG_REDIRECT>
 <?php
-if(isset($_REQUEST['DEBUG_REDIRECT'])) $CORE_LOCAL->set('Debug_Redirects',$_REQUEST['DEBUG_REDIRECT']);
+if(isset($_REQUEST['DEBUG_REDIRECT'])) $CORE_LOCAL->set('Debug_Redirects',$_REQUEST['DEBUG_REDIRECT'],True);
 if ($CORE_LOCAL->get("Debug_Redirects") == 1){
 	echo "<option value=1 selected>Yes</option>";
 	echo "<option value=0>No</option>";
