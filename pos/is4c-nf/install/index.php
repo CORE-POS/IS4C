@@ -1522,11 +1522,16 @@ function create_trans_dbs($db,$type){
 		trans_type,
 		unitPrice,
 		voided,
-		trans_id
+		CASE 
+			WHEN upc = 'DISCOUNT' THEN (
+			SELECT MAX(trans_id) FROM localtemptrans WHERE voided=3
+			)-1
+			WHEN trans_type = 'T' THEN trans_id+99999	
+			ELSE trans_id
+		END AS trans_id
 		from localtemptrans
-		where voided <> 5 and UPC <> 'TAX' and UPC <> 'DISCOUNT'
-		AND trans_type <> 'L'
-		order by trans_id";
+		where voided <> 5 and UPC <> 'TAX'
+		AND trans_type <> 'L'";
 	if($type == 'mssql'){
 		$lttR = "CREATE view ltt_receipt as 
 			select
@@ -1571,10 +1576,16 @@ function create_trans_dbs($db,$type){
 			as Status,
 			trans_type,
 			unitPrice,
-			voided,
 			trans_id
+			CASE 
+				WHEN upc = 'DISCOUNT' THEN (
+				SELECT MAX(trans_id) FROM localtemptrans WHERE voided=3
+				)-1
+				WHEN trans_type = 'T' THEN trans_id+99999	
+				ELSE trans_id
+			END AS trans_id
 			from localtemptrans
-			where voided <> 5 and UPC <> 'TAX' and UPC <> 'DISCOUNT'
+			where voided <> 5 and UPC <> 'TAX'
 			AND trans_type <> 'L'
 			order by trans_id";
 	}
@@ -1604,7 +1615,7 @@ function create_trans_dbs($db,$type){
 			when voided = 7 or voided = 17
 				then 	concat(left(concat(Description, space(30)), 30) 
 					, space(14) 
-					, right(concat(space(8), format(UnitPrice, 2)), 8) 
+					, right(concat(space(8), format(unitPrice, 2)), 8) 
 					, right(concat(space(4), status), 4))
 			else
 				concat(left(concat(Description, space(30)), 30)
