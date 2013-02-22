@@ -24,6 +24,7 @@
 include_once(dirname(__FILE__).'/../../config.php');
 include_once(dirname(__FILE__).'/../../classlib2.0/item/ItemModule.php');
 include_once(dirname(__FILE__).'/../../classlib2.0/lib/FormLib.php');
+include_once(dirname(__FILE__).'/../../classlib2.0/data/controllers/ProductsController.php');
 include_once(dirname(__FILE__).'/../../src/JsonLib.php');
 
 class LikeCodeModule extends ItemModule {
@@ -52,7 +53,7 @@ class LikeCodeModule extends ItemModule {
 			);
 		}
 		$ret .= "</select></td>";
-		$ret .= "<td><input type=checkbox name=LikeCodeNoUpdate value='no'>Check to not update like code items</td>
+		$ret .= "<td><input type=checkbox name=LikeCodeNoUpdate value='noupdate'>Check to not update like code items</td>
 			</tr><tr>";
 		$ret .= '<td id="LikeCodeItemList">';
 		$ret .= $this->LikeCodeItems($myLC);	
@@ -64,6 +65,42 @@ class LikeCodeModule extends ItemModule {
 		$ret .= $this->js();
 
 		return $ret;
+	}
+
+	function SaveFormData($upc){
+		$lc = FormLib::get_form_value('likeCode');	
+		$dbc = $this->db();
+
+		$delP = $dbc->prepare_statement('DELETE FROM upcLike WHERE upc=?');	
+		$delR = $dbc->exec_statement($delP,array($upc));
+		if ($lc == -1){
+			return ($delR === False) ? False : True;
+		}
+
+		$insP = 'INSERT INTO upcLike (upc,likeCode) VALUES (?,?)';
+		$insR = $dbc->exec_statement($insP,array($upc,$lc));
+		
+		if (FormLib::get_form_value('LikeCodeNoUpdate') == 'noupdate'){
+			return ($insR === False) ? False : True;
+		}
+
+		/* get values for current item */
+		$valuesP = $dbc->prepare_statement('SELECT normal_price,pricemethod,groupprice,quantity,
+			department,scale,tax,foodstamp,discount,qttyEnforced,local
+			FROM products WHERE upc=?');
+		$valuesR = $dbc->exec_statement($valuesP,array($upc));	
+		if ($dbc->num_rows($valuesR) == 0) return False;
+		$values = $dbc->fetch_row($valuesR);
+
+		/* apply current values to other other items
+		   in the like code */
+		$upcP = $dbc->prepare_statement('SELECT upc FROM upcLike WHERE likeCode=? AND upc<>?');
+		$upcR = $dbc->exec_statement($upcP,array($lc,$upc));
+		while($upcW = $dbc->fetch_row($upcR)){
+			ProductsController::update($upcW['upc'],$values);
+			updateProductAllLanes($upcW['upc']);
+		}
+		return True;
 	}
 
 	private function js(){

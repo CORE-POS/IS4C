@@ -40,6 +40,7 @@ class ProdUpdateController {
 		$q = 'INSERT INTO prodUpdate (';
 		// translate some field names from products => prodUpdate
 		foreach($fields as $name => $value){
+			if ($name === 0 || $name === True) continue;
 			switch($name){
 			case 'description':
 			case 'tax':
