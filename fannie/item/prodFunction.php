@@ -290,7 +290,7 @@ function itemParse($upc){
 	echo "<td> <input type='text'";
 	echo "name='deposit' size='5' value=0></td>";
 	echo "</tr><tr><th align=right>Cost</th>";
-	printf("<td>$<input type=text size=5 value=\"%.2f\" id=cost name=cost onchange=\"cscallback();\" /></td>",
+	printf("<td>$<input type=text size=5 value=\"%.2f\" id=cost name=cost /></td>",
 		(isset($data['cost']) && is_numeric($data['cost'])?$data['cost']:0) );
 	echo "</tr><th align-right>Location</th>";
 	echo "<td><input type=text size=5 value=\"\" name=location /></td>";
@@ -302,29 +302,17 @@ function itemParse($upc){
 	echo "<div style=\"clear:left;text-align:left;color:darkmagenta;\">Last modified: ".date('r');
 	echo "</div></fieldset>";
 
-	echo '<br /><fieldset><legend>Likecode</legend>';
-	echo "<table border=0><tr><td><b>Like code</b> ";
-	echo "<select name=likeCode style=\"{width: 175px;}\"
-		onchange=\"updateLC(this.value);\">";
-	echo "<option value=-1>(none)</option>";
-	$likelistQ = "select * from likeCodes order by likecode";
-	$likelistR = $dbc->query($likelistQ);
-	while ($llRow = $dbc->fetch_array($likelistR)){
-	  echo "<option value={$llRow[0]}";
-	  echo ">{$llRow[0]} {$llRow[1]}</option>";
-	}
-	echo "</select></td>";
-	echo "<td><input type=checkbox name=update value='no'>Check to not update like code items</td>
-		</tr><tr id=lchidden style=\"display:none;\"";
-	echo "><td><b>Like Code Linked Items</b><div id=lctable>";
-	echo '</div></td><td valign=top><a href="../reports/RecentSales/?likecode='.$likeCodeRow[1].'" target="_recentlike">';
-	echo 'Likecode Sales History</td>';
-	echo '</tr></table></fieldset>';
+	include(dirname(__FILE__).'/modules/LikeCodeModule.php');	
+	$mod = new LikeCodeModule();
+	echo $mod->ShowEditForm($upc);
 
-	echo "<br /><fieldset id=marginfs>";
-	echo "<legend>Margin</legend>";
-	echo "</fieldset>";
-	echo "<script type=\"text/javascript\">cscallback();</script>";
+	include(dirname(__FILE__).'/modules/ItemFlagsModule.php');	
+	$mod = new ItemFlagsModule();
+	echo $mod->ShowEditForm($upc);
+
+	include(dirname(__FILE__).'/modules/ItemMarginModule.php');	
+	$mod = new ItemMarginModule();
+	echo $mod->ShowEditForm($upc);
 
 
     }elseif($num > 1){
@@ -625,7 +613,7 @@ function itemParse($upc){
 					}
 				echo "name='deposit' size='5'></td>";
 		echo "</tr><tr><th align=right>Cost</th>";
-		printf("<td>$<input type=text size=5 value=\"%.2f\" id=cost name=cost onchange=\"cscallback();\" /></td>",$rowItem['cost']);
+		printf("<td>$<input type=text size=5 value=\"%.2f\" id=cost name=cost /></td>",$rowItem['cost']);
 		echo "</tr><th align-right>Location</th>";
 		echo "<td><input type=text size=5 value=\"{$xtraRow['location']}\" name=location /></td>";
 		echo "</tr><th align=right>Local</th>";
@@ -635,45 +623,22 @@ function itemParse($upc){
 		echo "</tr></table></div>";
 		echo "<div style=\"clear:left;text-align:left;color:darkmagenta;\">Last modified: {$rowItem['modified']}";
 		echo "</div></fieldset>";
-			echo '<br /><fieldset><legend>Likecode</legend>';
-			echo "<table border=0><tr><td><b>Like code</b> ";
-			echo "<select name=likeCode style=\"{width: 175px;}\"
-				onchange=\"updateLC(this.value);\">";
-			echo "<option value=-1>(none)</option>";
-			$likelistQ = "select * from likeCodes order by likecode";
-			$likelistR = $dbc->query($likelistQ);
-			while ($llRow = $dbc->fetch_array($likelistR)){
-			  echo "<option value={$llRow[0]}";
-			  if ($llRow[0] == $likecode){
-			    echo " selected";
-			  }
-			  echo ">{$llRow[0]} {$llRow[1]}</option>";
-			}
-			echo "</select></td>";
-			echo "<td><input type=checkbox name=update value='no'>Check to not update like code items</td>
-				</tr><tr id=lchidden";
-			if ($likeCodeNum <= 0) echo ' style="display:none;"';
-			echo "><td><b>Like Code Linked Items</b><div id=lctable>";
-			GetLikecodeItems($likecode);
-			echo '</div></td><td valign=top><a href="../reports/RecentSales/?likecode='.$likeCodeRow[1].'" target="_recentlike">';
-			echo 'Likecode Sales History</td>';
-			echo '</tr></table></fieldset>';
 
-			echo "<br /><fieldset id=marginfs>";
-			echo "<legend>Margin</legend>";
-			MarginFS($rowItem['upc'],$rowItem['cost'],$rowItem['department']);
-			echo "</fieldset>";
+		include(dirname(__FILE__).'/modules/LikeCodeModule.php');	
+		$mod = new LikeCodeModule();
+		echo $mod->ShowEditForm($upc);
 
-			echo "<br /><fieldset id=flagsfs>";
-			echo "<legend>Flags</legend>";
-			FlagsByUPC($rowItem['upc']);
-			echo "</fieldset>";
+		include(dirname(__FILE__).'/modules/ItemMarginModule.php');	
+		$mod = new ItemMarginModule();
+		echo $mod->ShowEditForm($upc);
 
-			echo '<fieldset id="lanefs">';
-			echo '<legend>Lane Status</legend>';
-			include('prodAllLanes.php');
-			echo allLanes($upc);
-			echo '</fieldset>';
+		include(dirname(__FILE__).'/modules/ItemFlagsModule.php');	
+		$mod = new ItemFlagsModule();
+		echo $mod->ShowEditForm($upc);
+
+		include(dirname(__FILE__).'/modules/AllLanesItemModule.php');	
+		$mod = new AllLanesItemModule();
+		echo $mod->ShowEditForm($upc);
 		
 	}
     return $num;
