@@ -126,11 +126,6 @@ $ins_array['end_date'] = "'1900-01-01'";
 $ins_array['numflag'] = 0;
 $ins_array['store_id'] = 0;
 
-if (isset($_REQUEST['likeCode']) && $_REQUEST['likeCode'] != -1){
-	$dbc->query("DELETE FROM upcLike WHERE upc='$upc'");
-	$lcQ = "INSERT INTO upcLike (upc,likeCode) VALUES ('$upc',{$_REQUEST['likeCode']})";
-	$dbc->query($lcQ);	
-}
 // echo "<br>" .$query99. "<br>";
 
 /* since the item doesn't exist at all, just insert a master record */
@@ -193,6 +188,14 @@ if (isset($_REQUEST['s_plu'])){
 		$scale_array['bycount'],$s_type,0.00,trim($scale_array['text'],"'"),
 		$scale_array['label'],($scale_array['graphics']==1)?121:0);
 }
+
+include(dirname(__FILE__).'/modules/ItemFlagsModule.php');	
+$mod = new ItemFlagsModule();
+$mod->SaveFormData($upc);
+
+include(dirname(__FILE__).'/modules/LikeCodeModule.php');	
+$mod = new LikeCodeModule();
+$mod->SaveFormData($upc);
 
 include('laneUpdates.php');
 updateProductAllLanes($upc);
