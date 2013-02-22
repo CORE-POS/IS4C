@@ -41,6 +41,7 @@ class OtherFormat extends DefaultReceiptFormat {
 			return $description;
 		}
 		else if ($row['trans_type'] == 'H'){
+			$this->is_bold = True;
 			return $row['description'];
 		}
 		return "";
