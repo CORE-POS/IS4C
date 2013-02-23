@@ -77,5 +77,5 @@ foreach ($_POST["pricechange"] as $value) {
 echo "</form>";
 echo "</table>";
 
-echo "<a href={$FANNIE_URL}legacy/queries/labels/barcodenew.php?id=$buyID>Go to barcode page</a>";
+echo "<a href=/queries/labels/barcodenew.php?id=$buyID>Go to barcode page</a>";
 ?>

@@ -65,24 +65,20 @@ $pdf = new FPDF();
 $rowNum=0;
 while($selAddW = $sql->fetch_row($selAddR)){
    $pdf->AddPage();
-   $pdf->SetFont('Arial','B','14');
-   $pdf->Cell(20,10,'Whole Foods Community Co-op',0);
-   $pdf->Image($FANNIE_ROOT.'legacy/images/WFCLogoCThru1.jpg',130,10,50,25);
+
+   $pdf->Ln(5);
+   $pdf->Image($FANNIE_ROOT.'legacy/images/letterhead.jpg',10,10,200);
    $pdf->Ln(5);
    $pdf->SetFont('Arial','','12');
-   $pdf->Cell(20,10,'610 East Fourth Street',0);
-   $pdf->Ln(5);
-   $pdf->Cell(20,10,'Duluth, MN  55805',0);
-   $pdf->Ln(18);
+   $pdf->Ln(35);
 
    $pdf->Cell(10,10,$stateDate,0);
-   $pdf->Ln(15);
+   $pdf->Ln(8);
 
 
    //Member address
-   $pdf->Cell(10,10,trim($selAddW[0]),0);
-   $pdf->Ln(5);
-   $pdf->Cell(50,10,trim($selAddW[1]),0);
+   $pdf->SetX(15);
+   $pdf->Cell(50,10,trim($selAddW[0]).' '.trim($selAddW[1]),0);
    $pdf->Ln(5);
 
    if (strstr($selAddW[2],"\n") === False){

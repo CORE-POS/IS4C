@@ -42,6 +42,10 @@ class WFC_Kicker extends Kicker {
 
 		return ($num_rows > 0) ? True : False;
 	}
+
+	function kickOnSignIn(){
+		return False;
+	}
 }
 
 ?>

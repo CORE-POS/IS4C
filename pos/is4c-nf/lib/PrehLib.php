@@ -23,6 +23,7 @@
 
 /* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+	13Feb2013 Andy Theuninck visitingMem support for memdiscountadd
 	13Jan2013 Eric Lee New omtr_ttl() based on ttl() for Ontario Meal Tax Rebate.
 	18Sep2012 Eric Lee In setMember support for not displaying subtotal.
 
@@ -707,8 +708,7 @@ static public function modular_tender($right, $strl){
 
 		$CORE_LOCAL->set("change",-1 * $CORE_LOCAL->get("amtdue"));
 		$cash_return = $CORE_LOCAL->get("change");
-		$change_type = ($CORE_LOCAL->get("ChangeType") != $right) ? $CORE_LOCAL->get("ChangeType") : $right;
-		TransRecord::addchange($cash_return,$change_type);
+		TransRecord::addchange($cash_return,$tender_object->ChangeType());
 					
 		$CORE_LOCAL->set("End",1);
 		$CORE_LOCAL->set("beep","rePoll");
@@ -772,14 +772,6 @@ static public function deptkey($price, $dept,$ret=array()) {
 	$price = $price/100;
 	$dept = $dept/10;
 
-	/* auto reprint on ar  */
-	if ($dept == 990){
-		$CORE_LOCAL->set("autoReprint",1);
-	}
-	/* auto reprint on gift card sales */
-	if ($dept == 902)
-		$CORE_LOCAL->set("autoReprint",1);
-	
 	if ($CORE_LOCAL->get("casediscount") > 0 && $CORE_LOCAL->get("casediscount") <= 100) {
 		$case_discount = (100 - $CORE_LOCAL->get("casediscount"))/100;
 		$price = $case_discount * $price;
@@ -946,7 +938,7 @@ static public function ttl() {
 		$mconn = Database::tDataConnect();
 		$query = "";
 		$query2 = "";
-		if ($CORE_LOCAL->get("isMember") == 1) {
+		if ($CORE_LOCAL->get("isMember") == 1 || $CORE_LOCAL->get("memberID") == $CORE_LOCAL->get("visitingMem")) {
 			$cols = Database::localMatchingColumns($mconn,"localtemptrans","memdiscountadd");
 			$query = "INSERT INTO localtemptrans ({$cols}) SELECT {$cols} FROM memdiscountadd";
 		} else {
@@ -1005,12 +997,13 @@ static public function ttl() {
 			$st->WriteToScale($CORE_LOCAL->get("ccTermOut"));
 		*/
 		//}
+		$memline = "";
 		if($CORE_LOCAL->get("memberID") != $CORE_LOCAL->get("defaultNonMem")) {
 			$memline = " #" . $CORE_LOCAL->get("memberID");
 		} 
-		else {
-			$memline = "";
-		}
+		// temporary fix Andy 13Feb13
+		// my cashiers don't like the behavior; not configurable yet
+		if ($CORE_LOCAL->get("store") == "wfc") $memline=""; 
 		$peek = self::peekItem();
 		if (True || substr($peek,0,9) != "Subtotal "){
 			TransRecord::addItem("", "Subtotal ".MiscLib::truncate2($CORE_LOCAL->get("subtotal")).", Tax ".MiscLib::truncate2($CORE_LOCAL->get("taxTotal")).$memline, "C", "", "D", 0, 0, $amtDue, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3);
@@ -1066,7 +1059,7 @@ static public function omtr_ttl() {
 		$query = "";
 		$query2 = "";
 		// Apply or remove any member discounts as appropriate.
-		if ($CORE_LOCAL->get("isMember") == 1) {
+		if ($CORE_LOCAL->get("isMember") == 1 || $CORE_LOCAL->get("memberID") == $CORE_LOCAL->get("visitingMem")) {
 			$cols = Database::localMatchingColumns($mconn,"localtemptrans","memdiscountadd");
 			$query = "INSERT INTO localtemptrans ({$cols}) SELECT {$cols} FROM memdiscountadd";
 		} else {

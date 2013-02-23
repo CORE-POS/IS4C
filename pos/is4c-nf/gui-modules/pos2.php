@@ -59,12 +59,12 @@ class pos2 extends BasicPage {
 				/* this breaks the model a bit, but I'm putting
 				 * putting the CC parser first manually to minimize
 				 * code that potentially handles the PAN */
-				/*
-				if($CORE_LOCAL->get("store")=="wfc" && substr($entered,0,9) == "PANCACHE:"){
+				if($CORE_LOCAL->get("PaycardsCashierFacing")=="1" && substr($entered,0,9) == "PANCACHE:"){
+					/* cashier-facing device behavior; run card immediately */
 					$entered = substr($entered,9);
 					$CORE_LOCAL->set("CachePanEncBlock",$entered);
 				}
-				 */
+
 				$pe = new paycardEntered();
 				if ($pe->check($entered)){
 					$valid = $pe->parse($entered);
@@ -278,6 +278,31 @@ class pos2 extends BasicPage {
 		else
 			echo DisplayLib::printfooter();
 		echo "</div>";
+
+		if ($CORE_LOCAL->get("touchscreen") === True){
+			echo '<div style="text-align: center;">
+			<input type="submit" value="Items"
+				class="quick_button"
+				style="margin: 0 10px 0 0;"
+				onclick="parseWrapper(\'QK0\');" />
+			<input type="submit" value="Total"
+				class="quick_button"
+				style="margin: 0 10px 0 0;"
+				onclick="parseWrapper(\'QK4\');" />
+			<input type="submit" value="Tender"
+				class="quick_button"
+				style="margin: 0 10px 0 0;"
+				onclick="parseWrapper(\'QK2\');" />
+			<input type="submit" value="Member"
+				class="quick_button"
+				style="margin: 0 10px 0 0;"
+				onclick="parseWrapper(\'QK5\');" />
+			<input type="submit" value="Misc"
+				class="quick_button"
+				style="margin: 0 10px 0 0;"
+				onclick="parseWrapper(\'QK6\');" />
+			</div>';
+		}
 
 		$CORE_LOCAL->set("away",0);
 	} // END body_content() FUNCTION

@@ -83,6 +83,17 @@ class memlist extends NoInputPage {
 			$query = "select CardNo,personNum,LastName,FirstName from custdata 
 				where LastName like '".$entered."%' order by LastName, FirstName";
 		}
+		if ($selected_name && is_numeric($personNum)){
+			/**
+			  13Feb13 Andy
+			  Use personNum if provided so the lookup returns
+			  the correct record
+			*/
+			$query = "select CardNo,personNum,LastName,FirstName,CashBack,Balance,Discount,
+				MemDiscountLimit,ChargeOk,WriteChecks,StoreCoupons,Type,memType,staff,
+				SSI,Purchases,NumberOfChecks,memCoupons,blueLine,Shown,id from custdata 
+				where CardNo = '".$entered."' AND personNum=".$personNum;
+		}
 
 		$result = $db_a->query($query);
 		$num_rows = $db_a->num_rows($result);

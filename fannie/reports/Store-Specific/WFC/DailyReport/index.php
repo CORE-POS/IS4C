@@ -274,11 +274,16 @@ echo "<br /><b>Discounts</b>";
 echo tablify($discounts,array(1,0,2,3),array("Account","Type","Amount","Count"),
 	     array($ALIGN_LEFT,$ALIGN_LEFT,$ALIGN_RIGHT|$TYPE_MONEY,$ALIGN_RIGHT),2);
 
-$deliTax = 0.0325;
+$deliTax = 0.0225;
 $checkQ = "select ".$dbc->datediff("'$repDate'","'2008-07-01'");
 $checkR = $dbc->query($checkQ);
 $diff = array_pop($dbc->fetch_row($checkR));
 if ($diff < 0) $deliTax = 0.025;
+
+$checkQ = "select ".$dbc->datediff("'$repDate'","'2012-11-01'");
+$checkR = $dbc->query($checkQ);
+$diff = array_pop($dbc->fetch_row($checkR));
+$deliTax = 0.0325;
 
 
 $taxQ = "SELECT (CASE WHEN d.tax = 1 THEN 'Non Deli Sales' ELSE 'Deli Sales' END) as type, sum(total) as taxable_sales,

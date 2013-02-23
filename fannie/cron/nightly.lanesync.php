@@ -59,7 +59,8 @@ $products = curl_init($url."?tablename=products&othertable=");
 curl_setopt($products, CURLOPT_RETURNTRANSFER, True);
 // r1 is apparently never used.
 $r1 = curl_exec($products);
-echo "Result of tablesync of products: >{$r1}<";
+// r1 contains a copy of the web page. logging makes a bit of a mess
+//echo "Result of tablesync of products: >{$r1}<";
 curl_close($products);
 
 // Other tables are done the same way, except as noted.

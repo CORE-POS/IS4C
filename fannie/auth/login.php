@@ -123,7 +123,7 @@ function ldap_login($name,$passwd){
 
 	$user_dn = $ldap_info[0]["dn"];
 	$uid = $ldap_info[0][$FANNIE_LDAP_UID_FIELD][0];
-	$fullname = $ldap_info[0][$FANNIE_LDAP_RN_FIELD];
+	$fullname = $ldap_info[0][$FANNIE_LDAP_RN_FIELD][0];
 
 	if (ldap_bind($conn,$user_dn,$passwd)){
 		syncUserLDAP($name,$uid,$fullname);	
@@ -321,6 +321,7 @@ function changePassword($name,$oldpassword,$newpassword){
 }
 
 function changeAnyPassword($name,$newpassword){
+  $sql = dbconnect();
   if (!validateUser('admin')){
     return false;
   }

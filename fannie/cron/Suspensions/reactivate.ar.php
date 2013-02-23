@@ -59,11 +59,11 @@ $meminfoQ = "UPDATE meminfo AS m LEFT JOIN
 	    custdata AS c ON m.card_no=c.CardNo
 	    LEFT JOIN {$TRANS}ar_live_balance AS s
 	    ON c.cardno=s.card_no LEFT JOIN suspensions AS p
-	    ON c.cardno=p.cardno LEFT JOIN {$TRANS}AR_EOM_SummaryAS a
+	    ON c.cardno=p.cardno LEFT JOIN {$TRANS}AR_EOM_Summary AS a
 	    ON m.card_no=a.cardno
 	    SET m.ads_OK=p.mailflag
 	    WHERE c.Type = 'INACT' and p.reasoncode IN (1)
-				AND s.balance < a.twoMonthBalance";
+		AND s.balance < a.twoMonthBalance";
 $sql->query($meminfoQ);
 
 $custQ = "UPDATE custdata AS c LEFT JOIN {$TRANS}ar_live_balance AS s
@@ -78,7 +78,7 @@ $custQ = "UPDATE custdata AS c LEFT JOIN {$TRANS}ar_live_balance AS s
 $sql->query($custQ);
 
 $histQ = "insert into suspension_history
-	    select 'automatic',".$sql->now().",
+	    select 'AR paid',".$sql->now().",
 	    'Account reactivated',c.CardNo,0 from
 	    suspensions as s left join
 	    custdata as c on s.cardno=c.CardNo

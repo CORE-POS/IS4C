@@ -101,6 +101,25 @@ function getNumUsers(){
   return $sql->num_rows($fetchR);
 }
 
+function getNumAdmins(){
+	$sql = dbconnect();
+	$num = 0;
+	if ($sql->table_exists('userPrivs')){
+		$q = "SELECT uid FROM userPrivs WHERE auth_class='admin'";
+		$r = $sql->query($q);
+		$num += $sql->num_rows($r);
+	}
+	if ($sql->table_exists('userGroups') && $sql->table_exists('userGroupPrivs')){
+		$q = "SELECT username FROM userGroups AS g LEFT JOIN
+			userGroupPrivs AS p ON g.gid=p.gid
+			WHERE p.auth='admin'";
+		$r = $sql->query($q);
+		$num += $sql->num_rows($r);
+
+	}
+	return $num;
+}
+
 function getGID($group){
   if (!isAlphaNumeric($group))
     return false;

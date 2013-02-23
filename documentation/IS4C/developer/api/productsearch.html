@@ -1,0 +1,66 @@
+<html>
+<head>
+	<title>ProductSearch</title>
+</head>
+<body>
+<div style="text-align:center;">
+<h1>ProductSearch</h1>
+<!--
+14Feb13 AT Doc first written
+-->
+<br />as of: February 14, 2013
+</div>
+<p>
+The ProductSearch module is used to look up products. 
+The base class provides a single method that modules may implement:
+</p>
+<blockquote>
+array <b>search</b>(string $input)
+</blockquote>
+<p>
+The parameter <b>$input</b> is a string entered by the cashier. The return value
+is an array of records keyed by UPC. Each record should contain entries for
+upc, description, normal_price, and scale. An example return value:
+<pre>
+array(
+  "0000000004011" => array(
+      "upc" => "0000000004011",
+      "description" => "BANANAS",
+      "normal_price" => "0.99",
+      "scale" => "1",
+  )
+);
+</pre>
+</p>
+<p>
+<b>Example</b>: this product search only checks certain departments:
+<pre>
+class CustomDeptProductSearch extends ProductSearch {
+
+	function search($input){
+		/* get a database connect */
+		$db = Database::pDataConnect();
+
+		/* perform custom look up query */
+		$query = "SELECT upc,description,normal_price,scale
+			FROM products WHERE inUse=1 AND
+			department BETWEEN 10 AND 25
+			AND description like '%$input%'
+			ORDER BY description";
+		$results = $db->query($query);
+	
+		/* build a return value array */
+		$return_value = array();
+		while($row = $db->fetch_row($results)){
+			$upc = $row['upc'];
+			$return_value[$upc] = $row;
+		}
+
+		/* finish up */
+		$db->close();
+		return $return_value;
+	}
+
+}
+</pre>
+</p>

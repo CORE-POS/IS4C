@@ -67,28 +67,15 @@ class DeptKey extends Parser {
 				$ret['main_frame'] = $my_url.'gui-modules/refundComment.php';
 			$CORE_LOCAL->set("refundComment",$CORE_LOCAL->get("strEntered"));
 		}
-		elseif ($CORE_LOCAL->get("warned") == 1 and ($CORE_LOCAL->get("warnBoxType") == "warnEquity" or $CORE_LOCAL->get("warnBoxType") == "warnAR")){
-			$CORE_LOCAL->set("warned",0);
-			$CORE_LOCAL->set("warnBoxType","");
-		}
-		elseif ($dept == 991 || $dept == 992){
-			$ref = trim($CORE_LOCAL->get("CashierNo"))."-"
-				.trim($CORE_LOCAL->get("laneno"))."-"
-				.trim($CORE_LOCAL->get("transno"));
-			if ($CORE_LOCAL->get("LastEquityReference") != $ref){
-				$CORE_LOCAL->set("warned",1);
-				$CORE_LOCAL->set("warnBoxType","warnEquity");
-				$CORE_LOCAL->set("endorseType","stock");
-				$CORE_LOCAL->set("equityAmt",$price);
-				$CORE_LOCAL->set("boxMsg","<b>Equity Sale</b><br>Insert paperwork and press<br><font size=-1>[enter] to continue, [clear] to cancel</font>");
-				$ret['main_frame'] = $my_url.'gui-modules/boxMsg2.php';
+
+		/* apply any appropriate special dept modules */
+		$deptmods = $CORE_LOCAL->get('SpecialDeptMap');
+		$index = (int)($dept/10);
+		if (is_array($deptmods) && isset($deptmods[$index])){
+			foreach($deptmods[$index] as $mod){
+				$obj = new $mod();
+				$ret = $obj->handle($dept,$split[1]/100,$ret);
 			}
-		}
-		elseif ($dept == 990){
-			$CORE_LOCAL->set("warned",1);
-			$CORE_LOCAL->set("warnBoxType","warnAR");
-			$CORE_LOCAL->set("boxMsg","<b>A/R Payment Sale</b><br>remember to retain you<br>reprinted receipt<br><font size=-1>[enter] to continue, [clear] to cancel</font>");
-			$ret['main_frame'] = $my_url.'gui-modules/boxMsg2.php';
 		}
 		
 		if (!$ret['main_frame'])
