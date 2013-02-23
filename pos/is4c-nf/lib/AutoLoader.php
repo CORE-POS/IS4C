@@ -111,8 +111,20 @@ class AutoLoader extends LibraryClass {
 			$path = realpath(dirname(__FILE__).'/Scanning/SpecialUPCs');
 			$map = Plugin::PluginMap($path,$map);
 			break;
+		case 'SpecialDept':
+			$path = realpath(dirname(__FILE__).'/Scanning/SpecialDepts');
+			$map = Plugin::PluginMap($path,$map);
+			break;
 		case 'TenderModule':
 			$path = realpath(dirname(__FILE__).'/Tenders');
+			$map = Plugin::PluginMap($path,$map);
+			break;
+		case 'TenderReport':
+			$path = realpath(dirname(__FILE__).'/ReceiptBuilding/TenderReports');
+			$map = Plugin::PluginMap($path,$map);
+			break;
+		case 'ProductSearch':
+			$path = realpath(dirname(__FILE__).'/Search/Products');
 			$map = Plugin::PluginMap($path,$map);
 			break;
 		}

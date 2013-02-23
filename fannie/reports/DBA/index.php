@@ -63,6 +63,7 @@ if ($errors == "" && $query != ""){
 		if (isset($_REQUEST['excel'])){
 			header('Content-Type: application/ms-excel');
 			header('Content-Disposition: attachment; filename="resultset.xls"');
+			ob_start();
 		}
 		echo '<table cellspacing="0" cellpadding="4" border="1">';
 		echo '<tr>';
@@ -79,9 +80,18 @@ if ($errors == "" && $query != ""){
 		}
 		echo '</table>';
 
+		if (isset($_REQUEST['excel'])){
+			$output = ob_get_contents();
+			ob_end_clean();
+			include($FANNIE_ROOT.'src/ReportConvert/HtmlToArray.php');
+			include($FANNIE_ROOT.'src/ReportConvert/ArrayToXls.php');
+			$array = HtmlToArray($output);
+			$xls = ArrayToXls($array);
+			echo $xls;
+		}
+
 		if (!empty($_REQUEST['repName'])){
 			$name = $_REQUEST['repName'];
-			echo "Report saved as $name";
 			$saveableQ = base64_encode($_REQUEST['query']);
 
 			$chkQ = "SELECT reportID FROM customReports WHERE reportName=".$dbc->escape($name);

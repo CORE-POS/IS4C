@@ -25,6 +25,7 @@ include('../../config.php');
 include($FANNIE_ROOT.'src/mysql_connect.php');
 include($FANNIE_ROOT.'src/select_dlog.php');
 include($FANNIE_ROOT.'classlib2.0/FannieReportPage.php');
+include($FANNIE_ROOT.'classlib2.0/lib/FormLib.php');
 
 class ProductMovementModular extends FannieReportPage {
 
@@ -34,7 +35,7 @@ class ProductMovementModular extends FannieReportPage {
 		*/
 		$this->title = "Fannie : Product Movement";
 		$this->header = "Product Movement Report";
-		$this->report_cache = 'day';
+		$this->report_cache = 'none';
 
 		if (isset($_REQUEST['date1'])){
 			/**
@@ -63,9 +64,9 @@ class ProductMovementModular extends FannieReportPage {
 
 	function fetch_report_data(){
 		global $dbc, $FANNIE_ARCHIVE_DB;
-		$date1 = get_form_value('date1',date('Y-m-d'));
-		$date2 = get_form_value('date2',date('Y-m-d'));
-		$upc = get_form_value('upc','0');
+		$date1 = FormLib::get_form_value('date1',date('Y-m-d'));
+		$date2 = FormLib::get_form_value('date2',date('Y-m-d'));
+		$upc = FormLib::get_form_value('upc','0');
 		if (is_numeric($upc))
 			$upc = str_pad($upc,13,'0',STR_PAD_LEFT);
 
@@ -83,7 +84,7 @@ class ProductMovementModular extends FannieReportPage {
 			  t.upc,p.description
 			  order by year(t.tdate),month(t.tdate),day(t.tdate)";
 	
-		if (strtolower($upc) == "rrr"){
+		if (strtolower($upc) == "rrr" || $upc == "0000000000052"){
 			if ($dlog == "dlog_90_view" || $dlog=="dlog_15")
 				$dlog = "transarchive";
 			else {
@@ -91,10 +92,11 @@ class ProductMovementModular extends FannieReportPage {
 			}
 
 			$query = "select MONTH(datetime),DAY(datetime),YEAR(datetime),
-				upc,'RRR',sum(case when volSpecial is null or volSpecial > 9999 then 0 else volSpecial end) as qty,
+				upc,'RRR',
+				sum(case when upc <> 'rrr' then quantity when volSpecial is null or volSpecial > 9999 then 0 else volSpecial end) as qty,
 				sum(t.total) from
 				$dlog as t
-				where upc IN ('rrr','000000000052')
+				where upc = '$upc'
 				AND datetime BETWEEN '$date1 00:00:00' AND '$date2 23:59:59'
 				and emp_no <> 9999 and register_no <> 99
 				and trans_status <> 'X'
@@ -141,35 +143,34 @@ class ProductMovementModular extends FannieReportPage {
 <form method = "get" action="ProductMovementModular.php">
 	<table border="0" cellspacing="0" cellpadding="5">
 		<tr> 
-			<td> <p><b>UPC</b></p>
-			<p><b>Excel</b></p>
+			<th>UPC</th>
+			<td>
+			<input type=text name=upc size=14 id=upc  />
 			</td>
-			<td><p>
-			<input type=text name=upc id=upc  />
-			</p>
-			<p>
-			<input type=checkbox name=excel id=excel value=xls /> 
-			</p>
+			<td>
+			<input type="checkbox" name="excel" id="excel" value="xls" />
+			<label for="excel">Excel</label>
+			</td>	
+		</tr>
+		<tr>
+			<th>Date Start</th>
+			<td>	
+		               <input type=text size=14 id=date1 name=date1 onfocus="this.value='';showCalendarControl(this);">
 			</td>
-
-			 <td>
-			<p><b>Date Start</b> </p>
-		         <p><b>End</b></p>
-		       </td>
-		            <td>
-		             <p>
-		               <input type=text size=25 name=date1 onfocus="this.value='';showCalendarControl(this);">
-		               </p>
-		               <p>
-		                <input type=text size=25 name=date2 onfocus="this.value='';showCalendarControl(this);">
-		         </p>
+			<td rowspan="3">
+			<?php echo FormLib::date_range_picker(); ?>
+			</td>
+		</tr>
+		<tr>
+			<th>End</th>
+			<td>
+		                <input type=text size=14 id=date2 name=date2 onfocus="this.value='';showCalendarControl(this);">
 		       </td>
 
 		</tr>
+		<tr>
 			<td> <input type=submit name=submit value="Submit"> </td>
 			<td> <input type=reset name=reset value="Start Over"> </td>
-			<td>&nbsp;</td>
-			<td>&nbsp;</td>
 		</tr>
 	</table>
 </form>

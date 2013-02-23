@@ -105,7 +105,7 @@ $MI_FIELDS['ads_OK'] = $_POST['mailflag'];
 
 MemberCardsController::update($memNum,$_REQUEST['cardUPC']);
 
-$sql->query_all("UPDATE memContact SET pref=$mailflag WHERE card_no=$memNum");
+$sql->query_all("UPDATE memContact SET pref=".$MI_FIELDS['ads_OK']." WHERE card_no=$memNum");
 
 if ($CUST_FIELDS['memType'] == 1 || $CUST_FIELDS['memType'] == 3){
 	$CUST_FIELDS['Type'] = 'PC';

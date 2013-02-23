@@ -1,0 +1,29 @@
+<html>
+<head>
+<title>Fannie Plugins</title>
+</head>
+<body>
+<h1>Plugin Database Use / Access</h1>
+<p>
+All database interactions are conducted via the SQLManager class. A full list of its
+methods is beyond the scope of this document, but its primary purpose is to allow
+for different DBMSes (e.g., MySQL, Postgres, etc) without altering PHP code. In general,
+its methods correspond to PHP's MySQL functions with the "mysql_" removed (e.g., <i>query()</i>,
+<i>fetch_row()</i>, <i>num_rows()</i>, <i>error()</i>, etc). Learning all the classes' methods
+is encouraged but probably overkill when just getting started. 
+</p>
+<p>
+Request a database connection via the FannieDB class. It contains a static method, <i>get($db_name [string])</i>
+where $db_name is the name of a database. The global configuration variables $FANNIE_OP_DB, $FANNIE_TRANS_DB,
+and $FANNIE_ARCHIVE_DB contain the names of Fannie's three default databases. These are user-customizable so
+don't hardcode common defaults like "core_op" or "is4c_trans".
+</p>
+<p>
+If your plugin needs additional tables and/or views, include a database name option in the plugins' settings
+so the user has the option of keeping the plugins' tables/views in a separate database. This reduces the
+chances of running into name problems where two plugins want to use the same name for a table/view and makes
+it easier for the user to manage data related to the plugin. Deleting tables or views when the plugin is
+disabled is generally a bad idea unless that data can be easily recreated. Losing data due to a mistaken
+configuration change is bad. Clearly keeping the plugins' tables/views separate makes it more reasonable
+for the user to decide what is safe to manually delete.
+</p>

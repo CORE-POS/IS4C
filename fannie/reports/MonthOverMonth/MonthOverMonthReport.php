@@ -25,6 +25,7 @@ include('../../config.php');
 include($FANNIE_ROOT.'src/mysql_connect.php');
 include($FANNIE_ROOT.'src/select_dlog.php');
 include($FANNIE_ROOT.'classlib2.0/FannieReportPage.php');
+include($FANNIE_ROOT.'classlib2.0/lib/FormLib.php');
 
 class MonthOverMonthReport extends FannieReportPage {
 
@@ -50,8 +51,8 @@ class MonthOverMonthReport extends FannieReportPage {
 			$this->report_headers = array('#','Description');
 			// build headers and keys off span of months
 			$this->months = array();
-			$stamp1 = mktime(0,0,0,get_form_value('month1',1),1,get_form_value('year1',1));
-			$stamp2 = mktime(0,0,0,get_form_value('month2',1),1,get_form_value('year2',1));
+			$stamp1 = mktime(0,0,0,FormLib::get_form_value('month1',1),1,FormLib::get_form_value('year1',1));
+			$stamp2 = mktime(0,0,0,FormLib::get_form_value('month2',1),1,FormLib::get_form_value('year2',1));
 			while($stamp1 <= $stamp2){
 				$this->report_headers[] = date('F Y',$stamp1);
 				$this->months[] = date('Y-n',$stamp1);
@@ -77,10 +78,10 @@ class MonthOverMonthReport extends FannieReportPage {
 
 	function fetch_report_data(){
 		global $dbc, $FANNIE_ARCHIVE_DB;
-		$month1 = get_form_value('month1',date('n'));
-		$month2 = get_form_value('month2',date('n'));
-		$year1 = get_form_value('year1',date('Y'));
-		$year2 = get_form_value('year2',date('Y'));
+		$month1 = FormLib::get_form_value('month1',date('n'));
+		$month2 = FormLib::get_form_value('month2',date('n'));
+		$year1 = FormLib::get_form_value('year1',date('Y'));
+		$year2 = FormLib::get_form_value('year2',date('Y'));
 
 		$date1 = date('Y-m-d',mktime(0,0,0,$month1,1,$year1));
 		$date2 = date('Y-m-t',mktime(0,0,0,$month2,1,$year2));
@@ -90,10 +91,10 @@ class MonthOverMonthReport extends FannieReportPage {
 
 		$qArgs = array($date1,$date2);
 		$query = "";
-		$type = get_form_value('mtype','upc');
+		$type = FormLib::get_form_value('mtype','upc');
 		if ($type == 'upc'){
 			$inClause = "(";
-			$vals = preg_split("/\D+/",get_form_value('upcs',''));
+			$vals = preg_split("/\D+/",FormLib::get_form_value('upcs',''));
 			foreach($vals as $v){
 				$qArgs[] = str_pad($v,13,'0',STR_PAD_LEFT);
 				$inClause .= "?,";
@@ -111,8 +112,8 @@ class MonthOverMonthReport extends FannieReportPage {
 				ORDER BY YEAR(tdate),MONTH(tdate),t.upc,p.description";
 		}
 		else {
-			$dept1 = get_form_value('dept1',1);
-			$dept2 = get_form_value('dept2',1);
+			$dept1 = FormLib::get_form_value('dept1',1);
+			$dept2 = FormLib::get_form_value('dept2',1);
 			$qArgs[] = $dept1;
 			$qArgs[] = $dept2;
 			$query = "SELECT t.department,d.dept_name,SUM(t.quantity) as qty,
@@ -136,7 +137,7 @@ class MonthOverMonthReport extends FannieReportPage {
 				foreach($this->months as $mkey)
 					$ret[$row[0]][$mkey] = 0;
 			}
-			if (get_form_value('results','Sales') == 'Sales')
+			if (FormLib::get_form_value('results','Sales') == 'Sales')
 				$ret[$row[0]][$row['year'].'-'.$row['month']] = $row['sales'];
 			else
 				$ret[$row[0]][$row['year'].'-'.$row['month']] = $row['qty'];

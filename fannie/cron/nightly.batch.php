@@ -58,14 +58,12 @@ $sql->query("UPDATE products SET
 		specialquantity=0,
 		specialgroupprice=0,
 		discounttype=0,
-		numflag=numflag & ( ((1<<32)-1) ^ ((1<<10)-1) ),
 		start_date='1900-01-01',
 		end_date='1900-01-01'");
 
-/* hooray! bit-math! everyone loves bit-math!
-   the first 5 bits of products.numflag contain the batch type
-   the next 5 bits contain the batch priority
-   the remaining 22 bits aren't spoken for (yet)
+/* 
+   products.numflag is being used for actual flags;
+   priority needs to be re-done some other way
 
    priorities:
    15	=> HQ High Priority
@@ -104,7 +102,6 @@ if ($FANNIE_SERVER_DBMS == "MYSQL"){
 		p.start_date = b.startDate,
 		p.end_date = b.endDate,
 		p.discounttype = b.discounttype,
-		p.numflag=p.numflag | ((b.priority & 0x1f)<<5) | (b.batchType & 0x1f),
 		p.mixmatchcode = CASE 
 			WHEN l.pricemethod IN (3,4) AND l.salePrice >= 0 THEN convert(l.batchID,char)
 			WHEN l.pricemethod IN (3,4) AND l.salePrice < 0 THEN convert(-1*l.batchID,char)
@@ -124,7 +121,6 @@ if ($FANNIE_SERVER_DBMS == "MYSQL"){
 		p.specialquantity=l.quantity,
 		p.specialpricemethod=l.pricemethod,
 		p.discounttype = b.discounttype,
-		p.numflag=p.numflag | ((b.priority & 0x1f)<<5) | (b.batchType & 0x1f),
 		p.mixmatchcode = CASE 
 			WHEN l.pricemethod IN (3,4) AND l.salePrice >= 0 THEN convert(l.batchID,char)
 			WHEN l.pricemethod IN (3,4) AND l.salePrice < 0 THEN convert(-1*l.batchID,char)

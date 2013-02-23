@@ -916,7 +916,7 @@ class SQLManager {
 	  parameter order on SQLManager::query so existing code
 	  works as expected
 	*/
-	function exec_statement($sql, $input_array, $which_connection){
+	function exec_statement($sql, $input_array, $which_connection=''){
 		if ($which_connection == '')
 			$which_connection=$this->default_db;
 		if (!is_array($input_array)) $input_array = array($input_array);

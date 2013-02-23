@@ -157,7 +157,7 @@
 		}
 		else if (isset($buyer) && $buyer == -2){
 		$query = "SELECT t.upc,p.description, 
-				SUM(quantity) as qty,
+				SUM(t.quantity) as qty,
 				SUM(t.total) AS total,
 				d.dept_no,d.dept_name,s.superID,x.distributor
 			  FROM $sumTable as t LEFT JOIN products as p on t.upc = p.upc
@@ -262,20 +262,20 @@
 		$item = (!empty($alias)) ? $groupBy." AS ".$alias : $groupBy;
 		$orderBy = (!empty($alias)) ? $alias : $groupBy;
 		if(isset($buyer) && $buyer>0){
-		 $query =  "SELECT $item,SUM(quantity) as Qty, SUM(total) as Sales "
+		 $query =  "SELECT $item,SUM(t.quantity) as Qty, SUM(total) as Sales "
                           ."FROM $sumTable as t LEFT JOIN departments as d on d.dept_no=t.dept_ID "
 			  ."LEFT JOIN superdepts AS s ON s.dept_ID = t.dept_ID "
 			  ."WHERE s.superID=$buyer AND tdate >= '$date1' AND tdate <= '$date2' "
 			  ."GROUP BY $groupBy ORDER BY $orderBy";
 		}
 		else if (isset($buyer) && $buyer == -1){
-		 $query =  "SELECT $item,SUM(quantity) as Qty, SUM(total) as Sales "
+		 $query =  "SELECT $item,SUM(t.quantity) as Qty, SUM(total) as Sales "
                           ."FROM $sumTable as t LEFT JOIN departments as d on d.dept_no=t.dept_ID "
 			  ."WHERE tdate >= '$date1' AND tdate <= '$date2' "
 			  ."GROUP BY $groupBy ORDER BY $orderBy";
 		}
 		else if (isset($buyer) && $buyer == -2){
-		 $query =  "SELECT $item,SUM(quantity) as Qty, SUM(total) as Sales "
+		 $query =  "SELECT $item,SUM(t.quantity) as Qty, SUM(total) as Sales "
                           ."FROM $sumTable as t LEFT JOIN departments as d on d.dept_no=t.dept_ID "
 			  ."LEFT JOIN MasterSuperDepts AS s ON s.dept_ID = t.dept_ID "
 			  ."WHERE tdate >= '$date1' AND tdate <= '$date2' "
@@ -283,7 +283,7 @@
 			  ."GROUP BY $groupBy ORDER BY $orderBy";
 		}
 		else {
-		 $query =  "SELECT $item,SUM(quantity) as Qty, SUM(total) as Sales "
+		 $query =  "SELECT $item,SUM(t.quantity) as Qty, SUM(total) as Sales "
                           ."FROM $sumTable as t LEFT JOIN departments as d on d.dept_no=t.dept_ID "
 			  ."WHERE tdate >= '$date1' AND tdate <= '$date2' "
 			  ."AND t.dept_ID BETWEEN $deptStart AND $deptEnd "
@@ -292,7 +292,7 @@
 		if ($sort == "Weekday"){
 			$query = str_replace("as Sales",
 					"as Sales,
-					sum(quantity)/count(distinct(".$dbc->dateymd('tdate').")) as avg_qty,
+					sum(t.quantity)/count(distinct(".$dbc->dateymd('tdate').")) as avg_qty,
 					sum(total)/count(distinct(".$dbc->dateymd('tdate').")) as avg_ttl",
 					$query);
 		}

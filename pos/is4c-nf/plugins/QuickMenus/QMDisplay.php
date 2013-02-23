@@ -35,6 +35,7 @@ class QMDisplay extends NoInputPage {
 		var prevKey = -1;
 		var prevPrevKey = -1;
 		var selectedId = 0;
+		var form_disabled = 0;
 		function keyCheck(e) {
 			var jsKey;
 			if(!e)e = window.event;
@@ -49,7 +50,8 @@ class QMDisplay extends NoInputPage {
 			(prevKey == 99 || prevKey == 67) ){
 				document.getElementById('doClear').value='1';
 			}
-			else if (jsKey==13){
+			else if (jsKey==13 && form_disabled == 0){
+				form_disabled=1;
 				$('#qmform').submit();
 			}
 			prevPrevKey = prevKey;
@@ -71,7 +73,6 @@ class QMDisplay extends NoInputPage {
 		$this->offset = isset($_REQUEST['offset'])?$_REQUEST['offset']:0;
 
 		if (count($_POST) > 0){
-			var_dump($_POST);
 			$output = "";
 			if ($_REQUEST["clear"] == 0){
 				$value = $_REQUEST['ddQKselect'];
@@ -109,8 +110,8 @@ class QMDisplay extends NoInputPage {
 			onblur="$(\'#ddQKselect\').focus();" >';
 		$i=1;
 		foreach($my_menu as $label => $value){
-			printf('<option value="%s" %s>%s</option>',$value,
-				($i==1?'selected':''),$label);
+			printf('<option value="%s" %s>%d. %s</option>',$value,
+				($i==1?'selected':''),$i,$label);
 			$i++;
 		}
 		echo '</select>';

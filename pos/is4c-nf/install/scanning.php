@@ -149,8 +149,55 @@ foreach($CORE_LOCAL->get("PriceMethodClasses") as $r){
 }
 $saveStr = rtrim($saveStr,",").")";
 confsave('PriceMethodClasses',$saveStr);
+?></td></tr><tr><td colspan=2>
+<hr />	<p>Special Department modules add extra steps to open rings in specific departments.
+	Enter department number(s) that each module should apply to.</p>
+</td></tr>
+<tr><td>
+<?php
+$sdepts = AutoLoader::ListModules('SpecialDept');
+$sconf = $CORE_LOCAL->get('SpecialDeptMap');
+if (!is_array($sconf)) $sconf = array();
+if (isset($_REQUEST['SDEPT_MAP_LIST'])){
+	$sconf = array();
+	for($i=0;$i<count($_REQUEST['SDEPT_MAP_NAME']);$i++){
+		if (!isset($_REQUEST['SDEPT_MAP_LIST'][$i])) continue;
+		if (empty($_REQUEST['SDEPT_MAP_LIST'][$i])) continue;
+
+		$class = $_REQUEST['SDEPT_MAP_NAME'][$i];
+		$obj = new $class();
+		$ids = preg_split('/\D+/',$_REQUEST['SDEPT_MAP_LIST'][$i]);
+		foreach($ids as $id)
+			$sconf = $obj->register($id,$sconf);
+	}
+	$CORE_LOCAL->set('SpecialDeptMap',$sconf);
+}
+foreach($sdepts as $sd){
+	$list = "";
+	foreach($sconf as $id => $mods){
+		if (in_array($sd,$mods))
+			$list .= $id.', ';
+	}
+	$list = rtrim($list,', ');
+	printf('<tr><td>%s</td><td>
+		<input type="text" name="SDEPT_MAP_LIST[]" value="%s" />
+		<input type="hidden" name="SDEPT_MAP_NAME[]" value="%s" />
+		</td></tr>',
+		$sd,$list,$sd);
+}
+$saveStr = 'array(';
+foreach($sconf as $id => $mods){
+	if (empty($mods)) continue;
+	$saveStr .= $id.'=>array(';
+	foreach($mods as $m)
+		$saveStr .= '\''.$m.'\',';
+	$saveStr = rtrim($saveStr,',').'),';
+}
+$saveStr = rtrim($saveStr,',').')';
+confsave('SpecialDeptMap',$saveStr);
 ?>
-</td></tr><tr><td colspan=2>
+</td></tr>
+<tr><td colspan=2>
 <hr />
 <input type=submit name=scansubmit value="Save Changes" />
 </td></tr></table>

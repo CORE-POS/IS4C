@@ -202,10 +202,15 @@ class paycardSuccess extends BasicPage {
 		if( $CORE_LOCAL->get("paycard_type") == PaycardLib::PAYCARD_TYPE_GIFT) {
 			if( $CORE_LOCAL->get("paycard_mode") == PaycardLib::PAYCARD_MODE_BALANCE) {
 				$rp_type = "gcBalSlip";
-			} else {
+			} 
+			else {
 				$rp_type ="gcSlip";
 			}
-		} else if( $CORE_LOCAL->get("paycard_type") == PaycardLib::PAYCARD_TYPE_CREDIT) {
+		} 
+		else if( $CORE_LOCAL->get("paycard_type") == PaycardLib::PAYCARD_TYPE_CREDIT) {
+			$rp_type = "ccSlip";
+		}
+		else if( $CORE_LOCAL->get("paycard_type") == PaycardLib::PAYCARD_TYPE_ENCRYPTED) {
 			$rp_type = "ccSlip";
 		}
 		printf("<input type=\"hidden\" id=\"rp_type\" value=\"%s\" />",$rp_type);

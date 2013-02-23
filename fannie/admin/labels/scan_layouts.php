@@ -22,9 +22,8 @@
 *********************************************************************************/
 
 function scan_layouts(){
-	global $FANNIE_ROOT;
 	$layouts = array();
-	$dh = opendir($FANNIE_ROOT.'admin/labels/pdf_layouts/');
+	$dh = opendir(dirname(__FILE__).'/pdf_layouts/');
 	while( ($file=readdir($dh)) !== False){
 		if ($file[0] == ".") continue;
 		if (substr(strtolower($file),-4) == ".php")

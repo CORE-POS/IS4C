@@ -184,7 +184,7 @@ if (isset($_GET['action'])){
 		break;
 	case 'addItemUPC':
 		$id = $_GET['id'];
-		$upc = str_pad($_GET['upc'],13,'0',STR_PAD_LEFT);
+		$upc = str_pad(trim($_GET['upc']),13,'0',STR_PAD_LEFT);
 		$tag = false;
 		if ($_GET['tag'] == 'true')
 			$tag = true;

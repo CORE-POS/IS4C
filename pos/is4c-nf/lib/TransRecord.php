@@ -21,7 +21,6 @@
 
 *********************************************************************************/
 
-
 /* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 	* 19Jan2013 Eric Lee Fix typo "Datbase" in reverseTaxExempt
@@ -225,6 +224,8 @@ static public function addItem($strupc, $strdescription, $strtransType, $strtran
 	$CORE_LOCAL->set("ccAmtEntered",0);
 	$CORE_LOCAL->set("ccAmt",0);
 
+	if ($intscale == 1)
+		$CORE_LOCAL->set("lastWeight",$dblquantity);
 }
 
 /**

@@ -28,7 +28,7 @@ $header = "CAP Sales";
 include($FANNIE_ROOT."src/header.html");
 ?>
 <ul>
-<li><a href="uploadPriceSheet.php">Upload Price File</a></li>
+<li><a href="CoopDealsUploadPage.php">Upload Price File</a></li>
 <li><a href="review.php">Review data &amp; create sales batches</a></li>
 </ul>
 <?php

@@ -68,8 +68,20 @@ class undo_confirm extends BasicPage {
 						break;
 					}
 				});\n");
-		$this->add_onload_command("\$('#reginput').focus();");
+		$this->add_onload_command("undoInstructions();");
 		$CORE_LOCAL->set("beep","noScan");
+	}
+
+	function head_content(){
+		?>
+		<script type="text/javascript">
+		function undoInstructions(){
+			var str = '<span style="padding:3px;background:#fff;"><b>[Enter] to accept, [Clear] to reject</b></span> ';
+			var cur = $('.notices').html();
+			$('.notices').html(str+cur);
+		}
+		</script>
+		<?php
 	}
 
 	function preprocess(){

@@ -62,6 +62,9 @@ function newType(mytype){
 	case 'term':
 		showTerm();
 		break;
+	case 'paidinfull':
+		showPaidInFull();
+		break;
 	}
 }
 
@@ -94,6 +97,17 @@ function showUpgrade(){
 	redisplay('upgrade','0month');
 }
 
+function showPaidInFull(){
+	var b = "<b>Show</b>: ";
+	b += "<input type=radio name=buttons onchange=\"redisplay('paidinfull','0month');\" checked /> This month";
+	b += "<input type=radio name=buttons onchange=\"redisplay('paidinfull','1month');\" /> Last month";
+	b += "<input type=radio name=buttons onchange=\"redisplay('paidinfull','2month');\" /> Two months ago";
+	b += "<input type=radio name=buttons onchange=\"redisplay('paidinfull','all');\" /> All members";
+	document.getElementById('buttons').innerHTML = b;
+
+	redisplay('paidinfull','0month');
+}
+
 function showTerm(){
 	var b = "<b>Show</b>: ";
 	b += "<input type=radio name=buttons onchange=\"redisplay('upgrade','0month');\" checked /> This month";
@@ -108,8 +122,8 @@ function showTerm(){
 function showDue(){
 	var b = "<b>Show</b>: ";
 	b += "<input type=radio name=buttons onchange=\"redisplay('due','0month');\" checked /> This month";
-	b += "<input type=radio name=buttons onchange=\"redisplay('due','1month');\" /> Next month";
-	b += "<input type=radio name=buttons onchange=\"redisplay('due','2month');\" /> Two months";
+	b += "<input type=radio name=buttons onchange=\"redisplay('due','1month');\" /> 30 days";
+	b += "<input type=radio name=buttons onchange=\"redisplay('due','2month');\" /> 60 days";
 	b += "<input type=radio name=buttons onchange=\"redisplay('due','all');\" /> All members";
 	document.getElementById('buttons').innerHTML = b;
 

@@ -23,6 +23,7 @@
 include('../config.php');
 include('prodFunction.php');
 include_once('../src/mysql_connect.php');
+require_once($FANNIE_ROOT.'classlib2.0/data/controllers/ProductsController.php');
 
 include_once('../auth/login.php');
 $validatedUser = validateUserQuiet('pricechange');
@@ -45,7 +46,7 @@ $ins_array['deposit'] = isset($_REQUEST['deposit'])?$_REQUEST['deposit']:0;
 $ins_array['qttyEnforced'] = isset($_REQUEST['QtyFrc'])?1:0;
 $ins_array['discount'] = isset($_REQUEST['NoDisc'])?0:1;
 $ins_array['normal_price'] = isset($_REQUEST['price'])?$_REQUEST['price']:0;
-$ins_array['description'] = $dbc->escape($_REQUEST['descript']);
+$ins_array['description'] = $_REQUEST['descript'];
 
 /* set tax and FS to department defaults */
 $deptSub = 0;
@@ -93,8 +94,10 @@ if (!$validatedUser && !$auditedUser){
 	return;
 }
 
+/*
 $del99Q = "DELETE FROM products WHERE upc = '$upc'";
 $delISR = $dbc->query($del99Q);
+*/
 
 $ins_array['pricemethod'] = 0;
 $ins_array['groupprice'] = 0.00;
@@ -131,13 +134,8 @@ if (isset($_REQUEST['likeCode']) && $_REQUEST['likeCode'] != -1){
 // echo "<br>" .$query99. "<br>";
 
 /* since the item doesn't exist at all, just insert a master record */
-$resultI = $dbc->smart_insert('products',$ins_array);
-/* if we do persistent per-store records
-if ($FANNIE_STORE_ID != 0){
-	$ins_array['store_id'] = $FANNIE_STORE_ID;
-	$resultI = $dbc->smart_insert('products',$ins_array);
-}
-*/
+//$resultI = $dbc->smart_insert('products',$ins_array);
+ProductsController::update($upc, $ins_array);
 
 if ($dbc->table_exists('prodExtra')){
 	$pxarray = array(
@@ -154,25 +152,6 @@ if ($dbc->table_exists('prodExtra')){
 	);
 	$dbc->query("DELETE FROM prodExtra WHERE upc='$upc'");
 	$dbc->smart_insert('prodExtra',$pxarray);
-}
-
-if ($dbc->table_exists("prodUpdate")){
-	$puarray = array(
-	'upc' => $dbc->escape($upc),
-	'description' => $ins_array['description'],
-	'price' => $ins_array['normal_price'],
-	'dept' => $ins_array['department'],
-	'tax' => $ins_array['tax'],
-	'fs' => $ins_array['foodstamp'],
-	'scale' => $ins_array['scale'],
-	'likeCode' => isset($_REQUEST['likeCode'])?$_REQUEST['likeCode']:0,
-	'modified' => $dbc->now(),
-	'user' => $uid,
-	'forceQty' => $ins_array['qttyEnforced'],
-	'noDisc' => $ins_array['discount'],
-	'inUse' => $ins_array['inUse']
-	);
-	$dbc->smart_insert('prodUpdate',$puarray);
 }
 if (isset($_REQUEST['s_plu'])){
 	$s_plu = substr($upc,3,4);
