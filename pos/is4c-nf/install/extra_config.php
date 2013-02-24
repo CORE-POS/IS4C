@@ -206,7 +206,7 @@ confsave('emailReceiptFrom',"'".$CORE_LOCAL->get('emailReceiptFrom')."'");
 // echo '</select>';
 // confsave('kickerModule',"'".$CORE_LOCAL->get('kickerModule')."'");
 ?>
-<p>Disabled temporarily:  AutoLoader busted.  Set kickerModule directly in ini.php</p>
+<p style="color:red;weight:bold;background:whitemoke;">Disabled temporarily:  AutoLoader busted.  Set kickerModule directly in ini.php</p>
 </td></tr><tr><td>
 <b>Scanner/scale port</b>:</td><td>
 <?php
@@ -278,36 +278,37 @@ confsave('timeout',"'".$CORE_LOCAL->get('timeout')."'");
 <tr><td>
 <b>Footer Modules</b> (left to right):</td><td>
 <?php
-$footer_mods = array();
-// get current settings
-$current_mods = $CORE_LOCAL->get("FooterModules");
-// replace w/ form post if needed
-// fill in defaults if missing
-if (isset($_REQUEST['FOOTER_MODS'])) $current_mods = $_REQUEST['FOOTER_MODS'];
-elseif(!is_array($current_mods) || count($current_mods) != 5){
-	$current_mods = array(
-	'SavedOrCouldHave',
-	'TransPercentDiscount',
-	'MemSales',
-	'EveryoneSales',
-	'MultiTotal'
-	);
-}
-$footer_mods = AutoLoader::ListModules('FooterBox');
-for($i=0;$i<5;$i++){
-	echo '<select name="FOOTER_MODS[]">';
-	foreach($footer_mods as $fm){
-		printf('<option %s>%s</option>',
-			($current_mods[$i]==$fm?'selected':''),$fm);
-	}
-	echo '</select><br />';
-}
-$saveStr = "array(";
-foreach($current_mods as $m)
-	$saveStr .= "'".$m."',";
-$saveStr = rtrim($saveStr,",").")";
-confsave('FooterModules',$saveStr);
+// $footer_mods = array();
+// // get current settings
+// $current_mods = $CORE_LOCAL->get("FooterModules");
+// // replace w/ form post if needed
+// // fill in defaults if missing
+// if (isset($_REQUEST['FOOTER_MODS'])) $current_mods = $_REQUEST['FOOTER_MODS'];
+// elseif(!is_array($current_mods) || count($current_mods) != 5){
+// 	$current_mods = array(
+// 	'SavedOrCouldHave',
+// 	'TransPercentDiscount',
+// 	'MemSales',
+// 	'EveryoneSales',
+// 	'MultiTotal'
+// 	);
+// }
+// $footer_mods = AutoLoader::ListModules('FooterBox');
+// for($i=0;$i<5;$i++){
+// 	echo '<select name="FOOTER_MODS[]">';
+// 	foreach($footer_mods as $fm){
+// 		printf('<option %s>%s</option>',
+// 			($current_mods[$i]==$fm?'selected':''),$fm);
+// 	}
+// 	echo '</select><br />';
+// }
+// $saveStr = "array(";
+// foreach($current_mods as $m)
+// 	$saveStr .= "'".$m."',";
+// $saveStr = rtrim($saveStr,",").")";
+// confsave('FooterModules',$saveStr);
 ?>
+<p style="color:red;weight:bold;background:whitemoke;">Disabled temporarily:  AutoLoader busted.  Set directly in ini.php</p>
 </td></tr><tr><td>
 <b>Enable onscreen keys</b>:</td><td> <select name=SCREENKEYS>
 <?php
