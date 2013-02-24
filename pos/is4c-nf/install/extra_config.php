@@ -194,18 +194,19 @@ confsave('emailReceiptFrom',"'".$CORE_LOCAL->get('emailReceiptFrom')."'");
 </td></tr><tr><td>
 <b>Drawer Behavior Module</b>:</td><td>
 <?php
-$kmods = AutoLoader::ListModules('Kicker',True);
-if(isset($_REQUEST['kickerModule'])) $CORE_LOCAL->set('kickerModule',$_REQUEST['kickerModule']);
-if ($CORE_LOCAL->get('kickerModule')=='') $CORE_LOCAL->set('kickerModule','Kicker');
-echo '<select name="kickerModule">';
-foreach($kmods as $k){
-	printf('<option %s>%s</option>',
-		($CORE_LOCAL->get('kickerModule')==$k?'selected':''),
-		$k);
-}
-echo '</select>';
-confsave('kickerModule',"'".$CORE_LOCAL->get('kickerModule')."'");
+// $kmods = AutoLoader::ListModules('Kicker',True);
+// if(isset($_REQUEST['kickerModule'])) $CORE_LOCAL->set('kickerModule',$_REQUEST['kickerModule']);
+// if ($CORE_LOCAL->get('kickerModule')=='') $CORE_LOCAL->set('kickerModule','Kicker');
+// echo '<select name="kickerModule">';
+// foreach($kmods as $k){
+// 	printf('<option %s>%s</option>',
+// 		($CORE_LOCAL->get('kickerModule')==$k?'selected':''),
+// 		$k);
+// }
+// echo '</select>';
+// confsave('kickerModule',"'".$CORE_LOCAL->get('kickerModule')."'");
 ?>
+<p>Disabled temporarily:  AutoLoader busted.  Set kickerModule directly in ini.php</p>
 </td></tr><tr><td>
 <b>Scanner/scale port</b>:</td><td>
 <?php
