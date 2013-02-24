@@ -31,7 +31,6 @@ class VirtCoupDisplay extends NoInputPage {
 	var $temp_num_rows;
 	var $entered;
 	var $db;
-	var $selectFlag;
 
 	function preprocess(){
 		global $CORE_LOCAL;
@@ -142,6 +141,7 @@ class VirtCoupDisplay extends NoInputPage {
 				."<select name=\"search\" size=\"15\" "
 				."onblur=\"\$('#search').focus();\" ondblclick=\"document.forms['selectform'].submit();\" id=\"search\">";
 
+			$selectFlag = (isset($selectFlag)?$selectFlag:0);
 			for ($i = 0; $i < $num_rows; $i++) {
 				$row = $db->fetch_array($result);
 				if( $i == 0 && $selectFlag == 0) {
