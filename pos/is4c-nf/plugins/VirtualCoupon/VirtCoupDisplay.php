@@ -31,6 +31,7 @@ class VirtCoupDisplay extends NoInputPage {
 	var $temp_num_rows;
 	var $entered;
 	var $db;
+	var $selectFlag;
 
 	function preprocess(){
 		global $CORE_LOCAL;
