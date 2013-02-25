@@ -26,7 +26,7 @@ include('util.php');
 </td><td>
 <?php
 if (isset($_REQUEST['BROWSER_ONLY'])) $CORE_LOCAL->set('browserOnly',$_REQUEST['BROWSER_ONLY'],True);
-elseif $CORE_LOCAL->set('browserOnly',0,True);
+else $CORE_LOCAL->set('browserOnly',0,True);
 echo "<fieldset class='toggle'>\n<input type='checkbox' name='BROWSER_ONLY' id='browser'";
 if ($CORE_LOCAL->get('browserOnly') == 1) echo " value='1' checked />";
 else echo " value='0' />";
@@ -499,7 +499,7 @@ confsave('gcIntegrate',$CORE_LOCAL->get('gcIntegrate'));
 if (isset($_REQUEST['PAY_MODS'])) $CORE_LOCAL->set('RegisteredPaycardClasses',$_REQUEST['PAY_MODS'],True);
 
 $mods = array();
-$dh = opendir('../cc-modules/');
+$dh = opendir('../plugins/Paycards/');
 while(False !== ($f = readdir($dh))){
 	if ($f == "." || $f == ".." || $f == "BasicCCModule.php")
 		continue;
