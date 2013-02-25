@@ -26,7 +26,7 @@ include('util.php');
 </td><td>
 <?php
 if (isset($_REQUEST['BROWSER_ONLY'])) $CORE_LOCAL->set('browserOnly',$_REQUEST['BROWSER_ONLY'],True);
-elseif $CORE_LOCAL->set('browserOnly',0,True);
+else $CORE_LOCAL->set('browserOnly',0,True);
 echo "<fieldset class='toggle'>\n<input type='checkbox' name='BROWSER_ONLY' id='browser'";
 if ($CORE_LOCAL->get('browserOnly') == 1) echo " value='1' checked />";
 else echo " value='0' />";
@@ -231,8 +231,7 @@ if ($CORE_LOCAL->get("scaleDriver") != ""){
 	if (!file_exists('../scale-drivers/php-wrappers/'.$classname.'.php'))
 		echo "<br /><i>Warning: PHP driver file not found</i>";
 	else {
-		if (!class_exists($classname))
-			include('../scale-drivers/php-wrappers/'.$classname.'.php');
+		include('../scale-drivers/php-wrappers/'.$classname.'.php');
 		$instance = new $classname();
 		@$instance->SavePortConfiguration($CORE_LOCAL->get("scalePort"));
 		@$abs_path = substr($_SERVER['SCRIPT_FILENAME'],0,
@@ -499,7 +498,15 @@ confsave('gcIntegrate',$CORE_LOCAL->get('gcIntegrate'));
 <?php
 if (isset($_REQUEST['PAY_MODS'])) $CORE_LOCAL->set('RegisteredPaycardClasses',$_REQUEST['PAY_MODS'],True);
 
-$mods = AutoLoader::ListModules('BasicCCModule');
+$mods = array();
+$dh = opendir('../plugins/Paycards/');
+while(False !== ($f = readdir($dh))){
+	if ($f == "." || $f == ".." || $f == "BasicCCModule.php")
+		continue;
+	if (substr($f,-4) == ".php")
+		$mods[] = rtrim($f,".php");
+}
+
 foreach($mods as $m){
 	$selected = "";
 	foreach($CORE_LOCAL->get("RegisteredPaycardClasses") as $r){
