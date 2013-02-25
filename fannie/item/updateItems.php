@@ -121,54 +121,10 @@ if ($dbc->table_exists('prodExtra')){
 		$dbc->smart_update('prodExtra',$arr,"upc='$upc'");
 	}
 }
-if(isset($_REQUEST['s_plu'])){
-	$s_plu = substr($_REQUEST['s_plu'],3,4);
-	$scale_array = array();
-	$scale_array['plu'] = $upc;
-	$scale_array['itemdesc'] = $dbc->escape($up_array['description']);
-	$scale_array['price'] = $up_array['normal_price'];
-	if (isset($_REQUEST['s_longdesc']) && !empty($_REQUEST['s_longdesc']))
-		$scale_array['itemdesc'] = $dbc->escape($_REQUEST['s_longdesc']);
-	$scale_array['tare'] = isset($_REQUEST['s_tare'])?$_REQUEST['s_tare']:0;
-	$scale_array['shelflife'] = isset($_REQUEST['s_shelflife'])?$_REQUEST['s_shelflife']:0;
-	$scale_array['bycount'] = isset($_REQUEST['s_bycount'])?1:0;
-	$scale_array['graphics'] = isset($_REQUEST['s_graphics'])?1:0;
-	$s_type = isset($_REQUEST['s_type'])?$_REQUEST['s_type']:'Random Weight';
-	$scale_array['weight'] = ($s_type=="Random Weight")?0:1;
-	$scale_array['text'] = isset($_REQUEST['s_text'])?$dbc->escape($_REQUEST['s_text']):"''";
 
-	$s_label = isset($_REQUEST['s_label'])?$_REQUEST['s_label']:'horizontal';	
-	if ($s_label == "horizontal" && $s_type == "Random Weight")
-		$s_label = 133;
-	elseif ($s_label == "horizontal" && $s_type == "Fixed Weight")
-		$s_label = 63;
-	elseif ($s_label == "vertical" && $s_type == "Random Weight")
-		$s_label = 103;
-	elseif ($s_label == "vertical" && $s_type == "Fixed Weight")
-		$s_label = 23;
-
-	$scale_array['label'] = $s_label;
-	$scale_array['excpetionprice'] = 0.00;
-	$scale_array['class'] = "''";
-
-	$chk = $dbc->query("SELECT * FROM scaleItems WHERE plu='$upc'");
-	$action = "ChangeOneItem";
-	if ($dbc->num_rows($chk) == 0){
-		$dbc->smart_insert('scaleItems',$scale_array);
-		$action = "WriteOneItem";
-	}
-	else {
-		unset($scale_array['plu']);
-		$dbc->smart_update('scaleItems',$scale_array,"plu='$upc'");
-		$action = "ChangeOneItem";
-	}
-
-	include('hobartcsv/parse.php');
-	parseitem($action,$s_plu,trim($scale_array["itemdesc"],"'"),
-		$scale_array['tare'],$scale_array['shelflife'],$scale_array['price'],
-		$scale_array['bycount'],$s_type,0.00,trim($scale_array['text'],"'"),
-		$scale_array['label'],($scale_array['graphics']==1)?121:0);
-}
+include(dirname(__FILE__).'/modules/ScaleItemModule.php');
+$mod = new ScaleItemModule();
+$mod->SaveFormData($upc);
 
 include(dirname(__FILE__).'/modules/ItemFlagsModule.php');	
 $mod = new ItemFlagsModule();
