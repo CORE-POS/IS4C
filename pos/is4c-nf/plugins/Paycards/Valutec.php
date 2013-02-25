@@ -27,7 +27,8 @@
  */
 if (!class_exists("AutoLoader")) include_once(realpath(dirname(__FILE__).'/../../lib/AutoLoader.php'));
 
-if (!function_exists("PaycardLib")) include_once(realpath(dirname(__FILE__)."/lib/paycardLib.php"));
+if (!class_exists("PaycardLib")) include_once(realpath(dirname(__FILE__)."/lib/PaycardLib.php"));
+var_dump(realpath(dirname(__FILE__)."/lib/PaycardLib.php"));
 
 class Valutec extends BasicCCModule {
 	var $temp;
@@ -215,7 +216,7 @@ class Valutec extends BasicCCModule {
 	 * Again, this is for removing type-specific
 	 * code from paycard*.php files.
 	 */
-	function paycard_void($transID,$json=array()){
+	function paycard_void($transID,$laneNo=-1,$transNo=-1,$json=array()) {
 		global $CORE_LOCAL;
 		// situation checking
 		if( $CORE_LOCAL->get("gcIntegrate") != 1) { // gift card integration must be enabled
