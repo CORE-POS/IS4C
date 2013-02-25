@@ -232,7 +232,8 @@ if ($CORE_LOCAL->get("scaleDriver") != ""){
 	if (!file_exists('../scale-drivers/php-wrappers/'.$classname.'.php'))
 		echo "<br /><i>Warning: PHP driver file not found</i>";
 	else {
-		include('../scale-drivers/php-wrappers/'.$classname.'.php');
+		if (!class_exists($classname))
+			include('../scale-drivers/php-wrappers/'.$classname.'.php');
 		$instance = new $classname();
 		@$instance->SavePortConfiguration($CORE_LOCAL->get("scalePort"));
 		@$abs_path = substr($_SERVER['SCRIPT_FILENAME'],0,
@@ -500,15 +501,7 @@ confsave('gcIntegrate',$CORE_LOCAL->get('gcIntegrate'));
 <?php
 if (isset($_REQUEST['PAY_MODS'])) $CORE_LOCAL->set('RegisteredPaycardClasses',$_REQUEST['PAY_MODS']);
 
-$mods = array();
-$dh = opendir('../cc-modules/');
-while(False !== ($f = readdir($dh))){
-	if ($f == "." || $f == ".." || $f == "BasicCCModule.php")
-		continue;
-	if (substr($f,-4) == ".php")
-		$mods[] = rtrim($f,".php");
-}
-
+$mods = AutoLoader::ListModules('BasicCCModule');
 foreach($mods as $m){
 	$selected = "";
 	foreach($CORE_LOCAL->get("RegisteredPaycardClasses") as $r){
