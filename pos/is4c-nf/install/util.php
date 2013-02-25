@@ -38,7 +38,7 @@ function confsave($key,$value,$prefer_local=False){
 	$added_global = $added_local = False;
 
 	$orig_setting = '|\$CORE_LOCAL->set\([\'"]'.$key.'[\'"],\s*(.+)\);[\r\n]|';
-	$new_setting = "\$CORE_LOCAL->set('{$key}',{$value});\n";
+	$new_setting = "\$CORE_LOCAL->set('{$key}',{$value}, True);\n";
 
 	$orig_global = file_get_contents($path_global);
 	$orig_local = $writeable_local ? file_get_contents($path_local) : '';
@@ -49,7 +49,7 @@ function confsave($key,$value,$prefer_local=False){
 					-1, $found_local);
 	if ($found_global) {
 		preg_match($orig_setting, $orig_global, $matches);
-		if ($matches[1] === $value)	// found with exact same value
+		if ($matches[1] === $value.', True') // found with exact same value
 			$written_global = True;	// no need to bother rewriting it
 		elseif ($writeable_global)
 			$written_global = file_put_contents($path_global, $new_global);
@@ -57,7 +57,7 @@ function confsave($key,$value,$prefer_local=False){
 
 	if ($found_local) {
 		preg_match($orig_setting, $orig_local, $matches);
-		if ($matches[1] === $value)	// found with exact same value
+		if ($matches[1] === $value.', True') // found with exact same value
 			$written_local = True;	// no need to bother rewriting it
 		elseif ($writeable_local) {
 			$written_local = file_put_contents($path_local, $new_local);
