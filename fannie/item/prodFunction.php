@@ -233,50 +233,11 @@ function itemParse($upc){
 	echo "<input type=submit value=\"Create Item\" /><br />";
 
 	if (substr($upc,0,3) == "002"){
-		echo "<br /><div align=center><fieldset><legend>Scale</legend>";
-		echo "<input type=hidden value=\"$upc\" name=s_plu />";
 
-		echo "<table style=\"background:#ffffcc;\" cellpadding=5 cellspacing=0 border=1>";
-
-		echo "<tr><th colspan=2>Longer description</th><td colspan=4><input size=35 type=text name=s_longdesc maxlength=100";
-		echo " /></td></tr>";
-
-		echo "<tr><td colspan=6 style=\"font-size:1px;\">&nbsp;</td></tr>";
-
-		echo "<tr><th>Weight</th><th>By Count</th><th>Tare</th><th>Shelf Life</th>";
-		echo "<th>Label</th><th>Safehandling</th></tr>";			
-
-		echo "<tr>";
-		echo "<td>";
-		echo "<input type=radio name=s_type value=\"Random Weight\" checked /> Random<br />";
-		echo "<input type=radio name=s_type value=\"Fixed Weight\" /> Fixed<br />";
-		echo "</td>";
-
-		echo "<td align=center><input type=checkbox name=s_bycount ";
-		echo "/></td>";
-
-		echo "<td align=center><input type=text size=5 name=s_tare ";
-		echo "value=0 /></td>";
-
-		echo "<td align=center><input type=text size=5 name=s_shelflife ";
-		echo "value=0 /></td>";
-
-		echo "<td><select name=s_label size=2>";
-		echo "<option value=horizontal selected>Horizontal</option>";
-		echo "<option value=vertical>Vertical</option>";
-		echo "</td>";
-
-		echo "<td align=center><input type=checkbox name=s_graphics ";
-		echo "/></td>";
-		echo "</tr>";
-
-		echo "<tr><td colspan=6 style=\"font-size:1px;\">&nbsp;</td></tr>";
-
-		echo "<tr><td colspan=6>";
-		echo "<b>Expanded text:<br /><textarea name=s_text rows=4 cols=50>";
-		echo "</textarea></td></tr>";
+		include(dirname(__FILE__).'/modules/ScaleItemModule.php');	
+		$mod = new ScaleItemModule();
+		echo $mod->ShowEditForm($upc);
 		
-		echo "</table></fieldset></div>";
 	}
 
 	echo "<br /><fieldset><legend>Extra Info</legend>";
@@ -521,78 +482,11 @@ function itemParse($upc){
 				echo "</div> "; 
 
 		if (substr($upc,0,3) == "002"){
-			echo "<br /><div align=center><fieldset><legend>Scale</legend>";
-			echo "<input type=hidden value=\"$upc\" name=s_plu />";
-			$scaleR = $dbc->query("SELECT * FROM scaleItems WHERE plu='$upc'");
-			$scale = array();
-			if ($dbc->num_rows($scaleR) > 0)
-				$scale = $dbc->fetch_row($scaleR);
-			echo "<table style=\"background:#ffffcc;\" cellpadding=5 cellspacing=0 border=1>";
 
-			echo "<tr><th colspan=2>Longer description</th><td colspan=4><input size=35 type=text name=s_longdesc maxlength=100";
-			if (isset($scale['itemdesc']) && $scale['itemdesc'] != $rowItem['description'])
-				echo " value=\"".$scale['itemdesc']."\"";
-			echo " /></td></tr>";
-
-			echo "<tr><td colspan=6 style=\"font-size:1px;\">&nbsp;</td></tr>";
-
-			echo "<tr><th>Weight</th><th>By Count</th><th>Tare</th><th>Shelf Life</th>";
-			echo "<th>Label</th><th>Safehandling</th></tr>";			
-
-			echo "<tr>";
-			echo "<td>";
-			if (!isset($scale['weight']) || $scale['weight']==0){
-				echo "<input type=radio name=s_type value=\"Random Weight\" checked /> Random<br />";
-				echo "<input type=radio name=s_type value=\"Fixed Weight\" /> Fixed<br />";
-			}
-			else {
-				echo "<input type=radio name=s_type value=\"Random Weight\" /> Random<br />";
-				echo "<input type=radio name=s_type value=\"Fixed Weight\" checked /> Fixed<br />";
-			}
-			echo "</td>";
-
-			echo "<td align=center><input type=checkbox name=s_bycount ";
-			if (isset($scale['bycount']) && $scale['bycount']==1)
-				echo "checked ";
-			echo "/></td>";
-
-			echo "<td align=center><input type=text size=5 name=s_tare ";
-			echo "value=".((isset($scale['tare']))?$scale['tare']:'0');
-			echo " /></td>";
-
-			echo "<td align=center><input type=text size=5 name=s_shelflife ";
-			echo "value=".((isset($scale['shelflife']))?$scale['shelflife']:'0');
-			echo " /></td>";
-
-			echo "<td><select name=s_label size=2>";
-			if (isset($scale['label']) && ($scale['label']==133 || $scale['label']==63)){
-		   		echo "<option value=horizontal selected>Horizontal</option>";
-		   		echo "<option value=vertical>Vertical</option>";
-			}
-			else if (!isset($scale['label'])){
-		   		echo "<option value=horizontal selected>Horizontal</option>";
-		   		echo "<option value=vertical>Vertical</option>";
-			}
-			else {
-		   		echo "<option value=horizontal>Horizontal</option>";
-		   		echo "<option value=vertical selected>Vertical</option>";
-			}
-			echo "</td>";
-
-			echo "<td align=center><input type=checkbox name=s_graphics ";
-			if (isset($scale['graphics']) && $scale['graphics']==1)
-				echo "checked ";
-			echo "/></td>";
-			echo "</tr>";
-
-			echo "<tr><td colspan=6 style=\"font-size:1px;\">&nbsp;</td></tr>";
-
-			echo "<tr><td colspan=6>";
-			echo "<b>Expanded text:<br /><textarea name=s_text rows=4 cols=50>";
-			echo (isset($scale['text'])?$scale['text']:'');
-			echo "</textarea></td></tr>";
-			
-			echo "</table></fieldset></div>";
+			include(dirname(__FILE__).'/modules/ScaleItemModule.php');	
+			$mod = new ScaleItemModule();
+			echo $mod->ShowEditForm($upc);
+		
 		}
 
 		echo "<br /><fieldset><legend>Extra Info</legend>";
