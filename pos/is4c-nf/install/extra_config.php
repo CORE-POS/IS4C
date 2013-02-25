@@ -26,7 +26,7 @@ include('util.php');
 </td><td>
 <?php
 if (isset($_REQUEST['BROWSER_ONLY'])) $CORE_LOCAL->set('browserOnly',$_REQUEST['BROWSER_ONLY'],True);
-else $CORE_LOCAL->set('browserOnly',0,True);
+elseif $CORE_LOCAL->set('browserOnly',0,True);
 echo "<fieldset class='toggle'>\n<input type='checkbox' name='BROWSER_ONLY' id='browser'";
 if ($CORE_LOCAL->get('browserOnly') == 1) echo " value='1' checked />";
 else echo " value='0' />";
