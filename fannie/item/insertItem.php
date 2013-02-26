@@ -42,7 +42,7 @@ $ins_array['upc'] = $dbc->escape($_REQUEST['upc']);
 $ins_array['tax'] = isset($_REQUEST['tax'])?$_REQUEST['tax']:0;
 $ins_array['foodstamp'] = isset($_REQUEST['FS'])?1:0;
 $ins_array['scale'] = isset($_REQUEST['Scale'])?1:0;
-$ins_array['deposit'] = isset($_REQUEST['deposit'])?$_REQUEST['deposit']:0;
+$ins_array['deposit'] = 0;
 $ins_array['qttyEnforced'] = isset($_REQUEST['QtyFrc'])?1:0;
 $ins_array['discount'] = isset($_REQUEST['NoDisc'])?0:1;
 $ins_array['normal_price'] = isset($_REQUEST['price'])?$_REQUEST['price']:0;
@@ -117,10 +117,10 @@ $ins_array['discounttype'] = 0;
 $ins_array['unitofmeasure'] = "''";
 $ins_array['wicable'] = 0;
 $ins_array['idEnforced'] = 0;
-$ins_array['cost'] = $_REQUEST['cost'];
+$ins_array['cost'] = 0;
 $ins_array['inUse'] = 1;
 $ins_array['subdept'] = $_REQUEST['subdepartment'];
-$ins_array['local'] = isset($_REQUEST['local'])?1:0;
+$ins_array['local'] = 0;
 $ins_array['start_date'] = "'1900-01-01'";
 $ins_array['end_date'] = "'1900-01-01'";
 $ins_array['numflag'] = 0;
@@ -137,10 +137,10 @@ if ($dbc->table_exists('prodExtra')){
 	'upc' => $dbc->escape($upc),
 	'distributor' => $dbc->escape($_REQUEST['distributor']),
 	'manufacturer' => $dbc->escape($_REQUEST['manufacturer']),
-	'cost' => $_REQUEST['cost'],
+	'cost' => 0.00,
 	'margin' => 0.00,
 	'variable_pricing' => 0,
-	'location' => $dbc->escape($_REQUEST['location']),
+	'location' => 0,
 	'case_quantity' => "''",
 	'case_cost' => 0.00,
 	'case_info' => "''"
@@ -148,6 +148,10 @@ if ($dbc->table_exists('prodExtra')){
 	$dbc->query("DELETE FROM prodExtra WHERE upc='$upc'");
 	$dbc->smart_insert('prodExtra',$pxarray);
 }
+
+include(dirname(__FILE__).'/modules/ExtraInfoModule.php');
+$mod = new ExtraInfoModule();
+$mod->SaveFormData($upc);
 
 include(dirname(__FILE__).'/modules/ScaleItemModule.php');
 $mod = new ScaleItemModule();
@@ -159,6 +163,10 @@ $mod->SaveFormData($upc);
 
 include(dirname(__FILE__).'/modules/LikeCodeModule.php');	
 $mod = new LikeCodeModule();
+$mod->SaveFormData($upc);
+
+include(dirname(__FILE__).'/modules/ItemLinksModule.php');	
+$mod = new ItemLinksModule();
 $mod->SaveFormData($upc);
 
 include('laneUpdates.php');
@@ -226,12 +234,6 @@ $row = $dbc->fetch_array($prodR);
     echo "<input name=submit type=submit value=submit>";
     echo "</form>";
 
-    if (isset($_REQUEST['newshelftag'])){
-	    echo "<script type=\"text/javascript\">";
-	    echo "testwindow= window.open (\"addShelfTag.php?upc=$upc\", \"New Shelftag\",\"location=0,status=1,scrollbars=1,width=300,height=220\");";
-	    echo "testwindow.moveTo(50,50);";
-	    echo "</script>";
-    }
 	?>
 	<script type="text/javascript">
 	$(document).ready(function(){
