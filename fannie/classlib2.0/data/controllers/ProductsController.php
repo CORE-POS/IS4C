@@ -85,6 +85,8 @@ class ProductsController {
 			case 'deposit':
 			case 'local':
 			case 'store_id':
+				if ($name === 0 || $name === True)
+					break; // switch does loose comparison...
 				$updateQ .= $name." = ?,";
 				$updateArgs[] = $value;
 				break;
