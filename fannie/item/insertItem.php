@@ -42,7 +42,7 @@ $ins_array['upc'] = $dbc->escape($_REQUEST['upc']);
 $ins_array['tax'] = isset($_REQUEST['tax'])?$_REQUEST['tax']:0;
 $ins_array['foodstamp'] = isset($_REQUEST['FS'])?1:0;
 $ins_array['scale'] = isset($_REQUEST['Scale'])?1:0;
-$ins_array['deposit'] = isset($_REQUEST['deposit'])?$_REQUEST['deposit']:0;
+$ins_array['deposit'] = 0;
 $ins_array['qttyEnforced'] = isset($_REQUEST['QtyFrc'])?1:0;
 $ins_array['discount'] = isset($_REQUEST['NoDisc'])?0:1;
 $ins_array['normal_price'] = isset($_REQUEST['price'])?$_REQUEST['price']:0;
@@ -117,20 +117,15 @@ $ins_array['discounttype'] = 0;
 $ins_array['unitofmeasure'] = "''";
 $ins_array['wicable'] = 0;
 $ins_array['idEnforced'] = 0;
-$ins_array['cost'] = $_REQUEST['cost'];
+$ins_array['cost'] = 0;
 $ins_array['inUse'] = 1;
 $ins_array['subdept'] = $_REQUEST['subdepartment'];
-$ins_array['local'] = isset($_REQUEST['local'])?1:0;
+$ins_array['local'] = 0;
 $ins_array['start_date'] = "'1900-01-01'";
 $ins_array['end_date'] = "'1900-01-01'";
 $ins_array['numflag'] = 0;
 $ins_array['store_id'] = 0;
 
-if (isset($_REQUEST['likeCode']) && $_REQUEST['likeCode'] != -1){
-	$dbc->query("DELETE FROM upcLike WHERE upc='$upc'");
-	$lcQ = "INSERT INTO upcLike (upc,likeCode) VALUES ('$upc',{$_REQUEST['likeCode']})";
-	$dbc->query($lcQ);	
-}
 // echo "<br>" .$query99. "<br>";
 
 /* since the item doesn't exist at all, just insert a master record */
@@ -142,10 +137,10 @@ if ($dbc->table_exists('prodExtra')){
 	'upc' => $dbc->escape($upc),
 	'distributor' => $dbc->escape($_REQUEST['distributor']),
 	'manufacturer' => $dbc->escape($_REQUEST['manufacturer']),
-	'cost' => $_REQUEST['cost'],
+	'cost' => 0.00,
 	'margin' => 0.00,
 	'variable_pricing' => 0,
-	'location' => $dbc->escape($_REQUEST['location']),
+	'location' => 0,
 	'case_quantity' => "''",
 	'case_cost' => 0.00,
 	'case_info' => "''"
@@ -153,46 +148,26 @@ if ($dbc->table_exists('prodExtra')){
 	$dbc->query("DELETE FROM prodExtra WHERE upc='$upc'");
 	$dbc->smart_insert('prodExtra',$pxarray);
 }
-if (isset($_REQUEST['s_plu'])){
-	$s_plu = substr($upc,3,4);
-	$scale_array = array();
-	$scale_array['plu'] = $upc;
-	$scale_array['itemdesc'] = $ins_array['description'];
-	$scale_array['price'] = $ins_array['normal_price'];
-	if (isset($_REQUEST['s_longdesc']) && !empty($_REQUEST['s_longdesc']))
-		$scale_array['itemdesc'] = $dbc->escape($_REQUEST['s_longdesc']);
-	$scale_array['tare'] = isset($_REQUEST['s_tare'])?$_REQUEST['s_tare']:0;
-	$scale_array['shelflife'] = isset($_REQUEST['s_shelflife'])?$_REQUEST['s_shelflife']:0;
-	$scale_array['bycount'] = isset($_REQUEST['s_bycount'])?1:0;
-	$scale_array['graphics'] = isset($_REQUEST['s_graphics'])?1:0;
-	$s_type = isset($_REQUEST['s_type'])?$_REQUEST['s_type']:'Random Weight';
-	$scale_array['weight'] = ($s_type=="Random Weight")?0:1;
-	$scale_array['text'] = isset($_REQUEST['s_text'])?$dbc->escape($_REQUEST['s_text']):"''";
 
-	$s_label = isset($_REQUEST['s_label'])?$_REQUEST['s_label']:'horizontal';
-	if ($s_label == "horizontal" && $s_type == "Random Weight")
-		$s_label = 133;
-	elseif ($s_label == "horizontal" && $s_type == "Fixed Weight")
-		$s_label = 63;
-	elseif ($s_label == "vertical" && $s_type == "Random Weight")
-		$s_label = 103;
-	elseif ($s_label == "vertical" && $s_type == "Fixed Weight")
-		$s_label = 23;
+include(dirname(__FILE__).'/modules/ExtraInfoModule.php');
+$mod = new ExtraInfoModule();
+$mod->SaveFormData($upc);
 
-	$scale_array['label'] = $s_label;
-	$scale_array['excpetionprice'] = 0.00;
-	$scale_array['class'] = "''";
+include(dirname(__FILE__).'/modules/ScaleItemModule.php');
+$mod = new ScaleItemModule();
+$mod->SaveFormData($upc);
 
-	$dbc->query("DELETE FROM scaleItems WHERE plu='$upc'");
-	$dbc->smart_insert("scaleItems",$scale_array);
+include(dirname(__FILE__).'/modules/ItemFlagsModule.php');	
+$mod = new ItemFlagsModule();
+$mod->SaveFormData($upc);
 
-	$action = "WriteOneItem";
-	include('hobartcsv/parse.php');
-	parseitem($action,$s_plu,trim($scale_array["itemdesc"],"'"),
-		$scale_array['tare'],$scale_array['shelflife'],$scale_array['price'],
-		$scale_array['bycount'],$s_type,0.00,trim($scale_array['text'],"'"),
-		$scale_array['label'],($scale_array['graphics']==1)?121:0);
-}
+include(dirname(__FILE__).'/modules/LikeCodeModule.php');	
+$mod = new LikeCodeModule();
+$mod->SaveFormData($upc);
+
+include(dirname(__FILE__).'/modules/ItemLinksModule.php');	
+$mod = new ItemLinksModule();
+$mod->SaveFormData($upc);
 
 include('laneUpdates.php');
 updateProductAllLanes($upc);
@@ -259,12 +234,6 @@ $row = $dbc->fetch_array($prodR);
     echo "<input name=submit type=submit value=submit>";
     echo "</form>";
 
-    if (isset($_REQUEST['newshelftag'])){
-	    echo "<script type=\"text/javascript\">";
-	    echo "testwindow= window.open (\"addShelfTag.php?upc=$upc\", \"New Shelftag\",\"location=0,status=1,scrollbars=1,width=300,height=220\");";
-	    echo "testwindow.moveTo(50,50);";
-	    echo "</script>";
-    }
 	?>
 	<script type="text/javascript">
 	$(document).ready(function(){
