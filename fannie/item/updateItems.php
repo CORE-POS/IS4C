@@ -41,7 +41,6 @@ $up_array = array();
 $up_array['tax'] = isset($_REQUEST['tax'])?$_REQUEST['tax']:0;
 $up_array['foodstamp'] = isset($_REQUEST['FS'])?1:0;
 $up_array['scale'] = isset($_REQUEST['Scale'])?1:0;
-$up_array['deposit'] = isset($_REQUEST['deposit'])?$_REQUEST['deposit']:0;
 $up_array['qttyEnforced'] = isset($_REQUEST['QtyFrc'])?1:0;
 $up_array['discount'] = isset($_REQUEST['NoDisc'])?0:1;
 $up_array['normal_price'] = isset($_REQUEST['price'])?$_REQUEST['price']:0;
@@ -58,10 +57,7 @@ $up_array['tareweight'] = 0;
 $up_array['unitofmeasure'] = "''";
 $up_array['wicable'] = 0;
 $up_array['idEnforced'] = 0;
-$up_array['cost'] = $_REQUEST['cost'];
-$up_array['inUse'] = 1;
 $up_array['subdept'] = $_REQUEST['subdepartment'];
-$up_array['local'] = isset($_REQUEST['local'])?1:0;
 $up_array['store_id'] = isset($_REQUEST['store_id'])?$_REQUEST['store_id']:0;
 
 /* turn on volume pricing if specified, but don't
@@ -103,8 +99,7 @@ if ($dbc->table_exists('prodExtra')){
 	$arr = array();
 	$arr['manufacturer'] = $dbc->escape($_REQUEST['manufacturer']);
 	$arr['distributor'] = $dbc->escape($_REQUEST['distributor']);
-	$arr['cost'] = $up_array['cost'];
-	$arr['location'] = $dbc->escape($_REQUEST['location']);
+	$arr['location'] = 0;
 
 	$checkR = $dbc->query("SELECT upc FROM prodExtra WHERE upc='$upc'");
 	if ($dbc->num_rows($checkR) == 0){
@@ -121,6 +116,10 @@ if ($dbc->table_exists('prodExtra')){
 		$dbc->smart_update('prodExtra',$arr,"upc='$upc'");
 	}
 }
+
+include(dirname(__FILE__).'/modules/ExtraInfoModule.php');
+$mod = new ExtraInfoModule();
+$mod->SaveFormData($upc);
 
 include(dirname(__FILE__).'/modules/ScaleItemModule.php');
 $mod = new ScaleItemModule();
