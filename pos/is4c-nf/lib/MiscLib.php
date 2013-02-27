@@ -169,7 +169,7 @@ static public function pinghost($host)
   database is running as well as the host is up.
 */
 static public function pingport($host,$dbms){
-	$port = ($dbms == 'mysql') ? 3306 : 1433;	
+	$port = strstr($dbms,'mysql') ? 3306 : 1433;	
 	if (strstr($host,":"))
 		list($host,$port) = explode(":",$host);
 	$sock = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);

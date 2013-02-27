@@ -100,7 +100,6 @@ static public function get(){
 //		$receipt .= chr(27).chr(105);
 	}
 
-	$db_a->close();
 	return $receipt.chr(27).chr(105);
 }
 

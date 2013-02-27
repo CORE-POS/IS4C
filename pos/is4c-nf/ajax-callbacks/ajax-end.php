@@ -94,8 +94,6 @@ function cleartemptrans($type) {
 	moveTempData();
 	truncateTempTables();
 
-	$db->close();
-
 	if ($CORE_LOCAL->get("testremote")==0)
 		Database::testremote(); 
 
@@ -123,8 +121,6 @@ function truncateTempTables() {
 	$connection->query($query1);
 	$connection->query($query2);
 	$connection->query($query3);
-
-	$connection->close();
 }
 
 function moveTempData() {
@@ -140,7 +136,5 @@ function moveTempData() {
 
 	$connection->query("insert into activitylog select * from activitytemplog");
 	$connection->query("insert into alog select * from activitytemplog");
-
-	$connection->close();
 }
 ?>

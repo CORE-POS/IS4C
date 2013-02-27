@@ -201,7 +201,6 @@ static public function addItem($strupc, $strdescription, $strtransType, $strtran
 	}
 
 	$db->smart_insert("localtemptrans",$values);
-	$db->close();
 
 	if ($strtransType == "I" || $strtransType == "D") {
 		$CORE_LOCAL->set("beep","goodBeep");
@@ -698,17 +697,9 @@ static public function addactivity($activity) {
 		'CashierNo'	=> MiscLib::nullwrap($intcashier),
 		'TransNo'	=> MiscLib::nullwrap($CORE_LOCAL->get("transno")),
 		'Activity'	=> MiscLib::nullwrap($activity),
-		'Interval'	=> MiscLib::nullwrap($interval)
+		$db->identifier_escape('Interval')	=> MiscLib::nullwrap($interval)
 		);
-		/*
-	if ($CORE_LOCAL->get("DBMS")=="mysql"){
-		unset($values['Interval']);
-		$values['`Interval`'] = MiscLib::nullwrap($interval);
-	}
-	*/
 	$result = $db->smart_insert("activitytemplog",$values);
-
-	$db->close();
 
 }
 

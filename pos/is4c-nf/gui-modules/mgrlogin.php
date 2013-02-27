@@ -141,7 +141,6 @@ class mgrlogin extends NoInputPage {
 			$this->cancelorder();
 			$ret['cancelOrder'] = true;
 		}
-		$db->close();
 
 		return $ret;
 	}

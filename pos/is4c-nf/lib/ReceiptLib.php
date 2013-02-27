@@ -498,8 +498,6 @@ static public function getChgName() {
 	else{
 		$CORE_LOCAL->set("ChgName",$CORE_LOCAL->get("memMsg"));
 	}
-
-	$connection->close();
 }
 
 static public function printCCSigSlip($dateTimeStamp,$ref,$storeCopy=True,$rp=0){
@@ -514,7 +512,6 @@ static public function printCCSigSlip($dateTimeStamp,$ref,$storeCopy=True,$rp=0)
 	$slip = "";
 	$db = -1;
 	$idclause = "";
-	$limit = "";
 	$sort = "";
 
 	if ( $rp != 0 ) {	// if this is a reprint of a previous transaction, loop through all cc slips for that transaction
@@ -522,23 +519,16 @@ static public function printCCSigSlip($dateTimeStamp,$ref,$storeCopy=True,$rp=0)
 	} else {		// else if current transaction, just grab most recent 
 		if ($storeCopy){
 			$idclause = " and transID = ".$CORE_LOCAL->get("paycard_id");
-			//$limit = " TOP 1 ";
 		}
 		$sort = " desc ";
 		$db = Database::tDataConnect();
 	}
 	// query database for cc receipt info 
-	$query = "select ".$limit." tranType, amount, PAN, entryMethod, issuer, xResultMessage, xApprovalNumber, xTransactionID, name, "
+	$query = "select  tranType, amount, PAN, entryMethod, issuer, xResultMessage, xApprovalNumber, xTransactionID, name, "
 		." datetime from ccReceiptView where date=".date('Ymd',$dateTimeStamp)
 		." and cashierNo = ".$emp." and laneNo = ".$reg
 		." and transNo = ".$trans ." ".$idclause
 		." order by datetime, cashierNo, laneNo, transNo, xTransactionID, transID ".$sort.", sortorder ".$sort;
-	if ($CORE_LOCAL->get("DBMS") == "mysql" && $rp == 0){
-		if ($limit != ""){
-			$query = str_replace($limit,"",$query);
-			$query .= " LIMIT 1";
-		}
-	}
 	$result = $db->query($query);
 	$num_rows = $db->num_rows($result);
 
@@ -682,7 +672,6 @@ static public function receiptFromBuilders($reprint=False,$trans_num=''){
 	$recordset = array();
 	while($row = $sql->fetch_row($result))
 		$recordset[] = $row;
-	$sql->close();
 
 	// load module configuration
 	$FILTER_MOD = $CORE_LOCAL->get("RBFilter");
@@ -769,23 +758,24 @@ static public function receiptDetail($reprint=False,$trans_num='') { // put into
 		}
 	} 
 	else { 
+		$db = Database::tDataConnect();
+
 		// otherwise use new format 
-		$query = "select linetoprint,sequence,dept_name,ordered, 0 as [local] "
+		$query = "select linetoprint,sequence,dept_name,ordered, 0 as ".
+			    $db->identifier_escape('local')
 			    ." from receipt_reorder_unions_g order by ordered,dept_name, " 
-			    ." case when ordered=4 then '' else upc end, [sequence]";
+			    ." case when ordered=4 then '' else upc end, "
+			    .$db->identifier_escape('sequence');
 		if ($reprint){
-			$query = "select linetoprint,sequence,dept_name,ordered, 0 as [local] "
+			$query = "select linetoprint,sequence,dept_name,ordered, 0 as ".
+			        $db->identifier_escape('local')
 				." from rp_receipt_reorder_unions_g where emp_no=$empNo and "
 				." register_no=$laneNo and trans_no=$transNo "
 				." order by ordered,dept_name, " 
-				." case when ordered=4 then '' else upc end, [sequence]";
+				." case when ordered=4 then '' else upc end, "
+			        .$db->identifier_escape('sequence');
 		}
 
-		$db = Database::tDataConnect();
-		if ($CORE_LOCAL->get("DBMS") == "mysql"){
-			$query = str_replace("[","",$query);
-			$query = str_replace("]","",$query);
-		}
 		$result = $db->query($query);
 		$num_rows = $db->num_rows($result);
 			
@@ -857,22 +847,16 @@ static public function printGCSlip($dateTimeStamp, $ref, $storeCopy=true, $rp=0)
 	$slip = "";
 	
 	// query database for gc receipt info 
-	$limit = "";
+	$db = Database::tDataConnect();
 	$order = "";
-	$where = "[date]=".date('Ymd',$dateTimeStamp)." AND cashierNo=".$emp." AND laneNo=".$reg." AND transNo=".$trans;
+	$where = $db->identifier_escape('date')."=".date('Ymd',$dateTimeStamp)
+		." AND cashierNo=".$emp." AND laneNo=".$reg." AND transNo=".$trans;
 	if( $rp == 0) {
-		$limit = " TOP 1";
 		$order = " desc";
 		$where .= " AND transID=".$CORE_LOCAL->get("paycard_id");
 	}
-	$sql = "SELECT".$limit." * FROM gcReceiptView WHERE ".$where." ORDER BY [datetime]".$order.", sortorder".$order;
-	$db = Database::tDataConnect();
-	if ($CORE_LOCAL->get("DBMS") == "mysql"){
-		$sql = "SELECT * FROM gcReceiptView WHERE ".$where." ORDER BY [datetime]".$order.", sortorder".$order." ".$limit;
-		$sql = str_replace("[","",$sql);
-		$sql = str_replace("]","",$sql);
-		$sql = str_replace("TOP","LIMIT",$sql);
-	}
+	$sql = "SELECT * FROM gcReceiptView WHERE ".$where." ORDER BY "
+		.$db->identifier_escape('datetime').$order.", sortorder".$order;
 	$result = $db->query($sql);
 	$num = $db->num_rows($result);
 
@@ -945,6 +929,8 @@ static public function printGCSlip($dateTimeStamp, $ref, $storeCopy=true, $rp=0)
 		// reprint footer
 		if( $storeCopy && $rp != 0)
 			$slip .= chr(27).chr(33).chr(5).self::centerString("***    R E P R I N T    ***")."\n";
+
+		if ($rp == 0) break; // easier that row-limiting the query
 	} // foreach row
 	
 	// add normal font ONLY IF we printed something else, too
@@ -1256,8 +1242,6 @@ static public function reprintReceipt($trans_num=""){
 		$CORE_LOCAL->set("discounttotal",$headerRow["discountTTL"]);
 		$CORE_LOCAL->set("memSpecial",$headerRow["memSpecial"]);
 
-		$connect->close();
-
 		$connID = Database::pDataConnect();
 		$queryID = "select LastName,FirstName,Type,blueLine from custdata 
 			where CardNo = '".$CORE_LOCAL->get("memberID")."' and personNum=1";
@@ -1276,8 +1260,6 @@ static public function reprintReceipt($trans_num=""){
 		}
 		$CORE_LOCAL->set("memMsg",$row["blueLine"]);
 	
-		$connID->close();
-
 		if ($CORE_LOCAL->get("isMember") == 1) {
 			$CORE_LOCAL->set("yousaved",number_format( $CORE_LOCAL->get("transDiscount") + $CORE_LOCAL->get("discounttotal") + $CORE_LOCAL->get("memSpecial"), 2));
 			$CORE_LOCAL->set("couldhavesaved",0);

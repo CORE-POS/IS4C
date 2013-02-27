@@ -710,8 +710,6 @@ static public function drawitems($top_item, $rows, $highlight) {
 	$row = $db->fetch_array($result);
 	$rowCount = $row["count"];
 
-	$db->close();
-
 	$last_item = array();
 
 	if ($rowCount == 0) {
@@ -778,7 +776,6 @@ static public function drawitems($top_item, $rows, $highlight) {
 				$last_item[] = $fixed_desc.$spaces.$fixed_price;
 			}
 		}
-		$db_range->close();
 	}
 
 	$td = SigCapture::term_object();
