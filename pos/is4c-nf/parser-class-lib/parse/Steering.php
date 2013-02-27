@@ -23,7 +23,8 @@
 
 /* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
  *
- * 11Feb2013 Eric Lee Support argument to PV. See also gui-modules/productlist.php
+ * 17Feb2013 Eric Lee Support argument to PV, either before or after.
+ *           See also gui-modules/productlist.php
 */
 
 /* 
@@ -46,10 +47,14 @@ class Steering extends Parser {
 		$this->dest_scale = False;
 		$this->ret = $this->default_json();
 
-		if ( substr($str,0,2) == "PV" ) {
+		// Argument to PV, either before or after.
+		if ( substr($str,-2,2) == "PV" ) {
+			$pvsearch = substr($str,0,-2);
+			$str = "PV";
+		} elseif ( substr($str,0,2) == "PV" ) {
 			$pvsearch = substr($str,2);
 			$str = "PV";
-		}
+		} else { 1; }
 
 		switch($str){
 			
