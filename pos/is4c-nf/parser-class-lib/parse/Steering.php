@@ -115,7 +115,6 @@ class Steering extends Parser {
 				$db = Database::tDataConnect();
 				$result = $db->query($query);
 				$num_rows = $db->num_rows($result);
-				$db->close();
 
 				if ($num_rows == 0) 
 					$this->ret['output'] = DisplayLib::boxMsg("no receipt found");

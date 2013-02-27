@@ -102,7 +102,6 @@ class DefaultReceiptFilter {
 		while($w = $dbc->fetch_row($r)){
 			$categoryMap[$w['dept_ID']] = $w['subdept_name'];
 		}
-		$dbc->close();
 		
 		// add categories to the appropriate records
 		$reverseMap = array();

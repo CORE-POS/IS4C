@@ -35,7 +35,6 @@ class AllItemProductSearch extends ProductSearch {
 		while($row = $sql->fetch_row($result)){
 			$ret[$row['upc']] = $row;
 		}
-		$sql->close();
 		return $ret;
 	}
 }
