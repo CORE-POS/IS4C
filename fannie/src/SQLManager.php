@@ -30,11 +30,11 @@
  across two servers that are useful for lane-server
  communication
 */
-$QUERY_LOG = $FANNIE_ROOT."logs/queries.log";
-
 if (!function_exists("ADONewConnection")) include($FANNIE_ROOT.'adodb5/adodb.inc.php');
 
 class SQLManager {
+
+	private $QUERY_LOG; 
 
 	/** Array of connections **/
 	var $connections;
@@ -52,6 +52,7 @@ class SQLManager {
 	    @param $persistent Make persistent connection.
 	*/
 	function SQLManager($server,$type,$database,$username,$password='',$persistent=False){
+		$this->QUERY_LOG = dirname(__FILE__)."/../logs/queries.log";
 		$this->connections=array();
 		$this->default_db = $database;
 		$this->add_connection($server,$type,$database,$username,$password,$persistent);
@@ -128,18 +129,19 @@ class SQLManager {
 	  @return A result object on success, False on failure
 	*/
 	function query($query_text,$which_connection='',$params=False){
-		global $QUERY_LOG;
+		$ql = $this->QUERY_LOG;
 		if ($which_connection == '')
 			$which_connection=$this->default_db;
 		$con = $this->connections[$which_connection];
 
 		$ok = (!is_object($con)) ? False : $con->Execute($query_text,$params);
-		if (!$ok && is_writable($QUERY_LOG)){
-			$fp = fopen($QUERY_LOG,'a');
+		if (!$ok && is_writable($ql)){
+			$fp = fopen($ql,'a');
 			fputs($fp,$_SERVER['PHP_SELF'].": ".date('r').': '.$query_text."\n");
 			fclose($fp);
 		}
 		else if (!$ok){
+			var_dump($ql);
 			echo "Bad query: {$_SERVER['PHP_SELF']}: $query_text<br />";
 			echo $this->error($which_connection)."<br />";
 		}
