@@ -21,6 +21,7 @@
 
 *********************************************************************************/
 
+include_once(dirname(__FILE__).'/../../config.php');
 include_once(dirname(__FILE__).'/../../classlib2.0/item/ItemModule.php');
 include_once(dirname(__FILE__).'/../../classlib2.0/lib/FormLib.php');
 include_once(dirname(__FILE__).'/../../classlib2.0/data/controllers/ProductsController.php');
@@ -29,6 +30,7 @@ include_once(dirname(__FILE__).'/../../src/JsonLib.php');
 class BaseItemModule extends ItemModule {
 
 	function ShowEditForm($upc){
+		global $FANNIE_URL;
 		$upc = str_pad($upc,13,0,STR_PAD_LEFT);
 
 		$ret = '<fieldset id="BaseItemFieldset">';
@@ -132,8 +134,8 @@ class BaseItemModule extends ItemModule {
 
         	$ret .= "<table border=1 cellpadding=5 cellspacing=0>";
 
-		$ret .= '<tr><td align=right><b>UPC</b></td><td style="color:red;">'.$rowItem['upc'];
-		$ret .= '<input type=hidden value="'.$rowItem['upc'].'" id=upc name=upc />';
+		$ret .= '<tr><td align=right><b>UPC</b></td><td style="color:red;">'.$upc;
+		$ret .= '<input type=hidden value="'.$upc.'" id=upc name=upc />';
 		if ($prevUPC) $ret .= " <a style=\"font-size:85%;\" href=itemMaint.php?upc=$prevUPC>Previous</a>";
 		if ($nextUPC) $ret .= " <a style=\"font-size:85%;\" href=itemMaint.php?upc=$nextUPC>Next</a>";
 		$ret .= '</td>';
@@ -234,6 +236,26 @@ class BaseItemModule extends ItemModule {
 				$('#subdept').html(lookupTable[val]);
 			else
 				$('#subdept').html('<option value=0>None</option>');
+			$.ajax({
+				url: '<?php echo $FANNIE_URL; ?>item/modules/BaseItemModule.php',
+				data: 'dept_defaults='+val,
+				dataType: 'json',
+				cache: false,
+				success: function(data){
+					if (data.tax)
+						$('#tax').val(data.tax);
+					if (data.fs)
+						$('#FS').attr('checked','checked');
+					else{
+						$('#FS').removeAttr('checked');
+					}
+					if (data.nodisc)
+						$('#NoDisc').attr('checked','checked');
+					else
+						$('#NoDisc').removeAttr('checked');
+				}
+
+			});
 		}
 		</script>
 		<?php
@@ -258,7 +280,7 @@ class BaseItemModule extends ItemModule {
 		while ($taxW = $dbc->fetch_row($taxR))
 			array_push($rates,array($taxW[0],$taxW[1]));
 		array_push($rates,array("0","NoTax"));
-		$ret .= '<td align="left"><select name="tax">';
+		$ret .= '<td align="left"><select name="tax" id="tax">';
 		foreach($rates as $r){
 			$ret .= sprintf('<option %s value="%d">%s</option>',
 				(isset($rowItem['tax'])&&$rowItem['tax']==$r[0]?'selected':''),
@@ -266,7 +288,7 @@ class BaseItemModule extends ItemModule {
 		}
 		$ret .= '</select></td>';
 
-		$ret .= sprintf('<td align="center"><input type="checkbox" value="1" name="FS" %s /></td>',
+		$ret .= sprintf('<td align="center"><input type="checkbox" value="1" name="FS" id="FS" %s /></td>',
 				(isset($rowItem['foodstamp']) && $rowItem['foodstamp']==1 ? 'checked' : ''));
 
 		$ret .= sprintf('<td align="center"><input type="checkbox" value="1" name="Scale" %s /></td>',
@@ -275,7 +297,7 @@ class BaseItemModule extends ItemModule {
 		$ret .= sprintf('<td align="center"><input type="checkbox" value="1" name="QtyFrc" %s /></td>',
 				(isset($rowItem['qttyEnforced']) && $rowItem['qttyEnforced']==1 ? 'checked' : ''));
 
-		$ret .= sprintf('<td align="center"><input type="checkbox" value="1" name="NoDisc" %s /></td>',
+		$ret .= sprintf('<td align="center"><input type="checkbox" value="0" id="NoDisc" name="NoDisc" %s /></td>',
 				(isset($rowItem['discount']) && $rowItem['discount']==0 ? 'checked' : ''));
 
 		$ret .= '</tr>';
@@ -285,7 +307,95 @@ class BaseItemModule extends ItemModule {
 
 	function SaveFormData($upc){
 		$upc = str_pad($upc,13,0,STR_PAD_LEFT);
+		$dbc = $this->db();
+
+		$up_array = array();
+		$up_array['tax'] = FormLib::get_form_value('tax',0);
+		$up_array['foodstamp'] = FormLib::get_form_value('FS',0);
+		$up_array['scale'] = FormLib::get_form_value('Scale',0);
+		$up_array['qttyEnforced'] = FormLib::get_form_value('QtyFrc',0);
+		$up_array['discount'] = FormLib::get_form_value('NoDisc',1);
+		$up_array['normal_price'] = FormLib::get_form_value('price',0.00);
+		$up_array['description'] = FormLib::get_form_value('descript','');
+		$up_array['pricemethod'] = 0;
+		$up_array['groupprice'] = 0.00;
+		$up_array['quantity'] = 0;
+		$up_array['department'] = FormLib::get_form_value('department',0);
+		$up_array['size'] = "''";
+		$up_array['scaleprice'] = 0.00;
+		$up_array['modified'] = $dbc->now();
+		$up_array['advertised'] = 1;
+		$up_array['tareweight'] = 0;
+		$up_array['unitofmeasure'] = '';
+		$up_array['wicable'] = 0;
+		$up_array['idEnforced'] = 0;
+		$up_array['subdept'] = FormLib::get_form_value('subdepartment',0);
+		$up_array['store_id'] = 0;
+
+		/* turn on volume pricing if specified, but don't
+		   alter pricemethod if it's already non-zero */
+		$doVol = FormLib::get_form_value('doVolume',False);
+		$vprice = FormLib::get_form_value('vol_price','');
+		$vqty = FormLib::get_form_value('vol_qtty','');
+		if ($doVol !== False && is_numeric($vprice) && is_numeric($vqty)){
+			$up_array['pricemethod'] = FormLib::get_form_value('pricemethod',0);
+			if ($up_array['pricemethod']==0) $up_array['pricemethod']=2;
+			$up_array['groupprice'] = $vprice;
+			$up_array['quantity'] = $vqty;
+		}
+
+		ProductsController::update($upc, $up_array);
+
+		if ($dbc->table_exists('prodExtra')){
+			$arr = array();
+			$arr['manufacturer'] = $dbc->escape(FormLib::get_form_value('manufacturer'));
+			$arr['distributor'] = $dbc->escape(FormLib::get_form_value('distributor'));
+			$arr['location'] = 0;
+
+			$checkP = $dbc->prepare_statement('SELECT upc FROM prodExtra WHERE upc=?');
+			$checkR = $dbc->exec_statement($checkP,array($upc));
+			if ($dbc->num_rows($checkR) == 0){
+				// if prodExtra record doesn't exist, needs more values
+				$arr['upc'] = $dbc->escape($upc);
+				$arr['variable_pricing'] = 0;
+				$arr['margin'] = 0;
+				$arr['case_quantity'] = "''";
+				$arr['case_cost'] = 0.00;
+				$arr['case_info'] = "''";
+				$dbc->smart_insert('prodExtra',$arr);
+			}
+			else {
+				$dbc->smart_update('prodExtra',$arr,"upc='$upc'");
+			}
+		}
 	}
+
+	function AjaxCallback(){
+		$json = array('tax'=>0,'fs'=>False,'nodisc'=>False);
+		$dept = FormLib::get_form_value('dept_defaults','');
+		$db = $this->db();
+		$p = $db->prepare_statement('SELECT dept_tax,dept_fs,dept_discount
+				FROM departments WHERE dept_no=?');
+		$r = $db->exec_statement($p,array($dept));
+		if ($db->num_rows($r)){
+			$w = $db->fetch_row($r);
+			$json['tax'] = $w['dept_tax'];
+			if ($w['dept_fs'] == 1) $json['fs'] = True;
+			if ($w['dept_discount'] == 0) $json['nodisc'] = True;
+		}
+		echo JsonLib::array_to_json($json);
+	}
+}
+
+/**
+  This form does some fancy tricks via AJAX calls. This block
+  ensures the AJAX functionality only runs when the script
+  is accessed via the browser and not when it's included in
+  another PHP script.
+*/
+if (basename($_SERVER['SCRIPT_NAME']) == basename(__FILE__)){
+	$obj = new BaseItemModule();
+	$obj->AjaxCallback();	
 }
 
 ?>
