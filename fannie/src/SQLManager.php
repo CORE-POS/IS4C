@@ -177,6 +177,20 @@ class SQLManager {
 			$which_connection = $this->default_db;
 		return $this->connections[$which_connection]->qstr($query_text);
 	}
+
+	function identifier_escape($str,$which_connection=''){
+		if ($which_connection == '')
+			$which_connection = $this->default_db;
+		switch($this->connections[$which_connection]->databaseType){
+		case 'mysql':
+		case 'mysqli':
+		case 'pdo_mysql':
+                        return '`'.$str.'`';
+		case 'mssql':
+                        return '['.$str.']';
+                }
+                return $str;
+        }
 	
 	/**
 	  Get number of rows in a result set
