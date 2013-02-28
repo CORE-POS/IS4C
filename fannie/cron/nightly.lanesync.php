@@ -48,7 +48,7 @@ include($FANNIE_ROOT.'src/cron_msg.php');
 
 set_time_limit(0);
 
-$url = "http://".php_uname('n').$FANNIE_URL."/sync/tablesync.php";
+$url = "http://".php_uname('n').$FANNIE_URL."/sync/TableSyncPage.php";
 
 // curl_init():
 //  Initializes a new session and return a cURL handle for use with the curl_setopt(), curl_exec(), and curl_close() functions.
