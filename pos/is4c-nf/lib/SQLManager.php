@@ -375,6 +375,14 @@ class SQLManager {
 	}
 
 	/**
+	  Temporary compatibility solution. Will go away once
+	  db_close() calls are gone in all branches
+	*/
+	function db_close($which_connection='',$force=False){
+		return $this->close($which_connection,$force);
+	}
+
+	/**
 	  Start a SQL transaction
 	  Nexted transactions not supported on MSSQL
 	*/
