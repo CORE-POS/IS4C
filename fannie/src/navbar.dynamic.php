@@ -24,6 +24,7 @@ x               Add Product List and Tool to Item Maint submenu0
 <ul id="css_menu_root">
 
 <?php
+global $FANNIE_MENU;
 if (!isset($FANNIE_MENU) || !is_array($FANNIE_MENU))
 	include($path.'src/defaultmenu.php');
 function render_menu($arr,$depth=0){
