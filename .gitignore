@@ -29,3 +29,4 @@ fannie/pi_food_net/scalesDistro
 *.exe
 fannie/INSTALL
 README
+reset_slave.sql

@@ -66,7 +66,7 @@ if (!function_exists("socket_create")){
 <tr>
 <td style="width: 30%;">OS: </td><td><select name=OS>
 <?php
-if (isset($_REQUEST['OS'])) $CORE_LOCAL->set('OS',$_REQUEST['OS']);
+if (isset($_REQUEST['OS'])) $CORE_LOCAL->set('OS',$_REQUEST['OS'],True);
 if ($CORE_LOCAL->get('OS') == 'win32'){
 	echo "<option value=win32 selected>Windows</option>";
 	echo "<option value=other>*nix</option>";
@@ -80,7 +80,7 @@ confsave('OS',"'".$CORE_LOCAL->get('OS')."'");
 </select></td></tr>
 <tr><td>Lane number:</td><td>
 <?php
-if (isset($_REQUEST['LANE_NO']) && is_numeric($_REQUEST['LANE_NO'])) $CORE_LOCAL->set('laneno',$_REQUEST['LANE_NO']);
+if (isset($_REQUEST['LANE_NO']) && is_numeric($_REQUEST['LANE_NO'])) $CORE_LOCAL->set('laneno',$_REQUEST['LANE_NO'],True);
 printf("<input type=text name=LANE_NO value=\"%d\" />",
 	$CORE_LOCAL->get('laneno'));
 confsave('laneno',$CORE_LOCAL->get('laneno'));
@@ -90,7 +90,7 @@ confsave('laneno',$CORE_LOCAL->get('laneno'));
 <tr><td>
 Lane database host: </td><td>
 <?php
-if (isset($_REQUEST['LANE_HOST'])) $CORE_LOCAL->set('localhost',$_REQUEST['LANE_HOST']);
+if (isset($_REQUEST['LANE_HOST'])) $CORE_LOCAL->set('localhost',$_REQUEST['LANE_HOST'],True);
 printf("<input type=text name=LANE_HOST value=\"%s\" />",
 	$CORE_LOCAL->get('localhost'));
 confsave('localhost',"'".$CORE_LOCAL->get('localhost')."'");
@@ -99,7 +99,7 @@ confsave('localhost',"'".$CORE_LOCAL->get('localhost')."'");
 Lane database type:</td>
 <td><select name=LANE_DBMS>
 <?php
-if(isset($_REQUEST['LANE_DBMS'])) $CORE_LOCAL->set('DBMS',$_REQUEST['LANE_DBMS']);
+if(isset($_REQUEST['LANE_DBMS'])) $CORE_LOCAL->set('DBMS',$_REQUEST['LANE_DBMS'],True);
 if ($CORE_LOCAL->get('DBMS') == 'mssql'){
 	echo "<option value=mysql>MySQL</option>";
 	echo "<option value=mssql selected>SQL Server</option>";
@@ -113,7 +113,7 @@ confsave('DBMS',"'".$CORE_LOCAL->get('DBMS')."'");
 </select></td></tr>
 <tr><td>Lane user name:</td><td>
 <?php
-if (isset($_REQUEST['LANE_USER'])) $CORE_LOCAL->set('localUser',$_REQUEST['LANE_USER']);
+if (isset($_REQUEST['LANE_USER'])) $CORE_LOCAL->set('localUser',$_REQUEST['LANE_USER'],True);
 printf("<input type=text name=LANE_USER value=\"%s\" />",
 	$CORE_LOCAL->get('localUser'));
 confsave('localUser',"'".$CORE_LOCAL->get('localUser')."'");
@@ -121,7 +121,7 @@ confsave('localUser',"'".$CORE_LOCAL->get('localUser')."'");
 </td></tr><tr><td>
 Lane password:</td><td>
 <?php
-if (isset($_REQUEST['LANE_PASS'])) $CORE_LOCAL->set('localPass',$_REQUEST['LANE_PASS']);
+if (isset($_REQUEST['LANE_PASS'])) $CORE_LOCAL->set('localPass',$_REQUEST['LANE_PASS'],True);
 printf("<input type=password name=LANE_PASS value=\"%s\" />",
 	$CORE_LOCAL->get('localPass'));
 confsave('localPass',"'".$CORE_LOCAL->get('localPass')."'");
@@ -129,7 +129,7 @@ confsave('localPass',"'".$CORE_LOCAL->get('localPass')."'");
 </td></tr><tr><td>
 Lane operational DB:</td><td>
 <?php
-if (isset($_REQUEST['LANE_OP_DB'])) $CORE_LOCAL->set('pDatabase',$_REQUEST['LANE_OP_DB']);
+if (isset($_REQUEST['LANE_OP_DB'])) $CORE_LOCAL->set('pDatabase',$_REQUEST['LANE_OP_DB'],True);
 printf("<input type=text name=LANE_OP_DB value=\"%s\" />",
 	$CORE_LOCAL->get('pDatabase'));
 confsave('pDatabase',"'".$CORE_LOCAL->get('pDatabase')."'");
@@ -193,7 +193,7 @@ else {
 </td></tr><tr><td>
 Lane transaction DB:</td><td>
 <?php
-if (isset($_REQUEST['LANE_TRANS_DB'])) $CORE_LOCAL->set('tDatabase',$_REQUEST['LANE_TRANS_DB']);
+if (isset($_REQUEST['LANE_TRANS_DB'])) $CORE_LOCAL->set('tDatabase',$_REQUEST['LANE_TRANS_DB'],True);
 printf("<input type=text name=LANE_TRANS_DB value=\"%s\" />",
 	$CORE_LOCAL->get('tDatabase'));
 confsave('tDatabase',"'".$CORE_LOCAL->get('tDatabase')."'");
@@ -270,7 +270,7 @@ else {
 </td></tr><tr><td>
 Server database host: </td><td>
 <?php
-if (isset($_REQUEST['SERVER_HOST'])) $CORE_LOCAL->set('mServer',$_REQUEST['SERVER_HOST']);
+if (isset($_REQUEST['SERVER_HOST'])) $CORE_LOCAL->set('mServer',$_REQUEST['SERVER_HOST'],True);
 printf("<input type=text name=SERVER_HOST value=\"%s\" />",
 	$CORE_LOCAL->get('mServer'));
 confsave('mServer',"'".$CORE_LOCAL->get('mServer')."'");
@@ -279,7 +279,7 @@ confsave('mServer',"'".$CORE_LOCAL->get('mServer')."'");
 Server database type:</td><td>
 <select name=SERVER_TYPE>
 <?php
-if (isset($_REQUEST['SERVER_TYPE'])) $CORE_LOCAL->set('mDBMS',$_REQUEST['SERVER_TYPE']);
+if (isset($_REQUEST['SERVER_TYPE'])) $CORE_LOCAL->set('mDBMS',$_REQUEST['SERVER_TYPE'],True);
 if ($CORE_LOCAL->get('mDBMS') == 'mssql'){
 	echo "<option value=mysql>MySQL</option>";
 	echo "<option value=mssql selected>SQL Server</option>";
@@ -293,7 +293,7 @@ confsave('mDBMS',"'".$CORE_LOCAL->get('mDBMS')."'");
 </select></td></tr><tr><td>
 Server user name:</td><td>
 <?php
-if (isset($_REQUEST['SERVER_USER'])) $CORE_LOCAL->set('mUser',$_REQUEST['SERVER_USER']);
+if (isset($_REQUEST['SERVER_USER'])) $CORE_LOCAL->set('mUser',$_REQUEST['SERVER_USER'],True);
 printf("<input type=text name=SERVER_USER value=\"%s\" />",
 	$CORE_LOCAL->get('mUser'));
 confsave('mUser',"'".$CORE_LOCAL->get('mUser')."'");
@@ -301,7 +301,7 @@ confsave('mUser',"'".$CORE_LOCAL->get('mUser')."'");
 </td></tr><tr><td>
 Server password:</td><td>
 <?php
-if (isset($_REQUEST['SERVER_PASS'])) $CORE_LOCAL->set('mPass',$_REQUEST['SERVER_PASS']);
+if (isset($_REQUEST['SERVER_PASS'])) $CORE_LOCAL->set('mPass',$_REQUEST['SERVER_PASS'],True);
 printf("<input type=password name=SERVER_PASS value=\"%s\" />",
 	$CORE_LOCAL->get('mPass'));
 confsave('mPass',"'".$CORE_LOCAL->get('mPass')."'");
@@ -309,7 +309,7 @@ confsave('mPass',"'".$CORE_LOCAL->get('mPass')."'");
 </td></tr><tr><td>
 Server database name:</td><td>
 <?php
-if (isset($_REQUEST['SERVER_DB'])) $CORE_LOCAL->set('mDatabase',$_REQUEST['SERVER_DB']);
+if (isset($_REQUEST['SERVER_DB'])) $CORE_LOCAL->set('mDatabase',$_REQUEST['SERVER_DB'],True);
 printf("<input type=text name=SERVER_DB value=\"%s\" />",
 	$CORE_LOCAL->get('mDatabase'));
 confsave('mDatabase',"'".$CORE_LOCAL->get('mDatabase')."'");
