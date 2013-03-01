@@ -77,7 +77,7 @@ class MoreThanQttyPM extends PriceMethod {
 		if ($num_rowst > 0){
 			$rowt = $dbt->fetch_array($resultt);
 			$trans_qty = floor($rowt['mmqtty']);
-			$undisc_ttl = $rowt['unDiscountedTotal'];
+			$undisc_ttl = $row['unDiscountedTotal'];
 		}
 		/* include the items in this ring */
 		$trans_qty += $quantity;
