@@ -132,7 +132,11 @@ else {
 			$json['redraw_footer'] = DisplayLib::printfooter();
 	}
 	if (isset($json['scale']) && $json['scale'] !== False){
-		$json['scale'] = DisplayLib::scaledisplaymsg($json['scale']);
+		$display = DisplayLib::scaledisplaymsg($json['scale']);
+		if (is_array($display))
+			$json['scale'] = $display['display'];
+		else
+			$json['scale'] = $display;
 	}
 	echo JsonLib::array_to_json($json);
 }
