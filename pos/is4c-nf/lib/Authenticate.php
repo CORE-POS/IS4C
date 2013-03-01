@@ -91,6 +91,7 @@ static public function check_password($password,$activity=1){
 			Database::setglobalvalues($globals);
 
 			if ($transno == 1) TransRecord::addactivity($activity);
+
 			/**
 			  Use Kicker object to determine whether the drawer should open
 			  The first line is just a failsafe in case the setting has not
@@ -100,6 +101,7 @@ static public function check_password($password,$activity=1){
 			$kicker_object = new $kicker_class();
 			if ($kicker_object->kickOnSignIn())
 				ReceiptLib::drawerKick();
+
 		} elseif ($password == 9999) {
 			Database::loadglobalvalues();
 			$transno = Database::gettransno(9999);

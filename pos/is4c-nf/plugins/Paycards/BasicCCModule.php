@@ -87,7 +87,7 @@ class BasicCCModule {
 	 If you set a URL in 'main_frame', POS
 	 might go there but it's not guaranteed.
 	 */
-	function entered($validate,$json=array()){
+	function entered($validate,$json){
 		if(!isset($json['output'])) $json['output'] = '';
 		if(!isset($json['main_frame'])) $json['main_frame'] = False;
 		return $json;
@@ -125,7 +125,7 @@ class BasicCCModule {
 	  cleanliness. You could leave this as is and
 	  do all the everything inside doSend()
 	 */
-	function cleanup($json=array()){
+	function cleanup($json){
 
 	}
 

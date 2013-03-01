@@ -29,7 +29,7 @@ body {
 </td><td>
 <select multiple size=10 name=SPECIAL_UPC_MODS[]>
 <?php
-if (isset($_REQUEST['SPECIAL_UPC_MODS'])) $CORE_LOCAL->set('SpecialUpcClasses',$_REQUEST['SPECIAL_UPC_MODS'],True);
+if (isset($_REQUEST['SPECIAL_UPC_MODS'])) $CORE_LOCAL->set('SpecialUpcClasses',$_REQUEST['SPECIAL_UPC_MODS']);
 
 $mods = AutoLoader::ListModules('SpecialUPC');
 
@@ -57,16 +57,16 @@ confsave('SpecialUpcClasses',$saveStr);
 <tr><td>
 <b>Number of Discounts</b>:</td><td>
 <?php
-if (isset($_REQUEST['DT_COUNT']) && is_numeric($_REQUEST['DT_COUNT'])) $CORE_LOCAL->set('DiscountTypeCount',$_REQUEST['DT_COUNT'],True);
-if ($CORE_LOCAL->get("DiscountTypeCount") == "") $CORE_LOCAL->set("DiscountTypeCount",5,True);
-if ($CORE_LOCAL->get("DiscountTypeCount") <= 0) $CORE_LOCAL->set("DiscountTypeCount",1,True);
+if (isset($_REQUEST['DT_COUNT']) && is_numeric($_REQUEST['DT_COUNT'])) $CORE_LOCAL->set('DiscountTypeCount',$_REQUEST['DT_COUNT']);
+if ($CORE_LOCAL->get("DiscountTypeCount") == "") $CORE_LOCAL->set("DiscountTypeCount",5);
+if ($CORE_LOCAL->get("DiscountTypeCount") <= 0) $CORE_LOCAL->set("DiscountTypeCount",1);
 printf("<input type=text size=4 name=DT_COUNT value=\"%d\" />",
 	$CORE_LOCAL->get('DiscountTypeCount'));
 confsave('DiscountTypeCount',$CORE_LOCAL->get('DiscountTypeCount'));
 ?></td></tr><tr><td>
 <b>Discount Module Mapping</b>:</td><td>
 <?php
-if (isset($_REQUEST['DT_MODS'])) $CORE_LOCAL->set('DiscountTypeClasses',$_REQUEST['DT_MODS'],True);
+if (isset($_REQUEST['DT_MODS'])) $CORE_LOCAL->set('DiscountTypeClasses',$_REQUEST['DT_MODS']);
 if (!is_array($CORE_LOCAL->get('DiscountTypeClasses'))){
 	$CORE_LOCAL->set('DiscountTypeClasses',
 		array(
@@ -75,7 +75,7 @@ if (!is_array($CORE_LOCAL->get('DiscountTypeClasses'))){
 			'MemberSale',
 			'CaseDiscount',
 			'StaffSale'			
-		),True);
+		));
 }
 $discounts = AutoLoader::ListModules('DiscountType');
 $dt_conf = $CORE_LOCAL->get("DiscountTypeClasses");
@@ -107,9 +107,9 @@ confsave('DiscountTypeClasses',$saveStr);
 <tr><td>
 <b>Number of Price Methods</b>:</td><td>
 <?php
-if (isset($_REQUEST['PM_COUNT']) && is_numeric($_REQUEST['PM_COUNT'])) $CORE_LOCAL->set('PriceMethodCount',$_REQUEST['PM_COUNT'],True);
-if ($CORE_LOCAL->get("PriceMethodCount") == "") $CORE_LOCAL->set("PriceMethodCount",3,True);
-if ($CORE_LOCAL->get("PriceMethodCount") <= 0) $CORE_LOCAL->set("PriceMethodCount",1,True);
+if (isset($_REQUEST['PM_COUNT']) && is_numeric($_REQUEST['PM_COUNT'])) $CORE_LOCAL->set('PriceMethodCount',$_REQUEST['PM_COUNT']);
+if ($CORE_LOCAL->get("PriceMethodCount") == "") $CORE_LOCAL->set("PriceMethodCount",3);
+if ($CORE_LOCAL->get("PriceMethodCount") <= 0) $CORE_LOCAL->set("PriceMethodCount",1);
 printf("<input type=text size=4 name=PM_COUNT value=\"%d\" />",
 	$CORE_LOCAL->get('PriceMethodCount'));
 confsave('PriceMethodCount',$CORE_LOCAL->get('PriceMethodCount'));
@@ -117,14 +117,14 @@ confsave('PriceMethodCount',$CORE_LOCAL->get('PriceMethodCount'));
 </td></tr><tr><td>
 <b>Price Method Mapping</b>:</td><td>
 <?php
-if (isset($_REQUEST['PM_MODS'])) $CORE_LOCAL->set('PriceMethodClasses',$_REQUEST['PM_MODS'],True);
+if (isset($_REQUEST['PM_MODS'])) $CORE_LOCAL->set('PriceMethodClasses',$_REQUEST['PM_MODS']);
 if (!is_array($CORE_LOCAL->get('PriceMethodClasses'))){
 	$CORE_LOCAL->set('PriceMethodClasses',
 		array(
 			'BasicPM',
 			'GroupPM',
 			'QttyEnforcedGroupPM'
-		),True);
+		));
 }
 $pms = AutoLoader::ListModules('PriceMethod');
 $pm_conf = $CORE_LOCAL->get("PriceMethodClasses");
@@ -170,7 +170,7 @@ if (isset($_REQUEST['SDEPT_MAP_LIST'])){
 		foreach($ids as $id)
 			$sconf = $obj->register($id,$sconf);
 	}
-	$CORE_LOCAL->set('SpecialDeptMap',$sconf,True);
+	$CORE_LOCAL->set('SpecialDeptMap',$sconf);
 }
 foreach($sdepts as $sd){
 	$list = "";
@@ -196,7 +196,8 @@ foreach($sconf as $id => $mods){
 $saveStr = rtrim($saveStr,',').')';
 confsave('SpecialDeptMap',$saveStr);
 ?>
-</td></tr><tr><td colspan=2>
+</td></tr>
+<tr><td colspan=2>
 <hr />
 <input type=submit name=scansubmit value="Save Changes" />
 </td></tr></table>

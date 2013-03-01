@@ -26,15 +26,6 @@ class Paycards extends Plugin {
 	public $description = 'Plugin for integrated payment cards';
 
 	public $plugin_settings = array(
-		'ccLive' => array(
-		'label' => 'Live',
-		'description' => 'Enable live integrated transactions',
-		'default' => 1,
-		'options' => array(
-			'Yes' => 1,
-			'No' => 0
-			)
-		),
 		'PaycardsCashierFacing' => array(
 		'label' => 'Mode',
 		'description' => 'Who is swiping the card?',
