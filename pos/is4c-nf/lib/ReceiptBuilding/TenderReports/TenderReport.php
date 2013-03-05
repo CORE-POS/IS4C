@@ -52,7 +52,7 @@ static public function get(){
 	return $trClass::get();
 }
 
-static private function timeStamp($time) {
+static public function timeStamp($time) {
 
 	return strftime("%I:%M %p", strtotime($time));
 }
