@@ -22,8 +22,8 @@
 *********************************************************************************/
 
 function buildLTTViews($db,$type,$errors=array()){
-	if ($type == 'mysql') return buildLTTViewsMySQL($db,$errors);
-	elseif($type == 'mssql') return buildLTTViewsMSSQL($db,$errors);
+	if (strstr($type,'mysql')) return buildLTTViewsMySQL($db,$errors);
+	elseif(strstr($type,'mssql')) return buildLTTViewsMSSQL($db,$errors);
 }
 
 function buildLTTViewsMySQL($db, $errors=array()){

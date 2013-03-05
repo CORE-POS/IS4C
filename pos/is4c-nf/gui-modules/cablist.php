@@ -133,7 +133,6 @@ class cablist extends NoInputPage {
 		if ($num_rows == 0){
 			echo "<option value=\"\">None found</option>";
 		}
-		$db->close();
 		?>
 
 		</select>

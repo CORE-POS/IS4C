@@ -67,8 +67,6 @@ class TenderModule {
 			$this->min_limit = 0;
 			$this->max_limit = 0;
 		}
-
-		$db->close();
 	}
 
 	/**

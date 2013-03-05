@@ -91,7 +91,6 @@ class rplist extends NoInputPage {
 				sprintf('%.2f',$row["total"]);
 			$selected = "";
 		}
-		$db->db_close();
 		?>
 
 		</select>
