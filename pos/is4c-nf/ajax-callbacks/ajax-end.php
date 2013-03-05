@@ -108,8 +108,6 @@ function cleartemptrans($type) {
 	moveTempData();
 	truncateTempTables();
 
-	$db->close();
-
 	/**
 	  Moved to separate ajax call (ajax-transaction-sync.php)
 	if ($CORE_LOCAL->get("testremote")==0)
