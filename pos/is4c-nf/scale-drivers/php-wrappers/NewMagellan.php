@@ -115,7 +115,8 @@ class NewMagellan extends ScaleDriverWrapper {
 			if ($line[0] == 'S'){
 				$scale_display = DisplayLib::scaledisplaymsg($line);
 				if (is_array($scale_display)){
-					$scans[] = $scale_display['upc'];
+					if (isset($scale_display['upc']))
+						$scans[] = $scale_display['upc'];
 					$scale_display = $scale_display['display'];
 				}
 			}
