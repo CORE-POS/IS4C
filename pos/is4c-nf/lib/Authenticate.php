@@ -146,8 +146,6 @@ static public function check_password($password,$activity=1){
 		else return False;
 	}
 
-	$db_g->db_close();
-	
 	if ($CORE_LOCAL->get("LastID") != 0 && $CORE_LOCAL->get("memberID") != "0" && $CORE_LOCAL->get("memberID") != "") {
 		$CORE_LOCAL->set("unlock",1);
 		/* not sure why this is here; andy 13Feb13 */

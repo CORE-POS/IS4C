@@ -23,6 +23,7 @@
 
 /* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+	* 27Feb2013 Andy Theuninck singleton connection for local databases
 	* 13Jan2013 Eric Lee Added changeLttTaxCode(From, To);
 
 */
@@ -41,6 +42,11 @@ class Database extends LibraryClass {
 ***********************************************************************************************/
 
 /**
+  Singleton connection
+*/
+static private $SQL_CONNECTION = null;
+
+/**
   Connect to the transaction database (local)
   @return a SQLManager object
 */
@@ -48,9 +54,23 @@ static public function tDataConnect()
 {
 	global $CORE_LOCAL;
 
-	$sql = new SQLManager($CORE_LOCAL->get("localhost"),$CORE_LOCAL->get("DBMS"),$CORE_LOCAL->get("tDatabase"),
-			      $CORE_LOCAL->get("localUser"),$CORE_LOCAL->get("localPass"),False);
-	return $sql;
+	if (self::$SQL_CONNECTION === null){
+		/**
+		  Add both local databases to the connection object
+		*/
+		self::$SQL_CONNECTION = new SQLManager($CORE_LOCAL->get("localhost"),$CORE_LOCAL->get("DBMS"),$CORE_LOCAL->get("tDatabase"),
+				      $CORE_LOCAL->get("localUser"),$CORE_LOCAL->get("localPass"),False);
+		self::$SQL_CONNECTION->db_types[$CORE_LOCAL->get('pDatabase')] = strtoupper($CORE_LOCAL->get('DBMS'));
+		self::$SQL_CONNECTION->connections[$CORE_LOCAL->get('pDatabase')] = self::$SQL_CONNECTION->connections[$CORE_LOCAL->get('tDatabase')];
+	}
+	else {
+		/**
+		  Switch connection object to the requested database
+		*/
+		self::$SQL_CONNECTION->query('use '.$CORE_LOCAL->get('tDatabase'));
+		self::$SQL_CONNECTION->default_db = $CORE_LOCAL->get('tDatabase');
+	}	
+	return self::$SQL_CONNECTION;
 }
 
 /**
@@ -61,9 +81,23 @@ static public function pDataConnect()
 {
 	global $CORE_LOCAL;
 
-	$sql = new SQLManager($CORE_LOCAL->get("localhost"),$CORE_LOCAL->get("DBMS"),$CORE_LOCAL->get("pDatabase"),
-			      $CORE_LOCAL->get("localUser"),$CORE_LOCAL->get("localPass"),False);
-	return $sql;
+	if (self::$SQL_CONNECTION === null){
+		/**
+		  Add both local databases to the connection object
+		*/
+		self::$SQL_CONNECTION = new SQLManager($CORE_LOCAL->get("localhost"),$CORE_LOCAL->get("DBMS"),$CORE_LOCAL->get("pDatabase"),
+				      $CORE_LOCAL->get("localUser"),$CORE_LOCAL->get("localPass"),False);
+		self::$SQL_CONNECTION->db_types[$CORE_LOCAL->get('tDatabase')] = strtoupper($CORE_LOCAL->get('DBMS'));
+		self::$SQL_CONNECTION->connections[$CORE_LOCAL->get('tDatabase')] = self::$SQL_CONNECTION->connections[$CORE_LOCAL->get('pDatabase')];
+	}
+	else {
+		/**
+		  Switch connection object to the requested database
+		*/
+		self::$SQL_CONNECTION->query('use '.$CORE_LOCAL->get('pDatabase'));
+		self::$SQL_CONNECTION->default_db = $CORE_LOCAL->get('pDatabase');
+	}	
+	return self::$SQL_CONNECTION;
 }
 
 /**
@@ -143,10 +177,6 @@ static public function getsubtotals() {
 	if ( $CORE_LOCAL->get("fsEligible") > $CORE_LOCAL->get("subtotal") ) {
 		$CORE_LOCAL->set("fsEligible",$CORE_LOCAL->get("subtotal"));
 	}
-
-
-	$connection->close();
-
 }
 
 static public function LineItemTaxes(){
@@ -160,7 +190,6 @@ static public function LineItemTaxes(){
 		$taxRows[] = $w;
 		$fsTenderTTL = $w['foodstampTender'];
 	}
-	$db->close();
 
 	// loop through line items and deal with
 	// foodstamp tax exemptions
@@ -233,7 +262,6 @@ static public function gettransno($CashierNo) {
 	else {
 		$trans_no = $row["maxtransno"] + 1;
 	}
-	$connection->close();
 	return $trans_no;
 }
 
@@ -316,12 +344,12 @@ static public function uploadtoServer()
 		$al_matches = self::getMatchingColumns($connect,"alog");
 		// interval is a mysql reserved word
 		// so it needs to be escaped
-		$local_columns = $al_matches;
-		$server_columns = $al_matches;
-		if ($CORE_LOCAL->get("DBMS") == "mysql")
-			$local_columns = str_replace("Interval","`Interval`",$al_matches);
-		if ($CORE_LOCAL->get("mDBMS") == "mysql")
-			$server_columns = str_replace("Interval","`Interval`",$al_matches);
+		$local_columns = str_replace('Interval',
+					$connect->identifier_escape('Interval',$CORE_LOCAL->get('tDatabase')),
+					$al_matches);
+		$server_columns = str_replace('Interval',
+					$connect->identifier_escape('Interval',$CORE_LOCAL->get('mDatabase')),
+					$al_matches);
 		$al_success = $connect->transfer($CORE_LOCAL->get("tDatabase"),
 			"select $local_columns FROM alog",
 			$CORE_LOCAL->get("mDatabase"),
@@ -354,8 +382,7 @@ static public function uploadtoServer()
 		$CORE_LOCAL->set("standalone",1);
 	}
 
-	$connect->close($CORE_LOCAL->get("mDatabase"));
-	$connect->close($CORE_LOCAL->get("tDatabase"));
+	$connect->close($CORE_LOCAL->get("mDatabase"),True);
 
 	self::uploadCCdata();
 
@@ -482,8 +509,6 @@ static public function loadglobalvalues() {
 	$CORE_LOCAL->set("ttlflag",$row["TTLFlag"]);
 	$CORE_LOCAL->set("fntlflag",$row["FntlFlag"]);
 	$CORE_LOCAL->set("TaxExempt",$row["TaxExempt"]);
-
-	$db->close();
 }
 
 /**
@@ -535,7 +560,6 @@ static public function setglobalvalue($param, $value) {
 	$strUpdate = "update globalvalues set ".$param." = ".$value;
 
 	$db->query($strUpdate);
-	$db->close();
 }
 
 /**
@@ -558,7 +582,6 @@ static public function setglobalvalues($arr){
 	$db = self::pDataConnect();
 	$upQ = "UPDATE globalvalues SET ".$setStr;
 	$db->query($upQ);
-	$db->close();
 }
 
 /**
@@ -569,7 +592,6 @@ static public function setglobalflags($value) {
 	$db = self::pDataConnect();
 
 	$db->query("update globalvalues set TTLFlag = ".$value.", FntlFlag = ".$value);
-	$db->close();
 }
 
 /**
@@ -626,8 +648,6 @@ static public function changeLttTaxCode($fromName, $toName) {
 	if ( !$result ) {
 		return "UPDATE false";
 	}
-
-	$db->close();
 
 	return True;
 

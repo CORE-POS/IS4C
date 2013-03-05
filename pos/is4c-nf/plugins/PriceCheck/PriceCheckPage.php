@@ -188,7 +188,6 @@ class PriceCheckPage extends NoInputPage {
 			$this->cancelorder();
 			$ret['cancelOrder'] = true;
 		}
-		$db->close();
 
 		return $ret;
 	}

@@ -72,7 +72,6 @@ class suspendedlist extends NoInputPage {
 		$result = "";
 		if ($CORE_LOCAL->get("standalone") == 1) $result = $db_a->query($query_local);
 		else {
-			$db_a->close();
 			$db_a = Database::mDataConnect();
 			$result = $db_a->query($query_local);
 		}
@@ -96,7 +95,6 @@ class suspendedlist extends NoInputPage {
 			return True;
 		}
 		else {
-			$db_a->close();
 			$CORE_LOCAL->set("boxMsg",_("no suspended transaction"));
 			$this->change_page($this->page_url."gui-modules/pos2.php");	
 			return False;
@@ -159,7 +157,7 @@ class suspendedlist extends NoInputPage {
 					$CORE_LOCAL->get("tDatabase"),"insert into localtemptrans ({$cols})");
 				if ($success)
 					$db_a->query($query_del,$CORE_LOCAL->get("mDatabase"));
-				$db_a->close($CORE_LOCAL->get("mDatabase"));
+				$db_a->close($CORE_LOCAL->get("mDatabase"),True);
 			}
 			else {	
 				$localQ = "select * from suspendedtoday where register_no = $reg "

@@ -99,14 +99,13 @@ confsave('localhost',"'".$CORE_LOCAL->get('localhost')."'");
 Lane database type:</td>
 <td><select name=LANE_DBMS>
 <?php
+$db_opts = array('mysql'=>'MySQL','mssql'=>'SQL Server',
+	'pdomysql'=>'MySQL (PDO)','pdomssql'=>'SQL Server (PDO)');
 if(isset($_REQUEST['LANE_DBMS'])) $CORE_LOCAL->set('DBMS',$_REQUEST['LANE_DBMS'],True);
-if ($CORE_LOCAL->get('DBMS') == 'mssql'){
-	echo "<option value=mysql>MySQL</option>";
-	echo "<option value=mssql selected>SQL Server</option>";
-}
-else {
-	echo "<option value=mysql selected>MySQL</option>";
-	echo "<option value=mssql>SQL Server</option>";
+foreach($db_opts as $name=>$label){
+	printf('<option %s value="%s">%s</option>',
+		($CORE_LOCAL->get('DBMS')==$name?'selected':''),
+		$name,$label);
 }
 confsave('DBMS',"'".$CORE_LOCAL->get('DBMS')."'");
 ?>
@@ -279,14 +278,13 @@ confsave('mServer',"'".$CORE_LOCAL->get('mServer')."'");
 Server database type:</td><td>
 <select name=SERVER_TYPE>
 <?php
+$db_opts = array('mysql'=>'MySQL','mssql'=>'SQL Server',
+	'pdomysql'=>'MySQL (PDO)','pdomssql'=>'SQL Server (PDO)');
 if (isset($_REQUEST['SERVER_TYPE'])) $CORE_LOCAL->set('mDBMS',$_REQUEST['SERVER_TYPE'],True);
-if ($CORE_LOCAL->get('mDBMS') == 'mssql'){
-	echo "<option value=mysql>MySQL</option>";
-	echo "<option value=mssql selected>SQL Server</option>";
-}
-else {
-	echo "<option value=mysql selected>MySQL</option>";
-	echo "<option value=mssql>SQL Server</option>";
+foreach($db_opts as $name=>$label){
+	printf('<option %s value="%s">%s</option>',
+		($CORE_LOCAL->get('mDBMS')==$name?'selected':''),
+		$name,$label);
 }
 confsave('mDBMS',"'".$CORE_LOCAL->get('mDBMS')."'");
 ?>
