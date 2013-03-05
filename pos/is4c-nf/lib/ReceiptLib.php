@@ -1031,12 +1031,12 @@ static public function printReceipt($arg1,$second=False) {
 	global $CORE_LOCAL;
 
 	self::$PRINT_OBJ = new ESCPOSPrintHandler();
+	$receipt = "";
 
 	$kicker_class = ($CORE_LOCAL->get("kickerModule")=="") ? 'Kicker' : $CORE_LOCAL->get('kickerModule');
 	$kicker_object = new $kicker_class();
 	if (!is_object($kicker_object)) $kicker_object = new Kicker();
 	$dokick = $kicker_object->doKick();
-	$receipt = "";
 
 	if ($arg1 == "full" && $dokick) {	// ---- apbw 03/29/05 Drawer Kick Patch
 		$kick_cmd = self::$PRINT_OBJ->DrawerKick(2,48*2,30*2);
