@@ -1,4 +1,6 @@
 <?php
+header('Location: ItemEditorPage.php');
+exit;
 /*******************************************************************************
 
     Copyright 2005,2009 Whole Foods Community Co-op
