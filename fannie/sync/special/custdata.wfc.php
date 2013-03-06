@@ -21,7 +21,8 @@
 
 *********************************************************************************/
 
-include($FANNIE_ROOT.'sync/special/generic.mysql.php');
+include(dirname(__FILE__).'/../../config.php');
+require_once($FANNIE_ROOT.'sync/special/generic.mysql.php');
 
 // on each MySQL lane, load the CSV file
 foreach($FANNIE_LANES as $lane){

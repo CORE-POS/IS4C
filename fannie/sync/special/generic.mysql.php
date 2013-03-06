@@ -28,6 +28,7 @@
 
 // mysql version probably looks like this (not tested):
 // could use some error checking on connection/success, obviously
+include(dirname(__FILE__).'/../../config.php');
 include_once($FANNIE_ROOT.'src/tmp_dir.php');
 $tempfile = tempnam(sys_get_temp_dir(),$table.".sql");
 if (empty($table)) return;
