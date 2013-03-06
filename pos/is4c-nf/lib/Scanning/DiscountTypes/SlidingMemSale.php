@@ -34,7 +34,7 @@ class SlidingMemSale extends DiscountType {
 		$ret["unitPrice"] = $row['normal_price'];
 
 		$ret['discount'] = 0;
-		$ret['memDiscount'] = $row['special_price'] * $quantity;
+		$ret['memDiscount'] = MiscLib::truncate2($row['special_price'] * $quantity);
 
 		if ($CORE_LOCAL->get("isMember"))
 			$ret['unitPrice'] -= $row['special_price'];
