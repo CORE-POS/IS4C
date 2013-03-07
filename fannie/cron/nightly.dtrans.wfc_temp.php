@@ -1,7 +1,7 @@
 <?php
 /*******************************************************************************
 
-    Copyright 2011 Whole Foods Co-op
+    Copyright 2009 Whole Foods Co-op
 
     This file is part of Fannie.
 
@@ -21,10 +21,159 @@
 
 *********************************************************************************/
 
-function mk_trans_archive_table($month,$year,$db,$redo=False){
-	global $FANNIE_SERVER_DBMS, $FANNIE_ARCHIVE_REMOTE,
-		$FANNIE_ARCHIVE_DBMS, $FANNIE_ARCHIVE_DB;;
+/* HELP
 
+   nightly.dtrans.php
+
+   [ variant for archiving to two servers ]
+
+   This script archives transaction data. The main
+   reason for rotating transaction data into
+   multiple snapshot tables is speed. A single large
+   transaction table eventually becomes slow. The 
+   rotation applied here is as follows:
+
+   dtransactions is copied into transarchive, then
+   transarchive is trimmed so it contains the previous
+   90 days of transactions.
+
+   dlog_15, a lookup table of the past 15 days'
+   transaction data, is reloaded using transarchive
+
+   dtransactions is also copied to a monthly snapshot,
+   transarchiveYYYYMM on the archive database. Support
+   for archiving to a remote server is theoretical and
+   should be thoroughly tested before being put into
+   production. Archive tables are created automatically
+   as are corresponding dlog and receipt views.
+
+   After dtransactions has been copied to these two
+   locations, it is truncated. This script is meant to
+   be run nightly so that dtransactions always holds
+   just the current day's data. 
+*/
+
+include('../config.php');
+include('../src/SQLManager.php');
+include($FANNIE_ROOT.'src/cron_msg.php');
+
+set_time_limit(0);
+
+/* push from MySQL to MSSQL */
+
+unlink('/pos/csvs/mydtrans.csv');
+
+$dbc = new SQLManager("129.103.2.2","MYSQL","is4c_trans","root",$FANNIE_SERVER_PW);
+$dbc->query("SELECT * FROM dtransactions
+	INTO OUTFILE '/pos/csvs/mydtrans.csv'
+	FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\"'
+	LINES TERMINATED BY '\\r\\n'");
+$dbc->close();
+
+$dbc = new SQLManager('129.103.2.10','MSSQL','WedgePOS',
+		'sa',$FANNIE_SERVER_PW);
+$dbc->query("exec master..xp_cmdshell 'dtsrun /S IS4CSERV\IS4CSERV /U sa /P $FANNIE_SERVER_PW /N dt-import-my',no_output",'WedgePOS');
+$dbc->close();
+
+/* end pull */
+
+exit;
+
+/* push from MSSQL to MySQL follows */
+/*
+$dbc = new SQLManager('129.103.2.10','MSSQL','WedgePOS',
+		'sa',$FANNIE_SERVER_PW);
+$dbc->query("exec master..xp_cmdshell 'dtsrun /S IS4CSERV\IS4CSERV /U sa /P $FANNIE_SERVER_PW /N export_dt',no_output",'WedgePOS');
+$dbc->close();
+
+$sql = new SQLManager('129.103.2.2','MYSQL','is4c_trans',
+		'root',$FANNIE_SERVER_PW);
+
+$sql->query("LOAD DATA LOCAL INFILE '/pos/csvs/dtransactions.csv' 
+	INTO TABLE dtransactions
+	FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\"'
+	LINES TERMINATED BY '\\r\\n'");
+*/
+
+/*
+$sql = new SQLManager('129.103.2.2','MYSQL','is4c_trans',
+		'root',$FANNIE_SERVER_PW);
+*/
+/* Load dtransactions into the archive, trim to 90 days */
+/*
+$chk1 = $sql->query("INSERT INTO transarchive SELECT * FROM dtransactions");
+$chk2 = $sql->query("DELETE FROM transarchive WHERE ".$sql->datediff($sql->now(),'datetime')." > 92");
+if ($chk1 === false)
+	echo cron_msg("Error loading data into transarchive");
+elseif ($chk2 === false)
+	echo cron_msg("Error trimming transarchive");
+else
+	echo cron_msg("Data rotated into transarchive");
+*/
+
+/* reload all the small snapshot */
+/*
+$chk1 = $sql->query("TRUNCATE TABLE dlog_15");
+$chk2 = $sql->query("INSERT INTO dlog_15 SELECT * FROM dlog_90_view WHERE ".$sql->datediff($sql->now(),'tdate')." <= 15");
+if ($chk1 === false || $chk2 === false)
+	echo cron_msg("Error reloading dlog_15");
+else
+	echo cron_msg("Success reloading dlog_15");
+*/
+
+// use partitioned archive table; needs better solution by 3/31/2012
+//$sql->query("INSERT INTO trans_archive.bigArchive SELECT * FROM dtransactions");
+/* figure out which monthly archive dtransactions data belongs in */
+/*
+$res = $sql->query("SELECT month(datetime),year(datetime) FROM dtransactions");
+$row = $sql->fetch_row($res);
+$dstr = $row[1].(str_pad($row[0],2,'0',STR_PAD_LEFT));
+$table = 'transArchive'.$dstr;
+
+// archive dtransactions locally
+if(!$FANNIE_ARCHIVE_REMOTE || True){
+	$sql = new SQLManager('129.103.2.2','MYSQL',$FANNIE_ARCHIVE_DB,
+			'root',$FANNIE_SERVER_PW);
+	if (!$sql->table_exists($table)){
+		$query = "CREATE TABLE $table LIKE is4c_trans.dtransactions";
+		$chk1 = $sql->query($query,$FANNIE_ARCHIVE_DB);
+		// mysql doesn't create & populate in one step
+		$chk2 = $sql->query("INSERT INTO $table SELECT * FROM is4c_trans.dtransactions");
+		if ($chk1 === false || $chk2 === false)
+			echo cron_msg("Error creating new archive $table");
+		else
+			echo cron_msg("Created new table $table and archived dtransactions");
+		createViews($dstr,$sql);
+	}
+	else {
+		$query = "INSERT INTO $table SELECT * FROM is4c_trans.dtransactions";
+		$chk = $sql->query($query,$FANNIE_ARCHIVE_DB);
+		if ($chk === false)
+			echo cron_msg("Error archiving dtransactions");
+		else
+			echo cron_msg("Success archiving dtransactions");
+	}
+}
+*/
+
+/* drop dtransactions data */
+/*
+$sql = new SQLManager('129.103.2.2','MYSQL','is4c_trans',
+		'root',$FANNIE_SERVER_PW);
+$chk = $sql->query("TRUNCATE TABLE dtransactions");
+if ($chk === false)
+	echo cron_msg("Error truncating dtransactions");
+else
+	echo cron_msg("Success truncating dtransactions");
+*/
+
+function createArchive($name,$db,$override_dbms=''){
+	global $FANNIE_SERVER_DBMS, $FANNIE_ARCHIVE_REMOTE,
+		$FANNIE_ARCHIVE_DBMS, $FANNIE_ARCHIVE_DB;
+
+	$dbms = $FANNIE_ARCHIVE_REMOTE?$FANNIE_ARCHIVE_DBMS:$FANNIE_SERVER_DBMS;
+	if ($override_dbms != '') $dbms = $override_dbms;
+	
 	$trans_columns = "(
 	  `datetime` datetime default NULL,
 	  `register_no` smallint(6) default NULL,
@@ -54,7 +203,7 @@ function mk_trans_archive_table($month,$year,$db,$redo=False){
 	  `volDiscType` tinyint(4) default NULL,
 	  `volume` tinyint(4) default NULL,
 	  `VolSpecial` double default NULL,
-	  `mixMatch` varchar(13) default NULL,
+	  `mixMatch` smallint(6) default NULL,
 	  `matched` smallint(6) default NULL,
 	  `memType` tinyint(2) default NULL,
 	  `staff` tinyint(4) default NULL,
@@ -64,7 +213,7 @@ function mk_trans_archive_table($month,$year,$db,$redo=False){
 	  `trans_id` int(11) default NULL
 	)";
 
-	if ($FANNIE_SERVER_DBMS == 'MSSQL'){
+	if ($dbms == 'MSSQL'){
 		$trans_columns = "([datetime] [datetime] NOT NULL ,
 			[register_no] [smallint] NOT NULL ,
 			[emp_no] [smallint] NOT NULL ,
@@ -93,51 +242,29 @@ function mk_trans_archive_table($month,$year,$db,$redo=False){
 			[volDiscType] [tinyint] NOT NULL ,
 			[volume] [tinyint] NOT NULL ,
 			[VolSpecial] [money] NOT NULL ,
-			[mixMatch] [nvarchar] (13) COLLATE SQL_Latin1_General_CP1_CI_AS NULL ,
+			[mixMatch] [smallint] NULL ,
 			[matched] [smallint] NOT NULL ,
 			[memType] [smallint] NULL ,
-			[staff] [tinyint] NULL ,
+			[isStaff] [tinyint] NULL ,
 			[numflag] [smallint] NULL ,
 			[charflag] [nvarchar] (2) COLLATE SQL_Latin1_General_CP1_CI_AS NULL ,
 			[card_no] [nvarchar] (6) COLLATE SQL_Latin1_General_CP1_CI_AS NULL ,
 			[trans_id] [int] NOT NULL )";
 	}
 
-	$month = str_pad($month,2,'0',STR_PAD_LEFT);
-	if (strlen($year) == 2) $year = "20".$year;
-	elseif(strlen($year) != 4)
-		$year = "20".substr($year,-2);
-	$name = "transArchive".$year.$month;
-
-	$q = "CREATE TABLE $name $trans_columns";
-	
-	$exists = $db->table_exists($name);
-	if (!$exists){
-		$db->query($q,$FANNIE_ARCHIVE_DB);
-		echo "Created archive table for $month / $year<br />";
-	}
-	else if ($exists && $redo){
-		$db->query("DROP TABLE $name",$FANNIE_ARCHIVE_DB);
-		$db->query($q,$FANNIE_ARCHIVE_DB);
-		echo "Re-created archive table for $month / $year<br />";
-	}
-	else {
-		echo "Skipping existing table for $month / $year<br />";
-	}
+	$db->query("CREATE TABLE $table $trans_columns",$FANNIE_ARCHIVE_DB);
 }
 
-function mk_trans_archive_views($month,$year,$db){
-	global $FANNIE_SERVER_DBMS, $FANNIE_ARCHIVE_DB;
+function createViews($dstr,$db){
+	global $FANNIE_SERVER_DBMS, $FANNIE_ARCHIVE_REMOTE,
+		$FANNIE_ARCHIVE_DBMS, $FANNIE_ARCHIVE_DB,
+		$FANNIE_SERVER,$FANNIE_SERVER_PW,$FANNIE_SERVER_USER,
+		$FANNIE_ARCHIVE_SERVER,$FANNIE_ARCHIVE_USER,
+		$FANNIE_ARCHIVE_PW;	
 
-	$month = str_pad($month,2,'0',STR_PAD_LEFT);
-	if (strlen($year) == 2) $year = "20".$year;
-	elseif(strlen($year) != 4)
-		$year = "20".substr($year,-2);
+	$dbms = 'MYSQL';
 
-	/* dlog view only requires slight tweak for My/MS SQL
-	   receipt views are more divergent thus listed completely
-	   separate */
-	$dlogQ = "CREATE  view dlog$year$month as
+	$dlogQ = "CREATE  view dlog$dstr as
 		select 
 		d.datetime as tdate, 
 		d.register_no, 
@@ -158,20 +285,53 @@ function mk_trans_archive_views($month,$year,$db){
 		d.itemQtty, 
 		d.memType,
 		d.staff,
+		d.numflag,
+		d.charflag,
 		d.card_no, 
-		d.trans_id,";
-	if (strstr($FANNIE_SERVER_DBMS,"MYSQL")){
-		$dlogQ .= "concat(convert(d.emp_no,char), '-', convert(d.register_no,char), '-',
-			convert(d.trans_no,char)) as trans_num";
-	}
-	else {
-		$dlogQ .= "(convert(varchar,d.emp_no) +  '-' + convert(varchar,d.register_no) + '-' + 
-			convert(varchar,d.trans_no)) as trans_num";
-	}
-	$dlogQ .= " from transArchive$year$month as d
+		d.trans_id,
+		concat(convert(d.emp_no,char), '-', convert(d.register_no,char), '-',
+		convert(d.trans_no,char)) as trans_num
+
+		from transArchive$dstr as d
 		where d.trans_status not in ('D','X','Z') and d.emp_no not in (9999,56) and d.register_no  <> 99";
-	
-	$rp1Q = "CREATE  view rp_dt_receipt_$year$month as 
+
+	if ($dbms == "MSSQL"){
+		$dlogQ = "CREATE  view dlog$dstr as
+			select 
+			d.datetime as tdate, 
+			d.register_no, 
+			d.emp_no, 
+			d.trans_no, 
+			d.upc, 
+			CASE WHEN (d.trans_subtype IN ('CP','IC') OR d.upc like('%000000052')) then 'T' 
+				WHEN d.upc = 'DISCOUNT' then 'S' else d.trans_type end as trans_type, 
+			CASE WHEN d.upc = 'MAD Coupon' THEN 'MA' ELSe 
+			   case when d.upc like('%00000000052') then 'RR' else d.trans_subtype end end as trans_subtype, 
+			d.trans_status, 
+			d.department, 
+			d.quantity, 
+			d.unitPrice, 
+			d.total, 
+			d.tax, 
+			d.foodstamp, 
+			d.itemQtty, 
+			d.memType,
+			d.isStaff,
+			d.numflag,
+			d.charflag,
+			d.card_no, 
+			d.trans_id,
+			(convert(varchar,d.emp_no) +  '-' + convert(varchar,d.register_no) + '-' + 
+			convert(varchar,d.trans_no)) as trans_num
+
+			from transArchive$dstr as d
+			where d.trans_status not in ('D','X','Z') and d.emp_no not in (9999,56) and d.register_no  <> 99";
+	}
+	$chk = $db->query($dlogQ,$FANNIE_ARCHIVE_DB);
+	if ($chk === false)
+		echo cron_msg("Error creating dlog view for new archive table");
+
+	$rp1Q = "CREATE  view rp_dt_receipt_$dstr as 
 		select 
 		datetime,
 		register_no,
@@ -196,9 +356,11 @@ function mk_trans_archive_views($month,$year,$db){
 			when matched > 0
 				then '1 w/ vol adj'
 			else ''
+				
 		end
 		as comment,
 			total,
+
 		case 
 			when trans_status = 'V' 
 				then 'VD'
@@ -221,11 +383,10 @@ function mk_trans_archive_views($month,$year,$db){
 		trans_id,
 		concat(convert(emp_no,char), '-', convert(register_no,char), '-', convert(trans_no,char)) as trans_num
 
-		from transArchive$year$month
+		from transArchive$dstr
 		where voided <> 5 and UPC <> 'TAX' and UPC <> 'DISCOUNT'";
-
-	if ($FANNIE_SERVER_DBMS == 'MSSQL'){
-		$rp1Q = "CREATE  view rp_dt_receipt_$year$month as 
+	if ($dbms == 'MSSQL'){
+		$rp1Q = "CREATE  view rp_dt_receipt_$dstr as 
 			select 
 			datetime,
 			register_no,
@@ -250,9 +411,11 @@ function mk_trans_archive_views($month,$year,$db){
 				when matched > 0
 					then '1 w/ vol adj'
 				else ''
+					
 			end
 			as comment,
 				total,
+
 			case 
 				when trans_status = 'V' 
 					then 'VD'
@@ -274,12 +437,15 @@ function mk_trans_archive_views($month,$year,$db){
 			voided,
 			trans_id,
 			(convert(varchar,emp_no) +  '-' + convert(varchar,register_no) + '-' + convert(varchar,trans_no)) as trans_num
-			from transArchive$year$month
+
+			from transArchive$dstr
 			where voided <> 5 and UPC <> 'TAX' and UPC <> 'DISCOUNT'";
 	}
+	$chk = $db->query($rp1Q,$FANNIE_ARCHIVE_DB);
+	if ($chk === false)
+		echo cron_msg("Error creating receipt view for new archive table");
 
-	
-	$rp2Q = "create  view rp_receipt_header_$year$month as
+	$rp2Q = "create  view rp_receipt_header_$dstr as
 		select
 		datetime as dateTimeStamp,
 		card_no as memberID,
@@ -294,11 +460,11 @@ function mk_trans_archive_views($month,$year,$db){
 		abs(sum(case when trans_subtype = 'MI' or trans_subtype = 'CX' then total else 0 end)) as chargeTotal,
 		sum(case when upc = 'Discount' then total else 0 end) as transDiscount,
 		sum(case when trans_type = 'T' then -1 * total else 0 end) as tenderTotal
-		from transArchive$year$month
-		group by register_no, emp_no, trans_no, card_no, datetime";
 
-	if ($FANNIE_SERVER_DBMS == 'MSSQL'){
-		$rp2Q = "create  view rp_receipt_header_$year$month as
+		from transArchive$dstr
+		group by register_no, emp_no, trans_no, card_no, datetime";
+	if ($dbms == 'MSSQL'){
+		$rp2Q = "create  view rp_receipt_header_$dstr as
 			select
 			datetime as dateTimeStamp,
 			card_no as memberID,
@@ -313,22 +479,13 @@ function mk_trans_archive_views($month,$year,$db){
 			abs(sum(case when trans_subtype = 'MI' or trans_subtype = 'CX' then total else 0 end)) as chargeTotal,
 			sum(case when upc = 'Discount' then total else 0 end) as transDiscount,
 			sum(case when trans_type = 'T' then -1 * total else 0 end) as tenderTotal
-			from transArchive$year$month
+
+			from transArchive$dstr
 			group by register_no, emp_no, trans_no, card_no, datetime";
 	}
-
-	if ($db->table_exists("dlog".$year.$month,$FANNIE_ARCHIVE_DB))
-		$db->query("DROP VIEW dlog$year$month");
-	$db->query($dlogQ);
-	if ($db->table_exists("rp_dt_receipt_".$year.$month,$FANNIE_ARCHIVE_DB))
-		$db->query("DROP VIEW rp_dt_receipt_$year$month");
-	$db->query($rp1Q);
-	if ($db->table_exists("rp_receipt_header_".$year.$month,$FANNIE_ARCHIVE_DB))
-		$db->query("DROP VIEW rp_receipt_header_$year$month");
-	$db->query($rp2Q);
-
-	echo "Created views for $month / $year <br />";
+	$chk = $db->query($rp2Q,$FANNIE_ARCHIVE_DB);
+	if ($chk === false)
+		echo cron_msg("Error creating receipt header view for new archive table");
 }
-	
 
 ?>

@@ -589,7 +589,7 @@ function CreateEmptyOrder(){
 	global $dbc,$TRANS,$FANNIE_SERVER_DBMS;
 	$user = checkLogin();
 	$orderID = 1;
-	$val = ($FANNIE_SERVER_DBMS == "MYSQL" ? "VALUES()" : "DEFAULT VALUES");
+	$val = ($FANNIE_SERVER_DBMS != "MSSQL" ? "VALUES()" : "DEFAULT VALUES");
 	$dbc->query("INSERT {$TRANS}SpecialOrderID $val");
 	$orderID = $dbc->insert_id();
 
