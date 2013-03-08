@@ -23,17 +23,17 @@ x               Add Product List and Tool to Item Maint submenu0
 <ul id="css_menu_root">
 
 <li style="width:100%;" class="menu0">
-	<a href="<?php echo $path; ?>item/itemMaint.php">Item Maintenance</a>
+	<a href="<?php echo $path; ?>item/ItemEditorPage.php">Item Maintenance</a>
 	<div class="menuwrapper">
 	<div class="submenu level0" style="width:155px;top:-28px;left:135px;">
 		<ul style="">
 
-			<li><a href="<?php echo $path; ?>item/itemMaint.php" title="item or brand">Manage Products &gt;&gt;</a>
+			<li><a href="<?php echo $path; ?>item/ItemEditorPage.php" title="item or brand">Manage Products &gt;&gt;</a>
 				<div class="menuwrapper">
 					<div class="submenu level1" style="width:195px;top:-28px;left:135px;">
 					<ul style="">
-					<li><a href="<?php echo $path; ?>item/itemMaint.php">By UPC/SKU or Brand prefix</a></li>
-					<li><a href="<?php echo $path; ?>item/productList.php" title="List and edit">Product List and Tool</a></li>
+					<li><a href="<?php echo $path; ?>item/ItemEditorPage.php">By UPC/SKU or Brand prefix</a></li>
+					<li><a href="<?php echo $path; ?>item/ProductListPage.php" title="List and edit">Product List and Tool</a></li>
 					<li><a href="<?php echo $path; ?>item/ItemFlags.php" title="List and edit">Product Flags</a></li>
 					</ul>
 					</div>
@@ -43,8 +43,8 @@ x               Add Product List and Tool to Item Maint submenu0
 				<div class="menuwrapper">
 					<div class="submenu level1" style="width:155px;top:-28px;left:135px;">
 					<ul style="">
-					<li><a href="<?php echo $path; ?>item/import/prod.php">Products</a></li>
-					<li><a href="<?php echo $path; ?>item/import/uploadAnyFile.php">Upload a file</a></li>
+					<li><a href="<?php echo $path; ?>item/import/ProductImportPage.php">Products</a></li>
+					<li><a href="<?php echo $path; ?>item/import/UploadAnyFile.php">Upload a file</a></li>
 					</ul>
 					</div>
 				</div>
@@ -54,9 +54,9 @@ x               Add Product List and Tool to Item Maint submenu0
 				<div class="menuwrapper">
 					<div class="submenu level1" style="width:155px;top:-28px;left:135px;">
 					<ul style="">
-					<li><a href="<?php echo $path; ?>item/departments/super.php">Super Departments</a></li>
-					<li><a href="<?php echo $path; ?>item/departments/dept.php">Departments</a></li>
-					<li><a href="<?php echo $path; ?>item/departments/sub.php">Sub Departments</a></li>
+					<li><a href="<?php echo $path; ?>item/departments/SuperDeptEditor.php">Super Departments</a></li>
+					<li><a href="<?php echo $path; ?>item/departments/DepartmentEditor.php">Departments</a></li>
+					<li><a href="<?php echo $path; ?>item/departments/SubDeptEditor.php">Sub Departments</a></li>
 					</ul>
 					</div>
 				</div>
@@ -67,9 +67,9 @@ x               Add Product List and Tool to Item Maint submenu0
 					<div class="submenu level1" style="width:155px;top:-28px;left:135px;">
 					<ul style="">
 					<!-- li><a href="<?php echo $path; ?>item/import/super.php">Super Departments</a></li -->
-					<li><a href="<?php echo $path; ?>item/import/dept.php">Departments</a></li>
-					<li><a href="<?php echo $path; ?>item/import/subdept.php">Sub Departments</a></li>
-					<li><a href="<?php echo $path; ?>item/import/uploadAnyFile.php">Upload a file</a></li>
+					<li><a href="<?php echo $path; ?>item/import/DepartmentImportPage.php">Departments</a></li>
+					<li><a href="<?php echo $path; ?>item/import/SubdeptImportPage.php">Sub Departments</a></li>
+					<li><a href="<?php echo $path; ?>item/import/UploadAnyFile.php">Upload a file</a></li>
 					</ul>
 					</div>
 				</div>
@@ -77,7 +77,7 @@ x               Add Product List and Tool to Item Maint submenu0
 
 			<li><a href="<?php echo $path; ?>item/likecodes/">Manage Likecodes</a></li>
 			<li><a href="<?php echo $path; ?>item/vendors/">Manage Vendors</a></li>
-			<li><a href="<?php echo $path; ?>modules/plugins/HouseCoupon/HouseCoupon.php">Store Coupons</a></li>
+			<li><a href="<?php echo $path; ?>modules/plugins2.0/HouseCoupon/HouseCoupon.php">Store Coupons</a></li>
 		</ul>
 	</div>
 	</div>
@@ -135,7 +135,7 @@ x               Add Product List and Tool to Item Maint submenu0
 				</ul>
 				</div>
 				</div>
-			<li><a href="<?php echo $path; ?>item/productList.php">Product List and Tool</a></li>
+			<li><a href="<?php echo $path; ?>item/ProductListPage.php">Product List and Tool</a></li>
 			<li><a href="<?php echo $path; ?>reports/PriceHistory/">Price History Report</a></li>
 			<li><a href="<?php echo $path; ?>reports/DepartmentSettings/">Department Settings</a></li>
 			<li><a href="<?php echo $path; ?>reports/OpenRings/">Open Rings</a></li>

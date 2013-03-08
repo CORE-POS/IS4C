@@ -21,24 +21,15 @@
 
 *********************************************************************************/
 
-/**
-  Stopgap; work even if module system isn't configured
-*/
-if (basename($_SERVER['PHP_SELF']) == 'HouseCoupon.php'){
-	include('../../../config.php');
-	include($FANNIE_ROOT.'class-lib/FannieModule.php');
-	include($FANNIE_ROOT.'class-lib/FannieFunctions.php');
-	include($FANNIE_ROOT.'class-lib/FanniePage.php');
-	include($FANNIE_ROOT.'class-lib/db/SQLManager.php');
-	include($FANNIE_ROOT.'class-lib/db/DatabaseFunctions.php');
-}
+include('../../../config.php');
+include($FANNIE_ROOT.'classlib2.0/FanniePage.php');
+include($FANNIE_ROOT.'classlib2.0/data/FannieDB.php');
+include($FANNIE_ROOT.'classlib2.0/lib/FormLib.php');
 
 /**
   @class HouseCoupon
 */
 class HouseCoupon extends FanniePage {
-
-	public $required = False;
 
 	public $description = "
 	Module for managing in store coupons
@@ -51,118 +42,108 @@ class HouseCoupon extends FanniePage {
 	private $coupon_id;
 
 	function preprocess(){
-		global $FANNIE_SERVER_DBMS;
+		global $FANNIE_OP_DB;
 		$this->display_function = 'list_house_coupons';
 
-		if (isset($_REQUEST['edit_id'])){
-			$this->coupon_id = (int)$_REQUEST['edit_id'];
+		if (FormLib::get_form_value('edit_id','') !== ''){
+			$this->coupon_id = (int)FormLib::get_form_value('edit_id',0);
 			$this->display_function = 'edit_coupon';
 		}
-		else if (isset($_REQUEST['new_coupon_submit'])){
-			$dbc = op_connect();
+		else if (FormLib::get_form_value('new_coupon_submit') !== ''){
+			$dbc = FannieDB::get($FANNIE_OP_DB);
 
 			$maxQ = "SELECT max(coupID) from houseCoupons";
 			$max = array_pop($dbc->fetch_row($dbc->query($maxQ)));
 			$this->coupon_id = $max+1;
 			
-			$insQ = sprintf("INSERT INTO houseCoupons (coupID) values (%d)",
-				$this->coupon_id);;
-			$dbc->query($insQ);
+			$insQ = $dbc->prepare_statement("INSERT INTO houseCoupons (coupID) values (?)");
+			$dbc->exec_statement($insQ,array($this->coupon_id));
 
 			$this->display_function='edit_coupon';
 			
 			$dbc->close();
 		}
-		else if (isset($_REQUEST['explain_submit'])){
+		else if (FormLib::get_form_value('explain_submit') !== ''){
 			include(dirname(__FILE__).'/explainify.html');
 			return False;
 		}
-		else if (isset($_REQUEST['submit_save']) || isset($_REQUEST['submit_add_upc'])
-		  || isset($_REQUEST['submit_delete_upc']) || isset($_REQUEST['submit_add_dept'])
-		  || isset($_REQUEST['submit_delete_dept']) ){
+		else if (FormLib::get_form_value('submit_save') !== '' 
+		  || FormLib::get_form_value('submit_add_upc') !== ''
+		  || FormLib::get_form_value('submit_delete_upc') !== '' 
+		  || FormLib::get_form_value('submit_add_dept') !== ''
+		  || FormLib::get_form_value('submit_delete_dept') !== '' ){
 
-			$dbc = op_connect();
+			$dbc = FannieDB::get($FANNIE_OP_DB);
 
-			$this->coupon_id = isset($_REQUEST['cid']) ? (int)$_REQUEST['cid'] : 0;
-			$expires = isset($_REQUEST['expires'])?$_REQUEST['expires']:'';
-			if ($expires == '') $expires = "NULL";
-			else $expires = $dbc->escape($expires);
-			$limit = isset($_REQUEST['limit'])?$_REQUEST['limit']:1;
-			$mem = isset($_REQUEST['memberonly'])?1:0;
-			$dept = isset($_REQUEST['dept'])?$_REQUEST['dept']:800;
-			$dtype = isset($_REQUEST['dtype'])?$_REQUEST['dtype']:'Q';
-			$dval = isset($_REQUEST['dval'])?$_REQUEST['dval']:0;
-			$mtype = isset($_REQUEST['mtype'])?$_REQUEST['mtype']:'Q';
-			$mval = isset($_REQUEST['mval'])?$_REQUEST['mval']:0;
+			$this->coupon_id = FormLib::get_form_value('cid',0);
+			$expires = FormLib::get_form_value('expires');
+			if ($expires == '') $expires = null;
+			$limit = FormLib::get_form_value('limit',1);
+			$mem = FormLib::get_form_value('memberonly',0);
+			$dept = FormLib::get_form_value('dept',0);
+			$dtype = FormLib::get_form_value('dtype','Q');
+			$dval = FormLib::get_form_value('dval',0);
+			$mtype = FormLib::get_form_value('mtype','Q');
+			$mval = FormLib::get_form_value('mval',0);
 
-			$query =sprintf("UPDATE houseCoupons SET endDate=%s,
-				limit=%d,memberOnly=%d,discountType=%s,
-				discountValue=%f,minType=%s,minValue=%f,
-				department=%d WHERE coupID=%d",
-				$expires,$limit,$mem,$dbc->escape($dtype),
-				$dval,$dbc->escape($mtype),
-				$mval,$dept,$this->coupon_id);
-			if ($FANNIE_SERVER_DBMS == 'MYSQL')
-				$query = str_replace("limit","`limit`",$query);
-			$dbc->query($query);
+			$query = "UPDATE houseCoupons SET endDate=?,
+				".$dbc->identifier_escape('limit')."=?
+				,memberOnly=?,discountType=?,
+				discountValue=?,minType=?,minValue=?,
+				department=? WHERE coupID=?";
+			$args = array($expires,$limit,$mem,$dtype,
+				$dval,$mtype,$mval,$dept,$this->coupon_id);
+			$prep = $dbc->prepare_statement($query);
+			$dbc->exec_statement($prep,$args);
 			
 			$this->display_function = 'edit_coupon';
 
-			if (isset($_REQUEST['submit_add_upc']) && !empty($_REQUEST['new_upc'])){
+			if (FormLib::get_form_value('submit_add_upc') !== '' && FormLib::get_form_value('new_upc') !== ''){
 				/**
 				  Add (or update) a UPC
 				*/
-				$upc = str_pad($_REQUEST['new_upc'],13,'0',STR_PAD_LEFT);
-				$type = isset($_REQUEST['newtype']) ? $_REQUEST['newtype'] : 'BOTH';
-				$check = sprintf("SELECT upc FROM houseCouponItems WHERE
-					upc=%s and coupID=%d",$dbc->escape($upc),$this->coupon_id);
-				$check = $dbc->query($check);
+				$upc = str_pad(FormLib::get_form_value('new_upc'),13,'0',STR_PAD_LEFT);
+				$type = FormLib::get_form_value('newtype','BOTH');
+				$checkP = $dbc->prepare_statement('SELECT upc FROM houseCouponItems WHERE upc=? and coupID=?');
+				$check = $dbc->exec_statement($checkP,array($upc,$this->coupon_id));
 				if ($dbc->num_rows($check) == 0){
-					$query = sprintf("INSERT INTO houseCouponItems VALUES (
-						%d,%s,%s)",$this->coupon_id,$dbc->escape($upc),$dbc->escape($type));
-					$dbc->query($query);
+					$query = $dbc->prepare_statement("INSERT INTO houseCouponItems VALUES (?,?,?)");
+					$dbc->exec_statement($query,array($this->coupon_id,$upc,$type));
 				}
 				else {
-					$query = sprintf("UPDATE houseCouponItems SET type=%s
-						WHERE upc=%s AND coupID=%d",$dbc->escape($type),
-						$dbc->escape($upc),$this->coupon_id);
-					$dbc->query($query);
+					$query = $dbc->prepare_statement("UPDATE houseCouponItems SET type=?
+						WHERE upc=? AND coupID=?");
+					$dbc->exec_statement($query,array($type,$upc,$this->coupon_id));
 				}
 			}
-			if (isset($_REQUEST['submit_add_dept']) && !empty($_REQUEST['new_dept'])){
+			if (FormLib::get_form_value('submit_add_dept') !== '' && FormLib::get_form_value('new_dept') !== ''){
 				/**
 				  Add (or update) a department
 				*/
-				$dept = (int)$_REQUEST['new_dept'];
-				$type = isset($_REQUEST['newtype']) ? $_REQUEST['newtype'] : 'BOTH';
-				$check = sprintf("SELECT upc FROM houseCouponItems WHERE
-					upc=%s and coupID=%d",$dbc->escape($dept),$this->coupon_id);
-				$check = $dbc->query($check);
+				$dept = (int)FormLib::get_form_value('new_dept',0);
+				$type = FormLib::get_form_value('newtype','BOTH');
+				$checkP = $dbc->prepare_statement('SELECT upc FROM houseCouponItems WHERE upc=? and coupID=?');
+				$check = $dbc->exec_statement($checkP,array($dept,$this->coupon_id));
 				if ($dbc->num_rows($check) == 0){
-					$query = sprintf("INSERT INTO houseCouponItems VALUES (
-						%d,%s,%s)",$this->coupon_id,$dbc->escape($dept),$dbc->escape($type));
-					$dbc->query($query);
+					$query = $dbc->prepare_statement("INSERT INTO houseCouponItems VALUES (?,?,?)");
+					$dbc->exec_statement($query,array($this->coupon_id,$dept,$type));
 				}
 				else {
-					$query = sprintf("UPDATE houseCouponItems SET type=%s
-						WHERE upc=%s AND coupID=%d",$dbc->escape($type),
-						$dbc->escape($dept),$this->coupon_id);
-					$dbc->query($query);
+					$query = $dbc->prepare_statement("UPDATE houseCouponItems SET type=?
+						WHERE upc=? AND coupID=?");
+					$dbc->exec_statement($query,array($type,$dept,$this->coupon_id));
 				}
 			}
-			elseif (isset($_REQUEST['submit_delete_upc']) || isset($_REQUEST['submit_delete_dept'])){
+			elseif (FormLib::get_form_value('submit_delete_upc') !== '' || FormLib::get_form_value('submit_delete_dept') !== ''){
 				/**
 				  Delete UPCs and departments
 				*/
-				foreach($_REQUEST['del'] as $upc){
-					$query = sprintf("DELETE FROM houseCouponItems
-						WHERE upc=%s AND coupID=%d",
-						$dbc->escape($upc),$this->coupon_id);
-					$dbc->query($query);
+				$query = $dbc->prepare_statement("DELETE FROM houseCouponItems
+					WHERE upc=? AND coupID=?");
+				foreach(FormLib::get_form_value('del',array()) as $upc){
+					$dbc->exec_statement($query,array($upc,$this->coupon_id));
 				}
 			}
-
-			$dbc->close();
 		}
 
 		return True;
@@ -174,9 +155,10 @@ class HouseCoupon extends FanniePage {
 	}
 
 	function list_house_coupons(){
-		$dbc = op_connect();
+		global $FANNIE_OP_DB;
+		$dbc = FannieDB::get($FANNIE_OP_DB);
 		
-		$ret = $this->form_tag('get');
+		$ret = '<form action="HouseCoupon.php" method="get">';
 		$ret .= '<input type="submit" name="new_coupon_submit" value="New Coupon" />';
 		$ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
 		$ret .= '<input type="submit" name="explain_submit" value="Explanation of Settings" />';
@@ -186,9 +168,9 @@ class HouseCoupon extends FanniePage {
 		$q = "SELECT coupID, discountValue, discountType, endDate FROM houseCoupons ORDER BY coupID";
 		$r = $dbc->query($q);
 		while($w = $dbc->fetch_row($r)){
-			$ret .= sprintf('<tr><td>#%d <a href="%s&edit_id=%d">Edit</a></td>
+			$ret .= sprintf('<tr><td>#%d <a href="HouseCoupon.php?edit_id=%d">Edit</a></td>
 					<td>%.2f%s</td><td>%s</td></tr>',
-					$w['coupID'],$this->module_url(),$w['coupID'],
+					$w['coupID'],$w['coupID'],
 					$w['discountValue'],$w['discountType'],$w['endDate']);
 		}
 		$ret .= '</table>';
@@ -199,7 +181,8 @@ class HouseCoupon extends FanniePage {
 
 	function edit_coupon(){
 		global $FANNIE_URL;
-		$dbc = op_connect();
+		global $FANNIE_OP_DB;
+		$dbc = FannieDB::get($FANNIE_OP_DB);
 		
 		$depts = array();
 		$query = "SELECT dept_no,dept_name FROM departments ORDER BY dept_no";
@@ -225,7 +208,7 @@ class HouseCoupon extends FanniePage {
 		$mVal = $row['minValue'];
 		$dept = $row['department'];
 
-		$ret = $this->form_tag('post');
+		$ret .= '<form action="HouseCoupon.php" method="post">';
 		$ret .= '<input type="hidden" name="cid" value="'.$cid.'" />';
 
 		$ret .= sprintf('<table cellspacing=0 cellpadding=4><tr>
@@ -288,6 +271,7 @@ class HouseCoupon extends FanniePage {
 
 		$ret .= "</table>";
 		$ret .= "<br /><input type=submit name=submit_save value=Save />";
+		$ret .= ' | <input type="submit" value="Back" onclick="location=\'HouseCoupon.php\';return false;" />';
 
 		if ($mType == "Q" || $mType == "Q+" || $mType == "M"){
 			$ret .= "<hr />";
@@ -352,6 +336,6 @@ class HouseCoupon extends FanniePage {
 */
 if (basename($_SERVER['PHP_SELF']) == 'HouseCoupon.php'){
 	$obj = new HouseCoupon();
-	$obj->run_module();
+	$obj->draw_page();
 }
 
