@@ -21,22 +21,10 @@
 
 *********************************************************************************/
 
-class AllItemProductSearch extends ProductSearch {
+ini_set('display_errors','Off');
+include_once(realpath(dirname(__FILE__).'/../lib/AutoLoader.php'));
 
-	public function search($str){
-		$ret = array();
-		$sql = Database::pDataConnect();
-		$query = "select upc, description, normal_price, special_price, "
-			."advertised, scale from products where "
-			."description like '%".$str."%' "
-			."and inUse='1' "
-			."order by description";
-		$result = $sql->query($query);
-		while($row = $sql->fetch_row($result)){
-			$ret[$row['upc']] = $row;
-		}
-		return $ret;
-	}
-}
+if ($CORE_LOCAL->get("testremote")==0)
+	Database::testremote(); 
 
-?>
+echo 'Done';

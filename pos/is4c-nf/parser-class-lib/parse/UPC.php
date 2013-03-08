@@ -266,11 +266,11 @@ class UPC extends Parser {
 		if ($scale != 0 && $CORE_LOCAL->get("weight") == 0 && 
 			$CORE_LOCAL->get("quantity") == 0 && substr($upc,0,3) != "002") {
 
-			$CORE_LOCAL->set("SNR",1);
+			$CORE_LOCAL->set("SNR",$CORE_LOCAL->get('strEntered'));
 			$ret['output'] = DisplayLib::boxMsg(_("please put item on scale"));
 			$CORE_LOCAL->set("wgtRequested",0);
 			$CORE_LOCAL->set("warned",1);
-			$ret['retry'] = $CORE_LOCAL->get("strEntered");
+			//$ret['retry'] = $CORE_LOCAL->get("strEntered");
 			
 			return $ret;
 		}
