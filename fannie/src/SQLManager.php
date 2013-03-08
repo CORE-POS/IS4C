@@ -175,6 +175,20 @@ class SQLManager {
 			$which_connection = $this->default_db;
 		return $this->connections[$which_connection]->qstr($query_text);
 	}
+
+	function identifier_escape($str,$which_connection=''){
+		if ($which_connection == '')
+			$which_connection = $this->default_db;
+		switch($this->connections[$which_connection]->databaseType){
+		case 'mysql':
+		case 'mysqli':
+		case 'pdo':
+                        return '`'.$str.'`';
+		case 'mssql':
+                        return '['.$str.']';
+                }
+                return $str;
+        }
 	
 	/**
 	  Get number of rows in a result set
@@ -280,7 +294,7 @@ class SQLManager {
 		switch($this->connections[$which_connection]->databaseType){
 		case 'mysql':
 		case 'mysqli':
-		case 'pdo_mysql':
+		case 'pdo':
 			return "datediff($date1,$date2)";
 		case 'mssql':
 			return "datediff(dd,$date2,$date1)";
@@ -306,7 +320,7 @@ class SQLManager {
 		switch($this->connections[$which_connection]->databaseType){
 		case 'mysql':
 		case 'mysqli':
-		case 'pdo_mysql':
+		case 'pdo':
 			return "period_diff(date_format($date1, '%Y%m'), date_format($date2, '%Y%m'))";
 		case 'mssql':
 			return "datediff(mm,$date2,$date1)";
@@ -328,7 +342,7 @@ class SQLManager {
 		switch($this->connections[$which_connection]->databaseType){
 		case 'mysql':
 		case 'mysqli':
-		case 'pdo_mysql':
+		case 'pdo':
 			return "TIMESTAMPDIFF(SECOND,$date1,$date2)";
 		case 'mssql':
 			return "datediff(ss,$date2,$date1)";
@@ -349,7 +363,7 @@ class SQLManager {
 		switch($this->connections[$which_connection]->databaseType){
 		case 'mysql':
 		case 'mysqli':
-		case 'pdo_mysql':
+		case 'pdo':
 			return "DATE_FORMAT($date1,'%Y%m%d')";
 		case 'mssql':
 			return "CONVERT(CHAR(11),$date1,112)";
@@ -372,7 +386,7 @@ class SQLManager {
 		switch($this->connections[$which_connection]->databaseType){
 		case 'mysql':
 		case 'mysqli':
-		case 'pdo_mysql':
+		case 'pdo':
 			if(strtoupper($type)=='INT')
 				$type='SIGNED';
 			return "CONVERT($expr,$type)";
@@ -397,7 +411,7 @@ class SQLManager {
 		switch($this->connections[$which_connection]->databaseType){
 		case 'mysql':
 		case 'mysqli':
-		case 'pdo_mysql':
+		case 'pdo':
 			return "LOCATE($substr,$str)";
 		case 'mssql':
 			return "CHARINDEX($substr,$str)";
@@ -427,7 +441,7 @@ class SQLManager {
 		switch($this->connections[$which_connection]->databaseType){
 		case 'mysql':
 		case 'mysqli':
-		case 'pdo_mysql':
+		case 'pdo':
 			$ret .= "CONCAT(";
 			for($i=0;$i<count($args)-1;$i++)
 				$ret .= $args[$i].",";	
@@ -457,7 +471,7 @@ class SQLManager {
 		switch($this->connections[$which_connection]->databaseType){
 		case 'mysql':
 		case 'mysqli':
-		case 'pdo_mysql':
+		case 'pdo':
 			return "week($date1) - week($date2)";
 		case 'mssql':
 			return "datediff(wk,$date2,$date1)";
@@ -571,7 +585,7 @@ class SQLManager {
 		switch($this->connections[$which_connection]->databaseType){
 		case 'mysql':
 		case 'mysqli':
-		case 'pdo_mysql':
+		case 'pdo':
 			return "DATE_FORMAT($field,'%w')+1";
 		case 'mssql':
 			return "DATEPART(dw,$field)";
@@ -701,7 +715,7 @@ class SQLManager {
 		switch($this->connections[$which_connection]->databaseType){
 		case 'mysql':
 		case 'mysqli':
-		case 'pdo_mysql':
+		case 'pdo':
 			return 'decimal(10,2)';
 		case 'mssql':
 			return 'money';
@@ -723,7 +737,7 @@ class SQLManager {
 		switch($this->connections[$which_connection]->databaseType){
 		case 'mysql':
 		case 'mysqli':
-		case 'pdo_mysql':
+		case 'pdo':
 			return sprintf("%s LIMIT %d",$query,$int_limit);
 		case 'mssql':
 			return str_ireplace("SELECT ","SELECT TOP $int_limit ",$query);
@@ -741,7 +755,7 @@ class SQLManager {
 		switch($this->connections[$which_connection]->databaseType){
 		case 'mysql':
 		case 'mysqli':
-		case 'pdo_mysql':
+		case 'pdo':
 			return ".";
 		case 'mssql':
 			return ".dbo.";
