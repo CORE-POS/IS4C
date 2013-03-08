@@ -105,6 +105,41 @@ echo "<br /><b>Tenders</b>";
 echo tablify($tenders,array(1,0,2,3),array("Account","Type","Amount","Count"),
 	     array($ALIGN_LEFT,$ALIGN_LEFT,$ALIGN_RIGHT|$TYPE_MONEY,$ALIGN_RIGHT),2);
 
+$stamp = strtotime($dstr);
+$creditQ = "SELECT count(*) as num, 
+		sum(CASE WHEN q.mode='retail_alone_credit' THEN -amount ELSE amount END) as ttl,
+		CASE WHEN q.refNum LIKE '%-%' THEN 'FAPS' ELSE 'Mercury' END as proc
+	FROM is4c_trans.efsnetRequest AS q LEFT JOIN is4c_trans.efsnetResponse AS r ON q.refNum=r.refNum
+	WHERE q.date=? and r.httpCode=200 and 
+	(r.xResultMessage LIKE '%approved%' OR r.xResultMessage LIKE '%PENDING%')
+	GROUP BY 
+	CASE WHEN q.refNum LIKE '%-%' THEN 'FAPS' ELSE 'Mercury' END";
+$creditP = $dbc->prepare_statement($creditQ);
+$creditR = $dbc->exec_statement($creditP, array( date('Ymd',$stamp) ));
+$cTallies = array('FAPS'=>array(0.0,0),'Mercury'=>array(0.0,0),
+	'Non-integrated'=>array(0.0,0));
+while($creditW = $dbc->fetch_row($creditR)){
+	$cTallies[$creditW['proc']] = array($creditW['ttl'],$creditW['num']);
+}
+$nonQ = "SELECT count(*) as num, sum(-total) as ttl, 'Non-integrated' as proc
+	FROM $dlog as d LEFT JOIN 
+	(SELECT * FROM is4c_trans.efsnetResponse WHERE date=?
+	and httpCode=200 and 
+	(xResultMessage LIKE '%approved%' OR xResultMessage LIKE '%PENDING%')
+	) AS r ON d.register_no=r.laneNo and d.emp_no=r.cashierNo and d.trans_no=r.transNo
+	and d.trans_id=r.transID
+	WHERE d.trans_type='T' AND d.trans_subtype='CC' AND r.transID IS NULL 
+	AND ".$dbc->date_equals('d.tdate',$dstr);
+$nonP = $dbc->prepare_statement($nonQ);
+$nonR = $dbc->exec_statement($nonP, array( date('Ymd',$stamp) ));
+if ($dbc->num_rows($nonR) > 0){
+	$non = $dbc->fetch_row($nonR);
+	$cTallies['Non-integrated'] = array($non['ttl'],$non['num']);
+}
+echo '<br /><b>Integrated CC Supplement</b>';
+echo tablify($cTallies,array(0,1,2),array('Processor','Amount','Count'),
+	array($ALIGN_LEFT,$ALIGN_RIGHT|$TYPE_MONEY,$ALIGN_RIGHT),1);
+
 
 $pCodeQ = "SELECT s.salesCode,-1*sum(l.total) as total,min(l.department) 
 FROM $dlog as l 
