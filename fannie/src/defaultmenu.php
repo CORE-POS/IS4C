@@ -57,9 +57,9 @@ array('label'=>'Item Maintenance','url'=>'item/ItemEditorPage.php','subheading'=
 	),
 	array('label'=>'Manage Departments >>','url'=>'item/departments/',
 		'submenu'=>array(
-			array('label'=>'Super Departments','url'=>'item/departments/super.php'),
-			array('label'=>'Departments','url'=>'item/departments/dept.php'),
-			array('label'=>'Sub Departments','url'=>'item/departments/sub.php')
+			array('label'=>'Super Departments','url'=>'item/departments/SuperDeptEditor.php'),
+			array('label'=>'Departments','url'=>'item/departments/DepartmentEditor.php'),
+			array('label'=>'Sub Departments','url'=>'item/departments/SubDeptEditor.php')
 		)
 	),
 	array('label'=>'Import Departments >>','url'=>'item/import/',

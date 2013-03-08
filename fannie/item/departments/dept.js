@@ -28,9 +28,8 @@ function deptchange(){
 	}
 
 	$.ajax({
-		url: 'ajax.php',
+		url: 'DepartmentEditor.php',
 		type: 'POST',
-		dataType: 'text/html',
 		timeout: 1000,
 		data: 'did='+dID+'&action=deptDisplay',
 		error: function(){
@@ -62,9 +61,8 @@ function deptSave(){
 	qs += "&pcode="+$('#deptsalescode').val();
 
 	$.ajax({
-		url: 'ajax.php',
+		url: 'DepartmentEditor.php',
 		type: 'POST',
-		dataType: 'text/html',
 		timeout: 1000,
 		data: qs,
 		error: function(){
@@ -72,7 +70,6 @@ function deptSave(){
 		},
 		success: function(resp){
 			alert(resp);
-			top.location='dept.php';
 		}
 	});
 }

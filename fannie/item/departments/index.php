@@ -20,17 +20,5 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
-
-include('../../config.php');
-$page_title = "Fannie : Manage Departments";
-$header = "Manage Departments";
-include($FANNIE_ROOT.'src/header.html');
-?>
-<ul>
-<li> <a href="super.php">Super Departments</a></li>
-<li> <a href="dept.php">Departments</a></li>
-<li> <a href="sub.php">Sub Departments</a></li>
-</ul>
-<?php
-include($FANNIE_ROOT.'src/footer.html');
+header('Location: DepartmentIndexPage.php');
 ?>
