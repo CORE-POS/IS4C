@@ -73,7 +73,7 @@ $dataQ = "SELECT d.upc as upc, p.description as description,
 	AND datepart(ww,tdate) = $week
 	group by d.upc, p.description";
 // mysql handles week # differently by default
-if ($FANNIE_SERVER_DBMS == "MYSQL"){
+if (strstr($FANNIE_SERVER_DBMS,"MYSQL")){
 	$dataQ = "SELECT d.upc as upc, p.description as description,
 		sum(CASE WHEN d.quantity <> d.ItemQtty AND d.ItemQtty <> 0 THEN d.quantity*d.ItemQtty ELSE d.quantity END) as quantity,
 		sum(d.total) as dollars,
@@ -91,7 +91,7 @@ if ($FANNIE_SERVER_DBMS == "MYSQL"){
    so week is offset by one in the filename
    this may change back next year
 */
-$filename = "spins_wk".str_pad($week+1,2,"0",STR_PAD_LEFT).".csv";
+$filename = "spins_wfc_wk".str_pad($week+1,2,"0",STR_PAD_LEFT).".csv";
 $outfile = sys_get_temp_dir()."/".$filename;
 $fp = fopen($outfile,"w");
 
@@ -119,6 +119,8 @@ $upload = ftp_put($conn_id, $filename, $outfile, FTP_ASCII);
 if (!$upload){
 	echo "FTP upload failed";
 }
+
+echo date('r').': Uploaded file to SPINS';
 
 ftp_close($conn_id);
 

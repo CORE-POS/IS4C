@@ -8,6 +8,7 @@ function check_db_host($host,$dbms){
 	switch(strtoupper($dbms)){
 	case 'MYSQL':
 	case 'MYSQLI':
+	case 'PDO_MYSQL':
 		$port = 3306;
 		break;
 	case 'MSSQL':

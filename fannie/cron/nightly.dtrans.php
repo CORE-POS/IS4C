@@ -102,7 +102,7 @@ if ($FANNIE_ARCHIVE_REMOTE){
 else {
 	$sql = new SQLManager($FANNIE_SERVER,$FANNIE_SERVER_DBMS,$FANNIE_ARCHIVE_DB,
 			$FANNIE_SERVER_USER,$FANNIE_SERVER_PW);
-	if ($FANNIE_ARCHIVE_METHOD == "partitions" && $FANNIE_SERVER_DBMS == "MYSQL"){
+	if ($FANNIE_ARCHIVE_METHOD == "partitions" && strstr($FANNIE_SERVER_DBMS, "MYSQL")){
 		// we're just partitioning
 		// make a new partition if it's a new month
 		if (date('j') == 1){
@@ -144,7 +144,7 @@ else {
 			$query = "SELECT * INTO $table FROM $FANNIE_TRANS_DB.dbo.dtransactions";
 		$chk1 = $sql->query($query,$FANNIE_ARCHIVE_DB);
 		$chk2 = true;
-		if ($FANNIE_SERVER_DBMS == "MYSQL"){
+		if (strstr($FANNIE_SERVER_DBMS,"MYSQL")){
 			// mysql doesn't create & populate in one step
 			$chk2 = $sql->query("INSERT INTO $table SELECT * FROM $FANNIE_TRANS_DB.dtransactions");
 		}
@@ -167,7 +167,7 @@ else {
 
 	/* summary table stuff */
 
-	if ($sql->table_exists("sumUpcSalesByDay") && $FANNIE_SERVER_DBMS=="MYSQL"){	
+	if ($sql->table_exists("sumUpcSalesByDay") && strstr($FANNIE_SERVER_DBMS,"MYSQL")){
 		$sql->query("INSERT INTO sumUpcSalesByDay
 			SELECT DATE(tdate) AS tdate, upc,
 			CONVERT(SUM(total),DECIMAL(10,2)) as total,
@@ -177,7 +177,7 @@ else {
 			trans_type IN ('I') AND upc <> '0'
 			GROUP BY DATE(tdate), upc");
 	}
-	if ($sql->table_exists("sumRingSalesByDay") && $FANNIE_SERVER_DBMS=="MYSQL"){	
+	if ($sql->table_exists("sumRingSalesByDay") && strstr($FANNIE_SERVER_DBMS,"MYSQL")){	
 		$sql->query("INSERT INTO sumRingSalesByDay
 			SELECT DATE(tdate) AS tdate, upc, department,
 			CONVERT(SUM(total),DECIMAL(10,2)) as total,
@@ -187,7 +187,7 @@ else {
 			trans_type IN ('I','D') AND upc <> '0'
 			GROUP BY DATE(tdate), upc, department");
 	}
-	if ($sql->table_exists("sumDeptSalesByDay") && $FANNIE_SERVER_DBMS=="MYSQL"){	
+	if ($sql->table_exists("sumDeptSalesByDay") && strstr($FANNIE_SERVER_DBMS,"MYSQL")){
 		$sql->query("INSERT INTO sumDeptSalesByDay
 			SELECT DATE(tdate) AS tdate, department,
 			CONVERT(SUM(total),DECIMAL(10,2)) as total,
@@ -197,7 +197,7 @@ else {
 			trans_type IN ('I','D') 
 			GROUP BY DATE(tdate), department");
 	}
-	if ($sql->table_exists("sumMemSalesByDay") && $FANNIE_SERVER_DBMS=="MYSQL"){	
+	if ($sql->table_exists("sumMemSalesByDay") && strstr($FANNIE_SERVER_DBMS,"MYSQL")){	
 		$sql->query("INSERT INTO sumMemSalesByDay
 			SELECT DATE(tdate) AS tdate, card_no,
 			CONVERT(SUM(total),DECIMAL(10,2)) as total,
@@ -208,7 +208,7 @@ else {
 			trans_type IN ('I','D')
 			GROUP BY DATE(tdate), card_no");
 	}
-	if ($sql->table_exists("sumMemTypeSalesByDay") && $FANNIE_SERVER_DBMS=="MYSQL"){	
+	if ($sql->table_exists("sumMemTypeSalesByDay") && strstr($FANNIE_SERVER_DBMS,"MYSQL")){	
 		$sql->query("INSERT INTO sumMemTypeSalesByDay
 			SELECT DATE(tdate) AS tdate, c.memType,
 			CONVERT(SUM(total),DECIMAL(10,2)) as total,
@@ -222,7 +222,7 @@ else {
 			AND upc <> 'RRR' AND card_no <> 0
 			GROUP BY DATE(tdate), c.memType");
 	}
-	if ($sql->table_exists("sumTendersByDay") && $FANNIE_SERVER_DBMS=="MYSQL"){	
+	if ($sql->table_exists("sumTendersByDay") && strstr($FANNIE_SERVER_DBMS,"MYSQL")){	
 		$sql->query("INSERT INTO sumTendersByDay
 			SELECT DATE(tdate) AS tdate, trans_subtype,
 			CONVERT(SUM(total),DECIMAL(10,2)) as total,
@@ -232,7 +232,7 @@ else {
 			AND total <> 0
 			GROUP BY DATE(tdate), trans_subtype");
 	}
-	if ($sql->table_exists("sumDiscountsByDay") && $FANNIE_SERVER_DBMS=="MYSQL"){	
+	if ($sql->table_exists("sumDiscountsByDay") && strstr($FANNIE_SERVER_DBMS,"MYSQL")){	
 		$sql->query("INSERT INTO sumDiscountsByDay
 			SELECT DATE(tdate) AS tdate, c.memType,
 			CONVERT(SUM(total),DECIMAL(10,2)) as total,
