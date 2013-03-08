@@ -1,16 +1,16 @@
 <?php
 /*******************************************************************************
 
-    Copyright 2009 Whole Foods Co-op
+    Copyright 2011 Whole Foods Co-op, Duluth, MN
 
     This file is part of Fannie.
 
-    Fannie is free software; you can redistribute it and/or modify
+    IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    Fannie is distributed in the hope that it will be useful,
+    IT CORE is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
@@ -20,26 +20,29 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
-
 include('../../config.php');
-include($FANNIE_ROOT.'classlib2.0/data/FannieDB.php');
-include($FANNIE_ROOT.'classlib2.0/lib/FormLib.php');
-$dbc = FannieDB::get($FANNIE_OP_DB);
+include($FANNIE_ROOT.'classlib2.0/FanniePage.php');
 
-switch(FormLib::get_form_value('action')){
-case 'fetch':
-	$prep = $dbc->prepare_statement("SELECT u.upc,p.description FROM
-			upcLike AS u INNER JOIN products AS p
-			ON u.upc=p.upc WHERE u.likeCode=?
-			ORDER BY p.description");
-	$res = $dbc->exec_statement($prep,array(FormLib::get_form_value('lc',0)));
-	$ret = "";
-	while($row = $dbc->fetch_row($res)){
-		$ret .= "<a style=\"font-size:90%;\" href={$FANNIE_URL}item/itemMaint.php?upc=$row[0]>";
-		$ret .= $row[0]."</a> ".substr($row[1],0,25)."<br />";
+class ItemImportIndex extends FanniePage {
+	protected $title = "Fannie :: Product Tools";
+	protected $header = "Import Product Information";
+
+	function body_content(){
+		ob_start();
+		?>
+		<ul>
+		<li><a href="DepartmentImportPage.php">Departments</a></li>
+		<li><a href="SubdeptImportPage.php">Subdepartments</a></li>
+		<li><a href="ProductImportPage.php">Products</a></li>
+		<li><a href="UploadAnyFile.php">Upload a file</a></li>
+		</ul>
+		<?php
+		return ob_get_clean();
 	}
-	echo $ret;
-	break;
 }
 
+if (basename($_SERVER['PHP_SELF']) == basename(__FILE__)){
+	$obj = new ItemImportIndex();
+	$obj->draw_page();
+}
 ?>
