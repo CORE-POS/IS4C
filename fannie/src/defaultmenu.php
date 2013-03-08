@@ -45,7 +45,7 @@ array('label'=>'Item Maintenance','url'=>'item/ItemEditorPage.php','subheading'=
 	array('label'=>'Manage Products >>','url'=>'item/ItemEditorPage.php',
 		'submenu'=>array(
 			array('label'=>'By UPC/SKU or Brand Prefix','url'=>'item/ItemEditorPage.php'),
-			array('label'=>'Product List and Tool','url'=>'item/productList.php'),
+			array('label'=>'Product List and Tool','url'=>'item/ProductListPage.php'),
 			array('label'=>'Product Flags','url'=>'item/ItemFlags.php')
 		)
 	),
@@ -57,9 +57,9 @@ array('label'=>'Item Maintenance','url'=>'item/ItemEditorPage.php','subheading'=
 	),
 	array('label'=>'Manage Departments >>','url'=>'item/departments/',
 		'submenu'=>array(
-			array('label'=>'Super Departments','url'=>'item/departments/super.php'),
-			array('label'=>'Departments','url'=>'item/departments/dept.php'),
-			array('label'=>'Sub Departments','url'=>'item/departments/sub.php')
+			array('label'=>'Super Departments','url'=>'item/departments/SuperDeptEditor.php'),
+			array('label'=>'Departments','url'=>'item/departments/DepartmentEditor.php'),
+			array('label'=>'Sub Departments','url'=>'item/departments/SubDeptEditor.php')
 		)
 	),
 	array('label'=>'Import Departments >>','url'=>'item/import/',
@@ -104,7 +104,7 @@ array('label'=>'Reports','url'=>'reports/','subheading'=>'Custom reporting tools
 			array('label'=>'Department Hourly Sales','url'=>'reports/HourlySales/hourlySalesDept.php')
 		)
 	),
-	array('label'=>'Product List and Tool','url'=>'item/productList.php'),
+	array('label'=>'Product List and Tool','url'=>'item/ProductListPage.php'),
 	array('label'=>'Price History Report','url'=>'reports/PriceHistory/'),
 	array('label'=>'Department Settings','url'=>'reports/DepartmentSettings/'),
 	array('label'=>'Open Rings','url'=>'reports/OpenRings/'),
