@@ -89,8 +89,14 @@ class ssd extends ScaleDriverWrapper {
 	
 		$scale_display = '';
 		$scans = array();
-		if ($scale_data !== False && !empty($scale_data))
+		if ($scale_data !== False && !empty($scale_data)){
 			$scale_display = DisplayLib::scaledisplaymsg($scale_data);
+			if (is_array($scale_display)){
+				if (isset($scale_display['upc']))
+					$scans[] = $scale_display['upc'];
+				$scale_display = $scale_display['display'];
+			}
+		}
 		if ($scan_data !== False && !empty($scan_data))
 			$scans[] = $scan_data;
 

@@ -28,7 +28,6 @@
 if (!class_exists("AutoLoader")) include_once(realpath(dirname(__FILE__).'/../../lib/AutoLoader.php'));
 
 if (!class_exists("PaycardLib")) include_once(realpath(dirname(__FILE__)."/lib/PaycardLib.php"));
-var_dump(realpath(dirname(__FILE__)."/lib/PaycardLib.php"));
 
 class Valutec extends BasicCCModule {
 	var $temp;
@@ -67,12 +66,9 @@ class Valutec extends BasicCCModule {
 			$cashier = $CORE_LOCAL->get("CashierNo");
 			$lane = $CORE_LOCAL->get("laneno");
 			$trans = $CORE_LOCAL->get("transno");
-			$sql = "SELECT transID FROM valutecRequest WHERE [date]=".$today." AND PAN='".$pan."' " .
+			$sql = "SELECT transID FROM valutecRequest WHERE "
+				.$dbTrans->identifier_escape('date')."=".$today." AND PAN='".$pan."' " .
 				"AND cashierNo=".$cashier." AND laneNo=".$lane." AND transNo=".$trans;
-			if ($CORE_LOCAL->get("DBMS") == "mysql"){
-				$sql = str_replace("[","",$sql);
-				$sql = str_replace("]","",$sql);
-			}
 			$search = $dbTrans->query($sql);
 			$num = $dbTrans->num_rows($search);
 			if( $num < 1) {
@@ -233,11 +229,9 @@ class Valutec extends BasicCCModule {
 		$trans = $CORE_LOCAL->get("transno");
 
 		// look up the request using transID (within this transaction)
-		$sql = "SELECT live,PAN,mode,amount FROM valutecRequest WHERE [date]=".$today." AND cashierNo=".$cashier." AND laneNo=".$lane." AND transNo=".$trans." AND transID=".$transID;
-		if ($CORE_LOCAL->get("DBMS") == "mysql"){
-			$sql = str_replace("[","",$sql);
-			$sql = str_replace("]","",$sql);
-		}
+		$sql = "SELECT live,PAN,mode,amount FROM valutecRequest WHERE "
+			.$dbTrans->identifier_escape('date')."=".$today." AND cashierNo="
+			.$cashier." AND laneNo=".$lane." AND transNo=".$trans." AND transID=".$transID;
 		$search = $dbTrans->query($sql);
 		$num = $dbTrans->num_rows($search);
 		if( $num < 1) {
@@ -253,12 +247,9 @@ class Valutec extends BasicCCModule {
 
 		// look up the response
 		$sql = "SELECT commErr,httpCode,validResponse,xAuthorized,
-			xAuthorizationCode FROM valutecResponse WHERE [date]=".$today." 
+			xAuthorizationCode FROM valutecResponse WHERE "
+			.$dbTrans->identifier_escape('date')."=".$today." 
 			AND cashierNo=".$cashier." AND laneNo=".$lane." AND transNo=".$trans." AND transID=".$transID;
-		if ($CORE_LOCAL->get("DBMS") == "mysql"){
-			$sql = str_replace("[","",$sql);
-			$sql = str_replace("]","",$sql);
-		}
 		$search = $dbTrans->query($sql);
 		$num = $dbTrans->num_rows($search);
 		if( $num < 1) {
@@ -273,11 +264,10 @@ class Valutec extends BasicCCModule {
 		$response = $dbTrans->fetch_array($search);
 
 		// look up any previous successful voids
-		$sql = "SELECT transID FROM valutecRequestMod WHERE [date]=".$today." AND cashierNo=".$cashier." AND laneNo=".$lane." AND transNo=".$trans." AND transID=".$transID." AND mode='void' AND xAuthorized='true'";
-		if ($CORE_LOCAL->get("DBMS") == "mysql"){
-			$sql = str_replace("[","",$sql);
-			$sql = str_replace("]","",$sql);
-		}
+		$sql = "SELECT transID FROM valutecRequestMod WHERE "
+			.$dbTrans->identifier_escape('date')."=".$today." AND cashierNo="
+			.$cashier." AND laneNo=".$lane." AND transNo=".$trans." AND transID="
+			.$transID." AND mode='void' AND xAuthorized='true'";
 		$search = $dbTrans->query($sql);
 		$voided = $dbTrans->num_rows($search);
 		// look up the transaction tender line-item
@@ -384,18 +374,14 @@ class Valutec extends BasicCCModule {
 		
 		// store request in the database before sending it
 		$sqlColumns =
-			"[date],cashierNo,laneNo,transNo,transID," .
-			"[datetime],identifier,terminalID,live," . 
+			$dbTrans->identifier_escape('date').",cashierNo,laneNo,transNo,transID," .
+			$dbTrans->identifier_escape('datetime').",identifier,terminalID,live," . 
 			"mode,amount,PAN,manual";
 		$sqlValues =
 			sprintf("%d,%d,%d,%d,%d,",    $today, $cashierNo, $laneNo, $transNo, $transID) .
 			sprintf("'%s','%s','%s',%d,", $now, $identifier, $termID, $live) .
 			sprintf("'%s',%s,'%s',%d",    $mode, $amountText, $cardPAN, $manual);
 		$sql = "INSERT INTO valutecRequest (" . $sqlColumns . ") VALUES (" . $sqlValues . ")";
-		if ($CORE_LOCAL->get("DBMS") == "mysql"){
-			$sql = str_replace("[","",$sql);
-			$sql = str_replace("]","",$sql);
-		}
 		if( !$dbTrans->query($sql)){
 			return $this->setErrorMsg(PaycardLib::PAYCARD_ERR_NOSEND); // internal error, nothing sent (ok to retry)
 		}
@@ -451,13 +437,10 @@ class Valutec extends BasicCCModule {
 
 		// look up the auth code from the original response 
 		// (card number and amount should already be in session vars)
-		$sql = "SELECT xAuthorizationCode FROM valutecResponse WHERE [date]='".$today."'" .
+		$sql = "SELECT xAuthorizationCode FROM valutecResponse WHERE "
+			.$dbTrans->identifier_escape('date')."='".$today."'" .
 			" AND cashierNo=".$cashierNo." AND laneNo=".$laneNo." AND 
 			transNo=".$transNo." AND transID=".$transID;
-		if ($CORE_LOCAL->get("DBMS") == "mysql"){
-			$sql = str_replace("[","",$sql);
-			$sql = str_replace("]","",$sql);
-		}
 		$search = $dbTrans->query($sql);
 		if( !$search || $dbTrans->num_rows($search) != 1)
 			return PaycardLib::PAYCARD_ERR_NOSEND; // database error, nothing sent (ok to retry)
@@ -552,8 +535,8 @@ class Valutec extends BasicCCModule {
 
 		// prepare some fields to store the parsed response; we'll add more as we verify it
 		$sqlColumns =
-			"[date],cashierNo,laneNo,transNo,transID," .
-			"[datetime],identifier," .
+			$dbTrans->identifier_escape('date').",cashierNo,laneNo,transNo,transID," .
+			$dbTrans->identifier_escape('datetime').",identifier," .
 			"seconds,commErr,httpCode";
 		$sqlValues =
 			sprintf("%d,%d,%d,%d,%d,",  $today, $cashierNo, $laneNo, $transNo, $transID) .
@@ -609,10 +592,6 @@ class Valutec extends BasicCCModule {
 		$sqlColumns .= ",validResponse";
 		$sqlValues .= ",".$validResponse;
 		$sql = "INSERT INTO valutecResponse (" . $sqlColumns . ") VALUES (" . $sqlValues . ")";
-		if ($CORE_LOCAL->get("DBMS") == "mysql"){
-			$sql = str_replace("[","",$sql);
-			$sql = str_replace("]","",$sql);
-		}
 		$dbTrans->query($sql);
 
 		// check for communication errors (any cURL error or any HTTP code besides 200)
@@ -634,9 +613,8 @@ class Valutec extends BasicCCModule {
 		if ($amtUsed){
 			$CORE_LOCAL->set("paycard_amount",$amtUsed);
 			$amtFixQ = "UPDATE valutecRequest SET amount=$amtUsed WHERE 
-				identifier='$identifier' AND datediff(dd,getdate(),datetime)=0";
-			if ($CORE_LOCAL->get("DBMS") == "mysql")
-				$amtFixQ = str_replace("dd,getdate()","now()",$amtFixQ);
+				identifier='$identifier' AND "
+				.$dbTrans->datediff($dbTrans->now(),'datetime')."=0";
 			$dbTrans->query($amtFixQ);
 		}
 
@@ -681,8 +659,8 @@ class Valutec extends BasicCCModule {
 		$program = "Gift";
 
 		$sqlColumns =
-			"[date],cashierNo,laneNo,transNo,transID,[datetime]," .
-			"mode,origAuthCode," .
+			$dbTrans->identifier_escape('date').",cashierNo,laneNo,transNo,transID," .
+			$dbTrans->identifier_escape('datetime').",mode,origAuthCode," .
 			"seconds,commErr,httpCode";
 		$sqlValues =
 			sprintf("%d,%d,%d,%d,%d,'%s',", $today, $cashierNo, $laneNo, $transNo, $transID, $now) .
@@ -710,10 +688,6 @@ class Valutec extends BasicCCModule {
 		$sqlColumns .= ",validResponse";
 		$sqlValues .= ",".$validResponse;
 		$sql = "INSERT INTO valutecRequestMod (" . $sqlColumns . ") VALUES (" . $sqlValues . ")";
-		if ($CORE_LOCAL->get("DBMS") == "mysql"){
-			$sql = str_replace("[","",$sql);
-			$sql = str_replace("]","",$sql);
-		}
 		$dbTrans->query($sql);
 
 		if( $vdResult['curlErr'] != CURLE_OK || $vdResult['curlHTTP'] != 200) {

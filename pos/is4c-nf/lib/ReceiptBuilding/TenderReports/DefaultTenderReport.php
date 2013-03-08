@@ -61,6 +61,7 @@ static public function get(){
 		//$receipt .= chr(27).chr(33).chr(5);
 
 		$titleStr = "";
+		$itemize = 1;
 		for ($i = 0; $i < strlen($DESIRED_TENDERS[$tender_code]); $i++)
 			$titleStr .= $DESIRED_TENDERS[$tender_code][$i]." ";
 		$titleStr = substr($titleStr,0,strlen($titleStr)-1);
@@ -100,7 +101,6 @@ static public function get(){
 //		$receipt .= chr(27).chr(105);
 	}
 
-	$db_a->close();
 	return $receipt.chr(27).chr(105);
 }
 

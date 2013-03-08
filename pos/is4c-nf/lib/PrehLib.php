@@ -312,8 +312,6 @@ static public function checkstatus($num) {
 		}
 
 	}
-
-	$db->close();
 }
 
 //---------------------------------------------------
@@ -1274,7 +1272,6 @@ static public function percentDiscount($strl,$json=array()) {
 			$json['output'] = DisplayLib::lastpage();
 		}
 		else $json['output'] = DisplayLib::xboxMsg("10% discount already applied");
-		$db->close();
 	}
 	return $json;
 }

@@ -38,7 +38,6 @@ class WFC_Kicker extends Kicker {
 
 		$result = $db->query($query);
 		$num_rows = $db->num_rows($result);
-		$db->close();
 
 		return ($num_rows > 0) ? True : False;
 	}
