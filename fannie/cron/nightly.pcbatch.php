@@ -53,7 +53,7 @@ $chk_opt = array();
 
 /* change prices
 */
-if ($FANNIE_SERVER_DBMS == "MYSQL"){
+if (strstr($FANNIE_SERVER_DBMS, "MYSQL")){
 	$chk_vital[] = $sql->query("UPDATE products AS p LEFT JOIN
 		batchList AS l ON l.upc=p.upc LEFT JOIN
 		batches AS b ON b.batchID=l.batchID
@@ -90,7 +90,7 @@ if ($sql->table_exists("prodUpdate")){
 /* likecoded items differentiated
    for char concatenation
 */
-if ($FANNIE_SERVER_DBMS == "MYSQL"){
+if (strstr($FANNIE_SERVER_DBMS,"MYSQL")){
 	$chk_vital[] = $sql->query("UPDATE products AS p LEFT JOIN
 		likeCodeView AS v ON v.upc=p.upc LEFT JOIN
 		batchList AS l ON l.upc=concat('LC',convert(v.likeCode,char))

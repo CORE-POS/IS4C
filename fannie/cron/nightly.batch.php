@@ -86,7 +86,7 @@ else {
 }
 
 // resale things that should be on sale 
-if ($FANNIE_SERVER_DBMS == "MYSQL"){
+if (strstr($FANNIE_SERVER_DBMS,"MYSQL")){
 	$sql->query("UPDATE products AS p
 		INNER JOIN upcLike AS u ON p.upc=u.upc
 		SET p.mixmatchcode=convert(u.likeCode+500,char)");
