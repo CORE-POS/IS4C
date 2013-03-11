@@ -1,9 +1,9 @@
 <?php
 /*******************************************************************************
 
-    Copyright 2013 Whole Foods Co-op.
+    Copyright 2011 Whole Foods Co-op, Duluth, MN
 
-    This file is part of IT CORE.
+    This file is part of Fannie.
 
     IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -20,23 +20,29 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
+include('../../config.php');
+include($FANNIE_ROOT.'classlib2.0/FanniePage.php');
 
-class AllItemProductSearch extends ProductSearch {
+class ItemImportIndex extends FanniePage {
+	protected $title = "Fannie :: Product Tools";
+	protected $header = "Import Product Information";
 
-	public function search($str){
-		$ret = array();
-		$sql = Database::pDataConnect();
-		$query = "select upc, description, normal_price, special_price, "
-			."advertised, scale from products where "
-			."description like '%".$str."%' "
-			."and inUse='1' "
-			."order by description";
-		$result = $sql->query($query);
-		while($row = $sql->fetch_row($result)){
-			$ret[$row['upc']] = $row;
-		}
-		return $ret;
+	function body_content(){
+		ob_start();
+		?>
+		<ul>
+		<li><a href="DepartmentImportPage.php">Departments</a></li>
+		<li><a href="SubdeptImportPage.php">Subdepartments</a></li>
+		<li><a href="ProductImportPage.php">Products</a></li>
+		<li><a href="UploadAnyFile.php">Upload a file</a></li>
+		</ul>
+		<?php
+		return ob_get_clean();
 	}
 }
 
+if (basename($_SERVER['PHP_SELF']) == basename(__FILE__)){
+	$obj = new ItemImportIndex();
+	$obj->draw_page();
+}
 ?>

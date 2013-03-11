@@ -40,33 +40,33 @@
 */
 
 $FANNIE_MENU = array(
-array('label'=>'Item Maintenance','url'=>'item/itemMaint.php','subheading'=>'Manage our product DB',
+array('label'=>'Item Maintenance','url'=>'item/ItemEditorPage.php','subheading'=>'Manage our product DB',
 'submenu'=>array(
-	array('label'=>'Manage Products >>','url'=>'item/itemMaint.php',
+	array('label'=>'Manage Products >>','url'=>'item/ItemEditorPage.php',
 		'submenu'=>array(
-			array('label'=>'By UPC/SKU or Brand Prefix','url'=>'item/itemMaint.php'),
-			array('label'=>'Product List and Tool','url'=>'item/productList.php'),
+			array('label'=>'By UPC/SKU or Brand Prefix','url'=>'item/ItemEditorPage.php'),
+			array('label'=>'Product List and Tool','url'=>'item/ProductListPage.php'),
 			array('label'=>'Product Flags','url'=>'item/ItemFlags.php')
 		)
 	),
 	array('label'=>'Import Products >>','url'=>'item/import/',
 		'submenu'=>array(
-			array('label'=>'Products','url'=>'item/import/prod.php'),
-			array('label'=>'Upload a file','url'=>'item/import/uploadAnyFile.php')
+			array('label'=>'Products','url'=>'item/import/ProductImportPage.php'),
+			array('label'=>'Upload a file','url'=>'item/import/UploadAnyFile.php')
 		)
 	),
 	array('label'=>'Manage Departments >>','url'=>'item/departments/',
 		'submenu'=>array(
-			array('label'=>'Super Departments','url'=>'item/departments/super.php'),
-			array('label'=>'Departments','url'=>'item/departments/dept.php'),
-			array('label'=>'Sub Departments','url'=>'item/departments/sub.php')
+			array('label'=>'Super Departments','url'=>'item/departments/SuperDeptEditor.php'),
+			array('label'=>'Departments','url'=>'item/departments/DepartmentEditor.php'),
+			array('label'=>'Sub Departments','url'=>'item/departments/SubDeptEditor.php')
 		)
 	),
 	array('label'=>'Import Departments >>','url'=>'item/import/',
 		'submenu'=>array(
-			array('label'=>'Departments','url'=>'item/import/dept.php'),
-			array('label'=>'Sub Departments','url'=>'item/import/subdept.php'),
-			array('label'=>'Upload a file','url'=>'item/import/uploadAnyFile.php')
+			array('label'=>'Departments','url'=>'item/import/DepartmentImportPage.php'),
+			array('label'=>'Sub Departments','url'=>'item/import/SubdeptImportPage.php'),
+			array('label'=>'Upload a file','url'=>'item/import/UploadAnyFile.php')
 		)
 	),
 	array('label'=>'Manage Likcodes','url'=>'item/likecodes/'),
@@ -104,7 +104,7 @@ array('label'=>'Reports','url'=>'reports/','subheading'=>'Custom reporting tools
 			array('label'=>'Department Hourly Sales','url'=>'reports/HourlySales/hourlySalesDept.php')
 		)
 	),
-	array('label'=>'Product List and Tool','url'=>'item/productList.php'),
+	array('label'=>'Product List and Tool','url'=>'item/ProductListPage.php'),
 	array('label'=>'Price History Report','url'=>'reports/PriceHistory/'),
 	array('label'=>'Department Settings','url'=>'reports/DepartmentSettings/'),
 	array('label'=>'Open Rings','url'=>'reports/OpenRings/'),

@@ -124,8 +124,6 @@ class deptlist extends NoInputPage {
 			."<div class=\"clear\"></div>";
 		echo "</div>";
 
-		if (is_object($db))
-			$db->close();
 		$CORE_LOCAL->set("scan","noScan");
 		$CORE_LOCAL->set("beep","noBeep");
 

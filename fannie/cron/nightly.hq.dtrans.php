@@ -64,7 +64,7 @@ $dstr = $row[1].(str_pad($row[0],2,'0',STR_PAD_LEFT));
 $monthTable = "transArchive".$dstr;
 
 if (!$sql->table_exists($monthTable,$FANNIE_MASTER_ARCH_DB)){
-	if ($minfo['type'] == "MYSQL"){
+	if (strstr($minfo['type'], "MYSQL")){
 		$createQ = "CREATE TABLE $monthTable LIKE ".$minfo['trans'].".dtransactions";
 		$sql->query($createQ,$FANNIE_MASTER_ARCH_DB);
 	}
@@ -77,7 +77,7 @@ if (!$sql->table_exists($monthTable,$FANNIE_MASTER_ARCH_DB)){
 // create a temporary table on master so data only
 // ships across the network once
 $tempTable = "transTemp".str_replace(".","_",$FANNIE_SERVER);
-if ($minfo['type'] == "MYSQL"){
+if (strstr($minfo['type'], "MYSQL")){
 	$tempQ = "CREATE TABLE $tempTable LIKE $monthTable";
 	$sql->query($tempQ,$FANNIE_MASTER_ARCH_DB);
 }
@@ -93,7 +93,7 @@ $sql->transfer($FANNIE_TRANS_DB,"SELECT * FROM dtransactions",
 // copy data from temp table to transarchive and month snapshot
 $insQ1 = "INSERT INTO $monthTable SELECT * FROM $tempTable";
 $insQ2 = "INSERT INTO ".$minfo['trans'].".dbo.transarchive SELECT * FROM $tempTable";
-if ($minfo['type'] == "MYSQL"){
+if (strstr($minfo['type'], "MYSQL")){
 	$insQ2 = str_replace("dbo.","",$insQ2);
 }
 $sql->query($insQ1,$FANNIE_MASTER_ARCH_DB);

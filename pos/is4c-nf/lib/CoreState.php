@@ -253,8 +253,6 @@ static public function loaddata() {
 			$CORE_LOCAL->set("memberID",$row_local["card_no"]);
 		}
 	}
-	// moved, no need to stay open - andy 4/12/07
-	$db_local->close();
 
 	if ($CORE_LOCAL->get("memberID") == "0") {
 		// not used - andy 4/12/07
@@ -283,8 +281,6 @@ static public function loaddata() {
 			if ($CORE_LOCAL->get("SSI") == 1) 
 				$CORE_LOCAL->set("memMsg",$CORE_LOCAL->get("memMsg")." #");
 		}
-		// moved for proper scope - andy 4/12/07
-		$db_product->close();
 	}
 }
 
@@ -322,8 +318,6 @@ static public function customreceipt(){
 	foreach($counts as $key => $num){
 		$CORE_LOCAL->set($key."Count",$num);
 	}
-
-	$db->db_close();
 }
 
 }

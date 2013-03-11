@@ -108,7 +108,6 @@ var $ean;
 		}
 
 		// validate coupon
-		$db->close();
 		$db = Database::tDataConnect();
 		$fam = substr($fam, 0, 2);
 
