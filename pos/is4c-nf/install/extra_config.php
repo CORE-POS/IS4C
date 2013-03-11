@@ -499,7 +499,7 @@ confsave('gcIntegrate',$CORE_LOCAL->get('gcIntegrate'));
 if (isset($_REQUEST['PAY_MODS'])) $CORE_LOCAL->set('RegisteredPaycardClasses',$_REQUEST['PAY_MODS']);
 
 $mods = array();
-$dh = opendir('../cc-modules/');
+$dh = opendir('../plugins/Paycards/');
 while(False !== ($f = readdir($dh))){
 	if ($f == "." || $f == ".." || $f == "BasicCCModule.php")
 		continue;
