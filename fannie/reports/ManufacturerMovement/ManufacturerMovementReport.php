@@ -70,7 +70,7 @@ class ManufacturerMovementReport extends FannieReportPage {
 			$query = "select t.upc,p.description,
 				  sum(t.quantity) as qty,
 				  sum(t.total),d.dept_no,d.dept_name,s.superID
-				  from $sumTable as t left join products as p
+				  from $dlog as t left join products as p
 				  on t.upc=p.upc left join prodExtra as e on p.upc = e.upc
 				  left join departments as d on p.department = d.dept_no
 				  left join MasterSuperDepts as s on d.dept_no = s.dept_ID
@@ -83,7 +83,7 @@ class ManufacturerMovementReport extends FannieReportPage {
 			$query = "select year(t.tdate),month(t.tdate),day(t.tdate),
 				sum(t.quantity),sum(t.total)
 				  from products as p left join prodExtra as e on p.upc = e.upc
-				  left join $sumTable as t on p.upc = t.upc
+				  left join $dlog as t on p.upc = t.upc
 				  where $type_condition
 				  and t.tdate between '$date1 00:00:00' and '$date2 23:59:59'
 				  group by year(t.tdate),month(t.tdate),day(t.tdate)
@@ -92,7 +92,7 @@ class ManufacturerMovementReport extends FannieReportPage {
 		case 'dept':
 			$query = "select d.dept_no,d.dept_name,sum(t.quantity),sum(t.total),s.superID
 				  from products as p left join prodExtra as e on p.upc = e.upc
-				  left join $sumTable as t on p.upc = t.upc
+				  left join $dlog as t on p.upc = t.upc
 				  left join departments as d on p.department = d.dept_no
 				  left join MasterSuperDepts as s on d.dept_no=s.dept_ID
 				  where $type_condition

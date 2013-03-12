@@ -660,24 +660,21 @@ static public function receiptFromBuilders($reprint=False,$trans_num=''){
 		$transNo = $temp[2];
 	}
 
-	// read records from transaction database
-	$query = "SELECT * FROM localtemptrans ORDER BY trans_id";
-	if ($reprint){
-		$query = sprintf("SELECT * FROM localtranstoday WHERE
-			emp_no=%d AND register_no=%d AND trans_no=%d
-			ORDER BY trans_id",$empNo,$laneNo,$transNo);
-	}
-	$sql = Database::tDataConnect();
-	$result = $sql->query($query);
-	$recordset = array();
-	while($row = $sql->fetch_row($result))
-		$recordset[] = $row;
+	$FETCH_MOD = $CORE_LOCAL->get("RBFetchData");
+	if($FETCH_MOD=="") $FETCH_MOD = "DefaultReceiptFetchData";
+	$mod = new $FETCH_MOD();
+	$data = array();
+	if ($reprint)
+		$data = $mod->fetch($empNo,$laneNo,$transNo);
+	else
+		$data = $mod->fetch();
 
 	// load module configuration
 	$FILTER_MOD = $CORE_LOCAL->get("RBFilter");
 	if($FILTER_MOD=="") $FILTER_MOD = "DefaultReceiptFilter";
 	$SORT_MOD = $CORE_LOCAL->get("RBSort");
 	if($SORT_MOD=="") $SORT_MOD = "DefaultReceiptSort";
+	/*
 	$TAG_MOD = $CORE_LOCAL->get("RBTag");
 	if($TAG_MOD=="") $TAG_MOD = "DefaultReceiptTag";
 	$TYPE_MAP = $CORE_LOCAL->get("RBFormatMap");
@@ -689,18 +686,22 @@ static public function receiptFromBuilders($reprint=False,$trans_num=''){
 			'other' => 'OtherFormat'
 		);
 	}
+	*/
 
 	$f = new $FILTER_MOD();
-	$recordset = $f->filter($recordset);
+	$recordset = $f->filter($data);
 
 	$s = new $SORT_MOD();
 	$recordset = $s->sort($recordset);
 
+	/*
 	$t = new $TAG_MOD();
 	$recordset = $t->tag($recordset);
+	*/
 
 	$ret = "";
 	foreach($recordset as $record){
+		/*
 		$type = $record['tag'];
 		if(!isset($TYPE_MAP[$type])) continue;
 
@@ -708,15 +709,17 @@ static public function receiptFromBuilders($reprint=False,$trans_num=''){
 		$obj = new $class();
 
 		$line = $obj->format($record);
+		*/
+		if (!isset($record['output'])) continue;
 
-		if($obj->is_bold){
+		if(isset($record['bold'])){
 			$ret .= self::$PRINT_OBJ->TextStyle(True,True);
-			$ret .= $line;
+			$ret .= $record['output'];
 			$ret .= self::$PRINT_OBJ->TextStyle(True,False);
 			$ret .= "\n";
 		}
 		else {
-			$ret .= $line;
+			$ret .= $record['output'];
 			$ret .= "\n";
 		}
 	}
