@@ -88,7 +88,8 @@ class DepartmentEditor extends FanniePage {
 		}
 		$taxes = array();
 		$taxes[0] = "NoTax";
-		$resp = $dbc->query("SELECT id,description FROM taxrates ORDER BY id");
+		$p = $dbc->prepare_statement("SELECT id,description FROM taxrates ORDER BY id");
+		$resp = $dbc->exec_statement($p);
 		while($row = $dbc->fetch_row($resp)){
 			$taxes[$row[0]] = $row[1];
 		}
@@ -211,8 +212,9 @@ class DepartmentEditor extends FanniePage {
 		$dbc = FannieDB::get($FANNIE_OP_DB);
 		$depts = "<option value=0>Select a department...</option>";
 		$depts .= "<option value=-1>Create a new department</option>";
-		$resp = $dbc->query("SELECT dept_no,dept_name FROM departments
+		$p = $dbc->prepare_statement("SELECT dept_no,dept_name FROM departments
 					ORDER BY dept_no");
+		$resp = $dbc->exec_statement($p);
 		$selectedDID = FormLib::get_form_value('did');
 		while($row = $dbc->fetch_row($resp)){
 			if ($selectedDID !== '' && $selectedDID == $row[0])

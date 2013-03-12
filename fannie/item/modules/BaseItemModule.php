@@ -212,10 +212,11 @@ class BaseItemModule extends ItemModule {
 		$depts = array();
 		$subs = array();
 		if (!isset($rowItem['subdept'])) $rowItem['subdept'] = 0;
-		$r = $dbc->query('SELECT dept_no,dept_name,subdept_no,subdept_name,dept_ID 
+		$p = $dbc->prepare_statment('SELECT dept_no,dept_name,subdept_no,subdept_name,dept_ID 
 				FROM departments AS d
 				LEFT JOIN subdepts AS s ON d.dept_no=s.dept_ID
 				ORDER BY d.dept_no');
+		$r = $dbc->exec_statement($p);
 		while($w = $dbc->fetch_row($r)){
 			if (!isset($depts[$w['dept_no']])) $depts[$w['dept_no']] = $w['dept_name'];
 			if ($w['subdept_no'] == '') continue;
@@ -275,7 +276,8 @@ class BaseItemModule extends ItemModule {
 		$ret .= '</select>';
 		$ret .= '</td>';
 
-		$taxR = $dbc->query('SELECT id,description FROM taxrates ORDER BY id');
+		$taxQ = $dbc->prepare_statement('SELECT id,description FROM taxrates ORDER BY id');
+		$taxR = $dbc->exec_statement($taxQ);
 		$rates = array();
 		while ($taxW = $dbc->fetch_row($taxR))
 			array_push($rates,array($taxW[0],$taxW[1]));
