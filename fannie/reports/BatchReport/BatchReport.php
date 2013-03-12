@@ -109,7 +109,7 @@ class BatchReport extends FannieReportPage {
 
 		$salesBatchQ ="select d.upc, b.description, sum(d.total) as sales, 
 			 sum(d.quantity) as quantity
-			 FROM $sumTable as d left join batchMergeTable as b
+			 FROM $dlog as d left join batchMergeTable as b
 			 ON d.upc = b.upc
 			 WHERE 
 			 b.batchID IN $inClause 

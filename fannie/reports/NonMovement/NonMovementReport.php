@@ -97,7 +97,7 @@ class NonMovementReport extends FannieReportPage {
 		$dbc->query($tempQ);
 
 		$insQ = "INSERT INTO $tempName
-			SELECT d.upc FROM $sumTable AS d
+			SELECT d.upc FROM $dlog AS d
 			WHERE 
 			d.tdate BETWEEN '$date1 00:00:01' 
 			AND '$date2 23:59:59'
