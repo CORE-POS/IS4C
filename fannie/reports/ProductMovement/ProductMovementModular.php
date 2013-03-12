@@ -77,7 +77,7 @@ class ProductMovementModular extends FannieReportPage {
 			  t.upc,p.description,
 			  t.quantity as qty,
 			  sum(t.total) from
-			  $sumTable as t left join products as p on t.upc = p.upc 
+			  $dlog as t left join products as p on t.upc = p.upc 
 			  where t.upc = '$upc' AND
 			  tdate BETWEEN '$date1 00:00:00' AND '$date2 23:59:59'
 			  group by year(t.tdate),month(t.tdate),day(t.tdate),
