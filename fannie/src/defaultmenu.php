@@ -76,7 +76,8 @@ array('label'=>'Item Maintenance','url'=>'item/ItemEditorPage.php','subheading'=
 array('label'=>'Sales Batches','url'=>'batches/','subheading'=>'Create automated sales & price changes',
 'submenu'=>array(
 	array('label'=>'Sales Batches','url'=>'batches/newbatch/'),
-	array('label'=>'Manage Batch Types','url'=>'batches/types.php'),
+	array('label'=>'Upload Batch','url'=>'batches/xlsbatch/'),
+	array('label'=>'Manage Batch Types','url'=>'batches/BatchTypeEditor.php'),
 	array('label'=>'Co+op Deals Sales','url'=>'batches/CAP/'),
 	array('label'=>'Vendor Pricing','url'=>'batches/UNFI/')
 	)
