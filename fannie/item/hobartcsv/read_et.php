@@ -45,8 +45,8 @@ while($line = fgets($fp)){
       $temp = preg_replace("/\\r?<br.*?>/","\n",$temp); // breaks to newlines
       $temp = preg_replace("/\'/","",$temp); // lose apostrophes
       $temp = preg_replace("/<.*?>/","",$temp); // lose html tags
-      $upQ = "update scaleItems set text='$temp' where plu='$current_plu'";	
-      $upR = $sql->query($upQ);
+      $upQ = $sql->prepare_statement("update scaleItems set text=? where plu=?");	
+      $upR = $sql->exec_statement($upQ,array($temp,$current_plu));
       echo "<td>$temp</td>";   
     }
   }

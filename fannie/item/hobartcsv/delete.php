@@ -18,9 +18,8 @@ if (isset($_GET['plu'])){
 	}
 
 	include($FANNIE_ROOT."src/mysql_connect.php");
-	$query = sprintf("DELETE FROM scaleItems WHERE plu='002%s000000'",
-		$plu);
-	$result = $dbc->query($query);	
+	$query = $dbc->prepare_statement("DELETE FROM scaleItems WHERE plu=?");
+	$result = $dbc->exec_statement($query,array('002'.$plu.'000000'));
 
 	deleteitem($plu);
 	echo "Item delete requested<br />";

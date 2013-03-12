@@ -37,7 +37,8 @@ include($FANNIE_ROOT.'src/mysql_connect.php');
 include('ajax.php');
 $vendors = "<option value=\"\">Select a vendor...</option>";
 $vendors .= "<option value=\"new\">New vendor...</option>";
-$rp = $dbc->query("SELECT * FROM vendors ORDER BY vendorName");
+$q = $dbc->prepare_statement("SELECT * FROM vendors ORDER BY vendorName");
+$rp = $dbc->exec_statement($q);
 while($rw = $dbc->fetch_row($rp)){
 	if (isset($_REQUEST['vid']) && $_REQUEST['vid']==$rw[0])
 		$vendors .= "<option selected value=$rw[0]>$rw[0] $rw[1]</option>";
