@@ -212,7 +212,7 @@ class BaseItemModule extends ItemModule {
 		$depts = array();
 		$subs = array();
 		if (!isset($rowItem['subdept'])) $rowItem['subdept'] = 0;
-		$p = $dbc->prepare_statment('SELECT dept_no,dept_name,subdept_no,subdept_name,dept_ID 
+		$p = $dbc->prepare_statement('SELECT dept_no,dept_name,subdept_no,subdept_name,dept_ID 
 				FROM departments AS d
 				LEFT JOIN subdepts AS s ON d.dept_no=s.dept_ID
 				ORDER BY d.dept_no');
