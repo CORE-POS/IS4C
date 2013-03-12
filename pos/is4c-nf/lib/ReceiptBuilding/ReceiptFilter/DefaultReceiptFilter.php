@@ -32,100 +32,111 @@ class DefaultReceiptFilter {
 
 	/**
 	  Filtering function
-	  @param $rowset an array of records
+	  @param $data an SQL result object
 	  @return an array of records
 	*/
-	function filter($rowset){
+	function filter($data){
 		$deptsUsed = array();
 		$tenderTTL = 0.00;
 		$tax = False;
 		$discount = False;
 		$returnset = array();
+
+		$tagger = new DefaultReceiptTag();
+		$type_map = array(
+			'item' => new ItemFormat(),
+			'tender' => new TenderFormat(),
+			'total' => new TotalFormat(),
+			'other' => new OtherFormat()
+		);
 	
 		// walk through backwards and pick rows to keep
-		for($i=count($rowset)-1; $i>=0; $i--){
-			if ($tax === False && $rowset[$i]['upc'] == 'TAX'){
+		$dbc = Database::tDataConnect();
+		$count = 0;
+		while($row = $dbc->fetch_row($data)){
+			if ($tax === False && $row['upc'] == 'TAX'){
 				// keep tax row. relevant to total and subtotal
-				$tax = $rowset[$i];
+				$tax = $tagger->tag($row);
+				$tax['output'] = $type_map[$tax['tag']]->format($tax);
+				if ($type_map[$tax['tag']]->is_bold)
+					$tax['bold'] = True;
 			}
-			else if ($discount === False && $rowset[$i]['upc'] == 'DISCOUNT'){ 
+			else if ($discount === False && $row['upc'] == 'DISCOUNT'){ 
+				if ($discount['total'] == 0) continue;
 				// keep discount row. need to pick up proper % discount still
-				$discount = $rowset[$i];
+				$discount = $tagger->tag($row);
 				$discount['trans_type'] = 'S';
-				if ($discount['total'] == 0) $discount = False;
+				$discount['output'] = $type_map[$discount['tag']]->format($tax);
+				if ($type_map[$discount['tag']]->is_bold)
+					$discount['bold'] = True;
 			}
-			else if ($rowset[$i]['trans_type'] == 'T'){
+			else if ($row['trans_type'] == 'T'){
 				// keep tender rows. use them to calculate total
-				$tenderTTL += $rowset[$i]['total'];
-				$returnset[] = $rowset[$i];
+				$tenderTTL += $row['total'];
+				$tender = $tagger->tag($row);
+				if ($type_map[$tender['tag']]->is_bold)
+					$tender['bold'] = True;
+				$returnset[] = $type_map[$tender['tag']]->format($tender);
+				$count++;	
 			}
-			else if ($rowset[$i]['trans_type'] == 'I' || $rowset[$i]['trans_type'] == 'D'){
+			else if ($row['trans_type'] == 'I' || $row['trans_type'] == 'D'){
 				// keep item rows
 				// save department for fetching category headers
 				// and update discount row if necessary
-				$deptsUsed[$rowset[$i]['department']] = True;
-				if ($discount !== False && $rowset[$i]['percentDiscount'] > $discount['percentDiscount'])
-					$discount['percentDiscount'] = $rowset[$i]['percentDiscount'];
-				$returnset[] = $rowset[$i];
+				if ($discount !== False && $row['percentDiscount'] > $discount['percentDiscount'])
+					$discount['percentDiscount'] = $row['percentDiscount'];
+				if (!isset($reverseMap[$row['category']]))
+					$reverseMap[$row['category']] = True;
+				$item = $tagger->tag($row);
+				$item['output'] = $type_map[$item['tag']]->format($item);
+				if ($type_map[$item['tag']]->is_bold)
+					$item['bold'] = True;
+				$returnset[] = $item;
+				$count++;	
 			}
-			else if ($rowset[$i]['trans_status'] == '0'){
-				// keep tare lines but only if the next record is NOT a tare line
-				if (substr($rowset[$i]['description'],0,7) == "** Tare" &&
-				    (!isset($rowset[$i+1]) || strlen($rowset[$i+1]['description']) < 7
-				     || substr($rowset[$i+1]['description'],0,7) != "** Tare") ){
-					$returnset[] = $rowset[$i];
+			else if ($row['trans_status'] == '0' && substr($row['description'],0,7)=="** Tare"){
+				// only deal with tare lines
+				$prev = $count-1;
+				if (isset($returnset[$prev]) && strlen($returnset[$prev]['description'])>7
+				   && substr($returnset[$prev],0,7)=="** Tare"){
+					continue; // ignore repeat tares
 				}
+				$tare = $tagger->tag($row);
+				if (isset($returnset[$prev]))
+					$tare['category'] = $returnset[$prev]['category'];
+				$tare['output'] = $type_map[$tare['tag']]->format($tare);
+				if ($type_map[$tare['tag']]->is_bold)
+					$tare['bold'] = True;
+				$returnset[] = $tare;
+				$count++;
 			}
 		}
 
-		// reverse the return array since it was built backwards
 		$returnset = array_reverse($returnset);
 
 		// add discount, subtotal, tax, and total records to the end
 		if ($discount)
 			$returnset[] = $discount;
-		$returnset[] = array('upc'=>'SUBTOTAL','trans_type'=>'S','total'=>(-1*$tenderTTL) - $tax['total']);
+		$subtotal = $tagger->tag(array('upc'=>'SUBTOTAL','trans_type'=>'S','total'=>(-1*$tenderTTL) - $tax['total']));
+		$subtotal['output'] = $type_map[$subtotal['tag']]->format($subtotal);
+		if ($type_map[$subtotal['tag']]->is_bold)
+			$subtotal['bold'] = True;
+		$returnset[] = $subtotal;
 		if ($tax)
 			$returnset[] = $tax;
-		$returnset[] = array('upc'=>'TOTAL','trans_type'=>'S','total'=>-1*$tenderTTL);
+		$ttlrow = $tagger->tag(array('upc'=>'TOTAL','trans_type'=>'S','total'=>-1*$tenderTTL));
+		$ttlrow['output'] = $type_map[$subtotal['tag']]->format($ttlrow);
+		if ($type_map[$ttlrow['tag']]->is_bold)
+			$ttlrow['bold'] = True;
+		$returnset[] = $ttlrow;
 			
-		// look up category names
-		$deptclause = "(";
-		foreach($deptsUsed as $number => $val){
-			$deptclause .= $number.",";
-		}
-		$deptclause = rtrim($deptclause,",").")";
-		$dbc = Database::pDataConnect();
-		$q = "SELECT subdept_name,dept_ID FROM subdepts WHERE dept_ID IN ".$deptclause;
-		$r = $dbc->query($q);		
-		$categoryMap = array();
-		while($w = $dbc->fetch_row($r)){
-			$categoryMap[$w['dept_ID']] = $w['subdept_name'];
-		}
-		
-		// add categories to the appropriate records
-		$reverseMap = array();
-		for($i=0;$i<count($returnset);$i++){
-			if ($returnset[$i]['trans_type'] != 'I' && $returnset[$i]['trans_type'] != 'D' 
-			    && $returnset[$i]['trans_type'] != '0'){
-				continue;
-			}
-
-			if ($returnset[$i]['trans_type'] != '0' && isset($categoryMap[$returnset[$i]['department']])){
-				// add category to item & department records
-				$returnset[$i]['category'] = $categoryMap[$returnset[$i]['department']];
-				$reverseMap[$returnset[$i]['category']] = True;
-			}
-			elseif ($returnset[$i]['trans_type'] == '0' && isset($returnset[$i+1]) &&
-				// add category to tare records
-				isset($categoryMap[$returnset[$i+1]['department']])){
-				$returnset[$i]['category'] = $categoryMap[$returnset[$i+1]['department']];
-			}
-		}
-
 		// add category headers
 		foreach($reverseMap as $catName => $val){
-			$returnset[] = array('upc'=>'CAT_HEADER','trans_type'=>'H','description'=>$catName);
+			$header = $tagger->tag(array('upc'=>'CAT_HEADER','trans_type'=>'H','description'=>$catName));
+			$header['output'] = $type_map[$header['tag']]->format($header);
+			if ($type_map[$header['tag']]->is_bold)
+				$header['bold'] = True;
+			$returnset[] = $header;
 		}
 
 		return $returnset;
