@@ -40,10 +40,9 @@ if (isset($_REQUEST['action'])){
 		newVendor($_REQUEST['name']);
 		break;
 	case 'deleteCat':
-		$q = sprintf("DELETE FROM vendorDepartments
-			WHERE vendorID=%d AND deptID=%d",
-			$_REQUEST['vid'],$_REQUEST['deptID']);
-		$dbc->query($q);
+		$q = $dbc->prepare_statement("DELETE FROM vendorDepartments
+			WHERE vendorID=%d AND deptID=%d");
+		$dbc->exec_statement($q,array($_REQUEST['vid'],$_REQUEST['deptID']));
 		echo "Department deleted";
 		break;
 	case 'createCat':
@@ -51,13 +50,12 @@ if (isset($_REQUEST['action'])){
 			$_REQUEST['deptID'],$_REQUEST['name']);
 		break;
 	case 'updateCat':
-		$q = sprintf("UPDATE vendorDepartments
-			SET name=%s, margin=%f
-			WHERE vendorID=%d AND deptID=%d",
-			$dbc->escape($_REQUEST['name']),
+		$q = $dbc->prepare_statement("UPDATE vendorDepartments
+			SET name=?, margin=?
+			WHERE vendorID=? AND deptID=?");
+		$dbc->exec_statement($q,array($_REQUEST['name'],
 			trim($_REQUEST['margin'],'%')/100,
-			$_REQUEST['vid'],$_REQUEST['deptID']);
-		$dbc->query($q);
+			$_REQUEST['vid'],$_REQUEST['deptID']));
 		break;
 	case 'showCategoryItems':
 		showCategoryItems($_REQUEST['vid'],$_REQUEST['deptID'],$_REQUEST['brand']);
@@ -69,11 +67,10 @@ if (isset($_REQUEST['action'])){
 		addPosItem($_REQUEST['upc'],$_REQUEST['vid'],$_REQUEST['price'],$_REQUEST['dept']);
 		break;
 	case 'saveScript':
-		$q1 = sprintf("DELETE FROM vendorLoadScripts WHERE vendorID=%d",$_REQUEST['vid']);
-		$dbc->query($q1);
-		$q2 = sprintf("INSERT INTO vendorLoadScripts (vendorID,loadScript) VALUES (%d,%s)",
-			$_REQUEST['vid'],$dbc->escape($_REQUEST['script']));
-		$dbc->query($q2);
+		$q1 = $dbc->prepare_statement("DELETE FROM vendorLoadScripts WHERE vendorID=?");
+		$dbc->exec_statement($q1,array($_REQUEST['vid']));
+		$q2 = $dbc->prepare_statement("INSERT INTO vendorLoadScripts (vendorID,loadScript) VALUES (?,?)");
+		$dbc->exec_statement($q2,array($_REQUEST['vid'],$_REQUEST['script']));
 		break;
 	}
 }
@@ -81,29 +78,34 @@ if (isset($_REQUEST['action'])){
 function addPosItem($upc,$vid,$price,$dept){
 	global $dbc;
 
-	$vinfo = $dbc->query("SELECT i.*,v.vendorName FROM vendorItems AS i
+	$p = $dbc->prepare_statement("SELECT i.*,v.vendorName FROM vendorItems AS i
 		LEFT JOIN vendors AS v ON v.vendorID=i.vendorID
-		WHERE i.vendorID=$vid AND upc='$upc'");
+		WHERE i.vendorID=? AND upc=?");
+	$vinfo = $dbc->exec_statement($p, array($vid,$upc));
 	$vinfo = $dbc->fetch_row($vinfo);
-	$dinfo = $dbc->query("SELECT * FROM departments WHERE dept_no=$dept");
+	$p = $dbc->prepare_statement("SELECT * FROM departments WHERE dept_no=?");
+	$dinfo = $dbc->exec_statement($p,array($dept));
 	$dinfo = $dbc->fetch_row($dinfo);
 
-	$query99 = sprintf("INSERT INTO products (upc,description,normal_price,pricemethod,groupprice,quantity,
+	$query99 = $dbc->prepare_statement("INSERT INTO products (upc,description,normal_price,pricemethod,groupprice,quantity,
 	special_price,specialpricemethod,specialgroupprice,specialquantity,
 	department,size,tax,foodstamp,scale,scaleprice,mixmatchcode,modified,advertised,tareweight,discount,
 	discounttype,unitofmeasure,wicable,qttyEnforced,idEnforced,cost,inUse,subdept,deposit,local,
 	start_date,end_date,numflag) VALUES
-	('%s',%s,%.2f,0,0.00,0,0.00,0,0.00,0,%d,'',%d,%d,0,0,0,{$dbc->now()},
-	1,0,1,0,'',0,0,0,%.2f,1,0,0.00,0,'1900-01-01','1900-01-01',0)",$upc,$dbc->escape($vinfo['description']),
-	$price,$dept,$dinfo['dept_tax'],$dinfo['dept_fs'],($vinfo['cost']/$vinfo['units']));
+	(?,?,?,0,0.00,0,0.00,0,0.00,0,?,'',?,?,0,0,0,{$dbc->now()},
+	1,0,1,0,'',0,0,0,?,1,0,0.00,0,'1900-01-01','1900-01-01',0)");
+	$args99 = array($upc,$vinfo['description'],
+		$price,$dept,$dinfo['dept_tax'],$dinfo['dept_fs'],
+		($vinfo['cost']/$vinfo['units']));
 
-	$xInsQ = sprintf("INSERT INTO prodExtra (upc,distributor,manufacturer,cost,margin,variable_pricing,location,
+	$xInsQ = $dbc->prepare_statement("INSERT INTO prodExtra (upc,distributor,manufacturer,cost,margin,variable_pricing,location,
 			case_quantity,case_cost,case_info) VALUES
-			('%s',%s,%s,%.2f,0.00,0,'','',0.00,'')",$upc,$dbc->escape($vinfo['brand']),
-			$dbc->escape($vinfo['vendorName']),($vinfo['cost']/$vinfo['units']));
+			(?,?,?,?,0.00,0,'','',0.00,'')");
+	$args = array($upc,$vinfo['brand'],
+			$vinfo['vendorName'],($vinfo['cost']/$vinfo['units']));
 
-	$dbc->query($query99);
-	$dbc->query($xInsQ);
+	$dbc->exec_statement($query99,$args99);
+	$dbc->exec_statement($xInsQ,$args);
 
 	echo "Item added";
 }
@@ -111,13 +113,18 @@ function addPosItem($upc,$vid,$price,$dept){
 function getCategoryBrands($vid,$did){
 	global $dbc;
 
-	$clause = ($did=="All")?'':"AND vendorDept=$did";
 	$query = "SELECT brand FROM vendorItems AS v
 		LEFT JOIN vendorDepartments AS d ON
-		v.vendorDept=d.deptID WHERE v.vendorID=$vid
-		$clause GROUP BY brand ORDER BY brand";
+		v.vendorDept=d.deptID WHERE v.vendorID=?";
+	$args = array($vid);
+	if($did != 'All'){
+		$query .= ' AND vendorDept=? ';
+		$args[] = $did;
+	}
+	$query .= "GROUP BY brand ORDER BY brand";
 	$ret = "<option value=\"\">Select a brand...</option>";
-	$result = $dbc->query($query);
+	$p = $dbc->prepare_statement($query);
+	$result = $dbc->exec_statement($p,$args);
 	while($row=$dbc->fetch_row($result))
 		$ret .= "<option>$row[0]</option>";
 
@@ -128,13 +135,11 @@ function showCategoryItems($vid,$did,$brand){
 	global $dbc;
 
 	$depts = "";
-	$rp = $dbc->query("SELECT dept_no,dept_name FROM departments ORDER BY dept_no");
+	$p = $dbc->prepare_statement("SELECT dept_no,dept_name FROM departments ORDER BY dept_no");
+	$rp = $dbc->exec_statement($p);
 	while($rw = $dbc->fetch_row($rp))
 		$depts .= "<option value=$rw[0]>$rw[0] $rw[1]</option>";
 
-	$brand = $dbc->escape($brand);
-	
-	$clause = ($did=="All")?'':"AND vendorDept=$did";
 	$query = "SELECT v.upc,v.brand,v.description,v.size,
 		v.cost/v.units as cost,
 		CASE WHEN d.margin IS NULL THEN 0 ELSE d.margin END as margin,
@@ -142,13 +147,19 @@ function showCategoryItems($vid,$did,$brand){
 		FROM vendorItems AS v LEFT JOIN products AS p
 		ON v.upc=p.upc LEFT JOIN vendorDepartments AS d
 		ON d.deptID=v.vendorDept
-		WHERE v.vendorID=$vid AND brand=$brand
-		$clause ORDER BY v.upc";
+		WHERE v.vendorID=? AND brand=?";
+	$args = array($vid,$brand);
+	if ($did != 'All'){
+		$query .= ' AND vendorDept=? ';
+		$args[] = $dept;
+	}
+	$query .= "ORDER BY v.upc";
 	
 	$ret = "<table cellspacing=0 cellpadding=4 border=1>";
 	$ret .= "<tr><th>UPC</th><th>Brand</th><th>Description</th>";
 	$ret .= "<th>Size</th><th>Cost</th><th colspan=3>&nbsp;</th></tr>";
-	$result = $dbc->query($query);
+	$p = $dbc->prepare_statement($query);
+	$result = $dbc->exec_statement($p,$args);
 	while($row = $dbc->fetch_row($result)){
 		if ($row['inPOS'] == 1){
 			$ret .= sprintf("<tr style=\"background:#ffffcc;\">
@@ -187,18 +198,18 @@ function getSRP($cost,$margin){
 function createVendorDepartment($vid,$did,$name){
 	global $dbc;
 	
-	$chkQ = sprintf("SELECT * FROM vendorDepartments WHERE
-			vendorID=%d AND deptID=%d",$vid,$did);
-	$chkR = $dbc->query($chkQ);
+	$chkQ = $dbc->prepare_statement("SELECT * FROM vendorDepartments WHERE
+			vendorID=? AND deptID=?");
+	$chkR = $dbc->exec_statement($chkQ,array($vid,$did));
 	if ($dbc->num_rows($chkR) > 0){
 		echo "Number #$did is already in use!";
 		return;
 	}
 
-	$insQ = sprintf("INSERT INTO vendorDepartments (vendorID,deptID,
-		name,margin,testing,posDeptID) VALUES (%d,%d,
-		%s,0.00,0.00,0)",$vid,$did,$dbc->escape($name));
-	$insR = $dbc->query($insQ);
+	$insQ = $dbc->prepare_statement("INSERT INTO vendorDepartments (vendorID,deptID,
+		name,margin,testing,posDeptID) VALUES (?,?,
+		?,0.00,0.00,0)");
+	$insR = $dbc->exec_statement($insQ,array($vid,$did,$name));
 	
 	echo "Department created";
 }
@@ -208,13 +219,14 @@ function newVendor($name){
 
 	$name = $dbc->escape($name);
 	$id = 1;	
-	$rp = $dbc->query("SELECT max(vendorID) FROM vendors");
+	$p = $dbc->prepare_statement("SELECT max(vendorID) FROM vendors");
+	$rp = $dbc->exec_statement($p);
 	$rw = $dbc->fetch_row($rp);
 	if ($rw[0] != "")
 		$id = $rw[0]+1;
 
-	$insQ = "INSERT INTO vendors VALUES ($id,$name)";
-	$dbc->query($insQ);
+	$insQ = $dbc->prepare_statement("INSERT INTO vendors VALUES (?,?)");
+	$dbc->exec_statement($insQ,array($id,$name));
 
 	echo $id;
 }
@@ -223,14 +235,16 @@ function getVendorInfo($id){
 	global $dbc,$FANNIE_ROOT;
 	$ret = "";
 
-	$nameR = $dbc->query("SELECT vendorName FROM vendors WHERE vendorID=$id");
+	$nameQ = $dbc->prepare_statement("SELECT vendorName FROM vendors WHERE vendorID=?");
+	$nameR = $dbc->exec_statement($nameQ,array($id));
 	if ($dbc->num_rows($nameR) < 1)
 		$ret .= "<b>Name</b>: Unknown";
 	else
 		$ret .= "<b>Id</b>: $id &nbsp; <b>Name</b>: ".array_pop($dbc->fetch_row($nameR));
 	$ret .= "<p />";
 
-	$scriptR = $dbc->query("SELECT loadScript FROM vendorLoadScripts WHERE vendorID=$id");
+	$scriptQ = $dbc->prepare_statement("SELECT loadScript FROM vendorLoadScripts WHERE vendorID=?");
+	$scriptR = $dbc->exec_statement($scriptQ,array($id));
 	$ls = "";
 	if ($scriptR && $dbc->num_rows($scriptR) > 0)
 		$ls = array_pop($dbc->fetch_row($scriptR));
@@ -248,7 +262,8 @@ function getVendorInfo($id){
 	}
 	$ret .= '</select><p />';
 
-	$itemR = $dbc->query("SELECT COUNT(*) FROM vendorItems WHERE vendorID=$id");
+	$itemQ = $dbc->prepare_statement("SELECT COUNT(*) FROM vendorItems WHERE vendorID=?");
+	$itemR = $dbc->exec_statement($itemQ,array($id));
 	$num = array_pop($dbc->fetch_row($itemR));
 	if ($num == 0)
 		$ret .= "This vendor contains 0 items";
@@ -261,7 +276,8 @@ function getVendorInfo($id){
 	$ret .= "<a href=\"update.php?vid=$id\">Update vendor catalog</a>";
 	$ret .= "<p />";
 
-	$itemR = $dbc->query("SELECT COUNT(*) FROM vendorDepartments WHERE vendorID=$id");
+	$itemQ = $dbc->prepare_statement("SELECT COUNT(*) FROM vendorDepartments WHERE vendorID=?");
+	$itemR = $dbc->exec_statement($itemQ,array($id));
 	$num = array_pop($dbc->fetch_row($itemR));
 	if ($num == 0)
 		$ret .= "<a href=\"vdepts.php?vid=$id\">This vendor's items are not yet arranged into departments</a>";
@@ -278,7 +294,8 @@ function getVendorInfo($id){
 function vendorDeptDisplay($id){
 	global $dbc, $FANNIE_URL;
 	
-	$nameR = $dbc->query("SELECT vendorName FROM vendors WHERE vendorID=$id");
+	$nameQ = $dbc->prepare_statement("SELECT vendorName FROM vendors WHERE vendorID=?");
+	$nameR = $dbc->exec_statement($nameQ,array($id));
 	$name = array_pop($dbc->fetch_row($nameR));
 
 	$ret = "<b>Departments in $name</b><br />";
@@ -286,9 +303,9 @@ function vendorDeptDisplay($id){
 	$ret .= "<tr><th>No.</th><th>Name</th><th>Margin</th>
 		<th>&nbsp;</th><th>&nbsp;</th></tr>";
 
-	$deptQ = "SELECT * FROM vendorDepartments WHERE vendorID=$id
-		ORDER BY deptID";
-	$deptR = $dbc->query($deptQ);
+	$deptQ = $dbc->prepare_statement("SELECT * FROM vendorDepartments WHERE vendorID=?
+		ORDER BY deptID");;
+	$deptR = $dbc->exec_statement($deptQ,array($id));
 	while($row = $dbc->fetch_row($deptR)){
 		$ret .= sprintf("<tr>
 			<td>%d</td>

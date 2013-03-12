@@ -105,7 +105,8 @@ class SuperDeptEditor extends FanniePage {
 		global $FANNIE_OP_DB;
 		$dbc = FannieDB::get($FANNIE_OP_DB);
 		if ($id == -1){
-			$resp = $dbc->query("SELECT max(superID)+1 FROM superdepts");
+			$p = $dbc->prepare_statement("SELECT max(superID)+1 FROM superdepts");
+			$resp = $dbc->exec_statement($p);
 			$id = array_pop($dbc->fetch_row($resp));
 			if (empty($id)) $id = 1;
 		}
@@ -120,9 +121,9 @@ class SuperDeptEditor extends FanniePage {
 			$dbc->exec_statement($deptP,array($id,$d));
 		}
 
-		$delP = $dbc->query("DELETE FROM superDeptNames WHERE superID=?");
+		$delP = $dbc->prepare_statement("DELETE FROM superDeptNames WHERE superID=?");
 		$dbc->exec_statement($delP,array($id));
-		$insP = $dbc->query("INSERT INTO superDeptNames VALUES (?,?)");
+		$insP = $dbc->prepare_statement("INSERT INTO superDeptNames VALUES (?,?)");
 		$dbc->exec_statement($insP,array($id,$name));
 
 		echo "Saved Settings for $name";
@@ -131,11 +132,11 @@ class SuperDeptEditor extends FanniePage {
 	function body_content(){
 		global $FANNIE_OP_DB;
 		$dbc = FannieDB::get($FANNIE_OP_DB);
-		$superQ = "SELECT s.superID,super_name FROM superdepts as s
+		$superQ = $dbc->prepare_statement("SELECT s.superID,super_name FROM superdepts as s
 			LEFT JOIN superDeptNames AS n ON s.superID=n.superID
 			GROUP BY s.superID,super_name
-			ORDER BY super_name";
-		$superR = $dbc->query($superQ);
+			ORDER BY super_name");
+		$superR = $dbc->exec_statement($superQ);
 		$opts = "";
 		$firstID = False;
 		$firstName = "";
