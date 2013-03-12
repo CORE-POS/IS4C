@@ -12,7 +12,8 @@ function getFailedTrans($dateStr,$hour){
 		WHERE ".
 		$sql->datediff('q.datetime',$sql->escape($dateStr))."=0 
 		AND %s=%d
-		AND r.httpCode <> 200",
+		AND r.httpCode <> 200
+		AND (r.refNum like '%%-%%' OR r.refNum='')",
 		$sql->hour('q.datetime'),$hour);
 	$response = $sql->query($query);
 	while($row = $sql->fetch_row($response))
