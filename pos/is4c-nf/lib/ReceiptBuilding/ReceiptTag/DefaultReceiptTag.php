@@ -36,24 +36,24 @@ class DefaultReceiptTag {
 	*/
 	function tag($rowset){
 
-		for($i=0;$i<count($rowset);$i++){
-			switch($rowset[$i]['trans_type']){
+		//for($i=0;$i<count($rowset);$i++){
+			switch($rowset['trans_type']){
 			case 'T':
-				$rowset[$i]['tag'] = 'tender';
+				$rowset['tag'] = 'tender';
 				break;
 			case 'I':
 			case 'D':
-				$rowset[$i]['tag'] = 'item';
+				$rowset['tag'] = 'item';
 				break;
 			case 'H':
 			case '0':
-				$rowset[$i]['tag'] = 'other';
+				$rowset['tag'] = 'other';
 				break;
 			default:
-				$rowset[$i]['tag'] = 'total';
+				$rowset['tag'] = 'total';
 				break;
 			}
-		}
+		//}
 		
 		return $rowset;
 	}
