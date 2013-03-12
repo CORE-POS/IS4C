@@ -74,11 +74,13 @@ class ProductListPage extends FanniePage {
 
 		$dbc = FannieDB::get($FANNIE_OP_DB);
 		$depts = array();
-		$result = $dbc->query('SELECT dept_no,dept_name FROM departments ORDER BY dept_no');
+		$p = $dbc->prepare_statement('SELECT dept_no,dept_name FROM departments ORDER BY dept_no');
+		$result = $dbc->exec_statement($p);
 		while($w = $dbc->fetch_row($result))
 			$depts[$w[0]] = $w[1];
 		$taxes = array('-'=>array(0,'NoTax'));
-		$result = $dbc->query('SELECT id, description FROM taxrates ORDER BY id');
+		$p = $dbc->prepare_statement('SELECT id, description FROM taxrates ORDER BY id');
+		$result = $dbc->exec_statement($p);
 		while($w = $dbc->fetch_row($result)){
 			if ($w['id'] == 1)
 				$taxes['X'] = array(1,'Regular');
@@ -449,15 +451,15 @@ class ProductListPage extends FanniePage {
 	function form_content(){
 		global $FANNIE_OP_DB;
 		$dbc = FannieDB::get($FANNIE_OP_DB);
-		$deptQ = "select dept_no,dept_name from departments order by dept_no";
-		$deptR = $dbc->query($deptQ);
+		$deptQ = $dbc->prepare_statement("select dept_no,dept_name from departments order by dept_no");
+		$deptR = $dbc->exec_statement($deptQ);
 		$depts = array();
 		while ($deptW = $dbc->fetch_array($deptR)){
 			$depts[$deptW['dept_no']] = $deptW['dept_name'];
 		}
-		$superQ = "SELECT superID,super_name FROM superDeptNames WHERE 
-			superID > 0 ORDER BY superID";
-		$superR = $dbc->query($superQ);
+		$superQ = $dbc->prepare_statement("SELECT superID,super_name FROM superDeptNames WHERE 
+			superID > 0 ORDER BY superID");
+		$superR = $dbc->exec_statement($superQ);
 		$supers = array();
 		while ($superW = $dbc->fetch_row($superR)){
 			$supers[$superW['superID']] = $superW['super_name'];

@@ -44,8 +44,9 @@ class ItemFlagsModule extends ItemModule {
 		
 		if ($dbc->num_rows($r) == 0){
 			// item does not exist
-			$r = $dbc->query('SELECT f.description,f.bit_number,0 AS flagIsSet
+			$p = $dbc->prepare_statement('SELECT f.description,f.bit_number,0 AS flagIsSet
 					FROM prodFlags AS f');
+			$r = $dbc->exec_statement($p);
 		}
 
 

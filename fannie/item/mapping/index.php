@@ -63,12 +63,12 @@ if (isset($_REQUEST['ajax'])){
 
 function lookupItem($store,$sec,$subsec,$sh_set,$shelf,$loc){
 	global $dbc;
-	$q = sprintf("SELECT l.upc,p.description FROM prodPhysicalLocation AS l
+	$q = $dbc->prepare_statement("SELECT l.upc,p.description FROM prodPhysicalLocation AS l
 		LEFT JOIN products AS p ON l.upc=p.upc
-		WHERE l.store_id=%d AND section=%d AND subsection=%d
-		AND shelf_set=%d AND shelf=%d AND location=%d",
-		$store,$sec,$subsec,$sh_set,$shelf,$loc);
-	$r = $dbc->query($q);
+		WHERE l.store_id=? AND section=? AND subsection=?
+		AND shelf_set=? AND shelf=? AND location=?");
+	$args = array($store,$sec,$subsec,$sh_set,$shelf,$loc);
+	$r = $dbc->exec_statement($q,$args);
 	$ret = array('upc'=>'','description'=>'no item at this location');
 	if ($dbc->num_rows($r) > 0){
 		$w = $dbc->fetch_row($r);
@@ -82,22 +82,22 @@ function saveItem($store,$sec,$subsec,$sh_set,$shelf,$loc,$upc){
 	global $dbc;
 	$upc = str_pad($upc,13,'0',STR_PAD_LEFT);
 	$q = sprintf("DELETE FROM prodPhysicalLocation WHERE
-		store_id=%d AND section=%d AND subsection=%d
-		AND shelf_set=%d AND shelf=%d AND location=%d",
-		$store,$sec,$subsec,$sh_set,$shelf,$loc);
-	$r = $dbc->query($q);
-	$q = sprintf("INSERT INTO prodPhysicalLocation (upc,
+		store_id=? AND section=? AND subsection=?
+		AND shelf_set=? AND shelf=? AND location=?");
+	$args = array($store,$sec,$subsec,$sh_set,$shelf,$loc);
+	$r = $dbc->exec_statement($q,$args);
+	$q = $dbc->prepare_statement("INSERT INTO prodPhysicalLocation (upc,
 		store_id,section,subsection,shelf_set,shelf,
-		location) VALUES (%s,%d,%d,%d,%d,%d,%d)",
-		$dbc->escape($upc),$store,$sec,$subsec,$sh_set,
+		location) VALUES (%s,%d,%d,%d,%d,%d,%d)");
+	$args = array($upc,$store,$sec,$subsec,$sh_set,
 		$shelf,$loc);
-	$r = $dbc->query($q);
+	$r = $dbc->exec_statement($q,$args);
 }
 
 
-$sectionsQ = "SELECT superID,super_name FROM MasterSuperDepts
-	WHERE superID > 0 ORDER BY superID";
-$sectionsR = $dbc->query($sectionsQ);
+$sectionsQ = $dbc->prepare_statement("SELECT superID,super_name FROM MasterSuperDepts
+	WHERE superID > 0 ORDER BY superID");
+$sectionsR = $dbc->exec_statement($sectionsQ);
 $supers = array();
 while($sectionsW = $dbc->fetch_row($sectionsR))
 	$supers[$sectionsW[0]] = $sectionsW[1];
