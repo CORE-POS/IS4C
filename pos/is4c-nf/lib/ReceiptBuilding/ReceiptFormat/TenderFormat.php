@@ -36,7 +36,6 @@ class TenderFormat extends DefaultReceiptFormat {
 	function format($row){
 		$ret = str_pad($row['description'],44,' ',STR_PAD_LEFT);
 		$ret .= str_pad(sprintf('%.2f',-1*$row['total']),8,' ',STR_PAD_LEFT);
-		$ret .= str_repeat(' ',4);
 		return $ret;
 	}
 }
