@@ -46,6 +46,9 @@ foreach($FANNIE_LANES as $ln){
 	$cleanR = $sql->query($cleanQ,$ln['trans']);
 	$cleanQ = "DELETE FROM localtrans WHERE ".$sql->datediff($sql->now(),'datetime')." > 30";
 	$cleanR = $sql->query($cleanQ,$ln['trans']);
+
+	$cleanQ = 'DELETE FROM efsnetTokens WHERE '.$sql->datediff($sql->now(),'expireDay').' <> 0 ';
+	$cleanR = $sql->query($cleanQ,$ln['trans']);
 }
 
 
