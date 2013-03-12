@@ -67,19 +67,12 @@ class DefaultReceiptSort {
 				if(isset($row['category'])){
 					if (!isset($items[$row['category']]))
 						$items[$row['category']] = array();
-<<<<<<< Updated upstream
-					$items[$row['category']][] = $row;
-				}
-				else {
-					$items['_uncategorized'] = array();
-=======
 					//$items[$row['category']] = $this->upc_merge($items[$row['category']],$row);
 					$items[$row['category']][] = $row;
 				}
 				else {
 					//$items[$row['_uncategorized']] = $this->upc_merge($items[$row['_uncategorized']],$row);
 					$items[$row['_uncategorized']][] = $row;
->>>>>>> Stashed changes
 				}
 			}
 		}
