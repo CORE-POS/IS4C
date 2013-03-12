@@ -63,7 +63,8 @@ class SubDeptEditor extends FanniePage {
 		global $FANNIE_OP_DB;
 		$dbc = FannieDB::get($FANNIE_OP_DB);
 
-		$res = $dbc->query("SELECT max(subdept_no) FROM subdepts");
+		$p = $dbc->prepare_statement("SELECT max(subdept_no) FROM subdepts");
+		$res = $dbc->exec_statement($p);
 		$sid = 1;
 		if ($dbc->num_rows($res) > 0){
 			$tmp = array_pop($dbc->fetch_row($res));
@@ -103,9 +104,9 @@ class SubDeptEditor extends FanniePage {
 	function body_content(){
 		global $FANNIE_OP_DB;
 		$dbc = FannieDB::get($FANNIE_OP_DB);
-		$superQ = "SELECT d.dept_no,dept_name FROM departments as d
-			ORDER BY d.dept_no";
-		$superR = $dbc->query($superQ);
+		$superQ = $dbc->prepare_statement("SELECT d.dept_no,dept_name FROM departments as d
+			ORDER BY d.dept_no");
+		$superR = $dbc->exec_statement($superQ);
 		$opts = "";
 		$firstID = False;
 		$firstName = "";

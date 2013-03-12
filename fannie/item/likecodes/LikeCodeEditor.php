@@ -102,7 +102,8 @@ function loadlc(id){
 		global $FANNIE_OP_DB;
 		$dbc = FannieDB::get($FANNIE_OP_DB);
 		$opts = "";
-		$res = $dbc->query("SELECT likeCode,likeCodeDesc FROM likeCodes ORDER BY likeCode");
+		$p = $dbc->prepare_statement("SELECT likeCode,likeCodeDesc FROM likeCodes ORDER BY likeCode");
+		$res = $dbc->exec_statement($p);
 		while($row = $dbc->fetch_row($res))
 			$opts .= "<option value=\"$row[0]\">$row[0] $row[1]</option>";
 
