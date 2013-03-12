@@ -45,7 +45,8 @@ class LikeCodeModule extends ItemModule {
 				onchange=\"updateLcModList(this.value);\">";
 		$ret .= "<option value=-1>(none)</option>";
 	
-		$r = $dbc->query('SELECT likeCode, likeCodeDesc FROM likeCodes ORDER BY likeCode');
+		$p = $dbc->prepare_statement('SELECT likeCode, likeCodeDesc FROM likeCodes ORDER BY likeCode');
+		$r = $dbc->exec_statement($p);
 		while($w = $dbc->fetch_row($r)){
 			$ret .= sprintf('<option %s value="%d">%d %s</option>',
 				($w['likeCode'] == $myLC ? 'selected': ''),

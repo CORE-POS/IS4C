@@ -89,7 +89,9 @@ if (isset($_REQUEST['confirm'])){
 	$fn = base64_decode($_REQUEST['filename']);
 	$vid = $_REQUEST['vid'];
 
-	$dbc->query(sprintf("DELETE FROM vendorItems WHERE vendorID=%d",$vid));		
+	
+	$p = $dbc->prepare_statement("DELETE FROM vendorItems WHERE vendorID=?");
+	$dbc->exec_statement($p,array($vid));		
 	$fp = fopen($fn,"r");
 	$count = 0;
 	while(!feof($fp)){
@@ -108,11 +110,6 @@ if (isset($_REQUEST['confirm'])){
 		if (isset($_REQUEST['checkdigits']))	
 			$upc = '0'.substr($upc,0,12);
 
-		$sku = $dbc->escape(trim($data[$cols['sku']]));
-		$brand = $dbc->escape(trim($data[$cols['brand']]));
-		$desc = $dbc->escape(trim($data[$cols['desc']]));
-		$size = $dbc->escape(trim($data[$cols['size']]));
-		
 		$units = trim($data[$cols['units']]);
 		$units = (is_numeric($units))?$units:1;
 
@@ -123,11 +120,9 @@ if (isset($_REQUEST['confirm'])){
 		$dept = trim($data[$cols['dept']]);
 		$dept = (is_numeric($dept))?$dept:'NULL';
 
-		$insQ = sprintf("INSERT INTO vendorItems (upc,sku,brand,description,
-			size,units,cost,vendorDept,vendorID) VALUES ('%s',%s,%s,%s,
-			%s,%d,%.2f,%d,%d)",$upc,$sku,$brand,$desc,$size,$units,$cost,
-			$dept,$vid);
-		$dbc->query($insQ);
+		$insQ = $dbc->prepare_statement("INSERT INTO vendorItems (upc,sku,brand,description,
+			size,units,cost,vendorDept,vendorID) VALUES (?,?,?,?,?,?,?,?,?)");
+		$dbc->exec_statement($insQ,array($upc,$sku,$brand,$desc,$size,$units,$cost,$dept,$vid));
 		$count++;
 	}
 	fclose($fp);

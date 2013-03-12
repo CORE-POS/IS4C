@@ -36,18 +36,21 @@ $sku = $_REQUEST['sku'];
 $price = $_REQUEST['price'];
 $id = $_REQUEST['subID'];
 
-$checkUPCQ = "SELECT * FROM shelftags where upc = '$upc' and id=$id";
-$checkUPCR = $dbc->query($checkUPCQ);
+$checkUPCQ = $dbc->prepare_statement("SELECT * FROM shelftags where upc = ? and id=?";
+$checkUPCR = $dbc->exec_statement($checkUPCQ,array($upc,$id));
 $checkUPCN = $dbc->num_rows($checkUPCR);
 
 $insQ = "";
+$args = array();
 if($checkUPCN == 0){
-   $insQ = "INSERT INTO shelftags VALUES($id,'$upc','$description',$price,'$brand','$sku','$size','$units','$vendor','$ppo')";
+   $insQ = $dbc->prepare_statement("INSERT INTO shelftags VALUES(?,?,?,?,?,?,?,?,?,?)");
+   $args = array($id,$upc,$description,$price,$brand,$sku,$size,$units,$vendor,$ppo);
 }else{
-   $insQ = "UPDATE shelftags SET normal_price = $price, pricePerUnit='$ppo' WHERE upc = '$upc' and id=$id";
+   $insQ = $dbc->prepare_statement("UPDATE shelftags SET normal_price = ?, pricePerUnit=? WHERE upc = ? and id=?";
+   $args = array($price,$ppo,$upc,$id);
 }
 
-$insR = $dbc->query($insQ);
+$insR = $dbc->exec_statement($insQ,$args);
 
 ?>
 <html>

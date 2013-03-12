@@ -36,8 +36,9 @@ if (!isset($_REQUEST['vid'])){
 $vid = $_REQUEST['vid'];
 
 $cats = "";
-$rp = $dbc->query("SELECT deptID,name FROM vendorDepartments
-		WHERE vendorID=$vid");
+$p = $dbc->prepare_statement("SELECT deptID,name FROM vendorDepartments
+		WHERE vendorID=?");
+$rp = $dbc->exec_statement($p,array($vid));
 while($rw = $dbc->fetch_row($rp))
 	$cats .= "<option value=$rw[0]>$rw[0] $rw[1]</option>";
 
