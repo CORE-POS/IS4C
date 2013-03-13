@@ -143,7 +143,7 @@ class DepartmentMovementReport extends FannieReportPage {
 				  d.dept_no,d.dept_name,s.superID,x.distributor ORDER BY SUM(t.total) DESC";
 			break;
 		case 'Department':
-			$query =  "SELECT t.dept_ID,d.dept_name,SUM(t.quantity) as Qty, SUM(total) as Sales 
+			$query =  "SELECT t.department,d.dept_name,SUM(t.quantity) as Qty, SUM(total) as Sales 
 				FROM $dlog as t LEFT JOIN departments as d on d.dept_no=t.department 
 				LEFT JOIN $superTable AS s ON s.dept_ID = t.department 
 				WHERE $filter_condition
