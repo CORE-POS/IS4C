@@ -134,7 +134,7 @@ class CoopDealsUploadPage extends FannieUploadPage {
 
 	function results_content(){
 		$ret = "Sales data import complete<p />";
-		$ret .= "<a href=\"review.php\">Review data &amp; set up sales</a>";
+		$ret .= "<a href=\"CoopDealsReviewPage.php\">Review data &amp; set up sales</a>";
 		return $ret;
 	}
 }

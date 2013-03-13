@@ -49,7 +49,7 @@ $htable = array();
 while($row = $dbc->fetch_row($result)){
 	printf("<tr %s><td>%s</td><td>%s</td><td>%.2f</td>
 		<td>%s</td>
-		<td><a href=\"{$FANNIE_URL}admin/LookupReceipt/reprint.php?month=%d&year=%d&day=%d&receipt=%s\">
+		<td><a href=\"{$FANNIE_URL}admin/LookupReceipt/RenderReceiptPage.php?month=%d&year=%d&day=%d&receipt=%s\">
 		POS receipt</td></tr>", 
 		(isset($htable[$row[4]."+".$row[5]])||$row[9]=="")?"class=hilite":"",
 		$row[0],$row[5],$row[4],$row[9],
