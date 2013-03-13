@@ -322,8 +322,8 @@ class ProductListPage extends FanniePage {
 		}
 		$ret .= date("F j, Y, g:i a").'<br />'; 
 		
-		$page_url = sprintf('ProductListPage.php?supertype=%s&deptStart=%s&deptEnd=%s&deptSub=%s&manufactuer=%s&mtype=%s',
-				$supertype, $deptStart, $deptEnd, $super, $manufactuer, $mtype);
+		$page_url = sprintf('ProductListPage.php?supertype=%s&deptStart=%s&deptEnd=%s&deptSub=%s&manufacturer=%s&mtype=%s',
+				$supertype, $deptStart, $deptEnd, $super, $manufacturer, $mtype);
 		if (!$this->excel){
 			$ret .= sprintf('<a href="%s&sort=%s&excel=yes">Save to Excel</a><br />',
 				$page_url, $sort);
