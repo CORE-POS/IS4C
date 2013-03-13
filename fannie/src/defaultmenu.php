@@ -134,8 +134,8 @@ array('label'=>'Admin','url'=>'admin/','subheading'=>'Administrative functions, 
 'submenu'=>array(
 	array('label'=>'Cashier Management >>','url'=>'admin/Cashiers/',
 	'submenu'=>array(
-		array('label'=>'Add a new Cashier','url'=>'admin/Cashiers/add.php'),
-		array('label'=>'View/edit Cashiers','url'=>'admin/Cashiers/view.php'),
+		array('label'=>'Add a new Cashier','url'=>'admin/Cashiers/AddCashierPage.php'),
+		array('label'=>'View/edit Cashiers','url'=>'admin/Cashiers/ViewCashiersPage.php'),
 		array('label'=>'Cashier performance report','url'=>'reports/cash_report/')
 		)
 	),
