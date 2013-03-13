@@ -28,7 +28,8 @@ include($FANNIE_ROOT.'classlib2.0/data/FannieDB.php');
 include($FANNIE_ROOT.'classlib2.0/data/controllers/ProductsController.php');
 include($FANNIE_ROOT.'src/JsonLib.php');
 require('laneUpdates.php');
-include($FANNIE_ROOT.'auth/login.php');
+if (!function_exists('login'))
+	include($FANNIE_ROOT.'auth/login.php');
 include($FANNIE_ROOT.'src/ReportConvert/HtmlToArray.php');
 include($FANNIE_ROOT.'src/ReportConvert/ArrayToCsv.php');
 
