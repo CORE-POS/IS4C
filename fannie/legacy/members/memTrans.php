@@ -53,7 +53,7 @@ echo "<table cellspacing=0 cellpadding=4 border=1 style=\"font-weight:bold;\">";
 while($row = $sql->fetch_row($result)){
 	echo "<tr>";
 	printf("<td>%d/%d/%d</td>",$row[0],$row[1],$row[2]);
-	printf("<td><a href=\"{$FANNIE_URL}admin/LookupReceipt/reprint.php?receipt=%s&month=%d&day=%d&year=%d\">%s</a></td>",
+	printf("<td><a href=\"{$FANNIE_URL}admin/LookupReceipt/RenderReceiptPage.php?receipt=%s&month=%d&day=%d&year=%d\">%s</a></td>",
 		$row[3],$row[0],$row[1],$row[2],$row[3]);
 	printf("<td>\$%.2f</td>",$row[4]);
 	echo "<td>";
