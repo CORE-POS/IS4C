@@ -22,7 +22,7 @@ else {
 	$r = $dbc->query($q);
 	while($w = $dbc->fetch_row($r)){
 		printf('<tr><td>%d/%d/%d</td><td>
-			<a href="%sadmin/LookupReceipt/reprint.php?year=%d&month=%d&day=%d&receipt=%s">%s</a>
+			<a href="%sadmin/LookupReceipt/RenderReceiptPage.php?year=%d&month=%d&day=%d&receipt=%s">%s</a>
 			</td><td>%.2f</td><td>%s</td></tr>',
 			$w[4],$w[5],$w[3],$FANNIE_URL,$w[3],$w[4],$w[5],$w[1],$w[1],
 			($w[0]!=0?$w[0]:$w[2]),($w[0]!=0?'Charge':'Payment'));

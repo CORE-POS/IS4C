@@ -8,9 +8,8 @@ function catchange(){
 	}
 	else {
 		$.ajax({
-			url: 'ajax.php',
+			url: 'BrowseVendorItems.php',
 			type: 'post',
-			dataType: 'text/html',
 			timeout: 1000,
 			data: 'vid='+vid+'&deptID='+did+'&action=getCategoryBrands',
 			error: function(){
@@ -28,9 +27,8 @@ function addToPos(upc){
 	var price = $('#price'+upc).val();
 	var dept = $('#dept'+upc).val();
 	$.ajax({
-		url: 'ajax.php',
+		url: 'BrowseVendorItems.php',
 		type: 'POST',
-		dataType: 'text/html',
 		timeout: 1000,
 		data: 'upc='+upc+'&vid='+vid+'&price='+price+'&dept='+dept+'&action=addPosItem',
 		error: function(){
@@ -56,13 +54,11 @@ function brandchange() {
 	}
 	else {
 		$.ajax({
-			url: 'ajax.php',
+			url: 'BrowseVendorItems.php',
 			type: 'post',
-			dataType: 'text/html',
-			timeout: 1000,
 			data: 'vid='+vid+'&deptID='+did+'&brand='+brand+'&action=showCategoryItems',
-			error: function(e1){
-			alert('Error loading XML document');
+			error: function(e1,e2){
+				alert('Error loading XML document');
 			},
 			success: function(resp){
 				$('#contentarea').html(resp);

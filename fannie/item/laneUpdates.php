@@ -74,7 +74,7 @@ function deleteProductAllLanes($upc){
 			$FANNIE_LANES[$i]['op'],$FANNIE_LANES[$i]['user'],
 			$FANNIE_LANES[$i]['pw']);
 		$delQ = $tmp->prepare_statement("DELETE FROM products WHERE upc=?");
-		$delR = $tmp->exec_statement($delQ,,array($upc),$FANNIE_LANES[$i]['op']);
+		$delR = $tmp->exec_statement($delQ,array($upc),$FANNIE_LANES[$i]['op']);
 	}
 }
 
