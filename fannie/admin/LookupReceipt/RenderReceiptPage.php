@@ -51,6 +51,7 @@ class RenderReceiptPage extends FanniePage {
 			$ret .= $this->receiptHeader($date1,$transNum);
 			$ret .= $this->ccInfo($date1, $transNum);
 		}
+		return $ret;
 	}
 
 	function receiptHeader($date,$trans){
@@ -166,14 +167,18 @@ class RenderReceiptPage extends FanniePage {
 
 		$query = $dbc->prepare_statement("SELECT mode, amount, PAN, 
 			CASE WHEN manual=1 THEN 'keyed' ELSE 'swiped' END AS entryMethod, 
-			issuer, xResultMessage, xApprovalNumber, xTransactionID, name
+			issuer, xResultMessage, xApprovalNumber, xTransactionID, name,
+			q.refNum
 			FROM {$FANNIE_TRANS_DB}{$dbconn}efsnetRequest AS q LEFT JOIN 
 			{$FANNIE_TRANS_DB}{$dbconn}efsnetResponse AS r
 			ON q.refNum=r.refNum  WHERE q.date=? AND
-			q.cashierNo=? AND q.laneNo=? AND q.transNo=?");
+			q.cashierNo=? AND q.laneNo=? AND q.transNo=?
+			and commErr=0");
 		$result = $dbc->exec_statement($query,array($dateInt,$emp,$reg,$trans));
 		$ret = '';
+		$pRef = '';
 		while ($row = $dbc->fetch_row($result)){
+			if ($pRef == $row['refNum']) continue;
 			$ret .= "<hr />";
 			$ret .= "Card: ".$row['issuer'].' '.$row['PAN'].'<br />';
 			$ret .= "Name: ".$row['name'].'<br />';
@@ -181,6 +186,8 @@ class RenderReceiptPage extends FanniePage {
 			$ret .= "Sequence Number: ".$row['xTransactionID'].'<br />';
 			$ret .= "Authorization: ".$row['xResultMessage'].'<br />';
 			$ret .= '<b>Amount</b>: '.sprintf('$%.2f',$row['amount']).'<br />';
+			$ret .= (strstr($row['mode'],'Credit') ? 'MERCURY' : 'FAPS') . '<br />';
+			$pRef = $row['refNum'];
 		}
 		return $ret;
 	}
