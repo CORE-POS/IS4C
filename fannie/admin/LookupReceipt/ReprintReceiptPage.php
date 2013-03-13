@@ -25,6 +25,8 @@ include('../../config.php');
 include($FANNIE_ROOT.'classlib2.0/FanniePage.php');
 include($FANNIE_ROOT.'classlib2.0/data/FannieDB.php');
 include($FANNIE_ROOT.'classlib2.0/lib/FormLib.php');
+$dbc = FannieDB::get($FANNIE_OP_DB);
+include($FANNIE_ROOT.'src/select_dlog.php');
 
 class ReprintReceiptPage extends FanniePage {
 
@@ -94,7 +96,7 @@ class ReprintReceiptPage extends FanniePage {
 			$tender_clause .= ")";
 
 			$or_clause = "( ";
-			if ($tender_clause != "( )") $or_clause .= $tender_clause;
+			if ($tender_clause != "( 1=1)") $or_clause .= $tender_clause;
 			if ($department != ""){
 				if ($or_clause != '( ') $or_clause .= " OR ";
 				$or_clause .= " department=? ";
@@ -159,7 +161,7 @@ class ReprintReceiptPage extends FanniePage {
 	}
 
 	function form_content(){
-		global $FANNIE_OP_DB;
+		global $FANNIE_OP_DB,$FANNIE_URL;
 		$dbc = FannieDB::get($FANNIE_OP_DB);
 		$depts = "<option value=\"\">Select one...</option>";
 		$r = $dbc->query("SELECT dept_no,dept_name from departments order by dept_name");
@@ -169,7 +171,7 @@ class ReprintReceiptPage extends FanniePage {
 		$this->add_script($FANNIE_URL.'src/CalendarControl.js');
 		ob_start();
 		?>
-<form action=index.php method=get>
+<form action=ReprintReceiptPage.php method=get>
 Receipt Search - Fill in any information available
 <table id=mytable cellspacing=4 cellpadding=0>
 <tr>
