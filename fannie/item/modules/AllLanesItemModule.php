@@ -36,8 +36,8 @@ class AllLanesItemModule extends ItemModule {
 		for($i=0;$i<count($FANNIE_LANES);$i++){
 			$f = $FANNIE_LANES[$i];
 			$sql = new SQLManager($f['host'],$f['type'],$f['op'],$f['user'],$f['pw']);
-			if ($sql === False){
-				$ret .= "Can't connect to :ane ".($i+1)."<br />";
+			if (!is_object($sql) || $sql->connections[$f['op']] === False){
+				$ret .= "Can't connect to lane ".($i+1)."<br />";
 				continue;
 			}
 			$prep = $sql->prepare_statement($queryItem);

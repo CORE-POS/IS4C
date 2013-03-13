@@ -28,7 +28,8 @@ include($FANNIE_ROOT.'classlib2.0/data/FannieDB.php');
 include($FANNIE_ROOT.'classlib2.0/data/controllers/ProductsController.php');
 include($FANNIE_ROOT.'src/JsonLib.php');
 require('laneUpdates.php');
-include($FANNIE_ROOT.'auth/login.php');
+if (!function_exists('login'))
+	include($FANNIE_ROOT.'auth/login.php');
 include($FANNIE_ROOT.'src/ReportConvert/HtmlToArray.php');
 include($FANNIE_ROOT.'src/ReportConvert/ArrayToCsv.php');
 
@@ -68,7 +69,7 @@ class ProductListPage extends FanniePage {
 	}
 
 	function javascript_content(){
-		global $FANNIE_URL, $FANNIE_DB;
+		global $FANNIE_URL, $FANNIE_OP_DB;
 
 		if ($this->excel) return '';
 
@@ -321,8 +322,8 @@ class ProductListPage extends FanniePage {
 		}
 		$ret .= date("F j, Y, g:i a").'<br />'; 
 		
-		$page_url = sprintf('ProductListPage.php?supertype=%s&deptStart=%s&deptEnd=%s&deptSub=%s&manufactuer=%s&mtype=%s',
-				$supertype, $deptStart, $deptEnd, $super, $manufactuer, $mtype);
+		$page_url = sprintf('ProductListPage.php?supertype=%s&deptStart=%s&deptEnd=%s&deptSub=%s&manufacturer=%s&mtype=%s',
+				$supertype, $deptStart, $deptEnd, $super, $manufacturer, $mtype);
 		if (!$this->excel){
 			$ret .= sprintf('<a href="%s&sort=%s&excel=yes">Save to Excel</a><br />',
 				$page_url, $sort);
