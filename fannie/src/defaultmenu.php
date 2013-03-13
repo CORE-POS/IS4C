@@ -76,7 +76,8 @@ array('label'=>'Item Maintenance','url'=>'item/ItemEditorPage.php','subheading'=
 array('label'=>'Sales Batches','url'=>'batches/','subheading'=>'Create automated sales & price changes',
 'submenu'=>array(
 	array('label'=>'Sales Batches','url'=>'batches/newbatch/'),
-	array('label'=>'Manage Batch Types','url'=>'batches/types.php'),
+	array('label'=>'Upload Batch','url'=>'batches/xlsbatch/'),
+	array('label'=>'Manage Batch Types','url'=>'batches/BatchTypeEditor.php'),
 	array('label'=>'Co+op Deals Sales','url'=>'batches/CAP/'),
 	array('label'=>'Vendor Pricing','url'=>'batches/UNFI/')
 	)
@@ -133,8 +134,8 @@ array('label'=>'Admin','url'=>'admin/','subheading'=>'Administrative functions, 
 'submenu'=>array(
 	array('label'=>'Cashier Management >>','url'=>'admin/Cashiers/',
 	'submenu'=>array(
-		array('label'=>'Add a new Cashier','url'=>'admin/Cashiers/add.php'),
-		array('label'=>'View/edit Cashiers','url'=>'admin/Cashiers/view.php'),
+		array('label'=>'Add a new Cashier','url'=>'admin/Cashiers/AddCashierPage.php'),
+		array('label'=>'View/edit Cashiers','url'=>'admin/Cashiers/ViewCashiersPage.php'),
 		array('label'=>'Cashier performance report','url'=>'reports/cash_report/')
 		)
 	),
