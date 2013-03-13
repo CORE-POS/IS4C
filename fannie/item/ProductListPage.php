@@ -69,7 +69,7 @@ class ProductListPage extends FanniePage {
 	}
 
 	function javascript_content(){
-		global $FANNIE_URL, $FANNIE_DB;
+		global $FANNIE_URL, $FANNIE_OP_DB;
 
 		if ($this->excel) return '';
 
