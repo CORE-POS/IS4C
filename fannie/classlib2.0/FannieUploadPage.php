@@ -367,7 +367,8 @@ class FannieUploadPage extends FanniePage {
 	*/
 	protected function basic_form(){
 		return sprintf('
-		<form enctype="multipart/form-data" action="%s" method="post">
+		<form id="FannieUploadForm" enctype="multipart/form-data" 
+			action="%s" method="post">
 		<input type="hidden" name="MAX_FILE_SIZE" value="2097152" />
 		Filename: <input type="file" id="%s" name="%s" />
 		<input type="submit" value="Upload File" />

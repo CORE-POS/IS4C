@@ -39,7 +39,7 @@ class NonMovementReport extends FannieReportPage {
 		$this->report_cache = 'none';
 
 		if (isset($_REQUEST['deleteItem'])){
-			$upc = get_form_value('deleteItem','');
+			$upc = FormLib::get_form_value('deleteItem','');
 			$upc = str_pad($upc,13,'0',STR_PAD_LEFT);
 
 			$query = "DELETE FROM products WHERE upc=?";

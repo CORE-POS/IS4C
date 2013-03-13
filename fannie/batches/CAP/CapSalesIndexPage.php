@@ -1,7 +1,7 @@
 <?php
 /*******************************************************************************
 
-    Copyright 2009 Whole Foods Co-op
+    Copyright 2013 Whole Foods Co-op
 
     This file is part of Fannie.
 
@@ -22,35 +22,26 @@
 *********************************************************************************/
 
 include('../../config.php');
-include($FANNIE_ROOT.'src/mysql_connect.php');
+include($FANNIE_ROOT.'classlib2.0/FanniePage.php');
 
-$res = $dbc->query("SELECT s.superID,super_name
-		FROM unfi_order AS u INNER JOIN
-		products AS p ON u.upcc = p.upc
-		LEFT JOIN superdepts AS s ON
-		s.dept_ID = p.department
-		LEFT JOIN superDeptNames AS n
-		on s.superID=n.superID
-		GROUP BY s.superID,super_name");
-$opts = "<option value=99 selected>All</option>";
-while($row = $dbc->fetch_row($res))
-	$opts .= "<option value=$row[0]>$row[1]</option>";
+class CapSalesIndexPage extends FanniePage {
+	protected $title = "Fannie - CAP sales";
+	protected $header = "CAP Sales";
 
-$page_title = "Fannie : Check UNFI Pricing";
-$header = "Check UNFI Pricing";
-include($FANNIE_ROOT.'src/header.html');
+	function body_content(){
+		ob_start();
+		?>
+		<ul>
+		<li><a href="CoopDealsUploadPage.php">Upload Price File</a></li>
+		<li><a href="CoopDealsReviewPage.php">Review data &amp; create sales batches</a></li>
+		</ul>
+		<?php
+		return ob_get_clean();
+	}
+}
+
+if (basename($_SERVER['PHP_SELF']) == basename(__FILE__)){
+	$obj = new CapSalesIndexPage();
+	$obj->draw_page();
+}
 ?>
-<body>Select a buyer if you like....
-<form action=price_compare.php method=post>
-<select name=buyer>
-<?php echo $opts; ?>
-</select>
-<br>
-Show all items <select name=filter>
-<option>No</option>
-<option>Yes</option>
-</select>
-<br />
-<input type=submit value=Onward name=select>
-</form>
-<?php include($FANNIE_ROOT.'src/footer.html'); ?>
