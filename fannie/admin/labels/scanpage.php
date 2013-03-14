@@ -119,10 +119,14 @@ function build_page($upcs){
 		LEFT JOIN prodExtra AS x ON p.upc=x.upc
 		LEFT JOIN departments AS d ON p.department=d.dept_no
 		WHERE p.upc IN (";
-	foreach($upcs as $u)
-		$q .= $dbc->escape(str_pad($u,13,'0',STR_PAD_LEFT)).",";
+	$args = array();
+	foreach($upcs as $u){
+		$q .= '?,';
+		$args[] = str_pad($u,13,'0',STR_PAD_LEFT);
+	}
 	$q = rtrim($q,",").") ORDER BY fixedDesc";
-	$r = $dbc->query($q);
+	$p = $dbc->prepare_statement($q);
+	$r = $dbc->exec_statement($p,$args);
 
 	$pdf=new WFC_New_PDF('P','mm','Letter'); //start new instance of PDF
 	$pdf->Open(); //open new PDF Document
@@ -191,8 +195,8 @@ function build_page($upcs){
 if (isset($_REQUEST['likecode']) || isset($_REQUEST['upc'])){
 	$upcs = array();		
 	if (isset($_REQUEST['likecode'])){
-		$q = "SELECT upc FROM upcLike WHERE likeCode=".$_REQUEST['likecode'];
-		$r = $dbc->query($q);
+		$q = $dbc->prepare_statement("SELECT upc FROM upcLike WHERE likeCode=?");
+		$r = $dbc->exec_statement($q,array($_REQUEST['likecode']));
 		while($w = $dbc->fetch_row($r)){
 			$upcs[] = $w[0];
 		}

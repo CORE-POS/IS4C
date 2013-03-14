@@ -164,7 +164,8 @@ class ReprintReceiptPage extends FanniePage {
 		global $FANNIE_OP_DB,$FANNIE_URL;
 		$dbc = FannieDB::get($FANNIE_OP_DB);
 		$depts = "<option value=\"\">Select one...</option>";
-		$r = $dbc->query("SELECT dept_no,dept_name from departments order by dept_name");
+		$p = $dbc->prepare_statement("SELECT dept_no,dept_name from departments order by dept_name");
+		$r = $dbc->exec_statement($p);
 		while($w = $dbc->fetch_row($r)){
 			$depts .= sprintf("<option value=%d>%s</option>",$w[0],$w[1]);
 		}
