@@ -106,20 +106,20 @@ echo tablify($tenders,array(1,0,2,3),array("Account","Type","Amount","Count"),
 	     array($ALIGN_LEFT,$ALIGN_LEFT,$ALIGN_RIGHT|$TYPE_MONEY,$ALIGN_RIGHT),2);
 
 $stamp = strtotime($dstr);
-$creditQ = "SELECT count(*) as num, 
-		sum(CASE WHEN q.mode='retail_alone_credit' THEN -amount ELSE amount END) as ttl,
+$creditQ = "SELECT 1 as num, 
+		MAX(CASE WHEN q.mode IN ('retail_alone_credit','Credit_Return') THEN -amount ELSE amount END) as ttl,
 		CASE WHEN q.refNum LIKE '%-%' THEN 'FAPS' ELSE 'Mercury' END as proc
 	FROM is4c_trans.efsnetRequest AS q LEFT JOIN is4c_trans.efsnetResponse AS r ON q.refNum=r.refNum
 	WHERE q.date=? and r.httpCode=200 and 
 	(r.xResultMessage LIKE '%approved%' OR r.xResultMessage LIKE '%PENDING%')
-	GROUP BY 
-	CASE WHEN q.refNum LIKE '%-%' THEN 'FAPS' ELSE 'Mercury' END";
+	GROUP BY q.refNum";
 $creditP = $dbc->prepare_statement($creditQ);
 $creditR = $dbc->exec_statement($creditP, array( date('Ymd',$stamp) ));
 $cTallies = array('FAPS'=>array(0.0,0),'Mercury'=>array(0.0,0),
 	'Non-integrated'=>array(0.0,0));
 while($creditW = $dbc->fetch_row($creditR)){
-	$cTallies[$creditW['proc']] = array($creditW['ttl'],$creditW['num']);
+	$cTallies[$creditW['proc']][0] += $creditW['ttl'];
+	$cTallies[$creditW['proc']][1]++;
 }
 $nonQ = "SELECT count(*) as num, sum(-total) as ttl, 'Non-integrated' as proc
 	FROM $dlog as d LEFT JOIN 
