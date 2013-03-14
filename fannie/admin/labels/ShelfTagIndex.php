@@ -67,6 +67,12 @@ function goToPage(the_id){
 		global $FANNIE_URL, $FANNIE_OP_DB, $FANNIE_DEFAULT_PDF;
 		ob_start();
 		?>
+		<div style="float:right;">
+		<a href="CreateTagsByDept.php">Create Tags By Department</a>
+		<br />
+		<a href="CreateTagsByManu.php">Create Tags By Brand</a>
+		</div>
+		<div>
 		Regular shelf tags
 		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 		<a href="BatchShelfTags.php">Batch shelf tags</a>
@@ -93,7 +99,7 @@ function goToPage(the_id){
 		$ret = ob_get_clean();
 
 		$dbc = FannieDB::get($FANNIE_OP_DB);
-		$query = $dbc->prepare_statement("SELECT superID,super_name FROM superDeptNames
+		$query = $dbc->prepare_statement("SELECT superID,super_name FROM MasterSuperDepts
 			GROUP BY superID,super_name
 			ORDER BY superID");
 		$result = $dbc->exec_statement($query);
@@ -110,6 +116,8 @@ function goToPage(the_id){
 				alt=\"Edit\" border=0 /></td></tr>",$row[1],$row[0],$row[0],$row[0]);
 		}
 		$ret .= "</table>";
+		$ret .= '</div>
+		<div style="clear:right;"></div>';
 		
 		return $ret;
 	}
