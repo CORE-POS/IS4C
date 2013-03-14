@@ -45,8 +45,37 @@
 
 include('../config.php');
 include($FANNIE_ROOT.'src/cron_msg.php');
+include($FANNIE_ROOT.'classlib2.0/data/FannieDB.php');
+
 
 set_time_limit(0);
+
+$dbc = FannieDB::get($FANNIE_TRANS_DB);
+foreach($FANNIE_LANES as $f){
+	$dbc->add_connection($f['host'],$f['type'],$f['trans'],$f['user'],$f['pw']);
+	if ($dbc->connections[$f['trans']] === False){
+		echo cron_msg('Cannot connect to '.$f['host']);
+		continue;
+	}
+
+	$try = $dbc->transfer($f['trans'],'SELECT * FROM valutecRequest',
+			$FANNIE_TRANS_DB,'INSERT INTO valutecRequest');
+	if ($try !== False){
+		$dbc->query('TRUNCATE TABLE valutecRequest',$f['trans']);
+	}
+
+	$try = $dbc->transfer($f['trans'],'SELECT * FROM valutecRequestMod',
+			$FANNIE_TRANS_DB,'INSERT INTO valutecRequestMod');
+	if ($try !== False){
+		$dbc->query('TRUNCATE TABLE valutecRequestMod',$f['trans']);
+	}
+
+	$try = $dbc->transfer($f['trans'],'SELECT * FROM valutecResponse',
+			$FANNIE_TRANS_DB,'INSERT INTO valutecResponse');
+	if ($try !== False){
+		$dbc->query('TRUNCATE TABLE valutecResponse',$f['trans']);
+	}
+}
 
 $url = "http://".php_uname('n').$FANNIE_URL."sync/TableSyncPage.php";
 
