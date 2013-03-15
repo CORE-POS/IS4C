@@ -21,6 +21,12 @@
 
 *********************************************************************************/
 
+/* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+ *
+ * 17Feb2013 Eric Lee Support argument to PV, either before or after.
+ *           See also gui-modules/productlist.php
+*/
+
 /* 
  * This class is for any input designed to set processing
  * to an alternate gui module. That's how the particular
@@ -41,17 +47,27 @@ class Steering extends Parser {
 		$this->dest_scale = False;
 		$this->ret = $this->default_json();
 
+		// Argument to PV, either before or after.
+		if ( substr($str,-2,2) == "PV" ) {
+			$pvsearch = substr($str,0,-2);
+			$str = "PV";
+		} elseif ( substr($str,0,2) == "PV" ) {
+			$pvsearch = substr($str,2);
+			$str = "PV";
+		} else { 1; }
+
 		switch($str){
 			
 		case 'CAB':
 			if ($CORE_LOCAL->get("LastID") != "0")
-				$this->ret['output'] = DisplayLib::boxMsg("transaction in progress");
+				$this->ret['output'] = boxMsg("transaction in progress");
 			else {
 				$this->ret['main_frame'] = $my_url."gui-modules/cablist.php";
 			}
 			return True;
 		case "PV":
-			$CORE_LOCAL->set("pvsearch","");
+			$CORE_LOCAL->set("pvsearch","$pvsearch");
+			//$CORE_LOCAL->set("pvsearch","");
 			$CORE_LOCAL->set("away",1);
 			$this->ret['main_frame'] = $my_url."gui-modules/productlist.php";
 			return True;
@@ -115,6 +131,7 @@ class Steering extends Parser {
 				$db = Database::tDataConnect();
 				$result = $db->query($query);
 				$num_rows = $db->num_rows($result);
+				$db->close();
 
 				if ($num_rows == 0) 
 					$this->ret['output'] = DisplayLib::boxMsg("no receipt found");
@@ -134,20 +151,10 @@ class Steering extends Parser {
 			else {
 				Database::setglobalvalue("LoggedIn", 0);
 				$CORE_LOCAL->set("LoggedIn",0);
+				ReceiptLib::drawerKick();
 				$CORE_LOCAL->set("training",0);
 				$CORE_LOCAL->set("gui-scale","no");
 				$CORE_LOCAL->set("away",1);
-
-				/**
-				  Use Kicker object to determine whether the drawer should open
-				  The first line is just a failsafe in case the setting has not
-				  been configured.
-				*/
-				$kicker_class = ($CORE_LOCAL->get("kickerModule")=="") ? 'Kicker' : $CORE_LOCAL->get('kickerModule');
-				$kicker_object = new $kicker_class();
-				if ($kicker_object->kickOnSignOut())
-					ReceiptLib::drawerKick();
-
 				$this->ret['main_frame'] = $my_url."gui-modules/login2.php";
 			}
 			return True;

@@ -531,7 +531,6 @@ function like_to_table($query,$border,$bgcolor)
 function receipt_to_table($query,$query2,$border,$bgcolor)
 {
 	global $dbc, $FANNIE_COOP_ID;
-
 	$results = $dbc->query($query); 
 	$number_cols = $dbc->num_fields($results);
 	$row2 = $dbc->fetch_row($results);
@@ -570,7 +569,6 @@ function receipt_to_table($query,$query2,$border,$bgcolor)
 
 		default:
 			$receiptHeader .= ("<tr><td align=center colspan=4>" . "FANNIE_COOP_ID >{$FANNIE_COOP_ID}<" . "</td></tr>\n");
-
 		}
 	}
 
