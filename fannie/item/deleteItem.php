@@ -62,7 +62,7 @@ if (isset($_REQUEST['upc']) && !isset($_REQUEST['deny'])){
 			echo "<b>Delete this item?</b><br />";
 			echo "<table cellpadding=4 cellspacing=0 border=1>";
 			echo "<tr><th>UPC</th><th>Description</th><th>Price</th></tr>";
-			printf("<tr><td><a href=\"itemMain.php?upc=%s\" target=\"_new%s\">
+			printf("<tr><td><a href=\"ItemEditorPage.php?searchupc=%s\" target=\"_new%s\">
 				%s</a></td><td>%s</td><td>%.2f</td></tr>",$rw['upc'],
 				$rw['upc'],$rw['upc'],$rw['description'],$rw['normal_price']);
 			echo "</table><br />";
