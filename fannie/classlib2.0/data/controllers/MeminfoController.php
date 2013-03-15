@@ -60,6 +60,8 @@ class MeminfoController {
 				break;
 			}
 		}
+		if ($upQ == "UPDATE meminfo SET ") return True; // nothing to update 
+
 		$upQ = rtrim($upQ,",");
 		$upQ .= ' WHERE card_no=?';
 		$args[] = $card_no;
@@ -74,7 +76,7 @@ class MeminfoController {
 		$r = $dbc->exec_statement($q,array($card_no));
 
 		if ($dbc->num_rows($r) == 0){
-			$ins = $dbc->preparse_statement("INSERT INTO meminfo (card_no,
+			$ins = $dbc->prepare_statement("INSERT INTO meminfo (card_no,
 				last_name,first_name,othlast_name,othfirst_name,street,
 				city,state,zip,phone,email_1,email_2,ads_OK) VALUES
 				(?,'','','','','','','','','','','',1)");
