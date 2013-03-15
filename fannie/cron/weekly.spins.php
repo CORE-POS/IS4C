@@ -36,12 +36,17 @@
 set_time_limit(0);
 
 $SPINS_SERVER = "ftp.spins.com";
-$SPINS_USER = "whole_food_duluth";
-$SPINS_PW = "wfcc\$54*";
 
 include('../config.php');
 include($FANNIE_ROOT.'src/SQLManager.php');
 include($FANNIE_ROOT.'src/tmp_dir.php');
+
+/**
+  CONFIGURATION:
+  SPINS.php needs to define your FTP username and
+  password as $SPINS_USER and $SPINS_PW respectively.
+*/
+include($FANNIE_ROOT.'src/Credentials/SPINS.php');
 
 $tstamp = time();
 $week = date("W",$tstamp);
@@ -121,6 +126,7 @@ if (!$upload){
 }
 
 echo date('r').': Uploaded file to SPINS';
+unlink($outfile);
 
 ftp_close($conn_id);
 
