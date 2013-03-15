@@ -75,7 +75,7 @@ array('label'=>'Item Maintenance','url'=>'item/ItemEditorPage.php','subheading'=
 ),
 array('label'=>'Sales Batches','url'=>'batches/','subheading'=>'Create automated sales & price changes',
 'submenu'=>array(
-	array('label'=>'Sales Batches','url'=>'batches/newbatch/'),
+	array('label'=>'Sales Batches','url'=>'batches/newbatch.oo/'),
 	array('label'=>'Upload Batch','url'=>'batches/xlsbatch/'),
 	array('label'=>'Manage Batch Types','url'=>'batches/BatchTypeEditor.php'),
 	array('label'=>'Co+op Deals Sales','url'=>'batches/CAP/'),
@@ -147,9 +147,9 @@ array('label'=>'Admin','url'=>'admin/','subheading'=>'Administrative functions, 
 		array('label'=>'Print Member Stickers','url'=>'mem/numbers/'),
 		array('label'=>'Import Member Information >>','url'=>'mem/import/',
 			'submenu'=>array(
-				array('label'=>'Names & Numbers','url'=>'mem/import/nn.php'),
-				array('label'=>'Contact Information','url'=>'mem/import/contact.php'),
-				array('label'=>'Existing Equity','url'=>'mem/import/equity.php')
+				array('label'=>'Names & Numbers','url'=>'mem/import/MemNameNumImportPage.php'),
+				array('label'=>'Contact Information','url'=>'mem/import/MemContactImportPage.php'),
+				array('label'=>'Existing Equity','url'=>'mem/import/EquityHistoryImportPage.php')
 				)
 			)
 		)
