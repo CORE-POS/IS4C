@@ -1,0 +1,88 @@
+<?php 
+/*******************************************************************************
+
+    Copyright 2012 Whole Foods Co-op, Duluth, MN
+
+    This file is part of Fannie.
+
+    IT CORE is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    IT CORE is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    in the file license.txt along with IT CORE; if not, write to the Free Software
+    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+*********************************************************************************/
+include('../config.php');
+include($FANNIE_ROOT.'src/mysql_connect.php');
+
+$header = "Customer Preferences";
+$page_title = "Fannie :: Customer Preferences";
+
+$cardno = isset($_REQUEST['memID']) ? $_REQUEST['memID'] : 0;
+
+include($FANNIE_ROOT.'src/header.html');
+
+if ($cardno == 0){
+	echo '<i>Error - no member specified</i>';
+}
+else {
+
+	if (isset($_REQUEST['savebtn'])){
+		$pk = isset($_REQUEST['pref_k']) ? $_REQUEST['pref_k'] : array();
+		$pv = isset($_REQUEST['pref_v']) ? $_REQUEST['pref_v'] : array();
+		if (is_array($pk) && is_array($pv) && count($pk)==count($pv)){
+			for($i=0;$i<count($pk);$i++){
+				$dbc->query(sprintf("DELETE FROM custPreferences
+					WHERE card_no=%d AND pref_key=%s",
+					$cardno, $dbc->escape($pk[$i])
+				));
+				$dbc->query(sprintf("INSERT INTO custPreferences
+					(card_no, pref_key, pref_value) VALUES
+					(%d, %s, %s)", $cardno,
+					$dbc->escape($pk[$i]),$dbc->escape($pv[$i])
+				));
+			}
+			echo '<div align="center"><i>Settings Saved</i></div>';
+		}
+	}
+
+	printf('<h3>Account #%d</h3>',$cardno);
+	echo '<form action="prefs.php" method="post">';
+	printf('<input type="hidden" value="%d" name="memID" />',$cardno);
+
+	$prefQ = sprintf("SELECT a.pref_key,
+		CASE WHEN c.pref_value IS NULL THEN a.pref_default_value ELSE c.pref_value END
+		AS current_value,
+		a.pref_description
+		FROM custAvailablePrefs AS a
+		LEFT JOIN custPreferences AS c
+		ON a.pref_key=c.pref_key AND c.card_no=%d
+		ORDER BY a.pref_key",$cardno);
+	$prefR = $dbc->query($prefQ);
+	echo '<table cellpadding="4" cellspacing="0" border="1">';
+	echo '<tr><th>Setting</th><th>Value</th></tr>';	
+	while($prefW = $dbc->fetch_row($prefR)){
+		printf('<tr><td>%s</td>
+			<td><input type="text" name="pref_v[]" value="%s" /></td>
+			</tr><input type="hidden" name="pref_k[]" value="%s" />',
+			$prefW['pref_description'],
+			$prefW['current_value'],
+			$prefW['pref_key']
+		);
+	}
+	echo '</table><br />';
+	echo '<input type="submit" value="Save" name="savebtn" />';
+	echo '</form>';
+}
+
+include($FANNIE_ROOT.'src/footer.html');
+
+?>
