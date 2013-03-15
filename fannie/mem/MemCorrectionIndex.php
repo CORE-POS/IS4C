@@ -21,37 +21,35 @@
 
 *********************************************************************************/
 // A page to search the member base.
-$page_title='Fannie - Member Management Module';
-$header='Find A Member';
 include('../config.php');
-include('../src/header.html');
+include($FANNIE_ROOT.'classlib2.0/FanniePage.php');
+include($FANNIE_ROOT.'classlib2.0/lib/FormLib.php');
 
-require_once('../src/mysql_connect.php');
+class MemCorrectionIndex extends FanniePage {
 
-$CORRECTION_CASHIER = 1001;
-$CORRECTION_LANE = 30;
-$CORRECTION_DEPT = 800;
+	protected $title='Fannie - Member Management Module';
+	protected $header='Make Member Corrections';
 
-if (isset($_REQUEST['type'])){
-	if (file_exists('includes/'.$_REQUEST['type'].'.php'))
-		include('includes/'.$_REQUEST['type'].'.php');	
-	else {
-		echo "<em>Error: requested correction not found</em>";
-		echo "<br /><br />";
-		echo "<a href=\"corrections.php\">Back</a>";
+	private $msgs = '';
+
+	function body_content(){
+		ob_start();
+		?>
+		<ul>
+		<li><a href="correction_pages/MemEquityTransferTool.php">Equity Transfer</a></li>
+		<li><a href="correction_pages/MemArTransferTool.php">AR Transfer</a></li>
+		<li><a href="correction_pages/MemArEquitySwapTool.php">AR/Equity Swap</a></li>
+		<li><a href="correction_pages/MemArEquityDumpTool.php">Remove AR/Equity</a></li>
+		<!--<li><a href="MemCorrectionIndex.php?type=patronage_transfer">Transfer Patronage</a></li>-->
+		</ul>
+		<?php
+		return $this->msgs.ob_get_clean();
 	}
 }
-else {
-?>
-<ul>
-<li><a href="corrections.php?type=equity_transfer">Equity Transfer</a></li>
-<li><a href="corrections.php?type=ar_transfer">AR Transfer</a></li>
-<li><a href="corrections.php?type=equity_ar_swap">AR/Equity Swap</a></li>
-<li><a href="corrections.php?type=equity_ar_dump">Remove Equity/AR</a></li>
-<li><a href="corrections.php?type=patronage_transfer">Transfer Patronage</a></li>
-</ul>
-<?php
+
+if (basename($_SERVER['PHP_SELF']) == basename(__FILE__)){
+	$obj = new MemCorrectionIndex();
+	$obj->draw_page();
 }
 
-include('../src/footer.html');
 ?>
