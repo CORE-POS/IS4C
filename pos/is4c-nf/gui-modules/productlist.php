@@ -23,6 +23,7 @@
 
 /* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+	* 11Feb2013 EL Support argument from initial PV command: PVAPPLES.
 	* 18Jan2013 Eric Lee Extended lookup to productUser.description, with Andy's help.
 	*                    Very slow unless products.upc has been changed to VARCHAR(13).
 
@@ -42,6 +43,8 @@ class productlist extends NoInputPage {
 		$entered = "";
 		if (isset($_REQUEST["search"]))
 			$entered = strtoupper(trim($_REQUEST["search"]));
+		elseif ($CORE_LOCAL->get("pvsearch") != "")
+			$entered = strtoupper(trim($CORE_LOCAL->get("pvsearch")));
 		else{
 			$this->temp_num_rows = 0;
 			return True;
@@ -148,7 +151,7 @@ class productlist extends NoInputPage {
 
 	function body_content(){
 		global $CORE_LOCAL;
-		$results = $this->temp_result;
+		$result = $this->temp_result;
 		$num_rows = $this->temp_num_rows;
 
 		if ($num_rows == 0) {
@@ -165,7 +168,7 @@ class productlist extends NoInputPage {
 				."size=".$this->boxSize." onblur=\"\$('#search').focus();\" ondblclick=\"document.forms['selectform'].submit();\">";
 
 			$selected = "selected";
-			foreach($results as $row){
+			foreach($result as $row){
 				$price = $row["normal_price"];	
 
 				if ($row["scale"] != 0) $Scale = "S";
@@ -202,7 +205,11 @@ class productlist extends NoInputPage {
 			</span>
 			<form action="<?php echo $_SERVER['PHP_SELF']; ?>" method="post" autocomplete="off">
 			<input type="text" name="search" size="15" id="search"
+<<<<<<< HEAD
 				onblur="$('#search').focus();" />
+=======
+				onblur="$('#search).focus();" />
+>>>>>>> flathat/master
 			</form>
 			press [enter] to cancel
 			</div>
