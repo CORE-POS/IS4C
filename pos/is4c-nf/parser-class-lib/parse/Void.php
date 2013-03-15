@@ -397,9 +397,15 @@ class Void extends Parser {
 			$chk = $db->query("SELECT deposit FROM products WHERE upc='$upc'");
 			if ($db->num_rows($chk) > 0){
 				$dpt = array_pop($db->fetch_row($chk));
-				if ($dpt > 0){
-					$dupc = (int)$dpt;
-					return $this->voidupc((-1*$quantity)."*".$dupc,True);
+				if ($dpt <= 0) return ''; // no deposit found
+				$db = Database::tDataConnect();
+				$dupc = str_pad((int)$dpt,13,'0',STR_PAD_LEFT);
+				$id = $db->query(sprintf("SELECT trans_id FROM localtemptrans
+					WHERE upc='%s' AND voided=0 AND quantity=%d",
+					$dupc,(-1*$quantity)));
+				if ($db->num_rows($id) > 0){	
+					$trans_id = array_pop($db->fetch_row($id));
+					return $this->voidupc((-1*$quantity)."*".$dupc,$trans_id,True);
 				}
 			}
 		}

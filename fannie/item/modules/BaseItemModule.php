@@ -147,9 +147,12 @@ class BaseItemModule extends ItemModule {
 
 		$ret .= '</tr><tr>';
 
+		$limit = 35 - strlen(isset($rowItem['description'])?$rowItem['description']:'');
 		$ret .= '<td><b>Description</b></td><td><input type=text size=30 value="'
 			.(isset($rowItem['description'])?$rowItem['description']:'')
-			.'" name=descript></td>'; 
+			.'" onkeyup="$(\'#dcounter\').html(35-(this.value.length));" '
+			.' name=descript maxlength=35 id=descript>
+			<span id=dcounter>'.$limit.'</span></td>'; 
 
 		/**
 		  Drop down box changes price field from single price to
