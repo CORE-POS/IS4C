@@ -23,16 +23,16 @@
 
 class HouseholdMembers extends MemberModule {
 
-	function ShowEditForm($memNum){
+	function ShowEditForm($memNum, $country="US"){
 		global $FANNIE_URL;
 
 		$dbc = $this->db();
 		
-		$infoQ = sprintf("SELECT c.FirstName,c.LastName
+		$infoQ = $dbc->prepare_statement("SELECT c.FirstName,c.LastName
 				FROM custdata AS c 
-				WHERE c.CardNo=%d AND c.personNum > 1
-				ORDER BY c.personNum",$memNum);
-		$infoR = $dbc->query($infoQ);
+				WHERE c.CardNo=? AND c.personNum > 1
+				ORDER BY c.personNum");
+		$infoR = $dbc->exec_statement($infoQ,array($memNum));
 
 		$ret = "<fieldset><legend>Household Members</legend>";
 		$ret .= "<table class=\"MemFormTable\" 
@@ -86,8 +86,8 @@ class HouseholdMembers extends MemberModule {
 		$CUST_FIELDS['FirstName'][] = $lookupW['FirstName'];
 		$CUST_FIELDS['LastName'][] = $lookupW['LastName'];
 
-		$fns = $_REQUEST['HouseholdMembers_fn'];
-		$lns = $_REQUEST['HouseholdMembers_ln'];
+		$fns = FormLib::get_form_value('HouseholdMembers_fn',array());
+		$lns = FormLib::get_form_value('HouseholdMembers_ln',array());
 		$pn = 2;
 		for($i=0; $i<count($lns); $i++){
 			if (empty($fns[$i]) && empty($lns[$i])) continue;
@@ -102,9 +102,9 @@ class HouseholdMembers extends MemberModule {
 		$test = CustdataController::update($memNum, $CUST_FIELDS);
 
 		if ($test === False)
-			$ret = "Error: Problem saving household members<br />";	
+			return "Error: Problem saving household members<br />";	
 
-		return $ret;
+		return '';
 	}
 }
 

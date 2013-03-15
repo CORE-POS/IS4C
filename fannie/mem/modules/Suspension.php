@@ -26,18 +26,18 @@
 
 class Suspension extends MemberModule {
 
-	function ShowEditForm($memNum){
+	function ShowEditForm($memNum,$country="US"){
 		global $FANNIE_URL;
 
 		$dbc = $this->db();
 		
-		$infoQ = sprintf("SELECT CASE WHEN s.type = 'I' THEN 'Inactive' ELSE 'Terminated' END as status,
+		$infoQ = $dbc->prepare_statement("SELECT CASE WHEN s.type = 'I' THEN 'Inactive' ELSE 'Terminated' END as status,
 				s.suspDate,
 				CASE WHEN s.reasoncode = 0 THEN s.reason ELSE r.textStr END as reason
 				FROM suspensions AS s LEFT JOIN reasoncodes AS r
 				ON s.reasoncode & r.mask <> 0
-				WHERE s.cardno=%d",$memNum);
-		$infoR = $dbc->query($infoQ);
+				WHERE s.cardno=?");
+		$infoR = $dbc->exec_statement($infoQ,array($memNum));
 
 		$status = "Active";
 		$date = "";
@@ -62,7 +62,7 @@ class Suspension extends MemberModule {
 			$ret .= "<td>$reason</td></tr>";
 		}
 		$ret .= "<tr><td><a href=\"{$FANNIE_URL}reports/SuspensionHistory/index.php?memNum=$memNum\">History</a></td>";
-		$ret .= "<td><a href=\"{$FANNIE_URL}mem/status.php?memID=$memNum\">Change Status</a></td></tr>";
+		$ret .= "<td><a href=\"{$FANNIE_URL}mem/MemStatusEditor.php?memID=$memNum\">Change Status</a></td></tr>";
 
 		$ret .= "</table></fieldset>";
 		return $ret;

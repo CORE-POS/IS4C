@@ -121,13 +121,13 @@ array('label'=>'Dayend Polling','url'=>'cron/management/','subheading'=>'Schedul
 ),
 array('label'=>'Synchronize','url'=>'sync/','subheading'=>'Update cash registers',
 'submenu'=>array(
-	array('label'=>'Products','url'=>'sync/tablesync.php?tablename=products'),
-	array('label'=>'ProductUser','url'=>'sync/tablesync.php?tablename=productUser'),
-	array('label'=>'Membership','url'=>'sync/tablesync.php?tablename=custdata'),
-	array('label'=>'Member Cards','url'=>'sync/tablesync.php?tablename=memberCards'),
-	array('label'=>'Employees','url'=>'sync/tablesync.php?tablename=employees'),
-	array('label'=>'Departments','url'=>'sync/tablesync.php?tablename=departments'),
-	array('label'=>'Sub Departments','url'=>'sync/tablesync.php?tablename=subdepts')
+	array('label'=>'Products','url'=>'sync/TableSyncPage.php?tablename=products'),
+	array('label'=>'ProductUser','url'=>'sync/TableSyncPage.php?tablename=productUser'),
+	array('label'=>'Membership','url'=>'sync/TableSyncPage.php?tablename=custdata'),
+	array('label'=>'Member Cards','url'=>'sync/TableSyncPage.php?tablename=memberCards'),
+	array('label'=>'Employees','url'=>'sync/TableSyncPage.php?tablename=employees'),
+	array('label'=>'Departments','url'=>'sync/TableSyncPage.php?tablename=departments'),
+	array('label'=>'Sub Departments','url'=>'sync/TableSyncPage.php?tablename=subdepts')
 	)
 ),
 array('label'=>'Admin','url'=>'admin/','subheading'=>'Administrative functions, etc.',
@@ -141,9 +141,9 @@ array('label'=>'Admin','url'=>'admin/','subheading'=>'Administrative functions, 
 	),
 	array('label'=>'Member Management >>','url'=>'mem/',
 	'submenu'=>array(
-		array('label'=>'View/edit Members','url'=>'mem/search.php'),
-		array('label'=>'Manage Member Types','url'=>'mem/types.php'),
-		array('label'=>'Create New Members','url'=>'mem/new.php'),
+		array('label'=>'View/edit Members','url'=>'mem/MemberSearchPage.php'),
+		array('label'=>'Manage Member Types','url'=>'mem/MemberTypeEditor.php'),
+		array('label'=>'Create New Members','url'=>'mem/NewMemberTool.php'),
 		array('label'=>'Print Member Stickers','url'=>'mem/numbers/'),
 		array('label'=>'Import Member Information >>','url'=>'mem/import/',
 			'submenu'=>array(

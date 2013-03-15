@@ -27,6 +27,7 @@
 	* 10Oct12 Eric Lee Add memberCards to table list
 */
 header('Location: SyncIndexPage.php');
+exit;
 
 include('../config.php');
 
@@ -54,6 +55,5 @@ echo "</form>";
 echo '<a href="store/">Sync Stores</a>';
 
 include($FANNIE_ROOT.'src/footer.html');
->>>>>>> flathat/master
 
 ?>

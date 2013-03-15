@@ -23,18 +23,16 @@
 
 class Equity extends MemberModule {
 
-	function ShowEditForm($memNum){
-		global $FANNIE_URL,$FANNIE_TRANS_DB,$FANNIE_SERVER_DBMS;
-
-		$trans = $FANNIE_TRANS_DB;
-		if ($FANNIE_SERVER_DBMS == 'MSSQL') $trans .= ".dbo";
+	function ShowEditForm($memNum, $country="US"){
+		global $FANNIE_URL,$FANNIE_TRANS_DB;
 
 		$dbc = $this->db();
+		$trans = $FANNIE_TRANS_DB.$dbc->sep();
 		
-		$infoQ = sprintf("SELECT payments
-				FROM {$trans}.newBalanceStockToday_test
-				WHERE memnum=%d",$memNum);
-		$infoR = $dbc->query($infoQ);
+		$infoQ = $dbc->prepare_statement("SELECT payments
+				FROM {$trans}newBalanceStockToday_test
+				WHERE memnum=?");
+		$infoR = $dbc->exec_statement($infoQ,array($memNum));
 		$equity = 0;
 		if ($dbc->num_rows($infoR) > 0)
 			$equity = array_pop($dbc->fetch_row($infoR));
@@ -47,8 +45,8 @@ class Equity extends MemberModule {
 		$ret .= sprintf('<td>%.2f</td>',$equity);
 
 		$ret .= "<td><a href=\"{$FANNIE_URL}reports/Equity/index.php?memNum=$memNum\">History</a></td></tr>";
-		$ret .= "<tr><td><a href=\"{$FANNIE_URL}mem/corrections.php?type=equity_transfer&memIN=$memNum\">Transfer Equity</a></td>";
-		$ret .= "<td><a href=\"{$FANNIE_URL}mem/corrections.php?type=equity_ar_swap&memIN=$memNum\">Convert Equity</a></td></tr>";
+		$ret .= "<tr><td><a href=\"{$FANNIE_URL}mem/correction_pages/MemEquityTransferTool.php?memIN=$memNum\">Transfer Equity</a></td>";
+		$ret .= "<td><a href=\"{$FANNIE_URL}mem/correction_pages/MemArEquitySwapTool.php?memIN=$memNum\">Convert Equity</a></td></tr>";
 
 
 		$ret .= "</table></fieldset>";

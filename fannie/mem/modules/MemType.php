@@ -23,17 +23,17 @@
 
 class MemType extends MemberModule {
 
-	function ShowEditForm($memNum){
+	function ShowEditForm($memNum, $country="US"){
 		global $FANNIE_URL;
 
 		$dbc = $this->db();
 		
-		$infoQ = sprintf("SELECT c.memType,n.memType,n.memDesc,c.discount
+		$infoQ = $dbc->prepare_statement("SELECT c.memType,n.memType,n.memDesc,c.discount
 				FROM custdata AS c, 
 				memtype AS n 
-				WHERE c.CardNo=%d AND c.personNum=1
-				ORDER BY n.memType",$memNum);
-		$infoR = $dbc->query($infoQ);
+				WHERE c.CardNo=? AND c.personNum=1
+				ORDER BY n.memType");
+		$infoR = $dbc->exec_statement($infoQ,array($memNum));
 
 		$ret = "<fieldset><legend>Membership Type</legend>";
 		$ret .= "<table class=\"MemFormTable\" 
@@ -68,10 +68,10 @@ class MemType extends MemberModule {
 		if (!class_exists("CustdataController"))
 			include($FANNIE_ROOT.'classlib2.0/data/controllers/CustdataController.php');
 
-		$mtype = isset($_REQUEST['MemType_type']) ? $_REQUEST['MemType_type'] : 0;
-		$q = sprintf("SELECT discount,staff,SSI,cd_type FROM memdefaults
-			WHERE memtype=%d",$mtype);
-		$r = $dbc->query($q);
+		$mtype = FormLib::get_form_value('MemType_type',0);
+		$q = $dbc->prepare_statement("SELECT discount,staff,SSI,cd_type FROM memdefaults
+			WHERE memtype=?");
+		$r = $dbc->exec_statement($q,array($mtype));
 
 		$CUST_FIELDS = array();
 		$CUST_FIELDS['memType'] = $mtype;
