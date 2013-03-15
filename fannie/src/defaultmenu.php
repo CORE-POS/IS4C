@@ -147,9 +147,9 @@ array('label'=>'Admin','url'=>'admin/','subheading'=>'Administrative functions, 
 		array('label'=>'Print Member Stickers','url'=>'mem/numbers/'),
 		array('label'=>'Import Member Information >>','url'=>'mem/import/',
 			'submenu'=>array(
-				array('label'=>'Names & Numbers','url'=>'mem/import/nn.php'),
-				array('label'=>'Contact Information','url'=>'mem/import/contact.php'),
-				array('label'=>'Existing Equity','url'=>'mem/import/equity.php')
+				array('label'=>'Names & Numbers','url'=>'mem/import/MemNameNumImportPage.php'),
+				array('label'=>'Contact Information','url'=>'mem/import/MemContactImportPage.php'),
+				array('label'=>'Existing Equity','url'=>'mem/import/EquityHistoryImportPage.php')
 				)
 			)
 		)
