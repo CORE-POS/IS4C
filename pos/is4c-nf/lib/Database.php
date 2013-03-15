@@ -654,68 +654,6 @@ static public function changeLttTaxCode($fromName, $toName) {
 // changeLttTaxCode
 }
 
-/**
-  Change one tax code in all items of localtemptrans to a different one.
-  Parameters are the names of the taxes, as in taxrates.description
-  @param $fromName The name of the tax changed from.
-  @param $fromName The name of the tax changed to.
-*/
-static public function changeLttTaxCode($fromName, $toName) {
-
-	$msg = "";
-	$pfx = "changeLttTaxCode ";
-	$pfx = "";
-	if ( $fromName == "" ) {
-		$msg = "{$pfx}fromName is empty";
-		return msg;
-	} else {
-		if ( $toName == "" ) {
-			$msg = "{$pfx}toName is empty";
-			return msg;
-		}
-	}
-
-	$db = self::tDataConnect();
-
-	// Get the codes for the names provided.
-	$query = "SELECT id FROM taxrates WHERE description = '$fromName'";
-	$result = $db->query($query);
-	$row = $db->fetch_row($result);
-	if ( $row ) {
-		$fromId = $row['id'];
-	} else {
-		$msg = "{$pfx}fromName: >{$fromName}< not known.";
-		return $msg;
-	}
-	$query = "SELECT id FROM taxrates WHERE description = '$toName'";
-	$result = $db->query($query);
-	$row = $db->fetch_row($result);
-	if ( $row ) {
-		$toId = $row['id'];
-	} else {
-		$msg = "{$pfx}toName: >{$toName}< not known.";
-		return $msg;
-	}
-
-	// Change the values.
-	$query = "UPDATE localtemptrans set tax = $toId WHERE tax = $fromId";
-	$result = $db->query($query);
-	/* Complains that errno is undefined in SQLManager.
-	if ( $db->errno ) {
-		return "{$pfx}UPDATE error: " . $db->error;
-	}
-	*/
-	if ( !$result ) {
-		return "UPDATE false";
-	}
-
-	$db->close();
-
-	return True;
-
-// changeLttTaxCode
-}
-
 } // end Database class
 
 ?>
