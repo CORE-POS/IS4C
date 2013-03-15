@@ -24,7 +24,7 @@
 class MemCard extends MemberModule {
 
 	// Return a form segment for display or edit the Member Card#
-	function ShowEditForm($memNum){
+	function ShowEditForm($memNum, $country="US"){
 		global $FANNIE_URL;
 		global $FANNIE_MEMBER_UPC_PREFIX;
 
@@ -33,11 +33,10 @@ class MemCard extends MemberModule {
 		$prefix = isset($FANNIE_MEMBER_UPC_PREFIX) ? $FANNIE_MEMBER_UPC_PREFIX : "";
 		$plen = strlen($prefix);
 
-		$infoQ = sprintf("SELECT upc
+		$infoQ = $dbc->prepare_statement("SELECT upc
 				FROM memberCards
-				WHERE card_no=%d",
-				$memNum);
-		$infoR = $dbc->query($infoQ);
+				WHERE card_no=?");
+		$infoR = $dbc->exec_statement($infoQ,array($memNum));
 		if ( $infoR === false ) {
 			return "Error: problem checking for Member Card<br />";
 		}
@@ -79,7 +78,7 @@ class MemCard extends MemberModule {
 		$prefix = isset($FANNIE_MEMBER_UPC_PREFIX) ? $FANNIE_MEMBER_UPC_PREFIX : "";
 		$plen = strlen($prefix);
 
-		$form_upc = isset($_REQUEST['memberCard']) ? "{$_REQUEST['memberCard']}" : "";
+		$form_upc = FormLib::get_form_value('memberCard','');
 		// Restore prefix and leading 0's to upc.
 		if ( $form_upc && strlen($form_upc) < 13 ) {
 			$clen = (13 - $plen);

@@ -31,14 +31,14 @@ class Notes extends MemberModule {
 	 *              History button is displayed iff history and un-hides the list of notes.
 	 *              NoHistory button re-hides the list of notes.
 	*/
-	function ShowEditForm($memNum){
+	function ShowEditForm($memNum, $country="US"){
 		global $FANNIE_URL;
 
 		$dbc = $this->db();
 		
-		$infoQ = sprintf("SELECT note,stamp FROM memberNotes
-				WHERE cardno=%d ORDER BY stamp DESC",$memNum);
-		$infoR = $dbc->query($infoQ);
+		$infoQ = $dbc->prepare_statement("SELECT note,stamp FROM memberNotes
+				WHERE cardno=? ORDER BY stamp DESC");
+		$infoR = $dbc->exec_statement($infoQ,array($memNum));
 
 		$note = "";
 		$date = "";
@@ -97,21 +97,18 @@ class Notes extends MemberModule {
 	*/
 	function SaveFormData($memNum){
 
-		if ( $_REQUEST['Notes_text'] == "" ) {
+		$note = FormLib::get_form_value('Notes_text');
+		if ( $note == "" ) {
 			return "";
 		}
 
 		$dbc = $this->db();
 
-		$insertNote = sprintf("INSERT into memberNotes
+		$insertNote = $dbc->prepare_statement("INSERT into memberNotes
 				(cardno, note, stamp, username)
-				VALUES (%d, %s, %s, %s)",
-				$memNum,
-				$dbc->escape($_REQUEST['Notes_text']),
-				$dbc->now(),
-				"'Admin'");
+				VALUES (%d, %s, ".$dbc->now().", 'Admin')");
 
-		$test1 = $dbc->query($insertNote);
+		$test1 = $dbc->exec_statement($insertNote,array($memNum,$note));
 
 		if ($test1 === False )
 			return "Error: problem saving Notes<br />";

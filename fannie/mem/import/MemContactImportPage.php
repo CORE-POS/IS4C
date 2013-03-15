@@ -29,7 +29,7 @@ include($FANNIE_ROOT.'classlib2.0/FannieUploadPage.php');
 include($FANNIE_ROOT.'classlib2.0/data/FannieDB.php');
 include($FANNIE_ROOT.'classlib2.0/data/controllers/MeminfoController.php');
 
-$country = isset($FANNIE_COUNTRY)?$FANNIE_COUNTRY:"US";
+$country = (isset($FANNIE_COUNTRY)&&!empty($FANNIE_COUNTRY))?$FANNIE_COUNTRY:"US";
 
 class MemContactImportPage extends FannieUploadPage {
 	protected $title = "Fannie :: Member Tools";

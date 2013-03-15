@@ -26,12 +26,12 @@ class ContactInfo extends MemberModule {
 	function ShowEditForm($memNum, $country="US"){
 		$dbc = $this->db();
 		
-		$infoQ = sprintf("SELECT CardNo,FirstName,LastName,
+		$infoQ = $dbc->prepare_statement("SELECT CardNo,FirstName,LastName,
 				street,city,state,zip,phone,email_1,
 				email_2,ads_OK FROM custdata AS c
 				LEFT JOIN meminfo AS m ON c.CardNo = m.card_no
-				WHERE c.personNum=1 AND CardNo=%d",$memNum);
-		$infoR = $dbc->query($infoQ);
+				WHERE c.personNum=1 AND CardNo=?");
+		$infoR = $dbc->exec_statement($infoQ,array($memNum));
 		$infoW = $dbc->fetch_row($infoR);
 
 		$labels = array();
@@ -102,23 +102,23 @@ class ContactInfo extends MemberModule {
 			include($FANNIE_ROOT.'classlib2.0/data/controllers/CustdataController.php');
 
 		$MI_FIELDS = array(
-			'street' => $_REQUEST['ContactInfo_addr1'],
-			'city' => $_REQUEST['ContactInfo_city'],
-			'state' => $_REQUEST['ContactInfo_state'],
-			'zip' => $_REQUEST['ContactInfo_zip'],
-			'phone' => $_REQUEST['ContactInfo_ph1'],
-			'email_2' => $_REQUEST['ContactInfo_ph2'],
-			'email_1' => $_REQUEST['ContactInfo_email'],
-			'ads_OK' => ($_REQUEST['ContactInfo_mail'] ? 1 : 0)
+			'street' => FormLib::get_form_value('ContactInfo_addr1',''),
+			'city' => FormLib::get_form_value('ContactInfo_city',''),
+			'state' => FormLib::get_form_value('ContactInfo_state',''),
+			'zip' => FormLib::get_form_value('ContactInfo_zip',''),
+			'phone' => FormLib::get_form_value('ContactInfo_ph1',''),
+			'email_2' => FormLib::get_form_value('ContactInfo_ph2',''),
+			'email_1' => FormLib::get_form_value('ContactInfo_email',''),
+			'ads_OK' => (FormLib::get_form_value('ContactInfo_mail')!=='' ? 1 : 0)
 		);
-		if (!empty($_REQUEST['ContactInfo_addr2']))
-			$MI_FIELDS['street'] .= "\n".$_REQUEST['ContactInfo_addr2'];
+		if (FormLib::get_form_value('ContactInfo_addr2','') !== '')
+			$MI_FIELDS['street'] .= "\n".FormLib::get_form_value('ContactInfo_addr2');
 		$test1 = MeminfoController::update($memNum, $MI_FIELDS);
 
 		$CUST_FIELDS = array(
 			'personNum' => array(1),
-			'FirstName' => array($_REQUEST['ContactInfo_fn']),
-			'LastName' => array($_REQUEST['ContactInfo_ln'])
+			'FirstName' => array(FormLib::get_form_value('ContactInfo_fn')),
+			'LastName' => array(FormLib::get_form_value('ContactInfo_ln'))
 		);
 		$test2 = CustdataController::update($memNum, $CUST_FIELDS);
 
@@ -164,51 +164,52 @@ class ContactInfo extends MemberModule {
 	function GetSearchResults(){
 		$dbc = $this->db();
 
-		$fn = isset($_REQUEST['ContactInfo_fn'])?$_REQUEST['ContactInfo_fn']:"";
-		$ln = isset($_REQUEST['ContactInfo_ln'])?$_REQUEST['ContactInfo_ln']:"";
-		$addr = isset($_REQUEST['ContactInfo_addr'])?$_REQUEST['ContactInfo_addr']:"";
-		$city = isset($_REQUEST['ContactInfo_city'])?$_REQUEST['ContactInfo_city']:"";
-		$state = isset($_REQUEST['ContactInfo_state'])?$_REQUEST['ContactInfo_state']:"";
-		$zip = isset($_REQUEST['ContactInfo_zip'])?$_REQUEST['ContactInfo_zip']:"";
-		$email = isset($_REQUEST['ContactInfo_email'])?$_REQUEST['ContactInfo_email']:"";
+		$fn = FormLib::get_form_value('ContactInfo_fn');
+		$ln = FormLib::get_form_value('ContactInfo_ln');
+		$addr = FormLib::get_form_value('ContactInfo_addr');
+		$city = FormLib::get_form_value('ContactInfo_city');
+		$state = FormLib::get_form_value('ContactInfo_state');
+		$zip = FormLib::get_form_value('ContactInfo_zip');
+		$email = FormLib::get_form_value('ContactInfo_email');
 
 		$where = "";
+		$args = array();
 		if (!empty($fn)){
-			$where .= sprintf(" AND FirstName LIKE %s",
-					$dbc->escape("%".$fn."%"));
+			$where .= " AND FirstName LIKE ?";
+			$args[] = '%'.$fn.'%';
 		}
 		if (!empty($ln)){
-			$where .= sprintf(" AND LastName LIKE %s",
-					$dbc->escape("%".$ln."%"));
+			$where .= " AND LastName LIKE ?";
+			$args[] = '%'.$ln.'%';
 		}
 		if (!empty($addr)){
-			$where .= sprintf(" AND street LIKE %s",
-					$dbc->escape("%".$addr."%"));
+			$where .= " AND street LIKE ?";
+			$args[] = '%'.$addr.'%';
 		}
 		if (!empty($city)){
-			$where .= sprintf(" AND city LIKE %s",
-					$dbc->escape("%".$city."%"));
+			$where .= " AND city LIKE ?";
+			$args[] = '%'.$city.'%';
 		}
 		if (!empty($state)){
-			$where .= sprintf(" AND state LIKE %s",
-					$dbc->escape("%".$state."%"));
+			$where .= " AND state LIKE ?";
+			$args[] = '%'.$state.'%';
 		}
 		if (!empty($zip)){
-			$where .= sprintf(" AND zip LIKE %s",
-					$dbc->escape("%".$zip."%"));
+			$where .= " AND zip LIKE ?";
+			$args[] = '%'.$zip.'%';
 		}
 		if (!empty($email)){
-			$where .= sprintf(" AND email_1 LIKE %s",
-					$dbc->escape("%".$email."%"));
+			$where .= " AND email_1 LIKE ?";
+			$args[] = '%'.$email.'%';
 		}
 
 		$ret = array();
 		if (!empty($where)){
-			$q = "SELECT CardNo,FirstName,LastName FROM
+			$q = $dbc->prepare_statement("SELECT CardNo,FirstName,LastName FROM
 				custdata as c LEFT JOIN meminfo AS m
 				ON c.CardNo = m.card_no
-				WHERE 1=1 $where ORDER BY m.card_no";
-			$r = $dbc->query($q);
+				WHERE 1=1 $where ORDER BY m.card_no");
+			$r = $dbc->exec_statement($q,$args);
 			if ($dbc->num_rows($r) > 0){
 				while($w = $dbc->fetch_row($r)){
 					$ret[$w[0]] = $w[1]." ".$w[2];
