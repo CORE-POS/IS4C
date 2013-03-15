@@ -148,6 +148,23 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
 		current_state = STATE_START_TRANSACTION;
 	}
 
+	private void SetStateReStart(){
+		PushOutput("TERMCLEARALL");
+		SendReport(BuildCommand(LcdStopCapture()));
+		SendReport(BuildCommand(PinpadCancelGetPIN()));
+		SendReport(BuildCommand(LcdFillColor(0xff,0xff,0xff)));
+		SendReport(BuildCommand(LcdFillRectangle(0,0,LCD_X_RES-1,LCD_Y_RES-1)));
+
+		SendReport(BuildCommand(LcdTextFont(3,12,14)));
+		SendReport(BuildCommand(LcdTextColor(0,0,0)));
+		SendReport(BuildCommand(LcdTextBackgroundColor(0xff,0xff,0xff)));
+		SendReport(BuildCommand(LcdTextBackgroundMode(false)));
+		SendReport(BuildCommand(LcdDrawText("error",115,70)));
+		SendReport(BuildCommand(LcdDrawText("swipe card again",55,100)));
+
+		current_state = STATE_START_TRANSACTION;
+	}
+
 	private void SetStateCardType(){
 		SendReport(BuildCommand(LcdFillColor(0xff,0xff,0xff)));
 		SendReport(BuildCommand(LcdFillRectangle(0,0,LCD_X_RES-1,LCD_Y_RES-1)));
@@ -465,8 +482,13 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
 			if (msg.Length > 63 && msg[0] == 0x80 ){
 				SendReport(BuildCommand(DoBeep()));
 				string block = FixupCardBlock(msg);
-				PushOutput("PANCACHE:"+block);
-				SetStateCardType();
+				if (block.Length == 0){
+					SetStateReStart();
+				}
+				else {
+					PushOutput("PANCACHE:"+block);
+					SetStateCardType();
+				}
 			}
 			else if (msg.Length > 1){
 				if (this.verbose_mode > 0)
@@ -487,6 +509,8 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
 	private string FixupCardBlock(byte[] data){
 		string hex = BitConverter.ToString(data).Replace("-","");
 		hex = "02E600"+hex+"XXXX03";
+		if (hex.Length < 24) return "";
+		if(hex.Substring(hex.Length-16,10) == "0000000000") return "";
 		if (this.verbose_mode > 0)
 			System.Console.WriteLine(hex);
 		return hex;
