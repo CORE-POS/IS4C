@@ -1,7 +1,7 @@
 <?php
 /*******************************************************************************
 
-    Copyright 2011 Whole Foods Co-op, Duluth, MN
+    Copyright 2013 Whole Foods Co-op, Duluth, MN
 
     This file is part of Fannie.
 
@@ -20,5 +20,29 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
-header('Location: MemImportIndex.php');
+include('../../config.php');
+include($FANNIE_ROOT.'classlib2.0/FanniePage.php');
+
+class MemImportIndex extends FanniePage {
+	protected $title = "Fannie :: Member Tools";
+	protected $header = "Import Member Information";
+	
+	function body_content(){
+		ob_start();
+		?>
+		<ul>
+		<li><a href="MemNameNumImportPage.php">Names &amp; Numbers</a></li>
+		<li><a href="MemContactImportPage.php">Contact Information</a></li>
+		<li><a href="EquityHistoryImportPage.php">Existing Equity</a></li>
+		</ul>
+		<?php
+		return ob_get_clean();
+	}
+}
+
+if (basename($_SERVER['PHP_SELF']) == basename(__FILE__)){
+	$obj = new MemImportIndex();
+	$obj->draw_page();
+}
 ?>
+
