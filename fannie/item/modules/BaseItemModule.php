@@ -156,29 +156,29 @@ class BaseItemModule extends ItemModule {
 		  X for $Y style pricing
 		*/
 		if (!isset($rowItem['pricemethod'])) $rowItem['pricemethod'] = 0;
-		$ret .= '<td><select onchange="$(\'#price1\').toggle();$(\'#price2\').toggle();">';
-		$ret .= sprintf('<option %s>Price</option><option %s>Volume Price</option>',
-				($rowItem['pricemethod']==0 ? 'selected' : ''),
-				($rowItem['pricemethod'] >0 ? 'selected' : '')
+		$ret .= '<td><b>Price</b></td>';
+		$ret .= sprintf('<td>$<input id="price" name="price" type="text" size="6" value="%.2f" />
+				</td>', (isset($rowItem['normal_price']) ? $rowItem['normal_price'] : 0)
 		);
-		$ret .= '</select></td>';
-		$ret .= sprintf('<td><span id="price1" style="display:%s;">$<input id="price"
-				name="price" type="text" size="6" value="%.2f" /></span>
-				<span id="price2" style="display:%s;"><input type="text" size="4"
-				name="vol_qtty" value="%d" /> for $<input type="text" size="4"
-				name="vol_price" value="%.2f" /><input type="checkbox"
-				name="doVolume" %s /></span><input type="hidden" name="pricemethod"
-				value="%d" /></td>',
-				($rowItem['pricemethod']==0 ? 'inline' : 'none'),
-				(isset($rowItem['normal_price']) ? $rowItem['normal_price'] : 0),
-				($rowItem['pricemethod'] >0 ? 'inline' : 'none'),
+
+		$ret .= '</tr><tr>';
+
+		$ret .= '<tr><td><b>Package Size</b></td><td><input type="text" name="size" size="4"
+				value="'.(isset($rowItem['size'])?$rowItem['size']:'').'" />';
+		$ret .= '<b>Unit of measure</b> <input type="text" name"unitm" size="4"
+				value="'.(isset($rowItem['unitofmeasure'])?$rowItem['unitofmeasure']:'').'" /></td>';
+		$ret .= sprintf('<td colspan="2">
+				<input type="checkbox" name="doVolume" %s />
+				<input type="text" size="4" name="vol_qtty" value="%d" /> 
+				for $<input type="text" size="4" name="vol_price" value="%.2f" />
+				<input type="hidden" name="pricemethod" value="%d" /></td>',
+				($rowItem['pricemethod'] >0 ? 'checked' : ''),
 				(isset($rowItem['quantity']) ? $rowItem['quantity'] : 0),
 				(isset($rowItem['groupprice']) ? $rowItem['groupprice'] : 0),
 				($rowItem['pricemethod'] >0 ? 'checked' : ''),
 				$rowItem['pricemethod']
 		);
-
-		$ret .= '</tr><tr>';
+		$ret .= '</tr>';
 
 		$ret .="<td align=right><b>Manufacturer</b></td><td><input type=text name=manufacturer size=30 value=\""
 			.(isset($rowItem['manufacturer'])?$rowItem['manufacturer']:"")
@@ -323,12 +323,12 @@ class BaseItemModule extends ItemModule {
 		$up_array['groupprice'] = 0.00;
 		$up_array['quantity'] = 0;
 		$up_array['department'] = FormLib::get_form_value('department',0);
-		$up_array['size'] = "''";
+		$up_array['size'] = FormLib::get_form_value('size','');
 		$up_array['scaleprice'] = 0.00;
 		$up_array['modified'] = $dbc->now();
 		$up_array['advertised'] = 1;
 		$up_array['tareweight'] = 0;
-		$up_array['unitofmeasure'] = '';
+		$up_array['unitofmeasure'] = FormLib::get_form_value('unitm','');
 		$up_array['wicable'] = 0;
 		$up_array['idEnforced'] = 0;
 		$up_array['subdept'] = FormLib::get_form_value('subdepartment',0);

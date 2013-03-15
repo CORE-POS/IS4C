@@ -34,6 +34,7 @@ include(dirname(__FILE__).'/modules/ItemLinksModule.php');
 include(dirname(__FILE__).'/modules/LikeCodeModule.php');	
 include(dirname(__FILE__).'/modules/ItemMarginModule.php');	
 include(dirname(__FILE__).'/modules/ItemFlagsModule.php');	
+include(dirname(__FILE__).'/modules/VendorItemModule.php');	
 include(dirname(__FILE__).'/modules/AllLanesItemModule.php');	
 
 class ItemEditorPage extends FanniePage {
@@ -234,6 +235,9 @@ class ItemEditorPage extends FanniePage {
 		$ret .= $mod->ShowEditForm($upc);
 
 		if (!$isNew){
+			$mod = new VendorItemModule();
+			$ret .= $mod->ShowEditForm($upc);
+
 			$mod = new AllLanesItemModule();
 			$ret .= $mod->ShowEditForm($upc);
 		}
