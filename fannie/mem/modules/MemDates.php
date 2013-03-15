@@ -23,15 +23,15 @@
 
 class MemDates extends MemberModule {
 
-	function ShowEditForm($memNum){
+	function ShowEditForm($memNum, $country="US"){
 		global $FANNIE_URL;
 
 		$dbc = $this->db();
 		
-		$infoQ = sprintf("SELECT start_date,end_date
+		$infoQ = $dbc->prepare_statement("SELECT start_date,end_date
 				FROM memDates
-				WHERE card_no=%d",$memNum);
-		$infoR = $dbc->query($infoQ);
+				WHERE card_no=?");
+		$infoR = $dbc->exec_statement($infoQ,array($memNum));
 		$infoW = $dbc->fetch_row($infoR);
 
 		$ret = "<script type=\"text/javascript\"
@@ -61,7 +61,10 @@ class MemDates extends MemberModule {
 		if (!class_exists("MemDatesController"))
 			include($FANNIE_ROOT.'classlib2.0/data/controllers/MemDatesController.php');
 		
-		$test = MemDatesController::update($memNum,$_REQUEST['MemDates_start'],$_REQUEST['MemDates_end']);
+		$test = MemDatesController::update($memNum,
+				FormLib::get_form_value('MemDates_start'),
+				FormLib::get_form_value('MemDates_end')
+		);
 
 		if ($test === False)
 			return "Error: problem saving start/end dates<br />";
