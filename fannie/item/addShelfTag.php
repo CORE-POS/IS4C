@@ -29,8 +29,9 @@ require('../config.php');
 require_once($FANNIE_ROOT.'src/mysql_connect.php');
 
 
-$unfiQ = $dbc->prepare_statement("SELECT DISTINCT * FROM vendorItems where upc = ? ORDER BY vendorID");
-//echo $unfiQ;
+$unfiQ = $dbc->prepare_statement("SELECT DISTINCT i.*,v.vendorName FROM vendorItems AS i
+			LEFT JOIN vendors AS v ON i.vendorID=v.vendorID
+			where upc = ? ORDER BY i.vendorID");
 
 $unfiR = $dbc->exec_statement($unfiQ,array($upc));
 $unfiN = $dbc->num_rows($unfiR);
@@ -59,7 +60,7 @@ if($unfiN == 1){
    $brand = $unfiW['brand'];
    $units = $unfiW['units'];
    $sku = $unfiW['sku'];
-   $vendor = 'UNFI';
+   $vendor = $unfiW['vendorName'];
    $ppo = pricePerOunce($price,$size);
 }
 else if ($dbc->table_exists('prodExtra')) {
