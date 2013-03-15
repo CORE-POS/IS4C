@@ -72,7 +72,6 @@ class MemCard extends MemberModule {
 	function SaveFormData($memNum){
 
 		global $FANNIE_MEMBER_UPC_PREFIX, $FANNIE_ROOT;
-
 		$dbc = $this->db();
 		if (!class_exists("MemberCardsController"))
 			include($FANNIE_ROOT.'classlib2.0/data/controllers/MemberCardsController.php');
@@ -91,16 +90,6 @@ class MemCard extends MemberModule {
 			return 'Error: problem saving Member Card<br />';
 		else
 			return '';
-
-		//Is there already a memberCards record for this member?
-		$infoQ = sprintf("SELECT upc
-				FROM memberCards
-				WHERE card_no=%d",
-				$memNum);
-		$infoR = $dbc->query($infoQ);
-		if ( $infoR === false ) {
-			return "Error: problem checking for Member Card<br />";
-		}
 
 	// saveFormData
 	}
