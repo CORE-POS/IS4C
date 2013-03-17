@@ -1,15 +1,3 @@
-The load* files exist to populate the vendorItems table.
-Data files from vendors vary wildly in format, so each
-has its own file.
-
-The upload script (up a directoy) will place the loaded
-file in ../tmp, unzip it if needed, and name it
-"unfi.csv". Unzip behavior is probably *nix only.
-
-Adding support for a new vendor:
-
-The load files really just need to push data into
-the vendorItems table. The provided ones do some weird
-redirecting-to-themselves to avoid PHP memory / time
-limits. Folks with newer servers can probably just up
-the memory limit and turn this behavior off.
+This is no longer the preferred way of handling vendor imports.
+There files are here for reference but should not be served as
+PHP scripts. They are not SQL safe.

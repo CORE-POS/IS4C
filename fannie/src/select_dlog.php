@@ -50,8 +50,8 @@ function select_dlog($date, $end_date="",$unions=True){
 
   $dbconn = ($FANNIE_SERVER_DBMS=='MSSQL')?'.dbo.':'.';
 
-  $diffQ = "select ".$dbc->datediff($dbc->now(),"'$date'")." as daydiff";
-  $diffR = $dbc->query($diffQ);
+  $diffQ = $dbc->prepare_statement("select ".$dbc->datediff($dbc->now(),'?')." as daydiff");
+  $diffR = $dbc->exec_statement($diffQ,array($date));
   $diffRow = $dbc->fetch_array($diffR);
   $daydiff = abs($diffRow['daydiff']);
   if ($FANNIE_ARCHIVE_METHOD == "partitions"){
@@ -105,8 +105,8 @@ function select_dlog($date, $end_date="",$unions=True){
   if (strlen($endyear) < 4){
     $endyear = "20".$endyear;
   }
-  $diffQ = "select ".$dbc->datediff($dbc->now(),"'$end_date'")." as daydiff";
-  $diffR = $dbc->query($diffQ);
+
+  $diffR = $dbc->exec_statement($diffQ,array($end_date));
   $diffRow = $dbc->fetch_array($diffR);
   $enddiff = abs($diffRow['daydiff']);
 
@@ -192,8 +192,8 @@ function select_dtrans($date, $end_date=""){
 
   $dbconn = ($FANNIE_SERVER_DBMS=='MSSQL')?'.dbo.':'.';
 
-  $diffQ = "select ".$dbc->datediff($dbc->now(),"'$date'")." as daydiff";
-  $diffR = $dbc->query($diffQ);
+  $diffQ = $dbc->prepare_statement("select ".$dbc->datediff($dbc->now(),'?')." as daydiff");
+  $diffR = $dbc->exec_statement($diffQ,array($date));
   $diffRow = $dbc->fetch_array($diffR);
   $daydiff = abs($diffRow['daydiff']);
   if ($FANNIE_ARCHIVE_METHOD == "partitions"){
@@ -236,8 +236,7 @@ function select_dtrans($date, $end_date=""){
   if (strlen($endyear) < 4){
     $endyear = "20".$endyear;
   }
-  $diffQ = "select ".$dbc->datediff($dbc->now(),"'$end_date'")." as daydiff";
-  $diffR = $dbc->query($diffQ);
+  $diffR = $dbc->exec_statement($diffQ,array($end_date));
   $diffRow = $dbc->fetch_array($diffR);
   $enddiff = abs($diffRow['daydiff']);
 

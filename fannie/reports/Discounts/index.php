@@ -42,14 +42,14 @@ if (isset($_REQUEST['submit'])){
 
 	$placeholder = isset($_REQUEST['excel'])?'':'&nbsp;';
 
-	$query = "SELECT m.memDesc,sum(total) as total FROM $dlog AS d
+	$query = $dbc->prepare_statement("SELECT m.memDesc,sum(total) as total FROM $dlog AS d
 		LEFT JOIN custdata AS c ON d.card_no=c.CardNo
 		AND c.personNum=1 LEFT JOIN memtype AS m ON
 		c.memType=m.memtype
 		WHERE d.upc='DISCOUNT'
 		GROUP BY m.memDesc
-		ORDER BY m.memDesc";
-	$result = $dbc->query($query);
+		ORDER BY m.memDesc");
+	$result = $dbc->exec_statement($query);
 
 	echo '<table cellspacing="0" cellpadding="4" border="1">';
 	echo '<tr><th>Type</th><th>Total</th>';

@@ -148,8 +148,8 @@ class MonthOverMonthReport extends FannieReportPage {
 	function form_content(){
 		global $dbc;
 		$depts = array();
-		$q = "SELECT dept_no,dept_name FROM departments ORDER BY dept_no";
-		$r = $dbc->query($q);
+		$q = $dbc->prepare_statement("SELECT dept_no,dept_name FROM departments ORDER BY dept_no");
+		$r = $dbc->exec_statement($q);
 		while($w = $dbc->fetch_row($r))
 			$depts[$w[0]] = $w[1];
 ?>

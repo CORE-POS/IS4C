@@ -38,9 +38,8 @@ if (isset($_REQUEST['send_email']) || isset($_REQUEST['skip_email']) || isset($_
 		$msg = $_REQUEST['msg'];
 		$headers = "From: Whole Foods Co-op <mms@wholefoods.coop>\r\n";
 		mail($to,$sub,$msg,$headers);
-		$logQ = sprintf("INSERT INTO emailLog VALUES (%s,%d,%s,'Equity')",
-			$dbc->now(),$_REQUEST['curcard'],$dbc->escape($to));
-		$dbc->query($logQ);
+		$logQ = $dbc->prepare_statement("INSERT INTO emailLog VALUES (".$dbc->now().",?,?,'Equity')");
+		$dbc->exec_statement($logQ,array($_REQUEST['curcard'],$to));
 		echo "<i>E-mail sent to $to</i><hr />";
 	}
 	else if (isset($_REQUEST['skip_email'])){
@@ -49,7 +48,7 @@ if (isset($_REQUEST['send_email']) || isset($_REQUEST['skip_email']) || isset($_
 	}
 	if (!empty($cns)){
 		$cur = array_shift($cns);
-		$q = "SELECT m.card_no,c.firstname,c.lastname,
+		$q = $dbc->prepare_statement("SELECT m.card_no,c.firstname,c.lastname,
                		m.email_1,n.payments, 
 			convert(varchar,d.end_date,101)
 			FROM meminfo AS m LEFT JOIN
@@ -58,8 +57,8 @@ if (isset($_REQUEST['send_email']) || isset($_REQUEST['skip_email']) || isset($_
 			{$trans}.newBalanceStockToday_test AS n
 			on m.card_no = n.memnum
 			LEFT JOIN memDates AS d ON m.card_no=d.card_no
-			WHERE cardno = $cur";
-		$r = $dbc->query($q);
+			WHERE cardno = ?");
+		$r = $dbc->exec_statement($q,array($cn));
 		$w = $dbc->fetch_row($r);
 
 		echo "<form action=equity.php method=post>";
@@ -104,17 +103,17 @@ Member Services";
 }
 elseif (!isset($_REQUEST['cardno'])){
 	echo "<form action=equity.php method=post>";
-	$query = "select m.card_no,c.lastname,i.email_1,
+	$query = $dbc->prepare_statement("select m.card_no,c.lastname,i.email_1,
 		datediff(mm,getdate(),m.end_date) as months_left from
 		memDates as m left join custdata as c
 		on m.card_no=c.cardno and c.personnum=1
 		left join {$trans}.newBalanceStockToday_test as n on
 		m.card_no = n.memnum left join meminfo as i
 		on i.card_no=m.card_no
-		where datediff(mm,getdate(),m.end_date) BETWEEN 0 AND 2
+		where ".$dbc->monthdiff($dbc->now(),'m.end_date')." BETWEEN 0 AND 2
 		and c.type NOT IN ('REG','TERM','INACT2') and n.payments < 100 
-		order by datediff(mm,getdate(),m.end_date) DESC, m.card_no";
-	$result = $dbc->query($query);
+		order by ".$dbc->monthdiff($dbc->now(),'m.end_date')." DESC, m.card_no");
+	$result = $dbc->exec_statement($query);
 	echo "<table cellspacing=0 cellpadding=4 border=1>
 		<tr><th>&nbsp;</th><th>Member</th><th>E-mail</th><th>Months Remaining</th></tr>";
 	while($row = $dbc->fetch_row($result)){
