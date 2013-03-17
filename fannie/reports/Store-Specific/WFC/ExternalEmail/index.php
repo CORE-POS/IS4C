@@ -8,8 +8,8 @@ $page_title = "Fannie :: Email List";
 include($FANNIE_ROOT.'src/header.html');
 
 require($FANNIE_ROOT.'src/Credentials/OutsideDB.wfc.php');
-$q = "SELECT email FROM userData WHERE email LIKE '%@%.%'";
-$r = $dbc->query($q);
+$q = $dbc->prepare_statement("SELECT email FROM userData WHERE email LIKE '%@%.%'");
+$r = $dbc->exec_statement($q);
 
 echo '<input type="submit" value="Select All"
 	onclick="$(\'#emailListing\').focus();$(\'#emailListing\').select();"

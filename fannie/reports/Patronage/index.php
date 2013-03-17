@@ -35,8 +35,8 @@ else {
 
 $fy = isset($_REQUEST['fy'])?$_REQUEST['fy']:'';
 if (!isset($_REQUEST['excel'])){
-	$fyQ = "SELECT FY FROM patronage GROUP BY FY ORDER BY FY DESC";
-	$fyR = $dbc->query($fyQ);
+	$fyQ = $dbc->prepare_statement("SELECT FY FROM patronage GROUP BY FY ORDER BY FY DESC");
+	$fyR = $dbc->exec_statement($fyQ);
 	echo '<select onchange="location=\'index.php?fy=\'+this.value;">';
 	echo '<option value="">Select FY</option>';
 	while($fyW = $dbc->fetch_row($fyR)){
@@ -51,12 +51,12 @@ if (!isset($_REQUEST['excel'])){
 }
 
 if ($fy != ""){
-	$pQ = sprintf("SELECT cardno,purchase,discounts,rewards,net_purch,
+	$pQ = $dbc->prepare_statement("SELECT cardno,purchase,discounts,rewards,net_purch,
 		tot_pat,cash_pat,equit_pat,m.type,m.ttl FROM patronage as p
 		LEFT JOIN patronageRedemption AS m ON p.cardno=m.card_no
 		AND p.FY=m.fy
-		WHERE p.FY=%d ORDER BY cardno",$fy);
-	$pR = $dbc->query($pQ);
+		WHERE p.FY=? ORDER BY cardno");
+	$pR = $dbc->exec_statement($pQ,array($fy));
 	if (!isset($_REQUEST['excel']))
 		printf('<a href="index.php?fy=%d&excel=yes">Download Report</a>',$fy);
 	echo '<table cellspacing="0" cellpadding="4" border="1">';

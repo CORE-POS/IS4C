@@ -48,46 +48,50 @@ if (isset($_GET['dept1']) || isset($_GET['upc']) || isset($_GET['manufacturer'])
   }
 
   $q = "";
+  $args = array();
   if (!isset($_GET['type'])){
     $q = "select h.upc,p.description,price,h.modified from prodPriceHistory
 	as h left join products as p on h.upc=p.upc
-   	  where h.upc = '$upc'
+   	  where h.upc = ?
 	  order by h.upc,h.modified desc";
+    $args = array($upc);
   }
   else if ($_GET['type'] == 'upc'){
     $q = "select h.upc,p.description,price,h.modified from prodPriceHistory
 	as h left join products as p on h.upc=p.upc
-   	  where h.upc = '$upc' and h.modified between
-	  '$start_date' and '$end_date'
+   	  where h.upc = ? and h.modified between ? AND ?
 	  order by h.upc,h.modified";
+    $args = array($upc,$start_date.' 00:00:00',$end_date.' 23:59:59');
   }
   else if ($_GET['type'] == 'department'){
     $q = "select h.upc,p.description,price,h.modified,p.normal_price from prodPriceHistory
 	as h left join products as p on h.upc=p.upc
-  	  where department between $dept1 and $dept2 and h.modified 
-	  between '$start_date' and '$end_date'
+  	  where department between ? and ? and h.modified BETWEEN ? AND ?
 	  order by h.upc, h.modified";
+    $args = array($dept1,$dept2,$start_date.' 00:00:00',$end_date.' 23:59:59');
     unset($_GET['upc']);
   }
   else {
     if ($mtype == 'upc'){
       $q = "select h.upc,p.description,price,h.modified,p.normal_price from prodPriceHistory
 	as h left join products as p on h.upc=p.upc
-   	  where h.upc like '%$manu%' and h.modified
-	  between '$start_date' and '$end_date'
+   	  where h.upc like ? and h.modified BETWEEN ? AND ?
 	  order by h.upc,h.modified";
+       $args = array('%'.$manu.'%',$start_date.' 00:00:00',$end_date.' 23:59:59');
     }
     else {
       $q = "select p.upc,b.description,p.price,p.modified,b.normal_price
 	    from prodPriceHistory as p left join prodExtra as x
 	    on p.upc = x.upc left join products as b on
-	    p.upc=b.upc where x.manufacturer='$manu' and
-	    p.modified between '$start_date' and '$end_date'
+	    p.upc=b.upc where x.manufacturer ? and
+	    p.modified between ? AND ?
 	    order by p.upc,p.modified";
+       $args = array($manu,$start_date.' 00:00:00',$end_date.' 23:59:59');
     }
     unset($_GET['upc']);
   }
-  $r = $sql->query($q);
+  $p = $sql->prepare_statement($q);
+  $r = $sql->exec_statement($p,$args);
 
   echo "<table cellspacing=2 cellpadding=2 border=1>";
   echo "<tr><th>UPC</th><th>Description</th>";
@@ -107,8 +111,8 @@ if (isset($_GET['dept1']) || isset($_GET['upc']) || isset($_GET['manufacturer'])
 }
 else {
 
-$deptsQ = "select dept_no,dept_name from departments order by dept_no";
-$deptsR = $sql->query($deptsQ);
+$deptsQ = $dbc->prepare_statement("select dept_no,dept_name from departments order by dept_no");
+$deptsR = $sql->exec_statement($deptsQ);
 $deptsList = "";
 while ($deptsW = $sql->fetch_array($deptsR))
   $deptsList .= "<option value=$deptsW[0]>$deptsW[0] $deptsW[1]</option>";

@@ -14,13 +14,17 @@ if (strlen($search) > 2){
 		FROM products AS p LEFT JOIN productUser AS u ON p.upc=u.upc ";
 	if ($sd != 0)
 		$q .= "LEFT JOIN superdepts AS s ON p.department=s.dept_ID ";
-	$q .=  "WHERE (u.description LIKE $search OR
-		(u.description IS NULL and p.description LIKE $search)) ";
-	if ($sd != 0)
-		$q .= "AND s.superID=$sd ";
+	$q .=  "WHERE (u.description LIKE ? OR
+		(u.description IS NULL and p.description LIKE ?)) ";
+	$args = array('%'.$search.'%','%'.$search.'%');
+	if ($sd != 0){
+		$q .= "AND s.superID=? ";
+		$args[] = $sd;
+	}
 	$q .=  "GROUP BY goodDesc
 		ORDER BY goodDesc";
-	$r = $dbc->query($q);
+	$p = $dbc->prepare_statement($q);
+	$r = $dbc->exec_statement($p,$args);
 	while($w = $dbc->fetch_row($r)){
 		$ret[] = array('label'=>$w[1],'value'=>$w[0]);
 	}

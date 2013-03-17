@@ -25,8 +25,8 @@ include('../../config.php');
 include($FANNIE_ROOT.'src/mysql_connect.php');
 include($FANNIE_ROOT.'src/select_dlog.php');
 
-$deptQ = "select dept_no,dept_name from departments order by dept_no";
-$deptR = $dbc->query($deptQ);
+$deptQ = $dbc->prepare_statement("select dept_no,dept_name from departments order by dept_no");
+$deptR = $dbc->exec_statement($deptQ);
 $depts = array();
 while ($deptW = $dbc->fetch_array($deptR)){
 	$depts[$deptW[0]] = $deptW[1];
@@ -40,8 +40,10 @@ if (isset($_REQUEST['submit'])){
 	$filters = $_REQUEST['filters'];
 
 	$dClause = "";
+	$dArgs = array();
 	foreach($_REQUEST['depts'] as $d){
-		$dClause .= $d.",";
+		$dClause .= "?,";
+		$dArgs[] = $d;
 	}
 	$dClause = "(".rtrim($dClause,",").")";
 
@@ -50,34 +52,39 @@ if (isset($_REQUEST['submit'])){
 	$inv = "d.department NOT IN $dClause";
 	if ($upc != "") {
 		$upc = str_pad($upc,13,"0",STR_PAD_LEFT);
-		$where = "d.upc = '$upc'";
-		$inv = "d.upc <> '$upc'";
+		$where = "d.upc = ?";
+		$inv = "d.upc <> ?";
+		$dArgs = array($upc);
 	}
 	$dlog = select_dlog($date1,$date2);
 
 	$filter = "";
+	$fArgs = array();
 	if (is_array($filters)){
 		$fClause = "";
 		foreach($filters as $f){
-			$fClause .= $f.",";
+			$fClause .= "?,";
+			$fArgs[] = $f;
 		}
 		$fClause = "(".rtrim($fClause,",").")";
 		$filter = "AND d.department IN $fClause";
 	}
 
-	$dbc->query("CREATE TABLE groupingTemp (tdate varchar(11), emp_no int, register_no int, trans_no int)");
+	$query = $dbc->prepare_statement("CREATE TABLE groupingTemp (tdate varchar(11), emp_no int, register_no int, trans_no int)");
+	$dbc->exec_statement($query);
 
 	$dateConvertStr = ($FANNIE_SERVER_DBMS=='MSSQL')?'convert(char(11),d.tdate,110)':'convert(date(d.tdate),char)';
 
-	$loadQ = "INSERT INTO groupingTemp
+	$loadQ = $dbc->prepare_statement("INSERT INTO groupingTemp
 		SELECT $dateConvertStr as tdate,
 		emp_no,register_no,trans_no FROM $dlog AS d
-		WHERE $where AND tdate BETWEEN
-		'$date1 00:00:00' AND '$date2 23:59:59'
-		GROUP BY $dateConvertStr, emp_no,register_no,trans_no";
-	$dbc->query($loadQ);
+		WHERE $where AND tdate BETWEEN ? AND ?
+		GROUP BY $dateConvertStr, emp_no,register_no,trans_no");
+	$dArgs[] = $date1.' 00:00:00';
+	$dArgs[] = $date2.' 23:59:59';
+	$dbc->exec_statement($loadQ,$dArgs);
 
-	$dataQ = "SELECT d.upc,p.description,t.dept_no,t.dept_name,
+	$dataQ = $dbc->prepare_statement("SELECT d.upc,p.description,t.dept_no,t.dept_name,
 		SUM(d.quantity) AS quantity FROM
 		$dlog AS d INNER JOIN groupingTemp AS g
 		ON $dateConvertStr = g.tdate
@@ -89,13 +96,13 @@ if (isset($_REQUEST['submit'])){
 		ON d.department=t.dept_no
 		WHERE $inv 
 		AND trans_type IN ('I','D')
-		AND d.tdate BETWEEN
-		'$date1 00:00:00' AND '$date2 23:59:59'
+		AND d.tdate BETWEEN ? AND ?
 		AND d.trans_status=''
 		$filter
 		GROUP BY d.upc,p.description,t.dept_no,t.dept_name
-		ORDER BY SUM(d.quantity) DESC";	
-	$dataR = $dbc->query($dataQ);
+		ORDER BY SUM(d.quantity) DESC");	
+	foreach($fArgs as $f) $dArgs[] = $f;
+	$dataR = $dbc->exec_statement($dataQ,$dArgs);
 
 	if (isset($_REQUEST['excel'])){
 		header('Content-Type: application/ms-excel');
@@ -119,7 +126,8 @@ if (isset($_REQUEST['submit'])){
 	}
 	echo "</table>";
 
-	$dbc->query("DROP TABLE groupingTemp");
+	$drop = $dbc->prepare_statement("DROP TABLE groupingTemp");
+	$dbc->exec_statement($drop);
 	exit;
 }
 

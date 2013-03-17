@@ -42,9 +42,8 @@ if (isset($_REQUEST['send_email']) || isset($_REQUEST['skip_email']) || isset($_
 		$headers .= 'MIME-Version: 1.0' . "\r\n";
 		$headers .= 'Content-type: text/html; charset=iso-8859-1' . "\r\n";
 		mail($to,$sub,$msg,$headers);
-		$logQ = sprintf("INSERT INTO emailLog VALUES (%s,%d,%s,'AR (Business Any Balance)')",
-			$dbc->now(),$_REQUEST['curcard'],$dbc->escape($to));
-		$dbc->query($logQ);
+		$logQ = $dbc->prepare_statement("INSERT INTO emailLog VALUES (".$dbc->now().",?,?,'AR (Business Any Balance)')");
+		$dbc->exec_statement($logQ,array($_REQUEST['curcard'],$to));
 		echo "<i>E-mail sent to $to</i><hr />";
 	}
 	else if (isset($_REQUEST['skip_email'])){
@@ -53,15 +52,15 @@ if (isset($_REQUEST['send_email']) || isset($_REQUEST['skip_email']) || isset($_
 	}
 	if (!empty($cns)){
 		$cur = array_shift($cns);
-		$q = "SELECT m.card_no, 
+		$q = $dbc->prepare_statement("SELECT m.card_no, 
 		   CASE WHEN c.firstname='' THEN c.lastname ELSE c.firstname+' '+c.lastname END,
 		   m.email_1,n.balance
 		   FROM meminfo AS m LEFT JOIN
 		   custdata as c on c.cardno=m.card_no and c.personnum=1
 		   LEFT JOIN {$trans}.ar_live_balance AS n
 		   ON m.card_no=n.card_no
-		   WHERE m.card_no=$cur";
-		$r = $dbc->query($q);
+		   WHERE m.card_no=?");
+		$r = $dbc->exec_statement($q,array($cur));
 		$w = $dbc->fetch_row($r);
 
 		echo "<form action=busInv.php method=post>";
@@ -74,10 +73,10 @@ if (isset($_REQUEST['send_email']) || isset($_REQUEST['skip_email']) || isset($_
 
 		$trans = $FANNIE_TRANS_DB;
 		if ($FANNIE_SERVER_DBMS=='MSSQL') $trans .= ".dbo";
-		$priorQ = "SELECT sum(charges) - sum(payments) FROM {$trans}.ar_history
+		$priorQ = $dbc->prepare_statement("SELECT sum(charges) - sum(payments) FROM {$trans}.ar_history
 			WHERE datediff(dd,getdate(),tdate) < -90
-			AND card_no = $cur";
-		$priorR = $dbc->query($priorQ);
+			AND card_no = ?");
+		$priorR = $dbc->exec_statement($priorQ,array($cur));
 		$priorBalance = array_pop($dbc->fetch_row($priorR));
 
 		$msg = "Whole Foods Co-op
@@ -93,16 +92,16 @@ If payment has been made or sent, please ignore this invoice. If you have any qu
 
 $msg .= "\n<b>Balance Forward</b>: \$".$priorBalance."\n";
 
-		$histQ = "SELECT card_no, max(charges) as charges, max(payments) as payments, 
+		$histQ = $dbc->prepare_statement("SELECT card_no, max(charges) as charges, max(payments) as payments, 
 			convert(varchar(50),date,101), trans_num,min(description),min(dept_name),
 			count(*)
-			FROM AR_statementHistory WHERE card_no = $cur
+			FROM AR_statementHistory WHERE card_no = ?
 			group by convert(varchar(50),date,101),trans_num,card_no
-			order by max(date) desc";
+			order by max(date) desc");
 		$gazetteFlag = False;
 		$msg .= "<table border=\"1\"><tr><td colspan=\"4\">Recent 90 Day History</td></tr>
 <tr><td>Date</td><td>Receipt</td><td>Charges</td><td>Payments</td></tr>";
-		$histR = $dbc->query($histQ);
+		$histR = $dbc->exec_statement($histQ,array($cur));
 		while ($histW = $dbc->fetch_row($histR)){
 			$msg .= sprintf("<tr><td>%s</td><td>%s</td><td>\$%.2f</td><td>\$%.2f</td></tr>",
 				$histW[3],$histW[4],$histW[1],$histW[2]);
@@ -148,7 +147,7 @@ $msg .= "\n<b>Balance Forward</b>: \$".$priorBalance."\n";
 }
 elseif (!isset($_REQUEST['cardno'])){
 	echo "<form action=busInv.php method=post>";
-	$query = "SELECT c.cardno, c.lastname,i.email_1
+	$query = $dbc->prepare_statement("SELECT c.cardno, c.lastname,i.email_1
                            FROM 
                            custdata as c 
 			   LEFT JOIN meminfo AS i ON c.cardno=i.card_no
@@ -157,8 +156,8 @@ elseif (!isset($_REQUEST['cardno'])){
                            WHERE c.type not in ('TERM') and
                            c.memtype = 2 AND c.personnum=1
 			   and n.balance > 0	
-                           ORDER BY c.cardno";
-	$result = $dbc->query($query);
+                           ORDER BY c.cardno");
+	$result = $dbc->exec_statement($query);
 	echo "<table cellspacing=0 cellpadding=4 border=1>
 		<tr><th>&nbsp;</th><th>Member</th><th>E-mail</th></tr>";
 	while($row = $dbc->fetch_row($result)){

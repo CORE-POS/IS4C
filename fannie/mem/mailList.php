@@ -58,8 +58,6 @@ $query = $dbc->prepare_statement("SELECT CardNo,
 	  AND LastName <> 'NEW MEMBER'
           order by m.card_no");
 
-//select_to_table($query,0,';#ffffff');
-
 $result = $dbc->exec_statement($query);
 
 $ret = array();
