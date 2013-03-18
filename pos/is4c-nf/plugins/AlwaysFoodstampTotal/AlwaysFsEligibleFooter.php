@@ -37,7 +37,7 @@ class AlwaysFsEligibleFooter extends FooterBox {
 	function header_content(){
 		global $CORE_LOCAL;
 		$this->header_css .= "background:#800080;";
-		return _("fs Amount Due");
+		return _("FS Eligible");
 	}
 
 	function display_content(){
