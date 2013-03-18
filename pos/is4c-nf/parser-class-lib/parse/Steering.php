@@ -145,13 +145,22 @@ class Steering extends Parser {
 			$CORE_LOCAL->set("search_or_list",1);
 			$this->ret['main_frame'] = $my_url."gui-modules/memlist.php";
 			return True;
+		case 'DDM':
+			$this->ret['main_frame'] = $my_url.'gui-modules/drawerPage.php';
+			return True;
+		case 'SS':
 		case 'SO':
+			// sign off and suspend shift are identical except for
+			// drawer behavior
 			if ($CORE_LOCAL->get("LastID") != 0) 
 				$this->ret['output'] = DisplayLib::boxMsg(_("Transaction in Progress"));
 			else {
 				Database::setglobalvalue("LoggedIn", 0);
 				$CORE_LOCAL->set("LoggedIn",0);
-				ReceiptLib::drawerKick();
+				if ($str == 'SO'){
+					ReceiptLib::drawerKick();
+					ReceiptLib::freeDrawer(ReceiptLib::currentDrawer());
+				}
 				$CORE_LOCAL->set("training",0);
 				$CORE_LOCAL->set("gui-scale","no");
 				$CORE_LOCAL->set("away",1);
