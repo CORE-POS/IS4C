@@ -533,6 +533,17 @@ function create_op_dbs($db,$type){
 		load_sample_data($db,'globalvalues');
 	}
 
+	$ddQ = "CREATE TABLE drawerowner (
+		drawer_no tinyint,
+		emp_no smallint,
+		PRIMARY KEY (drawer_no)
+		)";
+	if (!$db->table_exists('drawerowner',$name)){
+		db_structure_modify($db,'drawerowner',$ddQ,$errors);
+		$db->query('INSERT INTO drawerowner (drawer_no) VALUES (1)');
+		$db->query('INSERT INTO drawerowner (drawer_no) VALUES (2)');
+	}
+
 	$prodQ = "CREATE TABLE `products` (
 	  `upc` varchar(13) default NULL,
 	  `description` varchar(30) default NULL,

@@ -257,7 +257,6 @@ static public function gettransno($CashierNo) {
 	$row = $connection->fetch_array($result);
 	if (!$row || !$row["maxtransno"]) {
 		$trans_no = 1;
-		ReceiptLib::drawerKick();
 	}
 	else {
 		$trans_no = $row["maxtransno"] + 1;

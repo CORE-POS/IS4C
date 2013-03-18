@@ -25,7 +25,8 @@ include('util.php');
 <tr><td style="width: 30%;">
 </td><td>
 <?php
-if (isset($_REQUEST['BROWSER_ONLY'])) $CORE_LOCAL->set('browserOnly',$_REQUEST['BROWSER_ONLY'],True);
+if (isset($_REQUEST['BROWSER_ONLY'])) $CORE_LOCAL->set('browserOnly',1,True);
+elseif (isset($_REQUEST['esubmit'])) $CORE_LOCAL->set('browserOnly',0,True);
 else $CORE_LOCAL->set('browserOnly',0,True);
 echo "<fieldset class='toggle'>\n<input type='checkbox' name='BROWSER_ONLY' id='browser'";
 if ($CORE_LOCAL->get('browserOnly') == 1) echo " value='1' checked />";
@@ -47,7 +48,8 @@ off based on the store setting. Adherence to this principle is less than ideal.<
 </td></tr><tr><td>
 </td><td>
 <?php
-if(isset($_REQUEST['DISCOUNTS'])) $CORE_LOCAL->set('discountEnforced',$_REQUEST['DISCOUNTS'],True);
+if(isset($_REQUEST['DISCOUNTS'])) $CORE_LOCAL->set('discountEnforced',1,True);
+elseif(isset($_REQUEST['DISCOUNTS'])) $CORE_LOCAL->set('discountEnforced',0,True);
 elseif ($CORE_LOCAL->get('discountEnforced')==='') $CORE_LOCAL->set('discountEnforced',0,True);
 echo "<fieldset class='toggle'>\n<input type='checkbox' name='DISCOUNTS' id='discounts'";
 if ($CORE_LOCAL->get("discountEnforced") == 1) echo " value='1' checked";
@@ -59,7 +61,8 @@ confsave('discountEnforced',$CORE_LOCAL->get('discountEnforced'));
 <span class='noteTxt'>If yes, members get a percentage discount as specified in custdata.</span>
 </td></tr><tr><td></td><td> 
 <?php
-if(isset($_REQUEST['RDISCOUNTS'])) $CORE_LOCAL->set('refundDiscountable',$_REQUEST['RDISCOUNTS'],True);
+if(isset($_REQUEST['RDISCOUNTS'])) $CORE_LOCAL->set('refundDiscountable',1,True);
+elseif(isset($_REQUEST['esubmit'])) $CORE_LOCAL->set('refundDiscountable',0,True);
 elseif($CORE_LOCAL->get('refundDiscountable')==='') $CORE_LOCAL->set('refundDiscountable',0,True);
 echo "<fieldset class='toggle'>\n<input type='checkbox' name='RDISCOUNTS' id='rdiscounts'";
 if ($CORE_LOCAL->get("refundDiscountable") == 1) echo " value='1' checked";
@@ -105,7 +108,8 @@ confsave('visitingMem',"'".$CORE_LOCAL->get('visitingMem')."'");
 but no other benefits. Leave blank to disable.</span>
 </td></tr><tr><td></td><td>
 <?php
-if (isset($_REQUEST['SHOW_NONMEM'])) $CORE_LOCAL->set('memlistNonMember',$_REQUEST['SHOW_NONMEM'],True);
+if (isset($_REQUEST['SHOW_NONMEM'])) $CORE_LOCAL->set('memlistNonMember',1,True);
+elseif (isset($_REQUEST['esubmit'])) $CORE_LOCAL->set('memlistNonMember',0,True);
 elseif ($CORE_LOCAL->get('memlistNonMember')==='') $CORE_LOCAL->set('memlistNonMember',0,True);
 echo "<fieldset class='toggle'>\n<input type='checkbox' name='SHOW_NONMEM' id='shownonmem'";
 if ($CORE_LOCAL->get("memlistNonMember") == 1) echo " value='1' checked";
@@ -129,11 +133,11 @@ confsave('BottleReturnDept',"'".$CORE_LOCAL->get('BottleReturnDept')."'");
 <tr><td colspan=2 class="tblHeader">
 <h3>Hardware Settings</h3></td></tr><tr><td></td><td>
 <?php
-if (isset($_REQUEST['PRINT'])) $CORE_LOCAL->set('print',$_REQUEST['PRINT'],True);
+if (isset($_REQUEST['PRINT'])) $CORE_LOCAL->set('print',1,True);
+elseif (isset($_REQUEST['esubmit'])) $CORE_LOCAL->set('print',0,True);
 elseif ($CORE_LOCAL->get('print')==='') $CORE_LOCAL->set('print',0,True);
 echo "<fieldset class='toggle'>\n<input type='checkbox' name='PRINT' id='printing'";
-if ($CORE_LOCAL->get("print") == 1) echo " value='1' checked";
-else echo " value='0'";
+if ($CORE_LOCAL->get("print") == 1) echo " checked";
 echo " />\n<label for='printing' onclick=''>Enable receipts: </label>\n
 	<span class='toggle-button'></span></fieldset>";
 confsave('print',$CORE_LOCAL->get("print"));
@@ -206,7 +210,19 @@ foreach($kmods as $k){
 echo '</select>';
 confsave('kickerModule',"'".$CORE_LOCAL->get('kickerModule')."'");
 ?>
-</td></tr><tr><td>
+</td></tr><tr><td></td><td>
+<?php
+if (isset($_REQUEST['DDM'])) $CORE_LOCAL->set('dualDrawerMode',1,True);
+elseif (isset($_REQUEST['esubmit'])) $CORE_LOCAL->set('dualDrawerMode',0,True);
+elseif ($CORE_LOCAL->get('dualDrawerMode')==='') $CORE_LOCAL->set('dualDrawerMode',0,True);
+echo "<fieldset class='toggle'>\n<input type='checkbox' name='DDM' id='dualDrawerMode'";
+if ($CORE_LOCAL->get("dualDrawerMode") == 1) echo " value='1' checked";
+else echo " value='0'";
+echo " />\n<label for='dualDrawerMode' onclick=''>Dual Drawer Mode: </label>\n
+	<span class='toggle-button'></span></fieldset>";
+confsave('dualDrawerMode',$CORE_LOCAL->get("dualDrawerMode"));
+?>
+</select></td></tr><tr><td>
 <b>Scanner/scale port</b>:</td><td>
 <?php
 if(isset($_REQUEST['SPORT'])) $CORE_LOCAL->set('scalePort',$_REQUEST['SPORT'],True);
@@ -254,7 +270,8 @@ confsave('alertBar',"'".$CORE_LOCAL->get('alertBar')."'");
 <tr><td>
 </td><td>
 <?php
-if (isset($_REQUEST['LOCKSCREEN'])) $CORE_LOCAL->set('lockScreen',$_REQUEST['LOCKSCREEN'],True);
+if (isset($_REQUEST['LOCKSCREEN'])) $CORE_LOCAL->set('lockScreen',1,True);
+elseif (isset($_REQUEST['esubmit'])) $CORE_LOCAL->set('lockScreen',0,True);
 elseif ($CORE_LOCAL->get('lockScreen')==='') $CORE_LOCAL->set('lockScreen',0,True);
 echo "<fieldset class='toggle'>\n<input type='checkbox' name='LOCKSCREEN' id='lockscreen'";
 if ($CORE_LOCAL->get("lockScreen") == 1) echo " value='1' checked";
@@ -591,47 +608,3 @@ else {
 </div> <!--	wrapper -->
 </body>
 </html>
-<script type="text/javascript">
-$('#browser').change(function(){
-     if($(this).attr('checked')){
-          $(this).val('1');
-     }else{
-          $(this).val('0');
-     }
-});
-$('#discounts').change(function(){
-     if($(this).attr('checked')){
-          $(this).val('1');
-     }else{
-          $(this).val('0');
-     }
-});
-$('#rdiscounts').change(function(){
-     if($(this).attr('checked')){
-          $(this).val('1');
-     }else{
-          $(this).val('0');
-     }
-});
-$('#lockscreen').change(function(){
-     if($(this).attr('checked')){
-          $(this).val('1');
-     }else{
-          $(this).val('0');
-     }
-});
-$('#printing').change(function(){
-     if($(this).attr('checked')){
-          $(this).val('1');
-     }else{
-          $(this).val('0');
-     }
-});
-$('#shownonmem').change(function(){
-     if($(this).attr('checked')){
-          $(this).val('1');
-     }else{
-          $(this).val('0');
-     }
-});
-</script>
