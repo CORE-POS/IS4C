@@ -69,13 +69,15 @@ $dlog = select_dlog($dstr);
 $OP = $FANNIE_SERVER_DBMS=='MSSQL' ? $FANNIE_OP_DB.'.dbo.' : $FANNIE_OP_DB.'.';
 $TRANS = $FANNIE_SERVER_DBMS=='MSSQL' ? $FANNIE_TRANS_DB.'.dbo.' : $FANNIE_TRANS_DB.'.';
 
-$tenderQ = "SELECT t.TenderName,-sum(d.total) as total, COUNT(d.total)
+$tenderQ = "SELECT 
+CASE WHEN d.trans_subtype IN ('CC','AX') then 'Credit Card' ELSE t.TenderName END as TenderName,
+-sum(d.total) as total, COUNT(d.total)
 FROM $dlog as d ,{$OP}tenders as t 
 WHERE ".$dbc->date_equals('d.tdate',$dstr)." 
 AND d.trans_status <>'X'  
 AND d.Trans_Subtype = t.TenderCode
 and d.total <> 0
-GROUP BY t.TenderName";
+GROUP BY CASE WHEN d.trans_subtype IN ('CC','AX') then 'Credit Card' ELSE t.TenderName END";
 $tenderR = $dbc->query($tenderQ);
 $tenders = array("Cash"=>array(10120,0.0,0),
 		"Check"=>array(10120,0.0,0),
@@ -112,6 +114,7 @@ $creditQ = "SELECT 1 as num,
 	FROM is4c_trans.efsnetRequest AS q LEFT JOIN is4c_trans.efsnetResponse AS r ON q.refNum=r.refNum
 	WHERE q.date=? and r.httpCode=200 and 
 	(r.xResultMessage LIKE '%approved%' OR r.xResultMessage LIKE '%PENDING%')
+	AND q.CashierNo <> 9999 AND q.laneNo <> 99
 	GROUP BY q.refNum";
 $creditP = $dbc->prepare_statement($creditQ);
 $creditR = $dbc->exec_statement($creditP, array( date('Ymd',$stamp) ));
