@@ -23,7 +23,7 @@ $selAddQ = "SELECT m.card_no, c.LastName,m.street, '',
            FROM 
            meminfo m 
 	   LEFT JOIN custdata as c on c.CardNo=m.card_no and c.personNum=1
-	   LEFT JOIN {$TRANS}newBalanceToday_cust as n ON m.card_no=n.memnum
+	   LEFT JOIN {$TRANS}ar_live_balance as n ON m.card_no=n.card_no
 	   WHERE c.Type not in ('TERM') and
 	   c.memType IN (2,0)
 	   and n.balance > 0
@@ -88,7 +88,7 @@ if ($prevPrevMonth == 0){
 	$prevPrevYear = $year - 1;
 }
 
-$stateDate = date("d F, Y",mktime(0,0,0,$month,0,$year));
+$stateDate = date("d F, Y",mktime(0,0,0,date('n'),0,date('Y')));
 
 $pdf = new FPDF();
 
@@ -96,28 +96,20 @@ $pdf = new FPDF();
 $rowNum=0;
 while($selAddW = $sql->fetch_row($selAddR)){
    $pdf->AddPage();
-   $pdf->SetFont('Arial','B','14');
    $pdf->Ln(5);
-   $pdf->Cell(20,10,'Whole Foods Community Co-op',0);
-   $pdf->Image($FANNIE_ROOT.'legacy/images/WFCLogoCThru1.jpg',130,10,50,25);
+   $pdf->Image($FANNIE_ROOT.'legacy/images/letterhead.jpg',10,10,200);
    $pdf->Ln(5);
    $pdf->SetFont('Arial','','12');
-   $pdf->Cell(20,10,'610 East Fourth Street',0);
-   $pdf->Ln(5);
-   $pdf->Cell(20,10,'Duluth, MN  55805',0);
-   $pdf->Ln(13);
+   $pdf->Ln(35);
 
    $pdf->Cell(10,5,sprintf("Invoice #: %s-%s",$selAddW[0],date("ymd")),0,1,'L');
    $pdf->Cell(10,5,$stateDate,0);
-   $pdf->Ln(15);
+   $pdf->Ln(8);
 
 
    //Member address
    $pdf->SetX(15);
-   $pdf->Cell(10,10,trim($selAddW[0]),0);
-   $pdf->Ln(5);
-   $pdf->SetX(15);
-   $pdf->Cell(50,10,trim($selAddW[1]),0);
+   $pdf->Cell(50,10,trim($selAddW[0]).' '.trim($selAddW[1]),0);
    $pdf->Ln(5);
    $pdf->SetX(15);
 
@@ -172,7 +164,7 @@ while($selAddW = $sql->fetch_row($selAddR)){
    $pdf->Ln(20);
 */
 
-   $priorQ = "SELECT sum(charges) - sum(payments) FROM ar_history
+   $priorQ = "SELECT sum(charges) - sum(payments) FROM is4c_trans.ar_history
 		WHERE ".$sql->datediff('tdate',$sql->now())." < -90
 		AND card_no = $selAddW[0]";
    $priorR = $sql->query($priorQ);

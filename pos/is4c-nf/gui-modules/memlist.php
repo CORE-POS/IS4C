@@ -83,12 +83,23 @@ class memlist extends NoInputPage {
 			$query = "select CardNo,personNum,LastName,FirstName from custdata 
 				where LastName like '".$entered."%' order by LastName, FirstName";
 		}
+		if ($selected_name && is_numeric($personNum)){
+			/**
+			  13Feb13 Andy
+			  Use personNum if provided so the lookup returns
+			  the correct record
+			*/
+			$query = "select CardNo,personNum,LastName,FirstName,CashBack,Balance,Discount,
+				MemDiscountLimit,ChargeOk,WriteChecks,StoreCoupons,Type,memType,staff,
+				SSI,Purchases,NumberOfChecks,memCoupons,blueLine,Shown,id from custdata 
+				where CardNo = '".$entered."' AND personNum=".$personNum;
+		}
 
 		$result = $db_a->query($query);
 		$num_rows = $db_a->num_rows($result);
 
 		// if theres only 1 match don't show the memlist
-		if ($num_rows == 1) {
+		if ($num_rows == 1 && $CORE_LOCAL->get("verifyName")==0) {
 			$selected_name = True;
 			$personNum = 1;
 		}
@@ -119,11 +130,13 @@ class memlist extends NoInputPage {
 
 	function head_content(){
 		global $CORE_LOCAL;
-		$this->add_onload_command("\$('#search').focus();\n");
-		if ($this->temp_num_rows > 0)
+		if ($this->temp_num_rows > 0){
 			$this->add_onload_command("\$('#search').keypress(processkeypress);\n");
-		else
-			$this->default_parsewrapper_js('search','selectform');
+			$this->add_onload_command("\$('#search').focus();\n");
+		} else {
+			$this->default_parsewrapper_js('reginput','selectform');
+			$this->add_onload_command("\$('#reginput').focus();\n");
+		}
 		?>
 		<script type="text/javascript">
 		var prevKey = -1;
@@ -168,12 +181,12 @@ class memlist extends NoInputPage {
 			<div class=\"colored centeredDisplay\">
 				<span class=\"larger\">";
 			if ($num_rows == -1)
-				echo "member search<br />enter member number or name";
+				echo _("member search")."<br />"._("enter member number or name");
 			else
-				echo "no match found<br />next search or member number";
+				echo _("no match found")."<br />"._("next search or member number");
 			echo "</span>
 				<input type=\"text\" name=\"search\" size=\"15\"
-			       	onblur=\"\$('#search').focus();\" id=\"search\" />
+			       	onblur=\"\$('#reginput').focus();\" id=\"reginput\" />
 				<br />
 				press [enter] to cancel
 			</div>";
@@ -181,7 +194,7 @@ class memlist extends NoInputPage {
 		else {
 			echo "<div class=\"listbox\">"
 				."<select name=\"search\" size=\"15\" "
-				."onblur=\"\$('#search').focus()\" id=\"search\">";
+				."onblur=\"\$('#search').focus();\" ondblclick=\"document.forms['selectform'].submit();\" id=\"search\">";
 
 			$selectFlag = 0;
 			if (!is_numeric($entered) && $CORE_LOCAL->get("memlistNonMember") == 1) {
@@ -202,7 +215,7 @@ class memlist extends NoInputPage {
 			}
 			echo "</select></div>"
 				."<div class=\"listboxText centerOffset\">"
-				."use arrow keys to navigate<p>[clear] to cancel</div>"
+				._("use arrow keys to navigate")."<p>"._("clear to cancel")."</div>"
 				."<div class=\"clear\"></div>";
 		}
 		echo "</form></div>";

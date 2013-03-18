@@ -27,6 +27,14 @@ all functions return true on success, false on failure
 unless otherwise noted
 */
 
+
+/* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+	* 10Nov12 Eric Lee Add FANNIE_AUTH_ENABLED test in createLogin per intent(?)
+	*                   in first-user call from install/auth.php.
+
+*/
+
 require_once('groups.php');
 
 /*
@@ -44,6 +52,8 @@ function login($name,$password){
     return false;
   }
   if ($password == "") return false;
+
+  table_check();
 
   $sql = dbconnect();
   $gatherQ = "select password,salt from Users where name='$name'";
@@ -113,7 +123,7 @@ function ldap_login($name,$passwd){
 
 	$user_dn = $ldap_info[0]["dn"];
 	$uid = $ldap_info[0][$FANNIE_LDAP_UID_FIELD][0];
-	$fullname = $ldap_info[0][$FANNIE_LDAP_RN_FIELD];
+	$fullname = $ldap_info[0][$FANNIE_LDAP_RN_FIELD][0];
 
 	if (ldap_bind($conn,$user_dn,$passwd)){
 		syncUserLDAP($name,$uid,$fullname);	
@@ -145,6 +155,8 @@ a session id is also stored in this table, but that is created
 when the user actually logs in
 */
 function createLogin($name,$password){
+	// 10Nov12 EL Add FANNIE_AUTH_ENABLED
+	global $FANNIE_AUTH_ENABLED;
   if (!isAlphanumeric($name) ){
     //echo 'failed alphanumeric';
     return false;
@@ -153,10 +165,13 @@ function createLogin($name,$password){
   if (init_check())
     table_check();
 
-  if (!validateUser('admin')){
-    return false;
+	// 10Nov12 EL Add FANNIE_AUTH_ENABLED test per intent in first-user call from auth.php.
+	if ( $FANNIE_AUTH_ENABLED ) {
+		if (!validateUser('admin')){
+			return false;
+		}
   }
-  
+
   $sql = dbconnect();
   $checkQ = "select * from Users where name='$name'";
   $checkR = $sql->query($checkQ);
@@ -265,6 +280,15 @@ function showUsers(){
   echo "</table>";
 }
 
+function getUserList(){
+	$sql = dbconnect();
+	$ret = array();
+	$result = $sql->query("SELECT name,uid FROM Users ORDER BY name");
+	while($row = $sql->fetch_row($result))
+		$ret[$row['uid']] = $row['name'];
+	return $ret;
+}
+
 /* 
 this function uses login to verify the user's presented
 name and password (thus creating a new session) rather
@@ -297,6 +321,7 @@ function changePassword($name,$oldpassword,$newpassword){
 }
 
 function changeAnyPassword($name,$newpassword){
+  $sql = dbconnect();
   if (!validateUser('admin')){
     return false;
   }

@@ -50,6 +50,9 @@ class deptlist extends NoInputPage {
 				// to be the next POS entry
 				// Redirect to main screen
 				$input = $CORE_LOCAL->get("departmentAmount")."DP".$entered."0";
+				$qty = $CORE_LOCAL->get("quantity");
+				if ($qty != "" & $qty != 1 & $qty != 0)
+					$input = $qty."*".$input;
 				$CORE_LOCAL->set("msgrepeat",1);
 				$CORE_LOCAL->set("strRemembered",$input);
 				$this->change_page($this->page_url."gui-modules/pos2.php");
@@ -117,12 +120,10 @@ class deptlist extends NoInputPage {
 			."</form>"
 			."</div>"
 			."<div class=\"listboxText centerOffset\">"
-			."[Clear] to Cancel</div>"
+			._("clear to cancel")."</div>"
 			."<div class=\"clear\"></div>";
 		echo "</div>";
 
-		if (is_object($db))
-			$db->close();
 		$CORE_LOCAL->set("scan","noScan");
 		$CORE_LOCAL->set("beep","noBeep");
 

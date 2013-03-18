@@ -3,7 +3,7 @@
 Table: meminfo
 
 Columns:
-	card_no smallint
+	card_no int
 	last_name varchar
 	first_name varchar
 	othlast_name varchar
@@ -11,6 +11,7 @@ Columns:
 	street varchar
 	city varchar
 	state varchar
+	zip varchar 10
 	phone varchar
 	email_1 varchar
 	email_2 varchar
@@ -20,26 +21,49 @@ Depends on:
 	custdata (table)
 
 Use:
-This table has contact information for a member.
-Street, city/state/zip, and phone are straightforward.
+This table has contact information for a member,
+i.e. it extends custdata on card_no.
+See also: memContact.
 
-I ignore the name fields entirely. They'll work if your
-co-op allows only 1 or 2 people per membership, but
-custdata can hold the same information in a more
-future-proof way.
-
-I put an email address in email_1 and a second
-phone number in email_2. More people seem to have a home
-phone and cellphone than two email addresses they check
-regularly.
-
-Usage doesn't have to match mine. The member section of
+Usage doesn't have to match mine (AT). The member section of
 fannie should be modular enough to support alternate
 usage of some fields.
+
+card_no key to custdata and other customer tables.
+
+Straightforward:
+- street varchar 255
+- city
+- state
+- zip
+- phone
+  long enough to include extension but don't put more than
+  one number in it.
+
+The name fields are for two different people.
+This approach will work if your co-op allows only
+1 or 2 people per membership, but custdata can hold
+the same information in a more future-proof way,
+i.e. support any number of people per membership,
+so better to not use them in favour of custdata.
+
+- email_1 for email
+- email_2 for second phone
+
+- ads_OK EL: Perhaps: flag for whether OK to send ads.
+  Don't know whether implemented for this or any purpose.
+
+--COMMENTS - - - - - - - - - - - - - - - - - - - -
+
+26Jun12 EL Reformatted and rephrased Use section
+           Added zip to columns list
+           Added note about ads_OK
+epoch   AT Original notes by Andy Theuninck.
+
 */
 $CREATE['op.meminfo'] = "
 	CREATE TABLE `meminfo` (
-	  `card_no` smallint(5) default NULL,
+	  `card_no` int(11) default NULL,
 	  `last_name` varchar(30) default NULL,
 	  `first_name` varchar(30) default NULL,
 	  `othlast_name` varchar(30) default NULL,
@@ -59,7 +83,7 @@ $CREATE['op.meminfo'] = "
 if ($dbms == "MSSQL"){
 	$CREATE['op.meminfo'] = "
 		CREATE TABLE meminfo (
-		  card_no smallint ,
+		  card_no int ,
 		  last_name varchar(30) ,
 		  first_name varchar(30) ,
 		  othlast_name varchar(30) ,

@@ -30,11 +30,11 @@
  across two servers that are useful for lane-server
  communication
 */
-$QUERY_LOG = $FANNIE_ROOT."logs/queries.log";
-
 if (!function_exists("ADONewConnection")) include($FANNIE_ROOT.'adodb5/adodb.inc.php');
 
 class SQLManager {
+
+	private $QUERY_LOG; 
 
 	/** Array of connections **/
 	var $connections;
@@ -52,6 +52,7 @@ class SQLManager {
 	    @param $persistent Make persistent connection.
 	*/
 	function SQLManager($server,$type,$database,$username,$password='',$persistent=False){
+		$this->QUERY_LOG = dirname(__FILE__)."/../logs/queries.log";
 		$this->connections=array();
 		$this->default_db = $database;
 		$this->add_connection($server,$type,$database,$username,$password,$persistent);
@@ -127,19 +128,20 @@ class SQLManager {
 	  @param which_connection see method close
 	  @return A result object on success, False on failure
 	*/
-	function query($query_text,$which_connection=''){
-		global $QUERY_LOG;
+	function query($query_text,$which_connection='',$params=False){
+		$ql = $this->QUERY_LOG;
 		if ($which_connection == '')
 			$which_connection=$this->default_db;
 		$con = $this->connections[$which_connection];
 
-		$ok = (!is_object($con)) ? False : $con->Execute($query_text);
-		if (!$ok && is_writable($QUERY_LOG)){
-			$fp = fopen($QUERY_LOG,'a');
+		$ok = (!is_object($con)) ? False : $con->Execute($query_text,$params);
+		if (!$ok && is_writable($ql)){
+			$fp = fopen($ql,'a');
 			fputs($fp,$_SERVER['PHP_SELF'].": ".date('r').': '.$query_text."\n");
 			fclose($fp);
 		}
 		else if (!$ok){
+			var_dump($ql);
 			echo "Bad query: {$_SERVER['PHP_SELF']}: $query_text<br />";
 			echo $this->error($which_connection)."<br />";
 		}
@@ -175,6 +177,20 @@ class SQLManager {
 			$which_connection = $this->default_db;
 		return $this->connections[$which_connection]->qstr($query_text);
 	}
+
+	function identifier_escape($str,$which_connection=''){
+		if ($which_connection == '')
+			$which_connection = $this->default_db;
+		switch($this->connections[$which_connection]->databaseType){
+		case 'mysql':
+		case 'mysqli':
+		case 'pdo':
+                        return '`'.$str.'`';
+		case 'mssql':
+                        return '['.$str.']';
+                }
+                return $str;
+        }
 	
 	/**
 	  Get number of rows in a result set
@@ -280,6 +296,7 @@ class SQLManager {
 		switch($this->connections[$which_connection]->databaseType){
 		case 'mysql':
 		case 'mysqli':
+		case 'pdo':
 			return "datediff($date1,$date2)";
 		case 'mssql':
 			return "datediff(dd,$date2,$date1)";
@@ -305,6 +322,7 @@ class SQLManager {
 		switch($this->connections[$which_connection]->databaseType){
 		case 'mysql':
 		case 'mysqli':
+		case 'pdo':
 			return "period_diff(date_format($date1, '%Y%m'), date_format($date2, '%Y%m'))";
 		case 'mssql':
 			return "datediff(mm,$date2,$date1)";
@@ -326,6 +344,7 @@ class SQLManager {
 		switch($this->connections[$which_connection]->databaseType){
 		case 'mysql':
 		case 'mysqli':
+		case 'pdo':
 			return "TIMESTAMPDIFF(SECOND,$date1,$date2)";
 		case 'mssql':
 			return "datediff(ss,$date2,$date1)";
@@ -346,6 +365,7 @@ class SQLManager {
 		switch($this->connections[$which_connection]->databaseType){
 		case 'mysql':
 		case 'mysqli':
+		case 'pdo':
 			return "DATE_FORMAT($date1,'%Y%m%d')";
 		case 'mssql':
 			return "CONVERT(CHAR(11),$date1,112)";
@@ -368,6 +388,7 @@ class SQLManager {
 		switch($this->connections[$which_connection]->databaseType){
 		case 'mysql':
 		case 'mysqli':
+		case 'pdo':
 			if(strtoupper($type)=='INT')
 				$type='SIGNED';
 			return "CONVERT($expr,$type)";
@@ -392,6 +413,7 @@ class SQLManager {
 		switch($this->connections[$which_connection]->databaseType){
 		case 'mysql':
 		case 'mysqli':
+		case 'pdo':
 			return "LOCATE($substr,$str)";
 		case 'mssql':
 			return "CHARINDEX($substr,$str)";
@@ -421,6 +443,7 @@ class SQLManager {
 		switch($this->connections[$which_connection]->databaseType){
 		case 'mysql':
 		case 'mysqli':
+		case 'pdo':
 			$ret .= "CONCAT(";
 			for($i=0;$i<count($args)-1;$i++)
 				$ret .= $args[$i].",";	
@@ -450,6 +473,7 @@ class SQLManager {
 		switch($this->connections[$which_connection]->databaseType){
 		case 'mysql':
 		case 'mysqli':
+		case 'pdo':
 			return "week($date1) - week($date2)";
 		case 'mssql':
 			return "datediff(wk,$date2,$date1)";
@@ -563,6 +587,7 @@ class SQLManager {
 		switch($this->connections[$which_connection]->databaseType){
 		case 'mysql':
 		case 'mysqli':
+		case 'pdo':
 			return "DATE_FORMAT($field,'%w')+1";
 		case 'mssql':
 			return "DATEPART(dw,$field)";
@@ -692,6 +717,7 @@ class SQLManager {
 		switch($this->connections[$which_connection]->databaseType){
 		case 'mysql':
 		case 'mysqli':
+		case 'pdo':
 			return 'decimal(10,2)';
 		case 'mssql':
 			return 'money';
@@ -713,6 +739,7 @@ class SQLManager {
 		switch($this->connections[$which_connection]->databaseType){
 		case 'mysql':
 		case 'mysqli':
+		case 'pdo':
 			return sprintf("%s LIMIT %d",$query,$int_limit);
 		case 'mssql':
 			return str_ireplace("SELECT ","SELECT TOP $int_limit ",$query);
@@ -730,6 +757,7 @@ class SQLManager {
 		switch($this->connections[$which_connection]->databaseType){
 		case 'mysql':
 		case 'mysqli':
+		case 'pdo':
 			return ".";
 		case 'mssql':
 			return ".dbo.";
@@ -870,6 +898,45 @@ class SQLManager {
 		$ret = $this->query($upQ,$which_connection);
 
 		return $ret;
+	}
+
+	/**
+	  Create a prepared statement
+	  @param $sql SQL expression	
+	  @param which_connection see method close
+	  @return
+	    - If ADOdb supports prepared statements, an
+	      array of (input string $sql, statement object)
+	    - If ADOdb does not supported prepared statements,
+	      then just the input string $sql
+
+	  The return value of this function should be handed
+	  to SQLManager::exec_statement for execution
+	*/
+	function prepare_statement($sql,$which_connection=""){
+		if ($which_connection == '')
+			$which_connection=$this->default_db;
+		$con = $this->connections[$which_connection];
+		return $con->Prepare($sql);
+	}
+
+	/**
+	  Execute a prepared statement with the given
+	  set of parameters
+	  @param $sql a value from SQLManager::prepare_statement
+	  @param $input_array an array of values
+	  @param which_connection see method close
+	  @return same as SQLManager::query
+
+	  This is essentially a helper function to flip the 
+	  parameter order on SQLManager::query so existing code
+	  works as expected
+	*/
+	function exec_statement($sql, $input_array=array(), $which_connection=''){
+		if ($which_connection == '')
+			$which_connection=$this->default_db;
+		if (!is_array($input_array)) $input_array = array($input_array);
+		return $this->query($sql,$which_connection,$input_array);
 	}
 
 	/** 

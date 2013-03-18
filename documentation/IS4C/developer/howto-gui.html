@@ -3,6 +3,10 @@
 		<title>Howto Write a GUI Object</title>
 	</head>
 	<body>
+	<div style="text-align:center;margin-bottom:10px;font-size:80%;">
+	updated as of: August 20, 2012<br />
+	last author: Andy Theuninck
+	</div>
 	The classes in gui-class-lib provide a structured way to draw screen output.
 	All subclasses follow a nearly identical path; the variations on BasicPage
 	just automatically fill in some common variations.
@@ -13,8 +17,9 @@
 	and to redirect to other pages when applicable. Setting headers to redirect
 	is really the only reason I can think of to return false.</li>
 	<li>Doctype, html and head tags, the default css, and jquery are all
-	output automatically, then head_content() is called. Use head_content()
-	to add more javascript or custom CSS.</li>
+	output automatically, then head_content() is called. If a store.css file is
+	present, it will also be included <i>after</i> the default pos.css.
+	Use head_content() to add more javascript or custom CSS.</li>
 	<li>A closing head tag and opening body tag are output, then body_content()
 	is called. Print the main contents here.</li>
 	<li>Closing tags are added and all javascript specified by calls to the

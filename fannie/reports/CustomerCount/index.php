@@ -20,6 +20,22 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
+header('Location: CustomerCountReport.php');
+exit;
+
+
+/* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+	*
+	* 13Feb13 Eric Lee This report counts the number of transaction, not the
+	*          number of, possibly unique, customers.
+	*         Correct handling of date, memType, trans_num in various tables/views.
+	*         Get member Type headings from table, except for "WFC"
+	*         Add a report heading.
+	*         Change WHERE trans_type from "in ('I','D')" to "= 'T'" because card_no,
+	*          which is needed to derive memType is always available there but
+	*          sometimes not for I and D items. Day and Grand totals are the same
+	*          but member type counts more accurate with T.
+*/
 
 include('../../config.php');
 include($FANNIE_ROOT.'src/mysql_connect.php');
@@ -40,15 +56,49 @@ if (isset($_REQUEST['submit'])){
 			$d1,$d2);
 	}
 
-	$sales = "SELECT year(tdate) as year, month(tdate) as month,
-			day(tdate) as day,max(memType) as memType,trans_num
-			FROM $dlog as t
-			WHERE 
-			tDate BETWEEN '$d1 00:00:00' AND '$d2 23:59:59'
-			and trans_type in ('I','D')
-			AND upc <> 'RRR'
-			group by year(tdate),month(tdate),day(tdate),trans_num
-			order by year(tdate),month(tdate),day(tdate),max(memType)";
+	/* I know this is mysql-specific. I left it because this file isn't actually
+	   used and it reduces merge conflicts - Andy 15Mar2013 */
+
+	/* For dtransactions, transarchive, trans_archive.transArchive*
+	 * As far as I know these tables are never searched.
+	*/
+	if ( strpos($dlog,"dlog") === FALSE ) {
+		$dte = "datetime";
+		$tn = "CONCAT_WS('-', CAST(t.register_no AS CHAR), CAST(t.emp_no AS CHAR), CAST(t.trans_no AS CHAR))";
+		$tna = "$tn AS trans_num";
+		$trans_type = "trans_type in ('T')";
+		$sales = "SELECT year($dte) as year, month($dte) as month,
+				day($dte) as day, max(memType) as memType, $tna
+				FROM $dlog as t
+				WHERE 
+				$dte BETWEEN '$d1 00:00:00' AND '$d2 23:59:59'
+				AND trans_type = 'T'
+				AND upc <> 'RRR'
+				GROUP BY year($dte),month($dte),day($dte),$tn
+				ORDER BY year($dte),month($dte),day($dte), max(memType)";
+	}
+	// For dlog fieldset tables.
+	else {
+		$dte = "tdate";
+		if ( strpos($dlog,"trans_archive") === FALSE ) {
+			$tn = "trans_num";
+			$tna = "$tn";
+		} else {
+			$tn = "CONCAT_WS('-', CAST(t.register_no AS CHAR), CAST(t.emp_no AS CHAR), CAST(t.trans_no AS CHAR))";
+			$tna = "$tn AS trans_num";
+		}
+		$sales = "SELECT year($dte) as year, month($dte) as month,
+				day($dte) as day, max(c.memType) as memType, $tna
+				FROM $dlog as t
+				LEFT JOIN core_op.custdata c ON c.CardNo = t.card_no
+				WHERE 
+				tDate BETWEEN '$d1 00:00:00' AND '$d2 23:59:59'
+				AND trans_type = 'T'
+				AND upc <> 'RRR'
+				GROUP BY year($dte),month($dte),day($dte),$tn
+				ORDER BY year($dte),month($dte),day($dte), max(c.memType)";
+	}
+
 	$data = array();
 	$result = $dbc->query($sales);
 	while($row = $dbc->fetch_row($result)){
@@ -59,10 +109,22 @@ if (isset($_REQUEST['submit'])){
 		$data[$stamp][$row['memType']]++;
 	}
 
-	$cols = array(0=>"NonMember",1=>"Member",2=>"Business",3=>"Staff Member",
-			4=>"Nabs",9=>"Staff NonMem");
+	if ( !isset($FANNIE_COOP_ID) || (isset($FANNIE_COOP_ID) && $FANNIE_COOP_ID != "WFC") ) {
+		$memQ = "SELECT memtype, memDesc FROM core_op.memtype";
+		$memR = $dbc->query($memQ);
+		$cols = array();
+		while($row = $dbc->fetch_row($memR)){
+			$cols[$row['memtype']] = $row['memDesc'];
+		}
+	}
+	else {
+		$cols = array(0=>"NonMember",1=>"Member",2=>"Business",3=>"Staff Member",
+				4=>"Nabs",9=>"Staff NonMem");
+	}
 
 	$placeholder = isset($_REQUEST['excel'])?'':'&nbsp;';
+
+	echo "<p style='font-weight:bold;'>Transaction Count by Day by Member Type for $d1 to $d2</p>\n";
 
 	echo '<table cellspacing="0" cellpadding="4" border="1">';
 	echo '<tr><th>Date</th>';

@@ -30,7 +30,12 @@
     <li><a href="hierarchy.html"><span>Class&nbsp;Hierarchy</span></a></li>
     <li><a href="functions.html"><span>Class&nbsp;Members</span></a></li>
   </ul></div>
-<h1>PrintHandler Class Reference</h1><!-- doxytag: class="PrintHandler" --><a href="class_print_handler-members.html">List of all members.</a><table border="0" cellpadding="0" cellspacing="0">
+<h1>PrintHandler Class Reference</h1><!-- doxytag: class="PrintHandler" --><p>Inheritance diagram for PrintHandler:
+<p><center><img src="class_print_handler.png" usemap="#PrintHandler_map" border="0" alt=""></center>
+<map name="PrintHandler_map">
+<area href="class_email_print_handler.html" alt="EmailPrintHandler" shape="rect" coords="0,56,113,80">
+</map>
+<a href="class_print_handler-members.html">List of all members.</a><table border="0" cellpadding="0" cellspacing="0">
 <tr><td></td></tr>
 <tr><td colspan="2"><br><h2>Public Member Functions</h2></td></tr>
 <tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_print_handler.html#92485b1a6168c53817f5b70d1d6fb8aa">Tab</a> ()</td></tr>
@@ -262,6 +267,8 @@ Enable or disable bold font <dl compact><dt><b>Parameters:</b></dt><dd>
 </dl>
 <dl compact><dt><b>Returns:</b></dt><dd>string printer command </dd></dl>
 
+<p>
+Reimplemented in <a class="el" href="class_email_print_handler.html#a7c21f8b4c234ef75aa394a2a1b10c2a">EmailPrintHandler</a>.
 </div>
 </div><p>
 <a class="anchor" name="6a0d2c0e66a7005261f246fb20ba0675"></a><!-- doxytag: member="PrintHandler::CarriageReturn" ref="6a0d2c0e66a7005261f246fb20ba0675" args="()" -->
@@ -282,6 +289,8 @@ Enable or disable bold font <dl compact><dt><b>Parameters:</b></dt><dd>
 <p>
 Get carriage return <dl compact><dt><b>Returns:</b></dt><dd>string printer command </dd></dl>
 
+<p>
+Reimplemented in <a class="el" href="class_email_print_handler.html#b891b9fc1a1800c03245fded5cab7c99">EmailPrintHandler</a>.
 </div>
 </div><p>
 <a class="anchor" name="831e5780ad0e142b248265017fb79e07"></a><!-- doxytag: member="PrintHandler::centerString" ref="831e5780ad0e142b248265017fb79e07" args="($text, $big=false)" -->
@@ -318,6 +327,8 @@ Center a string of text <dl compact><dt><b>Parameters:</b></dt><dd>
 </dl>
 <dl compact><dt><b>Returns:</b></dt><dd>a printable string</dd></dl>
 Replaces old center(), <a class="el" href="class_print_handler.html#831e5780ad0e142b248265017fb79e07">centerString()</a>, and centerBig() functions. 
+<p>
+Reimplemented in <a class="el" href="class_email_print_handler.html#057d917904e0c9daa48f92e472a71fc6">EmailPrintHandler</a>.
 </div>
 </div><p>
 <a class="anchor" name="076cba0cc3ce8e1e96bfb228b0997bb0"></a><!-- doxytag: member="PrintHandler::LineFeed" ref="076cba0cc3ce8e1e96bfb228b0997bb0" args="($lines=1)" -->
@@ -344,6 +355,8 @@ Get newlines <dl compact><dt><b>Parameters:</b></dt><dd>
 </dl>
 <dl compact><dt><b>Returns:</b></dt><dd>string printer command </dd></dl>
 
+<p>
+Reimplemented in <a class="el" href="class_email_print_handler.html#7a4189b41bcc71eff820f99ade1a7245">EmailPrintHandler</a>.
 </div>
 </div><p>
 <a class="anchor" name="7d3a830fcb1f3381d29d838f991d62b0"></a><!-- doxytag: member="PrintHandler::RenderBitmapFromFile" ref="7d3a830fcb1f3381d29d838f991d62b0" args="($fn)" -->
@@ -370,6 +383,8 @@ Draw bitmap from file <dl compact><dt><b>Parameters:</b></dt><dd>
 </dl>
 <dl compact><dt><b>Returns:</b></dt><dd>printer command string </dd></dl>
 
+<p>
+Reimplemented in <a class="el" href="class_email_print_handler.html#b840e5f9e220964c5c66a46b5ee81def">EmailPrintHandler</a>.
 </div>
 </div><p>
 <a class="anchor" name="92485b1a6168c53817f5b70d1d6fb8aa"></a><!-- doxytag: member="PrintHandler::Tab" ref="92485b1a6168c53817f5b70d1d6fb8aa" args="()" -->
@@ -390,6 +405,8 @@ Draw bitmap from file <dl compact><dt><b>Parameters:</b></dt><dd>
 <p>
 Get printer tab <dl compact><dt><b>Returns:</b></dt><dd>string printer command </dd></dl>
 
+<p>
+Reimplemented in <a class="el" href="class_email_print_handler.html#96587f43c15f8e3bcf6e5e6b3016e8e2">EmailPrintHandler</a>.
 </div>
 </div><p>
 <a class="anchor" name="63c4812f1f9b7681ac3a943d1fe834c9"></a><!-- doxytag: member="PrintHandler::TextStyle" ref="63c4812f1f9b7681ac3a943d1fe834c9" args="($altFont=false, $bold=false, $tall=false, $wide=false, $underline=false)" -->
@@ -447,6 +464,8 @@ Add font style command <dl compact><dt><b>Parameters:</b></dt><dd>
 </dl>
 <dl compact><dt><b>Returns:</b></dt><dd>A printer command string</dd></dl>
 Replaces several old printLib.php functions TextStyle(true) is equivalent to normalFont() TextStyle(true,true) is equivalent to boldFont() TextStyle(true,false,true) is equivalent to biggerFont(). 
+<p>
+Reimplemented in <a class="el" href="class_email_print_handler.html#3f6fb7b873d00ef297a40bffa73a1eb1">EmailPrintHandler</a>.
 </div>
 </div><p>
 <a class="anchor" name="440235ae315a15296ef825761f02e205"></a><!-- doxytag: member="PrintHandler::writeLine" ref="440235ae315a15296ef825761f02e205" args="($text)" -->
@@ -476,7 +495,7 @@ Write output to device <dl compact><dt><b>Parameters:</b></dt><dd>
 </div><p>
 <hr>The documentation for this class was generated from the following file:<ul>
 <li>pos/is4c-nf/lib/PrintHandlers/PrintHandler.php</ul>
-<hr size="1"><address style="align: right;"><small>Generated on Mon May 21 10:55:52 2012 for CORE POS - IS4C by&nbsp;
+<hr size="1"><address style="align: right;"><small>Generated on Tue Oct 23 14:30:34 2012 for CORE POS - IS4C by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img src="doxygen.png" alt="doxygen" align="middle" border="0"></a> 1.4.7 </small></address>
 </body>

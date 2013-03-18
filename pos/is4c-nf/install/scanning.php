@@ -6,7 +6,7 @@ include('util.php');
 ?>
 <html>
 <head>
-<title>Scanning options</title>
+<title>IT CORE Lane Installation: Scanning options</title>
 <style type="text/css">
 body {
 	line-height: 1.5em;
@@ -14,33 +14,24 @@ body {
 </style>
 </head>
 <body>
-<a href="index.php">Necessities</a>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<a href="extra_config.php">Additional Configuration</a>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-Scanning Options
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<a href="security.php">Security</a>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<a href="debug.php">Debug</a>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<a href="extra_data.php">Sample Data</a>
+<?php include('tabs.php'); ?>
+<div id="wrapper">
+<h2>IT CORE Lane Installation: Scanning Options</h2>
+
+<div class="alert"><?php check_writeable('../ini.php'); ?></div>
+<div class="alert"><?php check_writeable('../ini-local.php'); ?></div>
+
 <form action=scanning.php method=post>
-Special handling modules for UPCs that aren't
-products (e.g., coupons)<br />
+<table id="install" border=0 cellspacing=0 cellpadding=4>
+<tr><td style="width:30%;">
 <b>Special UPCs</b>:<br />
+<p>Special handling modules for UPCs that aren't products (e.g., coupons)</p>
+</td><td>
 <select multiple size=10 name=SPECIAL_UPC_MODS[]>
 <?php
-if (isset($_REQUEST['SPECIAL_UPC_MODS'])) $CORE_LOCAL->set('SpecialUpcClasses',$_REQUEST['SPECIAL_UPC_MODS']);
+if (isset($_REQUEST['SPECIAL_UPC_MODS'])) $CORE_LOCAL->set('SpecialUpcClasses',$_REQUEST['SPECIAL_UPC_MODS'],True);
 
-$mods = array();
-$dh = opendir('../lib/Scanning/SpecialUPCs');
-while(False !== ($f = readdir($dh))){
-	if ($f == "." || $f == "..")
-		continue;
-	if (substr($f,-4) == ".php")
-		$mods[] = rtrim($f,".php");
-}
+$mods = AutoLoader::ListModules('SpecialUPC');
 
 foreach($mods as $m){
 	$selected = "";
@@ -60,28 +51,22 @@ foreach($CORE_LOCAL->get("SpecialUpcClasses") as $r){
 $saveStr = rtrim($saveStr,",").")";
 confsave('SpecialUpcClasses',$saveStr);
 ?>
-</select><br />
-<b>Member Card UPC Prefix</b>:
-<?php
-if (isset($_REQUEST['memberUpcPrefix'])) $CORE_LOCAL->set('memberUpcPrefix',$_REQUEST['memberUpcPrefix']);
-printf("<input type=text name=memberUpcPrefix value=\"%s\" />",$CORE_LOCAL->get('memberUpcPrefix'));
-confsave('memberUpcPrefix',"'".$CORE_LOCAL->get('memberUpcPrefix')."'");
-?>
+</select></td></tr><tr><td colspan=2>
 <hr />
-Discount type modules control how sale prices
-are calculated.<br />
-<b>Number of Discounts</b>:
+<p>Discount type modules control how sale prices are calculated.</p></td></tr>
+<tr><td>
+<b>Number of Discounts</b>:</td><td>
 <?php
-if (isset($_REQUEST['DT_COUNT']) && is_numeric($_REQUEST['DT_COUNT'])) $CORE_LOCAL->set('DiscountTypeCount',$_REQUEST['DT_COUNT']);
-if ($CORE_LOCAL->get("DiscountTypeCount") == "") $CORE_LOCAL->set("DiscountTypeCount",5);
-if ($CORE_LOCAL->get("DiscountTypeCount") <= 0) $CORE_LOCAL->set("DiscountTypeCount",1);
+if (isset($_REQUEST['DT_COUNT']) && is_numeric($_REQUEST['DT_COUNT'])) $CORE_LOCAL->set('DiscountTypeCount',$_REQUEST['DT_COUNT'],True);
+if ($CORE_LOCAL->get("DiscountTypeCount") == "") $CORE_LOCAL->set("DiscountTypeCount",5,True);
+if ($CORE_LOCAL->get("DiscountTypeCount") <= 0) $CORE_LOCAL->set("DiscountTypeCount",1,True);
 printf("<input type=text size=4 name=DT_COUNT value=\"%d\" />",
 	$CORE_LOCAL->get('DiscountTypeCount'));
 confsave('DiscountTypeCount',$CORE_LOCAL->get('DiscountTypeCount'));
-?>
-<br /><b>Discount Module Mapping</b>:<br />
+?></td></tr><tr><td>
+<b>Discount Module Mapping</b>:</td><td>
 <?php
-if (isset($_REQUEST['DT_MODS'])) $CORE_LOCAL->set('DiscountTypeClasses',$_REQUEST['DT_MODS']);
+if (isset($_REQUEST['DT_MODS'])) $CORE_LOCAL->set('DiscountTypeClasses',$_REQUEST['DT_MODS'],True);
 if (!is_array($CORE_LOCAL->get('DiscountTypeClasses'))){
 	$CORE_LOCAL->set('DiscountTypeClasses',
 		array(
@@ -90,17 +75,9 @@ if (!is_array($CORE_LOCAL->get('DiscountTypeClasses'))){
 			'MemberSale',
 			'CaseDiscount',
 			'StaffSale'			
-		));
+		),True);
 }
-$discounts = array();
-$dh = opendir('../lib/Scanning/DiscountTypes');
-while(False !== ($f = readdir($dh))){
-	if ($f == "." || $f == "..")
-		continue;
-	if (substr($f,-4) == ".php"){
-		$discounts[] = rtrim($f,".php");
-	}
-}
+$discounts = AutoLoader::ListModules('DiscountType');
 $dt_conf = $CORE_LOCAL->get("DiscountTypeClasses");
 for($i=0;$i<$CORE_LOCAL->get('DiscountTypeCount');$i++){
 	echo "[$i] => ";
@@ -123,40 +100,33 @@ foreach($CORE_LOCAL->get("DiscountTypeClasses") as $r){
 }
 $saveStr = rtrim($saveStr,",").")";
 confsave('DiscountTypeClasses',$saveStr);
-?>
-<hr />
-Price Methods dictate how item prices are calculated.
-There's some overlap with Discount Types, but <i>generally</i>
-price methods deal with grouped items.<br />
-<b>Number of Price Methods</b>:
+?></td></tr><tr><td colspan=2>
+<hr />	<p>Price Methods dictate how item prices are calculated.
+	There's some overlap with Discount Types, but <i>generally</i>
+	price methods deal with grouped items.</p></td></tr>
+<tr><td>
+<b>Number of Price Methods</b>:</td><td>
 <?php
-if (isset($_REQUEST['PM_COUNT']) && is_numeric($_REQUEST['PM_COUNT'])) $CORE_LOCAL->set('PriceMethodCount',$_REQUEST['PM_COUNT']);
-if ($CORE_LOCAL->get("PriceMethodCount") == "") $CORE_LOCAL->set("PriceMethodCount",3);
-if ($CORE_LOCAL->get("PriceMethodCount") <= 0) $CORE_LOCAL->set("PriceMethodCount",1);
+if (isset($_REQUEST['PM_COUNT']) && is_numeric($_REQUEST['PM_COUNT'])) $CORE_LOCAL->set('PriceMethodCount',$_REQUEST['PM_COUNT'],True);
+if ($CORE_LOCAL->get("PriceMethodCount") == "") $CORE_LOCAL->set("PriceMethodCount",3,True);
+if ($CORE_LOCAL->get("PriceMethodCount") <= 0) $CORE_LOCAL->set("PriceMethodCount",1,True);
 printf("<input type=text size=4 name=PM_COUNT value=\"%d\" />",
 	$CORE_LOCAL->get('PriceMethodCount'));
 confsave('PriceMethodCount',$CORE_LOCAL->get('PriceMethodCount'));
 ?>
-<br /><b>Price Method Mapping</b>:<br />
+</td></tr><tr><td>
+<b>Price Method Mapping</b>:</td><td>
 <?php
-if (isset($_REQUEST['PM_MODS'])) $CORE_LOCAL->set('PriceMethodClasses',$_REQUEST['PM_MODS']);
+if (isset($_REQUEST['PM_MODS'])) $CORE_LOCAL->set('PriceMethodClasses',$_REQUEST['PM_MODS'],True);
 if (!is_array($CORE_LOCAL->get('PriceMethodClasses'))){
 	$CORE_LOCAL->set('PriceMethodClasses',
 		array(
 			'BasicPM',
 			'GroupPM',
 			'QttyEnforcedGroupPM'
-		));
+		),True);
 }
-$pms = array();
-$dh = opendir('../lib/Scanning/PriceMethods');
-while(False !== ($f = readdir($dh))){
-	if ($f == "." || $f == "..")
-		continue;
-	if (substr($f,-4) == ".php"){
-		$pms[] = rtrim($f,".php");
-	}
-}
+$pms = AutoLoader::ListModules('PriceMethod');
 $pm_conf = $CORE_LOCAL->get("PriceMethodClasses");
 for($i=0;$i<$CORE_LOCAL->get('PriceMethodCount');$i++){
 	echo "[$i] => ";
@@ -179,9 +149,59 @@ foreach($CORE_LOCAL->get("PriceMethodClasses") as $r){
 }
 $saveStr = rtrim($saveStr,",").")";
 confsave('PriceMethodClasses',$saveStr);
+?></td></tr><tr><td colspan=2>
+<hr />	<p>Special Department modules add extra steps to open rings in specific departments.
+	Enter department number(s) that each module should apply to.</p>
+</td></tr>
+<tr><td>
+<?php
+$sdepts = AutoLoader::ListModules('SpecialDept');
+$sconf = $CORE_LOCAL->get('SpecialDeptMap');
+if (!is_array($sconf)) $sconf = array();
+if (isset($_REQUEST['SDEPT_MAP_LIST'])){
+	$sconf = array();
+	for($i=0;$i<count($_REQUEST['SDEPT_MAP_NAME']);$i++){
+		if (!isset($_REQUEST['SDEPT_MAP_LIST'][$i])) continue;
+		if (empty($_REQUEST['SDEPT_MAP_LIST'][$i])) continue;
+
+		$class = $_REQUEST['SDEPT_MAP_NAME'][$i];
+		$obj = new $class();
+		$ids = preg_split('/\D+/',$_REQUEST['SDEPT_MAP_LIST'][$i]);
+		foreach($ids as $id)
+			$sconf = $obj->register($id,$sconf);
+	}
+	$CORE_LOCAL->set('SpecialDeptMap',$sconf,True);
+}
+foreach($sdepts as $sd){
+	$list = "";
+	foreach($sconf as $id => $mods){
+		if (in_array($sd,$mods))
+			$list .= $id.', ';
+	}
+	$list = rtrim($list,', ');
+	printf('<tr><td>%s</td><td>
+		<input type="text" name="SDEPT_MAP_LIST[]" value="%s" />
+		<input type="hidden" name="SDEPT_MAP_NAME[]" value="%s" />
+		</td></tr>',
+		$sd,$list,$sd);
+}
+$saveStr = 'array(';
+foreach($sconf as $id => $mods){
+	if (empty($mods)) continue;
+	$saveStr .= $id.'=>array(';
+	foreach($mods as $m)
+		$saveStr .= '\''.$m.'\',';
+	$saveStr = rtrim($saveStr,',').'),';
+}
+$saveStr = rtrim($saveStr,',').')';
+confsave('SpecialDeptMap',$saveStr);
 ?>
+</td></tr>
+<tr><td colspan=2>
 <hr />
-<input type=submit value="Save Changes" />
+<input type=submit name=scansubmit value="Save Changes" />
+</td></tr></table>
 </form>
+</div> <!--	wrapper -->
 </body>
 </html>

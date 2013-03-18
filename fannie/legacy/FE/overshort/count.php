@@ -135,7 +135,7 @@ function displayUI($dateStr){
 		if ($d == 'Checks') 
 			$ret .= "<td>&nbsp;</td>";
 		else{
-			$ret .= "<td><input size=4 type=text id=safeCount1$d value=".$holding['openSafeCount'][$d];
+			$ret .= "<td><input size=4 type=text id=\"safeCount1$d\" value=".$holding['openSafeCount'][$d];
 			$ret .= " onchange=\"updateOpenSafeCount('$d');\" /></td>";
 			$sum += $holding['openSafeCount'][$d];
 		}
@@ -220,7 +220,7 @@ function displayUI($dateStr){
 	$accountableTotal -= (168*$bags);
 
 	$fills = array('0.01'=>1,'0.05'=>2,'0.10'=>5,'0.25'=>10,'1.00'=>50,'5.00'=>50,'10.00'=>50);
-	$pars = array("0.01"=>50,"0.05"=>100,"0.10"=>300,"0.25"=>1000,"1.00"=>2300,"5.00"=>500,"10.00"=>750);
+	$pars = array("0.01"=>40,"0.05"=>60,"0.10"=>200,"0.25"=>700,"1.00"=>1700,"5.00"=>500,"10.00"=>800);
 
 	$ret .= "<tr class=\"color\"><th>Deposit Amount</th>";
 	$sum = 0;
@@ -340,11 +340,11 @@ function displayUI($dateStr){
 		$buyAmounts['1.00'] -= 1;
 		$overage += 1;
 	}
-	while($buyAmounts['5.00'] % 50 != 0){ 
+	while($buyAmounts['5.00'] % 5 == 0 && $buyAmounts['5.00'] % 50 != 0){ 
 		$buyAmounts['5.00'] -= 5;
 		$overage += 5;
 	}
-	while($buyAmounts['10.00'] % 50 != 0){ 
+	while($buyAmounts['10.00'] % 10 == 0 && $buyAmounts['10.00'] % 50 != 0){ 
 		$buyAmounts['10.00'] -= 10;
 		$overage += 10;
 	}

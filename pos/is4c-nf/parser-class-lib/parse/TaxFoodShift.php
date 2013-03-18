@@ -52,7 +52,7 @@ class TaxFoodShift extends Parser {
 		}
 		$db->query($q);	
 
-		$next_tax = $current['tax']+1;
+		$next_tax = $row['tax']+1;
 		$next_fs = 0;
 		if ($next_tax > $max){
 			$next_tax = 0;
@@ -63,8 +63,6 @@ class TaxFoodShift extends Parser {
 			set tax=$next_tax,foodstamp=$next_fs 
 			WHERE trans_id=$id";
 		$db->query($q);	
-		
-		$db->db_close();
 		
 		$ret = $this->default_json();
 		$ret['output'] = DisplayLib::listitems($CORE_LOCAL->get("currenttopid"),$id);

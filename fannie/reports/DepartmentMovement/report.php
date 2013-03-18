@@ -21,6 +21,16 @@
 
 *********************************************************************************/
 
+
+/* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+	* 19Feb13 Eric Lee Coulumn-head sort links for sum-by-Department reports.
+	*         Sort-sensitive initial setting of $dir.
+	*         Use $dir in non-PLU queries.
+	*         Change way of assigning orderBy for non-PLU reports.
+	*         Change heading "Sub Dept" to "Super Dept".
+	*         Right-align amounts.
+*/
+
 	include('../../config.php');
 	include($FANNIE_ROOT.'src/mysql_connect.php');
 	include($FANNIE_ROOT.'src/select_dlog.php');
@@ -30,14 +40,34 @@
 	$date2 = $_GET['date2'];
 	$deptStart = $_GET['deptStart'];
 	$deptEnd = $_GET['deptEnd'];
+	// i.e. "sum by"
 	$sort = $_GET['sort'];
 	
-	$dir = 'DESC';
-	if (isset($_GET['dir']))
-		$dir = $_GET['dir'];
+	// Default for $order only correct when $sort = PLU
 	$order = 'total';
 	if (isset($_GET['order']))
 		$order = $_GET['order'];
+
+	/* _GET[dir] isn't set on the initial run
+	 * PLU-sort is by highest-total first.
+	 * Others are lowest-value first.
+	*/
+	if (isset($_GET['dir'])) {
+		$dir = $_GET['dir'];
+	} else {
+		switch ($sort) {
+			case "PLU":
+				$dir = "DESC";
+				break;
+			case "Department":
+				$dir = "ASC";
+				break;
+			default:
+				$dir = "ASC";
+				break;
+		}
+	}
+	// This isn't sort-sensitive or thought-through.
 	$revdir = 'ASC';
 	if ($dir == 'ASC')
 		$revdir = 'DESC';
@@ -59,7 +89,7 @@
 	echo "<body>";
 		
 	$today = date("F d, Y");	
-	//Following lines creates a header for the report, listing sort option chosen, report date, date and department range.
+	//Following lines create a header for the report, listing sort option chosen, report date, date and department range.
 	echo "Report summed by ";
 	echo $_GET['sort'] . " on ";
 	echo "<br>";
@@ -85,28 +115,33 @@
 		   print $deptEnd;
 		}
 		echo "<br>";
+		// EL I'm not sure the initial values of order and dir make sense for non-$sort=PLU reports.
 		echo "<a href=report.php?excel=1&buyer=$buyer&deptStart=$deptStart&deptEnd=$deptEnd&date1=$date1&date2=$date2&sort=$sort&order=$order&dir=$dir>Save</a> to Excel<br />";
 	}
 	
 	$dlog = select_dlog($date1,$date2);
+	$sumTable = $FANNIE_ARCHIVE_DB.$dbc->sep()."sumRingSalesByDay";
+	if (substr($dlog,-4)=="dlog")
+		$sumTable = $FANNIE_ARCHIVE_DB.$dbc->sep()."vRingSalesToday";
 
 	$date2a = $date2 . " 23:59:59";
 	$date1a = $date1 . " 00:00:00";
-	//decide what the sort index is and translate from lay person to mySQL table label
 
-	$groupBy="";$alias="";
-	if($_GET['sort']=='Department'){
+	$groupBy="";
+	// The AS name, for use in ORDER BY in non-PLU-order reports, only when order is Date:tdate or Weekday:DoW
+	$alias="";
+	//decide what the sort (sum-by) index is and translate from layperson term to mySQL table label
+	$sort = $_GET['sort'];
+	if($sort == 'Department'){
 		
-		$groupBy = "department,dept_name";
-		$query1 = "department";
+		$groupBy = "t.dept_ID,dept_name";
 		
-	}elseif($_GET['sort']=='Date') { 
+	}elseif($sort == 'Date') { 
 		
 		$groupBy = $dbc->dateymd('tdate');
 		$alias = "tdate";
-		$query1 = "CONVERT(CHAR(11),tDate,106)";
 
-	}elseif($_GET['sort']=='Weekday'){
+	}elseif($sort == 'Weekday'){
 
 		$groupBy = $dbc->dayofweek("tdate").",CASE 
 			WHEN ".$dbc->dayofweek("tdate")."=1 THEN 'Sun'
@@ -119,73 +154,74 @@
 			ELSE 'Err' END";
 		$alias = "DoW";
 	
-	}elseif($_GET['sort']=='PLU') {
+	}elseif($sort == 'PLU') {
 		
 		$groupBy = "upc";
-		$query1 = "description";
 	}
 	
-	$sort = $_GET['sort'];
-	
 	if($sort == "PLU"){
+		if ( empty($order) )
+			$order = "total";
 		$query = "";
 		if(isset($buyer) && $buyer > 0){
-		$query = "SELECT DISTINCT t.upc,p.description, 
-				SUM(case when t.trans_status in ('M') then t.itemqtty else t.quantity end) as qty,
+		$query = "SELECT t.upc,p.description, 
+				SUM(t.quantity) as qty,
 				SUM(t.total) AS total,
 				d.dept_no,d.dept_name,s.superID,x.distributor
-			  FROM $dlog as t LEFT JOIN products as p on t.upc = p.upc
-			  LEFT JOIN departments as d on d.dept_no = t.department 
-			  LEFT JOIN superdepts AS s ON t.department = s.dept_ID
+			  FROM $sumTable as t LEFT JOIN products as p on t.upc = p.upc
+			  LEFT JOIN departments as d on d.dept_no = t.dept 
+			  LEFT JOIN superdepts AS s ON t.dept = s.dept_ID
 			  LEFT JOIN prodExtra as x on t.upc = x.upc
 			  WHERE s.superID = $buyer
-			  AND tDate >= '$date1a' AND tDate <= '$date2a' GROUP BY t.upc,p.description,
+			  AND tdate >= '$date1' AND tdate <= '$date2' GROUP BY t.upc,p.description,
 			  d.dept_no,d.dept_name,s.superID,x.distributor ORDER BY $order $dir";
 		}
 		else if (isset($buyer) && $buyer == -1){
-		$query = "SELECT DISTINCT t.upc,p.description, 
-				SUM(case when t.trans_status in ('M') then t.itemqtty else t.quantity end) as qty,
+		$query = "SELECT t.upc,p.description, 
+				SUM(t.quantity) as qty,
 				SUM(t.total) AS total,
 				d.dept_no,d.dept_name,s.superID,x.distributor
-			  FROM  $dlog as t LEFT JOIN products as p on t.upc = p.upc
-			  LEFT JOIN departments as d on d.dept_no = t.department 
-			  LEFT JOIN MasterSuperDepts AS s ON t.department = s.dept_ID
+			  FROM  $sumTable as t LEFT JOIN products as p on t.upc = p.upc
+			  LEFT JOIN departments as d on d.dept_no = t.dept 
+			  LEFT JOIN MasterSuperDepts AS s ON t.dept = s.dept_ID
 			  LEFT JOIN prodExtra as x on t.upc = x.upc
-			  WHERE t.trans_type in ('D','I','M') and
-			  tDate >= '$date1a' AND tDate <= '$date2a' GROUP BY t.upc,p.description,
+			  WHERE 
+			  tdate >= '$date1' AND tdate <= '$date2' GROUP BY t.upc,p.description,
 			  d.dept_no,d.dept_name,s.superID,x.distributor ORDER BY $order $dir";
 		}
 		else if (isset($buyer) && $buyer == -2){
-		$query = "SELECT DISTINCT t.upc,p.description, 
-				SUM(case when t.trans_status in ('M') then t.itemqtty else t.quantity end) as qty,
+		$query = "SELECT t.upc,p.description, 
+				SUM(t.quantity) as qty,
 				SUM(t.total) AS total,
 				d.dept_no,d.dept_name,s.superID,x.distributor
-			  FROM $dlog as t LEFT JOIN products as p on t.upc = p.upc
-			  LEFT JOIN departments as d on d.dept_no = t.department 
-			  LEFT JOIN MasterSuperDepts AS s ON t.department = s.dept_ID
+			  FROM $sumTable as t LEFT JOIN products as p on t.upc = p.upc
+			  LEFT JOIN departments as d on d.dept_no = t.dept 
+			  LEFT JOIN MasterSuperDepts AS s ON t.dept = s.dept_ID
 			  LEFT JOIN prodExtra as x on t.upc = x.upc
-			  WHERE t.trans_type in ('D','I','M') and s.superID <> 0 and
-			  tDate >= '$date1a' AND tDate <= '$date2a' GROUP BY t.upc,p.description,
+			  WHERE s.superID <> 0 and
+			  tdate >= '$date1' AND tdate <= '$date2' GROUP BY t.upc,p.description,
 			  d.dept_no,d.dept_name,s.superID,x.distributor ORDER BY $order $dir";
 		}
 		else {
 		$query = "SELECT t.upc,p.description, 
-				SUM(case when t.trans_status in ('M') then t.itemqtty else t.quantity end) as qty,
+				SUM(t.quantity) as qty,
 				SUM(t.total) AS total,
 				d.dept_no,d.dept_name,s.superID,x.distributor
-			  FROM $dlog as t LEFT JOIN products as p on t.upc = p.upc
-			  LEFT JOIN departments as d on d.dept_no = t.department 
-			  LEFT JOIN MasterSuperDepts AS s ON t.department = s.dept_ID
+			  FROM $sumTable as t LEFT JOIN products as p on t.upc = p.upc
+			  LEFT JOIN departments as d on d.dept_no = t.dept 
+			  LEFT JOIN MasterSuperDepts AS s ON t.dept = s.dept_ID
 			  LEFT JOIN prodExtra as x on t.upc = x.upc
-			  WHERE t.department BETWEEN $deptStart AND $deptEnd
-			  AND tDate >= '$date1a' AND tDate <= '$date2a' GROUP BY t.upc,p.description,
+			  WHERE t.dept BETWEEN $deptStart AND $deptEnd
+			  AND tdate >= '$date1' AND tdate <= '$date2' GROUP BY t.upc,p.description,
 			  d.dept_no,d.dept_name,s.superID,x.distributor ORDER BY $order $dir";
 		}
+
 		//$query = fixup_dquery($query,$dlog);
-		//echo $query;
+		//echo "<br />", $query;
 		$result = $dbc->query($query);
 
-		echo "<table border=1>\n"; //create table
+		echo "<table border=1>\n";
+		//create table header
 		echo "<tr>";
 		if (!isset($_GET['excel'])){
 			echo "<td><a href=report.php?buyer=$buyer&deptStart=$deptStart&deptEnd=$deptEnd"
@@ -194,41 +230,48 @@
 				echo "$revdir>UPC</a></td>";
 			else
 				echo "ASC>UPC</a></td>";
+
 			echo "<td><a href=report.php?buyer=$buyer&deptStart=$deptStart&deptEnd=$deptEnd"
 			    ."&date1=$date1&date2=$date2&sort=$sort&order=p.description&dir=";
 			if ($order == "p.description")
 				echo "$revdir>Description</a></td>";
 			else
 				echo "ASC>Description</a></td>";
+
 			echo "<td><a href=report.php?buyer=$buyer&deptStart=$deptStart&deptEnd=$deptEnd"
 			    ."&date1=$date1&date2=$date2&sort=$sort&order=qty&dir=";
 			if ($order == "qty")
 				echo "$revdir>Qty</a></td>";
 			else
 				echo "DESC>Qty</a></td>";
+
 			echo "<td><a href=report.php?buyer=$buyer&deptStart=$deptStart&deptEnd=$deptEnd"
 			    ."&date1=$date1&date2=$date2&sort=$sort&order=total&dir=";
 			if ($order == "total")
 				echo "$revdir>Sales</a></td>";
 			else
 				echo "DESC>Sales</a></td>";
+
 			echo "<td><a href=report.php?buyer=$buyer&deptStart=$deptStart&deptEnd=$deptEnd"
 			    ."&date1=$date1&date2=$date2&sort=$sort&order=d.dept_no&dir=";
 			if ($order == "d.dept_no")
-				echo "$revdir>Dept</a></td>";
+				echo "$revdir>Dept#</a></td>";
 			else
-				echo "ASC>Dept</a></td>";
+				echo "ASC>Dept#</a></td>";
+
 			echo "<td><a href=report.php?buyer=$buyer&deptStart=$deptStart&deptEnd=$deptEnd"
 			    ."&date1=$date1&date2=$date2&sort=$sort&order=d.dept_name&dir=";
 			if ($order == "d.dept_name")
-				echo "$revdir>Dept</a></td>";
+				echo "$revdir>Department</a></td>";
 			else
-				echo "ASC>Dept</a></td>";
+				echo "ASC>Department</a></td>";
+
 			echo "<td><a href=report.php?buyer=$buyer&deptStart=$deptStart&deptEnd=$deptEnd&date1=$date1&date2=$date2&sort=$sort&order=s.superID&dir=";
 			if ($order = "s.superID")
-				echo "$revdir>Sub dept</a></td>";
+				echo "$revdir>Super Dept</a></td>";
 			else
-				echo "ASC>Sub dept</a></td>";
+				echo "ASC>Super Dept</a></td>";
+
 			echo "<td><a href=report.php?buyer=$buyer&deptStart=$deptStart&deptEnd=$deptEnd&date1=$date1&date2=$date2&sort=$sort&order=distributor&dir=";
 			if ($order = "distributor")
 				echo "$revdir>Vendor</a></td>";
@@ -236,9 +279,9 @@
 				echo "ASC>Vendor</a></td>";
 		}
 		else {
-			echo "<th>UPC</th><th>Description</th><th>Qty</th><th>Sales</th><th>Dept</th><th>Dept</th><th>Sub dept</th><th>Vendor</th>";
+			echo "<th>UPC</th><th>Description</th><th>Qty</th><th>Sales</th><th>Dept#</th><th>Department</th><th>Super Dept</th><th>Vendor</th>";
 		}
-		echo "</tr>\n";//create table header
+		echo "</tr>\n";
 		
 		$dept_subs = array();
 		$dsR = $dbc->query("SELECT super_name,superID FROM superDeptNames");
@@ -247,73 +290,125 @@
 
 		while ($myrow = $dbc->fetch_row($result)) { //create array from query
 		
-		printf("<tr><td>%s</td><td>%s</td><td>%.2f</td><td>%.2f</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>\n",$myrow['upc'], $myrow['description'],$myrow['qty'],$myrow['total'],$myrow['dept_no'],$myrow['dept_name'],$dept_subs[$myrow['superID']],$myrow['distributor']==''?'&nbsp;':$myrow[7]);
 		//convert row information to strings, enter in table cells
+		printf("<tr><td align=right>%s</td><td>%s</td><td align=right>%.2f</td><td align=right>%.2f</td><td align=right>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>\n",$myrow['upc'], $myrow['description']==''?'&nbsp;':$myrow['description'],$myrow['qty'],$myrow['total'],$myrow['dept_no'],$myrow['dept_name'],$dept_subs[$myrow['superID']],$myrow['distributor']==''?'&nbsp;':$myrow['distributor']);
 		
 		}
 		
 		echo "</table>\n";//end table
 
-	}else{ //create alternate query if not sorting by PLU
+	}
+	//create query for sorts other than PLU
+	else {
 		$query="";
+		$sumTable = $FANNIE_ARCHIVE_DB.$dbc->sep()."sumDeptSalesByDay";
+		if (substr($dlog,-4)=="dlog")
+			$sumTable = $FANNIE_ARCHIVE_DB.$dbc->sep()."vDeptSalesToday";
 		$item = (!empty($alias)) ? $groupBy." AS ".$alias : $groupBy;
-		$orderBy = (!empty($alias)) ? $alias : $groupBy;
+		// "total" is a default that is only meaningful for PLU-sorted reports.
+		if ( $order == 'total' )
+			$order = "";
+		if ( !empty($alias) )
+			$orderBy = $alias;
+		elseif ( !empty($order) )
+			$orderBy = $order;
+		elseif ( $sort == "Date" )
+			$orderBy = "t.dept_ID";
+		else
+			$orderBy = "t.dept_ID";
+
 		if(isset($buyer) && $buyer>0){
-		 $query =  "SELECT $item,SUM(quantity) as Qty, SUM(total) as Sales "
-                          ."FROM $dlog as t LEFT JOIN departments as d on d.dept_no=t.department "
-			  ."LEFT JOIN superdepts AS s ON s.dept_ID = t.department "
-			  ."WHERE s.superID=$buyer AND tdate >= '$date1a' AND tdate <= '$date2a' "
-			  ."AND trans_type in ('D','I','M') "
-			  ."GROUP BY $groupBy ORDER BY $orderBy";
+		 $query =  "SELECT $item,SUM(t.quantity) as Qty, SUM(total) as Sales "
+                          ."FROM $sumTable as t LEFT JOIN departments as d on d.dept_no=t.dept_ID "
+			  ."LEFT JOIN superdepts AS s ON s.dept_ID = t.dept_ID "
+			  ."WHERE s.superID=$buyer AND tdate >= '$date1' AND tdate <= '$date2' "
+			  ."GROUP BY $groupBy ORDER BY $orderBy $dir";
 		}
 		else if (isset($buyer) && $buyer == -1){
-		 $query =  "SELECT $item,SUM(quantity) as Qty, SUM(total) as Sales "
-                          ."FROM $dlog as t LEFT JOIN departments as d on d.dept_no=t.department "
-			  ."WHERE tdate >= '$date1a' AND tdate <= '$date2a' "
-			  ."AND trans_type in ('D','I','M')"
-			  ."GROUP BY $groupBy ORDER BY $orderBy";
+		 $query =  "SELECT $item,SUM(t.quantity) as Qty, SUM(total) as Sales "
+                          ."FROM $sumTable as t LEFT JOIN departments as d on d.dept_no=t.dept_ID "
+			  ."WHERE tdate >= '$date1' AND tdate <= '$date2' "
+			  ."GROUP BY $groupBy ORDER BY $orderBy $dir";
 		}
 		else if (isset($buyer) && $buyer == -2){
-		 $query =  "SELECT $item,SUM(quantity) as Qty, SUM(total) as Sales "
-                          ."FROM $dlog as t LEFT JOIN departments as d on d.dept_no=t.department "
-			  ."LEFT JOIN MasterSuperDepts AS s ON s.dept_ID = t.department "
-			  ."WHERE tdate >= '$date1a' AND tdate <= '$date2a' "
-			  ."AND trans_type in ('D','I','M') and s.superID <> 0 "
-			  ."GROUP BY $groupBy ORDER BY $orderBy";
+		 $query =  "SELECT $item,SUM(t.quantity) as Qty, SUM(total) as Sales "
+                          ."FROM $sumTable as t LEFT JOIN departments as d on d.dept_no=t.dept_ID "
+			  ."LEFT JOIN MasterSuperDepts AS s ON s.dept_ID = t.dept_ID "
+			  ."WHERE tdate >= '$date1' AND tdate <= '$date2' "
+			  ."AND s.superID <> 0 "
+			  ."GROUP BY $groupBy ORDER BY $orderBy $dir";
 		}
 		else {
-		 $query =  "SELECT $item,SUM(quantity) as Qty, SUM(total) as Sales "
-                          ."FROM $dlog as t LEFT JOIN departments as d on d.dept_no=t.department "
-			  ."WHERE tdate >= '$date1a' AND tdate <= '$date2a' "
-			  ."AND trans_type in ('D','I','M') "
-			  ."AND t.department BETWEEN $deptStart AND $deptEnd "
-			  ."GROUP BY $groupBy ORDER BY $orderBy";
+		 $query =  "SELECT $item,SUM(t.quantity) as Qty, SUM(total) as Sales "
+                          ."FROM $sumTable as t LEFT JOIN departments as d on d.dept_no=t.dept_ID "
+			  ."WHERE tdate >= '$date1' AND tdate <= '$date2' "
+			  ."AND t.dept_ID BETWEEN $deptStart AND $deptEnd "
+			  ."GROUP BY $groupBy ORDER BY $orderBy $dir";
 		}
 		if ($sort == "Weekday"){
 			$query = str_replace("as Sales",
 					"as Sales,
-					sum(quantity)/count(distinct(".$dbc->dateymd('tdate').")) as avg_qty,
+					sum(t.quantity)/count(distinct(".$dbc->dateymd('tdate').")) as avg_qty,
 					sum(total)/count(distinct(".$dbc->dateymd('tdate').")) as avg_ttl",
 					$query);
 		}
-		//echo $query;
+		//echo "<br />alias: ", $alias;
+		//echo "<br />order: ", $order;
+		//echo "<br />dir: ", $dir;
+		//echo "<br />", $query;
 		//$query = fixup_dquery($query,$dlog);
 		$result = $dbc->query($query);	
 
 		$dtemp = explode("-",$date1);
 		$ts = mktime(0,0,0,$dtemp[1],$dtemp[2],$dtemp[0]);
 		
-		echo "<table border=1>\n";//create table
-		if ($sort == "Department")
-			echo "<tr><td>$sort</td><td>Department</td><td>Qty</td><td>Sales</tr>\n";//create table header
-		elseif ($sort == "Weekday"){
-			echo "<tr><td colspan=2>$sort</td><td>Tot. Qty</td><td>Tot. Sales</td>
-			<td>Avg. Qty</td><td>Avg. Sales</td></tr>\n";//create table header
+		echo "<table border=1>\n";
+		//create table headers
+		if ($sort == "Department") {
+			echo "<tr>";
+
+			echo "<th><a href=report.php?buyer=$buyer&deptStart=$deptStart&deptEnd=$deptEnd"
+			    ."&date1=$date1&date2=$date2&sort=$sort&order=t.dept_ID&dir=";
+			// It would be better if this were DESC on the initial run, but it isn't.
+			//  EL Not sure how to do without risking breaking something else.
+			if ($order == "t.dept_ID")
+				echo "$revdir>$sort</a></th>";
+			else
+				echo "ASC>$sort</a></th>";
+
+			echo "<th><a href=report.php?buyer=$buyer&deptStart=$deptStart&deptEnd=$deptEnd"
+			    ."&date1=$date1&date2=$date2&sort=$sort&order=d.dept_name&dir=";
+			if ($order == "d.dept_name")
+				echo "$revdir>Department Name</a></th>";
+			else
+				echo "ASC>Department Name</a></th>";
+
+			echo "<th><a href=report.php?buyer=$buyer&deptStart=$deptStart&deptEnd=$deptEnd"
+			    ."&date1=$date1&date2=$date2&sort=$sort&order=Qty&dir=";
+			if ($order == "Qty")
+				echo "$revdir>Qty</a></th>";
+			else
+				echo "ASC>Qty</a></th>";
+
+			echo "<th><a href=report.php?buyer=$buyer&deptStart=$deptStart&deptEnd=$deptEnd"
+			    ."&date1=$date1&date2=$date2&sort=$sort&order=Sales&dir=";
+			if ($order == "Sales")
+				echo "$revdir>Sales</a></th>";
+			else
+				echo "ASC>Sales</a></th>";
+
+			echo "</tr>";
 		}
-		else
-			echo "<tr><td>$sort</td><td>Qty</td><td>Sales</tr>\n";//create table header
-	
-		while ($myrow = $dbc->fetch_row($result)) { //create array from query
+		elseif ($sort == "Weekday") {
+			echo "<tr><th colspan=2>$sort</th><th>Tot. Qty</th><th>Tot. Sales</th>
+			<th>Avg. Qty</th><th>Avg. Sales</th></tr>\n";
+		}
+		else {
+			echo "<tr><th>$sort</th><th>Qty</th><th>Sales</th></tr>\n";
+		}
+
+		//create array from query
+		while ($myrow = $dbc->fetch_row($result)) {
 			if ($sort == "Date" ){
 				$myrow[0] = substr($myrow[0],4,2)."/".substr($myrow[0],6,2)."/"
 					.substr($myrow[0],0,4)." ";
@@ -329,10 +424,15 @@
 			echo "<tr>";
 			for ($i=0;$i<$dbc->num_fields($result);$i++){
 				echo "<td";
-				if ($i==0) echo " align=right";
-				echo ">";
-				if (is_numeric($myrow[$i])) printf('%.2f',$myrow[$i]);
-				else echo $myrow[$i];
+				// Assume first col is never an amount.
+				if ($i==0) {
+					echo " align=right>{$myrow[$i]}";
+				} else {
+					//if (is_numeric($myrow[$i]) && $myrow[$i] != floor($myrow[$i])) 
+					if (is_numeric($myrow[$i]))
+						printf(' align=right>%.2f',$myrow[$i]);
+					else echo ">{$myrow[$i]}";
+				}
 				echo '</td>';
 			}
 			echo "</tr>";

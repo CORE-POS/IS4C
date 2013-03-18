@@ -49,18 +49,19 @@ static public function suspendorder() {
 		$cols = Database::getMatchingColumns($db_a,"localtemptrans","suspended");
 		$db_a->transfer($CORE_LOCAL->get("tDatabase"),"select {$cols} from localtemptrans",
 			$CORE_LOCAL->get("mDatabase"),"insert into suspended ($cols)");
-		$db_a->close($CORE_LOCAL->get("mDatabase"));
+		$db_a->close($CORE_LOCAL->get("mDatabase"),True);
 	}
 	else { 
 		$query = "insert into suspended select * from localtemptrans";
 		$result = $db_a->query($query);
 	}
 
-	$CORE_LOCAL->set("plainmsg","transaction suspended");
+	/* ensure the cancel happens */
+	$cancelR = $db_a->query("UPDATE localtemptrans SET trans_status='X'");
+
+	$CORE_LOCAL->set("plainmsg",_("transaction suspended"));
 	$CORE_LOCAL->set("msg",2);
 	$recall_line = $CORE_LOCAL->get("standalone")." ".$CORE_LOCAL->get("laneno")." ".$cashier_no." ".$trans_no;
-
-	$db_a->close();
 }
 
 /**
@@ -84,7 +85,6 @@ static public function checksuspended() {
 	if ($CORE_LOCAL->get("standalone") == 1) {
 		$result = $db_a->query($query_local);
 	} else {
-		$db_a->close();
 		$db_a = Database::mDataConnect();
 		$result = $db_a->query($query_local);
 	}
@@ -93,8 +93,6 @@ static public function checksuspended() {
 
 	if ($num_rows == 0) return 0;
 	else return 1;
-
-	$db_a->close();
 }
 
 }

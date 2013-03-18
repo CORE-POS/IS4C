@@ -101,12 +101,32 @@ function getNumUsers(){
   return $sql->num_rows($fetchR);
 }
 
+function getNumAdmins(){
+	$sql = dbconnect();
+	$num = 0;
+	if ($sql->table_exists('userPrivs')){
+		$q = "SELECT uid FROM userPrivs WHERE auth_class='admin'";
+		$r = $sql->query($q);
+		$num += $sql->num_rows($r);
+	}
+	if ($sql->table_exists('userGroups') && $sql->table_exists('userGroupPrivs')){
+		$q = "SELECT username FROM userGroups AS g LEFT JOIN
+			userGroupPrivs AS p ON g.gid=p.gid
+			WHERE p.auth='admin'";
+		$r = $sql->query($q);
+		$num += $sql->num_rows($r);
+
+	}
+	return $num;
+}
+
 function getGID($group){
   if (!isAlphaNumeric($group))
     return false;
   $sql = dbconnect();
 
-  $gidQ = "select top 1 gid from userGroups where name='$group'";
+  $gidQ = "select gid from userGroups where name='$group'";
+  $gidQ = $sql->add_select_limit($gidQ,1); 
   $gidR = $sql->query($gidQ);
 
   if ($sql->num_rows($gidR) == 0)
@@ -185,9 +205,14 @@ function syncUserLDAP($name,$uid,$fullname){
 }
 
 function auth_enabled(){
-	$path = guesspath();
-	include($path."config.php");
-	return $FANNIE_AUTH_ENABLED;
+	global $FANNIE_AUTH_ENABLED;
+	if (!isset($FANNIE_AUTH_ENABLED)){
+		$path = guesspath();
+		include($path."config.php");
+		return $FANNIE_AUTH_ENABLED;
+	}
+	else
+		return $FANNIE_AUTH_ENABLED;
 }
 
 function table_check(){
@@ -209,6 +234,13 @@ function table_check(){
 			auth_class varchar(50),
 			sub_start varchar(50),
 			sub_end varchar(50)
+			)");
+	}
+	if (!$sql->table_exists('userKnownPrivs')){
+		$sql->query("CREATE TABLE userKnownPrivs (
+			auth_class varchar(50),
+			notes text,
+			PRIMARY KEY (auth_class)
 			)");
 	}
 	if (!$sql->table_exists('userGroups')){

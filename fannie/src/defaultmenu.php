@@ -40,33 +40,33 @@
 */
 
 $FANNIE_MENU = array(
-array('label'=>'Item Maintenance','url'=>'item/itemMaint.php','subheading'=>'Manage our product DB',
+array('label'=>'Item Maintenance','url'=>'item/ItemEditorPage.php','subheading'=>'Manage our product DB',
 'submenu'=>array(
-	array('label'=>'Manage Products >>','url'=>'item/itemMaint.php',
+	array('label'=>'Manage Products >>','url'=>'item/ItemEditorPage.php',
 		'submenu'=>array(
-			array('label'=>'By UPC/SKU or Brand Prefix','url'=>'item/itemMaint.php'),
-			array('label'=>'Product List and Tool','url'=>'item/productList.php'),
+			array('label'=>'By UPC/SKU or Brand Prefix','url'=>'item/ItemEditorPage.php'),
+			array('label'=>'Product List and Tool','url'=>'item/ProductListPage.php'),
 			array('label'=>'Product Flags','url'=>'item/ItemFlags.php')
 		)
 	),
 	array('label'=>'Import Products >>','url'=>'item/import/',
 		'submenu'=>array(
-			array('label'=>'Products','url'=>'item/import/prod.php'),
-			array('label'=>'Upload a file','url'=>'item/import/uploadAnyFile.php')
+			array('label'=>'Products','url'=>'item/import/ProductImportPage.php'),
+			array('label'=>'Upload a file','url'=>'item/import/UploadAnyFile.php')
 		)
 	),
 	array('label'=>'Manage Departments >>','url'=>'item/departments/',
 		'submenu'=>array(
-			array('label'=>'Super Departments','url'=>'item/departments/super.php'),
-			array('label'=>'Departments','url'=>'item/departments/dept.php'),
-			array('label'=>'Sub Departments','url'=>'item/departments/sub.php')
+			array('label'=>'Super Departments','url'=>'item/departments/SuperDeptEditor.php'),
+			array('label'=>'Departments','url'=>'item/departments/DepartmentEditor.php'),
+			array('label'=>'Sub Departments','url'=>'item/departments/SubDeptEditor.php')
 		)
 	),
 	array('label'=>'Import Departments >>','url'=>'item/import/',
 		'submenu'=>array(
-			array('label'=>'Departments','url'=>'item/import/dept.php'),
-			array('label'=>'Sub Departments','url'=>'item/import/subdept.php'),
-			array('label'=>'Upload a file','url'=>'item/import/uploadAnyFile.php')
+			array('label'=>'Departments','url'=>'item/import/DepartmentImportPage.php'),
+			array('label'=>'Sub Departments','url'=>'item/import/SubdeptImportPage.php'),
+			array('label'=>'Upload a file','url'=>'item/import/UploadAnyFile.php')
 		)
 	),
 	array('label'=>'Manage Likcodes','url'=>'item/likecodes/'),
@@ -75,8 +75,9 @@ array('label'=>'Item Maintenance','url'=>'item/itemMaint.php','subheading'=>'Man
 ),
 array('label'=>'Sales Batches','url'=>'batches/','subheading'=>'Create automated sales & price changes',
 'submenu'=>array(
-	array('label'=>'Sales Batches','url'=>'batches/newbatch/'),
-	array('label'=>'Manage Batch Types','url'=>'batches/types.php'),
+	array('label'=>'Sales Batches','url'=>'batches/newbatch.oo/'),
+	array('label'=>'Upload Batch','url'=>'batches/xlsbatch/'),
+	array('label'=>'Manage Batch Types','url'=>'batches/BatchTypeEditor.php'),
 	array('label'=>'Co+op Deals Sales','url'=>'batches/CAP/'),
 	array('label'=>'Vendor Pricing','url'=>'batches/UNFI/')
 	)
@@ -104,7 +105,7 @@ array('label'=>'Reports','url'=>'reports/','subheading'=>'Custom reporting tools
 			array('label'=>'Department Hourly Sales','url'=>'reports/HourlySales/hourlySalesDept.php')
 		)
 	),
-	array('label'=>'Product List and Tool','url'=>'item/productList.php'),
+	array('label'=>'Product List and Tool','url'=>'item/ProductListPage.php'),
 	array('label'=>'Price History Report','url'=>'reports/PriceHistory/'),
 	array('label'=>'Department Settings','url'=>'reports/DepartmentSettings/'),
 	array('label'=>'Open Rings','url'=>'reports/OpenRings/'),
@@ -120,35 +121,35 @@ array('label'=>'Dayend Polling','url'=>'cron/management/','subheading'=>'Schedul
 ),
 array('label'=>'Synchronize','url'=>'sync/','subheading'=>'Update cash registers',
 'submenu'=>array(
-	array('label'=>'Products','url'=>'sync/tablesync.php?tablename=products'),
-	array('label'=>'ProductUser','url'=>'sync/tablesync.php?tablename=productUser'),
-	array('label'=>'Membership','url'=>'sync/tablesync.php?tablename=custdata'),
-	array('label'=>'Member Cards','url'=>'sync/tablesync.php?tablename=memberCards'),
-	array('label'=>'Employees','url'=>'sync/tablesync.php?tablename=employees'),
-	array('label'=>'Departments','url'=>'sync/tablesync.php?tablename=departments'),
-	array('label'=>'Sub Departments','url'=>'sync/tablesync.php?tablename=subdepts')
+	array('label'=>'Products','url'=>'sync/TableSyncPage.php?tablename=products'),
+	array('label'=>'ProductUser','url'=>'sync/TableSyncPage.php?tablename=productUser'),
+	array('label'=>'Membership','url'=>'sync/TableSyncPage.php?tablename=custdata'),
+	array('label'=>'Member Cards','url'=>'sync/TableSyncPage.php?tablename=memberCards'),
+	array('label'=>'Employees','url'=>'sync/TableSyncPage.php?tablename=employees'),
+	array('label'=>'Departments','url'=>'sync/TableSyncPage.php?tablename=departments'),
+	array('label'=>'Sub Departments','url'=>'sync/TableSyncPage.php?tablename=subdepts')
 	)
 ),
 array('label'=>'Admin','url'=>'admin/','subheading'=>'Administrative functions, etc.',
 'submenu'=>array(
 	array('label'=>'Cashier Management >>','url'=>'admin/Cashiers/',
 	'submenu'=>array(
-		array('label'=>'Add a new Cashier','url'=>'admin/Cashiers/add.php'),
-		array('label'=>'View/edit Cashiers','url'=>'admin/Cashiers/view.php'),
+		array('label'=>'Add a new Cashier','url'=>'admin/Cashiers/AddCashierPage.php'),
+		array('label'=>'View/edit Cashiers','url'=>'admin/Cashiers/ViewCashiersPage.php'),
 		array('label'=>'Cashier performance report','url'=>'reports/cash_report/')
 		)
 	),
 	array('label'=>'Member Management >>','url'=>'mem/',
 	'submenu'=>array(
-		array('label'=>'View/edit Members','url'=>'mem/search.php'),
-		array('label'=>'Manage Member Types','url'=>'mem/types.php'),
-		array('label'=>'Create New Members','url'=>'mem/new.php'),
+		array('label'=>'View/edit Members','url'=>'mem/MemberSearchPage.php'),
+		array('label'=>'Manage Member Types','url'=>'mem/MemberTypeEditor.php'),
+		array('label'=>'Create New Members','url'=>'mem/NewMemberTool.php'),
 		array('label'=>'Print Member Stickers','url'=>'mem/numbers/'),
 		array('label'=>'Import Member Information >>','url'=>'mem/import/',
 			'submenu'=>array(
-				array('label'=>'Names & Numbers','url'=>'mem/import/nn.php'),
-				array('label'=>'Contact Information','url'=>'mem/import/contact.php'),
-				array('label'=>'Existing Equity','url'=>'mem/import/equity.php')
+				array('label'=>'Names & Numbers','url'=>'mem/import/MemNameNumImportPage.php'),
+				array('label'=>'Contact Information','url'=>'mem/import/MemContactImportPage.php'),
+				array('label'=>'Existing Equity','url'=>'mem/import/EquityHistoryImportPage.php')
 				)
 			)
 		)

@@ -26,13 +26,12 @@ include('../src/mysql_connect.php');
 if (isset($_REQUEST['submit2'])){
 	$upc = str_pad($_REQUEST['upc'],13,'0',STR_PAD_LEFT);
 
-	$delQ = "DELETE FROM upcLike WHERE upc='$upc'";
-	$dbc->query($delQ);
+	$delQ = $dbc->prepare_statement("DELETE FROM upcLike WHERE upc=?");
+	$dbc->exec_statement($delQ,array($upc));
 
 	if (isset($_REQUEST['currentLC']) && $_REQUEST['currentLC'] != 0){
-		$insQ = "INSERT INTO upcLike (likeCode,upc) VALUES
-			({$_REQUEST['currentLC']},'$upc')";
-		$dbc->query($insQ);
+		$insQ = $dbc->prepare_statement("INSERT INTO upcLike (likeCode,upc) VALUES (?,?)");
+		$dbc->exec_statement($insQ,array($_REQUEST['currentLC'],$upc));
 	}
 	
 	header("Location: handheld.php?submit=Submit&upc=".$upc);
@@ -57,16 +56,16 @@ if (!isset($_REQUEST['upc'])){
 
 $upc = str_pad($_REQUEST['upc'],13,'0',STR_PAD_LEFT);
 
-$descQ = "SELECT description FROM products WHERE upc='$upc'";
-$descR = $dbc->query($descQ);
+$descQ = $dbc->prepare_statement("SELECT description FROM products WHERE upc=?");
+$descR = $dbc->exec_statement($descQ,array($upc));
 $desc = array_pop($dbc->fetch_row($descR));
 
-$lcQ = "SELECT likeCode FROM upcLike WHERE upc='$upc'";
-$lcR = $dbc->query($lcQ);
+$lcQ = $dbc->prepare_statement("SELECT likeCode FROM upcLike WHERE upc=?");
+$lcR = $dbc->exec_statement($lcQ,array($upc));
 $lc = $dbc->num_rows($lcR)>0?array_pop($dbc->fetch_row($lcR)):0;
 
 $lclistQ = "SELECT likeCode,likeCodeDesc FROM likeCodes ORDER BY likeCode";
-$lclistR = $dbc->query($lclistQ);
+$lclistR = $dbc->exec_statement($lclistQ);
 $lcs = array();
 $lcs[0] = 'None';
 while($lclistW = $dbc->fetch_row($lclistR)){
@@ -98,11 +97,11 @@ echo "<input type=submit value=\"Back\"
 
 echo "<hr />";
 echo "<b>Items in the likecode $lc</b><br />";
-$query = "SELECT u.upc,p.description FROM upcLike AS u
+$query = $dbc->prepare_statement("SELECT u.upc,p.description FROM upcLike AS u
 		INNER JOIN products AS p ON p.upc=u.upc
-		WHERE u.likeCode=$lc
-		ORDER BY u.upc";	
-$result = $dbc->query($query);
+		WHERE u.likeCode=?
+		ORDER BY u.upc");
+$result = $dbc->exec_statement($query,array($lc));
 while($row = $dbc->fetch_row($result)){
 	printf("<a href=\"handheld.php?submit=Submit&upc=%s\">%s</a> %s<br />",
 		$row[0],$row[0],$row[1]);

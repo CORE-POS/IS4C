@@ -133,9 +133,9 @@ class DepartmentMovementReport extends FannieReportPage {
 				  SUM(t.quantity) as qty,
 				  SUM(t.total) AS total,
 				  d.dept_no,d.dept_name,s.superID,x.distributor
-				  FROM $sumTable as t LEFT JOIN products as p on t.upc = p.upc
-				  LEFT JOIN departments as d on d.dept_no = t.dept 
-				  LEFT JOIN $superTable AS s ON t.dept = s.dept_ID
+				  FROM $dlog as t LEFT JOIN products as p on t.upc = p.upc
+				  LEFT JOIN departments as d on d.dept_no = t.department
+				  LEFT JOIN $superTable AS s ON t.department = s.dept_ID
 				  LEFT JOIN prodExtra as x on t.upc = x.upc
 				  WHERE $filter_condition
 				  AND tdate >= '$date1 00:00:00' AND tdate <= '$date2 23:59:59' 
@@ -143,17 +143,17 @@ class DepartmentMovementReport extends FannieReportPage {
 				  d.dept_no,d.dept_name,s.superID,x.distributor ORDER BY SUM(t.total) DESC";
 			break;
 		case 'Department':
-			$query =  "SELECT t.dept_ID,d.dept_name,SUM(t.quantity) as Qty, SUM(total) as Sales 
-				FROM $sumTable as t LEFT JOIN departments as d on d.dept_no=t.dept_ID 
-				LEFT JOIN $superTable AS s ON s.dept_ID = t.dept_ID 
+			$query =  "SELECT t.department,d.dept_name,SUM(t.quantity) as Qty, SUM(total) as Sales 
+				FROM $dlog as t LEFT JOIN departments as d on d.dept_no=t.department 
+				LEFT JOIN $superTable AS s ON s.dept_ID = t.department 
 				WHERE $filter_condition
 				AND tdate >= '$date1 00:00:00' AND tdate <= '$date2 23:59:59' 
-				GROUP BY t.dept_ID,d.dept_name ORDER BY SUM(total) DESC";
+				GROUP BY t.department,d.dept_name ORDER BY SUM(total) DESC";
 			break;
 		case 'Date':
 			$query =  "SELECT year(tdate),month(tdate),day(tdate),SUM(t.quantity) as Qty, SUM(total) as Sales 
-				FROM $sumTable as t LEFT JOIN departments as d on d.dept_no=t.dept_ID 
-				LEFT JOIN $superTable AS s ON s.dept_ID = t.dept_ID 
+				FROM $dlog as t LEFT JOIN departments as d on d.dept_no=t.department 
+				LEFT JOIN $superTable AS s ON s.dept_ID = t.department
 				WHERE $filter_condition
 				AND tdate >= '$date1 00:00:00' AND tdate <= '$date2 23:59:59' 
 				GROUP BY year(tdate),month(tdate),day(tdate) 
@@ -170,8 +170,8 @@ class DepartmentMovementReport extends FannieReportPage {
 				WHEN ".$dbc->dayofweek("tdate")."=7 THEN 'Sat'
 				ELSE 'Err' END";
 			$query =  "SELECT $cols,SUM(t.quantity) as Qty, SUM(total) as Sales 
-				FROM $sumTable as t LEFT JOIN departments as d on d.dept_no=t.dept_ID 
-				LEFT JOIN $superTable AS s ON s.dept_ID = t.dept_ID 
+				FROM $dlog as t LEFT JOIN departments as d on d.dept_no=t.department 
+				LEFT JOIN $superTable AS s ON s.dept_ID = t.department 
 				WHERE $filter_condition
 				AND tdate >= '$date1 00:00:00' AND tdate <= '$date2 23:59:59' 
 				GROUP BY $cols
@@ -338,10 +338,10 @@ class DepartmentMovementReport extends FannieReportPage {
 		       </td>
 		            <td>
 		             <p>
-		               <input type=text size=25 name=date1 onfocus="this.value='';showCalendarControl(this);">
+		               <input type=text id=date1 name=date1 onfocus="this.value='';showCalendarControl(this);">
 		               </p>
 		               <p>
-		                <input type=text size=25 name=date2 onfocus="this.value='';showCalendarControl(this);">
+		                <input type=text id=date2 name=date2 onfocus="this.value='';showCalendarControl(this);">
 		         </p>
 		       </td>
 
@@ -354,9 +354,10 @@ class DepartmentMovementReport extends FannieReportPage {
 			<option>Department</option>
 			<option>Weekday</option>
 			</select> </td>
-			<td colspan=2>Date format is YYYY-MM-DD</br>(e.g. 2004-04-01 = April 1, 2004)
-			                        </td>
-				</tr>
+			<td colspan=2 rowspan=2>
+			<?php echo FormLib::date_range_picker(); ?>	                        
+			</td>
+		</tr>
 		<tr> 
 			<td> <input type=submit name=submit value="Submit"> </td>
 			<td> <input type=reset name=reset value="Start Over"> </td>

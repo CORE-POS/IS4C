@@ -6,4 +6,5 @@ shadowread: shadowread.c
 
 install:
 	chown root:root shadowread
+	chmod 755 shadowread
 	chmod u+s shadowread

@@ -1,0 +1,50 @@
+<html>
+<head>
+	<title>Internationalization</title>
+</head>
+<body>
+	<div style="text-align:center;margin-bottom:10px;font-size:80%;">
+	updated as of: August 20, 2012<br />
+	last author: Andy Theuninck
+	</div>
+This is a quick primer on using gettext in conjunction with PHP
+to store message strings in various languages.
+<h3>In PHP</h3>
+Using gettext in PHP is pretty simple. Instead of writing:
+<pre>
+echo "I am awesome"
+</pre>
+use on of the following:
+<pre>
+echo gettext("I am awesome")
+echo _("I am awesome")
+</pre>
+I tend to use the underscore version. If the string hasn't been translated,
+everything will still work fine. It'll just return exactly the input unmodified.
+<h3>Creating / Managing Language Files</h3>
+<blockquote><i>This is by no means the only method. Other tools exist for
+editing these kind of files. Examples are command-line based, executed
+from the pos/is4c-nf directory</i></blockquote>
+First, we need a list of all the messages. This is normally in a .pot file.
+Generate it like this:
+<pre>
+find . -name '*.php' | xargs xgettext -L PHP -d pos-nf -o locale/pos-nf.pot --no-wrap -j
+</pre>
+Try not to forget the <b>-j</b> option. That merges things so existing translations
+in the .pot file are preserved. The .pot file is just a text file. Update the <b>msgstr</b>
+values in it as needed.
+<p />
+Next, we need to translate the .pot file into a .po file. The command is this:
+<pre>
+msgmerge -U locale/pos-nf_en_US.po locale/pos-nf.pot
+</pre>
+Some programs can edit .po files directly.
+<p />
+Finally, we need to translate the .po file into a .mo file. The .mo is the 
+binary file that gettext actually uses to look up translations. The .po to .mo
+command is this:
+<pre>
+msgfmt -v -o locale/en_US/LC_MESSAGES/pos-nf.mo locale/pos-nf_en_US.po
+</pre>
+</body>
+</html>

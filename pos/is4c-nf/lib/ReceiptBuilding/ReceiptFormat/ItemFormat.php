@@ -42,12 +42,12 @@ class ItemFormat extends DefaultReceiptFormat {
 			// a "YOU SAVED" line
 			$description = strtolower($row['description']);
 			$description = str_replace("**"," >",$description);
-			return $this->align($description,'',0,'');
+			return $description;
 		}
 		else if ($row['trans_status'] == 'M'){
 			// member special line
 			$description = sprintf(' > you saved $%.2f Member Special <',$row['total']*-1);
-			return $this->align($description,'',0,'');
+			return $description;
 		}
 		else {
 			// an item record
@@ -85,7 +85,7 @@ class ItemFormat extends DefaultReceiptFormat {
 			if($row['foodstamp'] != 0)
 				$flags .= 'F';
 			return $flags;
-		}	
+		}
 	}
 
 	/**
@@ -96,7 +96,7 @@ class ItemFormat extends DefaultReceiptFormat {
 		if ($amount=="0.00") $amount="";
 
 		$ret = str_pad($description,30,' ',STR_PAD_RIGHT);
-		$ret .= str_pad($comment,12,' ',STR_PAD_RIGHT);
+		$ret .= str_pad($comment,14,' ',STR_PAD_RIGHT);
 		$ret .= str_pad($amount,8,' ',STR_PAD_LEFT);
 		$ret .= str_pad($flags,4,' ',STR_PAD_RIGHT);
 		

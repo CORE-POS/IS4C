@@ -74,7 +74,11 @@ foreach(explode("/",$uri) as $x){
   <span style="font-size:6px"><br></span>
   <div align="center">
  	<?php
-		include($path.'src/navbar.html');
+		global $FANNIE_DYNAMIC_MENU;
+		if (isset($FANNIE_DYNAMIC_MENU) && $FANNIE_DYNAMIC_MENU===True)
+			include($path.'src/navbar.dynamic.php');
+		else
+			include($path.'src/navbar.html');
 	?>
   <span style="font-size:6px"><br></span>
   </div>

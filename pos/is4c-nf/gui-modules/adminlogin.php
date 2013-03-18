@@ -37,7 +37,7 @@ class adminlogin extends NoInputPage {
 	function preprocess(){
 		global $CORE_LOCAL;
 		$this->box_color="#004080";
-		$this->msg = "enter admin password";
+		$this->msg = _("enter admin password");
 
 		if (isset($_REQUEST['reginput'])){
 			$passwd = $_REQUEST['reginput'];
@@ -45,13 +45,15 @@ class adminlogin extends NoInputPage {
 				// clear state variables on clear
 				$CORE_LOCAL->set("refundComment","");
 				$CORE_LOCAL->set("transfertender",0);
+				if ($CORE_LOCAL->get("cashierAgeOverride")==2)
+					$CORE_LOCAL->set("cashierAgeOverride",0);
 				$CORE_LOCAL->set("msgrepeat",0);
 				$this->change_page($this->page_url."gui-modules/pos2.php");
 				return False;	
 			}
 			else if (!is_numeric($passwd) || $passwd > 9999 || $passwd < 1){
 				$this->box_color="#800000";
-				$this->msg = "re-enter admin password";
+				$this->msg = _("re-enter admin password");
 			}
 			else {
 				$query = "select emp_no, FirstName, LastName from employees 
@@ -63,12 +65,14 @@ class adminlogin extends NoInputPage {
 				$result = $db->query($query);
 				$num_rows = $db->num_rows($result);
 				if ($num_rows != 0) {
+					if ($CORE_LOCAL->get("cashierAgeOverride")==2)
+						$CORE_LOCAL->set("cashierAgeOverride",1);
 					$this->change_page($CORE_LOCAL->get("adminRequest"));
 					return False;
 				}
 				else {
 					$this->box_color="#800000";
-					$this->msg = "re-enter admin password";
+					$this->msg = _("re-enter admin password");
 				}
 			}
 		}
@@ -93,9 +97,9 @@ class adminlogin extends NoInputPage {
 			autocomplete="off" action="<?php echo $_SERVER['PHP_SELF']; ?>">
 		<input type="password" id="reginput" name="reginput" tabindex="0" onblur="$('#reginput').focus();" />
 		</form>
-		<p />
+		<p>
 		<?php echo $this->msg ?>
-		<p />
+		</p>
 		</div>
 		</div>
 		<?php

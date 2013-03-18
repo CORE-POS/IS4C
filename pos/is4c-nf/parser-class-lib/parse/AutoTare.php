@@ -40,9 +40,9 @@ class AutoTare extends Parser {
 			$left = 1;	
 
 		if (strlen($left) > 4)
-			$ret['output'] = DisplayLib::boxMsg(MiscLib::truncate2($left/100)." tare not supported");
+			$ret['output'] = DisplayLib::boxMsg(MiscLib::truncate2($left/100)." "._("tare not supported"));
 		elseif ($left/100 > $CORE_LOCAL->get("weight") && $CORE_LOCAL->get("weight") > 0) 
-			$ret['output'] = DisplayLib::boxMsg("Tare cannot be<BR>greater than item weight");
+			$ret['output'] = DisplayLib::boxMsg(_("Tare cannot be")."<br />"._("greater than item weight"));
 		else {
 			TransRecord::addTare($left);
 			$ret['output'] = DisplayLib::lastpage();

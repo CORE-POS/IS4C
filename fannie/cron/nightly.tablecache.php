@@ -61,12 +61,10 @@ $chk = $sql->query("INSERT INTO CashPerformDay_cache SELECT * FROM CashPerformDa
 if ($chk === False)
 	echo cron_msg("Could not load data for CashPerformDay_cache");
 
-$chk = $sql->query("TRUNCATE TABLE ar_sum_cache");
-if ($chk === False)
-	echo cron_msg("Could not truncate ar_sum_cache");
-$chk = $sql->query("INSERT INTO ar_sum_cache SELECT * FROM ar_history_sum");
-if ($chk === False)
-	echo cron_msg("Could not load data for ar_sum_cache");
+$sql->query("USE ".$FANNIE_ARCHIVE_DB);
+if ($sql->table_exists("reportDataCache")){
+	$sql->query("DELETE FROM reportDataCache WHERE expires < ".$sql->now());
+}
 
 echo cron_msg("Success");
 ?>

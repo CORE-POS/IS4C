@@ -31,8 +31,8 @@ class nslogin extends NoInputPage {
 
 	function preprocess(){
 		$this->color ="#004080";
-		$this->heading = "enter manager password";
-		$this->msg = "confirm no sales";
+		$this->heading = _("enter manager password");
+		$this->msg = _("confirm no sales");
 
 		if (isset($_REQUEST['reginput'])){
 			if (strtoupper($_REQUEST['reginput']) == "CL"){
@@ -45,8 +45,8 @@ class nslogin extends NoInputPage {
 			}
 			else {
 				$this->color ="#800000";
-				$this->heading = "re-enter manager password";
-				$this->msg = "invalid password";
+				$this->heading = _("re-enter manager password");
+				$this->msg = _("invalid password");
 			}
 		}
 
@@ -71,9 +71,9 @@ class nslogin extends NoInputPage {
 		<input type="password" name="reginput" tabindex="0" 
 			onblur="$('#reginput').focus();" id="reginput" />
 		</form>
-		<p />
+		<p>
 		<?php echo $this->msg ?>
-		<p />
+		</p>
 		</div>
 		</div>
 		<?php

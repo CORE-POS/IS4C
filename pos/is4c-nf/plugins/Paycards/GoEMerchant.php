@@ -23,7 +23,7 @@
 
 if (!class_exists("BasicCCModule")) include_once(realpath(dirname(__FILE__)."/BasicCCModule.php"));
 if (!class_exists("xmlData")) include_once(realpath(dirname(__FILE__)."/lib/xmlData.php"));
-if (!class_exists("PaycardLib")) include_once(realpath(dirname(__FILE__)."/lib/paycardLib.php"));
+if (!class_exists("PaycardLib")) include_once(realpath(dirname(__FILE__)."/lib/PaycardLib.php"));
 
 if (!isset($CORE_LOCAL)){
 	include(realpath(dirname(__FILE__)."/lib/LS_Access.php"));
@@ -78,13 +78,8 @@ class GoEMerchant extends BasicCCModule {
 			$cashier = $CORE_LOCAL->get("CashierNo");
 			$lane = $CORE_LOCAL->get("laneno");
 			$trans = $CORE_LOCAL->get("transno");
-			$sql = "SELECT transID FROM efsnetRequest WHERE [date]='".$today."' AND (PAN LIKE '%".$pan4."') " .
-				"AND cashierNo=".$cashier." AND laneNo=".$lane." AND transNo=".$trans;
-			$sql = "SELECT transID,cashierNo,laneNo,transNo FROM efsnetRequest WHERE [date]='".$today."' AND (PAN LIKE '%".$pan4."')"; 
-			if ($CORE_LOCAL->get("DBMS") == "mysql"){
-				$sql = str_replace("[","",$sql);
-				$sql = str_replace("]","",$sql);
-			}
+			$sql = "SELECT transID,cashierNo,laneNo,transNo FROM efsnetRequest WHERE "
+				.$dbTrans->identifier_escape('date')."='".$today."' AND (PAN LIKE '%".$pan4."')"; 
 			$search = PaycardLib::paycard_db_query($sql, $dbTrans);
 			$num = PaycardLib::paycard_db_num_rows($search);
 			if( $num < 1) {
@@ -172,12 +167,8 @@ class GoEMerchant extends BasicCCModule {
 	
 		// look up the request using transID (within this transaction)
 		$sql = "SELECT live,PAN,mode,amount,name FROM efsnetRequest 
-			WHERE [date]='".$today."' AND cashierNo=".$cashier." AND 
+			WHERE ".$dbTrans->identifier_escape('date')."='".$today."' AND cashierNo=".$cashier." AND 
 			laneNo=".$lane." AND transNo=".$trans." AND transID=".$transID;
-		if ($CORE_LOCAL->get("DBMS") == "mysql"){
-			$sql = str_replace("[","",$sql);
-			$sql = str_replace("]","",$sql);
-		}
 		$search = PaycardLib::paycard_db_query($sql, $dbTrans);
 		$num = PaycardLib::paycard_db_num_rows($search);
 		if( $num < 1) {
@@ -195,12 +186,8 @@ class GoEMerchant extends BasicCCModule {
 
 		// look up the response
 		$sql = "SELECT commErr,httpCode,validResponse,xResponseCode,
-			xTransactionID FROM efsnetResponse WHERE [date]='".$today."' 
+			xTransactionID FROM efsnetResponse WHERE ".$dbTrans->identifier_escape('date')."='".$today."' 
 			AND cashierNo=".$cashier." AND laneNo=".$lane." AND transNo=".$trans." AND transID=".$transID;
-		if ($CORE_LOCAL->get("DBMS") == "mysql"){
-			$sql = str_replace("[","",$sql);
-			$sql = str_replace("]","",$sql);
-		}
 		$search = PaycardLib::paycard_db_query($sql, $dbTrans);
 		$num = PaycardLib::paycard_db_num_rows($search);
 		if( $num < 1) {
@@ -217,12 +204,11 @@ class GoEMerchant extends BasicCCModule {
 		$response = PaycardLib::paycard_db_fetch_row($search);
 
 		// look up any previous successful voids
-		$sql = "SELECT transID FROM efsnetRequestMod WHERE [date]=".$today." AND cashierNo=".$cashier." AND laneNo=".$lane." AND transNo=".$trans." AND transID=".$transID
+		$sql = "SELECT transID FROM efsnetRequestMod WHERE "
+				.$dbTrans->identifier_escape('date')."=".$today
+				." AND cashierNo=".$cashier." AND laneNo=".$lane
+				." AND transNo=".$trans." AND transID=".$transID
 				." AND mode='void' AND xResponseCode=0";
-		if ($CORE_LOCAL->get("DBMS") == "mysql"){
-			$sql = str_replace("[","",$sql);
-			$sql = str_replace("]","",$sql);
-		}
 		$search = PaycardLib::paycard_db_query($sql, $dbTrans);
 		$voided = PaycardLib::paycard_db_num_rows($search);
 		if( $voided > 0) {
@@ -322,6 +308,7 @@ class GoEMerchant extends BasicCCModule {
 	function handleResponseAuth($authResult){
 		global $CORE_LOCAL;
 		$xml = new xmlData($authResult['response']);
+		$dbTrans = PaycardLib::paycard_db();
 
 		// prepare some fields to store the parsed response; we'll add more as we verify it
 		$today = date('Ymd'); // numeric date only, it goes in an 'int' field as part of the primary key
@@ -332,9 +319,9 @@ class GoEMerchant extends BasicCCModule {
 		$transID = $CORE_LOCAL->get("paycard_id");
 		$cvv2 = $CORE_LOCAL->get("paycard_cvv2");
 		$sqlColumns =
-			"[date],cashierNo,laneNo,transNo,transID," .
-			"[datetime]," .
-			"seconds,commErr,httpCode";
+			$dbTrans->identifier_escape('date').",cashierNo,laneNo,transNo,transID," .
+			$dbTrans->identifier_escape('datetime').
+			",seconds,commErr,httpCode";
 		$sqlValues =
 			sprintf("%d,%d,%d,%d,%d,",  $today, $cashierNo, $laneNo, $transNo, $transID) .
 			sprintf("'%s',",            $now ) .
@@ -383,12 +370,7 @@ class GoEMerchant extends BasicCCModule {
 		$sqlColumns .= ",validResponse";
 		$sqlValues .= sprintf(",%d",$validResponse);
 
-		$dbTrans = PaycardLib::paycard_db();
 		$sql = "INSERT INTO efsnetResponse (" . $sqlColumns . ") VALUES (" . $sqlValues . ")";
-		if ($CORE_LOCAL->get("DBMS") == "mysql"){
-			$sql = str_replace("[","",$sql);
-			$sql = str_replace("]","",$sql);
-		}
 		PaycardLib::paycard_db_query($sql, $dbTrans);
 
 		if( $authResult['curlErr'] != CURLE_OK || $authResult['curlHTTP'] != 200){
@@ -435,10 +417,12 @@ class GoEMerchant extends BasicCCModule {
 		$amountText = number_format(abs($amount), 2, '.', '');
 		$refNum = $this->refnum($transID);
 
+		$dbTrans = PaycardLib::paycard_db();
 		// prepare some fields to store the request and the parsed response; we'll add more as we verify it
 		$sqlColumns =
-			"[date],cashierNo,laneNo,transNo,transID,[datetime]," .
-			"origAmount,mode,altRoute," .
+			$dbTrans->identifier_escape('date').",cashierNo,laneNo,transNo,transID,"
+			.$dbTrans->identifier_escape('datetime').
+			",origAmount,mode,altRoute," .
 			"seconds,commErr,httpCode";
 		$sqlValues =
 			sprintf("%d,%d,%d,%d,%d,'%s',",  $today, $cashierNo, $laneNo, $transNo, $transID, $now) .
@@ -475,12 +459,7 @@ class GoEMerchant extends BasicCCModule {
 		$sqlColumns .= ",validResponse";
 		$sqlValues .= sprintf(",%d",$validResponse);
 
-		$dbTrans = PaycardLib::paycard_db();
 		$sql = "INSERT INTO efsnetRequestMod (" . $sqlColumns . ") VALUES (" . $sqlValues . ")";
-		if ($CORE_LOCAL->get("DBMS") == "mysql"){
-			$sql = str_replace("[","",$sql);
-			$sql = str_replace("]","",$sql);
-		}
 		PaycardLib::paycard_db_query($sql, $dbTrans);
 
 		if( $authResult['curlErr'] != CURLE_OK || $authResult['curlHTTP'] != 200){
@@ -628,8 +607,8 @@ class GoEMerchant extends BasicCCModule {
 		$sqlVals = "$sendPAN,$sendExp,$sendTr1,$sendTr2";
 		// store request in the database before sending it
 		$sqlCols .= "," . // already defined some sent* columns
-			"[date],cashierNo,laneNo,transNo,transID," .
-			"[datetime],refNum,live,mode,amount," .
+			$dbTrans->identifier_escape('date').",cashierNo,laneNo,transNo,transID," .
+			$dbTrans->identifier_escape('datetime').",refNum,live,mode,amount," .
 			"PAN,issuer,manual,name";
 		$fixedName = PaycardLib::paycard_db_escape($cardName, $dbTrans);
 		$sqlVals .= "," . // already defined some sent* values
@@ -637,10 +616,6 @@ class GoEMerchant extends BasicCCModule {
 			sprintf("'%s','%s',%d,'%s',%s,",  $now, $refNum, $live, $mode, $amountText) .
 			sprintf("'%s','%s',%d,'%s'",           $cardPANmasked, $cardIssuer, $manual,$fixedName);
 		$sql = "INSERT INTO efsnetRequest (" . $sqlCols . ") VALUES (" . $sqlVals . ")";
-		if ($CORE_LOCAL->get("DBMS") == "mysql"){
-			$sql = str_replace("[","",$sql);
-			$sql = str_replace("]","",$sql);
-		}
 
 		if( !PaycardLib::paycard_db_query($sql, $dbTrans) ) {
 			PaycardLib::paycard_reset();
@@ -736,12 +711,8 @@ class GoEMerchant extends BasicCCModule {
 		}
 
 		// look up the TransactionID from the original response (card number and amount should already be in session vars)
-		$sql = "SELECT refNum,xTransactionID FROM efsnetResponse WHERE [date]='".$today."'" .
+		$sql = "SELECT refNum,xTransactionID FROM efsnetResponse WHERE ".$dbTrans->identifier_escape('date')."='".$today."'" .
 			" AND cashierNo=".$cashierNo." AND laneNo=".$laneNo." AND transNo=".$transNo." AND transID=".$transID;
-		if ($CORE_LOCAL->get("DBMS") == "mysql"){
-			$sql = str_replace("[","",$sql);
-			$sql = str_replace("]","",$sql);
-		}
 		$result = PaycardLib::paycard_db_query($sql, $dbTrans);
 		if( !$result || PaycardLib::paycard_db_num_rows($result) != 1){
 			PaycardLib::paycard_reset();

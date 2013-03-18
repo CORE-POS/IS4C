@@ -167,4 +167,13 @@
 	made inactive</i>.
 	</td>
 </tr>
+<tr>
+	<td valign=top><b>Current Inactivations</b><br />
+	<a href=inactiveCurrent.php>Regular</a><br />
+	<a href=inactiveCurrent.php?excel=yes.php>Excel</a>
+	</td>
+	<td>
+	All members who are currently inactive.
+	</td>
+</tr>
 </table>

@@ -160,7 +160,7 @@ function mk_trans_archive_views($month,$year,$db){
 		d.staff,
 		d.card_no, 
 		d.trans_id,";
-	if ($FANNIE_SERVER_DBMS == "MYSQL"){
+	if (strstr($FANNIE_SERVER_DBMS,"MYSQL")){
 		$dlogQ .= "concat(convert(d.emp_no,char), '-', convert(d.register_no,char), '-',
 			convert(d.trans_no,char)) as trans_num";
 	}

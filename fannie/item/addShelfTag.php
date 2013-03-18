@@ -29,17 +29,18 @@ require('../config.php');
 require_once($FANNIE_ROOT.'src/mysql_connect.php');
 
 
-$unfiQ = "SELECT DISTINCT * FROM vendorItems where upc = '$upc' ORDER BY vendorID";
-//echo $unfiQ;
+$unfiQ = $dbc->prepare_statement("SELECT DISTINCT i.*,v.vendorName FROM vendorItems AS i
+			LEFT JOIN vendors AS v ON i.vendorID=v.vendorID
+			where upc = ? ORDER BY i.vendorID");
 
-$unfiR = $dbc->query($unfiQ);
+$unfiR = $dbc->exec_statement($unfiQ,array($upc));
 $unfiN = $dbc->num_rows($unfiR);
 
-$prodQ = "SELECT p.*,s.superID FROM products AS p
+$prodQ = $dbc->prepare_statement("SELECT p.*,s.superID FROM products AS p
 	LEFT JOIN MasterSuperDepts AS s ON p.department=s.dept_ID
-	where upc='$upc'";
+	where upc=?");
 //echo $prodQ;
-$prodR = $dbc->query($prodQ);
+$prodR = $dbc->exec_statement($prodQ,array($upc));
 $prodW = $dbc->fetch_array($prodR);
 $price = $prodW['normal_price'];
 $desc = $prodW['description'];
@@ -59,12 +60,12 @@ if($unfiN == 1){
    $brand = $unfiW['brand'];
    $units = $unfiW['units'];
    $sku = $unfiW['sku'];
-   $vendor = 'UNFI';
+   $vendor = $unfiW['vendorName'];
    $ppo = pricePerOunce($price,$size);
 }
 else if ($dbc->table_exists('prodExtra')) {
-	$prodExtraQ = "select manufacturer,distributor from prodExtra where upc='$upc'";
-	$prodExtraR = $dbc->query($prodExtraQ);
+	$prodExtraQ = $dbc->prepare_statement("select manufacturer,distributor from prodExtra where upc=?");
+	$prodExtraR = $dbc->exec_statement($prodExtraQ,array($upc));
 	$prodExtraN = $dbc->num_rows($prodExtraR);
 	if ($prodExtraN == 1){
 		$prodExtraW = $dbc->fetch_array($prodExtraR);
@@ -118,8 +119,8 @@ echo "<input type='submit' value='New' name='submit'>";
 ?>
 Barcode page: <select name=subID>
 <?php
-$subsQ = "SELECT superID,super_name FROM superDeptNames";
-$subsR = $dbc->query($subsQ);
+$subsQ = $dbc->prepare_statement("SELECT superID,super_name FROM superDeptNames");
+$subsR = $dbc->exec_statement($subsQ);
 while($subsW = $dbc->fetch_row($subsR)){
 	if ($subsW[0] == 0) $subsW[1] = 'All';
 	$checked = ($subsW[0]==$superID)?'selected':'';

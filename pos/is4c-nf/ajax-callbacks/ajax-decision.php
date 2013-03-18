@@ -21,6 +21,7 @@
 
 *********************************************************************************/
 
+ini_set('display_errors','Off');
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 $decision = isset($_REQUEST['input'])?strtoupper(trim($_REQUEST["input"])):'CL';
@@ -39,6 +40,8 @@ if ($decision == "CL") {
 	$CORE_LOCAL->set("endorseType","");
 	$CORE_LOCAL->set("warned",0);
 	$CORE_LOCAL->set("warnBoxType","");
+	$CORE_LOCAL->set("requestType","");
+	$CORE_LOCAL->set("requestMsg","");
 }
 elseif (strlen($decision) > 0) {
 

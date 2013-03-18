@@ -35,7 +35,7 @@ class CreditCardTender extends TenderModule {
 		global $CORE_LOCAL;
 	
 		if (($this->amount > ($CORE_LOCAL->get("amtdue") + 0.005)) && $CORE_LOCAL->get("amtdue") >= 0){ 
-			return DisplayLib::xboxMsg("tender cannot exceed purchase amount");
+			return DisplayLib::xboxMsg(_("tender cannot exceed purchase amount"));
 		}
 
 		return True;

@@ -15,14 +15,14 @@ Columns:
 	department smallint
 	quantity double
 	scale tinyint
-	cost double
-	unitPrice double
-	total double
-	regPrice double
+	cost currency
+	unitPrice currency
+	total currency
+	regPrice currency
 	tax smallint
 	foodstamp tinyint
-	discount double
-	memDiscount double
+	discount currency
+	memDiscount currency
 	discounttable tinyint
 	discounttype tinyint
 	voided tinyint
@@ -30,14 +30,14 @@ Columns:
 	ItemQtty double
 	volDiscType tinyint
 	volume tinyint
-	VolSpecial double
+	VolSpecial currency
 	mixMatch varchar
 	matched smallint
 	memType tinyint
 	staff tinyint
 	numflag int
 	charflag varchar
-	card_no varchar
+	card_no int
 	trans_id int
 
 Depends on:
@@ -208,14 +208,14 @@ $CREATE['trans.dtransactions'] = "
 	  `department` smallint(6) default NULL,
 	  `quantity` double default NULL,
 	  `scale` tinyint(4) default NULL,
-	  `cost` double default 0.00 NULL,
-	  `unitPrice` double default NULL,
-	  `total` double default NULL,
-	  `regPrice` double default NULL,
+	  `cost` decimal(10,2) default 0.00 NULL,
+	  `unitPrice` decimal(10,2) default NULL,
+	  `total` decimal(10,2) default NULL,
+	  `regPrice` decimal(10,2) default NULL,
 	  `tax` smallint(6) default NULL,
 	  `foodstamp` tinyint(4) default NULL,
-	  `discount` double default NULL,
-	  `memDiscount` double default NULL,
+	  `discount` decimal(10,2) default NULL,
+	  `memDiscount` decimal(10,2) default NULL,
 	  `discountable` tinyint(4) default NULL,
 	  `discounttype` tinyint(4) default NULL,
 	  `voided` tinyint(4) default NULL,
@@ -223,14 +223,14 @@ $CREATE['trans.dtransactions'] = "
 	  `ItemQtty` double default NULL,
 	  `volDiscType` tinyint(4) default NULL,
 	  `volume` tinyint(4) default NULL,
-	  `VolSpecial` double default NULL,
+	  `VolSpecial` decimal(10,2) default NULL,
 	  `mixMatch` varchar(13) default NULL,
 	  `matched` smallint(6) default NULL,
 	  `memType` tinyint(2) default NULL,
 	  `staff` tinyint(4) default NULL,
 	  `numflag` smallint(6) default 0 NULL,
 	  `charflag` varchar(2) default '' NULL,
-	  `card_no` varchar(12) default NULL,
+	  `card_no` int(11) default NULL,
 	  `trans_id` int(11) default NULL,
 	  INDEX(`datetime`),
 	  INDEX(`upc`),

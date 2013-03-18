@@ -34,13 +34,13 @@ class FoodstampTender extends TenderModule {
 	function ErrorCheck(){
 		global $CORE_LOCAL;
 		if ($CORE_LOCAL->get("fntlflag") == 0){
-			return DisplayLib::boxMsg("eligible amount must be totaled before foodstamp tender can be accepted");
+			return DisplayLib::boxMsg(_("eligible amount must be totaled before foodstamp tender can be accepted"));
 		}
-		else if ($this->amount > $CORE_LOCAL->get("amtdue")){
-			return DisplayLib::xboxMsg("no cash back with EBT cash tender");
+		else if ($this->amount - $CORE_LOCAL->get("amtdue") > 0.005){
+			return DisplayLib::xboxMsg(_("no cash back with EBT cash tender "));
 		}
 		else if ($this->amount > ($CORE_LOCAL->get("fsEligible")+10)){
-			return DisplayLib::xboxMsg('Foodstamp tender cannot exceed eligible amount by over $10.00');
+			return DisplayLib::xboxMsg(_('Foodstamp tender cannot exceed eligible amount by over $10.00'));
 		}
 		return True;
 	}

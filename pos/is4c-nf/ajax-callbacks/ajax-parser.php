@@ -21,6 +21,7 @@
 
 *********************************************************************************/
 
+ini_set('display_errors','Off');
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 $sd = MiscLib::scaleObject();
@@ -49,6 +50,7 @@ if ($entered != ""){
 	/* this breaks the model a bit, but I'm putting
 	 * putting the CC parser first manually to minimize
 	 * code that potentially handles the PAN */
+	/*
 	include_once(realpath(dirname(__FILE__)."/../cc-modules/lib/paycardEntered.php"));
 	$pe = new paycardEntered();
 	if ($pe->check($entered)){
@@ -57,6 +59,7 @@ if ($entered != ""){
 		$CORE_LOCAL->set("strEntered","");
 		$json = $valid;
 	}
+	 */
 
 	$CORE_LOCAL->set("quantity",0);
 	$CORE_LOCAL->set("multiple",0);
@@ -69,7 +72,7 @@ if ($entered != ""){
 	 */
 	$parser_lib_path = MiscLib::base_url()."parser-class-lib/";
 	if (!is_array($CORE_LOCAL->get("preparse_chain")))
-		$CORE_LOCAL->set("preparse_chain",Parser::get_preparse_chain());
+		$CORE_LOCAL->set("preparse_chain",PreParser::get_preparse_chain());
 
 	foreach ($CORE_LOCAL->get("preparse_chain") as $cn){
 		$p = new $cn();
@@ -129,7 +132,11 @@ else {
 			$json['redraw_footer'] = DisplayLib::printfooter();
 	}
 	if (isset($json['scale']) && $json['scale'] !== False){
-		$json['scale'] = DisplayLib::scaledisplaymsg($json['scale']);
+		$display = DisplayLib::scaledisplaymsg($json['scale']);
+		if (is_array($display))
+			$json['scale'] = $display['display'];
+		else
+			$json['scale'] = $display;
 	}
 	echo JsonLib::array_to_json($json);
 }

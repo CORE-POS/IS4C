@@ -184,7 +184,7 @@ if (isset($_GET['action'])){
 		break;
 	case 'addItemUPC':
 		$id = $_GET['id'];
-		$upc = str_pad($_GET['upc'],13,'0',STR_PAD_LEFT);
+		$upc = str_pad(trim($_GET['upc']),13,'0',STR_PAD_LEFT);
 		$tag = false;
 		if ($_GET['tag'] == 'true')
 			$tag = true;
@@ -602,7 +602,7 @@ function newBatchInput(){
 		$ret .= "<option>$o</option>";
 	$ret .= "</select>";
 	
-	$ret .= " <a href=\"{$FANNIE_URL}admin/labels/batchtags.php\">Print shelf tags</a>";
+	$ret .= " <a href=\"{$FANNIE_URL}admin/labels/BatchShelfTags.php\">Print shelf tags</a>";
 	
 	return $ret;
 }
@@ -948,7 +948,7 @@ function showBatchDisplay($id,$orderby=' ORDER BY b.listID DESC'){
 	
 	$ret = "<span class=\"newBatchBlack\"><b>Batch name</b>: $name</span><br />";
 	$ret .= "<a href=\"\" onclick=\"backToList(); return false;\">Back to batch list</a> | ";
-	$ret .= "<a href=\"{$FANNIE_URL}admin/labels/batchtags.php?batchID%5B%5D=$id\">Print shelf tags</a> | ";
+	$ret .= "<a href=\"{$FANNIE_URL}admin/labels/BatchShelfTags.php?batchID%5B%5D=$id\">Print shelf tags</a> | ";
 	$ret .= "<a href=\"\" onclick=\"autoTag($id); return false;\">Auto-tag</a> | ";
 	if ($cp > 0)
 		$ret .= "<a href=\"\" onclick=\"doPaste($uid,$id); return false;\">Paste Items ($cp)</a> | ";

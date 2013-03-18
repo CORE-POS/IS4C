@@ -44,11 +44,6 @@ class MemberSale extends DiscountType {
 			$ret["unitPrice"] -= $discount;
 			$ret["discount"] += ($discount * $quantity);
 		}
-		else if ($CORE_LOCAL->get("itemDiscount") > 0){
-			$discount = $ret['unitPrice'] * (($CORE_LOCAL->get("itemDiscount")/100));
-			$ret["unitPrice"] -= $discount;
-			$ret["discount"] += ($discount * $quantity);
-		}
 
 		$this->savedRow = $row;
 		$this->savedInfo = $ret;
@@ -62,7 +57,7 @@ class MemberSale extends DiscountType {
 			TransRecord::adddiscount($this->savedInfo['memDiscount'],
 				$this->savedRow['department']);
 		}
-		if ($this->saved_info['discount'] != 0){
+		if ($this->savedInfo['discount'] != 0){
 			$CORE_LOCAL->set("voided",2);
 			TransRecord::adddiscount($this->savedInfo['discount'],
 					$this->savedRow['department']);

@@ -52,7 +52,6 @@ class TotalFormat extends DefaultReceiptFormat {
 
 		$ret = str_pad($text,44,' ',STR_PAD_LEFT);
 		$ret .= str_pad($amount,8,' ',STR_PAD_LEFT);
-		$ret .= str_repeat(' ',4);
 		return $ret;
 	}
 }

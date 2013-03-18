@@ -20,25 +20,5 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
-
-include('../../config.php');
-include($FANNIE_ROOT.'auth/login.php');
-if (!validateUserQuiet('editcashiers')){
-	$url = $FANNIE_URL.'auth/ui/loginform.php';
-	$rd = $FANNIE_URL.'admin/Cashiers/index.php';
-	header("Location: $url?redirect=$rd");
-	return;
-}
-
-$page_title = "Fannie : Cashier Management";
-$header = "Cashier Management";
-include($FANNIE_ROOT.'src/header.html');
-?>
-<ul>
-<li> <a href=add.php>Add a new cashier</a></li>
-<li> <a href=view.php>View/edit cashiers</a></li>
-<li> <a href="../../reports/cash_report/">Cashier performance report</a></li>
-</ul>
-<?php
-include($FANNIE_ROOT.'src/footer.html');
+header('Location: CashierIndexPage.php');
 ?>

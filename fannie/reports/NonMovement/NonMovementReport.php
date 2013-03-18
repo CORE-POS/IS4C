@@ -39,7 +39,7 @@ class NonMovementReport extends FannieReportPage {
 		$this->report_cache = 'none';
 
 		if (isset($_REQUEST['deleteItem'])){
-			$upc = get_form_value('deleteItem','');
+			$upc = FormLib::get_form_value('deleteItem','');
 			$upc = str_pad($upc,13,'0',STR_PAD_LEFT);
 
 			$query = "DELETE FROM products WHERE upc=?";
@@ -97,7 +97,7 @@ class NonMovementReport extends FannieReportPage {
 		$dbc->query($tempQ);
 
 		$insQ = "INSERT INTO $tempName
-			SELECT d.upc FROM $sumTable AS d
+			SELECT d.upc FROM $dlog AS d
 			WHERE 
 			d.tdate BETWEEN '$date1 00:00:01' 
 			AND '$date2 23:59:59'
@@ -173,28 +173,33 @@ class NonMovementReport extends FannieReportPage {
 		       </td>
 		            <td>
 		             <p>
-		               <input type=text size=25 name=date1 onfocus="this.value='';showCalendarControl(this);">
+		               <input type=text size=25 id=date1 name=date1 onfocus="this.value='';showCalendarControl(this);">
 		               </p>
 		               <p>
-		                <input type=text size=25 name=date2 onfocus="this.value='';showCalendarControl(this);">
+		                <input type=text size=25 id=date2 name=date2 onfocus="this.value='';showCalendarControl(this);">
 		         </p>
 		       </td>
 
 		</tr>
 		<tr> 
-			<td><b>Excel</b>
-			</td><td>
-			<input type=checkbox name=excel value=xls />
-			</td>
-			</td>
-			<td rowspan=2 colspan=2>Date format is YYYY-MM-DD</br>(e.g. 2004-04-01 = April 1, 2004)<!-- Output to CSV?</td>
-		            <td><input type="checkbox" name="csv" value="yes">
-			                        yes --> </td>
-				</tr>
-		<tr>
+			<th>
+			<label for="excel">Excel</label>
+			</th>
 			<td>
-			<b>Netted</td><td>
-			<input type=checkbox name=netted />
+			<input type=checkbox name=excel value=xls id="excel" />
+			</td>
+			</td>
+			<td rowspan=3 colspan=2>
+			<?php echo FormLib::date_range_picker(); ?>	                        
+			</td>
+		</tr>
+		<tr>
+			<th>
+			<label for="netted">Netted</label>
+			</th>
+			<td>
+			<input type=checkbox name=netted id="netted" />
+			</td>
 		</tr>
 
 		<tr> 

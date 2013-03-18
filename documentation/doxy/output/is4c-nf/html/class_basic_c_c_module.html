@@ -53,7 +53,7 @@
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_basic_c_c_module.html#ef742dcbcaba51c4522d56ef69a0ee6a">array2post</a> ($parray)</td></tr>
 
-<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_basic_c_c_module.html#95cb63f44f8cb4f7fb24b78f65b6f09c">soapify</a> ($action, $objs, $namespace=&quot;&quot;)</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_basic_c_c_module.html#0b3ba58e56d3aba1b4f521a1b4bb6fa3">soapify</a> ($action, $objs, $namespace=&quot;&quot;, $encode_tags=True)</td></tr>
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_basic_c_c_module.html#814ae6eddcbd43301e893c59fd75d296">desoapify</a> ($action, $soaptext)</td></tr>
 
@@ -481,7 +481,7 @@ Store card data in class member $trans_pan. <dl compact><dt><b>Parameters:</b></
 Recommended for credit card modules. Card data can be populated at the last possible moment before calling doSend and expunged again once the request has been submitted to the gateway. 
 </div>
 </div><p>
-<a class="anchor" name="95cb63f44f8cb4f7fb24b78f65b6f09c"></a><!-- doxytag: member="BasicCCModule::soapify" ref="95cb63f44f8cb4f7fb24b78f65b6f09c" args="($action, $objs, $namespace=&quot;&quot;)" -->
+<a class="anchor" name="0b3ba58e56d3aba1b4f521a1b4bb6fa3"></a><!-- doxytag: member="BasicCCModule::soapify" ref="0b3ba58e56d3aba1b4f521a1b4bb6fa3" args="($action, $objs, $namespace=&quot;&quot;, $encode_tags=True)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -501,7 +501,13 @@ Recommended for credit card modules. Card data can be populated at the last poss
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">$&nbsp;</td>
-          <td class="paramname"> <em>namespace</em> = <code>&quot;&quot;</code></td><td>&nbsp;</td>
+          <td class="paramname"> <em>namespace</em> = <code>&quot;&quot;</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">$&nbsp;</td>
+          <td class="paramname"> <em>encode_tags</em> = <code>True</code></td><td>&nbsp;</td>
         </tr>
         <tr>
           <td></td>
@@ -547,7 +553,7 @@ Put objects into a soap envelope <dl compact><dt><b>Parameters:</b></dt><dd>
 </div><p>
 <hr>The documentation for this class was generated from the following file:<ul>
 <li>pos/is4c-nf/cc-modules/BasicCCModule.php</ul>
-<hr size="1"><address style="align: right;"><small>Generated on Mon May 21 10:55:52 2012 for CORE POS - IS4C by&nbsp;
+<hr size="1"><address style="align: right;"><small>Generated on Tue Oct 23 14:30:34 2012 for CORE POS - IS4C by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img src="doxygen.png" alt="doxygen" align="middle" border="0"></a> 1.4.7 </small></address>
 </body>

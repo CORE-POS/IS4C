@@ -44,10 +44,10 @@ if (isset($_REQUEST['PLUGINLIST']) || isset($_REQUEST['psubmit'])){
 			$obj->plugin_disable();
 		}
 	}
-	$CORE_LOCAL->set('PluginList',$_REQUEST['PLUGINLIST']);
+	$CORE_LOCAL->set('PluginList',$_REQUEST['PLUGINLIST'], True);
 }
 $type_check = $CORE_LOCAL->get('PluginList');
-if (!is_array($type_check)) $CORE_LOCAL->set('PluginList',array());
+if (!is_array($type_check)) $CORE_LOCAL->set('PluginList',array(), True);
 
 $mods = AutoLoader::ListModules('Plugin');
 sort($mods);
@@ -76,8 +76,8 @@ foreach($mods as $m){
 		echo '<tr><td colspan="2"><i>No settings required</i></td></tr>';	
 	}
 	else if ($enabled){
-		echo '<tr><td colspan="2" style="margin-bottom: 0px; height:auto;">';
 		foreach($instance->plugin_settings as $field => $info){
+			echo '<tr><td colspan="2" style="margin-bottom: 0px; height:auto;">';
 			$form_id = $m.'_'.$field;
 			if (isset($_REQUEST[$form_id])) 
 				$CORE_LOCAL->set($field,$_REQUEST[$form_id]);
@@ -100,8 +100,8 @@ foreach($mods as $m){
 			if (isset($info['description'])) 
 				echo '<span class="noteTxt">'.$info['description'].'</span>';
 			confsave($field,"'".$CORE_LOCAL->get($field)."'");
-		}
 		echo '</td></tr>';
+		}
 	}
 
 }

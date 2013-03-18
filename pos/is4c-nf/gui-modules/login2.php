@@ -24,6 +24,7 @@
 ini_set('display_errors','1');
 
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
+AutoLoader::LoadMap();
 
 class login2 extends BasicPage {
 
@@ -32,7 +33,7 @@ class login2 extends BasicPage {
 
 	function preprocess(){
 		$this->box_color = '#004080';
-		$this->msg = 'please enter your password';
+		$this->msg = _('please enter your password');
 
 		if (isset($_REQUEST['reginput'])){
 			if (Authenticate::check_password($_REQUEST['reginput'])){
@@ -45,7 +46,7 @@ class login2 extends BasicPage {
 			}
 			else {
 				$this->box_color = '#800000';
-				$this->msg = 'password invalid, please re-enter';
+				$this->msg = _('password invalid, please re-enter');
 			}
 		}
 
@@ -60,34 +61,38 @@ class login2 extends BasicPage {
 		}
 		</script>
 		<?php
+		$this->default_parsewrapper_js();
 	}
 
 	function body_content(){
 		global $CORE_LOCAL;
-		$this->add_onload_command("\$('#reginput').focus();\n
-					   \$('#scalebox').css('display','none');\n
-					   \$('body').css('background-image','none');\n");
+		// 18Agu12 EL Add separately for readability of source.
+		$this->add_onload_command("\$('#reginput').focus();");
+		$this->add_onload_command("\$('#scalebox').css('display','none');");
+		$this->add_onload_command("\$('body').css('background-image','none');");
+
 		?>
 		<div id="loginTopBar">
 			<div class="name">I S 4 C</div>
 			<div class="version">P H P &nbsp; D E V E L O P M E N T
-			&nbsp; V E R S I O N &nbsp; 2 .0 .0 (beta)</div>
-			<div class="welcome">W E L C O M E</div>
+			&nbsp; V E R S I O N &nbsp; 2 .0 .0</div>
+			<div class="welcome"><?php echo _("W E L C O M E"); ?></div>
 		</div>
 		<div id="loginCenter">
 		<div class="box" style="background:<?php echo $this->box_color; ?>;" >
-				<b>log in</b>
-				<form name="form" method="post" autocomplete="off" 
+				<b><?php echo _("log in"); ?></b>
+				<form id="formlocal" name="form" method="post" autocomplete="off" 
 					action="<?php echo $_SERVER['PHP_SELF']; ?>">
 				<input type="password" name="reginput" size="20" tabindex="0" 
 					onblur="$('#reginput').focus();" id="reginput" >
-				<p />
+				<p>
 				<?php echo $this->msg ?>
+				</p>
 				</form>
 			</div>	
 		</div>
 		<div id="loginExit">
-			EXIT
+			<?php echo _("EXIT"); ?>
 			<?php
 			if ($CORE_LOCAL->get("browserOnly") == 1) {
 				echo "<a href=\"\" onclick=\"window.top.close();\" ";
@@ -99,7 +104,7 @@ class login2 extends BasicPage {
 			echo "onmouseover=\"document.exit.src='{$this->page_url}graphics/switchred2.gif';\" ";
 			echo "onmouseout=\"document.exit.src='{$this->page_url}graphics/switchblue2.gif';\">";
 			?>
-			<img name="exit" border="0" src="<?php echo $this->page_url; ?>graphics/switchblue2.gif" /></a>
+			<img id="exit" style="border:0;" alt="exit"  src="<?php echo $this->page_url; ?>graphics/switchblue2.gif" /></a>
 	
 		</div>
 		<form name="hidden">

@@ -19,14 +19,14 @@ $cards .= ")";
 $selAddQ = "SELECT m.card_no,c.firstname,c.lastname,
 		m.street,'',m.city,m.state,
 		m.zip,n.payments,
-		convert(varchar,d.end_date,101)
+		YEAR(d.end_date),MONTH(d.end_date),DAY(d.end_date)
 		FROM meminfo AS m LEFT JOIN
-		custdata AS c ON m.card_no=c.cardno
-		AND c.personnum=1 LEFT JOIN
-		newBalanceStockToday_test AS n
+		custdata AS c ON m.card_no=c.CardNo
+		AND c.personNum=1 LEFT JOIN
+		is4c_trans.newBalanceStockToday_test AS n
 		on m.card_no = n.memnum
 		LEFT JOIN memDates AS d ON m.card_no=d.card_no
-		WHERE cardno IN $cards
+		WHERE CardNo IN $cards
 		ORDER BY m.card_no"; 
 $selAddR = $sql->query($selAddQ);
 
@@ -40,19 +40,12 @@ $pdf->AddFont('Scala','','Scala.php');
 //Meat of the statement
 while($selAddW = $sql->fetch_row($selAddR)){
    $pdf->AddPage();
-   $pdf->SetFont('Scala','B','14');
-   $pdf->Cell(20,10,'Whole Foods Community Co-op',0);
-   $pdf->Image($FANNIE_ROOT.'legacy/images/WFCLogoCThru1.jpg',130,10,50,25);
+
+   $pdf->Ln(5);
+   $pdf->Image($FANNIE_ROOT.'legacy/images/letterhead.jpg',10,10,200);
    $pdf->Ln(5);
    $pdf->SetFont('Scala','','12');
-   $pdf->Cell(20,10,'610 East Fourth Street',0);
-   $pdf->Ln(5);
-   $pdf->Cell(20,10,'Duluth, MN  55805',0);
-   $pdf->Ln(5);
-   $pdf->Cell(20,10,'218-728-0884',0);
-   $pdf->Ln(5);
-   $pdf->Cell(20,10,'218-728-0490/fax',0);
-   $pdf->Ln(18);
+   $pdf->Ln(35);
 
    $pdf->Cell(10,10,$today,0);
    $pdf->Ln(15);
@@ -64,7 +57,7 @@ while($selAddW = $sql->fetch_row($selAddR)){
    $classA = 20;
    $classB = $equity - 20;
    $remainingB = 100 - $equity;
-   $endDate = $selAddW[9];
+   $endDate = $selAddW[10].'/'.$selAddW[11].'/'.$selAddW[9];
 
    //Member address
    $pdf->Cell(10,10,trim($fullname),0);

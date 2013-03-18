@@ -1,4 +1,10 @@
 <?php
+/* compatibility w/ old links */
+if (isset($_REQUEST['upc']))
+	header('Location: ItemEditorPage.php?searchupc='.$_REQUEST['upc']);
+else
+	header('Location: ItemEditorPage.php');
+exit;
 /*******************************************************************************
 
     Copyright 2005,2009 Whole Foods Community Co-op

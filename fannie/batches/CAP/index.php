@@ -20,17 +20,5 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
-
-include('../../config.php');
-
-$page_title = "Fannie - CAP sales";
-$header = "CAP Sales";
-include($FANNIE_ROOT."src/header.html");
-?>
-<ul>
-<li><a href="uploadPriceSheet.php">Upload Price File</a></li>
-<li><a href="review.php">Review data &amp; create sales batches</a></li>
-</ul>
-<?php
-include($FANNIE_ROOT."src/footer.html");
+header('Location: CapSalesIndexPage.php');
 ?>

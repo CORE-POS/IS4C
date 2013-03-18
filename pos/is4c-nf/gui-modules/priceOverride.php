@@ -49,9 +49,11 @@ class PriceOverride extends NoInputPage {
 		if (isset($_REQUEST['reginput'])){
 			$input = strtoupper($_REQUEST['reginput']);
 
-			if ($input == "CL" && $this->price == '$0.00'){
-				$q = sprintf("DELETE FROM localtemptrans WHERE trans_id=".(int)$line_id);
-				$r = $db->query($q);
+			if ($input == "CL"){
+				if ($this->price == "$0.00"){
+					$q = sprintf("DELETE FROM localtemptrans WHERE trans_id=".(int)$line_id);
+					$r = $db->query($q);
+				}
 				// override canceled; go home
 				$this->change_page($this->page_url."gui-modules/pos2.php");
 				return False;
@@ -93,9 +95,9 @@ class PriceOverride extends NoInputPage {
 		<input type="text" id="reginput" name='reginput' tabindex="0" onblur="$('#reginput').focus()" />
 		</form>
 		<span><?php echo $this->description; ?> - <?php echo $this->price; ?></span>
-		<p />
+		<p>
 		<span class="smaller">[clear] to cancel</span>
-		<p />
+		</p>
 		</div>
 		</div>	
 		<?php

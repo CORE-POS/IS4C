@@ -20,25 +20,5 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
-include('../config.php');
-
-$page_title = 'Fannie - Batch Module';
-$header = 'Sales Batches';
-include('../src/header.html');
-?>
-<ul>
-	<li><a href="newbatch/">Sales Batches</a> is a tool to create
-		batches manually one item at a time.</li>
-	<li><a href="types.php">Manage Batch Types</a> adds, removes, or
-		adjusts batch types</li>
-	<li><a href="CAP/">Co+op Deals</a> imports the Co+op Deals pricing
-		spreadsheet, determines where sale items exist in POS,
-		and creates appropriate sales batches.</li>
-	<li><a href="UNFI/">Vendor Pricing</a> imports cost information
-		from vendor spreadsheets, calculates SRPs based on desired
-		margins, and creates price change batches to apply new
-		SRPs.</li>
-</ul>
-<?php
-include('../src/footer.html');
+header('Location: BatchIndexPage.php');
 ?>

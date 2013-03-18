@@ -20,7 +20,6 @@
 
 *********************************************************************************/
 
-
 /*************************************************************
  * SPH_Magellan_Scale
  * 	SerialPortHandler implementation for the magellan scale
@@ -34,6 +33,12 @@
  * Sends beep requests to the scale in PageLoaded(Uri) as
  * determined by frame #1
 *************************************************************/
+
+/* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+	* 27Oct2012 Eric Lee Added Code 39 handling to ParseData()
+
+*/
 
 using System;
 using System.IO;
@@ -95,15 +100,19 @@ private static String MAGELLAN_OUTPUT_DIR = "ss-output/";
 
 	override public void Read(){
 		string buffer = "";
-		System.Console.WriteLine("Reading serial data");
+		if (this.verbose_mode > 0)
+			System.Console.WriteLine("Reading serial data");
 		sp.Write("S14\r");
 		while(SPH_Running){
 			try {
 				int b = sp.ReadByte();
 				if (b == 13){
+					if (this.verbose_mode > 0)
+						System.Console.WriteLine("RECV FROM SCALE: "+buffer);
 					buffer = this.ParseData(buffer);
 					if (buffer != null){
-						System.Console.WriteLine(buffer);
+						if (this.verbose_mode > 0)
+							System.Console.WriteLine("PASS TO POS: "+buffer);
 						this.PushOutput(buffer);
 					}
 					buffer = "";
@@ -157,6 +166,7 @@ private static String MAGELLAN_OUTPUT_DIR = "ss-output/";
 		}
 		else if(s.Substring(0,4) == "S143"){
 			sp.Write("S11\r");
+			got_weight = false;
 			return "S110000";
 		}
 		else if(s.Substring(0,4) == "S144"){
@@ -170,6 +180,10 @@ private static String MAGELLAN_OUTPUT_DIR = "ss-output/";
 			sp.Write("S11\r");
 			return "S145";
 		}
+		else if (s.Substring(0,3) == "S14"){
+			sp.Write("S11\r");
+			return s;
+		}
 		else if (s.Substring(0,4) == "S08A" ||
 			 s.Substring(0,4) == "S08F")
 			return s.Substring(4);
@@ -177,6 +191,8 @@ private static String MAGELLAN_OUTPUT_DIR = "ss-output/";
 			return this.ExpandUPCE(s.Substring(4));
 		else if (s.Substring(0,4) == "S08R")
 			return "GS1~"+s.Substring(3);
+		else if (s.Substring(0,5) == "S08B1")
+			return s.Substring(5);
 		else
 			return s;
 

@@ -8,7 +8,7 @@ $tos = array(	0=>"andy@wholefoods.coop",
 		6=>"michael@wholefoods.coop, alex@wholefoods.coop",
 		7=>"shannon@wholefoods.coop",
 		8=>"jesse@wholefoods.coop, lisa@wholefoods.coop",
-		9=>"raelynn@wholefoods.coop, lisa@wholefoods.coop"
+		9=>"lisa@wholefoods.coop"
 );	
 
 function auditPriceChange($sql,$uid,$upc,$price,$batchID){

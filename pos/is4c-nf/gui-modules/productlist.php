@@ -21,13 +21,20 @@
 
 *********************************************************************************/
 
+/* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+	* 11Feb2013 EL Support argument from initial PV command: PVAPPLES.
+	* 18Jan2013 Eric Lee Extended lookup to productUser.description, with Andy's help.
+	*                    Very slow unless products.upc has been changed to VARCHAR(13).
+
+*/
+
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class productlist extends NoInputPage {
 
 	var $temp_result;
 	var $temp_num_rows;
-	var $temp_db;
 	var $boxSize;
 
 	function preprocess(){
@@ -36,6 +43,8 @@ class productlist extends NoInputPage {
 		$entered = "";
 		if (isset($_REQUEST["search"]))
 			$entered = strtoupper(trim($_REQUEST["search"]));
+		elseif ($CORE_LOCAL->get("pvsearch") != "")
+			$entered = strtoupper(trim($CORE_LOCAL->get("pvsearch")));
 		else{
 			$this->temp_num_rows = 0;
 			return True;
@@ -88,23 +97,25 @@ class productlist extends NoInputPage {
 				$entered = substr($entered, 0, 8)."00000";
 		}
 
-		$query = "select upc, description, normal_price, special_price, advertised, scale from products where "
-			."upc = '".$entered."' AND inUse  = '1'";
-		$this->boxSize = 3;
-		if (!is_numeric($entered)) {
-			$query = "select upc, description, normal_price, special_price, "
-				."advertised, scale from products where "
-				."description like '%".$entered."%' "
-				."and upc LIKE ('0000000%') and inUse='1' "
-				."order by description";
-			$this->boxSize = 15;
+		/* get all available modules */
+		$modules = AutoLoader::ListModules('ProductSearch');
+		$results = array();
+		$this->boxSize = 1;
+		/* search with each available module. Use UPC
+		   to filter out any duplicate results */
+		foreach($modules as $mod_name){
+			$mod = new $mod_name();
+			$mod_results = $mod->search($entered);
+			foreach($mod_results as $upc => $record){
+				if (!isset($results[$upc]))
+					$results[$upc] = $record;
+			}
+			if ($mod->result_size > $this->boxSize)
+				$this->boxSize = $mod->result_size;
 		}
 
-		$sql = Database::pDataConnect();
-
-		$this->temp_result = $sql->query($query);
-		$this->temp_num_rows = $sql->num_rows($this->temp_result);
-		$this->temp_db = $sql;
+		$this->temp_result = $results;
+		$this->temp_num_rows = count($results);
 
 		return True;
 	} // END preprocess() FUNCTION
@@ -142,10 +153,9 @@ class productlist extends NoInputPage {
 		global $CORE_LOCAL;
 		$result = $this->temp_result;
 		$num_rows = $this->temp_num_rows;
-		$db = $this->temp_db;
 
 		if ($num_rows == 0) {
-			$this->productsearchbox("no match found<br />next search or enter upc");
+			$this->productsearchbox(_("no match found")."<br />"._("next search or enter upc"));
 		}
 		else {
 			$this->add_onload_command("\$('#search').keypress(processkeypress);\n");
@@ -155,11 +165,10 @@ class productlist extends NoInputPage {
 				."<form name=\"selectform\" method=\"post\" action=\"{$_SERVER['PHP_SELF']}\""
 				." id=\"selectform\">"
 				."<select name=\"search\" id=\"search\" "
-				."size=".$this->boxSize." onblur=\"\$('#search').focus();\">";
+				."size=".$this->boxSize." onblur=\"\$('#search').focus();\" ondblclick=\"document.forms['selectform'].submit();\">";
 
 			$selected = "selected";
-			for ($i = 0; $i < $num_rows; $i++) {
-				$row = $db->fetch_array($result);
+			foreach($result as $row){
 				$price = $row["normal_price"];	
 
 				if ($row["scale"] != 0) $Scale = "S";
@@ -177,13 +186,11 @@ class productlist extends NoInputPage {
 				."</form>"
 				."</div>"
 				."<div class=\"listboxText centerOffset\">"
-				."[Clear] to Cancel</div>"
+				._("clear to cancel")."</div>"
 				."<div class=\"clear\"></div>";
 			echo "</div>";
 		}
 
-		if (is_object($db))
-			$db->close();
 		$CORE_LOCAL->set("scan","noScan");
 		$CORE_LOCAL->set("beep","noBeep");
 		$this->add_onload_command("\$('#search').focus();\n");
@@ -198,7 +205,11 @@ class productlist extends NoInputPage {
 			</span>
 			<form action="<?php echo $_SERVER['PHP_SELF']; ?>" method="post" autocomplete="off">
 			<input type="text" name="search" size="15" id="search"
+<<<<<<< HEAD
+				onblur="$('#search').focus();" />
+=======
 				onblur="$('#search).focus();" />
+>>>>>>> flathat/master
 			</form>
 			press [enter] to cancel
 			</div>
