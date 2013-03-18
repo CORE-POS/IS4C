@@ -41,7 +41,11 @@ class login2 extends BasicPage {
 				$sd = MiscLib::scaleObject();
 				if (is_object($sd))
 					$sd->ReadReset();
-				$this->change_page($this->page_url."gui-modules/pos2.php");
+				$my_drawer = ReceiptLib::currentDrawer();
+				if ($my_drawer == 0)
+					$this->change_page($this->page_url."gui-modules/drawerPage.php");
+				else
+					$this->change_page($this->page_url."gui-modules/pos2.php");
 				return False;
 			}
 			else {
