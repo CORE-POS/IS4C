@@ -260,14 +260,14 @@ class Void extends Parser {
 		$query_upc = "select ItemQtty,foodstamp,discounttype,mixMatch,cost,
 				numflag,charflag,unitPrice,total,discounttype,regPrice,discount,
 				memDiscount,discountable,description,trans_type,trans_subtype,
-				department,tax,VolSpecial
+				department,tax,VolSpecial,trans_id
 				from localtemptrans where upc = '".$upc."' and unitPrice = "
 			     .$scaleprice." and trans_id=$item_num";
 		if ($CORE_LOCAL->get("discounttype") == 3) {
 			$query_upc = "select ItemQtty,foodstamp,discounttype,mixMatch,cost,
 				numflag,charflag,unitPrice,total,discounttype,regPrice,discount,
 				memDiscount,discountable,description,trans_type,trans_subtype,
-				department,tax,VolSpecial
+				department,tax,VolSpecial,trans_id
 				from localtemptrans where upc = '".$upc
 				."' and discounttype = 3 and unitPrice = ".$CORE_LOCAL->get("caseprice")
 			        ." and trans_id=$item_num";
@@ -276,7 +276,7 @@ class Void extends Parser {
 			$query_upc = "select ItemQtty,foodstamp,discounttype,mixMatch,cost,
 				numflag,charflag,unitPrice,total,discounttype,regPrice,discount,
 				memDiscount,discountable,description,trans_type,trans_subtype,
-				department,tax,VolSpecial
+				department,tax,VolSpecial,trans_id
 			       	from localtemptrans where upc = '".$upc
 				."' and discounttype <> 3"
 			        ." and trans_id=$item_num";
@@ -293,6 +293,7 @@ class Void extends Parser {
 		$foodstamp = MiscLib::nullwrap($row["foodstamp"]);
 		$discounttype = MiscLib::nullwrap($row["discounttype"]);
 		$mixMatch = MiscLib::nullwrap($row["mixMatch"]);
+		$item_num = $row['trans_id'];
 		$cost = isset($row["cost"])?-1*$row["cost"]:0;
 		$numflag = isset($row["numflag"])?$row["numflag"]:0;
 		$charflag = isset($row["charflag"])?$row["charflag"]:0;
@@ -386,6 +387,8 @@ class Void extends Parser {
 			return DisplayLib::boxMsg(_("Item already paid for"));
 		}
 		elseif ($quantity != 0) {
+			$update = "update localtemptrans set voided = 1 where trans_id = ".$item_num;
+			$db->query($update);
 			TransRecord::addItem($upc, $row["description"], $row["trans_type"], $row["trans_subtype"], "V", $row["department"], $quantity, $unitPrice, $total, $row["regPrice"], $scale, $row["tax"], $foodstamp, $discount, $memDiscount, $discountable, $discounttype, $quantity, $volDiscType, $volume, $VolSpecial, $mixMatch, 0, 1, $cost, $numflag, $charflag);
 
 			if ($row["trans_type"] != "T") {
