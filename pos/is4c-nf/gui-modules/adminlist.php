@@ -89,7 +89,7 @@ class adminlist extends NoInputPage {
 				return False;
 			}
 			else if ($_REQUEST['selectlist'] == 'TR'){
-				TenderReport::printReport();
+				TenderReport::get();
 				$this->change_page($this->page_url."gui-modules/pos2.php");
 				return False;
 			}

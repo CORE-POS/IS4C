@@ -101,7 +101,7 @@ static public function check_password($password,$activity=1){
 			$kicker_object = new $kicker_class();
 			if ($kicker_object->kickOnSignIn())
 				ReceiptLib::drawerKick();
-			
+
 		} elseif ($password == 9999) {
 			Database::loadglobalvalues();
 			$transno = Database::gettransno(9999);

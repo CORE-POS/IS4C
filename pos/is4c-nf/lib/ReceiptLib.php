@@ -110,7 +110,7 @@ static public function printReceiptHeader($dateTimeStamp, $ref) {
 			$receipt .= "\n\n";
 		}
 	}
-	else if ($CORE_LOCAL->get("newReceipt")==1 && $CORE_LOCAL->get("store") == "wfc"){
+	else if ($CORE_LOCAL->get("newReceipt")>=1 && $CORE_LOCAL->get("store") == "wfc"){
 		$img = self::$PRINT_OBJ->RenderBitmapFromFile(MiscLib::base_url()."graphics/WFC_Logo.bmp");
 		$receipt .= $img."\n";
 		$i=4;
@@ -1077,7 +1077,7 @@ static public function printReceipt($arg1,$second=False) {
 			$receipt .= "\n";
 	
 			if (trim($CORE_LOCAL->get("memberID")) != $CORE_LOCAL->get("defaultNonMem")) {
-				if ($CORE_LOCAL->get("newReceipt")==1){
+				if ($CORE_LOCAL->get("newReceipt")>=1){
 					$receipt .= self::$PRINT_OBJ->TextStyle(True,False,True);
 					$receipt .= self::$PRINT_OBJ->centerString("thank you - owner ".$member,True);
 					$receipt .= self::$PRINT_OBJ->TextStyle(True);
@@ -1089,7 +1089,7 @@ static public function printReceipt($arg1,$second=False) {
 				}
 			}
 			else {
-				if ($CORE_LOCAL->get("newReceipt")==1){
+				if ($CORE_LOCAL->get("newReceipt")>=1){
 					$receipt .= self::$PRINT_OBJ->TextStyle(True,False,True);
 					$receipt .= self::$PRINT_OBJ->centerString("thank you",True);
 					$receipt .= self::$PRINT_OBJ->TextStyle(True);

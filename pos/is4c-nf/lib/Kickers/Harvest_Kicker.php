@@ -1,7 +1,7 @@
 <?php
 /*******************************************************************************
 
-    Copyright 2010 Whole Foods Co-op
+    Copyright 2012 Whole Foods Co-op
 
     This file is part of IT CORE.
 
@@ -21,42 +21,31 @@
 
 *********************************************************************************/
 
-/**
-  @class MemberBarcode
-  WFC barcoded member ID implementation
+class Harvest_Kicker extends Kicker {
 
-  Checks for UPC prefix specified
-  by memberUpcPrefix in $CORE_LOCAL.
-
-  Looks up member number via memberCards table
-*/
-class MemberBarcode extends SpecialUPC {
-
-	function is_special($upc){
+	function doKick(){
 		global $CORE_LOCAL;
-		$prefix = $CORE_LOCAL->get("memberUpcPrefix");
-		if (substr($upc,0,strlen($prefix)) == $prefix)
-			return true;
+		$db = Database::tDataConnect();
 
-		return false;
+		$query = "select trans_id from localtemptrans where 
+			(trans_subtype = 'CA' and total <> 0) 
+			OR (trans_subtype = 'XB' and total <> 0)
+			OR (trans_subtype = 'PE' and total <> 0)";
+
+		$result = $db->query($query);
+		$num_rows = $db->num_rows($result);
+		$db->close();
+
+		return ($num_rows > 0) ? True : False;
+
 	}
 
-	function handle($upc,$json){
-		global $CORE_LOCAL;
+	function kickOnSignIn(){
+		return True;
+	}
 
-		$db = Database::pDataConnect();
-		$query = "select card_no from memberCards where upc='$upc'";
-		$result = $db->query($query);
-
-		if ($db->num_rows($result) < 1){
-			$json['output'] = DisplayLib::boxMsg(_("Card Not Assigned"));
-			return $json;
-		}
-
-		$row = $db->fetch_array($result);
-		$CORE_LOCAL->set("memberCardUsed",1);
-		$json = PrehLib::memberID($row[0]);
-		return $json;
+	function kickOnSignOut(){
+		return True;
 	}
 }
 

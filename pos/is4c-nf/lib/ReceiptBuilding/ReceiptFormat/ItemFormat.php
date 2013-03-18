@@ -68,6 +68,8 @@ class ItemFormat extends DefaultReceiptFormat {
 				$comment = 'w/ vol adj';
 			}
 
+			if ($row['numflag'] > 0) $row['description'] .= '*';
+
 			return $this->align($row['description'],$comment,$row['total'],$this->flags($row));
 		}
 	}
@@ -98,7 +100,7 @@ class ItemFormat extends DefaultReceiptFormat {
 		$ret = str_pad($description,30,' ',STR_PAD_RIGHT);
 		$ret .= str_pad($comment,14,' ',STR_PAD_RIGHT);
 		$ret .= str_pad($amount,8,' ',STR_PAD_LEFT);
-		$ret .= str_pad($flags,4,' ',STR_PAD_RIGHT);
+		$ret .= str_pad($flags,4,' ',STR_PAD_LEFT);
 		
 		return $ret;
 	}
