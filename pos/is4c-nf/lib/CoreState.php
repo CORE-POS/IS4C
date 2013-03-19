@@ -164,6 +164,11 @@ static public function transReset() {
 	$CORE_LOCAL->set("ebt_authcode","");
 	$CORE_LOCAL->set("ebt_vnum","");
 	$CORE_LOCAL->set("paycard_keyed",False);
+
+	foreach($CORE_LOCAL->get('PluginList') as $p){
+		$obj = new $p();
+		$obj->plugin_transaction_reset();
+	}
 }
 
 /**
