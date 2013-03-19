@@ -118,6 +118,7 @@ class drawerPage extends NoInputPage {
 		if ($this->my_drawer == 0)
 			$msg = 'You do not have a drawer';
 		$num_drawers = ($CORE_LOCAL->get('dualDrawerMode')===1) ? 2 : 1;
+		$db = Database::pDataConnect();
 		?>
 		<div class="baseHeight">
 		<div class="centeredDisplay colored">
@@ -129,8 +130,15 @@ class drawerPage extends NoInputPage {
 		<?php 
 		if ($this->is_admin){
 			for($i=0;$i<$num_drawers;$i++){
-				printf('<option value="TO%d">Take over drawer #%d</option>',
-					($i+1),($i+1));
+				$nameQ = 'SELECT FirstName FROM drawerowner as d
+					LEFT JOIN employees AS e ON e.emp_no=d.emp_no
+					WHERE d.drawer_no='.($i+1);
+				$name = $db->query($nameQ);
+				if ($db->num_rows($name) > 0)
+					$name = array_pop($db->fetch_row($name));
+				if (empty($name)) $name = 'Unassigned';
+				printf('<option value="TO%d">Take over drawer #%d (%s)</option>',
+					($i+1),($i+1),$name);
 			}
 		}
 		elseif (count($this->available) > 0){
