@@ -46,8 +46,9 @@ if($checkUPCN == 0){
    $insQ = $dbc->prepare_statement("INSERT INTO shelftags VALUES(?,?,?,?,?,?,?,?,?,?)");
    $args = array($id,$upc,$description,$price,$brand,$sku,$size,$units,$vendor,$ppo);
 }else{
-   $insQ = $dbc->prepare_statement("UPDATE shelftags SET normal_price = ?, pricePerUnit=? WHERE upc = ? and id=?";
-   $args = array($price,$ppo,$upc,$id);
+   $insQ = $dbc->prepare_statement("UPDATE shelftags SET normal_price=?, pricePerUnit=?,
+			description=?,brand=?,sku=?,size=?,units=?,vendor=? WHERE upc = ? and id=?";
+   $args = array($price,$ppo,$description,$brand,$sku,$size,$units,$vendor,$upc,$id);
 }
 
 $insR = $dbc->exec_statement($insQ,$args);
