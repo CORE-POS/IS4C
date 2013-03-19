@@ -77,8 +77,6 @@ static public function check_password($password,$activity=1){
 			//Database::testremote();
 			Database::loadglobalvalues();
 
-			
-
 			$transno = Database::gettransno($row_q["emp_no"]);
 			$CORE_LOCAL->set("transno",$transno);
 			if (!is_numeric($row_q["age"])) $row_q["age"]=0;
