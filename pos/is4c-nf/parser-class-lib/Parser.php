@@ -143,6 +143,7 @@ class Parser {
 	static public function get_parse_chain(){
 
 		$set = AutoLoader::ListModules('Parser');
+		$set = array_reverse($set);
 
 		$parse_chain = array();
 		$first = "";
