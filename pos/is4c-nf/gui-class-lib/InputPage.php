@@ -52,12 +52,15 @@ class InputPage extends BasicPage {
 		$this->head_content();
 		echo "</head>";
 		echo "<body>";
+		echo "<div id=\"boundingBox\">";
 		$this->input_header();
 		echo DisplayLib::printheaderb();
 		$this->body_content();	
 		echo "<div id=\"footer\">";
 		echo DisplayLib::printfooter();
 		echo "</div>\n";
+		echo "</div>\n";
+		$this->scale_box();
 		if (!empty($this->onload_commands)){
 			echo "<script type=\"text/javascript\">\n";
 			echo "\$(document).ready(function(){\n";
