@@ -80,9 +80,9 @@ foreach($mods as $m){
 			echo '<tr><td colspan="2" style="margin-bottom: 0px; height:auto;">';
 			$form_id = $m.'_'.$field;
 			if (isset($_REQUEST[$form_id])) 
-				$CORE_LOCAL->set($field,$_REQUEST[$form_id]);
+				$CORE_LOCAL->set($field,$_REQUEST[$form_id],True);
 			if ($CORE_LOCAL->get($field) === "") 
-				$CORE_LOCAL->set($field,isset($info['default'])?$info['default']:'');
+				$CORE_LOCAL->set($field,isset($info['default'])?$info['default']:'',True);
 			echo '<b>'.(isset($info['label'])?$info['label']:$field).'</b>: ';
 			if (isset($info['options']) && is_array($info['options'])){
 				printf('<select name="%s">',$form_id);

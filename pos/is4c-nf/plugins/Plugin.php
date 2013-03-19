@@ -61,6 +61,14 @@ class Plugin {
 	}
 
 	/**
+	  Callback. Triggered after every transaction.
+	  Use for reseting any session/state info.
+	*/
+	public function plugin_transaction_reset(){
+
+	}
+
+	/**
 	  Get a URL for the plugin's directory	
 	*/
 	public function plugin_url(){

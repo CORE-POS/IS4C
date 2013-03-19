@@ -247,7 +247,8 @@ if ($CORE_LOCAL->get("scaleDriver") != ""){
 	if (!file_exists('../scale-drivers/php-wrappers/'.$classname.'.php'))
 		echo "<br /><i>Warning: PHP driver file not found</i>";
 	else {
-		include('../scale-drivers/php-wrappers/'.$classname.'.php');
+		if (!class_exists($classname))
+			include('../scale-drivers/php-wrappers/'.$classname.'.php');
 		$instance = new $classname();
 		@$instance->SavePortConfiguration($CORE_LOCAL->get("scalePort"));
 		@$abs_path = substr($_SERVER['SCRIPT_FILENAME'],0,

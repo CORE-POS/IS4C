@@ -112,6 +112,7 @@ class PreParser {
 	static public function get_preparse_chain(){
 
 		$set = AutoLoader::ListModules('PreParser');
+		$set = array_reverse($set);
 
 		$preparse_chain = array();
 		$first = "";
