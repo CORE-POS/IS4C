@@ -25,7 +25,7 @@ include('../../config.php');
 include($FANNIE_ROOT.'classlib2.0/FanniePage.php');
 include($FANNIE_ROOT.'classlib2.0/data/FannieDB.php');
 include($FANNIE_ROOT.'classlib2.0/lib/FormLib.php');
-include($FANNIE_ROOT.'item/pricePerOunce.php');
+include($FANNIE_ROOT.'classlib2.0/lib/PriceLib.php');
 
 class CreateTagsByManu extends FanniePage {
 	protected $title = "Fannie : Manufacturer Shelf Tags";
@@ -65,8 +65,8 @@ class CreateTagsByManu extends FanniePage {
 				$args = array($pageID,$w['upc'],
 					$w['description'],$w['normal_price'],
 					$w['manufacturer'],$w['distributor'],
-					$w['sku'],$w['units'],
-					$w['size'],pricePerOunce($w['normal_price'],$w['size'])
+					$w['sku'],$w['units'],$w['size'],
+					PriceLib::pricePerUnit($w['normal_price'],$w['size'])
 				);
 				$dbc->exec_statement($ins,$args);
 			}

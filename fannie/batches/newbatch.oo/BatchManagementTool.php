@@ -451,7 +451,7 @@ class BatchManagementTool extends FanniePage {
 			$uid = FormLib::get_form_value('uid','');
 			$q = $dbc->prepare_statement("DELETE FROM batchCutPaste WHERE upc=%s
 					AND batchID=%d AND uid=%d");
-			$dbc->query($q,array($upc,$bid,$uid));
+			$dbc->exec_statement($q,array($upc,$bid,$uid));
 			break;
 
 		case 'doPaste':
@@ -492,7 +492,7 @@ class BatchManagementTool extends FanniePage {
 			
 			$q = $dbc->prepare_statement("UPDATE batchList SET pricemethod=?
 				WHERE batchID=?");
-			$r = $dbc->query($q,array($newMethod,$bid));
+			$r = $dbc->exec_statement($q,array($newMethod,$bid));
 			break;
 		case 'PS_toggleMemberOnly':
 			$bid = FormLib::get_form_value('batchID','');
@@ -559,7 +559,7 @@ class BatchManagementTool extends FanniePage {
 				left join vendors as z on
 				v.vendorID=z.vendorID
 				where batchID=? ORDER BY l.upc");
-			$selR = $dbc->query($selQ);
+			$selR = $dbc->exec_statement($selQ,array($bid));
 			$upc = "";
 			$insP = $dbc->prepare_statement("INSERT INTO batchBarcodes
 				(upc,description,normal_price,brand,sku,size,units,vendor,batchID)
