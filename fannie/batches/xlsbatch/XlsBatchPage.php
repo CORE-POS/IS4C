@@ -47,6 +47,8 @@ class XlsBatchPage extends FannieUploadPage {
 		)
 	);
 
+	private $results = '';
+
 	private function get_batch_types(){
 		global $FANNIE_OP_DB;
 		$dbc = FannieDB::get($FANNIE_OP_DB);
@@ -119,7 +121,12 @@ class XlsBatchPage extends FannieUploadPage {
 		}
 
 		$ret .= "Batch created";
-		return $ret;
+		$this->results = $ret;
+		return True;
+	}
+
+	function results_content(){
+		return $this->results;
 	}
 
 	function preview_content(){
@@ -160,7 +167,7 @@ class XlsBatchPage extends FannieUploadPage {
 		$batchtypes = $this->get_batch_types();
 		ob_start();
 		?>
-		<form enctype="multipart/form-data" action="XlsBatchPage.php" method="post">
+		<form enctype="multipart/form-data" action="XlsBatchPage.php" id="FannieUploadForm" method="post">
 		<table cellspacing=4 cellpadding=4>
 		<tr><th>Type</th>
 		<td><select name=btype>
@@ -171,7 +178,7 @@ class XlsBatchPage extends FannieUploadPage {
 		<th>End</th><td><input type=text size=10 name=date2 onclick="showCalendarControl(this);" /></td></tr>
 		<tr><td colspan=4>
 		<input type="hidden" name="MAX_FILE_SIZE" value="2097152" />
-		Filename: <input type="file" id="file" name="upload" />
+		Filename: <input type="file" id="FannieUploadFile" name="FannieUploadFile" />
 		</td></tr>
 		<tr>
 		<th>Identifier</th><td><select name=ftype><option>UPCs</option>

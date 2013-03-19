@@ -21,12 +21,11 @@
 
 *********************************************************************************/
 
-require('pricePerOunce.php');
-
 $upc=str_pad($_GET['upc'],13,0,STR_PAD_LEFT);
 
 require('../config.php');
 require_once($FANNIE_ROOT.'src/mysql_connect.php');
+include($FANNIE_ROOT.'classlib2.0/lib/PriceLib.php');
 
 
 $unfiQ = $dbc->prepare_statement("SELECT DISTINCT i.*,v.vendorName FROM vendorItems AS i
@@ -61,7 +60,7 @@ if($unfiN == 1){
    $units = $unfiW['units'];
    $sku = $unfiW['sku'];
    $vendor = $unfiW['vendorName'];
-   $ppo = pricePerOunce($price,$size);
+   $ppo = PriceLib::pricePerUnit($price,$size);
 }
 else if ($dbc->table_exists('prodExtra')) {
 	$prodExtraQ = $dbc->prepare_statement("select manufacturer,distributor from prodExtra where upc=?");
@@ -79,7 +78,7 @@ else if ($dbc->table_exists('prodExtra')) {
 <form method='post' action='addShelfTag1.php'>
 <input type='hidden' name=upc value='<?php echo $upc; ?>'>
 <font color='blue'>Description</font>
-<input type='text' name='description' size=27 maxlength=27
+<input type='text' name='description' size=27 
 <?php
 echo "value='".strtoupper($desc)."'";
 ?>

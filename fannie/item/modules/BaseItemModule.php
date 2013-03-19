@@ -76,7 +76,7 @@ class BaseItemModule extends ItemModule {
 			  Check for entries in the vendorItems table to prepopulate
 			  fields for the new item
 			*/
-			$vendorP = "SELECT description,brand as manufacturer,cost/units as cost,
+			$vendorP = "SELECT description,brand as manufacturer,cost,
 				vendorName as distributor,margin,i.vendorID
 				FROM vendorItems AS i LEFT JOIN vendors AS v ON i.vendorID=v.vendorID
 				LEFT JOIN vendorDepartments AS d ON i.vendorDept=d.deptID
