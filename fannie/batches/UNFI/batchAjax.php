@@ -24,7 +24,7 @@
 include('../../config.php');
 include($FANNIE_ROOT.'classlib2.0/data/FannieDB.php');
 include($FANNIE_ROOT.'classlib2.0/lib/FormLib.php');
-include($FANNIE_ROOT.'item/pricePerOunce.php');
+include($FANNIE_ROOT.'classlib2.0/lib/PriceLib.php');
 
 $upc = FormLib::get_form_value('upc');
 $action = FormLib::get_form_value('action','unknown');
@@ -69,7 +69,7 @@ case 'batchAdd':
 		v.vendorID=? LEFT JOIN vendors AS b ON v.vendorID=b.vendorID
 		WHERE p.upc=?");
 	$info = $dbc->fetch_row($dbc->exec_statement($infoQ,array($vid,$upc)));
-	$ppo = pricePerOunce($price,$info['size']);
+	$ppo = PriceLib:;pricePerUnit($price,$info['size']);
 	
 	/* create a shelftag */
 	$stQ = $dbc->prepare_statement("DELETE FROM shelftags WHERE upc=? AND id=?");
