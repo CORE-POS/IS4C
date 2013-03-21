@@ -53,6 +53,8 @@ class PriceLib {
 
 		$unit = ltrim($unit);
 		$unit = strtoupper($unit);
+		if ( strpos($unit,"FL") !== False )
+			$unit = "FLOZ";
 		if ($num == "") $num = 1;
 		$num = (float)$num;
 		$num = $num*$mult;
@@ -69,10 +71,18 @@ class PriceLib {
 			if ($country == "US")
 				return round($price/($num*0.034),3)."/OZ";
 			else
-				return $price."/ML";
+				return round($price/$num,3)."/ML";
+		case 'FLOZ':
+			if ( $country == 'US' )
+				return round($price/$num,3)."/OZ";
+			else
+				return round($price/($num*29.5735),3)."/ML"; 
 		case 'OZ':
 		case 'Z':
-			return round($price/$num,3)."/OZ";
+			if ( $country == 'US' )
+				return round($price/$num,3)."/OZ";
+			else
+				return round($price/($num*28.35),3)."/G"; 
 		case 'PINT':
 		case 'PINTS':
 			if ($country == "US")
@@ -87,7 +97,7 @@ class PriceLib {
 			if ($country == "US")
 				return round($price/($num*0.035),3)."/OZ";
 			else
-				return $price."/G";
+				return round($price/$num,3)."/G";
 		case 'LTR':
 		case 'L':
 			if ($country == "US")
