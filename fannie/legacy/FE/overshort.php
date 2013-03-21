@@ -102,9 +102,13 @@ if (isset($_POST['action'])){
 
     /* get cash, check, and credit totals for each employee
        print them in a table along with input boxes for over/short */
-    $q = "SELECT -1*sum(total) AS total,emp_no,trans_subtype FROM $dlog
+    $q = "SELECT -1*sum(total) AS total,emp_no,
+	CASE WHEN trans_subtype IN ('CC','AX') THEN 'CC' ELSE trans_subtype END
+	AS trans_subtype
+	FROM $dlog
 	WHERE ".$sql->date_equals('tdate',$date)." 
-	GROUP BY emp_no,trans_subtype";
+	GROUP BY emp_no,
+	CASE WHEN trans_subtype IN ('CC','AX') THEN 'CC' ELSE trans_subtype END";
     $r = $sql->query($q);
     $posttl = array();
     while($w = $sql->fetch_row($r)){
