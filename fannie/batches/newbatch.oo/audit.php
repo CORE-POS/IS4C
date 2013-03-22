@@ -37,10 +37,10 @@ $hostname = 'key.wfco-op.store';
 function auditPriceChange($sql,$uid,$upc,$price,$batchID){
 	global $tos, $hostname, $FANNIE_URL;
 
-	$query = "select p.description,b.batchName,s.superID from products as p, batches as b,
+	$query = $sql->prepare_statement("select p.description,b.batchName,s.superID from products as p, batches as b,
 		MasterSuperDepts AS s
-		where p.upc = '$upc' and b.batchID='$batchID' AND p.department=s.dept_ID";
-	$result = $sql->query($query);
+		where p.upc = ? and b.batchID=? AND p.department=s.dept_ID");
+	$result = $sql->exec_statement($query,array($upc,$batchID));
 	$row = $sql->fetch_row($result);
 	$dept_sub = $row[2];
 
@@ -62,16 +62,16 @@ function auditPriceChange($sql,$uid,$upc,$price,$batchID){
 function auditPriceChangeLC($sql,$uid,$upc,$price,$batchID){
 	global $tos,$hostname,$FANNIE_URL;
 
-	$query = "select l.likeCodeDesc,b.batchName from likeCodes as l, batches as b
-		where b.batchID=$batchID and l.likecode=".substr($upc,2);	
-	$result = $sql->query($query);
+	$query = $sql->prepare_statement("select l.likeCodeDesc,b.batchName from likeCodes as l, batches as b
+		where b.batchID=? and l.likecode=?");
+	$result = $sql->exec_statement($query,array($batchID,substr($upc,2)));
 	$row = $sql->fetch_row($result);
-	$deptQ = "select s.superID from products as p left join
+	$deptQ = $sql->prepare_statement("select s.superID from products as p left join
 		upcLike as u on p.upc=u.upc left join
 		MasterSuperDepts AS s ON p.department=s.dept_ID
-		where u.likecode=".substr($upc,2)."
-		group by s.superID order by count(*) desc";
-	$deptR = $sql->query($deptQ);
+		where u.likecode=?
+		group by s.superID order by count(*) desc");
+	$deptR = $sql->exec_statement($deptQ,array(substr($upc,2)));
 	$dept_sub = array_pop($sql->fetch_row($deptR));
 
 	$subject = "Batch Update notification: ".$row[1];
@@ -92,23 +92,25 @@ function auditPriceChangeLC($sql,$uid,$upc,$price,$batchID){
 function auditSavePrice($sql,$uid,$upc,$price,$batchID){
 	global $tos,$hostname,$FANNIE_URL;
 
-	$query = "select p.description,b.batchName,s.superID from products as p, batches as b,
+	$query = $sql->prepare_statement("select p.description,b.batchName,s.superID from products as p, batches as b,
 		MasterSuperDepts AS s
-		where p.upc = '$upc' and b.batchID='$batchID' AND s.dept_ID=p.department";
+		where p.upc = ? and b.batchID=? AND s.dept_ID=p.department");
+	$args = array($upc, $batchID);
 	if (substr($upc,0,2) == "LC"){
-		$query = "select l.likeCodeDesc,b.batchName from likeCodes as l, batches as b
-			where b.batchID=$batchID and l.likecode=".substr($upc,2);	
+		$query = $sql->prepare_statement("select l.likeCodeDesc,b.batchName from likeCodes as l, batches as b
+			where b.batchID=? and l.likecode=?");
+		$args = array($batchID, substr($upc,2));
 	}
-	$result = $sql->query($query);
+	$result = $sql->exec_statement($query,$args);
 	$row = $sql->fetch_row($result);
 	$dept_sub = 0;
 	if (substr($upc,0,2) == "LC"){
-		$deptQ = "select s.superID,count(*) from products as p left join
+		$deptQ = $sql->prepare_statement("select s.superID,count(*) from products as p left join
 			upcLike as u on p.upc=u.upc left join
 			MasterSuperDepts AS s ON p.department=s.dept_ID
-			where u.likecode=".substr($upc,2)."
-			group by s.superID order by count(*) desc";
-		$deptR = $sql->query($deptQ);
+			where u.likecode=?
+			group by s.superID order by count(*) desc");
+		$deptR = $sql->exec_statement($deptQ,array(substr($upc,2)));
 		$dept_sub = array_pop($sql->fetch_row($deptR));
 	}
 	else
@@ -132,23 +134,25 @@ function auditSavePrice($sql,$uid,$upc,$price,$batchID){
 function auditDelete($sql,$uid,$upc,$batchID){
 	global $tos,$hostname,$FANNIE_URL;
 
-	$query = "select p.description,b.batchName,s.superID from products as p, batches as b,
+	$query = $sql->prepare_statement("select p.description,b.batchName,s.superID from products as p, batches as b,
 		MasterSuperDepts AS s
-		where p.upc = '$upc' and b.batchID='$batchID' AND p.department=s.dept_ID";
+		where p.upc = ? and b.batchID=? AND s.dept_ID=p.department");
+	$args = array($upc, $batchID);
 	if (substr($upc,0,2) == "LC"){
-		$query = "select l.likeCodeDesc,b.batchName from likeCodes as l, batches as b
-			where b.batchID=$batchID and l.likecode=".substr($upc,2);	
+		$query = $sql->prepare_statement("select l.likeCodeDesc,b.batchName from likeCodes as l, batches as b
+			where b.batchID=? and l.likecode=?");
+		$args = array($batchID, substr($upc,2));
 	}
-	$result = $sql->query($query);
+	$result = $sql->exec_statement($query,$args);
 	$row = $sql->fetch_row($result);
 	$dept_sub = 0;
 	if (substr($upc,0,2) == "LC"){
-		$deptQ = "select s.superID from products as p left join
+		$deptQ = $sql->prepare_statement("select s.superID from products as p left join
 			upcLike as u on p.upc=u.upc  left join
 			MasterSuperDepts AS s ON p.department=s.dept_ID
-			where u.likecode=".substr($upc,2)." 
-			group by s.superID order by count(*) desc";
-		$deptR = $sql->query($deptQ);
+			where u.likecode=?
+			group by s.superID order by count(*) desc");
+		$deptR = $sql->exec_statement($deptQ,array(substr($upc,2)));
 		$dept_sub = array_pop($sql->fetch_row($deptR));
 	}
 	else

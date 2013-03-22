@@ -171,9 +171,9 @@ function forceBatch($batchID){
 	}
 
 	$forceP = $dbc->prepare_statement($forceQ);
-	$forceR = $dbc->query($forceP,array($batchID));
+	$forceR = $dbc->exec_statement($forceP,array($batchID));
 	$forceLCP = $dbc->prepare_statement($forceLCQ);
-	$forceR = $dbc->query($forceLCP,array($batchID));
+	$forceR = $dbc->exec_statement($forceLCP,array($batchID));
 
 	$q = $dbc->prepare_statement("SELECT upc FROM batchList WHERE batchID=?");
 	$r = $dbc->exec_statement($q,array($batchID));
