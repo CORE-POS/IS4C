@@ -40,6 +40,8 @@ include('util.php');
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 Stores
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<a href="prod.php">Products</a>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <a href="update.php">Updates</a>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <a href="plugins.php">Plugins</a>
