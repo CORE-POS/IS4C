@@ -41,6 +41,8 @@ Necessities
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <a href="mem.php">Members</a>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<a href="prod.php">Products</a>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <a href="stores.php">Stores</a>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <a href="update.php">Updates</a>
@@ -94,27 +96,6 @@ else {
 	exit;
 }
 ?>
-<br />
-Default Shelf Tag Layout
-<select name=FANNIE_DEFAULT_PDF>
-<?php
-if (!isset($FANNIE_DEFAULT_PDF)) $FANNIE_DEFAULT_PDF = 'Fannie Standard';
-if (isset($_REQUEST['FANNIE_DEFAULT_PDF'])) $FANNIE_DEFAULT_PDF = $_REQUEST['FANNIE_DEFAULT_PDF'];
-if (file_exists($FANNIE_ROOT.'admin/labels/scan_layouts.php')){
-	include($FANNIE_ROOT.'admin/labels/scan_layouts.php');
-	foreach(scan_layouts() as $l){
-		if ($l == $FANNIE_DEFAULT_PDF)
-			echo "<option selected>$l</option>";
-		else
-			echo "<option>$l</option>";
-	}
-}
-else {
-	echo "<option>No layouts found!</option>";
-}
-confset('FANNIE_DEFAULT_PDF',"'$FANNIE_DEFAULT_PDF'");
-?>
-</select>
 <hr />
 <b>Main Server</b><br />
 Server Database Host
