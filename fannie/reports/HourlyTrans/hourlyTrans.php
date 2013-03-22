@@ -5,8 +5,8 @@ include($FANNIE_ROOT.'src/mysql_connect.php');
 
 $DAYS = array("","Sun","Mon","Tue","Wed","Thu","Fri","Sat");
 
-$subdeptsQ = "SELECT superID,super_name FROM superDeptNames ORDER BY super_name";
-$subdeptsR = $dbc->query($subdeptsQ);
+$subdeptsQ = $dbc->prepare_statement("SELECT superID,super_name FROM superDeptNames ORDER BY super_name");
+$subdeptsR = $dbc->exec_statement($subdeptsQ);
 $options = "<option value=-1>All</option>";
 while($subW = $dbc->fetch_row($subdeptsR))
 	$options .= "<option value=$subW[0]>$subW[1]</option>";
@@ -52,6 +52,7 @@ else {
 	$dlog = select_dlog($date1,$date2);
 
 	$group = "year(tdate),month(tdate),day(tdate),".$dbc->hour('tdate');
+	$args = array($date1.' 00:00:00',$date2.' 23:59:59');
 
 	$query = "select 
 		$group,
@@ -59,7 +60,7 @@ else {
 		count(distinct trans_num),
 		sum(case when trans_type in ('I','D') then total else 0 end)	
 		from $dlog as d
-		WHERE tdate BETWEEN '$date1 00:00:00' AND '$date2 23:59:59'
+		WHERE tdate BETWEEN ? AND ?
 		group by $group
 		order by $group";
 	if ($_REQUEST['sub'] != -1){
@@ -71,12 +72,14 @@ else {
 			from $dlog as d LEFT JOIN
 			departments as t on d.department = t.dept_no
 			left join superdepts AS s ON t.dept_no=s.dept_ID
-			WHERE tdate BETWEEN '$date1 00:00:00' AND '$date2 23:59:59'
-			AND s.superID = {$_REQUEST['sub']}
+			WHERE tdate BETWEEN ? AND ?
+			AND s.superID = ?
 			group by $group
 			order by $group";
+		$args[] = $_REQUEST['sub'];
 	}
-	$result = $dbc->query($query);
+	$prep = $dbc->prepare_statement($query);
+	$result = $dbc->exec_statement($prep,$args);
 
 	echo "<b>Transactions from $date1 to $date2</b>";
 	if (isset($_REQUEST['group']))

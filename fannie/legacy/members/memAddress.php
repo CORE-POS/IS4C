@@ -340,7 +340,6 @@ function addressForm($memNum)
 			echo "<td>" ; 
 			//echo $type;
 			echo "<input type=hidden name=curDiscLimit value={$type}>";
-			//query_to_drop($memIDQ,'memTypeID','memDesc','discList',$type);
             ?><select id=discList onchange="setvisible();" name=discList>
             <?php
             $selMemTypeQ = "SELECT * FROM memTypeID";

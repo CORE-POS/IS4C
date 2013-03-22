@@ -24,14 +24,14 @@
 include('../../config.php');
 include($FANNIE_ROOT.'src/mysql_connect.php');
 
-$deptsQ = "select dept_no,dept_name from departments order by dept_no";
-$deptsR = $dbc->query($deptsQ);
+$deptsQ = $dbc->prepare_statement("select dept_no,dept_name from departments order by dept_no");
+$deptsR = $dbc->exec_statement($deptsQ);
 $deptsList = "";
 
-$deptSubQ = "SELECT superID,super_name FROM superDeptNames
+$deptSubQ = $dbc->prepare_statement("SELECT superID,super_name FROM superDeptNames
 		WHERE superID <> 0 
-		ORDER BY superID";
-$deptSubR = $dbc->query($deptSubQ);
+		ORDER BY superID");
+$deptSubR = $dbc->exec_statement($deptSubQ);
 
 $deptSubList = "";
 while($deptSubW = $dbc->fetch_array($deptSubR)){

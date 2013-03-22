@@ -12,18 +12,18 @@ include($FANNIE_ROOT.'src/header.html');
 $trans = $FANNIE_TRANS_DB;
 if ($FANNIE_SERVER_DBMS=='MSSQL') $trans .= ".dbo";
 
-$q = sprintf("select stockPurchase,trans_num,dept_name,
+$q = $dbc->prepare_statement("select stockPurchase,trans_num,dept_name,
 		year(tdate),month(tdate),day(tdate)
 		from {$trans}.stockpurchases AS s LEFT JOIN
 		departments AS d ON s.dept=d.dept_no
-		WHERE s.card_no=%d ORDER BY tdate DESC",$memNum);
+		WHERE s.card_no=? ORDER BY tdate DESC");
 if ($memNum == 0){
 	echo "<i>Error: no member specified</i>";
 }
 else {
 	echo "<table cellpadding=\"4\" cellspacing=\"0\" border=\"1\">";
 	echo "<tr><th>Date</th><th>Receipt</th><th>Amount</th><th>Type</th></tr>";
-	$r = $dbc->query($q);
+	$r = $dbc->exec_statement($q,array($memNum));
 	while($w = $dbc->fetch_row($r)){
 		printf('<tr><td>%d/%d/%d</td><td>
 			<a href="%sadmin/LookupReceipt/RenderReceiptPage.php?year=%d&month=%d&day=%d&receipt=%s">%s</a>

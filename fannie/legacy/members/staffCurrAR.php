@@ -9,6 +9,6 @@ include($FANNIE_ROOT."src/functions.php");
   header("Content-type: application/vnd.ms-excel; name='excel'");
 
 $query = "SELECT * FROM staffAR";
-select_to_table($query,0,"FFFFFF");
+select_to_table($query,array(),0,"FFFFFF");
 
 ?>

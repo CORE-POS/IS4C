@@ -24,6 +24,8 @@
 
 /* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+	* 17Mar13 Andy Theuninck removed variable name for datestamp filed
+	* + (not necessary, not compatible with all databases)
 	*  2Jan13 Eric Lee Report of Costs, based on GeneralSales/index.php
 	* + Base on a dtrans table
 	* + Use variable for name of datestamp field.
@@ -51,7 +53,6 @@ if (isset($_REQUEST['submit'])){
 	$dept = $_REQUEST['dept'];
 
 	$dlog = select_dtrans($d1,$d2);
-	$datestamp = '`datetime`';
 
 	if (isset($_REQUEST['excel'])){
 		header("Content-Disposition: inline; filename=costs_{$d1}_{$d2}.xls");
@@ -82,7 +83,7 @@ if (isset($_REQUEST['submit'])){
 					MasterSuperDepts AS s ON t.department=s.dept_ID LEFT JOIN
 					deptMargin AS m ON t.department=m.dept_id
 				WHERE 
-					($datestamp BETWEEN '$d1 00:00:00' AND '$d2 23:59:59') 
+					(datetime BETWEEN ? AND ?)
 					AND (s.superID > 0 OR s.superID IS NULL) 
 					AND (t.trans_type in ('I','D'))
 					AND ((t.trans_status not in ('D','X','Z')) and (t.emp_no <> 9999) and (t.register_no <> 99))
@@ -112,7 +113,7 @@ if (isset($_REQUEST['submit'])){
 				MasterSuperDepts AS r ON r.dept_ID=t.department LEFT JOIN
 				deptMargin AS m ON p.department=m.dept_id
 			WHERE
-				($datestamp BETWEEN '$d1 00:00:00' AND '$d2 23:59:59') 
+				(datetime BETWEEN ? AND ?)
 				AND (t.trans_type = 'I' or t.trans_type = 'D')
 				AND (s.superID > 0 OR (s.superID IS NULL AND r.superID > 0)
 					OR (s.superID IS NULL AND r.superID IS NULL))
@@ -134,7 +135,8 @@ if (isset($_REQUEST['submit'])){
 	// Array in which totals used in the report are accumulated.
 	$supers = array();
 
-	$costsR = $dbc->query($costs);
+	$prep = $dbc->prepare_statement($costs);
+	$costsR = $dbc->exec_statement($prep,array($d1.' 00:00:00',$d2.' 23:59:59'));
 	
 	$curSuper = 0;
 	$grandTotal = 0;

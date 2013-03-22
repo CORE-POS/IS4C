@@ -2,7 +2,6 @@
 include('../../config.php');
 include($FANNIE_ROOT.'src/mysql_connect.php');
 include($FANNIE_ROOT.'src/select_dlog.php');
-//require('functions.php');
 
 if (isset($_GET['excel'])){
 	header('Content-Type: application/ms-excel');
@@ -48,9 +47,6 @@ if (isset($_GET['startDate'])){
 	$endDate = $_GET['endDate']." 23:59:59";
 	$limit = $_GET['limit'];
 	
-	$topStr = "";
-	if ($limit != 0)
-		$topStr = " top $limit ";
 	$mem11Str = "";
 	if (isset($_GET['mem11']))
 		$mem11Str = " and d.card_no <> 11 ";
@@ -58,16 +54,16 @@ if (isset($_GET['startDate'])){
 
 	$dlog = select_dlog($startDate);
 
-	$fetchQ = "select $topStr d.card_no,sum(d.total),
+	$fetchQ = $dbc->prepare_statement("select d.card_no,sum(d.total),
 		case when m.zip='' then 'None Given' else m.zip end
 		from $dlog as d left join meminfo as m
 		on d.card_no = m.card_no 
 		where trans_type='I' $mem11Str
-		d.tdate BETWEEN '$startDate' AND '$endDate'
+		d.tdate BETWEEN ? AND ?
 		group by d.card_no,m.zip
-		order by sum(d.total) desc";
+		order by sum(d.total) desc");
 	//echo $fetchQ."<br />";
-	$fetchR = $dbc->query($fetchQ);
+	$fetchR = $dbc->exec_statement($fetchQ,array($startDate,$endDate));
 
 	echo "<table cellspacing=0 cellpadding=4 border=1>";
 	echo "<tr><th>Mem No.</th><th>Total</th><th>Zipcode</th></tr>";

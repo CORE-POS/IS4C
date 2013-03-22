@@ -1,16 +1,6 @@
 <?php
 
 
-/* -----------------------start select_to_table-----------------------*/
-/* creates a table from query defined outside function. 
-   Variables are:
-   		$query = query to run 
-  
-   example:
-	$x = "SELECT * FROM tlog WHERE TransDate BETWEEN '2004-04-01' AND '2004-04-02' LIMIT 50"
-	select_to_table($x);
-
-*/
 function trans_to_table($query,$border,$bgcolor)
 {
 	global $sql;
@@ -74,55 +64,6 @@ function trans_to_table($query,$border,$bgcolor)
 	} echo "</table>\n";
 }
 
-
-function select_to_table($query,$border,$bgcolor)
-{
-	global $sql;
-        //echo $query;
-        $results = $sql->query($query) /*or
-                die("<li>errorno=".$sql->errno()
-                        ."<li>error=" .$sql->error()
-                        ."<li>query=".$query)*/;
-        $number_cols = $sql->num_fields($results);
-        //display query
-        //echo "<b>query: $query</b>";
-        //layout table header
-        echo "<table border = $border bgcolor=$bgcolor>\n";
-        /*$r=0;
-
-        while($r < $sql->num_fields($results)){
-                $reportF = $sql->fetch_field($results,$r);
-                $field = $reportF->name;
-                echo "<th>" . $field; 
-                $r++;
-        }*/
-        echo "<tr align left>\n";
-        echo "</tr>\n"; //end table header
-        //layout table body
-        while($row = $sql->fetch_array($results))
-        {
-                echo "<tr align=center>\n";
-                echo "<td >";
-                        if(!isset($row[0]))
-                        {
-                                echo "NULL";
-                        }else{
-                                  echo $row[0]; 
-                         echo "</td>";
-                        }
-                for ($i=1;$i<$number_cols; $i++)
-                {
-                echo "<td>";
-                        if(!isset($row[$i])) //test for null value
-                        {
-                                echo "NULL";
-                        }else{
-                                echo $row[$i];
-                        }
-                        echo "</td>\n";
-                } echo "</tr>\n";
-        } echo "</table>\n";
-}
 
 /* -------------------------------end select_to_table-------------------*/
 

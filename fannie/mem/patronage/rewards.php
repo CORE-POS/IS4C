@@ -32,25 +32,28 @@ if (isset($_REQUEST['rewardsubmit'])){
 
 	$upcs = "";
 	$list = preg_split("/\D+/",$_REQUEST['upcs'],-1,PREG_SPLIT_NO_EMPTY);
-	foreach($list as $l)
-		$upcs .= "'".str_pad($l,13,'0',STR_PAD_LEFT)."',";
+	$args = array();
+	foreach($list as $l){
+		$upcs .= '?,';
+		$args[] = str_pad($l,13,'0',STR_PAD_LEFT);
+	}
 	if ($upcs != ""){
 		$upcs = rtrim($upcs,",");
-		$upcs = "OR (trans_subtype='IC' AND upc IN ($upcs)";
+		$upcs = "OR (trans_subtype='IC' AND upc IN ($upcs))";
 	}
 
-	$fetchQ = sprintf("SELECT card_no,
-		SUM(CASE WHEN trans_type='MA' %s) 
-			THEN total ELSE 0 END) as total
+	$fetchQ = sprintf("SELECT card_no,SUM(total) as total
 		FROM %s%sdlog_patronage
-		GROUP BY card_no",$upcs,$FANNIE_TRANS_DB,$dbc->sep());
-	$fetchR = $dbc->query($fetchQ);
+		WHERE trans_type='MA' %s 
+		GROUP BY card_no",$FANNIE_TRANS_DB,$dbc->sep(),$upcs);
+	$prep = $dbc->prepare_statement($fetchQ);
+	$fetchR = $dbc->exec_statement($prep,$args);
+
+	$upP = $dbc->prepare_statement("UPDATE patronage_workingcopy
+		SET rewards=? WHERE cardno=?");
 	while($fetchW = $dbc->fetch_row($fetchR)){
 		if ($fetchW['total']==0) continue;
-		$upQ = sprintf("UPDATE patronage_workingcopy
-			SET rewards=%.2f WHERE cardno=%d",
-			$fetchW['total'],$fetchW['card_no']);
-		$dbc->query($upQ);
+		$dbc->exec_statement($upP,array($fetchW['total'],$fetchW['card_no']));
 	}
 	
 	echo '<i>Rewards loaded</i>';

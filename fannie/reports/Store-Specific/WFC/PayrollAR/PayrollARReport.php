@@ -53,7 +53,7 @@ class PayrollARReport extends FannieReportPage {
 	function fetch_report_data(){
 		global $dbc, $FANNIE_TRANS_DB;
 
-		$query = "SELECT c.CardNo,c.FirstName,c.LastName,c.memDiscountLimit,
+		$query = $dbc->prepare_statement("SELECT c.CardNo,c.FirstName,c.LastName,c.memDiscountLimit,
 			CASE WHEN s.cardNo IS NULL THEN 'no' ELSE 'yes' END as autodeduct,
 			x.FirstName,x.LastName,
 			y.FirstName,y.LastName,
@@ -65,14 +65,14 @@ class PayrollARReport extends FannieReportPage {
 			LEFT JOIN custdata AS z ON c.CardNo=z.CardNo AND z.personNum=4
 			WHERE c.personNum=1 AND c.memType in (3,9)
 			AND c.LastName <> 'NEW STAFF'
-			order by c.CardNo";
+			order by c.CardNo");
 	
 		/**
 		  Simple report
 		
 		  Issue a query, build array of results
 		*/
-		$result = $dbc->query($query);
+		$result = $dbc->exec_statement($query);
 		$ret = array();
 		while ($row = $dbc->fetch_array($result)){
 			$record = array();
