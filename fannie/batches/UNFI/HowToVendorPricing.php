@@ -27,7 +27,7 @@ Step 2: That file is probably too big. Right click on it and select
 <br />
 <hr />
 <br />
-Step 3: Go to the <a href=uploadPriceSheet.php>upload page</a>, click Browse, and select
+Step 3: Go to the <a href=UploadVendorPriceFile.php>upload page</a>, click Browse, and select
 the zip file you just made (if done as above, it should be named 
 <i>unfi.csv.zip</i>). Click Upload File and wait. It can take a while
 for a big price file.<br />

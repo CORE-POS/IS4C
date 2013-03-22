@@ -47,31 +47,40 @@
 	$queryAll = "SELECT YEAR(tdate) AS year, MONTH(tdate) AS month, DAY(tdate) AS day,
 		COUNT(DISTINCT trans_num) as trans_count
 		FROM $dlog AS d 
-		WHERE tdate BETWEEN '$date1 00:00:00' AND '$date2 23:59:59'
+		WHERE tdate BETWEEN ? AND ?
 		GROUP BY YEAR(tdate), MONTH(tdate), DAY(tdate)
 		ORDER BY YEAR(tdate), MONTH(tdate), DAY(tdate)";
+	$argsAll = array($date1.' 00:00:00',$date2.' 23:59:59');
 
 	$querySelected = "SELECT YEAR(tdate) AS year, MONTH(tdate) AS month, DAY(tdate) AS day,
 		COUNT(DISTINCT trans_num) as trans_count
 		FROM $dlog AS d ";
 	if ($buyer != -999)
 		$querySelected .= " LEFT JOIN superdepts AS s ON d.department=s.dept_ID ";
-	$querySelected .= " WHERE tdate BETWEEN '$date1 00:00:00' AND '$date2 23:59:59' ";
-	if ($buyer != -999)
-		$querySelected .= " AND s.superID=".((int)$buyer);
-	else
-		$querySelected .= sprintf(" AND department BETWEEN %d AND %d", $deptStart, $deptEnd);
+	$querySelected .= " WHERE tdate BETWEEN ? AND ? ";
+	$argsSel = $argsAll;
+	if ($buyer != -999){
+		$querySelected .= " AND s.superID=? ";
+		$argsSel[] = $buyer;
+	}
+	else{
+		$querySelected .= " AND department BETWEEN ? AND ?";
+		$argsSel[] = $deptStart;
+		$argsSel[] = $deptEnd;
+	}
 	$querySelected .= " GROUP BY YEAR(tdate), MONTH(tdate), DAY(tdate)";
 
 	$dataset = array();
 
-	$result = $dbc->query($queryAll);
+	$prep = $dbc->prepare_statement($queryAll);
+	$result = $dbc->exec_statement($prep,$argsAll);
 	while($row = $dbc->fetch_row($result)){
 		$datestr = sprintf("%d/%d/%d",$row['month'],$row['day'],$row['year']);
 		$dataset[$datestr] = array('ttl'=>$row['trans_count'],'sub'=>0);
 	}
 
-	$result = $dbc->query($querySelected);
+	$prep = $dbc->prepare_statement($querySelected);
+	$result = $dbc->exec_statement($prep,$argsSel);
 	while($row = $dbc->fetch_row($result)){
 		$datestr = sprintf("%d/%d/%d",$row['month'],$row['day'],$row['year']);
 		if (isset($dataset[$datestr]))

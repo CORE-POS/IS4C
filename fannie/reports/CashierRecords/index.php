@@ -28,14 +28,14 @@ if (isset($_GET['date'])){
   $date2 = $_GET['date2'];
   $dlog = select_dlog($date,$date2);
 
-  $q = "select emp_no,sum(-total),count(*)/2,
+  $q = $dbc->prepare_statement("select emp_no,sum(-total),count(*)/2,
 	year(tdate),month(tdate),day(tdate)
         from $dlog as d where
-	tdate BETWEEN '$date 00:00:00' AND '$date2 23:59:59'
+	tdate BETWEEN ? AND ?
 	AND trans_type='T'
 	GROUP BY year(tdate),month(tdate),day(tdate),emp_no
-	ORDER BY sum(-total) DESC";
-  $r = $dbc->query($q);
+	ORDER BY sum(-total) DESC");
+  $r = $dbc->exec_statement($q,array($date.' 00:00:00',$date2.' 23:59:59'));
 ?>
 <table cellspacing="0" border="1" cellpadding="4"><tr><th>Emp#</th><th>Date</th><th>$</th><th># of Trans (approx)</th></tr>
 <?php

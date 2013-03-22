@@ -56,14 +56,14 @@ class ProduceSign extends SignClass {
 		global $dbc, $FANNIE_URL;
 		
 		$upc = str_pad($_REQUEST['search_desc'],13,'0',STR_PAD_LEFT);
-		$q = "SELECT CASE WHEN u.brand IS NULL THEN '' ELSE u.brand END as origin,
+		$q = $dbc->prepare_statement("SELECT CASE WHEN u.brand IS NULL THEN '' ELSE u.brand END as origin,
 			CASE WHEN u.description IS NULL THEN p.description ELSE u.description END as goodDesc,
 			CASE WHEN p.discounttype IN (1,2) THEN special_price ELSE normal_price END as price,
 			CASE WHEN p.discounttype in (1,2) THEN 'SALE' ELSE 'REG' END as onSale,
 			p.scale,p.local
 			FROM products AS p LEFT JOIN productUser AS u ON p.upc=u.upc
-			WHERE p.upc=".$dbc->escape($upc);
-		$r = $dbc->query($q);
+			WHERE p.upc=?");
+		$r = $dbc->exec_statement($q,array($upc));
 		$w = $dbc->fetch_row($r);
 		?>
 		<script type="text/javascript">

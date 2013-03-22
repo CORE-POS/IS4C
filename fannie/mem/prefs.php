@@ -39,16 +39,13 @@ else {
 		$pk = isset($_REQUEST['pref_k']) ? $_REQUEST['pref_k'] : array();
 		$pv = isset($_REQUEST['pref_v']) ? $_REQUEST['pref_v'] : array();
 		if (is_array($pk) && is_array($pv) && count($pk)==count($pv)){
+			$delP = $dbc->prepare_statement("DELETE FROM custPreferences
+				WHERE card_no=? AND pref_key=?");
+			$insP = $dbc->prepare_statement("INSERT INTO custPreferences
+				(card_no, pref_key, pref_value) VALUES (?,?,?)");
 			for($i=0;$i<count($pk);$i++){
-				$dbc->query(sprintf("DELETE FROM custPreferences
-					WHERE card_no=%d AND pref_key=%s",
-					$cardno, $dbc->escape($pk[$i])
-				));
-				$dbc->query(sprintf("INSERT INTO custPreferences
-					(card_no, pref_key, pref_value) VALUES
-					(%d, %s, %s)", $cardno,
-					$dbc->escape($pk[$i]),$dbc->escape($pv[$i])
-				));
+				$dbc->exec_startment($delP,array($cardno,$pk[$i]));
+				$dbc->exec_statement($insP,array($cardno,$pk[$i],$pv[$i]));
 			}
 			echo '<div align="center"><i>Settings Saved</i></div>';
 		}
@@ -58,15 +55,15 @@ else {
 	echo '<form action="prefs.php" method="post">';
 	printf('<input type="hidden" value="%d" name="memID" />',$cardno);
 
-	$prefQ = sprintf("SELECT a.pref_key,
+	$prefQ = $dbc->prepare_statement("SELECT a.pref_key,
 		CASE WHEN c.pref_value IS NULL THEN a.pref_default_value ELSE c.pref_value END
 		AS current_value,
 		a.pref_description
 		FROM custAvailablePrefs AS a
 		LEFT JOIN custPreferences AS c
-		ON a.pref_key=c.pref_key AND c.card_no=%d
-		ORDER BY a.pref_key",$cardno);
-	$prefR = $dbc->query($prefQ);
+		ON a.pref_key=c.pref_key AND c.card_no=?
+		ORDER BY a.pref_key");
+	$prefR = $dbc->exec_statement($prefQ,array($cardno));
 	echo '<table cellpadding="4" cellspacing="0" border="1">';
 	echo '<tr><th>Setting</th><th>Value</th></tr>';	
 	while($prefW = $dbc->fetch_row($prefR)){

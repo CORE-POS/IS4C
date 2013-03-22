@@ -88,7 +88,7 @@ if (isset($_REQUEST['submit'])){
 			ON d.dept_no=t.department LEFT JOIN
 			MasterSuperDepts AS s ON t.department=s.dept_ID
 			WHERE 
-			(tDate BETWEEN '$d1 00:00:00' AND '$d2 23:59:59') 
+			(tDate BETWEEN ? AND ?)
 			AND (s.superID > 0 OR s.superID IS NULL) 
 			AND t.trans_type in ('I','D')
 			AND t.trans_status not in ('D','X','Z')
@@ -108,7 +108,7 @@ if (isset($_REQUEST['submit'])){
 			MasterSuperDepts AS s ON s.dept_ID=p.department LEFT JOIN
 			MasterSuperDepts AS r ON r.dept_ID=t.department
 			WHERE
-			(tDate BETWEEN '$d1 00:00:00' AND '$d2 23:59:59') 
+			(tDate BETWEEN ? AND ?)
 			AND t.trans_type in ('I','D')
 			AND t.trans_status not in ('D','X','Z')
 			AND t.emp_no not in (7000, 9999)
@@ -125,7 +125,8 @@ if (isset($_REQUEST['submit'])){
 			CASE WHEN e.dept_no IS NULL THEN d.dept_no ELSE e.dept_no end";
 	}
 	$supers = array();
-	$salesR = $dbc->query($sales);
+	$prep = $dbc->prepare_statement($sales);
+	$salesR = $dbc->exec_statement($prep,array($d1.' 00:00:00',$d2.' 23:59:59'));
 	
 	$curSuper = 0;
 	$grandTotal = 0;

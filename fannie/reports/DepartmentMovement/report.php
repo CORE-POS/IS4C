@@ -21,8 +21,12 @@
 
 *********************************************************************************/
 
+exit;
+
 
 /* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+	* 17Feb13 Andy Theuninck this is not SQL-safe; DepartmentMovementReport.php
+		  replaces it. This file will be removed from the tree soon.
 	* 19Feb13 Eric Lee Coulumn-head sort links for sum-by-Department reports.
 	*         Sort-sensitive initial setting of $dir.
 	*         Use $dir in non-PLU queries.
