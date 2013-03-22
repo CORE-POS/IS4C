@@ -67,9 +67,12 @@ class CoopDealsUploadPage extends FannieUploadPage {
 	function process_file($linedata){
 		global $FANNIE_OP_DB;
 		$dbc = FannieDB::get($FANNIE_OP_DB);
-		if ($dbc->table_exists('tempCapPrices'))
-			$dbc->query("DROP TABLE tempCapPrices");
-		$dbc->query("CREATE TABLE tempCapPrices (upc varchar(13), price decimal(10,2), abtpr varchar(3))");
+		if ($dbc->table_exists('tempCapPrices')){
+			$drop = $dbc->prepare_statement("DROP TABLE tempCapPrices");
+			$dbc->exec_statement($drop);
+		}
+		$create = $dbc->prepare_statement("CREATE TABLE tempCapPrices (upc varchar(13), price decimal(10,2), abtpr varchar(3))");
+		$dbc->exec_statement($create);
 
 		$SUB = $this->get_column_index('sub');
 		$UPC = $this->get_column_index('upc');
