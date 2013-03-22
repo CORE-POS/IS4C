@@ -95,9 +95,27 @@ class MemberSearchPage extends FanniePage {
 	}
 
 	function form_content(){
-		global $FANNIE_MEMBER_MODULES;
+		global $FANNIE_MEMBER_MODULES, $FANNIE_OP_DB;
+		$ret = '';
 
-		$ret = '<form action="MemberSearchPage.php" method="post">';
+		$review = FormLib::get_form_value('review',False);
+		if ($review !== False){
+			$ret .= '<fieldset><legend>Review</legend>';
+			$dbc = FannieDB::get($FANNIE_OP_DB);
+			$prep = $dbc->prepare_statement('SELECT LastName,FirstName FROM custdata
+					WHERE personNum=1 AND CardNo=?');
+			$res = $dbc->exec_statement($prep,array($review));
+			$ret .= 'Saved Member #'.$review.' (';
+			if ($dbc->num_rows($res) > 0){
+				$row = $dbc->fetch_row($res);
+				$ret .= $row['FirstName'].' '.$row['LastName'];
+			}
+			$ret .= ')';
+			$ret .= '<br /><a href="MemberEditor.php?memNum='.$review.'">Edit Again</a>';
+			$ret .= '</fieldset>';
+		}
+
+		$ret .= '<form action="MemberSearchPage.php" method="post">';
 		$ret .= '<p><b>Member Number</>: <input type="text" name="memNum" id="mn" size="5" /></p>';
 		foreach($FANNIE_MEMBER_MODULES as $mm){
 			include('modules/'.$mm.'.php');
@@ -120,9 +138,14 @@ class MemberSearchPage extends FanniePage {
 			$ret .= "<i>Error</i>: No matching member found";
 		}
 		else {
+			$list = '';
+			foreach($this->results as $cn => $name){
+				if (strlen($list) > 1900) break; // avoid excessively long URLs
+				$list .= '&l[]='.$cn;
+			}
 			$ret .= "<ul>";
 			foreach($this->results as $cn => $name){
-				$ret .= "<li><a href=\"MemberEditor.php?memNum=$cn\">$cn $name</a></li>";
+				$ret .= "<li><a href=\"MemberEditor.php?memNum=$cn$list\">$cn $name</a></li>";
 			}
 			$ret .= "</ul>";
 		}
