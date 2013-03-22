@@ -38,7 +38,7 @@ class MemberEditor extends FanniePage {
 	private $msgs = '';
 
 	function preprocess(){
-		global $FANNIE_COUNTRY, $FANNIE_MEMBER_MODULES;
+		global $FANNIE_COUNTRY, $FANNIE_MEMBER_MODULES, $FANNIE_OP_DB;
 
 		$this->country = (isset($FANNIE_COUNTRY)&&!empty($FANNIE_COUNTRY))?$FANNIE_COUNTRY:"US";
 		$this->memNum = FormLib::get_form_value('memNum',False);
@@ -46,16 +46,86 @@ class MemberEditor extends FanniePage {
 			$this->title .= $this->memNum;
 			$this->header .= $this->memNum;
 
+			/* start building prev/next links */
+			$prev = ''; $prevLink='';
+			$next = ''; $nextLink='';
+			$list = FormLib::get_form_value('l');
+			if (is_array($list)){
+				// list mode
+				for($i=0;$i<count($list);$i++){
+					if ($list[$i] == $this->memNum){
+						if (isset($list[$i-1]))
+							$prev = $list[$i-1];
+						if (isset($list[$i+1]))
+							$next = $list[$i+1];
+					}
+				}
+			}
+			else {
+				$dbc = FannieDB::get($FANNIE_OP_DB);
+				$prevP = $dbc->prepare_statement('SELECT MAX(CardNo) FROM custdata WHERE CardNo < ?');
+				$prevR = $dbc->exec_statement($prevP,array($this->memNum));
+				if ($dbc->num_rows($prevR) > 0)
+					$prev = array_pop($dbc->fetch_row($prevR));
+				$nextP = $dbc->prepare_statement('SELECT MIN(CardNo) FROM custdata WHERE CardNo > ?');
+				$nextR = $dbc->exec_statement($nextP,array($this->memNum));
+				if ($dbc->num_rows($nextR) > 0)
+					$next = array_pop($dbc->fetch_row($nextR));
+			}
+
+			if ($prev != ''){
+				$prevLink = '<a id="prevLink" href="MemberEditor.php?memNum='.$prev;
+				if (is_array($list)){
+					foreach($list as $l) $prevLink .= '&l[]='.$l;	
+				}
+				$prevLink .= '">';
+				$prevLink .= (is_array($list)) ? 'Prev Match' : 'Prev';
+				$prevLink .= '</a>';
+			}
+			if ($next != ''){
+				$nextLink = '<a id="nextLink" href="MemberEditor.php?memNum='.$next;
+				if (is_array($list)){
+					foreach($list as $l) $nextLink .= '&l[]='.$l;
+				}
+				$nextLink .= '">';
+				$nextLink .= (is_array($list)) ? 'Next Match' : 'Next';
+				$nextLink .= '</a>';
+			}
+
+			if (!empty($prevLink))
+				$this->header .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'.$prevLink;
+			if (!empty($nextLink))
+				$this->header .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'.$nextLink;
+			/* end building prev/next links */
+
 			/* form was submitted. save input. */
 			if (FormLib::get_form_value('saveBtn',False) !== False){
+				$whichBtn = FormLib::get_form_value('saveBtn');
 				foreach($FANNIE_MEMBER_MODULES as $mm){
 					if (!class_exists($mm))
 						include('modules/'.$mm.'.php');
 					$instance = new $mm();
 					$this->msgs .= $instance->SaveFormData($this->memNum);
 				}
-				if (!empty($this->msgs))
+
+				if (!empty($this->msgs)){
+					// implies: errors occurred
+					// stay on this page
 					$this->msgs .= '<hr />';
+				}
+				else {
+					// By default, go back to search page w/ review info.
+					// If user clicked Save & Next and another match is
+					// available, edit the next match
+					$loc = 'MemberSearchPage.php?review='.$this->memNum;
+					if($whichBtn == 'Save & Next' && !empty($next)){
+						$loc = 'MemberEditor.php?memNum='.$next;
+						foreach($list as $l)
+							$loc .= '&l[]='.$l;
+					}
+					header('Location: '.$loc);
+					return False;
+				}
 			}
 		}
 		else {
@@ -72,8 +142,15 @@ class MemberEditor extends FanniePage {
 		if (!empty($this->msgs)){
 			$ret .= $this->msgs;
 		}
+
+		$list = FormLib::get_form_value('l');
+
 		$ret .= '<form action="MemberEditor.php" method="post">';
 		$ret .= sprintf('<input type="hidden" name="memNum" value="%d" />',$this->memNum);
+		if (is_array($list)){
+			foreach($list as $l)
+				$ret .= sprintf('<input type="hidden" name="l[]" value="%d" />',$l);
+		}
 		foreach($FANNIE_MEMBER_MODULES as $mm){
 			if (!class_exists($mm))
 				include('modules/'.$mm.'.php');
@@ -84,7 +161,13 @@ class MemberEditor extends FanniePage {
 		}
 		$ret .= '<div style="clear:left;"></div>';
 		$ret .= '<hr />';
-		$ret .= '<input type="submit" name="saveBtn" value="Save Changes" />';
+		if (is_array($list)){
+			$ret .= '<input type="submit" name="saveBtn" value="Save" />';
+			$ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
+			$ret .= '<input type="submit" name="saveBtn" value="Save &amp; Next" />';
+		}
+		else
+			$ret .= '<input type="submit" name="saveBtn" value="Save" />';
 		$ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
 		$ret .= '<input type="reset" value="Undo Changes" />';
 		$ret .= '</form>';
