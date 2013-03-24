@@ -87,6 +87,9 @@ Maintenance:
 */
 /*--COMMENTS - - - - - - - - - - - - - - - - - - - -
 
+ * 12Dec12 EL Field LastChange
+ *            MSSQL will probably need support like described at:
+ *             http://www.dociletree.co.za/mssql-and-on-update/
  * 22Oct12 EL Comment about cron update of Balance.
  *         EL Comment about ChargeOK
  *         EL Maintenance section in comments.
@@ -116,10 +119,12 @@ $CREATE['op.custdata'] = "
 	  `memCoupons` int(11) NOT NULL default '1',
 	  `blueLine` varchar(50) default NULL,
 	  `Shown` tinyint(4) NOT NULL default '1',
+	  `LastChange` timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
 	  `id` int(11) NOT NULL auto_increment,
 	  PRIMARY KEY  (`id`),
 	  KEY `CardNo` (`CardNo`),
-	  KEY `LastName` (`LastName`)
+	  KEY `LastName` (`LastName`),
+	  KEY `LastChange` (`LastChange`)
 	)
 ";
 
@@ -146,6 +151,7 @@ if ($dbms == "MSSQL"){
 			[memCoupons] [int] NULL ,
 			[blueLine] [varchar] (50) COLLATE SQL_Latin1_General_CP1_CI_AS NULL ,
 			[Shown] [tinyint] NULL ,
+			[LastChange] [datetime] NULL ,
 			[id] [int] IDENTITY (1, 1) NOT NULL 
 		) ON [PRIMARY]
 	";
