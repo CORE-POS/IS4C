@@ -24,7 +24,8 @@
 
 /* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-	 7Sep2012 Eric Lee Display vendorID in select.
+ * 18Oct2012 EL Change select size from 2 to 3 because at 2 some are skipped.
+ *  7Sep2012 Eric Lee Display vendorID in select.
 	                   Display both "Select" and "New" options.
 
 */
@@ -49,7 +50,7 @@ while($rw = $dbc->fetch_row($rp)){
 	type="text/javascript"></script>
 <script src="index.js" type="text/javascript"></script>
 <div id="vendorarea">
-<select size="2" onchange="vendorchange();" id=vendorselect>
+<select size="3" onchange="vendorchange();" id=vendorselect>
 <?php echo $vendors; ?>
 </select>
 </div>
