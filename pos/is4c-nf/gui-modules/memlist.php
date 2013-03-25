@@ -21,6 +21,15 @@
 
 *********************************************************************************/
 
+/* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+	*  5Oct2012 Eric Lee Added:
+	*                    + A WEFC_Toronto-only chunk for collecting Member Card#
+	*                    + A general facility for displaying an error encountered in preprocess()
+	*                       in body_content() using temp_message.
+
+*/
+
 ini_set('display_errors','1');
 
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
@@ -31,6 +40,7 @@ class memlist extends NoInputPage {
 	var $temp_num_rows;
 	var $entered;
 	var $db;
+	var $temp_message;
 
 	function preprocess(){
 		global $CORE_LOCAL;
@@ -56,6 +66,7 @@ class memlist extends NoInputPage {
 
 		$personNum = 1;
 		$selected_name = False;
+		// Values of memlist items are "CardNo::personNum"
 		if (strstr($entered,"::") !== False){
 			$tmp = explode("::",$entered);
 			$entered = $tmp[0];
@@ -75,13 +86,15 @@ class memlist extends NoInputPage {
 		$memberID = $entered;
 		$db_a = Database::pDataConnect();
 
-		$query = "select CardNo,personNum,LastName,FirstName,CashBack,Balance,Discount,
-			MemDiscountLimit,ChargeOk,WriteChecks,StoreCoupons,Type,memType,staff,
-			SSI,Purchases,NumberOfChecks,memCoupons,blueLine,Shown,id from custdata 
-			where CardNo = '".$entered."' order by personNum";
 		if (!is_numeric($entered)) {
 			$query = "select CardNo,personNum,LastName,FirstName from custdata 
 				where LastName like '".$entered."%' order by LastName, FirstName";
+		}
+		else {
+			$query = "select CardNo,personNum,LastName,FirstName,CashBack,Balance,Discount,
+				MemDiscountLimit,ChargeOk,WriteChecks,StoreCoupons,Type,memType,staff,
+				SSI,Purchases,NumberOfChecks,memCoupons,blueLine,Shown,id from custdata 
+				where CardNo = '".$entered."' order by personNum";
 		}
 
 		$result = $db_a->query($query);
@@ -93,16 +106,57 @@ class memlist extends NoInputPage {
 			$personNum = 1;
 		}
 
-		// if there's on result and either
+		// if there's one result and either
 		// a. it's the default nonmember account or
 		// b. it's been confirmed in the select box
 		// then set the member number
-		if (($num_rows == 1 && $entered == $CORE_LOCAL->get("defaultNonMem"))
-			||
-		    (is_numeric($entered) && is_numeric($personNum) && $selected_name) ){
+		// proceed/return to the appropriate next page
+		if ( ($num_rows == 1 && $entered == $CORE_LOCAL->get("defaultNonMem"))
+				||
+		    (is_numeric($entered) && is_numeric($personNum) && $selected_name) ) {
 			$row = $db_a->fetch_array($result);
 			PrehLib::setMember($row["CardNo"], $personNum,$row);
 			$CORE_LOCAL->set("scan","scan");
+
+			// WEFC_Toronto: If a Member Card # was entered when the choice from the list was made,
+			// add the memberCards record.
+			if ( $CORE_LOCAL->get('store') == "WEFC_Toronto" ) {
+				$mmsg = "";
+				if ( isset($_REQUEST['memberCard']) && $_REQUEST['memberCard'] != "" ) {
+					$memberCard = $_REQUEST['memberCard'];
+					if ( !is_numeric($memberCard) || strlen($memberCard) > 5 || $memberCard == 0 ) {
+						$mmsg = "Bad Member Card# format >{$memberCard}<";
+					}
+					else {
+						$upc = sprintf("00401229%05d", $memberCard);
+						// Check that it isn't already there, perhaps for someone else.
+						$mQ = "SELECT card_no FROM memberCards where card_no = {$row['CardNo']}";
+						$mResult = $db_a->query($mQ);
+						$mNumRows = $db_a->num_rows($mResult);
+						if ( $mNumRows > 0 ) {
+							$mmsg = "{$row['CardNo']} is already associated with another Member Card";
+						}
+						else {
+							$mQ = "INSERT INTO memberCards (card_no, upc) VALUES ({$row['CardNo']}, '$upc')";
+							$mResult = $db_a->query($mQ);
+							if ( !$mResult ) {
+								$mmsg = "Linking membership to Member Card failed.";
+							}
+						}
+					}
+				}
+				if ( $mmsg != "" ) {
+					// Prepare to display the error.
+					$this->temp_result = $result;
+					$this->temp_num_rows = $num_rows;
+					$this->entered = $entered;
+					$this->db = $db_a;
+					$this->temp_message = $mmsg;
+					return True;
+				}
+			// /WEFC_Toronto bit.
+			}
+
 			if ($entered != $CORE_LOCAL->get("defaultNonMem") && PrehLib::check_unpaid_ar($row["CardNo"]))
 				$this->change_page($this->page_url."gui-modules/UnpaidAR.php");
 			else
@@ -110,11 +164,14 @@ class memlist extends NoInputPage {
 			return False;
 		}
 
+		// Prepare to display the memlist (list to choose from).
 		$this->temp_result = $result;
 		$this->temp_num_rows = $num_rows;
 		$this->entered = $entered;
 		$this->db = $db_a;
+		$this->temp_message = "";
 		return True;
+
 	} // END preprocess() FUNCTION
 
 	function head_content(){
@@ -158,14 +215,28 @@ class memlist extends NoInputPage {
 		$result = $this->temp_result;
 		$entered = $this->entered;
 		$db = $this->db;
+		$message = $this->temp_message;
 
 		echo "<div class=\"baseHeight\">"
 			."<form id=\"selectform\" method=\"post\" action=\"{$_SERVER['PHP_SELF']}\">";
 
+		// First check for a problem found in preprocess.
+		if ( $message != "" ) {
+			echo "
+			<div class=\"colored centeredDisplay\">
+				<span class=\"larger\">
+			{$message}<br />".
+			_("enter member number or name").
+			"</span>
+				<input type=\"text\" name=\"search\" size=\"15\"
+			       	onblur=\"\$('#reginput').focus();\" id=\"reginput\" />
+				<br />press [enter] to cancel
+			</div>";
+		}
 		/* for no results, just throw up a re-do
 		 * otherwise, put results in a select box
 		 */
-		if ($num_rows < 1){
+		elseif ($num_rows < 1) {
 			echo "
 			<div class=\"colored centeredDisplay\">
 				<span class=\"larger\">";
@@ -202,13 +273,26 @@ class memlist extends NoInputPage {
 				echo "<option value='".$row["CardNo"]."::".$row["personNum"]."' ".$selected.">"
 					.$row["CardNo"]." ".$row["LastName"].", ".$row["FirstName"]."\n";
 			}
-			echo "</select></div>"
+			echo "</select></div><!-- /.listbox -->"
 				."<div class=\"listboxText centerOffset\">"
-				._("use arrow keys to navigate")."<p>"._("clear to cancel")."</div>"
+				._("use arrow keys to navigate")."<p>"._("clear to cancel")."</div><!-- /.listboxText .centerOffset -->"
 				."<div class=\"clear\"></div>";
+
+			// A textbox for the Member Card number, to be added to the db for the selected member.
+			if ( $CORE_LOCAL->get('store') == "WEFC_Toronto" ) {
+				echo "<div style='text-align:left; margin-top: 0.5em;'>
+				<p style='margin: 0.2em 0em 0.2em 0em; font-size:0.8em;'>To link the member chosen above to a Member Card:</p>";
+				echo "<span style='font-weight:bold;'>Member Card#:</span> <input name='memberCard' id='memberCard' width='20' title='The digits after 01229, no leading zeroes, not the final, small check-digit' />";
+				echo "<p style='margin-top: 0.2em; font-size:0.8em;'>If the back of the card has: '4 01229 00125 7' enter 125
+				<br />Then the card should be recognized in the scan.</p>";
+				echo "</div>";
+			}
+
 		}
 		echo "</form></div>";
 	} // END body_content() FUNCTION
+
+// /class memlist
 }
 
 new memlist();
