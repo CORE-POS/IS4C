@@ -14,6 +14,7 @@ if (!$user && !isset($_POST['action'])){
 }
 
 include($FANNIE_ROOT.'src/mysql_connect.php');
+$sql = $dbc;
 
 /* actions via POST are AJAX requests */
 if (isset($_POST['action'])){
@@ -25,15 +26,15 @@ if (isset($_POST['action'])){
 	$resolved = $_POST['resolved'];
 	$notes = $_POST['notes'];
 	
-	$checkQ = "select username from overshortsLog where date='$date'";
-	$checkR = $sql->query($checkQ);
+	$checkQ = $sql->prepare_statement("select username from overshortsLog where date=?");
+	$checkR = $sql->exec_statement($checkQ,array($date));
 	if ($sql->num_rows($checkR) == 0){
-		$insQ = "insert into overshortsLog values ('$date','$user',$resolved)";
-		$insR = $sql->query($insQ);
+		$insQ = $sql->prepare_statement("insert into overshortsLog values (?,?,?)");
+		$insR = $sql->exec_statement($insQ,array($date,$user,$resolved));
 	}
 	else {
-		$upQ = "update overshortsLog set username='$user',resolved=$resolved where date='$date'";
-		$upR = $sql->query($upQ);
+		$upQ = $sql->prepare_statement("update overshortsLog set username=?,resolved=? where date=?");
+		$upR = $sql->exec_statement($upQ,array($user,$resolved,$date));
 	}
 	
 	save($date,$data);
@@ -45,12 +46,12 @@ if (isset($_POST['action'])){
 		require($FANNIE_ROOT."src/select_dlog.php");
 		$dlog = select_dlog($date);
 		/* determine who worked that day (and their first names) */
-		$empsQ = "select e.firstname,d.emp_no,-1*sum(total) as total,trans_subtype,t.TenderName
+		$empsQ = $sql->prepare_statement("select e.firstname,d.emp_no,-1*sum(total) as total,trans_subtype,t.TenderName
 			from $dlog as d,employees as e, tenders as t where
-		      ".$dbc->datediff('d.tdate',"'$date'")." = 0 and trans_type='T' and d.emp_no = e.emp_no
+		      ".$sql->datediff('d.tdate',"?")." = 0 and trans_type='T' and d.emp_no = e.emp_no
 			AND d.trans_subtype=t.TenderCode	
-		      group by d.emp_no,e.firstname,trans_subtype,TenderName order by e.firstname,trans_subtype";
-		$empsR=$dbc->query($empsQ);
+		      group by d.emp_no,e.firstname,trans_subtype,TenderName order by e.firstname,trans_subtype");
+		$empsR=$sql->exec_statement($empsQ,array($date));
 		$output = "<h3 id=currentdate>$date</h3>";
 		//$output .= "<form onsubmit=\"excel(); return false;\" >";
 		$output .= "<form onsubmit=\"save(); return false;\">";
@@ -70,7 +71,7 @@ if (isset($_POST['action'])){
 		$tnames = array();
 
 		// gather POS totals
-		while ($row = $dbc->fetch_array($empsR)){
+		while ($row = $sql->fetch_array($empsR)){
 			$id = $row['emp_no'];
 			if (!isset($empTTL[$id])){
 				$empTTL[$id] = array();
@@ -86,18 +87,18 @@ if (isset($_POST['action'])){
 		}
 
 		// gather counted totals
-		$query = "SELECT emp_no,amt,tender_type FROM dailyCounts WHERE date='$date'";
-		$result = $dbc->query($query);
-		while($row = $dbc->fetch_row($result)){
+		$query = $sql->prepare_statement("SELECT emp_no,amt,tender_type FROM dailyCounts WHERE date=?");
+		$result = $sql->exec_statement($query,array($date));
+		while($row = $sql->fetch_row($result)){
 			$id = $row['emp_no'];
 			$tender = strtoupper($row['tender_type']);
 			$empTTL[$id]['count_tenders'][$tender] = $row['amt'];
 		}
 
 		// gather notes
-		$noteQ = "select emp_no,note from dailyNotes where date='$date'";
-		$noteR = $dbc->query($noteQ);
-		while($noteW = $dbc->fetch_array($noteR)){
+		$noteQ = $sql->prepare_statement("select emp_no,note from dailyNotes where date=?");
+		$noteR = $sql->exec_statement($noteQ,array($date));
+		while($noteW = $sql->fetch_array($noteR)){
 			$id = $noteW['emp_no'];
 			$note = stripslashes($noteW['note']);
 			if ($id == -1) $overallnote = $note;
@@ -199,9 +200,9 @@ if (isset($_POST['action'])){
 
 		$output .= "</table>";
     
-		$extraQ = "select username, resolved from overshortsLog where date='$date'";
-		$extraR = $dbc->query($extraQ);
-		$extraW = $dbc->fetch_array($extraR);
+		$extraQ = $sql->prepare_statement("select username, resolved from overshortsLog where date=?");
+		$extraR = $sql->exec_statement($extraQ,array($date));
+		$extraW = $sql->fetch_array($extraR);
 		$output .= "This date last edited by: <span id=lastEditedBy><b>$extraW[0]</b></span><br />";
 		$output .= "<input type=submit value=Save />";
 		$output .= "<input type=checkbox id=resolved ";
@@ -227,21 +228,21 @@ function save($date,$data){
 		if (count($temp) != 2) continue;
 		$cashier = $temp[0];
 		$tenders = explode(';',$temp[1]);
+		$checkQ = $sql->prepare_statement("select emp_no from dailyCounts
+				  where date=? and emp_no=? and tender_type=?");
+		$insQ = $sql->prepare_statement("insert into dailyCounts values (?,?,?,?)");
+		$upQ = $sql->prepare_statement("update dailyCounts set amt=? where date=? and emp_no=? and tender_type=?");
 		foreach($tenders as $t){
 			$temp = explode('|',$t);
 			$tender_type = $temp[0];
 			$amt = rtrim($temp[1]);
 			if ($amt != ''){
-				$checkQ = "select emp_no from dailyCounts
-						  where date='$date' and emp_no=$cashier and tender_type='$tender_type'";
-				$checkR = $sql->query($checkQ);
+				$checkR = $sql->exec_statement($checkQ,array($date,$cashier,$tender_type));
 				if ($sql->num_rows($checkR) == 0){
-					$insQ = "insert into dailyCounts values ('$date',$cashier,'$tender_type',$amt)";
-					$insR = $sql->query($insQ);
+					$insR = $sql->exec_statement($insQ,array($date,$cashier,$tender_type,$amt));
 				}
 				else {
-					$upQ = "update dailyCounts set amt=$amt where date='$date' and emp_no=$cashier and tender_type='$tender_type'";
-					$upR = $sql->query($upQ);
+					$upR = $sql->exec_statement($upQ,array($amt,$date,$cashier,$tender_type));
 				}
 			}
 		}
@@ -251,20 +252,20 @@ function save($date,$data){
 function saveNotes($date,$notes){
 	global $sql;
 	$noteIDs = explode('`',$notes);
+	$checkQ = $sql->prepare_statement("select emp_no from dailyNotes where date=? and emp_no=?");
+	$insQ = $sql->prepare_statement("insert into dailyNotes values (?,?,?)");
+	$upQ = $sql->prepare_statement("update dailyNotes set note=? where date=? and emp_no=?");
 	foreach ($noteIDs as $n){
 		$temp = explode('|',$n);
 		$emp = $temp[0];
 		$note = str_replace("'","''",urldecode($temp[1]));
 		
-		$checkQ = "select emp_no from dailyNotes where date='$date' and emp_no=$emp";
-		$checkR = $sql->query($checkQ);
+		$checkR = $sql->exec_statement($checkQ,array($date,$emp));
 		if ($sql->num_rows($checkR) == 0){
-			$insQ = "insert into dailyNotes values ('$date',$emp,'$note')";
-			$insR = $sql->query($insQ);
+			$insR = $sql->exec_statement($insQ,array($date,$emp,$note));
 		}
 		else {
-			$upQ = "update dailyNotes set note='$note' where date='$date' and emp_no=$emp";
-			$upR = $sql->query($upQ);
+			$upR = $sql->exec_statement($upQ,array($note,$date,$emp));
 		}
 	}
 }

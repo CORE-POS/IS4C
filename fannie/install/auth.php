@@ -42,6 +42,8 @@ Authentication
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <a href="mem.php">Members</a>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<a href="prod.php">Products</a>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <a href="stores.php">Stores</a>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <a href="update.php">Updates</a>

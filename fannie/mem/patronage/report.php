@@ -40,7 +40,7 @@ else {
 	header('Content-Disposition: attachment; filename="patronage-draft.csv"');
 }
 
-$q = "SELECT p.cardno,c.LastName,c.FirstName,c.Type,
+$q = $dbc->prepare_statement("SELECT p.cardno,c.LastName,c.FirstName,c.Type,
 	CASE WHEN c.Type IN ('REG','PC') then a.memDesc
 	ELSE b.memDesc END as memDesc,
 	p.purchase,p.discounts,p.rewards,p.net_purch,
@@ -52,8 +52,8 @@ $q = "SELECT p.cardno,c.LastName,c.FirstName,c.Type,
 	LEFT JOIN suspensions AS s ON p.cardno=s.cardno
 	LEFT JOIN memtype AS a ON c.memType=a.memtype
 	LEFT JOIN memtype AS b ON s.memtype1=b.memtype
-	ORDER BY p.cardno";
-$r = $dbc->query($q);
+	ORDER BY p.cardno");
+$r = $dbc->exec_statement($q);
 echo '<table cellpadding="4" cellspacing="0" border="1">';
 echo '<tr><th>#</th><th>Last</th><th>First</th><th>Status</th>
 <th>Type</th><th>Gross</th><th>Discounts</th><th>Rewards</th>

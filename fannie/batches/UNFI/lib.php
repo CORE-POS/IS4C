@@ -24,9 +24,9 @@
 function getVendorID($scriptName){
 	global $dbc;
 
-	$query = sprintf("SELECT vendorID FROM vendorLoadScripts
-		WHERE loadScript=%s",$dbc->escape($scriptName));
-	$result = $dbc->query($query);
+	$query = $dbc->prepare_statement("SELECT vendorID FROM vendorLoadScripts
+		WHERE loadScript=?");
+	$result = $dbc->exec_statement($query,array($scriptName));
 
 	if (!$result || $dbc->num_rows($result) == 0)
 		return False;

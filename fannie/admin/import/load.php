@@ -75,6 +75,15 @@ $ORIGIN = (isset($_REQUEST['origin_col'])) ? (int)$_REQUEST['origin_col'] : 4;
 
 $tpath = sys_get_temp_dir()."/vendorupload/";
 $fp = fopen($tpath."lcimp.csv","r");
+$chkP = $dbc->prepare_statement("SELECT p.upc FROM products AS p INNER JOIN
+	upcLike AS u ON p.upc=u.upc WHERE
+	u.likeCode=? AND p.upc NOT IN (
+	select upc from productUser)");
+$ins = $dbc->prepare_statement("INSERT INTO productUser (upc) VALUES (?)");
+$up = $dbc->prepare_statement("UPDATE productUser AS p INNER JOIN
+	upcLike AS u ON p.upc=u.upc
+	SET p.description=?,
+	p.brand=? WHERE u.likeCode=?");
 while(!feof($fp)){
 	$line = fgets($fp);
 	$data = csv_parser($line);
@@ -90,22 +99,12 @@ while(!feof($fp)){
 	$o = $data[$ORIGIN];
 	if (!is_numeric($l) || $l != (int)$l) continue;
 
-	$q = "SELECT p.upc FROM products AS p INNER JOIN
-		upcLike AS u ON p.upc=u.upc WHERE
-		u.likeCode=$l AND p.upc NOT IN (
-		select upc from productUser)";
-	$r  = $dbc->query($q);
+	$r  = $dbc->exec_statement($chkP,array($l));
 	while($w = $dbc->fetch_row($r)){
-		$ins = "INSERT INTO productUser (upc) VALUES ('{$w['upc']}')";
-		$dbc->query($ins);
+		$dbc->exec_statement($ins,array($w['upc']));
 	}
 
-	$up = sprintf("UPDATE productUser AS p INNER JOIN
-		upcLike AS u ON p.upc=u.upc
-		SET p.description=%s,
-		p.brand=%s WHERE u.likeCode=%d",
-		$dbc->escape($d),$dbc->escape($o),$l);
-	$dbc->query($up);
+	$dbc->exec_statement($up,array($d,$o,$l));
 
 }
 fclose($fp);

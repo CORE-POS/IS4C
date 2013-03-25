@@ -49,9 +49,8 @@ echo "</form>";
 echo "<hr />";
 echo "<table cellspacing=0 cellpadding=4 border=1>
 	<tr><th>Date</th><th>Mem #</th><th>E-mail</th><th>Type</th></tr>";
-$q = sprintf("SELECT * FROM emailLog WHERE month(tdate)=%d AND year(tdate)=%d ORDER BY tdate",
-		$month,$year);
-$r = $dbc->query($q);
+$q = $dbc->prepare_statement("SELECT * FROM emailLog WHERE month(tdate)=? AND year(tdate)=? ORDER BY tdate");
+$r = $dbc->exec_statement($q,array($month,$year));
 while($w = $dbc->fetch_row($r)){
 	printf("<tr><td>%s</td><td>%d</td><td>%s</td><td>%s</td></tr>",
 		array_shift(explode(" ",$w[0])),$w[1],$w[2],$w[3]);

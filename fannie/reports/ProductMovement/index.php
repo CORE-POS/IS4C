@@ -21,6 +21,7 @@
 
 *********************************************************************************/
 header('Location: ProductMovementModular.php');
+exit;
 
 include('../../config.php');
 include($FANNIE_ROOT.'src/mysql_connect.php');

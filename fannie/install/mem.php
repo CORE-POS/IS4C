@@ -39,6 +39,8 @@ $FILEPATH = $FANNIE_ROOT;
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 Members 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<a href="prod.php">Products</a>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <a href="stores.php">Stores</a>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <a href="update.php">Updates</a>
@@ -83,7 +85,7 @@ printf("<input type=\"text\" name=\"FANNIE_AR_DEPARTMENTS\" value=\"%s\" />",$FA
 <hr />
 <b>Membership Information Modules</b> <br />
 The Member editing interface displayed after you select a member at:
-<br /><a href="/IS4C/fannie/mem/search.php" target="_mem">/IS4C/fannie/mem/search.php</a>
+<br /><a href="<?php echo $FANNIE_URL; ?>mem/MemberSearchPage.php" target="_mem"><?php echo $FANNIE_URL; ?>mem/MemberSearchPage.php</a>
 <br />consists of fields grouped in several sections, called modules, listed below.
 <br />The enabled (active) ones are selected/highlighted.
 <br />

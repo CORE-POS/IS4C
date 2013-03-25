@@ -38,26 +38,28 @@ if (isset($_GET['date1'])){
 	}
 
 
-	$dbc->query("CREATE TABLE groupingTempBS (year int, month int, day int, trans_num varchar(25))");
+	$create = $dbc->prepare_statement("CREATE TABLE groupingTempBS (year int, month int, day int, trans_num varchar(25))");
+	$dbc->exec_statement($create);
 
-	$setupQ = "SELECT year(tdate),month(tdate),day(tdate),trans_num
-		FROM $dlog AS d WHERE tdate BETWEEN '$date1 00:00:00'
-		AND '$date2 23:59:59' AND trans_type IN ('I','D')
+	$setupQ = $dbc->prepare_statement("INSERT INTO groupingTempBS
+		SELECT year(tdate),month(tdate),day(tdate),trans_num
+		FROM $dlog AS d WHERE tdate BETWEEN ? AND ?
+		AND trans_type IN ('I','D')
 		GROUP BY year(tdate),month(tdate),day(tdate),trans_num 
-		HAVING COUNT(*) <= $qty";
-	$dbc->query("INSERT INTO groupingTempBS ".$setupQ);
+		HAVING COUNT(*) <= ?");
+	$dbc->exec_statement($setupQ,array($date1.' 00:00:00',$date2.' 23:59:59',$qty));
 	
 	echo '<h3>Basket Size '.$qty.' or less</h3>';
 
-	$reportQ = "SELECT d.upc,description,sum(d.quantity),count(*),sum(total) FROM
+	$reportQ = $dbc->prepare_statement("SELECT d.upc,description,sum(d.quantity),count(*),sum(total) FROM
 		$dlog AS d INNER JOIN groupingTempBS as g ON
 		year(tdate)=g.year AND month(tdate)=g.month AND
 		day(tdate)=g.day AND d.trans_num=g.trans_num
 		LEFT JOIN products AS p ON d.upc=p.upc
 		WHERE trans_type IN ('I','D') GROUP BY
 		d.upc,description HAVING sum(total) <> 0
-		ORDER BY count(*) DESC";
-	$reportR = $dbc->query($reportQ);
+		ORDER BY count(*) DESC");
+	$reportR = $dbc->exec_statement($reportQ);
 
 	echo '<table cellspacing="0" cellpadding="4" border="1">';
 	echo '<tr><th>UPC</th><th>Description</th><th># Trans</th><th>Qty</th><th>$</th></tr>';
@@ -67,7 +69,8 @@ if (isset($_GET['date1'])){
 	}
 	echo '</table>';
 
-	$dbc->query("DROP TABLE groupingTempBS");
+	$drop = $dbc->prepare_statement("DROP TABLE groupingTempBS");
+	$dbc->exec_statement($drop);
 
 	return;
 }

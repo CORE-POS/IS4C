@@ -47,7 +47,19 @@ class drawerPage extends NoInputPage {
 
 		if (isset($_REQUEST['selectlist'])){
 			if (empty($_REQUEST['selectlist'])){
-				$this->change_page($this->page_url."gui-modules/pos2.php");
+				if (empty($this->available) && !$this->is_admin && $this->my_drawer == 0){
+					// no drawer available and not admin
+					// sign out and go back to main login screen
+					Database::setglobalvalue("LoggedIn", 0);
+					$CORE_LOCAL->set("LoggedIn",0);
+					$CORE_LOCAL->set("training",0);
+					$CORE_LOCAL->set("gui-scale","no");
+					$CORE_LOCAL->set("away",1);
+					$this->change_page($this->page_url."gui-modules/login2.php");
+				}
+				else {
+					$this->change_page($this->page_url."gui-modules/pos2.php");
+				}
 				return False;
 			}
 			if (substr($_REQUEST['selectlist'],0,2) == 'TO' && $this->is_admin){

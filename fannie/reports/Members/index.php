@@ -46,7 +46,7 @@ else {
 
 $trans = $FANNIE_TRANS_DB;
 if ($FANNIE_SERVER_DBMS=='MSSQL') $trans .= ".dbo";
-$q = "SELECT c.CardNo,
+$q = $dbc->prepare_statement("SELECT c.CardNo,
 		month(CASE WHEN m.start_date IS NULL then n.startdate ELSE m.start_date END),
 		day(CASE WHEN m.start_date IS NULL then n.startdate ELSE m.start_date END),
 		year(CASE WHEN m.start_date IS NULL then n.startdate ELSE m.start_date END),
@@ -63,8 +63,8 @@ $q = "SELECT c.CardNo,
 	ON s.reasonCode & r.mask <> 0
 	WHERE c.Type <> 'TERM' AND $where
 	AND c.personNum=1
-	ORDER BY c.CardNo";
-$r = $dbc->query($q);
+	ORDER BY c.CardNo");
+$r = $dbc->exec_statement($q);
 echo "<table cellspacing=0 cellpadding=4 border=1>
 	<tr><th>#</th><th>First Name</th><th>Last Name</th>
 	<th>Start</th><th>End</th><th>Equity</th>

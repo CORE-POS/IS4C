@@ -40,7 +40,7 @@ class MemCorrectionIndex extends FanniePage {
 		<li><a href="correction_pages/MemArTransferTool.php">AR Transfer</a></li>
 		<li><a href="correction_pages/MemArEquitySwapTool.php">AR/Equity Swap</a></li>
 		<li><a href="correction_pages/MemArEquityDumpTool.php">Remove AR/Equity</a></li>
-		<!--<li><a href="MemCorrectionIndex.php?type=patronage_transfer">Transfer Patronage</a></li>-->
+		<li><a href="correction_pages/PatronageTransferTool.php">Transfer Patronage</a></li>
 		</ul>
 		<?php
 		return $this->msgs.ob_get_clean();

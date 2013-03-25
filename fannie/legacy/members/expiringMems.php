@@ -5,7 +5,7 @@ header('Content-Disposition: attachment; filename="expiringMem.xls"');
 include('../../config.php');
 include($FANNIE_ROOT.'src/SQLManager.php');
 include('../db.php');
-include('functMem.php');
+include($FANNIE_ROOT.'src/functions.php');
 
 $query="SELECT DISTINCT m.lname,m.fname,e.*
 	FROM expingMems as e, memnames as m
@@ -14,7 +14,7 @@ $query="SELECT DISTINCT m.lname,m.fname,e.*
 	AND m.active = 1
 	order by e.memnum";
 
-select_to_table($query,0,'ffffff');
+select_to_table($query,array(),0,'ffffff');
 
 ?>
 

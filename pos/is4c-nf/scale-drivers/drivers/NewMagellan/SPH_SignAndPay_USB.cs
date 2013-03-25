@@ -126,10 +126,12 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
 		OpenDevice();
 		waiting_for_data = true;
 		SendReport(BuildCommand(LcdSetBacklightTimeout(0)));
-		//SendReport(BuildCommand(EnableAudio()));
 		SetStateStart();
+		#if MONO
+		MonoRead();
+		#else
 		ReRead();
-		//SetStateCardType();
+		#endif
 	}
 
 	private void SetStateStart(){
@@ -248,16 +250,7 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
 		current_state = STATE_MANUAL_CVV;
 	}
 
-	private void ReadCallback(IAsyncResult iar){
-		byte[] input = (byte[])iar.AsyncState;
-		try {
-			usb_fs.EndRead(iar);
-		}
-		catch (Exception ex){
-			if (this.verbose_mode > 0)
-				System.Console.WriteLine(ex);
-		}
-
+	private void HandleReadData(byte[] input){
 		int msg_sum = 0;
 		if (usb_report_size == 64){
 			byte[] temp_in = new byte[65];
@@ -267,11 +260,6 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
 				msg_sum += input[i];
 			}
 			input = temp_in;
-		}
-		if (msg_sum == 0) {
-			if (this.verbose_mode > 0)
-				System.Console.WriteLine("bailing");
-			waiting_for_data = false;
 		}
 
 		/* Data received, as bytes
@@ -288,7 +276,6 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
 		}
 
 		int report_length = input[1] & (0x80-1);
-
 		/*
 		 * Bit 7 turned on means a multi-report message
 		 */
@@ -374,10 +361,24 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
 			long_pos = 0;
 			long_buffer = null;
 		}
-		
-		if (!waiting_for_data)
-			System.Threading.Thread.Sleep(1000);
+	}
+
+	private void ReadCallback(IAsyncResult iar){
+		byte[] input = (byte[])iar.AsyncState;
+		try {
+			usb_fs.EndRead(iar);
+			HandleReadData(input);		
+		}
+		catch (Exception ex){
+			if (this.verbose_mode > 0)
+				System.Console.WriteLine(ex);
+		}
+
+		#if MONO
+		// do nothing
+		#else
 		ReRead();
+		#endif
 	}
 
 	private void HandleDeviceMessage(byte[] msg){
@@ -520,6 +521,20 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
 		waiting_for_data = true;
 		byte[] buf = new byte[usb_report_size];
 		usb_fs.BeginRead(buf, 0, usb_report_size, new AsyncCallback(ReadCallback), buf);
+	}
+
+	/**
+	  Mono doesn't support asynchronous reads correctly.
+	  BeginRead will block. Using ReRead with Mono will
+	  eventually make the stack blow up as ReRead and
+	  ReadCallback calls build up one after the other.
+	*/
+	private void MonoRead(){
+		waiting_for_data = true;
+		while(SPH_Running){
+			byte[] buf = new byte[usb_report_size];
+			usb_fs.BeginRead(buf, 0, usb_report_size, new AsyncCallback(ReadCallback), buf);
+		}
 	}
 
 	public override void HandleMsg(string msg){ 

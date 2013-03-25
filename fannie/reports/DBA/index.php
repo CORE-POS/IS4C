@@ -5,10 +5,9 @@ include($FANNIE_ROOT.'src/mysql_connect.php');
 include($FANNIE_ROOT.'src/select_dlog.php');
 
 if (isset($_REQUEST['loadID'])){
-	$q = sprintf("SELECT reportName,reportQuery FROM 
-		customReports WHERE reportID=%d",
-		$_REQUEST['loadID']);
-	$r = $dbc->query($q);
+	$q = $dbc->prepare_statement("SELECT reportName,reportQuery FROM 
+		customReports WHERE reportID=?");
+	$r = $dbc->exec_statement($q,array($_REQUEST['loadID']));
 	$w = $dbc->fetch_row($r);
 	echo $w['reportName'];
 	echo '`';
@@ -49,7 +48,8 @@ if ($errors == "" && $query != ""){
 	if (!empty($dtrans))
 		$query = str_ireplace(" dtransactions "," ".$dtrans." ",$query);
 
-	$result = $dbc->query($query);
+	$prep = $dbc->prepare_statement($query);
+	$result = $dbc->exec_statement($query);
 	if (!$result){
 		echo "<i>Error occured</i>: ".$dbc->error();
 		echo "<hr />";
@@ -94,23 +94,21 @@ if ($errors == "" && $query != ""){
 			$name = $_REQUEST['repName'];
 			$saveableQ = base64_encode($_REQUEST['query']);
 
-			$chkQ = "SELECT reportID FROM customReports WHERE reportName=".$dbc->escape($name);
-			$chkR = $dbc->query($chkQ);
+			$chkQ = $dbc->prepare_statement("SELECT reportID FROM customReports WHERE reportName=?");
+			$chkR = $dbc->exec_statement($chkQ,array($name));
 			if ($dbc->num_rows($chkR) == 0){
-				$idQ = "SELECT max(reportID) FROM customReports";
-				$idR = $dbc->query($idQ);
+				$idQ = $dbc->prepare_statement("SELECT max(reportID) FROM customReports");
+				$idR = $dbc->exec_statement($idQ);
 				$id = array_pop($dbc->fetch_row($idR));
 				$id = ($id=="")?1:$id+1;
-				$insQ = sprintf("INSERT INTO customReports (reportID,reportName,reportQuery)
-					VALUES (%d,%s,%s)",$id,$dbc->escape($name),
-					$dbc->escape($saveableQ));
-				$insR = $dbc->query($insQ);
+				$insQ = $dbc->prepare_statement("INSERT INTO customReports (reportID,reportName,reportQuery)
+					VALUES (?,?,?)");
+				$insR = $dbc->exec_statement($insQ,array($id,$name,$saveableQ));
 			}
 			else {
 				$id = array_pop($dbc->fetch_row($chkR));
-				$upQ = sprintf("UPDATE customReports SET reportQuery=%s WHERE reportID=%d",
-					$dbc->escape($saveableQ),$id);
-				$upR = $dbc->query($upQ);
+				$upQ = $dbc->prepare_statement("UPDATE customReports SET reportQuery=? WHERE reportID=?");
+				$upR = $dbc->exec_statement($upQ,array($saveableQ,$id));
 			}
 		}
 	}
@@ -123,8 +121,8 @@ else {
 	if (!empty($errors))
 		echo "<blockquote>".$errors."</blockquote>";
 
-	$q = "SELECT reportID,reportName FROM customReports ORDER BY reportName";
-	$r = $dbc->query($q);
+	$q = $dbc->prepare_statement("SELECT reportID,reportName FROM customReports ORDER BY reportName");
+	$r = $dbc->exec_statement($q);
 	$opts = "";
 	while($w = $dbc->fetch_row($r))
 		$opts .= sprintf('<option value="%d">%s</option>',$w['reportID'],$w['reportName']);

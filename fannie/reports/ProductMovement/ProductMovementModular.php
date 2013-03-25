@@ -78,11 +78,12 @@ class ProductMovementModular extends FannieReportPage {
 			  t.quantity as qty,
 			  sum(t.total) from
 			  $dlog as t left join products as p on t.upc = p.upc 
-			  where t.upc = '$upc' AND
-			  tdate BETWEEN '$date1 00:00:00' AND '$date2 23:59:59'
+			  where t.upc = ? AND
+			  tdate BETWEEN ? AND ?
 			  group by year(t.tdate),month(t.tdate),day(t.tdate),
 			  t.upc,p.description
 			  order by year(t.tdate),month(t.tdate),day(t.tdate)";
+		$args = array($upc,$date1.' 00:00:00',$date2.' 23:59:59');
 	
 		if (strtolower($upc) == "rrr" || $upc == "0000000000052"){
 			if ($dlog == "dlog_90_view" || $dlog=="dlog_15")
@@ -96,15 +97,16 @@ class ProductMovementModular extends FannieReportPage {
 				sum(case when upc <> 'rrr' then quantity when volSpecial is null or volSpecial > 9999 then 0 else volSpecial end) as qty,
 				sum(t.total) from
 				$dlog as t
-				where upc = '$upc'
-				AND datetime BETWEEN '$date1 00:00:00' AND '$date2 23:59:59'
+				where upc = ?
+				AND datetime BETWEEN ? AND ?
 				and emp_no <> 9999 and register_no <> 99
 				and trans_status <> 'X'
 				GROUP BY YEAR(datetime),MONTH(datetime),DAY(datetime)
 				ORDER BY YEAR(datetime),MONTH(datetime),DAY(datetime)";
 			
 		}
-		$result = $dbc->query($query);
+		$prep = $dbc->prepare_statement($query);
+		$result = $dbc->exec_statement($prep,$args);
 
 		/**
 		  Simple report

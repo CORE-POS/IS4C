@@ -34,15 +34,15 @@ if (isset($_REQUEST['submit'])){
 		printf("<a href=index.php?submit=yes&excel=yes>Save to Excel</a>");
 	}
 
-	$q = "SELECT c.CardNo,c.FirstName,c.LastName,
+	$q = $dbc->prepare_statement("SELECT c.CardNo,c.FirstName,c.LastName,
 		m.street,m.city,m.state,m.zip FROM
 		custdata AS c LEFT JOIN meminfo AS m
 		ON c.CardNo=m.card_no
 		WHERE personNum=1 AND Type='PC'
 		AND memType IN (1,3)
 		AND c.LastName <> 'NEW MEMBER'
-		ORDER BY c.CardNo";
-	$r = $dbc->query($q);
+		ORDER BY c.CardNo");
+	$r = $dbc->exec_statement($q);
 
 	echo '<table cellspacing="0" cellpadding="4" border="1">';
 	//echo '<tr><th>Username</th><th>Password</th>';

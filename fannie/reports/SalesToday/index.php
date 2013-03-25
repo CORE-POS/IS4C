@@ -38,7 +38,8 @@ include($FANNIE_ROOT.'src/mysql_connect.php');
 $selected = (isset($_GET['super']))?$_GET['super']:-1;
 $name = "";
 
-$superR = $dbc->query("SELECT superID,super_name FROM MasterSuperDepts ORDER BY super_name");
+$superP = $dbc->prepare_statement("SELECT superID,super_name FROM MasterSuperDepts ORDER BY super_name");
+$superR = $dbc->exec_statement($superP);
 $supers = array();
 $supers[-1] = "All";
 while($row = $dbc->fetch_row($superR)){
@@ -56,25 +57,28 @@ $query1="SELECT ".$dbc->hour('tdate').",
 sum(total)as Sales
 FROM ".$FANNIE_TRANS_DB.$dbc->sep()."dlog as d left join MasterSuperDepts as t
 on d.department = t.dept_ID
-WHERE ".$dbc->date_equals('tdate',$today)." 
+WHERE ".$dbc->datediff('tdate',$dbc->now())."=0
 AND (trans_type ='I' OR trans_type = 'D' or trans_type='M')
 AND (t.superID > 0 or t.superID IS NULL)
 GROUP BY ".$dbc->hour('tdate')."
 order by ".$dbc->hour('tdate');
+$args = array();
 if ($selected != -1){
 	$query1="SELECT ".$dbc->hour('tdate').", 
 	sum(total)as Sales,
-	sum(case when t.superID=$selected then total else 0 end) as prodSales
+	sum(case when t.superID=? then total else 0 end) as prodSales
 	FROM ".$FANNIE_TRANS_DB.$dbc->sep()."dlog as d left join MasterSuperDepts as t
 	on d.department = t.dept_ID
-	WHERE ".$dbc->date_equals('tdate',$today)." 
+	WHERE ".$dbc->datediff('tdate',$dbc->now())."=0
 	AND (trans_type ='I' OR trans_type = 'D' or trans_type='M')
 	AND t.superID > 0
 	GROUP BY ".$dbc->hour('tdate')."
 	order by ".$dbc->hour('tdate');
+	$args = array($selected);
 }
 
-$result = $dbc->query($query1);
+$prep = $dbc->prepare_statement($query1);
+$result = $dbc->exec_statement($query1,$args);
 echo "<div align=\"center\"><h1>Today's <span style=\"color:green;\">$name</span> Sales!</h1>";
 echo "<table cellpadding=4 cellspacing=2>";
 echo "<tr><td><b>Hour</b></td><td><b>Sales</b></td></tr>";

@@ -37,31 +37,37 @@ if (isset($_GET['date1'])){
 	  header('Content-Type: application/ms-excel');
 	  header('Content-Disposition: attachment; filename="movementReport'.$manu.'.xls"');
 	}
-	$sort = "entryDate, a.upc";
-	if (isset($_REQUEST['sort'])) $sort = $_REQUEST['sort'];
 
 	$query = "SELECT MIN(a.modified) AS entryDate, a.upc, p.description, p.department, d.dept_name
 		FROM prodUpdateArchive AS a INNER JOIN products AS p ON a.upc=p.upc
 		LEFT JOIN departments AS d ON d.dept_no=p.department
 		LEFT JOIN MasterSuperDepts AS s ON p.department=s.dept_ID
 		WHERE ";
+	$args = array();
 	if (is_numeric($super)){
-		if ($super != -1)
-			$query .= "s.superID=$super ";	
+		if ($super != -1){
+			$query .= "s.superID=? ";	
+			$args[] = $super;
+		}
 		else
 			$query .= "1=1 ";
 	}
 	else {
-		$query .= "p.department BETWEEN $dept1 AND $dept2 ";
+		$query .= "p.department BETWEEN ? AND ? ";
+		$args[] = $dept1;
+		$args[] = $dept2;
 	}
 	$query .= "GROUP BY a.upc, p.description, p.department, d.dept_name
-		HAVING MIN(a.modified) BETWEEN '$date1' AND '$date2'
-		ORDER BY $sort";
-	$result = $dbc->query($query);
+		HAVING MIN(a.modified) BETWEEN ? AND ?
+		ORDER BY entryDate, a.upc";
+	$args[] = $date1;
+	$args[] = $date2;
+	$prep = $dbc->prepare_statement($query);
+	$result = $dbc->exec_statement($query,$args);
 
 	$qs = "<a href=index.php?date1={$_REQUEST['date1']}&date2={$_REQUEST['date2']}&dept1=$dept1&depts=$dept2&super=$super";
 	if (!isset($_GET['excel'])){
-		echo $qs."&sort=$sort&excel=yes>Save</a> to Excel<br />";
+		echo $qs."&excel=yes>Save</a> to Excel<br />";
 	}
 
 	echo $date1." through ".$date2;
@@ -83,15 +89,15 @@ if (isset($_GET['date1'])){
 	return;
 }
 
-$deptsQ = "select dept_no,dept_name from departments order by dept_no";
-$deptsR = $dbc->query($deptsQ);
+$deptsQ = $dbc->prepare_statement("select dept_no,dept_name from departments order by dept_no");
+$deptsR = $dbc->exec_statement($deptsQ);
 $deptsList = "";
 
-$deptSubQ = "SELECT superID,super_name FROM MasterSuperDepts
+$deptSubQ = $dbc->prepare_statement("SELECT superID,super_name FROM MasterSuperDepts
 		WHERE superID <> 0 
 		group by superID,super_name
-		ORDER BY superID";
-$deptSubR = $dbc->query($deptSubQ);
+		ORDER BY superID");
+$deptSubR = $dbc->exec_statement($deptSubQ);
 
 $deptSubList = "";
 while($deptSubW = $dbc->fetch_array($deptSubR)){

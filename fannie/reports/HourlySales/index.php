@@ -27,8 +27,9 @@ $page_title = "Fannie : Hourly Sales";
 include($FANNIE_ROOT.'src/header.html');
 include($FANNIE_ROOT.'src/mysql_connect.php');
 $options = "<option value=-1 selected>All</option>";
-$res = $dbc->query("SELECT superID,super_name FROM superDeptNames 
+$prep = $dbc->prepare_statement("SELECT superID,super_name FROM superDeptNames 
 		WHERE superID > 0");
+$res = $dbc->exec_statement($prep);
 while($row = $dbc->fetch_row($res))
 	$options .= sprintf("<option value=%d>%s</option>",$row[0],$row[1]);
 ?>

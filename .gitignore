@@ -5,7 +5,6 @@ pos/is4c-nf/log/*.log
 pos/is4c-nf/ini.php
 pos/is4c-web/ini.php
 pos/is4c-web/lib/pp-api-credentials.php
-<<<<<<< HEAD
 fannie/reports/cash_report/image_area/*
 fannie/config.php
 fannie/logs/*.log
@@ -27,28 +26,14 @@ dist/rpm/SOURCES/*
 dist/rpm/SRPMS/*
 fannie/pi_food_net
 fannie/pi_food_net/scalesDistro
-=======
 fannie/reports/cash_report/image_area/*
 fannie/config.php
 fannie/logs/*
+fannie/reports/cash_report/image_area/*
+fannie/config.php
+fannie/logs/*.log
+fannie/logs/*.txt
 pos/is4c-nf/scale-drivers/drivers/rs232/ssd
-*/tmp/*
-fannie/item/images/done/*
-fannie/item/images/new/*
-fannie/legacy/FE/overshort/acct
-fannie/cache/cachefiles
-fannie/inventory/archive/*
-fannie/reports/Store-Specific/WFC/CCSettle/xmlcache/*.xml
-fannie/auth/shadowread/shadowread
-fannie/src/Credentials/*
-dist/deb/DEBS/*.deb
-dist/rpm/BUILD/*
-dist/rpm/RPMS/*
-dist/rpm/SOURCES/*
-dist/rpm/SRPMS/*
-fannie/pi_food_net
-fannie/pi_food_net/scalesDistro
->>>>>>> c43574b25cd787b1b2ad73d462207349006c58eb
 *.dll
 *.exe
 fannie/INSTALL

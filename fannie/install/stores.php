@@ -23,6 +23,9 @@
 
 /* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+	* 22Feb2013 EL Change page heading to "Fannie Co-op and Store Settings"
+	*              Add FANNIE_COMPOSE_PRODUCT_DESCRIPTION
+	*              Add FANNIE_COMPOSE_PRODUCT_LONG_DESCRIPTION
 	*  6Dec2012 Eric Lee Add FANNIE_COOP_ID
 
 */
@@ -40,13 +43,15 @@ include('util.php');
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 Stores
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<a href="prod.php">Products</a>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <a href="update.php">Updates</a>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <a href="plugins.php">Plugins</a>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <a href="sample_data/extra_data.php">Sample Data</a>
 <form action=stores.php method=post>
-<h1>Fannie install checks</h1>
+<h1>Fannie Co-op and Store Settings</h1>
 <?php
 // path detection
 $FILEPATH = rtrim($_SERVER['SCRIPT_FILENAME'],'stores.php');
@@ -108,6 +113,7 @@ echo "<input type=text name=FANNIE_NUM_STORES value=\"$FANNIE_NUM_STORES\" size=
 if ($FANNIE_NUM_STORES == 0) confset('FANNIE_STORES','array()');
 else {
 ?>
+
 <script type=text/javascript>
 function showhide(i,num){
 	for (var j=0; j<num; j++){
@@ -185,6 +191,36 @@ confset('FANNIE_STORES',$conf);
 <?php
 } // endif for HQ only settings
 ?>
+
+<hr />
+<b>Product Editing</b>
+<p style="margin:0.4em 0em 0.4em 0em;"><b>Compose Product Description</b>: 
+<?php
+if (!isset($FANNIE_COMPOSE_PRODUCT_DESCRIPTION)) $FANNIE_COMPOSE_PRODUCT_DESCRIPTION = 0;
+if (isset($_REQUEST['FANNIE_COMPOSE_PRODUCT_DESCRIPTION'])) $FANNIE_COMPOSE_PRODUCT_DESCRIPTION = $_REQUEST['FANNIE_COMPOSE_PRODUCT_DESCRIPTION'];
+confset('FANNIE_COMPOSE_PRODUCT_DESCRIPTION',"$FANNIE_COMPOSE_PRODUCT_DESCRIPTION");
+echo "<input type=text name=FANNIE_COMPOSE_PRODUCT_DESCRIPTION value=\"$FANNIE_COMPOSE_PRODUCT_DESCRIPTION\" size=1 />";
+?>
+<br />If 0 products.description, which appears on the receipt, will be used as-is.
+<br />If 1 it will be shortened enough hold a "package" description made by
+concatenating products.size and products.unitofmeasure so that the whole
+string is still 30 or less characters:
+<br /> "Eden Seville Orange Marma 500g"
+</p>
+
+<p style="margin:0.0em 0em 0.4em 0em;"><b>Compose Long Product Description</b>: 
+<?php
+if (!isset($FANNIE_COMPOSE_LONG_PRODUCT_DESCRIPTION)) $FANNIE_COMPOSE_LONG_PRODUCT_DESCRIPTION = 0;
+if (isset($_REQUEST['FANNIE_COMPOSE_LONG_PRODUCT_DESCRIPTION'])) $FANNIE_COMPOSE_LONG_PRODUCT_DESCRIPTION = $_REQUEST['FANNIE_COMPOSE_LONG_PRODUCT_DESCRIPTION'];
+confset('FANNIE_COMPOSE_LONG_PRODUCT_DESCRIPTION',"$FANNIE_COMPOSE_LONG_PRODUCT_DESCRIPTION");
+echo "<input type=text name=FANNIE_COMPOSE_LONG_PRODUCT_DESCRIPTION value=\"$FANNIE_COMPOSE_LONG_PRODUCT_DESCRIPTION\" size=1 />";
+?>
+<br />If 0 productUser.description, which may be used in Product Verification, will be used as-is.
+<br />If 1 productUser.brand will be prepended and a "package" description made by
+concatenating products.size and products.unitofmeasure will be appended:
+<br /> "EDEN | Marmalade, Orange, Seville, Rough-Cut | 500g"<br />
+</p>
+
 <hr />
 <input type=submit value="Re-run" />
 </form>
