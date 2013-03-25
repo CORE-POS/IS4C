@@ -132,7 +132,7 @@ class TenderModule {
 	  change as cash.
 	*/
 	function ChangeType(){
-		return "CA";
+		return $this->tender_code;
 	}
 
 }
