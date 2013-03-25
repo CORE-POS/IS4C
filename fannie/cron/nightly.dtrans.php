@@ -84,7 +84,7 @@ $row = $sql->fetch_row($res);
 $dstr = $row[1].(str_pad($row[0],2,'0',STR_PAD_LEFT));
 $table = 'transArchive'.$dstr;
 
-/* store montly archive locally or remotely as needed 
+/* store monthly archive locally or remotely as needed 
    remote archiving is very beta
 */
 if ($FANNIE_ARCHIVE_REMOTE){
@@ -123,7 +123,8 @@ else {
 		$loadR = $sql->query($loadQ);	
 	}
 	else if (!$sql->table_exists($table)){
-		$query = "CREATE $table LIKE $FANNIE_TRANS_DB.dtransactions";
+		// 20Nov12 EL Add "TABLE".
+		$query = "CREATE TABLE $table LIKE $FANNIE_TRANS_DB.dtransactions";
 		if ($FANNIE_SERVER_DBMS == 'MSSQL')
 			$query = "SELECT * INTO $table FROM $FANNIE_TRANS_DB.dbo.dtransactions";
 		$chk1 = $sql->query($query,$FANNIE_ARCHIVE_DB);
