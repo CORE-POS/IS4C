@@ -21,6 +21,13 @@
 
 *********************************************************************************/
 
+
+/* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+	* 21Jan2013 Eric Lee table upcLike need database specified: core_op.upcLike
+
+*/
+
 require('../../config.php');
 require($FANNIE_ROOT."src/SQLManager.php");
 
@@ -32,7 +39,7 @@ if (isset($_GET['upc'])){
 	$where = sprintf("WHERE upc='%s'",str_pad($_GET['upc'],13,'0',STR_PAD_LEFT));
 }
 else if (isset($_GET['likecode'])){
-	$where = "LEFT JOIN upcLike AS u ON d.upc=u.upc WHERE u.likecode=".$_GET['likecode'];
+	$where = "LEFT JOIN core_op.upcLike AS u ON d.upc=u.upc WHERE u.likecode=".$_GET['likecode'];
 }
 else
 	exit;
