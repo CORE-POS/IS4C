@@ -1,5 +1,6 @@
 <?php
 include('../config.php');
+
 include($FANNIE_ROOT.'src/mysql_connect.php');
 
 if (isset($_REQUEST['action'])){
@@ -80,5 +81,6 @@ function getSRP($cost,$margin){
 		$srp += 0.01;
 	return $srp;
 }
+
 
 ?>

@@ -22,7 +22,7 @@
 *********************************************************************************/
 
 /* --FUNCTIONALITY- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
- * These lines grepped in from this listing: !!grep "^/. [0-9]\." %
+ * These lines grepped in from this listing: !!grep "^/. [0-9]*\." %
 */
 /* 1. Insert or update coop-specific product data */
 /* 2. Replace likecode.  */
@@ -31,8 +31,9 @@
 /* 5. Insert to prodExtra */
 /* 6. Insert to prodUpdate, an audit table. */
 /* 7. Insert to scaleItem */
-/* 8. Delete and re-add to product-related tables on the lanes.  */
-/* 9. Display the post-update values and an input for the next edit.  */
+/* 8. Delete and re-add to product-related tables on the lanes. */
+/* 9. Display the post-update values and an input for the next edit. */
+/* 10. If requested on the capture form, pop a window for making a shelf tag. */
 
 /* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 */
@@ -463,6 +464,7 @@ $row = $dbc->fetch_array($prodR);
 
         echo "</form>";
 
+		/* 10. If requested on the capture form, pop a window for making a shelf tag. */
     if (isset($_REQUEST['newshelftag'])){
 	    echo "<script type=\"text/javascript\">";
 	    echo "testwindow= window.open (\"addShelfTag.php?upc=$upc\", \"New Shelftag\",\"location=0,status=1,scrollbars=1,width=300,height=220\");";

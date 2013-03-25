@@ -35,6 +35,7 @@
 /* 9. Insert or update scaleItems */
 /* 10. Delete and re-add to product-related tables on the lanes.  */
 /* 11. Display the post-update values and an input for the next edit.  */
+/* 12. If requested on the capture form, pop a window for making a shelf tag. */
 
 /*
  * This code INSERTs when the record for the fields doesn't exist,
@@ -545,6 +546,14 @@ echo "<table border=0>";
 				echo promptForUPC($upc);
 
         echo "</form>";
+
+		/* 12. If requested on the capture form, pop a window for making a shelf tag. */
+    if (isset($_REQUEST['newshelftag'])){
+	    echo "<script type=\"text/javascript\">";
+	    echo "testwindow= window.open (\"addShelfTag.php?upc=$upc\", \"New Shelftag\",\"location=0,status=1,scrollbars=1,width=300,height=220\");";
+	    echo "testwindow.moveTo(50,50);";
+	    echo "</script>";
+    }
 ?>
 <script type="text/javascript">
 $(document).ready(function(){
