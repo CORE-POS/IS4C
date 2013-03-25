@@ -21,6 +21,13 @@
 
 *********************************************************************************/
 
+
+/* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+	* 21Jan2013 Eric Lee Fix duplicate "'" on $name resulting from escaping the form value.
+
+*/
+
 include('../../config.php');
 include($FANNIE_ROOT.'src/mysql_connect.php');
 include($FANNIE_ROOT.'auth/login.php');
@@ -43,12 +50,12 @@ if (isset($_REQUEST['submit'])){
 		$chk = $dbc->query("SELECT * FROM likeCodes WHERE likeCode=$lc");
 		if ($dbc->num_rows($chk) > 0){
 			$dbc->query("UPDATE likeCodes SET
-					likeCodeDesc='$name'
+					likeCodeDesc=$name
 					WHERE likeCode=$lc");
-			$msgs .= "LC #$lc renamed \"$name\"<br />";
+			$msgs .= "LC #$lc renamed $name<br />";
 		}
 		else {
-			$dbc->query("INSERT INTO likeCodes VALUES ($lc,'$name')");
+			$dbc->query("INSERT INTO likeCodes VALUES ($lc,$name)");
 			$msgs .= "LC #$lc ($name) created<br />";
 		}
 	}
