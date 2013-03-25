@@ -23,6 +23,10 @@
 
 /* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+	* 24Mar2013 Eric Lee Removed some woodshed comments before saving to github.
+	*  5Oct2012 Eric Lee A specialized WEFC_Toronto utility to update Fannie and lanes
+	*                    with Member Card numbers linked to members in a CiviCRM database.
+
 	*  5Oct2012 Eric Lee Added:
 	*                    + A WEFC_Toronto-only chunk for collecting Member Card#
 	*                    + A general facility for displaying an error encountered in preprocess()
@@ -34,7 +38,7 @@ ini_set('display_errors','1');
 
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
-class memlist extends NoInputPage {
+class memlist_cards extends NoInputPage {
 
 	var $temp_result;
 	var $temp_num_rows;
@@ -79,14 +83,13 @@ class memlist extends NoInputPage {
 			$CORE_LOCAL->set("mirequested",0);
 			$CORE_LOCAL->set("scan","scan");
 			$CORE_LOCAL->set("reprintNameLookup",0);
-			$this->change_page($this->page_url."gui-modules/pos2.php");
+			$this->change_page($this->page_url."gui-modules/memlist_cards.php");
 			return False;
 		}
 
 		$memberID = $entered;
 		$db_a = Database::pDataConnect();
 
-		$query = "";
 		if (!is_numeric($entered)) {
 			$query = "select CardNo,personNum,LastName,FirstName from custdata 
 				where LastName like '".$entered."%' order by LastName, FirstName";
@@ -96,17 +99,6 @@ class memlist extends NoInputPage {
 				MemDiscountLimit,ChargeOk,WriteChecks,StoreCoupons,Type,memType,staff,
 				SSI,Purchases,NumberOfChecks,memCoupons,blueLine,Shown,id from custdata 
 				where CardNo = '".$entered."' order by personNum";
-		}
-		if ($selected_name && is_numeric($personNum)){
-			/**
-			  13Feb13 Andy
-			  Use personNum if provided so the lookup returns
-			  the correct record
-			*/
-			$query = "select CardNo,personNum,LastName,FirstName,CashBack,Balance,Discount,
-				MemDiscountLimit,ChargeOk,WriteChecks,StoreCoupons,Type,memType,staff,
-				SSI,Purchases,NumberOfChecks,memCoupons,blueLine,Shown,id from custdata 
-				where CardNo = '".$entered."' AND personNum=".$personNum;
 		}
 
 		$result = $db_a->query($query);
@@ -127,7 +119,8 @@ class memlist extends NoInputPage {
 				||
 		    (is_numeric($entered) && is_numeric($personNum) && $selected_name) ) {
 			$row = $db_a->fetch_array($result);
-			PrehLib::setMember($row["CardNo"], $personNum,$row);
+			// Don't want to affect the current trans.  Will it still work?
+			// PrehLib::setMember($row["CardNo"], $personNum,$row);
 			$CORE_LOCAL->set("scan","scan");
 
 			// WEFC_Toronto: If a Member Card # was entered when the choice from the list was made,
@@ -136,26 +129,74 @@ class memlist extends NoInputPage {
 				$mmsg = "";
 				if ( isset($_REQUEST['memberCard']) && $_REQUEST['memberCard'] != "" ) {
 					$memberCard = $_REQUEST['memberCard'];
+					$upc = sprintf("00401229%05d", $memberCard);
+					$card_no = $row['CardNo'];
+
+					// Get the Member Card # from CiviCRM.
+					//  By looking up card_no in Civi members to get the contact id and use contact_id to get mcard.
+					// Can't do that because MySQL on Civi will only allow access from pos and posdev.
+					// Have to get op to enter mcard# again.
+
 					if ( !is_numeric($memberCard) || strlen($memberCard) > 5 || $memberCard == 0 ) {
-						$mmsg = "Bad Member Card# format >{$memberCard}<";
+						$mmsg .= "<br />Bad Member Card# format >{$memberCard}<";
 					}
 					else {
-						$upc = sprintf("00401229%05d", $memberCard);
-						// Check that it isn't already there, perhaps for someone else.
-						$mQ = "SELECT card_no FROM memberCards where card_no = {$row['CardNo']}";
+						/* Check that it isn't already in use, perhaps for someone else.
+						*/
+						$masterLane = $CORE_LOCAL->get('laneno');
+						$currentLane = $masterLane;
+						$mQ = "SELECT card_no FROM memberCards where card_no = $card_no";
 						$mResult = $db_a->query($mQ);
 						$mNumRows = $db_a->num_rows($mResult);
 						if ( $mNumRows > 0 ) {
-							$mmsg = "{$row['CardNo']} is already associated with another Member Card";
+							$mmsg .= "<br />On lane $currentLane {$row['CardNo']} is already associated with a Member Card";
 						}
 						else {
 							$mQ = "INSERT INTO memberCards (card_no, upc) VALUES ({$row['CardNo']}, '$upc')";
 							$mResult = $db_a->query($mQ);
 							if ( !$mResult ) {
-								$mmsg = "Linking membership to Member Card failed.";
+								$mmsg .= "<br />On lane $currentLane linking membership to Member Card failed.";
+						 	}
+						}
+
+						// Do other lane.
+						$otherLane = ($masterLane == 1) ? 2 : 1;
+						$currentLane = $otherLane;
+						$isLAN = 1;
+						if ( $isLAN ) {
+							$LANE = "10.0.0.6$otherLane";
+							$LANE_PORT = "3306";
+						}
+						else {
+							$LANE = "wefc.dyndns.org";
+							$LANE_PORT = "5066$otherLane";
+						}
+						$LANE_USER = "root";
+						$LANE_PW = "wefc1229";
+						$LANE_DB = "opdata";
+						$db_b = new mysqli("$LANE", "$LANE_USER", "$LANE_PW", "$LANE_DB", "$LANE_PORT");
+						if ( $db_b->connect_error != "" ) {
+							$mmsg .= "<br />Connection to lane $currentLane failed >". $db_b->connect_error ."<";
+						} else {
+							$mQ = "SELECT card_no FROM memberCards where card_no = $card_no";
+							$mResult = $db_b->query("$mQ");
+							$mNumRows = $mResult->$num_rows;
+							if ( $mNumRows > 0 ) {
+								$mmsg .= "<br />On lane $currentLane member $card_no is already associated with a Member Card";
+							}
+							else {
+								$mQ = "INSERT INTO memberCards (card_no, upc) VALUES ($card_no, '$upc')";
+								$mResult = $db_b->query($mQ);
+								if ( !$mResult ) {
+									$mmsg .= "<br />On lane $currentLane linking membership to Member Card failed.";
+								}
 							}
 						}
+						$db_b->close();
 					}
+				}
+				else {
+					$mmsg .= "<br />Member Card# absent or empty.";
 				}
 				if ( $mmsg != "" ) {
 					// Prepare to display the error.
@@ -163,7 +204,7 @@ class memlist extends NoInputPage {
 					$this->temp_num_rows = $num_rows;
 					$this->entered = $entered;
 					$this->db = $db_a;
-					$this->temp_message = $mmsg;
+					$this->temp_message = preg_replace("/^<br />/", "", $mmsg);
 					return True;
 				}
 			// /WEFC_Toronto bit.
@@ -172,7 +213,7 @@ class memlist extends NoInputPage {
 			if ($entered != $CORE_LOCAL->get("defaultNonMem") && PrehLib::check_unpaid_ar($row["CardNo"]))
 				$this->change_page($this->page_url."gui-modules/UnpaidAR.php");
 			else
-				$this->change_page($this->page_url."gui-modules/pos2.php");
+				$this->change_page($this->page_url."gui-modules/memlist_cards.php");
 			return False;
 		}
 
@@ -296,7 +337,7 @@ class memlist extends NoInputPage {
 				<p style='margin: 0.2em 0em 0.2em 0em; font-size:0.8em;'>To link the member chosen above to a Member Card:</p>";
 				echo "<span style='font-weight:bold;'>Member Card#:</span> <input name='memberCard' id='memberCard' width='20' title='The digits after 01229, no leading zeroes, not the final, small check-digit' />";
 				echo "<p style='margin-top: 0.2em; font-size:0.8em;'>If the back of the card has: '4 01229 00125 7' enter 125
-				<br />Then the card should be recognized in the scan.</p>";
+				";
 				echo "</div>";
 			}
 
@@ -307,6 +348,6 @@ class memlist extends NoInputPage {
 // /class memlist
 }
 
-new memlist();
+new memlist_cards();
 
 ?>

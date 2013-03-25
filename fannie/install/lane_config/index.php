@@ -20,6 +20,13 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
+
+/* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+	* 22Sep2012 Eric Lee Change h1 to refer to Lane config and add note about usage.
+
+*/
+
 include('ini.php');
 ?>
 <html>
@@ -43,7 +50,18 @@ Necessities
 <a href="text.php">Text Strings</a>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <form action=index.php method=post>
-<h1>IT CORE Install checks</h1>
+<h1>IT CORE Lane Global Configuration</h1>
+
+<p style="line-height: 1.2em;">
+Use these forms for values that will be used on all lanes.
+<br />To install, on each lane: $LANE/install/ &nbsp; &gt; &nbsp; "Upgrade ini.php via server"
+<br />That only installs changes made here (Fannie) since the last time it was run on the lane.
+<br />The first time it is run it will probably overwrite everything in ini.php,
+<br />including config done locally with $LANE/install/*.php
+<br />22Sep12 Eric Lee In my first try at this nothing in $LANE/ini.php was changed, no reason given.
+<br /> I will see about making util.confsave() return more informative failure messages.
+</p>
+
 <h3>Basics</h3>
 OS: <select name=OS>
 <?php
