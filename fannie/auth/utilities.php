@@ -25,6 +25,11 @@
 utility functions
 */
 
+
+/* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+	* 12Nov2012 Eric Lee In getGID() test FANNIE_DBMS_SERVER for SQL syntax.
+*/
+
 /*
 connect to the database
 having this as a separate function makes changing
@@ -102,11 +107,22 @@ function getNumUsers(){
 }
 
 function getGID($group){
+	// 11Nov12 EL Bring in config for SERVER_DBMS test.
+	$path = guesspath();
+	include($path."config.php");
+
   if (!isAlphaNumeric($group))
     return false;
   $sql = dbconnect();
 
-  $gidQ = "select top 1 gid from userGroups where name='$group'";
+	// 11Nov12 EL Test dbms for syntax.
+	if ( $FANNIE_SERVER_DBMS == 'MYSQL' ) {
+		$gidQ = "select gid from userGroups where name='$group' limit 1";
+	} elseif ( $FANNIE_SERVER_DBMS == 'MSSQL' ) {
+		$gidQ = "select top 1 gid from userGroups where name='$group'";
+	} else {
+		$gidQ = "Unknown DBMS in getGID";
+	}
   $gidR = $sql->query($gidQ);
 
   if ($sql->num_rows($gidR) == 0)
