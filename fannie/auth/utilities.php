@@ -25,6 +25,11 @@
 utility functions
 */
 
+
+/* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+	* 12Nov2012 Eric Lee In getGID() test FANNIE_DBMS_SERVER for SQL syntax.
+*/
+
 /*
 connect to the database
 having this as a separate function makes changing
@@ -121,6 +126,10 @@ function getNumAdmins(){
 }
 
 function getGID($group){
+	// 11Nov12 EL Bring in config for SERVER_DBMS test.
+	$path = guesspath();
+	include($path."config.php");
+
   if (!isAlphaNumeric($group))
     return false;
   $sql = dbconnect();
