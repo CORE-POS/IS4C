@@ -77,12 +77,12 @@ class VendorItemModule extends ItemModule {
 
 	function SaveFormData($upc){
 		$upc = str_pad($upc,13,0,STR_PAD_LEFT);
-		$ids = FormLib::get_form_values('v_id',array());
-		$skus = FormLib::get_form_values('v_sku',array());
-		$costs = FormLib::get_form_values('v_cost',array());
-		$units = FormLib::get_form_values('v_units',array());
+		$ids = FormLib::get_form_value('v_id',array());
+		$skus = FormLib::get_form_value('v_sku',array());
+		$costs = FormLib::get_form_value('v_cost',array());
+		$units = FormLib::get_form_value('v_units',array());
 
-		$dbc = $this->db;
+		$dbc = $this->db();
 		$chkP = $dbc->prepare_statement('SELECT upc FROM vendorItems WHERE vendorID=? AND upc=?');
 		$insP = $dbc->prepare_statement('INSERT INTO vendorItems (upc,vendorID,cost,units,sku)
 					VALUES (?,?,?,?,?)');

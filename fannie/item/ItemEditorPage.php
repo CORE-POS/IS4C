@@ -311,7 +311,7 @@ class ItemEditorPage extends FanniePage {
 			if ($mod == '') continue;
 			if ($mod == 'BaseItemModule') continue;
 			$obj = new $mod();
-			$ret .= $mod->SaveFormData($upc);
+			$ret .= $obj->SaveFormData($upc);
 		}
 
 		/* push updates to the lanes */
