@@ -61,6 +61,10 @@ include($FANNIE_ROOT.'src/header.html');
 	<li><a href="GeneralSales/">General Sales Report</a> shows total sales per
 		department for a given date range in dollars as well as a percentage
 		of store-wide sales.</li>
+	<li><a href="GeneralCosts/">General Costs Report</a> shows total costs per
+		department for a given date range in dollars as well as a percentage
+		of store-wide costs. It uses actual item cost if known and estimates
+		cost from price and department margin if not; relies on department margins being accurate.</li>
 	<li><a href="SalesToday/">Today's Sales</a> shows current day totals by hour.</li>
 	<li><a href="HourlySales/">Store Hourly Sales</a> lists store-wide sales per hour
 		over a given date range.</li>
