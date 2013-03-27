@@ -41,15 +41,17 @@ class TimesheetExport extends FannieReportPage {
 
 		echo "<form action='".$_SERVER['PHP_SELF']."' method=GET>";
 
-		$currentQ = "SELECT periodID FROM {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.payperiods WHERE now() BETWEEN periodStart AND periodEnd";
-		$currentR = $ts_db->query($currentQ);
+		$currentQ = $ts_db->prepare_statement("SELECT periodID 
+			FROM {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.payperiods 
+			WHERE ".$ts_db->now()." BETWEEN periodStart AND periodEnd");
+		$currentR = $ts_db->exec_statement($currentQ);
 		list($ID) = $ts_db->fetch_row($currentR);
 
-		$query = "SELECT date_format(periodStart, '%M %D, %Y') as periodStart, 
+		$query = $ts_db->prepare_statement("SELECT date_format(periodStart, '%M %D, %Y') as periodStart, 
 			date_format(periodEnd, '%M %D, %Y') as periodEnd, periodID 
 			FROM {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.payperiods 
-			WHERE periodStart < now() ORDER BY periodID DESC";
-		$result = $ts_db->query($query);
+			WHERE periodStart < ".$ts_db->now()." ORDER BY periodID DESC");
+		$result = $ts_db->exec_statement($query);
 
 		echo '<p>Pay Period: <select name="period">
 		    <option>Please select a payperiod to view.</option>';
@@ -66,24 +68,48 @@ class TimesheetExport extends FannieReportPage {
 		global $ts_db, $FANNIE_PLUGIN_SETTINGS, $FANNIE_OP_DB;
 		$periodID = FormLib::get_form_value('period',0);
 		$_SESSION['periodID'] = $periodID;
-		$perDatesQ = "SELECT * FROM ".$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase'].".payperiods WHERE periodID = $periodID";
-		$perDatesR = $ts_db->query($perDatesQ);
+		$perDatesQ = $ts_db->prepare_statement("SELECT * FROM ".
+			$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase'].".payperiods WHERE periodID = ?");
+		$perDatesR = $ts_db->exec_statement($perDatesQ,array($periodID));
 		$perDates = $ts_db->fetch_array($perDatesR);
 
-		$dumpQ = "SELECT t.date, e.emp_no, e.LastName, e.FirstName, t.area, SUM(t.hours) AS hours 
+		$dumpQ = $ts_db->prepare_statement("SELECT t.date, e.emp_no, e.LastName, e.FirstName, t.area, SUM(t.hours) AS hours 
 			FROM (SELECT emp_no,FirstName, LastName FROM ".$FANNIE_OP_DB.".employees WHERE empActive = 1) e 
 			LEFT JOIN ".$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase'].".timesheet t ON e.emp_no = t.emp_no 
-			AND t.periodID = $periodID GROUP BY e.emp_no";
-		
-		$result = $ts_db->query($dumpQ);
+			AND t.periodID = ? GROUP BY e.emp_no");
+		$result = $ts_db->exec_statement($dumpQ,array($periodID));
 
 		$data = array();
 		$data[] = array("TC");
 		$data[] = array("00001");
+		$nonPTOtotalP = $ts_db->prepare_statement("SELECT SUM(hours) FROM ".
+			$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase'].".timesheet 
+			WHERE periodID = ? AND area <> 31 AND emp_no = ?");
+		$weekoneP = $ts_db->prepare_statement("SELECT ROUND(SUM(hours), 2)
+			    FROM {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.timesheet AS t
+			    INNER JOIN {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.payperiods AS p
+			    ON (p.periodID = t.periodID)
+			    WHERE t.emp_no = ?
+			    AND t.periodID = ?
+			    AND t.area <> 31
+			    AND t.tdate >= DATE(p.periodStart)
+			    AND t.tdate < DATE(date_add(p.periodStart, INTERVAL 7 day))");
+		$weektwoP = $ts_db->prepare_statement("SELECT ROUND(SUM(hours), 2)
+			    FROM {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.timesheet AS t
+			    INNER JOIN {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.payperiods AS p
+			    ON (p.periodID = t.periodID)
+			    WHERE t.emp_no = ?
+			    AND t.periodID = ?
+			    AND t.area <> 31
+			    AND t.tdate >= DATE(date_add(p.periodStart, INTERVAL 7 day)) 
+			    AND t.tdate <= DATE(p.periodEnd)");
+		$vacationP = $ts_db->prepare_statement("SELECT ROUND(SUM(hours), 2)
+			    FROM {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.timesheet AS t
+			    WHERE t.emp_no = ?
+			    AND t.periodID = ?
+			    AND t.area = 31");
 		while ($row = $ts_db->fetch_row($result)) {
-			$nonPTOtotalq = "SELECT SUM(hours) FROM ".$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase'].".timesheet 
-				WHERE periodID = $periodID AND area <> 31 AND emp_no = " . $row['emp_no'];
-			$nonPTOtotalr = $ts_db->query($nonPTOtotalq);
+			$nonPTOtotalr = $ts_db->exec_statement($nonPTOtotalP,array($periodID,$row['emp_no']));
 			$nonPTOtotal = $ts_db->fetch_row($nonPTOtotalr);
 			
 			$nonPTOtot = $nonPTOtotal[0];
@@ -92,35 +118,11 @@ class TimesheetExport extends FannieReportPage {
 			$hours = (is_null($row['hours'])) ? 0 : $row['hours'];
 		
 			if ($hours > 0) {
-				$weekoneQ = "SELECT ROUND(SUM(hours), 2)
-					    FROM {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.timesheet AS t
-					    INNER JOIN {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.payperiods AS p
-					    ON (p.periodID = t.periodID)
-					    WHERE t.emp_no = " . $row['emp_no'] . "
-					    AND t.periodID = $periodID
-					    AND t.area <> 31
-					    AND t.tdate >= DATE(p.periodStart)
-					    AND t.tdate < DATE(date_add(p.periodStart, INTERVAL 7 day))";
 
-				$weektwoQ = "SELECT ROUND(SUM(hours), 2)
-					    FROM {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.timesheet AS t
-					    INNER JOIN {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.payperiods AS p
-					    ON (p.periodID = t.periodID)
-					    WHERE t.emp_no = " . $row['emp_no'] . "
-					    AND t.periodID = $periodID
-					    AND t.area <> 31
-					    AND t.tdate >= DATE(date_add(p.periodStart, INTERVAL 7 day)) 
-				 	    AND t.tdate <= DATE(p.periodEnd)";
 
-				$vacationQ = "SELECT ROUND(SUM(hours), 2)
-					    FROM {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.timesheet AS t
-					    WHERE t.emp_no = " . $row['emp_no'] . "
-					    AND t.periodID = $periodID
-					    AND t.area = 31";
-
-				$weekoneR = $ts_db->query($weekoneQ);
-				$weektwoR = $ts_db->query($weektwoQ);
-				$vacationR = $ts_db->query($vacationQ);
+				$weekoneR = $ts_db->exec_statement($weekoneP,array($row['emp_no'],$periodID));
+				$weektwoR = $ts_db->exec_statement($weektwoP,array($row['emp_no'],$periodID));
+				$vacationR = $ts_db->exec_statement($vacationP,array($row['emp_no'],$periodID));
 
 				list($weekone) = $ts_db->fetch_row($weekoneR);
 				if (is_null($weekone)) $weekone = 0;
