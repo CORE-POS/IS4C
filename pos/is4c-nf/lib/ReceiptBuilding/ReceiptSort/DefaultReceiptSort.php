@@ -67,12 +67,20 @@ class DefaultReceiptSort {
 				if(isset($row['category'])){
 					if (!isset($items[$row['category']]))
 						$items[$row['category']] = array();
+<<<<<<< HEAD
 					//$items[$row['category']] = $this->upc_merge($items[$row['category']],$row);
 					$items[$row['category']][] = $row;
 				}
 				else {
 					//$items[$row['_uncategorized']] = $this->upc_merge($items[$row['_uncategorized']],$row);
 					$items[$row['_uncategorized']][] = $row;
+=======
+
+					$items[$row['category']] = $this->upc_merge($items[$row['category']],$row);
+				}
+				else {
+					$items[$row['_uncategorized']] = $this->upc_merge($items[$row['_uncategorized']],$row);
+>>>>>>> c43574b25cd787b1b2ad73d462207349006c58eb
 				}
 			}
 		}

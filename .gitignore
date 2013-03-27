@@ -26,6 +26,14 @@ dist/rpm/SOURCES/*
 dist/rpm/SRPMS/*
 fannie/pi_food_net
 fannie/pi_food_net/scalesDistro
+fannie/reports/cash_report/image_area/*
+fannie/config.php
+fannie/logs/*
+fannie/reports/cash_report/image_area/*
+fannie/config.php
+fannie/logs/*.log
+fannie/logs/*.txt
+pos/is4c-nf/scale-drivers/drivers/rs232/ssd
 *.dll
 *.exe
 fannie/INSTALL
