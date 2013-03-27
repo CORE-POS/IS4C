@@ -39,20 +39,21 @@ class TimesheetPage extends FanniePage {
 			}
 
 			// Make sure we're in a valid pay period.
-			$query = "SELECT periodID, periodStart FROM ".$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase'].
-				".payperiods WHERE '$date' BETWEEN DATE(periodStart) AND DATE(periodEnd)";
+			$query = $ts_db->prepare_statement("SELECT periodID, periodStart FROM ".
+				$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase'].
+				".payperiods WHERE ? BETWEEN DATE(periodStart) AND DATE(periodEnd)");
 
-			$result = $ts_db->query($query);
+			$result = $ts_db->exec_statement($query,array($date));
 			list($periodID, $periodStart) = $ts_db->fetch_row($result);
 
-			$query = "SELECT DATEDIFF(CURDATE(), DATE(periodEnd)) FROM ".
-				$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase'].".payperiods WHERE periodID = $periodID";
+			$query = $ts_db->prepare_statement("SELECT DATEDIFF(CURDATE(), DATE(periodEnd)) FROM ".
+				$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase'].".payperiods WHERE periodID = ?");
 
-			$result = $ts_db->query($query);
+			$result = $ts_db->exec_statement($query,array($periodID));
 			list($datediff) = $ts_db->fetch_row($result);
 		
-			$empnoChkQ = "SELECT * FROM employees WHERE emp_no = " . $_POST['emp_no'];
-			$empnoChkR = $ts_db->query($empnoChkQ);
+			$empnoChkQ = $ts_db->prepare_statement("SELECT * FROM employees WHERE emp_no = ?");
+			$empnoChkR = $ts_db->exec_statement($empnoChkQ,array($_POST['emp_no']));
 	
 			if ($_POST['emp_no'] && ($_POST['emp_no'] != '')) {
 				if (!is_numeric($_POST['emp_no'])) {
@@ -96,21 +97,26 @@ class TimesheetPage extends FanniePage {
 				setcookie("timesheet", $emp_no, time()+60*3);
 		
 				// First check to make sure they haven't already entered hours for this day.
-				$query = "SELECT * FROM ".$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase'].
-					".timesheet WHERE emp_no=$emp_no AND tdate='$date' and area <> 31";
+				$query = $ts_db->prepare_statement("SELECT * FROM ".
+					$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase'].
+					".timesheet WHERE emp_no=? AND tdate=? and area <> 31");
 		
-				$result = $ts_db->query($query);
+				$result = $ts_db->exec_statement($query,array($emp_no,$date));
 				if ($ts_db->num_rows($result) == 0) { // Success.
 						// if (strtotime($date) < strtotime($periodStart)) {
 						// 	echo "Previous Pay period!!!";
 					// 	exit;
 					// }	
 					$successcount = 0;
+					$insP = $ts_db->prepare_statement("INSERT INTO ".
+						$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase'].
+						".timesheet (emp_no, hours, area, tdate, periodID)
+						VALUES (?,?,?,?,?)");
 					for ($i = 1; $i <= $entrycount; $i++) {
-						$query = "INSERT INTO ".$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase'].
-							".timesheet (emp_no, hours, area, tdate, periodID)
-							VALUES ($emp_no, ".$_POST['hours' . $i].", ".$_POST['area' . $i].", '$date', $periodID)";
-						$result = $ts_db->query($query);
+						$result = $ts_db->exec_statement($insP,array(
+							$emp_no, $_POST['hours'.$i],
+							$_POST['area'.$i],$date,$periodID
+						));
 						if ($ts_db->affected_rows() == 1) {$successcount++;}
 					}
 					if ($successcount == $entrycount) {
@@ -194,11 +200,11 @@ class TimesheetPage extends FanniePage {
 			echo '<td><p>Name: <select name="emp_no">
 				<option value="error">Select staff member</option>' . "\n";
 		
-			$query = "SELECT FirstName, 
+			$query = $ts_db->prepare_statement("SELECT FirstName, 
 				CASE WHEN LastName='' OR LastName IS NULL THEN ''
 				ELSE ".$ts_db->concat('LEFT(LastName,1)',"'.'")." END,
-				emp_no FROM ".$FANNIE_OP_DB.".employees where EmpActive=1 ORDER BY FirstName ASC";
-			$result = $ts_db->query($query);
+				emp_no FROM ".$FANNIE_OP_DB.".employees where EmpActive=1 ORDER BY FirstName ASC");
+			$result = $ts_db->exec_statement($query);
 			while ($row = $ts_db->fetch_array($result)) {
 				echo "<option value=\"$row[2]\">$row[0] $row[1]</option>\n";
 			}
@@ -210,11 +216,13 @@ class TimesheetPage extends FanniePage {
 			<!--<font size=1>Tip: try cmd + arrow keys</font>--></p></td></tr>';
 		echo "<tr><td><br /></td></tr>";
 		echo "<tr><td align='right'><b>Total Hours</b></td><td align='center'><strong>Labor Category</strong></td>";
+		$queryP = $ts_db->prepare_statement("SELECT IF(NiceName='', ShiftName, NiceName), ShiftID 
+			FROM " . $FANNIE_PLUGIN_SETTINGS['TimesheetDatabase'] . ".shifts 
+			WHERE visible=true ORDER BY ShiftOrder ASC");
 		for ($i = 1; $i <= $max; $i++) {
 			echo "<tr><td align='right'><input type='text' name='hours" . $i . "' size=6></input></td>";
 
-			$query = "SELECT IF(NiceName='', ShiftName, NiceName), ShiftID FROM " . $FANNIE_PLUGIN_SETTINGS['TimesheetDatabase'] . ".shifts WHERE visible=true ORDER BY ShiftOrder ASC";
-			$result = $ts_db->query($query);
+			$result = $ts_db->exec_statement($queryP);
 			echo '<td><select name="area' . $i . '" id="area' . $i . '"><option>Please select an area of work.</option>';
 			while ($row = $ts_db->fetch_row($result)) {
 				echo "<option id =\"$i$row[1]\" value=\"$row[1]\">$row[0]</option>";
