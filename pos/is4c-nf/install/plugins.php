@@ -44,10 +44,10 @@ if (isset($_REQUEST['PLUGINLIST']) || isset($_REQUEST['psubmit'])){
 			$obj->plugin_disable();
 		}
 	}
-	$CORE_LOCAL->set('PluginList',$_REQUEST['PLUGINLIST']);
+	$CORE_LOCAL->set('PluginList',$_REQUEST['PLUGINLIST'], True);
 }
 $type_check = $CORE_LOCAL->get('PluginList');
-if (!is_array($type_check)) $CORE_LOCAL->set('PluginList',array());
+if (!is_array($type_check)) $CORE_LOCAL->set('PluginList',array(), True);
 
 $mods = AutoLoader::ListModules('Plugin');
 sort($mods);
@@ -80,9 +80,9 @@ foreach($mods as $m){
 			echo '<tr><td colspan="2" style="margin-bottom: 0px; height:auto;">';
 			$form_id = $m.'_'.$field;
 			if (isset($_REQUEST[$form_id])) 
-				$CORE_LOCAL->set($field,$_REQUEST[$form_id]);
+				$CORE_LOCAL->set($field,$_REQUEST[$form_id],True);
 			if ($CORE_LOCAL->get($field) === "") 
-				$CORE_LOCAL->set($field,isset($info['default'])?$info['default']:'');
+				$CORE_LOCAL->set($field,isset($info['default'])?$info['default']:'',True);
 			echo '<b>'.(isset($info['label'])?$info['label']:$field).'</b>: ';
 			if (isset($info['options']) && is_array($info['options'])){
 				printf('<select name="%s">',$form_id);

@@ -99,13 +99,20 @@ class DepartmentMovementReport extends FannieReportPage {
 		  department and negative values have special
 		  meaning
 		*/
-		$filter_condition = sprintf("d.dept_no BETWEEN %d AND %d",$deptStart,$deptEnd);
-		if ($buyer !== "" && $buyer > 0)
-			$filter_condition = sprintf("s.superID=%d",$buyer);
-		elseif ($buyer !== "" && $buyer == -1)
+		$filter_condition = 'd.dept_no BETWEEN ? AND ?';
+		$args = array($deptStart,$deptEnd);
+		if ($buyer !== "" && $buyer > 0){
+			$filter_condition = 's.superID=?';
+			$args = array($buyer);
+		}
+		elseif ($buyer !== "" && $buyer == -1){
 			$filter_condition = "1=1";
-		elseif ($buyer !== "" && $buyer == -2)
+			$args = array();
+		}
+		elseif ($buyer !== "" && $buyer == -2){
 			$filter_condition = "s.superID<>0";
+			$args = array();
+		}
 
 		/**
 		  Select a summary table. For UPC results, per-unique-ring
@@ -127,35 +134,37 @@ class DepartmentMovementReport extends FannieReportPage {
 		*/
 		$query = "";
 		$superTable = ($buyer !== "" && $buyer > 0) ? 'superdepts' : 'MasterSuperDepts';
+		$args[] = $date1.' 00:00:00';
+		$args[] = $date2.' 23:59:59';
 		switch($groupby){
 		case 'PLU':
 			$query = "SELECT t.upc,p.description, 
 				  SUM(t.quantity) as qty,
 				  SUM(t.total) AS total,
 				  d.dept_no,d.dept_name,s.superID,x.distributor
-				  FROM $sumTable as t LEFT JOIN products as p on t.upc = p.upc
-				  LEFT JOIN departments as d on d.dept_no = t.dept 
-				  LEFT JOIN $superTable AS s ON t.dept = s.dept_ID
+				  FROM $dlog as t LEFT JOIN products as p on t.upc = p.upc
+				  LEFT JOIN departments as d on d.dept_no = t.department
+				  LEFT JOIN $superTable AS s ON t.department = s.dept_ID
 				  LEFT JOIN prodExtra as x on t.upc = x.upc
 				  WHERE $filter_condition
-				  AND tdate >= '$date1 00:00:00' AND tdate <= '$date2 23:59:59' 
+				  AND tdate BETWEEN ? AND ?
 				  GROUP BY t.upc,p.description,
 				  d.dept_no,d.dept_name,s.superID,x.distributor ORDER BY SUM(t.total) DESC";
 			break;
 		case 'Department':
-			$query =  "SELECT t.dept_ID,d.dept_name,SUM(t.quantity) as Qty, SUM(total) as Sales 
-				FROM $sumTable as t LEFT JOIN departments as d on d.dept_no=t.dept_ID 
-				LEFT JOIN $superTable AS s ON s.dept_ID = t.dept_ID 
+			$query =  "SELECT t.department,d.dept_name,SUM(t.quantity) as Qty, SUM(total) as Sales 
+				FROM $dlog as t LEFT JOIN departments as d on d.dept_no=t.department 
+				LEFT JOIN $superTable AS s ON s.dept_ID = t.department 
 				WHERE $filter_condition
-				AND tdate >= '$date1 00:00:00' AND tdate <= '$date2 23:59:59' 
-				GROUP BY t.dept_ID,d.dept_name ORDER BY SUM(total) DESC";
+				AND tdate BETWEEN ? AND ?
+				GROUP BY t.department,d.dept_name ORDER BY SUM(total) DESC";
 			break;
 		case 'Date':
 			$query =  "SELECT year(tdate),month(tdate),day(tdate),SUM(t.quantity) as Qty, SUM(total) as Sales 
-				FROM $sumTable as t LEFT JOIN departments as d on d.dept_no=t.dept_ID 
-				LEFT JOIN $superTable AS s ON s.dept_ID = t.dept_ID 
+				FROM $dlog as t LEFT JOIN departments as d on d.dept_no=t.department 
+				LEFT JOIN $superTable AS s ON s.dept_ID = t.department
 				WHERE $filter_condition
-				AND tdate >= '$date1 00:00:00' AND tdate <= '$date2 23:59:59' 
+				AND tdate BETWEEN ? AND ?
 				GROUP BY year(tdate),month(tdate),day(tdate) 
 				ORDER BY year(tdate),month(tdate),day(tdate)";
 			break;
@@ -170,10 +179,10 @@ class DepartmentMovementReport extends FannieReportPage {
 				WHEN ".$dbc->dayofweek("tdate")."=7 THEN 'Sat'
 				ELSE 'Err' END";
 			$query =  "SELECT $cols,SUM(t.quantity) as Qty, SUM(total) as Sales 
-				FROM $sumTable as t LEFT JOIN departments as d on d.dept_no=t.dept_ID 
-				LEFT JOIN $superTable AS s ON s.dept_ID = t.dept_ID 
+				FROM $dlog as t LEFT JOIN departments as d on d.dept_no=t.department 
+				LEFT JOIN $superTable AS s ON s.dept_ID = t.department 
 				WHERE $filter_condition
-				AND tdate >= '$date1 00:00:00' AND tdate <= '$date2 23:59:59' 
+				AND tdate BETWEEN ? AND ?
 				GROUP BY $cols
 				ORDER BY ".$dbc->dayofweek('tdate');
 			break;
@@ -184,7 +193,8 @@ class DepartmentMovementReport extends FannieReportPage {
 		  special case to combine year, month, and day into
 		  a single field
 		*/
-		$result = $dbc->query($query);
+		$prep = $dbc->prepare_statement($query);
+		$result = $dbc->exec_statement($prep,$args);
 		$ret = array();
 		while ($row = $dbc->fetch_array($result)){
 			$record = array();
@@ -281,14 +291,14 @@ class DepartmentMovementReport extends FannieReportPage {
 
 	function form_content(){
 		global $dbc;
-		$deptsQ = "select dept_no,dept_name from departments order by dept_no";
-		$deptsR = $dbc->query($deptsQ);
+		$deptsQ = $dbc->prepare_statement("select dept_no,dept_name from departments order by dept_no");
+		$deptsR = $dbc->exec_statement($deptsQ);
 		$deptsList = "";
 
-		$deptSubQ = "SELECT superID,super_name FROM superDeptNames
+		$deptSubQ = $dbc->prepare_statement("SELECT superID,super_name FROM superDeptNames
 				WHERE superID <> 0 
-				ORDER BY superID";
-		$deptSubR = $dbc->query($deptSubQ);
+				ORDER BY superID");
+		$deptSubR = $dbc->exec_statement($deptSubQ);
 
 		$deptSubList = "";
 		while($deptSubW = $dbc->fetch_array($deptSubR)){

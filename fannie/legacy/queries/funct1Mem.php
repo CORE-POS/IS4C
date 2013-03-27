@@ -1,16 +1,6 @@
 <?php
 
 
-/* -----------------------start select_to_table-----------------------*/
-/* creates a table from query defined outside function. 
-   Variables are:
-   		$query = query to run 
-  
-   example:
-	$x = "SELECT * FROM tlog WHERE TransDate BETWEEN '2004-04-01' AND '2004-04-02' LIMIT 50"
-	select_to_table($x);
-
-*/
 if (!class_exists("SQLManager")) require_once($FANNIE_ROOT.'src/SQLManager.php');
 include($FANNIE_ROOT.'legacy/db.php');
 
@@ -64,49 +54,6 @@ function select_cols_to_table($query,$border,$bgcolor,$cols)
         } echo "</table>\n";
         return $sum;
 }
-
-function select_to_table($query,$border,$bgcolor)
-{
-	global $sql;
-	$results = $sql->query($query);
-	//echo "<b>query: $query</b>";
-	//layout table header
-	echo "<table border = $border bgcolor=$bgcolor>\n";
-	echo "<tr align left>\n";
-	/*for($i=0; $i<5; $i++)
-	{
-		echo "<th>" . $sql->field_name($results,$i). "</th>\n";
-	}
-	echo "</tr>\n"; *///end table header
-	//layout table body
-	while($row = $sql->fetch_row($results))
-	{
-		echo "<tr align=left>\n";
-		echo "<td >";
-			if(!isset($row[0]))
-			{
-				echo "NULL";
-			}else{
-				 ?>
-				 <a href="transaction.php?id=<? echo $row[5]; ?>">
-				 <? echo $row[0]; ?></a>
-			<? echo "</td>";
-			}
-		for ($i=1;$i<$number_cols-1; $i++)
-		{
-		echo "<td>";
-			if(!isset($row[$i])) //test for null value
-			{
-				echo "NULL";
-			}else{
-				echo $row[$i];
-			}
-			echo "</td>\n";
-		} echo "</tr>\n";
-	} echo "</table>\n";
-}
-
-/* -------------------------------end select_to_table-------------------*/ 
 
 function prodList_to_table($query,$border,$bgcolor,$upc)
 {

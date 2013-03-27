@@ -109,7 +109,7 @@ class BatchReport extends FannieReportPage {
 
 		$salesBatchQ ="select d.upc, b.description, sum(d.total) as sales, 
 			 sum(d.quantity) as quantity
-			 FROM $sumTable as d left join batchMergeTable as b
+			 FROM $dlog as d left join batchMergeTable as b
 			 ON d.upc = b.upc
 			 WHERE 
 			 b.batchID IN $inClause 
@@ -157,9 +157,9 @@ class BatchReport extends FannieReportPage {
 		$filter1 = FormLib::get_form_value('btype','');
 		$filter2 = FormLib::get_form_value('owner','');
 
-		$ownerQ = "SELECT super_name FROM superDeptNames WHERE superID > 0
-			ORDER BY superID";
-		$ownerR = $dbc->query($ownerQ);
+		$ownerQ = $dbc->prepare_statement("SELECT super_name FROM superDeptNames WHERE superID > 0
+			ORDER BY superID");
+		$ownerR = $dbc->exec_statement($ownerQ);
 		$o_opts = "<option value=\"\">Select owner</option>";
 		while($ownerW = $dbc->fetch_row($ownerR)){
 			$o_opts .= sprintf("<option %s>%s</option>",
@@ -167,8 +167,8 @@ class BatchReport extends FannieReportPage {
 				$ownerW[0]);
 		}
 
-		$typeQ = "SELECT batchTypeID,typeDesc FROM batchType ORDER BY batchTypeID";
-		$typeR = $dbc->query($typeQ);
+		$typeQ = $dbc->prepare_statement("SELECT batchTypeID,typeDesc FROM batchType ORDER BY batchTypeID");
+		$typeR = $dbc->exec_statement($typeQ);
 		$t_opts = "<option value=\"\">Select type</option>";
 		while($typeW = $dbc->fetch_row($typeR)){
 			$t_opts .= sprintf("<option %s value=%d>%s</option>",

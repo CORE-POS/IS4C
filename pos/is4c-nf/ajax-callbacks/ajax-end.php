@@ -72,8 +72,7 @@ if (strlen($receiptType) > 0) {
 
 	$PRINT_OBJ = new ESCPOSPrintHandler();
 	if ($receiptType == "full" && $dokick){
-		$kick_cmd = $PRINT_OBJ->DrawerKick(2,48*2,30*2);
-		$PRINT_OBJ->writeLine($kick_cmd);
+		ReceiptLib::drawerKick();
 	}
 	foreach($receiptContent as $receipt){
 		if(!empty($receipt))

@@ -48,14 +48,14 @@ if (isset($_GET['date1'])){
 	  header('Content-Disposition: attachment; filename="tenderUsage'.$code.'.xls"');
 	}
 
-	$query = "select tdate,trans_num,-total as total,card_no
+	$query = $dbc->prepare_statement("select tdate,trans_num,-total as total,card_no
 		  FROM $dlog as t 
-		  where t.trans_subtype = '$code' AND
+		  where t.trans_subtype = ? AND
 		  trans_type='T' AND
-		  tdate BETWEEN '$date1 00:00:00' AND '$date2 23:59:59'
-		  order by $sort $dir";
+		  tdate BETWEEN ? AND ?
+		  order by tdate");
 	//echo $query;
-	$result = $dbc->query($query);
+	$result = $dbc->exec_statement($query,array($code,$date1.' 00:00:00',$date2.' 23:59:59'));
 
 	// make headers sort links
 	$today = date("F d, Y");	
@@ -120,7 +120,8 @@ $page_title = "Fannie : Tender Usage";
 $header = "Tender Usage Report";
 include($FANNIE_ROOT.'src/header.html');
 $tenders = array();
-$r = $dbc->query("SELECT TenderCode,TenderName FROM tenders ORDER BY TenderName");
+$p = $dbc->prepare_statement("SELECT TenderCode,TenderName FROM tenders ORDER BY TenderName");
+$r = $dbc->exec_statement($p);
 while($w = $dbc->fetch_row($r))
 	$tenders[$w['TenderCode']] = $w['TenderName'];
 ?>

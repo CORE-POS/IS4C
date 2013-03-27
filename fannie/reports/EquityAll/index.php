@@ -18,16 +18,16 @@ if (isset($_REQUEST['submit'])){
 	if ($_REQUEST['owed'] == 2)
 		$equity_restrict = "(n.payments > 0 AND n.payments < 100)";
 
-	$q = "SELECT n.memnum,c.LastName,c.FirstName,n.payments,m.end_date
+	$q = $dbc->prepare_statement("SELECT n.memnum,c.LastName,c.FirstName,n.payments,m.end_date
 		FROM custdata AS c LEFT JOIN {$trans}.newBalanceStockToday_test as n ON
 		n.memnum=c.CardNo AND c.personNum=1
 		LEFT JOIN memDates as m ON c.CardNo=m.card_no
 		WHERE $type_restrict AND $equity_restrict
-		ORDER BY n.memnum";
+		ORDER BY n.memnum");
 
 	echo "<table cellpadding=\"4\" cellspacing=\"0\" border=\"1\">";
 	echo "<tr><th>Mem #</th><th>Last Name</th><th>First Name</th><th>Equity</th><th>Due Date</th></tr>";
-	$r = $dbc->query($q);
+	$r = $dbc->exec_statement($q);
 	while($w = $dbc->fetch_row($r)){
 		echo "<tr>";
 		printf('<td><a href="%s%d">%d</a></td>',$FANNIE_URL."reports/Equity/index.php?memNum=",$w['memnum'],$w['memnum']);

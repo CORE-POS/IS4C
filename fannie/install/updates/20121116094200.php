@@ -22,7 +22,7 @@
 *********************************************************************************/
 
 class update_20121116094200 extends UpdateObj {
-	     20121116094200 
+
 	protected $timestamp = '20121116094200';
 
 	protected $description = 'Replace AR_EOM_Summary with a table rather

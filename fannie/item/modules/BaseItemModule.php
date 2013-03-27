@@ -76,7 +76,7 @@ class BaseItemModule extends ItemModule {
 			  Check for entries in the vendorItems table to prepopulate
 			  fields for the new item
 			*/
-			$vendorP = "SELECT description,brand as manufacturer,cost/units as cost,
+			$vendorP = "SELECT description,brand as manufacturer,cost,
 				vendorName as distributor,margin,i.vendorID
 				FROM vendorItems AS i LEFT JOIN vendors AS v ON i.vendorID=v.vendorID
 				LEFT JOIN vendorDepartments AS d ON i.vendorDept=d.deptID
@@ -147,38 +147,41 @@ class BaseItemModule extends ItemModule {
 
 		$ret .= '</tr><tr>';
 
+		$limit = 35 - strlen(isset($rowItem['description'])?$rowItem['description']:'');
 		$ret .= '<td><b>Description</b></td><td><input type=text size=30 value="'
 			.(isset($rowItem['description'])?$rowItem['description']:'')
-			.'" name=descript></td>'; 
+			.'" onkeyup="$(\'#dcounter\').html(35-(this.value.length));" '
+			.' name=descript maxlength=35 id=descript>
+			<span id=dcounter>'.$limit.'</span></td>'; 
 
 		/**
 		  Drop down box changes price field from single price to
 		  X for $Y style pricing
 		*/
 		if (!isset($rowItem['pricemethod'])) $rowItem['pricemethod'] = 0;
-		$ret .= '<td><select onchange="$(\'#price1\').toggle();$(\'#price2\').toggle();">';
-		$ret .= sprintf('<option %s>Price</option><option %s>Volume Price</option>',
-				($rowItem['pricemethod']==0 ? 'selected' : ''),
-				($rowItem['pricemethod'] >0 ? 'selected' : '')
+		$ret .= '<td><b>Price</b></td>';
+		$ret .= sprintf('<td>$<input id="price" name="price" type="text" size="6" value="%.2f" />
+				</td>', (isset($rowItem['normal_price']) ? $rowItem['normal_price'] : 0)
 		);
-		$ret .= '</select></td>';
-		$ret .= sprintf('<td><span id="price1" style="display:%s;">$<input id="price"
-				name="price" type="text" size="6" value="%.2f" /></span>
-				<span id="price2" style="display:%s;"><input type="text" size="4"
-				name="vol_qtty" value="%d" /> for $<input type="text" size="4"
-				name="vol_price" value="%.2f" /><input type="checkbox"
-				name="doVolume" %s /></span><input type="hidden" name="pricemethod"
-				value="%d" /></td>',
-				($rowItem['pricemethod']==0 ? 'inline' : 'none'),
-				(isset($rowItem['normal_price']) ? $rowItem['normal_price'] : 0),
-				($rowItem['pricemethod'] >0 ? 'inline' : 'none'),
+
+		$ret .= '</tr><tr>';
+
+		$ret .= '<tr><td><b>Package Size</b></td><td><input type="text" name="size" size="4"
+				value="'.(isset($rowItem['size'])?$rowItem['size']:'').'" />';
+		$ret .= '<b>Unit of measure</b> <input type="text" name"unitm" size="4"
+				value="'.(isset($rowItem['unitofmeasure'])?$rowItem['unitofmeasure']:'').'" /></td>';
+		$ret .= sprintf('<td colspan="2">
+				<input type="checkbox" name="doVolume" %s />
+				<input type="text" size="4" name="vol_qtty" value="%d" /> 
+				for $<input type="text" size="4" name="vol_price" value="%.2f" />
+				<input type="hidden" name="pricemethod" value="%d" /></td>',
+				($rowItem['pricemethod'] >0 ? 'checked' : ''),
 				(isset($rowItem['quantity']) ? $rowItem['quantity'] : 0),
 				(isset($rowItem['groupprice']) ? $rowItem['groupprice'] : 0),
 				($rowItem['pricemethod'] >0 ? 'checked' : ''),
 				$rowItem['pricemethod']
 		);
-
-		$ret .= '</tr><tr>';
+		$ret .= '</tr>';
 
 		$ret .="<td align=right><b>Manufacturer</b></td><td><input type=text name=manufacturer size=30 value=\""
 			.(isset($rowItem['manufacturer'])?$rowItem['manufacturer']:"")
@@ -212,10 +215,11 @@ class BaseItemModule extends ItemModule {
 		$depts = array();
 		$subs = array();
 		if (!isset($rowItem['subdept'])) $rowItem['subdept'] = 0;
-		$r = $dbc->query('SELECT dept_no,dept_name,subdept_no,subdept_name,dept_ID 
+		$p = $dbc->prepare_statement('SELECT dept_no,dept_name,subdept_no,subdept_name,dept_ID 
 				FROM departments AS d
 				LEFT JOIN subdepts AS s ON d.dept_no=s.dept_ID
 				ORDER BY d.dept_no');
+		$r = $dbc->exec_statement($p);
 		while($w = $dbc->fetch_row($r)){
 			if (!isset($depts[$w['dept_no']])) $depts[$w['dept_no']] = $w['dept_name'];
 			if ($w['subdept_no'] == '') continue;
@@ -275,7 +279,8 @@ class BaseItemModule extends ItemModule {
 		$ret .= '</select>';
 		$ret .= '</td>';
 
-		$taxR = $dbc->query('SELECT id,description FROM taxrates ORDER BY id');
+		$taxQ = $dbc->prepare_statement('SELECT id,description FROM taxrates ORDER BY id');
+		$taxR = $dbc->exec_statement($taxQ);
 		$rates = array();
 		while ($taxW = $dbc->fetch_row($taxR))
 			array_push($rates,array($taxW[0],$taxW[1]));
@@ -321,12 +326,12 @@ class BaseItemModule extends ItemModule {
 		$up_array['groupprice'] = 0.00;
 		$up_array['quantity'] = 0;
 		$up_array['department'] = FormLib::get_form_value('department',0);
-		$up_array['size'] = "''";
+		$up_array['size'] = FormLib::get_form_value('size','');
 		$up_array['scaleprice'] = 0.00;
 		$up_array['modified'] = $dbc->now();
 		$up_array['advertised'] = 1;
 		$up_array['tareweight'] = 0;
-		$up_array['unitofmeasure'] = '';
+		$up_array['unitofmeasure'] = FormLib::get_form_value('unitm','');
 		$up_array['wicable'] = 0;
 		$up_array['idEnforced'] = 0;
 		$up_array['subdept'] = FormLib::get_form_value('subdepartment',0);

@@ -92,6 +92,16 @@ static public function check_password($password,$activity=1){
 
 			if ($transno == 1) TransRecord::addactivity($activity);
 
+			$my_drawer = ReceiptLib::currentDrawer();
+			if ($my_drawer == 0){
+				$available = ReceiptLib::availableDrawers();	
+				if (count($available) > 0){ 
+					ReceiptLib::assignDrawer($row_q['emp_no'],$available[0]);
+				}
+			}
+			else
+				ReceiptLib::assignDrawer($row_q['emp_no'],$my_drawer);
+
 			/**
 			  Use Kicker object to determine whether the drawer should open
 			  The first line is just a failsafe in case the setting has not
@@ -116,6 +126,17 @@ static public function check_password($password,$activity=1){
 				"LoggedIn" => 1
 			);
 			Database::setglobalvalues($globals);
+
+			$my_drawer = ReceiptLib::currentDrawer();
+			if ($my_drawer == 0){
+				$available = ReceiptLib::availableDrawers();	
+				if (count($available) > 0) {
+					ReceiptLib::assignDrawer(9999,$available[0]);
+				}
+			}
+			else
+				ReceiptLib::assignDrawer(9999,$my_drawer);
+			
 		}
 		else return False;
 	}

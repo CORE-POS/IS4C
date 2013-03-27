@@ -67,6 +67,7 @@ if (isset($_GET['type'])){
 	$dlog = select_dlog($date1,$date2);
 	
 	$query = "";
+	$args = array();
 	switch ($_GET["type"]){
 	case 'dept':
 		$query = "select 
@@ -76,12 +77,13 @@ if (isset($_GET['type'])){
 			d.upc, p.description, 
 			sum(d.quantity) as total 
 			from $dlog as d left join products as p on d.upc = p.upc
-			where d.department between $dept1 and $dept2
-			AND d.tdate BETWEEN '$date1 00:00:00' AND '$date2 23:59:59'
+			where d.department between ? AND ?
+			AND d.tdate BETWEEN ? AND ?
 			and trans_status <> 'M'
 			group by year(d.tdate),month(d.tdate),day(d.tdate),
 			d.upc,p.description
 			order by d.upc,year(d.tdate),month(d.tdate),day(d.tdate)";
+		$args = array($dept1,$dept2);
 		break;
 	case 'manu':
 		if ($man_type == "name"){
@@ -93,12 +95,13 @@ if (isset($_GET['type'])){
 				sum(d.quantity) as total 
 				from $dlog as d left join products as p on d.upc = p.upc
 				left join prodExtra as x on p.upc = x.upc
-				where x.manufacturer = '$manufacturer' 
-				AND d.tdate BETWEEN '$date1 00:00:00' AND '$date2 23:59:59'
+				where x.manufacturer = ?
+				AND d.tdate BETWEEN ? AND ?
 				and trans_status <> 'M'
 				group by year(d.tdate),month(d.tdate),day(d.tdate),
 				d.upc,p.description
 				order by d.upc,year(d.tdate),month(d.tdate),day(d.tdate)";
+			$args = array($manufacturer);
 		}
 		else {
 			$query = "select 
@@ -108,12 +111,13 @@ if (isset($_GET['type'])){
 				d.upc, p.description, 
 				sum(d.quantity) as total 
 				from $dlog as d left join products as p on d.upc = p.upc
-				where p.upc like '%$manufacturer%' 
-				AND d.tdate BETWEEN '$date1 00:00:00' AND '$date2 23:59:59'
+				where p.upc like ?
+				AND d.tdate BETWEEN ? AND ?
 				and trans_status <> 'M'
 				group by year(d.tdate),month(d.tdate),day(d.tdate),
 				d.upc,p.description
 				order by d.upc,year(d.tdate),month(d.tdate),day(d.tdate)";
+			$args = array('%'.$manufacturer.'%');
 		}
 		break;
 	case 'upc':
@@ -124,12 +128,13 @@ if (isset($_GET['type'])){
 			d.upc, p.description, 
 			sum(d.quantity) as total 
 			from $dlog as d left join products as p on d.upc = p.upc
-			where p.upc = '$upc' 
-			AND d.tdate BETWEEN '$date1 00:00:00' AND '$date2 23:59:59'
+			where p.upc = ?
+			AND d.tdate BETWEEN ? AND ?
 			and trans_status <> 'M'
 			group by year(d.tdate),month(d.tdate),day(d.tdate),
 			d.upc,p.description
 			order by d.upc,year(d.tdate),month(d.tdate),day(d.tdate)";
+		$args = array($upc);
 		break;
 
 	case 'likecode':
@@ -141,18 +146,21 @@ if (isset($_GET['type'])){
 			sum(d.quantity) as total 
 			from $dlog as d left join upcLike as p on d.upc = p.upc
 			left join likeCodes AS l ON p.likeCode=l.likeCode
-			where p.likeCode BETWEEN $lc AND $lc2
-			AND d.tdate BETWEEN '$date1 00:00:00' AND '$date2 23:59:59'
+			where p.likeCode BETWEEN ? AND ?
+			AND d.tdate BETWEEN ? AND ?
 			and trans_status <> 'M'
 			group by year(d.tdate),month(d.tdate),day(d.tdate),
 			p.likeCode, l.likeCodeDesc
 			order by p.likeCode,year(d.tdate),month(d.tdate),day(d.tdate)";
+		$args = array($lc,$lc2);
 		break;
 		
 		
 	}
-	//echo $query;
-	$result = $dbc->query($query);
+	$args[] = $date1.' 00:00:00';
+	$args[] = $date2.' 23:59:59';
+	$prep = $dbc->prepare_statement($query);
+	$result = $dbc->exec_statement($prep,$args);
 	
 	$dates = array();
 	while($date1 != $date2) {
@@ -233,8 +241,8 @@ else {
 	$header = "Trend Report";
 	include($FANNIE_ROOT.'src/header.html');
 
-	$deptsQ = "select dept_no,dept_name from departments order by dept_no";
-	$deptsR = $dbc->query($deptsQ);
+	$deptsQ = $dbc->prepare_statement("select dept_no,dept_name from departments order by dept_no");
+	$deptsR = $dbc->exec_statement($deptsQ);
 	$deptsList = "";
 	while ($deptsW = $dbc->fetch_array($deptsR))
 	  $deptsList .= "<option value=$deptsW[0]>$deptsW[0] $deptsW[1]</option>";	

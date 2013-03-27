@@ -27,14 +27,21 @@ include($FANNIE_ROOT.'classlib2.0/lib/FormLib.php');
 include($FANNIE_ROOT.'classlib2.0/data/FannieDB.php');
 include('laneUpdates.php');
 
-include(dirname(__FILE__).'/modules/BaseItemModule.php');	
-include(dirname(__FILE__).'/modules/ScaleItemModule.php');	
-include(dirname(__FILE__).'/modules/ExtraInfoModule.php');	
-include(dirname(__FILE__).'/modules/ItemLinksModule.php');	
-include(dirname(__FILE__).'/modules/LikeCodeModule.php');	
-include(dirname(__FILE__).'/modules/ItemMarginModule.php');	
-include(dirname(__FILE__).'/modules/ItemFlagsModule.php');	
-include(dirname(__FILE__).'/modules/AllLanesItemModule.php');	
+// validate modules & include class definitions
+if (!is_array($FANNIE_PRODUCT_MODULES)) $FANNIE_PRODUCT_MODULES = 'BaseItemModule';
+for($i=0;$i<count($FANNIE_PRODUCT_MODULES);$i++){
+	$mod = $FANNIE_PRODUCT_MODULES[$i];
+	if (class_exists($mod)) continue;
+	$file = dirname(__FILE__).'/modules/'.$mod.'.php';
+	if (!file_exists($file)){
+		$FANNIE_PRODUCT_MODULES[$i] = ''; // not found
+	}
+	else {
+		include_once($file);
+		if (!class_exists($mod))
+			$FANNIE_PRODUCT_MODULES[$i] = ''; // still not found
+	}
+}
 
 class ItemEditorPage extends FanniePage {
 
@@ -199,10 +206,15 @@ class ItemEditorPage extends FanniePage {
 	}
 
 	function edit_form($upc,$isNew){
+		global $FANNIE_PRODUCT_MODULES;
+		$shown = array();
 		$ret = '<form action="ItemEditorPage.php" method="post">';
 
-		$mod = new BaseItemModule();
-		$ret .= $mod->ShowEditForm($upc);
+		if (in_array('BaseItemModule',$FANNIE_PRODUCT_MODULES)){
+			$mod = new BaseItemModule();
+			$ret .= $mod->ShowEditForm($upc);
+			$shown['BaseItemModule'] = True;
+		}
 
 		if ($isNew){
 			$ret .= '<input type="submit" name="createBtn" value="Create Item" />';
@@ -213,28 +225,63 @@ class ItemEditorPage extends FanniePage {
                	$ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 			<a href="ItemEditorPage.php">Back</a>';
 
-		if (substr($upc,0,3) == "002"){
-			$mod = new ScaleItemModule();
-			$ret .= $mod->ShowEditForm($upc);
+		if (in_array('ScaleItemModule',$FANNIE_PRODUCT_MODULES)){
+			if (substr($upc,0,3) == "002"){
+				$mod = new ScaleItemModule();
+				$ret .= $mod->ShowEditForm($upc);
+			}
+			$shown['ScaleItemModule'] = True;
 		}
 
-		$mod = new ExtraInfoModule();
-		$ret .= $mod->ShowEditForm($upc);
+		if (in_array('ExtraInfoModule',$FANNIE_PRODUCT_MODULES)){
+			$mod = new ExtraInfoModule();
+			$ret .= $mod->ShowEditForm($upc);
+			$shown['ExtraInfoModule'] = True;
+		}
 
-		$mod = new ItemLinksModule();
-		$ret .= $mod->ShowEditForm($upc);
+		if (in_array('ItemLinksModule',$FANNIE_PRODUCT_MODULES)){
+			$mod = new ItemLinksModule();
+			$ret .= $mod->ShowEditForm($upc);
+			$shown['ItemLinksModule'] = True;
+		}
 
-		$mod = new LikeCodeModule();
-		$ret .= $mod->ShowEditForm($upc);
+		if (in_array('LikeCodeModule',$FANNIE_PRODUCT_MODULES)){
+			$mod = new LikeCodeModule();
+			$ret .= $mod->ShowEditForm($upc);
+			$shown['LikeCodeModule'] = True;
+		}
 
-		$mod = new ItemMarginModule();
-		$ret .= $mod->ShowEditForm($upc);
+		if (in_array('ItemMarginModule',$FANNIE_PRODUCT_MODULES)){
+			$mod = new ItemMarginModule();
+			$ret .= $mod->ShowEditForm($upc);
+			$shown['ItemMarginModule'] = True;
+		}
 
-		$mod = new ItemFlagsModule();
-		$ret .= $mod->ShowEditForm($upc);
+		if (in_array('ItemFlagsModule',$FANNIE_PRODUCT_MODULES)){
+			$mod = new ItemFlagsModule();
+			$ret .= $mod->ShowEditForm($upc);
+			$shown['ItemFlagsModule'] = True;
+		}
 
 		if (!$isNew){
-			$mod = new AllLanesItemModule();
+			if (in_array('VendorItemModule',$FANNIE_PRODUCT_MODULES)){
+				$mod = new VendorItemModule();
+				$ret .= $mod->ShowEditForm($upc);
+				$shown['VendorItemModule'] = True;
+			}
+
+			if (in_array('AllLanesItemModule',$FANNIE_PRODUCT_MODULES)){
+				$mod = new AllLanesItemModule();
+				$ret .= $mod->ShowEditForm($upc);
+				$shown['AllLanesItemModule'] = True;
+			}
+		}
+
+		// show any remaining, valid modules
+		foreach($FANNIE_PRODUCT_MODULES as $mod){
+			if ($mod == '') continue;
+			if (isset($shown[$mod])) continue;
+			$obj = new $mod();
 			$ret .= $mod->ShowEditForm($upc);
 		}
 
@@ -246,27 +293,26 @@ class ItemEditorPage extends FanniePage {
 	}
 
 	function save_item($isNew){
-		global $FANNIE_OP_DB;
+		global $FANNIE_OP_DB, $FANNIE_PRODUCT_MODULES;
 
 		$upc = FormLib::get_form_value('upc','');
 		if ($upc === '' || !is_numeric($upc)){
 			return '<span style="color:red;">Error: bad UPC:</span> '.$upc;
 		}
 
-		$mod = new BaseItemModule();
-		$mod->SaveFormData($upc);
+		// save base module data first
+		if (in_array('BaseItemModule',$FANNIE_PRODUCT_MODULES)){
+			$mod = new BaseItemModule();
+			$mod->SaveFormData($upc);
+		}
 
-		$mod = new ExtraInfoModule();
-		$mod->SaveFormData($upc);
-
-		$mod = new ScaleItemModule();
-		$mod->SaveFormData($upc);
-
-		$mod = new ItemFlagsModule();
-		$mod->SaveFormData($upc);
-
-		$mod = new LikeCodeModule();
-		$mod->SaveFormData($upc);
+		// save everything else
+		foreach($FANNIE_PRODUCT_MODULES as $mod){
+			if ($mod == '') continue;
+			if ($mod == 'BaseItemModule') continue;
+			$obj = new $mod();
+			$ret .= $obj->SaveFormData($upc);
+		}
 
 		/* push updates to the lanes */
 		$dbc = FannieDB::get($FANNIE_OP_DB);

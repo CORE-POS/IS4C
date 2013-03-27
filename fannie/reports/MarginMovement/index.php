@@ -38,10 +38,7 @@ if (isset($_REQUEST['deptStart'])){
 
 	$dlog = select_dtrans($date1,$date2);
 
-	$order = isset($_REQUEST['sort'])?$_REQUEST['sort']:'sum(total)';
-	$dir = isset($_REQUEST['dir'])?$_REQUEST['dir']:'DESC';
-
-	$query = "SELECT d.upc,p.description,d.department,t.dept_name,
+	$query = $dbc->prepare_statement("SELECT d.upc,p.description,d.department,t.dept_name,
 		sum(total) as total,sum(d.cost) as cost
 		FROM $dlog AS d INNER JOIN products AS p
 		ON d.upc=p.upc LEFT JOIN departments AS t 
@@ -53,8 +50,9 @@ if (isset($_REQUEST['deptStart'])){
 		AND trans_status NOT IN ('X','Z')
 		AND emp_no <> 9999 and register_no <> 99
 		GROUP BY d.upc,p.description,d.department,t.dept_name
-		ORDER BY $order $dir";
-	$result = $dbc->query($query);
+		ORDER BY sum(total) DESC)");
+	$args = array($date1,$date2,$dept1,$dept2);
+	$result = $dbc->exec_statement($query,$args);
 	$data = array();
 	$sumT = 0;
 	$sumC = 0;
@@ -87,8 +85,8 @@ if (isset($_REQUEST['deptStart'])){
 	exit;
 }
 
-$deptsQ = "select dept_no,dept_name from departments order by dept_no";
-$deptsR = $dbc->query($deptsQ);
+$deptsQ = $dbc->prepare_statement("select dept_no,dept_name from departments order by dept_no");
+$deptsR = $dbc->exec_statement($deptsQ);
 $deptsList = "";
 while ($deptsW = $dbc->fetch_array($deptsR))
   $deptsList .= "<option value=$deptsW[0]>$deptsW[0] $deptsW[1]</option>";

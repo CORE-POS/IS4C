@@ -20,18 +20,5 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
-include('../../config.php');
-
-$page_title = "Fannie :: Member Tools";
-$header = "Import Member Information";
-
-include($FANNIE_ROOT.'src/header.html');
-?>
-<ul>
-<li><a href="nn.php">Names &amp; Numbers</a></li>
-<li><a href="contact.php">Contact Information</a></li>
-<li><a href="equity.php">Existing Equity</a></li>
-</ul>
-<?php
-include($FANNIE_ROOT.'src/footer.html');
+header('Location: MemImportIndex.php');
 ?>

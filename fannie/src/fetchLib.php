@@ -5,16 +5,16 @@ function getFailedTrans($dateStr,$hour){
 	global $sql;
 
 	$trans_stack = array();
-	$query = sprintf("SELECT q.refNum FROM efsnetRequest as q
+	$query = $sql->prepare_statement("SELECT q.refNum FROM efsnetRequest as q
 		LEFT JOIN efsnetResponse as r ON q.date=r.date
 		and q.cashierNo=r.cashierNo and q.laneNo=r.laneNo
 		and q.transNo=r.transNo and q.transID=r.transID
 		WHERE ".
-		$sql->datediff('q.datetime',$sql->escape($dateStr))."=0 
-		AND %s=%d
-		AND r.httpCode <> 200",
-		$sql->hour('q.datetime'),$hour);
-	$response = $sql->query($query);
+		$sql->datediff('q.datetime','?')."=0 
+		AND ".$sql->hour('q.datetime')."=?
+		AND r.httpCode <> 200
+		AND (r.refNum like '%%-%%' OR r.refNum='')");
+	$response = $sql->exec_statement($query,array($dateStr,$hour));
 	while($row = $sql->fetch_row($response))
 		$trans_stack[] = $row['refNum'];
 

@@ -39,9 +39,8 @@ if (isset($_REQUEST['send_email']) || isset($_REQUEST['skip_email']) || isset($_
 		$headers .= 'MIME-Version: 1.0' . "\r\n";
 		$headers .= 'Content-type: text/html; charset=iso-8859-1' . "\r\n";
 		mail($to,$sub,$msg,$headers);
-		$logQ = sprintf("INSERT INTO emailLog VALUES (%s,%d,%s,'AR (Business EOM)')",
-			$dbc->now(),$_REQUEST['curcard'],$dbc->escape($to));
-		$dbc->query($logQ);
+		$logQ = $dbc->prepare_statement("INSERT INTO emailLog VALUES (".$dbc->now().",?,?,'AR (Business EOM)')");
+		$dbc->exec_statement($logQ,array($_REQUEST['curcard'],$to));
 		echo "<i>E-mail sent to $to</i><hr />";
 	}
 	else if (isset($_REQUEST['skip_email'])){
@@ -50,15 +49,15 @@ if (isset($_REQUEST['send_email']) || isset($_REQUEST['skip_email']) || isset($_
 	}
 	if (!empty($cns)){
 		$cur = array_shift($cns);
-		$q = "SELECT m.card_no, a.memName,
+		$q = $dbc->prepare_statement("SELECT m.card_no, a.memName,
 		   m.email_1,
 		   a.TwoMonthBalance,a.LastMonthCharges,
 		   a.LastMonthPayments,a.LastMonthBalance
 		   FROM AR_EOM_Summary a LEFT JOIN
 		   meminfo m ON a.cardno = m.card_no
 		   LEFT JOIN custdata as c on c.cardno=a.cardno and c.personnum=1
-		   WHERE a.cardno=$cur";
-		$r = $dbc->query($q);
+		   WHERE a.cardno=?");
+		$r = $dbc->exec_statement($q,array($cur));
 		$w = $dbc->fetch_row($r);
 
 		echo "<form action=busAR.php method=post>";
@@ -86,16 +85,16 @@ If payment has been made or sent, please ignore this invoice. If you have any qu
 <tr><td>Beginning Balance</td><td>Charges</td><td>Payments</td><td>Ending Balance</td><td>Amount Due</td></tr>
 <tr><td>\$$beg</td><td>\$$chg</td><td>\$$pay</td><td>\$$bal</td><td>\$$bal</td></tr>
 </table>\n";
-		$histQ = "SELECT card_no, max(charges) as charges, max(payments) as payments, 
+		$histQ = $dbc->prepare_statement("SELECT card_no, max(charges) as charges, max(payments) as payments, 
 			convert(varchar(50),date,101), trans_num,min(description),min(dept_name),
 			count(*)
-			FROM AR_statementHistory WHERE card_no = $cur
+			FROM AR_statementHistory WHERE card_no = ?
 			group by convert(varchar(50),date,101),trans_num,card_no
-			order by max(date) desc";
+			order by max(date) desc");
 		$gazetteFlag = False;
 		$msg .= "<table border=\"1\"><tr><td colspan=\"4\">Recent 90 Day History</td></tr>
 <tr><td>Date</td><td>Receipt</td><td>Charges</td><td>Payments</td></tr>";
-		$histR = $dbc->query($histQ);
+		$histR = $dbc->exec_statement($histQ,array($cur));
 		while ($histW = $dbc->fetch_row($histR)){
 			$msg .= sprintf("<tr><td>%s</td><td>%s</td><td>\$%.2f</td><td>\$%.2f</td></tr>",
 				$histW[3],$histW[4],$histW[1],$histW[2]);
@@ -188,15 +187,15 @@ to Board discretion with respect to access to member credit benefits.";
 }
 elseif (!isset($_REQUEST['cardno'])){
 	echo "<form action=busAR.php method=post>";
-	$query = "SELECT a.cardno, c.lastname,i.email_1
+	$query = $dbc->prepare_statement("SELECT a.cardno, c.lastname,i.email_1
                            FROM AR_EOM_Summary a LEFT JOIN
                            custdata as c on c.cardno=a.cardno and c.personnum=1
 			   LEFT JOIN meminfo AS i ON c.cardno=i.card_no
                            WHERE c.type not in ('TERM') and
                            c.memtype = 2
                            and (a.LastMonthBalance <> 0 or a.lastMonthCharges <> 0 or a.lastMonthPayments <> 0)
-                           ORDER BY a.cardno";
-	$result = $dbc->query($query);
+                           ORDER BY a.cardno");
+	$result = $dbc->exec_statement($query);
 	echo "<table cellspacing=0 cellpadding=4 border=1>
 		<tr><th>&nbsp;</th><th>Member</th><th>E-mail</th></tr>";
 	while($row = $dbc->fetch_row($result)){

@@ -60,49 +60,53 @@ class ManufacturerMovementReport extends FannieReportPage {
 		$dlog = select_dlog($date1,$date2);
 		$sumTable = $FANNIE_ARCHIVE_DB.$dbc->sep()."sumUpcSalesByDay";
 
-		$type_condition = sprintf("e.manufacturer like %s",$dbc->escape('%'.$manu.'%'));
+		$type_condition = "e.manufacturer like ?";
+		$args = array('%'.$manu.'%');
 		if ($type == 'prefix')
-			$type_condition = sprintf("t.upc like %s",$dbc->escape('%'.$manu.'%'));
+			$type_condition = 't.upc LIKE ?';
 
 		$query = "";
+		$args[] = $date1.' 00:00:00';
+		$args[] = $date2.' 23:59:59';
 		switch($groupby){
 		case 'upc':
 			$query = "select t.upc,p.description,
 				  sum(t.quantity) as qty,
 				  sum(t.total),d.dept_no,d.dept_name,s.superID
-				  from $sumTable as t left join products as p
+				  from $dlog as t left join products as p
 				  on t.upc=p.upc left join prodExtra as e on p.upc = e.upc
 				  left join departments as d on p.department = d.dept_no
 				  left join MasterSuperDepts as s on d.dept_no = s.dept_ID
 				  where $type_condition
-				  and t.tdate between '$date1 00:00:00' and '$date2 23:59:59'
-				  group by $groupby,p.description,d.dept_no,d.dept_name,s.superID
+				  and t.tdate between ? AND ?
+				  group by t.upc,p.description,d.dept_no,d.dept_name,s.superID
 				  order by sum(t.total) desc";
 			break;
 		case 'date':
 			$query = "select year(t.tdate),month(t.tdate),day(t.tdate),
 				sum(t.quantity),sum(t.total)
 				  from products as p left join prodExtra as e on p.upc = e.upc
-				  left join $sumTable as t on p.upc = t.upc
+				  left join $dlog as t on p.upc = t.upc
 				  where $type_condition
-				  and t.tdate between '$date1 00:00:00' and '$date2 23:59:59'
+				  and t.tdate between ? AND ?
 				  group by year(t.tdate),month(t.tdate),day(t.tdate)
 				  order by year(t.tdate),month(t.tdate),day(t.tdate)";
 			break;
 		case 'dept':
 			$query = "select d.dept_no,d.dept_name,sum(t.quantity),sum(t.total),s.superID
 				  from products as p left join prodExtra as e on p.upc = e.upc
-				  left join $sumTable as t on p.upc = t.upc
+				  left join $dlog as t on p.upc = t.upc
 				  left join departments as d on p.department = d.dept_no
 				  left join MasterSuperDepts as s on d.dept_no=s.dept_ID
 				  where $type_condition
-				  and t.tdate between '$date1 00:00:00' and '$date2 23:59:59'
+				  and t.tdate between ? AND ?
 				  group by d.dept_no,d.dept_name,s.superID
 				  order by sum(t.total) desc";
 			break;
 		}
 
-		$result = $dbc->query($query);
+		$prep = $dbc->prepare_statement($query);
+		$result = $dbc->exec_statement($prep,$args);
 		$ret = array();
 		while ($row = $dbc->fetch_array($result)){
 			$record = array();

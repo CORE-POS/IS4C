@@ -25,7 +25,6 @@ include('../../config.php');
 include($FANNIE_ROOT.'src/mysql_connect.php');
 include($FANNIE_ROOT.'src/select_dlog.php');
 include($FANNIE_ROOT.'auth/login.php');
-include($FANNIE_ROOT.'src/functions.php');
 
 $dbconn = ($FANNIE_SERVER_DBMS=='MSSQL')?'.dbo.':'.';
 
@@ -43,19 +42,20 @@ if (isset($_GET['startDate'])){
                          FROM $dlog as d left join 
 			 {$FANNIE_OP_DB}{$dbconn}departments as t on d.department = t.dept_no
                          WHERE (d.trans_type = 'I' or d.trans_type = 'D') AND
-			 d.tdate BETWEEN '$startDate' and '$endDate'
+			 d.tdate BETWEEN ? AND ?
 			 and ".$dbc->hour('d.tdate')." between 7 and 20
-                         AND t.dept_no BETWEEN $dept AND $dept2
+                         AND t.dept_no BETWEEN ? AND ?
 			 GROUP BY year(tdate),month(tdate),day(d.tdate),".$dbc->hour('tdate')."
 			 ORDER BY year(tdate),month(tdate),day(d.tdate),".$dbc->hour('tdate');
+	$args = array($startDate,$endDate,$dept,$dept2);
 	if (isset($_GET['weekday'])){
 			$hourlySalesQ = "SELECT min(".$dbc->dayofweek('d.tdate')."),".$dbc->hour('d.tdate').",sum(d.total),avg(d.total)
 				 FROM $dlog as d left join 
 				 {$FANNIE_OP_DB}{$dbconn}departments as t on d.department = t.dept_no
                  		 WHERE (d.trans_type = 'I' or d.trans_type = 'D') AND
-				 d.tdate BETWEEN '$startDate' and '$endDate'
+				 d.tdate BETWEEN ? AND ?
 				 and ".$dbc->hour('d.tdate')." between 7 and 20
- 		 		 AND dept_no BETWEEN $dept and $dept2
+ 		 		 AND dept_no BETWEEN ? AND ?
 				 GROUP BY ".$dbc->dayofweek('tdate').",".$dbc->hour('tdate')."
 				 ORDER BY ".$dbc->dayofweek('tdate').",".$dbc->hour('tdate');
 	}
@@ -95,7 +95,8 @@ if (isset($_GET['startDate'])){
 	echo "</tr>";
 	
 	//echo $hourlySalesQ."<br />";
-	$hourlySalesR = $dbc->query($hourlySalesQ);
+	$prep = $dbc->prepare_statement($hourlySalesQ);
+	$hourlySalesR = $dbc->exec_statement($prep,$args);
 	$curDay = "";
 	$expectedHour = 7;
 	$c = 0;
@@ -149,8 +150,8 @@ function update(targetdiv,sourcediv){
 }
 </script>
 <?php
-	$deptQ = "select dept_no,dept_name from departments order by dept_no";
-	$deptR = $dbc->query($deptQ);
+	$deptQ = $dbc->prepare_statement("select dept_no,dept_name from departments order by dept_no");
+	$deptR = $dbc->exec_statement($deptQ);
 	$depts = array();
 	$dept_nos = array();
 	$count = 0;

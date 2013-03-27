@@ -41,6 +41,8 @@ Necessities
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <a href="mem.php">Members</a>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<a href="prod.php">Products</a>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <a href="stores.php">Stores</a>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <a href="update.php">Updates</a>
@@ -93,28 +95,33 @@ else {
 	echo "</form>";
 	exit;
 }
-?>
-<br />
-Default Shelf Tag Layout
-<select name=FANNIE_DEFAULT_PDF>
-<?php
-if (!isset($FANNIE_DEFAULT_PDF)) $FANNIE_DEFAULT_PDF = 'Fannie Standard';
-if (isset($_REQUEST['FANNIE_DEFAULT_PDF'])) $FANNIE_DEFAULT_PDF = $_REQUEST['FANNIE_DEFAULT_PDF'];
-if (file_exists($FANNIE_ROOT.'admin/labels/scan_layouts.php')){
-	include($FANNIE_ROOT.'admin/labels/scan_layouts.php');
-	foreach(scan_layouts() as $l){
-		if ($l == $FANNIE_DEFAULT_PDF)
-			echo "<option selected>$l</option>";
-		else
-			echo "<option>$l</option>";
-	}
+
+/**
+  Detect databases that are supported
+*/
+$supportedTypes = array();
+if (extension_loaded('pdo') && extension_loaded('pdo_mysql'))
+	$supportedTypes['PDO_MYSQL'] = 'PDO MySQL';
+if (extension_loaded('mysqli'))
+	$supportedTypes['MYSQLI'] = 'MySQLi';
+if (extension_loaded('mysql'))
+	$supportedTypes['MYSQL'] = 'MySQL';
+if (extension_loaded('mssql'))
+	$supportedTypes['MSSQL'] = 'MSSQL';
+
+if (count($supportedTypes) == 0){
+	echo "<span style=\"color:red;\"><b>Error</b>: no database driver available</span>";
+	echo "<blockquote>";
+	echo 'Install at least one of the following PHP extensions: pdo_mysql, mysqli, mysql,
+		or mssql. If you installed one or more of these and are still seeing this
+		error, make sure they are enabled in your PHP configuration and try 
+		restarting your web server.';
+	echo "</blockquote>";
+	exit;
 }
-else {
-	echo "<option>No layouts found!</option>";
-}
-confset('FANNIE_DEFAULT_PDF',"'$FANNIE_DEFAULT_PDF'");
+$defaultDbType = array_shift(array_keys($supportedTypes));
+
 ?>
-</select>
 <hr />
 <b>Main Server</b><br />
 Server Database Host
@@ -129,17 +136,11 @@ echo "<input type=text name=FANNIE_SERVER value=\"$FANNIE_SERVER\" />";
 <br />Server Database Type
 <select name=FANNIE_SERVER_DBMS>
 <?php
-if(!isset($FANNIE_SERVER_DBMS)) $FANNIE_SERVER_DBMS = 'MYSQL';
+if(!isset($FANNIE_SERVER_DBMS)) $FANNIE_SERVER_DBMS = $defaultDbType;
 if (isset($_REQUEST['FANNIE_SERVER_DBMS'])){
 	$FANNIE_SERVER_DBMS = $_REQUEST['FANNIE_SERVER_DBMS'];
 }
 confset('FANNIE_SERVER_DBMS',"'$FANNIE_SERVER_DBMS'");
-$supportedTypes = array(
-	'MYSQL' => 'MySQL',
-	'MSSQL' => 'MSSQL',
-	'MYSQLI' => 'MySQLi',
-	'PDO_MYSQL' => 'PDO MySQL'
-);
 foreach ($supportedTypes as $val=>$label){
 	printf('<option value="%s" %s>%s</option>',
 		$val,
@@ -247,7 +248,7 @@ echo "<input type=text name=FANNIE_ARCHIVE_DB value=\"$FANNIE_ARCHIVE_DB\" />";
 <br />Archive Method:
 <select name=FANNIE_ARCHIVE_METHOD>
 <?php
-if (!isset($FANNIE_ARCHIVE_METHOD)) $FANNIE_ARCHIVE_METHOD = 'tables';
+if (!isset($FANNIE_ARCHIVE_METHOD)) $FANNIE_ARCHIVE_METHOD = 'partitions';
 if (isset($_REQUEST['FANNIE_ARCHIVE_METHOD'])) $FANNIE_ARCHIVE_METHOD = $_REQUEST['FANNIE_ARCHIVE_METHOD'];
 if ($FANNIE_ARCHIVE_METHOD == 'tables'){
 	confset('FANNIE_ARCHIVE_METHOD',"'tables'");
@@ -436,7 +437,7 @@ for($i=0; $i<$FANNIE_NUM_LANES; $i++){
 	$conf .= "'host'=>'{$FANNIE_LANES[$i]['host']}',";
 	echo "Lane ".($i+1)." Database Host: <input type=text name=LANE_HOST_$i value=\"{$FANNIE_LANES[$i]['host']}\" /><br />";
 	
-	if (!isset($FANNIE_LANES[$i]['type'])) $FANNIE_LANES[$i]['type'] = 'MYSQL';
+	if (!isset($FANNIE_LANES[$i]['type'])) $FANNIE_LANES[$i]['type'] = $defaultDbType;
 	if (isset($_REQUEST["LANE_TYPE_$i"])) $FANNIE_LANES[$i]['type'] = $_REQUEST["LANE_TYPE_$i"];
 	$conf .= "'type'=>'{$FANNIE_LANES[$i]['type']}',";
 	echo "Lane ".($i+1)." Database Type: <select name=LANE_TYPE_$i>";

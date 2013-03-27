@@ -20,6 +20,11 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
+$url = 'BatchReport.php';
+if (isset($_REQUEST['batchID']))
+	$url .= '?batchID='.$_REQUEST['batchID'];
+header('Location: '.$url);
+exit;
 
 include('../../src/mysql_connect.php');
 include('../../src/select_dlog.php');

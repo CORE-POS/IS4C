@@ -64,8 +64,8 @@ class ProductImportPage extends FannieUploadPage {
 		global $FANNIE_OP_DB;
 		$dbc = FannieDB::get($FANNIE_OP_DB);
 		$defaults_table = array();
-		$defQ = "SELECT dept_no,dept_tax,dept_fs,dept_discount FROM departments";
-		$defR = $dbc->query($defQ);
+		$defQ = $dbc->prepare_statement("SELECT dept_no,dept_tax,dept_fs,dept_discount FROM departments");
+		$defR = $dbc->exec_statement($defQ);
 		while($defW = $dbc->fetch_row($defR)){
 			$defaults_table[$defW['dept_no']] = array(
 				'tax' => $defW['dept_tax'],

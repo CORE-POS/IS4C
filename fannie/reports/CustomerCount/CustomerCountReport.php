@@ -50,8 +50,8 @@ class CustomerCountReport extends FannieReportPage {
 			$this->content_function = "report_content";
 			$this->has_menus(False);
 
-			$typeQ = "SELECT memtype,memDesc FROM memtype ORDER BY memtype";
-			$typeR = $dbc->query($typeQ);
+			$typeQ = $dbc->prepare_statement("SELECT memtype,memDesc FROM memtype ORDER BY memtype");
+			$typeR = $dbc->exec_statement($typeQ);
 			$this->memtypes = array();
 			$this->report_headers = array('Date');
 			while($typeW = $dbc->fetch_row($typeR)){

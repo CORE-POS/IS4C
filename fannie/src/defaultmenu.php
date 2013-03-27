@@ -75,8 +75,9 @@ array('label'=>'Item Maintenance','url'=>'item/ItemEditorPage.php','subheading'=
 ),
 array('label'=>'Sales Batches','url'=>'batches/','subheading'=>'Create automated sales & price changes',
 'submenu'=>array(
-	array('label'=>'Sales Batches','url'=>'batches/newbatch/'),
-	array('label'=>'Manage Batch Types','url'=>'batches/types.php'),
+	array('label'=>'Sales Batches','url'=>'batches/newbatch.oo/'),
+	array('label'=>'Upload Batch','url'=>'batches/xlsbatch/'),
+	array('label'=>'Manage Batch Types','url'=>'batches/BatchTypeEditor.php'),
 	array('label'=>'Co+op Deals Sales','url'=>'batches/CAP/'),
 	array('label'=>'Vendor Pricing','url'=>'batches/UNFI/')
 	)
@@ -120,35 +121,35 @@ array('label'=>'Dayend Polling','url'=>'cron/management/','subheading'=>'Schedul
 ),
 array('label'=>'Synchronize','url'=>'sync/','subheading'=>'Update cash registers',
 'submenu'=>array(
-	array('label'=>'Products','url'=>'sync/tablesync.php?tablename=products'),
-	array('label'=>'ProductUser','url'=>'sync/tablesync.php?tablename=productUser'),
-	array('label'=>'Membership','url'=>'sync/tablesync.php?tablename=custdata'),
-	array('label'=>'Member Cards','url'=>'sync/tablesync.php?tablename=memberCards'),
-	array('label'=>'Employees','url'=>'sync/tablesync.php?tablename=employees'),
-	array('label'=>'Departments','url'=>'sync/tablesync.php?tablename=departments'),
-	array('label'=>'Sub Departments','url'=>'sync/tablesync.php?tablename=subdepts')
+	array('label'=>'Products','url'=>'sync/TableSyncPage.php?tablename=products'),
+	array('label'=>'ProductUser','url'=>'sync/TableSyncPage.php?tablename=productUser'),
+	array('label'=>'Membership','url'=>'sync/TableSyncPage.php?tablename=custdata'),
+	array('label'=>'Member Cards','url'=>'sync/TableSyncPage.php?tablename=memberCards'),
+	array('label'=>'Employees','url'=>'sync/TableSyncPage.php?tablename=employees'),
+	array('label'=>'Departments','url'=>'sync/TableSyncPage.php?tablename=departments'),
+	array('label'=>'Sub Departments','url'=>'sync/TableSyncPage.php?tablename=subdepts')
 	)
 ),
 array('label'=>'Admin','url'=>'admin/','subheading'=>'Administrative functions, etc.',
 'submenu'=>array(
 	array('label'=>'Cashier Management >>','url'=>'admin/Cashiers/',
 	'submenu'=>array(
-		array('label'=>'Add a new Cashier','url'=>'admin/Cashiers/add.php'),
-		array('label'=>'View/edit Cashiers','url'=>'admin/Cashiers/view.php'),
+		array('label'=>'Add a new Cashier','url'=>'admin/Cashiers/AddCashierPage.php'),
+		array('label'=>'View/edit Cashiers','url'=>'admin/Cashiers/ViewCashiersPage.php'),
 		array('label'=>'Cashier performance report','url'=>'reports/cash_report/')
 		)
 	),
 	array('label'=>'Member Management >>','url'=>'mem/',
 	'submenu'=>array(
-		array('label'=>'View/edit Members','url'=>'mem/search.php'),
-		array('label'=>'Manage Member Types','url'=>'mem/types.php'),
-		array('label'=>'Create New Members','url'=>'mem/new.php'),
+		array('label'=>'View/edit Members','url'=>'mem/MemberSearchPage.php'),
+		array('label'=>'Manage Member Types','url'=>'mem/MemberTypeEditor.php'),
+		array('label'=>'Create New Members','url'=>'mem/NewMemberTool.php'),
 		array('label'=>'Print Member Stickers','url'=>'mem/numbers/'),
 		array('label'=>'Import Member Information >>','url'=>'mem/import/',
 			'submenu'=>array(
-				array('label'=>'Names & Numbers','url'=>'mem/import/nn.php'),
-				array('label'=>'Contact Information','url'=>'mem/import/contact.php'),
-				array('label'=>'Existing Equity','url'=>'mem/import/equity.php')
+				array('label'=>'Names & Numbers','url'=>'mem/import/MemNameNumImportPage.php'),
+				array('label'=>'Contact Information','url'=>'mem/import/MemContactImportPage.php'),
+				array('label'=>'Existing Equity','url'=>'mem/import/EquityHistoryImportPage.php')
 				)
 			)
 		)

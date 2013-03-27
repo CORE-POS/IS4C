@@ -25,8 +25,9 @@ include('util.php');
 <tr><td style="width: 30%;">
 </td><td>
 <?php
-if (isset($_REQUEST['BROWSER_ONLY'])) $CORE_LOCAL->set('browserOnly',$_REQUEST['BROWSER_ONLY']);
-else $CORE_LOCAL->set('browserOnly',0);
+if (isset($_REQUEST['BROWSER_ONLY'])) $CORE_LOCAL->set('browserOnly',1,True);
+elseif (isset($_REQUEST['esubmit'])) $CORE_LOCAL->set('browserOnly',0,True);
+else $CORE_LOCAL->set('browserOnly',0,True);
 echo "<fieldset class='toggle'>\n<input type='checkbox' name='BROWSER_ONLY' id='browser'";
 if ($CORE_LOCAL->get('browserOnly') == 1) echo " value='1' checked />";
 else echo " value='0' />";
@@ -38,7 +39,7 @@ confsave('browserOnly',$CORE_LOCAL->get('browserOnly'));
 </td></tr><tr><td>
 <b>Store</b>:</td><td>
 <?php
-if (isset($_REQUEST['STORE'])) $CORE_LOCAL->set('store',$_REQUEST['STORE']);
+if (isset($_REQUEST['STORE'])) $CORE_LOCAL->set('store',$_REQUEST['STORE'],True);
 printf("<input type=text name=STORE value=\"%s\" />",$CORE_LOCAL->get('store'));
 confsave('store',"'".$CORE_LOCAL->get('store')."'");
 ?>
@@ -47,8 +48,9 @@ off based on the store setting. Adherence to this principle is less than ideal.<
 </td></tr><tr><td>
 </td><td>
 <?php
-if(isset($_REQUEST['DISCOUNTS'])) $CORE_LOCAL->set('discountEnforced',$_REQUEST['DISCOUNTS']);
-else $CORE_LOCAL->set('discountEnforced',0);
+if(isset($_REQUEST['DISCOUNTS'])) $CORE_LOCAL->set('discountEnforced',1,True);
+elseif(isset($_REQUEST['DISCOUNTS'])) $CORE_LOCAL->set('discountEnforced',0,True);
+elseif ($CORE_LOCAL->get('discountEnforced')==='') $CORE_LOCAL->set('discountEnforced',0,True);
 echo "<fieldset class='toggle'>\n<input type='checkbox' name='DISCOUNTS' id='discounts'";
 if ($CORE_LOCAL->get("discountEnforced") == 1) echo " value='1' checked";
 else echo " value='0'";
@@ -59,8 +61,9 @@ confsave('discountEnforced',$CORE_LOCAL->get('discountEnforced'));
 <span class='noteTxt'>If yes, members get a percentage discount as specified in custdata.</span>
 </td></tr><tr><td></td><td> 
 <?php
-if(isset($_REQUEST['RDISCOUNTS'])) $CORE_LOCAL->set('refundDiscountable',$_REQUEST['RDISCOUNTS']);
-else $CORE_LOCAL->set('refundDiscountable',0);
+if(isset($_REQUEST['RDISCOUNTS'])) $CORE_LOCAL->set('refundDiscountable',1,True);
+elseif(isset($_REQUEST['esubmit'])) $CORE_LOCAL->set('refundDiscountable',0,True);
+elseif($CORE_LOCAL->get('refundDiscountable')==='') $CORE_LOCAL->set('refundDiscountable',0,True);
 echo "<fieldset class='toggle'>\n<input type='checkbox' name='RDISCOUNTS' id='rdiscounts'";
 if ($CORE_LOCAL->get("refundDiscountable") == 1) echo " value='1' checked";
 else echo " value='0'";
@@ -72,7 +75,7 @@ confsave('refundDiscountable',$CORE_LOCAL->get('refundDiscountable'));
 </td></tr><tr><td>
 <b>Line Item Discount (member)</b>: </td><td>
 <?php
-if(isset($_REQUEST['LD_MEM'])) $CORE_LOCAL->set('LineItemDiscountMem',$_REQUEST['LD_MEM']);
+if(isset($_REQUEST['LD_MEM'])) $CORE_LOCAL->set('LineItemDiscountMem',$_REQUEST['LD_MEM'],True);
 printf("<input type=text name=LD_MEM value=\"%f\" />",$CORE_LOCAL->get('LineItemDiscountMem'));
 confsave('LineItemDiscountMem',"'".$CORE_LOCAL->get('LineItemDiscountMem')."'");
 ?>
@@ -80,7 +83,7 @@ confsave('LineItemDiscountMem',"'".$CORE_LOCAL->get('LineItemDiscountMem')."'");
 </td></tr><tr><td>
 <b>Line Item Discount (non-member)</b>: </td><td>
 <?php
-if(isset($_REQUEST['LD_NONMEM'])) $CORE_LOCAL->set('LineItemDiscountNonMem',$_REQUEST['LD_NONMEM']);
+if(isset($_REQUEST['LD_NONMEM'])) $CORE_LOCAL->set('LineItemDiscountNonMem',$_REQUEST['LD_NONMEM'],True);
 printf("<input type=text name=LD_NONMEM value=\"%f\" />",$CORE_LOCAL->get('LineItemDiscountNonMem'));
 confsave('LineItemDiscountNonMem',"'".$CORE_LOCAL->get('LineItemDiscountNonMem')."'");
 ?>
@@ -88,7 +91,7 @@ confsave('LineItemDiscountNonMem',"'".$CORE_LOCAL->get('LineItemDiscountNonMem')
 </td></tr><tr><td>
 <b>Default Non-member #</b>: </td><td>
 <?php
-if(isset($_REQUEST['NONMEM'])) $CORE_LOCAL->set('defaultNonMem',$_REQUEST['NONMEM']);
+if(isset($_REQUEST['NONMEM'])) $CORE_LOCAL->set('defaultNonMem',$_REQUEST['NONMEM'],True);
 printf("<input type=text name=NONMEM value=\"%s\" />",$CORE_LOCAL->get('defaultNonMem'));
 confsave('defaultNonMem',"'".$CORE_LOCAL->get('defaultNonMem')."'");
 ?>
@@ -97,7 +100,7 @@ transactions. Specify that account number here.</span>
 </td></tr><tr><td>
 <b>Visiting Member #</b>: </td><td>
 <?php
-if(isset($_REQUEST['VISMEM'])) $CORE_LOCAL->set('visitingMem',$_REQUEST['VISMEM']);
+if(isset($_REQUEST['VISMEM'])) $CORE_LOCAL->set('visitingMem',$_REQUEST['VISMEM'],True);
 printf("<input type=text name=VISMEM value=\"%s\" />",$CORE_LOCAL->get('visitingMem'));
 confsave('visitingMem',"'".$CORE_LOCAL->get('visitingMem')."'");
 ?>
@@ -105,8 +108,9 @@ confsave('visitingMem',"'".$CORE_LOCAL->get('visitingMem')."'");
 but no other benefits. Leave blank to disable.</span>
 </td></tr><tr><td></td><td>
 <?php
-if (isset($_REQUEST['SHOW_NONMEM'])) $CORE_LOCAL->set('memlistNonMember',$_REQUEST['SHOW_NONMEM']);
-else $CORE_LOCAL->set('memlistNonMember',0);
+if (isset($_REQUEST['SHOW_NONMEM'])) $CORE_LOCAL->set('memlistNonMember',1,True);
+elseif (isset($_REQUEST['esubmit'])) $CORE_LOCAL->set('memlistNonMember',0,True);
+elseif ($CORE_LOCAL->get('memlistNonMember')==='') $CORE_LOCAL->set('memlistNonMember',0,True);
 echo "<fieldset class='toggle'>\n<input type='checkbox' name='SHOW_NONMEM' id='shownonmem'";
 if ($CORE_LOCAL->get("memlistNonMember") == 1) echo " value='1' checked";
 else echo " value='0'";
@@ -118,7 +122,7 @@ confsave('memlistNonMember',$CORE_LOCAL->get('memlistNonMember'));
 </td></tr><tr><td>
 <b>Bottle Return Department number</b>: </td><td>
 <?php
-if(isset($_REQUEST['BOTTLE_RET'])) $CORE_LOCAL->set('BottleReturnDept',$_REQUEST['BOTTLE_RET']);
+if(isset($_REQUEST['BOTTLE_RET'])) $CORE_LOCAL->set('BottleReturnDept',$_REQUEST['BOTTLE_RET'],True);
 printf("<input type=text name=BOTTLE_RET value=\"%s\" />",$CORE_LOCAL->get('BottleReturnDept'));
 confsave('BottleReturnDept',"'".$CORE_LOCAL->get('BottleReturnDept')."'");
 ?>
@@ -129,11 +133,11 @@ confsave('BottleReturnDept',"'".$CORE_LOCAL->get('BottleReturnDept')."'");
 <tr><td colspan=2 class="tblHeader">
 <h3>Hardware Settings</h3></td></tr><tr><td></td><td>
 <?php
-if (isset($_REQUEST['PRINT'])) $CORE_LOCAL->set('print',$_REQUEST['PRINT']);
-else $CORE_LOCAL->set('print',0);
+if (isset($_REQUEST['PRINT'])) $CORE_LOCAL->set('print',1,True);
+elseif (isset($_REQUEST['esubmit'])) $CORE_LOCAL->set('print',0,True);
+elseif ($CORE_LOCAL->get('print')==='') $CORE_LOCAL->set('print',0,True);
 echo "<fieldset class='toggle'>\n<input type='checkbox' name='PRINT' id='printing'";
-if ($CORE_LOCAL->get("print") == 1) echo " value='1' checked";
-else echo " value='0'";
+if ($CORE_LOCAL->get("print") == 1) echo " checked";
 echo " />\n<label for='printing' onclick=''>Enable receipts: </label>\n
 	<span class='toggle-button'></span></fieldset>";
 confsave('print',$CORE_LOCAL->get("print"));
@@ -141,7 +145,7 @@ confsave('print',$CORE_LOCAL->get("print"));
 </select></td></tr><tr><td>
 <b>Use new receipt</b>: </td><td><select name=NEWRECEIPT>
 <?php
-if (isset($_REQUEST['NEWRECEIPT'])) $CORE_LOCAL->set('newReceipt',$_REQUEST['NEWRECEIPT']);
+if (isset($_REQUEST['NEWRECEIPT'])) $CORE_LOCAL->set('newReceipt',$_REQUEST['NEWRECEIPT'],True);
 if ($CORE_LOCAL->get("newReceipt") == 2){
 	echo "<option value=2 selected>PHP (even newer)</option>";
 	echo "<option value=1>Yes</option>";
@@ -164,7 +168,7 @@ confsave('newReceipt',$CORE_LOCAL->get("newReceipt"));
 them in order.</span></td></tr><tr><td>
 <b>Printer port</b>:<br />
 <?php
-if(isset($_REQUEST['PPORT'])) $CORE_LOCAL->set('printerPort',$_REQUEST['PPORT']);
+if(isset($_REQUEST['PPORT'])) $CORE_LOCAL->set('printerPort',$_REQUEST['PPORT'],True);
 
 ?>
 </td><td>
@@ -187,7 +191,7 @@ confsave('printerPort',"'".$CORE_LOCAL->get('printerPort')."'");
 </td></tr><tr><td>
 <b>Email Receipt Sender</b>:</td><td>
 <?php
-if(isset($_REQUEST['emailReceiptFrom'])) $CORE_LOCAL->set('emailReceiptFrom',$_REQUEST['emailReceiptFrom']);
+if(isset($_REQUEST['emailReceiptFrom'])) $CORE_LOCAL->set('emailReceiptFrom',$_REQUEST['emailReceiptFrom'],True);
 printf("<input type=text name=emailReceiptFrom value=\"%s\" />",$CORE_LOCAL->get('emailReceiptFrom'));
 confsave('emailReceiptFrom',"'".$CORE_LOCAL->get('emailReceiptFrom')."'");
 ?>
@@ -195,8 +199,8 @@ confsave('emailReceiptFrom',"'".$CORE_LOCAL->get('emailReceiptFrom')."'");
 <b>Drawer Behavior Module</b>:</td><td>
 <?php
 $kmods = AutoLoader::ListModules('Kicker',True);
-if(isset($_REQUEST['kickerModule'])) $CORE_LOCAL->set('kickerModule',$_REQUEST['kickerModule']);
-if ($CORE_LOCAL->get('kickerModule')=='') $CORE_LOCAL->set('kickerModule','Kicker');
+if(isset($_REQUEST['kickerModule'])) $CORE_LOCAL->set('kickerModule',$_REQUEST['kickerModule'],True);
+if ($CORE_LOCAL->get('kickerModule')=='') $CORE_LOCAL->set('kickerModule','Kicker',True);
 echo '<select name="kickerModule">';
 foreach($kmods as $k){
 	printf('<option %s>%s</option>',
@@ -206,10 +210,22 @@ foreach($kmods as $k){
 echo '</select>';
 confsave('kickerModule',"'".$CORE_LOCAL->get('kickerModule')."'");
 ?>
-</td></tr><tr><td>
+</td></tr><tr><td></td><td>
+<?php
+if (isset($_REQUEST['DDM'])) $CORE_LOCAL->set('dualDrawerMode',1,True);
+elseif (isset($_REQUEST['esubmit'])) $CORE_LOCAL->set('dualDrawerMode',0,True);
+elseif ($CORE_LOCAL->get('dualDrawerMode')==='') $CORE_LOCAL->set('dualDrawerMode',0,True);
+echo "<fieldset class='toggle'>\n<input type='checkbox' name='DDM' id='dualDrawerMode'";
+if ($CORE_LOCAL->get("dualDrawerMode") == 1) echo " value='1' checked";
+else echo " value='0'";
+echo " />\n<label for='dualDrawerMode' onclick=''>Dual Drawer Mode: </label>\n
+	<span class='toggle-button'></span></fieldset>";
+confsave('dualDrawerMode',$CORE_LOCAL->get("dualDrawerMode"));
+?>
+</select></td></tr><tr><td>
 <b>Scanner/scale port</b>:</td><td>
 <?php
-if(isset($_REQUEST['SPORT'])) $CORE_LOCAL->set('scalePort',$_REQUEST['SPORT']);
+if(isset($_REQUEST['SPORT'])) $CORE_LOCAL->set('scalePort',$_REQUEST['SPORT'],True);
 printf("<input type=text name=SPORT value=\"%s\" />",$CORE_LOCAL->get('scalePort'));
 confsave('scalePort',"'".$CORE_LOCAL->get('scalePort')."'");
 ?>
@@ -218,7 +234,7 @@ confsave('scalePort',"'".$CORE_LOCAL->get('scalePort')."'");
 </td></tr><tr><td>
 <b>Scanner/scale driver</b>:</td><td>
 <?php
-if(isset($_REQUEST['SDRIVER'])) $CORE_LOCAL->set('scaleDriver',$_REQUEST['SDRIVER']);
+if(isset($_REQUEST['SDRIVER'])) $CORE_LOCAL->set('scaleDriver',$_REQUEST['SDRIVER'],True);
 printf("<input type=text name=SDRIVER value=\"%s\" />",$CORE_LOCAL->get('scaleDriver'));
 confsave('scaleDriver',"'".$CORE_LOCAL->get('scaleDriver')."'");
 ?>
@@ -231,7 +247,8 @@ if ($CORE_LOCAL->get("scaleDriver") != ""){
 	if (!file_exists('../scale-drivers/php-wrappers/'.$classname.'.php'))
 		echo "<br /><i>Warning: PHP driver file not found</i>";
 	else {
-		include('../scale-drivers/php-wrappers/'.$classname.'.php');
+		if (!class_exists($classname))
+			include('../scale-drivers/php-wrappers/'.$classname.'.php');
 		$instance = new $classname();
 		@$instance->SavePortConfiguration($CORE_LOCAL->get("scalePort"));
 		@$abs_path = substr($_SERVER['SCRIPT_FILENAME'],0,
@@ -246,7 +263,7 @@ if ($CORE_LOCAL->get("scaleDriver") != ""){
 <h3>Display Settings</h3></td></tr><tr><td>
 <b>Alert Bar</b>:</td><td>
 <?php
-if (isset($_REQUEST['ALERT'])) $CORE_LOCAL->set('alertBar',$_REQUEST['ALERT']);
+if (isset($_REQUEST['ALERT'])) $CORE_LOCAL->set('alertBar',$_REQUEST['ALERT'],True);
 printf("<input size=40 type=text name=ALERT value=\"%s\" />",$CORE_LOCAL->get('alertBar'));
 confsave('alertBar',"'".$CORE_LOCAL->get('alertBar')."'");
 ?>
@@ -254,8 +271,9 @@ confsave('alertBar',"'".$CORE_LOCAL->get('alertBar')."'");
 <tr><td>
 </td><td>
 <?php
-if (isset($_REQUEST['LOCKSCREEN'])) $CORE_LOCAL->set('lockScreen',$_REQUEST['LOCKSCREEN']);
-else $CORE_LOCAL->set('lockScreen',0);
+if (isset($_REQUEST['LOCKSCREEN'])) $CORE_LOCAL->set('lockScreen',1,True);
+elseif (isset($_REQUEST['esubmit'])) $CORE_LOCAL->set('lockScreen',0,True);
+elseif ($CORE_LOCAL->get('lockScreen')==='') $CORE_LOCAL->set('lockScreen',0,True);
 echo "<fieldset class='toggle'>\n<input type='checkbox' name='LOCKSCREEN' id='lockscreen'";
 if ($CORE_LOCAL->get("lockScreen") == 1) echo " value='1' checked";
 else echo " value='0'";
@@ -267,8 +285,8 @@ confsave('lockScreen',$CORE_LOCAL->get('lockScreen'));
 <tr><td>
 <b>Lock Screen Timeout</b>:</td><td>
 <?php
-if(isset($_REQUEST['TIMEOUT'])) $CORE_LOCAL->set('timeout',$_REQUEST['TIMEOUT']);
-else $CORE_LOCAL->set('timeout',180000);
+if(isset($_REQUEST['TIMEOUT'])) $CORE_LOCAL->set('timeout',$_REQUEST['TIMEOUT'],True);
+elseif ($CORE_LOCAL->get('timeout')==='') $CORE_LOCAL->set('timeout',180000,True);
 printf("<input type=text name=TIMEOUT value=\"%s\" />",$CORE_LOCAL->get('timeout'));
 confsave('timeout',"'".$CORE_LOCAL->get('timeout')."'");
 ?>
@@ -311,7 +329,7 @@ confsave('FooterModules',$saveStr);
 <b>Enable onscreen keys</b>:</td><td> <select name=SCREENKEYS>
 <?php
 if(isset($_REQUEST['SCREENKEYS'])){
-	$CORE_LOCAL->set('touchscreen',($_REQUEST['SCREENKEYS']==1)?True:False);
+	$CORE_LOCAL->set('touchscreen',($_REQUEST['SCREENKEYS']==1)?True:False,True);
 }
 if ($CORE_LOCAL->get('touchscreen')){
 	echo "<option value=1 selected>Yes</option>";
@@ -327,7 +345,7 @@ else {
 </select></td></tr><tr><td>
 <b>Separate customer display</b>:</td><td> <select name=CUSTDISPLAY>
 <?php
-if(isset($_REQUEST['CUSTDISPLAY'])) $CORE_LOCAL->set('CustomerDisplay',$_REQUEST['CUSTDISPLAY']);
+if(isset($_REQUEST['CUSTDISPLAY'])) $CORE_LOCAL->set('CustomerDisplay',$_REQUEST['CUSTDISPLAY'],True);
 if ($CORE_LOCAL->get('CustomerDisplay')){
 	echo "<option value=1 selected>Yes</option>";
 	echo "<option value=0 >No</option>";
@@ -351,7 +369,7 @@ window always shows the item listing. Very alpha.</p>
 <tr><td>
 <b>Allow members to write checks over purchase amount</b>: </td><td><select name=OVER>
 <?php
-if(isset($_REQUEST['OVER'])) $CORE_LOCAL->set('cashOverLimit',$_REQUEST['OVER']);
+if(isset($_REQUEST['OVER'])) $CORE_LOCAL->set('cashOverLimit',$_REQUEST['OVER'],True);
 if ($CORE_LOCAL->get("cashOverLimit") == 1){
 	echo "<option value=1 selected>Yes</option>";
 	echo "<option value=0 >No</option>";
@@ -365,15 +383,15 @@ confsave('cashOverLimit',$CORE_LOCAL->get('cashOverLimit'));
 </select></td></tr><tr><td>
 <b>Check over limit</b>:</td><td>$
 <?php
-if(isset($_REQUEST['OVER_LIMIT'])) $CORE_LOCAL->set('dollarOver',$_REQUEST['OVER_LIMIT']);
-printf("<input type=text size=4 name=OVER_LIMIT value=\"%s\" />",$CORE_LOCAL->Get('dollarOver'));
+if(isset($_REQUEST['OVER_LIMIT'])) $CORE_LOCAL->set('dollarOver',$_REQUEST['OVER_LIMIT'],True);
+printf("<input type=text size=4 name=OVER_LIMIT value=\"%s\" />",$CORE_LOCAL->get('dollarOver'));
 confsave('dollarOver',$CORE_LOCAL->get('dollarOver'));
 ?>
 </td></tr>
 <tr><td>
 <b>Modular Tenders</b>: </td><td><select name=MODTENDERS>
 <?php
-if(isset($_REQUEST['MODTENDERS'])) $CORE_LOCAL->set('ModularTenders',$_REQUEST['MODTENDERS']);
+if(isset($_REQUEST['MODTENDERS'])) $CORE_LOCAL->set('ModularTenders',$_REQUEST['MODTENDERS'],True);
 if ($CORE_LOCAL->get('ModularTenders')){
 	echo "<option value=1 selected>Yes</option>";
 	echo "<option value=0 >No</option>";
@@ -388,8 +406,8 @@ confsave('ModularTenders',"'".$CORE_LOCAL->get('ModularTenders')."'");
 <b>Tender Report</b>:</td>
 <td><select name="TENDERREPORTMOD">
 <?php
-if(isset($_REQUEST['TENDERREPORTMOD'])) $CORE_LOCAL->set('TenderReportMod',$_REQUEST['TENDERREPORTMOD']);
-if($CORE_LOCAL->get('TenderReportMod')=='') $CORE_LOCAL->set('TenderReportMod','DefaultTenderReport');
+if(isset($_REQUEST['TENDERREPORTMOD'])) $CORE_LOCAL->set('TenderReportMod',$_REQUEST['TENDERREPORTMOD'],True);
+if($CORE_LOCAL->get('TenderReportMod')=='') $CORE_LOCAL->set('TenderReportMod','DefaultTenderReport',True);
 $mods = AutoLoader::ListModules('TenderReport');
 sort($mods);
 foreach($mods as $mod){
@@ -467,7 +485,7 @@ of completeness. The modules themselves require individual configuration,
 too</i></p></td></tr><tr><td>
 <b>Integrated Credit Cards</b>: </td><td><select name=INT_CC>
 <?php
-if(isset($_REQUEST['INT_CC'])) $CORE_LOCAL->set('CCintegrate',$_REQUEST['INT_CC']);
+if(isset($_REQUEST['INT_CC'])) $CORE_LOCAL->set('CCintegrate',$_REQUEST['INT_CC'],True);
 if ($CORE_LOCAL->get('CCintegrate') == 1){
 	echo "<option value=1 selected>Yes</option>";
 	echo "<option value=0>No</option>";
@@ -481,7 +499,7 @@ confsave('CCintegrate',$CORE_LOCAL->get('CCintegrate'));
 </select></td></tr><tr><td>
 <b>Integrated Gift Cards</b>: </td><td><select name=INT_GC>
 <?php
-if(isset($_REQUEST['INT_GC'])) $CORE_LOCAL->set('gcIntegrate',$_REQUEST['INT_GC']);
+if(isset($_REQUEST['INT_GC'])) $CORE_LOCAL->set('gcIntegrate',$_REQUEST['INT_GC'],True);
 if ($CORE_LOCAL->get('gcIntegrate') == 1){
 	echo "<option value=1 selected>Yes</option>";
 	echo "<option value=0>No</option>";
@@ -496,7 +514,7 @@ confsave('gcIntegrate',$CORE_LOCAL->get('gcIntegrate'));
 <b>Enabled paycard modules</b>:</td><td>
 <select multiple size=10 name=PAY_MODS[]>
 <?php
-if (isset($_REQUEST['PAY_MODS'])) $CORE_LOCAL->set('RegisteredPaycardClasses',$_REQUEST['PAY_MODS']);
+if (isset($_REQUEST['PAY_MODS'])) $CORE_LOCAL->set('RegisteredPaycardClasses',$_REQUEST['PAY_MODS'],True);
 
 $mods = array();
 $dh = opendir('../plugins/Paycards/');
@@ -528,14 +546,14 @@ confsave('RegisteredPaycardClasses',$saveStr);
 </select></td></tr><tr><td>
 <b>Signature Required Limit</b>:</td><td>
 <?php
-if (isset($_REQUEST['CCSigLimit'])) $CORE_LOCAL->set('CCSigLimit',$_REQUEST['CCSigLimit']);
-if ($CORE_LOCAL->get('CCSigLimit')=="") $CORE_LOCAL->set('CCSigLimit',0.00);
+if (isset($_REQUEST['CCSigLimit'])) $CORE_LOCAL->set('CCSigLimit',$_REQUEST['CCSigLimit'],True);
+if ($CORE_LOCAL->get('CCSigLimit')=="") $CORE_LOCAL->set('CCSigLimit',0.00,True);
 printf(" \$<input size=4 type=text name=CCSigLimit value=\"%s\" />",$CORE_LOCAL->get('CCSigLimit'));
 confsave('CCSigLimit',$CORE_LOCAL->get('CCSigLimit'));
 ?>
 </td></tr><tr><td><b>Signature Capture Device</b>:</td><td>
 <?php
-if (isset($_REQUEST['SigCapture'])) $CORE_LOCAL->set('SigCapture',$_REQUEST['SigCapture']);
+if (isset($_REQUEST['SigCapture'])) $CORE_LOCAL->set('SigCapture',$_REQUEST['SigCapture'],True);
 printf("<br /><input size=4 type=text name=SigCapture value=\"%s\" />",$CORE_LOCAL->get('SigCapture'));
 confsave('SigCapture',"'".$CORE_LOCAL->get('SigCapture')."'");
 ?>
@@ -550,7 +568,7 @@ confsave('SigCapture',"'".$CORE_LOCAL->get('SigCapture')."'");
 <?php
 // Get the value from the latest submit, if it existed, into the core_local array ...
 if (array_key_exists('MEMBER_SUBTOTAL', $_REQUEST)){
-	$CORE_LOCAL->set('member_subtotal',($_REQUEST['MEMBER_SUBTOTAL']==1)?True:False);
+	$CORE_LOCAL->set('member_subtotal',($_REQUEST['MEMBER_SUBTOTAL']==1)?True:False,True);
 }
 // ... or from CORE_LOCAL if it is known ...
 elseif ( $CORE_LOCAL->get("member_subtotal") === False ) {
@@ -561,7 +579,7 @@ elseif ( $CORE_LOCAL->get("member_subtotal") === True ) {
 }
 // ... or set the default value ...
 elseif ( $CORE_LOCAL->get("member_subtotal") == NULL ) {
-		$CORE_LOCAL->set('member_subtotal', True);
+		$CORE_LOCAL->set('member_subtotal', True, True);
 }
 // ... or complain (unexpected actual values such as 0 or 1). 
 else {
@@ -591,47 +609,3 @@ else {
 </div> <!--	wrapper -->
 </body>
 </html>
-<script type="text/javascript">
-$('#browser').change(function(){
-     if($(this).attr('checked')){
-          $(this).val('1');
-     }else{
-          $(this).val('0');
-     }
-});
-$('#discounts').change(function(){
-     if($(this).attr('checked')){
-          $(this).val('1');
-     }else{
-          $(this).val('0');
-     }
-});
-$('#rdiscounts').change(function(){
-     if($(this).attr('checked')){
-          $(this).val('1');
-     }else{
-          $(this).val('0');
-     }
-});
-$('#lockscreen').change(function(){
-     if($(this).attr('checked')){
-          $(this).val('1');
-     }else{
-          $(this).val('0');
-     }
-});
-$('#printing').change(function(){
-     if($(this).attr('checked')){
-          $(this).val('1');
-     }else{
-          $(this).val('0');
-     }
-});
-$('#shownonmem').change(function(){
-     if($(this).attr('checked')){
-          $(this).val('1');
-     }else{
-          $(this).val('0');
-     }
-});
-</script>

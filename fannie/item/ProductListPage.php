@@ -28,7 +28,8 @@ include($FANNIE_ROOT.'classlib2.0/data/FannieDB.php');
 include($FANNIE_ROOT.'classlib2.0/data/controllers/ProductsController.php');
 include($FANNIE_ROOT.'src/JsonLib.php');
 require('laneUpdates.php');
-include($FANNIE_ROOT.'auth/login.php');
+if (!function_exists('login'))
+	include($FANNIE_ROOT.'auth/login.php');
 include($FANNIE_ROOT.'src/ReportConvert/HtmlToArray.php');
 include($FANNIE_ROOT.'src/ReportConvert/ArrayToCsv.php');
 
@@ -68,17 +69,19 @@ class ProductListPage extends FanniePage {
 	}
 
 	function javascript_content(){
-		global $FANNIE_URL, $FANNIE_DB;
+		global $FANNIE_URL, $FANNIE_OP_DB;
 
 		if ($this->excel) return '';
 
 		$dbc = FannieDB::get($FANNIE_OP_DB);
 		$depts = array();
-		$result = $dbc->query('SELECT dept_no,dept_name FROM departments ORDER BY dept_no');
+		$p = $dbc->prepare_statement('SELECT dept_no,dept_name FROM departments ORDER BY dept_no');
+		$result = $dbc->exec_statement($p);
 		while($w = $dbc->fetch_row($result))
 			$depts[$w[0]] = $w[1];
 		$taxes = array('-'=>array(0,'NoTax'));
-		$result = $dbc->query('SELECT id, description FROM taxrates ORDER BY id');
+		$p = $dbc->prepare_statement('SELECT id, description FROM taxrates ORDER BY id');
+		$result = $dbc->exec_statement($p);
 		while($w = $dbc->fetch_row($result)){
 			if ($w['id'] == 1)
 				$taxes['X'] = array(1,'Regular');
@@ -319,8 +322,8 @@ class ProductListPage extends FanniePage {
 		}
 		$ret .= date("F j, Y, g:i a").'<br />'; 
 		
-		$page_url = sprintf('ProductListPage.php?supertype=%s&deptStart=%s&deptEnd=%s&deptSub=%s&manufactuer=%s&mtype=%s',
-				$supertype, $deptStart, $deptEnd, $super, $manufactuer, $mtype);
+		$page_url = sprintf('ProductListPage.php?supertype=%s&deptStart=%s&deptEnd=%s&deptSub=%s&manufacturer=%s&mtype=%s',
+				$supertype, $deptStart, $deptEnd, $super, $manufacturer, $mtype);
 		if (!$this->excel){
 			$ret .= sprintf('<a href="%s&sort=%s&excel=yes">Save to Excel</a><br />',
 				$page_url, $sort);
@@ -449,15 +452,15 @@ class ProductListPage extends FanniePage {
 	function form_content(){
 		global $FANNIE_OP_DB;
 		$dbc = FannieDB::get($FANNIE_OP_DB);
-		$deptQ = "select dept_no,dept_name from departments order by dept_no";
-		$deptR = $dbc->query($deptQ);
+		$deptQ = $dbc->prepare_statement("select dept_no,dept_name from departments order by dept_no");
+		$deptR = $dbc->exec_statement($deptQ);
 		$depts = array();
 		while ($deptW = $dbc->fetch_array($deptR)){
 			$depts[$deptW['dept_no']] = $deptW['dept_name'];
 		}
-		$superQ = "SELECT superID,super_name FROM superDeptNames WHERE 
-			superID > 0 ORDER BY superID";
-		$superR = $dbc->query($superQ);
+		$superQ = $dbc->prepare_statement("SELECT superID,super_name FROM superDeptNames WHERE 
+			superID > 0 ORDER BY superID");
+		$superR = $dbc->exec_statement($superQ);
 		$supers = array();
 		while ($superW = $dbc->fetch_row($superR)){
 			$supers[$superW['superID']] = $superW['super_name'];

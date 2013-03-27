@@ -91,8 +91,9 @@ x               Add Product List and Tool to Item Maint submenu0
 	<div class="menuwrapper">
 	<div class="submenu level0" style="width:155px;top:-28px;left:135px;">
 		<ul style="">
-			<li><a href="<?php echo $path; ?>batches/newbatch/">Sales Batches</a></li>
-			<li><a href="<?php echo $path; ?>batches/types.php">Manage Batch Types</a></li>
+			<li><a href="<?php echo $path; ?>batches/newbatch.oo/">Sales Batches</a></li>
+			<li><a href="<?php echo $path; ?>batches/xlsbatch/">Upload Batch</a></li>
+			<li><a href="<?php echo $path; ?>batches/BatchTypeEditor.php">Manage Batch Types</a></li>
 			<li><a href="<?php echo $path; ?>batches/CAP/">Co+op Deals Sales</a></li>
 			<li><a href="<?php echo $path; ?>batches/UNFI/">Vendor Pricing</a></li>
 		</ul>
@@ -130,8 +131,8 @@ x               Add Product List and Tool to Item Maint submenu0
 				<li><a href="<?php echo $path; ?>reports/GeneralSales/">General Sales Report</a></li>
 				<li><a href="<?php echo $path; ?>reports/GeneralCosts/">General Costs Report</a></li>
 				<li><a href="<?php echo $path; ?>reports/SalesToday/">Today's Sales</a></li>
-				<li><a href="<?php echo $path; ?>reports/HourlySales/">Store Hourly Sales Report</a></li>
-				<li><a href="<?php echo $path; ?>reports/HourlySales/hourlySalesDept.php">Department Hourly Sales Report</a></li>
+				<li><a href="<?php echo $path; ?>reports/HourlySales/">Store Hourly Sales</a></li>
+				<li><a href="<?php echo $path; ?>reports/HourlySales/hourlySalesDept.php">Department Hourly Sales</a></li>
 				</ul>
 				</div>
 				</div>
@@ -139,7 +140,7 @@ x               Add Product List and Tool to Item Maint submenu0
 			<li><a href="<?php echo $path; ?>reports/PriceHistory/">Price History Report</a></li>
 			<li><a href="<?php echo $path; ?>reports/DepartmentSettings/">Department Settings</a></li>
 			<li><a href="<?php echo $path; ?>reports/OpenRings/">Open Rings</a></li>
-			<li><a href="<?php echo $path; ?>reports/BatchReport/">Batch Report</a></li>
+			<li><a href="<?php echo $path; ?>reports/BatchReport/">Batches</a></li>
 			<li><a href="<?php echo $path; ?>reports/CustomerCount/">Customer Count</a></li>
 			</ul>
 	</div>
@@ -167,13 +168,13 @@ x               Add Product List and Tool to Item Maint submenu0
 	<div class="menuwrapper">
 	<div class="submenu level0" style="width:145px;top:-28px;left:135px;">
 		<ul style="">
-			<li><a href="<?php echo $path; ?>sync/tablesync.php?tablename=products">Products</a></li>
-			<li><a href="<?php echo $path; ?>sync/tablesync.php?tablename=productUser">ProductUser</a></li>
-			<li><a href="<?php echo $path; ?>sync/tablesync.php?tablename=custdata">Membership</a></li>
-			<li><a href="<?php echo $path; ?>sync/tablesync.php?tablename=memberCards">Member Cards</a></li>
-			<li><a href="<?php echo $path; ?>sync/tablesync.php?tablename=employees">Employees</a></li>
-			<li><a href="<?php echo $path; ?>sync/tablesync.php?tablename=departments">Departments</a></li>
-			<li><a href="<?php echo $path; ?>sync/tablesync.php?tablename=subdepts">Sub-Departments</a></li>
+			<li><a href="<?php echo $path; ?>sync/TableSyncPage.php?tablename=products">Products</a></li>
+			<li><a href="<?php echo $path; ?>sync/TableSyncPage.php?tablename=productUser">ProductUser</a></li>
+			<li><a href="<?php echo $path; ?>sync/TableSyncPage.php?tablename=custdata">Membership</a></li>
+			<li><a href="<?php echo $path; ?>sync/TableSyncPage.php?tablename=memberCards">Member Cards</a></li>
+			<li><a href="<?php echo $path; ?>sync/TableSyncPage.php?tablename=employees">Employees</a></li>
+			<li><a href="<?php echo $path; ?>sync/TableSyncPage.php?tablename=departments">Departments</a></li>
+			<li><a href="<?php echo $path; ?>sync/TableSyncPage.php?tablename=subdepts">Sub-Departments</a></li>
 <!--			<li><a href="<?php echo $path; ?>sync/reloadsubdepts.php">Sub-Departments</a></li>		-->
 <!--			<li><a href="<?php echo $path; ?>sync/reloadtenders.php">Tenders</a></li>				-->
 		</ul>
@@ -192,8 +193,8 @@ x               Add Product List and Tool to Item Maint submenu0
 				<div class="menuwrapper">
 					<div class="submenu level1" style="width:195px;top:-28px;left:135px;">
 					<ul style="">
-					<li><a href="<?php echo $path; ?>admin/Cashiers/add.php">Add a new cashier</a></li>
-					<li><a href="<?php echo $path; ?>admin/Cashiers/view.php">View/edit cashiers</a></li>
+					<li><a href="<?php echo $path; ?>admin/Cashiers/AddCashierPage.php">Add a new cashier</a></li>
+					<li><a href="<?php echo $path; ?>admin/Cashiers/ViewCashiersPage.php">View/edit cashiers</a></li>
 					<li><a href="<?php echo $path; ?>reports/cash_report/">Cashier performance report</a></li>
 					</ul>
 					</div><!-- /#submenu -->
@@ -203,17 +204,17 @@ x               Add Product List and Tool to Item Maint submenu0
 				<div class="menuwrapper">
 					<div class="submenu level1" style="width:195px;top:-28px;left:135px;">
 					<ul style="">
-					<li><a href="<?php echo $path; ?>mem/search.php">View/Edit Members</a></li>
-					<li><a href="<?php echo $path; ?>mem/types.php">Manage Member Types</a></li>
-					<li><a href="<?php echo $path; ?>mem/new.php">View/Create New Members</a></li>
+					<li><a href="<?php echo $path; ?>mem/MemberSearchPage.php">View/Edit Members</a></li>
+					<li><a href="<?php echo $path; ?>mem/MemberTypeEditor.php">Manage Member Types</a></li>
+					<li><a href="<?php echo $path; ?>mem/NewMemberTool.php">View/Create New Members</a></li>
 					<li><a href="<?php echo $path; ?>mem/numbers/">Print Member Stickers</a></li>
 					<li><a href="<?php echo $path; ?>mem/import/">Import Member Information &gt;&gt;</a>
 						<div class="menuwrapper">
 							<div class="submenu level2" style="width:155px;top:-28;left:135px;">
 							<ul style="">
-								<li><a href="<?php echo $path; ?>mem/import/nn.php">Names &amp; Numbers</a></li>
-								<li><a href="<?php echo $path; ?>mem/import/contact.php">Contact Information</a></li>
-								<li><a href="<?php echo $path; ?>mem/import/equity.php">Existing Equity</a></li>
+								<li><a href="<?php echo $path; ?>mem/import/MemNameNumImportPage.php">Names &amp; Numbers</a></li>
+								<li><a href="<?php echo $path; ?>mem/import/MemContactImportPage.php">Contact Information</a></li>
+								<li><a href="<?php echo $path; ?>mem/import/EquityHistoryImportPage.php">Existing Equity</a></li>
 							</ul>
 							</div><!-- /#submenu -->
 						</div><!-- /#menuwrapper -->
@@ -261,24 +262,6 @@ x               Add Product List and Tool to Item Maint submenu0
 <div class="sub">
 	Administrative functions, etc.
 </div>
-
-<!-- Better to include based on existence of per_coop/$store -->
-<!--
-<li  style="width:100%;"><a href="<?php echo $path; ?>per_coop/WEFC_Toronto/index.php">WEFC Toronto</a>
-	<div class="menuwrapper">
-	<div class="submenu level0" style="width:145px;top:-28px;left:135px;">
-		<ul style="">
-			<li><a href="<?php echo $path; ?>item/import/uploadAnyFile.php">Upload Any File</a></li>
-			<li><a href="<?php echo $path; ?>item/departments/loadWEFCTorontoDepts.php">Load Departments</a></li>
-			<li><a href="<?php echo $path; ?>item/import/loadWEFCTorontoProducts.php">Load Products</a></li>
-		</ul>
-	</div>
-	</div>
-</li>
-<div class="sub">
-	WEFC Toronto utilities
-</div>
--->
 
 </ul>
 <!-- 10Aug12 EL Added -->
