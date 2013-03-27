@@ -180,7 +180,6 @@ static public function setMember($member, $personNumber, $row) {
 		}
 	}
 
-	var_dump($CORE_LOCAL->get("discountEnforced"));exit;
 	if ($CORE_LOCAL->get("discountEnforced") != 0) {
 		if ($CORE_LOCAL->get("percentDiscount") > 0) {
                    TransRecord::discountnotify($CORE_LOCAL->get("percentDiscount"));
