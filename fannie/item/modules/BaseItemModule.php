@@ -168,7 +168,7 @@ class BaseItemModule extends ItemModule {
 
 		$ret .= '<tr><td><b>Package Size</b></td><td><input type="text" name="size" size="4"
 				value="'.(isset($rowItem['size'])?$rowItem['size']:'').'" />';
-		$ret .= '<b>Unit of measure</b> <input type="text" name"unitm" size="4"
+		$ret .= '<b>Unit of measure</b> <input type="text" name="unitm" size="4"
 				value="'.(isset($rowItem['unitofmeasure'])?$rowItem['unitofmeasure']:'').'" /></td>';
 		$ret .= sprintf('<td colspan="2">
 				<input type="checkbox" name="doVolume" %s />
