@@ -5,3 +5,5 @@ This is development branch is based off WFC's release. Up to date code can be fo
 Whereas the FLOSS-POS project is a fork of this project, the reposity here should aim to complete the currently available code. The feature set may be more limited, but hopefully robust enough to have a clear upgrade path to any future versions of IS4C/FLOSS-POS/???
 
 See the INSTALL file for installation instructions.
+
+(test github editor)
