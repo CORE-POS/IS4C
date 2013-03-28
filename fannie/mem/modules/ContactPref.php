@@ -31,7 +31,7 @@ class ContactPref extends MemberModule {
 		$dbc = $this->db();
 
 		// Select the preference for this member and all of the options.
-		$infoQ = $dbc->prepare_statement(("SELECT n.pref, p.pref_id, p.pref_description
+		$infoQ = $dbc->prepare_statement("SELECT n.pref, p.pref_id, p.pref_description
 				FROM memContact AS n,
 				memContactPrefs AS p
 				WHERE n.card_no=?
