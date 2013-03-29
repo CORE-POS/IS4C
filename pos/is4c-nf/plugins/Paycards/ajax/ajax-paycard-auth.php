@@ -45,7 +45,7 @@ foreach($CORE_LOCAL->get("RegisteredPaycardClasses") as $rpc){
 $st = MiscLib::sigTermObject();
 
 $result = $myObj->doSend($CORE_LOCAL->get("paycard_mode"));
-if ($result == PaycardLib::PAYCARD_ERR_OK){
+if ($result === PaycardLib::PAYCARD_ERR_OK){
 	PaycardLib::paycard_wipe_pan();
 	$json = $myObj->cleanup($json);
 	$CORE_LOCAL->set("strRemembered","");

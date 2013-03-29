@@ -1950,7 +1950,7 @@ function create_trans_dbs($db,$type){
 		httpCode int ,
 		validResponse smallint ,
 		xResponseCode varchar (4),
-		xResultCode varchar (4), 
+		xResultCode varchar (8), 
 		xResultMessage varchar (100),
 		xTransactionID varchar (12),
 		xApprovalNumber varchar (20)
@@ -1987,6 +1987,8 @@ function create_trans_dbs($db,$type){
 			expireDay datetime, 
 			refNum varchar(50),
 			token varchar(100),
+			processData varchar(255),
+			acqRefData varchar(255),
 			PRIMARY KEY (refNum)
 		)";
 	if(!$db->table_exists('efsnetTokens',$name)){
