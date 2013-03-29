@@ -172,6 +172,10 @@ class paycardEntered extends Parser {
 			}
 			$CORE_LOCAL->set("paycard_amount",$CORE_LOCAL->get("fsEligible"));
 		}
+		if (($type == 'EBTCASH' || $type == 'DEBIT') && $CORE_LOCAL->get('CacheCardCashBack') > 0){
+			$CORE_LOCAL->set('paycard_amount',
+				$CORE_LOCAL->get('amtdue') + $CORE_LOCAL->get('CacheCardCashBack'));
+		}
 	
 		// if we knew the type coming in, make sure it agrees
 		if( $type != PaycardLib::PAYCARD_TYPE_UNKNOWN && $type != $CORE_LOCAL->get("paycard_type")) {
