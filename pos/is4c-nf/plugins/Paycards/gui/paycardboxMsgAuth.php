@@ -46,6 +46,7 @@ class paycardboxMsgAuth extends PaycardProcessPage {
 				$CORE_LOCAL->set("CachePanEncBlock","");
 				$CORE_LOCAL->set("CachePinEncBlock","");
 				$CORE_LOCAL->set("CacheCardType","");
+				$CORE_LOCAL->set("CacheCardCashBack",0);
 				UdpComm::udpSend("termReset");
 				$this->change_page($this->page_url."gui-modules/pos2.php");
 				return False;
@@ -59,8 +60,11 @@ class paycardboxMsgAuth extends PaycardProcessPage {
 			else if( $input != "" && substr($input,-2) != "CL") {
 				// any other input is an alternate amount
 				$CORE_LOCAL->set("paycard_amount","invalid");
-				if( is_numeric($input))
+				if( is_numeric($input)){
 					$CORE_LOCAL->set("paycard_amount",$input/100);
+					if ($CORE_LOCAL->get('CacheCardCashBack') > 0)
+						$CORE_LOCAL->set('paycard_amount',($input/100)+$CORE_LOCAL->get('CacheCardCashBack'));
+				}
 			}
 			// if we're still here, we haven't accepted a valid amount yet; display prompt again
 		} // post?
@@ -71,10 +75,11 @@ class paycardboxMsgAuth extends PaycardProcessPage {
 		global $CORE_LOCAL;
 		$amt = $CORE_LOCAL->get("paycard_amount");
 		$due = $CORE_LOCAL->get("amtdue");
+		$type = $CORE_LOCAL->get("CacheCardType");
 		if( !is_numeric($amt) || abs($amt) < 0.005) {
 		} else if( $amt > 0 && $due < 0) {
 		} else if( $amt < 0 && $due > 0) {
-		} else if( abs($amt) > abs($due) && $CORE_LOCAL->get("CacheCardType") != "DEBIT" && $CORE_LOCAL->get("CacheCardType") != "EBTCASH") {
+		} else if ( ($amt-$due)>0.005 && $type != 'DEBIT' && $type != 'EBTCASH'){
 		} else {
 			return True;
 		}
@@ -91,6 +96,8 @@ class paycardboxMsgAuth extends PaycardProcessPage {
 		$mode = $CORE_LOCAL->get("paycard_mode");
 		$amt = $CORE_LOCAL->get("paycard_amount");
 		$due = $CORE_LOCAL->get("amtdue");
+		$cb = $CORE_LOCAL->get('CacheCardCashBack');
+		if ($cb > 0) $amt -= $cb;
 		if( !is_numeric($amt) || abs($amt) < 0.005) {
 			echo PaycardLib::paycard_msgBox($type,"Invalid Amount: $amt $due",
 				"Enter a different amount","[clear] to cancel");
@@ -100,13 +107,12 @@ class paycardboxMsgAuth extends PaycardProcessPage {
 		} else if( $amt < 0 && $due > 0) {
 			echo PaycardLib::paycard_msgBox($type,"Invalid Amount",
 				"Enter a positive amount","[clear] to cancel");
-		} else if( abs($amt) > abs($due) && $CORE_LOCAL->get("CacheCardType") != "DEBIT" && $CORE_LOCAL->get("CacheCardType") != "EBTCASH") {
-			echo PaycardLib::paycard_msgBox($type,"Invalid Amount",
-				"Enter a lesser amount","[clear] to cancel");
 		} else if( $amt > 0) {
 			$msg = "Tender ".PaycardLib::paycard_moneyFormat($amt);
 			if ($CORE_LOCAL->get("CacheCardType") != "")
 				$msg .= " as ".$CORE_LOCAL->get("CacheCardType");
+			if ($cb > 0)
+				$msg .= ' (CB:'.PaycardLib::paycard_moneyFormat($cb).')';
 			echo PaycardLib::paycard_msgBox($type,$msg."?","","[enter] to continue if correct<br>Enter a different amount if incorrect<br>[clear] to cancel");
 		} else if( $amt < 0) {
 			echo PaycardLib::paycard_msgBox($type,"Refund ".PaycardLib::paycard_moneyFormat($amt)."?","","[enter] to continue if correct<br>Enter a different amount if incorrect<br>[clear] to cancel");

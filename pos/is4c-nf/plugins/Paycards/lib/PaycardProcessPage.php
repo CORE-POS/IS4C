@@ -81,6 +81,9 @@ class PaycardProcessPage extends BasicPage {
 					}
 					else
 						location = destination;
+				},
+				error: function(){
+					location = '<?php echo $plugin_info->plugin_url(); ?>/gui/paycardboxMsgAuth.php';
 				}
 			});
 			paycard_processingDisplay();
