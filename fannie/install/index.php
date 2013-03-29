@@ -855,6 +855,9 @@ function create_trans_dbs($con){
 			'efsnetRequestMod','trans');
 
 	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+			'efsnetTokens','trans');
+
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
 			'ccReceiptView','trans');
 
 	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
