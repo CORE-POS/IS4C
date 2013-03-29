@@ -29,7 +29,7 @@ if (!class_exists('FannieDB'))
 if (!class_exists('FormLib'))
 	include($FANNIE_ROOT.'classlib2.0/lib/FormLib.php');
 
-class MemArEquityDump extends FanniePage {
+class MemArEquityDumpTool extends FanniePage {
 
 	protected $title='Fannie - Member Management Module';
 	protected $header='Dump Member Equity/AR';
@@ -112,12 +112,6 @@ class MemArEquityDump extends FanniePage {
 			$this->amount = FormLib::get_form_value('amount');
 			$this->cn = FormLib::get_form_value('card_no');
 
-			if (!isset($this->depts[$this->dept1]) || !isset($this->depts[$this->dept2])){
-				$this->errors .= "<em>Error: AR department doesn't exist</em>"
-					."<br /><br />"
-					."<a href=\"\" onclick=\"back(); return false;\">Back</a>";
-				return True;
-			}
 			if (!is_numeric($this->amount)){
 				$this->errors .= "<em>Error: amount given (".$this->amount.") isn't a number</em>"
 					."<br /><br />"
@@ -165,7 +159,7 @@ class MemArEquityDump extends FanniePage {
 
 		if (!empty($this->errors)) return $this->errors;
 
-		$ret = "<form action=\"MemArEquityDump.php\" method=\"post\">";
+		$ret = "<form action=\"MemArEquityDumpTool.php\" method=\"post\">";
 		$ret .= "<b>Confirm transactions</b>";
 		$ret .= "<p style=\"font-size:120%\">";
 		$ret .= sprintf("\$%.2f will be moved from %s to %s for Member #%d (%s)",
@@ -176,7 +170,7 @@ class MemArEquityDump extends FanniePage {
 		$ret .= "<input type=\"hidden\" name=\"deptTo\" value=\"{$this->dept2}\" />";
 		$ret .= "<input type=\"hidden\" name=\"amount\" value=\"{$this->amount}\" />";
 		$ret .= "<input type=\"hidden\" name=\"card_no\" value=\"{$this->cn}\" />";
-		$ret .= "<input type=\"hidden\" name=\"card_no\" value=\"".FormLib::get_form_value('comment')."\" />";
+		$ret .= "<input type=\"hidden\" name=\"comment\" value=\"".FormLib::get_form_value('comment')."\" />";
 		$ret .= "<input type=\"submit\" name=\"submit2\" value=\"Confirm\" />";
 		$ret .= "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
 		$ret .= "<input type=\"submit\" value=\"Back\" onclick=\"back(); return false;\" />";
@@ -214,7 +208,7 @@ class MemArEquityDump extends FanniePage {
 
 		if (!empty($this->errors)) return $this->errors;
 
-		$ret = "<form action=\"MemArEquityDump.php\" method=\"post\">";
+		$ret = "<form action=\"MemArEquityDumpTool.php\" method=\"post\">";
 		$ret .= "<p style=\"font-size:120%\">";
 		$ret .= "Remove $<input type=\"text\" name=\"amount\" size=\"5\" /> ";
 		$ret .= "<select name=\"deptFrom\">";
@@ -392,7 +386,7 @@ class MemArEquityDump extends FanniePage {
 }
 
 if (basename($_SERVER['PHP_SELF']) == basename(__FILE__)){
-	$obj = new MemArEquityDump();
+	$obj = new MemArEquityDumpTool();
 	$obj->draw_page();
 }
 

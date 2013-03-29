@@ -20,7 +20,7 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
-
+// Another trivial change for git test.
 /* --FUNCTIONALITY- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
  * Modes:
  * + If called directly: Prompt for upc to edit or create.
