@@ -38,4 +38,3 @@ pos/is4c-nf/scale-drivers/drivers/rs232/ssd
 *.exe
 fannie/INSTALL
 README
-reset_slave.sql
