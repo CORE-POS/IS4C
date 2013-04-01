@@ -38,7 +38,9 @@ class ProductsController {
 	public static function update($upc,$fields, $update_only=False){
 		global $FANNIE_OP_DB;
 		$dbc = FannieDB::get($FANNIE_OP_DB);
-		if (!is_numeric($upc) || $upc != ((int)$upc))
+		if (!is_numeric($upc))
+			return False;
+		if (!is_int($upc) && !ctype_digit($upc))
 			return False;
 		$upc = substr($upc,0,13);
 		$upc = str_pad($upc,13,'0',STR_PAD_LEFT);
@@ -47,6 +49,8 @@ class ProductsController {
 		$chkR = $dbc->exec_statement($chkP, array($upc));
 		if ($dbc->num_rows($chkR) == 0)
 			return ($update_only===False ? self::add($upc,$fields) : True);
+
+		$valid_columns = $dbc->table_definition('products');
 
 		$updateQ = "UPDATE products SET ";
 		$updateArgs = array();
@@ -87,6 +91,8 @@ class ProductsController {
 			case 'store_id':
 				if ($name === 0 || $name === True)
 					break; // switch does loose comparison...
+				if (!isset($valid_columns[$name]))
+					break; // table does not have that column
 				$updateQ .= $name." = ?,";
 				$updateArgs[] = $value;
 				break;

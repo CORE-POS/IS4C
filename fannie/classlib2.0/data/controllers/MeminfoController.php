@@ -53,6 +53,8 @@ class MeminfoController {
 			case 'email_1':
 			case 'email_2':
 			case 'ads_OK':
+				if ($name === 0 || $name === True)
+					break; // switch does loose comparison...
 				$upQ .= $name." = ?,";
 				$args[] = $value;
 				break;
