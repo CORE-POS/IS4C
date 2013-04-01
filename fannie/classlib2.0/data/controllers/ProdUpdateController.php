@@ -31,7 +31,9 @@ class ProdUpdateController {
 	public static function add($upc,$fields){
 		global $FANNIE_OP_DB;
 		$dbc = FannieDB::get($FANNIE_OP_DB);
-		if (!is_numeric($upc) || $upc != ((int)$upc))
+		if (!is_numeric($upc))
+			return False;
+		if (!is_int($upc) && !ctype_digit($upc))
 			return False;
 		$upc = substr($upc,0,13);
 		$upc = str_pad($upc,13,'0',STR_PAD_LEFT);
@@ -46,6 +48,8 @@ class ProdUpdateController {
 			case 'tax':
 			case 'scale':
 			case 'inUse':
+				if ($name === 0 || $name === True)
+					break; // switch does loose comparison...
 				$q .= $name.',';
 				$args[] = $value;	
 				break;
