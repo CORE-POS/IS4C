@@ -138,6 +138,7 @@ class SQLManager {
 		if (!$ok && is_writable($ql)){
 			$fp = fopen($ql,'a');
 			fputs($fp,$_SERVER['PHP_SELF'].": ".date('r').': '.$query_text."\n");
+			fputs($fp,$this->error()."\n\n");
 			fclose($fp);
 		}
 		else if (!$ok){
