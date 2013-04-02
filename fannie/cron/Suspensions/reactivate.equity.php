@@ -82,8 +82,10 @@ while($clearW = $sql->fetch_row($clearR)){
 }
 $cns = rtrim($cns,",").")";
 
-$delQ = "DELETE FROM suspensions WHERE cardno IN $cns";
-$delR = $sql->query($delQ);
+if ($cns != "()"){
+	$delQ = "DELETE FROM suspensions WHERE cardno IN $cns";
+	$delR = $sql->query($delQ);
+}
 
 
 ?>
