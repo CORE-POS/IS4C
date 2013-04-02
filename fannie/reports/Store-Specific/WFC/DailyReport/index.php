@@ -205,7 +205,7 @@ echo sprintf("%.2f<br />",array_pop($dbc->fetch_row($saleSumR)));
 $returnsQ = $dbc->prepare_statement("SELECT s.salesCode,-1*sum(L.total)as returns
 FROM $dlog as L,deptSalesCodes as s
 WHERE s.dept_ID = L.department
-WHERE L.tdate BETWEEN ? AND ?
+AND L.tdate BETWEEN ? AND ?
 AND(trans_status = 'R')
 GROUP BY s.salesCode");
 $returnsR = $dbc->exec_statement($returnsQ,$dates);
