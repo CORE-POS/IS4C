@@ -66,7 +66,7 @@ function receiptHeader($date,$trans){
    }
 
    $args = array("$year-$month-$day 00:00:00","$year-$month-$day 23:59:59",$trans);
-   $queryHead = "SELECT * FROM $head WHERE dateTimeStamp BETWEEN ? AND ? AND trans_num=?"
+   $queryHead = "SELECT * FROM $head WHERE dateTimeStamp BETWEEN ? AND ? AND trans_num=?";
    
    $query1 = "SELECT description,comment,total,Status,
 		datetime,register_no,emp_no,trans_no,memberID FROM $rp WHERE 
