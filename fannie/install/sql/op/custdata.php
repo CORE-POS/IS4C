@@ -23,6 +23,7 @@ Columns:
 	memCoupons
 	blueLine
 	Shown
+	LastChange
 	id int (auto increment)
 
 Depends on:
