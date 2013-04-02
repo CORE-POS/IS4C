@@ -42,7 +42,7 @@ class PayrollSummaryPage extends FanniePage {
 		$periodID = FormLib::get_form_value('period','');
 		if (!empty($submitted) && is_numeric($period)) { // If submitted.
 			$periodID = $_POST['period'];
-			$query = "SELECT ROUND(SUM(TIMESTAMPDIFF(MINUTE, t.time_in, t.time_out))/60, 2),
+			$query = $ts_db->prepare_statement("SELECT ROUND(SUM(TIMESTAMPDIFF(MINUTE, t.time_in, t.time_out))/60, 2),
 			    t.emp_no,
 			    e.RealFirstName,
 			    date_format(p.periodStart, '%M %D, %Y'),
@@ -54,17 +54,17 @@ class PayrollSummaryPage extends FanniePage {
 			    ON (t.emp_no = e.emp_no)
 			    INNER JOIN {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.payperiods AS p
 			    ON (t.periodID = p.periodID)
-			WHERE t.periodID = $periodID
+			WHERE t.periodID = ?
 			    AND t.area NOT IN (13, 14)
 			GROUP BY t.emp_no
-			ORDER BY e.RealFirstName ASC";
+			ORDER BY e.RealFirstName ASC");
 
-			$result = $ts_db->query($query);
+			$result = $ts_db->exec_statement($query,array($periodID));
 
-			$periodQ = "SELECT periodStart, periodEnd 
+			$periodQ = $ts_db->prepare_statement("SELECT periodStart, periodEnd 
 				FROM {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.payperiods 
-				WHERE periodID = $periodID";
-			$periodR = $ts_db->query($periodQ);
+				WHERE periodID = ?");
+			$periodR = $ts_db->exec_statement($periodQ,array($periodID));
 			list($periodStart, $periodEnd) = $ts_db->fetch_row($periodR);
 
 			if ($ts_db->num_rows($result) > 0) {
@@ -81,6 +81,57 @@ class PayrollSummaryPage extends FanniePage {
 				$hours = array();
 
 				$bg = '#eeeeee';
+				$prevP = $ts_db->prepare_statement("SELECT 
+					SUM(ROUND(TIMESTAMPDIFF(MINUTE, time_in, time_out)/60,2)), 
+					tdate, DAYOFWEEK(date)
+					FROM timesheet
+					WHERE emp_no = ?
+					AND periodID = ?
+					AND tdate NOT BETWEEN ? AND ?
+					GROUP BY date");
+				$weekP = $ts_db->prepare_statement("SELECT 
+					DATE_ADD(?, INTERVAL (1-?) DAY) AS weekStart, 
+					DATE_ADD(?, INTERVAL (7-?) DAY) AS weekEnd)");
+				$tsP = $ts_db->prepare_statement("SELECT 
+					SUM(ROUND(TIMESTAMPDIFF(MINUTE, time_in, time_out)/60,2))
+					FROM timesheet
+					WHERE emp_no = ?
+					AND tdate BETWEEN ? AND ?");
+				$weekoneP = $ts_db->prepare_statement("SELECT 
+					ROUND(SUM(TIMESTAMPDIFF(MINUTE, t.time_in, t.time_out))/60, 2)
+					FROM {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.timesheet AS t
+					INNER JOIN {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.payperiods AS p
+					ON (p.periodID = t.periodID)
+					WHERE t.emp_no = ?
+					AND t.periodID = ?
+					AND t.tdate >= DATE(p.periodStart)
+					AND t.tdate < DATE(date_add(p.periodStart, INTERVAL 7 day))
+					AND t.area NOT IN (31)");
+				$weektwoP = $ts_db->prepare_statement("SELECT 
+					ROUND(SUM(TIMESTAMPDIFF(MINUTE, t.time_in, t.time_out))/60, 2)
+					FROM {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.timesheet AS t
+					INNER JOIN {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.payperiods AS p
+					ON (p.periodID = t.periodID)
+					WHERE t.emp_no = ?
+					AND t.periodID = ?
+					AND t.tdate >= DATE(date_add(p.periodStart, INTERVAL 7 day)) 
+					AND t.tdate <= DATE(p.periodEnd)
+					AND t.area NOT IN (31)");
+				$vacationP = $ts_db->prepare_statement("SELECT ROUND(vacation, 2)
+					FROM {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.timesheet AS t
+					INNER JOIN {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.payperiods AS p
+					ON (p.periodID = t.periodID)
+					WHERE t.emp_no = ?
+					AND t.periodID = ?
+					AND t.area = 31");
+				$oncallP = $ts_db->prepare_statement("SELECT 
+					ROUND(SUM(TIMESTAMPDIFF(MINUTE, t.time_in, t.time_out))/60, 2)
+					FROM {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.timesheet AS t
+					INNER JOIN {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.payperiods AS p
+					ON (p.periodID = t.periodID)
+					WHERE t.emp_no = ?
+					AND t.periodID = ?
+					AND t.area =100");
 				while ($row = $ts_db->fetch_array($result)) {
 					$emp_no = $row[1];
 					$cn = $row[5];
@@ -88,14 +139,8 @@ class PayrollSummaryPage extends FanniePage {
 					$yearStart = substr($periodStart, 0, 4);
 					$yearEnd = substr($periodEnd, 0, 4);
 
-					$prevQ = "SELECT SUM(ROUND(TIMESTAMPDIFF(MINUTE, time_in, time_out)/60,2)), 
-						tdate, DAYOFWEEK(date)
-						FROM timesheet
-						WHERE emp_no = $emp_no
-						AND periodID = $periodID
-						AND tdate NOT BETWEEN '$periodStart' AND '$periodEnd'
-						GROUP BY date";
-					$prevR = $ts_db->query($prevQ);
+					$prevR = $ts_db->exec_statement($prevP,array($emp_no,$periodID,
+						$periodStart,$periodEnd));
 
 					if ($ts_db->num_rows($prevR) > 0) {
 						$totalPHours[$emp_no] = 0;
@@ -103,17 +148,12 @@ class PayrollSummaryPage extends FanniePage {
 
 						while (list($pHours, $pDate, $pDay) = $ts_db->fetch_row($prevR)) {
 							// Get a week range for the old payday.
-							$weekQ = "SELECT DATE_ADD('$pDate', INTERVAL (1-$pDay) DAY) AS weekStart, 
-								DATE_ADD('$pDate', INTERVAL (7-$pDay) DAY) AS weekEnd";
-							$weekR = $ts_db->query($weekQ);
+							$weekR = $ts_db->exec_statement($weekP,array(
+								$pDate,$pDay,$pDate,$pDay));
 
 							list($weekStart, $weekEnd) = $ts_db->fetch_row($weekR);
 							// echo $weekStart . " & " . $weekEnd . " & " . $emp_no;
-							$Q = "SELECT SUM(ROUND(TIMESTAMPDIFF(MINUTE, time_in, time_out)/60,2))
-								FROM timesheet
-								WHERE emp_no = $emp_no
-								AND tdate BETWEEN '$weekStart' AND '$weekEnd'";
-							$R = $ts_db->query($Q);
+							$R = $ts_db->exec_statement($tsP,array($emp_no,$weekStart,$weekEnd));
 
 							list($totalHours) = $ts_db->fetch_row($R);
 
@@ -129,41 +169,6 @@ class PayrollSummaryPage extends FanniePage {
 						}
 					}
 
-					$weekoneQ = "SELECT ROUND(SUM(TIMESTAMPDIFF(MINUTE, t.time_in, t.time_out))/60, 2)
-						FROM {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.timesheet AS t
-						INNER JOIN {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.payperiods AS p
-						ON (p.periodID = t.periodID)
-						WHERE t.emp_no = $emp_no
-						AND t.periodID = $periodID
-						AND t.tdate >= DATE(p.periodStart)
-						AND t.tdate < DATE(date_add(p.periodStart, INTERVAL 7 day))
-						AND t.area NOT IN (31)";
-
-					$weektwoQ = "SELECT ROUND(SUM(TIMESTAMPDIFF(MINUTE, t.time_in, t.time_out))/60, 2)
-						FROM {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.timesheet AS t
-						INNER JOIN {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.payperiods AS p
-						ON (p.periodID = t.periodID)
-						WHERE t.emp_no = $emp_no
-						AND t.periodID = $periodID
-						AND t.tdate >= DATE(date_add(p.periodStart, INTERVAL 7 day)) 
-						AND t.tdate <= DATE(p.periodEnd)
-						AND t.area NOT IN (31)";
-
-					$vacationQ = "SELECT ROUND(vacation, 2)
-						FROM {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.timesheet AS t
-						INNER JOIN {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.payperiods AS p
-						ON (p.periodID = t.periodID)
-						WHERE t.emp_no = $emp_no
-						AND t.periodID = $periodID
-						AND t.area = 31";
-
-					$oncallQ = "SELECT ROUND(SUM(TIMESTAMPDIFF(MINUTE, t.time_in, t.time_out))/60, 2)
-						FROM {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.timesheet AS t
-						INNER JOIN {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.payperiods AS p
-						ON (p.periodID = t.periodID)
-						WHERE t.emp_no = $emp_no
-						AND t.periodID = $periodID
-						AND t.area =100";
 
 					if ($yearStart == $yearEnd) {
 						$houseChargeQ = "SELECT ROUND(SUM(d.total),2)
@@ -192,10 +197,10 @@ class PayrollSummaryPage extends FanniePage {
 						    AND d.emp_no <> 9999 AND d.trans_status <> 'X') AS yearSpan";
 					}
 
-					$weekoneR = $ts_db->query($weekoneQ);
-					$weektwoR = $ts_db->query($weektwoQ);
-					$vacationR = $ts_db->query($vacationQ);
-					$oncallR = $ts_db->query($oncallQ);
+					$weekoneR = $ts_db->exec_statement($weekoneP,array($emp_no,$periodID));
+					$weektwoR = $ts_db->exec_statement($weektwoP,array($emp_no,$periodID));
+					$vacationR = $ts_db->exec_statement($vacationP,array($emp_no,$periodID));
+					$oncallR = $ts_db->exec_statement($oncallP,array($emp_no,$periodID));
 
 					$roundhour = explode('.', number_format($row[0], 2));
 
@@ -282,21 +287,22 @@ class PayrollSummaryPage extends FanniePage {
 			}
 		} 
 		else {
-			$query = "SELECT FirstName, emp_no FROM "
+			$query = $ts_db->prepare_statement("SELECT FirstName, emp_no FROM "
 				.$FANNIE_OP_DB.$ts_db->sep()."employees 
-				WHERE EmpActive=1 ORDER BY FirstName ASC";
-			$result = $ts_db->query($query);
+				WHERE EmpActive=1 ORDER BY FirstName ASC");
+			$result = $ts_db->exec_statement($query);
 			echo '<form action="'.$_SERVER['PHP_SELF'].'" method="POST">';
-			$currentQ = "SELECT periodID-1 FROM {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.payperiods 
-				WHERE ".$ts_db->now()." BETWEEN periodStart AND periodEnd";
-			$currentR = $ts_db->query($currentQ);
+			$currentQ = $ts_db->prepare_statement("SELECT periodID-1 FROM 
+				{$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.payperiods 
+				WHERE ".$ts_db->now()." BETWEEN periodStart AND periodEnd");
+			$currentR = $ts_db->exec_statement($currentQ);
 			list($ID) = $ts_db->fetch_row($currentR);
 
-			$query = "SELECT DATE_FORMAT(periodStart, '%M %D, %Y'), 
+			$query = $ts_db->prepare_statement("SELECT DATE_FORMAT(periodStart, '%M %D, %Y'), 
 				DATE_FORMAT(periodEnd, '%M %D, %Y'), periodID 
 				FROM {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.payperiods 
-				WHERE periodStart < ".$ts_db->now();
-			$result = $ts_db->query($query);
+				WHERE periodStart < ".$ts_db->now());
+			$result = $ts_db->exec_statement($query);
 
 			echo '<p>Pay Period: <select name="period">
 				<option>Please select a payperiod to view.</option>';

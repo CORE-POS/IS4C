@@ -96,7 +96,8 @@ class UnfiUploadPage extends FannieUploadPage {
 	function process_file($linedata){
 		global $FANNIE_OP_DB;
 		$dbc = FannieDB::get($FANNIE_OP_DB);
-		$idR = $dbc->query("SELECT vendorID FROM vendors WHERE vendorName='UNFI' ORDER BY vendorID");
+		$idP = $dbc->prepare_statement("SELECT vendorID FROM vendors WHERE vendorName='UNFI' ORDER BY vendorID");
+		$idR = $dbc->exec_statement($idP);
 		if ($dbc->num_rows($idR) == 0){
 			$this->error_details = 'Cannot find vendor';
 			return False;
@@ -201,16 +202,20 @@ class UnfiUploadPage extends FannieUploadPage {
 		global $FANNIE_OP_DB;
 		$dbc = FannieDB::get($FANNIE_OP_DB);
 
-		$idR = $dbc->query("SELECT vendorID FROM vendors WHERE vendorName='UNFI' ORDER BY vendorID");
+		$idP = $dbc->prepare_statement("SELECT vendorID FROM vendors WHERE vendorName='UNFI' ORDER BY vendorID");
+		$idR = $dbc->exec_statement($idP);
 		if ($dbc->num_rows($idR) == 0){
 			$this->error_details = 'Cannot find vendor';
 			return False;
 		}
 		$VENDOR_ID = array_pop($dbc->fetch_row($idR));
 
-		$dbc->query("DELETE FROM vendorItems WHERE vendorID=".((int)$VENDOR_ID));
-		$dbc->query("DELETE FROM vendorSRPs WHERE vendorID=".((int)$VENDOR_ID));
-		$dbc->query("TRUNCATE TABLE unfi_order");
+		$viP = $dbc->prepare_statement("DELETE FROM vendorItems WHERE vendorID=?");
+		$vsP = $dbc->prepare_statement("DELETE FROM vendorSRPs WHERE vendorID=?");
+		$uoP = $dbc->prepare_statement("TRUNCATE TABLE unfi_order");
+		$dbc->exec_statement($viP,array($VENDOR_ID));
+		$dbc->exec_statement($vsP,array($VENDOR_ID));
+		$dbc->exec_statement($uoP);
 	}
 
 	function preview_content(){
@@ -230,48 +235,52 @@ class UnfiUploadPage extends FannieUploadPage {
 		// upcc field in unfi_order for the affected items
 		if ($dbc->table_exists("vendorSKUtoPLU")){
 
-			$idR = $dbc->query("SELECT vendorID FROM vendors WHERE vendorName='UNFI' ORDER BY vendorID");
+			$idP = $dbc->prepare_statement("SELECT vendorID FROM vendors WHERE vendorName='UNFI' ORDER BY vendorID");
+			$idR = $dbc->exec_statement($idP);
 			$VENDOR_ID=0;
 			if ($dbc->num_rows($idR) > 0)
 				$VENDOR_ID = array_pop($dbc->fetch_row($idR));
 
-			$pluQ1 = "UPDATE unfi_order AS u
+			$pluQ1 = $dbc->prepare_statement("UPDATE unfi_order AS u
 				INNER JOIN vendorSKUtoPLU AS p
 				ON u.unfi_sku = p.sku
 				SET u.upcc = p.upc
-				WHERE p.vendorID=".$VENDOR_ID;
-			$pluQ2 = "UPDATE vendorItems AS u
+				WHERE p.vendorID=?");
+			$pluQ2 = $dbc->prepare_statement("UPDATE vendorItems AS u
 				INNER JOIN vendorSKUtoPLU AS p
 				ON u.sku = p.sku
 				SET u.upc = p.upc
-				WHERE u.vendorID=".$VENDOR_ID;
-			$pluQ3 = "UPDATE prodExtra AS x
+				WHERE u.vendorID=?");
+			$pluQ3 = $dbc->prepare_statement("UPDATE prodExtra AS x
 				INNER JOIN vendorSKUtoPLU AS p
 				ON x.upc=p.upc
 				INNER JOIN unfi_order AS u
 				ON u.unfi_sku=p.sku
 				SET x.cost = u.vd_cost / u.pack
-				WHERE p.vendorID=".$VENDOR_ID;
+				WHERE p.vendorID=?");
+			$args = array($VENDOR_ID);
+			$args2 = array($VENDOR_ID); // kludge
 			if ($FANNIE_SERVER_DBMS == "MSSQL"){
-				$pluQ1 = "UPDATE unfi_order SET upcc = p.wfc_plu
+				$pluQ1 = $dbc->prepare_statement("UPDATE unfi_order SET upcc = p.wfc_plu
 					FROM unfi_order AS u RIGHT JOIN
 					UnfiToPLU AS p ON u.unfi_sku = p.unfi_sku
-					WHERE u.unfi_sku IS NOT NULL";
-				$pluQ2 = "UPDATE vendorItems SET upc = p.wfc_plu
+					WHERE u.unfi_sku IS NOT NULL");
+				$pluQ2 = $dbc->prepare_statement("UPDATE vendorItems SET upc = p.wfc_plu
 					FROM vendorItems AS u RIGHT JOIN
 					UnfiToPLU AS p ON u.sku = p.unfi_sku
 					WHERE u.sku IS NOT NULL
-					AND u.vendorID=".$VENDOR_ID;
-				$pluQ3 = "UPDATE prodExtra
+					AND u.vendorID=?");
+				$pluQ3 = $dbc->prepare_statement("UPDATE prodExtra
 					SET cost = u.vd_cost / u.pack
 					FROM UnfiToPLU AS p LEFT JOIN
 					unfi_order AS u ON p.unfi_sku = u.unfi_sku
 					LEFT JOIN prodExtra AS x
-					ON p.wfc_plu = x.upc";
+					ON p.wfc_plu = x.upc");
+				$args = array();
 			}
-			$dbc->query($pluQ1);
-			$dbc->query($pluQ2);
-			$dbc->query($pluQ3);
+			$dbc->exec_statement($pluQ1,$args);
+			$dbc->exec_statement($pluQ2,$args2);
+			$dbc->exec_statement($pluQ3,$args);
 		}
 
 		return $ret;

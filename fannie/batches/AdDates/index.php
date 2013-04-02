@@ -32,11 +32,9 @@ include($FANNIE_ROOT.'src/header.html');
 
 if (isset($_REQUEST['sn'])){
 	if (!empty($_REQUEST['sn']) && !empty($_REQUEST['sd']) && !empty($_REQUEST['ed'])){
-		$q = sprintf("INSERT INTO AdSaleDates (sale_name,start_date,end_date)
-			VALUES (%s,%s,%s)",$dbc->escape($_REQUEST['sn']),
-			$dbc->escape($_REQUEST['sd']),$dbc->escape($_REQUEST['ed'])
-		);
-		$r = $dbc->query($q);
+		$q = $dbc->prepare_statement("INSERT INTO AdSaleDates (sale_name,start_date,end_date)
+			VALUES (?,?,?)");
+		$r = $dbc->exec_statement($q,array($_REQUEST['sn'],$_REQUEST['sd'],$_REQUEST['ed']));
 	}
 }
 
@@ -54,9 +52,9 @@ echo '<input type="submit" value="Add Sale" />';
 echo '</form>';
 
 echo '<hr />';
-$q = "SELECT sale_name,start_date,end_date FROM AdSaleDates
-	ORDER BY start_date,sale_name";
-$r = $dbc->query($q);
+$q = $dbc->prepare_statement("SELECT sale_name,start_date,end_date FROM AdSaleDates
+	ORDER BY start_date,sale_name");
+$r = $dbc->exec_statement($q);
 echo '<table cellspacing="0" cellpadding="4" border="1">';
 while($w = $dbc->fetch_row($r)){
 	printf('<tr><th>%s</th><td>%s</td><td>%s</td></tr>',
