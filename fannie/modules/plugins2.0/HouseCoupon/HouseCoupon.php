@@ -52,8 +52,8 @@ class HouseCoupon extends FanniePage {
 		else if (FormLib::get_form_value('new_coupon_submit') !== ''){
 			$dbc = FannieDB::get($FANNIE_OP_DB);
 
-			$maxQ = "SELECT max(coupID) from houseCoupons";
-			$max = array_pop($dbc->fetch_row($dbc->query($maxQ)));
+			$maxQ = $dbc->prepare_statement("SELECT max(coupID) from houseCoupons");
+			$max = array_pop($dbc->fetch_row($dbc->exec_statement($maxQ)));
 			$this->coupon_id = $max+1;
 			
 			$insQ = $dbc->prepare_statement("INSERT INTO houseCoupons (coupID) values (?)");
@@ -165,8 +165,8 @@ class HouseCoupon extends FanniePage {
 		$ret .= '</form>';
 		$ret .= '<table cellpadding="4" cellspacing="0" border="1" />';
 		$ret .= '<tr><th>ID</th><th>Value</th><th>Expires</th></tr>';
-		$q = "SELECT coupID, discountValue, discountType, endDate FROM houseCoupons ORDER BY coupID";
-		$r = $dbc->query($q);
+		$q = $dbc->prepare_statement("SELECT coupID, discountValue, discountType, endDate FROM houseCoupons ORDER BY coupID");
+		$r = $dbc->exec_statement($q);
 		while($w = $dbc->fetch_row($r)){
 			$ret .= sprintf('<tr><td>#%d <a href="HouseCoupon.php?edit_id=%d">Edit</a></td>
 					<td>%.2f%s</td><td>%s</td></tr>',
@@ -185,16 +185,16 @@ class HouseCoupon extends FanniePage {
 		$dbc = FannieDB::get($FANNIE_OP_DB);
 		
 		$depts = array();
-		$query = "SELECT dept_no,dept_name FROM departments ORDER BY dept_no";
-		$result = $dbc->query($query);
+		$query = $dbc->prepare_statement("SELECT dept_no,dept_name FROM departments ORDER BY dept_no");
+		$result = $dbc->exec_statement($query);
 		while($row = $dbc->fetch_row($result)){
 			$depts[$row[0]] = $row[1];
 		}
 
 		$cid = $this->coupon_id;
 
-		$q1 = "SELECT * FROM houseCoupons WHERE coupID=$cid";
-		$r1 = $dbc->query($q1);
+		$q1 = $dbc->prepare_statement("SELECT * FROM houseCoupons WHERE coupID=?");
+		$r1 = $dbc->exec_statement($q1,array($cid));
 		$row = $dbc->fetch_row($r1);
 
 		$expires = $row['endDate'];
@@ -282,10 +282,10 @@ class HouseCoupon extends FanniePage {
 			$ret .= "<br /><br />";
 			$ret .= "<table cellspacing=0 cellpadding=4 border=1>
 			<tr><th colspan=4>Items</th></tr>";
-			$query = "SELECT h.upc,p.description,h.type FROM
+			$query = $dbc->prepare_statement("SELECT h.upc,p.description,h.type FROM
 				houseCouponItems as h LEFT JOIN products AS
-				p ON h.upc = p.upc WHERE coupID=$cid";
-			$result = $dbc->query($query);
+				p ON h.upc = p.upc WHERE coupID=?");
+			$result = $dbc->exec_statement($query,array($cid));
 			while($row = $dbc->fetch_row($result)){
 				$ret .= sprintf("<tr><td>%s</td><td>%s</td><td>%s</td>
 					<td><input type=checkbox name=del[] 
@@ -310,10 +310,10 @@ class HouseCoupon extends FanniePage {
 			$ret .= "<br /><br />";
 			$ret .= "<table cellspacing=0 cellpadding=4 border=1>
 			<tr><th colspan=4>Items</th></tr>";
-			$query = "SELECT h.upc,d.dept_name,h.type FROM
+			$query = $dbc->prepare_statement("SELECT h.upc,d.dept_name,h.type FROM
 				houseCouponItems as h LEFT JOIN departments as d
-				ON h.upc = d.dept_no WHERE coupID=$cid";
-			$result = $dbc->query($query);
+				ON h.upc = d.dept_no WHERE coupID=?");
+			$result = $dbc->exec_statement($query,array($cid));
 			while($row = $dbc->fetch_row($result)){
 				$ret .= sprintf("<tr><td>%s</td><td>%s</td><td>%s</td>
 					<td><input type=checkbox name=del[] 

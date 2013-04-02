@@ -881,7 +881,8 @@ function create_trans_dbs($con){
 		price float,
 		INDEX (upc))";
 	if (!$con->table_exists('InvDelivery',$FANNIE_TRANS_DB)){
-		$con->query($invCur,$FANNIE_TRANS_DB);
+		$prep = $con->prepare_statement($invCur,$FANNIE_TRANS_DB);
+		$con->exec_statement($prep,array(),$FANNIE_TRANS_DB);
 	}
 
 	$invCur = "CREATE TABLE InvDeliveryLM (
@@ -891,7 +892,8 @@ function create_trans_dbs($con){
 		quantity double,
 		price float)";
 	if (!$con->table_exists('InvDeliveryLM',$FANNIE_TRANS_DB)){
-		$con->query($invCur,$FANNIE_TRANS_DB);
+		$prep = $con->prepare_statement($invCur,$FANNIE_TRANS_DB);
+		$con->exec_statement($prep,array(),$FANNIE_TRANS_DB);
 	}
 
 	$invArc = "CREATE TABLE InvDeliveryArchive (
@@ -902,7 +904,8 @@ function create_trans_dbs($con){
 		price float,
 		INDEX(upc))";
 	if (!$con->table_exists('InvDeliveryArchive',$FANNIE_TRANS_DB)){
-		$con->query($invArc,$FANNIE_TRANS_DB);
+		$prep = $con->prepare_statement($invArc,$FANNIE_TRANS_DB);
+		$con->exec_statement($prep,array(),$FANNIE_TRANS_DB);
 	}
 
 	$invRecent = "CREATE VIEW InvRecentOrders AS
@@ -914,7 +917,8 @@ function create_trans_dbs($con){
 		sum(price) as price
 		FROM InvDeliveryLM GROUP BY inv_date,upc";
 	if (!$con->table_exists('InvRecentOrders',$FANNIE_TRANS_DB)){
-		$con->query($invRecent,$FANNIE_TRANS_DB);
+		$prep = $con->prepare_statement($invRecent,$FANNIE_TRANS_DB);
+		$con->exec_statement($prep,array(),$FANNIE_TRANS_DB);
 	}
 
 	$union = "CREATE VIEW InvDeliveryUnion AS
@@ -933,7 +937,8 @@ function create_trans_dbs($con){
 		FROM InvDeliveryArchive
 		GROUP BY upc,vendor_id";
 	if (!$con->table_exists("InvDeliveryUnion",$FANNIE_TRANS_DB)){
-		$con->query($union,$FANNIE_TRANS_DB);
+		$prep = $con->prepare_statement($union,$FANNIE_TRANS_DB);
+		$con->exec_statement($prep,array(),$FANNIE_TRANS_DB);
 	}
 
 	$total = "CREATE VIEW InvDeliveryTotals AS
@@ -942,7 +947,8 @@ function create_trans_dbs($con){
 		FROM InvDeliveryUnion
 		GROUP BY upc";
 	if (!$con->table_exists("InvDeliveryTotals",$FANNIE_TRANS_DB)){
-		$con->query($total,$FANNIE_TRANS_DB);
+		$prep = $con->prepare_statement($total,$FANNIE_TRANS_DB);
+		$con->exec_statement($prep,array(),$FANNIE_TRANS_DB);
 	}
 
 
@@ -1101,7 +1107,8 @@ function create_delayed_dbs(){
 		AND trans_type = 'I' AND trans_subtype <> '0'
 		AND register_no <> 99 AND emp_no <> 9999";
 	if (!$con->table_exists("InvSales",$FANNIE_TRANS_DB)){
-		$con->query($invSalesView,$FANNIE_TRANS_DB);
+		$prep = $con->prepare_statement($invSalesView,$FANNIE_TRANS_DB);
+		$con->exec_statement($prep,array(),$FANNIE_TRANS_DB);
 	}
 
 	$invRecentSales = "CREATE VIEW InvRecentSales AS
@@ -1115,7 +1122,8 @@ function create_delayed_dbs(){
 		".$con->datediff('s.inv_date','t.inv_date')." >= 0
 		group by t.upc";
 	if (!$con->table_exists("InvRecentSales",$FANNIE_TRANS_DB)){
-		$con->query($invRecentSales,$FANNIE_TRANS_DB);
+		$prep = $con->prepare_statement($invRecentSales,$FANNIE_TRANS_DB);
+		$con->exec_statement($prep,array(),$FANNIE_TRANS_DB);
 	}
 
 	$invSales = "CREATE TABLE InvSalesArchive (
@@ -1125,7 +1133,8 @@ function create_delayed_dbs(){
 		price float,
 		INDEX(upc))";
 	if (!$con->table_exists('InvSalesArchive',$FANNIE_TRANS_DB)){
-		$con->query($invSales,$FANNIE_TRANS_DB);
+		$prep = $con->prepare_statement($invSales,$FANNIE_TRANS_DB);
+		$con->exec_statement($prep,array(),$FANNIE_TRANS_DB);
 	}
 
 	$union = "CREATE VIEW InvSalesUnion AS
@@ -1140,7 +1149,8 @@ function create_delayed_dbs(){
 		FROM InvSalesArchive
 		GROUP BY upc";
 	if (!$con->table_exists("InvSalesUnion",$FANNIE_TRANS_DB)){
-		$con->query($union,$FANNIE_TRANS_DB);
+		$prep = $con->prepare_statement($union,$FANNIE_TRANS_DB);
+		$con->exec_statement($prep,array(),$FANNIE_TRANS_DB);
 	}
 
 	$total = "CREATE VIEW InvSalesTotals AS
@@ -1149,7 +1159,8 @@ function create_delayed_dbs(){
 		FROM InvSalesUnion
 		GROUP BY upc";
 	if (!$con->table_exists("InvSalesTotals",$FANNIE_TRANS_DB)){
-		$con->query($total,$FANNIE_TRANS_DB);
+		$prep = $con->prepare_statement($total,$FANNIE_TRANS_DB);
+		$con->exec_statement($prep,array(),$FANNIE_TRANS_DB);
 	}
 		
 	$adj = "CREATE TABLE InvAdjustments (
@@ -1158,7 +1169,8 @@ function create_delayed_dbs(){
 		diff double,
 		INDEX(upc))";
 	if (!$con->table_exists("InvAdjustments",$FANNIE_TRANS_DB)){
-		$con->query($adj,$FANNIE_TRANS_DB);
+		$prep = $con->prepare_statement($adj,$FANNIE_TRANS_DB);
+		$con->exec_statement($prep,array(),$FANNIE_TRANS_DB);
 	}
 
 	$adjTotal = "CREATE VIEW InvAdjustTotals AS
@@ -1166,7 +1178,8 @@ function create_delayed_dbs(){
 		FROM InvAdjustments
 		GROUP BY upc";
 	if (!$con->table_exists("InvAdjustTotals",$FANNIE_TRANS_DB)){
-		$con->query($adjTotal,$FANNIE_TRANS_DB);
+		$prep = $con->prepare_statement($adjTotal,$FANNIE_TRANS_DB);
+		$con->exec_statement($prep,array(),$FANNIE_TRANS_DB);
 	}
 
 	$opstr = $FANNIE_OP_DB;
@@ -1191,7 +1204,8 @@ function create_delayed_dbs(){
 		ON d.upc = s.upc LEFT JOIN
 		InvAdjustTotals AS a ON d.upc=a.upc";
 	if (!$con->table_exists("Inventory",$FANNIE_TRANS_DB)){
-		$con->query($inv,$FANNIE_TRANS_DB);
+		$prep = $con->prepare_statement($inv,$FANNIE_TRANS_DB);
+		$con->exec_statement($prep,array(),$FANNIE_TRANS_DB);
 	}
 
 	$cache = "CREATE TABLE InvCache (
@@ -1202,7 +1216,8 @@ function create_delayed_dbs(){
 		LastAdjustDate datetime,
 		CurrentStock int)";
 	if (!$con->table_exists("InvCache",$FANNIE_TRANS_DB)){
-		$con->query($cache,$FANNIE_TRANS_DB);
+		$prep = $con->prepare_statement($cache,$FANNIE_TRANS_DB);
+		$con->exec_statement($prep,array(),$FANNIE_TRANS_DB);
 	}
 	
 	return $ret;
@@ -1229,7 +1244,8 @@ function create_archive_dbs($con) {
 			{$FANNIE_TRANS_DB}{$dbconn}dtransactions";
 	}
 	if (!$con->table_exists($archive,$FANNIE_ARCHIVE_DB)){
-		$con->query($query,$FANNIE_ARCHIVE_DB);
+		$create = $con->prepare_statement($query,$FANNIE_ARCHIVE_DB);
+		$con->exec_statement($create,array(),$FANNIE_ARCHIVE_DB);
 		// create the first partition if needed
 		if ($FANNIE_ARCHIVE_METHOD == "partitions"){
 			$p = "p".date("Ym");
@@ -1239,7 +1255,8 @@ function create_archive_dbs($con) {
 				(PARTITION %s 
 					VALUES LESS THAN (TO_DAYS('%s'))
 				)",$p,$limit);
-			$con->query($partQ);
+			$prep = $dbc->prepare_statement($partQ);
+			$con->exec_statement($prep);
 		}
 	}
 
@@ -1291,8 +1308,9 @@ function create_archive_dbs($con) {
 
 	$dlog_view = ($FANNIE_ARCHIVE_METHOD != "partitions") ? "dlog".$dstr : "dlogBig";
 	if (!$con->table_exists($dlog_view,$FANNIE_ARCHIVE_DB)){
-		$con->query("CREATE VIEW $dlog_view AS $dlogView",
+		$prep = $con->prepare_statement("CREATE VIEW $dlog_view AS $dlogView",
 			$FANNIE_ARCHIVE_DB);
+		$con->exec_statement($prep,array(),$FANNIE_ARCHIVE_DB);
 	}
 
 	$rp_dt_view = ($FANNIE_ARCHIVE_METHOD != "partitions") ? "rp_dt_receipt_".$dstr : "rp_dt_receipt_big";
@@ -1407,7 +1425,8 @@ function create_archive_dbs($con) {
 			where voided <> 5 and UPC <> 'TAX' and UPC <> 'DISCOUNT'";
 	}
 	if (!$con->table_exists($rp_dt_view,$FANNIE_ARCHIVE_DB)){
-		$con->query($rp1Q,$FANNIE_ARCHIVE_DB);
+		$prep = $con->prepare_statement($rp1Q,$FANNIE_ARCHIVE_DB);
+		$con->exec_statement($prep,array(),$FANNIE_ARCHIVE_DB);
 	}
 
 	$rp_view = ($FANNIE_ARCHIVE_METHOD != "partitions") ? "rp_receipt_header_".$dstr : "rp_receipt_header_big";
@@ -1450,7 +1469,8 @@ function create_archive_dbs($con) {
 			group by register_no, emp_no, trans_no, card_no, datetime";
 	}
 	if (!$con->table_exists($rp_view,$FANNIE_ARCHIVE_DB)){
-		$con->query($rp2Q,$FANNIE_ARCHIVE_DB);
+		$prep = $con->prepare_statement($rp2Q,$FANNIE_ARCHIVE_DB);
+		$con->exec_statement($prep,array(),$FANNIE_ARCHIVE_DB);
 	}
 
 	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_ARCHIVE_DB,

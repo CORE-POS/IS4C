@@ -10,7 +10,7 @@ if (isset($_REQUEST['submit'])){
 	$dlog = select_dlog($date1,$date2);
 
 	$q = $dbc->prepare_statement("SELECT description FROM products WHERE upc=?");
-	$r = $dbc->query($q,array($upc));
+	$r = $dbc->exec_statement($q,array($upc));
 	$w = $dbc->fetch_row($r);
 	$description = $w[0];
 
