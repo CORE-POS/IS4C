@@ -49,7 +49,8 @@ function create_if_needed($con,$dbms,$db_name,$table_name,$stddb){
 		return $ret;
 	}
 
-	$result = $con->query($CREATE["$stddb.$table_name"],$db_name);
+	$prep = $con->prepare_statement($CREATE["$stddb.$table_name"],$db_name);
+	$result = $con->exec_statement($prep,array(),$db_name);
 	if ($result === False){
 		$ret['error_msg'] = $con->error($db_name);
 		$ret['error'] = 3;
@@ -117,18 +118,20 @@ function loaddata($sql, $table){
 	if (file_exists("{$FANNIE_ROOT}install/sample_data/$table.sql")){
 		$fp = fopen("{$FANNIE_ROOT}install/sample_data/$table.sql","r");
 		while($line = fgets($fp)){
-			$sql->query("INSERT INTO $table VALUES $line");
+			$prep = $sql->prepare_statement("INSERT INTO $table VALUES $line");
+			$sql->exec_statement($prep);
 		}
 		fclose($fp);
 	}
 	else if (file_exists("{$FANNIE_ROOT}install/sample_data/$table.csv")){
-		$sql->query("LOAD DATA LOCAL INFILE
+		$prep = $sql->prepare_statement("LOAD DATA LOCAL INFILE
 			'{$FANNIE_ROOT}install/sample_data/$table.csv'
 			INTO TABLE $table
 			FIELDS TERMINATED BY ','
 			ESCAPED BY '\\\\'
 			OPTIONALLY ENCLOSED BY '\"'
 			LINES TERMINATED BY '\\r\\n'");
+		$sql->exec_statement($prep);
 	}
 }
 

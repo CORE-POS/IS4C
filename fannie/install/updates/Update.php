@@ -127,7 +127,8 @@ class UpdateObj {
 
 	public function CheckStatus(){
 		$db = $this->db();
-		$r = $db->query("SELECT status FROM UpdateLog WHERE id='".$this->timestamp."'");
+		$p = $db->prepare_statement("SELECT status FROM UpdateLog WHERE id=?");
+		$r = $db->exec_statement($p,array($this->timestamp));
 		$ret = False;
 		if ($db->num_rows($r) > 0){
 			$st = array_pop($db->fetch_row($r));
@@ -140,9 +141,10 @@ class UpdateObj {
 	public function SetStatus($st){
 		$st = ($st==True) ? 1 : 0;
 		$db = $this->db();
-		$db->query("DELETE FROM UpdateLog WHERE id='".$this->timestamp."'");
-		$db->query(sprintf("INSERT INTO UpdateLog (id,status,tdate) VALUES ('%s',%d,%s)",
-			$this->timestamp,$st,$db->now()));
+		$p = $db->prepare_statement("DELETE FROM UpdateLog WHERE id=?");
+		$r = $db->exec_statement($p,array($this->timestamp));
+		$p = $db->prepare_statement("INSERT INTO UpdateLog (id,status,tdate) VALUES (?,?,".$db->now().")");
+		$r = $db->exec_statement($p,array($this->timestamp,$st));
 		$db->close();
 	}
 

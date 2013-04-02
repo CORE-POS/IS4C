@@ -21,6 +21,12 @@
 
 *********************************************************************************/
 
+include('../../../config.php');
+include($FANNIE_ROOT.'classlib2.0/FanniePage.php');
+include($FANNIE_ROOT.'classlib2.0/data/FannieDB.php');
+include($FANNIE_ROOT.'classlib2.0/lib/FormLib.php');
+include('FannieInventory.php');
+
 /**
   @class Brewventory
 */
@@ -32,24 +38,20 @@ class Brewventory extends FannieInventory {
 	Module for managing homebrew ingredients
 	";
 
+	protected $header = 'BrewVentory';
+	protected $title = 'BrewVentory';
+	protected $window_dressing = False;
+
 	protected $mode = 'menu';
 	private $msgs = "";
 
-	function get_header(){
+	function init(){
 		global $FANNIE_URL;
 		$this->add_script($FANNIE_URL.'src/jquery/js/jquery.js');
 		$this->add_script($FANNIE_URL.'src/jquery/js/jquery-ui-1.8.1.custom.min.js');
+		$this->add_css_file($FANNIE_URL."src/jquery/css/smoothness/jquery-ui-1.8.1.custom.css");
 
 		ob_start();
-		?>
-		<html>
-		<head>
-		<link rel="STYLESHEET" type="text/css"
-			href="<?php echo $FANNIE_URL; ?>src/jquery/css/smoothness/jquery-ui-1.8.1.custom.css" >
-		<title>BrewVentory</title>
-		</head>
-		<body>
-		<?php
 		vprintf('
 			<a href="%s">Home</a>
 			&nbsp;&nbsp;&nbsp;&nbsp;
@@ -63,16 +65,21 @@ class Brewventory extends FannieInventory {
 			&nbsp;&nbsp;&nbsp;&nbsp;
 			<a href="%s&mode=import">Import</a>
 			&nbsp;&nbsp;&nbsp;&nbsp;
-			',array_fill(0,6,$this->module_url()));
+			',array_fill(0,6,'Brewventory.php'));
 		return ob_get_clean();
 	}
 
-	function get_footer(){
-		return "</body></html>";	
+	function form_tag(){
+		return '<form action="Brewventory.php">';
+	}
+	
+	function module_url(){
+		return 'Brewventory.php';
 	}
 
 	function adjust(){
 		ob_start();
+		echo $this->init();
 		if (!empty($this->msgs)){
 			echo '<blockquote><i>'.$this->msgs.'</i></blockquote>';
 			$this->msgs = "";
@@ -97,14 +104,16 @@ class Brewventory extends FannieInventory {
 	}
 
 	function adjust_confirm(){
-		$ret = $this->form_tag();
+		global $FANNIE_OP_DB;
+		$ret = $this->init();
+		$ret .= $this->form_tag();
 
 		$upc = array_pop(array_keys($this->msgs));
 		$amt = $this->msgs[$upc];	
 
-		$dbc = op_connect();
-		$q = "SELECT description FROM productUser WHERE upc=".$dbc->escape($upc);
-		$r = $dbc->query($q);
+		$dbc = FannieDB::get($FANNIE_OP_DB);
+		$q = $dbc->prepare_statement("SELECT description FROM productUser WHERE upc=?");
+		$r = $dbc->exec_statement($q,array($upc));
 		$w = $dbc->fetch_row($r);
 		$dbc->close();
 
@@ -130,6 +139,7 @@ class Brewventory extends FannieInventory {
 
 	function import(){
 		ob_start();
+		echo $this->init();
 		echo str_replace('form ', 'form enctype="multipart/form-data" ',$this->form_tag());
 		?>
 		<input type="hidden" name="MAX_FILE_SIZE" value="2097152" />
@@ -142,6 +152,7 @@ class Brewventory extends FannieInventory {
 
 	function sale(){
 		ob_start();
+		echo $this->init();
 		echo str_replace('form ', 'form enctype="multipart/form-data" ',$this->form_tag());
 		?>
 		<h3>Use Single Ingredient</h3>
@@ -175,7 +186,8 @@ class Brewventory extends FannieInventory {
 		$qty = $this->get_stock(array_keys($this->msgs));
 		$name = $this->get_names(array_keys($this->msgs));
 
-		$ret = $this->form_tag('post');
+		$ret = $this->init();
+		$ret .= $this->form_tag('post');
 		$ret .= '<table cellspacing="0" cellpadding="4" border="1">';
 		$ret .= '<tr><th>ID</th><th>Name</th><th>Amount</th><th>Decrease Inventory</th></tr>';
 		foreach($this->msgs as $upc => $info){
@@ -221,18 +233,22 @@ class Brewventory extends FannieInventory {
 	}
 
 	function get_stock($upcs=False){
-		$dbc = trans_connect();	
+		global $FANNIE_TRANS_DB;
+		$dbc = FannieDB::get($FANNIE_TRANS_DB);
 
 		$where = "";
+		$args = array();
 		$ret = array();
 		if ($upcs && is_array($upcs) && count($upcs)>0){
 			$where = "WHERE d.upc IN (";
-			foreach($upcs as $upc)
-				$where .= $dbc->escape($upc).",";
+			foreach($upcs as $upc){
+				$where .= '?,';
+				$args[] = $upc;
+			}
 			$where = rtrim($where,",").")";
 		}
 
-		$upcQ = "SELECT d.upc,
+		$upcQ = $dbc->prepare_statement("SELECT d.upc,
 			SUM(d.quantity)
 			 - SUM(CASE WHEN s.quantity IS NULL THEN 0 ELSE s.quantity END) 
 			 - SUM(CASE WHEN a.diff IS NULL THEN 0 ELSE a.diff END) as stock
@@ -240,8 +256,8 @@ class Brewventory extends FannieInventory {
 			LEFT JOIN InvSalesArchive AS s ON d.upc=s.upc
 			LEFT JOIN InvAdjustments AS a ON d.upc=a.upc
 			$where
-			GROUP BY d.upc";
-		$upcR = $dbc->query($upcQ);
+			GROUP BY d.upc");
+		$upcR = $dbc->exec_statement($upcQ,$args);
 		while($upcW = $dbc->fetch_row($upcR)){
 			$ret[$upcW['upc']] = $upcW['stock'];
 		}
@@ -251,16 +267,20 @@ class Brewventory extends FannieInventory {
 	}
 
 	function get_names($upcs){
-		$dbc = op_connect();
+		global $FANNIE_OP_DB;
+		$dbc = FannieDB::get($FANNIE_OP_DB);
 		$ret = array();
+		$args = array();
 		if ($upcs && is_array($upcs) && count($upcs)>0){
 			$where = "WHERE upc IN (";
-			foreach($upcs as $upc)
-				$where .= $dbc->escape($upc).",";
+			foreach($upcs as $upc){
+				$where .= '?,';
+				$args[] = $upc;
+			}
 			$where = rtrim($where,",").")";
 		}
-		$q = "SELECT upc,description FROM productUser ".$where;
-		$r = $dbc->query($q);
+		$q = $dbc->prepare_statement("SELECT upc,description FROM productUser ".$where);
+		$r = $dbc->exec_statement($q,$args);
 		while($w = $dbc->fetch_row($r)){
 			$ret[$w['upc']] = $w['description'];	
 		}
@@ -269,21 +289,24 @@ class Brewventory extends FannieInventory {
 	}
 
 	function view(){
+		global $FANNIE_OP_DB;
 		$qty = $this->get_stock();
 		$upcs = "(";
+		$args = array();
 		foreach($qty as $upc=>$amt){
-			$upcs .= "'".$upc."',";
+			$upcs .= '?,';
+			$args[] = $upc;
 		}
 		$upcs = rtrim($upcs,",").")";
 
-		$dbc = op_connect();
-		$query = "SELECT p.upc,p.mixmatchcode,u.*,x.*
+		$dbc = FannieDB::get($FANNIE_OP_DB);
+		$query = $dbc->prepare_statement("SELECT p.upc,p.mixmatchcode,u.*,x.*
 			FROM products AS p LEFT JOIN
 			productUser AS u ON p.upc=u.upc
 			LEFT JOIN prodExtra AS x ON p.upc=x.upc
 			WHERE p.mixmatchcode IN ('brewmisc','hops','malts','yeasts')
-			AND p.upc IN $upcs ORDER BY u.description";
-		$result = $dbc->query($query);
+			AND p.upc IN $upcs ORDER BY u.description");
+		$result = $dbc->exec_statement($query,$args);
 
 		$rows = array('hops'=>array(),'brewmisc'=>array(),'malts'=>array(),'yeasts'=>array());
 		while($row = $dbc->fetch_row($result))
@@ -291,6 +314,7 @@ class Brewventory extends FannieInventory {
 		$dbc->close();
 
 		ob_start();
+		echo $this->init();
 		?>
 
 		<h3>Hops</h3>
@@ -431,6 +455,7 @@ class Brewventory extends FannieInventory {
 
 	function receive(){
 		ob_start();
+		echo $this->init();
 		if (!empty($this->msgs)){
 			echo '<blockquote><i>'.$this->msgs.'</i></blockquote>';
 			$this->msgs = "";
@@ -494,7 +519,8 @@ class Brewventory extends FannieInventory {
 	}
 
 	function preprocess(){
-		$this->mode = get_form_value('mode','menu');
+		global $FANNIE_TRANS_DB, $FANNIE_OP_DB;
+		$this->mode = FormLib::get_form_value('mode','menu');
 
 		/**
 		  Begin form callbacks
@@ -511,7 +537,7 @@ class Brewventory extends FannieInventory {
 			$bxml = new BeerXMLParser($filename);
 			$data = $bxml->get_data();
 		
-			$dbc = op_connect();
+			$dbc = FannieDB::get($FANNIE_OP_DB);
 			foreach($data['Hops'] as $h)
 				echo $this->add_hops($dbc, $h)."<br />";
 
@@ -584,9 +610,9 @@ class Brewventory extends FannieInventory {
 		  Process single ingredient
 		*/
 		if (isset($_REQUEST['sale_submit'])){
-			$upc = get_form_value('upc','');
-			$lbs = get_form_value('lbs',0.0);
-			$ozs = get_form_value('ozs',0.0);
+			$upc = FormLib::get_form_value('upc','');
+			$lbs = FormLib::get_form_value('lbs',0.0);
+			$ozs = FormLib::get_form_value('ozs',0.0);
 			$kgs = $this->lb_oz_to_kg($lbs,$ozs);
 			
 			$this->msgs = array($upc=>array('qty'=>$kgs,'name'=>''));
@@ -599,10 +625,13 @@ class Brewventory extends FannieInventory {
 		  Process single ingredient
 		*/
 		if (isset($_REQUEST['submit_sale_confirm'])){
-			$upcs = get_form_value('upc',array());	
-			$amts = get_form_value('amt',array());
-			$confirms = get_form_value('decrement',array());
+			$upcs = FormLib::get_form_value('upc',array());	
+			$amts = FormLib::get_form_value('amt',array());
+			$confirms = FormLib::get_form_value('decrement',array());
 
+			$dbc = FannieDB::get($FANNIE_TRANS_DB);
+			$p = $dbc->prepare_statement("INSERT INTO InvSalesArchive (inv_date, upc, quantity, price)
+				VALUES (".$dbc->now().", ?, ?, 0.0)");
 			for($i=0;$i<count($confirms);$i++){
 				if ($confirms[$i] == 0) continue; // skip
 
@@ -614,10 +643,7 @@ class Brewventory extends FannieInventory {
 					else continue; // couldn't find current stock	
 				}
 
-				$dbc = trans_connect();
-				$q = sprintf("INSERT INTO InvSalesArchive (inv_date, upc, quantity, price)
-					VALUES (%s, %s, %f, 0.0)",$dbc->now(),$dbc->escape($upc),$amt);
-				$r = $dbc->query($q);
+				$r = $dbc->exec_statement($p, array($upc,$amt));
 				$dbc->close();
 			}
 
@@ -629,32 +655,28 @@ class Brewventory extends FannieInventory {
 		  Callback for receive() display function
 		*/
 		if (isset($_REQUEST['receive_submit'])){
-			$upc = get_form_value('upc','');
-			$lbs = get_form_value('lbs',0.0);
-			$ozs = get_form_value('ozs',0.0);
+			$upc = FormLib::get_form_value('upc','');
+			$lbs = FormLib::get_form_value('lbs',0.0);
+			$ozs = FormLib::get_form_value('ozs',0.0);
 			$ttl = $lbs + ($ozs/16.0);
 
 			$kgs = $ttl * 0.45359237;
 
-			$dbc = op_connect();
-			$query = sprintf("SELECT description FROM productUser
-				WHERE upc=%s",$dbc->escape($upc));
-			$result = $dbc->query($query);
+			$dbc = FannieDB::get($FANNIE_OP_DB);
+			$query = $dbc->prepare_statement("SELECT description FROM productUser
+				WHERE upc=?");
+			$result = $dbc->exec_statement($query,array($upc));
 			if ($dbc->num_rows($result)==0){
 				$this->msgs = "Product not found";
 			}
 			else {
 				$item = array_pop($dbc->fetch_row($result));
 				$dbc->close();
-				$dbc = trans_connect();
-				$insQ = sprintf("INSERT INTO InvDeliveryArchive
+				$dbc = FannieDB::get($FANNIE_TRANS_DB);
+				$insQ = $dbc->prepare_statement("INSERT INTO InvDeliveryArchive
 					(inv_date, upc, vendor_id, quantity, price)
-					VALUES (%s, %s, 0, %f, %.2f)",
-					$dbc->now(),
-					$dbc->escape($upc),
-					$kgs, 0.00
-				);
-				$add = $dbc->query($insQ);
+					VALUES (".$dbc->now().", ?, 0, ?, 0.00)");
+				$add = $dbc->exec_statement($insQ,array($upc,$kgs));
 				if ($add)
 					$this->msgs = "Added $item to inventory";
 				else
@@ -670,19 +692,18 @@ class Brewventory extends FannieInventory {
 		  Callback for adjust_confirm() display function
 		*/
 		if (isset($_REQUEST['adjust_confirm_submit'])){
-			$upc = get_form_value('upc','');
-			$lbs = get_form_value('lbs',0.0);
-			$ozs = get_form_value('ozs',0.0);
-			$amt = get_form_value('amt',0.0);
+			$upc = FormLib::get_form_value('upc','');
+			$lbs = FormLib::get_form_value('lbs',0.0);
+			$ozs = FormLib::get_form_value('ozs',0.0);
+			$amt = FormLib::get_form_value('amt',0.0);
 
 			$newamt = $this->lb_oz_to_kg($lbs,$ozs);
 			$diff = $amt - $newamt;
 
-			$dbc = trans_connect();
-			$q = sprintf("INSERT INTO InvAdjustments (inv_date,upc,diff)
-				VALUES(%s, %s, %f)",$dbc->now(),$dbc->escape($upc),
-				$diff);
-			$r = $dbc->query($q);
+			$dbc = FannieDB::get($FANNIE_TRANS_DB);
+			$q = $dbc->prepare_statement("INSERT INTO InvAdjustments (inv_date,upc,diff)
+				VALUES(".$dbc->now().", ?, ?)");
+			$r = $dbc->exec_statement($q,array($upc,$diff));
 			$dbc->close();
 
 			$this->msgs = 'Adjustment saved';
@@ -695,7 +716,7 @@ class Brewventory extends FannieInventory {
 		  Callback for adjust() display function
 		*/
 		if (isset($_REQUEST['adjust_submit'])){
-			$upc = get_form_value('upc','');
+			$upc = FormLib::get_form_value('upc','');
 
 			$current = $this->get_stock(array($upc));
 			if(!isset($current[$upc])){
@@ -714,18 +735,16 @@ class Brewventory extends FannieInventory {
 		  jQuery autocomplete callback
 		*/
 		if (isset($_REQUEST['LookUp']) && isset($_REQUEST['term'])){
-			$dbc = op_connect();
-			$query = sprintf("SELECT p.upc,u.description,u.brand,u.sizing,
+			$dbc = FannieDB::get($FANNIE_OP_DB);
+			$query = $dbc->prepare_statement("SELECT p.upc,u.description,u.brand,u.sizing,
 					x.distributor FROM products AS p
 					INNER JOIN productUser as u ON p.upc=u.upc
 					INNER JOIN prodExtra AS x ON p.upc=x.upc
 					WHERE p.mixmatchcode IN ('hops','malts','yeasts','brewmisc')
-					AND u.description LIKE %s",
-					$dbc->escape("%".$_REQUEST['term']."%")
-			);
+					AND u.description LIKE ?");
 
 			$json = "[";
-			$result = $dbc->query($query);
+			$result = $dbc->exec_statement($query,array('%'.$_REQUEST['term'].'%'));
 			while($row = $dbc->fetch_row($result)){
 				$json .= "{ \"label\": \"".$row['description'];
 
@@ -803,47 +822,43 @@ class Brewventory extends FannieInventory {
 		$short_desc = substr($malt_info['name'],0,30);
 		$upc = $this->hash('malt', $malt_info);
 
-		$q = "SELECT upc FROM products WHERE upc=".$dbc->escape($upc);
-		$r = $dbc->query($q);
+		$q = $dbc->prepare_statement("SELECT upc FROM products WHERE upc=?");
+		$r = $dbc->exec_statement($q,array($upc));
 		if ($dbc->num_rows($r) > 0)
 			return "<i>Omitting malt: $good_desc (already exists)</i>";
 
-		$userQ = sprintf("INSERT INTO productUser
+		$userQ = $dbc->prepare_statement("INSERT INTO productUser
 			(upc, description, brand, sizing, photo,
 			long_text, enableOnline) VALUES
-			(%s, %s, %s, %s, '', %s, 0)",
-			$dbc->escape($upc),
-			$dbc->escape($good_desc),
-			$dbc->escape(isset($malt_info['supplier'])?$malt_info['supplier']:''),
-			"''",
-			$dbc->escape(isset($malt_info['notes'])?$malt_info['notes']:'')
-		);
+			(?, ?, ?, '', '', ?, 0)");
 
-		$xtraQ = sprintf("INSERT INTO prodExtra (upc, distributor, 
+		$delP = $dbc->prepare_statement("DELETE FROM productUser WHERE upc=?");
+		$dbc->exec_statement($delP,array($upc));
+		$dbc->exec_statement($userQ,array(
+			$upc, $good_desc,
+			(isset($malt_info['supplier'])?$malt_info['supplier']:''),
+			(isset($malt_info['notes'])?$malt_info['notes']:'')
+		));
+
+		$xtraQ = $dbc->prepare_statement("INSERT INTO prodExtra (upc, distributor, 
 			manufacturer, cost, margin, variable_pricing, location,
 			case_quantity, case_cost, case_info) VALUES
-			(%s, %s, '', %.2f, %.2f, 0, '', '', %.2f, '')",
-			$dbc->escape($upc),
-			$dbc->escape(isset($malt_info['origin'])?$malt_info['origin']:''),
-			(isset($malt_info['color'])?$malt_info['color']:0),
-			0,0
-		);
+			(?, ?, '', ?, 0, 0, '', '', 0, '')");
 
-		$prodQ = sprintf("INSERT INTO products (upc, description, modified, mixmatchcode) VALUES
-				(%s, %s, %s, 'malts')",
-				$dbc->escape($upc),
-				$dbc->escape($short_desc),
-				$dbc->now()
-		);
+		$delP = $dbc->prepare_statement("DELETE FROM prodExtra WHERE upc=?");
+		$dbc->exec_statement($delP,array($upc));
+		$dbc->exec_statement($xtraQ,array(
+			$upc,
+			(isset($malt_info['origin'])?$malt_info['origin']:''),
+			(isset($malt_info['color'])?$malt_info['color']:0)
+		));
 
-		$dbc->query("DELETE FROM products WHERE upc=".$dbc->escape($upc));
-		$dbc->query($prodQ);
+		$prodQ = $dbc->prepare_statement("INSERT INTO products (upc, description, modified, mixmatchcode) VALUES
+				(?, ?, ".$dbc->now().", 'malts')");
 
-		$dbc->query("DELETE FROM prodExtra WHERE upc=".$dbc->escape($upc));
-		$dbc->query($xtraQ);
-
-		$dbc->query("DELETE FROM productUser WHERE upc=".$dbc->escape($upc));
-		$dbc->query($userQ);
+		$delP = $dbc->prepare_statement("DELETE FROM products WHERE upc=?");
+		$dbc->exec_statement($delP,array($upc));
+		$dbc->exec_statement($prodQ,array($upc,$short_desc));
 
 		return "Imported malt: $good_desc";
 	}
@@ -859,47 +874,40 @@ class Brewventory extends FannieInventory {
 		$short_desc = substr($misc_info['name'],0,30);
 		$upc = $this->hash('misc', $misc_info);
 
-		$q = "SELECT upc FROM products WHERE upc=".$dbc->escape($upc);
-		$r = $dbc->query($q);
+		$q = $dbc->prepare_statement("SELECT upc FROM products WHERE upc=?");
+		$r = $dbc->exec_statement($q,array($upc));
 		if ($dbc->num_rows($r) > 0)
 			return "<i>Omitting misc: $good_desc (already exists)</i>";
 
-		$userQ = sprintf("INSERT INTO productUser
+		$userQ = $dbc->prepare_statement("INSERT INTO productUser
 			(upc, description, brand, sizing, photo,
 			long_text, enableOnline) VALUES
-			(%s, %s, %s, %s, '', %s, 0)",
-			$dbc->escape($upc),
-			$dbc->escape($good_desc),
-			$dbc->escape(isset($misc_info['supplier'])?$misc_info['supplier']:''),
-			$dbc->escape(isset($misc_info['type'])?$misc_info['type']:''),
-			$dbc->escape(isset($misc_info['notes'])?$misc_info['notes']:'')
-		);
+			(?, ?, ?, ?, '', ?, 0)");
 
-		$xtraQ = sprintf("INSERT INTO prodExtra (upc, distributor, 
+		$delP = $dbc->prepare_statement("DELETE FROM productUser WHERE upc=?");
+		$dbc->exec_statement($delP,array($upc));
+		$dbc->exec_statement($userQ,array(
+			$upc, $good_desc,
+			(isset($misc_info['supplier'])?$misc_info['supplier']:''),
+			(isset($misc_info['type'])?$misc_info['type']:''),
+			(isset($misc_info['notes'])?$misc_info['notes']:'')
+		));
+
+		$xtraQ = $dbc->prepare_statement("INSERT INTO prodExtra (upc, distributor, 
 			manufacturer, cost, margin, variable_pricing, location,
 			case_quantity, case_cost, case_info) VALUES
-			(%s, %s, '', %.2f, %.2f, 0, '', '', %.2f, %s)",
-			$dbc->escape($upc),
-			"''",
-			0,0,0,
-			"''"
-		);
+			(?, '', '', 0, 0, 0, '', '', 0, '')");
 
-		$prodQ = sprintf("INSERT INTO products (upc, description, modified, mixmatchcode) VALUES
-				(%s, %s, %s, 'brewmisc')",
-				$dbc->escape($upc),
-				$dbc->escape($short_desc),
-				$dbc->now()
-		);
+		$delP = $dbc->prepare_statement("DELETE FROM prodExtra WHERE upc=?");
+		$dbc->exec_statement($delP,array($upc));
+		$dbc->exec_statement($xtraQ,array($upc));
 
-		$dbc->query("DELETE FROM products WHERE upc=".$dbc->escape($upc));
-		$dbc->query($prodQ);
+		$prodQ = $dbc->prepare_statement("INSERT INTO products (upc, description, modified, mixmatchcode) VALUES
+				(?, ?, ".$dbc->now().", 'brewmisc')");
 
-		$dbc->query("DELETE FROM prodExtra WHERE upc=".$dbc->escape($upc));
-		$dbc->query($xtraQ);
-
-		$dbc->query("DELETE FROM productUser WHERE upc=".$dbc->escape($upc));
-		$dbc->query($userQ);
+		$delP = $dbc->prepare_statement("DELETE FROM products WHERE upc=?");
+		$dbc->exec_statement($delP,array($upc));
+		$dbc->exec_statement($prodQ,array($upc,$short_desc));
 
 		return "Imported misc: $good_desc";
 	}
@@ -915,47 +923,42 @@ class Brewventory extends FannieInventory {
 		$short_desc = substr($yeast_info['name'],0,30);
 		$upc = $this->hash('yeast', $yeast_info);
 
-		$q = "SELECT upc FROM products WHERE upc=".$dbc->escape($upc);
-		$r = $dbc->query($q);
+		$q = $dbc->prepare_statement("SELECT upc FROM products WHERE upc=?");
+		$r = $dbc->exec_statement($q,array($upc));
 		if ($dbc->num_rows($r) > 0)
 			return "<i>Omitting yeast: $good_desc (already exists)</i>";
 
-		$userQ = sprintf("INSERT INTO productUser
+		$userQ = $dbc->prepare_statement("INSERT INTO productUser
 			(upc, description, brand, sizing, photo,
 			long_text, enableOnline) VALUES
-			(%s, %s, %s, %s, '', %s, 0)",
-			$dbc->escape($upc),
-			$dbc->escape($good_desc),
-			$dbc->escape(isset($yeast_info['laboratory'])?$yeast_info['laboratory']:''),
-			$dbc->escape(isset($yeast_info['form'])?$yeast_info['form']:''),
-			$dbc->escape(isset($yeast_info['notes'])?$yeast_info['notes']:'')
-		);
+			(?, ?, ?, ?, '', ?, 0)");
+		$delP = $dbc->prepare_statement("DELETE FROM productUser WHERE upc=?");
+		$dbc->exec_statement($delP,array($upc));
+		$dbc->exec_statement($userQ,array(
+			$upc, $good_desc,
+			(isset($yeast_info['laboratory'])?$yeast_info['laboratory']:''),
+			(isset($yeast_info['form'])?$yeast_info['form']:''),
+			(isset($yeast_info['notes'])?$yeast_info['notes']:'')
+		));
 
-		$xtraQ = sprintf("INSERT INTO prodExtra (upc, distributor, 
+		$xtraQ = $dbc->prepare_statement("INSERT INTO prodExtra (upc, distributor, 
 			manufacturer, cost, margin, variable_pricing, location,
 			case_quantity, case_cost, case_info) VALUES
-			(%s, %s, '', %.2f, %.2f, 0, '', '', %.2f, %s)",
-			$dbc->escape($upc),
-			$dbc->escape(isset($yeast_info['type'])?$yeast_info['type']:''),
-			0,0,0,
-			$dbc->escape(isset($yeast_info['product_id'])?$yeast_info['product_id']:'')
-		);
+			(?, ?, '', 0, 0, 0, '', '', 0, ?)");
+		$delP = $dbc->prepare_statement("DELETE FROM prodExtra WHERE upc=?");
+		$dbc->exec_statement($delP,array($upc));
+		$dbc->exec_statement($xtraQ,array(
+			$upc,
+			(isset($yeast_info['type'])?$yeast_info['type']:''),
+			(isset($yeast_info['product_id'])?$yeast_info['product_id']:'')
+		));
 
-		$prodQ = sprintf("INSERT INTO products (upc, description, modified, mixmatchcode) VALUES
-				(%s, %s, %s, 'yeasts')",
-				$dbc->escape($upc),
-				$dbc->escape($short_desc),
-				$dbc->now()
-		);
+		$prodQ = $dbc->prepare_statement("INSERT INTO products (upc, description, modified, mixmatchcode) VALUES
+				(?, ?, ".$dbc->now().", 'yeasts')");
 
-		$dbc->query("DELETE FROM products WHERE upc=".$dbc->escape($upc));
-		$dbc->query($prodQ);
-
-		$dbc->query("DELETE FROM prodExtra WHERE upc=".$dbc->escape($upc));
-		$dbc->query($xtraQ);
-
-		$dbc->query("DELETE FROM productUser WHERE upc=".$dbc->escape($upc));
-		$dbc->query($userQ);
+		$delP = $dbc->prepare_statement("DELETE FROM products WHERE upc=?");
+		$dbc->exec_statement($delP,array($upc));
+		$dbc->exec_statement($prodQ,array($upc,$short_desc));
 
 		return "Imported yeast: $good_desc";
 	}
@@ -971,48 +974,44 @@ class Brewventory extends FannieInventory {
 		$short_desc = substr($hop_info['name'],0,30);
 		$upc = $this->hash('hops', $hop_info);
 
-		$q = "SELECT upc FROM products WHERE upc=".$dbc->escape($upc);
-		$r = $dbc->query($q);
+		$q = $dbc->prepare_statement("SELECT upc FROM products WHERE upc=?");
+		$r = $dbc->exec_statement($q,array($upc));
 		if ($dbc->num_rows($r) > 0)
 			return "<i>Omitting hops: $good_desc (already exists)</i>";
 		
-		$userQ = sprintf("INSERT INTO productUser
+		$userQ = $dbc->prepare_statement("INSERT INTO productUser
 			(upc, description, brand, sizing, photo,
 			long_text, enableOnline) VALUES
-			(%s, %s, %s, %s, '', %s, 0)",
-			$dbc->escape($upc),
-			$dbc->escape($good_desc),
-			$dbc->escape(isset($hop_info['supplier'])?$hop_info['supplier']:''),
-			$dbc->escape(isset($hop_info['form'])?$hop_info['form']:''),
-			$dbc->escape(isset($hop_info['notes'])?$hop_info['notes']:'')
-		);
+			(?, ?, ?, ?, '', ?, 0)");
+		$delP = $dbc->prepare_statement("DELETE FROM prodExtra WHERE upc=?");
+		$dbc->exec_statement($delP,array($upc));
+		$dbc->exec_statement($userQ,array(
+			$upc,$good_desc,
+			(isset($hop_info['supplier'])?$hop_info['supplier']:''),
+			(isset($hop_info['form'])?$hop_info['form']:''),
+			(isset($hop_info['notes'])?$hop_info['notes']:'')
+		));
 
-		$xtraQ = sprintf("INSERT INTO prodExtra (upc, distributor, 
+		$xtraQ = $dbc->prepare_statement("INSERT INTO prodExtra (upc, distributor, 
 			manufacturer, cost, margin, variable_pricing, location,
 			case_quantity, case_cost, case_info) VALUES
-			(%s, %s, '', %.2f, %.2f, 0, '', '', %.2f, '')",
-			$dbc->escape($upc),
-			$dbc->escape(isset($hop_info['origin'])?$hop_info['origin']:''),
+			(?, ?, '', ?, ?, 0, '', '', ?, '')");
+		$delP = $dbc->prepare_statement("DELETE FROM prodExtra WHERE upc=?");
+		$dbc->exec_statement($delP,array($upc));
+		$dbc->exec_statement($xtraQ,array(
+			$upc,
+			(isset($hop_info['origin'])?$hop_info['origin']:''),
 			(isset($hop_info['alpha'])?$hop_info['alpha']:0),
 			(isset($hop_info['beta'])?$hop_info['beta']:0),
 			(isset($hop_info['hsi'])?$hop_info['hsi']:0)
-		);
+		));
 
-		$prodQ = sprintf("INSERT INTO products (upc, description, modified, mixmatchcode) VALUES
-				(%s, %s, %s, 'hops')",
-				$dbc->escape($upc),
-				$dbc->escape($short_desc),
-				$dbc->now()
-		);
+		$prodQ = $dbc->prepare_statement("INSERT INTO products (upc, description, modified, mixmatchcode) VALUES
+				(?, ?, ".$dbc->now().", 'hops')");
 
-		$dbc->query("DELETE FROM products WHERE upc=".$dbc->escape($upc));
-		$dbc->query($prodQ);
-
-		$dbc->query("DELETE FROM prodExtra WHERE upc=".$dbc->escape($upc));
-		$dbc->query($xtraQ);
-
-		$dbc->query("DELETE FROM productUser WHERE upc=".$dbc->escape($upc));
-		$dbc->query($userQ);
+		$delP = $dbc->prepare_statement("DELETE FROM products WHERE upc=?");
+		$dbc->exec_statement($delP,array($upc));
+		$dbc->exec_statement($prodQ,array($upc,$short_desc));
 
 		return "Imported hops: $good_desc";
 	}
@@ -1137,5 +1136,10 @@ class BeerXMLParser {
 		}
 	}
 
+}
+
+if (basename($_SERVER['PHP_SELF']) == basename(__FILE__)){
+	$obj = new Brewventory();
+	$obj->draw_page();
 }
 ?>

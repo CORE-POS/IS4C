@@ -29,32 +29,27 @@ function confsave($k,$v){
 	global $dbc;
 	if (is_string($v))
 		$v = trim($v,"'");
-	$r = $dbc->query("SELECT value FROM lane_config WHERE keycode='$k'");
+	$p = $dbc->prepare_statement("SELECT value FROM lane_config WHERE keycode=?");
+	$r = $dbc->exec_statement($p,array($k));
 	if ($dbc->num_rows($r)==0){
-		$dbc->query(sprintf("INSERT INTO lane_config (keycode,value,modified)
-			VALUES (%s,%s,%s)",
-			$dbc->escape($k),
-			$dbc->escape(serialize($v)),
-			$dbc->now()
-		));
+		$insP = $dbc->prepare_statement('INSERT INTO lane_config (keycode, value,
+				modified) VALUES (?, ?, '.$dbc->now().')');
+		$dbc->exec_statement($insP,array($k,serialize($v)));
 	}
 	else {
 		$current = array_pop($dbc->fetch_row($r));
 		if ($v !== unserialize($current)){
-			$dbc->query(sprintf("UPDATE lane_config SET value=%s, modified=%s
-				WHERE keycode=%s",
-				$dbc->escape(serialize($v)),
-				$dbc->now(),
-				$dbc->escape($k)
-			));
+			$upP = $dbc->prepare_statement('UPDATE lane_config SET value=?,
+				modified='.$dbc->now().' WHERE keycode=?');
+			$dbc->exec_statement($upP, array(serialize($v),$k));
 		}	
 	}
 }
 
 $CORE_LOCAL = new cl_wrapper();
 
-$q = "SELECT keycode,value FROM lane_config";
-$r = $dbc->query($q);
+$q = $dbc->prepare_statement("SELECT keycode,value FROM lane_config");
+$r = $dbc->exec_statement($q);
 while($w = $dbc->fetch_row($r)){
 	$k = $w['keycode'];
 	$v = unserialize($w['value']);
