@@ -569,9 +569,12 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
 	 * this format
 	 */
 	private string FixupCardBlock(byte[] data){
+		// no track 2 means bad read
+		if (data.Length < 3 || data[3] == 0) return "";
 		string hex = BitConverter.ToString(data).Replace("-","");
 		hex = "02E600"+hex+"XXXX03";
 		if (hex.Length < 24) return "";
+		// something went wrong with the KSN/key
 		if(hex.Substring(hex.Length-16,10) == "0000000000") return "";
 		if (this.verbose_mode > 0)
 			System.Console.WriteLine(hex);
