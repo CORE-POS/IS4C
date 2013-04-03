@@ -64,11 +64,13 @@ if (isset($_REQUEST['sort'])){
 	$end = isset($_REQUEST['deptEnd']) ? (int)$_REQUEST['deptEnd'] : 0;
 	$sort = isset($_REQUEST['sort']) ? $_REQUEST['sort'] : 'dept_name';
 	if (isset($_REQUEST['local']) && is_array($_REQUEST['local'])){
+		$p = $dbc->prepare_statement("UPDATE products SET local=?
+			WHERE upc=?");
 		for($i=0;$i<count($_REQUEST['local']);$i++){
-			$q = sprintf("UPDATE products SET local=%d
-				WHERE upc=%s",$_REQUEST['local'][$i],
-				$dbc->escape($_REQUEST['upc'][$i]));
-			$r = $dbc->query($q);
+			$r = $dbc->exec_statement($p,array(
+				$_REQUEST['local'][$i],
+				$_REQUEST['upc'][$i]
+			));
 		}
 	}
 
@@ -79,30 +81,48 @@ if (isset($_REQUEST['sort'])){
 		MasterSuperDepts AS m ON p.department=m.dept_ID
 		LEFT JOIN prodExtra AS x ON p.upc=x.upc
 		WHERE ";
+	$args = array();
 	if ($super != 0){
-		$q .= "m.superID=$super";
+		$q .= "m.superID=?";
 		$q = str_replace("MasterSuperDepts","superdepts",$q);
+		$args = array($super);
 	}
-	else
-		$q .= "p.department BETWEEN $start AND $end";
-	$q .= " ORDER BY $sort";
-	if ($sort != "p.upc") $q .= ",p.upc";
+	else{
+		$q .= "p.department BETWEEN ? AND ?";
+		$args = array($start,$end);
+	}
+	switch($sort){
+	case 'upc':
+	default:
+		$q .= ' ORDER BY p.upc';
+		break;
+	case 'manu':
+		$q .= ' ORDER BY manufacturer,p.upc';
+		break;
+	case 'desc':
+		$q .= ' ORDER BY description,p.upc';
+		break;
+	case 'dept':
+		$q .= ' ORDER BY dept_name,p.upc';
+		break;
+	}
 
 	if (!isset($_REQUEST['excel']))
 		echo '<form action="localItems.php" id="formlocal" name="formlocal" method="post">';
 	echo '<table cellpadding="4" cellspacing="0" border="1">';
 	if (!isset($_REQUEST['excel'])){
 		echo '<tr>';
-		echo '<th><a href="" onclick="return re_sort(\'p.upc\');">UPC</a></th>';
-		echo '<th><a href="" onclick="return re_sort(\'manufacturer\');">Brand</a></th>';
-		echo '<th><a href="" onclick="return re_sort(\'description\');">Desc</a></th>';
-		echo '<th colspan="2"><a href="" onclick="return re_sort(\'dept_name\');">Dept</a></th>';
+		echo '<th><a href="" onclick="return re_sort(\'upc\');">UPC</a></th>';
+		echo '<th><a href="" onclick="return re_sort(\'manu\');">Brand</a></th>';
+		echo '<th><a href="" onclick="return re_sort(\'desc\');">Desc</a></th>';
+		echo '<th colspan="2"><a href="" onclick="return re_sort(\'dept\');">Dept</a></th>';
 		echo '<th>Local</th>';
 		echo '</tr>';
 	}
 	else
 		echo '<tr><th>UPC</th><th>Brand</th><th>Desc</th><th colspan="2">Dept</th><th>Local</th></tr>';
-	$r = $dbc->query($q);
+	$p = $dbc->prepare_statement($q);
+	$r = $dbc->exec_statement($p, $args);
 	while($w = $dbc->fetch_row($r)){
 		$class = "";
 		if ($w['local'] > 0){
@@ -149,8 +169,8 @@ $page_title = 'Fannie - Local Products';
 $header = 'Local Products';
 include($FANNIE_ROOT.'src/header.html');
 
-$deptQ = "select dept_no,dept_name from departments order by dept_no";
-$deptR = $dbc->query($deptQ);
+$deptQ = $dbc->prepare_statement("select dept_no,dept_name from departments order by dept_no");
+$deptR = $dbc->exec_statement($deptQ);
 $dept_nos = array();
 $dept_names = array();
 $count = 0;
@@ -160,9 +180,9 @@ while ($deptW = $dbc->fetch_array($deptR)){
 	$count++;
 }
 
-$deptSubQ = "SELECT superID,super_name FROM superDeptNames WHERE 
-	superID > 0 ORDER BY superID";
-$deptSubR = $dbc->query($deptSubQ);
+$deptSubQ = $dbc->prepare_statement("SELECT superID,super_name FROM superDeptNames WHERE 
+	superID > 0 ORDER BY superID");
+$deptSubR = $dbc->exec_statement($deptSubQ);
 $deptSubList = "";
 
 while($deptSubW = $dbc->fetch_array($deptSubR)){

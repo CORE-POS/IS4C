@@ -78,8 +78,8 @@ if($vendiN > 0){
  if ( $vendiW['vendorName'] != "" ) {
 	 $vendor = $vendiW['vendorName'];
  } else if ($dbc->table_exists('prodExtra')) {
-	$prodExtraQ = "select distributor from prodExtra where upc='$upc'";
-	$prodExtraR = $dbc->query($prodExtraQ);
+	$prodExtraQ = $dbc->prepare_statement("select distributor from prodExtra where upc=?");
+	$prodExtraR = $dbc->exec_statement($prodExtraQ, array($upc));
 	$prodExtraN = $dbc->num_rows($prodExtraR);
 	if ($prodExtraN > 0){
 		$prodExtraW = $dbc->fetch_array($prodExtraR);
@@ -89,8 +89,8 @@ if($vendiN > 0){
  $ppo = PriceLib::pricePerUnit($price,$size);
 }
 else if ($dbc->table_exists('prodExtra')) {
-$prodExtraQ = "select manufacturer,distributor from prodExtra where upc='$upc'";
-$prodExtraR = $dbc->query($prodExtraQ);
+$prodExtraQ = $dbc->prepare_statement("select manufacturer,distributor from prodExtra where upc=?");
+$prodExtraR = $dbc->exec_statement($prodExtraQ,array($upc));
 $prodExtraN = $dbc->num_rows($prodExtraR);
 	if ($prodExtraN == 1){
 		$prodExtraW = $dbc->fetch_array($prodExtraR);

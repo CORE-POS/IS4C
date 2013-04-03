@@ -21,6 +21,20 @@
 
 *********************************************************************************/
 
+/* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+	* 03Apr13 AT incorporated changes below in class-based version
+	*
+	* 13Feb13 Eric Lee This report counts the number of transaction, not the
+	*          number of, possibly unique, customers.
+	*         Correct handling of date, memType, trans_num in various tables/views.
+	*         Get member Type headings from table, except for "WFC"
+	*         Add a report heading.
+	*         Change WHERE trans_type from "in ('I','D')" to "= 'T'" because card_no,
+	*          which is needed to derive memType is always available there but
+	*          sometimes not for I and D items. Day and Grand totals are the same
+	*          but member type counts more accurate with T.
+*/
+
 include('../../config.php');
 include($FANNIE_ROOT.'src/mysql_connect.php');
 include($FANNIE_ROOT.'src/select_dlog.php');
@@ -88,7 +102,7 @@ class CustomerCountReport extends FannieReportPage {
 			FROM $dlog as t
 			WHERE 
 			tdate BETWEEN ? AND ?
-			and trans_type in ('I','D')
+			and trans_type = 'T'
 			AND upc <> 'RRR'
 			group by year(tdate),month(tdate),day(tdate),trans_num
 			order by year(tdate),month(tdate),day(tdate),max(memType)";
