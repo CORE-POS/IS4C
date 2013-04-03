@@ -139,8 +139,10 @@ function receipt_to_table($query,$args,$query2,$args2,$border,$bgcolor)
 	$prep = $dbc->prepare_statement($query);
 	$results = $dbc->exec_statement($prep,$args);
 	$number_cols = $dbc->num_fields($results);
-	$row2 = $dbc->fetch_row($results);
-	$dbc->data_seek($results,0);
+	$rows = array();
+	while($row = $dbc->fetch_row($results))
+		$rows[] = $row;
+	$row2 = $rows[0];
 	$emp_no = $row2['emp_no'];	
 	$trans_num = $row2['emp_no']."-".$row2['register_no']."-".$row2['trans_no'];
 
@@ -190,7 +192,7 @@ function receipt_to_table($query,$args,$query2,$args2,$border,$bgcolor)
 	}
 	echo "</tr>\n"; *///end table header
 	//layout table body
-	while($row = $dbc->fetch_row($results)) {
+	foreach($rows as $row){
 		echo "<tr><td align=left>";
 		echo $row["description"]; 
 		echo "</td>";

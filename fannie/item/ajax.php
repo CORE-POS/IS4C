@@ -18,10 +18,11 @@ function GetLikecodeItems($lc){
 	global $dbc;
 	$ret = "<table border=0 bgcolor=\"#FFFFCC\">";
 	if (is_numeric($lc)){
-		$res = $dbc->query("SELECT p.upc,p.description FROM
+		$prep = $dbc->prepare_statement("SELECT p.upc,p.description FROM
 			products AS p INNER JOIN upcLike AS u ON
-			p.upc=u.upc WHERE u.likeCode=$lc
+			p.upc=u.upc WHERE u.likeCode=?
 			ORDER BY p.upc");
+		$res = $dbc->exec_statement($prep, array($lc));
 		while($row = $dbc->fetch_row($res)){
 			$ret .= sprintf("<tr><td><a href=itemMaint.php?upc=%s>%s</a></td>
 					<td>%s</td></tr>",$row[0],$row[0],$row[1]);
@@ -34,13 +35,15 @@ function GetLikecodeItems($lc){
 
 function MarginFS($upc,$cost,$dept){
 	global $dbc;
-	$price = $dbc->query("SELECT normal_price FROM products WHERE upc='$upc'");
+	$prep = $dbc->prepare_statement("SELECT normal_price FROM products WHERE upc=?");
+	$price = $dbc->exec_statement($prep,array($upc));
 	if ($dbc->num_rows($price) > 0)
 		$price = array_pop($dbc->fetch_row($price));
 	else
 		$price = "None";
 
-	$dm = $dbc->query("SELECT margin FROM deptMargin WHERE dept_ID=$dept");
+	$prep = $dbc->prepare_statement("SELECT margin FROM deptMargin WHERE dept_ID=?");
+	$dm = $dbc->exec_statement($prep,array($dept));
 	if ($dbc->num_rows($dm) > 0){
 		$dm = array_pop($dbc->fetch_row($dm));
 	}
