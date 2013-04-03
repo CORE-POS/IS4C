@@ -31,6 +31,7 @@ class TenderModule {
 	var $amount;
 
 	var $name_string;
+	var $change_type;
 	var $change_string;
 	var $min_limit;
 	var $max_limit;
@@ -62,10 +63,11 @@ class TenderModule {
 			$this->max_limit = $row['MaxAmount'];
 		}
 		else {
-			$this->name_string = "";
-			$this->change_string = "";
+			$this->name_string = '';
+			$this->change_string = '';
 			$this->min_limit = 0;
 			$this->max_limit = 0;
+			$this->change_type = 'CA';
 		}
 	}
 
@@ -126,13 +128,9 @@ class TenderModule {
 	/**
 	  What type should be used for change records associated with this tender.
 	  @return string tender code
-
-	  Most common override will probably be "return $this->tender_code;" to
-	  give change records a the same code as the tender rather than giving
-	  change as cash.
 	*/
 	function ChangeType(){
-		return $this->tender_code;
+		return $this->change_type;
 	}
 
 }

@@ -32,10 +32,10 @@ $dbc = FannieDB::get($FANNIE_OP_DB);
 if (!function_exists('select_dlog'))
 	include($FANNIE_ROOT.'src/select_dlog.php');
 
-class MemArTransferTool extends FanniePage {
+class PatronageTransferTool extends FanniePage {
 
 	protected $title='Fannie - Member Management Module';
-	protected $header='Transfer Member Equity';
+	protected $header='Transfer Patronage';
 
 	private $errors = '';
 	private $mode = 'init';
@@ -53,6 +53,8 @@ class MemArTransferTool extends FanniePage {
 	private $amt;
 
 	function preprocess(){
+		global $FANNIE_OP_DB;
+		$dbc = FannieDB::get($FANNIE_OP_DB);
 
 		if (FormLib::get_form_value('submit1',False) !== False)
 			$this->mode = 'confirm';
@@ -84,7 +86,7 @@ class MemArTransferTool extends FanniePage {
 			$row = $dbc->fetch_row($r);
 			$this->name2 = $row[0].' '.$row[1];
 
-			$dlog = select_dlog($date);
+			$dlog = select_dlog($this->date);
 			$q = $dbc->prepare_statement("SELECT card_no FROM $dlog WHERE trans_num=? AND
 				tdate BETWEEN ? AND ?
 				ORDER BY card_no DESC");
@@ -97,7 +99,7 @@ class MemArTransferTool extends FanniePage {
 			}
 			$this->cn1 = array_pop($dbc->fetch_row($r));
 
-			$q = $this->prepare_statement("SELECT SUM(CASE WHEN trans_type in ('I','M','D') then total else 0 END)
+			$q = $dbc->prepare_statement("SELECT SUM(CASE WHEN trans_type in ('I','M','D') then total else 0 END)
 				FROM $dlog WHERE trans_num=? AND tdate BETWEEN ? AND ?");
 			$r = $dbc->exec_statement($q,array($this->tn,$this->date.' 00:00:00',$this->date.' 23:59:59'));
 			$this->amt = array_pop($dbc->fetch_row($r));
@@ -119,12 +121,9 @@ class MemArTransferTool extends FanniePage {
 
 		if (!empty($this->errors)) return $this->errors;
 
-		$ret = "<form action=\"MemArTransferTool.php\" method=\"post\">";
+		$ret = "<form action=\"PatronageTransferTool.php\" method=\"post\">";
 		$ret .= "<b>Confirm transfer</b>";
 		$ret .= "<p style=\"font-size:120%\">";
-		$ret .= printf("\$%.2f %s will be moved from %d (%s) to %d (%s)",
-			$this->amount,$this->depts[$this->dept],
-			$this->cn1,$this->name1,$this->cn2,$this->name2);
 		$ret .= sprintf("\$%.2f will be moved from %d to %d (%s)",
 			$this->amt,$this->cn1,$this->cn2,$this->name2);
 		$ret .= "</p><p>";
@@ -148,13 +147,13 @@ class MemArTransferTool extends FanniePage {
 		$dtrans = array();
 		$dtrans['trans_no'] = $this->getTransNo($this->CORRECTION_CASHIER,$this->CORRECTION_LANE);
 		$dtrans['trans_id'] = 1;
-		$this->doInsert($dtrans,-1*$this->amount,$this->CORRECTION_DEPT,$this->cn1);
+		$this->doInsert($dtrans,-1*$this->amt,$this->CORRECTION_DEPT,$this->cn1);
 
 		$ret .= sprintf("Receipt #1: %s",$this->CORRECTION_CASHIER.'-'.$this->CORRECTION_LANE.'-'.$dtrans['trans_no']);
 
 		$dtrans['trans_no'] = $this->getTransNo($this->CORRECTION_CASHIER,$this->CORRECTION_LANE);
 		$dtrans['trans_id'] = 1;
-		$this->doInsert($dtrans,$this->amount,$this->CORRECTION_DEPT,$this->cn2);
+		$this->doInsert($dtrans,$this->amt,$this->CORRECTION_DEPT,$this->cn2);
 
 		$ret .= "<br /><br />";
 		$ret .= sprintf("Receipt #2: %s",$this->CORRECTION_CASHIER.'-'.$this->CORRECTION_LANE.'-'.$dtrans['trans_no']);
@@ -166,17 +165,14 @@ class MemArTransferTool extends FanniePage {
 
 		if (!empty($this->errors)) return $this->errors;
 
-		$ret = "<form action=\"MemArTransferTool.php\" method=\"post\">";
+		$ret = "<form action=\"PatronageTransferTool.php\" method=\"post\">";
 		$ret .= "<p style=\"font-size:120%\">";
-		$ret .= "Transfer $<input type=\"text\" name=\"amount\" size=\"5\" /> ";
-		$ret .= "<select name=\"dept\">";
-		foreach($this->depts as $k=>$v)
-			$ret .= "<option value=\"$k\">$v</option>";
-		$ret .= "</select>";
+		$ret .= "Date <input type=\"text\" name=\"date\" size=\"10\" /> ";
+		$ret .= '<br />';
+		$ret .= "Receipt <input type=\"text\" name=\"trans_num\" size=\"10\" /> ";
 		$ret .= "</p><p style=\"font-size:120%;\">";
 		$memNum = FormLib::get_form_value('memIN');
-		$ret .= "From member #<input type=\"text\" name=\"memFrom\" size=\"5\" value=\"$memNum\" /> ";
-		$ret .= "to member #<input type=\"text\" name=\"memTo\" size=\"5\" />";
+		$ret .= "To member #<input type=\"text\" name=\"memTo\" size=\"5\" />";
 		$ret .= "</p><p>";
 		$ret .= "<input type=\"hidden\" name=\"type\" value=\"equity_transfer\" />";
 		$ret .= "<input type=\"submit\" name=\"submit1\" value=\"Submit\" />";
@@ -279,7 +275,7 @@ class MemArTransferTool extends FanniePage {
 }
 
 if (basename($_SERVER['PHP_SELF']) == basename(__FILE__)){
-	$obj = new MemArTransferTool();
+	$obj = new PatronageTransferTool();
 	$obj->draw_page();
 }
 

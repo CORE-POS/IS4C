@@ -59,9 +59,10 @@ if (!is_array($FANNIE_PLUGIN_SETTINGS)) $FANNIE_PLUGIN_SETTINGS = array();
 //sort($mods);
 /** no autoloading functionality in Fannie yet
     hardcoded lists will go away eventually */
-$mods = array('TimesheetPlugin','CalendarPlugin');
+$mods = array('TimesheetPlugin','CalendarPlugin','ShelfAuditPlugin');
 include('../modules/plugins2.0/timesheet/TimesheetPlugin.php');
 include('../modules/plugins2.0/calendar/CalendarPlugin.php');
+include('../modules/plugins2.0/ShelfAudit/ShelfAuditPlugin.php');
 
 if (isset($_REQUEST['PLUGINLIST']) || isset($_REQUEST['psubmit'])){
 	$oldset = $FANNIE_PLUGIN_LIST;

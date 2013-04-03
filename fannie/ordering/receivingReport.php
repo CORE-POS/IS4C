@@ -60,9 +60,9 @@ echo '</select>';
 echo '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
 
 $suppliers = array('');
-$q = "SELECT mixMatch FROM PendingSpecialOrder WHERE trans_type='I'
-	GROUP BY mixMatch ORDER BY mixMatch";
-$r = $dbc->query($q);
+$q = $dbc->prepare_statement("SELECT mixMatch FROM PendingSpecialOrder WHERE trans_type='I'
+	GROUP BY mixMatch ORDER BY mixMatch");
+$r = $dbc->exec_statement($q);
 while($w = $dbc->fetch_row($r)){
 	$suppliers[] = $w[0];
 }
@@ -76,21 +76,33 @@ echo '</select><br /><br />';
 printf('<input type="hidden" id="orderSetting" value="%s" />',$order);
 
 $where = "p.trans_type = 'I'";
+$args = array();
 if (!empty($filter)){
-	$where .= " AND s.status_flag=".((int)$filter);
+	$where .= " AND s.status_flag=? ";
+	$args[] = ((int)$filter);
 }
 if (!empty($supp)){
-	$where .= " AND mixMatch=".$dbc->escape($supp);
+	$where .= " AND mixMatch=? ";
+	$args[] = $supp;
 }
+$sql_order = 'mixMatch,upc';
+if ($order == 'upc')
+	$sql_order = 'upc';
+elseif($order == 'description')
+	$sql_order = 'description,upc';
+elseif($order == 'ItemQtty')
+	$sql_order = 'ItemQtty,upc';
+elseif($order == 'sub_status')
+	$sql_order = 'sub_status,upc';
 
 $q = "SELECT upc,description,ItemQtty,mixMatch,sub_status
 	FROM PendingSpecialOrder AS p
 	LEFT JOIN SpecialOrderStatus as s
 	ON p.order_id=s.order_id
 	WHERE $where
-	ORDER BY $order";
-if ($order != "upc") $q .= ",upc";
-$r = $dbc->query($q);
+	ORDER BY $sql_order";
+$p = $dbc->prepare_statement($q);
+$r = $dbc->exec_statement($q, $args);
 echo '<table cellspacing="0" cellpadding="4" border="1"><tr>';
 echo '<th><a href="" onclick="resort(\'upc\');return false;">UPC</a></td>';
 echo '<th><a href="" onclick="resort(\'description\');return false;">Desc.</a></td>';

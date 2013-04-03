@@ -173,6 +173,14 @@ class ADODB_pdo_mysql extends ADODB_pdo {
 			return $retarr;	
 	}
 		
+	// returns true or false
+	function SelectDB($dbName) 
+	{
+		$this->database = $dbName;
+		$this->databaseName = $dbName; # obsolete, retained for compat with older adodb versions
+		$try = $this->Execute('use '.$dbName);
+		return ($try !== false) ? true : false;
+	}
 	
 	// parameters use PostgreSQL convention, not MySQL
 	function SelectLimit($sql,$nrows=-1,$offset=-1,$inputarr=false,$secs=0)

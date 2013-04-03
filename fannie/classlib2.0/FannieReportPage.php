@@ -202,10 +202,10 @@ class FannieReportPage extends FanniePage {
 		$hash = $_SERVER['REQUEST_URI'];
 		$hash = str_replace("&excel=xls","",$hash);
 		$hash = str_replace("&excel=csv","",$hash);
-		$query = sprintf("SELECT report_data FROM %s WHERE
-			hash_key=%s AND expires >= %s",
-			$table, $dbc->escape(md5($hash)), $dbc->now());
-		$result = $dbc->query($query);
+		$hash = md5($hash);
+		$query = $dbc->prepare_statement("SELECT report_data FROM $table WHERE
+			hash_key=? AND expires >= ".$dbc->now());
+		$result = $dbc->exec_statement($query,array($hash));
 		if ($dbc->num_rows($result) > 0)
 			return array_pop($dbc->fetch_row($result));
 		else
@@ -227,19 +227,18 @@ class FannieReportPage extends FanniePage {
 		$hash = $_SERVER['REQUEST_URI'];
 		$hash = str_replace("&excel=xls","",$hash);
 		$hash = str_replace("&excel=csv","",$hash);
+		$hash = md5($hash);
 		$expires = '';
 		if ($this->report_cache == 'day')
 			$expires = date('Y-m-d',mktime(0,0,0,date('n'),date('j')+1,date('Y')));
 		elseif ($this->report_cache == 'month')
 			$expires = date('Y-m-d',mktime(0,0,0,date('n')+1,date('j'),date('Y')));
 
-		$delQ = sprintf("DELETE FROM $table WHERE hash_key=%s",
-			$dbc->escape(md5($hash)));
-		$dbc->query($delQ);
-		$upQ = sprintf("INSERT INTO $table (hash_key, report_data, expires)
-			VALUES (%s,%s,%s)",$dbc->escape(md5($hash)),
-			$dbc->escape(gzcompress(serialize($data))), $dbc->escape($expires));
-		$dbc->query($upQ);
+		$delQ = $dbc->prepare_statement("DELETE FROM $table WHERE hash_key=?");
+		$dbc->exec_statement($delQ,array($hash));
+		$upQ = $dbc->prepare_statement("INSERT INTO $table (hash_key, report_data, expires)
+			VALUES (?,?,?)");
+		$dbc->exec_statement($upQ, array($hash, gzcompress(serialize($data)), $expires));
 		return True;
 	}
 

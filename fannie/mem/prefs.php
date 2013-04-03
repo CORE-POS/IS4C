@@ -44,7 +44,7 @@ else {
 			$insP = $dbc->prepare_statement("INSERT INTO custPreferences
 				(card_no, pref_key, pref_value) VALUES (?,?,?)");
 			for($i=0;$i<count($pk);$i++){
-				$dbc->exec_startment($delP,array($cardno,$pk[$i]));
+				$dbc->exec_statement($delP,array($cardno,$pk[$i]));
 				$dbc->exec_statement($insP,array($cardno,$pk[$i],$pv[$i]));
 			}
 			echo '<div align="center"><i>Settings Saved</i></div>';

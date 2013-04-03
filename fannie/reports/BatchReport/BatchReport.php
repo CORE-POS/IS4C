@@ -226,6 +226,24 @@ class BatchReport extends FannieReportPage {
 
 		echo '</table></form>';
 	}
+
+	function report_description_content(){
+		global $dbc;
+		$ret = array();
+		$batchID = FormLib::get_form_value('batchID');
+		$batchInfoQ = $dbc->prepare_statement("SELECT batchName,startDate as startDate,
+			endDate as endDate FROM batches where batchID = ?");
+		$batchInfoR = $dbc->exec_statement($batchInfoQ,array($batchID));
+		while($batchInfoW = $dbc->fetch_array($batchInfoR)){
+			$bName = $batchInfoW['batchName'];
+			$bStart = $batchInfoW['startDate'];
+			$bEnd = $batchInfoW['endDate'];
+
+			$ret[] = '<span style="font-size:150%;">'.$bName.'</span>';
+			$ret[] = "<span style=\"color:black\">From: $bStart to: $bEnd</span>";
+		}
+		return $ret;
+	}
 }
 
 $obj = new BatchReport();

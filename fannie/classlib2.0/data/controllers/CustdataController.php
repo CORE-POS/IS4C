@@ -108,6 +108,8 @@ class CustdataController {
 			case 'NumberOfChecks':
 			case 'memCoupons':	
 			case 'Shown':
+				if ($name === 0 || $name === True)
+					break; // switch does loose comparison...
 				$updateQ .= $name." = ?,";
 				$updateArgs[] = $value;
 				break;
