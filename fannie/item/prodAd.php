@@ -30,20 +30,19 @@ if (isset($_REQUEST['upc']) && isset($_REQUEST['ajax'])){
 	$size = $_REQUEST['size'];
 	$brand = $_REQUEST['brand'];
 
-	$q = "SELECT upc FROM productUser WHERE upc='$upc'";
-	$r = $dbc->query($q);
+	$q = $dbc->prepare_statement("SELECT upc FROM productUser WHERE upc=?");
+	$r = $dbc->exec_statement($q, array($upc));
 	if ($dbc->num_rows($r) == 0){
-		$dbc->query(sprintf("INSERT INTO productUser 
+		$ins = $dbc->prepare_statement("INSERT INTO productUser 
 				(upc, description, brand, sizing, photo, long_text, enableOnline)
-				VALUES ('%s',%s,%s,%s,NULL,NULL,0)",
-			$upc,$dbc->escape($desc),$dbc->escape($brand),
-			$dbc->escape($size)));
+				VALUES (?,?,?,?,NULL,NULL,0)");
+		$dbc->exec_statement($ins, array($upc,$desc,$brand,$size));
 	}
 	else {
-		$dbc->query(sprintf("UPDATE productUser SET description=%s,
-			brand=%s,sizing=%s
-			WHERE upc='%s'",$dbc->escape($desc),
-			$dbc->escape($brand),$dbc->escape($size),$upc));
+		$up = $dbc->prepare_statement("UPDATE productUser SET description=?,
+			brand=?,sizing=?
+			WHERE upc=?");
+		$dbc->exec_statement($up, array($desc,$brand,$size,$upc));
 	}
 
 	echo "Saved";
@@ -61,27 +60,28 @@ if (isset($_REQUEST['upc']) && isset($_REQUEST['savebutton'])){
 	$size = $_REQUEST['size'];
 	$brand = $_REQUEST['brand'];
 
-	$q = "SELECT upc FROM productUser WHERE upc='$upc'";
-	$r = $dbc->query($q);
+	$q = $dbc->prepare_statement("SELECT upc FROM productUser WHERE upc=?");
+	$r = $dbc->exec_statement($q, array($upc));
 	if ($dbc->num_rows($r) == 0){
-		$dbc->query(sprintf("INSERT INTO productUser VALUES ('%s',%s,%s,%s,NULL)",
-			$upc,$dbc->escape($desc),$dbc->escape($brand),
-			$dbc->escape($size)));
+		$ins = $dbc->prepare_statement("INSERT INTO productUser 
+				(upc, description, brand, sizing, photo, long_text, enableOnline)
+				VALUES (?,?,?,?,NULL,NULL,0)");
+		$dbc->exec_statement($ins, array($upc,$desc,$brand,$size));
 	}
 	else {
-		$dbc->query(sprintf("UPDATE productUser SET description=%s,
-			brand=%s,sizing=%s
-			WHERE upc='%s'",$dbc->escape($desc),
-			$dbc->escape($brand),$dbc->escape($size),$upc));
+		$up = $dbc->prepare_statement("UPDATE productUser SET description=?,
+			brand=?,sizing=?
+			WHERE upc=?");
+		$dbc->exec_statement($up, array($desc,$brand,$size,$upc));
 	}
 
 	unset($_REQUEST['upc']);
 }
 
 if (isset($_REQUEST['upc'])){
-	$q = "SELECT description,brand,sizing,photo FROM productUser
-		WHERE upc='{$_REQUEST['upc']}'";
-	$r = $dbc->query($q);
+	$q = $dbc->prepare_statement("SELECT description,brand,sizing,photo FROM productUser
+		WHERE upc=?");
+	$r = $dbc->exec_statement($q,array($_REQUEST['upc']));
 	$desc = '';
 	$brand = '';
 	$size = '';
@@ -205,7 +205,8 @@ function save(upc){
                 ORDER BY p.upc";
 	}
 
-	$r = $dbc->query($q);
+	$p = $dbc->prepare_statement($q);
+	$r = $dbc->exec_statement($p);
 
 	if (isset($_REQUEST['trim'])){
 		echo "<a href=prodAd.php>Show all items</a>";
