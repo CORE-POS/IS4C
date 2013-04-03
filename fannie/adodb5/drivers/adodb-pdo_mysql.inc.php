@@ -195,5 +195,90 @@ class ADODB_pdo_mysql extends ADODB_pdo {
 			$rs = $this->Execute($sql." LIMIT $offsetStr$nrows",$inputarr);
 		return $rs;
 	}
+
+	function SQLDate($fmt, $col=false)
+	{	
+		if (!$col) $col = $this->sysTimeStamp;
+		$s = 'DATE_FORMAT('.$col.",'";
+		$concat = false;
+		$len = strlen($fmt);
+		for ($i=0; $i < $len; $i++) {
+			$ch = $fmt[$i];
+			switch($ch) {
+				
+			default:
+				if ($ch == '\\') {
+					$i++;
+					$ch = substr($fmt,$i,1);
+				}
+				/** FALL THROUGH */
+			case '-':
+			case '/':
+				$s .= $ch;
+				break;
+				
+			case 'Y':
+			case 'y':
+				$s .= '%Y';
+				break;
+			case 'M':
+				$s .= '%b';
+				break;
+				
+			case 'm':
+				$s .= '%m';
+				break;
+			case 'D':
+			case 'd':
+				$s .= '%d';
+				break;
+			
+			case 'Q':
+			case 'q':
+				$s .= "'),Quarter($col)";
+				
+				if ($len > $i+1) $s .= ",DATE_FORMAT($col,'";
+				else $s .= ",('";
+				$concat = true;
+				break;
+			
+			case 'H': 
+				$s .= '%H';
+				break;
+				
+			case 'h':
+				$s .= '%I';
+				break;
+				
+			case 'i':
+				$s .= '%i';
+				break;
+				
+			case 's':
+				$s .= '%s';
+				break;
+				
+			case 'a':
+			case 'A':
+				$s .= '%p';
+				break;
+				
+			case 'w':
+				$s .= '%w';
+				break;
+				
+			 case 'W':
+				$s .= '%U';
+				break;
+				
+			case 'l':
+				$s .= '%W';
+				break;
+			}
+		}
+		$s.="')";
+		if ($concat) $s = "CONCAT($s)";
+		return $s;
+	}
 }
 ?>
