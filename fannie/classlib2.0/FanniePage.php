@@ -37,11 +37,11 @@ class FanniePage {
 	";
 
 	/** force users to login immediately */
-	protected $must_authenticate = True;
+	protected $must_authenticate = False;
 	/** name of the logged in user (or False is no one is logged in) */
 	protected $current_user = False;
 	/** list of either auth_class(es) or array(auth_class, start, end) tuple(s) */
-	protected $auth_classes = array('admin');
+	protected $auth_classes = array();
 
 	protected $title = 'Page window title';
  	protected $header = 'Page displayed header';
