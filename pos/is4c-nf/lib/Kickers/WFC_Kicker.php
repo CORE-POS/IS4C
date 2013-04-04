@@ -26,7 +26,7 @@
   Opens drawer for cash, credit card over $25,
   credit card refunds, and stamp sales
 */
-class WFC_Kicker {
+class WFC_Kicker extends Kicker {
 
 	function doKick(){
 		$db = Database::tDataConnect();
@@ -38,9 +38,12 @@ class WFC_Kicker {
 
 		$result = $db->query($query);
 		$num_rows = $db->num_rows($result);
-		$db->close();
 
 		return ($num_rows > 0) ? True : False;
+	}
+
+	function kickOnSignIn(){
+		return False;
 	}
 }
 

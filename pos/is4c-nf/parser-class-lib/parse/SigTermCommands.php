@@ -25,12 +25,52 @@ class SigTermCommands extends Parser {
 
 	function check($str){
 		global $CORE_LOCAL;
-		if ($str == "TRESET"){
-			$CORE_LOCAL->set("ccTermOut","reset");
+		if ($str == "TERMMANUAL"){
+			UdpComm::udpSend("termManual");
+			$CORE_LOCAL->set("paycard_keyed",True);
 			return True;
 		}
-		if ($str == "TSIG"){
-			$CORE_LOCAL->set("ccTermOut","sig");
+		elseif ($str == "TERMRESET"){
+			UdpComm::udpSend("termReset");
+			$CORE_LOCAL->set("paycard_keyed",False);
+			return True;
+		}
+		elseif ($str == "CCFROMCACHE"){
+			return True;
+		}
+		else if (substr($str,0,9) == "PANCACHE:"){
+			$CORE_LOCAL->set("CachePanEncBlock",substr($str,9));
+			return True;
+		}
+		else if (substr($str,0,9) == "PINCACHE:"){
+			$CORE_LOCAL->set("CachePinEncBlock",substr($str,9));
+			return True;
+		}
+		else if (substr($str,0,6) == "VAUTH:"){
+			$CORE_LOCAL->set("paycard_voiceauthcode",substr($str,6));
+			return True;
+		}
+		else if (substr($str,0,8) == "EBTAUTH:"){
+			$CORE_LOCAL->set("ebt_authcode",substr($str,8));
+			return True;
+		}
+		else if (substr($str,0,5) == "EBTV:"){
+			$CORE_LOCAL->set("ebt_vnum",substr($str,5));
+			return True;
+		}
+		else if ($str == "TERMCLEARALL"){
+			$CORE_LOCAL->set("CachePanEncBlock","");
+			$CORE_LOCAL->set("CachePinEncBlock","");
+			$CORE_LOCAL->set("CacheCardType","");
+			$CORE_LOCAL->set("CacheCardCashBack",0);
+			return True;
+		}
+		else if (substr($str,0,5) == "TERM:"){
+			$CORE_LOCAL->set("CacheCardType",substr($str,5));
+			return True;
+		}
+		else if (substr($str,0,7) == "TERMCB:"){
+			$CORE_LOCAL->set("CacheCardCashBack",substr($str,7));
 			return True;
 		}
 		return False;
@@ -39,9 +79,9 @@ class SigTermCommands extends Parser {
 	function parse($str){
 		global $CORE_LOCAL;
 		$ret = $this->default_json();
-		$ret['udpmsg'] = $CORE_LOCAL->get("ccTermOut");
-		if ($ret['udpmsg'] == "sig")
-			$ret['main_frame'] = MiscLib::base_url().'gui-modules/paycardSignature.php';
+		if ($str == "CCFROMCACHE"){
+			$ret['retry'] = $CORE_LOCAL->get("CachePanEncBlock");
+		}
 		return $ret;
 	}
 
@@ -51,13 +91,26 @@ class SigTermCommands extends Parser {
 				<th>Input</th><th>Result</th>
 			</tr>
 			<tr>
-				<td>WAKEUP</td>
-				<td>Try to coax a stuck scale back
-				into operation</td>
+				<td>TERMMANUAL</td>
+				<td>
+				Send CC terminal to manual entry mode
+				</td>
 			</tr>
 			<tr>
-				<td>WAKEUP2</td>
-				<td>Different method, same goal</td>
+				<td>TERMRESET</td>
+				<td>Reset CC terminal to begin transaction</td>
+			</tr>
+			<tr>
+				<td>CCFROMCACHE</td>
+				<td>Charge the card cached earlier</td>
+			</tr>
+			<tr>
+				<td>PANCACHE:<encrypted block></td>
+				<td>Cache an encrypted block on swipe</td>
+			</tr>
+			<tr>
+				<td>PINCACHE:<encrypted block></td>
+				<td>Cache an encrypted block on PIN entry</td>
 			</tr>
 			</table>";
 	}

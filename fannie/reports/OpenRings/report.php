@@ -73,8 +73,8 @@
 	echo "<br>";
 		if(isset($buyer) && $buyer != 0){
 		   echo "    Buyer/Dept: ";
-		   $buyerQ = "SELECT super_name as name FROM superDeptNames where superID = $buyer";
-		   $buyerR = $dbc->query($buyerQ);
+		   $buyerQ = $dbc->prepare_statement("SELECT super_name as name FROM superDeptNames where superID = ?");
+		   $buyerR = $dbc->exec_statement($buyerQ,array($buyer));
 		   $buyerW = $dbc->fetch_array($buyerR);
 		   $buyName = $buyerW['name'];
 		   echo $buyName;
@@ -94,6 +94,7 @@
 	$date1a = $date1 . " 00:00:00";
 	//decide what the sort index is and translate from lay person to mySQL table label
 
+	$args = array();
 	if($sort == "Date"){
 		$query = "";
 		if(isset($buyer) && $buyer > 0){
@@ -104,10 +105,11 @@
 			  SUM(CASE WHEN trans_type IN ('I','D') THEN 1.0 ELSE 0.0 END) as percentage
 			  FROM $dlog as t 
 			  LEFT JOIN MasterSuperDepts AS s ON t.department = s.dept_ID
-			  WHERE s.superID = $buyer AND trans_type IN ('I','D')
-			  AND tdate >= '$date1a' AND tdate <= '$date2a' 
+			  WHERE s.superID = ? AND trans_type IN ('I','D')
+			  AND tdate BETWEEN ? AND ?
 			  GROUP BY year(tdate),month(tdate),day(tdate)
 			  ORDER BY year(tdate),month(tdate),day(tdate)";
+			$args = array($buyer);
 		}
 		else if (isset($buyer) && $buyer == -1){
 			$query = "SELECT year(tdate),month(tdate),day(tdate),
@@ -118,7 +120,7 @@
 			  FROM $dlog as t 
 			  LEFT JOIN MasterSuperDepts AS s ON t.department = s.dept_ID
 			  WHERE trans_type IN ('I','D')
-			  AND tdate >= '$date1a' AND tdate <= '$date2a' 
+			  AND tdate BETWEEN ? AND ?
 			  GROUP BY year(tdate),month(tdate),day(tdate)
 			  ORDER BY year(tdate),month(tdate),day(tdate)";
 		}
@@ -131,7 +133,7 @@
 			  FROM $dlog as t 
 			  LEFT JOIN MasterSuperDepts AS s ON t.department = s.dept_ID
 			  WHERE s.superID <> 0 AND trans_type IN ('I','D')
-			  AND tdate >= '$date1a' AND tdate <= '$date2a' 
+			  AND tdate BETWEEN ? AND ?
 			  GROUP BY year(tdate),month(tdate),day(tdate)
 			  ORDER BY year(tdate),month(tdate),day(tdate)";
 		}
@@ -143,13 +145,17 @@
 			  SUM(CASE WHEN trans_type IN ('I','D') THEN 1.0 ELSE 0.0 END) as percentage
 			  FROM $dlog as t 
 			  LEFT JOIN MasterSuperDepts AS s ON t.department = s.dept_ID
-			  WHERE t.department BETWEEN $deptStart AND $deptEnd
+			  WHERE t.department BETWEEN ? AND ?
 			  AND trans_type IN ('I','D')
-			  AND tdate >= '$date1a' AND tdate <= '$date2a' 
+			  AND tdate BETWEEN ? AND ?
 			  GROUP BY year(tdate),month(tdate),day(tdate)
 			  ORDER BY year(tdate),month(tdate),day(tdate)";
+			$args = array($deptStart,$deptEnd);
 		}
-		$result = $dbc->query($query);
+		$args[] = $date1a;
+		$args[] = $date2a;
+		$prep = $dbc->prepare_statement($query);
+		$result = $dbc->exec_statement($prep,$args);
 		echo "<table border=1>\n"; //create table
 		echo "<tr>";
 		echo "<th>Day</th><th>$</th><th># Open Rings</th><th>%</th>";
@@ -167,6 +173,7 @@
 
 	}else if ($sort=="Department"){ //create alternate query if not sorting by PLU
 		$query="";
+		$args = array();
 		if(isset($buyer) && $buyer>0){
 			$query = "SELECT t.department,d.dept_name,
 			  SUM(CASE WHEN trans_type='D' THEN total ELSE 0 END) as total,
@@ -176,10 +183,11 @@
 			  FROM $dlog as t 
 			  LEFT JOIN MasterSuperDepts AS s ON t.department = s.dept_ID
 			  LEFT JOIN departments AS d ON t.department=d.dept_no
-			  WHERE s.superID = $buyer AND trans_type IN ('I','D')
-			  AND tdate >= '$date1a' AND tdate <= '$date2a' 
+			  WHERE s.superID = ? AND trans_type IN ('I','D')
+			  AND tdate BETWEEN ? AND ?
 			  GROUP BY t.department,d.dept_name
 			  ORDER BY t.department,d.dept_name";
+			$args = array($buyer);
 		}
 		else if (isset($buyer) && $buyer == -1){
 			$query = "SELECT t.department,d.dept_name,
@@ -191,7 +199,7 @@
 			  LEFT JOIN MasterSuperDepts AS s ON t.department = s.dept_ID
 			  LEFT JOIN departments AS d ON t.department=d.dept_no
 			  WHERE trans_type IN ('I','D')
-			  AND tdate >= '$date1a' AND tdate <= '$date2a' 
+			  AND tdate BETWEEN ? AND ?
 			  GROUP BY t.department,d.dept_name
 			  ORDER BY t.department,d.dept_name";
 		}
@@ -205,7 +213,7 @@
 			  LEFT JOIN MasterSuperDepts AS s ON t.department = s.dept_ID
 			  LEFT JOIN departments AS d ON t.department=d.dept_no
 			  WHERE s.superID <> 0 AND trans_type IN ('I','D')
-			  AND tdate >= '$date1a' AND tdate <= '$date2a' 
+			  AND tdate BETWEEN ? AND ?
 			  GROUP BY t.department,d.dept_name
 			  ORDER BY t.department,d.dept_name";
 		}
@@ -218,14 +226,18 @@
 			  FROM $dlog as t 
 			  LEFT JOIN MasterSuperDepts AS s ON t.department = s.dept_ID
 			  LEFT JOIN departments AS d ON t.department=d.dept_no
-			  WHERE t.department BETWEEN $deptStart AND $deptEnd
+			  WHERE t.department BETWEEN ? AND ?
 			  AND trans_type IN ('I','D')
-			  AND tdate >= '$date1a' AND tdate <= '$date2a' 
+			  AND tdate BETWEEN ? AND ?
 			  GROUP BY t.department,d.dept_name
 			  ORDER BY t.department,d.dept_name";
+			$args = array($deptStart,$deptEnd);
 		}
 		//echo $query;
-		$result = $dbc->query($query);	
+		$args[] = $date1a;
+		$args[] = $date2a;
+		$prep = $dbc->prepare_statement($query);
+		$result = $dbc->exec_statement($prep,$args);
 
 		echo "<table border=1>\n";//create table
 		echo "<tr>";

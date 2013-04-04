@@ -35,18 +35,17 @@ have a balance overdue at checkout
 
 $CREATE['trans.unpaid_ar_today'] = "
 	CREATE VIEW unpaid_ar_today AS
-	SELECT u.card_no,
-		u.old_balance,
-		(CASE WHEN m.card_no IS NULL
-          THEN u.recent_payments
-          ELSE m.payments+u.recent_payments END) AS recent_payments,
-		(CASE WHEN m.card_no IS NULL
-          THEN 0
-          ELSE 1 END)                            AS mark
-	FROM unpaid_ar_balances AS u
-	LEFT JOIN memIouToday   AS m ON u.card_no=m.card_no
+	SELECT u.card_no,u.old_balance,
+	case when m.card_no is null then
+		u.recent_payments else
+		m.payments+u.recent_payments
+		end as recent_payments,
+	case when m.card_no is null then 0 else 1 end as mark
+	from unpaid_ar_balances as u
+	left join ar_history_today_sum as m
+	on u.card_no=m.card_no
 ";
 
-if (!$con->table_exists("memIouToday"))
+if (!$con->table_exists("ar_history_today_sum"))
 	$CREATE['trans.unpaid_ar_today'] = "SELECT 1";
 ?>

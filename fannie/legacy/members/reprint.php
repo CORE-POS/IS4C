@@ -65,16 +65,13 @@ function receiptHeader($date,$trans){
 	$rp = $FANNIE_ARCHIVE_DB.$dbconn.'rp_dt_receipt_big';
    }
 
-   $queryHead = "SELECT * FROM $head WHERE "
-		.$dbc->date_equals('dateTimeStamp',"$year-$month-$day")
-               ." and trans_num = '$trans' ";
+   $args = array("$year-$month-$day 00:00:00","$year-$month-$day 23:59:59",$trans);
+   $queryHead = "SELECT * FROM $head WHERE dateTimeStamp BETWEEN ? AND ? AND trans_num=?";
    
    $query1 = "SELECT description,comment,total,Status,
-		datetime,register_no,emp_no,trans_no,memberID FROM $rp WHERE "
-		.$dbc->date_equals('datetime',"$year-$month-$day")
-           ." and trans_num = '$trans'"
-           ." ORDER BY trans_id";
-   receipt_to_table($query1,$queryHead,0,'FFFFFF');
+		datetime,register_no,emp_no,trans_no,memberID FROM $rp WHERE 
+		datetime BETWEEN ? AND ? AND trans_num=? ORDER BY trans_id";
+   receipt_to_table($query1,$args,$queryHead,$args,0,'FFFFFF');
 }
 
 $border = 0;

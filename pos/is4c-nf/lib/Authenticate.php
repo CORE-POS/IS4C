@@ -92,7 +92,25 @@ static public function check_password($password,$activity=1){
 
 			if ($transno == 1) TransRecord::addactivity($activity);
 
-			ReceiptLib::drawerKick();
+			$my_drawer = ReceiptLib::currentDrawer();
+			if ($my_drawer == 0){
+				$available = ReceiptLib::availableDrawers();	
+				if (count($available) > 0){ 
+					ReceiptLib::assignDrawer($row_q['emp_no'],$available[0]);
+				}
+			}
+			else
+				ReceiptLib::assignDrawer($row_q['emp_no'],$my_drawer);
+
+			/**
+			  Use Kicker object to determine whether the drawer should open
+			  The first line is just a failsafe in case the setting has not
+			  been configured.
+			*/
+			$kicker_class = ($CORE_LOCAL->get("kickerModule")=="") ? 'Kicker' : $CORE_LOCAL->get('kickerModule');
+			$kicker_object = new $kicker_class();
+			if ($kicker_object->kickOnSignIn())
+				ReceiptLib::drawerKick();
 			
 		} elseif ($password == 9999) {
 			Database::loadglobalvalues();
@@ -108,6 +126,17 @@ static public function check_password($password,$activity=1){
 				"LoggedIn" => 1
 			);
 			Database::setglobalvalues($globals);
+
+			$my_drawer = ReceiptLib::currentDrawer();
+			if ($my_drawer == 0){
+				$available = ReceiptLib::availableDrawers();	
+				if (count($available) > 0) {
+					ReceiptLib::assignDrawer(9999,$available[0]);
+				}
+			}
+			else
+				ReceiptLib::assignDrawer(9999,$my_drawer);
+			
 		}
 		else return False;
 	}
@@ -138,11 +167,11 @@ static public function check_password($password,$activity=1){
 		else return False;
 	}
 
-	$db_g->db_close();
-	
 	if ($CORE_LOCAL->get("LastID") != 0 && $CORE_LOCAL->get("memberID") != "0" && $CORE_LOCAL->get("memberID") != "") {
 		$CORE_LOCAL->set("unlock",1);
-		PrehLib::memberID($CORE_LOCAL->get("memberID"));
+		/* not sure why this is here; andy 13Feb13 */
+		/* don't want to clear member info via this call */
+		//PrehLib::memberID($CORE_LOCAL->get("memberID"));
 	}
 	$CORE_LOCAL->set("inputMasked",0);
 

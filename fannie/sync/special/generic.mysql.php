@@ -26,17 +26,57 @@
    much faster than SQLManager transfer
 */
 
-// mysql version probably looks like this (not tested):
-// could use some error checking on connection/success, obviously
-include_once($FANNIE_ROOT.'src/temp_dir.php');
+/* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - -
+	.22Mar13 Add Andy's changes: "Variable scoping w/ sync scripts from within class"
+	.https://github.com/CORE-POS/IS4C/commit/261fddb60849857043e9ef0da32c672d8d9cf77b
+	.        prior to proposing mine be added.
+	.14Jan13 Eric Lee Bugfix: non-port branch using -P.
+	. 1Oct12 Eric Lee Support a port# in the lane host: 1.2.3.4:50001
+	.                 Test return value of dump and each load.
+*/
+
+include(dirname(__FILE__).'/../../config.php');
+include_once($FANNIE_ROOT.'src/tmp_dir.php');
 $tempfile = tempnam(sys_get_temp_dir(),$table.".sql");
-exec("mysqldump -u $FANNIE_SERVER_USER -p$FANNIE_SERVER_PW -h $FANNIE_SERVER $FANNIE_OP_DB $table > $tempfile");
-$i=0;
-foreach($FANNIE_LANES as $lane){
-	exec("mysql -u {$lane['user']} -p{$lane['pw']} -h {$lane['host']} {$lane['op']} < $tempfile");
-	echo "<li>Lane ".($i+1)." completed successfully</li>";
-	$i++;
+if (empty($table)) return;
+$ret = 0;
+$output = array();
+exec("mysqldump -u $FANNIE_SERVER_USER -p$FANNIE_SERVER_PW -h $FANNIE_SERVER $FANNIE_OP_DB $table > $tempfile", $output, $ret);
+if ( $ret > 0 ) {
+	$report = implode('<br />', $output);
+	if ( strlen($report) > 0 ) {
+		$report = "<br />$report";
+	}
+	echo "<li>Dump failed, returned: $ret {$report}</li>";
 }
+else {
+	$i=0;
+	foreach($FANNIE_LANES as $lane){
+		$ret = 0;
+		$output = array();
+		if ( strpos($lane['host'], ':') > 0 ) {
+			list($host, $port) = explode(":", $lane['host']);
+			exec("mysql -u {$lane['user']} -p{$lane['pw']} -h {$host} -P {$port} {$lane['op']} < $tempfile", $output, $ret);
+		}
+		else {
+			exec("mysql -u {$lane['user']} -p{$lane['pw']} -h {$lane['host']} {$lane['op']} < $tempfile", $output, $ret);
+		}
+		if ( $ret == 0 ) {
+			echo "<li>Lane ".($i+1)." completed successfully</li>";
+		} else {
+			$report = implode('<br />', $output);
+			if ( strlen($report) > 0 ) {
+				$report = "<br />$report";
+			}
+			echo "<li>Lane ".($i+1)." failed, returned: $ret {$report}</li>";
+		}
+		unset($output);
+		$i++;
+	// each lane
+	}
+// mysqldump ok
+}
+
 unlink($tempfile);
 
 ?>

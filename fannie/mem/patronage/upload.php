@@ -15,7 +15,7 @@ if (isset($_POST["MAX_FILE_SIZE"])){
 
 	$fp = fopen($filename,"r");
 	$errors = False;
-	$queries = array();
+	$argsSets = array();
 	while (!feof($fp)){
 		$line = fgets($fp);
 		$fields = csv_parser($line);
@@ -27,17 +27,17 @@ if (isset($_POST["MAX_FILE_SIZE"])){
 			break;
 		}
 	
-		$q = sprintf("INSERT INTO patronage (cardno,purchase,discounts,rewards,net_purch,tot_pat,
-			cash_pat,equit_pat,FY) VALUES (%d,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%d)",
-			$fields[0],sanitize_xls_money($fields[1]),-1*sanitize_xls_money($fields[2]),
+		$args = array($fields[0],sanitize_xls_money($fields[1]),-1*sanitize_xls_money($fields[2]),
 			-1*sanitize_xls_money($fields[3]),sanitize_xls_money($fields[4]),
 			sanitize_xls_money($fields[5]),sanitize_xls_money($fields[6]),
 			sanitize_xls_money($fields[7]),$_REQUEST['fy']);
-		$queries[] = $q;
+		$argSets[] = $args;
 	}
 	if (!$errors){
-		foreach($queries as $q)
-			$dbc->query($q);
+		$insP = $dbc->prepare_statement("INSERT INTO patronage (cardno,purchase,discounts,rewards,net_purch,tot_pat,
+			cash_pat,equit_pat,FY) VALUES (?,?,?,?,?,?,?,?,?)");
+		foreach($argSets as $args)
+			$dbc->exec_statement($insP,$args);
 		echo "Patronage imported!";
 	}
 

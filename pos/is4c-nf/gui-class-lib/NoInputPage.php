@@ -36,14 +36,19 @@ class NoInputPage extends BasicPage {
 	function print_page(){
 		$my_url = $this->page_url;
 		?>
-		<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-		<html xmlns="http://www.w3.org/1999/xhtml">
+		<!DOCTYPE html>
+		<html>
 		<?php
 		echo "<head>";
 		// 18Aug12 EL Add content/charset.
 		echo "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" />\n";
 		echo "<link rel=\"stylesheet\" type=\"text/css\"
-		    href=\"{$my_url}pos.css\">";
+		    href=\"{$my_url}css/pos.css\">";
+		// include store css file if it exists
+		if (file_exists(dirname(__FILE__).'/../store.css')){
+			echo "<link rel=\"stylesheet\" type=\"text/css\"
+			    href=\"{$my_url}/store.css\">";
+		}
 		echo "<script type=\"text/javascript\"
 			src=\"{$my_url}js/jquery.js\"></script>";
 		$this->head_content();

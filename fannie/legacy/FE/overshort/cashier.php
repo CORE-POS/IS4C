@@ -34,7 +34,7 @@ function displayCashier($date,$empno){
 	$dlog = select_dlog($date);
 	$dlog = "trans_archive.dlogBig";
 
-	$tenders = array('CA','CK','CC','MI','GD','TC','EF','EC','CP','IC','SC');
+	$tenders = array('CA','CK','CC','MI','GD','TC','EF','EC','CP','IC','SC','AX');
 	$totals = array();
 	$counts = array();
 	$tClause = "(";
@@ -47,9 +47,13 @@ function displayCashier($date,$empno){
 	$counts["SCA"] = 0.00;
 
 
-	$totalsQ = "SELECT trans_subtype,-1*SUM(total) FROM $dlog WHERE emp_no = $empno
+	$totalsQ = "SELECT 
+		CASE WHEN trans_subtype IN ('CC','AX') THEN 'CC' ELSE trans_subtype END
+		as trans_subtype,
+		-1*SUM(total) FROM $dlog WHERE emp_no = $empno
 		AND ".$sql->date_equals('tdate',$date)." AND trans_subtype IN $tClause
-		GROUP BY trans_subtype";
+		GROUP BY 
+		CASE WHEN trans_subtype IN ('CC','AX') THEN 'CC' ELSE trans_subtype END";
 	$totalsR = $sql->query($totalsQ);
 	while($totalsW = $sql->fetch_row($totalsR))
 		$totals[$totalsW[0]] = $totalsW[1];

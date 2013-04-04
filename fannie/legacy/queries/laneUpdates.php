@@ -56,20 +56,11 @@ function rowRelease(){
 }
 
 function syncProductsAllLanes(){
-	global $sql,$FANNIE_ROOT,$FANNIE_SERVER_USER,$FANNIE_SERVER_PW,$FANNIE_OP_DB,$FANNIE_LANES;
-	
-	$sql->query("exec master..xp_cmdshell 'dtsrun /S IS4CSERV\IS4CSERV /U {$FANNIE_SERVER_USER} /P {$FANNIE_SERVER_PW} /N CSV_products',no_output","WedgePOS");
-	foreach ($FANNIE_LANES as $lane){
-		$tmp = new SQLManager($lane['host'],$lane['type'],$lane['op'],$lane['user'],$lane['pw']);
-
-		if (!is_readable('/pos/csvs/products.csv')) break;
-
-		$result = $tmp->query("TRUNCATE TABLE products",$lane['op']);
-
-		$tmp->query("LOAD DATA LOCAL INFILE '/pos/csvs/products.csv' INTO TABLE
-			products FIELDS TERMINATED BY ',' OPTIONALLY
-			ENCLOSED BY '\"' LINES TERMINATED BY '\\r\\n'",$lane['op']);
-	}
+	global $FANNIE_ROOT,$FANNIE_SERVER,$FANNIE_SERVER_USER,$FANNIE_SERVER_PW,$FANNIE_OP_DB,$FANNIE_LANES;
+	ob_start();
+	$table = 'products';
+	include($FANNIE_ROOT.'sync/special/products.php');
+	ob_end_clean();
 }
 
 ?>

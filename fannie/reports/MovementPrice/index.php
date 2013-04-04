@@ -33,6 +33,14 @@ if (isset($_GET['date1'])){
 	$dept2 = isset($_REQUEST['dept2'])?$_REQUEST['dept2']:0;
 	$super = isset($_REQUEST['super'])?$_REQUEST['super']:'';
 	$where = (empty($super))?" t.department BETWEEN $dept1 AND $dept2 ":" s.superID=$super ";
+	$where = 't.department BETWEEN ? AND ?';
+	$args = array($dept1,$dept2);
+	if (!empty($super)){
+		$where = 's.superID=?';
+		$args = array($super);
+	}
+	array_unshift($args,$date2.' 23:59:59');
+	array_unshift($args,$date1.' 00:00:00');
 
 	$dtrans = select_dtrans($date1,$date2);
 
@@ -40,10 +48,9 @@ if (isset($_GET['date1'])){
 	  header('Content-Type: application/ms-excel');
 	  header('Content-Disposition: attachment; filename="movementReport'.$manu.'.xls"');
 	}
-	$sort = "t.department";
-	if (isset($_REQUEST['sort'])) $sort = $_REQUEST['sort'];
+	$sort = "department";
 
-	$query = "select t.upc,p.description,
+	$query = $dbc->prepare_statement("select t.upc,p.description,
 		  sum(t.quantity) as qty,
 		  CASE WHEN t.discounttype IN (2,5) AND memType IN (1,3) THEN unitPrice-memDiscount
 		  ELSE unitPrice END as price,
@@ -53,7 +60,7 @@ if (isset($_GET['date1'])){
 		  left join departments as d on t.department = d.dept_no
 		  left join MasterSuperDepts as s on d.dept_no = s.dept_ID
 		  left join scaleItems as c on t.upc=c.plu
-		  where t.datetime between '$date1' and '$date2'
+		  where t.datetime between ? AND ?
 		  and trans_status NOT IN ('X','Z','M') and register_no <> 99
 		  and emp_no <> 9999 and $where
 		  and (t.upc not like '002%' or c.weight=1)
@@ -61,10 +68,10 @@ if (isset($_GET['date1'])){
 		  CASE WHEN t.discounttype IN (2,5) and memType IN (1,3) THEN unitPrice-memDiscount
 		  ELSE unitPrice END,
 		  p.description,t.department,d.dept_name,s.superID
-		  order by $sort,t.upc,
+		  order by t.department,t.upc,
 		  CASE WHEN t.discounttype IN (2,5) and memType IN (1,3) THEN unitPrice-memDiscount
-		  ELSE unitPrice END";
-	$result = $dbc->query($query);
+		  ELSE unitPrice END");
+	$result = $dbc->exec_statement($query,$args);
 
 	// make headers sort links
 	$today = date("F d, Y");	
@@ -118,15 +125,15 @@ if (isset($_GET['date1'])){
 	return;
 }
 
-$deptsQ = "select dept_no,dept_name from departments order by dept_no";
-$deptsR = $dbc->query($deptsQ);
+$deptsQ = $dbc->prepare_statement("select dept_no,dept_name from departments order by dept_no");
+$deptsR = $dbc->exec_statement($deptsQ);
 $deptsList = "";
 
-$deptSubQ = "SELECT superID,super_name FROM MasterSuperDepts
+$deptSubQ = $dbc->prepare_statement("SELECT superID,super_name FROM MasterSuperDepts
 		WHERE superID <> 0 
 		group by superID,super_name
-		ORDER BY superID";
-$deptSubR = $dbc->query($deptSubQ);
+		ORDER BY superID");
+$deptSubR = $dbc->exec_statement($deptSubQ);
 
 $deptSubList = "";
 while($deptSubW = $dbc->fetch_array($deptSubR)){

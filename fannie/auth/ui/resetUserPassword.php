@@ -20,14 +20,13 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
-?>
-<html>
-<body bgcolor=cabb1e>
-<?php
-
-$DEFAULT_PASSWORD = 'password';
 
 require('../login.php');
+$path = guesspath();
+$page_title = 'Fannie : Auth : Reset Password';
+$header = 'Fannie : Auth : Reset Password';
+
+include($path."src/header.html");
 
 if (!validateUser('admin')){
   return;
@@ -35,19 +34,35 @@ if (!validateUser('admin')){
 
 if (isset($_GET['name'])){
   $name = $_GET['name'];
-  if (changeAnyPassword($name,$DEFAULT_PASSWORD)){
+  $newpass = '';
+  srand();
+  for($i=0;$i<8;$i++){
+    switch(rand(1,3)){
+    case 1: // digit
+	$newpass .= chr(48+rand(0,9));
+	break;
+    case 2: // uppercase
+	$newpass .= chr(65+rand(0,25));
+	break;
+    case 3:
+	$newpass .= chr(97+rand(0,25));
+	break;
+    }
+  }
+  if (changeAnyPassword($name,$newpass)){
     echo "User $name's password reset succesfully<p />";
+    echo 'New password is: '.$newpass.'<p />';
   }
 }
 else {
   echo "<form method=get action=resetUserPassword.php>";
-  echo "User name: <input type=text name=name /><br />";
+  echo "User name: <select name=name>";
+  foreach(getUserList() as $uid => $name)
+	echo "<option>".$name."</option>";
+  echo '</select> ';
   echo "<input type=submit value=Submit /></form>";  
 }
+echo '<p />';
+echo '<a href="menu.php">Main menu</a>';
+include($path."src/footer.html");
 ?>
-<p />
-<a href=menu.php>Main menu</a>
-
-</body>
-</html>
-

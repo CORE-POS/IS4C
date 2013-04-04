@@ -42,10 +42,10 @@ $CREATE['trans.newBalanceToday_cust'] = "
 		(CASE when a.card_no IS NULL THEN c.Balance ELSE (c.Balance - a.charges - a.payments)END) AS balance,
 		(CASE WHEN a.card_no IS NULL THEN 0 ELSE 1 END) AS mark
 	FROM 
-		{$names['op']}.custdata     AS b
-		LEFT JOIN ar_sum_cache      AS c ON b.CardNo=c.card_no AND b.personNum=1
-		LEFT OUTER JOIN memIouToday AS a ON c.card_no = a.card_no AND b.persoNnum=1
-	WHERE b.personNum=1
+	{$names['op']}.custdata as b left join
+	ar_history_sum as c on b.CardNo=c.card_no and b.personNum=1
+	left outer join memIouToday as a ON c.card_no = a.card_no and b.personNum=1
+	where b.personNum=1
 ";
 
 if (!$con->table_exists("memIouToday"))

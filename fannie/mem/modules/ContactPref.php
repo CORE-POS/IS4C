@@ -24,26 +24,26 @@
 class ContactPref extends MemberModule {
 
 	// Return a form segment to display or edit the Contact Preference.
-	function ShowEditForm($memNum){
+	function ShowEditForm($memNum, $country="US"){
 
 		global $FANNIE_URL;
 
 		$dbc = $this->db();
 
 		// Select the preference for this member and all of the options.
-		$infoQ = sprintf("SELECT n.pref, p.pref_id, p.pref_description
+		$infoQ = $dbc->prepare_statement("SELECT n.pref, p.pref_id, p.pref_description
 				FROM memContact AS n,
 				memContactPrefs AS p
-				WHERE n.card_no=%d
-				ORDER BY p.pref_id",$memNum);
-		$infoR = $dbc->query($infoQ);
+				WHERE n.card_no=?
+				ORDER BY p.pref_id");
+		$infoR = $dbc->exec_statement($infoQ,array($memNum));
 
 		// If no preference exists get the options and force a default in pref.
 		if ( $dbc->num_rows($infoR) == 0 ) {
-			$infoQ = "SELECT IF(pref_id=2,2,-1) pref, pref_id, pref_description
+			$infoQ = $dbc->prepare_statement("SELECT IF(pref_id=2,2,-1) pref, pref_id, pref_description
 					FROM memContactPrefs
-					ORDER BY pref_id";
-			$infoR = $dbc->query($infoQ);
+					ORDER BY pref_id");
+			$infoR = $dbc->exec_statement($infoQ);
 		}
 
 		// Compose the display/edit block.
@@ -74,20 +74,20 @@ class ContactPref extends MemberModule {
 	function SaveFormData($memNum){
 		$dbc = $this->db();
 
-		$formPref = isset($_REQUEST['MemContactPref'])? $_REQUEST['MemContactPref'] : -1;
+		$formPref = FormLib::get_form_value('MemContactPref',-1);
 
 		// Does a preference for this member exist?
-		$infoQ = sprintf("SELECT pref
+		$infoQ = $dbc->prepare_statement("SELECT pref
 				FROM memContact
-				WHERE card_no=%d",$memNum);
-		$infoR = $dbc->query($infoQ);
+				WHERE card_no=?");
+		$infoR = $dbc->exec_statement($infoQ,array($memNum));
 
 		// If no preference exists, add one if one was chosen.
 		if ( $dbc->num_rows($infoR) == 0 ) {
 			if ( $formPref > -1 ) {
-				$upQ = sprintf("INSERT INTO memContact (card_no, pref)
-					VALUES (%d, %d)", $memNum, $formPref);
-				$upR = $dbc->query($upQ);
+				$upQ = $dbc->prepare_statement("INSERT INTO memContact (card_no, pref)
+					VALUES (?, ?)");
+				$upR = $dbc->exec_statement($upQ,array($memNum, $formPref));
 				if ( $upR === False )
 					return "Error: problem adding Contact Preference.";
 				else
@@ -99,9 +99,9 @@ class ContactPref extends MemberModule {
 			$row = $dbc->fetch_row($infoR);
 			$dbPref = $row['pref'];
 			if ( $formPref != $dbPref ) {
-				$upQ = sprintf("UPDATE memContact SET pref = %d
-					WHERE card_no = %d", $formPref, $memNum);
-				$upR = $dbc->query($upQ);
+				$upQ = $dbc->prepare_statement("UPDATE memContact SET pref = ?
+					WHERE card_no = ?");
+				$upR = $dbc->exec_statement($upQ,array($formPref, $memNum));
 				if ( $upR === False )
 					return "Error: problem updating Contact Preference.";
 				else

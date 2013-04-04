@@ -57,30 +57,35 @@ if (!$output){
 
 	$start = date("Y-m-01",$stamp);
 	$end = date("Y-m-t",$stamp);
-	$span = "'$start 00:00:00' AND '$end 23:59:59'";
+	$span = array("$start 00:00:00","$end 23:59:59");
 
 	$accounts = array();
-	$accountQ = "SELECT CardNo from custdata WHERE memType=4 ORDER BY CardNo";
-	$accountR = $dbc->query($accountQ);
+	$accountQ = $dbc->prepare_statement("SELECT CardNo from custdata WHERE memType=4 ORDER BY CardNo");
+	$accountR = $dbc->exec_statement($accountQ);
 	while($accountW = $dbc->fetch_row($accountR))
 		$accounts[] = $accountW['CardNo'];
 
 	$accountStr = "(";
-	foreach($accounts as $a)
-		$accountStr .= $a.",";
+	$args=array();
+	foreach($accounts as $a){
+		$accountStr .= "?,";
+		$args[] = $a;
+	}
 	$accountStr = rtrim($accountStr,",").")";
 
 	echo "<b>Total by account</b>";
-	$totalQ = "select l.card_no,sum(l.total),
+	$totalQ = $dbc->prepare_statement("select l.card_no,sum(l.total),
 		(sum(l.total)-(sum(l.total*m.margin))) as cost
 		FROM $dlog as l left join deptMargin as m on l.department = m.dept_ID
 		WHERE card_no IN $accountStr
 		and (l.department < 600 or l.department = 902)
 		and l.department <> 0 and l.trans_type <> 'T'
-		and tdate BETWEEN $span
+		and tdate BETWEEN ? AND ?
 		GROUP BY card_no
-		ORDER BY card_no";
-	$totalR = $dbc->query($totalQ);
+		ORDER BY card_no");
+	$args[] = $span[0];
+	$args[] = $span[1];
+	$totalR = $dbc->exec_statement($totalQ,$args);
 	$data = array();
 	while ($totalW=$dbc->fetch_row($totalR)){
 		if (!isset($data["$totalW[0]"])){
@@ -96,17 +101,17 @@ if (!$output){
 		2,array(1,2));
 
 	echo "<br /><b>Total by pCode</b>";
-	$totalQ = "select d.salesCode,sum(l.total),
+	$totalQ = $dbc->prepare_statement("select d.salesCode,sum(l.total),
 		(sum(l.total)-(sum(l.total)*m.margin)) as cost
 		FROM $dlog as l left join deptSalesCodes as d on l.department = d.dept_ID
 		left join deptMargin as m on l.department=m.dept_ID
 		WHERE card_no IN $accountStr
 		and (l.department < 600 or l.department = 902)
 		and l.department <> 0 and l.trans_type <> 'T'
-		and tdate BETWEEN $span
+		and tdate BETWEEN ? AND ?
 		GROUP BY d.salesCode,m.margin
-		ORDER BY d.salesCode";
-	$totalR = $dbc->query($totalQ);
+		ORDER BY d.salesCode");
+	$totalR = $dbc->exec_statement($totalQ,$args);
 	$data = array();
 	while ($totalW=$dbc->fetch_row($totalR)){
 		if (empty($data["$totalW[0]"])){
@@ -121,19 +126,19 @@ if (!$output){
 		array($ALIGN_LEFT,$ALIGN_RIGHT|$TYPE_MONEY,$ALIGN_RIGHT|$TYPE_MONEY),
 		2,array(1,2));
 
+	$totalQ = $dbc->prepare_statement("select d.salesCode,sum(l.total),
+		(sum(l.total)-(sum(l.total)*m.margin)) as cost
+		FROM $dlog as l left join deptSalesCodes as d on l.department = d.dept_ID
+		left join deptMargin as m on l.department=m.dept_ID
+		WHERE card_no = ?
+		and (l.department < 600 or l.department = 902)
+		and l.department <> 0 and l.trans_type <> 'T'
+		and tdate BETWEEN ? AND ?
+		GROUP BY d.salesCode,m.margin
+		ORDER BY d.salesCode");
 	foreach ($accounts as $account){
 		echo "<br /><b>Total for $account</b>";
-		$totalQ = "select d.salesCode,sum(l.total),
-			(sum(l.total)-(sum(l.total)*m.margin)) as cost
-			FROM $dlog as l left join deptSalesCodes as d on l.department = d.dept_ID
-			left join deptMargin as m on l.department=m.dept_ID
-			WHERE card_no = $account
-			and (l.department < 600 or l.department = 902)
-			and l.department <> 0 and l.trans_type <> 'T'
-			and tdate BETWEEN $span
-			GROUP BY d.salesCode,m.margin
-			ORDER BY d.salesCode";
-		$totalR = $dbc->query($totalQ);
+		$totalR = $dbc->exec_statement($totalQ,array($account,$span[0],$span[1]));
 		$data = array();
 		while ($totalW=$dbc->fetch_row($totalR)){
 			if (empty($data["$totalW[0]"])){

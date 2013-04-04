@@ -22,23 +22,24 @@
 *********************************************************************************/
 
 include('../../config.php');
-include($FANNIE_ROOT.'src/mysql_connect.php');
+include($FANNIE_ROOT.'classlib2.0/data/FannieDB.php');
+include($FANNIE_ROOT.'classlib2.0/lib/FormLib.php');
+$dbc = FannieDB::get($FANNIE_OP_DB);
 
-if (isset($_REQUEST['action'])){
-	switch($_REQUEST['action']){
-	case 'fetch':
-		$res = $dbc->query("SELECT u.upc,p.description FROM
-				upcLike AS u INNER JOIN products AS p
-				ON u.upc=p.upc WHERE u.likeCode={$_REQUEST['lc']}
-				ORDER BY p.description");
-		$ret = "";
-		while($row = $dbc->fetch_row($res)){
-			$ret .= "<a style=\"font-size:90%;\" href={$FANNIE_URL}item/itemMaint.php?upc=$row[0]>";
-			$ret .= $row[0]."</a> ".$row[1]."<br />";
-		}
-		echo $ret;
-		break;
+switch(FormLib::get_form_value('action')){
+case 'fetch':
+	$prep = $dbc->prepare_statement("SELECT u.upc,p.description FROM
+			upcLike AS u INNER JOIN products AS p
+			ON u.upc=p.upc WHERE u.likeCode=?
+			ORDER BY p.description");
+	$res = $dbc->exec_statement($prep,array(FormLib::get_form_value('lc',0)));
+	$ret = "";
+	while($row = $dbc->fetch_row($res)){
+		$ret .= "<a style=\"font-size:90%;\" href={$FANNIE_URL}item/itemMaint.php?upc=$row[0]>";
+		$ret .= $row[0]."</a> ".substr($row[1],0,25)."<br />";
 	}
+	echo $ret;
+	break;
 }
 
 ?>

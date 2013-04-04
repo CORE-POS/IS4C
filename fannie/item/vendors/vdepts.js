@@ -2,9 +2,8 @@ function deleteCat(num,name){
 	var vid = $('#vendorID').val();
 	if (confirm('Delete '+name+' ('+num+')?')){
 		$.ajax({
-			url: 'ajax.php',
+			url: 'VendorDepartmentEditor.php',
 			type: 'POST',
-			dataType: 'text/html',
 			timeout: 1000,
 			data: 'deptID='+num+'&vid='+vid+'&action=deleteCat',
 			error: function(){
@@ -12,7 +11,7 @@ function deleteCat(num,name){
 			},
 			success: function(resp){
 				alert(resp);
-				top.location='vdepts.php?vid='+vid;
+				top.location='VendorDepartmentEditor.php?vid='+vid;
 			}
 		});
 	}
@@ -24,9 +23,8 @@ function newdept(){
 	var name = $('#newname').val();
 
 	$.ajax({
-		url: 'ajax.php',
+		url: 'VendorDepartmentEditor.php',
 		type: 'POST',
-		dataType: 'text/html',
 		timeout: 1000,
 		data: 'deptID='+num+'&vid='+vid+'&name='+name+'&action=createCat',
 		error: function(){
@@ -35,7 +33,7 @@ function newdept(){
 		success: function(resp){
 			alert(resp);
 			if (resp == "Department created")
-				top.location='vdepts.php?vid='+vid;
+				top.location='VendorDepartmentEditor.php?vid='+vid;
 		}
 	});
 }
@@ -67,11 +65,11 @@ function save(did){
 	newbutton += "<img src=\""+path+"src/img/buttons/b_edit.png\" ";
 	newbutton += "alt=\"Edit\" border=0 /></a>";
 	$('#button'+did).html(newbutton);	
-
+	
+	name = encodeURIComponents(name);
 	$.ajax({
-		url: 'ajax.php',
+		url: 'VendorDepartmentEditor.php',
 		type: 'POST',
-		dataType: 'text/html',
 		timeout: 1000,
 		data: 'deptID='+did+'&vid='+vid+'&name='+name+'&margin='+margin+'&action=updateCat',
 		error: function(){

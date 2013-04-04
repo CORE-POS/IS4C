@@ -23,6 +23,22 @@
 
 /* --COMMENTS - -  - - - - - - - - - - - - - - - - - - - - - -
 
+	15Feb13 EL Convert markup in source data to margin for deptMargin.margin
+	14Jan13 EL All superdept cols empty; only one superdept in list
+.             Jigger to use the "list"[10] as original source for SuperDept, as TopLevel.
+.             Change superdept number ranges to accommodate.
+.            Fix data:
+.             Assign PROD_BUL_LEGACY and YCHEESES to RETAIL SuperDept.
+.             Fix spelling of ZSEAFOOODS
+.             Add COOPKITCHEN
+COOPKITCHEN	2005	0								COOPKITCHEN	2005 - COOPKITCHEN (COOPKITCHEN)
+	21Nov12 EL Use the list-of-superdepts field to tag by superdept.
+.             If the "YES" supderdept turns out to be a non-issue some deadwood
+.              commented code can be deleted.
+	10Oct12 EL News superdepts regime: Top Tax Buyer Category Bulk
+	 6Oct12 EL Tax_SD new, drop Subcategory_SD
+	 3Oct12 EL Trap superdepts dups. Enhancements to file-choice page.
+	25Sep12 EL Rejig colums, bulk departemts, add Subcategory SD
 	 2Sep12 Eric Lee loadWEFCTorontoDepts.php , based on
 	 									fannie/batches/UNFI/load-scripts/loadUNFIprices.php
 	http://107.20.205.138/IS4C/fannie/item/departments/loadWEFCTorontoDepts.php
@@ -78,17 +94,29 @@ if ( isset($_REQUEST['dept_csv']) && $_REQUEST['dept_csv'] != "" ) {
 
 	$dept_csv = $_REQUEST['dept_csv'];
 
+// 14Jan13 Layout.
+//0A         |1B  |2C |3D   |4E      |5F    |6G    |7H      |8I         |9J     |10K             |11L
+//Department |Dept|Tax|ORDER|CATEGORY|Parent|Tax SD|Buyer SD|Category SD|Bulk SD|Super Department|Summary
+//MEMBERSHIPS|1000|0  |     |        |      |      |        |           |       |MEMBERSHIPS     |1000 - MEMBERSHIPS (MEMBERSHIPS)
+//PRODUCE    |3000|0  |     |        |      |      |        |           |       |RETAIL          |3000 - PRODUCE (RETAIL)
+//WPRODUCE   |3100|0  |     |        |      |      |        |           |       |RETAIL          |3100 - WPRODUCE (RETAIL)
 	/* the column number in the array returned by csv_parser where various information is stored
 		"first" = 0.
 	*/
-	$DEPT_NAME = 0;			// A 
-	$DEPT_NO = 1;				// B deptMargin.dept_ID
-	$DEPT_TAX = 2;			// C 
-	$MARGIN = 3;				// D deptMargin.margin
-	$ACCOUNTING_SD = 4;	// E 
-	$TOPLEVEL_SD = 5;		// F 
-	$PURCHASING_SD = 6;	// G 
-	$CATEGORY_SD = 7;		// H 
+	$DEPT_NAME = 0;				// A 
+	$DEPT_NO = 1;					// B deptMargin.dept_ID
+	$DEPT_TAX = 2;				// C 
+	$BULK = 3;						// D If not "" scale = 1, except there is no departments.scale
+	$MARGIN = 4;					// E deptMargin.margin
+	$TOP_SD = 5;					// F 
+	//$ACCOUNTING_SD = 5;		// F - 6Oct12
+	$TAX_SD = 6;					// G  - 6Oct12 was TOPLEVEL_SD
+	$BUYER_SD = 7;				// H 
+	//$PURCHASING_SD = 7;		// H - 6Oct12
+	$CATEGORY_SD = 8;			// I 
+	$BULK_SD = 9;					// J
+	//$SUBCATEGORY_SD = 9;	// J  - 6Oct12 now empty; do not rebuild.
+	$SUPERDEPTS = 10;					// K
 
 	// EL This lib may not be needed.
 	require($FANNIE_ROOT.'batches/UNFI/lib.php');
@@ -101,6 +129,14 @@ if ( isset($_REQUEST['dept_csv']) && $_REQUEST['dept_csv'] != "" ) {
 	*/
 	$PRICEFILE_USE_SPLITS = False;
 	//$PRICEFILE_USE_SPLITS = True;
+
+	// The tables affected by this script.
+	$departmentTables = array("departments", "deptMargin", "superdepts", "superDeptNames");
+
+	// Messages to display when the run finished.
+	$messages = array();
+	$mct = -1;
+	$messages[++$mct] = "Issues and Information:";
 
 	/*
 		filestoprocess is the array of split files.
@@ -122,38 +158,34 @@ if ( isset($_REQUEST['dept_csv']) && $_REQUEST['dept_csv'] != "" ) {
 					continue;
 				$filestoprocess[$i++] = $current;
 			}
-			
-			$truncateQ = "truncate table departments";
-			$truncateR = $dbc->query($truncateQ);
-			$truncateQ = "truncate table deptMargin";
-			$truncateR = $dbc->query($truncateQ);
-			/* Also superdepts, at some point.
-			*/
-			$truncateQ = "truncate table superdepts";
-			$truncateR = $dbc->query($truncateQ);
-			$truncateQ = "truncate table superDeptNames";
-			$truncateR = $dbc->query($truncateQ);
-			/* EL Not pertinent to departments
-			$delQ = "DELETE FROM vendorItems WHERE vendorID=$VENDOR_ID";
-			$delR = $dbc->query($delQ);
-			$delQ = "DELETE FROM vendorSRPs WHERE vendorID=$VENDOR_ID";
-			$delR = $dbc->query($delQ);
-			*/
+			foreach ($departmentTables as $table) {
+				$truncateQ = "truncate table $table";
+				$truncateR = $dbc->query($truncateQ);
+				if ( ! $truncateR ) {
+					$messages[++$mct] = "** Error: Failed: $truncateQ";
+				} else {
+					$messages[++$mct] = "Table $table truncated (emptied)";
+				}
+			}
+			$messages[++$mct] = "";
+
 		}
 		else {
 			$filestoprocess = unserialize(base64_decode($_GET["filestoprocess"]));	
 		}
 	}
 	else {
-		$truncateQ = "truncate table departments";
-		$truncateR = $dbc->query($truncateQ);
-		$truncateQ = "truncate table deptMargin";
-		$truncateR = $dbc->query($truncateQ);
-		/* Also superdepts, at some point.  */
-		$truncateQ = "truncate table superdepts";
-		$truncateR = $dbc->query($truncateQ);
-		$truncateQ = "truncate table superDeptNames";
-		$truncateR = $dbc->query($truncateQ);
+		foreach ($departmentTables as $table) {
+			$truncateQ = "truncate table $table";
+			$truncateR = $dbc->query($truncateQ);
+			if ( ! $truncateR ) {
+				$messages[++$mct] = "** Error: Failed: $truncateQ";
+			} else {
+				$messages[++$mct] = "Table $table truncated (emptied)";
+			}
+		}
+		$messages[++$mct] = "";
+
 		$filestoprocess[] = "$dept_csv";
 	}
 
@@ -169,14 +201,26 @@ if ( isset($_REQUEST['dept_csv']) && $_REQUEST['dept_csv'] != "" ) {
 
 	$superDeptCounter = 0;
 	/* Try to put superdepts.superID's in some meaningful sequence and ranges.
-		ACCTG 40-69, TOP 1-9, PURCH 79-99, CATEGORIES 10-39
+		new: TOP 1-9, TAX 10-19, BUYER 2xx, CATEGORIES 1xx, BULK 20-29
+		obs: ACCTG 2xx, TOP 1-9, PURCH 3xx, CATEGORIES 1xx, SUBCATEGORIES 4xx
+		obs: ACCTG 2xx, TAX 1-9, PURCH 3xx, CATEGORIES 1xx
 	*/
-	$superDeptCounters = array (0,0,0,0, 200, 1, 300, 100);
+	// 14Jan13 Change for no-real-superdepts
+	$superDeptCounters = array (0,0,0,0,0, 1, 30, 200, 100, 50);
+	//$superDeptCounters = array (0,0,0,0,0, 1, 10, 200, 100, 20);
+
+	// Lines read from CSV, including column headings.
+	$lineCount = 0;
+	// Department records written.
+	$departmentCount = 0;
+	// Records flagged as incomplete.
+	//$incompletes = 0;
 
 	$fp = fopen($tpath.$current,'r');
 	while( !feof($fp) ) {
 
 		$line = fgets($fp);
+		$lineCount++;
 		//EL The data is tab-delimited, but no embedded commas.
 		//		Why not just use explode()?
 		// $line = preg_replace("\t",",",$line);
@@ -189,7 +233,7 @@ if ( isset($_REQUEST['dept_csv']) && $_REQUEST['dept_csv'] != "" ) {
 		// Skipping the row of column labels is done later.
 		// In early versions some don't have numbers yet, useless.
 		if ( !isset($data[$DEPT_NO]) || $data[$DEPT_NO] == "" ) {
-			echo "Skipping {$data[$DEPT_NAME]} because it has no number.<br />\n";
+			$messages[++$mct] = "Skipping line $lineCount Name >{$data[$DEPT_NAME]}< because it has no number.";
 			continue;
 		}
 
@@ -197,19 +241,34 @@ if ( isset($_REQUEST['dept_csv']) && $_REQUEST['dept_csv'] != "" ) {
 		$dept_name = fix_text_for_db($data[$DEPT_NAME]);
 		$dept_no = $data[$DEPT_NO];
 		$dept_tax = $data[$DEPT_TAX];
-		$margin = $data[$MARGIN];
+		if ( $data[$MARGIN] == "" ) {
+			$margin = 0;
+			$messages[++$mct] = "Line $lineCount Name >{$data[$DEPT_NAME]}< has empty markup; set to 0.";
+		}
+		elseif ( $data[$MARGIN] == 0 ) {
+			$messages[++$mct] = "Line $lineCount Name >{$data[$DEPT_NAME]}< has markup 0.";
+		}
+		elseif ( !is_numeric($data[$MARGIN]) ) {
+			$messages[++$mct] = "Line $lineCount Name >{$data[$DEPT_NAME]}< has no-numeric markup >{$data[$MARGIN]}<; set to 0.";
+			$margin = 0;
+		}
+		else {
+			// Convert markup to margin
+			$margin = sprintf("%.5f",(($data[$MARGIN]-1)/$data[$MARGIN]));
+			//$messages[++$mct] = "Line $lineCount Name >{$data[$DEPT_NAME]}< converted markup >{$data[$MARGIN]}< to $margin .";
+		}
 
 		// Don't include duplicate departments by either number or name.
 		$checkQ = "SELECT dept_no FROM departments WHERE dept_no='$dept_no'";
 		$checkR = $dbc->query($checkQ);
 		if ($dbc->num_rows($checkR) > 0) {
-			echo "<br />Skipping dept_no duplicate: $dept_no $dept_name";
+			$messages[++$mct] = "<br />Skipping dept_no duplicate: $dept_no $dept_name";
 			continue;
 		}
 		$checkQ = "SELECT dept_name FROM departments WHERE dept_name='$dept_name'";
 		$checkR = $dbc->query($checkQ);
 		if ($dbc->num_rows($checkR) > 0) {
-			echo "<br />Skipping dept_name duplicate: $dept_no $dept_name";
+			$messages[++$mct] = "<br />Skipping dept_name duplicate: $dept_no $dept_name";
 			continue;
 		}
 
@@ -219,6 +278,7 @@ if ( isset($_REQUEST['dept_csv']) && $_REQUEST['dept_csv'] != "" ) {
 				we can't be certain *when* that chunk will come up
 		*/
 		if ( !is_numeric($dept_tax) ) {
+			$colHeads = $data;
 			continue;
 		}
 
@@ -236,15 +296,25 @@ if ( isset($_REQUEST['dept_csv']) && $_REQUEST['dept_csv'] != "" ) {
 		($dept_no, '$margin')";
 		$insR = $dbc->query($insQ);
 
+		$departmentCount++;
+
 		/* Begin superdepartments
 		*/
-		$data[$ACCOUNTING_SD]	= fix_text_for_db($data[$ACCOUNTING_SD]);
-		$data[$TOPLEVEL_SD]		= fix_text_for_db($data[$TOPLEVEL_SD]);
-		$data[$PURCHASING_SD]	= fix_text_for_db($data[$PURCHASING_SD]);
-		$data[$CATEGORY_SD]		= fix_text_for_db($data[$CATEGORY_SD]);
+		// 14Jan13 - No proper SuperDepts. List of SuperDepts has only one item.
+		if ( ! $data[$TOP_SD] ) {
+			$data[$TOP_SD] = $data[$SUPERDEPTS];
+		}
+		$data[$TOP_SD]			= fix_text_for_db($data[$TOP_SD]);
+		$data[$TAX_SD]			= fix_text_for_db($data[$TAX_SD]);
+		$data[$BUYER_SD]		= fix_text_for_db($data[$BUYER_SD]);
+		$data[$CATEGORY_SD]	= fix_text_for_db($data[$CATEGORY_SD]);
+		$data[$BULK_SD]			= fix_text_for_db($data[$BULK_SD]);
+		// 14Jan13 - No proper SuperDepts
+		// $data[$SUPERDEPTS]	= fix_text_for_db($data[$SUPERDEPTS]);
 
 		// foreach of the four superdepartment fields
-		for ( $sdk=4; $sdk<=7; $sdk++) {
+		//  Build the table of superdepartment names and id#s.
+		for ( $sdk=5; $sdk<=9; $sdk++) {
 			// 	Check by super_name whether superDeptNames record exists
 			$selQ = "SELECT superId, super_name from superDeptNames where super_name = '{$data[$sdk]}'";
 			$selR = $dbc->query($selQ);
@@ -257,19 +327,57 @@ if ( isset($_REQUEST['dept_csv']) && $_REQUEST['dept_csv'] != "" ) {
 				// Add to superDeptNames
 				$insQ = "INSERT INTO superDeptNames (superID, super_name ) values ($superDeptCounter, '{$data[$sdk]}')";
 				$insR = $dbc->query($insQ);
-				// Add link via superdepts
+				/* Add link via superdepts - Done later now.
 				$insQ = "INSERT INTO superdepts (superID, dept_ID ) values ($superDeptCounter, $dept_no)";
 				$insR = $dbc->query($insQ);
+				*/
 			}
-			// if it does, add an item.
+			/* if it does, add an item. - Done later now.
 			else {
 				$row = $dbc->fetch_row($selR);
-				// Add link via superdepts
-				$insQ = "INSERT INTO superdepts (superID, dept_ID ) values ({$row[0]}, $dept_no)";
-				$insR = $dbc->query($insQ);
-			//
+				// Check for duplicate.
+				$selQ1 = "SELECT superId, dept_ID from superdepts where superId = {$row[0]} and dept_ID = $dept_no";
+				$selR1 = $dbc->query($selQ1);
+				// if unique, add it
+				if ($dbc->num_rows($selR1) == 0) {
+					// Add link via superdepts
+					$insQ = "INSERT INTO superdepts (superID, dept_ID ) values ({$row[0]}, $dept_no)";
+					$insR = $dbc->query($insQ);
+				}
+				else {
+					$messages[++$mct] = "<br />For Department $dept_no $dept_name column $colHeads[$sdk] >$data[$sdk]< skipping superdepts duplicate: {$row[0]} $dept_no";
+				}
 			}
-		// Each superdept
+			*/
+		// Each superdept field
+		}
+
+		// Foreach superdept named in the list, link the dept to it.
+		foreach ( preg_split("/ +/", $data[$SUPERDEPTS]) as $sdName ) {
+			$sdName = fix_text_for_db($sdName);
+			// Check that it exists and get its ID#
+			$selQ = "SELECT superId, super_name from superDeptNames where super_name = '{$sdName}'";
+			$selR = $dbc->query($selQ);
+			// if it doesn't, complain.
+			if ($dbc->num_rows($selR) == 0) {
+				$messages[++$mct] = "<br />For Department $dept_no $dept_name column listed superdept >{$sdName}< is not known";
+			// if it does, add a link for it.
+			}
+			else {
+				$row = $dbc->fetch_row($selR);
+				// Check for duplicate.
+				$selQ1 = "SELECT superId, dept_ID from superdepts where superId = {$row[0]} and dept_ID = $dept_no";
+				$selR1 = $dbc->query($selQ1);
+				// if unique, add it
+				if ($dbc->num_rows($selR1) == 0) {
+					// Add link via superdepts
+					$insQ = "INSERT INTO superdepts (superID, dept_ID ) values ({$row[0]}, $dept_no)";
+					$insR = $dbc->query($insQ);
+				}
+				else {
+					$messages[++$mct] = "<br />For Department $dept_no $dept_name column listed superdept >{$sdName}< is a duplicate of: {$row[0]} $dept_no and is being skipped.";
+				}
+			}
 		}
 
 	// Each CSV line
@@ -319,6 +427,20 @@ if ( isset($_REQUEST['dept_csv']) && $_REQUEST['dept_csv'] != "" ) {
 		else {
 			echo "$dept_csv<br />";
 		}
+
+		echo "Read $lineCount CSV lines.  Wrote $departmentCount records to the departments table.";
+		echo "<br />";
+		//echo "$incompletes records flagged as known-to-be incomplete.";
+		// Display messages accumulated during the run.
+		for ( $n=0; $n<count($messages); $n++ ) {
+			if ( substr($messages[$n], 0, 3) == "<br" ) {
+				echo "$messages[$n]";
+			} else {
+				echo "<br />$messages[$n]";
+			}
+		}
+		echo "<br />";
+
 		// Not unlink
 		// unlink($tpath."$dept_csv");
 		echo "<br />You might want to delete: {$tpath}{$dept_csv}<br />";
@@ -355,20 +477,27 @@ else {
 	// Get a list of files
 	$dh = opendir($tpath);
 	$opts = "<option value='' SELECTED>Choose a source CSV file</option>\n";
+	$selectSize = 1;
 	while (($file = readdir($dh)) !== false) {
-		if ( substr($file, 0, 1) != "." )
+		if ( substr($file, 0, 1) != "." ) {
 			$opts .= "<option value='$file'>$file</option>\n";
+			$selectSize++;
+		}
 			// With full path.  But we don't need that.
 			//$opts .= "<option value='$tpath.$file'>$file</option>\n";
 	}
 	closedir($dh);
 
+	if ($selectSize > 5)
+		$selectSize = 5;
+
 ?>
 
 <form action="loadWEFCTorontoDepts.php" method="post">
-<select name="dept_csv" size="2">
+<select name="dept_csv" size="<?php echo $selectSize; ?>">
 <?php echo "$opts"; ?>
 </select>
+<div style="margin-top: 0.5em;"><a href="../import/uploadAnyFile.php" target="_upload">File upload utility</a></div>
 <div style="margin-top: 0.5em;"><input type="submit" value="Load Departments" /></div>
 </form>
 

@@ -42,12 +42,12 @@ if (isset($_REQUEST['lookup'])){
 			$m,$y);
 	$ret .= "<table cellspacing=0 cellpadding=4 border=1>";
 	$ret .= "<tr><th>&nbsp;</th><th>Batch</th><th>Start</th><th>End</th></tr>";
-	$q = "SELECT batchID,batchName,startDate,endDate FROM
+	$q = $dbc->prepare_statement("SELECT batchID,batchName,startDate,endDate FROM
 		batches WHERE discounttype <> 0 AND (
-		(year(startDate)=$y and month(startDate)=$m) OR
-		(year(endDate)=$y and month(endDate)=$m)
-		) ORDER BY startDate,batchType,batchName";
-	$r = $dbc->query($q);
+		(year(startDate)=? and month(startDate)=?) OR
+		(year(endDate)=? and month(endDate)=?)
+		) ORDER BY startDate,batchType,batchName");
+	$r = $dbc->exec_statement($q,array($y,$m,$y,$m));
 	while($w = $dbc->fetch_row($r)){
 		$start = array_shift(explode(' ',$w[2]));
 		$end = array_shift(explode(' ',$w[3]));

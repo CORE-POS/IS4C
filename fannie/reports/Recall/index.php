@@ -9,23 +9,23 @@ if (isset($_REQUEST['submit'])){
 	$date2 = $_REQUEST['date2'];
 	$dlog = select_dlog($date1,$date2);
 
-	$q = "SELECT description FROM products WHERE upc='$upc'";
-	$r = $dbc->query($q);
+	$q = $dbc->prepare_statement("SELECT description FROM products WHERE upc=?");
+	$r = $dbc->exec_statement($q,array($upc));
 	$w = $dbc->fetch_row($r);
 	$description = $w[0];
 
-	$q = "SELECT d.card_no,c.lastname,c.firstname,m.street,m.city,m.state,
+	$q = $dbc->prepare_statement("SELECT d.card_no,c.lastname,c.firstname,m.street,m.city,m.state,
 			m.zip,m.phone,m.email_2,m.email_1,sum(quantity) as qty,
 			sum(total) as amt
 		FROM $dlog AS d LEFT JOIN custdata AS c
 		ON c.cardno=d.card_no AND c.personnum=1
 		LEFT JOIN meminfo AS m ON m.card_no=c.cardno
-		WHERE d.upc=".$dbc->escape($upc)." AND 
-		tdate BETWEEN '$date1 00:00:00' AND '$date2 23:59:59'	
+		WHERE d.upc=? AND 
+		tdate BETWEEN ? AND ?
 		GROUP BY d.card_no,c.firstname,c.lastname,m.street,m.city,
 		m.state,m.zip,m.phone,m.email_1,m.email_2
-		ORDER BY c.lastname,c.firstname";
-	$r = $dbc->query($q);
+		ORDER BY c.lastname,c.firstname");
+	$r = $dbc->exec_statement($q,array($upc,$date1.' 00:00:00',$date2.' 23:59:59'));
 
 	if(isset($_REQUEST['excel'])){
 	  header('Content-Type: application/ms-excel');

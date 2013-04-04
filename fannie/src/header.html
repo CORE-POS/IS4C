@@ -74,17 +74,11 @@ foreach(explode("/",$uri) as $x){
   <span style="font-size:6px"><br></span>
   <div align="center">
  	<?php
-	// A coop-specific menu.
-	if ( isset($FANNIE_COOP_ID) ) {
-		$menu = "{$path}per_coop/{$FANNIE_COOP_ID}/navbar.php";
-		if ( file_exists("$menu") )
-			include("$menu");
+		global $FANNIE_DYNAMIC_MENU;
+		if (isset($FANNIE_DYNAMIC_MENU) && $FANNIE_DYNAMIC_MENU===True)
+			include($path.'src/navbar.dynamic.php');
 		else
 			include($path.'src/navbar.html');
-
-	} else {
-		include($path.'src/navbar.html');
-	}
 	?>
   <span style="font-size:6px"><br></span>
   </div>

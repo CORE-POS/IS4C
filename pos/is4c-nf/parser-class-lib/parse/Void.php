@@ -260,14 +260,14 @@ class Void extends Parser {
 		$query_upc = "select ItemQtty,foodstamp,discounttype,mixMatch,cost,
 				numflag,charflag,unitPrice,total,discounttype,regPrice,discount,
 				memDiscount,discountable,description,trans_type,trans_subtype,
-				department,tax,VolSpecial
+				department,tax,VolSpecial,trans_id
 				from localtemptrans where upc = '".$upc."' and unitPrice = "
 			     .$scaleprice." and trans_id=$item_num";
 		if ($CORE_LOCAL->get("discounttype") == 3) {
 			$query_upc = "select ItemQtty,foodstamp,discounttype,mixMatch,cost,
 				numflag,charflag,unitPrice,total,discounttype,regPrice,discount,
 				memDiscount,discountable,description,trans_type,trans_subtype,
-				department,tax,VolSpecial
+				department,tax,VolSpecial,trans_id
 				from localtemptrans where upc = '".$upc
 				."' and discounttype = 3 and unitPrice = ".$CORE_LOCAL->get("caseprice")
 			        ." and trans_id=$item_num";
@@ -276,7 +276,7 @@ class Void extends Parser {
 			$query_upc = "select ItemQtty,foodstamp,discounttype,mixMatch,cost,
 				numflag,charflag,unitPrice,total,discounttype,regPrice,discount,
 				memDiscount,discountable,description,trans_type,trans_subtype,
-				department,tax,VolSpecial
+				department,tax,VolSpecial,trans_id
 			       	from localtemptrans where upc = '".$upc
 				."' and discounttype <> 3"
 			        ." and trans_id=$item_num";
@@ -293,6 +293,7 @@ class Void extends Parser {
 		$foodstamp = MiscLib::nullwrap($row["foodstamp"]);
 		$discounttype = MiscLib::nullwrap($row["discounttype"]);
 		$mixMatch = MiscLib::nullwrap($row["mixMatch"]);
+		$item_num = $row['trans_id'];
 		$cost = isset($row["cost"])?-1*$row["cost"]:0;
 		$numflag = isset($row["numflag"])?$row["numflag"]:0;
 		$charflag = isset($row["charflag"])?$row["charflag"]:0;
@@ -386,6 +387,8 @@ class Void extends Parser {
 			return DisplayLib::boxMsg(_("Item already paid for"));
 		}
 		elseif ($quantity != 0) {
+			$update = "update localtemptrans set voided = 1 where trans_id = ".$item_num;
+			$db->query($update);
 			TransRecord::addItem($upc, $row["description"], $row["trans_type"], $row["trans_subtype"], "V", $row["department"], $quantity, $unitPrice, $total, $row["regPrice"], $scale, $row["tax"], $foodstamp, $discount, $memDiscount, $discountable, $discounttype, $quantity, $volDiscType, $volume, $VolSpecial, $mixMatch, 0, 1, $cost, $numflag, $charflag);
 
 			if ($row["trans_type"] != "T") {
@@ -397,9 +400,15 @@ class Void extends Parser {
 			$chk = $db->query("SELECT deposit FROM products WHERE upc='$upc'");
 			if ($db->num_rows($chk) > 0){
 				$dpt = array_pop($db->fetch_row($chk));
-				if ($dpt > 0){
-					$dupc = (int)$dpt;
-					return $this->voidupc((-1*$quantity)."*".$dupc,True);
+				if ($dpt <= 0) return ''; // no deposit found
+				$db = Database::tDataConnect();
+				$dupc = str_pad((int)$dpt,13,'0',STR_PAD_LEFT);
+				$id = $db->query(sprintf("SELECT trans_id FROM localtemptrans
+					WHERE upc='%s' AND voided=0 AND quantity=%d",
+					$dupc,(-1*$quantity)));
+				if ($db->num_rows($id) > 0){	
+					$trans_id = array_pop($db->fetch_row($id));
+					return $this->voidupc((-1*$quantity)."*".$dupc,$trans_id,True);
 				}
 			}
 		}

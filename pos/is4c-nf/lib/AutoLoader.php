@@ -50,11 +50,10 @@ class AutoLoader extends LibraryClass {
 		$map = $CORE_LOCAL->get("ClassLookup");
 		if (!is_array($map)) return;
 
-		if (isset($map[$name]) && !class_exists($name)
+		if (isset($map[$name]) && !class_exists($name,False)
 		   && file_exists($map[$name])){
 
 			include_once($map[$name]);
-
 		}
 	}
 
@@ -68,6 +67,97 @@ class AutoLoader extends LibraryClass {
 		$search_path = realpath(dirname(__FILE__).'/../');
 		self::RecursiveLoader($search_path, $class_map);
 		$CORE_LOCAL->set("ClassLookup",$class_map);
+	}
+
+	/**
+	  Get a list of available modules with the
+	  given base class
+	  @param $base_class string class name
+	  @param $include_base whether base class should be included
+		in the return value
+	  @return an array of class names
+	*/
+	static public function ListModules($base_class, $include_base=False){
+		$ret = array();
+		
+		// lookup plugin modules, then standard modules
+		$map = Plugin::PluginMap();
+		switch($base_class){
+		case 'DiscountType':
+			$path = realpath(dirname(__FILE__).'/Scanning/DiscountTypes');
+			$map = Plugin::PluginMap($path,$map);
+			break;
+		case 'FooterBox':
+			$path = realpath(dirname(__FILE__).'/FooterBoxes');
+			$map = Plugin::PluginMap($path,$map);
+			break;
+		case 'Kicker':
+			$path = realpath(dirname(__FILE__).'/Kickers');
+			$map = Plugin::PluginMap($path,$map);
+			break;
+		case 'Parser':
+			$path = realpath(dirname(__FILE__).'/../parser-class-lib/parse');
+			$map = Plugin::PluginMap($path,$map);
+			break;
+		case 'PreParser':
+			$path = realpath(dirname(__FILE__).'/../parser-class-lib/preparse');
+			$map = Plugin::PluginMap($path,$map);
+			break;
+		case 'PriceMethod':
+			$path = realpath(dirname(__FILE__).'/Scanning/PriceMethods');
+			$map = Plugin::PluginMap($path,$map);
+			break;
+		case 'SpecialUPC':
+			$path = realpath(dirname(__FILE__).'/Scanning/SpecialUPCs');
+			$map = Plugin::PluginMap($path,$map);
+			break;
+		case 'SpecialDept':
+			$path = realpath(dirname(__FILE__).'/Scanning/SpecialDepts');
+			$map = Plugin::PluginMap($path,$map);
+			break;
+		case 'TenderModule':
+			$path = realpath(dirname(__FILE__).'/Tenders');
+			$map = Plugin::PluginMap($path,$map);
+			break;
+		case 'TenderReport':
+			$path = realpath(dirname(__FILE__).'/ReceiptBuilding/TenderReports');
+			$map = Plugin::PluginMap($path,$map);
+			break;
+		case 'ProductSearch':
+			$path = realpath(dirname(__FILE__).'/Search/Products');
+			$map = Plugin::PluginMap($path,$map);
+			break;
+		}
+
+		foreach($map as $name => $file){
+
+			// matched base class
+			if ($name == $base_class){
+				if ($include_base) $ret[] = $name;
+				continue;
+			}
+
+			ob_start();
+			if (!class_exists($name)){ 
+				ob_end_clean();
+				continue;
+			}
+
+			if (strstr($file,'plugins')){
+				$parent = Plugin::MemberOf($file);
+				if ($parent && Plugin::IsEnabled($parent) && is_subclass_of($name,$base_class))
+					$ret[] = $name;
+				else if ($base_class=="Plugin" && is_subclass_of($name,$base_class))
+					$ret[] = $name;
+			}
+			else {
+				if (is_subclass_of($name,$base_class))
+					$ret[] = $name;
+			}
+			ob_end_clean();
+		}
+
+		return $ret;
 	}
 
 	/**
@@ -106,9 +196,11 @@ else {
 }
 
 /** internationalization */
+/*
 setlocale(LC_MESSAGES, "en_US.UTF-8");
 bindtextdomain("pos-nf",realpath(dirname(__FILE__).'/../locale'));
 bind_textdomain_codeset("pos-nf","UTF-8");
 textdomain("pos-nf");
+ */
 
 ?>

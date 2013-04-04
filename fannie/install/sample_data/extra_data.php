@@ -2,6 +2,7 @@
 include('../../config.php');
 if(!class_exists('SQLManager'))
 	include($FANNIE_ROOT.'src/SQLManager.php');
+include('../db.php');
 ?>
 <html>
 <head>
@@ -79,6 +80,11 @@ elseif (isset($_REQUEST['tenders'])){
 	$db->query("TRUNCATE TABLE tenders");
 	loaddata($db,'tenders');
 }
+elseif (isset($_REQUEST['authentication'])){
+	echo "Loadintg authentication info";
+	$db->query("TRUNCATE TABLE userKnownPrivs");
+	loaddata($db,'userKnownPrivs');
+}
 ?>
 </i></blockquote>
 Some sample data is available to get a test lane
@@ -121,27 +127,11 @@ Can also used to group the domains of Buyers.
 <b>Tenders</b>:
 Load all the default tenders into the tenders table.<br />
 <input type=submit name=tenders value="Load default tenders" />
+<hr />
+<b>Authentication</b>:
+Load information about currently defined authorization classes<br />
+<input type=submit name=authentication value="Load auth info" />
+<hr />
 </form>
 </body>
 </html>
-<?php
-function loaddata($sql, $table){
-	global $FANNIE_ROOT;
-	if (file_exists("$table.sql")){
-		$fp = fopen("$table.sql","r");
-		while($line = fgets($fp)){
-			$sql->query("INSERT INTO $table VALUES $line");
-		}
-		fclose($fp);
-	}
-	else if (file_exists("$table.csv")){
-		$sql->query("LOAD DATA LOCAL INFILE
-			'{$FANNIE_ROOT}install/sample_data/$table.csv'
-			INTO TABLE $table
-			FIELDS TERMINATED BY ','
-			ESCAPED BY '\\\\'
-			OPTIONALLY ENCLOSED BY '\"'
-			LINES TERMINATED BY '\\r\\n'");
-	}
-}
-?>

@@ -24,9 +24,8 @@ function showSubsForDept(did){
 	var d= 'did='+did+'&action=showSubsForDept';
 	var name = $('#deptselect option:selected').text();
 	$.ajax({
-		url: 'ajax.php',
+		url: 'SubDeptEditor.php',
 		type: 'POST',
-		dataType: 'text/html',
 		timeout: 1000,
 		data: d,
 		error: function(){
@@ -47,9 +46,8 @@ function addSub(){
 	var did = $('#deptselect').val();
 	var d = 'action=addSub&name='+name+'&did='+did;
 	$.ajax({
-		url: 'ajax.php',
+		url: 'SubDeptEditor.php',
 		type: 'POST',
-		dataType: 'text/html',
 		timeout: 1000,
 		data: d,
 		error: function(){
@@ -69,9 +67,8 @@ function deleteSub(){
 		d += '&sid[]='+$(this).val();
 	});
 	$.ajax({
-		url: 'ajax.php',
+		url: 'SubDeptEditor.php',
 		type: 'POST',
-		dataType: 'text/html',
 		timeout: 1000,
 		data: d,
 		error: function(){

@@ -23,16 +23,16 @@
 
 class HouseholdMembers extends MemberModule {
 
-	function ShowEditForm($memNum){
+	function ShowEditForm($memNum, $country="US"){
 		global $FANNIE_URL;
 
 		$dbc = $this->db();
 		
-		$infoQ = sprintf("SELECT c.FirstName,c.LastName
+		$infoQ = $dbc->prepare_statement("SELECT c.FirstName,c.LastName
 				FROM custdata AS c 
-				WHERE c.CardNo=%d AND c.personNum > 1
-				ORDER BY c.personNum",$memNum);
-		$infoR = $dbc->query($infoQ);
+				WHERE c.CardNo=? AND c.personNum > 1
+				ORDER BY c.personNum");
+		$infoR = $dbc->exec_statement($infoQ,array($memNum));
 
 		$ret = "<fieldset><legend>Household Members</legend>";
 		$ret .= "<table class=\"MemFormTable\" 
@@ -65,45 +65,46 @@ class HouseholdMembers extends MemberModule {
 	}
 
 	function SaveFormData($memNum){
+		global $FANNIE_ROOT;
 		$dbc = $this->db();
+		if (!class_exists("CustdataController"))
+			include($FANNIE_ROOT.'classlib2.0/data/controllers/CustdataController.php');
 
-		$prepQ = sprintf("DELETE FROM custdata WHERE CardNo=%d
-			AND personNum > 1",$memNum);
-		$test = $dbc->query($prepQ);
-		$ret = "";
-		if ($test === False)
-			$ret = "Error: Problem saving household members<br />";	
+		$CUST_FIELDS = array('personNum'=>array(),'FirstName'=>array(),'LastName'=>array());
 
-		$fns = $_REQUEST['HouseholdMembers_fn'];
-		$lns = $_REQUEST['HouseholdMembers_ln'];
+		/**
+		  Controller needs all names, so lookup primary member
+		*/
+		$lookupP = $dbc->prepare_statement("SELECT FirstName,LastName FROM custdata WHERE
+				personNum=1 AND CardNo=?");
+		$lookupR = $dbc->exec_statement($lookupP, array($memNum));
+		if ($dbc->num_rows($lookupR) == 0){
+			return "Error: Problem saving household members<br />";	
+		}
+		$lookupW = $dbc->fetch_row($lookupR);
+		$CUST_FIELDS['personNum'][] = 1;
+		$CUST_FIELDS['FirstName'][] = $lookupW['FirstName'];
+		$CUST_FIELDS['LastName'][] = $lookupW['LastName'];
 
-		$settingsQ = sprintf("SELECT CashBack,Balance,Discount,MemDiscountLimit,ChargeOk,
-				WriteChecks,StoreCoupons,Type,memType,staff,SSI,Purchases,
-				NumberOfChecks,memCoupons,Shown FROM custdata
-				WHERE CardNo=%d",$memNum);		
-		$settingsR = $dbc->query($settingsQ);
-		$row = $dbc->fetch_row($settingsR);
-		
+		$fns = FormLib::get_form_value('HouseholdMembers_fn',array());
+		$lns = FormLib::get_form_value('HouseholdMembers_ln',array());
 		$pn = 2;
 		for($i=0; $i<count($lns); $i++){
 			if (empty($fns[$i]) && empty($lns[$i])) continue;
 
-			$insQ = sprintf("INSERT INTO custdata (CardNo,personNum,LastName,FirstName,CashBack,
-				Balance,Discount,MemDiscountLimit,ChargeOk,WriteChecks,StoreCoupons,
-				Type,memType,staff,SSI,Purchases,NumberOfChecks,memCoupons,blueLine,
-				Shown) VALUES (%d,%d,%s,%s,%f,%f,%d,%f,%d,%d,%d,'%s',%d,%d,%d,%f,
-				%d,%d,%s,%d)",$memNum,$pn,$dbc->escape($lns[$i]),$dbc->escape($fns[$i]),
-				$row['CashBack'],$row['Balance'],$row['Discount'],$row['MemDiscountLimit'],
-				$row['ChargeOk'],$row['WriteChecks'],$row['StoreCoupons'],$row['Type'],
-				$row['memType'],$row['staff'],$row['SSI'],$row['Purchases'],
-				$row['NumberOfChecks'],$row['memCoupons'],$dbc->escape($memNum.' '.$lns[$i]),
-				$row['Shown']);
-			$test = $dbc->query($insQ);
-			if ($test === False)
-				$ret = "Error: Problem saving household members<br />";	
+			$CUST_FIELDS['personNum'][] = $pn;
+			$CUST_FIELDS['FirstName'][] = $fns[$i];
+			$CUST_FIELDS['LastName'][] = $lns[$i];
+
 			$pn++;
 		}
-		return $ret;
+
+		$test = CustdataController::update($memNum, $CUST_FIELDS);
+
+		if ($test === False)
+			return "Error: Problem saving household members<br />";	
+
+		return '';
 	}
 }
 

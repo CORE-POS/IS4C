@@ -57,7 +57,7 @@ class MemberSale extends DiscountType {
 			TransRecord::adddiscount($this->savedInfo['memDiscount'],
 				$this->savedRow['department']);
 		}
-		if ($this->saved_info['discount'] != 0){
+		if ($this->savedInfo['discount'] != 0){
 			$CORE_LOCAL->set("voided",2);
 			TransRecord::adddiscount($this->savedInfo['discount'],
 					$this->savedRow['department']);

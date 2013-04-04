@@ -29,14 +29,13 @@ if (isset($_REQUEST['submitPC'])){
 	$batchID = $_REQUEST['batchID'];
 	$price = $_REQUEST['sprice'];
 
-	$prodQ = sprintf("UPDATE products SET special_price=%.2f
-			WHERE upc=%s",$price,$dbc->escape($upc));
-	$dbc->query($prodQ);
+	$prodQ = $dbc->prepare_statement("UPDATE products SET special_price=?
+			WHERE upc=?");
+	$dbc->exec_statement($prodQ, array($price,$upc));
 
-	$batchQ = sprintf("UPDATE batchList SET salePrice=%.2f
-			WHERE upc=%s AND batchID=%d",$price,
-			$dbc->escape($upc),$batchID);
-	$dbc->query($batchQ);
+	$batchQ = $dbc->prepare_statement("UPDATE batchList SET salePrice=?
+			WHERE upc=? AND batchID=?");
+	$dbc->exec_statement($batchQ,array($price,$upc,$batchID));
 
 	updateProductAllLanes($upc);	
 	header("Location: handheld.php?submit=Submit&upc=".$upc);
@@ -46,16 +45,14 @@ elseif (isset($_REQUEST['submitUnsale'])){
 	$upc = $_REQUEST['upc'];
 	$batchID = $_REQUEST['batchID'];
 	
-	$prodQ = sprintf("UPDATE products SET special_price=0,
+	$prodQ = $dbc->prepare_statement("UPDATE products SET special_price=0,
 		discounttype=0,start_date='1900-01-01',
-		end_date='1900-01-01' WHERE upc=%s",
-		$dbc->escape($upc));
-	$dbc->query($prodQ);
+		end_date='1900-01-01' WHERE upc=?");
+	$dbc->exec_statement($prodQ, array($upc));
 
-	$batchQ = sprintf("DELETE FROM batchList WHERE
-		upc=%s AND batchID=%d",$dbc->escape($upc),
-		$batchID);
-	$dbc->query($batchQ);
+	$batchQ = $dbc->prepare_statement("DELETE FROM batchList WHERE
+		upc=? AND batchID=?");
+	$dbc->exec_statement($batchQ, array($upc,$batchID));
 
 	updateProductAllLanes($upc);	
 	header("Location: handheld.php?submit=Submit&upc=".$upc);
@@ -80,32 +77,32 @@ if (!isset($_REQUEST['upc'])){
 
 $upc = str_pad($_REQUEST['upc'],13,'0',STR_PAD_LEFT);
 
-$descQ = "SELECT description,discounttype,special_price,start_date,end_date
-	 FROM products WHERE upc='$upc'";
-$descR = $dbc->query($descQ);
+$descQ = $dbc->prepare_statement("SELECT description,discounttype,special_price,start_date,end_date
+	 FROM products WHERE upc=?");
+$descR = $dbc->exec_statement($descQ, array($upc));
 $row = $dbc->fetch_row($descR);
 
 if ($row['discounttype'] == 0){
 	echo "<i>Error: Item $upc doesn't appear to be one sale</i>";
 }
 
-$batchQ = "SELECT l.batchID,b.batchName FROM batchList as l
+$batchQ = $dbc->prepare_statement("SELECT l.batchID,b.batchName FROM batchList as l
 	INNER JOIN batches AS b ON b.batchID=l.batchID
-	WHERE l.upc='$upc' AND "
+	WHERE l.upc=? AND "
 	.$dbc->datediff($dbc->now(),'b.startdate')." >= 0 AND "
-	.$dbc->datediff($dbc->now(),'b.enddate')." <= 0 ";
-$batchR = $dbc->query($batchQ);
+	.$dbc->datediff($dbc->now(),'b.enddate')." <= 0 ");
+$batchR = $dbc->exec_statement($batchQ, array($upc));
 if ($dbc->num_rows($batchR) == 0){
-	$lcQ = "SELECT likeCode FROM upcLike WHERE upc='$upc'";
-	$lcR = $dbc->query($lcQ);
+	$lcQ = $dbc->prepare_statement("SELECT likeCode FROM upcLike WHERE upc=?");
+	$lcR = $dbc->exec_statement($lcQ, array($upc));
 	$lc = $dbc->num_rows($lcR)>0?array_pop($dbc->fetch_row($lcR)):0;
 
-	$batchQ = "SELECT l.batchID,b.batchName FROM batchList as l
+	$batchQ = $dbc->prepare_statement("SELECT l.batchID,b.batchName FROM batchList as l
 		INNER JOIN batches AS b ON b.batchID=l.batchID
-		WHERE l.upc='LC$lc' AND "
+		WHERE l.upc=? AND "
 		.$dbc->datediff($dbc->now(),'b.startdate')." >= 0 AND "
-		.$dbc->datediff($dbc->now(),'b.enddate')." <= 0 ";
-	$batchR = $dbc->query($batchQ);
+		.$dbc->datediff($dbc->now(),'b.enddate')." <= 0 ");
+	$batchR = $dbc->exec_statement($batchQ, array('LC'.$lc));
 }
 
 if ($dbc->num_rows($batchR) == 0){

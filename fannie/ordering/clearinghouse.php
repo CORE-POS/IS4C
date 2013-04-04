@@ -215,6 +215,7 @@ foreach($valid_ids as $id=>$nonsense)
 	$oids .= $id.",";
 $oids = rtrim($oids,",").")";
 
+if ($oids == '()') $oids = '(-1)';
 $itemsQ = "SELECT order_id,description,mixMatch FROM {$TRANS}PendingSpecialOrder WHERE order_id IN $oids
 	AND trans_id > 0";
 $itemsR = $dbc->query($itemsQ);

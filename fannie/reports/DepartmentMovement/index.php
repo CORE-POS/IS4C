@@ -20,18 +20,20 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
+header('Location: DepartmentMovementReport.php');
+exit;
 
 include('../../config.php');
 include($FANNIE_ROOT.'src/mysql_connect.php');
 
-$deptsQ = "select dept_no,dept_name from departments order by dept_no";
-$deptsR = $dbc->query($deptsQ);
+$deptsQ = $dbc->prepare_statement("select dept_no,dept_name from departments order by dept_no");
+$deptsR = $dbc->exec_statement($deptsQ);
 $deptsList = "";
 
-$deptSubQ = "SELECT superID,super_name FROM superDeptNames
+$deptSubQ = $dbc->prepare_statement("SELECT superID,super_name FROM superDeptNames
 		WHERE superID <> 0 
-		ORDER BY superID";
-$deptSubR = $dbc->query($deptSubQ);
+		ORDER BY superID");
+$deptSubR = $dbc->exec_statement($deptSubQ);
 
 $deptSubList = "";
 while($deptSubW = $dbc->fetch_array($deptSubR)){
@@ -101,22 +103,6 @@ function swap(src,dst){
 		       </td>
 
 		</tr>
-		<!--<tr>
-			<td> Select Dept/Buyer </td>
-			<td colspan=3>
-				<table width=100%><tr>
-					<td><input type=radio name=buyer value=1>Bulk</td>
-				       	<td><input type=radio name=buyer value=3>Cool</td>
-				      	<td><input type=radio name=buyer value=4>Deli</td>
-				      	<td><input type=radio name=buyer value=4>Grocery</td>
-				      	<td><input type=radio name=buyer value=5>HBC</td></tr>
-				      	<tr><td><input type=radio name=buyer value=6>Produce</td>
-				      	<td><input type=radio name=buyer value=7>Marketing</td>
-				      	<td><input type=radio name=buyer value=8>Meat</td>
-				      	<td><input type=radio name=buyer value=9>Gen Merch</td>
-				</tr></table>
-			</td>
-		</tr>-->
 		<tr> 
 			<td><b>Sum movement by?</b></td>
 			<td> <select name="sort" size="1">
@@ -125,9 +111,8 @@ function swap(src,dst){
 			<option>Department</option>
 			<option>Weekday</option>
 			</select> </td>
-			<td colspan=2>Date format is YYYY-MM-DD</br>(e.g. 2004-04-01 = April 1, 2004)<!-- Output to CSV?</td>
-		            <td><input type="checkbox" name="csv" value="yes">
-			                        yes --> </td>
+			<td colspan=2>Date format is YYYY-MM-DD</br>(e.g. 2004-04-01 = April 1, 2004)
+			                        </td>
 				</tr>
 		<tr> 
 			<td> <input type=submit name=submit value="Submit"> </td>

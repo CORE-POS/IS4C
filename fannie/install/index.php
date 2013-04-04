@@ -31,9 +31,9 @@
 ini_set('display_errors','1');
 ?>
 <?php 
-include('../config.php'); 
-include('util.php');
-include('db.php');
+require(dirname(__FILE__).'/../config.php'); 
+include(dirname(__FILE__).'/util.php');
+include(dirname(__FILE__).'/db.php');
 ?>
 Necessities
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
@@ -41,18 +41,22 @@ Necessities
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <a href="mem.php">Members</a>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<a href="prod.php">Products</a>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <a href="stores.php">Stores</a>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <a href="update.php">Updates</a>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<a href="module_system">Modules</a>
+<a href="plugins.php">Plugins</a>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<a href="menu.php">Menu</a>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <a href="sample_data/extra_data.php">Sample Data</a>
 <form action=index.php method=post>
 <h1>Fannie install checks</h1>
 <?php
 // path detection
-$FILEPATH = rtrim($_SERVER['SCRIPT_FILENAME'],'index.php');
+$FILEPATH = rtrim(__FILE__,'index.php');
 $URL = rtrim($_SERVER['SCRIPT_NAME'],'index.php');
 $FILEPATH = rtrim($FILEPATH,'/');
 $URL = rtrim($URL,'/');
@@ -91,28 +95,33 @@ else {
 	echo "</form>";
 	exit;
 }
-?>
-<br />
-Default Shelf Tag Layout
-<select name=FANNIE_DEFAULT_PDF>
-<?php
-if (!isset($FANNIE_DEFAULT_PDF)) $FANNIE_DEFAULT_PDF = 'Fannie Standard';
-if (isset($_REQUEST['FANNIE_DEFAULT_PDF'])) $FANNIE_DEFAULT_PDF = $_REQUEST['FANNIE_DEFAULT_PDF'];
-if (file_exists($FANNIE_ROOT.'admin/labels/scan_layouts.php')){
-	include($FANNIE_ROOT.'admin/labels/scan_layouts.php');
-	foreach(scan_layouts() as $l){
-		if ($l == $FANNIE_DEFAULT_PDF)
-			echo "<option selected>$l</option>";
-		else
-			echo "<option>$l</option>";
-	}
+
+/**
+  Detect databases that are supported
+*/
+$supportedTypes = array();
+if (extension_loaded('pdo') && extension_loaded('pdo_mysql'))
+	$supportedTypes['PDO_MYSQL'] = 'PDO MySQL';
+if (extension_loaded('mysqli'))
+	$supportedTypes['MYSQLI'] = 'MySQLi';
+if (extension_loaded('mysql'))
+	$supportedTypes['MYSQL'] = 'MySQL';
+if (extension_loaded('mssql'))
+	$supportedTypes['MSSQL'] = 'MSSQL';
+
+if (count($supportedTypes) == 0){
+	echo "<span style=\"color:red;\"><b>Error</b>: no database driver available</span>";
+	echo "<blockquote>";
+	echo 'Install at least one of the following PHP extensions: pdo_mysql, mysqli, mysql,
+		or mssql. If you installed one or more of these and are still seeing this
+		error, make sure they are enabled in your PHP configuration and try 
+		restarting your web server.';
+	echo "</blockquote>";
+	exit;
 }
-else {
-	echo "<option>No layouts found!</option>";
-}
-confset('FANNIE_DEFAULT_PDF',"'$FANNIE_DEFAULT_PDF'");
+$defaultDbType = array_shift(array_keys($supportedTypes));
+
 ?>
-</select>
 <hr />
 <b>Main Server</b><br />
 Server Database Host
@@ -127,25 +136,16 @@ echo "<input type=text name=FANNIE_SERVER value=\"$FANNIE_SERVER\" />";
 <br />Server Database Type
 <select name=FANNIE_SERVER_DBMS>
 <?php
-if(!isset($FANNIE_SERVER_DBMS)) $FANNIE_SERVER_DBMS = 'MYSQL';
+if(!isset($FANNIE_SERVER_DBMS)) $FANNIE_SERVER_DBMS = $defaultDbType;
 if (isset($_REQUEST['FANNIE_SERVER_DBMS'])){
 	$FANNIE_SERVER_DBMS = $_REQUEST['FANNIE_SERVER_DBMS'];
 }
 confset('FANNIE_SERVER_DBMS',"'$FANNIE_SERVER_DBMS'");
-if ($FANNIE_SERVER_DBMS == 'MYSQL'){
-	echo "<option value=MYSQL selected>MySQL</option>";
-	echo "<option value=MSSQL>SQL Server</option>";
-	echo "<option value=MYSQLI>MySQLi</option>";
-}
-else if ($FANNIE_SERVER_DBMS == 'MSSQL'){
-	echo "<option value=MYSQL>MySQL</option>";
-	echo "<option value=MSSQL selected>SQL Server</option>";
-	echo "<option value=MYSQLI>MySQLi</option>";
-}
-else {
-	echo "<option value=MYSQL>MySQL</option>";
-	echo "<option value=MSSQL>SQL Server</option>";
-	echo "<option value=MYSQLI selected>MySQLi</option>";
+foreach ($supportedTypes as $val=>$label){
+	printf('<option value="%s" %s>%s</option>',
+		$val,
+		($FANNIE_SERVER_DBMS == $val)?'selected':'',
+		$label);
 }
 ?>
 </select>
@@ -191,8 +191,12 @@ if ($sql === False)
 	echo "<span style=\"color:red;\">Failed</span>";
 else {
 	echo "<span style=\"color:green;\">Succeeded</span>";
-	create_op_dbs($sql);
+	$msgs = create_op_dbs($sql);
 	$createdOps = True;
+	foreach($msgs as $msg){
+		if ($msg['error'] == 0) continue;
+		echo $msg['error_msg'].'<br />';
+	}
 
 	// create auth tables later than the original
 	// setting in case db settings were wrong
@@ -212,12 +216,24 @@ if ($sql === False)
 	echo "<span style=\"color:red;\">Failed</span>";
 else {
 	echo "<span style=\"color:green;\">Succeeded</span>";
-	create_trans_dbs($sql);
-	create_dlogs($sql);
+	$msgs = create_trans_dbs($sql);
+	foreach($msgs as $msg){
+		if ($msg['error'] == 0) continue;
+		echo $msg['error_msg'].'<br />';
+	}
+	$msgs = create_dlogs($sql);
+	foreach($msgs as $msg){
+		if ($msg['error'] == 0) continue;
+		echo $msg['error_msg'].'<br />';
+	}
 	$createdTrans = True;
 }
 if ($createdOps && $createdTrans){
-	create_delayed_dbs();
+	$msgs = create_delayed_dbs();
+	foreach($msgs as $msg){
+		if ($msg['error'] == 0) continue;
+		echo $msg['error_msg'].'<br />';
+	}
 }
 ?>
 <hr />
@@ -232,7 +248,7 @@ echo "<input type=text name=FANNIE_ARCHIVE_DB value=\"$FANNIE_ARCHIVE_DB\" />";
 <br />Archive Method:
 <select name=FANNIE_ARCHIVE_METHOD>
 <?php
-if (!isset($FANNIE_ARCHIVE_METHOD)) $FANNIE_ARCHIVE_METHOD = 'tables';
+if (!isset($FANNIE_ARCHIVE_METHOD)) $FANNIE_ARCHIVE_METHOD = 'partitions';
 if (isset($_REQUEST['FANNIE_ARCHIVE_METHOD'])) $FANNIE_ARCHIVE_METHOD = $_REQUEST['FANNIE_ARCHIVE_METHOD'];
 if ($FANNIE_ARCHIVE_METHOD == 'tables'){
 	confset('FANNIE_ARCHIVE_METHOD',"'tables'");
@@ -312,7 +328,11 @@ else {
 		echo "<span style=\"color:red;\">Failed</span>";
 	else {
 		echo "<span style=\"color:green;\">Succeeded</span>";
-		create_archive_dbs($sql);
+		$msgs = create_archive_dbs($sql);
+		foreach($msgs as $msg){
+			if ($msg['error'] == 0) continue;
+			echo $msg['error_msg'].'<br />';
+		}
 	}
 }
 ?>
@@ -417,18 +437,15 @@ for($i=0; $i<$FANNIE_NUM_LANES; $i++){
 	$conf .= "'host'=>'{$FANNIE_LANES[$i]['host']}',";
 	echo "Lane ".($i+1)." Database Host: <input type=text name=LANE_HOST_$i value=\"{$FANNIE_LANES[$i]['host']}\" /><br />";
 	
-	if (!isset($FANNIE_LANES[$i]['type'])) $FANNIE_LANES[$i]['type'] = 'MYSQL';
+	if (!isset($FANNIE_LANES[$i]['type'])) $FANNIE_LANES[$i]['type'] = $defaultDbType;
 	if (isset($_REQUEST["LANE_TYPE_$i"])) $FANNIE_LANES[$i]['type'] = $_REQUEST["LANE_TYPE_$i"];
 	$conf .= "'type'=>'{$FANNIE_LANES[$i]['type']}',";
 	echo "Lane ".($i+1)." Database Type: <select name=LANE_TYPE_$i>";
-	if ($FANNIE_LANES[$i]['type'] == 'MYSQL'){
-		echo "<option value=MYSQL selected>MySQL</option><option value=MSSQL>SQL Server</option><option value=MYSQLI>MySQLi</option>";
-	}
-	else if ($FANNIE_LANES[$i]['type'] == 'MSSQL'){
-		echo "<option value=MYSQL>MySQL</option><option selected value=MSSQL>SQL Server</option><option value=MYSQLI>MySQLi</option>";
-	}
-	else {
-		echo "<option value=MYSQL>MySQL</option><option value=MSSQL>SQL Server</option><option selected value=MYSQLI>MySQLi</option>";
+	foreach ($supportedTypes as $val=>$label){
+		printf('<option value="%s" %s>%s</option>',
+			$val,
+			($FANNIE_LANES[$i]['type'] == $val)?'selected':'',
+			$label);
 	}
 	echo "</select><br />";
 
@@ -572,267 +589,287 @@ confset('FANNIE_SCALES',$conf);
 function create_op_dbs($con){
 	global $FANNIE_OP_DB, $FANNIE_SERVER_DBMS;
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+	$ret = array();
+
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 			'employees','op');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 			'departments','op');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 			'deptMargin','op');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 			'deptSalesCodes','op');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 			'dateRestrict','op');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 			'subdepts','op');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 			'superdepts','op');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 			'superDeptNames','op');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 			'superMinIdView','op');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 			'MasterSuperDepts','op');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 			'products','op');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 			'productBackup','op');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 			'likeCodes','op');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 			'upcLike','op');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 			'taxrates','op');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 			'prodExtra','op');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+			'prodFlags','op');
+
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+			'prodPhysicalLocation','op');
+
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 			'productUser','op');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 			'prodUpdate','op');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 			'prodUpdateArchive','op');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 			'prodPriceHistory','op');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 			'prodDepartmentHistory','op');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 			'batches','op');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 			'batchList','op');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 			'batchType','op');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 			'batchowner','op');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 			'batchCutPaste','op');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 			'batchBarcodes','op');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 			'batchMergeTable','op');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 			'batchMergeProd','op');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 			'likeCodeView','op');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 			'batchMergeLC','op');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 			'batchPriority30','op');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 			'batchPriority20','op');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 			'batchPriority10','op');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 			'batchPriority0','op');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 			'batchPriority','op');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 			'unfi','op');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 			'unfi_order','op');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 			'unfi_diff','op');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 			'unfi_all','op');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 			'unfiCategories','op');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 			'shelftags','op');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 			'custdata','op');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 			'custdataBackup','op');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 			'custAvailablePrefs','op');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 			'custPreferences','op');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 			'meminfo','op');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 			'memtype','op');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 			'memdefaults','op');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 			'memberCards','op');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 			'memDates','op');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 			'memContact','op');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 			'memContactPrefs','op');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 			'tenders','op');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 			'customReceipt','op');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 			'houseCoupons','op');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+			'houseVirtualCoupons','op');
+
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 			'houseCouponItems','op');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 			'disableCoupon','op');
 	
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 			'productMargin','op');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 			'vendors','op');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 			'vendorItems','op');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 			'vendorSKUtoPLU','op');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 			'vendorSRPs','op');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 			'vendorDepartments','op');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 			'vendorLoadScripts','op');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 			'scaleItems','op');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 			'PurchaseOrder','op');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 			'PurchaseOrderItems','op');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 			'emailLog','op');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 			'UpdateLog','op');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 			'memberNotes','op');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 			'suspensions','op');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 			'reasoncodes','op');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 			'suspension_history','op');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 			'cronBackup','op');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 			'customReports','op');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 			'AdSaleDates','op');
+
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+			'custReceiptMessage','op');
+
+	return $ret;
 }
 
 function create_trans_dbs($con){
 	global $FANNIE_TRANS_DB, $FANNIE_SERVER_DBMS, $FANNIE_OP_DB;
 
+	$ret = array();
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
 			'alog','trans');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
 			'efsnetRequest','trans');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
 			'efsnetResponse','trans');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
 			'efsnetRequestMod','trans');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+			'efsnetTokens','trans');
+
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
 			'ccReceiptView','trans');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
 			'valutecRequest','trans');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
 			'valutecResponse','trans');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
 			'valutecRequestMod','trans');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
 			'voidTransHistory','trans');
 
 	/* invoice stuff is very beta; not documented yet */
@@ -844,7 +881,8 @@ function create_trans_dbs($con){
 		price float,
 		INDEX (upc))";
 	if (!$con->table_exists('InvDelivery',$FANNIE_TRANS_DB)){
-		$con->query($invCur,$FANNIE_TRANS_DB);
+		$prep = $con->prepare_statement($invCur,$FANNIE_TRANS_DB);
+		$con->exec_statement($prep,array(),$FANNIE_TRANS_DB);
 	}
 
 	$invCur = "CREATE TABLE InvDeliveryLM (
@@ -854,7 +892,8 @@ function create_trans_dbs($con){
 		quantity double,
 		price float)";
 	if (!$con->table_exists('InvDeliveryLM',$FANNIE_TRANS_DB)){
-		$con->query($invCur,$FANNIE_TRANS_DB);
+		$prep = $con->prepare_statement($invCur,$FANNIE_TRANS_DB);
+		$con->exec_statement($prep,array(),$FANNIE_TRANS_DB);
 	}
 
 	$invArc = "CREATE TABLE InvDeliveryArchive (
@@ -865,7 +904,8 @@ function create_trans_dbs($con){
 		price float,
 		INDEX(upc))";
 	if (!$con->table_exists('InvDeliveryArchive',$FANNIE_TRANS_DB)){
-		$con->query($invArc,$FANNIE_TRANS_DB);
+		$prep = $con->prepare_statement($invArc,$FANNIE_TRANS_DB);
+		$con->exec_statement($prep,array(),$FANNIE_TRANS_DB);
 	}
 
 	$invRecent = "CREATE VIEW InvRecentOrders AS
@@ -877,7 +917,8 @@ function create_trans_dbs($con){
 		sum(price) as price
 		FROM InvDeliveryLM GROUP BY inv_date,upc";
 	if (!$con->table_exists('InvRecentOrders',$FANNIE_TRANS_DB)){
-		$con->query($invRecent,$FANNIE_TRANS_DB);
+		$prep = $con->prepare_statement($invRecent,$FANNIE_TRANS_DB);
+		$con->exec_statement($prep,array(),$FANNIE_TRANS_DB);
 	}
 
 	$union = "CREATE VIEW InvDeliveryUnion AS
@@ -896,7 +937,8 @@ function create_trans_dbs($con){
 		FROM InvDeliveryArchive
 		GROUP BY upc,vendor_id";
 	if (!$con->table_exists("InvDeliveryUnion",$FANNIE_TRANS_DB)){
-		$con->query($union,$FANNIE_TRANS_DB);
+		$prep = $con->prepare_statement($union,$FANNIE_TRANS_DB);
+		$con->exec_statement($prep,array(),$FANNIE_TRANS_DB);
 	}
 
 	$total = "CREATE VIEW InvDeliveryTotals AS
@@ -905,155 +947,157 @@ function create_trans_dbs($con){
 		FROM InvDeliveryUnion
 		GROUP BY upc";
 	if (!$con->table_exists("InvDeliveryTotals",$FANNIE_TRANS_DB)){
-		$con->query($total,$FANNIE_TRANS_DB);
+		$prep = $con->prepare_statement($total,$FANNIE_TRANS_DB);
+		$con->exec_statement($prep,array(),$FANNIE_TRANS_DB);
 	}
 
 
 	
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
 			'ar_history_backup','trans');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
 			'AR_EOM_Summary','trans');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
-			'AR_EOM_Summary_cache','trans');
-
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
 			'lane_config','trans');
 
+	return $ret;
 }
 
 function create_dlogs($con){
 	global $FANNIE_TRANS_DB, $FANNIE_SERVER_DBMS, $FANNIE_AR_DEPARTMENTS, $FANNIE_EQUITY_DEPARTMENTS, $FANNIE_OP_DB;
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+	$ret = array();
+
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
 			'dtransactions','trans');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
 			'transarchive','trans');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
 			'suspended','trans');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
 			'SpecialOrderID','trans');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
 			'SpecialOrderDeptMap','trans');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
 			'SpecialOrderContact','trans');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
 			'SpecialOrderNotes','trans');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
 			'SpecialOrderHistory','trans');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
 			'SpecialOrderStatus','trans');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
 			'PendingSpecialOrder','trans');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
 			'CompleteSpecialOrder','trans');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
 			'dlog','trans');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
 			'dlog_90_view','trans');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
 			'dlog_15','trans');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
 			'suspendedtoday','trans');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
 			'TenderTapeGeneric','trans');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
 			'rp_dt_receipt_90','trans');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
 			'rp_receipt_header_90','trans');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
-			'memIouToday','trans');
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+			'ar_live_balance','trans');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
-			'newBalanceToday_cust','trans');
-
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
 			'ar_history','trans');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
 			'ar_history_sum','trans');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
-			'ar_sum_cache','trans');
-
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
 			'stockpurchases','trans');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
 			'stockSum_purch','trans');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
 			'stockSumToday','trans');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
 			'newBalanceStockToday_test','trans');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
 			'memChargeBalance','trans');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
 			'unpaid_ar_balances','trans');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
 			'unpaid_ar_today','trans');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
 			'dheader','trans');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
 			'dddItems','trans');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
 			'CashPerformDay','trans');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
 			'CashPerformDay_cache','trans');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
 			'houseCouponThisMonth','trans');
+
+	return $ret;
 }
 
 function create_delayed_dbs(){
 	global $FANNIE_SERVER,$FANNIE_SERVER_DBMS,$FANNIE_SERVER_USER,$FANNIE_SERVER_PW,$FANNIE_OP_DB,$FANNIE_TRANS_DB;
 
+	$ret = array();
+
 	$con = db_test_connect($FANNIE_SERVER,$FANNIE_SERVER_DBMS,
 		$FANNIE_OP_DB,$FANNIE_SERVER_USER,
 		$FANNIE_SERVER_PW);
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 			'expingMems','op');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 			'expingMems_thisMonth','op');
 
 	$con = db_test_connect($FANNIE_SERVER,$FANNIE_SERVER_DBMS,
 		$FANNIE_TRANS_DB,$FANNIE_SERVER_USER,
 		$FANNIE_SERVER_PW);
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
 			'ar_history_today','trans');
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+			'ar_history_today_sum','trans');
+
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
 			'AR_statementHistory','trans');
 
 	$invSalesView = "CREATE VIEW InvSales AS
@@ -1063,7 +1107,8 @@ function create_delayed_dbs(){
 		AND trans_type = 'I' AND trans_subtype <> '0'
 		AND register_no <> 99 AND emp_no <> 9999";
 	if (!$con->table_exists("InvSales",$FANNIE_TRANS_DB)){
-		$con->query($invSalesView,$FANNIE_TRANS_DB);
+		$prep = $con->prepare_statement($invSalesView,$FANNIE_TRANS_DB);
+		$con->exec_statement($prep,array(),$FANNIE_TRANS_DB);
 	}
 
 	$invRecentSales = "CREATE VIEW InvRecentSales AS
@@ -1077,7 +1122,8 @@ function create_delayed_dbs(){
 		".$con->datediff('s.inv_date','t.inv_date')." >= 0
 		group by t.upc";
 	if (!$con->table_exists("InvRecentSales",$FANNIE_TRANS_DB)){
-		$con->query($invRecentSales,$FANNIE_TRANS_DB);
+		$prep = $con->prepare_statement($invRecentSales,$FANNIE_TRANS_DB);
+		$con->exec_statement($prep,array(),$FANNIE_TRANS_DB);
 	}
 
 	$invSales = "CREATE TABLE InvSalesArchive (
@@ -1087,7 +1133,8 @@ function create_delayed_dbs(){
 		price float,
 		INDEX(upc))";
 	if (!$con->table_exists('InvSalesArchive',$FANNIE_TRANS_DB)){
-		$con->query($invSales,$FANNIE_TRANS_DB);
+		$prep = $con->prepare_statement($invSales,$FANNIE_TRANS_DB);
+		$con->exec_statement($prep,array(),$FANNIE_TRANS_DB);
 	}
 
 	$union = "CREATE VIEW InvSalesUnion AS
@@ -1102,7 +1149,8 @@ function create_delayed_dbs(){
 		FROM InvSalesArchive
 		GROUP BY upc";
 	if (!$con->table_exists("InvSalesUnion",$FANNIE_TRANS_DB)){
-		$con->query($union,$FANNIE_TRANS_DB);
+		$prep = $con->prepare_statement($union,$FANNIE_TRANS_DB);
+		$con->exec_statement($prep,array(),$FANNIE_TRANS_DB);
 	}
 
 	$total = "CREATE VIEW InvSalesTotals AS
@@ -1111,7 +1159,8 @@ function create_delayed_dbs(){
 		FROM InvSalesUnion
 		GROUP BY upc";
 	if (!$con->table_exists("InvSalesTotals",$FANNIE_TRANS_DB)){
-		$con->query($total,$FANNIE_TRANS_DB);
+		$prep = $con->prepare_statement($total,$FANNIE_TRANS_DB);
+		$con->exec_statement($prep,array(),$FANNIE_TRANS_DB);
 	}
 		
 	$adj = "CREATE TABLE InvAdjustments (
@@ -1120,7 +1169,8 @@ function create_delayed_dbs(){
 		diff double,
 		INDEX(upc))";
 	if (!$con->table_exists("InvAdjustments",$FANNIE_TRANS_DB)){
-		$con->query($adj,$FANNIE_TRANS_DB);
+		$prep = $con->prepare_statement($adj,$FANNIE_TRANS_DB);
+		$con->exec_statement($prep,array(),$FANNIE_TRANS_DB);
 	}
 
 	$adjTotal = "CREATE VIEW InvAdjustTotals AS
@@ -1128,7 +1178,8 @@ function create_delayed_dbs(){
 		FROM InvAdjustments
 		GROUP BY upc";
 	if (!$con->table_exists("InvAdjustTotals",$FANNIE_TRANS_DB)){
-		$con->query($adjTotal,$FANNIE_TRANS_DB);
+		$prep = $con->prepare_statement($adjTotal,$FANNIE_TRANS_DB);
+		$con->exec_statement($prep,array(),$FANNIE_TRANS_DB);
 	}
 
 	$opstr = $FANNIE_OP_DB;
@@ -1153,7 +1204,8 @@ function create_delayed_dbs(){
 		ON d.upc = s.upc LEFT JOIN
 		InvAdjustTotals AS a ON d.upc=a.upc";
 	if (!$con->table_exists("Inventory",$FANNIE_TRANS_DB)){
-		$con->query($inv,$FANNIE_TRANS_DB);
+		$prep = $con->prepare_statement($inv,$FANNIE_TRANS_DB);
+		$con->exec_statement($prep,array(),$FANNIE_TRANS_DB);
 	}
 
 	$cache = "CREATE TABLE InvCache (
@@ -1164,12 +1216,17 @@ function create_delayed_dbs(){
 		LastAdjustDate datetime,
 		CurrentStock int)";
 	if (!$con->table_exists("InvCache",$FANNIE_TRANS_DB)){
-		$con->query($cache,$FANNIE_TRANS_DB);
+		$prep = $con->prepare_statement($cache,$FANNIE_TRANS_DB);
+		$con->exec_statement($prep,array(),$FANNIE_TRANS_DB);
 	}
+	
+	return $ret;
 }
 
 function create_archive_dbs($con) {
 	global $FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,$FANNIE_ARCHIVE_DB,$FANNIE_ARCHIVE_METHOD;
+
+	$ret = array();
 
 	$dstr = date("Ym");
 	$archive = "transArchive".$dstr;
@@ -1187,7 +1244,8 @@ function create_archive_dbs($con) {
 			{$FANNIE_TRANS_DB}{$dbconn}dtransactions";
 	}
 	if (!$con->table_exists($archive,$FANNIE_ARCHIVE_DB)){
-		$con->query($query,$FANNIE_ARCHIVE_DB);
+		$create = $con->prepare_statement($query,$FANNIE_ARCHIVE_DB);
+		$con->exec_statement($create,array(),$FANNIE_ARCHIVE_DB);
 		// create the first partition if needed
 		if ($FANNIE_ARCHIVE_METHOD == "partitions"){
 			$p = "p".date("Ym");
@@ -1197,7 +1255,8 @@ function create_archive_dbs($con) {
 				(PARTITION %s 
 					VALUES LESS THAN (TO_DAYS('%s'))
 				)",$p,$limit);
-			$con->query($partR);
+			$prep = $dbc->prepare_statement($partQ);
+			$con->exec_statement($prep);
 		}
 	}
 
@@ -1249,8 +1308,9 @@ function create_archive_dbs($con) {
 
 	$dlog_view = ($FANNIE_ARCHIVE_METHOD != "partitions") ? "dlog".$dstr : "dlogBig";
 	if (!$con->table_exists($dlog_view,$FANNIE_ARCHIVE_DB)){
-		$con->query("CREATE VIEW $dlog_view AS $dlogView",
+		$prep = $con->prepare_statement("CREATE VIEW $dlog_view AS $dlogView",
 			$FANNIE_ARCHIVE_DB);
+		$con->exec_statement($prep,array(),$FANNIE_ARCHIVE_DB);
 	}
 
 	$rp_dt_view = ($FANNIE_ARCHIVE_METHOD != "partitions") ? "rp_dt_receipt_".$dstr : "rp_dt_receipt_big";
@@ -1365,7 +1425,8 @@ function create_archive_dbs($con) {
 			where voided <> 5 and UPC <> 'TAX' and UPC <> 'DISCOUNT'";
 	}
 	if (!$con->table_exists($rp_dt_view,$FANNIE_ARCHIVE_DB)){
-		$con->query($rp1Q,$FANNIE_ARCHIVE_DB);
+		$prep = $con->prepare_statement($rp1Q,$FANNIE_ARCHIVE_DB);
+		$con->exec_statement($prep,array(),$FANNIE_ARCHIVE_DB);
 	}
 
 	$rp_view = ($FANNIE_ARCHIVE_METHOD != "partitions") ? "rp_receipt_header_".$dstr : "rp_receipt_header_big";
@@ -1408,29 +1469,33 @@ function create_archive_dbs($con) {
 			group by register_no, emp_no, trans_no, card_no, datetime";
 	}
 	if (!$con->table_exists($rp_view,$FANNIE_ARCHIVE_DB)){
-		$con->query($rp2Q,$FANNIE_ARCHIVE_DB);
+		$prep = $con->prepare_statement($rp2Q,$FANNIE_ARCHIVE_DB);
+		$con->exec_statement($prep,array(),$FANNIE_ARCHIVE_DB);
 	}
 
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_ARCHIVE_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_ARCHIVE_DB,
 			'sumUpcSalesByDay','arch');
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_ARCHIVE_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_ARCHIVE_DB,
 			'sumRingSalesByDay','arch');
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_ARCHIVE_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_ARCHIVE_DB,
 			'vRingSalesToday','arch');
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_ARCHIVE_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_ARCHIVE_DB,
 			'sumDeptSalesByDay','arch');
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_ARCHIVE_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_ARCHIVE_DB,
 			'vDeptSalesToday','arch');
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_ARCHIVE_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_ARCHIVE_DB,
 			'sumFlaggedSalesByDay','arch');
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_ARCHIVE_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_ARCHIVE_DB,
 			'sumMemSalesByDay','arch');
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_ARCHIVE_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_ARCHIVE_DB,
 			'sumMemTypeSalesByDay','arch');
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_ARCHIVE_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_ARCHIVE_DB,
 			'sumTendersByDay','arch');
-	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_ARCHIVE_DB,
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_ARCHIVE_DB,
 			'sumDiscountsByDay','arch');
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_ARCHIVE_DB,
+			'reportDataCache','arch');
+	return $ret;
 }
 
 ?>

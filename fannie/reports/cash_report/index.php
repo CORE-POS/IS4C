@@ -52,6 +52,7 @@ include('../../src/trans_connect.php');
 $emp_no = $_GET['emp_no'];
 
 $query = "";
+$args = array();
 if($emp_no==""){
 $query = "select
           emp_no,
@@ -79,11 +80,12 @@ $query = "select
           SUM(cancels)as cancels,
           MIN(proc_date)
           FROM CashPerformDay_cache
-          WHERE emp_no = $emp_no
+          WHERE emp_no = ?
 	  GROUP BY emp_no,".$dbc->weekdiff($dbc->now(),'proc_date').",year(proc_date)
 	  ORDER BY year(proc_date) desc,".$dbc->weekdiff($dbc->now(),'proc_date')." asc";
+$args = array($emp_no);
 }
-$result = $dbc->query($query);
+$result = $dbc->exec_statement($query,$args);
 
 $rpm = array(); // rings per minute
 $ipm = array(); // items per minute

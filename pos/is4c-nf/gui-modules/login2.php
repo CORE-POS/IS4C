@@ -24,6 +24,7 @@
 ini_set('display_errors','1');
 
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
+AutoLoader::LoadMap();
 
 class login2 extends BasicPage {
 
@@ -40,7 +41,11 @@ class login2 extends BasicPage {
 				$sd = MiscLib::scaleObject();
 				if (is_object($sd))
 					$sd->ReadReset();
-				$this->change_page($this->page_url."gui-modules/pos2.php");
+				$my_drawer = ReceiptLib::currentDrawer();
+				if ($my_drawer == 0)
+					$this->change_page($this->page_url."gui-modules/drawerPage.php");
+				else
+					$this->change_page($this->page_url."gui-modules/pos2.php");
 				return False;
 			}
 			else {
@@ -74,7 +79,7 @@ class login2 extends BasicPage {
 		<div id="loginTopBar">
 			<div class="name">I S 4 C</div>
 			<div class="version">P H P &nbsp; D E V E L O P M E N T
-			&nbsp; V E R S I O N &nbsp; 2 .0 .0 (beta)</div>
+			&nbsp; V E R S I O N &nbsp; 2 .0 .0</div>
 			<div class="welcome"><?php echo _("W E L C O M E"); ?></div>
 		</div>
 		<div id="loginCenter">
@@ -84,8 +89,9 @@ class login2 extends BasicPage {
 					action="<?php echo $_SERVER['PHP_SELF']; ?>">
 				<input type="password" name="reginput" size="20" tabindex="0" 
 					onblur="$('#reginput').focus();" id="reginput" >
-				<p />
+				<p>
 				<?php echo $this->msg ?>
+				</p>
 				</form>
 			</div>	
 		</div>
@@ -102,7 +108,7 @@ class login2 extends BasicPage {
 			echo "onmouseover=\"document.exit.src='{$this->page_url}graphics/switchred2.gif';\" ";
 			echo "onmouseout=\"document.exit.src='{$this->page_url}graphics/switchblue2.gif';\">";
 			?>
-			<img name="exit" border="0" src="<?php echo $this->page_url; ?>graphics/switchblue2.gif" /></a>
+			<img id="exit" style="border:0;" alt="exit"  src="<?php echo $this->page_url; ?>graphics/switchblue2.gif" /></a>
 	
 		</div>
 		<form name="hidden">

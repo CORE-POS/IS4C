@@ -35,8 +35,6 @@ $query = "SELECT CardNo,
           AND PersonNum = 1
           order by m.card_no";
 
-//select_to_table($query,0,';#ffffff');
-
 $result = $sql->query($query,$db);
 
 echo '<table>';

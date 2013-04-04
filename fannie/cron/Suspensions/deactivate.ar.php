@@ -56,31 +56,34 @@ $sql = new SQLManager($FANNIE_SERVER,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 $TRANS = $FANNIE_TRANS_DB . ($FANNIE_SERVER_DBMS=="MSSQL" ? 'dbo.' : '.');
 
 $susQ = "INSERT INTO suspensions
-	SELECT m.card_no,'I',c.memType,c.Type,'',
-		".$sql->now().",m.ads_OK,c.Discount,
-		c.memDiscountLimit,1
-	FROM meminfo AS m
-		LEFT JOIN custdata AS c ON c.CardNo=m.card_no AND c.personNum=1
-		LEFT JOIN {$TRANS}newBalanceToday_cust AS n ON m.card_no=n.memnum
-		LEFT JOIN {$TRANS}AR_EOM_Summary AS a ON a.cardno=m.card_no
-	WHERE a.twoMonthBalance <= n.balance
-		AND a.lastMonthPayments < a.twoMonthBalance
-		AND c.type='PC' AND n.balance > 0
-		AND c.memtype in (1,3)
-		AND NOT EXISTS (SELECT NULL FROM suspensions AS s WHERE s.cardno=m.card_no)";
+	select m.card_no,'I',c.memType,c.Type,'',
+	".$sql->now().",m.ads_OK,c.Discount,
+	c.memDiscountLimit,1
+	from meminfo as m left join
+	custdata as c on c.CardNo=m.card_no and c.personNum=1
+	left join {$TRANS}ar_live_balance as n on m.card_no=n.card_no
+	left join {$TRANS}AR_EOM_Summary AS a ON a.cardno=m.card_no
+	where a.twoMonthBalance <= n.balance
+	AND a.lastMonthPayments < a.twoMonthBalance
+	and c.type='PC' and n.balance > 0
+	and c.memtype in (1,3)
+	and NOT EXISTS(SELECT NULL FROM suspensions as s
+	WHERE s.cardno=m.card_no)";
 $sql->query($susQ);
 
 $histQ = "INSERT INTO suspension_history
-	SELECT 'automatic',".$sql->now().",'', m.card_no,1
-	FROM meminfo AS m
-		LEFT JOIN custdata AS c ON c.CardNo=m.card_no AND c.personNum=1
-		LEFT JOIN {$TRANS}newBalanceToday_cust AS n ON m.card_no=n.memnum
-		LEFT JOIN {$TRANS}AR_EOM_Summary AS a ON a.cardno=m.card_no
-	WHERE a.twoMonthBalance <= n.balance
-		AND a.lastMonthPayments < a.twoMonthBalance
-		AND c.type='PC' AND n.balance > 0
-		AND c.memtype in (1,3)
-		AND NOT EXISTS (SELECT NULL FROM suspensions AS s WHERE s.cardno=m.card_no)";
+	    select 'automatic',".$sql->now().",'',
+	    m.card_no,1
+	    from meminfo as m left join
+	    custdata as c on c.CardNo=m.card_no and c.personNum=1
+	    left join {$TRANS}ar_live_balance as n on m.card_no=n.card_no
+	    left join {$TRANS}AR_EOM_Summary AS a ON a.cardno=m.card_no
+	    where a.twoMonthBalance <= n.balance
+	    AND a.lastMonthPayments < a.twoMonthBalance
+	    and c.type='PC' and n.balance > 0
+	    and c.memtype in (1,3)
+	    and NOT EXISTS(SELECT NULL FROM suspensions as s
+	    WHERE s.cardno=m.card_no)";
 $sql->query($histQ);
 
 $custQ = "UPDATE custdata AS c

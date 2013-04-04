@@ -22,7 +22,7 @@ $q = "select c.cardno,c.firstname,c.lastname,
 		then stockPurchase else 0 end) <> 0
       order by convert(int,c.cardno)";
 
-select_to_table($q,1,'#ffffff',120,0,0,array('Mem#','First','Last','Equity'));
+select_to_table2($q,array(),1,'#ffffff',120,0,0,array('Mem#','First','Last','Equity'));
 
 
 ?>

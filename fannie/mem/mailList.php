@@ -30,7 +30,7 @@ include($FANNIE_ROOT.'src/ReportConvert/HtmlToArray.php');
 include($FANNIE_ROOT.'src/ReportConvert/ArrayToXls.php');
 include($FANNIE_ROOT.'src/ReportConvert/ArrayToCsv.php');
 
-$query = "SELECT CardNo, 
+$query = $dbc->prepare_statement("SELECT CardNo, 
           LastName, 
           FirstName, 
           street,
@@ -56,11 +56,9 @@ $query = "SELECT CardNo,
           AND ads_OK = 1
           AND personNum = 1
 	  AND LastName <> 'NEW MEMBER'
-          order by m.card_no";
+          order by m.card_no");
 
-//select_to_table($query,0,';#ffffff');
-
-$result = $dbc->query($query);
+$result = $dbc->exec_statement($query);
 
 $ret = array();
 while($row = $dbc->fetch_row($result)){

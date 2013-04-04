@@ -20,7 +20,8 @@ $query = "SELECT month(tdate),day(tdate),year(tdate),trans_num,
 	sum(case when trans_subtype='MI' then total else 0 end) as charges,
 	sum(case when department in (991,992) then total else 0 end) as stock,
 	sum(case when trans_subtype='MA' then total else 0 end) as madcoupon,
-	sum(case when upc='DISCOUNT' then total else 0 end) as discountTTL
+	sum(case when upc='DISCOUNT' then total else 0 end) as discountTTL,
+	sum(case when upc like '00499999%' then total else 0 end) as wfcoupon
 	FROM $table as t
 	WHERE card_no=$mem
 	AND tdate BETWEEN '$start 00:00:00' AND '$end 23:59:59'
@@ -52,15 +53,16 @@ echo "<table cellspacing=0 cellpadding=4 border=1 style=\"font-weight:bold;\">";
 while($row = $sql->fetch_row($result)){
 	echo "<tr>";
 	printf("<td>%d/%d/%d</td>",$row[0],$row[1],$row[2]);
-	printf("<td><a href=\"{$FANNIE_URL}admin/LookupReceipt/reprint.php?receipt=%s&month=%d&day=%d&year=%d\">%s</a></td>",
+	printf("<td><a href=\"{$FANNIE_URL}admin/LookupReceipt/RenderReceiptPage.php?receipt=%s&month=%d&day=%d&year=%d\">%s</a></td>",
 		$row[3],$row[0],$row[1],$row[2],$row[3]);
 	printf("<td>\$%.2f</td>",$row[4]);
 	echo "<td>";
-	if ($row[5] != 0) echo "<span style=\"color:#bb44bb;\">P</span>";
-	if ($row[6] != 0) echo "<span style=\"color:#0055aa;\">C</span>";
-	if ($row[7] != 0) echo "<span style=\"color:#ff3300;\">S</span>";
-	if ($row[8] != 0) echo "<span style=\"color:#003311;\">MC</span>";
-	if ($row[9] != 0) echo "<span style=\"color:#003333;\">%</span>";
+	if ($row[5] != 0) echo "<span style=\"color:#bb44bb;\" title=\"A/R Payment\">P</span>";
+	if ($row[6] != 0) echo "<span style=\"color:#0055aa;\" title=\"A/R Charge\">C</span>";
+	if ($row[7] != 0) echo "<span style=\"color:#ff3300;\" title=\"Equity Purchase\">S</span>";
+	if ($row[8] != 0) echo "<span style=\"color:#003311;\" title=\"Quarterly Coupon\">MC</span>";
+	if ($row[9] != 0) echo "<span style=\"color:#003333;\" title=\"Percent Discount\">%</span>";
+	if ($row[10] != 0) echo "<span style=\"color:#660033;\" title=\"In Store Coupon\">IC</span>";
 	echo "&nbsp;</td>";
 	echo "</tr>";
 	$spending += $row[4];

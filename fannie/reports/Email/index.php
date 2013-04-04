@@ -11,8 +11,11 @@ include($FANNIE_ROOT.'src/header.html');
 
 if (isset($_REQUEST['types'])){
 	$tstr = "(";
-	foreach($_REQUEST['types'] as $t)
-		$tstr .= ((int)$t).",";
+	$args = array();
+	foreach($_REQUEST['types'] as $t){
+		$tstr .= "?,";
+		$args[] = (int)$t;
+	}
 	$tstr = rtrim($tstr,",").")";
 
 	$q = "SELECT m.email_1 FROM
@@ -30,9 +33,14 @@ if (isset($_REQUEST['types'])){
 	$q .= "(a.memType IN $tstr ";
 	if (isset($_REQUEST['inactives'])){
 		$q .= "OR (s.memType1 IN $tstr AND s.type='I')";
+		/* double up arguments */
+		$temp = $args;
+		foreach($args as $a) $temp[] = $a;
+		$args = $temp;
 	}
 	$q .= ") AND email_1 LIKE '%@%.%'";
-	$r = $dbc->query($q);
+	$p = $dbc->prepare_statement($q);
+	$r = $dbc->exec_statement($p,$args);
 
 	echo 'Matched '.$dbc->num_rows($r).' accounts';
 	echo '&nbsp;&nbsp;&nbsp;&nbsp;';
@@ -48,7 +56,8 @@ if (isset($_REQUEST['types'])){
 else {
 	echo '<form action="index.php" method="get">';
 	echo '<div style="float:left;"><fieldset><legend>Include Types</legend>';
-	$r = $dbc->query("SELECT memtype,memDesc FROM memtype ORDER BY memtype");
+	$p = $dbc->prepare_statement("SELECT memtype,memDesc FROM memtype ORDER BY memtype");
+	$r = $dbc->exec_statement($p);
 	while($w = $dbc->fetch_row($r)){
 		printf('<input type="checkbox" value="%d" name="types[]" /> %s <br />',
 			$w['memtype'],$w['memDesc']);

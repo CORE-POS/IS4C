@@ -27,6 +27,8 @@ a { color: blue; }
 <br />
 <li><a href=importWeekly.php>Import Weekly Hours</a></li>
 <li><a href=weeklyReport.php>View Weekly Hours</a></li>
+<br />
+<li><a href=sync.php>Import New Employees</a></li>
 </ul>
 </body>
 </html>

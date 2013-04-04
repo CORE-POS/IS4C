@@ -26,6 +26,8 @@ include($FANNIE_ROOT.'src/mysql_connect.php');
 $page_title = "Fannie :: Patronage Tools";
 $header = "Working Copy Report";
 
+ob_start();
+
 if (!isset($_REQUEST['excel'])){
 	include($FANNIE_ROOT.'src/header.html');
 	echo '<a href="index.php">Patronage Menu</a>';
@@ -35,10 +37,10 @@ if (!isset($_REQUEST['excel'])){
 }
 else {
 	header('Content-Type: application/ms-excel');
-	header('Content-Disposition: attachment; filename="patronage-draft.xls"');
+	header('Content-Disposition: attachment; filename="patronage-draft.csv"');
 }
 
-$q = "SELECT p.cardno,c.LastName,c.FirstName,c.Type,
+$q = $dbc->prepare_statement("SELECT p.cardno,c.LastName,c.FirstName,c.Type,
 	CASE WHEN c.Type IN ('REG','PC') then a.memDesc
 	ELSE b.memDesc END as memDesc,
 	p.purchase,p.discounts,p.rewards,p.net_purch,
@@ -50,8 +52,8 @@ $q = "SELECT p.cardno,c.LastName,c.FirstName,c.Type,
 	LEFT JOIN suspensions AS s ON p.cardno=s.cardno
 	LEFT JOIN memtype AS a ON c.memType=a.memtype
 	LEFT JOIN memtype AS b ON s.memtype1=b.memtype
-	ORDER BY p.cardno";
-$r = $dbc->query($q);
+	ORDER BY p.cardno");
+$r = $dbc->exec_statement($q);
 echo '<table cellpadding="4" cellspacing="0" border="1">';
 echo '<tr><th>#</th><th>Last</th><th>First</th><th>Status</th>
 <th>Type</th><th>Gross</th><th>Discounts</th><th>Rewards</th>
@@ -69,4 +71,20 @@ echo '</table>';
 
 if (!isset($_REQUEST['excel']))
 	include($FANNIE_ROOT.'src/footer.html');
+
+$output = ob_get_contents();
+ob_end_clean();
+
+if (!isset($_REQUEST['excel'])){
+	echo $output;
+}
+else {
+	include($FANNIE_ROOT.'src/ReportConvert/HtmlToArray.php');
+	//include($FANNIE_ROOT.'src/ReportConvert/ArrayToXls.php');
+	include($FANNIE_ROOT.'src/ReportConvert/ArrayToCsv.php');
+	$array = HtmlToArray($output);
+	//$xls = ArrayToXls($array);
+	$xls = ArrayToCsv($array);
+	echo $xls;
+}
 ?>

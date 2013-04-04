@@ -25,7 +25,6 @@ include('../../config.php');
 include($FANNIE_ROOT.'src/mysql_connect.php');
 include($FANNIE_ROOT.'auth/login.php');
 include($FANNIE_ROOT.'src/select_dlog.php');
-include($FANNIE_ROOT.'src/functions.php');
 
 $startDate = $_REQUEST['startDate'];
 $endDate = $_REQUEST['endDate'];
@@ -42,6 +41,8 @@ $dlog = select_dlog($startDate,$endDate);
 
 $dbconn = ($FANNIE_SERVER_DBMS=='MSSQL')?'.dbo.':'.';
 
+$hourlySalesQ = '';
+$args = array();
 if(!isset($_REQUEST['weekday'])){
    if($buyer != -1){
      $hourlySalesQ = "SELECT year(d.tdate),month(d.tdate),day(d.tdate),".$dbc->hour('d.tdate').",
@@ -49,18 +50,20 @@ if(!isset($_REQUEST['weekday'])){
                  FROM $dlog as d left join 
 		 {$FANNIE_OP_DB}{$dbconn}superdepts as t on d.department = t.dept_ID
                  WHERE (d.trans_type = 'I' or d.trans_type = 'D') AND
-                 d.tdate BETWEEN '$dDiffStart' AND '$dDiffEnd'
-                 AND t.superID = $buyer
+                 d.tdate BETWEEN ? AND ?
+                 AND t.superID = ?
                  GROUP BY year(d.tdate),month(d.tdate),day(d.tdate), ".$dbc->hour('d.tdate')."
                  ORDER BY year(d.tdate),month(d.tdate),day(d.tdate), ".$dbc->hour('d.tdate');
+     $args = array($dDiffStart,$dDiffEnd,$buyer);
    }else{
     $hourlySalesQ = "SELECT year(d.tdate),month(d.tdate),day(tdate),".$dbc->hour('tdate').",
 		 sum(total),avg(total)
                  FROM $dlog as d
                  WHERE (trans_type = 'I' or trans_type = 'D') AND
-                 tdate BETWEEN '$dDiffStart' AND '$dDiffEnd'
+                 tdate BETWEEN ? AND ?
                  GROUP BY year(d.tdate),month(d.tdate),day(d.tdate), ".$dbc->hour('d.tdate')."
                  ORDER BY year(d.tdate),month(d.tdate),day(d.tdate), ".$dbc->hour('d.tdate');
+     $args = array($dDiffStart,$dDiffEnd);
     }
 }else{
 echo "<br>Grouped by weekday";
@@ -72,10 +75,11 @@ echo "<br>Grouped by weekday";
                  FROM $dlog as d LEFT JOIN 
 		 {$FANNIE_OP_DB}{$dbconn}superdepts as t on d.department = t.dept_ID
                  WHERE (d.trans_type = 'I' or d.trans_type = 'D') AND
-                 d.tdate BETWEEN '$dDiffStart' AND '$dDiffEnd'
- 		 AND t.superID = $buyer
+                 d.tdate BETWEEN ? AND ?
+ 		 AND t.superID = ?
                  GROUP BY ".$dbc->dayofweek('tdate').",".$dbc->hour('tdate')."
                  ORDER BY ".$dbc->dayofweek('tdate').",".$dbc->hour('tdate');
+     $args = array($dDiffStart,$dDiffEnd,$buyer);
    }else{
       $hourlySalesQ = "SELECT 
 		 ".$dbc->dayofweek('tdate').",
@@ -83,9 +87,10 @@ echo "<br>Grouped by weekday";
 		 sum(total),avg(total)
                  FROM $dlog as d
                  WHERE (trans_type = 'I' or trans_type = 'D') AND
-                 tdate BETWEEN '$dDiffStart' AND '$dDiffEnd'
+                 tdate BETWEEN ? AND ?
                  GROUP BY ".$dbc->dayofweek('tdate').",".$dbc->hour('tdate')."
                  ORDER BY ".$dbc->dayofweek('tdate').",".$dbc->hour('tdate');
+     $args = array($dDiffStart,$dDiffEnd);
     }
 }
 
@@ -102,7 +107,8 @@ else {
 	}
 }
 $sum = 0;
-$result = $dbc->query($hourlySalesQ);
+$prep = $dbc->prepare_statement($hourlySalesQ);
+$result = $dbc->exec_statement($prep,$args);
 echo "<table cellspacing=0 cellpadding=4 border=1>";
 $minhour = 24;
 $maxhour = 0;
@@ -113,7 +119,6 @@ if (!isset($_REQUEST['weekday'])){
 		$hour = (int)$row[3];
 		$date = $row[1]."/".$row[2]."/".$row[0];
 		if (!isset($acc[$date])) $acc[$date] = array();
-		if (!isset($sums[$hour])) $sums[$date] = 0;
 		if ($hour < $minhour) $minhour = $hour;
 		if ($hour > $maxhour) $maxhour = $hour;
 		$acc[$date][$hour] = $row[4];

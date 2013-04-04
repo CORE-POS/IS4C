@@ -22,9 +22,12 @@
 *********************************************************************************/
 
 /* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+	* 28Feb13 Andy Theuninck moved functionality to SyncIndexPage.php
 	* 19Jan13 Eric Lee Add productUser to table list
 	* 10Oct12 Eric Lee Add memberCards to table list
 */
+header('Location: SyncIndexPage.php');
+exit;
 
 include('../config.php');
 

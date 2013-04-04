@@ -34,6 +34,7 @@
 include('../../config.php');
 include($FANNIE_ROOT.'src/mysql_connect.php');
 include($FANNIE_ROOT.'src/select_dlog.php');
+include($FANNIE_ROOT.'classlib2.0/lib/FormLib.php');
 
 if (isset($_REQUEST['submit'])){
 	$d1 = $_REQUEST['date1'];
@@ -87,7 +88,7 @@ if (isset($_REQUEST['submit'])){
 			ON d.dept_no=t.department LEFT JOIN
 			MasterSuperDepts AS s ON t.department=s.dept_ID
 			WHERE 
-			(tDate BETWEEN '$d1 00:00:00' AND '$d2 23:59:59') 
+			(tDate BETWEEN ? AND ?)
 			AND (s.superID > 0 OR s.superID IS NULL) 
 			AND t.trans_type in ('I','D')
 			AND t.trans_status not in ('D','X','Z')
@@ -107,7 +108,7 @@ if (isset($_REQUEST['submit'])){
 			MasterSuperDepts AS s ON s.dept_ID=p.department LEFT JOIN
 			MasterSuperDepts AS r ON r.dept_ID=t.department
 			WHERE
-			(tDate BETWEEN '$d1 00:00:00' AND '$d2 23:59:59') 
+			(tDate BETWEEN ? AND ?)
 			AND t.trans_type in ('I','D')
 			AND t.trans_status not in ('D','X','Z')
 			AND t.emp_no not in (7000, 9999)
@@ -124,7 +125,8 @@ if (isset($_REQUEST['submit'])){
 			CASE WHEN e.dept_no IS NULL THEN d.dept_no ELSE e.dept_no end";
 	}
 	$supers = array();
-	$salesR = $dbc->query($sales);
+	$prep = $dbc->prepare_statement($sales);
+	$salesR = $dbc->exec_statement($prep,array($d1.' 00:00:00',$d2.' 23:59:59'));
 	
 	$curSuper = 0;
 	$grandTotal = 0;
@@ -196,38 +198,15 @@ input[type="checkbox"] {
 <table cellspacing='4' cellpadding='4' border='0'>
 <tr>
 <th>Start Date</th>
-<td><input type=text name='date1' onclick="showCalendarControl(this);" value="<?php echo $lastMonday; ?>" />
-<tr>
+<td><input type=text id=date1 name=date1 onclick="showCalendarControl(this);" value="<?php echo $lastMonday; ?>" /></td>
+<td rowspan="2">
+<?php echo FormLib::date_range_picker(); ?>
+</td>
+</tr><tr>
 <th>End Date</th>
-<td><input type=text name='date2' onclick="showCalendarControl(this);" value="<?php echo $lastSunday; ?>" /></td>
-<tr>
-<th></th>
-<td>
-<input id='od01' type='radio' name='other_dates' value='' checked='1' > Start - End Dates
-</td>
-</table>
-</td>
-<td rowspan='1'>
-<fieldset style='border:330066;'>
-<legend>Other dates</legend>
-<table style='margin: 0em 0em 0em 0em;'>
-<tr style='vertical-align:top;'><td style='margin: 0em 1.0em 0em 0em;'>
-<input id='od10'  type='radio' name='other_dates' value='today'> Today</br >
-<input id='od11'  type='radio' name='other_dates' value='this_week'> This week</br >
-<input id='od12'  type='radio' name='other_dates' value='this_month'> This month</br >
-</td>
-<td rowspan='1'>
-<input id='od20' type='radio' name='other_dates' value='yesterday'> Yesterday</br >
-<input id='od21' type='radio' name='other_dates' value='last_week'> Last week</br >
-<input id='od22' type='radio' name='other_dates' value='last_month'> Last month</br >
-</td>
-</tr>
-</table>
-</fieldset>
-</td>
-</tr>
-<tr>
-<td colspan=99><select name=dept>
+<td><input type=text id=date2 name=date2 onclick="showCalendarControl(this);" value="<?php echo $lastSunday; ?>" /></td>
+</tr><tr>
+<td colspan=2><select name=dept>
 <option value=0>Use department settings at time of sale</option>
 <option value=1>Use current department settings</option>
 </select></td>
