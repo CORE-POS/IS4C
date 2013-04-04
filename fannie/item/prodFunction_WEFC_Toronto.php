@@ -1090,7 +1090,7 @@ function itemParse($upc){
 		echo "<div id='LaneStatus' style='display:" . (array_search('LaneStatus',$Fannie_Item_Modules) !== False?'block':'none') . ";'>";
 		echo '<fieldset id="lanefs">';
 		echo '<legend>Lane Status</legend>';
-		include('prodAllLanes.php');
+		include('prodAllLanes_WEFC_Toronto.php');
 		echo allLanes($upc);
 		echo '</fieldset>';
 		echo "</div><!-- /#LaneStatus -->";
