@@ -57,9 +57,9 @@ if (isset($_REQUEST['q'])){
 	echo '<input type="submit" onclick="window.close();" value="Close" />';
 
 	echo '<div id="one" style="display:block;">';
-	$itemQ = sprintf("SELECT upc,description FROM products WHERE description LIKE %s
-		ORDER BY description",$dbc->escape("%".$_REQUEST['q']."%"));
-	$itemR = $dbc->query($itemQ);
+	$itemP = $dbc->prepare_statement("SELECT upc,description FROM products WHERE description LIKE ?
+		ORDER BY description");
+	$itemR = $dbc->exec_statement($itemP,array('%'.$_REQUEST['q'].'%'));
 	if ($dbc->num_rows($itemR) == 0)
 		echo 'No matching items';
 	else {
@@ -73,9 +73,9 @@ if (isset($_REQUEST['q'])){
 	echo '</div>';
 
 	echo '<div id="two" style="display:none;">';
-	$memQ = sprintf("SELECT CardNo,FirstName,LastName FROM custdata WHERE LastName LIKE %s
-		ORDER BY LastName,FirstName",$dbc->escape("%".$_REQUEST['q']."%"));
-	$memR = $dbc->query($memQ);
+	$memP = $dbc->prepare_statement("SELECT CardNo,FirstName,LastName FROM custdata WHERE LastName LIKE ?
+		ORDER BY LastName,FirstName");
+	$memR = $dbc->exec_statement($memP,array('%'.$_REQUEST['q'].'%'));
 	if ($dbc->num_rows($memR) == 0)
 		echo 'No matching owners';
 	else {
@@ -89,10 +89,10 @@ if (isset($_REQUEST['q'])){
 	echo '</div>';
 
 	echo '<div id="three" style="display:none;">';
-	$brandQ = sprintf("SELECT x.manufacturer FROM prodExtra AS x INNER JOIN products AS p ON
-		x.upc=p.upc WHERE x.manufacturer LIKE %s GROUP BY x.manufacturer
-		ORDER BY x.manufacturer",$dbc->escape("%".$_REQUEST['q']."%"));
-	$brandR = $dbc->query($brandQ);
+	$brandP = $dbc->prepare_statement("SELECT x.manufacturer FROM prodExtra AS x INNER JOIN products AS p ON
+		x.upc=p.upc WHERE x.manufacturer LIKE ? GROUP BY x.manufacturer
+		ORDER BY x.manufacturer");
+	$brandR = $dbc->exec_statement($brandP,array('%'.$_REQUEST['q'].'%'));
 	if ($dbc->num_rows($brandR) == 0)
 		echo 'No matching brands';
 	else {
@@ -107,11 +107,10 @@ if (isset($_REQUEST['q'])){
 	echo '</div>';
 }
 else if (isset($_REQUEST['brand'])){
-	$q = sprintf("SELECT p.upc,p.description FROM products AS p
+	$q = $dbc->prepare_statement("SELECT p.upc,p.description FROM products AS p
 		INNER JOIN prodExtra AS x ON p.upc=x.upc WHERE
-		x.manufacturer=%s ORDER by p.description",
-		$dbc->escape(base64_decode($_REQUEST['brand'])));
-	$r = $dbc->query($q);
+		x.manufacturer=? ORDER by p.description");
+	$r = $dbc->exec_statement($q, array(base64_decode($_REQUEST['brand'])));
 	printf("<b>%s items</b>",base64_decode($_REQUEST['brand']));
 	echo '<ul>';
 	while($itemW = $dbc->fetch_row($r)){

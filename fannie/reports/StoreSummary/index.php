@@ -24,6 +24,8 @@
 
 /* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+	* 03Apr13 AT Added prepared statements. Used SQLManger::identifer_escape
+		     rather than direct backticks for datestamp field variable
 	* 15Feb13 EL + For trans_type D approximate cost as (total - (total*dept_margin)).
 	* 27Jan13 Eric Lee Based on GeneralCosts.
 	*         N.B. For trans_type D approximate cost as (total / dept markup).
@@ -94,7 +96,7 @@ if (isset($_REQUEST['submit'])){
 	}
 
 	$dlog = select_dtrans($d1,$d2);
-	$datestamp = '`datetime`';
+	$datestamp = $dbc->identifier_escape('datetime');
 
 	if (isset($_REQUEST['excel'])){
 		header("Content-Disposition: inline; filename=costs_{$d1}_{$d2}.xls");
@@ -117,8 +119,8 @@ if (isset($_REQUEST['submit'])){
 
 	$taxNames = array(0 => '');
 	$taxRates = array(0 => 0);
-	$tQ = "SELECT id, description FROM core_op.taxrates WHERE id > 0 ORDER BY id";
-	$tR = $dbc->query($tQ);
+	$tQ = $dbc->prepare_statement("SELECT id, description FROM core_op.taxrates WHERE id > 0 ORDER BY id");
+	$tR = $dbc->exec_statement($tQ);
 	while ( $trow = $dbc->fetch_array($tR) ) {
 		$taxNames[$trow['id']] = $trow['description'];
 		$taxRates[$trow['id']] = $trow['rate'];
@@ -149,7 +151,7 @@ if (isset($_REQUEST['submit'])){
 					deptMargin AS m ON t.department=m.dept_id LEFT JOIN
 					core_op.taxrates AS x ON t.tax=x.id
 				WHERE 
-					($datestamp BETWEEN '$d1 00:00:00' AND '$d2 23:59:59') 
+					($datestamp BETWEEN ? AND ?)
 					AND (s.superID > 0 OR s.superID IS NULL) 
 					AND t.trans_type in ('I','D')
 					AND t.trans_status not in ('D','X','Z')
@@ -185,7 +187,7 @@ if (isset($_REQUEST['submit'])){
 				deptMargin AS m ON p.department=m.dept_id LEFT JOIN
 				core_op.taxrates AS x ON t.tax=x.id
 			WHERE
-				($datestamp BETWEEN '$d1 00:00:00' AND '$d2 23:59:59') 
+				($datestamp BETWEEN ? AND ?)
 				AND (s.superID > 0 OR (s.superID IS NULL AND r.superID > 0)
 					OR (s.superID IS NULL AND r.superID IS NULL))
 				AND t.trans_type in ('I','D')
@@ -209,7 +211,9 @@ if (isset($_REQUEST['submit'])){
 	// Array in which totals used in the report are accumulated.
 	$supers = array();
 
-	$costsR = $dbc->query($costs);
+	$costsP = $dbc->prepare_statement($costs);
+	$costArgs = array($d1.' 00:00:00', $d2.'23:59:59');
+	$costsR = $dbc->exec_statement($costsP, $costArgs);
 	
 	$curSuper = 0;
 	$grandTotal = 0;

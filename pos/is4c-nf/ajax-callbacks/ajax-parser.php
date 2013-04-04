@@ -50,16 +50,27 @@ if ($entered != ""){
 	/* this breaks the model a bit, but I'm putting
 	 * putting the CC parser first manually to minimize
 	 * code that potentially handles the PAN */
-	/*
-	include_once(realpath(dirname(__FILE__)."/../cc-modules/lib/paycardEntered.php"));
-	$pe = new paycardEntered();
-	if ($pe->check($entered)){
-		$valid = $pe->parse($entered);
-		$entered = "PAYCARD";
-		$CORE_LOCAL->set("strEntered","");
-		$json = $valid;
+	if (in_array("Paycards",$CORE_LOCAL->get("PluginList"))){
+		/* this breaks the model a bit, but I'm putting
+		 * putting the CC parser first manually to minimize
+		 * code that potentially handles the PAN */
+		if($CORE_LOCAL->get("PaycardsCashierFacing")=="1" && substr($entered,0,9) == "PANCACHE:"){
+			/* cashier-facing device behavior; run card immediately */
+			$entered = substr($entered,9);
+			$CORE_LOCAL->set("CachePanEncBlock",$entered);
+		}
+
+		$pe = new paycardEntered();
+		if ($pe->check($entered)){
+			$valid = $pe->parse($entered);
+			$entered = "PAYCARD";
+			$CORE_LOCAL->set("strEntered","");
+			$json = $valid;
+		}
+
+		$CORE_LOCAL->set("quantity",0);
+		$CORE_LOCAL->set("multiple",0);
 	}
-	 */
 
 	$CORE_LOCAL->set("quantity",0);
 	$CORE_LOCAL->set("multiple",0);

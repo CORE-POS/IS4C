@@ -325,6 +325,19 @@ static public function customreceipt(){
 	}
 }
 
+static public function getCustomerPref($key){
+	global $CORE_LOCAL;
+	if ($CORE_LOCAL->get('memberID') == 0) return '';
+	$db = Database::pDataConnect();
+	$q = sprintf('SELECT pref_value FROM custPreferences WHERE
+		card_no=%d AND pref_key=\'%s\'',
+		$CORE_LOCAL->get('memberID'),$key);
+	$r = $db->query($q);
+	if ($r === False) return '';
+	if ($db->num_rows($r) == 0) return '';
+	return array_pop($db->fetch_row($r));
+}
+
 }
 
 ?>

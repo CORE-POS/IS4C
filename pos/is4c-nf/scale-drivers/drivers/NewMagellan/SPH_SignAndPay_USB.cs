@@ -65,6 +65,7 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
 	private const int STATE_ENTER_PIN = 3;
 	private const int STATE_WAIT_FOR_CASHIER = 4;
 	private const int STATE_SELECT_EBT_TYPE = 5;
+	private const int STATE_SELECT_CASHBACK = 6;
 	private const int STATE_MANUAL_PAN = 11;
 	private const int STATE_MANUAL_EXP = 12;
 	private const int STATE_MANUAL_CVV = 13;
@@ -75,6 +76,12 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
 	private const int BUTTON_GIFT = 8;
 	private const int BUTTON_EBT_FOOD = 9;
 	private const int BUTTON_EBT_CASH = 10;
+	private const int BUTTON_000  = 0;
+	private const int BUTTON_500  = 5;
+	private const int BUTTON_1000 = 10;
+	private const int BUTTON_2000 = 20;
+	private const int BUTTON_3000 = 30;
+	private const int BUTTON_4000 = 40;
 	private const int BUTTON_HARDWARE_BUTTON = 0xff;
 
 	private int current_state;
@@ -145,7 +152,7 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
 		SendReport(BuildCommand(LcdTextColor(0,0,0)));
 		SendReport(BuildCommand(LcdTextBackgroundColor(0xff,0xff,0xff)));
 		SendReport(BuildCommand(LcdTextBackgroundMode(false)));
-		SendReport(BuildCommand(LcdDrawText("swipe card",75,100)));
+		SendReport(BuildCommand(LcdDrawText("Swipe Card",75,100)));
 
 		current_state = STATE_START_TRANSACTION;
 	}
@@ -161,8 +168,8 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
 		SendReport(BuildCommand(LcdTextColor(0,0,0)));
 		SendReport(BuildCommand(LcdTextBackgroundColor(0xff,0xff,0xff)));
 		SendReport(BuildCommand(LcdTextBackgroundMode(false)));
-		SendReport(BuildCommand(LcdDrawText("error",115,70)));
-		SendReport(BuildCommand(LcdDrawText("swipe card again",55,100)));
+		SendReport(BuildCommand(LcdDrawText("Error",115,70)));
+		SendReport(BuildCommand(LcdDrawText("Swipe Card Again",55,100)));
 
 		current_state = STATE_START_TRANSACTION;
 	}
@@ -195,6 +202,26 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
 		SendReport(BuildCommand(LcdStartCapture(4)));
 
 		current_state = STATE_SELECT_EBT_TYPE;
+	}
+
+	private void SetStateCashBack(){
+		SendReport(BuildCommand(LcdFillColor(0xff,0xff,0xff)));
+		SendReport(BuildCommand(LcdFillRectangle(0,0,LCD_X_RES-1,LCD_Y_RES-1)));
+
+		SendReport(BuildCommand(LcdStopCapture()));
+		SendReport(BuildCommand(LcdClearSignature()));
+		SendReport(BuildCommand(LcdSetClipArea(0,0,1,1)));
+		SendReport(BuildCommand(LcdTextFont(3,12,14)));
+		SendReport(BuildCommand(LcdDrawText("Select Cash Back",60,5)));
+		SendReport(BuildCommand(LcdCreateButton(BUTTON_000,"None",5,40,95,130)));
+		SendReport(BuildCommand(LcdCreateButton(BUTTON_500,"5.00",113,40,208,130)));
+		SendReport(BuildCommand(LcdCreateButton(BUTTON_1000,"10.00",224,40,314,130)));
+		SendReport(BuildCommand(LcdCreateButton(BUTTON_2000,"20.00",5,144,95,234)));
+		SendReport(BuildCommand(LcdCreateButton(BUTTON_3000,"30.00",113,144,208,234)));
+		SendReport(BuildCommand(LcdCreateButton(BUTTON_4000,"40.00",224,144,314,234)));
+		SendReport(BuildCommand(LcdStartCapture(4)));
+
+		current_state = STATE_SELECT_CASHBACK;
 	}
 
 	private void SetStateGetPin(){
@@ -363,6 +390,10 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
 		}
 	}
 
+	/**
+	  Proper async version. Call ReRead at the end to
+	  start another async read.
+	*/
 	private void ReadCallback(IAsyncResult iar){
 		byte[] input = (byte[])iar.AsyncState;
 		try {
@@ -374,18 +405,36 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
 				System.Console.WriteLine(ex);
 		}
 
-		#if MONO
-		// do nothing
-		#else
 		ReRead();
-		#endif
+	}
+
+	/**
+	  Synchronous version. Do not automatically start
+	  another read. The calling method will handle that.
+	
+	  The wait on excpetion is important. Exceptions
+	  are generally the result of a write that occurs
+	  during a blocking read. Waiting a second lets any
+	  subsequent writes complete without more blocking.
+	*/
+	private void MonoReadCallback(IAsyncResult iar){
+		byte[] input = (byte[])iar.AsyncState;
+		try {
+			usb_fs.EndRead(iar);
+			HandleReadData(input);		
+		}
+		catch (Exception ex){
+			if (this.verbose_mode > 0)
+				System.Console.WriteLine(ex);
+			System.Threading.Thread.Sleep(1000);
+		}
 	}
 
 	private void HandleDeviceMessage(byte[] msg){
 		if (this.verbose_mode > 0)
 			System.Console.Write("DMSG: {0}: ",current_state);
 
-		if (msg == null) return;
+		//if (msg == null) return;
 
 		if (this.verbose_mode > 0){
 			foreach(byte b in msg)
@@ -402,7 +451,7 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
 				}
 				else if (msg[1] == BUTTON_DEBIT){
 					PushOutput("TERM:Debit");
-					SetStateGetPin();
+					SetStateCashBack();
 				}
 				else if (msg[1] == BUTTON_EBT){
 					SetStateEbtType();
@@ -425,10 +474,22 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
 				}
 				else if (msg[1] == BUTTON_EBT_CASH){
 					PushOutput("TERM:EbtCash");
-					SetStateGetPin();
+					SetStateCashBack();
 				}
 				else if (msg[1] == BUTTON_HARDWARE_BUTTON && msg[3] == 0x43){
 					SetStateStart();
+				}
+			}
+			break;
+		case STATE_SELECT_CASHBACK:
+			if (msg.Length == 4 && msg[0] == 0x7a){
+				SendReport(BuildCommand(DoBeep()));
+				if (msg[1] == BUTTON_HARDWARE_BUTTON && msg[3] == 0x43){
+					SetStateStart();
+				}
+				else {
+					PushOutput("TERMCB:"+msg[1]);
+					SetStateGetPin();
 				}
 			}
 			break;
@@ -508,9 +569,12 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
 	 * this format
 	 */
 	private string FixupCardBlock(byte[] data){
+		// no track 2 means bad read
+		if (data.Length < 3 || data[3] == 0) return "";
 		string hex = BitConverter.ToString(data).Replace("-","");
 		hex = "02E600"+hex+"XXXX03";
 		if (hex.Length < 24) return "";
+		// something went wrong with the KSN/key
 		if(hex.Substring(hex.Length-16,10) == "0000000000") return "";
 		if (this.verbose_mode > 0)
 			System.Console.WriteLine(hex);
@@ -533,7 +597,7 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
 		waiting_for_data = true;
 		while(SPH_Running){
 			byte[] buf = new byte[usb_report_size];
-			usb_fs.BeginRead(buf, 0, usb_report_size, new AsyncCallback(ReadCallback), buf);
+			usb_fs.BeginRead(buf, 0, usb_report_size, new AsyncCallback(MonoReadCallback), buf);
 		}
 	}
 

@@ -89,8 +89,10 @@ class RenderReceiptPage extends FanniePage {
 		$prep = $dbc->prepare_statement($query); 
 		$results = $dbc->exec_statement($prep,$args);
 		$number_cols = $dbc->num_fields($results);
-		$row2 = $dbc->fetch_row($results);
-		$dbc->data_seek($results,0);
+		$rows = array();
+		while($row = $dbc->fetch_row($results))
+			$rows[] = $row;
+		$row2 = $rows[0];
 		$emp_no = $row2['emp_no'];	
 		$trans_num = $row2['emp_no']."-".$row2['register_no']."-".$row2['trans_no'];
 
@@ -134,7 +136,7 @@ class RenderReceiptPage extends FanniePage {
 		$ret .= "<tr><td align=center colspan=4>Cashier:&nbsp;$emp_no</td></tr>";
 		$ret .= "<tr><td colspan=4>&nbsp;</td></tr>";
 		$ret .= "<tr align left>\n";
-		while($row = $dbc->fetch_row($results)) {
+		foreach($rows as $row){
 			$ret .= "<tr><td align=left>";
 			$ret .= $row["description"]; 
 			$ret .= "</td>";

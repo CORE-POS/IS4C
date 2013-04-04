@@ -138,10 +138,10 @@ class SQLManager {
 		if (!$ok && is_writable($ql)){
 			$fp = fopen($ql,'a');
 			fputs($fp,$_SERVER['PHP_SELF'].": ".date('r').': '.$query_text."\n");
+			fputs($fp,$this->error()."\n\n");
 			fclose($fp);
 		}
 		else if (!$ok){
-			var_dump($ql);
 			echo "Bad query: {$_SERVER['PHP_SELF']}: $query_text<br />";
 			echo $this->error($which_connection)."<br />";
 		}
@@ -965,6 +965,24 @@ class SQLManager {
 
 	function aff_rows($result){
 		return $this->affected_rows($result);
+	}
+
+	/**
+	   Log a string to the query log.
+	   @param $str The string
+	   @return A True on success, False on failure 
+	*/  
+	function logger($str){
+		$ql = $this->QUERY_LOG;
+		if (is_writable($ql)){
+			$fp = fopen($ql,'a');
+			fputs($fp,$_SERVER['PHP_SELF'].": ".date('r').': '.$str."\n");
+			fclose($fp);
+			return True;
+		}
+		else {
+			return False;
+		}
 	}
 
 	// skipping fetch_cell on purpose; generic-db way would be slow as heck

@@ -108,8 +108,8 @@ function saveType(val,bid){
 	function body_content(){
 		global $FANNIE_OP_DB;
 		$dbc = FannieDB::get($FANNIE_OP_DB);
-		$q = "SELECT batchTypeID,typeDesc,discType FROM batchType ORDER BY batchTypeID";
-		$r = $dbc->query($q);
+		$q = $dbc->prepare_statement("SELECT batchTypeID,typeDesc,discType FROM batchType ORDER BY batchTypeID");
+		$r = $dbc->exec_statement($q);
 
 		$ret = '<table cellspacing="0" cellpadding="4" border="1">';
 		$ret .= '<tr><th>ID#</th><th>Description</th><th>Discount Type</th><th>&nbsp;</td></tr>';
