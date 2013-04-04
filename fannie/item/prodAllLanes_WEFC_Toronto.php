@@ -1,6 +1,6 @@
 <?php
 /* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-	*  1Apr2013 Eric Lee No change for WEFC_Toronto. CORE does this differently now.
+	*  4Apr2013 Eric Lee No change for WEFC_Toronto. CORE does this differently now.
 */
 function allLanes($upc){
   global $FANNIE_LANES, $FANNIE_ROOT;
