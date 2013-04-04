@@ -73,17 +73,17 @@ $status = array(
 );
 
 $assignments = array();
-$q = "SELECT superID,super_name FROM MasterSuperDepts
-	GROUP BY superID,super_name ORDER BY superID";
-$r = $dbc->query($q);
+$q = $dbc->prepare_statement("SELECT superID,super_name FROM MasterSuperDepts
+	GROUP BY superID,super_name ORDER BY superID");
+$r = $dbc->exec_statement($q);
 while($w = $dbc->fetch_row($r))
 	$assignments[$w[0]] = $w[1];
 unset($assignments[0]); 
 
 $suppliers = array('');
-$q = "SELECT mixMatch FROM {$TRANS}CompleteSpecialOrder WHERE trans_type='I'
-	GROUP BY mixMatch ORDER BY mixMatch";
-$r = $dbc->query($q);
+$q = $dbc->prepare_statement("SELECT mixMatch FROM {$TRANS}CompleteSpecialOrder WHERE trans_type='I'
+	GROUP BY mixMatch ORDER BY mixMatch");
+$r = $dbc->exec_statement($q);
 while($w = $dbc->fetch_row($r)){
 	$suppliers[] = $w[0];
 }
@@ -93,8 +93,10 @@ $f2 = (isset($_REQUEST['f2']) && $_REQUEST['f2'] !== '')?$_REQUEST['f2']:'';
 $f3 = (isset($_REQUEST['f3']) && $_REQUEST['f3'] !== '')?$_REQUEST['f3']:'';
 
 $filterstring = "";
+$filterargs = array();
 if ($f1 !== ''){
-	$filterstring = sprintf("WHERE status_flag=%d",$f1);
+	$filterstring = 'WHERE status_flag=?';
+	$filterargs[] = $f1;
 }
 
 echo '<a href="index.php">Main Menu</a>';
@@ -133,19 +135,32 @@ echo '</select>';
 echo '<hr />';
 
 if (isset($_REQUEST['card_no']) && is_numeric($_REQUEST['card_no'])){
-	if (empty($filterstring))
-		$filterstring .= sprintf("WHERE p.card_no=%d",$_REQUEST['card_no']);
-	else
-		$filterstring .= sprintf(" AND p.card_no=%d",$_REQUEST['card_no']);
+	if (empty($filterstring)){
+		$filterstring .= "WHERE p.card_no=?";
+	}
+	else{
+		$filterstring .= " AND p.card_no=?";
+	}
+	$filterargs[] = $_REQUEST['card_no'];
 	printf('<input type="hidden" id="cardno" value="%d" />',$_REQUEST['card_no']);
 }
 $page = isset($_REQUEST['page'])?$_REQUEST['page']:1;
+$page = (int)$page;
 $order = isset($_REQUEST['order'])?$_REQUEST['order']:'';
 printf('<input type="hidden" id="orderSetting" value="%s" />',$order);
-if ($order !== '') $order = base64_decode($order);
-else $order = 'min(datetime) desc';
+$orderby = 'min(datetime) desc';
+if ($order === 'date')
+	$orderby = "min(datetime)";
+elseif($order === 'name')
+	$orderby = "CASE WHEN MAX(p.card_no)=0 THEN MAX(t.last_name) ELSE MAX(c.LastName) END";
+elseif($order === 'ttl')
+	$orderby = "sum(total)";
+elseif($order === 'qty')
+	$orderby = "count(*)-1";
+elseif($order === 'status')
+	$orderby = "status_flag";
 
-$q = "SELECT min(datetime) as orderDate,p.order_id,sum(total) as value,
+$p = $dbc->prepare_statement("SELECT min(datetime) as orderDate,p.order_id,sum(total) as value,
 	count(*)-1 as items,status_flag,sub_status,
 	CASE WHEN MAX(p.card_no)=0 THEN MAX(t.last_name) ELSE MAX(c.LastName) END as name,
 	MIN(CASE WHEN trans_type='I' THEN charflag ELSE 'ZZZZ' END) as charflag,
@@ -160,10 +175,12 @@ $q = "SELECT min(datetime) as orderDate,p.order_id,sum(total) as value,
 	HAVING (count(*) > 1 OR
 		SUM(CASE WHEN notes LIKE '' THEN 0 ELSE 1 END) > 0
 		)
-	AND ".$dbc->monthdiff($dbc->now(),'min(datetime)')." >= ".(($page-1)*3)."
-	AND ".$dbc->monthdiff($dbc->now(),'min(datetime)')." < ".($page*3)."
-	ORDER BY $order";
-$r = $dbc->query($q);
+	AND ".$dbc->monthdiff($dbc->now(),'min(datetime)')." >= ((?-1)*3)
+	AND ".$dbc->monthdiff($dbc->now(),'min(datetime)')." < (?*3)
+	ORDER BY $orderby");
+$filterargs[] = $page;
+$filterargs[] = $page; // again
+$r = $dbc->exec_statement($p,$filterargs);
 
 $orders = array();
 $valid_ids = array();
@@ -173,38 +190,56 @@ while($w = $dbc->fetch_row($r)){
 }
 
 if ($f2 !== '' || $f3 !== ''){
-	$filter2 = ($f2!==''?sprintf("AND (m.superID IN (%s) OR n.superID IN (%s))",$f2,$f2):'');
-	$filter3 = ($f3!==''?sprintf("AND p.mixMatch=%s",$dbc->escape($f3)):'');
-	$q = "SELECT p.order_id FROM {$TRANS}CompleteSpecialOrder AS p
+	$filter = "";
+	$args = array();
+	if ($f2 !== ''){
+		$filter .= "AND (m.superID IN (?) OR n.superID IN (?))";
+		$args = array($f2,$f2);
+	}
+	if ($f3 !== ''){
+		$filter .= "AND p.mixMatch=?";
+		$args[] = $f3;
+	}
+	$p = $dbc->prepare_statement("SELECT p.order_id FROM {$TRANS}CompleteSpecialOrder AS p
 		LEFT JOIN MasterSuperDepts AS m ON p.department=m.dept_ID
 		LEFT JOIN {$TRANS}SpecialOrderNotes AS n ON p.order_id=n.order_id
-		WHERE 1=1 $filter2 $filter3
-		GROUP BY p.order_id";
-	$r = $dbc->query($q);
+		WHERE 1=1 $filter
+		GROUP BY p.order_id");
+	$r = $dbc->exec_statement($p,$args);
 	$valid_ids = array();
 	while($w = $dbc->fetch_row($r))
 		$valid_ids[$w['order_id']] = True;
 
 	if ($f2 !== '' && $f3 === ''){
-		$q2 = sprintf("SELECT s.order_id FROM {$TRANS}SpecialOrderNotes AS s
+		$q2 = $dbc->prepare_statement("SELECT s.order_id FROM 
+				{$TRANS}SpecialOrderNotes AS s
 				INNER JOIN {$TRANS}CompleteSpecialOrder AS p
 				ON p.order_id=s.order_id
-				WHERE s.superID IN (%s)
-				GROUP BY s.order_id",$f2);
-		$r2 = $dbc->query($q2);
+				WHERE s.superID IN (?)
+				GROUP BY s.order_id");
+		$r2 = $dbc->exec_statement($q2, array($f2));
 		while($w2 = $dbc->fetch_row($r2))
 			$valid_ids[$w2['order_id']] = True;
 	}
 }
 
 $oids = "(";
-foreach($valid_ids as $id=>$nonsense)
-	$oids .= $id.",";
+$oargs = array();
+foreach($valid_ids as $id=>$nonsense){
+	$oids .= "?,";
+	$oargs[] = $id;
+}
 $oids = rtrim($oids,",").")";
+if (empty($oargs)){
+	$oids = '(?)';
+	$oargs = array(-1);
+	// avoid invalid query
+}
 
-$itemsQ = "SELECT order_id,description,mixMatch FROM {$TRANS}CompleteSpecialOrder WHERE order_id IN $oids
-	AND trans_id > 0";
-$itemsR = $dbc->query($itemsQ);
+$itemsQ = $dbc->prepare_statement("SELECT order_id,description,mixMatch FROM 
+	{$TRANS}CompleteSpecialOrder WHERE order_id IN $oids
+	AND trans_id > 0");
+$itemsR = $dbc->exec_statement($itemsQ, $oargs);
 $items = array();
 $suppliers = array();
 while($itemsW = $dbc->fetch_row($itemsR)){
@@ -244,22 +279,16 @@ foreach($suppliers as $id=>$desc){
 	$suppliers[$id] = $desc;
 }
 
-$ret = sprintf('<table cellspacing="0" cellpadding="4" border="1">
+$ret = '<table cellspacing="0" cellpadding="4" border="1">
 	<tr>
-	<th><a href="" onclick="resort(\'%s\');return false;">Order Date</a></th>
-	<th><a href="" onclick="resort(\'%s\');return false;">Name</a></th>
+	<th><a href="" onclick="resort(\'date\');return false;">Order Date</a></th>
+	<th><a href="" onclick="resort(\'name\');return false;">Name</a></th>
 	<th>Desc</th>
 	<th>Supplier</th>
-	<th><a href="" onclick="resort(\'%s\');return false;">Items</a>
-	(<a href="" onclick="resort(\'%s\');return false;">$</a>)</th>
-	<th><a href="" onclick="resort(\'%s\');return false;">Status</a></th>',
-	base64_encode("min(datetime)"),
-	base64_encode("CASE WHEN MAX(p.card_no)=0 THEN MAX(t.last_name) ELSE MAX(c.LastName) END"),
-	base64_encode("sum(total)"),
-	base64_encode("count(*)-1"),
-	base64_encode("status_flag")
-);
-$ret .= '</tr>';
+	<th><a href="" onclick="resort(\'qty\');return false;">Items</a>
+	(<a href="" onclick="resort(\'ttl\');return false;">$</a>)</th>
+	<th><a href="" onclick="resort(\'status\');return false;">Status</a></th>
+	</tr>';
 $key = "";
 foreach($orders as $w){
 	if (!isset($valid_ids[$w['order_id']])) continue;

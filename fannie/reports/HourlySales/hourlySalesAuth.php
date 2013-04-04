@@ -119,7 +119,6 @@ if (!isset($_REQUEST['weekday'])){
 		$hour = (int)$row[3];
 		$date = $row[1]."/".$row[2]."/".$row[0];
 		if (!isset($acc[$date])) $acc[$date] = array();
-		if (!isset($sums[$hour])) $sums[$date] = 0;
 		if ($hour < $minhour) $minhour = $hour;
 		if ($hour > $maxhour) $maxhour = $hour;
 		$acc[$date][$hour] = $row[4];

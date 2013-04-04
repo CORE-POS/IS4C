@@ -2,6 +2,8 @@
 include('../../config.php');
 include('../../src/mysql_connect.php');
 
+$p1 = $dbc->prepare_statement("SELECT upc FROM productUser where upc=?");
+$p2 = $dbc->prepare_statement("SELECT upc FROM products WHERE upc=?");
 $dh = opendir('new');
 while( ($file = readdir($dh)) !== False){
 
@@ -15,14 +17,11 @@ while( ($file = readdir($dh)) !== False){
 
 	$upc = str_pad($u,13,'0',STR_PAD_LEFT);
 
-	$q1 = "SELECT upc FROM productUser where upc='$upc'";
-	$q2 = "SELECT upc FROM products WHERE upc='$upc'";
-	
-	$r1 = $dbc->query($q1);
+	$r1 = $dbc->exec_statement($p1,array($upc));
 	if ($dbc->num_rows($r1) > 0)
 		continue;
 
-	$r2 = $dbc->query($q2);
+	$r2 = $dbc->exec_statement($p2,array($upc));
 	if ($dbc->num_rows($r2) > 0)
 		continue;
 

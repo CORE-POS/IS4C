@@ -19,7 +19,8 @@ $cardsClause = " AND m.card_no IN $cards ";
 if ($cards == "(") $cardsClause = "";
 
 $selAddQ = "SELECT m.card_no, c.LastName,m.street, '',
-           m.city, m.state, m.zip,n.balance
+           m.city, m.state, m.zip,n.balance,
+	   c.FirstName
            FROM 
            meminfo m 
 	   LEFT JOIN custdata as c on c.CardNo=m.card_no and c.personNum=1
@@ -109,7 +110,10 @@ while($selAddW = $sql->fetch_row($selAddR)){
 
    //Member address
    $pdf->SetX(15);
-   $pdf->Cell(50,10,trim($selAddW[0]).' '.trim($selAddW[1]),0);
+   $name = $selAddW['LastName'];
+   if (!empty($selAddW['FirstName'])) 
+      $name = $selAddW['FirstName'].' '.$name;
+   $pdf->Cell(50,10,trim($selAddW[0]).' '.trim($name),0);
    $pdf->Ln(5);
    $pdf->SetX(15);
 
