@@ -6,7 +6,7 @@ include($FANNIE_ROOT.'src/mysql_connect.php');
 $trans = $FANNIE_TRANS_DB;
 if ($FANNIE_SERVER_DBMS == "MSSQL") $trans .= ".dbo";
 
-$q = "select 
+$q = $dbc->prepare_statement("select 
 	card_no,
 	LastName,FirstName,Type,
 	sum(case when tdate <= '2005-11-26 23:59:59' then stockPurchase else 0 end) as unknown,
@@ -17,8 +17,8 @@ $q = "select
 	on s.card_no=c.CardNo and c.personNum=1
 	where card_no > 0
 	group by card_no,LastName,FirstName,Type
-	order by card_no";
-$r = $dbc->query($q);
+	order by card_no");
+$r = $dbc->exec_statement($q);
 
 if (!isset($_REQUEST['excel']))
 	echo "<a href=index.php?excel=yes>Save as Excel</a>";

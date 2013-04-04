@@ -27,11 +27,14 @@ include($FANNIE_ROOT.'src/mysql_connect.php');
 $table = "trans_archive.dbo.dlog".$_POST['year'].sprintf("%02d",$_POST['month']);
 
 $bids = "(";
-foreach ($_POST['ids'] as $id)
-	$bids .= $id.",";
+$args = array();
+foreach ($_POST['ids'] as $id){
+	$bids .= "?,";
+	$args[] = $id;
+}
 $bids = substr($bids,0,strlen($bids)-1).")";
 
-$q = "SELECT min(tdate) as weekStart,max(tdate) as weekEnd,
+$q = $dbc->prepare_statement("SELECT min(tdate) as weekStart,max(tdate) as weekEnd,
 	batchName,sum(total) as sales,sum(d.quantity) as qty 
 	FROM $table AS d INNER JOIN batchList
 	AS l ON d.upc=l.upc LEFT JOIN batches
@@ -40,8 +43,8 @@ $q = "SELECT min(tdate) as weekStart,max(tdate) as weekEnd,
 	AND d.tdate >= b.startDate
 	AND d.tdate <= b.endDate
 	GROUP BY datepart(wk,tdate),batchName
-	ORDER BY batchName,min(tdate)";
-$r = $dbc->query($q);
+	ORDER BY batchName,min(tdate)");
+$r = $dbc->exec_statement($q,$args);
 $ttls = array();
 $bttls = array();
 echo "<table cellspacing=0 cellpadding=4 border=1>";

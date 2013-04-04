@@ -69,6 +69,7 @@ class CheckTender extends TenderModule {
 
 			$CORE_LOCAL->set("boxMsg",$msg);
 			$CORE_LOCAL->set("endorseType","check");
+			$CORE_LOCAL->set("tenderamt",$this->amount);
 
 			return MiscLib::base_url().'gui-modules/boxMsg2.php';
 		}

@@ -24,12 +24,12 @@
 class MemberModule {
 
 	function db(){
-		global $dbc,$FANNIE_ROOT;
-		if (!isset($dbc)) include_once($FANNIE_ROOT.'src/mysql_connect.php');
-		return $dbc;
+		global $FANNIE_ROOT,$FANNIE_OP_DB;
+		if (!class_exists('FannieDB')) include_once($FANNIE_ROOT.'classlib2.0/data/FannieDB.php');
+		return FannieDB::get($FANNIE_OP_DB);
 	}
 
-	function ShowEditForm($memNum){
+	function ShowEditForm($memNum,$country="US"){
 
 	}
 
@@ -41,7 +41,7 @@ class MemberModule {
 		return False;
 	}
 
-	function ShowSearchForm(){
+	function ShowSearchForm($country="US"){
 
 	}
 

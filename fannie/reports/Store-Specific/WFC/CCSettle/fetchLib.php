@@ -6,12 +6,12 @@ function getProcessorInfo($dateStr){
 	global $dbc;
 
 	$trans_stack = array();
-	$query = sprintf("SELECT q.refNum,r.httpCode,q.PAN,q.issuer FROM efsnetRequest as q
+	$query = $dbc->prepare_statement("SELECT q.refNum,r.httpCode,q.PAN,q.issuer FROM efsnetRequest as q
 		LEFT JOIN efsnetResponse as r ON q.date=r.date
 		and q.cashierNo=r.cashierNo and q.laneNo=r.laneNo
 		and q.transNo=r.transNo and q.transID=r.transID
-		WHERE ".$dbc->date_equals("q.datetime",$dbc->escape($dateStr));
-	$result = $dbc->query($query);
+		WHERE q.datetime BETWEEN ? AND ?");
+	$result = $dbc->exec_statement($query,array($dateStr.' 00:00:00',$dateStr.' 23:59:59'));
 	while($row = $dbc->fetch_row($result)){
 		$trans_stack[$row['refNum']] = array(
 			"http"=>$row['httpCode'],
@@ -84,18 +84,18 @@ function loadAuthInfo($fn,&$trans_stack){
 }
 
 function queryAuth($dateStr){
-	return doquery('SALE',$dateStr);
+	return doDuery('SALE',$dateStr);
 }
 
 function querySettle($dateStr){
-	return doquery('SETTLE',$dateStr);
+	return doDuery('SETTLE',$dateStr);
 }
 
 /* query all transactions for a given date and type
    return cached results, if any, otherwise query
    processor and cache results
 */
-function doquery($type,$dateStr){
+function doDuery($type,$dateStr){
 	global $GOEMERCH_ID,$GOEMERCH_GATEWAY_ID;
 
 	$cache_fn = 'xmlcache/'.$type.'.'.$dateStr.'.xml';

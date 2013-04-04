@@ -63,7 +63,6 @@ function save(){
 	var depositAmount = saveDepositAmount();
 	var atmAmount = saveAtmAmount();
 
-	alert('save&date1='+date1+'&date2='+date2+'&changeOrder='+changeOrder+'&openSafeCount='+openSafeCount+'&closeSafeCount='+closeSafeCount+'&buyAmount='+buyAmount+'&dropAmount='+dropAmount+"&depositAmount="+depositAmount+'&atmAmount='+atmAmount);
 	phpSend('save&date1='+date1+'&date2='+date2+'&changeOrder='+changeOrder+'&openSafeCount='+openSafeCount+'&closeSafeCount='+closeSafeCount+'&buyAmount='+buyAmount+'&dropAmount='+dropAmount+"&depositAmount="+depositAmount+'&atmAmount='+atmAmount);
 }
 
@@ -163,7 +162,9 @@ function updateChangeOrder(d){
 function updateOpenSafeCount(d){
 	var newval = Number(document.getElementById('safeCount1'+d).value);
 	
-	var v = Number(document.getElementById('changeOrder'+d).value) + newval;
+	var v = newval;
+	if (document.getElementById('changeOrder'+d))
+		v = Number(document.getElementById('changeOrder'+d).value) + newval;
 	document.getElementById('cashInTills'+d).innerHTML = Math.round(v*100)/100;
 
 	resumInputs('safeCount1');

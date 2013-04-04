@@ -108,6 +108,7 @@ class UPC extends Parser {
 			}
 			// no match; not a product, not special
 			
+			/*
 			if ($CORE_LOCAL->get("requestType")!="badscan"){
 				$CORE_LOCAL->set("requestType","badscan");
 				$CORE_LOCAL->set("requestMsg",_("not a valid item").'<br />'._("enter description"));
@@ -121,7 +122,14 @@ class UPC extends Parser {
 				$CORE_LOCAL->set("requestType","");
 				return $ret; 
 			}
-
+			*/
+			//TransRecord::addQueued($upc,'BADSCAN');
+			$opts = array('upc'=>$upc,'description'=>'BADSCAN');
+			TransRecord::add_log_record($opts);
+			$CORE_LOCAL->set("boxMsg",$upc." "._("not a valid item"));
+			//$ret['udpmsg'] = 'errorBeep'; // 12/12/12 this seems to stack with DisplayLib::msgbox
+			$ret['main_frame'] = $my_url."gui-modules/boxMsg2.php";
+			return $ret;
 		}
 
 		/* product exists
@@ -145,6 +153,35 @@ class UPC extends Parser {
 				$CORE_LOCAL->set("boxMsg","<b>".$row["upc"]." - ".$row["description"]."</b>
 					<br />"._("Item not for sale")."
 					<br /><font size=-1>"._("enter to continue sale").", "._("clear to cancel")."</font>");
+				$ret['main_frame'] = $my_url."gui-modules/boxMsg2.php";
+				return $ret;
+			}
+		}
+
+		/**
+		  Detect if a by-weight item has the same weight as the last by-weight
+		  item. This can indicate a stuck scale.
+		  The giant if determines whether the item is scalable, that we
+		  know the weight, and that we know the previous weight (lastWeight)
+		
+		  Pre-weighed items (upc starts with 002) are ignored because they're not
+		  weighed here. Scalable items that cost one cent are ignored as a special
+		  case; they're normally entered by keying a quantity multiplier
+		*/
+		if ($num_rows > 0 && $row['scale'] == 1 
+			&& $CORE_LOCAL->get("lastWeight") > 0 && $CORE_LOCAL->get("weight") > 0
+			&& abs($CORE_LOCAL->get("weight") - $CORE_LOCAL->get("lastWeight")) < 0.0005
+			&& substr($upc,0,3) != "002" && abs($row['normal_price']) > 0.01){
+			if ($CORE_LOCAL->get("warned") == 1 && $CORE_LOCAL->get("warnBoxType") == "stuckScale"){
+				$CORE_LOCAL->set("warned",0);
+				$CORE_LOCAL->set("warnBoxType","");
+			}	
+			else {
+				$CORE_LOCAL->set("warned",1);
+				$CORE_LOCAL->set("warnBoxType","stuckScale");
+				$CORE_LOCAL->set("strEntered",$row["upc"]);
+				$CORE_LOCAL->set("boxMsg","<b>Same weight as last item</b>
+					<br><font size=-1>[enter] to confirm correct, [clear] to cancel</font>");
 				$ret['main_frame'] = $my_url."gui-modules/boxMsg2.php";
 				return $ret;
 			}
@@ -229,11 +266,11 @@ class UPC extends Parser {
 		if ($scale != 0 && $CORE_LOCAL->get("weight") == 0 && 
 			$CORE_LOCAL->get("quantity") == 0 && substr($upc,0,3) != "002") {
 
-			$CORE_LOCAL->set("SNR",1);
+			$CORE_LOCAL->set("SNR",$CORE_LOCAL->get('strEntered'));
 			$ret['output'] = DisplayLib::boxMsg(_("please put item on scale"));
 			$CORE_LOCAL->set("wgtRequested",0);
 			$CORE_LOCAL->set("warned",1);
-			$ret['retry'] = $CORE_LOCAL->get("strEntered");
+			//$ret['retry'] = $CORE_LOCAL->get("strEntered");
 			
 			return $ret;
 		}
@@ -346,11 +383,16 @@ class UPC extends Parser {
 		$DiscountObject = new $DTClasses[$discounttype];
 
 		/* add in sticker price and calculate a quantity
-		   if the item is stickered, scaled, and on sale */
+		   if the item is stickered, scaled, and on sale 
+		   if it's not scaled or on sale, there's no need
+		   to back-calculate weight and adjust so just use
+		   sticker price as normal_price
+		*/
 		if (substr($upc,0,3) == "002"){
 			if ($DiscountObject->isSale() && $scale == 1)
 				$quantity = MiscLib::truncate2($scaleprice / $row["normal_price"]);
-			$row['normal_price'] = $scaleprice;
+			else
+				$row['normal_price'] = $scaleprice;
 		}
 
 		// don't know what this is - wedge?
@@ -410,7 +452,7 @@ class UPC extends Parser {
 		$ret['redraw_footer'] = True;
 		$ret['output'] = DisplayLib::lastpage();
 
-		if ($prefetch['unitPrice']==0){
+		if ($prefetch['unitPrice']==0 && $discounttype == 0){
 			$ret['main_frame'] = $my_url.'gui-modules/priceOverride.php';
 		}
 

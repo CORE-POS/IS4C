@@ -71,9 +71,9 @@ class nslogin extends NoInputPage {
 		<input type="password" name="reginput" tabindex="0" 
 			onblur="$('#reginput').focus();" id="reginput" />
 		</form>
-		<p />
+		<p>
 		<?php echo $this->msg ?>
-		<p />
+		</p>
 		</div>
 		</div>
 		<?php

@@ -67,7 +67,7 @@ class boxMsg2 extends BasicPage {
 		<div class="baseHeight">
 
 		<?php
-		echo DisplayLib::boxMsg($CORE_LOCAL->get("boxMsg"));
+		echo DisplayLib::boxMsg($CORE_LOCAL->get("boxMsg"),"",True);
 		echo "</div>";
 		echo "<div id=\"footer\">";
 		echo DisplayLib::printfooter();

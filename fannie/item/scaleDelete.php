@@ -49,7 +49,8 @@ if (isset($_REQUEST['upc']) && !isset($_REQUEST['deny'])){
 	$upc = str_pad($_REQUEST['upc'],13,'0',STR_PAD_LEFT);
 	
 	if (isset($_REQUEST['submit'])){
-		$rp = $dbc->query(sprintf("SELECT * FROM scaleItems WHERE plu=%s",$dbc->escape($upc)));
+		$p = $dbc->prepare_statement("SELECT * FROM scaleItems WHERE plu=?");
+		$rp = $dbc->exec_statement($p,array($upc));
 		if ($dbc->num_rows($rp) == 0){
 			printf("No item found for <b>%s</b><p />",$upc);
 			echo "<a href=\"scaleDelete.php\">Go back</a>";
@@ -72,9 +73,8 @@ if (isset($_REQUEST['upc']) && !isset($_REQUEST['deny'])){
 	}
 	else if (isset($_REQUEST['confirm'])){
 		$plu = substr($upc,3,4);
-		$upc = $dbc->escape($upc);
-		$scaleQ = sprintf("DELETE FROM scaleItems WHERE plu=%s",$upc);
-		$dbc->query($scaleQ);
+		$p = $dbc->prepare_statement("DELETE FROM scaleItems WHERE plu=?");
+		$rp = $dbc->exec_statement($p,array($upc));
 		include('hobartcsv/parse.php');
 		deleteitem($plu);
 

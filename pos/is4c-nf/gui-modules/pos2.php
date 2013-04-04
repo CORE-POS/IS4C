@@ -21,13 +21,6 @@
 
 *********************************************************************************/
 
-/* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-	18Sep2012 Eric Lee Added CORE_LOCAL[store]-based option to change style of items.
-	                    Needed for expanded comments for scaled items.
-
-*/
-
 ini_set('display_errors','1');
  
 session_cache_limiter('nocache');
@@ -61,20 +54,28 @@ class pos2 extends BasicPage {
 
 		$json = array();
 		if ($entered != ""){
-			/* this breaks the model a bit, but I'm putting
-			 * putting the CC parser first manually to minimize
-			 * code that potentially handles the PAN */
-			include_once(realpath(dirname(__FILE__)."/../cc-modules/lib/paycardEntered.php"));
-			$pe = new paycardEntered();
-			if ($pe->check($entered)){
-				$valid = $pe->parse($entered);
-				$entered = "PAYCARD";
-				$CORE_LOCAL->set("strEntered","");
-				$json = $valid;
-			}
 
-			$CORE_LOCAL->set("quantity",0);
-			$CORE_LOCAL->set("multiple",0);
+			if (in_array("Paycards",$CORE_LOCAL->get("PluginList"))){
+				/* this breaks the model a bit, but I'm putting
+				 * putting the CC parser first manually to minimize
+				 * code that potentially handles the PAN */
+				if($CORE_LOCAL->get("PaycardsCashierFacing")=="1" && substr($entered,0,9) == "PANCACHE:"){
+					/* cashier-facing device behavior; run card immediately */
+					$entered = substr($entered,9);
+					$CORE_LOCAL->set("CachePanEncBlock",$entered);
+				}
+
+				$pe = new paycardEntered();
+				if ($pe->check($entered)){
+					$valid = $pe->parse($entered);
+					$entered = "PAYCARD";
+					$CORE_LOCAL->set("strEntered","");
+					$json = $valid;
+				}
+
+				$CORE_LOCAL->set("quantity",0);
+				$CORE_LOCAL->set("multiple",0);
+			}
 
 			/* FIRST PARSE CHAIN:
 			 * Objects belong in the first parse chain if they
@@ -84,7 +85,7 @@ class pos2 extends BasicPage {
 			 */
 			$parser_lib_path = $this->page_url."parser-class-lib/";
 			if (!is_array($CORE_LOCAL->get("preparse_chain")))
-				$CORE_LOCAL->set("preparse_chain",Parser::get_preparse_chain());
+				$CORE_LOCAL->set("preparse_chain",PreParser::get_preparse_chain());
 
 			foreach ($CORE_LOCAL->get("preparse_chain") as $cn){
 				$p = new $cn();
@@ -161,9 +162,12 @@ class pos2 extends BasicPage {
 		<script type="text/javascript">
 		function submitWrapper(){
 			var str = $('#reginput').val();
-			if (str.indexOf("tw") != -1 || str.indexOf("TW") != -1 || (str.search(/^[0-9]+$/) == 0 && str.length <= 13) || str=='TFS'){
+			if (str.indexOf("tw") != -1 || str.indexOf("TW") != -1 || (str.search(/^[0-9]+$/) == 0 && str.length <= 13) || str=='TFS'
+			    || str == 'U' || str == 'D'){
 				$('#reginput').val('');
+				clearTimeout(screenLockVar);
 				runParser(str,'<?php echo $this->page_url; ?>');
+				enableScreenLock();
 				return false;
 			}
 			return true;
@@ -171,6 +175,10 @@ class pos2 extends BasicPage {
 		function parseWrapper(str){
 			$('#reginput').val(str);
 			$('#formlocal').submit();
+		}
+		var screenLockVar;
+		function enableScreenLock(){
+			screenLockVar = setTimeout('lockScreen()', <?php echo $CORE_LOCAL->get("timeout") ?>);
 		}
 		function lockScreen(){
 			$.ajax({
@@ -187,26 +195,21 @@ class pos2 extends BasicPage {
 				url: '<?php echo $this->page_url; ?>ajax-callbacks/ajax-end.php',
 				type: 'get',
 				data: 'receiptType='+r_type,
+				dataType: 'json',
 				cache: false,
 				success: function(data){
+					if (data.sync){
+						ajaxTransactionSync('<?php echo $this->page_url; ?>');
+					}
 				},
 				error: function(e1){
 				}
 			});
 		}
 		function inputRetry(str){
-			$('#reginput').val(str);
-			submitWrapper();
+			parseWrapper(str);
 		}
 		</script>
-		<?php
-		if ( $CORE_LOCAL->get('store') == "WEFC_Toronto" ) {
-			echo "<style type='text/css'>
-			div.item .desc { width:45%;}
-			div.item .comments { width:33%;}
-			</style>\n";
-		}
-		?>
 		<?php
 	}
 
@@ -214,7 +217,7 @@ class pos2 extends BasicPage {
 		global $CORE_LOCAL;
 		$this->input_header('action="pos2.php" onsubmit="return submitWrapper();"');
 		if ($CORE_LOCAL->get("timeout") != "")
-			$this->add_onload_command("setTimeout('lockScreen()', ".$CORE_LOCAL->get("timeout").");\n");
+			$this->add_onload_command("enableScreenLock();\n");
 		$this->add_onload_command("\$('#reginput').keydown(function(ev){
 					switch(ev.which){
 					case 33:
@@ -279,6 +282,31 @@ class pos2 extends BasicPage {
 		else
 			echo DisplayLib::printfooter();
 		echo "</div>";
+
+		if ($CORE_LOCAL->get("touchscreen") === True){
+			echo '<div style="text-align: center;">
+			<input type="submit" value="Items"
+				class="quick_button"
+				style="margin: 0 10px 0 0;"
+				onclick="parseWrapper(\'QK0\');" />
+			<input type="submit" value="Total"
+				class="quick_button"
+				style="margin: 0 10px 0 0;"
+				onclick="parseWrapper(\'QK4\');" />
+			<input type="submit" value="Tender"
+				class="quick_button"
+				style="margin: 0 10px 0 0;"
+				onclick="parseWrapper(\'QK2\');" />
+			<input type="submit" value="Member"
+				class="quick_button"
+				style="margin: 0 10px 0 0;"
+				onclick="parseWrapper(\'QK5\');" />
+			<input type="submit" value="Misc"
+				class="quick_button"
+				style="margin: 0 10px 0 0;"
+				onclick="parseWrapper(\'QK6\');" />
+			</div>';
+		}
 
 		$CORE_LOCAL->set("away",0);
 	} // END body_content() FUNCTION

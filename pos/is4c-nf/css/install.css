@@ -1,0 +1,153 @@
+body { font-family: Arial; }
+p { font-size: 14px; margin-left: 10px; }
+
+.tabwrap {
+	width:88%;
+	margin-left:auto;
+	margin-right:auto;
+}
+/*.ui-tabs-panel {
+	height: 800px;
+	overflow:auto;
+}*/
+
+.alert {
+	background: whiteSmoke;
+	border: #ececec solid 3px;
+	border-radius: 8px;
+	padding: 4px 12px;
+	margin-bottom: 4px;
+}
+
+.success {
+	color: green; 
+	font-weight: bold;
+}
+.fail {
+	color: red;
+	font-weight: bold;
+}
+#install td { vertical-align:top; }
+
+h2 { padding-top:8px; }
+
+#wrapper {
+	margin-left:auto;
+	margin-right:auto;
+	width: 82%;
+}
+
+.tblSection {
+	border:2px solid #666;
+	border-radius:28px;
+	margin:12px;
+}
+
+.tblSection h3 {
+	background: #eee;
+	font-size: 1.5em
+}
+
+.tblHeader {
+	border-top: #eee 2px solid;
+	padding: 8px 0 16px 0;
+}
+
+.submitBtn {
+	padding-top: 30px;
+	text-align:center;
+}
+.submitBtn input {
+	font-size:1.4em;
+}
+
+input[type="text"] {
+	/*font-size:1.3em;*/
+	/*float:left;*/
+}
+.noteTxt {
+	color:#666;
+	display: block;
+	font-size:14px;
+	line-height: 1.1em;
+	position: relative;
+	top:-33px;
+	float:right;
+	width:auto;
+	background: whiteSmoke;
+	padding: 10px;
+	max-width: 66%;
+}
+
+.spacer {
+	display: block;
+	float: left;
+}
+
+.pre {
+	font-weight:bolder;
+	font-family:monaco, monospace;
+}
+/*********************************
+ * INSTALLER MENU TAB STYLES
+ *********************************/
+.invertedshiftdown{
+padding: 0;
+width: 100%;
+border-top: 5px solid #D10000; /*Red color theme*/
+background: transparent;
+voice-family: "\"}\"";
+voice-family: inherit;
+}
+
+.invertedshiftdown ul{
+margin:0;
+margin-left: 40px; /*margin between first menu item and left browser edge*/
+padding: 0;
+list-style: none;
+}
+
+.invertedshiftdown li{
+display: inline;
+margin: 0 2px 0 0;
+padding: 0;
+text-transform:uppercase;
+}
+
+.invertedshiftdown a{
+float: left;
+display: block;
+font: bold 15px Arial;
+color: black;
+text-decoration: none;
+margin: 0 1px 0 0; /*Margin between each menu item*/
+padding: 5px 10px 9px 10px; /*Padding within each menu item*/
+background-color: white; /*Default menu color*/
+
+/*BELOW 4 LINES add rounded bottom corners to each menu item.
+  ONLY WORKS IN FIREFOX AND FUTURE CSS3 CAPABLE BROWSERS
+  REMOVE IF DESIRED*/
+-moz-border-radius-bottomleft: 5px;
+border-bottom-left-radius: 5px;
+-moz-border-radius-bottomright: 5px;
+border-bottom-right-radius: 5px;
+}
+
+.invertedshiftdown a:hover{
+background-color: #D10000; /*Red color theme*/
+padding-top: 9px; /*Flip default padding-top value with padding-bottom */
+padding-bottom: 5px; /*Flip default padding-bottom value with padding-top*/
+color: white;
+}
+
+.invertedshiftdown .current a{ /** currently selected menu item **/
+background-color: #D10000; /*Red color theme*/
+padding-top: 9px; /*Flip default padding-top value with padding-bottom */
+padding-bottom: 5px; /*Flip default padding-bottom value with padding-top*/
+color: white;
+}
+
+
+/***************************
+ *	Switch stuff
+ ***************************/

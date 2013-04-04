@@ -53,26 +53,33 @@ if(isset($_REQUEST['upc']) && !empty($_REQUEST['upc'])){
 			FROM products AS p LEFT JOIN prodExtra AS x ON p.upc=x.upc
 			LEFT JOIN upcLike AS u ON p.upc=u.upc LEFT JOIN likeCodes AS l
 			ON l.likeCode=u.likeCode ";
+		$args = array();
 		if (!is_numeric($_REQUEST['upc'])){
-			$query .= "WHERE p.description like ".$dbc->escape("%".$_REQUEST['upc']."%");
+			$query .= "WHERE p.description like ?";
+			$args[] = '%'.$_REQUEST['upc'].'%';
 		}
 		else {
 			switch($_REQUEST['ntype']){
 			case 'Brand Prefix':
-				$query .= "WHERE p.upc LIKE '%".$_REQUEST['upc']."%'";
+				$query .= "WHERE p.upc LIKE ?";
+				$args[] = '%'.$_REQUEST['upc'].'%';
 				break;
 			case 'SKU':
 				$query .= "INNER JOIN vendorItems AS v ON p.upc=v.upc
-					WHERE v.sku='".$_REQUEST['upc']."'";
+					WHERE v.sku=?";
+				$args[] = $_REQUEST['upc'];
+				break;
 			case 'UPC':
 			default:
-				$query .= "WHERE p.upc='".str_pad($_REQUEST['upc'],13,'0',STR_PAD_LEFT)."'";
+				$query .= "WHERE p.upc=?";
+				$args[] = str_pad($_REQUEST['upc'],13,'0',STR_PAD_LEFT);
 				break;
 			}
 		}
 		$query .= " ORDER BY p.description";
 
-		$result = $dbc->query($query);
+		$prep = $dbc->prepare_statement($query);
+		$result = $dbc->exec_statement($query,$args);
 		$num = $dbc->num_rows($result);
 		if ($num > 1){
 			echo "<body><b>Multiple items found</b><br />";
@@ -120,8 +127,8 @@ if(isset($_REQUEST['upc']) && !empty($_REQUEST['upc'])){
 				sprintf("On Sale @ \$%.2f",$row['special_price']):""));
 
 			$departments = array();
-			$deptQ = "SELECT dept_no,dept_name FROM departments ORDER BY dept_no";
-			$deptR = $dbc->query($deptQ);
+			$deptQ = $dbc->prepare_statement("SELECT dept_no,dept_name FROM departments ORDER BY dept_no");
+			$deptR = $dbc->exec_statement($deptQ);
 			while($deptW = $dbc->fetch_row($deptR))
 				$departments[$deptW[0]] = $deptW[1];
 			echo "<tr><td><em>Dept</em> <select name=dept>";
@@ -134,8 +141,8 @@ if(isset($_REQUEST['upc']) && !empty($_REQUEST['upc'])){
 
 			$taxrates = array();
 			$taxrates[0] = "NoTax";
-			$taxQ = "SELECT id,description FROM taxrates ORDER BY id";
-			$taxR = $dbc->query($taxQ);
+			$taxQ = $dbc->prepare_statement("SELECT id,description FROM taxrates ORDER BY id");
+			$taxR = $dbc->exec_statement($taxQ);
 			while($taxW = $dbc->fetch_row($taxR))
 				$taxrates[$taxW[0]] = $taxW[1];
 			echo "<td><em>Tax</em> <select name=tax>";
@@ -213,16 +220,15 @@ if(isset($_REQUEST['upc']) && !empty($_REQUEST['upc'])){
 
 		if (!empty($_REQUEST['lc'])){
 			// drop from like code, re-add if appropriate
-			$delQ = "DELETE FROM upcLike WHERE upc='".$upcs[0]."'";
-			$delR = $dbc->query($delQ);
+			$delQ = $dbc->prepare_statement("DELETE FROM upcLike WHERE upc=?");
+			$delR = $dbc->exec_statement($delQ, array($upcs[0]));
 			if (is_numeric($_REQUEST['lc']) && $_REQUEST['lc'] != 0 && $_REQUEST['lc'] != -1){
-				$insQ = sprintf("INSERT INTO upcLike (likeCode,upc) 
-					VALUES (%d,%s)",$_REQUEST['lc'],$dbc->escape($upcs[0]));
-				$insR = $dbc->query($insQ);
+				$insQ = $dbc->prepare_statement("INSERT INTO upcLike (likeCode,upc) 
+					VALUES (?,?)");
+				$insR = $dbc->exec_statement($insQ,array($_REQUEST['lc'],$upcs[0]));
 
-				$fetchQ = sprintf("SELECT upc FROM upcLike WHERE likeCode=%d",
-						$_REQUEST['lc']);
-				$fetchR = $dbc->query($fetchQ);
+				$fetchQ = $dbc->prepare_statement("SELECT upc FROM upcLike WHERE likeCode=?");
+				$fetchR = $dbc->exec_statement($fetchQ,array($_REQUEST['lc']));
 				$upcs = array();
 				while($w = $dbc->fetch_row($fetchR))
 					$upcs[] = $w[0];
@@ -230,45 +236,24 @@ if(isset($_REQUEST['upc']) && !empty($_REQUEST['upc'])){
 		}
 
 		include('laneUpdates.php');
+		include($FANNIE_ROOT.'classlib2.0/data/controllers/ProductsController.php');
+		$xQ = $dbc->prepare_statement("INSERT INTO prodExtra (upc) VALUES (?");
 		foreach($upcs as $upc){
-			$query = sprintf("UPDATE products SET
-					normal_price=%.2f,
-					tax=%d,
-					foodstamp=%d,
-					department=%d,
-					scale=%d,
-					discount=%d,
-					qttyEnforced=%d,
-					modified=%s,
-					description=%s
-					WHERE upc=%s",
-					$price,$tax,$fs,$dept,$scale,$disc,
-					$qttyForce,$dbc->now(),
-					$dbc->escape($desc),
-					$dbc->escape($upc));
+			$up = array(
+				'normal_price'=>$price,
+				'tax'=>$tax,
+				'foodstamp'=>$fs,
+				'department'=>$dept,
+				'scale'=>$scale,
+				'discount'=>$disc,
+				'qttyEnforced'=>$qttyForce,
+				'description'=>$desc
+			);
+			ProductsController::update($upc, $up);
 			if ($upc == $_REQUEST['upc'] && $_REQUEST['olditem'] == 0){
-				$query = sprintf("INSERT INTO products (upc,description,normal_price,
-					pricemethod,groupprice,quantity,special_price,specialpricemethod,
-					specialgroupprice,specialquantity,start_date,end_date,department,
-					size,tax,foodstamp,scale,scaleprice,mixmatchcode,modified,advertised,
-					tareweight,discount,discounttype,unitofmeasure,wicable,qttyEnforced,
-					idEnforced,cost,inUse,numflag,subdept,deposit,local) VALUES
-					(%s,%s,%.2f,0,0.00,0,0.00,0,0.00,0,'1900-01-01','1900-01-01',%d,'',
-					%d,%d,%d,0.00,'',%s,1,0,%d,0,'LB',0,%d,0,0.00,1,0,0,0.00,0)",
-					$dbc->escape($upc),$dbc->escape($desc),$price,$dept,$tax,$fs,
-					$scale,$dbc->now(),$disc,$qttyForce);
-				$xQ = "INSERT INTO prodExtra (upc) VALUES (".$dbc->escape($upc).")";
-				$dbc->query($xQ);
+				$dbc->exec_statement($xQ,array($upc));
 			}
-			$dbc->query($query);
 			updateProductAllLanes($upc);
-
-			if ($dbc->table_exists("prodUpdate")){
-				$query = sprintf("INSERT INTO prodUpdate VALUES ('%s',%s,%.2f,%d,%d,%d,%d,
-					%d,%s,%d,%d,%d,1)",$upc,$dbc->escape($desc),$price,$department,$tax,$fs,$scale,
-					0,$dbc->now(),0,$qttyForce,$disc);
-				$result =  $dbc->query($query);
-			}
 		}
 		if(count($upcs)==1)
 			echo "<i>Item $upcs[0] updated</i><br />";

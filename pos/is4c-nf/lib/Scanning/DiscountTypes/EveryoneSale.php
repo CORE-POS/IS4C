@@ -56,7 +56,7 @@ class EveryoneSale extends DiscountType {
 		}
 
 		// enforce per-transaction limit
-		if ($row['specialquantity'] > 0){
+		if ($row['specialpricemethod']==0 && $row['specialquantity'] > 0){
 			$tdb = Database::tDataConnect();
 			$chkQ = "SELECT sum(ItemQtty) FROM
 				localtemptrans WHERE upc='{$row['upc']}'";

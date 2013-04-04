@@ -23,7 +23,7 @@
 
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
-class paycardboxMsgVoid extends BasicPage {
+class paycardboxMsgVoid extends PaycardProcessPage {
 
 	function preprocess(){
 		global $CORE_LOCAL;

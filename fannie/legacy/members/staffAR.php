@@ -30,7 +30,7 @@ if(!validateUserQuiet('staffar')){
               c.FirstName,
               n.balance as Ending_Balance
               FROM is4c_op.custdata as c INNER JOIN staffID as a ON a.cardNo = c.CardNo
-	      LEFT JOIN newBalanceToday_cust AS n ON c.CardNo=n.memnum
+	      LEFT JOIN ar_live_balance AS n ON c.CardNo=n.card_no
               WHERE (c.memType = 9 OR c.memType = 3)
               and c.personNum = 1
               order by c.LastName";
@@ -44,7 +44,7 @@ if(!validateUserQuiet('staffar')){
               c.FirstName,
               n.balance as Ending_Balance
               FROM is4c_op.custdata as c INNER JOIN staffID as a ON a.cardNo = c.CardNo
-	      LEFT JOIN newBalanceToday_cust AS n ON c.CardNo=n.memnum
+	      LEFT JOIN ar_live_balance AS n ON c.CardNo=n.card_no
               WHERE (c.memType = 9 OR c.memType = 3)
               and c.personNum = 1
               order by c.LastName";

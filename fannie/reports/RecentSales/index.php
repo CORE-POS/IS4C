@@ -21,6 +21,13 @@
 
 *********************************************************************************/
 
+
+/* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+	* 21Jan2013 Eric Lee table upcLike need database specified: core_op.upcLike
+
+*/
+
 require('../../config.php');
 require($FANNIE_ROOT."src/SQLManager.php");
 
@@ -28,11 +35,15 @@ $dbc = new SQLManager($FANNIE_SERVER,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
 	$FANNIE_SERVER_USER,$FANNIE_SERVER_PW);
 
 $where = '';
+$args = array();
 if (isset($_GET['upc'])){
-	$where = sprintf("WHERE upc='%s'",str_pad($_GET['upc'],13,'0',STR_PAD_LEFT));
+	$where = "WHERE upc=?";
+	$args = array(str_pad($_GET['upc'],13,'0',STR_PAD_LEFT));
 }
 else if (isset($_GET['likecode'])){
-	$where = "LEFT JOIN upcLike AS u ON d.upc=u.upc WHERE u.likecode=".$_GET['likecode'];
+	$where = sprintf("LEFT JOIN %s%supcLike AS u ON d.upc=u.upc WHERE u.likecode=?",
+		$FANNIE_OP_DB,$dbc->sep());
+	$args = array($_GET['likecode']);
 }
 else
 	exit;
@@ -70,7 +81,8 @@ $q = "SELECT sum(case when ".$dbc->date_equals('tdate',$days[1])." AND trans_sta
 	sum(case when (tdate BETWEEN '{$weeks[1][0]} 00:00:00' AND
 			'{$weeks[1][1]} 23:59:59') THEN total else 0 end) as totalwk1
 	FROM dlog_15 as d $where";
-$r = $dbc->query($q);
+$p = $dbc->prepare_statement($q);
+$r = $dbc->exec_statement($p,$args);
 $w = $dbc->fetch_row($r);
 
 echo "<td><font color=blue>Yesterday</font></td>";
@@ -94,7 +106,8 @@ $q = "SELECT sum(case when ".$dbc->monthdiff($dbc->now(),'tdate')."=0 AND trans_
 	sum(case when ".$dbc->monthdiff($dbc->now(),'tdate')."=1 AND trans_status<>'M' THEN quantity else 0 end) as qtym1,
 	sum(case when ".$dbc->monthdiff($dbc->now(),'tdate')."=1 THEN total else 0 end) as totalm1
 	FROM dlog_90_view as d $where";
-$r = $dbc->query($q);
+$p = $dbc->prepare_statement($q);
+$r = $dbc->exec_statement($p,$args);
 $w = $dbc->fetch_row($r);
 
 echo "</td><tr><td><font color=blue>This Month</font></td>";

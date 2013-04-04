@@ -57,8 +57,7 @@ class BasicPage {
 		if ($this->preprocess()){
 			ob_start();
 			$this->print_page();
-			while (ob_get_level() > 0)
-				ob_end_flush();
+			ob_end_flush();
 		}
 	}
 
@@ -112,14 +111,20 @@ class BasicPage {
 	function print_page(){
 		$my_url = $this->page_url;
 		?>
-		<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-		<html xmlns="http://www.w3.org/1999/xhtml">
+		<!DOCTYPE html>
+		<html>
 		<?php
 		echo "<head>";
+		echo "<title>COREPOS</title>";
 		// 18Aug12 EL Add content/charset.
 		echo "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" />\n";
 		echo "<link rel=\"stylesheet\" type=\"text/css\"
-		    href=\"{$my_url}/pos.css\">";
+		    href=\"{$my_url}/css/pos.css\">";
+		// include store css file if it exists
+		if (file_exists(dirname(__FILE__).'/../store.css')){
+			echo "<link rel=\"stylesheet\" type=\"text/css\"
+			    href=\"{$my_url}/store.css\">";
+		}
 		echo "<script type=\"text/javascript\"
 			src=\"{$my_url}/js/jquery.js\"></script>";
 		$this->head_content();
@@ -222,27 +227,33 @@ class BasicPage {
 			<?php
 			if ($CORE_LOCAL->get("training") == 1) {
 				echo "<span class=\"text\">"._("training")." </span>"
-				     ."<img src='{$my_url}graphics/BLUEDOT.GIF'>&nbsp;&nbsp;&nbsp;";
+				     ."<img alt=\"training\" src='{$my_url}graphics/BLUEDOT.GIF'>&nbsp;&nbsp;&nbsp;";
 			}
 			elseif ($CORE_LOCAL->get("standalone") == 0) {
-				echo "<img src='{$my_url}graphics/GREENDOT.GIF'>&nbsp;&nbsp;&nbsp;";
+				echo "<img alt=\"online\" src='{$my_url}graphics/GREENDOT.GIF'>&nbsp;&nbsp;&nbsp;";
 			}
 			else {
 				echo "<span class=\"text\">stand alone</span>"
-				     ."<img src='{$my_url}graphics/REDDOT.GIF'>&nbsp;&nbsp;&nbsp;";
+				     ."<img alt=\"standalone\" src='{$my_url}graphics/REDDOT.GIF'>&nbsp;&nbsp;&nbsp;";
 			}
 			if ($CORE_LOCAL->get("receiptToggle")==1){
-				echo "<img src='{$my_url}graphics/receipt.gif'>&nbsp;&nbsp;&nbsp;";
+				echo "<img alt=\"receipt\" src='{$my_url}graphics/receipt.gif'>&nbsp;&nbsp;&nbsp;";
 			}
 			else {
-				echo "<img src='{$my_url}graphics/noreceipt.gif'>&nbsp;&nbsp;&nbsp;";
+				echo "<img alt=\"no receipt\" src='{$my_url}graphics/noreceipt.gif'>&nbsp;&nbsp;&nbsp;";
 			}
 			if($CORE_LOCAL->get("CCintegrate") == 1 && 
 				$CORE_LOCAL->get("ccLive") == 1 && $CORE_LOCAL->get("training") == 0){
-			   echo "<img src='{$my_url}graphics/ccIn.gif'>&nbsp;";
+			   if ($CORE_LOCAL->get("CachePanEncBlock")=="")
+				   echo "<img alt=\"cc mode\" src='{$my_url}graphics/ccIn.gif'>&nbsp;";
+			   else
+				   echo "<img alt=\"cc available\" src='{$my_url}graphics/ccInLit.gif'>&nbsp;";
 			}elseif($CORE_LOCAL->get("CCintegrate") == 1 && 
 				($CORE_LOCAL->get("training") == 1 || $CORE_LOCAL->get("ccLive") == 0)){
-			   echo "<img src='{$my_url}graphics/ccTest.gif'>&nbsp;";
+			   if ($CORE_LOCAL->get("CachePanEncBlock")=="")
+				   echo "<img alt=\"cc test mode\" src='{$my_url}graphics/ccTest.gif'>&nbsp;";
+			   else
+				   echo "<img alt=\"cc available (test)\" src='{$my_url}graphics/ccTestLit.gif'>&nbsp;";
 			}
 
 			echo "<span id=\"timeSpan\" class=\"time\">".$time."</span>\n";
@@ -306,21 +317,27 @@ class BasicPage {
 			<?php	
 			if ($CORE_LOCAL->get("training") == 1) {
 				echo "<span class=\"text\">"._("training")." </span>"
-				     ."<img src='{$my_url}graphics/BLUEDOT.GIF'>&nbsp;&nbsp;&nbsp;";
+				     ."<img alt=\"training\" src='{$my_url}graphics/BLUEDOT.GIF'>&nbsp;&nbsp;&nbsp;";
 			}
 			elseif ($CORE_LOCAL->get("standalone") == 0) {
-				echo "<img src='{$my_url}graphics/GREENDOT.GIF'>&nbsp;&nbsp;&nbsp;";
+				echo "<img alt=\"online\" src='{$my_url}graphics/GREENDOT.GIF'>&nbsp;&nbsp;&nbsp;";
 			}
 			else {
 				echo "<span class=\"text\">stand alone</span>"
-				     ."<img src='{$my_url}graphics/REDDOT.GIF'>&nbsp;&nbsp;&nbsp;";
+				     ."<img alt=\"standalone\" src='{$my_url}graphics/REDDOT.GIF'>&nbsp;&nbsp;&nbsp;";
 			}
 			if($CORE_LOCAL->get("CCintegrate") == 1 && 
 				$CORE_LOCAL->get("ccLive") == 1 && $CORE_LOCAL->get("training") == 0){
-			   echo "<img src='/graphics/ccIn.gif'>&nbsp;";
+			   if ($CORE_LOCAL->get("CachePanEncBlock")=="")
+				   echo "<img alt=\"cc mode\" src='{$my_url}graphics/ccIn.gif'>&nbsp;";
+			   else
+				   echo "<img alt=\"cc available\" src='{$my_url}graphics/ccInLit.gif'>&nbsp;";
 			}elseif($CORE_LOCAL->get("CCintegrate") == 1 && 
 				($CORE_LOCAL->get("training") == 1 || $CORE_LOCAL->get("ccLive") == 0)){
-			   echo "<img src='{$my_url}graphics/ccTest.gif'>&nbsp;";
+			   if ($CORE_LOCAL->get("CachePanEncBlock")=="")
+				   echo "<img alt=\"cc test mode\" src='{$my_url}graphics/ccTest.gif'>&nbsp;";
+			   else
+				   echo "<img alt=\"cc available (test)\" src='{$my_url}graphics/ccTestLit.gif'>&nbsp;";
 			}
 
 			echo "<span id=\"timeSpan\" class=\"time\">".$time."</span>\n";

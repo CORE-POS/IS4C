@@ -1,0 +1,142 @@
+<html>
+<head>
+	<title>Porting Existing Code</title>
+</head>
+<body>
+<h1>Porting Existing Code Into Fannie</h1>
+Got something that already works and what to start integrating
+it into Fannie? Great! Get started here. There are a few key
+tasks to make your code get along with Fannie and behave nicely
+for others as well as your self.
+<ul>
+<li>Interact with the configuration file</li>
+<li>Avoid absolute paths</li>
+<li>Access the database</li>
+</ul>
+<h3>Interact with the configuration file</h3>
+Fannie provides a global configuration file for storing settings.
+It lives in the root directory and is aptly named config.php.
+Including this file is almost always the first thing you should
+do in a script. It defines a bunch of helpful global variables.
+<h3>Avoid absolute paths</h3>
+Since Fannie is meant to exist at many locations with various
+configurations, we cannot make any assumptions about file
+paths. If your code is in /var/www/fannie/my-new-feature/index.php,
+don't write this:
+<pre style="background:#ccc; padding:3px;">
+include('/var/www/fannie/config.php');
+</pre>
+That's not portable. If someone else tries to use this code
+and they have fannie in a different directory, it won't work.
+Either of these options would work as an alternative:
+<pre style="background:#ccc; padding:3px;">
+include('../config.php');
+include(dirname(__FILE__).'/../config.php');
+</pre>
+The second option is slightly less likely to cause path problems
+but either will work in most cases. You can use a similar notation
+for further includes or use the variable $FANNIE_ROOT that's defined
+in config.php and contains the filesystem path for fannie's top
+directory. Similarly, the variable $FANNIE_URL provides a URL for
+fannie's top directory.
+<h3>Access the Database</h3>
+There are a couple ways to connect to the database. The recommended
+way is using objects.
+<pre style="background:#ccc; padding:3px;">
+include($FANNIE_ROOT.'classlib2.0/data/FannieDB.php);
+$dbc = FannieDB::get($FANNIE_OP_DB);
+</pre>
+The older way, at least in some versions of Fannie, still exists too.
+<pre style="background:#ccc; padding:3px;">
+include($FANNIE_ROOT.'src/mysql_connect.php');
+</pre>
+This include file also provides a similar variable named <b>$dbc</b>.
+<p>
+One important thing to note is that <b>$dbc</b> is not a mysql connection
+resource; it's an instance of the SQLManager class. In a lot of cases that
+won't matter yet, but if you're passing the optional connection argument to
+mysql functions they may object. For example:
+<pre style="background:#ccc; padding:3px;">
+mysql_query($someQuery, $dbc); // may cause error
+mysql_query($someQuery);       // should work
+</pre>
+</p>
+<h1>Next Steps</h1>
+Hopefully at this point your feature works (or mostly works). What should you do
+next? These are a few options:
+<ul>
+<li>Use the SQLManager class</li>
+<li>Add your own settings to Fannie's configuration</li>
+<li>Use Fannie's look &amp; feel on your pages</li>
+</ul>
+</body>
+<h3>Use the SQLManager class</h3>
+<p>
+The SQLManager class is a layer between Fannie and the database. Its primary purpose
+is to prevent database-specific function calls and query syntax as much as possible.
+If anyone ever wants or needs to run Fannie on something other than MySQL this makes
+the process a lot easier. It also enables some nifty tricks like unified logging of 
+all failed queries and prepared statements and transfering data between different
+hosts.
+</p>
+<p>
+The biggest task here is to convert mysql_* functions. This is usually pretty easy
+since SQLManager's method names are based on the mysql_* functions. Just remove
+"mysql_" like this:
+<pre style="background:#ccc; padding:3px;">
+mysql_query($someQuery);
+$dbc->query($someQuery);
+
+mysql_num_rows($result);
+$dbc->num_rows($result);
+
+mysql_fetch_row($result);
+$dbc->fetch_row($result);
+</pre>
+Often you can just use find and replace in your editor
+to change all instances of "mysql_" to "$dbc-&gt;". One
+potential issue to be aware of is you have to keep track
+of the connection object. If you have a query inside a function,
+you need to pass it <b>$dbc</b> or use the global keyword
+to get access to it.
+<pre style="background:#ccc; padding:3px;">
+function updateV1($dbc){
+	$dbc->query($someQuery);
+}
+// or
+function updateV2(){
+	global $dbc;
+	$dbc->query($someQuery);
+}
+</pre>
+</p>
+<h1>Add your own settings to Fannie's configuration</h1>
+If your feature has (or needs) user configurable settings,
+you can add them by writing a plugin class
+(<a href="plugins/define-a-plugin.html">details</a>).
+You don't have to do anything special to the rest of your
+files. This is just the easiest to define your settings
+and hook into the web interface without mucking around in
+some fairly ugly code.
+<h1>Use Fannie's look &amp; feel on your pages</h1>
+Like accessing the database, there are two ways to
+add Fannie's header, footer, and menu to your page(s):
+an object-oriented way and the old way. The
+<a href="plugins/page.phps">object-oriented way</a> is
+very structured for consistency and its subclasses can
+automatically provide a bunch of functionality for
+certain tasks (e.g., generating a report or uploading a
+file). The traditional way is quicker and there's no API
+to learn:
+<pre style="background:#ccc; padding:3px;">
+$header = 'My Page Header';
+$page_title = 'My Window Title';
+include($FANNIE_ROOT.'src/header.html');
+
+/*
+All your code for printing
+*/
+
+include($FANNIE_ROOT.'src/footer.html');
+</pre>
+</html>

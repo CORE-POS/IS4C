@@ -112,13 +112,15 @@ function mk_trans_archive_table($month,$year,$db,$redo=False){
 	$q = "CREATE TABLE $name $trans_columns";
 	
 	$exists = $db->table_exists($name);
+	$p = $dbc->prepare_statement($q,$FANNIE_ARCHIVE_DB);
 	if (!$exists){
-		$db->query($q,$FANNIE_ARCHIVE_DB);
+		$db->exec_statement($p,array(),$FANNIE_ARCHIVE_DB);
 		echo "Created archive table for $month / $year<br />";
 	}
 	else if ($exists && $redo){
-		$db->query("DROP TABLE $name",$FANNIE_ARCHIVE_DB);
-		$db->query($q,$FANNIE_ARCHIVE_DB);
+		$drop = $db->prepare_statement("DROP TABLE $name",$FANNIE_ARCHIVE_DB);
+		$db->exec_statement($drop,array(),$FANNIE_ARCHIVE_DB);
+		$db->exec_statement($p,array(),$FANNIE_ARCHIVE_DB);
 		echo "Re-created archive table for $month / $year<br />";
 	}
 	else {
@@ -128,6 +130,9 @@ function mk_trans_archive_table($month,$year,$db,$redo=False){
 
 function mk_trans_archive_views($month,$year,$db){
 	global $FANNIE_SERVER_DBMS, $FANNIE_ARCHIVE_DB;
+
+	$month = (int)$month;
+	$year = (int)$year;
 
 	$month = str_pad($month,2,'0',STR_PAD_LEFT);
 	if (strlen($year) == 2) $year = "20".$year;
@@ -160,7 +165,7 @@ function mk_trans_archive_views($month,$year,$db){
 		d.staff,
 		d.card_no, 
 		d.trans_id,";
-	if ($FANNIE_SERVER_DBMS == "MYSQL"){
+	if (strstr($FANNIE_SERVER_DBMS,"MYSQL")){
 		$dlogQ .= "concat(convert(d.emp_no,char), '-', convert(d.register_no,char), '-',
 			convert(d.trans_no,char)) as trans_num";
 	}
@@ -317,15 +322,24 @@ function mk_trans_archive_views($month,$year,$db){
 			group by register_no, emp_no, trans_no, card_no, datetime";
 	}
 
-	if ($db->table_exists("dlog".$year.$month,$FANNIE_ARCHIVE_DB))
-		$db->query("DROP VIEW dlog$year$month");
-	$db->query($dlogQ);
-	if ($db->table_exists("rp_dt_receipt_".$year.$month,$FANNIE_ARCHIVE_DB))
-		$db->query("DROP VIEW rp_dt_receipt_$year$month");
-	$db->query($rp1Q);
-	if ($db->table_exists("rp_receipt_header_".$year.$month,$FANNIE_ARCHIVE_DB))
-		$db->query("DROP VIEW rp_receipt_header_$year$month");
-	$db->query($rp2Q);
+	if ($db->table_exists("dlog".$year.$month,$FANNIE_ARCHIVE_DB)){
+		$drop = $db->prepare_statement("DROP VIEW dlog$year$month", $FANNIE_ARCHIVE_DB);
+		$db->exec_statement($drop,array(),$FANNIE_ARCHIVE_DB);
+	}
+	$dlogP = $db->prepare_statement($dlogQ,$FANNIE_ARCHIVE_DB);
+	$db->exec_statement($dlogP,array(),$FANNIE_ARCHIVE_DB);
+	if ($db->table_exists("rp_dt_receipt_".$year.$month,$FANNIE_ARCHIVE_DB)){
+		$drop = $db->prepare_statement("DROP VIEW rp_dt_receipt_$year$month",$FANNIE_ARCHIVE_DB);
+		$db->exec_statement($drop,array(),$FANNIE_ARCHIVE_DB);
+	}
+	$rp1P = $db->prepare_statement($rp1Q,$FANNIE_ARCHIVE_DB);
+	$db->exec_statement($rp1P,array(),$FANNIE_ARCHIVE_DB);
+	if ($db->table_exists("rp_receipt_header_".$year.$month,$FANNIE_ARCHIVE_DB)){
+		$drop = $db->prepare_statement("DROP VIEW rp_receipt_header_$year$month",$FANNIE_ARCHIVE_DB);
+		$db->exec_statement($drop,array(),$FANNIE_ARCHIVE_DB);
+	}
+	$rp2P = $db->prepare_statement($rp2Q,$FANNIE_ARCHIVE_DB);
+	$db->exec_statement($rp2P,array(),$FANNIE_ARCHIVE_DB);
 
 	echo "Created views for $month / $year <br />";
 }

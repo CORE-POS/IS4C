@@ -24,54 +24,66 @@
 *********************************************************************************/
 //	TODO -- Add javascript for batcher product entry popup window		~joel 2007-08-21
 
+/* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+	* 22Feb2013 Eric Lee Add support for editing
+	*           products.quantity, .groupprice, .pricemethod, .mixmatchcode
+	*           products.size, .unitofmeasure
+	* 10Feb2013 Eric Lee In itemParse add FANNIE_STORE_ID to globals.
+
+*/
+
+
 include_once('../src/mysql_connect.php');
 include_once('../auth/login.php');
 include_once('ajax.php');
 
 function itemParse($upc){
     global $dbc,$FANNIE_URL;
+    global $FANNIE_STORE_ID;
+    global $FANNIE_COOP_ID;
 
     $logged_in = checkLogin();
 
     $queryItem = "";
     $numType = (isset($_REQUEST['ntype'])?$_REQUEST['ntype']:'UPC');
     if(is_numeric($upc)){
-	switch($numType){
-	case 'UPC':
-		$upc = str_pad($upc,13,0,STR_PAD_LEFT);
-		$savedUPC = $upc;
-		$queryItem = "SELECT p.*,x.distributor,x.manufacturer 
-			FROM products as p left join 
-			prodExtra as x on p.upc=x.upc 
-			WHERE (p.upc = '$upc' or x.upc = '$upc')
-			AND p.store_id=0";
-		break;
-	case 'SKU':
-		$queryItem = "SELECT p.*,x.distributor,x.manufacturer 
-			FROM products as p inner join 
-			vendorItems as v ON p.upc=v.upc 
-			left join prodExtra as x on p.upc=x.upc 
-			WHERE v.sku='$upc'
-			AND p.store_id=0";
-		break;
-	case 'Brand Prefix':
-	      $queryItem = "SELECT p.*,x.distributor,x.manufacturer 
-			FROM products as p left join 
-			prodExtra as x on p.upc=x.upc 
-			WHERE p.upc like '%$upc%' 
-			AND p.store_id=0
-			ORDER BY p.upc";
-		break;
-	}
+			switch($numType){
+				case 'UPC':
+					$upc = str_pad($upc,13,0,STR_PAD_LEFT);
+					$savedUPC = $upc;
+					$queryItem = "SELECT p.*,x.distributor,x.manufacturer 
+						FROM products as p left join 
+						prodExtra as x on p.upc=x.upc 
+						WHERE (p.upc = '$upc' or x.upc = '$upc')
+						AND p.store_id=0";
+					break;
+				case 'SKU':
+					$queryItem = "SELECT p.*,x.distributor,x.manufacturer 
+						FROM products as p inner join 
+						vendorItems as v ON p.upc=v.upc 
+						left join prodExtra as x on p.upc=x.upc 
+						WHERE v.sku='$upc'
+						AND p.store_id=0";
+					break;
+				case 'Brand Prefix':
+					$queryItem = "SELECT p.*,x.distributor,x.manufacturer 
+						FROM products as p left join 
+						prodExtra as x on p.upc=x.upc 
+						WHERE p.upc like '%$upc%' 
+						AND p.store_id=0
+						ORDER BY p.upc";
+					break;
+			}
     }else{
+				/* note: only search by HQ records (store_id=0) to avoid duplicates */
         $queryItem = "SELECT p.*,x.distributor,x.manufacturer 
-		FROM products AS p LEFT JOIN 
-		prodExtra AS x ON p.upc=x.upc
-		WHERE description LIKE '%$upc%' 
-		AND p.store_id=0
-		ORDER BY description";
+			FROM products AS p LEFT JOIN 
+			prodExtra AS x ON p.upc=x.upc
+			WHERE description LIKE '%$upc%' 
+			AND p.store_id=0
+			ORDER BY description";
     }
-    /* note: only search by HQ records (store_id=0) to avoid duplicates */
     $resultItem = $dbc->query($queryItem);
     $num = $dbc->num_rows($resultItem);
    
@@ -655,8 +667,13 @@ function itemParse($upc){
 			echo '</tr></table></fieldset>';
 
 			echo "<br /><fieldset id=marginfs>";
-			echo "<legend>Margin</legend>";
-			MarginFS($rowItem['upc'],$rowItem['cost'],$rowItem['department']);
+			if ( isset($FANNIE_COOP_ID) && $FANNIE_COOP_ID == "WEFC_Torontx" ) {
+				echo "<legend>Markup</legend>";
+				MarkupFS($rowItem['upc'],$rowItem['cost'],$rowItem['department']);
+			} else {
+				echo "<legend>Margin</legend>";
+				MarginFS($rowItem['upc'],$rowItem['cost'],$rowItem['department']);
+			}
 			echo "</fieldset>";
 
 			echo '<fieldset id="lanefs">';

@@ -24,7 +24,10 @@ echo "<form action=index.php method=get>
 
 echo "<h3>Integrated CC Report for $date</h3>";
 
-$query = "SELECT q.datetime,q.laneno,q.cashierno,q.transno,q.amount,
+$seconds = strtotime($dateStr);
+$start = date('Y-m-d 00:00:00',$seconds);
+$end = date('Y-m-d 23:59:59',$seconds);
+$query = $dbc->prepare_statement("SELECT q.datetime,q.laneno,q.cashierno,q.transno,q.amount,
 	q.PAN, year(q.datetime),day(q.datetime),
 	month(q.datetime),r.xResultMessage
 	FROM efsnetRequest q LEFT JOIN efsnetResponse r
@@ -35,11 +38,11 @@ $query = "SELECT q.datetime,q.laneno,q.cashierno,q.transno,q.amount,
 	on m.date = q.date and m.cashierNo=q.cashierNo and
 	m.transNo=q.transNo and m.laneNo=q.laneNo
 	and m.transID=q.transID
-	where ".$dbc->date_equals('q.datetime',$date)." 
+	where q.datetime between ? AND ?
 	and q.laneNo <> 99 and q.cashierNo <> 9999
 	and m.transID is null
-	order by q.datetime,q.laneNo,q.transNo,q.cashierNo";	
-$result = $dbc->query($query);
+	order by q.datetime,q.laneNo,q.transNo,q.cashierNo");
+$result = $dbc->exec_statement($query,array($start,$end));
 
 echo "<table cellspacing=0 cellpadding=4 border=1>
 <tr><th>Date &amp; Time</th><th>Card</th><th>Amount</th>
@@ -49,7 +52,7 @@ $htable = array();
 while($row = $dbc->fetch_row($result)){
 	printf("<tr %s><td>%s</td><td>%s</td><td>%.2f</td>
 		<td>%s</td>
-		<td><a href=\"{$FANNIE_URL}admin/LookupReceipt/reprint.php?month=%d&year=%d&day=%d&receipt=%s\">
+		<td><a href=\"{$FANNIE_URL}admin/LookupReceipt/RenderReceiptPage.php?month=%d&year=%d&day=%d&receipt=%s\">
 		POS receipt</td></tr>", 
 		(isset($htable[$row[4]."+".$row[5]])||$row[9]=="")?"class=hilite":"",
 		$row[0],$row[5],$row[4],$row[9],

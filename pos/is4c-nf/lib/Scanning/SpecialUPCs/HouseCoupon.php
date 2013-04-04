@@ -51,16 +51,13 @@ class HouseCoupon extends SpecialUPC {
 		 * and isn't expired
 		 */
 		$db = Database::pDataConnect();
-		$infoQ = "select endDate,limit,discountType, department,
+		$infoQ = "select endDate,".$db->identifier_escape('limit').
+			",discountType, department,
 			discountValue,minType,minValue,memberOnly, 
 			case when endDate is NULL then 0 else 
-			datediff(dd,getdate(),endDate) end as expired
+			".$db->datediff('endDate',$db->now())." end as expired
 			from
 			houseCoupons where coupID=".$coupID;
-		if ($CORE_LOCAL->get("DBMS") == "mysql"){
-			$infoQ = str_replace("dd,getdate(),endDate","endDate,now()",$infoQ);
-			$infoQ = str_replace("limit","`limit`",$infoQ);
-		}
 		$infoR = $db->query($infoQ);
 		if ($db->num_rows($infoR) == 0){
 			$json['output'] =  DisplayLib::boxMsg(_("coupon not found"));
@@ -118,11 +115,9 @@ class HouseCoupon extends SpecialUPC {
 			$minQ = "select case when sum(ItemQtty) is null
 				then 0 else sum(ItemQtty) end
 			       	from localtemptrans
-				as l left join opData.dbo.houseCouponItems 
+				as l left join opdata".$transDB->sep()."houseCouponItems 
 				as h on l.upc = h.upc
 				where h.coupID=".$coupID;
-			if ($CORE_LOCAL->get("DBMS") == "mysql")
-				$minQ = str_replace("dbo.","",$minQ);
 			$minR = $transDB->query($minQ);
 			$validQtty = array_pop($transDB->fetch_row($minR));
 			if ($validQtty < $infoW["minValue"]){
@@ -134,11 +129,9 @@ class HouseCoupon extends SpecialUPC {
 			$minQ = "select case when sum(ItemQtty) is null
 				then 0 else sum(ItemQtty) end
 			       	from localtemptrans
-				as l left join opData.dbo.houseCouponItems 
+				as l left join opdata".$transDB->sep()."houseCouponItems 
 				as h on l.upc = h.upc
 				where h.coupID=".$coupID;
-			if ($CORE_LOCAL->get("DBMS") == "mysql")
-				$minQ = str_replace("dbo.","",$minQ);
 			$minR = $transDB->query($minQ);
 			$validQtty = array_pop($transDB->fetch_row($minR));
 			if ($validQtty <= $infoW["minValue"]){
@@ -150,11 +143,9 @@ class HouseCoupon extends SpecialUPC {
 			$minQ = "select case when sum(total) is null
 				then 0 else sum(total) end
 				from localtemptrans
-				as l left join opData.dbo.houseCouponItems
+				as l left join opdata".$transDB."houseCouponItems
 				as h on l.department = h.upc
 				where h.coupID=".$coupID;
-			if ($CORE_LOCAL->get("DBMS") == "mysql")
-				$minQ = str_replace("dbo.","",$minQ);
 			$minR = $transDB->query($minQ);
 			$validQtty = array_pop($transDB->fetch_row($minR));
 			if ($validQtty < $infoW["minValue"]){
@@ -166,11 +157,9 @@ class HouseCoupon extends SpecialUPC {
 			$minQ = "select case when sum(total) is null
 				then 0 else sum(total) end
 				from localtemptrans
-				as l left join opData.dbo.houseCouponItems
+				as l left join opdata".$transDB->sep()."houseCouponItems
 				as h on l.department = h.upc
 				where h.coupID=".$coupID;
-			if ($CORE_LOCAL->get("DBMS") == "mysql")
-				$minQ = str_replace("dbo.","",$minQ);
 			$minR = $transDB->query($minQ);
 			$validQtty = array_pop($transDB->fetch_row($minR));
 			if ($validQtty <= $infoW["minValue"]){
@@ -183,24 +172,20 @@ class HouseCoupon extends SpecialUPC {
 			$minQ = "select case when sum(ItemQtty) is null then 0 else
 				sum(ItemQtty) end
 				from localtemptrans
-				as l left join opData.dbo.houseCouponItems
+				as l left join opdata".$transDB->sep()."houseCouponItems
 				as h on l.upc = h.upc
 				where h.coupID=$coupID
 				and h.type = 'QUALIFIER'";
-			if ($CORE_LOCAL->get("DBMS") == "mysql")
-				$minQ = str_replace("dbo.","",$minQ);
 			$minR = $transDB->query($minQ);
 			$validQtty = array_pop($transDB->fetch_row($minR));
 
 			$min2Q = "select case when sum(ItemQtty) is null then 0 else
 				sum(ItemQtty) end
 				from localtemptrans
-				as l left join opData.dbo.houseCouponItems
+				as l left join opdata".$transDB->sep()."houseCouponItems
 				as h on l.upc = h.upc
 				where h.coupID=$coupID
 				and h.type = 'DISCOUNT'";
-			if ($CORE_LOCAL->get("DBMS") == "mysql")
-				$min2Q = str_replace("dbo.","",$min2Q);
 			$min2R = $transDB->query($min2Q);
 			$validQtty2 = array_pop($transDB->fetch_row($min2R));
 
@@ -246,14 +231,12 @@ class HouseCoupon extends SpecialUPC {
 			// discount = coupon's discountValue
 			// times the cheapeast coupon item
 			$valQ = "select unitPrice, department from localtemptrans
-				as l left join opData.dbo.houseCouponItems
+				as l left join opdata".$transDB->sep()."houseCouponItems
 				as h on l.upc = h.upc
 				where h.coupID=".$coupID." 
 				and h.type in ('BOTH','DISCOUNT')
 				and l.total >0
 				order by unitPrice asc";
-			if ($CORE_LOCAL->get("DBMS") == "mysql")
-				$valQ = str_replace("dbo.","",$valQ);
 			$valR = $transDB->query($valQ);
 			$valW = $transDB->fetch_row($valR);
 			$value = $valW[0]*$infoW["discountValue"];
@@ -264,14 +247,12 @@ class HouseCoupon extends SpecialUPC {
 			// take off
 			$value = $infoW["discountValue"];
 			$deptQ = "select department,(total/quantity) as value from localtemptrans
-				as l left join opdata.dbo.houseCouponItems
+				as l left join opdata".$transDB->sep()."houseCouponItems
 				as h on l.upc = h.upc
 				where h.coupID=".$coupID."
 				and h.type in ('BOTH','DISCOUNT')
 				and l.total >0
 				order by unitPrice asc";
-			if ($CORE_LOCAL->get("DBMS") == "mysql")
-				$deptQ = str_replace("dbo.","",$deptQ);
 			$deptR = $transDB->query($deptQ);
 			$row = $transDB->fetch_row($deptR);
 			$value = $row[1] - $value;
@@ -281,14 +262,12 @@ class HouseCoupon extends SpecialUPC {
 			// scales with quantity for by-weight items
 			$value = $infoW["discountValue"];
 			$valQ = "select department,quantity from localtemptrans
-				as l left join opdata.dbo.houseCouponItems
+				as l left join opdata".$transDB->sep()."houseCouponItems
 				as h on l.department = h.upc
 				where h.coupID=".$coupID."
 				and h.type in ('BOTH','DISCOUNT')
 				and l.total > 0
 				order by unitPrice asc";
-			if ($CORE_LOCAL->get("DBMS") == "mysql")
-				$valQ = str_replace("dbo.","",$valQ);
 			$valR = $transDB->query($valQ);
 			$row = $transDB->fetch_row($valR);
 			$value = $row[1] * $value;
@@ -298,14 +277,12 @@ class HouseCoupon extends SpecialUPC {
 			// scales with quantity for by-weight items
 			$value = $infoW["discountValue"];
 			$valQ = "select sum(quantity) from localtemptrans
-				as l left join opdata.dbo.houseCouponItems
+				as l left join opdata".$transDB->sep()."houseCouponItems
 				as h on l.department = h.upc
 				where h.coupID=".$coupID."
 				and h.type in ('BOTH','DISCOUNT')
 				and l.total > 0
 				order by unitPrice asc";
-			if ($CORE_LOCAL->get("DBMS") == "mysql")
-				$valQ = str_replace("dbo.","",$valQ);
 			$valR = $transDB->query($valQ);
 			$row = $transDB->fetch_row($valR);
 			$value = $row[1] * $value;
@@ -315,14 +292,12 @@ class HouseCoupon extends SpecialUPC {
 			// scales with quantity for by-weight items
 			$value = $infoW["discountValue"];
 			$valQ = "select l.upc,quantity from localtemptrans
-				as l left join opdata.dbo.houseCouponItems
+				as l left join opdata".$transDB->sep()."houseCouponItems
 				as h on l.upc = h.upc
 				where h.coupID=".$coupID."
 				and h.type in ('BOTH','DISCOUNT')
 				and l.total > 0
 				order by unitPrice asc";
-			if ($CORE_LOCAL->get("DBMS") == "mysql")
-				$valQ = str_replace("dbo.","",$valQ);
 			$valR = $transDB->query($valQ);
 			$row = $transDB->fetch_row($valR);
 			$value = $row[1] * $value;
@@ -334,6 +309,16 @@ class HouseCoupon extends SpecialUPC {
 			Database::getsubtotals();
 			$value = $infoW["discountValue"]*$CORE_LOCAL->get("discountableTotal");
 			break;
+		case "%D": // percent discount on all items in give department(s)
+			$valQ = "select sum(total) from localtemptrans
+				as l left join opdata".$transDB->sep()."houseCouponItems
+				as h on l.department = h.upc
+				where h.coupID=".$coupID."
+				and h.type in ('BOTH','DISCOUNT')";
+			$valR = $transDB->query($valQ);
+			$row = $transDB->fetch_row($valR);
+			$value = $row[0] * $infoW["discountValue"];
+			break;
 		}
 
 		$dept = $infoW["department"];
@@ -341,6 +326,7 @@ class HouseCoupon extends SpecialUPC {
 		TransRecord::addhousecoupon($upc,$dept,-1*$value);
 		$json['output'] = DisplayLib::lastpage();
 		$json['udpmsg'] = 'goodBeep';
+		$json['redraw_footer'] = True;
 		return $json;
 	}
 

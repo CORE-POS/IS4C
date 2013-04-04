@@ -1,7 +1,14 @@
 <?php
 include('../../config.php');
 include($FANNIE_ROOT.'src/SQLManager.php');
-include('../db.php');
+include($FANNIE_ROOT.'classlib2.0/data/FannieDB.php');
+include($FANNIE_ROOT.'classlib2.0/data/controllers/CustdataController.php');
+include($FANNIE_ROOT.'classlib2.0/data/controllers/MeminfoController.php');
+include($FANNIE_ROOT.'classlib2.0/data/controllers/MemDatesController.php');
+include($FANNIE_ROOT.'classlib2.0/data/controllers/MemberCardsController.php');
+$dbc = FannieDB::get($FANNIE_OP_DB);
+$sql = $dbc;
+//include('../db.php');
 
 include('memAddress.php');
 include('header.html');
@@ -13,8 +20,6 @@ if(isset($_GET['memNum'])){
 }else{
 	$memID = $_POST['memNum'];
 }
-
-//$lName = $_POST['lastName'];
 
 /* audit logging */
 $uid = getUID($username);
@@ -78,150 +83,37 @@ $auditQ = "insert custUpdate select ".$sql->now().",$uid,1,
 
 <?php 
 
-//echo $memID;
-//echo $lName;
+$CUST_FIELDS = array('personNum'=>array(1),'LastName'=>array(),'FirstName'=>array());
+$MI_FIELDS = array();
 
 $memNum = $_POST['memNum'];
-$fName = $sql->escape($_POST['fName']);
-$lName = $sql->escape($_POST['lName']);
-$blueline = $memNum . " " . $_POST['lName'];
-$bladd = "";
-if ($_POST['status'] == "ACTIVE"){
-	$bladd = " Coup(".$_POST['memcoupons'].")";
+$CUST_FIELDS['FirstName'][] = $_POST['fName'];
+$CUST_FIELDS['LastName'][] = $_POST['lName'];
+$MI_FIELDS['street'] = $_POST['address1'] . (!empty($_POST['address2']) ? "\n".$_POST['address2'] : '');
+$MI_FIELDS['city'] = $_POST['city'];
+$MI_FIELDS['state'] = $_POST['state'];
+$MI_FIELDS['zip'] = $_POST['zip'];
+$CUST_FIELDS['MemDiscountLimit'] = $_POST['chargeLimit'];
+$MI_FIELDS['phone'] = $_POST['phone'];
+$MI_FIELDS['email_2'] = $_POST['phone2'];
+$MI_FIELDS['email_1'] = $_POST['email'];
+$CUST_FIELDS['memType'] = $_POST['discList'];
+$CUST_FIELDS['Type'] = 'REG';
+$CUST_FIELDS['Staff'] = 0;
+$CUST_FIELDS['Discount'] = 0;
+$MI_FIELDS['ads_OK'] = $_POST['mailflag'];
+
+MemberCardsController::update($memNum,$_REQUEST['cardUPC']);
+
+$sql->query_all("UPDATE memContact SET pref=".$MI_FIELDS['ads_OK']." WHERE card_no=$memNum");
+
+if ($CUST_FIELDS['memType'] == 1 || $CUST_FIELDS['memType'] == 3){
+	$CUST_FIELDS['Type'] = 'PC';
 }
-$blueline .= $bladd;
-$blueline = $dbc->escape($blueline);
-$address1 = $_POST['address1'];
-$address2 = $_POST['address2'];
-$city = $_POST['city'];
-$state = $_POST['state'];
-$zip = $_POST['zip'];
-$startDate = $_POST['startDate'];
-$arLimit = $_POST['chargeLimit'];
-$phone = $_POST['phone'];
-$phone2 = $_POST['phone2'];
-$email = $_POST['email'];
-$discList=$_POST['discList'];
-//$charge1 = $_POST['charge1'];
-//$checks1 = $_POST['checks1'];
-//$charge2 = $_POST['charge2'];
-//$checks2 = $_POST['checks2'];
-//$charge3 = $_POST['charge3'];
-//$checks3 = $_POST['checks3'];
-$enddate = $_POST['endDate'];
-$curDiscLimit = $_POST['curDiscLimit'];
-$mailflag = $_POST['mailflag'];
-
-add_second_server();
-$sql->query_all(sprintf("DELETE FROM memberCards WHERE card_no=%d",$memNum));
-if (isset($_REQUEST['cardUPC']) && is_numeric($_REQUEST['cardUPC'])){
-	$sql->query_all(sprintf("INSERT INTO memberCards VALUES (%d,'%s')",
-		$memNum,str_pad($_REQUEST['cardUPC'],13,'0',STR_PAD_LEFT)));
+if ($CUST_FIELDS['memType'] == 3 || $CUST_FIELDS['memType'] == 9){
+	$CUST_FIELDS['Discount'] = 12;
+	$CUST_FIELDS['Staff'] = 1;
 }
-
-$sql->query_all("UPDATE meminfo SET ads_OK=$mailflag WHERE card_no=$memNum");
-$sql->query_all("UPDATE memContact SET pref=$mailflag WHERE card_no=$memNum");
-
-//echo $charge1."<br />".$charge2."<br />".$charge3."<br />".$checks1."<br />".$checks2."<br />".$checks3."<br />";
-$charge1=$charge2=$charge3=0;
-$checks1=$checks2=$checks3=0;
-/*
-if ($charge1 == 'on')
-     $charge1 = 1;
-else
-     $charge1 = 0;
-if ($charge2 == 'on')
-     $charge2 = 1;
-else
-     $charge2 = 0;
-if ($charge3 == 'on')
-     $charge3 = 1;
-else
-     $charge3 = 0;
-if ($checks1 == 'on')
-     $checks1 = 1;
-else
-     $checks1 = 0;
-if ($checks2 == 'on')
-     $checks2 = 1;
-else
-     $checks2 = 0;
-if ($checks3 == 'on')
-     $checks3 = 1;
-else
-     $checks3 = 0;
-*/
-
-//echo $fname1.$fname2.$fname3."<br>";
-//echo $memNum."<br>";
-//echo $lName."<br>";
-//echo $address1."<br>";
-//echo $address2."<br>";
-//echo $city."<br>";
-//echo $state."<br>";
-//echo $zip."<br>";
-//echo $startDate."<br>";
-//echo $enddate."<br>";
-//echo $arLimit."<br>";
-//echo "discList:".$discList."<br>";
-//echo $lname1."<br>";
-//echo $curDiscLimit."<br>";
-
-if ($discList == '')
-     $discList = $curDiscLimit;
-
-$staff=0;
-$disc = 0;
-$mem = "REG";
-if ($discList == 1 || $discList == 3)
-	$mem = "PC";
-if ($discList == 3 || $discList == 9){
-	$disc = 12;
-	$staff=1;
-}
-
-if (isset($discount) && isset($doDiscount))
-	$disc = $discount;
-
-// update top name
-//echo "<br>";
-$custdataQ = "Update custdata set firstname = $fName, lastname = $lName, blueline=$blueline where cardNo = $memNum and personnum = 1";
-$memNamesQ = "Update memNames set fname = $fName, lname = $lName where memNum = $memNum and personnum = 1";
-//echo $memNamesQ."<br>";
-$custdataR = $sql->query_all($custdataQ);
-//$memNamesR = $sql->query($memNamesQ);
-
-// update other stuff
-if(isset($discList)){
-  $discMstrQ = "UPDATE mbrmastr SET DiscountPerc = $disc, memType=$discList, DiscountType = $discList WHERE memNum = $memNum";
-  $discCORE = "UPDATE custdata SET memdiscountlimit = $arLimit,memType = $discList,Discount = $disc,staff=$staff WHERE cardNo = $memNum";
-  $typeQ = "UPDATE custdata set type = '$mem' where cardNo=$memNum and type <> 'INACT' and type <> 'TERM'";
-  //$discRes1 = $sql->query($discMstrQ);
-  $discRes2 = $sql->query_all($discCORE);
-  $typeR = $sql->query_all($typeQ);
-}
-
-$memDiscQ = "select memDiscountLimit,balance,type,memType,staff,SSI,discount,chargeOk,memCoupons from custdata where cardno=$memNum and personnum = 1";
-$memDiscR = $sql->query($memDiscQ);
-$memDiscRow = $sql->fetch_row($memDiscR);
-// ideally, memdiscountlimit 0 would stop charges
-// unfortunately, it stops ALL charges right now
-$cd_charge1 = $memDiscRow[0];// * $charge1;
-$cd_charge2 = $memDiscRow[0];// * $charge2;
-$cd_charge3 = $memDiscRow[0];// * $charge3;
-$balance = $memDiscRow[1];
-$type = $memDiscRow[2];
-$memType = $memDiscRow[3];
-$staff = $memDiscRow[4];
-$SSI = $memDiscRow[5];
-$discount = $memDiscRow[6];
-$can_charge = $memDiscRow[7];
-$mcoup = $memDiscRow[8];
-
-$delCQ = "delete from custdata where cardno=$memNum and personnum > 1";
-$delMQ = "delete from memnames where memnum=$memNum and personnum > 1";
-$delCR = $sql->query_all($delCQ);
-//$delMR = $sql->query($delMQ);
 
 $lnames = $_REQUEST['hhLname'];
 $fnames = $_REQUEST['hhFname'];
@@ -229,34 +121,16 @@ $count = 2;
 for($i=0;$i<count($lnames);$i++){
 	if (empty($lnames[$i]) && empty($fnames[$i])) continue;
 
-	$fname1 = $sql->escape($fnames[$i]);
-	$lname1 = $sql->escape($lnames[$i]);
-	$blue1 = $sql->escape($memNum.' '.$lnames[$i]);
-
-	$houseCustUpQ1 = "Insert into custdata (lastname,firstname,blueline,cardno,personnum,chargeok,
-			writechecks,shown,memDiscountLimit,type,memType,staff,SSI,balance,discount,
-			CashBack,StoreCoupons,Purchases,NumberOfChecks,memCoupons) values ($lname1,
-			$fname1,$blue1,$memNum,$count,1,$checks1,1,$cd_charge1,'$type',$memType,$staff,
-			$SSI,$balance,$discount,0,0,0,999,$mcoup)";
-
-	$houseMemUpQ1 = "insert into memnames (lname,fname,memnum,personnum,charge,checks,active) values ($lname1,$fname1,$memNum,$count,$charge1,$checks1,1)";
-
-	$sql->query_all($houseCustUpQ1);
-	//$sql->query($houseMemUpQ1);
+	$CUST_FIELDS['personNum'][] = $count;
+	$CUST_FIELDS['LastName'][] = $lnames[$i];
+	$CUST_FIELDS['FirstName'][] = $fnames[$i];
 
 	$count++;
 }
 
-$mbrQ =    "UPDATE mbrmastr SET zipCode = '$zip',phone ='$phone',address1='$address1',address2='$address2',arLimit=$arLimit,city='$city',state='$state',startdate='$startDate',enddate = '$enddate',notes='$phone2',emailaddress='$email'  WHERE memNum = $memNum";
-//$result=$sql->query($mbrQ);
-$meminfoQ = sprintf("UPDATE meminfo SET street='%s',city='%s',state='%s',zip='%s',phone='%s',email_1='%s',email_2='%s'
-		WHERE card_no=%d",(!empty($address2)?"$address1\n$address2":$address1),
-			$city,$state,$zip,
-			$phone,$email,$phone2,$memNum);
-$sql->query_all($meminfoQ);
-
-$datesQ = "UPDATE memDates SET start_date='$startDate',end_date='$enddate' WHERE card_no=$memNum";
-$sql->query_all($datesQ);
+CustdataController::update($memNum, $CUST_FIELDS);
+MeminfoController::update($memNum, $MI_FIELDS);
+MemDatesController::update($memNum, $_POST['startDate'], $_POST['endDate']);
 
 // FIRE ALL UPDATE
 include('custUpdates.php');

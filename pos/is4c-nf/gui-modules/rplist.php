@@ -67,9 +67,7 @@ class rplist extends NoInputPage {
 		$query = "select register_no, emp_no, trans_no, sum((case when trans_type = 'T' then -1 * total else 0 end)) as total "
 		."from localtranstoday where register_no = ".$CORE_LOCAL->get("laneno")." and emp_no = ".$CORE_LOCAL->get("CashierNo")
 		." group by register_no, emp_no, trans_no order by trans_no desc";
-		if ($CORE_LOCAL->get("DBMS") == "mysql" && $CORE_LOCAL->get("store") != "wfc")
-			$query = "select register_no,emp_no,trans_no,total from rp_list where register_no = ".$CORE_LOCAL->get("laneno")." and emp_no = ".$CORE_LOCAL->get("CashierNo")." order by trans_no desc";
-
+	
 		$db = Database::tDataConnect();
 		$result = $db->query($query);
 		$num_rows = $db->num_rows($result);
@@ -90,10 +88,9 @@ class rplist extends NoInputPage {
 			echo $selected;
 			echo ">lane ".substr(100 + $row["register_no"], -2)." Cashier ".substr(100 + $row["emp_no"], -2)
 				." #".$row["trans_no"]." -- $".
-				sprintf($row["total"]);
+				sprintf('%.2f',$row["total"]);
 			$selected = "";
 		}
-		$db->db_close();
 		?>
 
 		</select>

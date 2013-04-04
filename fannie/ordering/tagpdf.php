@@ -23,7 +23,7 @@
 include('../config.php');
 include($FANNIE_ROOT.'src/mysql_connect.php');
 include($FANNIE_ROOT.'src/tmp_dir.php');
-$TRANS = ($FANNIE_SERVER_DBMS == "MSSQL") ? $FANNIE_TRANS_DB.".dbo." : $FANNIE_TRANS_DB.".";
+$TRANS = $FANNIE_TRANS_DB.$dbc->sep();
 
 if (isset($_REQUEST['toids'])){
 	define('FPDF_FONTPATH','font/');
@@ -37,6 +37,20 @@ if (isset($_REQUEST['toids'])){
 	$x = 0;
 	$y = 0;
 	$date = date("m/d/Y");
+	$infoP = $dbc->prepare_statement("SELECT ItemQtty,total,regPrice,p.card_no,description,department,
+		CASE WHEN p.card_no=0 THEN t.last_name ELSE c.LastName END as name,
+		CASE WHEN p.card_no=0 THEN t.first_name ELSE c.FirstName END as fname,
+		CASE WHEN t.phone is NULL THEN m.phone ELSE t.phone END as phone,
+		discounttype,quantity
+		FROM {$TRANS}PendingSpecialOrder AS p
+		LEFT JOIN custdata AS c ON p.card_no=c.CardNo AND personNum=p.voided
+		LEFT JOIN meminfo AS m ON c.CardNo=m.card_no
+		LEFT JOIN {$TRANS}SpecialOrderContact AS t ON t.card_no=p.order_id
+		WHERE trans_id=? AND p.order_id=?");
+	$flagP = $dbc->prepare_statement("UPDATE {$TRANS}PendingSpecialOrder SET charflag='P'
+		WHERE trans_id=? AND order_id=?");
+	$idP = $dbc->prepare_statement("SELECT trans_id FROM {$TRANS}PendingSpecialOrder WHERE
+		trans_id > 0 AND order_id=? ORDER BY trans_id");
 	foreach($_REQUEST['toids'] as $toid){
 		if ($count % 4 == 0){ 
 			$pdf->AddPage();
@@ -53,27 +67,13 @@ if (isset($_REQUEST['toids'])){
 		$tid = $tmp[0];
 		$oid = $tmp[1];
 
-		$q = "SELECT ItemQtty,total,regPrice,p.card_no,description,department,
-			CASE WHEN p.card_no=0 THEN t.last_name ELSE c.LastName END as name,
-			CASE WHEN p.card_no=0 THEN t.first_name ELSE c.FirstName END as fname,
-			CASE WHEN t.phone is NULL THEN m.phone ELSE t.phone END as phone,
-			discounttype,quantity
-			FROM {$TRANS}PendingSpecialOrder AS p
-			LEFT JOIN custdata AS c ON p.card_no=c.CardNo AND personNum=p.voided
-			LEFT JOIN meminfo AS m ON c.CardNo=m.card_no
-			LEFT JOIN {$TRANS}SpecialOrderContact AS t ON t.card_no=p.order_id
-			WHERE trans_id=$tid AND p.order_id=$oid";
-		$r = $dbc->query($q);
+		$r = $dbc->exec_statement($infoP, array($tid, $oid));
 		$w = $dbc->fetch_row($r);
 
 		// flag item as "printed"
-		$q2 = "UPDATE {$TRANS}PendingSpecialOrder SET charflag='P'
-			WHERE trans_id=$tid AND order_id=$oid";
-		$r2 = $dbc->query($q2);
+		$r2 = $dbc->exec_statement($flagP, array($tid, $oid));
 
-		$q3 = "SELECT trans_id FROM {$TRANS}PendingSpecialOrder WHERE
-			trans_id > 0 AND order_id=$oid ORDER BY trans_id";
-		$r3 = $dbc->query($q3);
+		$r3 = $dbc->exec_statement($idP, array($oid));
 		$o_count = 0;
 		$rel_id = 1;
 		while($w3 = $dbc->fetch_row($r3)){
@@ -168,24 +168,23 @@ else {
 				$_REQUEST['oids'][] = $oid;
 		}
 	}
+	$infoP = $dbc->prepare_statement("SELECT min(datetime) as orderDate,sum(total) as value,
+		count(*)-1 as items,
+		CASE WHEN MAX(p.card_no)=0 THEN MAX(t.last_name) ELSE MAX(c.LastName) END as name
+		FROM {$TRANS}PendingSpecialOrder AS p
+		LEFT JOIN custdata AS c ON c.CardNo=p.card_no AND personNum=p.voided
+		LEFT JOIN {$TRANS}SpecialOrderContact AS t ON t.card_no=p.order_id	
+		WHERE p.order_id=?");
+	$itemP = $dbc->prepare_statement("SELECT description,department,quantity,ItemQtty,total,trans_id
+		FROM {$TRANS}PendingSpecialOrder WHERE order_id=? AND trans_id > 0");
 	foreach($_REQUEST['oids'] as $oid){
-		$q = sprintf("SELECT min(datetime) as orderDate,sum(total) as value,
-			count(*)-1 as items,
-			CASE WHEN MAX(p.card_no)=0 THEN MAX(t.last_name) ELSE MAX(c.LastName) END as name
-			FROM {$TRANS}PendingSpecialOrder AS p
-			LEFT JOIN custdata AS c ON c.CardNo=p.card_no AND personNum=p.voided
-			LEFT JOIN {$TRANS}SpecialOrderContact AS t ON t.card_no=p.order_id	
-			WHERE p.order_id=%d",$oid);
-		$r = $dbc->query($q);
+		$r = $dbc->exec_statement($infoP, array($oid));
 		$w = $dbc->fetch_row($r);
 		printf('<tr><td colspan="2">Order #%d (%s, %s)</td><td>Amt: $%.2f</td>
 			<td>Items: %d</td><td>&nbsp;</td></tr>',
 			$oid,$w['orderDate'],$w['name'],$w['value'],$w['items']);
 
-		$q = sprintf("SELECT description,department,quantity,ItemQtty,total,trans_id
-			FROM {$TRANS}PendingSpecialOrder WHERE order_id=%d AND trans_id > 0",
-			$oid);
-		$r = $dbc->query($q);
+		$r = $dbc->exec_statement($itemP, array($oid));
 		while($w = $dbc->fetch_row($r)){
 			if ($w['department']==0){
 				echo '<tr><td>&nbsp;</td>';

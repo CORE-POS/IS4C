@@ -22,19 +22,27 @@
 *********************************************************************************/
 
 require('../../config.php');
-require($FANNIE_ROOT.'src/mysql_connect.php');
+require($FANNIE_ROOT.'classlib2.0/data/FannieDB.php');
+require($FANNIE_ROOT.'classlib2.0/lib/FormLib.php');
 
-$layout = (isset($_REQUEST['layout']))?$_REQUEST['layout']:$FANNIE_DEFAULT_PDF;
+$layout = FormLib::get_form_value('layout',$FANNIE_DEFAULT_PDF);
 $layout = str_replace(" ","_",$layout);
 $offset = (isset($_REQUEST['offset']) && is_numeric($_REQUEST['offset']))?$_REQUEST['offset']:0;
+$offset = FormLib::get_form_value('offset',0);
 $data = array();
 
-if (isset($_REQUEST['id'])){
-	$query = "SELECT s.*,p.scale FROM shelftags AS s
+$id = FormLib::get_form_value('id',False);
+$batchID = FormLib::get_form_value('batchID',False);
+
+$dbc = FannieDB::get($FANNIE_OP_DB);
+
+if ($id !== False){
+	$query = $dbc->prepare_statement("SELECT s.*,p.scale 
+		FROM shelftags AS s
 		INNER JOIN products AS p ON s.upc=p.upc
-		WHERE s.id=".$_REQUEST['id']." ORDER BY
-		p.department,s.upc";
-	$result = $dbc->query($query);
+		WHERE s.id=? ORDER BY
+		p.department,s.upc");
+	$result = $dbc->exec_statement($query,array($id));
 
 	while($row = $dbc->fetch_row($result)){
 		$myrow = array(
@@ -52,16 +60,19 @@ if (isset($_REQUEST['id'])){
 		$data[] = $myrow;
 	}
 }
-elseif (isset($_REQUEST['batchID'])){
+elseif ($batchID !== False){
 	$batchIDList = '';
-	foreach($_GET['batchID'] as $x)
-		$batchIDList .= $x.',';
+	$args = array();
+	foreach($batchID as $x){
+		$batchIDList .= '?,';
+		$args[] = $x;
+	}
 	$batchIDList = substr($batchIDList,0,strlen($batchIDList)-1);
-	$testQ = "select b.*,p.scale
+	$testQ = $dbc->prepare_statement("select b.*,p.scale
 		FROM batchBarcodes as b INNER JOIN products AS p
 		ON b.upc=p.upc WHERE batchID in ($batchIDList) and b.description <> ''
-		ORDER BY batchID";
-	$result = $dbc->query($testQ);
+		ORDER BY batchID");
+	$result = $dbc->exec_statement($testQ,$args);
 	while($row = $dbc->fetch_row($result)){
 		$myrow = array(
 		'normal_price' => $row['normal_price'],

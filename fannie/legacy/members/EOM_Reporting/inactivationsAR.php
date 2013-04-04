@@ -38,7 +38,7 @@ echo "<th colspan=3>3 Months Prior</th>";
 echo "<th colspan=3>2 Months Prior</th>";
 echo "<th colspan=3>Last Month</th></tr>";
 
-select_to_table2($query,0,'#ffffcc',120,0,0,$headers,True);
+select_to_table2($query,array(),0,'#ffffcc',120,0,0,$headers,True);
 
 $output = ob_get_contents();
 ob_end_clean();

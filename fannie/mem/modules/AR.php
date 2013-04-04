@@ -23,20 +23,18 @@
 
 class AR extends MemberModule {
 
-	function ShowEditForm($memNum){
-		global $FANNIE_URL,$FANNIE_TRANS_DB,$FANNIE_SERVER_DBMS;
-
-		$trans = $FANNIE_TRANS_DB;
-		if ($FANNIE_SERVER_DBMS == 'MSSQL') $trans .= ".dbo";
+	function ShowEditForm($memNum,$country="US"){
+		global $FANNIE_URL,$FANNIE_TRANS_DB;
 
 		$dbc = $this->db();
+		$trans = $FANNIE_TRANS_DB.$dbc->sep();
 		
-		$infoQ = sprintf("SELECT c.memDiscountLimit,n.balance
+		$infoQ = $dbc->prepare_statement("SELECT c.memDiscountLimit,n.balance
 				FROM custdata AS c LEFT JOIN
-				{$trans}.newBalanceToday_cust AS n ON
-				c.CardNo=n.memnum
-				WHERE c.CardNo=%d AND c.personNum=1",$memNum);
-		$infoR = $dbc->query($infoQ);
+				{$trans}ar_live_balance AS n ON
+				c.CardNo=n.card_no
+				WHERE c.CardNo=? AND c.personNum=1");
+		$infoR = $dbc->exec_statement($infoQ,array($memNum));
 		$infoW = $dbc->fetch_row($infoR);
 
 		$ret = "<fieldset><legend>A/R</legend>";
@@ -50,21 +48,22 @@ class AR extends MemberModule {
 		$ret .= sprintf('<td>%.2f</td>',$infoW['balance']);	
 
 		$ret .= "<td><a href=\"{$FANNIE_URL}reports/AR/index.php?memNum=$memNum\">History</a></td></tr>";
-		$ret .= "<tr><td colspan=\"2\"><a href=\"{$FANNIE_URL}mem/corrections.php?type=ar_transfer&memIN=$memNum\">Transfer A/R</a></td>";
-		$ret .= "<td><a href=\"{$FANNIE_URL}mem/corrections.php?type=equity_ar_swap&memIN=$memNum\">Convert A/R</a></td></tr>";
-
+		$ret .= "<tr><td colspan=\"2\"><a href=\"{$FANNIE_URL}mem/correction_pages/MemArTransferTool.php?memIN=$memNum\">Transfer A/R</a></td>";
+		$ret .= "<td><a href=\"{$FANNIE_URL}mem/correction_pages/MemArEquitySwapTool.php?memIN=$memNum\">Convert A/R</a></td></tr>";
 
 		$ret .= "</table></fieldset>";
 		return $ret;
 	}
 
 	function SaveFormData($memNum){
+		global $FANNIE_ROOT;
 		$dbc = $this->db();
+		if (!class_exists("CustdataController"))
+			include($FANNIE_ROOT.'classlib2.0/data/controllers/CustdataController.php');
 
-		$saveQ = sprintf("UPDATE custdata SET memDiscountLimit=%f
-				WHERE CardNo=%d",$_REQUEST['AR_limit'],
-				$memNum);
-		$test = $dbc->query($saveQ);
+		$limit = FormLib::get_form_value('AR_limit',0);
+		$test = CustdataController::update($memNum,
+				array('MemDiscountLimit' => $limit));
 		
 		if ($test === False)
 			return 'Error: Problme saving A/R limit<br />';

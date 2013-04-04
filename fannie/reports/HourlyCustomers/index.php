@@ -20,13 +20,13 @@ if (isset($_GET['date'])){
   $date = $_GET['date'];
   $dlog = select_dlog($date);
 
-  $q = "select datepart(hh,tdate) as hour,
+  $q = $dbc->prepare_statement("select datepart(hh,tdate) as hour,
         count(distinct trans_num)
         from $dlog where
-        ".$dbc->date_equals('tdate',$date)."
+        tdate BETWEEN ? AND ?
         group by datepart(hh,tdate)
-        order by datepart(hh,tdate)";
-  $r = $dbc->query($q);
+        order by datepart(hh,tdate)");
+  $r = $dbc->exec_statement($q,array($date.' 00:00:00',$date.' 23:59:59'));
 
   echo "Report for $date<br />";
 ?>

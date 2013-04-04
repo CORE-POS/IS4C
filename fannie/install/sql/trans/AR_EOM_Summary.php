@@ -1,11 +1,11 @@
 <?php
 /*
-View: AR_EOM_Summary
+Table: AR_EOM_Summary
 
 Columns:
 	card_no int
 	memName varchar
-	priorBalance money   - 4 months ago
+	priorBalance money
 	threeMonthCharges money
 	threeMonthPayments money
 	threeMonthBalance money
@@ -16,72 +16,39 @@ Columns:
 	lastMonthPayments money
 	lastMonthBalance money
 
-Depends on:
-	ar_history_backup (table)
-	core_op.custdata (table)
-
 Use:
-View of customer start/end AR balances
- over past few months
-Is refreshed monthly.
+List of customer start/end AR balances
+over past few months
 
-Maintained:
-ar_history_backup is populated
- on the first of each month
- by cron/nightly.ar.php
+Maintenance:
+cron/nightly.ar.php, after updating ar_history,
+ truncates ar_history_backup and then appends all of ar_history
+ to it, giving new data for AR_EOM_Summary.
 
 */
-
 
 /* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-	* 24Oct2012 Eric Lee In docs, Fix Table:, Enhance: Depends on:, Add Maintained:
+	* 22Oct2012 EL Add Maintenance section
+  * 20Oct2012 Eric Lee Fix capitalization in array index.
+	*                    Add MSSQL version.
 
 */
 
-$names = qualified_names();
 $CREATE['trans.AR_EOM_Summary'] = "
-	CREATE VIEW AR_EOM_Summary AS
-	SELECT c.cardno,"
-	.$con->concat("c.firstname","' '","c.lastname",'')." AS memName,
-
-	SUM(CASE WHEN ".$con->monthdiff('a.tdate',$con->now())." <= -4
-	THEN charges ELSE 0 END)
-	- SUM(CASE WHEN ".$con->monthdiff('a.tdate',$con->now())." <= -4
-	THEN payments ELSE 0 END) AS priorBalance,
-
-	SUM(CASE WHEN ".$con->monthdiff('a.tdate',$con->now())." = -3
-		THEN a.charges ELSE 0 END) AS threeMonthCharges,
-	SUM(CASE WHEN ".$con->monthdiff('a.tdate',$con->now())." = -3
-		THEN a.payments ELSE 0 END) AS threeMonthPayments,
-
-	SUM(CASE WHEN ".$con->monthdiff('a.tdate',$con->now())." <= -3
-	THEN charges ELSE 0 END)
-	- SUM(CASE WHEN ".$con->monthdiff('a.tdate',$con->now())." <= -3
-	THEN payments ELSE 0 END) AS threeMonthBalance,
-
-	SUM(CASE WHEN ".$con->monthdiff('a.tdate',$con->now())." = -2
-		THEN a.charges ELSE 0 END) AS twoMonthCharges,
-	SUM(CASE WHEN ".$con->monthdiff('a.tdate',$con->now())." = -2
-		THEN a.payments ELSE 0 END) AS twoMonthPayments,
-
-	SUM(CASE WHEN ".$con->monthdiff('a.tdate',$con->now())." <= -2
-	THEN charges ELSE 0 END)
-	- SUM(CASE WHEN ".$con->monthdiff('a.tdate',$con->now())." <= -2
-	THEN payments ELSE 0 END) AS twoMonthBalance,
-
-	SUM(CASE WHEN ".$con->monthdiff('a.tdate',$con->now())." = -1
-		THEN a.charges ELSE 0 END) AS lastMonthCharges,
-	SUM(CASE WHEN ".$con->monthdiff('a.tdate',$con->now())." = -1
-		THEN a.payments ELSE 0 END) AS lastMonthPayments,
-
-	SUM(CASE WHEN ".$con->monthdiff('a.tdate',$con->now())." <= -1
-	THEN charges ELSE 0 END)
-	- SUM(CASE WHEN ".$con->monthdiff('a.tdate',$con->now())." <= -1
-	THEN payments ELSE 0 END) AS lastMonthBalance
-
-	FROM ar_history_backup AS a LEFT JOIN
-	{$names['op']}.custdata AS c ON a.card_no=c.cardno AND c.personnum=1
-	GROUP BY c.cardno,c.lastname,c.firstname
+	CREATE TABLE AR_EOM_Summary(
+	cardno int,
+	memName varchar(100),
+	priorBalance decimal(10,2),
+	threeMonthCharges decimal(10,2),
+	threeMonthPayments decimal(10,2),
+	threeMonthBalance decimal(10,2),	
+	twoMonthCharges decimal(10,2),
+	twoMonthPayments decimal(10,2),
+	twoMonthBalance decimal(10,2),	
+	lastMonthCharges decimal(10,2),
+	lastMonthPayments decimal(10,2),
+	lastMonthBalance decimal(10,2),	
+	PRIMARY KEY (cardno)
+	)
 ";
-?>

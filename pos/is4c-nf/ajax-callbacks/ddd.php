@@ -21,6 +21,7 @@
 
 *********************************************************************************/
 
+ini_set('display_errors','Off');
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 $CORE_LOCAL->set("away",1);
@@ -49,5 +50,6 @@ $_REQUEST['receiptType'] = 'ddd';
 ob_start();
 include(realpath(dirname(__FILE__).'/ajax-end.php'));
 header("Location: ".MiscLib::base_url()."gui-modules/pos2.php");
+ob_end_clean();
 
 ?>

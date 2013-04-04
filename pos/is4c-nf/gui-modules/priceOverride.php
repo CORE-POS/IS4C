@@ -95,9 +95,9 @@ class PriceOverride extends NoInputPage {
 		<input type="text" id="reginput" name='reginput' tabindex="0" onblur="$('#reginput').focus()" />
 		</form>
 		<span><?php echo $this->description; ?> - <?php echo $this->price; ?></span>
-		<p />
+		<p>
 		<span class="smaller">[clear] to cancel</span>
-		<p />
+		</p>
 		</div>
 		</div>	
 		<?php

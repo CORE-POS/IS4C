@@ -33,13 +33,12 @@ function superSelected(){
 	$('#newname').val(name);	
 
 	$.ajax({
-		url: 'ajax.php',
+		url: 'SuperDeptEditor.php',
 		type: 'POST',
-		dataType: 'text/html',
 		timeout: 1000,
 		data: 'sid='+superID+'&action=deptsInSuper',
-		error: function(){
-		alert('Error loading XML document');
+		error: function(e1,e2){
+			alert('Error loading XML document');
 		},
 		success: function(resp){
 			$('#deptselect').html(resp);	
@@ -47,9 +46,8 @@ function superSelected(){
 	});
 
 	$.ajax({
-		url: 'ajax.php',
+		url: 'SuperDeptEditor.php',
 		type: 'POST',
-		dataType: 'text/html',
 		timeout: 1000,
 		data: 'sid='+superID+'&action=deptsNotInSuper',
 		error: function(){
@@ -89,7 +87,6 @@ function saveData(){
 	$.ajax({
 		url: 'ajax.php',
 		type: 'POST',
-		dataType: 'text/html',
 		timeout: 1000,
 		data: qs,
 		error: function(){
@@ -97,7 +94,7 @@ function saveData(){
 		},
 		success: function(resp){
 			alert(resp);
-			top.location='super.php';
+			top.location = 'SuperDeptEditor.php';
 			// reload the page so the form resets
 			// when a new super department is created
 		}

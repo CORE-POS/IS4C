@@ -10,7 +10,7 @@ Columns:
 
 Depends on:
 	core_op.custdata (table)
-	memIouToday (view of t.dtransactions -> .v.dlog)
+	ar_live_balance (view of t.dtransactions -> .v.dlog)
 
 Depended on by:
   newBalanceToday_cust
@@ -38,15 +38,14 @@ $names = qualified_names();
 $CREATE['trans.memChargeBalance'] = "
 	CREATE VIEW memChargeBalance as
 	SELECT   c.CardNo, 
-		(CASE when a.balance is NULL then c.memDiscountLimit
-			ELSE c.memDiscountLimit - a.balance END)              AS availBal,
-		(CASE when a.balance is NULL then 0 ELSE a.balance END) AS balance,
-		CASE WHEN a.mark IS NULL THEN 0 ELSE a.mark END         AS mark   
-	FROM {$names['op']}.custdata    AS c
-   LEFT JOIN newBalanceToday_cust AS a ON c.CardNo = a.memnum
-	WHERE c.personNum = 1
+	(CASE when a.balance is NULL then c.memDiscountLimit
+		ELSE c.memDiscountLimit - a.balance END) as availBal,
+	(CASE when a.balance is NULL then 0 ELSE a.balance END) as balance,
+	CASE WHEN a.mark IS NULL THEN 0 ELSE a.mark END AS mark   
+	FROM {$names['op']}.custdata as c left join ar_live_balance as a ON c.CardNo = a.card_no
+	where c.personNum = 1
 ";
 
-if (!$con->table_exists("newBalanceToday_cust"))
+if (!$con->table_exists("ar_live_balance"))
 	$CREATE['trans.memChargeBalance'] = "SELECT 1";
 ?>

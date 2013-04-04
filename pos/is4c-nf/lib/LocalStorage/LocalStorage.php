@@ -12,10 +12,13 @@
 */
 
 class LocalStorage {
+
+	protected $immutables = array();
+
 	/**
 	  Constructor
 	*/
-	function localStorage(){
+	function LocalStorage(){
 
 	}
 
@@ -37,13 +40,37 @@ class LocalStorage {
 	/**
 	  Save the value with the given key
 	  @param $key A unique key string
-	  @param The value (mixed)
+	  @param $val The value (mixed)
+	  @param $immutable the value is a constant
 
 	  The value can be any PHP type that the
 	  underlying mechanism can store.
 	*/
-	function set($key,$val){
+	function set($key,$val,$immutable=False){
 		debug($key);
+	}
+
+	/**
+	  Store an immutable value by key
+	  @param $key A unique key string
+	  @param $val The value (mixed)
+
+	  Values are saved in LocalStorage::immutables
+	*/
+	function immutable_set($key,$val){
+		$this->immutables[$key] = $val;
+	}
+	
+	/**
+	  Check if a key is present in immutables
+	  @param $key A unique key string
+	  @return bool
+	*/
+	function is_immutable($key){
+		if (isset($this->immutables[$key]))
+			return True;
+		else
+			return False;
 	}
 
 	/**

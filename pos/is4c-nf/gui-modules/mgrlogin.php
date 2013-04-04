@@ -48,7 +48,6 @@ class mgrlogin extends NoInputPage {
 				cache: false,
 				dataType: 'json',
 				error: function(data,st,xmlro){
-					alert(st);
 				},
 				success: function(data){
 					if (data.cancelOrder){
@@ -96,9 +95,9 @@ class mgrlogin extends NoInputPage {
 		<input type="password" name="reginput" tabindex="0" 
 			onblur="$('#reginput').focus();" id="reginput" />
 		</form>
-		<p />
+		<p>
 		<span id="localmsg"><?php echo _("please enter manager password"); ?></span>
-		<p />
+		</p>
 		</div>
 		</div>
 		<?php
@@ -142,7 +141,6 @@ class mgrlogin extends NoInputPage {
 			$this->cancelorder();
 			$ret['cancelOrder'] = true;
 		}
-		$db->close();
 
 		return $ret;
 	}
@@ -154,6 +152,7 @@ class mgrlogin extends NoInputPage {
 		$CORE_LOCAL->set("plainmsg",_("transaction cancelled"));
 		$CORE_LOCAL->set("beep","rePoll");
 		UdpComm::udpSend("rePoll");
+		UdpComm::udpSend("termReset");
 		$CORE_LOCAL->set("ccTermOut","reset");
 		$CORE_LOCAL->set("receiptType","cancelled");
 	}

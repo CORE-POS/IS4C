@@ -23,206 +23,101 @@
       </form>
     </li>
   </ul></div>
-<h1><a class="anchor" name="deprecated">Deprecated List</a></h1><a class="anchor" name="_deprecated000008"></a> <dl>
+<h1><a class="anchor" name="deprecated">Deprecated List</a></h1><a class="anchor" name="_deprecated000001"></a> <dl>
 <dt>Member <a class="el" href="class_authenticate.html#b621d559d750ee46c3e3c800c3f4d8cf">Authenticate::ns_check_password</a> ($password) </dt>
 <dd></dd>
 </dl>
 <p>
-<a class="anchor" name="_deprecated000010"></a> <dl>
+<a class="anchor" name="_deprecated000002"></a> <dl>
 <dt>Member <a class="el" href="class_core_state.html#1408a81f148d2363f9bd161003292f88">CoreState::blueLine</a> ($row) </dt>
 <dd>Just define blueLine in custdata. </dd>
 </dl>
 <p>
-<a class="anchor" name="_deprecated000011"></a> <dl>
+<a class="anchor" name="_deprecated000003"></a> <dl>
 <dt>Member <a class="el" href="class_display_lib.html#35bf574150ecee082b07f3412eed91b9">DisplayLib::printfooterb</a> () </dt>
 <dd>Only used with the old VB scale driver </dd>
 </dl>
 <p>
-<a class="anchor" name="_deprecated000018"></a> <dl>
+<a class="anchor" name="_deprecated000004"></a> <dl>
 <dt>Member <a class="el" href="class_misc_lib.html#c5a1f5ecf39c295b8881258593f1a182">MiscLib::pinghost</a> ($host) </dt>
-<dd>Doesn't work reliably in all environments. Use <a class="el" href="lib_8php.html#85988c86f18c54a562dd7f52b9a8770a">pingport()</a>. </dd>
+<dd>Doesn't work reliably in all environments. Use pingport(). </dd>
 </dl>
 <p>
-<a class="anchor" name="_deprecated000026"></a> <dl>
+<a class="anchor" name="_deprecated000005"></a> <dl>
 <dt>Member <a class="el" href="class_preh_lib.html#54e7f8cbcf66cde9703b8a1fc1c42828">PrehLib::classic_tender</a> ($right, $strl) </dt>
 <dd>See <a class="el" href="class_preh_lib.html#43af74fe4611922d003416f9c9b2c2a6">PrehLib::modular_tender</a> </dd>
 </dl>
 <p>
-<a class="anchor" name="_deprecated000029"></a> <dl>
+<a class="anchor" name="_deprecated000008"></a> <dl>
 <dt>Member <a class="el" href="class_preh_lib.html#38e5e5048e0c10f4b9100ce3d7cac42c">PrehLib::comment</a> ($comment) </dt>
-<dd>Use <a class="el" href="additem_8php.html#63c88ba3547f57881665453159f9c829">addcomment()</a>. </dd>
+<dd>Use addcomment(). </dd>
 </dl>
 <p>
-<a class="anchor" name="_deprecated000031"></a> <dl>
+<a class="anchor" name="_deprecated000010"></a> <dl>
 <dt>Member <a class="el" href="class_preh_lib.html#eed6ef107ad29d78c66931a8e907cbaf">PrehLib::endofShift</a> ($json) </dt>
 <dd></dd>
 </dl>
 <p>
-<a class="anchor" name="_deprecated000028"></a> <dl>
+<a class="anchor" name="_deprecated000007"></a> <dl>
 <dt>Member <a class="el" href="class_preh_lib.html#80b21229fb668f3beae6053281d47fc9">PrehLib::madCoupon</a> () </dt>
 <dd></dd>
 </dl>
 <p>
-<a class="anchor" name="_deprecated000027"></a> <dl>
+<a class="anchor" name="_deprecated000006"></a> <dl>
 <dt>Member <a class="el" href="class_preh_lib.html#2b8d7fba1978692806c06c59f4b94b99">PrehLib::percentDiscount</a> ($strl, $json=array()) </dt>
-<dd>Use <a class="el" href="additem_8php.html#9638d99b682c20e3c1f2cfe1ab589ed9">discountnotify()</a> instead. This just adds hard-coded percentages and PLUs that likely aren't applicable anywhere but the Wedge. </dd>
+<dd>Use discountnotify() instead. This just adds hard-coded percentages and PLUs that likely aren't applicable anywhere but the Wedge. </dd>
 </dl>
 <p>
-<a class="anchor" name="_deprecated000030"></a> <dl>
+<a class="anchor" name="_deprecated000009"></a> <dl>
 <dt>Member <a class="el" href="class_preh_lib.html#6441751a276bef274211571cae6692b2">PrehLib::staffCharge</a> ($arg, $json=array()) </dt>
 <dd></dd>
 </dl>
 <p>
-<a class="anchor" name="_deprecated000032"></a> <dl>
+<a class="anchor" name="_deprecated000011"></a> <dl>
 <dt>Member <a class="el" href="class_preh_lib.html#8c31e2a3fbddfed9ccb405833b4dadfa">PrehLib::wmdiscount</a> () </dt>
 <dd>Do not use this. The memType structure in custdata is a far better solution. </dd>
 </dl>
 <p>
-<a class="anchor" name="_deprecated000040"></a> <dl>
+<a class="anchor" name="_deprecated000012"></a> <dl>
+<dt>Member <a class="el" href="class_receipt_lib.html#976ade46d25fcd7a9b2e14b92e94df7c">ReceiptLib::printCCFooter</a> ($dateTimeStamp, $ref) </dt>
+<dd>Not called, ccTotal session var has been removed </dd>
+</dl>
+<p>
+<a class="anchor" name="_deprecated000013"></a> <dl>
+<dt>Member <a class="el" href="class_receipt_lib.html#c347e8b7a016d8dbc6331405ee75341e">ReceiptLib::setDrawerKick</a> () </dt>
+<dd>use <a class="el" href="class_kicker.html">Kicker</a> modules </dd>
+</dl>
+<p>
+<a class="anchor" name="_deprecated000014"></a> <dl>
+<dt>Member <a class="el" href="class_receipt_lib.html#daa9d38d19fe48b18f44bd2c145a66d4">ReceiptLib::setDrawerKickLater</a> () </dt>
+<dd>use <a class="el" href="class_kicker.html">Kicker</a> modules </dd>
+</dl>
+<p>
+<a class="anchor" name="_deprecated000019"></a> <dl>
 <dt>Member <a class="el" href="class_trans_record.html#b4691882c0265f16b82c76d259fa1dea">TransRecord::addDeposit</a> ($quantity, $deposit, $foodstamp) </dt>
 <dd>Use deposit column in products table </dd>
 </dl>
 <p>
-<a class="anchor" name="_deprecated000036"></a> <dl>
+<a class="anchor" name="_deprecated000015"></a> <dl>
 <dt>Member <a class="el" href="class_trans_record.html#7e13af9f32eff242c9d50fed36c29b47">TransRecord::addEndofShift</a> () </dt>
 <dd></dd>
 </dl>
 <p>
-<a class="anchor" name="_deprecated000039"></a> <dl>
+<a class="anchor" name="_deprecated000018"></a> <dl>
 <dt>Member <a class="el" href="class_trans_record.html#801745ec88b2f62f4053751d131ff294">TransRecord::addMadCoup</a> () </dt>
 <dd></dd>
 </dl>
 <p>
-<a class="anchor" name="_deprecated000037"></a> <dl>
+<a class="anchor" name="_deprecated000016"></a> <dl>
 <dt>Member <a class="el" href="class_trans_record.html#57dbb53eae02b66a91ecab53cf3082cf">TransRecord::addscDiscount</a> () </dt>
 <dd></dd>
 </dl>
 <p>
-<a class="anchor" name="_deprecated000038"></a> <dl>
+<a class="anchor" name="_deprecated000017"></a> <dl>
 <dt>Member <a class="el" href="class_trans_record.html#3aa5b2d111877954b08b20c2187e7fe8">TransRecord::addStaffCoffeeDiscount</a> () </dt>
 <dd></dd>
 </dl>
-<p>
-<a class="anchor" name="_deprecated000001"></a> <dl>
-<dt>File <a class="el" href="additem_8php.html">additem.php</a>  </dt>
-<dd>See <a class="el" href="class_trans_record.html">TransRecord</a> </dd>
-</dl>
-<p>
-<a class="anchor" name="_deprecated000006"></a> <dl>
-<dt>Member <a class="el" href="additem_8php.html#6d04f2dd8c5b6bb35e4ebe7ca6163746">addDeposit</a>  </dt>
-<dd>Use deposit column in products table </dd>
-</dl>
-<p>
-<a class="anchor" name="_deprecated000002"></a> <dl>
-<dt>Member <a class="el" href="additem_8php.html#d410581c9f3434bf60c332984dfffb63">addEndofShift</a>  </dt>
-<dd></dd>
-</dl>
-<p>
-<a class="anchor" name="_deprecated000005"></a> <dl>
-<dt>Member <a class="el" href="additem_8php.html#d5c78c2a7e2c37c8a8035693def6edaa">addMadCoup</a>  </dt>
-<dd></dd>
-</dl>
-<p>
-<a class="anchor" name="_deprecated000003"></a> <dl>
-<dt>Member <a class="el" href="additem_8php.html#b0976760a9dcf02a467060e9553530e1">addscDiscount</a>  </dt>
-<dd></dd>
-</dl>
-<p>
-<a class="anchor" name="_deprecated000004"></a> <dl>
-<dt>Member <a class="el" href="additem_8php.html#0421f2709e2d8f1a57888d052be24d05">addStaffCoffeeDiscount</a>  </dt>
-<dd></dd>
-</dl>
-<p>
-<a class="anchor" name="_deprecated000007"></a> <dl>
-<dt>File <a class="el" href="array__to__json_8php.html">array_to_json.php</a>  </dt>
-<dd>See <a class="el" href="class_json_lib.html">JsonLib</a> </dd>
-</dl>
-<p>
-<a class="anchor" name="_deprecated000009"></a> <dl>
-<dt>File <a class="el" href="connect_8php.html">connect.php</a>  </dt>
-<dd>see <a class="el" href="class_database.html">Database</a> </dd>
-</dl>
-<p>
-<a class="anchor" name="_deprecated000012"></a> <dl>
-<dt>File <a class="el" href="drawscreen_8php.html">drawscreen.php</a>  </dt>
-<dd>see <a class="el" href="class_display_lib.html">DisplayLib</a> </dd>
-</dl>
-<p>
-<a class="anchor" name="_deprecated000013"></a> <dl>
-<dt>Member <a class="el" href="drawscreen_8php.html#6476dc7b6853fe04c83d1dc2ecc3a481">printfooterb</a>  </dt>
-<dd>Only used with the old VB scale driver </dd>
-</dl>
-<p>
-<a class="anchor" name="_deprecated000014"></a> <dl>
-<dt>File <a class="el" href="lib_8php.html">lib.php</a>  </dt>
-<dd>See <a class="el" href="class_misc_lib.html">MiscLib</a> </dd>
-</dl>
-<p>
-<a class="anchor" name="_deprecated000015"></a> <dl>
-<dt>Member <a class="el" href="lib_8php.html#d859657dccdb3f7f60ff8e2c94684ea5">pinghost</a>  </dt>
-<dd>Doesn't work reliably in all environments. Use <a class="el" href="lib_8php.html#85988c86f18c54a562dd7f52b9a8770a">pingport()</a>. </dd>
-</dl>
-<p>
-<a class="anchor" name="_deprecated000016"></a> <dl>
-<dt>File <a class="el" href="listitems_8php.html">listitems.php</a>  </dt>
-<dd>see <a class="el" href="class_display_lib.html">DisplayLib</a> </dd>
-</dl>
-<p>
-<a class="anchor" name="_deprecated000017"></a> <dl>
-<dt>File <a class="el" href="loadconfig_8php.html">loadconfig.php</a>  </dt>
-<dd>See <a class="el" href="class_database.html">Database</a> </dd>
-</dl>
-<p>
-<a class="anchor" name="_deprecated000019"></a> <dl>
-<dt>File <a class="el" href="prehkeys_8php.html">prehkeys.php</a>  </dt>
-<dd>see <a class="el" href="class_preh_lib.html">PrehLib</a> </dd>
-</dl>
-<p>
-<a class="anchor" name="_deprecated000022"></a> <dl>
-<dt>Member <a class="el" href="prehkeys_8php.html#c5f9c0594aaab5b7bfc7c56247254eda">comment</a>  </dt>
-<dd>Use <a class="el" href="additem_8php.html#63c88ba3547f57881665453159f9c829">addcomment()</a>. </dd>
-</dl>
-<p>
-<a class="anchor" name="_deprecated000024"></a> <dl>
-<dt>Member <a class="el" href="prehkeys_8php.html#55089a04befe3cd760984502a6597d8d">endofShift</a>  </dt>
-<dd></dd>
-</dl>
-<p>
-<a class="anchor" name="_deprecated000021"></a> <dl>
-<dt>Member <a class="el" href="prehkeys_8php.html#c3dbfc491f2812717a96093b9cddd1f2">madCoupon</a>  </dt>
-<dd></dd>
-</dl>
-<p>
-<a class="anchor" name="_deprecated000020"></a> <dl>
-<dt>Member <a class="el" href="prehkeys_8php.html#ffb3ef3321a728b636764563aaddccdb">percentDiscount</a>  </dt>
-<dd>Use <a class="el" href="additem_8php.html#9638d99b682c20e3c1f2cfe1ab589ed9">discountnotify()</a> instead. This just adds hard-coded percentages and PLUs that likely aren't applicable anywhere but the Wedge. </dd>
-</dl>
-<p>
-<a class="anchor" name="_deprecated000023"></a> <dl>
-<dt>Member <a class="el" href="prehkeys_8php.html#caea005406390984a26b0a2da1159aaa">staffCharge</a>  </dt>
-<dd></dd>
-</dl>
-<p>
-<a class="anchor" name="_deprecated000025"></a> <dl>
-<dt>Member <a class="el" href="prehkeys_8php.html#0cd62eb434126dafc8ea1cda4bc79551">wmdiscount</a>  </dt>
-<dd>Do not use this. The memType structure in custdata is a far better solution. </dd>
-</dl>
-<p>
-<a class="anchor" name="_deprecated000033"></a> <dl>
-<dt>Member <a class="el" href="session_8php.html#1efd2ab163dd5e85e0d5fa5341cc5750">blueLine</a>  </dt>
-<dd>Just define blueLine in custdata. </dd>
-</dl>
-<p>
-<a class="anchor" name="_deprecated000034"></a> <dl>
-<dt>File <a class="el" href="set_drawer_kick_8php.html">setDrawerKick.php</a>  </dt>
-<dd>See <a class="el" href="class_receipt_lib.html">ReceiptLib</a> </dd>
-</dl>
-<p>
-<a class="anchor" name="_deprecated000035"></a> <dl>
-<dt>File <a class="el" href="special_8php.html">special.php</a>  </dt>
-<dd>see <a class="el" href="class_suspend_lib.html">SuspendLib</a> </dd>
-</dl>
-<hr size="1"><address style="align: right;"><small>Generated on Mon May 21 10:55:52 2012 for CORE POS - IS4C by&nbsp;
+<hr size="1"><address style="align: right;"><small>Generated on Tue Oct 23 14:30:34 2012 for CORE POS - IS4C by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img src="doxygen.png" alt="doxygen" align="middle" border="0"></a> 1.4.7 </small></address>
 </body>

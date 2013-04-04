@@ -32,15 +32,21 @@ include($FANNIE_ROOT.'src/header.html');
 
 if (isset($_REQUEST['date1'])){
 	$mtype = "(";
-	foreach($_REQUEST['mtype'] as $m)
-		$mtype .= ((int)$m).",";
+	$mArgs = array();
+	foreach($_REQUEST['mtype'] as $m){
+		$mtype .= '?,';
+		$mArgs[] = (int)$m;
+	}
 	$mtype = rtrim($mtype,",").")";
 
 	$dlog = select_dlog($_REQUEST['date1'],$_REQUEST['date2']);
 
-	if ($dbc->table_exists("dlog_patronage"))
-		$dbc->query("DROP TABLE dlog_patronage");
-	$dbc->query(duplicate_structure($FANNIE_SERVER_DBMS,'dlog_15','dlog_patronage'));
+	if ($dbc->table_exists("dlog_patronage")){
+		$drop = $dbc->prepare_statement("DROP TABLE dlog_patronage");
+		$dbc->exec_statement($drop);
+	}
+	$create = $dbc->prepare_statement(duplicate_structure($FANNIE_SERVER_DBMS,'dlog_15','dlog_patronage'));
+	$dbc->exec_statement($create);
 
 	$insQ = sprintf("INSERT INTO dlog_patronage
 			SELECT d.* FROM %s AS d
@@ -50,11 +56,18 @@ if (isset($_REQUEST['date1'])){
 			WHERE (d.trans_type IN ('I','D','S')
 			OR (d.trans_type='T' AND d.trans_subtype IN ('MA','IC')))	
 			AND d.total <> 0
-			AND (s.memtype1 IN %s OR c.memType IN %s)",
+			AND (s.memtype1 IN %s OR c.memType IN %s)
+			AND d.tdate BETWEEN ? AND ?",
 			$dlog,$FANNIE_OP_DB,$dbc->sep(),
 			$FANNIE_OP_DB,$dbc->sep(),
 			$mtype,$mtype);
-	$dbc->query($insQ);
+	$args = $mArgs;
+	foreach($mArgs as $m) $args[] = $m; // need them twice
+	$args[] = $_REQUEST['date1'].' 00:00:00';
+	$args[] = $_REQUEST['date2'].' 23:59:59';
+	
+	$prep = $dbc->prepare_statement($insQ);
+	$dbc->exec_statement($prep,$args);
 
 	echo '<i>Patronage working table created</i>';
 }
@@ -72,8 +85,8 @@ else {
 	echo '</tr><tr><th>End Date</th>';
 	echo '<td><input type="text" name="date2" onfocus="showCalendarControl(this);" />';
 	echo '</tr><tr><td colspan="2"><b>Member Type</b>:<br />';
-	$typeQ = "SELECT memtype,memDesc FROM memtype ORDER BY memtype";
-	$typeR = $dbc->query($typeQ);
+	$typeQ = $dbc->prepare_statement("SELECT memtype,memDesc FROM ".$FANNIE_OP_DB.$dbc->sep()."memtype ORDER BY memtype");
+	$typeR = $dbc->exec_statement($typeQ);
 	while($typeW = $dbc->fetch_row($typeR)){
 		printf('<input type="checkbox" value="%d" name="mtype[]"
 			id="mtype%d" /><label for="mtype%d">%s</label><br />',
