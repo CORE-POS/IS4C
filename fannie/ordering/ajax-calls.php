@@ -294,6 +294,22 @@ case 'UpdatePrint':
 	fwrite($fp,serialize($prints));
 	fclose($fp);
 	break;
+case 'UpdateItemO':
+	$oid = sprintf("%d",$_REQUEST['orderID']);
+	$tid = sprintf("%d",$_REQUEST['transID']);
+	$p = $dbc->prepare_statement("UPDATE {$TRANS}PendingSpecialOrder SET
+			memType=(memType+1)%2 WHERE order_id=?
+			AND trans_id=?");
+	$dbc->exec_statement($p, array($oid,$tid));
+	break;
+case 'UpdateItemA':
+	$oid = sprintf("%d",$_REQUEST['orderID']);
+	$tid = sprintf("%d",$_REQUEST['transID']);
+	$p = $dbc->prepare_statement("UPDATE {$TRANS}PendingSpecialOrder SET
+			staff=(staff+1)%2 WHERE order_id=?
+			AND trans_id=?");	
+	$dbc->exec_statement($p, array($oid,$tid));
+	break;
 }
 
 function canSaveAddress($orderID){
@@ -1205,7 +1221,8 @@ function editableItemList($orderID){
 	$ret .= '<tr><th>UPC</th><th>SKU</th><th>Description</th><th>Cases</th><th>SRP</th><th>Actual</th><th>Qty</th><th>Dept</th><th>&nbsp;</th></tr>';
 	$q = $dbc->prepare_statement("SELECT o.upc,o.description,total,quantity,department,
 		v.sku,ItemQtty,regPrice,o.discounttype,o.charflag,o.mixMatch,
-		o.trans_id,o.unitPrice FROM {$TRANS}PendingSpecialOrder as o
+		o.trans_id,o.unitPrice,o.memType,o.staff
+		FROM {$TRANS}PendingSpecialOrder as o
 		left join vendorItems as v on o.upc=v.upc AND vendorID=1
 		WHERE order_id=? AND trans_type='I' 
 		ORDER BY trans_id DESC");
@@ -1265,8 +1282,13 @@ function editableItemList($orderID){
 				($w['charflag']=='P'?'Yes':'No'));
 		if ($num_rows > 1){
 			$ret .= sprintf('<td colspan="2"><input type="submit" value="Split Item to New Order"
-				onclick="doSplit(%d,%d);return false;" /></td>',
-				$orderID,$w['trans_id']);
+				onclick="doSplit(%d,%d);return false;" /><br />
+				O <input type="checkbox" id="itemChkO" %s onclick="toggleO(%d,%d);" />&nbsp;&nbsp;&nbsp;&nbsp;
+				A <input type="checkbox" id="itemChkA" %s onclick="toggleA(%d,%d);" />
+				</td>',
+				$orderID,$w['trans_id'],
+				($w['memType']>0?'checked':''),$orderID,$w['trans_id'],
+				($w['staff']>0?'checked':''),$orderID,$w['trans_id']);
 		}
 		else
 			$ret .= '<td colspan="2"></td>';
