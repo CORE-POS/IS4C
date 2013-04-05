@@ -68,6 +68,7 @@ if (strlen($receiptType) > 0) {
 		$CORE_LOCAL->set("End",0);
 		cleartemptrans($receiptType);
 		$output = $yesSync;
+		UdpComm::udpSend("termReset");
 	}
 
 	$PRINT_OBJ = new ESCPOSPrintHandler();

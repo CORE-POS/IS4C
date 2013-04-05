@@ -33,6 +33,10 @@ class SigTermCommands extends Parser {
 		elseif ($str == "TERMRESET"){
 			UdpComm::udpSend("termReset");
 			$CORE_LOCAL->set("paycard_keyed",False);
+			$CORE_LOCAL->set("CachePanEncBlock","");
+			$CORE_LOCAL->set("CachePinEncBlock","");
+			$CORE_LOCAL->set("CacheCardType","");
+			$CORE_LOCAL->set("CacheCardCashBack",0);
 			return True;
 		}
 		elseif ($str == "CCFROMCACHE"){

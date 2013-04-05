@@ -142,7 +142,6 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
 	}
 
 	private void SetStateStart(){
-		PushOutput("TERMCLEARALL");
 		SendReport(BuildCommand(LcdStopCapture()));
 		SendReport(BuildCommand(PinpadCancelGetPIN()));
 		SendReport(BuildCommand(LcdFillColor(0xff,0xff,0xff)));
@@ -158,7 +157,6 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
 	}
 
 	private void SetStateReStart(){
-		PushOutput("TERMCLEARALL");
 		SendReport(BuildCommand(LcdStopCapture()));
 		SendReport(BuildCommand(PinpadCancelGetPIN()));
 		SendReport(BuildCommand(LcdFillColor(0xff,0xff,0xff)));
@@ -168,7 +166,6 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
 		SendReport(BuildCommand(LcdTextColor(0,0,0)));
 		SendReport(BuildCommand(LcdTextBackgroundColor(0xff,0xff,0xff)));
 		SendReport(BuildCommand(LcdTextBackgroundMode(false)));
-		SendReport(BuildCommand(LcdDrawText("Error",115,70)));
 		SendReport(BuildCommand(LcdDrawText("Swipe Card Again",55,100)));
 
 		current_state = STATE_START_TRANSACTION;
