@@ -80,7 +80,7 @@ class ItemFlags extends FanniePage {
 		global $FANNIE_OP_DB;
 		echo '<form action="'.$_SERVER['PHP_SELF'].'" method="post">';
 		$db = FannieDB::get($FANNIE_OP_DB);
-		$q = $dbc->prepare_statement("SELECT bit_number,description FROM prodFlags ORDER BY description");
+		$q = $db->prepare_statement("SELECT bit_number,description FROM prodFlags ORDER BY description");
 		$r = $db->exec_statement($q);
 		echo '<b>Current Flags</b>:<br />';
 		echo '<table cellpadding="4" cellspacing="0" border="1">';
