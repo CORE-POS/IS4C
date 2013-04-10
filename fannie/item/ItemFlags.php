@@ -32,8 +32,8 @@ class ItemFlags extends FanniePage {
 
 	function preprocess(){
 		global $FANNIE_OP_DB;
-		$this->title = 'Fannie - Item Maintanence';
-		$this->header = 'Item Maintanence';
+		$this->title = 'Fannie - Product Flag Maintanence';
+		$this->header = 'Product Flag Maintanence';
 		$this->msgs = array();
 		$db = FannieDB::get($FANNIE_OP_DB);
 
@@ -48,7 +48,7 @@ class ItemFlags extends FanniePage {
 					if ($db->num_rows($chkR) == 0) break;
 					$bit *= 2;
 				}
-				if ($bit > (1<<32)) $msgs[] = 'Error: can\' add more flags';
+				if ($bit > (1<<32)) $msgs[] = 'Error: can\'t add more flags';
 				else {
 					$insP = $db->prepare_statement("INSERT INTO prodFlags 
 								(bit_number, description) VALUES (?,?)");
@@ -80,7 +80,7 @@ class ItemFlags extends FanniePage {
 		global $FANNIE_OP_DB;
 		echo '<form action="'.$_SERVER['PHP_SELF'].'" method="post">';
 		$db = FannieDB::get($FANNIE_OP_DB);
-		$q = $dbc->prepare_statement("SELECT bit_number,description FROM prodFlags ORDER BY description");
+		$q = $db->prepare_statement("SELECT bit_number,description FROM prodFlags ORDER BY description");
 		$r = $db->exec_statement($q);
 		echo '<b>Current Flags</b>:<br />';
 		echo '<table cellpadding="4" cellspacing="0" border="1">';
