@@ -32,8 +32,8 @@ class ItemFlags extends FanniePage {
 
 	function preprocess(){
 		global $FANNIE_OP_DB;
-		$this->title = 'Fannie - Item Maintanence';
-		$this->header = 'Item Maintanence';
+		$this->title = 'Fannie - Product Flag Maintanence';
+		$this->header = 'Product Flag Maintanence';
 		$this->msgs = array();
 		$db = FannieDB::get($FANNIE_OP_DB);
 
