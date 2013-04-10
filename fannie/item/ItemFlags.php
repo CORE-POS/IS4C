@@ -43,12 +43,12 @@ class ItemFlags extends FanniePage {
 			else {
 				$bit=1;
 				$chkP = $db->prepare_statement("SELECT bit_number FROM prodFlags WHERE bit_number=?");
-				for($i=0; $i<32; $i++){
+				for($i=0; $i<30; $i++){
 					$chkR = $db->exec_statement($chkP,array($bit));
 					if ($db->num_rows($chkR) == 0) break;
 					$bit *= 2;
 				}
-				if ($bit > (1<<32)) $msgs[] = 'Error: can\'t add more flags';
+				if ($bit > (1<<30)) $msgs[] = 'Error: can\'t add more flags';
 				else {
 					$insP = $db->prepare_statement("INSERT INTO prodFlags 
 								(bit_number, description) VALUES (?,?)");
@@ -78,6 +78,11 @@ class ItemFlags extends FanniePage {
 
 	function body_content(){
 		global $FANNIE_OP_DB;
+		if (count($this->msgs) > 0){
+			echo '<ul>';
+			foreach($this->msgs as $m) echo '<li>'.$m.'</li>';
+			echo '</ul>';
+		}
 		echo '<form action="'.$_SERVER['PHP_SELF'].'" method="post">';
 		$db = FannieDB::get($FANNIE_OP_DB);
 		$q = $db->prepare_statement("SELECT bit_number,description FROM prodFlags ORDER BY description");
