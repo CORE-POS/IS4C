@@ -39,7 +39,7 @@ class ItemFlags extends FanniePage {
 
 		if (FormLib::get_form_value('addBtn') !== ''){
 			$desc = FormLib::get_form_value('new');			
-			if (empty($desc)) $msgs[] = 'Error: no new description given';
+			if (empty($desc)) $this->msgs[] = 'Error: no new description given';
 			else {
 				$bit=1;
 				$chkP = $db->prepare_statement("SELECT bit_number FROM prodFlags WHERE bit_number=?");
@@ -48,7 +48,7 @@ class ItemFlags extends FanniePage {
 					if ($db->num_rows($chkR) == 0) break;
 					$bit *= 2;
 				}
-				if ($bit > (1<<30)) $msgs[] = 'Error: can\'t add more flags';
+				if ($bit > (1<<30)) $this->msgs[] = 'Error: can\'t add more flags';
 				else {
 					$insP = $db->prepare_statement("INSERT INTO prodFlags 
 								(bit_number, description) VALUES (?,?)");
