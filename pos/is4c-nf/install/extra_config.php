@@ -131,41 +131,8 @@ confsave('BottleReturnDept',"'".$CORE_LOCAL->get('BottleReturnDept')."'");
 
 
 <tr><td colspan=2 class="tblHeader">
-<h3>Hardware Settings</h3></td></tr><tr><td></td><td>
-<?php
-if (isset($_REQUEST['PRINT'])) $CORE_LOCAL->set('print',1,True);
-elseif (isset($_REQUEST['esubmit'])) $CORE_LOCAL->set('print',0,True);
-elseif ($CORE_LOCAL->get('print')==='') $CORE_LOCAL->set('print',0,True);
-echo "<fieldset class='toggle'>\n<input type='checkbox' name='PRINT' id='printing'";
-if ($CORE_LOCAL->get("print") == 1) echo " checked";
-echo " />\n<label for='printing' onclick=''>Enable receipts: </label>\n
-	<span class='toggle-button'></span></fieldset>";
-confsave('print',$CORE_LOCAL->get("print"));
-?>
-</select></td></tr><tr><td>
-<b>Use new receipt</b>: </td><td><select name=NEWRECEIPT>
-<?php
-if (isset($_REQUEST['NEWRECEIPT'])) $CORE_LOCAL->set('newReceipt',$_REQUEST['NEWRECEIPT'],True);
-if ($CORE_LOCAL->get("newReceipt") == 2){
-	echo "<option value=2 selected>PHP (even newer)</option>";
-	echo "<option value=1>Yes</option>";
-	echo "<option value=0>No</option>";
-}
-elseif ($CORE_LOCAL->get("newReceipt") == 1){
-	echo "<option value=2>PHP (even newer)</option>";
-	echo "<option value=1 selected>Yes</option>";
-	echo "<option value=0>No</option>";
-}
-else {
-	echo "<option value=2>PHP (even newer)</option>";
-	echo "<option value=1 >Yes</option>";
-	echo "<option value=0 selected>No</option>";
-}
-confsave('newReceipt',$CORE_LOCAL->get("newReceipt"));
-?>
-</select>
-<span class='noteTxt'>The new receipt groups items by category; the old one just lists
-them in order.</span></td></tr><tr><td>
+<h3>Hardware Settings</h3></td></tr>
+<tr><td>
 <b>Printer port</b>:<br />
 <?php
 if(isset($_REQUEST['PPORT'])) $CORE_LOCAL->set('printerPort',$_REQUEST['PPORT'],True);
@@ -188,14 +155,8 @@ confsave('printerPort',"'".$CORE_LOCAL->get('printerPort')."'");
 ?>
 <span class='noteTxt' style="top:-120px;"> <?php printf("<p>Current value: <span class='pre'>%s</span></p>",$CORE_LOCAL->get('printerPort')); ?>
 <br />Path to the printer. Select from common values, or enter a custom path.  Some ubuntu distros might put your USB printer at /dev/usblp0</span>
-</td></tr><tr><td>
-<b>Email Receipt Sender</b>:</td><td>
-<?php
-if(isset($_REQUEST['emailReceiptFrom'])) $CORE_LOCAL->set('emailReceiptFrom',$_REQUEST['emailReceiptFrom'],True);
-printf("<input type=text name=emailReceiptFrom value=\"%s\" />",$CORE_LOCAL->get('emailReceiptFrom'));
-confsave('emailReceiptFrom',"'".$CORE_LOCAL->get('emailReceiptFrom')."'");
-?>
-</td></tr><tr><td>
+</td></tr>
+<tr><td>
 <b>Drawer Behavior Module</b>:</td><td>
 <?php
 $kmods = AutoLoader::ListModules('Kicker',True);
