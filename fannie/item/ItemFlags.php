@@ -48,7 +48,7 @@ class ItemFlags extends FanniePage {
 					if ($db->num_rows($chkR) == 0) break;
 					$bit *= 2;
 				}
-				if ($bit > (1<<32)) $msgs[] = 'Error: can\' add more flags';
+				if ($bit > (1<<32)) $msgs[] = 'Error: can\'t add more flags';
 				else {
 					$insP = $db->prepare_statement("INSERT INTO prodFlags 
 								(bit_number, description) VALUES (?,?)");
