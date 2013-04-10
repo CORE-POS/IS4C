@@ -738,7 +738,7 @@ static public function receiptFromBuilders($reprint=False,$trans_num=''){
 	}
 
 	$FETCH_MOD = $CORE_LOCAL->get("RBFetchData");
-	if($FETCH_MOD=="") $FETCH_MOD = "DefaultReceiptFetchData";
+	if($FETCH_MOD=="") $FETCH_MOD = "DefaultReceiptDataFetch";
 	$mod = new $FETCH_MOD();
 	$data = array();
 	if ($reprint)
@@ -753,15 +753,6 @@ static public function receiptFromBuilders($reprint=False,$trans_num=''){
 	if($SORT_MOD=="") $SORT_MOD = "DefaultReceiptSort";
 	$TAG_MOD = $CORE_LOCAL->get("RBTag");
 	if($TAG_MOD=="") $TAG_MOD = "DefaultReceiptTag";
-	$TYPE_MAP = $CORE_LOCAL->get("RBFormatMap");
-	if (!is_array($TYPE_MAP)){
-		$TYPE_MAP = array(
-			'item' => 'ItemFormat',
-			'tender' => 'TenderFormat',
-			'total' => 'TotalFormat',
-			'other' => 'OtherFormat'
-		);
-	}
 
 	$f = new $FILTER_MOD();
 	$recordset = $f->filter($data);
@@ -774,11 +765,9 @@ static public function receiptFromBuilders($reprint=False,$trans_num=''){
 
 	$ret = "";
 	foreach($recordset as $record){
-		$type = $record['tag'];
-		if(!isset($TYPE_MAP[$type])) continue;
-
-		$class = $TYPE_MAP[$type];
-		$obj = new $class();
+		$class_name = $record['tag'].'ReceiptFormat';
+		if (!class_exists($class_name)) continue;
+		$obj = new $class_name();
 
 		$line = $obj->format($record);
 
