@@ -1,0 +1,43 @@
+<html>
+	<head>
+	<title>DefaultReceiptFormat</title>
+	</head>
+<body>
+<div style="text-align:center;">
+<h2>DefaultReceiptFormat</h2>
+<a href="#change_log">Revised: 10Apr2013</a>
+</div>
+<p>Formatting data is the final step in building a receipt. Modules
+implementing DefaultReceiptFormat take a single record of data
+and return a formatted string to print on the receipt. Format modules
+are not configured directly; they're loaded based on tags so classes
+should always be named [tag value]ReceiptFormat (e.g., ItemReceiptFormat,
+TenderReceiptFormat, etc). Subclasses must implement the method <b>format</b>
+which takes an array of data and returns a string. Modules may also adjust
+the class property <b>is_bold</b>. The default is false. If you switch it
+to true, that line will be printed in bold.
+</p>
+<p><b>Example</b>:
+<pre>
+class CustomBananasReceiptFormat extends DefaultReceiptFormat {
+	function format($row){
+		$line = str_pad($row['description'],30,' ',STR_PAD_RIGHT);
+		$line .= str_pad('MONKEY CHOW',14,' ',STR_PAD_RIGHT);
+		$price = sprintf('%.2f',$row['total']);
+		$line .= str_pad($price,8,' ',STR_PAD_LEFT);
+
+		$this-&gt;is_bold = True;
+
+		return $line;
+	}
+}
+</pre>
+</p>
+<hr />
+<pre>
+<a name="change_log">Change Log:</a>
+
+10Apr13 Andy Theuninck - Created document
+</pre>
+</body>
+</html>

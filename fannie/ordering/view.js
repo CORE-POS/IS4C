@@ -384,6 +384,24 @@ function togglePrint(username,oid){
 	success: function(resp){}
 	});
 }
+function toggleO(oid,tid){
+	$.ajax({
+	url: 'ajax-calls.php',
+	dataType: 'post',
+	data: 'action=UpdateItemO&orderID='+oid+'&transID='+tid,
+	cache: false,
+	success: function(resp){}
+	});
+}
+function toggleA(oid,tid){
+	$.ajax({
+	url: 'ajax-calls.php',
+	dataType: 'post',
+	data: 'action=UpdateItemA&orderID='+oid+'&transID='+tid,
+	cache: false,
+	success: function(resp){}
+	});
+}
 function doSplit(oid,tid){
 	var dcheck=false;
 	$('select.editDept').each(function(){

@@ -194,7 +194,7 @@ static public function printfooter($readOnly=False) {
 			$CORE_LOCAL->set("waitforScale",0);
 			$CORE_LOCAL->set("beep","noBeep");
 		}
-		if ($CORE_LOCAL->get("scale") == 0 && $CORE_LOCAL->get("SNR") != 0) {
+		if ($CORE_LOCAL->get("scale") == 0 && $CORE_LOCAL->get("SNR") == 1) {
 			MiscLib::rePoll();
 		}
 		if ($CORE_LOCAL->get("cashOverAmt") <> 0) {
@@ -336,7 +336,7 @@ static public function boxMsg($strmsg,$header="",$noBeep=False) {
 */
 static public function inputUnknown() {
 	return self::msgbox("<b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-			"._("input unknown")."</b>", MiscLib::base_url()."graphics/exclaimC.gif");
+			"._("input unknown")."</b>", MiscLib::base_url()."graphics/exclaimC.gif",True);
 }
 
 //--------------------------------------------------------------------//
@@ -549,7 +549,7 @@ static public function scaledisplaymsg($input=""){
 	$reginput = trim(strtoupper($input));
 
 	$scans = '';
-	
+
 	// return early; all other cases simplified
 	// by resetting session "weight"
 	if (strlen($reginput) == 0) {
@@ -691,6 +691,11 @@ static public function printReceiptfooter($readOnly=False) {
 		for($i=0;$i<=$CORE_LOCAL->get("farewellMsgCount");$i++){
 			$ret .= $CORE_LOCAL->get("farewellMsg".$i)."<br />";
 		}
+
+		$email = CoreState::getCustomerPref('email_receipt');
+		$doEmail = filter_var($email, FILTER_VALIDATE_EMAIL);
+		if($doEmail) $ret .= 'receipt emailed';
+
 		$ret .= "</div>";
 		return $ret;
 	}

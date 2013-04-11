@@ -60,7 +60,8 @@ class SpecialOrder extends SpecialUPC {
 
 		$db = Database::mDataConnect();
 		$query = sprintf("SELECT upc,description,department,
-				quantity,unitPrice,total,regPrice,d.dept_tax,d.dept_fs,ItemQtty
+				quantity,unitPrice,total,regPrice,d.dept_tax,d.dept_fs,
+				ItemQtty,p.discountable
 				FROM PendingSpecialOrder as p LEFT JOIN
 				departments AS d ON p.department=d.dept_no
 				WHERE order_id=%d AND trans_id=%d",
@@ -75,7 +76,7 @@ class SpecialOrder extends SpecialUPC {
 		$row = $db->fetch_array($result);
 		TransRecord::addItem($row['upc'],$row['description'],'I','','',$row['department'],$row['quantity'],
 			$row['unitPrice'],$row['total'],$row['regPrice'],0,$row['dept_tax'],
-			$row['dept_fs'],0.00,0.00,0,0,$row['ItemQtty'],0,0,0,$orderID,$transID,0,0.00,0,'SO');
+			$row['dept_fs'],0.00,0.00,$row['discountable'],0,$row['ItemQtty'],0,0,0,$orderID,$transID,0,0.00,0,'SO');
 		$json['output'] = DisplayLib::lastpage();
 		$json['udpmsg'] = 'goodBeep';
 		$json['redraw_footer'] = True;

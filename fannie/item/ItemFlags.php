@@ -32,8 +32,8 @@ class ItemFlags extends FanniePage {
 
 	function preprocess(){
 		global $FANNIE_OP_DB;
-		$this->title = 'Fannie - Product Flag Maintenance';
-		$this->header = 'Product Flag Maintenance';
+		$this->title = 'Fannie - Product Flag Maintanence';
+		$this->header = 'Product Flag Maintanence';
 		$this->msgs = array();
 		$db = FannieDB::get($FANNIE_OP_DB);
 
@@ -43,7 +43,7 @@ class ItemFlags extends FanniePage {
 			else {
 				$bit=1;
 				$chkP = $db->prepare_statement("SELECT bit_number FROM prodFlags WHERE bit_number=?");
-				for($i=0; $i<32; $i++){
+				for($i=0; $i<30; $i++){
 					$chkR = $db->exec_statement($chkP,array($bit));
 					if ($db->num_rows($chkR) == 0) break;
 					$bit *= 2;
@@ -83,7 +83,6 @@ class ItemFlags extends FanniePage {
 
 	function body_content(){
 		global $FANNIE_OP_DB;
-		// If there were errors in preprocess().
 		if (count($this->msgs) > 0){
 			echo '<ul>';
 			foreach($this->msgs as $m) echo '<li>'.$m.'</li>';

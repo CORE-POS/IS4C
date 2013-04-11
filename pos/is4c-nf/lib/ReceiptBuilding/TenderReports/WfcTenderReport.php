@@ -71,10 +71,73 @@ static public function get(){
 	$receipt = "";
 
 	$itemize = 0;
-	foreach(array_keys($DESIRED_TENDERS) as $tender_code){ 
-		$query = "select tdate from TenderTapeGeneric where emp_no=".$CORE_LOCAL->get("CashierNo").
-			" and trans_subtype ".
-			" = '".$tender_code."' order by tdate";
+	foreach($DESIRED_TENDERS as $tender_code => $header){ 
+		$query = "select tdate,register_no,trans_no,-total AS tender
+		       	from dlog where emp_no=".$CORE_LOCAL->get("CashierNo").
+			" and trans_type='T' AND trans_subtype='".$tender_code."'
+			  ORDER BY tdate";
+		switch($tender_code){
+		case 'CC':
+			$query = "select tdate,register_no,trans_no,-total AS tender
+				from dlog where emp_no=".$CORE_LOCAL->get("CashierNo").
+				" and trans_type='T' AND trans_subtype IN ('CC','AX')
+				  ORDER BY tdate";
+			break;
+		case 'EF':
+			$query = "select tdate,register_no,trans_no,-total AS tender
+				from dlog where emp_no=".$CORE_LOCAL->get("CashierNo").
+				" and trans_type='T' AND trans_subtype IN ('EF','EC')
+				  ORDER BY tdate";
+			break;
+		case 'CP':
+			$query = "select tdate,register_no,trans_no,-total AS tender
+				from dlog where emp_no=".$CORE_LOCAL->get("CashierNo").
+				" and trans_type='T' AND trans_subtype ='CP' AND
+				  upc NOT LIKE '%MAD%' ORDER BY tdate";
+			break;
+		case 'SC':
+			$query = "select tdate,register_no,trans_no,-total AS tender
+				from dlog where emp_no=".$CORE_LOCAL->get("CashierNo").
+				" and trans_type='T' AND trans_subtype ='SC' AND
+				  total<0 ORDER BY tdate";
+			break;
+		case 'AR':
+			$query = "select tdate,register_no,trans_no,total AS tender
+				from dlog where emp_no=".$CORE_LOCAL->get("CashierNo").
+				" and trans_type='D' AND department = 990
+				  ORDER BY tdate";
+			break;
+		case 'EQ':
+			$query = "select tdate,register_no,trans_no,total AS tender
+				from dlog where emp_no=".$CORE_LOCAL->get("CashierNo").
+				" and trans_type='D' AND department IN (991,992)
+				  ORDER BY tdate";
+			break;
+		case 'ST':
+			$query = "select tdate,register_no,trans_no,total AS tender
+				from dlog where emp_no=".$CORE_LOCAL->get("CashierNo").
+				" and trans_type='I' AND upc = '0000000001065'
+				  ORDER BY tdate";
+			break;
+		case 'BP':
+			$query = "select tdate,register_no,trans_no,total AS tender
+				from dlog where emp_no=".$CORE_LOCAL->get("CashierNo").
+				" and trans_type='I' AND upc IN('0000000007573','0000000007574')
+				  ORDER BY tdate";
+			break;
+		case 'SN':
+			$query = "select tdate,register_no,trans_no,total AS tender
+				from dlog where emp_no=".$CORE_LOCAL->get("CashierNo").
+				" and trans_type='I' AND upc LIKE '002001000%'
+				  ORDER BY tdate";
+			break;
+		case 'CF':
+			$query = "select tdate,register_no,trans_no,total AS tender
+				from dlog where emp_no=".$CORE_LOCAL->get("CashierNo").
+				" and trans_type='I' AND upc LIKE '002000600%'
+				  ORDER BY tdate";
+			break;
+		}
 		$result = $db_a->query($query);
 		$num_rows = $db_a->num_rows($result);
 		if ($num_rows <= 0) continue;
@@ -82,20 +145,13 @@ static public function get(){
 		//$receipt .= chr(27).chr(33).chr(5);
 
 		$titleStr = "";
-		for ($i = 0; $i < strlen($DESIRED_TENDERS[$tender_code]); $i++)
-			$titleStr .= $DESIRED_TENDERS[$tender_code][$i]." ";
+		for ($i = 0; $i < strlen($header); $i++)
+			$titleStr .= $header[$i]." ";
 		$titleStr = substr($titleStr,0,strlen($titleStr)-1);
 		$receipt .= ReceiptLib::centerString($titleStr)."\n";
 
 		$receipt .= $ref;
 		if ($itemize == 1) $receipt .=	ReceiptLib::centerString("------------------------------------------------------");
-
-		$query = "select tdate,register_no,trans_no,tender
-		       	from TenderTapeGeneric where emp_no=".$CORE_LOCAL->get("CashierNo").
-			" and trans_subtype ".
-			" = '".$tender_code."' order by tdate";
-		$result = $db_a->query($query);
-		$num_rows = $db_a->num_rows($result);
 
 		$itemize = 1;
 		
