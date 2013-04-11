@@ -31,8 +31,8 @@ $CREATE['op.batchList'] = "
 	  `batchID` int(5) default NULL,
 	  `salePrice` decimal(10,2) default NULL,
 	  `active` bit(1) default NULL,
-	  `pricemethod` int(4) default NULL,
-	  `quantity` int(4) default NULL, 
+	  `pricemethod` int(4) default 0,
+	  `quantity` int(4) default 0, 
 	  PRIMARY KEY  (`listID`)
 	)
 ";
