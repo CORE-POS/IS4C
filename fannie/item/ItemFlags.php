@@ -32,8 +32,8 @@ class ItemFlags extends FanniePage {
 
 	function preprocess(){
 		global $FANNIE_OP_DB;
-		$this->title = 'Fannie - Product Flag Maintanence';
-		$this->header = 'Product Flag Maintanence';
+		$this->title = 'Fannie - Product Flag Maintenance';
+		$this->header = 'Product Flag Maintenance';
 		$this->msgs = array();
 		$db = FannieDB::get($FANNIE_OP_DB);
 
@@ -73,11 +73,17 @@ class ItemFlags extends FanniePage {
 				$db->exec_statement($delP,array($id));
 		}
 
+		//EL
+		for($i=1; $i<=count($this->msgs); $i++) {
+			$db->logger($this->msgs[($i-1)]);
+		}
+		//EL
 		return True;
 	}
 
 	function body_content(){
 		global $FANNIE_OP_DB;
+		// If there were errors in preprocess().
 		if (count($this->msgs) > 0){
 			echo '<ul>';
 			foreach($this->msgs as $m) echo '<li>'.$m.'</li>';
@@ -107,6 +113,7 @@ class ItemFlags extends FanniePage {
 		echo '<input type="submit" name="addBtn" value="Add New Flag" />';
 		echo '</form>';
 	}
+
 }
 
 if (basename($_SERVER['PHP_SELF']) == basename(__FILE__)){
