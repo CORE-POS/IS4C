@@ -5259,3 +5259,55 @@ nightly.update_members_all.php: Sun, 06 Jan 2013 00:09:52 -0500: SELECT CardNo, 
 FROM custdata
 WHERE CardNo between is4cMin AND is4cMax AND LastName != 'NEW MEMBER'
 >>>>>>> flathat/master
+/IS4C/fannie/item/ItemFlags.php: Wed, 10 Apr 2013 00:48:32 -0400: Hello.
+/IS4C/fannie/item/ItemFlags.php: Wed, 10 Apr 2013 00:48:32 -0400: 1. Error: no new description given
+/IS4C/fannie/item/ItemFlags.php: Wed, 10 Apr 2013 00:48:32 -0400: HelloB
+/IS4C/fannie/item/ItemFlags.php: Wed, 10 Apr 2013 00:48:44 -0400: Hello.
+/IS4C/fannie/item/ItemFlags.php: Wed, 10 Apr 2013 00:48:44 -0400: 1. Error: can' add more flags
+/IS4C/fannie/item/ItemFlags.php: Wed, 10 Apr 2013 00:48:44 -0400: HelloB
+/IS4C/fannie/item/ItemFlags.php: Wed, 10 Apr 2013 00:50:58 -0400: Hello.
+/IS4C/fannie/item/ItemFlags.php: Wed, 10 Apr 2013 00:50:58 -0400: 1. Error: can' add more flags
+/IS4C/fannie/item/ItemFlags.php: Wed, 10 Apr 2013 00:50:58 -0400: HelloB
+/IS4C/fannie/item/ItemFlags.php: Wed, 10 Apr 2013 00:55:55 -0400: Hello.
+/IS4C/fannie/item/ItemFlags.php: Wed, 10 Apr 2013 00:55:55 -0400: 1. Error: can't add more flags2
+/IS4C/fannie/item/ItemFlags.php: Wed, 10 Apr 2013 00:55:55 -0400: HelloB
+/IS4C/fannie/item/ItemFlags.php: Wed, 10 Apr 2013 01:18:48 -0400: Hello.
+/IS4C/fannie/item/ItemFlags.php: Wed, 10 Apr 2013 01:18:48 -0400: 1. Error: can't add more flags2 16
+/IS4C/fannie/item/ItemFlags.php: Wed, 10 Apr 2013 01:18:48 -0400: HelloB
+/IS4C/fannie/item/ItemFlags.php: Wed, 10 Apr 2013 01:19:45 -0400: Hello.
+/IS4C/fannie/item/ItemFlags.php: Wed, 10 Apr 2013 01:19:45 -0400: 1. Error: can't add more flags2 16
+/IS4C/fannie/item/ItemFlags.php: Wed, 10 Apr 2013 01:19:45 -0400: HelloB
+/IS4C/fannie/item/ItemFlags.php: Wed, 10 Apr 2013 01:20:08 -0400: Hello.
+/IS4C/fannie/item/ItemFlags.php: Wed, 10 Apr 2013 01:20:08 -0400: 1. Last
+/IS4C/fannie/item/ItemFlags.php: Wed, 10 Apr 2013 01:20:08 -0400: HelloB
+/IS4C/fannie/item/ItemFlags.php: Wed, 10 Apr 2013 01:21:28 -0400: Hello.
+/IS4C/fannie/item/ItemFlags.php: Wed, 10 Apr 2013 01:21:28 -0400: 1. Error: can't add more flags2 65536
+/IS4C/fannie/item/ItemFlags.php: Wed, 10 Apr 2013 01:21:28 -0400: HelloB
+/IS4C/fannie/item/ItemFlags.php: Wed, 10 Apr 2013 01:22:15 -0400: Hello.
+/IS4C/fannie/item/ItemFlags.php: Wed, 10 Apr 2013 01:22:15 -0400: 1. Last
+/IS4C/fannie/item/ItemFlags.php: Wed, 10 Apr 2013 01:22:15 -0400: HelloB
+/IS4C/fannie/item/ItemFlags.php: Wed, 10 Apr 2013 01:24:48 -0400: Hello.
+/IS4C/fannie/item/ItemFlags.php: Wed, 10 Apr 2013 01:24:48 -0400: 1. Error: can't add more flags4 -2147483648
+/IS4C/fannie/item/ItemFlags.php: Wed, 10 Apr 2013 01:24:48 -0400: HelloB
+/IS4C/fannie/item/ItemFlags.php: Wed, 10 Apr 2013 01:26:04 -0400: Hello.
+/IS4C/fannie/item/ItemFlags.php: Wed, 10 Apr 2013 01:26:04 -0400: 1. Error: can't add more flags4 1
+/IS4C/fannie/item/ItemFlags.php: Wed, 10 Apr 2013 01:26:04 -0400: HelloB
+/IS4C/fannie/item/ItemFlags.php: Wed, 10 Apr 2013 01:42:36 -0400: Hello.
+/IS4C/fannie/item/ItemFlags.php: Wed, 10 Apr 2013 01:42:36 -0400: 1. Error: can't add more flags4 1
+/IS4C/fannie/item/ItemFlags.php: Wed, 10 Apr 2013 01:42:36 -0400: HelloB
+/IS4C/fannie/item/ItemFlags.php: Wed, 10 Apr 2013 02:05:45 -0400: preprocess.
+/IS4C/fannie/item/ItemFlags.php: Wed, 10 Apr 2013 02:05:45 -0400: Error: can't add more flags4 1
+/IS4C/fannie/item/ItemFlags.php: Wed, 10 Apr 2013 02:05:45 -0400: HelloB
+/IS4C/fannie/item/ItemFlags.php: Wed, 10 Apr 2013 02:06:56 -0400: preprocess.
+/IS4C/fannie/item/ItemFlags.php: Wed, 10 Apr 2013 02:06:56 -0400: Error: can't add more flags4 1
+/IS4C/fannie/item/ItemFlags.php: Wed, 10 Apr 2013 02:06:56 -0400: Last
+/IS4C/fannie/item/ItemFlags.php: Wed, 10 Apr 2013 02:06:56 -0400: HelloB
+/IS4C/fannie/item/ItemFlags.php: Wed, 10 Apr 2013 02:12:58 -0400: preprocess.
+/IS4C/fannie/item/ItemFlags.php: Wed, 10 Apr 2013 02:12:58 -0400: Error: can't add more flags4 1
+/IS4C/fannie/item/ItemFlags.php: Wed, 10 Apr 2013 02:12:58 -0400: Last
+/IS4C/fannie/item/ItemFlags.php: Wed, 10 Apr 2013 02:12:58 -0400: body_content
+/IS4C/fannie/item/ItemFlags.php: Wed, 10 Apr 2013 02:23:58 -0400: preprocess.
+/IS4C/fannie/item/ItemFlags.php: Wed, 10 Apr 2013 02:23:58 -0400: Last. bit2: 1073741824
+/IS4C/fannie/item/ItemFlags.php: Wed, 10 Apr 2013 02:23:58 -0400: body_content
+/IS4C/fannie/item/ItemFlags.php: Wed, 10 Apr 2013 02:54:29 -0400: Last. bit2: 1073741824
+/IS4C/fannie/item/ItemFlags.php: Wed, 10 Apr 2013 21:21:00 -0400: Error: no new description given
