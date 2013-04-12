@@ -1,27 +1,21 @@
 <?php
 include('ini.php');
+include('../util.php');
 ?>
 <html>
 <head>
-<title>Security configuration options</title>
-<style type="text/css">
-body {
-	line-height: 1.5em;
-}
-</style>
+<title>Lane Global: Security configuration options</title>
+<link rel="stylesheet" href="../../src/css/install.css" type="text/css" />
+<script type="text/javascript" src="../../src/jquery/jquery.js"></script>
 </head>
 <body>
-<a href="index.php">Necessities</a>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<a href="extra_config.php">Additional Configuration</a>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<a href="scanning.php">Scanning Options</a>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-Security
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<a href="text.php">Text Strings</a>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<?php
+echo showLinkToFannie();
+echo showInstallTabsLane("Security", '');
+?>
+
 <form action=security.php method=post>
+<h1>IT CORE Lane Global Configuration: Security</h1>
 <b>Cancel Transaction</b>: <select name=PRIV_CANCEL>
 <?php
 if(isset($_REQUEST['PRIV_CANCEL'])) $CORE_LOCAL->set('SecurityCancel',$_REQUEST['PRIV_CANCEL']);

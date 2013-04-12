@@ -72,7 +72,6 @@ class paycardSuccess extends BasicPage {
 				}
 
 				PaycardLib::paycard_reset();
-				UdpComm::udpSend("termReset");
 				$CORE_LOCAL->set("strRemembered","TO");
 				$CORE_LOCAL->set("msgrepeat",1);
 

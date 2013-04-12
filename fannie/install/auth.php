@@ -21,38 +21,24 @@
 
 *********************************************************************************/
 
-
-/* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-	* 10Nov2012 Eric Lee Add include ../auth/login.php
-	*                    Fix closing of Authentication Enabled select.
-
-*/
-
 ini_set('display_errors','1');
-?>
-<?php 
 include('../config.php'); 
 include('util.php');
 include('db.php');
 ?>
-<a href="index.php">Necessities</a>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-Authentication
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<a href="mem.php">Members</a>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<a href="prod.php">Products</a>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<a href="stores.php">Stores</a>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<a href="update.php">Updates</a>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<a href="plugins.php">Plugins</a>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<a href="sample_data/extra_data.php">Sample Data</a>
+<html>
+<head>
+<title>Fannie: Authentication Settings</title>
+<link rel="stylesheet" href="../src/css/install.css" type="text/css" />
+<script type="text/javascript" src="../src/jquery/jquery.js"></script>
+</head>
+<body>
+<?php 
+echo showInstallTabs("Authentication");
+?>
+
 <form action=auth.php method=post>
-<h1>Fannie install checks</h1>
+<h1>Fannie: Authentication Settings</h1>
 <?php
 // path detection
 $FILEPATH = rtrim($_SERVER['SCRIPT_FILENAME'],'auth.php');
@@ -67,7 +53,7 @@ else {
 	echo "<span style=\"color:red;\"><b>Error</b>: config.php is not writeable</span>";
 }
 ?>
-<br /><br />
+<p class="ichunk" style="margin-top: 1.0em;">
 <b>Authentication enabled</b>
 <select name=FANNIE_AUTH_ENABLED>
 <?php
@@ -81,11 +67,32 @@ else{
 	confset('FANNIE_AUTH_ENABLED','False');
 	echo "<option>Yes</option><option selected>No</option>";
 }
-//10Nov12 EL New location for </select>
-echo "</select><br />";
+echo "</select>";
+echo "</p><!-- /.ichunk -->";
+
+// Default to Authenticate ("Authenticate Everything") or not.
+if ($FANNIE_AUTH_ENABLED){
+	echo "<p class='ichunk'>";
+	echo "<b>Authenticate by default </b>";
+	echo "<select name=FANNIE_AUTH_DEFAULT>";
+	if (!isset($FANNIE_AUTH_DEFAULT)) $FANNIE_AUTH_DEFAULT = False;
+	if (isset($_REQUEST['FANNIE_AUTH_DEFAULT'])) $FANNIE_AUTH_DEFAULT = $_REQUEST['FANNIE_AUTH_DEFAULT'];
+	if ($FANNIE_AUTH_DEFAULT === True || $FANNIE_AUTH_DEFAULT == 'Yes'){
+		confset('FANNIE_AUTH_DEFAULT','True');
+		echo "<option selected>Yes</option><option>No</option>";
+	}
+	else{
+		confset('FANNIE_AUTH_DEFAULT','False');
+		echo "<option>Yes</option><option selected>No</option>";
+	}
+	echo "</select><br />";
+	echo "If 'Yes' all Admin utilities will require Login<br />";
+	echo "If 'No' only those utilities coded for it will require Login";
+	echo "</p><!-- /.ichunk -->";
+}
+
 if ($FANNIE_AUTH_ENABLED){
 	include("../auth/utilities.php");
-	//10Nov12 EL Added include login.php
 	include("../auth/login.php");
 	table_check(); // create user tables
 
@@ -130,13 +137,13 @@ if ($FANNIE_AUTH_ENABLED){
 		}
 	}
 	else {
-		echo "You can manage users and groups via the <a href='../auth/ui/' target='_aui'>Authentication Interface</a></br />";
+		echo "<p class='ichunk'>You can manage Login users and groups via the <a href='../auth/ui/' target='_aui'>Authentication Interface</a>";
+		echo "</p><!-- /.ichunk -->";
 	}
+	echo "<p class='ichunk'><a href='../../documentation/Fannie/developer/auth.html' target='_audoc'>How Authentication Works</a>";
+	echo "</p><!-- /.ichunk -->";
 }
 ?>
-<!-- 10Nov12 EL Formerly.
-</select>
--->
 <hr />
 <b>Allow shadow logins</b>
 <select name=FANNIE_AUTH_SHADOW>

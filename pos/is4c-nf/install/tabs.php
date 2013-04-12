@@ -3,6 +3,7 @@
     <ul>
         <li><a href="index.php">NECESSITIES</a></li>
         <li><a href="extra_config.php">EXTRAS</a></li>
+        <li><a href="receipt.php">RECEIPT</a></li>
         <li><a href="scanning.php">SCANNING</a></li>
         <li><a href="security.php">SECURITY</a></li>
         <li><a href="plugins.php">PLUGINS</a></li>

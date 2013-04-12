@@ -142,6 +142,8 @@ class SQLManager {
 			fclose($fp);
 		}
 		else if (!$ok){
+			if (is_array($query_text))
+				$query_text = $query_text[0];
 			echo "Bad query: {$_SERVER['PHP_SELF']}: $query_text<br />";
 			echo $this->error($which_connection)."<br />";
 		}

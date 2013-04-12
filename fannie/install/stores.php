@@ -20,38 +20,23 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
-
-/* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-	* 22Feb2013 EL Change page heading to "Fannie Co-op and Store Settings"
-	*              Add FANNIE_COMPOSE_PRODUCT_DESCRIPTION
-	*              Add FANNIE_COMPOSE_PRODUCT_LONG_DESCRIPTION
-	*  6Dec2012 Eric Lee Add FANNIE_COOP_ID
-
-*/
 ini_set('display_errors','1');
-?>
-<?php 
 include('../config.php'); 
 include('util.php');
 ?>
-<a href="index.php">Necessities</a>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<a href="auth.php">Authentication</a>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<a href="mem.php">Members</a>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-Stores
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<a href="prod.php">Products</a>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<a href="update.php">Updates</a>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<a href="plugins.php">Plugins</a>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<a href="sample_data/extra_data.php">Sample Data</a>
+<html>
+<head>
+<title>Fannie: Store Settings</title>
+<link rel="stylesheet" href="../src/css/install.css" type="text/css" />
+<script type="text/javascript" src="../src/jquery/jquery.js"></script>
+</head>
+<body>
+<?php 
+echo showInstallTabs("Stores");
+?>
 <form action=stores.php method=post>
-<h1>Fannie Co-op and Store Settings</h1>
+<h1>Fannie: Store Settings</h1>
+<p class="ichunk">As of 11Apr2013 these settings are not widely or well supported.</p>
 <?php
 // path detection
 $FILEPATH = rtrim($_SERVER['SCRIPT_FILENAME'],'stores.php');
@@ -65,19 +50,6 @@ if (is_writable($FILEPATH.'config.php')){
 else {
 	echo "<span style=\"color:red;\"><b>Error</b>: config.php is not writeable</span>";
 }
-?>
-
-<hr />
-<b>Co-op</b>
-<br />Use this to identify code that is specific to your co-op.
-<br />Particularly important if you plan to contribute to the CORE IT code base.
-<br />Try to use a code that will not be confused with any other, e.g. "WEFC_Toronto" instead of "WEFC".
-<br />Co-op ID: 
-<?php
-if (!isset($FANNIE_COOP_ID)) $FANNIE_COOP_ID = '';
-if (isset($_REQUEST['FANNIE_COOP_ID'])) $FANNIE_COOP_ID=$_REQUEST['FANNIE_COOP_ID'];
-confset('FANNIE_COOP_ID',"'$FANNIE_COOP_ID'");
-printf("<input type=\"text\" name=\"FANNIE_COOP_ID\" value=\"%s\" />",$FANNIE_COOP_ID);
 ?>
 
 <hr />
@@ -191,35 +163,6 @@ confset('FANNIE_STORES',$conf);
 <?php
 } // endif for HQ only settings
 ?>
-
-<hr />
-<b>Product Editing</b>
-<p style="margin:0.4em 0em 0.4em 0em;"><b>Compose Product Description</b>: 
-<?php
-if (!isset($FANNIE_COMPOSE_PRODUCT_DESCRIPTION)) $FANNIE_COMPOSE_PRODUCT_DESCRIPTION = 0;
-if (isset($_REQUEST['FANNIE_COMPOSE_PRODUCT_DESCRIPTION'])) $FANNIE_COMPOSE_PRODUCT_DESCRIPTION = $_REQUEST['FANNIE_COMPOSE_PRODUCT_DESCRIPTION'];
-confset('FANNIE_COMPOSE_PRODUCT_DESCRIPTION',"$FANNIE_COMPOSE_PRODUCT_DESCRIPTION");
-echo "<input type=text name=FANNIE_COMPOSE_PRODUCT_DESCRIPTION value=\"$FANNIE_COMPOSE_PRODUCT_DESCRIPTION\" size=1 />";
-?>
-<br />If 0 products.description, which appears on the receipt, will be used as-is.
-<br />If 1 it will be shortened enough hold a "package" description made by
-concatenating products.size and products.unitofmeasure so that the whole
-string is still 30 or less characters:
-<br /> "Eden Seville Orange Marma 500g"
-</p>
-
-<p style="margin:0.0em 0em 0.4em 0em;"><b>Compose Long Product Description</b>: 
-<?php
-if (!isset($FANNIE_COMPOSE_LONG_PRODUCT_DESCRIPTION)) $FANNIE_COMPOSE_LONG_PRODUCT_DESCRIPTION = 0;
-if (isset($_REQUEST['FANNIE_COMPOSE_LONG_PRODUCT_DESCRIPTION'])) $FANNIE_COMPOSE_LONG_PRODUCT_DESCRIPTION = $_REQUEST['FANNIE_COMPOSE_LONG_PRODUCT_DESCRIPTION'];
-confset('FANNIE_COMPOSE_LONG_PRODUCT_DESCRIPTION',"$FANNIE_COMPOSE_LONG_PRODUCT_DESCRIPTION");
-echo "<input type=text name=FANNIE_COMPOSE_LONG_PRODUCT_DESCRIPTION value=\"$FANNIE_COMPOSE_LONG_PRODUCT_DESCRIPTION\" size=1 />";
-?>
-<br />If 0 productUser.description, which may be used in Product Verification, will be used as-is.
-<br />If 1 productUser.brand will be prepended and a "package" description made by
-concatenating products.size and products.unitofmeasure will be appended:
-<br /> "EDEN | Marmalade, Orange, Seville, Rough-Cut | 500g"<br />
-</p>
 
 <hr />
 <input type=submit value="Re-run" />
