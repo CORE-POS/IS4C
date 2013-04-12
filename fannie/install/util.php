@@ -68,64 +68,8 @@ function db_test_connect($host,$type,$db,$user,$pw){
 		return $sql;
 }
 
-// Probably better in a .css. Maybe ../src/install.css
-function showInstallStyle() {
-
-	$ret = "<style type='text/css'>
-
-ul.installTabList {
-	list-style-type:none;
-	/* IE */
-	margin-left:0.0em;
-	/* FF */
-	padding-left:0.0em;
-}
-
-ul.installTabList2 {
-	list-style-type:none;
-	/* IE - not tested */
-	margin-top:0.0em;
-	margin-left:1.0em;
-	/* FF */
-	padding-top:0.0em;
-	padding-left:1.0em;
-}
-
-li.installTab {
-	float:left;
-	color:#000000;
-	border:1px solid #ADADAD;
-	border-bottom-style:none;
-	margin: 0.2em 0.2em 0.2em 0.2em;
-	padding: 0.2em 0.5em 0.0em 0.5em;
-}
-
-/* 2nd level deep */
-li.installTab2 {
-	float:left;
-	color:#000000;
-	border:1px dashed #ADADAD;
-	border-bottom-style:none;
-	margin: 0.2em 0.2em 0.2em 0.2em;
-	padding: 0.2em 0.5em 0.0em 0.5em;
-}
-
-/* A piece of configuration */
-p.ichunk {
-	margin: 0.5em 0.0em 0.5em 0.0em;
-}
-</style>
-";
-
-	return $ret;
-
-// showInstallStyle
-}
-
 function showInstallTabs($current,$path='') {
 	$ret = "";
-
-	//$ret .= showInstallStyle();
 
 	$ret .= "<ul class='installTabList'>";
 
@@ -160,8 +104,6 @@ function showInstallTabs($current,$path='') {
 
 function showInstallTabsLane($current,$path='') {
 	$ret = "";
-
-	$ret .= showInstallStyle();
 
 	$ret .= "<ul class='installTabList2'>";
 
