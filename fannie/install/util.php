@@ -68,4 +68,135 @@ function db_test_connect($host,$type,$db,$user,$pw){
 		return $sql;
 }
 
+// Probably better in a .css. Maybe ../src/install.css
+function showInstallStyle() {
+
+	$ret = "<style type='text/css'>
+
+ul.installTabList {
+	list-style-type:none;
+	/* IE */
+	margin-left:0.0em;
+	/* FF */
+	padding-left:0.0em;
+}
+
+ul.installTabList2 {
+	list-style-type:none;
+	/* IE - not tested */
+	margin-top:0.0em;
+	margin-left:1.0em;
+	/* FF */
+	padding-top:0.0em;
+	padding-left:1.0em;
+}
+
+li.installTab {
+	float:left;
+	color:#000000;
+	border:1px solid #ADADAD;
+	border-bottom-style:none;
+	margin: 0.2em 0.2em 0.2em 0.2em;
+	padding: 0.2em 0.5em 0.0em 0.5em;
+}
+
+/* 2nd level deep */
+li.installTab2 {
+	float:left;
+	color:#000000;
+	border:1px dashed #ADADAD;
+	border-bottom-style:none;
+	margin: 0.2em 0.2em 0.2em 0.2em;
+	padding: 0.2em 0.5em 0.0em 0.5em;
+}
+
+/* A piece of configuration */
+p.ichunk {
+	margin: 0.5em 0.0em 0.5em 0.0em;
+}
+</style>
+";
+
+	return $ret;
+
+// showInstallStyle
+}
+
+function showInstallTabs($current,$path='') {
+	$ret = "";
+
+	//$ret .= showInstallStyle();
+
+	$ret .= "<ul class='installTabList'>";
+
+	$installTabs = array(
+		'Necessities'=>'index.php',
+		'Authentication' => 'auth.php',
+		'Members' => 'mem.php',
+		'Products' => 'prod.php',
+		'Stores' => 'stores.php',
+		'Updates' => 'update.php',
+		'Plugins' => 'plugins.php',
+		'Menu' => 'menu.php',
+		'Lane Config' => 'lane_config/',
+		'Sample Data' => 'sample_data/extra_data.php'
+		);
+
+	foreach($installTabs as $key => $loc) {
+		if ( $key == $current ) {
+			$ret .= "<li class='installTab'>$key</li>";
+		} else {
+			$ret .= "<li class='installTab'><a href='$path$loc'>$key</a></li>";
+		}
+	}
+
+	$ret .= "</ul>";
+	$ret .= "<br style='clear:both;' />";
+
+	return $ret;
+
+// showInstallTabs()
+}
+
+function showInstallTabsLane($current,$path='') {
+	$ret = "";
+
+	$ret .= showInstallStyle();
+
+	$ret .= "<ul class='installTabList2'>";
+
+	$installTabs = array(
+		'Lane Necessities'=>'index.php',
+		'Additional Configuration' => 'extra_config.php',
+		'Scanning Options' => 'scanning.php',
+		'Security' => 'security.php',
+		'Text Strings' => 'text.php'
+		);
+
+	foreach($installTabs as $key => $loc) {
+		if ( $key == $current ) {
+			$ret .= "<li class='installTab2'>$key</li>";
+		} else {
+			$ret .= "<li class='installTab2'><a href='$path$loc'>$key</a></li>";
+		}
+	}
+
+	$ret .= "</ul>";
+	$ret .= "<br style='clear:both;' />";
+
+	return $ret;
+
+// showInstallTabs()
+}
+
+// Link "up" to higher level of install pages.
+function showLinkToFannie() {
+	$ret = "<ul class='installTabList'>";
+	$key =	'Up to Fannie Config'; $loc = 'index.php'; $path = '../';
+			$ret .= "<li class='installTab'><a href='$path$loc'>$key</a></li>";
+	$ret .= "</ul>";
+	$ret .= "<br style='clear:both;' />";
+	return $ret;
+}
+
 ?>

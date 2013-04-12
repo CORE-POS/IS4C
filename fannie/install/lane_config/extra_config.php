@@ -1,27 +1,21 @@
 <?php
 include('ini.php');
+include('../util.php');
 ?>
 <html>
 <head>
-<title>Extra configuration options</title>
-<style type="text/css">
-body {
-	line-height: 1.5em;
-}
-</style>
+<title>Lane Global: Extra configuration options</title>
+<link rel="stylesheet" href="../../src/css/install.css" type="text/css" />
+<script type="text/javascript" src="../../src/jquery/jquery.js"></script>
 </head>
 <body>
-<a href="index.php">Necessities</a>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-Additional Configuration
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<a href="scanning.php">Scanning Options</a>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<a href="security.php">Security</a>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<a href="text.php">Text Strings</a>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<?php
+echo showLinkToFannie();
+echo showInstallTabsLane("Additional Configuration", '');
+?>
+
 <form action=extra_config.php method=post>
+<h1>IT CORE Lane Global Configuration: Additional Configuration</h1>
 <b>Browser only</b>: <select name=BROWSER_ONLY>
 <?php
 if ($CORE_LOCAL->get('browserOnly')==="") $CORE_LOCAL->set('browserOnly','1');

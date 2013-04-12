@@ -3,22 +3,25 @@ include('../../config.php');
 if(!class_exists('SQLManager'))
 	include($FANNIE_ROOT.'src/SQLManager.php');
 include('../db.php');
+include('../util.php');
 ?>
 <html>
 <head>
-<title>Load optional data</title>
+<title>Fannie: Sample Data</title>
 <style type="text/css">
 body {
 	line-height: 1.5em;
 }
 </style>
+<link rel="stylesheet" href="../../src/css/install.css" type="text/css" />
+<script type="text/javascript" src="../../src/jquery/jquery.js"></script>
 </head>
 <body>
-<a href="../index.php">Necessities</a>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-Sample Data
-<br />
+<?php
+echo showInstallTabs("Sample Data", '../');
+?>
 <form action=extra_data.php method=post>
+<H1>Fannie: Sample Data</H1>
 <blockquote><i>
 <?php
 $db = new SQLManager($FANNIE_SERVER,
@@ -90,6 +93,9 @@ elseif (isset($_REQUEST['authentication'])){
 Some sample data is available to get a test lane
 up &amp; running quickly. Keep in mind this data
 overwrites whatever is currently in the table.
+<br />These utilities populate the server tables.
+Then use the <a href="../../sync/SyncIndexPage.php" target="_sync">Synchronize</a>
+utilities to populate the lane tables.
 <hr />
 <b>Employees</b><br />
 This table contains login information for cashiers. The two

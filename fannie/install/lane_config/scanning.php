@@ -1,27 +1,21 @@
 <?php
 include('ini.php');
+include('../util.php');
 ?>
 <html>
 <head>
-<title>Scanning options</title>
-<style type="text/css">
-body {
-	line-height: 1.5em;
-}
-</style>
+<title>Lane Global: Scanning options</title>
+<link rel="stylesheet" href="../../src/css/install.css" type="text/css" />
+<script type="text/javascript" src="../../src/jquery/jquery.js"></script>
 </head>
 <body>
-<a href="index.php">Necessities</a>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<a href="extra_config.php">Additional Configuration</a>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-Scanning Options
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<a href="security.php">Security</a>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<a href="text.php">Text Strings</a>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<?php
+echo showLinkToFannie();
+echo showInstallTabsLane("Scanning Options", '');
+?>
+
 <form action=scanning.php method=post>
+<h1>IT CORE Lane Global Configuration: Scanning Options</h1>
 Special handling modules for UPCs that aren't
 products (e.g., coupons)<br />
 <b>Special UPCs</b>:<br />
