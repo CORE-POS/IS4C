@@ -21,8 +21,9 @@
 
 *********************************************************************************/
 
-include('../src/mysql_connect.php');
-include('laneUpdates.php');
+include('../../config.php');
+include($FANNIE_ROOT.'src/mysql_connect.php');
+include('../laneUpdates.php');
 
 if (isset($_REQUEST['submitPC'])){
 	$upc = $_REQUEST['upc'];

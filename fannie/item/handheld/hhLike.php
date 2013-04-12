@@ -21,7 +21,8 @@
 
 *********************************************************************************/
 
-include('../src/mysql_connect.php');
+include('../../config.php');
+include($FANNIE_ROOT.'src/mysql_connect.php');
 
 if (isset($_REQUEST['submit2'])){
 	$upc = str_pad($_REQUEST['upc'],13,'0',STR_PAD_LEFT);

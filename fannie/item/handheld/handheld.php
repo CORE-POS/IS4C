@@ -21,13 +21,40 @@
 
 *********************************************************************************/
 
-include('../src/mysql_connect.php');
+include('../../config.php');
+include($FANNIE_ROOT.'src/mysql_connect.php');
 
 ?>
 <html><head><title>Item Maintenance</title>
 <script type="text/javascript" 
 	src="<?php echo $FANNIE_URL; ?>src/jquery-1.2.6.min.js">
 </script>
+<?php if ($FANNIE_HANDHELD == 'Linea'){ ?>
+<script type="text/javascript" 
+	src="<?php echo $FANNIE_URL; ?>src/linea/cordova-2.2.0.js">
+</script>
+<script type="text/javascript" 
+	src="<?php echo $FANNIE_URL; ?>src/linea/ScannerLib-Linea-2.0.0.js">
+</script>
+<script type="text/javascript" >
+Device = new ScannerDevice({
+	barcodeData: function (data, type){
+		var upc = data.substring(0,data.length-1);
+		if ($('#upc_in').length > 0){
+			$('#upc_in').val(upc);
+			$('#submitBtn').click();
+		}
+	}
+});
+ScannerDevice.registerListener(Device);
+</script>
+<?php } else { ?>
+<script type="text/javascript">
+$(document).ready(function(){
+	$('#upc_in').focus();
+});
+</script>
+<?php } ?>
 <style>
 body {
 	margin: 10px;
@@ -45,7 +72,7 @@ a {
 <?php
 
 if(isset($_REQUEST['upc']) && !empty($_REQUEST['upc'])){
-	if (isset($_REQUEST['submit'])){
+	if (isset($_REQUEST['submit1'])){
 		$query = "SELECT p.upc,p.description,p.normal_price,p.special_price,
 			p.department,p.tax,p.foodstamp,p.scale,p.qttyEnforced,p.discount,
 			p.discounttype,x.manufacturer,x.distributor,u.likeCode,l.likeCodeDesc,
@@ -84,7 +111,7 @@ if(isset($_REQUEST['upc']) && !empty($_REQUEST['upc'])){
 		if ($num > 1){
 			echo "<body><b>Multiple items found</b><br />";
 			while($row=$dbc->fetch_row($result)){
-				printf("<a href=\"handheld.php?submit=Submit&upc=%s\">%s</a><br />",
+				printf("<a href=\"handheld.php?submit1=Submit&upc=%s\">%s</a><br />",
 					$row['upc'],$row['description']);
 			}
 			echo "</body></html>";
@@ -265,11 +292,11 @@ if(isset($_REQUEST['upc']) && !empty($_REQUEST['upc'])){
 	}
 }
 
-echo "<body onload=\"$('#upc').focus();\">";
+echo "<body>";
 echo "<b>Item Maintenance</b>";
 echo "<form action=handheld.php method=get>";
 echo "<table><tr><td>";
-echo "<input name=upc type=text id=upc> 
+echo "<input name=upc type=text id=upc_in> 
 </td><td>
 <select name=\"ntype\">
 <option>UPC</option>
@@ -278,7 +305,8 @@ echo "<input name=upc type=text id=upc>
 </select><td></tr><tr> 
 <td colspan=2 align=right>or description</td></tr>";
 echo "<tr><td colspan=2 align=left>";
-echo "<input name=submit type=submit value=Submit 
+echo '<input type="hidden" name="submit1" value="Submit" />';
+echo "<input name=submitBtn id=submitBtn type=submit value=Submit 
 	style=\"width:150px;height:50px;font-size:110%;\" /> ";
 echo "</td></tr></table></form>";
 echo "</body>";
