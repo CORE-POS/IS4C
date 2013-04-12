@@ -50,6 +50,12 @@ class FanniePage {
 	protected $scripts = array();
 	protected $css_files = array();
 
+	public function __construct(){
+		global $FANNIE_AUTH_DEFAULT;
+		if ( isset($FANNIE_AUTH_DEFAULT) )
+			$this->must_authenticate = $FANNIE_AUTH_DEFAULT;
+	}
+
 	/**
 	  Toggle using menus
 	  @param $menus boolean
