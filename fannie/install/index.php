@@ -21,39 +21,23 @@
 
 *********************************************************************************/
 
-
-/* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-	*  5Dec2012 Eric Lee Added table memContactPrefs
-
-*/
-
 ini_set('display_errors','1');
-?>
-<?php 
 require(dirname(__FILE__).'/../config.php'); 
 include(dirname(__FILE__).'/util.php');
 include(dirname(__FILE__).'/db.php');
 ?>
-Necessities
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<a href="auth.php">Authentication</a>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<a href="mem.php">Members</a>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<a href="prod.php">Products</a>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<a href="stores.php">Stores</a>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<a href="update.php">Updates</a>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<a href="plugins.php">Plugins</a>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<a href="menu.php">Menu</a>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<a href="sample_data/extra_data.php">Sample Data</a>
+<html>
+<head>
+<title>Fannie install checks: Necesseties</title>
+<link rel="stylesheet" href="../src/css/install.css" type="text/css" />
+<script type="text/javascript" src="../src/jquery/jquery.js"></script>
+</head>
+<body>
+<?php 
+echo showInstallTabs("Necessities");
+?>
 <form action=index.php method=post>
-<h1>Fannie install checks</h1>
+<h1>Fannie install checks: Necessities</h1>
 <?php
 // path detection
 $FILEPATH = rtrim(__FILE__,'index.php');
@@ -580,6 +564,70 @@ for($i=0; $i<$FANNIE_NUM_SCALES; $i++){
 confset('FANNIE_SCALES',$conf);
 }
 ?>
+
+<hr />
+<b>Co-op</b>
+<br />Use this to identify code that is specific to your co-op.
+<br />Particularly important if you plan to contribute to the CORE IT code base.
+<br />Try to use a code that will not be confused with any other, e.g. "WEFC_Toronto" instead of "WEFC".
+<br />Co-op ID: 
+<?php
+if (!isset($FANNIE_COOP_ID)) $FANNIE_COOP_ID = '';
+if (isset($_REQUEST['FANNIE_COOP_ID'])) $FANNIE_COOP_ID=$_REQUEST['FANNIE_COOP_ID'];
+confset('FANNIE_COOP_ID',"'$FANNIE_COOP_ID'");
+printf("<input type=\"text\" name=\"FANNIE_COOP_ID\" value=\"%s\" />",$FANNIE_COOP_ID);
+?>
+
+<hr />
+<b>Locale</b> <br />
+Set the Country and Language where Fannie will run.
+<br />If these are not set in Fannie configuration but are set in the Linux environment the environment values will be used as
+defaults that can be overridden by settings here.
+
+<br /><b>Country</b> <br />
+<?php
+// If the var doesn't exist in config.php assign a default value.
+if (!isset($FANNIE_COUNTRY)) $FANNIE_COUNTRY = "";
+// If the form var is set assign it to the local copy of the config var.
+if (isset($_REQUEST['FANNIE_COUNTRY'])) $FANNIE_COUNTRY = $_REQUEST['FANNIE_COUNTRY'];
+// Change or add the local copy to the config file.
+confset('FANNIE_COUNTRY',"'$FANNIE_COUNTRY'");
+if ( !isset($FANNIE_COUNTRY) && isset($_ENV['LANG']) ) {
+	$FANNIE_COUNTRY = substr($_ENV['LANG'],3,2);
+}
+?>
+<select name="FANNIE_COUNTRY" size='1'>
+<?php
+//Use I18N country codes.
+$countries = array("US"=>"USA", "CA"=>"Canada");
+foreach (array_keys($countries) as $key) {
+	printf("<option value='%s' %s>%s</option>", $key, (($FANNIE_COUNTRY == $key)?'selected':''), $countries["$key"]);
+}
+?>
+</select>
+
+<br /><b>Language</b> <br />
+<?php
+// If the var doesn't exist in config.php assign a default value.
+if (!isset($FANNIE_LANGUAGE)) $FANNIE_LANGUAGE = "";
+// If the form var is set assign it to the local copy of the config var.
+if (isset($_REQUEST['FANNIE_LANGUAGE'])) $FANNIE_LANGUAGE = $_REQUEST['FANNIE_LANGUAGE'];
+// Change or add the local copy to the config file.
+confset('FANNIE_LANGUAGE',"'$FANNIE_LANGUAGE'");
+if ( !isset($FANNIE_LANGUAGE) && isset($_ENV['LANG']) ) {
+	$FANNIE_LANGUAGE = substr($_ENV['LANG'],0,2);
+}
+?>
+<select name="FANNIE_LANGUAGE" size='1'>
+<?php
+//Use I18N language codes.
+$langs = array("en"=>"English", "fr"=>"French", "sp"=>"Spanish");
+foreach (array_keys($langs) as $key) {
+	printf("<option value='%s' %s>%s</option>", $key, (($FANNIE_LANGUAGE == $key)?'selected':''), $langs["$key"]);
+}
+?>
+</select><br />
+
 <hr />
 <input type=submit value="Re-run" />
 </form>

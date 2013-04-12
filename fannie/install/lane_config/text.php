@@ -2,7 +2,9 @@
 include('../../config.php');
 include($FANNIE_ROOT.'src/SQLManager.php');
 include($FANNIE_ROOT.'src/mysql_connect.php');
+include('../util.php');
 
+// keys are customReceipt.type values.
 $TRANSLATE = array(
 	'receiptHeader'=>'Receipt Header',
 	'receiptFooter'=>'Receipt Footer',
@@ -48,32 +50,55 @@ else if (isset($_REQUEST['old_submit'])){
 }
 
 ?>
-<a href="index.php">Necessities</a>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<a href="extra_config.php">Additional Configuration</a>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<a href="scanning.php">Scanning Options</a>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<a href="security.php">Security</a>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-Text Strings
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<hr />
-<form method="post" action="text.php">
-<select name="new_type">
+<html>
+<head>
+<title>Lane Global: Text Strings</title>
+<link rel="stylesheet" href="../../src/css/install.css" type="text/css" />
+<script type="text/javascript" src="../../src/jquery/jquery.js"></script>
+</head>
+<body>
 <?php
+echo showLinkToFannie();
+echo showInstallTabsLane("Text Strings", '');
+?>
+
+<form method="post" action="text.php">
+<h1>IT CORE Lane Global Configuration: Text Strings</h1>
+<p class="ichunk">Use this utility to enter and edit the lines of text that appear on
+receipts, the lane Welcome screen, and elsewhere.
+<br />If your receipts have no headers or footers or they are wrong this is the place to fix that.
+<br />The upper form is for adding lines.
+<br />The lower form is for editing existing lines.
+</p>
+<hr />
+<h3 style="margin-bottom:0.0em;">Add lines</h3>
+<p class="ichunk" style="margin-top:0.25em;">Select a type of text string, enter a line, for it, and click "Add".
+<br />All types may initially have no lines, i.e. be empty.
+</p>
+<select name="new_type" size="5">
+<?php
+$tcount = 0;
 foreach($TRANSLATE as $short=>$long){
+	$tcount++;
+	if (isset($_REQUEST['new_type'])) {
+		$selected=($_REQUEST['new_type']==$short)?'selected':'';
+	} else {
+		$selected = ($tcount==1)?'selected':'';
+	}
 	printf('<option value="%s" %s>%s</option>',
-		$short,
-		(isset($_REQUEST['new_type'])&&$_REQUEST['new_type']==$short)?'selected':'',
-		$long);
+		$short, $selected, $long);
 }
 ?>
 </select>
 <input type="text" name="new_content" maxlength="80" />
-<input type="submit" name="new_submit" value="Add" />
+<input type="submit" name="new_submit" value="Add a line of the selected type" />
 </form>
 <hr />
+<h3 style="margin-bottom:0.0em;">Edit existing lines</h3>
+<p class="ichunk" style="margin-top:0.25em;">Existing lines of text of different types are displayed below and can be edited there.
+<br />All types may initially have no lines in which case the heading will not appear and no line boxes will appear.
+<br />To delete a line erase all the text from it.
+</p>
 <form method="post" action="text.php">
 <?php
 $q = $dbc->prepare_statement("SELECT type,text FROM customReceipt ORDER BY type,seq");
