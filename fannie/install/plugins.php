@@ -13,28 +13,17 @@ body {
 	line-height: 1.5em;
 }
 </style>
+<link rel="stylesheet" href="../src/css/install.css" type="text/css" />
 <link rel="stylesheet" href="../src/css/toggle-switch.css" type="text/css" />
 <script type="text/javascript" src="../src/jquery/jquery.js"></script>
 </head>
 <body>
-<a href="index.php">Necessities</a>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<a href="auth.php">Authentication</a>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<a href="mem.php">Members</a>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<a href="prod.php">Products</a>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<a href="stores.php">Stores</a>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<a href="update.php">Updates</a>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-Plugins
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<a href="sample_data/extra_data.php">Sample Data</a>
+<?php
+echo showInstallTabs("Plugins");
+?>
 
 <div id="wrapper">
-<h2>Fannie: Plugins</h2>
+<h1>Fannie: Plugins</h1>
 <?php
 if (is_writable('../config.php')){
 	echo "<span style=\"color:green;\"><i>config.php</i> is writeable</span>";

@@ -21,33 +21,22 @@
 
 *********************************************************************************/
 
-
-/* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-	*  4Jan2013 Eric Lee Add unmark option to allow an update to be run again.
-
-*/
-
 include('../config.php');
 include('updates/Update.php');
-
-echo '<html><head>';
-echo '<script src="'.$FANNIE_URL.'src/jquery/js/jquery.js" type="text/javascript"></script>';
-echo '</head><body>';
+include('util.php');
 ?>
-<a href="index.php">Necessities</a>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<a href="auth.php">Authentication</a>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<a href="mem.php">Members</a>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<a href="stores.php">Stores</a>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-Updates
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<a href="plugins.php">Plugins</a>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<a href="sample_data/extra_data.php">Sample Data</a>
+<html>
+<head>
+<title>Fannie: Database Updates</title>
+<link rel="stylesheet" href="../src/css/install.css" type="text/css" />
+<script type="text/javascript" src="../src/jquery/jquery.js"></script>
+</head>
+<body>
+<?php
+echo showInstallTabs("Updates");
+?>
+<h1>Fannie Database Updates</h1>
+<p class="ichunk">Click a link for details on the Update.</p>
 <?php
 
 $action = isset($_REQUEST['action']) ? $_REQUEST['action']: 'list';
