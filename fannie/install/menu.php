@@ -28,23 +28,15 @@ include('util.php');
 ?>
 <html>
 <head><title>Fannie Menu Builder</title>
-<script type="text/javascript" src="../src/jquery/jquery.js">
-</script>
+<link rel="stylesheet" href="../src/css/install.css" type="text/css" />
+<script type="text/javascript" src="../src/jquery/jquery.js"></script>
 </head>
 <body>
-<a href="index.php">Necessities</a>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<a href="auth.php">Authentication</a>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<a href="mem.php">Members</a>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<a href="stores.php">Stores</a>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-Menu
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<a href="sample_data/extra_data.php">Sample Data</a>
+<?php
+echo showInstallTabs("Menu");
+?>
 <form action=menu.php method=post>
-<h1>Fannie Menu</h1>
+<h1>Fannie: Menu Builder</h1>
 <?php
 // path detection
 $FILEPATH = rtrim($_SERVER['SCRIPT_FILENAME'],'menu.php');

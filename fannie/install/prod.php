@@ -21,35 +21,24 @@
 
 *********************************************************************************/
 
-/* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-	* 22Mar2013 Andy Theuninck based on mem.php
-
-*/
-
 ini_set('display_errors','1');
 include('../config.php'); 
 include('util.php');
 include('db.php');
 $FILEPATH = $FANNIE_ROOT;
 ?>
-<a href="index.php">Necessities</a>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<a href="auth.php">Authentication</a>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<a href="mem.php">Members</a>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-Products 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<a href="stores.php">Stores</a>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<a href="update.php">Updates</a>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<a href="plugins.php">Plugins</a>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<a href="sample_data/extra_data.php">Sample Data</a>
+<html>
+<head>
+<title>Fannie: Product Settings</title>
+<link rel="stylesheet" href="../src/css/install.css" type="text/css" />
+<script type="text/javascript" src="../src/jquery/jquery.js"></script>
+</head>
+<body>
+<?php
+echo showInstallTabs("Products");
+?>
 <form action=prod.php method=post>
-<h1>Fannie Product Settings</h1>
+<h1>Fannie: Product Settings</h1>
 <?php
 if (is_writable('../config.php')){
 	echo "<span style=\"color:green;\"><i>config.php</i> is writeable</span>";
@@ -116,6 +105,36 @@ else {
 confset('FANNIE_DEFAULT_PDF',"'$FANNIE_DEFAULT_PDF'");
 ?>
 </select>
+
+<hr />
+<b>Product Editing</b>
+<p style="margin:0.4em 0em 0.4em 0em;"><b>Compose Product Description</b>: 
+<?php
+if (!isset($FANNIE_COMPOSE_PRODUCT_DESCRIPTION)) $FANNIE_COMPOSE_PRODUCT_DESCRIPTION = 0;
+if (isset($_REQUEST['FANNIE_COMPOSE_PRODUCT_DESCRIPTION'])) $FANNIE_COMPOSE_PRODUCT_DESCRIPTION = $_REQUEST['FANNIE_COMPOSE_PRODUCT_DESCRIPTION'];
+confset('FANNIE_COMPOSE_PRODUCT_DESCRIPTION',"$FANNIE_COMPOSE_PRODUCT_DESCRIPTION");
+echo "<input type=text name=FANNIE_COMPOSE_PRODUCT_DESCRIPTION value=\"$FANNIE_COMPOSE_PRODUCT_DESCRIPTION\" size=1 />";
+?>
+<br />If 0 products.description, which appears on the receipt, will be used as-is.
+<br />If 1 it will be shortened enough hold a "package" description made by
+concatenating products.size and products.unitofmeasure so that the whole
+string is still 30 or less characters:
+<br /> "Eden Seville Orange Marma 500g"
+</p>
+
+<p style="margin:0.0em 0em 0.4em 0em;"><b>Compose Long Product Description</b>: 
+<?php
+if (!isset($FANNIE_COMPOSE_LONG_PRODUCT_DESCRIPTION)) $FANNIE_COMPOSE_LONG_PRODUCT_DESCRIPTION = 0;
+if (isset($_REQUEST['FANNIE_COMPOSE_LONG_PRODUCT_DESCRIPTION'])) $FANNIE_COMPOSE_LONG_PRODUCT_DESCRIPTION = $_REQUEST['FANNIE_COMPOSE_LONG_PRODUCT_DESCRIPTION'];
+confset('FANNIE_COMPOSE_LONG_PRODUCT_DESCRIPTION',"$FANNIE_COMPOSE_LONG_PRODUCT_DESCRIPTION");
+echo "<input type=text name=FANNIE_COMPOSE_LONG_PRODUCT_DESCRIPTION value=\"$FANNIE_COMPOSE_LONG_PRODUCT_DESCRIPTION\" size=1 />";
+?>
+<br />If 0 productUser.description, which may be used in Product Verification, will be used as-is.
+<br />If 1 productUser.brand will be prepended and a "package" description made by
+concatenating products.size and products.unitofmeasure will be appended:
+<br /> "EDEN | Marmalade, Orange, Seville, Rough-Cut | 500g"<br />
+</p>
+
 <hr />
 <input type=submit value="Re-run" />
 </form>

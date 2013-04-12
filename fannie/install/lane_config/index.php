@@ -20,37 +20,23 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
-
-/* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-	* 22Sep2012 Eric Lee Change h1 to refer to Lane config and add note about usage.
-
-*/
-
 include('ini.php');
+include('../util.php');
 ?>
 <html>
 <head>
 <title>IT CORE Lane Global Configuration</title>
-<style type="text/css">
-body {
-	line-height: 1.5em;
-}
-</style>
+<link rel="stylesheet" href="../../src/css/install.css" type="text/css" />
+<script type="text/javascript" src="../../src/jquery/jquery.js"></script>
 </head>
 <body>
-Necessities
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<a href="extra_config.php">Additional Configuration</a>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<a href="scanning.php">Scanning Options</a>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<a href="security.php">Security</a>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<a href="text.php">Text Strings</a>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<?php
+echo showLinkToFannie();
+echo showInstallTabsLane("Lane Necessities", '');
+?>
+
 <form action=index.php method=post>
-<h1>IT CORE Lane Global Configuration</h1>
+<h1>IT CORE Lane Global Configuration: Necessities</h1>
 
 <p style="line-height: 1.2em;">
 Use these forms for values that will be used on all lanes.
