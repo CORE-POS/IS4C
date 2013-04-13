@@ -81,12 +81,13 @@ static public function memberID($member_number) {
 	$num_rows = $db->num_rows($result);
 
 	if ($num_rows == 1 && 
-		$member_number == $CORE_LOCAL->get("defaultNonMem")){
+		($member_number == $CORE_LOCAL->get("defaultNonMem")
+		|| ($member_number == 5607 && 
+		$CORE_LOCAL->get("requestType") == "member gift"))) {
            	$row = $db->fetch_array($result);
 	     	self::setMember($row["CardNo"], $row["personNum"],$row);
 		$ret['redraw_footer'] = True;
 		$ret['output'] = DisplayLib::lastpage();
-		return $ret;
 	} 
 
 	// special hard coding for member 5607 WFC 
@@ -96,15 +97,11 @@ static public function memberID($member_number) {
 			$CORE_LOCAL->set("requestType","member gift");
 			$CORE_LOCAL->set("requestMsg","Card for which member?");
 			$ret['main_frame'] = MiscLib::base_url()."gui-modules/requestInfo.php";
-			$CORE_LOCAL->set("strEntered","5607ID");
+			$CORE_LOCAL->set("strEntered","5607id");
 		}
 		else if ($CORE_LOCAL->get("requestType") == "member gift"){
 			TransRecord::addcomment("CARD FOR #".$CORE_LOCAL->get("requestMsg"));
 			$CORE_LOCAL->set("requestType","");
-			$row = $db->fetch_array($result);
-			self::setMember($row["CardNo"], $row["personNum"],$row);
-			$ret['redraw_footer'] = True;
-			$ret['output'] = DisplayLib::lastpage();
 		}
 	}
 
@@ -185,7 +182,7 @@ static public function setMember($member, $personNumber, $row) {
 
 	if ($CORE_LOCAL->get("discountEnforced") != 0) {
 		if ($CORE_LOCAL->get("percentDiscount") > 0) {
-                   TransRecord::discountnotify($CORE_LOCAL->get("percentDiscount"));
+                   //TransRecord::discountnotify($CORE_LOCAL->get("percentDiscount"));
 		}
 		$memquery .= " , percentDiscount = ".$CORE_LOCAL->get("percentDiscount")." ";
 	}
@@ -203,13 +200,13 @@ static public function setMember($member, $personNumber, $row) {
 	}
 
 	// 16Sep12 Eric Lee Allow  not append Subtotal at this point.
-	if ( $CORE_LOCAL->get("member_subtotal") === False ) {
-		$noop = "";
-	} elseif ( $CORE_LOCAL->get("member_subtotal") === True ) {
-		self::ttl();
-	} elseif ( $CORE_LOCAL->get("member_subtotal") == NULL ) {
-		self::ttl();
-	}
+	//if ( $CORE_LOCAL->get("member_subtotal") === False ) {
+	//	$noop = "";
+	//} elseif ( $CORE_LOCAL->get("member_subtotal") === True ) {
+	//	self::ttl();
+	//} elseif ( $CORE_LOCAL->get("member_subtotal") == NULL ) {
+	//	self::ttl();
+	//}
 
 	$CORE_LOCAL->set("unlock",0);
 
@@ -238,7 +235,7 @@ static public function check_unpaid_ar($cardno){
 	if ($cardno == $CORE_LOCAL->get("defaultNonMem")) return False;
 	if ($CORE_LOCAL->get("balance") == 0) return False;
 
-	$db = Database::mDataConnect();
+	$db = Database::pDataConnect();
 
 	if (!$db->table_exists("unpaid_ar_today")) return False;
 
@@ -982,6 +979,8 @@ static public function ttl() {
 		}
 
 		if ($CORE_LOCAL->get("percentDiscount") > 0) {
+			TransRecord::addItem("", "Subtotal", "", "", "D", 0, 0, MiscLib::truncate2($CORE_LOCAL->get("transDiscount") + $CORE_LOCAL->get("subtotal")), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7);
+			TransRecord::discountnotify($CORE_LOCAL->get("percentDiscount"));
 			TransRecord::addItem("", $CORE_LOCAL->get("percentDiscount")."% Discount", "C", "", "D", 0, 0, MiscLib::truncate2(-1 * $CORE_LOCAL->get("transDiscount")), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5);
 		}
 		$amtDue = str_replace(",", "", $CORE_LOCAL->get("amtdue"));
@@ -1004,8 +1003,9 @@ static public function ttl() {
 		} 
 		// temporary fix Andy 13Feb13
 		// my cashiers don't like the behavior; not configurable yet
-		if ($CORE_LOCAL->get("store") == "wfc") $memline="";
+		if ($CORE_LOCAL->get("store") == "wfc") $memline=""; 
 		$peek = self::peekItem();
+		
 		if (True || substr($peek,0,9) != "Subtotal "){
 			TransRecord::addItem("", "Subtotal ".MiscLib::truncate2($CORE_LOCAL->get("subtotal")).", Tax ".MiscLib::truncate2($CORE_LOCAL->get("taxTotal")).$memline, "C", "", "D", 0, 0, $amtDue, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3);
 		}
@@ -1458,7 +1458,7 @@ static public function wmdiscount() {
 		}
 	}
 
-//	TransRecord::discountnotify($CORE_LOCAL->get("percentDiscount"));
+    // TransRecord::discountnotify($CORE_LOCAL->get("percentDiscount"));
 	$conn2->query("update localtemptrans set percentDiscount = ".$CORE_LOCAL->get("percentDiscount"));
 
 	if ($CORE_LOCAL->get("discountableTotal") < $total) {
