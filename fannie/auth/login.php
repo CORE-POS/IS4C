@@ -137,12 +137,33 @@ function ldap_login($name,$passwd){
 sets a cookie.  nothing before this function call can have output
 */
 function logout(){
-  $name = checkLogin();
-  if (!$name){
-    return true;
-  }
-  setcookie('session_data','',time()+(60*600),'/');
-  return true;
+	$name = checkLogin();
+	if (!$name){
+		return true;
+	}
+
+	/**
+	  Remove session data from the database
+	*/
+	if (isset($_COOKIE['session_data'])){
+		$cookie_data = base64_decode($_COOKIE['session_data']);
+		$session_data = unserialize($cookie_data);
+
+		$name = $session_data['name'];
+		$session_id = $session_data['session_id'];
+		$uid = getUID($name);
+
+		$sql = dbconnect();
+		$delP = $sql->prepare_statement('DELETE FROM userSessions
+				WHERE uid=? AND session_id=?');
+		$delR = $sql->exec_statement($delP, array($uid,$session_id));
+
+		$upP = $sql->prepare_statement("UPDATE Users SET session_id='' WHERE name=?");
+		$upR = $sql->exec_statement($upP,array($name));
+	}
+
+	setcookie('session_data','',time()+(60*600),'/');
+	return true;
 }
 
 /*
@@ -250,8 +271,14 @@ function checkLogin(){
     return false;
   }
 
+  /**
+    New behavior: use dedicated userSessions table.
+    Could enforce expired, optionally
+  */
   $sql = dbconnect();
-  $checkQ = $sql->prepare_statement("select * from Users where name=? and session_id=?");
+  $checkQ = $sql->prepare_statement("select * from Users AS u LEFT JOIN
+			userSessions AS s ON u.uid=s.uid where u.name=? 
+			and s.session_id=?");
   $checkR = $sql->exec_statement($checkQ,array($name,$session_id));
 
   if ($sql->num_rows($checkR) == 0){
@@ -401,7 +428,7 @@ function refreshSession(){
   return true;
   if (!isset($_COOKIE['session_data']))
     return false;
-  setcookie('session_data',$_COOKIE['session_data'],time()+(60*40),'/');
+  setcookie('session_data',$_COOKIE['session_data'],time()+(60*600),'/');
   return true;
 }
 
