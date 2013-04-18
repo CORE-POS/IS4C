@@ -63,7 +63,7 @@ class SpecialOrder extends SpecialUPC {
 				quantity,unitPrice,total,regPrice,d.dept_tax,d.dept_fs,
 				ItemQtty,p.discountable
 				FROM PendingSpecialOrder as p LEFT JOIN
-				departments AS d ON p.department=d.dept_no
+				is4c_op.departments AS d ON p.department=d.dept_no
 				WHERE order_id=%d AND trans_id=%d",
 				$orderID,$transID);
 		$result = $db->query($query);

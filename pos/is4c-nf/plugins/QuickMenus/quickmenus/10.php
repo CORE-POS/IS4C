@@ -9,7 +9,8 @@ $my_menu = array(
 	"St Paul Bagelry" => "*15005",
 	"Turtle Bread" => "*15006",
 	"Biscotti" => "7011",
-	"Single Bagel" => "99DP1500"
+	"Single Bagel" => "99DP1500",
+	"Cream Cheese" => "0020104000050"
 );
 
 ?>

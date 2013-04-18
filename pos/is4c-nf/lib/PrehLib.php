@@ -216,7 +216,7 @@ static public function setMember($member, $personNumber, $row) {
 	if ($CORE_LOCAL->get("mirequested") == 1) {
 		$CORE_LOCAL->set("mirequested",0);
 		$CORE_LOCAL->set("runningTotal",$CORE_LOCAL->get("amtdue"));
-		self::tender("SC", $CORE_LOCAL->get("runningTotal") * 100);
+		self::tender("MI", $CORE_LOCAL->get("runningTotal") * 100);
 	}
 
 }
@@ -1384,7 +1384,7 @@ static public function staffCharge($arg,$json=array()) {
 			return $json;
 		}
 		$CORE_LOCAL->set("runningTotal",$CORE_LOCAL->get("amtdue"));
-		return self::tender("SC", $CORE_LOCAL->get("runningTotal") * 100);
+		return self::tender("MI", $CORE_LOCAL->get("runningTotal") * 100);
 
 	}
 

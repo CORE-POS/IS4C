@@ -25,7 +25,8 @@ ini_set('display_errors','Off');
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 $CORE_LOCAL->set("cabReference",$_REQUEST['input']);
-ReceiptLib::printReceipt('cab');
+$receipt = ReceiptLib::printReceipt('cab');
+ReceiptLib::writeLine($receipt);
 
 echo "Done";
 

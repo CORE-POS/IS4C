@@ -54,7 +54,7 @@ class cablist extends NoInputPage {
 					type: 'get',
 					cache: false,
 					data: 'input='+ref,
-					success: function(){
+					success: function(data){
 						location='<?php echo $this->page_url; ?>gui-modules/pos2.php';
 					}
 				});

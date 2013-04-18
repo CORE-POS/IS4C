@@ -267,9 +267,9 @@ class UPC extends Parser {
 			$CORE_LOCAL->get("quantity") == 0 && substr($upc,0,3) != "002") {
 
 			$CORE_LOCAL->set("SNR",$CORE_LOCAL->get('strEntered'));
-			$ret['output'] = DisplayLib::boxMsg(_("please put item on scale"));
+			$ret['output'] = DisplayLib::boxMsg(_("please put item on scale"),'',True);
 			$CORE_LOCAL->set("wgtRequested",0);
-			$CORE_LOCAL->set("warned",1);
+			$CORE_LOCAL->set("warned",0);
 			//$ret['retry'] = $CORE_LOCAL->get("strEntered");
 			
 			return $ret;

@@ -105,8 +105,8 @@ class NewMagellan extends ScaleDriverWrapper {
 			}
 		}
 		*/
-		$dh  = opendir($readdir);
-		while ($dh && false !== ($fn = readdir($dh))) {
+		$files = scandir($readdir);
+		foreach($files as $fn){
 			if (is_dir($readdir."/".$fn)) continue;
 			$data = file_get_contents($readdir."/".$fn);
 			unlink($readdir."/".$fn);
@@ -125,7 +125,6 @@ class NewMagellan extends ScaleDriverWrapper {
 			}
 			break;
 		}
-		closedir($dh);
 
 		$output = array();
 		if (!empty($scale_display)) $output['scale'] = $scale_display;

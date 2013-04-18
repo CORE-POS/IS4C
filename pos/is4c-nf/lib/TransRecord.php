@@ -123,6 +123,7 @@ static public function addItem($strupc, $strdescription, $strtransType, $strtran
 
 		$CORE_LOCAL->set("refund",0);
 		$CORE_LOCAL->set("refundComment","");
+		$CORE_LOCAL->set("autoReprint",1);
 
 		if ($CORE_LOCAL->get("refundDiscountable")==0)
 			$intdiscountable = 0;
