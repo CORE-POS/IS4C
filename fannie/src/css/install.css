@@ -1,6 +1,37 @@
 /* installTab* are for install-page taskbar links */
 body {
 	line-height: 1.5em;
+	color:#444444;
+	bgcolor:#FFFFFF;
+}
+h1.install {
+	font-family: Arial;
+	font-size: 1.8em;
+	line-height: 2.0em;
+	color:#330066;
+}
+h2.install {
+	font-family: Arial;
+	font-size: 1.6em;
+	line-height: 1.8em;
+	color:#330066;
+}
+h3.install {
+	font-family: Arial;
+	font-size: 1.4em;
+	line-height: 1.4em;
+	/*letter-spacing: 0.2em;*/
+	letter-spacing: 0.0em;
+	color:#330066;
+	}
+h4.install {
+	font-family: Arial;
+	font-size: 1.2em;
+	font-weight: bolder;
+	line-height: 0.8em;
+	letter-spacing: 0.0em;
+	margin:1.2em 0.0em 1.0em 0.0em;
+	color:#330066;
 }
 
 ul.installTabList {
