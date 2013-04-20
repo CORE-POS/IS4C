@@ -1285,7 +1285,7 @@ static public function printReceipt($arg1,$second=False,$email=False) {
 		if (is_array($receipt))
 			$receipt['print'] .= self::printChargeFooterStore($dateTimeStamp, $ref);
 		else
-			$receipt = self::printChargeFooterStore($dateTimeStamp, $ref);
+			$receipt .= self::printChargeFooterStore($dateTimeStamp, $ref);
 	}		
 			
 	if (is_array($receipt)){

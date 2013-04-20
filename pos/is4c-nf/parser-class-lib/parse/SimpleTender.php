@@ -31,14 +31,18 @@ class SimpleTender extends Parser {
 		case "TA":
 			$this->stored_ret = PrehLib::tender("TA", 100 * $CORE_LOCAL->get("runningTotal"));
 			return True;
+		/*
 		case "EC":
 			$this->stored_ret = PrehLib::tender("EC", 100 * $CORE_LOCAL->get("runningTotal"));
 			return True;
-		case "FS":
-			$this->stored_ret['output'] = DisplayLib::boxMsg(_("EBT tender must specify amount"));
-			return True;
 		case "EF":
 			$this->stored_ret = PrehLib::tender("EF", 100 * $CORE_LOCAL->get("fsEligible"));
+			return True;
+		*/
+		case "EC":
+		case "EF":
+		case "FS":
+			$this->stored_ret['output'] = DisplayLib::boxMsg(_("EBT tender must specify amount"));
 			return True;
 		case "TB":
 		case "MCC":
@@ -76,7 +80,7 @@ class SimpleTender extends Parser {
 				$ref = trim($CORE_LOCAL->get("CashierNo"))."-"
 					.trim($CORE_LOCAL->get("laneno"))."-"
 					.trim($CORE_LOCAL->get("transno"));
-				$msg = "<br />insert check for $".$CORE_LOCAL->get("runningTotal")."<br />
+				$msg = '<br />insert check for $'.$CORE_LOCAL->get("amtdue")."<br />
 					"._("press enter to endorse")."<br /><font size='-1'>"._("clear to cancel")."</font>";
 				if ($CORE_LOCAL->get("LastEquityReference") == $ref){
 					$msg .= "<div style=\"background:#993300;color:#ffffff;
@@ -86,8 +90,8 @@ class SimpleTender extends Parser {
 				}
 				$CORE_LOCAL->set("boxMsg",$msg);
 				$CORE_LOCAL->set("endorseType","check");
-				$CORE_LOCAL->set("strEntered",$CORE_LOCAL->get("runningTotal")*100);
-				$CORE_LOCAL->set("tenderamt",$CORE_LOCAL->get("runningTotal"));
+				$CORE_LOCAL->set("strEntered",$CORE_LOCAL->get("amtdue")*100);
+				$CORE_LOCAL->set("tenderamt",$CORE_LOCAL->get("amtdue"));
 				$CORE_LOCAL->set("strEntered",$CORE_LOCAL->get("strEntered")."CK");
 				$this->stored_ret['main_frame'] = $my_url.'gui-modules/boxMsg2.php';
 			}
@@ -102,8 +106,17 @@ class SimpleTender extends Parser {
 		case "SC":
 			if ($CORE_LOCAL->get("LastID") == 0 ) 
 				$this->stored_ret['output'] = DisplayLib::boxMsg(_("no transaction in progress"));
-			elseif ($CORE_LOCAL->get("ttlflag") == 1) 
+			elseif ($CORE_LOCAL->get("warned") == 1 and $CORE_LOCAL->get("warnBoxType")== "warnSC"){
+				$CORE_LOCAL->set("warnBoxType","");
+				$CORE_LOCAL->set("warned",0);
 				$this->stored_ret = PrehLib::tender("SC", "".$CORE_LOCAL->get("runningTotal") * 100);
+			}
+			elseif ($CORE_LOCAL->get("ttlflag") == 1){
+				$CORE_LOCAL->set("warnBoxType","warnSC");
+				$CORE_LOCAL->set("warned",1);
+				$CORE_LOCAL->set("boxMsg","<BR>tender $".$CORE_LOCAL->get("runningTotal")." as store credit</B><BR>press [enter] to continue<P><FONT size='-1'>[clear] to cancel</FONT>");
+				$this->stored_ret['main_frame'] = $my_url.'gui-modules/boxMsg2.php';
+			}
 			else {
 				$this->stored_ret['output'] = DisplayLib::boxMsg(_("transaction must be totaled").
 						"<br />"._("before tender can be accepted")); 

@@ -41,6 +41,7 @@ class RRR extends Parser {
 		$this->add($qty);
 
 		$ret['output'] = DisplayLib::lastpage();
+		$ret['udpmsg'] = 'goodBeep';
 
 		Database::getsubtotals();
 		if ($CORE_LOCAL->get("runningTotal") == 0){

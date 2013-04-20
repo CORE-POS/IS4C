@@ -92,9 +92,6 @@ else {
     echo "</tr></table>";
     echo "<input type=hidden value=$redirect name=redirect />";
     echo "</form>";
-    echo "<blockquote><i>I'm trying to unify logins a bit. If you're seeing
-	this instead of the old yellowish page, that's normal.
-	- Andy</i></blockquote>";
     echo "<script type=text/javascript>";
     echo "document.forms[0].name.focus();";
     echo "</script>";

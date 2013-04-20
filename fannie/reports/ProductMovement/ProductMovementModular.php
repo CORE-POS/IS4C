@@ -75,7 +75,7 @@ class ProductMovementModular extends FannieReportPage {
 
 		$query = "select month(t.tdate),day(t.tdate),year(t.tdate),
 			  t.upc,p.description,
-			  t.quantity as qty,
+			  sum(t.quantity) as qty,
 			  sum(t.total) from
 			  $dlog as t left join products as p on t.upc = p.upc 
 			  where t.upc = ? AND

@@ -143,7 +143,7 @@ class HouseCoupon extends SpecialUPC {
 			$minQ = "select case when sum(total) is null
 				then 0 else sum(total) end
 				from localtemptrans
-				as l left join opdata".$transDB."houseCouponItems
+				as l left join opdata".$transDB->sep()."houseCouponItems
 				as h on l.department = h.upc
 				where h.coupID=".$coupID;
 			$minR = $transDB->query($minQ);
