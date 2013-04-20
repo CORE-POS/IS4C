@@ -162,7 +162,7 @@ class SplitABGroupPM extends PriceMethod {
 				$row['department'],
 				$sets,
 				$pricing['unitPrice'],
-				truncate2($sets*$pricing['unitPrice']),
+				MiscLib::truncate2($sets*$pricing['unitPrice']),
 				$pricing['regPrice'],
 				$row['scale'],
 				$row['tax'],
