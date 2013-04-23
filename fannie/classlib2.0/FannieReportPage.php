@@ -62,6 +62,7 @@ class FannieReportPage extends FanniePage {
 	*/
 	protected $multi_report_mode = False;
 	protected $multi_counter = 1;
+	protected $number_of_reports = 0;
 
 	/**
 	  Option to enable/disable javascript sorting
@@ -134,11 +135,13 @@ class FannieReportPage extends FanniePage {
 		}
 		$output = '';
 		if ($this->multi_report_mode && $this->report_format != 'xls'){
+			$this->number_of_reports = count($data);
 			foreach($data as $report_data){
 				$footers = $this->calculate_footers($report_data);
 				$output .= $this->render_data($report_data,$this->report_headers,
 						$footers,$this->report_format);
-				$output .= '<br />';
+				if ($this->sortable)
+					$output .= '<br />';
 			}
 		}
 		elseif ($this->multi_report_mode && $this->report_format == 'xls'){
@@ -280,8 +283,9 @@ class FannieReportPage extends FanniePage {
 		case 'html':
 			if ($this->multi_counter == 1){
 				$this->add_css_file($FANNIE_URL.'src/jquery/themes/blue/style.css');
-				$ret .= sprintf('<html><head></head><body>
-					<a href="%s%sexcel=xls">Download Excel</a>
+				if ( !$this->window_dressing )
+					$ret .= '<html><head></head><body>';
+				$ret .= sprintf('<a href="%s%sexcel=xls">Download Excel</a>
 					&nbsp;&nbsp;&nbsp;&nbsp;
 					<a href="%s%sexcel=csv">Download CSV</a>',
 					$_SERVER['REQUEST_URI'],
@@ -294,8 +298,9 @@ class FannieReportPage extends FanniePage {
 			}
 			$class = 'mySortableTable';
 			if ($this->sortable) $class .= ' tablesorter';
-			$ret .= '<table class="'.$class.'" cellspacing="0" 
-				cellpadding="4" border="1">';
+			if ($this->sortable || $this->multi_counter == 1)
+				$ret .= '<table class="'.$class.'" cellspacing="0" 
+					cellpadding="4" border="1">';
 			break;
 		case 'csv':
 			foreach($this->report_description_content() as $line)
@@ -337,9 +342,16 @@ class FannieReportPage extends FanniePage {
 		if (!empty($footers)){
 			switch(strtolower($format)){
 			case 'html':
+				if ($this->sortable) {
 				$ret .= '<tfoot>';
 				$ret .= $this->html_line($footers, True);
 				$ret .= '</tfoot>';
+				}
+				else {
+					$ret .= $this->html_line($footers, True);
+					if ($this->multi_counter < $this->number_of_reports)
+						$ret .= "<tr><td colspan=99> &nbsp; </td></tr>";
+				}
 				break;
 			case 'csv':
 				$ret .= $this->csv_line($data[$i]);
@@ -351,7 +363,9 @@ class FannieReportPage extends FanniePage {
 
 		switch(strtolower($format)){
 		case 'html':
-			$ret .= '</table></body></html>';
+			if ($this->sortable || $this->multi_counter == $this->number_of_reports)
+				$ret .= '</table>';
+
 			$this->add_script($FANNIE_URL.'src/jquery/js/jquery.js');
 			$this->add_script($FANNIE_URL.'src/jquery/jquery.tablesorter.js');
 			$sort = sprintf('[[%d,%d]]',$this->sort_column,$this->sort_direction);
@@ -421,7 +435,7 @@ class FannieReportPage extends FanniePage {
 			$ret .= '<'.$tag.' colspan="'.$span.'">'.$row[$i].'</'.$tag.'>';
 			$i += $span;
 		}
-		return $ret.'</tr>';;
+		return $ret.'</tr>';
 	}
 
 	/**
