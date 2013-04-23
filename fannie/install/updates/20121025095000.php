@@ -39,7 +39,7 @@ class update_20121025095000 extends UpdateObj {
 			card_no INT,
 			charges DECIMAL(10,2),
 			payments DECIMAL(10,2),
-			balance descimal(10,2),
+			balance DECIMAL(10,2),
 			PRIMARY KEY (card_no)	
 			)'
 		),
