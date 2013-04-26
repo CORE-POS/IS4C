@@ -24,10 +24,10 @@
 include_once(dirname(__FILE__).'/FanniePage.php');
 
 /**
-  @class FanniePage
+  @class FannieReportPage2
   Class for drawing screens
 */
-class FannieReportPage extends FanniePage {
+class FannieReportPage2 extends FanniePage {
 
 	public $required = True;
 
@@ -48,6 +48,16 @@ class FannieReportPage extends FanniePage {
 	protected $report_headers = array();
 
 	/**
+	  End-of report summary(ies), with integrated headers. (optional)
+		Two-dimensional, as for body data.
+		Same number of columns as body data.
+		EL+
+	*/
+	protected $summary_data = array();
+	protected $summary_counter = 0;
+	protected $number_of_summaries = 0;
+
+	/**
 	  Define report format. Valid values are: html, xls, csv
 	*/
 	protected $report_format = 'html';
@@ -62,6 +72,7 @@ class FannieReportPage extends FanniePage {
 	*/
 	protected $multi_report_mode = False;
 	protected $multi_counter = 1;
+	protected $number_of_reports = 0;
 
 	/**
 	  Option to enable/disable javascript sorting
@@ -134,11 +145,30 @@ class FannieReportPage extends FanniePage {
 		}
 		$output = '';
 		if ($this->multi_report_mode && $this->report_format != 'xls'){
+			$this->number_of_reports = count($data);
 			foreach($data as $report_data){
 				$footers = $this->calculate_footers($report_data);
 				$output .= $this->render_data($report_data,$this->report_headers,
 						$footers,$this->report_format);
-				$output .= '<br />';
+				if ($this->sortable)
+					$output .= '<br />';
+			}
+			// A summary or grand total of the report
+			// First row (of each) contains headers.
+			if ( True && !empty($this->summary_data) ) {
+				$this->number_of_summaries = count($this->summary_data);
+				foreach($this->summary_data as $report_data){
+					$this->summary_counter++;
+					// Could move $report_data[0] to headers if all non-numbers.
+					// Maybe not always wanted.
+					$headers = array();
+					$footers = array();
+					$output .= $this->render_data($report_data,$headers,
+							$footers,$this->report_format);
+					//->EL Better with margin-bottom
+					if ($this->sortable)
+						$output .= '<br />';
+				}
 			}
 		}
 		elseif ($this->multi_report_mode && $this->report_format == 'xls'){
@@ -270,6 +300,7 @@ class FannieReportPage extends FanniePage {
 	  Format data for display
 	  @param $data a two dimensional array of data
 	  @param $headers a header row (optional)
+	  @param $footers a column-totals row (optional)
 	  @param $format output format (html | xls | csv)
 	  @return formatted string
 	*/
@@ -280,8 +311,10 @@ class FannieReportPage extends FanniePage {
 		case 'html':
 			if ($this->multi_counter == 1){
 				$this->add_css_file($FANNIE_URL.'src/jquery/themes/blue/style.css');
-				$ret .= sprintf('<html><head></head><body>
-					<a href="%s%sexcel=xls">Download Excel</a>
+				$this->add_css_file($FANNIE_URL.'src/css/reports.css');
+				if ( !$this->window_dressing )
+					$ret .= '<html><head></head><body>';
+				$ret .= sprintf('<a href="%s%sexcel=xls">Download Excel</a>
 					&nbsp;&nbsp;&nbsp;&nbsp;
 					<a href="%s%sexcel=csv">Download CSV</a>',
 					$_SERVER['REQUEST_URI'],
@@ -290,12 +323,13 @@ class FannieReportPage extends FanniePage {
 					(strstr($_SERVER['REQUEST_URI'],'?') ===False ? '?' : '&')
 				);
 				foreach($this->report_description_content() as $line)
-					$ret .= '<br />'.$line;
+					$ret .= (substr($line,0,1) == '<')?$line:'<br />'.$line;
 			}
 			$class = 'mySortableTable';
 			if ($this->sortable) $class .= ' tablesorter';
-			$ret .= '<table class="'.$class.'" cellspacing="0" 
-				cellpadding="4" border="1">';
+			if ($this->sortable || $this->multi_counter == 1)
+				$ret .= '<table class="'.$class.'" cellspacing="0" 
+					cellpadding="4" border="1">';
 			break;
 		case 'csv':
 			foreach($this->report_description_content() as $line)
@@ -322,8 +356,10 @@ class FannieReportPage extends FanniePage {
 		for ($i=0;$i<count($data);$i++){
 			switch(strtolower($format)){
 			case 'html':
+				// ->ELif not sortable then only before the first section
 				if ($i==0) $ret .= '<tbody>';
 				$ret .= $this->html_line($data[$i]);
+				// ->ELif not sortable then only at the end of the last section
 				if ($i==count($data)-1) $ret .= '</tbody>';
 				break;
 			case 'csv':
@@ -334,12 +370,20 @@ class FannieReportPage extends FanniePage {
 			}
 		}
 
+		// For html these are supposed to be before <tbody>
 		if (!empty($footers)){
 			switch(strtolower($format)){
 			case 'html':
-				$ret .= '<tfoot>';
-				$ret .= $this->html_line($footers, True);
-				$ret .= '</tfoot>';
+				if ($this->sortable) {
+					$ret .= '<tfoot>';
+					$ret .= $this->html_line($footers, True);
+					$ret .= '</tfoot>';
+				}
+				else {
+					$ret .= $this->html_line($footers, True);
+					if ( $this->multi_counter < ($this->number_of_reports + count($this->summary_data)) )
+						$ret .= "<tr><td colspan=0> &nbsp; </td></tr>";
+				}
 				break;
 			case 'csv':
 				$ret .= $this->csv_line($data[$i]);
@@ -351,7 +395,14 @@ class FannieReportPage extends FanniePage {
 
 		switch(strtolower($format)){
 		case 'html':
-			$ret .= '</table></body></html>';
+			if ( $this->sortable ||
+					($this->multi_counter == $this->number_of_reports && empty($this->summary_data)) ||
+					($this->multi_counter >= $this->number_of_reports && $this->summary_counter == $this->number_of_summaries)
+					) 
+				$ret .= "</table> <!-- mc: {$this->multi_counter} nor: {$this->number_of_reports} sc: {$this->summary_counter} nos: {$this->number_of_summaries} -->";
+				// <!-- mc: 5 nor: 4 sc: 1 nos: 1 -->  appeared before summary
+				// <!-- mc: 4 nor: 4 sc: 0 nos: 0 -->  correct, after last main when summaries defeated.
+
 			$this->add_script($FANNIE_URL.'src/jquery/js/jquery.js');
 			$this->add_script($FANNIE_URL.'src/jquery/jquery.tablesorter.js');
 			$sort = sprintf('[[%d,%d]]',$this->sort_column,$this->sort_direction);
@@ -378,6 +429,8 @@ class FannieReportPage extends FanniePage {
 
 		$this->multi_counter++;
 		return $ret;
+
+	// render_data()
 	}
 
 	/**
@@ -412,16 +465,21 @@ class FannieReportPage extends FanniePage {
 			while(isset($row[$i+$span]) && $row[$i+$span] === null && ($i+$span)<count($row)){
 				$span++;
 			}
+			$textAlign = '';
 			if ($row[$i] === "" || $row[$i] === null) $row[$i] = '&nbsp;';
 			elseif (is_numeric($row[$i]) && strlen($row[$i]) == 13){
 				// auto-link UPCs to edit tool
+				$textAlign = 'right';
 				$row[$i] = sprintf('<a href="%sitem/itemMaint.php?upc=%s">%s</a>',
 					$FANNIE_URL,$row[$i],$row[$i]);
 			}
-			$ret .= '<'.$tag.' colspan="'.$span.'">'.$row[$i].'</'.$tag.'>';
+			if ( $textAlign == '' && preg_match("/^[0-9., $%]+$/",$row[$i]) )
+				$textAlign = 'right';
+			$class = ($textAlign == 'right') ? " class='number'" : '';
+			$ret .= '<'.$tag.$class.' colspan="'.$span.'">'.$row[$i].'</'.$tag.'>';
 			$i += $span;
 		}
-		return $ret.'</tr>';;
+		return $ret.'</tr>';
 	}
 
 	/**

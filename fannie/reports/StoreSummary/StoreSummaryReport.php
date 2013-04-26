@@ -23,15 +23,14 @@
 
 /* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 	* 21Apr13 EL -> has_menus False in production
-	* 21Apr13 EL -> calculate_footers is not done for this report.
 */
 include('../../config.php');
 include($FANNIE_ROOT.'src/mysql_connect.php');
 include($FANNIE_ROOT.'src/select_dlog.php');
 include($FANNIE_ROOT.'classlib2.0/lib/FormLib.php');
-include($FANNIE_ROOT.'classlib2.0/FannieReportPage.php');
+include($FANNIE_ROOT.'classlib2.0/FannieReportPage2.php');
 
-class StoreSummaryReport extends FannieReportPage {
+class StoreSummaryReport extends FannieReportPage2 {
 
 	private $grandTTL;
 	private $grandCostsTotal;
@@ -333,6 +332,7 @@ class StoreSummaryReport extends FannieReportPage {
 /* EL WHOLE STORE
 // The numbers are straightforward, just another $report[] but how to do the different headings?
 // Try doing as data, with <b>, bgcolor not possible.
+// How to prevent calculate_footer from being called?
 
 		// Whole-store totals
 			$headingsW = "<tr align=center bgcolor='FFFF99'>
@@ -373,6 +373,45 @@ class StoreSummaryReport extends FannieReportPage {
 			number_format($grandTax1Total,2));
 			
 */
+//xx
+		// This is the default from parent. s/n/b necessary to assign.
+		$this->summary_data = array();
+
+		$report = array();
+
+		// Headings
+		$record = array(
+			'',
+			'',
+			'Costs',
+			'',
+			'',
+			'Sales',
+			'Profit',
+			'Margin %',
+			$taxNames['2'],
+			$taxNames['1']
+		);
+		$report[] = $record;
+
+		// Grand totals
+		$record = array(
+			'WHOLE STORE',
+			'',
+			number_format($grandCostsTotal,2),
+			'',
+			'',
+			number_format($grandSalesTotal,2),
+			number_format(($grandSalesTotal - $grandCostsTotal),2),
+			((($grandSalesTotal - $grandCostsTotal) / $grandSalesTotal) * 100),
+			number_format($grandTax2Total,2),
+			number_format($grandTax1Total,2)
+		);
+		$report[] = $record;
+
+		$this->summary_data[] = $report;
+
+//xx
 
 		$this->grandTTL = $grandTotal;
 		return $data;
@@ -444,6 +483,8 @@ class StoreSummaryReport extends FannieReportPage {
 				number_format($s['taxes2'],2),
 				number_format($s['taxes1'],2));
 			*/
+
+	// calculate_footers()
 	}
 
 	function form_content(){
