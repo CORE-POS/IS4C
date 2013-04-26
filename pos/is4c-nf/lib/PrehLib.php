@@ -184,9 +184,6 @@ static public function setMember($member, $personNumber, $row) {
 	}
 
 	if ($CORE_LOCAL->get("discountEnforced") != 0) {
-		if ($CORE_LOCAL->get("percentDiscount") > 0) {
-                   TransRecord::discountnotify($CORE_LOCAL->get("percentDiscount"));
-		}
 		$memquery .= " , percentDiscount = ".$CORE_LOCAL->get("percentDiscount")." ";
 	}
 	else if ($CORE_LOCAL->get("discountEnforced") == 0 && $CORE_LOCAL->get("tenderTotal") == 0) {
@@ -982,6 +979,10 @@ static public function ttl() {
 		}
 
 		if ($CORE_LOCAL->get("percentDiscount") > 0) {
+			if ($CORE_LOCAL->get("member_subtotal") === False){
+				TransRecord::addItem("", "Subtotal", "", "", "D", 0, 0, MiscLib::truncate2($CORE_LOCAL->get("transDiscount") + $CORE_LOCAL->get("subtotal")), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7);
+			}
+			TransRecord::discountnotify($CORE_LOCAL->get("percentDiscount"));
 			TransRecord::addItem("", $CORE_LOCAL->get("percentDiscount")."% Discount", "C", "", "D", 0, 0, MiscLib::truncate2(-1 * $CORE_LOCAL->get("transDiscount")), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5);
 		}
 		$amtDue = str_replace(",", "", $CORE_LOCAL->get("amtdue"));
