@@ -36,8 +36,8 @@ class CheckTender extends TenderModule {
 		if ( ($CORE_LOCAL->get("isMember") != 0 || $CORE_LOCAL->get("isStaff") != 0) && (($this->amount - $CORE_LOCAL->get("amtdue") - 0.005) > $CORE_LOCAL->get("dollarOver")) && ($CORE_LOCAL->get("cashOverLimit") == 1)){
 			return DisplayLib::boxMsg(_("member or staff check tender cannot exceed total purchase by over $").$CORE_LOCAL->get("dollarOver"));
 		}
-		else if( $CORE_LOCAL->get("isMember") == 0 and $CORE_LOCAL->get("isStaff") == 0 && ($this->amount - $CORE_LOCAL->get("amtdue") - 0.005) > 5){ 
-			$ret['output'] = DisplayLib::xboxMsg(_('non-member check tender cannot exceed total purchase by over $5.00'));
+		else if( $CORE_LOCAL->get("isMember") == 0 and $CORE_LOCAL->get("isStaff") == 0 && ($this->amount - $CORE_LOCAL->get("amtdue") - 0.005) > 0){ 
+			return DisplayLib::xboxMsg(_('non-member check tender cannot exceed total purchase'));
 		}
 		return True;
 	}
@@ -58,7 +58,9 @@ class CheckTender extends TenderModule {
 
 		// check endorsing
 		if ($CORE_LOCAL->get("msgrepeat") == 0){
-			$msg = "<br />"._("insert")." ".$this->name_string."<br />"._("press enter to endorse");
+			$msg = "<br />"._("insert")." ".$this->name_string.
+				' for $'.sprintf('%.2f',$this->amount).
+				"<br />"._("press enter to endorse");
 			$msg .= "<p><font size='-1'>"._("clear to cancel")."</font></p>";
 			if ($CORE_LOCAL->get("LastEquityReference") == $ref){
 				$msg .= "<div style=\"background:#993300;color:#ffffff;

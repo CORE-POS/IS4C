@@ -1,7 +1,7 @@
 <?php
 /*******************************************************************************
 
-    Copyright 2013 Whole Foods Co-op.
+    Copyright 2012 Whole Foods Co-op.
 
     This file is part of IT CORE.
 
@@ -21,12 +21,20 @@
 
 *********************************************************************************/
 
-ini_set('display_errors','Off');
-include_once(realpath(dirname(__FILE__).'/../lib/AutoLoader.php'));
-
-/*
-if ($CORE_LOCAL->get("testremote")==0)
-	Database::testremote(); 
+/**
+  @class InOrderReceiptSort
+  Does nothing. Leave items in the order they
+  were entered.
 */
+class InOrderReceiptSort extends DefaultReceiptSort {
 
-echo 'Done';
+	/**
+	  Sorting function
+	  @param $rowset an array of records
+	  @return an array of records
+	*/
+	function sort($rowset){
+		return $rowset;
+	}
+
+}	
