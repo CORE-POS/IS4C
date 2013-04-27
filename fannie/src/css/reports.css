@@ -2,3 +2,9 @@
 td.number, th.number {
 	text-align:right;
 }
+td.footer {
+	font-weight:bold;
+}
+table.fancytable {
+	margin-bottom:2.0em;
+}
