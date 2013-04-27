@@ -22,7 +22,6 @@
 *********************************************************************************/
 
 /* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-	* 21Apr13 EL -> has_menus False in production
 */
 include('../../config.php');
 include($FANNIE_ROOT.'src/mysql_connect.php');
@@ -46,18 +45,20 @@ class StoreSummaryReport extends FannieReportPage2 {
 		$this->report_cache = 'none';
 		$this->grandTTL = 1;
 		$this->multi_report_mode = True;
-		$this->sortable = False;
+		if (isset($_REQUEST['sortable']))
+			$this->sortable = True;
+		else
+			$this->sortable = False;
+		$this->cellTextAlign = 'right';
 
 		if (isset($_REQUEST['date1'])){
 			$this->content_function = "report_content";
 			$this->has_menus(False);
 			$this->report_headers = array('','Qty','Costs','% Costs','DeptC%','Sales','% Sales','DeptS %','GST','HST');
-			//$this->report_headers = array('','Sales','Quantity','% Sales','Dept %');
-			// For the WHOLE STORE total at bottom.  How to do?
-			//$this->report_headers = array('','','Costs','','','Sales','Profit','Margin %','GST','HST');
 
 			/**
 			  Check if a non-html format has been requested
+			   from the links in the initial display, not the form.
 			*/
 			if (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'xls')
 				$this->report_format = 'xls';
@@ -103,16 +104,16 @@ class StoreSummaryReport extends FannieReportPage2 {
 
 		$this->report_desc[] = sprintf("<H3 style='margin-bottom:0;'>Store Summary: %s </H3>", ($d1 == $d2) ? "For $d1" : "From $d1 to $d2");
 		if ($dept == 0) {
-			$this->report_desc[] = "Using the department# the upc was assigned to at time of sale";
+			$this->report_desc[] = "<p>Using the department# the upc was assigned to at time of sale</p>";
 		}
 		elseif ($dept == 1) {
-			$this->report_desc[] = "Using the department# the upc is assigned to now";
+			$this->report_desc[] = "<p>Using the department# the upc is assigned to now</p>";
 		}
 		else {
 			// fetch_report_data() will abort on this condition.
-			$this->report_desc[] = "Department#-source choice >${dept}< not known.";
+			$this->report_desc[] = "<p>Department#-source choice >${dept}< not known.</p>";
 		}
-		$this->report_desc[] = "Note: For items where cost is not recorded the margin in the deptMargin table is relied on.";
+		$this->report_desc[] = "<p>Note: For items where cost is not recorded the margin in the deptMargin table is relied on.</p>";
 
 		$dlog = select_dtrans($d1,$d2);
 		// dlog is probably more efficient. But it doesn't work at this point.
@@ -209,17 +210,12 @@ class StoreSummaryReport extends FannieReportPage2 {
 		}
 		else {
 			// Abort. The message is in the heading.
-			//orig print "<br />Form variable 'dept' value >{$dept}< is unknown.";
 			return $data;
-			//orig exit;
 		}
 
 		$costsP = $dbc->prepare_statement($costs);
 		$costArgs = array($d1.' 00:00:00', $d2.' 23:59:59');
 		$costsR = $dbc->exec_statement($costsP, $costArgs);
-//		$rc = $dbc->num_rows($costsR);
-//		$dbc->logger("Stmt: $costsP");
-//		$dbc->logger("Rows: $rc");
 
 		// Array in which totals used in the report are accumulated.
 		$supers = array();
@@ -229,19 +225,7 @@ class StoreSummaryReport extends FannieReportPage2 {
 		$this->grandSalesTotal = 0;
 		$this->grandTax1Total = 0;
 		$this->grandTax2Total = 0;
-		/* GS
-		while($row = $dbc->fetch_row($salesR)){
-			if ($curSuper != $row[3]){
-				$curSuper = $row[3];
-			}
-			if (!isset($supers[$curSuper]))
-				$supers[$curSuper] = array('sales'=>0.0,'qty'=>0.0,'name'=>$row[4],'depts'=>array());
-			$supers[$curSuper]['sales'] += $row[1];
-			$supers[$curSuper]['qty'] += $row[2];
-			$supers[$curSuper]['depts'][] = array('name'=>$row[0],'sales'=>$row[1],'qty'=>$row[2]);
-			$grandTotal += $row[1];
-		}
-		*/
+
 		while($row = $dbc->fetch_array($costsR)){
 			if ($curSuper != $row['sid']){
 				$curSuper = $row['sid'];
@@ -273,34 +257,6 @@ class StoreSummaryReport extends FannieReportPage2 {
 			$this->grandTax2Total += $row['taxes2'];
 		}
 
-		/* AT
-		// $data is array-of-arrays-of-array, array of data for superdept table rows.
-		//orig $data = array();
-		foreach($supers as $s){
-			if ($s['sales']==0) continue;
-			$superSum = $s['sales'];
-			$report = array();
-			foreach($s['depts'] as $d){
-				$record = array(
-					$d['name'],
-					sprintf('%.2f',$d['sales']),
-					sprintf('%.2f',$d['qty']),
-					sprintf('%.2f',($d['sales'] / $grandTotal) * 100),
-					sprintf('%.2f',($d['sales'] / $superSum) * 100)
-				);
-				$report[] = $record;
-			}
-
-			$data[] = $report;
-
-			// Commented out by AT.  Not sure what it was about.
-			//printf("<tr border = 1 align=right bgcolor=#ffff99><th>%s</th><th>\$%.2f</th><th>%.2f</th>
-			//	<th>%.2f %%</th><td>&nbsp;</td></tr>\n",
-			//	$s['name'],$s['sales'],$s['qty'],$s['sales']/$grandTotal * 100);
-
-		}
-		 AT */
-
 		foreach($supers as $s){
 			if ($s['sales']==0) continue;
 
@@ -329,53 +285,7 @@ class StoreSummaryReport extends FannieReportPage2 {
 
 		}
 
-/* EL WHOLE STORE
-// The numbers are straightforward, just another $report[] but how to do the different headings?
-// Try doing as data, with <b>, bgcolor not possible.
-// How to prevent calculate_footer from being called?
-
-		// Whole-store totals
-			$headingsW = "<tr align=center bgcolor='FFFF99'>
-			<th>&nbsp;</th>
-			<th>&nbsp;</th>
-			<th>Costs</th>
-			<th>&nbsp;</th>
-			<th>&nbsp;</th>
-			<th>Sales</th>
-			<th>Profit</th>
-			<th>Margin %</th>
-			<th>{$taxNames['2']}</th>
-			<th>{$taxNames['1']}</th>
-			</tr>\n";
-		echo "<tr><th colspan='99' style='color:white;'>Blank</th></tr>\n";
-		echo "$headingsW\n";
-		printf("<tr border = 1 align=right bgcolor=#ffff99>
-		<th>%s</th>
-		<th>%s</th>
-		<th>\$%s</th>
-		<th>%s</th>
-		<td>%s</td>
-		<th>\$%s</th>
-		<th>\$%s</th>
-		<th>%.2f %%</th>
-		<th>\$%s</th>
-		<th>\$%s</th>
-		</tr>\n",
-			'WHOLE STORE',
-			'&nbsp;',
-			number_format($grandCostsTotal,2),
-			'&nbsp;',
-			'&nbsp;',
-			number_format($grandSalesTotal,2),
-			number_format(($grandSalesTotal - $grandCostsTotal),2),
-			((($grandSalesTotal - $grandCostsTotal) / $grandSalesTotal) * 100),
-			number_format($grandTax2Total,2),
-			number_format($grandTax1Total,2));
-			
-*/
-//xx
-		// This is the default from parent. s/n/b necessary to assign.
-		$this->summary_data = array();
+		// The summary of grand totals proportions.
 
 		$report = array();
 
@@ -398,20 +308,18 @@ class StoreSummaryReport extends FannieReportPage2 {
 		$record = array(
 			'WHOLE STORE',
 			'',
-			number_format($grandCostsTotal,2),
+			'$ '.number_format($this->grandCostsTotal,2),
 			'',
 			'',
-			number_format($grandSalesTotal,2),
-			number_format(($grandSalesTotal - $grandCostsTotal),2),
-			((($grandSalesTotal - $grandCostsTotal) / $grandSalesTotal) * 100),
-			number_format($grandTax2Total,2),
-			number_format($grandTax1Total,2)
+			'$ '.number_format($this->grandSalesTotal,2),
+			'$ '.number_format(($this->grandSalesTotal - $this->grandCostsTotal),2),
+			number_format(((($this->grandSalesTotal - $this->grandCostsTotal) / $this->grandSalesTotal) * 100),2).' %',
+			'$ '.number_format($this->grandTax2Total,2),
+			'$ '.number_format($this->grandTax1Total,2)
 		);
 		$report[] = $record;
 
 		$this->summary_data[] = $report;
-
-//xx
 
 		$this->grandTTL = $grandTotal;
 		return $data;
@@ -420,16 +328,6 @@ class StoreSummaryReport extends FannieReportPage2 {
 	}
 
 	function calculate_footers($data){
-
-		/*
-		$sumQty = 0.0;
-		$sumSales = 0.0;
-		foreach($data as $row){
-			$sumQty += $row[2];
-			$sumSales += $row[1];
-		}
-		return array(null,$sumSales,$sumQty,sprintf('%.2f',($sumSales/$this->grandTTL)*100),null);
-		*/
 
 		$sumQty = 0.0;
 		$sumSales = 0.0;
@@ -458,32 +356,6 @@ class StoreSummaryReport extends FannieReportPage2 {
 			sprintf('$ %s',number_format($sumTax1,2))
 		);
 
-			/* How does AT do this?
-			// Footer of Totals for SuperDept
-			printf("<tr border = 1 align=right bgcolor=#ffff99>
-			<th>%s</th>
-			<th>%s</th>
-			<th>\$%s</th>
-			<th>%.2f %%</th>
-			<td>%s</td>
-			<th>\$%s</th>
-			<th>%.2f %%</th>
-			<td>%s</td>
-			<th>\$%s</th>
-			<th>\$%s</th>
-			</tr>\n",
-				$s['name'],
-				number_format($s['qty'],2),
-				number_format($s['costs'],2),
-				$s['costs']/$grandCostsTotal * 100,
-				'&nbsp;',
-				number_format($s['sales'],2),
-				$s['sales']/$grandSalesTotal * 100,
-				'&nbsp;',
-				number_format($s['taxes2'],2),
-				number_format($s['taxes1'],2));
-			*/
-
 	// calculate_footers()
 	}
 
@@ -501,7 +373,7 @@ class StoreSummaryReport extends FannieReportPage2 {
 		}
 		?>
 		<form action=StoreSummaryReport.php method=get>
-		<table cellspacing=4 cellpadding=4>
+		<table cellspacing=4 cellpadding=4 border=0>
 		<tr>
 		<th>Start Date</th>
 		<td><input type=text id=date1 name=date1 onclick="showCalendarControl(this);" value="<?php echo $lastMonday; ?>" /></td>
@@ -517,8 +389,9 @@ class StoreSummaryReport extends FannieReportPage2 {
 		<option value=1>Use current department settings</option>
 		</select></td>
 		</tr><tr>
-		<td>Excel <input type=checkbox name=excel /></td>
-		<td><input type=submit name=submit value="Submit" /></td>
+		<td colspan=2><!--Excel <input type=checkbox name=excel />
+		&nbsp; &nbsp; &nbsp; -->Sortable <input type=checkbox name=sortable />
+		&nbsp; &nbsp; &nbsp; <input type=submit name=submit value="Submit" /></td>
 		</tr>
 		</table>
 		</form>
