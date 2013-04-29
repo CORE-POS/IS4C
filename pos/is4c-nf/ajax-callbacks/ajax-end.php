@@ -155,9 +155,8 @@ function truncateTempTables() {
 function moveTempData() {
 	$connection = Database::tDataConnect();
 
-	$connection->query("update localtemptrans set trans_type = 'T' where trans_subtype = 'CP'");
-	//$connection->query("update localtemptrans set trans_type = 'T', trans_subtype = 'IC' where upc in ('0000000008019', '0000000003031', '0000000001014')");
-	$connection->query("update localtemptrans set upc = 'DISCOUNT', description = upc, department = 0 where trans_status = 'S'");
+	$connection->query("update localtemptrans set trans_type = 'T' where trans_subtype IN ('CP','IC')");
+	$connection->query("update localtemptrans set upc = 'DISCOUNT', description = upc, department = 0, trans_type='S' where trans_status = 'S'");
 
 	$connection->query("insert into localtrans select * from localtemptrans");
 	$connection->query("insert into localtrans_today select * from localtemptrans");
