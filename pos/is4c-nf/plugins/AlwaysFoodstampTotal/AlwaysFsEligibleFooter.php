@@ -23,7 +23,7 @@
 
 class AlwaysFsEligibleFooter extends FooterBox {
 
-	var $header_css = "color: #ffffff;";
+	var $header_css = '';
 	var $display_css = '';
 
 	function AlwaysFsEligibleFooter() {
@@ -36,7 +36,7 @@ class AlwaysFsEligibleFooter extends FooterBox {
 
 	function header_content(){
 		global $CORE_LOCAL;
-		$this->header_css .= "background:#800080;";
+		$this->header_css .= "color:#800080;";
 		return _("FS Eligible");
 	}
 
