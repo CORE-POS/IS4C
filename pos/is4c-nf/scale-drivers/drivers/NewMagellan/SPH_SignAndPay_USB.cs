@@ -55,7 +55,6 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
 	private int long_pos;
 	private FileStream usb_fs;
 	private int usb_report_size;
-	private bool waiting_for_data;
 
 	private const int LCD_X_RES = 320;
 	private const int LCD_Y_RES = 240;
@@ -84,6 +83,8 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
 	private const int BUTTON_4000 = 40;
 	private const int BUTTON_HARDWARE_BUTTON = 0xff;
 
+	private const int DEFAULT_WAIT_TIMEOUT = 1000;
+
 	private int current_state;
 	private int ack_counter;
 
@@ -105,7 +106,8 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
 		#endif
 	}
 
-	private void OpenDevice(){
+	private void GetHandle(){
+		usb_fs = null;
 		#if MONO
 		usb_port = new USBWrapper_Posix();
 		usb_report_size = 64;
@@ -130,12 +132,50 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
 	}
 
 	public override void Read(){ 
-		OpenDevice();
-		waiting_for_data = true;
+		GetHandle();
 		SendReport(BuildCommand(LcdSetBacklightTimeout(0)));
+		SendReport(BuildCommand(EnableAudio()));
 		SetStateStart();
 		#if MONO
 		MonoRead();
+		#else
+		ReRead();
+		#endif
+	}
+
+	private void RebootTerminal(){
+		try {
+			SendReport(BuildCommand(ResetDevice()));
+		}
+		catch (Exception ex){
+			if (this.verbose_mode > 0){
+				System.Console.WriteLine("Reboot error:");
+				System.Console.WriteLine(ex);
+			}
+		}
+		try {
+			usb_fs.Dispose();
+		}
+		catch (Exception ex){
+			if (this.verbose_mode > 0){
+				System.Console.WriteLine("Dispose error:");
+				System.Console.WriteLine(ex);
+			}
+		}
+		try {
+			usb_port.CloseUSBHandle();
+		}
+		catch (Exception ex){
+			if (this.verbose_mode > 0){
+				System.Console.WriteLine("Dispose error:");
+				System.Console.WriteLine(ex);
+			}
+		}
+		System.Threading.Thread.Sleep(DEFAULT_WAIT_TIMEOUT);
+		GetHandle();
+		SetStateStart();
+		#if MONO
+		//MonoRead();
 		#else
 		ReRead();
 		#endif
@@ -423,7 +463,7 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
 		catch (Exception ex){
 			if (this.verbose_mode > 0)
 				System.Console.WriteLine(ex);
-			System.Threading.Thread.Sleep(1000);
+			System.Threading.Thread.Sleep(DEFAULT_WAIT_TIMEOUT);
 		}
 	}
 
@@ -579,9 +619,16 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
 	}
 
 	private void ReRead(){
-		waiting_for_data = true;
 		byte[] buf = new byte[usb_report_size];
-		usb_fs.BeginRead(buf, 0, usb_report_size, new AsyncCallback(ReadCallback), buf);
+		try {
+			usb_fs.BeginRead(buf, 0, usb_report_size, new AsyncCallback(ReadCallback), buf);
+		}
+		catch(Exception ex){
+			if (this.verbose_mode > 0){
+				System.Console.WriteLine("Read exception:");
+				System.Console.WriteLine(ex);
+			}
+		}
 	}
 
 	/**
@@ -591,10 +638,17 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
 	  ReadCallback calls build up one after the other.
 	*/
 	private void MonoRead(){
-		waiting_for_data = true;
 		while(SPH_Running){
 			byte[] buf = new byte[usb_report_size];
-			usb_fs.BeginRead(buf, 0, usb_report_size, new AsyncCallback(MonoReadCallback), buf);
+			try {
+				usb_fs.BeginRead(buf, 0, usb_report_size, new AsyncCallback(MonoReadCallback), buf);
+			}
+			catch(Exception ex){
+				if (this.verbose_mode > 0){
+					System.Console.WriteLine("Read exception:");
+					System.Console.WriteLine(ex);
+				}
+			}
 		}
 	}
 
@@ -602,6 +656,9 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
 		switch(msg){
 		case "termReset":
 			SetStateStart();
+			break;
+		case "termReboot":
+			RebootTerminal();
 			break;
 		case "termManual":
 			SetStateGetManualPan();
