@@ -39,6 +39,13 @@ class StoreSummaryReport extends FannieReportPage2 {
 
 	protected $report_desc = array();
 
+	public function __construct() {
+		// To set authentication.
+		//parent::__construct();
+		// Would dialing-direct work? Seems to.
+		FanniePage::__construct();
+	}
+
 	function preprocess(){
 		$this->title = "Fannie : Store Summary Report";
 		$this->header = "Store Summary Report";
@@ -250,7 +257,6 @@ class StoreSummaryReport extends FannieReportPage2 {
 				'taxes1'=>$row['taxes1'],
 				'taxes2'=>$row['taxes2']);
 
-			// EL These may not be accounted for.
 			$this->grandCostsTotal += $row['costs'];
 			$this->grandSalesTotal += $row['sales'];
 			$this->grandTax1Total += $row['taxes1'];
