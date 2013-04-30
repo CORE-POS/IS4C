@@ -50,6 +50,10 @@ class FannieReportPage2 extends FannieReportPage {
 	Formats non-sortable multi-section report as single table.
 	";
 
+	public function __construct() {
+		parent::__construct();
+	}
+
 	/**
 	  Function for drawing page content.
 	  form_content and report_content are provided
