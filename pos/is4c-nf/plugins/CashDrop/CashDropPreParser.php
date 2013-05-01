@@ -46,6 +46,8 @@ class CashDropPreParser extends PreParser {
 
 		if ($ttl > $CORE_LOCAL->get('cashDropThreshold'))
 			return True;
+		else
+			return False;
 	}
 
 	function parse($str){

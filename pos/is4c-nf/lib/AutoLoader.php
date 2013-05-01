@@ -189,7 +189,7 @@ class AutoLoader extends LibraryClass {
 		while($dh && ($file=readdir($dh)) !== False){
 			if ($file[0] == ".") continue;
 			$fullname = realpath($path."/".$file);
-			if (is_dir($fullname)){
+			if (is_dir($fullname) && $file != "gui-modules"){
 				self::RecursiveLoader($fullname, $map);
 			}
 			else if (substr($file,-4) == '.php'){
