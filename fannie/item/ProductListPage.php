@@ -376,7 +376,7 @@ class ProductListPage extends FanniePage {
 				$query .= ' WHERE i.upc LIKE ? ';
 			}
 			else {
-				$query .= ' WHERE x.manfacturer LIKE ? ';
+				$query .= ' WHERE x.manufacturer LIKE ? ';
 			}
 			$args = array('%'.$manufacturer.'%');
 			$query .= "ORDER BY ".$order; 
