@@ -56,7 +56,7 @@ $CREATE['trans.dlog_90_view'] = "
 		memType,
 		staff,
 		numflag,
-		charflat,
+		charflag,
 		card_no,
 		trans_id,
 		".$con->concat(
