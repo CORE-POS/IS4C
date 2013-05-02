@@ -42,17 +42,19 @@ class ItemFlags extends FanniePage {
 			if (empty($desc)) $this->msgs[] = 'Error: no new description given';
 			else {
 				$bit=1;
+				$bit_number=1;
 				$chkP = $db->prepare_statement("SELECT bit_number FROM prodFlags WHERE bit_number=?");
 				for($i=0; $i<30; $i++){
-					$chkR = $db->exec_statement($chkP,array($bit));
+					$chkR = $db->exec_statement($chkP,array($bit_number));
 					if ($db->num_rows($chkR) == 0) break;
 					$bit *= 2;
+					$bit_number++;
 				}
 				if ($bit > (1<<30)) $this->msgs[] = 'Error: can\'t add more flags';
 				else {
 					$insP = $db->prepare_statement("INSERT INTO prodFlags 
 								(bit_number, description) VALUES (?,?)");
-					$db->exec_statement($insP,array($bit,$desc));	
+					$db->exec_statement($insP,array($bit_number,$desc));	
 				}
 			}
 		}
