@@ -42,17 +42,19 @@ class ItemFlags extends FanniePage {
 			if (empty($desc)) $this->msgs[] = 'Error: no new description given';
 			else {
 				$bit=1;
+				$bit_number=1;
 				$chkP = $db->prepare_statement("SELECT bit_number FROM prodFlags WHERE bit_number=?");
 				for($i=0; $i<30; $i++){
-					$chkR = $db->exec_statement($chkP,array($bit));
+					$chkR = $db->exec_statement($chkP,array($bit_number));
 					if ($db->num_rows($chkR) == 0) break;
 					$bit *= 2;
+					$bit_number++;
 				}
 				if ($bit > (1<<30)) $this->msgs[] = 'Error: can\'t add more flags';
 				else {
 					$insP = $db->prepare_statement("INSERT INTO prodFlags 
 								(bit_number, description) VALUES (?,?)");
-					$db->exec_statement($insP,array($bit,$desc));	
+					$db->exec_statement($insP,array($bit_number,$desc));	
 				}
 			}
 		}
@@ -73,16 +75,16 @@ class ItemFlags extends FanniePage {
 				$db->exec_statement($delP,array($id));
 		}
 
-		//EL
 		for($i=1; $i<=count($this->msgs); $i++) {
 			$db->logger($this->msgs[($i-1)]);
 		}
-		//EL
+
 		return True;
 	}
 
 	function body_content(){
 		global $FANNIE_OP_DB;
+		global $FANNIE_COOP_ID;
 		// If there were errors in preprocess().
 		if (count($this->msgs) > 0){
 			echo '<ul>';
@@ -91,17 +93,31 @@ class ItemFlags extends FanniePage {
 		}
 		echo '<form action="'.$_SERVER['PHP_SELF'].'" method="post">';
 		$db = FannieDB::get($FANNIE_OP_DB);
-		$q = $db->prepare_statement("SELECT bit_number,description FROM prodFlags ORDER BY description");
+		if ( isset($FANNIE_COOP_ID) && $FANNIE_COOP_ID = 'WEFC_Toronto' ) {
+			$q = $db->prepare_statement("SELECT bit_number,description FROM prodFlags ORDER BY bit_number");
+			$excelCols = array('','AJ','AK','AL','AM','AN','AO','AP','AQ','AR','AS','AT','AU','AV','AW','AX','AY','AZ');
+		} else {
+			$q = $db->prepare_statement("SELECT bit_number,description FROM prodFlags ORDER BY description");
+		}
 		$r = $db->exec_statement($q);
 		echo '<b>Current Flags</b>:<br />';
 		echo '<table cellpadding="4" cellspacing="0" border="1">';
 		while($w = $db->fetch_row($r)){
-			printf('<tr><td><input type="text" name="desc[]" value="%s" />
-				<input type="hidden" name="mask[]" value="%d" /></td>
-				<td><input type="checkbox" name="del[]" value="%d" /></td>
-				</tr>',
-				$w['description'],$w['bit_number'],$w['bit_number']
-			);
+			if ( isset($FANNIE_COOP_ID) && $FANNIE_COOP_ID = 'WEFC_Toronto' ) {
+				printf('<tr><td>%d. %s <input type="text" name="desc[]" value="%s" />
+					<input type="hidden" name="mask[]" value="%d" /></td>
+					<td><input type="checkbox" name="del[]" value="%d" /></td>
+					</tr>',
+					$w['bit_number'],($w['bit_number'] <= count($excelCols))?$excelCols[$w['bit_number']]:'',$w['description'],$w['bit_number'],$w['bit_number']
+				);
+			} else {
+				printf('<tr><td><input type="text" name="desc[]" value="%s" />
+					<input type="hidden" name="mask[]" value="%d" /></td>
+					<td><input type="checkbox" name="del[]" value="%d" /></td>
+					</tr>',
+					$w['description'],$w['bit_number'],$w['bit_number']
+				);
+			}
 		}
 		echo '</table>';
 		echo '<input type="submit" name="updateBtn" value="Update Descriptions" /> | ';
