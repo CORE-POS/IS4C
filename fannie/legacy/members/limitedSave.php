@@ -1,6 +1,9 @@
 <?php
 include('../../config.php');
 include($FANNIE_ROOT.'src/SQLManager.php');
+include($FANNIE_ROOT.'classlib2.0/data/FannieDB.php');
+include($FANNIE_ROOT.'classlib2.0/data/controllers/CustdataController.php');
+include($FANNIE_ROOT.'classlib2.0/data/controllers/MeminfoController.php');
 include('../db.php');
 
 include('memAddress.php');
@@ -80,10 +83,13 @@ $auditQ = "insert custUpdate select now(),$uid,1,* from custdata where cardno=$m
 //echo $lName;
 //echo $fName;
 //echo $_POST['fName'] . "THIS IS IT";
+$MI_FIELDS = array();
 
 $memNum = $_POST['memNum'];
-$fname = $sql->escape($_POST['fName']);
-$lName = $sql->escape($_POST['lName']);
+$fname = str_replace("'","",$_POST['fName']);
+$fname = $sql->escape($fname);
+$lName = str_replace("'","",$_POST['lName']);
+$lName = $sql->escape($lName);
 $blueline = $memNum . " " . $_POST['lName'];
 $bladd = "";
 if ($_POST['status'] == "ACTIVE"){
@@ -91,20 +97,24 @@ if ($_POST['status'] == "ACTIVE"){
 }
 $blueline .= $bladd;
 $blueline = $dbc->escape($blueline);
-$address1 = $_POST['address1'];
-$address2 = $_POST['address2'];
-$city = $_POST['city'];
-$state = $_POST['state'];
-$zip = $_POST['zip'];
-$phone = $_POST['phone'];
-$phone2 = $_POST['phone2'];
-$email = $_POST['email'];
+$MI_FIELDS['street'] = $_POST['address1'] . (!empty($_POST['address2']) ? "\n".$_POST['address2'] : '');
+$MI_FIELDS['city'] = $_POST['city'];
+$MI_FIELDS['state'] = $_POST['state'];
+$MI_FIELDS['zip'] = $_POST['zip'];
+$MI_FIELDS['phone'] = $_POST['phone'];
+$MI_FIELDS['email_2'] = $_POST['phone2'];
+$MI_FIELDS['email_1'] = $_POST['email'];
+$MI_FIELDS['ads_OK'] = $_POST['mailflag'];
 $fnames = $_POST["hfname"];
 $lnames = $_POST["hlname"];
-for($i=0;$i<count($fnames);$i++)
+for($i=0;$i<count($fnames);$i++){
+	$fnames[$i] = str_replace("'","",$fnames[$i]);
 	$fnames[$i] = $sql->escape($fnames[$i]);
-for($i=0;$i<count($lnames);$i++)
+}
+for($i=0;$i<count($lnames);$i++){
+	$lnames[$i] = str_replace("'","",$lnames[$i]);
 	$lnames[$i] = $sql->escape($lnames[$i]);
+}
 
 add_second_server();
 $sql->query_all(sprintf("DELETE FROM memberCards WHERE card_no=%d",$memNum));
@@ -115,10 +125,7 @@ if (isset($_REQUEST['cardUPC']) && is_numeric($_REQUEST['cardUPC'])){
 
 // update top name
 $custdataQ = "Update custdata set lastname = $lName, firstname = $fname, blueline=$blueline where cardNo = $memNum and personnum = 1";
-$memNamesQ = "Update memNames set lname = $lName, fname=$fname where memNum = $memNum and personnum = 1";
 $custdataR = $sql->query_all($custdataQ);
-//echo $memNamesQ."<br />";
-//$memNamesR = $sql->query($memNamesQ);
 
 for($i=0;$i<3;$i++){
 	if ($fnames[$i]=="''") $fnames[$i] = "";
@@ -147,14 +154,18 @@ for($i=0; $i<3; $i++){
 	}
 }
 
-$mbrQ =    "UPDATE mbrmastr SET zipCode = '$zip',phone ='$phone',address1='$address1',address2='$address2',city='$city',state='$state',notes='$phone2',emailaddress='$email'  WHERE memNum = $memNum";
-//$result=$sql->query($mbrQ);
+MeminfoController::update($memNum, $MI_FIELDS);
 
-$meminfoQ = sprintf("UPDATE meminfo SET street='%s',city='%s',state='%s',zip='%s',phone='%s',email_1='%s',email_2='%s'
-		WHERE card_no=%d",(!empty($address2)?"$address1\n$address2":$address1),
-			$city,$state,$zip,
-			$phone,$email,$phone2,$memNum);
-$sql->query_all($meminfoQ);
+/* general note handling */
+$notetext = $_POST['notetext'];
+$notetext = preg_replace("/\n/","<br />",$notetext);
+$notetext = preg_replace("/\'/","''",$notetext);
+$checkQ = "select * from memberNotes where note='$notetext' and cardno=$memNum";
+$checkR = $sql->query($checkQ);
+if ($sql->num_rows($checkR) == 0){
+	$noteQ = "insert into memberNotes values ($memNum,'$notetext',".$sql->now().",'$username')";
+	$noteR = $sql->query($noteQ);
+}
 
 // FIRE ALL UPDATE
 include('custUpdates.php');
