@@ -23,6 +23,10 @@
 
 /* #'Z--COMMENTZ { -  - - - - - - - - - - - - - - - - - - - - - -
 
+	30Apr13	- ORDER_CODE in D, SKU to Y.
+	        o Qualifications flags in AJ-BN assigned to bits of products.numflag.
+	        o Drop use of products_WEFC_Toronto.km100, ontario, canada
+	        o Put ORDER_CODE in products_WEFC_Toronto.order_code
 	23Mar13	+ vendorItem.cost s/N/b case_cost as in prodExtra; revert to unit_cost
           + A non-manual control of checking for dev_side for add-to-vendors.
 	16Mar12 Add unknown vendorID to vendors; should only do dev_side. Manual.
@@ -244,7 +248,7 @@ if ( isset($_REQUEST['product_csv']) && $_REQUEST['product_csv'] != "" ) {
 		$SEARCH = 1;						// B:B:1 search_description, for productUser.description
 //	$STD = 1;								// B:B:1 STD y/n "in use". Values?
 		$VENDOR_NAME = 2;				// E:C:2 Distributor
-		$SKU = 3;								// A:D:3 SKU
+		$ORDER_CODE = 3;				// -:D:3 ORDER_CODE, from Buying system
 		$DEPT_NAME = 4;					// F:E:4 Department
 		$BRAND_NAME = 5;				// C:F:5 Brand deptMargin.dept_ID
 // 14Jan13 PRODUCER_MEMBER  apparently dropped.
@@ -269,8 +273,7 @@ if ( isset($_REQUEST['product_csv']) && $_REQUEST['product_csv'] != "" ) {
 //
 // 15Feb13 New.
 		$DISCOUNTABLE = 12;			// -:M:12 Item discountable 0=no 1=yes
-// N not used here
-//		$DISCOUNT_TYPE = 13;		// -:N:13 Whether to use "special" i.e. sale prices and for which kind of customer:
+		$DISCOUNT_TYPE = 13;		// -:N:13 Whether to use "special" i.e. sale prices and for which kind of customer:
 /*
 discounttype indicates if an item is on sale
 	0 => not on sale
@@ -292,21 +295,20 @@ vary based on whose code you're running
 //
 		$TAX_TYPE = 22;					// R:W:22 Tax 0/1/2 "Taxes"
 		$MARKUP = 23;						// S:X:23 Markup "150%" -> 1.42 "Markup"
-// :Y-AC are superdepts
-		$CATEGORY_SD = 27;			// W:AB:27 Category SuperDept.
+		$SKU = 24;							// D:Y:24 Vendor SKU
+//
+		$SALE_PRICE = 25;				// Z:25 "Sale Price"
+		$SALE_COST = 26;				// AA:26 "Sale Cost"
+		$TEMP_COST = 27;				// AB:27 "Temp Cost" ? Case sale price.
+//
+		$CATEGORY_SD = 28;			// W:AC:28 Category SuperDept.
 //
 		$SCALE = 30;						// Z:AE:30 BULK. "BULK" means scale=1
 		$VENDOR_ID = 34;				// AE:AI:34 Vendor ID.
 //
-// 17Jan13 Removed obsolete code that refers to this.
-//		$OVERRIDE_PRICE = 35;		// T:AJ:35 Override Price <- Doesn't exist. Dummy
-//
-		$SALE_PRICE = 38;				// Q:AM:38 "Sale Price"
-		$SALE_COST = 39;				// P:AN:39 "Sale Cost"
-		$TEMP_COST = 40;				// I:AO:40 "Temp Cost" ? Case sale price.
+// 30Apr13 Columns AJ/35 - BN/64 are for Qualification flags.
+//         "" means not-assigned, probably implies No. 0=No 1=Yes
 //-- :End
-	//	$ONTARIO = 19;					// T YES/NO/"" (very few examples)
-	//	$CANADA = 20;						// U YES/NO/"" (very few examples)
 
 
 		// Defaults for:
@@ -390,6 +392,9 @@ vary based on whose code you're running
 		// Known in products.  Only matters if !$hasPrice
 		$inProducts = 0;
 
+		// Order code
+		$order_code = 'NULL';
+
 		// #'L --LOOP - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 		$fp = fopen($tpath.$current,'r');
 		while( !feof($fp) ) {
@@ -465,6 +470,20 @@ vary based on whose code you're running
 				}
 			}
 
+			if ( $data[$ORDER_CODE] == '' ) {
+				$order_code = 'NULL';
+			} elseif ( is_numeric($data[$ORDER_CODE]) ) {
+				if ( $data[$ORDER_CODE] <= 99999 ) {
+					$order_code = $data[$ORDER_CODE];
+				} else {
+					$messages[++$mct] = "<br />Order number >{$data[$ORDER_CODE]}< for upc: $upc is too long; set to NULL.";
+					$order_code = 'NULL';
+				}
+			} else {
+				$messages[++$mct] = "<br />Order number >{$data[$ORDER_CODE]}< for upc: $upc is not numeric; set to NULL.";
+				$order_code = 'NULL';
+			}
+
 			// PV description defaults to receipt description
 			$data[$DESCRIPTION] = trim($data[$DESCRIPTION]);
 			if ( $data[$SEARCH] == "" ) {
@@ -528,7 +547,8 @@ vary based on whose code you're running
 			if ( $data[$MARKUP] == "#NAME?" ) {
 				$data[$MARKUP] = "";
 			}
-			if ( is_numeric($data[$MARKUP]) != "" ) {
+			//if ( is_numeric($data[$MARKUP]) != "" ) {}
+			if ( is_numeric($data[$MARKUP]) ) {
 				$margin = sprintf("%.5f",(($data[$MARKUP]-1)/$data[$MARKUP]));
 				//$messages[++$mct] = "Line $lineCount created margin $margin";
 				/* From when we were markup-based.
@@ -646,9 +666,6 @@ vary based on whose code you're running
 				$data[$UNIT_COST] = sprintf("%.2f", $data[$UNIT_COST]);
 			}
 
-			// 17Jan13 Earlier versions support this now-unused field as first choice for normal_price.
-			//if ( is_numeric($data[$OVERRIDE_PRICE]) ) {}
-
 			// If price not supplied skip the assignments that involve it
 			//  but still assign $size.
 			// Prefer the pre-calculated or pre-set price
@@ -722,13 +739,6 @@ vary based on whose code you're running
 				$messages[++$mct] = "<br />Line $lineCount missing normal_price when pricemethod = 2";
 			}
 
-			/* 25Sep12 These values no longer captured at this point.
-			           See earlier versions of program for how it was done.
-			*/
-			$local = 0; $canada = 0; $ontario = 0;
-
-			$local = -1; $canada = -1; $ontario = -1;
-
 			if ( !$hasPrice && $inProducts ) {
 				$dbMode = "update";
 				$updateCount++;
@@ -767,6 +777,20 @@ vary based on whose code you're running
 				}
 			}
 
+
+			/* Qualifications flags
+			*/
+			// Offset of first qualifications flag in $data
+			$first_flag = 35;
+			$numflag = 0;
+			//echo "Start: $numflag\n";
+			for ($i=0 ; $i<30 ; $i++) {
+				if (
+					array_key_exists(($first_flag+$i), $data) &&
+					preg_match("/^(1|yes|y|t|true|x)$/", strtolower($data[$first_flag+$i]))
+				)
+					$numflag = $numflag | (1 << $i);
+			}
 
 			/* All problems should be in $messages[] at this point.
 			*/
@@ -991,7 +1015,6 @@ vary based on whose code you're running
 
 			/* #'T --products_WEFC_Toronto - - - - */
 			$table = "products_WEFC_Toronto";
-			$km100 = "NULL";
 
 			if ( $dbMode == "add/replace" ) {
 
@@ -999,11 +1022,11 @@ vary based on whose code you're running
 				$dbc->query("DELETE FROM products_WEFC_Toronto WHERE upc=".$dbc->escape($upc));
 			}
 
-			$insQ = sprintf("INSERT INTO products_WEFC_Toronto (upc, km100, ontario, canada,
+			$insQ = sprintf("INSERT INTO products_WEFC_Toronto (upc, order_code,
 				description, search_description)
-				VALUES (%s, %s, %d, %d,
+				VALUES (%s, %s,
 				%s, %s)",
-				$dbc->escape($upc), $km100, $ontario, $canada,
+				$dbc->escape($upc), $order_code,
 				$dbc->escape($data[$DESCRIPTION]), $dbc->escape($data[$SEARCH])
 				);
 
@@ -1013,10 +1036,10 @@ vary based on whose code you're running
 			}
 			else {
 				$updQ = sprintf("UPDATE products_WEFC_Toronto SET
-					km100 = %d, ontario = %d, canada = %d,
+					order_code = %s,
 					description = %s, search_description = %s
 				WHERE upc=%s",
-				$km100, $ontario, $canada,
+				$order_code,
 				$dbc->escape($data[$DESCRIPTION]), $dbc->escape($data[$SEARCH]),
 				$dbc->escape($upc));
 
@@ -1040,7 +1063,7 @@ vary based on whose code you're running
 			// Use productUser.sizing for size: "300 ml"
 			// Use unitsize for units: 500, e.g. grams. Not the case size.
 			$vendorID = $data[$VENDOR_ID];
-			$vendorDept = "NULL";
+			$vendorDept = 'NULL';
 			$vi_size = ($size == 0 || $size == "")?'NULL':$size;
 
 			if ( $dbMode == "add/replace" ) {
