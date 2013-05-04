@@ -243,6 +243,7 @@ if ( isset($_REQUEST['product_csv']) && $_REQUEST['product_csv'] != "" ) {
 
 		/* Indexes to the array returned by csv_parser, the column number in the .csv file.
 			"first" = 0.
+		{
 		*/
 		$UPC = 0;								// G:A:0 "Supplier UPC". UPC or PLU.
 		$SEARCH = 1;						// B:B:1 search_description, for productUser.description
@@ -282,7 +283,6 @@ discounttype indicates if an item is on sale
 Values greater than 2 may be used, but results will
 vary based on whose code you're running
 */
-
 		$DESCRIPTION = 14;			// D:O:14 Item
 		$CASE_COST = 15;				// H:P:15 "Case Cost" 9999.99
 		$CASE_SIZE = 16;				// J:Q:16 "Case Size" 99
@@ -308,7 +308,7 @@ vary based on whose code you're running
 //
 // 30Apr13 Columns AJ/35 - BN/64 are for Qualification flags.
 //         "" means not-assigned, probably implies No. 0=No 1=Yes
-//-- :End
+//-- :End }
 
 
 		// Defaults for:
