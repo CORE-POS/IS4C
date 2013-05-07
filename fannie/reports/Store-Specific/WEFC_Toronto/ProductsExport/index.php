@@ -39,6 +39,8 @@
 
 /* #'Z--COMMENTZ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+	*  3May13 EL Change order of some fields and add product flags from numflag bits.
+	*            New args[] in select_to_table
 	* 15Feb13 EL Translate margin to markup.
 	*             MySQL gags on the comma in ROUND(markup,2). Tolerable.
 	* 29Jan13 EL Begun.
@@ -83,7 +85,7 @@ if (isset($_REQUEST['submit'])){
 
 	$taxNames = array(0 => '');
 	$taxRates = array(0 => 0);
-	$tQ = "SELECT id, description FROM core_op.taxrates WHERE id > 0 ORDER BY id";
+	$tQ = "SELECT id, description,rate FROM core_op.taxrates WHERE id > 0 ORDER BY id";
 	$tR = $dbc->query($tQ);
 	while ( $trow = $dbc->fetch_array($tR) ) {
 		$taxNames[$trow['id']] = $trow['description'];
@@ -98,7 +100,7 @@ if (isset($_REQUEST['submit'])){
 		$UPC = 0;								// G:A:0 "Supplier UPC". UPC or PLU.
 		$SEARCH = 1;						// B:B:1 search_description, for productUser.description
 		$VENDOR_NAME = 2;				// E:C:2 Distributor
-		$SKU = 3;								// A:D:3 SKU
+		$ORDER_CODE = 3;				// -:D:3 ORDER_CODE, from Buying system
 		$DEPT_NAME = 4;					// F:E:4 Department
 		$BRAND_NAME = 5;				// C:F:5 Brand deptMargin.dept_ID
 //
@@ -117,6 +119,8 @@ if (isset($_REQUEST['submit'])){
 //              Error if 2 and normal_price = ""
 		$PRICE_METHOD = 11;			// -:L:11 products:pricemethod qstrict
 // :M-N are not used here
++		$DISCOUNTABLE = 12;			// -:M:12 Item discountable 0=no 1=yes
++		$DISCOUNT_TYPE = 13;		// -:N:13 Whether to use "special" i.e. sale prices and for which kind of customer:
 
 		$DESCRIPTION = 14;			// D:O:14 Item
 		$CASE_COST = 15;				// H:P:15 "Case Cost" 9999.99
@@ -130,18 +134,23 @@ if (isset($_REQUEST['submit'])){
 //
 		$TAX_TYPE = 22;					// R:W:22 Tax 0/1/2 "Taxes"
 		$MARKUP = 23;						// S:X:23 Markup "150%" -> 1.42 "Markup"
++		$SKU = 24;							// D:Y:24 Vendor SKU
+//
++		$SALE_PRICE = 25;				// Z:25 "Sale Price"
++		$SALE_COST = 26;				// AA:26 "Sale Cost"
++		$TEMP_COST = 27;				// AB:27 "Temp Cost" ? Case sale price.
 // :Y-AC are superdepts
-		$CATEGORY_SD = 27;			// W:AB:27 Category SuperDept.
++		$CATEGORY_SD = 28;			// W:AC:28 Category SuperDept.
 //
 		$SCALE = 30;						// Z:AE:30 BULK. "BULK" means scale=1
 		$VENDOR_ID = 34;				// AE:AI:34 Vendor ID.
-
-// 17Jan13 Removed obsolete code that refers to this.
-//		$OVERRIDE_PRICE = 35;		// T:AJ:35 Override Price <- Doesn't exist. Dummy
 //
-		$SALE_PRICE = 38;				// Q:AM:38 "Sale Price"
-		$SALE_COST = 39;				// P:AN:39 "Sale Cost"
-		$TEMP_COST = 40;				// I:AO:40 "Temp Cost" ? Case sale price.
+// 30Apr13 Columns AJ/35 - BN/64 are for Qualification flags.
+//         "" means not-assigned, probably implies No. 0=No 1=Yes
+//
+-		$SALE_PRICE = 38;				// Q:AM:38 "Sale Price"
+-		$SALE_COST = 39;				// P:AN:39 "Sale Cost"
+-		$TEMP_COST = 40;				// I:AO:40 "Temp Cost" ? Case sale price.
 //-- :End
 	//	$ONTARIO = 19;					// T YES/NO/"" (very few examples)
 	//	$CANADA = 20;						// U YES/NO/"" (very few examples)
@@ -220,15 +229,21 @@ if (isset($_REQUEST['submit'])){
 					WHEN p.scale = 1 THEN 'BULK' ELSE 'COUNT' END scale,
 	*/
 
-	// 'a
-	// (WHEN p.scale = 1 THEN 'BULK' ELSE 'COUNT' END) scale,
-	// p.scale scale,
+	$productFlags = "";
+	$j=0;
+	for($i=0;$i<30;$i++) {
+		$j++;
+		$productFlags .= "\n,CASE WHEN ((1<<$i) & p.numflag) = 0 THEN 0 ELSE 1 END pFlag$j";
+	}
+	/* 'a The select is in the order of the final excel format.
+	 * Column aliases are extracted for column heads.
+	*/
 	$pQ = "SELECT
 					p.upc upc,
 					w.search_description searchDesc,
 					v.vendorID distribId,
 					e.distributor distribName,
-					v.sku sku,
+					w.order_code orderCode,
 					p.department deptId,
 					d.dept_name deptName,
 					u.brand brand,
@@ -238,6 +253,8 @@ if (isset($_REQUEST['submit'])){
 					p.quantity groupCount,
 					p.groupprice groupPrice,
 					p.pricemethod priceMethod,
+					p.discount discount,
+					p.discounttype discountType,
 					w.description description,
 					e.case_cost caseCost,
 					v.units caseSize,
@@ -246,15 +263,14 @@ if (isset($_REQUEST['submit'])){
 					p.normal_price setPrice,
 					p.tax taxType,
 					CASE WHEN e.margin > 1.00 THEN e.margin ELSE ((1/e.margin)/((1/e.margin)-1)) END markup,
-				 CASE WHEN p.scale = 1 THEN 'BULK' ELSE 'COUNT' END scale,
+					CASE WHEN p.scale = 1 THEN 'BULK' ELSE 'COUNT' END scale,
+					v.sku SKU,
 					p.special_price salePrice,
 					p.specialpricemethod salePriceMethod,
 					p.specialgroupprice saleGroupPrice,
 					p.specialquantity saleQuantity,
 					p.start_date saleStartDate,
-					p.end_date saleEndDate,
-					p.discount discount,
-					p.discounttype discountType
+					p.end_date saleEndDate$productFlags
 				FROM
 					core_op.products AS p
 					LEFT JOIN core_op.productUser AS u ON p.upc = u.upc
@@ -267,33 +283,22 @@ if (isset($_REQUEST['submit'])){
 				ORDER BY
 					p.upc";
 
-	//$hstr = preg_replace("/(^SELECT)(.*)(FROM.*$)/", "$2", $pQ);
+	// Create column head labels from field aliases
 	$hstr = preg_replace("/\t|\n/", "", $pQ);
 	$hstr = preg_replace("/(^SELECT)(.*)(FROM.*$)/", "$2", $hstr);
-//	$hstr = preg_replace("/(^SELECT)(.*)/", "$2", $hstr);
-//	$hstr = preg_replace("/(^.*)(FROM.*$)/", "$1", $hstr);
 	$hraw = explode(",", $hstr);
 	$headers = preg_replace("/^.*( [a-zA-Z0-9]*$)/", "$1", $hraw);
-	/* woodshed for the above
-	for ( $n=0 ; $n<count($hraw) ; $n++ ) {
-		echo "<br />", $n, ". ", $hraw[$n];
-//		$hraw[$n] = preg_replace("/^.*( [a-zA-Z0-9]*$)/", "$1", $hraw[$n]);
-		echo " -> ", $headers[$n], "\n";
-	}
-	echo "<br />Done" . count($hraw) . "\n";
-	exit;
-	*/
-	
-	//select_to_table($pQ,1,'ffffff');
-	select_to_table2($pQ,1,'ffffff', '', '0', '2', $headers, False);
-	//select_to_table2($query,$border,$bgcolor,$width="120",$spacing="0",$padding="0",$headers=array(),$nostart=False)
+
+	//select_to_table($pQ,array(),1,'ffffff');
+	select_to_table2($pQ,array(),1,'ffffff', '', '0', '2', $headers, False);
+	//select_to_table2($query,$arguments,$border,$bgcolor,$width="120",$spacing="0",$padding="0",$headers=array(),$nostart=False)
 
 }
 // Form for specifying the report.
 else {
 
-$page_title = "Fannie : Products Export Report";
-$header = "Products Export Report";
+$page_title = "Fannie : WEFC Toronto Products Export Report";
+$header = "WEFC Toronto Products Export Report";
 include($FANNIE_ROOT.'src/header.html');
 ?>
 
