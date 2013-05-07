@@ -66,7 +66,7 @@ function save(did){
 	newbutton += "alt=\"Edit\" border=0 /></a>";
 	$('#button'+did).html(newbutton);	
 	
-	name = encodeURIComponents(name);
+	name = encodeURIComponent(name);
 	$.ajax({
 		url: 'VendorDepartmentEditor.php',
 		type: 'POST',

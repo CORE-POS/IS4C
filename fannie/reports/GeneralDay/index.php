@@ -1,7 +1,7 @@
 <?php
 /*******************************************************************************
 
-    Copyright 2012 Whole Foods Co-op
+    Copyright 2009 Whole Foods Co-op
 
     This file is part of Fannie.
 
@@ -20,31 +20,5 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
-
-class update_20121025095000 extends UpdateObj {
-
-	protected $timestamp = '20121025095000';
-
-	protected $description = 'Simplify A/R Balance calculations';
-
-
-	protected $author = 'Andy Theuninck (WFC)';
-
-	protected $queries = array(
-		'op' => array(),
-		'trans' => array(
-		'DROP VIEW ar_history_sum',
-		'DROP TABLE ar_sum_cache',
-		'CREATE TABLE ar_history_sum (
-			card_no INT,
-			charges DECIMAL(10,2),
-			payments DECIMAL(10,2),
-			balance DECIMAL(10,2),
-			PRIMARY KEY (card_no)	
-			)'
-		),
-		'archive' => array()
-	);
-}
-
+header('Location: GeneralDayReport.php');
 ?>

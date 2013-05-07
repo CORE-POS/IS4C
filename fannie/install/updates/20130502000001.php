@@ -1,7 +1,7 @@
 <?php
 /*******************************************************************************
 
-    Copyright 2012 Whole Foods Co-op
+    Copyright 2013 Whole Foods Co-op
 
     This file is part of Fannie.
 
@@ -21,27 +21,26 @@
 
 *********************************************************************************/
 
-class update_20121025095000 extends UpdateObj {
+class update_20130502000001 extends UpdateObj {
 
-	protected $timestamp = '20121025095000';
+	protected $timestamp = '20130502000001';
 
-	protected $description = 'Simplify A/R Balance calculations';
-
+	protected $description = 'Add the following columns to
+		dlog_15: memType, staff, numflag, charflag. This will
+		also drop the view dlog_90_view so it can be recreated
+		with the same columns included. Click the necessities tab
+		after this update to recreate the view.';
 
 	protected $author = 'Andy Theuninck (WFC)';
 
 	protected $queries = array(
 		'op' => array(),
 		'trans' => array(
-		'DROP VIEW ar_history_sum',
-		'DROP TABLE ar_sum_cache',
-		'CREATE TABLE ar_history_sum (
-			card_no INT,
-			charges DECIMAL(10,2),
-			payments DECIMAL(10,2),
-			balance DECIMAL(10,2),
-			PRIMARY KEY (card_no)	
-			)'
+			'ALTER TABLE dlog_15 ADD COLUMN memType TINYINT AFTER ItemQtty',
+			'ALTER TABLE dlog_15 ADD COLUMN staff TINYINT AFTER memType',
+			'ALTER TABLE dlog_15 ADD COLUMN numflag INT AFTER staff',
+			'ALTER TABLE dlog_15 ADD COLUMN charflag VARCHAR(2) AFTER numflag',
+			'DROP VIEW dlog_90_view'
 		),
 		'archive' => array()
 	);

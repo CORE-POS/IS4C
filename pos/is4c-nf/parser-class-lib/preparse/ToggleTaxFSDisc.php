@@ -32,6 +32,7 @@ class ToggleTaxFSDisc extends PreParser {
 	// use bit-masks to determine the which toggles
 	// should be enabled
 	function check($str){
+		global $CORE_LOCAL;
 		$this->tfd = 0;
 		if (substr($str,0,5) == "1TNFN" || substr($str,0,5) == "FN1TN"){
 			$this->remainder = substr($str,5);

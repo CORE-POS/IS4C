@@ -53,6 +53,10 @@ $CREATE['trans.dlog_90_view'] = "
 		tax,
 		foodstamp,
 		ItemQtty,
+		memType,
+		staff,
+		numflag,
+		charflag,
 		card_no,
 		trans_id,
 		".$con->concat(
