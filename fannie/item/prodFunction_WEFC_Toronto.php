@@ -58,6 +58,7 @@
 
 /* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 	*
+	*  1May2013 EL Support product flags (Qualifications) in products.numflag
 	*  8Mar2013 EL Better, I think, support for lookup by SKU
 	* 22Feb2013 Eric Lee Add support for editing
 	*           products.quantity, .groupprice, .pricemethod, .mixmatchcode
@@ -69,6 +70,7 @@
 include_once('../src/mysql_connect.php');
 include_once('../auth/login.php');
 include_once('ajax.php');
+//include_once(dirname(__FILE__).'/../classlib2.0/lib/FormLib.php');
 
 function itemParse($upc){
 	global $dbc,$FANNIE_URL;
@@ -79,7 +81,7 @@ function itemParse($upc){
 	//global $FANNIE_ITEM_MODULES;
 	// This is both whether-or-not and sequence-on-page
 	//"ThreeForDollar",
-	$Fannie_Item_Modules = array("Operations","ExtraInfo",
+	$Fannie_Item_Modules = array("Operations","ItemFlags","ExtraInfo",
 	"ThreeForDollar",
 	"Cost","Sale","Margin", "LikeCode", "LaneStatus");
 
@@ -393,7 +395,48 @@ function itemParse($upc){
 	echo "</fieldset>";
 	echo "</div><!-- /#Operations -->";
 
-	// 3e. Create - Extra Info Fieldset
+	//'c 3ea. Create - Item Flags Fieldset
+	echo "<div id='Flags' style='float:left; margin-left:10px; width:{$fieldsetWidth}em; " .
+				 "display:" . (array_search('ItemFlags',$Fannie_Item_Modules) !== False?'block':'none') . ";'>";
+	echo "<fieldset><legend>Item Flags</legend>";
+	echo "<table>";
+
+	$q = "SELECT f.description,
+		f.bit_number,
+		(1<<(f.bit_number-1)) & p.numflag AS flagIsSet
+		FROM products AS p, prodFlags AS f
+		WHERE p.upc=$upc";
+	$r = $dbc->query($q);
+
+	// item does not exist. Just get the flag names.
+	if ($dbc->num_rows($r) == 0){
+		$q = 'SELECT f.description,f.bit_number,0 AS flagIsSet
+				FROM prodFlags AS f';
+		$r = $dbc->query($q);
+	}
+
+	$ret = '';
+	$i=0;
+	while($w = $dbc->fetch_row($r)){
+		if ($i==0) $ret .= '<tr>';
+		// n-column table
+		if ($i != 0 && $i % 2 == 0) $ret .= '</tr><tr>';
+		$ret .= sprintf('<td><input type="checkbox" name="flags[]" value="%d" %s /></td>
+			<td>%s</td>',$w['bit_number'],
+			($w['flagIsSet']==0 ? '' : 'checked'),
+			$w['description']
+		);
+		$i++;
+	}
+	if ( strlen($ret) > 0 )
+		$ret .= "</tr>";
+	echo "$ret";
+
+	echo "</table>";
+	echo "</fieldset>";
+	echo "</div><!-- /#ItemFlags -->";
+
+	// 3eb. Create - Extra Info Fieldset
 	echo "<div id='ExtraInfo' style='float:left; margin-left:10px; width:{$fieldsetWidth}em; " .
 				 "display:" . (array_search('ExtraInfo',$Fannie_Item_Modules) !== False?'block':'none') . ";'>";
 	echo "<fieldset><legend>Extra Info</legend>";
@@ -898,6 +941,47 @@ function itemParse($upc){
 		echo "</div>";
 		echo "</div><!-- /#Operations -->";
 
+		//'u 5ea. Update - Item Flags Fieldset
+		echo "<div id='Flags' style='float:left; margin-left:10px; width:{$fieldsetWidth}em; " .
+					 "display:" . (array_search('ItemFlags',$Fannie_Item_Modules) !== False?'block':'none') . ";'>";
+		echo "<fieldset><legend>Item Flags</legend>";
+		echo "<table>";
+		$q = "SELECT f.description,
+			f.bit_number,
+			(1<<(f.bit_number-1)) & p.numflag AS flagIsSet
+			FROM products AS p, prodFlags AS f
+			WHERE p.upc=$upc
+			ORDER BY f.bit_number";
+		$r = $dbc->query($q);
+
+		// item does not exist. Just get the flag names.
+		if ($dbc->num_rows($r) == 0){
+			$q = 'SELECT f.description,f.bit_number,0 AS flagIsSet
+					FROM prodFlags AS f';
+			$r = $dbc->query($q);
+		}
+
+		$ret = '';
+		$i=0;
+		while($w = $dbc->fetch_row($r)){
+			if ($i==0) $ret .= '<tr>';
+			// n-column table
+			if ($i != 0 && $i % 2 == 0) $ret .= '</tr><tr>';
+			$ret .= sprintf('<td><input type="checkbox" name="flags[]" value="%d" %s /></td>
+				<td>%s</td>',$w['bit_number'],
+				($w['flagIsSet']==0 ? '' : 'checked'),
+				$w['description']
+			);
+			$i++;
+		}
+		if ( strlen($ret) > 0 )
+			$ret .= "</tr>";
+		echo "$ret";
+
+		echo "</table>";
+		echo "</fieldset>";
+		echo "</div><!-- /#ItemFlags -->";
+
 		// 5e. Update - Extra Info Fieldset
 		// ->EL Why does the top of this fieldset align below the top of Operations here but even with it in Create?
 		echo "<div id='ExtraInfo' style='float:left; margin-left:10px; width:{$fieldsetWidth}em; " .
@@ -1241,6 +1325,18 @@ function promptForUPC($upc="") {
 	$retVal .= "<br />";
 
 	return $retVal;
+}
+
+// $flags is an array of powers of 2.
+function setProductFlags($flags){
+	$numflag = 0;	
+	if (is_array($flags)) {
+		foreach($flags as $f){
+			if ($f != (int)$f) continue;
+			$numflag = $numflag | (1 << ($f-1));
+		}
+	}
+	return $numflag;
 }
 
 //
