@@ -57,7 +57,10 @@ function goToPage(the_id){
 	var pdf = sel.options[sel.selectedIndex].text;
 	url += '&layout='+pdf;
 
-	window.top.location = url;
+	/*window.top.location = url;*/
+	/* 5May13 Eric Lee As popup instead of replacing the select window. */
+	tagwindow=window.open (url, "Shelftags", "location=0,status=1,scrollbars=1,width=800,height=1100");
+	tagwindow.moveTo(750,10);
 }
 		<?php
 		return ob_get_clean();
@@ -99,7 +102,15 @@ function goToPage(the_id){
 		$ret = ob_get_clean();
 
 		$dbc = FannieDB::get($FANNIE_OP_DB);
+		/* Was:
 		$query = $dbc->prepare_statement("SELECT superID,super_name FROM MasterSuperDepts
+			GROUP BY superID,super_name
+			ORDER BY superID");
+		*/
+		// 5May13 Change SELECT so #-of-labels can be displayed. */
+		$query = $dbc->prepare_statement("SELECT superID,super_name, count(t.id) ct
+			FROM superDeptNames AS s
+				LEFT JOIN shelftags AS t ON s.superID = t.id
 			GROUP BY superID,super_name
 			ORDER BY superID");
 		$result = $dbc->exec_statement($query);
@@ -110,10 +121,15 @@ function goToPage(the_id){
 			$rows[] = array(0,'All Tags');
 		}
 		foreach($rows as $row){
-			$ret .= sprintf("<tr><td>%s barcodes</td><td><a href=\"\" onclick=\"goToPage('%d');return false;\">
-				Print</a></td><td><a href=\"DeleteShelfTags.php?id=%d\">Clear</a></td>
-				<td><a href=\"EditShelfTags.php?id=%d\"><img src=\"{$FANNIE_URL}src/img/buttons/b_edit.png\"
-				alt=\"Edit\" border=0 /></td></tr>",$row[1],$row[0],$row[0],$row[0]);
+			$ret .= sprintf("<tr>
+			<td>%s barcodes/shelftags</td>
+			<td style='text-align:right;'>%d</td>
+			<td><a href=\"\" onclick=\"goToPage('%d');return false;\">Print</a></td>
+			<td><a href=\"DeleteShelfTags.php?id=%d\">Clear</a></td>
+			<td><a href=\"EditShelfTags.php?id=%d\"><img src=\"{$FANNIE_URL}src/img/buttons/b_edit.png\"
+				alt=\"Edit\" border=0 /></td>
+			</tr>",
+			$row[1],$row[2],$row[0],$row[0],$row[0]);
 		}
 		$ret .= "</table>";
 		$ret .= '</div>

@@ -119,7 +119,7 @@ if (isset($_REQUEST['submit'])){
 
 	$taxNames = array(0 => '');
 	$taxRates = array(0 => 0);
-	$tQ = $dbc->prepare_statement("SELECT id, description FROM core_op.taxrates WHERE id > 0 ORDER BY id");
+	$tQ = $dbc->prepare_statement("SELECT id, rate, description FROM core_op.taxrates WHERE id > 0 ORDER BY id");
 	$tR = $dbc->exec_statement($tQ);
 	while ( $trow = $dbc->fetch_array($tR) ) {
 		$taxNames[$trow['id']] = $trow['description'];
@@ -212,7 +212,7 @@ if (isset($_REQUEST['submit'])){
 	$supers = array();
 
 	$costsP = $dbc->prepare_statement($costs);
-	$costArgs = array($d1.' 00:00:00', $d2.'23:59:59');
+	$costArgs = array($d1.' 00:00:00', $d2.' 23:59:59');
 	$costsR = $dbc->exec_statement($costsP, $costArgs);
 	
 	$curSuper = 0;
