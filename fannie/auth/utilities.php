@@ -298,7 +298,7 @@ function table_check(){
 			session_id varchar(50),
 			ip varchar(45),
 			expires datetime,
-			PRIMARY KEY (uid,ip)
+			PRIMARY KEY (uid,session_id)
 			)");
 		$sql->exec_statement($p);
 	}
