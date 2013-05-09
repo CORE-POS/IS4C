@@ -108,9 +108,9 @@ function goToPage(the_id){
 			ORDER BY superID");
 		*/
 		// 5May13 Change SELECT so #-of-labels can be displayed. */
-		$query = $dbc->prepare_statement("SELECT superID,super_name, count(t.id) ct
-			FROM superDeptNames AS s
-				LEFT JOIN shelftags AS t ON s.superID = t.id
+		$query = $dbc->prepare_statement("SELECT superID,super_name, count(distinct t.upc) ct
+			FROM MasterSuperDepts AS s
+			LEFT JOIN shelftags AS t ON s.superID = t.id
 			GROUP BY superID,super_name
 			ORDER BY superID");
 		$result = $dbc->exec_statement($query);
