@@ -39,16 +39,29 @@ class ExtraInfoModule extends ItemModule {
 		$r = $dbc->exec_statement($p,array($upc));
 		if ($dbc->num_rows($r) > 0)
 			$info = $dbc->fetch_row($r);
+
+		$local_opts = array(0=>'No');
+		$p = $dbc->prepare_statement('SELECT originID,shortName FROM originName WHERE local=1 ORDER BY originID');
+		$r = $dbc->exec_statement($p);
+		while($w = $dbc->fetch_row($r)){
+			$local_opts[$w['originID']] = $w['shortName'];	
+		}
+		if (count($local_opts) == 0) $local_opts[1] = 'Yes'; // generic local if no origins defined
+		$localSelect = '<select name="local">';
+		foreach($local_opts as $id => $val){
+			$localSelect .= sprintf('<option value="%d" %s>%s</option>',
+				$id, ($id == $info['local']?'selected':''), $val);
+		}
+		$localSelect .= '</select>';
 		
 		$ret .= "<table style=\"margin-top:5px;margin-bottom:5px;\" border=1 cellpadding=5 cellspacing=0 width='100%'><tr>";
 		$ret .= '<tr><th>Deposit</th><th>Cost</th><th>Local</th><th>In Use</th></tr>';
 		$ret .= sprintf('<tr>
 				<td align="center"><input type="text" size="5" value="%d" name="deposit" /></td>
 				<td align="center"><input type="text" size="5" value="%.2f" id="cost" name="cost" /></td>
-				<td align="center"><input type="checkbox" name="local" value="1" %s /></td>
+				<td align="center">%s</td>
 				<td align="center"><input type="checkbox" name="inUse" value="1" %s /></td></tr>',
-				$info['deposit'],$info['cost'],
-				($info['local']==1 ? 'checked': ''),
+				$info['deposit'],$info['cost'],$localSelect,
 				($info['inUse']==1 ? 'checked': '')
 		);
 		$ret .= '<tr><td colspan="4" style="color:darkmagenta;">Last modified: '.$info['modified'].'</td></tr>';		

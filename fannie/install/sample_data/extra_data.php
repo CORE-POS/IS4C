@@ -84,9 +84,17 @@ elseif (isset($_REQUEST['tenders'])){
 	loaddata($db,'tenders');
 }
 elseif (isset($_REQUEST['authentication'])){
-	echo "Loadintg authentication info";
+	echo "Loading authentication info";
 	$db->query("TRUNCATE TABLE userKnownPrivs");
 	loaddata($db,'userKnownPrivs');
+}
+elseif (isset($_REQUEST['origin'])){
+	echo "Loading country info";
+	$db->query("TRUNCATE TABLE originCountry");
+	loaddata($db,'originCountry');
+	echo "<br />Loading state/province info";
+	$db->query("TRUNCATE TABLE originStateProv");
+	loaddata($db,'originStateProv');
 }
 ?>
 </i></blockquote>
@@ -137,6 +145,10 @@ Load all the default tenders into the tenders table.<br />
 <b>Authentication</b>:
 Load information about currently defined authorization classes<br />
 <input type=submit name=authentication value="Load auth info" />
+<hr />
+<b>Countries, States, and Provinces</b>
+Load default origin information<br />
+<input type=submit name=origin value="Load origin info" />
 <hr />
 </form>
 </body>
