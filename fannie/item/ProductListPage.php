@@ -88,10 +88,18 @@ class ProductListPage extends FanniePage {
 			else
 				$taxes[strtoupper(substr($w[1],0,1))] = array($w[0], $w[1]);
 		}
+		$local_opts = array('-'=>array(0,'No'));
+		$p = $dbc->prepare_statement('SELECT originID,shortName FROM originName WHERE local=1 ORDER BY originID');
+		$r = $dbc->exec_statement($p);
+		while($w = $dbc->fetch_row($r)){
+			$local_opts[substr($w['shortName'],0,1)] = array($w['originID'],$w['shortName']);
+		}
+		if (count($local_opts) == 1) $local_opts['X'] = array(1,'Yes'); // generic local if no origins defined
 		ob_start();
 		?>
 		var deptObj = <?php echo JsonLib::array_to_json($depts); ?>;
 		var taxObj = <?php echo JsonLib::array_to_json($taxes); ?>;
+		var localObj = <?php echo JsonLib::array_to_json($local_opts); ?>;
 		function edit(upc){
 			var desc = $('tr#'+upc+' .td_desc').html();
 			var content = "<input type=text class=in_desc value=\""+desc+"\" />";	
@@ -136,7 +144,13 @@ class ProductListPage extends FanniePage {
 			$('tr#'+upc+' .td_wgt').html(content);
 
 			var local = $('tr#'+upc+' .td_local').html();
-			var content = "<input type=checkbox class=in_local "+((local=='X')?'checked':'')+" />";
+			//var content = "<input type=checkbox class=in_local "+((local=='X')?'checked':'')+" />";
+			var content = '<select class=in_local>';
+			for (ch in localObj){
+				var sel = (local == ch) ? 'selected' : '';
+				content += "<option value=\""+ch+":"+localObj[ch][0]+"\" "+sel+">";
+				content += localObj[ch][1]+"</option>";
+			}
 			$('tr#'+upc+' .td_local').html(content);
 
 			var lnk = "<img src=\"<?php echo $FANNIE_URL;?>src/img/buttons/b_save.png\" alt=\"Save\" border=0 />";
@@ -167,21 +181,24 @@ class ProductListPage extends FanniePage {
 			var wgt = $('tr#'+upc+' .in_wgt').is(':checked') ? 1 : 0;
 			$('tr#'+upc+' .td_wgt').html((wgt==1)?'X':'-');
 
-			var local = $('tr#'+upc+' .in_local').is(':checked') ? 1 : 0;
-			$('tr#'+upc+' .td_local').html((local==1)?'X':'-');
+			//var local = $('tr#'+upc+' .in_local').is(':checked') ? 1 : 0;
+			//$('tr#'+upc+' .td_local').html((local==1)?'X':'-');
+			var local = $('tr#'+upc+' .in_local').val().split(':');
+			$('tr#'+upc+' .td_local').html(local[0]);
 
 			var lnk = "<img src=\"<?php echo $FANNIE_URL;?>src/img/buttons/b_edit.png\" alt=\"Edit\" border=0 />";
 			var cmd = "<a href=\"\" onclick=\"edit('"+upc+"'); return false;\">"+lnk+"</a>";
 			$('tr#'+upc+' .td_cmd').html(cmd);
 
 			var dstr = 'ajax=save&upc='+upc+'&desc='+desc+'&dept='+dept+'&price='+price;
-			dstr += '&tax='+tax[1]+'&fs='+fs+'&disc='+disc+'&wgt='+wgt+'&supplier='+supplier+'&local='+local;
+			dstr += '&tax='+tax[1]+'&fs='+fs+'&disc='+disc+'&wgt='+wgt+'&supplier='+supplier+'&local='+local[1];
 			$.ajax({
 			url: 'ProductListPage.php',
 			data: dstr,
 			cache: false,
 			type: 'post',
-			success: function(data){}
+			success: function(data){
+			}
 			});
 		}
 		function deleteCheck(upc,desc){
@@ -234,8 +251,8 @@ class ProductListPage extends FanniePage {
 			if ($disc !== '') $values['discount'] = ($disc==1) ? 1 : 0;
 			$wgt = FormLib::get_form_value('wgt');
 			if ($wgt !== '') $values['scale'] = ($wgt==1) ? 1 : 0;
-			$loc = FormLib::get_form_value('loc');
-			if ($loc !== '') $values['local'] = ($loc==1) ? 1 : 0;
+			$loc = FormLib::get_form_value('local');
+			if ($loc !== '') $values['local'] = $loc;
 
 			ProductsController::update($upc, $values);
 
@@ -335,11 +352,13 @@ class ProductListPage extends FanniePage {
 	 	        (CASE WHEN i.foodstamp = 1 THEN 'X' ELSE '-' END) as FS,
                         (CASE WHEN i.discount = 0 THEN '-' ELSE 'X'END) as DISC,
                         (CASE WHEN i.scale = 1 THEN 'X' ELSE '-' END) as WGHd,
-                        (CASE WHEN i.local = 1 THEN 'X' ELSE '-' END) as local,
+			(CASE WHEN i.local > 0 AND o.originID IS NULL THEN 'X' 
+			      WHEN i.local > 0 AND o.originID IS NOT NULL THEN LEFT(o.shortName,1) ELSE '-' END) as local,
 			x.distributor
                         FROM products as i LEFT JOIN departments as d ON i.department = d.dept_no
 			LEFT JOIN taxrates AS t ON t.id = i.tax
 			LEFT JOIN prodExtra as x on i.upc = x.upc
+			LEFT JOIN originName AS o ON i.local=o.originID
                         WHERE i.department BETWEEN ? AND ? 
 			ORDER BY ".$order;
 		$args = array($deptStart, $deptEnd);
@@ -350,12 +369,14 @@ class ProductListPage extends FanniePage {
 				(CASE WHEN i.foodstamp = 1 THEN 'X' ELSE '-' END) as FS,
 				(CASE WHEN i.discount = 0 THEN '-' ELSE 'X'END) as DISC,
 				(CASE WHEN i.scale = 1 THEN 'X' ELSE '-' END) as WGHd,
-				(CASE WHEN i.local = 1 THEN 'X' ELSE '-' END) as local,
+				(CASE WHEN i.local > 0 AND o.originID IS NULL THEN 'X' 
+				      WHEN i.local > 0 AND o.originID IS NOT NULL THEN LEFT(o.shortName,1) ELSE '-' END) as local,
 				x.distributor
 				FROM products as i LEFT JOIN superdepts as s ON i.department = s.dept_ID
 				LEFT JOIN taxrates AS t ON t.id = i.tax
 				LEFT JOIN departments as d on i.department = d.dept_no
 				LEFT JOIN prodExtra as x on i.upc = x.upc
+				LEFT JOIN originName AS o ON i.local=o.originID
 				WHERE s.superID = ?
 				ORDER BY ".$order;
 			$args = array($super);
@@ -367,10 +388,12 @@ class ProductListPage extends FanniePage {
 				(CASE WHEN i.foodstamp = 1 THEN 'X' ELSE '-' END) as FS,
 				(CASE WHEN i.discount = 0 THEN '-' ELSE 'X'END) as DISC,
 				(CASE WHEN i.scale = 1 THEN 'X' ELSE '-' END) as WGHd,
-				(CASE WHEN i.local = 1 THEN 'X' ELSE '-' END) as local,
+				(CASE WHEN i.local > 0 AND o.originID IS NULL THEN 'X' 
+				      WHEN i.local > 0 AND o.originID IS NOT NULL THEN LEFT(o.shortName,1) ELSE '-' END) as local,
 				x.distributor
 				FROM products as i LEFT JOIN departments as d ON i.department = d.dept_no
 				LEFT JOIN prodExtra as x on i.upc = x.upc
+				LEFT JOIN originName AS o ON i.local=o.originID
 				LEFT JOIN taxrates AS t ON t.id = i.tax";
 			if ($mtype == 'prefix'){
 				$query .= ' WHERE i.upc LIKE ? ';
