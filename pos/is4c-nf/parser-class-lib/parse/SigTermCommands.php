@@ -40,6 +40,7 @@ class SigTermCommands extends Parser {
 			$CORE_LOCAL->set("CachePinEncBlock","");
 			$CORE_LOCAL->set("CacheCardType","");
 			$CORE_LOCAL->set("CacheCardCashBack",0);
+			$CORE_LOCAL->set('ccTermState','swipe');
 			return True;
 		}
 		elseif ($str == "CCFROMCACHE"){
@@ -47,10 +48,12 @@ class SigTermCommands extends Parser {
 		}
 		else if (substr($str,0,9) == "PANCACHE:"){
 			$CORE_LOCAL->set("CachePanEncBlock",substr($str,9));
+			$CORE_LOCAL->set('ccTermState','type');
 			return True;
 		}
 		else if (substr($str,0,9) == "PINCACHE:"){
 			$CORE_LOCAL->set("CachePinEncBlock",substr($str,9));
+			$CORE_LOCAL->set('ccTermState','ready');
 			return True;
 		}
 		else if (substr($str,0,6) == "VAUTH:"){
@@ -74,10 +77,25 @@ class SigTermCommands extends Parser {
 		}
 		else if (substr($str,0,5) == "TERM:"){
 			$CORE_LOCAL->set("CacheCardType",substr($str,5));
+			switch($CORE_LOCAL->get('CacheCardType')){
+			case 'CREDIT':
+				$CORE_LOCAL->set('ccTermState','ready');
+				break;
+			case 'DEBIT':
+				$CORE_LOCAL->set('ccTermState','cashback');
+				break;
+			case 'EBTFOOD':
+				$CORE_LOCAL->set('ccTermState','pin');
+				break;
+			case 'EBTCASH':
+				$CORE_LOCAL->set('ccTermState','cashback');
+				break;
+			}
 			return True;
 		}
 		else if (substr($str,0,7) == "TERMCB:"){
 			$CORE_LOCAL->set("CacheCardCashBack",substr($str,7));
+			$CORE_LOCAL->set('ccTermState','pin');
 			return True;
 		}
 		return False;
@@ -86,6 +104,7 @@ class SigTermCommands extends Parser {
 	function parse($str){
 		global $CORE_LOCAL;
 		$ret = $this->default_json();
+		$ret['scale'] = ''; // redraw righthand column
 		if ($str == "CCFROMCACHE"){
 			$ret['retry'] = $CORE_LOCAL->get("CachePanEncBlock");
 		}
