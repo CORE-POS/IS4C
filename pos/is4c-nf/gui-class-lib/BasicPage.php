@@ -362,6 +362,9 @@ class BasicPage {
 			<div id="scaleBottom">
 			<?php echo DisplayLib::scaledisplaymsg(); ?>	
 			</div>
+			<div id="scaleIconBox">
+			<?php echo DisplayLib::termdisplaymsg(); ?>
+			</div>
 		</div>
 		<?php
 	}
@@ -374,6 +377,7 @@ class BasicPage {
 	  input and activates it on page load.
 	*/
 	function scanner_scale_polling($include_scans=True){
+		if (!$include_scans) return '';
 		?>
 		<script type="text/javascript"
 			src="<?php echo $this->page_url; ?>js/poll-scale.js">

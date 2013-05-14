@@ -148,6 +148,9 @@ else {
 			$json['scale'] = $display['display'];
 		else
 			$json['scale'] = $display;
+		$term_display = DisplayLib::termdisplaymsg();
+		if (!empty($term_display))
+			$json['term'] = $term_display;
 	}
 	echo JsonLib::array_to_json($json);
 }
