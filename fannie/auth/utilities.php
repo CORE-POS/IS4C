@@ -184,13 +184,11 @@ function doLogin($name){
 	$cookie_data = serialize($session_data);
 
 	/**
-	  Periodically purge expired records
+	  purge expired records
 	*/
-	if (rand(1,10) == 5){
-		$delP = $sql->prepare_statement('DELETE FROM userSessions
-				WHERE expires < '.$sql->now());
-		$delR = $sql->exec_statement($delP);
-	}
+	$delP = $sql->prepare_statement('DELETE FROM userSessions
+			WHERE expires < '.$sql->now());
+	$delR = $sql->exec_statement($delP);
 
 	setcookie('session_data',base64_encode($cookie_data),time()+(60*600),'/');
 }
@@ -298,7 +296,7 @@ function table_check(){
 			session_id varchar(50),
 			ip varchar(45),
 			expires datetime,
-			PRIMARY KEY (uid,ip)
+			PRIMARY KEY (uid,session_id)
 			)");
 		$sql->exec_statement($p);
 	}

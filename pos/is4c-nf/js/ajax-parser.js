@@ -55,6 +55,10 @@ function parserHandler(data,status_str,xml_ro){
 		$('#scaleBottom').html(data.scale);
 	}
 
+	if (data.term){
+		$('#scaleIconBox').html(data.term);
+	}
+
 	if (data.receipt){
 		$.ajax({
 			url: CORE_JS_PREFIX+'ajax-callbacks/ajax-end.php',

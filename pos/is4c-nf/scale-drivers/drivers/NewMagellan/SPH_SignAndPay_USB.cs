@@ -89,6 +89,7 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
 	private int ack_counter;
 
 	private string usb_devicefile;
+	private System.Object usb_lock;
 
 	public SPH_SignAndPay_USB(string p) : base(p){ 
 		read_continues = false;
@@ -96,6 +97,7 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
 		long_pos = 0;
 		ack_counter = 0;
 		usb_fs = null;
+		usb_lock = new System.Object();
 		
 		#if MONO
 		usb_devicefile = p;
@@ -456,6 +458,9 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
 	*/
 	private void MonoReadCallback(IAsyncResult iar){
 		byte[] input = (byte[])iar.AsyncState;
+		usb_fs.EndRead(iar);
+		HandleReadData(input);		
+		/* Revision: 7May13 - use locks instead
 		try {
 			usb_fs.EndRead(iar);
 			HandleReadData(input);		
@@ -465,6 +470,7 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
 				System.Console.WriteLine(ex);
 			System.Threading.Thread.Sleep(DEFAULT_WAIT_TIMEOUT);
 		}
+		*/
 	}
 
 	private void HandleDeviceMessage(byte[] msg){
@@ -648,23 +654,35 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
 					System.Console.WriteLine("Read exception:");
 					System.Console.WriteLine(ex);
 				}
+				// 7May13 use locks
+				// wait until writes are complete
+				lock(usb_lock){}
 			}
 		}
 	}
 
 	public override void HandleMsg(string msg){ 
+		// 7May13 use locks
 		switch(msg){
 		case "termReset":
-			SetStateStart();
+			lock(usb_lock){
+				SetStateStart();
+			}
 			break;
 		case "termReboot":
-			RebootTerminal();
+			lock(usb_lock){
+				RebootTerminal();
+			}
 			break;
 		case "termManual":
-			SetStateGetManualPan();
+			lock(usb_lock){
+				SetStateGetManualPan();
+			}
 			break;
 		case "termApproved":
-			SetStateApproved();
+			lock(usb_lock){
+				SetStateApproved();
+			}
 			break;
 		}
 	}

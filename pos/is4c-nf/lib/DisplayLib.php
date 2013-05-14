@@ -610,6 +610,37 @@ static public function scaledisplaymsg($input=""){
 }
 
 /**
+  Display CC terminal state
+  @return HTML string
+*/
+static public function termdisplaymsg(){
+	global $CORE_LOCAL;
+	if (!in_array("Paycards",$CORE_LOCAL->get("PluginList")))
+		return '';
+	// style box to look like a little screen
+	$ret = '<div style="background:#ccc;border:solid 1px black;padding:7px;text-align:center;font-size:120%;">';
+	$rdy = '<div style="background:#0c0;border:solid 1px black;padding:7px;text-align:center;font-size:120%;">';
+	switch($CORE_LOCAL->get('ccTermState')){
+	case 'swipe':
+		return $ret.'Slide<br />Card</div>';
+		break;
+	case 'ready':
+		return $rdy.'Ready</div>';
+		break;
+	case 'pin':
+		return $ret.'Enter<br />PIN</div>';
+		break;
+	case 'type':
+		return $ret.'Card<br />Type</div>';
+		break;
+	case 'cashback':
+		return $ret.'Cash<br />Back</div>';
+		break;
+	}
+	return '';
+}
+
+/**
   Get the items currently on screen
   @param $top_item is trans_id (localtemptrans)
    of the first item to display

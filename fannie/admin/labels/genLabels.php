@@ -37,7 +37,7 @@ $batchID = FormLib::get_form_value('batchID',False);
 $dbc = FannieDB::get($FANNIE_OP_DB);
 
 if ($id !== False){
-	$query = $dbc->prepare_statement("SELECT s.*,p.scale 
+	$query = $dbc->prepare_statement("SELECT s.*,p.scale,p.numflag
 		FROM shelftags AS s
 		INNER JOIN products AS p ON s.upc=p.upc
 		WHERE s.id=? ORDER BY
@@ -55,7 +55,8 @@ if ($id !== False){
 		'pricePerUnit' => $row['pricePerUnit'],
 		'upc' => $row['upc'],
 		'vendor' => $row['vendor'],
-		'scale' => $row['scale']
+		'scale' => $row['scale'],
+		'numflag' => $row['numflag']
 		);			
 		$data[] = $myrow;
 	}
@@ -68,9 +69,10 @@ elseif ($batchID !== False){
 		$args[] = $x;
 	}
 	$batchIDList = substr($batchIDList,0,strlen($batchIDList)-1);
-	$testQ = $dbc->prepare_statement("select b.*,p.scale
+	$testQ = $dbc->prepare_statement("select b.*,p.scale,p.numflag
 		FROM batchBarcodes as b INNER JOIN products AS p
-		ON b.upc=p.upc WHERE batchID in ($batchIDList) and b.description <> ''
+		ON b.upc=p.upc
+		WHERE batchID in ($batchIDList) and b.description <> ''
 		ORDER BY batchID");
 	$result = $dbc->exec_statement($testQ,$args);
 	while($row = $dbc->fetch_row($result)){
@@ -84,7 +86,8 @@ elseif ($batchID !== False){
 		'pricePerUnit' => '',
 		'upc' => $row['upc'],
 		'vendor' => $row['vendor'],
-		'scale' => $row['scale']
+		'scale' => $row['scale'],
+		'numflag' => $row['numflag']
 		);			
 		$data[] = $myrow;
 	}

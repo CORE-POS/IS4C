@@ -40,7 +40,8 @@ class NonMovementReport extends FannieReportPage {
 
 		if (isset($_REQUEST['deleteItem'])){
 			$upc = FormLib::get_form_value('deleteItem','');
-			$upc = str_pad($upc,13,'0',STR_PAD_LEFT);
+			if (is_numeric($upc))
+				$upc = str_pad($upc,13,'0',STR_PAD_LEFT);
 
 			$query = "DELETE FROM products WHERE upc=?";
 			$queryP = $dbc->prepare_statement($query);
@@ -53,6 +54,9 @@ class NonMovementReport extends FannieReportPage {
 			$query = "DELETE FROM prodExtra WHERE upc=?";
 			$queryP = $dbc->prepare_statement($query);
 			$dbc->exec_statement($queryP, array($upc));
+
+			echo 'Deleted';
+			exit;
 		}
 
 		if (isset($_REQUEST['date1'])){
@@ -73,6 +77,10 @@ class NonMovementReport extends FannieReportPage {
 				$this->report_format = 'xls';
 			elseif (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'csv')
 				$this->report_format = 'csv';
+			else {
+				$this->add_script("../../src/jquery/jquery.js");
+				$this->add_script('delete.js');
+			}
 		}
 		else {
 			$this->add_script("../../src/CalendarControl.js");
@@ -125,10 +133,9 @@ class NonMovementReport extends FannieReportPage {
 			$record[] = $row[2];
 			$record[] = $row[3];
 			if ($this->report_format == 'html'){
-				$record[] = sprintf('<a href="%s&deleteItem=%s" 
-					onclick="return confirm(\'Delete %s %s?\');">
-					Delete this item</a>',$_SERVER['REQUEST_URI'],$row[0],
-					$row[0],$row[1]);
+				$record[] = sprintf('<a href="" id="del%s"
+						onclick="backgroundDelete(\'%s\',\'%s\');return false;">
+						Delete this item</a>',$row[0],$row[0],$row[1]);
 			}
 			else
 				$record[] = '';
