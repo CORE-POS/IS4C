@@ -88,7 +88,6 @@ class Notes extends MemberModule {
 		return $ret;
 	}
 
-	
 	function SaveFormData($memNum){
 
 		/* entry blank. do not save */
