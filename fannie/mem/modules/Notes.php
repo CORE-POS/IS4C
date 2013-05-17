@@ -23,14 +23,6 @@
 
 class Notes extends MemberModule {
 
-	/* 15Aug12 flathat Formerly populated the input with the last note.  History link not coded.
-	 *         When the Save function added the populated note was re-added each time.
-	 *          Old code commented.
-	 *         Now: Populates a table, initially hidden, of historical notes under the input,
-	 *               which is left empty.
-	 *              History button is displayed iff history and un-hides the list of notes.
-	 *              NoHistory button re-hides the list of notes.
-	*/
 	function ShowEditForm($memNum, $country="US"){
 		global $FANNIE_URL;
 
@@ -42,13 +34,6 @@ class Notes extends MemberModule {
 
 		$note = "";
 		$date = "";
-		/*
-		if ($dbc->num_rows($infoR) > 0){
-			$infoW = $dbc->fetch_row($infoR);
-			$note = str_replace("<br />","\n",$infoW['note']);
-			$date = $infoW['stamp'];
-		}
-		*/
 
 		$ret = "<fieldset><legend>Notes</legend>";
 
@@ -92,9 +77,6 @@ class Notes extends MemberModule {
 		return $ret;
 	}
 
-	/* 15Aug12 EL Did not previously exist.
-	 *            Value for username is dummy as currently no login.
-	*/
 	function SaveFormData($memNum){
 
 		$note = FormLib::get_form_value('Notes_text');
@@ -106,7 +88,7 @@ class Notes extends MemberModule {
 
 		$insertNote = $dbc->prepare_statement("INSERT into memberNotes
 				(cardno, note, stamp, username)
-				VALUES (%d, %s, ".$dbc->now().", 'Admin')");
+				VALUES (?, ?, ".$dbc->now().", 'Admin')");
 
 		$test1 = $dbc->exec_statement($insertNote,array($memNum,$note));
 

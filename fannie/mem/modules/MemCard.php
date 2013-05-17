@@ -85,7 +85,7 @@ class MemCard extends MemberModule {
 			$form_upc = sprintf("{$prefix}%0{$clen}d", $form_upc);
 		}
 
-		if (MemberCardsController::update($memNum, $form_upc))	
+		if (!MemberCardsController::update($memNum, $form_upc))	
 			return 'Error: problem saving Member Card<br />';
 		else
 			return '';
