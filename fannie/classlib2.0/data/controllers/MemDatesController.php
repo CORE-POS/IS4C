@@ -54,7 +54,7 @@ class MemDatesController {
 		$r = $dbc->exec_statement($q,array($card_no));
 
 		if ($dbc->num_rows($r) == 0){
-			$ins = $dbc->preparse_statement("INSERT INTO memDates (card_no,
+			$ins = $dbc->prepare_statement("INSERT INTO memDates (card_no,
 				start_date,end_date) VALUES (?, NULL, NULL)");
 			$dbc->exec_statement($ins,array($card_no));
 		}

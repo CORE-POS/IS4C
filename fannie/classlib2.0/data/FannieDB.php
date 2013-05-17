@@ -66,6 +66,7 @@ class FannieDB {
 			include($FANNIE_ROOT.'src/SQLManager.php');
 		self::$db->add_connection($FANNIE_SERVER,$FANNIE_SERVER_DBMS,
 			$db_name, $FANNIE_SERVER_USER, $FANNIE_SERVER_PW);
+		self::$db->query('use '.$db_name);
 	}
 }
 
