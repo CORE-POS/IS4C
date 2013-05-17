@@ -37,6 +37,13 @@ class MemberEditor extends FanniePage {
 
 	private $msgs = '';
 
+  public function __construct(){
+    global $FANNIE_COOP_ID;
+		parent::__construct();
+    if ( isset($FANNIE_COOP_ID) && $FANNIE_COOP_ID == 'WEFC_Toronto' )
+  		$this->auth_classes = array('editmembers');
+  }
+
 	function preprocess(){
 		global $FANNIE_COUNTRY, $FANNIE_MEMBER_MODULES, $FANNIE_OP_DB;
 

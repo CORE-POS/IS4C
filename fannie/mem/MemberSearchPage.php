@@ -30,7 +30,6 @@ $dbc = FannieDB::get($FANNIE_OP_DB);
 
 class MemberSearchPage extends FanniePage {
 	protected $title = "Fannie :: Find Member";
-	// 5Dec12 EL Howto note in header.
 	protected $header = "Find Members
 		<p style='font-family:arial; font-size:0.7em; margin:0.0em 0em 0em 1.5em;'>
 		Enter criteria to find one member or a list members from which to choose.</p>";
@@ -38,7 +37,14 @@ class MemberSearchPage extends FanniePage {
 	private $mode = 'search';
 	private $country;
 	private $results = array();
-	
+
+  public function __construct(){
+    global $FANNIE_COOP_ID;
+		parent::__construct();
+    if ( isset($FANNIE_COOP_ID) && $FANNIE_COOP_ID == 'WEFC_Toronto' )
+  		$this->auth_classes = array('editmembers');
+  }
+
 	function preprocess(){
 		global $FANNIE_COUNTRY,$FANNIE_MEMBER_MODULES,$FANNIE_OP_DB;
 		$this->country = (isset($FANNIE_COUNTRY)&&!empty($FANNIE_COUNTRY))?$FANNIE_COUNTRY:"US";
