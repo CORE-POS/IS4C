@@ -70,7 +70,7 @@ class VendorMovementReport extends FannieReportPage {
 				  left join departments as d on p.department = d.dept_no
 				  left join MasterSuperDepts as s on d.dept_no = s.dept_ID
 				  where e.distributor like ?
-				  and t.tdate between '$date1 00:00:00' and '$date2 23:59:59'
+				  and t.tdate between ? AND ?
 				  group by t.upc,p.description,d.dept_no,d.dept_name,s.superID
 				  order by sum(t.total) desc";
 			break;
