@@ -565,6 +565,7 @@ function addressFormLimited($memNum)
 	$infoQ = "SELECT * FROM meminfo WHERE card_no=$memNum";
 	$infoR = $sql->query($infoQ);
 	$infoW = $sql->fetch_row($infoR);
+	$getsMail = $infoW['ads_OK'];
 
 	$cardsQ = "SELECT upc FROM memberCards WHERE card_no=$memNum";
 	$cardsR = $sql->query($cardsQ);
@@ -613,6 +614,19 @@ function addressFormLimited($memNum)
 			else
 				$address = explode("\n",$infoW['street']);
                         echo "<td><input name=address1 maxlength=30 value='" . $address[0] . "'></td>";
+			echo "<td bgcolor='FFFF33'>Gets mail: </td>";
+			echo "<td><select name=mailflag>";
+			echo "<option value=1";
+			if ($getsMail != 0){
+			  echo " selected";
+			}
+			echo ">Yes</option>";
+			echo "<option value=0";
+			if ($getsMail == 0){
+			  echo " selected";
+			}
+			echo ">No</option>";
+			echo "</select></td>";
                 echo "</tr>";
                 echo "<tr>";
                         echo "<td bgcolor='FFFF33'>Address2: </td>";
@@ -642,6 +656,19 @@ function addressFormLimited($memNum)
 			echo "<td><input type ='submit' value='Edit More' name='more'></td>";
 			echo "<td><input type ='submit' value='Done Editing' name='done'><td>";
 			echo "<td><input type ='reset' value='Reset (oops)' name='done'></td>";
+		echo "</tr>";
+		echo '<tr>';
+			echo "<td></td>";
+			echo "<td bgcolor='FFFF33'>First Name</td>";
+			echo "<td bgcolor='FFFF33'>Last Name</td>";
+			$noteQ = "select note from memberNotes where cardno=$memNum order by stamp desc limit 1";
+			$noteR = $sql->query($noteQ);
+			$notetext = "";
+			if ($sql->num_rows($noteR) == 1){
+				$notetext = stripslashes(array_pop($sql->fetch_array($noteR)));
+				$notetext = preg_replace("/<br \/>/","\n",$notetext);
+			}
+			echo "<td rowspan=4 colspan=3><textarea name=notetext rows=7 cols=50>$notetext</textarea></td>";
 		echo "</tr>";
 		$nameQ = "SELECT firstName,LastName FROM custdata WHERE cardno=$memNum and personnum > 1 order by personnum";
 		$nameR = $sql->query($nameQ);

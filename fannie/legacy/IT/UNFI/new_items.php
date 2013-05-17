@@ -33,7 +33,7 @@ if (isset($_GET['cat'])){
 	if (isset($_GET["brands"]) && $_GET["brands"] != "")
 		$brand = " AND v.brand='".$_GET["brands"]."' ";
 
-	$mysql = new SQLManager('mysql.wfco-op.store','mysqli','IS4C','is4c','is4c');
+	$mysql = new SQLManager('mysql.wfco-op.store','mysql','IS4C','is4c','is4c');
 	$dsubs = " superID IN (";
 	$buyersR = $mysql->query("SELECT buyer FROM unfi_cat WHERE unfi_cat=$catID");
 	$buyers = array();
