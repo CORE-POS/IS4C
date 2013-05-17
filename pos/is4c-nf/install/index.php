@@ -707,6 +707,16 @@ function create_op_dbs($db,$type){
 		db_structure_modify($db,'customReceipt',$custRpt,$errors);
 	}
 
+	$memRpt = "CREATE TABLE custReceiptMessage (
+		card_no int,
+		msg_text carchar(255),
+		modifier_module varchar(50),
+		primary key (card_no,modifier_module)
+		)";
+	if(!$db->table_exists('custReceiptMessage',$name)){
+		db_structure_modify($db,'custReceiptMessage',$custRpt,$errors);
+	}
+
 	$dCoup = "CREATE TABLE disableCoupon (
 		upc varchar(13),
 		reason text,
