@@ -82,20 +82,25 @@ class FormLib {
 			<input id='od10' type='radio' name='other_dates' 
 				onclick=\"\$('#%s').val('%s');\$('#%s').val('%s')\" > 
 				<label for='od10'>Today</label></br >
+			</td><td>
 			<input id='od11' type='radio' name='other_dates' 
 				onclick=\"\$('#%s').val('%s');\$('#%s').val('%s')\" >
 				<label for='od11'>This week</label></br >
+			</td><td>
 			<input id='od12' type='radio' name='other_dates' 
 				onclick=\"\$('#%s').val('%s');\$('#%s').val('%s')\" >
 				<label for='od12'>This month</label></br >
 			</td>
+			</tr><tr>
 			<td rowspan='1'>
 			<input id='od20' type='radio' name='other_dates' value='yesterday'
 				onclick=\"\$('#%s').val('%s');\$('#%s').val('%s')\" >
 				<label for='od20'>Yesterday</label></br >
+			</td><td>
 			<input id='od21' type='radio' name='other_dates' value='last_week'
 				onclick=\"\$('#%s').val('%s');\$('#%s').val('%s')\" >
 				<label for='od21'>Last week</label></br >
+			</td><td>
 			<input id='od22' type='radio' name='other_dates' value='last_month'
 				onclick=\"\$('#%s').val('%s');\$('#%s').val('%s')\" >
 				<label for='od22'>Last month</label></br >
