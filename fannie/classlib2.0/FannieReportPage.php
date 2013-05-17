@@ -35,6 +35,11 @@ class FannieReportPage extends FanniePage {
 	Base class for creating reports.
 	";
 
+	public function __construct() {
+		// To set authentication.
+		parent::__construct();
+	}
+
 	/**
 	  Function for drawing page content.
 	  form_content and report_content are provided
@@ -443,7 +448,10 @@ class FannieReportPage extends FanniePage {
 	  Check for input and display the page
 	*/
 	function draw_page(){
-		if ($this->preprocess()){
+		if (!$this->check_auth() && $this->must_authenticate){
+			$this->login_redirect();
+		}
+		elseif ($this->preprocess()){
 			
 			if ($this->window_dressing)
 				echo $this->get_header();
@@ -477,12 +485,18 @@ class FannieReportPage extends FanniePage {
 				echo $page_css;
 				echo '</style>';
 			}
+
 			foreach($this->css_files as $css_url){
 				printf('<link rel="stylesheet" type="text/css" href="%s">',
 					$css_url);
 				echo "\n";
 			}
+
+			if ($this->window_dressing)
+				echo '</body></html>';
 		}
+
+	// draw_page()
 	}
 }
 
