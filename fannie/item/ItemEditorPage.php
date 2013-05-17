@@ -85,7 +85,7 @@ class ItemEditorPage extends FanniePage {
 		}
 		$ret .= '<form action="ItemEditorPage.php" method=get>';
 		$ret .= '<input name=searchupc type=text id=upc> Enter 
-		<select name=\"ntype\">
+		<select name="ntype">
 		<option>UPC</option>
 		<option>SKU</option>
 		<option>Brand Prefix</option>
