@@ -696,6 +696,10 @@ function getCustomerForm($orderID,$memNum="0"){
 		$p = $dbc->prepare_statement("UPDATE {$TRANS}PendingSpecialOrder SET card_no=?
 			WHERE order_id=?");
 		$r = $dbc->exec_statement($p,array($memNum,$orderID));
+
+		$p = $dbc->prepare_statement("UPDATE {$TRANS}SpecialOrderContact SET
+			street='',phone='' WHERE card_no=?");
+		$r = $dbc->exec_statement($p, array($orderID));
 		
 		// look up personnum, correct if it hasn't been set
 		$pQ = $dbc->prepare_statement("SELECT voided FROM {$TRANS}PendingSpecialOrder
