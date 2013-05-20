@@ -53,7 +53,7 @@ echo "<tr><th>Group name</th><td><select name=name>";
 foreach(getGroupList() as $uid => $name)
 	echo "<option>".$name."</option>";
 echo "</select></td></tr>";
-echo "<tr><th>Group name</th><td><select name=class>";
+echo "<tr><th>Authorization</th><td><select name=class>";
 foreach(getAuthList() as $uid => $name)
 	echo "<option>".$name."</option>";
 echo "</select></td></tr>";
