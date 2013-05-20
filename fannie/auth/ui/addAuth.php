@@ -23,6 +23,7 @@
 
 include('../login.php');
 $path = guesspath();
+include($path."config.php");
 $page_title = 'Fannie : Auth : Add Authorization';
 $header = 'Fannie : Auth : Add Authorization';
 

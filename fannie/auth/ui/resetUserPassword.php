@@ -23,6 +23,7 @@
 
 require('../login.php');
 $path = guesspath();
+include($path."config.php");
 $page_title = 'Fannie : Auth : Reset Password';
 $header = 'Fannie : Auth : Reset Password';
 
