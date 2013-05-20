@@ -29,6 +29,12 @@ include('MemberModule.php');
 $dbc = FannieDB::get($FANNIE_OP_DB);
 
 class MemberEditor extends FanniePage {
+
+	/** list of either auth_class(es) or array(auth_class, start, end) tuple(s) */
+	/* 19May13 Wait on this til better established.
+	protected $auth_classes = array('members_view');
+	*/
+
 	protected $title = "Fannie :: Member "; 
 	protected $header = "Member ";
 
@@ -37,12 +43,16 @@ class MemberEditor extends FanniePage {
 
 	private $msgs = '';
 
+	/*
   public function __construct(){
     global $FANNIE_COOP_ID;
 		parent::__construct();
+		// If saving, set higher priv: members_edit_full
+  		$this->auth_classes = array('members_edit_full');
     if ( isset($FANNIE_COOP_ID) && $FANNIE_COOP_ID == 'WEFC_Toronto' )
   		$this->auth_classes = array('editmembers');
   }
+	*/
 
 	function preprocess(){
 		global $FANNIE_COUNTRY, $FANNIE_MEMBER_MODULES, $FANNIE_OP_DB;
@@ -103,6 +113,8 @@ class MemberEditor extends FanniePage {
 				$this->header .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'.$prevLink;
 			if (!empty($nextLink))
 				$this->header .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'.$nextLink;
+			$this->header .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'.'<a href="javascript:history.back();">Back</a>';
+			$this->header .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'.'<a href="MemberSearchPage.php">Find</a>';
 			/* end building prev/next links */
 
 			/* form was submitted. save input. */
@@ -141,6 +153,8 @@ class MemberEditor extends FanniePage {
 			return False;	
 		}
 		return True;
+
+	// preprocess()
 	}
 
 	function body_content(){
@@ -176,7 +190,7 @@ class MemberEditor extends FanniePage {
 		else
 			$ret .= '<input type="submit" name="saveBtn" value="Save" />';
 		$ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
-		$ret .= '<input type="reset" value="Undo Changes" />';
+		$ret .= '<input type="reset" value="Reset Form" />';
 		$ret .= '</form>';
 		return $ret;
 	}
