@@ -107,6 +107,9 @@ class paycardboxMsgAuth extends PaycardProcessPage {
 		} else if( $amt < 0 && $due > 0) {
 			echo PaycardLib::paycard_msgBox($type,"Invalid Amount",
 				"Enter a positive amount","[clear] to cancel");
+		} else if ( ($amt-$due)>0.005 && $type != 'DEBIT' && $type != 'EBTCASH'){
+			echo PaycardLib::paycard_msgBox($type,"Invalid Amount",
+				"Cannot exceed amount due","[clear] to cancel");
 		} else if( $amt > 0) {
 			$msg = "Tender ".PaycardLib::paycard_moneyFormat($amt);
 			if ($CORE_LOCAL->get("CacheCardType") != "")
