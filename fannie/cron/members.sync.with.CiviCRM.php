@@ -1,7 +1,7 @@
 <?php
 /*******************************************************************************
 
-    Copyright 2012 West End Food Co-op, Toronto, ON, Canada
+    Copyright 2013 West End Food Co-op, Toronto, ON, Canada
 
     This file is part of Fannie.
 
@@ -21,7 +21,18 @@
 
 *********************************************************************************/
 
-/* nightly.update_members_all.php
+/* HELP
+
+   members.sync.with.CiviCRM.php
+
+	 Synchronizes membership data between Fannie and CiviCRM 3.4.4.
+	 Matches records on custdata.CardNo = civicrm_membership.id
+	  and updates the older of the pair from the newer.
+	 Add records that don't exist in the other database, both ways.
+
+*/
+
+/* members.sync.with.CiviCRM.php
    update IS4C members tables from CiviCRM contact and membership tables
    update CiviCRM contact and membership tables from IS4C members tables
 	 
@@ -43,7 +54,8 @@
  --functionality } - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
  #'Z --COMMENTZ { - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
+ *11May13 EL In production.
+ * 7May13 EL Add support for and try dry run.
  --commentz } - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 */
@@ -264,6 +276,7 @@ $selLimit;";
 */
 function assignLocalI ($row, $is4cOps, $updated) {
 
+	global $dbConn2;
 	// table-arrays.
 	// in core_op
 	// Card#, Person#, Name
@@ -353,23 +366,23 @@ id)
 VALUES (
 $custdata[CardNo],
 $custdata[personNum],
-'$custdata[LastName]',
-'$custdata[FirstName]',
+{$dbConn2->escape($custdata[LastName])},
+{$dbConn2->escape($custdata[FirstName])},
 $custdata[CashBack],
-'$custdata[Type]',
+{$dbConn2->escape($custdata[Type])},
 $custdata[memType],
-'$custdata[blueLine]',
-'$custdata[LastChange]',
-'$custdata[id]'
+{$dbConn2->escape($custdata[blueLine])},
+{$dbConn2->escape($custdata[LastChange])},
+{$dbConn2->escape($custdata[id])}
 );";
 		}
 		elseif ( $is4cOps[custdata] == "update" ) {
 			// $updateCustdata is an array of statements to execute later.
 			$updateCustdata[$i] = "UPDATE custdata SET 
-LastName = '$custdata[LastName]'
-, FirstName = '$custdata[FirstName]'
-, LastChange = '$custdata[LastChange]'
-, blueLine = '$custdata[blueLine]'
+LastName = {$dbConn2->escape($custdata[LastName])}
+, FirstName = {$dbConn2->escape($custdata[FirstName])}
+, LastChange = {$dbConn2->escape($custdata[LastChange])}
+, blueLine = {$dbConn2->escape($custdata[blueLine])}
 WHERE CardNo = $custdata[CardNo]
 AND
 personNum = $custdata[personNum]
@@ -420,26 +433,26 @@ card_no
 )
 VALUES (
 $meminfo[card_no]
-, '$meminfo[street]'
-, '$meminfo[city]'
-, '$meminfo[state]'
-, '$meminfo[zip]'
-, '$meminfo[phone]'
-, '$meminfo[email_1]'
-, '$meminfo[email_2]'
+, {$dbConn2->escape($meminfo[street])}
+, {$dbConn2->escape($meminfo[city])}
+, {$dbConn2->escape($meminfo[state])}
+, {$dbConn2->escape($meminfo[zip])}
+, {$dbConn2->escape($meminfo[phone])}
+, {$dbConn2->escape($meminfo[email_1])}
+, {$dbConn2->escape($meminfo[email_2])}
 , $meminfo[ads_OK]
 );";
 
 	// update
 	} else {
 		$updateMeminfo = "UPDATE meminfo SET
-street =  '$meminfo[street]'
-,city = '$meminfo[city]'
-,state = '$meminfo[state]'
-,zip = '$meminfo[zip]'
-,phone = '$meminfo[phone]'
-,email_1 = '$meminfo[email_1]'
-,email_2 = '$meminfo[email_2]'
+street =  {$dbConn2->escape($meminfo[street])}
+,city = {$dbConn2->escape($meminfo[city])}
+,state = {$dbConn2->escape($meminfo[state])}
+,zip = {$dbConn2->escape($meminfo[zip])}
+,phone = {$dbConn2->escape($meminfo[phone])}
+,email_1 = {$dbConn2->escape($meminfo[email_1])}
+,email_2 = {$dbConn2->escape($meminfo[email_2])}
 ,ads_OK = $meminfo[ads_OK]
 WHERE card_no = $meminfo[card_no]
 ;";
@@ -562,6 +575,7 @@ WHERE card_no = $memberCards[card_no]
 */
 function assignLocalC ($row, $civiOps, $updated, $civiContactId) {
 
+	global $dbConn;
 	// Base
 	global $civicrm_contact;
 	// Membership#
@@ -684,14 +698,14 @@ function assignLocalC ($row, $civiOps, $updated, $civiContactId) {
 		)
 		VALUES
 		(''
-		, '$civicrm_contact[contact_type]'
-		, '$civicrm_contact[source]'
-		, '$civicrm_contact[first_name]'
-		, '$civicrm_contact[middle_name]'
-		, '$civicrm_contact[last_name]'
-		, '$civicrm_contact[organization_name]'
-		, '$civicrm_contact[sort_name]'
-		, '$civicrm_contact[display_name]'
+		, {$dbConn->escape($civicrm_contact[contact_type])}
+		, {$dbConn->escape($civicrm_contact[source])}
+		, {$dbConn->escape($civicrm_contact[first_name])}
+		, {$dbConn->escape($civicrm_contact[middle_name])}
+		, {$dbConn->escape($civicrm_contact[last_name])}
+		, {$dbConn->escape($civicrm_contact[organization_name])}
+		, {$dbConn->escape($civicrm_contact[sort_name])}
+		, {$dbConn->escape($civicrm_contact[display_name])}
 		, $civicrm_contact[is_opt_out]
 		, $civicrm_contact[do_not_email]
 		, $civicrm_contact[do_not_mail]
@@ -700,13 +714,13 @@ function assignLocalC ($row, $civiOps, $updated, $civiContactId) {
 	else {
 		$updateContact = "UPDATE civicrm_contact
 		SET
-			contact_type = '$civicrm_contact[contact_type]'
-			, first_name = '$civicrm_contact[first_name]'
-			, middle_name = '$civicrm_contact[middle_name]'
-			, last_name = '$civicrm_contact[last_name]'
-			, organization_name = '$civicrm_contact[organization_name]'
-			, sort_name = '$civicrm_contact[sort_name]'
-			, display_name = '$civicrm_contact[display_name]'
+			contact_type = {$dbConn->escape($civicrm_contact[contact_type])}
+			, first_name = {$dbConn->escape($civicrm_contact[first_name])}
+			, middle_name = {$dbConn->escape($civicrm_contact[middle_name])}
+			, last_name = {$dbConn->escape($civicrm_contact[last_name])}
+			, organization_name = {$dbConn->escape($civicrm_contact[organization_name])}
+			, sort_name = {$dbConn->escape($civicrm_contact[sort_name])}
+			, display_name = {$dbConn->escape($civicrm_contact[display_name])}
 			, is_opt_out = $civicrm_contact[is_opt_out]
 			, do_not_email = $civicrm_contact[do_not_email]
 			, do_not_mail = $civicrm_contact[do_not_mail]
@@ -769,7 +783,7 @@ function assignLocalC ($row, $civiOps, $updated, $civiContactId) {
 		)
 		VALUES
 		('', $civiContactId
-		, '$civicrm_email[email]'
+		, {$dbConn->escape($civicrm_email[email])}
 		, $civicrm_email[location_type_id]
 		, $civicrm_email[is_primary]
 		, $civicrm_email[is_bulkmail]
@@ -789,7 +803,7 @@ function assignLocalC ($row, $civiOps, $updated, $civiContactId) {
 			)
 			VALUES
 			('', $civiContactId
-			, '$civicrm_email[email]'
+			, {$dbConn->escape($civicrm_email[email])}
 			, $civicrm_email[location_type_id]
 			, $civicrm_email[is_primary]
 			)";
@@ -798,7 +812,7 @@ function assignLocalC ($row, $civiOps, $updated, $civiContactId) {
 	else {
 		$updateEmail[] = "UPDATE civicrm_email
 		SET
-		email = '$civicrm_email[email]'
+		email = {$dbConn->escape($civicrm_email[email])}
 		WHERE contact_id = $civiContactId AND is_primary = 1";
 
 		/* If there is another one
@@ -815,7 +829,7 @@ function assignLocalC ($row, $civiOps, $updated, $civiContactId) {
 			if ( $email_id != 0 ) {
 				$updateEmail[] = "UPDATE civicrm_email
 				SET
-				email = '$civicrm_email[email]'
+				email = {$dbConn->escape($civicrm_email[email])}
 				, is_primary = $civicrm_email[is_primary]
 				WHERE id = $email_id";
 			}
@@ -827,7 +841,7 @@ function assignLocalC ($row, $civiOps, $updated, $civiContactId) {
 				)
 				VALUES
 				('', $civiContactId
-				, '$civicrm_email[email]'
+				, {$dbConn->escape($civicrm_email[email])}
 				, $civicrm_email[is_primary]
 				)";
 			}
@@ -859,9 +873,9 @@ function assignLocalC ($row, $civiOps, $updated, $civiContactId) {
 			)
 			VALUES
 			('', $civiContactId
-			, '$civicrm_address[street_address]'
-			, '$civicrm_address[city]'
-			, '$civicrm_address[postal_code]'
+			, {$dbConn->escape($civicrm_address[street_address])}
+			, {$dbConn->escape($civicrm_address[city])}
+			, {$dbConn->escape($civicrm_address[postal_code])}
 			, $civicrm_address[state_province_id]
 			, $civicrm_address[location_type_id]
 			, $civicrm_address[is_primary]
@@ -873,9 +887,9 @@ function assignLocalC ($row, $civiOps, $updated, $civiContactId) {
 		// This will set-empty but not delete if foo=="".
 		$updateAddress[] = "UPDATE civicrm_address
 		SET
-		street_address = '$civicrm_address[street_address]'
-		, city = '$civicrm_address[city]'
-		, postal_code = '$civicrm_address[postal_code]'
+		street_address = {$dbConn->escape($civicrm_address[street_address])}
+		, city = {$dbConn->escape($civicrm_address[city])}
+		, postal_code = {$dbConn->escape($civicrm_address[postal_code])}
 		, state_province_id = $civicrm_address[state_province_id]
 		WHERE contact_id = $civiContactId AND is_primary = 1";
 
@@ -909,7 +923,7 @@ function assignLocalC ($row, $civiOps, $updated, $civiContactId) {
 			)
 			VALUES
 			('', $civiContactId
-			, '$civicrm_phone[phone]'
+			, {$dbConn->escape($civicrm_phone[phone])}
 			, $civicrm_phone[location_type_id]
 			, $civicrm_phone[is_primary]
 			)";
@@ -928,7 +942,7 @@ function assignLocalC ($row, $civiOps, $updated, $civiContactId) {
 				)
 				VALUES
 				('', $civiContactId
-				, '$civicrm_phone[phone]'
+				, {$dbConn->escape($civicrm_phone[phone])}
 				, $civicrm_email[location_type_id]
 				, $civicrm_phone[is_primary]
 				)";
@@ -939,7 +953,7 @@ function assignLocalC ($row, $civiOps, $updated, $civiContactId) {
 		// This will set-empty but not delete if phone=="".
 		$updatePhone[] = "UPDATE civicrm_phone
 		SET
-		phone = '$civicrm_phone[phone]'
+		phone = {$dbConn->escape($civicrm_phone[phone])}
 		WHERE contact_id = $civiContactId AND is_primary = 1";
 
 		/* If there is another one
@@ -956,7 +970,7 @@ function assignLocalC ($row, $civiOps, $updated, $civiContactId) {
 			if ( $phone_id != 0 ) {
 				$updatePhone[] = "UPDATE civicrm_phone
 				SET
-				phone = '$civicrm_phone[phone]'
+				phone = {$dbConn->escape($civicrm_phone[phone])}
 				, is_primary = $civicrm_phone[is_primary]
 				WHERE id = $phone_id";
 			}
@@ -968,7 +982,7 @@ function assignLocalC ($row, $civiOps, $updated, $civiContactId) {
 				)
 				VALUES
 				('', $civiContactId
-				, '$civicrm_phone[phone]'
+				, {$dbConn->escape($civicrm_phone[phone])}
 				, $civicrm_phone[is_primary]
 				)";
 			}
@@ -1025,10 +1039,9 @@ function assignLocalC ($row, $civiOps, $updated, $civiContactId) {
 */
 function toCivi($mode, $member, $updated) {
 
-	//return True;
-
 	global $civiOps;
 	global $debug;
+	global $dryRun;
 	global $civiTableNames;
 	global $civiContactId;
 	global $dieMail;
@@ -1041,6 +1054,9 @@ function toCivi($mode, $member, $updated) {
 	$funcName = "toCivi";
 	if ( $debug )
 		goOrDie("In $funcName debug: $debug > ");
+
+	if ($dryRun)
+		return True;
 
 	$newMember = 0;
 	$upshot = "";
@@ -1332,10 +1348,9 @@ function adjustIS4C($tempMember, $newMember, $updated) {
 */
 function toIS4C($mode, $member, $updated) {
 
-	// return True;
-
 	global $is4cOps;
 	global $debug;
+	global $dryRun;
 	global $is4cTableNames;
 	global $dieMail;
 
@@ -1344,6 +1359,9 @@ function toIS4C($mode, $member, $updated) {
 
 	// debug=2 allows inserts and updates while displaying messages.
 	//$debug = 2;
+
+	if ($dryRun)
+		return True;
 
 	// Get all the data from Civi for this member.
 	// You don't know contact_id at this point.
@@ -2140,7 +2158,8 @@ function fixPhone($str = "") {
 	if ( preg_match("/^(\d{3})-(\d{3})-(\d{4})$/", $str) ) {
 		return($str);
 	} else {
-		$str_orig = str_replace("'", "''", $str_orig);
+		// Let dbc->escape() do this.
+		//$str_orig = str_replace("'", "''", $str_orig);
 		return($str_orig);
 	}
 //fixPhone
@@ -2156,7 +2175,8 @@ function fixCity($str = "") {
 		$str = strtolower($str);
 	}
 	$str = ucwords($str);
-	$str = str_replace("'", "''", $str);
+	// Let dbc->escape() do this.
+	//$str = str_replace("'", "''", $str);
 	return($str);
 //fixCity
 }
@@ -2187,7 +2207,8 @@ function fixName($str = "") {
 	else {
 		1;
 	}
-	$str = str_replace("'", "''", $str);
+	// Let dbc->escape() do this.
+	//$str = str_replace("'", "''", $str);
 	return($str);
 //fixName
 }
@@ -2202,7 +2223,8 @@ function fixAddress($str = "") {
 		$str = strtolower($str);
 	}
 	$str = ucwords($str);
-	$str = str_replace("'", "''", $str);
+	// Let dbc->escape() do this.
+	//$str = str_replace("'", "''", $str);
 	return($str);
 //fixAddress
 }
@@ -2458,15 +2480,16 @@ include($FANNIE_ROOT.'src/cron_msg.php');
 // No limit on PHP execution time.
 set_time_limit(0);
 
-// Tab-delimited.
-// Only used during development.
+// Only used during development, for a local source for remote data.
 $outFile = "../logs/updateMembers.tab";
 
-// Log. Cumulative. Still vague on what s/b written here.
+/* Log. Cumulative.
+ * Contains the one-line summary emailed to ops.
+*/
 $logFile = "../logs/updateMembers.log";
 
-/* Run report.
- . Emailed to ops
+/* Run report. Cumulative.
+ * An item for each change in a run.
 */
 $reportFile = "../logs/updateMembersReport.log";
 
@@ -2489,6 +2512,9 @@ $dieMail = 1;
 //  Use _DEV for new-conact tests.
 $dev = "";
 //$dev = "_DEV";
+//
+// 0=normal, 1=return from to[ISC4C|Civi]() without changing anything.
+$dryRun = 0;
 
 $memberCardTable = "civicrm_value_identification_and_cred_5";
 $memberCardField = "member_card_number2_21";
@@ -2814,7 +2840,7 @@ if ( ! $outer ) {
 	dieHere("Could not open $outFile\n", $dieMail);
 }
 
-// Contains the summary emailed to ops.
+// Contains the one-line summary emailed to ops.
 $logger = fopen("$logFile", "a");
 if ( ! $logger ) {
 	dieHere("Could not open $logFile\n", $dieMail);
@@ -2836,12 +2862,15 @@ fwrite($reporter, "STARTED: $dbNow\n");
 /* End of open the log files */
 
 
-// #'N In development, False to disable getting actual data.
+// #'N True in production.
+//     False in development, False to disable getting actual data and use local source instead.
 if ( TRUE ) {
 
 // CiviCRM members with date modified.
 $c_selectMembers = "SELECT DISTINCT
 c.id as contact_id
+,c.first_name
+,c.last_name
 ,m.id as member_id
  ,m.join_date
 ,v.{$memberCardField} as mcard
@@ -2851,7 +2880,8 @@ civicrm_membership m INNER JOIN civicrm_contact c ON c.id = m.contact_id
 LEFT JOIN {$memberCardTable} v ON m.contact_id = v.entity_id
 LEFT JOIN civicrm_log u ON m.contact_id = u.entity_id AND u.entity_table = 'civicrm_contact'
 WHERE u.modified_date > '$latestRunDate'
-ORDER BY c.id, u.modified_date DESC;";
+ AND NOT (m.is_override = 1 AND m.status_id = 6)
+ORDER BY c.id, m.id, u.modified_date DESC;";
 
 $c_members = $dbConn->query("$c_selectMembers");
 //$c_members = $dbConn->query("$c_selectMembers", MYSQLI_STORE_RESULT);
@@ -2867,22 +2897,35 @@ if ( ! $c_members ) {
 // Populate the big list with Civi members.
 $allMembers = array();
 $ami = -1;
+$lastCid = -1;
+$lastMid = -1;
+$memberForContact = -1;
 while ( $c_row = $dbConn->fetch_row($c_members) ) {
 
 	if ( $c_row['contact_id'] == $lastCid ) {
-		$dupCid++;
-		$isDupCid = 1;
+		if ( $c_row['member_id'] == $lastMid ) {
+			$dupCid++;
+			$isDupCid = 1;
+		} else {
+			$uniqueCid++;
+			$isDupCid = 0;
+			$problems[] = "{$c_row[first_name]} {$c_row[last_name]} contact $lastCid has membership $lastMid and membership {$c_row[member_id]}";
+			$lastMid = "$c_row[member_id]";
+		}
 	} else {
 		$uniqueCid++;
 		$isDupCid = 0;
 		$lastCid = "$c_row[contact_id]";
+		$lastMid = "$c_row[member_id]";
+		$memberForContact = "$c_row[member_id]";
 	}
 
-	// For the first record for each member (same contact_id):
+	// For the first record for each member (same contact_id and member_id):
 	if ( $isDupCid == 0 ) {
 
 		$ami++;
 		$allMembers[$ami] = sprintf("%05d|%s|C", $c_row[member_id], $c_row[modified_date]);
+		//$allMembers[$ami] = sprintf("%05d|%s|C %05d", $c_row[member_id], $c_row[modified_date], $c_row[contact_id]);
 
 	}
 }
@@ -2892,7 +2935,8 @@ $is4cMin = 470;
 $is4cMax = 99997; // 99997
 $i_selectMembers ="SELECT CardNo, LastChange
 FROM custdata
-WHERE CardNo between $is4cMin AND $is4cMax AND LastName != 'NEW MEMBER'";
+WHERE CardNo between $is4cMin AND $is4cMax AND LastName != 'NEW MEMBER'
+ AND NumberOfChecks != 9";
 $i_members = $dbConn2->query("$i_selectMembers");
 if ( $dbConn2->errno ) {
 	$message = sprintf("Select failed: %s\n", $dbConn->error);
@@ -2917,14 +2961,18 @@ sort($allMembers);
 foreach ( $allMembers as $item ) {
 		fwrite($outer, "$item\n");
 }
+if ( count($problems) > 0 ) {
+	fwrite($outer, implode("\n", $problems));
+	echo implode("\n", $problems), "\n";;
+}
 
-dieHere("Got real list in $outFile", 0);
+//dieHere("Got real list in $outFile", 0);
 
 // Enable/Defeat normal member-getting from dbs.
 }
 else {
 	// During dev't use this instead of getting from dbs
-	$allMembers = file("../logs/allMembers13.txt", FILE_IGNORE_NEW_LINES);
+	$allMembers = file("../logs/updateMembers_real.txt", FILE_IGNORE_NEW_LINES);
 }
 
 // #'L --LOOP
@@ -2940,10 +2988,14 @@ list($m2,$d2,$s2) = explode("|", $allMembers[++$ami]);
 $prevAmi = ($ami - 1);
 $nextAmi = ($ami + 1);
 
+// This is a card_no, not civicrm_contact.id
+$maxM = 575;
 // Does not work if there is only one item in $allMembers.
 while ( $ami <= $lastAmi ) {
 
 	/* Used in development
+	if ( $m1 > $maxM || $m2 > $maxM )
+		break;
 	if ( $noChange > 9999 )
 		break;
 	if ( $updateI > 9999 )
@@ -2971,6 +3023,7 @@ while ( $ami <= $lastAmi ) {
 		}
 		elseif ( "$d1" < "$d2" ) {
 			$msg = " $m1:$d1 < $m2:$d2 -> update $s1\n";
+			$problems[] = $msg;
 			fwrite($reporter, $msg);
 			if ( $debug > 0 )
 				echo $msg;
@@ -3007,6 +3060,7 @@ while ( $ami <= $lastAmi ) {
 				echo "A at lastAmi: $m1, $d1, $s1\n";
 				$otherSource = ( $s1 == "I" ) ? "C" : "I";
 				$msg = " $m1/$s1 != $m2/$s2 -> 1add $m1 to $otherSource\n";
+				$problems[] = $msg;
 				fwrite($reporter, $msg);
 				if ( $debug > 0 )
 					echo $msg;
@@ -3039,6 +3093,7 @@ while ( $ami <= $lastAmi ) {
 	elseif ( $m1 < $m2 ) {
 		$otherSource = ( $s1 == "I" ) ? "C" : "I";
 		$msg = " $m1/$s1 != $m2/$s2 -> 2add $m1 to $otherSource\n";
+		$problems[] = $msg;
 		fwrite($reporter, $msg);
 		if ( $debug > 0 )
 			echo $msg;
@@ -3066,6 +3121,7 @@ while ( $ami <= $lastAmi ) {
 			echo "B at lastAmi: $m1, $d1, $s1\n";
 			$otherSource = ( $s1 == "I" ) ? "C" : "I";
 			$msg = " $m1/$s1 != $m2/$s2 -> 3add $m1 to $otherSource\n";
+			$problems[] = $msg;
 			fwrite($reporter, $msg);
 			if ( $debug > 0 )
 				echo $msg;
@@ -3106,7 +3162,8 @@ while ( $ami <= $lastAmi ) {
 
 $dbNow = date("Y-m-d H:i:s"); // " e"
 $subject = "{$problemPrefix}PoS: $dbNow Update members: added $insertC to CiviCRM, $insertI to IS4C";
-$shortMessage = "No change needed: $noChange \nAdded to CiviCRM: $insertC \nUpdated CiviCRM: $updateC \nAdded to IS4C: $insertI \nUpdated IS4C: $updateI \n";
+$shortMessage = ($dryRun == 1)?"Dry Run: ":"";
+$shortMessage .= "No change needed: $noChange \nAdded to CiviCRM: $insertC \nUpdated CiviCRM: $updateC \nAdded to IS4C: $insertI \nUpdated IS4C: $updateI \n";
 $cronMessage = str_replace(" \n", " : ", $shortMessage);
 if ( count($problems) > 0 ) {
 	$shortMessage .= implode("\n", $problems);

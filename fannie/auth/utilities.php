@@ -167,6 +167,14 @@ function doLogin($name){
 	$sessionR = $sql->exec_statement($sessionQ,array($session_id,$name));
 
 	/**
+	  Periodically purge expired records
+		9May13 EL Not periodic.
+	*/
+	$delP = $sql->prepare_statement('DELETE FROM userSessions
+			WHERE expires < '.$sql->now());
+	$delR = $sql->exec_statement($delP);
+
+	/**
 	  New behavior - Store session id in dedicated table.
 	  This allows more than one session record per user
 	  record - i.e., someone can be logged in on multiple
@@ -182,13 +190,6 @@ function doLogin($name){
 
 	$session_data = array("name"=>$name,"session_id"=>$session_id);
 	$cookie_data = serialize($session_data);
-
-	/**
-	  purge expired records
-	*/
-	$delP = $sql->prepare_statement('DELETE FROM userSessions
-			WHERE expires < '.$sql->now());
-	$delR = $sql->exec_statement($delP);
 
 	setcookie('session_data',base64_encode($cookie_data),time()+(60*600),'/');
 }

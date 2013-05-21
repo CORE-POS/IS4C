@@ -41,9 +41,9 @@ class StoreSummaryReport extends FannieReportPage2 {
 
 	public function __construct() {
 		// To set authentication.
-		//parent::__construct();
-		// Would dialing-direct work? Seems to.
-		FanniePage::__construct();
+		parent::__construct();
+		// Would dialing-direct work? Seems to. No, it doesn't.
+		// FanniePage::__construct();
 	}
 
 	function preprocess(){

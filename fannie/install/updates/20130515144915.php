@@ -1,7 +1,7 @@
 <?php
 /*******************************************************************************
 
-    Copyright 2009 Whole Foods Co-op
+    Copyright 2013 Whole Foods Co-op
 
     This file is part of Fannie.
 
@@ -21,23 +21,23 @@
 
 *********************************************************************************/
 
-require('../login.php');
-$path = guesspath();
-include($path."config.php");
-$page_title = 'Fannie : Auth : View Groups';
-$header = 'Fannie : Auth : View Groups';
+class update_20130515144915 extends UpdateObj {
 
-include($path."src/header.html");
+	protected $timestamp = '20130515144915';
 
-if (!validateUser('admin')){
-  return;
+	protected $description = 'This update:
+changes the PRIMARY KEY of userSessions to (uid, session_id)
+';
+
+	protected $author = 'Eric Lee (WEFC_Toronto)';
+
+	protected $queries = array(
+		'op' => array(
+			'ALTER TABLE userSessions DROP PRIMARY KEY',
+			'ALTER TABLE userSessions ADD PRIMARY KEY (uid, session_id) USING BTREE'),
+		'trans' => array(),
+		'archive' => array()
+	);
 }
 
-showGroups();
-
-?>
-<p />
-<a href=menu.php>Main menu</a>
-<?php
-include($path."src/footer.html");
 ?>

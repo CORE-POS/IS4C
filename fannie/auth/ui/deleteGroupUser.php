@@ -23,6 +23,7 @@
 
 require('../login.php');
 $path = guesspath();
+include($path."config.php");
 $page_title = 'Fannie : Auth : Delete User from Group';
 $header = 'Fannie : Auth : Delete User from Group';
 

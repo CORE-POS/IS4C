@@ -23,6 +23,7 @@
 
 require('../login.php');
 $path = guesspath();
+include($path."config.php");
 $page_title = 'Fannie : Auth : View Authorizations';
 $header = 'Fannie : Auth : View Authorizations';
 

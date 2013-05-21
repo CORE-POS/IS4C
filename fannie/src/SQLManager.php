@@ -137,6 +137,8 @@ class SQLManager {
 		$ok = (!is_object($con)) ? False : $con->Execute($query_text,$params);
 		if (!$ok && is_writable($ql)){
 			$fp = fopen($ql,'a');
+			if (is_array($query_text))
+				$query_text = $query_text[0];
 			fputs($fp,$_SERVER['PHP_SELF'].": ".date('r').': '.$query_text."\n");
 			fputs($fp,$this->error()."\n\n");
 			fclose($fp);

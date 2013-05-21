@@ -71,7 +71,7 @@ class VendorItemModule extends ItemModule {
 			$style = 'display:none;';
 		}
 		
-		$ret .= '</table></fieldset>';
+		$ret .= '</fieldset>';
 		return $ret;
 	}
 

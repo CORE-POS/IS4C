@@ -60,6 +60,11 @@ set_time_limit(0);
 $sql = new SQLManager($FANNIE_SERVER,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
 		$FANNIE_SERVER_USER,$FANNIE_SERVER_PW);
 
+$cols = $sql->table_definition('dtransactions');
+if (isset($cols['date_id'])){
+	$sql->query("UPDATE dtransactions SET date_id=DATE_FORMAT(datetime,'%Y%m%d')");
+}
+
 /* Load dtransactions into the archive, trim to 90 days */
 $chk1 = $sql->query("INSERT INTO transarchive SELECT * FROM dtransactions");
 $chk2 = $sql->query("DELETE FROM transarchive WHERE ".$sql->datediff($sql->now(),'datetime')." > 92");

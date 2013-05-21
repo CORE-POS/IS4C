@@ -35,6 +35,7 @@ class CoopDealsReviewPage extends FanniePage {
 	function preprocess(){
 		if (FormLib::get_form_value('start') !== '')
 			$this->mode = 'results';
+		return True;
 	}
 
 	function body_content(){
@@ -45,6 +46,8 @@ class CoopDealsReviewPage extends FanniePage {
 	}
 
 	function results_content(){
+		global $FANNIE_OP_DB;
+		$dbc = FannieDB::get($FANNIE_OP_DB);
 		$start = FormLib::get_form_value('start',date('Y-m-d'));
 		$end = FormLib::get_form_value('end',date('Y-m-d'));
 		$b_start = FormLib::get_form_value('bstart',date('Y-m-d'));
@@ -96,7 +99,7 @@ class CoopDealsReviewPage extends FanniePage {
 
 	
 	function form_content(){
-		global $FANNIE_OP_DB;
+		global $FANNIE_OP_DB, $FANNIE_URL;
 		$dbc = FannieDB::get($FANNIE_OP_DB);
 		$query = $dbc->prepare_statement("SELECT t.upc,p.description,t.price,
 			CASE WHEN s.super_name IS NULL THEN 'sale' ELSE s.super_name END as batch,
@@ -134,6 +137,8 @@ class CoopDealsReviewPage extends FanniePage {
 		</tr></table>
 		<input type=submit value=\"Create Batch(es)\" />
 		</form>";
+
+		$this->add_script($FANNIE_URL.'src/CalendarControl.js');
 
 		return $ret;
 	}

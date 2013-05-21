@@ -53,6 +53,7 @@ $week = date("W",$tstamp);
 $week--;
 if ($week == 0) $week = 52;
 
+
 if (isset($argv[1]) && is_numeric($argv[1]))
 	$week = $argv[1];
 
@@ -88,7 +89,7 @@ if (strstr($FANNIE_SERVER_DBMS,"MYSQL")){
 		on d.upc=p.upc
 		WHERE p.scale = 0
 		AND d.upc > '0000000999999'
-		AND week(tdate) = ".($week)."
+		AND week(tdate) = ".($week-1)."
 		group by d.upc, p.description";
 }
 
