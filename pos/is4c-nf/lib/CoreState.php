@@ -77,7 +77,6 @@ static public function system_init() {
         $CORE_LOCAL->set("ccRemoteServerUp",1);
 	$CORE_LOCAL->set("search_or_list",0);
 	$CORE_LOCAL->set("ccTermOut","idle");
-	$CORE_LOCAL->set('ccTermState','swipe');
 	$CORE_LOCAL->set("inputMasked",0);
 
 	/**
@@ -162,6 +161,7 @@ static public function transReset() {
 	$CORE_LOCAL->set("CachePinEncBlock","");
 	$CORE_LOCAL->set("CacheCardType","");
 	$CORE_LOCAL->set("CacheCardCashBack",0);
+	$CORE_LOCAL->set('ccTermState','swipe');
 	$CORE_LOCAL->set("paycard_voiceauthcode","");
 	$CORE_LOCAL->set("ebt_authcode","");
 	$CORE_LOCAL->set("ebt_vnum","");
