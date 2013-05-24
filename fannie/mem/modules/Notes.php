@@ -38,8 +38,8 @@ class Notes extends MemberModule {
 		  Always show the most recent note
 		*/
 		if ($dbc->num_rows($infoR) > 0){
-			$temp = $dbc->fetch_row($infoQ);	
-			$recentNote = str_replace("<br />","\n",$infoW['note']);
+			$temp = $dbc->fetch_row($infoR);	
+			$recentNote = str_replace("<br />","\n",$temp['note']);
 			$recentDate = $temp['stamp'];
 		}
 
