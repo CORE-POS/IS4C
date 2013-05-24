@@ -78,7 +78,8 @@ class paycardSuccess extends BasicPage {
 				$this->change_page($this->page_url."gui-modules/pos2.php");
 				return False;
 			}
-			else if ($mode == PaycardLib::PAYCARD_MODE_AUTH && $input == "VD"){
+			else if ($mode == PaycardLib::PAYCARD_MODE_AUTH && $input == "VD" 
+				&& ($CORE_LOCAL->get('CacheCardType') == 'CREDIT' || $CORE_LOCAL->get('CacheCardType') == '')){
 				$plugin_info = new Paycards();
 				$this->change_page($plugin_info->plugin_url()."/gui/paycardboxMsgVoid.php");
 				return False;
@@ -181,8 +182,9 @@ class paycardSuccess extends BasicPage {
 			$newstr = "<img src=\"$img\" width=200 id=\"sigimg\" style=\"border:solid 1px black;\" />";
 			$msg = "<b>Approved</b><font size=-1>
 				<p>$newstr
-				<p>[enter] to continue
-				<br>[void] to cancel and void";
+				<p>[enter] to continue";
+			if ($CORE_LOCAL->get('CacheCardType') == 'CREDIT' || $CORE_LOCAL->get('CacheCardType') == '')
+				$msg .= "<br>[void] to cancel and void";
 			$CORE_LOCAL->set("boxMsg",$msg);
 			$this->add_onload_command("setTimeout('getImg()',500);");
 		}
