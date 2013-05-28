@@ -68,6 +68,10 @@ class Plugin {
 
 	}
 
+	public function plugin_draw_icon(){
+		return '';
+	}
+
 	/**
 	  Get a URL for the plugin's directory	
 	*/
