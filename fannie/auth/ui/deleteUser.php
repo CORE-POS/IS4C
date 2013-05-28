@@ -23,6 +23,7 @@
 
 require('../login.php');
 $path = guesspath();
+include($path."config.php");
 $page_title = 'Fannie : Auth : Delete User';
 $header = 'Fannie : Auth : Delete User';
 
@@ -57,7 +58,11 @@ else if (isset($_POST['warn'])){
 }
 else {
   echo "<form action=deleteUser.php method=post>";
-  echo "Username: <input type=text name=name> <input type=submit value=Delete>";
+echo "Username:<select name=name>";
+foreach(getUserList() as $uid => $name)
+	echo "<option>".$name."</option>";
+echo "</select>";
+echo '&nbsp;&nbsp;&nbsp;<input type="submit" value="Delete" />';
   echo "<input type=hidden name=warn value=warn>";
   echo "</form>";
   echo "<p /><a href=menu.php>Main menu</a>";

@@ -1,6 +1,6 @@
 <?php
 include('../../config.php');
-include($FANNIE_ROOT.'src/mysql_connect.php');
+include($FANNIE_ROOT.'src/trans_connect.php');
 include($FANNIE_ROOT.'src/select_dlog.php');
 
 $header = "Credit Card Report (supplemental)";
@@ -24,22 +24,25 @@ echo "<form action=index.php method=get>
 
 echo "<h3>Integrated CC Report for $date</h3>";
 
-$query = "SELECT q.datetime,q.laneno,q.cashierno,q.transno,q.amount,
-	q.PAN, datepart(yy,q.datetime),datepart(dd,q.datetime),
-	datepart(mm,q.datetime),r.xresultmessage
+$seconds = strtotime($dateStr);
+$start = date('Y-m-d 00:00:00',$seconds);
+$end = date('Y-m-d 23:59:59',$seconds);
+$query = $dbc->prepare_statement("SELECT q.datetime,q.laneno,q.cashierno,q.transno,q.amount,
+	q.PAN, year(q.datetime),day(q.datetime),
+	month(q.datetime),r.xResultMessage
 	FROM efsnetRequest q LEFT JOIN efsnetResponse r
-	on r.date=q.date and r.cashierno=q.cashierno and 
-	r.transno=q.transno and r.laneno=q.laneno
-	and r.transid=q.transid
+	on r.date=q.date and r.cashierNo=q.cashierNo and 
+	r.transNo=q.transNo and r.laneNo=q.laneNo
+	and r.transID=q.transID
 	left join efsnetRequestMod m
-	on m.date = q.date and m.cashierno=q.cashierno and
-	m.transno=q.transno and m.laneno=q.laneno
-	and m.transid=q.transid
-	where datediff(dd,q.datetime,'$date')=0
-	and q.laneno <> 99 and q.cashierno <> 9999
-	and m.transid is null
-	order by q.datetime,q.laneno,q.transno,q.cashierno";	
-$result = $dbc->query($query);
+	on m.date = q.date and m.cashierNo=q.cashierNo and
+	m.transNo=q.transNo and m.laneNo=q.laneNo
+	and m.transID=q.transID
+	where q.datetime between ? AND ?
+	and q.laneNo <> 99 and q.cashierNo <> 9999
+	and m.transID is null
+	order by q.datetime,q.laneNo,q.transNo,q.cashierNo");
+$result = $dbc->exec_statement($query,array($start,$end));
 
 echo "<table cellspacing=0 cellpadding=4 border=1>
 <tr><th>Date &amp; Time</th><th>Card</th><th>Amount</th>
@@ -49,7 +52,7 @@ $htable = array();
 while($row = $dbc->fetch_row($result)){
 	printf("<tr %s><td>%s</td><td>%s</td><td>%.2f</td>
 		<td>%s</td>
-		<td><a href=\"{$FANNIE_URL}admin/LookupReceipt/reprint.php?month=%d&year=%d&day=%d&receipt=%s\">
+		<td><a href=\"{$FANNIE_URL}admin/LookupReceipt/RenderReceiptPage.php?month=%d&year=%d&day=%d&receipt=%s\">
 		POS receipt</td></tr>", 
 		(isset($htable[$row[4]."+".$row[5]])||$row[9]=="")?"class=hilite":"",
 		$row[0],$row[5],$row[4],$row[9],

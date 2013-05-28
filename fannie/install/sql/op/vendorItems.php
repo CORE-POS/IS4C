@@ -26,6 +26,9 @@ for making shelf tags.
 Size relates to an indivdual product.
 Units relates to a case. So a case of beer has 24
 units, each with a size of 12 oz.
+
+Cost represents the unit cost. Cost times units 
+should then equal the case cost.
 */
 $CREATE['op.vendorItems'] = "
 	CREATE TABLE vendorItems (
@@ -37,7 +40,10 @@ $CREATE['op.vendorItems'] = "
 		units int,
 		cost decimal(10,2),
 		vendorDept int,
-		vendorID int
+		vendorID int,
+		PRIMARY KEY (vendorID,upc),
+		INDEX(vendorID),
+		INDEX(upc)
 	)
 ";
 

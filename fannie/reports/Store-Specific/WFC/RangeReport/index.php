@@ -54,18 +54,20 @@ $today = date("m/j/y");
 $repDate = date('m/j/y', mktime(0, 0, 0, date("m") , date("d") - 1, date("Y")));
 $repDate2 = $repDate;
 
-$datediff = '-1 AND -1';
+$d1 = date("Y-m-d",strtotime('yesterday'));
+$ddiff = "'$d1 00:00:00' AND '$d1 23:59:59'";
 if(isset($_REQUEST['date']) && isset($_REQUEST['date2'])){
    $repDate = $_REQUEST['date'];
    $repDate2 = $_REQUEST['date2'];
-   
-   $diffQ = "SELECT datediff(dd,getdate(),'$repDate'),datediff(dd,getdate(),'$repDate2')";
-   $diffR = $dbc->query($diffQ);
 
-   $diffW = $dbc->fetch_array($diffR);
+   $t1 = strtotime($repDate);
+   $t2 = strtotime($repDate2);
+   $d1 = date('Y-m-d',($t1 ? $t1 : strtotime('yesterday')));
+   $d2 = date('Y-m-d',($t2 ? $t2 : strtotime('yesterday')));
 
-   $datediff = $diffW[0].' and '.$diffW[1];;
+   $ddiff = "'$d1 00:00:00' AND '$d2 23:59:59'";
 }
+$dates = array($d1.' 00:00:00',$d2.' 23:59:59');
 
 if (!isset($_GET['excel']))
 	echo "<br /><a href=index.php?date=$repDate&date2=$repDate2&excel=yes>Click here for Excel version</a>";
@@ -74,16 +76,16 @@ echo '<br>Report run ' . $today. ' for ' . $repDate." to ".$repDate2."<br />";
 
 $dlog = select_dlog($repDate,$repDate2);
 //var_dump($dlog);
+$dlog = "trans_archive.dlogBig";
+$ARCH = $FANNIE_SERVER_DBMS=='MSSQL' ? $FANNIE_ARCHIVE_DB.'.dbo.' : $FANNIE_ARCHIVE_DB.'.';
 
-$tenderQ = "SELECT t.TenderName,-sum(d.total) as total, COUNT(d.total)
-
-FROM $dlog as d ,tenders as t 
-WHERE datediff(dd,getdate(),d.tDate) BETWEEN $datediff 
-AND d.trans_status <>'X'  
-AND d.Trans_Subtype = t.TenderCode
+$tenderQ = $dbc->prepare_statement("SELECT t.TenderName,-sum(d.total) as total, SUM(d.quantity)
+FROM {$ARCH}sumTendersByDay as d ,tenders as t 
+WHERE d.tdate BETWEEN ? AND ?
+AND d.tender_code = t.TenderCode
 and d.total <> 0
-GROUP BY t.TenderName";
-$tenderR = $dbc->query($tenderQ);
+GROUP BY t.TenderName");
+$tenderR = $dbc->exec_statement($tenderQ,$dates);
 $tenders = array("Cash"=>array(10120,0.0,0),
 		"Check"=>array(10120,0.0,0),
 		"Credit Card"=>array(10120,0.0,0),
@@ -113,15 +115,14 @@ echo tablify($tenders,array(1,0,2,3),array("Account","Type","Amount","Count"),
 	     array($ALIGN_LEFT,$ALIGN_LEFT,$ALIGN_RIGHT|$TYPE_MONEY,$ALIGN_RIGHT),2);
 
 
-$pCodeQ = "SELECT s.salesCode,-1*sum(l.total) as total,min(l.department) 
-FROM $dlog as l join departments as d on l.department = d.dept_no
+$pCodeQ = $dbc->prepare_statement("SELECT s.salesCode,-1*sum(l.total) as total,min(l.dept_ID) 
+FROM {$ARCH}sumDeptSalesByDay as l join departments as d on l.dept_ID = d.dept_no
 LEFT JOIN deptSalesCodes AS s ON d.dept_no=s.dept_ID
-WHERE datediff(dd,getdate(),tDate) BETWEEN $datediff
-AND l.department < 600 AND l.department <> 0
-AND l.trans_type <>'T'
+WHERE tdate BETWEEN ? AND ?
+AND l.dept_ID < 600 AND l.dept_ID <> 0
 GROUP BY s.salesCode
-order by s.salesCode";
-$pCodeR = $dbc->query($pCodeQ);
+order by s.salesCode");
+$pCodeR = $dbc->exec_statement($pCodeQ,$dates);
 $pCodes = array("41201"=>array(0.0),
 		"41205"=>array(0.0),
 		"41300"=>array(0.0),
@@ -161,56 +162,22 @@ echo "<br /><b>Sales</b>";
 echo tablify($pCodes,array(0,1),array("pCode","Sales"),
 	     array($ALIGN_LEFT,$ALIGN_RIGHT|$TYPE_MONEY),1);
 
-$saleSumQ = "SELECT -1*sum(l.total) as totalSales
-FROM $dlog as l
-WHERE datediff(dd,getdate(),tDate) =$datediff  
-AND l.department < 600 AND l.department <> 0
-AND l.trans_type <> 'T'";
-$saleSumR = $dbc->query($saleSumQ);
+$saleSumQ = $dbc->prepare_statement("SELECT -1*sum(l.total) as totalSales
+FROM {$ARCH}sumDeptSalesByDay as l
+WHERE tdate BETWEEN ? AND ?
+AND l.dept_ID < 600 AND l.dept_ID <> 0");
+$saleSumR = $dbc->exec_statement($saleSumQ,$dates);
 echo "<br /><b><u>Total Sales</u></b><br />";
 echo sprintf("%.2f<br />",array_pop($dbc->fetch_row($saleSumR)));
 
-/*
-$returnsQ = "SELECT s.salesCode,-1*sum(L.total)as returns
-FROM $dlog as L,departments as d,deptSalesCodes as s
-WHERE d.dept_no = L.department
-AND d.dept_no=s.dept_ID
- AND datediff(dd,getdate(),tDate) BETWEEN $datediff
-AND(trans_status = 'R')
-GROUP BY s.salesCode";
-$returnsR = $dbc->query($returnsQ);
-$returns = array();
-while($row = $dbc->fetch_row($returnsR))
-	$returns["$row[0]"] = array($row[1]);
-echo "<br /><b>Returns</b>";
-echo tablify($returns,array(0,1),array("pCode","Sales"),
-	     array($ALIGN_LEFT,$ALIGN_RIGHT|$TYPE_MONEY),1);
-*/
-
-// idea here is to get everything to the right of the
-// RIGHT MOST space, hence the reverse
-/*
-$voidTransQ = "SELECT RIGHT(description,CHARINDEX(' ',REVERSE(description))-1),
-	       trans_num,-1*total from
-	       voidTransHistory where datediff(dd,getdate(),tdate) BETWEEN $datediff";
-$voidTransR = $dbc->query($voidTransQ);
-$voids = array();
-while($row = $dbc->fetch_row($voidTransR))
-	$voids["$row[0]"] = array($row[1],$row[2]);
-echo "<br /><b>Voids</b>";
-echo tablify($voids,array(0,1,2),array("Original","Void","Total"),
-	     array($ALIGN_LEFT,$ALIGN_LEFT,$ALIGN_RIGHT|$TYPE_MONEY),2);
-*/
-
-$otherQ = "SELECT d.department,t.dept_name, -1*sum(total) as total 
-FROM $dlog as d join departments as t ON d.department = t.dept_no
-WHERE datediff(dd,getdate(),tDate) BETWEEN $datediff  
-AND (d.department >300)AND d.Department <> 0 AND 
-(d.register_no <> 20 or d.department = 703)
-and d.department <> 610
-and d.department not between 500 and 599
-GROUP BY d.department, t.dept_name order by d.department";
-$otherR = $dbc->query($otherQ);
+$otherQ = $dbc->prepare_statement("SELECT d.dept_ID,t.dept_name, -1*sum(total) as total 
+FROM {$ARCH}sumDeptSalesByDay as d join departments as t ON d.dept_ID = t.dept_no
+WHERE tdate BETWEEN ? AND ?
+AND (d.dept_ID >300)AND d.dept_ID <> 0 
+and d.dept_ID <> 610
+and d.dept_ID not between 500 and 599
+GROUP BY d.dept_ID, t.dept_name order by d.dept_ID");
+$otherR = $dbc->exec_statement($otherQ,$dates);
 $others = array("600"=>array("64410","SUPPLIES",0.0),
 		"604"=>array("&nbsp;","MISC PO",0.0),
 		"700"=>array("63320","TOTES",0.0),
@@ -232,51 +199,15 @@ echo "<br /><b>Other</b>";
 echo tablify($others,array(1,0,2,3),array("Account","Dept","Description","Amount"),
 	     array($ALIGN_LEFT,$ALIGN_LEFT,$ALIGN_LEFT,$ALIGN_RIGHT|$TYPE_MONEY),3);
 
-/*
-$equityQ = "SELECT d.card_no,t.dept_name, -1*sum(total) as total 
-FROM $dlog as d join departments as t ON d.department = t.dept_no
-WHERE datediff(dd,getdate(),tDate) BETWEEN $datediff
-AND (d.department IN(991,992))AND d.Department <> 0 and d.register_no <> 20
-GROUP BY d.card_no, t.dept_name ORDER BY d.card_no, t.dept_name";
-$equityR = $dbc->query($equityQ);
-$equityrows = array();
-while($row = $dbc->fetch_row($equityR)){
-	$newrow = array("00-".str_pad($row[0],7,"0",STR_PAD_LEFT),$row[0],$row[1],$row[2]);
-	array_push($equityrows,$newrow);
-}
-echo "<br /><b>Equity Payments by Member Number</b>";
-echo tablify($equityrows,array(1,2,3,4),array("Account","MemNum","Description","Amount"),
-	array(0,$ALIGN_LEFT,$ALIGN_LEFT,$ALIGN_LEFT,$ALIGN_RIGHT|$TYPE_MONEY));
-*/
-
-/*
-$arQ = "SELECT d.card_no,CASE WHEN d.department = 990 THEN 'AR PAYMENT' ELSE 'STORE CHARGE' END as description, 
--1*sum(total) as total, count(card_no) as transactions 
-FROM $dlog as d 
-WHERE datediff(dd,getdate(),tDate) BETWEEN $datediff  
-AND (d.department =990 OR d.trans_subtype = 'MI') and 
-(d.register_no <> 20 or d.department <> 990)
-GROUP BY d.card_no,d.department order by department,card_no";
-$arR = $dbc->query($arQ);
-$ar_rows = array();
-while($row = $dbc->fetch_row($arR)){
-	$newrow = array("01-".str_pad($row[0],7,"0",STR_PAD_LEFT),$row[0],$row[1],$row[2],$row[3]);
-	array_push($ar_rows,$newrow);
-}
-echo "<br /><b>AR Activity by Member Number</b>";
-echo tablify($ar_rows,array(1,2,3,4,5),array("Account","MemNum","Description","Amount","Transactions"),
-	array(0,$ALIGN_LEFT,$ALIGN_LEFT,$ALIGN_LEFT,$ALIGN_RIGHT|$TYPE_MONEY,$ALIGN_RIGHT));
-*/
-
-$discQ = "SELECT     m.memDesc, -1*SUM(d.total) AS Discount,count(*) 
+$discQ = $dbc->prepare_statement("SELECT     m.memDesc, -1*SUM(d.total) AS Discount,count(*) 
 FROM $dlog d INNER JOIN
        custdata c ON d.card_no = c.CardNo INNER JOIN
       memTypeID m ON c.memType = m.memTypeID
-WHERE     (DATEDIFF(dd, GETDATE(), d.tdate) BETWEEN $datediff ) 
+WHERE     (d.tdate BETWEEN ? AND ? ) 
     AND (d.upc = 'DISCOUNT') AND c.personnum= 1
 and total <> 0
-GROUP BY m.memDesc, d.upc ";
-$discR = $dbc->query($discQ);
+GROUP BY m.memDesc, d.upc ");
+$discR = $dbc->exec_statement($discQ,$dates);
 $discounts = array("MAD Coupon"=>array(66600,$mad[0],$mad[1]),
 		   "Staff Member"=>array(61170,0.0,0),
 		   "Staff NonMem"=>array(61170,0.0,0),
@@ -289,46 +220,36 @@ echo "<br /><b>Discounts</b>";
 echo tablify($discounts,array(1,0,2,3),array("Account","Type","Amount","Count"),
 	     array($ALIGN_LEFT,$ALIGN_LEFT,$ALIGN_RIGHT|$TYPE_MONEY,$ALIGN_RIGHT),2);
 
-$taxSumQ = "SELECT  -1*sum(total) as tax_collected
+$taxSumQ = $dbc->prepare_statement("SELECT  -1*sum(total) as tax_collected
 FROM $dlog as d 
-WHERE datediff(dd,getdate(),tDate) = $datediff
+WHERE tdate BETWEEN ? AND ?
 AND (d.upc = 'tax')
-GROUP BY d.upc";
-$taxSumR = $dbc->query($taxSumQ);
+GROUP BY d.upc");
+$taxSumR = $dbc->exec_statement($taxSumQ,$dates);
 echo "<br /><b><u>Actual Tax Collected</u></b><br />";
 echo sprintf("%.2f<br />",array_pop($dbc->fetch_row($taxSumR)));
 
-/*
-$transQ = "select q.trans_num,sum(q.quantity) as items,transaction_type, sum(q.total) from
-	(
-	select trans_num,card_no,quantity,total,
-        m.memdesc as transaction_type
-	from $dlog as d
-	left join custdata as c on d.card_no = c.cardno
-	left join memtypeid as m on c.memtype = m.memtypeid
-	where datediff(dd,getdate(),tdate) BETWEEN $datediff and 
-	trans_type in ('I','D')
-	and upc <> 'RRR'
-	and c.personnum=1
-	) as q 
-	group by q.trans_num,q.transaction_type";
-$transR = $dbc->query($transQ);
+$transQ = $dbc->prepare_statement("SELECT SUM(d.total),SUM(d.quantity),SUM(d.transCount),m.memdesc
+	FROM {$ARCH}sumMemTypeSalesByDay as d LEFT JOIN
+	memTypeID as m ON m.memTypeID=d.memType
+	WHERE d.tdate BETWEEN ? AND ?
+	GROUP BY d.memType, m.memdesc");
+$transR = $dbc->exec_statement($transQ,$dates);
 $transinfo = array("Member"=>array(0,0.0,0.0,0.0,0.0),
 		   "Non Member"=>array(0,0.0,0.0,0.0,0.0),
 		   "Staff Member"=>array(0,0.0,0.0,0.0,0.0),
 		   "Staff NonMem"=>array(0,0.0,0.0,0.0,0.0));
 while($row = $dbc->fetch_array($transR)){
-	if (!isset($transinfo[$row[2]])) continue;
-	$transinfo[$row[2]][0] += 1;
-	$transinfo[$row[2]][1] += $row[1];
-	$transinfo[$row[2]][3] += $row[3];
+	if (!isset($transinfo[$row[3]])) continue;
+	$transinfo[$row[3]] = array($row[2],$row[1],
+		round($row[1]/$row[2],2),$row[0],
+		round($row[0]/$row[2],2)
+	);
 }
 $tSum = 0;
 $tItems = 0;
 $tDollars = 0;
 foreach(array_keys($transinfo) as $k){
-	$transinfo[$k][2] = round($transinfo[$k][1]/$transinfo[$k][0],2);
-	$transinfo[$k][4] = round($transinfo[$k][3]/$transinfo[$k][0],2);
 	$tSum += $transinfo[$k][0];
 	$tItems += $transinfo[$k][1];
 	$tDollars += $transinfo[$k][3];
@@ -339,7 +260,6 @@ echo tablify($transinfo,array(0,1,2,3,4,5),
 	array("Type","Transactions","Items","Average items/transaction","$","$/transaction"),
 	array($ALIGN_LEFT,$ALIGN_RIGHT,$ALIGN_RIGHT|$TYPE_MONEY,$ALIGN_RIGHT|$TYPE_MONEY,
 		$ALIGN_RIGHT|$TYPE_MONEY,$ALIGN_RIGHT|$TYPE_MONEY));
-*/
 
 function tablify($data,$col_order,$col_headers,$formatting,$sum_col=-1){
 	$sum = 0;

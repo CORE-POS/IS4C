@@ -23,6 +23,7 @@
 
 require('../login.php');
 $path = guesspath();
+include($path."config.php");
 $page_title = 'Fannie : Auth : Delete Group';
 $header = 'Fannie : Auth : Delete Group';
 
@@ -56,8 +57,12 @@ else if (isset($_POST['warn'])){
 }
 else {
   echo "<form action=deleteGroup.php method=post>";
-  echo "Group name: <input type=text name=name> <input type=submit value=Delete>";
+echo "Group name:<select name=name>";
+foreach(getGroupList() as $uid => $name)
+	echo "<option>".$name."</option>";
+echo "</select>";
   echo "<input type=hidden name=warn value=warn>";
+echo '&nbsp;&nbsp;&nbsp;<input type="submit" value="Delete" />';
   echo "</form>";
   echo "<p /><a href=menu.php>Main menu</a>";
 }

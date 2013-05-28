@@ -21,6 +21,14 @@
 
 *********************************************************************************/
 
+/* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+	* 28Feb13 Andy Theuninck moved functionality to SyncIndexPage.php
+	* 19Jan13 Eric Lee Add productUser to table list
+	* 10Oct12 Eric Lee Add memberCards to table list
+*/
+header('Location: SyncIndexPage.php');
+exit;
+
 include('../config.php');
 
 $page_title = "Fannie : Sync Lane";
@@ -32,7 +40,9 @@ echo "<form action=\"tablesync.php\" method=\"get\">";
 echo "<b>Table</b>: <select name=\"tablename\">
 	<option>Select a table</option>
 	<option>products</option>
+	<option>productUser</option>
 	<option>custdata</option>
+	<option>memberCards</option>
 	<option>employees</option>
 	<option>departments</option>
 	<option>tenders</option>

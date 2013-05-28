@@ -21,9 +21,10 @@
 
 *********************************************************************************/
 
-/* Split AB Group PriceMethod module
+/** 
+   @class SplitABGroupPM
    
-   The same as AB, but the discount gets
+   The same as ABGroupPM, but the discount gets
    split across two departments
  
    Splitting doesn't work with member/staff
@@ -33,12 +34,6 @@
    This is pricemethod 3 in earlier WFC releases
    and may not exist anywhere else.
 */
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
-
-if (!class_exists('PriceMethod')) include($CORE_PATH.'lib/Scanning/PriceMethod.php');
-if (!function_exists('addItem')) include($CORE_PATH.'lib/additem.php');
-if (!function_exists('truncate2')) include($CORE_PATH.'lib/lib.php');
 
 class SplitABGroupPM extends PriceMethod {
 
@@ -71,7 +66,7 @@ class SplitABGroupPM extends PriceMethod {
 		$qualMM = abs($mixMatch);
 		$discMM = -1*abs($mixMatch);
 
-		$dbt = tDataConnect();
+		$dbt = Database::tDataConnect();
 		// lookup existing qualifiers (i.e., item As)
 		// by-weight items are rounded down here
 		$q1 = "SELECT floor(sum(ItemQtty)),max(department) 
@@ -159,7 +154,7 @@ class SplitABGroupPM extends PriceMethod {
 			if($quantity != (int)$quantity) $sets = $quantity;
 			$quantity = $quantity - $sets;
 
-			addItem($row['upc'],
+			TransRecord::addItem($row['upc'],
 				$row['description'],
 				'I',
 				'',
@@ -167,13 +162,13 @@ class SplitABGroupPM extends PriceMethod {
 				$row['department'],
 				$sets,
 				$pricing['unitPrice'],
-				truncate2($sets*$pricing['unitPrice']),
+				MiscLib::truncate2($sets*$pricing['unitPrice']),
 				$pricing['regPrice'],
 				$row['scale'],
 				$row['tax'],
 				$row['foodstamp'],
 				0,
-				($priceObj->isMemberSale() || $priceObj->isStaffSale()) ? truncate2($maxDiscount) : 0,
+				($priceObj->isMemberSale() || $priceObj->isStaffSale()) ? MiscLib::truncate2($maxDiscount) : 0,
 				$row['discount'],
 				$row['discounttype'],
 				$sets,
@@ -189,15 +184,15 @@ class SplitABGroupPM extends PriceMethod {
 			);
 
 			if (!$priceObj->isMemberSale() && !$priceObj->isStaffSale()){
-				additemdiscount($dept1,truncate2($maxDiscount/2.0));
-				additemdiscount($dept2,truncate2($maxDiscount/2.0));
+				TransRecord::additemdiscount($dept1,MiscLib::truncate2($maxDiscount/2.0));
+				TransRecord::additemdiscount($dept2,MiscLib::truncate2($maxDiscount/2.0));
 			}
 		}
 
 		/* any remaining quantity added without
 		   grouping discount */
 		if ($quantity > 0){
-			addItem($row['upc'],
+			TransRecord::addItem($row['upc'],
 				$row['description'],
 				'I',
 				' ',
@@ -205,7 +200,7 @@ class SplitABGroupPM extends PriceMethod {
 				$row['department'],
 				$quantity,
 				$pricing['unitPrice'],
-				truncate2($pricing['unitPrice'] * $quantity),
+				MiscLib::truncate2($pricing['unitPrice'] * $quantity),
 				$pricing['regPrice'],
 				$row['scale'],
 				$row['tax'],

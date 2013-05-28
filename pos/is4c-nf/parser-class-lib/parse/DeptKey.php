@@ -20,12 +20,6 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
-
-if (!class_exists("Parser")) include_once($CORE_PATH."parser-class-lib/Parser.php");
-if (!isset($CORE_LOCAL)) include_once($CORE_PATH."lib/LocalStorage/conf.php");
-if (!function_exists("deptkey")) include_once($CORE_PATH."lib/prehkeys.php");
 
 class DeptKey extends Parser {
 	function check($str){
@@ -36,43 +30,56 @@ class DeptKey extends Parser {
 	}
 
 	function parse($str){
-		global $CORE_LOCAL,$CORE_PATH;
+		global $CORE_LOCAL;
+		$my_url = MiscLib::base_url();
 
 		$split = explode("DP",$str);
 		$dept = $split[1];
 		$amt = $split[0];
 		$ret = $this->default_json();
 
-		if ($CORE_LOCAL->get("refund")==1 && $CORE_LOCAL->get("refundComment") == ""){
-			$ret['main_frame'] = $CORE_PATH.'gui-modules/refundComment.php';
+		/**
+		  This "if" is the new addition to trigger the
+		  department select screen
+		*/
+		if (empty($split[1])){
+			// no department specified, just amount followed by DP
+			
+			// maintain refund if needed
+			if ($CORE_LOCAL->get("refund"))
+				$amt = "RF".$amt;
+
+			// save entered amount
+			$CORE_LOCAL->set("departmentAmount",$amt);
+
+			// go to the department select screen
+			$ret['main_frame'] = $my_url.'gui-modules/deptlist.php';
+		}
+		elseif ($CORE_LOCAL->get("refund")==1 && $CORE_LOCAL->get("refundComment") == ""){
+			if ($CORE_LOCAL->get("SecurityRefund") > 20){
+				$CORE_LOCAL->set("adminRequest",$my_url."gui-modules/refundComment.php");
+				$CORE_LOCAL->set("adminRequestLevel",$CORE_LOCAL->get("SecurityRefund"));
+				$CORE_LOCAL->set("adminLoginMsg",_("Login to issue refund"));
+				$CORE_LOCAL->set("away",1);
+				$ret['main_frame'] = $my_url."gui-modules/adminlogin.php";
+			}
+			else
+				$ret['main_frame'] = $my_url.'gui-modules/refundComment.php';
 			$CORE_LOCAL->set("refundComment",$CORE_LOCAL->get("strEntered"));
 		}
-		elseif ($CORE_LOCAL->get("warned") == 1 and ($CORE_LOCAL->get("warnBoxType") == "warnEquity" or $CORE_LOCAL->get("warnBoxType") == "warnAR")){
-			$CORE_LOCAL->set("warned",0);
-			$CORE_LOCAL->set("warnBoxType","");
-		}
-		elseif ($dept == 991 || $dept == 992){
-			$ref = trim($CORE_LOCAL->get("CashierNo"))."-"
-				.trim($CORE_LOCAL->get("laneno"))."-"
-				.trim($CORE_LOCAL->get("transno"));
-			if ($CORE_LOCAL->get("LastEquityReference") != $ref){
-				$CORE_LOCAL->set("warned",1);
-				$CORE_LOCAL->set("warnBoxType","warnEquity");
-				$CORE_LOCAL->set("endorseType","stock");
-				$CORE_LOCAL->set("equityAmt",$price);
-				$CORE_LOCAL->set("boxMsg","<b>Equity Sale</b><br>Insert paperwork and press<br><font size=-1>[enter] to continue, [clear] to cancel</font>");
-				$ret['main_frame'] = $CORE_PATH.'gui-modules/boxMsg2.php';
+
+		/* apply any appropriate special dept modules */
+		$deptmods = $CORE_LOCAL->get('SpecialDeptMap');
+		$index = (int)($dept/10);
+		if (is_array($deptmods) && isset($deptmods[$index])){
+			foreach($deptmods[$index] as $mod){
+				$obj = new $mod();
+				$ret = $obj->handle($dept,$split[1]/100,$ret);
 			}
-		}
-		elseif ($dept == 990){
-			$CORE_LOCAL->set("warned",1);
-			$CORE_LOCAL->set("warnBoxType","warnAR");
-			$CORE_LOCAL->set("boxMsg","<b>A/R Payment Sale</b><br>remember to retain you<br>reprinted receipt<br><font size=-1>[enter] to continue, [clear] to cancel</font>");
-			$ret['main_frame'] = $CORE_PATH.'gui-modules/boxMsg2.php';
 		}
 		
 		if (!$ret['main_frame'])
-			$ret = deptkey($split[0],$split[1],$ret);
+			$ret = PrehLib::deptkey($split[0],$split[1],$ret);
 		return $ret;
 	}
 

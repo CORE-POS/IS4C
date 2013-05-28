@@ -20,17 +20,6 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
-
-if (!class_exists("Parser")) include_once($CORE_PATH."parser-class-lib/Parser.php");
-if (!function_exists("tDataConnect")) include_once($CORE_PATH."lib/connect.php");
-if (!function_exists("boxMsg")) include_once($CORE_PATH."lib/drawscreen.php");
-if (!function_exists("lastpage")) include_once($CORE_PATH."lib/listitems.php");
-if (!function_exists("checkstatus")) include_once($CORE_PATH."lib/prehkeys.php");
-if (!function_exists("addItem")) include_once($CORE_PATH."lib/additem.php");
-if (!function_exists("nullwrap")) include_once($CORE_PATH."lib/lib.php");
-if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
 
 class ItemPD extends Parser {
 	function check($str){
@@ -43,7 +32,7 @@ class ItemPD extends Parser {
 		global $CORE_LOCAL;
 		$ret = $this->default_json();
 		if ($CORE_LOCAL->get("currentid") == 0) 
-			$ret['output'] = boxMsg("No Item on Order");
+			$ret['output'] = DisplayLib::boxMsg(_("No Item on Order"));
 		else {
 			$str = $CORE_LOCAL->get("currentid");
 			$pd = substr($str,0,strlen($str)-2);
@@ -51,7 +40,7 @@ class ItemPD extends Parser {
 			$ret['output'] = $this->discountitem($str,$pd);
 		}
 		if (empty($ret['output'])){
-			$ret['output'] = lastpage();
+			$ret['output'] = DisplayPage::lastpage();
 			$ret['redraw_footer'] = True;
 			$ret['udpmsg'] = 'goodBeep';
 		}
@@ -68,16 +57,16 @@ class ItemPD extends Parser {
 			$query = "select upc, quantity, ItemQtty, foodstamp, total, voided, charflag from localtemptrans where "
 				."trans_id = ".$item_num;
 
-			$db = tDataConnect();
+			$db = Database::tDataConnect();
 			$result = $db->query($query);
 			$num_rows = $db->num_rows($result);
 
-			if ($num_rows == 0) return boxMsg("Item not found");
+			if ($num_rows == 0) return DisplayLib::boxMsg(_("Item not found"));
 			else {
 				$row = $db->fetch_array($result);
 
 				if (!$row["upc"] || strlen($row["upc"]) < 1 || $row['charflag'] == 'SO') 
-					return boxMsg("Not a valid item");
+					return DisplayLib::boxMsg("Not a valid item");
 				else  
 					return $this->discountupc($row["ItemQtty"]."*".$row["upc"],$item_num,$pd);
 			}
@@ -127,9 +116,9 @@ class ItemPD extends Parser {
 			}
 		}
 
-		if ($upc == "stop") return inputUnknown();
+		if ($upc == "stop") return DisplayLib::inputUnknown();
 
-		$db = tDataConnect();
+		$db = Database::tDataConnect();
 
 		$query = "select sum(ItemQtty) as voidable, sum(quantity) as vquantity, max(scale) as scale, "
 			."max(volDiscType) as volDiscType from localtemptrans where upc = '".$upc
@@ -138,7 +127,7 @@ class ItemPD extends Parser {
 		$result = $db->query($query);
 		$num_rows = $db->num_rows($result);
 		if ($num_rows == 0 ){
-			return boxMsg("Item $upc not found");
+			return DisplayLib::boxMsg(_("Item not found").": ".$upc);
 		}
 
 		$row = $db->fetch_array($result);
@@ -149,11 +138,11 @@ class ItemPD extends Parser {
 		}
 
 		$volDiscType = $row["volDiscType"];
-		$voidable = nullwrap($row["voidable"]);
+		$voidable = MiscLib::nullwrap($row["voidable"]);
 
 		$VolSpecial = 0;
 		$volume = 0;
-		$scale = nullwrap($row["scale"]);
+		$scale = MiscLib::nullwrap($row["scale"]);
 
 		//----------------------Void Item------------------
 		$query_upc = "select ItemQtty,foodstamp,discounttype,mixMatch,cost,
@@ -167,9 +156,9 @@ class ItemPD extends Parser {
 		$row = $db->fetch_array($result);
 
 		$ItemQtty = $row["ItemQtty"];
-		$foodstamp = nullwrap($row["foodstamp"]);
-		$discounttype = nullwrap($row["discounttype"]);
-		$mixMatch = nullwrap($row["mixMatch"]);
+		$foodstamp = MiscLib::nullwrap($row["foodstamp"]);
+		$discounttype = MiscLib::nullwrap($row["discounttype"]);
+		$mixMatch = MiscLib::nullwrap($row["mixMatch"]);
 		$cost = isset($row["cost"])?-1*$row["cost"]:0;
 		$numflag = isset($row["numflag"])?$row["numflag"]:0;
 		$charflag = isset($row["charflag"])?$row["charflag"]:0;
@@ -181,7 +170,7 @@ class ItemPD extends Parser {
 		elseif ((($CORE_LOCAL->get("isMember") == 1 && $row["discounttype"] == 2) || 
 		    ($CORE_LOCAL->get("isStaff") != 0 && $row["discounttype"] == 4)) && 
 		    ($row["unitPrice"] == $row["regPrice"])) {
-			$db_p = pDataConnect();
+			$db_p = Database::pDataConnect();
 			$query_p = "select special_price from products where upc = '".$upc."'";
 			$result_p = $db_p->query($query_p);
 			$row_p = $db_p->fetch_array($result_p);
@@ -196,19 +185,19 @@ class ItemPD extends Parser {
 
 		$CardNo = $CORE_LOCAL->get("memberID");
 		
-		$discounttype = nullwrap($row["discounttype"]);
+		$discounttype = MiscLib::nullwrap($row["discounttype"]);
 		if ($discounttype == 3) 
 			$quantity = -1 * $ItemQtty;
 
 		elseif ($quantity != 0) {
-			addItem($upc, $row["description"], $row["trans_type"], $row["trans_subtype"], "V", $row["department"], $quantity, $unitPrice, $total, $row["regPrice"], $scale, $row["tax"], $foodstamp, $discount, $memDiscount, $discountable, $discounttype, $quantity, $volDiscType, $volume, $VolSpecial, $mixMatch, 0, 1, $cost, $numflag, $charflag);
+			TransRecord::addItem($upc, $row["description"], $row["trans_type"], $row["trans_subtype"], "V", $row["department"], $quantity, $unitPrice, $total, $row["regPrice"], $scale, $row["tax"], $foodstamp, $discount, $memDiscount, $discountable, $discounttype, $quantity, $volDiscType, $volume, $VolSpecial, $mixMatch, 0, 1, $cost, $numflag, $charflag);
 
 			if ($row["trans_type"] != "T") {
 				$CORE_LOCAL->set("ttlflag",0);
 				$CORE_LOCAL->set("discounttype",0);
 			}
 
-			$db = pDataConnect();
+			$db = Database::pDataConnect();
 			$chk = $db->query("SELECT deposit FROM products WHERE upc='$upc'");
 			if ($db->num_rows($chk) > 0){
 				$dpt = array_pop($db->fetch_row($chk));

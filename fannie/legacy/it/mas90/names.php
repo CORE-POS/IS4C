@@ -11,21 +11,21 @@ $Q = "\"";
 $NL = "\r\n";
 
 $query = "select m.card_no,
-	  c.firstname+' '+c.lastname,
+	  concat(c.FirstName,' ',c.LastName),
 	  m.street,
-	'',
+	  '',
 	  m.city,
 	  m.state,
 	  m.zip,
 	  m.phone,
-	  case when c.memtype = 2 then '07'
+	  case when c.memType = 2 then '07'
 	  when m.card_no <= 4999 then '14'
 	  when m.card_no > 4999 and m.card_no <= 5499 then '22'
 	  when m.card_no > 5499 and m.card_no <= 5999 then '99'
 	  else '14' end as payTermCode
 	  from meminfo as m left join custdata as c
-	  on m.card_no=c.cardno where c.personnum = 1
-	  and c.type <> 'TERM'"; 
+	  on m.card_no=c.CardNo where c.personNum = 1
+	  and c.Type <> 'TERM'"; 
 $result = $sql->query($query);
 
 while ($row = $sql->fetch_row($result)){

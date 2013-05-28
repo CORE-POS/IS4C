@@ -23,6 +23,7 @@
 
 require('../login.php');
 $path = guesspath();
+include($path."config.php");
 $page_title = 'Fannie : Auth : Pose';
 $header = 'Fannie : Auth : Pose';
 
@@ -37,7 +38,13 @@ if (validateUserQuiet('admin')){
 		include($path."src/header.html");
 ?>
 <form method=post action=pose.php>
-<input type=text name=newname /> <input type=submit value=Pose />
+<?php
+echo "Username:<select name=name>";
+foreach(getUserList() as $uid => $name)
+	echo "<option>".$name."</option>";
+echo "</select>";
+echo '&nbsp;&nbsp;&nbsp;<input type="submit" value="Pose" />';
+?>
 </form>
 <?php
 		include($path."src/footer.html");

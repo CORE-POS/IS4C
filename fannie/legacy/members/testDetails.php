@@ -7,9 +7,10 @@ include('headerTest.php');
 
 $mem = $_GET['memID'];
 $col='#FFFF99';
+$sql->query("USE $FANNIE_TRANS_DB");
 
 //new query based on stockpurchases table
-$query = "SELECT datepart(mm,tdate),datepart(dd,tdate),datepart(yy,tdate),stockpurchase,card_no,trans_num,datepart(mi,tdate)
+$query = "SELECT month(tdate),day(tdate),year(tdate),stockpurchase,card_no,trans_num
           from stockpurchases
           where card_no = $mem
           order by tdate DESC";

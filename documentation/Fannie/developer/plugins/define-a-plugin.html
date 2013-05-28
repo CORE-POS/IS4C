@@ -1,0 +1,64 @@
+<html>
+<head>
+<title>Fannie Plugins</title>
+</head>
+<body>
+<h1>Defining a Plugin</h1>
+<p>
+User-defined plugins go in <i>modules/plugins2.0</i>. To get started, make a new
+directory there. This will contain your plugin. Inside that directory create a
+new PHP file to define your plugin. This definition tells Fannie a little information
+about your plugin. To do so, it needs to define a class extending FanniePlugin like this:
+</p>
+<pre style="background:#ccc; padding:3px;">
+include_once(dirname(__FILE__).'/../../../config.php');
+</pre>
+<p>
+This line includes Fannie's global configuration file. It's almost always a good idea
+to do this first so all user-defined settings are accessible. Note that the path does not
+assume Fannie is in a particular directory like /var/www. This is important for compatibility
+with various systems. Using "dirname(__FILE__)" is preferred over using "__DIR__" since
+the latter is only available in relatively new versions of PHP.
+</p>
+<pre style="background:#ccc; padding:3px;">
+if (!class_exists('FanniePlugin')) include($FANNIE_ROOT.'classlib2.0/FanniePlugin.php');
+</pre>
+<p>
+This line includes the definition for the base class FanniePlugin. The variable $FANNIE_ROOT
+is provided by Fannie's global configuration file. It points to the directory containing Fannie
+and can be used to reference paths without using lots of "../" strings.
+</p>
+<pre style="background:#ccc; padding:3px;">
+class CalendarPlugin extends FanniePlugin {
+}
+</pre>
+<p>
+Finally, define the plugin class. The name of the subclass should match the name of the PHP file.
+So, for example, in this case the file should be named CalendarPlugin.php. As a best practice, this
+applies to any PHP file that defines a class.
+</p>
+<h1>Further Options</h1>
+At this point, the plugin definition is technically complete. Possible additions include:
+<ul>
+<li>A description of your plugin is generally a good idea.
+<pre style="background:#ccc; padding:3px;">
+public $plugin_description = 'Plugin for calendars';
+</pre>
+<li>If your plugin has any user-configurable settings, you can define them in the
+settings array. Each setting needs a name, default value, description, and label.
+Settings will be saved in the global configuration variable $FANNIE_PLUGIN_SETTINGS 
+via the name key. An example setting like this:
+<pre style="background:#ccc; padding:3px;">
+public $plugin_settings = array(
+'CalendarDatabase' => array('default'=>'core_calendar','label'=>'Database',
+		'description'=>'Database to calendars. Can
+				be one of the default CORE databases or a 
+				separate one.')
+);
+</pre>
+would be saved as $FANNIE_PLUGIN_SETTINGS['CalendarDatabase'].
+<li>Define triggers. The FanniePlugin class includes methods
+named <i>plugin_enable()</i>, <i>plugin_disable()</i>, and
+<i>setting_change()</i>. These are called when the plugin
+is enabled, disabled, or its settings are updated (respectively).
+</ul>

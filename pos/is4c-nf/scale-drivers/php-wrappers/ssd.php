@@ -20,31 +20,25 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
-
-if (!isset($CORE_LOCAL)) include($CORE_PATH.'lib/LocalStorage/conf.php');
-if (!class_exists("ScaleDriverWrapper")) include($CORE_PATH."scale-drivers/php-wrappers/ScaleDriverWrapper.php");
-if (!function_exists('scaledisplaymsg')) include($CORE_PATH.'lib/drawscreen.php');
-if (!function_exists('array_to_json')) include($CORE_PATH.'lib/array_to_json.php');
-
 class ssd extends ScaleDriverWrapper {
 
 	function SavePortConfiguration($portName){
-		global $CORE_PATH;
+		$rel = MiscLib::base_url();
 
-		/* read in c code file */
-		$fp = fopen($CORE_PATH."scale-drivers/drivers/rs232/ssd.c","r");
+		if (!file_exists($rel."scale-drivers/drivers/rs232/ssd.conf")) return;
+
+		/* read in config file */
+		$fp = fopen($rel."scale-drivers/drivers/rs232/ssd.conf","r");
 		$lines = array();
 		while(!feof($fp)) $lines[] = fgets($fp);
 		fclose($fp);
 
-		/* replace SSD_SERIAL_PORT definition */
-		$fp = fopen($CORE_PATH."scale-drivers/drivers/rs232/ssd.c","w");
+		/* replace SerialPort config */
+		$fp = fopen($rel."scale-drivers/drivers/rs232/ssd.conf","w");
 		foreach($lines as $l){
-			if (strstr($l,"#define SSD_SERIAL_PORT ") === False) fwrite($fp,$l);
+			if (strstr($l,"SerialPort ") === False) fwrite($fp,$l);
 			else {
-				fwrite($fp,sprintf('#define SSD_SERIAL_PORT "%s"',$portName));
+				fwrite($fp,sprintf('SerialPort %s',$portName));
 				fwrite($fp,"\n");
 			}
 		}
@@ -52,24 +46,27 @@ class ssd extends ScaleDriverWrapper {
 	}
 
 	function SaveDirectoryConfiguration($absPath){
-		global $CORE_PATH;
+		$rel = MiscLib::base_url();
 
-		/* read in c code file */
-		$fp = fopen($CORE_PATH."scale-drivers/drivers/rs232/ssd.c","r");
+		if (!file_exists($rel."scale-drivers/drivers/rs232/ssd.conf")) return;
+
+		/* read in config file */
+		$fp = fopen($rel."scale-drivers/drivers/rs232/ssd.conf","r");
+
 		$lines = array();
 		while(!feof($fp)) $lines[] = fgets($fp);
 		fclose($fp);
 
-		/* replace file location #defines */
-		$fp = fopen($CORE_PATH."scale-drivers/drivers/rs232/ssd.c","w");
+		/* replace file location config */
+		$fp = fopen($rel."scale-drivers/drivers/rs232/ssd.conf","w");
 		foreach($lines as $l){
-			if (strstr($l,"#define SCALE_OUTPUT_FILE ") !== False){
-				fwrite($fp,sprintf('#define SCALE_OUTPUT_FILE "%s"',
+			if (strstr($l,"ScannerFile ") !== False){
+				fwrite($fp,sprintf('ScannerFile %s',
 					$absPath."scale-drivers/drivers/rs232/scale"));
 				fwrite($fp,"\n");
 			}
-			elseif (strstr($l,"#define SCANNER_OUTPUT_FILE ") !== False){
-				fwrite($fp,sprintf('#define SCANNER_OUTPUT_FILE "%s"',
+			elseif (strstr($l,"ScaleFile ") !== False){
+				fwrite($fp,sprintf('ScaleFile %s',
 					$absPath."scale-drivers/drivers/rs232/scanner"));
 				fwrite($fp,"\n");
 			}
@@ -79,28 +76,35 @@ class ssd extends ScaleDriverWrapper {
 	}
 
 	function ReadFromScale(){
-		global $CORE_LOCAL,$CORE_PATH;
+		global $CORE_LOCAL;
+		$rel = MiscLib::base_url();
 
-		$scale_data = file_get_contents($CORE_PATH.'scale-drivers/drivers/rs232/scale');
-		$fp = open($CORE_PATH.'scale-drivers/drivers/rs232/scale','w');
+		$scale_data = file_get_contents($rel.'scale-drivers/drivers/rs232/scale');
+		$fp = fopen($rel.'scale-drivers/drivers/rs232/scale','w');
 		fclose($fp);
 
-		$scan_data = file_get_contents($CORE_PATH.'scale-drivers/drivers/rs232/scanner');
-		$fp = open($CORE_PATH.'scale-drivers/drivers/rs232/scanner','w');
+		$scan_data = file_get_contents($rel.'scale-drivers/drivers/rs232/scanner');
+		$fp = fopen($rel.'scale-drivers/drivers/rs232/scanner','w');
 		fclose($fp);
 	
 		$scale_display = '';
 		$scans = array();
-		if ($scale_data !== False && !empty($scale_data))
-			$scale_display = scaledisplaymsg($scale_data);
+		if ($scale_data !== False && !empty($scale_data)){
+			$scale_display = DisplayLib::scaledisplaymsg($scale_data);
+			if (is_array($scale_display)){
+				if (isset($scale_display['upc']))
+					$scans[] = $scale_display['upc'];
+				$scale_display = $scale_display['display'];
+			}
+		}
 		if ($scan_data !== False && !empty($scan_data))
 			$scans[] = $scan_data;
 
 		$output = array();
 		if (!empty($scale_display)) $output['scale'] = $scale_display;
-		if (!empty($scans)) $output['scans'] = $scans;
+		if (!empty($scans)) $output['scans'] = ltrim($scans[0],'0');
 
-		if (!empty($output)) echo array_to_json($output);
+		if (!empty($output)) echo JsonLib::array_to_json($output);
 		else echo "{}";
 	}
 

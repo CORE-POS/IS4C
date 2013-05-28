@@ -28,7 +28,7 @@ units, each with a size of 12 oz.
 */
 $CREATE['op.batchBarcodes'] = "
 	CREATE TABLE batchBarcodes (
-		`upc` bigint(13) unsigned zerofill NOT NULL default '0000000000000',
+		`upc` varchar(13),
 		`description` varchar(30) default NULL,
 		`normal_price` decimal(10,2) default NULL,
 		`brand` varchar(50) default NULL,
@@ -36,7 +36,8 @@ $CREATE['op.batchBarcodes'] = "
 		`size` varchar(50) default NULL,
 		`units` varchar(15) default NULL,
 		`vendor` varchar(50) default NULL,
-		`batchID` int
+		`batchID` int,
+		PRIMARY KEY (`batchID`,`upc`)
 	)
 ";
 

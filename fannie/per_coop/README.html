@@ -1,0 +1,23 @@
+<html>
+<head><title>per_coop/README</title>
+</head>
+<body>
+<pre>
+27Feb3013 Re: $FANNIE/per_coop/*
+The subdirectories, whose names match $FANNIE_COOP_ID for particular coops,
+contain code that can be PHP include()'d by $FANNIE/src/navbar.html
+to add options to the menu that will only appear for a the coop whose
+$FANNIE_COOP_ID matches the subdirectory name.
+
+The files in the subdirectories are named:
+
+main-list.php           For a section in the top-level navbar.html menu.
+main-index.php          A separate page the heading of that menu might link to.
+
+report-sales-list.php   A sub-list within the Reports > Sales group.
+
+navbar.php              A menu to completely replace $FANNIE/src/navbar.html
+.                       Called from header.html
+</pre>
+</body>
+</html>

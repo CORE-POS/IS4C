@@ -21,6 +21,10 @@
 
 *********************************************************************************/
 
+/* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+	 4Sep12 Eric Lee Add Functions fix_text_for_db, fix_money_for_db
+*/
+
 // takes a csv formated string and returns its elements as an array
 // optional args are quote character and separator character
 // you don't want them
@@ -48,6 +52,45 @@ function csv_parser($input,$q="\"",$s=","){
 	}
 	return $ret;
 }
+
+function sanitize_xls_money($val){
+	$val = str_replace('$','',$val);
+	$val = str_replace(',','',$val);
+	$val = trim($val);
+	if ($val=='-') $val = 0;
+	return $val;
+}
+
+/* Prepare text for writing to the database.
+	Another approach is VALUES ($dbc->escape($foo), ... )
+*/
+function fix_text_for_db ($str) {
+
+	// Remove apostrophes.  It may be better to double, i.e. escape, them.
+	$str = preg_replace("/\'/","",$str);
+	// Double, i.e. escape apostrophes
+	//$str = preg_replace("/\'/","''",$str);
+
+	return $str;
+
+//fix_text_for_db
+}
+
+/* May be redundant with: csv_parser.sanitize_xls_money($val)
+*/
+function fix_money_for_db ($str) {
+
+	$str = trim($str);
+	$str = preg_replace("/\\\$/","",$str);
+	$str = str_replace('$','',$str);
+	$str = str_replace(",","",$str);
+	if ($str == '-') $str = 0;
+
+	return $str;
+
+//fix_money_for_db
+}
+
 
 // testing
 /*

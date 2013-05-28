@@ -21,7 +21,8 @@ $CREATE['op.batchCutPaste'] = "
 	CREATE TABLE batchCutPaste (
 		batchID int,
 		upc varchar(13),
-		uid int
+		uid int,
+		PRIMARY KEY (batchID,upc,uid)
 	)
 ";
 ?>

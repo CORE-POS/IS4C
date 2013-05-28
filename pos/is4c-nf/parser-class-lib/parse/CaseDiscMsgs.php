@@ -21,13 +21,6 @@
 
 *********************************************************************************/
 
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
-
-if (!class_exists("Parser")) include_once($CORE_PATH."parser-class-lib/Parser.php");
-if (!function_exists("boxMsg")) include_once($CORE_PATH."lib/drawscreen.php");
-if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
-
 class CaseDiscMsgs extends Parser {
 	function check($str){
 		if ($str == "cdinvalid" ||
@@ -42,11 +35,11 @@ class CaseDiscMsgs extends Parser {
 		global $CORE_LOCAL;
 		$ret = $this->default_json();
 		if ($str == "cdInvalid") 
-			$ret['output'] = boxMsg($CORE_LOCAL->get("casediscount")."% case discount invalid");
+			$ret['output'] = DisplayLib::boxMsg($CORE_LOCAL->get("casediscount")._("% case discount invalid"));
 		elseif ($str == "cdStaffNA") 
-			$ret['output'] = boxMsg("case discount not applicable to staff");
+			$ret['output'] = DisplayLib::boxMsg(_("case discount not applicable to staff"));
 		elseif ($str == "cdSSINA") 
-			$ret['output'] = boxMsg("hit 10% key to apply case discount for member ".$CORE_LOCAL->get("memberID"));
+			$ret['output'] = DisplayLib::boxMsg(_("hit 10% key to apply case discount for member")." ".$CORE_LOCAL->get("memberID"));
 	
 		return $ret;
 	}

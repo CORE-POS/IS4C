@@ -8,6 +8,7 @@ Columns:
 	name varchar
 	margin float
 	testing float
+	posDeptID int
 
 Depends on:
 	vendors (table)
@@ -28,7 +29,11 @@ $CREATE['op.vendorDepartments'] = "
 		deptID int,
 		name varchar(125),
 		margin float,
-		testing float
+		testing float,
+		posDeptID int,
+		PRIMARY KEY (vendorID, deptID),
+		INDEX(deptID),
+		INDEX(vendorID)
 	)
 ";
 ?>

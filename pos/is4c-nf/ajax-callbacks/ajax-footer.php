@@ -20,19 +20,13 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
 
-ini_set('display_errors','1');
-
-if (!isset($CORE_LOCAL))
-	include($CORE_PATH.'lib/LocalStorage/conf.php');
-if (!function_exists('printfooter'))
-	include($CORE_PATH.'lib/drawscreen.php');
+ini_set('display_errors','Off');
+include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 if ($CORE_LOCAL->get("away") == 1)
-	echo printfooterb();
+	echo DisplayLib::printfooterb();
 else
-	echo printfooter();
+	echo DisplayLib::printfooter();
 
 ?>

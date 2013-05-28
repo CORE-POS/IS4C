@@ -21,7 +21,8 @@
 
 *********************************************************************************/
 
-/* Group PriceMethod module
+/** 
+   @class GroupPM
    
    This module provides the simplest form of group price:
    each item is sold for the group price divided by the 
@@ -29,13 +30,6 @@
 
    In most locations, this is pricemethod 1 or 2
 */
-
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
-
-if (!class_exists('PriceMethod')) include($CORE_PATH.'lib/Scanning/PriceMethod.php');
-if (!function_exists('addItem')) include($CORE_PATH.'lib/additem.php');
-if (!function_exists('truncate2')) include($CORE_PATH.'lib/lib.php');
 
 class GroupPM extends PriceMethod {
 
@@ -47,15 +41,15 @@ class GroupPM extends PriceMethod {
 		if ($priceObj->isSale()){
 			$disc = $pricing['unitPrice'] - ($row['specialgroupprice'] / $row['specialquantity']);
 			if ($priceObj->isMemberSale() || $priceObj->isStaffSale())
-				$pricing['memDiscount'] = truncate2($disc * $quantity);
+				$pricing['memDiscount'] = MiscLib::truncate2($disc * $quantity);
 			else
-				$pricing['discount'] = truncate2($disc * $quantity);
+				$pricing['discount'] = MiscLib::truncate2($disc * $quantity);
 		}
 		else {
 			$pricing['unitPrice'] = $row['groupprice'] / $row['quantity'];
 		}
 
-		addItem($row['upc'],
+		TransRecord::addItem($row['upc'],
 			$row['description'],
 			'I',
 			' ',
@@ -63,7 +57,7 @@ class GroupPM extends PriceMethod {
 			$row['department'],
 			$quantity,
 			$pricing['unitPrice'],
-			truncate2($pricing['unitPrice'] * $quantity),
+			MiscLib::truncate2($pricing['unitPrice'] * $quantity),
 			$pricing['regPrice'],
 			$row['scale'],
 			$row['tax'],

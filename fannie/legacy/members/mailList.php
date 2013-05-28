@@ -28,13 +28,12 @@ $query = "SELECT CardNo,
 	  LEFT JOIN memDates AS d
 	  ON c.cardno=d.card_no
           WHERE 
-          memType <>0
-          AND (end_date > getdate() or end_date = '')
+          memType in (1,3)
+	  AND c.Type='PC'
+          AND (end_date > now() or end_date = '')
           AND ads_OK = 1
           AND PersonNum = 1
           order by m.card_no";
-
-//select_to_table($query,0,';#ffffff');
 
 $result = $sql->query($query,$db);
 

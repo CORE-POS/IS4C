@@ -20,13 +20,6 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
-
-if (!class_exists('DiscountType')) include($CORE_PATH.'lib/Scanning/DiscountType.php');
-if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
-
-if (!function_exists('adddiscount')) include($CORE_PATH.'lib/additem.php');
 
 class MemberSale extends DiscountType {
 
@@ -46,6 +39,12 @@ class MemberSale extends DiscountType {
 		if ($CORE_LOCAL->get("isMember") == 1 || $CORE_LOCAL->get("memberID") == $CORE_LOCAL->get("visitingMem"))
 			$ret["unitPrice"] = $row['special_price'];
 
+		if ($CORE_LOCAL->get("itemPD") > 0){
+			$discount = $ret['unitPrice'] * (($CORE_LOCAL->get("itemPD")/100));
+			$ret["unitPrice"] -= $discount;
+			$ret["discount"] += ($discount * $quantity);
+		}
+
 		$this->savedRow = $row;
 		$this->savedInfo = $ret;
 		return $ret;
@@ -55,8 +54,13 @@ class MemberSale extends DiscountType {
 		global $CORE_LOCAL;	
 		if ($CORE_LOCAL->get("isMember") == 1 || $CORE_LOCAL->get("memberID") == $CORE_LOCAL->get("visitingMem")){
 			$CORE_LOCAL->set("voided",2);
-			adddiscount($this->savedInfo['memDiscount'],
+			TransRecord::adddiscount($this->savedInfo['memDiscount'],
 				$this->savedRow['department']);
+		}
+		if ($this->savedInfo['discount'] != 0){
+			$CORE_LOCAL->set("voided",2);
+			TransRecord::adddiscount($this->savedInfo['discount'],
+					$this->savedRow['department']);
 		}
 	}
 

@@ -20,21 +20,31 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
+
 ini_set('display_errors','1');
 include('../config.php'); 
 include('util.php');
 include('db.php');
 $FILEPATH = $FANNIE_ROOT;
 ?>
-<a href="index.php">Necessities</a>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<a href="auth.php">Authentication</a>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-Members 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<a href="sample_data/extra_data.php">Sample Data</a>
+<html>
+<head>
+<title>Fannie: Membership Settings</title>
+<style type="text/css">
+body {
+	line-height: 1.5em;
+}
+</style>
+<link rel="stylesheet" href="../src/css/install.css" type="text/css" />
+<script type="text/javascript" src="../src/jquery/jquery.js"></script>
+</head>
+<body>
+<?php
+echo showInstallTabs("Members");
+?>
+
 <form action=mem.php method=post>
-<h1>Fannie Membership Settings</h1>
+<h1>Fannie: Membership Settings</h1>
 <?php
 if (is_writable('../config.php')){
 	echo "<span style=\"color:green;\"><i>config.php</i> is writeable</span>";
@@ -52,7 +62,7 @@ confset('FANNIE_NAMES_PER_MEM',$FANNIE_NAMES_PER_MEM);
 echo "<input type=text size=3 name=FANNIE_NAMES_PER_MEM value=\"$FANNIE_NAMES_PER_MEM\" />";
 ?>
 <hr />
-<b>Equity/Store Charge</b>:
+<b>Equity/Store Charge</b>
 <br />Equity Department(s): 
 <?php
 if (!isset($FANNIE_EQUITY_DEPARTMENTS)) $FANNIE_EQUITY_DEPARTMENTS = '';
@@ -68,9 +78,15 @@ confset('FANNIE_AR_DEPARTMENTS',"'$FANNIE_AR_DEPARTMENTS'");
 printf("<input type=\"text\" name=\"FANNIE_AR_DEPARTMENTS\" value=\"%s\" />",$FANNIE_AR_DEPARTMENTS);
 ?>
 <hr />
-<b>Enabled modules</b><br />
+<b>Membership Information Modules</b> <br />
+The Member editing interface displayed after you select a member at:
+<br /><a href="<?php echo $FANNIE_URL; ?>mem/MemberSearchPage.php" target="_mem"><?php echo $FANNIE_URL; ?>mem/MemberSearchPage.php</a>
+<br />consists of fields grouped in several sections, called modules, listed below.
+<br />The enabled (active) ones are selected/highlighted.
+<br />
+<br /><b>Available Modules</b> <br />
 <?php
-if (!isset($FANNIE_MEMBER_MODULES)) $FANNIE_MEMBER_MODULES = array();
+if (!isset($FANNIE_MEMBER_MODULES)) $FANNIE_MEMBER_MODULES = array('ContactInfo','MemType');
 if (isset($_REQUEST['FANNIE_MEMBER_MODULES'])){
 	$FANNIE_MEMBER_MODULES = array();
 	foreach($_REQUEST['FANNIE_MEMBER_MODULES'] as $m)
@@ -96,7 +112,56 @@ foreach($tmp as $module){
 }
 ?>
 </select><br />
+Click or ctrl-Click or shift-Click to select/deselect modules for enablement.
+<br /><br />
 <a href="memModDisplay.php">Adjust Module Display Order</a>
+
+<hr />
+<b>Member Cards</b>
+<br />Member Card UPC Prefix: 
+<?php
+if (!isset($FANNIE_MEMBER_UPC_PREFIX)) $FANNIE_MEMBER_UPC_PREFIX = '';
+if (isset($_REQUEST['FANNIE_MEMBER_UPC_PREFIX'])) $FANNIE_MEMBER_UPC_PREFIX=$_REQUEST['FANNIE_MEMBER_UPC_PREFIX'];
+confset('FANNIE_MEMBER_UPC_PREFIX',"'$FANNIE_MEMBER_UPC_PREFIX'");
+printf("<input type=\"text\" name=\"FANNIE_MEMBER_UPC_PREFIX\" value=\"%s\" />",$FANNIE_MEMBER_UPC_PREFIX);
+?>
+
 <hr />
 <input type=submit value="Re-run" />
 </form>
+<?php
+$sql = db_test_connect($FANNIE_SERVER,$FANNIE_SERVER_DBMS,
+		$FANNIE_TRANS_DB,$FANNIE_SERVER_USER,
+		$FANNIE_SERVER_PW);
+recreate_views($sql);
+
+// rebuild views that depend on ar & equity
+// department definitions
+function recreate_views($con){
+	global $FANNIE_TRANS_DB,$FANNIE_OP_DB,$FANNIE_SERVER_DBMS;
+
+	$con->query("DROP VIEW ar_history_today_sum",$FANNIE_TRANS_DB);
+	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+			'ar_history_today_sum','trans');
+
+	$con->query("DROP VIEW ar_live_balance",$FANNIE_TRANS_DB);
+	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+			'ar_live_balance','trans');
+
+	$con->query("DROP VIEW stockSumToday",$FANNIE_TRANS_DB);
+	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+			'stockSumToday','trans');
+
+	$con->query("DROP VIEW newBalanceStockToday_test",$FANNIE_TRANS_DB);
+	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+			'newBalanceStockToday_test','trans');
+
+	$con->query("DROP VIEW dheader",$FANNIE_TRANS_DB);
+	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+			'dheader','trans');
+
+	$con->query("DROP VIEW ar_history_today",$FANNIE_TRANS_DB);
+	create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+			'ar_history_today','trans');
+}
+?>

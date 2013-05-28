@@ -21,34 +21,93 @@
 
 *********************************************************************************/
 
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
-
-if (!class_exists("Parser")) include_once($_SESSION["INCLUDE_PATH"]."/parser-class-lib/Parser.php");
-if (!function_exists("rePoll")) include_once($_SESSION["INCLUDE_PATH"]."/lib/lib.php");
-if (!isset($CORE_LOCAL)) include($_SESSION["INCLUDE_PATH"]."/lib/LocalStorage/conf.php");
-
 class SigTermCommands extends Parser {
 
 	function check($str){
 		global $CORE_LOCAL;
-		if ($str == "TRESET"){
-			$CORE_LOCAL->set("ccTermOut","reset");
+		if ($str == "TERMMANUAL"){
+			UdpComm::udpSend("termManual");
+			$CORE_LOCAL->set("paycard_keyed",True);
 			return True;
 		}
-		if ($str == "TSIG"){
-			$CORE_LOCAL->set("ccTermOut","sig");
+		elseif ($str == "TERMRESET" || $str == "TERMREBOOT"){
+			if ($str == "TERMRESET")
+				UdpComm::udpSend("termReset");
+			else
+				UdpComm::udpSend("termReboot");
+			$CORE_LOCAL->set("paycard_keyed",False);
+			$CORE_LOCAL->set("CachePanEncBlock","");
+			$CORE_LOCAL->set("CachePinEncBlock","");
+			$CORE_LOCAL->set("CacheCardType","");
+			$CORE_LOCAL->set("CacheCardCashBack",0);
+			$CORE_LOCAL->set('ccTermState','swipe');
+			return True;
+		}
+		elseif ($str == "CCFROMCACHE"){
+			return True;
+		}
+		else if (substr($str,0,9) == "PANCACHE:"){
+			$CORE_LOCAL->set("CachePanEncBlock",substr($str,9));
+			$CORE_LOCAL->set('ccTermState','type');
+			return True;
+		}
+		else if (substr($str,0,9) == "PINCACHE:"){
+			$CORE_LOCAL->set("CachePinEncBlock",substr($str,9));
+			$CORE_LOCAL->set('ccTermState','ready');
+			return True;
+		}
+		else if (substr($str,0,6) == "VAUTH:"){
+			$CORE_LOCAL->set("paycard_voiceauthcode",substr($str,6));
+			return True;
+		}
+		else if (substr($str,0,8) == "EBTAUTH:"){
+			$CORE_LOCAL->set("ebt_authcode",substr($str,8));
+			return True;
+		}
+		else if (substr($str,0,5) == "EBTV:"){
+			$CORE_LOCAL->set("ebt_vnum",substr($str,5));
+			return True;
+		}
+		else if ($str == "TERMCLEARALL"){
+			$CORE_LOCAL->set("CachePanEncBlock","");
+			$CORE_LOCAL->set("CachePinEncBlock","");
+			$CORE_LOCAL->set("CacheCardType","");
+			$CORE_LOCAL->set("CacheCardCashBack",0);
+			return True;
+		}
+		else if (substr($str,0,5) == "TERM:"){
+			$CORE_LOCAL->set("CacheCardType",substr($str,5));
+			switch($CORE_LOCAL->get('CacheCardType')){
+			case 'CREDIT':
+				$CORE_LOCAL->set('ccTermState','ready');
+				break;
+			case 'DEBIT':
+				$CORE_LOCAL->set('ccTermState','cashback');
+				break;
+			case 'EBTFOOD':
+				$CORE_LOCAL->set('ccTermState','pin');
+				break;
+			case 'EBTCASH':
+				$CORE_LOCAL->set('ccTermState','cashback');
+				break;
+			}
+			return True;
+		}
+		else if (substr($str,0,7) == "TERMCB:"){
+			$CORE_LOCAL->set("CacheCardCashBack",substr($str,7));
+			$CORE_LOCAL->set('ccTermState','pin');
 			return True;
 		}
 		return False;
 	}
 
 	function parse($str){
-		global $CORE_PATH,$CORE_LOCAL;
+		global $CORE_LOCAL;
 		$ret = $this->default_json();
-		$ret['udpmsg'] = $CORE_LOCAL->get("ccTermOut");
-		if ($ret['udpmsg'] == "sig")
-			$ret['main_frame'] = $CORE_PATH.'gui-modules/paycardSignature.php';
+		$ret['scale'] = ''; // redraw righthand column
+		if ($str == "CCFROMCACHE"){
+			$ret['retry'] = $CORE_LOCAL->get("CachePanEncBlock");
+		}
 		return $ret;
 	}
 
@@ -58,13 +117,26 @@ class SigTermCommands extends Parser {
 				<th>Input</th><th>Result</th>
 			</tr>
 			<tr>
-				<td>WAKEUP</td>
-				<td>Try to coax a stuck scale back
-				into operation</td>
+				<td>TERMMANUAL</td>
+				<td>
+				Send CC terminal to manual entry mode
+				</td>
 			</tr>
 			<tr>
-				<td>WAKEUP2</td>
-				<td>Different method, same goal</td>
+				<td>TERMRESET</td>
+				<td>Reset CC terminal to begin transaction</td>
+			</tr>
+			<tr>
+				<td>CCFROMCACHE</td>
+				<td>Charge the card cached earlier</td>
+			</tr>
+			<tr>
+				<td>PANCACHE:<encrypted block></td>
+				<td>Cache an encrypted block on swipe</td>
+			</tr>
+			<tr>
+				<td>PINCACHE:<encrypted block></td>
+				<td>Cache an encrypted block on PIN entry</td>
 			</tr>
 			</table>";
 	}

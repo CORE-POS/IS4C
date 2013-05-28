@@ -20,50 +20,57 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
 
-if (!class_exists("Parser")) include_once($CORE_PATH."parser-class-lib/Parser.php");
-if (!function_exists("fsEligible")) include_once($CORE_PATH."lib/prehkeys.php");
-if (!function_exists("addcomment")) include_once($CORE_PATH."lib/additem.php");
-if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
+/* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+	* 13Jan2013 Eric Lee Added MTL for Ontario Meal Tax Rebate
+
+*/
 
 class Totals extends Parser {
 
 	function check($str){
 		if ($str == "FNTL" || $str == "TETL" ||
 		    $str == "FTTL" || $str == "TL" ||
+				$str == "MTL" ||
 		    substr($str,0,2) == "FN")
 			return True;
 		return False;
 	}
 
 	function parse($str){
-		global $CORE_LOCAL,$CORE_PATH;
+		global $CORE_LOCAL;
 		$ret = $this->default_json();
 		if ($str == "FNTL"){
-			$ret['main_frame'] = $CORE_PATH.'gui-modules/fsTotalConfirm.php';
+			$ret['main_frame'] = MiscLib::base_url().'gui-modules/fsTotalConfirm.php';
 		}
 		elseif ($str == "TETL"){
 			if ($CORE_LOCAL->get("requestType") == ""){
 				$CORE_LOCAL->set("requestType","tax exempt");
 				$CORE_LOCAL->set("requestMsg","Enter the tax exempt ID");
-				$ret['main_frame'] = $CORE_PATH.'gui-modules/requestInfo.php';
+				$ret['main_frame'] = MiscLib::base_url().'gui-modules/requestInfo.php';
 			}
 			else if ($CORE_LOCAL->get("requestType") == "tax exempt"){
-				addTaxExempt();
-				addcomment("Tax Ex ID# ".$CORE_LOCAL->get("requestMsg"));
+				TransRecord::addTaxExempt();
+				TransRecord::addcomment("Tax Ex ID# ".$CORE_LOCAL->get("requestMsg"));
 				$CORE_LOCAL->set("requestType","");
 			}
 		}
 		elseif ($str == "FTTL")
-			finalttl();
+			PrehLib::finalttl();
 		elseif ($str == "TL"){
-			ttl();
+			$chk = PrehLib::ttl();
+			if ($chk !== True)
+				$ret['main_frame'] = $chk;
+		}
+		elseif ($str == "MTL"){
+			$chk = PrehLib::omtr_ttl();
+			if ($chk !== True)
+				$ret['main_frame'] = $chk;
 		}
 
 		if (!$ret['main_frame']){
-			$ret['output'] = lastpage();
+			$ret['output'] = DisplayLib::lastpage();
 			$ret['redraw_footer'] = True;
 		}
 		return $ret;

@@ -20,30 +20,62 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
+/** @class ScaleDriverWrapper
+    PHP Module for talking to hardware
+
+    This class deals with reading and writing
+    to hardware devices that PHP can't talk to
+    directly. Normally this means "scanner scale".
+    All drivers should provide a ScaleDriverWrapper
+    subclass.
+
+    Modules that extend this class must at least define
+    ReadFromScale and WriteToScale.
+*/
 
 class ScaleDriverWrapper {
 
+	/**
+	  This method updates the driver code
+	  or configuration with the specified port name.
+	  @param $portName a serial port device name
+	   e.g., /dev/ttyS0 or COM1
+	  <b>Not used much</b>
+	  In practice it's kind of a mess. The driver code
+	  has to be browser-writable for this to work
+	  and in many cases the driver also needs to be
+	  recompiled. Browser-based driver configuration
+	  just doesn't work very well, so if your
+	  implementation skips this method that's probably
+	  fine.
+	*/
 	function SavePortConfiguration($portName){}
 	
-	/* absPath is the top of IT CORE, should have
+	/** 
+	   This method updates the driver code or configuration
+	   with the specified path
+	   @param $absPath is the top of IT CORE, should have
 	   trailing slash
+	   <b>not used much</b>
+	   See the SavePortConfiguration() method for details.
 	*/
 	function SaveDirectoryConfiguration($absPath){}
 
-	/* reads available scale and scanner input
+	/** 
+	   Reads available scale and scanner input
 	   Function should print a JSON object with two fields:
 		'scale' is an HTML string to display current scale weight/status
-		'scans' is an array of UPCs
+		'scans' is a string representing a UPC
 	   Use scaledisplaymsg() to generate scale HTML. This ensures
 	   appropriate weight-related session variables are
 	   updated.
 	*/
 	function ReadFromScale(){}
 
-	/* send output to the scale. Possible inputs
-	   (not case sensitive):
+	/** 
+	   Sends output to the scale. 
+	   @param $str the output
+	   Currently supported messages (not case sensitive):
 		1. goodBeep
 		2. errorBeep
 		3. twoPairs
@@ -52,7 +84,13 @@ class ScaleDriverWrapper {
 	*/
 	function WriteToScale($str){}
 
-	/* clear all pending input */
+	/** Clear all pending input 
+	    
+	    If the driver has been running in the backgounrd
+	    and the browser hasn't, there could be a lot of 
+	    accumulated weight data. POS uses this method
+	    to discard everything on startup. 
+	 */
 	function ReadReset(){}
 
 }

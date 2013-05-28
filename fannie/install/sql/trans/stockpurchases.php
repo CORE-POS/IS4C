@@ -24,7 +24,8 @@ $CREATE['trans.stockpurchases'] = "
 		stockPurchase decimal(10,2),
 		tdate datetime,
 		trans_num varchar(90),
-		dept int
+		dept int,
+		INDEX(card_no)
 	)
 ";
 if ($dbms == "MSSQL"){

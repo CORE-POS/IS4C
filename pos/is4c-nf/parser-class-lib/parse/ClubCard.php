@@ -20,16 +20,6 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
-
-if (!class_exists("Parser")) include_once($CORE_PATH."parser-class-lib/Parser.php");
-if (!function_exists("addItem")) include_once($CORE_PATH."lib/additem.php");
-if (!function_exists("boxMsg")) include_once($CORE_PATH."lib/drawscreen.php");
-if (!function_exists("lastpage")) include_once($CORE_PATH."lib/listitems.php");
-if (!function_exists("nullwrap")) include_once($CORE_PATH."lib/lib.php");
-if (!function_exists("tDataConnect")) include_once($CORE_PATH."lib/connect.php");
-if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
 
 class ClubCard extends Parser {
 	function check($str){
@@ -48,7 +38,7 @@ class ClubCard extends Parser {
 			tax,volume,volDiscType
 			from localtemptrans where 
 			trans_id = " . $CORE_LOCAL->get("currentid");	
-		$connection = tDataConnect();
+		$connection = Database::tDataConnect();
 		$result = $connection->query($query);
 		$num_rows = $connection->num_rows($result);
 
@@ -59,14 +49,14 @@ class ClubCard extends Parser {
 			$dblVolSpecial = $row["VolSpecial"];			
 			$dblquantity = -0.5 * $row["quantity"];
 
-			$dblTotal = truncate2(-1 * 0.5 * $row["total"]); 		// invoked truncate2 rounding function to fix half-penny errors apbw 3/7/05
+			$dblTotal = MiscLib::truncate2(-1 * 0.5 * $row["total"]); 		// invoked truncate2 rounding function to fix half-penny errors apbw 3/7/05
 
 			$strCardNo = $CORE_LOCAL->get("memberID");
 			$dblDiscount = $row["discount"];
 			$dblmemDiscount = $row["memDiscount"];
 			$intDiscountable = $row["discountable"];
 			$dblUnitPrice = $row["unitPrice"];
-			$intScale = nullwrap($row["scale"]);
+			$intScale = MiscLib::nullwrap($row["scale"]);
 
 			if ($row["foodstamp"] <> 0) {
 				$intFoodStamp = 1;
@@ -74,31 +64,31 @@ class ClubCard extends Parser {
 				$intFoodStamp = 0;
 			}
 
-			$intdiscounttype = nullwrap($row["discounttype"]);
+			$intdiscounttype = MiscLib::nullwrap($row["discounttype"]);
 
 			if ($row["voided"] == 20) {
-				boxMsg("Discount already taken");
+				DisplayLib::boxMsg(_("Discount already taken"));
 			} elseif ($row["trans_type"] == "T" or $row["trans_status"] == "D" or $row["trans_status"] == "V" or $row["trans_status"] == "C") {
-				boxMsg("Item cannot be discounted");
+				DisplayLib::boxMsg("Item cannot be discounted");
 			} elseif (strncasecmp($strDescription, "Club Card", 9) == 0 ) {		//----- edited by abpw 2/15/05 -----
-				boxMsg("Item cannot be discounted");
+				DisplayLib::boxMsg(_("Item cannot be discounted"));
 			} elseif ($CORE_LOCAL->get("tenderTotal") < 0 and $intFoodStamp == 1 and (-1 * $dblTotal) > $CORE_LOCAL->get("fsEligible")) {
-				boxMsg("Item already paid for");
+				DisplayLib::boxMsg(_("Item already paid for"));
 			} elseif ($CORE_LOCAL->get("tenderTotal") < 0 and (-1 * $dblTotal) > ($CORE_LOCAL->get("runningTotal") - $CORE_LOCAL->get("taxTotal"))) {
-				boxMsg("Item already paid for");
+				DisplayLib::boxMsg(_("Item already paid for"));
 			} 
 			else {
 				// --- added partial item desc to club card description - apbw 2/15/05 --- 
-				addItem($strUPC, "Club Card: " . substr($strDescription, 0, 19), "I", "", "J", $row["department"], $dblquantity, $dblUnitPrice, $dblTotal, 0.5 * $row["regPrice"], $intScale, $row["tax"], $intFoodStamp, $dblDiscount, $dblmemDiscount, $intDiscountable, $intdiscounttype, $dblquantity, $row["volDiscType"], $row["volume"], $dblVolSpecial, 0, 0, 0);
+				TransRecord::addItem($strUPC, "Club Card: " . substr($strDescription, 0, 19), "I", "", "J", $row["department"], $dblquantity, $dblUnitPrice, $dblTotal, 0.5 * $row["regPrice"], $intScale, $row["tax"], $intFoodStamp, $dblDiscount, $dblmemDiscount, $intDiscountable, $intdiscounttype, $dblquantity, $row["volDiscType"], $row["volume"], $dblVolSpecial, 0, 0, 0);
 
 				$update = "update localtemptrans set voided = 20 where trans_id = " . $CORE_LOCAL->get("currentid");
-				$connection = tDataConnect();
+				$connection = Database::tDataConnect();
 				$connection->query($update);
 
 				$CORE_LOCAL->set("TTLflag",0);
 				$CORE_LOCAL->set("TTLRequested",0);
 
-				lastpage();
+				DisplayLib::lastpage();
 			}
 		}	
 		return False;

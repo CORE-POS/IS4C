@@ -29,6 +29,14 @@ $(document).ready(function(){
 	});
 });
 
+$(window).unload(function() {
+	$('#nText').change();
+	//$(':input').each(function(){
+	//	$(this).change();
+	//});
+});
+
+
 function confirmC(oid,tid){
 	var t = new Array();
 	t[7] = "Completed";
@@ -173,7 +181,6 @@ function saveQty(new_qty,tid){
 	});
 }
 function saveUnit(new_unit,tid){
-	alert('hi');
 	var oid = $('#orderID').val();
 	$.ajax({
 	url: 'ajax-calls.php',
@@ -377,6 +384,24 @@ function togglePrint(username,oid){
 	success: function(resp){}
 	});
 }
+function toggleO(oid,tid){
+	$.ajax({
+	url: 'ajax-calls.php',
+	dataType: 'post',
+	data: 'action=UpdateItemO&orderID='+oid+'&transID='+tid,
+	cache: false,
+	success: function(resp){}
+	});
+}
+function toggleA(oid,tid){
+	$.ajax({
+	url: 'ajax-calls.php',
+	dataType: 'post',
+	data: 'action=UpdateItemA&orderID='+oid+'&transID='+tid,
+	cache: false,
+	success: function(resp){}
+	});
+}
 function doSplit(oid,tid){
 	var dcheck=false;
 	$('select.editDept').each(function(){
@@ -411,6 +436,12 @@ function validateAndHome(){
 
 	if (dcheck){
 		alert("Item(s) don't have a department");
+		return false;
+	}
+
+	var CtC = $('#ctcselect').val();
+	if (CtC == 2){
+		alert("Choose Call to Confirm option");
 		return false;
 	}
 

@@ -19,50 +19,33 @@ if ($cached_output && !isset($_REQUEST['month'])){
 
 ob_start();
 
-$curMonth = date('n');
-$curYear = date('Y');
+$year = date('Y');
+$month = date('n');
+$stamp = mktime(0,0,0,$month-1,1,$year);
+$year = date("Y",$stamp);
 
-$lastMonth = $curMonth - 1;
-$lastYear = $curYear;
-if ($lastMonth == 0){
-	$lastMonth = 12;
-	$lastYear--;
+if (isset($_REQUEST['month']) && isset($_REQUEST['year'])){
+	$month = $_REQUEST['month'];
+	$year = $_REQUEST['year'];
+	$stamp = mktime(0,0,0,$month,1,$year);
 }
+$start = date("Y-m-01",$stamp);
+$end = date("Y-m-t",$stamp);
+$lm_span = "'$start 00:00:00' AND '$end 23:59:59'";
 
-if (isset($_REQUEST['month'])) $lastMonth = $_REQUEST['month'];
-if (isset($_REQUEST['year'])) $lastYear = $_REQUEST['year'];
+$dlog_lm = "trans_archive.dlogBig";
 
-$endDate = $lastYear."-".str_pad($lastMonth,2,"0",STR_PAD_LEFT)."-28";
+$stamp = mktime(0,0,0,date('m',$stamp)-2,1,date('Y',$stamp));
+$start = date("Y-m-01",$stamp);
+$lq_span = "'$start 00:00:00' AND '$end 23:59:59'";
 
-$dlog_lm = select_dlog($endDate);
+$dlog_lq = "trans_archive.dlogBig";
 
-for($i=0;$i<2;$i++){
-	$lastMonth--;
-	if ($lastMonth == 0){
-		$lastMonth = 12;
-		$lastYear--;
-	}
-}
-$qStartDate = $lastYear."-".str_pad($lastMonth,2,"0",STR_PAD_LEFT)."-28";
-
-$dlog_lq = select_dlog($qStartDate,$endDate);
-
-for($i=0;$i<9;$i++){
-	$lastMonth--;
-	if ($lastMonth == 0){
-		$lastMonth = 12;
-		$lastYear--;
-	}
-}
-$yStartDate = $lastYear."-".str_pad($lastMonth,2,"0",STR_PAD_LEFT)."-28";
-
-$dlog_ly = select_dlog($yStartDate,$endDate);
-
-$totalQ = "select datepart(yy,m.start_date),c.type from
-	memDates as m left join custdata as c on m.card_no=c.cardno
-	and c.personnum=1 left join suspensions as s on
-	s.cardno = m.card_no where c.memtype=1 or s.memtype1 = 1
-	order by datepart(yy,m.start_date)";
+$totalQ = "select year(m.start_date),c.Type from
+	memDates as m left join custdata as c on m.card_no=c.CardNo
+	and c.personNum=1 left join suspensions as s on
+	s.cardno = m.card_no where c.memType=1 or s.memtype1 = 1
+	order by year(m.start_date)";
 $totalR = $sql->query($totalQ);
 
 $totalMems = 0;
@@ -106,23 +89,25 @@ foreach ($yearBuckets as $k=>$v){
 echo "</table>";
 
 $patronageLMQ = "select d.card_no from $dlog_lm as d LEFT JOIN
-		custdata as c on c.cardno=d.card_no LEFT JOIN
+		custdata as c on c.CardNo=d.card_no LEFT JOIN
 		suspensions as s on s.cardno=d.card_no
-		WHERE c.personnum=1 and (c.memtype=1 or s.memtype1=1)
+		WHERE c.personNum=1 and (c.memType=1 or s.memtype1=1)
 		AND register_no <> 30
+		AND (tdate BETWEEN $lm_span)
 		GROUP BY d.card_no";
 $patronageLM = $sql->num_rows($sql->query($patronageLMQ));
 
 $patronageLQQ = "select d.card_no from $dlog_lq as d LEFT JOIN
-		custdata as c on c.cardno=d.card_no LEFT JOIN
+		custdata as c on c.CardNo=d.card_no LEFT JOIN
 		suspensions as s on s.cardno=d.card_no
-		WHERE c.personnum=1 and (c.memtype=1 or s.memtype1=1)
+		WHERE c.personNum=1 and (c.memType=1 or s.memtype1=1)
 		and register_no <> 30
+		AND tdate BETWEEN $lq_span
 		GROUP BY d.card_no";
 $patronageLQ = $sql->num_rows($sql->query($patronageLQQ));
 
 $yearQ = "select y.card_no,month_no,-1*total,
-	datediff(mm,m.start_date,getdate()) 
+	".$sql->monthdiff($sql->now(),'m.start_date')." 
 	from YTD_Patronage_Speedup as y left join
 	memDates as m on y.card_no=m.card_no
 	where y.total <> 0

@@ -23,6 +23,7 @@
 
 include('../login.php');
 $path = guesspath();
+include($path."config.php");
 $page_title = 'Fannie : Auth : Add Group Authorization';
 $header = 'Fannie : Auth : Add Group Authorization';
 
@@ -49,8 +50,14 @@ if (isset($_POST['name'])){
 else {
   echo "<form action=addGroupAuth.php method=post>";
   echo "<table cellspacing=3 cellpadding=3>";
-  echo "<tr><td>Group name:</td><td><input type=text name=name></td></tr>";
-  echo "<tr><td>Authorization class:</td><td><input type=text name=class></td></tr>";
+echo "<tr><th>Group name</th><td><select name=name>";
+foreach(getGroupList() as $uid => $name)
+	echo "<option>".$name."</option>";
+echo "</select></td></tr>";
+echo "<tr><th>Group name</th><td><select name=class>";
+foreach(getAuthList() as $uid => $name)
+	echo "<option>".$name."</option>";
+echo "</select></td></tr>";
   echo "<tr><td>Subclass start:</td><td><input type=text name=start value=all></td></tr>";
   echo "<tr><td>Subclass end:</td><td><input type=text name=end value=all></td></tr>";
   echo "<tr><td><input type=submit value=Add></td><td><input type=reset value=reset></td></tr>";

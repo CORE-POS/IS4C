@@ -26,24 +26,42 @@ include($FANNIE_ROOT.'src/SQLManager.php');
 include($FANNIE_ROOT.'src/cron_msg.php');
 include($FANNIE_ROOT.'src/select_dlog.php');
 
-$dbc = new SQLManager($FANNIE_SERVER,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+$dbc = new SQLManager($FANNIE_SERVER,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 		$FANNIE_SERVER_USER,$FANNIE_SERVER_PW);
 
-$end = date("Y-m-d",mktime(0,0,0,date("n")-1,28,date("Y")));
-$start = date("Y-m-d",mktime(0,0,0,date("n"),1,date("Y")-1));
-$dlog = select_dlog($start,$end);
-
-$query = "INSERT INTO YTD_Patronage_Speedup 
-	select d.card_no,datepart(mm,d.tdate) as month_no,
-	sum(CASE WHEN d.trans_type='T' THEN d.total ELSE 0 END) as total
-	from ".$dlog." as d
-	LEFT JOIN custdata as c on c.cardno=d.card_no and c.personnum=1 
-	LEFT JOIN suspensions as s on s.cardno = d.card_no 
-	WHERE c.memtype=1 or s.memtype1=1 
-	GROUP BY d.card_no,
-	datepart(yy,d.tdate), datepart(mm,d.tdate),datepart(dd,d.tdate),d.trans_num";
+$dbc->query("TRUNCATE TABLE YTD_Patronage_MiddleStep");
+$ts = mktime(0,0,0,date("n"),1,date("Y")-1);
+for($i=0;$i<12;$i++){
+	$start = date("Y-m-d",$ts);
+	$end = date("Y-m-t",$ts);
+	$dlog = select_dtrans($start,$end);
+	$ts = mktime(0,0,0,date("n",$ts)+1,1,date("Y",$ts));
+	$query = "INSERT INTO YTD_Patronage_MiddleStep 
+		select d.card_no,MONTH(d.datetime) as month_no,
+		total,
+		YEAR(d.datetime) AS year_no,
+		DAY(d.datetime) AS day_no,
+		".$dbc->concat(
+			$dbc->convert('emp_no','char'),"'-'",
+			$dbc->convert('register_no','char'),"'-'",
+			$dbc->convert('trans_no','char'),'')
+		." as trans_num
+		from ".$dlog." as d
+		WHERE datetime BETWEEN '$start 00:00:00' AND '$end 23:59:59'
+		AND d.trans_type = 'T' AND total <> 0
+		AND emp_no <> 9999 and register_no <> 99 AND trans_status NOT IN ('Z','X')";
+	$dbc->query($query);
+}
 
 $dbc->query("TRUNCATE TABLE YTD_Patronage_Speedup");
+$query = "INSERT INTO YTD_Patronage_Speedup
+	SELECT card_no,month_no,SUM(total) as total,year_no
+	FROM YTD_Patronage_MiddleStep AS d
+	LEFT JOIN custdata as c on c.CardNo=d.card_no and c.personNum=1 
+	LEFT JOIN suspensions as s on s.cardno = d.card_no 
+	WHERE c.memType=1 or s.memtype1=1 
+	GROUP BY d.card_no,
+	year_no, month_no, day_no, trans_num";
 $dbc->query($query);
 
 ?>

@@ -28,7 +28,7 @@ if ($CORE_LOCAL->get("gui-scale") == "no")
 ?>
 <html>
 <head>
-<link rel="stylesheet" type="text/css" href="/pos.css">
+<link rel="stylesheet" type="text/css" href="/css/pos.css">
 <script type="text/javascript">
 function trySubmit(inputstr){
 	if (window.top.input.document.forms[0]){

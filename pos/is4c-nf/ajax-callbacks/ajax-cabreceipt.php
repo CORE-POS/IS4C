@@ -20,19 +20,13 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
 
-include_once($CORE_PATH."ini.php");
-include_once($CORE_PATH."lib/session.php");
-include_once($CORE_PATH."lib/printLib.php");
-include_once($CORE_PATH."lib/printReceipt.php");
-include_once($CORE_PATH."lib/connect.php");
-include_once($CORE_PATH."lib/additem.php");
-if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
+ini_set('display_errors','Off');
+include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 $CORE_LOCAL->set("cabReference",$_REQUEST['input']);
-printReceipt('cab');
+$receipt = ReceiptLib::printReceipt('cab');
+ReceiptLib::writeLine($receipt);
 
 echo "Done";
 

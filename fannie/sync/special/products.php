@@ -1,1 +1,1 @@
-products.wfc.php
+generic.mysql.php

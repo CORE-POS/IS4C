@@ -21,16 +21,18 @@
 
 *********************************************************************************/
 
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
+/* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+	*  5Oct2012 Eric Lee Added:
+	*                    + A WEFC_Toronto-only chunk for collecting Member Card#
+	*                    + A general facility for displaying an error encountered in preprocess()
+	*                       in body_content() using temp_message.
+
+*/
 
 ini_set('display_errors','1');
 
-if (!class_exists("NoInputPage")) include_once($CORE_PATH."gui-class-lib/NoInputPage.php");
-if (!function_exists("pDataConnect")) include($CORE_PATH."lib/connect.php");
-if (!function_exists("setMember")) include($CORE_PATH."lib/prehkeys.php");
-if (!function_exists("printfooter")) include($CORE_PATH."lib/drawscreen.php");
-if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
+include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class memlist extends NoInputPage {
 
@@ -38,9 +40,16 @@ class memlist extends NoInputPage {
 	var $temp_num_rows;
 	var $entered;
 	var $db;
+	var $temp_message;
 
 	function preprocess(){
-		global $CORE_LOCAL,$CORE_PATH;
+		global $CORE_LOCAL;
+
+		// set variable ahead of time
+		// so we know if lookup found no one
+		// vs. lookup didn't happen
+		$this->temp_num_rows = -1;
+
 		$CORE_LOCAL->set("away",1);
 		$entered = "";
 		if ($CORE_LOCAL->get("idSearch") && strlen($CORE_LOCAL->get("idSearch")) > 0) {
@@ -57,6 +66,7 @@ class memlist extends NoInputPage {
 
 		$personNum = 1;
 		$selected_name = False;
+		// Values of memlist items are "CardNo::personNum"
 		if (strstr($entered,"::") !== False){
 			$tmp = explode("::",$entered);
 			$entered = $tmp[0];
@@ -69,54 +79,122 @@ class memlist extends NoInputPage {
 			$CORE_LOCAL->set("mirequested",0);
 			$CORE_LOCAL->set("scan","scan");
 			$CORE_LOCAL->set("reprintNameLookup",0);
-			header("Location: {$CORE_PATH}gui-modules/pos2.php");
+			$this->change_page($this->page_url."gui-modules/pos2.php");
 			return False;
 		}
 
 		$memberID = $entered;
-		$db_a = pDataConnect();
+		$db_a = Database::pDataConnect();
 
-		$query = "select CardNo,personNum,LastName,FirstName,CashBack,Balance,Discount,
-			MemDiscountLimit,ChargeOk,WriteChecks,StoreCoupons,Type,memType,staff,
-			SSI,Purchases,NumberOfChecks,memCoupons,blueLine,Shown,id from custdata 
-			where CardNo = '".$entered."' order by personNum";
+		$query = "";
 		if (!is_numeric($entered)) {
 			$query = "select CardNo,personNum,LastName,FirstName from custdata 
 				where LastName like '".$entered."%' order by LastName, FirstName";
+		}
+		else {
+			$query = "select CardNo,personNum,LastName,FirstName,CashBack,Balance,Discount,
+				MemDiscountLimit,ChargeOk,WriteChecks,StoreCoupons,Type,memType,staff,
+				SSI,Purchases,NumberOfChecks,memCoupons,blueLine,Shown,id from custdata 
+				where CardNo = '".$entered."' order by personNum";
+		}
+		if ($selected_name && is_numeric($personNum)){
+			/**
+			  13Feb13 Andy
+			  Use personNum if provided so the lookup returns
+			  the correct record
+			*/
+			$query = "select CardNo,personNum,LastName,FirstName,CashBack,Balance,Discount,
+				MemDiscountLimit,ChargeOk,WriteChecks,StoreCoupons,Type,memType,staff,
+				SSI,Purchases,NumberOfChecks,memCoupons,blueLine,Shown,id from custdata 
+				where CardNo = '".$entered."' AND personNum=".$personNum;
 		}
 
 		$result = $db_a->query($query);
 		$num_rows = $db_a->num_rows($result);
 
-		// if there's on result and either
+		// if theres only 1 match don't show the memlist
+		if ($num_rows == 1) {
+			$selected_name = True;
+			$personNum = 1;
+		}
+
+		// if there's one result and either
 		// a. it's the default nonmember account or
 		// b. it's been confirmed in the select box
 		// then set the member number
-		if (($num_rows == 1 && $entered == $CORE_LOCAL->get("defaultNonMem"))
-			||
-		    (is_numeric($entered) && is_numeric($personNum) && $selected_name) ){
+		// proceed/return to the appropriate next page
+		if ( ($num_rows == 1 && $entered == $CORE_LOCAL->get("defaultNonMem"))
+				||
+		    (is_numeric($entered) && is_numeric($personNum) && $selected_name) ) {
 			$row = $db_a->fetch_array($result);
-			setMember($row["CardNo"], $personNum,$row);
+			PrehLib::setMember($row["CardNo"], $personNum,$row);
 			$CORE_LOCAL->set("scan","scan");
-			if ($entered != $CORE_LOCAL->get("defaultNonMem") && check_unpaid_ar($row["CardNo"]))
-				header("Location: {$CORE_PATH}gui-modules/UnpaidAR.php");
+
+			// WEFC_Toronto: If a Member Card # was entered when the choice from the list was made,
+			// add the memberCards record.
+			if ( $CORE_LOCAL->get('store') == "WEFC_Toronto" ) {
+				$mmsg = "";
+				if ( isset($_REQUEST['memberCard']) && $_REQUEST['memberCard'] != "" ) {
+					$memberCard = $_REQUEST['memberCard'];
+					if ( !is_numeric($memberCard) || strlen($memberCard) > 5 || $memberCard == 0 ) {
+						$mmsg = "Bad Member Card# format >{$memberCard}<";
+					}
+					else {
+						$upc = sprintf("00401229%05d", $memberCard);
+						// Check that it isn't already there, perhaps for someone else.
+						$mQ = "SELECT card_no FROM memberCards where card_no = {$row['CardNo']}";
+						$mResult = $db_a->query($mQ);
+						$mNumRows = $db_a->num_rows($mResult);
+						if ( $mNumRows > 0 ) {
+							$mmsg = "{$row['CardNo']} is already associated with another Member Card";
+						}
+						else {
+							$mQ = "INSERT INTO memberCards (card_no, upc) VALUES ({$row['CardNo']}, '$upc')";
+							$mResult = $db_a->query($mQ);
+							if ( !$mResult ) {
+								$mmsg = "Linking membership to Member Card failed.";
+							}
+						}
+					}
+				}
+				if ( $mmsg != "" ) {
+					// Prepare to display the error.
+					$this->temp_result = $result;
+					$this->temp_num_rows = $num_rows;
+					$this->entered = $entered;
+					$this->db = $db_a;
+					$this->temp_message = $mmsg;
+					return True;
+				}
+			// /WEFC_Toronto bit.
+			}
+
+			if ($entered != $CORE_LOCAL->get("defaultNonMem") && PrehLib::check_unpaid_ar($row["CardNo"]))
+				$this->change_page($this->page_url."gui-modules/UnpaidAR.php");
 			else
-				header("Location: {$CORE_PATH}gui-modules/pos2.php");
+				$this->change_page($this->page_url."gui-modules/pos2.php");
 			return False;
 		}
 
+		// Prepare to display the memlist (list to choose from).
 		$this->temp_result = $result;
 		$this->temp_num_rows = $num_rows;
 		$this->entered = $entered;
 		$this->db = $db_a;
+		$this->temp_message = "";
 		return True;
+
 	} // END preprocess() FUNCTION
 
 	function head_content(){
 		global $CORE_LOCAL;
-		$this->add_onload_command("\$('#search').focus();\n");
-		if ($this->temp_num_rows > 0)
+		if ($this->temp_num_rows > 0){
 			$this->add_onload_command("\$('#search').keypress(processkeypress);\n");
+			$this->add_onload_command("\$('#search').focus();\n");
+		} else {
+			$this->default_parsewrapper_js('reginput','selectform');
+			$this->add_onload_command("\$('#reginput').focus();\n");
+		}
 		?>
 		<script type="text/javascript">
 		var prevKey = -1;
@@ -149,21 +227,38 @@ class memlist extends NoInputPage {
 		$result = $this->temp_result;
 		$entered = $this->entered;
 		$db = $this->db;
+		$message = $this->temp_message;
 
 		echo "<div class=\"baseHeight\">"
 			."<form id=\"selectform\" method=\"post\" action=\"{$_SERVER['PHP_SELF']}\">";
 
-		/* for no results, just throw up a re-do
-		 * otherwise, put results in a select box
-		 */
-		if ($num_rows < 1){
+		// First check for a problem found in preprocess.
+		if ( $message != "" ) {
 			echo "
 			<div class=\"colored centeredDisplay\">
 				<span class=\"larger\">
-				no match found<br />next search or member number
-				</span>
+			{$message}<br />".
+			_("enter member number or name").
+			"</span>
 				<input type=\"text\" name=\"search\" size=\"15\"
-			       	onblur=\"\$('#search').focus();\" id=\"search\" />
+			       	onblur=\"\$('#reginput').focus();\" id=\"reginput\" />
+				<br />press [enter] to cancel
+			</div>";
+		}
+		/* for no results, just throw up a re-do
+		 * otherwise, put results in a select box
+		 */
+		elseif ($num_rows < 1) {
+			echo "
+			<div class=\"colored centeredDisplay\">
+				<span class=\"larger\">";
+			if ($num_rows == -1)
+				echo _("member search")."<br />"._("enter member number or name");
+			else
+				echo _("no match found")."<br />"._("next search or member number");
+			echo "</span>
+				<input type=\"text\" name=\"search\" size=\"15\"
+			       	onblur=\"\$('#reginput').focus();\" id=\"reginput\" />
 				<br />
 				press [enter] to cancel
 			</div>";
@@ -171,7 +266,7 @@ class memlist extends NoInputPage {
 		else {
 			echo "<div class=\"listbox\">"
 				."<select name=\"search\" size=\"15\" "
-				."onblur=\"\$('#search').focus()\" id=\"search\">";
+				."onblur=\"\$('#search').focus();\" ondblclick=\"document.forms['selectform'].submit();\" id=\"search\">";
 
 			$selectFlag = 0;
 			if (!is_numeric($entered) && $CORE_LOCAL->get("memlistNonMember") == 1) {
@@ -190,13 +285,26 @@ class memlist extends NoInputPage {
 				echo "<option value='".$row["CardNo"]."::".$row["personNum"]."' ".$selected.">"
 					.$row["CardNo"]." ".$row["LastName"].", ".$row["FirstName"]."\n";
 			}
-			echo "</select></div>"
+			echo "</select></div><!-- /.listbox -->"
 				."<div class=\"listboxText centerOffset\">"
-				."use arrow keys to navigate<p>[clear] to cancel</div>"
+				._("use arrow keys to navigate")."<p>"._("clear to cancel")."</div><!-- /.listboxText .centerOffset -->"
 				."<div class=\"clear\"></div>";
+
+			// A textbox for the Member Card number, to be added to the db for the selected member.
+			if ( $CORE_LOCAL->get('store') == "WEFC_Toronto" ) {
+				echo "<div style='text-align:left; margin-top: 0.5em;'>
+				<p style='margin: 0.2em 0em 0.2em 0em; font-size:0.8em;'>To link the member chosen above to a Member Card:</p>";
+				echo "<span style='font-weight:bold;'>Member Card#:</span> <input name='memberCard' id='memberCard' width='20' title='The digits after 01229, no leading zeroes, not the final, small check-digit' />";
+				echo "<p style='margin-top: 0.2em; font-size:0.8em;'>If the back of the card has: '4 01229 00125 7' enter 125
+				<br />Then the card should be recognized in the scan.</p>";
+				echo "</div>";
+			}
+
 		}
 		echo "</form></div>";
 	} // END body_content() FUNCTION
+
+// /class memlist
 }
 
 new memlist();

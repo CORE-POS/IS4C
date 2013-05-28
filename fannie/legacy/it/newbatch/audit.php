@@ -2,13 +2,13 @@
 $tos = array(	0=>"andy@wholefoods.coop",
 		1=>"jim@wholefoods.coop, lisa@wholefoods.coop",
 		2=>"jesse@wholefoods.coop, lisa@wholefoods.coop",
-		3=>"debbie@wholefoods.coop, mfudala@wholefoods.coop, justin@wholefoods.coop",
+		3=>"debbie@wholefoods.coop, aelliott@wholefoods.coop, justin@wholefoods.coop",
 		4=>"joeu@wholefoods.coop, lisa@wholefoods.coop",
 		5=>"jillhall@wholefoods.coop, lisa@wholefoods.coop",
 		6=>"michael@wholefoods.coop, alex@wholefoods.coop",
 		7=>"shannon@wholefoods.coop",
 		8=>"jesse@wholefoods.coop, lisa@wholefoods.coop",
-		9=>"raelynn@wholefoods.coop, lisa@wholefoods.coop"
+		9=>"lisa@wholefoods.coop"
 );	
 
 function auditPriceChange($sql,$uid,$upc,$price,$batchID){

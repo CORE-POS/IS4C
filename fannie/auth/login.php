@@ -27,6 +27,14 @@ all functions return true on success, false on failure
 unless otherwise noted
 */
 
+
+/* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+	* 10Nov12 Eric Lee Add FANNIE_AUTH_ENABLED test in createLogin per intent(?)
+	*                   in first-user call from install/auth.php.
+
+*/
+
 require_once('groups.php');
 
 /*
@@ -43,10 +51,13 @@ function login($name,$password){
   if (!isAlphanumeric($name)){
     return false;
   }
+  if ($password == "") return false;
+
+  table_check();
 
   $sql = dbconnect();
-  $gatherQ = "select password,salt from users where name='$name'";
-  $gatherR = $sql->query($gatherQ);
+  $gatherQ = $sql->prepare_statement("select password,salt from Users where name=?");
+  $gatherR = $sql->exec_statement($gatherQ,array($name));
   if ($sql->num_rows($gatherR) == 0){
     return false;
   }
@@ -73,6 +84,7 @@ function login($name,$password){
 function shadow_login($name,$passwd){
 	if (!isAlphanumeric($name))
 		return false;
+	if ($passwd == "") return false;
 
 	$output = array();
 	$return_value = -1;
@@ -95,6 +107,9 @@ function shadow_login($name,$passwd){
  */
 function ldap_login($name,$passwd){
 	global $FANNIE_LDAP_SERVER, $FANNIE_LDAP_PORT, $FANNIE_LDAP_DN, $FANNIE_LDAP_SEARCH_FIELD, $FANNIE_LDAP_UID_FIELD, $FANNIE_LDAP_RN_FIELD;
+	if (!isAlphanumeric($name))
+		return false;
+	if ($passwd == "") return false;
 
 	$conn = ldap_connect($FANNIE_LDAP_SERVER,$FANNIE_LDAP_PORT);
 	if (!$conn) return false;
@@ -108,7 +123,7 @@ function ldap_login($name,$passwd){
 
 	$user_dn = $ldap_info[0]["dn"];
 	$uid = $ldap_info[0][$FANNIE_LDAP_UID_FIELD][0];
-	$fullname = $ldap_info[0][$FANNIE_LDAP_RN_FIELD];
+	$fullname = $ldap_info[0][$FANNIE_LDAP_RN_FIELD][0];
 
 	if (ldap_bind($conn,$user_dn,$passwd)){
 		syncUserLDAP($name,$uid,$fullname);	
@@ -122,16 +137,37 @@ function ldap_login($name,$passwd){
 sets a cookie.  nothing before this function call can have output
 */
 function logout(){
-  $name = checkLogin();
-  if (!$name){
-    return true;
-  }
-  setcookie('session_data','',time()+(60*600),'/');
-  return true;
+	$name = checkLogin();
+	if (!$name){
+		return true;
+	}
+
+	/**
+	  Remove session data from the database
+	*/
+	if (isset($_COOKIE['session_data'])){
+		$cookie_data = base64_decode($_COOKIE['session_data']);
+		$session_data = unserialize($cookie_data);
+
+		$name = $session_data['name'];
+		$session_id = $session_data['session_id'];
+		$uid = getUID($name);
+
+		$sql = dbconnect();
+		$delP = $sql->prepare_statement('DELETE FROM userSessions
+				WHERE uid=? AND session_id=?');
+		$delR = $sql->exec_statement($delP, array($uid,$session_id));
+
+		$upP = $sql->prepare_statement("UPDATE Users SET session_id='' WHERE name=?");
+		$upR = $sql->exec_statement($upP,array($name));
+	}
+
+	setcookie('session_data','',time()+(60*600),'/');
+	return true;
 }
 
 /*
-logins are stored in a table called users
+logins are stored in a table called Users
 information in the table includes an alphanumeric
 user name, an alphanumeric password (stored in crypted form),
 the salt used to crypt the password (time of user creation),
@@ -140,6 +176,8 @@ a session id is also stored in this table, but that is created
 when the user actually logs in
 */
 function createLogin($name,$password){
+	// 10Nov12 EL Add FANNIE_AUTH_ENABLED
+	global $FANNIE_AUTH_ENABLED;
   if (!isAlphanumeric($name) ){
     //echo 'failed alphanumeric';
     return false;
@@ -148,13 +186,16 @@ function createLogin($name,$password){
   if (init_check())
     table_check();
 
-  if (!validateUser('admin')){
-    return false;
+	// 10Nov12 EL Add FANNIE_AUTH_ENABLED test per intent in first-user call from auth.php.
+	if ( $FANNIE_AUTH_ENABLED ) {
+		if (!validateUser('admin')){
+			return false;
+		}
   }
-  
+
   $sql = dbconnect();
-  $checkQ = "select * from users where name='$name'";
-  $checkR = $sql->query($checkQ);
+  $checkQ = $sql->prepare_statement("select * from Users where name=?");
+  $checkR = $sql->exec_statement($checkQ,array($name));
   if ($sql->num_rows($checkR) != 0){
     return false;
   }
@@ -164,21 +205,21 @@ function createLogin($name,$password){
   
   // generate unique user-id between 0001 and 9999
   // implicit assumption:  there are less than 10,000
-  // users currently in the database
+  // Users currently in the database
   $uid = '';
   srand($salt);
+  $verifyQ = $sql->prepare_statement("select * from Users where uid=?");
   while ($uid == ''){
     $newid = (rand() % 9998) + 1;
     $newid = str_pad($newid,4,'0',STR_PAD_LEFT);
-    $verifyQ = "select * from users where uid='$newid'";
-    $verifyR = $sql->query($verifyQ);
+    $verifyR = $sql->exec_statement($verifyQ,array($newid));
     if ($sql->num_rows($verifyR) == 0){
       $uid = $newid;
     }
   }
 
-  $addQ = "insert into users (name,uid,password,salt) values ('$name','$uid','$crypt_pass','$salt')";
-  $addR = $sql->query($addQ);
+  $addQ = $sql->prepare_statement("insert into Users (name,uid,password,salt) values (?,?,?,?)");
+  $addR = $sql->exec_statement($addQ,array($name,$uid,$crypt_pass,$salt));
 
   return true;
 }
@@ -194,14 +235,14 @@ function deleteLogin($name){
 
   $sql=dbconnect();
   $uid = getUID($name);
-  $delQ = "delete from userPrivs where uid=$uid";
-  $delR = $sql->query($delQ);
+  $delQ = $sql->prepare_statement("delete from userPrivs where uid=?");
+  $delR = $sql->exec_statement($delQ,array($uid));
 
-  $deleteQ = "delete from users where name='$name'";
-  $deleteR = $sql->query($deleteQ);
+  $deleteQ = $sql->prepare_statement("delete from Users where name=?");
+  $deleteR = $sql->exec_statement($deleteQ,array($name));
 
-  $groupQ = "DELETE FROM userGroups WHERE name='$name'";
-  $groupR = $sql->query($groupQ);
+  $groupQ = $sql->prepare_statement("DELETE FROM userGroups WHERE name=?");
+  $groupR = $sql->exec_statement($groupQ,array($name));
 
   return true;
 }
@@ -230,9 +271,15 @@ function checkLogin(){
     return false;
   }
 
+  /**
+    New behavior: use dedicated userSessions table.
+    Could enforce expired, optionally
+  */
   $sql = dbconnect();
-  $checkQ = "select * from users where name='$name' and session_id='$session_id'";
-  $checkR = $sql->query($checkQ);
+  $checkQ = $sql->prepare_statement("select * from Users AS u LEFT JOIN
+			userSessions AS s ON u.uid=s.uid where u.name=? 
+			and s.session_id=?");
+  $checkR = $sql->exec_statement($checkQ,array($name,$session_id));
 
   if ($sql->num_rows($checkR) == 0){
     return false;
@@ -249,8 +296,8 @@ function showUsers(){
   echo "<table cellspacing=2 cellpadding=2 border=1>";
   echo "<tr><th>Name</th><th>User ID</th></tr>";
   $sql = dbconnect();
-  $usersQ = "select name,uid from users order by name";
-  $usersR = $sql->query($usersQ);
+  $usersQ = $sql->prepare_statement("select name,uid from Users order by name");
+  $usersR = $sql->exec_statement($usersQ);
   while ($row = $sql->fetch_array($usersR)){
     echo "<tr>";
     echo "<td>$row[0]</td>";
@@ -260,13 +307,23 @@ function showUsers(){
   echo "</table>";
 }
 
+function getUserList(){
+	$sql = dbconnect();
+	$ret = array();
+	$prep = $sql->prepare_statement("SELECT name,uid FROM Users ORDER BY name");
+	$result = $sql->exec_statement($prep);
+	while($row = $sql->fetch_row($result))
+		$ret[$row['uid']] = $row['name'];
+	return $ret;
+}
+
 /* 
 this function uses login to verify the user's presented
 name and password (thus creating a new session) rather
 than using checkLogin to verify the correct user is
 logged in.  This is nonstandard usage.  Normally checkLogin
 should be used to determine who (if anyone) is logged in
-(this way users don't have to constantly provide passwords)
+(this way Users don't have to constantly provide passwords)
 However, since the current password is provided, checking
 it is slightly more secure than checking a cookie
 */
@@ -285,13 +342,14 @@ function changePassword($name,$oldpassword,$newpassword){
   $salt = time();
   $crypt_pass = crypt($newpassword,$salt);
 
-  $updateQ = "update users set password='$crypt_pass',salt='$salt' where name='$name'";
-  $updateR = $sql->query($updateQ);
+  $updateQ = $sql->prepare_statement("update Users set password=?,salt=? where name=?");
+  $updateR = $sql->exec_statement($updateQ,array($crypt_pass,$salt,$name));
   
   return true;
 }
 
 function changeAnyPassword($name,$newpassword){
+  $sql = dbconnect();
   if (!validateUser('admin')){
     return false;
   }
@@ -303,8 +361,8 @@ function changeAnyPassword($name,$newpassword){
   $salt = time();
   $crypt_pass = crypt($newpassword,$salt);
 
-  $updateQ = "update users set password='$crypt_pass',salt='$salt' where name='$name'";
-  $updateR = $sql->query($updateQ);
+  $updateQ = $sql->prepare_statement("update Users set password=?,salt=? where name=?");
+  $updateR = $sql->exec_statement($updateQ,array($crypt_pass,$salt,$name));
 
   return true;
 }
@@ -370,7 +428,7 @@ function refreshSession(){
   return true;
   if (!isset($_COOKIE['session_data']))
     return false;
-  setcookie('session_data',$_COOKIE['session_data'],time()+(60*40),'/');
+  setcookie('session_data',$_COOKIE['session_data'],time()+(60*600),'/');
   return true;
 }
 
@@ -386,8 +444,8 @@ function pose($username){
 	$session_id = $session_data['session_id'];
 
 	$sql = dbconnect();
-	$sessionQ = "update users set session_id = '$session_id' where name='$username'";
-	$sessionR = $sql->query($sessionQ);
+	$sessionQ = $sql->prepare_statement("update Users set session_id = ? where name=?");
+	$sessionR = $sql->exec_statement($sessionQ,array($session_id,$name));
 
 	$session_data = array("name"=>$username,"session_id"=>$session_id);
 	$cookie_data = serialize($session_data);

@@ -21,23 +21,22 @@
 
 *********************************************************************************/
 
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
+/**
+   @class SpecialOrder
+   WFC Electronic Special Orders
 
-if (!class_exists("SpecialUPC")) include($CORE_PATH."lib/Scanning/SpecialUPC.php");
-if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
+   Special order upc format:
+   prefix orderID transID
+   00454  xxxxxx  xx
+  
+   e.g., orderID #1, transID #1:
+   0045400000101
 
-if (!function_exists('mDataConnect')) include($CORE_PATH."lib/connect.php");
-if (!function_exists('boxMsg')) include($CORE_PATH."lib/drawscreen.php");
-if (!function_exists('addItem')) include($CORE_PATH."lib/additem.php");
-if (!function_exists('lastpage')) include($CORE_PATH."lib/listitems.php");
-
-// special order upc format:
-// prefix orderID transID
-// 00454  xxxxxx  xx
-//
-// e.g., orderID #1, transID #1:
-// 0045400000101
+   These IDs are used to locate the
+   special order record in the 
+   PendingSpecialOrder table on
+   the server database
+*/
 
 class SpecialOrder extends SpecialUPC {
 
@@ -49,35 +48,38 @@ class SpecialOrder extends SpecialUPC {
 	}
 
 	function handle($upc,$json){
-		global $CORE_LOCAL,$CORE_PATH;
+		global $CORE_LOCAL;
 
 		$orderID = substr($upc,5,6);
 		$transID = substr($upc,11,2);
 
 		if ((int)$transID === 0){
-			$json['output'] = boxMsg("Not a valid order");
+			$json['output'] = DisplayLib::boxMsg(_("Not a valid order"));
 			return $json;
 		}
 
-		$db = mDataConnect();
+		$db = Database::mDataConnect();
 		$query = sprintf("SELECT upc,description,department,
-				quantity,unitPrice,total,regPrice,d.dept_tax,d.dept_fs,ItemQtty
+				quantity,unitPrice,total,regPrice,d.dept_tax,d.dept_fs,
+				ItemQtty,p.discountable
 				FROM PendingSpecialOrder as p LEFT JOIN
-				departments AS d ON p.department=d.dept_no
+				is4c_op.departments AS d ON p.department=d.dept_no
 				WHERE order_id=%d AND trans_id=%d",
 				$orderID,$transID);
 		$result = $db->query($query);
 
 		if ($db->num_rows($result) != 1){
-			$json['output'] = boxMsg("Order not found");
+			$json['output'] = DisplayLib::boxMsg(_("Order not found"));
 			return $json;
 		}
 
 		$row = $db->fetch_array($result);
-		addItem($row['upc'],$row['description'],'I','','',$row['department'],$row['quantity'],
+		TransRecord::addItem($row['upc'],$row['description'],'I','','',$row['department'],$row['quantity'],
 			$row['unitPrice'],$row['total'],$row['regPrice'],0,$row['dept_tax'],
-			$row['dept_fs'],0.00,0.00,0,0,$row['ItemQtty'],0,0,0,$orderID,$transID,0,0.00,0,'SO');
-		$json['output'] = lastpage();
+			$row['dept_fs'],0.00,0.00,$row['discountable'],0,$row['ItemQtty'],0,0,0,$orderID,$transID,0,0.00,0,'SO');
+		$json['output'] = DisplayLib::lastpage();
+		$json['udpmsg'] = 'goodBeep';
+		$json['redraw_footer'] = True;
 
 		return $json;
 	}

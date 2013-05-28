@@ -2,8 +2,9 @@
 include('../../../config.php');
 
 require($FANNIE_ROOT.'src/SQLManager.php');
-require($FANNIE_ROOT.'src/select_dlog.php');
 include('../../db.php');
+$sql->query("use is4c_trans");
+require($FANNIE_ROOT.'src/select_dlog.php');
 
 if (isset($_GET["action"])){
 	$out = $_GET["action"]."`";
@@ -31,20 +32,22 @@ if (isset($_GET["action"])){
 			     $_GET['closeSafeCount'],
 			     $_GET['buyAmount'],
 			     $_GET['dropAmount'],	
-			     $_GET['depositAmount']);
+			     $_GET['depositAmount'],
+			     $_GET['atmAmount']);
 	
 	}
 	echo $out;
 	return;
 }
 
-function save($dateStr,$changeOrder,$openSafeCount,$closeSafeCount,$buyAmount,$dropAmount,$depositAmount){
+function save($dateStr,$changeOrder,$openSafeCount,$closeSafeCount,$buyAmount,$dropAmount,$depositAmount,$atmAmount){
 	saveInputs($dateStr,'changeOrder',$changeOrder);
 	saveInputs($dateStr,'openSafeCount',$openSafeCount);
 	saveInputs($dateStr,'closeSafeCount',$closeSafeCount);
 	saveInputs($dateStr,'buyAmount',$buyAmount);
 	saveInputs($dateStr,'dropAmount',$dropAmount);
 	saveInputs($dateStr,'depositAmount',$depositAmount);
+	saveInputs($dateStr,'atm',$atmAmount);
 	
 	return 'Saved';
 }
@@ -64,11 +67,11 @@ function saveInputs($dateStr,$row,$data){
 		$checkQ = "SELECT amt FROM dailyDeposit WHERE dateStr='$dateStr' AND rowName='$row' AND denomination='$denom'";
 		if ($sql->num_rows($sql->query($checkQ)) == 0){
 			$insQ = "INSERT INTO dailyDeposit VALUES ('$dateStr','$row','$denom',$amt)";
-			$sql->query($insQ);
+			$sql->query_all($insQ);
 		}
 		else {
 			$upQ = "UPDATE dailyDeposit SET amt=$amt WHERE dateStr='$dateStr' AND rowName='$row' AND denomination='$denom'";
-			$sql->query($upQ);
+			$sql->query_all($upQ);
 		}
 	}
 }
@@ -87,7 +90,8 @@ function displayUI($dateStr){
 	$holding = array('changeOrder'=>array(),
 			'openSafeCount'=>array(),
 			'closeSafeCount'=>array(),
-			'dropAmount'=>array()
+			'dropAmount'=>array(),
+			'atm'=>array('fill'=>0,'reject'=>0)
 			);
 
 	$denoms = array('0.01','0.05','0.10','0.25','Junk','1.00','5.00','10.00','20.00','50.00','100.00','Checks');
@@ -131,17 +135,17 @@ function displayUI($dateStr){
 		if ($d == 'Checks') 
 			$ret .= "<td>&nbsp;</td>";
 		else{
-			$ret .= "<td><input size=4 type=text id=safeCount1$d value=".$holding['openSafeCount'][$d];
+			$ret .= "<td><input size=4 type=text id=\"safeCount1$d\" value=".$holding['openSafeCount'][$d];
 			$ret .= " onchange=\"updateOpenSafeCount('$d');\" /></td>";
 			$sum += $holding['openSafeCount'][$d];
 		}
 	}
 	$ret .= "<td id=safeCount1Total>$sum</td></tr>";
 
-	$dateClause = " datediff(dd,date,'$dateStr') = 0 ";
+	$dateClause = " ".$sql->date_equals('date',$dateStr)." ";
 	if (strstr($dateStr," ")){
 		$dates = explode(" ",$dateStr);
-		$dateClause = " datediff(dd,date,'$dates[0]') <= 0 AND datediff(dd,date,'$dates[1]') >=0 ";
+		$dateClause = " date BETWEEN '$dates[0] 00:00:00' AND '$dates[1] 23:59:59' ";
 	}
 	$countQ = "SELECT tender_type,sum(amt) from dailyCounts where tender_type in ('CA','CK','SCA') and $dateClause GROUP BY tender_type";
 	$countR = $sql->query($countQ);
@@ -187,7 +191,21 @@ function displayUI($dateStr){
 	$buyAmountTotal -= $val;
 	$accountableTotal += $val;
 
-	$ret .= "<tr class=color><th>Fill Amount</th>";
+	$ret .= "<tr class=\"color\"><th>ATM</th>";
+	$ret .= "<td colspan=\"7\">&nbsp;</td>";
+	$ret .= "<td>Fill:</td>";
+	$ret .= "<td><input size=4 type=text id=atmFill value=\"".$holding['atm']['fill']."\"
+			onchange=\"updateAtmAmounts();\" /></td>";
+	$ret .= "<td>&nbsp;</td>";
+	$ret .= "<td>Reject:</td>";
+	$ret .= "<td><input size=4 type=text id=atmReject value=\"".$holding['atm']['reject']."\"
+			onchange=\"updateAtmAmounts();\" /></td>";
+	$ret .= "<td>&nbsp;</td>";
+	$ret .= "</tr>";
+
+	$accountableTotal += ($holding['atm']['reject'] - $holding['atm']['fill']);
+	
+	$ret .= "<tr><th>Fill Amount</th>";
 	$ret .= "<td id=fill0.01>".(1*$bags)."</td>";
 	$ret .= "<td id=fill0.05>".(2*$bags)."</td>";
 	$ret .= "<td id=fill0.10>".(5*$bags)."</td>";
@@ -202,8 +220,9 @@ function displayUI($dateStr){
 	$accountableTotal -= (168*$bags);
 
 	$fills = array('0.01'=>1,'0.05'=>2,'0.10'=>5,'0.25'=>10,'1.00'=>50,'5.00'=>50,'10.00'=>50);
+	$pars = array("0.01"=>40,"0.05"=>60,"0.10"=>200,"0.25"=>700,"1.00"=>1700,"5.00"=>500,"10.00"=>800);
 
-	$ret .= "<tr><th>Deposit Amount</th>";
+	$ret .= "<tr class=\"color\"><th>Deposit Amount</th>";
 	$sum = 0;
 	$depositAmount = array();
 	foreach($denoms as $d){
@@ -212,13 +231,20 @@ function displayUI($dateStr){
 			$sum += $osCounts['CK'];
 			$depositAmount['Checks'] = $osCounts['CK'];
 		}
-		else if ($d == '100.00' || $d == '50.00' || $d == '20.00' || $d == 'Junk'){
+		else if ($d == '100.00' || $d == '50.00' || $d == 'Junk'){
 			$ret .= "<td id=depositAmount$d>".($holding['openSafeCount'][$d] + $holding['dropAmount'][$d])."</td>";
 			$sum += ($holding['openSafeCount'][$d] + $holding['dropAmount'][$d]);
 			$depositAmount[$d] = $holding['openSafeCount'][$d]+$holding['dropAmount'][$d];
 		}
+		else if ($d == '20.00'){
+			$atmTtl = $holding['openSafeCount'][$d] + $holding['dropAmount'][$d] 
+				- $holding['atm']['fill'] + $holding['atm']['reject'];
+			$ret .= "<td id=depositAmount$d>".$atmTtl."</td>";
+			$sum += $atmTtl;
+			$depositAmount[$d] = $atmTtl;
+		}
 		else if ($d == '10.00'){
-			$val = $holding['changeOrder'][$d] + $holding['openSafeCount'][$d] + $holding['dropAmount'][$d] - 500 - (50*$bags);
+			$val = $holding['changeOrder'][$d] + $holding['openSafeCount'][$d] + $holding['dropAmount'][$d] - $pars['10.00'] - (50*$bags);
 			$val = round($val,2);
 			if ($val < 0) $val = 0;
 			$ret .= "<td id=depositAmount$d>".$val."</td>";
@@ -226,7 +252,7 @@ function displayUI($dateStr){
 			$depositAmount[$d] = $val;
 		}
 		else if ($d == '5.00'){
-			$val = $holding['changeOrder'][$d] + $holding['openSafeCount'][$d] + $holding['dropAmount'][$d] - 300 - (50*$bags);
+			$val = $holding['changeOrder'][$d] + $holding['openSafeCount'][$d] + $holding['dropAmount'][$d] - $pars['5.00'] - (50*$bags);
 			$val = round($val,2);
 			if ($val < 0) $val = 0;
 			$ret .= "<td id=depositAmount$d>".$val."</td>";
@@ -271,7 +297,7 @@ function displayUI($dateStr){
 	$buyAmountTotal += $sum;
 	$accountableTotal -= $sum;
 	
-	$ret .= "<tr class=color><th>Close Safe Count</th>";
+	$ret .= "<tr><th>Close Safe Count</th>";
 	$sum = 0;
 	foreach($denoms as $d){
 		if ($d == 'Checks' || $d == "Junk") 
@@ -285,8 +311,8 @@ function displayUI($dateStr){
 	$ret .= "<td id=safeCount2Total>$sum</td></tr>";
 	$actualTotal += $sum;
 
-	$pars = array("0.01"=>23,"0.05"=>50,"0.10"=>125,"0.25"=>610,"1.00"=>1000,"5.00"=>300,"10.00"=>500);
-	$ret .= "<tr><th>Par Amounts</th>";
+	$parTTL = 0; foreach($pars as $k=>$v) $parTTL += $v;
+	$ret .= "<tr class=\"color\"><th>Par Amounts</th>";
 	$ret .= "<td id=par0.01>".$pars['0.01']."</td>";
 	$ret .= "<td id=par0.05>".$pars['0.05']."</td>";
 	$ret .= "<td id=par0.10>".$pars['0.10']."</td>";
@@ -296,7 +322,7 @@ function displayUI($dateStr){
 	$ret .= "<td id=par5.00>".$pars['5.00']."</td>";
 	$ret .= "<td id=par10.00>".$pars['10.00']."</td>";
 	$ret .= "<td colspan=4>&nbsp;</td>";
-	$ret .= "<td>2608.00</td></tr>";
+	$ret .= sprintf("<td>%.2f</td></tr>",$parTTL);
 
 	$buyAmounts = array("0.01"=>0,"0.05"=>0,"0.10"=>0,"0.25"=>0,"1.00"=>0,"5.00"=>0,"10.00"=>0);
 	foreach ($buyAmounts as $k=>$v){
@@ -314,11 +340,11 @@ function displayUI($dateStr){
 		$buyAmounts['1.00'] -= 1;
 		$overage += 1;
 	}
-	while($buyAmounts['5.00'] % 50 != 0){ 
+	while($buyAmounts['5.00'] % 5 == 0 && $buyAmounts['5.00'] % 50 != 0){ 
 		$buyAmounts['5.00'] -= 5;
 		$overage += 5;
 	}
-	while($buyAmounts['10.00'] % 50 != 0){ 
+	while($buyAmounts['10.00'] % 10 == 0 && $buyAmounts['10.00'] % 50 != 0){ 
 		$buyAmounts['10.00'] -= 10;
 		$overage += 10;
 	}
@@ -329,7 +355,7 @@ function displayUI($dateStr){
 	$buyAmounts['0.05'] += $overs['0.05'];
 	$buyAmounts['0.01'] += $overs['0.01'];
 
-	$ret .= "<tr class=color><th>Buy Amount</th>";
+	$ret .= "<tr><th>Buy Amount</th>";
 	foreach ($denoms as $d){
 		if (isset($buyAmounts[$d]))
 			$ret .= "<td id=buyAmount$d>".$buyAmounts[$d]."</td>";
@@ -339,10 +365,11 @@ function displayUI($dateStr){
 	$ret .= "<td id=buyAmountTotal>".array_sum($buyAmounts)."</td></tr>";
 
 	$dlog = select_dlog($startDate,$endDate);
-	$posTotalQ = "SELECT -1*sum(d.total) FROM $dlog  as d WHERE ".str_replace(",date,",",d.tdate,",$dateClause)." AND d.trans_subtype IN ('CA','CK')";
+	$dlog = "trans_archive.dlogBig";
+	$posTotalQ = "SELECT -1*sum(d.total) FROM $dlog as d WHERE ".str_replace(" date "," d.tdate ",$dateClause)." AND d.trans_subtype IN ('CA','CK')";
 	$posTotal = array_pop($sql->fetch_row($sql->query($posTotalQ)));
 
-	$ret .= "<tr><th>Over/Shorts</th>";
+	$ret .= "<tr class=\"color\"><th>Over/Shorts</th>";
 	$ret .= "<td><i>Count total</i></td><td>".round(($osCounts['CA']+$osCounts['CK'] - $osCounts['SCA'] ),2)."</td>";
 	$ret .= "<td><i>POS total</i></td><td>".$posTotal."</td>";
 	$ret .= "<td><i>Variance</i></td><td>".round(($osCounts['CA']+$osCounts['CK']) - $osCounts['SCA'] -$posTotal,2)."</td>";
@@ -353,18 +380,18 @@ function displayUI($dateStr){
 
 
 	$dailies = array();
-	$countQ = "SELECT datepart(yy,date),datepart(mm,date),datepart(dd,date),
+	$countQ = "SELECT YEAR(date),MONTH(date),DAY(date),
 			SUM(CASE WHEN tender_type IN ('CA','CK') THEN amt
 				WHEN tender_type = 'SCA' THEN -amt
 				ELSE 0 end) AS total
 			FROM dailyCounts WHERE date BETWEEN
 			'$startDate 00:00:00' AND '$endDate 23:59:59'
-			GROUP BY datepart(yy,date),datepart(mm,date),datepart(dd,date)";
-	$posQ = "SELECT datepart(yy,tdate),datepart(mm,tdate),datepart(dd,tdate),
+			GROUP BY YEAR(date),MONTH(date),DAY(date)";
+	$posQ = "SELECT YEAR(tdate),MONTH(tdate),DAY(tdate),
 			SUM(case when trans_subtype in ('CA','CK') then -total ELSE 0 END) as total
 			FROM $dlog AS d WHERE tdate BETWEEN
 			'$startDate 00:00:00' AND '$endDate 23:59:59'
-			GROUP BY datepart(yy,tdate),datepart(mm,tdate),datepart(dd,tdate)";
+			GROUP BY YEAR(tdate),MONTH(tdate),DAY(tdate)";
 	$countR = $sql->query($countQ);
 	while($row = $sql->fetch_row($countR)){
 		$d = $row[0]."-".str_pad($row[1],2,'0',STR_PAD_LEFT)."-".str_pad($row[2],2,'0',STR_PAD_LEFT);
@@ -381,8 +408,8 @@ function displayUI($dateStr){
 	foreach($dailies as $k=>$v){
 		if ($num % 2 == 0){
 			if ($num != 0) $ret .= "</tr>";
-			if ($num % 4 == 0) $ret .= "<tr class=color>";
-			else $ret .= "<tr>";
+			if ($num % 4 == 0) $ret .= "<tr>";
+			else $ret .= "<tr class=\"color\">";
 		}
 		$ret .= sprintf("<th>%s</th><td><i>Count</i></td><td>%.2f</td>
 				<td><i>POS</i></td><td>%.2f</td><td><i>Variance
@@ -438,13 +465,14 @@ tr.color {
 <table>
 <tr>
 	<th>Start Date</th><td><input type=text id=startDate onfocus="this.value='';showCalendarControl(this);" /></td>
+	<td>
+	<input type=submit Value=Load onclick="loader();" />
+	</td>
 </tr>
 <tr>
 	<th>End Date</th><td><input type=text id=endDate onfocus="this.value='';showCalendarControl(this);" /></td>
 </tr>
-</tr>
 </table>
-<input type=submit Value=Load onclick="loader();" />
 </div>
 
 <hr />

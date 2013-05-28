@@ -1,0 +1,197 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>How CORE POS IS4C Pages are Constructed and Work</title>
+<style type="text/css">
+// Reset margins for browser compatibility.
+p, ul, ol {
+	margin: 0.0em 0.0em 0.0em 0.0em;
+}
+pre, tt, .tt {
+	font-family: Courier New;
+	font-size: 0.8em;
+}
+.gray {
+	background-color:#DEDEDE;
+}
+.first {
+	margin-top: 0.5em;
+}
+</style>
+</head>
+<body>
+<div style="text-align: center;">
+<H2>How CORE POS IS4C Pages are Constructed and Work</H2>
+<p>Revised: 18Aug2012</p>
+</div>
+
+<p>This document walks through how a Top Level Page,
+i.e. one whose name appears in the browser address bar
+and whose initial source usually resides in /IS4C/pos/is4c-nf/gui-modules,
+is assembled by PHP.
+You may find this useful if you are new to object-oriented PHP, JavaScript, jQuery or JSON.
+I wrote this as part of trying to become un-new to some of those.
+<br />Eric "flathat" Lee, 18Aug2012
+</p>
+
+<p>The initial subject subject will be pos2.php,
+although we may find that too difficult and do a simpler one such as mgrlogin.php instead.
+This commentary will not be exhaustive but I hope will illuminate most of the most important features.
+</p>
+
+<ul>
+<li>
+<div class="gray tt">
+include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
+</div><!-- /.gray -->
+<p class="first">
+This uses the PHP Magic Constant <tt>__FILE__</tt>
+<br />See:<tt>http://php.net/manual/en/language.constants.predefined.php</tt>
+<br />to refer to the path and name of the current file
+and the <tt>dirname()</tt> function to reduce that to the path,
+and then familiar code to point to
+<tt>/IS4C/pos/is4c-nf/lib/AutoLoader.php</tt>
+<br />which points to 
+<br /> - <tt>/IS4C/pos/is4c-nf/lib/LocalStorage/conf.php</tt>
+<br />which points to 
+<br /> - <tt>/IS4C/pos/is4c-nf/lib/LocalStorage/SessionStorage.php</tt>
+<br />which defines and includes the class <tt>CORE_LOCAL</tt>,
+which consists simply of two methods, which are used a great deal,
+to <tt>set</tt> and <tt>get</tt> certain variables,
+and a structure of other classes which I don't understand yet
+but that are generally related to maintaining a session,
+that is, information that persists between the instances of running <tt>pos2.php</tt>
+that create the PoS transaction.
+<br /><tt>AutoLoader.php</tt> itself contains classes for finding the other files
+that the Top Level Page might refer to and makes a persistent list or map of them
+using <tt>$CORE_LOCAL->set</tt> and <tt>->get</tt>.
+It is essential that naming conventions be observed,
+e.g. that a class <tt>FooBar</tt> be defined in a file called <tt>FooBar.php</tt>
+</li>
+
+<li>
+<div class="gray tt">
+new pos2();
+</div><!-- /.gray -->
+<p class="first">
+Next, find the above line at the end of the listing.
+It says to run the function <tt>pos2</tt>.
+Go back to the top of the listing to find where <tt>pos2</tt> is defined.
+</p>
+</li>
+
+<li>
+<div class="gray tt">
+class pos2 extends BasicPage {
+</div><!-- /.gray -->
+<p class="first">
+In the above, <tt>extends</tt> means that the class being defined, <tt>pos2</tt>,
+is a child of <tt>BasicPage</tt> that inherits from it and may add to and redefine parts of it.
+To understand <tt>pos2</tt> we must first understand <tt>BasicPage</tt>
+which is defined in
+<br /><tt>/IS4C/pos/is4c-nf/gui-class-lib/BasicPage.php</tt>
+<br />Go there now.
+</p>
+<p>(If you read through <tt>pos2</tt> you will notice it contains only functions
+and no calls to them, i.e. nothing exectuable.
+To learn how <tt>pos2()</tt> actually does anything study <tt>BasicPage</tt>.)
+</p>
+</li>
+
+<li>
+<div class="gray tt">
+function BasicPage(){
+</div><!-- /.gray -->
+<p class="first">
+Find the above line towards the top of the listing.
+A function, or method, to use the correct oo term,
+with the same name as the class it is in is called a <em>Constructor</em>,
+and, unlike other methods, is run each time an instance of the class,
+or a child of it, such as <tt>pos2()</tt> is created with <tt>new</tt>.
+</p>
+<p>The constructor, <tt>BasicPage()</tt> runs it's <tt>preprocess()</tt> method
+and possibly its <tt>print_page()</tt> method.
+There is a useful comment about <tt>preprocess()</tt> in the code at this point:
+<blockquote>It is typically
+    used to check $_GET or $_POST variables. If the
+    function returns True, the rest of the page will be
+    printed. If the function returns False, there is no
+    output. Usually this function returns False after
+    setting a redirect header to change to another page.
+</blockquote>
+</p>
+<p>
+Now go back to <tt>pos2.php</tt> to see whether either of those methods have been
+redefined for use there.
+It turns out that <tt>preprocess()</tt> has and <tt>print_page()</tt> has not,
+although other methods of <tt>BasicPage</tt> which are called by <tt>print_page()</tt>,
+including <tt>body_content()</tt>, have.
+</p>
+</li>
+<li>
+<pre class="gray">
+&lt;form name="form" id="formlocal" method="post" autocomplete="off"
+action="pos2.php" onsubmit="return submitWrapper();" &gt;
+&lt;input name="reginput" value="" onblur="$('#reginput').focus();"
+type="text" id="reginput"  /&gt;
+&lt;/form&gt;
+</pre>
+<p class="first">
+Before examining <tt>preprocess</tt> look at the <tt>&lt;form&gt;</tt> that captures
+the <tt>POST</tt> variables that <tt>preprocess()</tt> will handle.
+It is quite simple, with only one <tt>input</tt>, with <tt>name="reginput"</tt>,
+the input being sent back to itself <tt>action="pos2.php"</tt>
+and <tt>onsubmit="return submitWrapper();"</tt>.
+The latter is the subject of most of the rest of this page.
+</p>
+
+<li>
+<div class="gray tt">
+if (Authenticate::check_password($_REQUEST['reginput'])){
+</div><!-- /.gray -->
+<p class="first">
+NOT TRUE. login2.php calls itself to check password and then runs pos2.
+<br />$this->change_page($this->page_url."gui-modules/pos2.php");
+<br />The first time <tt>pos2.php</tt> is called is from <tt>login2.php</tt>
+which submits a form variable named <tt>reginput</tt>, the same as <tt>pos2</tt>'s own variable,
+containing the password of a cashier.
+Let's look at what <tt>preprocess</tt> does with this value, a two-to-four-digit number.
+</p>
+</li>
+<li>
+<div class="gray tt">
+x pos2();
+</div><!-- /.gray -->
+<p class="first">
+<br />The first time <tt>pos2.php</tt> is called is from <tt>login2.php</tt>,
+with no <tt>GET</tt> or <tt>POST</tt> variables.
+</p>
+</li>
+
+</ul>
+
+<!--
+"r
+<br />
+"p
+<p>
+</p>
+"t
+<tt></tt>
+"l
+<li>
+<div class="gray tt">
+new pos2();
+</div><!-- /.gray -->
+<!-- Delete me
+<p class="first">
+Next, ...
+</p>
+</li>
+
+-->
+
+</body>
+</html>
+

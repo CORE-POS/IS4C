@@ -20,7 +20,7 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
-   header("Content-Disposition: inline; filename=mailingList.xls");
+   header("Content-Disposition: inline; filename=mailingList.csv");
    header("Content-Description: PHP3 Generated Data");
    header("Content-type: application/vnd.ms-excel; name='excel'");
 
@@ -28,8 +28,9 @@ include('../config.php');
 include($FANNIE_ROOT.'src/mysql_connect.php');
 include($FANNIE_ROOT.'src/ReportConvert/HtmlToArray.php');
 include($FANNIE_ROOT.'src/ReportConvert/ArrayToXls.php');
+include($FANNIE_ROOT.'src/ReportConvert/ArrayToCsv.php');
 
-$query = "SELECT CardNo, 
+$query = $dbc->prepare_statement("SELECT CardNo, 
           LastName, 
           FirstName, 
           street,
@@ -41,19 +42,23 @@ $query = "SELECT CardNo,
           end_date
           FROM custdata AS c
 	  LEFT JOIN meminfo AS m
-	  ON c.cardno=m.card_no
+	  ON c.CardNo=m.card_no
 	  LEFT JOIN memDates AS d
-	  ON c.cardno=d.card_no
+	  ON c.CardNo=d.card_no
           WHERE 
-          memType <>0
-          AND (end_date > getdate() or end_date = '')
+          memType IN (1,3)
+	  AND c.Type='PC'
+          AND (end_date > ".$dbc->now()." 
+		or end_date = '' 
+		or end_date is null
+		or end_date='1900-01-01 00:00:00'
+		or end_date='0000-00-00 00:00:00')
           AND ads_OK = 1
-          AND PersonNum = 1
-          order by m.card_no";
+          AND personNum = 1
+	  AND LastName <> 'NEW MEMBER'
+          order by m.card_no");
 
-//select_to_table($query,0,';#ffffff');
-
-$result = $dbc->query($query);
+$result = $dbc->exec_statement($query);
 
 $ret = array();
 while($row = $dbc->fetch_row($result)){
@@ -75,7 +80,7 @@ while($row = $dbc->fetch_row($result)){
    $ret[] = $new;
 }
 
-//$array = HtmlToArray($output);
-$xls = ArrayToXls($ret);
+//$xls = ArrayToXls($ret);
+$xls = ArrayToCsv($ret);
 echo $xls;
 ?>

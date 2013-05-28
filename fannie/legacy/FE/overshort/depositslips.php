@@ -21,11 +21,12 @@ if (isset($_GET['startDate'])){
 		$dateClause = $start." ".$end;
 
 	include('../../db.php');
+	$sql->query("use $FANNIE_TRANS_DB");
+
 	$query = "select checks from dailyChecks where
-		datediff(dd,date,'$start') <= 0 and
-		datediff(dd,date,'$end') >= 0
-		order by case 
-	      when id >= 68 then id+1
+		date BETWEEN '$start' AND '$end'
+		order by 
+	      case when id >= 68 then id+1
 	      when id = 43 then 68
 	      else id end";
 	$result = $sql->query($query);
@@ -35,15 +36,16 @@ if (isset($_GET['startDate'])){
 	$width = 30;
 	$i = 0;
 	$num = 1;
-	$breakon = 0;
+	$breakon = 1;
 	while($row = $sql->fetch_row($result)){
 		$real = $num;
-		if ($num % 7 == 0 && $num > 0 && $num != $breakon){
+		if (($num-1) % 6 == 0 && $num > 0 && $num != $breakon){
 			$pdf->AddPage();
 			$breakon = $num;
 		}
 		if ($num > 6){
-			$real = ($num%7)+1;
+			$real = ($num%6);
+			if ($real == 0) $real = 6;
 		}
 		$vals = explode(",",$row[0]);
 
@@ -109,7 +111,10 @@ if (isset($_GET['startDate'])){
 	$str1 = "WFC #$num\n";
 	$real = $num;
 	if ($num % 7 == 0 && $num > 0) $pdf->AddPage();
-	if ($num > 6) $real = ($num%7)+1;
+	if ($num > 6){
+		$real = ($num%6);
+		if ($real == 0) $real = 6;
+	}
 
 	if (count($acc) > 0){
 		$sum = 0;
@@ -143,7 +148,7 @@ if (isset($_GET['startDate'])){
 		$pdf->MultiCell($width+($j==0?-1:$k),5,$str3,'R','L');
 	}
 
-	if ($num <= 6 && $pdf->PageNo() != 2) $pdf->AddPage();
+	if ($num <= 6 || $num > 10) $pdf->AddPage();
 
 	/* shift last box over a bit */
 	$width += 3;
@@ -196,6 +201,7 @@ if (isset($_GET['startDate'])){
 	$pdf->SetX(($width+2)*4 + 5);
 	$pdf->Cell(15,7,'Checks','L',0,'L');
 	$pdf->Cell(40,7,"\t$".sprintf('%.2f',$ckSum),'TBR',1);
+	//$pdf->Cell(40,7,"",'TBR',1);
 	$pdf->SetX(($width+2)*4 + 5);
 	$pdf->Cell(15,7,'Coin','L',0,'L');
 	$pdf->Cell(40,7,"\t$".sprintf('%.2f',$coin),'TBR',1);

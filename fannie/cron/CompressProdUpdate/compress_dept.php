@@ -48,9 +48,11 @@ $sql = new SQLManager($FANNIE_SERVER,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 $upc = null;
 $prevDept = null;
 
-$q = "select u.upc,u.modified,dept,[user] from prodUpdate
+$q = "select u.upc,u.modified,dept,user from prodUpdate
 as u inner join products as p on p.upc=u.upc
 order by u.upc,u.modified";
+if ($FANNIE_SERVER_DBMS == "MSSQL")
+	$q = str_replace("user","[user]",$q);
 $r = $sql->query($q);
 while($w = $sql->fetch_row($r)){
 	if ($upc === null || $upc != $w['upc']){

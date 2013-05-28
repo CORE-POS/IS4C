@@ -22,9 +22,9 @@ $CREATE['op.batchMergeLC'] = "
 	CREATE VIEW batchMergeLC AS
 	SELECT b.startDate, b.endDate, p.upc, p.description, b.batchID
 	FROM batchList AS l LEFT JOIN batches AS b
-	ON b.batchID=l.batchID LEFT JOIN upcLike AS u
+	ON b.batchID=l.batchID INNER JOIN upcLike AS u
 	ON l.upc = concat('LC',convert(u.likeCode,char))
-	LEFT JOIN products AS p ON u.upc=p.upc
+	INNER JOIN products AS p ON u.upc=p.upc
 	WHERE p.upc IS NOT NULL
 ";
 
@@ -33,9 +33,9 @@ if ($dbms == "MSSQL"){
 		CREATE VIEW batchMergeLC AS
 		SELECT b.startDate, b.endDate, p.upc, p.description, b.batchID
 		FROM batchList AS l LEFT JOIN batches AS b
-		ON b.batchID=l.batchID LEFT JOIN upcLike AS u
+		ON b.batchID=l.batchID INNER JOIN upcLike AS u
 		ON l.upc = 'LC'+convert(varchar,u.likeCode)
-		LEFT JOIN products AS p ON u.upc=p.upc
+		INNER JOIN products AS p ON u.upc=p.upc
 		WHERE p.upc IS NOT NULL
 	";
 }

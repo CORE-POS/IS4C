@@ -35,18 +35,18 @@ $months = array(
 );
 
 $query = "select m.card_no,
-	c.firstname,c.lastname,
+	c.FirstName,c.LastName,
 	m.street,m.city,m.state,m.zip,
 	d.start_date,
-	dateadd(yy,2,d.start_date) as endDate,
+	DATE_ADD(d.start_date,INTERVAL 2 YEAR) as endDate,
 	s.stockPurchase,
-	datepart(yy,s.tdate),datepart(dd,s.tdate),datepart(mm,s.tdate)
+	YEAR(s.tdate),DAY(s.tdate),MONTH(s.tdate)
 	from meminfo as m
-	left join stockpurchases as s on m.card_no=s.card_no
-	left join custdata as c on m.card_no=c.cardno and c.personnum=1
+	left join is4c_trans.stockpurchases as s on m.card_no=s.card_no
+	left join custdata as c on m.card_no=c.CardNo and c.personNum=1
 	left join memDates as d ON m.card_no=d.card_no
-	where datediff(yy,getdate(),d.start_date)=0
-	and c.type='PC'
+	where YEAR(d.start_date)=YEAR(now())
+	and c.Type='PC'
 	order by m.card_no,s.tdate";
 
 echo "<table border=1 cellpadding=0 cellspacing=0>\n";

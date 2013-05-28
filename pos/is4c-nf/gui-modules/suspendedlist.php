@@ -21,12 +21,7 @@
 
 *********************************************************************************/
 
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
-
-if (!class_exists("NoInputPage")) include_once($CORE_PATH."gui-class-lib/NoInputPage.php");
-if (!function_exists("tDataConnect")) include($CORE_PATH."lib/connect.php");
-if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
+include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class suspendedlist extends NoInputPage {
 	var $temp_result;
@@ -58,7 +53,7 @@ class suspendedlist extends NoInputPage {
 	} // END head() FUNCTION
 
 	function preprocess(){
-		global $CORE_LOCAL,$CORE_PATH;
+		global $CORE_LOCAL;
 
 		/* form submitted */
 		if (isset($_REQUEST['selectlist'])){
@@ -66,19 +61,18 @@ class suspendedlist extends NoInputPage {
 				$tmp = explode("::",$_REQUEST['selectlist']);
 				$this->doResume($tmp[0],$tmp[1],$tmp[2]);
 			}
-			header("Location: {$CORE_PATH}gui-modules/pos2.php");
+			$this->change_page($this->page_url."gui-modules/pos2.php");
 			return False;
 		}
 
 		$query_local = "select register_no, emp_no, trans_no, sum(total) as total from suspendedtoday "
 			."group by register_no, emp_no, trans_no";
 
-		$db_a = tDataConnect();
+		$db_a = Database::tDataConnect();
 		$result = "";
 		if ($CORE_LOCAL->get("standalone") == 1) $result = $db_a->query($query_local);
 		else {
-			$db_a->close();
-			$db_a = mDataConnect();
+			$db_a = Database::mDataConnect();
 			$result = $db_a->query($query_local);
 		}
 
@@ -101,9 +95,8 @@ class suspendedlist extends NoInputPage {
 			return True;
 		}
 		else {
-			$db_a->close();
-			$CORE_LOCAL->set("boxMsg","no suspended transaction");
-			header("Location: {$CORE_PATH}gui-modules/pos2.php");	
+			$CORE_LOCAL->set("boxMsg",_("no suspended transaction"));
+			$this->change_page($this->page_url."gui-modules/pos2.php");	
 			return False;
 		}
 		return True;
@@ -132,7 +125,7 @@ class suspendedlist extends NoInputPage {
 
 		echo "</select>\n</form>\n</div>\n"
 			."<div class=\"listboxText centerOffset\">"
-			."use arrow keys to navigate<br />[clear] to cancel</div>\n"
+			._("use arrow keys to navigate")."<br />"._("clear to cancel")."</div>\n"
 			."<div class=\"clear\"></div>";
 		echo "</div>";
 		$CORE_LOCAL->set("scan","noScan");
@@ -146,7 +139,7 @@ class suspendedlist extends NoInputPage {
 		$query_del = "delete from suspended where register_no = ".$reg." and emp_no = "
 			.$emp." and trans_no = ".$trans;
 
-		$db_a = tDataConnect();
+		$db_a = Database::tDataConnect();
 		$query_a = "select trans_id from localtemptrans";
 		$result_a = $db_a->query($query_a);
 		$num_rows_a = $db_a->num_rows($result_a);
@@ -157,14 +150,14 @@ class suspendedlist extends NoInputPage {
 			if ($CORE_LOCAL->get("standalone") == 0){
 				$db_a->add_connection($CORE_LOCAL->get("mServer"),$CORE_LOCAL->get("mDBMS"),
 					$CORE_LOCAL->get("mDatabase"),$CORE_LOCAL->get("mUser"),$CORE_LOCAL->get("mPass"));
-				$cols = getMatchingColumns($db_a,"localtemptrans","suspendedtoday");
+				$cols = Database::getMatchingColumns($db_a,"localtemptrans","suspendedtoday");
 				$remoteQ = "select {$cols} from suspendedtoday where register_no = $reg "
 					." and emp_no = ".$emp." and trans_no = ".$trans." order by trans_id";
 				$success = $db_a->transfer($CORE_LOCAL->get("mDatabase"),$remoteQ,
 					$CORE_LOCAL->get("tDatabase"),"insert into localtemptrans ({$cols})");
 				if ($success)
 					$db_a->query($query_del,$CORE_LOCAL->get("mDatabase"));
-				$db_a->close($CORE_LOCAL->get("mDatabase"));
+				$db_a->close($CORE_LOCAL->get("mDatabase"),True);
 			}
 			else {	
 				$localQ = "select * from suspendedtoday where register_no = $reg "
@@ -179,7 +172,7 @@ class suspendedlist extends NoInputPage {
 			.", trans_no = ".$CORE_LOCAL->get("transno");
 
 		$db_a->query($query_update);
-		getsubtotals();
+		Database::getsubtotals();
 		$CORE_LOCAL->set("unlock",1);
 		if ($CORE_LOCAL->get("chargeTotal") != 0) 
 			$CORE_LOCAL->set("chargetender",1);

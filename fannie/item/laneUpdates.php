@@ -58,7 +58,8 @@ function addProductAllLanes($upc){
 			$selQ .= $col.",";
 			$ins .= $col.",";
 		}
-		$selQ = rtrim($selQ,",")." FROM products WHERE upc='$upc'";
+		$selQ = rtrim($selQ,",")." FROM products WHERE upc='$upc' ORDER BY store_id DESC";
+		$selQ = $laneupdate_sql->add_select_limit($selQ, 1, $FANNIE_OP_DB);
 		$ins = rtrim($ins,",").")";
 
 		$laneupdate_sql->transfer($FANNIE_OP_DB,$selQ,$FANNIE_LANES[$i]['op'],$ins);
@@ -72,8 +73,8 @@ function deleteProductAllLanes($upc){
 		$tmp = new SQLManager($FANNIE_LANES[$i]['host'],$FANNIE_LANES[$i]['type'],
 			$FANNIE_LANES[$i]['op'],$FANNIE_LANES[$i]['user'],
 			$FANNIE_LANES[$i]['pw']);
-		$delQ = "DELETE FROM products WHERE upc='$upc'";
-		$delR = $tmp->query($delQ,$FANNIE_LANES[$i]['op']);
+		$delQ = $tmp->prepare_statement("DELETE FROM products WHERE upc=?");
+		$delR = $tmp->exec_statement($delQ,array($upc),$FANNIE_LANES[$i]['op']);
 	}
 }
 

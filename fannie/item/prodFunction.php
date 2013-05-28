@@ -24,33 +24,65 @@
 *********************************************************************************/
 //	TODO -- Add javascript for batcher product entry popup window		~joel 2007-08-21
 
+/* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+	* 22Feb2013 Eric Lee Add support for editing
+	*           products.quantity, .groupprice, .pricemethod, .mixmatchcode
+	*           products.size, .unitofmeasure
+	* 10Feb2013 Eric Lee In itemParse add FANNIE_STORE_ID to globals.
+
+*/
+
+
 include_once('../src/mysql_connect.php');
 include_once('../auth/login.php');
 include_once('ajax.php');
 
 function itemParse($upc){
     global $dbc,$FANNIE_URL;
+    global $FANNIE_STORE_ID;
+    global $FANNIE_COOP_ID;
 
     $logged_in = checkLogin();
 
     $queryItem = "";
     $numType = (isset($_REQUEST['ntype'])?$_REQUEST['ntype']:'UPC');
     if(is_numeric($upc)){
-	switch($numType){
-	case 'UPC':
-		$upc = str_pad($upc,13,0,STR_PAD_LEFT);
-		$savedUPC = $upc;
-		$queryItem = "SELECT p.*,x.distributor,x.manufacturer FROM products as p left join prodExtra as x on p.upc=x.upc WHERE p.upc = '$upc' or x.upc = '$upc'";
-		break;
-	case 'SKU':
-		$queryItem = "SELECT p.*,x.distributor,x.manufacturer FROM products as p inner join vendorItems as v ON p.upc=v.upc left join prodExtra as x on p.upc=x.upc WHERE v.sku='$upc'";
-		break;
-	case 'Brand Prefix':
-	      $queryItem = "SELECT p.*,x.distributor,x.manufacturer FROM products as p left join prodExtra as x on p.upc=x.upc WHERE p.upc like '%$upc%' order by p.upc";
-		break;
-	}
+			switch($numType){
+				case 'UPC':
+					$upc = str_pad($upc,13,0,STR_PAD_LEFT);
+					$savedUPC = $upc;
+					$queryItem = "SELECT p.*,x.distributor,x.manufacturer 
+						FROM products as p left join 
+						prodExtra as x on p.upc=x.upc 
+						WHERE (p.upc = '$upc' or x.upc = '$upc')
+						AND p.store_id=0";
+					break;
+				case 'SKU':
+					$queryItem = "SELECT p.*,x.distributor,x.manufacturer 
+						FROM products as p inner join 
+						vendorItems as v ON p.upc=v.upc 
+						left join prodExtra as x on p.upc=x.upc 
+						WHERE v.sku='$upc'
+						AND p.store_id=0";
+					break;
+				case 'Brand Prefix':
+					$queryItem = "SELECT p.*,x.distributor,x.manufacturer 
+						FROM products as p left join 
+						prodExtra as x on p.upc=x.upc 
+						WHERE p.upc like '%$upc%' 
+						AND p.store_id=0
+						ORDER BY p.upc";
+					break;
+			}
     }else{
-        $queryItem = "SELECT * FROM products WHERE description LIKE '%$upc%' ORDER BY description";
+				/* note: only search by HQ records (store_id=0) to avoid duplicates */
+        $queryItem = "SELECT p.*,x.distributor,x.manufacturer 
+			FROM products AS p LEFT JOIN 
+			prodExtra AS x ON p.upc=x.upc
+			WHERE description LIKE '%$upc%' 
+			AND p.store_id=0
+			ORDER BY description";
     }
     $resultItem = $dbc->query($queryItem);
     $num = $dbc->num_rows($resultItem);
@@ -73,10 +105,11 @@ function itemParse($upc){
         noItem();
 	$data = array();
 	if (is_numeric($upc)){
-		$dataQ = "SELECT description,brand,cost/units as cost,vendorName,margin
+		$dataQ = "SELECT description,brand,cost/units as cost,vendorName,margin,i.vendorID
 			FROM vendorItems AS i LEFT JOIN vendors AS v ON i.vendorID=v.vendorID
 			LEFT JOIN vendorDepartments AS d ON i.vendorDept=d.deptID
 			WHERE upc='$upc'";
+		if (isset($_REQUEST['vid'])) $dataQ .= " AND i.vendorID=".((int)$_REQUEST['vid']);
 		$dataR = $dbc->query($dataQ);
 		if ($dbc->num_rows($dataR) > 0){
 			$data = $dbc->fetch_row($dataR);
@@ -86,16 +119,13 @@ function itemParse($upc){
 	}
         echo "<BODY onLoad='putFocus(0,1);'>";
         echo "<span style=\"color:red;\">Item not found.  You are creating a new one.  </span>";
-		if (@
-			$_SESSION["popup"] == 1) {
-			$_SESSION["popup"] = 0;
-			echo "<a href='javascript: self.close ()'>close</a>";
-		} else {
-			echo "<a href='../item/itemMaint.php'><font size='-1'>cancel</font></a>";
-		}
 	if (count($data) > 0){
 		echo "<br /><i>This product is in the ".$data['vendorName']." catalog. Values have
 			been filled in where possible</i><br />";
+		while($vendorW = $dbc->fetch_row($dataR)){
+			printf('This product is also in <a href="?upc=%s&vid=%d">%s</a><br />',
+				$upc,$vendorW['vendorID'],$vendorW['vendorName']);
+		}
 	}
 		echo "<form name=pickSubDepartment action=insertItem.php method=post>";
         echo "<div><table style=\"margin-bottom:5px;\" width=\"100%\" border=1 cellpadding=5 cellspacing=0>";
@@ -314,17 +344,21 @@ function itemParse($upc){
 				else { echo "-- <font color=green>$" .$rowItem['special_price']. " onsale</font><br>"; }
     		}
     }else{
-        oneItem($upc);
-			//         	$likeCodeQ = "SELECT u.*,l.likeCodeDesc FROM upcLike as u, likeCodes as l 
-			//                       WHERE u.likecode = l.likecode and u.upc = '$upc'";
-			//         	//echo $likeCodeQ; 
-			// $likeCodeR = $dbc->query($likeCodeQ);
-			// $likeCodeRow= $dbc->fetch_row($likeCodeR);
-			//    			$likeCodeNum = $dbc->num_rows($likeCodeR);
-			// 
-			//    	 		$listCodeQ = "SELECT * from likeCodes";
-			//    	 		$listCodeR = $dbc->query($listCodeQ);
-			//    	 		$listCodeRow = $dbc->fetch_row($likeCodeR);
+		oneItem($upc);
+
+		if ($FANNIE_STORE_ID != 0){
+			/* if this isn't HQ, revise the lookup query to search
+			   for HQ records AND store records
+			   ordering by store_id descendings means we'll get the
+			   store record if there is one and the HQ record if
+			   there isn't */
+			$clause = sprintf("p.store_id IN (0,%d)",$FANNIE_STORE_ID);
+			$queryItem = str_replace("p.store_id=0",$clause,$queryItem);
+			if (strstr($queryItem, "ORDER BY"))
+				$queryItem = array_shift(explode("ORDER BY",$queryItem));
+			$queryItem .= " ORDER BY p.store_id DESC";
+			$resultItem = $dbc->query($queryItem);
+		}
 
 		$rowItem = $dbc->fetch_array($resultItem);
 		$upc = $rowItem['upc'];
@@ -358,7 +392,10 @@ function itemParse($upc){
 	if ($prevUPC) echo " <a style=\"font-size:85%;\" href=itemMaint.php?upc=$prevUPC>Previous</a>";
 	if ($nextUPC) echo " <a style=\"font-size:85%;\" href=itemMaint.php?upc=$nextUPC>Next</a>";
 	echo '</td>';
-        echo '<td colspan=2>&nbsp;</td></tr><tr><td><b>Description</b></td><td><input type=text size=30 value="' . $rowItem[1] . '" name=descript></td>'; 
+        echo '<td colspan=2>';
+	echo '<input type="hidden" name="store_id" value="'.$rowItem['store_id'].'" />';
+	echo ($rowItem['store_id']==0 ? 'Master' : 'Store').' record';
+	echo '</td></tr><tr><td><b>Description</b></td><td><input type=text size=30 value="' . $rowItem[1] . '" name=descript></td>'; 
         echo "<td><select onchange=\"if(this.value=='Price'){
 		document.getElementById('price2').style.display='none';
 		document.getElementById('price1').style.display='inline';
@@ -630,8 +667,13 @@ function itemParse($upc){
 			echo '</tr></table></fieldset>';
 
 			echo "<br /><fieldset id=marginfs>";
-			echo "<legend>Margin</legend>";
-			MarginFS($rowItem['upc'],$rowItem['cost'],$rowItem['department']);
+			if ( isset($FANNIE_COOP_ID) && $FANNIE_COOP_ID == "WEFC_Torontx" ) {
+				echo "<legend>Markup</legend>";
+				MarkupFS($rowItem['upc'],$rowItem['cost'],$rowItem['department']);
+			} else {
+				echo "<legend>Margin</legend>";
+				MarginFS($rowItem['upc'],$rowItem['cost'],$rowItem['department']);
+			}
 			echo "</fieldset>";
 
 			echo '<fieldset id="lanefs">';

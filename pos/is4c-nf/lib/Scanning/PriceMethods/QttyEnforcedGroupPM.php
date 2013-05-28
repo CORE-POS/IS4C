@@ -20,7 +20,8 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
-/* Quantity-Enforced Group PriceMethod module
+/** 
+   @class QttyEnforcedGroupPM
    
    This module provides grouped sales where the
    customer is required to buy a "complete set"
@@ -28,13 +29,6 @@
 
    In most locations, this is pricemethod 1 or 2
 */
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
-
-if (!class_exists('PriceMethod')) include($CORE_PATH.'lib/Scanning/PriceMethod.php');
-if (!function_exists('addItem')) include($CORE_PATH.'lib/additem.php');
-if (!function_exists('tDataConnect')) include($CORE_PATH.'lib/connect.php');
-if (!function_exists('truncate2')) include($CORE_PATH.'lib/lib.php');
 
 class QttyEnforcedGroupPM extends PriceMethod {
 
@@ -62,23 +56,36 @@ class QttyEnforcedGroupPM extends PriceMethod {
 
 		/* add complete sets */
 		if ($new_sets > 0){
+
+			$percentDiscount = 0;
+			if (!$priceObj->isSale() && $pricing['unitPrice'] != $row['normal_price']){
+				$percentDiscount = ($row['normal_price'] - $pricing['unitPrice']) / $row['normal_price'];
+				$groupPrice *= (1 - $percentDiscount);
+			}
+			else if ($priceObj->isSale() && $pricing['unitPrice'] != $row['special_price']){
+				$percentDiscount = ($row['special_price'] - $pricing['unitPrice']) / $row['special_price'];
+				$groupPrice *= (1 - $percentDiscount);
+			}
+
 			/* discount for complete set */
-			$discount = ($pricing['unitPrice']*$groupQty) - $groupPrice;
+			$discount = $new_sets * (($pricing['unitPrice']*$groupQty) - $groupPrice);
+			$total = ($new_sets* $groupQty * $pricing['unitPrice']) - $discount;
+			$unit = $total / ($new_sets * $groupQty);
 			$memDiscount = 0;
 			if ($priceObj->isMemberSale() || $priceObj->isStaffSale()){
 				$memDiscount = $discount;
 				$discount = 0;
 			}
 
-			addItem($row['upc'],
+			TransRecord::addItem($row['upc'],
 				$row['description'],
 				'I',
 				'',
 				'',
 				$row['department'],
 				$new_sets * $groupQty,
-				$pricing['unitPrice'],
-				truncate2($pricing['unitPrice'] * $quantity),
+				MiscLib::truncate2($unit),
+				MiscLib::truncate2($total),
 				$pricing['regPrice'],
 				$row['scale'],
 				$row['tax'],
@@ -99,6 +106,11 @@ class QttyEnforcedGroupPM extends PriceMethod {
 				(isset($row['charflag']) ? $row['charflag'] : '')
 			);
 
+			if ($percentDiscount != 0){
+				$discount -= $pricing['discount'];
+			}
+			TransRecord::adddiscount($discount,$row['department']);
+
 			$quantity = $quantity - ($new_sets * $groupQty);
 			if ($quantity < 0) $quantity = 0;
 		}
@@ -118,9 +130,9 @@ class QttyEnforcedGroupPM extends PriceMethod {
 				$mixMatch = 0;
 				$queryt = "select sum(ItemQtty - matched) as mmqtty from "
 					."localtemptrans where trans_status<>'R' AND "
-					."upc = '".$upc."' group by upc";
+					."upc = '".$row['upc']."' group by upc";
 			}
-			$dbt = tDataConnect();
+			$dbt = Database::tDataConnect();
 			$resultt = $dbt->query($queryt);
 			$num_rowst = $dbt->num_rows($resultt);
 
@@ -143,15 +155,15 @@ class QttyEnforcedGroupPM extends PriceMethod {
 					$discount = 0;
 				}
 
-				addItem($row['upc'],
+				TransRecord::addItem($row['upc'],
 					$row['description'],
 					'I',
 					'',
 					'',
 					$row['department'],
 					1,
-					$pricing['unitPrice'],
-					$pricing['unitPrice'],
+					$pricing['unitPrice'] - $discount,
+					$pricing['unitPrice'] - $discount,
 					$pricing['regPrice'],
 					$row['scale'],
 					$row['tax'],
@@ -180,7 +192,7 @@ class QttyEnforcedGroupPM extends PriceMethod {
 		/* any remaining quantity added without
 		   grouping discount */
 		if ($quantity > 0){
-			addItem($row['upc'],
+			TransRecord::addItem($row['upc'],
 				$row['description'],
 				'I',
 				' ',
@@ -188,7 +200,7 @@ class QttyEnforcedGroupPM extends PriceMethod {
 				$row['department'],
 				$quantity,
 				$pricing['unitPrice'],
-				truncate2($pricing['unitPrice'] * $quantity),
+				MiscLib::truncate2($pricing['unitPrice'] * $quantity),
 				$pricing['regPrice'],
 				$row['scale'],
 				$row['tax'],

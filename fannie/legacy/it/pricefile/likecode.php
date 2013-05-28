@@ -6,6 +6,7 @@ include('../../db.php');
 
 require($FANNIE_ROOT.'src/csv_parser.php');
 require($FANNIE_ROOT.'src/tmp_dir.php');
+if (!function_exists("updateProductAllLanes")) include($FANNIE_ROOT.'legacy/queries/laneUpdates.php');
 
 $LC_COL=0;
 $PRICE_COL=1;
@@ -27,10 +28,10 @@ if (isset($_POST["MAX_FILE_SIZE"])){
 		if (!is_numeric($data[$LC_COL])) continue;
 
 		$q = "select l.likeCodeDesc,min(p.normal_price) from products as p
-			left join upclike as u on u.upc=p.upc 
-			left join likecodes as l on l.likecode=u.likecode where
-			u.likecode=".$data[$LC_COL]." group by
-			u.likecode, l.likeCodeDesc
+			left join upcLike as u on u.upc=p.upc 
+			left join likeCodes as l on l.likeCode=u.likeCode where
+			u.likeCode=".$data[$LC_COL]." group by
+			u.likeCode, l.likeCodeDesc
 			order by count(*) desc";
 		$r = $sql->query($q);
 		if ($sql->num_rows($r) == 0){
@@ -61,11 +62,16 @@ else if (isset($_POST['likecode'])){
 
 	echo "<b>Peforming updates</b><br />";
 	for ($i = 0; $i < count($likecodes); $i++){
-		$q = "update products set normal_price=".rtrim($prices[$i]).", modified=getdate()
-			from products as p left join upclike as u on p.upc=u.upc
-			where u.likecode=".$likecodes[$i];	
+		$q = "update products as p left join upcLike as u on p.upc=u.upc
+			SET normal_price=".trim($prices[$i],' $').", modified=".$sql->now()."
+			where u.likeCode=".$likecodes[$i];	
 		echo "Setting likecode #".$likecodes[$i]." to $".$prices[$i]."<br />";
 		$sql->query($q);
+
+		$q2 = "SELECT upc FROM upcLike WHERE likeCode=".$likecodes[$i];
+		$r2 = $sql->query($q2);
+		while($w2 = $sql->fetch_row($r2))
+			updateProductAllLanes($w2['upc']);
 	}
 }
 else{

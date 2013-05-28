@@ -21,33 +21,22 @@
 
 *********************************************************************************/
 
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
-
 ini_set('display_errors','1');
  
 session_cache_limiter('nocache');
 
-if (!class_exists("BasicPage")) include_once($CORE_PATH."gui-class-lib/BasicPage.php");
-
-if (!function_exists("lastpage")) include($CORE_PATH."lib/listitems.php");
-if (!function_exists("printheaderb")) include($CORE_PATH."lib/drawscreen.php");
-if (!function_exists("tender")) include($CORE_PATH."lib/prehkeys.php");
-if (!function_exists("drawerKick")) include_once($CORE_PATH."lib/printLib.php");
-if (!function_exists("get_preparse_chain")) include_once($CORE_PATH."parser-class-lib/Parser.php");
-if (!function_exists('scaleObject')) include_once($CORE_PATH.'lib/lib.php');
-if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
+include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class pos2 extends BasicPage {
 
 	var $display;
 
 	function preprocess(){
-		global $CORE_LOCAL,$CORE_PATH;
+		global $CORE_LOCAL;
 		$this->display = "";
 
-		$sd = scaleObject();
-		//$st = sigTermObject();
+		$sd = MiscLib::scaleObject();
+		//$st = MiscLib::sigTermObject();
 
 		$entered = "";
 		if (isset($_REQUEST["reginput"])) {
@@ -65,20 +54,28 @@ class pos2 extends BasicPage {
 
 		$json = array();
 		if ($entered != ""){
-			/* this breaks the model a bit, but I'm putting
-			 * putting the CC parser first manually to minimize
-			 * code that potentially handles the PAN */
-			include_once($CORE_PATH."cc-modules/lib/paycardEntered.php");
-			$pe = new paycardEntered();
-			if ($pe->check($entered)){
-				$valid = $pe->parse($entered);
-				$entered = "PAYCARD";
-				$CORE_LOCAL->set("strEntered","");
-				$json = $valid;
-			}
 
-			$CORE_LOCAL->set("quantity",0);
-			$CORE_LOCAL->set("multiple",0);
+			if (in_array("Paycards",$CORE_LOCAL->get("PluginList"))){
+				/* this breaks the model a bit, but I'm putting
+				 * putting the CC parser first manually to minimize
+				 * code that potentially handles the PAN */
+				if($CORE_LOCAL->get("PaycardsCashierFacing")=="1" && substr($entered,0,9) == "PANCACHE:"){
+					/* cashier-facing device behavior; run card immediately */
+					$entered = substr($entered,9);
+					$CORE_LOCAL->set("CachePanEncBlock",$entered);
+				}
+
+				$pe = new paycardEntered();
+				if ($pe->check($entered)){
+					$valid = $pe->parse($entered);
+					$entered = "PAYCARD";
+					$CORE_LOCAL->set("strEntered","");
+					$json = $valid;
+				}
+
+				$CORE_LOCAL->set("quantity",0);
+				$CORE_LOCAL->set("multiple",0);
+			}
 
 			/* FIRST PARSE CHAIN:
 			 * Objects belong in the first parse chain if they
@@ -86,13 +83,11 @@ class pos2 extends BasicPage {
 			 * This chain should be used for checking prefixes/suffixes
 			 * to set up appropriate $CORE_LOCAL variables.
 			 */
-			$parser_lib_path = $CORE_PATH."parser-class-lib/";
+			$parser_lib_path = $this->page_url."parser-class-lib/";
 			if (!is_array($CORE_LOCAL->get("preparse_chain")))
-				$CORE_LOCAL->set("preparse_chain",get_preparse_chain());
+				$CORE_LOCAL->set("preparse_chain",PreParser::get_preparse_chain());
 
 			foreach ($CORE_LOCAL->get("preparse_chain") as $cn){
-				if (!class_exists("cn"))
-					include_once($parser_lib_path."preparse/".$cn.".php");
 				$p = new $cn();
 				if ($p->check($entered))
 					$entered = $p->parse($entered);
@@ -108,12 +103,10 @@ class pos2 extends BasicPage {
 				 * whether to call lastpage() [list the items on screen]
 				 */
 				if (!is_array($CORE_LOCAL->get("parse_chain")))
-					$CORE_LOCAL->set("parse_chain",get_parse_chain());
+					$CORE_LOCAL->set("parse_chain",Parser::get_parse_chain());
 
 				$result = False;
 				foreach ($CORE_LOCAL->get("parse_chain") as $cn){
-					if (!class_exists($cn))
-						include_once($parser_lib_path."parse/".$cn.".php");
 					$p = new $cn();
 					if ($p->check($entered)){
 						$result = $p->parse($entered);
@@ -135,16 +128,17 @@ class pos2 extends BasicPage {
 					$arr = array(
 						'main_frame'=>false,
 						'target'=>'.baseHeight',
-						'output'=>inputUnknown());
+						'output'=>DisplayLib::inputUnknown());
 					$json = $arr;
-					if (is_object($sd))
+					if (is_object($sd)){
 						$sd->WriteToScale('errorBeep');
+					}
 				}
 			}
 		}
 		$CORE_LOCAL->set("msgrepeat",0);
 		if (isset($json['main_frame']) && $json['main_frame'] != False){
-			header("Location: ".$json['main_frame']);
+			$this->change_page($json['main_frame']);
 			return False;
 		}
 		if (isset($json['output']) && !empty($json['output']))
@@ -162,48 +156,58 @@ class pos2 extends BasicPage {
 	}
 
 	function head_content(){
-		global $CORE_LOCAL,$CORE_PATH;
+		global $CORE_LOCAL;
 		?>
-		<script type="text/javascript" src="<?php echo $CORE_PATH; ?>js/ajax-parser.js"></script>
+		<script type="text/javascript" src="<?php echo $this->page_url; ?>js/ajax-parser.js"></script>
 		<script type="text/javascript">
 		function submitWrapper(){
 			var str = $('#reginput').val();
-			if (str.indexOf("tw") != -1 || str.indexOf("TW") != -1 || str.search(/^[0-9]+$/) == 0){
-				$('#reginput').val('');
-				runParser(str,'<?php echo $CORE_PATH; ?>');
+			$('#reginput').val('');
+			//if (str.indexOf("tw") != -1 || str.indexOf("TW") != -1 || (str.search(/^[0-9]+$/) == 0 && str.length <= 13) || str=='TFS'
+			 //   || str == 'U' || str == 'D'){
+				clearTimeout(screenLockVar);
+				runParser(str,'<?php echo $this->page_url; ?>');
+				enableScreenLock();
 				return false;
-			}
-			return true;
+			//}
+			//return true;
 		}
 		function parseWrapper(str){
 			$('#reginput').val(str);
 			$('#formlocal').submit();
 		}
+		var screenLockVar;
+		function enableScreenLock(){
+			screenLockVar = setTimeout('lockScreen()', <?php echo $CORE_LOCAL->get("timeout") ?>);
+		}
 		function lockScreen(){
 			$.ajax({
-				'url': '<?php echo $CORE_PATH; ?>ajax-callbacks/ajax-lock.php',
+				'url': '<?php echo $this->page_url; ?>ajax-callbacks/ajax-lock.php',
 				'type': 'get',
 				'cache': false,
 				'success': function(){
-					location = '<?php echo $CORE_PATH; ?>gui-modules/login3.php';
+					location = '<?php echo $this->page_url; ?>gui-modules/login3.php';
 				}
 			});
 		}
 		function receiptFetch(r_type){
 			$.ajax({
-				url: '<?php echo $CORE_PATH; ?>ajax-callbacks/ajax-end.php',
+				url: '<?php echo $this->page_url; ?>ajax-callbacks/ajax-end.php',
 				type: 'get',
 				data: 'receiptType='+r_type,
+				dataType: 'json',
 				cache: false,
 				success: function(data){
+					if (data.sync){
+						ajaxTransactionSync('<?php echo $this->page_url; ?>');
+					}
 				},
 				error: function(e1){
 				}
 			});
 		}
 		function inputRetry(str){
-			$('#reginput').val(str);
-			submitWrapper();
+			parseWrapper(str);
 		}
 		</script>
 		<?php
@@ -212,25 +216,25 @@ class pos2 extends BasicPage {
 	function body_content(){
 		global $CORE_LOCAL;
 		$this->input_header('action="pos2.php" onsubmit="return submitWrapper();"');
-		$this->add_onload_command("setTimeout('lockScreen()', 180000);\n");
+		if ($CORE_LOCAL->get("timeout") != "")
+			$this->add_onload_command("enableScreenLock();\n");
 		$this->add_onload_command("\$('#reginput').keydown(function(ev){
 					switch(ev.which){
 					case 33:
-						\$('#reginput').val('U11');
-						submitWrapper();
+						parseWrapper('U11');
 						break;
 					case 38:
-						\$('#reginput').val('U');
-						submitWrapper();
+						parseWrapper('U');
 						break;
 					case 34:
-						\$('#reginput').val('D11');
-						submitWrapper();
+						parseWrapper('D11');
 						break;
 					case 40:
-						\$('#reginput').val('D');
-						submitWrapper();
+						parseWrapper('D');
 						break;
+					case 9:
+						parseWrapper('TFS');
+						return false;
 					}
 				});\n");
 		/*
@@ -258,9 +262,9 @@ class pos2 extends BasicPage {
 		}
 
 		if ($CORE_LOCAL->get("plainmsg") && strlen($CORE_LOCAL->get("plainmsg")) > 0) {
-			echo printheaderb();
+			echo DisplayLib::printheaderb();
 			echo "<div class=\"centerOffset\">";
-			echo plainmsg($CORE_LOCAL->get("plainmsg"));
+			echo DisplayLib::plainmsg($CORE_LOCAL->get("plainmsg"));
 			$CORE_LOCAL->set("plainmsg",0);
 			$CORE_LOCAL->set("msg",99);
 			echo "</div>";
@@ -268,16 +272,41 @@ class pos2 extends BasicPage {
 		elseif (!empty($this->display))
 			echo $this->display;
 		else
-			echo lastpage();
+			echo DisplayLib::lastpage();
 
 		echo "</div>"; // end base height
 
 		echo "<div id=\"footer\">";
 		if ($CORE_LOCAL->get("away") == 1)
-			echo printfooterb();
+			echo DisplayLib::printfooterb();
 		else
-			echo printfooter();
+			echo DisplayLib::printfooter();
 		echo "</div>";
+
+		if ($CORE_LOCAL->get("touchscreen") === True){
+			echo '<div style="text-align: center;">
+			<input type="submit" value="Items"
+				class="quick_button"
+				style="margin: 0 10px 0 0;"
+				onclick="parseWrapper(\'QK0\');" />
+			<input type="submit" value="Total"
+				class="quick_button"
+				style="margin: 0 10px 0 0;"
+				onclick="parseWrapper(\'QK4\');" />
+			<input type="submit" value="Tender"
+				class="quick_button"
+				style="margin: 0 10px 0 0;"
+				onclick="parseWrapper(\'QK2\');" />
+			<input type="submit" value="Member"
+				class="quick_button"
+				style="margin: 0 10px 0 0;"
+				onclick="parseWrapper(\'QK5\');" />
+			<input type="submit" value="Misc"
+				class="quick_button"
+				style="margin: 0 10px 0 0;"
+				onclick="parseWrapper(\'QK6\');" />
+			</div>';
+		}
 
 		$CORE_LOCAL->set("away",0);
 	} // END body_content() FUNCTION

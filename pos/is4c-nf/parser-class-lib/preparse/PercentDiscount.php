@@ -21,13 +21,11 @@
 
 *********************************************************************************/
 
-if (!class_exists("Parser")) include_once($CORE_PATH."parser-class-lib/Parser.php");
-if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
-
-class PercentDiscount extends Parser {
+class PercentDiscount extends PreParser {
 	var $remainder;
 	
 	function check($str){
+		global $CORE_LOCAL;
 		if (strstr($str,"DI")){
 			$split = explode("DI",$str);
 			if (is_numeric($split[0])){
@@ -40,7 +38,7 @@ class PercentDiscount extends Parser {
 			$split = explode("PD",$str);	
 			if (is_numeric($split[0]) && strlen($split[1]) > 0){
 				$this->remainder = $split[1];
-				$CORE_LOCAL->set("itemDiscount",(int)$split[0]);
+				$CORE_LOCAL->set("itemPD",(int)$split[0]);
 				return True;
 			}
 		}

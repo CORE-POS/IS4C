@@ -20,13 +20,6 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
-
-if (!class_exists('DiscountType')) include($CORE_PATH.'lib/Scanning/DiscountType.php');
-if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
-
-if (!function_exists('adddiscount')) include($CORE_PATH.'lib/additem.php');
 
 class SlidingMemSale extends DiscountType {
 
@@ -41,7 +34,7 @@ class SlidingMemSale extends DiscountType {
 		$ret["unitPrice"] = $row['normal_price'];
 
 		$ret['discount'] = 0;
-		$ret['memDiscount'] = $row['special_price'] * $quantity;
+		$ret['memDiscount'] = MiscLib::truncate2($row['special_price'] * $quantity);
 
 		if ($CORE_LOCAL->get("isMember"))
 			$ret['unitPrice'] -= $row['special_price'];
@@ -55,7 +48,7 @@ class SlidingMemSale extends DiscountType {
 		global $CORE_LOCAL;	
 		if ($CORE_LOCAL->get("isMember")){
 			$CORE_LOCAL->set("voided",2);
-			adddiscount($this->savedInfo['memDiscount'],
+			TransRecord::adddiscount($this->savedInfo['memDiscount'],
 				$this->savedRow['department']);
 		}
 	}

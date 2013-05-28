@@ -11,7 +11,7 @@ $Q = "\"";
 $NL = "\r\n";
 
 $query = "select card_no,sum(total) from dlog_15 where department in (991,992)
-	and datediff(dd,getdate(),tdate)=-1
+	and ".$sql->datediff($sql->>now(),'tdate')." = 1
 	group by card_no";
 $result = $sql->query($query);
 

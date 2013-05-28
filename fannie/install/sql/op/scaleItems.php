@@ -37,7 +37,8 @@ $CREATE['op.scaleItems'] = "
 		text text,
 		class varchar(6),
 		label int,
-		graphics int
+		graphics int,
+		PRIMARY KEY (plu)
 	)
 ";
 ?>

@@ -23,6 +23,7 @@
 
 require('../login.php');
 $path = guesspath();
+include($path."config.php");
 $page_title = 'Fannie : Auth : Group Details';
 $header = 'Fannie : Auth : Group Details';
 
@@ -37,8 +38,12 @@ if (isset($_GET['group'])){
   detailGroup($group);
 }
 echo "<form method=get action=groupDetail.php>";
-echo "Group name: <input type=text name=group /> ";
-echo "<input type=submit value=Sumit /></form>";  
+echo "Group name:<select name=group>";
+foreach(getGroupList() as $uid => $name)
+	echo "<option>".$name."</option>";
+echo "</select>";
+echo '&nbsp;&nbsp;&nbsp;<input type="submit" value="View" />';
+echo '</form>';
 
 ?>
 <p />

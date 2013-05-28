@@ -21,11 +21,8 @@
 
 *********************************************************************************/
 
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
-
-if (!isset($CORE_LOCAL))
-	include($CORE_PATH.'lib/LocalStorage/conf.php');
+ini_set('display_errors','Off');
+include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 $CORE_LOCAL->set("inputMasked", 1);
 

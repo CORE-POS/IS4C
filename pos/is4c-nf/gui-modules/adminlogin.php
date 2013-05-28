@@ -28,31 +28,32 @@
  * variable
  */
 
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
-
-if (!class_exists("NoInputPage")) include_once($CORE_PATH."gui-class-lib/NoInputPage.php");
-if (!function_exists("pDataConnect")) include_once($CORE_PATH."lib/connect.php");
-if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
+include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class adminlogin extends NoInputPage {
 	var $box_color;
 	var $msg;
 
 	function preprocess(){
-		global $CORE_LOCAL,$CORE_PATH;
+		global $CORE_LOCAL;
 		$this->box_color="#004080";
-		$this->msg = "enter admin password";
+		$this->msg = _("enter admin password");
 
 		if (isset($_REQUEST['reginput'])){
 			$passwd = $_REQUEST['reginput'];
 			if (strtoupper($passwd) == "CL"){
-				header("Location: {$CORE_PATH}gui-modules/pos2.php");
+				// clear state variables on clear
+				$CORE_LOCAL->set("refundComment","");
+				$CORE_LOCAL->set("transfertender",0);
+				if ($CORE_LOCAL->get("cashierAgeOverride")==2)
+					$CORE_LOCAL->set("cashierAgeOverride",0);
+				$CORE_LOCAL->set("msgrepeat",0);
+				$this->change_page($this->page_url."gui-modules/pos2.php");
 				return False;	
 			}
 			else if (!is_numeric($passwd) || $passwd > 9999 || $passwd < 1){
 				$this->box_color="#800000";
-				$this->msg = "re-enter admin password";
+				$this->msg = _("re-enter admin password");
 			}
 			else {
 				$query = "select emp_no, FirstName, LastName from employees 
@@ -60,20 +61,26 @@ class adminlogin extends NoInputPage {
 					.$CORE_LOCAL->get("adminRequestLevel")
 					." and (CashierPassword = ".$passwd
 					." or AdminPassword = ".$passwd.")";
-				$db = pDataConnect();
+				$db = Database::pDataConnect();
 				$result = $db->query($query);
 				$num_rows = $db->num_rows($result);
 				if ($num_rows != 0) {
-					header("Location: ".$CORE_LOCAL->get("adminRequest"));
+					if ($CORE_LOCAL->get("cashierAgeOverride")==2)
+						$CORE_LOCAL->set("cashierAgeOverride",1);
+					$this->change_page($CORE_LOCAL->get("adminRequest"));
 					return False;
 				}
 				else {
 					$this->box_color="#800000";
-					$this->msg = "re-enter admin password";
+					$this->msg = _("re-enter admin password");
 				}
 			}
 		}
 		return True;
+	}
+
+	function head_content(){
+		$this->default_parsewrapper_js();
 	}
 
 	function body_content(){
@@ -86,12 +93,13 @@ class adminlogin extends NoInputPage {
 		<span class="larger">
 		<?php echo $heading ?>
 		</span><br />
-		<form name="form" method="post" autocomplete="off" action="<?php echo $_SERVER['PHP_SELF']; ?>">
+		<form name="form" id="formlocal" method="post" 
+			autocomplete="off" action="<?php echo $_SERVER['PHP_SELF']; ?>">
 		<input type="password" id="reginput" name="reginput" tabindex="0" onblur="$('#reginput').focus();" />
 		</form>
-		<p />
+		<p>
 		<?php echo $this->msg ?>
-		<p />
+		</p>
 		</div>
 		</div>
 		<?php

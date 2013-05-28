@@ -42,8 +42,9 @@ $CREATE['trans.dlog_90_view'] = "
 		emp_no,
 		trans_no,
 		upc,
-		trans_type,
-		trans_subtype,
+		CASE WHEN (trans_subtype IN ('CP','IC') OR upc like('%000000052')) then 'T' WHEN upc = 'DISCOUNT' then 'S' else trans_type end as trans_type,
+		CASE WHEN upc = 'MAD Coupon' THEN 'MA' 
+		   WHEN upc like('%00000000052') THEN 'RR' ELSE trans_subtype END as trans_subtype,
 		trans_status,
 		department,
 		quantity,
@@ -52,6 +53,10 @@ $CREATE['trans.dlog_90_view'] = "
 		tax,
 		foodstamp,
 		ItemQtty,
+		memType,
+		staff,
+		numflag,
+		charflag,
 		card_no,
 		trans_id,
 		".$con->concat(

@@ -21,69 +21,76 @@
 
 *********************************************************************************/
 
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
-
 ini_set('display_errors','1');
 
-if (!class_exists("NoInputPage")) include_once($CORE_PATH."gui-class-lib/NoInputPage.php");
-if (!function_exists("getsubtotals")) include($CORE_PATH."lib/connect.php");
-if (!function_exists("checksuspended")) include($CORE_PATH."lib/special.php");
-if (!function_exists("tenderReport")) include($CORE_PATH."lib/tenderReport.php");
-if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
+include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class adminlist extends NoInputPage {
 
 	function preprocess(){
-		global $CORE_LOCAL,$CORE_PATH;
+		global $CORE_LOCAL;
 
 		if (isset($_REQUEST['selectlist'])){
 			if (empty($_REQUEST['selectlist'])){
-				header("Location: {$CORE_PATH}gui-modules/pos2.php");
+				$this->change_page($this->page_url."gui-modules/pos2.php");
 				return False;
 			}
 			elseif ($_REQUEST['selectlist'] == 'SUSPEND'){
-				getsubtotals();
+				Database::getsubtotals();
 				if ($CORE_LOCAL->get("LastID") == 0) {
-					$CORE_LOCAL->set("boxMsg","no transaction in progress");
-					header("Location: {$CORE_PATH}gui-modules/boxMsg2.php");
+					$CORE_LOCAL->set("boxMsg",_("no transaction in progress"));
+					$this->change_page($this->page_url."gui-modules/boxMsg2.php");
 					return False;
 				}
 				else {
 					// ajax call to end transaction
 					// and print receipt
-					suspendorder();
+					SuspendLib::suspendorder();
 					$this->add_onload_command("\$.ajax({
 						type:'post',
-						url:'{$CORE_PATH}ajax-callbacks/ajax-end.php',
+						url:'{$this->page_url}ajax-callbacks/ajax-end.php',
 						cache: false,
 						data: 'receiptType=suspended',
+						dataType: 'json',
 						success: function(data){
-							location='{$CORE_PATH}gui-modules/pos2.php';
+							\$.ajax({
+							type:'post',
+							url:'{$this->page_url}ajax-callbacks/ajax-transaction-sync.php',
+							cache: false,
+							success: function(data){
+								location='{$this->page_url}gui-modules/pos2.php';
+							},
+							error: function(e1){
+								location='{$this->page_url}gui-modules/pos2.php';
+							}
+							});
+						},
+						error: function(e1){
+							location='{$this->page_url}gui-modules/pos2.php';
 						}
 						});");
 					return True;
 				}
 			}
 			else if ($_REQUEST['selectlist'] == 'RESUME'){
-				getsubtotals();
+				Database::getsubtotals();
 				if ($CORE_LOCAL->get("LastID") != 0) {
-					$CORE_LOCAL->set("boxMsg","transaction in progress");
-					header("Location: {$CORE_PATH}gui-modules/boxMsg2.php");
+					$CORE_LOCAL->set("boxMsg",_("transaction in progress"));
+					$this->change_page($this->page_url."gui-modules/boxMsg2.php");
 				}
-				elseif (checksuspended() == 0) {
-					$CORE_LOCAL->set("boxMsg","no suspended transaction");
+				elseif (SuspendLib::checksuspended() == 0) {
+					$CORE_LOCAL->set("boxMsg",_("no suspended transaction"));
 					$CORE_LOCAL->set("strRemembered","");
-					header("Location: {$CORE_PATH}gui-modules/boxMsg2.php");
+					$this->change_page($this->page_url."gui-modules/boxMsg2.php");
 				}
 				else {
-					header("Location: {$CORE_PATH}gui-modules/suspendedlist.php");
+					$this->change_page($this->page_url."gui-modules/suspendedlist.php");
 				}
 				return False;
 			}
 			else if ($_REQUEST['selectlist'] == 'TR'){
-				tenderReport();
-				header("Location: {$CORE_PATH}gui-modules/pos2.php");
+				TenderReport::printReport();
+				$this->change_page($this->page_url."gui-modules/pos2.php");
 				return False;
 			}
 		}
@@ -92,6 +99,7 @@ class adminlist extends NoInputPage {
 
 	function head_content(){
 		?>
+		<script type="text/javascript" src="<?php echo $this->page_url; ?>js/ajax-parser.js"></script>
 		<script type="text/javascript" >
 		var prevKey = -1;
 		var prevPrevKey = -1;
@@ -120,18 +128,19 @@ class adminlist extends NoInputPage {
 		?>
 		<div class="baseHeight">
 		<div class="centeredDisplay colored">
-			<span class="larger">administrative tasks</span>
+			<span class="larger"><?php echo _("administrative tasks"); ?></span>
 			<br />
 		<form id="selectform" method="post" action="<?php echo $_SERVER['PHP_SELF']; ?>">
 		<select name="selectlist" id="selectlist" onblur="$('#selectlist').focus();">
 		<option value=''>
-		<option value='SUSPEND'>1. Suspend Transaction
-		<option value='RESUME'>2. Resume Transaction
-		<option value='TR'>3. Tender Reports
+		<option value='SUSPEND'>1. <?php echo _("Suspend Transaction"); ?>
+		<option value='RESUME'>2. <?php echo _("Resume Transaction"); ?>
+		<option value='TR'>3. <?php echo _("Tender Reports"); ?>
 		</select>
 		</form>
-		<span class="smaller">[clear] to cancel</span>
-		<p />
+		<p>
+		<span class="smaller"><?php echo _("clear to cancel"); ?></span>
+		</p>
 		</div>
 		</div>
 		<?php

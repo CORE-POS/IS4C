@@ -5,6 +5,8 @@ include('../db.php');
 include('functMem.php');
 include('headerTest.php');
 
+$sql->query("USE $FANNIE_TRANS_DB");
+
 $mem = $_GET['memID'];
 $col='#FFFF99';
 /*
@@ -23,7 +25,7 @@ $query="SELECT datepart(mm,dateTimeStamp),datepart(dd,dateTimeStamp),datepart(yy
 	order by dateTimeStamp DESC";
 */
 
-$query="SELECT datepart(mm,tdate),datepart(dd,tdate),datepart(yy,tdate),
+$query="SELECT month(tdate) as tm,day(tdate) as td,year(tdate) as ty,
         CASE WHEN charges <> 0 THEN charges ELSE Payments END as tendertotal,
         card_no,trans_num,
         (CASE WHEN payments <> 0
@@ -31,14 +33,13 @@ $query="SELECT datepart(mm,tdate),datepart(dd,tdate),datepart(yy,tdate),
            ELSE '' END) as payment,
         (CASE WHEN charges <> 0
            THEN 'C'
-           ELSE '' END) as charge,
-        datepart(mi,tdate)
+           ELSE '' END) as charge
         from ar_history_today
         WHERE card_no = $mem
 	
 	union all
 	
- SELECT datepart(mm,tdate),datepart(dd,tdate),datepart(yy,tdate),
+ SELECT month(tdate) as tm,day(tdate) as td,year(tdate) as ty,
         CASE WHEN charges <> 0 THEN charges ELSE Payments END as tendertotal,
         card_no,trans_num,
         (CASE WHEN payments <> 0
@@ -46,11 +47,11 @@ $query="SELECT datepart(mm,tdate),datepart(dd,tdate),datepart(yy,tdate),
            ELSE '' END) as payment,
         (CASE WHEN charges <> 0
            THEN 'C'
-           ELSE '' END) as charge,
-        datepart(mi,tdate)
+           ELSE '' END) as charge
         from ar_history
         WHERE card_no = $mem
-        order by datepart(yy,tdate) desc, datepart(mm,tdate) desc, datepart(dd,tdate) desc";
+
+        order by ty desc, tm desc, td desc";
 
 
 trans_to_table($query,1,$col);

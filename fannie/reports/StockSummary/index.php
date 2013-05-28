@@ -3,19 +3,22 @@
 require('../../config.php');
 include($FANNIE_ROOT.'src/mysql_connect.php');
 
-$q = "select 
+$trans = $FANNIE_TRANS_DB;
+if ($FANNIE_SERVER_DBMS == "MSSQL") $trans .= ".dbo";
+
+$q = $dbc->prepare_statement("select 
 	card_no,
-	lastname,firstname,type,
-	sum(case when datediff(dd,'2005-11-26',tdate) <= 0 then stockPurchase else 0 end) as unknown,
-	sum(case when datediff(dd,'2005-11-26',tdate) > 0 and dept=992 then stockPurchase else 0 end) as classA,
-	sum(case when datediff(dd,'2005-11-26',tdate) > 0 and dept=991 then stockPurchase else 0 end) as classB
-	from stockpurchases as s
+	LastName,FirstName,Type,
+	sum(case when tdate <= '2005-11-26 23:59:59' then stockPurchase else 0 end) as unknown,
+	sum(case when tdate > '2005-11-26 23:59:59' and dept=992 then stockPurchase else 0 end) as classA,
+	sum(case when tdate > '2005-11-26 23:59:59' and dept=991 then stockPurchase else 0 end) as classB
+	from $trans.stockpurchases as s
 	left join custdata as c
-	on s.card_no=c.cardno and c.personnum=1
+	on s.card_no=c.CardNo and c.personNum=1
 	where card_no > 0
-	group by card_no,lastname,firstname,type
-	order by cast(card_no as int)";
-$r = $dbc->query($q);
+	group by card_no,LastName,FirstName,Type
+	order by card_no");
+$r = $dbc->exec_statement($q);
 
 if (!isset($_REQUEST['excel']))
 	echo "<a href=index.php?excel=yes>Save as Excel</a>";
@@ -31,8 +34,8 @@ $types = array('PC'=>'Member','REG'=>'NonMember',
 while($w = $dbc->fetch_row($r)){
 	printf("<tr><td>%d</td><td>%s, %s</td><td>%s</td>
 		<td>%.2f</td><td>%.2f</td><td>%.2f</td></tr>",
-		$w['card_no'],$w['lastname'],$w['firstname'],
-		$types[$w['type']],$w['classA'],$w['classB'],
+		$w['card_no'],$w['LastName'],$w['FirstName'],
+		$types[$w['Type']],$w['classA'],$w['classB'],
 		$w['unknown']);
 }
 echo "</table>";

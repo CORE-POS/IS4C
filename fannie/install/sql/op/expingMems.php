@@ -21,7 +21,7 @@ CREATE VIEW expingMems as
 	m.city,
 	m.state,
 	m.zip,
-	n.card_no as memnum,
+	m.card_no as memnum,
 	n.payments,
 	n.startdate,
 	".$con->convert('d.end_date','char')." as enddate,
@@ -30,7 +30,7 @@ CREATE VIEW expingMems as
 	from meminfo as m,{$names['trans']}.newBalanceStockToday_test as n,custdata as c, memDates as d
 	where d.end_date is not null
 	AND d.end_date <> ''
-	AND m.card_no = n.card_no
+	AND m.card_no = n.memnum
 	AND c.CardNo = m.card_no
 	AND m.card_no = d.card_no
 	AND n.payments < 100

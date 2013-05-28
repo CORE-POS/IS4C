@@ -8,7 +8,8 @@ $query = "select c.cardno, c.lastname, c.firstname, m.street, m.city, m.state, m
 	  from custdata as c left join meminfo as m on c.cardno=m.card_no
 	  LEFT JOIN memDates AS d ON c.cardno=d.card_no
 	  where c.personnum = 1 and c.memtype in (1,3)
-	  and (datediff(dd,getdate(),d.end_date) > 0 or d.end_date = '' or d.end_date is NULL)
+	  AND c.Type='PC'
+	  and (d.end_date > now() or d.end_date = '' or d.end_date is NULL)
 	  and m.street <> ''
 	  order by convert(int,c.cardno)";
 $NL = "<br />";

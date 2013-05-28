@@ -129,10 +129,10 @@ printf("<i>Order for Week of: %s</i>",date("m/d/y",$now));
 </thead>
 <tbody class="scrollContent">
 <?php
-$query = "SELECT [desc],price,unit,quantity,p.likecode,p.id,
+$query = "SELECT `desc`,price,unit,quantity,p.likecode,p.id,
 	monday,tuesday,wednesday,thursday,friday,saturday
 	FROM produceWeekly p LEFT JOIN
-	likecodeWeeklyQuantity l ON p.likecode=l.likecode
+	likecodeWeeklyQuantity l ON p.likecode=l.likeCode
 	LEFT JOIN produceWeeklyData d
 	ON p.id=d.id
 	ORDER BY p.id";

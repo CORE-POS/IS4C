@@ -23,7 +23,10 @@ in the same report, maintained by the same buyer, etc
 $CREATE['op.superdepts'] = "
 	CREATE TABLE superdepts (
 		superID int,
-		dept_ID int
+		dept_ID int,
+		PRIMARY KEY (superID, dept_ID),
+		INDEX(superID),
+		INDEX(dept_ID)
 	)
 ";
 ?>

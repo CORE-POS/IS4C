@@ -28,7 +28,7 @@ require($FANNIE_ROOT.'src/fpdf/fpdf.php');
  has to go to Olivier for posting the script on the FPDF.org scripts
  webpage.****/
 
-class WFC_Standard_PDF extends FPDF
+class WFC_Old_PDF extends FPDF
 {
    function EAN13($x,$y,$barcode,$h=16,$w=.35)
    {
@@ -122,9 +122,9 @@ class WFC_Standard_PDF extends FPDF
     }
 }
 
-function WFC_Standard($data,$offset=0){
+function WFC_Old($data,$offset=0){
 
-$pdf=new WFC_Standard_PDF('P','mm','Letter'); //start new instance of PDF
+$pdf=new WFC_Old_PDF('P','mm','Letter'); //start new instance of PDF
 $pdf->Open(); //open new PDF Document
 $pdf->SetTopMargin(40);  //Set top margin of the page
 $pdf->SetLeftMargin(5);  //Set left margin of the page

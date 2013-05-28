@@ -21,18 +21,11 @@
 
 *********************************************************************************/
 
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
-
-if (!class_exists("NoInputPage")) include_once($CORE_PATH."gui-class-lib/NoInputPage.php");
-if (!function_exists("tDataConnect")) include($CORE_PATH."lib/connect.php");
-if (!function_exists("receipt")) include($CORE_PATH."lib/clientscripts.php");
-if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
+include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class cablist extends NoInputPage {
 
 	function head_content(){
-		global $CORE_PATH;
 		?>
 		<script type="text/javascript" >
 		var prevKey = -1;
@@ -57,17 +50,17 @@ class cablist extends NoInputPage {
 			var ref = $('#selectlist').val();
 			if (ref != ""){
 				$.ajax({
-					url: '<?php echo $CORE_PATH; ?>ajax-callbacks/ajax-cabreceipt.php',
+					url: '<?php echo $this->page_url; ?>ajax-callbacks/ajax-cabreceipt.php',
 					type: 'get',
 					cache: false,
 					data: 'input='+ref,
-					success: function(){
-						location='<?php echo $CORE_PATH; ?>gui-modules/pos2.php';
+					success: function(data){
+						location='<?php echo $this->page_url; ?>gui-modules/pos2.php';
 					}
 				});
 			}
 			else {
-				location='<?php echo $CORE_PATH; ?>gui-modules/pos2.php';
+				location='<?php echo $this->page_url; ?>gui-modules/pos2.php';
 			}
 
 			return false;
@@ -81,7 +74,7 @@ class cablist extends NoInputPage {
 	function body_content(){
 		global $CORE_LOCAL;
 
-		$db = pDataConnect();
+		$db = Database::pDataConnect();
 		$query = "SELECT frontendsecurity FROM employees WHERE emp_no=".$CORE_LOCAL->get("CashierNo");
 		$result = $db->query($query);
 		$fes = 0;
@@ -99,10 +92,10 @@ class cablist extends NoInputPage {
 			." group by register_no, emp_no, trans_no
 			having sum((case when trans_type='T' THEN -1*total ELSE 0 end)) >= 30
 			order by register_no,emp_no,trans_no desc";
-			$db = tDataConnect();
+			$db = Database::tDataConnect();
 			if ($CORE_LOCAL->get("standalone") == 0){
 				$query = str_replace("localtranstoday","dtransactions",$query);
-				$db = mDataConnect();
+				$db = Database::mDataConnect();
 			}
 			$result = $db->query($query);
 
@@ -114,7 +107,7 @@ class cablist extends NoInputPage {
 			having sum((case when trans_type='T' THEN -1*total ELSE 0 end)) >= 30
 			order by trans_no desc";
 
-			$db = tDataConnect();
+			$db = Database::tDataConnect();
 			$result = $db->query($query);
 		}
 
@@ -140,7 +133,6 @@ class cablist extends NoInputPage {
 		if ($num_rows == 0){
 			echo "<option value=\"\">None found</option>";
 		}
-		$db->close();
 		?>
 
 		</select>
@@ -152,7 +144,7 @@ class cablist extends NoInputPage {
 		<div class="clear"></div>
 		</div>
 
-		<?
+		<?php
 		$CORE_LOCAL->set("scan","noScan");
 	} // END body_content() FUNCTION
 }

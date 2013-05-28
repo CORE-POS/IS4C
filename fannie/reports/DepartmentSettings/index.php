@@ -38,17 +38,20 @@ if (isset($_REQUEST['submit']) || isset($_REQUEST['super'])){
 	$join = "";
 	$where = "";
 	$link = "";	
+	$args = array();
 	if ($super == 1){
 		$superID = $_REQUEST['superdept'];
 		$join = "LEFT JOIN superdepts AS s ON d.dept_no=s.dept_ID";
-		$where = "s.superID = $superID";
+		$where = "s.superID = ?";
+		$args[] = $superID;
 		$link = "&super=1&superdept=$superID";
 	}
 	else {
 		$d1 = $_REQUEST['dept1'];
 		$d2 = $_REQUEST['dept2'];
 		$join = "";
-		$where = "d.dept_no BETWEEN $d1 AND $d2";
+		$where = "d.dept_no BETWEEN ? AND ?";
+		$args = array($d1,$d2);
 		$link = "&super=0&dept1=$d1&dept2=$d2";
 	}
 
@@ -78,7 +81,7 @@ if (isset($_REQUEST['submit']) || isset($_REQUEST['super'])){
 	}
 	echo "</tr>";
 
-	$query = "SELECT d.dept_no,d.dept_name,c.salesCode,m.margin,
+	$query = $dbc->prepare_statement("SELECT d.dept_no,d.dept_name,c.salesCode,m.margin,
 		CASE WHEN d.dept_tax=0 THEN 'NoTax' ELSE t.description END as tax,
 		CASE WHEN d.dept_fs=1 THEN 'Yes' ELSE 'No' END as fs
 		FROM departments AS d LEFT JOIN taxrates AS t
@@ -86,8 +89,8 @@ if (isset($_REQUEST['submit']) || isset($_REQUEST['super'])){
 		ON d.dept_no=c.dept_ID LEFT JOIN deptMargin AS m
 		ON d.dept_no=m.dept_ID $join
 		WHERE $where
-		ORDER BY $order $dir";
-	$result = $dbc->query($query);
+		ORDER BY d.dept_no");
+	$result = $dbc->exec_statement($query,$args);
 	while($row = $dbc->fetch_row($result)){
 		printf("<tr><td>%d</td><td>%s</td><td>%d</td><td>%.2f%%</td>
 			<td>%s</td><td>%s</td></tr>",$row[0],
@@ -98,11 +101,13 @@ if (isset($_REQUEST['submit']) || isset($_REQUEST['super'])){
 }
 else {
 $opts = "";
-$resp = $dbc->query("SELECT superID,super_name fROM superDeptNames ORDER BY super_name");
+$prep = $dbc->prepare_statement("SELECT superID,super_name fROM superDeptNames ORDER BY super_name");
+$resp = $dbc->exec_statement($prep);
 while($row = $dbc->fetch_row($resp))
 	$opts .= "<option value=$row[0]>$row[1]</option>";
 $depts = "";
-$resp = $dbc->query("SELECT dept_no,dept_name FROM departments ORDER BY dept_no");
+$prep = $dbc->prepare_statement("SELECT dept_no,dept_name FROM departments ORDER BY dept_no");
+$resp = $dbc->exec_statement($prep);
 $d1 = False;
 while($row = $dbc->fetch_row($resp)){
 	$depts .= "<option value=$row[0]>$row[0] $row[1]</option>";

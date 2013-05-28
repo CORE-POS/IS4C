@@ -60,7 +60,7 @@ $CREATE['trans.efsnetResponse'] = "
 		httpCode int ,
 		validResponse smallint ,
 		xResponseCode varchar (4),
-		xResultCode varchar (4), 
+		xResultCode varchar (8), 
 		xResultMessage varchar (100),
 		xTransactionID varchar (12),
 		xApprovalNumber varchar (20)

@@ -25,13 +25,18 @@
 utility functions
 */
 
+
+/* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+	* 12Nov2012 Eric Lee In getGID() test FANNIE_DBMS_SERVER for SQL syntax.
+*/
+
 /*
 connect to the database
 having this as a separate function makes changing
 the database easier
 */
 function dbconnect(){
-	global $FANNIE_ROOT;
+	global $FANNIE_ROOT,$FANNIE_SERVER_PW;
 	$path = guesspath();
 	if (!class_exists("SQLManager")){
 		include($path."config.php");
@@ -81,8 +86,8 @@ function getUID($name){
   if (!auth_enabled()) return '0000';
 
   $sql = dbconnect();
-  $fetchQ = "select uid from users where name='$name'";
-  $fetchR = $sql->query($fetchQ);
+  $fetchQ = $sql->prepare_statement("select uid from Users where name=?");
+  $fetchR = $sql->exec_statement($fetchQ,array($name));
   if ($sql->num_rows($fetchR) == 0){
     return false;
   }
@@ -95,19 +100,44 @@ function getNumUsers(){
   if (!auth_enabled()) return 9999;
 	
   $sql = dbconnect();
-  $fetchQ = "select uid from users";
-  $fetchR = $sql->query($fetchQ);
+  $fetchQ = $sql->prepare_statement("select uid from Users");
+  $fetchR = $sql->exec_statement($fetchQ);
 
   return $sql->num_rows($fetchR);
 }
 
+function getNumAdmins(){
+	$sql = dbconnect();
+	$num = 0;
+	if ($sql->table_exists('userPrivs')){
+		$q = $sql->prepare_statement("SELECT uid FROM userPrivs WHERE auth_class='admin'");
+		$r = $sql->exec_statement($q);
+		$num += $sql->num_rows($r);
+	}
+	if ($sql->table_exists('userGroups') && $sql->table_exists('userGroupPrivs')){
+		$q = $sql->prepare_statement("SELECT username FROM userGroups AS g LEFT JOIN
+			userGroupPrivs AS p ON g.gid=p.gid
+			WHERE p.auth='admin'");
+		$r = $sql->exec_statement($q);
+		$num += $sql->num_rows($r);
+
+	}
+	return $num;
+}
+
 function getGID($group){
+	// 11Nov12 EL Bring in config for SERVER_DBMS test.
+	$path = guesspath();
+	include($path."config.php");
+
   if (!isAlphaNumeric($group))
     return false;
   $sql = dbconnect();
 
-  $gidQ = "select top 1 gid from userGroups where name='$group'";
-  $gidR = $sql->query($gidQ);
+  $gidQ = "select gid from userGroups where name=?";
+  $gidQ = $sql->add_select_limit($gidQ,1); 
+  $gidP = $sql->prepare_statement($gidQ);
+  $gidR = $sql->exec_statement($gidP,array($group));
 
   if ($sql->num_rows($gidR) == 0)
     return false;
@@ -133,8 +163,30 @@ function doLogin($name){
 	$session_id = genSessID();	
 
 	$sql = dbconnect();
-	$sessionQ = "update users set session_id = '$session_id' where name='$name'";
-	$sessionR = $sql->query($sessionQ);
+	$sessionQ = $sql->prepare_statement("update Users set session_id = ? where name=?");
+	$sessionR = $sql->exec_statement($sessionQ,array($session_id,$name));
+
+	/**
+	  Periodically purge expired records
+		9May13 EL Not periodic.
+	*/
+	$delP = $sql->prepare_statement('DELETE FROM userSessions
+			WHERE expires < '.$sql->now());
+	$delR = $sql->exec_statement($delP);
+
+	/**
+	  New behavior - Store session id in dedicated table.
+	  This allows more than one session record per user
+	  record - i.e., someone can be logged in on multiple
+	  computers simultaneously.
+	*/
+	$uid = getUID($name);
+	$ip = (isset($_SERVER['REMOTE_ADDR'])) ? $_SERVER['REMOTE_ADDR'] : 'unknown';
+	$expires = date('Y-m-d',strtotime('tomorrow'));
+	$sessionP = $sql->prepare_statement('INSERT INTO userSessions 
+				(uid,session_id,ip,expires)
+				VALUES (?,?,?,?)');
+	$sessionR = $sql->exec_statement($sessionP,array($uid,$session_id,$ip,$expires));
 
 	$session_data = array("name"=>$name,"session_id"=>$session_id);
 	$cookie_data = serialize($session_data);
@@ -151,17 +203,15 @@ function syncUserShadow($name){
 	$sql = dbconnect();	
 
 	if (!$currentUID){
-		$addQ = sprintf("INSERT INTO Users 
+		$addQ = $sql->prepare_statement("INSERT INTO Users 
 			(name,password,salt,uid,session_id,real_name)
-			VALUES ('%s','','','%s','','%s')",
-			$name,$posixUID,$realname);
-		$sql->query($addQ);
+			VALUES (?,'','',?,'',?)");
+		$sql->exec_statement($addQ,array($name,$posixUID,$realname));
 	}
 	else {
-		$upQ1 = sprintf("UPDATE Users SET real_name='%s'
-				WHERE name='%s'",
-				$realname,$name);
-		$sql->query($upQ1);
+		$upQ1 = $sql->prepare_statement("UPDATE Users SET real_name=?
+				WHERE name=?");
+		$sql->exec_statement($upQ1,array($realname,$name));
 	}
 }
 
@@ -170,30 +220,33 @@ function syncUserLDAP($name,$uid,$fullname){
 	$sql = dbconnect();
 
 	if (!$currentUID){
-		$addQ = sprintf("INSERT INTO Users 
+		$addQ = $sql->prepare_statement("INSERT INTO Users 
 			(name,password,salt,uid,session_id,real_name)
-			VALUES ('%s','','','%s','','%s')",
-			$name,$uid,$fullname);
-		$sql->query($addQ);
+			VALUES (?,'','',?,'',?)");
+		$sql->exec_statement($addQ,array($name,$uid,$fullname));
 	}
 	else {
-		$upQ1 = sprintf("UPDATE Users SET real_name='%s'
-				WHERE name='%s'",
-				$fullname,$name);
-		$sql->query($upQ1);
+		$upQ1 = $sql->prepare_statement("UPDATE Users SET real_name=?
+				WHERE name=?");
+		$sql->exec_statement($upQ1,array($fullname,$name));
 	}
 }
 
 function auth_enabled(){
-	$path = guesspath();
-	include($path."config.php");
-	return $FANNIE_AUTH_ENABLED;
+	global $FANNIE_AUTH_ENABLED;
+	if (!isset($FANNIE_AUTH_ENABLED)){
+		$path = guesspath();
+		include($path."config.php");
+		return $FANNIE_AUTH_ENABLED;
+	}
+	else
+		return $FANNIE_AUTH_ENABLED;
 }
 
 function table_check(){
 	$sql = dbconnect();
 	if (!$sql->table_exists('Users')){
-		$sql->query("CREATE TABLE Users (
+		$p = $sql->prepare_statement("CREATE TABLE Users (
 			name varchar(50),
 			password varchar(50),
 			salt varchar(10),
@@ -202,29 +255,51 @@ function table_check(){
 			real_name varchar(75),
 			PRIMARY KEY (name)
 			)");
+		$sql->exec_statement($p);
 	}
 	if (!$sql->table_exists('userPrivs')){
-		$sql->query("CREATE TABLE userPrivs (
+		$p = $sql->prepare_statement("CREATE TABLE userPrivs (
 			uid varchar(4),
 			auth_class varchar(50),
 			sub_start varchar(50),
 			sub_end varchar(50)
 			)");
+		$sql->exec_statement($p);
+	}
+	if (!$sql->table_exists('userKnownPrivs')){
+		$p = $sql->prepare_statement("CREATE TABLE userKnownPrivs (
+			auth_class varchar(50),
+			notes text,
+			PRIMARY KEY (auth_class)
+			)");
+		$sql->exec_statement($p);
 	}
 	if (!$sql->table_exists('userGroups')){
-		$sql->query("CREATE TABLE userGroups (
+		$sql->prepare_statement("CREATE TABLE userGroups (
 			gid int,
 			name varchar(50),
 			username varchar(50)
 			)");
+		$sql->exec_statement($p);
 	}
 	if (!$sql->table_exists('userGroupPrivs')){
-		$sql->query("CREATE TABLE userGroupPrivs (
+		$sql->prepare_statement("CREATE TABLE userGroupPrivs (
 			gid int,
 			auth varchar(50),
 			sub_start varchar(50),
 			sub_end varchar(50)
 			)");
+		$sql->exec_statement($p);
+	}
+	if (!$sql->table_exists('userSessions')){
+		$p = $sql->prepare_statement("CREATE TABLE userSessions (
+			uid varchar(4),
+			session_id varchar(50),
+			ip varchar(45),
+			expires datetime,
+			PRIMARY KEY (uid,session_id)
+			)");
+		$sql->exec_statement($p);
 	}
 }
 

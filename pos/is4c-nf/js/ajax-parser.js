@@ -14,7 +14,6 @@ function runParser(input_str,rel_prefix){
 }
 
 function parserError(xml_ro,st,err){
-
 }
 
 function parserHandler(data,status_str,xml_ro){
@@ -56,13 +55,21 @@ function parserHandler(data,status_str,xml_ro){
 		$('#scaleBottom').html(data.scale);
 	}
 
+	if (data.term){
+		$('#scaleIconBox').html(data.term);
+	}
+
 	if (data.receipt){
 		$.ajax({
 			url: CORE_JS_PREFIX+'ajax-callbacks/ajax-end.php',
 			type: 'GET',
 			data: 'receiptType='+data.receipt,
+			dataType: 'json',
 			cache: false,
 			success: function(data){
+				if (data.sync){
+					ajaxTransactionSync(CORE_JS_PREFIX);
+				}
 			}
 		});
 	}
@@ -70,4 +77,15 @@ function parserHandler(data,status_str,xml_ro){
 	if (data.retry){
 		setTimeout("runParser('"+data.retry+"','"+CORE_JS_PREFIX+"');",700);
 	}
+}
+
+function ajaxTransactionSync(rel_prefix){
+	$.ajax({
+		url: rel_prefix+'ajax-callbacks/ajax-transaction-sync.php',
+		type: 'GET',
+		cache: false,
+		success: function(data){
+		}
+	});
+
 }

@@ -21,22 +21,22 @@
 
 *********************************************************************************/
 ini_set('display_errors','1');
-?>
-<?php 
 include('../config.php'); 
 include('util.php');
 ?>
-<a href="index.php">Necessities</a>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<a href="auth.php">Authentication</a>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<a href="mem.php">Members</a>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-Stores
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<a href="sample_data/extra_data.php">Sample Data</a>
+<html>
+<head>
+<title>Fannie: Store Settings</title>
+<link rel="stylesheet" href="../src/css/install.css" type="text/css" />
+<script type="text/javascript" src="../src/jquery/jquery.js"></script>
+</head>
+<body>
+<?php 
+echo showInstallTabs("Stores");
+?>
 <form action=stores.php method=post>
-<h1>Fannie install checks</h1>
+<h1>Fannie: Store Settings</h1>
+<p class="ichunk">As of 11Apr2013 these settings are not widely or well supported.</p>
 <?php
 // path detection
 $FILEPATH = rtrim($_SERVER['SCRIPT_FILENAME'],'stores.php');
@@ -51,7 +51,28 @@ else {
 	echo "<span style=\"color:red;\"><b>Error</b>: config.php is not writeable</span>";
 }
 ?>
-<br /><br />
+
+<hr />
+<b>Stores</b>
+<p style="margin:0.0em 0em 0.4em 0em;"><b>Store ID</b>: 
+<?php
+if (!isset($FANNIE_STORE_ID)) $FANNIE_STORE_ID = 0;
+if (isset($_REQUEST['FANNIE_STORE_ID'])) $FANNIE_STORE_ID = $_REQUEST['FANNIE_STORE_ID'];
+confset('FANNIE_STORE_ID',"$FANNIE_STORE_ID");
+echo "<input type=text name=FANNIE_STORE_ID value=\"$FANNIE_STORE_ID\" size=3 />";
+?>
+ &nbsp; By convention store id #0 is HQ.
+</p>
+<?php
+/*
+	By convention store id #0 is HQ
+	I don't know if the rest of these settings are really
+	necessary, but I don't want to remove them yet
+	just in case
+*/
+if($FANNIE_STORE_ID == 0){
+?>
+
 <b>Other Stores</b>: 
 <?php
 if (!isset($FANNIE_NUM_STORES)) $FANNIE_NUM_STORES = 0;
@@ -64,6 +85,7 @@ echo "<input type=text name=FANNIE_NUM_STORES value=\"$FANNIE_NUM_STORES\" size=
 if ($FANNIE_NUM_STORES == 0) confset('FANNIE_STORES','array()');
 else {
 ?>
+
 <script type=text/javascript>
 function showhide(i,num){
 	for (var j=0; j<num; j++){
@@ -134,32 +156,14 @@ for($i=0; $i<$FANNIE_NUM_STORES; $i++){
 		$conf .= ",";
 }
 confset('FANNIE_STORES',$conf);
+}
 
-echo "<br />";
-echo "<b>Master Store</b>: <select name=FANNIE_MASTER_STORE>";
-if (!isset($FANNIE_MASTER_STORE)) $FANNIE_MASTER_STORE = 0;
-if (isset($_REQUEST["FANNIE_MASTER_STORE"])) $FANNIE_MASTER_STORE = $_REQUEST['FANNIE_MASTER_STORE'];
-printf("<option value=\"me\" %s>This Store</option>",
-	('me'==$FANNIE_MASTER_STORE?'selected':'')
-);
-for($i = 0; $i < $FANNIE_NUM_STORES; $i++){
-	printf("<option value=%d %s>Store %d</option>",
-		$i,
-		($i==$FANNIE_MASTER_STORE && $FANNIE_MASTER_STORE != 'me'?'selected':''),
-		($i+1)
-	);
-}
-echo "</select>";
-if ($FANNIE_MASTER_STORE != "me" && $FANNIE_MASTER_STORE >= $FANNIE_NUM_STORES) $FANNIE_MASTER_STORE=0; // sanity
-confset('FANNIE_MASTER_STORE',"'$FANNIE_MASTER_STORE'");
-echo "<br />";
-echo "<b>Master Archive DB</b>: ";
-if (!isset($FANNIE_MASTER_ARCH_DB)) $FANNIE_MASTER_ARCH_DB = 'trans_archive';
-if (isset($_REQUEST['FANNIE_MASTER_ARCH_DB'])) $FANNIE_MASTER_ARCH_DB = $_REQUEST['FANNIE_MASTER_ARCH_DB'];
-printf('<input type="text" name="FANNIE_MASTER_ARCH_DB" value="%s" /><br />',$FANNIE_MASTER_ARCH_DB);
-confset('FANNIE_MASTER_ARCH_DB',"'$FANNIE_MASTER_ARCH_DB'");
-}
 ?>
+
+<?php
+} // endif for HQ only settings
+?>
+
 <hr />
 <input type=submit value="Re-run" />
 </form>

@@ -56,7 +56,7 @@ foreach($dbs as $db){
 	}
 
 	$cmd = realpath($FANNIE_BACKUP_BIN."/mysqldump");
-	$cmd .= " -q -h \"$FANNIE_SERVER\" -u \"$FANNIE_SERVER_USER\" -p\"$FANNIE_SERVER_PW\" \"$db\"";
+	$cmd .= " -q --databases -h \"$FANNIE_SERVER\" -u \"$FANNIE_SERVER_USER\" -p\"$FANNIE_SERVER_PW\" \"$db\"";
 	$cmd = escapeshellcmd($cmd);
 	if ($FANNIE_BACKUP_GZIP)
 		$cmd .= " | ".escapeshellcmd(realpath($FANNIE_BACKUP_BIN."/gzip"));

@@ -16,66 +16,37 @@ $EMP_NO = 1001;
 $LANE_NO = 30;
 
 $BILLING_MEMBER = array(
-	"A1B/W" => 41.25,
-	"A2B/W" => 41.25,
-	"B1B/W" => 48.75,
-	"B2B/W" => 48.75,
-	"CB/W"  => 86.25,
-	"DB/W"  => 78.75,
-	"EB/W"  => 123.75,
-	"FB/W"  => 221.25,
-	"GB/W"  => 221.25,
-	"1/20B/W" => 41.25,
-	"1/15B/W" => 56.25,
-	"1/10B/W" => 82.50,
-	"1/5B/W" => 165,
-	"1/ 5B/W" => 165,
+	"1/20B/W" => 45.00, 
+	"1/15B/W" => 60.00,
+	"1/10B/W" => 90.00,
+	"1/5B/W" => 187.50,
+	"1/ 5B/W" => 187.50,
 	"1/2B/W" => 412.50,
-	"A1FULL" => 56.25,
-	"A2FULL" => 56.25,
-	"B1FULL" => 63.75,
-	"B2FULL" => 63.75,
-	"CFULL"  => 101.25,
-	"DFULL"  => 93.75,
-	"1/20FULL" => 56.25,
-	"1/15FULL" => 82.50,
+	"1/ 2B/W" => 412.50,
+	"1/20FULL" => 63.75,
+	"1/15FULL" => 75.00,
 	"1/10FULL"  => 112.50,
 	"1/5FULL" => 225,
 	"1/ 5FULL" => 225,
 	"1/2FULL" => 562.50,
-	"EFULL"  => 138.75,
-	"FFULL"  => 236.25,	
-	"GFULL"  => 236.25
+	"1/ 2FULL" => 562.50
 );
 
 $BILLING_NONMEMBER = array(
-	"A1B/W" => 55,
-	"A2B/W" => 55,
-	"B1B/W" => 75,
-	"CB/W" => 115,
-	"DB/W"  => 110,
-	"EB/W"  => 220,
-	"FB/W"  => 550,
-	"1/20B/W" => 55,
-	"1/15B/W" => 75,
-	"1/10B/W" => 110,
-	"1/5B/W" => 220,
-	"1/ 5B/W" => 220,
+	"1/20B/W" => 60,
+	"1/15B/W" => 80,
+	"1/10B/W" => 120,
+	"1/5B/W" => 250,
+	"1/ 5B/W" => 250,
 	"1/2B/W" => 550,
-	"A1FULL" => 75,
-	"A2FULL" => 75,
-	"B1FULL" => 110,
-	"B2FULL" => 110,
-	"DFULL"  => 150,
-	"1/20FULL" => 75,
-	"1/15FULL" => 110,
+	"1/ 2B/W" => 550,
+	"1/20FULL" => 85,
+	"1/15FULL" => 100,
 	"1/10FULL"  => 150,
 	"1/5FULL" => 300,
 	"1/ 5FULL" => 300,
 	"1/2FULL" => 750,
-	"EFULL"  => 300,
-	"FFULL"  => 750,
-	"CFULL"  => 135
+	"1/ 2FULL" => 750
 );
 
 if (isset($_POST['cardnos'])){
@@ -83,6 +54,7 @@ if (isset($_POST['cardnos'])){
 		<i>Summary of charges</i><br />
 		<table cellspacing=0 cellpadding=3 border=1>
 		<tr><th>Account</th><th>Charge</th><th>Receipt #</th></tr>";
+	$sql->query("use $FANNIE_TRANS_DB");
 	foreach($_POST['cardnos'] as $cardno){
 		$amt = $_POST['billable'.$cardno];
 		$transQ = "SELECT MAX(trans_no) FROM dtransactions
@@ -91,16 +63,18 @@ if (isset($_POST['cardnos'])){
 		$t_no = array_pop($sql->fetch_array($transR));
 		if ($t_no == "") $t_no = 1;
 		else $t_no++;
+		$desc = isset($_POST['desc'.$cardno]) ? $_POST['desc'.$cardno] : '';
+		$desc = substr($desc,0,24);
 
 		$insQ = "INSERT INTO dtransactions VALUES (
-			getdate(),$LANE_NO,$EMP_NO,$t_no,
-			'{$amt}DP703','Gazette Ad','D','','',703,
+			now(),$LANE_NO,$EMP_NO,$t_no,
+			'{$amt}DP703','Gazette Ad {$desc}','D','','',703,
 			1.0,0,0,$amt,$amt,$amt,0,0,.0,.0,
 			0,0,0,NULL,0.0,0,0,.0,0,0,0,0,
 			0,'',$cardno,1)";
 		$amt *= -1;
 		$insQ2 = "INSERT INTO dtransactions VALUES (
-			getdate(),$LANE_NO,$EMP_NO,$t_no,
+			now(),$LANE_NO,$EMP_NO,$t_no,
 			0,'InStore Charges','T','MI',0,0,
 			0.0,0,0,.0,$amt,.0,0,0,.0,.0,
 			0,0,0,NULL,0.0,0,0,.0,0,0,0,0,
@@ -126,7 +100,6 @@ else if (isset($_POST['MAX_FILE_SIZE'])){
 		$data = csv_parser($line);
 
 		if (!isset($data[$PHONE])) continue;
-		if (!is_numeric($data[$PHONE][0])) continue;
 
 		$ph = $data[$PHONE];
 		if (strstr($ph," OR "))
@@ -138,13 +111,16 @@ else if (isset($_POST['MAX_FILE_SIZE'])){
 		if ($clr[0] == "B") $clr = "B/W";
 		elseif($clr == "COLOR") $clr = "FULL";
 
+		$desc = "($sz, ".($clr=="FULL" ? "color" : "b&w");
+		$desc .= ((substr($data[$MEMBER],0,3)=="YES") ? ', owner' : '').")";
+
 		$searchQ = "SELECT m.card_no,c.lastname FROM
 			meminfo as m left join custdata as c
 			on m.card_no=c.cardno and c.personnum=1
 			left join suspensions as s on
 			m.card_no = s.cardno
 			WHERE (c.memtype = 2 or s.memtype1 = 2)
-			and (m.phone='$ph' OR m.email_2='$ph'
+			and (m.phone='$ph' OR m.email_1='$ph' OR m.email_2='$ph'
 			or c.lastname=$cn)";
 		$searchR = $sql->query($searchQ);
 
@@ -155,7 +131,7 @@ else if (isset($_POST['MAX_FILE_SIZE'])){
 				on m.card_no=c.cardno and c.personnum=1
 				WHERE c.memtype = 2
 				AND c.lastname like '$tmp[0]%' and
-				(m.phone='$ph' OR m.email_2='$ph')";
+				(m.phone='$ph' OR m.email_1='$ph' OR m.email_2='$ph')";
 			$searchR = $sql->query($searchQ);
 		}
 		
@@ -173,6 +149,7 @@ else if (isset($_POST['MAX_FILE_SIZE'])){
 			printf("<tr><td>%d</td><td>%s</td>
 				<td>%s %s (%s)</td><td><input type=text 
 				size=5 name=billable%d value=%.2f /></td></tr>
+				<input type=hidden name=desc%d value=\"%s\" />
 				<input type=hidden name=cardnos[] value=%d />",
 				$row[0],$row[1],$data[$SIZE],
 				$data[$COLOR],
@@ -182,8 +159,10 @@ else if (isset($_POST['MAX_FILE_SIZE'])){
 				(substr($data[$MEMBER],0,3)=="YES")?
 				$BILLING_NONMEMBER[$sz.$clr]*0.75:
 				$BILLING_NONMEMBER[$sz.$clr],
-				$row[0]);
-			if (!isset($BILLING_NONMEMBER[$sz.$clr])) var_dump($sz.$clr);
+				$row[0],$desc,$row[0]);
+			if (!isset($BILLING_NONMEMBER[$sz.$clr])){
+				var_dump($sz.$clr);
+			}
 		}
 	}
 	echo "</table>";

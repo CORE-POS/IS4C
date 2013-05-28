@@ -3,7 +3,7 @@ include('../../config.php');
 
 if (!class_exists("SQLManager")) require_once($FANNIE_ROOT."src/SQLManager.php");
 include('../db.php');
-$mysql = new SQLManager('mysql.wfco-op.store','MYSQL','payroll1','root');
+$sql->query("use is4c_trans");
 
 /* delete is easy
  * just delete from staffID and staffAR
@@ -12,7 +12,7 @@ if (isset($_POST['remove'])){
 	$cardno = $_POST['cardno'];
 	$delQ = "delete from staffID where cardno=$cardno";
 	$delR = $sql->query($delQ);
-	$delQ = "delete from staffAR where cardno=$cardno";
+	$delQ = "delete from staffAR where cardNo=$cardno";
 	$delQ = $sql->query($delQ);
 	echo "Member #$cardno removed from staff AR<p />";
 }
@@ -26,48 +26,19 @@ if (isset($_POST['remove'])){
 if (isset($_POST['add'])){
 	$cardno = $_POST['cardno'];
 	
-	$namesQ = "select firstname,lastname from custdata where cardno=$cardno and personnum=1";
+	$namesQ = "select FirstName,LastName from is4c_op.custdata where CardNo=$cardno and personNum=1";
 	$namesR = $sql->query($namesQ);
 	$namesW = $sql->fetch_array($namesR);
 	$fname = $namesW[0];
 	$lname = $namesW[1];
 	
-	$findQ = "select adpID from employees where lastName='$lname'";
-	//$mysql->select_db('payroll1');
-	$findR = $mysql->query($findQ);
-	switch($mysql->num_rows($findR)){
-	case 0: // no employee found with that first & last name
-		echo "Enter the employee's ADP ID#<br />";
-		echo "<form method=post action=staffARmanager.php>";
-		echo "<input type=text name=adpID value=100 /> ";
-		echo "<input type=submit value=Submit />";
-		echo "<input type=hidden name=cardno value=$cardno />";
-		echo "</form>";
-		return; // not done adding yet
-		break;
-	case 1: // one employee found - use that adp id
-		$findW = $mysql->fetch_array($findR);
-		$adpID = '10'.$findW[0];
-		$insQ = "insert into staffID values ($cardno,$adpID,1)";
-		$insR = $sql->query($insQ);
-		balance($cardno);
-		echo "Member #$cardno added to staff AR";
-		break;
-	default: // more than 1 found - offer a choice amongst the
-			// adp ids (or none of them)
-		echo "Which of these adpIDs is correct?<br />";
-		echo "<form method=post action=staffARmanager.php>";
-		echo "<select name=adpID>";
-		while ($findW = $mysql->fetch_array($findR))
-			echo "<option>10".$findW[0]."</option>";
-		echo "<option>None of these</option>";
-		echo "</select> ";
-		echo "<input type=submit value=Submit />";
-		echo "<input type=hidden name=cardno value=$cardno />";
-		echo "</form>";
-		return; // not done adding so don't display main form'
-		break;
-	}
+	echo "Enter the employee's ADP ID#<br />";
+	echo "<form method=post action=staffARmanager.php>";
+	echo "<input type=text name=adpID value=100 /> ";
+	echo "<input type=submit value=Submit />";
+	echo "<input type=hidden name=cardno value=$cardno />";
+	echo "</form>";
+	return; // not done adding yet
 }
 /* adp id wasn't found, so a form of
  * some kind was submitted to fill it in
@@ -98,13 +69,13 @@ if (isset($_POST['add'])){
 // add the correct balance for the cardno to staffAR
 function balance($cardno){
 	global $sql;
-	$balanceQ = "INSERT INTO staffAR
+	$balanceQ = "INSERT INTO staffAR (cardNo, lastName, firstName, adjust)
                  	SELECT
-                 	cardno,
-                 	lastname,
-                 	firstname,
-                 	balance as Ending_Balance
-                 	from custdata where cardno=$cardno and personnum=1";
+                 	CardNo,
+                 	LastName,
+                 	FirstName,
+                 	Balance as Ending_Balance
+                 	from is4c_op.custdata where CardNo=$cardno and personNum=1";
 	$balanceR = $sql->query($balanceQ);
 }
 

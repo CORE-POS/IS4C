@@ -1,0 +1,44 @@
+<html>
+<head>
+	<title>POS Module API</title>
+</head>
+<body>
+<div style="text-align:center;">
+<h1>POS Module API</h1>
+<!--
+10Apr13 AT Added Receipt Building section
+14Feb13 AT Doc first written
+-->
+<br />as of: April 10, 2013
+</div>
+<p>
+POS is designed to be altered and extended via the use of modules.
+The structure is object oriented so modules are classes and they
+are discovered via the parent class(es) they inherit from. This document
+describes the modules that are available.
+</p>
+<ul>
+<li><b>Prerequisites</b>:
+	<ul>
+	<li><a href="autoloader.html">The AutoLoader</a></li>
+	</ul>
+</li>
+<li><b>Available Modules</b>:
+	<ul>
+	<li><a href="kicker.html">Kicker</a></li>
+	<li><a href="productsearch.html">ProductSearch</a></li>
+	<li><a href="specialdept.html">SpecialDept</a></li>
+	<li><a href="tenderreport.html">TenderReport</a></li>
+	<li>Receipt Building<ol>
+		<li><a href="receipt/fetch.html">DefaultReceiptDataFetch</a></li>
+		<li><a href="receipt/filter.html">DefaultReceiptFilter</a></li>
+		<li><a href="receipt/sort.html">DefaultReceiptSort</a></li>
+		<li><a href="receipt/tag.html">DefaultReceiptTag</a></li>
+		<li><a href="receipt/format.html">DefaultReceiptFormat</a></li>
+	</ol></li>
+	</ul>
+</li>
+</ul>
+
+</body>
+</html>

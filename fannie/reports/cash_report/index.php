@@ -47,20 +47,21 @@ Enter an employee number<br />
 /*
 first get the data from the database
 */
-include('../../src/mysql_connect.php');
+include('../../src/trans_connect.php');
 
 $emp_no = $_GET['emp_no'];
 
 $query = "";
+$args = array();
 if($emp_no==""){
 $query = "select
           emp_no,
           ".$dbc->weekdiff($dbc->now(),'proc_date')." as week,
           year(proc_date) as year,
 	  SUM(Rings) / count(emp_no) as rings,
-	  CONVERT(int,SUM(items)) / count(emp_no) as items,
+	  ".$dbc->convert('SUM(items)','int')." / count(emp_no) as items,
 	  COUNT(Rings) / count(emp_no) as Trans,
-	  SUM(CASE WHEN transinterval = 0 then 1 else transinterval END) / count(emp_no)  / 60 as minutes,
+	  SUM(CASE WHEN transinterval = 0 then 1 when transinterval > 600 then 600 else transinterval END) / count(emp_no)  / 60 as minutes,
 	  SUM(Cancels) / count(emp_no) as cancels,
 	  MIN(proc_date)
 	  from CashPerformDay_cache
@@ -73,17 +74,18 @@ $query = "select
           ".$dbc->weekdiff($dbc->now(),'proc_date')." as week,
           year(proc_date) as year,
           SUM(Rings) as rings,
-          CONVERT(int,SUM(items)) as items,
+	  ".$dbc->convert('SUM(items)','int')." as items,
           COUNT(*) as TRANS,
-          SUM(CASE WHEN transInterval = 0 THEN 1 ELSE transInterval END)/60 as minutes,
+          SUM(CASE WHEN transInterval = 0 THEN 1 when transInterval > 600 then 600 ELSE transInterval END)/60 as minutes,
           SUM(cancels)as cancels,
           MIN(proc_date)
           FROM CashPerformDay_cache
-          WHERE emp_no = $emp_no
+          WHERE emp_no = ?
 	  GROUP BY emp_no,".$dbc->weekdiff($dbc->now(),'proc_date').",year(proc_date)
 	  ORDER BY year(proc_date) desc,".$dbc->weekdiff($dbc->now(),'proc_date')." asc";
+$args = array($emp_no);
 }
-$result = $dbc->query($query);
+$result = $dbc->exec_statement($query,$args);
 
 $rpm = array(); // rings per minute
 $ipm = array(); // items per minute

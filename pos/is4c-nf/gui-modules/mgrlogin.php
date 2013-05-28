@@ -21,30 +21,22 @@
 
 *********************************************************************************/
 
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
-
 ini_set('display_errors','1');
 
-if (!class_exists("NoInputPage")) include_once($CORE_PATH."gui-class-lib/NoInputPage.php");
-if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
-if (!function_exists("array_to_json")) include($CORE_PATH."lib/array_to_json.php");
-if (!function_exists("pDataConnect")) include($CORE_PATH."lib/connect.php");
-if (!function_exists("udpSend")) include($CORE_PATH."lib/udpSend.php");
+include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class mgrlogin extends NoInputPage {
 
 	function preprocess(){
 		if (isset($_REQUEST['input'])){
 			$arr = $this->mgrauthenticate($_REQUEST['input']);
-			echo array_to_json($arr);
+			echo JsonLib::array_to_json($arr);
 			return False;
 		}
 		return True;
 	}
 
 	function head_content(){
-		global $CORE_PATH;
 		?>
 		<script type="text/javascript">
 		function submitWrapper(){
@@ -56,22 +48,21 @@ class mgrlogin extends NoInputPage {
 				cache: false,
 				dataType: 'json',
 				error: function(data,st,xmlro){
-					alert(st);
 				},
 				success: function(data){
 					if (data.cancelOrder){
 						$.ajax({
-							url: '<?php echo $CORE_PATH; ?>ajax-callbacks/ajax-end.php',
+							url: '<?php echo $this->page_url; ?>ajax-callbacks/ajax-end.php',
 							type: 'get',
 							data: 'receiptType=cancelled',
 							cache: false,
 							success: function(data2){
-								location = '<?php echo $CORE_PATH; ?>gui-modules/pos2.php';
+								location = '<?php echo $this->page_url; ?>gui-modules/pos2.php';
 							}
 						});
 					}
 					else if (data.giveUp){
-						location = '<?php echo $CORE_PATH; ?>gui-modules/pos2.php';
+						location = '<?php echo $this->page_url; ?>gui-modules/pos2.php';
 					}
 					else {
 						$('div.colored').css('background',data.color);
@@ -86,6 +77,7 @@ class mgrlogin extends NoInputPage {
 		}
 		</script>
 		<?php
+		$this->default_parsewrapper_js();
 	}
 
 	function body_content(){
@@ -96,15 +88,16 @@ class mgrlogin extends NoInputPage {
 		<div class="baseHeight">
 		<div class="colored centeredDisplay" <?php echo $style; ?>>
 		<span class="larger">
-		confirm cancellation
+		<?php echo _("confirm cancellation"); ?>
 		</span><br />
-		<form name="form" method="post" autocomplete="off" onsubmit="return submitWrapper();">
+		<form name="form" id="formlocal" method="post" 
+			autocomplete="off" onsubmit="return submitWrapper();">
 		<input type="password" name="reginput" tabindex="0" 
 			onblur="$('#reginput').focus();" id="reginput" />
 		</form>
-		<p />
-		<span id="localmsg">please enter manager password</span>
-		<p />
+		<p>
+		<span id="localmsg"><?php echo _("please enter manager password"); ?></span>
+		</p>
 		</div>
 		</div>
 		<?php
@@ -118,8 +111,8 @@ class mgrlogin extends NoInputPage {
 		$ret = array(
 			'cancelOrder'=>false,
 			'color'=>'#800000',
-			'msg'=>'password invalid',
-			'heading'=>'re-enter manager password',
+			'msg'=>_('password invalid'),
+			'heading'=>_('re-enter manager password'),
 			'giveUp'=>false
 		);
 
@@ -137,8 +130,9 @@ class mgrlogin extends NoInputPage {
 			return $ret;
 		}
 
-		$db = pDataConnect();
-		$query = "select emp_no, FirstName, LastName from employees where EmpActive = 1 and frontendsecurity >= 11 "
+		$db = Database::pDataConnect();
+		$priv = sprintf("%d",$CORE_LOCAL->get("SecurityCancel"));
+		$query = "select emp_no, FirstName, LastName from employees where EmpActive = 1 and frontendsecurity >= $priv "
 		."and (CashierPassword = ".$password." or AdminPassword = ".$password.")";
 		$result = $db->query($query);
 		$num_rows = $db->num_rows($result);
@@ -147,7 +141,6 @@ class mgrlogin extends NoInputPage {
 			$this->cancelorder();
 			$ret['cancelOrder'] = true;
 		}
-		$db->close();
 
 		return $ret;
 	}
@@ -156,9 +149,9 @@ class mgrlogin extends NoInputPage {
 		global $CORE_LOCAL;
 
 		$CORE_LOCAL->set("msg",2);
-		$CORE_LOCAL->set("plainmsg","transaction cancelled");
+		$CORE_LOCAL->set("plainmsg",_("transaction cancelled"));
 		$CORE_LOCAL->set("beep","rePoll");
-		udpSend("rePoll");
+		UdpComm::udpSend("rePoll");
 		$CORE_LOCAL->set("ccTermOut","reset");
 		$CORE_LOCAL->set("receiptType","cancelled");
 	}

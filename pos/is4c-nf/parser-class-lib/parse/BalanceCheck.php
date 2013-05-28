@@ -20,13 +20,6 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
-
-if (!class_exists("Parser")) include_once($CORE_PATH."parser-class-lib/Parser.php");
-if (!function_exists("boxMsg")) include_once($CORE_PATH."lib/drawscreen.php");
-if (!function_exists("chargeOK")) include_once($CORE_PATH."lib/prehkeys.php");
-if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
 
 class BalanceCheck extends Parser {
 	function check($str){
@@ -38,9 +31,11 @@ class BalanceCheck extends Parser {
 	function parse($str){
 		global $CORE_LOCAL;
 		$ret = $this->default_json();
-		chargeOK();
+		PrehLib::chargeOk();
 		$memChargeCommitted=$CORE_LOCAL->get("availBal") - $CORE_LOCAL->get("memChargeTotal");
-		$ret['output'] = boxMsg("Member #". $CORE_LOCAL->get("memberID")."<br />Current AR balance is " . $CORE_LOCAL->get("balance") . "<br />Available AR balance is ".$CORE_LOCAL->get("availBal"). "</b>","",True);
+		$ret['output'] = DisplayLib::boxMsg(_("Member")." #". $CORE_LOCAL->get("memberID")."<br />".
+					_("Current AR balance is")." " . $CORE_LOCAL->get("balance") . "<br />".
+					_("Available AR balance is")." ".$CORE_LOCAL->get("availBal"). "</b>","",True);
 		return $ret;
 	}
 

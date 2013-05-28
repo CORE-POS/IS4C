@@ -20,6 +20,56 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
+
+
+/* --FUNCTIONALITY- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+	* 17Oct2012 Eric Lee noted:
+	*  This is meant to be called by ../management/index.php, which base64_encode()'s fn.
+
+*/
+
+/* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+	* 17Oct2012 Eric Lee Add comments, error checks.
+	*            Add checkBase64Encoded().
+	*            Test for base64_encoded and if not use urldecode() instead.
+	*            Add window.close() button.
+
+*/
+
+/**
+ * Check a string of base64 encoded data to make sure it has actually
+ * been encoded.
+ *
+ * @param $encodedString string Base64 encoded string to validate.
+ * @return Boolean Returns true when the given string only contains
+ * base64 characters; returns false if there is even one non-base64 character.
+ *
+ * Source: http://ca3.php.net/manual/en/function.base64-decode.php
+ */
+function checkBase64Encoded($encodedString) {
+	$length = strlen($encodedString);
+ 
+	// Check every character.
+	for ($i = 0; $i < $length; ++$i) {
+		$c = $encodedString[$i];
+		if (
+			($c < '0' || $c > '9')
+			&& ($c < 'a' || $c > 'z')
+			&& ($c < 'A' || $c > 'Z')
+			&& ($c != '+')
+			&& ($c != '/')
+			&& ($c != '=')
+		) {
+			// Bad character found.
+			return false;
+		}
+	}
+	// Only good characters found.
+	return true;
+}
+
 include('../../config.php');
 
 $fn = isset($_REQUEST['fn'])?$_REQUEST['fn']:'';
@@ -28,9 +78,23 @@ if ($fn == ''){
 	exit;
 }
 
-$fn = $FANNIE_ROOT.'cron/'.base64_decode($fn);
+if ( checkBase64Encoded($fn) ) {
+	$fn = $FANNIE_ROOT.'cron/'.base64_decode($fn);
+} else {
+	$fn = $FANNIE_ROOT.'cron/'.urldecode($fn);
+}
+if ( ! file_exists($fn) ){
+	echo "File: >${fn}< does not exist.";
+	exit;
+}
 
+// Read the file into a string.
 $data = file_get_contents($fn);
+/* Parse into an array ($tokens) of arrays($t), one for each token where:
+ * $t[0] the kind of token, e.g. T_COMMENT
+ * $t[1] the content of the token, e.g. the entire comment.
+ * $t[2] the line number in the file
+*/
 $tokens = token_get_all($data);
 $doc = "";
 foreach($tokens as $t){
@@ -47,8 +111,9 @@ echo "<pre>";
 if (!empty($doc))
 	echo $doc;
 else
-	echo "Sorry, no documentation for this script";
+	echo "Sorry, no documentation for this script: >{$fn}<";
 echo "</pre>";
+echo "<p><button onclick='window.close();'>Close Window</button></p>";
 echo "</body></html>";
 
 ?>

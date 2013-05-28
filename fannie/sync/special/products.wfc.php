@@ -25,7 +25,7 @@
 //$dbc->query("exec productsUpdateAll");
 
 // Run DTS to export server data to a CSV file
-$dbc->query("exec master..xp_cmdshell 'dtsrun /S IS4CSERV\IS4CSERV /U $FANNIE_SERVER_USER /P $FANNIE_SERVER_PW /N CSV_products',no_output",$FANNIE_OP_DB);
+//$dbc->query("exec master..xp_cmdshell 'dtsrun /S IS4CSERV\IS4CSERV /U $FANNIE_SERVER_USER /P $FANNIE_SERVER_PW /N CSV_products',no_output",$FANNIE_OP_DB);
 
 // on each MySQL lane, load the CSV file
 foreach($FANNIE_LANES as $lane){
@@ -38,7 +38,7 @@ foreach($FANNIE_LANES as $lane){
 
 		if (!is_readable('/pos/csvs/products.csv')) break;
 		
-		$dbc->query("TRUNCATE TABLE Products",$lane['op']);
+		$dbc->query("TRUNCATE TABLE products",$lane['op']);
 
 		$dbc->query("LOAD DATA LOCAL INFILE '/pos/csvs/products.csv' INTO TABLE
 			products FIELDS TERMINATED BY ',' OPTIONALLY

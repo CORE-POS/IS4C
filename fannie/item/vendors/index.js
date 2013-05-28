@@ -30,7 +30,6 @@ function saveScript(vID){
 	$.ajax({
 		url: 'ajax.php',
 		type: 'POST',
-		dataType: 'text/html',
 		timeout: 1000,
 		data: 'vid='+vID+'&script='+scriptName+'&action=saveScript',
 		error: function(){
@@ -61,9 +60,8 @@ function vendorchange(){
 	}
 
 	$.ajax({
-		url: 'ajax.php',
+		url: 'VendorIndexPage.php',
 		type: 'POST',
-		dataType: 'text/html',
 		timeout: 1000,
 		data: 'vid='+vID+'&action=vendorDisplay',
 		error: function(){
@@ -78,16 +76,15 @@ function vendorchange(){
 function newvendor(){
 	var name = $('#newname').val();
 	$.ajax({
-		url: 'ajax.php',
+		url: 'VendorIndexPage.php',
 		type: 'POST',
-		dataType: 'text/html',
 		timeout: 1000,
 		data: 'name='+name+'&action=newVendor',
 		error: function(){
 		alert('Error loading XML document');
 		},
 		success: function(resp){
-			top.location='index.php?vid='+resp;
+			top.location='VendorIndexPage.php?vid='+resp;
 		}
 	});
 }

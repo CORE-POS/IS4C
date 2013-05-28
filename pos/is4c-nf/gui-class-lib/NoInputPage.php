@@ -21,51 +21,58 @@
 
 *********************************************************************************/
 
-/* NoInputPage
- * 
- * Automatically add the header w/o input box
+/** @class NoInputPage
+
+    This class automatically adds the header and
+    and footer, but the header does not contain
+    an input form.
+
+    Normally pages using this class will define
+    their own form in body_content().
  */
-
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
-
-if (!class_exists('BasicPage')) include($CORE_PATH.'gui-class-lib/BasicPage.php');
-if (!function_exists('printfooter')) include($CORE_PATH.'lib/drawscreen.php');
 
 class NoInputPage extends BasicPage {
 
 	function print_page(){
-		global $CORE_PATH;
+		$my_url = $this->page_url;
 		?>
-		<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+		<!DOCTYPE html>
 		<html>
 		<?php
 		echo "<head>";
+		// 18Aug12 EL Add content/charset.
+		echo "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" />\n";
 		echo "<link rel=\"stylesheet\" type=\"text/css\"
-		    href=\"{$CORE_PATH}pos.css\">";
+		    href=\"{$my_url}css/pos.css\">";
+		// include store css file if it exists
+		if (file_exists(dirname(__FILE__).'/../store.css')){
+			echo "<link rel=\"stylesheet\" type=\"text/css\"
+			    href=\"{$my_url}/store.css\">";
+		}
 		echo "<script type=\"text/javascript\"
-			src=\"{$CORE_PATH}js/jquery.js\"></script>";
+			src=\"{$my_url}js/jquery.js\"></script>";
 		$this->head_content();
 		echo "</head>";
 		echo "<body>";
 		echo "<div id=\"boundingBox\">";
 		$this->noinput_header();
-		echo printheaderb();
+		echo DisplayLib::printheaderb();
 		$this->body_content();	
 		echo "<div id=\"footer\">";
-		echo printfooter();
+		echo DisplayLib::printfooter();
 		echo "</div>";
 		echo "</div>";
 		$this->scale_box();
 		$this->scanner_scale_polling(false);
-		echo "</body>";
 		if (!empty($this->onload_commands)){
-			echo "<script type=\"text/javascript\">\n";
+			echo "\n<script type=\"text/javascript\">\n";
 			echo "\$(document).ready(function(){\n";
 			echo $this->onload_commands;
 			echo "});\n";
 			echo "</script>\n";
 		}
+		// 18Aug12 EL Moved after ready-script.
+		echo "</body>\n";
 		print "</html>";
 	}
 

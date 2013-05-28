@@ -24,6 +24,8 @@ include('../config.php');
 include($FANNIE_ROOT.'src/mysql_connect.php');
 include($FANNIE_ROOT.'src/tmp_dir.php');
 
+$TRANS = ($FANNIE_SERVER_DBMS == "MSSQL") ? $FANNIE_TRANS_DB.".dbo." : $FANNIE_TRANS_DB.".";
+
 include($FANNIE_ROOT.'auth/login.php');
 $username = checkLogin();
 if (!$username){
@@ -32,6 +34,7 @@ if (!$username){
 	header("Location: $url?redirect=$rd");
 	exit;
 }
+
 
 $cachepath = sys_get_temp_dir()."/ordercache/";
 
@@ -62,7 +65,16 @@ echo '<html>
 	<script type="text/javascript" src="'.$FANNIE_URL.'src/jquery/js/jquery-ui-1.8.1.custom.min.js">
 	</script>
 	</head>
-	<body>';
+	<body id="bodytag">';
+echo '<h3>'.$header.'</h3>';
+if (isset($_REQUEST['card_no'])){
+	printf('(<a href="clearinghouse.php?f1=%s&f2=%s&f3=%s&order=%s">Back to All Owners</a>)<br />',
+		(isset($_REQUEST['f1'])?$_REQUEST['f1']:''),	
+		(isset($_REQUEST['f2'])?$_REQUEST['f2']:''),	
+		(isset($_REQUEST['f3'])?$_REQUEST['f3']:''),	
+		(isset($_REQUEST['order'])?$_REQUEST['order']:'')
+	);
+}
 
 $status = array(
 	0 => "New, No Call",
@@ -82,7 +94,7 @@ while($w = $dbc->fetch_row($r))
 unset($assignments[0]); 
 
 $suppliers = array('');
-$q = "SELECT mixMatch FROM PendingSpecialOrder WHERE trans_type='I'
+$q = "SELECT mixMatch FROM {$TRANS}PendingSpecialOrder WHERE trans_type='I'
 	GROUP BY mixMatch ORDER BY mixMatch";
 $r = $dbc->query($q);
 while($w = $dbc->fetch_row($r)){
@@ -152,12 +164,13 @@ else $order = 'min(datetime)';
 $q = "SELECT min(datetime) as orderDate,p.order_id,sum(total) as value,
 	count(*)-1 as items,status_flag,sub_status,
 	CASE WHEN MAX(p.card_no)=0 THEN MAX(t.last_name) ELSE MAX(c.LastName) END as name,
-	MIN(CASE WHEN trans_type='I' THEN charflag ELSE 'ZZZZ' END) as charflag
-	FROM PendingSpecialOrder as p
-	LEFT JOIN SpecialOrderStatus as s ON p.order_id=s.order_id
-	LEFT JOIN SpecialOrderNotes as n ON n.order_id=p.order_id
+	MIN(CASE WHEN trans_type='I' THEN charflag ELSE 'ZZZZ' END) as charflag,
+	MAX(p.card_no) AS card_no
+	FROM {$TRANS}PendingSpecialOrder as p
+	LEFT JOIN {$TRANS}SpecialOrderStatus as s ON p.order_id=s.order_id
+	LEFT JOIN {$TRANS}SpecialOrderNotes as n ON n.order_id=p.order_id
 	LEFT JOIN custdata AS c ON c.CardNo=p.card_no AND personNum=p.voided
-	LEFT JOIN SpecialOrderContact as t on t.card_no=p.order_id
+	LEFT JOIN {$TRANS}SpecialOrderContact as t on t.card_no=p.order_id
 	$filterstring
 	GROUP BY p.order_id,status_flag,sub_status
 	HAVING count(*) > 1 OR
@@ -175,9 +188,9 @@ while($w = $dbc->fetch_row($r)){
 if ($f2 !== '' || $f3 !== ''){
 	$filter2 = ($f2!==''?sprintf("AND (m.superID IN (%s) OR n.superID IN (%s))",$f2,$f2):'');
 	$filter3 = ($f3!==''?sprintf("AND p.mixMatch=%s",$dbc->escape($f3)):'');
-	$q = "SELECT p.order_id FROM PendingSpecialOrder AS p
+	$q = "SELECT p.order_id FROM {$TRANS}PendingSpecialOrder AS p
 		LEFT JOIN MasterSuperDepts AS m ON p.department=m.dept_ID
-		LEFT JOIN SpecialOrderNotes AS n ON p.order_id=n.order_id
+		LEFT JOIN {$TRANS}SpecialOrderNotes AS n ON p.order_id=n.order_id
 		WHERE 1=1 $filter2 $filter3
 		GROUP BY p.order_id";
 	$r = $dbc->query($q);
@@ -186,8 +199,8 @@ if ($f2 !== '' || $f3 !== ''){
 		$valid_ids[$w['order_id']] = True;
 
 	if ($f2 !== '' && $f3 === ''){
-		$q2 = sprintf("SELECT s.order_id FROM SpecialOrderNotes AS s
-				INNER JOIN PendingSpecialOrder AS p
+		$q2 = sprintf("SELECT s.order_id FROM {$TRANS}SpecialOrderNotes AS s
+				INNER JOIN {$TRANS}PendingSpecialOrder AS p
 				ON p.order_id=s.order_id
 				WHERE s.superID IN (%s)
 				GROUP BY s.order_id",$f2);
@@ -202,7 +215,8 @@ foreach($valid_ids as $id=>$nonsense)
 	$oids .= $id.",";
 $oids = rtrim($oids,",").")";
 
-$itemsQ = "SELECT order_id,description,mixMatch FROM PendingSpecialOrder WHERE order_id IN $oids
+if ($oids == '()') $oids = '(-1)';
+$itemsQ = "SELECT order_id,description,mixMatch FROM {$TRANS}PendingSpecialOrder WHERE order_id IN $oids
 	AND trans_id > 0";
 $itemsR = $dbc->query($itemsQ);
 $items = array();
@@ -270,14 +284,14 @@ foreach($orders as $w){
 	if (!isset($valid_ids[$w['order_id']])) continue;
 
 	$ret .= sprintf('<tr class="%s"><td><a href="view.php?orderID=%d&k=%s">%s</a></td>
-		<td>%s</td>
+		<td><a href="" onclick="applyMemNum(%d);return false;">%s</a></td>
 		<td style="font-size:75%%;">%s</td>
 		<td style="font-size:75%%;">%s</td>
 		<td align=center>%d (%.2f)</td>',
 		($w['charflag']=='P'?'arrived':'notarrived'),
 		$w['order_id'],$key,
 		array_shift(explode(' ',$w['orderDate'])),
-		$w['name'],
+		$w['card_no'],$w['name'],
 		(isset($items[$w['order_id']])?$items[$w['order_id']]:'&nbsp;'),
 		(isset($suppliers[$w['order_id']])?$suppliers[$w['order_id']]:'&nbsp;'),
 		$w['items'],$w['value']);
@@ -316,6 +330,12 @@ function refilter(){
 }
 function resort(o){
 	$('#orderSetting').val(o);
+	refilter();
+}
+function applyMemNum(n){
+	if ($('#cardno').length==0)	
+		$('#bodytag').append('<input type="hidden" id="cardno" />');
+	$('#cardno').val(n);
 	refilter();
 }
 function updateStatus(oid,val){

@@ -17,32 +17,37 @@ if(!validateUserQuiet('staffar')){
    <div id=main><?php
    echo "<a href=\"{$FANNIE_URL}auth/ui/loginform.php?redirect={$FANNIE_URL}legacy/members/staffAR.php\">Click here</a> to login<p />";
 }else{
+
+  $sql->query("use is4c_trans");
+
   if(isset($_POST['recalc'])){
     $truncQ = "TRUNCATE TABLE staffAR";
     $truncR = $sql->query($truncQ);
 
     $query = "SELECT
-              c.cardno,
-              c.lastname,
-              c.firstname,
-              c.balance as Ending_Balance
-              FROM custdata as c, staffID as a WHERE a.cardno = c.cardno
-              AND (c.memType = 9 OR c.memType = 3)
-              and c.personnum = 1
-              order by c.lastname";
+              c.CardNo,
+              c.LastName,
+              c.FirstName,
+              n.balance as Ending_Balance
+              FROM is4c_op.custdata as c INNER JOIN staffID as a ON a.cardNo = c.CardNo
+	      LEFT JOIN ar_live_balance AS n ON c.CardNo=n.card_no
+              WHERE (c.memType = 9 OR c.memType = 3)
+              and c.personNum = 1
+              order by c.LastName";
 
       $result=$sql->query($query);
 
-      $insARQ = "INSERT INTO staffAR
-                 SELECT
-                 c.cardno,
-                 c.lastname,
-                 c.firstname,
-                 c.balance as Ending_Balance
-                 FROM custdata as c, staffID as a WHERE a.cardno = c.cardno
-                 AND (c.memType = 9 OR c.memType = 3)
-                 and c.personnum = 1
-                order by c.lastname";
+      $insARQ = "INSERT INTO staffAR (cardNo, lastName, firstName, adjust)
+	      SELECT
+              c.CardNo,
+              c.LastName,
+              c.FirstName,
+              n.balance as Ending_Balance
+              FROM is4c_op.custdata as c INNER JOIN staffID as a ON a.cardNo = c.CardNo
+	      LEFT JOIN ar_live_balance AS n ON c.CardNo=n.card_no
+              WHERE (c.memType = 9 OR c.memType = 3)
+              and c.personNum = 1
+              order by c.LastName";
 
       $insARR = $sql->query($insARQ);
    }
@@ -74,18 +79,21 @@ if(!validateUserQuiet('staffar')){
       }
    }
    
-   $query = "SELECT * FROM staffAR order by lastName";
+   $query = "SELECT a.*,s.adpID FROM staffAR AS a LEFT JOIN
+	staffID AS s ON a.cardNo=s.cardno order by lastName";
    $result = $sql->query($query);
 
    echo "<form name=upStaffAR method=post action=staffAR.php>";
    echo "<table cellspacing=0 cellpadding=3>";
-   echo "<tr><th align=left>Mem#</th><th align=left>Lastname</th><th align=left>Firstname</th>";
+   echo "<tr><th align=left>Mem#</th><th align=left>ADP#</th><th align=left>Lastname</th><th align=left>Firstname</th>";
    echo "<th align=left>Current deduction</th><th align=left>Change deduction to</th></tr>";
    $sum = 0;
    $colors = array('#ffffff','#ffffaa');
    $c = 1;
    while($row = $sql->fetch_array($result)){
-      echo "<tr><td bgcolor=$colors[$c]>".$row['cardNo']."</td><td bgcolor=$colors[$c]>".$row['lastName']."</td>"
+      echo "<tr><td bgcolor=$colors[$c]>".$row['cardNo']."</td>"
+	  ."<td bgcolor=$colors[$c]>".$row['adpID']."</td>"
+	  ."<td bgcolor=$colors[$c]>".$row['lastName']."</td>"
 	  ."<td bgcolor=$colors[$c]>".$row['firstName']."</td>"
           ."<td bgcolor=$colors[$c]>".trim($row['adjust'])."</td>"
 	  ."<td bgcolor=$colors[$c]><input type=text name=".$row['cardNo']." value="

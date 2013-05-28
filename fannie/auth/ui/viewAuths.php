@@ -23,6 +23,7 @@
 
 require('../login.php');
 $path = guesspath();
+include($path."config.php");
 $page_title = 'Fannie : Auth : View Authorizations';
 $header = 'Fannie : Auth : View Authorizations';
 
@@ -38,7 +39,11 @@ if (isset($_POST['name'])){
 }
 echo "<p />";
 echo "<form action=viewAuths.php method=post>";
-echo "Username: <input type=text name=name> <input type=submit value=View>";
+echo "Username:<select name=name>";
+foreach(getUserList() as $uid => $name)
+	echo "<option>".$name."</option>";
+echo "</select>";
+echo '&nbsp;&nbsp;&nbsp;<input type="submit" value="View" />';
 echo "</form>";
 echo "<a href=menu.php>Main menu</a>";
 

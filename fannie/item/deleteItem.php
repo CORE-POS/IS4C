@@ -21,6 +21,7 @@
 
 *********************************************************************************/
 include('../config.php');
+require_once($FANNIE_ROOT.'classlib2.0/data/controllers/ProductsController.php');
 
 include($FANNIE_ROOT.'auth/login.php');
 $name = checkLogin();
@@ -49,7 +50,8 @@ if (isset($_REQUEST['upc']) && !isset($_REQUEST['deny'])){
 	$upc = str_pad($_REQUEST['upc'],13,'0',STR_PAD_LEFT);
 	
 	if (isset($_REQUEST['submit'])){
-		$rp = $dbc->query(sprintf("SELECT * FROM products WHERE upc=%s",$dbc->escape($upc)));
+		$p = $dbc->prepare_statement("SELECT * FROM products WHERE upc=?");
+		$rp = $dbc->exec_statement($p,array($upc));
 		if ($dbc->num_rows($rp) == 0){
 			printf("No item found for <b>%s</b><p />",$upc);
 			echo "<a href=\"deleteItem.php\">Go back</a>";
@@ -60,7 +62,7 @@ if (isset($_REQUEST['upc']) && !isset($_REQUEST['deny'])){
 			echo "<b>Delete this item?</b><br />";
 			echo "<table cellpadding=4 cellspacing=0 border=1>";
 			echo "<tr><th>UPC</th><th>Description</th><th>Price</th></tr>";
-			printf("<tr><td><a href=\"itemMain.php?upc=%s\" target=\"_new%s\">
+			printf("<tr><td><a href=\"ItemEditorPage.php?searchupc=%s\" target=\"_new%s\">
 				%s</a></td><td>%s</td><td>%.2f</td></tr>",$rw['upc'],
 				$rw['upc'],$rw['upc'],$rw['description'],$rw['normal_price']);
 			echo "</table><br />";
@@ -72,14 +74,12 @@ if (isset($_REQUEST['upc']) && !isset($_REQUEST['deny'])){
 	}
 	else if (isset($_REQUEST['confirm'])){
 		$plu = substr($upc,3,4);
-		$upc = $dbc->escape($upc);
-		$delQ = sprintf("DELETE FROM products WHERE upc=%s",$upc);
-		$dbc->query($delQ);
-		$delxQ = sprintf("DELETE FROM prodExtra WHERE upc=%s",$upc);
-		$dbc->query($delxQ);
+		ProductsController::delete($upc);
+		$delxQ = $dbc->prepare_statement("DELETE FROM prodExtra WHERE upc=?");
+		$dbc->exec_statement($delxQ,array($upc));
 		if ($dbc->table_exists("scaleItems")){
-			$scaleQ = sprintf("DELETE FROM scaleItems WHERE plu=%s",$upc);
-			$dbc->query($scaleQ);
+			$scaleQ = $dbc->prepare_statement("DELETE FROM scaleItems WHERE plu=?");
+			$dbc->exec_statement($scaleQ,array($upc));
 			include('hobartcsv/parse.php');
 			deleteitem($plu);
 		}

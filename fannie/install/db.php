@@ -31,29 +31,38 @@
 			   'op', 'trans', or 'arch'
 */
 function create_if_needed($con,$dbms,$db_name,$table_name,$stddb){
-	if ($con->table_exists($table_name,$db_name)) return;
+	$ret = array('db'=>$db_name,'struct'=>$table_name,'error'=>0,'error_msg'=>'');
+	if ($con->table_exists($table_name,$db_name)) return $ret;
 	
-	$fn = "sql/$stddb/$table_name.php";
+	$fn = dirname(__FILE__)."/sql/$stddb/$table_name.php";
 	if (!file_exists($fn)){
-		echo "<i>Error: no create file for $stddb.$table_name.
+		$ret['error_msg'] = "<i>Error: no create file for $stddb.$table_name.
 			File should be: $fn</i><br />";
-		return;
+		$ret['error'] = 1;
+		return $ret;
 	}
 
 	include($fn);
 	if (!isset($CREATE["$stddb.$table_name"])){
-		echo "<i>Error: file $fn doesn't have a valid \$CREATE</i><br />";
-		return;
+		$ret['error_msg'] = "<i>Error: file $fn doesn't have a valid \$CREATE</i><br />";
+		$ret['error'] = 2;
+		return $ret;
 	}
 
-	$con->query($CREATE["$stddb.$table_name"],$db_name);
+	$prep = $con->prepare_statement($CREATE["$stddb.$table_name"],$db_name);
+	$result = $con->exec_statement($prep,array(),$db_name);
+	if ($result === False){
+		$ret['error_msg'] = $con->error($db_name);
+		$ret['error'] = 3;
+	}
+	return $ret;
 }
 
 /* query to create another table with the same
 	columns
 */
 function duplicate_structure($dbms,$table1,$table2){
-	if ($dbms == "MYSQL"){
+	if (strstr($dbms,"MYSQL")){
 		return "CREATE TABLE `$table2` LIKE `$table1`";
 	}
 	elseif ($dbms == "MSSQL"){
@@ -102,6 +111,28 @@ function qualified_names(){
 		$ret["trans"] .= ".dbo";
 	}
 	return $ret;
+}
+
+function loaddata($sql, $table){
+	global $FANNIE_ROOT;
+	if (file_exists("{$FANNIE_ROOT}install/sample_data/$table.sql")){
+		$fp = fopen("{$FANNIE_ROOT}install/sample_data/$table.sql","r");
+		while($line = fgets($fp)){
+			$prep = $sql->prepare_statement("INSERT INTO $table VALUES $line");
+			$sql->exec_statement($prep);
+		}
+		fclose($fp);
+	}
+	else if (file_exists("{$FANNIE_ROOT}install/sample_data/$table.csv")){
+		$prep = $sql->prepare_statement("LOAD DATA LOCAL INFILE
+			'{$FANNIE_ROOT}install/sample_data/$table.csv'
+			INTO TABLE $table
+			FIELDS TERMINATED BY ','
+			ESCAPED BY '\\\\'
+			OPTIONALLY ENCLOSED BY '\"'
+			LINES TERMINATED BY '\\r\\n'");
+		$sql->exec_statement($prep);
+	}
 }
 
 ?>

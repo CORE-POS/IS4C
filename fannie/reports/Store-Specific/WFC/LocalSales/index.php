@@ -29,72 +29,105 @@ if (isset($_REQUEST['submit'])){
 	$d1 = $_REQUEST['date1'];
 	$d2 = $_REQUEST['date2'];
 
-	$dlog = select_dtrans($d1,$d2);
+	$dlog = select_dlog($d1,$d2);
 
 	if (isset($_REQUEST['excel'])){
-		header("Content-Disposition: inline; filename=customers_{$d1}_{$d2}.xls");
+		header("Content-Disposition: inline; filename=local_{$d1}_{$d2}.xls");
 		header("Content-type: application/vnd.ms-excel; name='excel'");
+		ob_start();
 	}
 	else{
 		printf("<a href=index.php?date1=%s&date2=%s&submit=yes&excel=yes>Save to Excel</a>",
 			$d1,$d2);
 	}
 
-	$sales = "SELECT t.department,d.dept_name,s.superID,n.super_name,
-			sum(case when numflag=1 then total else 0 end) as localSales,
+	$sales = $dbc->prepare_statement("SELECT t.department,d.dept_name,s.superID,n.super_name,
+			sum(case when numflag = 2 then total else 0 end) as localSales,
+			sum(case when numflag = 1 then total else 0 end) as scSales,
 			sum(total) as allSales
 			FROM $dlog as t inner join departments as d
 			ON t.department=d.dept_no LEFT JOIN 
 			MasterSuperDepts AS s ON s.dept_ID=t.department
 			LEFT JOIN superDeptNames AS n ON s.superID=n.superID
 			WHERE 
-			datetime BETWEEN '$d1 00:00:00' AND '$d2 23:59:59'
+			tdate BETWEEN ? AND ?
 			and trans_type = 'I'
 			and s.superID > 0
-			AND trans_status NOT IN ('X','Z')
-			AND emp_no <> 9999 and register_no <> 99
 			AND upc Not IN ('RRR','DISCOUNT')
 			group by t.department,d.dept_name,s.superID,n.super_name
-			order by s.superID,t.department";
-	//echo $sales;
-	$result = $dbc->query($sales);
+			order by s.superID,t.department");
+	$result = $dbc->exec_statement($sales,array($d1.' 00:00:00',$d2.' 23:59:59'));
 	$sID = -1;
 	$sname = "";
 	$sttl = 0;
 	$slocal = 0;
+	$sc = 0;
+	$master_totals = array(0,0,0);
 	echo '<table cellspacing="0" cellpadding="4" border="1">';
 	while($row = $dbc->fetch_row($result)){
 		if ($sID != $row['superID']){
 			if ($sID != -1){
 				printf('<tr><th>Ttl</th><th>%s</th>
-					<th>$%.2f</th><th>$%.2f</th>
-					<th>%.2f%%</th></tr>',
-					$sname,$slocal,$sttl,
-					100*($slocal/$sttl));
+					<th>$%.2f</th><th>%.2f%%</th>
+					<th>$%.2f</th><th>%.2f%%</th>
+					<th>$%.2f</th></tr>',
+					$sname,$slocal,100*($slocal/$sttl),
+					$sc,100*($sc/$sttl),$sttl);
 			}
+			printf('<tr><th colspan=2>%s</th><th>300mi</th><th>%%</th>
+				<th>SC</th><th>%%</th><th>Dept TTL</th></tr>',
+				(isset($_REQUEST['excel'])?'':'&nbsp;'));
 			$sID = $row['superID'];
 			$sname = $row['super_name'];
 			$sttl = 0;
 			$slocal = 0;
+			$sc = 0;
 		}
 		if ($row['allSales'] == 0) $row['allSales']=1; // no div by zero
 		printf('<tr><td>%d</td><td>%s</td><td>$%.2f</td>
-			<td>$%.2f</td><td>%.2f%%</td></tr>',
+			<td>%.2f%%</td><td>$%.2f</td>
+			<td>%.2f%%</td><td>$%.2f</td></tr>',
 			$row['department'],$row['dept_name'],
-			$row['localSales'],$row['allSales'],
-			100*($row['localSales']/$row['allSales'])
+			$row['localSales'],
+			100*($row['localSales']/$row['allSales']),
+			$row['scSales'],
+			100*($row['scSales']/$row['allSales']),
+			$row['allSales']
 		);
 		$slocal += $row['localSales'];
+		$sc += $row['scSales'];
 		$sttl += $row['allSales'];
+		$master_totals[0] += $row['localSales'];
+		$master_totals[1] += $row['scSales'];
+		$master_totals[2] += $row['allSales'];
 	}
 	printf('<tr><th>Ttl</th><th>%s</th>
-		<th>$%.2f</th><th>$%.2f</th>
-		<th>%.2f%%</th></tr>',
-		$sname,$slocal,$sttl,
-		100*($slocal/$sttl));
+		<th>$%.2f</th><th>%.2f%%</th>
+		<th>$%.2f</th><th>%.2f%%</th>
+		<th>$%.2f</th></tr>',
+		$sname,$slocal,100*($slocal/$sttl),
+		$sc,100*($sc/$sttl),$sttl);
+
+	printf('<tr><td colspan=7>&nbsp;</td></tr>
+		<tr><th>Ttl</th><th>Store</th>
+		<th>$%.2f</th><th>%.2f%%</th>
+		<th>$%.2f</th><th>%.2f%%</th>
+		<th>$%.2f</th></tr>',
+		$master_totals[0],100*($master_totals[0]/$master_totals[2]),
+		$master_totals[1],100*($master_totals[1]/$master_totals[2]),
+		$master_totals[2]);
 
 	echo '</table>';
 
+	if (isset($_REQUEST['excel'])){
+		include($FANNIE_ROOT.'src/ReportConvert/HtmlToArray.php');
+		include($FANNIE_ROOT.'src/ReportConvert/ArrayToXls.php');
+		$output = ob_get_contents();
+		ob_end_clean();
+		$array = HtmlToArray($output);
+		$xls = ArrayToXls($array);
+		echo $xls;
+	}
 			
 }
 else {

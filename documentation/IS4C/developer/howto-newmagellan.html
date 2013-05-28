@@ -3,6 +3,14 @@
 	<title>New Magellan</title>
 </head>
 <body>
+<!--
+.8Nov12 EL Link to another doc about NewMagellan.
+-->
+	<div style="text-align:center;margin-bottom:10px;font-size:80%;">
+	updated as of: November 8, 2012
+	<br />last author: Eric Lee
+	<br />original author: Andy Theuninck
+	</div>
 NewMagellan is one of the scale drivers included in this release.
 It works to connect IS4C to a Magellan scanner/scale, but it also
 serves as a base point for communicating with multiple external
@@ -32,9 +40,10 @@ a simple UDP server. All it does is listen (port 9450 by default) and
 pass any received messages to each driver. This way IS4C can send
 commands to devices directly without intermediary files.
 <p />
-The current version accepts command line input of messages, too. Writing
-an init script to background the process is left as an excercise for
-the sysadmin on linux (or when I get around to it). The windows version
+The current version accepts command line input of messages, too.
+Re an init script to background the process see
+<a href="howto-newmagellan-2.html" target="_blank">Installing NewMagellan Scanner/Scale Driver</a>
+The windows version
 compiles a second executable that can be registered as a windows service.
 <p />
 Win32 service notes: the port/driver configuration is hard-coded into

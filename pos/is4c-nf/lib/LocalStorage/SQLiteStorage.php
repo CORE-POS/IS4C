@@ -2,6 +2,14 @@
 
 if (!class_exists("LocalStorage")) include_once($_SESSION["INCLUDE_PATH"]."/lib/LocalStorage/LocalStorage.php");
 
+/**
+  @class SQLiteStorage
+  A LocalStorage implementation using SQLite
+
+  Mostly a sample of what an alternative might
+  look like. Performance is decidedly subpar.
+  Not recommended for production use.
+*/
 class SQLiteStorage extends LocalStorage {
 	var $db;
 	function SQLiteStorage(){
@@ -15,6 +23,8 @@ class SQLiteStorage extends LocalStorage {
 	}	
 
 	function get($key){
+		if ($this->is_immutable($key)) return $this->immutables[$key];
+
 		$row = sqlite_array_query("SELECT valstr FROM is4c_local WHERE keystr='$key'",$this->db);
 		if (!$row) return "";
 		$row = $row[0];
@@ -22,23 +32,28 @@ class SQLiteStorage extends LocalStorage {
 		else return $row[0];
 	}
 
-	function set($key,$val){
-		if (empty($val))
-			sqlite_query("DELETE FROM is4c_local WHERE keystr='$key'",$this->db);
+	function set($key,$val,$immutable=False){
+		if ($immutable)
+			$this->immutable_set($key,$val);
 		else {
-			if (is_array($val)){
-				$temp = "";
-				foreach($val as $v) $temp.=$v.chr(255);
-				$val = substr($temp,0,strlen($temp)-1);
+			if (empty($val))
+				sqlite_query("DELETE FROM is4c_local WHERE keystr='$key'",$this->db);
+			else {
+				if (is_array($val)){
+					$temp = "";
+					foreach($val as $v) $temp.=$v.chr(255);
+					$val = substr($temp,0,strlen($temp)-1);
+				}
+				$check = sqlite_query("SELECT valstr FROM is4c_local WHERE keystr='$key'",$this->db);
+				if (sqlite_num_rows($check) == 0){
+					//echo "INSERT INTO is4c_local VALUES ('$key','$val')";
+					sqlite_query("INSERT INTO is4c_local VALUES ('$key','$val')",$this->db);
+				}
+				else
+					sqlite_query("UPDATE is4c_local SET valstr='$val' WHERE keystr='$key'",$this->db);
 			}
-			$check = sqlite_query("SELECT valstr FROM is4c_local WHERE keystr='$key'",$this->db);
-			if (sqlite_num_rows($check) == 0){
-				//echo "INSERT INTO is4c_local VALUES ('$key','$val')";
-				sqlite_query("INSERT INTO is4c_local VALUES ('$key','$val')",$this->db);
-			}
-			else
-				sqlite_query("UPDATE is4c_local SET valstr='$val' WHERE keystr='$key'",$this->db);
 		}
+		$this->debug();
 	}
 
 	function conn(){

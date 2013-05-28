@@ -1,0 +1,36 @@
+<html>
+<head>
+	<title>Database Alteration System</title>
+</head>
+<body>
+	<div style="text-align:center;margin-bottom:10px;font-size:80%;">
+	updated as of: August 20, 2012<br />
+	last author: Andy Theuninck
+	</div>
+Occasionally a developer may wish to change an existing table
+or view. This has the potential to be more disruptive to other
+users, so the process is a bit different and requires confirmation
+rather than being automated.
+<p />
+Updates must be placed in the install/updates directory.
+Update files should be named with a date and time stamp -
+i.e., YYYYMMDDHHMMSS.php. This means they sort sensibly into
+chronological order.
+<p />
+The update file should contain a class named
+<b>update_YYYYMMDDHHMMSS</b> the extends the provided base
+class <b>UpdateObj</b> (class names can't start with a number).
+In most cases an update class will just define a few properties:
+<ul>
+<li> <i>$timestamp</i> should be the same YYYYMMDDHHMMSS date and time.
+<li> <i>$author</i> should say who you are
+<li> <i>$description</i> should explain what the update does.
+<li> <i>$queries</i> is the the actual update. It should contain 
+three entries with keys: <i>op</i>, <i>trans</i>, and <i>archive</i>.
+Each entry is an array of queries to perform on the respective
+databases.
+</ul>
+Look at existing updates for examples. It's very light coding; you're 
+really just defining variables.
+</body>
+</html>

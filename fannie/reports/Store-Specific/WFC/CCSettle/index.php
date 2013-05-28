@@ -12,17 +12,15 @@ $info = getProcessorInfo($date);
 $dlog = select_dlog($date);
 list($y,$m,$d) = explode("-",$date);
 
-$order = isset($_REQUEST['order']) ? $_REQUEST['order'] : 'd.tdate';
-
-$q = "SELECT d.tdate,-d.total as total,d.trans_num,q.refNum,d.card_no
+$q = $dbc->prepare_statement("SELECT d.tdate,-d.total as total,d.trans_num,q.refNum,d.card_no
 	FROM $dlog AS d LEFT JOIN efsnetRequest as q
 	ON d.register_no=q.laneNo AND d.emp_no=q.cashierNo
 	AND d.trans_no = q.transNo and d.trans_id=q.transID
-	AND q.date=$y$m$d
-	WHERE ".$dbc->datediff('tdate',"'$date'")." = 0
+	AND q.date=?
+	WHERE tdate BETWEEN ? AND ?
 	AND d.trans_subtype='CC'
-	ORDER BY $order";
-$r = $dbc->query($q);
+	ORDER BY d.tdate");
+$r = $dbc->exec_statement($q,array($y.$m.$d, $date.' 00:00:00', $date.'23:59:59'));
 
 if (!isset($_REQUEST['excel'])){
 	echo '<style type="text/css">
@@ -54,6 +52,7 @@ $totals = array(
 	"settled"=>0.0,
 	"Visa"=>0.0,
 	"MasterCard"=>0.0,
+	"American Express"=>0.0,
 	"Discover"=>0.0
 );
 $colors = array("one","two");

@@ -29,7 +29,18 @@ This is just a look-up table. It contains the
 past 15 days worth of dlog entries. For reports
 on data within that time frame, it's faster to
 use this small table.
+
+Maintenance:
+Truncated and populated by cron/nightly.dtrans.php
 */
+
+
+/* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+	* 23Oct2012 Eric Lee Added Maintenance section to comments.
+
+*/
+
 $CREATE['trans.dlog_15'] = "
 	CREATE TABLE dlog_15 (`tdate` datetime default NULL,
           `register_no` smallint(6) default NULL,
@@ -46,6 +57,10 @@ $CREATE['trans.dlog_15'] = "
           `tax` smallint(6) default NULL,
           `foodstamp` tinyint(4) default NULL,
           `ItemQtty` double default NULL,
+	  `memType` tinyint(2) default NULL,
+	  `staff` tinyint(4) default NULL,
+	  `numflag` int(11) default 0 NULL,
+	  `charflag` varchar(2) default '' NULL,
           `card_no` varchar(255) default NULL,
           `trans_id` int(11) default NULL,
           `trans_num` varchar(25) default NULL
@@ -68,6 +83,10 @@ if ($dbms == "MSSQL"){
                         [tax] [smallint] NULL ,
                         [foodstamp] [tinyint] NOT NULL ,
                         [ItemQtty] [float] NULL ,
+			[memType] [smallint] NULL ,
+			[isStaff] [tinyint] NULL ,
+			[numflag] [smallint] NULL ,
+			[charflag] [nvarchar] (2) COLLATE SQL_Latin1_General_CP1_CI_AS NULL ,
                         [card_no] [nvarchar] (6) COLLATE SQL_Latin1_General_CP1_CI_AS NULL ,
                         [trans_id] [int] NOT NULL ,
                         [trans_num] [nvarchar] (25) COLLATE SQL_Latin1_General_CP1_CI_AS NULL 

@@ -15,6 +15,7 @@ if (!$user && !isset($_POST['action'])){
 
 if (!class_exists("SQLManager")) require_once($FANNIE_ROOT."src/SQLManager.php");
 include('../db.php');
+$sql->query("USE is4c_trans");
 
 /* actions via POST are AJAX requests */
 if (isset($_POST['action'])){
@@ -30,11 +31,11 @@ if (isset($_POST['action'])){
 	$checkR = $sql->query($checkQ);
 	if ($sql->num_rows($checkR) == 0){
 		$insQ = "insert into overshortsLog values ('$date','$user',$resolved)";
-		$insR = $sql->query($insQ);
+		$insR = $sql->query_all($insQ);
 	}
 	else {
 		$upQ = "update overshortsLog set username='$user',resolved=$resolved where date='$date'";
-		$upR = $sql->query($upQ);
+		$upR = $sql->query_all($upQ);
 	}
 	
 	save($date,$data);
@@ -45,9 +46,11 @@ if (isset($_POST['action'])){
     $date = $_POST['arg'];
     require($FANNIE_ROOT."src/select_dlog.php");
     $dlog = select_dlog($date);
+    if ($dlog != "is4c_trans.dlog")
+	    $dlog = "trans_archive.dlogBig";
     /* determine who worked that day (and their first names) */
-    $empsQ = "select e.firstname,d.emp_no from $dlog as d,employees as e where
-              datediff(dd,d.tdate,'$date') = 0 and trans_type='T' and d.emp_no = e.emp_no
+    $empsQ = "select e.firstname,d.emp_no from $dlog as d,is4c_op.employees as e where
+              ".$sql->date_equals('d.tdate',$date)." and trans_type='T' and d.emp_no = e.emp_no
               group by d.emp_no,e.firstname order by e.firstname";
     $empsR=$sql->query($empsQ);
     $output = "<h3 id=currentdate>$date</h3>";
@@ -99,105 +102,151 @@ if (isset($_POST['action'])){
 
     /* get cash, check, and credit totals for each employee
        print them in a table along with input boxes for over/short */
+    $q = "SELECT -1*sum(total) AS total,emp_no,
+	CASE WHEN trans_subtype IN ('CC','AX') THEN 'CC' ELSE trans_subtype END
+	AS trans_subtype
+	FROM $dlog
+	WHERE ".$sql->date_equals('tdate',$date)." 
+	GROUP BY emp_no,
+	CASE WHEN trans_subtype IN ('CC','AX') THEN 'CC' ELSE trans_subtype END";
+    $r = $sql->query($q);
+    $posttl = array();
+    while($w = $sql->fetch_row($r)){
+	if (!isset($posttl[$w['emp_no']])) $posttl[$w['emp_no']] = array();
+	$posttl[$w['emp_no']][$w['trans_subtype']] = $w['total'];
+    }
     while ($row = $sql->fetch_array($empsR)){
       $perCashierTotal = 0;
       $perCashierCountTotal = 0;
       $perCashierOSTotal = 0;
 
+	/*
       $caQ = "select -1*sum(total) from $dlog where emp_no = $row[1]
               and datediff(dd,tdate,'$date') = 0 and trans_subtype = 'CA'";
       $caR = $sql->query($caQ);
       $caW = $sql->fetch_array($caR);
+	*/
+      $caW = array((isset($posttl[$row[1]]['CA'])) ? $posttl[$row[1]]['CA'] : 0);
       $caTotal += $caW[0];
       if (empty($caW[0]))
       	$caW[0] = 0;
       $perCashierTotal += $caW[0];
       
+	/*
       $ckQ = "select -1*sum(total) from $dlog where emp_no = $row[1]
               and datediff(dd,tdate,'$date') = 0 and trans_subtype = 'CK'";
       $ckR = $sql->query($ckQ);
       $ckW = $sql->fetch_array($ckR);
+	*/
+      $ckW = array((isset($posttl[$row[1]]['CK'])) ? $posttl[$row[1]]['CK'] : 0);
       $ckTotal += $ckW[0];
       if (empty($ckW[0]))
       	$ckW[0] = 0;
       $perCashierTotal += $ckW[0];
       
+	/*
       $ccQ = "select -1*sum(total) from $dlog where emp_no = $row[1]
               and datediff(dd,tdate,'$date') = 0 and trans_subtype = 'CC'";
       $ccR = $sql->query($ccQ);
       $ccW = $sql->fetch_array($ccR);
+	*/
+      $ccW = array((isset($posttl[$row[1]]['CC'])) ? $posttl[$row[1]]['CC'] : 0);
       $ccTotal += $ccW[0];
       if (empty($ccW[0]))
       	$ccW[0] = 0;
       $perCashierTotal += $ccW[0];
       
+	/*
       $miQ = "select -1*sum(total) from $dlog where emp_no = $row[1]
       		 and datediff(dd,tdate,'$date') = 0 and trans_subtype = 'MI'";
       $miR = $sql->query($miQ);
       $miW = $sql->fetch_array($miR);
+	*/
+      $miW = array((isset($posttl[$row[1]]['MI'])) ? $posttl[$row[1]]['MI'] : 0);
       $miTotal += $miW[0];
       if (empty($miW[0]))
       	$miW[0] = 0;
       $perCashierTotal += $miW[0];
       
+	/*
       $tcQ = "select -1*sum(total) from $dlog where emp_no = $row[1]
       		 and datediff(dd,tdate,'$date') = 0 and trans_subtype = 'TC'";
       $tcR = $sql->query($tcQ);
       $tcW = $sql->fetch_array($tcR);
+	*/
+      $tcW = array((isset($posttl[$row[1]]['TC'])) ? $posttl[$row[1]]['TC'] : 0);
       $tcTotal += $tcW[0];
       if (empty($tcW[0]))
       	$tcW[0] = 0;
       $perCashierTotal += $tcW[0];
       
+	/*
       $gdQ = "select -1*sum(total) from $dlog where emp_no = $row[1]
       		 and datediff(dd,tdate,'$date') = 0 and trans_subtype = 'GD'";
       $gdR = $sql->query($gdQ);
       $gdW = $sql->fetch_array($gdR);
+	*/
+      $gdW = array((isset($posttl[$row[1]]['GD'])) ? $posttl[$row[1]]['GD'] : 0);
       $gdTotal += $gdW[0];
       if (empty($gdW[0]))
       	$gdW[0] = 0;
       $perCashierTotal += $gdW[0];
       	
+	/*
       $efQ = "select -1*sum(total) from $dlog where emp_no = $row[1]
       		 and datediff(dd,tdate,'$date') = 0 and trans_subtype = 'EF'";
       $efR = $sql->query($efQ);
       $efW = $sql->fetch_array($efR);
+	*/
+      $efW = array((isset($posttl[$row[1]]['EF'])) ? $posttl[$row[1]]['EF'] : 0);
       $efTotal += $efW[0];
       if (empty($efW[0]))
       	$efW[0] = 0;
       $perCashierTotal += $efW[0];
       	
+	/*
       $ecQ = "select -1*sum(total) from $dlog where emp_no = $row[1]
       		 and datediff(dd,tdate,'$date') = 0 and trans_subtype = 'EC'";
       $ecR = $sql->query($ecQ);
       $ecW = $sql->fetch_array($ecR);
+	*/
+      $ecW = array((isset($posttl[$row[1]]['EC'])) ? $posttl[$row[1]]['EC'] : 0);
       $ecTotal += $ecW[0];
       if (empty($ecW[0]))
       	$ecW[0] = 0;
       $perCashierTotal += $ecW[0];
       	
+	/*
       $cpQ = "select -1*sum(total) from $dlog where emp_no = $row[1]
       		 and datediff(dd,tdate,'$date') = 0 and trans_subtype = 'CP'";
       $cpR = $sql->query($cpQ);
       $cpW = $sql->fetch_array($cpR);
+	*/
+      $cpW = array((isset($posttl[$row[1]]['CP'])) ? $posttl[$row[1]]['CP'] : 0);
       $cpTotal += $cpW[0];
       if (empty($cpW[0]))
       	$cpW[0] = 0;
       $perCashierTotal += $cpW[0];
       	
+	/*
       $icQ = "select -1*sum(total) from $dlog where emp_no = $row[1]
       		 and datediff(dd,tdate,'$date') = 0 and trans_subtype = 'IC'";
       $icR = $sql->query($icQ);
       $icW = $sql->fetch_array($icR);
+	*/
+      $icW = array((isset($posttl[$row[1]]['IC'])) ? $posttl[$row[1]]['IC'] : 0);
       $icTotal += $icW[0];
       if (empty($icW[0]))
       	$icW[0] = 0;
       $perCashierTotal += $icW[0];
 
+	/*
       $scQ = "select -1*sum(total) from $dlog where emp_no = $row[1]
       		 and datediff(dd,tdate,'$date') = 0 and trans_subtype = 'SC'";
       $scR = $sql->query($scQ);
       $scW = $sql->fetch_array($scR);
+	*/
+      $scW = array((isset($posttl[$row[1]]['SC'])) ? $posttl[$row[1]]['SC'] : 0);
       $scTotal += $scW[0];
       if (empty($scW[0]))
       	$scW[0] = 0;
@@ -402,7 +451,7 @@ if (isset($_POST['action'])){
 		$perCashierOSTotal += $os;
 	  }
 	  
-	  $output .= "<tr><td>&nbsp;</td><td>Coupons</td><td id=dlogCP$row[1]>$cpW[0]</td>";
+	  $output .= "<tr><td>&nbsp;</td><td>Coupons</td><td id=dlogCP$row[1]>".sprintF("%.2f",$cpW[0])."</td>";
       $fetchQ = "select amt from dailyCounts where date='$date' and emp_no=$row[1] and tender_type='CP'";
       $fetchR = $sql->query($fetchQ);
 	  if ($sql->num_rows($fetchR) == 0){
@@ -651,11 +700,11 @@ function save($date,$data){
 				$checkR = $sql->query($checkQ);
 				if ($sql->num_rows($checkR) == 0){
 					$insQ = "insert into dailyCounts values ('$date',$cashier,'$tender_type',$amt)";
-					$insR = $sql->query($insQ);
+					$insR = $sql->query_all($insQ);
 				}
 				else {
 					$upQ = "update dailyCounts set amt=$amt where date='$date' and emp_no=$cashier and tender_type='$tender_type'";
-					$upR = $sql->query($upQ);
+					$upR = $sql->query_all($upQ);
 				}
 			}
 		}
@@ -674,11 +723,11 @@ function saveNotes($date,$notes){
 		$checkR = $sql->query($checkQ);
 		if ($sql->num_rows($checkR) == 0){
 			$insQ = "insert into dailyNotes values ('$date',$emp,'$note')";
-			$insR = $sql->query($insQ);
+			$insR = $sql->query_all($insQ);
 		}
 		else {
 			$upQ = "update dailyNotes set note='$note' where date='$date' and emp_no=$emp";
-			$upR = $sql->query($upQ);
+			$upR = $sql->query_all($upQ);
 		}
 	}
 }

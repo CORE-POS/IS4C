@@ -21,12 +21,17 @@
 
 *********************************************************************************/
 
+include('../../config.php');
 include('../../src/mysql_connect.php');
 include('../../src/select_dlog.php');
 
 $batchID = 1;
 if (isset($_GET['batchID']))
 	$batchID = $_GET['batchID'];
+
+/* use batch report in reports directory */
+header('Location: '.$FANNIE_URL.'reports/BatchReport/BatchReport.php?batchID[]='.$batchID);
+exit;
 
 $batchInfoQ = "SELECT batchName,startDate,endDate FROM batches where batchID = $batchID";
 $batchInfoR = $dbc->query($batchInfoQ);
@@ -69,13 +74,14 @@ $bnEnd = strtotime($bEnd);
 $bnEnd = date('Y-m-d',$bnEnd);
 
 $dlog = select_dlog($bnStart,$bnEnd);
+$sumTable = $FANNIE_ARCHIVE_DB.$dbc->sep().'sumUpcSalesByDay';
 
 if(!isset($_GET['excel'])){
    echo "<p class=excel><a href=batchReport.php?batchID=$batchID&excel=1&startDate=$bnStart&endDate=$bnEnd>Click here for Excel version</a></p>";
 }
 
-$salesBatchQ ="select d.upc, b.description, sum(d.total) as sales, sum(CASE WHEN trans_status='M' then 0 else d.quantity END) as quantity
-         FROM $dlog as d left join batchMergeTable as b
+$salesBatchQ ="select d.upc, b.description, sum(d.total) as sales, sum(quantity) as quantity
+         FROM $sumTable as d left join batchMergeTable as b
          ON d.upc = b.upc
          WHERE d.tdate BETWEEN '$bStart' and '$bEnd' 
          AND b.batchID = $batchID 
@@ -99,7 +105,7 @@ while($salesBatchW = $dbc->fetch_array($salesBatchR)){
       $rColor= '#ffffcc';
    }
 
-   echo "<tr bgcolor=$rColor><td width=120>$upc</td><td width=300>$desc</td><td width=50>$sales</td><td width=50 align=right>$qty</td></tr>";
+   echo "<tr bgcolor=$rColor><td width=120>$upc</td><td width=300>$desc</td><td width=50>$sales</td><td width=50 align=right>$qty</td><td>{$salesBatchW['total']}</td></tr>";
    $i++;
 }
 echo "</table>";

@@ -1,0 +1,71 @@
+<html>
+<head>
+	<title>SpecialDept</title>
+</head>
+<body>
+<div style="text-align:center;">
+<h1>SpecialDept</h1>
+<!--
+14Feb13 AT Doc first written
+-->
+<br />as of: February 14, 2013
+</div>
+<p>
+SpecialDept modules are used to associate an arbitrary actions
+with open rings to a certain department or departments. The base
+class exposes one method:
+</p>
+<blockquote>
+array <b>handle</b>(integer $department, float $amount, array $json)
+</blockquote>
+<p>
+The <b>$department</b> parameter is the department number. Checking
+this parameter to make sure it matches an specific value or values is
+frowned upon. Doing so makes it harder for anyone else to re-use your
+module and the configuration of SpecialDept module mappings can
+effecitvely impose the same restrictions.
+</p>
+<p>
+The <b>$amount</b> parameter is the amount entered.
+</p>
+<p>
+The <b>$json</b> parameter is a Parser-module formatted array. You should
+almost always return this value. Modifying it first can be useful. 
+Most notably setting a URL for the <i>main_frame</i> key will redirect
+POS to another page of your choosing. You may want to use a <b>$CORE_LOCAL</b>
+(i.e., session) setting here and at the destination page to avoid
+winding up in a loop.
+</p>
+<p>
+The return value is a Parser-module formatted array. Hence the advice above
+about returning <b>$json</b>. That ensures the return format is correct.
+</p>
+<p><b>Example</b>: redirect to an extra cashier prompt to confirm an Equity sale.
+Note the use of <b>$CORE_LOCAL</b> to alternate behavior. The first time the module
+is called, it redirects for confirmation but the second time - after the cashier
+has provided confirmation - it returns <b>$json</b> unmodified.
+<pre>
+class EquityWarnDept extends SpecialDept {
+
+	function handle($deptID,$amount,$json){
+		global $CORE_LOCAL;
+
+		if ($CORE_LOCAL->get("warned") == 1 and $CORE_LOCAL->get("warnBoxType") == "warnEquity"){
+			$CORE_LOCAL->set("warned",0);
+			$CORE_LOCAL->set("warnBoxType","");
+		}
+		else {
+			$CORE_LOCAL->set("warned",1);
+			$CORE_LOCAL->set("warnBoxType","warnEquity");
+			$CORE_LOCAL->set("boxMsg","&lt;b&gt;Equity Sale&lt;/b&gt;&lt;br&gt;please confirm&lt;br&gt;
+				&lt;font size=-1&gt;[enter] to continue, [clear] to cancel&lt;/font&gt;");
+			$json['main_frame'] = MiscLib::base_url().'gui-modules/boxMsg2.php';
+		}
+
+		return $json;
+	}
+}
+</pre>
+</p>
+</body>
+</html>

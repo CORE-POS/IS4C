@@ -32,10 +32,6 @@
    This script should run daily. Because batch start
    and end dates are inclusive, scheduling the script
    after midnight will give the most sensible results.
-
-   THIS SCRIPT IS CURRENTLY DISABLED TO AVOID CONFLICTS
-   AT WFC. IF YOU WANT TO USE IT, REMOVE THE "exit"
-   LINE.
 */
 
 /* why is this file such a mess?
@@ -55,11 +51,6 @@ set_time_limit(0);
 $sql = new SQLManager($FANNIE_SERVER,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 		$FANNIE_SERVER_USER,$FANNIE_SERVER_PW);
 
-exit;
-
-/*
-// update batch merge table 
-
 // unsale everything  
 $sql->query("UPDATE products SET
 		special_price=0,
@@ -70,46 +61,74 @@ $sql->query("UPDATE products SET
 		start_date='1900-01-01',
 		end_date='1900-01-01'");
 
+/* 
+   products.numflag is being used for actual flags;
+   priority needs to be re-done some other way
+
+   priorities:
+   15	=> HQ High Priority
+	   (applies to all product records)
+   10	=> Store High Priority
+	   (applies to store records w/o HQ high priority)
+   5	=> HQ Normal Priority
+	   (applies to all records except store high priority)
+   0	=> Store Normal Priority
+	   (applies to store records not already on sale)
+*/
+$priority_clause = "";
+if ($FANNIE_STORE_ID==0){
+	$priority_clause = "(b.priority=15 
+		OR (b.priority >= ((p.numflag>>5)&0x1f) < 10))";
+}
+else {
+	$priority_clause = "(p.store_id=$FANNIE_STORE_ID
+		AND (b.priority >= ((p.numflag>>5)&0x1f) < 10))";
+}
+
 // resale things that should be on sale 
-if ($FANNIE_SERVER_DBMS == "MYSQL"){
+if (strstr($FANNIE_SERVER_DBMS,"MYSQL")){
 	$sql->query("UPDATE products AS p
 		INNER JOIN upcLike AS u ON p.upc=u.upc
 		SET p.mixmatchcode=convert(u.likeCode+500,char)");
 
 	$sql->query("UPDATE products AS p
-		LEFT JOIN batchPriority AS b ON p.upc=b.upc
+		LEFT JOIN batchList AS l ON p.upc=l.upc
+		LEFT JOIN batches AS b ON l.batchID=b.batchID
 		SET
-		p.special_price = b.salePrice,
-		p.specialpricemethod = b.pricemethod,
-		p.specialgroupprice=CASE WHEN b.salePrice < 0 THEN -1*b.salePrice ELSE b.salePrice END,
-		p.specialquantity = b.quantity,
+		p.special_price = l.salePrice,
+		p.specialpricemethod = l.pricemethod,
+		p.specialgroupprice=CASE WHEN l.salePrice < 0 THEN -1*l.salePrice ELSE l.salePrice END,
+		p.specialquantity = l.quantity,
 		p.start_date = b.startDate,
 		p.end_date = b.endDate,
-		p.discounttype = b.discountType,
+		p.discounttype = b.discounttype,
 		p.mixmatchcode = CASE 
-			WHEN b.pricemethod IN (3,4) AND b.salePrice >= 0 THEN convert(b.batchID,char)
-			WHEN l.pricemethod IN (3,4) AND b.salePrice < 0 THEN convert(-1*b.batchID,char)
+			WHEN l.pricemethod IN (3,4) AND l.salePrice >= 0 THEN convert(l.batchID,char)
+			WHEN l.pricemethod IN (3,4) AND l.salePrice < 0 THEN convert(-1*l.batchID,char)
 			ELSE p.mixmatchcode 
 		END	
-		WHERE b.upc NOT LIKE 'LC%'
-		AND b.discountType <> 0");
+		WHERE l.upc NOT LIKE 'LC%'
+		AND CURDATE() >= b.startDate AND CURDATE() <= b.endDate
+		AND b.discounttype <> 0");
 
 	$sql->query("UPDATE products AS p LEFT JOIN
-		likeCodeView AS v ON v.upc=p.upc 
-		batchPriority AS b ON b.upc=concat('LC',convert(v.likeCode,char))
-		SET p.special_price = b.salePrice,
+		likeCodeView AS v ON v.upc=p.upc LEFT JOIN
+		batchList AS l ON l.upc=concat('LC',convert(v.likeCode,char))
+		LEFT JOIN batches AS b ON l.batchID=b.batchID
+		SET p.special_price = l.salePrice,
 		p.end_date = b.endDate,p.start_date=b.startDate,
-		p.specialgroupprice=CASE WHEN l.salePrice < 0 THEN -1*b.salePrice ELSE b.salePrice END,
-		p.specialquantity=b.quantity,
-		p.specialpricemethod=b.pricemethod,
-		p.discounttype = b.discountType,
+		p.specialgroupprice=CASE WHEN l.salePrice < 0 THEN -1*l.salePrice ELSE l.salePrice END,
+		p.specialquantity=l.quantity,
+		p.specialpricemethod=l.pricemethod,
+		p.discounttype = b.discounttype,
 		p.mixmatchcode = CASE 
-			WHEN b.pricemethod IN (3,4) AND b.salePrice >= 0 THEN convert(b.batchID,char)
-			WHEN b.pricemethod IN (3,4) AND b.salePrice < 0 THEN convert(-1*b.batchID,char)
+			WHEN l.pricemethod IN (3,4) AND l.salePrice >= 0 THEN convert(l.batchID,char)
+			WHEN l.pricemethod IN (3,4) AND l.salePrice < 0 THEN convert(-1*l.batchID,char)
 			ELSE p.mixmatchcode 
 		END	
-		WHERE b.upc LIKE 'LC%'
-		AND b.discountType <> 0");
+		WHERE l.upc LIKE 'LC%'
+		AND CURDATE() >= b.startDate AND CURDATE() <= b.endDate
+		AND b.discounttype <> 0");
 }
 else {
 	$sql->query("UPDATE products
@@ -154,6 +173,5 @@ else {
 		WHERE b.upc LIKE 'LC%'
 		AND b.discountType <> 0");
 }
-*/
 
 ?>

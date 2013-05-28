@@ -20,13 +20,8 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
 
-if (!class_exists("Parser")) include_once($CORE_PATH."parser-class-lib/Parser.php");
-if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
-
-class ToggleTaxFSDisc extends Parser {
+class ToggleTaxFSDisc extends PreParser {
 	var $tfd;
 	var $remainder;
 
@@ -37,6 +32,7 @@ class ToggleTaxFSDisc extends Parser {
 	// use bit-masks to determine the which toggles
 	// should be enabled
 	function check($str){
+		global $CORE_LOCAL;
 		$this->tfd = 0;
 		if (substr($str,0,5) == "1TNFN" || substr($str,0,5) == "FN1TN"){
 			$this->remainder = substr($str,5);

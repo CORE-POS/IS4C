@@ -42,7 +42,7 @@ function regularDisplay(){
 		ORDER BY cardno";
 	$numsR = $sql->query($numsQ);
 	while($numsW = $sql->fetch_row($numsR)){
-		if ($_REQUEST['memnum'] == trim($numsW[0]))
+		if ($value == trim($numsW[0]))
 			printf("<option value=%d selected>%d %s</option>",$numsW[0],$numsW[0],$numsW[1]);	
 		else
 			printf("<option value=%d>%d %s</option>",$numsW[0],$numsW[0],$numsW[1]);	
@@ -55,10 +55,10 @@ function regularDisplay(){
 function billingDisplay($cardno){
 	global $sql;
 
-	$query = "SELECT c.cardno,c.lastname,n.balance
+	$query = "SELECT c.CardNo,c.LastName,n.balance
 		FROM custdata AS c LEFT JOIN
-		newBalanceToday_cust AS n ON c.cardno=n.memnum
-		WHERE c.cardno=$cardno AND c.personnum=1";
+		is4c_trans.ar_live_balance AS n ON c.CardNo=n.card_no
+		WHERE c.CardNo=$cardno AND c.personNum=1";
 	$result = $sql->query($query);
 	$row = $sql->fetch_row($result);
 
@@ -87,7 +87,8 @@ function billingDisplay($cardno){
 }
 
 function bill($cardno,$amt,$desc){
-	global $sql,$EMP_NO,$LANE_NO;
+	global $sql,$EMP_NO,$LANE_NO,$FANNIE_TRANS_DB;
+	$sql->query("use $FANNIE_TRANS_DB");
 
 	$desc = str_replace("'","''",$desc);
 
@@ -99,14 +100,14 @@ function bill($cardno,$amt,$desc){
 	else $t_no++;
 
 	$insQ = "INSERT INTO dtransactions VALUES (
-		getdate(),$LANE_NO,$EMP_NO,$t_no,
+		".$sql->now().",$LANE_NO,$EMP_NO,$t_no,
 		'{$amt}DP703','$desc','D','','',703,
 		1.0,0,0.00,$amt,$amt,$amt,0,0,.0,.0,
 		0,0,0,NULL,0.0,0,0,.0,0,0,0,0,0,'',
 		$cardno,1)";
 	$amt *= -1;
 	$insQ2 = "INSERT INTO dtransactions VALUES (
-		getdate(),$LANE_NO,$EMP_NO,$t_no,
+		".$sql->now().",$LANE_NO,$EMP_NO,$t_no,
 		0,'InStore Charges','T','MI',0,0,
 		0.0,0,0.00,.0,$amt,.0,0,0,.0,.0,
 		0,0,0,NULL,0.0,0,0,.0,0,0,0,0,0,'',

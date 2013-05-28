@@ -37,6 +37,7 @@ Columns:
 	subdept smallint
 	deposit double
 	local tinyint
+	store_id smallint
 	id int auto_increment
 
 Depends on:
@@ -135,7 +136,7 @@ it won't *do* anything.
 
 $CREATE['op.products'] = "
 	CREATE TABLE `products` (
-		  `upc` bigint(13) unsigned zerofill default NULL,
+		  `upc` varchar(13) default NULL,
 		  `description` varchar(30) default NULL,
 		  `normal_price` double default NULL,
 		  `pricemethod` smallint(6) default NULL,
@@ -169,13 +170,15 @@ $CREATE['op.products'] = "
 		  `subdept` smallint(4) default NULL,
 		  `deposit` double default NULL,
 		  `local` int(11) default '0',
+		  `store_id` smallint default '0',
 		  `id` int(11) NOT NULL auto_increment,
 		  PRIMARY KEY  (`id`),
 		  KEY `upc` (`upc`),
 		  KEY `description` (`description`),
 		  KEY `normal_price` (`normal_price`),
 		  KEY `subdept` (`subdept`),
-		  KEY `department` (`department`)
+		  KEY `department` (`department`),
+		  KEY `store_id` (`store_id`)
 	)
 ";
 if ($dbms == "MSSQL"){
@@ -215,6 +218,7 @@ if ($dbms == "MSSQL"){
 			[subdept] [smallint] NULL ,
 			[deposit] [money] NULL ,
 			[local] [int] NULL ,
+			[store_id] [smallint] 0,
 			[id] [int] IDENTITY (1, 1) NOT NULL ,
 			PRIMARY KEY ([id]) )
 	";

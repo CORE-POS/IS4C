@@ -21,42 +21,47 @@
 
 *********************************************************************************/
 
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
-
 ini_set('display_errors','1');
 
-if (!class_exists("NoInputPage")) include_once($CORE_PATH."gui-class-lib/NoInputPage.php");
-if (!function_exists("ttl")) include_once($CORE_PATH."lib/prehkeys.php");
-if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
+include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class fsTotalConfirm extends NoInputPage {
 
 	var $tendertype;
 
 	function preprocess(){
-		global $CORE_PATH,$CORE_LOCAL;
+		global $CORE_LOCAL;
 		$this->tendertype = "";
 		if (isset($_REQUEST["selectlist"])){
 			$choice = $_REQUEST["selectlist"];
 			if ($choice == "EF"){
-				$chk = fsEligible();
+				$chk = PrehLib::fsEligible();
 				if ($chk !== True){
-					header("Location: $chk");
+					$this->change_page($chk);
 					return False;
 				}
+				// 13Feb13 Andy
+				// Disable option to enter tender here by returning immediately	
+				// to pos2.php. Should be conigurable or have secondary
+				// functionality removed entirely
 				$this->tendertype = 'EF';
+				$this->change_page($this->page_url."gui-modules/pos2.php");
+				return False;
 			}
 			elseif ($choice == "EC"){
-				$chk = ttl();
+				$chk = PrehLib::ttl();
 				if ($chk !== True){
-					header("Location: $chk");
+					$this->change_page($chk);
 					return False;
 				}
+				// 13Feb13 Andy
+				// Disabled option; see above
 				$this->tendertype = 'EC';
+				$this->change_page($this->page_url."gui-modules/pos2.php");
+				return False;
 			}
 			else if ($choice == ''){
-				header("Location: {$CORE_PATH}gui-modules/pos2.php");
+				$this->change_page($this->page_url."gui-modules/pos2.php");
 				return False;
 			}
 		}
@@ -73,9 +78,13 @@ class fsTotalConfirm extends NoInputPage {
 				$valid_input = True;
 			}
 			elseif (is_numeric($in)){
-				$CORE_LOCAL->set("strRemembered",$in.$this->tendertype);
-				$CORE_LOCAL->set("msgrepeat",1);
-				$valid_input = True;
+				if ($this->tendertype == 'EF' && $in > (100*$CORE_LOCAL->get("fsEligible")))
+					$valid_input = False;
+				else {
+					$CORE_LOCAL->set("strRemembered",$in.$this->tendertype);
+					$CORE_LOCAL->set("msgrepeat",1);
+					$valid_input = True;
+				}
 			}
 			elseif (strtoupper($in) == "CL"){
 				$CORE_LOCAL->set("strRemembered","");
@@ -84,7 +93,7 @@ class fsTotalConfirm extends NoInputPage {
 			}
 
 			if ($valid_input){
-				header("Location: {$CORE_PATH}gui-modules/pos2.php");
+				$this->change_page($this->page_url."gui-modules/pos2.php");
 				return False;
 			}
 		}	
@@ -144,8 +153,9 @@ class fsTotalConfirm extends NoInputPage {
 			<input type="hidden" name="tendertype" value="<?php echo $this->tendertype?>" />
 		<?php } ?>
 		</form>
+		<p>
 		<span class="smaller">[clear] to cancel</span>
-		<p />
+		</p>
 		</div>
 		</div>
 		<?php

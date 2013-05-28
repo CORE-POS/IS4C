@@ -12,13 +12,12 @@ $batchInfoR = $sql->query($batchInfoQ);
 
 $batchInfoW = $sql->fetch_array($batchInfoR);
 
-$forceQ = "UPDATE products
+$forceQ = "UPDATE products AS p
+		LEFT JOIN batchListTest as l
+		ON l.upc=p.upc
               SET normal_price = l.salePrice,
-              modified = getdate()
-              FROM products as p,
-              batchListTest as l
-              WHERE l.upc = p.upc
-              AND l.batchID = $batchID";
+              modified = now()
+              WHERE l.batchID = $batchID";
 
 //echo $forceQ;
 $forceR = $sql->query($forceQ);

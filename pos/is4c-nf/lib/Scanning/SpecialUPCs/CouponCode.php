@@ -21,18 +21,22 @@
 
 *********************************************************************************/
 
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
+/**
+  @class CouponCode
+  Handle standard manufacturer coupons
 
-if (!class_exists("SpecialUPC")) include($CORE_PATH."lib/Scanning/SpecialUPC.php");
-if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
+  This module looks for UPCs with prefix
+   - 005 UPC-12 coupon 
+   - 099 EAN-13 coupon
 
-if (!function_exists('pDataConnect')) include($CORE_PATH."lib/connect.php");
-if (!function_exists('boxMsg')) include($CORE_PATH."lib/drawscreen.php");
-if (!function_exists('lastpage')) include($CORE_PATH."lib/listitems.php");
-if (!function_exists('truncate2')) include($CORE_PATH."lib/lib.php");
-if (!function_exists('addcoupon')) include($CORE_PATH."lib/additem.php");
+  It extracts the manufacturer prefix from
+  the UPC and validates that a matching item
+  is in the transaction
 
+  It looks up the coupon code to calculate
+  a discount value and adds the coupon to
+  the transaction
+*/
 class CouponCode extends SpecialUPC {
 
 var $ean;
@@ -56,13 +60,21 @@ var $ean;
 		$fam = substr($upc, 8, 3);
 		$val = substr($upc, -2);
 
-		$db = pDataConnect();
+		$db = Database::pDataConnect();
 		$query = "select Value,Qty from couponcodes where Code = '".$val."'";
 		$result = $db->query($query);
 		$num_rows = $db->num_rows($result);
 
 		if ($num_rows == 0) {
-			$json['output'] = boxMsg("coupon type unknown<br>please enter coupon<br>manually");
+			$json['output'] = DisplayLib::boxMsg(_("coupon type unknown")."<br />"._("enter coupon manually"));
+			return $json;
+		}
+
+		$query2 = "SELECT reason FROM disableCoupon WHERE upc='$upc'";
+		$result2 = $db->query($query2);
+		if ($db->num_rows($result2) > 0){
+			$reason = array_pop($db->fetch_row($result2));
+			$json['output'] = DisplayLib::boxMsg(_("coupon disabled")."<br />".$reason);
 			return $json;
 		}
 
@@ -77,12 +89,12 @@ var $ean;
 			// Instead I just try to guess, otherwise use zero
 			// (since that's what would happen anyway when the
 			// confused cashier does a generic coupon tender)
-			$value = truncate2($value);
+			$value = MiscLib::truncate2($value);
 			$CORE_LOCAL->set("couponupc",$upc);
 			$CORE_LOCAL->set("couponamt",$value);
 
 			$dept = 0;
-			$db = tDataConnect();
+			$db = Database::tDataConnect();
 			$query = "select department from localtemptrans WHERE
 				substring(upc,4,5)='$man_id' group by department
 				order by count(*) desc";
@@ -90,14 +102,13 @@ var $ean;
 			if ($db->num_rows($result) > 0)
 				$dept = array_pop($db->fetch_row($result));
 
-			addcoupon($upc, $dept, $value);
-			$json['output'] = lastpage();
+			TransRecord::addcoupon($upc, $dept, $value);
+			$json['output'] = DisplayLib::lastpage();
 			return $json;
 		}
 
 		// validate coupon
-		$db->close();
-		$db = tDataConnect();
+		$db = Database::tDataConnect();
 		$fam = substr($fam, 0, 2);
 
 		/* the idea here is to track exactly which
@@ -129,7 +140,7 @@ var $ean;
 
 		/* no item w/ matching manufacturer */
 		if ($num_rows == 0){
-			$json['output'] = boxMsg("product not found<br />in transaction");
+			$json['output'] = DisplayLib::boxMsg(_("product not found")."<br />"._("in transaction"));
 			return $json;
 		}
 
@@ -157,13 +168,14 @@ var $ean;
 
 		/* every line has maximum coupons applied */
 		if (count($available) == 0) {
-			$json['output'] = boxMsg("Coupon already applied<br />for this item");
+			$json['output'] = DisplayLib::boxMsg(_("Coupon already applied")."<br />"._("for this item"));
 			return $json;
 		}
 
 		/* insufficient number of matching items */
 		if ($qty > $act_qty) {
-			$json['output'] = boxMsg("coupon requires ".$qty."items<br />there are only ".$act_qty." item(s)<br />in this transaction");
+			$json['output'] = DisplayLib::boxMsg(sprintf(_("coupon requires %d items"),$qty)."<br />".
+						sprintf(_("there are only %d item(s)"),$act_qty)."<br />"._("in this transaction"));
 			return $json;
 		}
 		
@@ -202,9 +214,11 @@ var $ean;
 			if ($applied >= $qty) break;
 		}
 
-		$value = truncate2($value);
-		addcoupon($upc, $dept, $value, $foodstamp);
-		$json['output'] = lastpage();
+		$value = MiscLib::truncate2($value);
+		$json['udpmsg'] = 'goodBeep';
+		TransRecord::addcoupon($upc, $dept, $value, $foodstamp);
+		$json['output'] = DisplayLib::lastpage();
+		$json['redraw_footer'] = True;
 		return $json;
 	}
 

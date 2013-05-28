@@ -20,17 +20,11 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
-
-if (!class_exists('DiscountType')) include($CORE_PATH.'lib/Scanning/DiscountType.php');
-if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
-
-if (!function_exists('adddiscount')) include($CORE_PATH.'lib/additem.php');
 
 class EveryoneSale extends DiscountType {
 
 	function priceInfo($row,$quantity=1){
+		global $CORE_LOCAL;
 		if (is_array($this->savedInfo))
 			return $this->savedInfo;
 
@@ -55,6 +49,41 @@ class EveryoneSale extends DiscountType {
 		$ret['discount'] = ($ret['regPrice'] - $row['special_price']) * $quantity;
 		$ret['memDiscount'] = 0;
 
+		if ($CORE_LOCAL->get("itemPD") > 0){
+			$discount = $row['special_price'] * (($CORE_LOCAL->get("itemPD")/100));
+			$ret["unitPrice"] = $row['special_price'] - $discount;
+			$ret["discount"] += ($discount * $quantity);
+		}
+
+		// enforce per-transaction limit
+		if ($row['specialpricemethod']==0 && $row['specialquantity'] > 0){
+			$tdb = Database::tDataConnect();
+			$chkQ = "SELECT sum(ItemQtty) FROM
+				localtemptrans WHERE upc='{$row['upc']}'";
+			if (strlen($row['mixmatchcode'])>0 && $row['mixmatchcode'][0]=='b')
+				$chkQ .= " OR mixMatch='{$row['mixmatchcode']}'";
+			$chkR = $tdb->query($chkQ);
+			$prevSales = 0;
+			if ($tdb->num_rows($chkR) > 0){
+				$prevSales = array_pop($tdb->fetch_row($chkR));
+			}
+
+			if ($prevSales >= $row['specialquantity']){
+				// already sold the limit; use non-sale price
+				$ret['unitPrice'] = $row['normal_price'];
+				$ret['discount'] = 0;
+			}
+			else if ( ($prevSales+$quantity) > $row['specialquantity'] ){
+				// this multiple qty ring will pass the limit
+				// set discount based on appropriate quantity
+				// and adjust unitPrice so total comes out correctly
+				$discountQty = $row['specialquantity'] - $prevSales;
+				$ret['discount'] = ($ret['regPrice'] - $row['special_price']) * $discountQty;
+				$total = ($ret['regPrice'] * $quantity) - $ret['discount'];
+				$ret['unitPrice'] = MiscLib::truncate2($total / $quantity);
+			}
+		}
+
 		$this->savedRow = $row;
 		$this->savedInfo = $ret;
 		return $ret;
@@ -62,9 +91,11 @@ class EveryoneSale extends DiscountType {
 
 	function addDiscountLine(){
 		global $CORE_LOCAL;	
-		$CORE_LOCAL->set("voided",2);
-		adddiscount($this->savedInfo['discount'],
-			$this->savedRow['department']);
+		if ($this->savedInfo['discount'] != 0){
+			$CORE_LOCAL->set("voided",2);
+			TransRecord::adddiscount($this->savedInfo['discount'],
+				$this->savedRow['department']);
+		}
 	}
 
 	function isSale(){

@@ -30,7 +30,7 @@
 */
 
 function forceBatch($batchID){
-	global $dbc,$FANNIE_SERVER_DBMS;
+	global $dbc,$FANNIE_SERVER_DBMS,$FANNIE_STORE_ID;
 
 	$batchInfoQ = "SELECT batchType,discountType FROM batches WHERE batchID = $batchID";
 	$batchInfoR = $dbc->query($batchInfoQ);
@@ -66,7 +66,7 @@ function forceBatch($batchID){
 			INNER JOIN likeCodeView AS v 
 			ON v.upc=p.upc
 			INNER JOIN batchList as l 
-			ON l.upc='LC'+convert(v.likecode,char)
+			ON l.upc=concat('LC',convert(v.likecode,char))
 			INNER JOIN batches AS b 
 			ON b.batchID=l.batchID
 			set p.special_price = l.salePrice,
@@ -137,7 +137,7 @@ function forceBatch($batchID){
 		$forceLCQ = "UPDATE products AS p
 			INNER JOIN upcLike AS v
 			ON v.upc=p.upc INNER JOIN
-			batchList as b on b.upc='LC'+convert(v.likecode,char)
+			batchList as b on b.upc=concat('LC',convert(v.likecode,char))
 			set p.normal_price = b.salePrice,
    			p.modified=curdate()
 			where b.batchID=$batchID";
@@ -165,6 +165,23 @@ function forceBatch($batchID){
 
 	$forceR = $dbc->query($forceQ);
 	$forceLCR = $dbc->query($forceLCQ);
+
+	$q = "SELECT upc FROM batchList WHERE batchID=".$batchID;
+	$r = $dbc->query($q);
+	while($w = $dbc->fetch_row($r)){
+		$upcs = array($w['upc']);
+		if (substr($w['upc'],0,2)=='LC'){
+			$upcs = array();
+			$lc = substr($w['upc'],2);
+			$q2 = "SELECT upc FROM upcLike WHERE likeCode=".$lc;
+			$r2 = $dbc->query($q2);
+			while($w2 = $dbc->fetch_row($r2))
+				$upcs[] = $w2['upc'];
+		}
+		foreach($upcs as $u){
+			updateProductAllLanes($u);
+		}
+	}
 }
 
 ?>

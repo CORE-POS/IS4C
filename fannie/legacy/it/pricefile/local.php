@@ -32,7 +32,7 @@ if (isset($_POST["MAX_FILE_SIZE"])){
 		if (!is_numeric($data[$LC_COL])) continue;
 
 		$q = "select l.likeCodeDesc
-			from likecodes as l where
+			from likeCodes as l where
 			l.likecode=".$data[$LC_COL]; 
 		$r = $sql->query($q);
 		if ($sql->num_rows($r) == 0){
@@ -42,8 +42,8 @@ if (isset($_POST["MAX_FILE_SIZE"])){
 		$row = $sql->fetch_array($r);
 
 		$local = 'No';
-		if (!empty($data[$LOCAL_COL]) && $data[$LOCAL_COL] == 1) $local = '300';
-		if (!empty($data[$LOCAL_COL]) && $data[$LOCAL_COL] == 2) $local = 'S.C.';
+		if (!empty($data[$LOCAL_COL]) && $data[$LOCAL_COL] == 2) $local = '300';
+		if (!empty($data[$LOCAL_COL]) && $data[$LOCAL_COL] == 1) $local = 'S.C.';
 
 		if (!empty($data[$LOCAL_COL]))
 			echo "<tr class=\"local\">";
@@ -68,10 +68,10 @@ else if (isset($_POST['likecode'])){
 	echo "<b>Peforming updates</b><br />";
 	for ($i = 0; $i < count($likecodes); $i++){
 		$lval = 0;
-		if ($local[$i] == '300') $lval = 1;
-		elseif ($local[$i] == 'S.C.') $lval = 2;
-		$q = "update products set local=".$lval."
-			from products as p left join upclike as u on p.upc=u.upc
+		if ($local[$i] == '300') $lval = 2;
+		elseif ($local[$i] == 'S.C.') $lval = 1;
+		$q = "update products as p left join upcLike as u on p.upc=u.upc
+			set local=$lval
 			where u.likecode=".$likecodes[$i];	
 		echo "Setting likecode #".$likecodes[$i]." to local =>".$local[$i]."<br />";
 		$sql->query($q);

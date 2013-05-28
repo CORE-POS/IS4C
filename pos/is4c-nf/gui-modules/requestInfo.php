@@ -28,22 +28,17 @@
  * variable
  */
 
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
-
-if (!class_exists("NoInputPage")) include_once($CORE_PATH."gui-class-lib/NoInputPage.php");
-if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
+include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class requestInfo extends NoInputPage {
 
 	function head_content(){
-		global $CORE_PATH;
 		?>
 		<script type="text/javascript">
 		function submitWrapper(){
 			var str = $('#reginput').val();
 			$.ajax({
-				url: '<?php echo $CORE_PATH; ?>ajax-callbacks/ajax-decision.php',
+				url: '<?php echo $this->page_url; ?>ajax-callbacks/ajax-decision.php',
 				type: 'get',
 				data: 'input='+str,
 				dataType: 'json',
@@ -51,7 +46,7 @@ class requestInfo extends NoInputPage {
 				success: function(data){
 					if (data.endorse){
 						$.ajax({
-							url: '<?php echo $CORE_PATH; ?>ajax-callbacks/ajax-endorse.php',
+							url: '<?php echo $this->page_url; ?>ajax-callbacks/ajax-endorse.php',
 							type: 'get',
 							cache: false,
 							success: function(){
@@ -81,9 +76,9 @@ class requestInfo extends NoInputPage {
 		<form name="form" method="post" autocomplete="off" onsubmit="return submitWrapper();">
 		<input type="text" id="reginput" name='input' tabindex="0" onblur="$('#input').focus()" />
 		</form>
-		<p />
+		<p>
 		<?php echo $CORE_LOCAL->get("requestMsg") ?>
-		<p />
+		</p>
 		</div>
 		</div>
 

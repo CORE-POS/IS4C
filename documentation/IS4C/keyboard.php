@@ -1,12 +1,17 @@
 <?php
 
-print_docs($_SESSION["INCLUDE_PATH"]."/parser-class-lib/preparse/");
-print_docs($_SESSION["INCLUDE_PATH"]."/parser-class-lib/parse/");
+$CORE_PATH="../../pos/is4c-nf/";
+print_docs("../../pos/is4c-nf/parser-class-lib/preparse/");
+print_docs("../../pos/is4c-nf/parser-class-lib/parse/");
 
+class Parser {
+}
 
 function print_docs($dir){
+	global $CORE_PATH;
 	$dh = opendir($dir);
 	while(False !== ($file=readdir($dh))){
+		
 		if (substr($file,-4) != ".php") continue;
 
 		$cn = substr($file,0,strlen($file)-4);

@@ -26,7 +26,7 @@ if (isset($_GET['modified'])){
 	$checkR = $sql->query($checkQ);
 	if ($sql->num_rows($checkR) == 0){
 		$fixQ = "insert products values ('$upc','$desc',$price,0,.0,0,.0,0,.0,0,'1900-01-01 00:00:00','1900-01-01 00:00:00',
-			 $dept,0,$tax,$fs,$scale,0,getdate(),0,0,$discount,0,0,0,$qty,$inuse)";
+			 $dept,0,$tax,$fs,$scale,0,now(),0,0,$discount,0,0,0,$qty,$inuse)";
 		$fixR = $sql->query($fixQ);
 
 		$checkQ2 = "select upc from prodExtra where upc='$upc'";

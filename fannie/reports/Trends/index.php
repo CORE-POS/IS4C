@@ -51,6 +51,12 @@ if (isset($_GET['type'])){
 		$date2 = $_GET["date2u"];
 		$upc = str_pad($_GET["upc"],13,'0',STR_PAD_LEFT);
 		break;
+	case 'likecode':
+		$date1 = $_GET["date1l"];
+		$date2 = $_GET["date2l"];
+		$lc = $_GET["likeCode"];	
+		$lc2 = $_GET["likeCode2"];
+		break;
 	}	
 
 	if (isset($_GET['excel'])){
@@ -61,6 +67,7 @@ if (isset($_GET['type'])){
 	$dlog = select_dlog($date1,$date2);
 	
 	$query = "";
+	$args = array();
 	switch ($_GET["type"]){
 	case 'dept':
 		$query = "select 
@@ -70,13 +77,13 @@ if (isset($_GET['type'])){
 			d.upc, p.description, 
 			sum(d.quantity) as total 
 			from $dlog as d left join products as p on d.upc = p.upc
-			where d.department between $dept1 and $dept2
-			and ".$dbc->datediff('d.tdate',"'$date1'")." >= 0
-			and ".$dbc->datediff('d.tdate',"'$date2'")." <= 0
+			where d.department between ? AND ?
+			AND d.tdate BETWEEN ? AND ?
 			and trans_status <> 'M'
 			group by year(d.tdate),month(d.tdate),day(d.tdate),
 			d.upc,p.description
 			order by d.upc,year(d.tdate),month(d.tdate),day(d.tdate)";
+		$args = array($dept1,$dept2);
 		break;
 	case 'manu':
 		if ($man_type == "name"){
@@ -88,13 +95,13 @@ if (isset($_GET['type'])){
 				sum(d.quantity) as total 
 				from $dlog as d left join products as p on d.upc = p.upc
 				left join prodExtra as x on p.upc = x.upc
-				where x.manufacturer = '$manufacturer' 
-				and ".$dbc->datediff('d.tdate',"'$date1'")." >= 0
-				and ".$dbc->datediff('d.tdate',"'$date2'")." <= 0
+				where x.manufacturer = ?
+				AND d.tdate BETWEEN ? AND ?
 				and trans_status <> 'M'
 				group by year(d.tdate),month(d.tdate),day(d.tdate),
 				d.upc,p.description
 				order by d.upc,year(d.tdate),month(d.tdate),day(d.tdate)";
+			$args = array($manufacturer);
 		}
 		else {
 			$query = "select 
@@ -104,13 +111,13 @@ if (isset($_GET['type'])){
 				d.upc, p.description, 
 				sum(d.quantity) as total 
 				from $dlog as d left join products as p on d.upc = p.upc
-				where p.upc like '%$manufacturer%' 
-				and ".$dbc->datediff('d.tdate',"'$date1'")." >= 0
-				and ".$dbc->datediff('d.tdate',"'$date2'")." <= 0
+				where p.upc like ?
+				AND d.tdate BETWEEN ? AND ?
 				and trans_status <> 'M'
 				group by year(d.tdate),month(d.tdate),day(d.tdate),
 				d.upc,p.description
 				order by d.upc,year(d.tdate),month(d.tdate),day(d.tdate)";
+			$args = array('%'.$manufacturer.'%');
 		}
 		break;
 	case 'upc':
@@ -121,18 +128,39 @@ if (isset($_GET['type'])){
 			d.upc, p.description, 
 			sum(d.quantity) as total 
 			from $dlog as d left join products as p on d.upc = p.upc
-			where p.upc = '$upc' 
-			and ".$dbc->datediff('d.tdate',"'$date1'")." >= 0
-			and ".$dbc->datediff('d.tdate',"'$date2'")." <= 0
+			where p.upc = ?
+			AND d.tdate BETWEEN ? AND ?
 			and trans_status <> 'M'
 			group by year(d.tdate),month(d.tdate),day(d.tdate),
 			d.upc,p.description
 			order by d.upc,year(d.tdate),month(d.tdate),day(d.tdate)";
+		$args = array($upc);
+		break;
+
+	case 'likecode':
+		$query = "select 
+			year(d.tdate) as year,
+			month(d.tdate) as month,
+			day(d.tdate) as day,
+			p.likeCode as upc, l.likeCodeDesc as description,
+			sum(d.quantity) as total 
+			from $dlog as d left join upcLike as p on d.upc = p.upc
+			left join likeCodes AS l ON p.likeCode=l.likeCode
+			where p.likeCode BETWEEN ? AND ?
+			AND d.tdate BETWEEN ? AND ?
+			and trans_status <> 'M'
+			group by year(d.tdate),month(d.tdate),day(d.tdate),
+			p.likeCode, l.likeCodeDesc
+			order by p.likeCode,year(d.tdate),month(d.tdate),day(d.tdate)";
+		$args = array($lc,$lc2);
 		break;
 		
+		
 	}
-	//echo $query;
-	$result = $dbc->query($query);
+	$args[] = $date1.' 00:00:00';
+	$args[] = $date2.' 23:59:59';
+	$prep = $dbc->prepare_statement($query);
+	$result = $dbc->exec_statement($prep,$args);
 	
 	$dates = array();
 	while($date1 != $date2) {
@@ -213,8 +241,8 @@ else {
 	$header = "Trend Report";
 	include($FANNIE_ROOT.'src/header.html');
 
-	$deptsQ = "select dept_no,dept_name from departments order by dept_no";
-	$deptsR = $dbc->query($deptsQ);
+	$deptsQ = $dbc->prepare_statement("select dept_no,dept_name from departments order by dept_no");
+	$deptsR = $dbc->exec_statement($deptsQ);
 	$deptsList = "";
 	while ($deptsW = $dbc->fetch_array($deptsR))
 	  $deptsList .= "<option value=$deptsW[0]>$deptsW[0] $deptsW[1]</option>";	
@@ -236,6 +264,7 @@ function doShow(which){
 		document.getElementById('dept_version').style.display='none';
 		document.getElementById('manu_version').style.display='block';
 		document.getElementById('upc_version').style.display='none';
+		document.getElementById('lc_version').style.display='none';
 
 		document.getElementById("date1m").value = curDate1;
 		document.getElementById("date2m").value = curDate2;
@@ -244,6 +273,7 @@ function doShow(which){
 		document.getElementById('dept_version').style.display='block';
 		document.getElementById('manu_version').style.display='none';
 		document.getElementById('upc_version').style.display='none';
+		document.getElementById('lc_version').style.display='none';
 
 		document.getElementById("date1d").value = curDate1;
 		document.getElementById("date2d").value = curDate2;
@@ -252,9 +282,19 @@ function doShow(which){
 		document.getElementById('dept_version').style.display='none';
 		document.getElementById('manu_version').style.display='none';
 		document.getElementById('upc_version').style.display='block';
+		document.getElementById('lc_version').style.display='none';
 
 		document.getElementById("date1u").value = curDate1;
 		document.getElementById("date2u").value = curDate2;
+	}
+	else if (which == "likecode"){
+		document.getElementById('dept_version').style.display='none';
+		document.getElementById('manu_version').style.display='none';
+		document.getElementById('lc_version').style.display='block';
+		document.getElementById('upc_version').style.display='none';
+
+		document.getElementById("date1l").value = curDate1;
+		document.getElementById("date2l").value = curDate2;
 	}
 	document.getElementById("current").value = which;
 }
@@ -264,7 +304,8 @@ function doShow(which){
 <input type=hidden id=current value=dept />
 <b>Type</b>: <input type=radio name=type checked value=dept onclick="doShow('dept');" />Department
 <input type=radio name=type value=manu onclick="doShow('manu');" />Manufacturer
-<input type=radio name=type value=upc onclick="doShow('upc');" />Single item<br />
+<input type=radio name=type value=upc onclick="doShow('upc');" />Single item 
+<input type=radio name=type value=likecode onclick="doShow('likecode');" />Like code<br />
 
 <div id=dept_version>
 <table><tr>
@@ -308,6 +349,20 @@ function doShow(which){
 <tr><td></td><td>
 </td>
 <td>End date:</td><td><input type=text id=date2u name=date2u onfocus="showCalendarControl(this);"/></td>
+</tr></table>
+</div>
+
+<div id=lc_version style="display:none;">
+<table><tr>
+<td>LikeCode Start:</td><td>
+<input type=text name=likeCode />
+</td>
+<td>Start date:</td><td><input type=text id=date1l name=date1l onfocus="showCalendarControl(this);"/></td></tr>
+<tr>
+<td>LikeCode End:</td><td>
+<input type=text name=likeCode2 />
+</td>
+<td>End date:</td><td><input type=text id=date2l name=date2l onfocus="showCalendarControl(this);"/></td>
 </tr></table>
 </div>
 

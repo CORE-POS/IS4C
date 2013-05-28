@@ -19,9 +19,9 @@ if ($cached_output){
 
 ob_start();
 
-$query = "select a.* from AR_EOM_Summary as a
-	left join custdata as c on a.cardno=c.cardno and c.personnum=1
-	where c.type <> 'TERM' 
+$query = "select a.* from is4c_trans.AR_EOM_Summary as a
+	left join custdata as c on a.cardno=c.CardNo and c.personNum=1
+	where c.Type <> 'TERM' 
 	and (
 	priorBalance <> 0 or
 	threeMonthCharges <> 0 or
@@ -34,7 +34,7 @@ $query = "select a.* from AR_EOM_Summary as a
 	lastMonthPayments <> 0 or
 	lastMonthBalance <> 0
 	)
-	order by convert(int,a.cardno)";
+	order by a.cardno";
 $headers = array('Mem Num','Name','Prior Balance',
 	'Charge','Payment','Balance',
 	'Charge','Payment','Balance',
@@ -46,7 +46,7 @@ echo "<th colspan=3>3 Months Prior</th>";
 echo "<th colspan=3>2 Months Prior</th>";
 echo "<th colspan=3>Last Month</th></tr>";
 
-select_to_table2($query,0,'#ffffcc',120,0,0,$headers,True);
+select_to_table2($query,array(),0,'#ffffcc',120,0,0,$headers,True);
 
 $output = ob_get_contents();
 ob_end_clean();

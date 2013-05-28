@@ -21,14 +21,15 @@
 
 *********************************************************************************/
 
-$CORE_PATH = isset($CORE_PATH)?$CORE_PATH:"";
-if (empty($CORE_PATH)){ while(!file_exists($CORE_PATH."pos.css")) $CORE_PATH .= "../"; }
+/**
+  @class MagicPLU
 
-if (!class_exists("SpecialUPC")) include($CORE_PATH."lib/Scanning/SpecialUPC.php");
-if (!isset($CORE_LOCAL)) include($CORE_PATH."lib/LocalStorage/conf.php");
-
-if (!function_exists('boxMsg')) include($CORE_PATH."lib/drawscreen.php");
-
+  This module matches specific UPCs to a function
+  Only here for legacy support. Probably not a great
+  idea. Hardcoding a function to a UPC doesn't scale
+  very well. Keeping track of what every special PLU
+  does would get messy.
+*/
 class MagicPLU extends SpecialUPC {
 
 	function is_special($upc){
@@ -39,32 +40,33 @@ class MagicPLU extends SpecialUPC {
 	}
 
 	function handle($upc,$json){
-		global $CORE_LOCAL,$CORE_PATH;
+		global $CORE_LOCAL;
+		$my_url = MiscLib::base_url();
 
 		switch(ltrim($upc,'0')){
 		case '8006':
 			if ($CORE_LOCAL->get("memberID") == 0)
-				$json['main_frame'] = $CORE_PATH.'gui-modules/memlist.php';
+				$json['main_frame'] = $my_url.'gui-modules/memlist.php';
 			else if ($CORE_LOCAL->get("msgrepeat") == 0){
 				$CORE_LOCAL->set("endorseType","stock");
 				$CORE_LOCAL->set("tenderamt",$total);
 				$CORE_LOCAL->set("boxMsg","<B>".$total." stock payment</B><BR>insert form<BR>press [enter] to endorse<P><FONT size='-1'>[clear] to cancel</FONT>");
-				$ret["main_frame"] = $CORE_PATH."gui-modules/boxMsg2.php";
+				$ret["main_frame"] = $my_url."gui-modules/boxMsg2.php";
 			}
 			break;
 		case '8005':
 			if ($CORE_LOCAL->get("memberID") == 0)
-				$json['main_frame'] = $CORE_PATH.'gui-modules/memlist.php';
+				$json['main_frame'] = $my_url.'gui-modules/memlist.php';
 			elseif ($CORE_LOCAL->get("isMember") == 0)
-				$json['output'] = boxMsg("<br />member discount not applicable");
+				$json['output'] = DisplayLib::boxMsg("<br />member discount not applicable");
 			elseif ($CORE_LOCAL->get("percentDiscount") > 0)
-				$json['output'] = boxMsg($CORE_LOCAL->get("percentDiscount")."% discount already applied");
+				$json['output'] = DisplayLib::boxMsg($CORE_LOCAL->get("percentDiscount")."% discount already applied");
 			break;	
 		}
 
 		// magic plu, but other conditions not matched
 		if ($json['main_frame'] === false && empty($json['output']))
-			$json['output'] = boxMsg($upc."<br />is not a valid item");
+			$json['output'] = DisplayLib::boxMsg($upc."<br />is not a valid item");
 
 		return $json;
 	}

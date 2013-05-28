@@ -51,6 +51,52 @@ closedir($dh);
 $sql = new SQLManager($FANNIE_SERVER,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
 		$FANNIE_SERVER_USER,$FANNIE_SERVER_PW);
 
+// auto-close called/waiting after 30 days
+$subquery = "select p.order_id from PendingSpecialOrder as p
+	left join SpecialOrderStatus as s
+	on p.order_id=s.order_id
+	where p.trans_id=0 and s.status_flag=1
+	and ".$sql->datediff($sql->now(),'datetime')." > 30";
+$cwIDs = "(";
+$r = $sql->query($subquery);
+while($w = $sql->fetch_row($r)){
+	$cwIDs .= $w['order_id'].",";
+}
+$cwIDs = rtrim($cwIDs,",").")";
+if (strlen($cwIDs) > 2){
+	$copyQ = "INSERT INTO CompleteSpecialOrder
+		SELECT p.* FROM PendingSpecialOrder AS p
+		WHERE p.order_id IN $cwIDs";
+	$sql->query($copyQ);
+	$delQ = "DELETE FROM PendingSpecialOrder
+		WHERE order_id IN $cwIDs";
+	$sql->query($delQ);
+}
+// end auto-close
+
+// auto-close all after 60 days
+$subquery = "select p.order_id from PendingSpecialOrder as p
+	left join SpecialOrderStatus as s
+	on p.order_id=s.order_id
+	where p.trans_id=0 
+	and ".$sql->datediff($sql->now(),'datetime')." > 60";
+$allIDs = "(";
+$r = $sql->query($subquery);
+while($w = $sql->fetch_row($r)){
+	$allIDs .= $w['order_id'].",";
+}
+$allIDs = rtrim($allIDs,",").")";
+if (strlen($allIDs) > 2){
+	$copyQ = "INSERT INTO CompleteSpecialOrder
+		SELECT p.* FROM PendingSpecialOrder AS p
+		WHERE p.order_id IN $allIDs";
+	$sql->query($copyQ);
+	$delQ = "DELETE FROM PendingSpecialOrder
+		WHERE order_id IN $allIDs";
+	$sql->query($delQ);
+}
+// end auto-close
+
 $query = "SELECT mixMatch,matched FROM transarchive
 	WHERE charflag='SO' AND emp_no <> 9999 AND
 	register_no <> 99 AND trans_status NOT IN ('X','Z')
@@ -116,20 +162,21 @@ if (count($todo) > 0){
 }
 
 // remove "empty" orders from pending
-$cleanupQ = "SELECT p.order_id FROM PendingSpecialOrder 
+$cleanupQ = sprintf("SELECT p.order_id FROM PendingSpecialOrder 
 		AS p LEFT JOIN SpecialOrderNotes AS n
 		ON p.order_id=n.order_id
 		LEFT JOIN SpecialOrderStatus AS s
 		ON p.order_id=s.order_id
 		WHERE (n.order_id IS NULL
-		OR datalength(n.notes)=0)
+		OR %s(n.notes)=0)
 		OR p.order_id IN (
 		SELECT order_id FROM CompleteSpecialOrder
 		WHERE trans_id=0
 		GROUP BY order_id
 		)
 		GROUP BY p.order_id
-		HAVING MAX(trans_id)=0";
+		HAVING MAX(trans_id)=0",
+		($FANNIE_SERVER_DBMS=="MSSQL" ? 'datalength' : 'length'));
 $cleanupR = $sql->query($cleanupQ);
 $empty = "(";
 $clean=0;
@@ -146,5 +193,18 @@ if (strlen($empty) > 2){
 	$delQ = "DELETE FROM PendingSpecialOrder WHERE order_id IN $empty AND trans_id=0";
 	$delR = $sql->query($delQ);
 }
+
+/* blueLine flagging disabled
+$q = "SELECT card_no,count(*) FROM PendingSpecialOrder as p LEFT JOIN
+	SpecialOrderStatus AS s ON p.order_id=s.order_id
+	WHERE s.status_flag=5 AND trans_id > 0 
+	GROUP BY card_no";
+$r = $sql->query($q);
+while($w = $sql->fetch_row($r)){
+	$upQ = "UPDATE {$FANNIE_OP_DB}.custdata SET blueLine=CONCAT(blueLine, ' SO({$w[1]})')
+		WHERE CardNo={$w[0]}";
+	$upR = $sql->query($upQ);
+}
+*/
 
 ?>
