@@ -46,6 +46,7 @@ function tDataConnect()
 
 	$sql = new SQLManager($IS4C_LOCAL->get("localhost"),$IS4C_LOCAL->get("DBMS"),$IS4C_LOCAL->get("tDatabase"),
 			      $IS4C_LOCAL->get("localUser"),$IS4C_LOCAL->get("localPass"),False);
+	$sql->query("SET time_zone='America/Chicago'");
 	return $sql;
 }
 
@@ -55,6 +56,7 @@ function pDataConnect()
 
 	$sql = new SQLManager($IS4C_LOCAL->get("localhost"),$IS4C_LOCAL->get("DBMS"),$IS4C_LOCAL->get("pDatabase"),
 			      $IS4C_LOCAL->get("localUser"),$IS4C_LOCAL->get("localPass"),False);
+	$sql->query("SET time_zone='America/Chicago'");
 	return $sql;
 }
 

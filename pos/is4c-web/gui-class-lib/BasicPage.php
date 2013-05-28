@@ -72,7 +72,7 @@ class BasicPage {
 
 	function print_page(){
 		global $IS4C_PATH;
-		$this->streamTemplateFile($IS4C_PATH.'src/template/doctype.html');
+		$this->streamTemplateFile('doctype.html');
 		echo '<title>'.$this->title.'</title>';	
 		echo "<link rel=\"stylesheet\" type=\"text/css\"
 		    href=\"{$IS4C_PATH}is4c.css\">";
@@ -81,12 +81,12 @@ class BasicPage {
 		echo "<script type=\"text/javascript\">";
 		$this->js_content();
 		echo "</script>";
-		$this->streamTemplateFile($IS4C_PATH.'src/template/header.html');
+		$this->streamTemplateFile('header.html');
 		$this->top_menu();
-		echo "<div id=\"boundingBox\">";
+		echo "<div id=\"boundingBox\">\n";
 		$this->main_content();	
-		echo "</div>";
-		$this->streamTemplateFile($IS4C_PATH.'src/template/footer.html');
+		echo "\n</div>\n";
+		$this->streamTemplateFile('footer.html');
 	}
 
 	function top_menu(){
@@ -113,8 +113,11 @@ class BasicPage {
 	}
 
 	function streamTemplateFile($fn){
-		global $IS4C_PATH;
-		$str = file_get_contents($fn);
+		global $IS4C_LOCAL, $IS4C_PATH;
+		$full_name = $IS4C_PATH.'src/template/';
+		$full_name .= $IS4C_LOCAL->get("Template").'/';
+		$full_name .= $fn;
+		$str = file_get_contents($full_name);
 		echo str_replace('"/','"'.$IS4C_PATH,$str);
 	}
 }

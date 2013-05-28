@@ -67,6 +67,9 @@ class confirm extends BasicPage {
 		else {
 			echo '<blockquote>Your order has been processed</blockquote>';
 		}
+		if (!empty($this->msgs)){
+			echo '<blockquote>'.$this->msgs.'</blockquote>';
+		}
 		echo "<table id=\"carttable\" cellspacing='0' cellpadding='4' border='1'>";
 		echo "<tr><th>Item</th><th>Qty</th><th>Price</th>
 			<th>Total</th><th>&nbsp;</th></tr>";
@@ -97,6 +100,15 @@ class confirm extends BasicPage {
 		echo "</table><br />";
 		if (!$receiptMode){
 			printf('<input type="hidden" name="token" value="%s" />',$_REQUEST['token']);
+			echo '<b>Phone Number (incl. area code)</b>: ';
+			echo '<input type="text" name="ph_contact" /> (<span style="color:red;">Required</span>)<br />';
+			echo '<blockquote>We require a phone number because some email providers
+				have trouble handling .coop email addresses. A phone number ensures
+				we can reach you if there are any questions about your order.</blockquote>';
+			echo '<b>Additional attendees</b>: ';
+			echo '<input type="text" name="attendees" /><br />';
+			echo '<blockquote>If you are purchasing a ticket for someone else, please
+				enter their name(s) so we know to put them on the list.</blockquote>';
 			echo '<input type="submit" name="confbtn" value="Finalize Order" />';
 			echo "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
 			echo '<input type="submit" name="backbtn" value="Go Back" />';
@@ -105,11 +117,16 @@ class confirm extends BasicPage {
 			/* refactor idea: clear in preprocess()
 			   and print receipt from a different script
 			*/
+			$endQ = "INSERT INTO localtrans SELECT l.* FROM
+				localtemptrans AS l WHERE emp_no=$empno";
+			$endR = $db->query($endQ);
 			$endQ = "INSERT INTO pendingtrans SELECT l.* FROM
 				localtemptrans AS l WHERE emp_no=$empno";
-			$db->query($endQ);
-			$clearQ = "DELETE FROM localtemptrans WHERE emp_no=$empno";
-			$db->query($clearQ);
+			$endR = $db->query($endQ);
+			if ($endR !== False){
+				$clearQ = "DELETE FROM localtemptrans WHERE emp_no=$empno";
+				$db->query($clearQ);
+			}
 		}
 	}
 
@@ -128,6 +145,13 @@ class confirm extends BasicPage {
 			   shuffle order to pendingtrans table
 			   send order notifications
 			*/
+			$ph = $_REQUEST['ph_contact'];
+			$ph = preg_replace("/[^\d]/","",$ph);
+			if (strlen($ph) != 10){
+				$this->msgs = 'Phone number with area code is required';
+				return True;
+			}
+			$attend = isset($_REQUEST['attendees']) ? $_REQUEST['attendees'] : '';
 			if (isset($_REQUEST['token'])){
 				$pp1 = GetExpressCheckoutDetails($_REQUEST['token']);
 
@@ -148,11 +172,22 @@ class confirm extends BasicPage {
 					addtax($taxes);
 					
 					/* add paypal tender */
-					addtender("Paypal","PP",$pp1['PAYMENTREQUEST_0_AMT']);
+					addtender("Paypal","PP",-1*$pp1['PAYMENTREQUEST_0_AMT']);
 
 					/* send notices */
 					$cart = customer_confirmation($empno,$email,$pp1['PAYMENTREQUEST_0_AMT']);
-					admin_notification($empno,$email,$pp1['PAYMENTREQUEST_0_AMT'],$cart);
+					admin_notification($empno,$email,$ph,$pp1['PAYMENTREQUEST_0_AMT'],$cart);
+
+					$addrQ = sprintf("SELECT e.email_address FROM localtemptrans
+						as l INNER JOIN superdepts AS s ON l.department=s.dept_ID
+						INNER JOIN superDeptEmails AS e ON s.superID=e.superID
+						WHERE l.emp_no=%d GROUP BY e.email_address",$empno);
+					$addrR = $db->query($addrQ);
+					$addr = array();
+					while($addrW = $db->fetch_row($addrR))
+						$addr[] = $addrW[0];
+					if (count($addr) > 0)
+						mgr_notification($addr,$email,$ph,$pp1['PAYMENTREQUEST_0_AMT'],$attend,$cart);
 
 				}
 			}

@@ -94,8 +94,9 @@ function addItem($strupc, $strdescription, $strtransType, $strtranssubType, $str
 	else {
 		$owner = $IS4C_LOCAL->get("defaultNonMem");
 		if ($strtransType == 'I'){
-			$dblunitPrice += $memDiscount;
-			$dbltotal += ($quantity*$memDiscount);
+			// this is handled fine in addUPC
+			//$dblunitPrice += $memDiscount;
+			//$dbltotal += ($quantity*$memDiscount);
 		}
 	}
 	$strCardNo = $owner;
@@ -194,7 +195,8 @@ function addUPC($upc,$quantity=1.0){
 		$unitPrice -= $discount;
 		break;
 	case 2:
-		$memDiscount = $row['normal_price'] - $row['special_price'];
+		if (getOwner(checkLogin()))
+			$memDiscount = $row['normal_price'] - $row['special_price'];
 		$unitPrice -= $memDiscount;
 		break;
 	}

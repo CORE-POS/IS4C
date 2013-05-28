@@ -165,7 +165,7 @@ class SQLManager {
 			$result = mysql_query($query_text,$this->connections[$which_connection]);
 			if (!$result && DEBUG_MYSQL_QUERIES != "" && is_writable(DEBUG_MYSQL_QUERIES)){
 				$fp = fopen(DEBUG_MYSQL_QUERIES,"a");
-				fwrite($fp,date('r').": ".$query_text."\n\n");
+				fwrite($fp,date('r').": ".$query_text."\n".mysql_error()."\n\n");
 				fclose($fp);
 			}
 			//else if (!$result) echo $query_text;

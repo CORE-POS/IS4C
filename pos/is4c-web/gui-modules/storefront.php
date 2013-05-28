@@ -58,6 +58,7 @@ class storefront extends BasicPage {
 		echo '<div id="browsearea">';
 		echo $this->itemlist();
 		echo '</div>';
+		echo '<div style="clear:both;"></div>';
 	}
 
 	function itemlist(){
@@ -91,7 +92,7 @@ class storefront extends BasicPage {
 			$q .= "INNER JOIN superdepts AS s ON p.department=s.dept_ID ";
 		if ($sub != -1)
 			$q .= "INNER JOIN subdepts AS b ON p.department=b.dept_ID ";
-		$q .= "WHERE p.inUse=1 AND (o.available IS NULL or o.available > 0) ";
+		$q .= "WHERE p.inUse=1 AND u.enableOnline=1 AND (o.available IS NULL or o.available > 0) ";
 		if ($super != -1)
 			$q .= sprintf("AND s.superID=%d ",$super);
 		if ($d != -1)

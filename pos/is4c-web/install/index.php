@@ -613,6 +613,14 @@ function create_op_dbs($db,$type){
 		$db->query($sdnQ);
 	}
 
+	$seQ = "CREATE TABLE superDeptEmails (
+		superID int,
+		email_address varchar(100)	
+		)";
+	if (!$db->table_exists('superDeptEmails',$name)){
+		$db->query($seQ);
+	}
+
 	$puQ = "CREATE TABLE productUser (
 		upc varchar(13),
 		description varchar(255),

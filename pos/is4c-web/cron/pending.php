@@ -8,7 +8,7 @@ if (!function_exists("pDataConnect")) include($IS4C_PATH."lib/connect.php");
 $db = tDataConnect();
 
 $db->query("LOCK TABLES pendingtrans WRITE, dtransactions WRITE, 
-	localtrans_today WRITE, localtrans WRITE");
+	localtrans_today WRITE");
 
 // get upcs & quantities from pending
 $data = array();
@@ -21,7 +21,6 @@ while($row = $db->fetch_row($result)){
 // shuffle contents to final trans tables
 $db->query("INSERT INTO dtransactions SELECT * FROM pendingtrans");
 $db->query("INSERT INTO localtrans_today SELECT * FROM pendingtrans");
-$db->query("INSERT INTO localtrans SELECT * FROM pendingtrans");
 
 // clear pending
 $db->query("DELETE FROM pendingtrans");
