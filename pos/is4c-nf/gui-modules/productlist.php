@@ -205,11 +205,7 @@ class productlist extends NoInputPage {
 			</span>
 			<form action="<?php echo $_SERVER['PHP_SELF']; ?>" method="post" autocomplete="off">
 			<input type="text" name="search" size="15" id="search"
-<<<<<<< HEAD
 				onblur="$('#search').focus();" />
-=======
-				onblur="$('#search).focus();" />
->>>>>>> flathat/master
 			</form>
 			press [enter] to cancel
 			</div>

@@ -145,7 +145,7 @@ class pos2 extends BasicPage {
 			$this->display = $json['output'];
 
 		if (isset($json['retry']) && $json['retry'] != False){
-			$this->add_onload_command("setTimeout(\"inputRetry('".$json['retry']."');\", 700);\n");
+			$this->add_onload_command("setTimeout(\"inputRetry('".$json['retry']."');\", 150);\n");
 		}
 
 		if (isset($json['receipt']) && $json['receipt'] != False){
