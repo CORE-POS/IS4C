@@ -851,7 +851,7 @@ class SQLManager {
 		return $str;
 	}
 
-	function sep($str,$which_connection=''){
+	function sep($which_connection=''){
                 if ($which_connection == '')
                         $which_connection = $this->default_db;
                 switch($this->db_types[$which_connection]){
