@@ -2,8 +2,7 @@
 
 $my_menu = array(
 	"Charge Available Card" => "CCFROMCACHE",
-	"Reset Terminal" => "TERMRESET",
-	"Manual Card Entry" => "TERMMANUAL",
+	"Reboot Terminal" => "TERMREBOOT",
 	"Tender External CC" => "MANUALCC"
 );
 

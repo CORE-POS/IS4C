@@ -486,6 +486,16 @@ static public function uploadCCdata(){
 			$sql->query("truncate table efsnetRequestMod",
 				$CORE_LOCAL->get("tDatabase"));
 		}
+
+		$mod_cols = self::getMatchingColumns($sql,"efsnetTokens");
+		$mod_success = $sql->transfer($CORE_LOCAL->get("tDatabase"),
+			"select {$mod_cols} from efsnetTokens",
+			$CORE_LOCAL->get("mDatabase"),
+			"insert into efsnetTokens ({$mod_cols})");
+		if ($mod_success){
+			$sql->query("truncate table efsnetTokens",
+				$CORE_LOCAL->get("tDatabase"));
+		}
 	}
 }
 
