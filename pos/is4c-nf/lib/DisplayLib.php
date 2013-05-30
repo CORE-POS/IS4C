@@ -683,8 +683,8 @@ static public function listitems($top_item, $highlight) {
 
 //------------------Boundary Bottom----------------
 
-	return self::drawitems($top_item, 11, $highlight);
 	$CORE_LOCAL->set("currentid",$highlight);
+	return self::drawitems($top_item, 11, $highlight);
 }
 
 

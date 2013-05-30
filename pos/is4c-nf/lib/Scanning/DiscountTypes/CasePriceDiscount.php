@@ -21,7 +21,7 @@
 
 *********************************************************************************/
 
-class CaseDiscount extends DiscountType {
+class CasePriceDiscount extends DiscountType {
 
 	function priceInfo($row,$quantity=1){
 		global $CORE_LOCAL;
@@ -37,7 +37,7 @@ class CaseDiscount extends DiscountType {
 
 		if ($CORE_LOCAL->get("casediscount") > 0 && $CORE_LOCAL->get("casediscount") <= 100) {
 			$casediscount = (100 - $CORE_LOCAL->get("casediscount"))/100;
-			$ret['unitPrice'] = $casediscount * $ret['unitPrice'];
+			$ret['unitPrice'] = MiscLib::truncate2($casediscount * $ret['unitPrice']);
 			$ret['regPrice'] = $ret['unitPrice'];
 			$CORE_LOCAL->set("casediscount",0);
 		}

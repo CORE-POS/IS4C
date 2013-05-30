@@ -44,7 +44,7 @@ class AlwaysFsEligibleFooter extends FooterBox {
 		global $CORE_LOCAL;
 		$this->display_css .= "color:#800080;";
 		if ($CORE_LOCAL->get('End') != 1)
-			return number_format($CORE_LOCAL->get("fsEligible"),2);
+			return number_format((double)$CORE_LOCAL->get("fsEligible"),2);
 		else
 			return '0.00';
 	}

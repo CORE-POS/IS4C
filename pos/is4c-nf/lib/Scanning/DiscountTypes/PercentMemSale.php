@@ -34,10 +34,10 @@ class PercentMemSale extends DiscountType {
 		$ret["unitPrice"] = $row['normal_price'];
 
 		$ret['discount'] = 0;
-		$ret['memDiscount'] = ($ret['unitPrice'] * $row['special_price']) * $quantity;
+		$ret['memDiscount'] = MiscLib::truncate2(($ret['regPrice'] - ($ret['unitPrice'] * $row['special_price'])) * $quantity);
 
 		if ($CORE_LOCAL->get("isMember") == 1)
-			$ret['unitPrice'] = $ret['unitPrice'] * $row['special_price'];
+			$ret['unitPrice'] = MiscLib::truncate2($ret['unitPrice'] * $row['special_price']);
 
 		$this->savedRow = $row;
 		$this->savedInfo = $ret;

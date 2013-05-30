@@ -66,7 +66,7 @@ class MultiTotal extends FooterBox {
 		}	
 		else {
 			$this->display_css .= "color:#000000;";
-			return number_format($CORE_LOCAL->get("runningTotal"),2);
+			return number_format((double)$CORE_LOCAL->get("runningTotal"),2);
 		}
 	}
 }
