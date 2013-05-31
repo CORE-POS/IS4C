@@ -303,7 +303,6 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
 		$lp = DisplayLib::lastpage();
 		$this->assertInternalType('string',$lp);
 
-		$this->assertEquals($lp,$draw);
 		$this->assertEquals($lp,$list);
 	}
 
@@ -330,5 +329,358 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
 		global $CORE_LOCAL;
 		UdpComm::udpSend('most likely no one is listening...');
 	}
+
+	public function testTransRecord(){
+		global $CORE_LOCAL;
+
+		if (!class_exists('lttLib')) include ('lttLib.php');
+		lttLib::clear();
+
+		$CORE_LOCAL->set('infoRecordQueue',array());
+		TransRecord::addQueued('1234567890123','UNIT TEST',1,'UT',1.99);
+		$queue = $CORE_LOCAL->get('infoRecordQueue');
+		$this->assertInternalType('array',$queue);
+		$this->assertEquals(1,count($queue));
+		$this->assertArrayHasKey(0,$queue);
+		$this->assertInternalType('array',$queue[0]);
+		$this->assertArrayHasKey('upc',$queue[0]);
+		$this->assertEquals('1234567890123',$queue[0]['upc']);
+		$this->assertArrayHasKey('description',$queue[0]);
+		$this->assertEquals('UNIT TEST',$queue[0]['description']);
+		$this->assertArrayHasKey('numflag',$queue[0]);
+		$this->assertEquals(1,$queue[0]['numflag']);
+		$this->assertArrayHasKey('charflag',$queue[0]);
+		$this->assertEquals('UT',$queue[0]['charflag']);
+		$this->assertArrayHasKey('regPrice',$queue[0]);
+		$this->assertEquals(1.99,$queue[0]['regPrice']);
+
+		TransRecord::emptyQueue();
+		$queue = $CORE_LOCAL->get('infoRecordQueue');
+		$this->assertInternalType('array',$queue);
+		$this->assertEquals(0,count($queue));
+		$record = lttLib::genericRecord();
+		$record['upc'] = '1234567890123';
+		$record['description'] = 'UNIT TEST';
+		$record['numflag'] = 1;
+		$record['charflag'] = 'UT';
+		$record['regPrice'] = 1.99;
+		$record['trans_type'] = 'C';
+		$record['trans_status'] = 'D';
+		lttLib::verifyRecord(1, $record, $this);
+
+		lttLib::clear();
+
+		$CORE_LOCAL->set('taxTotal',1.23);
+		TransRecord::addtax();
+		$record = lttLib::genericRecord();
+		$record['upc'] = 'TAX';
+		$record['description'] = 'Tax';
+		$record['trans_type'] = 'A';
+		$record['total'] = 1.23;
+		lttLib::verifyRecord(1, $record, $this);
+
+		lttLib::clear();
+
+		TransRecord::addtender('UT TENDER','UT',2.34);
+		$record = lttLib::genericRecord();
+		$record['description'] = 'UT TENDER';
+		$record['trans_type'] = 'T';
+		$record['trans_subtype'] = 'UT';
+		$record['total'] = 2.34;
+		lttLib::verifyRecord(1, $record, $this);
+
+		lttLib::clear();
+
+		TransRecord::addcomment('UNIT TEST COMMENT');
+		$record = lttLib::genericRecord();
+		$record['description'] = 'UNIT TEST COMMENT';
+		$record['trans_type'] = 'C';
+		$record['trans_subtype'] = 'CM';
+		$record['trans_status'] = 'D';
+		lttLib::verifyRecord(1, $record, $this);
+
+		lttLib::clear();
+
+		TransRecord::addchange(3.14,'UT');
+		$record = lttLib::genericRecord();
+		$record['description'] = 'Change';
+		$record['trans_type'] = 'T';
+		$record['trans_subtype'] = 'UT';
+		$record['total'] = 3.14;
+		$record['voided'] = 8;
+		lttLib::verifyRecord(1, $record, $this);
+
+		lttLib::clear();
+
+		TransRecord::addfsones(3);
+		$record = lttLib::genericRecord();
+		$record['description'] = 'FS Change';
+		$record['trans_type'] = 'T';
+		$record['trans_subtype'] = 'FS';
+		$record['total'] = 3;
+		$record['voided'] = 8;
+		lttLib::verifyRecord(1, $record, $this);
+
+		lttLib::clear();
+
+		TransRecord::addEndofShift(3);
+		$record = lttLib::genericRecord();
+		$record['upc'] = 'ENDOFSHIFT';
+		$record['description'] = 'End of Shift';
+		$record['trans_type'] = 'S';
+		lttLib::verifyRecord(1, $record, $this);
+
+		lttLib::clear();
+
+		TransRecord::adddiscount(5.45,25);
+		$record = lttLib::genericRecord();
+		$record['description'] = '** YOU SAVED $5.45 **';
+		$record['trans_type'] = 'I';
+		$record['trans_status'] = 'D';
+		$record['department'] = 25;
+		$record['voided'] = 2;
+		lttLib::verifyRecord(1, $record, $this);
+
+		lttLib::clear();
+
+		TransRecord::addfsTaxExempt();
+		$record = lttLib::genericRecord();
+		$record['upc'] = 'FS Tax Exempt';
+		$record['description'] = ' Fs Tax Exempt ';
+		$record['trans_type'] = 'C';
+		$record['trans_status'] = 'D';
+		$record['voided'] = 17;
+		lttLib::verifyRecord(1, $record, $this);
+
+		lttLib::clear();
+
+		TransRecord::discountnotify(5);
+		$record = lttLib::genericRecord();
+		$record['description'] = '** 5% Discount Applied **';
+		$record['trans_status'] = 'D';
+		$record['voided'] = 4;
+		lttLib::verifyRecord(1, $record, $this);
+
+		lttLib::clear();
+
+		TransRecord::addTaxExempt();
+		$record = lttLib::genericRecord();
+		$record['description'] = '** Order is Tax Exempt **';
+		$record['trans_status'] = 'D';
+		$record['voided'] = 10;
+		$record['tax'] = 9;
+		lttLib::verifyRecord(1, $record, $this);
+		$this->assertEquals(1, $CORE_LOCAL->get('TaxExempt'));
+
+		lttLib::clear();
+
+		TransRecord::reverseTaxExempt();
+		$record = lttLib::genericRecord();
+		$record['description'] = '** Tax Exemption Reversed **';
+		$record['trans_status'] = 'D';
+		$record['voided'] = 10;
+		$record['tax'] = 9;
+		lttLib::verifyRecord(1, $record, $this);
+		$this->assertEquals(0, $CORE_LOCAL->get('TaxExempt'));
+
+		lttLib::clear();
+
+		$CORE_LOCAL->set('casediscount',7);
+		TransRecord::addcdnotify();
+		$record = lttLib::genericRecord();
+		$record['description'] = '** 7% Case Discount Applied';
+		$record['trans_status'] = 'D';
+		$record['voided'] = 6;
+		lttLib::verifyRecord(1, $record, $this);
+
+		lttLib::clear();
+
+		TransRecord::addCoupon('0051234512345',123,-1.23,1);
+		$record = lttLib::genericRecord();
+		$record['upc'] = '0051234512345';
+		$record['description'] = ' * Manufacturers Coupon';
+		$record['trans_type'] = 'I';
+		$record['trans_subtype'] = 'CP';
+		$record['trans_status'] = 'C';
+		$record['department'] = 123;
+		$record['unitPrice'] = -1.23;
+		$record['total'] = -1.23;
+		$record['regPrice'] = -1.23;
+		$record['foodstamp'] = 1;
+		$record['quantity'] = 1;
+		$record['ItemQtty'] = 1;
+		lttLib::verifyRecord(1, $record, $this);
+
+		lttLib::clear();
+
+		TransRecord::addhousecoupon('0049999912345',122,-1.22);
+		$record = lttLib::genericRecord();
+		$record['upc'] = '0049999912345';
+		$record['description'] = ' * Store Coupon';
+		$record['trans_type'] = 'I';
+		$record['trans_subtype'] = 'IC';
+		$record['trans_status'] = 'C';
+		$record['department'] = 122;
+		$record['unitPrice'] = -1.22;
+		$record['total'] = -1.22;
+		$record['regPrice'] = -1.22;
+		$record['quantity'] = 1;
+		$record['ItemQtty'] = 1;
+		lttLib::verifyRecord(1, $record, $this);
+
+		lttLib::clear();
+
+		TransRecord::additemdiscount(345,3.45);
+		$record = lttLib::genericRecord();
+		$record['upc'] = 'ITEMDISCOUNT';
+		$record['description'] = ' * Item Discount';
+		$record['trans_type'] = 'I';
+		$record['department'] = 345;
+		$record['unitPrice'] = -3.45;
+		$record['total'] = -3.45;
+		$record['regPrice'] = -3.45;
+		$record['quantity'] = 1;
+		$record['ItemQtty'] = 1;
+		lttLib::verifyRecord(1, $record, $this);
+
+		lttLib::clear();
+
+		TransRecord::addtare(5);
+		$record = lttLib::genericRecord();
+		$record['description'] = '** Tare Weight 0.05 **';
+		$record['trans_status'] = 'D';
+		$record['voided'] = 6;
+		lttLib::verifyRecord(1, $record, $this);
+		$this->assertEquals(0.05, $CORE_LOCAL->get('tare'));
+
+		lttLib::clear();
+
+		TransRecord::addMadCoup();
+		$record = lttLib::genericRecord();
+		$record['upc'] = 'MAD Coupon';
+		$record['description'] = 'Member Appreciation Coupon';
+		$record['trans_type'] = 'I';
+		$record['trans_subtype'] = 'CP';
+		$record['trans_status'] = 'C';
+		$record['quantity'] = 1;
+		$record['ItemQtty'] = 1;
+		$record['voided'] = 17;
+		lttLib::verifyRecord(1, $record, $this);
+
+		lttLib::clear();
+
+		$CORE_LOCAL->set('transDiscount',3.24);
+		TransRecord::addTransDiscount();
+		$record = lttLib::genericRecord();
+		$record['upc'] = 'DISCOUNT';
+		$record['description'] = 'Discount';
+		$record['trans_type'] = 'I';
+		$record['quantity'] = 1;
+		$record['ItemQtty'] = 1;
+		$record['unitPrice'] = -3.24;
+		$record['total'] = -3.24;
+		lttLib::verifyRecord(1, $record, $this);
+
+		lttLib::clear();
+
+		TransRecord::addCashDrop('90.78');
+		$record = lttLib::genericRecord();
+		$record['upc'] = 'DROP';
+		$record['description'] = 'Cash Drop';
+		$record['trans_type'] = 'I';
+		$record['trans_status'] = 'X';
+		$record['quantity'] = 1;
+		$record['ItemQtty'] = 1;
+		$record['unitPrice'] = -90.78;
+		$record['total'] = -90.78;
+		$record['charflag'] = 'CD';
+		lttLib::verifyRecord(1, $record, $this);
+
+		lttLib::clear();
+
+		$record = lttLib::genericRecord();
+		$record['upc'] = 'UNITTEST';
+		$record['description'] = 'Unit Test';
+		$record['department'] = 5;
+		$record['numflag'] = 4;
+		$record['charflag'] = 'UT';
+		$record['amount1'] = 1.23;
+		$record['total'] = 1.23;
+		$record['amount2'] = 1.24;
+		$record['regPrice'] = 1.24;
+		TransRecord::add_log_record($record);
+		unset($record['amount1']); // not real column
+		unset($record['amount2']); // not real column
+		$record['trans_type'] = 'L';
+		$record['trans_subtype'] = 'OG';
+		$record['trans_status'] = 'D';
+		lttLib::verifyRecord(1, $record, $this);
+
+		lttLib::clear();
+	}
+
+	public function testPrehLib(){
+		global $CORE_LOCAL;
+
+		if (!class_exists('lttLib')) include ('lttLib.php');
+		lttLib::clear();
+		
+		TransRecord::addcomment('peek');
+		$peek = PrehLib::peekItem();
+		$this->assertEquals('peek',$peek);
+
+		lttLib::clear();
+
+		$CORE_LOCAL->set('percentDiscount',5);
+		$CORE_LOCAL->set('transDiscount',0.51);
+		$CORE_LOCAL->set('taxTotal',1.45);
+		$CORE_LOCAL->set('fsTaxExempt',1.11);
+		$CORE_LOCAL->set('fstaxable',5.67);
+		$CORE_LOCAL->set('amtdue',9.55);
+		// should add four records
+		PrehLib::finalttl();
+
+		// verify discount record
+		$record = lttLib::genericRecord();
+		$record['description'] = 'Discount';
+		$record['trans_type'] = 'C';
+		$record['trans_status'] = 'D';
+		$record['unitPrice'] = -0.51;
+		$record['voided'] = 5;
+		lttLib::verifyRecord(1, $record, $this);
+
+		// verify subtotal record
+		$record = lttLib::genericRecord();
+		$record['upc'] = 'Subtotal';
+		$record['description'] = 'Subtotal';
+		$record['trans_type'] = 'C';
+		$record['trans_status'] = 'D';
+		$record['unitPrice'] = 0.34;
+		$record['voided'] = 11;
+		lttLib::verifyRecord(2, $record, $this);
+
+		// verify fs tax exempt record
+		$record = lttLib::genericRecord();
+		$record['upc'] = 'Tax';
+		$record['description'] = '5.67 Taxable';
+		$record['trans_type'] = 'C';
+		$record['trans_status'] = 'D';
+		$record['unitPrice'] = 1.11;
+		$record['voided'] = 7;
+		lttLib::verifyRecord(3, $record, $this);
+
+		// verify total record
+		$record = lttLib::genericRecord();
+		$record['upc'] = 'Total';
+		$record['description'] = 'Total';
+		$record['trans_type'] = 'C';
+		$record['trans_status'] = 'D';
+		$record['unitPrice'] = 9.55;
+		$record['voided'] = 11;
+		lttLib::verifyRecord(4, $record, $this);
+
+		lttLib::clear();
+	}
+
 }
 ?>

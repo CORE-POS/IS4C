@@ -645,8 +645,8 @@ static public function addTransDiscount() {
 /**
   Add cash drop record
 */
-static public function addCashDrop($ttl) {
-	self::addItem("DROP", "Cash Drop", "I", "", "X", 0, 1, MiscLib::truncate2(-1 * $amt), MiscLib::truncate2(-1 * $amt), 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0.00, 0, 'CD');
+static public function addCashDrop($amt) {
+	self::addItem("DROP", "Cash Drop", "I", "", "X", 0, 1, MiscLib::truncate2(-1 * $amt), MiscLib::truncate2(-1 * $amt), 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0.00, 0, 'CD');
 }
 
 // ---------------------------- insert stamp in activitytemplog --------------------------------
