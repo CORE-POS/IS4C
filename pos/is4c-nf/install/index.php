@@ -405,83 +405,15 @@ function create_op_dbs($db,$type){
 	$name = $CORE_LOCAL->get('pDatabase');
 	$errors = array();
 
-	$chargeCodeQ = "CREATE TABLE chargecode (
-		staffID varchar(4),
-		chargecode varchar(6))";
-	if (!$db->table_exists('chargecode',$name)){
-		$db->query($chargeCodeQ,$name);
-		db_structure_modify($db,'chargecode',$chargeCodeQ,$errors);
-	}
-
-	$couponCodeQ = "CREATE TABLE couponcodes (
-		Code varchar(4),
-		Qty int,
-		Value real)";
-	if (!$db->table_exists('couponcodes',$name)){
-		db_structure_modify($db,'couponcodes',$couponCodeQ,$errors);
+	create_if_needed($db, $type, $name, 'couponcodes', 'op', $errors);
+	$chk = $db->query('SELECT Code FROM couponcodes', $name);
+	if ($db->num_rows($chk) == 0){
 		load_sample_data($db,'couponcodes');
 	}
 
-	$custDataQ = "CREATE TABLE `custdata` (
-	  `CardNo` int(11) default NULL,
-	  `personNum` tinyint(4) NOT NULL default '1',
-	  `LastName` varchar(30) default NULL,
-	  `FirstName` varchar(30) default NULL,
-	  `CashBack` real NOT NULL default '60',
-	  `Balance` real NOT NULL default '0',
-	  `Discount` smallint(6) default NULL,
-	  `MemDiscountLimit` real NOT NULL default '0',
-	  `ChargeOk` tinyint(4) NOT NULL default '1',
-	  `WriteChecks` tinyint(4) NOT NULL default '1',
-	  `StoreCoupons` tinyint(4) NOT NULL default '1',
-	  `Type` varchar(10) NOT NULL default 'pc',
-	  `memType` tinyint(4) default NULL,
-	  `staff` tinyint(4) NOT NULL default '0',
-	  `SSI` tinyint(4) NOT NULL default '0',
-	  `Purchases` real NOT NULL default '0',
-	  `NumberOfChecks` smallint(6) NOT NULL default '0',
-	  `memCoupons` int(11) NOT NULL default '1',
-	  `blueLine` varchar(50) default NULL,
-	  `Shown` tinyint(4) NOT NULL default '1',
-	  `id` int(11) NOT NULL auto_increment,
-	  PRIMARY KEY  (`id`),
-	  KEY `CardNo` (`CardNo`),
-	  KEY `LastName` (`LastName`)
-	) ENGINE=MyISAM AUTO_INCREMENT=926 DEFAULT CHARSET=latin1;";
-	if ($type == 'mssql'){
-		$custDataQ = "CREATE TABLE [custdata] (
-		[CardNo] [varchar] (25) COLLATE SQL_Latin1_General_CP1_CI_AS NULL ,
-		[personNum] [varchar] (3) COLLATE SQL_Latin1_General_CP1_CI_AS NULL ,
-		[LastName] [varchar] (30) COLLATE SQL_Latin1_General_CP1_CI_AS NULL ,
-		[FirstName] [varchar] (30) COLLATE SQL_Latin1_General_CP1_CI_AS NULL ,
-		[CashBack] [money] NULL ,
-		[Balance] [money] NULL ,
-		[Discount] [smallint] NULL ,
-		[MemDiscountLimit] [money] NULL ,
-		[ChargeOk] [bit] NULL ,
-		[WriteChecks] [bit] NULL ,
-		[StoreCoupons] [bit] NULL ,
-		[Type] [varchar] (10) COLLATE SQL_Latin1_General_CP1_CI_AS NULL ,
-		[memType] [smallint] NULL ,
-		[staff] [tinyint] NULL ,
-		[SSI] [tinyint] NULL ,
-		[Purchases] [money] NULL ,
-		[NumberOfChecks] [smallint] NULL ,
-		[memCoupons] [int] NULL ,
-		[blueLine] [varchar] (50) COLLATE SQL_Latin1_General_CP1_CI_AS NULL ,
-		[Shown] [tinyint] NULL ,
-		[id] [int] IDENTITY (1, 1) NOT NULL 
-		) ON [PRIMARY]";
-	}
-	if (!$db->table_exists('custdata',$name)){
-		db_structure_modify($db,'custdata',$custDataQ,$errors);
-	}
+	create_if_needed($db, $type, $name, 'custdata', 'op', $errors);
 
-	$cardsQ = "CREATE TABLE memberCards (upc VARCHAR(13),card_no INT,
-			PRIMARY KEY(upc))";
-	if (!$db->table_exists('memberCards',$name)){
-		db_structure_modify($db,'memberCards',$cardsQ,$errors);
-	}
+	create_if_needed($db, $type, $name, 'memberCards', 'op', $errors);
 
 	$cardsViewQ = "CREATE VIEW memberCardsView AS 
 		SELECT CONCAT(" . $CORE_LOCAL->get('memberUpcPrefix') . ",c.CardNo) as upc, c.CardNo as card_no FROM custdata c";
@@ -489,305 +421,57 @@ function create_op_dbs($db,$type){
 		db_structure_modify($db,'memberCardsView',$cardsViewQ,$errors);
 	}
 	
-	$deptQ = "CREATE TABLE departments (
-		dept_no smallint,
-		dept_name varchar(30),
-		dept_tax tinyint,
-		dept_fs tinyint,
-		dept_limit real,
-		dept_minimum real,
-		dept_discount tinyint,
-		modified datetime,
-		modifiedby int,
-		PRIMARY KEY (dept_no))";
-	if (!$db->table_exists('departments',$name)){
-		db_structure_modify($db,'departments',$deptQ,$errors);
-	}
+	create_if_needed($db, $type, $name, 'departments', 'op', $errors);
 
-	$empQ = "CREATE TABLE employees (
-		emp_no smallint,
-		CashierPassword int,
-		AdminPassword int,
-		FirstName varchar(255),
-		LastName varchar(255),
-		JobTitle varchar(255),
-		EmpActive tinyint,
-		frontendsecurity smallint,
-		backendsecurity smallint,
-		birthdate datetime,
-		PRIMARY KEY (emp_no))";
-	if (!$db->table_exists('employees',$name)){
-		db_structure_modify($db,'employees',$empQ,$errors);
-	}
+	create_if_needed($db, $type, $name, 'employees', 'op', $errors);
 
-	$globalQ = "CREATE TABLE globalvalues (
-		CashierNo int,
-		Cashier varchar(30),
-		LoggedIn tinyint,
-		TransNo int,
-		TTLFlag tinyint,
-		FntlFlag tinyint,
-		TaxExempt tinyint)";
-	if (!$db->table_exists('globalvalues',$name)){
-		db_structure_modify($db,'globalvalues',$globalQ,$errors);
+	create_if_needed($db, $type, $name, 'globalvalues', 'op', $errors);
+	$chk = $db->query('SELECT CashierNo FROM globalvalues', $name);
+	if ($db->num_rows($chk) != 1){
+		$db->query('TRUNCATE TABLE globalvalues');
 		load_sample_data($db,'globalvalues');
 	}
 
-	$ddQ = "CREATE TABLE drawerowner (
-		drawer_no tinyint,
-		emp_no smallint,
-		PRIMARY KEY (drawer_no)
-		)";
-	if (!$db->table_exists('drawerowner',$name)){
-		db_structure_modify($db,'drawerowner',$ddQ,$errors);
-		$db->query('INSERT INTO drawerowner (drawer_no) VALUES (1)');
-		$db->query('INSERT INTO drawerowner (drawer_no) VALUES (2)');
+	create_if_needed($db, $type, $name, 'drawerowner', 'op', $errors);
+	$chk = $db->query('SELECT drawer_no FROM drawerowner', $name);
+	if ($db->num_rows($chk) == 0){
+		$db->query('INSERT INTO drawerowner (drawer_no) VALUES (1)', $name);
+		$db->query('INSERT INTO drawerowner (drawer_no) VALUES (2)', $name);
 	}
 
-	$prodQ = "CREATE TABLE `products` (
-	  `upc` varchar(13) default NULL,
-	  `description` varchar(30) default NULL,
-	  `normal_price` real default NULL,
-	  `pricemethod` smallint(6) default NULL,
-	  `groupprice` real default NULL,
-	  `quantity` smallint(6) default NULL,
-	  `special_price` real default NULL,
-	  `specialpricemethod` smallint(6) default NULL,
-	  `specialgroupprice` real default NULL,
-	  `specialquantity` smallint(6) default NULL,
-	  `start_date` datetime default NULL,
-	  `end_date` datetime default NULL,
-	  `department` smallint(6) default NULL,
-	  `size` varchar(9) default NULL,
-	  `tax` smallint(6) default NULL,
-	  `foodstamp` tinyint(4) default NULL,
-	  `scale` tinyint(4) default NULL,
-	  `scaleprice` tinyint(4) default 0 NULL,
-	  `mixmatchcode` varchar(13) default NULL,
-	  `modified` datetime default NULL,
-	  `advertised` tinyint(4) default NULL,
-	  `tareweight` real default NULL,
-	  `discount` smallint(6) default NULL,
-	  `discounttype` tinyint(4) default NULL,
-	  `unitofmeasure` varchar(15) default NULL,
-	  `wicable` smallint(6) default NULL,
-	  `qttyEnforced` tinyint(4) default NULL,
-	  `idEnforced` tinyint(4) default 0 NULL,
-	  `cost` real default 0 NULL,
-	  `inUse` tinyint(4) default NULL,
-	  `numflag` int(11) default 0 NULL,
-	  `subdept` smallint(4) default NULL,
-	  `deposit` real default NULL,
-	  `local` int(11) default 0 NULL,
-	  `store_id` smallint default 0,
-	  `id` int(11) NOT NULL,
-	  KEY `upc` (`upc`),
-	  KEY `description` (`description`),
-	  KEY `normal_price` (`normal_price`)
-	) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
-	if ($type == 'mssql'){
-		$prodQ = "CREATE TABLE [products] (
-		[upc] [varchar] (13) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL ,
-		[description] [varchar] (30) COLLATE SQL_Latin1_General_CP1_CI_AS NULL ,
-		[normal_price] [money] NULL ,
-		[pricemethod] [smallint] NULL ,
-		[groupprice] [money] NULL ,
-		[quantity] [smallint] NULL ,
-		[special_price] [money] NULL ,
-		[specialpricemethod] [smallint] NULL ,
-		[specialgroupprice] [money] NULL ,
-		[specialquantity] [smallint] NULL ,
-		[start_date] [datetime] NULL ,
-		[end_date] [datetime] NULL ,
-		[department] [smallint] NOT NULL ,
-		[size] [varchar] (9) COLLATE SQL_Latin1_General_CP1_CI_AS NULL ,
-		[tax] [smallint] NOT NULL ,
-		[foodstamp] [bit] NOT NULL ,
-		[scale] [bit] NOT NULL ,
-		[scaleprice] [tinyint] NULL ,
-		[mixmatchcode] [varchar] (13) COLLATE SQL_Latin1_General_CP1_CI_AS NULL ,
-		[modified] [datetime] NULL ,
-		[advertised] [bit] NOT NULL ,
-		[tareweight] [float] NULL ,
-		[discount] [smallint] NULL ,
-		[discounttype] [tinyint] NULL ,
-		[unitofmeasure] [varchar] (15) COLLATE SQL_Latin1_General_CP1_CI_AS NULL ,
-		[wicable] [smallint] NULL ,
-		[qttyEnforced] [tinyint] NULL ,
-		[idEnforced] [tinyint] NULL ,
-		[cost] [money] NULL ,
-		[inUse] [tinyint] NOT NULL ,
-		[numflag] [int] NULL ,
-		[subdept] [int] NULL ,
-		[deposit] [money] NULL ,
-		[local] [int] NULL ,
-		[store_id] [smallint] NULL,
-		[id] [int] NOT NULL ,
-		CONSTRAINT [PK_Products] PRIMARY KEY  CLUSTERED 
-		(
-			[upc]
-		) WITH  FILLFACTOR = 90  ON [PRIMARY] 
-		) ON [PRIMARY]";
-	}
-	if (!$db->table_exists('products',$name)){
-		db_structure_modify($db,'products',$prodQ,$errors);
-	}
+	create_if_needed($db, $type, $name, 'products', 'op', $errors);
 
-	$promoQ = "CREATE TABLE promomsgs (
-		startDate datetime,
-		endDate datetime,
-		promoMsg varchar(50),
-		sequence tinyint)";
-	if (!$db->table_exists('promomsgs',$name)){
-		db_structure_modify($db,'promomsgs',$promoQ,$errors);
-	}
+	create_if_needed($db, $type, $name, 'dateRestrict', 'op', $errors);
 
-	$drQ = "CREATE TABLE dateRestrict (
-                upc varchar(13),
-                dept_ID int,
-                restrict_date date default null,
-                restrict_dow smallint default null,
-                restrict_start time default null,
-                restrict_end time default null,
-                INDEX (upc),
-                INDEX (dept_ID)
-        )";
-	if (!$db->table_exists('dateRestrict',$name)){
-		db_structure_modify($db,'dateRestrict',$drQ,$errors);
-	}
-
-	$tenderQ = "CREATE TABLE tenders (
-		TenderID smallint,
-		TenderCode varchar(255),
-		TenderName varchar(255),
-		TenderType varchar(255),
-		ChangeMessage varchar(255),
-		MinAmount real,
-		MaxAmount real,
-		MaxRefund real)";
-	if(!$db->table_exists('tenders',$name)){
-		db_structure_modify($db,'tenders',$tenderQ,$errors);
+	create_if_needed($db, $type, $name, 'tenders', 'op', $errors);
+	$chk = $db->query('SELECT TenderID FROM tenders', $name);
+	if ($db->num_rows($chk) == 0){
 		load_sample_data($db,'tenders');
 	}
 
-	$ccView = "CREATE VIEW chargecodeview AS
-		SELECT c.staffID, c.chargecode, d.blueLine
-		FROM chargecode AS c, custdata AS d
-		WHERE c.staffID = d.CardNo";
-	if (!$db->table_exists('chargecodeview',$name)){
-		db_structure_modify($db,'chargecodeview',$ccView,$errors);
-	}
+	create_if_needed($db, $type, $name, 'subdepts', 'op', $errors);
 
-	$subQ = "CREATE TABLE subdepts (
-		subdept_no smallint,
-		subdept_name varchar(30),
-		dept_ID smallint)";
-	if(!$db->table_exists('subdepts',$name)){
-		db_structure_modify($db,'subdepts',$subQ,$errors);
-	}
+	create_if_needed($db, $type, $name, 'customReceipt', 'op', $errors);
 
-	$pmV = "CREATE view promoMsgsView as
-		select 
-		 * from promomsgs
-		where ".
-		$db->datediff('startDate',$db->now())." >= 0
-		and ".
-		$db->datediff($db->now(),'endDate')." >= 0
-		order by sequence";
-	if(!$db->table_exists('promoMsgsView',$name)){
-		db_structure_modify($db,'promoMsgsView',$pmV,$errors);
-	}
+	create_if_needed($db, $type, $name, 'custReceiptMessage', 'op', $errors);
 
-	$custRpt = "CREATE TABLE customReceipt (
-		text varchar(20),
-		seq int,
-		type varchar(20)
-		)";
-	if(!$db->table_exists('customReceipt',$name)){
-		db_structure_modify($db,'customReceipt',$custRpt,$errors);
-	}
+	create_if_needed($db, $type, $name, 'disableCoupon', 'op', $errors);
 
-	$memRpt = "CREATE TABLE custReceiptMessage (
-		card_no int,
-		msg_text carchar(255),
-		modifier_module varchar(50),
-		primary key (card_no,modifier_module)
-		)";
-	if(!$db->table_exists('custReceiptMessage',$name)){
-		db_structure_modify($db,'custReceiptMessage',$custRpt,$errors);
-	}
+	create_if_needed($db, $type, $name, 'houseCoupons', 'op', $errors);
 
-	$dCoup = "CREATE TABLE disableCoupon (
-		upc varchar(13),
-		reason text,
-		PRIMARY KEY (upc)
-		)";
-	if(!$db->table_exists('disableCoupon',$name)){
-		db_structure_modify($db,'disableCoupon',$dCoup,$errors);
-	}
+	create_if_needed($db, $type, $name, 'houseVirtualCoupons', 'op', $errors);
 
-	$houseCoup = "CREATE TABLE houseCoupons (
-		coupID int,
-		endDate datetime,
-		`limit` smallint,
-		memberOnly smallint,
-		discountType varchar(2),
-		discountValue real,
-		minType varchar(2),
-		minValue real,
-		department int)";
-	if ($type == 'mssql')
-		$houseCoup = str_replace("`","",$houseCoup);
-	if(!$db->table_exists('houseCoupons',$name)){
-		db_structure_modify($db,'houseCoupons',$houseCoup,$errors);
-	}
+	create_if_needed($db, $type, $name, 'houseCouponItems', 'op', $errors);
 
-	$hvQ = "CREATE TABLE houseVirtualCoupons (
-		card_no int,
-		coupID int,
-		description varchar(100),
-		start_date datetime,
-		end_date datetime,
-		PRIMARY KEY (card_no, coupID)
-		)";
-	if(!$db->table_exists('houseVirtualCoupons',$name)){
-		db_structure_modify($db,'houseVirtualCoupons',$hvQ,$errors);
-	}
+	create_if_needed($db, $type, $name, 'memchargebalance', 'op', $errors);
 
-	$hciQ = "CREATE TABLE houseCouponItems (
-		coupID int,
-		upc varchar(13),
-		type varchar(15))";
-	if(!$db->table_exists('houseCouponItems',$name)){
-		db_structure_modify($db,'houseCouponItems',$hciQ,$errors);
-	}
+	create_if_needed($db, $type, $name, 'unpaid_ar_today', 'op', $errors);
 
-	$mcV = "CREATE view memchargebalance as
-		SELECT 
-		c.CardNo,
-		c.memDiscountLimit - c.Balance AS availBal,	
-		c.Balance as balance
-		FROM custdata AS c WHERE personNum = 1";
-	if (!$db->table_exists('memchargebalance',$name)){
-		db_structure_modify($db,'memchargebalance',$mcV,$errors);
-	}
-
-	$uaQ = "CREATE TABLE unpaid_ar_today (
-		card_no int,
-		old_balance real,
-		recent_payments real,
-		primary key (card_no)
-		)";
-	if (!$db->table_exists('unpaid_ar_today',$name)){
-		db_structure_modify($db,'unpaid_ar_today',$uaQ,$errors);
-	}
-
-	$lcQ = "CREATE TABLE lane_config (
-		modified datetime
-		)";
-	if (!$db->table_exists('lane_config',$name)){
-		db_structure_modify($db,'lane_config',$lcQ,$errors);
-		$db->query("INSERT INTO lane_config VALUES ('1900-01-01 00:00:00')");
+	create_if_needed($db, $type, $name, 'lane_config', 'op', $errors);
+	$chk = $db->query('SELECT modified FROM lane_config',$name);
+	if ($db->num_rows($chk) != 1){
+		$db->query('TRUNCATE TABLE lane_config', $name);
+		$db->query("INSERT INTO lane_config VALUES ('1900-01-01 00:00:00')", $name);
 	}
 	return $errors;
 }
@@ -2423,23 +2107,8 @@ function create_trans_dbs($db,$type){
 	999 as sequence,
 	'' as department,
 	'' as upc,
-	'' as trans_subtype
+	'' as trans_subtype";
 
-	union
-
-	select 
-	concat('  ',promoMsg) as description,
-	' ' as comment,
-	0 as total,
-	' ' as Status,
-	' ' as trans_type,
-	0 as unitPrice,
-	0 as voided,
-	sequence,
-	'' as department,
-	'' as upc,
-	'' as trans_subtype
-	from ".$CORE_LOCAL->get('pDatabase').".promoMsgsView";
 	if($type == 'mssql'){
 		$lttreorderG = "CREATE view ltt_receipt_reorder_g as
 		select top 100 percent
@@ -2510,23 +2179,7 @@ function create_trans_dbs($db,$type){
 		999 as sequence,
 		'' as department,
 		'' as upc,
-		'' as trans_subtype
-
-		union
-
-		select top 100 percent
-		'  ' + promoMsg as description,
-		' ' as comment,
-		0 as total,
-		' ' as Status,
-		' ' as trans_type,
-		0 as unitPrice,
-		0 as voided,
-		sequence,
-		'' as department,
-		'' as upc,
-		'' as trans_subtype
-		from ".$CORE_LOCAL->get('pDatabase').".dbo.promoMsgsView";
+		'' as trans_subtype";
 	}
 	db_structure_modify($db,'ltt_receipt_reorder_g','DROP VIEW ltt_receipt_reorder_g',$errors);
 	if(!$db->table_exists('ltt_receipt_reorder_g',$name)){
@@ -3012,24 +2665,7 @@ function create_trans_dbs($db,$type){
 		999 as sequence,
 		'' as department,
 		'' as upc,
-		'' as trans_subtype
-
-		union
-
-		select 
-		0 as register_no, 0 as emp_no,0 as trans_no,0 as card_no,
-		concat('  ',promoMsg) as description,
-		' ' as comment,
-		0 as total,
-		' ' as Status,
-		' ' as trans_type,
-		0 as unitPrice,
-		0 as voided,
-		sequence,
-		'' as department,
-		'' as upc,
-		'' as trans_subtype
-		from ".$CORE_LOCAL->get('pDatabase').".promoMsgsView";
+		'' as trans_subtype";
 	if($type == 'mssql'){
 		$rpreorderG = "CREATE     view rp_ltt_receipt_reorder_g as
 		select top 100 percent
@@ -3099,24 +2735,7 @@ function create_trans_dbs($db,$type){
 		999 as sequence,
 		'' as department,
 		'' as upc,
-		'' as trans_subtype
-
-		union
-
-		select top 100 percent
-		0 as register_no, 0 as emp_no,0 as trans_no,0 as card_no,
-		'  ' + promoMsg as description,
-		' ' as comment,
-		0 as total,
-		' ' as Status,
-		' ' as trans_type,
-		0 as unitPrice,
-		0 as voided,
-		sequence,
-		'' as department,
-		'' as upc,
-		'' as trans_subtype
-		from ".$CORE_LOCAL->get('pDatabase').".dbo.promoMsgsView";
+		'' as trans_subtype";
 	}	
 	db_structure_modify($db,'rp_ltt_receipt_reorder_g','DROP VIEW rp_ltt_receipt_reorder_g',$errors);
 	if(!$db->table_exists("rp_ltt_receipt_reorder_g",$name)){

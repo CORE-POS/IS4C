@@ -1,7 +1,7 @@
 <?php
 /*******************************************************************************
 
-    Copyright 2007 Whole Foods Co-op
+    Copyright 2007,2013 Whole Foods Co-op
 
     This file is part of IT CORE.
 
@@ -21,7 +21,7 @@
 
 *********************************************************************************/
 
-class StaffCharge extends Parser {
+class WedgeScParser extends Parser {
 	var $left;
 
 	function check($str){
@@ -38,9 +38,44 @@ class StaffCharge extends Parser {
 	}
 
 	function parse($str){
-		$ret = $this->default_json();
-		PrehLib::staffCharge($this->left,$ret);
-		return $ret;
+		global $CORE_LOCAL;
+		$json = $this->default_json();
+		$arg = $this->left;
+
+		$CORE_LOCAL->set("sc",1);
+		$staffID = substr($arg, 0, 4);
+
+		$pQuery = "select staffID,chargecode,blueLine from chargecodeview where chargecode = '".$arg."'";
+		$pConn = Database::pDataConnect();
+		$result = $pConn->query($pQuery);
+		$num_rows = $pConn->num_rows($result);
+		$row = $pConn->fetch_array($result);
+
+		if ($num_rows == 0) {
+			$json['output'] = DisplayLib::xboxMsg("unable to authenticate staff ".$staffID);
+			$CORE_LOCAL->set("isStaff",0);			// apbw 03/05/05 SCR
+			return $json;
+		}
+		else {
+			$CORE_LOCAL->set("isStaff",1);			// apbw 03/05/05 SCR
+			$CORE_LOCAL->set("memMsg",$row["blueLine"]);
+			$tQuery = "update localtemptrans set card_no = '".$staffID."', percentDiscount = 15";
+			$tConn = Database::tDataConnect();
+
+			TransRecord::addscDiscount();		
+			TransRecord::discountnotify(15);
+			$tConn->query($tQuery);
+			Database::getsubtotals();
+
+			$chk = self::ttl();
+			if ($chk !== True){
+				$json['main_frame'] = $chk;
+				return $json;
+			}
+			$CORE_LOCAL->set("runningTotal",$CORE_LOCAL->get("amtdue"));
+			return self::tender("MI", $CORE_LOCAL->get("runningTotal") * 100);
+
+		}
 	}
 
 	function doc(){

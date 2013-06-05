@@ -122,6 +122,35 @@ function db_test_connect($host,$type,$db,$user,$pw){
                 return $sql;
 }
 
+function create_if_needed($con, $dbms, $db_name, $table_name, $stddb, &$errors=array()){
+	if ($con->table_exists($table_name,$db_name)) return $errors;
+	$dbms = strtoupper($dbms);
+
+	$fn = dirname(__FILE__)."/sql/$stddb/$table_name.php";
+	if (!file_exists($fn)){
+		$errors[] = array(
+			'struct'=>$table_name,
+			'query'=>'n/a',
+			'details'=>'Missing file: '.$fn,
+			'important'=>True
+		);
+		return $errors;
+	}
+
+	include($fn);
+	if (!isset($CREATE["$stddb.$table_name"])){
+		$errors[] = array(
+			'struct'=>$table_name,
+			'query'=>'n/a',
+			'details'=>'No valid $CREATE in: '.$fn,
+			'important'=>True
+		);
+		return $errors;
+	}
+
+	return db_structure_modify($con, $table_name, $CREATE["$stddb.$table_name"], $errors);
+}
+
 function db_structure_modify($sql, $struct_name, $query, &$errors=array()){
 	ob_start();
 	$try = @$sql->query($query);
