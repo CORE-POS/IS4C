@@ -162,6 +162,26 @@ static public function getsubtotals() {
 		if ($CORE_LOCAL->get("SSI") != 0 && ($CORE_LOCAL->get("isStaff") == 3 || $CORE_LOCAL->get("isStaff") == 6)) PrehLib::wmdiscount();
 	}
 
+	/* BETA 10Jun2013
+	   Calculate taxes & exemptions separately from
+	   the subtotals view.
+
+	   Adding the exemption amount back on is a bit
+	   silly but the goal for the moment is to keep
+	   this function behaving the same. Once the subtotals
+	   view is deprecated we can revisit how these two
+	   session variables should behave.
+	$taxes = Database::LineItemTaxes();
+	$taxTTL = 0.00;
+	$exemptTTL = 0.00;
+	foreach($taxes as $tax){
+		$taxTTL += $tax['amount'];
+		$exemptTTL += $tax['exempt'];
+	}
+	$CORE_LOCAL->set('fsTaxExempt', number_format($exemptTTL,2));
+	$CORE_LOCAL->set('taxTotal', number_format($taxTTL+$exemptTTL,2));
+	*/
+
 	if ( $CORE_LOCAL->get("TaxExempt") == 1 ) {
 		$CORE_LOCAL->set("taxable",0);
 		$CORE_LOCAL->set("taxTotal",0);
@@ -179,6 +199,15 @@ static public function getsubtotals() {
 	}
 }
 
+/**
+  Calculate taxes using new-style taxView.
+  @return an array of records each containing:
+    - id
+    - description
+    - amount (taxes actually due)
+    - exempt (taxes exempted because of foodstamps) 
+  There will always be one record for each existing tax rate.
+*/
 static public function LineItemTaxes(){
 	$db = Database::tDataConnect();
 	$q = "SELECT id, description, taxTotal, fsTaxable, fsTaxTotal, foodstampTender, taxrate
@@ -187,6 +216,7 @@ static public function LineItemTaxes(){
 	$taxRows = array();
 	$fsTenderTTL = 0.00;
 	while ($w = $db->fetch_row($r)){
+		$w['fsExempt'] = 0.00;
 		$taxRows[] = $w;
 		$fsTenderTTL = $w['foodstampTender'];
 	}
@@ -202,6 +232,7 @@ static public function LineItemTaxes(){
 			//	Decrement line item tax by foodstamp tax total
 			//	No FS tender left, so exemption ends
 			$taxRows[$i]['taxTotal'] = MiscLib::truncate2($taxRows[$i]['taxTotal'] - $taxRows[$i]['fsTaxTotal']);
+			$taxRows[$i]['fsExempt'] = $taxRows[$i]['fsTaxTotal'];
 			$fsTenderTTL = 0;
 		}
 		else if ($fsTenderTTL > $taxRows[$i]['fsTaxable']){
@@ -210,6 +241,7 @@ static public function LineItemTaxes(){
 			//	Decrement line item tax by foodstamp tax total
 			//	Decrement foodstamp tender total to reflect amount not yet applied
 			$taxRows[$i]['taxTotal'] = MiscLib::truncate2($taxRows[$i]['taxTotal'] - $taxRows[$i]['fsTaxTotal']);
+			$taxRows[$i]['fsExempt'] = $taxRows[$i]['fsTaxTotal'];
 			$fsTenderTTL = MiscLib::truncate2($fsTenderTTL - $taxRows[$i]['fsTaxable']);;
 		}
 		else {
@@ -220,6 +252,7 @@ static public function LineItemTaxes(){
 			$percentageApplied = $fsTenderTTL / $taxRows[$i]['fsTaxable'];
 			$exemption = $taxRows[$i]['fsTaxTotal'] * $percentageApplied;
 			$taxRows[$i]['taxTotal'] = MiscLib::truncate2($taxRows[$i]['taxTotal'] - $exemption);
+			$taxRows[$i]['fsExempt'] = $exemption;
 			$fsTenderTTL = 0;
 		}
 	}
@@ -229,7 +262,8 @@ static public function LineItemTaxes(){
 		$ret[] = array(
 			'rate_id' => $tr['id'],
 			'description' => $tr['description'],
-			'amount' => $tr['taxTotal']
+			'amount' => $tr['taxTotal'],
+			'exempt' => $tr['fsExempt']
 		);
 	}
 	return $ret;
