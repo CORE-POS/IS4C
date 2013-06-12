@@ -568,21 +568,6 @@ static public function addTare($dbltare) {
 
 //___________________________end addTare()
 
-
-//------------------------------- insert MAD coupon statement (WFC specific) -------------------
-
-/**
-  Add WFC virtual coupon
-  @deprecated
-*/
-static public function addMadCoup() {
-	global $CORE_LOCAL;
-
-	$madCoup = -1 * $CORE_LOCAL->get("madCoup");
-	self::addItem("MAD Coupon", "Member Appreciation Coupon", "I", "CP", "C", 0, 1, $madCoup, $madCoup, $madCoup, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 17);
-
-}
-
 /**
   Add a virtual coupon by ID
   @param $id identifier in the VirtualCoupon table

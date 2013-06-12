@@ -1326,17 +1326,6 @@ static public function chargeOk() {
 //----------------------------------------------------------
 
 /**
-  Add WFC virtual coupon
-  @deprecated
-*/
-static public function madCoupon(){
-	Database::getsubtotals();
-	TransRecord::addMadCoup();
-	DisplayLib::lastpage();
-
-}
-
-/**
   Add a comment
   @deprecated
   Use addcomment().

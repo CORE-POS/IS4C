@@ -151,7 +151,6 @@ static public function getsubtotals() {
 	$CORE_LOCAL->set("fsTaxExempt", (!$row || !isset($row['fsTaxExempt'])) ? 0 : (double)$row["fsTaxExempt"] );
 	$CORE_LOCAL->set("fsEligible", (!$row || !isset($row['fsEligible'])) ? 0 : (double)$row["fsEligible"] );
 	$CORE_LOCAL->set("chargeTotal", (!$row || !isset($row['chargeTotal'])) ? 0 : (double)$row["chargeTotal"] );
-	$CORE_LOCAL->set("madCoup", (!$row || !isset($row['madCoupon'])) ? 0 : (double)$row["madCoupon"] );
 	$CORE_LOCAL->set("paymentTotal", (!$row || !isset($row['paymentTotal'])) ? 0 : (double)$row["paymentTotal"] );
 	$CORE_LOCAL->set("memChargeTotal", $CORE_LOCAL->get("chargeTotal") + $CORE_LOCAL->get("paymentTotal") );
 	$CORE_LOCAL->set("discountableTotal", (!$row || !isset($row['discountableTotal'])) ? 0 : (double)$row["discountableTotal"] );
@@ -178,8 +177,8 @@ static public function getsubtotals() {
 		$taxTTL += $tax['amount'];
 		$exemptTTL += $tax['exempt'];
 	}
-	$CORE_LOCAL->set('fsTaxExempt', number_format($exemptTTL,2));
-	$CORE_LOCAL->set('taxTotal', number_format($taxTTL+$exemptTTL,2));
+	$CORE_LOCAL->set('taxTotal', number_format($taxTTL,2));
+	$CORE_LOCAL->set('fsTaxExempt', number_format(-1*$exemptTTL,2));
 	*/
 
 	if ( $CORE_LOCAL->get("TaxExempt") == 1 ) {

@@ -1,7 +1,7 @@
 <?php
 /*******************************************************************************
 
-    Copyright 2007 Whole Foods Co-op
+    Copyright 2007,2013 Whole Foods Co-op
 
     This file is part of IT CORE.
 
@@ -21,7 +21,8 @@
 
 *********************************************************************************/
 
-class MadCoupon extends Parser {
+class WfcMadCouponParser extends Parser {
+
 	function check($str){
 		if ($str == "MA")
 			return True;
@@ -29,7 +30,13 @@ class MadCoupon extends Parser {
 	}
 
 	function parse($str){
-		PrehLib::madCoupon();
+		global $CORE_LOCAL;
+		Database::getsubtotals();
+		$amt = $CORE_LOCAL->get('runningTotal') - $CORE_LOCAL->get('transDiscount');
+		$madCoup = number_format($amt * 0.05, 2);
+		if ($madCoup > 2.50) $madCoup = 2.50;
+		TransRecord::addItem("MAD Coupon", "Member Appreciation Coupon", "I", "CP", "C", 0, 1, 
+			-1*$madCoup, -1*$madCoup, -1*$madCoup, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 17);
 		$ret = $this->default_json();
 		$ret['output'] = DisplayLib::lastpage();
 		$ret['redraw_footer'] = True;
