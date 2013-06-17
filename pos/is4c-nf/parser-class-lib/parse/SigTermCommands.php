@@ -23,6 +23,8 @@
 
 class SigTermCommands extends Parser {
 
+	var $cb_error;
+
 	function check($str){
 		global $CORE_LOCAL;
 		if ($str == "TERMMANUAL"){
@@ -94,7 +96,14 @@ class SigTermCommands extends Parser {
 			return True;
 		}
 		else if (substr($str,0,7) == "TERMCB:"){
-			$CORE_LOCAL->set("CacheCardCashBack",substr($str,7));
+			$cashback = substr($str,7);
+			if ($cashback <= 40){
+				$this->cb_error = False;
+				$CORE_LOCAL->set("CacheCardCashBack",$cashback);
+			}
+			else {
+				$this->cb_error = True;
+			}
 			$CORE_LOCAL->set('ccTermState','pin');
 			return True;
 		}
@@ -107,6 +116,11 @@ class SigTermCommands extends Parser {
 		$ret['scale'] = ''; // redraw righthand column
 		if ($str == "CCFROMCACHE"){
 			$ret['retry'] = $CORE_LOCAL->get("CachePanEncBlock");
+		}
+		if ($this->cb_error){
+			$CORE_LOCAL->set('boxMsg','Warning: Invalid cash back<br />
+					selection ignored');
+			$ret['main_frame'] = MiscLib::base_url().'gui-modules/boxMsg2.php';	
 		}
 		return $ret;
 	}
