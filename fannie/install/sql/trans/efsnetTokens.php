@@ -35,7 +35,7 @@ $CREATE['trans.efsnetTokens'] = "
 		token varchar(100),
 		processData varchar(255),
 		acqRefData varchar(255),
-		PRIMARY KEY (refNum)
+		PRIMARY KEY (refNum,token)
 	)
 ";
 ?>
