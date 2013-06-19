@@ -20,12 +20,19 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
+/* --COMMENTS
+ * 20May13 Eric Lee This still has some of my woodshedding comments.
+*/
 
-//ini_set('display_errors','1');
+ini_set('display_errors','1');
 include('../config.php'); 
 include('util.php');
 include('db.php');
+// Not in fact used.
+//$FILEPATH = $FANNIE_ROOT;
 include_once('../classlib2.0/InstallPage.php');
+//include_once('../classlib2.0/InstallPage.php');
+//require('../classlib2.0/InstallPage.php');
 
 /**
 	@class InstallMembershipPage
@@ -43,7 +50,14 @@ class InstallMembershipPage extends InstallPage {
 	// This replaces the __construct() in the parent.
 	public function __construct() {
 
+		// To set authentication.
+		//parent::__construct();
+		// Would dialing-direct work? Seems to.
 		FanniePage::__construct();
+
+		// Why do this here instead of above?
+		//$this->title = "Fannie: Membership Settings";
+		//$this->header = "Fannie: Membership Settings";
 
 		// Link to a file of CSS by using a function.
 		$this->add_css_file("../src/style.css");
@@ -63,12 +77,14 @@ class InstallMembershipPage extends InstallPage {
 	/**
 	  Define any CSS needed
 	  @return A CSS string
+	*/
 	function css_content(){
 		$css ="";
+
 		return $css;
+
 	//css_content()
 	}
-	*/
 
 	// If chunks of JS are going to be added the function has to be
 	//  redefined to return them.
@@ -76,26 +92,24 @@ class InstallMembershipPage extends InstallPage {
 	  Define any javascript needed
 	  @return A javascript string
 	function javascript_content(){
-		$js ="";
-		return $js;
+
 	}
 	*/
 
 	function body_content(){
-		global $FANNIE_URL,
-			$FANNIE_EQUITY_DEPARTMENTS,
-			$FANNIE_AR_DEPARTMENTS,
-			$FANNIE_NAMES_PER_MEM,
-			$FANNIE_MEMBER_MODULES,
-			$FANNIE_MEMBER_UPC_PREFIX,
-			$FANNIE_SERVER,$FANNIE_SERVER_DBMS, $FANNIE_TRANS_DB,$FANNIE_SERVER_USER, $FANNIE_SERVER_PW;
-
+		//Should this really be done with global?
+		//global $FANNIE_URL, $FANNIE_EQUITY_DEPARTMENTS;
+		include('../config.php'); 
 		ob_start();
-
-		echo showInstallTabs("Members");
+?>
+<?php
+// Could this be in the class and assigned with a var?
+echo showInstallTabs("Members");
 ?>
 
 <form action=InstallMembershipPage.php method=post>
+<!-- Could this be in the class and assigned with a var?
+-->
 <h1 class="install"><?php echo $this->header; ?></h1>
 <?php
 if (is_writable('../config.php')){
@@ -106,42 +120,35 @@ else {
 }
 ?>
 <hr />
-
-<p class="ichunk2"><b>Names per membership: </b>
+Names per membership
 <?php
 if (!isset($FANNIE_NAMES_PER_MEM)) $FANNIE_NAMES_PER_MEM = 1;
 if (isset($_REQUEST['FANNIE_NAMES_PER_MEM'])) $FANNIE_NAMES_PER_MEM = $_REQUEST['FANNIE_NAMES_PER_MEM'];
 confset('FANNIE_NAMES_PER_MEM',$FANNIE_NAMES_PER_MEM);
 echo "<input type=text size=3 name=FANNIE_NAMES_PER_MEM value=\"$FANNIE_NAMES_PER_MEM\" />";
 ?>
-</p>
-
 <hr />
 <h4 class="install">Equity/Store Charge</h4>
-<p class="ichunk2"><b>Equity Department(s): </b>
+<!-- br / -->Equity Department(s): 
 <?php
 if (!isset($FANNIE_EQUITY_DEPARTMENTS)) $FANNIE_EQUITY_DEPARTMENTS = '';
 if (isset($_REQUEST['FANNIE_EQUITY_DEPARTMENTS'])) $FANNIE_EQUITY_DEPARTMENTS=$_REQUEST['FANNIE_EQUITY_DEPARTMENTS'];
 confset('FANNIE_EQUITY_DEPARTMENTS',"'$FANNIE_EQUITY_DEPARTMENTS'");
 printf("<input type=\"text\" name=\"FANNIE_EQUITY_DEPARTMENTS\" value=\"%s\" />",$FANNIE_EQUITY_DEPARTMENTS);
 ?>
-</p>
-
-<p class="ichunk2"><b>Store Charge Department(s): </b>
+<br />Store Charge Department(s): 
 <?php
 if (!isset($FANNIE_AR_DEPARTMENTS)) $FANNIE_AR_DEPARTMENTS = '';
 if (isset($_REQUEST['FANNIE_AR_DEPARTMENTS'])) $FANNIE_AR_DEPARTMENTS=$_REQUEST['FANNIE_AR_DEPARTMENTS'];
 confset('FANNIE_AR_DEPARTMENTS',"'$FANNIE_AR_DEPARTMENTS'");
 printf("<input type=\"text\" name=\"FANNIE_AR_DEPARTMENTS\" value=\"%s\" />",$FANNIE_AR_DEPARTMENTS);
 ?>
-</p>
-
 <hr />
 <h4 class="install">Membership Information Modules</h4>
 The Member editing interface displayed after you select a member at:
 <br /><a href="<?php echo $FANNIE_URL; ?>mem/MemberSearchPage.php" target="_mem"><?php echo $FANNIE_URL; ?>mem/MemberSearchPage.php</a>
 <br />consists of fields grouped in several sections, called modules, listed below.
-<br />The enabled (active) ones are selected/highlighted. May initially be none.
+<br />The enabled (active) ones are selected/highlighted.
 <br />
 <br /><b>Available Modules</b> <br />
 <?php
