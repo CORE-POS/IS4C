@@ -54,8 +54,10 @@
  --functionality } - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
  #'Z --COMMENTZ { - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
- *11May13 EL In production.
- * 7May13 EL Add support for and try dry run.
+ * 23May13 EL Include table memberNotes in adjustIS4C().
+ *            memberNotes is not synced with CiviCRM.
+ * 11May13 EL In production.
+ *  7May13 EL Add support for and try dry run.
  --commentz } - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 */
@@ -1316,6 +1318,7 @@ function adjustIS4C($tempMember, $newMember, $updated) {
 	if ( $is4cOps[memberCards] == "update" ) {
 		$statements[] = "UPDATE memberCards set card_no = $newMember WHERE card_no = $tempMember";
 	}
+	$statements[] = "UPDATE memberNotes set cardno = $newMember WHERE cardno = $tempMember";
 	//   Set the datestamp to what it was originally, to agree with what Civi is now.
 	$statements[] = "UPDATE custdata SET LastChange = '$updated' WHERE CardNo = $newMember";
 	$statement = "";
