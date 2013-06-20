@@ -892,7 +892,7 @@ vary based on whose code you're running
 					%.2f, %d, %s, %s, %d,
 					%s, %d, %d, %d, %.2f, %s, %s, %d,
 					%.2f, %d, %d, %s, %d, %d,
-					%d, %.2f, %d, %d, %d, %.2f, %d)",
+					%d, %.2f, %d, %d, %d, %.2f)",
 					$dbc->escape($upc), $dbc->escape($description), $normal_price,
 					$pricemethod, $groupprice, $quantity, $special_price, $specialpricemethod,
 					$specialgroupprice, $specialquantity, $start_date, $end_date, $department,
