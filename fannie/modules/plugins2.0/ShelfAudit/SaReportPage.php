@@ -232,6 +232,7 @@ table tr:hover {
 	<body>
 		<div id="bdiv">
 			<p><a href="#" onclick="window.open('SaScanningPage.php','scan','width=320, height=200, location=no, menubar=no, status=no, toolbar=no, scrollbars=no, resizable=no');">Enter a new scan</a></p>
+			<p><a href="SaHandheldPage.php">Alternate Scan Page</a></p>
 			<p><?php echo($this->sql_actions); ?></p>
 			<p><?php echo($this->status); ?></p>
 			<p><a href="?view=dept">view by pos department</a> <a href="SaReportPage.php">view by scanned section</a></p>
