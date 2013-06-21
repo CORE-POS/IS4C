@@ -100,14 +100,14 @@ function bill($cardno,$amt,$desc){
 	else $t_no++;
 
 	$insQ = "INSERT INTO dtransactions VALUES (
-		".$sql->now().",$LANE_NO,$EMP_NO,$t_no,
+		".$sql->now().",0,0,$LANE_NO,$EMP_NO,$t_no,
 		'{$amt}DP703','$desc','D','','',703,
 		1.0,0,0.00,$amt,$amt,$amt,0,0,.0,.0,
 		0,0,0,NULL,0.0,0,0,.0,0,0,0,0,0,'',
 		$cardno,1)";
 	$amt *= -1;
 	$insQ2 = "INSERT INTO dtransactions VALUES (
-		".$sql->now().",$LANE_NO,$EMP_NO,$t_no,
+		".$sql->now().",0,0,$LANE_NO,$EMP_NO,$t_no,
 		0,'InStore Charges','T','MI',0,0,
 		0.0,0,0.00,.0,$amt,.0,0,0,.0,.0,
 		0,0,0,NULL,0.0,0,0,.0,0,0,0,0,0,'',
