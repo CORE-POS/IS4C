@@ -23,6 +23,8 @@
 
 /* #'Z--COMMENTZ { -  - - - - - - - - - - - - - - - - - - - - - -
 
+	20Jun13	7-digit PLU in UPC field.
+	        Flag empty case_cost if hasPrice.
 	19Jun13	ORDER_CODE to seven digits from five.
 	        Allow for decimal-number CASE_SIZE when UNIT_COST not supplied.
 			     Used for BULK, where "case" is treated as a container of CASE_SIZE pounds.
@@ -451,19 +453,17 @@ vary based on whose code you're running
 			if ( $data[$UPC] == "" ) {
 				$messages[++$mct] = "<br />Skipping line $lineCount {$data[$DESCRIPTION]} because it has no UPC/PLU.";
 				continue;
-			} else {
-				$upc = $data[$UPC];
 			}
 
+			$upc = $data[$UPC];
 			// Incoming data is expected to be %012d and UPC's have checkdigit at the end which must be removed.
 			// Check for the expected base format.
 			if ( ! preg_match("/^\d{12}/", $upc) ) {
 				$messages[++$mct] = "<br />Skipping line $lineCount {$data[$DESCRIPTION]} because its UPC &gt;{$upc}&lt; is not 12 digits.";
-				// 17Jun13 obs $upcProblem++;
 				continue;
 			} else {
-				// If it's a PLU (4 or maybe 5 digits with left-0 padding), leave as-is.
-				if ( ! preg_match("/^0{7}/", $upc) ) {
+				// If it's a PLU (up to 7 digits with left-0 padding), leave as-is.
+				if ( ! preg_match("/^0{5}/", $upc) ) {
 					// Remove checkdigit.
 					$upc = substr($upc, 0, 11);
 				}
@@ -636,6 +636,8 @@ vary based on whose code you're running
 				$hasPrice = 1;
 			}
 
+			// 20Jun13 Bulk does have CASE_COST, the cost of the bulk container,
+			//          but keep testing SET_PRICE.
 			// 24Jan13 Change test to SET_PRICE because for bulk there is no CASE_COST.
 			// 17Jan13 CASE_COST tests moved here.
 			/* Skip the item if case-cost isn't numeric
@@ -644,14 +646,18 @@ vary based on whose code you're running
 					we can't be certain *when* that chunk will come up
 			*/
 			if ( $hasPrice && !is_numeric($data[$SET_PRICE]) ) {
-				$messages[++$mct] = "<br />Line $lineCount skipping invalid price (col V): >{$data[$SET_PRICE]}<";
-				//echo "<br />$messages[$mct]";
+				$messages[++$mct] = "<br />Skipping line $lineCount UPC: {$data[$UPC]} {$data[$DESCRIPTION]} because of invalid price (col V): >{$data[$SET_PRICE]}<";
+				continue;
+			}
+
+			if ( $hasPrice && empty($data[$CASE_COST]) ) {
+				$messages[++$mct] = "<br />Skipping line $lineCount UPC: {$data[$UPC]} {$data[$DESCRIPTION]} because of no case cost (col P): >{$data[$CASE_COST]}<";
 				continue;
 			}
 
 			// Treat CASE_COST == -1 as flag for data known to be incomplete and skip and note.
 			if ( $data[$CASE_COST] == -1 ) {
-				$messages[++$mct] = "<br />Line $lineCount skipping flagged-as-incomplete item >{$data[$CASE_COST]}<";
+				$messages[++$mct] = "<br />Skipping line $lineCount UPC: {$data[$UPC]} {$data[$DESCRIPTION]} because flagged-as-incomplete item >{$data[$CASE_COST]}<";
 				$incompletes++;
 				continue;
 			}
