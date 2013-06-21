@@ -120,9 +120,9 @@ class memlist extends NoInputPage {
 		// b. it's been confirmed in the select box
 		// then set the member number
 		// proceed/return to the appropriate next page
-		if (($num_rows == 1 && $entered == $CORE_LOCAL->get("defaultNonMem"))
+		if ( ($num_rows == 1 && $entered == $CORE_LOCAL->get("defaultNonMem"))
 				||
-		    (is_numeric($entered) && is_numeric($personNum) && $selected_name) ){
+		    (is_numeric($entered) && is_numeric($personNum) && $selected_name) ) {
 			$row = $db_a->fetch_array($result);
 			PrehLib::setMember($row["CardNo"], $personNum,$row);
 			$CORE_LOCAL->set("scan","scan");

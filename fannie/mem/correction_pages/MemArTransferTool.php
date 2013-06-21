@@ -32,7 +32,8 @@ if (!class_exists('FormLib'))
 class MemArTransferTool extends FanniePage {
 
 	protected $title='Fannie - Member Management Module';
-	protected $header='Transfer Member Equity';
+	protected $header='Transfer A/R';
+	//was: protected $header='Transfer Member Equity';
 
 	private $errors = '';
 	private $mode = 'init';

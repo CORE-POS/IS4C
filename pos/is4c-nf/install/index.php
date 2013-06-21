@@ -519,7 +519,6 @@ function create_trans_dbs($db,$type){
 
 	create_if_needed($db, $type, $name, 'couponApplied', 'trans', $errors);
 
-
 	/* lttsummary, lttsubtotals, and subtotals
 	 * always get rebuilt to account for tax rate
 	 * changes */

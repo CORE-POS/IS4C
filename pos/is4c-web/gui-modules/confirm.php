@@ -188,7 +188,6 @@ class confirm extends BasicPage {
 						$addr[] = $addrW[0];
 					if (count($addr) > 0)
 						mgr_notification($addr,$email,$ph,$pp1['PAYMENTREQUEST_0_AMT'],$attend,$cart);
-
 				}
 			}
 		}

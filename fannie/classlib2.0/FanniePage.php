@@ -218,16 +218,12 @@ class FanniePage {
 				echo '</script>';
 			}
 
+			// 22May13 Eric Lee  Moved after css_files so these take precedence.
 			$page_css = $this->css_content();
 			if (!empty($page_css)){
 				echo '<style type="text/css">';
 				echo $page_css;
 				echo '</style>';
-			}
-			foreach($this->css_files as $css_url){
-				printf('<link rel="stylesheet" type="text/css" href="%s">',
-					$css_url);
-				echo "\n";
 			}
 
 			if ($this->window_dressing) echo '</body></html>';

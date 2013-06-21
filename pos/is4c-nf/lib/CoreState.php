@@ -77,6 +77,7 @@ static public function system_init() {
         $CORE_LOCAL->set("ccRemoteServerUp",1);
 	$CORE_LOCAL->set("search_or_list",0);
 	$CORE_LOCAL->set("ccTermOut","idle");
+	$CORE_LOCAL->set('ccTermState','swipe');
 	$CORE_LOCAL->set("inputMasked",0);
 
 	/**
