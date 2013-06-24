@@ -21,8 +21,8 @@
 
 *********************************************************************************/
 
-if (!function_exists('validateUserQuiet'))
-	include($FANNIE_ROOT.'auth/login.php');
+if (!class_exists('FannieAuth'))
+	include(dirname(__FILE__).'/auth/FannieAuth.php');
 
 /**
   @class FanniePage
@@ -163,15 +163,15 @@ class FanniePage {
 		foreach($this->auth_classes as $class){
 			$try = False;
 			if (is_array($class) && count($class) == 3)
-				$try = validateUserQuiet($class[0],$class[1],$class[2]);
+				$try = FannieAuth::validateUserQuiet($class[0],$class[1],$class[2]);
 			else
-				$try = validateUserQuiet($class);
+				$try = FannieAuth::validateUserQuiet($class);
 			if ($try){
 				$this->current_user = $try;
 				return True;
 			}
 		}
-		$try = checkLogin();
+		$try = FannieAuth::checkLogin();
 		if ($try && empty($this->auth_classes)){
 			$this->current_user = $try;
 			return True;

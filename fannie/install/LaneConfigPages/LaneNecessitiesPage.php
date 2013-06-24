@@ -35,7 +35,7 @@ include('../util.php');
 include('../db.php');
 include('../../config.php');
 */
-include_once('../../classlib2.0/InstallPage.php');
+include_once('../../classlib2.0/FannieAPI.php');
 
 /**
 	@class LaneNecessitiesPage

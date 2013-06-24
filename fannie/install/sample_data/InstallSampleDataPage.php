@@ -27,7 +27,7 @@ if(!class_exists('SQLManager'))
 	include($FANNIE_ROOT.'src/SQLManager.php');
 include('../util.php');
 include('../db.php');
-include_once('../../classlib2.0/InstallPage.php');
+include_once('../../classlib2.0/FannieAPI.php');
 
 /**
 	@class InstallSampleDataPage

@@ -21,6 +21,7 @@
 
 *********************************************************************************/
 
+global $FANNIE_ROOT;
 if (!class_exists('FanniePlugin'))
 	include($FANNIE_ROOT.'classlib2.0/FanniePlugin.php');
 if (!function_exists('createClass'))

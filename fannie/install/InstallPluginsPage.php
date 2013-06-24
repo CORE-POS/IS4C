@@ -24,8 +24,7 @@
 include('../config.php'); 
 include('util.php');
 include('db.php');
-include_once('../classlib2.0/InstallPage.php');
-include('../classlib2.0/FanniePlugin.php');
+include_once('../classlib2.0/FannieAPI.php');
 $FILEPATH = $FANNIE_ROOT;
 
 /**

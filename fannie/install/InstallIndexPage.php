@@ -25,7 +25,7 @@
 require(dirname(__FILE__).'/../config.php'); 
 include(dirname(__FILE__).'/util.php');
 include(dirname(__FILE__).'/db.php');
-include_once('../classlib2.0/InstallPage.php');
+include_once('../classlib2.0/FannieAPI.php');
 
 /**
 	@class InstallIndexPage
