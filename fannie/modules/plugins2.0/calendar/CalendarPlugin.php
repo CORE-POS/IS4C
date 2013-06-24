@@ -22,7 +22,7 @@
 *********************************************************************************/
 
 include_once(dirname(__FILE__).'/../../../config.php');
-if (!class_exists('FanniePlugin')) include($FANNIE_ROOT.'classlib2.0/FanniePlugin.php');
+if (!class_exists('FannieAPI')) include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
 /**
 */
@@ -48,9 +48,6 @@ class CalendarPlugin extends FanniePlugin {
 
 		$db_name = $FANNIE_PLUGIN_SETTINGS['CalendarDatabase'];
 		if (empty($db_name)) return;
-
-		if (!class_exists('FannieDB'))
-			include($FANNIE_ROOT.'classlib2.0/data/FannieDB.php');
 
 		$dbc = FannieDB::get($db_name);
 

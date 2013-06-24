@@ -22,8 +22,8 @@
 *********************************************************************************/
 
 global $FANNIE_ROOT;
-if (!class_exists('FanniePlugin'))
-	include($FANNIE_ROOT.'classlib2.0/FanniePlugin.php');
+if (!class_exists('FannieAPI'))
+	include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 if (!function_exists('createClass'))
 	include($FANNIE_ROOT.'auth/login.php');
 
@@ -51,9 +51,6 @@ class TimesheetPlugin extends FanniePlugin {
 
 		$db_name = $FANNIE_PLUGIN_SETTINGS['TimesheetDatabase'];
 		if (empty($db_name)) return;
-
-		if (!class_exists('FannieDB'))
-			include($FANNIE_ROOT.'classlib2.0/data/FannieDB.php');
 
 		$dbc = FannieDB::get($db_name);
 

@@ -22,12 +22,7 @@
 *********************************************************************************/
 
 include('../../config.php');
-if (!class_exists('FanniePage'))
-	include($FANNIE_ROOT.'classlib2.0/FanniePage.php');
-if (!class_exists('FannieDB'))
-	include($FANNIE_ROOT.'classlib2.0/data/FannieDB.php');
-if (!class_exists('FormLib'))
-	include($FANNIE_ROOT.'classlib2.0/lib/FormLib.php');
+include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
 class MemArEquityDumpTool extends FanniePage {
 

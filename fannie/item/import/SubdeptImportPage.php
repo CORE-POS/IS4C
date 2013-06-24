@@ -26,9 +26,7 @@
 	          Add some notes to the initial page.
 */
 include('../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieUploadPage.php');
-include($FANNIE_ROOT.'classlib2.0/data/FannieDB.php');
-include($FANNIE_ROOT.'classlib2.0/data/controllers/ProductsController.php');
+include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
 class SubdeptImportPage extends FannieUploadPage {
 

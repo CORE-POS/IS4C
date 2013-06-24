@@ -32,8 +32,7 @@
 
 /* configuration for your module - Important */
 include("../../config.php");
-include($FANNIE_ROOT.'classlib2.0/FanniePage.php');
-include($FANNIE_ROOT.'classlib2.0/lib/FormLib.php');
+include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 include($FANNIE_ROOT.'src/tmp_dir.php');
 
 class UploadAnyFile extends FanniePage {

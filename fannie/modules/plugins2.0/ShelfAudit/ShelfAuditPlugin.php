@@ -21,8 +21,8 @@
 
 *********************************************************************************/
 
-if (!class_exists('FanniePlugin'))
-	include($FANNIE_ROOT.'classlib2.0/FanniePlugin.php');
+if (!class_exists('FannieAPI'))
+	include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
 /**
 */
@@ -47,9 +47,6 @@ class ShelfAuditPlugin extends FanniePlugin {
 
 		$db_name = $FANNIE_PLUGIN_SETTINGS['ShelfAuditDB'];
 		if (empty($db_name)) return;
-
-		if (!class_exists('FannieDB'))
-			include($FANNIE_ROOT.'classlib2.0/data/FannieDB.php');
 
 		$dbc = FannieDB::get($db_name);
 

@@ -25,9 +25,7 @@
 	 4Sep2012 Eric Lee Add some notes to the initial page.
 */
 include('../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieUploadPage.php');
-include($FANNIE_ROOT.'classlib2.0/data/FannieDB.php');
-include($FANNIE_ROOT.'classlib2.0/data/controllers/MeminfoController.php');
+include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
 $country = (isset($FANNIE_COUNTRY)&&!empty($FANNIE_COUNTRY))?$FANNIE_COUNTRY:"US";
 

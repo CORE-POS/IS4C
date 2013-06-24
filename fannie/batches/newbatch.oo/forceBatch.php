@@ -30,8 +30,8 @@
 */
 
 include('../../config.php');
-if (!class_exists('FannieDB'))
-	include($FANNIE_ROOT.'classlib2.0/data/FannieDB.php');
+if (!class_exists('FannieAPI'))
+	include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 if (!function_exists('updateProductAllLanes'))
 	include($FANNIE_ROOT.'item/laneUpdates.php');
 

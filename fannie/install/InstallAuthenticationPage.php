@@ -170,8 +170,6 @@ if ($FANNIE_AUTH_ENABLED){
 						echo "You can use these credentials at the Installation and Configuration Interface (these pages)</br />";
 
 						// populate known privileges table automatically
-						if (!class_exists('FannieDB'))
-							include($FANNIE_ROOT.'classlib2.0/data/FannieDB.php');
 						$db = FannieDB::get($FANNIE_OP_DB);
 						ob_start(); // don't care about primary key errors
 						loaddata($db, 'userKnownPrivs');

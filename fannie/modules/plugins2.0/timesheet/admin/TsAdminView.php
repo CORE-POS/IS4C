@@ -1,8 +1,6 @@
 <?php
 require_once('../../../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FanniePage.php');
-include($FANNIE_ROOT.'classlib2.0/data/FannieDB.php');
-include($FANNIE_ROOT.'classlib2.0/lib/FormLib.php');
+include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
 class TsAdminView extends FanniePage {
 	protected $header = 'Timesheet Management';
