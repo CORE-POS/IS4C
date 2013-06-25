@@ -253,7 +253,7 @@ ScannerDevice.registerListener(Device);
 <head><title>Scan Inventory</title></head>
 <body onload="$('<?php echo $elem; ?>').focus();">
 <form action="SaHandheldPage.php" method="get" id="upcScanForm">
-<b>UPC</b>: <input type="text" size="10" name="upc_in" id="upc_in" 
+<b>UPC</b>: <input type="number" size="10" name="upc_in" id="upc_in" 
 onfocus="paint_focus('upc_in');"
 <?php echo ($elem=='#upc_in')?'class="focused"':''; ?> 
 />
@@ -274,7 +274,7 @@ onfocus="paint_focus('upc_in');"
 				echo $this->current_item_data['desc'];
 				echo '</span>';
 				echo '<br />';
-				printf('<input type="text" size="3" value="%d" %s
+				printf('<input type="number" size="3" value="%d" %s
 					onfocus="paint_focus(\'cur_qty\');$(this).select();" 
 					onkeyup="qty_typed(event);" id="cur_qty" />
 					<input type="hidden" id="cur_upc" value="%s" />',
