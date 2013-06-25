@@ -23,12 +23,13 @@
 
 $PLUGIN_CREATE['sa_inventory'] = "
 	CREATE TABLE sa_inventory (
-	id INT,
+	id INT NOT NULL AUTO_INCREMENT,
 	datetime DATETIME,
 	upc VARCHAR(13),	
 	clear TINYINT,
 	quantity DOUBLE,
 	section INT,
+	PRIMARY KEY (id),
 	INDEX (upc)
 	)
 ";

@@ -108,7 +108,8 @@ class SaHandheldPage extends FanniePage {
 				if (!isset($this->current_item_data['case_sizes'])){
 					$this->current_item_data['case_sizes'] = array();
 				}
-				$this->current_item_data['case_sizes'][] = $w['units'];
+				if ($w['units'] > 0)
+					$this->current_item_data['case_sizes'][] = $w['units'];
 			}
 		}
 
@@ -252,7 +253,7 @@ ScannerDevice.registerListener(Device);
 <head><title>Scan Inventory</title></head>
 <body onload="$('<?php echo $elem; ?>').focus();">
 <form action="SaHandheldPage.php" method="get" id="upcScanForm">
-<b>UPC</b>: <input type="text" size="13" name="upc_in" id="upc_in" 
+<b>UPC</b>: <input type="text" size="10" name="upc_in" id="upc_in" 
 onfocus="paint_focus('upc_in');"
 <?php echo ($elem=='#upc_in')?'class="focused"':''; ?> 
 />

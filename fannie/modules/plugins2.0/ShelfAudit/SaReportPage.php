@@ -278,7 +278,7 @@ table tr:hover {
 					<td id="col_e" class="right">'.money_format('%.2n', $row['retail']).'</td>
 					<td id="col_f">'.(($row['retailstatus'])?$row['retailstatus']:'&nbsp;').'</td>
 					<td id="col_g" class="right">'.money_format('%!.2n', ($row['quantity']*$row['retail'])).'</td>
-					<td id="col_h"><a href="SaReportPage.php?delete=yes&id='.$row['id'].'"><img src="../../../images/cancel.png" border="0"/></a></td>
+					<td id="col_h"><a href="SaReportPage.php?delete=yes&id='.$row['id'].'"><img src="../../../src/img/buttons/trash.png" border="0"/></a></td>
 				</tr>';
 			} else if ($counter_number!=$row['section'] && $counter_number!=$row['dept_no']) {
 				if ($counter=='d') { $counter_number=$row['dept_no']; }
@@ -320,7 +320,7 @@ table tr:hover {
 					<td id="col_e" class="right">'.money_format('%.2n', $row['retail']).'</td>
 					<td id="col_f">'.(($row['retailstatus'])?$row['retailstatus']:'&nbsp;').'</td>
 					<td id="col_g" class="right">'.money_format('%!.2n', ($row['quantity']*$row['retail'])).'</td>
-					<td id="col_h"><a href="SaReportPage.php?delete=yes&id='.$row['id'].'"><img src="../../../images/cancel.png" border="0"/></a></td>
+					<td id="col_h"><a href="SaReportPage.php?delete=yes&id='.$row['id'].'"><img src="../../../src/img/buttons/trash.png" border="0"/></a></td>
 				</tr>';
 				
 				$counter_total=$row['quantity']*$row['retail'];
@@ -336,7 +336,7 @@ table tr:hover {
 					<td id="col_e" class="right">'.money_format('%.2n', $row['retail']).'</td>
 					<td id="col_f">'.(($row['retailstatus'])?$row['retailstatus']:'&nbsp;').'</td>
 					<td id="col_g" class="right">'.money_format('%!.2n', ($row['quantity']*$row['retail'])).'</td>
-					<td id="col_h"><a href="SaReportPage.php?delete=yes&id='.$row['id'].'"><img src="../../../images/cancel.png" border="0"/></a></td>
+					<td id="col_h"><a href="SaReportPage.php?delete=yes&id='.$row['id'].'"><img src="../../../src/img/buttons/trash.png" border="0"/></a></td>
 				</tr>';
 			}
 		}
