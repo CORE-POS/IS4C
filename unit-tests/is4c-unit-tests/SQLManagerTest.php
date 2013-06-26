@@ -14,7 +14,13 @@ class SQLManagerTest extends PHPUnit_Framework_TestCase
 		$this->assertObjectHasAttribute('connections',$sql);
 		$this->assertInternalType('array',$sql->connections);
 		$this->assertArrayHasKey($CORE_LOCAL->get('pDatabase'),$sql->connections);
-		$this->assertInternalType('resource',$sql->connections[$CORE_LOCAL->get('pDatabase')]);
+		$con = $sql->connections[$CORE_LOCAL->get('pDatabase')];
+		// mysql gives resource; PDO gives object
+		$constraint = $this->logicalOr(
+			$this->isType('resource',$con),
+			$this->isType('object',$con)
+		);
+		$this->assertThat($con, $constraint);
 		
 		/* test query */
 		$result = $sql->query("SELECT 1 as one");
@@ -32,7 +38,12 @@ class SQLManagerTest extends PHPUnit_Framework_TestCase
 		$this->assertEquals(1,$fields);
 
 		$type = $sql->field_type($result,0);
-		$this->assertEquals('int',$type);
+		$constraint = $this->logicalOr(
+			$this->equalTo('int'),
+			$this->equalTo('longlong')
+		);
+		$this->assertThat($type, $constraint);
+		//$this->assertEquals('int',$type);
 
 		/* test various fetch methods */
 		$array = $sql->fetch_array($result);
@@ -52,16 +63,6 @@ class SQLManagerTest extends PHPUnit_Framework_TestCase
 		$this->assertArrayHasKey('one',$array);
 		$this->assertEquals(1,$array[0]);
 		$this->assertEquals(1,$array['one']);
-
-		/* repeat test query for next fetch */
-		$result = $sql->query("SELECT 1 as one");
-		$this->assertNotEquals(False,$result);
-
-		$field = $sql->fetch_field($result,0);
-		$this->assertNotEquals(False,$field);
-		$this->assertInstanceOf('stdClass',$field);
-		$this->assertObjectHasAttribute('numeric',$field);
-		$this->assertEquals(1,$field->numeric);
 
 		$now = $sql->now();
 		$this->assertInternalType('string',$now);
@@ -100,7 +101,7 @@ class SQLManagerTest extends PHPUnit_Framework_TestCase
 		$this->assertNotEquals('',$error);
 
 		/* prepared statements */
-		$prep = $sql->prepare_statement("SELECT ?");
+		$prep = $sql->prepare_statement("SELECT ? as col");
 		$this->assertNotEquals(False,$prep);
 		$exec = $sql->exec_statement($prep,array(2));
 		$this->assertNotEquals(False,$exec);

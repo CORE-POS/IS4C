@@ -326,7 +326,7 @@ class SQLManager {
 		case $this->TYPE_PDOMY:
 		case $this->TYPE_PDOMS:
 		case $this->TYPE_PDOPG:
-			return $result_object->fetchColumn($index);
+			return $result_object->getColumnMeta($index);
 		}
 		return -1;
 	}
@@ -881,7 +881,7 @@ class SQLManager {
 		case $this->TYPE_PDOPG:
 			$obj = $this->connections[$which_connection];
 			$info = $obj->errorInfo();
-			return $info[2];
+			return ($info[2]==null ? '' : $info[2]);
 		}
 		return 'unknown error';
 	}

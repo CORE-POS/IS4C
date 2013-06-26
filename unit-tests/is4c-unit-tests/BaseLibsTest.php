@@ -555,20 +555,6 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
 
 		lttLib::clear();
 
-		TransRecord::addMadCoup();
-		$record = lttLib::genericRecord();
-		$record['upc'] = 'MAD Coupon';
-		$record['description'] = 'Member Appreciation Coupon';
-		$record['trans_type'] = 'I';
-		$record['trans_subtype'] = 'CP';
-		$record['trans_status'] = 'C';
-		$record['quantity'] = 1;
-		$record['ItemQtty'] = 1;
-		$record['voided'] = 17;
-		lttLib::verifyRecord(1, $record, $this);
-
-		lttLib::clear();
-
 		$CORE_LOCAL->set('transDiscount',3.24);
 		TransRecord::addTransDiscount();
 		$record = lttLib::genericRecord();
