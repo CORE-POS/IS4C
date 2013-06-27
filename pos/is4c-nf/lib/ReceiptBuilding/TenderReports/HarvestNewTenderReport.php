@@ -53,6 +53,14 @@ static public function get(){
 	// 			 "AR"=>"AR PAYMENTS",
 	// 			 "EQ"=>"EQUITY SALES"
 	// 		 );
+	array_push($DESIRED_TENDERS, array(
+			"CP"=>"COUPONS TENDERED", 
+			"FS"=>"EBT CARD TENDERS", 
+			"CK"=>"CHECK TENDERS", 
+			"AR"=>"ACCOUNTANT ONLY", 
+			"EQ"=>"EQUITY"
+		)
+	);
 
 	$db_a = Database::mDataConnect();
 
@@ -72,26 +80,18 @@ static public function get(){
 			" and trans_type='T' AND trans_subtype='".$tender_code."'
 			  ORDER BY tdate";
 		switch($tender_code){
-		case 'EF':
-		case 'EC':
-		case 'EB':
-		case 'EK':
+		case 'FS':
 			$query = "select tdate,register_no,trans_no,-total AS tender
 				from dlog where emp_no=".$CORE_LOCAL->get("CashierNo").
 				" and trans_type='T' AND trans_subtype IN ('EF','EC','EB','EK')
 				  ORDER BY tdate";
 			break;
-		case 'PE':
-		case 'BU':
-		case 'EL':
-		case 'PY':
-		case 'TV':
+		case 'CK':
 			$query = "select tdate,register_no,trans_no,-total AS tender
 				from dlog where emp_no=".$CORE_LOCAL->get("CashierNo").
 				" and trans_type='T' AND trans_subtype IN ('PE','BU','EL','PY','TV')
 				  ORDER BY tdate";
 			break;
-		case 'CP':
 		case 'MC':
 			$query = "select tdate,register_no,trans_no,-total AS tender
 				from dlog where emp_no=".$CORE_LOCAL->get("CashierNo").
