@@ -42,6 +42,18 @@ static public function get(){
 
 	$DESIRED_TENDERS = $CORE_LOCAL->get("TRDesiredTenders");
 
+	$DESIRED_TENDERS = array(
+				 "CK"=>"CHECK TENDERS",
+				 "GD"=>"GIFT CARD TENDERS",
+				 "TC"=>"GIFT CERT TENDERS",
+				 "MI"=>"STORE CHARGE TENDERS",
+				 "EF"=>"EBT CARD TENDERS",
+				 "CP"=>"COUPONS TENDERED",
+				 "IC"=>"INSTORE COUPONS TENDERED",
+				 "AR"=>"AR PAYMENTS",
+				 "EQ"=>"EQUITY SALES"
+			 );
+
 	$db_a = Database::mDataConnect();
 
 	$blank = "             ";
@@ -60,64 +72,34 @@ static public function get(){
 			" and trans_type='T' AND trans_subtype='".$tender_code."'
 			  ORDER BY tdate";
 		switch($tender_code){
-		case 'CC':
-			$query = "select tdate,register_no,trans_no,-total AS tender
-				from dlog where emp_no=".$CORE_LOCAL->get("CashierNo").
-				" and trans_type='T' AND trans_subtype IN ('CC','AX')
-				  ORDER BY tdate";
-			break;
 		case 'EF':
 			$query = "select tdate,register_no,trans_no,-total AS tender
 				from dlog where emp_no=".$CORE_LOCAL->get("CashierNo").
-				" and trans_type='T' AND trans_subtype IN ('EF','EC')
+				" and trans_type='T' AND trans_subtype IN ('EF','EC','EB','EK')
+				  ORDER BY tdate";
+			break;
+		case 'CK':
+			$query = "select tdate,register_no,trans_no,-total AS tender
+				from dlog where emp_no=".$CORE_LOCAL->get("CashierNo").
+				" and trans_type='T' AND trans_subtype IN ('PE','BU','EL','PY','TV')
 				  ORDER BY tdate";
 			break;
 		case 'CP':
 			$query = "select tdate,register_no,trans_no,-total AS tender
 				from dlog where emp_no=".$CORE_LOCAL->get("CashierNo").
-				" and trans_type='T' AND trans_subtype ='CP' AND
+				" and trans_type='T' AND trans_subtype  IN ('CP','MC') AND
 				  upc NOT LIKE '%MAD%' ORDER BY tdate";
-			break;
-		case 'SC':
-			$query = "select tdate,register_no,trans_no,-total AS tender
-				from dlog where emp_no=".$CORE_LOCAL->get("CashierNo").
-				" and trans_type='T' AND trans_subtype ='SC' AND
-				  total<0 ORDER BY tdate";
 			break;
 		case 'AR':
 			$query = "select tdate,register_no,trans_no,total AS tender
 				from dlog where emp_no=".$CORE_LOCAL->get("CashierNo").
-				" and trans_type='D' AND department = 990
+				" and trans_type='D' AND department = 98
 				  ORDER BY tdate";
 			break;
 		case 'EQ':
 			$query = "select tdate,register_no,trans_no,total AS tender
 				from dlog where emp_no=".$CORE_LOCAL->get("CashierNo").
-				" and trans_type='D' AND department IN (991,992)
-				  ORDER BY tdate";
-			break;
-		case 'ST':
-			$query = "select tdate,register_no,trans_no,total AS tender
-				from dlog where emp_no=".$CORE_LOCAL->get("CashierNo").
-				" and trans_type='I' AND upc = '0000000001065'
-				  ORDER BY tdate";
-			break;
-		case 'BP':
-			$query = "select tdate,register_no,trans_no,total AS tender
-				from dlog where emp_no=".$CORE_LOCAL->get("CashierNo").
-				" and trans_type='I' AND upc IN('0000000007573','0000000007574')
-				  ORDER BY tdate";
-			break;
-		case 'SN':
-			$query = "select tdate,register_no,trans_no,total AS tender
-				from dlog where emp_no=".$CORE_LOCAL->get("CashierNo").
-				" and trans_type='I' AND upc LIKE '002001000%'
-				  ORDER BY tdate";
-			break;
-		case 'CF':
-			$query = "select tdate,register_no,trans_no,total AS tender
-				from dlog where emp_no=".$CORE_LOCAL->get("CashierNo").
-				" and trans_type='I' AND upc LIKE '002000600%'
+				" and trans_type='D' AND department IN (70,71)
 				  ORDER BY tdate";
 			break;
 		}
