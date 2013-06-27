@@ -42,17 +42,17 @@ static public function get(){
 
 	$DESIRED_TENDERS = $CORE_LOCAL->get("TRDesiredTenders");
 
-	$DESIRED_TENDERS = array(
-				 "CK"=>"CHECK TENDERS",
-				 "GD"=>"GIFT CARD TENDERS",
-				 "TC"=>"GIFT CERT TENDERS",
-				 "MI"=>"STORE CHARGE TENDERS",
-				 "EF"=>"EBT CARD TENDERS",
-				 "CP"=>"COUPONS TENDERED",
-				 "IC"=>"INSTORE COUPONS TENDERED",
-				 "AR"=>"AR PAYMENTS",
-				 "EQ"=>"EQUITY SALES"
-			 );
+	// $DESIRED_TENDERS = array(
+	// 			 "CK"=>"CHECK TENDERS",
+	// 			 "GD"=>"GIFT CARD TENDERS",
+	// 			 "TC"=>"GIFT CERT TENDERS",
+	// 			 "MI"=>"STORE CHARGE TENDERS",
+	// 			 "EF"=>"EBT CARD TENDERS",
+	// 			 "CP"=>"COUPONS TENDERED",
+	// 			 "IC"=>"INSTORE COUPONS TENDERED",
+	// 			 "AR"=>"AR PAYMENTS",
+	// 			 "EQ"=>"EQUITY SALES"
+	// 		 );
 
 	$db_a = Database::mDataConnect();
 
@@ -73,18 +73,26 @@ static public function get(){
 			  ORDER BY tdate";
 		switch($tender_code){
 		case 'EF':
+		case 'EC':
+		case 'EB':
+		case 'EK':
 			$query = "select tdate,register_no,trans_no,-total AS tender
 				from dlog where emp_no=".$CORE_LOCAL->get("CashierNo").
 				" and trans_type='T' AND trans_subtype IN ('EF','EC','EB','EK')
 				  ORDER BY tdate";
 			break;
-		case 'CK':
+		case 'PE':
+		case 'BU':
+		case 'EL':
+		case 'PY':
+		case 'TV':
 			$query = "select tdate,register_no,trans_no,-total AS tender
 				from dlog where emp_no=".$CORE_LOCAL->get("CashierNo").
 				" and trans_type='T' AND trans_subtype IN ('PE','BU','EL','PY','TV')
 				  ORDER BY tdate";
 			break;
 		case 'CP':
+		case 'MC':
 			$query = "select tdate,register_no,trans_no,-total AS tender
 				from dlog where emp_no=".$CORE_LOCAL->get("CashierNo").
 				" and trans_type='T' AND trans_subtype  IN ('CP','MC') AND
