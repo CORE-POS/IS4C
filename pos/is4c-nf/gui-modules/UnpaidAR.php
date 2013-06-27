@@ -47,6 +47,7 @@ class UnpaidAR extends BasicPage {
 				if (strtoupper($dec)=="BQ")
 					$amt = $CORE_LOCAL->get("balance");
 				PrehLib::deptkey($amt*100,9900);
+				$CORE_LOCAL->set('autoReprint',1);
 				$memtype = $CORE_LOCAL->get("memType");
 				$type = $CORE_LOCAL->get("Type");
 				if ($memtype == 1 || $memtype == 3 || $type == "INACT"){
@@ -69,12 +70,12 @@ class UnpaidAR extends BasicPage {
 
 		<?php
 		if ($amt == $CORE_LOCAL->get("balance")){
-			DisplayLib::boxMsg(sprintf("Old A/R Balance: $%.2f<br />
+			echo DisplayLib::boxMsg(sprintf("Old A/R Balance: $%.2f<br />
 				[Enter] to pay balance now<br />
 				[Clear] to leave balance",$amt));
 		}
 		else {
-			DisplayLib::boxMsg(sprintf("Old A/R Balance: $%.2f<br />
+			echo DisplayLib::boxMsg(sprintf("Old A/R Balance: $%.2f<br />
 				Total A/R Balance: $%.2f<br />
 				[Enter] to pay old balance<br />
 				[Balance] to pay the entire balance<br />

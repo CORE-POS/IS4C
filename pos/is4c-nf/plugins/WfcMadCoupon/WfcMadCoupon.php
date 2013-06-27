@@ -1,7 +1,7 @@
 <?php
 /*******************************************************************************
 
-    Copyright 2007 Whole Foods Co-op
+    Copyright 2013 Whole Foods Co-op
 
     This file is part of IT CORE.
 
@@ -21,34 +21,8 @@
 
 *********************************************************************************/
 
-class MadCoupon extends Parser {
-	function check($str){
-		if ($str == "MA")
-			return True;
-		return False;
-	}
+class WfcMadCoupon extends Plugin {
 
-	function parse($str){
-		PrehLib::madCoupon();
-		$ret = $this->default_json();
-		$ret['output'] = DisplayLib::lastpage();
-		$ret['redraw_footer'] = True;
-		return $ret;
-	}
-
-	function doc(){
-		return "<table cellspacing=0 cellpadding=3 border=1>
-			<tr>
-				<th>Input</th><th>Result</th>
-			</tr>
-			<tr>
-				<td>MA</td>
-				<td>Add quarterly member coupon
-				(WFC specific)</td>
-			</tr>
-			</table>";
-	}
-
+	public $plugin_description = "WFC's quarterly member appreciation discount. Very
+			co-op specific and shouldn't be in the main code.";
 }
-
-?>

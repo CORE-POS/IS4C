@@ -22,9 +22,7 @@
 *********************************************************************************/
 
 include('../../config.php');
-include($FANNIE_ROOT.'classlib2.0/data/FannieDB.php');
-include($FANNIE_ROOT.'classlib2.0/lib/FormLib.php');
-include($FANNIE_ROOT.'classlib2.0/lib/PriceLib.php');
+include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
 $upc = FormLib::get_form_value('upc');
 $action = FormLib::get_form_value('action','unknown');

@@ -569,10 +569,10 @@ class MercuryE2E extends BasicCCModule {
 				TransRecord::addtender("Debit Card", "DC", $amt);
 			else
 				TransRecord::addtender("Credit Card", "CC", $amt);
-			$CORE_LOCAL->set("boxMsg","<b>Approved</b><font size=-1><p>Please verify cardholder signature<p>[enter] to continue<br>\"rp\" to reprint slip<br>[void] to cancel and void</font>");
+			$CORE_LOCAL->set("boxMsg","<b>Approved</b><font size=-1><p>Please verify cardholder signature<p>[enter] to continue<br>\"rp\" to reprint slip</font>");
 			if (($CORE_LOCAL->get("paycard_amount") <= $CORE_LOCAL->get("CCSigLimit") && $CORE_LOCAL->get("paycard_amount") >= 0)
 			     || $type == "DEBIT" || substr($type,0,3)=="EBT"){
-				$CORE_LOCAL->set("boxMsg","<b>Approved</b><font size=-1><p>No signature required<p>[enter] to continue<br>[void] to cancel and void</font>");
+				$CORE_LOCAL->set("boxMsg","<b>Approved</b><font size=-1><p>No signature required<p>[enter] to continue</font>");
 			}
 			break;
 		case PaycardLib::PAYCARD_MODE_VOID:

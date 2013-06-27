@@ -22,12 +22,7 @@
 *********************************************************************************/
 
 include('../../../config.php');
-if (!class_exists('FannieUploadPage'))
-	include_once($FANNIE_ROOT.'classlib2.0/FannieUploadPage.php');
-if (!class_exists('FannieDB'))
-	include_once($FANNIE_ROOT.'classlib2.0/data/FannieDB.php');
-if (!class_exists('ProductsController'))
-	include_once($FANNIE_ROOT.'classlib2.0/data/controllers/ProductsController.php');
+include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
 class UnfiUploadPage extends FannieUploadPage {
 

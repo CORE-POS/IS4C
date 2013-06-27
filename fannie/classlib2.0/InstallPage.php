@@ -20,12 +20,6 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
-/* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-	* 15Apr2013 Eric Lee 
-	* - Want it to have the default authentication assignments from FanniePage
-	* o Leave window_dressing value but have it mean something different,
-	*    less elaborate, by using different header and footer includes.
-*/
 include_once(dirname(__FILE__).'/FanniePage.php');
 
 /**
@@ -35,12 +29,14 @@ include_once(dirname(__FILE__).'/FanniePage.php');
 class InstallPage extends FanniePage {
 
 	public $required = True;
+	protected $auth_classes = array('sysadmin');
 
 	public $description = "
 	Base class for install-and-config pages not using Admin menu.
 	";
 
-
+	// 20May13 EL Likely not needed.
+	// If all it does is call parent::__construct(), that is done by default.
 	public function __construct() {
 		parent::__construct();
 	}

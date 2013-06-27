@@ -30,7 +30,7 @@
  across two servers that are useful for lane-server
  communication
 */
-if (!function_exists("ADONewConnection")) include($FANNIE_ROOT.'adodb5/adodb.inc.php');
+if (!function_exists("ADONewConnection")) include(dirname(__FILE__).'/../adodb5/adodb.inc.php');
 
 class SQLManager {
 

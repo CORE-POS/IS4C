@@ -67,14 +67,14 @@ if (isset($_POST['cardnos'])){
 		$desc = substr($desc,0,24);
 
 		$insQ = "INSERT INTO dtransactions VALUES (
-			now(),$LANE_NO,$EMP_NO,$t_no,
+			now(),0,0,$LANE_NO,$EMP_NO,$t_no,
 			'{$amt}DP703','Gazette Ad {$desc}','D','','',703,
 			1.0,0,0,$amt,$amt,$amt,0,0,.0,.0,
 			0,0,0,NULL,0.0,0,0,.0,0,0,0,0,
 			0,'',$cardno,1)";
 		$amt *= -1;
 		$insQ2 = "INSERT INTO dtransactions VALUES (
-			now(),$LANE_NO,$EMP_NO,$t_no,
+			now(),0,0,$LANE_NO,$EMP_NO,$t_no,
 			0,'InStore Charges','T','MI',0,0,
 			0.0,0,0,.0,$amt,.0,0,0,.0,.0,
 			0,0,0,NULL,0.0,0,0,.0,0,0,0,0,
@@ -110,6 +110,15 @@ else if (isset($_POST['MAX_FILE_SIZE'])){
 		$clr = trim(strtoupper($data[$COLOR]));
 		if ($clr[0] == "B") $clr = "B/W";
 		elseif($clr == "COLOR") $clr = "FULL";
+
+		if (strstr($cn,'STAR CREATIVE')){
+			if (strstr($cn,'TYCOONS'))
+				$ph = '218-623-1889';
+			elseif(strstr($cn,'BURRITO'))
+				$ph = '218-348-4557';
+			elseif(strstr($cn,'BREWHOUSE'))
+				$ph = '218-726-1392';
+		}
 
 		$desc = "($sz, ".($clr=="FULL" ? "color" : "b&w");
 		$desc .= ((substr($data[$MEMBER],0,3)=="YES") ? ', owner' : '').")";

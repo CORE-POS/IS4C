@@ -21,9 +21,8 @@
 
 *********************************************************************************/
 
-include_once(dirname(__FILE__).'/../../classlib2.0/item/ItemModule.php');
-include_once(dirname(__FILE__).'/../../classlib2.0/lib/FormLib.php');
-include_once(dirname(__FILE__).'/../../classlib2.0/data/FannieDB.php');
+if (!class_exists('FannieAPI'))
+	include_once(dirname(__FILE__).'/../../classlib2.0/FannieAPI.php');
 
 class VendorItemModule extends ItemModule {
 

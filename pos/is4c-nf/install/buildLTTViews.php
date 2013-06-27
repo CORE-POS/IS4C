@@ -142,8 +142,6 @@ l.paymentTotal,
 l.discountTTL,
 l.memSpecial,
 l.staffSpecial,
-case when convert(l.runningTotal - s.transDiscount,decimal(10,2)) * .05 > 2.5 then 2.5
-else convert (l.runningTotal - s.transDiscount,decimal(10,2)) * .05 end as madCoupon,
 s.fsEligible as fsEligible,\n";
 
 $ratesQ = "select description,rate from taxrates order by rate desc";
@@ -330,8 +328,6 @@ l.paymentTotal,
 l.discountTTL,
 l.memSpecial,
 l.staffSpecial,
-case when convert(numeric(10,2),l.runningTotal - s.transDiscount) * .05 > 2.5 then 2.5
-else convert(numeric(10,2),l.runningTotal - s.transDiscount) * .05 end as madCoupon,
 s.fsEligible as fsEligible,";
 
 $ratesQ = "select description,rate from taxrates order by rate desc";

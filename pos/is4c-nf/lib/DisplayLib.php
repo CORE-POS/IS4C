@@ -617,6 +617,8 @@ static public function termdisplaymsg(){
 	global $CORE_LOCAL;
 	if (!in_array("Paycards",$CORE_LOCAL->get("PluginList")))
 		return '';
+	elseif($CORE_LOCAL->get("PaycardsCashierFacing")=="1")
+		return '';
 	// style box to look like a little screen
 	$ret = '<div style="background:#ccc;border:solid 1px black;padding:7px;text-align:center;font-size:120%;">';
 	$rdy = '<div style="background:#0c0;border:solid 1px black;padding:7px;text-align:center;font-size:120%;">';
@@ -681,8 +683,8 @@ static public function listitems($top_item, $highlight) {
 
 //------------------Boundary Bottom----------------
 
-	return self::drawitems($top_item, 11, $highlight);
 	$CORE_LOCAL->set("currentid",$highlight);
+	return self::drawitems($top_item, 11, $highlight);
 }
 
 

@@ -23,9 +23,7 @@
 *********************************************************************************/
 
 include('../../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FanniePage.php');
-include($FANNIE_ROOT.'classlib2.0/data/FannieDB.php');
-include($FANNIE_ROOT.'classlib2.0/lib/FormLib.php');
+include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
 /**
   @class SaScanningPage
@@ -232,6 +230,7 @@ table tr:hover {
 	<body>
 		<div id="bdiv">
 			<p><a href="#" onclick="window.open('SaScanningPage.php','scan','width=320, height=200, location=no, menubar=no, status=no, toolbar=no, scrollbars=no, resizable=no');">Enter a new scan</a></p>
+			<p><a href="SaHandheldPage.php">Alternate Scan Page</a></p>
 			<p><?php echo($this->sql_actions); ?></p>
 			<p><?php echo($this->status); ?></p>
 			<p><a href="?view=dept">view by pos department</a> <a href="SaReportPage.php">view by scanned section</a></p>
@@ -279,7 +278,7 @@ table tr:hover {
 					<td id="col_e" class="right">'.money_format('%.2n', $row['retail']).'</td>
 					<td id="col_f">'.(($row['retailstatus'])?$row['retailstatus']:'&nbsp;').'</td>
 					<td id="col_g" class="right">'.money_format('%!.2n', ($row['quantity']*$row['retail'])).'</td>
-					<td id="col_h"><a href="SaReportPage.php?delete=yes&id='.$row['id'].'"><img src="../../../images/cancel.png" border="0"/></a></td>
+					<td id="col_h"><a href="SaReportPage.php?delete=yes&id='.$row['id'].'"><img src="../../../src/img/buttons/trash.png" border="0"/></a></td>
 				</tr>';
 			} else if ($counter_number!=$row['section'] && $counter_number!=$row['dept_no']) {
 				if ($counter=='d') { $counter_number=$row['dept_no']; }
@@ -321,7 +320,7 @@ table tr:hover {
 					<td id="col_e" class="right">'.money_format('%.2n', $row['retail']).'</td>
 					<td id="col_f">'.(($row['retailstatus'])?$row['retailstatus']:'&nbsp;').'</td>
 					<td id="col_g" class="right">'.money_format('%!.2n', ($row['quantity']*$row['retail'])).'</td>
-					<td id="col_h"><a href="SaReportPage.php?delete=yes&id='.$row['id'].'"><img src="../../../images/cancel.png" border="0"/></a></td>
+					<td id="col_h"><a href="SaReportPage.php?delete=yes&id='.$row['id'].'"><img src="../../../src/img/buttons/trash.png" border="0"/></a></td>
 				</tr>';
 				
 				$counter_total=$row['quantity']*$row['retail'];
@@ -337,7 +336,7 @@ table tr:hover {
 					<td id="col_e" class="right">'.money_format('%.2n', $row['retail']).'</td>
 					<td id="col_f">'.(($row['retailstatus'])?$row['retailstatus']:'&nbsp;').'</td>
 					<td id="col_g" class="right">'.money_format('%!.2n', ($row['quantity']*$row['retail'])).'</td>
-					<td id="col_h"><a href="SaReportPage.php?delete=yes&id='.$row['id'].'"><img src="../../../images/cancel.png" border="0"/></a></td>
+					<td id="col_h"><a href="SaReportPage.php?delete=yes&id='.$row['id'].'"><img src="../../../src/img/buttons/trash.png" border="0"/></a></td>
 				</tr>';
 			}
 		}

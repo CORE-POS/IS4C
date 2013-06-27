@@ -531,7 +531,11 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
 					SetStateStart();
 				}
 				else {
-					PushOutput("TERMCB:"+msg[1]);
+					// Pressed green or yellow button
+					// Proceed to PIN entry but don't
+					// request 0xFF as cash back
+					if (msg[1] != BUTTON_HARDWARE_BUTTON)
+						PushOutput("TERMCB:"+msg[1]);
 					SetStateGetPin();
 				}
 			}

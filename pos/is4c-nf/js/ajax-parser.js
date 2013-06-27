@@ -75,7 +75,7 @@ function parserHandler(data,status_str,xml_ro){
 	}
 
 	if (data.retry){
-		setTimeout("runParser('"+data.retry+"','"+CORE_JS_PREFIX+"');",700);
+		setTimeout("runParser('"+data.retry+"','"+CORE_JS_PREFIX+"');",150);
 	}
 }
 

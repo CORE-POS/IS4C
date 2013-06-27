@@ -103,7 +103,7 @@ class login2 extends BasicPage {
 			}
 			else {
 				//echo "<a href='/bye.html' onclick=\"var cw=window.open('','Customer_Display'); cw.close()\" ";
-				echo "<a href=\"/bye.html\" ";
+				echo "<a href=\"\" ";
 			}
 			echo "onmouseover=\"document.exit.src='{$this->page_url}graphics/switchred2.gif';\" ";
 			echo "onmouseout=\"document.exit.src='{$this->page_url}graphics/switchblue2.gif';\">";

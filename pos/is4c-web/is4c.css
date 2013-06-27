@@ -9,16 +9,27 @@ div#loginTitle table th {
 div#topMenuRunner li {
 	display:inline;
 	padding-left: 0.3em;
-	font-size: 85%;
+	font-size: 10pt;
+}
+div#topMenuRunner {
+	margin-bottom: 15px;
 }
 div#sidebar {
 	float:left;
-	width:170px;
+	width:100px;
 	margin-right: 10px;
+	font-size: 10pt;
+}
+ul#deptlist {
+	margin-left: 8px;
+}
+ul#sidebar3 {
+	margin-left: 8px;
 }
 div#browsearea {
 	float:left;
 	width:520px;	
+	font-size: 10pt;
 }
 
 table#carttable td, th {
@@ -28,6 +39,7 @@ table#carttable td, th {
 div.itemMain {
 	width: 400px;
 	float: left;
+	font-size: 10pt;
 }
 span.itemDesc {
 	font-size: 125%;

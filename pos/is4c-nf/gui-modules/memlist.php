@@ -86,16 +86,13 @@ class memlist extends NoInputPage {
 		$memberID = $entered;
 		$db_a = Database::pDataConnect();
 
-		$query = "";
+		$query = "select CardNo,personNum,LastName,FirstName,CashBack,Balance,Discount,
+			MemDiscountLimit,ChargeOk,WriteChecks,StoreCoupons,Type,memType,staff,
+			SSI,Purchases,NumberOfChecks,memCoupons,blueLine,Shown,id from custdata 
+			where CardNo = '".$entered."' order by personNum";
 		if (!is_numeric($entered)) {
 			$query = "select CardNo,personNum,LastName,FirstName from custdata 
 				where LastName like '".$entered."%' order by LastName, FirstName";
-		}
-		else {
-			$query = "select CardNo,personNum,LastName,FirstName,CashBack,Balance,Discount,
-				MemDiscountLimit,ChargeOk,WriteChecks,StoreCoupons,Type,memType,staff,
-				SSI,Purchases,NumberOfChecks,memCoupons,blueLine,Shown,id from custdata 
-				where CardNo = '".$entered."' order by personNum";
 		}
 		if ($selected_name && is_numeric($personNum)){
 			/**
@@ -113,7 +110,7 @@ class memlist extends NoInputPage {
 		$num_rows = $db_a->num_rows($result);
 
 		// if theres only 1 match don't show the memlist
-		if ($num_rows == 1) {
+		if ($num_rows == 1 && $CORE_LOCAL->get("verifyName")==0) {
 			$selected_name = True;
 			$personNum = 1;
 		}
@@ -169,8 +166,14 @@ class memlist extends NoInputPage {
 			// /WEFC_Toronto bit.
 			}
 
-			if ($entered != $CORE_LOCAL->get("defaultNonMem") && PrehLib::check_unpaid_ar($row["CardNo"]))
-				$this->change_page($this->page_url."gui-modules/UnpaidAR.php");
+			// don't bother with unpaid balance check if there is no balance
+			if ($entered != $CORE_LOCAL->get("defaultNonMem") && $CORE_LOCAL->get('balance') > 0){
+				$unpaid = PrehLib::check_unpaid_ar($row["CardNo"]);
+				if ($unpaid)
+					$this->change_page($this->page_url."gui-modules/UnpaidAR.php");
+				else
+					$this->change_page($this->page_url."gui-modules/pos2.php");
+			}
 			else
 				$this->change_page($this->page_url."gui-modules/pos2.php");
 			return False;

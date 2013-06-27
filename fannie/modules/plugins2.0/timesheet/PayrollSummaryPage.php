@@ -1,8 +1,6 @@
 <?php # payroll.php - Generates a bi-monthly statement from timesheet table.
 require_once('../../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FanniePage.php');
-include($FANNIE_ROOT.'classlib2.0/data/FannieDB.php');
-include($FANNIE_ROOT.'classlib2.0/lib/FormLib.php');
+include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
 $ts_db = FannieDB::get($FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']);
 

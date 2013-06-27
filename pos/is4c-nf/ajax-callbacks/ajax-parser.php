@@ -67,9 +67,6 @@ if ($entered != ""){
 			$CORE_LOCAL->set("strEntered","");
 			$json = $valid;
 		}
-
-		$CORE_LOCAL->set("quantity",0);
-		$CORE_LOCAL->set("multiple",0);
 	}
 
 	$CORE_LOCAL->set("quantity",0);

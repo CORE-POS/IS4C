@@ -56,7 +56,7 @@ class SpecialDept {
 
 	  These modules supplement parsing to make
 	  open ring handling more customizable. The module
-	  will be invoked within a Paser object and
+	  will be invoked within a Parser object and
 	  hence uses the same return format.
 	*/
 	function handle($deptID,$amount,$json){

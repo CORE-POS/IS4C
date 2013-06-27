@@ -52,15 +52,35 @@ function customer_confirmation($uid,$email,$total){
 	return $cart;
 }
 
-function admin_notification($uid,$email,$total,$cart=""){
+function admin_notification($uid,$email,$ph,$total,$cart=""){
 	$msg = "New online order\n\n";
-	$msg .= getRealName($email)." (".$email.")\n\n";
+	$msg .= getRealName($email)." (".$email.")\n";
+	$msg .= "Phone # provided: ".$ph."\n\n";
 	$msg .= sprintf("Order Total: \$%.2f\n",$total);
 
 	$msg .= "\nOrder Summary:\n";
 	$msg .= $cart;
 	
 	send_email(ADMIN_EMAIL,"New Online Order",$msg);
+}
+
+function mgr_notification($addresses,$email,$ph,$total,$notes="",$cart=""){
+	$msg = "New online order\n\n";
+	$msg .= getRealName($email)." (".$email.")\n";
+	$msg .= "Phone # provided: ".$ph."\n\n";
+	$msg .= sprintf("Order Total: \$%.2f\n",$total);
+
+	$msg .= "\nOrder Summary:\n";
+	$msg .= $cart;
+
+	$msg .= "\n:Additional attendees\n";
+	$msg .= (!empty($notes) ? $notes : 'none listed');
+	
+	$addr = "";
+	foreach($addresses as $a)
+		$addr .= $a.",";
+	$addr = rtrim($addr,",");
+	send_email($addr,"New Online Order",$msg);
 }
 
 function getcart($empno){

@@ -111,6 +111,34 @@ class ContactInfo extends MemberModule {
 			'email_1' => FormLib::get_form_value('ContactInfo_email',''),
 			'ads_OK' => (FormLib::get_form_value('ContactInfo_mail')!=='' ? 1 : 0)
 		);
+		/* Canadian Postal Code, and City and Province
+		 * Phone style: ###-###-####
+		*/
+		if ( preg_match("/^[A-Z]\d[A-Z]/i", $MI_FIELDS['zip']) ) {
+			$MI_FIELDS['zip'] = strtoupper($MI_FIELDS['zip']);
+			if ( strlen($MI_FIELDS['zip']) == 6 ) {
+				$MI_FIELDS['zip'] = substr($MI_FIELDS['zip'],0,3).' '. substr($MI_FIELDS['zip'],3,3);
+			}
+			// Postal code M* supply City and Province
+			if ( preg_match("/^M/", $MI_FIELDS['zip']) &&
+					$MI_FIELDS['city'] == '' && $MI_FIELDS['state'] == '') {
+				$MI_FIELDS['city'] = 'Toronto';
+				$MI_FIELDS['state'] = 'ON';
+			}
+			// Phone# style: ###-###-####
+			if ( preg_match("/^[MKLP]/", $MI_FIELDS['zip']) ) {
+				if ( preg_match("/^[-() .0-9]+$/",$MI_FIELDS['phone']) ) {
+					$phone = preg_replace("/[^0-9]/", '' ,$MI_FIELDS['phone']);
+					if ( preg_match("/^\d{10}$/",$phone) )
+						$MI_FIELDS['phone'] = preg_replace("/(\d{3})(\d{3})(\d{4})/",'${1}-${2}-${3}',$phone);
+				}
+				if ( preg_match("/^[-() .0-9]+$/",$MI_FIELDS['email_2']) ) {
+					$phone = preg_replace("/[^0-9]/", '' ,$MI_FIELDS['email_2']);
+					if ( preg_match("/^\d{10}$/",$phone) )
+						$MI_FIELDS['email_2'] = preg_replace("/(\d{3})(\d{3})(\d{4})/",'${1}-${2}-${3}',$phone);
+				}
+			}
+		}
 		if (FormLib::get_form_value('ContactInfo_addr2','') !== '')
 			$MI_FIELDS['street'] .= "\n".FormLib::get_form_value('ContactInfo_addr2');
 		$test1 = MeminfoController::update($memNum, $MI_FIELDS);

@@ -25,6 +25,13 @@ class EquityWarnDept extends SpecialDept {
 
 	function handle($deptID,$amount,$json){
 		global $CORE_LOCAL;
+		
+		if ($CORE_LOCAL->get("memberID") == "0" || $CORE_LOCAL->get("memberID") == $CORE_LOCAL->get("defaultNonMem")){
+			$CORE_LOCAL->set('strEntered','');
+			$CORE_LOCAL->set('boxMsg','Equity requires member.<br />Apply member number first');
+			$json['main_frame'] = MiscLib::base_url().'gui-modules/boxMsg2.php';
+			return $json;
+		}
 
 		if ($CORE_LOCAL->get("warned") == 1 and $CORE_LOCAL->get("warnBoxType") == "warnEquity"){
 			$CORE_LOCAL->set("warned",0);

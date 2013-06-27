@@ -326,7 +326,7 @@ class SQLManager {
 		case $this->TYPE_PDOMY:
 		case $this->TYPE_PDOMS:
 		case $this->TYPE_PDOPG:
-			return $result_object->fetchColumn($index);
+			return $result_object->getColumnMeta($index);
 		}
 		return -1;
 	}
@@ -851,7 +851,7 @@ class SQLManager {
 		return $str;
 	}
 
-	function sep($str,$which_connection=''){
+	function sep($which_connection=''){
                 if ($which_connection == '')
                         $which_connection = $this->default_db;
                 switch($this->db_types[$which_connection]){
@@ -881,7 +881,7 @@ class SQLManager {
 		case $this->TYPE_PDOPG:
 			$obj = $this->connections[$which_connection];
 			$info = $obj->errorInfo();
-			return $info[2];
+			return ($info[2]==null ? '' : $info[2]);
 		}
 		return 'unknown error';
 	}

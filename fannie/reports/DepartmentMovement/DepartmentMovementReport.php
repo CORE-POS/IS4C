@@ -24,8 +24,9 @@
 include('../../config.php');
 include($FANNIE_ROOT.'src/mysql_connect.php');
 include($FANNIE_ROOT.'src/select_dlog.php');
-include($FANNIE_ROOT.'classlib2.0/FannieReportPage.php');
-include($FANNIE_ROOT.'classlib2.0/lib/FormLib.php');
+include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+//include($FANNIE_ROOT.'classlib2.0/FannieReportPage.php');
+//include($FANNIE_ROOT.'classlib2.0/lib/FormLib.php');
 
 class DepartmentMovementReport extends FannieReportPage {
 

@@ -22,9 +22,13 @@
 *********************************************************************************/
 
 include('../../../config.php');
+<<<<<<< HEAD
 include($FANNIE_ROOT.'classlib2.0/FanniePage.php');
 include($FANNIE_ROOT.'classlib2.0/data/FannieDB.php');
 include($FANNIE_ROOT.'classlib2.0/lib/FormLib.php');
+=======
+include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+>>>>>>> 49256ebb7edbde405b7cace6fa4d29f8ac0e57e4
 
 /**
   @class SaHandheldPage
@@ -110,7 +114,12 @@ class SaHandheldPage extends FanniePage {
 				if (!isset($this->current_item_data['case_sizes'])){
 					$this->current_item_data['case_sizes'] = array();
 				}
+<<<<<<< HEAD
 				$this->current_item_data['case_sizes'][] = $w['units'];
+=======
+				if ($w['units'] > 0)
+					$this->current_item_data['case_sizes'][] = $w['units'];
+>>>>>>> 49256ebb7edbde405b7cace6fa4d29f8ac0e57e4
 			}
 		}
 
@@ -150,6 +159,12 @@ input#cur_qty {
 	font-size: 135%;
 	font-weight: bold;
 }
+<<<<<<< HEAD
+=======
+input.focused {
+	background: #ffeebb;
+}
+>>>>>>> 49256ebb7edbde405b7cace6fa4d29f8ac0e57e4
 		<?php
 		return ob_get_clean();
 	}
@@ -157,6 +172,19 @@ input#cur_qty {
 	function javascript_content(){
 		ob_start();
 		?>
+<<<<<<< HEAD
+=======
+function paint_focus(elem){
+	if (elem == 'upc_in'){
+		$('#upc_in').addClass('focused');
+		$('#cur_qty').removeClass('focused');
+	}
+	else {
+		$('#cur_qty').addClass('focused');
+		$('#upc_in').removeClass('focused');
+	}
+}
+>>>>>>> 49256ebb7edbde405b7cace6fa4d29f8ac0e57e4
 function update_qty(amt){
 	var cur = Number($('#cur_qty').val());
 	if (cur + amt < 0)
@@ -173,12 +201,47 @@ function update_qty(amt){
 		cache: false,
 		error: function(){
 			$('#upc_in').focus();
+<<<<<<< HEAD
 		},
 		success: function(){
 			$('#upc_in').focus();
 		}
 	});
 }
+=======
+			paint_focus('upc_in');
+		},
+		success: function(){
+			$('#upc_in').focus();
+			paint_focus('upc_in');
+		}
+	});
+}
+
+function qty_typed(ev){
+	var cur = Number($('#cur_qty').val());
+	// save new quantity, return cursor to upc input
+	var args = 'action=save&upc='+$('#cur_upc').val()+'&qty='+cur;
+	$.ajax({
+		url: 'SaHandheldPage.php',
+		data: args,
+		cache: false,
+		error: function(){
+		},
+		success: function(){
+		}
+	});
+	if (ev.keyCode==13){
+		$('#upc_in').focus();
+		paint_focus('upc_in');
+	}
+	else if (ev.keyCode >= 37 && ev.keyCode <= 40){
+		$('#upc_in').focus();
+		paint_focus('upc_in');
+	}
+}
+
+>>>>>>> 49256ebb7edbde405b7cace6fa4d29f8ac0e57e4
 		<?php if ($this->linea_ios_mode){ ?>
 Device = new ScannerDevice({
 	barcodeData: function (data, type){
@@ -208,12 +271,26 @@ ScannerDevice.registerListener(Device);
 
 	function body_content(){
 		ob_start();
+<<<<<<< HEAD
 		?>
 <html>
 <head><title>Scan Inventory</title></head>
 <body>
 <form action="SaHandheldPage.php" method="get" id="upcScanForm">
 <b>UPC</b>: <input type="text" size="13" name="upc_in" id="upc_in" />
+=======
+		$elem = '#upc_in';
+		if (isset($this->current_item_data['upc']) && isset($this->current_item_data['desc'])) $elem = '#cur_qty';
+		?>
+<html>
+<head><title>Scan Inventory</title></head>
+<body onload="$('<?php echo $elem; ?>').focus();">
+<form action="SaHandheldPage.php" method="get" id="upcScanForm">
+<b>UPC</b>: <input type="number" size="10" name="upc_in" id="upc_in" 
+onfocus="paint_focus('upc_in');"
+<?php echo ($elem=='#upc_in')?'class="focused"':''; ?> 
+/>
+>>>>>>> 49256ebb7edbde405b7cace6fa4d29f8ac0e57e4
 <input type="submit" value="Go" class="addButton" id="goBtn" />
 </form>
 <hr />
@@ -231,9 +308,18 @@ ScannerDevice.registerListener(Device);
 				echo $this->current_item_data['desc'];
 				echo '</span>';
 				echo '<br />';
+<<<<<<< HEAD
 				printf('<input type="text" size="3" value="%d" id="cur_qty" />
 					<input type="hidden" id="cur_upc" value="%s" />',
 					$this->current_item_data['qty'],
+=======
+				printf('<input type="number" size="3" value="%d" %s
+					onfocus="paint_focus(\'cur_qty\');$(this).select();" 
+					onkeyup="qty_typed(event);" id="cur_qty" />
+					<input type="hidden" id="cur_upc" value="%s" />',
+					$this->current_item_data['qty'],
+					(($elem=='#cur_qty')?'class="focused"':''),
+>>>>>>> 49256ebb7edbde405b7cace6fa4d29f8ac0e57e4
 					$this->current_item_data['upc']
 				);
 				printf('<input type="submit" value="+%d" onclick="update_qty(%d);" class="addButton" />
@@ -248,7 +334,10 @@ ScannerDevice.registerListener(Device);
 				}
 			}
 		}
+<<<<<<< HEAD
 		$this->add_onload_command("\$('#upc_in').focus();");
+=======
+>>>>>>> 49256ebb7edbde405b7cace6fa4d29f8ac0e57e4
 		return ob_get_clean();
 	}
 }

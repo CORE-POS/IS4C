@@ -272,6 +272,21 @@ class HouseCoupon extends SpecialUPC {
 			$row = $transDB->fetch_row($valR);
 			$value = $row[1] * $value;
 			break;
+		case "MD": // mix discount for departments
+			// take off item value or discount value
+			// whichever is less
+			$value = $infoW["discountValue"];
+			$valQ = "select department,l.total from localtemptrans
+				as l left join opdata".$transDB->sep()."houseCouponItems
+				as h on l.department = h.upc
+				where h.coupID=".$coupID."
+				and h.type in ('BOTH','DISCOUNT')
+				and l.total > 0
+				order by l.total desc";
+			$valR = $transDB->query($valQ);
+			$row = $transDB->fetch_row($valR);
+			$value = ($row[1] < $value) ? $row[1] : $value;
+			break;
 		case "AD": // all department discount
 			// apply discount across all items
 			// scales with quantity for by-weight items

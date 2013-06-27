@@ -22,8 +22,7 @@
 *********************************************************************************/
 
 require('../../config.php');
-require($FANNIE_ROOT.'classlib2.0/data/FannieDB.php');
-require($FANNIE_ROOT.'classlib2.0/lib/FormLib.php');
+require($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
 $layout = FormLib::get_form_value('layout',$FANNIE_DEFAULT_PDF);
 $layout = str_replace(" ","_",$layout);

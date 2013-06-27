@@ -181,7 +181,7 @@ static public function printReceiptHeader($dateTimeStamp, $ref) {
 		// cache the receipt-formatted bitmap so it's
 		// not re-rendered every single time
 		$img_file = MiscLib::base_url()."graphics/WFC_Logo.bmp";
-		if (isset($img_cache[basename($img_file)])){
+		if (isset($img_cache[basename($img_file)]) && get_class(self::$PRINT_OBJ)=='ESCPOSPrintHandler'){
 			$receipt .= $img_cache[basename($img_file)]."\n";
 		}
 		else {
@@ -1210,14 +1210,17 @@ static public function printReceipt($arg1,$second=False,$email=False) {
 				self::promoMsg();
 			}
 
-			if ($chk['SC'] > 0)
-				$receipt['print'] .= self::storeCreditIssued($second);
 			$CORE_LOCAL->set("equityNoticeAmt",0);
 			if ($chk['equity'] > 0)
 				$receipt['any'] .= self::equityNotification();
 			if ($CORE_LOCAL->get('memberID') != $CORE_LOCAL->get('defaultNonMem'))
 				$receipt['any'] .= self::memReceiptMessages($CORE_LOCAL->get("memberID"));
 			$CORE_LOCAL->set("equityNoticeAmt",0);
+
+			// switch back to print output handler
+			self::$PRINT_OBJ = new ESCPOSPrintHandler();
+			if ($chk['SC'] > 0)
+				$receipt['print'] .= self::storeCreditIssued($second);
 
 			// knit pieces back together if not emailing
 			if (!$email) $receipt = ''.$receipt['any'].$receipt['print'];

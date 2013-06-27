@@ -91,6 +91,7 @@ $tenders = array("Cash"=>array(10120,0.0,0),
 		"Pay Pal"=>array(10120,0.0,0),
 		"Coupons"=>array(10740,0.0,0),
 		"InStoreCoupon"=>array(67710,0.0,0),
+		"Store Credit"=>array(21200,0.0,0),
 		"RRR Coupon"=>array(63380,0.0,0));
 $mad = array(0.0,0);
 while ($row = $dbc->fetch_row($tenderR)){
@@ -324,13 +325,13 @@ $checkQ = $dbc->prepare_statement("select ".$dbc->datediff("?","'2012-11-01'"));
 $checkR = $dbc->exec_statement($checkQ,array($repDate));
 $diff = array_pop($dbc->fetch_row($checkR));
 $deliTax = 0.0325;
-
+$deliTax = 0.02775; 
 
 $taxQ = $dbc->prepare_statement("SELECT (CASE WHEN d.tax = 1 THEN 'Non Deli Sales' ELSE 'Deli Sales' END) as type, sum(total) as taxable_sales,
 .01*(sum(CASE WHEN d.tax = 1 THEN total ELSE 0 END)) as city_tax_nonDeli,
 $deliTax*(sum(CASE WHEN d.tax = 2 THEN total ELSE 0 END)) as city_tax_Del, 
-.065*(sum(total)) as state_tax,
-((.01*(sum(CASE WHEN d.tax = 1 THEN total ELSE 0 END))) + ($deliTax*(sum(CASE WHEN d.tax = 2 THEN total ELSE 0 END))) + (.065*(sum(total)))) as total_tax 
+.0685*(sum(total)) as state_tax,
+((.01*(sum(CASE WHEN d.tax = 1 THEN total ELSE 0 END))) + ($deliTax*(sum(CASE WHEN d.tax = 2 THEN total ELSE 0 END))) + (.0685*(sum(total)))) as total_tax 
 FROM $dlog as d 
 WHERE d.tdate BETWEEN ? AND ?
 AND d.tax <> 0 

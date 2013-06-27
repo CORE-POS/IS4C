@@ -36,6 +36,19 @@ class CheckTender extends TenderModule {
 		if ( ($CORE_LOCAL->get("isMember") != 0 || $CORE_LOCAL->get("isStaff") != 0) && (($this->amount - $CORE_LOCAL->get("amtdue") - 0.005) > $CORE_LOCAL->get("dollarOver")) && ($CORE_LOCAL->get("cashOverLimit") == 1)){
 			return DisplayLib::boxMsg(_("member or staff check tender cannot exceed total purchase by over $").$CORE_LOCAL->get("dollarOver"));
 		}
+		else if( $CORE_LOCAL->get("store")=="wfc" && $CORE_LOCAL->get("isMember") != 0 && ($this->amount - $CORE_LOCAL->get("amtdue") - 0.005) > 0){ 
+			// This should really be a separate tender 
+			// module for store-specific behavior
+			$db = Database::pDataConnect();
+			$q = sprintf("SELECT card_no FROM custReceiptMessage
+				WHERE card_no=%d AND modifier_module='WfcEquityMessage'",
+				$CORE_LOCAL->get('memberID'));
+			$r = $db->query($q);
+			if ($db->num_rows($r) > 0){
+				return DisplayLib::xboxMsg(_('member check tender cannot exceed total 
+									purchase if equity is owed'));
+			}
+		}
 		else if( $CORE_LOCAL->get("isMember") == 0 and $CORE_LOCAL->get("isStaff") == 0 && ($this->amount - $CORE_LOCAL->get("amtdue") - 0.005) > 0){ 
 			return DisplayLib::xboxMsg(_('non-member check tender cannot exceed total purchase'));
 		}

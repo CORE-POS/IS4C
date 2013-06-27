@@ -1326,17 +1326,6 @@ static public function chargeOk() {
 //----------------------------------------------------------
 
 /**
-  Add WFC virtual coupon
-  @deprecated
-*/
-static public function madCoupon(){
-	Database::getsubtotals();
-	TransRecord::addMadCoup();
-	DisplayLib::lastpage();
-
-}
-
-/**
   Add a comment
   @deprecated
   Use addcomment().
@@ -1346,50 +1335,6 @@ static public function comment($comment){
 	DisplayLib::lastpage();
 }
 //----------------------------------------------------------
-
-/**
-  Wedge staff charge related
-  @deprecated
-*/
-static public function staffCharge($arg,$json=array()) {
-	global $CORE_LOCAL;
-
-	$CORE_LOCAL->set("sc",1);
-	$staffID = substr($arg, 0, 4);
-
-	$pQuery = "select staffID,chargecode,blueLine from chargecodeview where chargecode = '".$arg."'";
-	$pConn = Database::pDataConnect();
-	$result = $pConn->query($pQuery);
-	$num_rows = $pConn->num_rows($result);
-	$row = $pConn->fetch_array($result);
-
-	if ($num_rows == 0) {
-		$json['output'] = DisplayLib::xboxMsg("unable to authenticate staff ".$staffID);
-		$CORE_LOCAL->set("isStaff",0);			// apbw 03/05/05 SCR
-		return $json;
-	}
-	else {
-		$CORE_LOCAL->set("isStaff",1);			// apbw 03/05/05 SCR
-		$CORE_LOCAL->set("memMsg",$row["blueLine"]);
-		$tQuery = "update localtemptrans set card_no = '".$staffID."', percentDiscount = 15";
-		$tConn = Database::tDataConnect();
-
-		TransRecord::addscDiscount();		
-		TransRecord::discountnotify(15);
-		$tConn->query($tQuery);
-		Database::getsubtotals();
-
-		$chk = self::ttl();
-		if ($chk !== True){
-			$json['main_frame'] = $chk;
-			return $json;
-		}
-		$CORE_LOCAL->set("runningTotal",$CORE_LOCAL->get("amtdue"));
-		return self::tender("MI", $CORE_LOCAL->get("runningTotal") * 100);
-
-	}
-
-}
 
 /**
   End of Shift functionality isn't in use

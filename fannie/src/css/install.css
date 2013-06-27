@@ -73,6 +73,24 @@ li.installTab2 {
 
 /* A piece of configuration */
 p.ichunk {
+	font-family: Arial;
+	color: black;
 	margin: 0.5em 0.0em 0.5em 0.0em;
 }
 
+/* A piece of configuration
+ * Used where there is a label and a control usually on the same line.
+ * The label is bolded inline.
+*/
+p.ichunk2 {
+	font-family: Arial;
+	color: black;
+	margin: 0.0em 0em 0.4em 0em;
+}
+
+/* A comment under a heading.
+ * Used in addition to ichunk2
+*/
+p.ichunk3 {
+	margin: 0.0em 0em 1.0em 1.0em;
+}

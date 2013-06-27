@@ -62,7 +62,7 @@ class paycardboxMsgAuth extends PaycardProcessPage {
 				$CORE_LOCAL->set("paycard_amount","invalid");
 				if( is_numeric($input)){
 					$CORE_LOCAL->set("paycard_amount",$input/100);
-					if ($CORE_LOCAL->get('CacheCardCashBack') > 0)
+					if ($CORE_LOCAL->get('CacheCardCashBack') > 0 && $CORE_LOCAL->get('CacheCardCashBack') <= 40)
 						$CORE_LOCAL->set('paycard_amount',($input/100)+$CORE_LOCAL->get('CacheCardCashBack'));
 				}
 			}
