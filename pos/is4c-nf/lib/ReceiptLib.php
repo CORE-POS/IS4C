@@ -1186,7 +1186,7 @@ static public function printReceipt($arg1,$second=False,$email=False) {
 			// applicable records
 			$db = Database::tDataConnect();
 			$q = "SELECT
-				SUM(CASE WHEN trans_subtype IN ('CC','AX') THEN 1 ELSE 0 END) as CC,
+				SUM(CASE WHEN trans_subtype IN ('CC','AX','DC') THEN 1 ELSE 0 END) as CC,
 				SUM(CASE WHEN trans_subtype='GD' OR department=902 THEN 1 ELSE 0 END) as GD,
 				SUM(CASE WHEN trans_subtype='SC' THEN 1 ELSE 0 END) as SC,
 				SUM(CASE WHEN department=991 THEN 1 ELSE 0 END) as equity
