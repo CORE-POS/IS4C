@@ -770,6 +770,17 @@ class SQLManager {
 	}
 
 	/**
+	  Get name of database driver 
+	  @param which_connection see method close
+	  @return String name
+	*/
+	function dbms_name($which_connection=''){
+		if ($which_connection == '')
+			$which_connection=$this->default_db;
+		return $this->connections[$which_connection]->databaseType;
+	}
+
+	/**
 	  Get last error message
 	  @param which_connection see method close
 	  @return The message

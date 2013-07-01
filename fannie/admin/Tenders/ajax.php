@@ -22,11 +22,14 @@
 *********************************************************************************/
 
 include('../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+if (!class_exists('FannieAPI'))
+	include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
 $dbc = FannieDB::get($FANNIE_OP_DB);
-
+$controller = new TendersController($dbc);
 $id = FormLib::get_form_value('id',0);
+$controller->TenderID($id);
+
 if (FormLib::get_form_value('saveCode',False) !== False){
 	$code = FormLib::get_form_value('saveCode');
 
@@ -36,37 +39,32 @@ if (FormLib::get_form_value('saveCode',False) !== False){
 	if ($dbc->num_rows($chk) > 0)
 		echo "Error: Code $code is already in use";
 	else{
-		$p = $dbc->prepare_statement("UPDATE tenders SET TenderCode=?
-			WHERE TenderID=?");
-		$dbc->exec_statement($p, array($code,$id));
+		$controller->TenderCode($code);
+		$controller->save();
 	}
 }
 elseif(FormLib::get_form_value('saveName',False) !== False){
 	$name = FormLib::get_form_value('saveName');
-	$p = $dbc->prepare_statement("UPDATE tenders SET TenderName=?
-		WHERE TenderID=?");
-	$dbc->exec_statement($p, array($name,$id));
+	$controller->TenderName($name);
+	$controller->save();
 }
 elseif(FormLib::get_form_value('saveType',False) !== False){
 	$type = FormLib::get_form_value('saveType');
-	$p = $dbc->prepare_statement("UPDATE tenders SET TenderType=?
-		WHERE TenderID=?");
-	$dbc->exec_statement($p, array($type,$id));
+	$controller->TenderType($type);
+	$controller->save();
 }
 elseif(FormLib::get_form_value('saveCMsg',False) !== False){
 	$msg = FormLib::get_form_value('saveCMsg');
-	$p = $dbc->prepare_statement("UPDATE tenders SET ChangeMessage=?
-		WHERE TenderID=?");
-	$dbc->exec_statement($p, array($msg,$id));
+	$controller->ChangeMessage($msg);
+	$controller->save();
 }
 elseif(FormLib::get_form_value('saveMin',False) !== False){
 	$min = FormLib::get_form_value('saveMin');
 	if (!is_numeric($min))
 		echo "Error: Minimum must be a number";
 	else {
-		$p = $dbc->prepare_statement("UPDATE tenders SET MinAmount=?
-			WHERE TenderID=?");
-		$dbc->exec_statement($p, array($min,$id));
+		$controller->MinAmount($min);
+		$controller->save();
 	}
 }
 elseif(FormLib::get_form_value('saveMax',False) !== False){
@@ -74,9 +72,8 @@ elseif(FormLib::get_form_value('saveMax',False) !== False){
 	if (!is_numeric($max))
 		echo "Error: Maximum must be a number";
 	else {
-		$p = $dbc->prepare_statement("UPDATE tenders SET MaxAmount=?
-			WHERE TenderID=?");
-		$dbc->exec_statement($p, array($max,$id));
+		$controller->MaxAmount($max);
+		$controller->save();
 	}
 }
 elseif(FormLib::get_form_value('saveRLimit',False) !== False){
@@ -84,9 +81,8 @@ elseif(FormLib::get_form_value('saveRLimit',False) !== False){
 	if (!is_numeric($limit))
 		echo "Error: Refund limit must be a number";
 	else {
-		$p = $dbc->prepare_statement("UPDATE tenders SET MaxRefund=?
-			WHERE TenderID=?");
-		$dbc->exec_statement($p, array($limit,$id));
+		$controller->MaxRefund($limit);
+		$controller->save();
 	}
 }
 elseif(FormLib::get_form_value('newTender',False) !== False){
@@ -97,28 +93,29 @@ elseif(FormLib::get_form_value('newTender',False) !== False){
 		$idW = $dbc->fetch_row($idR);
 		if (!empty($idW[0])) $newID = $idW[0] + 1;
 	}
-	
-	$prep = $dbc->prepare_statement("INSERT INTO tenders (TenderID, TenderCode,
-		TenderName, TenderType, ChangeMessage, MinAmount, MaxAmount,
-		MaxRefund) VALUES (?, '', 'NEW TENDER', 'CA', '', 0, 500, 0)"); 
-	$dbc->exec_statement($prep, array($newID));
 
+	$controller->reset();
+	$controller->TenderID($newID);
+	$controller->TenderName('NEW TENDER');
+	$controller->TenderType('CA');
+	$controller->MinAmount(0);
+	$controller->MaxAmount(500);
+	$controller->MaxRefund(0);
+	$controller->save();
+	
 	echo getTenderTable();
 }
 
 function getTenderTable(){
 	global $dbc;
+	$tc = new TendersController($dbc);
 	
 	$ret = '<table cellpadding="4" cellspacing="0" border="1">
 		<tr><th>Code</th><th>Name</th><th>Type</th>
 		<th>Change Msg</th><th>Min</th><th>Max</th>
 		<th>Refund Limit</th></tr>';
 
-	$q = $dbc->prepare_statement("SELECT TenderID,TenderCode,TenderName,TenderType,
-		ChangeMessage,MinAmount,MaxAmount,MaxRefund
-		FROM tenders ORDER BY TenderID");
-	$r = $dbc->exec_statement($q);
-	while($w = $dbc->fetch_row($r)){
+	foreach($tc->find('TenderID') as $row){
 		$ret .= sprintf('<tr>
 			<td><input size="2" maxlength="2" value="%s"
 				onchange="saveCode(this.value,%d);" /></td>
@@ -135,13 +132,13 @@ function getTenderTable(){
 			<td><input size="6" maxlength="10" value="%.2f"
 				onchange="saveRLimit(this.value,%d);" /></td>
 			</tr>',
-			$w['TenderCode'],$w['TenderID'],
-			$w['TenderName'],$w['TenderID'],
-			$w['TenderType'],$w['TenderID'],
-			$w['ChangeMessage'],$w['TenderID'],
-			$w['MinAmount'],$w['TenderID'],
-			$w['MaxAmount'],$w['TenderID'],
-			$w['MaxRefund'],$w['TenderID']
+			$row->TenderCode(),$row->TenderID(),
+			$row->TenderName(),$row->TenderID(),
+			$row->TenderType(),$row->TenderID(),
+			$row->ChangeMessage(),$row->TenderID(),
+			$row->MinAmount(),$row->TenderID(),
+			$row->MaxAmount(),$row->TenderID(),
+			$row->MaxRefund(),$row->TenderID()
 		);
 	}
 	$ret .= "</table>";
