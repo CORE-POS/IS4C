@@ -711,6 +711,17 @@ class SQLManager {
 	}
 
 	/**
+	   Get list of tables/views
+	   @param which_connection see method close
+	*/
+	function get_tables($which_connection=''){
+		if ($which_connection == '')
+			$which_connection=$this->default_db;
+		$conn = $this->connections[$which_connection];
+		return $conn->MetaTables();
+	}
+
+	/**
 	  Get database's currency type
 	  @param which_connection see method close
 	  @return The SQL type

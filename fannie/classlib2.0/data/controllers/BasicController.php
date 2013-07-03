@@ -309,6 +309,8 @@ class BasicController {
 			}
 			$prep = $this->connection->prepare_statement($check);
 			$result = $this->connection->exec_statement($prep, $args);
+			if ($this->connection->num_rows($result)==0)
+				$new_record = True;
 		}
 
 		if ($new_record)
@@ -331,8 +333,8 @@ class BasicController {
 			$vals .= '?,';	
 			$args[] = $value;
 		}
-		$cols = substr($cols,0,strlen($cols)-1);
-		$vals = substr($vals,0,strlen($vals)-1);
+		$cols = substr($cols,0,strlen($cols)-1).')';
+		$vals = substr($vals,0,strlen($vals)-1).')';
 		$sql .= ' '.$cols.' VALUES '.$vals;
 
 		$prep = $this->connection->prepare_statement($sql);
@@ -368,6 +370,92 @@ class BasicController {
 		$prep = $this->connection->prepare_statement($sql);
 		$result = $this->connection->exec_statement($prep, $all_args);
 		return $result;
+	}
+
+	/**
+	  Compare existing table to definition
+	  Add any columns that are missing from the table structure
+	  Extra columns that are present in the table but not in the
+	  controlelr class are left as-is.
+	  @param $db_name name of the database containing the table 
+	  @return number of columns added or False on failure
+	*/
+	public function normalize($db_name){
+		echo "==========================================\n";
+		echo "Updating table $db_name.".$this->name."\n";
+		echo "==========================================\n";
+		$this->connection = FannieDB::get($db_name);
+		if (!$this->connection->table_exists($this->name)){
+			echo "No table found!\n";
+			return False;
+		}
+		$current = $this->connection->table_definition($this->name);
+
+		$new = array();
+		$unknown = array();
+		foreach ($this->columns as $col_name => $defintion){
+			if (!in_array($col_name,array_keys($current))){
+				$new[] = $col_name;
+			}
+		}
+		foreach($current as $col_name => $type){
+			if (!in_array($col_name,array_keys($this->columns))){
+				$unknown[] = $col_name;
+				echo "Ignoring unkown column: $col_name (delete manually if desired)\n";
+			}
+		}
+		$our_columns = array_keys($this->columns);
+		$their_columns = array_keys($current);
+		for($i=0;$i<count($our_columns);$i++){
+			if (!in_array($our_columns[$i],$new))
+				continue; // column already exists
+			echo "Adding column: {$our_columns[$i]}\n";
+			$sql = '';
+			foreach($their_columns as $their_col){
+				if (isset($our_columns[$i-1]) && $our_columns[$i-1] == $their_col){
+					$sql = 'ALTER TABLE '.$this->name.' ADD COLUMN '
+						.$this->connection->identifier_escape($our_columns[$i]).' '
+						.$this->get_meta($this->columns[$our_columns[$i]]['type'],
+							$this->connection->dbms_name())
+						.' AFTER '.$this->connection->identifier_escape($their_col);
+					echo $sql."\n";
+					break;
+				}
+				elseif (isset($our_columns[$i+1]) && $our_columns[$i+1] == $their_col){
+					$sql = 'ALTER TABLE '.$this->name.' ADD COLUMN '
+						.$this->connection->identifier_escape($our_columns[$i]).' '
+						.$this->get_meta($this->columns[$our_columns[$i]]['type'],
+							$this->connection->dbms_name())
+						.' BEFORE '.$this->connection->identifier_escape($their_col);
+					echo $sql."\n";
+					break;
+				}
+				if (isset($our_columns[$i-1]) && in_array($our_columns[$i-1],$new)){
+					$sql = 'ALTER TABLE '.$this->name.' ADD COLUMN '
+						.$this->connection->identifier_escape($our_columns[$i]).' '
+						.$this->get_meta($this->columns[$our_columns[$i]]['type'],
+							$this->connection->dbms_name())
+						.' AFTER '.$this->connection->identifier_escape($our_columns[$i-1]);
+					echo $sql."\n";
+					break;
+				}
+			}
+			if ($sql === ''){
+				echo "Error: could not find context for {$our_columns[$i]}\n";
+			}
+			else if ($sql !== '' && isset($this->columns[$our_columns[$i]]['index'])
+				&& $this->columns[$our_columns[$i]]['index']){
+				$index_sql = 'ALTER TABLE '.$this->name.' ADD INDEX '
+						.$this->connections->identifier_escape($our_columns[$i])
+						.' ('.$this->connections->identifier_escape($our_columns[$i]).')';
+				echo $index_sql."\n";
+			}
+		}
+		echo "==========================================\n";
+		echo "Update complete\n";
+		echo "==========================================\n";
+
+		return count($new);
 	}
 
 	/**
@@ -433,12 +521,17 @@ class BasicController {
 
 if (php_sapi_name() === 'cli' && $_SERVER['PHP_SELF'] == basename(__FILE__)){
 
-	if ($argc != 2){
-		echo "Command Line Usage: php BasicController.php <Subclass Filename>\n";
+	if (($argc != 2 && $argc != 4) || ($argc == 4 && $argv[1] != '--update')){
+		echo "Generate Accessor Functions: php BasicController.php <Subclass Filename>\n";
+		echo "Update Table Structure: php BasicController.php --update <Database name> <Subclass Filename>\n";
 		exit;
 	}
 
+	include(dirname(__FILE__).'/../../../config.php');
+	include(dirname(__FILE__).'/../../FannieAPI.php');
+
 	$classfile = $argv[1];
+	if ($argc == 4) $classfile = $argv[3];
 	if (!file_exists($classfile)){
 		echo "Error: file '$classfile' does not exist\n";
 		exit;
@@ -457,8 +550,13 @@ if (php_sapi_name() === 'cli' && $_SERVER['PHP_SELF'] == basename(__FILE__)){
 		exit;
 	}
 
-	$try = $obj->generate($classfile);
-	if ($try) echo "Generated accessor functions\n";
-	else echo "Failed to generate functions\n";
+	if ($argc == 2){
+		$try = $obj->generate($classfile);
+		if ($try) echo "Generated accessor functions\n";
+		else echo "Failed to generate functions\n";
+	}
+	else if ($argc == 4){
+		$try = $obj->normalize($argv[2]);
+	}
 	exit;
 }
