@@ -28,7 +28,7 @@ class FannieAPI {
 	  definition info.
 	*/
 	static public function init(){
-		if (ini_get('session.auto_start')==0 && !headers_sent())
+		if (ini_get('session.auto_start')==0 && !headers_sent() && php_sapi_name() != 'cli')
                         @session_start();
 		if (!isset($_SESSION['FannieClassMap']))
 			$_SESSION['FannieClassMap'] = array();
