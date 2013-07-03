@@ -519,7 +519,7 @@ class BasicController {
 	}
 }
 
-if (php_sapi_name() === 'cli' && $_SERVER['PHP_SELF'] == basename(__FILE__)){
+if (php_sapi_name() === 'cli' && basename($_SERVER['PHP_SELF']) == basename(__FILE__)){
 
 	if (($argc != 2 && $argc != 4) || ($argc == 4 && $argv[1] != '--update')){
 		echo "Generate Accessor Functions: php BasicController.php <Subclass Filename>\n";

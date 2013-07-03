@@ -49,8 +49,9 @@ function deleteEmp(emp_no,filter){
 		$emp = FormLib::get_form_value('emp_no');
 		if (FormLib::get_form_value('delete') !== '' && $emp !== ''){
 			$dbc = FannieDB::get($FANNIE_OP_DB);
-			$p = $dbc->prepare_statement("DELETE FROM employees WHERE emp_no=?");
-			$dbc->exec_statement($p, array($emp));
+			$ec = new EmployeesController($dbc);
+			$ec->emp_no($emp);
+			$ec->delete();
 		}
 		return True;
 	}
@@ -63,16 +64,16 @@ function deleteEmp(emp_no,filter){
 		switch($order){
 		case 'num':
 		default:
-			$orderby = 'ORDER BY emp_no';
+			$orderby = 'emp_no';
 			break;
 		case 'name':
-			$orderby = 'ORDER BY FirstName';
+			$orderby = 'FirstName';
 			break;
 		case 'pass':
-			$orderby = 'ORDER BY CashierPassword';
+			$orderby = 'CashierPassword';
 			break;
 		case 'fes':
-			$orderby = 'ORDER BY frontendsecurity';
+			$orderby = 'frontendsecurity';
 			break;
 		}
 		
@@ -95,18 +96,19 @@ function deleteEmp(emp_no,filter){
 		$ret .= "<th>&nbsp;</th><th>&nbsp;</th></tr>";
 
 		$dbc = FannieDB::get($FANNIE_OP_DB);
-		$empP = $dbc->prepare_statement("SELECT emp_no,CashierPassword,FirstName,LastName,frontendsecurity
-				FROM employees WHERE EmpActive=? $orderby");
-		$empR = $dbc->exec_statement($empP,array($filter));
-		while($row = $dbc->fetch_row($empR)){
+		$ec = new EmployeesController($dbc);
+		$ec->EmpActive($filter);
+		foreach($ec->find($orderby) as $emp){
 			$ret .= sprintf("<tr><td>%d</td><td>%s</td><td>%d</td><td>%s</td>",
-				$row[0],$row[2].' '.$row[3],$row[1],
-				($row[4]<=20)?'Regular':'Manager');
+					$emp->emp_no(),
+					$emp->FirstName().' '.$emp->LastName,
+					$emp->CashierPassword(),
+					($emp->frontendsecurity()<=20?'Regular':'Manager'));
 			$ret .= sprintf("<td><a href=\"CashierEditor.php?emp_no=%d\"><img src=\"{$FANNIE_URL}src/img/buttons/b_edit.png\" 
 				alt=\"Edit\" border=0 /></a></td>
 				<td><a href=\"\" onclick=\"deleteEmp(%d,%d); return false;\"><img alt=\"Delete\"
 				src=\"{$FANNIE_URL}src/img/buttons/b_drop.png\" border=0 /></a></td></tr>",
-				$row[0],$row[0],$filter);
+				$emp->emp_no(),$emp->emp_no(),$filter);
 		}
 		$ret .= "</table>";
 
