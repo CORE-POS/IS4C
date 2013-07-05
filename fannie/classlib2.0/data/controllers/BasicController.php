@@ -329,6 +329,8 @@ class BasicController {
 		$vals = '(';
 		$args = array();
 		foreach($this->instance as $column => $value){
+			if (isset($this->columns[$column]['increment']) && $this->columns[$column]['increment'])
+				continue;
 			$cols .= $this->connection->identifier_escape($column).',';
 			$vals .= '?,';	
 			$args[] = $value;
@@ -358,6 +360,8 @@ class BasicController {
 				$where_args[] = $value;
 			}
 			else {
+				if (isset($this->columns[$column]['increment']) && $this->columns[$column]['increment'])
+					continue;
 				$sets .= ' '.$this->connection->identifier_escape($column).' = ?,';
 				$set_args[] = $value;
 			}

@@ -29,7 +29,49 @@
 if (!class_exists('FannieDB'))
 	include(dirname(__FILE__).'/../FannieDB.php');
 
-class MemberCardsController {
+class MemberCardsController extends BasicController {
+	
+	protected $name = 'memberCards';
+	
+	protected $columns = array(
+	'card_no' => array('type'=>'INT','primary_key'=>True,'default'=>0),
+	'upc' => array('type'=>'VARCHAR(13)','primary_key'=>True,'default'=>'')
+	);
+
+	/* START ACCESSOR FUNCTIONS */
+
+	public function card_no(){
+		if(func_num_args() == 0){
+			if(isset($this->instance["card_no"]))
+				return $this->instance["card_no"];
+			elseif(isset($this->columns["card_no"]["default"]))
+				return $this->columns["card_no"]["default"];
+			else return null;
+		}
+		else{
+			$this->instance["card_no"] = func_get_arg(0);
+		}
+	}
+
+	public function upc(){
+		if(func_num_args() == 0){
+			if(isset($this->instance["upc"]))
+				return $this->instance["upc"];
+			elseif(isset($this->columns["upc"]["default"]))
+				return $this->columns["upc"]["default"];
+			else return null;
+		}
+		else{
+			$this->instance["upc"] = func_get_arg(0);
+		}
+	}
+	/* END ACCESSOR FUNCTIONS */
+
+	/**
+	  5Jul13 static stuff is legacy functionality
+	  that predates the BasicController class.
+	  Can be removed when no calls to these functions
+	  remain in Fannie.
 	
 	/**
 	  Update memberCards record for an account

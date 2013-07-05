@@ -29,7 +29,63 @@
 if (!class_exists('FannieDB'))
 	include(dirname(__FILE__).'/../FannieDB.php');
 
-class MemDatesController {
+class MemDatesController extends BasicController {
+
+	protected $name = 'memDates';
+	protected $columns = array(
+	'card_no' => array('type'=>'INT','primary_key'=>True),
+	'start_date'=>array('type'=>'DATETIME'),
+	'end_date'=>array('type'=>'DATETIME')	
+	);
+
+	/* START ACCESSOR FUNCTIONS */
+
+	public function card_no(){
+		if(func_num_args() == 0){
+			if(isset($this->instance["card_no"]))
+				return $this->instance["card_no"];
+			elseif(isset($this->columns["card_no"]["default"]))
+				return $this->columns["card_no"]["default"];
+			else return null;
+		}
+		else{
+			$this->instance["card_no"] = func_get_arg(0);
+		}
+	}
+
+	public function start_date(){
+		if(func_num_args() == 0){
+			if(isset($this->instance["start_date"]))
+				return $this->instance["start_date"];
+			elseif(isset($this->columns["start_date"]["default"]))
+				return $this->columns["start_date"]["default"];
+			else return null;
+		}
+		else{
+			$this->instance["start_date"] = func_get_arg(0);
+		}
+	}
+
+	public function end_date(){
+		if(func_num_args() == 0){
+			if(isset($this->instance["end_date"]))
+				return $this->instance["end_date"];
+			elseif(isset($this->columns["end_date"]["default"]))
+				return $this->columns["end_date"]["default"];
+			else return null;
+		}
+		else{
+			$this->instance["end_date"] = func_get_arg(0);
+		}
+	}
+	/* END ACCESSOR FUNCTIONS */
+
+	/**
+	  5Jul13 static stuff is legacy functionality
+	  that predates the BasicController class.
+	  Can be removed when no calls to these functions
+	  remain in Fannie.
+	*/
 	
 	/**
 	  Update memDates record for an account

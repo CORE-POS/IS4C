@@ -79,37 +79,44 @@ $auditQ = "insert custUpdate select ".$sql->now().",$uid,1,
 
 <?php 
 
-$CUST_FIELDS = array('personNum'=>array(1),'LastName'=>array(),'FirstName'=>array());
 $MI_FIELDS = array();
 
 $memNum = $_POST['memNum'];
-$CUST_FIELDS['FirstName'][] = $_POST['fName'];
-$CUST_FIELDS['LastName'][] = $_POST['lName'];
 $MI_FIELDS['street'] = $_POST['address1'] . (!empty($_POST['address2']) ? "\n".$_POST['address2'] : '');
 $MI_FIELDS['city'] = $_POST['city'];
 $MI_FIELDS['state'] = $_POST['state'];
 $MI_FIELDS['zip'] = $_POST['zip'];
-$CUST_FIELDS['MemDiscountLimit'] = $_POST['chargeLimit'];
 $MI_FIELDS['phone'] = $_POST['phone'];
 $MI_FIELDS['email_2'] = $_POST['phone2'];
 $MI_FIELDS['email_1'] = $_POST['email'];
-$CUST_FIELDS['memType'] = $_POST['discList'];
-$CUST_FIELDS['Type'] = 'REG';
-$CUST_FIELDS['Staff'] = 0;
-$CUST_FIELDS['Discount'] = 0;
 $MI_FIELDS['ads_OK'] = $_POST['mailflag'];
+
+$cust = new CustdataController($dbc);
+$cust->CardNo($memNum);
+$cust->personNum(1);
+$cust->load(); // get all current values
+$cust->MemDiscountLimit($_POST['chargeLimit']);
+$cust->memType($_POST['discList']);
+$cust->Type('Reg');
+$cust->Staff(0);
+$cust->Discount(0);
 
 MemberCardsController::update($memNum,$_REQUEST['cardUPC']);
 
 $sql->query_all("UPDATE memContact SET pref=".$MI_FIELDS['ads_OK']." WHERE card_no=$memNum");
 
 if ($CUST_FIELDS['memType'] == 1 || $CUST_FIELDS['memType'] == 3){
-	$CUST_FIELDS['Type'] = 'PC';
+	$cust->Type('PC');
 }
 if ($CUST_FIELDS['memType'] == 3 || $CUST_FIELDS['memType'] == 9){
-	$CUST_FIELDS['Discount'] = 12;
-	$CUST_FIELDS['Staff'] = 1;
+	$cust->Discount(12);
+	$cust->Staff(1);
 }
+
+$cust->FirstName($_POST['fName']);
+$cust->LastName($_POST['lName']);
+$cust->BlueLine( $cust->CardNo().' '.$cust->LastName() );
+$cust->save(); // save personNum=1
 
 $lnames = $_REQUEST['hhLname'];
 $fnames = $_REQUEST['hhFname'];
@@ -117,14 +124,20 @@ $count = 2;
 for($i=0;$i<count($lnames);$i++){
 	if (empty($lnames[$i]) && empty($fnames[$i])) continue;
 
-	$CUST_FIELDS['personNum'][] = $count;
-	$CUST_FIELDS['LastName'][] = $lnames[$i];
-	$CUST_FIELDS['FirstName'][] = $fnames[$i];
+	$cust->personNum($count);
+	$cust->FirstName($fnames[$i]);
+	$cust->LastName($lnames[$i]);
+	$cust->BlueLine( $cust->CardNo().' '.$cust->LastName() );
+	$cust->save(); // save next personNum
 
 	$count++;
 }
+// remove names that were blank on the form
+for($i=$count;$i<5;$i++){
+	$cust->personNum($i);
+	$cust->delete();
+}
 
-CustdataController::update($memNum, $CUST_FIELDS);
 MeminfoController::update($memNum, $MI_FIELDS);
 MemDatesController::update($memNum, $_POST['startDate'], $_POST['endDate']);
 
