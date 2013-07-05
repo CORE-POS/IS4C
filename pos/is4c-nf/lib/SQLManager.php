@@ -307,7 +307,7 @@ class SQLManager {
 		case $this->TYPE_PDOPG:
 			return $result_object->fetch();
 		}
-		return -1;
+		return False;
 	}
 	
 	/* compatibility */
