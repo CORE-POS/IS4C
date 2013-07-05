@@ -126,11 +126,13 @@ $mods = array(
 	'TimesheetPlugin'
 	,'CalendarPlugin'
 	,'ShelfAuditPlugin'
+	,'CoreWarehousePlugin'
 );
 //,'PreorderPlugin'
 include('../modules/plugins2.0/timesheet/TimesheetPlugin.php');
 include('../modules/plugins2.0/calendar/CalendarPlugin.php');
 include('../modules/plugins2.0/ShelfAudit/ShelfAuditPlugin.php');
+include('../modules/plugins2.0/warehouse/CoreWarehousePlugin.php');
 // 17Jan13 Doesn't exist on github upstream.
 //include('../modules/plugins2.0/preorder/PreorderPlugin.php');
 
@@ -145,6 +147,7 @@ if (isset($_REQUEST['PLUGINLIST']) || isset($_REQUEST['psubmit'])){
 		}
 	}
 	foreach($oldset as $plugin_class){
+		if (!class_exists($plugin_class)) continue;
 		if (!in_array($plugin_class,$newset)){
 			$obj = new $plugin_class();
 			$obj->plugin_disable();
