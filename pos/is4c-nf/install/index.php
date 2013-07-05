@@ -418,7 +418,7 @@ function create_op_dbs($db,$type){
 	create_if_needed($db, $type, $name, 'custPreferences', 'op', $errors);
 
 	$cardsViewQ = "CREATE VIEW memberCardsView AS 
-		SELECT CONCAT(" . $CORE_LOCAL->get('memberUpcPrefix') . ",c.CardNo) as upc, c.CardNo as card_no FROM custdata c";
+		SELECT CONCAT('" . $CORE_LOCAL->get('memberUpcPrefix') . "',c.CardNo) as upc, c.CardNo as card_no FROM custdata c";
 	if (!$db->table_exists('memberCardsView',$name)){
 		db_structure_modify($db,'memberCardsView',$cardsViewQ,$errors);
 	}
