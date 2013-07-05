@@ -57,7 +57,7 @@ function deleteEmp(emp_no,filter){
 	}
 
 	function body_content(){
-		global $FANNIE_OP_DB;
+		global $FANNIE_OP_DB, $FANNIE_URL;
 		$filter = FormLib::get_form_value('filter',1);
 		$order = FormLib::get_form_value('order','num');
 		$orderby = '';
