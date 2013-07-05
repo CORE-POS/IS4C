@@ -68,20 +68,20 @@ class DTransactionsController extends BasicController {
 	  Overriden to check multiple tables that should
 	  all have identical or similar structure
 	*/
-	public function normalize($db_name){
+	public function normalize($db_name, $preview_only){
 		global $FANNIE_ARCHIVE_DB, $FANNIE_ARCHIVE_METHOD;
 		$trans_adds = 0;
 		$log_adds = 0;
 		// check self first
-		$chk = parent::normalize($db_name);
+		$chk = parent::normalize($db_name, $preview_only);
 		if ($chk !== False) $trans_adds += $chk;
 		
 		$this->name = 'transarchive';
-		$chk = parent::normalize($db_name);
+		$chk = parent::normalize($db_name, $preview_only);
 		if ($chk !== False) $trans_adds += $chk;
 
 		$this->name = 'suspended';
-		$chk = parent::normalize($db_name);
+		$chk = parent::normalize($db_name, $preview_only);
 		if ($chk !== False) $trans_adds += $chk;
 
 		// if columns were added to any dtrans tables, go ahead and
@@ -91,7 +91,7 @@ class DTransactionsController extends BasicController {
 			$this->connection = FannieDB::get($FANNIE_ARCHIVE_DB);
 			if ($FANNIE_ARCHIVE_METHOD == 'partitions'){
 				$this->name = 'bigArchive';
-				parent::normalize($FANNIE_ARCHIVE_DB);
+				parent::normalize($FANNIE_ARCHIVE_DB, $preview_only);
 			}
 			else {
 				$pattern = '/^transArchive\d\d\d\d\d\d$/';
@@ -99,7 +99,7 @@ class DTransactionsController extends BasicController {
 				foreach($tables as $t){
 					if (preg_match($pattern,$t)){
 						$this->name = $t;
-						parent::normalize($FANNIE_ARCHIVE_DB);
+						parent::normalize($FANNIE_ARCHIVE_DB, $preview_only);
 					}
 				}
 			}
@@ -114,15 +114,12 @@ class DTransactionsController extends BasicController {
 		$tdate = array('tdate'=>array('type'=>'datetime','index'=>True));
 		$trans_num = array('trans_num'=>array('type'=>'VARCHAR(25)'));
 		$this->columns = $tdate + $this->columns + $trans_num;
-		$chk = parent::normalize($db_name);
+		$chk = parent::normalize($db_name, $preview_only);
 		if ($chk !== False) $log_adds += $chk;
 
 		// rebuild views
 		if ($log_adds > 0){
-			echo "Archive Issue: dlog structure changed\n";
-			echo "Recreate view: dlog\n";
 			$this->normalize_log('dlog','dtransactions');
-			echo "Recreate view: dlog_90_view\n";
 			$this->normalize_log('dlog_90_view','transarchive');
 			$this->connection = FannieDB::get($FANNIE_ARCHIVE_DB);
 			if ($FANNIE_ARCHIVE_METHOD == 'partitions'){
@@ -133,18 +130,21 @@ class DTransactionsController extends BasicController {
 				$tables = $this->connection->get_tables($FANNIE_ARCHIVE_DB);
 				foreach($tables as $t){
 					if (preg_match($pattern,$t)){
-						echo "Recreate view: $t\n";
 						$this->normalize_log($t, 'transArchive'.substr($t,4));
 					}
 				}
 			}
 		}
+
+		return $log_adds + $trans_adds;
 	}
 
 	/**
 	  Rebuild dlog style views
 	  @param $view_name name of the view
 	  @param $table_name underlying table
+	  @param $preview_only boolean [default True] do not
+	         make any changes
 
 	  The view changes the column "datetime" to "tdate" and
 	  adds a "trans_num" column. Otherwise it includes all
@@ -152,10 +152,12 @@ class DTransactionsController extends BasicController {
 	  and "trans_subtype" still have translations to fix
 	  older records but everyting else passes through as-is.
 	*/
-	private function normalize_log($view_name, $table_name){
+	private function normalize_log($view_name, $table_name, $preview_only=True){
+		echo "Recreating view: $view_name (on $table_name)\n";
 		if ($this->connection->table_exists($view_name)){
 			$sql = 'DROP VIEW '.$this->connection->identifier_escape($view_name);
-			echo $sql."\n";
+			if (!$preview_only)
+				$this->connection->query($sql);
 		}
 
 		$sql = 'CREATE VIEW '.$this->connection->identifier_escape($view_name).' AS '
@@ -197,7 +199,8 @@ class DTransactionsController extends BasicController {
 			.' WHERE '.$c->identifier_escape('trans_status')
 			." NOT IN ('D','X','Z') AND emp_no <> 9999
 			AND register_no <> 99";
-		echo $sql."\n";
+		if (!$preview_only)
+			$this->connection->query($sql);
 	}
 
 	/* START ACCESSOR FUNCTIONS */

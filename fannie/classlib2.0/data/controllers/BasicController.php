@@ -378,11 +378,13 @@ class BasicController {
 	  Extra columns that are present in the table but not in the
 	  controlelr class are left as-is.
 	  @param $db_name name of the database containing the table 
+	  @param $preview_only boolean [default True] do not
+	         make any changes
 	  @return number of columns added or False on failure
 	*/
-	public function normalize($db_name){
+	public function normalize($db_name, $preview_only=True){
 		echo "==========================================\n";
-		echo "Updating table $db_name.".$this->name."\n";
+		echo "Checking table $db_name.".$this->name."\n";
 		echo "==========================================\n";
 		$this->connection = FannieDB::get($db_name);
 		if (!$this->connection->table_exists($this->name)){
@@ -418,7 +420,6 @@ class BasicController {
 						.$this->get_meta($this->columns[$our_columns[$i]]['type'],
 							$this->connection->dbms_name())
 						.' AFTER '.$this->connection->identifier_escape($their_col);
-					echo $sql."\n";
 					break;
 				}
 				elseif (isset($our_columns[$i+1]) && $our_columns[$i+1] == $their_col){
@@ -427,7 +428,6 @@ class BasicController {
 						.$this->get_meta($this->columns[$our_columns[$i]]['type'],
 							$this->connection->dbms_name())
 						.' BEFORE '.$this->connection->identifier_escape($their_col);
-					echo $sql."\n";
 					break;
 				}
 				if (isset($our_columns[$i-1]) && in_array($our_columns[$i-1],$new)){
@@ -436,24 +436,39 @@ class BasicController {
 						.$this->get_meta($this->columns[$our_columns[$i]]['type'],
 							$this->connection->dbms_name())
 						.' AFTER '.$this->connection->identifier_escape($our_columns[$i-1]);
-					echo $sql."\n";
 					break;
 				}
 			}
-			if ($sql === ''){
-				echo "Error: could not find context for {$our_columns[$i]}\n";
+			if ($sql !== '') {
+				if ($preview_only){
+					echo "\tSQL Details: $sql\n";
+				}
+				else {
+					$this->connection->query($sql);
+				}
 			}
-			else if ($sql !== '' && isset($this->columns[$our_columns[$i]]['index'])
+
+			if ($sql === ''){
+				echo "\tError: could not find context for {$our_columns[$i]}\n";
+			}
+
+			if ($sql !== '' && isset($this->columns[$our_columns[$i]]['index'])
 				&& $this->columns[$our_columns[$i]]['index']){
 				$index_sql = 'ALTER TABLE '.$this->name.' ADD INDEX '
 						.$this->connections->identifier_escape($our_columns[$i])
 						.' ('.$this->connections->identifier_escape($our_columns[$i]).')';
-				echo $index_sql."\n";
+				if ($preview_only){
+					echo "Adding index to column: {$our_columns[$i]}\n";
+					echo "\tSQL Details: $index_sql\n";
+				}
+				else {
+					$this->connection->query($index_sql);
+				}
 			}
 		}
 		echo "==========================================\n";
-		echo "Update complete\n";
-		echo "==========================================\n";
+		echo "Check complete\n";
+		echo "==========================================\n\n";
 
 		return count($new);
 	}
@@ -556,7 +571,20 @@ if (php_sapi_name() === 'cli' && basename($_SERVER['PHP_SELF']) == basename(__FI
 		else echo "Failed to generate functions\n";
 	}
 	else if ($argc == 4){
-		$try = $obj->normalize($argv[2]);
+		$try = $obj->normalize($argv[2],True);
+		if ($try !== False && $try > 0){
+			while(True){
+				echo 'Apply Changes [Y/n]: ';
+				$in = rtrim(fgets(STDIN));
+				if ($in === 'n' || $in === False || $in === '')
+					break;
+				elseif($in ==='Y'){
+					// THIS WILL APPLY PROPOSED CHANGES!
+					$obj->normalize($argv[2],False);
+					break;
+				}
+			}
+		}
 	}
 	exit;
 }
