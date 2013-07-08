@@ -32,7 +32,7 @@ function check_writeable($filename, $optional=False, $template=False){
 		if (!$optional){
 			echo "<b>Advice</b>: <div style=\"font-face:mono;background:#ccc;padding:8px;\">
 				touch \"".realpath(dirname($filename))."/".basename($filename)."\"<br />
-				chown \"".whoami()." ".realpath(dirname($filename))."/".basename($filename)."\"</div>";
+				chown ".whoami()." \"".realpath(dirname($filename))."/".basename($filename)."\"</div>";
 		}
 	}
 	elseif (is_writable($filename))

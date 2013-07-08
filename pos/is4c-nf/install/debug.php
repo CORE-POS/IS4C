@@ -29,7 +29,7 @@ Optional logs:
 <ul>
 	<li><i>core_local.log</i> lists changes to session/state values. Fills FAST.</li>
 </ul>
-<div class="alert"><?php check_writeable('../log/core_local.log'); ?></div>
+<div class="alert"><?php check_writeable('../log/core_local.log','True'); ?></div>
 <hr />
 <form action=debug.php method=post>
 <b>Log State Changes</b>: <select name=DEBUG_STATE>
