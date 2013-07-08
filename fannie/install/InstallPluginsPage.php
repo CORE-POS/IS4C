@@ -129,10 +129,10 @@ $mods = array(
 	,'CoreWarehousePlugin'
 );
 //,'PreorderPlugin'
-include('../modules/plugins2.0/timesheet/TimesheetPlugin.php');
-include('../modules/plugins2.0/calendar/CalendarPlugin.php');
-include('../modules/plugins2.0/ShelfAudit/ShelfAuditPlugin.php');
-include('../modules/plugins2.0/warehouse/CoreWarehousePlugin.php');
+include('../modules/plugins2.0/TimesheetPlugin/TimesheetPlugin.php');
+include('../modules/plugins2.0/CalendarPlugin/CalendarPlugin.php');
+include('../modules/plugins2.0/ShelfAudit/ShelfAudit.php');
+include('../modules/plugins2.0/CoreWarehouse/CoreWarehouse.php');
 // 17Jan13 Doesn't exist on github upstream.
 //include('../modules/plugins2.0/preorder/PreorderPlugin.php');
 
