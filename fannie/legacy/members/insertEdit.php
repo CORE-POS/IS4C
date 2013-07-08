@@ -105,10 +105,10 @@ MemberCardsController::update($memNum,$_REQUEST['cardUPC']);
 
 $sql->query_all("UPDATE memContact SET pref=".$MI_FIELDS['ads_OK']." WHERE card_no=$memNum");
 
-if ($CUST_FIELDS['memType'] == 1 || $CUST_FIELDS['memType'] == 3){
+if ($cust->memType() == 1 || $cust->memType() == 3){
 	$cust->Type('PC');
 }
-if ($CUST_FIELDS['memType'] == 3 || $CUST_FIELDS['memType'] == 9){
+if ($cust->memType() == 3 || $cust->memType() == 9){
 	$cust->Discount(12);
 	$cust->Staff(1);
 }
