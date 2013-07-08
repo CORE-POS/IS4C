@@ -47,17 +47,11 @@ body {
 
 <form action=index.php method=post>
 
-<div class="alert"><?php check_writeable('../ini.php'); ?></div>
-<div class="alert"><?php check_writeable('../ini-local.php'); ?></div>
+<div class="alert"><?php check_writeable('../ini.php', False, 'PHP'); ?></div>
+<div class="alert"><?php check_writeable('../ini-local.php', True, 'PHP'); ?></div>
 
+PHP is running as: <?php echo whoami(); ?><br />
 <?php
-if (function_exists('posix_getpwuid')){
-	$chk = posix_getpwuid(posix_getuid());
-	echo "PHP is running as: ".$chk['name']."<br />";
-}
-else
-	echo "PHP is (probably) running as: ".get_current_user()."<br />";
-
 if (!function_exists("socket_create")){
 	echo '<b>Warning</b>: PHP socket extension is not enabled. NewMagellan will not work quite right';
 }
