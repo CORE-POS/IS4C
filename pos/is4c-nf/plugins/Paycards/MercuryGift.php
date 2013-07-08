@@ -419,10 +419,6 @@ class MercuryGift extends BasicCCModule {
 			array("tran"=>$msgXml,"pw"=>$password),
 			"http://www.mercurypay.com");
 
-		$fp = fopen("C:/is4c-nf/log.xml","a");
-		fwrite($fp,"SENT: ".$msgXml."\n\n");
-		fclose($fp);
-
 		if ($CORE_LOCAL->get("training") == 1)
 			$this->GATEWAY = "https://w1.mercurydev.net/ws/ws.asmx";
 		else
@@ -510,10 +506,6 @@ class MercuryGift extends BasicCCModule {
 			array("tran"=>$msgXml,"pw"=>$password),
 			"http://www.mercurypay.com");
 
-		$fp = fopen("C:/is4c-nf/log.xml","a");
-		fwrite($fp,"SENT: ".$msgXml."\n\n");
-		fclose($fp);
-
 		if ($CORE_LOCAL->get("training") == 1)
 			$this->GATEWAY = "https://w1.mercurydev.net/ws/ws.asmx";
 		else
@@ -561,10 +553,6 @@ class MercuryGift extends BasicCCModule {
 		//$soaptext = str_replace("</GiftTransaction>",
 		//	"</GiftTransaction><pw>$password</pw>",$soaptext);
 
-		$fp = fopen("C:/is4c-nf/log.xml","a");
-		fwrite($fp,"SENT: ".$msgXml."\n\n");
-		fclose($fp);
-
 		if ($CORE_LOCAL->get("training") == 1)
 			$this->GATEWAY = "https://w1.mercurydev.net/ws/ws.asmx";
 		else
@@ -592,9 +580,6 @@ class MercuryGift extends BasicCCModule {
 		global $CORE_LOCAL;
 		$resp = $this->desoapify("GiftTransactionResult",
 			$authResult["response"]);
-		$fp = fopen("C:/is4c-nf/log.xml","a");
-		fwrite($fp,"RECEIVED: ".$resp."\n\n");
-		fclose($fp);
 		$xml = new xmlData($resp);
 
 		// initialize
@@ -683,8 +668,16 @@ class MercuryGift extends BasicCCModule {
 		$temp = $CORE_LOCAL->get("paycard_response");
 		$temp["Balance"] = isset($temp['BALANCE']) ? $temp["BALANCE"] : 0;
 		$CORE_LOCAL->set("paycard_response",$temp);
+		/**
+		  Update authorized amount based on response. If
+		  the transaction was a refund ("Return") then the
+		  amount needs to be negative for POS to handle
+		  it correctly.
+		*/
 		if ($xml->get_first("AUTHORIZE")){
-			$CORE_LOCAL->set("paycard_amount",$xml->get_first("AUTHORIZE"));	
+			$CORE_LOCAL->set("paycard_amount",$xml->get_first("AUTHORIZE"));
+			if ($xml->get_first('TRANCODE') && $xml->get_first('TRANCODE') == 'Return')
+				$CORE_LOCAL->set("paycard_amount",-1*$xml->get_first("AUTHORIZE"));
 			$correctionQ = sprintf("UPDATE valutecRequest SET amount=%f WHERE
 				date=%s AND identifier='%s'",
 				$xml->get_first("AUTHORIZE"),date("Ymd"),$identifier);
@@ -705,9 +698,6 @@ class MercuryGift extends BasicCCModule {
 		global $CORE_LOCAL;
 		$resp = $this->desoapify("GiftTransactionResult",
 			$vdResult["response"]);
-		$fp = fopen("C:/is4c-nf/log.xml","a");
-		fwrite($fp,"RECEIVED: ".$resp."\n\n");
-		fclose($fp);
 		$xml = new xmlData($resp);
 
 		// initialize
@@ -800,9 +790,6 @@ class MercuryGift extends BasicCCModule {
 		global $CORE_LOCAL;
 		$resp = $this->desoapify("GiftTransactionResult",
 			$balResult["response"]);
-		$fp = fopen("C:/is4c-nf/log.xml","a");
-		fwrite($fp,"RECEIVED: ".$resp."\n\n");
-		fclose($fp);
 		$xml = new xmlData($resp);
 		$program = 'Gift';
 
