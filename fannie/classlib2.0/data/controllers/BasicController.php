@@ -204,7 +204,7 @@ class BasicController {
 	  @param $sort array of columns to sort by
 	  @return an array of controller objects
 	*/
-	public function find($sort){
+	public function find($sort=''){
 		if (!is_array($sort)) $sort = array($sort);
 
 		$sql = 'SELECT ';

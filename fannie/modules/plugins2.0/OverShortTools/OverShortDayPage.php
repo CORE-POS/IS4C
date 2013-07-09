@@ -65,12 +65,24 @@ class OverShortDayPage extends FanniePage {
 		case 'date':
 			$date = FormLib::get_form_value('arg');
 			$dlog = select_dlog($date);
-			/* determine who worked that day (and their first names) */
-			$empsQ = "select e.firstname,d.emp_no from $dlog as d,$FANNIE_OP_DB".$dbc->sep()."employees as e where
-			      d.tdate BETWEEN ? AND ? and trans_type='T' and d.emp_no = e.emp_no
-			      group by d.emp_no,e.firstname order by e.firstname";
-			$empsP = $dbc->prepare_statement($empsQ);
-			$empsR=$dbc->exec_statement($empsP,array($date.' 00:00:00',$date.' 23:59:59'));
+			
+			$empsR = null;
+			if (FormLib::get_form_value('emp_no') !== ''){
+				/* get info for single employee */
+				$empsQ = "SELECT e.firstname,e.emp_no FROM "
+					.$FANNIE_OP_DB.$dbc->sep()."employees AS e
+					WHERE emp_no=?";
+				$empsP = $dbc->prepare_statement($empsQ);
+				$empsR = $dbc->exec_statement($empsP,array(FormLib::get_form_value('emp_no')));
+			}
+			else {
+				/* determine who worked that day (and their first names) */
+				$empsQ = "select e.firstname,d.emp_no from $dlog as d,$FANNIE_OP_DB".$dbc->sep()."employees as e where
+				      d.tdate BETWEEN ? AND ? and trans_type='T' and d.emp_no = e.emp_no
+				      group by d.emp_no,e.firstname order by e.firstname";
+				$empsP = $dbc->prepare_statement($empsQ);
+				$empsR=$dbc->exec_statement($empsP,array($date.' 00:00:00',$date.' 23:59:59'));
+			}
 			$output = "<h3 id=currentdate>$date</h3>";
 
 			$output .= "<form onsubmit=\"save(); return false;\">";
@@ -106,15 +118,20 @@ class OverShortDayPage extends FanniePage {
 
 			/* get cash, check, and credit totals for each employee
 			print them in a table along with input boxes for over/short */
+			$args = array($date.' 00:00:00',$date.' 23:59:59');
 			$q = "SELECT -1*sum(total) AS total,emp_no,
 				CASE WHEN trans_subtype IN ('CC','AX') THEN 'CC' ELSE trans_subtype END
 				AS trans_subtype
 				FROM $dlog
-				WHERE tdate BETWEEN ? AND ? AND trans_type='T'
-				GROUP BY emp_no,
+				WHERE tdate BETWEEN ? AND ? AND trans_type='T' ";
+			if (FormLib::get_form_value('emp_no') !== ''){
+				$q .= ' AND emp_no=? ';
+				$args[] = FormLib::get_form_value('emp_no');
+			}
+			$q .= "GROUP BY emp_no,
 				CASE WHEN trans_subtype IN ('CC','AX') THEN 'CC' ELSE trans_subtype END";
 			$p = $dbc->prepare_statement($q);
-			$r = $dbc->exec_statement($p, array($date.' 00:00:00',$date.' 23:59:59'));
+			$r = $dbc->exec_statement($p, $args);
 			$posttl = array();
 			while($w = $dbc->fetch_row($r)){
 				$tender_info[$w['trans_subtype']]['perEmp'][$w['emp_no']] = $w['total'];
@@ -137,7 +154,7 @@ class OverShortDayPage extends FanniePage {
 
 				$output .= "<input type=hidden class=\"cashier\" value=\"$row[1]\" />";
       
-				$output .= "<tr><td><a href=overshortSingleEmp.php?date=$date&emp_no=$row[1] target={$date}_{$row[1]}>$row[0]</a></td>";
+				$output .= "<tr><td><a href=OverShortDayPage.php?action=date&arg=$date&emp_no=$row[1] target={$date}_{$row[1]}>$row[0]</a></td>";
 				$output .= "<td>Starting cash</td><td>n/a</td>";
 				$fetchR = $dbc->exec_statement($scaP, array($date, $emp_no));
 				$startcash = 0;
@@ -204,6 +221,11 @@ class OverShortDayPage extends FanniePage {
 				$output .= "<textarea rows=5 cols=35 id=note$row[1]>$note</textarea></td></tr>";
 		  
 				$output .= "<tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>";
+			}
+			if (FormLib::get_form_value('emp_no') !== ''){
+				// single employee view. grand totals are redundant
+				echo $output;
+				return False;
 			}
 			/* add overall totals */
 			$output .= "<tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>";
