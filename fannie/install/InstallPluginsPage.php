@@ -125,14 +125,16 @@ plugins2.0/preorder/ does not exist
 $mods = array(
 	'TimesheetPlugin'
 	,'CalendarPlugin'
-	,'ShelfAuditPlugin'
-	,'CoreWarehousePlugin'
+	,'ShelfAudit'
+	,'CoreWarehouse'
+	,'OverShortTools'
 );
 //,'PreorderPlugin'
 include('../modules/plugins2.0/TimesheetPlugin/TimesheetPlugin.php');
 include('../modules/plugins2.0/CalendarPlugin/CalendarPlugin.php');
 include('../modules/plugins2.0/ShelfAudit/ShelfAudit.php');
 include('../modules/plugins2.0/CoreWarehouse/CoreWarehouse.php');
+include('../modules/plugins2.0/OverShortTools/OverShortTools.php');
 // 17Jan13 Doesn't exist on github upstream.
 //include('../modules/plugins2.0/preorder/PreorderPlugin.php');
 

@@ -21,12 +21,13 @@
 
 *********************************************************************************/
 
+global $FANNIE_ROOT;
 if (!class_exists('FannieAPI'))
 	include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
 /**
 */
-class ShelfAudit extends FanniePlugin {
+class OverShortTools extends FanniePlugin {
 
 	/**
 	  Desired settings. These are automatically exposed
@@ -34,28 +35,39 @@ class ShelfAudit extends FanniePlugin {
 	  written to ini.php
 	*/
 	public $plugin_settings = array(
-	'ShelfAuditDB' => array('default'=>'core_shelfaudit','label'=>'Database',
-			'description'=>'Database to store inventory information. Can
-					be one of the default CORE databases or a 
-					separate one.')
+	'OverShortDatabase' => array('default'=>'core_overshort','label'=>'Database',
+			'description'=>'Database to store tender counts and related info')
 	);
 
-	public $plugin_description = 'Plugin for scanning items on hand';
+	public $plugin_description = 'Plugin for comparing counted cashier tender totals
+			to POS totals';
+
 
 	public function setting_change(){
 		global $FANNIE_ROOT, $FANNIE_PLUGIN_SETTINGS;
 
-		$db_name = $FANNIE_PLUGIN_SETTINGS['ShelfAuditDB'];
+		$db_name = $FANNIE_PLUGIN_SETTINGS['OverShortDatabase'];
 		if (empty($db_name)) return;
 
 		$dbc = FannieDB::get($db_name);
+		
+		$tables = array(
+			'SumDeptSalesByDay',
+			'SumDiscountsByDay',
+			'SumMemSalesByDay',
+			'SumMemTypeSalesByDay',
+			'SumRingSalesByDay',
+			'SumTendersByDay',
+			'SumUpcSalesByDay',
+			'TransactionSummary'
+		);
 
-		$errors = array();
-		$errors[] = $this->plugin_db_struct($dbc, 'sa_inventory', $db_name);
-
-		foreach($errors as $e){
-			if ($e === True) continue;
-			echo 'ShelfAuditPlugin error: '.$e.'<br />';
+		foreach($tables as $t){
+			$controller_class = $t.'Controller';
+			if (!class_exists($controller_class))
+				include_once(dirname(__FILE__).'/controllers/'.$controller_class.'.php');
+			$instance = new $controller_class($dbc);
+			$instance->create();		
 		}
 	}
 }

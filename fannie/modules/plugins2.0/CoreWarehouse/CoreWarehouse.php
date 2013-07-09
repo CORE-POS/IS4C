@@ -27,7 +27,7 @@ if (!class_exists('FannieAPI'))
 
 /**
 */
-class CoreWarehousePlugin extends FanniePlugin {
+class CoreWarehouse extends FanniePlugin {
 
 	/**
 	  Desired settings. These are automatically exposed
