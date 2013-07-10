@@ -188,8 +188,10 @@ class BasicModel {
 				if (!isset($row[$name])) continue;
 				$this->instance[$name] = $row[$name];
 			}
+			return True;
 		}
-		return True;
+		else
+			return False;
 	}
 
 	/**
@@ -536,18 +538,71 @@ class BasicModel {
 
 		return True;
 	}
+
+	function new_model($name){
+		$fp = fopen($name.'.php','w');
+		fwrite($fp,"<?php
+/*******************************************************************************
+
+    Copyright ".date("Y")." Whole Foods Co-op
+
+    This file is part of Fannie.
+
+    IT CORE is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    IT CORE is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    in the file license.txt along with IT CORE; if not, write to the Free Software
+    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+*********************************************************************************/
+
+/**
+  @class $name
+*/
+class $name extends BasicModel {\n");
+		fwrite($fp,"\n");
+		fwrite($fp,"\tprotected \$name = \"".substr($name,0,strlen($name)-5)."\";\n");
+		fwrite($fp,"\n");
+		fwrite($fp,"\tprotected \$columns = array(\n\t);\n");
+		fwrite($fp,"\n");
+		fwrite($fp,"\t/* START ACCESSOR FUNCTIONS */\n");
+		fwrite($fp,"\t/* END ACCESSOR FUNCTIONS */\n");
+		fwrite($fp,"}\n?>\n");
+		fclose($fp);
+	}
 }
 
 if (php_sapi_name() === 'cli' && basename($_SERVER['PHP_SELF']) == basename(__FILE__)){
 
-	if (($argc != 2 && $argc != 4) || ($argc == 4 && $argv[1] != '--update')){
+	if (($argc < 2 || $argc > 4) || ($argc == 3 && $argv[1] != "--new") || ($argc == 4 && $argv[1] != '--update')){
 		echo "Generate Accessor Functions: php BasicModel.php <Subclass Filename>\n";
+		echo "Create new Model: php BasicModel.php --new <Model Name>\n";
 		echo "Update Table Structure: php BasicModel.php --update <Database name> <Subclass Filename>\n";
 		exit;
 	}
 
 	include(dirname(__FILE__).'/../../../config.php');
 	include(dirname(__FILE__).'/../../FannieAPI.php');
+
+	if ($argc == 3){
+		$modelname = $argv[2];
+		if (substr($modelname,-4) == '.php')
+			$modelname = substr($modelname,0,strlen($modelname)-4);
+		if (substr($modelname,-5) != 'Model')
+			$modelname .= 'Model';
+		echo "Generating Model '$modelname'\n";
+		$obj = new BasicModel(null);
+		$obj->new_model($modelname);
+		exit;
+	}
 
 	$classfile = $argv[1];
 	if ($argc == 4) $classfile = $argv[3];

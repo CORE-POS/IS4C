@@ -38,6 +38,8 @@ class MemberCardsModel extends BasicModel {
 	'upc' => array('type'=>'VARCHAR(13)','primary_key'=>True,'default'=>'')
 	);
 
+	protected $unique = array('card_no');
+
 	/* START ACCESSOR FUNCTIONS */
 
 	public function card_no(){
