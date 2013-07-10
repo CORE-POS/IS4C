@@ -162,7 +162,7 @@ class BrowseVendorItems extends FanniePage {
 		$dinfo = $dbc->exec_statement($p,array($dept));
 		$dinfo = $dbc->fetch_row($dinfo);
 		
-		ProductsController::update($upc,array(
+		ProductsModel::update($upc,array(
 			'description' => $vinfo['description'],
 			'normal_price' => $price,
 			'department' => $dept,

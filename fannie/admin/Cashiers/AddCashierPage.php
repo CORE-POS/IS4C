@@ -57,17 +57,17 @@ class AddCashierPage extends FanniePage {
 			$emp_no = array_pop($dbc->fetch_row($idR));
 			if ($emp_no == '') $emp_no=1;
 
-			$ec = new EmployeesController($dbc);
-			$ec->emp_no($emp_no);
-			$ec->CashierPassword($passwd);
-			$ec->AdminPassword($passwd);
-			$ec->FirstName($fn);
-			$ec->LastName($ln);
-			$ec->JobTitle('');
-			$ec->EmpActive(1);
-			$ec->frontendsecurity($fes);
-			$ec->backendsecurity($fes);
-			$ec->save();
+			$employee = new EmployeesModel($dbc);
+			$employee->emp_no($emp_no);
+			$employee->CashierPassword($passwd);
+			$employee->AdminPassword($passwd);
+			$employee->FirstName($fn);
+			$employee->LastName($ln);
+			$employee->JobTitle('');
+			$employee->EmpActive(1);
+			$employee->frontendsecurity($fes);
+			$employee->backendsecurity($fes);
+			$employee->save();
 
 			$this->messages = sprintf("Cashier Created<br />Name:%s<br />Emp#:%d<br />Password:%d",
 				$fn.' '.$ln,$emp_no,$passwd);

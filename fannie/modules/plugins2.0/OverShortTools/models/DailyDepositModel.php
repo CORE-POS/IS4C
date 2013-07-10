@@ -21,7 +21,7 @@
 
 *********************************************************************************/
 
-class DailyDepositController extends BasicController {
+class DailyDepositModel extends BasicModel {
 
 	protected $name = 'dailyDeposit';
 

@@ -22,10 +22,10 @@
 *********************************************************************************/
 
 /**
-  @class BasicController
+  @class BasicModel
 */
 
-class BasicController {
+class BasicModel {
 
 	/**
 	  Name of the table
@@ -541,8 +541,8 @@ class BasicController {
 if (php_sapi_name() === 'cli' && basename($_SERVER['PHP_SELF']) == basename(__FILE__)){
 
 	if (($argc != 2 && $argc != 4) || ($argc == 4 && $argv[1] != '--update')){
-		echo "Generate Accessor Functions: php BasicController.php <Subclass Filename>\n";
-		echo "Update Table Structure: php BasicController.php --update <Database name> <Subclass Filename>\n";
+		echo "Generate Accessor Functions: php BasicModel.php <Subclass Filename>\n";
+		echo "Update Table Structure: php BasicModel.php --update <Database name> <Subclass Filename>\n";
 		exit;
 	}
 
@@ -564,8 +564,8 @@ if (php_sapi_name() === 'cli' && basename($_SERVER['PHP_SELF']) == basename(__FI
 	}
 
 	$obj = new $class(null);
-	if (!is_a($obj, 'BasicController')){
-		echo "Error: invalid class. Must be BasicController\n";
+	if (!is_a($obj, 'BasicModel')){
+		echo "Error: invalid class. Must be BasicModel\n";
 		exit;
 	}
 

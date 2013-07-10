@@ -127,7 +127,7 @@ class MemNameNumImportPage extends FannieUploadPage {
 			}
 
 			if ($pn == 1){
-				MeminfoController::update($cardno,array());
+				MeminfoModel::update($cardno,array());
 				$dbc->exec_statement($dateP,array($cardno));
 			}
 		}

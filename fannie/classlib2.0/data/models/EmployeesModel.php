@@ -21,7 +21,7 @@
 
 *********************************************************************************/
 
-class EmployeesController extends BasicController {
+class EmployeesModel extends BasicModel {
 
 	protected $name = 'employees';
 

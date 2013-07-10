@@ -57,8 +57,8 @@ class CoreWarehouse extends FanniePlugin {
 
 		$dbc = FannieDB::get($db_name);
 		
-		if (!class_exists('WarehouseController'))
-			include(dirname(__FILE__).'/controllers/WarehouseController.php');
+		if (!class_exists('WarehouseModel'))
+			include(dirname(__FILE__).'/models/WarehouseModel.php');
 
 		$tables = array(
 			'SumDeptSalesByDay',
@@ -72,10 +72,10 @@ class CoreWarehouse extends FanniePlugin {
 		);
 
 		foreach($tables as $t){
-			$controller_class = $t.'Controller';
-			if (!class_exists($controller_class))
-				include_once(dirname(__FILE__).'/controllers/'.$controller_class.'.php');
-			$instance = new $controller_class($dbc);
+			$model_class = $t.'Model';
+			if (!class_exists($model_class))
+				include_once(dirname(__FILE__).'/models/'.$model_class.'.php');
+			$instance = new $model_class($dbc);
 			$instance->create();		
 		}
 	}

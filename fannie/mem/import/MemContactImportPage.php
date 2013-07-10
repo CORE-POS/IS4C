@@ -128,7 +128,7 @@ class MemContactImportPage extends FannieUploadPage {
 			// combine multi-line addresses
 			$full_street = !empty($street2) ? $street."\n".$street2 : $street;
 
-			$try = MemInfoController::update($cardno,array(
+			$try = MeminfoModel::update($cardno,array(
 				'street' => $full_street,
 				'city' => $city,
 				'state' => $state,

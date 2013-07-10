@@ -52,9 +52,9 @@ class DeleteTenderPage extends FanniePage {
 		$dbc = FannieDB::get($FANNIE_OP_DB);
 
 		$id = FormLib::get_form_value('TenderID');
-		$tc = new TendersController($dbc);
-		$tc->TenderID($id);
-		$tc->delete();
+		$tender = new TendersModel($dbc);
+		$tender->TenderID($id);
+		$tender->delete();
 
 		$ret = "<i>Tender deleted</i>";
 		$ret .= "<br /><br />";
@@ -74,8 +74,8 @@ class DeleteTenderPage extends FanniePage {
 		$ret .= '<form action="DeleteTenderPage.php" method="post">';
 		$ret .= '<select name="TenderID">';
 		$ret .= '<option>Select a tender...</option>';
-		$tc = new TendersController($dbc);
-		foreach($tc->find('TenderID') as $obj){
+		$tender = new TendersModel($dbc);
+		foreach($tender->find('TenderID') as $obj){
 			$ret .= sprintf('<option value="%d">%s - %s</option>',
 				$obj->TenderID(),$obj->TenderCode(),
 				$obj->TenderName());

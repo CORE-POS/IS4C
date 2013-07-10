@@ -109,7 +109,7 @@ class ProductImportPage extends FannieUploadPage {
 
 			if (strlen($desc) > 35) $desc = substr($desc,0,35);		
 
-			$try = ProductsController::update($upc,array(
+			$try = ProductsModel::update($upc,array(
 				'description' => $desc,
 				'normal_price' => $price,
 				'department' => $dept,

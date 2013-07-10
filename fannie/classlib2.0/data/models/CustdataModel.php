@@ -22,14 +22,14 @@
 *********************************************************************************/
 
 /**
-  @class CustdataController
+  @class CustdataModel
 
 */
 
 if (!class_exists('FannieDB'))
 	include(dirname(__FILE__).'/../FannieDB.php');
 
-class CustdataController extends BasicController {
+class CustdataModel extends BasicModel {
 
 	protected $name = 'custdata';
 
@@ -355,7 +355,7 @@ class CustdataController extends BasicController {
 
 	/**
 	  5Jul13 static stuff is legacy functionality
-	  that predates the BasicController class.
+	  that predates the BasicModel class.
 	  Can be removed when no calls to these functions
 	  remain in Fannie.
 	*/

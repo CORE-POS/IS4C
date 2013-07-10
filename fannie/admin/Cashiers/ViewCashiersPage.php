@@ -49,9 +49,9 @@ function deleteEmp(emp_no,filter){
 		$emp = FormLib::get_form_value('emp_no');
 		if (FormLib::get_form_value('delete') !== '' && $emp !== ''){
 			$dbc = FannieDB::get($FANNIE_OP_DB);
-			$ec = new EmployeesController($dbc);
-			$ec->emp_no($emp);
-			$ec->delete();
+			$employee = new EmployeesModel($dbc);
+			$employee->emp_no($emp);
+			$employee->delete();
 		}
 		return True;
 	}
@@ -96,9 +96,9 @@ function deleteEmp(emp_no,filter){
 		$ret .= "<th>&nbsp;</th><th>&nbsp;</th></tr>";
 
 		$dbc = FannieDB::get($FANNIE_OP_DB);
-		$ec = new EmployeesController($dbc);
-		$ec->EmpActive($filter);
-		foreach($ec->find($orderby) as $emp){
+		$employees = new EmployeesModel($dbc);
+		$employees->EmpActive($filter);
+		foreach($employees->find($orderby) as $emp){
 			$ret .= sprintf("<tr><td>%d</td><td>%s</td><td>%d</td><td>%s</td>",
 					$emp->emp_no(),
 					$emp->FirstName().' '.$emp->LastName,

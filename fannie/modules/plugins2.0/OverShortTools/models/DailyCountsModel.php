@@ -21,18 +21,16 @@
 
 *********************************************************************************/
 
-class DailyChecksController extends BasicController {
+class DailyCountsModel extends BasicModel {
 
-	protected $name = 'dailyChecks';
+	protected $name = 'dailyCounts';
 
 	protected $columns = array(
-	'date' => array('type'=>'VARCHAR(10)'),
-	'emp_no' => array('type'=>'SMALLINT'),
-	'checks' => array('type'=>'TEXT'),
-	'id' => array('type'=>'INT','primary_key'=>True,'increment'=>True)
+	'date' => array('type'=>'VARCHAR(10)','primary_key'=>True),
+	'emp_no' => array('type'=>'SMALLINT','primary_key'=>True),
+	'tender_type' => array('type'=>'VARCHAR(10)','primary_key'=>True),
+	'amt' => array('type'=>'MONEY','default'=>0)
 	);
-
-	protected $unique = array('date','emp_no');
 
 	/* START ACCESSOR FUNCTIONS */
 
@@ -62,29 +60,29 @@ class DailyChecksController extends BasicController {
 		}
 	}
 
-	public function checks(){
+	public function tender_type(){
 		if(func_num_args() == 0){
-			if(isset($this->instance["checks"]))
-				return $this->instance["checks"];
-			elseif(isset($this->columns["checks"]["default"]))
-				return $this->columns["checks"]["default"];
+			if(isset($this->instance["tender_type"]))
+				return $this->instance["tender_type"];
+			elseif(isset($this->columns["tender_type"]["default"]))
+				return $this->columns["tender_type"]["default"];
 			else return null;
 		}
 		else{
-			$this->instance["checks"] = func_get_arg(0);
+			$this->instance["tender_type"] = func_get_arg(0);
 		}
 	}
 
-	public function id(){
+	public function amt(){
 		if(func_num_args() == 0){
-			if(isset($this->instance["id"]))
-				return $this->instance["id"];
-			elseif(isset($this->columns["id"]["default"]))
-				return $this->columns["id"]["default"];
+			if(isset($this->instance["amt"]))
+				return $this->instance["amt"];
+			elseif(isset($this->columns["amt"]["default"]))
+				return $this->columns["amt"]["default"];
 			else return null;
 		}
 		else{
-			$this->instance["id"] = func_get_arg(0);
+			$this->instance["amt"] = func_get_arg(0);
 		}
 	}
 	/* END ACCESSOR FUNCTIONS */

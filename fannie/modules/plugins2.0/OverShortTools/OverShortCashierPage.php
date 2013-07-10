@@ -90,10 +90,10 @@ class OverShortCashierPage extends FanniePage {
 			$counts[$totalsW[0]] = 0.00;
 		}
 
-		$controller = new DailyCountsController($dbc);
-		$controller->date($date);
-		$controller->emp_no($empno);
-		foreach($controller->find() as $obj)
+		$model = new DailyCountsModel($dbc);
+		$model->date($date);
+		$model->emp_no($empno);
+		foreach($model->find() as $obj)
 			$counts[$obj->tender_type()] = $obj->amt();
 
 		$posTotal = 0;
@@ -137,12 +137,12 @@ class OverShortCashierPage extends FanniePage {
 		$os = round($counts['CK'] - $totals['CK'],2);
 		$ret .= "<td id=osCK>$os</td>";
 		$checks = "";
-		$controller = new DailyChecksController($dbc);
-		$controller->date($date);
-		$controller->emp_no($empno);
-		$controller->load();
+		$model = new DailyChecksModel($dbc);
+		$model->date($date);
+		$model->emp_no($empno);
+		$model->load();
 		$checks = "";
-		foreach( explode(",",$controller->checks()) as $c){
+		foreach( explode(",",$model->checks()) as $c){
 			if (is_numeric($c))
 				$checks .= "$c\n";
 		}
@@ -208,11 +208,11 @@ class OverShortCashierPage extends FanniePage {
 
 		$ret .= "<tr class=color>";
 		$ret .= "<th>Totals</th><td>POS</td><td>Count</td><td>O/S</td><td>&nbsp;</td>";
-		$controller = new DailyNotesController($dbc);
-		$controller->date($date);
-		$controller->emp_no($empno);
-		$controller->load();
-		$note = str_replace("''","'",$controller->note());
+		$model = new DailyNotesModel($dbc);
+		$model->date($date);
+		$model->emp_no($empno);
+		$model->load();
+		$note = str_replace("''","'",$model->note());
 		$ret .= "<td colspan=5 rowspan=2><textarea id=notes rows=4 cols=40>$note</textarea></td></tr>";
 		$ret .= "<tr>";
 		$ret .= "<td>&nbsp;</td>";
@@ -236,22 +236,22 @@ class OverShortCashierPage extends FanniePage {
 		global $FANNIE_PLUGIN_SETTINGS;
 		$dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['OverShortDatabase']);
 	
-		$controller = new DailyNotesController($dbc);
-		$controller->date($date);
-		$controller->emp_no($empno);
+		$model = new DailyNotesModel($dbc);
+		$model->date($date);
+		$model->emp_no($empno);
 		$notes = str_replace("'","''",urldecode($notes));
-		$controller->note($notes);
-		$controller->save();
+		$model->note($notes);
+		$model->save();
 
-		$controller = new DailyChecksController($dbc);
-		$controller->date($date);
-		$controller->emp_no($empno);
-		$controller->checks($checks);
-		$controller->save();
+		$model = new DailyChecksModel($dbc);
+		$model->date($date);
+		$model->emp_no($empno);
+		$model->checks($checks);
+		$model->save();
 
-		$controller = new DailyCountsController($dbc);
-		$controller->date($date);
-		$controller->emp_no($empno);
+		$model = new DailyCountsModel($dbc);
+		$model->date($date);
+		$model->emp_no($empno);
 		$tarray = explode("|",$tenders);
 		foreach($tarray as $t){
 			$temp = explode(":",$t);
@@ -261,9 +261,9 @@ class OverShortCashierPage extends FanniePage {
 			$tender = $temp[0];
 			$amt = $temp[1];
 
-			$controller->tender_type($tender);
-			$controller->amt($amt);
-			$controller->save();
+			$model->tender_type($tender);
+			$model->amt($amt);
+			$model->save();
 		}
 
 		return "Saved";

@@ -26,9 +26,9 @@ if (!class_exists('FannieAPI'))
 	include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
 $dbc = FannieDB::get($FANNIE_OP_DB);
-$controller = new TendersController($dbc);
+$model = new TendersModel($dbc);
 $id = FormLib::get_form_value('id',0);
-$controller->TenderID($id);
+$model->TenderID($id);
 
 if (FormLib::get_form_value('saveCode',False) !== False){
 	$code = FormLib::get_form_value('saveCode');
@@ -39,32 +39,32 @@ if (FormLib::get_form_value('saveCode',False) !== False){
 	if ($dbc->num_rows($chk) > 0)
 		echo "Error: Code $code is already in use";
 	else{
-		$controller->TenderCode($code);
-		$controller->save();
+		$model->TenderCode($code);
+		$model->save();
 	}
 }
 elseif(FormLib::get_form_value('saveName',False) !== False){
 	$name = FormLib::get_form_value('saveName');
-	$controller->TenderName($name);
-	$controller->save();
+	$model->TenderName($name);
+	$model->save();
 }
 elseif(FormLib::get_form_value('saveType',False) !== False){
 	$type = FormLib::get_form_value('saveType');
-	$controller->TenderType($type);
-	$controller->save();
+	$model->TenderType($type);
+	$model->save();
 }
 elseif(FormLib::get_form_value('saveCMsg',False) !== False){
 	$msg = FormLib::get_form_value('saveCMsg');
-	$controller->ChangeMessage($msg);
-	$controller->save();
+	$model->ChangeMessage($msg);
+	$model->save();
 }
 elseif(FormLib::get_form_value('saveMin',False) !== False){
 	$min = FormLib::get_form_value('saveMin');
 	if (!is_numeric($min))
 		echo "Error: Minimum must be a number";
 	else {
-		$controller->MinAmount($min);
-		$controller->save();
+		$model->MinAmount($min);
+		$model->save();
 	}
 }
 elseif(FormLib::get_form_value('saveMax',False) !== False){
@@ -72,8 +72,8 @@ elseif(FormLib::get_form_value('saveMax',False) !== False){
 	if (!is_numeric($max))
 		echo "Error: Maximum must be a number";
 	else {
-		$controller->MaxAmount($max);
-		$controller->save();
+		$model->MaxAmount($max);
+		$model->save();
 	}
 }
 elseif(FormLib::get_form_value('saveRLimit',False) !== False){
@@ -81,8 +81,8 @@ elseif(FormLib::get_form_value('saveRLimit',False) !== False){
 	if (!is_numeric($limit))
 		echo "Error: Refund limit must be a number";
 	else {
-		$controller->MaxRefund($limit);
-		$controller->save();
+		$model->MaxRefund($limit);
+		$model->save();
 	}
 }
 elseif(FormLib::get_form_value('newTender',False) !== False){
@@ -94,28 +94,28 @@ elseif(FormLib::get_form_value('newTender',False) !== False){
 		if (!empty($idW[0])) $newID = $idW[0] + 1;
 	}
 
-	$controller->reset();
-	$controller->TenderID($newID);
-	$controller->TenderName('NEW TENDER');
-	$controller->TenderType('CA');
-	$controller->MinAmount(0);
-	$controller->MaxAmount(500);
-	$controller->MaxRefund(0);
-	$controller->save();
+	$model->reset();
+	$model->TenderID($newID);
+	$model->TenderName('NEW TENDER');
+	$model->TenderType('CA');
+	$model->MinAmount(0);
+	$model->MaxAmount(500);
+	$model->MaxRefund(0);
+	$model->save();
 	
 	echo getTenderTable();
 }
 
 function getTenderTable(){
 	global $dbc;
-	$tc = new TendersController($dbc);
+	$model = new TendersModel($dbc);
 	
 	$ret = '<table cellpadding="4" cellspacing="0" border="1">
 		<tr><th>Code</th><th>Name</th><th>Type</th>
 		<th>Change Msg</th><th>Min</th><th>Max</th>
 		<th>Refund Limit</th></tr>';
 
-	foreach($tc->find('TenderID') as $row){
+	foreach($model->find('TenderID') as $row){
 		$ret .= sprintf('<tr>
 			<td><input size="2" maxlength="2" value="%s"
 				onchange="saveCode(this.value,%d);" /></td>

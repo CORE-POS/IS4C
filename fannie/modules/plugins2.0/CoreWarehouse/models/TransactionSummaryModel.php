@@ -22,12 +22,12 @@
 *********************************************************************************/
 
 global $FANNIE_ROOT;
-if (!class_exists('CoreWarehouseController'))
-	include_once(dirname(__FILE__).'/CoreWarehouseController.php');
+if (!class_exists('CoreWarehouseModel'))
+	include_once(dirname(__FILE__).'/CoreWarehouseModel.php');
 if (!function_exists('select_dlog'))
 	include_once($FANNIE_ROOT.'src/select_dlog.php');
 
-class TransactionSummaryController extends CoreWarehouseController {
+class TransactionSummaryModel extends CoreWarehouseModel {
 
 	protected $name = 'transactionSummary';
 	

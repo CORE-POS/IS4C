@@ -63,10 +63,10 @@ class OverShortTools extends FanniePlugin {
 		);
 
 		foreach($tables as $t){
-			$controller_class = $t.'Controller';
-			if (!class_exists($controller_class))
-				include_once(dirname(__FILE__).'/controllers/'.$controller_class.'.php');
-			$instance = new $controller_class($dbc);
+			$model_class = $t.'Model';
+			if (!class_exists($model_class))
+				include_once(dirname(__FILE__).'/models/'.$model_class.'.php');
+			$instance = new $model_class($dbc);
 			$instance->create();		
 		}
 	}

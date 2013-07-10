@@ -22,20 +22,20 @@
 *********************************************************************************/
 
 global $FANNIE_ROOT;
-if (!class_exists('CoreWarehouseController'))
-	include_once(dirname(__FILE__).'/CoreWarehouseController.php');
+if (!class_exists('CoreWarehouseModel'))
+	include_once(dirname(__FILE__).'/CoreWarehouseModel.php');
 if (!function_exists('select_dlog'))
 	include_once($FANNIE_ROOT.'src/select_dlog.php');
 
-class SumDeptSalesByDayController extends CoreWarehouseController {
+class SumDiscountsByDayModel extends CoreWarehouseModel {
 
-	protected $name = 'sumDeptSalesByDay';
+	protected $name = 'sumDiscountsByDay';
 	
 	protected $columns = array(
 	'date_id' => array('type'=>'INT','primary_key'=>True,'default'=>0),
-	'department' => array('type'=>'INT','primary_key'=>True,'default'=>''),
+	'memType' => array('type'=>'SMALLINT','primary_key'=>True,'default'=>''),
 	'total' => array('type'=>'MONEY','default'=>0.00),
-	'quantity' => array('type'=>'DOUBLE','default'=>0.00)
+	'transCount' => array('type'=>'INT','default'=>0)
 	);
 
 	public function refresh_data($trans_db, $month, $year, $day=False){
@@ -60,14 +60,14 @@ class SumDeptSalesByDayController extends CoreWarehouseController {
 		/* reload table from transarction archives */
 		$sql = "INSERT INTO ".$this->name."
 			SELECT DATE_FORMAT(tdate, '%Y%m%d') as date_id,
-			department,
+			memType,
 			CONVERT(SUM(total),DECIMAL(10,2)) as total,
-			CONVERT(SUM(CASE WHEN trans_status='M' THEN itemQtty 
-				WHEN unitPrice=0.01 THEN 1 ELSE quantity END),DECIMAL(10,2)) as quantity
+			COUNT(DISTINCT trans_num) as transCount
 			FROM $target_table WHERE
 			tdate BETWEEN ? AND ? AND
-			trans_type IN ('I','D') AND upc <> '0'
-			GROUP BY DATE_FORMAT(tdate,'%Y%m%d'), department";
+			trans_type IN ('S') AND total <> 0
+			AND upc='DISCOUNT' AND card_no <> 0
+			GROUP BY DATE_FORMAT(tdate,'%Y%m%d'), memType";
 		$prep = $this->connection->prepare_statement($sql);
 		$result = $this->connection->exec_statement($prep, array($start_date.' 00:00:00',$end_date.' 23:59:59'));
 	}
@@ -87,16 +87,16 @@ class SumDeptSalesByDayController extends CoreWarehouseController {
 		}
 	}
 
-	public function department(){
+	public function memType(){
 		if(func_num_args() == 0){
-			if(isset($this->instance["department"]))
-				return $this->instance["department"];
-			elseif(isset($this->columns["department"]["default"]))
-				return $this->columns["department"]["default"];
+			if(isset($this->instance["memType"]))
+				return $this->instance["memType"];
+			elseif(isset($this->columns["memType"]["default"]))
+				return $this->columns["memType"]["default"];
 			else return null;
 		}
 		else{
-			$this->instance["department"] = func_get_arg(0);
+			$this->instance["memType"] = func_get_arg(0);
 		}
 	}
 
@@ -113,16 +113,16 @@ class SumDeptSalesByDayController extends CoreWarehouseController {
 		}
 	}
 
-	public function quantity(){
+	public function transCount(){
 		if(func_num_args() == 0){
-			if(isset($this->instance["quantity"]))
-				return $this->instance["quantity"];
-			elseif(isset($this->columns["quantity"]["default"]))
-				return $this->columns["quantity"]["default"];
+			if(isset($this->instance["transCount"]))
+				return $this->instance["transCount"];
+			elseif(isset($this->columns["transCount"]["default"]))
+				return $this->columns["transCount"]["default"];
 			else return null;
 		}
 		else{
-			$this->instance["quantity"] = func_get_arg(0);
+			$this->instance["transCount"] = func_get_arg(0);
 		}
 	}
 	/* END ACCESSOR FUNCTIONS */

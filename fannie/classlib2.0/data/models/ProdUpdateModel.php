@@ -26,7 +26,7 @@ if (!class_exists('FannieDB'))
 if (!function_exists('checkLogin'))
 	include(dirname(__FILE__).'/../../../auth/login.php');
 
-class ProdUpdateController {
+class ProdUpdateModel {
 
 	public static function add($upc,$fields){
 		global $FANNIE_OP_DB;

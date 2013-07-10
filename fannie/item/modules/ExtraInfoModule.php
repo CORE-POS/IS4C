@@ -23,7 +23,7 @@
 
 include_once(dirname(__FILE__).'/../../classlib2.0/item/ItemModule.php');
 include_once(dirname(__FILE__).'/../../classlib2.0/lib/FormLib.php');
-include_once(dirname(__FILE__).'/../../classlib2.0/data/controllers/ProductsController.php');
+include_once(dirname(__FILE__).'/../../classlib2.0/data/models/ProductsModel.php');
 
 class ExtraInfoModule extends ItemModule {
 
@@ -76,7 +76,7 @@ class ExtraInfoModule extends ItemModule {
 		$inUse = FormLib::get_form_value('inUse',0);
 		$local = FormLib::get_form_value('local',0);
 
-		$r1 = ProductsController::update($upc,array('deposit'=>$deposit,'local'=>$local,
+		$r1 = ProductsModel::update($upc,array('deposit'=>$deposit,'local'=>$local,
 				'inUse'=>$inUse,'cost'=>$cost));
 		$dbc = $this->db();
 		$p = $dbc->prepare_statement('UPDATE prodExtra SET cost=? WHERE upc=?');

@@ -22,19 +22,18 @@
 *********************************************************************************/
 
 global $FANNIE_ROOT;
-if (!class_exists('CoreWarehouseController'))
-	include_once(dirname(__FILE__).'/CoreWarehouseController.php');
+if (!class_exists('CoreWarehouseModel'))
+	include_once(dirname(__FILE__).'/CoreWarehouseModel.php');
 if (!function_exists('select_dlog'))
 	include_once($FANNIE_ROOT.'src/select_dlog.php');
 
-class SumRingSalesByDayController extends CoreWarehouseController {
+class SumTendersByDayModel extends CoreWarehouseModel {
 
-	protected $name = 'sumRingSalesByDay';
+	protected $name = 'sumTendersByDay';
 	
 	protected $columns = array(
 	'date_id' => array('type'=>'INT','primary_key'=>True,'default'=>0),
-	'upc' => array('type'=>'VARCHAR(13)','primary_key'=>True,'default'=>''),
-	'department' => array('type'=>'INT','primary_key'=>True,'default'=>''),
+	'trans_subtype' => array('type'=>'VARCHAR(2)','primary_key'=>True,'default'=>''),
 	'total' => array('type'=>'MONEY','default'=>0.00),
 	'quantity' => array('type'=>'DOUBLE','default'=>0.00)
 	);
@@ -61,14 +60,14 @@ class SumRingSalesByDayController extends CoreWarehouseController {
 		/* reload table from transarction archives */
 		$sql = "INSERT INTO ".$this->name."
 			SELECT DATE_FORMAT(tdate, '%Y%m%d') as date_id,
-			upc,department,
+			trans_subtype,
 			CONVERT(SUM(total),DECIMAL(10,2)) as total,
-			CONVERT(SUM(CASE WHEN trans_status='M' THEN itemQtty 
-				WHEN unitPrice=0.01 THEN 1 ELSE quantity END),DECIMAL(10,2)) as quantity
+			COUNT(*) AS quantity
 			FROM $target_table WHERE
 			tdate BETWEEN ? AND ? AND
-			trans_type IN ('I','D') AND upc <> '0'
-			GROUP BY DATE_FORMAT(tdate,'%Y%m%d'), upc, department";
+			trans_type IN ('T') 
+			AND total <> 0
+			GROUP BY DATE_FORMAT(tdate,'%Y%m%d'), trans_subtype";
 		$prep = $this->connection->prepare_statement($sql);
 		$result = $this->connection->exec_statement($prep, array($start_date.' 00:00:00',$end_date.' 23:59:59'));
 	}
@@ -88,29 +87,16 @@ class SumRingSalesByDayController extends CoreWarehouseController {
 		}
 	}
 
-	public function upc(){
+	public function trans_subtype(){
 		if(func_num_args() == 0){
-			if(isset($this->instance["upc"]))
-				return $this->instance["upc"];
-			elseif(isset($this->columns["upc"]["default"]))
-				return $this->columns["upc"]["default"];
+			if(isset($this->instance["trans_subtype"]))
+				return $this->instance["trans_subtype"];
+			elseif(isset($this->columns["trans_subtype"]["default"]))
+				return $this->columns["trans_subtype"]["default"];
 			else return null;
 		}
 		else{
-			$this->instance["upc"] = func_get_arg(0);
-		}
-	}
-
-	public function department(){
-		if(func_num_args() == 0){
-			if(isset($this->instance["department"]))
-				return $this->instance["department"];
-			elseif(isset($this->columns["department"]["default"]))
-				return $this->columns["department"]["default"];
-			else return null;
-		}
-		else{
-			$this->instance["department"] = func_get_arg(0);
+			$this->instance["trans_subtype"] = func_get_arg(0);
 		}
 	}
 

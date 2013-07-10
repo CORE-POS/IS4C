@@ -67,13 +67,13 @@ class HouseholdMembers extends MemberModule {
 	function SaveFormData($memNum){
 		global $FANNIE_ROOT;
 		$dbc = $this->db();
-		if (!class_exists("CustdataController"))
-			include($FANNIE_ROOT.'classlib2.0/data/controllers/CustdataController.php');
+		if (!class_exists("CustdataModel"))
+			include($FANNIE_ROOT.'classlib2.0/data/models/CustdataModel.php');
 
 		$CUST_FIELDS = array('personNum'=>array(),'FirstName'=>array(),'LastName'=>array());
 
 		/**
-		  Controller needs all names, so lookup primary member
+		  Model needs all names, so lookup primary member
 		*/
 		$lookupP = $dbc->prepare_statement("SELECT FirstName,LastName FROM custdata WHERE
 				personNum=1 AND CardNo=?");
@@ -99,7 +99,7 @@ class HouseholdMembers extends MemberModule {
 			$pn++;
 		}
 
-		$test = CustdataController::update($memNum, $CUST_FIELDS);
+		$test = CustdataModel::update($memNum, $CUST_FIELDS);
 
 		if ($test === False)
 			return "Error: Problem saving household members<br />";	

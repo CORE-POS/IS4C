@@ -22,20 +22,20 @@
 *********************************************************************************/
 
 /**
-  @class MemberCardsController
+  @class MemDatesModel
 
 */
 
 if (!class_exists('FannieDB'))
 	include(dirname(__FILE__).'/../FannieDB.php');
 
-class MemberCardsController extends BasicController {
-	
-	protected $name = 'memberCards';
-	
+class MemDatesModel extends BasicModel {
+
+	protected $name = 'memDates';
 	protected $columns = array(
-	'card_no' => array('type'=>'INT','primary_key'=>True,'default'=>0),
-	'upc' => array('type'=>'VARCHAR(13)','primary_key'=>True,'default'=>'')
+	'card_no' => array('type'=>'INT','primary_key'=>True),
+	'start_date'=>array('type'=>'DATETIME'),
+	'end_date'=>array('type'=>'DATETIME')	
 	);
 
 	/* START ACCESSOR FUNCTIONS */
@@ -53,47 +53,67 @@ class MemberCardsController extends BasicController {
 		}
 	}
 
-	public function upc(){
+	public function start_date(){
 		if(func_num_args() == 0){
-			if(isset($this->instance["upc"]))
-				return $this->instance["upc"];
-			elseif(isset($this->columns["upc"]["default"]))
-				return $this->columns["upc"]["default"];
+			if(isset($this->instance["start_date"]))
+				return $this->instance["start_date"];
+			elseif(isset($this->columns["start_date"]["default"]))
+				return $this->columns["start_date"]["default"];
 			else return null;
 		}
 		else{
-			$this->instance["upc"] = func_get_arg(0);
+			$this->instance["start_date"] = func_get_arg(0);
+		}
+	}
+
+	public function end_date(){
+		if(func_num_args() == 0){
+			if(isset($this->instance["end_date"]))
+				return $this->instance["end_date"];
+			elseif(isset($this->columns["end_date"]["default"]))
+				return $this->columns["end_date"]["default"];
+			else return null;
+		}
+		else{
+			$this->instance["end_date"] = func_get_arg(0);
 		}
 	}
 	/* END ACCESSOR FUNCTIONS */
 
 	/**
 	  5Jul13 static stuff is legacy functionality
-	  that predates the BasicController class.
+	  that predates the BasicModel class.
 	  Can be removed when no calls to these functions
 	  remain in Fannie.
+	*/
 	
 	/**
-	  Update memberCards record for an account
+	  Update memDates record for an account
 	  @param $card_no the member number
-	  @param $upc the barcode
+	  @param $start the starting date
+	  @param $end the ending date
 	*/
-	public static function update($card_no,$upc){
+	public static function update($card_no,$start,$end){
 		global $FANNIE_OP_DB;
 		$dbc = FannieDB::get($FANNIE_OP_DB);
-	
-		$delP = $dbc->prepare_statement("DELETE FROM memberCards WHERE card_no=?");
-		$delR = $dbc->exec_statement($delP,array($card_no));
+		self::init_record($dbc,$card_no);
 
-		/** don't create entry w/o UPC */
-		if ($upc != ''){
-			$upc = str_pad($upc,13,'0',STR_PAD_LEFT);
-			$insP = $dbc->prepare_statement("INSERT INTO memberCards (card_no, upc)
-					VALUES (?, ?)");
-			$insR = $dbc->exec_statement($insP,array($card_no,$upc));
-			return $insR;
+		$upP = $dbc->prepare_statement("UPDATE memDates SET start_date=?,
+				end_date=? WHERE card_no=?");
+		$upR = $dbc->exec_statement($upP, array($start,$end,$card_no));
+
+		return $upR;
+	}
+
+	private static function init_record($dbc,$card_no){
+		$q = $dbc->prepare_statement("SELECT card_no FROM memDates WHERE card_no=?");
+		$r = $dbc->exec_statement($q,array($card_no));
+
+		if ($dbc->num_rows($r) == 0){
+			$ins = $dbc->prepare_statement("INSERT INTO memDates (card_no,
+				start_date,end_date) VALUES (?, NULL, NULL)");
+			$dbc->exec_statement($ins,array($card_no));
 		}
-		else return $delR;
 	}
 
 }

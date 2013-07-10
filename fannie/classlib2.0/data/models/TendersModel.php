@@ -21,7 +21,7 @@
 
 *********************************************************************************/
 
-class TendersController extends BasicController {
+class TendersModel extends BasicModel {
 
 	protected $name = 'tenders';
 

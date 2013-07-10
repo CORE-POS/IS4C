@@ -22,21 +22,21 @@
 *********************************************************************************/
 
 global $FANNIE_ROOT;
-if (!class_exists('CoreWarehouseController'))
-	include_once(dirname(__FILE__).'/CoreWarehouseController.php');
+if (!class_exists('CoreWarehouseModel'))
+	include_once(dirname(__FILE__).'/CoreWarehouseModel.php');
 if (!function_exists('select_dlog'))
 	include_once($FANNIE_ROOT.'src/select_dlog.php');
 
-class SumMemSalesByDayController extends CoreWarehouseController {
+class SumMemTypeSalesByDayModel extends CoreWarehouseModel {
 
-	protected $name = 'sumMemSalesByDay';
+	protected $name = 'sumMemTypeSalesByDay';
 	
 	protected $columns = array(
 	'date_id' => array('type'=>'INT','primary_key'=>True,'default'=>0),
-	'card_no' => array('type'=>'INT','primary_key'=>True,'default'=>''),
+	'memType' => array('type'=>'SMALLINT','primary_key'=>True,'default'=>''),
 	'total' => array('type'=>'MONEY','default'=>0.00),
 	'quantity' => array('type'=>'DOUBLE','default'=>0.00),
-	'transCount' => array('type'=>'SMALLINT','default'=>0)
+	'transCount' => array('type'=>'INT','default'=>0)
 	);
 
 	public function refresh_data($trans_db, $month, $year, $day=False){
@@ -58,21 +58,46 @@ class SumMemSalesByDayController extends CoreWarehouseController {
 		$prep = $this->connection->prepare_statement($sql);
 		$result = $this->connection->exec_statement($prep, array($start_id, $end_id));
 
-		/* reload table from transarction archives */
-		$sql = "INSERT INTO ".$this->name."
-			SELECT DATE_FORMAT(tdate, '%Y%m%d') as date_id,
-			card_no,
+		/* reload table from transarction archives 
+		   The process for this controller is iterative because of
+		   an old bug that assigns incorrect values to the transaction's
+		   memType column on records with trans_status 'M'. Using
+		   aggregates directly on the table over-counts memType zero
+		   so instead we count transactions one at a time.
+		*/
+		$sql = "SELECT DATE_FORMAT(tdate, '%Y%m%d') as date_id,
+			MAX(memType) as memType,
 			CONVERT(SUM(total),DECIMAL(10,2)) as total,
 			CONVERT(SUM(CASE WHEN trans_status='M' THEN itemQtty 
-				WHEN unitPrice=0.01 THEN 1 ELSE quantity END),DECIMAL(10,2)) as quantity,
-			COUNT(DISTINCT trans_num) AS transCount
+				WHEN unitPrice=0.01 THEN 1 ELSE quantity END),DECIMAL(10,2)) as quantity
 			FROM $target_table WHERE
 			tdate BETWEEN ? AND ? AND
-			trans_type IN ('I','D') 
-			AND card_no <> 0
-			GROUP BY DATE_FORMAT(tdate,'%Y%m%d'), card_no";
+			trans_type IN ('I','D') AND upc <> 'RRR'
+			AND card_no <> 0 AND memType IS NOT NULL
+			GROUP BY DATE_FORMAT(tdate,'%Y%m%d'), trans_num
+			ORDER BY DATE_FORMAT(tdate,'%Y%m%d'), MAX(memType)";
 		$prep = $this->connection->prepare_statement($sql);
 		$result = $this->connection->exec_statement($prep, array($start_date.' 00:00:00',$end_date.' 23:59:59'));
+		$this->reset();
+		while($row = $this->connection->fetch_row($result)){
+			if($this->date_id() != $row['date_id'] || $this->memType() != $row['memType']){
+				if ($this->date_id() !== 0){ 
+					$this->save();
+				}
+				$this->reset();
+				$this->date_id($row['date_id']);
+				$this->memType($row['memType']);
+				$this->total(0.00);
+				$this->quantity(0.00);
+				$this->transCount(0);
+			}
+			$this->total( $this->total() + $row['total'] );
+			$this->quantity( $this->quantity() + $row['quantity'] );
+			$this->transCount( $this->transCount() + 1 );
+		}
+		if ($this->date_id() !== ''){
+			$this->save();
+		}
 	}
 
 	/* START ACCESSOR FUNCTIONS */
@@ -90,16 +115,16 @@ class SumMemSalesByDayController extends CoreWarehouseController {
 		}
 	}
 
-	public function card_no(){
+	public function memType(){
 		if(func_num_args() == 0){
-			if(isset($this->instance["card_no"]))
-				return $this->instance["card_no"];
-			elseif(isset($this->columns["card_no"]["default"]))
-				return $this->columns["card_no"]["default"];
+			if(isset($this->instance["memType"]))
+				return $this->instance["memType"];
+			elseif(isset($this->columns["memType"]["default"]))
+				return $this->columns["memType"]["default"];
 			else return null;
 		}
 		else{
-			$this->instance["card_no"] = func_get_arg(0);
+			$this->instance["memType"] = func_get_arg(0);
 		}
 	}
 

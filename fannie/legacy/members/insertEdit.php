@@ -91,7 +91,7 @@ $MI_FIELDS['email_2'] = $_POST['phone2'];
 $MI_FIELDS['email_1'] = $_POST['email'];
 $MI_FIELDS['ads_OK'] = $_POST['mailflag'];
 
-$cust = new CustdataController($dbc);
+$cust = new CustdataModel($dbc);
 $cust->CardNo($memNum);
 $cust->personNum(1);
 $cust->load(); // get all current values
@@ -101,7 +101,7 @@ $cust->Type('Reg');
 $cust->Staff(0);
 $cust->Discount(0);
 
-MemberCardsController::update($memNum,$_REQUEST['cardUPC']);
+MemberCardsModel::update($memNum,$_REQUEST['cardUPC']);
 
 $sql->query_all("UPDATE memContact SET pref=".$MI_FIELDS['ads_OK']." WHERE card_no=$memNum");
 
@@ -138,8 +138,8 @@ for($i=$count;$i<5;$i++){
 	$cust->delete();
 }
 
-MeminfoController::update($memNum, $MI_FIELDS);
-MemDatesController::update($memNum, $_POST['startDate'], $_POST['endDate']);
+MeminfoModel::update($memNum, $MI_FIELDS);
+MemDatesModel::update($memNum, $_POST['startDate'], $_POST['endDate']);
 
 // FIRE ALL UPDATE
 include('custUpdates.php');

@@ -51,11 +51,11 @@ class OverShortDayPage extends FanniePage {
 			$resolved = FormLib::get_form_value('resolved');
 			$notes = FormLib::get_form_value('notes');
 	
-			$controller = new OverShortsLogController($dbc);
-			$controller->date($date);
-			$controller->username($user);
-			$controller->resolved($resolved);
-			$controller->save();
+			$model = new OverShortsLogModel($dbc);
+			$model->date($date);
+			$model->username($user);
+			$model->resolved($resolved);
+			$model->save();
 			
 			$this->save($date,$data);
 			$this->saveNotes($date,$notes);
@@ -261,13 +261,13 @@ class OverShortDayPage extends FanniePage {
 
 			$output .= "</table>";
     
-			$controller = new OverShortsLogController($dbc);
-			$controller->date($date);
-			$controller->load();
-			$output .= "This date last edited by: <span id=lastEditedBy><b>".$controller->username()."</b></span><br />";
+			$model = new OverShortsLogModel($dbc);
+			$model->date($date);
+			$model->load();
+			$output .= "This date last edited by: <span id=lastEditedBy><b>".$model->username()."</b></span><br />";
 			$output .= "<input type=submit value=Save />";
 			$output .= "<input type=checkbox id=resolved ";
-			if ($controller->resolved() == 1)
+			if ($model->resolved() == 1)
 				$output .= "checked";
 			$output .= " /> Resolved";
 			$output .= "</form>";
@@ -283,14 +283,14 @@ class OverShortDayPage extends FanniePage {
 		$dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['OverShortDatabase']);
 		$bycashier = explode(',',$data);
 
-		$controller = new DailyCountsController($dbc);
-		$controller->date($date);
+		$model = new DailyCountsModel($dbc);
+		$model->date($date);
 		foreach ($bycashier as $c){
 			$temp = explode(':',$c);
 			if (count($temp) != 2) continue;
 			$cashier = $temp[0];
 			$tenders = explode(';',$temp[1]);
-			$controller->emp_no($cashier);
+			$model->emp_no($cashier);
 			echo $cashier."\n";
 			foreach($tenders as $t){
 				$temp = explode('|',$t);
@@ -298,9 +298,9 @@ class OverShortDayPage extends FanniePage {
 				$amt = rtrim($temp[1]);
 				echo $tender_type." ".$amt."\n";
 				if ($amt != ''){
-					$controller->tender_type($tender_type);
-					$controller->amt($amt);
-					$controller->save();
+					$model->tender_type($tender_type);
+					$model->amt($amt);
+					$model->save();
 				}
 			}
 		}
@@ -310,15 +310,15 @@ class OverShortDayPage extends FanniePage {
 		global $FANNIE_OP_DB, $FANNIE_PLUGIN_SETTINGS;
 		$dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['OverShortDatabase']);
 		$noteIDs = explode('`',$notes);
-		$controller = new DailyNotesController($dbc);
-		$controller->date($date);
+		$model = new DailyNotesModel($dbc);
+		$model->date($date);
 		foreach ($noteIDs as $n){
 			$temp = explode('|',$n);
 			$emp = $temp[0];
 			$note = str_replace("'","''",urldecode($temp[1]));
-			$controller->emp_no($emp);
-			$controller->note($note);
-			$controller->save();
+			$model->emp_no($emp);
+			$model->note($note);
+			$model->save();
 		}
 	}
 

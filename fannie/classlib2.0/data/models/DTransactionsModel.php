@@ -21,7 +21,7 @@
 
 *********************************************************************************/
 
-class DTransactionsController extends BasicController {
+class DTransactionsModel extends BasicModel {
 
 	protected $name = 'dtransactions';
 

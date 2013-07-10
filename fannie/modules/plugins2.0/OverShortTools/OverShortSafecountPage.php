@@ -82,9 +82,9 @@ class OverShortSafecountPage extends FanniePage {
 		global $FANNIE_PLUGIN_SETTINGS;
 		$dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['OverShortDatabase']);
 
-		$controller = new DailyDepositController($dbc);
-		$controller->dateStr($dateStr);
-		$controller->rowName($row);
+		$model = new DailyDepositModel($dbc);
+		$model->dateStr($dateStr);
+		$model->rowName($row);
 
 		$temp = explode('|',$data);
 		foreach($temp as $t){
@@ -95,9 +95,9 @@ class OverShortSafecountPage extends FanniePage {
 		
 			if ($amt == '') continue;
 
-			$controller->denomination($denom);
-			$controller->amt($amt);
-			$controller->save();
+			$model->denomination($denom);
+			$model->amt($amt);
+			$model->save();
 		}
 	}
 
@@ -127,9 +127,9 @@ class OverShortSafecountPage extends FanniePage {
 			}
 		}
 
-		$controller = new DailyDepositController($dbc);
-		$controller->dateStr($dateStr);
-		foreach($controller->find() as $obj){
+		$model = new DailyDepositModel($dbc);
+		$model->dateStr($dateStr);
+		foreach($model->find() as $obj){
 			if ($obj->rowName() == 'buyAmount')
 				continue;
 		

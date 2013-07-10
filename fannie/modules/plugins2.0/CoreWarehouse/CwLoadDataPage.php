@@ -35,12 +35,12 @@ class CwLoadDataPage extends FanniePage {
 		global $FANNIE_PLUGIN_SETTINGS, $FANNIE_ARCHIVE_DB;
 		$month = FormLib::get_form_value('month', False);
 		$year = FormLib::get_form_value('year', False);
-		$controller = FormLib::get_form_value('controller', False);
+		$model = FormLib::get_form_value('model', False);
 
-		if ($month && $year && $controller){
-			$class = $controller.'Controller';
+		if ($month && $year && $model){
+			$class = $model.'Model';
 			if (!class_exists($class))
-				include_once('controllers/'.$class.'.php');
+				include_once('models/'.$class.'.php');
 			$con = FannieDB::get($FANNIE_PLUGIN_SETTINGS['WarehouseDatabase']);
 			$obj = new $class($con);
 			$obj->reload($FANNIE_ARCHIVE_DB, $month, $year);
@@ -48,13 +48,13 @@ class CwLoadDataPage extends FanniePage {
 		return True;
 	}
 
-	public function get_controllers(){
-		$dh = opendir(dirname(__FILE__).'/controllers');
+	public function get_models(){
+		$dh = opendir(dirname(__FILE__).'/models');
 		$ret = array();
 		while(($file=readdir($dh)) !== False){
 			if ($file[0] == '.') continue;
-			if (substr($file,-14) != 'Controller.php') continue;
-			if ($file == 'CoreWarehouseController.php') continue;
+			if (substr($file,-9) != 'Model.php') continue;
+			if ($file == 'CoreWarehouseModel.php') continue;
 			$ret[] = substr($file,0,strlen($file)-4);
 		}
 		sort($ret);
@@ -66,9 +66,9 @@ class CwLoadDataPage extends FanniePage {
 		?>
 		<form action="CwLoadDataPage.php" method="post">
 		<p>
-		<b>Table</b>: <select name="controller">
+		<b>Table</b>: <select name="model">
 		<?php 
-		foreach($this->get_controllers() as $file){
+		foreach($this->get_modles() as $file){
 			printf('<option>%s</option>',
 				substr($file,0,strlen($file)-10));
 		}
@@ -101,7 +101,7 @@ if (basename(__FILE__) == basename($_SERVER['PHP_SELF'])){
 	}
 	else {
 		function print_cli_help(){
-			echo "Usage: php CwReloadDataPage.php [-a || -c <controller file>]\n";
+			echo "Usage: php CwReloadDataPage.php [-a || -m <model file>]\n";
 			echo "\t[ -d <year-month-day] || [-s <start month> <start year> [-e <end month> <end year>]]\n";
 			echo "Specify a single date or a range of months.\n";
 		}
@@ -110,7 +110,7 @@ if (basename(__FILE__) == basename($_SERVER['PHP_SELF'])){
 		$day = array();
 		$file = False;
 		$all = False;
-		$controllers = $obj->get_controllers();
+		$models = $obj->get_models();
 		for ($i=1;$i<count($argv);$i++){
 			switch($argv[$i]){
 			case '-s':
@@ -163,8 +163,8 @@ if (basename(__FILE__) == basename($_SERVER['PHP_SELF'])){
 					exit;	
 				}
 				break;
-			case '-c':
-			case '--controller-file':
+			case '-m':
+			case '--model-file':
 				if (!isset($argv[$i+1])){
 					print_cli_help();
 					echo "No file given\n";
@@ -212,7 +212,7 @@ if (basename(__FILE__) == basename($_SERVER['PHP_SELF'])){
 
 		if (!$all && !$file){
 			print_cli_help();
-			echo "Must specify controller file or use option -a for 'all'\n";
+			echo "Must specify model file or use option -a for 'all'\n";
 			exit;
 		}
 		if (empty($start) && empty($date)){
@@ -224,18 +224,18 @@ if (basename(__FILE__) == basename($_SERVER['PHP_SELF'])){
 			$end = array(date('n'),date('Y'));
 		}
 
-		if (!class_exists('CoreWarehouseController'))
-			include_once(dirname(__FILE__).'/controllers/CoreWarehouseController.php');
+		if (!class_exists('CoreWarehouseModel'))
+			include_once(dirname(__FILE__).'/models/CoreWarehouseModel.php');
 
 		if ($file){
-			$controllers = array(substr($file,0,strlen($file)-4));
+			$models = array(substr($file,0,strlen($file)-4));
 		}
 
 		$con = FannieDB::get($FANNIE_PLUGIN_SETTINGS['WarehouseDatabase']);
-		foreach($controllers as $class){
+		foreach($models as $class){
 			echo "Reloading data for $class\n";
 			if (!class_exists($class))
-				include(dirname(__FILE__).'/controllers/'.$class.'.php');
+				include(dirname(__FILE__).'/models/'.$class.'.php');
 			$obj = new $class($con);
 			if (empty($date))
 				$obj->reload($FANNIE_ARCHIVE_DB, $start[0], $start[1], $end[0], $end[1]);

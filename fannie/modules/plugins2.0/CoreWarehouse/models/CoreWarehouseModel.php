@@ -25,7 +25,7 @@ global $FANNIE_ROOT;
 if (!class_exists('FannieAPI'))
 	include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
-class CoreWarehouseController extends BasicController {
+class CoreWarehouseModel extends BasicModel {
 
 	/**
 	  Reload transaction data for the table

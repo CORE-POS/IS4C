@@ -21,14 +21,14 @@
 
 *********************************************************************************/
 
-class DailyNotesController extends BasicController {
+class OverShortsLogModel extends BasicModel {
 
-	protected $name = 'dailyNotes';
+	protected $name = 'overshortsLog';
 
 	protected $columns = array(
 	'date' => array('type'=>'VARCHAR(10)','primary_key'=>True),
-	'emp_no' => array('type'=>'SMALLINT','primary_key'=>True),
-	'note' => array('type'=>'TEXT')
+	'username' => array('type'=>'VARCHAR(25)'),
+	'resolved' => array('type'=>'TINYINT','default'=>0)
 	);
 
 	/* START ACCESSOR FUNCTIONS */
@@ -46,29 +46,29 @@ class DailyNotesController extends BasicController {
 		}
 	}
 
-	public function emp_no(){
+	public function username(){
 		if(func_num_args() == 0){
-			if(isset($this->instance["emp_no"]))
-				return $this->instance["emp_no"];
-			elseif(isset($this->columns["emp_no"]["default"]))
-				return $this->columns["emp_no"]["default"];
+			if(isset($this->instance["username"]))
+				return $this->instance["username"];
+			elseif(isset($this->columns["username"]["default"]))
+				return $this->columns["username"]["default"];
 			else return null;
 		}
 		else{
-			$this->instance["emp_no"] = func_get_arg(0);
+			$this->instance["username"] = func_get_arg(0);
 		}
 	}
 
-	public function note(){
+	public function resolved(){
 		if(func_num_args() == 0){
-			if(isset($this->instance["note"]))
-				return $this->instance["note"];
-			elseif(isset($this->columns["note"]["default"]))
-				return $this->columns["note"]["default"];
+			if(isset($this->instance["resolved"]))
+				return $this->instance["resolved"];
+			elseif(isset($this->columns["resolved"]["default"]))
+				return $this->columns["resolved"]["default"];
 			else return null;
 		}
 		else{
-			$this->instance["note"] = func_get_arg(0);
+			$this->instance["resolved"] = func_get_arg(0);
 		}
 	}
 	/* END ACCESSOR FUNCTIONS */
