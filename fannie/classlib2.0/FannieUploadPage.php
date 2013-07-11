@@ -204,6 +204,33 @@ class FannieUploadPage extends FanniePage {
 		$path_parts = pathinfo($_FILES[$this->upload_field_name]['name']);
 		$extension = strtolower($path_parts['extension']);
 		$zip = False;
+		if ($_FILES[$this->upload_field_name]['error'] != UPLOAD_ERR_OK){
+			$msg = '';
+			switch($_FILES[$this->upload_field_name]['error']){
+			case UPLOAD_ERR_INI_SIZE:
+			case UPLOAD_ERR_FORM_SIZE:
+				$msg = 'File is too big. Try zipping it.';
+				break;
+			case UPLOAD_ERR_PARTIAL:
+				$msg = 'Upload did not complete.';
+				break;
+			case UPLOAD_ERR_NO_FILE:
+				$msg = 'No file was uploaded.';
+				break;
+			case UPLOAD_ERR_NO_TMP_DIR:
+				$msg = 'No place to put the file.';
+				break;
+			case UPLOAD_ERR_CANT_WRITE:
+				$msg = 'Permission problem saving file.';
+				break;
+			default:
+				$msg = 'Unknown problem uploading the file.';
+				break;
+			}
+			if (file_exists($tmpfile)) unlink($tmpfile);
+			$this->error_details = $msg;
+			return False;
+		}
 
 		/* validate file by extension */
 		if ($extension == 'zip'){
