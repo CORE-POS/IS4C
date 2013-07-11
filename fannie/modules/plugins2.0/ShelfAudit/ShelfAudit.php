@@ -26,7 +26,7 @@ if (!class_exists('FannieAPI'))
 
 /**
 */
-class ShelfAuditPlugin extends FanniePlugin {
+class ShelfAudit extends FanniePlugin {
 
 	/**
 	  Desired settings. These are automatically exposed

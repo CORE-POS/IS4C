@@ -58,10 +58,10 @@ class MemDates extends MemberModule {
 	function SaveFormData($memNum){
 		global $FANNIE_ROOT;
 		$dbc = $this->db();
-		if (!class_exists("MemDatesController"))
-			include($FANNIE_ROOT.'classlib2.0/data/controllers/MemDatesController.php');
+		if (!class_exists("MemDatesModel"))
+			include($FANNIE_ROOT.'classlib2.0/data/models/MemDatesModel.php');
 		
-		$test = MemDatesController::update($memNum,
+		$test = MemDatesModel::update($memNum,
 				FormLib::get_form_value('MemDates_start'),
 				FormLib::get_form_value('MemDates_end')
 		);

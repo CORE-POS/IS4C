@@ -23,7 +23,7 @@
 
 include_once(dirname(__FILE__).'/../../classlib2.0/item/ItemModule.php');
 include_once(dirname(__FILE__).'/../../classlib2.0/lib/FormLib.php');
-include_once(dirname(__FILE__).'/../../classlib2.0/data/controllers/ProductsController.php');
+include_once(dirname(__FILE__).'/../../classlib2.0/data/models/ProductsModel.php');
 
 class ItemFlagsModule extends ItemModule {
 
@@ -76,7 +76,7 @@ class ItemFlagsModule extends ItemModule {
 			if ($f != (int)$f) continue;
 			$numflag = $numflag | (1 << ($f-1));
 		}
-		return ProductsController::update($upc,array('numflag'=>$numflag),True);
+		return ProductsModel::update($upc,array('numflag'=>$numflag),True);
 	}
 }
 

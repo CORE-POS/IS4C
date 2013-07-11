@@ -1,13 +1,48 @@
 <?php
 
-function check_writeable($filename){
-	$basename = basename($filename);
-	if (!file_exists($filename))
-			echo "<span style=\"color:red;\"><b>Warning</b>: $basename does not exist</span><br />";
-	elseif (is_writable($filename))
-			echo "<span style=\"color:green;\">$basename is writeable</span><br />";
+function whoami(){
+	if (function_exists('posix_getpwuid')){
+		$chk = posix_getpwuid(posix_getuid());
+		return $chk['name'];
+	}
 	else
-			echo "<span style=\"color:red;\"><b>Warning</b>: $basename is not writeable</span><br />";
+		return get_current_user();
+}
+
+function check_writeable($filename, $optional=False, $template=False){
+	$basename = basename($filename);
+	$failure = ($optional) ? 'blue' : 'red';
+	$status = ($optional) ? 'Optional' : 'Warning';
+
+	if (!file_exists($filename) && !$optional && is_writable($filename)){
+		$fp = fopen($filename,'w');
+		if ($template !== False){
+			switch($template){
+			case 'PHP':
+				fwrite($fp,"<?php\n");
+				fwrite($fp,"?>\n");
+				break;
+			}
+		}
+		fclose($fp);
+	}
+
+	if (!file_exists($filename)){
+		echo "<span style=\"color:$failure;\"><b>$status</b>: $basename does not exist</span><br />";
+		if (!$optional){
+			echo "<b>Advice</b>: <div style=\"font-face:mono;background:#ccc;padding:8px;\">
+				touch \"".realpath(dirname($filename))."/".basename($filename)."\"<br />
+				chown ".whoami()." \"".realpath(dirname($filename))."/".basename($filename)."\"</div>";
+		}
+	}
+	elseif (is_writable($filename))
+		echo "<span style=\"color:green;\">$basename is writeable</span><br />";
+	else {
+		echo "<span style=\"color:red;\"><b>Warning</b>: $basename is not writeable</span><br />";
+		echo "<b>Advice</b>: <div style=\"font-face:mono;background:#ccc;padding:8px;\">
+			chown ".whoami()." \"".realpath(dirname($filename))."/".basename($filename)."\"<br />
+			chmod 600 \"".realpath(dirname($filename))."/".basename($filename)."\"</div>";
+	}
 }
 
 function confsave($key,$value,$prefer_local=False){

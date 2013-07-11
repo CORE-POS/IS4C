@@ -96,10 +96,10 @@ class ContactInfo extends MemberModule {
 	function SaveFormData($memNum){
 		global $FANNIE_ROOT;
 		$dbc = $this->db();
-		if (!class_exists("MeminfoController"))
-			include($FANNIE_ROOT.'classlib2.0/data/controllers/MeminfoController.php');
-		if (!class_exists("CustdataController"))
-			include($FANNIE_ROOT.'classlib2.0/data/controllers/CustdataController.php');
+		if (!class_exists("MeminfoModel"))
+			include($FANNIE_ROOT.'classlib2.0/data/models/MeminfoModel.php');
+		if (!class_exists("CustdataModel"))
+			include($FANNIE_ROOT.'classlib2.0/data/models/CustdataModel.php');
 
 		$MI_FIELDS = array(
 			'street' => FormLib::get_form_value('ContactInfo_addr1',''),
@@ -141,14 +141,14 @@ class ContactInfo extends MemberModule {
 		}
 		if (FormLib::get_form_value('ContactInfo_addr2','') !== '')
 			$MI_FIELDS['street'] .= "\n".FormLib::get_form_value('ContactInfo_addr2');
-		$test1 = MeminfoController::update($memNum, $MI_FIELDS);
+		$test1 = MeminfoModel::update($memNum, $MI_FIELDS);
 
 		$CUST_FIELDS = array(
 			'personNum' => array(1),
 			'FirstName' => array(FormLib::get_form_value('ContactInfo_fn')),
 			'LastName' => array(FormLib::get_form_value('ContactInfo_ln'))
 		);
-		$test2 = CustdataController::update($memNum, $CUST_FIELDS);
+		$test2 = CustdataModel::update($memNum, $CUST_FIELDS);
 
 		if ($test1 === False || $test2 === False)
 			return "Error: problem saving Contact Information<br />";

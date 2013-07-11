@@ -3,7 +3,7 @@
 
     Copyright 2013 Whole Foods Co-op
 
-    This file is part of Fannie.
+    This file is part of IT CORE.
 
     IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -21,39 +21,30 @@
 
 *********************************************************************************/
 
-/**
-  @class MemberCardsController
+include('../../../config.php');
+include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
-*/
+class OverShortIndexPage extends FanniePage {
 
-if (!class_exists('FannieDB'))
-	include(dirname(__FILE__).'/../FannieDB.php');
+	protected $header = 'Over Short Tools';
+	protected $title = 'Over Short Tools';
+	protected $auth_classes = array('overshorts');
 
-class MemberCardsController {
-	
-	/**
-	  Update memberCards record for an account
-	  @param $card_no the member number
-	  @param $upc the barcode
-	*/
-	public static function update($card_no,$upc){
-		global $FANNIE_OP_DB;
-		$dbc = FannieDB::get($FANNIE_OP_DB);
-	
-		$delP = $dbc->prepare_statement("DELETE FROM memberCards WHERE card_no=?");
-		$delR = $dbc->exec_statement($delP,array($card_no));
-
-		/** don't create entry w/o UPC */
-		if ($upc != ''){
-			$upc = str_pad($upc,13,'0',STR_PAD_LEFT);
-			$insP = $dbc->prepare_statement("INSERT INTO memberCards (card_no, upc)
-					VALUES (?, ?)");
-			$insR = $dbc->exec_statement($insP,array($card_no,$upc));
-			return $insR;
-		}
-		else return $delR;
+	function body_content(){
+		ob_start();
+		?>
+		<ul>
+		<li><a href="OverShortCashierPage.php">Single Cashier O/S</a></li>
+		<li><a href="OverShortDayPage.php">Whole Day O/S</a></li> 
+		<li><a href="OverShortSafecountPage.php">Safe Count</a></li> 
+		<li><a href="OverShortDepositSlips.php">Deposit Slips</a></li> 
+		</ul>
+		<?php
+		return ob_get_clean();
 	}
-
 }
 
-?>
+if (basename(__FILE__) == basename($_SERVER['PHP_SELF'])){
+	$obj = new OverShortIndexPage();
+	$obj->draw_page();
+}

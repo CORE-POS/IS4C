@@ -23,10 +23,10 @@
 
 if (!class_exists('FannieDB'))
 	include(dirname(__FILE__).'/../FannieDB.php');
-if (!class_exists('ProdUpdateController'))
-	include(dirname(__FILE__).'/ProdUpdateController.php');
+if (!class_exists('ProdUpdateModel'))
+	include(dirname(__FILE__).'/ProdUpdateModel.php');
 
-class ProductsController {
+class ProductsModel {
 
 	/**
 	  Update product record for a upc
@@ -111,7 +111,7 @@ class ProductsController {
 			$updateP = $dbc->prepare_statement($updateQ);
 			$updateR = $dbc->exec_statement($updateP,$updateArgs);
 			if ($updateR === False) return False;
-			ProdUpdateController::add($upc, $fields);
+			ProdUpdateModel::add($upc, $fields);
 		}
 
 		return True;
@@ -134,7 +134,7 @@ class ProductsController {
 		$delP = $dbc->prepare_statement('DELETE FROM products WHERE upc=?');
 		$delR = $dbc->exec_statement($delP,array($upc));
 		if ($delR === False) return False;
-		ProdUpdateController::add($upc,array('description'=>'_DELETED'));
+		ProdUpdateModel::add($upc,array('description'=>'_DELETED'));
 		return True;	
 	}
 
@@ -260,7 +260,7 @@ class ProductsController {
 		$insR = $dbc->exec_statement($insP, $args);
 		if ($insR === False) return False;
 
-		ProdUpdateController::add($upc, $fields);
+		ProdUpdateModel::add($upc, $fields);
 		return True;
 	}
 }

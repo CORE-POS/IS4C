@@ -185,7 +185,7 @@ class NewMemberTool extends FanniePage {
 
 			$args[0] = $i;
 			$dbc->exec_statement($insP,$args);
-			MeminfoController::update($i, array());
+			MeminfoModel::update($i, array());
 			$dbc->exec_statement($mdP, array($i));
 			$dbc->exec_statement($mcP, array($i));
 		}

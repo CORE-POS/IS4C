@@ -26,7 +26,8 @@ ini_set('display_errors','1');
 
 include(realpath(dirname(__FILE__).'/../lib/AutoLoader.php'));
 AutoLoader::LoadMap();
-include(realpath(dirname(__FILE__).'/../ini.php'));
+if(file_exists((dirname(__FILE__).'/../ini.php')))
+	include(realpath(dirname(__FILE__).'/../ini.php'));
 include('util.php');
 ?>
 <html>
@@ -46,17 +47,11 @@ body {
 
 <form action=index.php method=post>
 
-<div class="alert"><?php check_writeable('../ini.php'); ?></div>
-<div class="alert"><?php check_writeable('../ini-local.php'); ?></div>
+<div class="alert"><?php check_writeable('../ini.php', False, 'PHP'); ?></div>
+<div class="alert"><?php check_writeable('../ini-local.php', True, 'PHP'); ?></div>
 
+PHP is running as: <?php echo whoami(); ?><br />
 <?php
-if (function_exists('posix_getpwuid')){
-	$chk = posix_getpwuid(posix_getuid());
-	echo "PHP is running as: ".$chk['name']."<br />";
-}
-else
-	echo "PHP is (probably) running as: ".get_current_user()."<br />";
-
 if (!function_exists("socket_create")){
 	echo '<b>Warning</b>: PHP socket extension is not enabled. NewMagellan will not work quite right';
 }
@@ -418,7 +413,7 @@ function create_op_dbs($db,$type){
 	create_if_needed($db, $type, $name, 'custPreferences', 'op', $errors);
 
 	$cardsViewQ = "CREATE VIEW memberCardsView AS 
-		SELECT CONCAT(" . $CORE_LOCAL->get('memberUpcPrefix') . ",c.CardNo) as upc, c.CardNo as card_no FROM custdata c";
+		SELECT CONCAT('" . $CORE_LOCAL->get('memberUpcPrefix') . "',c.CardNo) as upc, c.CardNo as card_no FROM custdata c";
 	if (!$db->table_exists('memberCardsView',$name)){
 		db_structure_modify($db,'memberCardsView',$cardsViewQ,$errors);
 	}

@@ -24,7 +24,7 @@
 include_once(dirname(__FILE__).'/../../config.php');
 include_once(dirname(__FILE__).'/../../classlib2.0/item/ItemModule.php');
 include_once(dirname(__FILE__).'/../../classlib2.0/lib/FormLib.php');
-include_once(dirname(__FILE__).'/../../classlib2.0/data/controllers/ProductsController.php');
+include_once(dirname(__FILE__).'/../../classlib2.0/data/models/ProductsModel.php');
 include_once(dirname(__FILE__).'/../../src/JsonLib.php');
 
 class LikeCodeModule extends ItemModule {
@@ -98,7 +98,7 @@ class LikeCodeModule extends ItemModule {
 		$upcP = $dbc->prepare_statement('SELECT upc FROM upcLike WHERE likeCode=? AND upc<>?');
 		$upcR = $dbc->exec_statement($upcP,array($lc,$upc));
 		while($upcW = $dbc->fetch_row($upcR)){
-			ProductsController::update($upcW['upc'],$values);
+			ProductsModel::update($upcW['upc'],$values);
 			updateProductAllLanes($upcW['upc']);
 		}
 		return True;
