@@ -68,7 +68,7 @@ class DTransactionsModel extends BasicModel {
 	  Overriden to check multiple tables that should
 	  all have identical or similar structure
 	*/
-	public function normalize($db_name, $preview_only){
+	public function normalize($db_name, $preview_only=True){
 		global $FANNIE_ARCHIVE_DB, $FANNIE_ARCHIVE_METHOD;
 		$trans_adds = 0;
 		$log_adds = 0;
