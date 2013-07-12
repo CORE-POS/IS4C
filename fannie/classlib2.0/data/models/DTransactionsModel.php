@@ -203,6 +203,73 @@ class DTransactionsModel extends BasicModel {
 			$this->connection->query($sql);
 	}
 
+	static public function select_dlog($start, $end=False){
+		return self::select_struct(True, $start, $end);
+	}
+
+	static public function select_dtrans($start, $end=False){
+		return self::select_struct(False, $start, $end);
+	}
+
+	static private function select_struct($dlog, $start, $end=False){
+		global $FANNIE_TRANS_DB, $FANNIE_ARCHIVE_DB, $FANNIE_SERVER_DBMS, $FANNIE_ARCHIVE_METHOD;
+		$sep = ($FANNIE_SERVER_DBMS=='MSSQL')?'.dbo.':'.';
+
+		if ($end === False) $end = $start;
+		$start_ts = strtotime($start);
+		$end_ts = strtotime($end);
+	
+		// today. return dlog/dtrans
+		if (date('Y-m-d',$start_ts) == date('Y-m-d'))
+			return ($dlog) ? $FANNIE_TRANS_DB.$sep.'dlog' : $FANNIE_TRANS_DB.$sep.'dtransactions';
+
+		$days_ago_15 = mktime(0,0,0,date('n'),date('j')-15);	
+		$days_ago_90 = mktime(0,0,0,date('n'),date('j')-90);
+
+		// both in past 15 days => dlog_15. No dtrans equivalent
+		if ($start_ts > $days_ago_15 && $end_ts > $days_ago_15 && $dlog){
+			return $FANNIE_TRANS_DB.$sep.'dlog_15';
+		}
+
+		// same month 
+		if (date('Y',$start_ts) == date('Y',$end_ts) && date('n',$start_ts) == date('n',$end_ts)){
+			if ($FANNIE_ARCHIVE_METHOD == 'partitions')
+				return ($dlog) ? $FANNIE_ARCHIVE_DB.$sep.'dlogBig' : $FANNIE_ARCHIVE_DB.$sep.'bigArchive';
+			else {
+				$yyyymm = date('Ym',$start_ts);
+				return ($dlog) ? $FANNIE_ARCHIVE_DB.$sep.'dlog'.$yyyymm : $FANNIE_ARCHIVE_DB.$sep.'transArchive'.$yyyymm;
+			}
+		}
+
+		// both in past 90 days => dlog_90_view/transarchive
+		if ($start_ts > $days_ago_90 && $end_ts > $days_ago_90){
+			return ($dlog) ? $FANNIE_TRANS_DB.$sep.'dlog_90_view' : $FANNIE_TRANS_DB.$sep.'transarchive';
+		}
+
+		//
+		// All further options are in the archive tables
+		//
+		
+		// partitions are simple
+		if ($FANNIE_ARCHIVE_METHOD == 'partitions')
+			return ($dlog) ? $FANNIE_ARCHIVE_DB.$sep.'dlogBig' : $FANNIE_ARCHIVE_DB.$sep.'bigArchive';
+
+		// monthly archives. build a union containing both dates.	
+		$endstamp = mktime(0,0,0,date('n',$end_ts),1,date('Y',$end_ts));
+		$startstamp = mktime(0,0,0,date('n',$start_ts),1,date('Y',$end_ts));
+		$union = '(select * from ';		
+		while($startstamp <= $endstamp){
+			$union .= $FANNIE_ARCHIVE_DB.$sep;
+			$union .= ($dlog) ? 'dlog' : 'transArchive';
+			$union .= date('Ym',$startstamp);
+			$union .= ' union all select * from ';
+			$startstamp = mktime(0,0,0,date('n',$startstamp)+1,1,date('Y',$startstamp));
+		}
+		$union = preg_replace('/ union all select \* from $/','',$union);
+		$union .= ')';
+		return $union;
+	}
+
 	/* START ACCESSOR FUNCTIONS */
 
 	public function datetime(){
