@@ -145,6 +145,7 @@ static public function addItem($strupc, $strdescription, $strtransType, $strtran
 	$strCardNo = $CORE_LOCAL->get("memberID");
 	$memType = $CORE_LOCAL->get("memType");
 	$staff = $CORE_LOCAL->get("isStaff");
+	$percentDiscount = $CORE_LOCAL->get("percentDiscount");
 
 	$db = Database::tDataConnect();
 
@@ -193,6 +194,7 @@ static public function addItem($strupc, $strdescription, $strtransType, $strtran
 		'voided'	=> MiscLib::nullwrap($intvoided),
 		'memType'	=> MiscLib::nullwrap($memType),
 		'staff'		=> MiscLib::nullwrap($staff),
+		'percentDiscount'=> MiscLib::nullwrap($percentDiscount),
 		'numflag'	=> MiscLib::nullwrap($numflag),
 		'charflag'	=> $charflag,
 		'card_no'	=> (string)$strCardNo
