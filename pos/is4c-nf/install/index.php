@@ -318,17 +318,17 @@ $sql = db_test_connect($CORE_LOCAL->get('mServer'),
 		$CORE_LOCAL->get('mPass'));
 if ($sql === False){
 	echo "<span class='fail'>Failed</span>";
-	echo '<div class="db_hints" style="margin-left:25px;">';
+	echo '<div class="db_hints" style="margin-left:25px;width:350px;">';
 	if (!function_exists('socket_create')){
 		echo '<i>Try enabling PHP\'s socket extension in php.ini for better diagnostics</i>';
 	}
-	elseif (@MiscLib::pingport($CORE_LOCAL->get('localhost'),$CORE_LOCAL->get('DBMS'))){
-		echo '<i>Database found at '.$CORE_LOCAL->get('localhost').'. Verify username and password
+	elseif (@MiscLib::pingport($CORE_LOCAL->get('mServer'),$CORE_LOCAL->get('DBMS'))){
+		echo '<i>Database found at '.$CORE_LOCAL->get('mServer').'. Verify username and password
 			and/or database account permissions.</i>';
 	}
 	else {
 		echo '<i>Database does not appear to be listening for connections on '
-			.$CORE_LOCAL->get('localhost').'. Verify host is correct, database is running and
+			.$CORE_LOCAL->get('mServer').'. Verify host is correct, database is running and
 			firewall is allowing connections.</i>';
 	}
 	echo '</div>';
