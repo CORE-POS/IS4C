@@ -378,7 +378,7 @@ if($gotDBs == 2){
 	while($row=$sql->fetch_row($ratesR))
 		$rates[] = array($row[0],$row[1],$row[2]);
 }
-echo "<table><tr><th>ID</th><th>Rate (%)</th><th>Description</th></tr>";
+echo "<table><tr><th>ID</th><th>Rate</th><th>Description</th></tr>";
 foreach($rates as $rate){
 	printf("<tr><td>%d</td><td><input type=text name=TAX_RATE[] value=\"%f\" /></td>
 		<td><input type=text name=TAX_DESC[] value=\"%s\" /></td></tr>",
