@@ -161,6 +161,12 @@ static public function getsubtotals() {
 		if ($CORE_LOCAL->get("SSI") != 0 && ($CORE_LOCAL->get("isStaff") == 3 || $CORE_LOCAL->get("isStaff") == 6)) PrehLib::wmdiscount();
 	}
 
+	$handler_class = $CORE_LOCAL->get('DiscountModule');
+	if ($handler_class === '') $handler_class = 'DiscountModule';
+	elseif (!class_exists($handler_class)) $handler_class = 'DiscountModule';
+	$module = new $handler_class();
+	$CORE_LOCAL->set('transDiscount', $module->calculate() );
+
 	/* BETA 10Jun2013
 	   Calculate taxes & exemptions separately from
 	   the subtotals view.

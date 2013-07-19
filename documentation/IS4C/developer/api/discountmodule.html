@@ -1,0 +1,50 @@
+<html>
+<head>
+	<title>DiscountModule</title>
+</head>
+<body>
+<div style="text-align:center;">
+<h1>DiscountModule</h1>
+<!--
+19Jul13 AT Doc first written
+-->
+<br />as of: July 13, 2013
+</div>
+<p>
+DiscountModules calculate transaction-level discounts. The default
+behavior is to multiply items with discountable=1 by the percentage
+in custdata's Discount column. Subclasses may provide an entirely
+different calculation if necessary.
+</p>
+<blockquote>
+double <b>calculate</b>()<br />
+</blockquote>
+<p>
+The return value should be the current discount based on the
+transaction's state. This value is normally positive.
+</p>
+<p>
+<b>Example</b>: give members an extra 5% discount on 
+Wednesdays
+<pre>
+class WednesdayDiscount extends DiscountModule {
+	function calculate(){
+		global $CORE_LOCAL;
+		// Not a Wednesday or not a member
+		if (date('w') != 3 || $CORE_LOCAL->get('isMember') != 1)
+			return parent::calculate();
+
+		// get regular member discount
+		$custdataDiscount = $CORE_LOCAL->get('percentDiscount');
+		// get discountable total
+		$discountable = $CORE_LOCAL->get('discountableTotal');
+	
+		// increase discount by 5%
+		$discount = $discountable * ( ($custdataDiscount + 5.0) / 100.00 );
+		return MiscLib::truncate2($discount);
+	}
+}
+</pre>
+</p>
+</body>
+</html>
