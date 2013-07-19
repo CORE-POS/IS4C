@@ -135,11 +135,24 @@ function confsave($key,$value,$prefer_local=False){
 }
 
 function load_sample_data($sql, $table){
-	$fp = fopen("data/$table.sql","r");
-	while($line = fgets($fp)){
-		$sql->query("INSERT INTO $table VALUES $line");
+	if (file_exists("data/$table.sql")){
+		$fp = fopen("data/$table.sql","r");
+		while($line = fgets($fp)){
+			$sql->query("INSERT INTO $table VALUES $line");
+		}
+		fclose($fp);
 	}
-	fclose($fp);
+	else if (file_exists("data/$table.csv")){
+		$path = realpath("data/$table.csv");
+		$prep = $sql->prepare_statement("LOAD DATA LOCAL INFILE
+			'$path'
+			INTO TABLE $table
+			FIELDS TERMINATED BY ','
+			ESCAPED BY '\\\\'
+			OPTIONALLY ENCLOSED BY '\"'
+			LINES TERMINATED BY '\\r\\n'");
+		$sql->exec_statement($prep);
+	}
 }
 
 function db_test_connect($host,$type,$db,$user,$pw){
