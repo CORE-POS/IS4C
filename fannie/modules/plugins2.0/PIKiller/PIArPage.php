@@ -27,17 +27,15 @@ if (!class_exists('FannieAPI'))
 
 class PIArPage extends PIKillerPage {
 
-	protected function get_handler(){
+	protected function get_id_handler(){
 		global $FANNIE_TRANS_DB;
 		$this->card_no = $this->id;
-		if ($this->card_no === False)
-			return $this->unknown_request_handler();
 
 		$this->title = 'AR History : Member '.$this->card_no;
 
-		$this->models['ar'] = $this->get_model(FannieDB::get($FANNIE_TRANS_DB), 'ArHistoryModel',
+		$this->__models['ar'] = $this->get_model(FannieDB::get($FANNIE_TRANS_DB), 'ArHistoryModel',
 						array('card_no'=>$this->id),'tdate');
-		$this->models['ar'] = array_reverse($this->models['ar']);
+		$this->__models['ar'] = array_reverse($this->__models['ar']);
 	
 		return True;
 	}
@@ -46,7 +44,7 @@ class PIArPage extends PIKillerPage {
 		global $FANNIE_URL;
 		echo '<table border="1" style="background-color: #ffff99;">';
 		echo '<tr align="left"></tr>';
-		foreach($this->models['ar'] as $transaction){
+		foreach($this->__models['ar'] as $transaction){
 			$stamp = strtotime($transaction->tdate());
 			if ($transaction->Payments() != 0){
 				printf('<tr>

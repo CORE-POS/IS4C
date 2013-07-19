@@ -27,15 +27,13 @@ if (!class_exists('FannieAPI'))
 
 class PIPatronagePage extends PIKillerPage {
 
-	protected function get_handler(){
+	protected function get_id_handler(){
 		global $FANNIE_OP_DB;
 		$this->card_no = $this->id;
-		if ($this->card_no === False)
-			return $this->unknown_request_handler();
 
 		$this->title = 'Patronage : Member '.$this->card_no;
 
-		$this->models['patronage'] = $this->get_model(FannieDB::get($FANNIE_OP_DB),
+		$this->__models['patronage'] = $this->get_model(FannieDB::get($FANNIE_OP_DB),
 						'PatronageModel',
 						array('cardno'=>$this->id),
 						'FY');
@@ -52,7 +50,7 @@ class PIPatronagePage extends PIKillerPage {
 		echo '<tr><th>FY</th><th>Purchases</th><th>Discounts</th><th>Rewards</th>
 			<th>Net Purchases</th><th>Total Patronage</th>
 			<th>Cash Portion</th><th>Equity Portion</th></tr>';
-		foreach($this->models['patronage'] as $obj){
+		foreach($this->__models['patronage'] as $obj){
 			printf('<tr>
 				<td>%d</th>
 				<td>%.2f</td>

@@ -27,26 +27,24 @@ if (!class_exists('FannieAPI'))
 
 class PIPurchasesPage extends PIKillerPage {
 
-	protected function get_handler(){
+	protected function get_id_handler(){
 		$this->card_no = $this->id;
-		if ($this->card_no === False)
-			return $this->unknown_request_handler();
 
 		$my = FormLib::get_form_value('my',date('Ym'));
 		$start = date("Y-m-d",mktime(0,0,0,substr($my,4),1,substr($my,0,4)));
 		$end = date("Y-m-t",mktime(0,0,0,substr($my,4),1,substr($my,0,4)));
 		$table = DTransactionsModel::select_dlog($start,$end);
 
-		$this->models['start'] = $start;
-		$this->models['end'] = $end;
+		$this->__models['start'] = $start;
+		$this->__models['end'] = $end;
 		
 		return True;
 	}
 
 	protected function get_id_view(){
 		global $FANNIE_TRANS_DB,$FANNIE_URL;
-		$table = DTransactionsModel::select_dlog($this->models['start'],$this->models['end']);
-		$my = date('Ym',strtotime($this->models['start']));
+		$table = DTransactionsModel::select_dlog($this->__models['start'],$this->__models['end']);
+		$my = date('Ym',strtotime($this->__models['start']));
 
 		$dbc = FannieDB::get($FANNIE_TRANS_DB);
 		$query = "SELECT month(tdate),day(tdate),year(tdate),trans_num,
@@ -65,7 +63,7 @@ class PIPurchasesPage extends PIKillerPage {
 			day(tdate) DESC";
 		$prep = $dbc->prepare_statement($query);
 		$result = $dbc->exec_statement($prep, 
-			array($this->id, $this->models['start'].' 00:00:00', $this->models['end'].' 23:59:59'));
+			array($this->id, $this->__models['start'].' 00:00:00', $this->__models['end'].' 23:59:59'));
 
 		ob_start();
 		echo '<tr><td>';

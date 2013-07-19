@@ -51,9 +51,9 @@ class ReasoncodesModel extends BasicModel {
 	public function mask(){
 		if(func_num_args() == 0){
 			if(isset($this->instance["mask"]))
-				return $this->instance["mask"];
+				return (int)$this->instance["mask"];
 			elseif(isset($this->columns["mask"]["default"]))
-				return $this->columns["mask"]["default"];
+				return (int)$this->columns["mask"]["default"];
 			else return null;
 		}
 		else{

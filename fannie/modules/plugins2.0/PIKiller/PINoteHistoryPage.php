@@ -25,38 +25,31 @@ include('../../../config.php');
 if (!class_exists('FannieAPI'))
 	include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
-class PIEquityPage extends PIKillerPage {
+class PINoteHistoryPage extends PIKillerPage {
 
 	protected function get_id_handler(){
-		global $FANNIE_TRANS_DB;
+		global $FANNIE_OP_DB;
 		$this->card_no = $this->id;
 
-		$this->title = 'Equity History : Member '.$this->card_no;
+		$this->title = 'Notes History : Member '.$this->card_no;
 
-		$this->__models['equity'] = $this->get_model(FannieDB::get($FANNIE_TRANS_DB), 'StockpurchasesModel',
-						array('card_no'=>$this->id),'tdate');
-		$this->__models['equity'] = array_reverse($this->__models['equity']);
+		$this->__models['notes'] = $this->get_model(FannieDB::get($FANNIE_OP_DB), 'MemberNotesModel',
+						array('cardno'=>$this->id),'stamp');
+		$this->__models['notes'] = array_reverse($this->__models['notes']);
 	
 		return True;
 	}
 
 	protected function get_id_view(){
 		global $FANNIE_URL;
-		echo '<table border="1" style="background-color: #ffff99;">';
-		echo '<tr align="left"></tr>';
-		foreach($this->__models['equity'] as $transaction){
-			$stamp = strtotime($transaction->tdate());
-			printf('<tr>
-				<td><a href="%sadmin/LookupReceipt/RenderReceiptPage.php?date=%s&receipt=%s">%s</a></td>
-				<td>%.2f</td>
-				<td>%d</td>
-				</tr>',
-				$FANNIE_URL, date('Y-m-d',$stamp), $transaction->trans_num(), date('Y-m-d',$stamp),
-				$transaction->stockPurchase(),
-				$transaction->card_no()
-			);
+		ob_start();
+		echo '<tr><td>';
+		foreach($this->__models['notes'] as $note){
+			if(trim($note->note()) == '') continue;
+			echo '<b>'.$note->stamp().' - note added by '.$note->username().'</b><br />';
+			echo $note->note().'<br /><hr />';
 		}
-		echo '</table>';
+		echo '</td></tr>';
 		return ob_get_clean();
 	}
 }

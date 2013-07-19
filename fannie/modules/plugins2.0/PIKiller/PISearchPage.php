@@ -29,55 +29,56 @@ class PISearchPage extends PIKillerPage {
 
 	protected $title = 'Search';
 
-	private $results = False;
+	function preprocess(){
+		$this->__routes[] = 'get<id><first><last>';
+		return parent::preprocess();
+	}
 
-	function get_handler(){
+	function get_id_handler(){
+		$this->first = '';
+		$this->last = '';
+		return $this->get_id_first_last_handler();
+	}
+
+	function get_id_first_last_handler(){
 		global $FANNIE_OP_DB;
-		if ($this->id !== False){
-			$dbc = FannieDB::get($FANNIE_OP_DB);
-			$memNum = FormLib::get_form_value('id');
-			$first = FormLib::get_form_value('firstName');
-			$last = FormLib::get_form_value('lastName');
-			$this->results = array();
+		$dbc = FannieDB::get($FANNIE_OP_DB);
 
-			if (empty($memNum) && empty($last)) 
-				return True; // invalid search	
+		if (empty($this->id) && empty($this->last)) 
+			return True; // invalid search	
 			
-			if (!empty($memNum)){
-				$custdata = new CustdataModel($dbc);
-				$custdata->CardNo($memNum);
-				if (count($custdata->find()) > 0){
-					$this->card_no = $memNum;
-					header('Location: PIMemberPage.php?id='.$this->card_no);
-					return False;
-				}
-				$cards = new MemberCardsModel($dbc);
-				$cards->card_no($memNum);
-				if (count($cards->find()) > 0){
-					$w = $dbc->fetch_row($r);
-					$this->card_no = $w['card_no'];
-					header('Location: PIMemberPage.php?id='.$this->card_no);
-					return False;
-				}
+		if (!empty($this->id)){
+			$custdata = new CustdataModel($dbc);
+			$custdata->CardNo($this->id);
+			if (count($custdata->find()) > 0){
+				header('Location: PIMemberPage.php?id='.$this->id);
+				return False;
 			}
-			else {
-				$q = $dbc->prepare_statement('SELECT CardNo, LastName, FirstName FROM
-					custdata WHERE LastName LIKE ? AND FirstName LIKE ?
-					ORDER BY LastName,FirstName,CardNo');
-				$r = $dbc->exec_statement($q, array($last.'%',$first.'%'));
-				while($w = $dbc->fetch_row($r)){
-					$this->results[] = $w;
-				}
-				if (count($this->results)==1){
-					header('Location: PIMemberPage.php?id='.$this->card_no);
-					return False;
-				}
+			$cards = new MemberCardsModel($dbc);
+			$cards->upc(str_pad($this->id,13,'0',STR_PAD_LEFT));
+			foreach($cards->find() as $obj){
+				header('Location: PIMemberPage.php?id='.$obj->card_no());
+				return False;
+			}
+		}
+		else {
+			$q = $dbc->prepare_statement('SELECT CardNo, LastName, FirstName FROM
+				custdata WHERE LastName LIKE ? AND FirstName LIKE ?
+				ORDER BY LastName,FirstName,CardNo');
+			$r = $dbc->exec_statement($q, array($this->last.'%',$this->first.'%'));
+			$this->__models['custdata'] = array();
+			while($w = $dbc->fetch_row($r)){
+				$this->__models['custdata'][] = $w;
+			}
+			if (count($this->__models['custdata'])==1){
+				header('Location: PIMemberPage.php?id='.$this->id);
+				return False;
 			}
 		}
 		return True;
 	}
 
-	function get_show_view(){
+	function get_view(){
 		ob_start();
 		?>
 		<tr>
@@ -93,12 +94,12 @@ class PISearchPage extends PIKillerPage {
 		<td width="82" valign="middle"><font size="2" face="Papyrus, Verdana, Arial, Helvetica, sans-serif">Last Name</font></td>
 		<td colspan="5">
 		<font size="2" face="Papyrus, Verdana, Arial, Helvetica, sans-serif">
-		<input name="lastName" type="text" id="lastName3" size="25" maxlength="50" />
+		<input name="last" type="text" id="last" size="25" maxlength="50" />
 		</font>
 		</td>
 		<td width="75" valign="middle"><font size="2" face="Papyrus, Verdana, Arial, Helvetica, sans-serif">First
 		Name:</font></td><td>
-		<input name="firstName" type="text" id="firstName" size="20" maxlength="50" /></td>
+		<input name="first" type="text" id="first" size="20" maxlength="50" /></td>
 		<td><input type="submit" name="submit" value="submit">
 		</form></td>
 		</tr>
@@ -107,15 +108,15 @@ class PISearchPage extends PIKillerPage {
 		return ob_get_clean();
 	}
 
-	function get_id_view(){
-		if (count($this->results) == 0){
-			echo '<tr><td colspan="9"><p>No results from search</p></td></tr>';
-			return $this->get_show_view();
+	function get_id_first_last_view(){
+		if (!isset($this->__models['custdata']) || count($this->__models['custdata']) == 0){
+			return '<tr><td colspan="9"><p>No results from search</p></td></tr>'
+				.$this->get_view();
 		}
 		$ret = '<tr><td colspan="9"><p>There is more than one result</p>';
 		$ret .= '<form action="PISearchPage.php" method="get">';
 		$ret .= '<select name="id" id="memNum_s">';
-		foreach($this->results as $row){
+		foreach($this->__models['custdata'] as $row){
 			$ret .= sprintf('<option value="%d">%d %s %s</option>',
 				$row['CardNo'],$row['CardNo'],
 				$row['FirstName'],$row['LastName']);

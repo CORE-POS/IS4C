@@ -57,78 +57,119 @@
 */
 class FannieRESTfulPage extends FanniePage {
 
-	protected $method = '';
+	protected $__method = '';
 
-	protected $id = False;
-	protected $models = array();
+	protected $__models = array();
+
+	/**
+	  Define available routes
+	  Syntax is request method followed by
+	  parameter names in angle brackets
+
+	  method<one><two> should provide a controller
+	  function named method_one_two_handler(). It
+	  may optionally provide a view function
+	  named method_one_two_view().
+
+	  controller functions behave like FanniePage::preprocess
+	  and should return True or False.
+
+	  view functions behave like FanniePage::body_content
+	  and should return an HTML string
+	*/
+	protected $__routes = array(
+		'get',
+		'get<id>',
+		'post',
+		'post<id>',
+		'put',
+		'put<id>',
+		'delete',
+		'delete<id>'
+	);
+
+	protected $__route_stem = 'unknown_request';
+
+	/**
+	  Extract paramaters from route definition
+	  @param $route string route definition
+	  @return array of parameter names
+	*/
+	private function route_params($route){
+		$matches = array();
+		$try = preg_match_all('/<(.+?)>/',$route,$matches);
+		if ($try > 0) return $matches[1];
+		else return False;
+	}
+
+	/**
+	  Parse request info and determine which route to use
+	*/
+	public function read_routes(){
+		// routes begin with method
+		$this->__method = FormLib::get_form_value('_method');
+		if ($this->__method === ''){
+			$this->__method = $_SERVER['REQUEST_METHOD'];
+		}
+		$this->__method = strtolower($this->__method);
+
+		// find all matching routes
+		$try_routes = array();
+		foreach($this->__routes as $route){
+			// correct request type
+			if(substr($route,0,strlen($this->__method)) == $this->__method){
+				$params = $this->route_params($route);	
+				if ($params === False || count($params) === 0){
+					// route with no params
+					if (!isset($try_routes[0])) $try_routes[0] = array();
+					$try_routes[0][] = $route;
+				}
+				else {
+					// make sure all params provided
+					$all = True;
+					foreach($params as $p){
+						if (FormLib::get_form_value($p,False) === False){
+							$all = False;
+							break;
+						}
+					}
+					if ($all){
+						if (!isset($try_routes[count($params)]))
+							$try_routes[count($params)] = array();
+						$try_routes[count($params)][] = $route;
+					}
+				}
+			}
+		}
+		
+		// use the route with the most parameters
+		// set class variables to parameters
+		$num_params = array_keys($try_routes);
+		rsort($num_params);
+		$this->__route_stem = 'unknown_request';
+		if (count($num_params) > 0){
+			$longest = $num_params[0];
+			$best_route = array_pop($try_routes[$longest]);
+			$this->__route_stem = $this->__method;
+			if ($longest > 0){
+				foreach($this->route_params($best_route) as $param){
+					$this->$param = FormLib::get_form_value($param);
+					$this->__route_stem .= '_'.$param;
+				}
+			}
+		}
+	}
 
 	public function preprocess(){
-		$this->method = FormLib::get_form_value('_method');
-		if ($this->method === ''){
-			$this->method = $_SERVER['REQUEST_METHOD'];
-		}
-		if (FormLib::get_form_value('id',False) !== False)
-			$this->id = FormLib::get_form_value('id');
-		switch(strtolower($this->method)){
-		case 'get':
-			return $this->get_handler();
-			break;
-		case 'post':
-			return $this->post_handler();
-			break;
-		case 'put':
-			return $this->put_handler();
-			break;
-		case 'delete':
-			return $this->delete_handler();
-			break;
-		case '':
+		$this->read_routes();
+		$handler = $this->__route_stem.'_handler';
+		$view = $this->__route_stem.'_view';	
+		if (method_exists($this, $handler))
+			return $this->$handler();
+		elseif (method_exists($this, $view))
 			return True;
-			break;
-		default:
+		else
 			return $this->unknown_request_handler();
-			break;
-		}
-	}
-
-	/**
-	  Process HTTP GET request
-	  @return boolean
-	  Returning True draws the page
-	  Returning False does not
-	*/
-	protected function get_handler(){
-		return $this->unknown_request_handler();;
-	}
-
-	/**
-	  Process HTTP POST request
-	  @return boolean
-	  Returning True draws the page
-	  Returning False does not
-	*/
-	protected function post_handler(){
-		return $this->unknown_request_handler();;
-	}
-
-	/**
-	  Process HTTP PUT request
-	  @return boolean
-	  Returning True draws the page
-	  Returning False does not
-	*/
-	protected function put_handler(){
-		return $this->unknown_request_handler();;
-	}
-
-	/**
-	  Process HTTP DELETE request
-	  @return boolean
-	  Returning True draws the page
-	  Returning False does not
-	*/
-	protected function delete_handler(){
-		return $this->unknown_request_handler();;
 	}
 
 	/**
@@ -144,87 +185,11 @@ class FannieRESTfulPage extends FanniePage {
 	}
 
 	public function body_content(){
-		switch(strtolower($this->method)){
-		case 'get':
-			return ($this->id === False) ? $this->get_show_view() : $this->get_id_view();
-			break;
-		case 'post':
-			return ($this->id === False) ? $this->post_show_view() : $this->post_id_view();
-			break;
-		case 'put':
-			return ($this->id === False) ? $this->put_show_view() : $this->put_id_view();
-			break;
-		case 'delete':
-			return ($this->id === False) ? $this->delete_show_view() : $this->delete_id_view();
-			break;
-		default:
+		$func = $this->__route_stem.'_view';
+		if (!method_exists($this, $func))
 			return $this->unknown_request_view();
-			break;
-		}
-	}
-
-	/**
-	  Draw page for HTTP GET request
-	  @return HTML string
-	*/
-	protected function get_show_view(){
-		return $this->unknown_request_view();
-	}
-
-	/**
-	  Draw page for HTTP GET request
-	  @return HTML string
-	*/
-	protected function get_id_view(){
-		return $this->unknown_request_view();
-	}
-
-	/**
-	  Draw page for HTTP POST request
-	  @return HTML string
-	*/
-	protected function post_show_view(){
-		return $this->unknown_request_view();
-	}
-
-	/**
-	  Draw page for HTTP POST request
-	  @return HTML string
-	*/
-	protected function post_id_view(){
-		return $this->unknown_request_view();
-	}
-
-	/**
-	  Draw page for HTTP PUT request
-	  @return HTML string
-	*/
-	protected function put_show_view(){
-		return $this->unknown_request_view();
-	}
-
-	/**
-	  Draw page for HTTP PUT request
-	  @return HTML string
-	*/
-	protected function put_id_view(){
-		return $this->unknown_request_view();
-	}
-
-	/**
-	  Draw page for HTTP DELETE request
-	  @return HTML string
-	*/
-	protected function delete_show_view(){
-		return $this->unknown_request_view();
-	}
-
-	/**
-	  Draw page for HTTP DELETE request
-	  @return HTML string
-	*/
-	protected function delete_id_view(){
-		return $this->unknown_request_view();
+		else
+			return $this->$func();
 	}
 
 	/**

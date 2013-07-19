@@ -27,11 +27,9 @@ if (!class_exists('FannieAPI'))
 
 class PIDocumentsPage extends PIKillerPage {
 
-	protected function get_handler(){
+	protected function get_id_handler(){
 		global $FANNIE_OP_DB;
 		$this->card_no = $this->id;
-		if ($this->card_no === False)
-			return $this->unknown_request_handler();
 
 		$this->title = 'Documents : Member '.$this->card_no;
 
