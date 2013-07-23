@@ -38,13 +38,13 @@
 
   Eight methods are available for displaying the page
   and are also automatically called based on request type:
-  - get_show_view
+  - get_view
   - get_id_view
-  - post_show_view
+  - post_view
   - post_id_view
-  - put_show_view
+  - put_view
   - put_id_view
-  - delete_show_view
+  - delete_view
   - delete_id_view
   These methods behave like FanniePage::body_content; again
   there are just more options.

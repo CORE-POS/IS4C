@@ -62,6 +62,7 @@ class BasicModel {
 	  Database connection
 	*/
 	protected $connection = False;
+	public function db(){ return $this->connection; }
 
 	/**
 	  List of column names => values
@@ -199,6 +200,14 @@ class BasicModel {
 	*/
 	public function reset(){
 		$this->instance = array();
+	}
+
+	public function get_columns(){
+		return $this->columns;
+	}
+
+	public function get_name(){
+		return $this->name;
 	}
 
 	/**
@@ -376,6 +385,24 @@ class BasicModel {
 		$prep = $this->connection->prepare_statement($sql);
 		$result = $this->connection->exec_statement($prep, $all_args);
 		return $result;
+	}
+
+	protected function push_to_lanes(){
+		global $FANNIE_LANES;
+		foreach($this->unique as $column){
+			if (!isset($this->instance[$column]))
+				return False;
+		}
+		$current = $this->connection;
+		foreach($FANNIE_LANES as $lane){
+			$sql = new SQLManager($lane['host'],$lane['type'],$lane['op'],
+						$lane['user'],$lane['pw']);	
+			if (!is_object($sql) || $sql->connections[$lane['op']] === False)
+				continue;
+			$this->connection = $sql;
+			$this->update_record();
+		}
+		$this->connection = $current;
 	}
 
 	/**
