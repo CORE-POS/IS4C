@@ -38,6 +38,9 @@ class PISuspensionPage extends PIKillerPage {
 	  Route: post<id>
 	  Update suspension status for member <id> then
 	  redirect to PIMemberPage.php
+
+	  Route get<id><fixaddress>
+	  Special case clear suspension for bad address only
 	*/
 
 	function preprocess(){
@@ -52,6 +55,7 @@ class PISuspensionPage extends PIKillerPage {
 		}
 
 		$this->__routes[] = 'get<id><edit>';
+		$this->__routes[] = 'get<id><fixaddress>';
 		return parent::preprocess();
 	}
 
@@ -66,6 +70,23 @@ class PISuspensionPage extends PIKillerPage {
 		$this->__models['custdata'] = $this->get_model(FannieDB::get($FANNIE_OP_DB),'CustdataModel',
 					array('CardNo'=>$this->id,'personNum'=>1));
 		return True;
+	}
+
+	protected function get_id_fixaddress_handler(){
+		global $FANNIE_OP_DB;
+		$susp = new SuspensionsModel(FannieDB::get($FANNIE_OP_DB));
+		$susp->cardno($this->id);
+		if (!$susp->load()){
+			// not currently suspended
+			header('Location: PIMemberPage.php?id='.$this->id);
+			return False;
+		}
+		else if ($susp->reasoncode() == 16){
+			// clear suspension for bad address
+			return $this->post_id_handler();
+		}
+		else
+			return $this->unknown_request_handler();
 	}
 
 	protected function get_id_handler(){
@@ -133,7 +154,7 @@ class PISuspensionPage extends PIKillerPage {
 
 	function post_id_handler(){
 		global $FANNIE_OP_DB;
-		if (!FannieAuth::validateUserQuiet('editmembers'))
+		if (!FannieAuth::validateUserQuiet('editmembers') && !FannieAuth::validateUserQuiet('editmembers_csc'))
 			return $this->unknown_request_handler();
 		$dbc = FannieDB::get($FANNIE_OP_DB);
 
@@ -167,12 +188,20 @@ class PISuspensionPage extends PIKillerPage {
 					$this->__models['suspended']->chargelimit(),
 					$this->id));
 
+				$cust = new CustdataModel($dbc);
+				$cust->CardNo($this->id);
+				for($i=1;$i<=4;$i++){
+					$cust->personNum($i);
+					if($cust->load())
+						$cust->push_to_lanes();
+				}
+
 				$mi = new MeminfoModel($dbc);
 				$mi->card_no($this->id);
 				$mi->ads_OK($this->__models['suspended']->mailflag());
 				$mi->save();
 
-				$this->models['suspended']->delete();
+				$this->__models['suspended']->delete();
 			}
 		}
 		else if (isset($this->__models['suspended'])){
@@ -202,7 +231,7 @@ class PISuspensionPage extends PIKillerPage {
 			$mi = $this->get_model($dbc,'MeminfoModel',array('card_no'=>$this->id));
 			$cd = $this->get_model($dbc,'CustdataModel',array('CardNo'=>$this->id,'personNum'=>1));
 			
-			$susp = new SuspensionModel($dbc);
+			$susp = new SuspensionsModel($dbc);
 			$susp->cardno($this->id);
 			$susp->type( $status == 'TERM' ? 'T' : 'I' );			
 			$susp->memtype1($cd->memType());

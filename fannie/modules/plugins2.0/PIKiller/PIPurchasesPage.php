@@ -27,6 +27,8 @@ if (!class_exists('FannieAPI'))
 
 class PIPurchasesPage extends PIKillerPage {
 
+	protected $title = 'Member Purchase History';
+
 	protected function get_id_handler(){
 		$this->card_no = $this->id;
 

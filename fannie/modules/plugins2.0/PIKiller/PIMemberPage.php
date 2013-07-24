@@ -118,6 +118,7 @@ class PIMemberPage extends PIKillerPage {
 			$card = $this->get_model($dbc, 'MemberCardsModel', array('card_no'=>$this->card_no));
 			$card->upc(str_pad($upc,13,'0',STR_PAD_LEFT));
 			$card->save();
+			$card->push_to_lanes();
 		}
 
 		$meminfo = new MeminfoModel($dbc);
@@ -142,6 +143,7 @@ class PIMemberPage extends PIKillerPage {
 
 		$custdata->FirstName(FormLib::get_form_value('FirstName'));
 		$custdata->LastName(FormLib::get_form_value('LastName'));
+		$custdata->blueLine($this->card_no.' '.$custdata->LastName());
 
 		if ($this->auth_mode == 'Full'){
 			$custdata->memType(FormLib::get_form_value('memType'));
@@ -155,6 +157,7 @@ class PIMemberPage extends PIKillerPage {
 		}
 
 		$custdata->save();
+		$custdata->push_to_lanes();
 
 		$personNum=2;
 		$names = array('first'=>FormLib::get_form_value('fn'),
@@ -171,7 +174,9 @@ class PIMemberPage extends PIKillerPage {
 			$custdata->personNum($personNum);
 			$custdata->FirstName($set['first']);
 			$custdata->LastName($set['last']);
+			$custdata->blueLine($this->card_no.' '.$custdata->LastName());
 			$custdata->save();
+			$custdata->push_to_lanes();
 			$personNum++;
 		}
 
@@ -179,6 +184,7 @@ class PIMemberPage extends PIKillerPage {
 		// original form, delete the extras
 		for($i=$personNum; $i<=4; $i++){
 			$custdata->personNum($i);
+			$custdata->delete_from_lanes();
 			$custdata->delete();
 		}
 
@@ -188,7 +194,7 @@ class PIMemberPage extends PIKillerPage {
 			$noteP = $dbc->prepare_statement('INSERT INTO memberNotes
 					(cardno, note, stamp, username) VALUES
 					(?, ?, '.$dbc->now().', ?)');	
-			$noteR = $dbc->exec_statement($noteP,array($this->cardno,
+			$noteR = $dbc->exec_statement($noteP,array($this->card_no,
 					str_replace("\n",'<br />',$note),
 					$this->current_user));
 		}
@@ -220,7 +226,7 @@ class PIMemberPage extends PIKillerPage {
 
 		if (isset($this->__models['suspended'])){
 			echo "<td bgcolor='#cc66cc'>$status</td>";
-			echo "<td colspan=3>";
+			echo "<td colspan=1>";
 			if ($this->__models['suspended']->reason() != '')
 				echo $this->__models['suspended']->reason();
 			else {
@@ -231,11 +237,19 @@ class PIMemberPage extends PIKillerPage {
 					}
 				}
 			}
+			echo '</td>';
 		}
 		else {
 			echo "<td>$status</td>";
 		}
 		echo "<td colspan=2><a href=PISuspensionPage.php?id=".$this->card_no.">History</a>";
+		if ($this->auth_mode == 'Full')
+			echo '&nbsp;&nbsp;&nbsp;<a href="PISuspensionPage.php?edit=1&id='.$this->card_no.'">Change Status</a>';
+		else if ($this->auth_mode == 'Limited' && $this->__models['suspended']->reasoncode() == 16){
+			echo '&nbsp;&nbsp;&nbsp;<a href="PISuspensionPage.php?fixaddress=1&id='.$this->card_no.'"
+				onclick="return confirm(\'Address is correct?\');">Address Corrected</a>';
+		}
+		echo '</td>';
 		echo "<td><a href=\"{$FANNIE_URL}ordering/clearinghouse.php?card_no=".$this->card_no."\">Special Orders</a></td>";
 		echo "</tr>";
 
