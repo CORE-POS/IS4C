@@ -308,6 +308,8 @@ class BasicModel {
 			if (!isset($this->instance[$column]))
 				$new_record = True;
 		}
+		if (count($this->unique) == 0)
+			$new_record = True;
 
 		if (!$new_record){
 			// see if matching record exists
@@ -387,22 +389,42 @@ class BasicModel {
 		return $result;
 	}
 
-	protected function push_to_lanes(){
+	public function push_to_lanes(){
 		global $FANNIE_LANES;
-		foreach($this->unique as $column){
-			if (!isset($this->instance[$column]))
-				return False;
-		}
+		// load complete record
+		if (!$this->load()) return False;
+
 		$current = $this->connection;
+		// save to each lane
 		foreach($FANNIE_LANES as $lane){
 			$sql = new SQLManager($lane['host'],$lane['type'],$lane['op'],
 						$lane['user'],$lane['pw']);	
 			if (!is_object($sql) || $sql->connections[$lane['op']] === False)
 				continue;
 			$this->connection = $sql;
-			$this->update_record();
+			$this->save();
 		}
 		$this->connection = $current;
+		return True;
+	}
+
+	public function delete_from_lanes(){
+		global $FANNIE_LANES;
+		// load complete record
+		if (!$this->load()) return False;
+
+		$current = $this->connection;
+		// save to each lane
+		foreach($FANNIE_LANES as $lane){
+			$sql = new SQLManager($lane['host'],$lane['type'],$lane['op'],
+						$lane['user'],$lane['pw']);	
+			if (!is_object($sql) || $sql->connections[$lane['op']] === False)
+				continue;
+			$this->connection = $sql;
+			$this->delete();
+		}
+		$this->connection = $current;
+		return True;
 	}
 
 	/**
