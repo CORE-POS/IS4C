@@ -140,6 +140,11 @@ class StoreSummaryReport extends FannieReportPage2 {
 		*/
 //		$dbc->logger("dlog: $dlog");
 
+		if ( isset($FANNIE_COOP_ID) && $FANNIE_COOP_ID == 'WEFC_Toronto' )
+			$shrinkageUsers = " AND d.card_no not in ('99998','99997')";
+		else
+			$shrinkageUsers = "";
+
 		// The eventual return value.
 		$data = array();
 
@@ -208,7 +213,7 @@ class StoreSummaryReport extends FannieReportPage2 {
 						AND (s.superID > 0 OR s.superID IS NULL) 
 						AND t.trans_type in ('I','D')
 						AND t.trans_status not in ('D','X','Z')
-						AND t.emp_no not in (7000, 9999)
+						AND t.emp_no not in (7000, 9999){$shrinkageUsers}
 						AND t.register_no != 99
 					GROUP BY
 						s.superID, s.super_name, d.dept_name, t.department
@@ -245,7 +250,7 @@ class StoreSummaryReport extends FannieReportPage2 {
 						OR (s.superID IS NULL AND r.superID IS NULL))
 					AND t.trans_type in ('I','D')
 					AND t.trans_status not in ('D','X','Z')
-					AND t.emp_no not in (7000, 9999)
+					AND t.emp_no not in (7000, 9999){$shrinkageUsers}
 					AND t.register_no != 99
 				GROUP BY
 					CASE WHEN s.superID IS NULL THEN r.superID ELSE s.superID end,
