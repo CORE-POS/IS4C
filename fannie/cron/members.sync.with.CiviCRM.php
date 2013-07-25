@@ -54,6 +54,8 @@
  --functionality } - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
  #'Z --COMMENTZ { - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+ * 20Jun13 EL Finish report the new member number obtained from CiviCRM.
+ *            +>2add +>1add, +>3add
  * 23May13 EL Include table memberNotes in adjustIS4C().
  *            memberNotes is not synced with CiviCRM.
  * 11May13 EL In production.
@@ -1162,7 +1164,8 @@ function toCivi($mode, $member, $updated) {
 	clearCiviWorkVars();
 	$civiOps = array();
 
-	return True;
+	return $member;
+	//return True;
 
 // toCivi()
 }
@@ -3060,11 +3063,10 @@ while ( $ami <= $lastAmi ) {
 			if ( ($ami + 0) == $lastAmi ) {
 				// What do do?  Must be add?
 				// Do it, then ++ami to let/force loop to end.
-				echo "A at lastAmi: $m1, $d1, $s1\n";
+				if ( $debug > 0 )
+					echo "A at lastAmi: $m1, $d1, $s1\n";
 				$otherSource = ( $s1 == "I" ) ? "C" : "I";
-				$msg = " $m1/$s1 != $m2/$s2 -> 1add $m1 to $otherSource\n";
-				$problems[] = $msg;
-				fwrite($reporter, $msg);
+				$msg = " $m1/$s1 != $m2/$s2 -> 1add $m1 to $otherSource";
 				if ( $debug > 0 )
 					echo $msg;
 				if ( $otherSource == "I" ) {
@@ -3072,12 +3074,16 @@ while ( $ami <= $lastAmi ) {
 					toIS4C("insert", $m1, $d1);
 				} elseif ( $otherSource == "C" ) {
 					$insertC++;
-					toCivi("insert", $m1, $d1);
+					$asMember = toCivi("insert", $m1, $d1);
+					$msg .= " as $asMember";
 				} else {
 					$msg = "Unknown s1 >${s1}< for add.";
 					fwrite($reporter, " $msg\n");
 					dieHere("$msg", $dieMail);
 				}
+				$msg .= "\n";
+				$problems[] = $msg;
+				fwrite($reporter, $msg);
 				// Force exit
 				$ami++;
 			}
@@ -3095,23 +3101,26 @@ while ( $ami <= $lastAmi ) {
 	// Assume m1 needs to be added to other-source.
 	elseif ( $m1 < $m2 ) {
 		$otherSource = ( $s1 == "I" ) ? "C" : "I";
-		$msg = " $m1/$s1 != $m2/$s2 -> 2add $m1 to $otherSource\n";
-		$problems[] = $msg;
-		fwrite($reporter, $msg);
+		$msg = " $m1/$s1 != $m2/$s2 -> 2add $m1 to $otherSource";
 		if ( $debug > 0 )
-			echo $msg;
+			echo "$msg\n";
 		/* The apparatus for adding */
 		if ( $otherSource == "I" ) {
 			$insertI++;
 			toIS4C("insert", $m1, $d1);
 		} elseif ( $otherSource == "C" ) {
-				$insertC++;
-			toCivi("insert", $m1, $d1);
+			$insertC++;
+			$asMember = toCivi("insert", $m1, $d1);
+			$msg .= " as $asMember";
 		} else {
-			$msg = "Unknown s1 >${s1}< for add.";
 			fwrite($reporter, " $msg\n");
-			dieHere("$msg", $dieMail);
+			$msg2 = "Unknown s1 >${s1}< for add.";
+			fwrite($reporter, " $msg2\n");
+			dieHere("$msg2", $dieMail);
 		}
+		$msg .= "\n";
+		$problems[] = $msg;
+		fwrite($reporter, $msg);
 
 		// Get the next pair.
 		//  Shift the current #*2 to #*1.
@@ -3121,11 +3130,10 @@ while ( $ami <= $lastAmi ) {
 		if ( ($ami + 0) == $lastAmi ) {
 			// What do do?  Must be add?
 			// Do it, then ++ami to let/force loop to end.
-			echo "B at lastAmi: $m1, $d1, $s1\n";
+			if ( $debug > 0 )
+				echo "B at lastAmi: $m1, $d1, $s1\n";
 			$otherSource = ( $s1 == "I" ) ? "C" : "I";
-			$msg = " $m1/$s1 != $m2/$s2 -> 3add $m1 to $otherSource\n";
-			$problems[] = $msg;
-			fwrite($reporter, $msg);
+			$msg = " $m1/$s1 != $m2/$s2 -> 3add $m1 to $otherSource";
 			if ( $debug > 0 )
 				echo $msg;
 			if ( $otherSource == "I" ) {
@@ -3133,12 +3141,16 @@ while ( $ami <= $lastAmi ) {
 				toIS4C("insert", $m1, $d1);
 			} elseif ( $otherSource == "C" ) {
 				$insertC++;
-				toCivi("insert", $m1, $d1);
+				$asMember = toCivi("insert", $m1, $d1);
+				$msg .= " as $asMember";
 			} else {
 				$msg = "Unknown s1 >${s1}< for add.";
 				fwrite($reporter, " $msg\n");
 				dieHere("$msg", $dieMail);
 			}
+			$msg .= "\n";
+			$problems[] = $msg;
+			fwrite($reporter, $msg);
 			// Force exit
 			$ami++;
 		}

@@ -50,7 +50,14 @@ include($FANNIE_ROOT.'src/tmp_dir.php');
    jobs that weren't configured through the web
    interface. The whole tool is meant to be optional
    hand-holding for new users.
+
 */
+
+/* 1Jul13 EL This is handled in the 2.0 page now, yes?
+   The function is not available.
+
+if ( !function_exists("validateUserQuiet") )
+	include($FANNIE_ROOT.'auth/login.php');
 
 if(!validateUserQuiet('admin')){
 	$url = $FANNIE_URL.'auth/ui/loginform.php';
@@ -58,6 +65,7 @@ if(!validateUserQuiet('admin')){
 	header("Location: $url?redirect=$rd");
 	exit;
 }
+*/
 
 class CronManagementPage extends FanniePage {
 
