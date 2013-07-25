@@ -23,6 +23,7 @@
 
 /* #'Z--COMMENTZ { -  - - - - - - - - - - - - - - - - - - - - - -
 
+	 4Jul13	Require admin priv.
 	20Jun13	7-digit PLU in UPC field.
 	        Flag empty case_cost if hasPrice.
 	19Jun13	ORDER_CODE to seven digits from five.
@@ -144,6 +145,13 @@ include("../../config.php");
 require($FANNIE_ROOT.'src/csv_parser.php');
 require($FANNIE_ROOT.'src/mysql_connect.php');
 require($FANNIE_ROOT.'src/tmp_dir.php');
+require($FANNIE_ROOT.'auth/login.php');
+
+if ( !validateUserQuiet('admin') ) {
+	$redirect = $_SERVER['REQUEST_URI'];
+	$url = $FANNIE_URL.'auth/ui/loginform.php';
+	header('Location: '.$url.'?redirect='.$redirect);
+}
 
 $tpath = sys_get_temp_dir()."/misc/";
 
