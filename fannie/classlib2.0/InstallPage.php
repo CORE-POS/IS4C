@@ -29,16 +29,17 @@ include_once(dirname(__FILE__).'/FanniePage.php');
 class InstallPage extends FanniePage {
 
 	public $required = True;
-	protected $auth_classes = array('sysadmin');
 
 	public $description = "
 	Base class for install-and-config pages not using Admin menu.
 	";
 
-	// 20May13 EL Likely not needed.
-	// If all it does is call parent::__construct(), that is done by default.
 	public function __construct() {
 		parent::__construct();
+		/* This is the only privilege acceptable for these pages.
+		 * Overrides anything that might have been set in the parent.
+		*/
+		$this->auth_classes = array('sysadmin');
 	}
 
 	/**
