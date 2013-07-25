@@ -722,12 +722,31 @@ class ESCPOSPrintHandler {
 	}
 
 	function RenderBitmapFromFile($fn){
+		return $this->RenderBitmap($arg);
+	}
+
+	/**
+	  Turn bitmap into receipt string
+	  @param $arg string filename OR Bitmap obj
+	  @return receipt-formatted string
+	*/
+	function RenderBitmap($arg){
 		$slip = "";
 
 		if (!class_exists('Bitmap')) return "";
 
-		$bmp = new Bitmap();
-		$bmp->Load($fn);
+		$bmp = null;
+		if (is_object($arg) && is_a($bmp, 'Bitmap')){
+			$bmp = $arg;
+		}
+		else if (file_exists($arg)){
+			$bmp = new Bitmap();
+			$bmp->Load($arg);
+		}
+
+		// argument was invalid
+		if ($bmp === null)
+			return "";
 
 		$bmpData = $bmp->GetRawData();
 		$bmpWidth = $bmp->GetWidth();

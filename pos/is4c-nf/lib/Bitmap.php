@@ -577,34 +577,82 @@ class Bitmap {
 	function GetRawBytesPerRow() {
 		return $this->rowBytes;
 	} // GetRawBytesPerRow()
+
+	/**
+	  Generate a bar graph bitmap
+	  @param $percent (0.05 and 5 both represent 5%)
+	  @param $width default 200
+	  @param $height default 40
+	  @return Bitmap object
+	*/
+	public static function BarGraph($percent, $width=200, $height=40){
+		$graph = new Bitmap($width, $height, 1);
+		$black = 1;
+
+		// border top
+		$graph->DrawLine(0, 0, $width-1, 0, $black);
+		// border bottom
+		$graph->DrawLine(0, $height-1, $width-1, $height-1, $black);
+		// border left
+		$graph->DrawLine(0, 1, 0, $height-2, $black);
+		// border right
+		$graph->DrawLine($width-1, 1, $width-1, $height-2, $black);
+
+		$full_bar_size = $width - 4;
+		if ($percent > 1) $percent = (float)($percent / 100.00);
+		if ($percent > 1) $percent = 1.0;
+		$bar_size = round($percent * $full_bar_size);
+
+		for($line=2;$line<$height-2;$line++){
+			$graph->DrawLine(2, $line, 2+$bar_size, $line);	
+		}
+
+		return $graph;
+	}
+
+	/**
+	  Turn bitmap into receipt string
+	  @param $arg string filename OR Bitmap obj
+	  @return receipt-formatted string
+	*/
+	public static function RenderBitmap($arg){
+		global $PRINT_OBJ;
+		$slip = "";
+
+		$bmp = null;
+		if (is_object($arg) && is_a($bmp, 'Bitmap')){
+			$bmp = $arg;
+		}
+		else if (file_exists($arg)){
+			$bmp = new Bitmap();
+			$bmp->Load($arg);
+		}
+
+		// argument was invalid
+		if ($bmp === null)
+			return "";
+
+		$bmpData = $bmp->GetRawData();
+		$bmpWidth = $bmp->GetWidth();
+		$bmpHeight = $bmp->GetHeight();
+		$bmpRawBytes = (int)(($bmpWidth + 7)/8);
+
+		$printer = $PRINT_OBJ;
+		$stripes = $printer->TransposeBitmapData($bmpData, $bmpWidth);
+		for($i=0; $i<count($stripes); $i++)
+			$stripes[$i] = $printer->InlineBitmap($stripes[$i], $bmpWidth);
+
+		$slip .= $printer->AlignCenter();
+		if (count($stripes) > 1)
+			$slip .= $printer->LineSpacing(0);
+		$slip .= implode("\n",$stripes);
+		if (count($stripes) > 1)
+			$slip .= $printer->ResetLineSpacing()."\n";
+		$slip .= $printer->AlignLeft();
+
+		return $slip;
+	}
 	
 } // Bitmap
 
-function RenderBitmapFromFile($fn){
-	global $PRINT_OBJ;
-	$slip = "";
-
-	$bmp = new Bitmap();
-	$bmp->Load($fn);
-
-	$bmpData = $bmp->GetRawData();
-	$bmpWidth = $bmp->GetWidth();
-	$bmpHeight = $bmp->GetHeight();
-	$bmpRawBytes = (int)(($bmpWidth + 7)/8);
-
-	$printer = $PRINT_OBJ;
-	$stripes = $printer->TransposeBitmapData($bmpData, $bmpWidth);
-	for($i=0; $i<count($stripes); $i++)
-		$stripes[$i] = $printer->InlineBitmap($stripes[$i], $bmpWidth);
-
-	$slip .= $printer->AlignCenter();
-	if (count($stripes) > 1)
-		$slip .= $printer->LineSpacing(0);
-	$slip .= implode("\n",$stripes);
-	if (count($stripes) > 1)
-		$slip .= $printer->ResetLineSpacing()."\n";
-	$slip .= $printer->AlignLeft();
-
-	return $slip;
-}
 
