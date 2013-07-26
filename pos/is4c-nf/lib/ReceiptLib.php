@@ -744,11 +744,12 @@ static public function graphedLocalTTL(){
 	if ($row['localTTL'] == 0) 
 		return '';
 
-	$str = sprintf('LOCAL PURCHASES = $%.2f', $row['localTTL']);
+	$percent = ((float)$row['localTTL']) / ((float)$row['itemTTL']);
+	$str = sprintf('LOCAL PURCHASES = $%.2f (%.2f%%)', 
+			$row['localTTL'], 100*$percent);
 	$str .= "\n";
 
-	$percent = ((float)$row['localTTL']) / ((float)$row['itemTTL']);
-	$str .= self::$PRINT_OBJ->RenderBitmap(Bitmap::BarGraph($percent));
+	$str .= self::$PRINT_OBJ->RenderBitmap(Bitmap::BarGraph($percent), 'L');
 	return $str."\n";
 }
 
@@ -1166,6 +1167,7 @@ static public function printReceipt($arg1,$second=False,$email=False) {
 					"\n";
 			}
 			$receipt['any'] .= self::localTTL();
+			//$receipt['any'] .= self::graphedLocalTTL();
 			$receipt['any'] .= "\n";
 	
 			if (trim($CORE_LOCAL->get("memberID")) != $CORE_LOCAL->get("defaultNonMem")) {

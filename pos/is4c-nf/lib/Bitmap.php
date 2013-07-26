@@ -588,6 +588,7 @@ class Bitmap {
 	public static function BarGraph($percent, $width=200, $height=40){
 		$graph = new Bitmap($width, $height, 1);
 		$black = 1;
+		$spacing = 5;
 
 		// border top
 		$graph->DrawLine(0, 0, $width-1, 0, $black);
@@ -598,13 +599,13 @@ class Bitmap {
 		// border right
 		$graph->DrawLine($width-1, 1, $width-1, $height-2, $black);
 
-		$full_bar_size = $width - 4;
+		$full_bar_size = $width - ($spacing*2);
 		if ($percent > 1) $percent = (float)($percent / 100.00);
 		if ($percent > 1) $percent = 1.0;
 		$bar_size = round($percent * $full_bar_size);
 
-		for($line=2;$line<$height-2;$line++){
-			$graph->DrawLine(2, $line, 2+$bar_size, $line);	
+		for($line=$spacing;$line<$height-$spacing;$line++){
+			$graph->DrawLine($spacing, $line, $spacing+$bar_size, $line, $black);	
 		}
 
 		return $graph;
@@ -620,7 +621,7 @@ class Bitmap {
 		$slip = "";
 
 		$bmp = null;
-		if (is_object($arg) && is_a($bmp, 'Bitmap')){
+		if (is_object($arg) && is_a($arg, 'Bitmap')){
 			$bmp = $arg;
 		}
 		else if (file_exists($arg)){

@@ -721,8 +721,8 @@ class ESCPOSPrintHandler {
 		}
 	}
 
-	function RenderBitmapFromFile($fn){
-		return $this->RenderBitmap($arg);
+	function RenderBitmapFromFile($fn, $align='C'){
+		return $this->RenderBitmap($fn, $align);
 	}
 
 	/**
@@ -730,13 +730,13 @@ class ESCPOSPrintHandler {
 	  @param $arg string filename OR Bitmap obj
 	  @return receipt-formatted string
 	*/
-	function RenderBitmap($arg){
+	function RenderBitmap($arg, $align='C'){
 		$slip = "";
 
 		if (!class_exists('Bitmap')) return "";
 
 		$bmp = null;
-		if (is_object($arg) && is_a($bmp, 'Bitmap')){
+		if (is_object($arg) && is_a($arg, 'Bitmap')){
 			$bmp = $arg;
 		}
 		else if (file_exists($arg)){
@@ -757,12 +757,14 @@ class ESCPOSPrintHandler {
 		for($i=0; $i<count($stripes); $i++)
 			$stripes[$i] = $this->InlineBitmap($stripes[$i], $bmpWidth);
 
-		$slip .= $this->AlignCenter();
+		if ($align == 'C')
+			$slip .= $this->AlignCenter();
 		if (count($stripes) > 1)
 			$slip .= $this->LineSpacing(0);
 		$slip .= implode("\n",$stripes);
 		if (count($stripes) > 1)
-			$slip .= $this->ResetLineSpacing()."\n";
+			$slip .= $this->ResetLineSpacing();
+		if ($align == 'C') $slip .= "\n";
 		$slip .= $this->AlignLeft();
 
 		return $slip;

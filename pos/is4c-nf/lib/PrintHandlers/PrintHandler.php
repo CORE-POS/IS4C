@@ -659,8 +659,8 @@ class PrintHandler {
 	  @param $fn a bitmap file
 	  @return printer command string
 	*/
-	function RenderBitmapFromFile($fn){
-		return $this->RenderBitmap($fn);
+	function RenderBitmapFromFile($fn, $align='C'){
+		return $this->RenderBitmap($fn, $align);
 	}
 
 	/**
@@ -668,13 +668,13 @@ class PrintHandler {
 	  @param $arg string filename OR Bitmap obj
 	  @return receipt-formatted string
 	*/
-	function RenderBitmap($arg){
+	function RenderBitmap($arg, $align='C'){
 		$slip = "";
 
 		if (!class_exists('Bitmap')) return "";
 
 		$bmp = null;
-		if (is_object($arg) && is_a($bmp, 'Bitmap')){
+		if (is_object($arg) && is_a($arg, 'Bitmap')){
 			$bmp = $arg;
 		}
 		else if (file_exists($arg)){
