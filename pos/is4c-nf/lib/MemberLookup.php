@@ -92,7 +92,7 @@ class MemberLookup {
 		$dbc = Database::pDataConnect();
 		$query = $dbc->prepare_statement('SELECT CardNo, personNum,
 			LastName, FirstName FROM custdata
-			WHERE LastName LIKE ? ORDER BY LastName, FirstName');
+			WHERE LastName LIKE "?" ORDER BY LastName, FirstName');
 		$result = $dbc->exec_statement($query, array($text.'%'));	
 		$ret = $this->default_value();
 		while($w = $dbc->fetch_row($result)){
