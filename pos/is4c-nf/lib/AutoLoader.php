@@ -146,6 +146,9 @@ class AutoLoader extends LibraryClass {
 		case 'DiscountModule':
 			$map['DiscountModule'] = realpath(dirname(__FILE__).'/DiscountModule.php');
 			break;
+		case 'MemberLookup':
+			$map['MemberLookup'] = realpath(dirname(__FILE__).'/MemberLookup.php');
+			break;
 		}
 
 		foreach($map as $name => $file){
