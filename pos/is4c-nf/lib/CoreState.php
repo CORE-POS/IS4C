@@ -341,6 +341,18 @@ static public function getCustomerPref($key){
 	return array_pop($db->fetch_row($r));
 }
 
+static public function cashier_login($transno=False, $age=0){
+	global $CORE_LOCAL;
+	if ($CORE_LOCAL->get('CashierNo')==9999){
+		$CORE_LOCAL->set('training', 1);
+	}
+	if (!is_numeric($age)) $age = 0;
+	$CORE_LOCAL->set('cashierAge', $age);
+	if($transno && is_numeric($transno)){
+		$CORE_LOCAL->set('transno', $transno);
+	}
+}
+
 }
 
 ?>

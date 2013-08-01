@@ -77,11 +77,6 @@ static public function check_password($password,$activity=1){
 			//Database::testremote();
 			Database::loadglobalvalues();
 
-			$transno = Database::gettransno($row_q["emp_no"]);
-			$CORE_LOCAL->set("transno",$transno);
-			if (!is_numeric($row_q["age"])) $row_q["age"]=0;
-			$CORE_LOCAL->set("cashierAge",$row_q["age"]);
-
 			$globals = array(
 				"CashierNo" => $row_q["emp_no"],
 				"Cashier" => $row_q["FirstName"]." ".substr($row_q["LastName"], 0, 1).".",
@@ -89,6 +84,9 @@ static public function check_password($password,$activity=1){
 				"LoggedIn" => 1
 			);
 			Database::setglobalvalues($globals);
+
+			$transno = Database::gettransno($row_q["emp_no"]);
+			CoreState::cashier_login($transno, $row_q['age']);
 
 			if ($transno == 1) TransRecord::addactivity($activity);
 
@@ -114,10 +112,6 @@ static public function check_password($password,$activity=1){
 			
 		} elseif ($password == 9999) {
 			Database::loadglobalvalues();
-			$transno = Database::gettransno(9999);
-			$CORE_LOCAL->set("transno",$transno);
-			$CORE_LOCAL->set("training",1);
-			$CORE_LOCAL->set("cashierAge",0);
 
 			$globals = array(
 				"CashierNo" => 9999,
@@ -126,6 +120,9 @@ static public function check_password($password,$activity=1){
 				"LoggedIn" => 1
 			);
 			Database::setglobalvalues($globals);
+
+			$transno = Database::gettransno(9999);
+			CoreState::cashier_login($transno, 0);
 
 			$my_drawer = ReceiptLib::currentDrawer();
 			if ($my_drawer == 0){
@@ -144,7 +141,8 @@ static public function check_password($password,$activity=1){
 		// longer query but simpler. since someone is logged in already,
 		// only accept password from that person OR someone with a high
 		// frontendsecurity setting
-		$query_a = "select emp_no, FirstName, LastName "
+		$query_a = "select emp_no, FirstName, LastName, "
+			.$db_g->yeardiff($db_g->now(),'birthdate')." as age "
 			."from employees "
 			."where EmpActive = 1 and "
 			."(frontendsecurity >= 30 or emp_no = ".$row_g["CashierNo"].") "
@@ -158,11 +156,13 @@ static public function check_password($password,$activity=1){
 
 			Database::loadglobalvalues();
 			//testremote();
+			$row = $db_g->fetch_row($result_a);
+			CoreState::cashier_login(False, $row['age']);
 		}
 		elseif ($row_g["CashierNo"] == "9999" && $password == "9999"){
 			Database::loadglobalvalues();
 			//Database::testremote();
-			$CORE_LOCAL->set("training",1);
+			CoreState::cashier_login(False, 0);
 		}
 		else return False;
 	}
