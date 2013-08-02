@@ -28,6 +28,8 @@ class ReasoncodesModel extends BasicModel {
 
 	protected $name = "reasoncodes";
 
+	protected $preferred_db = 'op';
+
 	protected $columns = array(
 	'textStr' => array('type'=>'VARCHAR(100)'),
 	'mask' => array('type'=>'INT','primary_key'=>True,'default'=>0)

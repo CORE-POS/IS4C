@@ -32,6 +32,9 @@ if (!class_exists('FannieDB'))
 class MemDatesModel extends BasicModel {
 
 	protected $name = 'memDates';
+
+	protected $preferred_db = 'op';
+
 	protected $columns = array(
 	'card_no' => array('type'=>'INT','primary_key'=>True),
 	'start_date'=>array('type'=>'DATETIME'),

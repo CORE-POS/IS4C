@@ -36,6 +36,8 @@ class ArHistoryModel extends BasicModel {
 	'trans_num' => array('type'=>'VARCHAR(50)')
 	);
 
+	protected $preferred_db = 'trans';
+
 	/* START ACCESSOR FUNCTIONS */
 
 	public function card_no(){

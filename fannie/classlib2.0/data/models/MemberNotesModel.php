@@ -28,6 +28,8 @@ class MemberNotesModel extends BasicModel {
 
 	protected $name = "memberNotes";
 
+	protected $preferred_db = 'op';
+
 	protected $columns = array(
 	'cardno' => array('type'=>'INT'),
 	'note' => array('type','TEXT'),

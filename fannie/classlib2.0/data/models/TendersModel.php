@@ -25,6 +25,8 @@ class TendersModel extends BasicModel {
 
 	protected $name = 'tenders';
 
+	protected $preferred_db = 'op';
+
 	protected $columns = array(
 	'TenderID'	=> array('type'=>'SMALLINT','primary_key'=>True),
 	'TenderCode'	=> array('type'=>'VARCHAR(2)','index'=>True),

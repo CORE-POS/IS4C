@@ -25,6 +25,8 @@ class DTransactionsModel extends BasicModel {
 
 	protected $name = 'dtransactions';
 
+	protected $preferred_db = 'trans';
+
 	protected $columns = array(
 	'datetime'	=> array('type'=>'DATETIME','index'=>True),
 	'register_no'	=> array('type'=>'SMALLINT'),

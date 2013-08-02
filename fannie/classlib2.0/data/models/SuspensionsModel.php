@@ -28,6 +28,8 @@ class SuspensionsModel extends BasicModel {
 
 	protected $name = "suspensions";
 
+	protected $preferred_db = 'op';
+
 	protected $columns = array(
 	'cardno' => array('type'=>'INT','primary_key'=>True,'default'=>0),
 	'type' => array('type'=>'CHAR(1)'),

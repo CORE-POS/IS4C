@@ -39,6 +39,7 @@ class ArLiveBalanceModel extends BasicModel {
 	public function create(){ return False; }
 	public function delete(){ return False; }
 	public function save(){ return False; }
+	public function normalize(){ return 0; }
 
 	/* START ACCESSOR FUNCTIONS */
 

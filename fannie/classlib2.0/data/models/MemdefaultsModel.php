@@ -28,6 +28,8 @@ class MemdefaultsModel extends BasicModel {
 
 	protected $name = "memdefaults";
 
+	protected $preferred_db = 'op';
+
 	protected $columns = array(
 	'memtype' => array('type'=>'TINYINT','primary_key'=>True,'default'=>0),
 	'cd_type' => array('type'=>'VARCHAR(10)'),
