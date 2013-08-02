@@ -464,12 +464,14 @@ function create_op_dbs($db,$type){
 
 	create_if_needed($db, $type, $name, 'unpaid_ar_today', 'op', $errors);
 
-	create_if_needed($db, $type, $name, 'lane_config', 'op', $errors);
-	$chk = $db->query('SELECT modified FROM lane_config',$name);
-	if ($db->num_rows($chk) != 1){
-		$db->query('TRUNCATE TABLE lane_config', $name);
-		$db->query("INSERT INTO lane_config VALUES ('1900-01-01 00:00:00')", $name);
+	// Update lane_config structure if needed
+	if ($db->table_exists('lane_config', $name)){
+		$def = $db->table_definition('lane_config', $name);
+		if (!isset($def['keycode']) || !isset($def['value']))
+			$db->query('DROP TABLE lane_config', $name);
 	}
+	create_if_needed($db, $type, $name, 'lane_config', 'op', $errors);
+	
 	return $errors;
 }
 
@@ -2516,6 +2518,9 @@ function create_min_server($db,$type){
 	if (!$db->table_exists("TenderTapeGeneric",$name)){
 		db_structure_modify($db,'TenderTapeGeneric',$ttG,$errors);
 	}
+
+	// re-use definition to create lane_config on server
+	create_if_needed($db, $type, $name, 'lane_config', 'op', $errors);
 
 	return $errors;
 }

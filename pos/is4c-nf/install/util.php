@@ -45,6 +45,17 @@ function check_writeable($filename, $optional=False, $template=False){
 	}
 }
 
+/**
+  Save entry to ini.php or ini-local.php
+  @param $key string key
+  @param $value string value
+  @param $prefer_local use ini-local if it exists
+  @return boolean success
+
+  Values are written to a file and must be valid
+  PHP code. For example, a PHP string should include
+  single or double quote delimiters in $value.
+*/
 function confsave($key,$value,$prefer_local=False){
 
 	// do nothing if page isn't a form submit (i.e. user didn't press save)
@@ -105,8 +116,11 @@ function confsave($key,$value,$prefer_local=False){
 
 	if ($found_local && !$written_local)
 		return False;	// ini-local.php is overriding ini.php with bad data!
-	if ($written_global || $written_local)
+	if ($written_global || $written_local){
+		if ($written_global && $key != 'laneno')
+			conf_to_db($key, $value);
 		return True;	// successfully written somewhere relevant
+	}
 
 	if (!$found_global && !$found_local) {
 		$append_path = ($prefer_local? $path_local : $path_global);
@@ -126,10 +140,129 @@ function confsave($key,$value,$prefer_local=False){
 						1, $found_local);
 		$added_local = file_put_contents($append_path, $new_local);
 	}
-	if ($added_global || $added_local)
+	if ($added_global || $added_local){
+		if ($added_global && $key != 'laneno')
+			conf_to_db($key, $value);
 		return True;	// successfully appended somewhere relevant
+	}
 
 	return False;	// didn't manage to write anywhere!
+}
+
+/**
+  Save value to opdata.lane_config
+  @param $key string key
+  @param $value string value
+
+  Called automatically by confsave().
+*/
+function conf_to_db($key, $value){
+	global $CORE_LOCAL;
+	$sql = db_test_connect($CORE_LOCAL->get('localhost'),
+			$CORE_LOCAL->get('DBMS'),
+			$CORE_LOCAL->get('pDatabase'),
+			$CORE_LOCAL->get('localUser'),
+			$CORE_LOCAL->get('localPass'));
+	if ($sql !== False){
+		$q = $sql->prepare_statement("SELECT value FROM lane_config 
+			WHERE keycode=?");
+		$r = $sql->exec_statement($q, array($key));
+		if ($r === False) return False; // old table format
+		if ($sql->num_rows($r) == 0){
+			$ins = $sql->prepare_statement('INSERT INTO lane_config
+				(keycode, value) VALUES (?, ?)');
+			$sql->exec_statement($ins, array($key, $value));
+		}
+		else {
+			$up = $sql->prepare_statement('UPDATE lane_config SET
+				value=? WHERE keycode=?');
+			$sql->exec_statement($up, array($value, $key));
+		}
+	}
+}
+
+/**
+  Rewrite ini.php with values from
+  opdata.lane_config
+*/
+function write_conf_from_db(){
+	global $CORE_LOCAL;
+	$sql = db_test_connect($CORE_LOCAL->get('localhost'),
+			$CORE_LOCAL->get('DBMS'),
+			$CORE_LOCAL->get('pDatabase'),
+			$CORE_LOCAL->get('localUser'),
+			$CORE_LOCAL->get('localPass'));
+	if ($sql !== False){
+		$q = 'SELECT keycode, value FROM lane_config';
+		$r = $sql->query($q);
+		while($w = $db->fetch_row($r))
+			confsave($w['keycode'], $w['value']);
+	}
+}
+
+/**
+  Copy values from opdata.lane_config to the
+  server's lane_config table.
+*/
+function send_conf_to_server(){
+	global $CORE_LOCAL;
+	$sql = db_test_connect($CORE_LOCAL->get('localhost'),
+			$CORE_LOCAL->get('DBMS'),
+			$CORE_LOCAL->get('pDatabase'),
+			$CORE_LOCAL->get('localUser'),
+			$CORE_LOCAL->get('localPass'));
+	$mine = array();
+	if ($sql !== False){
+		$q = 'SELECT keycode, value FROM lane_config';
+		$r = $sql->query($q);
+		while($w = $sql->fetch_row($r))
+			$mine[$w['keycode']] = $w['value'];
+	}
+
+	$sql = db_test_connect($CORE_LOCAL->get('mServer'),
+			$CORE_LOCAL->get('mDBMS'),
+			$CORE_LOCAL->get('mDatabase'),
+			$CORE_LOCAL->get('mUser'),
+			$CORE_LOCAL->get('mPass'));
+	if ($sql !== False){
+		$chk = $sql->prepare_statement('SELECT value FROM
+				lane_config WHERE keycode=?');
+		$ins = $sql->prepare_statement('INSERT INTO lane_config
+				(keycode, value) VALUES (?, ?)');
+		$up = $sql->prepare_statement('UPDATE lane_config SET
+				value=? WHERE keycode=?');
+		foreach($mine as $key => $value){
+			$exists = $sql->exec_statement($chk, array($key));
+			if ($sql->num_rows($exists) == 0)
+				$sql->exec_statement($ins, array($key, $value));
+			else
+				$sql->exec_statement($up, array($value, $key));
+		}
+	}
+}
+
+/**
+  Fetch values from the server's lane_config table
+  Write them to ini.php and opdata.lane_config.
+*/
+function get_conf_from_server(){
+	global $CORE_LOCAL;
+	$sql = db_test_connect($CORE_LOCAL->get('mServer'),
+			$CORE_LOCAL->get('mDBMS'),
+			$CORE_LOCAL->get('mDatabase'),
+			$CORE_LOCAL->get('mUser'),
+			$CORE_LOCAL->get('mPass'));
+	$theirs = array();
+	if ($sql !== False){
+		$q = 'SELECT keycode, value FROM lane_config';
+		$r = $sql->query($q);
+		while($w = $sql->fetch_row($r))
+			$theirs[$w['keycode']] = $w['value'];
+	}
+
+	foreach($theirs as $key => $value){
+		confsave($key, $value);
+	}
 }
 
 function load_sample_data($sql, $table){
