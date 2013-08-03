@@ -204,9 +204,12 @@ class SQLManager {
 	*/
 	function num_rows($result_object,$which_connection=''){
 		if ($which_connection == '')
-			$which_connection = $this->default_db;
-		return $result_object->RecordCount();
-	}
+			$which_connection = $this->default_db;	
+			if ($result_object != null)
+				return $result_object->RecordCount();
+			else 
+				return 0;
+		}
 
 	/**
 	  Move result cursor to specified record
