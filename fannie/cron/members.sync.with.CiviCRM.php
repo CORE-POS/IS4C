@@ -2936,9 +2936,10 @@ while ( $c_row = $dbConn->fetch_row($c_members) ) {
 	}
 }
 
-// Get all the the members from IS4C, except placeholder "NEW MEMBER"s.
+// Get all the the members from IS4C, except placeholder "NEW MEMBER"s
+//  and the Dummy 99990-99998 and Non-Member 99999.
 $is4cMin = 470;
-$is4cMax = 99997; // 99997
+$is4cMax = 99989; // 99989
 $i_selectMembers ="SELECT CardNo, LastChange
 FROM custdata
 WHERE CardNo between $is4cMin AND $is4cMax AND LastName != 'NEW MEMBER'
