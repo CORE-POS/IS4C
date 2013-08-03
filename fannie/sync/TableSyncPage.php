@@ -55,7 +55,7 @@ class TableSyncPage extends FanniePage {
 			$this->errors[] = "Error: no table was specified";
 			return True;
 		}
-		elseif (ereg("[^A-Za-z0-9_]",$table)){
+		elseif (preg_match("[^A-Za-z0-9_]",$table)){
 			$this->errors[] = "Error: \"$table\" contains illegal characters";
 			return True;
 		}
