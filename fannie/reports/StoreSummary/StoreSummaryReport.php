@@ -63,7 +63,8 @@ class StoreSummaryReport extends FannieReportPage2 {
 		if (isset($_REQUEST['date1'])){
 			$this->content_function = "report_content";
 			$this->has_menus(True); // 1Jul13 was False, normal for reports of this kind.
-			$this->report_headers = array('','Qty','Costs','% Costs','DeptC%','Sales','% Sales','DeptS %','GST','HST');
+			$this->report_headers = array('','Qty','Costs','% Costs','DeptC%','Sales','% Sales','DeptS %',
+				'Margin %','GST','HST');
 
 			/**
 			  Check if a non-html format has been requested
@@ -111,7 +112,8 @@ class StoreSummaryReport extends FannieReportPage2 {
 		$d2 = FormLib::get_form_value('date2',date('Y-m-d'));
 		$dept = $_REQUEST['dept'];
 
-		$this->report_desc[] = sprintf("<H3 style='margin-bottom:0;'>Store Summary: %s </H3>", ($d1 == $d2) ? "For $d1" : "From $d1 to $d2");
+		$this->report_desc[] = sprintf("<H3 style='margin-bottom:0;'>Store Summary: %s </H3>",
+														($d1 == $d2) ? "For $d1" : "From $d1 to $d2");
 		if ($dept == 0) {
 			$this->report_desc[] = "<p>Using the department# the upc was assigned to at time of sale</p>";
 		}
@@ -141,7 +143,7 @@ class StoreSummaryReport extends FannieReportPage2 {
 //		$dbc->logger("dlog: $dlog");
 
 		if ( isset($FANNIE_COOP_ID) && $FANNIE_COOP_ID == 'WEFC_Toronto' )
-			$shrinkageUsers = " AND d.card_no not in ('99998','99997')";
+			$shrinkageUsers = " AND d.card_no not between 99990 and 99998";
 		else
 			$shrinkageUsers = "";
 
@@ -213,8 +215,10 @@ class StoreSummaryReport extends FannieReportPage2 {
 						AND (s.superID > 0 OR s.superID IS NULL) 
 						AND t.trans_type in ('I','D')
 						AND t.trans_status not in ('D','X','Z')
-						AND t.emp_no not in (7000, 9999){$shrinkageUsers}
+						AND t.emp_no not in (9999){$shrinkageUsers}
 						AND t.register_no != 99
+						AND t.upc != 'DISCOUNT'
+						AND t.`trans_subtype` not in ('CP','IC')
 					GROUP BY
 						s.superID, s.super_name, d.dept_name, t.department
 					ORDER BY
@@ -250,8 +254,10 @@ class StoreSummaryReport extends FannieReportPage2 {
 						OR (s.superID IS NULL AND r.superID IS NULL))
 					AND t.trans_type in ('I','D')
 					AND t.trans_status not in ('D','X','Z')
-					AND t.emp_no not in (7000, 9999){$shrinkageUsers}
+					AND t.emp_no not in (9999){$shrinkageUsers}
 					AND t.register_no != 99
+					AND t.upc != 'DISCOUNT'
+					AND t.`trans_subtype` not in ('CP','IC')
 				GROUP BY
 					CASE WHEN s.superID IS NULL THEN r.superID ELSE s.superID end,
 					CASE WHEN s.super_name IS NULL THEN r.super_name ELSE s.super_name END,
@@ -265,7 +271,6 @@ class StoreSummaryReport extends FannieReportPage2 {
 			// Abort. The message is in the heading.
 			return $data;
 		}
-		//debug: $this->report_desc[] = "costs: $costs";
 
 		$costsP = $dbc->prepare_statement($costs);
 		$costArgs = array($d1.' 00:00:00', $d2.' 23:59:59');
@@ -315,8 +320,6 @@ class StoreSummaryReport extends FannieReportPage2 {
 
 			$superCostsSum = $s['costs'];
 			$superSalesSum = $s['sales'];
-	//		$superTaxes1Sum = $s['taxes1'];
-	//		$superTaxes2Sum = $s['taxes2'];
 			$report = array();
 			foreach($s['depts'] as $d){
 				$record = array(
@@ -328,6 +331,9 @@ class StoreSummaryReport extends FannieReportPage2 {
 					sprintf('$%.2f',$d['sales']),
 					sprintf('%.2f %%',($d['sales'] / $this->grandSalesTotal) * 100),
 					sprintf('%.2f %%',($d['sales'] / $superSalesSum) * 100),
+					($d['sales']>0 && $d['costs']>0)?
+						number_format(((($d['sales'] - $d['costs']) / $d['sales']) * 100),2).' %':
+						'n/a',
 					sprintf('%.2f',$d['taxes2']),
 					sprintf('%.2f',$d['taxes1'])
 				);
@@ -351,6 +357,7 @@ class StoreSummaryReport extends FannieReportPage2 {
 			'',
 			'Sales',
 			'Profit',
+			'',
 			'Margin %',
 			$taxNames['2'],
 			$taxNames['1']
@@ -366,6 +373,7 @@ class StoreSummaryReport extends FannieReportPage2 {
 			'',
 			'$ '.number_format($this->grandSalesTotal,2),
 			'$ '.number_format(($this->grandSalesTotal - $this->grandCostsTotal),2),
+			'',
 			number_format(((($this->grandSalesTotal - $this->grandCostsTotal) / $this->grandSalesTotal) * 100),2).' %',
 			'$ '.number_format($this->grandTax2Total,2),
 			'$ '.number_format($this->grandTax1Total,2)
@@ -387,15 +395,12 @@ class StoreSummaryReport extends FannieReportPage2 {
 		$sumCosts = 0.0;
 		$sumTax1 = 0.0;
 		$sumTax2 = 0.0;
-		// Proportion of whole store by this superdept.
-		//$propCosts = 0.0;
-		//$propSales = 0.0;
 		foreach($data as $row){
 			$sumQty += $row[1];
 			$sumCosts += preg_replace("/[^.0-9]/",'',$row[2]);
 			$sumSales += preg_replace("/[^.0-9]/",'',$row[5]);
-			$sumTax2 += preg_replace("/[^.0-9]/",'',$row[8]);
-			$sumTax1 += preg_replace("/[^.0-9]/",'',$row[9]);
+			$sumTax2 += preg_replace("/[^.0-9]/",'',$row[9]);
+			$sumTax1 += preg_replace("/[^.0-9]/",'',$row[10]);
 		}
 		return array( $this->get_superdept_name($data[0][0]),
 			$sumQty,
@@ -405,6 +410,9 @@ class StoreSummaryReport extends FannieReportPage2 {
 			sprintf('$ %s',number_format($sumSales,2)),
 			sprintf('%.2f %%',($sumSales/$this->grandSalesTotal)*100),
 			null,
+			($sumSales>0.0 && $sumCosts>0.0)?
+				number_format(((($sumSales - $sumCosts) / $sumSales) * 100),2).' %':
+				'n/a',
 			sprintf('$ %s',number_format($sumTax2,2)),
 			sprintf('$ %s',number_format($sumTax1,2))
 		);

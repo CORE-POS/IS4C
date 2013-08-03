@@ -35,6 +35,7 @@
 */
 
 /* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+ * 23Jul13 EL Commented code for lane2 times-in-future problem.
  *  2Jul13 EL Contains some development comments and apparatus.
 */
 
@@ -101,6 +102,16 @@ class SalesAndTaxTodayReport extends FanniePage {
 /*
 $today = "2013-06-30";
 echo "<br />Jiggered date, table= $table, datediff= $ddiff for $today";
+$key = 'APACHE_RUN_USER';
+if (isset($_ENV["$key"]))
+	echo "<br />$key is {$_ENV["$key"]}";
+else
+	echo "<br />$key doesn't exist";
+$val = getenv("$key");
+//$val = apache_getenv("$key");
+echo "<br />val of key $key is $val";
+$id=exec("/usr/bin/id");
+echo "<br />id $id";
 */
 
 		$hourNames = array();
@@ -167,7 +178,17 @@ echo "<br />Jiggered date, table= $table, datediff= $ddiff for $today";
 		}
 //xecho "<br />"; print_r($taxNames);
 
+		if ( isset($FANNIE_COOP_ID) && $FANNIE_COOP_ID == 'WEFC_Toronto' )
+			$shrinkageUsers = " AND d.card_no not between 99990 and 99998";
+		else
+			$shrinkageUsers = "";
+
 		// Plain, no superdepartment.
+		/*
+					AND tdate < '2013-07-23 23:00:00'
+					AND tdate like '2013-07-23 %'
+					AND tdate >" . $dbc->now() . "
+		*/
 		if ($this->selected == -1){
 			$query1="SELECT ".$dbc->hour('tdate')." as Hour, 
 					sum(total)as Sales
@@ -177,7 +198,7 @@ echo "<br />Jiggered date, table= $table, datediff= $ddiff for $today";
 					LEFT JOIN taxrates AS x ON d.tax=x.id
 				WHERE ".$dbc->datediff('tdate',$dbc->now())."=$ddiff
 					AND (trans_type ='I' OR trans_type = 'D' or trans_type='M')
-					AND (t.superID > 0 or t.superID IS NULL)
+					AND (t.superID > 0 or t.superID IS NULL){$shrinkageUsers}
 				GROUP BY ".$dbc->hour('tdate')."
 				ORDER BY ".$dbc->hour('tdate');
 			// Moved earlier
@@ -194,7 +215,7 @@ echo "<br />Jiggered date, table= $table, datediff= $ddiff for $today";
 					taxrates AS x ON d.tax=x.id
 				WHERE ".$dbc->datediff('tdate',$dbc->now())."=$ddiff
 					AND (trans_type ='I' OR trans_type = 'D' or trans_type='M')
-					AND t.superID > 0
+					AND t.superID > 0{$shrinkageUsers}
 				GROUP BY ".$dbc->hour('tdate')."
 				ORDER BY ".$dbc->hour('tdate');
 			// Moved earlier
