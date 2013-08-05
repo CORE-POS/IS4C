@@ -26,7 +26,8 @@ ini_set('display_errors','1');
 
 include(realpath(dirname(__FILE__).'/../lib/AutoLoader.php'));
 AutoLoader::LoadMap();
-include(realpath(dirname(__FILE__).'/../ini.php'));
+if(file_exists((dirname(__FILE__).'/../ini.php')))
+	include(realpath(dirname(__FILE__).'/../ini.php'));
 include('util.php');
 ?>
 <html>
@@ -46,17 +47,11 @@ body {
 
 <form action=index.php method=post>
 
-<div class="alert"><?php check_writeable('../ini.php'); ?></div>
-<div class="alert"><?php check_writeable('../ini-local.php'); ?></div>
+<div class="alert"><?php check_writeable('../ini.php', False, 'PHP'); ?></div>
+<div class="alert"><?php check_writeable('../ini-local.php', True, 'PHP'); ?></div>
 
+PHP is running as: <?php echo whoami(); ?><br />
 <?php
-if (function_exists('posix_getpwuid')){
-	$chk = posix_getpwuid(posix_getuid());
-	echo "PHP is running as: ".$chk['name']."<br />";
-}
-else
-	echo "PHP is (probably) running as: ".get_current_user()."<br />";
-
 if (!function_exists("socket_create")){
 	echo '<b>Warning</b>: PHP socket extension is not enabled. NewMagellan will not work quite right';
 }
@@ -323,17 +318,17 @@ $sql = db_test_connect($CORE_LOCAL->get('mServer'),
 		$CORE_LOCAL->get('mPass'));
 if ($sql === False){
 	echo "<span class='fail'>Failed</span>";
-	echo '<div class="db_hints" style="margin-left:25px;">';
+	echo '<div class="db_hints" style="margin-left:25px;width:350px;">';
 	if (!function_exists('socket_create')){
 		echo '<i>Try enabling PHP\'s socket extension in php.ini for better diagnostics</i>';
 	}
-	elseif (@MiscLib::pingport($CORE_LOCAL->get('localhost'),$CORE_LOCAL->get('DBMS'))){
-		echo '<i>Database found at '.$CORE_LOCAL->get('localhost').'. Verify username and password
+	elseif (@MiscLib::pingport($CORE_LOCAL->get('mServer'),$CORE_LOCAL->get('DBMS'))){
+		echo '<i>Database found at '.$CORE_LOCAL->get('mServer').'. Verify username and password
 			and/or database account permissions.</i>';
 	}
 	else {
 		echo '<i>Database does not appear to be listening for connections on '
-			.$CORE_LOCAL->get('localhost').'. Verify host is correct, database is running and
+			.$CORE_LOCAL->get('mServer').'. Verify host is correct, database is running and
 			firewall is allowing connections.</i>';
 	}
 	echo '</div>';
@@ -383,7 +378,7 @@ if($gotDBs == 2){
 	while($row=$sql->fetch_row($ratesR))
 		$rates[] = array($row[0],$row[1],$row[2]);
 }
-echo "<table><tr><th>ID</th><th>Rate (%)</th><th>Description</th></tr>";
+echo "<table><tr><th>ID</th><th>Rate</th><th>Description</th></tr>";
 foreach($rates as $rate){
 	printf("<tr><td>%d</td><td><input type=text name=TAX_RATE[] value=\"%f\" /></td>
 		<td><input type=text name=TAX_DESC[] value=\"%s\" /></td></tr>",
@@ -418,7 +413,7 @@ function create_op_dbs($db,$type){
 	create_if_needed($db, $type, $name, 'custPreferences', 'op', $errors);
 
 	$cardsViewQ = "CREATE VIEW memberCardsView AS 
-		SELECT CONCAT(" . $CORE_LOCAL->get('memberUpcPrefix') . ",c.CardNo) as upc, c.CardNo as card_no FROM custdata c";
+		SELECT CONCAT('" . $CORE_LOCAL->get('memberUpcPrefix') . "',c.CardNo) as upc, c.CardNo as card_no FROM custdata c";
 	if (!$db->table_exists('memberCardsView',$name)){
 		db_structure_modify($db,'memberCardsView',$cardsViewQ,$errors);
 	}
@@ -469,12 +464,14 @@ function create_op_dbs($db,$type){
 
 	create_if_needed($db, $type, $name, 'unpaid_ar_today', 'op', $errors);
 
-	create_if_needed($db, $type, $name, 'lane_config', 'op', $errors);
-	$chk = $db->query('SELECT modified FROM lane_config',$name);
-	if ($db->num_rows($chk) != 1){
-		$db->query('TRUNCATE TABLE lane_config', $name);
-		$db->query("INSERT INTO lane_config VALUES ('1900-01-01 00:00:00')", $name);
+	// Update lane_config structure if needed
+	if ($db->table_exists('lane_config', $name)){
+		$def = $db->table_definition('lane_config', $name);
+		if (!isset($def['keycode']) || !isset($def['value']))
+			$db->query('DROP TABLE lane_config', $name);
 	}
+	create_if_needed($db, $type, $name, 'lane_config', 'op', $errors);
+	
 	return $errors;
 }
 
@@ -2521,6 +2518,9 @@ function create_min_server($db,$type){
 	if (!$db->table_exists("TenderTapeGeneric",$name)){
 		db_structure_modify($db,'TenderTapeGeneric',$ttG,$errors);
 	}
+
+	// re-use definition to create lane_config on server
+	create_if_needed($db, $type, $name, 'lane_config', 'op', $errors);
 
 	return $errors;
 }

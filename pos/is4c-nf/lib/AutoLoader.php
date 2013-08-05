@@ -143,6 +143,9 @@ class AutoLoader extends LibraryClass {
 			$path = realpath(dirname(__FILE__).'/Search/Products');
 			$map = Plugin::PluginMap($path,$map);
 			break;
+		case 'DiscountModule':
+			$map['DiscountModule'] = realpath(dirname(__FILE__).'/DiscountModule.php');
+			break;
 		}
 
 		foreach($map as $name => $file){

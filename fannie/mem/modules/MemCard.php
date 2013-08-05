@@ -72,8 +72,8 @@ class MemCard extends MemberModule {
 
 		global $FANNIE_MEMBER_UPC_PREFIX, $FANNIE_ROOT;
 		$dbc = $this->db();
-		if (!class_exists("MemberCardsController"))
-			include($FANNIE_ROOT.'classlib2.0/data/controllers/MemberCardsController.php');
+		if (!class_exists("MemberCardsModel"))
+			include($FANNIE_ROOT.'classlib2.0/data/models/MemberCardsModel.php');
 
 		$prefix = isset($FANNIE_MEMBER_UPC_PREFIX) ? $FANNIE_MEMBER_UPC_PREFIX : "";
 		$plen = strlen($prefix);
@@ -85,7 +85,7 @@ class MemCard extends MemberModule {
 			$form_upc = sprintf("{$prefix}%0{$clen}d", $form_upc);
 		}
 
-		if (!MemberCardsController::update($memNum, $form_upc))	
+		if (!MemberCardsModel::update($memNum, $form_upc))	
 			return 'Error: problem saving Member Card<br />';
 		else
 			return '';

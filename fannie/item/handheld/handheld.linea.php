@@ -271,7 +271,7 @@ if(isset($_REQUEST['upc']) && !empty($_REQUEST['upc'])){
 		}
 
 		include('laneUpdates.php');
-		include($FANNIE_ROOT.'classlib2.0/data/controllers/ProductsController.php');
+		include($FANNIE_ROOT.'classlib2.0/data/models/ProductsModel.php');
 		$xQ = $dbc->prepare_statement("INSERT INTO prodExtra (upc) VALUES (?");
 		foreach($upcs as $upc){
 			$up = array(
@@ -284,7 +284,7 @@ if(isset($_REQUEST['upc']) && !empty($_REQUEST['upc'])){
 				'qttyEnforced'=>$qttyForce,
 				'description'=>$desc
 			);
-			ProductsController::update($upc, $up);
+			ProductsModel::update($upc, $up);
 			if ($upc == $_REQUEST['upc'] && $_REQUEST['olditem'] == 0){
 				$dbc->exec_statement($xQ,array($upc));
 			}

@@ -68,11 +68,24 @@ class adminlogin extends NoInputPage {
 					if ($CORE_LOCAL->get("cashierAgeOverride")==2)
 						$CORE_LOCAL->set("cashierAgeOverride",1);
 					$this->change_page($CORE_LOCAL->get("adminRequest"));
+					$row = $db->fetch_row($result);
+					TransRecord::add_log_record(array(
+						'upc' => $passwd,
+						'description' => substr($CORE_LOCAL->get('adminLoginMsg'),0,30),
+						'charflag' => 'PW',
+						'num_flag' => $row['emp_no']
+					));
 					return False;
 				}
 				else {
 					$this->box_color="#800000";
 					$this->msg = _("re-enter admin password");
+
+					TransRecord::add_log_record(array(
+						'upc' => $passwd,
+						'description' => substr($CORE_LOCAL->get('adminLoginMsg'),0,30),
+						'charflag' => 'PW'
+					));
 				}
 			}
 		}

@@ -523,6 +523,13 @@ class InstallIndexPage extends InstallPage {
 		<a href="LaneConfigPages/LaneNecessitiesPage.php">Edit Global Lane Configuration Page</a>
 		<hr />
 		<h4 class="install">Logs</h4>
+		Fannie writes to the following log files:
+		<ul>
+		<li><?php check_writeable('../logs/queries.log'); ?>
+		<ul><li>Contains failed database queries</li></ul>	
+		<li><?php check_writeable('../logs/dayend.log'); ?>
+		<ul><li>Contains output from scheduled tasks</li></ul>	
+		</ul>
 		Color-Highlighted Logs
 		<?php
 		if (!isset($FANNIE_PRETTY_LOGS)) $FANNIE_PRETTY_LOGS = 0;

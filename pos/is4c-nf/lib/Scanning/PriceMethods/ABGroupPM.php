@@ -64,6 +64,8 @@ class ABGroupPM extends PriceMethod {
 		$qualMM = abs($mixMatch);
 		$discMM = -1*abs($mixMatch);
 
+		$dbt = Database::tDataConnect();
+
 		// lookup existing qualifiers (i.e., item As)
 		// by-weight items are rounded down here
 		$q1 = "SELECT floor(sum(ItemQtty)),max(department) 
@@ -133,9 +135,9 @@ class ABGroupPM extends PriceMethod {
 
 		// count up complete sets
 		$sets = 0;
-		while($discs > 0 && $quals >= ($volume-1) ){
+		while($discs > 0 && $quals >= ($groupQty-1) ){
 			$discs -= 1;
-			$quals -= ($volume -1);
+			$quals -= ($groupQty -1);
 			$sets++;
 		}
 
@@ -179,6 +181,10 @@ class ABGroupPM extends PriceMethod {
 				(isset($row['numflag']) ? $row['numflag'] : 0),
 				(isset($row['charflag']) ? $row['charflag'] : '')
 			);
+
+			if (!$priceObj->isMemberSale() && !$priceObj->isStaffSale()){
+				TransRecord::additemdiscount($dept2,MiscLib::truncate2($maxDiscount));
+			}
 		}
 
 		/* any remaining quantity added without

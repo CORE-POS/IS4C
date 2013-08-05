@@ -46,6 +46,7 @@ global $CORE_LOCAL;
   necessarily saved in the session or session replacement mechanism.
   Include these settings every time.
 */
-include_once(realpath(dirname(__FILE__).'/../../ini.php'));
+if (file_exists(dirname(__FILE__).'/../../ini.php'))
+	include_once(realpath(dirname(__FILE__).'/../../ini.php'));
 
 ?>

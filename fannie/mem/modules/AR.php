@@ -58,11 +58,11 @@ class AR extends MemberModule {
 	function SaveFormData($memNum){
 		global $FANNIE_ROOT;
 		$dbc = $this->db();
-		if (!class_exists("CustdataController"))
-			include($FANNIE_ROOT.'classlib2.0/data/controllers/CustdataController.php');
+		if (!class_exists("CustdataModel"))
+			include($FANNIE_ROOT.'classlib2.0/data/models/CustdataModel.php');
 
 		$limit = FormLib::get_form_value('AR_limit',0);
-		$test = CustdataController::update($memNum,
+		$test = CustdataModel::update($memNum,
 				array('MemDiscountLimit' => $limit));
 		
 		if ($test === False)

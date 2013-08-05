@@ -152,7 +152,7 @@ for($i=0; $i<3; $i++){
 	}
 }
 
-MeminfoController::update($memNum, $MI_FIELDS);
+MeminfoModel::update($memNum, $MI_FIELDS);
 
 /* general note handling */
 $notetext = $_POST['notetext'];

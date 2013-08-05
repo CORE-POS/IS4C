@@ -188,6 +188,7 @@ class FanniePage {
 
 		if (!$this->check_auth() && $this->must_authenticate){
 			$this->login_redirect();
+			exit;
 		}
 		elseif ($this->preprocess()){
 			

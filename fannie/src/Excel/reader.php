@@ -28,7 +28,7 @@
 
 
 //require_once 'PEAR.php';
-require_once $FANNIE_ROOT.'src/Excel/oleread.inc';
+require_once dirname(__FILE__).'/oleread.inc';
 //require_once 'OLE.php';
 
 define('SPREADSHEET_EXCEL_READER_BIFF8',             0x600);

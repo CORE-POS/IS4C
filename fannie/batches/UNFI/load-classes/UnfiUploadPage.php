@@ -171,7 +171,7 @@ class UnfiUploadPage extends FannieUploadPage {
 
 			// set cost in $PRICEFILE_COST_TABLE
 			$dbc->exec_statement($extraP, array($reg_unit,$upc));
-			ProductsController::update($upc, array('cost'=>$reg_unit), True);
+			ProductsModel::update($upc, array('cost'=>$reg_unit), True);
 			// end $PRICEFILE_COST_TABLE cost tracking
 
 			$args = array($brand,($sku===False?'':$sku),($size===False?'':$size),

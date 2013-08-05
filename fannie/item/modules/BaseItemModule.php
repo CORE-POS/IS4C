@@ -24,7 +24,7 @@
 include_once(dirname(__FILE__).'/../../config.php');
 include_once(dirname(__FILE__).'/../../classlib2.0/item/ItemModule.php');
 include_once(dirname(__FILE__).'/../../classlib2.0/lib/FormLib.php');
-include_once(dirname(__FILE__).'/../../classlib2.0/data/controllers/ProductsController.php');
+include_once(dirname(__FILE__).'/../../classlib2.0/data/models/ProductsModel.php');
 include_once(dirname(__FILE__).'/../../src/JsonLib.php');
 
 class BaseItemModule extends ItemModule {
@@ -349,7 +349,7 @@ class BaseItemModule extends ItemModule {
 			$up_array['quantity'] = $vqty;
 		}
 
-		ProductsController::update($upc, $up_array);
+		ProductsModel::update($upc, $up_array);
 
 		if ($dbc->table_exists('prodExtra')){
 			$arr = array();

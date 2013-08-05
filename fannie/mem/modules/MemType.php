@@ -65,8 +65,8 @@ class MemType extends MemberModule {
 	function SaveFormData($memNum){
 		global $FANNIE_ROOT;
 		$dbc = $this->db();
-		if (!class_exists("CustdataController"))
-			include($FANNIE_ROOT.'classlib2.0/data/controllers/CustdataController.php');
+		if (!class_exists("CustdataModel"))
+			include($FANNIE_ROOT.'classlib2.0/data/models/CustdataModel.php');
 
 		$mtype = FormLib::get_form_value('MemType_type',0);
 		$q = $dbc->prepare_statement("SELECT discount,staff,SSI,cd_type FROM memdefaults
@@ -87,8 +87,17 @@ class MemType extends MemberModule {
 			$CUST_FIELDS['SSI'] = $w['SSI'];
 		}
 
-		$upR = CustdataController::update($memNum, $CUST_FIELDS);
-
+		$cust = new CustdataModel($dbc);
+		$cust->CardNo($memNum);
+		foreach($cust->Find() as $obj){
+			$obj->memType($mtype);
+			$obj->Type($CUST_FIELDS['Type']);
+			$obj->Staff($CUST_FIELDS['Staff']);
+			$obj->Discount($CUST_FIELDS['Discount']);
+			$obj->SSI($CUST_FIELDS['SSI']);
+			$obj->save();
+		}
+		
 		if ($upR === False )
 			return "Error: problem saving Member Type<br />";
 		else

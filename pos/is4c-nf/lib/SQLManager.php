@@ -240,7 +240,7 @@ class SQLManager {
 				$query .= $p;
 				if (count($args)>0){
 					$val = array_shift($args);
-					$query .= is_numeric($val) ? $val : $this->escape($val,$which_connection);
+					$query .= is_numeric($val) ? $val : "'".$this->escape($val,$which_connection)."'";
 				}
 			}
 			return $this->query($query,$which_connection);
@@ -307,7 +307,7 @@ class SQLManager {
 		case $this->TYPE_PDOPG:
 			return $result_object->fetch();
 		}
-		return -1;
+		return False;
 	}
 	
 	/* compatibility */

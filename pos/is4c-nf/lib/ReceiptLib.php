@@ -726,6 +726,33 @@ static public function localTTL(){
 	return $str."\n";
 }
 
+static public function graphedLocalTTL(){
+	global $CORE_LOCAL;
+	$db = Database::tDataConnect();
+
+	$lookup = "SELECT 
+		SUM(CASE WHEN p.local=1 THEN l.total ELSE 0 END) as localTTL,
+		SUM(CASE WHEN l.trans_type IN ('I','D') then l.total ELSE 0 END) as itemTTL
+		FROM localtemptrans AS l LEFT JOIN ".
+		$CORE_LOCAL->get('pDatabase').$db->sep()."products AS p
+		ON l.upc=p.upc
+		WHERE l.trans_type IN ('I','D')";
+	$lookup = $db->query($lookup);
+	if ($db->num_rows($lookup) == 0)
+		return '';
+	$row = $db->fetch_row($lookup);
+	if ($row['localTTL'] == 0) 
+		return '';
+
+	$percent = ((float)$row['localTTL']) / ((float)$row['itemTTL']);
+	$str = sprintf('LOCAL PURCHASES = $%.2f (%.2f%%)', 
+			$row['localTTL'], 100*$percent);
+	$str .= "\n";
+
+	$str .= self::$PRINT_OBJ->RenderBitmap(Bitmap::BarGraph($percent), 'L');
+	return $str."\n";
+}
+
 static public function receiptFromBuilders($reprint=False,$trans_num=''){
 	global $CORE_LOCAL;
 
@@ -1140,6 +1167,7 @@ static public function printReceipt($arg1,$second=False,$email=False) {
 					"\n";
 			}
 			$receipt['any'] .= self::localTTL();
+			//$receipt['any'] .= self::graphedLocalTTL();
 			$receipt['any'] .= "\n";
 	
 			if (trim($CORE_LOCAL->get("memberID")) != $CORE_LOCAL->get("defaultNonMem")) {

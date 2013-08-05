@@ -100,7 +100,9 @@ class tenderlist extends NoInputPage {
 	function body_content(){
 		global $CORE_LOCAL;
 		$db = Database::pDataConnect();
-		$q = "SELECT TenderCode,TenderName FROM tenders ORDER BY TenderName";
+		$q = "SELECT TenderCode,TenderName FROM tenders 
+			WHERE MaxAmount > 0
+			ORDER BY TenderName";
 		$r = $db->query($q);
 
 		echo "<div class=\"baseHeight\">"
