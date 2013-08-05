@@ -28,6 +28,8 @@ class SuspensionHistoryModel extends BasicModel {
 
 	protected $name = "suspension_history";
 
+	protected $preferred_db = 'op';
+
 	protected $columns = array(
 	'username' => array('type'=>'VARCHAR(50)'),
 	'postdate' => array('type'=>'DATETIME'),

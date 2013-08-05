@@ -70,6 +70,12 @@ class BasicModel {
 	protected $instance = array();
 
 	/**
+	  Name of preferred database
+	*/
+	protected $preferred_db = '';
+	public function preferred_db(){ return $this->preferred_db; }
+
+	/**
 	  Constructor
 	  @param $con a SQLManager object
 	*/
@@ -525,7 +531,7 @@ class BasicModel {
 		echo "Check complete\n";
 		echo "==========================================\n\n";
 
-		return count($new);
+		return count($new) + count($unknown);
 	}
 
 	/**
@@ -627,9 +633,41 @@ class $name extends BasicModel {\n");
 		fwrite($fp,"}\n?>\n");
 		fclose($fp);
 	}
+
+	function get_models(){
+		/**
+		  Experiment using lambdas. I was curious
+		  if I could do recursion without having
+		  a named function.
+		*/
+		$search = function($path) use (&$search){
+			if (is_file($path) && substr($path,'-4')=='.php'){
+				include_once($path);
+				$class = basename(substr($path,0,strlen($path)-4));
+				if (class_exists($class) && is_subclass_of($class, 'BasicModel'))
+					return array($class);
+			}
+			elseif(is_dir($path)){
+				$dh = opendir($path);
+				$ret = array();	
+				while( ($file=readdir($dh)) !== False){
+					if ($file == '.' || $file == '..')
+						continue;
+					$ret = array_merge($ret, $search($path.'/'.$file));
+				}
+				return $ret;
+			}
+			return array();
+		};
+		$models = $search(dirname(__FILE__));
+		return $models;
+	}
 }
 
 if (php_sapi_name() === 'cli' && basename($_SERVER['PHP_SELF']) == basename(__FILE__)){
+
+	$obj = new BasicModel(null);
+	var_dump($obj->get_models());
 
 	if (($argc < 2 || $argc > 4) || ($argc == 3 && $argv[1] != "--new") || ($argc == 4 && $argv[1] != '--update')){
 		echo "Generate Accessor Functions: php BasicModel.php <Subclass Filename>\n";

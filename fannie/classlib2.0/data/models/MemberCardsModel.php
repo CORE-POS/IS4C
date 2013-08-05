@@ -32,6 +32,8 @@ if (!class_exists('FannieDB'))
 class MemberCardsModel extends BasicModel {
 	
 	protected $name = 'memberCards';
+
+	protected $preferred_db = 'op';
 	
 	protected $columns = array(
 	'card_no' => array('type'=>'INT','primary_key'=>True,'default'=>0),

@@ -30,6 +30,8 @@ class ProductsModel extends BasicModel {
 
 	protected $name = 'products';
 
+	protected $preferred_db = 'op';
+
 	protected $columns = array(
 	'upc' => array('type'=>'VARCHAR(13)','index'=>True),
 	'description'=>array('type'=>'VARCHAR(30)','index'=>True),
@@ -39,10 +41,11 @@ class ProductsModel extends BasicModel {
 	'quantity'=>array('type'=>'SMALLINT'),
 	'special_price'=>array('type'=>'MONEY'),
 	'specialpricemethod'=>array('type'=>'SMALLINT'),
-	'sepcialgroupprice'=>array('type'=>'MONEY'),
+	'specialgroupprice'=>array('type'=>'MONEY'),
 	'specialquantity'=>array('type'=>'SMALLINT'),
 	'start_date'=>array('type'=>'DATETIME'),
 	'end_date'=>array('type'=>'DATETIME'),
+	'department'=>array('type'=>'SMALLINT','index'=>True),
 	'size'=>array('type'=>'VARCHAR(9)'),
 	'tax'=>array('type'=>'SMALLINT'),
 	'foodstamp'=>array('type'=>'TINYINT'),

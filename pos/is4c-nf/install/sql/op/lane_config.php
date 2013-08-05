@@ -3,18 +3,23 @@
 Table: lane_config
 
 Columns:
+	keycode varchar
+	value varchar
 	modified datetime
 
 Depends on:
 	none
 
 Use:
-Keep track of when ini file is updated
+Store settings for lane ini.php
+globally
 */
 $CREATE['op.lane_config'] = "
 	CREATE TABLE lane_config (
-		modified datetime
+	keycode varchar(255),
+	value varchar(255),
+	modified datetime,
+	PRIMARY KEY (keycode)
 	)
 ";
-
 ?>

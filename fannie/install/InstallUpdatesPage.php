@@ -84,13 +84,88 @@ class InstallUpdatesPage extends InstallPage {
 	}
 	*/
 
+	private function normalize_db_name($name){
+		global $FANNIE_OP_DB, $FANNIE_TRANS_DB, $FANNIE_ARCHIVE_DB;
+		if ($name == 'op') return $FANNIE_OP_DB;
+		elseif($name == 'trans') return $FANNIE_TRANS_DB;
+		elseif($name == 'archive') return $FANNIE_ARCHIVE_DB;
+		else return False;
+	}
+
 	function body_content(){
 		ob_start();
 		echo showInstallTabs('Updates');
 ?>
 
 <h1 class="install"><?php echo $this->header; ?></h1>
-<p class="ichunk">Click a link for details on the Update.</p>
+<p class="ichunk">Model-based Updates.</p>
+<?php
+		if (FormLib::get_form_value('mupdate') !== ''){
+			$updateClass = FormLib::get_form_value('mupdate');
+			echo '<div style="border: solid 1px #999; padding:10px;">';
+			echo 'Attempting to update model: "'.$updateClass.'"<br />';
+			if (!class_exists($updateClass))
+				echo 'Error: class not found<br />';
+			elseif(!is_subclass_of($updateClass, 'BasicModel'))
+				echo 'Error: not a valid model<br />';	
+			else {
+				$updateModel = new $updateClass(null);
+				$db_name = $this->normalize_db_name($updateModel->preferred_db());
+				if ($db_name === False)
+					echo 'Error: requested database unknown';
+				else {
+					ob_start();
+					$changes = $updateModel->normalize($db_name, False);
+					$details = ob_get_clean();
+					if ($changes === False)
+						echo 'An error occurred.';
+					else
+						echo 'Update complete.';
+					printf(' <a href="" onclick="$(\'#updateDetails\').toggle();return false;"
+						>Details</a><pre style="display:none;" id="updateDetails">%s</pre>',
+						$details);
+				}
+			}
+			echo '</div>';
+		}
+
+		$obj = new BasicModel(null);
+		$models = $obj->get_models();
+		$cmd = new ReflectionClass('BasicModel');
+		$cmd = $cmd->getFileName();
+		echo '<ul>';
+		foreach($models as $class){
+			$model = new $class(null);
+			$db_name = $this->normalize_db_name($model->preferred_db());
+			if ($db_name === False) continue;
+		
+			ob_start();
+			$changes = $model->normalize($db_name, True);
+			$details = ob_get_clean();
+
+			if ($changes === False){
+				printf('<li>%s had errors.', $class);
+			}
+			elseif($changes !== 0){
+				printf('<li>%s has updates available.', $class);
+			}
+
+			if ($changes === False || $changes !== 0){
+				printf(' <a href="" onclick="$(\'#mDetails%s\').toggle();return false;"
+					>Details</a><br /><pre style="display:none;" id="mDetails%s">%s</pre><br />
+					To apply changes <a href="InstallUpdatesPage.php?mupdate=%s">Click Here</a>
+					or run the following command:<br />
+					<pre>php %s --update %s %s</pre>
+					</li>',
+					$class, $class, $details, $class,
+					$cmd, $db_name, $class
+					);
+			}
+		}
+		echo '</ul>';
+?>
+<hr />
+<p class="ichunk">Click a link for details on the simple Update.</p>
 <?php
 		if (is_writable('../config.php')){
 			echo "<span style=\"color:green;\"><i>config.php</i> is writeable</span>";

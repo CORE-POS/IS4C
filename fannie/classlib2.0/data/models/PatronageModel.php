@@ -28,6 +28,8 @@ class PatronageModel extends BasicModel {
 
 	protected $name = "patronage";
 
+	protected $preferred_db = 'op';
+
 	protected $columns = array(
 	'cardno' => array('type'=>'INT','primary_key'=>True,'default'=>0),
 	'purchase' => array('type'=>'MONEY'),

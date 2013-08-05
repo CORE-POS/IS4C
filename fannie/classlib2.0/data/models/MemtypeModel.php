@@ -28,6 +28,8 @@ class MemtypeModel extends BasicModel {
 
 	protected $name = "memtype";
 
+	protected $preferred_db = 'op';
+
 	protected $columns = array(
 	'memtype' => array('type'=>'TINYINT','primary_key'=>True,'default'=>0),
 	'memDesc' => array('type'=>'VARCHAR(20)')

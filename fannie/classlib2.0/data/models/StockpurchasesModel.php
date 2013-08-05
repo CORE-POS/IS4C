@@ -28,6 +28,8 @@ class StockpurchasesModel extends BasicModel {
 
 	protected $name = "stockpurchases";
 
+	protected $preferred_db = 'trans';
+
 	protected $columns = array(
 	'card_no' => array('type'=>'INT','index'=>True),
 	'stockPurchase' => array('type','MONEY'),
