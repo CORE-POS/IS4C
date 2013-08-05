@@ -20,10 +20,15 @@ function scalePollSuccess(data){
 		if (data.scale){
 			$('#scaleBottom').html(data.scale);	
 		}
-		var URL = location.href;
-		//var pagename = URL.substring(URL.lastIndexOf('/') + 1);
-		//if (pagename == 'pos2.php' && data.scans){
-		if ($('#reginput').length != 0 && data.scans){
+
+		if (data.scans && data.scans.indexOf(':') !== -1){
+			// data from the cc terminal
+			// run directly; don't include user input
+			if (typeof runParser == 'function')
+				runParser(SCALE_REL_PRE, data.scans);
+		}
+		else if ($('#reginput').length != 0 && data.scans){
+			// barcode scan input
 			var v = $('#reginput').val();
 			parseWrapper(v+data.scans);
 			//return; // why is this here? scale needs to keep polling...
