@@ -181,7 +181,7 @@ static public function printReceiptHeader($dateTimeStamp, $ref) {
 		// cache the receipt-formatted bitmap so it's
 		// not re-rendered every single time
 		$img_file = MiscLib::base_url()."graphics/WFC_Logo.bmp";
-		if (isset($img_cache[basename($img_file)]) && get_class(self::$PRINT_OBJ)=='ESCPOSPrintHandler'){
+		if (isset($img_cache[basename($img_file)]) && !empty($img_cache[basename($img_file)]) && get_class(self::$PRINT_OBJ)=='ESCPOSPrintHandler'){
 			$receipt .= $img_cache[basename($img_file)]."\n";
 		}
 		else {
