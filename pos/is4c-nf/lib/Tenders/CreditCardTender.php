@@ -46,6 +46,8 @@ class CreditCardTender extends TenderModule {
 	  @return True or a URL to redirect
 	*/
 	function PreReqCheck(){
+		global $CORE_LOCAL;
+		$CORE_LOCAL->set('kickOverride',True);
 		return True;
 	}
 }
