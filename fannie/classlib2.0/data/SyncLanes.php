@@ -78,8 +78,12 @@ class SyncLanes {
 
 		$special = dirname(__FILE__).'/../../sync/special/'.$table.'.php';
 		if (file_exists($special)){
-			// use special script to send table
+			/* Use special script to send table.
+			 * Usually with mysqldump.
+			 *  Much faster if both sides are mysql.
+			*/
 			ob_start();
+			$outputFormat = 'plain';
 			include($special);
 			$tmp = ob_get_clean();
 			$ret = array('sending'=>True,'messages'=>'');
@@ -87,10 +91,12 @@ class SyncLanes {
 			return $ret;
 		}
 		else {
-			// use the transfer option in SQLManager to copy
-			// records onto each lane
+			/* use the transfer option in SQLManager
+			*   to copy records onto each lane
+			*/
 			$server_db = $db=='op' ? $FANNIE_OP_DB : $FANNIE_TRANS_DB;
 			$dbc = FannieDB::get( $server_db );
+			$laneNumber=1;
 			foreach($FANNIE_LANES as $lane){
 				$dbc->add_connection($lane['host'],$lane['type'],
 					$lane[$db],$lane['user'],$lane['pw']);
@@ -104,15 +110,16 @@ class SyncLanes {
 						       "INSERT INTO $table");
 					$dbc->close($lane[$db]);
 					if ($success){
-						$ret['messages'] .= "<li>Lane ".$lane['host']." completed successfully</li>";
+						$ret['messages'] .= "Lane $laneNumber ({$lane['host']}) $table completed successfully";
 					}
 					else {
-						$ret['messages'] .= "Lane ".$lane['host']." completed but with some errors";
+						$ret['messages'] .= "Lane $laneNumber ({$lane['host']}) $table completed but with some errors";
 					}
 				}
 				else {
-					$ret['messages'] .= "Couldn't connect to lane ".$lane['host'];
+					$ret['messages'] .= "Couldn't connect to lane $laneNumber ({$lane['host']})";
 				}
+				$laneNumber++;
 			}
 			if ($truncate & self::TRUNCATE_SOURCE){
 				$dbc->query("TRUNCATE TABLE $table",$server_db);
@@ -161,6 +168,7 @@ class SyncLanes {
 		if ($truncate & self::TRUNCATE_DESTINATION){
 			$dbc->query("TRUNCATE TABLE $table",$server_db);
 		}
+		$laneNumber=1;
 		foreach($FANNIE_LANES as $lane){
 			$dbc->add_connection($lane['host'],$lane['type'],
 				$lane[$db],$lane['user'],$lane['pw']);
@@ -174,15 +182,16 @@ class SyncLanes {
 				}
 				$dbc->close($lane[$db]);
 				if ($success){
-					$ret['messages'] .= "<li>Lane ".$lane['host']." completed successfully</li>";
+					$ret['messages'] .= "Lane $laneNumber ({$lane['host']}) $table completed successfully";
 				}
 				else {
-					$ret['messages'] .= "Lane ".$lane['host']." completed but with some errors";
+					$ret['messages'] .= "Lane $laneNumber ({$lane['host']}) $table completed but with some errors";
 				}
 			}
 			else {
-				$ret['messages'] .= "Couldn't connect to lane ".$lane['host'];
+				$ret['messages'] .= "Couldn't connect to lane $laneNumber ({$lane['host']})";
 			}
+			$laneNumber++;
 		}
 		return $ret;
 	}

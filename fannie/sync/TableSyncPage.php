@@ -29,7 +29,8 @@
  * Rewriting the loop to use mysql commandline programs would be good
  * if everything's on the same dbms. Using the global settings in
  * $FANNIE_LANES is the important part. Rough sketch of this
- * is in comments below
+ * is in comments below.
+ * Using fannie/sync/special/* is one way to effect this.
  *
  */
 include('../config.php');
@@ -62,12 +63,12 @@ class TableSyncPage extends FanniePage {
 
 		$dbc = FannieDB::get($FANNIE_OP_DB);
 
-		$this->results = "<p>Syncing table $table <ul>";
+		$this->results = "<p style='font-family:Arial; font-size:1.0em;'>Syncing table $table <ul>";
 
 		if (file_exists("special/$table.php")){
 			ob_start();
 			include("special/$table.php");
-			$this->results = ob_get_clean();
+			$this->results .= ob_get_clean();
 		}
 		else {
 			$i = 1;
@@ -83,14 +84,14 @@ class TableSyncPage extends FanniePage {
 						       "INSERT INTO $table");
 					$dbc->close($lane['op']);
 					if ($success){
-						$this->results .= "<li>Lane ".$i." completed successfully</li>";
+						$this->results .= "<li>Lane ".$i." ({$lane['host']}) completed successfully</li>";
 					}
 					else {
-						$this->errors[] = "Lane ".$i." completed but with some errors";
+						$this->errors[] = "Lane ".$i." ({$lane['host']}) completed but with some errors";
 					}
 				}
 				else {
-					$this->errors[] = "Couldn't connect to lane ".$i;
+					$this->errors[] = "Lane ".$i." ({$lane['host']}) couldn't connect to lane";
 				}
 				$i++;
 			}
