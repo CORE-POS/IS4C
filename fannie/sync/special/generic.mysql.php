@@ -22,35 +22,46 @@
 *********************************************************************************/
 
 /*
-   If all machines are on MySQL, this should be
-   much faster than SQLManager transfer
+   If all machines are on MySQL, this,
+	 which uses mysqldump,
+   is much faster than SQLManager transfer
 */
 
-/* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - -
-	.22Mar13 Add Andy's changes: "Variable scoping w/ sync scripts from within class"
-	.https://github.com/CORE-POS/IS4C/commit/261fddb60849857043e9ef0da32c672d8d9cf77b
-	.        prior to proposing mine be added.
-	.14Jan13 Eric Lee Bugfix: non-port branch using -P.
-	. 1Oct12 Eric Lee Support a port# in the lane host: 1.2.3.4:50001
-	.                 Test return value of dump and each load.
-*/
-
-include(dirname(__FILE__).'/../../config.php');
+if (!isset($FANNIE_ROOT))
+	include(dirname(__FILE__).'/../../config.php');
 include_once($FANNIE_ROOT.'src/tmp_dir.php');
-$tempfile = tempnam(sys_get_temp_dir(),$table.".sql");
-if (empty($table)) return;
+
 $ret = 0;
 $output = array();
-exec("mysqldump -u $FANNIE_SERVER_USER -p$FANNIE_SERVER_PW -h $FANNIE_SERVER $FANNIE_OP_DB $table > $tempfile", $output, $ret);
-if ( $ret > 0 ) {
-	$report = implode('<br />', $output);
-	if ( strlen($report) > 0 ) {
-		$report = "<br />$report";
-	}
-	echo "<li>Dump failed, returned: $ret {$report}</li>";
+if (isset($outputFormat) && $outputFormat == 'plain') {
+	$itemStart = '';
+	$itemEnd = '';
+	$lineBreak = "\n";
 }
 else {
-	$i=0;
+	$outputFormat = 'html';
+	$itemStart = '<li>';
+	$itemEnd = '</li>';
+	$lineBreak = '<br />';
+}
+
+if (empty($table)) {
+	echo "{$itemStart}No table named. Cannot run.{$itemEnd}";
+	return;
+}
+$tempfile = tempnam(sys_get_temp_dir(),$table.".sql");
+
+// Make a mysqldump of the table.
+exec("mysqldump -u $FANNIE_SERVER_USER -p$FANNIE_SERVER_PW -h $FANNIE_SERVER $FANNIE_OP_DB $table > $tempfile", $output, $ret);
+if ( $ret > 0 ) {
+	$report = implode("$lineBreak", $output);
+	if ( strlen($report) > 0 )
+		$report = "{$lineBreak}$report";
+	echo "{$itemStart}mysqldump failed, returned: $ret {$report}{$itemEnd}";
+}
+else {
+	// Load the mysqldump from Fannie to each lane.
+	$laneNumber=1;
 	foreach($FANNIE_LANES as $lane){
 		$ret = 0;
 		$output = array();
@@ -62,16 +73,15 @@ else {
 			exec("mysql -u {$lane['user']} -p{$lane['pw']} -h {$lane['host']} {$lane['op']} < $tempfile", $output, $ret);
 		}
 		if ( $ret == 0 ) {
-			echo "<li>Lane ".($i+1)." completed successfully</li>";
+			echo "{$itemStart}Lane $laneNumber ({$lane['host']}) $table completed successfully{$itemEnd}";
 		} else {
-			$report = implode('<br />', $output);
-			if ( strlen($report) > 0 ) {
-				$report = "<br />$report";
-			}
-			echo "<li>Lane ".($i+1)." failed, returned: $ret {$report}</li>";
+			$report = implode("$lineBreak", $output);
+			if ( strlen($report) > 0 )
+				$report = "{$lineBreak}$report";
+			echo "{$itemStart}Lane $laneNumber ({$lane['host']}) $table failed, returned: $ret {$report}{$itemEnd}";
 		}
 		unset($output);
-		$i++;
+		$laneNumber++;
 	// each lane
 	}
 // mysqldump ok
