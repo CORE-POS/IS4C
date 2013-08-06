@@ -32,6 +32,7 @@ class QMDisplay extends NoInputPage {
 	function head_content(){
 		?>
 		<script type="text/javascript" >
+		/*
 		var prevKey = -1;
 		var prevPrevKey = -1;
 		var selectedId = 0;
@@ -59,6 +60,28 @@ class QMDisplay extends NoInputPage {
 		}
 
 		document.onkeyup = keyCheck;
+		*/
+		$(document).ready(function(){
+			var prevKey = -1;
+			var prevPrevKey = -1;
+			var selectedId = 0;
+			var form_disabled = 0;
+			$(document).keyup(function (event){
+				if (
+					(event.which==108 || event.which==76)
+					&&
+					(prevKey==99 || prevKey==67)
+				){
+					$('#doClear').val('1');
+				}
+				else if (event.which==13 && form_disabled == 0){
+					form_disabled=1;
+					$('#qmform').submit();
+				}
+				prevPrevKey = prevKey;
+				prevKey = event.which;
+			});
+		});
 
 		</script> 
 		<?php

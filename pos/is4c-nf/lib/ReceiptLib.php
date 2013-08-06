@@ -162,49 +162,52 @@ static public function printReceiptHeader($dateTimeStamp, $ref) {
 	$img_cache = $CORE_LOCAL->get('ImageCache');
 	if (!is_array($img_cache)) $img_cache = array();
 
-	$i = 2; // for headers below
-	if ($CORE_LOCAL->get("newReceipt")==1 && $CORE_LOCAL->get("store") != "wfc"){
-		if ($CORE_LOCAL->get("ReceiptHeaderImage") != ""){
-			$img = self::$PRINT_OBJ->RenderBitmapFromFile(MiscLib::base_url()."graphics/" . $CORE_LOCAL->get("ReceiptHeaderImage"));
-			$receipt .= $img."\n";
+	for ($i=1; $i <= $CORE_LOCAL->get("receiptHeaderCount"); $i++){
+
+		// wfc nonsense. get rid of this soon
+		if ($i == 1 && $CORE_LOCAL->get("newReceipt")>=1 && $CORE_LOCAL->get("store") == "wfc"){
+			$img_file = MiscLib::base_url()."graphics/WFC_Logo.bmp";
+			if (isset($img_cache[basename($img_file)]) && !empty($img_cache[basename($img_file)]) && get_class(self::$PRINT_OBJ)=='ESCPOSPrintHandler'){
+				$receipt .= $img_cache[basename($img_file)]."\n";
+			}
+			else {
+				$img = self::$PRINT_OBJ->RenderBitmapFromFile($img_file);
+				$receipt .= $img."\n";
+				$img_cache[basename($img_file)] = $img;
+				$CORE_LOCAL->set('ImageCache',$img_cache);
+			}
 			$i=4;
 			$receipt .= "\n";
-		} 
-		else {
-			$receipt .= self::$PRINT_OBJ->TextStyle(True, False, True);
-			$receipt .= self::$PRINT_OBJ->centerString($CORE_LOCAL->get("receiptHeader1"),True);
-			$receipt .= self::$PRINT_OBJ->TextStyle(True);
-			$receipt .= "\n\n";
+			continue;
 		}
-	}
-	else if ($CORE_LOCAL->get("newReceipt")>=1 && $CORE_LOCAL->get("store") == "wfc"){
-		// cache the receipt-formatted bitmap so it's
-		// not re-rendered every single time
-		$img_file = MiscLib::base_url()."graphics/WFC_Logo.bmp";
-		if (isset($img_cache[basename($img_file)]) && get_class(self::$PRINT_OBJ)=='ESCPOSPrintHandler'){
-			$receipt .= $img_cache[basename($img_file)]."\n";
-		}
-		else {
-			$img = self::$PRINT_OBJ->RenderBitmapFromFile($img_file);
-			$receipt .= $img."\n";
-			$img_cache[basename($img_file)] = $img;
-			$CORE_LOCAL->set('ImageCache',$img_cache);
-		}
-		$i=4;
-		$receipt .= "\n";
-	}
-	else{
-		// zero-indexing the receipt header and footer list
-		$receipt .= self::$PRINT_OBJ->TextStyle(True, False, True);
-		$receipt .= self::$PRINT_OBJ->centerString($CORE_LOCAL->get("receiptHeader1"),True);
-		$receipt .= self::$PRINT_OBJ->TextStyle(True);
-		$receipt .= "\n";
-	}
 
-	// and continuing on 
-	for (; $i <= $CORE_LOCAL->get("receiptHeaderCount"); $i++){
-		$receipt .= self::$PRINT_OBJ->centerString($CORE_LOCAL->get("receiptHeader$i"));
-		$receipt .= "\n";
+		/**
+		  If the receipt header line is a .bmp file (and it exists),
+		  print it on the receipt. Otherwise just print the line of
+		  text centered.
+		*/
+		$headerLine = $CORE_LOCAL->get("receiptHeader".$i);
+		$graphics_path = MiscLib::base_url().'graphics';
+		if (substr($headerLine,-4) == ".bmp" && file_exists($graphics_path.'/'.$headerLine)){
+			// save image bytes in cache so they're not recalculated
+			// on every receipt
+			$img_file = $graphics_path.'/'.$headerLine;
+			if (isset($img_cache[basename($img_file)]) && !empty($img_cache[basename($img_file)]) && get_class(self::$PRINT_OBJ)=='ESCPOSPrintHandler'){
+				$receipt .= $img_cache[basename($img_file)]."\n";
+			}
+			else {
+				$img = self::$PRINT_OBJ->RenderBitmapFromFile($img_file);
+				$receipt .= $img."\n";
+				$img_cache[basename($img_file)] = $img;
+				$CORE_LOCAL->set('ImageCache',$img_cache);
+				$receipt .= "\n";
+			}
+		}
+		else {
+			$bold = ($i==1) ? True : False;
+			$receipt .= self::$PRINT_OBJ->centerString($CORE_LOCAL->get("receiptHeader$i"), $bold);
+			$receipt .= "\n";
+		}
 	}
 
 	$receipt .= "\n";
@@ -1157,7 +1160,7 @@ static public function printReceipt($arg1,$second=False,$email=False) {
 			$receipt['any'] = self::printReceiptHeader($dateTimeStamp, $ref);
 
 			$receipt['any'] .= self::receiptDetail();
-			$member = "Member ".trim($CORE_LOCAL->get("memberID"));
+			$member = trim($CORE_LOCAL->get("memberID"));
 			$your_discount = $CORE_LOCAL->get("transDiscount");
 
 			if ($CORE_LOCAL->get("transDiscount") + 
@@ -1178,7 +1181,7 @@ static public function printReceipt($arg1,$second=False,$email=False) {
 					$receipt['any'] .= "\n\n";
 				}
 				else{
-					$receipt['any'] .= self::$PRINT_OBJ->centerString("Thank You - ".$member);
+					$receipt['any'] .= self::$PRINT_OBJ->centerString("Thank You - member ".$member);
 					$receipt['any'] .= "\n";
 				}
 			}

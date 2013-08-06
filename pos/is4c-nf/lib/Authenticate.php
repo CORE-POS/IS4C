@@ -77,6 +77,7 @@ static public function check_password($password,$activity=1){
 			//Database::testremote();
 			Database::loadglobalvalues();
 
+			$transno = Database::gettransno($row_q["emp_no"]);
 			$globals = array(
 				"CashierNo" => $row_q["emp_no"],
 				"Cashier" => $row_q["FirstName"]." ".substr($row_q["LastName"], 0, 1).".",
@@ -85,7 +86,6 @@ static public function check_password($password,$activity=1){
 			);
 			Database::setglobalvalues($globals);
 
-			$transno = Database::gettransno($row_q["emp_no"]);
 			CoreState::cashier_login($transno, $row_q['age']);
 
 			if ($transno == 1) TransRecord::addactivity($activity);
@@ -113,6 +113,7 @@ static public function check_password($password,$activity=1){
 		} elseif ($password == 9999) {
 			Database::loadglobalvalues();
 
+			$transno = Database::gettransno(9999);
 			$globals = array(
 				"CashierNo" => 9999,
 				"Cashier" => "Training Mode",
@@ -121,7 +122,6 @@ static public function check_password($password,$activity=1){
 			);
 			Database::setglobalvalues($globals);
 
-			$transno = Database::gettransno(9999);
 			CoreState::cashier_login($transno, 0);
 
 			$my_drawer = ReceiptLib::currentDrawer();

@@ -120,7 +120,7 @@ class GeneralDayReport extends FannieReportPage {
 		$taxR = $dbc->exec_statement($taxSumQ,$dates);
 		$report = array();
 		while($taxW = $dbc->fetch_row($taxR)){
-			$record = array('Sales Tax',null,$taxW['tax_collected']);
+			$record = array('Sales Tax',null,round($taxW['tax_collected'],2));
 			$report[] = $record;
 		}
 		$data[] = $report;

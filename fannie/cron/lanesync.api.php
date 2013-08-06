@@ -25,10 +25,15 @@
 
    lanesync.api.php
 
-   Send the following tables to all lanes:
+   Retrieve to the server from the following tables on all lanes:
+		valutecRequest, valutecRequestMod, valutecResponse
+   Replace the following tables on all lanes with contents of server table:
     products, custdata, memberCards, employees, departments, custReceiptMessage
-   Optionally also send:
+   Optionally also replace:
     productUser
+
+   If you can use fannie/sync/special/generic.mysql.php
+	  the transfers will go much faster.
 
   Replacement for nightly.lanesync.php using Fannie's API
   instead of cURL
@@ -41,29 +46,29 @@ include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
 set_time_limit(0);
 
-$result = SyncLanes::pull_table('valutecRequest', 'trans', SyncLanes::TRUNCATE_SOURCE);
-echo cron_msg($result['messages']);
-$result = SyncLanes::pull_table('valutecRequestMod', 'trans', SyncLanes::TRUNCATE_SOURCE);
-echo cron_msg($result['messages']);
-$result = SyncLanes::pull_table('valutecResponse', 'trans', SyncLanes::TRUNCATE_SOURCE);
-echo cron_msg($result['messages']);
+foreach (array('valutecRequest', 'valutecRequestMod', 'valutecResponse') as $table) {
+	$result = SyncLanes::pull_table("$table", 'trans', SyncLanes::TRUNCATE_SOURCE);
+	echo cron_msg($result['messages']);
+}
 
-$result = SyncLanes::push_table('products', 'op', SyncLanes::TRUNCATE_DESTINATION);
-echo cron_msg($result['messages']);
-$result = SyncLanes::push_table('custdata', 'op', SyncLanes::TRUNCATE_DESTINATION);
-echo cron_msg($result['messages']);
-$result = SyncLanes::push_table('memberCards', 'op', SyncLanes::TRUNCATE_DESTINATION);
-echo cron_msg($result['messages']);
-$result = SyncLanes::push_table('custReceiptMessage', 'op', SyncLanes::TRUNCATE_DESTINATION);
-echo cron_msg($result['messages']);
-$result = SyncLanes::push_table('employees', 'op', SyncLanes::TRUNCATE_DESTINATION);
-echo cron_msg($result['messages']);
-$result = SyncLanes::push_table('departments', 'op', SyncLanes::TRUNCATE_DESTINATION);
-echo cron_msg($result['messages']);
+
+$regularPushTables = array(
+	'products',
+	'custdata',
+	'memberCards',
+	'custReceiptMessage',
+	'employees',
+	'departments');
+foreach ($regularPushTables as $table) {
+	$result = SyncLanes::push_table("$table", 'op', SyncLanes::TRUNCATE_DESTINATION);
+	echo cron_msg($result['messages']);
+}
 
 if ( isset($FANNIE_COMPOSE_LONG_PRODUCT_DESCRIPTION) && $FANNIE_COMPOSE_LONG_PRODUCT_DESCRIPTION == True ) {
 	$result = SyncLanes::push_table('productUser', 'op', SyncLanes::TRUNCATE_DESTINATION);
 	echo cron_msg($result['messages']);
 }
+
+echo cron_msg(basename(__FILE__) ." done.");
 
 ?>
