@@ -598,9 +598,6 @@ static public function addVirtualCoupon($id){
 	self::addItem($upc, $desc, "I", "CP", "C", 0, 1, $val, $val, $val, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0);
 }
 
-
-//___________________________end addMadCoupon()
-
 /**
   Add a deposit
   @deprecated
