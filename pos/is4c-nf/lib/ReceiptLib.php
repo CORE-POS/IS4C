@@ -1157,7 +1157,7 @@ static public function printReceipt($arg1,$second=False,$email=False) {
 			$receipt['any'] = self::printReceiptHeader($dateTimeStamp, $ref);
 
 			$receipt['any'] .= self::receiptDetail();
-			$member = "Member ".trim($CORE_LOCAL->get("memberID"));
+			$member = trim($CORE_LOCAL->get("memberID"));
 			$your_discount = $CORE_LOCAL->get("transDiscount");
 
 			if ($CORE_LOCAL->get("transDiscount") + 
@@ -1178,7 +1178,7 @@ static public function printReceipt($arg1,$second=False,$email=False) {
 					$receipt['any'] .= "\n\n";
 				}
 				else{
-					$receipt['any'] .= self::$PRINT_OBJ->centerString("Thank You - ".$member);
+					$receipt['any'] .= self::$PRINT_OBJ->centerString("Thank You - member ".$member);
 					$receipt['any'] .= "\n";
 				}
 			}
