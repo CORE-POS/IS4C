@@ -591,7 +591,7 @@ static public function classic_tender($right, $strl) {
 		$cash_return = $CORE_LOCAL->get("change");
 
 		if ($right != "FS") {
-			TransRecord::addchange($cash_return,$CORE_LOCAL->get("TenderType"));
+			TransRecord::addchange($cash_return,'CA');
 		}
 
 		if ($right == "CK" && $cash_return > 0) 
