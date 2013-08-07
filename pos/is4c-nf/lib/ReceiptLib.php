@@ -164,23 +164,6 @@ static public function printReceiptHeader($dateTimeStamp, $ref) {
 
 	for ($i=1; $i <= $CORE_LOCAL->get("receiptHeaderCount"); $i++){
 
-		// wfc nonsense. get rid of this soon
-		if ($i == 1 && $CORE_LOCAL->get("newReceipt")>=1 && $CORE_LOCAL->get("store") == "wfc"){
-			$img_file = MiscLib::base_url()."graphics/WFC_Logo.bmp";
-			if (isset($img_cache[basename($img_file)]) && !empty($img_cache[basename($img_file)]) && get_class(self::$PRINT_OBJ)=='ESCPOSPrintHandler'){
-				$receipt .= $img_cache[basename($img_file)]."\n";
-			}
-			else {
-				$img = self::$PRINT_OBJ->RenderBitmapFromFile($img_file);
-				$receipt .= $img."\n";
-				$img_cache[basename($img_file)] = $img;
-				$CORE_LOCAL->set('ImageCache',$img_cache);
-			}
-			$i=4;
-			$receipt .= "\n";
-			continue;
-		}
-
 		/**
 		  If the receipt header line is a .bmp file (and it exists),
 		  print it on the receipt. Otherwise just print the line of
