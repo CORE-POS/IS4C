@@ -434,31 +434,42 @@ class BasicModel {
 		return True;
 	}
 
+	/** check for potential changes **/
+	const NORMALIZE_MODE_CHECK = 1;
+	/** apply changes **/
+	const NORMALIZE_MODE_APPLY = 2;
+
 	/**
 	  Compare existing table to definition
 	  Add any columns that are missing from the table structure
 	  Extra columns that are present in the table but not in the
 	  controlelr class are left as-is.
 	  @param $db_name name of the database containing the table 
-	  @param $preview_only boolean [default True] do not
-	         make any changes
+	  @param $mode the normalization mode. See above.
 	  @return number of columns added or False on failure
 	*/
-	public function normalize($db_name, $preview_only=True, $doCreate=False){
+	public function normalize($db_name, $mode=BasicModel::NORMALIZE_MODE_CHECK, $doCreate=False){
+		if ($mode != BasicModel::NORMALIZE_MODE_CHECK && $mode != BasicModel::NORMALIZE_MODE_APPLY){
+			echo "Error: Unknown mode ($mode)\n";
+			return False;
+		}
 		echo "==========================================\n";
-		printf("%s table %s\n", ($preview_only)?"Checking":"Updating", "{$db_name}.{$this->name}");
+		printf("%s table %s\n", 
+			($mode==BasicModel::NORMALIZE_MODE_CHECK)?"Checking":"Updating", 
+			"{$db_name}.{$this->name}"
+		);
 		echo "==========================================\n";
 		$this->connection = FannieDB::get($db_name);
 		if (!$this->connection->table_exists($this->name)){
-			if ($preview_only) {
+			if ($mode == BasicModel::NORMALIZE_MODE_CHECK) {
 				echo "Table {$this->name} not found!\n";
 				echo "==========================================\n";
-				printf("%s table %s\n",($preview_only)?"Check complete. Need to create":"Update complete: Created", $this->name);
+				printf("%s table %s\n","Check complete. Need to create", $this->name);
 				echo "==========================================\n\n";
 				return 999;
 				//return False;
 			}
-			else {
+			else if ($mode == BasicModel::NORMALIZE_MODE_APPLY){
 				echo "==========================================\n";
 				if ($doCreate) {
 					$cResult = $this->create(); 
@@ -492,7 +503,10 @@ class BasicModel {
 		for($i=0;$i<count($our_columns);$i++){
 			if (!in_array($our_columns[$i],$new_columns))
 				continue; // column already exists
-			printf("%s column: %s\n", ($preview_only)?"Need to add":"Adding", "{$our_columns[$i]}");
+			printf("%s column: %s\n", 
+					($mode==BasicModel::NORMALIZE_MODE_CHECK)?"Need to add":"Adding", 
+					"{$our_columns[$i]}"
+			);
 			$sql = '';
 			foreach($their_columns as $their_col){
 				if (isset($our_columns[$i-1]) && $our_columns[$i-1] == $their_col){
@@ -521,10 +535,10 @@ class BasicModel {
 				}
 			}
 			if ($sql !== '') {
-				if ($preview_only){
+				if ($mode == BasicModel::NORMALIZE_MODE_CHECK){
 					echo "\tSQL Details: $sql\n";
 				}
-				else {
+				else if ($mode == BasicModel::NORMALIZE_MODE_APPLY){
 					$this->connection->query($sql);
 				}
 			}
@@ -540,21 +554,22 @@ class BasicModel {
 				$index_sql = 'ALTER TABLE '.$this->name.' ADD INDEX '
 						.$this->connection->identifier_escape($our_columns[$i])
 						.' ('.$this->connection->identifier_escape($our_columns[$i]).')';
-				if ($preview_only){
+				if ($mode == BasicModel::NORMALIZE_MODE_CHECK){
 					echo "Need to add index to column: {$our_columns[$i]}\n";
 					echo "\tSQL Details: $index_sql\n";
 				}
-				else {
+				else if ($mode == BasicModel::NORMALIZE_MODE_APPLY){
 					echo "Adding index to column: {$our_columns[$i]}\n";
 					$this->connection->query($index_sql);
 				}
 			}
 		}
 		echo "==========================================\n";
-		printf("%s %d column%s  %d index%s.\n",($preview_only)?"Check complete. Need to add":"Update complete. Added",
-					count($new_columns), (count($new_columns)!=1)?"s":"",
-					count($new_indexes), (count($new_indexes)!=1)?"es":""
-					);
+		printf("%s %d column%s  %d index%s.\n",
+			($mode==BasicModel::NORMALIZE_MODE_CHECK)?"Check complete. Need to add":"Update complete. Added",
+			count($new_columns), (count($new_columns)!=1)?"s":"",
+			count($new_indexes), (count($new_indexes)!=1)?"es":""
+			);
 		echo "==========================================\n\n";
 
 		// EL: Why also count($unknown)?
@@ -700,9 +715,6 @@ class $name extends BasicModel ".chr(123)."\n");
 if (php_sapi_name() === 'cli' && basename($_SERVER['PHP_SELF']) == basename(__FILE__)){
 
 	$obj = new BasicModel(null);
-	/* Only during development,yes?
-	var_dump($obj->get_models());
-	*/
 
 	/* Argument signatures, to php, where BasicModel.php is the first:
    * 2 args: Generate Accessor Functions: php BasicModel.php <Subclass Filename>\n";
@@ -719,10 +731,6 @@ if (php_sapi_name() === 'cli' && basename($_SERVER['PHP_SELF']) == basename(__FI
 	include(dirname(__FILE__).'/../../../config.php');
 	include(dirname(__FILE__).'/../../FannieAPI.php');
 
-/*echo "argc: $argc\n";
-print_r($argv);
-exit;
-*/
 	// Create new Model
 	if ($argc == 3){
 		$modelname = $argv[2];
@@ -769,10 +777,7 @@ exit;
 	// Update Table Structure
 	else if ($argc == 4){
 		// Show what changes are needed but don't make them yet.
-		if ($argv[3]=='DTransactionsModel')
-			$try = $obj->normalize($argv[2],True,True,True);
-		else
-			$try = $obj->normalize($argv[2],True,False);
+		$try = $obj->normalize($argv[2],BasicModel::NORMALIZE_MODE_CHECK);
 		// If there was no error and there is anything to change,
 		//  including creating the table.
 		// Was: If the table exists and there is anything to change
@@ -788,10 +793,7 @@ exit;
 				elseif($in ==='Y'){
 					// THIS WILL APPLY PROPOSED CHANGES!
 					//EL Need to restore $this->name. See DTransactionsModel::normalize()
-					if ($argv[3]=='DTransactionsModel')
-						$try = $obj->normalize($argv[2],False,True,True);
-					else
-						$obj->normalize($argv[2],False,True);
+					$obj->normalize($argv[2],BasicModel::NORMALIZE_MODE_APPLY);
 					break;
 				}
 			}
