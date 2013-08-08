@@ -71,45 +71,39 @@ class DTransactionsModel extends BasicModel {
 	  all have identical or similar structure
 		after doing a normal run of the base.
 	*/
-	public function normalize($db_name, $preview_only=True, $doTrans=False, $doViews=False){
-		global $FANNIE_ARCHIVE_DB, $FANNIE_ARCHIVE_METHOD;
+	public function normalize($db_name, $mode=BasicModel::NORMALIZE_MODE_CHECK, $doCreate=False){
+		global $FANNIE_ARCHIVE_DB, $FANNIE_ARCHIVE_METHOD, $FANNIE_TRANS_DB;
 		$trans_adds = 0;
 		$log_adds = 0;
+
 		//EL If this isn't initialized it is "dlog_15" on the 2nd, preview_only=False run
-		echo "At start of DTransactionsModel::normalize() name: ".$this->name."\n";
 		$this->name = 'dtransactions';
 		// check self first
-		$chk = parent::normalize($db_name, $preview_only, True);
+		$chk = parent::normalize($db_name, $mode, $doCreate);
 		if ($chk !== False) $trans_adds += $chk;
 		
 		$this->name = 'transarchive';
-		$chk = parent::normalize($db_name, $preview_only, True);
+		$chk = parent::normalize($db_name, $mode, $doCreate);
 		if ($chk !== False) $trans_adds += $chk;
 
 		$this->name = 'suspended';
-		$chk = parent::normalize($db_name, $preview_only, True);
+		$chk = parent::normalize($db_name, $mode, $doCreate);
 		if ($chk !== False) $trans_adds += $chk;
 
-		// if columns were added to any dtrans tables, go ahead and
-		//  verify the archive table(s) too.
-		// EL: $trans_adds will also be > 0 if parent::normalize()
-		//     found any unknown cols in current tables.
-		if ($trans_adds > 0 || $doTrans){
-			if ($trans_adds > 0)
-				echo "Archive Issue: dtransactions structure changed\n";
-			$this->connection = FannieDB::get($FANNIE_ARCHIVE_DB);
-			if ($FANNIE_ARCHIVE_METHOD == 'partitions'){
-				$this->name = 'bigArchive';
-				parent::normalize($FANNIE_ARCHIVE_DB, $preview_only);
-			}
-			else {
-				$pattern = '/^transArchive\d\d\d\d\d\d$/';
-				$tables = $this->connection->get_tables($FANNIE_ARCHIVE_DB);
-				foreach($tables as $t){
-					if (preg_match($pattern,$t)){
-						$this->name = $t;
-						parent::normalize($FANNIE_ARCHIVE_DB, $preview_only);
-					}
+		$this->connection = FannieDB::get($FANNIE_ARCHIVE_DB);
+		if ($FANNIE_ARCHIVE_METHOD == 'partitions'){
+			$this->name = 'bigArchive';
+			$chk = parent::normalize($FANNIE_ARCHIVE_DB, $mode, $doCreate);
+			if ($chk !== False) $trans_adds += $chk;
+		}
+		else {
+			$pattern = '/^transArchive\d\d\d\d\d\d$/';
+			$tables = $this->connection->get_tables($FANNIE_ARCHIVE_DB);
+			foreach($tables as $t){
+				if (preg_match($pattern,$t)){
+					$this->name = $t;
+					$chk = parent::normalize($FANNIE_ARCHIVE_DB, $mode, $doCreate);
+					if ($chk !== False) $trans_adds += $chk;
 				}
 			}
 		}
@@ -119,42 +113,72 @@ class DTransactionsModel extends BasicModel {
 		// actual table.
 		// In the model the datestamp field datetime is swapped out for tdate
 		// and trans_num is tacked on the end
+		$this->connection = FannieDB::get($FANNIE_TRANS_DB);
 		$this->name = 'dlog_15';
-		// EL: Need to save original values of $this->columns
-		$columns_orig = $this->columns;
 		unset($this->columns['datetime']);
 		$tdate = array('tdate'=>array('type'=>'datetime','index'=>True));
 		$trans_num = array('trans_num'=>array('type'=>'VARCHAR(25)'));
 		$this->columns = $tdate + $this->columns + $trans_num;
-		$chk = parent::normalize($db_name, $preview_only, True);
+		$chk = parent::normalize($db_name, $mode, $doCreate);
 		if ($chk !== False) $log_adds += $chk;
 
 		// rebuild views
-		//  originally, only if normalize of dlog_15 required changes
-		// EL: $log_adds will also be > 0 if parent::normalize()
-		//     found any unknown cols in dlog_15.
-		if ($log_adds > 0 || $doViews){
-			$this->normalize_log('dlog','dtransactions',$preview_only);
-			$this->normalize_log('dlog_90_view','transarchive',$preview_only);
-			$this->connection = FannieDB::get($FANNIE_ARCHIVE_DB);
-			if ($FANNIE_ARCHIVE_METHOD == 'partitions'){
-				$this->normalize_log('dlogBig','bigArchive',$preview_only);
+		// use BasicModel::normalize in check mode to detect missing columns
+		// the ALTER queries it suggests won't work but the return value is
+		// still correct. If it returns > 0, the view needs to be rebuilt
+		$this->name = 'dlog';
+		ob_start();
+		$chk = parent::normalize($db_name, BasicModel::NORMALIZE_MODE_CHECK);
+		ob_end_clean();
+		if ($chk !== False && $chk > 0){
+			$log_adds += $chk;
+			$this->normalize_log('dlog','dtransactions',$mode);
+		}
+		$this->name = 'dlog_90_view';
+		ob_start();
+		$chk = parent::normalize($db_name, BasicModel::NORMALIZE_MODE_CHECK);
+		ob_end_clean();
+		if ($chk !== False && $chk > 0){
+			$log_adds += $chk;
+			$this->normalize_log('dlog_90_view','transarchive',$mode);
+		}
+
+		$this->connection = FannieDB::get($FANNIE_ARCHIVE_DB);
+		if ($FANNIE_ARCHIVE_METHOD == 'partitions'){
+			$this->name = 'dlogBig';
+			ob_start();
+			$chk = parent::normalize($FANNIE_ARCHIVE_DB, BasicModel::NORMALIZE_MODE_CHECK);
+			ob_end_clean();
+			if ($chk !== False && $chk > 0){
+				$log_adds += $chk;
+				$this->normalize_log('dlogBig','bigArchive',$mode);
 			}
-			else {
-				$pattern = '/^dlog\d\d\d\d\d\d$/';
-				$tables = $this->connection->get_tables($FANNIE_ARCHIVE_DB);
-				foreach($tables as $t){
-					if (preg_match($pattern,$t)){
-						$this->normalize_log($t, 'transArchive'.substr($t,4),$preview_only);
+		}
+		else {
+			$pattern = '/^dlog\d\d\d\d\d\d$/';
+			$tables = $this->connection->get_tables($FANNIE_ARCHIVE_DB);
+			foreach($tables as $t){
+				if (preg_match($pattern,$t)){
+					$this->name = $t;
+					ob_start();
+					$chk = parent::normalize($FANNIE_ARCHIVE_DB, BasicModel::NORMALIZE_MODE_CHECK);
+					ob_end_clean();
+					if ($chk !== False && $chk > 0){
+						$log_adds += $chk;
+						$this->normalize_log($t, 'transArchive'.substr($t,4),$mode);
 					}
 				}
 			}
 		}
 
 		// EL: Need to restore $this-columns to original values.
-		$this->columns = $columns_orig;
+		$this->connection = FannieDB::get($FANNIE_TRANS_DB);
+		unset($this->columns['tdate']);
+		unset($this->columns['trans_num']);
+		$datetime = array('datetime'=>array('type'=>'datetime','index'=>True));
+		$this->columns = $datetime + $this->columns;
 
-		return $log_adds + $trans_adds + ($doViews || $doTrans)?1:0;
+		return $log_adds + $trans_adds;
 
 	// normalize()
 	}
@@ -163,8 +187,7 @@ class DTransactionsModel extends BasicModel {
 	  Rebuild dlog style views
 	  @param $view_name name of the view
 	  @param $table_name underlying table
-	  @param $preview_only boolean [default True] do not
-	         make any changes
+	  @param $mode the normalization mode. See BasicModel.
 
 	  The view changes the column "datetime" to "tdate" and
 	  adds a "trans_num" column. Otherwise it includes all
@@ -172,11 +195,14 @@ class DTransactionsModel extends BasicModel {
 	  and "trans_subtype" still have translations to fix
 	  older records but everyting else passes through as-is.
 	*/
-	private function normalize_log($view_name, $table_name, $preview_only=True){
-		printf("%s view: %s",($preview_only)?"Would recreate":"Recreating", "$view_name (of table $table_name)\n");
+	private function normalize_log($view_name, $table_name, $mode=BasicModel::NORMALIZE_MODE_CHECK){
+		printf("%s view: %s",
+			($mode==BasicModel::NORMALIZE_MODE_CHECK)?"Would recreate":"Recreating", 
+			"$view_name (of table $table_name)\n"
+		);
 		if ($this->connection->table_exists($view_name)){
 			$sql = 'DROP VIEW '.$this->connection->identifier_escape($view_name);
-			if (!$preview_only)
+			if ($mode == BasicModel::NORMALIZE_MODE_APPLY)
 				$this->connection->query($sql);
 		}
 
@@ -219,7 +245,7 @@ class DTransactionsModel extends BasicModel {
 			.' WHERE '.$c->identifier_escape('trans_status')
 			." NOT IN ('D','X','Z') AND emp_no <> 9999
 			AND register_no <> 99";
-		if (!$preview_only)
+		if ($mode == BasicModel::NORMALIZE_MODE_APPLY)
 			$this->connection->query($sql);
 
 	// normalize_log()
