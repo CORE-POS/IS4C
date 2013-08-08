@@ -26,7 +26,7 @@
   Module for print-formatting 
   tender records.
 */
-class TenderFormat extends DefaultReceiptFormat {
+class TenderReceiptFormat extends DefaultReceiptFormat {
 
 	/**
 	  Formatting function

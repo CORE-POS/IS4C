@@ -67,86 +67,127 @@ class DTransactionsModel extends BasicModel {
 	);
 
 	/**
-	  Overriden to check multiple tables that should
+	  Overrides (extends) the base function to check multiple tables that should
 	  all have identical or similar structure
+		after doing a normal run of the base.
 	*/
-	public function normalize($db_name, $preview_only=True){
-		global $FANNIE_ARCHIVE_DB, $FANNIE_ARCHIVE_METHOD;
+	public function normalize($db_name, $mode=BasicModel::NORMALIZE_MODE_CHECK, $doCreate=False){
+		global $FANNIE_ARCHIVE_DB, $FANNIE_ARCHIVE_METHOD, $FANNIE_TRANS_DB;
 		$trans_adds = 0;
 		$log_adds = 0;
+
+		//EL If this isn't initialized it is "dlog_15" on the 2nd, preview_only=False run
+		$this->name = 'dtransactions';
 		// check self first
-		$chk = parent::normalize($db_name, $preview_only);
+		$chk = parent::normalize($db_name, $mode, $doCreate);
 		if ($chk !== False) $trans_adds += $chk;
 		
 		$this->name = 'transarchive';
-		$chk = parent::normalize($db_name, $preview_only);
+		$chk = parent::normalize($db_name, $mode, $doCreate);
 		if ($chk !== False) $trans_adds += $chk;
 
 		$this->name = 'suspended';
-		$chk = parent::normalize($db_name, $preview_only);
+		$chk = parent::normalize($db_name, $mode, $doCreate);
 		if ($chk !== False) $trans_adds += $chk;
 
-		// if columns were added to any dtrans tables, go ahead and
-		// verify the archive table(s) too.
-		if ($trans_adds > 0){
-			echo "Archive Issue: dtransactions structure changed\n";
-			$this->connection = FannieDB::get($FANNIE_ARCHIVE_DB);
-			if ($FANNIE_ARCHIVE_METHOD == 'partitions'){
-				$this->name = 'bigArchive';
-				parent::normalize($FANNIE_ARCHIVE_DB, $preview_only);
-			}
-			else {
-				$pattern = '/^transArchive\d\d\d\d\d\d$/';
-				$tables = $this->connection->get_tables($FANNIE_ARCHIVE_DB);
-				foreach($tables as $t){
-					if (preg_match($pattern,$t)){
-						$this->name = $t;
-						parent::normalize($FANNIE_ARCHIVE_DB, $preview_only);
-					}
+		$this->connection = FannieDB::get($FANNIE_ARCHIVE_DB);
+		if ($FANNIE_ARCHIVE_METHOD == 'partitions'){
+			$this->name = 'bigArchive';
+			$chk = parent::normalize($FANNIE_ARCHIVE_DB, $mode, $doCreate);
+			if ($chk !== False) $trans_adds += $chk;
+		}
+		else {
+			$pattern = '/^transArchive\d\d\d\d\d\d$/';
+			$tables = $this->connection->get_tables($FANNIE_ARCHIVE_DB);
+			foreach($tables as $t){
+				if (preg_match($pattern,$t)){
+					$this->name = $t;
+					$chk = parent::normalize($FANNIE_ARCHIVE_DB, $mode, $doCreate);
+					if ($chk !== False) $trans_adds += $chk;
 				}
 			}
 		}
 	
 		// move on to dlog views.
 		// dlog_15 is used for detection since it's the only
-		// actual table. datetime is swapped out for tdate
+		// actual table.
+		// In the model the datestamp field datetime is swapped out for tdate
 		// and trans_num is tacked on the end
+		$this->connection = FannieDB::get($FANNIE_TRANS_DB);
 		$this->name = 'dlog_15';
 		unset($this->columns['datetime']);
 		$tdate = array('tdate'=>array('type'=>'datetime','index'=>True));
 		$trans_num = array('trans_num'=>array('type'=>'VARCHAR(25)'));
 		$this->columns = $tdate + $this->columns + $trans_num;
-		$chk = parent::normalize($db_name, $preview_only);
+		$chk = parent::normalize($db_name, $mode, $doCreate);
 		if ($chk !== False) $log_adds += $chk;
 
 		// rebuild views
-		if ($log_adds > 0){
-			$this->normalize_log('dlog','dtransactions');
-			$this->normalize_log('dlog_90_view','transarchive');
-			$this->connection = FannieDB::get($FANNIE_ARCHIVE_DB);
-			if ($FANNIE_ARCHIVE_METHOD == 'partitions'){
-				$this->normalize_log('dlogBig','bigArchive');
+		// use BasicModel::normalize in check mode to detect missing columns
+		// the ALTER queries it suggests won't work but the return value is
+		// still correct. If it returns > 0, the view needs to be rebuilt
+		$this->name = 'dlog';
+		ob_start();
+		$chk = parent::normalize($db_name, BasicModel::NORMALIZE_MODE_CHECK);
+		ob_end_clean();
+		if ($chk !== False && $chk > 0){
+			$log_adds += $chk;
+			$this->normalize_log('dlog','dtransactions',$mode);
+		}
+		$this->name = 'dlog_90_view';
+		ob_start();
+		$chk = parent::normalize($db_name, BasicModel::NORMALIZE_MODE_CHECK);
+		ob_end_clean();
+		if ($chk !== False && $chk > 0){
+			$log_adds += $chk;
+			$this->normalize_log('dlog_90_view','transarchive',$mode);
+		}
+
+		$this->connection = FannieDB::get($FANNIE_ARCHIVE_DB);
+		if ($FANNIE_ARCHIVE_METHOD == 'partitions'){
+			$this->name = 'dlogBig';
+			ob_start();
+			$chk = parent::normalize($FANNIE_ARCHIVE_DB, BasicModel::NORMALIZE_MODE_CHECK);
+			ob_end_clean();
+			if ($chk !== False && $chk > 0){
+				$log_adds += $chk;
+				$this->normalize_log('dlogBig','bigArchive',$mode);
 			}
-			else {
-				$pattern = '/^dlog\d\d\d\d\d\d$/';
-				$tables = $this->connection->get_tables($FANNIE_ARCHIVE_DB);
-				foreach($tables as $t){
-					if (preg_match($pattern,$t)){
-						$this->normalize_log($t, 'transArchive'.substr($t,4));
+		}
+		else {
+			$pattern = '/^dlog\d\d\d\d\d\d$/';
+			$tables = $this->connection->get_tables($FANNIE_ARCHIVE_DB);
+			foreach($tables as $t){
+				if (preg_match($pattern,$t)){
+					$this->name = $t;
+					ob_start();
+					$chk = parent::normalize($FANNIE_ARCHIVE_DB, BasicModel::NORMALIZE_MODE_CHECK);
+					ob_end_clean();
+					if ($chk !== False && $chk > 0){
+						$log_adds += $chk;
+						$this->normalize_log($t, 'transArchive'.substr($t,4),$mode);
 					}
 				}
 			}
 		}
 
+		// EL: Need to restore $this-columns to original values.
+		$this->connection = FannieDB::get($FANNIE_TRANS_DB);
+		unset($this->columns['tdate']);
+		unset($this->columns['trans_num']);
+		$datetime = array('datetime'=>array('type'=>'datetime','index'=>True));
+		$this->columns = $datetime + $this->columns;
+
 		return $log_adds + $trans_adds;
+
+	// normalize()
 	}
 
 	/**
 	  Rebuild dlog style views
 	  @param $view_name name of the view
 	  @param $table_name underlying table
-	  @param $preview_only boolean [default True] do not
-	         make any changes
+	  @param $mode the normalization mode. See BasicModel.
 
 	  The view changes the column "datetime" to "tdate" and
 	  adds a "trans_num" column. Otherwise it includes all
@@ -154,11 +195,14 @@ class DTransactionsModel extends BasicModel {
 	  and "trans_subtype" still have translations to fix
 	  older records but everyting else passes through as-is.
 	*/
-	private function normalize_log($view_name, $table_name, $preview_only=True){
-		echo "Recreating view: $view_name (on $table_name)\n";
+	private function normalize_log($view_name, $table_name, $mode=BasicModel::NORMALIZE_MODE_CHECK){
+		printf("%s view: %s",
+			($mode==BasicModel::NORMALIZE_MODE_CHECK)?"Would recreate":"Recreating", 
+			"$view_name (of table $table_name)\n"
+		);
 		if ($this->connection->table_exists($view_name)){
 			$sql = 'DROP VIEW '.$this->connection->identifier_escape($view_name);
-			if (!$preview_only)
+			if ($mode == BasicModel::NORMALIZE_MODE_APPLY)
 				$this->connection->query($sql);
 		}
 
@@ -201,8 +245,10 @@ class DTransactionsModel extends BasicModel {
 			.' WHERE '.$c->identifier_escape('trans_status')
 			." NOT IN ('D','X','Z') AND emp_no <> 9999
 			AND register_no <> 99";
-		if (!$preview_only)
+		if ($mode == BasicModel::NORMALIZE_MODE_APPLY)
 			$this->connection->query($sql);
+
+	// normalize_log()
 	}
 
 	static public function select_dlog($start, $end=False){
@@ -213,6 +259,11 @@ class DTransactionsModel extends BasicModel {
 		return self::select_struct(False, $start, $end);
 	}
 
+	/* Return the SQL FROM parameter for a given date range
+	 *  i.e. the table, view or union of tables or views
+	 *  in which the transaction records can be found
+	 *  most efficiently.
+	*/
 	static private function select_struct($dlog, $start, $end=False){
 		global $FANNIE_TRANS_DB, $FANNIE_ARCHIVE_DB, $FANNIE_SERVER_DBMS, $FANNIE_ARCHIVE_METHOD;
 		$sep = ($FANNIE_SERVER_DBMS=='MSSQL')?'.dbo.':'.';
@@ -270,6 +321,8 @@ class DTransactionsModel extends BasicModel {
 		$union = preg_replace('/ union all select \* from $/','',$union);
 		$union .= ')';
 		return $union;
+
+	// select_struct()
 	}
 
 	/* START ACCESSOR FUNCTIONS */

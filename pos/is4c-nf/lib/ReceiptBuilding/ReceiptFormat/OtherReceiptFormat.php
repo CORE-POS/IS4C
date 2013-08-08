@@ -26,7 +26,7 @@
   Module for print-formatting 
   miscelaneous records. 
 */
-class OtherFormat extends DefaultReceiptFormat {
+class OtherReceiptFormat extends DefaultReceiptFormat {
 
 	/**
 	  Formatting function
@@ -40,7 +40,7 @@ class OtherFormat extends DefaultReceiptFormat {
 			$description = str_replace('**',' =',$description);
 			return $description;
 		}
-		else if ($row['trans_type'] == 'H'){
+		else if ($row['trans_type'] == 'H' && $row['description'] != ''){
 			$this->is_bold = True;
 			return $row['description'];
 		}

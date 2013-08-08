@@ -163,7 +163,7 @@ class Steering extends Parser {
 				$CORE_LOCAL->set("training",0);
 				$CORE_LOCAL->set("gui-scale","no");
 				$CORE_LOCAL->set("away",1);
-				$this->ret['main_frame'] = $my_url."gui-modules/login2.php";
+				$this->ret['main_frame'] = $my_url."login.php";
 			}
 			return True;
 		case 'NS':
