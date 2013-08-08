@@ -1,7 +1,5 @@
 <?php
-include('../lib/AutoLoader.php');
-AutoLoader::LoadMap();
-CoreState::initiate_session();
+include('test_env.php');
 $mods = AutoLoader::ListModules('TenderReport');
 ?>
 <form action="testTenderReport.php">

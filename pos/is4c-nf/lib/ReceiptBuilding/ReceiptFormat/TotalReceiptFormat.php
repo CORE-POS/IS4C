@@ -26,7 +26,7 @@
   Module for print-formatting 
   total records. 
 */
-class TotalFormat extends DefaultReceiptFormat {
+class TotalReceiptFormat extends DefaultReceiptFormat {
 
 	/**
 	  Formatting function
