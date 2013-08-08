@@ -1,5 +1,5 @@
 html { overflow: hidden; }
-body { font-family: arial; background-image: url('/graphics/is4c.gif');
+body { font-family: arial; background-image: url('../graphics/is4c.gif');
        background-repeat: no-repeat; margin-top:20px;}
 div#boundingBox { width: 675px; }
 /*********************************************
