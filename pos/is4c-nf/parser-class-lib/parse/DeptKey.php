@@ -60,7 +60,6 @@ class DeptKey extends Parser {
 				$CORE_LOCAL->set("adminRequest",$my_url."gui-modules/refundComment.php");
 				$CORE_LOCAL->set("adminRequestLevel",$CORE_LOCAL->get("SecurityRefund"));
 				$CORE_LOCAL->set("adminLoginMsg",_("Login to issue refund"));
-				$CORE_LOCAL->set("away",1);
 				$ret['main_frame'] = $my_url."gui-modules/adminlogin.php";
 			}
 			else

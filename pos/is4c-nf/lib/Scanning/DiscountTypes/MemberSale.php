@@ -53,12 +53,10 @@ class MemberSale extends DiscountType {
 	function addDiscountLine(){
 		global $CORE_LOCAL;	
 		if ($CORE_LOCAL->get("isMember") == 1 || $CORE_LOCAL->get("memberID") == $CORE_LOCAL->get("visitingMem")){
-			$CORE_LOCAL->set("voided",2);
 			TransRecord::adddiscount($this->savedInfo['memDiscount'],
 				$this->savedRow['department']);
 		}
 		if ($this->savedInfo['discount'] != 0){
-			$CORE_LOCAL->set("voided",2);
 			TransRecord::adddiscount($this->savedInfo['discount'],
 					$this->savedRow['department']);
 		}

@@ -125,7 +125,7 @@ class Input extends BasicPage {
 
 	function body_content(){
 		global $CORE_LOCAL;
-		if ($CORE_LOCAL->get("inputMasked") != 0) {
+		if ($this->mask_input){
 			$inputType = "password";
 		} else {
 			$inputType = "text";

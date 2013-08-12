@@ -64,7 +64,6 @@ class StoreTransferTender extends TenderModule {
 			$CORE_LOCAL->set("adminRequest",
 				$my_url."gui-modules/pos2.php?reginput=".$tenderStr);
 
-			$CORE_LOCAL->set("away",1);
 			$CORE_LOCAL->set("transfertender",1);
 			return $my_url."gui-modules/adminlogin.php";
 		}

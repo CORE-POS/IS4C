@@ -47,7 +47,6 @@ class PercentMemSale extends DiscountType {
 	function addDiscountLine(){
 		global $CORE_LOCAL;	
 		if ($CORE_LOCAL->get("isMember")){
-			$CORE_LOCAL->set("voided",2);
 			TransRecord::adddiscount($this->savedInfo['memDiscount'],
 				$this->savedRow['department']);
 		}

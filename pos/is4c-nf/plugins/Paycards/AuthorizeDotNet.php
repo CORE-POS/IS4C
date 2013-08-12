@@ -260,7 +260,6 @@ class AuthorizeDotNet extends BasicCCModule {
 		$CORE_LOCAL->set("paycard_name",$request["name"]);
 	
 		// display FEC code box
-		$CORE_LOCAL->set("inputMasked",1);
 		$plugin_info = new Paycards();
 		$json['main_frame'] = $plugin_info->plugin_url().'/gui/paycardboxMsgVoid.php';
 		return $json;
@@ -471,7 +470,6 @@ class AuthorizeDotNet extends BasicCCModule {
 		global $CORE_LOCAL;
 		switch($CORE_LOCAL->get("paycard_mode")){
 		case PaycardLib::PAYCARD_MODE_AUTH:
-			$CORE_LOCAL->set("ccTender",1); 
 			// cast to string. tender function expects string input
 			// numeric input screws up parsing on negative values > $0.99
 			$amt = "".($CORE_LOCAL->get("paycard_amount")*100);

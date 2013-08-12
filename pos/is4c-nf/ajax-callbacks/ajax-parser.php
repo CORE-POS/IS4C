@@ -134,10 +134,7 @@ $CORE_LOCAL->set("msgrepeat",0);
 if (empty($json)) $json = "{}";
 else {
 	if (isset($json['redraw_footer']) && $json['redraw_footer'] !== False){
-		if ($CORE_LOCAL->get("away") == 1)
-			$json['redraw_footer'] = DisplayLib::printfooterb();
-		else
-			$json['redraw_footer'] = DisplayLib::printfooter();
+		$json['redraw_footer'] = DisplayLib::printfooter();
 	}
 	if (isset($json['scale']) && $json['scale'] !== False){
 		$display = DisplayLib::scaledisplaymsg($json['scale']);

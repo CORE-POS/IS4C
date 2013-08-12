@@ -85,7 +85,6 @@ class giftcardlist extends NoInputPage {
 		</div>
 		</div>
 		<?php
-		$CORE_LOCAL->set("scan","noScan");
 	} // END body_content() FUNCTION
 }
 

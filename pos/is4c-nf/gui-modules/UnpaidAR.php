@@ -87,7 +87,6 @@ class UnpaidAR extends BasicPage {
 		echo DisplayLib::printfooter();
 		echo "</div>";
 		$CORE_LOCAL->set("msgrepeat",2);
-		$CORE_LOCAL->set("beep","noBeep");
 	} // END body_content() FUNCTION
 }
 

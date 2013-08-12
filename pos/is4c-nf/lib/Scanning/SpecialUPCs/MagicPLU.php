@@ -49,7 +49,7 @@ class MagicPLU extends SpecialUPC {
 				$json['main_frame'] = $my_url.'gui-modules/memlist.php';
 			else if ($CORE_LOCAL->get("msgrepeat") == 0){
 				$CORE_LOCAL->set("endorseType","stock");
-				$CORE_LOCAL->set("tenderamt",$total);
+				$CORE_LOCAL->set("endorseAmt",$total);
 				$CORE_LOCAL->set("boxMsg","<B>".$total." stock payment</B><BR>insert form<BR>press [enter] to endorse<P><FONT size='-1'>[clear] to cancel</FONT>");
 				$ret["main_frame"] = $my_url."gui-modules/boxMsg2.php";
 			}

@@ -23,7 +23,7 @@
 
 if (!class_exists("MainFramePage")) include_once($_SESSION["INCLUDE_PATH"]."/gui-class-lib/MainFramePage.php");
 if (!function_exists("changeCurrentPage")) include_once($_SESSION["INCLUDE_PATH"]."/gui-base.php");
-if (!function_exists("printfooterb")) include_once($_SESSION["INCLUDE_PATH"]."/lib/drawscreen.php");
+if (!function_exists("printfooter")) include_once($_SESSION["INCLUDE_PATH"]."/lib/drawscreen.php");
 if (!function_exists("receipt")) include_once($_SESSION["INCLUDE_PATH"]."/lib/clientscripts.php");
 if (!isset($CORE_LOCAL)) include($_SESSION["INCLUDE_PATH"]."/lib/LocalStorage/conf.php");
 

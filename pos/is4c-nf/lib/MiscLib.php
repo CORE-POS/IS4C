@@ -235,7 +235,6 @@ static public function sigTermObject(){
 */
 static public function goodBeep() {
 	global $CORE_LOCAL;
-	$CORE_LOCAL->set("beep","goodBeep");
 	$sd = self::scaleObject();
 	if (is_object($sd))
 		$sd->WriteToScale("goodBeep");
@@ -246,7 +245,6 @@ static public function goodBeep() {
 */
 static public function rePoll() {
 	global $CORE_LOCAL;
-	$CORE_LOCAL->set("beep","rePoll");
 	$sd = self::scaleObject();
 	if (is_object($sd))
 		$sd->WriteToScale("rePoll");
@@ -257,7 +255,6 @@ static public function rePoll() {
 */
 static public function errorBeep() {
 	global $CORE_LOCAL;
-	$CORE_LOCAL->set("beep","errorBeep");
 	$sd = self::scaleObject();
 	if (is_object($sd))
 		$sd->WriteToScale("errorBeep");
@@ -268,7 +265,6 @@ static public function errorBeep() {
 */
 static public function twoPairs() {
 	global $CORE_LOCAL;
-	$CORE_LOCAL->set("beep","twoPairs");
 	$sd = self::scaleObject();
 	if (is_object($sd))
 		$sd->WriteToScale("twoPairs");
