@@ -105,7 +105,7 @@ class undo_input extends BasicPage {
 		echo "<div id=\"inputArea\">";
 		echo "<div class=\"inputform\">";
 		echo "<form name='form' method='post' autocomplete='off' onsubmit=\"inputCheck();return false;\">";
-		if ($CORE_LOCAL->get("inputMasked") != 0) {
+		if ($this->mask_input){
 			$inputType = "password";
 		} else {
 			$inputType = "text";

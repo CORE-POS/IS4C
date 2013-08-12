@@ -29,6 +29,11 @@ $endorseType = $CORE_LOCAL->get("endorseType");
 if (strlen($endorseType) > 0) {
 	$CORE_LOCAL->set("endorseType","");
 
+	// close session so if printer hangs
+	// this script won't lock the session file
+	if (session_id() != '')
+		session_write_close();
+
 	switch ($endorseType) {
 
 		case "check":

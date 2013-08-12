@@ -181,14 +181,7 @@ class pos2 extends BasicPage {
 			screenLockVar = setTimeout('lockScreen()', <?php echo $CORE_LOCAL->get("timeout") ?>);
 		}
 		function lockScreen(){
-			$.ajax({
-				'url': '<?php echo $this->page_url; ?>ajax-callbacks/ajax-lock.php',
-				'type': 'get',
-				'cache': false,
-				'success': function(){
-					location = '<?php echo $this->page_url; ?>gui-modules/login3.php';
-				}
-			});
+			location = '<?php echo $this->page_url; ?>gui-modules/login3.php';
 		}
 		function receiptFetch(r_type){
 			$.ajax({
@@ -248,17 +241,10 @@ class pos2 extends BasicPage {
 		$CORE_LOCAL->set("quantity",0);
 		$CORE_LOCAL->set("multiple",0);
 		$CORE_LOCAL->set("casediscount",0);
-		$CORE_LOCAL->set("away",0);
 
 		// set memberID if not set already
 		if (!$CORE_LOCAL->get("memberID")) {
 			$CORE_LOCAL->set("memberID","0");
-		}
-
-		// handle messages
-		if ( $CORE_LOCAL->get("msg") == "0") {
-			$CORE_LOCAL->set("msg",99);
-			$CORE_LOCAL->set("unlock",0);
 		}
 
 		if ($CORE_LOCAL->get("plainmsg") && strlen($CORE_LOCAL->get("plainmsg")) > 0) {
@@ -266,7 +252,6 @@ class pos2 extends BasicPage {
 			echo "<div class=\"centerOffset\">";
 			echo DisplayLib::plainmsg($CORE_LOCAL->get("plainmsg"));
 			$CORE_LOCAL->set("plainmsg",0);
-			$CORE_LOCAL->set("msg",99);
 			echo "</div>";
 		}
 		elseif (!empty($this->display))
@@ -277,10 +262,7 @@ class pos2 extends BasicPage {
 		echo "</div>"; // end base height
 
 		echo "<div id=\"footer\">";
-		if ($CORE_LOCAL->get("away") == 1)
-			echo DisplayLib::printfooterb();
-		else
-			echo DisplayLib::printfooter();
+		echo DisplayLib::printfooter();
 		echo "</div>";
 
 		if ($CORE_LOCAL->get("touchscreen") === True){
@@ -307,8 +289,6 @@ class pos2 extends BasicPage {
 				onclick="parseWrapper(\'QK6\');" />
 			</div>';
 		}
-
-		$CORE_LOCAL->set("away",0);
 	} // END body_content() FUNCTION
 }
 

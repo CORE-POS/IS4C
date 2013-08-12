@@ -50,9 +50,6 @@ class TenderOut extends Parser {
 			if ($asTender != "FS") {
 				TransRecord::addchange($cash_return,'CA');
 			}
-			if ($asTender == "CK" && $cash_return > 0) {
-				$CORE_LOCAL->set("cashOverAmt",1); // apbw/cvr 3/5/05 cash back beep
-			}
 			$CORE_LOCAL->set("End",1);
 			$ret['output'] = DisplayLib::printReceiptFooter();
 			$ret['redraw_footer'] = true;

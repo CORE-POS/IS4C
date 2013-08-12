@@ -57,40 +57,16 @@ static public function initiate_session() {
 static public function system_init() {
 	global $CORE_LOCAL;
 
-	//$CORE_LOCAL->set("datetimestamp",strftime("%Y-%m-%m/%d/%y %T",time()));
-	$CORE_LOCAL->set("beep","noBeep");
-	$CORE_LOCAL->set("scan","scan");
 	$CORE_LOCAL->set("standalone",0);
-	$CORE_LOCAL->set("SNR",0);
-	$CORE_LOCAL->set("screset","staycool");
 	$CORE_LOCAL->set("currentid",1);
 	$CORE_LOCAL->set("currenttopid",1);
 	$CORE_LOCAL->set("training",0);
 	$CORE_LOCAL->set("adminRequest","");
+	$CORE_LOCAL->set("SNR",0);
 	$CORE_LOCAL->set("weight",0);
 	$CORE_LOCAL->set("scale",1);
-	$CORE_LOCAL->set("msg",0);
 	$CORE_LOCAL->set("plainmsg","");
-	//$CORE_LOCAL->set("alert","");
-	$CORE_LOCAL->set("away",0);
-	$CORE_LOCAL->set("waitforScale",0);
-        $CORE_LOCAL->set("ccRemoteServerUp",1);
-	$CORE_LOCAL->set("search_or_list",0);
 	$CORE_LOCAL->set("ccTermOut","idle");
-	$CORE_LOCAL->set('ccTermState','swipe');
-	$CORE_LOCAL->set("inputMasked",0);
-
-	/**
-	  These variables used to be in ini.php
-	  but aren't actually configurable. They
-	  probably don't do anything at this time,
-	  although bits of legacy functionality may
-	  be present that could be fixed. In that
-	  case they should probably go back to
-	  ini.php
-	*/
-	$CORE_LOCAL->set("ddNotify",0); 
-	$CORE_LOCAL->set("promoMsg",0);
 }
 
 /**
@@ -105,52 +81,25 @@ static public function transReset() {
 	$CORE_LOCAL->set("End",0);
 	$CORE_LOCAL->set("memberID","0");
 	$CORE_LOCAL->set("TaxExempt",0);
-	$CORE_LOCAL->set("fstaxable",0);
 	$CORE_LOCAL->set("yousaved",0);
 	$CORE_LOCAL->set("couldhavesaved",0);
-	//$CORE_LOCAL->set("void",0);
-	$CORE_LOCAL->set("voided",0);
-	$CORE_LOCAL->set("voidTTL",0);
+	$CORE_LOCAL->set("specials",0);
 	$CORE_LOCAL->set("tare",0);
-	$CORE_LOCAL->set("tenderamt",0);
+	$CORE_LOCAL->set("endorseAmt",0);
 	$CORE_LOCAL->set("change",0);
-	$CORE_LOCAL->set("transstatus","");
-	$CORE_LOCAL->set("ccTender",0);
-	$CORE_LOCAL->set("ccAmtEntered",0);
-	$CORE_LOCAL->set("ccAmt",0);
-	$CORE_LOCAL->set("TenderType","XX");				
-	$CORE_LOCAL->set("ChgName","Charge Account");			
-	$CORE_LOCAL->set("cashOverAmt",0);				
 	$CORE_LOCAL->set("chargetender",0);
-	$CORE_LOCAL->set("mirequested",0);
 	$CORE_LOCAL->set("toggletax",0);
 	$CORE_LOCAL->set("togglefoodstamp",0);
 	$CORE_LOCAL->set("toggleDiscountable",0);
-	//$CORE_LOCAL->set("ttlrequested",0);
-	$CORE_LOCAL->set("discounttype",0);
-	$CORE_LOCAL->set("discountable",0);
 	$CORE_LOCAL->set("refund",0);
-	//$CORE_LOCAL->set("istaxable",0);
-	$CORE_LOCAL->set("mfcoupon",0);
 	$CORE_LOCAL->set("casediscount",0);
-	//$CORE_LOCAL->set("ondiscount",0);
 	$CORE_LOCAL->set("multiple",0);
 	$CORE_LOCAL->set("quantity",0);
-	$CORE_LOCAL->set("nd",0); 			// negates default 10% discount at the charge book
-	$CORE_LOCAL->set("sc",0); 			// marks transaction as a staff charge at the charge book
-	$CORE_LOCAL->set("idSearch","");
-	//$CORE_LOCAL->set("repeat",0);
 	$CORE_LOCAL->set("strEntered","");
 	$CORE_LOCAL->set("strRemembered","");
 	$CORE_LOCAL->set("msgrepeat",0);		// when set to 1, pos2.php takes the previous strEntered
 	$CORE_LOCAL->set("boxMsg","");		
 	$CORE_LOCAL->set("itemPD",0); 		// Item percent discount for the charge book
-	$CORE_LOCAL->set("specials",0);
-	$CORE_LOCAL->set("ccSwipe","");
-	$CORE_LOCAL->set("ccName","");
-	$CORE_LOCAL->set("ccType","");
-	$CORE_LOCAL->set("troutd","");
-	$CORE_LOCAL->set("ouxWait",0);
 	$CORE_LOCAL->set("cashierAgeOverride",0);
 	
 	$CORE_LOCAL->set("warned",0);
@@ -182,15 +131,11 @@ static public function transReset() {
 static public function printReset() {
 	global $CORE_LOCAL;
 
-	//$CORE_LOCAL->set("franking",0);
-	//$CORE_LOCAL->set("noreceipt",0);
 	$CORE_LOCAL->set("receiptToggle",1);
 	$CORE_LOCAL->set("receiptType","");
 	$CORE_LOCAL->set("endorseType","");
-	//$CORE_LOCAL->set("kick",1);	
 
 	$CORE_LOCAL->set("autoReprint",0);
-	$CORE_LOCAL->set("reprintNameLookup",0);
 }
 
 /**
@@ -205,14 +150,12 @@ static public function memberReset() {
 	$CORE_LOCAL->set("isMember",0);
 	$CORE_LOCAL->set("isStaff",0);
 	$CORE_LOCAL->set("SSI",0);
-	//$CORE_LOCAL->set("discountcap",0);
 	$CORE_LOCAL->set("memMsg","");
 	$CORE_LOCAL->set("memType",0);
 	$CORE_LOCAL->set("balance",0);
 	$CORE_LOCAL->set("availBal",0);
 	$CORE_LOCAL->set("percentDiscount",0);
 
-	$CORE_LOCAL->set("ar_paid",0);
 	$CORE_LOCAL->set("inactMem",0);
 	$CORE_LOCAL->set("memAge",date('Ymd'));
 }

@@ -111,7 +111,6 @@ class ItemPD extends Parser {
 				$deliflag = 1;
 			}
 			elseif (substr($upc, 0, 3) == "002" && substr($upc, -5) == "00000") {
-				$scaleprice = $CORE_LOCAL->get("scaleprice");
 				$deliflag = 1;
 			}
 		}
@@ -194,7 +193,6 @@ class ItemPD extends Parser {
 
 			if ($row["trans_type"] != "T") {
 				$CORE_LOCAL->set("ttlflag",0);
-				$CORE_LOCAL->set("discounttype",0);
 			}
 
 			$db = Database::pDataConnect();

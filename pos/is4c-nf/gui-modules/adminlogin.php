@@ -117,7 +117,6 @@ class adminlogin extends NoInputPage {
 		</div>
 		<?php
 		$this->add_onload_command("\$('#reginput').focus();");
-		$CORE_LOCAL->set("scan","noScan");
 	} // END true_body() FUNCTION
 
 
