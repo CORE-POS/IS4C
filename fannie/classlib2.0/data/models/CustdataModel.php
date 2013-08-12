@@ -33,6 +33,8 @@ class CustdataModel extends BasicModel {
 
 	protected $name = 'custdata';
 
+	protected $preferred_db = 'op';
+
 	protected $columns = array(
 	'CardNo' => array('type'=>'INT','index'=>True),
 	'personNum' => array('type'=>'TINYINT'),

@@ -29,6 +29,7 @@
 class WFC_Kicker extends Kicker {
 
 	function doKick(){
+		global $CORE_LOCAL;
 		$db = Database::tDataConnect();
 
 		$query = "select trans_id from localtemptrans where 
@@ -39,7 +40,16 @@ class WFC_Kicker extends Kicker {
 		$result = $db->query($query);
 		$num_rows = $db->num_rows($result);
 
-		return ($num_rows > 0) ? True : False;
+		$ret = ($num_rows > 0) ? True : False;
+
+		// use session to override default behavior
+		// based on specific cashier actions rather
+		// than transaction state
+		$override = $CORE_LOCAL->get('kickOverride');
+		$CORE_LOCAL->set('kickOverride',False);
+		if ($override === True) $ret = True;
+
+		return $ret;
 	}
 
 	function kickOnSignIn(){

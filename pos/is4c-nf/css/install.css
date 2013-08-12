@@ -147,6 +147,10 @@ padding-bottom: 5px; /*Flip default padding-bottom value with padding-top*/
 color: white;
 }
 
+.db_hints {
+	margin-left: 25px;
+	width: 350px;
+}
 
 /***************************
  *	Switch stuff

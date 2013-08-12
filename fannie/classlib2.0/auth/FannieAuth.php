@@ -165,7 +165,7 @@ class FannieAuth {
 	  If authentication is not enabled,
 	  returns string '0000'.
 	*/
-	function getUID($name){
+	public static function getUID($name){
 		global $FANNIE_OP_DB;
 		if (!self::enabled()) return '0000';
 

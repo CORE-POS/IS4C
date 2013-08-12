@@ -62,11 +62,18 @@ class BasicModel {
 	  Database connection
 	*/
 	protected $connection = False;
+	public function db(){ return $this->connection; }
 
 	/**
 	  List of column names => values
 	*/
 	protected $instance = array();
+
+	/**
+	  Name of preferred database
+	*/
+	protected $preferred_db = '';
+	public function preferred_db(){ return $this->preferred_db; }
 
 	/**
 	  Constructor
@@ -148,9 +155,10 @@ class BasicModel {
 		if ($inc && $dbms == 'mssql')
 			$sql .= ' ON [PRIMARY]';
 
-		$prep = $this->connection->prepare_statement($sql);
-		$result = $this->connection->exec_statement($prep);
+		$result = $this->connection->exec_statement($sql);
 		return ($result === False) ? False : True;
+
+	// create()
 	}
 
 	/**
@@ -188,8 +196,10 @@ class BasicModel {
 				if (!isset($row[$name])) continue;
 				$this->instance[$name] = $row[$name];
 			}
+			return True;
 		}
-		return True;
+		else
+			return False;
 	}
 
 	/**
@@ -197,6 +207,14 @@ class BasicModel {
 	*/
 	public function reset(){
 		$this->instance = array();
+	}
+
+	public function get_columns(){
+		return $this->columns;
+	}
+
+	public function get_name(){
+		return $this->name;
 	}
 
 	/**
@@ -297,6 +315,8 @@ class BasicModel {
 			if (!isset($this->instance[$column]))
 				$new_record = True;
 		}
+		if (count($this->unique) == 0)
+			$new_record = True;
 
 		if (!$new_record){
 			// see if matching record exists
@@ -376,46 +396,117 @@ class BasicModel {
 		return $result;
 	}
 
+	public function push_to_lanes(){
+		global $FANNIE_LANES;
+		// load complete record
+		if (!$this->load()) return False;
+
+		$current = $this->connection;
+		// save to each lane
+		foreach($FANNIE_LANES as $lane){
+			$sql = new SQLManager($lane['host'],$lane['type'],$lane['op'],
+						$lane['user'],$lane['pw']);	
+			if (!is_object($sql) || $sql->connections[$lane['op']] === False)
+				continue;
+			$this->connection = $sql;
+			$this->save();
+		}
+		$this->connection = $current;
+		return True;
+	}
+
+	public function delete_from_lanes(){
+		global $FANNIE_LANES;
+		// load complete record
+		if (!$this->load()) return False;
+
+		$current = $this->connection;
+		// save to each lane
+		foreach($FANNIE_LANES as $lane){
+			$sql = new SQLManager($lane['host'],$lane['type'],$lane['op'],
+						$lane['user'],$lane['pw']);	
+			if (!is_object($sql) || $sql->connections[$lane['op']] === False)
+				continue;
+			$this->connection = $sql;
+			$this->delete();
+		}
+		$this->connection = $current;
+		return True;
+	}
+
+	/** check for potential changes **/
+	const NORMALIZE_MODE_CHECK = 1;
+	/** apply changes **/
+	const NORMALIZE_MODE_APPLY = 2;
+
 	/**
 	  Compare existing table to definition
 	  Add any columns that are missing from the table structure
 	  Extra columns that are present in the table but not in the
 	  controlelr class are left as-is.
 	  @param $db_name name of the database containing the table 
-	  @param $preview_only boolean [default True] do not
-	         make any changes
+	  @param $mode the normalization mode. See above.
 	  @return number of columns added or False on failure
 	*/
-	public function normalize($db_name, $preview_only=True){
+	public function normalize($db_name, $mode=BasicModel::NORMALIZE_MODE_CHECK, $doCreate=False){
+		if ($mode != BasicModel::NORMALIZE_MODE_CHECK && $mode != BasicModel::NORMALIZE_MODE_APPLY){
+			echo "Error: Unknown mode ($mode)\n";
+			return False;
+		}
 		echo "==========================================\n";
-		echo "Checking table $db_name.".$this->name."\n";
+		printf("%s table %s\n", 
+			($mode==BasicModel::NORMALIZE_MODE_CHECK)?"Checking":"Updating", 
+			"{$db_name}.{$this->name}"
+		);
 		echo "==========================================\n";
 		$this->connection = FannieDB::get($db_name);
 		if (!$this->connection->table_exists($this->name)){
-			echo "No table found!\n";
-			return False;
+			if ($mode == BasicModel::NORMALIZE_MODE_CHECK) {
+				echo "Table {$this->name} not found!\n";
+				echo "==========================================\n";
+				printf("%s table %s\n","Check complete. Need to create", $this->name);
+				echo "==========================================\n\n";
+				return 999;
+				//return False;
+			}
+			else if ($mode == BasicModel::NORMALIZE_MODE_APPLY){
+				echo "==========================================\n";
+				if ($doCreate) {
+					$cResult = $this->create(); 
+					printf("Update complete. Creation of table %s %s\n",$this->name, ($cResult)?"OK":"failed");
+				}
+				else {
+					printf("Update complete. Creation of table %s %s\n",$this->name, ($doCreate)?"OK":"not supported");
+				}
+				echo "==========================================\n\n";
+				return True;
+			}
 		}
 		$current = $this->connection->table_definition($this->name);
 
-		$new = array();
+		$new_columns = array();
+		$new_indexes = array();
 		$unknown = array();
 		foreach ($this->columns as $col_name => $defintion){
 			if (!in_array($col_name,array_keys($current))){
-				$new[] = $col_name;
+				$new_columns[] = $col_name;
 			}
 		}
 		foreach($current as $col_name => $type){
 			if (!in_array($col_name,array_keys($this->columns))){
 				$unknown[] = $col_name;
-				echo "Ignoring unkown column: $col_name (delete manually if desired)\n";
+				echo "Ignoring unknown column: $col_name in current definition (delete manually if desired)\n";
 			}
 		}
 		$our_columns = array_keys($this->columns);
 		$their_columns = array_keys($current);
 		for($i=0;$i<count($our_columns);$i++){
-			if (!in_array($our_columns[$i],$new))
+			if (!in_array($our_columns[$i],$new_columns))
 				continue; // column already exists
-			echo "Adding column: {$our_columns[$i]}\n";
+			printf("%s column: %s\n", 
+					($mode==BasicModel::NORMALIZE_MODE_CHECK)?"Need to add":"Adding", 
+					"{$our_columns[$i]}"
+			);
 			$sql = '';
 			foreach($their_columns as $their_col){
 				if (isset($our_columns[$i-1]) && $our_columns[$i-1] == $their_col){
@@ -434,7 +525,7 @@ class BasicModel {
 						.' BEFORE '.$this->connection->identifier_escape($their_col);
 					break;
 				}
-				if (isset($our_columns[$i-1]) && in_array($our_columns[$i-1],$new)){
+				if (isset($our_columns[$i-1]) && in_array($our_columns[$i-1],$new_columns)){
 					$sql = 'ALTER TABLE '.$this->name.' ADD COLUMN '
 						.$this->connection->identifier_escape($our_columns[$i]).' '
 						.$this->get_meta($this->columns[$our_columns[$i]]['type'],
@@ -444,10 +535,10 @@ class BasicModel {
 				}
 			}
 			if ($sql !== '') {
-				if ($preview_only){
+				if ($mode == BasicModel::NORMALIZE_MODE_CHECK){
 					echo "\tSQL Details: $sql\n";
 				}
-				else {
+				else if ($mode == BasicModel::NORMALIZE_MODE_APPLY){
 					$this->connection->query($sql);
 				}
 			}
@@ -456,25 +547,36 @@ class BasicModel {
 				echo "\tError: could not find context for {$our_columns[$i]}\n";
 			}
 
+			// If the new column is indexed create the index.
 			if ($sql !== '' && isset($this->columns[$our_columns[$i]]['index'])
 				&& $this->columns[$our_columns[$i]]['index']){
+				$new_indexes[]=$our_columns[$i];
 				$index_sql = 'ALTER TABLE '.$this->name.' ADD INDEX '
-						.$this->connections->identifier_escape($our_columns[$i])
-						.' ('.$this->connections->identifier_escape($our_columns[$i]).')';
-				if ($preview_only){
-					echo "Adding index to column: {$our_columns[$i]}\n";
+						.$this->connection->identifier_escape($our_columns[$i])
+						.' ('.$this->connection->identifier_escape($our_columns[$i]).')';
+				if ($mode == BasicModel::NORMALIZE_MODE_CHECK){
+					echo "Need to add index to column: {$our_columns[$i]}\n";
 					echo "\tSQL Details: $index_sql\n";
 				}
-				else {
+				else if ($mode == BasicModel::NORMALIZE_MODE_APPLY){
+					echo "Adding index to column: {$our_columns[$i]}\n";
 					$this->connection->query($index_sql);
 				}
 			}
 		}
 		echo "==========================================\n";
-		echo "Check complete\n";
+		printf("%s %d column%s  %d index%s.\n",
+			($mode==BasicModel::NORMALIZE_MODE_CHECK)?"Check complete. Need to add":"Update complete. Added",
+			count($new_columns), (count($new_columns)!=1)?"s":"",
+			count($new_indexes), (count($new_indexes)!=1)?"es":""
+			);
 		echo "==========================================\n\n";
 
-		return count($new);
+		// EL: Why also count($unknown)?
+		//     Calling routines assume it means something has changed.
+		return count($new_columns) + count($unknown);
+
+	// normalize()
 	}
 
 	/**
@@ -535,13 +637,93 @@ class BasicModel {
 		fclose($fp);
 
 		return True;
+	// generate()
+	}
+
+	function new_model($name){
+		$fp = fopen($name.'.php','w');
+		fwrite($fp, chr(60)."?php
+/*******************************************************************************
+
+    Copyright ".date("Y")." Whole Foods Co-op
+
+    This file is part of Fannie.
+
+    IT CORE is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    IT CORE is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    in the file license.txt along with IT CORE; if not, write to the Free Software
+    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+*********************************************************************************/
+
+/**
+  @class $name
+*/
+class $name extends BasicModel ".chr(123)."\n");
+		fwrite($fp,"\n");
+		fwrite($fp,"\tprotected \$name = \"".substr($name,0,strlen($name)-5)."\";\n");
+		fwrite($fp,"\n");
+		fwrite($fp,"\tprotected \$columns = array(\n\t);\n");
+		fwrite($fp,"\n");
+		fwrite($fp,"\t/* START ACCESSOR FUNCTIONS */\n");
+		fwrite($fp,"\t/* END ACCESSOR FUNCTIONS */\n");
+		fwrite($fp,chr(125)."\n?".chr(62)."\n");
+		fclose($fp);
+
+	// new_model()
+	}
+
+	function get_models(){
+		/**
+		  Experiment using lambdas. I was curious
+		  if I could do recursion without having
+		  a named function.
+		*/
+		$search = function($path) use (&$search){
+			if (is_file($path) && substr($path,'-4')=='.php'){
+				include_once($path);
+				$class = basename(substr($path,0,strlen($path)-4));
+				if (class_exists($class) && is_subclass_of($class, 'BasicModel'))
+					return array($class);
+			}
+			elseif(is_dir($path)){
+				$dh = opendir($path);
+				$ret = array();	
+				while( ($file=readdir($dh)) !== False){
+					if ($file == '.' || $file == '..')
+						continue;
+					$ret = array_merge($ret, $search($path.'/'.$file));
+				}
+				return $ret;
+			}
+			return array();
+		};
+		$models = $search(dirname(__FILE__));
+		return $models;
 	}
 }
 
 if (php_sapi_name() === 'cli' && basename($_SERVER['PHP_SELF']) == basename(__FILE__)){
 
-	if (($argc != 2 && $argc != 4) || ($argc == 4 && $argv[1] != '--update')){
+	$obj = new BasicModel(null);
+
+	/* Argument signatures, to php, where BasicModel.php is the first:
+   * 2 args: Generate Accessor Functions: php BasicModel.php <Subclass Filename>\n";
+   * 3 args: Create new Model: php BasicModel.php --new <Model Name>\n";
+   * 4 args: Update Table Structure: php BasicModel.php --update <Database name> <Subclass Filename[[Model].php]>\n";
+	*/
+	if (($argc < 2 || $argc > 4) || ($argc == 3 && $argv[1] != "--new") || ($argc == 4 && $argv[1] != '--update')){
 		echo "Generate Accessor Functions: php BasicModel.php <Subclass Filename>\n";
+		echo "Create new Model: php BasicModel.php --new <Model Name>\n";
 		echo "Update Table Structure: php BasicModel.php --update <Database name> <Subclass Filename>\n";
 		exit;
 	}
@@ -549,8 +731,24 @@ if (php_sapi_name() === 'cli' && basename($_SERVER['PHP_SELF']) == basename(__FI
 	include(dirname(__FILE__).'/../../../config.php');
 	include(dirname(__FILE__).'/../../FannieAPI.php');
 
+	// Create new Model
+	if ($argc == 3){
+		$modelname = $argv[2];
+		if (substr($modelname,-4) == '.php')
+			$modelname = substr($modelname,0,strlen($modelname)-4);
+		if (substr($modelname,-5) != 'Model')
+			$modelname .= 'Model';
+		echo "Generating Model '$modelname'\n";
+		$obj = new BasicModel(null);
+		$obj->new_model($modelname);
+		exit;
+	}
+
 	$classfile = $argv[1];
-	if ($argc == 4) $classfile = $argv[3];
+	if ($argc == 4)
+		$classfile = $argv[3];
+	if (substr($classfile,-4) != '.php')
+		$classfile .= '.php';
 	if (!file_exists($classfile)){
 		echo "Error: file '$classfile' does not exist\n";
 		exit;
@@ -563,28 +761,39 @@ if (php_sapi_name() === 'cli' && basename($_SERVER['PHP_SELF']) == basename(__FI
 		exit;
 	}
 
+	// A new object of the type named on the command line.
 	$obj = new $class(null);
 	if (!is_a($obj, 'BasicModel')){
 		echo "Error: invalid class. Must be BasicModel\n";
 		exit;
 	}
 
+	// Generate accessor functions
 	if ($argc == 2){
 		$try = $obj->generate($classfile);
 		if ($try) echo "Generated accessor functions\n";
 		else echo "Failed to generate functions\n";
 	}
+	// Update Table Structure
 	else if ($argc == 4){
-		$try = $obj->normalize($argv[2],True);
+		// Show what changes are needed but don't make them yet.
+		$try = $obj->normalize($argv[2],BasicModel::NORMALIZE_MODE_CHECK);
+		// If there was no error and there is anything to change,
+		//  including creating the table.
+		// Was: If the table exists and there is anything to change
+		//  get OK to change.
 		if ($try !== False && $try > 0){
 			while(True){
 				echo 'Apply Changes [Y/n]: ';
 				$in = rtrim(fgets(STDIN));
-				if ($in === 'n' || $in === False || $in === '')
+				if ($in === 'n' || $in === False || $in === '') {
+					echo "Goodbye.\n";
 					break;
+				}
 				elseif($in ==='Y'){
 					// THIS WILL APPLY PROPOSED CHANGES!
-					$obj->normalize($argv[2],False);
+					//EL Need to restore $this->name. See DTransactionsModel::normalize()
+					$obj->normalize($argv[2],BasicModel::NORMALIZE_MODE_APPLY);
 					break;
 				}
 			}

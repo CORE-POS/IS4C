@@ -25,6 +25,8 @@ class EmployeesModel extends BasicModel {
 
 	protected $name = 'employees';
 
+	protected $preferred_db = 'op';
+
 	protected $columns = array(
 	'emp_no'	=> array('type'=>'SMALLINT','primary_key'=>True),
 	'CashierPassword'=>array('type'=>'INT'),

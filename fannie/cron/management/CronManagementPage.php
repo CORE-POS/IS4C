@@ -52,13 +52,6 @@ include($FANNIE_ROOT.'src/tmp_dir.php');
    hand-holding for new users.
 */
 
-if(!validateUserQuiet('admin')){
-	$url = $FANNIE_URL.'auth/ui/loginform.php';
-	$rd = $FANNIE_URL.'cron/management/';
-	header("Location: $url?redirect=$rd");
-	exit;
-}
-
 class CronManagementPage extends FanniePage {
 
 	protected $header = "Manage Scheduled Tasks";

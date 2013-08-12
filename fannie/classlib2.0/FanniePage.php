@@ -52,7 +52,7 @@ class FanniePage {
 
 	public function __construct(){
 		global $FANNIE_AUTH_DEFAULT;
-		if ( isset($FANNIE_AUTH_DEFAULT) )
+		if ( isset($FANNIE_AUTH_DEFAULT) && !$this->must_authenticate )
 			$this->must_authenticate = $FANNIE_AUTH_DEFAULT;
 	}
 
@@ -186,6 +186,7 @@ class FanniePage {
 
 		if (!$this->check_auth() && $this->must_authenticate){
 			$this->login_redirect();
+			exit;
 		}
 		elseif ($this->preprocess()){
 			

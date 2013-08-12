@@ -48,6 +48,21 @@ class CheckTender extends TenderModule {
 				return DisplayLib::xboxMsg(_('member check tender cannot exceed total 
 									purchase if equity is owed'));
 			}
+			
+			// multi use
+			if ($CORE_LOCAL->get('standalone')==0){
+				$chkQ = "select trans_num from dlog 
+					where trans_type='T' and trans_subtype in ('CA','CK') 
+					and card_no=".((int)$CORE_LOCAL->get('memberID'))."
+					group by trans_num 
+					having sum(case when trans_subtype='CK' then total else 0 end) < 0 
+					and sum(Case when trans_subtype='CA' then total else 0 end) > 0";
+				$db = Database::mDataConnect();
+				$chkR = $db->query($chkQ);
+				if ($db->num_rows($chkR) > 0){
+					return DisplayLib::xboxMsg(_('already used check over benefit today'));
+				}
+			}
 		}
 		else if( $CORE_LOCAL->get("isMember") == 0 and $CORE_LOCAL->get("isStaff") == 0 && ($this->amount - $CORE_LOCAL->get("amtdue") - 0.005) > 0){ 
 			return DisplayLib::xboxMsg(_('non-member check tender cannot exceed total purchase'));

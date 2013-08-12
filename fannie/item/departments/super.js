@@ -85,7 +85,7 @@ function saveData(){
 	var qs = "action=save&sid="+sID+"&name="+name+depts;
 
 	$.ajax({
-		url: 'ajax.php',
+		url: 'SuperDeptEditor.php',
 		type: 'POST',
 		timeout: 1000,
 		data: qs,

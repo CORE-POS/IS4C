@@ -318,17 +318,17 @@ $sql = db_test_connect($CORE_LOCAL->get('mServer'),
 		$CORE_LOCAL->get('mPass'));
 if ($sql === False){
 	echo "<span class='fail'>Failed</span>";
-	echo '<div class="db_hints" style="margin-left:25px;">';
+	echo '<div class="db_hints" style="margin-left:25px;width:350px;">';
 	if (!function_exists('socket_create')){
 		echo '<i>Try enabling PHP\'s socket extension in php.ini for better diagnostics</i>';
 	}
-	elseif (@MiscLib::pingport($CORE_LOCAL->get('localhost'),$CORE_LOCAL->get('DBMS'))){
-		echo '<i>Database found at '.$CORE_LOCAL->get('localhost').'. Verify username and password
+	elseif (@MiscLib::pingport($CORE_LOCAL->get('mServer'),$CORE_LOCAL->get('DBMS'))){
+		echo '<i>Database found at '.$CORE_LOCAL->get('mServer').'. Verify username and password
 			and/or database account permissions.</i>';
 	}
 	else {
 		echo '<i>Database does not appear to be listening for connections on '
-			.$CORE_LOCAL->get('localhost').'. Verify host is correct, database is running and
+			.$CORE_LOCAL->get('mServer').'. Verify host is correct, database is running and
 			firewall is allowing connections.</i>';
 	}
 	echo '</div>';
@@ -378,7 +378,7 @@ if($gotDBs == 2){
 	while($row=$sql->fetch_row($ratesR))
 		$rates[] = array($row[0],$row[1],$row[2]);
 }
-echo "<table><tr><th>ID</th><th>Rate (%)</th><th>Description</th></tr>";
+echo "<table><tr><th>ID</th><th>Rate</th><th>Description</th></tr>";
 foreach($rates as $rate){
 	printf("<tr><td>%d</td><td><input type=text name=TAX_RATE[] value=\"%f\" /></td>
 		<td><input type=text name=TAX_DESC[] value=\"%s\" /></td></tr>",
@@ -464,12 +464,14 @@ function create_op_dbs($db,$type){
 
 	create_if_needed($db, $type, $name, 'unpaid_ar_today', 'op', $errors);
 
-	create_if_needed($db, $type, $name, 'lane_config', 'op', $errors);
-	$chk = $db->query('SELECT modified FROM lane_config',$name);
-	if ($db->num_rows($chk) != 1){
-		$db->query('TRUNCATE TABLE lane_config', $name);
-		$db->query("INSERT INTO lane_config VALUES ('1900-01-01 00:00:00')", $name);
+	// Update lane_config structure if needed
+	if ($db->table_exists('lane_config', $name)){
+		$def = $db->table_definition('lane_config', $name);
+		if (!isset($def['keycode']) || !isset($def['value']))
+			$db->query('DROP TABLE lane_config', $name);
 	}
+	create_if_needed($db, $type, $name, 'lane_config', 'op', $errors);
+	
 	return $errors;
 }
 
@@ -2516,6 +2518,9 @@ function create_min_server($db,$type){
 	if (!$db->table_exists("TenderTapeGeneric",$name)){
 		db_structure_modify($db,'TenderTapeGeneric',$ttG,$errors);
 	}
+
+	// re-use definition to create lane_config on server
+	create_if_needed($db, $type, $name, 'lane_config', 'op', $errors);
 
 	return $errors;
 }

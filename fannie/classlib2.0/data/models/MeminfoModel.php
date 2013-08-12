@@ -33,6 +33,8 @@ class MeminfoModel extends BasicModel {
 
 	protected $name = 'meminfo';
 
+	protected $preferred_db = 'op';
+
 	protected $columns = array(
 	'card_no' => array('type'=>'INT','primary_key'=>True,'default'=>0),
 	'last_name' => array('type'=>'VARCHAR(30)'),

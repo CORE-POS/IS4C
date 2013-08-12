@@ -37,7 +37,7 @@ class adminlogin extends NoInputPage {
 	function preprocess(){
 		global $CORE_LOCAL;
 		$this->box_color="#004080";
-		$this->msg = _("Enter Admin Password");
+		$this->msg = _("enter admin password");
 
 		if (isset($_REQUEST['reginput'])){
 			$passwd = $_REQUEST['reginput'];
@@ -53,7 +53,7 @@ class adminlogin extends NoInputPage {
 			}
 			else if (!is_numeric($passwd) || $passwd > 9999 || $passwd < 1){
 				$this->box_color="#800000";
-				$this->msg = _("Re-enter Admin Password");
+				$this->msg = _("re-enter admin password");
 			}
 			else {
 				$query = "select emp_no, FirstName, LastName from employees 
@@ -68,11 +68,24 @@ class adminlogin extends NoInputPage {
 					if ($CORE_LOCAL->get("cashierAgeOverride")==2)
 						$CORE_LOCAL->set("cashierAgeOverride",1);
 					$this->change_page($CORE_LOCAL->get("adminRequest"));
+					$row = $db->fetch_row($result);
+					TransRecord::add_log_record(array(
+						'upc' => $passwd,
+						'description' => substr($CORE_LOCAL->get('adminLoginMsg'),0,30),
+						'charflag' => 'PW',
+						'num_flag' => $row['emp_no']
+					));
 					return False;
 				}
 				else {
 					$this->box_color="#800000";
-					$this->msg = _("Re-enter Admin Password");
+					$this->msg = _("re-enter admin password");
+
+					TransRecord::add_log_record(array(
+						'upc' => $passwd,
+						'description' => substr($CORE_LOCAL->get('adminLoginMsg'),0,30),
+						'charflag' => 'PW'
+					));
 				}
 			}
 		}

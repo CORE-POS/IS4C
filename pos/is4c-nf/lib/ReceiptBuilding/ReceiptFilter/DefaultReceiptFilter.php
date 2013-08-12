@@ -91,11 +91,14 @@ class DefaultReceiptFilter {
 		$returnset = array_reverse($returnset);
 
 		// add discount, subtotal, tax, and total records to the end
-		if ($discount)
+		if ($discount){
 			$returnset[] = $discount;
-		$returnset[] = array('upc'=>'SUBTOTAL','trans_type'=>'S','total'=>(-1*$tenderTTL) - $tax['total']);
-		if ($tax)
+		}
+		$returnset[] = array('upc'=>'SUBTOTAL','trans_type'=>'S',
+				'total'=>(-1*$tenderTTL) - $tax['total']);
+		if ($tax){
 			$returnset[] = $tax;
+		}
 		$returnset[] = array('upc'=>'TOTAL','trans_type'=>'S','total'=>-1*$tenderTTL);
 			
 		// add category headers

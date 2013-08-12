@@ -97,7 +97,7 @@ $cust->personNum(1);
 $cust->load(); // get all current values
 $cust->MemDiscountLimit($_POST['chargeLimit']);
 $cust->memType($_POST['discList']);
-$cust->Type('Reg');
+$cust->Type('REG');
 $cust->Staff(0);
 $cust->Discount(0);
 

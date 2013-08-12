@@ -71,7 +71,7 @@ if ($sql->num_rows($r) > 0){
 	$msg_body .= "These messages will be sent daily until orders get departments\n";
 	$msg_body .= "or orders are closed\n";
 
-	$to = "buyers";
+	$to = "buyers, michael";
 	$subject = "Incomplete SO(s)";
 	mail($to,$subject,$msg_body);
 }

@@ -26,7 +26,7 @@
   Module for print-formatting 
   item records. 
 */
-class ItemFormat extends DefaultReceiptFormat {
+class ItemReceiptFormat extends DefaultReceiptFormat {
 
 	/**
 	  Formatting function

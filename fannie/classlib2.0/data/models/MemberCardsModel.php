@@ -32,11 +32,15 @@ if (!class_exists('FannieDB'))
 class MemberCardsModel extends BasicModel {
 	
 	protected $name = 'memberCards';
+
+	protected $preferred_db = 'op';
 	
 	protected $columns = array(
 	'card_no' => array('type'=>'INT','primary_key'=>True,'default'=>0),
 	'upc' => array('type'=>'VARCHAR(13)','primary_key'=>True,'default'=>'')
 	);
+
+	protected $unique = array('card_no');
 
 	/* START ACCESSOR FUNCTIONS */
 

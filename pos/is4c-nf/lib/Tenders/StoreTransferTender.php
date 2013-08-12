@@ -39,6 +39,13 @@ class StoreTransferTender extends TenderModule {
 			return DisplayLib::xboxMsg(_("store transfer exceeds purchase amount"));
 		}
 
+		$db = Database::pDataConnect();
+		$query = 'SELECT chargeOk FROM custdata WHERE chargeOk=1 AND CardNo='.$CORE_LOCAL->get('memberID');
+		$result = $db->query($query);
+		if ($db->num_rows($result) == 0){
+			return DisplayLib::xboxMsg(_("member cannot make transfers"));
+		}
+
 		return True;
 	}
 	
