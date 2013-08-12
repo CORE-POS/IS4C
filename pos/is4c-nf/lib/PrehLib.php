@@ -108,17 +108,15 @@ static public function memberID($member_number) {
 		}
 	}
 
-	$CORE_LOCAL->set("idSearch",$member_number);
 	$CORE_LOCAL->set("memberID","0");
 	$CORE_LOCAL->set("memType",0);
 	$CORE_LOCAL->set("percentDiscount",0);
 	$CORE_LOCAL->set("memMsg","");
 
 	if (empty($ret['output']) && $ret['main_frame'] == false)
-		$ret['main_frame'] = MiscLib::base_url()."gui-modules/memlist.php";
+		$ret['main_frame'] = MiscLib::base_url()."gui-modules/memlist.php?idSearch=".$member_number;
 	
 	if ($CORE_LOCAL->get("verifyName") != 1){
-		$CORE_LOCAL->set("beep","goodBeep");
 		$ret['udpmsg'] = 'goodBeep';
 	}
 
@@ -207,15 +205,6 @@ static public function setMember($member, $personNumber, $row) {
 	} elseif ( $CORE_LOCAL->get("member_subtotal") == NULL ) {
 		self::ttl();
 	}
-
-	$CORE_LOCAL->set("unlock",0);
-
-	if ($CORE_LOCAL->get("mirequested") == 1) {
-		$CORE_LOCAL->set("mirequested",0);
-		$CORE_LOCAL->set("runningTotal",$CORE_LOCAL->get("amtdue"));
-		self::tender("MI", $CORE_LOCAL->get("runningTotal") * 100);
-	}
-
 }
 
 /**
@@ -271,12 +260,27 @@ static public function check_unpaid_ar($cardno){
 /**
   Check if an item is voided or a refund
   @param $num item trans_id in localtemptrans
-  @return None
-  All discovered info is set in $CORE_LOCAL variables
-  @todo fix the above nonsense
+  @return array of status information with keys:
+   - voided (int)
+   - scaleprice (numeric)
+   - discountable (int)
+   - discounttype (int)
+   - caseprice (numeric)
+   - refund (boolean)
+   - status (string)
 */
 static public function checkstatus($num) {
 	global $CORE_LOCAL;
+
+	$ret = array(
+		'voided' => 0,
+		'scaleprice' => 0,
+		'discountable' => 0,
+		'discounttype' => 0,
+		'caseprice' => 0,
+		'refund' => False,
+		'status' => ''
+	);
 
 	if (!$num) {
 		$num = 0;
@@ -294,14 +298,15 @@ static public function checkstatus($num) {
 
 	if ($num_rows > 0) {
 		$row = $db->fetch_array($result);
-		$CORE_LOCAL->set("voided",$row["voided"]);
-		$CORE_LOCAL->set("scaleprice",$row["unitPrice"]);
-		$CORE_LOCAL->set("discountable",$row["discountable"]);
-		$CORE_LOCAL->set("discounttype",$row["discounttype"]);
-		$CORE_LOCAL->set("caseprice",$row["unitPrice"]);
+
+		$ret['voided'] = $row['voided'];
+		$ret['scaleprice'] = $row['unitPrice'];
+		$ret['discountable'] = $row['discountable'];
+		$ret['discounttype'] = $row['discounttype'];
+		$ret['caseprice'] = $row['unitPrice'];
 
 		if ($row["trans_status"] == "V") {
-			$CORE_LOCAL->set("transstatus","V");
+			$ret['status'] = 'V';
 		}
 
 // added by apbw 6/04/05 to correct voiding of refunded items 
@@ -309,9 +314,12 @@ static public function checkstatus($num) {
 		if ($row["trans_status"] == "R") {
 			$CORE_LOCAL->set("refund",1);
 			$CORE_LOCAL->set("autoReprint",1);
+			$ret['status'] = 'R';
+			$ret['refund'] = True;
 		}
-
 	}
+	
+	return $ret;
 }
 
 //---------------------------------------------------
@@ -451,11 +459,8 @@ static public function classic_tender($right, $strl) {
 	$tender_code = $right;
 	$tendered = -1 * $strl;
 				
-	if($tender_code == "CC" && $CORE_LOCAL->get("CCintegrate") == 1) {
-		$tender_upc = $CORE_LOCAL->get("troutd");
-	}
 	$tender_desc = $row["TenderName"];				
-	$CORE_LOCAL->set("tenderamt",$strl);
+	$CORE_LOCAL->set("endorseAmt",$strl);
 	$unit_price = 0;
 
 	if ($tender_code == "FS") {
@@ -546,10 +551,8 @@ static public function classic_tender($right, $strl) {
 	else
 		TransRecord::addItem($tender_upc, $tender_desc, "T", $tender_code, "", 0, 0, $unit_price, $tendered, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 	$CORE_LOCAL->set("msgrepeat",0);
-	$CORE_LOCAL->set("TenderType",$tender_code);			/***added by apbw 2/1/05 SCR ***/
 
-	if ($CORE_LOCAL->get("TenderType") == "SC" || $CORE_LOCAL->get("TenderType") == "CX"
-	  || $CORE_LOCAL->get("TenderType") == "MI" ) {
+	if ($tender_code == 'SC' || $tender_code == 'CX' || $tender_code == 'MI'){
 		$CORE_LOCAL->set("chargetender",1);							// apbw 2/28/05 SCR
 	}													// apbw 2/28/05 SCR
 
@@ -569,7 +572,7 @@ static public function classic_tender($right, $strl) {
 		}
 
 		if ($fs_change > 0) {
-			TransRecord::addchange($fs_change,$CORE_LOCAL->get("TenderType"));
+			TransRecord::addchange($fs_change,$tender_code);
 		}
 		Database::getsubtotals();
 	}
@@ -594,11 +597,7 @@ static public function classic_tender($right, $strl) {
 			TransRecord::addchange($cash_return,'CA');
 		}
 
-		if ($right == "CK" && $cash_return > 0) 
-			$CORE_LOCAL->set("cashOverAmt",1); // apbw/cvr 3/5/05 cash back beep
-					
 		$CORE_LOCAL->set("End",1);
-		$CORE_LOCAL->set("beep","rePoll");
 		$CORE_LOCAL->set("receiptType","full");
 		$ret['receipt'] = 'full';
 		$ret['output'] = DisplayLib::printReceiptFooter();
@@ -709,7 +708,6 @@ static public function modular_tender($right, $strl){
 		TransRecord::addchange($cash_return,$tender_object->ChangeType());
 					
 		$CORE_LOCAL->set("End",1);
-		$CORE_LOCAL->set("beep","rePoll");
 		$CORE_LOCAL->set("receiptType","full");
 		$ret['receipt'] = 'full';
 		$ret['output'] = DisplayLib::printReceiptFooter();
@@ -757,6 +755,12 @@ static public function deptkey($price, $dept,$ret=array()) {
 	if ($CORE_LOCAL->get("quantity") == 0 && $CORE_LOCAL->get("multiple") == 0) {
 		$CORE_LOCAL->set("quantity",1);
 	}
+
+	$ringAsCoupon = False;
+	if (substr($price,0,2) == 'MC'){
+		$ringAsCoupon = True;
+		$price = substr($price,2);
+	}
 		
 	if (!is_numeric($dept) || !is_numeric($price) || strlen($price) < 1 || strlen($dept) < 2) {
 		$ret['output'] = DisplayLib::inputUnknown();
@@ -788,9 +792,8 @@ static public function deptkey($price, $dept,$ret=array()) {
 		$ret['udpmsg'] = 'errorBeep';
 		$CORE_LOCAL->set("quantity",1);
 	}
-	elseif ($CORE_LOCAL->get("mfcoupon") == 1) {
+	elseif ($ringAsCoupon){
 		$row = $db->fetch_array($result);
-		$CORE_LOCAL->set("mfcoupon",0);
 		$query2 = "select department, sum(total) as total from localtemptrans where department = "
 			.$dept." group by department";
 
@@ -811,8 +814,6 @@ static public function deptkey($price, $dept,$ret=array()) {
 			else {
 				TransRecord::addItem("", $row["dept_name"]." Coupon", "I", "CP", "C", $dept, 1, -1 * $price, -1 * $price, -1 * $price, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, $intvoided);
 				$CORE_LOCAL->set("ttlflag",0);
-				//$CORE_LOCAL->set("ttlrequested",0);
-				$CORE_LOCAL->set("beep","goodBeep");
 				$ret['output'] = DisplayLib::lastpage();
 				$ret['redraw_footer'] = True;
 				$ret['udpmsg'] = 'goodBeep';
@@ -1207,7 +1208,7 @@ static public function finalttl() {
 
 
 	if ($CORE_LOCAL->get("fsTaxExempt")  != 0) {
-		TransRecord::addItem("Tax", MiscLib::truncate2($CORE_LOCAL->get("fstaxable"))." Taxable", "C", "", "D", 0, 0, MiscLib::truncate2($CORE_LOCAL->get("fsTaxExempt")), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7);
+		TransRecord::addItem("Tax", "FS Taxable", "C", "", "D", 0, 0, MiscLib::truncate2($CORE_LOCAL->get("fsTaxExempt")), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7);
 	}
 
 	TransRecord::addItem("Total", "Total", "C", "", "D", 0, 0, MiscLib::truncate2($CORE_LOCAL->get("amtdue")), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 11);

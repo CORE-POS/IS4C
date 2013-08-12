@@ -77,7 +77,6 @@ class nslogin extends NoInputPage {
 		</div>
 		</div>
 		<?php
-		$CORE_LOCAL->set("scan","noScan");
 		$this->add_onload_command("\$('#reginput').focus();\n");
 	} // END true_body() FUNCTION
 

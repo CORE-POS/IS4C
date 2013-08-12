@@ -49,7 +49,6 @@ class UPC extends Parser {
 				$CORE_LOCAL->set("adminRequest",$my_url."gui-modules/refundComment.php");
 				$CORE_LOCAL->set("adminRequestLevel",$CORE_LOCAL->get("SecurityRefund"));
 				$CORE_LOCAL->set("adminLoginMsg",_("Login to issue refund"));
-				$CORE_LOCAL->set("away",1);
 				$ret['main_frame'] = $my_url."gui-modules/adminlogin.php";
 			}
 			else
@@ -231,7 +230,6 @@ class UPC extends Parser {
 				$CORE_LOCAL->set("adminRequest",$my_url."gui-modules/pos2.php");
 				$CORE_LOCAL->set("adminRequestLevel",30);
 				$CORE_LOCAL->set("adminLoginMsg",_("Login to approve sale"));
-				$CORE_LOCAL->set("away",1);
 				$CORE_LOCAL->set("cashierAgeOverride",2);
 				$ret['main_frame'] = $my_url."gui-modules/adminlogin.php";
 				return $ret;
@@ -328,7 +326,7 @@ class UPC extends Parser {
 		*/
 		if ($upc == "0000000008010" && $CORE_LOCAL->get("msgrepeat") == 0) {
 			$CORE_LOCAL->set("endorseType","giftcert");
-			$CORE_LOCAL->set("tenderamt",$total);
+			$CORE_LOCAL->set("endorseAmt",$total);
 			$CORE_LOCAL->set("boxMsg","<b>".$total." gift certificate</b><br />
 				"._("insert document")."<br />"._("press enter to endorse")."
 				<p><font size='-1'>"._("clear to cancel")."</font>");
@@ -341,7 +339,7 @@ class UPC extends Parser {
 		*/
 		if ($upc == "0000000008011" && $CORE_LOCAL->get("msgrepeat") == 0) {
 			$CORE_LOCAL->set("endorseType","classreg");
-			$CORE_LOCAL->set("tenderamt",$total);
+			$CORE_LOCAL->set("endorseAmt",$total);
 			$CORE_LOCAL->set("boxMsg","<b>".$total." class registration</b><br />
 				"._("insert form")."<br />"._("press enter to endorse")."
 				<p><font size='-1'>"._("clear to cancel")."</font>");
@@ -409,12 +407,6 @@ class UPC extends Parser {
 				$row['normal_price'] = $scaleprice;
 		}
 
-		// don't know what this is - wedge?
-		if ($CORE_LOCAL->get("nd") == 1 && $discountable == 7) {
-			$discountable = 3;
-			$CORE_LOCAL->set("nd",0);
-		}
-
 		/*
 			END: figure out discounts by type
 		*/
@@ -450,16 +442,12 @@ class UPC extends Parser {
 			$ret['udpmsg'] = 'goodBeep';
 		}
 
-		// probably pointless, see what happens without it
-		//if ($tax != 1) $CORE_LOCAL->set("voided",0);
-
 		/* reset various flags and variables */
 		if ($CORE_LOCAL->get("tare") != 0) $CORE_LOCAL->set("tare",0);
 		$CORE_LOCAL->set("ttlflag",0);
 		$CORE_LOCAL->set("fntlflag",0);
 		$CORE_LOCAL->set("quantity",0);
 		$CORE_LOCAL->set("itemPD",0);
-		$CORE_LOCAL->set("voided",0);
 		Database::setglobalflags(0);
 
 		/* output item list, update totals footer */

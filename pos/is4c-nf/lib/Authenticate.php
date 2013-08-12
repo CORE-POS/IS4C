@@ -43,7 +43,6 @@ class Authenticate extends LibraryClass {
 static public function check_password($password,$activity=1){
 	global $CORE_LOCAL;
 
-	$CORE_LOCAL->set("away",1);
 	MiscLib::rePoll();
 	$CORE_LOCAL->set("training",0);
 
@@ -167,14 +166,6 @@ static public function check_password($password,$activity=1){
 		else return False;
 	}
 
-	if ($CORE_LOCAL->get("LastID") != 0 && $CORE_LOCAL->get("memberID") != "0" && $CORE_LOCAL->get("memberID") != "") {
-		$CORE_LOCAL->set("unlock",1);
-		/* not sure why this is here; andy 13Feb13 */
-		/* don't want to clear member info via this call */
-		//PrehLib::memberID($CORE_LOCAL->get("memberID"));
-	}
-	$CORE_LOCAL->set("inputMasked",0);
-
 	return True;
 }
 
@@ -186,7 +177,6 @@ static public function check_password($password,$activity=1){
 */
 static public function ns_check_password($password){
 	global $CORE_LOCAL;
-	$CORE_LOCAL->set("away",1);
 
 	$password = strtoupper(trim($password));
 	if ($password == "TRAINING") 

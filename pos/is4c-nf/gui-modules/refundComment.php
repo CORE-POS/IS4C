@@ -113,7 +113,6 @@ class RefundComment extends NoInputPage {
 		</div>
 		</div>	
 		<?php
-		$CORE_LOCAL->set("scan","noScan");
 		$this->add_onload_command("\$('#selectlist').focus();\n");
 		//if (isset($_POST['selectlist']) && $_POST['selectlist'] == 'Other') 
 			$this->add_onload_command("\$('#selectlist').keypress(processkeypress);\n");

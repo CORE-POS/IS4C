@@ -91,7 +91,7 @@ class SimpleTender extends Parser {
 				$CORE_LOCAL->set("boxMsg",$msg);
 				$CORE_LOCAL->set("endorseType","check");
 				$CORE_LOCAL->set("strEntered",$CORE_LOCAL->get("amtdue")*100);
-				$CORE_LOCAL->set("tenderamt",$CORE_LOCAL->get("amtdue"));
+				$CORE_LOCAL->set("endorseAmt",$CORE_LOCAL->get("amtdue"));
 				$CORE_LOCAL->set("strEntered",$CORE_LOCAL->get("strEntered")."CK");
 				$this->stored_ret['main_frame'] = $my_url.'gui-modules/boxMsg2.php';
 			}
@@ -135,9 +135,6 @@ class SimpleTender extends Parser {
 						"<br />"._("is not authorized to make employee charges"));
 			}
 			else {
-				$CORE_LOCAL->set("mirequested",1);
-				$CORE_LOCAL->set("away",1);
-				$CORE_LOCAL->set("search_or_list",1);
 				$this->stored_ret['main_frame'] = $my_url.'gui-modules/memlist.php';
 			}
 			return True;

@@ -47,7 +47,6 @@ class ParsersTest extends PHPUnit_Framework_TestCase
 		$input_output = array(
 			'CC'		=> 'QM1',
 			'MANUALCC'	=> '199CC',
-			'MC123'		=> '123',
 			'5DI123'	=> '123',
 			'7PD123'	=> '123',
 			'2*4011'	=> '4011',
@@ -58,7 +57,6 @@ class ParsersTest extends PHPUnit_Framework_TestCase
 			'RF3*100DP10'	=> '100DP10',
 			'FN123'		=> '123',
 			'DN123'		=> '123',
-			'ND123'		=> '123',
 			'1TN123'	=> '123',
 			'invalid'	=> 'invalid'
 		);
@@ -77,7 +75,6 @@ class ParsersTest extends PHPUnit_Framework_TestCase
 		}
 
 		/* verify correct session values */
-		$this->assertEquals(1, $CORE_LOCAL->get('mfcoupon'));
 		$this->assertEquals(7, $CORE_LOCAL->get('itemPD'));
 		$this->assertEquals(1, $CORE_LOCAL->get('multiple'));
 		$this->assertEquals(3, $CORE_LOCAL->get('quantity'));
@@ -85,7 +82,6 @@ class ParsersTest extends PHPUnit_Framework_TestCase
 		$this->assertEquals(1, $CORE_LOCAL->get('toggletax'));
 		$this->assertEquals(1, $CORE_LOCAL->get('togglefoodstamp'));
 		$this->assertEquals(1, $CORE_LOCAL->get('toggleDiscountable'));
-		$this->assertEquals(1, $CORE_LOCAL->get('nd'));
 	}
 
 	function testParsers(){

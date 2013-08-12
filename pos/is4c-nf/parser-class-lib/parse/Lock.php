@@ -29,8 +29,6 @@ class Lock extends Parser {
 	}
 
 	function parse($str){
-		global $CORE_LOCAL;
-		$CORE_LOCAL->set("inputMasked",1);
 		$ret = $this->default_json();
 		$ret['main_frame'] = MiscLib::base_url().'gui-modules/login3.php';
 		return $ret;
