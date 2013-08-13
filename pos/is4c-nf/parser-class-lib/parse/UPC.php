@@ -46,10 +46,7 @@ class UPC extends Parser {
 		if ($CORE_LOCAL->get("refund")==1 && $CORE_LOCAL->get("refundComment") == ""){
 			$ret['udpmsg'] = 'twoPairs';
 			if ($CORE_LOCAL->get("SecurityRefund") > 20){
-				$CORE_LOCAL->set("adminRequest",$my_url."gui-modules/refundComment.php");
-				$CORE_LOCAL->set("adminRequestLevel",$CORE_LOCAL->get("SecurityRefund"));
-				$CORE_LOCAL->set("adminLoginMsg",_("Login to issue refund"));
-				$ret['main_frame'] = $my_url."gui-modules/adminlogin.php";
+				$ret['main_frame'] = $my_url."gui-modules/adminlogin.php?class=RefundAdminLogin";
 			}
 			else
 				$ret['main_frame'] = $my_url.'gui-modules/refundComment.php';
@@ -107,22 +104,6 @@ class UPC extends Parser {
 			}
 			// no match; not a product, not special
 			
-			/*
-			if ($CORE_LOCAL->get("requestType")!="badscan"){
-				$CORE_LOCAL->set("requestType","badscan");
-				$CORE_LOCAL->set("requestMsg",_("not a valid item").'<br />'._("enter description"));
-				$ret['main_frame'] = $my_url.'gui-modules/requestInfo.php';
-				return $ret;
-			}
-			else {
-				$ret['output'] = DisplayLib::lastpage();
-				TransRecord::addQueued($upc,$CORE_LOCAL->get("requestMsg"),0,'BS');
-				$CORE_LOCAL->set("requestMsg","");
-				$CORE_LOCAL->set("requestType","");
-				return $ret; 
-			}
-			*/
-			//TransRecord::addQueued($upc,'BADSCAN');
 			$opts = array('upc'=>$upc,'description'=>'BADSCAN');
 			TransRecord::add_log_record($opts);
 			$CORE_LOCAL->set("boxMsg",$upc." "._("not a valid item"));
@@ -227,19 +208,8 @@ class UPC extends Parser {
 			}
 
 			if ($CORE_LOCAL->get("cashierAge") < 18 && $CORE_LOCAL->get("cashierAgeOverride") != 1){
-				$CORE_LOCAL->set("adminRequest",$my_url."gui-modules/pos2.php");
-				$CORE_LOCAL->set("adminRequestLevel",30);
-				$CORE_LOCAL->set("adminLoginMsg",_("Login to approve sale"));
-				$CORE_LOCAL->set("cashierAgeOverride",2);
-				$ret['main_frame'] = $my_url."gui-modules/adminlogin.php";
+				$ret['main_frame'] = $my_url."gui-modules/adminlogin.php?class=AgeApproveAdminLogin";
 				return $ret;
-			}
-
-			$msg = $CORE_LOCAL->get("requestMsg");
-			if ((is_numeric($msg) && strlen($msg)==8) || $msg == 1){
-				$CORE_LOCAL->set("memAge",$msg);
-				$CORE_LOCAL->set("requestMsg","");
-				$CORE_LOCAL->set("requestType","");
 			}
 
 			if ($CORE_LOCAL->get("memAge")=="")
@@ -248,10 +218,7 @@ class UPC extends Parser {
 			$age = floor($diff / (365*60*60*24));
 			if ($age < $row['idEnforced']){
 				$ret['udpmsg'] = 'twoPairs';
-				$current = date("m/d/y",strtotime($CORE_LOCAL->get("memAge")));
-				$CORE_LOCAL->set("requestType","customer age");
-				$CORE_LOCAL->set("requestMsg","Type customer birthdate YYYYMMDD<br />(current: $current)");
-				$ret['main_frame'] = $my_url.'gui-modules/requestInfo.php';
+				$ret['main_frame'] = $my_url.'gui-modules/requestInfo.php?class=UPC';
 				return $ret;
 			}
 		}
@@ -540,6 +507,19 @@ class UPC extends Parser {
 		// application identifier not recognized
 		// will likely cause no such item error
 		return $str; 
+	}
+
+	public static $requestInfoHeader = 'customer age';
+	public static $requestInfoMsg = 'Type customer birthdate YYYYMMDD';
+	public static function requestInfoCallback($info){
+		global $CORE_LOCAL;
+		if ((is_numeric($info) && strlen($info)==8) || $info == 1){
+			$CORE_LOCAL->set("memAge",$info);
+			$CORE_LOCAL->set('strRemembered', $CORE_LOCAL->get('strEntered'));
+			$CORE_LOCAL->set('msgrepeat', 1);
+			return True;
+		}
+		return False;
 	}
 
 	function doc(){
