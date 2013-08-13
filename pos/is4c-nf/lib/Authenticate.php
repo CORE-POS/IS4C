@@ -74,7 +74,6 @@ static public function check_password($password,$activity=1){
 		if ($num_rows_q > 0) {
 			$row_q = $db_g->fetch_array($result_q);
 
-			//Database::testremote();
 			Database::loadglobalvalues();
 
 			$transno = Database::gettransno($row_q["emp_no"]);
@@ -89,26 +88,6 @@ static public function check_password($password,$activity=1){
 			CoreState::cashier_login($transno, $row_q['age']);
 
 			if ($transno == 1) TransRecord::addactivity($activity);
-
-			$my_drawer = ReceiptLib::currentDrawer();
-			if ($my_drawer == 0){
-				$available = ReceiptLib::availableDrawers();	
-				if (count($available) > 0){ 
-					ReceiptLib::assignDrawer($row_q['emp_no'],$available[0]);
-				}
-			}
-			else
-				ReceiptLib::assignDrawer($row_q['emp_no'],$my_drawer);
-
-			/**
-			  Use Kicker object to determine whether the drawer should open
-			  The first line is just a failsafe in case the setting has not
-			  been configured.
-			*/
-			$kicker_class = ($CORE_LOCAL->get("kickerModule")=="") ? 'Kicker' : $CORE_LOCAL->get('kickerModule');
-			$kicker_object = new $kicker_class();
-			if ($kicker_object->kickOnSignIn())
-				ReceiptLib::drawerKick();
 			
 		} elseif ($password == 9999) {
 			Database::loadglobalvalues();
@@ -123,17 +102,6 @@ static public function check_password($password,$activity=1){
 			Database::setglobalvalues($globals);
 
 			CoreState::cashier_login($transno, 0);
-
-			$my_drawer = ReceiptLib::currentDrawer();
-			if ($my_drawer == 0){
-				$available = ReceiptLib::availableDrawers();	
-				if (count($available) > 0) {
-					ReceiptLib::assignDrawer(9999,$available[0]);
-				}
-			}
-			else
-				ReceiptLib::assignDrawer(9999,$my_drawer);
-			
 		}
 		else return False;
 	}
@@ -155,13 +123,11 @@ static public function check_password($password,$activity=1){
 		if ($num_rows_a > 0) {
 
 			Database::loadglobalvalues();
-			//testremote();
 			$row = $db_g->fetch_row($result_a);
 			CoreState::cashier_login(False, $row['age']);
 		}
 		elseif ($row_g["CashierNo"] == "9999" && $password == "9999"){
 			Database::loadglobalvalues();
-			//Database::testremote();
 			CoreState::cashier_login(False, 0);
 		}
 		else return False;

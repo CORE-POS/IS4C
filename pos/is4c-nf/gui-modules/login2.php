@@ -32,6 +32,7 @@ class login2 extends BasicPage {
 	var $msg;
 
 	function preprocess(){
+		global $CORE_LOCAL;
 		$this->box_color = '#004080';
 		$this->msg = _('please enter your password');
 
@@ -41,7 +42,33 @@ class login2 extends BasicPage {
 				$sd = MiscLib::scaleObject();
 				if (is_object($sd))
 					$sd->ReadReset();
+
+				/**
+				  Find a drawer for the cashier
+				*/
 				$my_drawer = ReceiptLib::currentDrawer();
+				if ($my_drawer == 0){
+					$available = ReceiptLib::availableDrawers();	
+					if (count($available) > 0){ 
+						ReceiptLib::assignDrawer($CORE_LOCAL->get('CashierNo'),$available[0]);
+						$my_drawer = $available[0];
+					}
+				}
+				else
+					ReceiptLib::assignDrawer($CORE_LOCAL->get('CashierNo'),$my_drawer);
+
+				/**
+				  Use Kicker object to determine whether the drawer should open
+				  The first line is just a failsafe in case the setting has not
+				  been configured.
+				*/
+				if (session_id() != '')
+					session_write_close();
+				$kicker_class = ($CORE_LOCAL->get("kickerModule")=="") ? 'Kicker' : $CORE_LOCAL->get('kickerModule');
+				$kicker_object = new $kicker_class();
+				if ($kicker_object->kickOnSignIn())
+					ReceiptLib::drawerKick();
+
 				if ($my_drawer == 0)
 					$this->change_page($this->page_url."gui-modules/drawerPage.php");
 				else
