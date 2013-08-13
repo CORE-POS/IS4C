@@ -57,10 +57,7 @@ class DeptKey extends Parser {
 		}
 		elseif ($CORE_LOCAL->get("refund")==1 && $CORE_LOCAL->get("refundComment") == ""){
 			if ($CORE_LOCAL->get("SecurityRefund") > 20){
-				$CORE_LOCAL->set("adminRequest",$my_url."gui-modules/refundComment.php");
-				$CORE_LOCAL->set("adminRequestLevel",$CORE_LOCAL->get("SecurityRefund"));
-				$CORE_LOCAL->set("adminLoginMsg",_("Login to issue refund"));
-				$ret['main_frame'] = $my_url."gui-modules/adminlogin.php";
+				$ret['main_frame'] = $my_url."gui-modules/adminlogin.php?class=RefundAdminLogin";
 			}
 			else
 				$ret['main_frame'] = $my_url.'gui-modules/refundComment.php';

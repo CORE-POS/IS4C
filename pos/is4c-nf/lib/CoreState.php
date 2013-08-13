@@ -61,7 +61,6 @@ static public function system_init() {
 	$CORE_LOCAL->set("currentid",1);
 	$CORE_LOCAL->set("currenttopid",1);
 	$CORE_LOCAL->set("training",0);
-	$CORE_LOCAL->set("adminRequest","");
 	$CORE_LOCAL->set("SNR",0);
 	$CORE_LOCAL->set("weight",0);
 	$CORE_LOCAL->set("scale",1);
@@ -104,7 +103,6 @@ static public function transReset() {
 	
 	$CORE_LOCAL->set("warned",0);
 	$CORE_LOCAL->set("warnBoxType","");
-	$CORE_LOCAL->set("requestType","");
 	$CORE_LOCAL->set("lastWeight",0.00);
 
 	$CORE_LOCAL->set("CachePanEncBlock","");

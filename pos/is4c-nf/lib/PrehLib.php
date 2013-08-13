@@ -92,20 +92,7 @@ static public function memberID($member_number) {
 	// special hard coding for member 5607 WFC 
 	// needs to go away
 	if ($member_number == "5607"){
-		if ($CORE_LOCAL->get("requestType") == ""){
-			$CORE_LOCAL->set("requestType","member gift");
-			$CORE_LOCAL->set("requestMsg","Card for which member?");
-			$ret['main_frame'] = MiscLib::base_url()."gui-modules/requestInfo.php";
-			$CORE_LOCAL->set("strEntered","5607ID");
-		}
-		else if ($CORE_LOCAL->get("requestType") == "member gift"){
-			TransRecord::addcomment("CARD FOR #".$CORE_LOCAL->get("requestMsg"));
-			$CORE_LOCAL->set("requestType","");
-			$row = $db->fetch_array($result);
-			self::setMember($row["CardNo"], $row["personNum"],$row);
-			$ret['redraw_footer'] = True;
-			$ret['output'] = DisplayLib::lastpage();
-		}
+		$ret['main_frame'] = MiscLib::base_url()."gui-modules/requestInfo.php?class=PrehLib";
 	}
 
 	$CORE_LOCAL->set("memberID","0");
@@ -121,6 +108,23 @@ static public function memberID($member_number) {
 	}
 
 	return $ret;
+}
+
+public static $requestInfoHeader = 'member gift';
+public static $requestInfoMsg = 'Card for which member?';
+public static function requestInfoCallback($info){
+	TransRecord::addcomment("CARD FOR #".$info);
+
+	$query = "select CardNo,personNum,LastName,FirstName,CashBack,Balance,Discount,
+		MemDiscountLimit,ChargeOk,WriteChecks,StoreCoupons,Type,memType,staff,
+		SSI,Purchases,NumberOfChecks,memCoupons,blueLine,Shown,id from custdata 
+		where CardNo = 5607";
+	$db = Database::pDataConnect();
+	$result = $db->query($query);
+	$row = $db->fetch_row($result);
+	self::setMember($row["CardNo"], $row["personNum"],$row);
+
+	return True;
 }
 
 //-------------------------------------------------

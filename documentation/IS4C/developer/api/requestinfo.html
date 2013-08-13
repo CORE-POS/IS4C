@@ -1,0 +1,76 @@
+<html>
+<head>
+	<title>Requesting Information</title>
+</head>
+<body>
+<div style="text-align:center;">
+<h1>Requesting Information from the User</h1>
+<!--
+13Aug13 AT Doc first written
+-->
+<br />as of: August 13, 2013
+</div>
+<p>
+If you want to prompt the cashier to enter some text, you
+can use the built-in <i>requestInfo.php</i> gui-module rather
+than writing a separate page. This is well-suited for cases 
+where you simply want to show a text entry box and get the
+result. To use this functionality, pass the name of an 
+appropriate class to requestInfo.php as the URL parameter
+<i>class</i>. The class does not have to inherit from any
+particular base class; it merely has to provide the methods
+and properties that requestInfo.php needs (i.e., <i>duck typing</i>).
+This structure lets you attach an information request to another
+class.
+</p>
+<blockquote>
+static string <b>requestInfoHeader</b><br />
+static string <b>requestInfoMsg</b><br />
+static mixed <b>requestInfoCallback</b>(string $info)<br />
+</blockquote>
+<p>
+The strings properties are prompts displayed for the cashier.
+<b>requestInfoHeader</b> appears above the input box;
+<b>requestInfoMsg</b> appears below the input box. When the cashier
+enters information, that string is passed to <b>requestInfoCallback</b>.
+If the string is not a valid entry, return boolean False to prompt
+the cashier to re-enter. If the string is valid, do whatever processing
+is necessary then return a URL indicating which page to go to next.
+If you want to return to the main POS screen, returning boolean True
+will be interpretted as that URL.
+</p>
+<p>
+<b>Example</b>: Add member's phone number to the transaction
+<pre>
+class GetMemPhone extends Parser {
+	function check($str){
+		if ($str == 'GETPH') return True;
+		else return False;
+	}
+
+	function parse($str){
+		$ret = $this->default_json();
+		// redirect to the prompt page
+		$ret['main_frame'] = MiscLib::base_url().'gui-modules/requestInfo.php?class=GetMemPhone';
+		return $ret;
+	}
+
+	public static $requestInfoHeader = 'member phone #';
+
+	public static $requestInfoMsg = 'type phone number XXX-XXX-XXXX';
+
+	public static function requestInfoCallback($info){
+		// if the entry is valid, add a comment to
+		// the transaction
+		if (preg_match('/^\d\d\d-\d\d\d-\d\d\d\d$/',trim($info)) == 1){
+			TransRecord::addcomment('PH: '.trim($info));
+			return True;
+		}
+		else
+			return False;
+	}
+}
+</pre>
+</p>
+</body>
+</html>

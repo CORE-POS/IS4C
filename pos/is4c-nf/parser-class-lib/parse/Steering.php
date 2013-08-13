@@ -84,24 +84,15 @@ class Steering extends Parser {
 			if ($CORE_LOCAL->get("LastID") != "0")
 				$this->ret['output'] = DisplayLib::boxMsg("transaction in progress");
 			else {
-				$CORE_LOCAL->set("adminRequest",$my_url."gui-modules/undo.php");
-				$CORE_LOCAL->set("adminRequestLevel","30");
-				$CORE_LOCAL->set("adminLoginMsg",_("Login to void transactions"));
-				$this->ret['main_frame'] = $my_url."gui-modules/adminlogin.php";
+				$this->ret['main_frame'] = $my_url."gui-modules/adminlogin.php?class=UndoAdminLogin";
 			}
 			return True;
 		case "DDD":
-			$CORE_LOCAL->set("adminRequest",$my_url."ajax-callbacks/ddd.php");
-			$CORE_LOCAL->set("adminLoginMsg","DDD these items?");
-			$CORE_LOCAL->set("adminRequestLevel","10");
-			$this->ret['main_frame'] = $my_url."gui-modules/adminlogin.php";
+			$this->ret['main_frame'] = $my_url."gui-modules/adminlogin.php?class=DDDAdminLogin";
 			return True;
 		case 'MG':
 			if ($CORE_LOCAL->get("SecuritySR") > 20){
-				$CORE_LOCAL->set("adminRequest",$my_url."gui-modules/adminlist.php");
-				$CORE_LOCAL->set("adminRequestLevel",$CORE_LOCAL->get("SecuritySR"));
-				$CORE_LOCAL->set("adminLoginMsg",_("Login to suspend/resume transactions"));
-				$this->ret['main_frame'] = $my_url."gui-modules/adminlogin.php";
+				$this->ret['main_frame'] = $my_url."gui-modules/adminlogin.php?class=SusResAdminLogin";
 			}
 			else
 				$this->ret['main_frame'] = $my_url."gui-modules/adminlist.php";
@@ -194,10 +185,7 @@ class Steering extends Parser {
 				$this->ret['main_frame'] = $my_url."cc-modules/gui/ProcessPage.php";
 			return True;
 		case "PO":
-			$CORE_LOCAL->set("adminRequest",$my_url."gui-modules/priceOverride.php");
-			$CORE_LOCAL->set("adminRequestLevel","30");
-			$CORE_LOCAL->set("adminLoginMsg",_("Login to alter price"));
-			$this->ret['main_frame'] = $my_url."gui-modules/adminlogin.php";
+			$this->ret['main_frame'] = $my_url."gui-modules/adminlogin.php?class=PriceOverrideAdminLogin";
 			return True;
 		case "HC":
 			$module = new HostedCheckout();
