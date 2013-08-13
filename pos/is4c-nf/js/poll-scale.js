@@ -21,7 +21,7 @@ function scalePollSuccess(data){
 			$('#scaleBottom').html(data.scale);	
 		}
 
-		if (data.scans && data.scans.indexOf(':') !== -1){
+		if (data.scans && && data.scans.indexOf && data.scans.indexOf(':') !== -1){
 			// data from the cc terminal
 			// run directly; don't include user input
 			if (typeof runParser == 'function')
