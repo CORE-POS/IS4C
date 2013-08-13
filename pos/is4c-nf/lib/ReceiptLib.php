@@ -1122,7 +1122,7 @@ static public function printReceipt($arg1,$second=False,$email=False) {
 		$arg1 = 'full';
 		$email = False;
 		$second = False;
-		$reprint = True
+		$reprint = True;
 		$rp_where = 'emp_no='.((int)$emp). 'AND
 			register_no='.((int)$reg).' AND
 			trans_no='.((int)$trans);

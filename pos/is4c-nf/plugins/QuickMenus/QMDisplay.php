@@ -125,8 +125,14 @@ class QMDisplay extends NoInputPage {
 		echo "<div class=\"baseHeight\" style=\"border: solid 1px black;\">";
 		echo "<form id=\"qmform\" action=\"".$_SERVER["PHP_SELF"]."\" method=\"post\">";
 
-		include(realpath(dirname(__FILE__)."/quickmenus/"
-			.$CORE_LOCAL->get("qmNumber").".php"));
+		$my_menu = array();
+		if (is_array($CORE_LOCAL->get('qmNumber'))){
+			$my_menu = $CORE_LOCAL->get('qmNumber');
+		}
+		else {
+			include(realpath(dirname(__FILE__)."/quickmenus/"
+				.$CORE_LOCAL->get("qmNumber").".php"));
+		}
 
 		echo '<br /><br />';
 		echo '<select name="ddQKselect" id="ddQKselect" style="width:200px;" size="10"

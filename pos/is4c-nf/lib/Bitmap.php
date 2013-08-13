@@ -210,10 +210,21 @@ class Bitmap {
 		if ($imgDataSize === null || $imgDataSize === 0)
 			$imgDataSize = abs($height) * $rowDataSize;
 		else if ($imgDataSize != (abs($height) * $rowDataSize)){
+			/** modification by Andy 09Aug13
+			    I think this makes more sense and it's incorrect
+			    to assume all zero bytes at the end of the
+			    image are padding **/
+			$padding = $imgDataSize % 4;
+			if ($padding > 0){
+				$imgDataSize -= $padding;
+				$data = substr($data,0,strlen($data)-$padding);
+			}
+			/* previous method for removing padding
 			while(ord($data[strlen($data)-1])===0){
 				$imgDataSize--;
 				$data = substr($data,0,strlen($data)-1);
 			}
+			*/
 			if($imgDataSize != (abs($height) * $rowDataSize))
 				return $this->ReturnError("Load(): incorrect image data size (".$imgDataSize." reported, ".(abs($height) * $rowDataSize)." expected)");
 		}
