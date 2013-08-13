@@ -21,9 +21,20 @@
 
 *********************************************************************************/
 
+/**
+  13Aug13 - AT
+
+  Disabling this parser. The TenderModule system now has a notion of
+  allowing default amounts and prompting for confirmation. There's no
+  good reason to have two Parsers that do essentially the same thing
+  and duplicate a bunch of common code
+*/
+
 class SimpleTender extends Parser {
 	var $stored_ret;
 	function check($str){
+		// on purpose. deprecated
+		return False;
 		global $CORE_LOCAL;
 		$my_url = MiscLib::base_url();
 		$this->stored_ret = $this->default_json();

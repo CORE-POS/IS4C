@@ -84,7 +84,6 @@ static public function transReset() {
 	$CORE_LOCAL->set("couldhavesaved",0);
 	$CORE_LOCAL->set("specials",0);
 	$CORE_LOCAL->set("tare",0);
-	$CORE_LOCAL->set("endorseAmt",0);
 	$CORE_LOCAL->set("change",0);
 	$CORE_LOCAL->set("chargetender",0);
 	$CORE_LOCAL->set("toggletax",0);
@@ -131,7 +130,6 @@ static public function printReset() {
 
 	$CORE_LOCAL->set("receiptToggle",1);
 	$CORE_LOCAL->set("receiptType","");
-	$CORE_LOCAL->set("endorseType","");
 
 	$CORE_LOCAL->set("autoReprint",0);
 }

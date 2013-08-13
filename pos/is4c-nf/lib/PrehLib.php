@@ -464,7 +464,6 @@ static public function classic_tender($right, $strl) {
 	$tendered = -1 * $strl;
 				
 	$tender_desc = $row["TenderName"];				
-	$CORE_LOCAL->set("endorseAmt",$strl);
 	$unit_price = 0;
 
 	if ($tender_code == "FS") {
@@ -509,8 +508,7 @@ static public function classic_tender($right, $strl) {
 					endorsed yet?</div>";
 			}
 			$CORE_LOCAL->set("boxMsg",$msg);
-			$CORE_LOCAL->set("endorseType","check");
-			$ret['main_frame'] = MiscLib::base_url().'gui-modules/boxMsg2.php';
+			$ret['main_frame'] = MiscLib::base_url().'gui-modules/boxMsg2.php?endorse=check&endorseAmt='.$strl;
 			return $ret;
 		}
 		elseif ($right == "TV" && $CORE_LOCAL->get("msgrepeat") == 0) {
@@ -522,8 +520,7 @@ static public function classic_tender($right, $strl) {
 					endorsed yet?</div>";
 			}
 			$CORE_LOCAL->set("boxMsg",$msg);
-			$CORE_LOCAL->set("endorseType","check");
-			$ret['main_frame'] = MiscLib::base_url().'gui-modules/boxMsg2.php';
+			$ret['main_frame'] = MiscLib::base_url().'gui-modules/boxMsg2.php?endorse=check&endorseAmt='.$strl;
 			return $ret;
 		}
 		elseif ($right == "RC" && $CORE_LOCAL->get("msgrepeat") == 0) {
@@ -535,14 +532,12 @@ static public function classic_tender($right, $strl) {
 					endorsed yet?</div>";
 			}
 			$CORE_LOCAL->set("boxMsg",$msg);
-			$CORE_LOCAL->set("endorseType","check");
-			$ret['main_frame'] = MiscLib::base_url().'gui-modules/boxMsg2.php';
+			$ret['main_frame'] = MiscLib::base_url().'gui-modules/boxMsg2.php?endorse=check&endorseAmt='.$strl;
 			return $ret;
 		}
 		elseif ($right == "TC" && $CORE_LOCAL->get("msgrepeat") == 0) {
 			$CORE_LOCAL->set("boxMsg","<B> insert gift certificate<B><BR>press [enter] to endorse<P><FONT size='-1'>[clear] to cancel</FONT>");
-			$CORE_LOCAL->set("endorseType","check");
-			$ret['main_frame'] = MiscLib::base_url().'gui-modules/boxMsg2.php';
+			$ret['main_frame'] = MiscLib::base_url().'gui-modules/boxMsg2.php?endorse=check&endorseAmt='.$strl;
 			return $ret;
 		}
 	}

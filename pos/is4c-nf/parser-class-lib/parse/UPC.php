@@ -247,7 +247,6 @@ class UPC extends Parser {
 
 			$CORE_LOCAL->set("SNR",$CORE_LOCAL->get('strEntered'));
 			$ret['output'] = DisplayLib::boxMsg(_("please put item on scale"),'',True);
-			$CORE_LOCAL->set("wgtRequested",0);
 			$CORE_LOCAL->set("warned",0);
 			//$ret['retry'] = $CORE_LOCAL->get("strEntered");
 			
@@ -292,12 +291,10 @@ class UPC extends Parser {
 		   operation
 		*/
 		if ($upc == "0000000008010" && $CORE_LOCAL->get("msgrepeat") == 0) {
-			$CORE_LOCAL->set("endorseType","giftcert");
-			$CORE_LOCAL->set("endorseAmt",$total);
 			$CORE_LOCAL->set("boxMsg","<b>".$total." gift certificate</b><br />
 				"._("insert document")."<br />"._("press enter to endorse")."
 				<p><font size='-1'>"._("clear to cancel")."</font>");
-			$ret["main_frame"] = $my_url."gui-modules/boxMsg2.php";
+			$ret["main_frame"] = $my_url."gui-modules/boxMsg2.php?endorse=giftcert&endorseAmt=".$total;
 			return $ret;
 		}
 
@@ -305,12 +302,10 @@ class UPC extends Parser {
 		   see 0000000008010 above
 		*/
 		if ($upc == "0000000008011" && $CORE_LOCAL->get("msgrepeat") == 0) {
-			$CORE_LOCAL->set("endorseType","classreg");
-			$CORE_LOCAL->set("endorseAmt",$total);
 			$CORE_LOCAL->set("boxMsg","<b>".$total." class registration</b><br />
 				"._("insert form")."<br />"._("press enter to endorse")."
 				<p><font size='-1'>"._("clear to cancel")."</font>");
-			$ret["main_frame"] = $my_url."gui-modules/boxMsg2.php";
+			$ret["main_frame"] = $my_url."gui-modules/boxMsg2.php?endorse=classreg&endorseAmt=".$total;
 			return $ret;
 		}
 
