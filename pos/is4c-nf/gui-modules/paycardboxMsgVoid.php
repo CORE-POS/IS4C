@@ -38,7 +38,6 @@ class paycardboxMsgVoid extends PaycardProcessPage {
 				$CORE_LOCAL->set("msgrepeat",1);
 				$CORE_LOCAL->set("strRemembered",'TO');
 				$CORE_LOCAL->set("toggletax",0);
-				$CORE_LOCAL->set("endorseType","");
 				$CORE_LOCAL->set("togglefoodstamp",0);
 				$this->change_page($this->page_url."gui-modules/pos2.php");
 				return False;

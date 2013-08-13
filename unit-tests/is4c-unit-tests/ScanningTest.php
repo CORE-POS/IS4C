@@ -295,8 +295,6 @@ class ScanningTest extends PHPUnit_Framework_TestCase
 		$this->assertArrayHasKey('main_frame',$json);
 		$this->assertInternalType('string',$json['main_frame']);
 		$this->assertNotEmpty($json['main_frame']);
-		$this->assertEquals(0,$CORE_LOCAL->get('warned'));
-		$this->assertEquals('',$CORE_LOCAL->get('warnBoxType'));
 
 		// show endorse warning screen
 		$CORE_LOCAL->set('memberID',123);
@@ -305,22 +303,20 @@ class ScanningTest extends PHPUnit_Framework_TestCase
 		$this->assertArrayHasKey('main_frame',$json);
 		$this->assertInternalType('string',$json['main_frame']);
 		$this->assertNotEmpty($json['main_frame']);
-		$this->assertEquals(1,$CORE_LOCAL->get('warned'));
-		$this->assertEquals('warnEquity',$CORE_LOCAL->get('warnBoxType'));
 
 		// clear warning and proceed
 		$CORE_LOCAL->set('memberID',123);
+		$CORE_LOCAL->set('msgrepeat', 1);
 		$json = $eEndorse->handle(1,1.00,array('main_frame'=>''));
 		$this->assertInternalType('array',$json);
 		$this->assertArrayHasKey('main_frame',$json);
 		$this->assertInternalType('string',$json['main_frame']);
 		$this->assertEmpty($json['main_frame']);
-		$this->assertEquals(0,$CORE_LOCAL->get('warned'));
-		$this->assertEquals('',$CORE_LOCAL->get('warnBoxType'));
 
 		$CORE_LOCAL->set('warned',0);
 		$CORE_LOCAL->set('warnBoxType','');
 		$CORE_LOCAL->set('memberID',0);
+		$CORE_LOCAL->set('msgrepeat', 0);
 
 		// error because member is required
 		$eWarn = new EquityWarnDept();

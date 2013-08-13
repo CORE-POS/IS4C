@@ -315,12 +315,12 @@ static public function printCabCoupon($dateTimeStamp, $ref){
 
 // -------------  frank.php incorporated into printlib on 3/24/05 apbw (from here to eof) -------
 
-static public function frank() {
+static public function frank($amount) {
 	global $CORE_LOCAL;
 
 	$date = strftime("%m/%d/%y %I:%M %p", time());
 	$ref = trim($CORE_LOCAL->get("memberID"))." ".trim($CORE_LOCAL->get("CashierNo"))." ".trim($CORE_LOCAL->get("laneno"))." ".trim($CORE_LOCAL->get("transno"));
-	$tender = "AMT: ".MiscLib::truncate2($CORE_LOCAL->get("endorseAmt"))."  CHANGE: ".MiscLib::truncate2($CORE_LOCAL->get("change"));
+	$tender = "AMT: ".MiscLib::truncate2($amount)."  CHANGE: ".MiscLib::truncate2($CORE_LOCAL->get("change"));
 	$output = self::center_check($ref)."\n"
 		.self::center_check($date)."\n"
 		.self::center_check($CORE_LOCAL->get("ckEndorse1"))."\n"
@@ -336,7 +336,7 @@ static public function frank() {
 
 // -----------------------------------------------------
 
-static public function frankgiftcert() {
+static public function frankgiftcert($amount) {
 	global $CORE_LOCAL;
 
 	$ref = trim($CORE_LOCAL->get("CashierNo"))."-".trim($CORE_LOCAL->get("laneno"))."-".trim($CORE_LOCAL->get("transno"));
@@ -351,14 +351,14 @@ static public function frankgiftcert() {
 	$output .= str_repeat(" ", 12).$next_year;
 	$output .= str_repeat("\n", 3);
 	$output .= str_repeat(" ", 75);
-      $output .= "$".MiscLib::truncate2($CORE_LOCAL->get("endorseAmt"));
+      $output .= "$".MiscLib::truncate2($amount);
 	self::endorse($output); 
 
 }
 
 // -----------------------------------------------------
 
-static public function frankstock() {
+static public function frankstock($amount) {
 	global $CORE_LOCAL;
 
 	$time_now = strftime("%m/%d/%y", time());		// apbw 3/10/05 "%D" didn't work - Franking patch
@@ -376,7 +376,7 @@ static public function frankstock() {
 		$CORE_LOCAL->set("LastEquityReference",$ref);
 	}
 	else {
-		$output .= "Stock Payment $".$CORE_LOCAL->get("endorseAmt")." ref: ".$ref."   ".$time_now; // apbw 3/24/05 Wedge Printer Swap Patch
+		$output .= "Stock Payment $".$amount." ref: ".$ref."   ".$time_now; // apbw 3/24/05 Wedge Printer Swap Patch
 	}
 
 	self::endorse($output);

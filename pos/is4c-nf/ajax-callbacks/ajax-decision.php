@@ -27,16 +27,16 @@ include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 $decision = isset($_REQUEST['input'])?strtoupper(trim($_REQUEST["input"])):'CL';
 
 $ret = array('dest_page'=>MiscLib::base_url().'gui-modules/pos2.php',
-		'endorse'=>false);
+		'endorse'=>False, 'cleared'=>False);
 
 if ($decision == "CL") {
 	$CORE_LOCAL->set("msgrepeat",0);
 	$CORE_LOCAL->set("toggletax",0);
 	$CORE_LOCAL->set("chargetender",0);
 	$CORE_LOCAL->set("togglefoodstamp",0);
-	$CORE_LOCAL->set("endorseType","");
 	$CORE_LOCAL->set("warned",0);
 	$CORE_LOCAL->set("warnBoxType","");
+	$ret['cleared'] = True;
 }
 elseif (strlen($decision) > 0) {
 
@@ -46,10 +46,6 @@ elseif (strlen($decision) > 0) {
 else {
 	$CORE_LOCAL->set("msgrepeat",1);
 	$CORE_LOCAL->set("strRemembered",$CORE_LOCAL->get("strEntered"));
-
-	if ($CORE_LOCAL->get("endorseType") != ""){
-		$ret['endorse'] = true;
-	}
 }
 
 echo JsonLib::array_to_json($ret);

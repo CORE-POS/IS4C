@@ -214,7 +214,6 @@ static public function addItem($strupc, $strdescription, $strtransType, $strtran
 	$CORE_LOCAL->set("toggletax",0);
 	$CORE_LOCAL->set("togglefoodstamp",0);
 	$CORE_LOCAL->set("SNR",0);
-	$CORE_LOCAL->set("wgtRequested",0);
 
 	if ($intscale == 1)
 		$CORE_LOCAL->set("lastWeight",$dblquantity);

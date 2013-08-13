@@ -32,6 +32,8 @@ class boxMsg2 extends BasicPage {
 		<script type="text/javascript">
 		function submitWrapper(){
 			var str = $('#reginput').val();
+			var endorseType = $('#endorseType').val();
+			var endorseAmt = $('#endorseAmt').val();
 			$.ajax({
 				url: '<?php echo $this->page_url; ?>ajax-callbacks/ajax-decision.php',
 				type: 'get',
@@ -39,10 +41,11 @@ class boxMsg2 extends BasicPage {
 				dataType: 'json',
 				cache: false,
 				success: function(data){
-					if (data.endorse){
+					if (!data.cleared && endorseType != ''){
 						$.ajax({
 							url: '<?php echo $this->page_url; ?>ajax-callbacks/ajax-endorse.php',
 							type: 'get',
+							data: 'type='+endorseType+'&amount='+endorseAmt,
 							cache: false,
 							success: function(){
 								location = data.dest_page;
@@ -72,6 +75,13 @@ class boxMsg2 extends BasicPage {
 		echo "<div id=\"footer\">";
 		echo DisplayLib::printfooter();
 		echo "</div>";
+		echo '<input type="hidden" id="endorseType" value="'
+			.(isset($_REQUEST['endorse'])?$_REQUEST['endorse']:'')
+			.'" />';
+		echo '<input type="hidden" id="endorseAmt" value="'
+			.(isset($_REQUEST['endorseAmt'])?$_REQUEST['endorseAmt']:'')
+			.'" />';
+		
 		$CORE_LOCAL->set("boxMsg",'');
 		$CORE_LOCAL->set("msgrepeat",2);
 		if ($CORE_LOCAL->get("warned") == 0)

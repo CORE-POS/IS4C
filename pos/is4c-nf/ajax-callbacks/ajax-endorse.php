@@ -24,10 +24,10 @@
 ini_set('display_errors','Off');
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
-$endorseType = $CORE_LOCAL->get("endorseType");
+$endorseType = isset($_REQUEST['type']) ? $_REQUEST['type'] : '';
+$amount = isset($_REQUEST['amount']) ? $_REQUEST['amount'] : '';
 
 if (strlen($endorseType) > 0) {
-	$CORE_LOCAL->set("endorseType","");
 
 	// close session so if printer hangs
 	// this script won't lock the session file
@@ -37,15 +37,15 @@ if (strlen($endorseType) > 0) {
 	switch ($endorseType) {
 
 		case "check":
-			ReceiptLib::frank();
+			ReceiptLib::frank($amount);
 			break;
 
 		case "giftcert":
-			ReceiptLib::frankgiftcert();
+			ReceiptLib::frankgiftcert($amount);
 			break;
 
 		case "stock":
-			ReceiptLib::frankstock();
+			ReceiptLib::frankstock($amount);
 			break;
 
 		case "classreg":

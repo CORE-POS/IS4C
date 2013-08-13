@@ -35,7 +35,6 @@ class paycardboxMsgAuth extends PaycardProcessPage {
 			if( $input == "CL") {
 				$CORE_LOCAL->set("msgrepeat",0);
 				$CORE_LOCAL->set("toggletax",0);
-				$CORE_LOCAL->set("endorseType","");
 				$CORE_LOCAL->set("togglefoodstamp",0);
 				$CORE_LOCAL->set("ccTermOut","resettotal:".
 					str_replace(".","",sprintf("%.2f",$CORE_LOCAL->get("amtdue"))));

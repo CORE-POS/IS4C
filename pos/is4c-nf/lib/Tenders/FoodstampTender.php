@@ -54,6 +54,10 @@ class FoodstampTender extends TenderModule {
 		parent::Add();
 		TransRecord::addfsTaxExempt();
 	}
+
+	function AllowDefault(){
+		return False;
+	}
 }
 
 ?>

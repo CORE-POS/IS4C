@@ -37,7 +37,6 @@ class paycardMsgCVV2 extends MainFramePage {
 				$CORE_LOCAL->set("msgrepeat",0);
 				$CORE_LOCAL->set("toggletax",0);
 				// $_SESSION["chargetender"] = 0;
-				$CORE_LOCAL->set("endorseType","");
 				$CORE_LOCAL->set("togglefoodstamp",0);
 				paycard_reset();
 				changeCurrentPageJS("/gui-modules/pos2.php");
