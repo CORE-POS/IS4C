@@ -36,8 +36,6 @@ class paycardMsgCVV2 extends MainFramePage {
 			if( $input == "CL") {
 				$CORE_LOCAL->set("msgrepeat",0);
 				$CORE_LOCAL->set("toggletax",0);
-				// $_SESSION["chargetender"] = 0;
-				$CORE_LOCAL->set("endorseType","");
 				$CORE_LOCAL->set("togglefoodstamp",0);
 				paycard_reset();
 				changeCurrentPageJS("/gui-modules/pos2.php");
@@ -67,7 +65,6 @@ class paycardMsgCVV2 extends MainFramePage {
 		paycard_msgBox($type,"Requires CVV2",
 				"Enter Verification # from back of card","[clear] to cancel");
 		$CORE_LOCAL->set("msgrepeat",2);
-		$CORE_LOCAL->set("beep","noBeep"); // to override the errorBeep() that is called inside boxMsg() (which is called inside paycard_msgBox())
 	?>
 	</div>
 	<script type="text/javascript">

@@ -35,7 +35,6 @@ class Clear extends Parser {
 		$CORE_LOCAL->set("strendered","");
 		$CORE_LOCAL->set("strRemembered","");
 		$CORE_LOCAL->set("SNR",0);
-		$CORE_LOCAL->set("wgtRequested",1);
 		// added by apbw 6/04/05 to correct voiding of refunded items
 		$CORE_LOCAL->set("refund",0);	
 		//$CORE_LOCAL->set("autoReprint",0);

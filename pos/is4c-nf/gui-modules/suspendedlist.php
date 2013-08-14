@@ -78,9 +78,6 @@ class suspendedlist extends NoInputPage {
 
 		$num_rows = $db_a->num_rows($result);
 		
-		// original code seems to do this either way
-		$CORE_LOCAL->set("scan","noScan");
-
 		/* if there are suspended transactions available, 
 		 * store the result and row count as class variables
 		 * so they can be retrieved in body_content()
@@ -128,7 +125,6 @@ class suspendedlist extends NoInputPage {
 			._("use arrow keys to navigate")."<br />"._("clear to cancel")."</div>\n"
 			."<div class=\"clear\"></div>";
 		echo "</div>";
-		$CORE_LOCAL->set("scan","noScan");
 		$this->add_onload_command("\$('#selectlist').focus();");
 		$this->add_onload_command("\$('#selectlist').keypress(processkeypress);");
 	} // END body_content() FUNCTION
@@ -173,10 +169,6 @@ class suspendedlist extends NoInputPage {
 
 		$db_a->query($query_update);
 		Database::getsubtotals();
-		$CORE_LOCAL->set("unlock",1);
-		if ($CORE_LOCAL->get("chargeTotal") != 0) 
-			$CORE_LOCAL->set("chargetender",1);
-		$CORE_LOCAL->set("msg",0);
 	}
 }
 

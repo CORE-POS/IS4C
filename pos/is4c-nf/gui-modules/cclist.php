@@ -73,7 +73,6 @@ class giftcardlist extends MainFramePage {
 		</div>
 		</div>	
 		<?php
-		$CORE_LOCAL->set("scan","noScan");
 	} // END body_content() FUNCTION
 }
 

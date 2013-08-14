@@ -165,7 +165,6 @@ class fsTotalConfirm extends NoInputPage {
 		}
 		else
 			$this->add_onload_command("\$('#tenderamt').focus();\n");
-		$CORE_LOCAL->set("scan","noScan");
 	} // END body_content() FUNCTION
 }
 
