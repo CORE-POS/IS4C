@@ -167,7 +167,6 @@ class Steering extends Parser {
 		*/
 		case "CN":
 			if ($CORE_LOCAL->get("runningTotal") == 0) {
-				$CORE_LOCAL->set("receiptType","cancelled");
 				$this->ret['receipt'] = 'cancelled';
 				$this->ret['output'] = DisplayLib::printheaderb();
 				$this->ret['output'] .= DisplayLib::plainmsg(_("transaction cancelled"));

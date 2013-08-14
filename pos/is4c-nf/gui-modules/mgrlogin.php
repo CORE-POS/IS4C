@@ -149,7 +149,6 @@ class mgrlogin extends NoInputPage {
 		$CORE_LOCAL->set("plainmsg",_("transaction cancelled"));
 		UdpComm::udpSend("rePoll");
 		$CORE_LOCAL->set("ccTermOut","reset");
-		$CORE_LOCAL->set("receiptType","cancelled");
 	}
 }
 

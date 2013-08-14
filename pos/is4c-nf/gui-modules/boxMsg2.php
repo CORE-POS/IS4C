@@ -84,8 +84,8 @@ class boxMsg2 extends BasicPage {
 		
 		$CORE_LOCAL->set("boxMsg",'');
 		$CORE_LOCAL->set("msgrepeat",2);
-		if ($CORE_LOCAL->get("warned") == 0)
-		MiscLib::errorBeep();
+		if (!isset($_REQUEST['quiet']))
+			MiscLib::errorBeep();
 	} // END body_content() FUNCTION
 }
 

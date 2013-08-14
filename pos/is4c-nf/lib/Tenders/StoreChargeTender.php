@@ -60,18 +60,11 @@ class StoreChargeTender extends TenderModule {
 	*/
 	function PreReqCheck(){
 		global $CORE_LOCAL;
-		$CORE_LOCAL->set("chargetender",1);
 		$pref = CoreState::getCustomerPref('store_charge_see_id');
 		if ($pref == 'yes'){
-			if ($CORE_LOCAL->get("warned") == 1 && $CORE_LOCAL->get("warnBoxType")== "warnMI"){
-				$CORE_LOCAL->set("warnBoxType","");
-				$CORE_LOCAL->set("warned",0);
-			}
-			else {
-				$CORE_LOCAL->set("warnBoxType","warnMI");
-				$CORE_LOCAL->set("warned",1);
+			if ($CORE_LOCAL->get('msgrepeat') == 0){	
 				$CORE_LOCAL->set("boxMsg","<BR>please verify member ID</B><BR>press [enter] to continue<P><FONT size='-1'>[clear] to cancel</FONT>");
-				return MiscLib::base_url().'gui-modules/boxMsg2.php';
+				return MiscLib::base_url().'gui-modules/boxMsg2.php?quiet=1';
 			}
 		}
 		return True;
