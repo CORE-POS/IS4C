@@ -262,7 +262,6 @@ static public function printChargeFooterStore($dateTimeStamp, $ref) {	// apbw 2/
 		   ."X____________________________________________\n"
 		   .$CORE_LOCAL->get("fname")." ".$CORE_LOCAL->get("lname")."\n\n"
 		   .self::centerString(".................................................")."\n\n";
-	$CORE_LOCAL->set("chargetender",0);	// apbw 2/14/05 SCR (moved up a line for Reprint patch on 3/10/05)
 
 	return $receipt;
 
@@ -1081,7 +1080,6 @@ static public function printReceipt($arg1,$second=False,$email=False) {
 		$CORE_LOCAL->set("memCouponTLL",$row["couponTotal"]);
 		$CORE_LOCAL->set("transDiscount",$row["transDiscount"]);
 		$CORE_LOCAL->set("chargeTotal",-1*$row["chargeTotal"]);
-		$CORE_LOCAL->set('chargetender', ($row['chargeTotal'] != 0 ? 1 : 0));
 		$CORE_LOCAL->set("discounttotal",$row["discountTTL"]);
 		$CORE_LOCAL->set("memSpecial",$row["memSpecial"]);
 
@@ -1301,7 +1299,7 @@ static public function printReceipt($arg1,$second=False,$email=False) {
 	/* --------------------------------------------------------------
 	  print store copy of charge slip regardless of receipt print setting - apbw 2/14/05 
 	  ---------------------------------------------------------------- */
-	if ($CORE_LOCAL->get("chargetender") == 1 && ($CORE_LOCAL->get("End") == 1 || $reprint)) {
+	if ($CORE_LOCAL->get("chargeTotal") != 0 && ($CORE_LOCAL->get("End") == 1 || $reprint)) {
 		if (is_array($receipt))
 			$receipt['print'] .= self::printChargeFooterStore($dateTimeStamp, $ref);
 		else
@@ -1358,12 +1356,6 @@ static public function reprintReceipt($trans_num=""){
 		$CORE_LOCAL->set("memCouponTLL",$headerRow["couponTotal"]);
 		$CORE_LOCAL->set("transDiscount",$headerRow["transDiscount"]);
 		$CORE_LOCAL->set("chargeTotal",-1*$headerRow["chargeTotal"]);
-
-		if ($CORE_LOCAL->get("chargeTotal") != 0) { 
-			$CORE_LOCAL->set("chargetender",1);
-		} else {
-			$CORE_LOCAL->set("chargetender",0);
-		}
 
 		$CORE_LOCAL->set("discounttotal",$headerRow["discountTTL"]);
 		$CORE_LOCAL->set("memSpecial",$headerRow["memSpecial"]);
@@ -1450,7 +1442,7 @@ static public function reprintReceipt($trans_num=""){
 		}
 
 
-		if ($CORE_LOCAL->get("chargetender") != 0 ) {			// apbw 03/10/05 Reprint patch
+		if ($CORE_LOCAL->get("chargeTotal") != 0 ) {			// apbw 03/10/05 Reprint patch
 			$receipt = $receipt.self::printChargeFooterStore($dateTimeStamp, $ref);	// apbw 03/10/05 Reprint patch
 		}			// apbw 03/10/05 Reprint patch
 

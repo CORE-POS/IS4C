@@ -154,13 +154,10 @@ static public function setMember($member, $personNumber, $row) {
 	$CORE_LOCAL->set("Type",$row["Type"]);
 	$CORE_LOCAL->set("percentDiscount",$row["Discount"]);
 
-	$CORE_LOCAL->set('inactMem',0);
 	if ($CORE_LOCAL->get("Type") == "PC") {
 		$CORE_LOCAL->set("isMember",1);
 	} else {
            	$CORE_LOCAL->set("isMember",0);
-		if ($CORE_LOCAL->get('Type') != 'REG')
-			$CORE_LOCAL->set('inactMem',1);
 	}
 
 	$CORE_LOCAL->set("isStaff",$row["staff"]);
@@ -551,10 +548,6 @@ static public function classic_tender($right, $strl) {
 		TransRecord::addItem($tender_upc, $tender_desc, "T", $tender_code, "", 0, 0, $unit_price, $tendered, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 	$CORE_LOCAL->set("msgrepeat",0);
 
-	if ($tender_code == 'SC' || $tender_code == 'CX' || $tender_code == 'MI'){
-		$CORE_LOCAL->set("chargetender",1);							// apbw 2/28/05 SCR
-	}													// apbw 2/28/05 SCR
-
 	Database::getsubtotals();
 
 	if ($right == "FS" || $right == "EB" || $right == "XE" || $right == "EF") {
@@ -597,7 +590,6 @@ static public function classic_tender($right, $strl) {
 		}
 
 		$CORE_LOCAL->set("End",1);
-		$CORE_LOCAL->set("receiptType","full");
 		$ret['receipt'] = 'full';
 		$ret['output'] = DisplayLib::printReceiptFooter();
 	}
@@ -707,7 +699,6 @@ static public function modular_tender($right, $strl){
 		TransRecord::addchange($cash_return,$tender_object->ChangeType());
 					
 		$CORE_LOCAL->set("End",1);
-		$CORE_LOCAL->set("receiptType","full");
 		$ret['receipt'] = 'full';
 		$ret['output'] = DisplayLib::printReceiptFooter();
 	}
@@ -959,23 +950,15 @@ static public function ttl() {
 		Database::setglobalvalue("TTLFlag", 1);
 		$temp = self::chargeOk();
 		if ($CORE_LOCAL->get("balance") < $CORE_LOCAL->get("memChargeTotal") && $CORE_LOCAL->get("memChargeTotal") > 0){
-			if ($CORE_LOCAL->get("warned") == 1 and $CORE_LOCAL->get("warnBoxType") == "warnOverpay"){
-				$CORE_LOCAL->set("warned",0);
-				$CORE_LOCAL->set("warnBoxType","");
-			}
-			else {
-				$CORE_LOCAL->set("warned",1);
-				$CORE_LOCAL->set("warnBoxType","warnOverpay");
-				$CORE_LOCAL->set("boxMsg",sprintf("<b>A/R Imbalance</b><br />Total AR payments $%.2f exceeds AR balance %.2f<br /><font size=-1>[enter] to continue, [clear] to cancel</font>",
-						$CORE_LOCAL->get("memChargeTotal"),
-						$CORE_LOCAL->get("balance")));
+			if ($CORE_LOCAL->get('msgrepeat') == 0){
+				$CORE_LOCAL->set("boxMsg",sprintf("<b>A/R Imbalance</b><br />
+					Total AR payments $%.2f exceeds AR balance %.2f<br />
+					<font size=-1>[enter] to continue, [clear] to cancel</font>",
+					$CORE_LOCAL->get("memChargeTotal"),
+					$CORE_LOCAL->get("balance")));
 				$CORE_LOCAL->set("strEntered","TL");
-				return MiscLib::base_url()."gui-modules/boxMsg2.php";
+				return MiscLib::base_url()."gui-modules/boxMsg2.php?quiet=1";
 			}
-		}
-		else {
-			$CORE_LOCAL->set("warned",0);
-			$CORE_LOCAL->set("warnBoxType","");
 		}
 
 		if ($CORE_LOCAL->get("percentDiscount") > 0) {
@@ -1109,23 +1092,15 @@ static public function omtr_ttl() {
 		*/
 		$temp = self::chargeOk();
 		if ($CORE_LOCAL->get("balance") < $CORE_LOCAL->get("memChargeTotal") && $CORE_LOCAL->get("memChargeTotal") > 0){
-			if ($CORE_LOCAL->get("warned") == 1 and $CORE_LOCAL->get("warnBoxType") == "warnOverpay"){
-				$CORE_LOCAL->set("warned",0);
-				$CORE_LOCAL->set("warnBoxType","");
-			}
-			else {
-				$CORE_LOCAL->set("warned",1);
-				$CORE_LOCAL->set("warnBoxType","warnOverpay");
-				$CORE_LOCAL->set("boxMsg",sprintf("<b>A/R Imbalance</b><br />Total AR payments $%.2f exceeds AR balance %.2f<br /><font size=-1>[enter] to continue, [clear] to cancel</font>",
-						$CORE_LOCAL->get("memChargeTotal"),
-						$CORE_LOCAL->get("balance")));
+			if ($CORE_LOCAL->get('msgrepeat') == 0){
+				$CORE_LOCAL->set("boxMsg",sprintf("<b>A/R Imbalance</b><br />
+					Total AR payments $%.2f exceeds AR balance %.2f<br />
+					<font size=-1>[enter] to continue, [clear] to cancel</font>",
+					$CORE_LOCAL->get("memChargeTotal"),
+					$CORE_LOCAL->get("balance")));
 				$CORE_LOCAL->set("strEntered","TL");
-				return MiscLib::base_url()."gui-modules/boxMsg2.php";
+				return MiscLib::base_url()."gui-modules/boxMsg2.php?quiet=1";
 			}
-		}
-		else {
-			$CORE_LOCAL->set("warned",0);
-			$CORE_LOCAL->set("warnBoxType","");
 		}
 
 		// Display discount.

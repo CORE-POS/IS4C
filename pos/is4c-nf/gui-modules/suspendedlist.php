@@ -169,8 +169,6 @@ class suspendedlist extends NoInputPage {
 
 		$db_a->query($query_update);
 		Database::getsubtotals();
-		if ($CORE_LOCAL->get("chargeTotal") != 0) 
-			$CORE_LOCAL->set("chargetender",1);
 	}
 }
 

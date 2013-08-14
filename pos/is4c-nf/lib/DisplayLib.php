@@ -163,7 +163,7 @@ static public function printfooter($readOnly=False) {
 		if ($CORE_LOCAL->get("End") == 1) {
 			MiscLib::rePoll();
 		}
-		if ($CORE_LOCAL->get("scale") == 0 && $CORE_LOCAL->get("SNR") == 1) {
+		if ($CORE_LOCAL->get("scale") == 0 && $CORE_LOCAL->get("SNR") != 0) {
 			MiscLib::rePoll();
 		}
 	}
@@ -250,9 +250,10 @@ static public function msgbox($strmsg, $icon,$noBeep=False) {
 	$ret .= "</div><div class=\"clear\"></div></div>";
 	$ret .= "</div>";
 
-	$CORE_LOCAL->set("strRemembered",$CORE_LOCAL->get("strEntered"));
-	if ($CORE_LOCAL->get("warned") == 0 && !$noBeep)
+	if (!$noBeep)
 		MiscLib::errorBeep();
+
+	$CORE_LOCAL->set("strRemembered",$CORE_LOCAL->get("strEntered"));
 	$CORE_LOCAL->set("msgrepeat",1);
 
 	return $ret;

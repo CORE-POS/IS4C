@@ -122,18 +122,12 @@ class UPC extends Parser {
 		 *   and allowing the sale to be confirmed or canceled
 		 */
 		if ($row["inUse"] == 0){
-			if ($CORE_LOCAL->get("warned") == 1 && $CORE_LOCAL->get("warnBoxType") == "inUse"){
-				$CORE_LOCAL->set("warned",0);
-				$CORE_LOCAL->set("warnBoxType","");
-			}	
-			else {
-				$CORE_LOCAL->set("warned",1);
-				$CORE_LOCAL->set("warnBoxType","inUse");
+			if ($CORE_LOCAL->get('msgrepeat') == 0){
 				$CORE_LOCAL->set("strEntered",$row["upc"]);
 				$CORE_LOCAL->set("boxMsg","<b>".$row["upc"]." - ".$row["description"]."</b>
 					<br />"._("Item not for sale")."
 					<br /><font size=-1>"._("enter to continue sale").", "._("clear to cancel")."</font>");
-				$ret['main_frame'] = $my_url."gui-modules/boxMsg2.php";
+				$ret['main_frame'] = $my_url."gui-modules/boxMsg2.php?quiet=1";
 				return $ret;
 			}
 		}
@@ -166,17 +160,11 @@ class UPC extends Parser {
 			&& $CORE_LOCAL->get("lastWeight") > 0 && $CORE_LOCAL->get("weight") > 0
 			&& abs($CORE_LOCAL->get("weight") - $CORE_LOCAL->get("lastWeight")) < 0.0005
 			&& substr($upc,0,3) != "002" && abs($row['normal_price']) > 0.01){
-			if ($CORE_LOCAL->get("warned") == 1 && $CORE_LOCAL->get("warnBoxType") == "stuckScale"){
-				$CORE_LOCAL->set("warned",0);
-				$CORE_LOCAL->set("warnBoxType","");
-			}	
-			else {
-				$CORE_LOCAL->set("warned",1);
-				$CORE_LOCAL->set("warnBoxType","stuckScale");
+			if ($CORE_LOCAL->get('msgrepeat') == 0){
 				$CORE_LOCAL->set("strEntered",$row["upc"]);
 				$CORE_LOCAL->set("boxMsg","<b>Same weight as last item</b>
 					<br><font size=-1>[enter] to confirm correct, [clear] to cancel</font>");
-				$ret['main_frame'] = $my_url."gui-modules/boxMsg2.php";
+				$ret['main_frame'] = $my_url."gui-modules/boxMsg2.php?quiet=1";
 				return $ret;
 			}
 		}
@@ -247,12 +235,11 @@ class UPC extends Parser {
 
 			$CORE_LOCAL->set("SNR",$CORE_LOCAL->get('strEntered'));
 			$ret['output'] = DisplayLib::boxMsg(_("please put item on scale"),'',True);
-			$CORE_LOCAL->set("warned",0);
 			//$ret['retry'] = $CORE_LOCAL->get("strEntered");
 			
 			return $ret;
 		}
-		$CORE_LOCAL->set("warned",0);
+
 		/* got a scale weight, make sure the tare
 		   is valid */
 		if ($scale != 0 and substr($upc,0,3) != "002"){
