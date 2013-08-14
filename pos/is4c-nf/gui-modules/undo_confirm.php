@@ -69,7 +69,6 @@ class undo_confirm extends BasicPage {
 					}
 				});\n");
 		$this->add_onload_command("undoInstructions();");
-		$CORE_LOCAL->set("beep","noScan");
 	}
 
 	function head_content(){

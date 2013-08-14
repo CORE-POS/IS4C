@@ -48,10 +48,8 @@ class MagicPLU extends SpecialUPC {
 			if ($CORE_LOCAL->get("memberID") == 0)
 				$json['main_frame'] = $my_url.'gui-modules/memlist.php';
 			else if ($CORE_LOCAL->get("msgrepeat") == 0){
-				$CORE_LOCAL->set("endorseType","stock");
-				$CORE_LOCAL->set("tenderamt",$total);
 				$CORE_LOCAL->set("boxMsg","<B>".$total." stock payment</B><BR>insert form<BR>press [enter] to endorse<P><FONT size='-1'>[clear] to cancel</FONT>");
-				$ret["main_frame"] = $my_url."gui-modules/boxMsg2.php";
+				$ret["main_frame"] = $my_url."gui-modules/boxMsg2.php?endorse=stock&endorseAmt=".$total;
 			}
 			break;
 		case '8005':

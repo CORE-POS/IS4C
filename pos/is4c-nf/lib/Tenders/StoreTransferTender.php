@@ -58,19 +58,27 @@ class StoreTransferTender extends TenderModule {
 		$my_url = MiscLib::base_url();
 
 		if ($CORE_LOCAL->get("transfertender") != 1){
-			$CORE_LOCAL->set("adminRequestLevel","30");
-			$CORE_LOCAL->set("adminLoginMsg",_("Login for store transfer"));
-			$tenderStr = ($this->amount*100).$this->tender_code;
-			$CORE_LOCAL->set("adminRequest",
-				$my_url."gui-modules/pos2.php?reginput=".$tenderStr);
-
-			$CORE_LOCAL->set("away",1);
 			$CORE_LOCAL->set("transfertender",1);
-			return $my_url."gui-modules/adminlogin.php";
+			return $my_url."gui-modules/adminlogin.php?class=StoreTransferTender";
 		}
 		else {
 			$CORE_LOCAL->set("transfertender",0);
 			return True;
+		}
+	}
+
+	public static $adminLoginMsg = 'Login for store transfer';
+	public static $adminLoginLevel = 30;
+	public static function adminLoginCallback($success){
+		global $CORE_LOCAL;
+		if ($success){
+			$CORE_LOCAL->set('strRemembered', $CORE_LOCAL->get('strEntered'));	
+			$CORE_LOCAL->set('msgrepeat', 1);
+			return True;
+		}
+		else {
+			$CORE_LOCAL->set('transfertender', 0);
+			return False;
 		}
 	}
 }

@@ -62,11 +62,6 @@ class ToggleTaxFSDisc extends PreParser {
 			$this->tfd = $this->tfd | $this->DISC;	
 			return True;
 		}
-		elseif (substr($str,0,2) == "ND"){
-			$this->remainder = substr($str,2);
-			$CORE_LOCAL->set("nd",1);
-			return True;
-		}
 		return False;	
 	}
 
@@ -101,12 +96,6 @@ class ToggleTaxFSDisc extends PreParser {
 			<tr>
 				<td>DN<i>ringable</i></td>
 				<td>Toggle discount setting for <i>ringable</i>
-				which may be an item or group of same items
-				using *</td>
-			</tr>
-			<tr>
-				<td>ND<i>ringable</i></td>
-				<td>Force no discount for <i>ringable</i>
 				which may be an item or group of same items
 				using *</td>
 			</tr>

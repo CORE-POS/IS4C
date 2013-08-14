@@ -133,6 +133,49 @@ class TenderModule {
 		return $this->change_type;
 	}
 
+	/**
+	  Allow the tender to be used without specifying a total
+	  @return boolean
+	*/
+	function AllowDefault(){
+		return True;
+	}
+
+	/**
+	  Value to use if no total is provided
+	  @return number
+	*/
+	function DefaultTotal(){
+		global $CORE_LOCAL;
+		return $CORE_LOCAL->get('runningTotal');
+	}
+
+	/**
+	  Prompt for the cashier when no total is provided
+	  @return string URL
+	
+	  Typically this sets up session variables and returns
+	  the URL for boxMsg2.php.
+	*/
+	function DefaultPrompt(){
+		global $CORE_LOCAL;
+		$amt = $this->DefaultTotal();
+		$CORE_LOCAL->set('boxMsg', '<br />tender $'.sprintf('%.2f',$amt).' as '.$this->name_string
+				.'<br />press [enter] to continue<br />
+				<font size="-1">[clear] to cancel</font>');
+		$CORE_LOCAL->set('strEntered', (100*$amt).$this->tender_code);
+		return MiscLib::base_url().'gui-modules/boxMsg2.php';
+	}
+
+	/**
+	  Error message shown if tender cannot be used without
+	  specifying a total
+	  @return html string
+	*/
+	function DisabledPrompt(){
+		return DisplayLib::boxMsg('Amount required for '.$this->name_string);
+	}
+
 }
 
 ?>

@@ -49,9 +49,6 @@ if (strlen($receiptType) > 0) {
 	$dokick = $kicker_object->doKick();
 
 	$PRINT_OBJ = new ESCPOSPrintHandler();
-	if ($receiptType == "full" && $dokick){
-		ReceiptLib::drawerKick();
-	}
 
 	$email = CoreState::getCustomerPref('email_receipt');
 	$customerEmail = filter_var($email, FILTER_VALIDATE_EMAIL);
@@ -78,6 +75,16 @@ if (strlen($receiptType) > 0) {
 		cleartemptrans($receiptType);
 		$output = $yesSync;
 		UdpComm::udpSend("termReset");
+	}
+
+	// close session so if printer hangs
+	// this script won't lock the session file
+	if (session_id() != ''){
+		session_write_close();
+	}
+
+	if ($receiptType == "full" && $dokick){
+		ReceiptLib::drawerKick();
 	}
 
 	$EMAIL_OBJ = new EmailPrintHandler();
@@ -113,7 +120,6 @@ function cleartemptrans($type) {
 	$db = Database::tDataConnect();
 
 	if($type == "cancelled") {
-		$CORE_LOCAL->set("msg",99);
 		$db->query("update localtemptrans set trans_status = 'X'");
 	}
 

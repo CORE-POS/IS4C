@@ -47,7 +47,6 @@ class StaffSale extends DiscountType {
 	function addDiscountLine(){
 		global $CORE_LOCAL;	
 		if ($CORE_LOCAL->get("isStaff") == 1){
-			$CORE_LOCAL->set("voided",2);
 			TransRecord::adddiscount($this->savedInfo['memDiscount'],
 				$this->savedRow['department']);
 		}

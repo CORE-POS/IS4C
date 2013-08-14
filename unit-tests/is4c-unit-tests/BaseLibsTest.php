@@ -178,6 +178,13 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
 	public function testCoreState(){
 		global $CORE_LOCAL;
 
+		// normal session init attempts to recover state
+		// transaction info - e.g., after a browser crash
+		// or reboot. Clear the table so that doesn't
+		// happen
+		$db = Database::tDataConnect();
+		$db->query('TRUNCATE TABLE localtemptrans');
+
 		/**
 		  This will trigger any syntax or run-time errors
 		  Testing all the invidual values of CORE_LOCAL
@@ -195,10 +202,6 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
 
 	public function testDisplayLib(){
 		global $CORE_LOCAL;
-
-		$footerb = DisplayLib::printfooterb();
-		$this->assertInternalType('string',$footerb);
-		$this->assertNotEmpty($footerb);
 
 		$footer = DisplayLib::printfooter();
 		$this->assertInternalType('string',$footer);
@@ -621,7 +624,6 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
 		$CORE_LOCAL->set('transDiscount',0.51);
 		$CORE_LOCAL->set('taxTotal',1.45);
 		$CORE_LOCAL->set('fsTaxExempt',1.11);
-		$CORE_LOCAL->set('fstaxable',5.67);
 		$CORE_LOCAL->set('amtdue',9.55);
 		// should add four records
 		PrehLib::finalttl();
@@ -648,7 +650,7 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
 		// verify fs tax exempt record
 		$record = lttLib::genericRecord();
 		$record['upc'] = 'Tax';
-		$record['description'] = '5.67 Taxable';
+		$record['description'] = 'FS Taxable';
 		$record['trans_type'] = 'C';
 		$record['trans_status'] = 'D';
 		$record['unitPrice'] = 1.11;

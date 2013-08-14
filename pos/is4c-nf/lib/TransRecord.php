@@ -207,13 +207,6 @@ static public function addItem($strupc, $strdescription, $strtransType, $strtran
 	$db->smart_insert("localtemptrans",$values);
 
 	if ($strtransType == "I" || $strtransType == "D") {
-		$CORE_LOCAL->set("beep","goodBeep");
-		if ($intscale == 1) {
-			$CORE_LOCAL->set("screset","rePoll");
-		}
-		elseif ($CORE_LOCAL->get("weight") != 0) {
-			$CORE_LOCAL->set("screset","rePoll");
-		}
 		$CORE_LOCAL->set("repeatable",1);
 	}
 
@@ -221,11 +214,6 @@ static public function addItem($strupc, $strdescription, $strtransType, $strtran
 	$CORE_LOCAL->set("toggletax",0);
 	$CORE_LOCAL->set("togglefoodstamp",0);
 	$CORE_LOCAL->set("SNR",0);
-	$CORE_LOCAL->set("wgtRequested",0);
-	$CORE_LOCAL->set("nd",0);
-
-	$CORE_LOCAL->set("ccAmtEntered",0);
-	$CORE_LOCAL->set("ccAmt",0);
 
 	if ($intscale == 1)
 		$CORE_LOCAL->set("lastWeight",$dblquantity);

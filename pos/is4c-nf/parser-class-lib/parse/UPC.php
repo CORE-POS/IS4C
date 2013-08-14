@@ -46,11 +46,7 @@ class UPC extends Parser {
 		if ($CORE_LOCAL->get("refund")==1 && $CORE_LOCAL->get("refundComment") == ""){
 			$ret['udpmsg'] = 'twoPairs';
 			if ($CORE_LOCAL->get("SecurityRefund") > 20){
-				$CORE_LOCAL->set("adminRequest",$my_url."gui-modules/refundComment.php");
-				$CORE_LOCAL->set("adminRequestLevel",$CORE_LOCAL->get("SecurityRefund"));
-				$CORE_LOCAL->set("adminLoginMsg",_("Login to issue refund"));
-				$CORE_LOCAL->set("away",1);
-				$ret['main_frame'] = $my_url."gui-modules/adminlogin.php";
+				$ret['main_frame'] = $my_url."gui-modules/adminlogin.php?class=RefundAdminLogin";
 			}
 			else
 				$ret['main_frame'] = $my_url.'gui-modules/refundComment.php';
@@ -108,22 +104,6 @@ class UPC extends Parser {
 			}
 			// no match; not a product, not special
 			
-			/*
-			if ($CORE_LOCAL->get("requestType")!="badscan"){
-				$CORE_LOCAL->set("requestType","badscan");
-				$CORE_LOCAL->set("requestMsg",_("not a valid item").'<br />'._("enter description"));
-				$ret['main_frame'] = $my_url.'gui-modules/requestInfo.php';
-				return $ret;
-			}
-			else {
-				$ret['output'] = DisplayLib::lastpage();
-				TransRecord::addQueued($upc,$CORE_LOCAL->get("requestMsg"),0,'BS');
-				$CORE_LOCAL->set("requestMsg","");
-				$CORE_LOCAL->set("requestType","");
-				return $ret; 
-			}
-			*/
-			//TransRecord::addQueued($upc,'BADSCAN');
 			$opts = array('upc'=>$upc,'description'=>'BADSCAN');
 			TransRecord::add_log_record($opts);
 			$CORE_LOCAL->set("boxMsg",$upc." "._("not a valid item"));
@@ -142,18 +122,12 @@ class UPC extends Parser {
 		 *   and allowing the sale to be confirmed or canceled
 		 */
 		if ($row["inUse"] == 0){
-			if ($CORE_LOCAL->get("warned") == 1 && $CORE_LOCAL->get("warnBoxType") == "inUse"){
-				$CORE_LOCAL->set("warned",0);
-				$CORE_LOCAL->set("warnBoxType","");
-			}	
-			else {
-				$CORE_LOCAL->set("warned",1);
-				$CORE_LOCAL->set("warnBoxType","inUse");
+			if ($CORE_LOCAL->get('msgrepeat') == 0){
 				$CORE_LOCAL->set("strEntered",$row["upc"]);
 				$CORE_LOCAL->set("boxMsg","<b>".$row["upc"]." - ".$row["description"]."</b>
 					<br />"._("Item not for sale")."
 					<br /><font size=-1>"._("enter to continue sale").", "._("clear to cancel")."</font>");
-				$ret['main_frame'] = $my_url."gui-modules/boxMsg2.php";
+				$ret['main_frame'] = $my_url."gui-modules/boxMsg2.php?quiet=1";
 				return $ret;
 			}
 		}
@@ -186,17 +160,11 @@ class UPC extends Parser {
 			&& $CORE_LOCAL->get("lastWeight") > 0 && $CORE_LOCAL->get("weight") > 0
 			&& abs($CORE_LOCAL->get("weight") - $CORE_LOCAL->get("lastWeight")) < 0.0005
 			&& substr($upc,0,3) != "002" && abs($row['normal_price']) > 0.01){
-			if ($CORE_LOCAL->get("warned") == 1 && $CORE_LOCAL->get("warnBoxType") == "stuckScale"){
-				$CORE_LOCAL->set("warned",0);
-				$CORE_LOCAL->set("warnBoxType","");
-			}	
-			else {
-				$CORE_LOCAL->set("warned",1);
-				$CORE_LOCAL->set("warnBoxType","stuckScale");
+			if ($CORE_LOCAL->get('msgrepeat') == 0){
 				$CORE_LOCAL->set("strEntered",$row["upc"]);
 				$CORE_LOCAL->set("boxMsg","<b>Same weight as last item</b>
 					<br><font size=-1>[enter] to confirm correct, [clear] to cancel</font>");
-				$ret['main_frame'] = $my_url."gui-modules/boxMsg2.php";
+				$ret['main_frame'] = $my_url."gui-modules/boxMsg2.php?quiet=1";
 				return $ret;
 			}
 		}
@@ -228,20 +196,8 @@ class UPC extends Parser {
 			}
 
 			if ($CORE_LOCAL->get("cashierAge") < 18 && $CORE_LOCAL->get("cashierAgeOverride") != 1){
-				$CORE_LOCAL->set("adminRequest",$my_url."gui-modules/pos2.php");
-				$CORE_LOCAL->set("adminRequestLevel",30);
-				$CORE_LOCAL->set("adminLoginMsg",_("Login to approve sale"));
-				$CORE_LOCAL->set("away",1);
-				$CORE_LOCAL->set("cashierAgeOverride",2);
-				$ret['main_frame'] = $my_url."gui-modules/adminlogin.php";
+				$ret['main_frame'] = $my_url."gui-modules/adminlogin.php?class=AgeApproveAdminLogin";
 				return $ret;
-			}
-
-			$msg = $CORE_LOCAL->get("requestMsg");
-			if ((is_numeric($msg) && strlen($msg)==8) || $msg == 1){
-				$CORE_LOCAL->set("memAge",$msg);
-				$CORE_LOCAL->set("requestMsg","");
-				$CORE_LOCAL->set("requestType","");
 			}
 
 			if ($CORE_LOCAL->get("memAge")=="")
@@ -250,10 +206,7 @@ class UPC extends Parser {
 			$age = floor($diff / (365*60*60*24));
 			if ($age < $row['idEnforced']){
 				$ret['udpmsg'] = 'twoPairs';
-				$current = date("m/d/y",strtotime($CORE_LOCAL->get("memAge")));
-				$CORE_LOCAL->set("requestType","customer age");
-				$CORE_LOCAL->set("requestMsg","Type customer birthdate YYYYMMDD<br />(current: $current)");
-				$ret['main_frame'] = $my_url.'gui-modules/requestInfo.php';
+				$ret['main_frame'] = $my_url.'gui-modules/requestInfo.php?class=UPC';
 				return $ret;
 			}
 		}
@@ -282,13 +235,11 @@ class UPC extends Parser {
 
 			$CORE_LOCAL->set("SNR",$CORE_LOCAL->get('strEntered'));
 			$ret['output'] = DisplayLib::boxMsg(_("please put item on scale"),'',True);
-			$CORE_LOCAL->set("wgtRequested",0);
-			$CORE_LOCAL->set("warned",0);
 			//$ret['retry'] = $CORE_LOCAL->get("strEntered");
 			
 			return $ret;
 		}
-		$CORE_LOCAL->set("warned",0);
+
 		/* got a scale weight, make sure the tare
 		   is valid */
 		if ($scale != 0 and substr($upc,0,3) != "002"){
@@ -327,12 +278,10 @@ class UPC extends Parser {
 		   operation
 		*/
 		if ($upc == "0000000008010" && $CORE_LOCAL->get("msgrepeat") == 0) {
-			$CORE_LOCAL->set("endorseType","giftcert");
-			$CORE_LOCAL->set("tenderamt",$total);
 			$CORE_LOCAL->set("boxMsg","<b>".$total." gift certificate</b><br />
 				"._("insert document")."<br />"._("press enter to endorse")."
 				<p><font size='-1'>"._("clear to cancel")."</font>");
-			$ret["main_frame"] = $my_url."gui-modules/boxMsg2.php";
+			$ret["main_frame"] = $my_url."gui-modules/boxMsg2.php?endorse=giftcert&endorseAmt=".$total;
 			return $ret;
 		}
 
@@ -340,12 +289,10 @@ class UPC extends Parser {
 		   see 0000000008010 above
 		*/
 		if ($upc == "0000000008011" && $CORE_LOCAL->get("msgrepeat") == 0) {
-			$CORE_LOCAL->set("endorseType","classreg");
-			$CORE_LOCAL->set("tenderamt",$total);
 			$CORE_LOCAL->set("boxMsg","<b>".$total." class registration</b><br />
 				"._("insert form")."<br />"._("press enter to endorse")."
 				<p><font size='-1'>"._("clear to cancel")."</font>");
-			$ret["main_frame"] = $my_url."gui-modules/boxMsg2.php";
+			$ret["main_frame"] = $my_url."gui-modules/boxMsg2.php?endorse=classreg&endorseAmt=".$total;
 			return $ret;
 		}
 
@@ -409,12 +356,6 @@ class UPC extends Parser {
 				$row['normal_price'] = $scaleprice;
 		}
 
-		// don't know what this is - wedge?
-		if ($CORE_LOCAL->get("nd") == 1 && $discountable == 7) {
-			$discountable = 3;
-			$CORE_LOCAL->set("nd",0);
-		}
-
 		/*
 			END: figure out discounts by type
 		*/
@@ -450,16 +391,12 @@ class UPC extends Parser {
 			$ret['udpmsg'] = 'goodBeep';
 		}
 
-		// probably pointless, see what happens without it
-		//if ($tax != 1) $CORE_LOCAL->set("voided",0);
-
 		/* reset various flags and variables */
 		if ($CORE_LOCAL->get("tare") != 0) $CORE_LOCAL->set("tare",0);
 		$CORE_LOCAL->set("ttlflag",0);
 		$CORE_LOCAL->set("fntlflag",0);
 		$CORE_LOCAL->set("quantity",0);
 		$CORE_LOCAL->set("itemPD",0);
-		$CORE_LOCAL->set("voided",0);
 		Database::setglobalflags(0);
 
 		/* output item list, update totals footer */
@@ -552,6 +489,19 @@ class UPC extends Parser {
 		// application identifier not recognized
 		// will likely cause no such item error
 		return $str; 
+	}
+
+	public static $requestInfoHeader = 'customer age';
+	public static $requestInfoMsg = 'Type customer birthdate YYYYMMDD';
+	public static function requestInfoCallback($info){
+		global $CORE_LOCAL;
+		if ((is_numeric($info) && strlen($info)==8) || $info == 1){
+			$CORE_LOCAL->set("memAge",$info);
+			$CORE_LOCAL->set('strRemembered', $CORE_LOCAL->get('strEntered'));
+			$CORE_LOCAL->set('msgrepeat', 1);
+			return True;
+		}
+		return False;
 	}
 
 	function doc(){

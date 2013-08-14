@@ -21,9 +21,20 @@
 
 *********************************************************************************/
 
+/**
+  13Aug13 - AT
+
+  Disabling this parser. The TenderModule system now has a notion of
+  allowing default amounts and prompting for confirmation. There's no
+  good reason to have two Parsers that do essentially the same thing
+  and duplicate a bunch of common code
+*/
+
 class SimpleTender extends Parser {
 	var $stored_ret;
 	function check($str){
+		// on purpose. deprecated
+		return False;
 		global $CORE_LOCAL;
 		$my_url = MiscLib::base_url();
 		$this->stored_ret = $this->default_json();
@@ -91,7 +102,7 @@ class SimpleTender extends Parser {
 				$CORE_LOCAL->set("boxMsg",$msg);
 				$CORE_LOCAL->set("endorseType","check");
 				$CORE_LOCAL->set("strEntered",$CORE_LOCAL->get("amtdue")*100);
-				$CORE_LOCAL->set("tenderamt",$CORE_LOCAL->get("amtdue"));
+				$CORE_LOCAL->set("endorseAmt",$CORE_LOCAL->get("amtdue"));
 				$CORE_LOCAL->set("strEntered",$CORE_LOCAL->get("strEntered")."CK");
 				$this->stored_ret['main_frame'] = $my_url.'gui-modules/boxMsg2.php';
 			}
@@ -135,9 +146,6 @@ class SimpleTender extends Parser {
 						"<br />"._("is not authorized to make employee charges"));
 			}
 			else {
-				$CORE_LOCAL->set("mirequested",1);
-				$CORE_LOCAL->set("away",1);
-				$CORE_LOCAL->set("search_or_list",1);
 				$this->stored_ret['main_frame'] = $my_url.'gui-modules/memlist.php';
 			}
 			return True;

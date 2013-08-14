@@ -121,9 +121,6 @@ class checklist extends NoInputPage {
 			."<div class=\"clear\"></div>";
 		echo "</div>";
 
-		$CORE_LOCAL->set("scan","noScan");
-		$CORE_LOCAL->set("beep","noBeep");
-
 		$this->add_onload_command("\$('#search').keypress(processkeypress);\n");
 		$this->add_onload_command("\$('#search').focus();\n");
 	} // END body_content() FUNCTION

@@ -64,8 +64,6 @@ class productlist extends NoInputPage {
 			return False;
 		}
 
-		$CORE_LOCAL->get("away",1);
-
 		if (is_numeric($entered)) {
 			// expand UPC-E to UPC-A
 			if (substr($entered, 0, 1) == 0 && strlen($entered) == 7) {
@@ -191,8 +189,6 @@ class productlist extends NoInputPage {
 			echo "</div>";
 		}
 
-		$CORE_LOCAL->set("scan","noScan");
-		$CORE_LOCAL->set("beep","noBeep");
 		$this->add_onload_command("\$('#search').focus();\n");
 	} // END body_content() FUNCTION
 
