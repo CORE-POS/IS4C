@@ -309,7 +309,7 @@ class DTransactionsModel extends BasicModel {
 
 		// monthly archives. build a union containing both dates.	
 		$endstamp = mktime(0,0,0,date('n',$end_ts),1,date('Y',$end_ts));
-		$startstamp = mktime(0,0,0,date('n',$start_ts),1,date('Y',$end_ts));
+		$startstamp = mktime(0,0,0,date('n',$start_ts),1,date('Y',$start_ts));
 		$union = '(select * from ';		
 		while($startstamp <= $endstamp){
 			$union .= $FANNIE_ARCHIVE_DB.$sep;
