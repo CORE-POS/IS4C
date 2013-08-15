@@ -178,8 +178,11 @@ class undo extends NoInputPage {
 					$temp = explode(" ",$row["description"]);
 					TransRecord::addTare($temp[3]*100);
 				}
-				elseif ($row["upc"] == "MAD Coupon")
-					TransRecord::addMadCoup();
+				elseif ($row["upc"] == "MAD Coupon"){
+					$madCoup = $row['total'];
+					TransRecord::addItem("MAD Coupon", "Member Appreciation Coupon", "I", "CP", "C", 0, 1, 
+						-1*$madCoup, -1*$madCoup, -1*$madCoup, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 17);
+				}
 				elseif ($row["upc"] == "DISCOUNT"){
 					//TransRecord::addTransDiscount();
 				}
