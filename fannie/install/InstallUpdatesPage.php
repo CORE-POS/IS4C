@@ -115,7 +115,7 @@ class InstallUpdatesPage extends InstallPage {
 					echo 'Error: requested database unknown';
 				else {
 					ob_start();
-					$changes = $updateModel->normalize($db_name, False);
+					$changes = $updateModel->normalize($db_name, BasicModel::NORMALIZE_MODE_APPLY);
 					$details = ob_get_clean();
 					if ($changes === False)
 						echo 'An error occurred.';
@@ -140,17 +140,20 @@ class InstallUpdatesPage extends InstallPage {
 			if ($db_name === False) continue;
 		
 			ob_start();
-			$changes = $model->normalize($db_name, True);
+			$changes = $model->normalize($db_name, BasicModel::NORMALIZE_MODE_CHECK);
 			$details = ob_get_clean();
 
 			if ($changes === False){
 				printf('<li>%s had errors.', $class);
 			}
-			elseif($changes !== 0){
+			elseif($changes > 0){
 				printf('<li>%s has updates available.', $class);
 			}
+			elseif($changes < 0){
+				printf('<li>%s does not match the schema but cannot be updated.', $class);
+			}
 
-			if ($changes === False || $changes !== 0){
+			if ($changes > 0){
 				printf(' <a href="" onclick="$(\'#mDetails%s\').toggle();return false;"
 					>Details</a><br /><pre style="display:none;" id="mDetails%s">%s</pre><br />
 					To apply changes <a href="InstallUpdatesPage.php?mupdate=%s">Click Here</a>
@@ -160,6 +163,12 @@ class InstallUpdatesPage extends InstallPage {
 					$class, $class, $details, $class,
 					$cmd, $db_name, $class
 					);
+			}
+			else if ($changes < 0 || $changes === False){
+				printf(' <a href="" onclick="$(\'#mDetails%s\').toggle();return false;"
+					>Details</a><br /><pre style="display:none;" id="mDetails%s">%s</pre></li>',
+					$class, $class, $details
+				);
 			}
 		}
 		echo '</ul>';
