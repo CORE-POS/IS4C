@@ -398,66 +398,6 @@ static public function frankclassreg() {
 
 }
 
-//----------------------------------Credit Card footer----by CvR
-
-/**
-  @deprecated
-  Not called, ccTotal session var has been removed
-*/
-static public function printCCFooter($dateTimeStamp, $ref) {
-	global $CORE_LOCAL;
-
-	$date = self::build_time($dateTimeStamp);
-
-
-			
-	$receipt = "\n".self::centerString("C U S T O M E R   C O P Y")."\n"
-		   .self::centerString("................................................")."\n"
-               .self::centerString($CORE_LOCAL->get("chargeSlip1"))."\n\n"
-		   .self::centerString("Cardholder acknowledges receipt of goods/services")."\n"
-               .self::centerString("in the amount shown and agrees to pay for them")."\n"
-               .self::centerString("according to card issuer agreement.")."\n\n"
-		   ."CREDIT CARD CHARGE\n"
-		   ."Name: ".trim($CORE_LOCAL->get("ccName"))."\n"
-		   ."Member Number: ".trim($CORE_LOCAL->get("memberID"))."\n"
-		   ."Date: ".$date."\n"
-		   ."REFERENCE #: ".$ref."\n"
-               ."TROUTD: ".trim($CORE_LOCAL->get("troutd"))."\n"
-		   ."Charge Amount: $".number_format(-1*$CORE_LOCAL->get("ccTotal"), 2)."\n"  //changed 04/01/05 Tak & CvR
-		   .self::centerString("................................................")."\n"
-		   ."\n\n\n\n\n\n\n"
-		   .chr(27).chr(105)
-
-	// self::writeLine($receipt1.chr(27).chr(105));
-	// self::writeLine(chr(27).chr(105));
-
-	// $receipt2 =""
-
-		   .self::centerString($CORE_LOCAL->get("chargeSlip2"))."\n"
-		   .self::centerString("................................................")."\n"
-		   .self::centerString($CORE_LOCAL->get("chargeSlip1"))."\n\n"
-		   ."CREDIT CARD CHARGE\n"
-		   ."Name: ".trim($CORE_LOCAL->get("ccName"))."\n"
-		   ."Member Number: ".trim($CORE_LOCAL->get("memberID"))."\n"
-		   ."Date: ".$date."\n"
-		   ."REFERENCE #: ".$ref."\n"
-               ."TROUTD: ".trim($CORE_LOCAL->get("troutd"))."\n"
-		   ."Charge Amount: $".number_format(-1*$CORE_LOCAL->get("ccTotal"), 2)."\n\n" //changed 04/01/05  Tak and CvR
-		   .self::centerString("I agree to pay the above total amount")."\n"
-		   .self::centerString("according to card issuer agreement.")."\n\n"
-		   ."Purchaser Sign Below\n\n\n"
-		   ."X____________________________________________\n\n"
-		   .self::centerString(".................................................")."\n\n";
-		
-		
-
-
-	// self::writeLine(chr(27).chr(105));
-
-	return $receipt;
-
-}
-
 /***** jqh 09/29/05 functions added for new receipt *****/
 static public function biggerFont($str) {
 	$receipt=chr(29).chr(33).chr(17);
