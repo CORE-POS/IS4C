@@ -169,6 +169,7 @@ static public function transReset() {
 	$CORE_LOCAL->set("paycard_keyed",False);
 
 	foreach($CORE_LOCAL->get('PluginList') as $p){
+		if (!class_exists($p)) continue;
 		$obj = new $p();
 		$obj->plugin_transaction_reset();
 	}
