@@ -528,7 +528,7 @@ function create_trans_dbs($db,$type){
 
 	$lttR = "CREATE view ltt_receipt as 
 		select
-		description,
+		l.description,
 		case 
 			when voided = 5 
 				then 'Discount'
@@ -557,12 +557,16 @@ function create_trans_dbs($db,$type){
 				then 'VD'
 			when trans_status = 'R'
 				then 'RF'
-			when tax <> 0 and foodstamp <> 0
+			when tax = 1 and foodstamp <> 0
 				then 'TF'
-			when tax <> 0 and foodstamp = 0
+			when tax = 1 and foodstamp = 0
 				then 'T' 
 			when tax = 0 and foodstamp <> 0
 				then 'F'
+			WHEN (tax > 1 and foodstamp <> 0)
+				THEN CONCAT(LEFT(t.description,1),'F')
+			WHEN (tax > 1 and foodstamp = 0)
+				THEN LEFT(t.description,1)
 			when tax = 0 and foodstamp = 0
 				then '' 
 		end
@@ -577,13 +581,15 @@ function create_trans_dbs($db,$type){
 			WHEN trans_type = 'T' THEN trans_id+99999	
 			ELSE trans_id
 		END AS trans_id
-		from localtemptrans
+		from localtemptrans as l
+		left join taxrates as t
+		on l.tax = t.id
 		where voided <> 5 and UPC <> 'TAX'
 		AND trans_type <> 'L'";
 	if($type == 'mssql'){
 		$lttR = "CREATE view ltt_receipt as 
 			select
-			description,
+			l.description,
 			case 
 				when voided = 5 
 					then 'Discount'
@@ -612,10 +618,14 @@ function create_trans_dbs($db,$type){
 					then 'VD'
 				when trans_status = 'R'
 					then 'RF'
-				when tax <> 0 and foodstamp <> 0
+				when tax = 1 and foodstamp <> 0
 					then 'TF'
-				when tax <> 0 and foodstamp = 0
+				when tax = 1 and foodstamp = 0
 					then 'T' 
+				WHEN (tax > 1 and foodstamp <> 0)
+					THEN LEFT(t.description,1)+'F'
+				WHEN (tax > 1 and foodstamp = 0)
+					THEN LEFT(t.description,1)
 				when tax = 0 and foodstamp <> 0
 					then 'F'
 				when tax = 0 and foodstamp = 0
@@ -632,7 +642,9 @@ function create_trans_dbs($db,$type){
 				WHEN trans_type = 'T' THEN trans_id+99999	
 				ELSE trans_id
 			END AS trans_id
-			from localtemptrans
+			from localtemptrans as l
+			left join taxrates as t
+			on l.tax = t.id
 			where voided <> 5 and UPC <> 'TAX'
 			AND trans_type <> 'L'
 			order by trans_id";
@@ -768,7 +780,7 @@ function create_trans_dbs($db,$type){
 		register_no,
 		emp_no,
 		trans_no,
-		description,
+		l.description,
 		case 
 			when voided = 5 
 				then 'Discount'
@@ -797,10 +809,14 @@ function create_trans_dbs($db,$type){
 				then 'VD'
 			when trans_status = 'R'
 				then 'RF'
-			when tax <> 0 and foodstamp <> 0
-				then 'TF'
-			when tax <> 0 and foodstamp = 0
-				then 'T' 
+			WHEN (tax = 1 and foodstamp <> 0)
+				THEN 'TF'
+			WHEN (tax = 1 and foodstamp = 0)
+				THEN 'T' 
+			WHEN (tax > 1 and foodstamp <> 0)
+				THEN CONCAT(LEFT(t.description,1),'F')
+			WHEN (tax > 1 and foodstamp = 0)
+				THEN LEFT(t.description,1)
 			when tax = 0 and foodstamp <> 0
 				then 'F'
 			when tax = 0 and foodstamp = 0
@@ -811,7 +827,9 @@ function create_trans_dbs($db,$type){
 		unitPrice,
 		voided,
 		trans_id
-		from localtranstoday
+		from localtranstoday as l
+		left join taxrates as t
+		on l.tax = t.id
 		where voided <> 5 and UPC <> 'TAX' and UPC <> 'DISCOUNT'
 		AND trans_type <> 'L'
 		order by emp_no, trans_no, trans_id";
@@ -850,10 +868,14 @@ function create_trans_dbs($db,$type){
 					then 'VD'
 				when trans_status = 'R'
 					then 'RF'
-				when tax <> 0 and foodstamp <> 0
-					then 'TF'
-				when tax <> 0 and foodstamp = 0
-					then 'T' 
+				WHEN (tax = 1 and foodstamp <> 0)
+					THEN 'TF'
+				WHEN (tax = 1 and foodstamp = 0)
+					THEN 'T' 
+				WHEN (tax > 1 and foodstamp <> 0)
+					THEN LEFT(t.description,1)+'F'
+				WHEN (tax > 1 and foodstamp = 0)
+					THEN LEFT(t.description,1)
 				when tax = 0 and foodstamp <> 0
 					then 'F'
 				when tax = 0 and foodstamp = 0
@@ -864,7 +886,9 @@ function create_trans_dbs($db,$type){
 			unitPrice,
 			voided,
 			trans_id
-			from localtranstoday
+			from localtranstoday as l
+			left join taxrates as t
+			on l.tax = t.id
 			where voided <> 5 and UPC <> 'TAX' and UPC <> 'DISCOUNT'
 			AND trans_type <> 'L'
 			order by emp_no, trans_no, trans_id";
@@ -1249,7 +1273,7 @@ function create_trans_dbs($db,$type){
 
 	$lttreorderG = "CREATE   view ltt_receipt_reorder_g as
 	select 
-	description,
+	l.description,
 	case 
 		when voided = 5 
 			then 'Discount'
@@ -1284,10 +1308,10 @@ function create_trans_dbs($db,$type){
 			then 'TF'
 		when tax = 1 and foodstamp = 0
 			then 'T' 
-		when tax = 2 and foodstamp <> 0
-			then 'DF'
-		when tax = 2 and foodstamp = 0
-			then 'D' 
+		WHEN (tax > 1 and foodstamp <> 0)
+			THEN CONCAT(LEFT(t.description,1),'F')
+		WHEN (tax > 1 and foodstamp = 0)
+			THEN LEFT(t.description,1)
 		when tax = 0 and foodstamp <> 0
 			then 'F'
 		when tax = 0 and foodstamp = 0
@@ -1304,7 +1328,9 @@ function create_trans_dbs($db,$type){
 	department,
 	upc,
 	trans_subtype
-	from ltt_grouped
+	from ltt_grouped as l
+	left join taxrates as t
+	on l.tax = t.id
 	where voided <> 5 and UPC <> 'TAX' and UPC <> 'DISCOUNT'
 	AND trans_type <> 'L'
 	and not (trans_status='M' and total=convert('0.00',decimal(10,2)))
@@ -1327,7 +1353,7 @@ function create_trans_dbs($db,$type){
 	if($type == 'mssql'){
 		$lttreorderG = "CREATE view ltt_receipt_reorder_g as
 		select top 100 percent
-		description,
+		l.description,
 		case 
 			when voided = 5 
 				then 'Discount'
@@ -1356,10 +1382,14 @@ function create_trans_dbs($db,$type){
 				then 'VD'
 			when trans_status = 'R'
 				then 'RF'
-			when tax <> 0 and foodstamp <> 0
-				then 'TF'
-			when tax <> 0 and foodstamp = 0
-				then 'T' 
+			WHEN (tax = 1 and foodstamp <> 0)
+				THEN 'TF'
+			WHEN (tax = 1 and foodstamp = 0)
+				THEN 'T' 
+			WHEN (tax > 1 and foodstamp <> 0)
+				THEN LEFT(t.description,1)+'F'
+			WHEN (tax > 1 and foodstamp = 0)
+				THEN LEFT(t.description,1)
 			when tax = 0 and foodstamp <> 0
 				then 'F'
 			when tax = 0 and foodstamp = 0
@@ -1376,7 +1406,9 @@ function create_trans_dbs($db,$type){
 		department,
 		upc,
 		trans_subtype
-		from ltt_grouped
+		from ltt_grouped as l
+		left join taxrates as t
+		on l.tax = t.id
 		where voided <> 5 and UPC <> 'TAX' and UPC <> 'DISCOUNT'
 		AND trans_type <> 'L'
 		and not (trans_status='M' and total=convert(money,'0.00'))
@@ -1815,7 +1847,7 @@ function create_trans_dbs($db,$type){
 	$rpreorderG = "CREATE    view rp_ltt_receipt_reorder_g as
 		select 
 		register_no,emp_no,trans_no,card_no,
-		description,
+		l.description,
 		case 
 			when voided = 5 
 				then 'Discount'
@@ -1844,10 +1876,14 @@ function create_trans_dbs($db,$type){
 				then 'VD'
 			when trans_status = 'R'
 				then 'RF'
-			when tax <> 0 and foodstamp <> 0
-				then 'TF'
-			when tax <> 0 and foodstamp = 0
-				then 'T' 
+			WHEN (tax = 1 and foodstamp <> 0)
+				THEN 'TF'
+			WHEN (tax = 1 and foodstamp = 0)
+				THEN 'T' 
+			WHEN (tax > 1 and foodstamp <> 0)
+				THEN CONCAT(LEFT(t.description,1),'F')
+			WHEN (tax > 1 and foodstamp = 0)
+				THEN LEFT(t.description,1)
 			when tax = 0 and foodstamp <> 0
 				then 'F'
 			when tax = 0 and foodstamp = 0
@@ -1861,7 +1897,9 @@ function create_trans_dbs($db,$type){
 		department,
 		upc,
 		trans_subtype
-		from rp_ltt_grouped
+		from rp_ltt_grouped as l
+		left join taxrates as t
+		on l.tax=t.id
 		where voided <> 5 and UPC <> 'TAX' and UPC <> 'DISCOUNT'
 		AND trans_type <> 'L'
 		and not (trans_status='M' and total=convert('0.00',decimal))
@@ -1885,7 +1923,7 @@ function create_trans_dbs($db,$type){
 		$rpreorderG = "CREATE     view rp_ltt_receipt_reorder_g as
 		select top 100 percent
 		register_no,emp_no,trans_no,card_no,
-		description,
+		l.description,
 		case 
 			when voided = 5 
 				then 'Discount'
@@ -1914,10 +1952,14 @@ function create_trans_dbs($db,$type){
 				then 'VD'
 			when trans_status = 'R'
 				then 'RF'
-			when tax <> 0 and foodstamp <> 0
-				then 'TF'
-			when tax <> 0 and foodstamp = 0
-				then 'T' 
+			WHEN (tax = 1 and foodstamp <> 0)
+				THEN 'TF'
+			WHEN (tax = 1 and foodstamp = 0)
+				THEN 'T' 
+			WHEN (tax > 1 and foodstamp <> 0)
+				THEN LEFT(t.description,1)+'F'
+			WHEN (tax > 1 and foodstamp = 0)
+				THEN LEFT(t.description,1)
 			when tax = 0 and foodstamp <> 0
 				then 'F'
 			when tax = 0 and foodstamp = 0
@@ -1931,7 +1973,9 @@ function create_trans_dbs($db,$type){
 		department,
 		upc,
 		trans_subtype
-		from rp_ltt_grouped
+		from rp_ltt_grouped as l
+		left join taxrates as t
+		on l.tax=t.id
 		where voided <> 5 and UPC <> 'TAX' and UPC <> 'DISCOUNT'
 		AND trans_type <> 'L'
 		and not (trans_status='M' and total=convert(money,'0.00'))
