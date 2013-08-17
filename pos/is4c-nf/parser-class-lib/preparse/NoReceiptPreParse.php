@@ -1,7 +1,7 @@
 <?php
 /*******************************************************************************
 
-    Copyright 2007 Whole Foods Co-op
+    Copyright 2013 Whole Foods Co-op
 
     This file is part of IT CORE.
 
@@ -21,25 +21,25 @@
 
 *********************************************************************************/
 
-class ToggleReceipt extends Parser {
+class NoReceiptPreParse extends PreParser {
+	var $remainder;
 	
 	function check($str){
-		if ($str == "NR")
+		if (substr($str,-2) == 'NR'){
+			$this->remainder = substr($str,0,strlen($str)-2);
 			return True;
+		}
+		elseif (substr($str,0,2) == "NR"){
+			$this->remainder = substr($str,2);
+			return True;
+		}
 		return False;
 	}
 
 	function parse($str){
 		global $CORE_LOCAL;
-		$rt = $CORE_LOCAL->get("receiptToggle");
-		if ($rt == 1)
-			$CORE_LOCAL->set("receiptToggle",0);
-		else
-			$CORE_LOCAL->set("receiptToggle",1);
-		$ret = $this->default_json();
-		// redirect to main screen so receipt icon reloads
-		$ret['main_frame'] = MiscLib::base_url().'gui-modules/pos2.php';
-		return $ret;
+		$CORE_LOCAL->set('receiptToggle', 0);
+		return $this->remainder;
 	}
 
 	function doc(){
@@ -48,9 +48,12 @@ class ToggleReceipt extends Parser {
 				<th>Input</th><th>Result</th>
 			</tr>
 			<tr>
-				<td>NR</td>
-				<td>Disable receipt printing. 
-				</td>
+				<td><i>tender command</i>NR<i>item</i></td>
+				<td>Apply tender with receipt disabled</td>
+			</tr>
+			<tr>
+				<td>NR<i>tender command</i></td>
+				<td>Same as above</td>
 			</tr>
 			</table>";
 	}
