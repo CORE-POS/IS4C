@@ -29,7 +29,12 @@ class NeedDiscountParser extends Parser {
 		global $CORE_LOCAL;
 		$CORE_LOCAL->set('NeedDiscountFlag',1);
 		// add comment/informational line to transaction?
-		return $this->default_json();
+		$ret = $this->default_json();
+		// re-calculate the discount
+		Database::getsubtotals();
+		// show new discount in footer
+		$ret['redraw_footer'] = True;		
+		return $ret;
 	}
 }
 ?>
