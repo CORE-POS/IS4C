@@ -520,9 +520,18 @@ static public function addcdnotify() {
   @param $intdepartment associated POS department
   @param $dbltotal coupon amount (should be negative)
   @param $foodstamp mark coupon foodstamp-able
+  @param $tax mark coupon as taxable
+
+  Marking a coupon as taxable will *reduce* the taxable
+  total by the coupon amount. This is not desirable in 
+  all tax jurisdictions. The ini setting 'CouponsAreTaxable'
+  controls whether the tax parameter is used.
 */
-static public function addCoupon($strupc, $intdepartment, $dbltotal, $foodstamp=0) {
-	self::addItem($strupc, " * Manufacturers Coupon", "I", "CP", "C", $intdepartment, 1, $dbltotal, $dbltotal, $dbltotal, 0, 0, $foodstamp, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0);	
+static public function addCoupon($strupc, $intdepartment, $dbltotal, $foodstamp=0, $tax=0) {
+	global $CORE_LOCAL;
+	if ($CORE_LOCAL->get('CouponsAreTaxable') !== 0)
+		$tax = 0;
+	self::addItem($strupc, " * Manufacturers Coupon", "I", "CP", "C", $intdepartment, 1, $dbltotal, $dbltotal, $dbltotal, 0, $tax, $foodstamp, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0);	
 }
 
 /**
