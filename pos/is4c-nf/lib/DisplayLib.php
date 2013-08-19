@@ -350,9 +350,9 @@ static public function printitem($field2, $field3, $total, $field5, $trans_id=-1
 
 	$ret = "<div class=\"item\">";
 	$ret .= "<div $onclick class=\"desc coloredText\">$field2</div>";
-	$ret .= "<div $onclick class=\"comments itemDetails\">$field3</div>";
-	$ret .= "<div $onclick class=\"total itemDetails\">$total</div>";
-	$ret .= "<div $onclick class=\"suffix itemDetails\">$field5</div>";
+	$ret .= "<div $onclick class=\"comments lightestColorText\">$field3</div>";
+	$ret .= "<div $onclick class=\"total lightestColorText\">$total</div>";
+	$ret .= "<div $onclick class=\"suffix lightestColorText\">$field5</div>";
 	$ret .= "</div>";
 	$ret .= "<div style=\"clear:left;\"></div>\n";
 	return $ret;
