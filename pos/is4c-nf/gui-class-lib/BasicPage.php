@@ -43,6 +43,8 @@ class BasicPage {
 	*/
 	var $page_url;
 
+	var $body_class='mainBGimage';
+
 	/**
 	  Constructor
 
@@ -129,7 +131,7 @@ class BasicPage {
 			src=\"{$my_url}/js/jquery.js\"></script>";
 		$this->head_content();
 		echo "</head>";
-		echo "<body>";
+		echo '<body class="'.$this->body_class.'">';
 		echo "<div id=\"boundingBox\">";
 		$this->body_content();	
 		echo "</div>";

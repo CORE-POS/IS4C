@@ -1,7 +1,21 @@
 html { overflow: hidden; }
-body { font-family: arial; background-image: url('/graphics/is4c.gif');
-       background-repeat: no-repeat; margin-top:20px;}
+body { font-family: arial; margin-top: 20px; }
+.mainBGimage {
+	background-image: url('../graphics/is4c.gif');
+	background-repeat: no-repeat;
+}
 div#boundingBox { width: 675px; }
+/*********************************************
+* COLORS
+*********************************************/
+.coloredArea { background: #004080; color: #ffffff; }
+.errorColoredArea { background: #800000; color: #ffffff; }
+.itemDetails { color: #808080; }
+.coloredText { color: #004080; }
+.totalLine { color: #000000; }
+.totalArea { background: #000000; color: #ffffff; }
+.fsLine { color: #800080; }
+.fsArea { background: #800080; color: #ffffff; }
 /*********************************************
  * main display
 *********************************************/
@@ -11,8 +25,6 @@ div.centerOffset { padding-top: 80px; }
 div.centeredDisplay { margin-left: auto; margin-right: auto; width: 40%;
 		      padding: 30px 0 10px 0; text-align: center; 
 		      top: 70px; position: relative; }
-div.colored { background: #004080; color: #ffffff; }
-div.errorColored { background: #800000; color: #ffffff; }
 span.larger { font-weight: bold; }
 span.smaller { font-size: 80%; }
 div.clear { clear: both; width: 100%; }

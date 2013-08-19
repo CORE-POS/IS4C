@@ -31,6 +31,8 @@ class login2 extends BasicPage {
 	var $box_color;
 	var $msg;
 
+	var $body_class = '';
+
 	function preprocess(){
 		global $CORE_LOCAL;
 		$this->box_color = '#004080';
@@ -100,7 +102,6 @@ class login2 extends BasicPage {
 		// 18Agu12 EL Add separately for readability of source.
 		$this->add_onload_command("\$('#reginput').focus();");
 		$this->add_onload_command("\$('#scalebox').css('display','none');");
-		$this->add_onload_command("\$('body').css('background-image','none');");
 
 		?>
 		<div id="loginTopBar">
