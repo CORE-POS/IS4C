@@ -244,11 +244,6 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
 		$this->assertInternalType('string',$itemH);
 		$this->assertNotEmpty($itemH);
 
-		$itemH2 = DisplayLib::printItemHilite('name','weight','1.99','T');
-		$this->assertInternalType('string',$itemH2);
-		$this->assertNotEmpty($itemH2);
-		$this->assertEquals($itemH,$itemH2);
-
 		$CORE_LOCAL->set('weight',0);
 		$CORE_LOCAL->set('scale',0);
 		$CORE_LOCAL->set('SNR',0);

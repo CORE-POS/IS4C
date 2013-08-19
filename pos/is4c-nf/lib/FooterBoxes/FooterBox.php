@@ -36,13 +36,15 @@ class FooterBox {
 	  header content. If you define a different
 	  width alignment might go haywire.
 	*/
-	var $header_css;
+	public $header_css = '';
+	public $header_css_class = '';
 	/**
 	  CSS here will be applied (in-line) to the
 	  display content. If you define a different
 	  width alignment might go haywire.
 	*/
-	var $display_css;
+	public $display_css = '';
+	public $display_css_class = '';
 
 	/**
 	  Define the header for this box

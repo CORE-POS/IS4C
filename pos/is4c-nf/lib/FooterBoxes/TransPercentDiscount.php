@@ -23,8 +23,9 @@
 
 class TransPercentDiscount extends FooterBox {
 
-	var $header_css = "color: #004080;";
-	var $display_css = "font-weight:bold;font-size:110%;color:#808080;";
+	public $header_css_class = 'coloredText';
+	public $display_css = "font-weight:bold;font-size:110%;";
+	public $display_css_class = 'lightestText';
 
 	function header_content(){
 		global $CORE_LOCAL;

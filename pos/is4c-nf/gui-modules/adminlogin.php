@@ -36,7 +36,7 @@ class adminlogin extends NoInputPage {
 
 	function preprocess(){
 		global $CORE_LOCAL;
-		$this->box_color="#004080";
+		$this->box_color="coloredArea";
 		$this->msg = _("enter admin password");
 
 		if (isset($_REQUEST['reginput'])){
@@ -52,7 +52,7 @@ class adminlogin extends NoInputPage {
 				return False;	
 			}
 			else if (!is_numeric($passwd) || $passwd > 9999 || $passwd < 1){
-				$this->box_color="#800000";
+				$this->box_color="errorColoredArea";
 				$this->msg = _("re-enter admin password");
 			}
 			else {
@@ -78,7 +78,7 @@ class adminlogin extends NoInputPage {
 					return False;
 				}
 				else {
-					$this->box_color="#800000";
+					$this->box_color="errorColoredArea";
 					$this->msg = _("re-enter admin password");
 
 					TransRecord::add_log_record(array(
@@ -99,10 +99,9 @@ class adminlogin extends NoInputPage {
 	function body_content(){
 		global $CORE_LOCAL;
 		$heading = $CORE_LOCAL->get("adminLoginMsg");
-		$style = "style=\"background:{$this->box_color};\"";
 		?>
 		<div class="baseHeight">
-		<div class="colored centeredDisplay" <?php echo $style; ?>>
+		<div class="<?php echo $this->box_color; ?> centeredDisplay">
 		<span class="larger">
 		<?php echo $heading ?>
 		</span><br />

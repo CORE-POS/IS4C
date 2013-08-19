@@ -28,14 +28,14 @@ AutoLoader::LoadMap();
 
 class login2 extends BasicPage {
 
-	var $box_color;
+	var $box_css_class;
 	var $msg;
 
 	var $body_class = '';
 
 	function preprocess(){
 		global $CORE_LOCAL;
-		$this->box_color = '#004080';
+		$this->box_css_class = 'coloredArea';
 		$this->msg = _('please enter your password');
 
 		if (isset($_REQUEST['reginput'])){
@@ -78,7 +78,7 @@ class login2 extends BasicPage {
 				return False;
 			}
 			else {
-				$this->box_color = '#800000';
+				$this->box_css_class = 'errorColoredArea';
 				$this->msg = _('password invalid, please re-enter');
 			}
 		}
@@ -108,10 +108,10 @@ class login2 extends BasicPage {
 			<div class="name">I S 4 C</div>
 			<div class="version">P H P &nbsp; D E V E L O P M E N T
 			&nbsp; V E R S I O N &nbsp; 2 .0 .0</div>
-			<div class="welcome"><?php echo _("W E L C O M E"); ?></div>
+			<div class="welcome coloredArea"><?php echo _("W E L C O M E"); ?></div>
 		</div>
 		<div id="loginCenter">
-		<div class="box" style="background:<?php echo $this->box_color; ?>;" >
+		<div class="box <?php echo $this->box_css_class; ?>">
 				<b><?php echo _("log in"); ?></b>
 				<form id="formlocal" name="form" method="post" autocomplete="off" 
 					action="<?php echo $_SERVER['PHP_SELF']; ?>">

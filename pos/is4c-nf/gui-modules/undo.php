@@ -24,15 +24,13 @@
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class undo extends NoInputPage {
-	var $box_color;
 	var $msg;
 
 	function body_content(){
 		global $CORE_LOCAL;
-		$style = "style=\"background:{$this->box_color};\"";
 		?>
 		<div class="baseHeight">
-		<div class="colored centeredDisplay" <?php echo $style; ?>>
+		<div class="<?php echo $this->box_color; ?> centeredDisplay">
 		<span class="larger">
 		<?php echo $this->msg ?>
 		</span><br />
@@ -51,7 +49,7 @@ class undo extends NoInputPage {
 
 	function preprocess(){
 		global $CORE_LOCAL;
-		$this->box_color = "#004080";
+		$this->box_color = "coloredArea";
 		$this->msg = "Undo transaction";
 
 		if (isset($_REQUEST['reginput'])){
@@ -65,7 +63,7 @@ class undo extends NoInputPage {
 
 			// error: malformed transaction number
 			if (!strpos($trans_num,"-")){
-				$this->box_color="#800000";
+				$this->box_color="errorColoredArea";
 				$this->msg = "Transaction not found";
 				return True;
 			}
@@ -73,7 +71,7 @@ class undo extends NoInputPage {
 			$temp = explode("-",$trans_num);
 			// error: malformed transaction number (2)
 			if (count($temp) != 3){
-				$this->box_color="#800000";
+				$this->box_color="errorColoredArea";
 				$this->msg = "Transaction not found";
 				return True;
 			}
@@ -84,7 +82,7 @@ class undo extends NoInputPage {
 			// error: malformed transaction number (3)
 			if (!is_numeric($emp_no) || !is_numeric($register_no)
 			    || !is_numeric($old_trans_no)){
-				$this->box_color="#800000";
+				$this->box_color="errorColoredArea";
 				$this->msg = "Transaction not found";
 				return True;
 			}
@@ -108,7 +106,7 @@ class undo extends NoInputPage {
 			}
 			else if ($CORE_LOCAL->get("standalone") == 1){
 				// error: remote lookups won't work in standalone
-				$this->box_color="#800000";
+				$this->box_color="errorColoredArea";
 				$this->msg = "Transaction not found";
 				return True;
 			}
@@ -131,7 +129,7 @@ class undo extends NoInputPage {
 			$result = $db->query($query);
 			// transaction not found
 			if ($db->num_rows($result) < 1){
-				$this->box_color="#800000";
+				$this->box_color="errorColoredArea";
 				$this->msg = "Transaction not found";
 				return True;
 			}

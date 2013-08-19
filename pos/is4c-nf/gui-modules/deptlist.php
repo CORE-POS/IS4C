@@ -119,7 +119,7 @@ class deptlist extends NoInputPage {
 		echo "</select>"
 			."</form>"
 			."</div>"
-			."<div class=\"listboxText centerOffset\">"
+			."<div class=\"listboxText coloredText centerOffset\">"
 			._("clear to cancel")."</div>"
 			."<div class=\"clear\"></div>";
 		echo "</div>";

@@ -138,7 +138,7 @@ class cablist extends NoInputPage {
 		</select>
 		</form>
 		</div>
-		<div class="listboxText centerOffset">
+		<div class="listboxText coloredText centerOffset">
 		use arrow keys to navigate<br />[enter] to reprint receipt<br />[clear] to cancel
 		</div>
 		<div class="clear"></div>

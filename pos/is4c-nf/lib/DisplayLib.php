@@ -85,68 +85,23 @@ static public function printfooter($readOnly=False) {
 		$weight = "_ _ _ _";
 	}
 
-	/* 5/11/12
-	if (is_numeric($CORE_LOCAL->get("discounttotal"))) {
-		$dbldiscounttotal = number_format($CORE_LOCAL->get("discounttotal"), 2);
-	}
-	else {
-		$dbldiscounttotal = 0.00;
-		if (!$readOnly)
-			$CORE_LOCAL->set("runningTotal",0);
-	}
-	*/
-
-	/*
-	if ($CORE_LOCAL->get("runningTotal") == "" && !$readOnly) {
-		$CORE_LOCAL->set("runningTotal",0);
-	}
-
-	if ($CORE_LOCAL->get("isMember") == 1 || $CORE_LOCAL->get("sc") == 1) {
-		$labelyousaved = "You Saved";
-	}
-	else {
-		$labelyousaved = "Could Have Saved";
-	}
-
-	if ($CORE_LOCAL->get("percentDiscount") == 0) {
-		$strpercentdisclabel = "% Discount";
-	}
-	else {
-		$strpercentdisclabel = $CORE_LOCAL->get("percentDiscount")."% Discount";
-	}
-	*/
-
 	$ret = "<table>";
 	$ret .= "<tr class=\"heading\">";
 	$label = $modchain[0]->header_content();
-	$ret .= sprintf('<td class="first" style="%s">%s</td>',$modchain[0]->header_css,$label);
+	$ret .= sprintf('<td class="first %s" style="%s">%s</td>',
+			$modchain[0]->header_css_class, $modchain[0]->header_css,$label);
 	$label = $modchain[1]->header_content();
-	$ret .= sprintf('<td class="reg" style="%s">%s</td>',$modchain[1]->header_css,$label);
+	$ret .= sprintf('<td class="reg %s" style="%s">%s</td>',
+			$modchain[1]->header_css_class, $modchain[1]->header_css,$label);
 	$label = $modchain[2]->header_content();
-	$ret .= sprintf('<td class="reg" style="%s">%s</td>',$modchain[2]->header_css,$label);
+	$ret .= sprintf('<td class="reg %s" style="%s">%s</td>',
+			$modchain[2]->header_css_class, $modchain[2]->header_css,$label);
 	$label = $modchain[3]->header_content();
-	$ret .= sprintf('<td class="reg" style="%s">%s</td>',$modchain[3]->header_css,$label);
+	$ret .= sprintf('<td class="reg %s" style="%s">%s</td>',
+			$modchain[3]->header_css_class, $modchain[3]->header_css,$label);
 	$label = $modchain[4]->header_content();
-	$ret .= sprintf('<td class="total" style="%s">%s</td>',$modchain[4]->header_css,$label);
-	/* 5/11/12
-	$ret .= "<td class=\"first\">$labelyousaved</td>";
-	$ret .= "<td class=\"reg\">$strpercentdisclabel</td>";
-	$ret .= "<td class=\"reg\">Mbr Special</td>";
-	$ret .= "<td class=\"reg\">Special</td>";
-	if ( $CORE_LOCAL->get("ttlflag") == 1 and $CORE_LOCAL->get("End") != 1 ) {
-		if ($CORE_LOCAL->get("fntlflag") == 1) {
-			$ret .= "<td class=\"fs\">fs Amount Due</td>";
-		} else {
-			$ret .= "<td class=\"due\">Amount Due</td>";
-		}
-	}
-	elseif ($CORE_LOCAL->get("ttlflag") == 1  and $CORE_LOCAL->get("End") == 1 ) {
-		$ret .= "<td class=\"change\">Change</td>";
-	}	
-	else {
-		$ret .= "<td class=\"total\">Total</td>";
-	}
-	*/
+	$ret .= sprintf('<td class="total %s" style="%s">%s</td>',
+			$modchain[4]->header_css_class, $modchain[4]->header_css,$label);
 	$ret .= "</tr>";
 
 	$special = $CORE_LOCAL->get("memSpecial") + $CORE_LOCAL->get("staffSpecial");
@@ -174,18 +129,6 @@ static public function printfooter($readOnly=False) {
 		$dblyousaved = $CORE_LOCAL->get("yousaved");
 	}
 
-	/* 5/11/12
-	$strperdiscount = "n/a";
-	if ($CORE_LOCAL->get("percentDiscount") != 0) {
-		$strperdiscount = number_format($CORE_LOCAL->get("transDiscount"), 2);
-	}
-
-	$strmemSpecial = "n/a";
-	if ($CORE_LOCAL->get("isMember") == 1) {
-		$strmemSpecial = number_format($CORE_LOCAL->get("memSpecial"), 2);
-	}
-	*/
-
 	if (!$readOnly){
 		if ($CORE_LOCAL->get("End") == 1) {
 			MiscLib::rePoll();
@@ -205,34 +148,20 @@ static public function printfooter($readOnly=False) {
 
 	$ret .= "<tr class=\"values\">";
 	$box = $modchain[0]->display_content();
-	$ret .= sprintf('<td class="first" style="%s">%s</td>',$modchain[0]->display_css,$box);
+	$ret .= sprintf('<td class="first %s" style="%s">%s</td>',
+			$modchain[0]->display_css_class,$modchain[0]->display_css,$box);
 	$box = $modchain[1]->display_content();
-	$ret .= sprintf('<td class="reg" style="%s">%s</td>',$modchain[1]->display_css,$box);
+	$ret .= sprintf('<td class="reg %s" style="%s">%s</td>',
+			$modchain[1]->display_css_class,$modchain[1]->display_css,$box);
 	$box = $modchain[2]->display_content();
-	$ret .= sprintf('<td class="reg" style="%s">%s</td>',$modchain[2]->display_css,$box);
+	$ret .= sprintf('<td class="reg %s" style="%s">%s</td>',
+			$modchain[2]->display_css_class,$modchain[2]->display_css,$box);
 	$box = $modchain[3]->display_content();
-	$ret .= sprintf('<td class="reg" style="%s">%s</td>',$modchain[3]->display_css,$box);
+	$ret .= sprintf('<td class="reg %s" style="%s">%s</td>',
+			$modchain[3]->display_css_class,$modchain[3]->display_css,$box);
 	$box = $modchain[4]->display_content();
-	$ret .= sprintf('<td class="total" style="%s">%s</td>',$modchain[4]->display_css,$box);
-	/* 5/11/12
-	$ret .= "<td class=\"first\">".number_format($dblyousaved,2)."</td>";
-	$ret .= "<td class=\"reg\">".$strperdiscount."</td>";
-	$ret .= "<td class=\"reg\">".$strmemSpecial."</td>";
-	$ret .= "<td class=\"reg\">".number_format($dbldiscounttotal,2)."</td>";
-	if ($CORE_LOCAL->get("ttlflag") == 1 && $CORE_LOCAL->get("End") != 1) {
-		if ($CORE_LOCAL->get("fntlflag") == 1) {
-			$ret .= "<td class=\"fs\">".number_format($CORE_LOCAL->get("fsEligible"), 2)."</td>";
-		} else {	
-			$ret .= "<td class=\"due\">".number_format($CORE_LOCAL->get("runningTotal"), 2)."</td>";
-		}
-	}
-	elseif ($CORE_LOCAL->get("ttlflag") == 1 && $CORE_LOCAL->get("End") == 1) {
-		$ret .= "<td class=\"change\">".number_format($CORE_LOCAL->get("runningTotal"), 2)."</td>";
-	}
-	else {
-		$ret .= "<td class=\"total\">".number_format($CORE_LOCAL->get("runningTotal"), 2)."</td>";
-	}
-	*/
+	$ret .= sprintf('<td class="total %s" style="%s">%s</td>',
+			$modchain[4]->display_css_class,$modchain[4]->display_css,$box);
 	$ret .= "</tr>";
 	$ret .= "</table>";
 
@@ -260,7 +189,7 @@ static public function printfooter($readOnly=False) {
    @return An HTML string
 */
 static public function plainmsg($strmsg) {
-	return "<div id=\"plainmsg\">$strmsg</div>";
+	return "<div id=\"plainmsg\" class=\"coloredText\">$strmsg</div>";
 }
 
 
@@ -281,7 +210,7 @@ static public function msgbox($strmsg, $icon,$noBeep=False) {
 
 	$ret = self::printheaderb();
 	$ret .= "<div id=\"boxMsg\" class=\"centeredDisplay\">";
-	$ret .= "<div class=\"boxMsgAlert\">";
+	$ret .= "<div class=\"boxMsgAlert coloredArea\">";
 	$ret .= $CORE_LOCAL->get("alertBar");
 	$ret .= "</div>";
 	$ret .= "<div class=\"boxMsgBody\">";
@@ -420,10 +349,10 @@ static public function printitem($field2, $field3, $total, $field5, $trans_id=-1
 	if ($field5 == "") $field5 = "&nbsp;";
 
 	$ret = "<div class=\"item\">";
-	$ret .= "<div $onclick class=\"desc\">$field2</div>";
-	$ret .= "<div $onclick class=\"comments\">$field3</div>";
-	$ret .= "<div $onclick class=\"total\">$total</div>";
-	$ret .= "<div $onclick class=\"suffix\">$field5</div>";
+	$ret .= "<div $onclick class=\"desc coloredText\">$field2</div>";
+	$ret .= "<div $onclick class=\"comments itemDetails\">$field3</div>";
+	$ret .= "<div $onclick class=\"total itemDetails\">$total</div>";
+	$ret .= "<div $onclick class=\"suffix itemDetails\">$field5</div>";
 	$ret .= "</div>";
 	$ret .= "<div style=\"clear:left;\"></div>\n";
 	return $ret;
@@ -434,6 +363,7 @@ static public function printitem($field2, $field3, $total, $field5, $trans_id=-1
 /**
   Get a transaction line item in a specific color
   @param $color is a hex color code (do not include a '#')
+	(see CSS notes)
   @param $description typically description
   @param $comments comment section. Used for things
    like "0.59@1.99" on weight items.
@@ -443,6 +373,15 @@ static public function printitem($field2, $field3, $total, $field5, $trans_id=-1
    the trans_id makes the lines selectable via mouseclick
    (or touchscreen).
   @return An HTML string
+
+  CSS Notes:
+  In an effort to replace hard-coded colors, some values are
+  re-written as CSS classes rather than inline styles.
+  Current mapping:
+  - 004080 => coloredText
+  - 408080 => lightColorText
+  - 000000 => totalLine
+  - 800080 => fsLine
 */
 static public function printitemcolor($color, $description, $comments, $total, $suffix,$trans_id=-1) {
 	global $CORE_LOCAL;
@@ -470,12 +409,24 @@ static public function printitemcolor($color, $description, $comments, $total, $
 	if (trim($comments) == "") $comments = "&nbsp;";
 	if ($suffix == "") $suffix = "&nbsp;";
 
-	$style = "style=\"color:#$color;\"";
+	$style = '';
+	$class = '';
+	if ($color == '408080')
+		$class = 'coloredText';
+	else if ($color == '000000')
+		$class = 'totalLine';
+	else if ($color == '800080')
+		$class = 'fsLine';
+	else if ($color == '408080')
+		$class = 'lightColorText';
+	else
+		$style = "style=\"color:#$color;\"";
+
 	$ret = "<div class=\"item\">";
-	$ret .= "<div $onclick class=\"desc\" $style>$description</div>";
-	$ret .= "<div $onclick class=\"comments\" $style>$comments</div>";
-	$ret .= "<div $onclick class=\"total\" $style>$total</div>";
-	$ret .= "<div $onclick class=\"suffix\" $style>$suffix</div>";
+	$ret .= "<div $onclick class=\"desc $class\" $style>$description</div>";
+	$ret .= "<div $onclick class=\"comments $class\" $style>$comments</div>";
+	$ret .= "<div $onclick class=\"total $class\" $style>$total</div>";
+	$ret .= "<div $onclick class=\"suffix $class\" $style>$suffix</div>";
 	$ret .= "</div>";
 	$ret .= "<div style=\"clear:left;\"></div>\n";
 	return $ret;
@@ -486,6 +437,7 @@ static public function printitemcolor($color, $description, $comments, $total, $
 /**
   Get a transaction line item in a specific color
   @param $color is a hex color code (do not include a '#')
+	(see CSS notes)
   @param $description typically description
   @param $comments comment section. Used for things
    like "0.59@1.99" on weight items.
@@ -493,8 +445,14 @@ static public function printitemcolor($color, $description, $comments, $total, $
   @param $suffix flags after the number
   @return An HTML string
 
-  This could probably be combined with printitemcolor(). They're
-  separate because no one has done that yet.
+  CSS Notes:
+  In an effort to replace hard-coded colors, some values are
+  re-written as CSS classes rather than inline styles.
+  Current mapping:
+  - 004080 => coloredArea
+  - 408080 => lightColorArea
+  - 000000 => totalArea
+  - 800080 => fsArea
 */
 static public function printitemcolorhilite($color, $description, $comments, $total, $suffix) {
 	if (strlen($total) > 0) {
@@ -507,25 +465,30 @@ static public function printitemcolorhilite($color, $description, $comments, $to
 	if (trim($comments) == "") $comments="&nbsp;";
 	if ($suffix == "") $suffix="&nbsp;";
 
-	$style = "style=\"background:#$color;color:#ffffff;\"";
+	$style = '';
+	$class = '';
+	if ($color == '408080')
+		$class = 'coloredArea';
+	else if ($color == '000000')
+		$class = 'totalArea';
+	else if ($color == '800080')
+		$class = 'fsArea';
+	else if ($color == '408080')
+		$class = 'lightColorArea';
+	else
+		$style = "style=\"background:#$color;color:#ffffff;\"";
+
 	$ret = "<div class=\"item\">";
-	$ret .= "<div class=\"desc\" $style>$description</div>";
-	$ret .= "<div class=\"comments\" $style>$comments</div>";
-	$ret .= "<div class=\"total\" $style>$total</div>";
-	$ret .= "<div class=\"suffix\" $style>$suffix</div>";
+	$ret .= "<div class=\"desc $class\" $style>$description</div>";
+	$ret .= "<div class=\"comments $class\" $style>$comments</div>";
+	$ret .= "<div class=\"total $class\" $style>$total</div>";
+	$ret .= "<div class=\"suffix $class\" $style>$suffix</div>";
 	$ret .= "</div>";
 	$ret .= "<div style=\"clear:left;\"></div>\n";
 	return $ret;
 }
 
 //----------------------------------------------------------------//
-
-/**
-  Alias for printitemcolorhilite().
-*/
-static public function printItemHilite($description, $comments, $total, $suffix) {
-	return self::printitemcolorhilite("004080", $description, $comments, $total, $suffix);
-}
 
 /**
   Get the scale display box
@@ -720,7 +683,7 @@ static public function printReceiptfooter($readOnly=False) {
 
 		$ret = self::drawitems($top_id, 7, 0);
 
-		$ret .= "<div class=\"farewellMsg\">";
+		$ret .= "<div class=\"farewellMsg coloredText\">";
 		for($i=0;$i<=$CORE_LOCAL->get("farewellMsgCount");$i++){
 			$ret .= $CORE_LOCAL->get("farewellMsg".$i)."<br />";
 		}
@@ -795,12 +758,7 @@ static public function drawitems($top_item, $rows, $highlight) {
 
 			
 			if ($trans_id == $highlight) {
-				if ($color == "004080") {
-					$ret .= self::printitemhilite($description, $comment, $total, $tf);
-				}
-				else {
-					$ret .= self::printitemcolorhilite($color, $description, $comment, $total, $tf);
-				}
+				$ret .= self::printitemcolorhilite($color, $description, $comment, $total, $tf);
 			}
 			else
 				{

@@ -23,8 +23,8 @@
 
 class SavedOrCouldHave extends FooterBox {
 
-	var $header_css;
-	var $display_css = "font-weight:bold;font-size:150%;color:#004080;";
+	public $display_css = "font-weight:bold;font-size:150%;";
+	public $display_css_class = 'coloredText';
 
 	function header_content(){
 		global $CORE_LOCAL;
