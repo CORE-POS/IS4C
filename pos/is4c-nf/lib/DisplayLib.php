@@ -411,7 +411,7 @@ static public function printitemcolor($color, $description, $comments, $total, $
 
 	$style = '';
 	$class = '';
-	if ($color == '408080')
+	if ($color == '004080')
 		$class = 'coloredText';
 	else if ($color == '000000')
 		$class = 'totalLine';
@@ -467,7 +467,7 @@ static public function printitemcolorhilite($color, $description, $comments, $to
 
 	$style = '';
 	$class = '';
-	if ($color == '408080')
+	if ($color == '004080')
 		$class = 'coloredArea';
 	else if ($color == '000000')
 		$class = 'totalArea';
