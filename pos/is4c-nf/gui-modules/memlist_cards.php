@@ -82,7 +82,6 @@ class memlist_cards extends NoInputPage {
 		if (!$entered || strlen($entered) < 1 || $entered == "CL") {
 			$CORE_LOCAL->set("mirequested",0);
 			$CORE_LOCAL->set("scan","scan");
-			$CORE_LOCAL->set("reprintNameLookup",0);
 			$this->change_page($this->page_url."gui-modules/memlist_cards.php");
 			return False;
 		}
@@ -327,8 +326,8 @@ class memlist_cards extends NoInputPage {
 					.$row["CardNo"]." ".$row["LastName"].", ".$row["FirstName"]."\n";
 			}
 			echo "</select></div><!-- /.listbox -->"
-				."<div class=\"listboxText centerOffset\">"
-				._("use arrow keys to navigate")."<p>"._("clear to cancel")."</div><!-- /.listboxText .centerOffset -->"
+				."<div class=\"listboxText coloredText centerOffset\">"
+				._("use arrow keys to navigate")."<p>"._("clear to cancel")."</div><!-- /.listboxText coloredText .centerOffset -->"
 				."<div class=\"clear\"></div>";
 
 			// A textbox for the Member Card number, to be added to the db for the selected member.

@@ -11,6 +11,7 @@ div#boundingBox { width: 675px; }
 .coloredArea { background: #004080; color: #ffffff; }
 .colored { background: #004080; color: #ffffff; } /* compat */
 .errorColoredArea { background: #800000; color: #ffffff; }
+.errorColored { background: #800000; color: #ffffff; } /* compat */
 .lightestColorText { color: #808080; }
 .coloredText { color: #004080; }
 .errorColoredText { color: #800000; }
