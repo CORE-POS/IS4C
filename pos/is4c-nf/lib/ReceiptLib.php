@@ -1057,16 +1057,20 @@ static public function printReceipt($arg1,$second=False,$email=False) {
 
 	  This block deprecates ReceiptLib::reprintReceipt()
 	*/
-	if (preg_match('/^\d+-\d+-\d+$/',$arg1) === 1){
-		list($emp, $reg, $trans) = explode('-',$arg1);
+	if (preg_match('/^\d+-\d+-\d+$/',$arg1) === 1 || preg_match('/^\d+::\d+::\d+$/',$arg1) === 1){
+		$emp=$reg=$trans=0;
+		if (strstr($arg1,'-') !== False)
+			list($emp, $reg, $trans) = explode('-',$arg1);
+		else if (strstr($arg1,'::') !== False)
+			list($reg, $emp, $trans) = explode('::',$arg1);
 		$arg1 = 'full';
 		$email = False;
 		$second = False;
 		$reprint = True;
-		$rp_where = 'emp_no='.((int)$emp). 'AND
+		$rp_where = 'emp_no='.((int)$emp). ' AND
 			register_no='.((int)$reg).' AND
 			trans_no='.((int)$trans);
-		$ref = $arg1;
+		$ref = sprintf('%d-%d-%d',$emp,$reg,$trans);
 
 		// lookup trans information
 		$queryHeader = "select * from rp_receipt_header where ".$rp_where;
@@ -1089,8 +1093,8 @@ static public function printReceipt($arg1,$second=False,$email=False) {
 		$db = Database::pDataConnect();
 		$queryID = "select LastName,FirstName,Type,blueLine from custdata 
 			where CardNo = '".$CORE_LOCAL->get("memberID")."' and personNum=1";
-		$result = $connID->query($queryID);
-		$row = $connID->fetch_array($result);
+		$result = $db->query($queryID);
+		$row = $db->fetch_array($result);
 
 		// set session variables from member info
 		$CORE_LOCAL->set("lname",$row["LastName"]);
