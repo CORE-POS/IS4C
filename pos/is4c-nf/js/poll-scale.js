@@ -25,7 +25,7 @@ function scalePollSuccess(data){
 			// data from the cc terminal
 			// run directly; don't include user input
 			if (typeof runParser == 'function')
-				runParser(SCALE_REL_PRE, data.scans);
+				runParser(data.scans, SCALE_REL_PRE);
 		}
 		else if ($('#reginput').length != 0 && data.scans){
 			// barcode scan input
