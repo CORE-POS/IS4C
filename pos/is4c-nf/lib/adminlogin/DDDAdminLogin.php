@@ -1,7 +1,7 @@
 <?php
 /*******************************************************************************
 
-    Copyright 2010 Whole Foods Co-op.
+    Copyright 2013 Whole Foods Co-op
 
     This file is part of IT CORE.
 
@@ -21,40 +21,17 @@
 
 *********************************************************************************/
 
-ini_set('display_errors','Off');
-include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
+class DDDAdminLogin {
 
-$endorseType = isset($_REQUEST['type']) ? $_REQUEST['type'] : '';
-$amount = isset($_REQUEST['amount']) ? $_REQUEST['amount'] : '';
+	public static $adminLoginMsg = 'DDD these items?';
+	
+	public static $adminLoginLevel = 10;
 
-if (strlen($endorseType) > 0) {
-
-	// close session so if printer hangs
-	// this script won't lock the session file
-	if (session_id() != '')
-		session_write_close();
-
-	switch ($endorseType) {
-
-		case "check":
-			ReceiptLib::frank($amount);
-			break;
-
-		case "giftcert":
-			ReceiptLib::frankgiftcert($amount);
-			break;
-
-		case "stock":
-			ReceiptLib::frankstock($amount);
-			break;
-
-		case "classreg":
-			ReceiptLib::frankclassreg();
-			break;
-
-		default:
-			break;
+	public static function adminLoginCallback($success){
+		if ($success)
+			return MiscLib::base_url().'ajax-callbacks/ddd.php';
+		else
+			return False;
 	}
+
 }
-echo "Done";
-?>

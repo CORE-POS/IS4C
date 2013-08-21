@@ -101,12 +101,10 @@ class mgrlogin extends NoInputPage {
 		</div>
 		</div>
 		<?php
-		$CORE_LOCAL->set("beep","noScan");
 	} // END true_body() FUNCTION
 
 	function mgrauthenticate($password){
 		global $CORE_LOCAL;
-		$CORE_LOCAL->set("away",1);
 
 		$ret = array(
 			'cancelOrder'=>false,
@@ -147,12 +145,9 @@ class mgrlogin extends NoInputPage {
 	function cancelorder() {
 		global $CORE_LOCAL;
 
-		$CORE_LOCAL->set("msg",2);
 		$CORE_LOCAL->set("plainmsg",_("transaction cancelled"));
-		$CORE_LOCAL->set("beep","rePoll");
 		UdpComm::udpSend("rePoll");
 		$CORE_LOCAL->set("ccTermOut","reset");
-		$CORE_LOCAL->set("receiptType","cancelled");
 	}
 }
 

@@ -51,6 +51,13 @@ class CreditCardTender extends TenderModule {
 			$CORE_LOCAL->set('kickOverride',True);
 		return True;
 	}
+
+	function AllowDefault(){
+		if ($this->tender_code == 'CC' && $CORE_LOCAL->get('store') == 'wfc')
+			return True;
+		else
+			return False;
+	}
 }
 
 ?>

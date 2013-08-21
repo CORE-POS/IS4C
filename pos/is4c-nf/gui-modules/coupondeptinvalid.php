@@ -42,8 +42,6 @@ class coupondeptinvalid extends MainFramePage {
 		</div>
 		</div>
 		<?php
-		$CORE_LOCAL->set("beep","errorBeep");
-		$CORE_LOCAL->set("scan","noScan");
 	} // END body_content() FUNCTION
 }
 

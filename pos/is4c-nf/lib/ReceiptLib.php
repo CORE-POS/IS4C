@@ -221,7 +221,7 @@ static public function printChargeFooterCust($dateTimeStamp, $ref) {	// apbw 2/1
 		   .self::centerString("................................................")."\n"
 		   .self::centerString($CORE_LOCAL->get("chargeSlip1"))."\n\n"
 		   ."CUSTOMER CHARGE ACCOUNT\n"
-		   ."Name: ".trim($CORE_LOCAL->get("ChgName"))."\n"		// changed by apbw 2/14/05 SCR
+		   ."Name: ".trim($chgName)."\n"		// changed by apbw 2/14/05 SCR
 		   ."Member Number: ".trim($CORE_LOCAL->get("memberID"))."\n"
 		   ."Date: ".$date."\n"
 		   ."REFERENCE #: ".$ref."\n"
@@ -251,7 +251,7 @@ static public function printChargeFooterStore($dateTimeStamp, $ref) {	// apbw 2/
 		   .self::centerString("................................................")."\n"
 		   .self::centerString($CORE_LOCAL->get("chargeSlip1"))."\n\n"
 		   ."CUSTOMER CHARGE ACCOUNT\n"
-		   ."Name: ".trim($CORE_LOCAL->get("ChgName"))."\n"		// changed by apbw 2/14/05 SCR
+		   ."Name: ".trim($chgName)."\n"		// changed by apbw 2/14/05 SCR
 		   ."Member Number: ".trim($CORE_LOCAL->get("memberID"))."\n"
 		   ."Date: ".$date."\n"
 		   ."REFERENCE #: ".$ref."\n"
@@ -262,7 +262,6 @@ static public function printChargeFooterStore($dateTimeStamp, $ref) {	// apbw 2/
 		   ."X____________________________________________\n"
 		   .$CORE_LOCAL->get("fname")." ".$CORE_LOCAL->get("lname")."\n\n"
 		   .self::centerString(".................................................")."\n\n";
-	$CORE_LOCAL->set("chargetender",0);	// apbw 2/14/05 SCR (moved up a line for Reprint patch on 3/10/05)
 
 	return $receipt;
 
@@ -315,12 +314,12 @@ static public function printCabCoupon($dateTimeStamp, $ref){
 
 // -------------  frank.php incorporated into printlib on 3/24/05 apbw (from here to eof) -------
 
-static public function frank() {
+static public function frank($amount) {
 	global $CORE_LOCAL;
 
 	$date = strftime("%m/%d/%y %I:%M %p", time());
 	$ref = trim($CORE_LOCAL->get("memberID"))." ".trim($CORE_LOCAL->get("CashierNo"))." ".trim($CORE_LOCAL->get("laneno"))." ".trim($CORE_LOCAL->get("transno"));
-	$tender = "AMT: ".MiscLib::truncate2($CORE_LOCAL->get("tenderamt"))."  CHANGE: ".MiscLib::truncate2($CORE_LOCAL->get("change"));
+	$tender = "AMT: ".MiscLib::truncate2($amount)."  CHANGE: ".MiscLib::truncate2($CORE_LOCAL->get("change"));
 	$output = self::center_check($ref)."\n"
 		.self::center_check($date)."\n"
 		.self::center_check($CORE_LOCAL->get("ckEndorse1"))."\n"
@@ -336,7 +335,7 @@ static public function frank() {
 
 // -----------------------------------------------------
 
-static public function frankgiftcert() {
+static public function frankgiftcert($amount) {
 	global $CORE_LOCAL;
 
 	$ref = trim($CORE_LOCAL->get("CashierNo"))."-".trim($CORE_LOCAL->get("laneno"))."-".trim($CORE_LOCAL->get("transno"));
@@ -351,14 +350,14 @@ static public function frankgiftcert() {
 	$output .= str_repeat(" ", 12).$next_year;
 	$output .= str_repeat("\n", 3);
 	$output .= str_repeat(" ", 75);
-      $output .= "$".MiscLib::truncate2($CORE_LOCAL->get("tenderamt"));
+      $output .= "$".MiscLib::truncate2($amount);
 	self::endorse($output); 
 
 }
 
 // -----------------------------------------------------
 
-static public function frankstock() {
+static public function frankstock($amount) {
 	global $CORE_LOCAL;
 
 	$time_now = strftime("%m/%d/%y", time());		// apbw 3/10/05 "%D" didn't work - Franking patch
@@ -376,7 +375,7 @@ static public function frankstock() {
 		$CORE_LOCAL->set("LastEquityReference",$ref);
 	}
 	else {
-		$output .= "Stock Payment $".$CORE_LOCAL->get("tenderamt")." ref: ".$ref."   ".$time_now; // apbw 3/24/05 Wedge Printer Swap Patch
+		$output .= "Stock Payment $".$amount." ref: ".$ref."   ".$time_now; // apbw 3/24/05 Wedge Printer Swap Patch
 	}
 
 	self::endorse($output);
@@ -504,10 +503,10 @@ static public function getChgName() {
 
 	if ($num_rows > 0) {
 		$LastInit = substr($CORE_LOCAL->get("lname"), 0, 1).".";
-		$CORE_LOCAL->set("ChgName",trim($CORE_LOCAL->get("fname")) ." ". $LastInit);
+		return trim($CORE_LOCAL->get("fname")) ." ". $LastInit;
 	}
 	else{
-		$CORE_LOCAL->set("ChgName",$CORE_LOCAL->get("memMsg"));
+		return $CORE_LOCAL->get('memMsg');
 	}
 }
 
@@ -1085,7 +1084,6 @@ static public function printReceipt($arg1,$second=False,$email=False) {
 		$CORE_LOCAL->set("memCouponTLL",$row["couponTotal"]);
 		$CORE_LOCAL->set("transDiscount",$row["transDiscount"]);
 		$CORE_LOCAL->set("chargeTotal",-1*$row["chargeTotal"]);
-		$CORE_LOCAL->set('chargetender', ($row['chargeTotal'] != 0 ? 1 : 0));
 		$CORE_LOCAL->set("discounttotal",$row["discountTTL"]);
 		$CORE_LOCAL->set("memSpecial",$row["memSpecial"]);
 
@@ -1305,7 +1303,7 @@ static public function printReceipt($arg1,$second=False,$email=False) {
 	/* --------------------------------------------------------------
 	  print store copy of charge slip regardless of receipt print setting - apbw 2/14/05 
 	  ---------------------------------------------------------------- */
-	if ($CORE_LOCAL->get("chargetender") == 1 && ($CORE_LOCAL->get("End") == 1 || $reprint)) {
+	if ($CORE_LOCAL->get("chargeTotal") != 0 && ($CORE_LOCAL->get("End") == 1 || $reprint)) {
 		if (is_array($receipt))
 			$receipt['print'] .= self::printChargeFooterStore($dateTimeStamp, $ref);
 		else
@@ -1362,12 +1360,6 @@ static public function reprintReceipt($trans_num=""){
 		$CORE_LOCAL->set("memCouponTLL",$headerRow["couponTotal"]);
 		$CORE_LOCAL->set("transDiscount",$headerRow["transDiscount"]);
 		$CORE_LOCAL->set("chargeTotal",-1*$headerRow["chargeTotal"]);
-
-		if ($CORE_LOCAL->get("chargeTotal") != 0) { 
-			$CORE_LOCAL->set("chargetender",1);
-		} else {
-			$CORE_LOCAL->set("chargetender",0);
-		}
 
 		$CORE_LOCAL->set("discounttotal",$headerRow["discountTTL"]);
 		$CORE_LOCAL->set("memSpecial",$headerRow["memSpecial"]);
@@ -1454,7 +1446,7 @@ static public function reprintReceipt($trans_num=""){
 		}
 
 
-		if ($CORE_LOCAL->get("chargetender") != 0 ) {			// apbw 03/10/05 Reprint patch
+		if ($CORE_LOCAL->get("chargeTotal") != 0 ) {			// apbw 03/10/05 Reprint patch
 			$receipt = $receipt.self::printChargeFooterStore($dateTimeStamp, $ref);	// apbw 03/10/05 Reprint patch
 		}			// apbw 03/10/05 Reprint patch
 
@@ -1470,72 +1462,6 @@ static public function reprintReceipt($trans_num=""){
 		$CORE_LOCAL->set("percentDiscount",0);
 		$CORE_LOCAL->set('isMember', 0);
 	}
-}
-
-/**
-  Check whether drawer should open on this transaction
-  @return
-   - 1 open drawer
-   - 0 do not open
-  @deprecated use Kicker modules
-*/
-static public function setDrawerKick()
-
-{
-	global $CORE_LOCAL;
-
-//	this, the simplest version, kicks the drawer for every tender *except* staff charge & business charge (MI, CX)
-// 	apbw 05/03/05 KickFix added !=0 criteria
-
-	if ($CORE_LOCAL->get("chargeTotal") == $CORE_LOCAL->get("tenderTotal") && $CORE_LOCAL->get("chargeTotal") != 0 && $CORE_LOCAL->get("tenderTotal") != 0 ) {	
-		if (in_array($CORE_LOCAL->get("TenderType"),$CORE_LOCAL->get("DrawerKickMedia"))) {
-			return 1;
-		} else {
-			//$_SESSION["kick"] = 0; 						
-			return 0;
-		}
-	} else {						
-		//$_SESSION["kick"] = 1;	
-		return 1;
-	}							
-}
-
-/**
-  Variant check for when to open cash drawer
-  @return
-   - 1 open drawer
-   - 0 do not open
-
-  Opens on cash transactions, credit card
-  transactions > $25, and stamp sales.
-
-  @deprecated use Kicker modules
-*/
-static public function setDrawerKickLater()
-
-{
-
-// 	this more complex version can be modified to kick the drawer under whatever circumstances the FE Mgr sees fit
-//	it currently kicks the drawer *only* for cash in & out
-//	and credit card - andy
- 
-
-	$db = Database::tDataConnect();
-
-	$query = "select * from localtemptrans where (trans_subtype = 'CA' and total <> 0) or (trans_subtype = 'CC' AND (total < -25 or total > 0)) or upc='0000000001065'";
-
-	$result = $db->query($query);
-	$num_rows = $db->num_rows($result);
-	$row = $db->fetch_array($result);
-
-	if ($num_rows != 0) {
-	 //$_SESSION["kick"] = 1;
-	 return 1;
-	} else {
-	//$_SESSION["kick"] = 0;
-	 return 0;
-	}
-
 }
 
 static public function memReceiptMessages($card_no){

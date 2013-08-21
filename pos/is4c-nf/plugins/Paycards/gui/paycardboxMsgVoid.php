@@ -25,9 +25,10 @@ include_once(dirname(__FILE__).'/../../../lib/AutoLoader.php');
 
 class paycardboxMsgVoid extends PaycardProcessPage {
 
+	protected $mask_input = True;
+
 	function preprocess(){
 		global $CORE_LOCAL;
-		$CORE_LOCAL->set("inputMasked",1);
 		// check for posts before drawing anything, so we can redirect
 		if( isset($_REQUEST['reginput'])) {
 			$input = strtoupper(trim($_REQUEST['reginput']));
@@ -37,9 +38,7 @@ class paycardboxMsgVoid extends PaycardProcessPage {
 				$CORE_LOCAL->set("msgrepeat",1);
 				$CORE_LOCAL->set("strRemembered",'TO');
 				$CORE_LOCAL->set("toggletax",0);
-				$CORE_LOCAL->set("endorseType","");
 				$CORE_LOCAL->set("togglefoodstamp",0);
-				$CORE_LOCAL->set("inputMasked",0);
 				$this->change_page($this->page_url."gui-modules/pos2.php");
 				return False;
 			}
@@ -62,7 +61,6 @@ class paycardboxMsgVoid extends PaycardProcessPage {
 			// go?
 			if( $continue) {
 				// send the request, then disable the form
-				$CORE_LOCAL->set("inputMasked",0);
 				$this->add_onload_command('paycard_submitWrapper();');
 				$this->action = "onsubmit=\"return false;\"";
 			}

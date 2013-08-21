@@ -77,6 +77,8 @@ if (strlen($receiptType) > 0) {
 		UdpComm::udpSend("termReset");
 	}
 
+	// close session so if printer hangs
+	// this script won't lock the session file
 	if (session_id() != ''){
 		session_write_close();
 	}
@@ -118,7 +120,6 @@ function cleartemptrans($type) {
 	$db = Database::tDataConnect();
 
 	if($type == "cancelled") {
-		$CORE_LOCAL->set("msg",99);
 		$db->query("update localtemptrans set trans_status = 'X'");
 	}
 

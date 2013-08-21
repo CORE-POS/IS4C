@@ -22,11 +22,17 @@
 *********************************************************************************/
 
 class Void extends Parser {
+
 	function check($str){
 		if (substr($str,0,2) == "VD" && strlen($str) <= 15)
 			return True;
 		return False;
 	}
+
+	private $discounttype = 0;
+	private $discountable = 0;
+	private $caseprice = 0;
+	private $scaleprice = 0;
 
 	function parse($str){
 		global $CORE_LOCAL;
@@ -38,21 +44,24 @@ class Void extends Parser {
 		else {
 			$str = $CORE_LOCAL->get("currentid");
 
-			PrehLib::checkstatus($str);
+			$status = PrehLib::checkstatus($str);
+			$this->discounttype = $status['discounttype'];
+			$this->discountable = $status['discountable'];
+			$this->caseprice = $status['caseprice'];
+			$this->scaleprice = $status['scaleprice'];
 
-			if ($CORE_LOCAL->get("voided") == 2) {
+			if ($status['voided'] == 2) {
 				$ret['output'] = $this->voiditem($str -1);
 			}
-			elseif ($CORE_LOCAL->get("voided") == 3 || $CORE_LOCAL->get("voided") == 6 || $CORE_LOCAL->get("voided") == 8) 
+			elseif ($status['voided'] == 3 || $status['voided'] == 6 || $status['voided'] == 8) 
 				$ret['output'] = DisplayLib::boxMsg(_("Cannot void this entry"));
-			elseif ($CORE_LOCAL->get("voided") == 4 || $CORE_LOCAL->get("voided") == 5) 
+			elseif ($status['voided'] == 4 || $status['voided'] == 5) 
 				PrehLib::percentDiscount(0);
-			elseif ($CORE_LOCAL->get("voided") == 10) {
+			elseif ($status['voided'] == 10) {
 				TransRecord::reverseTaxExempt();
 			}
-			elseif ($CORE_LOCAL->get("transstatus") == "V") {
+			elseif ($status['status'] == "V") {
 				$ret['output'] = DisplayLib::boxMsg(_("Item already voided"));
-				$CORE_LOCAL->set("transstatus","");
 			}
 			else 
 				$ret['output'] = $this->voiditem($str);
@@ -72,7 +81,8 @@ class Void extends Parser {
 		global $CORE_LOCAL;
 
 		if ($item_num) {
-			$query = "select upc, quantity, ItemQtty, foodstamp, total, voided, charflag from localtemptrans where "
+			$query = "select upc, quantity, ItemQtty, foodstamp, discountable,
+				total, voided, charflag, discounttype from localtemptrans where "
 				."trans_id = ".$item_num;
 
 			$db = Database::tDataConnect();
@@ -83,13 +93,17 @@ class Void extends Parser {
 			else {
 				$row = $db->fetch_array($result);
 
+				$this->discounttype = $row['discounttype'];
+				$this->discountable = $row['discountable'];
+
 				if ((!$row["upc"] || strlen($row["upc"]) < 1) && $row["voided"] == 1) 
 
 					return DisplayLib::boxMsg(_("Item already voided"));
 				elseif (!$row["upc"] || strlen($row["upc"]) < 1 || $row['charflag'] == 'SO') 
 					return $this->voidid($item_num);
-				elseif ($CORE_LOCAL->get("discounttype") == 3) 
+				elseif ($row["discounttype"] == 3){
 					return $this->voidupc($row["quantity"]."*".$row["upc"],$item_num);
+				}
 				else  
 					return $this->voidupc($row["ItemQtty"]."*".$row["upc"],$item_num);
 			}
@@ -189,7 +203,7 @@ class Void extends Parser {
 				$deliflag = 1;
 			}
 			elseif (substr($upc, 0, 3) == "002" && substr($upc, -5) == "00000") {
-				$scaleprice = $CORE_LOCAL->get("scaleprice");
+				$scaleprice = $this->scaleprice;
 				$deliflag = 1;
 			}
 		}
@@ -201,11 +215,11 @@ class Void extends Parser {
 		$query = "select sum(ItemQtty) as voidable, sum(quantity) as vquantity, max(scale) as scale, "
 			."max(volDiscType) as volDiscType from localtemptrans where upc = '".$upc
 			."' and unitPrice = ".$scaleprice." and discounttype <> 3 group by upc";
-		if ($CORE_LOCAL->get("discounttype") == 3) {
+		if ($this->discounttype == 3) {
 			$query = "select sum(quantity) as voidable, max(scale), as scale, "
 				."max(volDiscType) as volDiscType from localtemptrans where "
 				."upc = '".$upc."' and discounttype = 3 and unitPrice = "
-				.$CORE_LOCAL->get("caseprice")." group by upc";
+				.$this->caseprice." group by upc";
 		}
 		elseif ($deliflag == 0) {
 			$query = "select sum(ItemQtty) as voidable, sum(quantity) as vquantity, "
@@ -217,7 +231,7 @@ class Void extends Parser {
 			$query = "select sum(ItemQtty) as voidable, sum(quantity) as vquantity,"
 				."max(scale) as scale, max(volDiscType) as volDiscType from "
 				."localtemptrans where upc = '".$upc."' and discounttype <> 3 "
-				."and discountable = ".$CORE_LOCAL->get("discountable")." group by upc, "
+				."and discountable = ".$this->discountable." group by upc, "
 				."discounttype, discountable";
 		}
 
@@ -263,13 +277,13 @@ class Void extends Parser {
 				department,tax,VolSpecial,trans_id
 				from localtemptrans where upc = '".$upc."' and unitPrice = "
 			     .$scaleprice." and trans_id=$item_num";
-		if ($CORE_LOCAL->get("discounttype") == 3) {
+		if ($this->discounttype == 3) {
 			$query_upc = "select ItemQtty,foodstamp,discounttype,mixMatch,cost,
 				numflag,charflag,unitPrice,total,discounttype,regPrice,discount,
 				memDiscount,discountable,description,trans_type,trans_subtype,
 				department,tax,VolSpecial,trans_id
 				from localtemptrans where upc = '".$upc
-				."' and discounttype = 3 and unitPrice = ".$CORE_LOCAL->get("caseprice")
+				."' and discounttype = 3 and unitPrice = ".$this->caseprice
 			        ." and trans_id=$item_num";
 		}
 		elseif ($deliflag == 0) {
@@ -283,8 +297,6 @@ class Void extends Parser {
 		}
 		if ($item_num == -1)
 			$query_upc = str_replace(" trans_id=$item_num"," voided=0",$query_upc);
-
-		$CORE_LOCAL->set("discounttype",9);
 
 		$result = $db->query($query_upc);
 		$row = $db->fetch_array($result);
@@ -317,9 +329,6 @@ class Void extends Parser {
 		$discount = -1 * $row["discount"];
 		$memDiscount = -1 * $row["memDiscount"];
 		$discountable = $row["discountable"];
-
-		if ($CORE_LOCAL->get("ddNotify") == 1) 
-			$discountable = $CORE_LOCAL->get("discountable");
 
 		//----------------------mix match---------------------
 		if ($volDiscType >= 1 && $volDiscType != 3) {

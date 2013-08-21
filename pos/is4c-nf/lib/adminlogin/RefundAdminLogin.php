@@ -1,7 +1,7 @@
 <?php
 /*******************************************************************************
 
-    Copyright 2010 Whole Foods Co-op.
+    Copyright 2013 Whole Foods Co-op
 
     This file is part of IT CORE.
 
@@ -21,40 +21,23 @@
 
 *********************************************************************************/
 
-ini_set('display_errors','Off');
-include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
+class RefundAdminLogin {
 
-$endorseType = isset($_REQUEST['type']) ? $_REQUEST['type'] : '';
-$amount = isset($_REQUEST['amount']) ? $_REQUEST['amount'] : '';
+	public static $adminLoginMsg = 'Login to issue refund';
+	
+	public static $adminLoginLevel = 30;
 
-if (strlen($endorseType) > 0) {
-
-	// close session so if printer hangs
-	// this script won't lock the session file
-	if (session_id() != '')
-		session_write_close();
-
-	switch ($endorseType) {
-
-		case "check":
-			ReceiptLib::frank($amount);
-			break;
-
-		case "giftcert":
-			ReceiptLib::frankgiftcert($amount);
-			break;
-
-		case "stock":
-			ReceiptLib::frankstock($amount);
-			break;
-
-		case "classreg":
-			ReceiptLib::frankclassreg();
-			break;
-
-		default:
-			break;
+	public static function adminLoginCallback($success){
+		global $CORE_LOCAL;
+		if ($success){
+			$CORE_LOCAL->set('refundComment', $CORE_LOCAL->get('strEntered'));	
+			return MiscLib::base_url().'gui-modules/refundComment.php';
+		}
+		else{
+			$CORE_LOCAL->set('refundComment', '');
+			return False;
+		}
 	}
+
 }
-echo "Done";
-?>
+

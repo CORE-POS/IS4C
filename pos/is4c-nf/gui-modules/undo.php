@@ -44,7 +44,6 @@ class undo extends NoInputPage {
 		</div>
 		<?php
 		$this->add_onload_command("\$('#reginput').focus();");
-		$CORE_LOCAL->set("beep","noScan");
 	}
 
 	function preprocess(){
