@@ -100,11 +100,9 @@ class SimpleTender extends Parser {
 						endorsed yet?</div>";
 				}
 				$CORE_LOCAL->set("boxMsg",$msg);
-				$CORE_LOCAL->set("endorseType","check");
 				$CORE_LOCAL->set("strEntered",$CORE_LOCAL->get("amtdue")*100);
-				$CORE_LOCAL->set("endorseAmt",$CORE_LOCAL->get("amtdue"));
 				$CORE_LOCAL->set("strEntered",$CORE_LOCAL->get("strEntered")."CK");
-				$this->stored_ret['main_frame'] = $my_url.'gui-modules/boxMsg2.php';
+				$this->stored_ret['main_frame'] = $my_url.'gui-modules/boxMsg2.php?endorse=check&endorseAmt='.$CORE_LOCAL->get('amtdue');
 			}
 			else {
 				$this->stored_ret['output'] = DisplayLib::boxMsg(_("transaction must be totaled").
