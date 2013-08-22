@@ -350,7 +350,7 @@ static public function frankgiftcert($amount) {
 	$output .= str_repeat(" ", 12).$next_year;
 	$output .= str_repeat("\n", 3);
 	$output .= str_repeat(" ", 75);
-      $output .= "$".MiscLib::truncate2($amount);
+	$output .= "$".MiscLib::truncate2($amount);
 	self::endorse($output); 
 
 }
@@ -1229,7 +1229,7 @@ static public function printReceipt($arg1,$second=False,$email=False) {
 
 			$CORE_LOCAL->set("equityNoticeAmt",0);
 			if ($chk['equity'] > 0)
-				$receipt['any'] .= self::equityNotification( ($reprint===False) ? '' : $reprint );
+				$receipt['any'] .= self::equityNotification( ($reprint===False) ? '' : $ref );
 			if ($CORE_LOCAL->get('memberID') != $CORE_LOCAL->get('defaultNonMem'))
 				$receipt['any'] .= self::memReceiptMessages($CORE_LOCAL->get("memberID"));
 			$CORE_LOCAL->set("equityNoticeAmt",0);
@@ -1238,7 +1238,7 @@ static public function printReceipt($arg1,$second=False,$email=False) {
 			self::$PRINT_OBJ = new ESCPOSPrintHandler();
 			if ($chk['SC'] > 0){
 				$receipt['print'] .= self::storeCreditIssued($second,
-						($reprint===False ? '' : $reprint) );
+						($reprint===False ? '' : $ref) );
 			}
 
 			// knit pieces back together if not emailing
