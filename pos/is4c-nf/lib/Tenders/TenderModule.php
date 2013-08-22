@@ -147,7 +147,7 @@ class TenderModule {
 	*/
 	function DefaultTotal(){
 		global $CORE_LOCAL;
-		return $CORE_LOCAL->get('runningTotal');
+		return $CORE_LOCAL->get('amtdue');
 	}
 
 	/**
