@@ -265,7 +265,9 @@ class memlist extends NoInputPage {
 				."onblur=\"\$('#search').focus();\" ondblclick=\"document.forms['selectform'].submit();\" id=\"search\">";
 
 			$selectFlag = 0;
-			if (!is_numeric($entered) && $CORE_LOCAL->get("memlistNonMember") == 1) {
+			// I don't know what !$entered was supposed to do here, 
+			// but the variable isn't defined
+			if (False && $CORE_LOCAL->get("memlistNonMember") == 1) {
 				echo "<option value='3::1' selected> 3 "
 					."&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Customer";
 				$selectFlag = 1;
