@@ -41,7 +41,7 @@ class EquityEndorseDept extends SpecialDept {
 				$CORE_LOCAL->set("equityAmt",$amount);
 				$CORE_LOCAL->set("boxMsg","<b>Equity Sale</b><br>Insert paperwork and press<br>
 						<font size=-1>[enter] to continue, [clear] to cancel</font>");
-				$json['main_frame'] = MiscLib::base_url().'gui-modules/boxMsg2.php?endorse=stock&endorseAmt='.$amount;
+				$json['main_frame'] = MiscLib::base_url().'gui-modules/boxMsg2.php?quiet=1&endorse=stock&endorseAmt='.$amount;
 			}
 		}
 
