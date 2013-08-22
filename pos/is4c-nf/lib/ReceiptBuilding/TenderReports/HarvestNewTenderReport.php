@@ -53,13 +53,12 @@ static public function get(){
 	// 			 "AR"=>"AR PAYMENTS",
 	// 			 "EQ"=>"EQUITY SALES"
 	// 		 );
-	array_push($DESIRED_TENDERS, array(
-			"CP"=>"COUPONS TENDERED", 
-			"FS"=>"EBT CARD TENDERS", 
-			"CK"=>"CHECK TENDERS", 
-			"AR"=>"ACCOUNTANT ONLY", 
-			"EQ"=>"EQUITY"
-		)
+	$DESIRED_TENDERS += array(
+		"CP"=>"COUPONS TENDERED", 
+		"FS"=>"EBT CARD TENDERS", 
+		"CK"=>"CHECK TENDERS", 
+		"AR"=>"ACCOUNTANT ONLY", 
+		"EQ"=>"EQUITY"
 	);
 
 	$db_a = Database::mDataConnect();
@@ -126,7 +125,7 @@ static public function get(){
 		$receipt .= $ref;
 		if ($itemize == 1) $receipt .=	ReceiptLib::centerString("------------------------------------------------------");
 
-		$itemize = 1;
+//		$itemize = 1;
 		
 		if ($itemize == 1) $receipt .= $fieldNames;
 		$sum = 0;
