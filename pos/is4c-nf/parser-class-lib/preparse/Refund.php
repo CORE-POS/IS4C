@@ -38,13 +38,7 @@ class Refund extends PreParser {
 			$remainder = substr($str,2);
 		else
 			$remainder = substr($str,0,-2);
-		if (!is_numeric($remainder) &&
-		    !strpos($remainder,"*") &&
-		    !strpos($remainder,"DP"))
-			$remainder = "";
-		else {
-			$CORE_LOCAL->set("refund",1);
-		}
+		$CORE_LOCAL->set("refund",1);
 		return $remainder;
 	}
 

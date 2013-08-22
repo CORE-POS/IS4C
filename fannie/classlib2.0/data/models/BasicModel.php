@@ -574,7 +574,11 @@ class BasicModel {
 
 		// EL: Why also count($unknown)?
 		//     Calling routines assume it means something has changed.
-		return count($new_columns) + count($unknown);
+		if (count($new_columns) > 0)
+			return count($new_columns);
+		else if (count($unknown) > 0)
+			return -1*count($unknown);
+		return 0;
 
 	// normalize()
 	}
@@ -793,7 +797,7 @@ if (php_sapi_name() === 'cli' && basename($_SERVER['PHP_SELF']) == basename(__FI
 				elseif($in ==='Y'){
 					// THIS WILL APPLY PROPOSED CHANGES!
 					//EL Need to restore $this->name. See DTransactionsModel::normalize()
-					$obj->normalize($argv[2],BasicModel::NORMALIZE_MODE_APPLY);
+					$obj->normalize($argv[2],BasicModel::NORMALIZE_MODE_APPLY, True);
 					break;
 				}
 			}

@@ -27,8 +27,21 @@ class rplist extends NoInputPage {
 
 	function preprocess(){
 		if (isset($_REQUEST['selectlist'])){
-			if (!empty($_REQUEST['selectlist']))
-				ReceiptLib::reprintReceipt($_REQUEST['selectlist']);
+			if (!empty($_REQUEST['selectlist'])){
+				$PRINT_OBJ = new ESCPOSPrintHandler();
+				$receipt = ReceiptLib::printReceipt($_REQUEST['selectlist']);
+				if (session_id() != ''){
+					session_write_close();
+				}
+				if(is_array($receipt)){
+					if (!empty($receipt['any']))
+						$EMAIL_OBJ->writeLine($receipt['any']);
+					if (!empty($receipt['print']))
+						$PRINT_OBJ->writeLine($receipt['print']);
+				}
+				elseif(!empty($receipt))
+					$PRINT_OBJ->writeLine($receipt);
+			}
 			$this->change_page($this->page_url."gui-modules/pos2.php");
 			return False;
 		}
@@ -96,7 +109,7 @@ class rplist extends NoInputPage {
 		</select>
 		</form>
 		</div>
-		<div class="listboxText centerOffset">
+		<div class="listboxText coloredText centerOffset">
 		<?php echo _("use arrow keys to navigate"); ?><br />
 		<?php echo _("enter to reprint receipt"); ?><br />
 		<?php echo _("clear to cancel"); ?>

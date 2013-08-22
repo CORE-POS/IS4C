@@ -65,7 +65,8 @@ class mgrlogin extends NoInputPage {
 						location = '<?php echo $this->page_url; ?>gui-modules/pos2.php';
 					}
 					else {
-						$('div.colored').css('background',data.color);
+						$('div#cancelLoginBox').removeClass('coloredArea');
+						$('div#cancelLoginBox').addClass('errorColoredArea');
 						$('span.larger').html(data.heading);
 						$('span#localmsg').html(data.msg);
 						$('#reginput').val('');
@@ -83,10 +84,9 @@ class mgrlogin extends NoInputPage {
 	function body_content(){
 		global $CORE_LOCAL;
 		$this->add_onload_command("\$('#reginput').focus();\n");
-		$style = "style=\"background:#004080;\"";
 		?>
 		<div class="baseHeight">
-		<div class="colored centeredDisplay" <?php echo $style; ?>>
+		<div id="cancelLoginBox" class="coloredArea centeredDisplay">
 		<span class="larger">
 		<?php echo _("confirm cancellation"); ?>
 		</span><br />
@@ -110,7 +110,6 @@ class mgrlogin extends NoInputPage {
 
 		$ret = array(
 			'cancelOrder'=>false,
-			'color'=>'#800000',
 			'msg'=>_('password invalid'),
 			'heading'=>_('re-enter manager password'),
 			'giveUp'=>false

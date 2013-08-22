@@ -451,9 +451,6 @@ static public function classic_tender($right, $strl) {
 	$tender_code = $right;
 	$tendered = -1 * $strl;
 				
-	if($tender_code == "CC" && $CORE_LOCAL->get("CCintegrate") == 1) {
-		$tender_upc = $CORE_LOCAL->get("troutd");
-	}
 	$tender_desc = $row["TenderName"];				
 	$CORE_LOCAL->set("tenderamt",$strl);
 	$unit_price = 0;

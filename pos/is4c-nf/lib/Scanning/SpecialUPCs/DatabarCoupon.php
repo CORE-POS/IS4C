@@ -366,7 +366,7 @@ class DatabarCoupon extends SpecialUPC {
 			$offer = substr($offer,0,$remaining);
 		$coupon_upc = $upc_start.$offer;
 
-		TransRecord::addcoupon($coupon_upc, $row['department'], -1*$value);
+		TransRecord::addCoupon($coupon_upc, $row['department'], -1*$value);
 		$json['output'] = DisplayLib::lastpage();
 	
 		return $json;

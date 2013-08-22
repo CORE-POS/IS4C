@@ -30,7 +30,7 @@ class nslogin extends NoInputPage {
 	var $msg;
 
 	function preprocess(){
-		$this->color ="#004080";
+		$this->color ="coloredArea";
 		$this->heading = _("enter manager password");
 		$this->msg = _("confirm no sales");
 
@@ -44,7 +44,7 @@ class nslogin extends NoInputPage {
 				return False;
 			}
 			else {
-				$this->color ="#800000";
+				$this->color ="errorColoredArea";
 				$this->heading = _("re-enter manager password");
 				$this->msg = _("invalid password");
 			}
@@ -59,10 +59,9 @@ class nslogin extends NoInputPage {
 
 	function body_content(){
 		global $CORE_LOCAL;
-		$style = "style=\"background:{$this->color};\"";
 		?>
 		<div class="baseHeight">
-		<div class="colored centeredDisplay" <?php echo $style; ?>>
+		<div class="<?php echo $this->color; ?> centeredDisplay">
 		<span class="larger">
 		<?php echo $this->heading ?>
 		</span><br />

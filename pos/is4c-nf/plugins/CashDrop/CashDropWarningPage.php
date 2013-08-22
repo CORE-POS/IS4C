@@ -46,7 +46,7 @@ class CashDropWarningPage extends InputPage {
 		echo '<div class="baseHeight">';
 		$ret = "<div id=\"boxMsg\" style=\"background:red;\" 
 			class=\"centeredDisplay\">";
-		$ret .= "<div class=\"boxMsgAlert\">";
+		$ret .= "<div class=\"boxMsgAlert coloredArea\">";
 		$ret .= $CORE_LOCAL->get("alertBar");
 		$ret .= "</div>";
 		$ret .= "<div class=\"boxMsgBody\">";

@@ -1,7 +1,7 @@
 <?php
 /*******************************************************************************
 
-    Copyright 2012 Whole Foods Co-op
+    Copyright 2013 Whole Foods Co-op
 
     This file is part of IT CORE.
 
@@ -21,30 +21,26 @@
 
 *********************************************************************************/
 
-class AlwaysFsEligibleFooter extends FooterBox {
-
-	public $header_css_class = 'fsLine';
-	public $display_css_class = 'fsLine';
-
-	function AlwaysFsEligibleFooter() {
-		global $CORE_LOCAL;
-		if ($CORE_LOCAL->get('fntlflag') == 0 && $CORE_LOCAL->get('End') != 1){
-			$CORE_LOCAL->set("fntlflag",1);
-			Database::setglobalvalue("FntlFlag", 1);
-		}
-	}
+class NeedDiscountFooter extends TransPercentDiscount {
 
 	function header_content(){
 		global $CORE_LOCAL;
-		return _("FS Eligible");
+		$percent = $CORE_LOCAL->get('percentDiscount');
+		if ($CORE_LOCAL->get('NeedDiscountFlag')===1)
+			$percent += 5;
+		if ($percent == 0)
+			return _("% Discount");
+		else
+			return $percent._("% Discount");
 	}
 
 	function display_content(){
 		global $CORE_LOCAL;
-		if ($CORE_LOCAL->get('End') != 1)
-			return number_format((double)$CORE_LOCAL->get("fsEligible"),2);
+		if ($CORE_LOCAL->get("transDiscount") != 0 )
+			return number_format($CORE_LOCAL->get("transDiscount"), 2);
 		else
-			return '0.00';
+			return "n/a";
 	}
-		
 }
+
+?>

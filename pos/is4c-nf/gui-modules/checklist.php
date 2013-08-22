@@ -116,7 +116,7 @@ class checklist extends NoInputPage {
 		echo "</select>"
 			."</form>"
 			."</div>"
-			."<div class=\"listboxText centerOffset\">"
+			."<div class=\"listboxText coloredText centerOffset\">"
 			."[Clear] to Cancel</div>"
 			."<div class=\"clear\"></div>";
 		echo "</div>";

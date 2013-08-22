@@ -398,66 +398,6 @@ static public function frankclassreg() {
 
 }
 
-//----------------------------------Credit Card footer----by CvR
-
-/**
-  @deprecated
-  Not called, ccTotal session var has been removed
-*/
-static public function printCCFooter($dateTimeStamp, $ref) {
-	global $CORE_LOCAL;
-
-	$date = self::build_time($dateTimeStamp);
-
-
-			
-	$receipt = "\n".self::centerString("C U S T O M E R   C O P Y")."\n"
-		   .self::centerString("................................................")."\n"
-               .self::centerString($CORE_LOCAL->get("chargeSlip1"))."\n\n"
-		   .self::centerString("Cardholder acknowledges receipt of goods/services")."\n"
-               .self::centerString("in the amount shown and agrees to pay for them")."\n"
-               .self::centerString("according to card issuer agreement.")."\n\n"
-		   ."CREDIT CARD CHARGE\n"
-		   ."Name: ".trim($CORE_LOCAL->get("ccName"))."\n"
-		   ."Member Number: ".trim($CORE_LOCAL->get("memberID"))."\n"
-		   ."Date: ".$date."\n"
-		   ."REFERENCE #: ".$ref."\n"
-               ."TROUTD: ".trim($CORE_LOCAL->get("troutd"))."\n"
-		   ."Charge Amount: $".number_format(-1*$CORE_LOCAL->get("ccTotal"), 2)."\n"  //changed 04/01/05 Tak & CvR
-		   .self::centerString("................................................")."\n"
-		   ."\n\n\n\n\n\n\n"
-		   .chr(27).chr(105)
-
-	// self::writeLine($receipt1.chr(27).chr(105));
-	// self::writeLine(chr(27).chr(105));
-
-	// $receipt2 =""
-
-		   .self::centerString($CORE_LOCAL->get("chargeSlip2"))."\n"
-		   .self::centerString("................................................")."\n"
-		   .self::centerString($CORE_LOCAL->get("chargeSlip1"))."\n\n"
-		   ."CREDIT CARD CHARGE\n"
-		   ."Name: ".trim($CORE_LOCAL->get("ccName"))."\n"
-		   ."Member Number: ".trim($CORE_LOCAL->get("memberID"))."\n"
-		   ."Date: ".$date."\n"
-		   ."REFERENCE #: ".$ref."\n"
-               ."TROUTD: ".trim($CORE_LOCAL->get("troutd"))."\n"
-		   ."Charge Amount: $".number_format(-1*$CORE_LOCAL->get("ccTotal"), 2)."\n\n" //changed 04/01/05  Tak and CvR
-		   .self::centerString("I agree to pay the above total amount")."\n"
-		   .self::centerString("according to card issuer agreement.")."\n\n"
-		   ."Purchaser Sign Below\n\n\n"
-		   ."X____________________________________________\n\n"
-		   .self::centerString(".................................................")."\n\n";
-		
-		
-
-
-	// self::writeLine(chr(27).chr(105));
-
-	return $receipt;
-
-}
-
 /***** jqh 09/29/05 functions added for new receipt *****/
 static public function biggerFont($str) {
 	$receipt=chr(29).chr(33).chr(17);
@@ -1117,16 +1057,20 @@ static public function printReceipt($arg1,$second=False,$email=False) {
 
 	  This block deprecates ReceiptLib::reprintReceipt()
 	*/
-	if (preg_match('/^\d+-\d+-\d+$/',$arg1) === 1){
-		list($emp, $reg, $trans) = explode('-',$arg1);
+	if (preg_match('/^\d+-\d+-\d+$/',$arg1) === 1 || preg_match('/^\d+::\d+::\d+$/',$arg1) === 1){
+		$emp=$reg=$trans=0;
+		if (strstr($arg1,'-') !== False)
+			list($emp, $reg, $trans) = explode('-',$arg1);
+		else if (strstr($arg1,'::') !== False)
+			list($reg, $emp, $trans) = explode('::',$arg1);
 		$arg1 = 'full';
 		$email = False;
 		$second = False;
 		$reprint = True;
-		$rp_where = 'emp_no='.((int)$emp). 'AND
+		$rp_where = 'emp_no='.((int)$emp). ' AND
 			register_no='.((int)$reg).' AND
 			trans_no='.((int)$trans);
-		$ref = $arg1;
+		$ref = sprintf('%d-%d-%d',$emp,$reg,$trans);
 
 		// lookup trans information
 		$queryHeader = "select * from rp_receipt_header where ".$rp_where;
@@ -1149,8 +1093,8 @@ static public function printReceipt($arg1,$second=False,$email=False) {
 		$db = Database::pDataConnect();
 		$queryID = "select LastName,FirstName,Type,blueLine from custdata 
 			where CardNo = '".$CORE_LOCAL->get("memberID")."' and personNum=1";
-		$result = $connID->query($queryID);
-		$row = $connID->fetch_array($result);
+		$result = $db->query($queryID);
+		$row = $db->fetch_array($result);
 
 		// set session variables from member info
 		$CORE_LOCAL->set("lname",$row["LastName"]);

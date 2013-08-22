@@ -122,7 +122,7 @@ class tenderlist extends NoInputPage {
 		echo "</select>"
 			."</form>"
 			."</div>"
-			."<div class=\"listboxText centerOffset\">";
+			."<div class=\"listboxText coloredText centerOffset\">";
 		if ($CORE_LOCAL->get("tenderTotal") >= 0)
 			echo _("tendering").' $';
 		else

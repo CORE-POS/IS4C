@@ -124,7 +124,7 @@ class suspendedlist extends NoInputPage {
 		}
 
 		echo "</select>\n</form>\n</div>\n"
-			."<div class=\"listboxText centerOffset\">"
+			."<div class=\"listboxText coloredText centerOffset\">"
 			._("use arrow keys to navigate")."<br />"._("clear to cancel")."</div>\n"
 			."<div class=\"clear\"></div>";
 		echo "</div>";

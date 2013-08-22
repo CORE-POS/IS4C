@@ -169,7 +169,7 @@ class SmartItemList extends MainFramePage {
 				.$row["description"]."</option>";
 		}
 		echo "</select></form></div>"
-			."<div class=\"centerOffset listboxText\">"
+			."<div class=\"centerOffset listboxText coloredText\">"
 			."use arrow keys to navigate<p>[esc] to cancel</div>"
 			."<div class=\"clear\"></div>";
 		echo "</div>";

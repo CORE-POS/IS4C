@@ -130,7 +130,7 @@ class virtualCouponList extends MainFramePage {
 				.$row["name"]."</option>";
 		}
 		echo "</select></form></div>"
-			."<div class=\"centerOffset listboxText\">"
+			."<div class=\"centerOffset listboxText coloredText\">"
 			."use arrow keys to navigate<p>[esc] to cancel</div>"
 			."<div class=\"clear\"></div>";
 		echo "</div>";

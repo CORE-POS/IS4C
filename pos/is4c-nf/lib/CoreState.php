@@ -88,8 +88,8 @@ static public function system_init() {
 	  case they should probably go back to
 	  ini.php
 	*/
-	$CORE_LOCAL->set("ddNotify",0); 
-	$CORE_LOCAL->set("promoMsg",0);
+	//$CORE_LOCAL->set("ddNotify",0); 
+	//$CORE_LOCAL->set("promoMsg",0);
 }
 
 /**
@@ -114,9 +114,6 @@ static public function transReset() {
 	$CORE_LOCAL->set("tenderamt",0);
 	$CORE_LOCAL->set("change",0);
 	$CORE_LOCAL->set("transstatus","");
-	$CORE_LOCAL->set("ccTender",0);
-	$CORE_LOCAL->set("ccAmtEntered",0);
-	$CORE_LOCAL->set("ccAmt",0);
 	$CORE_LOCAL->set("TenderType","XX");				
 	$CORE_LOCAL->set("ChgName","Charge Account");			
 	$CORE_LOCAL->set("cashOverAmt",0);				
@@ -145,11 +142,6 @@ static public function transReset() {
 	$CORE_LOCAL->set("boxMsg","");		
 	$CORE_LOCAL->set("itemPD",0); 		// Item percent discount for the charge book
 	$CORE_LOCAL->set("specials",0);
-	$CORE_LOCAL->set("ccSwipe","");
-	$CORE_LOCAL->set("ccName","");
-	$CORE_LOCAL->set("ccType","");
-	$CORE_LOCAL->set("troutd","");
-	$CORE_LOCAL->set("ouxWait",0);
 	$CORE_LOCAL->set("cashierAgeOverride",0);
 	
 	$CORE_LOCAL->set("warned",0);
@@ -168,6 +160,7 @@ static public function transReset() {
 	$CORE_LOCAL->set("paycard_keyed",False);
 
 	foreach($CORE_LOCAL->get('PluginList') as $p){
+		if (!class_exists($p)) continue;
 		$obj = new $p();
 		$obj->plugin_transaction_reset();
 	}
@@ -189,7 +182,6 @@ static public function printReset() {
 	//$CORE_LOCAL->set("kick",1);	
 
 	$CORE_LOCAL->set("autoReprint",0);
-	$CORE_LOCAL->set("reprintNameLookup",0);
 }
 
 /**

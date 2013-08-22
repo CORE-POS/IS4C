@@ -131,7 +131,7 @@ if ($entered != ""){
 
 $CORE_LOCAL->set("msgrepeat",0);
 
-if (empty($json)) $json = "{}";
+if (empty($json)) echo "{}";
 else {
 	if (isset($json['redraw_footer']) && $json['redraw_footer'] !== False){
 		if ($CORE_LOCAL->get("away") == 1)

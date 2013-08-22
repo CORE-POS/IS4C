@@ -53,7 +53,7 @@ class NoInputPage extends BasicPage {
 			src=\"{$my_url}js/jquery.js\"></script>";
 		$this->head_content();
 		echo "</head>";
-		echo "<body>";
+		echo '<body class="'.$this->body_class.'">';
 		echo "<div id=\"boundingBox\">";
 		$this->noinput_header();
 		echo DisplayLib::printheaderb();

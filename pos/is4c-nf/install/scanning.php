@@ -18,8 +18,8 @@ body {
 <div id="wrapper">
 <h2>IT CORE Lane Installation: Scanning Options</h2>
 
-<div class="alert"><?php check_writeable('../ini.php'); ?></div>
-<div class="alert"><?php check_writeable('../ini-local.php'); ?></div>
+<div class="alert"><?php check_writeable('../ini.php', False, 'PHP'); ?></div>
+<div class="alert"><?php check_writeable('../ini-local.php', True, 'PHP'); ?></div>
 
 <form action=scanning.php method=post>
 <table id="install" border=0 cellspacing=0 cellpadding=4>
@@ -51,7 +51,29 @@ foreach($CORE_LOCAL->get("SpecialUpcClasses") as $r){
 $saveStr = rtrim($saveStr,",").")";
 confsave('SpecialUpcClasses',$saveStr);
 ?>
-</select></td></tr><tr><td colspan=2>
+</select></td></tr>
+<tr><td style="width: 30%;">
+</td><td>
+</td></tr><tr><td>
+<b>Coupons &amp; Sales Tax</b>:</td><td>
+<?php
+if (isset($_REQUEST['COUPONTAX'])) $CORE_LOCAL->set('CouponsAreTaxable',$_REQUEST['COUPONTAX'],True);
+echo '<select name="COUPONTAX">';
+if ($CORE_LOCAL->get('CouponsAreTaxable') === 0){
+	echo '<option value="1">Tax pre-coupon total</option>';
+	echo '<option value="0" selected>Tax post-coupon total</option>';
+}
+else {
+	echo '<option value="1" selected>Tax pre-coupon total</option>';
+	echo '<option value="0">Tax post-coupon total</option>';
+	$CORE_LOCAL->set('CouponsAreTaxable', 1);
+}
+echo '</select>';
+confsave('CouponsAreTaxable',$CORE_LOCAL->get('CouponsAreTaxable'));
+?>
+<span class='noteTxt'>Apply sales tax based on item price before any coupons, or
+apply sales tax to item price inclusive of coupons.</span>
+</td></tr>
 <hr />
 <p>Discount type modules control how sale prices are calculated.</p></td></tr>
 <tr><td>

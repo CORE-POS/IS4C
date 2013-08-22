@@ -28,6 +28,8 @@ $endorseType = $CORE_LOCAL->get("endorseType");
 
 if (strlen($endorseType) > 0) {
 	$CORE_LOCAL->set("endorseType","");
+	if (session_id() != '')
+		session_write_close();
 
 	switch ($endorseType) {
 

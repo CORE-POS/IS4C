@@ -286,8 +286,8 @@ class memlist extends NoInputPage {
 				echo '>'.$label.'</option>';
 			}
 			echo "</select></div><!-- /.listbox -->"
-				."<div class=\"listboxText centerOffset\">"
-				._("use arrow keys to navigate")."<p>"._("clear to cancel")."</div><!-- /.listboxText .centerOffset -->"
+				."<div class=\"listboxText coloredText centerOffset\">"
+				._("use arrow keys to navigate")."<p>"._("clear to cancel")."</div><!-- /.listboxText coloredText .centerOffset -->"
 				."<div class=\"clear\"></div>";
 
 			// A textbox for the Member Card number, to be added to the db for the selected member.

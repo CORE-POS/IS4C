@@ -102,7 +102,6 @@ class PriceCheckPage extends NoInputPage {
 	function body_content(){
 		global $CORE_LOCAL;
 		$this->add_onload_command("\$('#reginput').focus();\n");
-		$style = "style=\"background:#004080;\"";
 		$info = _("price check");
 		$inst = array(
 			_("[scan] item"),
@@ -133,7 +132,7 @@ class PriceCheckPage extends NoInputPage {
 		}
 		?>
 		<div class="baseHeight">
-		<div class="colored centeredDisplay" <?php echo $style; ?>>
+		<div class="coloredArea centeredDisplay">
 		<span class="larger">
 		<?php echo $info ?>
 		</span><br />

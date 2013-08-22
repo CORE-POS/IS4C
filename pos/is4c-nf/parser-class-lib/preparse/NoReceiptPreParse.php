@@ -1,7 +1,7 @@
 <?php
 /*******************************************************************************
 
-    Copyright 2012 Whole Foods Co-op
+    Copyright 2013 Whole Foods Co-op
 
     This file is part of IT CORE.
 
@@ -21,35 +21,41 @@
 
 *********************************************************************************/
 
-/**
-  @class CreditCardTender
-  Tender module for credit cards
-*/
-class CreditCardTender extends TenderModule {
-
-	/**
-	  Check for errors
-	  @return True or an error message string
-	*/
-	function ErrorCheck(){
-		global $CORE_LOCAL;
+class NoReceiptPreParse extends PreParser {
+	var $remainder;
 	
-		if (($this->amount > ($CORE_LOCAL->get("amtdue") + 0.005)) && $CORE_LOCAL->get("amtdue") >= 0){ 
-			return DisplayLib::xboxMsg(_("tender cannot exceed purchase amount"));
+	function check($str){
+		if (substr($str,-2) == 'NR'){
+			$this->remainder = substr($str,0,strlen($str)-2);
+			return True;
 		}
-
-		return True;
+		elseif (substr($str,0,2) == "NR"){
+			$this->remainder = substr($str,2);
+			return True;
+		}
+		return False;
 	}
-	
-	/**
-	  Set up state and redirect if needed
-	  @return True or a URL to redirect
-	*/
-	function PreReqCheck(){
+
+	function parse($str){
 		global $CORE_LOCAL;
-		if ($this->tender_code == 'CC' && $CORE_LOCAL->get('store') == 'wfc')
-			$CORE_LOCAL->set('kickOverride',True);
-		return True;
+		$CORE_LOCAL->set('receiptToggle', 0);
+		return $this->remainder;
+	}
+
+	function doc(){
+		return "<table cellspacing=0 cellpadding=3 border=1>
+			<tr>
+				<th>Input</th><th>Result</th>
+			</tr>
+			<tr>
+				<td><i>tender command</i>NR<i>item</i></td>
+				<td>Apply tender with receipt disabled</td>
+			</tr>
+			<tr>
+				<td>NR<i>tender command</i></td>
+				<td>Same as above</td>
+			</tr>
+			</table>";
 	}
 }
 

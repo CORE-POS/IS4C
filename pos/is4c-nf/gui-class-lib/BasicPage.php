@@ -43,6 +43,8 @@ class BasicPage {
 	*/
 	var $page_url;
 
+	var $body_class='mainBGimage';
+
 	/**
 	  Constructor
 
@@ -129,7 +131,7 @@ class BasicPage {
 			src=\"{$my_url}/js/jquery.js\"></script>";
 		$this->head_content();
 		echo "</head>";
-		echo "<body>";
+		echo '<body class="'.$this->body_class.'">';
 		echo "<div id=\"boundingBox\">";
 		$this->body_content();	
 		echo "</div>";
@@ -223,7 +225,7 @@ class BasicPage {
 					type="<?php echo $inputType; ?>" id="reginput"  />
 				</form>
 			</div>
-			<div class="notices <?php echo ($CORE_LOCAL->get("training")==1?'training':''); ?>">
+			<div class="notices coloredText <?php echo ($CORE_LOCAL->get("training")==1?'training':''); ?>">
 			<?php
 			if ($CORE_LOCAL->get("training") == 1) {
 				echo "<span class=\"text\">"._("training")." </span>"
@@ -313,7 +315,7 @@ class BasicPage {
 			<div class="inputform">
 			&nbsp;
 			</div>
-			<div class="notices">
+			<div class="notices coloredText">
 			<?php	
 			if ($CORE_LOCAL->get("training") == 1) {
 				echo "<span class=\"text\">"._("training")." </span>"
@@ -356,7 +358,7 @@ class BasicPage {
 	function scale_box(){
 		?>
 		<div id="scalebox">
-			<div id="scaleTop"> 
+			<div id="scaleTop" class="coloredArea"> 
 			<?php echo _("weight"); ?>
 			</div>
 			<div id="scaleBottom">

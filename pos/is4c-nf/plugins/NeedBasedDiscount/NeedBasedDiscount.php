@@ -1,7 +1,7 @@
 <?php
 /*******************************************************************************
 
-    Copyright 2012 Whole Foods Co-op
+    Copyright 2013 Whole Foods Co-op
 
     This file is part of IT CORE.
 
@@ -21,30 +21,14 @@
 
 *********************************************************************************/
 
-class AlwaysFsEligibleFooter extends FooterBox {
+class NeedBasedDiscount extends Plugin {
 
-	public $header_css_class = 'fsLine';
-	public $display_css_class = 'fsLine';
+	public $plugin_settings = array();
 
-	function AlwaysFsEligibleFooter() {
+	function plugin_transaction_reset(){
 		global $CORE_LOCAL;
-		if ($CORE_LOCAL->get('fntlflag') == 0 && $CORE_LOCAL->get('End') != 1){
-			$CORE_LOCAL->set("fntlflag",1);
-			Database::setglobalvalue("FntlFlag", 1);
-		}
+		$CORE_LOCAL->set('NeedDiscountFlag', 0);
 	}
-
-	function header_content(){
-		global $CORE_LOCAL;
-		return _("FS Eligible");
-	}
-
-	function display_content(){
-		global $CORE_LOCAL;
-		if ($CORE_LOCAL->get('End') != 1)
-			return number_format((double)$CORE_LOCAL->get("fsEligible"),2);
-		else
-			return '0.00';
-	}
-		
 }
+
+?>

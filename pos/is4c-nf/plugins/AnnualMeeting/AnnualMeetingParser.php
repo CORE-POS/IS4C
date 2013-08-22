@@ -23,9 +23,10 @@
 
 class AnnualMeetingParser extends Parser {
 
-	var $plus = array('1043');
+	var $plus = array('1042','1041');
 	var $descriptions = array(
-		'1043' => 'OWNER MEAL'
+		'1042' => 'OWNER MEAL',
+		'1041' => 'GUEST MEAL'
 	);
 
 	function check($str){
@@ -49,11 +50,15 @@ class AnnualMeetingParser extends Parser {
 		$ret = $this->default_json();
 		if (strlen($str)==4){
 			$CORE_LOCAL->set('qmInput',$str);
-			$CORE_LOCAL->set('qmNumber',array(
-				'Meat' => 'M',
-				'Veg' => 'V',
-				'Kids' => 'K'
-			));
+			$desc = $this->descriptions[$str];
+			$opts = array(
+				$desc.' (Meat)' => 'M',
+				$desc.' (Veg)' => 'V'
+			);
+			if ($str == 1041){
+				$opts[$desc.' (Kids)'] = 'K';
+			}
+			$CORE_LOCAL->set('qmNumber', $opts);
 			$plugin_info = new QuickMenus();
 			$ret['main_frame'] = $plugin_info->plugin_url().'/QMDisplay.php';
 			return $ret;
@@ -61,12 +66,13 @@ class AnnualMeetingParser extends Parser {
 		else {
 			$flag = strtoupper($str[4]);
 			$plu = substr($str,0,4);
+			$price = ($flag == 'K') ? 5.00 : 20.00;
 			TransRecord::addItem(
 				str_pad($plu,13,'0',STR_PAD_LEFT),
 				$this->descriptions[$plu].' ('.$flag.')',
 				'I','','',
 				235, 1.0, 
-				20.00, 20.00, 20.00,
+				$price, $price, $price,
 				0, 0, 0,
 				0.00, 0.00,
 				0, 0,

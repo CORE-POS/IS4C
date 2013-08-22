@@ -102,7 +102,7 @@ var $ean;
 			if ($db->num_rows($result) > 0)
 				$dept = array_pop($db->fetch_row($result));
 
-			TransRecord::addcoupon($upc, $dept, $value);
+			TransRecord::addCoupon($upc, $dept, $value);
 			$json['output'] = DisplayLib::lastpage();
 			return $json;
 		}
@@ -119,7 +119,8 @@ var $ean;
 			max(t.department) as department,
 			max(t.ItemQtty) as itemQtty,
 			sum(case when c.quantity is null then 0 else c.quantity end) as couponQtty,
-			max(case when c.quantity is null then 0 else t.foodstamp end) as foodstamp,
+			max(case when c.quantity is not null then 0 else t.foodstamp end) as foodstamp,
+			max(case when c.quantity is not null then 0 else t.tax end) as tax,
 			max(t.emp_no) as emp_no,
 			max(t.trans_no) as trans_no,
 			t.trans_id from
@@ -147,7 +148,7 @@ var $ean;
 		/* count up per-item quantites that have not
 		   yet had a coupon applied to them */
 		$available = array();
-		$emp_no=$transno=$dept=$foodstamp=-1;
+		$emp_no=$transno=$dept=$foodstamp=$tax=-1;
 		$act_qty = 0;
 		while($row = $db->fetch_array($result)){
 			if ($row["itemQtty"] - $row["couponQtty"] > 0){
@@ -163,6 +164,7 @@ var $ean;
 				$transno = $row["trans_no"];
 				$dept = $row["department"];
 				$foodstamp = $row["foodstamp"];
+				$tax = $row['tax'];
 			}
 		}
 
@@ -216,7 +218,7 @@ var $ean;
 
 		$value = MiscLib::truncate2($value);
 		$json['udpmsg'] = 'goodBeep';
-		TransRecord::addcoupon($upc, $dept, $value, $foodstamp);
+		TransRecord::addCoupon($upc, $dept, $value, $foodstamp, $tax);
 		$json['output'] = DisplayLib::lastpage();
 		$json['redraw_footer'] = True;
 		return $json;

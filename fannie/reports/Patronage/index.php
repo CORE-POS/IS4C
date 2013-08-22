@@ -52,9 +52,7 @@ if (!isset($_REQUEST['excel'])){
 
 if ($fy != ""){
 	$pQ = $dbc->prepare_statement("SELECT cardno,purchase,discounts,rewards,net_purch,
-		tot_pat,cash_pat,equit_pat,m.type,m.ttl FROM patronage as p
-		LEFT JOIN patronageRedemption AS m ON p.cardno=m.card_no
-		AND p.FY=m.fy
+		tot_pat,cash_pat,equit_pat,0 as type,0 as ttl FROM patronage as p
 		WHERE p.FY=? ORDER BY cardno");
 	$pR = $dbc->exec_statement($pQ,array($fy));
 	if (!isset($_REQUEST['excel']))
