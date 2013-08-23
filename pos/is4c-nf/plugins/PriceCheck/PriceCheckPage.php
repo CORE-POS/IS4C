@@ -117,7 +117,7 @@ class PriceCheckPage extends NoInputPage {
 				$this->upc = "";
 			}
 			else {
-				$info = $this->pricing['description'].' :: '.$this->pricing['department'].'<br />';
+				$info = $this->pricing['description'].'<br />';
 				$info .= _("Price").": ".$this->pricing['price'];
 				if (!empty($this->pricing['memPrice'])){
 					$info .= "<br />("._("Member Price").": ".$this->pricing['memPrice'].")";
