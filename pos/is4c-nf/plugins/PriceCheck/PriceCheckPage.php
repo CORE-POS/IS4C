@@ -148,7 +148,7 @@ class PriceCheckPage extends NoInputPage {
 		</div>
 		</div>
 		<?php
-		$CORE_LOCAL->set("beep","noScan");
+		$CORE_LOCAL->set("beep","goodBeep");
 	} // END true_body() FUNCTION
 
 	function mgrauthenticate($password){
