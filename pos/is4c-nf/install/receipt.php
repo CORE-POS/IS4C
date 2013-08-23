@@ -16,8 +16,8 @@ include('util.php');
 <div id="wrapper">	
 <h2>IT CORE Lane Installation: Receipt Configuration</h2>
 
-<div class="alert"><?php check_writeable('../ini.php'); ?></div>
-<div class="alert"><?php check_writeable('../ini-local.php'); ?></div>
+<div class="alert"><?php check_writeable('../ini.php', False, 'PHP'); ?></div>
+<div class="alert"><?php check_writeable('../ini-local.php', True, 'PHP'); ?></div>
 
 <form action=receipt.php method=post>
 <table id="install" border=0 cellspacing=0 cellpadding=4>
@@ -131,7 +131,40 @@ foreach($mods as $mod){
 confsave('RBTag',"'".$CORE_LOCAL->get('RBTag')."'");
 ?>
 </select></td></tr>
-<tr><td style="width: 30%;">
+<tr><td colspan="2"><h3>Message Modules</h3></td></tr>
+<tr><td colspan="3">
+<p>Message Modules provide special blocks of text on the end
+of the receipt &amp; special non-item receipt types.</p>
+</td></tr>
+<tr><td>&nbsp;</td><td>
+<?php
+if (isset($_REQUEST['RM_MODS'])){
+	$mods = array();
+	foreach($_REQUEST['RM_MODS'] as $m){
+		if ($m != '') $mods[] = $m;
+	}
+	$CORE_LOCAL->set('ReceiptMessageMods', $mods, True);
+}
+if (!is_array($CORE_LOCAL->get('ReceiptMessageMods'))){
+	$CORE_LOCAL->set('ReceiptMessageMods', array(), True);
+}
+$available = AutoLoader::ListModules('ReceiptMessage');
+$current = $CORE_LOCAL->get('ReceiptMessageMods');
+for($i=0;$i<=count($current);$i++){
+	$c = isset($current[$i]) ? $current[$i] : '';
+	echo '<select name="RM_MODS[]">';
+	echo '<option value="">[None]</option>';
+	foreach($available as $a)
+		printf('<option %s>%s</option>',($a==$c?'selected':''),$a);
+	echo '</select><br />';
+}
+$saveStr = 'array(';
+foreach($current as $c)
+	$saveStr .= "'".$c."',";
+$saveStr = rtrim($saveStr,",").")";
+confsave('ReceiptMessageMods',$saveStr);
+?>
+</td></tr>
 <tr><td colspan=2 class="submitBtn">
 <input type=submit name=esubmit value="Save Changes" />
 </td></tr>
