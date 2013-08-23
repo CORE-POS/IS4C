@@ -53,6 +53,8 @@ class Kicker {
 	  @return boolean
 	*/
 	function kickOnSignIn(){
+		global $CORE_LOCAL;
+		if($CORE_LOCAL->get('training') == 1) return False;
 		return True;
 	}
 
@@ -62,6 +64,8 @@ class Kicker {
 	  @return boolean
 	*/
 	function kickOnSignOut(){
+		global $CORE_LOCAL;
+		if($CORE_LOCAL->get('training') == 1) return False;
 		return True;
 	}
 }
