@@ -125,6 +125,7 @@ class adminlogin extends NoInputPage {
 
 	function head_content(){
 		$this->default_parsewrapper_js();
+		$this->scanner_scale_polling(True);
 	}
 
 	function body_content(){
