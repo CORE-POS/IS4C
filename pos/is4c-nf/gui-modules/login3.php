@@ -31,6 +31,8 @@ class login3 extends BasicPage {
 	var $img;
 	var $msg;
 
+	protected $mask_input = True;
+
 	function preprocess(){
 		$this->color = "coloredArea";
 		$this->img = $this->page_url."graphics/bluekey4.gif";
@@ -71,7 +73,6 @@ class login3 extends BasicPage {
 		</div>
 		<?php
 		TransRecord::addactivity(3);
-		$CORE_LOCAL->set("scan","noScan");
 		Database::getsubtotals();
 		echo "<div id=\"footer\">";
 		echo DisplayLib::printfooter();

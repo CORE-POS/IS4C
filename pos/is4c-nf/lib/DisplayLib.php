@@ -28,20 +28,6 @@
 class DisplayLib extends LibraryClass {
 
 /**
-  Print just the form from the regular footer
-  but entirely hidden.
-  @deprecated
-  Only used with the old VB scale driver
-*/
-static public function printfooterb() {
-	$ret = "<form name='hidden'>\n";
-	$ret .= "<input Type='hidden' name='alert' value='noBeep'>\n";
-	$ret .= "<input Type='hidden' name='scan' value='scan'>\n";
-	$ret .= "</form>";
-	return $ret;
-}
-
-/**
   Get the standard footer with total and
   amount(s) saved
   @param $readOnly don't update any session info
@@ -122,27 +108,13 @@ static public function printfooter($readOnly=False) {
 			$CORE_LOCAL->set("specials",$dbldiscounttotal + $CORE_LOCAL->get("staffSpecial"));
 		}
 	}
-	if ($CORE_LOCAL->get("sc") == 1) {
-		if (!$readOnly){
-			$CORE_LOCAL->set("yousaved",$CORE_LOCAL->get("yousaved") + $CORE_LOCAL->get("scDiscount"));
-		}
-		$dblyousaved = $CORE_LOCAL->get("yousaved");
-	}
 
 	if (!$readOnly){
 		if ($CORE_LOCAL->get("End") == 1) {
 			MiscLib::rePoll();
 		}
-		if (strlen($CORE_LOCAL->get("endorseType")) > 0 || $CORE_LOCAL->get("waitforScale") == 1) {
-			$CORE_LOCAL->set("waitforScale",0);
-			$CORE_LOCAL->set("beep","noBeep");
-		}
-		if ($CORE_LOCAL->get("scale") == 0 && $CORE_LOCAL->get("SNR") == 1) {
+		if ($CORE_LOCAL->get("scale") == 0 && $CORE_LOCAL->get("SNR") != 0) {
 			MiscLib::rePoll();
-		}
-		if ($CORE_LOCAL->get("cashOverAmt") <> 0) {
-			MiscLib::twoPairs();
-			$CORE_LOCAL->set("cashOverAmt",0);
 		}
 	}
 
@@ -167,14 +139,8 @@ static public function printfooter($readOnly=False) {
 
 	if (!$readOnly){
 		$ret .= "<form name='hidden'>\n";
-		$ret .= "<input type='hidden' id='alert' name='alert' value='".$CORE_LOCAL->get("beep")."'>\n";
-		$ret .= "<input type='hidden' id='scan' name='scan' value='".$CORE_LOCAL->get("scan")."'>\n";
-		$ret .= "<input type='hidden' id='screset' name='screset' value='".$CORE_LOCAL->get("screset")."'>\n";
 		$ret .= "<input type='hidden' id='ccTermOut' name='ccTermOut' value=\"".$CORE_LOCAL->get("ccTermOut")."\">\n";
 		$ret .= "</form>";
-		$CORE_LOCAL->set("beep","noBeep");
-		$CORE_LOCAL->set("scan","scan");
-		$CORE_LOCAL->set("screset","stayCool");
 		$CORE_LOCAL->set("ccTermOut","idle");
 	}
 
@@ -220,14 +186,11 @@ static public function msgbox($strmsg, $icon,$noBeep=False) {
 	$ret .= "</div><div class=\"clear\"></div></div>";
 	$ret .= "</div>";
 
-	$CORE_LOCAL->set("strRemembered",$CORE_LOCAL->get("strEntered"));
-	if ($CORE_LOCAL->get("warned") == 0 && !$noBeep)
+	if (!$noBeep)
 		MiscLib::errorBeep();
-	//$_SESSION["scan"] = "noScan";
+
+	$CORE_LOCAL->set("strRemembered",$CORE_LOCAL->get("strEntered"));
 	$CORE_LOCAL->set("msgrepeat",1);
-	//$_SESSION["toggletax"] = 0;
-	//$_SESSION["togglefoodstamp"] = 0;
-	//$_SESSION["away"] = 1;
 
 	return $ret;
 }
@@ -665,36 +628,30 @@ static public function listitems($top_item, $highlight) {
 static public function printReceiptfooter($readOnly=False) {
 	global $CORE_LOCAL;
 
-	if ($CORE_LOCAL->get("sc") == 1) {
-		return self::lastpage();
+	if (!$readOnly)
+		Database::getsubtotals();
+	$last_id = $CORE_LOCAL->get("LastID");
+
+	if (($last_id - 7) < 0) {
+		$top_id = 1;
 	}
 	else {
-
-		if (!$readOnly)
-			Database::getsubtotals();
-		$last_id = $CORE_LOCAL->get("LastID");
-
-		if (($last_id - 7) < 0) {
-			$top_id = 1;
-		}
-		else {
-			$top_id = $last_id - 7;
-		}
-
-		$ret = self::drawitems($top_id, 7, 0);
-
-		$ret .= "<div class=\"farewellMsg coloredText\">";
-		for($i=0;$i<=$CORE_LOCAL->get("farewellMsgCount");$i++){
-			$ret .= $CORE_LOCAL->get("farewellMsg".$i)."<br />";
-		}
-
-		$email = CoreState::getCustomerPref('email_receipt');
-		$doEmail = filter_var($email, FILTER_VALIDATE_EMAIL);
-		if($doEmail) $ret .= 'receipt emailed';
-
-		$ret .= "</div>";
-		return $ret;
+		$top_id = $last_id - 7;
 	}
+
+	$ret = self::drawitems($top_id, 7, 0);
+
+	$ret .= "<div class=\"farewellMsg coloredText\">";
+	for($i=0;$i<=$CORE_LOCAL->get("farewellMsgCount");$i++){
+		$ret .= $CORE_LOCAL->get("farewellMsg".$i)."<br />";
+	}
+
+	$email = CoreState::getCustomerPref('email_receipt');
+	$doEmail = filter_var($email, FILTER_VALIDATE_EMAIL);
+	if($doEmail) $ret .= 'receipt emailed';
+
+	$ret .= "</div>";
+	return $ret;
 }
 
 

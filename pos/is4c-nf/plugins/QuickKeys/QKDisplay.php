@@ -172,7 +172,6 @@ class QKDisplay extends NoInputPage {
 		echo "<input type=\"hidden\" value=\"0\" name=\"clear\" id=\"doClear\" />";	
 		echo "</form>";
 		echo "</div>";
-		$CORE_LOCAL->set("scan","noScan");
 	} // END body_content() FUNCTION
 
 }

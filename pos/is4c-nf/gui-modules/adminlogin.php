@@ -21,11 +21,18 @@
 
 *********************************************************************************/
 
-/* this module is intended for re-use. Just set 
- * $_SESSION["adminRequest"] to the module you want loaded
- * upon successful admin authentication. To be on the safe side,
- * that module should then unset (or clear to "") the session
- * variable
+/* this module is intended for re-use. 
+ * Pass the name of a class with the
+ * static properties: 
+ *  - adminLoginMsg (message to display)
+ *  - adminLoginLevel (employees.frontendsecurity requirement)
+ * and static method:
+ *  - adminLoginCallback(boolean $success)
+ *
+ * The callback should return a URL or True (for pos2.php)
+ * when $success is True. When $success is False, the return
+ * value is irrelevant. That call is provided in case any
+ * cleanup is necessary after a failed login.
  */
 
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
@@ -33,21 +40,42 @@ include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 class adminlogin extends NoInputPage {
 	var $box_color;
 	var $msg;
+	var $heading;
 
 	function preprocess(){
 		global $CORE_LOCAL;
 		$this->box_color="coloredArea";
 		$this->msg = _("enter admin password");
 
+		// get calling class (required)
+		$class = isset($_REQUEST['class']) ? $_REQUEST['class'] : '';
+		$pos_home = MiscLib::base_url().'gui-modules/pos2.php';
+		if ($class === '' || !class_exists($class)){
+			$this->change_page($pos_home);
+			return False;
+		}
+		// make sure calling class implements required
+		// method and properties
+		try {
+			$method = new ReflectionMethod($class, 'adminLoginCallback');
+			if (!$method->isStatic() || !$method->isPublic())
+				throw new Exception('bad method adminLoginCallback');
+			$property = new ReflectionProperty($class, 'adminLoginMsg');
+			if (!$property->isStatic() || !$property->isPublic())
+				throw new Exception('bad property adminLoginMsg');
+			$property = new ReflectionProperty($class, 'adminLoginLevel');
+			if (!$property->isStatic() || !$property->isPublic())
+				throw new Exception('bad property adminLoginLevel');
+		}
+		catch (Exception $e){
+			$this->change_page($pos_home);
+			return False;
+		}
+
 		if (isset($_REQUEST['reginput'])){
 			$passwd = $_REQUEST['reginput'];
 			if (strtoupper($passwd) == "CL"){
-				// clear state variables on clear
-				$CORE_LOCAL->set("refundComment","");
-				$CORE_LOCAL->set("transfertender",0);
-				if ($CORE_LOCAL->get("cashierAgeOverride")==2)
-					$CORE_LOCAL->set("cashierAgeOverride",0);
-				$CORE_LOCAL->set("msgrepeat",0);
+				$class::adminLoginCallback(False);
 				$this->change_page($this->page_url."gui-modules/pos2.php");
 				return False;	
 			}
@@ -58,23 +86,26 @@ class adminlogin extends NoInputPage {
 			else {
 				$query = "select emp_no, FirstName, LastName from employees 
 					where EmpActive = 1 and frontendsecurity >= "
-					.$CORE_LOCAL->get("adminRequestLevel")
+					.$class::$adminLoginLevel
 					." and (CashierPassword = ".$passwd
 					." or AdminPassword = ".$passwd.")";
 				$db = Database::pDataConnect();
 				$result = $db->query($query);
 				$num_rows = $db->num_rows($result);
 				if ($num_rows != 0) {
-					if ($CORE_LOCAL->get("cashierAgeOverride")==2)
-						$CORE_LOCAL->set("cashierAgeOverride",1);
-					$this->change_page($CORE_LOCAL->get("adminRequest"));
 					$row = $db->fetch_row($result);
 					TransRecord::add_log_record(array(
 						'upc' => $passwd,
-						'description' => substr($CORE_LOCAL->get('adminLoginMsg'),0,30),
+						'description' => substr($class::$adminLoginMsg,0,30),
 						'charflag' => 'PW',
 						'num_flag' => $row['emp_no']
 					));
+
+					$result = $class::adminLoginCallback(True);
+					if ($result === True)
+						$this->change_page(MiscLib::base_url().'gui-modules/pos2.php');
+					else
+						$this->change_page($result);
 					return False;
 				}
 				else {
@@ -83,7 +114,7 @@ class adminlogin extends NoInputPage {
 
 					TransRecord::add_log_record(array(
 						'upc' => $passwd,
-						'description' => substr($CORE_LOCAL->get('adminLoginMsg'),0,30),
+						'description' => substr($class::$adminLoginMsg,0,30),
 						'charflag' => 'PW'
 					));
 				}
@@ -94,6 +125,7 @@ class adminlogin extends NoInputPage {
 
 	function head_content(){
 		$this->default_parsewrapper_js();
+		$this->scanner_scale_polling(True);
 	}
 
 	function body_content(){
@@ -108,6 +140,7 @@ class adminlogin extends NoInputPage {
 		<form name="form" id="formlocal" method="post" 
 			autocomplete="off" action="<?php echo $_SERVER['PHP_SELF']; ?>">
 		<input type="password" id="reginput" name="reginput" tabindex="0" onblur="$('#reginput').focus();" />
+		<input type="hidden" name="class" value="<?php echo $_REQUEST['class']; ?>" />
 		</form>
 		<p>
 		<?php echo $this->msg ?>
@@ -116,7 +149,6 @@ class adminlogin extends NoInputPage {
 		</div>
 		<?php
 		$this->add_onload_command("\$('#reginput').focus();");
-		$CORE_LOCAL->set("scan","noScan");
 	} // END true_body() FUNCTION
 
 

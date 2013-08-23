@@ -118,7 +118,6 @@ class rplist extends NoInputPage {
 		</div>
 
 		<?php
-		$CORE_LOCAL->set("scan","noScan");
 	} // END body_content() FUNCTION
 }
 

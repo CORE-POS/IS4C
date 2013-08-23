@@ -53,11 +53,9 @@ class memlist extends NoInputPage {
 		// vs. lookup didn't happen
 		$this->submitted = False;
 
-		$CORE_LOCAL->set("away",1);
 		$entered = "";
-		if ($CORE_LOCAL->get("idSearch") && strlen($CORE_LOCAL->get("idSearch")) > 0) {
-			$entered = $CORE_LOCAL->get("idSearch");
-			$CORE_LOCAL->set("idSearch","");
+		if (isset($_REQUEST['idSearch']) && strlen($_REQUEST['idSearch']) > 0){
+			$entered = $_REQUEST['idSearch'];
 		}
 		elseif (isset($_REQUEST['search'])){
 			$entered = strtoupper(trim($_REQUEST["search"]));
@@ -74,11 +72,8 @@ class memlist extends NoInputPage {
 			list($memberID,$personNum) = explode("::",$entered);
 			$this->submitted = True;
 		}
-		else if (!$entered || strlen($entered) < 1 || $entered == "CL") {
-			// No input available, stop
-			$CORE_LOCAL->set("mirequested",0);
-			$CORE_LOCAL->set("scan","scan");
-			$CORE_LOCAL->set("reprintNameLookup",0);
+		// No input available, stop
+		if (!$entered || strlen($entered) < 1 || $entered == "CL") {
 			$this->change_page($this->page_url."gui-modules/pos2.php");
 			return False;
 		}
@@ -136,7 +131,6 @@ class memlist extends NoInputPage {
 			$result = $db_a->exec_statement($query,array($memberID, $personNum));
 			$row = $db_a->fetch_row($result);
 			PrehLib::setMember($row["CardNo"], $personNum, $row);
-			$CORE_LOCAL->set("scan","scan");
 
 			// WEFC_Toronto: If a Member Card # was entered when the choice from the list was made,
 			// add the memberCards record.
@@ -271,7 +265,9 @@ class memlist extends NoInputPage {
 				."onblur=\"\$('#search').focus();\" ondblclick=\"document.forms['selectform'].submit();\" id=\"search\">";
 
 			$selectFlag = 0;
-			if (!is_numeric($entered) && $CORE_LOCAL->get("memlistNonMember") == 1) {
+			// I don't know what !$entered was supposed to do here, 
+			// but the variable isn't defined
+			if (False && $CORE_LOCAL->get("memlistNonMember") == 1) {
 				echo "<option value='3::1' selected> 3 "
 					."&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Customer";
 				$selectFlag = 1;

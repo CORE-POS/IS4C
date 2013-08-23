@@ -45,16 +45,7 @@ class Totals extends Parser {
 			$ret['main_frame'] = MiscLib::base_url().'gui-modules/fsTotalConfirm.php';
 		}
 		elseif ($str == "TETL"){
-			if ($CORE_LOCAL->get("requestType") == ""){
-				$CORE_LOCAL->set("requestType","tax exempt");
-				$CORE_LOCAL->set("requestMsg","Enter the tax exempt ID");
-				$ret['main_frame'] = MiscLib::base_url().'gui-modules/requestInfo.php';
-			}
-			else if ($CORE_LOCAL->get("requestType") == "tax exempt"){
-				TransRecord::addTaxExempt();
-				TransRecord::addcomment("Tax Ex ID# ".$CORE_LOCAL->get("requestMsg"));
-				$CORE_LOCAL->set("requestType","");
-			}
+			$ret['main_frame'] = MiscLib::base_url().'gui-modules/requestInfo.php?class=Totals';
 		}
 		elseif ($str == "FTTL")
 			PrehLib::finalttl();
@@ -74,6 +65,14 @@ class Totals extends Parser {
 			$ret['redraw_footer'] = True;
 		}
 		return $ret;
+	}
+
+	static $requestInfoHeader = 'tax exempt';
+	static $requestInfoMsg = 'Enter the tax exempt ID';
+	static function requestInfoCallback($info){
+		TransRecord::addTaxExempt();
+		TransRecord::addcomment("Tax Ex ID# ".$info);
+		return True;
 	}
 
 	function doc(){

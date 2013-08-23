@@ -162,6 +162,11 @@ class BasicPage {
 		$this->onload_commands .= $str."\n";
 	}
 
+	protected $mask_input = False;
+	function hide_input($bool){
+		$this->mask_input = $bool;
+	}
+
 	/**
 	  Display the standard header with input box
 	  @param $action What the form does
@@ -183,7 +188,7 @@ class BasicPage {
 		$this->add_onload_command("betterDate();\n\$('#reginput').focus();");
 		
 		$inputType = "text";
-		if ($CORE_LOCAL->get("inputMasked") != 0)
+		if ($this->mask_input)
 			$inputType = "password";
 		// this needs to be configurable; just fixing
 		// a giant PHP warning for the moment

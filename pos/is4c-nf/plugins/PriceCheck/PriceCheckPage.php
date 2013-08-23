@@ -80,6 +80,8 @@ class PriceCheckPage extends NoInputPage {
 				}
 				$this->pricing['description'] = $row['description'];
 				$this->pricing['department'] = $row['department'];
+
+				MiscLib::goodBeep();
 			}
 
 			// user hit enter and there is a valid UPC present
@@ -117,7 +119,7 @@ class PriceCheckPage extends NoInputPage {
 				$this->upc = "";
 			}
 			else {
-				$info = $this->pricing['description'].'<br />';
+				$info = $this->pricing['description'].' :: '.$this->pricing['department'].'<br />';
 				$info .= _("Price").": ".$this->pricing['price'];
 				if (!empty($this->pricing['memPrice'])){
 					$info .= "<br />("._("Member Price").": ".$this->pricing['memPrice'].")";
@@ -148,12 +150,10 @@ class PriceCheckPage extends NoInputPage {
 		</div>
 		</div>
 		<?php
-		$CORE_LOCAL->set("beep","goodBeep");
 	} // END true_body() FUNCTION
 
 	function mgrauthenticate($password){
 		global $CORE_LOCAL;
-		$CORE_LOCAL->set("away",1);
 
 		$ret = array(
 			'cancelOrder'=>false,

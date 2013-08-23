@@ -83,6 +83,7 @@ if ($entered != ""){
 		$CORE_LOCAL->set("preparse_chain",PreParser::get_preparse_chain());
 
 	foreach ($CORE_LOCAL->get("preparse_chain") as $cn){
+		if (!class_exists($cn)) continue;
 		$p = new $cn();
 		if ($p->check($entered))
 			$entered = $p->parse($entered);
@@ -102,6 +103,7 @@ if ($entered != ""){
 
 		$result = False;
 		foreach ($CORE_LOCAL->get("parse_chain") as $cn){
+			if (!class_exists($cn)) continue;
 			$p = new $cn();
 			if ($p->check($entered)){
 				$result = $p->parse($entered);
@@ -134,10 +136,7 @@ $CORE_LOCAL->set("msgrepeat",0);
 if (empty($json)) echo "{}";
 else {
 	if (isset($json['redraw_footer']) && $json['redraw_footer'] !== False){
-		if ($CORE_LOCAL->get("away") == 1)
-			$json['redraw_footer'] = DisplayLib::printfooterb();
-		else
-			$json['redraw_footer'] = DisplayLib::printfooter();
+		$json['redraw_footer'] = DisplayLib::printfooter();
 	}
 	if (isset($json['scale']) && $json['scale'] !== False){
 		$display = DisplayLib::scaledisplaymsg($json['scale']);
