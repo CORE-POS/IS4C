@@ -43,9 +43,6 @@ class Authenticate extends LibraryClass {
 static public function check_password($password,$activity=1){
 	global $CORE_LOCAL;
 
-	MiscLib::rePoll();
-	$CORE_LOCAL->set("training",0);
-
 	$password = strtoupper($password);
 	$password = str_replace("'", "", $password);
 	$password = str_replace(",", "", $password);
