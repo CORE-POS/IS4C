@@ -148,7 +148,7 @@ static public function get(){
 		$receipt .= substr($blank.$blank.$blank."Count: ".$num_rows."  Total: ".number_format($sum,2), -56)."\n";
 		$receipt .= str_repeat("\n", 4);
 
-		$receipt .= chr(27).chr(105);
+		// $receipt .= chr(27).chr(105);
 	}
 
 	return $receipt.chr(27).chr(105);
