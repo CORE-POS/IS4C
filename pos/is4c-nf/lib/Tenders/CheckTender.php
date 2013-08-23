@@ -48,7 +48,7 @@ class CheckTender extends TenderModule {
 				return DisplayLib::xboxMsg(_('member check tender cannot exceed total 
 									purchase if equity is owed'));
 			}
-			
+
 			// multi use
 			if ($CORE_LOCAL->get('standalone')==0){
 				$chkQ = "select trans_num from dlog 
@@ -122,6 +122,7 @@ class CheckTender extends TenderModule {
 		}
 
 		$CORE_LOCAL->set("boxMsg",$msg);
+		$CORE_LOCAL->set('strEntered', (100*$this->amount).$this->tender_code);
 
 		return MiscLib::base_url().'gui-modules/boxMsg2.php?endorse=check&endorseAmt='.$this->amount;
 	}

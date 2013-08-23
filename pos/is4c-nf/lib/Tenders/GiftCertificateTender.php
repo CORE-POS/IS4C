@@ -75,6 +75,7 @@ class GiftCertificateTender extends TenderModule {
 				endorsed yet?</div>";
 		}
 
+		$CORE_LOCAL->set('strEntered', (100*$this->amount).$this->tender_code);
 		$CORE_LOCAL->set("boxMsg",$msg);
 
 		return MiscLib::base_url().'gui-modules/boxMsg2.php?endorse=check&endorseAmt='.$this->amount;
