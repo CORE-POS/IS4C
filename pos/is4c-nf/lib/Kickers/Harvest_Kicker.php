@@ -43,11 +43,13 @@ class Harvest_Kicker extends Kicker {
 	}
 
 	function kickOnSignIn(){
+		global $CORE_LOCAL;
 		if($CORE_LOCAL->get('training') == 1) return False;
 		return True;
 	}
 
 	function kickOnSignOut(){
+		global $CORE_LOCAL;
 		if($CORE_LOCAL->get('training') == 1) return False;
 		return True;
 	}
