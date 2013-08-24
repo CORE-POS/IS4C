@@ -35,7 +35,7 @@ class login3 extends BasicPage {
 
 	function preprocess(){
 		$this->color = "coloredArea";
-		$this->img = $this->page_url."graphics/bluekey4.gif";
+		$this->img = $this->page_url."graphics/key-icon.png";
 		$this->msg = _("please enter password");
 		if (isset($_REQUEST['reginput'])){
 			if (Authenticate::check_password($_REQUEST['reginput'],4)){
