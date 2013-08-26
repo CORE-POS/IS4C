@@ -33,8 +33,8 @@ class CheckTender extends TenderModule {
 	*/
 	function ErrorCheck(){
 		global $CORE_LOCAL;
-		if ( ($CORE_LOCAL->get("isMember") != 0 || $CORE_LOCAL->get("isStaff") != 0) && (($this->amount - $CORE_LOCAL->get("amtdue") - 0.005) > $CORE_LOCAL->get("dollarOver")) && ($CORE_LOCAL->get("cashOverLimit") == 1)){
-			return DisplayLib::boxMsg(_("member or staff check tender cannot exceed total purchase by over $").$CORE_LOCAL->get("dollarOver"));
+		if ( $CORE_LOCAL->get("isMember") != 0 && (($this->amount - $CORE_LOCAL->get("amtdue") - 0.005) > $CORE_LOCAL->get("dollarOver")) && ($CORE_LOCAL->get("cashOverLimit") == 1)){
+			return DisplayLib::boxMsg(_("member check tender cannot exceed total purchase by over $").$CORE_LOCAL->get("dollarOver"));
 		}
 		else if( $CORE_LOCAL->get("store")=="wfc" && $CORE_LOCAL->get("isMember") != 0 && ($this->amount - $CORE_LOCAL->get("amtdue") - 0.005) > 0){ 
 			// This should really be a separate tender 
@@ -64,7 +64,7 @@ class CheckTender extends TenderModule {
 				}
 			}
 		}
-		else if( $CORE_LOCAL->get("isMember") == 0 and $CORE_LOCAL->get("isStaff") == 0 && ($this->amount - $CORE_LOCAL->get("amtdue") - 0.005) > 0){ 
+		else if( $CORE_LOCAL->get("isMember") == 0  && ($this->amount - $CORE_LOCAL->get("amtdue") - 0.005) > 0){ 
 			return DisplayLib::xboxMsg(_('non-member check tender cannot exceed total purchase'));
 		}
 		return True;
