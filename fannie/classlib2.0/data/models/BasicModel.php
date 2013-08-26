@@ -513,24 +513,30 @@ class BasicModel {
 					$sql = 'ALTER TABLE '.$this->name.' ADD COLUMN '
 						.$this->connection->identifier_escape($our_columns[$i]).' '
 						.$this->get_meta($this->columns[$our_columns[$i]]['type'],
-							$this->connection->dbms_name())
-						.' AFTER '.$this->connection->identifier_escape($their_col);
+							$this->connection->dbms_name());
+					if (isset($this->columns[$our_columns[$i]]['default']))
+						$sql .= ' DEFAULT '.$this->columns[$our_columns[$i]]['default'];
+					$sql .= ' AFTER '.$this->connection->identifier_escape($their_col);
 					break;
 				}
 				elseif (isset($our_columns[$i+1]) && $our_columns[$i+1] == $their_col){
 					$sql = 'ALTER TABLE '.$this->name.' ADD COLUMN '
 						.$this->connection->identifier_escape($our_columns[$i]).' '
 						.$this->get_meta($this->columns[$our_columns[$i]]['type'],
-							$this->connection->dbms_name())
-						.' BEFORE '.$this->connection->identifier_escape($their_col);
+							$this->connection->dbms_name());
+					if (isset($this->columns[$our_columns[$i]]['default']))
+						$sql .= ' DEFAULT '.$this->columns[$our_columns[$i]]['default'];
+					$sql .= ' BEFORE '.$this->connection->identifier_escape($their_col);
 					break;
 				}
 				if (isset($our_columns[$i-1]) && in_array($our_columns[$i-1],$new_columns)){
 					$sql = 'ALTER TABLE '.$this->name.' ADD COLUMN '
 						.$this->connection->identifier_escape($our_columns[$i]).' '
 						.$this->get_meta($this->columns[$our_columns[$i]]['type'],
-							$this->connection->dbms_name())
-						.' AFTER '.$this->connection->identifier_escape($our_columns[$i-1]);
+							$this->connection->dbms_name());
+					if (isset($this->columns[$our_columns[$i]]['default']))
+						$sql .= ' DEFAULT '.$this->columns[$our_columns[$i]]['default'];
+					$sql .= ' AFTER '.$this->connection->identifier_escape($our_columns[$i-1]);
 					break;
 				}
 			}
