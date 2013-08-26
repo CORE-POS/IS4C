@@ -90,6 +90,7 @@ class PriceCheckPage extends NoInputPage {
 				$CORE_LOCAL->set("msgrepeat",1);
 				$CORE_LOCAL->set("strRemembered",$this->upc);
 				$this->change_page($this->page_url."gui-modules/pos2.php");
+				MiscLib::goodBeep();
 				return False;
 			}
 		}
@@ -118,6 +119,7 @@ class PriceCheckPage extends NoInputPage {
 					_("[clear] to cancel"),
 				);
 				$this->upc = "";
+				MiscLib::errorBeep();				
 			}
 			else {
 				$info = $this->pricing['description'].' :: '.$this->pricing['department'].'<br />';
