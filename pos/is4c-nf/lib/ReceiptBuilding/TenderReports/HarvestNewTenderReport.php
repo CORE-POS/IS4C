@@ -77,37 +77,37 @@ static public function get(){
 		$query = "select tdate,register_no,trans_no,-total AS tender
 		       	from dlog where emp_no=".$CORE_LOCAL->get("CashierNo").
 			" and trans_type='T' AND trans_subtype='".$tender_code."'
-			  ORDER BY tdate";
+			 AND total <> 0 ORDER BY tdate";
 		switch($tender_code){
 		case 'FS':
 			$query = "select tdate,register_no,trans_no,-total AS tender
 				from dlog where emp_no=".$CORE_LOCAL->get("CashierNo").
 				" and trans_type='T' AND trans_subtype IN ('EF','EC','EB','EK')
-				  ORDER BY tdate";
+				  AND total <> 0 ORDER BY tdate";
 			break;
 		case 'CK':
 			$query = "select tdate,register_no,trans_no,-total AS tender
 				from dlog where emp_no=".$CORE_LOCAL->get("CashierNo").
 				" and trans_type='T' AND trans_subtype IN ('PE','BU','EL','PY','TV')
-				  ORDER BY tdate";
+				  AND total <> 0 ORDER BY tdate";
 			break;
 		case 'MC':
 			$query = "select tdate,register_no,trans_no,-total AS tender
 				from dlog where emp_no=".$CORE_LOCAL->get("CashierNo").
 				" and trans_type='T' AND trans_subtype  IN ('CP','MC') AND
-				  upc NOT LIKE '%MAD%' ORDER BY tdate";
+				  upc NOT LIKE '%MAD%' AND total <> 0 ORDER BY tdate";
 			break;
 		case 'AR':
 			$query = "select tdate,register_no,trans_no,total AS tender
 				from dlog where emp_no=".$CORE_LOCAL->get("CashierNo").
-				" and trans_type='D' AND department = 98
+				" and trans_type='D' AND total <> 0 AND department = 98
 				  ORDER BY tdate";
 			break;
 		case 'EQ':
 			$query = "select tdate,register_no,trans_no,total AS tender
 				from dlog where emp_no=".$CORE_LOCAL->get("CashierNo").
 				" and trans_type='D' AND department IN (70,71)
-				  ORDER BY tdate";
+				  AND total <> 0 ORDER BY tdate";
 			break;
 		}
 		$result = $db_a->query($query);
