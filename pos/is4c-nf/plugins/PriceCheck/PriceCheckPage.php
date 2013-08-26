@@ -90,7 +90,6 @@ class PriceCheckPage extends NoInputPage {
 				$CORE_LOCAL->set("msgrepeat",1);
 				$CORE_LOCAL->set("strRemembered",$this->upc);
 				$this->change_page($this->page_url."gui-modules/pos2.php");
-				MiscLib::goodBeep();
 				return False;
 			}
 		}
