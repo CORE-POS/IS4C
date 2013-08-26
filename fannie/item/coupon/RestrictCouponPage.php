@@ -31,7 +31,7 @@ class RestrictCouponPage extends FannieRESTfulPage {
 	protected $title = 'Coupon Restrictions';
 
 	function get_view(){
-		global $FANNIE_OP_DB;
+		global $FANNIE_OP_DB, $FANNIE_URL;
 		$dbc = FannieDB::get($FANNIE_OP_DB);
 
 		$ret = '<form onsubmit="save();return false;">
@@ -49,10 +49,12 @@ class RestrictCouponPage extends FannieRESTfulPage {
 		$model = new DisableCouponModel($dbc);
 		$ret .= '<table cellpadding="4" cellspacing="0" border="1">';
 		foreach($model->find('upc') as $obj){
-			$ret .= sprintf('<tr><td><a onclick="loadcoupon(\'%s\');return false;">%s</a></td>
-					<td>%d</td><td>%s</td></tr>',
+			$ret .= sprintf('<tr><td><a href="" onclick="loadcoupon(\'%s\');return false;">%s</a></td>
+					<td>%d</td><td>%s</td>
+					<td><a href="" onclick="deletecoupon(\'%s\');return false;"><img 
+					src="%ssrc/img/buttons/trash.png" /></a></td></tr>',
 					$obj->upc(), $obj->upc(), $obj->threshold(),
-					$obj->reason()
+					$obj->reason(), $obj->upc(), $FANNIE_URL
 			);
 		}
 		$ret .= '</table>';
@@ -94,15 +96,27 @@ class RestrictCouponPage extends FannieRESTfulPage {
 		return False;
 	}
 
+	function delete_id_handler(){
+		global $FANNIE_OP_DB;
+		$dbc = FannieDB::get($FANNIE_OP_DB);
+
+		$upc = str_pad($this->id, 13, '0', STR_PAD_LEFT);
+		$model = new DisableCouponModel($dbc);
+		$model->upc($upc);
+		$model->delete();
+
+		echo 'Done';
+		return False;
+	}
+
 	function javascript_content(){
 		ob_start();
 		?>
 function loadcoupon(upc){
 	$.ajax({
-	url: 'RestrictCouponPage.php',
+	url: 'RestrictCouponPage.php?id='+upc,
 	type: 'get',
 	dataType: 'json',
-	data: 'id='+upc,
 	success: function(data){
 		$('#upc').val(upc);
 		if (data.limit)
@@ -124,6 +138,17 @@ function save(){
 		location='RestrictCouponPage.php';
 	}
 	});
+}
+function deletecoupon(upc){
+	if (confirm('Remove restrictions for '+upc+'?')){
+		$.ajax({
+		url: 'RestrictCouponPage.php?id='+upc,
+		type: 'delete',
+		success: function(){
+			location='RestrictCouponPage.php';
+		}
+		});
+	}
 }
 		<?php
 		return ob_get_clean();
