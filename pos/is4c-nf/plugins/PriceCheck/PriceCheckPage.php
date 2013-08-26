@@ -122,7 +122,7 @@ class PriceCheckPage extends NoInputPage {
 				MiscLib::errorBeep();				
 			}
 			else {
-				$info = $this->pricing['description'].' :: '.$this->pricing['department'].'<br />';
+				$info = $this->pricing['description'].'<br />'.$this->pricing['department'].'<br />';
 				$info .= _("Price").": ".$this->pricing['price'];
 				if (!empty($this->pricing['memPrice'])){
 					$info .= "<br />("._("Member Price").": ".$this->pricing['memPrice'].")";
