@@ -218,6 +218,8 @@ function do_pricechange(upc, newprice){
 <b>UPC</b>: <input type="number" size="10" name="upc_in" id="upc_in" 
 	class="focused" />
 <input type="submit" value="Go" class="addButton" id="goBtn" />
+<input type="submit" value="M" class="addButton" style="background-color: #009;"
+	onclick="location='SaMenuPage.php';return false;" />
 </form>
 <hr />
 <div id="output_area"></div>

@@ -258,6 +258,8 @@ onfocus="paint_focus('upc_in');"
 <?php echo ($elem=='#upc_in')?'class="focused"':''; ?> 
 />
 <input type="submit" value="Go" class="addButton" id="goBtn" />
+<input type="submit" value="M" class="addButton" style="background-color: #009;"
+	onclick="location='SaMenuPage.php';return false;" />
 </form>
 <hr />
 		<?php
