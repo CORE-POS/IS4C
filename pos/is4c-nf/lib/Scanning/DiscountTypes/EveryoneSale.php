@@ -91,7 +91,7 @@ class EveryoneSale extends DiscountType {
 
 	function addDiscountLine(){
 		global $CORE_LOCAL;	
-		if ($this->savedInfo['discount'] != 0){
+		if ($this->savedRow['specialpricemethod'] == 0 && $this->savedInfo['discount'] != 0){
 			TransRecord::adddiscount($this->savedInfo['discount'],
 				$this->savedRow['department']);
 		}
