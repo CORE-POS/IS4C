@@ -39,6 +39,7 @@ class RestrictCouponPage extends FannieRESTfulPage {
 			<b>UPC</b></td><td><input type="text" id="upc" />
 			</td></tr><tr><td>
 			<b>Limit</b></td><td><input type="text" size="3" value="0" id="limit" />
+			(max uses per transaction)
 			</td></tr><tr><td>
 			Reason</td><td><input type="text" id="reason" />
 			</td></tr></table>
