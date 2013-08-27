@@ -72,6 +72,8 @@ class adminlogin extends NoInputPage {
 			return False;
 		}
 
+		$this->heading = $class::$adminLoginMsg;
+
 		if (isset($_REQUEST['reginput'])){
 			$passwd = $_REQUEST['reginput'];
 			if (strtoupper($passwd) == "CL"){
@@ -130,12 +132,11 @@ class adminlogin extends NoInputPage {
 
 	function body_content(){
 		global $CORE_LOCAL;
-		$heading = $CORE_LOCAL->get("adminLoginMsg");
 		?>
 		<div class="baseHeight">
 		<div class="<?php echo $this->box_color; ?> centeredDisplay">
 		<span class="larger">
-		<?php echo $heading ?>
+		<?php echo $this->heading ?>
 		</span><br />
 		<form name="form" id="formlocal" method="post" 
 			autocomplete="off" action="<?php echo $_SERVER['PHP_SELF']; ?>">
