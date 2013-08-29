@@ -1557,6 +1557,16 @@ function create_trans_dbs($db,$type){
 
 	union all
 
+	select 
+	concat(
+	lpad('SUBTOTAL',44,' '), 
+	lpad(convert(round(l.runningTotal-s.taxTotal-l.tenderTotal+s.transDiscount,2),char),8,' '), 
+	space(4) ) as linetoprint,
+	1 as sequence,null as dept_name, 2 as ordered,'' as upc
+	from lttsummary as l, subtotals as s where s.percentDiscount <> 0
+
+	union all
+
 	select
 	concat(
 	rpad(concat('** ',rtrim(convert(percentdiscount,char)),'% Discount Applied **'),30,' '),
