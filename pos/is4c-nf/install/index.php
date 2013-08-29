@@ -1589,15 +1589,6 @@ function create_trans_dbs($db,$type){
 
 	select 
 	concat(
-	lpad('SUBTOTAL',44,' '),
-	lpad(convert(round(l.runningTotal-s.taxTotal-l.tenderTotal,2),char),8,' '),
-	space(4) ) as linetoprint,1 as sequence,null as dept_name,3 as ordered,'' as upc
-	from lttsummary as l, subtotals as s
-
-	union all
-
-	select 
-	concat(
 	lpad('TAX',44,' '),
 	lpad(convert(round(taxtotal,2),char),8,' '), 
 	space(4) ) as linetoprint,
@@ -1651,6 +1642,16 @@ function create_trans_dbs($db,$type){
 
 		union all
 
+		select 
+		concat(
+		lpad('SUBTOTAL',44,' '), 
+		lpad(convert(round(l.runningTotal-s.taxTotal-l.tenderTotal+s.transDiscount,2),char),8,' '), 
+		space(4) ) as linetoprint,
+		1 as sequence,null as dept_name, 2 as ordered,'' as upc
+		from lttsummary as l, subtotals as s where s.percentDiscount <> 0
+
+		union all
+
 		select
 		left('** '+rtrim(convert(char,percentdiscount))+'% Discount Applied **' + space(30), 30)
 		+ ' ' 
@@ -1667,14 +1668,6 @@ function create_trans_dbs($db,$type){
 		select linetoprint,sequence,null as dept_name,2 as ordered,upc
 		from receipt_reorder_g
 		where linetoprint like 'member discount%'
-
-		union all
-
-		select 
-		right((space(44) + upper(rtrim('SUBTOTAL'))), 44) 
-		+ right((space(8) + convert(varchar,round(l.runningTotal-s.taxTotal-l.tenderTotal,2))),8)
-		+ right((space(4) + ''), 4) as linetoprint,1 as sequence,null as dept_name,3 as ordered,'' as upc
-		from lttsummary as l, subtotals as s
 
 		union all
 
