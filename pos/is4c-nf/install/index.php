@@ -1557,6 +1557,10 @@ function create_trans_dbs($db,$type){
 
 	union all
 
+	select lpad(' ',44,' ') as linetoprint, 1 as sequence, null as dept_name, 1 as ordered, '' as upc
+
+	union all
+
 	select 
 	concat(
 	lpad('SUBTOTAL',44,' '), 
@@ -1639,6 +1643,10 @@ function create_trans_dbs($db,$type){
 		r1.[sequence],r2.dept_name,1 as ordered,r2.upc
 		from receipt_reorder_g r1 join receipt_reorder_g r2 on r1.[sequence]+1=r2.[sequence]
 		where r1.linetoprint like '** T%' and r2.dept_name is not null and r1.linetoprint<>'** Tare Weight 0 **'
+
+		union all
+		
+		select lpad(' ',44,' ') as linetoprint, 1 as sequence, null as dept_name, 1 as ordered, '' as upc
 
 		union all
 
