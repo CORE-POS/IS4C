@@ -139,12 +139,17 @@ class Steering extends Parser {
 			else {
 				Database::setglobalvalue("LoggedIn", 0);
 				$CORE_LOCAL->set("LoggedIn",0);
-				if ($str == 'SO'){
-					ReceiptLib::drawerKick();
-					ReceiptLib::freeDrawer(ReceiptLib::currentDrawer());
-				}
 				$CORE_LOCAL->set("training",0);
 				$CORE_LOCAL->set("gui-scale","no");
+				if ($str == 'SO'){
+					if (session_id() != '')
+						session_write_close();
+					$kicker_class = ($CORE_LOCAL->get("kickerModule")=="") ? 'Kicker' : $CORE_LOCAL->get('kickerModule');
+					$kicker_object = new $kicker_class();
+					if ($kicker_object->kickOnSignOut())
+						ReceiptLib::drawerKick();
+					ReceiptLib::freeDrawer(ReceiptLib::currentDrawer());
+				}
 				$this->ret['main_frame'] = $my_url."login.php";
 			}
 			return True;
