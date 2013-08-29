@@ -817,6 +817,8 @@ static public function receiptDetail($reprint=False,$trans_num='') { // put into
 					$detail .= "\n";
 				}
 			}
+			// add newline after item listing and before totals 
+			if ($row[1] == 1) $detail .= "\n";
 			/***** jqh 12/14/05 fix tax exempt on receipt *****/
 			if ($row[1]==2 and $CORE_LOCAL->get("TaxExempt")==1){
 				$detail .= "                                         TAX    0.00\n";
