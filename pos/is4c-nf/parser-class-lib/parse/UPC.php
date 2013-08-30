@@ -138,7 +138,7 @@ class UPC extends Parser {
 		*/
 		$deptmods = $CORE_LOCAL->get('SpecialDeptMap');
 		if (is_array($deptmods) && isset($deptmods[$row['department']])){
-			foreach($deptmods[$index] as $mod){
+			foreach($deptmods[$row['department']] as $mod){
 				$obj = new $mod();
 				$ret = $obj->handle($row['department'],$row['normal_price'],$ret);
 				if ($ret['main_frame'])
