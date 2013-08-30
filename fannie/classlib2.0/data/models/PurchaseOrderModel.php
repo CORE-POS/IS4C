@@ -34,7 +34,8 @@ class PurchaseOrderModel extends BasicModel {
 	'creationDate' => array('type'=>'DATETIME'),
 	'placed' => array('type'=>'TINYINT','default'=>0,'index'=>True),
 	'placedDate' => array('type'=>'DATETIME'),
-	'userID' => array('type'=>'INT')
+	'userID' => array('type'=>'INT'),
+	'standingID' => array('type'=>'INT')
 	);
 
 	protected $preferred_db = 'op';
@@ -148,6 +149,19 @@ class PurchaseOrderModel extends BasicModel {
 		}
 		else{
 			$this->instance["userID"] = func_get_arg(0);
+		}
+	}
+
+	public function standingID(){
+		if(func_num_args() == 0){
+			if(isset($this->instance["standingID"]))
+				return $this->instance["standingID"];
+			elseif(isset($this->columns["standingID"]["default"]))
+				return $this->columns["standingID"]["default"];
+			else return null;
+		}
+		else{
+			$this->instance["standingID"] = func_get_arg(0);
 		}
 	}
 	/* END ACCESSOR FUNCTIONS */
