@@ -88,6 +88,7 @@ class pos2 extends BasicPage {
 				$CORE_LOCAL->set("preparse_chain",PreParser::get_preparse_chain());
 
 			foreach ($CORE_LOCAL->get("preparse_chain") as $cn){
+				if (!class_exists($cn)) continue;
 				$p = new $cn();
 				if ($p->check($entered))
 					$entered = $p->parse($entered);
@@ -107,6 +108,7 @@ class pos2 extends BasicPage {
 
 				$result = False;
 				foreach ($CORE_LOCAL->get("parse_chain") as $cn){
+					if (!class_exists($cn)) continue;
 					$p = new $cn();
 					if ($p->check($entered)){
 						$result = $p->parse($entered);

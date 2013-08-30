@@ -79,6 +79,7 @@ class mgrlogin extends NoInputPage {
 		</script>
 		<?php
 		$this->default_parsewrapper_js();
+		$this->scanner_scale_polling(True);
 	}
 
 	function body_content(){

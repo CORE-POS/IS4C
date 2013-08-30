@@ -215,9 +215,15 @@ function do_pricechange(upc, newprice){
 <head><title>Price Check</title></head>
 <body onload="$('<?php echo $elem; ?>').focus();">
 <form onsubmit="lookupItem(); return false;" method="get" id="upcScanForm">
+<div style="float: left;">
+<a href="SaMenuPage.php">Menu</a><br />
 <b>UPC</b>: <input type="number" size="10" name="upc_in" id="upc_in" 
 	class="focused" />
+</div>
+<div style="float: left;">
 <input type="submit" value="Go" class="addButton" id="goBtn" />
+</div>
+<div style="clear:left;"></div>
 </form>
 <hr />
 <div id="output_area"></div>
