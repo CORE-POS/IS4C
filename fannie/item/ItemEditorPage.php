@@ -279,8 +279,11 @@ class ItemEditorPage extends FanniePage {
 		foreach($FANNIE_PRODUCT_MODULES as $mod){
 			if ($mod == '') continue;
 			if (isset($shown[$mod])) continue;
+			if (!class_exists($mod))
+				include_once(dirname(__FILE__).'/modules/'.$mod.'.php');
+			if (!class_exists($mod)) continue;
 			$obj = new $mod();
-			$ret .= $mod->ShowEditForm($upc);
+			$ret .= $obj->ShowEditForm($upc);
 		}
 
 		$ret .= '</form>';

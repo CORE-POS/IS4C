@@ -84,7 +84,7 @@ class BaseItemModule extends ItemModule {
 			$args = array($upc);
 			$vID = FormLib::get_form_value('vid','');
 			if ($vID !== ''){
-				$vendorP .= ' AND vendorID=?';
+				$vendorP .= ' AND i.vendorID=?';
 				$args[] = $vID;
 			}
 			$vendorP = $dbc->prepare_statement($vendorP);
@@ -100,7 +100,7 @@ class BaseItemModule extends ItemModule {
 				$rowItem['distributor'] = $v['distributor'];
 
 				while($v = $dbc->fetch_row($vendorR)){
-					printf('This product is also in <a href="?upc=%s&vid=%d">%s</a><br />',
+					printf('This product is also in <a href="?searchupc=%s&vid=%d">%s</a><br />',
 						$upc,$v['vendorID'],$v['distributor']);
 				}
 			}
