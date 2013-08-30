@@ -241,7 +241,7 @@ function deleteLogin($name){
   $deleteQ = $sql->prepare_statement("delete from Users where name=?");
   $deleteR = $sql->exec_statement($deleteQ,array($name));
 
-  $groupQ = $sql->prepare_statement("DELETE FROM userGroups WHERE name=?");
+  $groupQ = $sql->prepare_statement("DELETE FROM userGroups WHERE username=?");
   $groupR = $sql->exec_statement($groupQ,array($name));
 
   return true;
