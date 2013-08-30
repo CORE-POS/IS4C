@@ -873,6 +873,9 @@ function create_op_dbs($con){
 			'PurchaseOrderItems','op');
 
 	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+			'internalSKUs','op');
+
+	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 			'emailLog','op');
 
 	$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
