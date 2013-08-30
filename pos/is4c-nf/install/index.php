@@ -536,6 +536,8 @@ function create_trans_dbs($db,$type){
 				then 'Mbr special'
 			when trans_status = 'S'
 				then 'Staff special'
+			when unitPrice = 0.01
+				then ''
 			when scale <> 0 and quantity <> 0 
 				then concat(quantity, ' @ ', unitPrice)
 			when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity = 1
@@ -597,6 +599,8 @@ function create_trans_dbs($db,$type){
 					then 'Mbr special'
 				when trans_status = 'S'
 					then 'Staff special'
+				when unitPrice = 0.01
+					then ''
 				when scale <> 0 and quantity <> 0 
 					then quantity+ ' @ '+ unitPrice
 				when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity = 1
@@ -788,6 +792,8 @@ function create_trans_dbs($db,$type){
 				then 'Mbr special'
 			when trans_status = 'S'
 				then 'Staff special'
+			when unitPrice = 0.01
+				then ''
 			when scale <> 0 and quantity <> 0 
 				then concat(quantity, ' @ ', unitPrice)
 			when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity = 1
@@ -847,6 +853,8 @@ function create_trans_dbs($db,$type){
 					then 'Mbr special'
 				when trans_status = 'S'
 					then 'Staff special'
+				when unitPrice = 0.01
+					then ''
 				when scale <> 0 and quantity <> 0 
 					then quantity+ ' @ '+ unitPrice
 				when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity = 1
@@ -1281,6 +1289,8 @@ function create_trans_dbs($db,$type){
 			then 'Mbr special'
 		when trans_status = 'S'
 			then 'Staff special'
+		when unitPrice = 0.01
+			then ''
 		when charflag = 'SO'
 			then ''
 		when scale <> 0 and quantity <> 0 
@@ -1361,6 +1371,8 @@ function create_trans_dbs($db,$type){
 				then 'Mbr special'
 			when trans_status = 'S'
 				then 'Staff special'
+			when unitPrice = 0.01
+				then ''
 			when scale <> 0 and quantity <> 0 
 				then convert(varchar, quantity) + ' @ ' + convert(varchar, unitPrice)
 			when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity = 1
@@ -1855,6 +1867,8 @@ function create_trans_dbs($db,$type){
 				then 'Mbr special'
 			when trans_status = 'S'
 				then 'Staff special'
+			when unitPrice = 0.01
+				then ''
 			when scale <> 0 and quantity <> 0 
 				then concat(convert(quantity,char),' @ ',convert(unitPrice,char))
 			when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity = 1
@@ -1931,6 +1945,8 @@ function create_trans_dbs($db,$type){
 				then 'Mbr special'
 			when trans_status = 'S'
 				then 'Staff special'
+			when unitPrice = 0.01
+				then ''
 			when scale <> 0 and quantity <> 0 
 				then convert(varchar, quantity) + ' @ ' + convert(varchar, unitPrice)
 			when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity = 1
