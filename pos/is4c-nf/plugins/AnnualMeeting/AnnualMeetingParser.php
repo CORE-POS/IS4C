@@ -56,7 +56,7 @@ class AnnualMeetingParser extends Parser {
 			$opts = array(
 				$desc.' (Steak)' => 'M',
 				$desc.' (Risotto)' => 'V',
-				$desc.' (Squash)' => 'S'
+				$desc.' (Squash V)' => 'S'
 			);
 			if ($str == 1041){
 				$opts[$desc.' (Kids)'] = 'K';
