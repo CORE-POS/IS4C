@@ -840,7 +840,7 @@ static public function receiptDetail($reprint=False,$trans_num='') { // put into
 					if ( strpos($row[0]," TOTAL") ) { 		
 						// if it's the grand total line . . .
 						$detail .= self::$PRINT_OBJ->TextStyle(True,True);
-						$detail .= $row[0]."\n";
+						$detail .= $row[0]."\n\n";
 						$detail .= self::$PRINT_OBJ->TextStyle(True,False);
 					} else {
 						$detail .= $row[0]."\n";
