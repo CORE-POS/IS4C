@@ -34,11 +34,13 @@ class PurchasingIndexPage extends FannieRESTfulPage {
 	function get_view(){
 
 		return '<ul>
-			<li>View Orders</li>
+			<li><a href="ViewPurchaseOrders.php">View Orders</a>
+			</li>
 			<li>Create Order
 				<ul>
 				<li><a href="EditOnePurchaseOrder.php">By Vendor</a></li>
 				<li>By Item</li>
+				</ul>
 			</li>
 			</ul>';
 		
