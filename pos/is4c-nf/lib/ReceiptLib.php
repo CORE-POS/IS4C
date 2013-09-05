@@ -1158,19 +1158,19 @@ static public function printReceipt($arg1,$second=False,$email=False) {
 			if (trim($CORE_LOCAL->get("memberID")) != $CORE_LOCAL->get("defaultNonMem")) {
 				if ($CORE_LOCAL->get("newReceipt")>=1){
 					$receipt['any'] .= self::$PRINT_OBJ->TextStyle(True,False,True);
-					$receipt['any'] .= self::$PRINT_OBJ->centerString("thank you - owner ".$member,True);
+					$receipt['any'] .= self::$PRINT_OBJ->centerString("Thank You - Member ".$member,True);
 					$receipt['any'] .= self::$PRINT_OBJ->TextStyle(True);
 					$receipt['any'] .= "\n\n";
 				}
 				else{
-					$receipt['any'] .= self::$PRINT_OBJ->centerString("Thank You - member ".$member);
+					$receipt['any'] .= self::$PRINT_OBJ->centerString("Thank You - Member ".$member);
 					$receipt['any'] .= "\n";
 				}
 			}
 			else {
 				if ($CORE_LOCAL->get("newReceipt")>=1){
 					$receipt['any'] .= self::$PRINT_OBJ->TextStyle(True,False,True);
-					$receipt['any'] .= self::$PRINT_OBJ->centerString("thank you",True);
+					$receipt['any'] .= self::$PRINT_OBJ->centerString("Thank You",True);
 					$receipt['any'] .= self::$PRINT_OBJ->TextStyle(True);
 					$receipt['any'] .= "\n\n";
 				}
