@@ -1562,13 +1562,6 @@ function create_trans_dbs($db,$type){
 
 	union all
 
-	select replace(replace(replace(r1.linetoprint,'** T',' = t'),' **',' = '),'W','w') as linetoprint,
-	r1.sequence,r2.dept_name,1 as ordered,r2.upc
-	from receipt_reorder_g as r1 join receipt_reorder_g as r2 on r1.sequence+1=r2.sequence
-	where r1.linetoprint like '** T%' and r2.dept_name is not null and r1.linetoprint<>'** Tare Weight 0 **'
-
-	union all
-
 	select lpad(' ',44,' ') as linetoprint, 1 as sequence, null as dept_name, 1 as ordered, '' as upc
 
 	union all
@@ -1579,10 +1572,17 @@ function create_trans_dbs($db,$type){
 	lpad(convert(round(l.runningTotal-s.taxTotal-l.tenderTotal+s.transDiscount,2),char),8,' '), 
 	space(4) ) as linetoprint,
 	1 as sequence,null as dept_name, 2 as ordered,'' as upc
-	from lttsummary as l, subtotals as s where s.percentDiscount <> 0
+	from lttsummary as l, subtotals as s
 
 	union all
 
+	select replace(replace(replace(r1.linetoprint,'** T',' = t'),' **',' = '),'W','w') as linetoprint,
+	r1.sequence,r2.dept_name,1 as ordered,r2.upc
+	from receipt_reorder_g as r1 join receipt_reorder_g as r2 on r1.sequence+1=r2.sequence
+	where r1.linetoprint like '** T%' and r2.dept_name is not null and r1.linetoprint<>'** Tare Weight 0 **'
+
+	union all
+	
 	select
 	concat(
 	rpad(concat('** ',rtrim(convert(percentdiscount,char)),'% Discount Applied **'),30,' '),
