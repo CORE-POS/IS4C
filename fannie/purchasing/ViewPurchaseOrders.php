@@ -37,9 +37,24 @@ class ViewPurchaseOrders extends FannieRESTfulPage {
 	function preprocess(){
 		$this->__routes[] = 'get<pending>';
 		$this->__routes[] = 'get<placed>';
+		$this->__routes[] = 'post<id><setPlaced>';
 		if (FormLib::get_form_value('all') === '1')
 			$this->show_all = True;
 		return parent::preprocess();
+	}
+
+	function post_id_setPlaced_handler(){
+		global $FANNIE_OP_DB;
+		$model = new PurchaseOrderModel(FannieDB::get($FANNIE_OP_DB));
+		$model->orderID($this->id);
+		$model->placed($this->setPlaced);
+		if ($this->setPlaced == 1)
+			$model->placedDate(date('Y-m-d H:m:s'));
+		else
+			$model->placedDate(null);
+		$model->save();
+		echo ($this->setPlaced == 1) ? $model->placedDate() : 'n/a';
+		return False;
 	}
 
 	function get_pending_handler(){
@@ -110,7 +125,9 @@ class ViewPurchaseOrders extends FannieRESTfulPage {
 		$ret .= '&nbsp;&nbsp;&nbsp;&nbsp;';
 		$ret .= '<b>Created</b>: '.$order->creationDate();
 		$ret .= '&nbsp;&nbsp;&nbsp;&nbsp;';
-		$ret .= '<b>Placed</b>: '.($order->placed() ? $order->placedDate() : 'n/a');
+		$ret .= '<b>Placed</b>: <span id="orderPlacedSpan">'.($order->placed() ? $order->placedDate() : 'n/a').'</span>';
+		$ret .= '<input type="checkbox" '.($order->placed() ? 'checked' : '').' id="placedCheckbox"
+				onclick="togglePlaced('.$this->id.');" />';
 
 		$model = new PurchaseOrderItemsModel($dbc);
 		$model->orderID($this->id);
@@ -137,6 +154,9 @@ class ViewPurchaseOrders extends FannieRESTfulPage {
 			);
 		}
 		$ret .= '</table>';
+
+		$this->add_script('js/view.js');
+
 		return $ret;
 	}
 

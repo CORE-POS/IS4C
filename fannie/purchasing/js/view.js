@@ -11,3 +11,20 @@ function fetchOrders(){
 		}
 	});
 }
+
+function togglePlaced(orderID){
+	var dataStr = 'id='+orderID+'&setPlaced=';
+	if ($('#placedCheckbox').prop('checked'))
+		dataStr += '1';
+	else
+		dataStr += '0';
+
+	$.ajax({
+		url: 'ViewPurchaseOrders.php?',
+		type: 'post',
+		data: dataStr,
+		success: function(data){
+			$('#orderPlacedSpan').html(data);
+		}
+	});
+}
