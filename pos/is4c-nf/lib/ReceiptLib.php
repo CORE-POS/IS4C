@@ -199,7 +199,7 @@ static public function printReceiptHeader($dateTimeStamp, $ref) {
 	$time = self::build_time($dateTimeStamp);
 	$time = str_replace(" ","     ",$time);
 	$spaces = 55 - strlen($time) - strlen($ref);
-	$receipt .= $time.str_repeat(' ',$spaces).$ref."\n";
+	$receipt .= $time.str_repeat(' ',$spaces).$ref."\n\n";
 			
 	return $receipt;
 }
