@@ -39,7 +39,7 @@ class PurchasingIndexPage extends FannieRESTfulPage {
 			<li>Create Order
 				<ul>
 				<li><a href="EditOnePurchaseOrder.php">By Vendor</a></li>
-				<li>By Item</li>
+				<li><a href="EditManyPurchaseOrders.php">By Item</a></li>
 				</ul>
 			</li>
 			</ul>';
