@@ -77,7 +77,7 @@ class MemberLookup {
 		$ret = $this->default_value();
 		while($w = $dbc->fetch_row($result)){
 			$key = $w['CardNo'].'::'.$w['personNum'];
-			$val = $w['LastName'].', '.$w['FirstName'];
+			$val = $w['CardNo'].' '.$w['LastName'].', '.$w['FirstName'];
 			$ret['results'][$key] = $val;
 		}
 		return $ret;
@@ -97,7 +97,7 @@ class MemberLookup {
 		$ret = $this->default_value();
 		while($w = $dbc->fetch_row($result)){
 			$key = $w['CardNo'].'::'.$w['personNum'];
-			$val = $w['LastName'].', '.$w['FirstName'];
+			$val = $w['CardNo'].' '.$w['LastName'].', '.$w['FirstName'];
 			$ret['results'][$key] = $val;
 		}
 		return $ret;
