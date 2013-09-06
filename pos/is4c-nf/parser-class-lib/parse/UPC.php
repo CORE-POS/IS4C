@@ -76,11 +76,13 @@ class UPC extends Parser {
 		else $upc = substr("0000000000000".$entered, -13);
 
 		/* extract scale-sticker prices */
-		$scaleprice = 0;
+		$scalepriceUPC = 0;
+		$scalepriceEAN = 0;
 		if (substr($upc, 0, 3) == "002") {
-			$scaleprice = MiscLib::truncate2(substr($upc, -4)/100);
+			$scalepriceUPC = MiscLib::truncate2(substr($upc, -4)/100);
+			$scalepriceEAN = MiscLib::truncate2(substr($upc, -5)/100);
 			$upc = substr($upc, 0, 8)."00000";
-			if ($upc == "0020006000000" || $upc == "0020010000000") $scaleprice *= -1;
+			if ($upc == "0020006000000" || $upc == "0020010000000") $scalepriceUPC *= -1;
 		}
 
 		$db = Database::pDataConnect();
@@ -88,7 +90,7 @@ class UPC extends Parser {
 			qttyEnforced,department,local,cost,tax,foodstamp,discount,
 			discounttype,specialpricemethod,special_price,groupprice,
 			pricemethod,quantity,specialgroupprice,specialquantity,
-			mixmatchcode,idEnforced,tareweight
+			mixmatchcode,idEnforced,tareweight,scaleprice
 		       	from products where upc = '".$upc."'";
 		$result = $db->query($query);
 		$num_rows = $db->num_rows($result);
@@ -211,6 +213,9 @@ class UPC extends Parser {
 			}
 		}
 
+		/**
+		  Apply automatic tare weight
+		*/
 		if ($row['tareweight'] > 0){
 			$peek = PrehLib::peekItem();
 			if (strstr($peek,"** Tare Weight") === False)
@@ -226,6 +231,8 @@ class UPC extends Parser {
 		}
 
 		$scale = ($row["scale"] == 0) ? 0 : 1;
+		/* get correct scale price */
+		$scaleprice = ($row['scaleprice'] == 0) ? $scalepriceUPC : $scalepriceEAN;
 
 		/* need a weight with this item
 		   retry the UPC in a few milliseconds and see
