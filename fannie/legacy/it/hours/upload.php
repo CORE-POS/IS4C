@@ -80,6 +80,8 @@ if (isset($_POST["MAX_FILE_SIZE"])){
 		if ($db->num_rows($checkR) < 1){
 			echo "Notice: ADP ID #$adpID doesn't match any current employee.";
 			echo "Data for this ID is being omitted.<br />";
+			foreach($fields as $f) echo $f.' ';
+			echo '<hr />';
 			continue;
 		}
 

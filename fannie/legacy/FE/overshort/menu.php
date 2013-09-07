@@ -29,6 +29,11 @@
 		<a href="journal.php">Link</a></td>
 	<td>Get credits/debits by sales code (page #4)</td>
 </tr>
+<tr>
+	<td><b>MAS Export</b><br />
+		<a href="/git/fannie/modules/plugins2.0/OverShortTools/OverShortMAS.php">Link</a></td>
+	<td>Export POS data as CSV formatted for input into MAS</td>
+</tr>
 
 </table>
 

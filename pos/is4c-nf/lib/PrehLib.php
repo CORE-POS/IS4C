@@ -943,6 +943,15 @@ static public function ttl() {
 
 		$CORE_LOCAL->set("ttlflag",1);
 		Database::setglobalvalue("TTLFlag", 1);
+
+		if ($CORE_LOCAL->get("percentDiscount") > 0) {
+			if ($CORE_LOCAL->get("member_subtotal") === False){
+				TransRecord::addItem("", "Subtotal", "", "", "D", 0, 0, MiscLib::truncate2($CORE_LOCAL->get("transDiscount") + $CORE_LOCAL->get("subtotal")), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7);
+			}
+			TransRecord::discountnotify($CORE_LOCAL->get("percentDiscount"));
+			TransRecord::addItem("", $CORE_LOCAL->get("percentDiscount")."% Discount", "C", "", "D", 0, 0, MiscLib::truncate2(-1 * $CORE_LOCAL->get("transDiscount")), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5);
+		}
+
 		$temp = self::chargeOk();
 		if ($CORE_LOCAL->get("balance") < $CORE_LOCAL->get("memChargeTotal") && $CORE_LOCAL->get("memChargeTotal") > 0){
 			if ($CORE_LOCAL->get('msgrepeat') == 0){
@@ -956,13 +965,6 @@ static public function ttl() {
 			}
 		}
 
-		if ($CORE_LOCAL->get("percentDiscount") > 0) {
-			if ($CORE_LOCAL->get("member_subtotal") === False){
-				TransRecord::addItem("", "Subtotal", "", "", "D", 0, 0, MiscLib::truncate2($CORE_LOCAL->get("transDiscount") + $CORE_LOCAL->get("subtotal")), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7);
-			}
-			TransRecord::discountnotify($CORE_LOCAL->get("percentDiscount"));
-			TransRecord::addItem("", $CORE_LOCAL->get("percentDiscount")."% Discount", "C", "", "D", 0, 0, MiscLib::truncate2(-1 * $CORE_LOCAL->get("transDiscount")), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5);
-		}
 		$amtDue = str_replace(",", "", $CORE_LOCAL->get("amtdue"));
 
 		// check in case something else like an

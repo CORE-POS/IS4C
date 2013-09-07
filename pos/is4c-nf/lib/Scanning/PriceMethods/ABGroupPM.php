@@ -86,13 +86,14 @@ class ABGroupPM extends PriceMethod {
 		// extra checks to make sure the maximum
 		// discount on scale items is "free"
 		$q2 = "SELECT sum(CASE WHEN scale=0 THEN ItemQtty ELSE 1 END),
-			max(department),max(scale),max(total) FROM localtemptrans 
+			max(department),max(scale),max(total),max(quantity) FROM localtemptrans 
 			WHERE mixMatch='$discMM' 
 			and trans_status <> 'R'";
 		$r2 = $dbt->query($q2);
 		$dept2 = 0;
 		$discs = 0;
 		$discountIsScale = false;
+		$discountScaleQty = 0;
 		$scaleDiscMax = 0;
 		if($dbt->num_rows($r2)>0){
 			$rowd = $dbt->fetch_row($r2);
@@ -100,10 +101,12 @@ class ABGroupPM extends PriceMethod {
 			$dept2 = $rowd[1];
 			if ($rowd[2]==1) $discountIsScale = true;
 			$scaleDiscMax = $rowd[3];
+			$discountScaleQty = $rowd[4];
 		}
 		if ($quantity != (int)$quantity && $mixMatch < 0){
 			$discountIsScale = true;
 			$scaleDiscMax = $quantity * $unitPrice;
+			$discountScaleQty = $quantity;
 		}
 
 		// items that have already been used in an AB set
@@ -143,6 +146,8 @@ class ABGroupPM extends PriceMethod {
 
 		if ($sets > 0){
 			$maxDiscount = $sets*$groupPrice;
+			if ($discountIsScale && $discountScaleQty != 0)
+				$maxDiscount = $sets*$discountScaleQty*$groupPrice;
 			if ($scaleDiscMax != 0 && $maxDiscount > $scaleDiscMax)
 				$maxDiscount = $scaleDiscMax;
 
@@ -160,8 +165,8 @@ class ABGroupPM extends PriceMethod {
 				'',
 				$row['department'],
 				$sets,
-				$pricing['unitPrice'],
-				MiscLib::truncate2($sets*$pricing['unitPrice']),
+				$pricing['regPrice'],
+				MiscLib::truncate2($sets*$pricing['regPrice']),
 				$pricing['regPrice'],
 				$row['scale'],
 				$row['tax'],
@@ -197,8 +202,8 @@ class ABGroupPM extends PriceMethod {
 				' ',
 				$row['department'],
 				$quantity,
-				$pricing['unitPrice'],
-				MiscLib::truncate2($pricing['unitPrice'] * $quantity),
+				$pricing['regPrice'],
+				MiscLib::truncate2($pricing['regPrice'] * $quantity),
 				$pricing['regPrice'],
 				$row['scale'],
 				$row['tax'],

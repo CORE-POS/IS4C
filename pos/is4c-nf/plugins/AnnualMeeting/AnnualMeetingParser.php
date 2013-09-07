@@ -39,6 +39,8 @@ class AnnualMeetingParser extends Parser {
 				return True;
 			elseif(strtoupper($str[4])=='V')
 				return True;
+			elseif(strtoupper($str[4])=='S')
+				return True;
 			elseif(strtoupper($str[4])=='K')
 				return True;
 		}
@@ -52,8 +54,9 @@ class AnnualMeetingParser extends Parser {
 			$CORE_LOCAL->set('qmInput',$str);
 			$desc = $this->descriptions[$str];
 			$opts = array(
-				$desc.' (Meat)' => 'M',
-				$desc.' (Veg)' => 'V'
+				$desc.' (Steak)' => 'M',
+				$desc.' (Risotto)' => 'V',
+				$desc.' (Squash V)' => 'S'
 			);
 			if ($str == 1041){
 				$opts[$desc.' (Kids)'] = 'K';
