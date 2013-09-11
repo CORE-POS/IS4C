@@ -53,6 +53,14 @@ class StoreChargeTender extends TenderModule {
 
 		return True;
 	}
+
+	function DefaultPrompt(){
+		// don't prompt at all. just apply the tender
+		global $CORE_LOCAL;
+		$amt = $this->DefaultTotal();
+		$CORE_LOCAL->set('strEntered', (100*$amt).$this->tender_code);
+		return MiscLib::base_url().'gui-modules/boxMsg2.php?autoconfirm=1';
+	}
 	
 	/**
 	  Set up state and redirect if needed
