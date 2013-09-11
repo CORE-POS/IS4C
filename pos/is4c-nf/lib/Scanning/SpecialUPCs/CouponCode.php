@@ -70,12 +70,26 @@ var $ean;
 			return $json;
 		}
 
-		$query2 = "SELECT reason FROM disableCoupon WHERE upc='$upc'";
+		$query2 = "SELECT reason, threshold FROM disableCoupon WHERE upc='$upc'";
 		$result2 = $db->query($query2);
-		if ($db->num_rows($result2) > 0){
-			$reason = array_pop($db->fetch_row($result2));
-			$json['output'] = DisplayLib::boxMsg(_("coupon disabled")."<br />".$reason);
-			return $json;
+		if ($result2 && $db->num_rows($result2) > 0){
+			$row = $db->fetch_row($result2);
+			if ($row['threshold'] <= 0){
+				$json['output'] = DisplayLib::boxMsg(_("coupon disabled")."<br />".$row['reason']);
+				return $json;
+			}
+			else {
+				$transDB = Database::tDataConnect();
+				$q = "SELECT SUM(quantity) FROM localtemptrans WHERE upc='$upc'";
+				$r = $transDB->query($q);
+				if ($transDB->num_rows($r) > 0){
+					$qty = array_pop($transDB->fetch_row($r));
+					if ($qty >= $row['threshold']){
+						$json['output'] = DisplayLib::boxMsg(_('coupon already applied'));
+						return $json;
+					}
+				}
+			}
 		}
 
 		$row = $db->fetch_array($result);
