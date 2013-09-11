@@ -200,7 +200,8 @@ class FannieReportPage extends FanniePage {
 	  The data is stored as a serialized, gzcompressed string.
 	*/
 	function check_data_cache(){
-		global $dbc,$FANNIE_ARCHIVE_DB;
+		global $FANNIE_ARCHIVE_DB;
+		$dbc = FannieDB::get($FANNIE_ARCHIVE_DB);
 		if ($this->report_cache != 'day' && $this->report_cache != 'month')
 			return False;
 		$table = $FANNIE_ARCHIVE_DB.$dbc->sep()."reportDataCache";
@@ -211,8 +212,10 @@ class FannieReportPage extends FanniePage {
 		$query = $dbc->prepare_statement("SELECT report_data FROM $table WHERE
 			hash_key=? AND expires >= ".$dbc->now());
 		$result = $dbc->exec_statement($query,array($hash));
-		if ($dbc->num_rows($result) > 0)
-			return array_pop($dbc->fetch_row($result));
+		if ($dbc->num_rows($result) > 0){
+			$ret = $dbc->fetch_row($result);
+			return $ret[0];
+		}
 		else
 			return False;
 	}
@@ -225,7 +228,8 @@ class FannieReportPage extends FanniePage {
 	  See check_data_cache for details
 	*/
 	function freshen_cache($data){
-		global $dbc,$FANNIE_ARCHIVE_DB;
+		global $FANNIE_ARCHIVE_DB;
+		$dbc = FannieDB::get($FANNIE_ARCHIVE_DB);
 		if ($this->report_cache != 'day' && $this->report_cache != 'month')
 			return False;
 		$table = $FANNIE_ARCHIVE_DB.$dbc->sep()."reportDataCache";
