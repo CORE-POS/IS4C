@@ -17,7 +17,7 @@ Use:
 Information about how to contact a vendor
 */
 $CREATE['op.vendorContact'] = "
-	create table vendors (
+	create table vendorContact (
 		vendorID int,
 		phone	VARCHAR(15),
 		fax	VARCHAR(15),

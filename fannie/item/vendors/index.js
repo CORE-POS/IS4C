@@ -88,3 +88,49 @@ function newvendor(){
 		}
 	});
 }
+
+function editSaveVC(vendorID){
+	if ($('#vcPhoneEdit').length == 0)
+		editVC(vendorID);
+	else
+		saveVC(vendorID);
+}
+
+function editVC(vendorID){
+	var phone = $('#vcPhone').html();
+	$('#vcPhone').html('<input type="text" id="vcPhoneEdit" value="'+phone+'" />');
+
+	var fax = $('#vcFax').html();
+	$('#vcFax').html('<input type="text" id="vcFaxEdit" value="'+fax+'" />');
+
+	var email = $('#vcEmail').html();
+	$('#vcEmail').html('<input type="text" id="vcEmailEdit" value="'+email+'" />');
+
+	var web = $('#vcWebsite').html();
+	$('#vcWebsite').html('<input type="text" id="vcWebsiteEdit" value="'+web+'" />');
+
+	var notes = $('#vcNotes').html();
+	$('#vcNotes').html('<br /><textarea rows="5" cols="35" id="vcNotesEdit">'+notes+'</textarea>');
+
+	$('#vcEditSave').html('Save Contact Info');
+	$('#vcPhoneEdit').focus();
+}
+
+function saveVC(vendorID){
+	var dataStr = 'vendorID='+vendorID;
+	dataStr += '&phone='+$('#vcPhoneEdit').val();
+	dataStr += '&fax='+$('#vcFaxEdit').val();
+	dataStr += '&email='+$('#vcEmailEdit').val();
+	dataStr += '&website='+$('#vcWebsiteEdit').val();
+	dataStr += '&notes='+$('#vcNotesEdit').val();
+	dataStr += '&action=saveContactInfo';
+
+	$.ajax({
+		url: 'VendorIndexPage.php',
+		method: 'post',
+		data: dataStr,
+		success: function(resp){
+			$('#contentarea').html(resp);
+		}
+	});
+}
