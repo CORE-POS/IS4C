@@ -122,6 +122,7 @@ class adminlogin extends NoInputPage {
 				}
 			}
 		}
+		UdpComm::udpSend('twoPairs');
 		return True;
 	}
 
