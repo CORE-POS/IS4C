@@ -148,7 +148,7 @@ static public function check_password($password,$activity=1){
 		}
 		else return False;
 	}
-
+	UdpComm::udpSend('goodBeep');
 	return True;
 }
 
@@ -181,6 +181,7 @@ static public function ns_check_password($password){
 
 	if ($num_row2 > 0) {
 		ReceiptLib::drawerKick();
+		UdpComm::udpSend('goodBeep');		
 		return True;
 	}
 	return False;
