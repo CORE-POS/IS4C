@@ -159,7 +159,7 @@ class suspendedlist extends NoInputPage {
 		else {	
 			$localQ = "select {$cols} from suspendedtoday where register_no = $reg "
 				." and emp_no = ".$emp." and trans_no = ".$trans." order by trans_id";
-			$success = $db_a->query("insert into localtemptrans {$cols} ".$localQ);
+			$success = $db_a->query("insert into localtemptrans ({$cols}) ".$localQ);
 			if ($success)
 				$db_a->query($query_del);
 		}
