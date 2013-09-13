@@ -25,41 +25,40 @@ include('../config.php');
 include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 include($FANNIE_ROOT.'src/JsonLib.php');
 
-class EditOnePurchaseOrder extends FannieRESTfulPage {
-	
+class EditManyPurchaseOrders extends FannieRESTfulPage {
+
 	protected $header = 'Purchase Orders';
 	protected $title = 'Purchase Orders';
 
 	protected $must_authenticate = True;
-	
+
 	function preprocess(){
-		$this->__routes[] = 'get<id><search>';
+		$this->__routes[] = 'get<search>';
 		$this->__routes[] = 'get<id><sku><qty>';
 		return parent::preprocess();
 	}
 
-	/**
-	  AJAX call: ?id=<vendor ID>&search=<search string>
-	  Find vendor items based on search string
-	*/
-	function get_id_search_handler(){
+	function get_search_handler(){
 		global $FANNIE_OP_DB;
 		$dbc = FannieDB::get($FANNIE_OP_DB);
 		$ret = array();	
 
 		// search by vendor SKU
-		$skuQ = 'SELECT brand, description, size, units, cost, sku
-			FROM vendorItems WHERE sku LIKE ? AND vendorID=?';
+		$skuQ = 'SELECT brand, description, size, units, cost, sku,
+			i.vendorID, vendorName
+			FROM vendorItems AS i LEFT JOIN vendors AS v ON
+			i.vendorID=v.vendorID WHERE sku LIKE ?';
 		$skuP = $dbc->prepare_statement($skuQ);
-		$skuR = $dbc->exec_statement($skuP, array('%'.$this->search.'%', $this->id));	
+		$skuR = $dbc->exec_statement($skuP, array('%'.$this->search.'%'));
 		while($w = $dbc->fetch_row($skuR)){
 			$result = array(
 			'sku' => $w['sku'],
-			'title' => $w['brand'].' - '.$w['description'],
+			'title' => '['.$w['vendorName'].'] '.$w['brand'].' - '.$w['description'],
 			'unitSize' => $w['size'],	
 			'caseSize' => $w['units'],
 			'unitCost' => sprintf('%.2f',$w['cost']),
-			'caseCost' => sprintf('%.2f',$w['cost']*$w['units'])
+			'caseCost' => sprintf('%.2f',$w['cost']*$w['units']),
+			'vendorID' => $w['vendorID']
 			);
 			$ret[] = $result;
 		}
@@ -69,18 +68,21 @@ class EditOnePurchaseOrder extends FannieRESTfulPage {
 		}
 
 		// search by UPC
-		$upcQ = 'SELECT brand, description, size, units, cost, sku
-			FROM vendorItems WHERE upc = ? AND vendorID=?';
+		$upcQ = 'SELECT brand, description, size, units, cost, sku,
+			i.vendorID, vendorName
+			FROM vendorItems AS i LEFT JOIN vendors AS v ON
+			i.vendorID = v.vendorID WHERE upc=?';
 		$upcP = $dbc->prepare_statement($upcQ);
-		$upcR = $dbc->exec_statement($upcP, array(str_pad($this->search,13,'0',STR_PAD_LEFT), $this->id));
+		$upcR = $dbc->exec_statement($upcP, array(str_pad($this->search,13,'0',STR_PAD_LEFT)));
 		while($w = $dbc->fetch_row($upcR)){
 			$result = array(
 			'sku' => $w['sku'],
-			'title' => $w['brand'].' - '.$w['description'],
+			'title' => '['.$w['vendorName'].'] '.$w['brand'].' - '.$w['description'],
 			'unitSize' => $w['size'],	
 			'caseSize' => $w['units'],
 			'unitCost' => sprintf('%.2f',$w['cost']),
-			'caseCost' => sprintf('%.2f',$w['cost']*$w['units'])
+			'caseCost' => sprintf('%.2f',$w['cost']*$w['units']),
+			'vendorID' => $w['vendorID']
 			);
 			$ret[] = $result;
 		}
@@ -90,21 +92,24 @@ class EditOnePurchaseOrder extends FannieRESTfulPage {
 		}
 
 		// search by internalSKU / order code
-		$iskuQ = 'SELECT brand, description, size, units, cost, sku
+		$iskuQ = 'SELECT brand, description, size, units, cost, sku,
+			v.vendorID, vendorName
 			FROM internalSKUs as i
 			INNER JOIN vendorItems as v
 			ON i.vendor_sku = v.sku AND i.vendorID=v.vendorID
-			WHERE our_sku = ? AND i.vendorID=?';
+			LEFT JOIN vendors AS n ON v.vendorID=n.vendorID
+			WHERE our_sku = ? ';
 		$iskuP = $dbc->prepare_statement($iskuQ);
-		$iskuR = $dbc->exec_statement($iskuP, array($this->search, $this->id));
+		$iskuR = $dbc->exec_statement($iskuP, array($this->search));
 		while($w = $dbc->fetch_row($iskuR)){
 			$result = array(
 			'sku' => $w['sku'],
-			'title' => $w['brand'].' - '.$w['description'],
+			'title' => '['.$w['vendorName'].'] '.$w['brand'].' - '.$w['description'],
 			'unitSize' => $w['size'],	
 			'caseSize' => $w['units'],
 			'unitCost' => sprintf('%.2f',$w['cost']),
-			'caseCost' => sprintf('%.2f',$w['cost']*$w['units'])
+			'caseCost' => sprintf('%.2f',$w['cost']*$w['units']),
+			'vendorID' => $w['vendorID']
 			);
 			$ret[] = $result;
 		}
@@ -123,6 +128,7 @@ class EditOnePurchaseOrder extends FannieRESTfulPage {
 	*/
 	function get_id_sku_qty_handler(){
 		global $FANNIE_OP_DB;
+
 		$dbc = FannieDB::get($FANNIE_OP_DB);
 		$orderID = $this->getOrderID($this->id, FannieAuth::getUID($this->current_user));
 
@@ -152,31 +158,18 @@ class EditOnePurchaseOrder extends FannieRESTfulPage {
 			$ret['error'] = 'Error saving entry';
 		}
 		else {
-			$q = 'SELECT count(*) as rows,
-				SUM(unitCost*caseSize*quantity) as estimatedCost
-				FROM PurchaseOrderItems WHERE orderID=?';
-			$p = $dbc->prepare_statement($q);
-			$r = $dbc->exec_statement($p, array($orderID));
-			$w = $dbc->fetch_row($r);
-			$ret['count'] = $w['rows'];
-			$ret['cost'] = sprintf('%.2f',$w['estimatedCost']);
+			$ret['sidebar'] = $this->calculate_sidebar();
 		}
 		echo JsonLib::array_to_json($ret);
 		return False;
 	}
 
-	/**
-	  Main page. Vendor is selected. Find/create order
-	  based on vendorID & userID
-	*/
-	function get_id_view(){
+	function calculate_sidebar(){
 		global $FANNIE_OP_DB;
-		$vendorID = $this->id;
 		$userID = FannieAuth::getUID($this->current_user);
-		$orderID = $this->getOrderID($vendorID, $userID);
 
 		$dbc = FannieDB::get($FANNIE_OP_DB);
-		$q = 'SELECT vendorName, 
+		$q = 'SELECT p.orderID, vendorName, 
 			sum(case when i.orderID is null then 0 else 1 END) as rows, 
 			MAX(creationDate) as date,
 			sum(unitCost*caseSize*quantity) as estimatedCost
@@ -184,20 +177,27 @@ class EditOnePurchaseOrder extends FannieRESTfulPage {
 			INNER JOIN vendors as v ON p.vendorID=v.vendorID
 			LEFT JOIN PurchaseOrderItems as i
 			ON p.orderID=i.orderID
-			WHERE p.orderID=?';
+			WHERE p.userID=?
+			GROUP BY p.orderID, vendorName
+			ORDER BY vendorName';
 		$p = $dbc->prepare_statement($q);
-		$r = $dbc->exec_statement($p, array($orderID));	
-		$w = $dbc->fetch_row($r);
+		$r = $dbc->exec_statement($p, array($userID));	
 
-		$ret = '<div id="orderInfo">
-			<span id="orderInfoVendor">'.$w['vendorName'].'</span>';
-		$ret .= ' '.$w['date'];
-		$ret .= '&nbsp;&nbsp;&nbsp;&nbsp;';
-		$ret .= ' # of Items: <span id="orderInfoCount">'.$w['rows'].'</span>';
-		$ret .= '&nbsp;&nbsp;&nbsp;&nbsp;';
-		$ret .= ' Est. cost: $<span id="orderInfoCost">'.sprintf('%.2f',$w['estimatedCost']).'</span>';
-		$ret .= '</div><hr />';
+		$ret = '<ul id="vendorList">';
+		while($w = $dbc->fetch_row($r)){
+			$ret .= '<li><span id="orderInfoVendor">'.$w['vendorName'].'</span>';
+			$ret .= '<ul class="vendorSubList"><li>'.$w['date'];
+			$ret .= '<li># of Items: <span class="orderInfoCount">'.$w['rows'].'</span>';
+			$ret .= '<li>Est. cost: $<span class="orderInfoCost">'.sprintf('%.2f',$w['estimatedCost']).'</span>';
+			$ret .= '</ul></li>';
+		}
+		$ret .= '</ul>';
 
+		return $ret;
+	}
+
+	function get_view(){
+		$ret = '<div id="col2">';
 		$ret .= '<div id="ItemSearch">';
 		$ret .= '<form action="" onsubmit="itemSearch();return false;">';
 		$ret .= '<b>UPC/SKU</b>: <input type="text" id="searchField" />';
@@ -205,18 +205,49 @@ class EditOnePurchaseOrder extends FannieRESTfulPage {
 		$ret .= '</form>';
 		$ret .= '</div>';
 		$ret .= '<div id="SearchResults"></div>';
+		$ret .= '</div>';
 
-		$ret .= sprintf('<input type="hidden" id="id" value="%d" />',$this->id);
+		$ret .= '<div id="orderInfo">';
+		$ret .= $this->calculate_sidebar();
+		$ret .= '</div>';
+
+		$ret .= '<div style="clear: left;"></div>';
 
 		$this->add_onload_command("\$('#searchField').focus();\n");
-		$this->add_script('js/editone.js');
-
+		$this->add_script('js/editmany.js');
+	
 		return $ret;
 	}
 
-	/**
-	  Utility: find orderID from vendorID and userID
-	*/
+	function css_content(){
+		ob_start();
+		?>
+div#orderInfo {
+	border-left: solid 1px black;
+	float: left;
+	margin-left: 10px;
+}
+div#col2 {
+	float: left;
+	text-align: left;
+}
+ul.vendorSubList {
+	line-height: 1em;
+	padding-left: 5px;
+	font-weight: normal;
+	font-size: 90%;
+}
+ul.vendorSubList li {
+	margin-left: 5px;
+}
+ul#vendorList {
+	line-height: 1.1em;
+	font-weight: bold;
+}
+		<?php
+		return ob_get_clean();
+	}
+
 	private function getOrderID($vendorID, $userID){
 		global $FANNIE_OP_DB;
 		$dbc = FannieDB::get($FANNIE_OP_DB);
@@ -236,25 +267,6 @@ class EditOnePurchaseOrder extends FannieRESTfulPage {
 			$insR = $dbc->exec_statement($insP, array($vendorID, $userID));
 			return $dbc->insert_id();
 		}
-	}
-
-	/**
-	  First page. Show vendor list.
-	*/
-	function get_view(){
-		global $FANNIE_OP_DB;
-		$model = new VendorsModel(FannieDB::get($FANNIE_OP_DB));
-		$ret = 'Select a vendor';
-		$ret .= '<form action="EditOnePurchaseOrder.php" method="get">';
-		$ret .= '<select name="id">';
-		foreach($model->find('vendorName') as $vendor){
-			$ret .= sprintf('<option value="%d">%s</option>',
-				$vendor->vendorID(), $vendor->vendorName());
-		}
-		$ret .= '</select>';
-		$ret .= ' <input type="submit" value="Go" />';
-		$ret .= '</form>';
-		return $ret;
 	}
 }
 

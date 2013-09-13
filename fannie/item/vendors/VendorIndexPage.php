@@ -50,12 +50,32 @@ class VendorIndexPage extends FanniePage {
 	}
 
 	function ajax_callbacks($action){
+		global $FANNIE_OP_DB;
 		switch($action){
 		case 'vendorDisplay':
 			$this->getVendorInfo(FormLib::get_form_value('vid',0));	
 			break;
 		case 'newVendor':
 			$this->newVendor(FormLib::get_form_value('name',''));
+			break;
+		case 'saveContactInfo':
+			$id = FormLib::get_form_value('vendorID','');
+			if ($id === ''){
+				echo 'Bad request';
+				break;
+			}
+			$vcModel = new VendorContactModel(FannieDB::get($FANNIE_OP_DB));
+			$vcModel->vendorID($id);
+			$vcModel->phone(FormLib::get_form_value('phone'));
+			$vcModel->fax(FormLib::get_form_value('fax'));
+			$vcModel->email(FormLib::get_form_value('email'));
+			$web = FormLib::get_form_value('website');
+			if (!empty($web) && substr(strtolower($web),0,4) !== "http")
+				$web = 'http://'.$web;
+			$vcModel->website($web);
+			$vcModel->notes(FormLib::get_form_value('notes'));
+			$vcModel->save();
+			$this->getVendorInfo($id);
 			break;
 		default:
 			echo 'Bad request'; 
@@ -75,23 +95,6 @@ class VendorIndexPage extends FanniePage {
 		else
 			$ret .= "<b>Id</b>: $id &nbsp; <b>Name</b>: ".array_pop($dbc->fetch_row($nameR));
 		$ret .= "<p />";
-
-		/*
-		$scriptQ = $dbc->prepare_statement("SELECT loadScript FROM vendorLoadScripts WHERE vendorID=?");
-		$scriptR = $dbc->exec_statement($scriptQ,array($id));
-		$ls = "";
-		if ($scriptR && $dbc->num_rows($scriptR) > 0)
-			$ls = array_pop($dbc->fetch_row($scriptR));
-
-		$ret .= "<b>Load script</b>: <select id=\"vscript\" onchange=\"saveScript($id);\">";
-		$dh = opendir($FANNIE_ROOT.'batches/UNFI/load-scripts/');
-		while( ($file=readdir($dh)) !== False){
-			if ($file[0]==".") continue;
-			if (substr($file,-4) != ".php") continue;
-			$ret .= sprintf("<option %s>%s</option>",($ls==$file?'selected':''),$file);
-		}
-		$ret .= '</select><p />';
-		*/
 
 		$itemQ = $dbc->prepare_statement("SELECT COUNT(*) FROM vendorItems WHERE vendorID=?");
 		$itemR = $dbc->exec_statement($itemQ,array($id));
@@ -120,6 +123,18 @@ class VendorIndexPage extends FanniePage {
 			$ret .= "<br />";
 			$ret .= "<a href=\"VendorDepartmentEditor.php?vid=$id\">Display/Edit vendor departments</a>";
 		}
+
+		$vcModel = new VendorContactModel($dbc);
+		$vcModel->vendorID($id);
+		$vcModel->load();
+		$ret .= '<ul>';
+		$ret .= '<li>Phone: <span id="vcPhone">'.$vcModel->phone().'</span></li>';
+		$ret .= '<li>Fax: <span id="vcFax">'.$vcModel->fax().'</span></li>';
+		$ret .= '<li>Email: <span id="vcEmail">'.$vcModel->email().'</span></li>';
+		$ret .= '<li>Website: <span id="vcWebsite">'.$vcModel->website().'</span></li>';
+		$ret .= '<li>Ordering Notes: <span id="vcNotes">'.$vcModel->notes().'</span></li>';
+		$ret .= '</ul>';
+		$ret .= '<a href="" onclick="editSaveVC('.$id.');return false;" id="vcEditSave">Edit Contact Info</a>';
 
 		echo $ret;
 	}

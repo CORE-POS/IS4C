@@ -45,20 +45,27 @@ if (isset($_REQUEST['date1'])){
 		$drop = $dbc->prepare_statement("DROP TABLE dlog_patronage");
 		$dbc->exec_statement($drop);
 	}
-	$create = $dbc->prepare_statement(duplicate_structure($FANNIE_SERVER_DBMS,'dlog_15','dlog_patronage'));
+	$create = $dbc->prepare_statement('CREATE TABLE dlog_patronage (card_no INT, trans_type VARCHAR(2), 
+			trans_subtype VARCHAR(2), total DECIMAL(10,2), min_year INT, max_year INT,
+			primary key (card_no, trans_type, trans_subtype))');
 	$dbc->exec_statement($create);
 
 	$insQ = sprintf("INSERT INTO dlog_patronage
-			SELECT d.* FROM %s AS d
+			SELECT d.card_no,trans_type,trans_subtype,sum(total),
+			YEAR(MIN(tdate)), YEAR(MAX(tdate)) 
+			FROM %s AS d
 			LEFT JOIN %s%scustdata AS c ON c.CardNo=d.card_no
 			AND c.personNum=1 LEFT JOIN
 			%s%ssuspensions AS s ON d.card_no=s.cardno
-			WHERE (d.trans_type IN ('I','D','S')
-			OR (d.trans_type='T' AND d.trans_subtype IN ('MA','IC')))	
-			AND d.total <> 0
+			LEFT JOIN %s%sMasterSuperDepts AS m
+			ON d.department=m.dept_ID
+			WHERE d.trans_type IN ('I','D','S','T')
+			AND d.total <> 0 AND (m.superID IS NULL OR m.superID <> 0)
 			AND (s.memtype1 IN %s OR c.memType IN %s)
-			AND d.tdate BETWEEN ? AND ?",
+			AND d.tdate BETWEEN ? AND ?
+			GROUP BY d.card_no, trans_type, trans_subtype",
 			$dlog,$FANNIE_OP_DB,$dbc->sep(),
+			$FANNIE_OP_DB,$dbc->sep(),
 			$FANNIE_OP_DB,$dbc->sep(),
 			$mtype,$mtype);
 	$args = $mArgs;

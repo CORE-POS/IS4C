@@ -141,6 +141,7 @@ class OverShortMAS extends FannieRESTfulPage {
 			WHERE d.trans_type IN ('I','D')
 			AND tdate BETWEEN ? AND ?
 			AND m.superID > 0
+			AND register_no <> 20
 			GROUP BY salesCode HAVING sum(total) <> 0 
 			ORDER BY salesCode";
 		$salesP = $dbc->prepare_statement($salesQ);
@@ -179,6 +180,7 @@ class OverShortMAS extends FannieRESTfulPage {
 			AND tdate BETWEEN ? AND ?
 			AND m.superID = 0
 			AND d.department <> 703
+			AND register_no <> 20
 			GROUP BY salesCode HAVING sum(total) <> 0 
 			ORDER BY salesCode";
 		$salesP = $dbc->prepare_statement($salesQ);
@@ -235,6 +237,7 @@ class OverShortMAS extends FannieRESTfulPage {
 		}
 
 		$ret = '';
+		$debit = $credit = 0.0;
 		if (FormLib::get_form_value('excel','') === ''){
 			$ret .= sprintf('<a href="OverShortMAS.php?startDate=%s&endDate=%s&excel=yes">Download</a>',
 					$this->startDate, $this->endDate);
@@ -243,7 +246,11 @@ class OverShortMAS extends FannieRESTfulPage {
 				$ret .= sprintf('<tr><td>%d</td><td>%s</td><td>%s</td>
 						<td>%.2f</td><td>%.2f</td><td>%s</td></tr>',
 						$r[0],$r[1],$r[2],$r[3],$r[4],$r[5]);
+				$debit += $r[3];
+				$credit += $r[4];
 			}
+			$ret .= sprintf('<tr><td colspan="3">Sum</td><td>%.2f</td><td>%.2f</td><td>&nbsp;</td></tr>',
+					$debit, $credit);
 			$ret .= '</table>';
 		}
 		else {
