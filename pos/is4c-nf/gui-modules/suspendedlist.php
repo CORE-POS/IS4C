@@ -136,18 +136,20 @@ class suspendedlist extends NoInputPage {
 			.$emp." and trans_no = ".$trans;
 
 		$db_a = Database::tDataConnect();
-		$cols = Database::getMatchingColumns($db_a,"localtemptrans","suspendedtoday");
-		// localtemptrans might not actually be empty; let trans_id
-		// populate via autoincrement rather than copying it from
-		// the suspended table
-		if(substr($cols,-9) == ',trans_id')
-			$cols = substr($cols, 0, strlen($cols)-9);
 
 		// use SQLManager's transfer method when not in stand alone mode
 		// to eliminate the cross server query - andy 8/31/07
 		if ($CORE_LOCAL->get("standalone") == 0){
 			$db_a->add_connection($CORE_LOCAL->get("mServer"),$CORE_LOCAL->get("mDBMS"),
 				$CORE_LOCAL->get("mDatabase"),$CORE_LOCAL->get("mUser"),$CORE_LOCAL->get("mPass"));
+
+			$cols = Database::getMatchingColumns($db_a,"localtemptrans","suspendedtoday");
+			// localtemptrans might not actually be empty; let trans_id
+			// populate via autoincrement rather than copying it from
+			// the suspended table
+			if(substr($cols,-9) == ',trans_id')
+				$cols = substr($cols, 0, strlen($cols)-9);
+
 			$remoteQ = "select {$cols} from suspendedtoday where register_no = $reg "
 				." and emp_no = ".$emp." and trans_no = ".$trans." order by trans_id";
 			$success = $db_a->transfer($CORE_LOCAL->get("mDatabase"),$remoteQ,
@@ -157,6 +159,17 @@ class suspendedlist extends NoInputPage {
 			$db_a->close($CORE_LOCAL->get("mDatabase"),True);
 		}
 		else {	
+			// localtemptrans might not actually be empty; let trans_id
+			// populate via autoincrement rather than copying it from
+			// the suspended table
+			$def = $db_a->table_definition('localtemptrans');
+			$cols = '';
+			foreach($def as $name=>$info){
+				if ($name == 'trans_id') continue;
+				$cols .= $name.',';
+			}
+			$cols = substr($cols,0,strlen($cols)-1);
+
 			$localQ = "select {$cols} from suspendedtoday where register_no = $reg "
 				." and emp_no = ".$emp." and trans_no = ".$trans." order by trans_id";
 			$success = $db_a->query("insert into localtemptrans ({$cols}) ".$localQ);
