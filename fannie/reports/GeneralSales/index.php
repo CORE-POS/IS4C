@@ -41,35 +41,6 @@ if (isset($_REQUEST['submit'])){
 	$d2 = $_REQUEST['date2'];
 	$dept = $_REQUEST['dept'];
 
-	if ( isset($_REQUEST['other_dates']) ) {
-		switch ($_REQUEST['other_dates']) {
-			case 'today':
-				$d1 = date("Y-m-d");
-				$d2 = $d1;
-				break;
-			case 'yesterday':
-				$d1 = date("Y-m-d", strtotime('yesterday'));
-				$d2 = $d1;
-				break;
-			case 'this_week':
-				$d1 = date("Y-m-d", strtotime('last monday'));
-				$d2 = date("Y-m-d");
-				break;
-			case 'last_week':
-				$d1 = date("Y-m-d", strtotime('last monday - 7 days'));
-				$d2 = date("Y-m-d", strtotime('last sunday'));
-				break;
-			case 'this_month':
-				$d1 = date("Y-m-d", strtotime('first day of this month'));
-				$d2 = date("Y-m-d");
-				break;
-			case 'last_month':
-				$d1 = date("Y-m-d", strtotime('first day of last month'));
-				$d2 = date("Y-m-d", strtotime('last day of last month'));
-				break;
-		}
-	}
-
 	$dlog = select_dlog($d1,$d2);
 
 	if (isset($_REQUEST['excel'])){
@@ -82,7 +53,8 @@ if (isset($_REQUEST['submit'])){
 			$d1,$d2,$dept);
 	}
 
-	$sales = "SELECT d.Dept_name,sum(t.total),sum(t.quantity),
+	$sales = "SELECT d.Dept_name,sum(t.total),
+			sum(CASE WHEN unitPrice=0.01 THEN 1 ELSE t.quantity END),
 			s.superID,s.super_name
 			FROM $dlog AS t LEFT JOIN departments AS d
 			ON d.dept_no=t.department LEFT JOIN
@@ -98,7 +70,8 @@ if (isset($_REQUEST['submit'])){
 			ORDER BY s.superID,t.department";
 	if ($dept == 1){
 		$sales = "SELECT CASE WHEN e.dept_name IS NULL THEN d.dept_name ELSE e.dept_name end,
-			sum(t.total),sum(t.quantity),
+			sum(t.total),
+			sum(CASE WHEN unitPrice=0.01 THEN 1 ELSE t.quantity END),
 			CASE WHEN s.superID IS NULL THEN r.superID ELSE s.superID end,
 			CASE WHEN s.super_name IS NULL THEN r.super_name ELSE s.super_name END
 			FROM $dlog AS t LEFT JOIN
