@@ -39,7 +39,7 @@ if (validateUserQuiet('admin')){
 ?>
 <form method=post action=pose.php>
 <?php
-echo "Username:<select name=name>";
+echo "Username:<select name=newname>";
 foreach(getUserList() as $uid => $name)
 	echo "<option>".$name."</option>";
 echo "</select>";
