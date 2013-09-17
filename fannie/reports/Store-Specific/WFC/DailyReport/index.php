@@ -114,7 +114,10 @@ $creditQ = "SELECT 1 as num,
 		MAX(CASE WHEN q.mode IN ('retail_alone_credit','Credit_Return') THEN -amount ELSE amount END) as ttl,
 		CASE WHEN q.refNum LIKE '%-%' THEN 'FAPS' ELSE 'Mercury' END as proc
 	FROM is4c_trans.efsnetRequest AS q LEFT JOIN is4c_trans.efsnetResponse AS r ON q.refNum=r.refNum
-	WHERE q.date=? and r.httpCode=200 and 
+	LEFT JOIN is4c_trans.efsnetRequestMod AS m
+	ON q.date=m.date AND q.cashierNo=m.cashierNo AND q.laneNo=m.laneNo
+	AND q.transNo=m.transNo and q.transID=m.transID
+	WHERE q.date=? and r.httpCode=200 and m.date IS NULL AND
 	(r.xResultMessage LIKE '%approved%' OR r.xResultMessage LIKE '%PENDING%')
 	AND q.CashierNo <> 9999 AND q.laneNo <> 99
 	GROUP BY q.refNum";
