@@ -20,16 +20,13 @@ if (!validateUserQuiet('view_all_hours')){
 	   is in that department
 	*/
 	$validated = false;
-	$depts = array(11,12,13,20,21,30,40,41,50,60);
-	foreach ($depts as $d){
-		if (validateUserQuiet('view_all_hours',$d)){
-			$checkQ = "select department from employees where empID=".$empID;
-			$checkR = $sql->query($checkQ);
-			if ($d == array_pop($sql->fetch_row($checkR))){
-				$validated = true;
-				break;
-			}
-		}
+	$depts = array(10,11,12,13,20,21,30,40,41,50,60,998);
+	$checkQ = "select department from employees where empID=".$empID;
+	$checkR = $sql->query($checkQ);
+	$checkW = $sql->fetch_row($checkR);
+	var_dump($empID);
+	if (validateUserQuiet('view_all_hours',$checkW['department'])){
+		$validated = true;
 	}
 
 	/* no access permissions found, so only allow the
@@ -41,7 +38,8 @@ if (!validateUserQuiet('view_all_hours')){
 
 $deptQ = "select department from employees where empID=".$empID;
 $deptR = $sql->query($deptQ);
-if (array_pop($sql->fetch_row($deptR)) == "999"){
+$deptW = $sql->fetch_row($deptR);
+if ($deptW['department'] >= 998){
 	header("Location: {$FANNIE_URL}legacy/it/hours/viewEmployeeSalary.php?id=$empID");
 	exit;
 }

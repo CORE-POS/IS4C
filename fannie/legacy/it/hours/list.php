@@ -14,14 +14,18 @@ if (isset($_GET["showdept"])){
 
 require($FANNIE_ROOT.'auth/login.php');
 $ALL = validateUserQuiet('view_all_hours');
+$dept_list = '';
 if (!$ALL){
-	$valid_depts = array(11,12,13,20,21,30,40,50,60);
+	$valid_depts = array(10,11,12,13,20,21,30,40,50,60,998);
 	$validated = false;
 	$dept_list = "(";
+	$good_restrict = false;
 	foreach ($valid_depts as $d){
 		if (validateUserQuiet('view_all_hours',$d)){
 			$validated = true;
 			$dept_list .= $d.",";
+			if (isset($_GET['showdept']) && $d == $_GET['showdept'])
+				$good_restrict = true;
 		}
 	}
 	if (!$validated){
@@ -30,7 +34,8 @@ if (!$ALL){
 	}
 	else {
 		$dept_list = substr($dept_list,0,strlen($dept_list)-1).")";
-		$dept_restrict = " WHERE deleted=0 AND department IN $dept_list ";
+		if (!$good_restrict)
+			$dept_restrict = " WHERE deleted=0 AND department IN $dept_list ";
 	}
 }
 
@@ -78,11 +83,11 @@ if (isset($_POST["action"])){
 }
 
 $fetchQ = "select e.name,e.adpID,
-	case when e.department=999 then 'Salary' else e.PTOLevel end as PTOLevel,
-	case when e.department=999 then '&nbsp;' else h.totalHours end as totalHours,
+	case when e.department>=998 then 'Salary' else e.PTOLevel end as PTOLevel,
+	case when e.department>=998 then '&nbsp;' else h.totalHours end as totalHours,
 	c.cusp,e.empID,
 	case when s.totalTaken is null then p.ptoremaining else e.adpID-s.totalTaken end as ptoremaining,
-	case when e.department=999 then '&nbsp;' else u.hours end as hours
+	case when e.department>=998 then '&nbsp;' else u.hours end as hours
 	from employees as e left join hoursalltime as h on e.empID=h.empID
 	left join cusping as c on e.empID=c.empID
 	left join pto as p on e.empID=p.empID
@@ -138,6 +143,20 @@ if ($ALL){
 		echo "<option selected value=\"-1\">DELETED</option>";
 	else
 		echo "<option value=\"-1\">DELETED</option>";
+	echo "</select>";
+}
+else if (strlen($dept_list) > 4){
+	$deptsQ = "select name,deptID from Departments WHERE deptID IN $dept_list order by name";
+	$deptsR = $sql->query($deptsQ);
+	echo "Show Department: ";
+	echo "<select onchange=\"top.location='/it/hours/list.php?showdept='+this.value;\">";
+	echo "<option value=\"\">All</option>";
+	while ($deptsW = $sql->fetch_row($deptsR)){
+		if ($selected_dept == $deptsW[1])
+			echo "<option value=$deptsW[1] selected>$deptsW[0]</option>";
+		else
+			echo "<option value=$deptsW[1]>$deptsW[0]</option>";
+	}
 	echo "</select>";
 }
 
