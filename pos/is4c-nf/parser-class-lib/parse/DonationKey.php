@@ -36,11 +36,11 @@ class DonationKey extends Parser {
 			$ttl = $CORE_LOCAL->get("amtdue");	
 			$next = ceil($ttl);
 			$amt = sprintf('%.2f',(($ttl == $next) ? 1.00 : ($next - $ttl)));
-			$ret = PrehLib::deptkey($amt*100, 7010, $ret);
+			$ret = PrehLib::deptkey($amt*100, 380, $ret);
 		}
 		else {
 			$amt = substr($str,0,strlen($str)-2);
-			$ret = PrehLib::deptkey($amt, 7010, $ret);
+			$ret = PrehLib::deptkey($amt, 380, $ret);
 		}
 		return $ret;
 	}
