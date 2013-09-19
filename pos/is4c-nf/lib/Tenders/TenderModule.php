@@ -164,7 +164,7 @@ class TenderModule {
 				.'<br />press [enter] to continue<br />
 				<font size="-1">[clear] to cancel</font>');
 		$CORE_LOCAL->set('strEntered', (100*$amt).$this->tender_code);
-		return MiscLib::base_url().'gui-modules/boxMsg2.php';
+		return MiscLib::base_url().'gui-modules/boxMsg2.php?quiet=1';
 	}
 
 	/**

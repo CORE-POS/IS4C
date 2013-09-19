@@ -28,3 +28,7 @@ function togglePlaced(orderID){
 		}
 	});
 }
+
+function doExport(orderID){
+	window.location = 'ViewPurchaseOrders.php?id='+orderID+'&export='+$('#exporterSelect').val();
+}

@@ -38,9 +38,23 @@ class ViewPurchaseOrders extends FannieRESTfulPage {
 		$this->__routes[] = 'get<pending>';
 		$this->__routes[] = 'get<placed>';
 		$this->__routes[] = 'post<id><setPlaced>';
+		$this->__routes[] = 'get<id><export>';
 		if (FormLib::get_form_value('all') === '1')
 			$this->show_all = True;
 		return parent::preprocess();
+	}
+
+	function get_id_export_handler(){
+		if (!file_exists('exporters/'.$this->export.'.php'))
+			return $this->unknown_request_handler();
+		include_once('exporters/'.$this->export.'.php');	
+		if (!class_exists($this->export))
+			return $this->unknown_request_handler();
+
+		$exportObj = new $this->export();
+		$exportObj->send_headers();
+		$exportObj->export_order($this->id);
+		return False;
 	}
 
 	function post_id_setPlaced_handler(){
@@ -128,6 +142,23 @@ class ViewPurchaseOrders extends FannieRESTfulPage {
 		$ret .= '<b>Placed</b>: <span id="orderPlacedSpan">'.($order->placed() ? $order->placedDate() : 'n/a').'</span>';
 		$ret .= '<input type="checkbox" '.($order->placed() ? 'checked' : '').' id="placedCheckbox"
 				onclick="togglePlaced('.$this->id.');" />';
+
+		$ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
+
+		$ret .= 'Export as: <select id="exporterSelect">';
+		$dh = opendir('exporters');
+		while( ($file=readdir($dh)) !== False){
+			if (substr($file,-4) != '.php')
+				continue;
+			include('exporters/'.$file);
+			$class = substr($file,0,strlen($file)-4);
+			if (!class_exists($class)) continue;
+			$obj = new $class();
+			if (!isset($obj->nice_name)) continue;
+			$ret .= '<option value="'.$class.'">'.$obj->nice_name.'</option>';
+		}
+		$ret .= '</select>';
+		$ret .= '<input type="submit" value="Export" onclick="doExport('.$this->id.');return false;" />';
 
 		$model = new PurchaseOrderItemsModel($dbc);
 		$model->orderID($this->id);
