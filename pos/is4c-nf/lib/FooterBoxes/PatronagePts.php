@@ -34,7 +34,7 @@ class PatronagePts extends FooterBox {
 	function display_content(){
 		global $CORE_LOCAL;
 		if ($CORE_LOCAL->get("isMember") == 1)
-			return number_format($CORE_LOCAL->get("runningTotal"), 2);
+			return number_format($CORE_LOCAL->get("discountableTotal"), 2);
 		else
 			return "n/a";
 	}
