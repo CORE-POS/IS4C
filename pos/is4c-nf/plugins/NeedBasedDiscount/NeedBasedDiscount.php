@@ -23,7 +23,22 @@
 
 class NeedBasedDiscount extends Plugin {
 
-	public $plugin_settings = array();
+    public $plugin_settings = array(
+       'needBasedPercent' => array(
+        'default' => '',
+        'label' => 'Percentage Discount',
+        'description' => 'Enter the percentage discount of your need-based discount program
+                        e.g. for a 5% discount enter 0.05'
+        ),
+       'needBasedName' => array(
+        'default' => '',
+        'label' => 'Program Name',
+        'description' => 'Enter the name of your own need-based discount program')
+    );
+
+    public $plugin_description = 'Apply a flat percentage discount to all Members enrolled<br>
+                        in your Need-Based discount program.  Sometimes called Food For All or FLOWER.<br>
+                        Trigger with "FF"';
 
 	function plugin_transaction_reset(){
 		global $CORE_LOCAL;
