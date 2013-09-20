@@ -78,8 +78,8 @@
 include('prodFunction_WEFC_Toronto.php');
 include('../config.php');
 include('../src/mysql_connect.php');
-$page_title = 'Fannie - Item Maintanence WEFC_Toronto';
-$header = 'Item Maintanence WEFC_Toronto';
+$page_title = 'Fannie - Item Maintenence WEFC_Toronto';
+$header = 'Item Maintenence WEFC_Toronto';
 include('../src/header.html');
 
 ?>
