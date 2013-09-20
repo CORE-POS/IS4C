@@ -87,6 +87,7 @@ class DepartmentMovementReport extends FannieReportPage {
 	*/
 	function fetch_report_data(){
 		global $dbc, $FANNIE_ARCHIVE_DB;
+		global $dbo, $FANNIE_OP_DB;
 		$date1 = FormLib::get_form_value('date1',date('Y-m-d'));
 		$date2 = FormLib::get_form_value('date2',date('Y-m-d'));
 		$deptStart = FormLib::get_form_value('deptStart','');
@@ -143,10 +144,10 @@ class DepartmentMovementReport extends FannieReportPage {
 				  SUM(t.quantity) as qty,
 				  SUM(t.total) AS total,
 				  d.dept_no,d.dept_name,s.superID,x.distributor
-				  FROM $dlog as t LEFT JOIN $FANNIE_OP_DB.products as p on t.upc = p.upc
-				  LEFT JOIN $FANNIE_OP_DB.departments as d on d.dept_no = t.department
-				  LEFT JOIN $FANNIE_OP_DB.$superTable AS s ON t.department = s.dept_ID
-				  LEFT JOIN $FANNIE_OP_DB.prodExtra as x on t.upc = x.upc
+				  FROM $dlog as t LEFT JOIN $dbo.products as p on t.upc = p.upc
+				  LEFT JOIN $dbo.departments as d on d.dept_no = t.department
+				  LEFT JOIN $dbo.$superTable AS s ON t.department = s.dept_ID
+				  LEFT JOIN $dbo.prodExtra as x on t.upc = x.upc
 				  WHERE $filter_condition
 				  AND tdate BETWEEN ? AND ?
 				  GROUP BY t.upc,p.description,
@@ -154,16 +155,16 @@ class DepartmentMovementReport extends FannieReportPage {
 			break;
 		case 'Department':
 			$query =  "SELECT t.department,d.dept_name,SUM(t.quantity) as Qty, SUM(total) as Sales 
-				FROM $dlog as t LEFT JOIN $FANNIE_OP_DB.departments as d on d.dept_no=t.department 
-				LEFT JOIN $FANNIE_OP_DB.$superTable AS s ON s.dept_ID = t.department 
+				FROM $dlog as t LEFT JOIN $dbo.departments as d on d.dept_no=t.department 
+				LEFT JOIN $dbo.$superTable AS s ON s.dept_ID = t.department 
 				WHERE $filter_condition
 				AND tdate BETWEEN ? AND ?
 				GROUP BY t.department,d.dept_name ORDER BY SUM(total) DESC";
 			break;
 		case 'Date':
 			$query =  "SELECT year(tdate),month(tdate),day(tdate),SUM(t.quantity) as Qty, SUM(total) as Sales 
-				FROM $dlog as t LEFT JOIN $FANNIE_OP_DB.departments as d on d.dept_no=t.department 
-				LEFT JOIN $FANNIE_OP_DB.$superTable AS s ON s.dept_ID = t.department
+				FROM $dlog as t LEFT JOIN $dbo.departments as d on d.dept_no=t.department 
+				LEFT JOIN $dbo.$superTable AS s ON s.dept_ID = t.department
 				WHERE $filter_condition
 				AND tdate BETWEEN ? AND ?
 				GROUP BY year(tdate),month(tdate),day(tdate) 
@@ -180,8 +181,8 @@ class DepartmentMovementReport extends FannieReportPage {
 				WHEN ".$dbc->dayofweek("tdate")."=7 THEN 'Sat'
 				ELSE 'Err' END";
 			$query =  "SELECT $cols,SUM(t.quantity) as Qty, SUM(total) as Sales 
-				FROM $dlog as t LEFT JOIN $FANNIE_OP_DB.departments as d on d.dept_no=t.department 
-				LEFT JOIN $FANNIE_OP_DB.$superTable AS s ON s.dept_ID = t.department 
+				FROM $dlog as t LEFT JOIN $dbo.departments as d on d.dept_no=t.department 
+				LEFT JOIN $dbo.$superTable AS s ON s.dept_ID = t.department 
 				WHERE $filter_condition
 				AND tdate BETWEEN ? AND ?
 				GROUP BY $cols
