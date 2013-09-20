@@ -315,6 +315,19 @@ function duplicate_structure($dbms,$table1,$table2){
 	elseif ($dbms == "MSSQL"){
 		return "SELECT * INTO [$table2] FROM [$table1] WHERE 1=0";
 	}
+	elseif ($dbms == 'PDOLITE'){
+		$path = realpath(dirname(__FILE__).'/sql');
+		if (file_exists($path.'/op/'.$table1.'.php')){
+			include($path.'/op/'.$table1.'.php');
+			return str_replace($table1, $table2, $CREATE['op.'.$table1]);
+		}
+		elseif (file_exists($path.'/trans/'.$table1.'.php')){
+			include($path.'/trans/'.$table1.'.php');
+			return str_replace($table1, $table2, $CREATE['trans.'.$table1]);
+		}
+		else	
+			return 'No table found';
+	}
 }
 
 function create_if_needed($con, $dbms, $db_name, $table_name, $stddb, &$errors=array()){

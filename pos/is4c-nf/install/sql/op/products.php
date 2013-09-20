@@ -150,50 +150,50 @@ it won't *do* anything.
 */
 
 $CREATE['op.products'] = "
-	CREATE TABLE `products` (
-		  `upc` varchar(13) default NULL,
-		  `description` varchar(30) default NULL,
-		  `normal_price` double default NULL,
-		  `pricemethod` smallint(6) default NULL,
-		  `groupprice` double default NULL,
-		  `quantity` smallint(6) default NULL,
-		  `special_price` double default NULL,
-		  `specialpricemethod` smallint(6) default NULL,
-		  `specialgroupprice` double default NULL,
-		  `specialquantity` smallint(6) default NULL,
-		  `start_date` datetime default NULL,
-		  `end_date` datetime default NULL,
-		  `department` smallint(6) default NULL,
-		  `size` varchar(9) default NULL,
-		  `tax` smallint(6) default NULL,
-		  `foodstamp` tinyint(4) default NULL,
-		  `scale` tinyint(4) default NULL,
-		  `scaleprice` tinyint(4) default 0 NULL,
-		  `mixmatchcode` varchar(13) default NULL,
-		  `modified` datetime default NULL,
-		  `advertised` tinyint(4) default NULL,
-		  `tareweight` double default NULL,
-		  `discount` smallint(6) default NULL,
-		  `discounttype` tinyint(4) default NULL,
-		  `unitofmeasure` varchar(15) default NULL,
-		  `wicable` smallint(6) default NULL,
-		  `qttyEnforced` tinyint(4) default NULL,
-		  `idEnforced` tinyint(4) default NULL,
-		  `cost` double default 0 NULL,
-		  `inUse` tinyint(4) default NULL,
-		  `numflag` int(11) default '0',
-		  `subdept` smallint(4) default NULL,
-		  `deposit` double default NULL,
-		  `local` int(11) default '0',
-		  `store_id` smallint default '0',
-		  `id` int(11) NOT NULL auto_increment,
-		  PRIMARY KEY  (`id`),
-		  KEY `upc` (`upc`),
-		  KEY `description` (`description`),
-		  KEY `normal_price` (`normal_price`),
-		  KEY `subdept` (`subdept`),
-		  KEY `department` (`department`),
-		  KEY `store_id` (`store_id`)
+	CREATE TABLE products (
+		  upc varchar(13) default NULL,
+		  description varchar(30) default NULL,
+		  normal_price double default NULL,
+		  pricemethod smallint(6) default NULL,
+		  groupprice double default NULL,
+		  quantity smallint(6) default NULL,
+		  special_price double default NULL,
+		  specialpricemethod smallint(6) default NULL,
+		  specialgroupprice double default NULL,
+		  specialquantity smallint(6) default NULL,
+		  start_date datetime default NULL,
+		  end_date datetime default NULL,
+		  department smallint(6) default NULL,
+		  size varchar(9) default NULL,
+		  tax smallint(6) default NULL,
+		  foodstamp tinyint(4) default NULL,
+		  scale tinyint(4) default NULL,
+		  scaleprice tinyint(4) default 0 NULL,
+		  mixmatchcode varchar(13) default NULL,
+		  modified datetime default NULL,
+		  advertised tinyint(4) default NULL,
+		  tareweight double default NULL,
+		  discount smallint(6) default NULL,
+		  discounttype tinyint(4) default NULL,
+		  unitofmeasure varchar(15) default NULL,
+		  wicable smallint(6) default NULL,
+		  qttyEnforced tinyint(4) default NULL,
+		  idEnforced tinyint(4) default NULL,
+		  cost double default 0 NULL,
+		  inUse tinyint(4) default NULL,
+		  numflag int(11) default '0',
+		  subdept smallint(4) default NULL,
+		  deposit double default NULL,
+		  local int(11) default '0',
+		  store_id smallint default '0',
+		  id INTEGER NOT NULL auto_increment,
+		  PRIMARY KEY (id),
+		  INDEX (upc),
+		  INDEX (description),
+		  INDEX (normal_price),
+		  INDEX (subdept),
+		  INDEX (department),
+		  INDEX (store_id)
 	)
 ";
 if ($dbms == "MSSQL"){
@@ -238,5 +238,14 @@ if ($dbms == "MSSQL"){
 			PRIMARY KEY ([id]) )
 	";
 }
-
+else if ($dbms == "PDOLITE"){
+	$CREATE['op.products'] = str_replace('INDEX (upc),','',$CREATE['op.products']);
+	$CREATE['op.products'] = str_replace('INDEX (description),','',$CREATE['op.products']);
+	$CREATE['op.products'] = str_replace('INDEX (normal_price),','',$CREATE['op.products']);
+	$CREATE['op.products'] = str_replace('INDEX (subdept),','',$CREATE['op.products']);
+	$CREATE['op.products'] = str_replace('INDEX (department),','',$CREATE['op.products']);
+	$CREATE['op.products'] = str_replace('INDEX (store_id)','',$CREATE['op.products']);
+	$CREATE['op.products'] = str_replace('PRIMARY KEY (id),','',$CREATE['op.products']);
+	$CREATE['op.products'] = str_replace('NOT NULL auto_increment,','PRIMARY KEY autoincrement',$CREATE['op.products']);
+}
 ?>

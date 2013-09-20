@@ -65,5 +65,20 @@ if ($dbms == "MSSQL"){
 			[modifiedby] [int] NULL 
 		)";
 }
+elseif ($dbms == 'PDOLITE'){
+	$CREATE['op.departments'] = "
+		CREATE TABLE `departments` (
+		  `dept_no` smallint(6) default NULL,
+		  `dept_name` varchar(30) default NULL,
+		  `dept_tax` tinyint(4) default NULL,
+		  `dept_fs` tinyint(4) default NULL,  
+		  `dept_limit` double default NULL,
+		  `dept_minimum` double default NULL,
+		  `dept_discount` tinyint(4) default NULL,
+		  `modified` datetime default NULL,
+		  `modifiedby` int(11) default NULL,
+		  PRIMARY KEY (`dept_no`)
+		)";
+}
 
 ?>

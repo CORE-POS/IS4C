@@ -99,33 +99,33 @@ Maintenance:
 
 */
 $CREATE['op.custdata'] = "
-	CREATE TABLE `custdata` (
-	  `CardNo` int(11) default NULL,
-	  `personNum` tinyint(4) NOT NULL default '1',
-	  `LastName` varchar(30) default NULL,
-	  `FirstName` varchar(30) default NULL,
-	  `CashBack` double NOT NULL default '60',
-	  `Balance` double NOT NULL default '0',
-	  `Discount` smallint(6) default NULL,
-	  `MemDiscountLimit` double NOT NULL default '0',
-	  `ChargeOk` tinyint(4) NOT NULL default '1',
-	  `WriteChecks` tinyint(4) NOT NULL default '1',
-	  `StoreCoupons` tinyint(4) NOT NULL default '1',
-	  `Type` varchar(10) NOT NULL default 'pc',
-	  `memType` tinyint(4) default NULL,
-	  `staff` tinyint(4) NOT NULL default '0',
-	  `SSI` tinyint(4) NOT NULL default '0',
-	  `Purchases` double NOT NULL default '0',
-	  `NumberOfChecks` smallint(6) NOT NULL default '0',
-	  `memCoupons` int(11) NOT NULL default '1',
-	  `blueLine` varchar(50) default NULL,
-	  `Shown` tinyint(4) NOT NULL default '1',
-	  `LastChange` timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
-	  `id` int(11) NOT NULL auto_increment,
-	  PRIMARY KEY  (`id`),
-	  KEY `CardNo` (`CardNo`),
-	  KEY `LastName` (`LastName`),
-	  KEY `LastChange` (`LastChange`)
+	CREATE TABLE custdata (
+	  CardNo int(11) default NULL,
+	  personNum tinyint(4) NOT NULL default '1',
+	  LastName varchar(30) default NULL,
+	  FirstName varchar(30) default NULL,
+	  CashBack double NOT NULL default '60',
+	  Balance double NOT NULL default '0',
+	  Discount smallint(6) default NULL,
+	  MemDiscountLimit double NOT NULL default '0',
+	  ChargeOk tinyint(4) NOT NULL default '1',
+	  WriteChecks tinyint(4) NOT NULL default '1',
+	  StoreCoupons tinyint(4) NOT NULL default '1',
+	  Type varchar(10) NOT NULL default 'pc',
+	  memType tinyint(4) default NULL,
+	  staff tinyint(4) NOT NULL default '0',
+	  SSI tinyint(4) NOT NULL default '0',
+	  Purchases double NOT NULL default '0',
+	  NumberOfChecks smallint(6) NOT NULL default '0',
+	  memCoupons int(11) NOT NULL default '1',
+	  blueLine varchar(50) default NULL,
+	  Shown tinyint(4) NOT NULL default '1',
+	  LastChange timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
+	  id INTEGER NOT NULL auto_increment,
+	  PRIMARY KEY (id),
+	  INDEX (CardNo),
+	  INDEX (LastName),
+	  INDEX (LastChange)
 	)
 ";
 
@@ -156,6 +156,14 @@ if ($dbms == "MSSQL"){
 			[id] [int] IDENTITY (1, 1) NOT NULL 
 		) ON [PRIMARY]
 	";
+}
+else if ($dbms == "PDOLITE"){
+	$CREATE['op.custdata'] = str_replace('INDEX (LastChange)','',$CREATE['op.custdata']);
+	$CREATE['op.custdata'] = str_replace('INDEX (LastName),','',$CREATE['op.custdata']);
+	$CREATE['op.custdata'] = str_replace('INDEX (CardNo),','',$CREATE['op.custdata']);
+	$CREATE['op.custdata'] = str_replace('PRIMARY KEY (id),','',$CREATE['op.custdata']);
+	$CREATE['op.custdata'] = str_replace('NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP','',$CREATE['op.custdata']);
+	$CREATE['op.custdata'] = str_replace('NOT NULL auto_increment,','PRIMARY KEY autoincrement',$CREATE['op.custdata']);
 }
 
 ?>

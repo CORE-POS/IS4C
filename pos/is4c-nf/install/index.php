@@ -95,7 +95,8 @@ Lane database type:</td>
 <td><select name=LANE_DBMS>
 <?php
 $db_opts = array('mysql'=>'MySQL','mssql'=>'SQL Server',
-	'pdomysql'=>'MySQL (PDO)','pdomssql'=>'SQL Server (PDO)');
+	'pdomysql'=>'MySQL (PDO)','pdomssql'=>'SQL Server (PDO)',
+	'pdolite' => 'SQLite (PDO)');
 if(isset($_REQUEST['LANE_DBMS'])) $CORE_LOCAL->set('DBMS',$_REQUEST['LANE_DBMS'],True);
 foreach($db_opts as $name=>$label){
 	printf('<option %s value="%s">%s</option>',
@@ -399,11 +400,14 @@ function create_op_dbs($db,$type){
 	global $CORE_LOCAL;
 	$name = $CORE_LOCAL->get('pDatabase');
 	$errors = array();
-
+	
 	create_if_needed($db, $type, $name, 'couponcodes', 'op', $errors);
 	$chk = $db->query('SELECT Code FROM couponcodes', $name);
-	if ($db->num_rows($chk) == 0){
+	if (!$db->fetch_row($chk)){
 		load_sample_data($db,'couponcodes');
+	}
+	else {
+		$db->end_query($chk);
 	}
 
 	create_if_needed($db, $type, $name, 'custdata', 'op', $errors);
@@ -413,7 +417,8 @@ function create_op_dbs($db,$type){
 	create_if_needed($db, $type, $name, 'custPreferences', 'op', $errors);
 
 	$cardsViewQ = "CREATE VIEW memberCardsView AS 
-		SELECT CONCAT('" . $CORE_LOCAL->get('memberUpcPrefix') . "',c.CardNo) as upc, c.CardNo as card_no FROM custdata c";
+		SELECT ".$db->concat("'".$CORE_LOCAL->get('memberUpcPrefix')."'",'c.CardNo','')." as upc, 
+		c.CardNo as card_no FROM custdata c";
 	if (!$db->table_exists('memberCardsView',$name)){
 		db_structure_modify($db,'memberCardsView',$cardsViewQ,$errors);
 	}
@@ -528,7 +533,7 @@ function create_trans_dbs($db,$type){
 
 	$lttR = "CREATE view ltt_receipt as 
 		select
-		l.description,
+		l.description as description,
 		case 
 			when voided = 5 
 				then 'Discount'
@@ -539,15 +544,15 @@ function create_trans_dbs($db,$type){
 			when unitPrice = 0.01
 				then ''
 			when scale <> 0 and quantity <> 0 
-				then concat(quantity, ' @ ', unitPrice)
+				then ".$db->concat('quantity', "' @ '", 'unitPrice','')."
 			when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity = 1
-				then concat(volume, ' /', unitPrice)
+				then ".$db->concat('volume', "' / '", 'unitPrice','')."
 			when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity <> 1
-				then concat(Quantity, ' @ ', Volume, ' /', unitPrice)
+				then ".$db->concat('quantity', "' @ '", 'volume', "' /'", 'unitPrice','')."
 			when abs(itemQtty) > 1 and discounttype = 3
-				then concat(ItemQtty, ' /', UnitPrice)
+				then ".$db->concat('ItemQtty', "' / '", 'unitPrice','')."
 			when abs(itemQtty) > 1
-				then concat(quantity, ' @ ', unitPrice)	
+				then ".$db->concat('quantity', "' @ '", 'unitPrice','')."
 			when matched > 0
 				then '1 w/ vol adj'
 			else ''
@@ -566,9 +571,9 @@ function create_trans_dbs($db,$type){
 			when tax = 0 and foodstamp <> 0
 				then 'F'
 			WHEN (tax > 1 and foodstamp <> 0)
-				THEN CONCAT(LEFT(t.description,1),'F')
+				THEN ".$db->concat('SUBSTR(t.description,0,1)',"'F'",'')."
 			WHEN (tax > 1 and foodstamp = 0)
-				THEN LEFT(t.description,1)
+				THEN SUBSTR(t.description,0,1)
 			when tax = 0 and foodstamp = 0
 				then '' 
 		end
@@ -662,14 +667,14 @@ function create_trans_dbs($db,$type){
 		select
 		case 
 			when trans_type = 'T'
-				then 	concat(right( concat(space(44), upper(rtrim(Description)) ), 44) 
-					, right(concat( space(8), format(-1 * Total, 2)), 8) 
-					, right(concat(space(4), status), 4))
+				then 	".$db->concat( "SUBSTR(".$db->concat('UPPER(TRIM(description))','space(44)','').", 0, 44)" 
+					, "right(".$db->concat( 'space(8)', 'FORMAT(-1 * total, 2)','').", 8)" 
+					, "right(".$db->concat( 'space(4)', 'status','').", 4)",'')."
 			when voided = 3 
-				then 	concat(left(concat(Description, space(30)), 30) 
-					, space(9) 
-					, 'TOTAL' 
-					, right(concat(space(8), format(UnitPrice, 2)), 8))
+				then 	".$db->concat("SUBSTR(".$db->concat('description', 'space(30)','').", 0, 30)"
+					, 'space(9)'
+					, "'TOTAL'"
+					, 'right('.$db->concat( 'space(8)', 'FORMAT(unitPrice, 2)','').', 8)','')."
 			when voided = 2
 				then 	description
 			when voided = 4
@@ -677,16 +682,16 @@ function create_trans_dbs($db,$type){
 			when voided = 6
 				then 	description
 			when voided = 7 or voided = 17
-				then 	concat(left(concat(Description, space(30)), 30) 
-					, space(14) 
-					, right(concat(space(8), format(unitPrice, 2)), 8) 
-					, right(concat(space(4), status), 4))
+				then 	".$db->concat("SUBSTR(".$db->concat('description', 'space(30)','').", 0, 30)"
+					, 'space(14)'
+					, 'right('.$db->concat( 'space(8)', 'FORMAT(unitPrice, 2)','').', 8)'
+					, 'right('.$db->concat( 'space(4)', 'status','').', 4)','')."
 			else
-				concat(left(concat(Description, space(30)), 30)
-				, ' ' 
-				, left(concat(Comment, space(13)), 13) 
-				, right(concat(space(8), format(Total, 2)), 8) 
-				, right(concat(space(4), status), 4))
+				".$db->concat("SUBSTR(".$db->concat('description', 'space(30)','').", 0, 30)"
+				, "' '" 
+				, "SUBSTR(".$db->concat('comment', 'space(13)','').", 0, 13)"
+				, 'right('.$db->concat('space(8)', 'FORMAT(total, 2)','').', 8)'
+				, 'right('.$db->concat('space(4)', 'status','').', 4)','')."
 		end
 		as linetoprint
 		from ltt_receipt
@@ -729,6 +734,11 @@ function create_trans_dbs($db,$type){
 		from ltt_receipt
 		order by sequence";
 	}
+	elseif($type == 'pdolite'){
+		$rV = str_replace('right(','str_right(',$rV);
+		$rV = str_replace('FORMAT(','ROUND(',$rV);
+	}
+
 	if(!$db->table_exists('receipt',$name)){
 		db_structure_modify($db,'receipt',$rV,$errors);
 	}
@@ -740,13 +750,13 @@ function create_trans_dbs($db,$type){
 		register_no,
 		emp_no,
 		trans_no,
-		convert(sum(case when discounttype = 1 then discount else 0 end),decimal(10,2)) as discountTTL,
-		convert(sum(case when discounttype = 2 then memDiscount else 0 end),decimal(10,2)) as memSpecial,
+		CAST(sum(case when discounttype = 1 then discount else 0 end) AS decimal(10,2)) as discountTTL,
+		CAST(sum(case when discounttype = 2 then memDiscount else 0 end) AS decimal(10,2)) as memSpecial,
 		case when (min(datetime) is null) then 0 else
 			sum(CASE WHEN discounttype = 4 THEN memDiscount ELSE 0 END)
 		end as staffSpecial,
-		convert(sum(case when upc = '0000000008005' then total else 0 end),decimal(10,2)) as couponTotal,
-		convert(sum(case when upc = 'MEMCOUPON' then unitPrice else 0 end),decimal(10,2)) as memCoupon,
+		CAST(sum(case when upc = '0000000008005' then total else 0 end) AS decimal(10,2)) as couponTotal,
+		CAST(sum(case when upc = 'MEMCOUPON' then unitPrice else 0 end) AS decimal(10,2)) as memCoupon,
 		abs(sum(case when trans_subtype = 'MI' or trans_subtype = 'CX' then total else 0 end)) as chargeTotal,
 		sum(case when upc = 'Discount' then total else 0 end) as transDiscount,
 		sum(case when trans_type = 'T' then -1 * total else 0 end) as tenderTotal
@@ -784,7 +794,7 @@ function create_trans_dbs($db,$type){
 		register_no,
 		emp_no,
 		trans_no,
-		l.description,
+		l.description as description,
 		case 
 			when voided = 5 
 				then 'Discount'
@@ -795,15 +805,15 @@ function create_trans_dbs($db,$type){
 			when unitPrice = 0.01
 				then ''
 			when scale <> 0 and quantity <> 0 
-				then concat(quantity, ' @ ', unitPrice)
+				then ".$db->concat('quantity', "' @ '", 'unitPrice','')."
 			when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity = 1
-				then concat(volume, ' /', unitPrice)
+				then ".$db->concat('volume', "' / '", 'unitPrice','')."
 			when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity <> 1
-				then concat(Quantity, ' @ ', Volume, ' /', unitPrice)
+				then ".$db->concat('quantity', "' @ '", 'volume', "' /'", 'unitPrice','')."
 			when abs(itemQtty) > 1 and discounttype = 3
-				then concat(ItemQtty, ' /', UnitPrice)
+				then ".$db->concat('ItemQtty', "' / '", 'unitPrice','')."
 			when abs(itemQtty) > 1
-				then concat(quantity, ' @ ', unitPrice)	
+				then ".$db->concat('quantity', "' @ '", 'unitPrice','')."
 			when matched > 0
 				then '1 w/ vol adj'
 			else ''
@@ -820,9 +830,9 @@ function create_trans_dbs($db,$type){
 			WHEN (tax = 1 and foodstamp = 0)
 				THEN 'T' 
 			WHEN (tax > 1 and foodstamp <> 0)
-				THEN CONCAT(LEFT(t.description,1),'F')
+				THEN ".$db->concat('SUBSTR(t.description,0,1)',"'F'",'')."
 			WHEN (tax > 1 and foodstamp = 0)
-				THEN LEFT(t.description,1)
+				THEN SUBSTR(t.description,0,1)
 			when tax = 0 and foodstamp <> 0
 				then 'F'
 			when tax = 0 and foodstamp = 0
@@ -913,14 +923,14 @@ function create_trans_dbs($db,$type){
 		trans_no,
 		case 
 			when trans_type = 'T'
-				then 	concat(right( concat(space(44), upper(rtrim(Description)) ), 44) 
-					, right(concat( space(8), format(-1 * Total, 2)), 8) 
-					, right(concat(space(4), status), 4))
+				then 	".$db->concat( "SUBSTR(".$db->concat('UPPER(TRIM(description))','space(44)','').", 0, 44)" 
+					, "right(".$db->concat( 'space(8)', 'FORMAT(-1 * total, 2)','').", 8)" 
+					, "right(".$db->concat( 'space(4)', 'status','').", 4)",'')."
 			when voided = 3 
-				then 	concat(left(concat(Description, space(30)), 30) 
-					, space(9) 
-					, 'TOTAL' 
-					, right(concat(space(8), format(UnitPrice, 2)), 8))
+				then 	".$db->concat("SUBSTR(".$db->concat('description', 'space(30)','').", 0, 30)"
+					, 'space(9)'
+					, "'TOTAL'"
+					, 'right('.$db->concat( 'space(8)', 'FORMAT(unitPrice, 2)','').', 8)','')."
 			when voided = 2
 				then 	description
 			when voided = 4
@@ -928,16 +938,16 @@ function create_trans_dbs($db,$type){
 			when voided = 6
 				then 	description
 			when voided = 7 or voided = 17
-				then 	concat(left(concat(Description, space(30)), 30) 
-					, space(14) 
-					, right(concat(space(8), format(UnitPrice, 2)), 8) 
-					, right(concat(space(4), status), 4))
+				then 	".$db->concat("SUBSTR(".$db->concat('description', 'space(30)','').", 0, 30)"
+					, 'space(14)'
+					, 'right('.$db->concat( 'space(8)', 'FORMAT(unitPrice, 2)','').', 8)'
+					, 'right('.$db->concat( 'space(4)', 'status','').', 4)','')."
 			else
-				concat(left(concat(Description, space(30)), 30)
-				, ' ' 
-				, left(concat(Comment, space(13)), 13) 
-				, right(concat(space(8), format(Total, 2)), 8) 
-				, right(concat(space(4), status), 4))
+				".$db->concat("SUBSTR(".$db->concat('description', 'space(30)','').", 0, 30)"
+				, "' '" 
+				, "SUBSTR(".$db->concat('comment', 'space(13)','').", 0, 13)"
+				, 'right('.$db->concat('space(8)', 'FORMAT(total, 2)','').', 8)'
+				, 'right('.$db->concat('space(4)', 'status','').', 4)','')."
 		end
 		as linetoprint,
 		trans_id
@@ -979,6 +989,10 @@ function create_trans_dbs($db,$type){
 		as linetoprint,
 		trans_id
 		from rp_ltt_receipt";
+	}
+	elseif($type == 'pdolite'){
+		$rprV = str_replace('right(','str_right(',$rprV);
+		$rprV = str_replace('FORMAT(','ROUND(',$rprV);
 	}
 	if(!$db->table_exists('rp_receipt',$name)){
 		db_structure_modify($db,'rp_receipt',$rprV,$errors);
@@ -1159,7 +1173,7 @@ function create_trans_dbs($db,$type){
 		department,sum(quantity) as quantity,matched,min(trans_id) as trans_id,
 		scale,
 		sum(unitprice) as unitprice, 
-		convert(sum(total),decimal(10,2)) as total,
+		CAST(sum(total) AS decimal(10,2)) as total,
 		sum(regPrice) as regPrice,tax,foodstamp,charflag,
 		case when trans_status='d' or scale=1 or trans_type='T' then trans_id else scale end as grouper
 	from localtemptrans
@@ -1172,12 +1186,12 @@ function create_trans_dbs($db,$type){
 
 	union all
 
-	select 	upc,case when numflag=1 then concat(description,'*') else description end as description,
+	select 	upc,case when numflag=1 then ".$db->concat('description',"'*'",'')." else description end as description,
 		trans_type,trans_subtype,sum(itemQtty)as itemqtty,discounttype,volume,
 		trans_status,
 		case when voided=1 then 0 else voided end as voided,
 		department,sum(quantity) as quantity,matched,min(trans_id) as trans_id,
-		scale,unitprice,convert(sum(total),decimal(10,2)) as total,regPrice,tax,foodstamp,charflag,
+		scale,unitprice,CAST(sum(total) AS decimal(10,2)) as total,regPrice,tax,foodstamp,charflag,
 		case when trans_status='d' or scale=1 or trans_type='T' then trans_id else scale end as grouper
 	from localtemptrans
 	where description not like '** YOU SAVED %' and trans_status !='M'
@@ -1192,9 +1206,9 @@ function create_trans_dbs($db,$type){
 
 	select 	upc,
 		case when discounttype=1 then
-		concat(' > you saved $',convert(convert(sum(quantity*regprice-quantity*unitprice),decimal(10,2)),char(20)),'  <')
+		".$db->concat("' > you saved \$'",'CAST(CAST(sum(quantity*regprice-quantity*unitprice) AS decimal(10,2)) AS char(20))',"'  <'",'')."
 		when discounttype=2 then
-		concat(' > you saved $',convert(convert(sum(quantity*regprice-quantity*unitprice),decimal(10,2)),char(20)),'  Member Special <')
+		".$db->concat("' > you saved \$'",'CAST(CAST(sum(quantity*regprice-quantity*unitprice) AS decimal(10,2)) AS char(20))',"'  Member Special <'",'')."
 		end as description,
 		trans_type,'0' as trans_subtype,0 as itemQtty,discounttype,volume,
 		'D' as trans_status,
@@ -1210,7 +1224,7 @@ function create_trans_dbs($db,$type){
 	group by upc,description,trans_type,trans_subtype,discounttype,volume,
 		department,scale,matched,
 		case when trans_status='d' or scale=1 then trans_id else scale end
-	having convert(sum(quantity*regprice-quantity*unitprice),decimal(10,2))<>0";
+	having CAST(sum(quantity*regprice-quantity*unitprice) AS decimal(10,2))<>0";
 	if($type == 'mssql'){
 		$lttG = "CREATE   view ltt_grouped as
 		select 	upc,description,trans_type,trans_subtype,sum(itemQtty)as itemqtty,
@@ -1294,15 +1308,15 @@ function create_trans_dbs($db,$type){
 		when charflag = 'SO'
 			then ''
 		when scale <> 0 and quantity <> 0 
-			then concat(convert(quantity,char),' @ ',convert(unitPrice,char))
+			then ".$db->concat('CAST(quantity AS char)',"' @ '",'CAST(unitPrice AS char)','')."
 		when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity = 1
-			then concat(convert(volume,char),' /',convert(unitPrice,char))
+			then ".$db->concat('CAST(volume AS char)',"' / '",'CAST(unitPrice AS char)','')."
 		when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity <> 1
-			then concat(convert(Quantity,char),' @ ',convert(Volume,char),' /',convert(unitPrice,char))
+			then ".$db->concat('CAST(quantity AS char)',"' @ '",'CAST(volume AS char)',"' /'",'CAST(unitPrice AS char)','')."
 		when abs(itemQtty) > 1 and discounttype = 3
-			then concat(convert(ItemQtty,char),' /',convert(UnitPrice,char))
+			then ".$db->concat('CAST(ItemQtty AS char)',"' / '",'CAST(unitPrice AS char)','')."
 		when abs(itemQtty) > 1
-			then concat(convert(quantity,char),' @ ',convert(unitPrice,char))
+			then ".$db->concat('CAST(quantity AS char)',"' @ '",'CAST(unitPrice AS char)','')."
 		when matched > 0
 			then '1 w/ vol adj'
 		else ''
@@ -1319,9 +1333,9 @@ function create_trans_dbs($db,$type){
 		when tax = 1 and foodstamp = 0
 			then 'T' 
 		WHEN (tax > 1 and foodstamp <> 0)
-			THEN CONCAT(LEFT(t.description,1),'F')
+			THEN ".$db->concat('SUBSTR(t.description,0,1)',"'F'",'')."
 		WHEN (tax > 1 and foodstamp = 0)
-			THEN LEFT(t.description,1)
+			THEN SUBSTR(t.description,0,1)
 		when tax = 0 and foodstamp <> 0
 			then 'F'
 		when tax = 0 and foodstamp = 0
@@ -1343,7 +1357,7 @@ function create_trans_dbs($db,$type){
 	on l.tax = t.id
 	where voided <> 5 and UPC <> 'TAX' and UPC <> 'DISCOUNT'
 	AND trans_type <> 'L'
-	and not (trans_status='M' and total=convert('0.00',decimal(10,2)))
+	and not (trans_status='M' and total=CAST('0.00' AS decimal(10,2)))
 
 	union
 
@@ -1726,7 +1740,7 @@ function create_trans_dbs($db,$type){
 			department,sum(quantity) as quantity,matched,min(trans_id) as trans_id,
 			scale,
 			sum(unitprice) as unitprice, 
-			convert(sum(total),decimal(10,2)) as total,
+			CAST(sum(total) AS decimal(10,2)) as total,
 			sum(regPrice) as regPrice,tax,foodstamp,
 			case when trans_status='d' or scale=1 or trans_type='T' then trans_id else scale end as grouper
 		from localtranstoday
@@ -1741,12 +1755,12 @@ function create_trans_dbs($db,$type){
 		union all
 
 		select 	register_no,emp_no,trans_no,card_no,
-			upc,case when numflag=1 then concat(description,'*') else description end as description,
+			upc,case when numflag=1 then ".$db->concat('description',"'*'",'')." else description end as description,
 			trans_type,trans_subtype,sum(itemQtty)as itemqtty,discounttype,volume,
 			trans_status,
 			case when voided=1 then 0 else voided end as voided,
 			department,sum(quantity) as quantity,matched,min(trans_id) as trans_id,
-			scale,unitprice,convert(sum(total),decimal(10,2)) as total,regPrice,tax,foodstamp,
+			scale,unitprice,CAST(sum(total) AS decimal(10,2)) as total,regPrice,tax,foodstamp,
 			case when trans_status='d' or scale=1 or trans_type='T' then trans_id else scale end as grouper
 		from localtranstoday
 		where description not like '** YOU SAVED %' and trans_status !='M'
@@ -1763,9 +1777,9 @@ function create_trans_dbs($db,$type){
 		select 	register_no,emp_no,trans_no,card_no,
 			upc,
 			case when discounttype=1 then
-			concat(' > YOU SAVED $',convert(convert(sum(quantity*regprice-quantity*unitprice),decimal(10,2)),char(20)),'  <')
+			".$db->concat("' > you saved \$'",'CAST(CAST(sum(quantity*regprice-quantity*unitprice) AS decimal(10,2)) AS char(20))',"'  <'",'')."
 			when discounttype=2 then
-			concat(' > YOU SAVED $',convert(convert(sum(quantity*regprice-quantity*unitprice),decimal(10,2)),char(20)),'  Member Special <')
+			".$db->concat("' > you saved \$'",'CAST(CAST(sum(quantity*regprice-quantity*unitprice) AS decimal(10,2)) AS char(20))',"'  Member Special <'",'')."
 			end as description,
 			trans_type,'0' as trans_subtype,0 as itemQtty,discounttype,volume,
 			'D' as trans_status,
@@ -1782,7 +1796,7 @@ function create_trans_dbs($db,$type){
 			upc,description,trans_type,trans_subtype,discounttype,volume,
 			department,scale,matched,
 			case when trans_status='d' or scale=1 then trans_id else scale end
-		having convert(sum(quantity*regprice-quantity*unitprice),decimal(10,2))<>0";
+		having CAST(sum(quantity*regprice-quantity*unitprice) AS decimal(10,2))<>0";
 	if($type == 'mssql'){
 		$rplttG = "CREATE      view rp_ltt_grouped as
 		select 	register_no,emp_no,trans_no,card_no,
@@ -1870,15 +1884,15 @@ function create_trans_dbs($db,$type){
 			when unitPrice = 0.01
 				then ''
 			when scale <> 0 and quantity <> 0 
-				then concat(convert(quantity,char),' @ ',convert(unitPrice,char))
+				then ".$db->concat('CAST(quantity AS char)',"' @ '",'CAST(unitPrice AS char)','')."
 			when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity = 1
-				then concat(convert(volume,char),' /',convert(unitPrice,char))
+				then ".$db->concat('CAST(volume AS char)',"' / '",'CAST(unitPrice AS char)','')."
 			when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity <> 1
-				then concat(convert(Quantity,char),' @ ',convert(Volume,char),' /',convert(unitPrice,char))
+				then ".$db->concat('CAST(quantity AS char)',"' @ '",'CAST(volume AS char)',"' /'",'CAST(unitPrice AS char)','')."
 			when abs(itemQtty) > 1 and discounttype = 3
-				then concat(convert(ItemQtty,char),' /',convert(UnitPrice,char))
+				then ".$db->concat('CAST(ItemQtty AS char)',"' / '",'CAST(unitPrice AS char)','')."
 			when abs(itemQtty) > 1
-				then concat(convert(quantity,char),' @ ',convert(unitPrice,char))
+				then ".$db->concat('CAST(quantity AS char)',"' @ '",'CAST(unitPrice AS char)','')."
 			when matched > 0
 				then '1 w/ vol adj'
 			else ''
@@ -1895,9 +1909,9 @@ function create_trans_dbs($db,$type){
 			WHEN (tax = 1 and foodstamp = 0)
 				THEN 'T' 
 			WHEN (tax > 1 and foodstamp <> 0)
-				THEN CONCAT(LEFT(t.description,1),'F')
+				THEN ".$db->concat('SUBSTR(t.description,0,1)',"'F'",'')."
 			WHEN (tax > 1 and foodstamp = 0)
-				THEN LEFT(t.description,1)
+				THEN SUBSTR(t.description,0,1)
 			when tax = 0 and foodstamp <> 0
 				then 'F'
 			when tax = 0 and foodstamp = 0
@@ -1916,7 +1930,7 @@ function create_trans_dbs($db,$type){
 		on l.tax=t.id
 		where voided <> 5 and UPC <> 'TAX' and UPC <> 'DISCOUNT'
 		AND trans_type <> 'L'
-		and not (trans_status='M' and total=convert('0.00',decimal))
+		and not (trans_status='M' and total=CAST('0.00' AS decimal))
 
 		union
 
