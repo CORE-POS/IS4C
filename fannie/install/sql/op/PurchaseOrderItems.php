@@ -50,7 +50,7 @@ $CREATE['op.PurchaseOrderItems'] = "
 		caseSize INT,
 		receivedDate DATETIME,
 		receivedQty INT,
-		receivedTotalCost DECIMAL(10,2)
+		receivedTotalCost DECIMAL(10,2),
 		unitSize VARCHAR(25),
 		brand VARCHAR(50),
 		description VARCHAR(50),
