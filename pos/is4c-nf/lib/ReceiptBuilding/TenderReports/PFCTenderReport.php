@@ -83,13 +83,15 @@ static public function get(){
 	$receipt.= ReceiptLib::centerString("------------------------------------------------------");
     $receipt .= "\n";
 
-	$tendersQ = "SELECT t.TenderName, -SUM(d.total), COUNT(d.total) 
-		FROM dlog d, ".$CORE_LOCAL->get('pDatabase').".tenders t
-		WHERE d.trans_subtype = t.TenderID AND d.register_no=".$CORE_LOCAL->get('laneno').
-		" AND trans_subtype IN($DESIRED_TENDERS) AND d.tdate >= '$shiftCutoff' AND d.emp_no <> 9999
-		GROUP BY t.TenderName";
-	$tendersR = $db_a->query($tendersQ);
-	foreach ($tender = $db_a->fetch_array($cardR)) {
+
+	foreach(array_keys($DESIRED_TENDERS) as $tender_code){ 
+		$tendersQ = "SELECT t.TenderName, -SUM(d.total), COUNT(d.total) 
+			FROM dlog d, ".$CORE_LOCAL->get('pDatabase').".tenders t
+			WHERE d.trans_subtype = t.TenderID AND d.register_no=".$CORE_LOCAL->get('laneno').
+			" AND trans_subtype = $tender_code AND d.tdate >= '$shiftCutoff' AND d.emp_no <> 9999";
+		$tendersR = $db_a->query($tendersQ);
+		$tender = $db_a->fetch_row($tendersR);
+
 		$receipt .= "  ".substr($tender[0]." Total: ".$blank.$blank,0,20);
 		$receipt .= substr($blank.number_format(($tender[1]),2),-8).substr($blank.$tender[2],-8)."\n";
 	}
