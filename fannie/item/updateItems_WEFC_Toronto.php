@@ -61,8 +61,8 @@ $auditedUser = validateUserQuiet('audited_pricechange');
 $logged_in = checkLogin();
 refreshSession();
 
-$page_title = 'Fannie - Item Maintanence WEFC_Toronto';
-$header = 'Item Maintanence WEFC_Toronto';
+$page_title = 'Fannie - Item Maintenence WEFC_Toronto';
+$header = 'Item Maintenence WEFC_Toronto';
 include('../src/header.html');
 
 include_once('prodFunction_WEFC_Toronto.php');

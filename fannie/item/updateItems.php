@@ -46,8 +46,8 @@ $auditedUser = validateUserQuiet('audited_pricechange');
 $logged_in = checkLogin();
 refreshSession();
 
-$page_title = 'Fannie - Item Maintanence';
-$header = 'Item Maintanence';
+$page_title = 'Fannie - Item Maintenence';
+$header = 'Item Maintenence';
 include('../src/header.html');
 
 $upc = str_pad($_REQUEST['upc'],'0',13,STR_PAD_LEFT);

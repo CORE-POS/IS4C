@@ -24,8 +24,8 @@
 include('prodFunction.php');
 include('../config.php');
 include('../src/mysql_connect.php');
-$page_title = 'Fannie - Item Maintanence';
-$header = 'Item Maintanence';
+$page_title = 'Fannie - Item Maintenence';
+$header = 'Item Maintenence';
 include('../src/header.html');
 
 ?>
