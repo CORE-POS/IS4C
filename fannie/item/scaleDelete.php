@@ -35,8 +35,8 @@ if (!$user){
 }
 
 include('../src/mysql_connect.php');
-$page_title = 'Fannie - Item Maintenence';
-$header = 'Item Maintenence';
+$page_title = 'Fannie - Item Maintenance';
+$header = 'Item Maintenance';
 include('../src/header.html');
 ?>
 <script type"text/javascript" src=ajax.js></script>

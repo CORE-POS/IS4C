@@ -47,8 +47,8 @@ class ItemEditorPage extends FanniePage {
 	private $msgs = '';
 
 	function preprocess(){
-		$this->title = 'Fannie - Item Maintenence';
-		$this->header = 'Item Maintenence';
+		$this->title = 'Fannie - Item Maintenance';
+		$this->header = 'Item Maintenance';
 
 		if (FormLib::get_form_value('searchupc') !== ''){
 			$this->mode = 'search_results';
