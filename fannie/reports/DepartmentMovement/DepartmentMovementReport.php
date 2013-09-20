@@ -87,7 +87,6 @@ class DepartmentMovementReport extends FannieReportPage {
 	*/
 	function fetch_report_data(){
 		global $dbc, $FANNIE_ARCHIVE_DB;
-		global $dbo, $FANNIE_OP_DB;	
 		$date1 = FormLib::get_form_value('date1',date('Y-m-d'));
 		$date2 = FormLib::get_form_value('date2',date('Y-m-d'));
 		$deptStart = FormLib::get_form_value('deptStart','');
@@ -195,10 +194,10 @@ class DepartmentMovementReport extends FannieReportPage {
 		  special case to combine year, month, and day into
 		  a single field
 		*/
-		$prep = $dbo->prepare_statement($query);
-		$result = $dbo->exec_statement($prep,$args);
+		$prep = $dbc->prepare_statement($query);
+		$result = $dbc->exec_statement($prep,$args);
 		$ret = array();
-		while ($row = $dbo->fetch_array($result)){
+		while ($row = $dbc->fetch_array($result)){
 			$record = array();
 			if ($groupby == "Date"){
 				$record[] = $row[1]."/".$row[2]."/".$row[0];
