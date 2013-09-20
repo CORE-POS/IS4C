@@ -57,7 +57,8 @@ static public function get(){
 	$cashier_names = "";
     $cashierQ = "SELECT CONCAT(SUBSTR(e.FirstName,1,1),SUBSTR(e.Lastname,1,1)) as cashier
         FROM dlog d, ".$CORE_LOCAL->get('pDatabase').".employees e
-        WHERE d.emp_no = e.emp_no AND register_no = ". $CORE_LOCAL->get('laneno')."$excl
+        WHERE d.emp_no = e.emp_no AND register_no = ". $CORE_LOCAL->get('laneno')."
+		AND d.emp_no <> 9999
         GROUP BY d.emp_no ORDER BY d.tdate";
 
     $cashierR = $db_a->query($cashierQ);
