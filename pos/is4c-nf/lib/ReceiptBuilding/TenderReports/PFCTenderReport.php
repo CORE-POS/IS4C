@@ -82,22 +82,37 @@ static public function get(){
     $receipt .= "\n";
 	$receipt.= ReceiptLib::centerString("------------------------------------------------------");
     $receipt .= "\n";
-	// CASH TOTAL
-    $caQ = "SELECT -SUM(total) AS net, COUNT(total) FROM dlog 
-    	WHERE register_no=".$CORE_LOCAL->get('laneno').
-		" AND trans_subtype IN('CA') AND tdate >= '$shiftCutoff'$excl";
-	$caR = $db_a->query($caQ);
-	$ca = $db_a->fetch_row($caR);
-	$receipt .= "  ".substr("CASH Total: ".$blank.$blank,0,20);
-	$receipt .= substr($blank.number_format(($ca[0]),2),-8).substr($blank.$ca[1],-8)."\n";
-	// CHECK TOTAL
-    $ckQ = "SELECT -SUM(total) AS net, COUNT(total) FROM dlog 
-    	WHERE register_no=".$CORE_LOCAL->get('laneno').
-		" AND trans_subtype IN('CK') AND tdate >= '$shiftCutoff'$excl";
-	$ckR = $db_a->query($ckQ);
-	$ck = $db_a->fetch_row($ckR);
-	$receipt .= "  ".substr("CHECK Total: ".$blank.$blank,0,20);
-	$receipt .= substr($blank.number_format(($ck[0]),2),-8).substr($blank.$ck[1],-8)."\n";
+
+	$tendersQ = "SELECT t.TenderName, -SUM(d.total), COUNT(d.total) 
+		FROM dlog d, ".$CORE_LOCAL->get('pDatabase').".tenders t
+		WHERE d.trans_subtype = t.TenderID AND d.register_no=".$CORE_LOCAL->get('laneno').
+		" AND trans_subtype IN($DESIRED_TENDERS) AND d.tdate >= '$shiftCutoff' AND d.emp_no <> 9999
+		GROUP BY t.TenderName";
+	$tendersR = $db_a->query($tendersQ);
+	foreach ($tender = $db_a->fetch_array($cardR)) {
+		$receipt .= "  ".substr($tender[0]." Total: ".$blank.$blank,0,20);
+		$receipt .= substr($blank.number_format(($tender[1]),2),-8).substr($blank.$tender[2],-8)."\n";
+	}
+    $receipt .= "\n";
+	$receipt.= ReceiptLib::centerString("------------------------------------------------------");
+    $receipt .= "\n";
+
+	// // CASH TOTAL
+	//     $caQ = "SELECT -SUM(total) AS net, COUNT(total) FROM dlog 
+	//     	WHERE register_no=".$CORE_LOCAL->get('laneno').
+	// 	" AND trans_subtype IN('CA') AND tdate >= '$shiftCutoff'$excl";
+	// $caR = $db_a->query($caQ);
+	// $ca = $db_a->fetch_row($caR);
+	// $receipt .= "  ".substr("CASH Total: ".$blank.$blank,0,20);
+	// $receipt .= substr($blank.number_format(($ca[0]),2),-8).substr($blank.$ca[1],-8)."\n";
+	// // CHECK TOTAL
+	//     $ckQ = "SELECT -SUM(total) AS net, COUNT(total) FROM dlog 
+	//     	WHERE register_no=".$CORE_LOCAL->get('laneno').
+	// 	" AND trans_subtype IN('CK') AND tdate >= '$shiftCutoff'$excl";
+	// $ckR = $db_a->query($ckQ);
+	// $ck = $db_a->fetch_row($ckR);
+	// $receipt .= "  ".substr("CHECK Total: ".$blank.$blank,0,20);
+	// $receipt .= substr($blank.number_format(($ck[0]),2),-8).substr($blank.$ck[1],-8)."\n";
 	// CARD TENDERS TOTAL
     $cardQ = "SELECT -SUM(total) AS net, COUNT(total) FROM dlog 
     	WHERE register_no=".$CORE_LOCAL->get('laneno').
@@ -122,48 +137,48 @@ static public function get(){
 	$gs = $db_a->fetch_row($gsR);
 	$receipt .= "  ".substr("Gift Sold: ".$blank.$blank,0,20);
 	$receipt .= substr($blank.number_format(($gs[0]),2),-8).substr($blank.$gs[1],-8)."\n";
-    // GIFT TENDER TOTAL
-    $gtQ = "SELECT -SUM(total) AS net, COUNT(total) FROM dlog 
-    	WHERE register_no=".$CORE_LOCAL->get('laneno').
-		" AND trans_subtype = 'TC' AND tdate >= '$shiftCutoff'$excl";
-	$gtR = $db_a->query($gtQ);
-	$gt = $db_a->fetch_row($gtR);
-	$receipt .= "  ".substr("Gift Tender: ".$blank.$blank,0,20);
-	$receipt .= substr($blank.number_format(($gt[0]),2),-8).substr($blank.$gt[1],-8)."\n";
-    // COUPON - VENDOR TOTAL
-    $mcQ = "SELECT -SUM(total) AS net, COUNT(total) FROM dlog 
-    	WHERE register_no=".$CORE_LOCAL->get('laneno').
-		" AND trans_subtype IN ('CP','MC') AND tdate >= '$shiftCutoff'$excl";
-	$mcR = $db_a->query($mcQ);
-	$mc = $db_a->fetch_row($mcR);
-	$receipt .= "  ".substr("Coupons - Vendor: ".$blank.$blank,0,20);
-	$receipt .= substr($blank.number_format(($mc[0]),2),-8).substr($blank.$mc[1],-8)."\n";
-    // COUPON - INSTORE TOTAL
-    $icQ = "SELECT -SUM(total) AS net, COUNT(total) FROM dlog 
-    	WHERE register_no=".$CORE_LOCAL->get('laneno').
-		" AND trans_subtype IN ('IC') AND tdate >= '$shiftCutoff'$excl";
-	$icR = $db_a->query($icQ);
-	$ic = $db_a->fetch_row($icR);
-	$receipt .= "  ".substr("Coupons - Instore: ".$blank.$blank,0,20);
-	$receipt .= substr($blank.number_format(($ic[0]),2),-8).substr($blank.$ic[1],-8)."\n";
-    // COUPON - INSTORE TOTAL
-    $ptQ = "SELECT -SUM(total) AS net, COUNT(total) FROM dlog 
-    	WHERE register_no=".$CORE_LOCAL->get('laneno').
-		" AND trans_subtype IN ('PT') AND tdate >= '$shiftCutoff'$excl";
-	$ptR = $db_a->query($ptQ);
-	$pt = $db_a->fetch_row($ptR);
-	$receipt .= "  ".substr("Patronage: ".$blank.$blank,0,20);
-	$receipt .= substr($blank.number_format(($pt[0]),2),-8).substr($blank.$pt[1],-8)."\n";
-	$receipt.= ReceiptLib::centerString("------------------------------------------------------");
-    $receipt .= "\n";
-    // INSTORE CHARGE TOTAL
-    $miQ = "SELECT -SUM(total) AS net, COUNT(total) FROM dlog 
-    	WHERE register_no=".$CORE_LOCAL->get('laneno').
-		" AND trans_subtype IN ('MI') AND tdate >= '$shiftCutoff'$excl";
-	$miR = $db_a->query($miQ);
-	$mi = $db_a->fetch_row($miR);
-	$receipt .= "  ".substr("Instore Charges: ".$blank.$blank,0,20);
-	$receipt .= substr($blank.number_format(($mi[0]),2),-8).substr($blank.$mi[1],-8)."\n";
+	//     // GIFT TENDER TOTAL
+	//     $gtQ = "SELECT -SUM(total) AS net, COUNT(total) FROM dlog 
+	//     	WHERE register_no=".$CORE_LOCAL->get('laneno').
+	// 	" AND trans_subtype = 'TC' AND tdate >= '$shiftCutoff'$excl";
+	// $gtR = $db_a->query($gtQ);
+	// $gt = $db_a->fetch_row($gtR);
+	// $receipt .= "  ".substr("Gift Tender: ".$blank.$blank,0,20);
+	// $receipt .= substr($blank.number_format(($gt[0]),2),-8).substr($blank.$gt[1],-8)."\n";
+	//     // COUPON - VENDOR TOTAL
+	//     $mcQ = "SELECT -SUM(total) AS net, COUNT(total) FROM dlog 
+	//     	WHERE register_no=".$CORE_LOCAL->get('laneno').
+	// 	" AND trans_subtype IN ('CP','MC') AND tdate >= '$shiftCutoff'$excl";
+	// $mcR = $db_a->query($mcQ);
+	// $mc = $db_a->fetch_row($mcR);
+	// $receipt .= "  ".substr("Coupons - Vendor: ".$blank.$blank,0,20);
+	// $receipt .= substr($blank.number_format(($mc[0]),2),-8).substr($blank.$mc[1],-8)."\n";
+	//     // COUPON - INSTORE TOTAL
+	//     $icQ = "SELECT -SUM(total) AS net, COUNT(total) FROM dlog 
+	//     	WHERE register_no=".$CORE_LOCAL->get('laneno').
+	// 	" AND trans_subtype IN ('IC') AND tdate >= '$shiftCutoff'$excl";
+	// $icR = $db_a->query($icQ);
+	// $ic = $db_a->fetch_row($icR);
+	// $receipt .= "  ".substr("Coupons - Instore: ".$blank.$blank,0,20);
+	// $receipt .= substr($blank.number_format(($ic[0]),2),-8).substr($blank.$ic[1],-8)."\n";
+	//     // COUPON - INSTORE TOTAL
+	//     $ptQ = "SELECT -SUM(total) AS net, COUNT(total) FROM dlog 
+	//     	WHERE register_no=".$CORE_LOCAL->get('laneno').
+	// 	" AND trans_subtype IN ('PT') AND tdate >= '$shiftCutoff'$excl";
+	// $ptR = $db_a->query($ptQ);
+	// $pt = $db_a->fetch_row($ptR);
+	// $receipt .= "  ".substr("Patronage: ".$blank.$blank,0,20);
+	// $receipt .= substr($blank.number_format(($pt[0]),2),-8).substr($blank.$pt[1],-8)."\n";
+	// $receipt.= ReceiptLib::centerString("------------------------------------------------------");
+	//     $receipt .= "\n";
+	//     // INSTORE CHARGE TOTAL
+	//     $miQ = "SELECT -SUM(total) AS net, COUNT(total) FROM dlog 
+	//     	WHERE register_no=".$CORE_LOCAL->get('laneno').
+	// 	" AND trans_subtype IN ('MI') AND tdate >= '$shiftCutoff'$excl";
+	// $miR = $db_a->query($miQ);
+	// $mi = $db_a->fetch_row($miR);
+	// $receipt .= "  ".substr("Instore Charges: ".$blank.$blank,0,20);
+	// $receipt .= substr($blank.number_format(($mi[0]),2),-8).substr($blank.$mi[1],-8)."\n";
     // R/A TOTAL
     $raQ = "SELECT SUM(total), COUNT(total) from dlog where register_no=".$CORE_LOCAL->get('laneno').
 			" and department = 49 AND tdate >= '$shiftCutoff'$excl";
@@ -171,38 +186,38 @@ static public function get(){
 	$ra = $db_a->fetch_row($raR);
 	$receipt .= "  ".substr("R/A: ".$blank.$blank,0,20);
 	$receipt .= substr($blank.number_format(($ra[0]),2),-8).substr($blank.$ra[1],-8)."\n";
-    // CREDIT CARD TOTAL
-    $ccQ = "SELECT -SUM(total) AS net, COUNT(total) FROM dlog 
-    	WHERE register_no=".$CORE_LOCAL->get('laneno').
-		" AND trans_subtype IN ('CC') AND tdate >= '$shiftCutoff'$excl";
-	$ccR = $db_a->query($ccQ);
-	$cc = $db_a->fetch_row($ccR);
-	$receipt .= "  ".substr("Credit Card: ".$blank.$blank,0,20);
-	$receipt .= substr($blank.number_format(($cc[0]),2),-8).substr($blank.$cc[1],-8)."\n";
-    // DEBIT CARD TOTAL
-    $dcQ = "SELECT -SUM(total) AS net, COUNT(total) FROM dlog 
-    	WHERE register_no=".$CORE_LOCAL->get('laneno').
-		" AND trans_subtype IN ('DC') AND tdate >= '$shiftCutoff'$excl";
-	$dcR = $db_a->query($dcQ);
-	$dc = $db_a->fetch_row($dcR);
-	$receipt .= "  ".substr("Debit Card: ".$blank.$blank,0,20);
-	$receipt .= substr($blank.number_format(($dc[0]),2),-8).substr($blank.$dc[1],-8)."\n";
-    // EBT FOOD TOTAL
-    $fsQ = "SELECT -SUM(total) AS net, COUNT(total) FROM dlog 
-    	WHERE register_no=".$CORE_LOCAL->get('laneno').
-		" AND trans_subtype IN ('FS') AND tdate >= '$shiftCutoff'$excl";
-	$fsR = $db_a->query($fsQ);
-	$fs = $db_a->fetch_row($fsR);
-	$receipt .= "  ".substr("EBT Food: ".$blank.$blank,0,20);
-	$receipt .= substr($blank.number_format(($fs[0]),2),-8).substr($blank.$fs[1],-8)."\n";
-    // EBT CASH TOTAL
-    $ecQ = "SELECT -SUM(total) AS net, COUNT(total) FROM dlog 
-    	WHERE register_no=".$CORE_LOCAL->get('laneno').
-		" AND trans_subtype IN ('EC') AND tdate >= '$shiftCutoff'$excl";
-	$ecR = $db_a->query($ecQ);
-	$ec = $db_a->fetch_row($ecR);
-	$receipt .= "  ".substr("EBT Cash: ".$blank.$blank,0,20);
-	$receipt .= substr($blank.number_format(($ec[0]),2),-8).substr($blank.$ec[1],-8)."\n";
+	//     // CREDIT CARD TOTAL
+	//     $ccQ = "SELECT -SUM(total) AS net, COUNT(total) FROM dlog 
+	//     	WHERE register_no=".$CORE_LOCAL->get('laneno').
+	// 	" AND trans_subtype IN ('CC') AND tdate >= '$shiftCutoff'$excl";
+	// $ccR = $db_a->query($ccQ);
+	// $cc = $db_a->fetch_row($ccR);
+	// $receipt .= "  ".substr("Credit Card: ".$blank.$blank,0,20);
+	// $receipt .= substr($blank.number_format(($cc[0]),2),-8).substr($blank.$cc[1],-8)."\n";
+	//     // DEBIT CARD TOTAL
+	//     $dcQ = "SELECT -SUM(total) AS net, COUNT(total) FROM dlog 
+	//     	WHERE register_no=".$CORE_LOCAL->get('laneno').
+	// 	" AND trans_subtype IN ('DC') AND tdate >= '$shiftCutoff'$excl";
+	// $dcR = $db_a->query($dcQ);
+	// $dc = $db_a->fetch_row($dcR);
+	// $receipt .= "  ".substr("Debit Card: ".$blank.$blank,0,20);
+	// $receipt .= substr($blank.number_format(($dc[0]),2),-8).substr($blank.$dc[1],-8)."\n";
+	//     // EBT FOOD TOTAL
+	//     $fsQ = "SELECT -SUM(total) AS net, COUNT(total) FROM dlog 
+	//     	WHERE register_no=".$CORE_LOCAL->get('laneno').
+	// 	" AND trans_subtype IN ('FS') AND tdate >= '$shiftCutoff'$excl";
+	// $fsR = $db_a->query($fsQ);
+	// $fs = $db_a->fetch_row($fsR);
+	// $receipt .= "  ".substr("EBT Food: ".$blank.$blank,0,20);
+	// $receipt .= substr($blank.number_format(($fs[0]),2),-8).substr($blank.$fs[1],-8)."\n";
+	//     // EBT CASH TOTAL
+	//     $ecQ = "SELECT -SUM(total) AS net, COUNT(total) FROM dlog 
+	//     	WHERE register_no=".$CORE_LOCAL->get('laneno').
+	// 	" AND trans_subtype IN ('EC') AND tdate >= '$shiftCutoff'$excl";
+	// $ecR = $db_a->query($ecQ);
+	// $ec = $db_a->fetch_row($ecR);
+	// $receipt .= "  ".substr("EBT Cash: ".$blank.$blank,0,20);
+	// $receipt .= substr($blank.number_format(($ec[0]),2),-8).substr($blank.$ec[1],-8)."\n";
 	$receipt.= ReceiptLib::centerString("------------------------------------------------------");
 
 	$receipt .= str_repeat("\n", 5);
