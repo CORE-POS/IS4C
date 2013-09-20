@@ -87,7 +87,8 @@ class DepartmentMovementReport extends FannieReportPage {
 	*/
 	function fetch_report_data(){
 		global $dbc, $FANNIE_ARCHIVE_DB;
-		global $dbo, $FANNIE_OP_DB;
+		global $FANNIE_OP_DB;	
+		$dbo = FannieDB::get($FANNIE_OP_DB);
 		$date1 = FormLib::get_form_value('date1',date('Y-m-d'));
 		$date2 = FormLib::get_form_value('date2',date('Y-m-d'));
 		$deptStart = FormLib::get_form_value('deptStart','');
