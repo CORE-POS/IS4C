@@ -22,6 +22,17 @@
 *********************************************************************************/
 
 //ini_set('display_errors','1');
+if (!file_exists(dirname(__FILE__).'/../config.php')){
+	echo "Missing config file!<br />";
+	echo "Create a file named config.php in ".realpath(dirname(__FILE__).'/../').'<br />';
+	echo "and put this in it:<br />";
+	echo "<div style=\"border: 1px solid black;padding: 5em;\">";
+	echo '&lt;?php<br />';
+	echo '?&gt;';
+	echo '</div>';	
+	exit;	
+}
+
 require(dirname(__FILE__).'/../config.php'); 
 include(dirname(__FILE__).'/util.php');
 include(dirname(__FILE__).'/db.php');
