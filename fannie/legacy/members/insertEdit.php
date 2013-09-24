@@ -4,6 +4,13 @@ include($FANNIE_ROOT.'src/SQLManager.php');
 include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 $dbc = FannieDB::get($FANNIE_OP_DB);
 $sql = $dbc;
+
+include($FANNIE_ROOT.'auth/login.php');
+if (!validateUserQuiet('editmembers') && !validateUserQuiet('editmembers_csc') && !validateUserQuiet('viewmembers')){
+	$url = $FANNIE_URL.'auth/ui/loginform.php?redirect='.$_SERVER['PHP_SELF'];
+	header('Location: '.$url);
+	exit;
+}
 //include('../db.php');
 
 include('memAddress.php');
