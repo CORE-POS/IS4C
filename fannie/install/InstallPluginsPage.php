@@ -128,6 +128,7 @@ $mods = array(
 	,'ShelfAudit'
 	,'CoreWarehouse'
 	,'OverShortTools'
+	,'ReverseTransaction'
 );
 //,'PreorderPlugin'
 include('../modules/plugins2.0/TimesheetPlugin/TimesheetPlugin.php');
@@ -135,6 +136,7 @@ include('../modules/plugins2.0/CalendarPlugin/CalendarPlugin.php');
 include('../modules/plugins2.0/ShelfAudit/ShelfAudit.php');
 include('../modules/plugins2.0/CoreWarehouse/CoreWarehouse.php');
 include('../modules/plugins2.0/OverShortTools/OverShortTools.php');
+include('../modules/plugins2.0/ReverseTransaction/ReverseTransaction.php');
 // 17Jan13 Doesn't exist on github upstream.
 //include('../modules/plugins2.0/preorder/PreorderPlugin.php');
 
@@ -204,6 +206,7 @@ foreach($mods as $m){
 			// 17Jun13 EL Added <br /> for crampedness problem.
 			if (isset($info['description'])) 
 				echo '<br /><span class="noteTxt">'.$info['description'].'</span>';
+			echo '<br />';
 			//confset($field,"'".$CORE_LOCAL->get($field)."'");
 		}
 		echo '</td></tr>';
