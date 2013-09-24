@@ -204,7 +204,10 @@ class BaseItemModule extends ItemModule {
 
 			$ret .= '<tr>';
 			$ret .= "<td style=\"color:green;\"><b>Sale Price:</b></td><td style=\"color:green;\">$rowItem[6] (<em>Batch: $batch</em>)</td>";
-           		$ret .= "<td style=\"color:green;\">End Date:</td><td style=\"color:green;\">$rowItem[11]</td>";
+			list($date,$time) = explode(' ',$rowItem[11]);
+           		$ret .= "<td style=\"color:green;\">End Date:</td>
+				<td style=\"color:green;\">$date 
+				(<a href=\"EndItemSale.php?id=$upc\">Unsale Now</a>)</td>";
 			$ret .= '</tr>';
 		}
 		$ret .= "</table>";
