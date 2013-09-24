@@ -52,11 +52,11 @@ class OverShortTools extends FanniePlugin {
 		$dbc = FannieDB::get($db_name);
 		
 		$tables = array(
-			'dailyChecks',
-			'dailyCounts',
-			'dailyDeposit',
-			'dailyNotes',
-			'overshortsLog'
+			'DailyChecks',
+			'DailyCounts',
+			'DailyDeposit',
+			'DailyNotes',
+			'OverShortsLog'
 		);
 
 		foreach($tables as $t){
