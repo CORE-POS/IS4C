@@ -283,6 +283,20 @@ class SQLManager {
 	}
 
 	/**
+	  Get the database's function for current day
+	  @param $which_connection see method close()
+	  @return The appropriate function
+
+	  For example, with MySQL this will return the
+	  string 'CURDATE()'.
+	*/
+	function curdate($which_connection=''){
+		if ($which_connection == '')
+			$which_connection = $this->default_db;
+		return $this->connections[$which_connection]->sysDate;
+	}
+
+	/**
 	  Get the database's date difference function
 	  @param $date1 First date
 	  @param $date2 Second date
