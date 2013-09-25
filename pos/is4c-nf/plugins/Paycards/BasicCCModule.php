@@ -40,7 +40,7 @@
   The rest is utility methods that are often helpful.
  */
 
-if (!class_exists("PaycardLib")) include_once(realpath(dirname(__FILE__)."/lib/paycardLib.php"));
+if (!class_exists("PaycardLib")) include_once(realpath(dirname(__FILE__)."/lib/PaycardLib.php"));
 if (!isset($CORE_LOCAL)){
 	include_once(realpath(dirname(__FILE__)."/lib/LS_Access.php"));
 	$CORE_LOCAL = new LS_Access();
@@ -165,6 +165,7 @@ class BasicCCModule {
 	 @param $data string of data
 	 @param $type 'GET', 'POST', or 'SOAP'
 	 @param $xml True or False
+	 @param $extraOpts array of curl options and values
 	 @return integer error code
 	 
 	 The url should be specified in $this->GATEWAY.
@@ -177,7 +178,7 @@ class BasicCCModule {
 	 This function calls the handleResponse method
 	 and returns the result of that call.
 	 */
-	function curlSend($data=False,$type='POST',$xml=False){
+	function curlSend($data=False,$type='POST',$xml=False, $extraOpts=array()){
 		global $CORE_LOCAL;
 		if($data && $type == 'GET')
 			$this->GATEWAY .= $data;
@@ -203,6 +204,9 @@ class BasicCCModule {
 			curl_setopt($curl_handle, CURLOPT_HTTPHEADER,
 				array("Content-type: text/xml"));
 		}
+
+		foreach($extraOpts as $opt => $value)
+			curl_setopt($curl_handle, $opt, $value);
 
 		if ($data && ($type == 'POST' || $type == 'SOAP'))
 			curl_setopt($curl_handle, CURLOPT_POSTFIELDS, $data);
