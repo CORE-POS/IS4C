@@ -1331,51 +1331,52 @@ function create_archive_dbs($con) {
 		}
 	}
 
-	$dlogView = "select 
-		`$archive`.`datetime` AS `tdate`,
-		`$archive`.`register_no` AS `register_no`,
-		`$archive`.`emp_no` AS `emp_no`,
-		`$archive`.`trans_no` AS `trans_no`,
-		`$archive`.`upc` AS `upc`,
-		`$archive`.`trans_type` AS `trans_type`,
-		`$archive`.`trans_subtype` AS `trans_subtype`,
-		`$archive`.`trans_status` AS `trans_status`,
-		`$archive`.`department` AS `department`,
-		`$archive`.`quantity` AS `quantity`,
-		`$archive`.`unitPrice` AS `unitPrice`,
-		`$archive`.`total` AS `total`,
-		`$archive`.`tax` AS `tax`,
-		`$archive`.`foodstamp` AS `foodstamp`,
-		`$archive`.`ItemQtty` AS `itemQtty`,
-		`$archive`.`card_no` AS `card_no`,
-		`$archive`.`trans_id` AS `trans_id` 
-		from `$archive` 
-		where 
-		((`$archive`.`trans_status` <> 'D') 
-		and 
-		(`$archive`.`trans_status` <> 'X'))";
-	if ($FANNIE_SERVER_DBMS == 'MSSQL'){
-		$dlogView = "SELECT
-			datetime AS tdate,
-			register_no,
-			emp_no,
-			trans_no,
-			upc,
-			trans_type,
-			trans_subtype,
-			trans_status,
-			department,
-			quantity,
-			unitPrice,
-			total,
-			tax,
-			foodstamp,
-			ItemQtty,
-			card_no,
-			trans_id
-			FROM $archive
-			WHERE trans_status NOT IN ('D','X')";
-	}
+	$dlogView = "SELECT
+		datetime AS tdate,
+		register_no,
+		emp_no,
+		trans_no,
+		upc,
+		description,
+		CASE WHEN (trans_subtype IN ('CP','IC') OR upc like('%000000052')) then 'T' WHEN upc = 'DISCOUNT' then 'S' else trans_type end as trans_type,
+		CASE WHEN upc = 'MAD Coupon' THEN 'MA' 
+		   WHEN upc like('%00000000052') THEN 'RR' ELSE trans_subtype END as trans_subtype,
+		trans_status,
+		department,
+		quantity,
+		scale,
+		cost,
+		unitPrice,
+		total,
+		regPrice,
+		tax,
+		foodstamp,
+		discount,
+		memDiscount,
+		discountable,
+		discounttype,
+		voided,
+		percentDiscount,
+		ItemQtty,
+		volDiscType,
+		volume,
+		VolSpecial,
+		mixMatch,
+		matched,
+		memType,
+		staff,
+		numflag,
+		charflag,
+		card_no,
+		trans_id,
+		".$dbc->concat(
+			$dbc->convert('emp_no','char'),"'-'",
+			$dbc->convert('register_no','char'),"'-'",
+			$dbc->convert('trans_no','char'),'')
+		." as trans_num
+		FROM $archive
+		WHERE trans_status NOT IN ('D','X','Z')
+		AND emp_no <> 9999 and register_no <> 99";
 
 	$dlog_view = ($FANNIE_ARCHIVE_METHOD != "partitions") ? "dlog".$dstr : "dlogBig";
 	if (!$con->table_exists($dlog_view,$FANNIE_ARCHIVE_DB)){
