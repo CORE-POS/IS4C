@@ -159,7 +159,7 @@ class DepartmentEditor extends FanniePage {
 			$insP = $dbc->prepare_statement('INSERT INTO departments (dept_no, dept_name,
 				dept_tax,dept_fs,dept_discount,dept_limit,dept_minimum,modified,
 				modifiedby) VALUES (?,?,?,?,?,?,?,'.$dbc->now().',1)');
-			$insR = $dbc->exec_statement($insP, array($id,$name,$fax,$fs,$disc,$max,$min));
+			$insR = $dbc->exec_statement($insP, array($id,$name,$tax,$fs,$disc,$max,$min));
 			if ($insR === False){
 				echo 'Error: could not create department';
 				return;
