@@ -114,7 +114,7 @@ function qualified_names(){
 }
 
 function loaddata($sql, $table){
-	global $FANNIE_ROOT;
+	global $FANNIE_ROOT, $FANNIE_SERVER;
 	if (file_exists("{$FANNIE_ROOT}install/sample_data/$table.sql")){
 		$fp = fopen("{$FANNIE_ROOT}install/sample_data/$table.sql","r");
 		while($line = fgets($fp)){
@@ -124,7 +124,10 @@ function loaddata($sql, $table){
 		fclose($fp);
 	}
 	else if (file_exists("{$FANNIE_ROOT}install/sample_data/$table.csv")){
-		$prep = $sql->prepare_statement("LOAD DATA LOCAL INFILE
+		$LOCAL = 'LOCAL';
+		if ($FANNIE_SERVER == '127.0.0.1' || $FANNIE_SERVER == 'localhost')
+			$LOCAL = '';
+		$prep = $sql->prepare_statement("LOAD DATA $LOCAL INFILE
 			'{$FANNIE_ROOT}install/sample_data/$table.csv'
 			INTO TABLE $table
 			FIELDS TERMINATED BY ','
