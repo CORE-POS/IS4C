@@ -1295,7 +1295,7 @@ function create_trans_dbs($db,$type){
 
 	$lttreorderG = "CREATE   view ltt_receipt_reorder_g as
 	select 
-	l.description,
+	l.description as description,
 	case 
 		when voided = 5 
 			then 'Discount'
@@ -1341,7 +1341,7 @@ function create_trans_dbs($db,$type){
 		when tax = 0 and foodstamp = 0
 			then '' 
 	end
-	as Status,
+	as status,
 	case when trans_subtype='CM' or voided in (10,17)
 		then 'CM' else trans_type
 	end
@@ -1465,21 +1465,23 @@ function create_trans_dbs($db,$type){
 			when trans_type = 'T' 
 				then 	
 					case when trans_subtype = 'CP' and upc<>'0'
-					then	concat(	
-						rpad(Description,30,' '),
-						' ',
-						rpad(Comment,12,' '),
-						lpad(convert(Total,char),8,' '),
-						lpad(status,4,' ') ) 
-					else 	concat( lpad(upper(Description),44,' '), 
-						lpad(convert((-1 * Total),char),8,' '), 
-						lpad(status,4,' ') ) 
+					then	".$db->concat(
+						"SUBSTR(".$db->concat('description','space(30)','').",0,30)",
+						"' '",
+						"SUBSTR(".$db->concat('comment','space(12)','').",0,12)",
+						"right(".$db->concat('space(8)','CAST(total AS char)','').",8)",
+						"right(".$db->concat('space(4)','status','').",4)",'')." 
+					else 	".$db->concat( 
+						"right(".$db->concat('space(44)','upper(description)','').",44)", 
+						"right(".$db->concat('space(8)','CAST((-1*total) AS char)','').",8)",
+						"right(".$db->concat('space(4)','status','').",4)",'')." 
 					end 
 			when voided = 3 
-				then 	concat( rpad(Description,30,' '),
-					space(9), 
-					'TOTAL', 
-					lpad(convert(UnitPrice,char),8,' ') )
+				then 	".$db->concat( 
+					"SUBSTR(".$db->concat('description','space(30)','').",0,30)",
+					"space(9)", 
+					"'TOTAL'", 
+					"right(".$db->concat('space(8)','CAST(unitPrice AS char)','').",8)",'')."
 			when voided = 2
 				then 	description
 			when voided = 4
@@ -1487,18 +1489,20 @@ function create_trans_dbs($db,$type){
 			when voided = 6
 				then 	description
 			when voided = 7 or voided = 17
-				then 	concat( rpad(Description,30,' '), 
-					space(14), 
-					lpad(convert(UnitPrice,char),8,' '), 
-					lpad(status,4,' ') )
+				then 	".$db->concat(
+					"SUBSTR(".$db->concat('description','space(30)','').",0,30)",
+					"space(14)", 
+					"right(".$db->concat('space(8)','CAST(unitPrice AS char)','').",8)",
+					"right(".$db->concat('space(4)','status','').",4)",'')." 
 			when sequence < 1000
 				then 	description
 			else
-				concat( rpad(Description,30,' '),
-					' ',
-					rpad(Comment,12,' '),
-					lpad(convert(Total,char),8,' '),
-					lpad(status,4,' ') )
+				".$db->concat(
+					"SUBSTR(".$db->concat('description','space(30)','').",0,30)",
+					"' '",
+					"SUBSTR(".$db->concat('comment','space(12)','').",0,12)",
+					"right(".$db->concat('space(8)','CAST(total AS char)','').",8)",
+					"right(".$db->concat('space(4)','status','').",4)",'')." 
 			end as linetoprint,
 		sequence,
 		department,
@@ -1507,8 +1511,9 @@ function create_trans_dbs($db,$type){
 		upc
 		from ltt_receipt_reorder_g r
 		left outer join ".$CORE_LOCAL->get('pDatabase').".subdepts d on r.department=d.dept_ID
-		where r.total<>0 or r.unitprice=0
+		where r.total<>0 or r.unitPrice=0
 		order by sequence";
+	
 	if($type == 'mssql'){
 		$reorderG = "CREATE view receipt_reorder_g as
 		select top 100 percent
@@ -1562,6 +1567,9 @@ function create_trans_dbs($db,$type){
 			where r.total<>0 or r.unitprice=0
 			order by sequence";
 	}
+	elseif($type == 'pdolite'){
+		$reorderG = str_replace('right(','str_right(',$reorderG);
+	}
 	if(!$db->table_exists('receipt_reorder_g',$name)){
 		db_structure_modify($db,'receipt_reorder_g',$reorderG,$errors);
 	}
@@ -1584,16 +1592,16 @@ function create_trans_dbs($db,$type){
 	union all
 
 	select
-	concat(
-	rpad(concat('** ',rtrim(convert(percentdiscount,char)),'% Discount Applied **'),30,' '),
-	' ', 
-	space(13),
-	lpad(convert((-1*transDiscount),char),8,' '),
-	space(4) ) as linetoprint,
+	".$db->concat(
+	"SUBSTR(".$db->concat("'** '","trim(CAST(percentDiscount AS char))","'% Discount Applied **'",'space(30)','').",0,30)",
+	"' '", 
+	"space(13)",
+	"right(".$db->concat('space(8)',"CAST((-1*transDiscount) AS char)",'').",8)",
+	"space(4)",'')." as linetoprint,
 	0 as sequence,null as dept_name,2 as ordered,
 	'' as upc
 	from subtotals
-	where percentdiscount<>0
+	where percentDiscount<>0
 
 	union all
 
@@ -1604,29 +1612,29 @@ function create_trans_dbs($db,$type){
 	union all
 
 	select 
-	concat(
-	lpad('SUBTOTAL',44,' '),
-	lpad(convert(round(l.runningTotal-s.taxTotal-l.tenderTotal,2),char),8,' '),
-	space(4) ) as linetoprint,1 as sequence,null as dept_name,3 as ordered,'' as upc
+	".$db->concat(
+	"right(".$db->concat('space(44)',"'SUBTOTAL'",'').",44)",
+	"right(".$db->concat('space(8)',"CAST(round(l.runningTotal-s.taxTotal-l.tenderTotal,2) AS char)",'').",8)",
+	"space(4)",'')." as linetoprint,1 as sequence,null as dept_name,3 as ordered,'' as upc
 	from lttsummary as l, subtotals as s
 
 	union all
 
 	select 
-	concat(
-	lpad('TAX',44,' '),
-	lpad(convert(round(taxtotal,2),char),8,' '), 
-	space(4) ) as linetoprint,
+	".$db->concat(
+	"right(".$db->concat('space(44)',"'TAX'",'').",44)",
+	"right(".$db->concat('space(8)',"CAST(round(taxTotal,2) AS char)",'').",8)", 
+	"space(4)",'')." as linetoprint,
 	2 as sequence,null as dept_name,3 as ordered,'' as upc
 	from subtotals
 
 	union all
 
 	select 
-	concat(
-	lpad('TOTAL',44,' '),
-	lpad(convert(runningtotal-tendertotal,char),8,' '),
-	space(4) ) as linetoprint,3 as sequence,null as dept_name,3 as ordered,'' as upc
+	".$db->concat(
+	"right(".$db->concat('space(44)',"'TOTAL'",'').",44)",
+	"right(".$db->concat('space(8)',"CAST(runningTotal-tenderTotal AS char)",'').",8)", 
+	"space(4)",'')." as linetoprint,3 as sequence,null as dept_name,3 as ordered,'' as upc
 	from lttsummary
 
 	union all
@@ -1641,10 +1649,10 @@ function create_trans_dbs($db,$type){
 	union all
 
 	select 
-	concat(
-	lpad('CURRENT AMOUNT DUE',44,' '),
-	lpad(convert(runningTotal-transDiscount,char),8,' '),
-	space(4) ) as linetoprint,
+	".$db->concat(
+	"right(".$db->concat('space(44)',"'CURRENT AMOUNT DUE'",'').",44)",
+	"right(".$db->concat('space(8)',"CAST(runningTotal-transDiscount AS char)",'').",8)", 
+	"space(4)",'')." as linetoprint,
 	5 as sequence,
 	null as dept_name,
 	5 as ordered,'' as upc
@@ -1727,6 +1735,10 @@ function create_trans_dbs($db,$type){
 		5 as ordered,'' as upc
 		from subtotals where runningtotal <> 0 ";
 	}
+	elseif($type == 'pdolite'){
+		$unionsG = str_replace('right(','str_right(',$unionsG);
+	}
+	db_structure_modify($db,'receipt_reorder_unions_g','DROP VIEW receipt_reorder_unions_g',$errors);
 	if(!$db->table_exists('receipt_reorder_unions_g',$name)){
 		db_structure_modify($db,'receipt_reorder_unions_g',$unionsG,$errors);
 	}
@@ -1873,7 +1885,7 @@ function create_trans_dbs($db,$type){
 	$rpreorderG = "CREATE    view rp_ltt_receipt_reorder_g as
 		select 
 		register_no,emp_no,trans_no,card_no,
-		l.description,
+		l.description as description,
 		case 
 			when voided = 5 
 				then 'Discount'
@@ -1917,7 +1929,7 @@ function create_trans_dbs($db,$type){
 			when tax = 0 and foodstamp = 0
 				then '' 
 		end
-		as Status,
+		as status,
 		trans_type,
 		unitPrice,
 		voided,
@@ -2038,22 +2050,23 @@ function create_trans_dbs($db,$type){
 			when trans_type = 'T' 
 				then 	
 					case when trans_subtype = 'CP' and upc<>'0'
-					then	concat(	
-						rpad(Description,30,' '),
-						' ',
-						rpad(Comment,12,' '),
-						lpad(convert(Total,char),8,' '), 
-						lpad(status,4,' ')) 
-					else 	concat(	
-						lpad(upper(rtrim(Description)),44,' '),
-						lpad(convert((-1 * Total),char),8,' '), 
-						lpad(status,4,' ')) 
+					then	".$db->concat(
+						"SUBSTR(".$db->concat('description','space(30)','').",0,30)",
+						"' '",
+						"SUBSTR(".$db->concat('comment','space(12)','').",0,12)",
+						"right(".$db->concat('space(8)','CAST(total AS char)','').",8)",
+						"right(".$db->concat('space(4)','status','').",4)",'')." 
+					else 	".$db->concat( 
+						"right(".$db->concat('space(44)','upper(description)','').",44)", 
+						"right(".$db->concat('space(8)','CAST((-1*total) AS char)','').",8)",
+						"right(".$db->concat('space(4)','status','').",4)",'')." 
 					end 
 			when voided = 3 
-				then 	concat(rpad(Description,30,' '),
-					space(9), 
-					'TOTAL',
-					lpad(convert(UnitPrice,char),8,' '))
+				then 	".$db->concat( 
+					"SUBSTR(".$db->concat('description','space(30)','').",0,30)",
+					"space(9)", 
+					"'TOTAL'", 
+					"right(".$db->concat('space(8)','CAST(unitPrice AS char)','').",8)",'')."
 			when voided = 2
 				then 	description
 			when voided = 4
@@ -2061,18 +2074,20 @@ function create_trans_dbs($db,$type){
 			when voided = 6
 				then 	description
 			when voided = 7 or voided = 17
-				then 	concat(rpad(Description,30,' '),
-					space(14),
-					lpad(convert(UnitPrice,char),8,' '), 
-					lpad(status,4,' '))
+				then 	".$db->concat(
+					"SUBSTR(".$db->concat('description','space(30)','').",0,30)",
+					"space(14)", 
+					"right(".$db->concat('space(8)','CAST(unitPrice AS char)','').",8)",
+					"right(".$db->concat('space(4)','status','').",4)",'')." 
 			when sequence < 1000
 				then 	description
 			else
-				concat(rpad(Description,30,' '),
-				' ',
-				rpad(Comment,12, ' '),
-				lpad(convert(Total,char),8,' '), 
-				lpad(status,4,' '))
+				".$db->concat(
+					"SUBSTR(".$db->concat('description','space(30)','').",0,30)",
+					"' '",
+					"SUBSTR(".$db->concat('comment','space(12)','').",0,12)",
+					"right(".$db->concat('space(8)','CAST(total AS char)','').",8)",
+					"right(".$db->concat('space(4)','status','').",4)",'')." 
 		end
 		as linetoprint,
 		sequence,
@@ -2087,7 +2102,7 @@ function create_trans_dbs($db,$type){
 		from rp_ltt_receipt_reorder_g r
 		left outer join ".$CORE_LOCAL->get('pDatabase').".subdepts d 
 		on r.department=d.dept_ID
-		where r.total<>0 or r.unitprice=0
+		where r.total<>0 or r.unitPrice=0
 		order by register_no,emp_no,trans_no,card_no,sequence";
 	if($type == 'mssql'){
 		$rpG = "CREATE     view rp_receipt_reorder_g as
@@ -2147,6 +2162,9 @@ function create_trans_dbs($db,$type){
 		where r.total<>0 or r.unitprice=0
 		order by register_no,emp_no,trans_no,card_no,sequence";
 	}
+	elseif($type == 'pdolite'){
+		$rpG = str_replace('right(','str_right(',$rpG);
+	}
 	if(!$db->table_exists('rp_receipt_reorder_g',$name)){
 		db_structure_modify($db,'rp_receipt_reorder_g',$rpG,$errors);
 	}
@@ -2171,16 +2189,17 @@ function create_trans_dbs($db,$type){
 		union all
 
 		select
-		concat(
-		rpad(concat('** ',rtrim(convert(percentdiscount,char)),'% Discount Applied **'),30,' '),
-		space(14),
-		lpad(convert((-1*transDiscount),char),8,' '), 
-		space(4) ),
+		".$db->concat(
+		"SUBSTR(".$db->concat("'** '","trim(CAST(percentDiscount AS char))","'% Discount Applied **'",'space(30)','').",0,30)",
+		"' '", 
+		"space(13)",
+		"right(".$db->concat('space(8)',"CAST((-1*transDiscount) AS char)",'').",8)",
+		"space(4)",'')." as linetoprint,
 		emp_no,register_no,trans_no,
 		0 as sequence,null as dept_name,2 as ordered,
 		'' as upc
 		from rp_subtotals
-		where percentdiscount<>0
+		where percentDiscount<>0
 
 		union all
 
@@ -2193,10 +2212,10 @@ function create_trans_dbs($db,$type){
 		union all
 
 		select 
-		concat(
-		lpad('SUBTOTAL',44,' '), 
-		lpad(convert(l.runningTotal-s.taxTotal-l.tenderTotal,char),8,' '),
-		space(4)) as linetoprint,
+		".$db->concat(
+		"right(".$db->concat('space(44)',"'SUBTOTAL'",'').",44)",
+		"right(".$db->concat('space(8)',"CAST(round(l.runningTotal-s.taxTotal-l.tenderTotal,2) AS char)",'').",8)",
+		'space(4)','')." as linetoprint,
 		l.emp_no,l.register_no,l.trans_no,
 		1 as sequence,null as dept_name,3 as ordered,'' as upc
 		from rp_lttsummary as l, rp_subtotals as s
@@ -2207,10 +2226,10 @@ function create_trans_dbs($db,$type){
 		union all
 
 		select 
-		concat(
-		lpad('TAX',44,' '),
-		lpad(convert(taxtotal,char),8,' '), 
-		space(4)) as linetoprint,
+		".$db->concat(
+		"right(".$db->concat('space(44)',"'TAX'",'').",44)",
+		"right(".$db->concat('space(8)',"CAST(round(taxTotal,2) AS char)",'').",8)", 
+		"space(4)",'')." as linetoprint,
 		emp_no,register_no,trans_no,
 		2 as sequence,null as dept_name,3 as ordered,'' as upc
 		from rp_subtotals
@@ -2218,10 +2237,10 @@ function create_trans_dbs($db,$type){
 		union all
 
 		select 
-		concat(
-		lpad('TOTAL',44,' '),
-		lpad(convert(runningtotal-tendertotal,char),8,' '),
-		space(4)) as linetoprint,
+		".$db->concat(
+		"right(".$db->concat('space(44)',"'TOTAL'",'').",44)",
+		"right(".$db->concat('space(8)',"CAST(runningTotal-tenderTotal AS char)",'').",8)", 
+		'space(4)','')." as linetoprint,
 		emp_no,register_no,trans_no,
 		3 as sequence,null as dept_name,3 as ordered,'' as upc
 		from rp_lttsummary
@@ -2238,10 +2257,10 @@ function create_trans_dbs($db,$type){
 		union all
 
 		select 
-		concat(
-		lpad('CURRENT AMOUNT DUE',44,' '),
-		lpad(convert(runningTotal-transDiscount,char),8,' '),
-		space(4)) as linetoprint,
+		".$db->concat(
+		"right(".$db->concat('space(44)',"'CURRENT AMOUNT DUE'",'').",44)",
+		"right(".$db->concat('space(8)',"CAST(runningTotal-transDiscount AS char)",'').",8)", 
+		"space(4)",'')." as linetoprint,
 		emp_no,register_no,trans_no,
 		5 as sequence,
 		null as dept_name,
@@ -2340,6 +2359,9 @@ function create_trans_dbs($db,$type){
 		null as dept_name,
 		5 as ordered,'' as upc
 		from rp_subtotals where runningtotal <> 0"; 
+	}
+	elseif($type == 'pdolite'){
+		$rpunionsG = str_replace('right(','str_right(',$rpunionsG);
 	}
 	if(!$db->table_exists('rp_receipt_reorder_unions_g',$name)){
 		db_structure_modify($db,'rp_receipt_reorder_unions_g',$rpunionsG,$errors);

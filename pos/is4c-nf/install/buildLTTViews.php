@@ -138,12 +138,12 @@ select
 l.card_no as card_no,
 l.runningTotal as runningTotal,
 l.discountableTTL as discountableTotal,
-l.tenderTotal,
-l.chargeTotal,
-l.paymentTotal,
-l.discountTTL,
-l.memSpecial,
-l.staffSpecial,
+l.tenderTotal as tenderTotal,
+l.chargeTotal as chargeTotal,
+l.paymentTotal as paymentTotal,
+l.discountTTL as discountTTL,
+l.memSpecial as memSpecial,
+l.staffSpecial as staffSpecial,
 s.fsEligible as fsEligible,\n";
 
 $ratesQ = "select description,rate from taxrates order by rate desc";
@@ -192,10 +192,10 @@ else {
 	$createStr .= "0 as taxTotal,\n";
 }
 $createStr .= "
-s.transDiscount,
-l.percentDiscount,
-l.localTotal,
-l.voidTotal
+s.transDiscount as transDiscount,
+l.percentDiscount as percentDiscount,
+l.localTotal as localTotal,
+l.voidTotal as voidTotal
 from lttsummary l, lttsubtotals s where l.tdate = s.tdate\n";
 
 $errors = db_structure_modify($db,'subtotals','DROP VIEW subtotals',$errors);
