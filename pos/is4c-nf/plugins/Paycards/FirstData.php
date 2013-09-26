@@ -647,7 +647,8 @@ class FirstData extends BasicCCModule {
 			CURLOPT_SSLKEYPASSWD => FD_KEY_PASSWD
 		);
 
-		return $this->curlSend($this->soapify($xml),'SOAP',True,$extraCurlSetup);
+		$soaptext = $this->soapify('', array('xml'=>$xml), '', False);
+		return $this->curlSend($soaptext,'SOAP',True,$extraCurlSetup);
 	}
 
 	var $void_trans;
@@ -754,6 +755,34 @@ class FirstData extends BasicCCModule {
 		$ref .= str_pad($transNo,   3, "0", STR_PAD_LEFT);
 		$ref .= str_pad($transID,   3, "0", STR_PAD_LEFT);
 		return $ref;
+	}
+
+	protected $SOAP_ENVELOPE_ATTRS = array(
+		"xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\""
+		);
+
+	/** FirstData has a signficantly different SOAP format
+	    so the parent implementation is overriden
+	  @param $action top level tag in the soap body
+	  @param $objs keyed array of values	
+	  @param $namespace include an xmlns attribute
+	  @return soap string
+	*/
+	function soapify($action,$objs,$namespace="",$encode_tags=True){
+		$ret = "<?xml version=\"1.0\"?>
+			<SOAP-ENV:Envelope";
+		foreach ($this->SOAP_ENVELOPE_ATTRS as $attr){
+			$ret .= " ".$attr;
+		}
+		$ret .= ">
+			<SOAP-ENV:Header />
+			<SOAP-ENV:Body>";
+		foreach($objs as $xml)
+			$ret .= $xml;
+		$ret .= "</SOAP-ENV:Body>
+			</SOAP-ENV:Envelope>";
+
+		return $ret;
 	}
 }
 

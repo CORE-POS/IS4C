@@ -158,7 +158,7 @@ class BasicCCModule {
 	// will work modularly
 
 	protected $GATEWAY;
-	protected $SOAPACTION;
+	protected $SOAPACTION = '';
 
 	/**
 	 Send a curl request with the specified data.
@@ -196,9 +196,11 @@ class BasicCCModule {
 		if($CORE_LOCAL->get("OS")=="win32")
 			curl_setopt($curl_handle, CURLOPT_CAINFO, LOCAL_CERT_PATH);
 		if ($type == 'SOAP'){
-			curl_setopt($curl_handle, CURLOPT_HTTPHEADER,
-				array("SOAPAction: ".$this->SOAPACTION,
-				      "Content-type: text/xml"));
+			$headers = array();
+			if (!empty($this->SOAPACTION))
+				$headers[] = "SOAPAction: ".$this->SOAPACTION;
+			$headers[] = "Content-type: text/xml";
+			curl_setopt($curl_handle, CURLOPT_HTTPHEADER, $headers);
 		}
 		elseif ($xml){
 			curl_setopt($curl_handle, CURLOPT_HTTPHEADER,
