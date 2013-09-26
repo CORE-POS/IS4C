@@ -57,9 +57,9 @@ to apply that tender more than once.
 $CREATE['trans.taxView'] = "
 	CREATE VIEW taxView AS
 		SELECT 
-		r.id,
-		r.description,
-		CONVERT(SUM(CASE 
+		r.id AS id,
+		r.description AS description,
+		CAST(SUM(CASE 
 			WHEN l.trans_type IN ('I','D') AND discountable=0 THEN total 
 			WHEN l.trans_type IN ('I','D') AND discountable<>0 THEN total * ((100-s.percentDiscount)/100)
 			ELSE 0 END

@@ -60,7 +60,6 @@ fetch_array(result_object, connection_identifer)
 **************************************************/
 
 define('DEBUG_MYSQL_QUERIES',realpath(dirname(__FILE__).'/../log/queries.log'));
-define('DEBUG_SMART_INSERTS',realpath(dirname(__FILE__).'/../log/smart_insert_errors.log'));
 
 $TYPE_MYSQL = 'MYSQL';
 $TYPE_MSSQL = 'MSSQL'; 
@@ -163,8 +162,41 @@ class SQLManager {
 		case $this->TYPE_PDOMS:
 		case $this->TYPE_PDOPG:
 			return $this->query('use '.$db_name,$which_connection);
+		case $this->TYPE_PDOSL:
+			$path = dirname(__FILE__).'/sqlite/';
+			if (!is_dir($path)){
+				if (!mkdir($path, 0755))
+					return False;
+			}
+			$dsn = 'sqlite:'.realpath($path).'/'.$db_name.'.db';
+			try {
+				$handle = new PDO($dsn);
+				$this->connections[$db_name] = $handle;
+				$handle->sqliteCreateFunction('str_right', array('SQLManager','sqlite_right'), 2);
+				$handle->sqliteCreateFunction('space', array('SQLManager','sqlite_space'), 1);
+				$handle->sqliteCreateFunction('replace', array('SQLManager','sqlite_replace'), 3);
+				$handle->sqliteCreateFunction('trim', 'trim', 1);
+				return True;	
+			}
+			catch(Exception $ex){
+				return False;
+			}
 		}
 		return -1;
+	}
+
+	/**
+	  Supplementary functionality that SQLite doesn't have
+	  natively
+	*/
+	static public function sqlite_right($str, $num){
+		return substr($str, -1*$num);
+	}
+	static public function sqlite_space($num){
+		return str_pad('', $num);
+	}
+	static public function sqlite_replace($field, $original, $new){
+		return str_replace($original, $new, $field);
 	}
 
 	function query($query_text,$which_connection=''){
@@ -190,6 +222,16 @@ class SQLManager {
 			return $result;
 		case $this->TYPE_PGSQL:
 			return pg_query($this->connections[$which_connection],$query_text);
+		case $this->TYPE_PDOSL:
+			$this->__sqlite_result_cache = False;
+			if (stristr($query_text, 'TRUNCATE')){
+				// not supported so replace TRUNCATE TABLE with DELETE FROM
+				$query_text = str_ireplace('TRUNCATE', 'DELETE', $query_text);
+				$query_text = str_ireplace('TABLE', 'FROM', $query_text);
+			}
+			else if (strtoupper(substr($query_text,0,4)) == "USE ")
+				return True;
+			// intentional.
 		case $this->TYPE_PDOMY:
 		case $this->TYPE_PDOMS:
 		case $this->TYPE_PDOPG:
@@ -615,7 +657,7 @@ class SQLManager {
            Return values:
 	   	array of values => table found
 			array format: $return['column_name'] =
-					array('column_type', is_auto_increment)
+					array('column_type', is_auto_increment, column_name)
                 False => no such table
                 -1 => Operation not supported for this database type
         */
@@ -662,7 +704,15 @@ class SQLManager {
 					LEFT JOIN pg_type AS t ON a.atttypid = t.oid	
 					WHERE c.relname='$table_name'", $which_connection);
 			while($row = $this->fetch_row($result,$which_connection)){
-				$return[$row[0]] = array($row[1],False);
+				$return[$row[0]] = array($row[1],False,$row[0]);
+			}
+                        if (count($return) == 0) return False;
+                        else return $return;
+		case $this->TYPE_PDOSL:
+			$result = $this->query("PRAGMA table_info($table_name)", $which_connection);
+			$return = array();
+			while($row = $this->fetch_row($result,$which_connection)){
+				$return[$row['name']] = array($row['type'],False,$row['name']);
 			}
                         if (count($return) == 0) return False;
                         else return $return;
@@ -677,7 +727,7 @@ class SQLManager {
 	 * written are noted
 	 */
 	function smart_insert($table_name,$values,$which_connection=''){
-		$OUTFILE = DEBUG_SMART_INSERTS;
+		$OUTFILE = DEBUG_MYSQL_QUERIES;
 
                 if ($which_connection == '')
                         $which_connection=$this->default_db;
