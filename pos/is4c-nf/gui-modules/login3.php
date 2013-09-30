@@ -37,8 +37,18 @@ class login3 extends BasicPage {
 		$this->color = "coloredArea";
 		$this->img = $this->page_url."graphics/bluekey4.gif";
 		$this->msg = _("please enter password");
-		if (isset($_REQUEST['reginput'])){
-			if (Authenticate::check_password($_REQUEST['reginput'],4)){
+		if (isset($_REQUEST['reginput']) || isset($_REQUEST['scannerInput'])){
+
+			$passwd = '';
+			if (isset($_REQUEST['reginput']) && !empty($_REQUEST['reginput'])){
+				$passwd = $_REQUEST['reginput'];
+			}
+			elseif (isset($_REQUEST['scannerInput']) && !empty($_REQUEST['scannerInput'])){
+				$passwd = $_REQUEST['scannerInput'];
+				UdpComm::udpSend('goodBeep');
+			}
+
+			if (Authenticate::check_password($passwd,4)){
 				$sd = MiscLib::scaleObject();
 				if (is_object($sd))
 					$sd->ReadReset();
@@ -55,7 +65,8 @@ class login3 extends BasicPage {
 	}
 
 	function head_content(){
-		$this->default_parsewrapper_js();
+		$this->default_parsewrapper_js('scannerInput');
+		$this->scanner_scale_polling(True);
 	}
 
 	function body_content(){
@@ -63,6 +74,7 @@ class login3 extends BasicPage {
 		$this->input_header();
 		echo DisplayLib::printheaderb();
 		?>
+		<input type="hidden" name="scannerInput" id="scannerInput" value="" />
 		<div class="baseHeight">
 			<div class="<?php echo $this->color; ?> centeredDisplay">
 			<img alt="key" src='<?php echo $this->img ?>' />
