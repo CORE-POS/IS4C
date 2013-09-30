@@ -32,8 +32,30 @@
 
 class BasicPM extends PriceMethod {
 
+	private $error_msg = '';
+
 	function addItem($row,$quantity,$priceObj){
-		if ($quantity == 0) return false;
+		if ($quantity == 0) return False;
+
+		/*
+		  Use "quantity" field in products record as a per-transaction
+		  limit. This is analogous to a similar feature with sale items.
+		*/
+		if (!$priceObj->isSale() && $row['quantity'] > 0){
+			$db = Database::tDataConnect();
+			$query = "SELECT SUM(quantity) as qty FROM localtemptrans
+				WHERE upc='{$row['upc']}'";
+			$result = $db->query($query);
+			if ($db->num_rows($result) > 0){
+				$chkRow = $db->fetch_row($result);
+				if (($chkRow['qty']+$quantity) > $row['quantity']){
+					$this->error_msg = _("item only allows ")
+							.$row['quantity']
+							._(" per transaction");
+					return False;
+				}
+			}
+		}
 
 		$pricing = $priceObj->priceInfo($row,$quantity);
 
@@ -65,6 +87,12 @@ class BasicPM extends PriceMethod {
 			(isset($row['numflag'])?$row['numflag']:0),
 			(isset($row['charflag'])?$row['charflag']:'')
 		);
+
+		return True;
+	}
+
+	function errorInfo(){
+		return $this->error_msg;
 	}
 }
 

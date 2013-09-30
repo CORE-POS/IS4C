@@ -376,7 +376,12 @@ class UPC extends Parser {
 		// prefetch: otherwise object members 
 		// pass out of scope in addItem()
 		$prefetch = $DiscountObject->priceInfo($row,$quantity);
-		$PriceMethodObject->addItem($row, $quantity, $DiscountObject);
+		$added = $PriceMethodObject->addItem($row, $quantity, $DiscountObject);
+
+		if (!$added){
+			$ret['output'] = DisplayLib::boxMsg($PriceMethodObject->errorInfo());
+			return $ret;
+		}
 
 		/* add discount notifications lines, if applicable */
 		$DiscountObject->addDiscountLine();
