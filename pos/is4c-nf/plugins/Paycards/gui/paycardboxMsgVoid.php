@@ -46,9 +46,10 @@ class paycardboxMsgVoid extends PaycardProcessPage {
 			$continue = false;
 			// when voiding tenders, the input must be an FEC's passcode
 			if( $CORE_LOCAL->get("paycard_mode") == PaycardLib::PAYCARD_MODE_VOID && $input != "" && substr($input,-2) != "CL") {
-				$sql = "select emp_no, FirstName, LastName from employees" .
-					" where EmpActive=1 and frontendsecurity>=11 and AdminPassword=".(int)$input;
 				$db = Database::pDataConnect();
+				$passwd = $db->escape($input);
+				$sql = "select emp_no, FirstName, LastName from employees" .
+					" where EmpActive=1 and frontendsecurity>=11 and AdminPassword='$passwd'";
 				$result = $db->query($sql);
 				if( $db->num_rows($result) > 0) {
 					$CORE_LOCAL->set("adminP",$input);

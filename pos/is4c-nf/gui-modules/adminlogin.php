@@ -81,17 +81,18 @@ class adminlogin extends NoInputPage {
 				$this->change_page($this->page_url."gui-modules/pos2.php");
 				return False;	
 			}
-			else if (!is_numeric($passwd) || $passwd > 9999 || $passwd < 1){
+			else if (empty($passwd)){
 				$this->box_color="errorColoredArea";
 				$this->msg = _("re-enter admin password");
 			}
 			else {
+				$db = Database::pDataConnect();
+				$passwd = $db->escape($passwd);
 				$query = "select emp_no, FirstName, LastName from employees 
 					where EmpActive = 1 and frontendsecurity >= "
 					.$class::$adminLoginLevel
-					." and (CashierPassword = ".$passwd
-					." or AdminPassword = ".$passwd.")";
-				$db = Database::pDataConnect();
+					." and (CashierPassword = '".$passwd."' 
+					or AdminPassword = '".$passwd."')";
 				$result = $db->query($query);
 				$num_rows = $db->num_rows($result);
 				if ($num_rows != 0) {
