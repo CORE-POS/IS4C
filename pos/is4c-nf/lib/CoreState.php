@@ -342,6 +342,19 @@ static public function transReset() {
 	  - 1 => manager has given approval
 	*/
 	$CORE_LOCAL->set("cashierAgeOverride",0);
+
+	/**
+	  @var voidOverride
+	  This flag indicates a manager has given approval
+	  for the cashier to void items beyond the per
+	  transaction limit.
+	  The value persists for the remainder of
+	  the transaction so the manager does not have to give
+	  approval for each individual item.
+	  - 0 => no manager approval
+	  - 1 => manager has given approval
+	*/
+	$CORE_LOCAL->set("voidOverride",0);
 	
 	/**
 	  @var lastWeight
