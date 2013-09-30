@@ -48,7 +48,8 @@ else {
 }
 confsave('SecuritySR',$CORE_LOCAL->get("SecuritySR"));
 ?>
-</select></td></tr><tr><td>
+</select></td></tr>
+<tr><td>
 <b>Refund Item</b>: </td><td><select name=PRIV_REFUND>
 <?php
 if(isset($_REQUEST['PRIV_REFUND'])) $CORE_LOCAL->set('SecurityRefund',$_REQUEST['PRIV_REFUND'],True);
@@ -63,7 +64,24 @@ else {
 }
 confsave('SecurityRefund',$CORE_LOCAL->get("SecurityRefund"));
 ?>
-</select></td></tr><tr><td>
+</select></td></tr>
+<tr><td>
+<b>Line Item Discount</b>: </td><td><select name=LI_DISCOUNT>
+<?php
+if(isset($_REQUEST['LI_DISCOUNT'])) $CORE_LOCAL->set('SecurityLineItemDiscount',$_REQUEST['LI_DISCOUNT'],True);
+if ($CORE_LOCAL->get("SecurityLineItemDiscount")=="") $CORE_LOCAL->set("SecurityLineItemDiscount",20,True);
+if ($CORE_LOCAL->get("SecurityLineItemDiscount") == 30){
+	echo "<option value=30 selected>Admin only</option>";
+	echo "<option value=20>All</option>";
+}
+else {
+	echo "<option value=30 >Admin only</option>";
+	echo "<option value=20 selected>All</option>";
+}
+confsave('SecurityLineItemDiscount',$CORE_LOCAL->get("SecurityLineItemDiscount"));
+?>
+</select></td></tr>
+<tr><td>
 <b>Void Limit</b>:</td><td>
 <?php
 if (isset($_REQUEST['VOIDLIMIT'])) $CORE_LOCAL->set('VoidLimit',$_REQUEST['VOIDLIMIT'],True);

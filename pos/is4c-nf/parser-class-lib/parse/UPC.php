@@ -53,6 +53,10 @@ class UPC extends Parser {
 			$CORE_LOCAL->set("refundComment",$CORE_LOCAL->get("strEntered"));
 			return $ret;
 		}
+		if ($CORE_LOCAL->get('itemPD') > 0 && $CORE_LOCAL->get('SecurityLineItemDiscount') == 30 && $CORE_LOCAL->get('msgrepeat')==0){
+			$ret['main_frame'] = $my_url."gui-modules/adminlogin.php?class=LineItemDiscountAdminLogin";
+			return $ret;
+		}
 
 		$entered = str_replace(".", " ", $entered);
 
