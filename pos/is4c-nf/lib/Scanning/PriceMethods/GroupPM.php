@@ -77,6 +77,8 @@ class GroupPM extends PriceMethod {
 			(isset($row['numflag'])?$row['numflag']:0),
 			(isset($row['charflag'])?$row['charflag']:'')
 		);
+	
+		return True;
 	}
 }
 

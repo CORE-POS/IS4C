@@ -224,6 +224,8 @@ class ABGroupPM extends PriceMethod {
 				(isset($row['charflag'])?$row['charflag']:'')
 			);
 		}
+
+		return True;
 	}
 }
 
