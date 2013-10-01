@@ -263,8 +263,7 @@ static public function printChargeFooterStore($dateTimeStamp, $ref) {	// apbw 2/
 		   .$CORE_LOCAL->get("fname")." ".$CORE_LOCAL->get("lname")."\n\n"
 		   .self::centerString(".................................................")."\n\n";
 
-	return $receipt;
-
+	return self::chargeBalance($receipt);
 
 }
 
