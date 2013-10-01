@@ -45,6 +45,7 @@ $CREATE['op.departments'] = "
 	  `dept_limit` double default NULL,
 	  `dept_minimum` double default NULL,
 	  `dept_discount` tinyint(4) default NULL,
+	  `dept_see_id` tinyint(4) default NULL,
 	  `modified` datetime default NULL,
 	  `modifiedby` int(11) default NULL,
 	  PRIMARY KEY (`dept_no`),
@@ -61,6 +62,7 @@ if ($dbms == "MSSQL"){
 			[dept_limit] [money] NULL ,
 			[dept_minimum] [money] NULL ,
 			[dept_discount] [smallint] NULL ,
+			[dept_see_id] [tinyint] NULL ,
 			[modified] [smalldatetime] NULL ,
 			[modifiedby] [int] NULL 
 		)";
@@ -75,6 +77,7 @@ elseif ($dbms == 'PDOLITE'){
 		  `dept_limit` double default NULL,
 		  `dept_minimum` double default NULL,
 		  `dept_discount` tinyint(4) default NULL,
+		  `dept_see_id` tinyint(4) default NULL,
 		  `modified` datetime default NULL,
 		  `modifiedby` int(11) default NULL,
 		  PRIMARY KEY (`dept_no`)
