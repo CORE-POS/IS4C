@@ -148,19 +148,19 @@ class DepartmentEditor extends FanniePage {
 		if (!is_numeric($pcode)) $pcode = (int)$id;
 		$new = FormLib::get_form_value('new',0);
 
-		if ($new == 1){
-			$chk = $dbc->prepare_statement('SELECT * FROM departments WHERE dept_no=?');
-			$r = $dbc->exec_statement($chk,array($id));
-			if ($dbc->num_rows($r) > 0){
-				echo "Error: Dept # $id is already in use";
-				return;
-			}
+		$model = new DepartmentsModel($dbc);
+		$model->dept_no($id);
+		$model->dept_name($name);
+		$model->dept_tax($tax);
+		$model->dept_fs($fs);
+		$model->dept_discount($discount);
+		$model->dept_minimum($min);
+		$model->dept_limit($max);
+		$model->modified(date('Y-m-d H:i:s'));
+		$saved = $model->save();
 
-			$insP = $dbc->prepare_statement('INSERT INTO departments (dept_no, dept_name,
-				dept_tax,dept_fs,dept_discount,dept_limit,dept_minimum,modified,
-				modifiedby) VALUES (?,?,?,?,?,?,?,'.$dbc->now().',1)');
-			$insR = $dbc->exec_statement($insP, array($id,$name,$tax,$fs,$disc,$max,$min));
-			if ($insR === False){
+		if ($new == 1){
+			if ($saved === False){
 				echo 'Error: could not create department';
 				return;
 			}
@@ -169,11 +169,7 @@ class DepartmentEditor extends FanniePage {
 			$superR = $dbc->exec_statement($superP,array($id));
 		}
 		else {
-			$upP = $dbc->prepare_statement('UPDATE departments SET dept_name=?, dept_tax=?,
-				dept_fs=?, dept_discount=?, dept_limit=?, dept_minimum=?,
-				modified='.$dbc->now().' WHERE dept_no=?');
-			$upR = $dbc->exec_statement($upP, array($name, $tax, $fs, $disc, $max, $min, $id) );
-			if ($upR === False){
+			if ($saved === False){
 				echo 'Error: could not save changes';
 				return;
 			}
