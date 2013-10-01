@@ -66,7 +66,11 @@ class SaReportPage extends FanniePage {
 
 		if (FormLib::get_form_value('view') == 'dept'){
 			$order='d.dept_no,s.section,s.datetime';
-		} else {
+		}
+		elseif(FormLib::get_form_value('excel') == 'yes'){
+			$order='salesCode, d.dept_no, s.datetime';
+		} 
+		else {
 			$order='s.section,d.dept_no,s.datetime';
 		}
 	
@@ -108,9 +112,10 @@ class SaReportPage extends FanniePage {
 			s.upc,
 			s.quantity,
 			s.section,
-			p.description,
-			d.dept_name,
-			d.dept_no,
+			CASE WHEN p.description IS NULL THEN \'Not in POS\' ELSE p.description END as description,
+			CASE WHEN d.dept_name IS NULL THEN \'Unknown\' ELSE d.dept_name END as dept_name,
+			CASE WHEN d.dept_no IS NULL THEN \'n/a\' ELSE d.dept_no END as dept_no,
+			CASE WHEN c.salesCode IS NULL THEN \'n/a\' ELSE c.salesCode END as salesCode,
 
 			CASE WHEN p.discounttype > 0 THEN p.special_price
 			ELSE p.normal_price END AS retail,
@@ -122,7 +127,9 @@ class SaReportPage extends FanniePage {
 			$FANNIE_OP_DB.$dbc->sep().'products AS p
 			ON s.upc=p.upc LEFT JOIN '.
 			$FANNIE_OP_DB.$dbc->sep().'departments AS d
-			ON p.department=d.dept_no
+			ON p.department=d.dept_no LEFT JOIN '.
+			$FANNIE_OP_DB.$dbc->sep().'deptSalesCodes AS c
+			ON p.department=c.dept_ID
 			WHERE clear!=1
 			ORDER BY '.$order);
 		$r=$dbc->exec_statement($q);
@@ -140,6 +147,16 @@ class SaReportPage extends FanniePage {
 		} else {
 			$this->status = 'Bad - IT problem';
 		}
+
+		if (!empty($this->scans) && FormLib::get_form_value('excel') == 'yes'){
+			header("Content-type: text/csv");
+			header("Content-Disposition: attachment; filename=inventory_scans.csv");
+			header("Pragma: no-cache");
+			header("Expires: 0");
+			echo $this->csv_content();
+			return False;
+		}
+
 		return True;
 	}
 
@@ -221,6 +238,28 @@ table tr:hover {
 		return ob_get_clean();
 	}
 
+	function csv_content(){
+		$ret = "UPC,Description,Account#,Dept#,\"Dept Name\",Qty,Retail,Status,Total\r\n";
+		$totals = array();
+		foreach($this->scans as $row){
+			$ret .= sprintf("%s,\"%s\",%s,%s,%s,%.2f,%.2f,%s,%.2f\r\n",
+				$row['upc'],$row['description'],$row['salesCode'],$row['dept_no'],
+				$row['dept_name'],$row['quantity'],$row['retail'],
+				$row['retailstatus'],($row['quantity']*$row['retail'])
+			);
+			if (!isset($totals[$row['salesCode']]))
+				$totals[$row['salesCode']] = array('qty'=>0.0,'ttl'=>0.0);
+			$totals[$row['salesCode']]['qty'] += $row['quantity'];
+			$totals[$row['salesCode']]['ttl'] += ($row['quantity']*$row['retail']);
+		}
+		$ret .= ",,,,,,,,\r\n";
+		foreach($totals as $code => $info){
+			$ret .= sprintf("TOTAL,,%s,,,%.2f,,,%.2f\r\n",
+					$code, $info['qty'], $info['ttl']);
+		}
+		return $ret;
+	}
+
 	function body_content(){
 		ob_start();
 		?>
@@ -234,6 +273,7 @@ table tr:hover {
 			<p><?php echo($this->sql_actions); ?></p>
 			<p><?php echo($this->status); ?></p>
 			<p><a href="?view=dept">view by pos department</a> <a href="SaReportPage.php">view by scanned section</a></p>
+			<p><a href="?excel=yes">download as csv</a></p>
 		<?php
 		if ($this->scans) {
 			$clear = '<div><a href="SaReportPage.php?clear=yes">Clear Old</a></div>';
@@ -273,7 +313,7 @@ table tr:hover {
 				<tr>
 					<td id="col_a" class="small">'.$row['datetime'].'</td>
 					<td id="col_b">'.$row['upc'].'</td>
-					<td id="col_c">'.$row['item_desc'].'</td>
+					<td id="col_c">'.$row['description'].'</td>
 					<td id="col_d" class="right">'.$row['quantity'].'</td>
 					<td id="col_e" class="right">'.money_format('%.2n', $row['retail']).'</td>
 					<td id="col_f">'.(($row['retailstatus'])?$row['retailstatus']:'&nbsp;').'</td>
@@ -315,7 +355,7 @@ table tr:hover {
 				<tr>
 					<td id="col_a" class="small">'.$row['datetime'].'</td>
 					<td id="col_b">'.$row['upc'].'</td>
-					<td id="col_c">'.$row['item_desc'].'</td>
+					<td id="col_c">'.$row['description'].'</td>
 					<td id="col_d" class="right">'.$row['quantity'].'</td>
 					<td id="col_e" class="right">'.money_format('%.2n', $row['retail']).'</td>
 					<td id="col_f">'.(($row['retailstatus'])?$row['retailstatus']:'&nbsp;').'</td>
@@ -331,7 +371,7 @@ table tr:hover {
 				<tr>
 					<td id="col_a" class="small">'.$row['datetime'].'</td>
 					<td id="col_b">'.$row['upc'].'</td>
-					<td id="col_c">'.$row['item_desc'].'</td>
+					<td id="col_c">'.$row['description'].'</td>
 					<td id="col_d" class="right">'.$row['quantity'].'</td>
 					<td id="col_e" class="right">'.money_format('%.2n', $row['retail']).'</td>
 					<td id="col_f">'.(($row['retailstatus'])?$row['retailstatus']:'&nbsp;').'</td>
