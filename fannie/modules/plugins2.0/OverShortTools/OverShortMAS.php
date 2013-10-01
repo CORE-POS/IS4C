@@ -37,6 +37,7 @@ class OverShortMAS extends FannieRESTfulPage {
 	function get_data(){
 		global $FANNIE_OP_DB;
 		$dlog = DTransactionsModel::select_dlog($this->startDate, $this->endDate);
+		$dtrans = DTransactionsModel::select_dtrans($this->startDate, $this->endDate);
 
 		$records = array();
 		$dateID = date('ymd', strtotime($this->endDate));
@@ -201,9 +202,25 @@ class OverShortMAS extends FannieRESTfulPage {
 			AND tdate BETWEEN ? AND ? ORDER BY tdate";
 		$miscP = $dbc->prepare_statement($miscQ);
 		$miscR = $dbc->exec_statement($miscP, $args);
+		$detailP = $dbc->prepare_statement("SELECT description 
+			FROM $dtrans WHERE trans_type='C'
+			AND trans_subtype='CM' AND datetime BETWEEN ? AND ?
+			AND emp_no=? and register_no=? and trans_no=? ORDER BY trans_id");
 		while($w = $dbc->fetch_row($miscR)){
 			$coding = 63350;
 			list($date,$time) = explode(' ',$w['tdate']);
+			list($e,$r,$t) = explode('-',$w['trans_num']);
+			// lookup comments on the transaction
+			$detailR = $dbc->exec_statement($detailP, array(
+				$date.' 00:00:00', $date.' 23:59:59',
+				$e, $r, $t
+			));
+			if ($dbc->num_rows($detailR) > 0){
+				$w['name'] = '';
+				while($detail = $dbc->fetch_row($detailR))
+					$w['name'] .= $detail['description'];
+				if (is_numeric($w['name'])) $coding=trim($w['name']);
+			}
 			$name = $w['name'].' ('.$date.' '.$w['trans_num'].')';
 			$credit = $w['amount'] < 0 ? -1*$w['amount'] : 0;
 			$debit = $w['amount'] > 0 ? $w['amount'] : 0;
@@ -228,6 +245,7 @@ class OverShortMAS extends FannieRESTfulPage {
 	}
 
 	function get_startDate_endDate_view(){
+		global $FANNIE_URL;
 		$records = get_cache('daily');
 		if ($records !== False)
 			$records = unserialize($records);
@@ -243,6 +261,13 @@ class OverShortMAS extends FannieRESTfulPage {
 					$this->startDate, $this->endDate);
 			$ret .= '<table cellpadding="4" cellspacing="0" border="1">';
 			foreach($records as $r){
+				if (preg_match('/\(\d+-\d+-\d+ \d+-\d+-\d+\)/',$r[5])){
+					$tmp = explode(' ',$r[5]);
+					$date = trim($tmp[count($tmp)-2],'()');	
+					$trans = trim($tmp[count($tmp)-1],'()');	
+					$r[5] = sprintf('<a href="%sadmin/LookupReceipt/RenderReceiptPage.php?receipt=%s&date=%s">%s</a>',
+							$FANNIE_URL, $trans, $date, $r[5]);
+				}
 				$ret .= sprintf('<tr><td>%d</td><td>%s</td><td>%s</td>
 						<td>%.2f</td><td>%.2f</td><td>%s</td></tr>',
 						$r[0],$r[1],$r[2],$r[3],$r[4],$r[5]);
