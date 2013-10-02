@@ -6,8 +6,8 @@ function loadCashier(){
 	$.ajax({
 		url: 'OverShortCashierPage.php',
 		data: data,
-		success: function(data){
-			$('#display').html(data);
+		success: function(response){
+			$('#display').html(response);
 			$('#countSCA').focus();
 		}
 	});
@@ -74,7 +74,7 @@ function save(){
 		url: 'OverShortCashierPage.php',
 		type: 'post',
 		data: args,
-		success(data){
+		success: function(data){
 			alert(data);
 		}
 	});
