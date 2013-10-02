@@ -831,10 +831,7 @@ class SQLManager {
 					else
 						$vals .= "'".$v."',";
 					$col_name = $t_def[$k][2];
-					if ($this->db_types[$which_connection] == $this->TYPE_MYSQL)
-						$cols .= "`".$col_name."`,";
-					else
-						$cols .= $col_name.",";
+					$cols .= $this->identifier_escape($col_name).',';
 				}
 				else {
 					if ($OUTFILE != "")
