@@ -1211,7 +1211,7 @@ static public function printReceipt($arg1,$second=False,$email=False) {
 			foreach($message_mods as $class){
 				if (!class_exists($class)) continue;
 				$obj = new $class();
-				$q .= $class->select_condition().' AS '.$db->identifier_escape($class).',';
+				$q .= $obj->select_condition().' AS '.$db->identifier_escape($class).',';
 				$select_mods[$class] = $obj;
 			}
 			$q = rtrim($q,',');
