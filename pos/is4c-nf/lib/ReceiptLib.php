@@ -1297,6 +1297,11 @@ static public function printReceipt($arg1,$second=False,$email=False) {
 	}		
 			
 	if (is_array($receipt)){
+		if ($second){
+			// second always prints
+			$receipt['print'] = $receipt['any'].$receipt['print'];
+			$receipt['any'] = '';
+		}
 		if ($receipt['print'] !== ''){
 			$receipt['print'] = $receipt['print']."\n\n\n\n\n\n\n";
 			$receipt['print'] .= chr(27).chr(105);
