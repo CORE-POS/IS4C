@@ -61,6 +61,11 @@ class CoopDealsReviewPage extends FanniePage {
 				(?, ?, ?, 0, ?, ?)');
 		$listP = $dbc->prepare_statement('INSERT INTO batchList (upc, batchID, salePrice, active)
 				VALUES (?, ?, ?, 0)');
+		$list = new BatchListModel($dbc);
+		$list->active(0);
+		$list->pricemethod(0);
+		$list->quantity(0);
+
 		for($i=0;$i<count($upcs);$i++){
 			if(!isset($batchIDs[$names[$i]])){
 				$args = array($names[$i].' '.$naming,1,1);
@@ -82,12 +87,11 @@ class CoopDealsReviewPage extends FanniePage {
 				$batchIDs[$names[$i]] = $bID;
 			}
 			$id = $batchIDs[$names[$i]];
-			$args = array(
-				$upcs[$i],
-				$id,
-				sprintf("%.2f",$prices[$i])
-			);
-			$dbc->exec_statement($listP,$args);
+
+			$list->upc($upcs[$i]);
+			$list->batchID($id);
+			$list->salePrice(sprintf("%.2f",$prices[$i]));
+			$list->save();
 		}
 
 		$ret = "New sales batches have been created!<p />";

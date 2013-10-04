@@ -172,11 +172,14 @@ class BatchManagementTool extends FanniePage {
 			$infoQ = $dbc->prepare_statement("select discType from batchType where batchTypeID=?");
 			$infoR = $dbc->exec_statement($infoQ,array($type));
 			$discounttype = array_pop($dbc->fetch_array($infoR));
-			
-			$upQ = $dbc->prepare_statement("update batches set batchName=?,
-					batchType=?,discounttype=?,startDate=?,endDate=? where batchID=?");
-			$upR = $dbc->exec_statement($upQ,array($name,$type,$discounttype,$startdate,
-					$enddate,$id));
+
+			$model = new BatchesModel($dbc);
+			$model->batchID($id);
+			$model->batchType($type);
+			$model->startDate($startdate);
+			$model->endDate($enddate);
+			$model->discounttype($discounttype);
+			$model->save();
 			
 			$checkQ = $dbc->prepare_statement("select batchID from batchowner where batchID=?");
 			$checkR = $dbc->exec_statement($checkQ,array($id));
@@ -226,18 +229,15 @@ class BatchManagementTool extends FanniePage {
 			$qty = FormLib::get_form_value('limit',0);
 			
 			if ($price != ""){
-				$checkQ = $dbc->prepare_statement("select upc from batchList where upc=? and batchID=?");
-				$checkR = $dbc->exec_statement($checkQ,array($upc,$id));
-				if ($dbc->num_rows($checkR) == 0){
-					$insQ = $dbc->prepare_statement("INSERT INTO batchList (upc,batchID,salePrice,active,pricemethod,quantity) 
-						VALUES (?,?,?,1,0,?)");
-					$insR = $dbc->exec_statement($insQ,array($upc,$id,$price,$qty));
-				}
-				else {
-					$upQ = $dbc->prepare_statement("update batchList set salePrice=?,quantity=? 
-						where upc=? and batchID=?");
-					$upR = $dbc->exec_statement($upQ,array($price,$qty,$upc,$id));
-				}
+
+				$model = new BatchListModel($dbc);
+				$model->upc($upc);
+				$model->batchID($id);
+				$model->salePrice($price);
+				$model->quantity($qty);
+				$model->pricemethod(0);
+				$model->save();
+
 				if (FormLib::get_form_value('audited') == '1')
 					auditPriceChange($dbc,$this->current_user,$upc,$price,$id);
 			}
@@ -253,18 +253,15 @@ class BatchManagementTool extends FanniePage {
 			$qty = FormLib::get_form_value('limit',0);
 			
 			if ($price != ""){
-				$checkQ = $dbc->prepare_statement("select upc from batchList where upc=? and batchID=?");
-				$checkR = $dbc->exec_statement($checkQ,array('LC'.$lc,$id));
-				if ($dbc->num_rows($checkR) == 0){
-					$insQ = $dbc->prepare_statement("INSERT INTO batchList (upc,batchID,salePrice,active,pricemethod,quantity) 
-						VALUES (?,?,?,1,0,?)");
-					$insR = $dbc->exec_statement($insQ,array('LC'.$lc,$id,$price,$qty));
-				}
-				else {
-					$upQ = $dbc->prepare_statement("update batchList set salePrice=?,quantity=? 
-						where upc=? and batchID=?");
-					$upR = $dbc->exec_statement($upQ,array($price,$qty,'LC'.$lc,$id));
-				}
+
+				$model = new BatchListModel($dbc);
+				$model->upc('LC'.$lc);
+				$model->batchID($id);
+				$model->salePrice($price);
+				$model->quantity($qty);
+				$model->pricemethod(0);
+				$model->save();
+
 				if (FormLib::get_form_value('audited') == '1')
 					auditPriceChangeLC($dbc,$this->current_user,$upc,$price,$id);
 			}
@@ -331,10 +328,14 @@ class BatchManagementTool extends FanniePage {
 			$saleprice = FormLib::get_form_value('saleprice',0);
 			$saleqty = FormLib::get_form_value('saleqty',1);
 			$pm = ($saleqty >= 2)?2:0;	
-			
-			$upQ = $dbc->prepare_statement("update batchList set salePrice=?,quantity=?,
-				pricemethod=? where batchID=? and upc=?");
-			$upR = $dbc->exec_statement($upQ,array($saleprice,$saleqty,$pm,$id,$upc));
+
+			$model = new BatchListModel($dbc);
+			$model->upc($upc);
+			$model->batchID($id);
+			$model->salePrice($saleprice);
+			$model->quantity($saleqty);
+			$model->pricemethod($pm);	
+			$model->save();
 			
 			$upQ = $dbc->prepare_statement("update batchBarcodes set normal_price=? where upc=? and batchID=?");
 			$upR = $dbc->exec_statement($upQ,array($saleprice,$upc,$id));
@@ -375,11 +376,14 @@ class BatchManagementTool extends FanniePage {
 				$upQ = $dbc->prepare_statement("update batchBarcodes set normal_price=? where upc=? AND batchID=?");
 				$upR = $dbc->exec_statement($upQ,array($price,$upc,$id));
 			}
-			
-			$insQ = $dbc->prepare_statement("insert into batchList 
-				(upc,batchID,salePrice,active,pricemethod,quantity) 
-				VALUES (?, ?, ?, 1, 0, 0)");
-			$insR = $dbc->exec_statement($insQ,array($upc,$id,$price));
+
+			$model = new BatchListModel($dbc);
+			$model->upc($upc);
+			$model->batchID($id);
+			$model->salePrice($price);
+			$model->quantity(0);
+			$model->pricemethod(0);
+			$model->save();
 			
 			$out .= $this->addItemUPCInput(True);
 			$out .= '`';
@@ -494,14 +498,13 @@ class BatchManagementTool extends FanniePage {
 			break;
 		case 'PS_toggleMemberOnly':
 			$bid = FormLib::get_form_value('batchID','');
-			$q = $dbc->prepare_statement("SELECT discounttype FROM batches 
-				WHERE batchID=?");
-			$r = $dbc->exec_statement($q,array($bid));
-			$cur = array_pop($dbc->fetch_row($r));
+			$model = new BatchesModel($dbc);
+			$model->batchID($bid);
+			$model->load();
+			$cur = $model->discounttype();
 			$new = ($cur==1) ? 2 : 1;
-			$q = $dbc->prepare_statement("UPDATE batches SET discounttype=?
-				WHERE batchID=?");
-			$r = $dbc->exec_statement($q,array($new,$bid));
+			$model->discounttype($new);
+			$model->save();
 			break;
 		case 'PS_pricing':
 			$qty = $_REQUEST['quantity'];
@@ -512,8 +515,11 @@ class BatchManagementTool extends FanniePage {
 			$pmethod = FormLib::get_form_value('pricemethod');
 			$bid = FormLib::get_form_value('batchID',0);
 
-			$upQ1 = $dbc->prepare_statement("UPDATE batches SET discounttype=?
-				WHERE batchID=?");
+			$model = new BatchesModel($dbc);
+			$model->batchID($bid);
+			$model->discounttype($dtype);
+			$model->save();
+
 			$upQ2 = $dbc->prepare_statement("UPDATE batchList SET
 					quantity=?,pricemethod=?,
 					salePrice=? WHERE batchID=?
@@ -522,7 +528,6 @@ class BatchManagementTool extends FanniePage {
 					quantity=?,pricemethod=?,
 					salePrice=? WHERE batchID=?
 					AND salePrice < 0");
-			$dbc->exec_statement($upQ1,array($dtype,$bid));
 			$dbc->exec_statement($upQ2,array($qty+1,$pmethod,$disc,$bid));
 			$dbc->exec_statement($upQ3,array($qty+1,$pmethod,-1*$disc,$bid));
 			break;
@@ -933,12 +938,12 @@ class BatchManagementTool extends FanniePage {
 			break;
 		}
 
-		$nameQ = $dbc->prepare_statement("select batchName,batchType,discountType from batches where batchID=?");
-		$nameR = $dbc->exec_statement($nameQ,array($id));
-		$nameW = $dbc->fetch_row($nameR);
-		$name = $nameW[0];
-		$type = $nameW[1];
-		$dtype = $nameW[2];
+		$model = new BatchesModel($dbc);
+		$model->batchID($id);
+		$model->load();
+		$name = $model->batchName();
+		$type = $model->batchType();
+		$dtype = $model->discounttype();
 
 		if ($type == 10){
 			return $this->showPairedBatchDisplay($id,$name);
