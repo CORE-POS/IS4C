@@ -72,9 +72,37 @@ class QMDisplay extends NoInputPage {
 					&&
 					(prevKey==99 || prevKey==67)
 				){
+					// CL or cl
+					// pressed clear
 					$('#doClear').val('1');
 				}
+				if (
+					(event.which==77 || event.which==109)
+					&&
+					(prevKey==81 || prevKey==113)
+				){
+					// QM or qm
+					// sticky quick menu button?
+					// ignore the next enter key
+					form_disabled = 1;
+				}
 				else if (event.which==13 && form_disabled == 0){
+					// enter - submit form
+					form_disabled=1;
+					$('#qmform').submit();
+				}
+				else if (event.which==13 && form_disabled == 1){
+					// enter - ignore
+					// but re-enable form
+					form_disabled=0;
+				}
+				else if (event.which >= 49 && event.which <= 57 && form_disabled == 0){
+					// 1-9 key - submit form
+					form_disabled=1;
+					$('#qmform').submit();
+				}
+				else if (event.which >= 97 && event.which <= 105 && form_disabled == 0){
+					// 1-9 key (numpad) - submit form
 					form_disabled=1;
 					$('#qmform').submit();
 				}
