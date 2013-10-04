@@ -821,11 +821,12 @@ static public function receiptDetail($reprint=False,$trans_num='') { // put into
 				$detail .= "                                         TAX    0.00\n";
 			}
 			elseif ($row[1]==1 and $CORE_LOCAL->get("TaxExempt")==1){
-				$queryExempt="select 
-					right((space(44) + upper(rtrim('SUBTOTAL'))), 44) 
-					+ right((space(8) + convert(varchar,runningTotal-tenderTotal)), 8) 
-					+ right((space(4) + ''), 4) as linetoprint,1 as sequence,null as dept_name,3 as ordered,'' as upc
-					from lttSummary";
+				$queryExempt="select ".$db->concat(
+				"right(".$db->concat('space(44)',"'SUBTOTAL'",'').", 44)",
+				"right(".$db->concat('space(8)',$db->convert('runningTotal-tenderTotal','char'),'').", 8)", 
+				"space(4)",'')." as linetoprint,
+				1 as sequence,null as dept_name,3 as ordered,'' as upc
+				from lttsummary";
 				$resultExempt = $db->query($queryExempt);
 				$rowExempt = $db->fetch_array($resultExempt);
 				$detail .= $rowExempt[0]."\n";
