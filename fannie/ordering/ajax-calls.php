@@ -417,6 +417,7 @@ function addUPC($orderID,$memNum,$upc,$num_cases=1){
 		
 		// only calculate prices for items that exist in 
 		// vendorItems (i.e., have known case size)
+		$ins_array['discounttype'] = $pdW['discounttype'];
 		if ($dbc->num_rows($caseR) > 0 || true){ // test always do this
 			$ins_array['total'] = $pdW['normal_price']*$caseSize*$num_cases;
 			$ins_array['regPrice'] = $pdW['normal_price']*$caseSize*$num_cases;
@@ -430,12 +431,22 @@ function addUPC($orderID,$memNum,$upc,$num_cases=1){
 					$ins_array['total'] = $pdW['special_price']*$caseSize*$num_cases;
 					$ins_array['unitPrice'] = $pdW['special_price'];
 				}
-				elseif ($pdW['discount'] != 0)
+				elseif ($pdW['discounttype'] == 3){
+					$ins_array['unitPrice'] = $pdW['normal_price']*(1-$pdW['special_price']);
+					$ins_array['total'] = $ins_array['unitPrice']*$caseSize*$num_cases;
+				}
+				elseif ($pdW['discounttype'] == 5){
+					$ins_array['unitPrice'] = $pdW['normal_price']-$pdW['special_price'];
+					$ins_array['total'] = $ins_array['unitPrice']*$caseSize*$num_cases;
+				}
+				if($pdW['discount'] != 0 && ($pdW['normal_price']*$caseSize*$num_cases*0.85) < $ins_array['total']){
 					$ins_array['total'] = $pdW['normal_price']*$caseSize*$num_cases*0.85;
+					$ins_array['discounttype'] = 0;
+					$ins_array['unitPrice'] = $pdW['normal_price'];
+				}
 			}
 		}
 		$ins_array['description'] = "'".substr($pdW['description'],0,32)." SO'";
-		$ins_array['discounttype'] = $pdW['discounttype'];
 	}
 	elseif ($srp != 0){
 		// use vendor SRP if applicable
