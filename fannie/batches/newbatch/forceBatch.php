@@ -29,11 +29,18 @@
    for all queries.
 */
 
-function forceBatch($batchID){
-	global $dbc,$FANNIE_SERVER_DBMS,$FANNIE_STORE_ID;
+include('../../config.php');
+if (!class_exists('FannieAPI'))
+	include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+if (!function_exists('updateProductAllLanes'))
+	include($FANNIE_ROOT.'item/laneUpdates.php');
 
-	$batchInfoQ = "SELECT batchType,discountType FROM batches WHERE batchID = $batchID";
-	$batchInfoR = $dbc->query($batchInfoQ);
+function forceBatch($batchID){
+	global $FANNIE_OP_DB,$FANNIE_SERVER_DBMS,$FANNIE_STORE_ID;
+	$dbc = FannieDB::get($FANNIE_OP_DB);
+
+	$batchInfoQ = $dbc->prepare_statement("SELECT batchType,discountType FROM batches WHERE batchID = ?");
+	$batchInfoR = $dbc->exec_statement($batchInfoQ,array($batchID));
 	$batchInfoW = $dbc->fetch_array($batchInfoR);
 
 	$forceQ = "";
@@ -60,7 +67,7 @@ function forceBatch($batchID){
 			ELSE p.mixmatchcode 
 		    END	
 		    WHERE l.upc not like 'LC%'
-		    and l.batchID = $batchID";
+		    and l.batchID = ?";
             
 		$forceLCQ = "UPDATE products AS p
 			INNER JOIN likeCodeView AS v 
@@ -81,7 +88,7 @@ function forceBatch($batchID){
 				WHEN l.pricemethod = 0 AND l.quantity > 0 THEN concat('b',convert(l.batchID,char))
 				ELSE p.mixmatchcode 
 		        END	
-			where l.batchID=$batchID";
+			where l.batchID=?";
 
 		if ($FANNIE_SERVER_DBMS == 'MSSQL'){
 			$forceQ="UPDATE products
@@ -104,7 +111,7 @@ function forceBatch($batchID){
 			    WHERE l.upc = p.upc
 			    and l.upc not like 'LC%'
 			    and b.batchID = l.batchID
-			    and b.batchID = $batchID";
+			    and b.batchID = ?";
 
 			$forceLCQ = "update products set special_price = l.salePrice,
 				end_date = b.endDate,start_date=b.startDate,
@@ -122,7 +129,7 @@ function forceBatch($batchID){
 				likeCodeView as v on v.upc=p.upc left join
 				batchList as l on l.upc='LC'+convert(varchar,v.likecode)
 				left join batches as b on b.batchID = l.batchID
-				where b.batchID=$batchID";
+				where b.batchID=?";
 		}
 	}
 	else{
@@ -132,7 +139,7 @@ function forceBatch($batchID){
 		      SET p.normal_price = l.salePrice,
 		      p.modified = curdate()
 		      WHERE l.upc not like 'LC%'
-		      AND l.batchID = $batchID";
+		      AND l.batchID = ?";
 
 		$forceLCQ = "UPDATE products AS p
 			INNER JOIN upcLike AS v
@@ -140,7 +147,7 @@ function forceBatch($batchID){
 			batchList as b on b.upc=concat('LC',convert(v.likecode,char))
 			set p.normal_price = b.salePrice,
    			p.modified=curdate()
-			where b.batchID=$batchID";
+			where b.batchID=?";
 
 		if ($FANNIE_SERVER_DBMS == 'MSSQL'){
 			$forceQ = "UPDATE products
@@ -152,29 +159,31 @@ function forceBatch($batchID){
 			      WHERE l.upc = p.upc
 			      AND l.upc not like 'LC%'
 			      AND b.batchID = l.batchID
-			      AND b.batchID = $batchID";
+			      AND b.batchID = ?";
 
 			$forceLCQ = "update products set normal_price = b.salePrice,
 				modified=getdate()
 				from products as p left join
 				upcLike as v on v.upc=p.upc left join
 				batchList as b on b.upc='LC'+convert(varchar,v.likecode)
-				where b.batchID=$batchID";
+				where b.batchID=?";
 		}
 	}
 
-	$forceR = $dbc->query($forceQ);
-	$forceLCR = $dbc->query($forceLCQ);
+	$forceP = $dbc->prepare_statement($forceQ);
+	$forceR = $dbc->exec_statement($forceP,array($batchID));
+	$forceLCP = $dbc->prepare_statement($forceLCQ);
+	$forceR = $dbc->exec_statement($forceLCP,array($batchID));
 
-	$q = "SELECT upc FROM batchList WHERE batchID=".$batchID;
-	$r = $dbc->query($q);
+	$q = $dbc->prepare_statement("SELECT upc FROM batchList WHERE batchID=?");
+	$r = $dbc->exec_statement($q,array($batchID));
+	$likeP = $dbc->prepare_statement('SELECT upc FROM upcLike WHERE likeCode=?');
 	while($w = $dbc->fetch_row($r)){
 		$upcs = array($w['upc']);
 		if (substr($w['upc'],0,2)=='LC'){
 			$upcs = array();
 			$lc = substr($w['upc'],2);
-			$q2 = "SELECT upc FROM upcLike WHERE likeCode=".$lc;
-			$r2 = $dbc->query($q2);
+			$r2 = $dbc->exec_statement($likeP,array($lc));
 			while($w2 = $dbc->fetch_row($r2))
 				$upcs[] = $w2['upc'];
 		}
