@@ -24,6 +24,8 @@
 include('../../config.php');
 include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
+$dbc = FannieDB::get($FANNIE_OP_DB);
+
 $upc = FormLib::get_form_value('upc');
 $action = FormLib::get_form_value('action','unknown');
 switch($action){
@@ -40,11 +42,14 @@ case 'newPrice':
 	$bid = FormLib::get_form_value('batchID');
 	$sid = FormLib::get_form_value('superID',0);
 	if ($sid == 99) $sid = 0;
-	$sid = FormLib::get_form_value('price',0);
+	$price = FormLib::get_form_value('price',0);
 	$sP = $dbc->prepare_statement("UPDATE vendorSRPs SET srp=? WHERE upc=? AND vendorID=?");
 	$dbc->exec_statement($sP,array($price,$upc,$vid));
-	$bP = $dbc->prepare_statement("UPDATE batchList SET salePrice=? WHERE upc=? AND batchID=?");
-	$dbc->exec_statement($bP,array($price,$upc,$bid));
+	$model = new BatchListModel($dbc);
+	$model->batchID($bid);
+	$model->upc($upc);
+	$model->salePrice($price);
+	$model->save();
 	$bP = $dbc->prepare_statement("UPDATE shelftags SET normal_price=? WHERE upc=? AND id=?");
 	$dbc->exec_statement($bP,array($price,$upc,$sid));
 	echo "New Price Applied";
@@ -54,7 +59,7 @@ case 'batchAdd':
 	$bid = FormLib::get_form_value('batchID');
 	$sid = FormLib::get_form_value('superID',0);
 	if ($sid == 99) $sid = 0;
-	$sid = FormLib::get_form_value('price',0);
+	$price = FormLib::get_form_value('price',0);
 
 	$model = new BatchListModel($dbc);
 	$model->batchID($bid);

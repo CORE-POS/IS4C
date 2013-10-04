@@ -77,6 +77,7 @@ class BatchManagementTool extends FanniePage {
 	 * a backtick separates request name from data
 	 */
 	function ajax_response($action){
+		global $FANNIE_SERVER_DBMS;
 		$out = '';
 		$dbc = $this->con;
 		// prepend request name & backtick
