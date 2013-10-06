@@ -33,11 +33,24 @@ class BatchManagementTool extends FanniePage {
 	protected $window_dressing = False;
 	protected $must_authenticate = True;
 	protected $auth_classes = array('batches','batches_audited');
+	protected $title = 'Sales Batches Tool';
+ 	protected $header = 'Sales Batches Tool';
 
 	private $audited = 1;
 	private $con = null;
 	private $batchtypes = array();
 	private $owners = array();
+
+  // This replaces the __construct() in the parent.
+  public function __construct() {
+		global $FANNIE_WINDOW_DRESSING;
+    // To set authentication.
+    FanniePage::__construct();
+		if ( isset($FANNIE_WINDOW_DRESSING) ) {
+			$this->window_dressing = $FANNIE_WINDOW_DRESSING;
+		}
+	// __construct()
+	}
 
 	function preprocess(){
 		global $FANNIE_OP_DB;
@@ -424,7 +437,7 @@ class BatchManagementTool extends FanniePage {
 				where u.likecode = ? order by p.upc desc");
 			$likeR = $dbc->exec_statement($likeQ,array($likecode));
 			while ($likeW = $dbc->fetch_row($likeR)){
-				$out .= "<td><a href=/queries/productTest.php?upc=$likeW[0] target=_new$likeW[0]>$likeW[0]</a></td>";
+				$out .= "<td><a href={$FANNIE_URL}item/ItemEditorPage.php?upc=$likeW[0] target=_new$likeW[0]>$likeW[0]</a></td>";
 				$out .= "<td>$likeW[1]</td>";
 				$out .= "<td>$likeW[2]</td>";
 				$out .= "<td>$saleprice</td>";
@@ -593,7 +606,8 @@ class BatchManagementTool extends FanniePage {
 
 		$ret = "<form onsubmit=\"newBatch(); return false;\">";
 		$ret .= "<table>";
-		$ret .= "<tr><th>Batch Type</th><th>Name</th><th>Start date</th><th>End date</th><th>Owner</th><th>Priority</tr>";
+		$ret .= "<tr><th colspan=99 style='line-height:1.0em;'>Create a Batch:</th></tr>";
+		$ret .= "<tr><th>Batch/Sale Type</th><th>Name</th><th>Start date</th><th>End date</th><th>Owner/Super Dept.</th><th>Priority</tr>";
 		$ret .= "<tr>";
 		$ret .= "<td><select id=newBatchType>";
 		foreach ($this->batchtypes as $id=>$desc){
@@ -615,7 +629,7 @@ class BatchManagementTool extends FanniePage {
 		$ret .= "</tr></table></form><br />";
 		
 		$ret .= "<span class=\"newBatchBlack\">";
-		$ret .= "<b>Filter</b>: show batches owned by: ";
+		$ret .= "<b>Filter</b>: show batches owned by (of Super Dept.): ";
 		$ret .= "</span>";
 		$ret .= "<select id=filterOwner onchange=\"refilter();\">";
 		foreach ($this->owners as $o)
@@ -802,7 +816,7 @@ class BatchManagementTool extends FanniePage {
 		$ret .= "<th bgcolor=$colors[$c]>Type</th>";
 		$ret .= "<th bgcolor=$colors[$c]>Start date</th>";
 		$ret .= "<th bgcolor=$colors[$c]>End date</th>";
-		$ret .= "<th bgcolor=$colors[$c]>Owner</th>";
+		$ret .= "<th bgcolor=$colors[$c]>Owner/Super Dept.</th>";
 		$ret .= "<th colspan=\"3\">&nbsp;</th></tr>";
 		
 		// the 'all' query
@@ -1069,7 +1083,7 @@ class BatchManagementTool extends FanniePage {
 				$ret .= "<input type=hidden value=$row id=expandId$likecode name=expandId />";
 			}
 			else {
-				$ret .= "<td bgcolor=$colors[$c]><a href=/queries/productTest.php?upc=$fetchW[0] target=_new$fetchW[0]>$fetchW[0]</a></td>";
+				$ret .= "<td bgcolor=$colors[$c]><a href={$FANNIE_URL}item/ItemEditorPage.php?upc=$fetchW[0] target=_new$fetchW[0]>$fetchW[0]</a></td>";
 			}
 			$ret .= "<td bgcolor=$colors[$c]>$fetchW[1]</td>";
 			$ret .= "<td bgcolor=$colors[$c]>$fetchW[2]</td>";
@@ -1175,7 +1189,7 @@ class BatchManagementTool extends FanniePage {
 				$ret .= "<input type=hidden value=$row id=expandId$likecode name=expandId />";
 			}
 			else {
-				$ret .= "<td bgcolor=$colors[$c]><a href=/queries/productTest.php?upc=$fetchW[0] target=_new$fetchW[0]>$fetchW[0]</a></td>";
+				$ret .= "<td bgcolor=$colors[$c]><a href={$FANNIE_URL}item/ItemEditorPage.php?upc=$fetchW[0] target=_new$fetchW[0]>$fetchW[0]</a></td>";
 			}
 			$ret .= "<td bgcolor=$colors[$c]>$fetchW[1]</td>";
 			$ret .= "<td bgcolor=$colors[$c]><a href=\"\" onclick=\"moveDisc('$fetchW[0]'); return false;\"><img src=\"{$FANNIE_URL}src/img/buttons/arrow_down.gif\" alt=\"Make Discount Item\" /></a></td>";
@@ -1221,7 +1235,7 @@ class BatchManagementTool extends FanniePage {
 				$ret .= "<input type=hidden value=$row id=expandId$likecode name=expandId />";
 			}
 			else {
-				$ret .= "<td bgcolor=$colors[$c]><a href=/queries/productTest.php?upc=$fetchW[0] target=_new$fetchW[0]>$fetchW[0]</a></td>";
+				$ret .= "<td bgcolor=$colors[$c]><a href={$FANNIE_URL}item/ItemEditorPage.php?upc=$fetchW[0] target=_new$fetchW[0]>$fetchW[0]</a></td>";
 			}
 			$ret .= "<td bgcolor=$colors[$c]>$fetchW[1]</td>";
 			$ret .= "<td bgcolor=$colors[$c]><a href=\"\" onclick=\"moveQual('$fetchW[0]'); return false;\"><img src=\"{$FANNIE_URL}src/img/buttons/arrow_up.gif\" alt=\"Make Qualifying Item\" /></a></td>";

@@ -47,13 +47,16 @@ class InstallPage extends FanniePage {
 	  @return An HTML string
 	*/
 	function get_header(){
-		global $FANNIE_ROOT;
+		global $FANNIE_ROOT, $FANNIE_WINDOW_DRESSING;
 		ob_start();
 		$page_title = $this->title;
 		$header = $this->header;
-		include($FANNIE_ROOT.'src/header_install.html');
+		if ( isset($FANNIE_WINDOW_DRESSING) && $FANNIE_WINDOW_DRESSING == True ) {
+			include($FANNIE_ROOT.'src/header.html');
+		} else {
+			include($FANNIE_ROOT.'src/header_install.html');
+		}
 		return ob_get_clean();
-
 	}
 
 	/**
@@ -61,9 +64,13 @@ class InstallPage extends FanniePage {
 	  @return An HTML string
 	*/
 	function get_footer(){
-		global $FANNIE_ROOT, $FANNIE_AUTH_ENABLED, $FANNIE_URL;
+		global $FANNIE_ROOT, $FANNIE_AUTH_ENABLED, $FANNIE_URL, $FANNIE_WINDOW_DRESSING;
 		ob_start();
-		include($FANNIE_ROOT.'src/footer_install.html');
+		if ( isset($FANNIE_WINDOW_DRESSING) && $FANNIE_WINDOW_DRESSING == True ) {
+			include($FANNIE_ROOT.'src/footer.html');
+		} else {
+			include($FANNIE_ROOT.'src/footer_install.html');
+		}
 		return ob_get_clean();
 	}
 
