@@ -35,6 +35,8 @@ class FannieReportPage extends FanniePage {
 	Base class for creating reports.
 	";
 
+	/*
+	*/
 	public function __construct() {
 		// To set authentication.
 		parent::__construct();
