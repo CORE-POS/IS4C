@@ -112,6 +112,30 @@ class InstallMenuPage extends InstallPage {
 
 		<hr  />
 		<p class="ichunk">
+		Fannie Administration Menu at left or top.
+		<ul>
+		<li>Menu at left is traditional; on top may allows more horizontal space on the page for the report or tool.
+		<li>Under construction: The "top" option is only available for the configurable menu at this point.
+		</ul>
+		<b>Admin menu position</b>
+		<select name=FANNIE_NAV_POSITION>
+		<?php
+		if (!isset($FANNIE_NAV_POSITION)) $FANNIE_NAV_POSITION = 'left';
+		if (isset($_REQUEST['FANNIE_NAV_POSITION'])) $FANNIE_NAV_POSITION = $_REQUEST['FANNIE_NAV_POSITION'];
+		if ($FANNIE_NAV_POSITION == 'top'){
+			confset('FANNIE_NAV_POSITION','top');
+			echo "<option value='left'>Left</option><option value='top' selected>Top</option>";
+		}
+		else{
+			confset('FANNIE_NAV_POSITION','left');
+			echo "<option value='left' selected>Left</option><option value='top'>Top</option>";
+		}
+		echo "</select>";
+		?>
+		</p>
+
+		<hr  />
+		<p class="ichunk">
 		Whether to always show the Fannie Administration Menu.
 		<ul>
 		<li>Coops may prefer not to show the menu in order to maximize the space available on the page for the report or tool.
