@@ -51,9 +51,11 @@ class FanniePage {
 	protected $css_files = array();
 
 	public function __construct(){
-		global $FANNIE_AUTH_DEFAULT;
+		global $FANNIE_AUTH_DEFAULT, $FANNIE_COOP_ID;
 		if ( isset($FANNIE_AUTH_DEFAULT) && !$this->must_authenticate )
 			$this->must_authenticate = $FANNIE_AUTH_DEFAULT;
+		if ( isset($FANNIE_COOP_ID) && $FANNIE_COOP_ID == 'WEFC_Toronto' )
+			$this->auth_classes[] = 'admin';
 	}
 
 	/**

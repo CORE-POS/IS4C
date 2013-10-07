@@ -37,7 +37,7 @@ while($row = $dbc->fetch_row($res))
         type="text/javascript"></script>
 
 <form name='addBatch' action = 'hourlySalesAuth.php' method='POST'>
-<table><tr><td>Dept</td><td>Start Date</td><td>End Date</td></tr>
+<table><tr><td>Super Department</td><td>Start Date</td><td>End Date</td></tr>
 <tr><td><select name=buyer>
 	<?php echo $options; ?>
       </select></td>
