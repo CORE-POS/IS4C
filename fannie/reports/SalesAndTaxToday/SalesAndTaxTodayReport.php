@@ -94,14 +94,17 @@ class SalesAndTaxTodayReport extends FanniePage {
 	}
 
 	function body_content(){
-		global $dbc, $FANNIE_TRANS_DB;
+		global $dbc, $FANNIE_TRANS_DB, $FANNIE_COOP_ID;
 
 		$today = date("Y-m-d");
 		$table = 'dlog';	// i.e. dlog. dlog_15 if $today is before today.
 		$ddiff = 0;	// i.e. 0. -n if $today is before today.
 /*
-$today = "2013-06-30";
+$today = "2013-08-19";
+$table = 'dlog_15';	// i.e. dlog. dlog_15 if $today is before today.
+$ddiff = -1;	// i.e. 0. -n if $today is before today.
 echo "<br />Jiggered date, table= $table, datediff= $ddiff for $today";
+//
 $key = 'APACHE_RUN_USER';
 if (isset($_ENV["$key"]))
 	echo "<br />$key is {$_ENV["$key"]}";
@@ -188,6 +191,7 @@ echo "<br />id $id";
 					AND tdate < '2013-07-23 23:00:00'
 					AND tdate like '2013-07-23 %'
 					AND tdate >" . $dbc->now() . "
+				WHERE ".$dbc->datediff('tdate',$dbc->now())."=$ddiff
 		*/
 		if ($this->selected == -1){
 			$query1="SELECT ".$dbc->hour('tdate')." as Hour, 

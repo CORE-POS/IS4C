@@ -107,7 +107,7 @@ class StoreSummaryReport extends FannieReportPage2 {
 	}
 
 	function fetch_report_data(){
-		global $dbc, $FANNIE_ARCHIVE_DB, $FANNIE_OP_DB;
+		global $dbc, $FANNIE_ARCHIVE_DB, $FANNIE_OP_DB, $FANNIE_COOP_ID;
 		$d1 = FormLib::get_form_value('date1',date('Y-m-d'));
 		$d2 = FormLib::get_form_value('date2',date('Y-m-d'));
 		$dept = $_REQUEST['dept'];
@@ -143,7 +143,7 @@ class StoreSummaryReport extends FannieReportPage2 {
 //		$dbc->logger("dlog: $dlog");
 
 		if ( isset($FANNIE_COOP_ID) && $FANNIE_COOP_ID == 'WEFC_Toronto' )
-			$shrinkageUsers = " AND d.card_no not between 99990 and 99998";
+			$shrinkageUsers = " AND t.card_no not between 99990 and 99998";
 		else
 			$shrinkageUsers = "";
 
