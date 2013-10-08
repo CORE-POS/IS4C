@@ -22,7 +22,7 @@
 *********************************************************************************/
 
 include('../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 include_once($FANNIE_ROOT.'src/JsonLib.php');
 
 class RestrictCouponPage extends FannieRESTfulPage {

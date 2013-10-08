@@ -23,8 +23,8 @@
 
 include('../../config.php');
 include('audit.php');
-include('../../auth/login.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include_once('../../auth/login.php');
+include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 if (!function_exists("updateProductAllLanes")) include($FANNIE_ROOT.'item/laneUpdates.php');
 include('forceBatch.php');
 

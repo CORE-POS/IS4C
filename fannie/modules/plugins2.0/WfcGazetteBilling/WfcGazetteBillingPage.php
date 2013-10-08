@@ -1,6 +1,6 @@
 <?php
-include('../../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include(dirname(__FILE__).'/../../../config.php');
+include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
 $EMP_NO = 1001;
 $LANE_NO = 30;
