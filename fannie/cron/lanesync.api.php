@@ -23,17 +23,21 @@
 
 /* HELP
 
-   lanesync.api.php
+   nightly.lanesync.api.php
 
    Retrieve to the server from the following tables on all lanes:
-		valutecRequest, valutecRequestMod, valutecResponse
+    valutecRequest, valutecRequestMod, valutecResponse
    Replace the following tables on all lanes with contents of server table:
     products, custdata, memberCards, employees, departments, custReceiptMessage
    Optionally also replace:
     productUser
 
    If you can use fannie/sync/special/generic.mysql.php
-	  the transfers will go much faster.
+    the transfers will go much faster.
+
+   Coordinate this with cronjobs such as nightly.batch.php
+    that update the tables this is pushing to the lanes
+    so that the lanes have the most current data.
 
   Replacement for nightly.lanesync.php using Fannie's API
   instead of cURL
@@ -50,7 +54,6 @@ foreach (array('valutecRequest', 'valutecRequestMod', 'valutecResponse') as $tab
 	$result = SyncLanes::pull_table("$table", 'trans', SyncLanes::TRUNCATE_SOURCE);
 	echo cron_msg($result['messages']);
 }
-
 
 $regularPushTables = array(
 	'products',
