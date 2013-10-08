@@ -137,7 +137,8 @@ SKU: <input type='text' name='sku' size=8
 echo "value='".$sku."'";
 ?>
 >
-Price: <font color='green' size=+1><b><?php echo printf("%.2f",$price); ?><input type='hidden' name='price' size=8 value=<?php echo $price; ?> ></b></font>
+Price: <font color='green' size=+1><b><?php printf("%.2f",$price); ?>
+<input type='hidden' name='price' size=8 value=<?php echo $price; ?> ></b></font>
 <?php 
 
 echo "<input type='submit' value='New' name='submit'>";
