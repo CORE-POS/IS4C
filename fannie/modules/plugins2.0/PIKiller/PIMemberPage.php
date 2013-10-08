@@ -25,7 +25,6 @@ include(dirname(__FILE__).'/../../../config.php');
 if (!class_exists('FannieAPI'))
 	include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
-ini_set('display_errors',1);
 class PIMemberPage extends PIKillerPage {
 
 	private  $auth_mode = 'None';
