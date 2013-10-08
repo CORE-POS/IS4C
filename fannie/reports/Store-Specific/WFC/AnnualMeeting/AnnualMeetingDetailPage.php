@@ -1,7 +1,7 @@
 <?php
 include('../../../../config.php');
-include($FANNIE_ROOT.'src/SQLManager.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include_once($FANNIE_ROOT.'src/SQLManager.php');
+include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 include($FANNIE_ROOT.'src/Credentials/OutsideDB.is4c.php');
 
 class AnnualMeetingDetailPage extends FannieRESTfulPage {

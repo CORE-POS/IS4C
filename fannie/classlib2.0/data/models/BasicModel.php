@@ -732,7 +732,7 @@ if (php_sapi_name() === 'cli' && basename($_SERVER['PHP_SELF']) == basename(__FI
 	}
 
 	include(dirname(__FILE__).'/../../../config.php');
-	include(dirname(__FILE__).'/../../FannieAPI.php');
+	include_once(dirname(__FILE__).'/../../FannieAPI.php');
 
 	// Create new Model
 	if ($argc == 3){

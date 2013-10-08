@@ -22,8 +22,8 @@
 *********************************************************************************/
 
 include('../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
-include($FANNIE_ROOT.'auth/login.php');
+include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include_once($FANNIE_ROOT.'auth/login.php');
 
 class LikeCodeEditor extends FanniePage {
 	protected $title = "Fannie : Like Codes";

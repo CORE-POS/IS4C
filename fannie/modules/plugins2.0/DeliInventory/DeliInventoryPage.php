@@ -1,8 +1,12 @@
 <?php
 
-include('../../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
-include($FANNIE_ROOT.'src/JsonLib.php');
+if (basename($_SERVER['PHP_SELF']) != basename(__FILE__)){
+	return;
+}
+
+include(dirname(__FILE__).'/../../../config.php');
+include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include_once($FANNIE_ROOT.'src/JsonLib.php');
 $sql = FannieDB::get($FANNIE_OP_DB);
 
 /* ajax responses 

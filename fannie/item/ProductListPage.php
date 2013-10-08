@@ -22,13 +22,13 @@
 *********************************************************************************/
 
 include('../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
-include($FANNIE_ROOT.'src/JsonLib.php');
+include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include_once($FANNIE_ROOT.'src/JsonLib.php');
 require('laneUpdates.php');
 if (!function_exists('login'))
 	include($FANNIE_ROOT.'auth/login.php');
-include($FANNIE_ROOT.'src/ReportConvert/HtmlToArray.php');
-include($FANNIE_ROOT.'src/ReportConvert/ArrayToCsv.php');
+include_once($FANNIE_ROOT.'src/ReportConvert/HtmlToArray.php');
+include_once($FANNIE_ROOT.'src/ReportConvert/ArrayToCsv.php');
 
 class ProductListPage extends FanniePage {
 

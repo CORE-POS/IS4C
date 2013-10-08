@@ -21,9 +21,9 @@
 
 *********************************************************************************/
 
-include('../../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
-include($FANNIE_ROOT.'cache/cache.php');
+include(dirname(__FILE__).'/../../../config.php');
+include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include_once($FANNIE_ROOT.'cache/cache.php');
 
 class OverShortMAS extends FannieRESTfulPage {
 	protected $header = 'MAS Export';

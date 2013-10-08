@@ -22,7 +22,7 @@
 *********************************************************************************/
 
 include_once(dirname(__FILE__).'/../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
 class EndItemSale extends FannieRESTfulPage {
 
