@@ -106,6 +106,80 @@ class FannieAPI {
 
 		return False;
 	}
+
+	static public function ListModules($base_class, $include_base=False){
+		$directiories = array();
+		$directories[] = dirname(__FILE__).'/../modules/plugins2.0/';
+		$directories[] = dirname(__FILE__);
+
+		switch($base_class){
+		case 'ItemModule':
+			$directories[] = dirname(__FILE__).'/../item/modules/';
+			break;
+		case 'MemberModule':
+			$directories[] = dirname(__FILE__).'/../mem/modules/';
+			break;
+		}
+
+		// recursive search
+		$search = function($path) use (&$search){
+			if (is_file($path) && substr($path,-4)=='.php')
+				return array($path);
+			elseif (is_dir($path)){
+				$dh = opendir($path);
+				$ret = array();
+				while( ($file=readdir($dh)) !== False){
+					if ($file == '.' || $file == '..') continue;
+					$ret = array_merge($ret, $search($path.'/'.$file));
+				}
+				return $ret;
+			}
+			return array();
+		};
+
+		$files = array();
+		foreach($directories as $dir){
+			$files = array_merge($files, $search($dir));
+		}
+
+		$ret = array();
+		foreach($files as $file){
+			$class = substr(basename($file),0,strlen(basename($file))-4);
+			// matched base class
+			if ($class === $base_class){
+				if ($include_base) $ret[] = $class;
+				continue;
+			}
+			
+			// almost certainly not a class definition
+			if ($class == 'index')
+				continue;
+
+			// verify class exists
+			ob_start();
+			include_once($file);
+			ob_end_clean();
+
+			if (!class_exists($class)){
+				continue;
+			}
+
+			// if the file is part of a plugin, make sure
+			// the plugin is enabled. The exception is when requesting
+			// a list of plugin classes
+			if (strstr($file, 'plugins2.0') && $base_class != 'FanniePlugin'){
+				$parent = FanniePlugin::MemberOf($file);
+				if ($parent === False || !FanniePlugin::IsEnabled($parent)){
+					continue;
+				}
+			}
+
+			if (is_subclass_of($class, $base_class))
+				$ret[] = $class;
+		}
+
+		return $ret;
+	}
 }
 
 FannieAPI::init();
