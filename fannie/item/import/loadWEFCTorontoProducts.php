@@ -23,6 +23,7 @@
 
 /* #'Z--COMMENTZ { -  - - - - - - - - - - - - - - - - - - - - - -
 
+	20Aug13	Quantity-enforced prices with more than two decimals.
 	 4Jul13	Require admin priv.
 	20Jun13	7-digit PLU in UPC field.
 	        Flag empty case_cost if hasPrice.
@@ -157,6 +158,26 @@ $tpath = sys_get_temp_dir()."/misc/";
 
 // Are we dev-side?
 $isposdev = preg_match("/0A-38/", php_uname('n'))?True:False;
+
+/* Return the number of decimal places to use in a price format spec: %.#f .
+ * Minimum is 2.
+ * > 2 only if the price is in a quantity-enforced situation.
+*/
+function sig_decimals ($num, $qtty_enforced=0) {
+	$dec = 2;
+	if ( $qtty_enforced ) {
+		if ( preg_match('/\.\d{3}/',$num) )
+			$num = rtrim($num,'0');
+		for ($n=5 ; $n > $dec ; $n--) {
+			$pattern ='/\.\d{'.$n.'}$/';
+			if ( preg_match($pattern,$num) ) {
+				$dec = $n;
+				break;
+			}
+		}
+	}
+	return $dec;
+}
 
 /* Based on whether we have the name of a file to load,
 		is this a request-to-upload or delete, or an initial display of the get-file-to-process form?
@@ -685,8 +706,13 @@ vary based on whose code you're running
 			if ( $data[$CASE_COST] != "" ) {
 				$data[$CASE_COST] = sprintf("%.2f", $data[$CASE_COST]);
 			}
+			$set_price_pattern = '/^\d+\.\d{2}$/';
 			if ( $data[$SET_PRICE] != "" ) {
-				$data[$SET_PRICE] = sprintf("%.2f", $data[$SET_PRICE]);
+				$dec = ($data[$QTYFRC])?sig_decimals($data[$SET_PRICE],1):2;
+				$set_price_pattern = '/^\d+\.\d{'.$dec.'}$/';
+//$messages[++$mct] = "UPC: {$data[$UPC]} set_price : {$data[$SET_PRICE]} qttyF: {$data[$QTYFRC]}";
+				$data[$SET_PRICE] = sprintf("%.{$dec}f", $data[$SET_PRICE]);
+//$messages[$mct] .= " becomes {$data[$SET_PRICE]}";
 			}
 			if ( $data[$UNIT_COST] != "" ) {
 				$data[$UNIT_COST] = sprintf("%.2f", $data[$UNIT_COST]);
@@ -697,7 +723,8 @@ vary based on whose code you're running
 			// Prefer the pre-calculated or pre-set price
 			// 24Jan13 Require CASE_COST
 			if ( $hasPrice && $data[$CASE_COST] != "" ) {
-				if ( preg_match("/^\d+\.\d\d$/",$data[$SET_PRICE]) && preg_match("/^\d+\.\d\d$/",$data[$UNIT_COST]) ) {	
+				//if ( preg_match("/^\d+\.\d\d$/",$data[$SET_PRICE]) && preg_match("/^\d+\.\d\d$/",$data[$UNIT_COST]) ) {	}
+				if ( preg_match($set_price_pattern,$data[$SET_PRICE]) && preg_match("/^\d+\.\d\d$/",$data[$UNIT_COST]) ) {
 					$normal_price = $data[$SET_PRICE];
 					$cost = $data[$UNIT_COST];
 					if ( preg_match("/^\d+$/",$data[$CASE_SIZE]) ) {
@@ -721,7 +748,8 @@ vary based on whose code you're running
 				elseif ( preg_match("/^\d+\.\d\d$/",$data[$CASE_COST]) &&
 								(preg_match("/^\d+$/",$data[$CASE_SIZE]) || preg_match("/^\d+\.\d+$/",$data[$CASE_SIZE])) &&
 								 preg_match("/^\d\.\d+$/",$margin) ) {
-					if ( preg_match("/^\d+\.\d\d$/",$data[$SET_PRICE]) ) {
+					//if ( preg_match("/^\d+\.\d\d$/",$data[$SET_PRICE]) ) {}
+					if ( preg_match($set_price_pattern,$data[$SET_PRICE]) ) {
 						$normal_price = $data[$SET_PRICE];
 					} else {
 						// Markup-based price
@@ -741,6 +769,7 @@ vary based on whose code you're running
 				if ( preg_match("/^\d+$/",$data[$CASE_SIZE]) || preg_match("/^\d+\.\d+$/",$data[$CASE_SIZE]) )
 					$size = $data[$CASE_SIZE];
 			}
+//$messages[++$mct] = sprintf("--- Ultimately from SET_PRICE >%s<  we get normal_price >%s< .", $data[$SET_PRICE], $normal_price);
 
 			// May need some massaging/regularization: mL -> ml, gm -> g, ...
 			$unitofmeasure = $data[$UNIT_NAME];
@@ -1384,7 +1413,9 @@ else {
 
 <tr style="text-align:top;" vAlign="top">
 	<td><input type="checkbox" name="overwrite_products" CHECKED /></td><td style="padding-top:5px;">Overwrite existing 'products' and related records on UPC/PLU match.
-	<br />Items with price -1 will update the existing record rather than overwriting it and be added if there is no existing record.</td>
+	<br />Items with price empty or -1 will:
+	<br />- if there is an existing record, update it rather than overwriting it, but change no prices
+	<br />- if there is no existing record, be added</td>
 </tr>
 
 <!-- tr style="text-align:top;" vAlign="top">

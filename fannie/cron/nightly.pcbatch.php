@@ -36,6 +36,9 @@
    date. To work effectively, it must be run at
    least once a day.
 
+   This script does not update the lanes, therefore
+   the day's last run should be before lane syncing.
+
    Changes are logged in prodUpdate if possible.
 */
 
