@@ -21,9 +21,7 @@
 
 *********************************************************************************/
 
-include_once(dirname(__FILE__).'/../../classlib2.0/item/ItemModule.php');
-include_once(dirname(__FILE__).'/../../classlib2.0/lib/FormLib.php');
-include_once(dirname(__FILE__).'/../../classlib2.0/data/models/ProductsModel.php');
+include_once(dirname(__FILE__).'/../../classlib2.0/FannieAPI.php');
 
 class ExtraInfoModule extends ItemModule {
 
@@ -55,7 +53,10 @@ class ExtraInfoModule extends ItemModule {
 		$localSelect .= '</select>';
 		
 		$ret .= "<table style=\"margin-top:5px;margin-bottom:5px;\" border=1 cellpadding=5 cellspacing=0 width='100%'><tr>";
-		$ret .= '<tr><th>Deposit</th><th>Cost</th><th>Local</th><th>In Use</th></tr>';
+		$ret .= '<tr><th>Deposit'.FannieHelp::ToolTip('PLU/UPC of linked deposit item').'</th>
+			<th>Cost'.FannieHelp::ToolTip('Cost from current vendor').'</th>
+			<th>Local</th>
+			<th>In Use'.FannieHelp::ToolTip('Uncheck to temporarily disable').'</th></tr>';
 		$ret .= sprintf('<tr>
 				<td align="center"><input type="text" size="5" value="%d" name="deposit" /></td>
 				<td align="center"><input type="text" size="5" value="%.2f" id="cost" name="cost" /></td>
@@ -64,7 +65,6 @@ class ExtraInfoModule extends ItemModule {
 				$info['deposit'],$info['cost'],$localSelect,
 				($info['inUse']==1 ? 'checked': '')
 		);
-		$ret .= '<tr><td colspan="4" style="color:darkmagenta;">Last modified: '.$info['modified'].'</td></tr>';		
 		$ret .= '</table></fieldset>';
 		return $ret;
 	}

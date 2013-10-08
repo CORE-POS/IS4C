@@ -22,9 +22,7 @@
 *********************************************************************************/
 
 include_once(dirname(__FILE__).'/../../config.php');
-include_once(dirname(__FILE__).'/../../classlib2.0/item/ItemModule.php');
-include_once(dirname(__FILE__).'/../../classlib2.0/lib/FormLib.php');
-include_once(dirname(__FILE__).'/../../classlib2.0/data/models/ProductsModel.php');
+include_once(dirname(__FILE__).'/../../classlib2.0/FannieAPI.php');
 include_once(dirname(__FILE__).'/../../src/JsonLib.php');
 
 class BaseItemModule extends ItemModule {
@@ -37,8 +35,8 @@ class BaseItemModule extends ItemModule {
 		$ret .=  "<legend>Item</legend>";
 
 		$dbc = $this->db();
-		$p = $dbc->prepare_statement('SELECT p.*,x.* FROM products AS p LEFT JOIN prodExtra
-				AS x ON p.upc=x.upc WHERE p.upc=?');
+		$p = $dbc->prepare_statement('SELECT p.*,x.*,u.description as ldesc FROM products AS p LEFT JOIN prodExtra
+				AS x ON p.upc=x.upc LEFT JOIN productUser AS u ON p.upc=u.upc WHERE p.upc=?');
 		$r = $dbc->exec_statement($p,array($upc));
 		$rowItem = array();
 		$prevUPC = False;
@@ -170,23 +168,17 @@ class BaseItemModule extends ItemModule {
 				value="'.(isset($rowItem['size'])?$rowItem['size']:'').'" />';
 		$ret .= '<b>Unit of measure</b> <input type="text" name="unitm" size="4"
 				value="'.(isset($rowItem['unitofmeasure'])?$rowItem['unitofmeasure']:'').'" /></td>';
-		$ret .= sprintf('<td colspan="2">
-				<input type="checkbox" name="doVolume" %s />
-				<input type="text" size="4" name="vol_qtty" value="%d" /> 
-				for $<input type="text" size="4" name="vol_price" value="%.2f" />
-				<input type="hidden" name="pricemethod" value="%d" /></td>',
-				($rowItem['pricemethod'] >0 ? 'checked' : ''),
-				(isset($rowItem['quantity']) ? $rowItem['quantity'] : 0),
-				(isset($rowItem['groupprice']) ? $rowItem['groupprice'] : 0),
-				($rowItem['pricemethod'] >0 ? 'checked' : ''),
-				$rowItem['pricemethod']
-		);
+		$ret .= '<td style="color:darkmagenta;">Last modified</td>
+			<td style="color:darkmagenta;">'.$rowItem['modified'].'</td>';
 		$ret .= '</tr>';
 
-		$ret .="<td align=right><b>Manufacturer</b></td><td><input type=text name=manufacturer size=30 value=\""
+		$ret .= '<tr><td><b>Long Desc.</b><td colspan="2"><input type="text" size="60" name="puser_description"
+				value="'.$rowItem['ldesc'].'" /></td><td>&nbsp;</td></tr>';
+
+		$ret .="<td align=right><b>Brand</b></td><td><input type=text name=manufacturer size=30 value=\""
 			.(isset($rowItem['manufacturer'])?$rowItem['manufacturer']:"")
 			."\" /></td>";
-		$ret .= "<td align=right><b>Distributor</b></td><td><input type=text name=distributor size=8 value=\""
+		$ret .= "<td align=right><b>Vendor</b></td><td><input type=text name=distributor size=8 value=\""
 			.(isset($rowItem['distributor'])?$rowItem['distributor']:"")
 			."\" /></td>";
 		$ret .= '</tr>';
@@ -213,7 +205,10 @@ class BaseItemModule extends ItemModule {
 		$ret .= "</table>";
 
 		$ret .= "<table style=\"margin-top:5px;margin-bottom:5px;\" border=1 cellpadding=5 cellspacing=0 width='100%'>";
-		$ret .= "<tr><th>Dept</th><th>Tax</th><th>FS</th><th>Scale</th><th>QtyFrc</th><th>NoDisc</th></tr>";
+		$ret .= "<tr><th>Dept</th><th>Tax</th><th>FS</th>
+			<th>Scale".FannieHelp::ToolTip('Item sold by weight')."</th>
+			<th>QtyFrc".FannieHelp::ToolTip('Cashier must enter quantity')."</th>
+			<th>NoDisc".FannieHelp::ToolTip('Item not subject to % discount')."</th></tr>";
 
 		$depts = array();
 		$subs = array();
@@ -276,7 +271,7 @@ class BaseItemModule extends ItemModule {
 					($id == $rowItem['department'] ? 'selected':''),
 					$id,$id,$name);
 		}
-		$ret .= '</select><br />';
+		$ret .= '</select>';
 		$ret .= '<select name="subdept" id="subdept">';
 		$ret .= isset($subs[$rowItem['department']]) ? $subs[$rowItem['department']] : '<option value="0">None</option>';
 		$ret .= '</select>';
@@ -375,6 +370,14 @@ class BaseItemModule extends ItemModule {
 			else {
 				$dbc->smart_update('prodExtra',$arr,"upc='$upc'");
 			}
+		}
+
+		if ($dbc->table_exists('productUser')){
+			$ldesc = FormLib::get_form_value('puser_description');
+			$model = new ProductUserModel($dbc);
+			$model->upc($upc);
+			$model->description($ldesc);
+			$model->save();
 		}
 	}
 
