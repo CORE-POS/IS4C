@@ -32,6 +32,9 @@
    This script should run daily. Because batch start
    and end dates are inclusive, scheduling the script
    after midnight will give the most sensible results.
+
+   This script does not update the lanes, therefore
+   it should be run before lane syncing.
 */
 
 /* why is this file such a mess?

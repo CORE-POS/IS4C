@@ -69,7 +69,6 @@ class CustomerPurchasesReport extends FannieReportPage {
 		$card_no = FormLib::get_form_value('card_no','0');
 
 		$dlog = select_dlog($date1,$date2);
-
 		$query = "select month(t.tdate),day(t.tdate),year(t.tdate),
 			  t.upc,p.description,
 			  t.department,d.dept_name,m.super_name,
@@ -111,7 +110,7 @@ class CustomerPurchasesReport extends FannieReportPage {
 
 	function report_description_content(){
 		$ret = array();
-		$ret[] = "Movement from ".FormLib::get_form_value('date1','')." to ".FormLib::get_form_value('date2','');
+		$ret[] = "Purchases from ".FormLib::get_form_value('date1','')." to ".FormLib::get_form_value('date2','');
 		$ret[] = "For owner #".FormLib::get_form_value('card_no');
 		return $ret;
 	}
