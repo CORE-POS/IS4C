@@ -65,7 +65,9 @@ class FannieReportPage extends FanniePage {
 	protected $report_cache = 'none';
 
 	/**
-	  Allow for reports that contain multiple separate tables of data
+	  Allow for reports that contain multiple separate tables of data.
+	  If all the reports are the same width, using META_BLANK and/or
+	  META_REPEAT_HEADERS may be preferrable.  
 	*/
 	protected $multi_report_mode = False;
 	protected $multi_counter = 1;
@@ -84,6 +86,20 @@ class FannieReportPage extends FanniePage {
 	  Sort direction. 0 is ascending, 1 is descending
 	*/
 	protected $sort_direction = 0;
+
+	/** 
+	    Assign meta constant(s) to a row's "meta" field
+	    for special behavior.
+
+	    Bold is self-explanatory. Blank will insert a blank
+	    line and repeat headers will repeat the report_headers.
+	    The latter two will terminate the current <tbody> and
+	    start a new one. This breaks the report into separately
+	    sortable chunks.
+	  */ 
+	const META_BOLD 		= 1;
+	const META_BLANK		= 2;
+	const META_REPEAT_HEADERS	= 4;
 
 	/**
 	  Handle pre-display tasks such as input processing
@@ -416,11 +432,34 @@ class FannieReportPage extends FanniePage {
 	*/
 	function html_line($row, $header=False){
 		global $FANNIE_URL;
+		$meta = 0;
+		if (isset($row['meta'])){
+			$meta = $row['meta'];
+			unset($row['meta']);
+		}
 		$ret = "<tr>";
 		$tag = $header ? 'th' : 'td';
+
+		if (($meta & self::META_BOLD) != 0)
+			$tag = 'th';
+		if (($meta & self::META_BLANK) != 0){
+			$ret = '</tbody><tbody><tr>';
+			$row = array();
+			// just using headers as a column count
+			foreach($this->report_headers as $h)
+				$row[] = null;
+		}
+		if (($meta & self::META_REPEAT_HEADERS) != 0){
+			$ret = '</tbody><tbody><tr>';
+			$tag = 'th';
+			$row = array();
+			foreach($this->report_headers as $h)
+				$row[] = $h;
+		}
+
 		for($i=0;$i<count($row);$i){
 			$span = 1;
-			while(isset($row[$i+$span]) && $row[$i+$span] === null && ($i+$span)<count($row)){
+			while(array_key_exists($i+$span,$row) && $row[$i+$span] === null && ($i+$span)<count($row)){
 				$span++;
 			}
 			if ($row[$i] === "" || $row[$i] === null) $row[$i] = '&nbsp;';
@@ -432,7 +471,11 @@ class FannieReportPage extends FanniePage {
 			$ret .= '<'.$tag.' colspan="'.$span.'">'.$row[$i].'</'.$tag.'>';
 			$i += $span;
 		}
-		return $ret.'</tr>';;
+		$ret .= '</tr>';
+		if (($meta & self::META_REPEAT_HEADERS) != 0 || ($meta & self::META_BLANK) != 0){
+			$ret .= '</tbody><tbody>';
+		}
+		return $ret;
 	}
 
 	/**
@@ -441,6 +484,22 @@ class FannieReportPage extends FanniePage {
 	  @return CSV string
 	*/
 	function csv_line($row){
+		$meta = 0;
+		if (isset($row['meta'])){
+			$meta = $row['meta'];
+			unset($row['meta']);
+		}
+		if (($meta & self::META_BLANK) != 0){
+			$row = array();
+			// just using headers as a column count
+			foreach($this->report_headers as $h)
+				$row[] = null;
+		}
+		if (($meta & self::META_REPEAT_HEADERS) != 0){
+			$row = array();
+			foreach($this->report_headers as $h)
+				$row[] = $h;
+		}
 		$ret = "";
 		foreach($row as $item){
 			$item = str_replace('"','',$item);
@@ -448,6 +507,33 @@ class FannieReportPage extends FanniePage {
 		}
 		$ret = substr($ret,0,strlen($ret)-1)."\r\n";
 		return $ret;
+	}
+
+	/**
+	  Apply meta rules to XLS data
+	*/
+	function xls_meta($data){
+		$fixup = array();
+		foreach($data as $row){
+			$meta = 0;
+			if (isset($row['meta'])){
+				$meta = $row['meta'];
+				unset($row['meta']);
+			}
+			if (($meta & self::META_BLANK) != 0){
+				$row = array();
+				// just using headers as a column count
+				foreach($this->report_headers as $h)
+					$row[] = null;
+			}
+			if (($meta & self::META_REPEAT_HEADERS) != 0){
+				$row = array();
+				foreach($this->report_headers as $h)
+					$row[] = $h;
+			}
+			$fixup[] = $row;
+		}
+		return $fixup;
 	}
 
 	/**
