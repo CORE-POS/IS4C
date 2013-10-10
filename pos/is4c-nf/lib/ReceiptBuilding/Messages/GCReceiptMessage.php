@@ -43,7 +43,7 @@ class GCReceiptMessage extends ReceiptMessage {
 		// query database for gc receipt info 
 		$db = Database::tDataConnect();
 		$order = "";
-		$where = $db->identifier_escape('date')."=".date('Ymd',$dateTimeStamp)
+		$where = $db->identifier_escape('date')."=".date('Ymd');
 			." AND cashierNo=".$emp." AND laneNo=".$reg." AND transNo=".$trans;
 		$order = ($sigSlip) ? 'DESC' : 'ASC';
 		$sql = "SELECT * FROM gcReceiptView WHERE ".$where." ORDER BY "
