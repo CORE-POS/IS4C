@@ -34,12 +34,21 @@ class nslogin extends NoInputPage {
 		$this->heading = _("enter manager password");
 		$this->msg = _("confirm no sales");
 
-		if (isset($_REQUEST['reginput'])){
-			if (strtoupper($_REQUEST['reginput']) == "CL"){
+		if (isset($_REQUEST['reginput']) || isset($_REQUEST['userPassword'])){
+
+			$passwd = '';
+			if (isset($_REQUEST['reginput']) && !empty($_REQUEST['reginput'])){
+				$passwd = $_REQUEST['reginput'];
+				UdpComm::udpSend('goodBeep');
+			}
+			elseif (isset($_REQUEST['userPassword']) && !empty($_REQUEST['userPassword']))
+				$passwd = $_REQUEST['userPassword'];
+
+			if (strtoupper($passwd) == "CL"){
 				$this->change_page($this->page_url."gui-modules/pos2.php");
 				return False;
 			}
-			elseif (Authenticate::ns_check_password($_REQUEST['reginput'])){
+			elseif (Authenticate::ns_check_password($passwd)){
 				$this->change_page($this->page_url."gui-modules/pos2.php");
 				return False;
 			}
@@ -68,8 +77,9 @@ class nslogin extends NoInputPage {
 		</span><br />
 		<form name="form" id="nsform" method="post" autocomplete="off" 
 			action="<?php echo $_SERVER['PHP_SELF']; ?>">
-		<input type="password" name="reginput" tabindex="0" 
-			onblur="$('#reginput').focus();" id="reginput" />
+		<input type="password" name="userPassword" tabindex="0" 
+			onblur="$('#userPassword').focus();" id="userPassword" />
+		<input type="hidden" id="reginput" name="reginput" value="" />
 		</form>
 		<p>
 		<?php echo $this->msg ?>
@@ -77,7 +87,7 @@ class nslogin extends NoInputPage {
 		</div>
 		</div>
 		<?php
-		$this->add_onload_command("\$('#reginput').focus();\n");
+		$this->add_onload_command("\$('#userPassword').focus();\n");
 	} // END true_body() FUNCTION
 
 }

@@ -94,7 +94,7 @@ if (isset($_REQUEST['submit']) || isset($_REQUEST['super'])){
 	while($row = $dbc->fetch_row($result)){
 		printf("<tr><td>%d</td><td>%s</td><td>%d</td><td>%.2f%%</td>
 			<td>%s</td><td>%s</td></tr>",$row[0],
-			(isset($_REQUEST['excel']))?$row[1]:"<a href=\"{$FANNIE_URL}item/departments/dept.php?did=$row[0]\">$row[1]</a>",
+			(isset($_REQUEST['excel']))?$row[1]:"<a href=\"{$FANNIE_URL}item/departments/DepartmentEditor.php?did=$row[0]\">$row[1]</a>",
 			$row[2],$row[3]*100,$row[4],$row[5]);
 	}
 	echo "</table>";

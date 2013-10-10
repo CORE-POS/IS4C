@@ -21,9 +21,9 @@
 
 *********************************************************************************/
 
-include('../../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
-require($FANNIE_ROOT."src/select_dlog.php");
+include(dirname(__FILE__).'/../../../config.php');
+include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+require_once($FANNIE_ROOT."src/select_dlog.php");
 $dbc = FannieDB::get($FANNIE_OP_DB);
 
 class OverShortCashierPage extends FanniePage {
@@ -71,7 +71,7 @@ class OverShortCashierPage extends FanniePage {
 
 		$totalsQ = "SELECT 
 			CASE WHEN trans_subtype IN ('CC','AX') THEN 'CC' ELSE trans_subtype END
-			as trans_subtype,TenderName,
+			as trans_subtype,MAX(TenderName) as TenderName,
 			-1*SUM(total) FROM $dlog as d LEFT JOIN "
 			.$FANNIE_OP_DB.$dbc->sep()."tenders as t
 			ON d.trans_subtype=t.TenderCode
@@ -79,8 +79,7 @@ class OverShortCashierPage extends FanniePage {
 			AND tdate BETWEEN ? AND ?
 			AND trans_type='T'
 			GROUP BY 
-			CASE WHEN trans_subtype IN ('CC','AX') THEN 'CC' ELSE trans_subtype END,
-			TenderName, TenderID
+			CASE WHEN trans_subtype IN ('CC','AX') THEN 'CC' ELSE trans_subtype END
 			ORDER BY TenderID";
 		$totalsP = $dbc->prepare_statement($totalsQ);
 		$totalsR = $dbc->exec_statement($totalsP, array($empno,$date.' 00:00:00',$date.' 23:59:59'));
@@ -155,11 +154,18 @@ class OverShortCashierPage extends FanniePage {
 		$osTotal += $os;
 
 		$codes = array_keys($totals);
-		for($i=0;$i<count($codes);$i+=2){
+		for($i=0;$i<count($codes);$i++){
 			$code = $codes[$i];
-			$next = isset($codes[$i+1]) ? $codes[$i+1] : False;
 			if ($code == 'CA') continue;
 			if ($code == 'CK') continue;
+			$next = False;
+			for($j=$i+1;$j<count($codes);$j++){
+				if($codes[$j] == 'CA') continue;
+				if($codes[$j] == 'CK') continue;
+				$next = $codes[$j];
+				$i += 1; // we're consuming two entries this iteration
+				break;
+			}
 
 			$ret .= "<tr><td colspan=9 height=4><span style=\"font-size:1%;\">&nbsp;</span></td></tr>";
 

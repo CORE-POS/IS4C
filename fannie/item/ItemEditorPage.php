@@ -22,7 +22,7 @@
 *********************************************************************************/
 
 include('../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 include('laneUpdates.php');
 
 // validate modules & include class definitions
@@ -47,8 +47,8 @@ class ItemEditorPage extends FanniePage {
 	private $msgs = '';
 
 	function preprocess(){
-		$this->title = 'Fannie - Item Maintanence';
-		$this->header = 'Item Maintanence';
+		$this->title = 'Fannie - Item Maintenance';
+		$this->header = 'Item Maintenance';
 
 		if (FormLib::get_form_value('searchupc') !== ''){
 			$this->mode = 'search_results';
@@ -89,7 +89,7 @@ class ItemEditorPage extends FanniePage {
 		<option>Brand Prefix</option>
 		</select> or product name here<br>';
 
-		$ret .= '<input name=searchBtn type=submit value=submit> ';
+		$ret .= '<input name=searchBtn type=submit value=Go> ';
 		$ret .= '</form>';
 		
 		$this->add_onload_command('$(\'#upc\').focus();');
@@ -204,7 +204,7 @@ class ItemEditorPage extends FanniePage {
 	}
 
 	function edit_form($upc,$isNew){
-		global $FANNIE_PRODUCT_MODULES;
+		global $FANNIE_PRODUCT_MODULES, $FANNIE_URL;
 		$shown = array();
 		$ret = '<form action="ItemEditorPage.php" method="post">';
 
@@ -222,6 +222,20 @@ class ItemEditorPage extends FanniePage {
 		}
                	$ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 			<a href="ItemEditorPage.php">Back</a>';
+		if (!$isNew){
+			$ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
+			$ret .= '<a href="deleteItem.php?submit=submit&upc='.$upc.'">Delete this item</a>';
+
+			$ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
+			$ret .= '<a href="'.$FANNIE_URL.'reports/PriceHistory/?upc='.$upc.'" target="_price_history">Price History</a>';
+
+			$ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
+			$ret .= '<a href="'.$FANNIE_URL.'reports/RecentSales/?upc='.$upc.'" target="_recentsales">Sales History</a>';
+
+			$js = "window.open('addShelfTag.php?upc=$upc', 'New Shelftag','location=0,status=1,scrollbars=1,width=300,height=220');";
+			$ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
+			$ret .= '<a href="" onclick="'.$js.'return false;">Shelf Tag</a>';
+		}
 
 		if (in_array('ScaleItemModule',$FANNIE_PRODUCT_MODULES)){
 			if (substr($upc,0,3) == "002"){
@@ -235,12 +249,6 @@ class ItemEditorPage extends FanniePage {
 			$mod = new ExtraInfoModule();
 			$ret .= $mod->ShowEditForm($upc);
 			$shown['ExtraInfoModule'] = True;
-		}
-
-		if (in_array('ItemLinksModule',$FANNIE_PRODUCT_MODULES)){
-			$mod = new ItemLinksModule();
-			$ret .= $mod->ShowEditForm($upc);
-			$shown['ItemLinksModule'] = True;
 		}
 
 		if (in_array('LikeCodeModule',$FANNIE_PRODUCT_MODULES)){
@@ -326,6 +334,8 @@ class ItemEditorPage extends FanniePage {
 		$row = $dbc->fetch_array($result);
 		$ret = "<table border=0>";
 		$ret .= "<tr><td align=right><b>UPC</b></td><td><font color='red'>".$row['upc']."</font><input type=hidden value='{$row['upc']}' name=upc></td>";
+		$js = "window.open('addShelfTag.php?upc=$upc', 'New Shelftag','location=0,status=1,scrollbars=1,width=300,height=220');";
+		$ret .= "<td colspan=2 align=right><a href=\"\" onclick=\"{$js}return false;\">Shelf Tag</a></td>";
 		$ret .= "</tr><tr><td><b>Description</b></td><td>{$row['description']}</td>";
 		$ret .= "<td><b>Price</b></td><td>\${$row['normal_price']}</td></tr></table>";
 		return $ret;

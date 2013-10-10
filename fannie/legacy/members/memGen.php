@@ -4,6 +4,13 @@ include('../../config.php');
 include($FANNIE_ROOT.'src/SQLManager.php');
 include('../db.php');
 
+include($FANNIE_ROOT.'auth/login.php');
+if (!validateUserQuiet('editmembers') && !validateUserQuiet('editmembers_csc') && !validateUserQuiet('viewmembers')){
+	$url = $FANNIE_URL.'auth/ui/loginform.php?redirect='.$_SERVER['PHP_SELF'];
+	header('Location: '.$url);
+	exit;
+}
+
 include('memAddress.php');
 include('header.html');
 
@@ -159,7 +166,6 @@ $memPrec = $memID-1;
 <table>
 <tr>
 <?php
-include_once($FANNIE_ROOT.'auth/login.php');
 if (!validateUserQuiet('editmembers') && !validateUserQuiet('editmembers_csc')){
   echo "<td><a href=\"{$FANNIE_URL}auth/ui/loginform.php?redirect={$FANNIE_URL}legacy/members/memGen.php?memNum=$memID\">Login to edit</a> | </td>";
 }

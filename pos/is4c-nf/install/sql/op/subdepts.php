@@ -17,12 +17,12 @@ can be tagged with a subdepartment, but that
 setting doesn't go into the final transaction log
 */
 $CREATE['op.subdepts'] = "
-	CREATE TABLE `subdepts` (
-	  `subdept_no` smallint(4) NOT NULL, 
-	  `subdept_name` varchar(30) default NULL,
-	  `dept_ID` smallint(4) default NULL,
-	  PRIMARY KEY `subdept_no` (`subdept_no`),
-	  KEY `subdept_name` (`subdept_name`)
+	CREATE TABLE subdepts (
+	  subdept_no smallint(4) NOT NULL, 
+	  subdept_name varchar(30) default NULL,
+	  dept_ID smallint(4) default NULL,
+	  PRIMARY KEY (subdept_no),
+	  KEY (subdept_name)
 	) 
 ";
 
@@ -34,6 +34,10 @@ if ($dbms == "MSSQL"){
 		dept_ID smallint
 		)
 	";
+}
+elseif ($dbms == 'PDOLITE'){
+	$CREATE['op.subdepts'] = str_replace('KEY (subdept_name)','',$CREATE['op.subdepts']);
+	$CREATE['op.subdepts'] = str_replace('KEY (subdept_no),','KEY (subdept_no)',$CREATE['op.subdepts']);
 }
 
 ?>

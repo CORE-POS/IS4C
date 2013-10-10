@@ -50,9 +50,6 @@ static public function check_password($password,$activity=1){
 
 	if ($password == "TRAINING") $password = 9999; // if password is training, change to '9999'
 
-	if (!is_numeric($password)) return False; // if password is non-numeric, not a valid password
-	elseif ($password < 1) return False; // if password is less than 1, not a valid password
-
 	$query_g = "select LoggedIn,CashierNo from globalvalues";
 	$db_g = Database::pDataConnect();
 	$result_g = $db_g->query($query_g);
@@ -145,17 +142,14 @@ static public function ns_check_password($password){
 	if ($password == "TRAINING") 
 		$password = 9999;
 
-	if (!is_numeric($password)) 
-		return False;
-	elseif ($password > "9999" || $password < "1") 
-		return False;
-	elseif (empty($password))
+	if (empty($password))
 		return False;
 
 	$db = Database::pDataConnect();
-	$query2 = "select emp_no, FirstName, LastName from employees where empactive = 1 and "
-		."frontendsecurity >= 11 and (cashierpassword = ".$password." or adminpassword = "
-		.$password.")";
+	$password = $db->escape($password);
+	$query2 = "select emp_no, FirstName, LastName from employees where EmpActive = 1 and "
+		."frontendsecurity >= 11 and (CashierPassword = '".$password."' 
+		or AdminPassword = '".$password."')";
 	$result2 = $db->query($query2);
 	$num_row2 = $db->num_rows($result2);
 

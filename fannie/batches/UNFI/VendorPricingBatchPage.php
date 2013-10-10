@@ -22,7 +22,7 @@
 *********************************************************************************/
 
 include('../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
 class VendorPricingBatchPage extends FanniePage {
 	protected $title = "Fannie - Create Price Change Batch";
@@ -60,6 +60,9 @@ class VendorPricingBatchPage extends FanniePage {
 		tr.white td.sub {
 			background:#ffffff;
 		}
+		tr.selection td.sub {
+			background:#add8e6;
+		}
 		td.srp {
 			text-decoration: underline;
 		}';
@@ -88,7 +91,7 @@ function toggleB(upc){
 			url: 'batchAjax.php',
 			data: dstr + '&action=batchAdd&price='+price,
 			success: function(data){
-
+				$('#row'+upc).attr('class','selection');
 			}
 		});
 	}
@@ -98,7 +101,12 @@ function toggleB(upc){
 			url: 'batchAjax.php',
 			data: dstr + '&action=batchDel',
 			success: function(data){
-
+				if ($('tr#row'+upc+' input.varp:checked').length > 0)
+					$('#row'+upc).attr('class','white');
+				else if ($('tr#row'+upc+' td.price').html() < $('tr#row'+upc+' td.srp').html())
+					$('#row'+upc).attr('class','red');
+				else
+					$('#row'+upc).attr('class','green');
 			}
 		});
 	}
@@ -265,7 +273,9 @@ function saveprice(upc){
 			<th>Batch</th></tr>";
 		while($row = $dbc->fetch_row($result)){
 			$bg = "white";
-			if ($row['variable_pricing'] != 1)
+			if (isset($batchUPCs[$row['upc']]))
+				$bg = 'selection';
+			elseif ($row['variable_pricing'] != 1)
 				$bg = ($row['normal_price']<$row['srp'])?'red':'green';
 			$ret .= sprintf("<tr id=row%s class=%s>
 				<td class=\"sub\">%s</td>

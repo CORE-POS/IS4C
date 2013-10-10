@@ -282,7 +282,27 @@ function load_sample_data($sql, $table){
 			ESCAPED BY '\\\\'
 			OPTIONALLY ENCLOSED BY '\"'
 			LINES TERMINATED BY '\\r\\n'");
-		$sql->exec_statement($prep);
+		$try = $sql->exec_statement($prep);
+		/** alternate implementation
+		    for non-mysql and/or LOAD DATA LOCAL
+		    not allowed */
+		if ($try === False){
+			$fp = fopen("data/$table.csv",'r');
+			$stmt = False;
+			while(!feof($fp)){
+				$line = fgetcsv($fp);
+				if (!is_array($line)) continue;
+				if ($stmt === False){
+					$query = 'INSERT INTO '.$table.' VALUES (';
+					foreach($line as $field)
+						$query .= '?,';
+					$query = substr($query,0,strlen($query)-1).')';
+					$stmt = $sql->prepare_statement($query);
+				}
+				$sql->exec_statement($stmt, $line);
+			}
+			fclose($fp);
+		}
 	}
 }
 
@@ -314,6 +334,19 @@ function duplicate_structure($dbms,$table1,$table2){
 	}
 	elseif ($dbms == "MSSQL"){
 		return "SELECT * INTO [$table2] FROM [$table1] WHERE 1=0";
+	}
+	elseif ($dbms == 'PDOLITE'){
+		$path = realpath(dirname(__FILE__).'/sql');
+		if (file_exists($path.'/op/'.$table1.'.php')){
+			include($path.'/op/'.$table1.'.php');
+			return str_replace($table1, $table2, $CREATE['op.'.$table1]);
+		}
+		elseif (file_exists($path.'/trans/'.$table1.'.php')){
+			include($path.'/trans/'.$table1.'.php');
+			return str_replace($table1, $table2, $CREATE['trans.'.$table1]);
+		}
+		else	
+			return 'No table found';
 	}
 }
 

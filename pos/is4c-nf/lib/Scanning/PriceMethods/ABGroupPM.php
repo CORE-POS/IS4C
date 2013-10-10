@@ -105,7 +105,7 @@ class ABGroupPM extends PriceMethod {
 		}
 		if ($quantity != (int)$quantity && $mixMatch < 0){
 			$discountIsScale = true;
-			$scaleDiscMax = $quantity * $unitPrice;
+			$scaleDiscMax = $quantity * $pricing['regPrice'];
 			$discountScaleQty = $quantity;
 		}
 
@@ -125,7 +125,7 @@ class ABGroupPM extends PriceMethod {
 		// where does the currently scanned item go?
 		if ($mixMatch > 0){
 			$quals = ($quals >0)?$quals+floor($quantity):floor($quantity);
-			$dept1 = $department;
+			$dept1 = $row['department'];
 		}
 		else {
 			// again, scaled items count once per line
@@ -133,7 +133,7 @@ class ABGroupPM extends PriceMethod {
 				$discs = ($discs >0)?$discs+1:1;
 			else
 				$discs = ($discs >0)?$discs+$quantity:$quantity;
-			$dept2 = $department;
+			$dept2 = $row['department'];
 		}
 
 		// count up complete sets
@@ -224,6 +224,8 @@ class ABGroupPM extends PriceMethod {
 				(isset($row['charflag'])?$row['charflag']:'')
 			);
 		}
+
+		return True;
 	}
 }
 

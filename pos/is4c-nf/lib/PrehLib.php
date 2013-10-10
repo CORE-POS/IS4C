@@ -767,8 +767,14 @@ static public function deptkey($price, $dept,$ret=array()) {
 	$intdept = $dept;
 
 	$query = "select dept_no,dept_name,dept_tax,dept_fs,dept_limit,
-		dept_minimum,dept_discount from departments where dept_no = ".$intdept;
+		dept_minimum,dept_discount,";
 	$db = Database::pDataConnect();
+	$table = $db->table_definition('departments');
+	if (isset($table['dept_see_id']))
+		$query .= 'dept_see_id';
+	else
+		$query .= '0 as dept_see_id';
+	$query .= " from departments where dept_no = ".$intdept;
 	$result = $db->query($query);
 
 	$num_rows = $db->num_rows($result);
@@ -807,6 +813,27 @@ static public function deptkey($price, $dept,$ret=array()) {
 	}
 	else {
 		$row = $db->fetch_array($result);
+
+		if ($row['dept_see_id'] > 0){
+
+			$my_url = MiscLib::base_url();
+
+			if ($CORE_LOCAL->get("cashierAge") < 18 && $CORE_LOCAL->get("cashierAgeOverride") != 1){
+				$ret['main_frame'] = $my_url."gui-modules/adminlogin.php?class=AgeApproveAdminLogin";
+				return $ret;
+			}
+
+			if ($CORE_LOCAL->get("memAge")=="")
+				$CORE_LOCAL->set("memAge",date('Ymd'));
+			$diff = time() - ((int)strtotime($CORE_LOCAL->get("memAge")));
+			$age = floor($diff / (365*60*60*24));
+			if ($age < $row['dept_see_id']){
+				$ret['udpmsg'] = 'twoPairs';
+				$ret['main_frame'] = $my_url.'gui-modules/requestInfo.php?class=UPC';
+				return $ret;
+			}
+		}
+
 		if (!$row["dept_limit"]) $deptmax = 0;
 		else $deptmax = $row["dept_limit"];
 

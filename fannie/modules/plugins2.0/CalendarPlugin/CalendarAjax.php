@@ -21,7 +21,7 @@
 
 *********************************************************************************/
 
-include('../../../config.php');
+include(dirname(__FILE__).'/../../../config.php');
 if(!class_exists("CalendarPluginDB")) include(dirname(__FILE__).'/CalendarPluginDB.php');
 if(!class_exists("FannieWebService")) include($FANNIE_ROOT.'classlib2.0/FannieWebService.php');
 if(!class_exists("FormLib")) include($FANNIE_ROOT.'classlib2.0/lib/FormLib.php');

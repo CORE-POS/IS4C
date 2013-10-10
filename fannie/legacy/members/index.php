@@ -1,3 +1,7 @@
+<?php
+header('Location: mainMenu.php');
+exit;
+?>
 <html>
 <head>
 <title>Welcome to the Back End!</title>

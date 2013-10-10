@@ -170,17 +170,12 @@ class PriceCheckPage extends NoInputPage {
 			$ret['giveUp'] = true;
 			return $ret;
 		}
-		elseif (!is_numeric($password)) {
-			return $ret;
-		}
-		elseif ($password > 9999 || $password < 1) {
-			return $ret;
-		}
 
 		$db = Database::pDataConnect();
 		$priv = sprintf("%d",$CORE_LOCAL->get("SecurityCancel"));
+		$password = $db->escape($password);
 		$query = "select emp_no, FirstName, LastName from employees where EmpActive = 1 and frontendsecurity >= $priv "
-		."and (CashierPassword = ".$password." or AdminPassword = ".$password.")";
+		."and (CashierPassword = '".$password."' or AdminPassword = '".$password."')";
 		$result = $db->query($query);
 		$num_rows = $db->num_rows($result);
 

@@ -33,4 +33,16 @@ $CREATE['op.dateRestrict'] = "
 		INDEX (dept_ID)
 	)
 ";
+
+if ($dbms == 'PDOLITE'){
+	$CREATE['op.dateRestrict'] = "CREATE TABLE dateRestrict (
+		upc varchar(13),
+		dept_ID int,
+		restrict_date date default null,
+		restrict_dow smallint default null,
+		restrict_start time default null,
+		restrict_end time default null
+	)";
+
+}
 ?>

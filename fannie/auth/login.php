@@ -438,19 +438,7 @@ function pose($username){
 	if (!isAlphanumeric($username))
 		return false;
 
-	$cookie_data = base64_decode($_COOKIE['session_data']);
-	$session_data = unserialize($cookie_data);
-
-	$session_id = $session_data['session_id'];
-
-	$sql = dbconnect();
-	$sessionQ = $sql->prepare_statement("update Users set session_id = ? where name=?");
-	$sessionR = $sql->exec_statement($sessionQ,array($session_id,$name));
-
-	$session_data = array("name"=>$username,"session_id"=>$session_id);
-	$cookie_data = serialize($session_data);
-
-	setcookie('session_data',base64_encode($cookie_data),time()+(60*600),'/');
+	doLogin($username);
 
 	return true;
 }

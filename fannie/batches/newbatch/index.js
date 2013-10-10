@@ -39,7 +39,7 @@ var http = createRequestObject();
    tack on more arguments as needed with '&' and '='
 */
 function phpSend(action) {
-    http.open('get', 'index.php?action='+action);
+    http.open('get', 'BatchManagementTool.php?action='+action);
     http.onreadystatechange = handleResponse;
     http.send(null);
 }
@@ -52,7 +52,6 @@ function phpSend(action) {
 function handleResponse() {
     if(http.readyState == 4){
         var response = http.responseText.replace(/^\s*/,'');
-        //alert(response);
         var array = response.split('`');
         switch(array[0]){
         case 'newBatch':

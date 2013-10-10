@@ -52,42 +52,42 @@ trans_id column.
 */
 $CREATE['trans.localtemptrans'] = "
 	CREATE TABLE localtemptrans (
-	  `datetime` datetime default NULL,
-	  `register_no` smallint(6) default NULL,
-	  `emp_no` smallint(6) default NULL,
-	  `trans_no` int(11) default NULL,
-	  `upc` varchar(13) default NULL,
-	  `description` varchar(30) default NULL,
-	  `trans_type` varchar(1) default NULL,
-	  `trans_subtype` varchar(2) default NULL,
-	  `trans_status` varchar(1) default NULL,
-	  `department` smallint(6) default NULL,
-	  `quantity` double default NULL,
-	  `scale` tinyint(4) default NULL,
-	  `cost` decimal(10,2) default 0.00 NULL,
-	  `unitPrice` decimal(10,2) default NULL,
-	  `total` decimal(10,2) default NULL,
-	  `regPrice` decimal(10,2) default NULL,
-	  `tax` smallint(6) default NULL,
-	  `foodstamp` tinyint(4) default NULL,
-	  `discount` decimal(10,2) default NULL,
-	  `memDiscount` decimal(10,2) default NULL,
-	  `discountable` tinyint(4) default NULL,
-	  `discounttype` tinyint(4) default NULL,
-	  `voided` tinyint(4) default NULL,
-	  `percentDiscount` tinyint(4) default NULL,
-	  `ItemQtty` double default NULL,
-	  `volDiscType` tinyint(4) default NULL,
-	  `volume` tinyint(4) default NULL,
-	  `VolSpecial` decimal(10,2) default NULL,
-	  `mixMatch` varchar(13) default NULL,
-	  `matched` smallint(6) default NULL,
-	  `memType` tinyint(2) default NULL,
-	  `staff` tinyint(4) default NULL,
-	  `numflag` int(11) default 0 NULL,
-	  `charflag` varchar(2) default '' NULL,
-	  `card_no` int(11) default NULL,
-	  `trans_id` int(11) NOT NULL auto_increment,
+	  datetime datetime default NULL,
+	  register_no smallint(6) default NULL,
+	  emp_no smallint(6) default NULL,
+	  trans_no int(11) default NULL,
+	  upc varchar(13) default NULL,
+	  description varchar(30) default NULL,
+	  trans_type varchar(1) default NULL,
+	  trans_subtype varchar(2) default NULL,
+	  trans_status varchar(1) default NULL,
+	  department smallint(6) default NULL,
+	  quantity double default NULL,
+	  scale tinyint(4) default NULL,
+	  cost decimal(10,2) default 0.00 NULL,
+	  unitPrice decimal(10,2) default NULL,
+	  total decimal(10,2) default NULL,
+	  regPrice decimal(10,2) default NULL,
+	  tax smallint(6) default NULL,
+	  foodstamp tinyint(4) default NULL,
+	  discount decimal(10,2) default NULL,
+	  memDiscount decimal(10,2) default NULL,
+	  discountable tinyint(4) default NULL,
+	  discounttype tinyint(4) default NULL,
+	  voided tinyint(4) default NULL,
+	  percentDiscount tinyint(4) default NULL,
+	  ItemQtty double default NULL,
+	  volDiscType tinyint(4) default NULL,
+	  volume tinyint(4) default NULL,
+	  VolSpecial decimal(10,2) default NULL,
+	  mixMatch varchar(13) default NULL,
+	  matched smallint(6) default NULL,
+	  memType tinyint(2) default NULL,
+	  staff tinyint(4) default NULL,
+	  numflag int(11) default 0 NULL,
+	  charflag varchar(2) default '' NULL,
+	  card_no int(11) default NULL,
+	  trans_id INTEGER NOT NULL auto_increment,
 	  PRIMARY KEY (trans_id)
 	)
 ";
@@ -133,5 +133,9 @@ if ($dbms == "MSSQL"){
 			[trans_id] [int] IDENTITY (1, 1) NOT NULL 
 		) ON [PRIMARY]
 	";
+}
+elseif ($dbms == "PDOLITE"){
+	$CREATE['trans.localtemptrans'] = str_replace('PRIMARY KEY (trans_id)','',$CREATE['trans.localtemptrans']);
+	$CREATE['trans.localtemptrans'] = str_replace('NOT NULL auto_increment,','PRIMARY KEY autoincrement',$CREATE['trans.localtemptrans']);
 }
 ?>

@@ -106,8 +106,7 @@ $mdQ = "UPDATE memDates AS d
 			THEN DATE_ADD(s.startdate,INTERVAL 2 YEAR) 
 			ELSE DATE_ADD(s.startdate,INTERVAL 1 YEAR) END
 		END
-	WHERE (d.start_date IS null OR d.start_date = '0000-00-00 00:00:00'
-		OR d.end_date > '1900-01-01 00:00:00')
+	WHERE (d.start_date IS null OR d.start_date = '0000-00-00 00:00:00')
 	AND s.payments > 0
 	AND c.Type='PC'";
 if ($FANNIE_SERVER_DBMS == 'MSSQL'){

@@ -114,7 +114,7 @@ function qualified_names(){
 }
 
 function loaddata($sql, $table){
-	global $FANNIE_ROOT;
+	global $FANNIE_ROOT, $FANNIE_SERVER;
 	if (file_exists("{$FANNIE_ROOT}install/sample_data/$table.sql")){
 		$fp = fopen("{$FANNIE_ROOT}install/sample_data/$table.sql","r");
 		while($line = fgets($fp)){
@@ -124,14 +124,37 @@ function loaddata($sql, $table){
 		fclose($fp);
 	}
 	else if (file_exists("{$FANNIE_ROOT}install/sample_data/$table.csv")){
-		$prep = $sql->prepare_statement("LOAD DATA LOCAL INFILE
+		$LOCAL = 'LOCAL';
+		if ($FANNIE_SERVER == '127.0.0.1' || $FANNIE_SERVER == 'localhost')
+			$LOCAL = '';
+		$prep = $sql->prepare_statement("LOAD DATA $LOCAL INFILE
 			'{$FANNIE_ROOT}install/sample_data/$table.csv'
 			INTO TABLE $table
 			FIELDS TERMINATED BY ','
 			ESCAPED BY '\\\\'
 			OPTIONALLY ENCLOSED BY '\"'
 			LINES TERMINATED BY '\\r\\n'");
-		$sql->exec_statement($prep);
+		$try = $sql->exec_statement($prep);
+		/** alternate implementation
+		    for non-mysql and/or LOAD DATA LOCAL
+		    not allowed */
+		if ($try === False){
+			$fp = fopen("{$FANNIE_ROOT}install/sample_data/$table.csv",'r');
+			$stmt = False;
+			while(!feof($fp)){
+				$line = fgetcsv($fp);
+				if (!is_array($line)) continue;
+				if ($stmt === False){
+					$query = 'INSERT INTO '.$table.' VALUES (';
+					foreach($line as $field)
+						$query .= '?,';
+					$query = substr($query,0,strlen($query)-1).')';
+					$stmt = $sql->prepare_statement($query);
+				}
+				$sql->exec_statement($stmt, $line);
+			}
+			fclose($fp);
+		}
 	}
 }
 

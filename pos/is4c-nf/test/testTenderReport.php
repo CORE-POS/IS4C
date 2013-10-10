@@ -7,7 +7,13 @@ $mods = AutoLoader::ListModules('TenderReport');
 <?php foreach ($mods as $m){ ?>
 <option><?php echo $m; ?></option>
 <?php } ?>
-</select>
+</select> <br />
+
+Send to printer <select name="print">
+<option value="0">No</option>
+<option value="1">Yes</option>
+</select> <br />
+
 
 Emp# <input type="text" size="3" name="emp_no" />
 
@@ -20,7 +26,11 @@ if (isset($_REQUEST['t_mod']) && isset($_REQUEST['emp_no'])){
 	$tmod = $_REQUEST['t_mod'];
 	echo "Output for $tmod:<br />";
 	echo '<pre>';
-	var_dump($tmod::get());
+	$report = $tmod::get();
 	echo '</pre>';
+
+	if (isset($_REQUEST['print']) && $_REQUEST['print'] == 1){
+		ReceiptLib::writeLine($text);
+	}
 }
 ?>

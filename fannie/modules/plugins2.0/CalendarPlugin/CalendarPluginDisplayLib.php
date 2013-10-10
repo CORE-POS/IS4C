@@ -23,7 +23,7 @@
 
 
 if(!class_exists("CalendarPluginDB")) include(dirname(__FILE__).'/CalendarPluginDB.php');
-include('CalendarPluginPermissions.php');
+include_once(dirname(__FILE__).'/CalendarPluginPermissions.php');
 
 $DAY_NAMES = array(
 	array("Sunday","Sun"),

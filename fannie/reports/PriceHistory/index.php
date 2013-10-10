@@ -111,7 +111,7 @@ if (isset($_GET['dept1']) || isset($_GET['upc']) || isset($_GET['manufacturer'])
 }
 else {
 
-$deptsQ = $dbc->prepare_statement("select dept_no,dept_name from departments order by dept_no");
+$deptsQ = $sql->prepare_statement("select dept_no,dept_name from departments order by dept_no");
 $deptsR = $sql->exec_statement($deptsQ);
 $deptsList = "";
 while ($deptsW = $sql->fetch_array($deptsR))

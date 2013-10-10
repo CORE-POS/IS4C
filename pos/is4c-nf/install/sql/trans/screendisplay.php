@@ -45,7 +45,7 @@ $CREATE['trans.screendisplay'] = "
 		as description,
 		CASE
 		WHEN(discounttype = 3 and trans_status = 'V')
-			THEN CONCAT(ItemQtty,' /',UnitPrice)
+			THEN ".$con->concat('ItemQtty',"' /'",'UnitPrice','')."
 		WHEN (voided = 5)
 			THEN 'Discount'
 		WHEN (trans_status = 'M')
@@ -53,17 +53,17 @@ $CREATE['trans.screendisplay'] = "
 		WHEN (trans_status = 'S')
 			THEN 'Staff special'
 		WHEN (scale <> 0 and quantity <> 0 and unitPrice <> 0.01)
-			THEN CONCAT( quantity,' @ ',unitPrice)
-		WHEN (SUBSTRING(upc, 1, 3) = '002')
-			THEN CONCAT( itemQtty,' @ ',regPrice)
+			THEN ".$con->concat('quantity',"' @ '",'unitPrice','')."
+		WHEN (SUBSTR(upc, 1, 3) = '002')
+			THEN ".$con->concat('itemQtty',"' @ '",'regPrice','')."
 		WHEN (abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity = 1)
-			THEN CONCAT(volume,' for ',unitPrice)
+			THEN ".$con->concat('volume',"' for '",'unitPrice','')."
 		WHEN (abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity <> 1)
-			THEN CONCAT(Quantity,' @ ',Volume,' for ',unitPrice)
+			THEN ".$con->concat('quantity',"' @ '",'volume',"' for '",'unitPrice','')."
 		WHEN (abs(itemQtty) > 1 and discounttype = 3)
-			THEN CONCAT(ItemQtty,' /',UnitPrice)
+			THEN ".$con->concat('itemQtty',"' / '",'unitPrice','')."
 		WHEN (abs(itemQtty) > 1)
-			THEN CONCAT(quantity,' @ ',unitPrice)	
+			THEN ".$con->concat('quantity',"' @ '",'unitPrice','')."
 		WHEN (voided = 3)
 			THEN 'Total '
 		WHEN (voided = 5)
@@ -101,9 +101,9 @@ $CREATE['trans.screendisplay'] = "
 		WHEN (tax = 1 and foodstamp = 0)
 			THEN 'T' 
 		WHEN (tax > 1 and foodstamp <> 0)
-			THEN CONCAT(LEFT(t.description,1),'F')
+			THEN ".$con->concat('SUBSTR(t.description,0,1)',"'F'",'')."
 		WHEN (tax > 1 and foodstamp = 0)
-			THEN LEFT(t.description,1)
+			THEN SUBSTR(t.description,0,1)
 		WHEN (tax = 0 and foodstamp <> 0)
 			THEN 'F'
 		WHEN (tax = 0 and foodstamp = 0)
