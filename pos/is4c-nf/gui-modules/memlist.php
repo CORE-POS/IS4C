@@ -77,7 +77,7 @@ class memlist extends NoInputPage {
 			$this->change_page($this->page_url."gui-modules/pos2.php");
 			return False;
 		}
-		else {
+		else if ($memberID === False && $personNum === False){
 			// find the member
 			$lookups = AutoLoader::ListModules('MemberLookup', True);
 			foreach($lookups as $class){
@@ -121,6 +121,8 @@ class memlist extends NoInputPage {
 		// we have exactly one row and 
 		// don't need to confirm any further
 		if ($memberID !== False && $personNum !== False){
+			if ($memberID == $CORE_LOCAL->get('defaultNonMem'))
+				$personNum = 1;
 			$db_a = Database::pDataConnect();
 			$query = $db_a->prepare_statement('SELECT CardNo, personNum,
 				LastName, FirstName,CashBack,Balance,Discount,

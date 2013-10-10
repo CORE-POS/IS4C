@@ -47,11 +47,20 @@ class PriceMethod {
 	  @param $row A product table record
 	  @param $quantity Scan quantity
 	  @param $priceObj A DiscountType object 
+	  @return boolean success/failure
 	*/
 	function addItem($row,$quantity,$priceObj){
 		return true;
 	}
 
+	/**
+	  Information about error(s) adding the
+	  item to the transaction
+	  @return string message
+	*/
+	function errorInfo(){
+		return '';
+	}
 }
 
 ?>

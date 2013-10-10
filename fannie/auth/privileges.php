@@ -62,7 +62,7 @@ function addAuth($name,$auth_class,$sub_start='all',$sub_end='all'){
    *             auth_enabled() does not return the correct value.
   */
   if ( $FANNIE_AUTH_ENABLED ) {
-	if ($auth_class == 'admin' && getNumAdmins() == 0){
+	if (($auth_class == 'admin' || $auth_class=='sysadmin') && getNumUsers() == 1){
 		// skip validation check in
 		// this instance
 	}

@@ -21,8 +21,8 @@
 
 *********************************************************************************/
 include('../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
-include($FANNIE_ROOT.'src/tmp_dir.php');
+include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include_once($FANNIE_ROOT.'src/tmp_dir.php');
 
 
 /* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -132,6 +132,7 @@ class CronManagementPage extends FanniePage {
 		$jobs = $this->scan_scripts($FANNIE_ROOT.'cron',array());
 		$tab = $this->read_crontab();
 
+		if (True) {
 		$mode = FormLib::get_form_value('mode','simple');
 
 		$ret .= "<form action=\"{$_SERVER['PHP_SELF']}\" method=\"post\">";
@@ -196,6 +197,8 @@ class CronManagementPage extends FanniePage {
 		$ret .= "</table><br />";
 		$ret .= '<input type="submit" value="Save" />';
 		$ret .= '</form>';
+		//JIG
+		}
 
 		return $ret;
 	}
@@ -216,7 +219,7 @@ class CronManagementPage extends FanniePage {
 		$matched = False;
 		foreach($vals as $k=>$v){
 			$ret .= sprintf('<option value="%s"',$k);
-			if ("$k" == (($tab['jobs'][$shortname])?$tab['jobs'][$shortname]['hour']:'0')){
+			if ("$k" == (isset($tab['jobs'][$shortname])?$tab['jobs'][$shortname]['hour']:'0')){
 				$ret .= ' selected';
 				$matched = True;
 			}
@@ -233,7 +236,7 @@ class CronManagementPage extends FanniePage {
 		$matched = False;
 		foreach($vals as $k=>$v){
 			$ret .= sprintf('<option value="%s"',$k);
-			if ("$k" == (($tab['jobs'][$shortname])?$tab['jobs'][$shortname]['day']:'1')){
+			if ("$k" == (isset($tab['jobs'][$shortname])?$tab['jobs'][$shortname]['day']:'1')){
 				$ret .= ' selected';
 				$matched = True;
 			}
@@ -250,7 +253,7 @@ class CronManagementPage extends FanniePage {
 		$matched = False;
 		foreach($vals as $k=>$v){
 			$ret .= sprintf('<option value="%s"',$k);
-			if ("$k" === (($tab['jobs'][$shortname])?$tab['jobs'][$shortname]['month']:'1')){
+			if ("$k" === (isset($tab['jobs'][$shortname])?$tab['jobs'][$shortname]['month']:'1')){
 				$ret .= ' selected';
 				$matched = True;
 			}
@@ -271,7 +274,7 @@ class CronManagementPage extends FanniePage {
 		$matched = False;
 		foreach($vals as $k=>$v){
 			$ret .= sprintf('<option value="%s"',$k);
-			if ("$k" === (($tab['jobs'][$shortname])?$tab['jobs'][$shortname]['wkdy']:'*')){
+			if ("$k" === (isset($tab['jobs'][$shortname])?$tab['jobs'][$shortname]['wkdy']:'*')){
 				$ret .= ' selected';
 				$matched = True;
 			}

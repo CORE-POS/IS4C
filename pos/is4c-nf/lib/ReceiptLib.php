@@ -263,8 +263,7 @@ static public function printChargeFooterStore($dateTimeStamp, $ref) {	// apbw 2/
 		   .$CORE_LOCAL->get("fname")." ".$CORE_LOCAL->get("lname")."\n\n"
 		   .self::centerString(".................................................")."\n\n";
 
-	return $receipt;
-
+	return self::chargeBalance($receipt);
 
 }
 
@@ -823,11 +822,12 @@ static public function receiptDetail($reprint=False,$trans_num='') { // put into
 				$detail .= "                                         TAX    0.00\n";
 			}
 			elseif ($row[1]==1 and $CORE_LOCAL->get("TaxExempt")==1){
-				$queryExempt="select 
-					right((space(44) + upper(rtrim('SUBTOTAL'))), 44) 
-					+ right((space(8) + convert(varchar,runningTotal-tenderTotal)), 8) 
-					+ right((space(4) + ''), 4) as linetoprint,1 as sequence,null as dept_name,3 as ordered,'' as upc
-					from lttSummary";
+				$queryExempt="select ".$db->concat(
+				"right(".$db->concat('space(44)',"'SUBTOTAL'",'').", 44)",
+				"right(".$db->concat('space(8)',$db->convert('runningTotal-tenderTotal','char'),'').", 8)", 
+				"space(4)",'')." as linetoprint,
+				1 as sequence,null as dept_name,3 as ordered,'' as upc
+				from lttsummary";
 				$resultExempt = $db->query($queryExempt);
 				$rowExempt = $db->fetch_array($resultExempt);
 				$detail .= $rowExempt[0]."\n";
@@ -1120,6 +1120,17 @@ static public function printReceipt($arg1,$second=False,$email=False) {
 	$noreceipt = ($CORE_LOCAL->get("receiptToggle")==1 ? 0 : 1);
 	$ignoreNR = array("ccSlip");
 
+	// find receipt types provided via modules
+	$message_mods = $CORE_LOCAL->get('ReceiptMessageMods');
+	if (!is_array($message_mods)) $message_mods = array();
+	$type_map = array();
+	foreach($message_mods as $class){
+		if (!class_exists($class)) continue;
+		$obj = new $class();
+		if ($obj->standalone_receipt_type != '')
+			$type_map[$obj->standalone_receipt_type] = $obj;
+	}
+
 	if ($noreceipt != 1 || in_array($arg1,$ignoreNR) || $email){
 		$receipt = self::printReceiptHeader($dateTimeStamp, $ref);
 
@@ -1194,78 +1205,54 @@ static public function printReceipt($arg1,$second=False,$email=False) {
 			$receipt['any'] = self::chargeBalance($receipt['any']);
 			/**** CvR end ****/
 
-			// preemptive-check: avoid extra function calls if there aren't
-			// applicable records
+			// check if message mods have data
+			// and add them to the receipt
 			$db = Database::tDataConnect();
-			$q = "SELECT
-				SUM(CASE WHEN trans_subtype IN ('CC','AX','DC') THEN 1 ELSE 0 END) as CC,
-				SUM(CASE WHEN trans_subtype='GD' OR department=902 THEN 1 ELSE 0 END) as GD,
-				SUM(CASE WHEN trans_subtype='SC' THEN 1 ELSE 0 END) as SC,
-				SUM(CASE WHEN department=991 THEN 1 ELSE 0 END) as equity
-				FROM localtemptrans";
-			if ($reprint !== False){
-				$q = str_replace('localtemptrans','localtranstoday',$q);
-				$q .= ' WHERE '.$rp_where;
+			$q = "SELECT ";
+			$select_mods = array();
+			foreach($message_mods as $class){
+				if (!class_exists($class)) continue;
+				$obj = new $class();
+				$q .= $obj->select_condition().' AS '.$db->identifier_escape($class).',';
+				$select_mods[$class] = $obj;
 			}
-			$r = $db->query($q);
-			$chk = array('CC'=>0,'GD'=>0,'SC'=>0,'equity'=>0);
-			if ($db->num_rows($r) > 0) $chk = $db->fetch_row($r);
-
-			// append customer copy to actual lane receipt
-			if ($chk['CC'] > 0 && $CORE_LOCAL->get('standalone') == 0){
-				$receipt['any'] .= self::printCCSigSlip($dateTimeStamp, $ref, 
-							false, ($reprint===False ? 0 : 1));
-			}
-
-			if ($chk['GD'] > 0){
-				if ($CORE_LOCAL->get("autoReprint") == 1)
-					$receipt['any'] .= self::printGCSlip($dateTimeStamp, $ref, false, 1);
-				else
-					$receipt['any'] .= self::printGCSlip($dateTimeStamp, $ref, true, 1);
-			}
-
-			if ($CORE_LOCAL->get("promoMsg") == 1) {
-				self::promoMsg();
+			$q = rtrim($q,',');
+			if (count($select_mods) > 0){
+				$q .= ' FROM localtemptrans';
+				if ($reprint !== False){
+					$q = str_replace('localtemptrans','localtranstoday',$q);
+					$q .= ' WHERE '.$rp_where;
+				}
+				$r = $db->query($q);
+				$row = array();
+				if ($db->num_rows($r) > 0) $row = $db->fetch_row($r);
+				foreach($select_mods as $class => $obj){
+					if (!isset($row[$class])) continue;	
+					if ($obj->paper_only)
+						$receipt['print'] .= $obj->message($row[$class], $ref, $reprint);
+					else
+						$receipt['any'] .= $obj->message($row[$class], $ref, $reprint);
+				}
 			}
 
-			$CORE_LOCAL->set("equityNoticeAmt",0);
-			if ($chk['equity'] > 0)
-				$receipt['any'] .= self::equityNotification( ($reprint===False) ? '' : $ref );
 			if ($CORE_LOCAL->get('memberID') != $CORE_LOCAL->get('defaultNonMem'))
 				$receipt['any'] .= self::memReceiptMessages($CORE_LOCAL->get("memberID"));
 			$CORE_LOCAL->set("equityNoticeAmt",0);
-
-			// switch back to print output handler
-			self::$PRINT_OBJ = new ESCPOSPrintHandler();
-			if ($chk['SC'] > 0){
-				$receipt['print'] .= self::storeCreditIssued($second,
-						($reprint===False ? '' : $ref) );
-			}
 
 			// knit pieces back together if not emailing
 			if (!$email) $receipt = ''.$receipt['any'].$receipt['print'];
 
 			$CORE_LOCAL->set("headerprinted",0);
 		}
+		else if (isset($type_map[$arg1])){
+			$obj = $type_map[$arg1];
+			$receipt = $obj->standalone_receipt($ref, $reprint);
+		}
 		else if ($arg1 == "cab"){
 			$ref = $CORE_LOCAL->get("cabReference");
 			$receipt = self::printCabCoupon($dateTimeStamp, $ref);
 			$CORE_LOCAL->set("cabReference","");
 		}
-		elseif ($arg1 == "ccSlip") {
-			$receipt = self::printCCSigSlip($dateTimeStamp,$ref,True);
-		}
-		else if ($arg1 == "gcSlip") { 
-			if ($CORE_LOCAL->get("autoReprint") == 1){
-				$receipt = self::printGCSlip($dateTimeStamp,$ref,true);
-			}
-			else {
-				$receipt = self::printGCSlip($dateTimeStamp,$ref,false);
-			}
-		} 
-		else if ($arg1 == "gcBalSlip") { 
-			$receipt = self::printGCBalSlip();
-		} 
 		else {
 			/***** jqh 09/29/05 if receipt isn't full, then display receipt in old style *****/
 			$query="select linetoprint from receipt";
@@ -1312,6 +1299,11 @@ static public function printReceipt($arg1,$second=False,$email=False) {
 	}		
 			
 	if (is_array($receipt)){
+		if ($second){
+			// second always prints
+			$receipt['print'] = $receipt['any'].$receipt['print'];
+			$receipt['any'] = '';
+		}
 		if ($receipt['print'] !== ''){
 			$receipt['print'] = $receipt['print']."\n\n\n\n\n\n\n";
 			$receipt['print'] .= chr(27).chr(105);

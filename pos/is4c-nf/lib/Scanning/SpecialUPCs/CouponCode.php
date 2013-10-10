@@ -83,7 +83,8 @@ var $ean;
 				$q = "SELECT SUM(quantity) FROM localtemptrans WHERE upc='$upc'";
 				$r = $transDB->query($q);
 				if ($transDB->num_rows($r) > 0){
-					$qty = array_pop($transDB->fetch_row($r));
+					$w = $transDB->fetch_row($r);
+					$qty = $w[0];
 					if ($qty >= $row['threshold']){
 						$json['output'] = DisplayLib::boxMsg(_('coupon already applied'));
 						return $json;
@@ -113,8 +114,10 @@ var $ean;
 				substring(upc,4,5)='$man_id' group by department
 				order by count(*) desc";
 			$result = $db->query($query);
-			if ($db->num_rows($result) > 0)
-				$dept = array_pop($db->fetch_row($result));
+			if ($db->num_rows($result) > 0){
+				$row = $db->fetch_row($result);
+				$dept = $row['department'];
+			}
 
 			TransRecord::addCoupon($upc, $dept, $value);
 			$json['output'] = DisplayLib::lastpage();

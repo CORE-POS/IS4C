@@ -37,6 +37,18 @@ class Void extends Parser {
 	function parse($str){
 		global $CORE_LOCAL;
 		$ret = $this->default_json();
+	
+		if (is_numeric($CORE_LOCAL->get('VoidLimit')) && $CORE_LOCAL->get('VoidLimit') > 0){
+			Database::getsubtotals();
+			if ($CORE_LOCAL->get('voidTotal') > $CORE_LOCAL->get('VoidLimit') && $CORE_LOCAL->get('voidOverride') != 1){
+				$CORE_LOCAL->set('strRemembered', $CORE_LOCAL->get('strEntered'));
+				$CORE_LOCAL->set('voidOverride', 0);
+				$ret['main_frame'] = MiscLib::base_url().'gui-modules/adminlogin.php?class=Void';
+				return $ret;
+			}
+		}
+
+
 		if (strlen($str) > 2)
 			$ret['output'] = $this->voidupc(substr($str,2));
 		elseif ($CORE_LOCAL->get("currentid") == 0) 
@@ -422,6 +434,23 @@ class Void extends Parser {
 			}
 		}
 		return "";
+	}
+
+	public static $adminLoginMsg = 'Void Limit Exceeded. Login to continue.';
+	
+	public static $adminLoginLevel = 30;
+
+	public static function adminLoginCallback($success){
+		global $CORE_LOCAL;
+		if ($success){
+			$CORE_LOCAL->set('voidOverride', 1);
+			$CORE_LOCAL->set('msgrepeat', 1);
+			return True;
+		}
+		else{
+			$CORE_LOCAL->set('voidOverride', 0);
+			return False;
+		}
 	}
 
 	function doc(){

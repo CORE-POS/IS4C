@@ -275,7 +275,7 @@ function table_check(){
 		$sql->exec_statement($p);
 	}
 	if (!$sql->table_exists('userGroups')){
-		$sql->prepare_statement("CREATE TABLE userGroups (
+		$p = $sql->prepare_statement("CREATE TABLE userGroups (
 			gid int,
 			name varchar(50),
 			username varchar(50)
@@ -283,7 +283,7 @@ function table_check(){
 		$sql->exec_statement($p);
 	}
 	if (!$sql->table_exists('userGroupPrivs')){
-		$sql->prepare_statement("CREATE TABLE userGroupPrivs (
+		$p = $sql->prepare_statement("CREATE TABLE userGroupPrivs (
 			gid int,
 			auth varchar(50),
 			sub_start varchar(50),

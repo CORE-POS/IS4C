@@ -72,6 +72,8 @@ class paycardSuccess extends BasicPage {
 				}
 
 				PaycardLib::paycard_reset();
+				UdpComm::udpSend('termReset');
+
 				$CORE_LOCAL->set("strRemembered","TO");
 				$CORE_LOCAL->set("msgrepeat",1);
 
@@ -192,6 +194,9 @@ class paycardSuccess extends BasicPage {
 		$CORE_LOCAL->set("msgrepeat",2);
 		//UdpComm::udpSend('goodBeep');
 		UdpComm::udpSend('termApproved');
+		$CORE_LOCAL->set("CachePanEncBlock","");
+		$CORE_LOCAL->set("CachePinEncBlock","");
+		$CORE_LOCAL->set("CacheCardType","");
 		?>
 		</div>
 		<?php

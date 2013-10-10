@@ -650,14 +650,8 @@ static public function addactivity($activity) {
 		$intcashier = 0;
 	}
 
-	if ($CORE_LOCAL->get("DBMS") == "mssql") {
-		$strqtime = "select max(datetime) as maxDateTime, getdate() as rightNow from activitytemplog";
-	} else {
-		$strqtime = "select max(datetime) as maxDateTime, now() as rightNow from activitytemplog";
-	}
-
-
 	$db = Database::tDataConnect();
+	$strqtime = "select max(datetime) as maxDateTime, ".$db->now()." as rightNow from activitytemplog";
 	$result = $db->query($strqtime);
 
 
@@ -672,7 +666,6 @@ static public function addactivity($activity) {
 		$interval = strtotime($row["rightNow"]) - strtotime($row["maxDateTime"]);
 	}
 
-	//$_SESSION["datetimestamp"] = strftime("%Y-%m-%d %H:%M:%S", $timeNow);
 	$datetimestamp = strftime("%Y-%m-%d %H:%M:%S", $timeNow);
 
 	$values = array(
@@ -681,7 +674,7 @@ static public function addactivity($activity) {
 		'CashierNo'	=> MiscLib::nullwrap($intcashier),
 		'TransNo'	=> MiscLib::nullwrap($CORE_LOCAL->get("transno")),
 		'Activity'	=> MiscLib::nullwrap($activity),
-		$db->identifier_escape('Interval')	=> MiscLib::nullwrap($interval)
+		'Interval'	=> MiscLib::nullwrap($interval)
 		);
 	$result = $db->smart_insert("activitytemplog",$values);
 }

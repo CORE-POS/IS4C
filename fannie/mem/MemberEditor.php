@@ -21,7 +21,7 @@
 
 *********************************************************************************/
 include('../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 include('MemberModule.php');
 
 $dbc = FannieDB::get($FANNIE_OP_DB);
@@ -41,15 +41,15 @@ class MemberEditor extends FanniePage {
 	private $msgs = '';
 
 	/*
+	*/
   public function __construct(){
     global $FANNIE_COOP_ID;
 		parent::__construct();
 		// If saving, set higher priv: members_edit_full
   		$this->auth_classes = array('members_edit_full');
     if ( isset($FANNIE_COOP_ID) && $FANNIE_COOP_ID == 'WEFC_Toronto' )
-  		$this->auth_classes = array('editmembers');
+  		$this->auth_classes[] = 'editmembers';
   }
-	*/
 
 	function preprocess(){
 		global $FANNIE_COUNTRY, $FANNIE_MEMBER_MODULES, $FANNIE_OP_DB;

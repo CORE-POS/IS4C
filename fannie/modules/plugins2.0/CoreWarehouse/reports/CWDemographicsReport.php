@@ -21,8 +21,8 @@
 
 *********************************************************************************/
 
-include('../../../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include(dirname(__FILE__).'/../../../../config.php');
+include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
 class CWDemographicsReport extends FannieReportPage {
 
@@ -44,34 +44,37 @@ class CWDemographicsReport extends FannieReportPage {
 
 		$dbc = FannieDB::get($FANNIE_OP_DB);
 		$totalQ = "SELECT 
-			CASE WHEN (year(m.start_date) <= 1991 OR m.start_date IS NULL) THEN 1991 ELSE YEAR(m.start_date) END as yearBucket,
+			CASE WHEN (year(m.start_date) <= 1991 OR m.start_date IS NULL) THEN '1991 or earlier' ELSE YEAR(m.start_date) END as yearBucket,
 			CASE WHEN c.Type='PC' THEN 1 ELSE 0 END as active,
 			COUNT(*) AS numMembers
 			FROM memDates AS m LEFT JOIN custdata AS c ON m.card_no=c.CardNo
 			AND c.personNum=1 LEFT JOIN suspensions AS s ON s.cardno=m.card_no
 			WHERE c.Type='PC' OR s.memtype2 = 'PC'
 			GROUP BY 
-			CASE WHEN (year(m.start_date) <= 1991 OR m.start_date IS NULL) THEN 1991 ELSE YEAR(m.start_date) END,
+			CASE WHEN (year(m.start_date) <= 1991 OR m.start_date IS NULL) THEN '1991 or earlier' ELSE YEAR(m.start_date) END,
 			CASE WHEN c.Type='PC' THEN 1 ELSE 0 END
 			ORDER BY 
-			CASE WHEN (year(m.start_date) <= 1991 OR m.start_date IS NULL) THEN 1991 ELSE YEAR(m.start_date) END";
+			CASE WHEN (year(m.start_date) <= 1991 OR m.start_date IS NULL) THEN '1991 or earlier' ELSE YEAR(m.start_date) END";
 		$totalP = $dbc->prepare_statement($totalQ);
 		$totalR = $dbc->exec_statement($totalP);
 
 		$report1 = array();
 		$totalActiveMem = 0;
+		$totalInactMem = 0;
 		while($totalW = $dbc->fetch_row($totalR)){
 			if (!isset($report1[$totalW['yearBucket']])){
 				$report1[$totalW['yearBucket']] = array(
 					$totalW['yearBucket'], 0, 0, 100.0
 				);
 			}
+			$report1[$totalW['yearBucket']][1] += $totalW['numMembers'];
 			if ($totalW['active'] == 1){
-				$report1[$totalW['yearBucket']][1] += $totalW['numMembers'];
+				$report1[$totalW['yearBucket']][2] += $totalW['numMembers'];
 				$totalActiveMem += $totalW['numMembers'];
 			}
-			else
-				$report1[$totalW['yearBucket']][2] += $totalW['numMembers'];
+			else{
+				$totalInactMem += $totalW['numMembers'];
+			}
 		
 			if ($report1[$totalW['yearBucket']][1] != 0){
 				$report1[$totalW['yearBucket']][3] = sprintf('%.2f%%',
@@ -80,6 +83,11 @@ class CWDemographicsReport extends FannieReportPage {
 				);
 			}
 		}
+		$report0 = array();
+		$report0[] = array('Total Members',$totalActiveMem+$totalInactMem,'Active',
+				$totalActiveMem, sprintf('%.2f%%',100*$totalActiveMem/($totalActiveMem+$totalInactMem)));
+		$ret[] = $report0;
+
 		$deindex = array();
 		foreach($report1 as $row) $deindex[] = $row;
 		$ret[] = $deindex;
@@ -181,7 +189,7 @@ class CWDemographicsReport extends FannieReportPage {
 	function calculate_footers($data){
 		$ret = array();
 		switch($this->footer_count){
-		case 0:
+		case 1:
 			$ttl = array(0, 0);
 			foreach($data as $row){
 				$ttl[0] += $row[1];
@@ -190,15 +198,15 @@ class CWDemographicsReport extends FannieReportPage {
 			$ret = array('Total', $ttl[0], $ttl[1],
 				sprintf('%.2f%%',100*$ttl[0]/($ttl[0]+$ttl[1]))
 			);
-			$this->report_headers = array('Year Joined', 'Active', 'Inactive', '% Still Active');
-			break;
-		case 1:
-			$this->report_headers = array('Participation','Count','% (of active)');
+			$this->report_headers = array('Activated', '', 'Still Active', '');
 			break;
 		case 2:
-			$this->report_headers = array('Avg Visits per Month','Count','% (of active)');
+			$this->report_headers = array('Participation','Count','% (of active)');
 			break;
 		case 3:
+			$this->report_headers = array('Avg Visits per Month','Count','% (of active)');
+			break;
+		case 4:
 			$this->report_headers = array('Spending, 12 months','Count','% (of active)');
 			break;
 		}

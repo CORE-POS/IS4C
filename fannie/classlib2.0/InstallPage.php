@@ -29,16 +29,17 @@ include_once(dirname(__FILE__).'/FanniePage.php');
 class InstallPage extends FanniePage {
 
 	public $required = True;
-	protected $auth_classes = array('sysadmin');
 
 	public $description = "
 	Base class for install-and-config pages not using Admin menu.
 	";
 
-	// 20May13 EL Likely not needed.
-	// If all it does is call parent::__construct(), that is done by default.
 	public function __construct() {
 		parent::__construct();
+		/* This is the only privilege acceptable for these pages.
+		 * Overrides anything that might have been set in the parent.
+		*/
+		$this->auth_classes = array('sysadmin');
 	}
 
 	/**
@@ -46,13 +47,16 @@ class InstallPage extends FanniePage {
 	  @return An HTML string
 	*/
 	function get_header(){
-		global $FANNIE_ROOT;
+		global $FANNIE_ROOT, $FANNIE_WINDOW_DRESSING;
 		ob_start();
 		$page_title = $this->title;
 		$header = $this->header;
-		include($FANNIE_ROOT.'src/header_install.html');
+		if ( isset($FANNIE_WINDOW_DRESSING) && $FANNIE_WINDOW_DRESSING == True ) {
+			include($FANNIE_ROOT.'src/header.html');
+		} else {
+			include($FANNIE_ROOT.'src/header_install.html');
+		}
 		return ob_get_clean();
-
 	}
 
 	/**
@@ -60,9 +64,13 @@ class InstallPage extends FanniePage {
 	  @return An HTML string
 	*/
 	function get_footer(){
-		global $FANNIE_ROOT, $FANNIE_AUTH_ENABLED, $FANNIE_URL;
+		global $FANNIE_ROOT, $FANNIE_AUTH_ENABLED, $FANNIE_URL, $FANNIE_WINDOW_DRESSING;
 		ob_start();
-		include($FANNIE_ROOT.'src/footer_install.html');
+		if ( isset($FANNIE_WINDOW_DRESSING) && $FANNIE_WINDOW_DRESSING == True ) {
+			include($FANNIE_ROOT.'src/footer.html');
+		} else {
+			include($FANNIE_ROOT.'src/footer_install.html');
+		}
 		return ob_get_clean();
 	}
 

@@ -49,6 +49,8 @@
 	*  since the transaction.
 
 */
+header("Location: StoreSummaryReport.php");
+exit;
 
 include('../../config.php');
 include($FANNIE_ROOT.'src/mysql_connect.php');

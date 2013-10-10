@@ -29,8 +29,8 @@ class EmployeesModel extends BasicModel {
 
 	protected $columns = array(
 	'emp_no'	=> array('type'=>'SMALLINT','primary_key'=>True),
-	'CashierPassword'=>array('type'=>'INT'),
-	'AdminPassword'=>array('type'=>'INT'),
+	'CashierPassword'=>array('type'=>'VARCHAR(50)'),
+	'AdminPassword'=>array('type'=>'VARCHAR(50)'),
 	'FirstName'=>array('type'=>'VARCHAR(50)'),
 	'LastName'=>array('type'=>'VARCHAR(50)'),
 	'JobTitle'=>array('type'=>'VARCHAR(50)'),

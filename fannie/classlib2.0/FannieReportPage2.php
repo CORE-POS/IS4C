@@ -213,6 +213,12 @@ class FannieReportPage2 extends FannieReportPage {
 					*/
 				}
 			}
+			else {
+				$output .= $this->render_data($report_data,
+						array(),
+						array(),
+						$this->report_format);
+			}
 		}
 		elseif ($this->multi_report_mode && $this->report_format == 'xls'){
 			/**
@@ -221,6 +227,7 @@ class FannieReportPage2 extends FannieReportPage {
 			*/
 			$xlsdata = array();
 			foreach($data as $report_data){
+				// Is the reference to $this->reports_headers() (i.e. function) an error?
 				if (!empty($this->report_headers)) $xlsdata[] = $this->report_headers();
 				foreach($report_data as $line) $xlsdata[] = $line;
 				$footers = $this->calculate_footers($report_data);

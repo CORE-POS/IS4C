@@ -65,6 +65,7 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
 	private const int STATE_WAIT_FOR_CASHIER = 4;
 	private const int STATE_SELECT_EBT_TYPE = 5;
 	private const int STATE_SELECT_CASHBACK = 6;
+	private const int STATE_GET_SIGNATURE = 7;
 	private const int STATE_MANUAL_PAN = 11;
 	private const int STATE_MANUAL_EXP = 12;
 	private const int STATE_MANUAL_CVV = 13;
@@ -81,6 +82,8 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
 	private const int BUTTON_2000 = 20;
 	private const int BUTTON_3000 = 30;
 	private const int BUTTON_4000 = 40;
+	private const int BUTTON_SIG_ACCEPT = 1;
+	private const int BUTTON_SIG_RESET = 2;
 	private const int BUTTON_HARDWARE_BUTTON = 0xff;
 
 	private const int DEFAULT_WAIT_TIMEOUT = 1000;
@@ -185,6 +188,8 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
 
 	private void SetStateStart(){
 		SendReport(BuildCommand(LcdStopCapture()));
+		SendReport(BuildCommand(LcdClearSignature()));
+		SendReport(BuildCommand(LcdSetClipArea(0,0,1,1)));
 		SendReport(BuildCommand(PinpadCancelGetPIN()));
 		SendReport(BuildCommand(LcdFillColor(0xff,0xff,0xff)));
 		SendReport(BuildCommand(LcdFillRectangle(0,0,LCD_X_RES-1,LCD_Y_RES-1)));
@@ -297,6 +302,22 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
 		SendReport(BuildCommand(LcdDrawText("approved",75,100)));
 	}
 
+	private void SetStateGetSignature(){
+		SendReport(BuildCommand(LcdStopCapture()));
+		SendReport(BuildCommand(LcdClearSignature()));
+		SendReport(BuildCommand(LcdFillColor(0xff,0xff,0xff)));
+		SendReport(BuildCommand(LcdFillRectangle(0,0,LCD_X_RES-1,LCD_Y_RES-1)));
+
+		SendReport(BuildCommand(LcdSetClipArea(5,5,310,140,true,new byte[]{0,0,0})));
+		SendReport(BuildCommand(LcdDrawText("please sign",105,150)));
+		SendReport(BuildCommand(LcdCreateButton(BUTTON_SIG_ACCEPT,"Done",5,190,115,215)));
+		SendReport(BuildCommand(LcdCreateButton(BUTTON_SIG_RESET,"Clear",204,190,314,215)));
+
+		SendReport(BuildCommand(LcdStartCapture(5)));
+
+		current_state = STATE_GET_SIGNATURE;
+	}
+
 	private void SetStateGetManualPan(){
 		SendReport(BuildCommand(LcdStopCapture()));
 		ack_counter = 0;
@@ -366,8 +387,11 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
 				long_length = data_length;
 				long_pos = 0;
 				long_buffer = new byte[data_length];
-				if (data_length > report_length)
+				if (data_length > report_length){
 					data_length = report_length-3;
+					// re-skip the ACK byte
+					if (d_start == 6) data_length--;
+				}
 			}
 			else if (read_continues){
 				// subsequent messages start immediately after
@@ -556,6 +580,21 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
 				SetStateWaitForCashier();
 			}
 			break;
+		case STATE_GET_SIGNATURE:
+			if (msg.Length == 4 && msg[0] == 0x7a){
+				//SendReport(BuildCommand(DoBeep()));
+				if (msg[1] == BUTTON_SIG_RESET){
+					SendReport(BuildCommand(LcdClearSignature()));
+				}
+				else if (msg[1] == BUTTON_SIG_ACCEPT){
+					SendReport(BuildCommand(LcdGetBitmapSig()));
+				}
+			}
+			else if (msg.Length > 1024){
+				BitmapOutput(msg);
+				SetStateStart();
+			}
+			break;
 		case STATE_MANUAL_PAN:
 			if (msg.Length == 1 && msg[0] == 0x6){
 				ack_counter++;
@@ -692,6 +731,11 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
 				SetStateApproved();
 			}
 			break;
+		case "termSig":
+			lock(usb_lock){
+				SetStateGetSignature();
+			}
+			break;
 		}
 	}
 
@@ -818,6 +862,15 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
 
 		usb_fs.Write(report,0,usb_report_size);
 		System.Threading.Thread.Sleep(100);
+	}
+
+	private void BitmapOutput(byte[] file){
+		int ticks = Environment.TickCount;
+		char sep = System.IO.Path.DirectorySeparatorChar;
+		while(File.Exists(MAGELLAN_OUTPUT_DIR+sep+"tmp"+sep+ticks+".bmp"))
+			ticks++;
+		File.WriteAllBytes(MAGELLAN_OUTPUT_DIR+sep+"tmp"+sep+ticks+".bmp", file);
+		PushOutput("SIGBMP:"+ticks+".bmp");
 	}
 
 	private void PushOutput(string s){
@@ -1047,6 +1100,37 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
 		return ret;
 	}
 
+	private byte[] LcdSetClipArea(int x_top_left, int y_top_left, int x_bottom_right, int y_bottom_right, bool border, byte[] rgb){
+		byte[] ret = new byte[15];
+
+		// Command head
+		ret[0] = 0x7a;
+		ret[1] = 0x46;
+		ret[2] = 0x03;
+
+		ret[3] = (byte)(x_top_left & 0xff);
+		ret[4] = (byte)( (x_top_left >> 8) & 0xff);
+
+		ret[5] = (byte)(y_top_left & 0xff);
+		ret[6] = (byte)( (y_top_left >> 8) & 0xff);
+
+		ret[7] = (byte)(x_bottom_right & 0xff);
+		ret[8] = (byte)( (x_bottom_right >> 8) & 0xff);
+
+		ret[9] = (byte)(y_bottom_right & 0xff);
+		ret[10] = (byte)( (y_bottom_right >> 8) & 0xff);
+
+		ret[11] = (byte)(border ? 0xf : 0x0); // don't show lines around area
+
+		// rgb for border lines
+		ret[12] = (rgb.Length >= 1) ? rgb[0] : (byte)0x0;
+		ret[13] = (rgb.Length >= 2) ? rgb[1] : (byte)0x0;
+		ret[14] = (rgb.Length >= 3) ? rgb[2] : (byte)0x0;
+
+		return ret;
+	}
+
+
 	private byte[] LcdCreateButton(int id, string label, int x_top_left, int y_top_left,
 			int x_bottom_right, int y_bottom_right){
 
@@ -1117,6 +1201,10 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
 
 	private byte[] LcdClearSignature(){
 		return new byte[3]{ 0x7a, 0x46, 0x19 };
+	}
+
+	private byte[] LcdGetBitmapSig(){
+		return new byte[3]{ 0x7a, 0x46, 0x23 };
 	}
 
 	private byte[] LcdStopCapture(){

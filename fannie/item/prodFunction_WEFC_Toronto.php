@@ -1247,6 +1247,23 @@ function oneItem($upc)
     echo "One item found for: " . $upc;
 }
 
+/* Return the number of decimal places to use in a price format spec: %.#f .
+ * Minimum is 2.
+*/
+function sig_decimals ($num) {
+	$dec = 2;
+	if ( preg_match('/\.\d{3}/',$num) )
+		$num = rtrim($num,'0');
+	for ($n=5 ; $n > $dec ; $n--) {
+		$pattern ='/\.\d{'.$n.'}$/';
+		if ( preg_match($pattern,$num) ) {
+			$dec = $n;
+			break;
+		}
+	}
+	return $dec;
+}
+
 /* Return numbers that are in named arrays formatted %.2f
  * If entered without decimals, add them.
  * Return non-numbers as $none
@@ -1258,7 +1275,8 @@ function saveAsMoney(&$arr,$index,$none="0") {
 		if ( strpos($arr["$index"],'.') === False )
 			$retVal = sprintf("%.2f", $arr["$index"]/100);
 		else
-			$retVal = sprintf("%.2f", $arr["$index"]);
+			$dec = sig_decimals($arr["$index"]);
+			$retVal = sprintf("%.{$dec}f", $arr["$index"]);
 	} else {
 		$retVal = $none;
 	}
@@ -1281,7 +1299,8 @@ function showAsMoney(&$arr,$index,$none="") {
 		if ( array_key_exists($index,$arr) && $arr[$index] == 0 ) {
 			$retVal = "0.00";
 		} elseif ( !empty($arr[$index]) && is_numeric($arr[$index]) ) {
-			$retVal = sprintf("%.2f", $arr[$index]);
+			$dec = sig_decimals($arr["$index"]);
+			$retVal = sprintf("%.{$dec}f", $arr["$index"]);
 		} else {
 			$retVal = $none;
 		}

@@ -39,7 +39,7 @@ $header = "Create Special Order";
 include($FANNIE_ROOT.'src/header.html');
 
 $orderID = isset($_REQUEST['orderID'])?$_REQUEST['orderID']:'';
-$return_path = (isset($_SERVER['HTTP_REFERER']) && strstr($_SERVER['HTTP_REFERER'],'git/fannie/ordering/clearinghouse.php')) ? $_SERVER['HTTP_REFERER'] : '';
+$return_path = (isset($_SERVER['HTTP_REFERER']) && strstr($_SERVER['HTTP_REFERER'],'fannie/ordering/clearinghouse.php')) ? $_SERVER['HTTP_REFERER'] : '';
 if (!empty($return_path)) $_SESSION['specialOrderRedirect'] = $return_path;
 else if (isset($_SESSION['specialOrderRedirect'])) $return_path = $_SESSION['specialOrderRedirect'];
 else $return_path = $FANNIE_URL."ordering/";
