@@ -123,11 +123,11 @@ class InstallMenuPage extends InstallPage {
 		if (!isset($FANNIE_NAV_POSITION)) $FANNIE_NAV_POSITION = 'left';
 		if (isset($_REQUEST['FANNIE_NAV_POSITION'])) $FANNIE_NAV_POSITION = $_REQUEST['FANNIE_NAV_POSITION'];
 		if ($FANNIE_NAV_POSITION == 'top'){
-			confset('FANNIE_NAV_POSITION','top');
+			confset('FANNIE_NAV_POSITION',"'top'");
 			echo "<option value='left'>Left</option><option value='top' selected>Top</option>";
 		}
 		else{
-			confset('FANNIE_NAV_POSITION','left');
+			confset('FANNIE_NAV_POSITION',"'left'");
 			echo "<option value='left' selected>Left</option><option value='top'>Top</option>";
 		}
 		echo "</select>";
