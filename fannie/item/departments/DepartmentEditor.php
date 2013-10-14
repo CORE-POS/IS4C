@@ -153,7 +153,7 @@ class DepartmentEditor extends FanniePage {
 		$model->dept_name($name);
 		$model->dept_tax($tax);
 		$model->dept_fs($fs);
-		$model->dept_discount($discount);
+		$model->dept_discount($disc);
 		$model->dept_minimum($min);
 		$model->dept_limit($max);
 		$model->modified(date('Y-m-d H:i:s'));
