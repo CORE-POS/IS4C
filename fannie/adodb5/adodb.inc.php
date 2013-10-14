@@ -510,6 +510,8 @@
 	function Connect($argHostname = "", $argUsername = "", $argPassword = "", $argDatabaseName = "", $forceNew = false) 
 	{
 		if ($argHostname != "") $this->host = $argHostname;
+		if ( strpos($this->host, ':') > 0 && isset($this->port) )
+			list($this->host, $this->port) = explode(":", $this->host);
 		if ($argUsername != "") $this->user = $argUsername;
 		if ($argPassword != "") $this->password = $argPassword; // not stored for security reasons
 		if ($argDatabaseName != "") $this->database = $argDatabaseName;		
@@ -518,7 +520,6 @@
 			
 		global $ADODB_CACHE;
 		if (empty($ADODB_CACHE)) $this->_CreateCache();
-		
 		if ($forceNew) {
 			if ($rez=$this->_nconnect($this->host, $this->user, $this->password, $this->database)) return true;
 		} else {
@@ -4398,3 +4399,4 @@ http://www.stanford.edu/dept/itss/docs/oracle/10g/server.101/b10759/statements_1
 
 }
 ?>
+
