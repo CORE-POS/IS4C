@@ -73,8 +73,9 @@ class FannieDispatch {
 	}
 
 	static public function go(){
-		if (basename(__FILE__) == basename($_SERVER['PHP_SELF'])){
-
+		$bt = debug_backtrace();
+		if (count($bt) == 1){
+	
 			set_error_handler(array('FannieDispatch','error_handler'));
 			set_exception_handler(array('FannieDispatch','exception_handler'));
 			register_shutdown_function(array('FannieDispatch','catch_fatal'));
