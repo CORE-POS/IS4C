@@ -1454,10 +1454,10 @@ class InstallIndexPage extends InstallPage {
 			charflag,
 			card_no,
 			trans_id,
-			".$dbc->concat(
-				$dbc->convert('emp_no','char'),"'-'",
-				$dbc->convert('register_no','char'),"'-'",
-				$dbc->convert('trans_no','char'),'')
+			".$con->concat(
+				$con->convert('emp_no','char'),"'-'",
+				$con->convert('register_no','char'),"'-'",
+				$con->convert('trans_no','char'),'')
 			." as trans_num
 			FROM $archive
 			WHERE trans_status NOT IN ('D','X','Z')
