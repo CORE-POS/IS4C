@@ -69,16 +69,20 @@ class MemType extends MemberModule {
 			include($FANNIE_ROOT.'classlib2.0/data/models/CustdataModel.php');
 
 		$mtype = FormLib::get_form_value('MemType_type',0);
-		$q = $dbc->prepare_statement("SELECT discount,staff,SSI,cd_type FROM memdefaults
-			WHERE memtype=?");
-		$r = $dbc->exec_statement($q,array($mtype));
 
+		// Default values for custdata fields that depend on Member Type.
 		$CUST_FIELDS = array();
 		$CUST_FIELDS['memType'] = $mtype;
 		$CUST_FIELDS['Type'] = 'REG';
 		$CUST_FIELDS['Staff'] = 0;
 		$CUST_FIELDS['Discount'] = 0;
 		$CUST_FIELDS['SSI'] = 0;
+
+		// Get any special values for this Member Type.
+		$q = $dbc->prepare_statement("SELECT discount,staff,SSI,cd_type
+			FROM memdefaults
+			WHERE memtype=?");
+		$r = $dbc->exec_statement($q,array($mtype));
 		if ($dbc->num_rows($r) > 0){
 			$w = $dbc->fetch_row($r);
 			$CUST_FIELDS['Type'] = $w['cd_type'];
@@ -87,18 +91,22 @@ class MemType extends MemberModule {
 			$CUST_FIELDS['SSI'] = $w['SSI'];
 		}
 
+		// Assign Member Type values to each custdata record for the Membership.
 		$cust = new CustdataModel($dbc);
 		$cust->CardNo($memNum);
-		foreach($cust->Find() as $obj){
+		$error = "";
+		foreach($cust->find() as $obj){
 			$obj->memType($mtype);
 			$obj->Type($CUST_FIELDS['Type']);
 			$obj->Staff($CUST_FIELDS['Staff']);
 			$obj->Discount($CUST_FIELDS['Discount']);
 			$obj->SSI($CUST_FIELDS['SSI']);
-			$obj->save();
+			$upR = $obj->save();
+			if ($upR === False)
+				$error .= $mtype;
 		}
 		
-		if ($upR === False )
+		if ($error)
 			return "Error: problem saving Member Type<br />";
 		else
 			return "";
