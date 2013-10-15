@@ -115,6 +115,7 @@ if (isset($_REQUEST['excel'])){
 }
 else {
 	if(isset($_REQUEST['weekday'])){
+		 $weekday = $_REQUEST['weekday'];
 	   echo "<br><a href=hourlySalesAuth.php?endDate=$endDate&startDate=$startDate&buyer=$buyer&weekday=$weekday&excel=yes>Click here to dump to Excel File</a>";
 	}else{
 	   echo "<br><a href=hourlySalesAuth.php?endDate=$endDate&startDate=$startDate&buyer=$buyer&excel=yes>Click here to dump to Excel File</a>";
@@ -147,10 +148,11 @@ else {
 		$hour = (int)$row[1];
 		$date = $days[$row[0]];
 		if (!isset($acc[$date])) $acc[$date] = array();
-		if (!isset($sums[$hour])) $sums[$date] = 0;
+		if (!isset($sums[$hour])) $sums[$date] = 0;	// Correct?
 		if ($hour < $minhour) $minhour = $hour;
 		if ($hour > $maxhour) $maxhour = $hour;
 		$acc[$date][$hour] = $row[2];
+		if (!isset($sums[$hour])) $sums[$hour]=0;
 		$sums[$hour] += $row[2];
 	}
 }
@@ -176,6 +178,7 @@ for($i=$minhour;$i<=$maxhour;$i++){
 			else
 				echo "<td style='text-align:right;'>" . number_format($data[$i],2);
 			if (!isset($sums[$i])) $sums[$i] = 0;
+			if (!isset($sums[$date])) $sums[$date]=0;
 			$sums[$date] += $data[$i];
 		}
 		else
@@ -183,8 +186,10 @@ for($i=$minhour;$i<=$maxhour;$i++){
 	}
 	if (isset($_REQUEST['excel']))
 		printf("<td>%.2f</td>",$sums[$i]);
-	else
-		echo "<td style='text-align:right;'>" . number_format($sums[$i],2);
+	else {
+		$item = (isset($sums[$i])) ? number_format($sums[$i],2) : ' &nbsp; ';
+		echo "<td style='text-align:right;'>" . $item . "</td>";
+	}
 	echo "</tr>";
 }
 $sum=0;
@@ -196,10 +201,17 @@ foreach($acc as $date=>$data){
 		echo "<td style='text-align:right;'>" . number_format($sums[$date],2);
 	$sum += $sums[$date];
 }
-echo "<td>&nbsp;</td></tr>";
+// Grand total, in the table.
+if (isset($_REQUEST['excel']))
+	printf("<td>%.2f</td></tr>",$sum);
+else
+	echo "<td style='text-align:right;'>" . number_format($sum,2) . '</td></tr>';
+// Cell originally set to empty.  Why?
+//echo "<td>&nbsp;</td></tr>";
 
 echo "</table>";
 
+// Grand total, below the table.
 if (isset($_REQUEST['excel']))
 	echo "<p />Total: $sum";
 else

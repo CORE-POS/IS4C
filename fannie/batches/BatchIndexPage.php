@@ -31,7 +31,7 @@ class BatchIndexPage extends FanniePage {
 		ob_start();
 		?>
 		<ul>
-			<li><a href="newbatch.oo/">Sales Batches</a> is a tool to create
+			<li><a href="newbatch/">Sales Batches</a> is a tool to create
 				batches manually one item at a time.</li>
 			<li><a href="xlsbatch/">Upload Batch</a> is a tool to create
 				a batch from a spreadsheet.</li>

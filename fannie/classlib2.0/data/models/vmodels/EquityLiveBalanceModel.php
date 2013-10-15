@@ -37,7 +37,7 @@ class EquityLiveBalanceModel extends BasicModel {
 	public function create(){ return False; }
 	public function delete(){ return False; }
 	public function save(){ return False; }
-	public function normalize(){ return 0; }
+	public function normalize($db_name, $mode=BasicModel::NORMALIZE_MODE_CHECK, $doCreate=False){ return 0; }
 
 	/* START ACCESSOR FUNCTIONS */
 
