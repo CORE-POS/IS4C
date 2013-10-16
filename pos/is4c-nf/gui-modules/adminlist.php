@@ -27,8 +27,19 @@ include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class adminlist extends NoInputPage {
 
+	private $security;
 	function preprocess(){
 		global $CORE_LOCAL;
+
+		$me = $CORE_LOCAL->get('CashierNo');	
+		$this->security = 0;
+		$db = Database::pDataConnect();
+		$chk = $db->prepare_statement('SELECT frontendsecurity FROM employees WHERE emp_no=?');
+		$res = $db->exec_statement($chk, array($me));
+		if ($db->num_rows($res) > 0){
+			$row = $db->fetch_row($res);
+			$this->security = $row['frontendsecurity'];
+		}
 
 		if (isset($_REQUEST['selectlist'])){
 			if (empty($_REQUEST['selectlist'])){
@@ -93,6 +104,10 @@ class adminlist extends NoInputPage {
 				$this->change_page($this->page_url."gui-modules/pos2.php");
 				return False;
 			}
+			else if ($_REQUEST['selectlist'] == 'OTR' && $this->security >= 30){
+				$this->change_page($this->page_url.'gui-modules/requestInfo.php?class=AnyTenderReportRequest');
+				return False;
+			}
 		}
 		return True;
 	}
@@ -135,7 +150,10 @@ class adminlist extends NoInputPage {
 		<option value=''>
 		<option value='SUSPEND'>1. <?php echo _("Suspend Transaction"); ?>
 		<option value='RESUME'>2. <?php echo _("Resume Transaction"); ?>
-		<option value='TR'>3. <?php echo _("Tender Reports"); ?>
+		<option value='TR'>3. <?php echo _("Tender Report"); ?>
+		<?php if ($this->security >= 30){ ?>
+			<option value='OTR'>4. <?php echo _("Any Tender Report"); ?>
+		<?php } ?>
 		</select>
 		</form>
 		<p>
@@ -147,7 +165,9 @@ class adminlist extends NoInputPage {
 		$this->add_onload_command("\$('#selectlist').focus();");
 		$this->add_onload_command("\$('#selectlist').keypress(processkeypress);");
 	} // END body_content() FUNCTION
+
 }
 
-new adminlist();
+if (basename(__FILE__) == basename($_SERVER['PHP_SELF']))
+	new adminlist();
 ?>

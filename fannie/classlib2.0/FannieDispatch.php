@@ -73,18 +73,23 @@ class FannieDispatch {
 	}
 
 	static public function go(){
-		set_error_handler(array('FannieDispatch','error_handler'));
-		set_exception_handler(array('FannieDispatch','exception_handler'));
-		register_shutdown_function(array('FannieDispatch','catch_fatal'));
+		$bt = debug_backtrace();
+		if (count($bt) == 1){
+	
+			set_error_handler(array('FannieDispatch','error_handler'));
+			set_exception_handler(array('FannieDispatch','exception_handler'));
+			register_shutdown_function(array('FannieDispatch','catch_fatal'));
 
-		$page = basename($_SERVER['PHP_SELF']);
-		$class = substr($page,0,strlen($page)-4);
-		if (class_exists($class)){
-			$obj = new $class();
-			$obj->draw_page();
-		}
-		else {
-			trigger_error('Missing class '.$class, E_USER_NOTICE);
+			$page = basename($_SERVER['PHP_SELF']);
+			$class = substr($page,0,strlen($page)-4);
+			if (class_exists($class)){
+				$obj = new $class();
+				$obj->draw_page();
+			}
+			else {
+				trigger_error('Missing class '.$class, E_USER_NOTICE);
+			}
+
 		}
 	}
 }
