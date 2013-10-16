@@ -58,7 +58,27 @@ confsave('newReceipt',$CORE_LOCAL->get("newReceipt"));
 ?>
 </select>
 <span class='noteTxt'>The new receipt groups items by category; the old one just lists
-them in order.</span></td></tr><tr><td>
+them in order.</span></td></tr>
+<tr>
+	<td><b>Receipt Driver</b>:</td>
+	<td>
+	<select name="ReceiptDriver">
+<?php
+if (isset($_REQUEST['ReceiptDriver'])) $CORE_LOCAL->set('ReceiptDriver',$_REQUEST['ReceiptDriver'], True);
+elseif($CORE_LOCAL->get('ReceiptDriver') === '') $CORE_LOCAL->set('ReceiptDriver','ESCPOSPrintHandler',True);
+$mods = AutoLoader::ListModules('PrintHandler',True);
+foreach($mods as $m){
+	printf('<option %s>%s</option>',
+		($m==$CORE_LOCAL->get('ReceiptDriver')?'selected':''),
+		$m);
+}
+confsave('ReceiptDriver',"'".$CORE_LOCAL->get("ReceiptDriver")."'");
+?>
+	</select>
+	<span class="noteTxt"></span>
+	</td>
+</tr>
+<tr><td>
 <b>Email Receipt Sender</b>:</td><td>
 <?php
 if(isset($_REQUEST['emailReceiptFrom'])) $CORE_LOCAL->set('emailReceiptFrom',$_REQUEST['emailReceiptFrom'],True);

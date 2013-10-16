@@ -48,7 +48,10 @@ if (strlen($receiptType) > 0) {
 	if (!is_object($kicker_object)) $kicker_object = new Kicker();
 	$dokick = $kicker_object->doKick();
 
-	$PRINT_OBJ = new ESCPOSPrintHandler();
+	$print_class = $CORE_LOCAL->get('ReceiptDriver');
+	if ($print_class === '' || !class_exists($print_class))
+		$print_class = 'ESCPOSPrintHandler';
+	$PRINT_OBJ = new $print_class();
 
 	$email = CoreState::getCustomerPref('email_receipt');
 	$customerEmail = filter_var($email, FILTER_VALIDATE_EMAIL);

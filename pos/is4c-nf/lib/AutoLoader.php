@@ -170,6 +170,10 @@ class AutoLoader extends LibraryClass {
 		case 'MemberLookup':
 			$map['MemberLookup'] = realpath(dirname(__FILE__).'/MemberLookup.php');
 			break;
+		case 'PrintHandler':
+			$path = realpath(dirname(__FILE__).'/PrintHandlers');
+			$map = Plugin::PluginMap($path,$map);
+			break;
 		}
 
 		foreach($map as $name => $file){
