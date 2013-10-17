@@ -30,6 +30,7 @@ include($FANNIE_ROOT.'classlib2.0/lib/FormLib.php');
 class CustomerPurchasesReport extends FannieReportPage {
 
 	function preprocess(){
+		global $FANNIE_WINDOW_DRESSING;
 		/**
 		  Set the page header and title, enable caching
 		*/
@@ -45,7 +46,10 @@ class CustomerPurchasesReport extends FannieReportPage {
 			  set up headers
 			*/
 			$this->content_function = "report_content";
-			$this->has_menus(False);
+			if ( isset($FANNIE_WINDOW_DRESSING) && $FANNIE_WINDOW_DRESSING == True )
+				$this->has_menus(True);
+			else
+				$this->has_menus(False);
 			$this->report_headers = array('Date','UPC','Description','Dept','Cat','Qty','$');
 		
 			/**
@@ -63,7 +67,7 @@ class CustomerPurchasesReport extends FannieReportPage {
 	}
 
 	function fetch_report_data(){
-		global $dbc, $FANNIE_ARCHIVE_DB;
+		global $dbc, $FANNIE_ARCHIVE_DB, $FANNIE_OP_DB;
 		$date1 = FormLib::get_form_value('date1',date('Y-m-d'));
 		$date2 = FormLib::get_form_value('date2',date('Y-m-d'));
 		$card_no = FormLib::get_form_value('card_no','0');
@@ -74,9 +78,9 @@ class CustomerPurchasesReport extends FannieReportPage {
 			  t.department,d.dept_name,m.super_name,
 			  sum(t.quantity) as qty,
 			  sum(t.total) as ttl from
-			  $dlog as t left join products as p on t.upc = p.upc 
-			  left join departments AS d ON t.department=d.dept_no
-			  left join MasterSuperDepts AS m ON t.department=m.dept_ID
+			  $dlog as t left join {$FANNIE_OP_DB}.products as p on t.upc = p.upc 
+			  left join {$FANNIE_OP_DB}.departments AS d ON t.department=d.dept_no
+			  left join {$FANNIE_OP_DB}.MasterSuperDepts AS m ON t.department=m.dept_ID
 			  where t.card_no = ? AND
 			  trans_type IN ('I','D') AND
 			  tdate BETWEEN ? AND ?
