@@ -86,7 +86,7 @@ class DepartmentMovementReport extends FannieReportPage {
 	  Lots of options on this report.
 	*/
 	function fetch_report_data(){
-		global $dbc, $FANNIE_ARCHIVE_DB;
+		global $dbc, $FANNIE_ARCHIVE_DB, $FANNIE_OP_DB;
 		$date1 = FormLib::get_form_value('date1',date('Y-m-d'));
 		$date2 = FormLib::get_form_value('date2',date('Y-m-d'));
 		$deptStart = FormLib::get_form_value('deptStart','');
@@ -134,7 +134,7 @@ class DepartmentMovementReport extends FannieReportPage {
 		  Build an appropriate query depending on the grouping option
 		*/
 		$query = "";
-		$superTable = ($buyer !== "" && $buyer > 0) ? 'superdepts' : 'MasterSuperDepts';
+		$superTable = ($buyer !== "" && $buyer > 0) ? '$FANNIE_OP_DB.superdepts' : '$FANNIE_OP_DB.MasterSuperDepts';
 		$args[] = $date1.' 00:00:00';
 		$args[] = $date2.' 23:59:59';
 		switch($groupby){
@@ -143,10 +143,10 @@ class DepartmentMovementReport extends FannieReportPage {
 				  SUM(t.quantity) as qty,
 				  SUM(t.total) AS total,
 				  d.dept_no,d.dept_name,s.superID,x.distributor
-				  FROM $dlog as t LEFT JOIN products as p on t.upc = p.upc
-				  LEFT JOIN departments as d on d.dept_no = t.department
+				  FROM $dlog as t LEFT JOIN $FANNIE_OP_DB.products as p on t.upc = p.upc
+				  LEFT JOIN $FANNIE_OP_DB.departments as d on d.dept_no = t.department
 				  LEFT JOIN $superTable AS s ON t.department = s.dept_ID
-				  LEFT JOIN prodExtra as x on t.upc = x.upc
+				  LEFT JOIN $FANNIE_OP_DB.prodExtra as x on t.upc = x.upc
 				  WHERE $filter_condition
 				  AND tdate BETWEEN ? AND ?
 				  GROUP BY t.upc,p.description,
@@ -154,7 +154,7 @@ class DepartmentMovementReport extends FannieReportPage {
 			break;
 		case 'Department':
 			$query =  "SELECT t.department,d.dept_name,SUM(t.quantity) as Qty, SUM(total) as Sales 
-				FROM $dlog as t LEFT JOIN departments as d on d.dept_no=t.department 
+				FROM $dlog as t LEFT JOIN $FANNIE_OP_DB.departments as d on d.dept_no=t.department 
 				LEFT JOIN $superTable AS s ON s.dept_ID = t.department 
 				WHERE $filter_condition
 				AND tdate BETWEEN ? AND ?
@@ -162,7 +162,7 @@ class DepartmentMovementReport extends FannieReportPage {
 			break;
 		case 'Date':
 			$query =  "SELECT year(tdate),month(tdate),day(tdate),SUM(t.quantity) as Qty, SUM(total) as Sales 
-				FROM $dlog as t LEFT JOIN departments as d on d.dept_no=t.department 
+				FROM $dlog as t LEFT JOIN $FANNIE_OP_DB.departments as d on d.dept_no=t.department 
 				LEFT JOIN $superTable AS s ON s.dept_ID = t.department
 				WHERE $filter_condition
 				AND tdate BETWEEN ? AND ?
@@ -180,7 +180,7 @@ class DepartmentMovementReport extends FannieReportPage {
 				WHEN ".$dbc->dayofweek("tdate")."=7 THEN 'Sat'
 				ELSE 'Err' END";
 			$query =  "SELECT $cols,SUM(t.quantity) as Qty, SUM(total) as Sales 
-				FROM $dlog as t LEFT JOIN departments as d on d.dept_no=t.department 
+				FROM $dlog as t LEFT JOIN $FANNIE_OP_DB.departments as d on d.dept_no=t.department 
 				LEFT JOIN $superTable AS s ON s.dept_ID = t.department 
 				WHERE $filter_condition
 				AND tdate BETWEEN ? AND ?
