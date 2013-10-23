@@ -26,9 +26,13 @@ include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 class rplist extends NoInputPage {
 
 	function preprocess(){
+		global $CORE_LOCAL;
 		if (isset($_REQUEST['selectlist'])){
 			if (!empty($_REQUEST['selectlist'])){
-				$PRINT_OBJ = new ESCPOSPrintHandler();
+				$print_class = $CORE_LOCAL->get('ReceiptDriver');
+				if ($print_class === '' || !class_exists($print_class))
+					$print_class = 'ESCPOSPrintHandler';
+				$PRINT_OBJ = new $print_class();
 				$receipt = ReceiptLib::printReceipt($_REQUEST['selectlist']);
 				if (session_id() != ''){
 					session_write_close();

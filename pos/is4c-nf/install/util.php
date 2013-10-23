@@ -59,7 +59,7 @@ function check_writeable($filename, $optional=False, $template=False){
 function confsave($key,$value,$prefer_local=False){
 
 	// do nothing if page isn't a form submit (i.e. user didn't press save)
-	if ($_SERVER['REQUEST_METHOD'] !== 'POST')
+	if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] !== 'POST')
 		return NULL;
 
 	/*
@@ -314,7 +314,7 @@ function db_test_connect($host,$type,$db,$user,$pw){
 		elseif ($type == 'mssql')
 			ini_set('mssql.connect_timeout',1);
 		ob_start();
-                $sql = @ new SQLManager($host,$type,$db,$user,$pw);
+                $sql =  @ new SQLManager($host,$type,$db,$user,$pw);
 		ob_end_clean();
         }
         catch(Exception $ex) {}
