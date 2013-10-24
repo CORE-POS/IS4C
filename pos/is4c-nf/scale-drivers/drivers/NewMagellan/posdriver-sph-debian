@@ -17,7 +17,7 @@
 # + This must be installed in /etc/init.d
 #   After copying to /etc/init.d:
 #   sudo update-rc.d posdriver-sph-debian defaults
-#   Consider using posd.sh to install it.
+#   Consider using posd.sh to install it or swap in a new version.
 
 # --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - -
 #
@@ -50,6 +50,8 @@ NAME=posdriver-sph-debian
 LHOME=/var/run/${NAME}
 KILL=/bin/kill
 DHOME=/var/www/IS4C/pos/is4c-nf/scale-drivers/drivers/NewMagellan
+# Use '-v' for driver to log activity.
+VERBOSE=
 
 # --FUNCTIONS - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -117,7 +119,7 @@ start(){
 		chmod 666 /dev/ttyS0
 
 		# Start the driver in the background
-		mono pos.exe &> ${LHOME}/pos.log &
+		mono pos.exe ${VERBOSE} &> ${LHOME}/pos.log &
 		# Store the PID of the startup process.
 		MYPID=$!
 		echo $MYPID > ${LHOME}/sph.pid
