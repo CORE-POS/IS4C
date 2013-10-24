@@ -9,7 +9,7 @@ Notes
 	42 columns with standard 12x24 font, 56 columns with alternate 9x17 font
 */
 
-class ESCPOSPrintHandler {
+class ESCPOSPrintHandler extends PrintHandler {
 	
 	function Tab() {
 		// "\t"

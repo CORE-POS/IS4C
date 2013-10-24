@@ -175,7 +175,7 @@ static public function printReceiptHeader($dateTimeStamp, $ref) {
 			// save image bytes in cache so they're not recalculated
 			// on every receipt
 			$img_file = $graphics_path.'/'.$headerLine;
-			if (isset($img_cache[basename($img_file)]) && !empty($img_cache[basename($img_file)]) && get_class(self::$PRINT_OBJ)=='ESCPOSPrintHandler'){
+			if (isset($img_cache[basename($img_file)]) && !empty($img_cache[basename($img_file)]) && get_class(self::$PRINT_OBJ)!='EmailPrintHandler'){
 				$receipt .= $img_cache[basename($img_file)]."\n";
 			}
 			else {
@@ -624,7 +624,10 @@ static public function printCCSigSlip($dateTimeStamp,$ref,$storeCopy=True,$rp=0)
 		$bmpHeight = $bmp->GetHeight();
 		$bmpRawBytes = (int)(($bmpWidth + 7)/8);
 
-		$printer = new ESCPOSPrintHandler();
+		$print_class = $CORE_LOCAL->get('ReceiptDriver');
+		if ($print_class === '' || !class_exists($print_class))
+			$print_class = 'ESCPOSPrintHandler';
+		$printer = new $print_class();
 		$stripes = $printer->TransposeBitmapData($bmpData, $bmpWidth);
 		for($i=0; $i<count($stripes); $i++)
 			$stripes[$i] = $printer->InlineBitmap($stripes[$i], $bmpWidth);
@@ -1114,7 +1117,10 @@ static public function printReceipt($arg1,$second=False,$email=False) {
 		}
 	}
 
-	self::$PRINT_OBJ = new ESCPOSPrintHandler();
+	$print_class = $CORE_LOCAL->get('ReceiptDriver');
+	if ($print_class === '' || !class_exists($print_class))
+		$print_class = 'ESCPOSPrintHandler';
+	self::$PRINT_OBJ = new $print_class();
 	$receipt = "";
 
 	$noreceipt = ($CORE_LOCAL->get("receiptToggle")==1 ? 0 : 1);
@@ -1328,7 +1334,10 @@ static public function printReceipt($arg1,$second=False,$email=False) {
 static public function reprintReceipt($trans_num=""){
 	global $CORE_LOCAL;
 
-	self::$PRINT_OBJ = new ESCPOSPrintHandler();
+	$print_class = $CORE_LOCAL->get('ReceiptDriver');
+	if ($print_class === '' || !class_exists($print_class))
+		$print_class = 'ESCPOSPrintHandler';
+	self::$PRINT_OBJ = new $print_class();
 
 	if (strlen($trans_num) >= 1) {
 		$title = chr(27).chr(33).chr(5).self::centerString("***    R E P R I N T    ***")."\n\n\n";

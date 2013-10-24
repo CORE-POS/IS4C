@@ -48,7 +48,7 @@ function getMemInfo(){
 }
 function postBilling(){
 	var data = 'id='+$('#form_memnum').val();
-	data += '&amount='+$('#amt').val();
+	data += '&amount='+$('#amount').val();
 	data += '&desc='+$('#desc').val();
 	$.ajax({
 		url: 'GenericBillingPage.php',
@@ -198,7 +198,7 @@ function postBilling(){
 		$sql->exec_statement($prep, $param['arguments']);
 
 		printf("Member <b>%d</b> billed <b>$%.2f</b>.<br />
-			Receipt is %d-%d-%d.",$cardno,$amt*-1,
+			Receipt is %d-%d-%d.",$this->id,$amount,
 			$EMP_NO,$LANE_NO,$t_no);
 		return False;
 	}

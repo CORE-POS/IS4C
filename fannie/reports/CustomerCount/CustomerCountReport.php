@@ -46,7 +46,7 @@ class CustomerCountReport extends FannieReportPage {
 	var $memtypes;
 
 	function preprocess(){
-		global $dbc;
+		global $dbc, $FANNIE_WINDOW_DRESSING;
 		/**
 		  Set the page header and title, enable caching
 		*/
@@ -58,11 +58,14 @@ class CustomerCountReport extends FannieReportPage {
 			/**
 			  Form submission occurred
 
-			  Change content function, turn off the menus,
+			  Change content function, turn off the menus unless wanted,
 			  set up headers
 			*/
 			$this->content_function = "report_content";
-			$this->has_menus(False);
+			if (isset($FANNIE_WINDOW_DRESSING) && $FANNIE_WINDOW_DRESSING === True)
+				$this->has_menus(True);
+			else
+				$this->has_menus(False);
 
 			$typeQ = $dbc->prepare_statement("SELECT memtype,memDesc FROM memtype ORDER BY memtype");
 			$typeR = $dbc->exec_statement($typeQ);
@@ -123,6 +126,8 @@ class CustomerCountReport extends FannieReportPage {
 				$ret[$stamp]['ttl'] = 0;
 			}
 			$ret[$stamp]["ttl"]++;
+			if (!isset($ret[$stamp][$row['memType']]))
+				$ret[$stamp][$row['memType']] = 0;
 			$ret[$stamp][$row['memType']]++;
 		}
 		$ret = $this->dekey_array($ret);

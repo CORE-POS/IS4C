@@ -19,7 +19,7 @@ function allLanes($upc){
     $f = $FANNIE_LANES[$i];
     $sql = new SQLManager($f['host'],$f['type'],$f['op'],$f['user'],$f['pw']);
     if ($sql === False){
-	$ret .= "Can't connect to :ane ".($i+1)."<br />";
+	$ret .= "Can't connect to lane: ".($i+1)."<br />";
 	continue;
     }
     $resultItem = $sql->query($queryItem);

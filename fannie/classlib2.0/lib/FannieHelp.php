@@ -38,14 +38,14 @@ class FannieHelp {
 		$text = preg_replace('/\s\s+/',' ',$text);
 
 		$snippet = strlen($text) > 100 ? substr($text,0,100) : False;
-		if ($snippet || $doclink) $snippet .= ' (Click for more)';
+		if ($snippet || $doc_link) $snippet .= ' (Click for more)';
 
-		if ($doclink){
+		if ($doc_link){
 			if (!$snippet) $snippet = $text;
 			$text .= sprintf(' (<a href="%s">CORE Documentation</a>)',$doc_link);
 		}
 
-		if ($snippet || $doclink){
+		if ($snippet || $doc_link){
 			return sprintf('<a href="" 
 				onclick="$(\'#%s\').toggle();return false;"><img src="%s" title="%s" /></a>
 				<%s id="%s" style="display:none;">%s</%s>',

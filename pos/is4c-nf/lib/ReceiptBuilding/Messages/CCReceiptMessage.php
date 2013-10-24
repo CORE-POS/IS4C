@@ -54,18 +54,20 @@ class CCReceiptMessage extends ReceiptMessage {
 		$sort = 'asc';
 
 		$slip = '';
+		$idclause = '';
 		$db = Database::tDataConnect();
 		if ($reprint)
 			$db = Database::mDataConnect();
-		if ($sigSlip)
-			$sort = 'desc';
+		if ($sigSlip){
+			$idclause = ' AND transID='.$CORE_LOCAL->get('paycard_id');
+		}
 
 		// query database for cc receipt info 
 		$query = "select  tranType, amount, PAN, entryMethod, issuer, xResultMessage, xApprovalNumber, xTransactionID, name, "
 			." datetime from ccReceiptView where date=".date('Ymd',time())
 			." and cashierNo = ".$emp." and laneNo = ".$reg
 			." and transNo = ".$trans ." ".$idclause
-			." order by datetime $sort, transID $sort";
+			." order by datetime $sort, transID DESC";
 		$result = $db->query($query);
 		
 		while($row = $db->fetch_array($result)){
