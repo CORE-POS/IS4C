@@ -1,6 +1,6 @@
 <?php
-include(dirname(__FILE__).'/../../fannie/config.php');
-include(dirname(__FILE__).'/../../fannie/src/SQLManager.php');
+include(dirname(__FILE__).'/../config.php');
+include(dirname(__FILE__).'/../src/SQLManager.php');
 
 /**
  * @backupGlobals disabled
@@ -9,7 +9,7 @@ class InstallTest extends PHPUnit_Framework_TestCase
 {
 	public function testDoInstall(){
 		ob_start();
-		include(dirname(__FILE__).'/../../fannie/install/index.php');
+		include(dirname(__FILE__).'/../install/index.php');
 		$page = ob_get_clean();
 		
 		/* verify database structures */

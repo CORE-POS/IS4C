@@ -1,28 +1,28 @@
 #!/bin/sh
 
-if [ $( pwd | xargs basename ) != "fannie-unit-tests" ]; then
-	echo 'Run this script from the directory "fannie-unit-tests"'
+if [ $( pwd | xargs basename ) != "unit-tests" ]; then
+	echo 'Run this script from the directory "unit-tests"'
 	exit 1
 fi
 
-if [ -f "../../fannie/config.php.test-backup" ]; then
+if [ -f "../config.php.test-backup" ]; then
 	echo 'Config backup (config.php.test-backup) already exists!'
 	echo 'Cannot proceed. The existing backup would be destroyed.'
 	exit 1
 fi
 
-if [ ! -f "../../fannie/config.php" ]; then
+if [ ! -f "../config.php" ]; then
 	echo 'Warning: no config file found for fannie'
 	echo 'Generating blank config'
-	echo "<?php" > ../../fannie/config.php
-	echo "?>" >> ../../fannie/config.php
+	echo "<?php" > ../config.php
+	echo "?>" >> ../config.php
 fi
 
-mv ../../fannie/config.php ../../fannie/config.php.test-backup
+mv ../config.php ../config.php.test-backup
 
 echo "Creating test configuration"
-echo "<?php" > ../../fannie/config.php
-cd ../../fannie
+echo "<?php" > ../config.php
+cd ../
 
 FPATH=`pwd`
 echo "\$FANNIE_ROOT = '$FPATH/';" >> config.php

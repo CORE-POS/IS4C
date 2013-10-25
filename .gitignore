@@ -17,11 +17,11 @@ fannie/inventory/archive/*
 fannie/reports/Store-Specific/WFC/CCSettle/xmlcache/*.xml
 fannie/auth/shadowread/shadowread
 fannie/src/Credentials/*
-dist/deb/DEBS/*.deb
-dist/rpm/BUILD/*
-dist/rpm/RPMS/*
-dist/rpm/SOURCES/*
-dist/rpm/SRPMS/*
+scripts/dist/deb/DEBS/*.deb
+scripts/dist/rpm/BUILD/*
+scripts/dist/rpm/RPMS/*
+scripts/dist/rpm/SOURCES/*
+scripts/dist/rpm/SRPMS/*
 fannie/pi_food_net
 fannie/pi_food_net/scalesDistro
 *.dll
