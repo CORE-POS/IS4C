@@ -105,6 +105,9 @@ class SQLManager {
 				strtoupper($type),$username,$password,
 				$persistent,True);		
 		}
+
+		if ($this->connections[$database] === False) return False;
+
 		$this->db_types[$database] = strtoupper($type);
 		$gotdb = $this->select_db($database,$database);
 		if (!$gotdb){
@@ -122,35 +125,42 @@ class SQLManager {
 	function connect($server,$type,$username,$password,$persistent=False,$newlink=False){
 		switch($type){
 		case $this->TYPE_MYSQL:
+			if (!function_exists('mysql_connect')) return False;
 			if ($persistent)
 				return mysql_pconnect($server,$username,$password,$newlink);
 			else
 				return mysql_connect($server,$username,$password,$newlink);
 		case $this->TYPE_MSSQL:
+			if (!function_exists('mssql_connect')) return False;
 			if ($persistent)
 				return mssql_pconnect($server,$username,$password);
 			else
 				return mssql_connect($server,$username,$password);
 		case $this->TYPE_PGSQL:
+			if (!function_exists('pg_connect')) return False;
 			$conStr = "host=".$server." user=".$username." password=".$password;
 			if ($persistent)
 				return pg_pconnect($conStr);
 			else
 				return pg_connect($conStr);
 		case $this->TYPE_PDOMY:
+			if (!class_exists('PDO')) return False;
 			$dsn = 'mysql:host='.$server;
 			return new PDO($dsn, $username, $password);
 		case $this->TYPE_PDOMS:
+			if (!class_exists('PDO')) return False;
 			$dsn = 'mssql:host='.$server;
 			return new PDO($dsn, $username, $password);
 		case $this->TYPE_PDOPG:
+			if (!class_exists('PDO')) return False;
 			$dsn = 'pgsql:host='.$server;
 			return new PDO($dsn, $username, $password);
 		case $this->TYPE_PDOSL:
+			if (!class_exists('PDO')) return False;
 			// delay opening 'connection' until select_db()
 			return null;
 		}
-		return -1;
+		return False;
 	}
 
 	function select_db($db_name,$which_connection=''){
