@@ -123,6 +123,7 @@ $CORE_LOCAL->set("ReceiptHeaderImage",'', True);
 $CORE_LOCAL->set("timeout",180000, True);
 $CORE_LOCAL->set("TRDesiredTenders",array(), True);
 $CORE_LOCAL->set("DrawerKickMedia", array(), True);
+$CORE_LOCAL->set("PluginList", array(), True);
 
 @include_once(dirname(__FILE__).'/ini-local.php');
 ?>

@@ -44,7 +44,8 @@ if (isset($_REQUEST['PLUGINLIST']) || isset($_REQUEST['psubmit'])){
 			$obj->plugin_disable();
 		}
 	}
-	$CORE_LOCAL->set('PluginList',$_REQUEST['PLUGINLIST'], True);
+	if (isset($_REQUEST['PLUGINLIST']))
+		$CORE_LOCAL->set('PluginList',$_REQUEST['PLUGINLIST'], True);
 }
 $type_check = $CORE_LOCAL->get('PluginList');
 if (!is_array($type_check)) $CORE_LOCAL->set('PluginList',array(), True);
