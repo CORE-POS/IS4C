@@ -9,7 +9,7 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
 		global $CORE_LOCAL;
 
 		$here = getcwd();
-		chdir(dirname(__FILE__).'/../../pos/is4c-nf/gui-modules/');
+		chdir(dirname(__FILE__).'/../gui-modules/');
 		$rel = MiscLib::base_url();
 		$this->assertEquals('../',$rel);
 		chdir($here);
@@ -167,7 +167,7 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
 		*/
 
 		$ph = new PrintHandler();
-		$file = dirname(__FILE__).'/../../pos/is4c-nf/graphics/WFC_Logo.bmp';
+		$file = dirname(__FILE__).'/../graphics/WFC_Logo.bmp';
 
 		$this->assertFileExists($file);
 		$bitmap = $ph->RenderBitmapFromFile($file);

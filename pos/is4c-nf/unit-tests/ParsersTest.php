@@ -1,6 +1,6 @@
 <?php
-include(dirname(__FILE__).'/../../pos/is4c-nf/parser-class-lib/PreParser.php');
-include(dirname(__FILE__).'/../../pos/is4c-nf/parser-class-lib/Parser.php');
+include(dirname(__FILE__).'/../parser-class-lib/PreParser.php');
+include(dirname(__FILE__).'/../parser-class-lib/Parser.php');
 
 /**
  * @backupGlobals disabled
