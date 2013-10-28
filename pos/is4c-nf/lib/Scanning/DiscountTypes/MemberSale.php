@@ -45,12 +45,6 @@ class MemberSale extends DiscountType {
 			$ret["discount"] += ($discount * $quantity);
 		}
 
-		if ($row['special_price'] == $row['specialgroupprice'] && $row['special_price'] <> 0){
-			// volumed priced
-			$ret['unitPrice'] = $row['normal_price'];
-			$ret['memDiscount'] = 0;
-		}
-
 		$this->savedRow = $row;
 		$this->savedInfo = $ret;
 		return $ret;
