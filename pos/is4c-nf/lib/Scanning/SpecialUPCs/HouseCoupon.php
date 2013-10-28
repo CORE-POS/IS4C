@@ -35,7 +35,7 @@
 class HouseCoupon extends SpecialUPC {
 
 	function is_special($upc){
-		if (substr($upc,0,8) == "00499999")
+		if (substr($upc,0,8) == $CORE_LOCAL->get('houseCouponPrefix'))
 			return true;
 
 		return false;
