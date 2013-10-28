@@ -70,10 +70,6 @@ function parserHandler(data,status_str,xml_ro){
 				if (data.sync){
 					ajaxTransactionSync(CORE_JS_PREFIX);
 				}
-				if (typeof screenLockVar != 'undefined'){
-					clearTimeout(screenLockVar);
-					screenLockVar = setTimeout('location.reload()', 15000);
-				}
 			}
 		});
 	}
