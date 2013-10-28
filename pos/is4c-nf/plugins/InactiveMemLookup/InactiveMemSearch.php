@@ -24,6 +24,7 @@
 class InactiveMemSearch extends MemberLookup {
 
 	public function lookup_by_number($num){
+		global $CORE_LOCAL;
 		$dbc = Database::pDataConnect();
 		$query = $dbc->prepare_statement('SELECT CardNo, personNum,
 			LastName, FirstName FROM custdata
