@@ -83,11 +83,7 @@ class EveryoneSale extends DiscountType {
 				$ret['unitPrice'] = MiscLib::truncate2($total / $quantity);
 			}
 		}
-		else if ($row['special_price'] == $row['specialgroupprice'] && $row['special_price'] <> 0){
-			// volumed priced
-			$ret['unitPrice'] = $row['normal_price'];
-			$ret['discount'] = 0;
-		}
+
 		$this->savedRow = $row;
 		$this->savedInfo = $ret;
 		return $ret;
