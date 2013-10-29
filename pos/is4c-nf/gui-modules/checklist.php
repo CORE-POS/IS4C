@@ -95,7 +95,7 @@ class checklist extends NoInputPage {
 	*/
 	function body_content(){
 		global $CORE_LOCAL;
-		$db = pDataConnect();
+		$db = Database::pDataConnect();
 		$q = "SELECT TenderCode,TenderName FROM tenders WHERE TenderName LIKE '%check%' ORDER BY TenderName";
 		$r = $db->query($q);
 

@@ -420,7 +420,8 @@ class BasicPage {
 				echo '<ul><li>';
 				if(!empty($s['class'])) echo $s['class'].'::';
 				echo $s['function'].'()';
-				echo '<li>Line '.$s['line'].', '.$s['file'];
+				if (isset($s['line']))
+					echo '<li>Line '.$s['line'].', '.$s['file'];
 			}
 			foreach($stack as $s) echo '</ul>';
 		}
