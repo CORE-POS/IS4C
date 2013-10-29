@@ -21,8 +21,6 @@
 
 *********************************************************************************/
 
-ini_set('display_errors','1');
-
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class mgrlogin extends NoInputPage {
@@ -155,5 +153,6 @@ class mgrlogin extends NoInputPage {
 	}
 }
 
-new mgrlogin();
+if (basename(__FILE__) == basename($_SERVER['PHP_SELF']))
+	new mgrlogin();
 ?>

@@ -88,6 +88,7 @@ class UnpaidAR extends BasicPage {
 	} // END body_content() FUNCTION
 }
 
-new UnpaidAR();
+if (basename(__FILE__) == basename($_SERVER['PHP_SELF']))
+	new UnpaidAR();
 
 ?>

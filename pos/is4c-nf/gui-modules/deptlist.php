@@ -130,6 +130,7 @@ class deptlist extends NoInputPage {
 
 }
 
-new deptlist();
+if (basename(__FILE__) == basename($_SERVER['PHP_SELF']))
+	new deptlist();
 
 ?>

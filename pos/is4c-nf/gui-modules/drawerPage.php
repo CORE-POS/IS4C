@@ -21,8 +21,6 @@
 
 *********************************************************************************/
 
-ini_set('display_errors','1');
-
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class drawerPage extends NoInputPage {
@@ -174,5 +172,6 @@ class drawerPage extends NoInputPage {
 	} // END body_content() FUNCTION
 }
 
-new drawerPage();
+if (basename(__FILE__) == basename($_SERVER['PHP_SELF']))
+	new drawerPage();
 ?>
