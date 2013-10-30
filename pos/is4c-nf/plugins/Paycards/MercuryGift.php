@@ -84,7 +84,7 @@ class MercuryGift extends BasicCCModule {
 				return $json;
 			}
 			$payment = $dbTrans->fetch_array($search);
-			return $this->paycard_void($payment['transID'],$json);
+			return $this->paycard_void($payment['transID'],-1,-1,$json);
 		}
 
 		// check card data for anything else
@@ -181,16 +181,19 @@ class MercuryGift extends BasicCCModule {
 			$CORE_LOCAL->set("boxMsg","<b>Success</b><font size=-1><p>New card balance: $".$resp["Balance"]);
 				// reminder to void everything on testgift2, so that it remains inactive to test activations
 			$CORE_LOCAL->set("boxMsg",$CORE_LOCAL->get("boxMsg")."<p>[enter] to continue<br>\"rp\" to reprint slip</font>");
+			$json['receipt'] = 'gcSlip';
 			break;
 		case PaycardLib::PAYCARD_MODE_AUTH:
 			$CORE_LOCAL->set("autoReprint",1);
-			PrehLib::tender("GD", ($CORE_LOCAL->get("paycard_amount")*100));
+			$amt = "".(-1*($CORE_LOCAL->get("paycard_amount")));
+			TransRecord::addtender("Gift Card", "GD", $amt);
 			$resp = $CORE_LOCAL->get("paycard_response");
 			$CORE_LOCAL->set("boxMsg","<b>Approved</b><font size=-1><p>Used: $".$CORE_LOCAL->get("paycard_amount")."<br />New balance: $".$resp["Balance"]);
 			// reminder to void everything on testgift2, so that it remains inactive to test activations
 			if( !strcasecmp($CORE_LOCAL->get("paycard_PAN"),"7018525757980004481")) // == doesn't work because the string is numeric and very large, so PHP has trouble turning it into an (int) for comparison
 				$CORE_LOCAL->set("boxMsg",$CORE_LOCAL->get("boxMsg")."<br><b>REMEMBER TO VOID THIS</b><br>(ask IT for details)");
 			$CORE_LOCAL->set("boxMsg",$CORE_LOCAL->get("boxMsg")."<p>[enter] to continue<br>\"rp\" to reprint slip<br>[clear] to cancel and void</font>");
+			$json['receipt'] = 'gcSlip';
 			break;
 		case PaycardLib::PAYCARD_MODE_VOID:
 		case PaycardLib::PAYCARD_MODE_VOIDITEM:
@@ -866,7 +869,7 @@ class MercuryGift extends BasicCCModule {
 
 	function getPAN(){
 		global $CORE_LOCAL;
-		if (False && $CORE_LOCAL->get("training") == 1)
+		if ($CORE_LOCAL->get("training") == 1)
 			return "6050110000000296951";
 		else
 			return $CORE_LOCAL->get("paycard_PAN");
@@ -874,7 +877,7 @@ class MercuryGift extends BasicCCModule {
 
 	function getTrack2(){
 		global $CORE_LOCAL;
-		if (False && $CORE_LOCAL->get("training") == 1)
+		if ($CORE_LOCAL->get("training") == 1)
 			return False;
 		else
 			return $CORE_LOCAL->get("paycard_tr2");

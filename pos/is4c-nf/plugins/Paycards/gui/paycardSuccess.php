@@ -52,6 +52,7 @@ class paycardSuccess extends BasicPage {
 				// if this is just a signature request, not
 				// a full cc/gift transaction, associate
 				// it with last trans_id
+				/*
 				if ($CORE_LOCAL->get("SigCapture") != "" && 
 				   $CORE_LOCAL->get("paycard_amount") >= $CORE_LOCAL->get("CCSigLimit")){
 					$db = Database::tDataConnect();
@@ -70,10 +71,11 @@ class paycardSuccess extends BasicPage {
 					$CORE_LOCAL->set("SigSlipType","");
 					$this->sig_check(True);
 				}
+				*/
 
 				PaycardLib::paycard_reset();
 				UdpComm::udpSend('termReset');
-
+				$CORE_LOCAL->set("CacheCardType","");
 				$CORE_LOCAL->set("strRemembered","TO");
 				$CORE_LOCAL->set("msgrepeat",1);
 
@@ -196,7 +198,6 @@ class paycardSuccess extends BasicPage {
 		UdpComm::udpSend('termApproved');
 		$CORE_LOCAL->set("CachePanEncBlock","");
 		$CORE_LOCAL->set("CachePinEncBlock","");
-		$CORE_LOCAL->set("CacheCardType","");
 		?>
 		</div>
 		<?php

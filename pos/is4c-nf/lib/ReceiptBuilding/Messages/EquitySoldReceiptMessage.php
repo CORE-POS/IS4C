@@ -34,13 +34,13 @@ class EquitySoldReceiptMessage extends ReceiptMessage {
 		global $CORE_LOCAL;
 		if ($val <= 0) return '';
 
-		$slip = self::centerString("................................................")."\n\n";
-		$slip .= self::biggerFont("Class B Equity Purchase")."\n\n";
-		$slip .= self::biggerFont(sprintf('Amount: $%.2f',$val))."\n";
+		$slip = ReceiptLib::centerString("................................................")."\n\n";
+		$slip .= ReceiptLib::biggerFont("Class B Equity Purchase")."\n\n";
+		$slip .= ReceiptLib::biggerFont(sprintf('Amount: $%.2f',$val))."\n";
 		$slip .= "\n";
 		$slip .= "Proof of purchase for owner equity\n";
 		$slip .= "Please retain receipt for your records\n\n";
-		$slip .= self::centerString("................................................")."\n\n";
+		$slip .= ReceiptLib::centerString("................................................")."\n\n";
 
 		$CORE_LOCAL->set("equityNoticeAmt",$val);
 
