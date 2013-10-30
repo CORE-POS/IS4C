@@ -256,8 +256,7 @@ class ScanningTest extends PHPUnit_Framework_TestCase
 			$this->assertContains($class,$map[1]);
 		}
 
-		$CORE_LOCAL->set('warned',0);
-		$CORE_LOCAL->set('warnBoxType','');
+		$CORE_LOCAL->set('msgrepeat',0);
 
 		// first call should set warn vars
 		$arwarn = new ArWarnDept();
@@ -266,8 +265,8 @@ class ScanningTest extends PHPUnit_Framework_TestCase
 		$this->assertArrayHasKey('main_frame',$json);
 		$this->assertInternalType('string',$json['main_frame']);
 		$this->assertNotEmpty($json['main_frame']);
-		$this->assertEquals(1,$CORE_LOCAL->get('warned'));
-		$this->assertEquals('warnAR',$CORE_LOCAL->get('warnBoxType'));
+
+		$CORE_LOCAL->set('msgrepeat',1);
 
 		// second call should clear vars and proceed
 		$json = $arwarn->handle(1,1.00,array('main_frame'=>''));
@@ -275,8 +274,6 @@ class ScanningTest extends PHPUnit_Framework_TestCase
 		$this->assertArrayHasKey('main_frame',$json);
 		$this->assertInternalType('string',$json['main_frame']);
 		$this->assertEmpty($json['main_frame']);
-		$this->assertEquals(0,$CORE_LOCAL->get('warned'));
-		$this->assertEquals('',$CORE_LOCAL->get('warnBoxType'));
 
 		$CORE_LOCAL->set('autoReprint',0);
 		$auto = new AutoReprintDept();
@@ -284,8 +281,7 @@ class ScanningTest extends PHPUnit_Framework_TestCase
 		$this->assertInternalType('array',$json);
 		$this->assertEquals(1,$CORE_LOCAL->get('autoReprint'));	
 
-		$CORE_LOCAL->set('warned',0);
-		$CORE_LOCAL->set('warnBoxType','');
+		$CORE_LOCAL->set('msgrepeat',0);
 		$CORE_LOCAL->set('memberID',0);
 
 		// error because member is required
@@ -313,8 +309,6 @@ class ScanningTest extends PHPUnit_Framework_TestCase
 		$this->assertInternalType('string',$json['main_frame']);
 		$this->assertEmpty($json['main_frame']);
 
-		$CORE_LOCAL->set('warned',0);
-		$CORE_LOCAL->set('warnBoxType','');
 		$CORE_LOCAL->set('memberID',0);
 		$CORE_LOCAL->set('msgrepeat', 0);
 
@@ -325,7 +319,6 @@ class ScanningTest extends PHPUnit_Framework_TestCase
 		$this->assertArrayHasKey('main_frame',$json);
 		$this->assertInternalType('string',$json['main_frame']);
 		$this->assertNotEmpty($json['main_frame']);
-		$this->assertEquals(0,$CORE_LOCAL->get('warned'));
 
 		$CORE_LOCAL->set('memberID',123);
 
@@ -336,17 +329,14 @@ class ScanningTest extends PHPUnit_Framework_TestCase
 		$this->assertArrayHasKey('main_frame',$json);
 		$this->assertInternalType('string',$json['main_frame']);
 		$this->assertNotEmpty($json['main_frame']);
-		$this->assertEquals(1,$CORE_LOCAL->get('warned'));
-		$this->assertEquals('warnEquity',$CORE_LOCAL->get('warnBoxType'));
 
 		// clear warning and proceed
 		$CORE_LOCAL->set('memberID',123);
+		$CORE_LOCAL->set('msgrepeat', 1);
 		$json = $eWarn->handle(1,1.00,array('main_frame'=>''));
 		$this->assertInternalType('array',$json);
 		$this->assertArrayHasKey('main_frame',$json);
 		$this->assertInternalType('string',$json['main_frame']);
 		$this->assertEmpty($json['main_frame']);
-		$this->assertEquals(0,$CORE_LOCAL->get('warned'));
-		$this->assertEquals('',$CORE_LOCAL->get('warnBoxType'));
 	}
 }
