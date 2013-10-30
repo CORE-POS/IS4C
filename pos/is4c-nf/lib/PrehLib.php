@@ -154,6 +154,17 @@ static public function setMember($member, $personNumber, $row) {
 	$CORE_LOCAL->set("Type",$row["Type"]);
 	$CORE_LOCAL->set("percentDiscount",$row["Discount"]);
 
+	/**
+	  Use discount module to calculate modified percentDiscount
+	*/
+	$handler_class = $CORE_LOCAL->get('DiscountModule');
+	if ($handler_class === '') $handler_class = 'DiscountModule';
+	elseif (!class_exists($handler_class)) $handler_class = 'DiscountModule';
+	if (class_exists($handler_class)){
+		$module = new $handler_class();
+		$CORE_LOCAL->set('percentDiscount', $module->percentage($row['Discount']));
+	}
+
 	if ($CORE_LOCAL->get("Type") == "PC") {
 		$CORE_LOCAL->set("isMember",1);
 	} else {

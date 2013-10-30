@@ -48,4 +48,14 @@ class DiscountModule {
 			$subtotalsDiscount = 0.00;
 		return $subtotalsDiscount;
 	}
+
+	/**
+	  Decide what percent discount to apply to this
+	  transaction.
+	  @param $custdata_discount value in custdata.Discount
+	  @return int percentage (i.e., 5 == 5%)
+	*/
+	public function percentage($custdata_discount=0){
+		return $custdata_discount;
+	}
 }

@@ -334,6 +334,38 @@ class HouseCoupon extends SpecialUPC {
 			$row = $transDB->fetch_row($valR);
 			$value = $row[0] * $infoW["discountValue"];
 			break;
+		case 'PD': // modify customer percent discount
+			   // rather than add line-item
+			$couponPD = $infoW['discountValue'] * 100;
+			$ttlPD = 0;
+			Database::getsubtotals();
+			$opDB = Database::pDataConnect();
+			$custQ = 'SELECT Discount FROM custdata WHERE CardNo='.$CORE_LOCAL->get('memberID');	
+			$custR = $opDB->query($custQ);
+			// get member's normal discount
+			$cust_discount = 0;
+			if ($opDB->num_rows($custR) > 0){
+				$custW = $opDB->fetch_row($custR);
+				$cust_discount = $custW['Discount'];
+			}
+			// apply discount module
+			$handler_class = $CORE_LOCAL->get('DiscountModule');
+			if ($handler_class === '') $handler_class = 'DiscountModule';
+			elseif (!class_exists($handler_class)) $handler_class = 'DiscountModule';
+			if (class_exists($handler_class)){
+				$module = new $handler_class();
+				$ttlPD = $module->percentage($cust_discount);
+			}
+			// add coupon's discount
+			$ttlPD += $couponPD;
+			// apply new discount to session & transaction
+			$CORE_LOCAL->set('percentDiscount', $ttlPD);
+			$transDB->query(sprintf('UPDATE localtemptrans SET percentDiscount=%f',$ttlPD));
+
+			// still need to add a line-item with the coupon UPC to the
+			// transaction to track usage
+			$value = 0;
+			break;
 		}
 
 		$dept = $infoW["department"];
