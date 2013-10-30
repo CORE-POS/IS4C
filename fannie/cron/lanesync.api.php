@@ -38,7 +38,6 @@
    Coordinate this with cronjobs such as nightly.batch.php
     that update the tables this is pushing to the lanes
     so that the lanes have the most current data.
->>>>>>> flathat/master
 
   Replacement for nightly.lanesync.php using Fannie's API
   instead of cURL

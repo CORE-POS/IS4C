@@ -21,13 +21,7 @@
 
 *********************************************************************************/
  
-session_cache_limiter('nocache');
-
-if (!class_exists("BasicPage")) include_once($_SESSION["INCLUDE_PATH"]."/gui-class-lib/BasicPage.php");
-
-if (!function_exists("lastpage")) include($_SESSION["INCLUDE_PATH"]."/lib/listitems.php");
-if (!function_exists("printheaderb")) include($_SESSION["INCLUDE_PATH"]."/lib/drawscreen.php");
-if (!isset($CORE_LOCAL)) include($_SESSION["INCLUDE_PATH"]."/lib/LocalStorage/conf.php");
+include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class posCustDisplay extends BasicPage {
 
@@ -38,9 +32,9 @@ class posCustDisplay extends BasicPage {
 		<?php
 
 		if ($CORE_LOCAL->get("plainmsg") && strlen($CORE_LOCAL->get("plainmsg")) > 0) {
-			printheaderb();
+			echo DisplayLib::printheaderb();
 			echo "<div class=\"centerOffset\">";
-			plainmsg($CORE_LOCAL->get("plainmsg"));
+			echo DisplayLib::plainmsg($CORE_LOCAL->get("plainmsg"));
 			echo "</div>";
 			echo "</div>"; // end of baseHeight
 		}
@@ -48,17 +42,18 @@ class posCustDisplay extends BasicPage {
 			// No input and no messages, so
 			// list the items
 			if ($CORE_LOCAL->get("End") == 1)
-				printReceiptfooter(True);
+				echo DisplayLib::printReceiptfooter(True);
 			else
-				lastpage(True);
+				echo DisplayLib::lastpage(True);
 		}
 		echo "</div>"; // end base height
 
-		printfooter(True);
+		echo DisplayLib::printfooter(True);
 
 	} // END body_content() FUNCTION
 }
 
-new posCustDisplay();
+if (basename(__FILE__) == basename($_SERVER['PHP_SELF']))
+	new posCustDisplay();
 
 ?>

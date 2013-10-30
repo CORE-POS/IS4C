@@ -99,14 +99,14 @@ class SaPriceChangePage extends FannieRESTfulPage {
 		if ($dbc->table_exists('batchListTest')){
 			$pendQ = $dbc->prepare_statement('SELECT salePrice FROM batchListTest as l
 							LEFT JOIN batchTest AS b ON l.batchID=b.batchID WHERE
-							b.discounttype=0 AND l.upc=? ORDER BY l.batchID DESC');
+							b.discountType=0 AND l.upc=? ORDER BY l.batchID DESC');
 			$pendR = $dbc->exec_statement($pendQ, array($upc));
 		}
 
 		if ($pendR === 0 || $dbc->num_rows($pendR) == 0){
 			$pendQ = $dbc->prepare_statement('SELECT salePrice FROM batchList as l
 							LEFT JOIN batches AS b ON l.batchID=b.batchID WHERE
-							b.discounttype=0 AND l.upc=? ORDER BY l.batchID DESC');
+							b.discountType=0 AND l.upc=? ORDER BY l.batchID DESC');
 			$pendR = $dbc->exec_statement($pendQ, array($upc));
 		}
 

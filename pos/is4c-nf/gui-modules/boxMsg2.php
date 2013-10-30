@@ -21,8 +21,6 @@
 
 *********************************************************************************/
 
-ini_set('display_errors','1');
-
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class boxMsg2 extends BasicPage {
@@ -104,6 +102,7 @@ class boxMsg2 extends BasicPage {
 	} // END body_content() FUNCTION
 }
 
-new boxMsg2();
+if (basename(__FILE__) == basename($_SERVER['PHP_SELF']))
+	new boxMsg2();
 
 ?>

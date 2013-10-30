@@ -42,7 +42,7 @@ $CREATE['trans.memdiscountremove'] = "
 		0 as discount, 
 		-1 * (sum(case when (discounttype = 2 and unitPrice <> regPrice) then -1 * memDiscount 
 		else memDiscount end)) as memDiscount, 
-		3 as discountable, 
+		max(discountable) as discountable, 
 		20 as discounttype, 
 		8 as voided, 
 		MAX(percentDiscount) as percentDiscount,

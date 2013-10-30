@@ -125,6 +125,7 @@ class rplist extends NoInputPage {
 	} // END body_content() FUNCTION
 }
 
-new rplist();
+if (basename(__FILE__) == basename($_SERVER['PHP_SELF']))
+	new rplist();
 
 ?>

@@ -123,7 +123,8 @@ class CCReceiptMessage extends ReceiptMessage {
 			$slip .= ReceiptLib::centerString(".................................................")."\n";
 
 			if ($sigSlip){
-				$slip .= "\n\n\n\n".chr(27).chr(105);
+				// Cut is added automatically by printing process
+				//$slip .= "\n\n\n\n".chr(27).chr(105);
 				break;
 			}
 		}

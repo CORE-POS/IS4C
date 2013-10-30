@@ -92,6 +92,7 @@ class nslogin extends NoInputPage {
 
 }
 
-new nslogin();
+if (basename(__FILE__) == basename($_SERVER['PHP_SELF']))
+	new nslogin();
 
 ?>

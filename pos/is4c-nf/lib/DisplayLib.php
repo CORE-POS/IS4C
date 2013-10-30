@@ -91,7 +91,10 @@ static public function printfooter($readOnly=False) {
 	$ret .= "</tr>";
 
 	$special = $CORE_LOCAL->get("memSpecial") + $CORE_LOCAL->get("staffSpecial");
-	$dbldiscounttotal = number_format($CORE_LOCAL->get("discounttotal"), 2);
+	$dbldiscounttotal = 0.00;
+	if (is_numeric($CORE_LOCAL->get('discounttotal')))
+		$dbldiscounttotal = number_format($CORE_LOCAL->get("discounttotal"), 2);
+
 	if ($CORE_LOCAL->get("isMember") == 1) {
 		$dblyousaved = number_format( $CORE_LOCAL->get("transDiscount") + $dbldiscounttotal + $special, 2);
 		if (!$readOnly){
@@ -101,7 +104,9 @@ static public function printfooter($readOnly=False) {
 		}
 	}
 	else {
-		$dblyousaved = number_format($CORE_LOCAL->get("memSpecial"),2);
+		$dblyousaved = 0.00;
+		if (is_numeric($CORE_LOCAL->get('memSpecial')))
+			$dblyousaved = number_format($CORE_LOCAL->get("memSpecial"), 2);
 		if (!$readOnly){
 			$CORE_LOCAL->set("yousaved",$dbldiscounttotal + $CORE_LOCAL->get("staffSpecial"));
 			$CORE_LOCAL->set("couldhavesaved",$dblyousaved);

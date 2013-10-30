@@ -23,5 +23,8 @@ Magellan.dll: DelegateForm.dll SPH.dll UDPMsgBox.dll Magellan.cs
 posSVC.exe: Magellan.dll MagellanWinSVC.cs
 	$(CC) -target:exe $(BASE_LIBS) -r:System.ServiceProcess.dll -r:System.Configuration.Install.dll -r:SPH.dll -r:DelegateForm.dll -r:UDPMsgBox.dll -r:Magellan.dll -out:posSVC.exe MagellanWinSVC.cs
 
+bmpcon.exe: BitmapConverter.cs
+	$(CC) -target:exe $(BASE_LIBS) -out:bmpcon.exe BitmapConverter.cs
+
 clean:
 	$(RM) pos.exe SPH.dll DelegateForm.dll UDPMsgBox.dll USBLayer.dll

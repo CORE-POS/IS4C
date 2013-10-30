@@ -140,7 +140,7 @@ class DepartmentMovementReport extends FannieReportPage {
 		switch($groupby){
 		case 'PLU':
 			$query = "SELECT t.upc,p.description, 
-				  SUM(t.quantity) as qty,
+				  SUM(CASE WHEN unitPrice=0.01 THEN 1 ELSE t.quantity END) as qty,
 				  SUM(t.total) AS total,
 				  d.dept_no,d.dept_name,s.superID,x.distributor
 				  FROM $dlog as t LEFT JOIN products as p on t.upc = p.upc
@@ -153,7 +153,9 @@ class DepartmentMovementReport extends FannieReportPage {
 				  d.dept_no,d.dept_name,s.superID,x.distributor ORDER BY SUM(t.total) DESC";
 			break;
 		case 'Department':
-			$query =  "SELECT t.department,d.dept_name,SUM(t.quantity) as Qty, SUM(total) as Sales 
+			$query =  "SELECT t.department,d.dept_name,
+				SUM(CASE WHEN unitPrice=0.01 THEN 1 ELSE t.quantity END) as qty,
+				SUM(total) as Sales 
 				FROM $dlog as t LEFT JOIN departments as d on d.dept_no=t.department 
 				LEFT JOIN $superTable AS s ON s.dept_ID = t.department 
 				WHERE $filter_condition
@@ -161,7 +163,9 @@ class DepartmentMovementReport extends FannieReportPage {
 				GROUP BY t.department,d.dept_name ORDER BY SUM(total) DESC";
 			break;
 		case 'Date':
-			$query =  "SELECT year(tdate),month(tdate),day(tdate),SUM(t.quantity) as Qty, SUM(total) as Sales 
+			$query =  "SELECT year(tdate),month(tdate),day(tdate),
+				SUM(CASE WHEN unitPrice=0.01 THEN 1 ELSE t.quantity END) as qty,
+				SUM(total) as Sales 
 				FROM $dlog as t LEFT JOIN departments as d on d.dept_no=t.department 
 				LEFT JOIN $superTable AS s ON s.dept_ID = t.department
 				WHERE $filter_condition
@@ -179,7 +183,9 @@ class DepartmentMovementReport extends FannieReportPage {
 				WHEN ".$dbc->dayofweek("tdate")."=6 THEN 'Fri'
 				WHEN ".$dbc->dayofweek("tdate")."=7 THEN 'Sat'
 				ELSE 'Err' END";
-			$query =  "SELECT $cols,SUM(t.quantity) as Qty, SUM(total) as Sales 
+			$query =  "SELECT $cols,
+				SUM(CASE WHEN unitPrice=0.01 THEN 1 ELSE t.quantity END) as qty,
+				SUM(total) as Sales 
 				FROM $dlog as t LEFT JOIN departments as d on d.dept_no=t.department 
 				LEFT JOIN $superTable AS s ON s.dept_ID = t.department 
 				WHERE $filter_condition

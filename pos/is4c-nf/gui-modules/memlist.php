@@ -30,8 +30,6 @@
 
 */
 
-ini_set('display_errors','1');
-
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class memlist extends NoInputPage {
@@ -305,6 +303,7 @@ class memlist extends NoInputPage {
 // /class memlist
 }
 
-new memlist();
+if (basename(__FILE__) == basename($_SERVER['PHP_SELF']))
+	new memlist();
 
 ?>

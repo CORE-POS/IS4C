@@ -105,5 +105,6 @@ class PriceOverride extends NoInputPage {
 	} // END body_content() FUNCTION
 }
 
-new PriceOverride();
+if (basename(__FILE__) == basename($_SERVER['PHP_SELF']))
+	new PriceOverride();
 ?>

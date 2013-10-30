@@ -21,8 +21,6 @@
 
 *********************************************************************************/
 
-ini_set('display_errors','1');
-
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class login3 extends BasicPage {
@@ -93,6 +91,7 @@ class login3 extends BasicPage {
 
 }
 
-new login3();
+if (basename(__FILE__) == basename($_SERVER['PHP_SELF']))
+	new login3();
 
 ?>

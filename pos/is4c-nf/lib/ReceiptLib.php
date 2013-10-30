@@ -1296,7 +1296,7 @@ static public function printReceipt($arg1,$second=False,$email=False) {
 	/* --------------------------------------------------------------
 	  print store copy of charge slip regardless of receipt print setting - apbw 2/14/05 
 	  ---------------------------------------------------------------- */
-	if ($CORE_LOCAL->get("chargeTotal") != 0 && ($CORE_LOCAL->get("End") == 1 || $reprint)) {
+	if ($CORE_LOCAL->get("chargeTotal") != 0 && (($CORE_LOCAL->get("End") == 1 && !$second) || $reprint)) {
 		if (is_array($receipt))
 			$receipt['print'] .= self::printChargeFooterStore($dateTimeStamp, $ref);
 		else
