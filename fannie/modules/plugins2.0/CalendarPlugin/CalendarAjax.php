@@ -29,7 +29,8 @@ if(!class_exists("FormLib")) include($FANNIE_ROOT.'classlib2.0/lib/FormLib.php')
 class CalendarAjax extends FannieWebService {
 
 	public $type = 'backtick';
-	function render_backtick($arr){
+
+	function renderBacktick($arr){
 		$ret = '';
 		foreach($arr as $a) $ret .= $a.'`';
 		return $ret;
