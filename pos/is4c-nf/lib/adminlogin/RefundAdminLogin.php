@@ -21,23 +21,28 @@
 
 *********************************************************************************/
 
-class RefundAdminLogin {
+/**
+  @class RefundAdminLogin
+  adminlogin callback for approving refunds
+*/
+class RefundAdminLogin 
+{
 
-	public static $adminLoginMsg = 'Login to issue refund';
-	
-	public static $adminLoginLevel = 30;
+    public static $adminLoginMsg = 'Login to issue refund';
+    
+    public static $adminLoginLevel = 30;
 
-	public static function adminLoginCallback($success){
-		global $CORE_LOCAL;
-		if ($success){
-			$CORE_LOCAL->set('refundComment', $CORE_LOCAL->get('strEntered'));	
-			return MiscLib::base_url().'gui-modules/refundComment.php';
-		}
-		else{
-			$CORE_LOCAL->set('refundComment', '');
-			return False;
-		}
-	}
+    public static function adminLoginCallback($success)
+    {
+        global $CORE_LOCAL;
+        if ($success) {
+            $CORE_LOCAL->set('refundComment', $CORE_LOCAL->get('strEntered'));    
+            return MiscLib::base_url().'gui-modules/refundComment.php';
+        } else {
+            $CORE_LOCAL->set('refundComment', '');
+            return false;
+        }
+    }
 
 }
 

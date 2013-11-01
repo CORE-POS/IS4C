@@ -617,11 +617,11 @@ static public function printCCSigSlip($dateTimeStamp,$ref,$storeCopy=True,$rp=0)
 			.$CORE_LOCAL->get("CapturedSigFile");
 
 		$bmp = new Bitmap();
-		$bmp->Load($sig_file);
+		$bmp->load($sig_file);
 
-		$bmpData = $bmp->GetRawData();
-		$bmpWidth = $bmp->GetWidth();
-		$bmpHeight = $bmp->GetHeight();
+		$bmpData = $bmp->getRawData();
+		$bmpWidth = $bmp->getWidth();
+		$bmpHeight = $bmp->getHeight();
 		$bmpRawBytes = (int)(($bmpWidth + 7)/8);
 
 		$print_class = $CORE_LOCAL->get('ReceiptDriver');
@@ -684,7 +684,7 @@ static public function graphedLocalTTL(){
 			$row['localTTL'], 100*$percent);
 	$str .= "\n";
 
-	$str .= self::$PRINT_OBJ->RenderBitmap(Bitmap::BarGraph($percent), 'L');
+	$str .= self::$PRINT_OBJ->RenderBitmap(Bitmap::barGraph($percent), 'L');
 	return $str."\n";
 }
 

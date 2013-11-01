@@ -104,7 +104,7 @@ class UPC extends Parser {
 			$objs = $CORE_LOCAL->get("SpecialUpcClasses");
 			foreach($objs as $class_name){
 				$instance = new $class_name();
-				if ($instance->is_special($upc)){
+				if ($instance->isSpecial($upc)){
 					return $instance->handle($upc,$ret);
 				}
 			}

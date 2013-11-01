@@ -21,15 +21,16 @@
 
 *********************************************************************************/
 
-class NoDefaultAmountTender extends TenderModule {
-
-	/**
-	  Allow the tender to be used without specifying a total
-	  @return boolean
-	*/
-	function AllowDefault(){
-		return False;
-	}
+class NoDefaultAmountTender extends TenderModule 
+{
+    /**
+      Allow the tender to be used without specifying a total
+      @return boolean
+    */
+    public function allowDefault()
+    {
+        return false;
+    }
 
 }
 

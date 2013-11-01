@@ -2,7 +2,7 @@
 <html>
 <?php
 include(realpath(dirname(__FILE__).'/../lib/AutoLoader.php'));
-AutoLoader::LoadMap();
+AutoLoader::loadMap();
 include(realpath(dirname(__FILE__).'/../ini.php'));
 include('util.php');
 ?>
@@ -66,7 +66,7 @@ them in order.</span></td></tr>
 <?php
 if (isset($_REQUEST['ReceiptDriver'])) $CORE_LOCAL->set('ReceiptDriver',$_REQUEST['ReceiptDriver'], True);
 elseif($CORE_LOCAL->get('ReceiptDriver') === '') $CORE_LOCAL->set('ReceiptDriver','ESCPOSPrintHandler',True);
-$mods = AutoLoader::ListModules('PrintHandler',True);
+$mods = AutoLoader::listModules('PrintHandler',True);
 foreach($mods as $m){
 	printf('<option %s>%s</option>',
 		($m==$CORE_LOCAL->get('ReceiptDriver')?'selected':''),
@@ -92,7 +92,7 @@ confsave('emailReceiptFrom',"'".$CORE_LOCAL->get('emailReceiptFrom')."'");
 <?php
 if(isset($_REQUEST['RBFETCHDATA'])) $CORE_LOCAL->set('RBFetchData',$_REQUEST['RBFETCHDATA'],True);
 if($CORE_LOCAL->get('RBFetchData')=='') $CORE_LOCAL->set('RBFetchData','DefaultReceiptDataFetch',True);
-$mods = AutoLoader::ListModules('DefaultReceiptDataFetch',True);
+$mods = AutoLoader::listModules('DefaultReceiptDataFetch',True);
 sort($mods);
 foreach($mods as $mod){
 	printf('<option %s>%s</option>',
@@ -108,7 +108,7 @@ confsave('RBFetchData',"'".$CORE_LOCAL->get('RBFetchData')."'");
 <?php
 if(isset($_REQUEST['RBFILTER'])) $CORE_LOCAL->set('RBFilter',$_REQUEST['RBFILTER'],True);
 if($CORE_LOCAL->get('RBFilter')=='') $CORE_LOCAL->set('RBFilter','DefaultReceiptFilter',True);
-$mods = AutoLoader::ListModules('DefaultReceiptFilter',True);
+$mods = AutoLoader::listModules('DefaultReceiptFilter',True);
 sort($mods);
 foreach($mods as $mod){
 	printf('<option %s>%s</option>',
@@ -124,7 +124,7 @@ confsave('RBFilter',"'".$CORE_LOCAL->get('RBFilter')."'");
 <?php
 if(isset($_REQUEST['RBSORT'])) $CORE_LOCAL->set('RBSort',$_REQUEST['RBSORT'],True);
 if($CORE_LOCAL->get('RBSort')=='') $CORE_LOCAL->set('RBSort','DefaultReceiptSort',True);
-$mods = AutoLoader::ListModules('DefaultReceiptSort',True);
+$mods = AutoLoader::listModules('DefaultReceiptSort',True);
 sort($mods);
 foreach($mods as $mod){
 	printf('<option %s>%s</option>',
@@ -140,7 +140,7 @@ confsave('RBSort',"'".$CORE_LOCAL->get('RBSort')."'");
 <?php
 if(isset($_REQUEST['RBTAG'])) $CORE_LOCAL->set('RBTag',$_REQUEST['RBTAG'],True);
 if($CORE_LOCAL->get('RBTag')=='') $CORE_LOCAL->set('RBTag','DefaultReceiptTag',True);
-$mods = AutoLoader::ListModules('DefaultReceiptTag',True);
+$mods = AutoLoader::listModules('DefaultReceiptTag',True);
 sort($mods);
 foreach($mods as $mod){
 	printf('<option %s>%s</option>',
@@ -168,7 +168,7 @@ if (isset($_REQUEST['RM_MODS'])){
 if (!is_array($CORE_LOCAL->get('ReceiptMessageMods'))){
 	$CORE_LOCAL->set('ReceiptMessageMods', array(), True);
 }
-$available = AutoLoader::ListModules('ReceiptMessage');
+$available = AutoLoader::listModules('ReceiptMessage');
 $current = $CORE_LOCAL->get('ReceiptMessageMods');
 for($i=0;$i<=count($current);$i++){
 	$c = isset($current[$i]) ? $current[$i] : '';

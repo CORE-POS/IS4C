@@ -38,51 +38,54 @@
    the server database
 */
 
-class SpecialOrder extends SpecialUPC {
+class SpecialOrder extends SpecialUPC 
+{
 
-	function is_special($upc){
-		if (substr($upc,0,5) == "00454")
-			return true;
+    public function isSpecial($upc)
+    {
+        if (substr($upc,0,5) == "00454") {
+            return true;
+        }
 
-		return false;
-	}
+        return false;
+    }
 
-	function handle($upc,$json){
-		global $CORE_LOCAL;
+    public function handle($upc,$json)
+    {
+        global $CORE_LOCAL;
 
-		$orderID = substr($upc,5,6);
-		$transID = substr($upc,11,2);
+        $orderID = substr($upc,5,6);
+        $transID = substr($upc,11,2);
 
-		if ((int)$transID === 0){
-			$json['output'] = DisplayLib::boxMsg(_("Not a valid order"));
-			return $json;
-		}
+        if ((int)$transID === 0) {
+            $json['output'] = DisplayLib::boxMsg(_("Not a valid order"));
+            return $json;
+        }
 
-		$db = Database::mDataConnect();
-		$query = sprintf("SELECT upc,description,department,
-				quantity,unitPrice,total,regPrice,d.dept_tax,d.dept_fs,
-				ItemQtty,p.discountable
-				FROM PendingSpecialOrder as p LEFT JOIN
-				is4c_op.departments AS d ON p.department=d.dept_no
-				WHERE order_id=%d AND trans_id=%d",
-				$orderID,$transID);
-		$result = $db->query($query);
+        $db = Database::mDataConnect();
+        $query = sprintf("SELECT upc,description,department,
+                quantity,unitPrice,total,regPrice,d.dept_tax,d.dept_fs,
+                ItemQtty,p.discountable
+                FROM PendingSpecialOrder as p LEFT JOIN
+                is4c_op.departments AS d ON p.department=d.dept_no
+                WHERE order_id=%d AND trans_id=%d",
+                $orderID,$transID);
+        $result = $db->query($query);
 
-		if ($db->num_rows($result) != 1){
-			$json['output'] = DisplayLib::boxMsg(_("Order not found"));
-			return $json;
-		}
+        if ($db->num_rows($result) != 1) {
+            $json['output'] = DisplayLib::boxMsg(_("Order not found"));
+            return $json;
+        }
 
-		$row = $db->fetch_array($result);
-		TransRecord::addItem($row['upc'],$row['description'],'I','','',$row['department'],$row['quantity'],
-			$row['unitPrice'],$row['total'],$row['regPrice'],0,$row['dept_tax'],
-			$row['dept_fs'],0.00,0.00,$row['discountable'],0,$row['ItemQtty'],0,0,0,$orderID,$transID,0,0.00,0,'SO');
-		$json['output'] = DisplayLib::lastpage();
-		$json['udpmsg'] = 'goodBeep';
-		$json['redraw_footer'] = True;
+        $row = $db->fetch_array($result);
+        TransRecord::addItem($row['upc'],$row['description'],'I','','',$row['department'],$row['quantity'],
+            $row['unitPrice'],$row['total'],$row['regPrice'],0,$row['dept_tax'],
+            $row['dept_fs'],0.00,0.00,$row['discountable'],0,$row['ItemQtty'],0,0,0,$orderID,$transID,0,0.00,0,'SO');
+        $json['output'] = DisplayLib::lastpage();
+        $json['udpmsg'] = 'goodBeep';
+        $json['redraw_footer'] = True;
 
-		return $json;
-	}
+        return $json;
+    }
 }
 
-?>

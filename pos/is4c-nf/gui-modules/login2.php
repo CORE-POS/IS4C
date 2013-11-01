@@ -46,7 +46,7 @@ class login2 extends BasicPage {
 			elseif (isset($_REQUEST['userPassword']) && !empty($_REQUEST['userPassword']))
 				$passwd = $_REQUEST['userPassword'];
 
-			if (Authenticate::check_password($passwd)){
+			if (Authenticate::checkPassword($passwd)){
 				Database::testremote();
 				$sd = MiscLib::scaleObject();
 				if (is_object($sd))

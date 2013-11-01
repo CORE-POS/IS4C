@@ -21,18 +21,25 @@
 
 *********************************************************************************/
 
-class SusResAdminLogin {
+/**
+  @class SusResAdminLogin
+  adminlogin callback to approve access
+  to the suspend/resume/tender report menu
+*/
+class SusResAdminLogin 
+{
 
-	static public $adminLoginMsg = 'Login to suspend/resume transactions';
+    static public $adminLoginMsg = 'Login to suspend/resume transactions';
 
-	static public $adminLoginLevel = 30;
+    static public $adminLoginLevel = 30;
 
-	static public function adminLoginCallback($success){
-		if ($success)
-			return MiscLib::base_url().'gui-modules/adminlist.php';
-		else
-			return False;
-	}
+    static public function adminLoginCallback($success)
+    {
+        if ($success) {
+            return MiscLib::base_url().'gui-modules/adminlist.php';
+        } else {
+            return false;
+        }
+    }
 }
-
 

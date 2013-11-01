@@ -46,7 +46,7 @@ class login3 extends BasicPage {
 				UdpComm::udpSend('goodBeep');
 			}
 
-			if (Authenticate::check_password($passwd,4)){
+			if (Authenticate::checkPassword($passwd,4)){
 				$sd = MiscLib::scaleObject();
 				if (is_object($sd))
 					$sd->ReadReset();

@@ -25,61 +25,67 @@
   @class GiftCertificateTender
   Tender module for gift certificates
 */
-class GiftCertificateTender extends TenderModule {
+class GiftCertificateTender extends TenderModule 
+{
 
-	/**
-	  Check for errors
-	  @return True or an error message string
-	*/
-	function ErrorCheck(){
-		return True;
-	}
-	
-	/**
-	  Set up state and redirect if needed
-	  @return True or a URL to redirect
-	*/
-	function PreReqCheck(){
-		global $CORE_LOCAL;
-		$CORE_LOCAL->set("autoReprint",1);
+    /**
+      Check for errors
+      @return True or an error message string
+    */
+    public function errorCheck(){
+        return true;
+    }
+    
+    /**
+      Set up state and redirect if needed
+      @return True or a URL to redirect
+    */
+    public function preReqCheck()
+    {
+        global $CORE_LOCAL;
+        $CORE_LOCAL->set("autoReprint",1);
 
-		if ($CORE_LOCAL->get("enableFranking") != 1)
-			return True;
+        if ($CORE_LOCAL->get("enableFranking") != 1) {
+            return true;
+        }
 
-		if ($CORE_LOCAL->get("msgrepeat") == 0){
-			return $this->DefaultPrompt();
-		}
-		return True;
-	}
+        if ($CORE_LOCAL->get("msgrepeat") == 0) {
+            return $this->defaultPrompt();
+        }
 
-	function DefaultPrompt(){
-		global $CORE_LOCAL;
+        return true;
+    }
 
-		if ($CORE_LOCAL->get("enableFranking") != 1)
-			return parent::DefaultPrompt();
+    public function defaultPrompt()
+    {
+        global $CORE_LOCAL;
 
-		$ref = trim($CORE_LOCAL->get("CashierNo"))."-"
-			.trim($CORE_LOCAL->get("laneno"))."-"
-			.trim($CORE_LOCAL->get("transno"));
+        if ($CORE_LOCAL->get("enableFranking") != 1) {
+            return parent::defaultPrompt();
+        }
 
-		if ($this->amount === False)
-			$this->amount = $this->DefaultTotal();
+        $ref = trim($CORE_LOCAL->get("CashierNo"))."-"
+            .trim($CORE_LOCAL->get("laneno"))."-"
+            .trim($CORE_LOCAL->get("transno"));
 
-		$msg = "<br />"._("insert")." ".$this->name_string.
-			' for $'.sprintf('%.2f',$this->amount).
-			"<br />"._("press enter to endorse");
-		if ($CORE_LOCAL->get("LastEquityReference") == $ref){
-			$msg .= "<div style=\"background:#993300;color:#ffffff;
-				margin:3px;padding: 3px;\">
-				There was an equity sale on this transaction. Did it get
-				endorsed yet?</div>";
-		}
+        if ($this->amount === false) {
+            $this->amount = $this->defaultTotal();
+        }
 
-		$CORE_LOCAL->set('strEntered', (100*$this->amount).$this->tender_code);
-		$CORE_LOCAL->set("boxMsg",$msg);
+        $msg = "<br />"._("insert")." ".$this->name_string.
+            ' for $'.sprintf('%.2f',$this->amount).
+            "<br />"._("press enter to endorse");
+        if ($CORE_LOCAL->get("LastEquityReference") == $ref){
+            $msg .= "<div style=\"background:#993300;color:#ffffff;
+                margin:3px;padding: 3px;\">
+                There was an equity sale on this transaction. Did it get
+                endorsed yet?</div>";
+        }
 
-		return MiscLib::base_url().'gui-modules/boxMsg2.php?endorse=check&endorseAmt='.$this->amount;
-	}
+        $CORE_LOCAL->set('strEntered', (100*$this->amount).$this->tender_code);
+        $CORE_LOCAL->set("boxMsg",$msg);
+
+        return MiscLib::base_url().'gui-modules/boxMsg2.php?endorse=check&endorseAmt='.$this->amount;
+    }
 }
 
-?>

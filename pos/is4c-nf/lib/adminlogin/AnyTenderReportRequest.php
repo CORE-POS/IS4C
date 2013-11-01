@@ -21,30 +21,37 @@
 
 *********************************************************************************/
 
-class AnyTenderReportRequest {
+/**
+  @class AnyTenderReportRequest
+  requestInfo callback for printing
+  tender reports given an arbitrary
+  employee number.
+*/
+class AnyTenderReportRequest 
+{
 
-	static public $requestInfoHeader = 'print tender report';
-	static public $requestInfoMsg = 'enter cashier number';
-	static public function requestInfoCallback($info){
-		global $CORE_LOCAL;
-		if ($info === '' || strtoupper($info) == 'CL'){
-			// clear/blank => go back to adminlist
-			return MiscLib::base_url.'gui-modules/adminlist.php';
-		}
-		else if (!is_numeric($info)){
-			// other non-number is invalid input
-			return False;
-		}
-		else {
-			// change employee setting to desired,
-			// print report, change back
-			$my_emp_no = $CORE_LOCAL->get('CashierNo');
-			$CORE_LOCAL->set('CashierNo', $info);	
-			TenderReport::printReport();
-			$CORE_LOCAL->set('CashierNo', $my_emp_no);
-			return True;
-		}
-	}
+    static public $requestInfoHeader = 'print tender report';
+
+    static public $requestInfoMsg = 'enter cashier number';
+
+    static public function requestInfoCallback($info)
+    {
+        global $CORE_LOCAL;
+        if ($info === '' || strtoupper($info) == 'CL') {
+            // clear/blank => go back to adminlist
+            return MiscLib::base_url.'gui-modules/adminlist.php';
+        } else if (!is_numeric($info)) {
+            // other non-number is invalid input
+            return false;
+        } else {
+            // change employee setting to desired,
+            // print report, change back
+            $my_emp_no = $CORE_LOCAL->get('CashierNo');
+            $CORE_LOCAL->set('CashierNo', $info);    
+            TenderReport::printReport();
+            $CORE_LOCAL->set('CashierNo', $my_emp_no);
+            return true;
+        }
+    }
 }
 
-?>

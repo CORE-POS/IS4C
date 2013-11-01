@@ -96,23 +96,23 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
 
 		Database::setglobalvalue('LoggedIn',1);
 		Database::setglobalvalue('CashierNo',1);
-		$fail = Authenticate::check_password('9999');
+		$fail = Authenticate::checkPassword('9999');
 		$this->assertEquals(False, $fail);
 
 		Database::setglobalvalue('CashierNo',9999);
-		$pass = Authenticate::check_password('9999');
+		$pass = Authenticate::checkPassword('9999');
 		$this->assertEquals(True, $pass);
 
 		Database::setglobalvalue('LoggedIn',0);
 		Database::setglobalvalue('CashierNo',1);
-		$pass = Authenticate::check_password('9999');
+		$pass = Authenticate::checkPassword('9999');
 		$this->assertEquals(True, $pass);
 	}
 
 	public function testAutoLoader(){
 		global $CORE_LOCAL;
 		
-		AutoLoader::LoadMap();
+		AutoLoader::loadMap();
 		$class_map = $CORE_LOCAL->get('ClassLookup');
 		$this->assertInternalType('array', $class_map);
 		$this->assertNotEmpty($class_map);
@@ -148,7 +148,7 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
 			$this->assertFileExists($class_map[$class]);
 		}
 
-		$mods = AutoLoader::ListModules('Parser');
+		$mods = AutoLoader::listModules('Parser');
 		$this->assertInternalType('array',$mods);
 		$this->assertNotEmpty($mods);
 		foreach($mods as $m){
@@ -235,15 +235,15 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
 		$this->assertInternalType('string',$headerb);
 		$this->assertNotEmpty($headerb);
 
-		$item = DisplayLib::printitem('name','weight','1.99','T',1);
+		$item = DisplayLib::printItem('name','weight','1.99','T',1);
 		$this->assertInternalType('string',$item);
 		$this->assertNotEmpty($item);
 
-		$itemC = DisplayLib::printitem('name','weight','1.99','T',2);
+		$itemC = DisplayLib::printItemColor('004080','name','weight','1.99','T',2);
 		$this->assertInternalType('string',$itemC);
 		$this->assertNotEmpty($itemC);
 
-		$itemH = DisplayLib::printitemcolorhilite('004080','name','weight','1.99','T');
+		$itemH = DisplayLib::printItemColorHilite('004080','name','weight','1.99','T');
 		$this->assertInternalType('string',$itemH);
 		$this->assertNotEmpty($itemH);
 
@@ -289,13 +289,13 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
 		$term = DisplayLib::termdisplaymsg();
 		$this->assertInternalType('string',$term);
 
-		$list = DisplayLib::listitems(0,0);
+		$list = DisplayLib::listItems(0,0);
 		$this->assertInternalType('string',$list);
 
 		$rf = DisplayLib::printReceiptFooter();
 		$this->assertInternalType('string',$rf);
 
-		$draw = DisplayLib::drawitems(0,11,0);
+		$draw = DisplayLib::drawItems(0,11,0);
 		$this->assertInternalType('string',$draw);
 
 		$lp = DisplayLib::lastpage();

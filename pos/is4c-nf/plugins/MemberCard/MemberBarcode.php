@@ -30,25 +30,29 @@
 
   Looks up member number via memberCards table
 */
-class MemberBarcode extends SpecialUPC {
+class MemberBarcode extends SpecialUPC 
+{
 
-	function is_special($upc){
+	public function isSpecial($upc)
+    {
 		global $CORE_LOCAL;
 		$prefix = $CORE_LOCAL->get("memberUpcPrefix");
-		if (substr($upc,0,strlen($prefix)) == $prefix)
+		if (substr($upc,0,strlen($prefix)) == $prefix) {
 			return true;
+        }
 
 		return false;
 	}
 
-	function handle($upc,$json){
+	public function handle($upc,$json)
+    {
 		global $CORE_LOCAL;
 
 		$db = Database::pDataConnect();
 		$query = "select card_no from memberCards where upc='$upc'";
 		$result = $db->query($query);
 
-		if ($db->num_rows($result) < 1){
+		if ($db->num_rows($result) < 1) {
 			$json['output'] = DisplayLib::boxMsg(_("Card not assigned"));
 			return $json;
 		}
@@ -60,4 +64,3 @@ class MemberBarcode extends SpecialUPC {
 	}
 }
 
-?>

@@ -39,36 +39,43 @@ class LibraryClass {
   Map available modules and register automatic
   class loading
 */
-class AutoLoader extends LibraryClass {
+class AutoLoader extends LibraryClass 
+{
 
 	/**
 	  Autoload class by name
 	  @param $name class name
 	*/
-	static public function LoadClass($name){
+	static public function loadClass($name)
+    {
 		global $CORE_LOCAL;
 		$map = $CORE_LOCAL->get("ClassLookup");
-		if (!is_array($map)) return;
+		if (!is_array($map)) {
+            return;
+        }
 
-		if (isset($map[$name]) && !file_exists($map[$name])){
+		if (isset($map[$name]) && !file_exists($map[$name])) {
 			// file is missing. 
 			// rebuild map to see if the class is
 			// gone or the file just moved
-			self::LoadMap();
+			self::loadMap();
 			$map = $CORE_LOCAL->get("ClassLookup");
-			if (!is_array($map)) return;
-		}
-		else if (!isset($map[$name])){
+			if (!is_array($map)) {
+                return;
+            }
+		} else if (!isset($map[$name])) {
 			// class is unknown
 			// rebuild map to see if the definition
 			// file has been added
-			self::LoadMap();
+			self::loadMap();
 			$map = $CORE_LOCAL->get("ClassLookup");
-			if (!is_array($map)) return;
+			if (!is_array($map)) {
+                return;
+            }
 		}
 
-		if (isset($map[$name]) && !class_exists($name,False)
-		   && file_exists($map[$name])){
+		if (isset($map[$name]) && !class_exists($name,false)
+		   && file_exists($map[$name])) {
 
 			include_once($map[$name]);
 		}
@@ -78,11 +85,12 @@ class AutoLoader extends LibraryClass {
 	  Map available classes. Class names should
 	  match filenames for lookups to work.
 	*/
-	static public function LoadMap(){
+	static public function loadMap()
+    {
 		global $CORE_LOCAL;
 		$class_map = array();
 		$search_path = realpath(dirname(__FILE__).'/../');
-		self::RecursiveLoader($search_path, $class_map);
+		self::recursiveLoader($search_path, $class_map);
 		$CORE_LOCAL->set("ClassLookup",$class_map);
 	}
 
@@ -94,112 +102,114 @@ class AutoLoader extends LibraryClass {
 		in the return value
 	  @return an array of class names
 	*/
-	static public function ListModules($base_class, $include_base=False){
+	static public function listModules($base_class, $include_base=False)
+    {
 		$ret = array();
 		
 		// lookup plugin modules, then standard modules
-		$map = Plugin::PluginMap();
+		$map = Plugin::pluginMap();
 		switch($base_class){
-		case 'DiscountType':
-			$path = realpath(dirname(__FILE__).'/Scanning/DiscountTypes');
-			$map = Plugin::PluginMap($path,$map);
-			break;
-		case 'FooterBox':
-			$path = realpath(dirname(__FILE__).'/FooterBoxes');
-			$map = Plugin::PluginMap($path,$map);
-			break;
-		case 'Kicker':
-			$path = realpath(dirname(__FILE__).'/Kickers');
-			$map = Plugin::PluginMap($path,$map);
-			break;
-		case 'Parser':
-			$path = realpath(dirname(__FILE__).'/../parser-class-lib/parse');
-			$map = Plugin::PluginMap($path,$map);
-			break;
-		case 'PreParser':
-			$path = realpath(dirname(__FILE__).'/../parser-class-lib/preparse');
-			$map = Plugin::PluginMap($path,$map);
-			break;
-		case 'PriceMethod':
-			$path = realpath(dirname(__FILE__).'/Scanning/PriceMethods');
-			$map = Plugin::PluginMap($path,$map);
-			break;
-		case 'SpecialUPC':
-			$path = realpath(dirname(__FILE__).'/Scanning/SpecialUPCs');
-			$map = Plugin::PluginMap($path,$map);
-			break;
-		case 'SpecialDept':
-			$path = realpath(dirname(__FILE__).'/Scanning/SpecialDepts');
-			$map = Plugin::PluginMap($path,$map);
-			break;
-		case 'TenderModule':
-			$path = realpath(dirname(__FILE__).'/Tenders');
-			$map = Plugin::PluginMap($path,$map);
-			break;
-		case 'TenderReport':
-			$path = realpath(dirname(__FILE__).'/ReceiptBuilding/TenderReports');
-			$map = Plugin::PluginMap($path,$map);
-			break;
-		case 'DefaultReceiptDataFetch':
-			$path = realpath(dirname(__FILE__).'/ReceiptBuilding/ReceiptDataFetch');
-			$map = Plugin::PluginMap($path,$map);
-			break;
-		case 'DefaultReceiptFilter':
-			$path = realpath(dirname(__FILE__).'/ReceiptBuilding/ReceiptFilter');
-			$map = Plugin::PluginMap($path,$map);
-			break;
-		case 'DefaultReceiptSort':
-			$path = realpath(dirname(__FILE__).'/ReceiptBuilding/ReceiptSort');
-			$map = Plugin::PluginMap($path,$map);
-			break;
-		case 'DefaultReceiptTag':
-			$path = realpath(dirname(__FILE__).'/ReceiptBuilding/ReceiptTag');
-			$map = Plugin::PluginMap($path,$map);
-			break;
-		case 'ReceiptMessage':
-			$path = realpath(dirname(__FILE__).'/ReceiptBuilding/Messages');
-			$map = Plugin::PluginMap($path,$map);
-			break;
-		case 'ProductSearch':
-			$path = realpath(dirname(__FILE__).'/Search/Products');
-			$map = Plugin::PluginMap($path,$map);
-			break;
-		case 'DiscountModule':
-			$map['DiscountModule'] = realpath(dirname(__FILE__).'/DiscountModule.php');
-			break;
-		case 'MemberLookup':
-			$map['MemberLookup'] = realpath(dirname(__FILE__).'/MemberLookup.php');
-			break;
-		case 'PrintHandler':
-			$path = realpath(dirname(__FILE__).'/PrintHandlers');
-			$map = Plugin::PluginMap($path,$map);
-			break;
+            case 'DiscountType':
+                $path = realpath(dirname(__FILE__).'/Scanning/DiscountTypes');
+                $map = Plugin::pluginMap($path,$map);
+                break;
+            case 'FooterBox':
+                $path = realpath(dirname(__FILE__).'/FooterBoxes');
+                $map = Plugin::pluginMap($path,$map);
+                break;
+            case 'Kicker':
+                $path = realpath(dirname(__FILE__).'/Kickers');
+                $map = Plugin::pluginMap($path,$map);
+                break;
+            case 'Parser':
+                $path = realpath(dirname(__FILE__).'/../parser-class-lib/parse');
+                $map = Plugin::pluginMap($path,$map);
+                break;
+            case 'PreParser':
+                $path = realpath(dirname(__FILE__).'/../parser-class-lib/preparse');
+                $map = Plugin::pluginMap($path,$map);
+                break;
+            case 'PriceMethod':
+                $path = realpath(dirname(__FILE__).'/Scanning/PriceMethods');
+                $map = Plugin::pluginMap($path,$map);
+                break;
+            case 'SpecialUPC':
+                $path = realpath(dirname(__FILE__).'/Scanning/SpecialUPCs');
+                $map = Plugin::pluginMap($path,$map);
+                break;
+            case 'SpecialDept':
+                $path = realpath(dirname(__FILE__).'/Scanning/SpecialDepts');
+                $map = Plugin::pluginMap($path,$map);
+                break;
+            case 'TenderModule':
+                $path = realpath(dirname(__FILE__).'/Tenders');
+                $map = Plugin::pluginMap($path,$map);
+                break;
+            case 'TenderReport':
+                $path = realpath(dirname(__FILE__).'/ReceiptBuilding/TenderReports');
+                $map = Plugin::pluginMap($path,$map);
+                break;
+            case 'DefaultReceiptDataFetch':
+                $path = realpath(dirname(__FILE__).'/ReceiptBuilding/ReceiptDataFetch');
+                $map = Plugin::pluginMap($path,$map);
+                break;
+            case 'DefaultReceiptFilter':
+                $path = realpath(dirname(__FILE__).'/ReceiptBuilding/ReceiptFilter');
+                $map = Plugin::pluginMap($path,$map);
+                break;
+            case 'DefaultReceiptSort':
+                $path = realpath(dirname(__FILE__).'/ReceiptBuilding/ReceiptSort');
+                $map = Plugin::pluginMap($path,$map);
+                break;
+            case 'DefaultReceiptTag':
+                $path = realpath(dirname(__FILE__).'/ReceiptBuilding/ReceiptTag');
+                $map = Plugin::pluginMap($path,$map);
+                break;
+            case 'ReceiptMessage':
+                $path = realpath(dirname(__FILE__).'/ReceiptBuilding/Messages');
+                $map = Plugin::pluginMap($path,$map);
+                break;
+            case 'ProductSearch':
+                $path = realpath(dirname(__FILE__).'/Search/Products');
+                $map = Plugin::pluginMap($path,$map);
+                break;
+            case 'DiscountModule':
+                $map['DiscountModule'] = realpath(dirname(__FILE__).'/DiscountModule.php');
+                break;
+            case 'MemberLookup':
+                $map['MemberLookup'] = realpath(dirname(__FILE__).'/MemberLookup.php');
+                break;
+            case 'PrintHandler':
+                $path = realpath(dirname(__FILE__).'/PrintHandlers');
+                $map = Plugin::pluginMap($path,$map);
+                break;
 		}
 
-		foreach($map as $name => $file){
+		foreach($map as $name => $file) {
 
 			// matched base class
-			if ($name === $base_class){
+			if ($name === $base_class) {
 				if ($include_base) $ret[] = $name;
 				continue;
 			}
 
 			ob_start();
-			if (!class_exists($name)){ 
+			if (!class_exists($name)) { 
 				ob_end_clean();
 				continue;
 			}
 
-			if (strstr($file,'plugins')){
-				$parent = Plugin::MemberOf($file);
-				if ($parent && Plugin::IsEnabled($parent) && is_subclass_of($name,$base_class))
+			if (strstr($file,'plugins')) {
+				$parent = Plugin::memberOf($file);
+				if ($parent && Plugin::isEnabled($parent) && is_subclass_of($name,$base_class)) {
 					$ret[] = $name;
-				else if ($base_class=="Plugin" && is_subclass_of($name,$base_class))
+				} else if ($base_class=="Plugin" && is_subclass_of($name,$base_class)) {
 					$ret[] = $name;
-			}
-			else {
-				if (is_subclass_of($name,$base_class))
+                }
+			} else {
+				if (is_subclass_of($name,$base_class)) {
 					$ret[] = $name;
+                }
 			}
 			ob_end_clean();
 		}
@@ -213,17 +223,20 @@ class AutoLoader extends LibraryClass {
 	  @param $map array of class name => file
 	  @return $map (by reference)
 	*/
-	static private function RecursiveLoader($path,&$map=array()){
-		if(!is_dir($path)) return $map;
+	static private function recursiveLoader($path,&$map=array())
+    {
+		if(!is_dir($path)) {
+            return $map;
+        }
 
 		$dh = opendir($path);
-		while($dh && ($file=readdir($dh)) !== False){
+		while($dh && ($file=readdir($dh)) !== false) {
 			if ($file[0] == ".") continue;
+
 			$fullname = realpath($path."/".$file);
-			if (is_dir($fullname) && $file != "gui-modules"){
-				self::RecursiveLoader($fullname, $map);
-			}
-			else if (substr($file,-4) == '.php'){
+			if (is_dir($fullname) && $file != "gui-modules") {
+				self::recursiveLoader($fullname, $map);
+			} else if (substr($file,-4) == '.php') {
 				$class = substr($file,0,strlen($file)-4);
 				$map[$class] = $fullname;
 			}
@@ -234,11 +247,11 @@ class AutoLoader extends LibraryClass {
 }
 
 if (function_exists('spl_autoload_register')){
-	spl_autoload_register(array('AutoLoader','LoadClass'));
+	spl_autoload_register(array('AutoLoader','loadClass'));
 }
 else {
 	function __autoload($name){
-		AutoLoader::LoadClass($name);
+		AutoLoader::loadClass($name);
 	}
 }
 
@@ -250,4 +263,3 @@ bind_textdomain_codeset("pos-nf","UTF-8");
 textdomain("pos-nf");
  */
 
-?>

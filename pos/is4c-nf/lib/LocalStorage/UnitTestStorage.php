@@ -21,30 +21,39 @@
 
 *********************************************************************************/
 
-if (!class_exists("LocalStorage")) include_once(realpath(dirname(__FILE__).'/LocalStorage.php'));
+if (!class_exists("LocalStorage")) {
+    include_once(realpath(dirname(__FILE__).'/LocalStorage.php'));
+}
 
 /**
   @class UnitTestStorage
 
   Doesn't do any persistant storage. Just facilitates unit testing
 */
-class UnitTestStorage extends LocalStorage {
+class UnitTestStorage extends LocalStorage 
+{
 
-	private $mutable = array();
+    private $mutable = array();
 
-	function get($key){
-		if ($this->is_immutable($key)) return $this->immutables[$key];
-		if (!isset($this->mutable["$key"])) return "";
-		return $this->mutable["$key"];
-	}
+    public function get($key)
+    {
+        if ($this->isImmutable($key)) {
+            return $this->immutables[$key];
+        }
+        if (!isset($this->mutable["$key"])) {
+            return "";
+        }
 
-	function set($key,$val,$immutable=False){
-		if ($immutable)
-			$this->immutable_set($key,$val);
-		else
-			$this->mutable["$key"] = $val;
-		$this->debug($key,$val);
-	}
+        return $this->mutable["$key"];
+    }
+
+    public function set($key,$val,$immutable=false){
+        if ($immutable) {
+            $this->immutableSet($key,$val);
+        } else {
+            $this->mutable["$key"] = $val;
+        }
+        $this->debug($key,$val);
+    }
 }
 
-?>

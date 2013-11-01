@@ -25,7 +25,7 @@
 ini_set('display_errors','1');
 
 include(realpath(dirname(__FILE__).'/../lib/AutoLoader.php'));
-AutoLoader::LoadMap();
+AutoLoader::loadMap();
 if(file_exists((dirname(__FILE__).'/../ini.php')))
 	include(realpath(dirname(__FILE__).'/../ini.php'));
 include('util.php');

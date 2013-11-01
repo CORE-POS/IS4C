@@ -65,7 +65,7 @@ class TaxFoodShift extends Parser {
 		$db->query($q);	
 		
 		$ret = $this->default_json();
-		$ret['output'] = DisplayLib::listitems($CORE_LOCAL->get("currenttopid"),$id);
+		$ret['output'] = DisplayLib::listItems($CORE_LOCAL->get("currenttopid"),$id);
 		return $ret; // maintain item cursor position
 	}
 

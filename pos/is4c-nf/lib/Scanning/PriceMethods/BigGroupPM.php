@@ -39,122 +39,122 @@
 
 class BigGroupPM extends PriceMethod {
 
-	function addItem($row,$quantity,$priceObj){
-		if ($quantity == 0) return false;
+    function addItem($row,$quantity,$priceObj){
+        if ($quantity == 0) return false;
 
-		$pricing = $priceObj->priceInfo($row,$quantity);
+        $pricing = $priceObj->priceInfo($row,$quantity);
 
-		$stem = substr($mixMatch,0,10);	
-		$sets = 99;
-		// count up total sets
-		for($i=0; $i<=$volume; $i++){
-			$tmp = $stem."_q".$i;
-			if ($volume == $i) $tmp = $stem.'_d';
+        $stem = substr($mixMatch,0,10);    
+        $sets = 99;
+        // count up total sets
+        for($i=0; $i<=$volume; $i++){
+            $tmp = $stem."_q".$i;
+            if ($volume == $i) $tmp = $stem.'_d';
 
-			$chkQ = "SELECT sum(CASE WHEN scale=0 THEN ItemQtty ELSE 1 END) 
-				FROM localtemptrans WHERE mixmatch='$tmp' 
-				and trans_status<>'R'";
-			$chkR = $dbt->query($chkQ);
-			$tsets = 0;
-			if ($dbt->num_rows($chkR) > 0){
-				$tsets = array_pop($dbt->fetch_row($chkR));
-			}
-			if ($tmp == $mixMatch){
-				$tsets += is_int($quantity)?$quantity:1;
-			}
+            $chkQ = "SELECT sum(CASE WHEN scale=0 THEN ItemQtty ELSE 1 END) 
+                FROM localtemptrans WHERE mixmatch='$tmp' 
+                and trans_status<>'R'";
+            $chkR = $dbt->query($chkQ);
+            $tsets = 0;
+            if ($dbt->num_rows($chkR) > 0){
+                $tsets = array_pop($dbt->fetch_row($chkR));
+            }
+            if ($tmp == $mixMatch){
+                $tsets += is_int($quantity)?$quantity:1;
+            }
 
-			if ($tsets < $sets)
-				$sets = $tsets;
+            if ($tsets < $sets)
+                $sets = $tsets;
 
-			// item not found, no point continuing
-			if ($sets == 0) break;
-		}
+            // item not found, no point continuing
+            if ($sets == 0) break;
+        }
 
-		// count existing sets
-		$matches = 0;
-		$mQ = "SELECT sum(matched) FROM localtemptrans WHERE
-			left(mixmatch,11)='{$stem}_'";
-		$mR = $dbt->query($mQ);
-		if ($dbt->num_rows($mR) > 0)
-			$matches = array_pop($dbt->fetch_row($mR));
-		$sets -= $matches;
+        // count existing sets
+        $matches = 0;
+        $mQ = "SELECT sum(matched) FROM localtemptrans WHERE
+            left(mixmatch,11)='{$stem}_'";
+        $mR = $dbt->query($mQ);
+        if ($dbt->num_rows($mR) > 0)
+            $matches = array_pop($dbt->fetch_row($mR));
+        $sets -= $matches;
 
-		// this means the current item
-		// completes a new set
-		if ($sets > 0){
-			if ($priceObj->isSale()){
-				if ($priceObj->isMemberSale() || $priceObj->isStaffSale())
-					$pricing['memDiscount'] = MiscLib::truncate2($row['specialgroupprice'] * $quantity);
-				else
-					$pricing['discount'] = MiscLib::truncate2($row['specialgroupprice'] * $quantity);
-			}
-			else {
-				$pricing['unitPrice'] = $pricing['unitPrice'] - $row['specialgroupprice'];
-			}
+        // this means the current item
+        // completes a new set
+        if ($sets > 0){
+            if ($priceObj->isSale()){
+                if ($priceObj->isMemberSale() || $priceObj->isStaffSale())
+                    $pricing['memDiscount'] = MiscLib::truncate2($row['specialgroupprice'] * $quantity);
+                else
+                    $pricing['discount'] = MiscLib::truncate2($row['specialgroupprice'] * $quantity);
+            }
+            else {
+                $pricing['unitPrice'] = $pricing['unitPrice'] - $row['specialgroupprice'];
+            }
 
-			TransRecord::addItem($row['upc'],
-				$row['description'],
-				'I',
-				' ',
-				' ',
-				$row['department'],
-				$quantity,
-				$pricing['unitPrice'],
-				MiscLib::truncate2($pricing['unitPrice'] * $quantity),
-				$pricing['regPrice'],
-				$row['scale'],
-				$row['tax'],
-				$row['foodstamp'],
-				$pricing['discount'],
-				$pricing['memDiscount'],
-				$row['discount'],
-				$row['discounttype'],
-				$quantity,
-				($priceObj->isSale() ? $row['specialpricemethod'] : $row['pricemethod']),
-				($priceObj->isSale() ? $row['specialquantity'] : $row['quantity']),
-				($priceObj->isSale() ? $row['specialgroupprice'] : $row['groupprice']),
-				$row['mixmatchcode'],
-				$sets,
-				0,
-				(isset($row['cost'])?$row['cost']*$quantity:0.00),
-				(isset($row['numflag'])?$row['numflag']:0),
-				(isset($row['charflag'])?$row['charflag']:'')
-			);
-		}
-		else {
-			// not a new set, treat as a regular item
-			TransRecord::addItem($row['upc'],
-				$row['description'],
-				'I',
-				' ',
-				' ',
-				$row['department'],
-				$quantity,
-				$pricing['unitPrice'],
-				MiscLib::truncate2($pricing['unitPrice'] * $quantity),
-				$pricing['regPrice'],
-				$row['scale'],
-				$row['tax'],
-				$row['foodstamp'],
-				$pricing['discount'],
-				$pricing['memDiscount'],
-				$row['discount'],
-				$row['discounttype'],
-				$quantity,
-				$row['pricemethod'],
-				$row['quantity'],
-				$row['groupprice'],
-				$row['mixmatchcode'],
-				0,
-				0,
-				(isset($row['cost'])?$row['cost']*$quantity:0.00),
-				(isset($row['numflag'])?$row['numflag']:0),
-				(isset($row['charflag'])?$row['charflag']:'')
-			);
-		}
+            TransRecord::addItem($row['upc'],
+                $row['description'],
+                'I',
+                ' ',
+                ' ',
+                $row['department'],
+                $quantity,
+                $pricing['unitPrice'],
+                MiscLib::truncate2($pricing['unitPrice'] * $quantity),
+                $pricing['regPrice'],
+                $row['scale'],
+                $row['tax'],
+                $row['foodstamp'],
+                $pricing['discount'],
+                $pricing['memDiscount'],
+                $row['discount'],
+                $row['discounttype'],
+                $quantity,
+                ($priceObj->isSale() ? $row['specialpricemethod'] : $row['pricemethod']),
+                ($priceObj->isSale() ? $row['specialquantity'] : $row['quantity']),
+                ($priceObj->isSale() ? $row['specialgroupprice'] : $row['groupprice']),
+                $row['mixmatchcode'],
+                $sets,
+                0,
+                (isset($row['cost'])?$row['cost']*$quantity:0.00),
+                (isset($row['numflag'])?$row['numflag']:0),
+                (isset($row['charflag'])?$row['charflag']:'')
+            );
+        }
+        else {
+            // not a new set, treat as a regular item
+            TransRecord::addItem($row['upc'],
+                $row['description'],
+                'I',
+                ' ',
+                ' ',
+                $row['department'],
+                $quantity,
+                $pricing['unitPrice'],
+                MiscLib::truncate2($pricing['unitPrice'] * $quantity),
+                $pricing['regPrice'],
+                $row['scale'],
+                $row['tax'],
+                $row['foodstamp'],
+                $pricing['discount'],
+                $pricing['memDiscount'],
+                $row['discount'],
+                $row['discounttype'],
+                $quantity,
+                $row['pricemethod'],
+                $row['quantity'],
+                $row['groupprice'],
+                $row['mixmatchcode'],
+                0,
+                0,
+                (isset($row['cost'])?$row['cost']*$quantity:0.00),
+                (isset($row['numflag'])?$row['numflag']:0),
+                (isset($row['charflag'])?$row['charflag']:'')
+            );
+        }
 
-		return True;
-	}
+        return True;
+    }
 }
 
 ?>

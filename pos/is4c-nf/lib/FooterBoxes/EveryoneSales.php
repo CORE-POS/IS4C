@@ -21,21 +21,23 @@
 
 *********************************************************************************/
 
-class EveryoneSales extends FooterBox {
+class EveryoneSales extends FooterBox 
+{
 
-	public $header_css_class = 'coloredText';
-	public $display_css = "font-weight:bold;font-size:110%;";
-	public $display_css_class = 'lightestColorText';
+    public $header_css_class = 'coloredText';
+    public $display_css = "font-weight:bold;font-size:110%;";
+    public $display_css_class = 'lightestColorText';
 
-	function header_content(){
-		return _("Special");
-	}
+    public function header_content()
+    {
+        return _("Special");
+    }
 
-	function display_content(){
-		global $CORE_LOCAL;
-		$saleTTL = (is_numeric($CORE_LOCAL->get("discounttotal"))) ? number_format($CORE_LOCAL->get("discounttotal"),2) : "0.00";
-		return $saleTTL;
-	}
+    public function display_content()
+    {
+        global $CORE_LOCAL;
+        $saleTTL = (is_numeric($CORE_LOCAL->get("discounttotal"))) ? number_format($CORE_LOCAL->get("discounttotal"),2) : "0.00";
+        return $saleTTL;
+    }
 }
 
-?>

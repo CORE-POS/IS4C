@@ -1,6 +1,6 @@
 <?php
 include(realpath(dirname(__FILE__).'/../lib/AutoLoader.php'));
-AutoLoader::LoadMap();
+AutoLoader::loadMap();
 include(realpath(dirname(__FILE__).'/../ini.php'));
 include('util.php');
 ?>
@@ -31,7 +31,7 @@ body {
 <?php
 if (isset($_REQUEST['SPECIAL_UPC_MODS'])) $CORE_LOCAL->set('SpecialUpcClasses',$_REQUEST['SPECIAL_UPC_MODS'],True);
 
-$mods = AutoLoader::ListModules('SpecialUPC');
+$mods = AutoLoader::listModules('SpecialUPC');
 
 foreach($mods as $m){
 	$selected = "";
@@ -99,7 +99,7 @@ if (!is_array($CORE_LOCAL->get('DiscountTypeClasses'))){
 			'StaffSale'			
 		),True);
 }
-$discounts = AutoLoader::ListModules('DiscountType');
+$discounts = AutoLoader::listModules('DiscountType');
 $dt_conf = $CORE_LOCAL->get("DiscountTypeClasses");
 for($i=0;$i<$CORE_LOCAL->get('DiscountTypeCount');$i++){
 	echo "[$i] => ";
@@ -148,7 +148,7 @@ if (!is_array($CORE_LOCAL->get('PriceMethodClasses'))){
 			'QttyEnforcedGroupPM'
 		),True);
 }
-$pms = AutoLoader::ListModules('PriceMethod');
+$pms = AutoLoader::listModules('PriceMethod');
 $pm_conf = $CORE_LOCAL->get("PriceMethodClasses");
 for($i=0;$i<$CORE_LOCAL->get('PriceMethodCount');$i++){
 	echo "[$i] => ";
@@ -177,7 +177,7 @@ confsave('PriceMethodClasses',$saveStr);
 </td></tr>
 <tr><td>
 <?php
-$sdepts = AutoLoader::ListModules('SpecialDept');
+$sdepts = AutoLoader::listModules('SpecialDept');
 $sconf = $CORE_LOCAL->get('SpecialDeptMap');
 if (!is_array($sconf)) $sconf = array();
 if (isset($_REQUEST['SDEPT_MAP_LIST'])){

@@ -741,16 +741,16 @@ class ESCPOSPrintHandler extends PrintHandler {
 		}
 		else if (file_exists($arg)){
 			$bmp = new Bitmap();
-			$bmp->Load($arg);
+			$bmp->load($arg);
 		}
 
 		// argument was invalid
 		if ($bmp === null)
 			return "";
 
-		$bmpData = $bmp->GetRawData();
-		$bmpWidth = $bmp->GetWidth();
-		$bmpHeight = $bmp->GetHeight();
+		$bmpData = $bmp->getRawData();
+		$bmpWidth = $bmp->getWidth();
+		$bmpHeight = $bmp->getHeight();
 		$bmpRawBytes = (int)(($bmpWidth + 7)/8);
 
 		$stripes = $this->TransposeBitmapData($bmpData, $bmpWidth);

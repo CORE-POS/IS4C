@@ -49,8 +49,8 @@ class LocalStorageTest extends PHPUnit_Framework_TestCase
 			$this->assertInternalType('string',$get);
 			$this->assertEquals('imm',$get);
 
-			$is = $obj->is_immutable('imm');
-			$isNot = $obj->is_immutable('testArray');
+			$is = $obj->isImmutable('imm');
+			$isNot = $obj->isImmutable('testArray');
 			$this->assertInternalType('boolean',$is);
 			$this->assertInternalType('boolean',$isNot);
 			$this->assertEquals(True,$is);

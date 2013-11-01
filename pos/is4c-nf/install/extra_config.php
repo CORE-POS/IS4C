@@ -2,7 +2,7 @@
 <html>
 <?php
 include(realpath(dirname(__FILE__).'/../lib/AutoLoader.php'));
-AutoLoader::LoadMap();
+AutoLoader::loadMap();
 include(realpath(dirname(__FILE__).'/../ini.php'));
 include('util.php');
 ?>
@@ -66,7 +66,7 @@ confsave('discountEnforced',$CORE_LOCAL->get('discountEnforced'));
 <?php
 if(isset($_REQUEST['DISCOUNTHANDLER'])) $CORE_LOCAL->set('DiscountModule',$_REQUEST['DISCOUNTHANDLER'],True);
 elseif ($CORE_LOCAL->get('DiscountModule') === '') $CORE_LOCAL->set('DiscountModule','DiscountModule');
-$mods = AutoLoader::ListModules('DiscountModule',True);
+$mods = AutoLoader::listModules('DiscountModule',True);
 foreach($mods as $m){
 	printf('<option %s>%s</option>',
 		($CORE_LOCAL->get('DiscountModule')==$m ? 'selected' : ''),
@@ -188,7 +188,7 @@ confsave('enableFranking',$CORE_LOCAL->get("enableFranking"));
 <tr><td>
 <b>Drawer Behavior Module</b>:</td><td>
 <?php
-$kmods = AutoLoader::ListModules('Kicker',True);
+$kmods = AutoLoader::listModules('Kicker',True);
 if(isset($_REQUEST['kickerModule'])) $CORE_LOCAL->set('kickerModule',$_REQUEST['kickerModule'],True);
 if ($CORE_LOCAL->get('kickerModule')=='') $CORE_LOCAL->set('kickerModule','Kicker',True);
 echo '<select name="kickerModule">';
@@ -300,7 +300,7 @@ elseif(!is_array($current_mods) || count($current_mods) != 5){
 	'MultiTotal'
 	);
 }
-$footer_mods = AutoLoader::ListModules('FooterBox');
+$footer_mods = AutoLoader::listModules('FooterBox');
 for($i=0;$i<5;$i++){
 	echo '<select name="FOOTER_MODS[]">';
 	foreach($footer_mods as $fm){
@@ -398,7 +398,7 @@ confsave('ModularTenders',"'".$CORE_LOCAL->get('ModularTenders')."'");
 <?php
 if(isset($_REQUEST['TENDERREPORTMOD'])) $CORE_LOCAL->set('TenderReportMod',$_REQUEST['TENDERREPORTMOD'],True);
 if($CORE_LOCAL->get('TenderReportMod')=='') $CORE_LOCAL->set('TenderReportMod','DefaultTenderReport',True);
-$mods = AutoLoader::ListModules('TenderReport');
+$mods = AutoLoader::listModules('TenderReport');
 sort($mods);
 foreach($mods as $mod){
 	printf('<option %s>%s</option>',
@@ -427,7 +427,7 @@ if (isset($_REQUEST['TenderMapping'])){
 	$saveStr = rtrim($saveStr,",").")";
 	confsave('TenderMap',$saveStr);
 }
-$mods = AutoLoader::ListModules('TenderModule');
+$mods = AutoLoader::listModules('TenderModule');
 //  Tender Report: Desired tenders column
 $settings2 = $CORE_LOCAL->get("TRDesiredTenders");
 if (!is_array($settings2)) $settings2 = array();

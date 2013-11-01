@@ -1,6 +1,6 @@
 <?php
 include(realpath(dirname(__FILE__).'/../lib/AutoLoader.php'));
-AutoLoader::LoadMap();
+AutoLoader::loadMap();
 include(realpath(dirname(__FILE__).'/../ini.php'));
 include('util.php');
 ?>
@@ -33,7 +33,7 @@ if (isset($_REQUEST['PLUGINLIST']) || isset($_REQUEST['psubmit'])){
 	if (!is_array($oldset)) $oldset = array();
 	$newset = isset($_REQUEST['PLUGINLIST']) ? $_REQUEST['PLUGINLIST'] : array();
 	foreach($newset as $plugin_class){
-		if (!Plugin::IsEnabled($plugin_class)){
+		if (!Plugin::isEnabled($plugin_class)){
 			$obj = new $plugin_class();
 			$obj->plugin_enable();
 		}
@@ -49,7 +49,7 @@ if (isset($_REQUEST['PLUGINLIST']) || isset($_REQUEST['psubmit'])){
 $type_check = $CORE_LOCAL->get('PluginList');
 if (!is_array($type_check)) $CORE_LOCAL->set('PluginList',array(), True);
 
-$mods = AutoLoader::ListModules('Plugin');
+$mods = AutoLoader::listModules('Plugin');
 sort($mods);
 
 foreach($mods as $m){
