@@ -193,7 +193,7 @@ class PISuspensionPage extends PIKillerPage {
 				for($i=1;$i<=4;$i++){
 					$cust->personNum($i);
 					if($cust->load())
-						$cust->push_to_lanes();
+						$cust->pushToLanes();
 				}
 
 				$mi = new MeminfoModel($dbc);

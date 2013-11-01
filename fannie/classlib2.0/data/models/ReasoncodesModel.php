@@ -24,7 +24,8 @@
 /**
   @class ReasoncodesModel
 */
-class ReasoncodesModel extends BasicModel {
+class ReasoncodesModel extends BasicModel 
+{
 
     protected $name = "reasoncodes";
 
@@ -37,31 +38,35 @@ class ReasoncodesModel extends BasicModel {
 
     /* START ACCESSOR FUNCTIONS */
 
-    public function textStr(){
-        if(func_num_args() == 0){
-            if(isset($this->instance["textStr"]))
+    public function textStr()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["textStr"])) {
                 return $this->instance["textStr"];
-            elseif(isset($this->columns["textStr"]["default"]))
+            } elseif(isset($this->columns["textStr"]["default"])) {
                 return $this->columns["textStr"]["default"];
-            else return null;
-        }
-        else{
+            } else {
+                return null;
+            }
+        } else {
             $this->instance["textStr"] = func_get_arg(0);
         }
     }
 
-    public function mask(){
-        if(func_num_args() == 0){
-            if(isset($this->instance["mask"]))
-                return (int)$this->instance["mask"];
-            elseif(isset($this->columns["mask"]["default"]))
-                return (int)$this->columns["mask"]["default"];
-            else return null;
-        }
-        else{
+    public function mask()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["mask"])) {
+                return $this->instance["mask"];
+            } elseif(isset($this->columns["mask"]["default"])) {
+                return $this->columns["mask"]["default"];
+            } else {
+                return null;
+            }
+        } else {
             $this->instance["mask"] = func_get_arg(0);
         }
     }
     /* END ACCESSOR FUNCTIONS */
 }
-?>
+

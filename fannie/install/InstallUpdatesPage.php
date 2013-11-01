@@ -110,7 +110,7 @@ class InstallUpdatesPage extends InstallPage {
 				echo 'Error: not a valid model<br />';	
 			else {
 				$updateModel = new $updateClass(null);
-				$db_name = $this->normalize_db_name($updateModel->preferred_db());
+				$db_name = $this->normalize_db_name($updateModel->preferredDB());
 				if ($db_name === False)
 					echo 'Error: requested database unknown';
 				else {
@@ -130,13 +130,13 @@ class InstallUpdatesPage extends InstallPage {
 		}
 
 		$obj = new BasicModel(null);
-		$models = $obj->get_models();
+		$models = $obj->getModels();
 		$cmd = new ReflectionClass('BasicModel');
 		$cmd = $cmd->getFileName();
 		echo '<ul>';
 		foreach($models as $class){
 			$model = new $class(null);
-			$db_name = $this->normalize_db_name($model->preferred_db());
+			$db_name = $this->normalize_db_name($model->preferredDB());
 			if ($db_name === False) continue;
 		
 			ob_start();

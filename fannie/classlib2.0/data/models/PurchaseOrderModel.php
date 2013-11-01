@@ -24,7 +24,8 @@
 /**
   @class PurchaseOrderModel
 */
-class PurchaseOrderModel extends BasicModel {
+class PurchaseOrderModel extends BasicModel 
+{
 
     protected $name = "PurchaseOrder";
 
@@ -74,96 +75,110 @@ class PurchaseOrderModel extends BasicModel {
 
     /* START ACCESSOR FUNCTIONS */
 
-    public function orderID(){
-        if(func_num_args() == 0){
-            if(isset($this->instance["orderID"]))
+    public function orderID()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["orderID"])) {
                 return $this->instance["orderID"];
-            elseif(isset($this->columns["orderID"]["default"]))
+            } elseif(isset($this->columns["orderID"]["default"])) {
                 return $this->columns["orderID"]["default"];
-            else return null;
-        }
-        else{
+            } else {
+                return null;
+            }
+        } else {
             $this->instance["orderID"] = func_get_arg(0);
         }
     }
 
-    public function vendorID(){
-        if(func_num_args() == 0){
-            if(isset($this->instance["vendorID"]))
+    public function vendorID()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["vendorID"])) {
                 return $this->instance["vendorID"];
-            elseif(isset($this->columns["vendorID"]["default"]))
+            } elseif(isset($this->columns["vendorID"]["default"])) {
                 return $this->columns["vendorID"]["default"];
-            else return null;
-        }
-        else{
+            } else {
+                return null;
+            }
+        } else {
             $this->instance["vendorID"] = func_get_arg(0);
         }
     }
 
-    public function creationDate(){
-        if(func_num_args() == 0){
-            if(isset($this->instance["creationDate"]))
+    public function creationDate()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["creationDate"])) {
                 return $this->instance["creationDate"];
-            elseif(isset($this->columns["creationDate"]["default"]))
+            } elseif(isset($this->columns["creationDate"]["default"])) {
                 return $this->columns["creationDate"]["default"];
-            else return null;
-        }
-        else{
+            } else {
+                return null;
+            }
+        } else {
             $this->instance["creationDate"] = func_get_arg(0);
         }
     }
 
-    public function placed(){
-        if(func_num_args() == 0){
-            if(isset($this->instance["placed"]))
+    public function placed()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["placed"])) {
                 return $this->instance["placed"];
-            elseif(isset($this->columns["placed"]["default"]))
+            } elseif(isset($this->columns["placed"]["default"])) {
                 return $this->columns["placed"]["default"];
-            else return null;
-        }
-        else{
+            } else {
+                return null;
+            }
+        } else {
             $this->instance["placed"] = func_get_arg(0);
         }
     }
 
-    public function placedDate(){
-        if(func_num_args() == 0){
-            if(isset($this->instance["placedDate"]))
+    public function placedDate()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["placedDate"])) {
                 return $this->instance["placedDate"];
-            elseif(isset($this->columns["placedDate"]["default"]))
+            } elseif(isset($this->columns["placedDate"]["default"])) {
                 return $this->columns["placedDate"]["default"];
-            else return null;
-        }
-        else{
+            } else {
+                return null;
+            }
+        } else {
             $this->instance["placedDate"] = func_get_arg(0);
         }
     }
 
-    public function userID(){
-        if(func_num_args() == 0){
-            if(isset($this->instance["userID"]))
+    public function userID()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["userID"])) {
                 return $this->instance["userID"];
-            elseif(isset($this->columns["userID"]["default"]))
+            } elseif(isset($this->columns["userID"]["default"])) {
                 return $this->columns["userID"]["default"];
-            else return null;
-        }
-        else{
+            } else {
+                return null;
+            }
+        } else {
             $this->instance["userID"] = func_get_arg(0);
         }
     }
 
-    public function standingID(){
-        if(func_num_args() == 0){
-            if(isset($this->instance["standingID"]))
+    public function standingID()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["standingID"])) {
                 return $this->instance["standingID"];
-            elseif(isset($this->columns["standingID"]["default"]))
+            } elseif(isset($this->columns["standingID"]["default"])) {
                 return $this->columns["standingID"]["default"];
-            else return null;
-        }
-        else{
+            } else {
+                return null;
+            }
+        } else {
             $this->instance["standingID"] = func_get_arg(0);
         }
     }
     /* END ACCESSOR FUNCTIONS */
 }
-?>
+

@@ -24,7 +24,8 @@
 /**
   @class SuspensionHistoryModel
 */
-class SuspensionHistoryModel extends BasicModel {
+class SuspensionHistoryModel extends BasicModel 
+{
 
     protected $name = "suspension_history";
 
@@ -40,70 +41,80 @@ class SuspensionHistoryModel extends BasicModel {
 
     /* START ACCESSOR FUNCTIONS */
 
-    public function username(){
-        if(func_num_args() == 0){
-            if(isset($this->instance["username"]))
+    public function username()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["username"])) {
                 return $this->instance["username"];
-            elseif(isset($this->columns["username"]["default"]))
+            } elseif(isset($this->columns["username"]["default"])) {
                 return $this->columns["username"]["default"];
-            else return null;
-        }
-        else{
+            } else {
+                return null;
+            }
+        } else {
             $this->instance["username"] = func_get_arg(0);
         }
     }
 
-    public function postdate(){
-        if(func_num_args() == 0){
-            if(isset($this->instance["postdate"]))
+    public function postdate()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["postdate"])) {
                 return $this->instance["postdate"];
-            elseif(isset($this->columns["postdate"]["default"]))
+            } elseif(isset($this->columns["postdate"]["default"])) {
                 return $this->columns["postdate"]["default"];
-            else return null;
-        }
-        else{
+            } else {
+                return null;
+            }
+        } else {
             $this->instance["postdate"] = func_get_arg(0);
         }
     }
 
-    public function post(){
-        if(func_num_args() == 0){
-            if(isset($this->instance["post"]))
+    public function post()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["post"])) {
                 return $this->instance["post"];
-            elseif(isset($this->columns["post"]["default"]))
+            } elseif(isset($this->columns["post"]["default"])) {
                 return $this->columns["post"]["default"];
-            else return null;
-        }
-        else{
+            } else {
+                return null;
+            }
+        } else {
             $this->instance["post"] = func_get_arg(0);
         }
     }
 
-    public function cardno(){
-        if(func_num_args() == 0){
-            if(isset($this->instance["cardno"]))
+    public function cardno()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["cardno"])) {
                 return $this->instance["cardno"];
-            elseif(isset($this->columns["cardno"]["default"]))
+            } elseif(isset($this->columns["cardno"]["default"])) {
                 return $this->columns["cardno"]["default"];
-            else return null;
-        }
-        else{
+            } else {
+                return null;
+            }
+        } else {
             $this->instance["cardno"] = func_get_arg(0);
         }
     }
 
-    public function reasoncode(){
-        if(func_num_args() == 0){
-            if(isset($this->instance["reasoncode"]))
+    public function reasoncode()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["reasoncode"])) {
                 return $this->instance["reasoncode"];
-            elseif(isset($this->columns["reasoncode"]["default"]))
+            } elseif(isset($this->columns["reasoncode"]["default"])) {
                 return $this->columns["reasoncode"]["default"];
-            else return null;
-        }
-        else{
+            } else {
+                return null;
+            }
+        } else {
             $this->instance["reasoncode"] = func_get_arg(0);
         }
     }
     /* END ACCESSOR FUNCTIONS */
 }
-?>
+

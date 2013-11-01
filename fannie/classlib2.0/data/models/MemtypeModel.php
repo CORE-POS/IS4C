@@ -24,7 +24,8 @@
 /**
   @class MemtypeModel
 */
-class MemtypeModel extends BasicModel {
+class MemtypeModel extends BasicModel 
+{
 
     protected $name = "memtype";
 
@@ -37,31 +38,35 @@ class MemtypeModel extends BasicModel {
 
     /* START ACCESSOR FUNCTIONS */
 
-    public function memtype(){
-        if(func_num_args() == 0){
-            if(isset($this->instance["memtype"]))
+    public function memtype()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["memtype"])) {
                 return $this->instance["memtype"];
-            elseif(isset($this->columns["memtype"]["default"]))
+            } elseif(isset($this->columns["memtype"]["default"])) {
                 return $this->columns["memtype"]["default"];
-            else return null;
-        }
-        else{
+            } else {
+                return null;
+            }
+        } else {
             $this->instance["memtype"] = func_get_arg(0);
         }
     }
 
-    public function memDesc(){
-        if(func_num_args() == 0){
-            if(isset($this->instance["memDesc"]))
+    public function memDesc()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["memDesc"])) {
                 return $this->instance["memDesc"];
-            elseif(isset($this->columns["memDesc"]["default"]))
+            } elseif(isset($this->columns["memDesc"]["default"])) {
                 return $this->columns["memDesc"]["default"];
-            else return null;
-        }
-        else{
+            } else {
+                return null;
+            }
+        } else {
             $this->instance["memDesc"] = func_get_arg(0);
         }
     }
     /* END ACCESSOR FUNCTIONS */
 }
-?>
+

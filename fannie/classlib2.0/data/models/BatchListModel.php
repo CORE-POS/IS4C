@@ -24,7 +24,8 @@
 /**
   @class BatchListModel
 */
-class BatchListModel extends BasicModel {
+class BatchListModel extends BasicModel 
+{
 
     protected $name = "batchList";
 
@@ -42,96 +43,110 @@ class BatchListModel extends BasicModel {
 
     /* START ACCESSOR FUNCTIONS */
 
-    public function listID(){
-        if(func_num_args() == 0){
-            if(isset($this->instance["listID"]))
+    public function listID()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["listID"])) {
                 return $this->instance["listID"];
-            elseif(isset($this->columns["listID"]["default"]))
+            } elseif(isset($this->columns["listID"]["default"])) {
                 return $this->columns["listID"]["default"];
-            else return null;
-        }
-        else{
+            } else {
+                return null;
+            }
+        } else {
             $this->instance["listID"] = func_get_arg(0);
         }
     }
 
-    public function upc(){
-        if(func_num_args() == 0){
-            if(isset($this->instance["upc"]))
+    public function upc()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["upc"])) {
                 return $this->instance["upc"];
-            elseif(isset($this->columns["upc"]["default"]))
+            } elseif(isset($this->columns["upc"]["default"])) {
                 return $this->columns["upc"]["default"];
-            else return null;
-        }
-        else{
+            } else {
+                return null;
+            }
+        } else {
             $this->instance["upc"] = func_get_arg(0);
         }
     }
 
-    public function batchID(){
-        if(func_num_args() == 0){
-            if(isset($this->instance["batchID"]))
+    public function batchID()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["batchID"])) {
                 return $this->instance["batchID"];
-            elseif(isset($this->columns["batchID"]["default"]))
+            } elseif(isset($this->columns["batchID"]["default"])) {
                 return $this->columns["batchID"]["default"];
-            else return null;
-        }
-        else{
+            } else {
+                return null;
+            }
+        } else {
             $this->instance["batchID"] = func_get_arg(0);
         }
     }
 
-    public function salePrice(){
-        if(func_num_args() == 0){
-            if(isset($this->instance["salePrice"]))
+    public function salePrice()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["salePrice"])) {
                 return $this->instance["salePrice"];
-            elseif(isset($this->columns["salePrice"]["default"]))
+            } elseif(isset($this->columns["salePrice"]["default"])) {
                 return $this->columns["salePrice"]["default"];
-            else return null;
-        }
-        else{
+            } else {
+                return null;
+            }
+        } else {
             $this->instance["salePrice"] = func_get_arg(0);
         }
     }
 
-    public function active(){
-        if(func_num_args() == 0){
-            if(isset($this->instance["active"]))
+    public function active()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["active"])) {
                 return $this->instance["active"];
-            elseif(isset($this->columns["active"]["default"]))
+            } elseif(isset($this->columns["active"]["default"])) {
                 return $this->columns["active"]["default"];
-            else return null;
-        }
-        else{
+            } else {
+                return null;
+            }
+        } else {
             $this->instance["active"] = func_get_arg(0);
         }
     }
 
-    public function pricemethod(){
-        if(func_num_args() == 0){
-            if(isset($this->instance["pricemethod"]))
+    public function pricemethod()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["pricemethod"])) {
                 return $this->instance["pricemethod"];
-            elseif(isset($this->columns["pricemethod"]["default"]))
+            } elseif(isset($this->columns["pricemethod"]["default"])) {
                 return $this->columns["pricemethod"]["default"];
-            else return null;
-        }
-        else{
+            } else {
+                return null;
+            }
+        } else {
             $this->instance["pricemethod"] = func_get_arg(0);
         }
     }
 
-    public function quantity(){
-        if(func_num_args() == 0){
-            if(isset($this->instance["quantity"]))
+    public function quantity()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["quantity"])) {
                 return $this->instance["quantity"];
-            elseif(isset($this->columns["quantity"]["default"]))
+            } elseif(isset($this->columns["quantity"]["default"])) {
                 return $this->columns["quantity"]["default"];
-            else return null;
-        }
-        else{
+            } else {
+                return null;
+            }
+        } else {
             $this->instance["quantity"] = func_get_arg(0);
         }
     }
     /* END ACCESSOR FUNCTIONS */
 }
-?>
+

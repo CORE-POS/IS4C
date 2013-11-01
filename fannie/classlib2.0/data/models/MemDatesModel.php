@@ -30,7 +30,8 @@ if (!class_exists('FannieDB')) {
     include(dirname(__FILE__).'/../FannieDB.php');
 }
 
-class MemDatesModel extends BasicModel {
+class MemDatesModel extends BasicModel 
+{
 
     protected $name = 'memDates';
 
@@ -44,41 +45,47 @@ class MemDatesModel extends BasicModel {
 
     /* START ACCESSOR FUNCTIONS */
 
-    public function card_no(){
-        if(func_num_args() == 0){
-            if(isset($this->instance["card_no"]))
+    public function card_no()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["card_no"])) {
                 return $this->instance["card_no"];
-            elseif(isset($this->columns["card_no"]["default"]))
+            } elseif(isset($this->columns["card_no"]["default"])) {
                 return $this->columns["card_no"]["default"];
-            else return null;
-        }
-        else{
+            } else {
+                return null;
+            }
+        } else {
             $this->instance["card_no"] = func_get_arg(0);
         }
     }
 
-    public function start_date(){
-        if(func_num_args() == 0){
-            if(isset($this->instance["start_date"]))
+    public function start_date()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["start_date"])) {
                 return $this->instance["start_date"];
-            elseif(isset($this->columns["start_date"]["default"]))
+            } elseif(isset($this->columns["start_date"]["default"])) {
                 return $this->columns["start_date"]["default"];
-            else return null;
-        }
-        else{
+            } else {
+                return null;
+            }
+        } else {
             $this->instance["start_date"] = func_get_arg(0);
         }
     }
 
-    public function end_date(){
-        if(func_num_args() == 0){
-            if(isset($this->instance["end_date"]))
+    public function end_date()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["end_date"])) {
                 return $this->instance["end_date"];
-            elseif(isset($this->columns["end_date"]["default"]))
+            } elseif(isset($this->columns["end_date"]["default"])) {
                 return $this->columns["end_date"]["default"];
-            else return null;
-        }
-        else{
+            } else {
+                return null;
+            }
+        } else {
             $this->instance["end_date"] = func_get_arg(0);
         }
     }
@@ -97,10 +104,11 @@ class MemDatesModel extends BasicModel {
       @param $start the starting date
       @param $end the ending date
     */
-    public static function update($card_no,$start,$end){
+    public static function update($card_no,$start,$end)
+    {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
-        self::init_record($dbc,$card_no);
+        self::initRecord($dbc,$card_no);
 
         $upP = $dbc->prepare_statement("UPDATE memDates SET start_date=?,
                 end_date=? WHERE card_no=?");
@@ -109,11 +117,12 @@ class MemDatesModel extends BasicModel {
         return $upR;
     }
 
-    private static function init_record($dbc,$card_no){
+    private static function initRecord($dbc,$card_no)
+    {
         $q = $dbc->prepare_statement("SELECT card_no FROM memDates WHERE card_no=?");
         $r = $dbc->exec_statement($q,array($card_no));
 
-        if ($dbc->num_rows($r) == 0){
+        if ($dbc->num_rows($r) == 0) {
             $ins = $dbc->prepare_statement("INSERT INTO memDates (card_no,
                 start_date,end_date) VALUES (?, NULL, NULL)");
             $dbc->exec_statement($ins,array($card_no));
@@ -122,4 +131,3 @@ class MemDatesModel extends BasicModel {
 
 }
 
-?>

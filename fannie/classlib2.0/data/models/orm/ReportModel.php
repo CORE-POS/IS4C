@@ -21,7 +21,8 @@
 
 *********************************************************************************/
 
-class ReportModel extends BasicModel {
+class ReportModel extends BasicModel 
+{
 
     protected $name = '';
 
@@ -36,33 +37,39 @@ class ReportModel extends BasicModel {
     public function create(){}
     public function save(){}
     public function delete(){}
-    public function push_to_lanes(){}
-    public function delete_from_lanes(){}
+    public function pushToLanes(){}
+    public function deleteFromLanes(){}
 
-    public function find($sort=''){
+    public function find($sort='')
+    {
         $sql = 'SELECT ';
-        foreach($this->columns as $name => $definition){
+        foreach($this->columns as $name => $definition) {
             $sql .= $definition.' as '.$this->connection->identifier_escape($name).',';
         }
         $sql = substr($sql,0,strlen($sql)-1);
         
         $sql .= ' FROM ';
-        foreach($this->tables as $name => $join){
-            if (!empty($join))
+        foreach($this->tables as $name => $join) {
+            if (!empty($join)) {
                 $sql .= ' '.$join['type'].' ';
+            }
             $sql .= $name;
-            if (!empty($join))
+            if (!empty($join)) {
                 $sql .= ' '.$join['on'].' ';
+            }
         }
-        if (!empty($this->where))
+        if (!empty($this->where)) {
             $sql .= ' WHERE '.$this->where;
-        if (!empty($this->group_by))
+        }
+        if (!empty($this->group_by)) {
             $sql .= ' GROUP BY '.$this->group_by;
-        if (!empty($this->having))
+        }
+        if (!empty($this->having)) {
             $sql .= ' HAVING '.$this->having;
-        if (!empty($this->order_by))
+        }
+        if (!empty($this->order_by)) {
             $sql .= ' ORDER BY '.$this->order_by;
+        }
     }
 }
 
-?>

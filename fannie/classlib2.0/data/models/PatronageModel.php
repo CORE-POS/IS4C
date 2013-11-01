@@ -24,7 +24,8 @@
 /**
   @class PatronageModel
 */
-class PatronageModel extends BasicModel {
+class PatronageModel extends BasicModel 
+{
 
     protected $name = "patronage";
 
@@ -44,122 +45,140 @@ class PatronageModel extends BasicModel {
 
     /* START ACCESSOR FUNCTIONS */
 
-    public function cardno(){
-        if(func_num_args() == 0){
-            if(isset($this->instance["cardno"]))
+    public function cardno()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["cardno"])) {
                 return $this->instance["cardno"];
-            elseif(isset($this->columns["cardno"]["default"]))
+            } elseif(isset($this->columns["cardno"]["default"])) {
                 return $this->columns["cardno"]["default"];
-            else return null;
-        }
-        else{
+            } else {
+                return null;
+            }
+        } else {
             $this->instance["cardno"] = func_get_arg(0);
         }
     }
 
-    public function purchase(){
-        if(func_num_args() == 0){
-            if(isset($this->instance["purchase"]))
+    public function purchase()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["purchase"])) {
                 return $this->instance["purchase"];
-            elseif(isset($this->columns["purchase"]["default"]))
+            } elseif(isset($this->columns["purchase"]["default"])) {
                 return $this->columns["purchase"]["default"];
-            else return null;
-        }
-        else{
+            } else {
+                return null;
+            }
+        } else {
             $this->instance["purchase"] = func_get_arg(0);
         }
     }
 
-    public function discounts(){
-        if(func_num_args() == 0){
-            if(isset($this->instance["discounts"]))
+    public function discounts()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["discounts"])) {
                 return $this->instance["discounts"];
-            elseif(isset($this->columns["discounts"]["default"]))
+            } elseif(isset($this->columns["discounts"]["default"])) {
                 return $this->columns["discounts"]["default"];
-            else return null;
-        }
-        else{
+            } else {
+                return null;
+            }
+        } else {
             $this->instance["discounts"] = func_get_arg(0);
         }
     }
 
-    public function rewards(){
-        if(func_num_args() == 0){
-            if(isset($this->instance["rewards"]))
+    public function rewards()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["rewards"])) {
                 return $this->instance["rewards"];
-            elseif(isset($this->columns["rewards"]["default"]))
+            } elseif(isset($this->columns["rewards"]["default"])) {
                 return $this->columns["rewards"]["default"];
-            else return null;
-        }
-        else{
+            } else {
+                return null;
+            }
+        } else {
             $this->instance["rewards"] = func_get_arg(0);
         }
     }
 
-    public function net_purch(){
-        if(func_num_args() == 0){
-            if(isset($this->instance["net_purch"]))
+    public function net_purch()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["net_purch"])) {
                 return $this->instance["net_purch"];
-            elseif(isset($this->columns["net_purch"]["default"]))
+            } elseif(isset($this->columns["net_purch"]["default"])) {
                 return $this->columns["net_purch"]["default"];
-            else return null;
-        }
-        else{
+            } else {
+                return null;
+            }
+        } else {
             $this->instance["net_purch"] = func_get_arg(0);
         }
     }
 
-    public function tot_pat(){
-        if(func_num_args() == 0){
-            if(isset($this->instance["tot_pat"]))
+    public function tot_pat()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["tot_pat"])) {
                 return $this->instance["tot_pat"];
-            elseif(isset($this->columns["tot_pat"]["default"]))
+            } elseif(isset($this->columns["tot_pat"]["default"])) {
                 return $this->columns["tot_pat"]["default"];
-            else return null;
-        }
-        else{
+            } else {
+                return null;
+            }
+        } else {
             $this->instance["tot_pat"] = func_get_arg(0);
         }
     }
 
-    public function cash_pat(){
-        if(func_num_args() == 0){
-            if(isset($this->instance["cash_pat"]))
+    public function cash_pat()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["cash_pat"])) {
                 return $this->instance["cash_pat"];
-            elseif(isset($this->columns["cash_pat"]["default"]))
+            } elseif(isset($this->columns["cash_pat"]["default"])) {
                 return $this->columns["cash_pat"]["default"];
-            else return null;
-        }
-        else{
+            } else {
+                return null;
+            }
+        } else {
             $this->instance["cash_pat"] = func_get_arg(0);
         }
     }
 
-    public function equit_pat(){
-        if(func_num_args() == 0){
-            if(isset($this->instance["equit_pat"]))
+    public function equit_pat()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["equit_pat"])) {
                 return $this->instance["equit_pat"];
-            elseif(isset($this->columns["equit_pat"]["default"]))
+            } elseif(isset($this->columns["equit_pat"]["default"])) {
                 return $this->columns["equit_pat"]["default"];
-            else return null;
-        }
-        else{
+            } else {
+                return null;
+            }
+        } else {
             $this->instance["equit_pat"] = func_get_arg(0);
         }
     }
 
-    public function FY(){
-        if(func_num_args() == 0){
-            if(isset($this->instance["FY"]))
+    public function FY()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["FY"])) {
                 return $this->instance["FY"];
-            elseif(isset($this->columns["FY"]["default"]))
+            } elseif(isset($this->columns["FY"]["default"])) {
                 return $this->columns["FY"]["default"];
-            else return null;
-        }
-        else{
+            } else {
+                return null;
+            }
+        } else {
             $this->instance["FY"] = func_get_arg(0);
         }
     }
     /* END ACCESSOR FUNCTIONS */
 }
-?>
+

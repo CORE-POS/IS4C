@@ -24,7 +24,8 @@
 /**
   @class DisableCouponModel
 */
-class DisableCouponModel extends BasicModel {
+class DisableCouponModel extends BasicModel 
+{
 
     protected $name = "disableCoupon";
 
@@ -36,44 +37,50 @@ class DisableCouponModel extends BasicModel {
 
     /* START ACCESSOR FUNCTIONS */
 
-    public function upc(){
-        if(func_num_args() == 0){
-            if(isset($this->instance["upc"]))
+    public function upc()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["upc"])) {
                 return $this->instance["upc"];
-            elseif(isset($this->columns["upc"]["default"]))
+            } elseif(isset($this->columns["upc"]["default"])) {
                 return $this->columns["upc"]["default"];
-            else return null;
-        }
-        else{
+            } else {
+                return null;
+            }
+        } else {
             $this->instance["upc"] = func_get_arg(0);
         }
     }
 
-    public function threshold(){
-        if(func_num_args() == 0){
-            if(isset($this->instance["threshold"]))
+    public function threshold()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["threshold"])) {
                 return $this->instance["threshold"];
-            elseif(isset($this->columns["threshold"]["default"]))
+            } elseif(isset($this->columns["threshold"]["default"])) {
                 return $this->columns["threshold"]["default"];
-            else return null;
-        }
-        else{
+            } else {
+                return null;
+            }
+        } else {
             $this->instance["threshold"] = func_get_arg(0);
         }
     }
 
-    public function reason(){
-        if(func_num_args() == 0){
-            if(isset($this->instance["reason"]))
+    public function reason()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["reason"])) {
                 return $this->instance["reason"];
-            elseif(isset($this->columns["reason"]["default"]))
+            } elseif(isset($this->columns["reason"]["default"])) {
                 return $this->columns["reason"]["default"];
-            else return null;
-        }
-        else{
+            } else {
+                return null;
+            }
+        } else {
             $this->instance["reason"] = func_get_arg(0);
         }
     }
     /* END ACCESSOR FUNCTIONS */
 }
-?>
+

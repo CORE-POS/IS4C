@@ -69,7 +69,7 @@ class SaPriceChangePage extends FannieRESTfulPage {
 		$prod->upc(str_pad($this->upc,13,'0',STR_PAD_LEFT));
 		$prod->normal_price($this->price);
 		$prod->save();
-		$prod->push_to_lanes();
+		$prod->pushToLanes();
 
 		$this->id = $this->upc;
 		return $this->get_id_handler();

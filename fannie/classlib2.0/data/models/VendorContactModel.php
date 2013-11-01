@@ -24,7 +24,8 @@
 /**
   @class VendorContactModel
 */
-class VendorContactModel extends BasicModel {
+class VendorContactModel extends BasicModel 
+{
 
     protected $name = "vendorContact";
 
@@ -39,83 +40,95 @@ class VendorContactModel extends BasicModel {
 
     /* START ACCESSOR FUNCTIONS */
 
-    public function vendorID(){
-        if(func_num_args() == 0){
-            if(isset($this->instance["vendorID"]))
+    public function vendorID()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["vendorID"])) {
                 return $this->instance["vendorID"];
-            elseif(isset($this->columns["vendorID"]["default"]))
+            } elseif(isset($this->columns["vendorID"]["default"])) {
                 return $this->columns["vendorID"]["default"];
-            else return null;
-        }
-        else{
+            } else {
+                return null;
+            }
+        } else {
             $this->instance["vendorID"] = func_get_arg(0);
         }
     }
 
-    public function phone(){
-        if(func_num_args() == 0){
-            if(isset($this->instance["phone"]))
+    public function phone()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["phone"])) {
                 return $this->instance["phone"];
-            elseif(isset($this->columns["phone"]["default"]))
+            } elseif(isset($this->columns["phone"]["default"])) {
                 return $this->columns["phone"]["default"];
-            else return null;
-        }
-        else{
+            } else {
+                return null;
+            }
+        } else {
             $this->instance["phone"] = func_get_arg(0);
         }
     }
 
-    public function fax(){
-        if(func_num_args() == 0){
-            if(isset($this->instance["fax"]))
+    public function fax()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["fax"])) {
                 return $this->instance["fax"];
-            elseif(isset($this->columns["fax"]["default"]))
+            } elseif(isset($this->columns["fax"]["default"])) {
                 return $this->columns["fax"]["default"];
-            else return null;
-        }
-        else{
+            } else {
+                return null;
+            }
+        } else {
             $this->instance["fax"] = func_get_arg(0);
         }
     }
 
-    public function email(){
-        if(func_num_args() == 0){
-            if(isset($this->instance["email"]))
+    public function email()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["email"])) {
                 return $this->instance["email"];
-            elseif(isset($this->columns["email"]["default"]))
+            } elseif(isset($this->columns["email"]["default"])) {
                 return $this->columns["email"]["default"];
-            else return null;
-        }
-        else{
+            } else {
+                return null;
+            }
+        } else {
             $this->instance["email"] = func_get_arg(0);
         }
     }
 
-    public function website(){
-        if(func_num_args() == 0){
-            if(isset($this->instance["website"]))
+    public function website()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["website"])) {
                 return $this->instance["website"];
-            elseif(isset($this->columns["website"]["default"]))
+            } elseif(isset($this->columns["website"]["default"])) {
                 return $this->columns["website"]["default"];
-            else return null;
-        }
-        else{
+            } else {
+                return null;
+            }
+        } else {
             $this->instance["website"] = func_get_arg(0);
         }
     }
 
-    public function notes(){
-        if(func_num_args() == 0){
-            if(isset($this->instance["notes"]))
+    public function notes()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["notes"])) {
                 return $this->instance["notes"];
-            elseif(isset($this->columns["notes"]["default"]))
+            } elseif(isset($this->columns["notes"]["default"])) {
                 return $this->columns["notes"]["default"];
-            else return null;
-        }
-        else{
+            } else {
+                return null;
+            }
+        } else {
             $this->instance["notes"] = func_get_arg(0);
         }
     }
     /* END ACCESSOR FUNCTIONS */
 }
-?>
+

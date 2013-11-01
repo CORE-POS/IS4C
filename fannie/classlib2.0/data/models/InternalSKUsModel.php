@@ -24,7 +24,8 @@
 /**
   @class InternalSKUsModel
 */
-class InternalSKUsModel extends BasicModel {
+class InternalSKUsModel extends BasicModel 
+{
 
     protected $name = "internalSKUs";
 
@@ -37,57 +38,65 @@ class InternalSKUsModel extends BasicModel {
 
     /* START ACCESSOR FUNCTIONS */
 
-    public function our_sku(){
-        if(func_num_args() == 0){
-            if(isset($this->instance["our_sku"]))
+    public function our_sku()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["our_sku"])) {
                 return $this->instance["our_sku"];
-            elseif(isset($this->columns["our_sku"]["default"]))
+            } elseif(isset($this->columns["our_sku"]["default"])) {
                 return $this->columns["our_sku"]["default"];
-            else return null;
-        }
-        else{
+            } else {
+                return null;
+            }
+        } else {
             $this->instance["our_sku"] = func_get_arg(0);
         }
     }
 
-    public function vendor_sku(){
-        if(func_num_args() == 0){
-            if(isset($this->instance["vendor_sku"]))
+    public function vendor_sku()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["vendor_sku"])) {
                 return $this->instance["vendor_sku"];
-            elseif(isset($this->columns["vendor_sku"]["default"]))
+            } elseif(isset($this->columns["vendor_sku"]["default"])) {
                 return $this->columns["vendor_sku"]["default"];
-            else return null;
-        }
-        else{
+            } else {
+                return null;
+            }
+        } else {
             $this->instance["vendor_sku"] = func_get_arg(0);
         }
     }
 
-    public function vendorID(){
-        if(func_num_args() == 0){
-            if(isset($this->instance["vendorID"]))
+    public function vendorID()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["vendorID"])) {
                 return $this->instance["vendorID"];
-            elseif(isset($this->columns["vendorID"]["default"]))
+            } elseif(isset($this->columns["vendorID"]["default"])) {
                 return $this->columns["vendorID"]["default"];
-            else return null;
-        }
-        else{
+            } else {
+                return null;
+            }
+        } else {
             $this->instance["vendorID"] = func_get_arg(0);
         }
     }
 
-    public function upc(){
-        if(func_num_args() == 0){
-            if(isset($this->instance["upc"]))
+    public function upc()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["upc"])) {
                 return $this->instance["upc"];
-            elseif(isset($this->columns["upc"]["default"]))
+            } elseif(isset($this->columns["upc"]["default"])) {
                 return $this->columns["upc"]["default"];
-            else return null;
-        }
-        else{
+            } else {
+                return null;
+            }
+        } else {
             $this->instance["upc"] = func_get_arg(0);
         }
     }
     /* END ACCESSOR FUNCTIONS */
 }
-?>
+
