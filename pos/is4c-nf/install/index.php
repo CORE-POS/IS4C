@@ -571,9 +571,9 @@ function create_trans_dbs($db,$type){
 			when tax = 0 and foodstamp <> 0
 				then 'F'
 			WHEN (tax > 1 and foodstamp <> 0)
-				THEN ".$db->concat('SUBSTR(t.description,0,1)',"'F'",'')."
+				THEN ".$db->concat('SUBSTR(t.description,1,1)',"'F'",'')."
 			WHEN (tax > 1 and foodstamp = 0)
-				THEN SUBSTR(t.description,0,1)
+				THEN SUBSTR(t.description,1,1)
 			when tax = 0 and foodstamp = 0
 				then '' 
 		end
@@ -667,11 +667,11 @@ function create_trans_dbs($db,$type){
 		select
 		case 
 			when trans_type = 'T'
-				then 	".$db->concat( "SUBSTR(".$db->concat('UPPER(TRIM(description))','space(44)','').", 0, 44)" 
+				then 	".$db->concat( "SUBSTR(".$db->concat('UPPER(TRIM(description))','space(44)','').", 1, 44)" 
 					, "right(".$db->concat( 'space(8)', 'FORMAT(-1 * total, 2)','').", 8)" 
 					, "right(".$db->concat( 'space(4)', 'status','').", 4)",'')."
 			when voided = 3 
-				then 	".$db->concat("SUBSTR(".$db->concat('description', 'space(30)','').", 0, 30)"
+				then 	".$db->concat("SUBSTR(".$db->concat('description', 'space(30)','').", 1, 30)"
 					, 'space(9)'
 					, "'TOTAL'"
 					, 'right('.$db->concat( 'space(8)', 'FORMAT(unitPrice, 2)','').', 8)','')."
@@ -682,14 +682,14 @@ function create_trans_dbs($db,$type){
 			when voided = 6
 				then 	description
 			when voided = 7 or voided = 17
-				then 	".$db->concat("SUBSTR(".$db->concat('description', 'space(30)','').", 0, 30)"
+				then 	".$db->concat("SUBSTR(".$db->concat('description', 'space(30)','').", 1, 30)"
 					, 'space(14)'
 					, 'right('.$db->concat( 'space(8)', 'FORMAT(unitPrice, 2)','').', 8)'
 					, 'right('.$db->concat( 'space(4)', 'status','').', 4)','')."
 			else
-				".$db->concat("SUBSTR(".$db->concat('description', 'space(30)','').", 0, 30)"
+				".$db->concat("SUBSTR(".$db->concat('description', 'space(30)','').", 1, 30)"
 				, "' '" 
-				, "SUBSTR(".$db->concat('comment', 'space(13)','').", 0, 13)"
+				, "SUBSTR(".$db->concat('comment', 'space(13)','').", 1, 13)"
 				, 'right('.$db->concat('space(8)', 'FORMAT(total, 2)','').', 8)'
 				, 'right('.$db->concat('space(4)', 'status','').', 4)','')."
 		end
@@ -830,9 +830,9 @@ function create_trans_dbs($db,$type){
 			WHEN (tax = 1 and foodstamp = 0)
 				THEN 'T' 
 			WHEN (tax > 1 and foodstamp <> 0)
-				THEN ".$db->concat('SUBSTR(t.description,0,1)',"'F'",'')."
+				THEN ".$db->concat('SUBSTR(t.description,1,1)',"'F'",'')."
 			WHEN (tax > 1 and foodstamp = 0)
-				THEN SUBSTR(t.description,0,1)
+				THEN SUBSTR(t.description,1,1)
 			when tax = 0 and foodstamp <> 0
 				then 'F'
 			when tax = 0 and foodstamp = 0
@@ -923,11 +923,11 @@ function create_trans_dbs($db,$type){
 		trans_no,
 		case 
 			when trans_type = 'T'
-				then 	".$db->concat( "SUBSTR(".$db->concat('UPPER(TRIM(description))','space(44)','').", 0, 44)" 
+				then 	".$db->concat( "SUBSTR(".$db->concat('UPPER(TRIM(description))','space(44)','').", 1, 44)" 
 					, "right(".$db->concat( 'space(8)', 'FORMAT(-1 * total, 2)','').", 8)" 
 					, "right(".$db->concat( 'space(4)', 'status','').", 4)",'')."
 			when voided = 3 
-				then 	".$db->concat("SUBSTR(".$db->concat('description', 'space(30)','').", 0, 30)"
+				then 	".$db->concat("SUBSTR(".$db->concat('description', 'space(30)','').", 1, 30)"
 					, 'space(9)'
 					, "'TOTAL'"
 					, 'right('.$db->concat( 'space(8)', 'FORMAT(unitPrice, 2)','').', 8)','')."
@@ -938,14 +938,14 @@ function create_trans_dbs($db,$type){
 			when voided = 6
 				then 	description
 			when voided = 7 or voided = 17
-				then 	".$db->concat("SUBSTR(".$db->concat('description', 'space(30)','').", 0, 30)"
+				then 	".$db->concat("SUBSTR(".$db->concat('description', 'space(30)','').", 1, 30)"
 					, 'space(14)'
 					, 'right('.$db->concat( 'space(8)', 'FORMAT(unitPrice, 2)','').', 8)'
 					, 'right('.$db->concat( 'space(4)', 'status','').', 4)','')."
 			else
-				".$db->concat("SUBSTR(".$db->concat('description', 'space(30)','').", 0, 30)"
+				".$db->concat("SUBSTR(".$db->concat('description', 'space(30)','').", 1, 30)"
 				, "' '" 
-				, "SUBSTR(".$db->concat('comment', 'space(13)','').", 0, 13)"
+				, "SUBSTR(".$db->concat('comment', 'space(13)','').", 1, 13)"
 				, 'right('.$db->concat('space(8)', 'FORMAT(total, 2)','').', 8)'
 				, 'right('.$db->concat('space(4)', 'status','').', 4)','')."
 		end
@@ -1333,9 +1333,9 @@ function create_trans_dbs($db,$type){
 		when tax = 1 and foodstamp = 0
 			then 'T' 
 		WHEN (tax > 1 and foodstamp <> 0)
-			THEN ".$db->concat('SUBSTR(t.description,0,1)',"'F'",'')."
+			THEN ".$db->concat('SUBSTR(t.description,1,1)',"'F'",'')."
 		WHEN (tax > 1 and foodstamp = 0)
-			THEN SUBSTR(t.description,0,1)
+			THEN SUBSTR(t.description,1,1)
 		when tax = 0 and foodstamp <> 0
 			then 'F'
 		when tax = 0 and foodstamp = 0
@@ -1466,9 +1466,9 @@ function create_trans_dbs($db,$type){
 				then 	
 					case when trans_subtype = 'CP' and upc<>'0'
 					then	".$db->concat(
-						"SUBSTR(".$db->concat('description','space(30)','').",0,30)",
+						"SUBSTR(".$db->concat('description','space(30)','').",1,30)",
 						"' '",
-						"SUBSTR(".$db->concat('comment','space(12)','').",0,12)",
+						"SUBSTR(".$db->concat('comment','space(12)','').",1,12)",
 						"right(".$db->concat('space(8)','CAST(total AS char)','').",8)",
 						"right(".$db->concat('space(4)','status','').",4)",'')." 
 					else 	".$db->concat( 
@@ -1478,7 +1478,7 @@ function create_trans_dbs($db,$type){
 					end 
 			when voided = 3 
 				then 	".$db->concat( 
-					"SUBSTR(".$db->concat('description','space(30)','').",0,30)",
+					"SUBSTR(".$db->concat('description','space(30)','').",1,30)",
 					"space(9)", 
 					"'TOTAL'", 
 					"right(".$db->concat('space(8)','CAST(unitPrice AS char)','').",8)",'')."
@@ -1490,7 +1490,7 @@ function create_trans_dbs($db,$type){
 				then 	description
 			when voided = 7 or voided = 17
 				then 	".$db->concat(
-					"SUBSTR(".$db->concat('description','space(30)','').",0,30)",
+					"SUBSTR(".$db->concat('description','space(30)','').",1,30)",
 					"space(14)", 
 					"right(".$db->concat('space(8)','CAST(unitPrice AS char)','').",8)",
 					"right(".$db->concat('space(4)','status','').",4)",'')." 
@@ -1498,9 +1498,9 @@ function create_trans_dbs($db,$type){
 				then 	description
 			else
 				".$db->concat(
-					"SUBSTR(".$db->concat('description','space(30)','').",0,30)",
+					"SUBSTR(".$db->concat('description','space(30)','').",1,30)",
 					"' '",
-					"SUBSTR(".$db->concat('comment','space(12)','').",0,12)",
+					"SUBSTR(".$db->concat('comment','space(12)','').",1,12)",
 					"right(".$db->concat('space(8)','CAST(total AS char)','').",8)",
 					"right(".$db->concat('space(4)','status','').",4)",'')." 
 			end as linetoprint,
@@ -1593,7 +1593,7 @@ function create_trans_dbs($db,$type){
 
 	select
 	".$db->concat(
-	"SUBSTR(".$db->concat("'** '","trim(CAST(percentDiscount AS char))","'% Discount Applied **'",'space(30)','').",0,30)",
+	"SUBSTR(".$db->concat("'** '","trim(CAST(percentDiscount AS char))","'% Discount Applied **'",'space(30)','').",1,30)",
 	"' '", 
 	"space(13)",
 	"right(".$db->concat('space(8)',"CAST((-1*transDiscount) AS char)",'').",8)",
@@ -1921,9 +1921,9 @@ function create_trans_dbs($db,$type){
 			WHEN (tax = 1 and foodstamp = 0)
 				THEN 'T' 
 			WHEN (tax > 1 and foodstamp <> 0)
-				THEN ".$db->concat('SUBSTR(t.description,0,1)',"'F'",'')."
+				THEN ".$db->concat('SUBSTR(t.description,1,1)',"'F'",'')."
 			WHEN (tax > 1 and foodstamp = 0)
-				THEN SUBSTR(t.description,0,1)
+				THEN SUBSTR(t.description,1,1)
 			when tax = 0 and foodstamp <> 0
 				then 'F'
 			when tax = 0 and foodstamp = 0
@@ -2051,9 +2051,9 @@ function create_trans_dbs($db,$type){
 				then 	
 					case when trans_subtype = 'CP' and upc<>'0'
 					then	".$db->concat(
-						"SUBSTR(".$db->concat('description','space(30)','').",0,30)",
+						"SUBSTR(".$db->concat('description','space(30)','').",1,30)",
 						"' '",
-						"SUBSTR(".$db->concat('comment','space(12)','').",0,12)",
+						"SUBSTR(".$db->concat('comment','space(12)','').",1,12)",
 						"right(".$db->concat('space(8)','CAST(total AS char)','').",8)",
 						"right(".$db->concat('space(4)','status','').",4)",'')." 
 					else 	".$db->concat( 
@@ -2063,7 +2063,7 @@ function create_trans_dbs($db,$type){
 					end 
 			when voided = 3 
 				then 	".$db->concat( 
-					"SUBSTR(".$db->concat('description','space(30)','').",0,30)",
+					"SUBSTR(".$db->concat('description','space(30)','').",1,30)",
 					"space(9)", 
 					"'TOTAL'", 
 					"right(".$db->concat('space(8)','CAST(unitPrice AS char)','').",8)",'')."
@@ -2075,7 +2075,7 @@ function create_trans_dbs($db,$type){
 				then 	description
 			when voided = 7 or voided = 17
 				then 	".$db->concat(
-					"SUBSTR(".$db->concat('description','space(30)','').",0,30)",
+					"SUBSTR(".$db->concat('description','space(30)','').",1,30)",
 					"space(14)", 
 					"right(".$db->concat('space(8)','CAST(unitPrice AS char)','').",8)",
 					"right(".$db->concat('space(4)','status','').",4)",'')." 
@@ -2083,9 +2083,9 @@ function create_trans_dbs($db,$type){
 				then 	description
 			else
 				".$db->concat(
-					"SUBSTR(".$db->concat('description','space(30)','').",0,30)",
+					"SUBSTR(".$db->concat('description','space(30)','').",1,30)",
 					"' '",
-					"SUBSTR(".$db->concat('comment','space(12)','').",0,12)",
+					"SUBSTR(".$db->concat('comment','space(12)','').",1,12)",
 					"right(".$db->concat('space(8)','CAST(total AS char)','').",8)",
 					"right(".$db->concat('space(4)','status','').",4)",'')." 
 		end
@@ -2190,7 +2190,7 @@ function create_trans_dbs($db,$type){
 
 		select
 		".$db->concat(
-		"SUBSTR(".$db->concat("'** '","trim(CAST(percentDiscount AS char))","'% Discount Applied **'",'space(30)','').",0,30)",
+		"SUBSTR(".$db->concat("'** '","trim(CAST(percentDiscount AS char))","'% Discount Applied **'",'space(30)','').",1,30)",
 		"' '", 
 		"space(13)",
 		"right(".$db->concat('space(8)',"CAST((-1*transDiscount) AS char)",'').",8)",
