@@ -58,7 +58,7 @@ while ($taxRatesW = $db->fetch_row($taxRatesR)){
 $createStr .= "
 CAST(sum(case when trans_subtype = 'MI' or trans_subtype = 'CX'  then total else 0 end) AS decimal(10,2)) as chargeTotal,
 CAST(sum(case when department = 990  then total else 0 end) AS decimal(10,2)) as paymentTotal,
-CAST(sum(case when trans_type = 'T' then total else 0 end) AS decimal(10,2)) as tenderTotal,\n";
+CAST(sum(case when trans_type = 'T' and department = 0 then total else 0 end) AS decimal(10,2)) as tenderTotal,\n";
 $createStr .= "CAST(sum(case when trans_subtype = 'FS' or trans_subtype = 'EF' then total else 0 end) AS decimal(10,2)) as fsTendered,
 CAST(sum(case when foodstamp = 1 and discountable = 0 then total else 0 end) AS decimal(10,2)) as fsNoDiscTTL,
 CAST(sum(case when foodstamp = 1 and discountable <> 0 then total else 0 end) AS decimal(10,2)) as fsDiscTTL,
@@ -243,7 +243,7 @@ while ($taxRatesW = $db->fetch_row($taxRatesR)){
 $createStr .= "
 convert(numeric(10,2),sum(case when trans_subtype = 'MI' or trans_subtype = 'CX'  then total else 0 end)) as chargeTotal,
 convert(numeric(10,2),sum(case when department = 990  then total else 0 end)) as paymentTotal,
-convert(numeric(10,2),sum(case when trans_type = 'T' then total else 0 end)) as tenderTotal,";
+convert(numeric(10,2),sum(case when trans_type = 'T' and department = 0 then total else 0 end)) as tenderTotal,";
 $createStr .= "convert(numeric(10,2),sum(case when trans_subtype = 'FS' or trans_subtype = 'EF' then total else 0 end)) as fsTendered,
 convert(numeric(10,2),sum(case when foodstamp = 1 and discountable = 0 then total else 0 end)) as fsItems,
 convert(numeric(10,2),sum(case when foodstamp = 1 and discountable <> 0 then total else 0 end)) as fsDiscItems,
