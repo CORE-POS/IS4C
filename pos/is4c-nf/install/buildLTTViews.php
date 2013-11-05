@@ -68,14 +68,14 @@ CAST(sum(case when trans_status='V' THEN -total ELSE 0 END) AS decimal(10,2)) as
 max(trans_id) as LastID
 from localtemptrans WHERE trans_type <> 'L'\n";
 
-$errors = db_structure_modify($db,'lttsummary','DROP VIEW lttsummary',$errors);
-$errors = db_structure_modify($db,'lttsummary',$createStr,$errors);
+$errors = InstallUtilities::dbStructureModify($db,'lttsummary','DROP VIEW lttsummary',$errors);
+$errors = InstallUtilities::dbStructureModify($db,'lttsummary',$createStr,$errors);
 $rpQ = str_replace("select","select emp_no,register_no,trans_no,",$createStr);
 $rpQ = str_replace("localtemptrans","localtranstoday",$rpQ);
 $rpQ = str_replace("lttsummary","rp_lttsummary",$rpQ);
 $rpQ .= " GROUP BY emp_no,register_no,trans_no";
-$errors = db_structure_modify($db,'rp_lttsummary','DROP VIEW rp_lttsummary',$errors);
-$errors = db_structure_modify($db,'rp_lttsummary',$rpQ,$errors);
+$errors = InstallUtilities::dbStructureModify($db,'rp_lttsummary','DROP VIEW rp_lttsummary',$errors);
+$errors = InstallUtilities::dbStructureModify($db,'rp_lttsummary',$rpQ,$errors);
 //echo str_replace("\n","<br />",$createStr)."<br />";
 //echo "<hr />";
 
@@ -118,13 +118,13 @@ else $createStr .= "0 as fsTax,\n";
 $createStr .= "CAST(discountableTTL * percentDiscount / 100 AS decimal(10,2)) as transDiscount
 
 from lttsummary\n";
-$errors = db_structure_modify($db,'lttsubtotals','DROP VIEW lttsubtotals',$errors);
-$errors = db_structure_modify($db,'lttsubtotals',$createStr,$errors);
+$errors = InstallUtilities::dbStructureModify($db,'lttsubtotals','DROP VIEW lttsubtotals',$errors);
+$errors = InstallUtilities::dbStructureModify($db,'lttsubtotals',$createStr,$errors);
 $rpQ = str_replace("select","select emp_no,register_no,trans_no,",$createStr);
 $rpQ = str_replace("lttsummary","rp_lttsummary",$rpQ);
 $rpQ = str_replace("lttsubtotals","rp_lttsubtotals",$rpQ);
-$errors = db_structure_modify($db,'rp_lttsubtotals','DROP VIEW rp_lttsubtotals',$errors);
-$errors = db_structure_modify($db,'rp_lttsubtotals',$rpQ,$errors);
+$errors = InstallUtilities::dbStructureModify($db,'rp_lttsubtotals','DROP VIEW rp_lttsubtotals',$errors);
+$errors = InstallUtilities::dbStructureModify($db,'rp_lttsubtotals',$rpQ,$errors);
 //echo str_replace("\n","<br />",$createStr)."<br />";
 //echo "<hr />";
 
@@ -198,8 +198,8 @@ l.localTotal as localTotal,
 l.voidTotal as voidTotal
 from lttsummary l, lttsubtotals s where l.tdate = s.tdate\n";
 
-$errors = db_structure_modify($db,'subtotals','DROP VIEW subtotals',$errors);
-$errors = db_structure_modify($db,'subtotals',$createStr,$errors);
+$errors = InstallUtilities::dbStructureModify($db,'subtotals','DROP VIEW subtotals',$errors);
+$errors = InstallUtilities::dbStructureModify($db,'subtotals',$createStr,$errors);
 $rpQ = str_replace("select","select l.emp_no,l.register_no,l.trans_no,",$createStr);
 $rpQ = str_replace("lttsummary","rp_lttsummary",$rpQ);
 $rpQ = str_replace("lttsubtotals","rp_lttsubtotals",$rpQ);
@@ -207,8 +207,8 @@ $rpQ = str_replace("view subtotals","view rp_subtotals",$rpQ);
 $rpQ .= " AND l.emp_no=s.emp_no AND 
 	l.register_no=s.register_no AND
 	l.trans_no=s.trans_no";
-$errors = db_structure_modify($db,'rp_subtotals','DROP VIEW rp_subtotals',$errors);
-$errors = db_structure_modify($db,'rp_subtotals',$rpQ,$errors);
+$errors = InstallUtilities::dbStructureModify($db,'rp_subtotals','DROP VIEW rp_subtotals',$errors);
+$errors = InstallUtilities::dbStructureModify($db,'rp_subtotals',$rpQ,$errors);
 //echo str_replace("\n","<br />",$createStr)."<br />";
 
 return $errors;

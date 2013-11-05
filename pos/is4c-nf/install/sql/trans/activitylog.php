@@ -17,6 +17,6 @@ Use:
 Lane-side record of activities. These are
 shipped to the server via alog.
 */
-$CREATE['trans.activitylog'] = duplicate_structure($dbms,'alog','activitylog');
+$CREATE['trans.activitylog'] = InstallUtilities::duplicateStructure($dbms,'alog','activitylog');
 
 ?>

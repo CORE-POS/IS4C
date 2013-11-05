@@ -769,7 +769,21 @@ static public function loadParams(){
         $value = $row['param_value'];
         if ($row['is_array'] == 1) {
             $value = explode(',', $value);
+            if (isset($value[0]) && strstr($value[0], '=>')) {
+                // keyed array
+                $tmp = array();
+                foreach($value as $entry) {
+                    list($k, $v) = explode('=>', $entry, 2);
+                    $tmp[$k] = $v;
+                }
+                $value = $tmp;
+            }
+        } else if (strtoupper($value === 'TRUE')) {
+            $value = true;
+        } else if (strtoupper($value === 'FALSE')) {
+            $value = false;
         }
+
         $CORE_LOCAL->set($key, $value);
     }
 }

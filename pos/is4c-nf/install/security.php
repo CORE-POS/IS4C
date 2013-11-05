@@ -3,7 +3,7 @@ include(realpath(dirname(__FILE__).'/../lib/AutoLoader.php'));
 AutoLoader::loadMap();
 include(realpath(dirname(__FILE__).'/../ini.php'));
 CoreState::loadParams();
-include('util.php');
+include('InstallUtilities.php');
 ?>
 <html>
 <head>
@@ -32,7 +32,7 @@ else {
 	echo "<option value=30 >Admin only</option>";
 	echo "<option value=20 selected>All</option>";
 }
-paramSave('SecurityCancel',$CORE_LOCAL->get("SecurityCancel"));
+InstallUtilities::paramSave('SecurityCancel',$CORE_LOCAL->get("SecurityCancel"));
 ?>
 </select></td></tr><tr><td>
 <b>Suspend/Resume</b>: </td><td><select name=PRIV_SR>
@@ -47,7 +47,7 @@ else {
 	echo "<option value=30 >Admin only</option>";
 	echo "<option value=20 selected>All</option>";
 }
-paramSave('SecuritySR',$CORE_LOCAL->get("SecuritySR"));
+InstallUtilities::paramSave('SecuritySR',$CORE_LOCAL->get("SecuritySR"));
 ?>
 </select></td></tr>
 <tr><td>
@@ -63,7 +63,7 @@ else {
 	echo "<option value=30 >Admin only</option>";
 	echo "<option value=20 selected>All</option>";
 }
-paramSave('SecurityRefund',$CORE_LOCAL->get("SecurityRefund"));
+InstallUtilities::paramSave('SecurityRefund',$CORE_LOCAL->get("SecurityRefund"));
 ?>
 </select></td></tr>
 <tr><td>
@@ -79,7 +79,7 @@ else {
 	echo "<option value=30 >Admin only</option>";
 	echo "<option value=20 selected>All</option>";
 }
-paramSave('SecurityLineItemDiscount',$CORE_LOCAL->get("SecurityLineItemDiscount"));
+InstallUtilities::paramSave('SecurityLineItemDiscount',$CORE_LOCAL->get("SecurityLineItemDiscount"));
 ?>
 </select></td></tr>
 <tr><td>
@@ -88,7 +88,7 @@ paramSave('SecurityLineItemDiscount',$CORE_LOCAL->get("SecurityLineItemDiscount"
 if (isset($_REQUEST['VOIDLIMIT'])) $CORE_LOCAL->set('VoidLimit',$_REQUEST['VOIDLIMIT']);
 if ($CORE_LOCAL->get("VoidLimit")=="") $CORE_LOCAL->set("VoidLimit",0);
 printf("<input type=text name=VOIDLIMIT value=\"%s\" />",$CORE_LOCAL->get('VoidLimit'));
-paramSave('VoidLimit',$CORE_LOCAL->get('VoidLimit'));
+InstallUtilities::paramSave('VoidLimit',$CORE_LOCAL->get('VoidLimit'));
 ?> (in dollars, per transaction. Zero for unlimited).
 </td></tr><tr><td colspan=2>
 <hr />

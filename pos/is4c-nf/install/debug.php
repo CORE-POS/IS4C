@@ -3,7 +3,7 @@ include(realpath(dirname(__FILE__).'/../lib/AutoLoader.php'));
 AutoLoader::loadMap();
 include(realpath(dirname(__FILE__).'/../ini.php'));
 CoreState::loadParams();
-include('util.php');
+include('InstallUtilities.php');
 ?>
 <html>
 <head>
@@ -24,13 +24,13 @@ Default logs:
 	<li><i>php-errors.log</i> contains PHP errors, warnings, notices, etc depending on error reporting settings for PHP installation.</li>
 	<li><i>queries.log</i> lists failed queries</li>
 </ul>
-<div class="alert"><?php check_writeable('../log/php-errors.log'); ?></div>
-<div class="alert"><?php check_writeable('../log/queries.log'); ?></div>
+<div class="alert"><?php InstallUtilities::checkWritable('../log/php-errors.log'); ?></div>
+<div class="alert"><?php InstallUtilities::checkWritable('../log/queries.log'); ?></div>
 Optional logs:
 <ul>
 	<li><i>core_local.log</i> lists changes to session/state values. Fills FAST.</li>
 </ul>
-<div class="alert"><?php check_writeable('../log/core_local.log','True'); ?></div>
+<div class="alert"><?php InstallUtilities::checkWritable('../log/core_local.log','True'); ?></div>
 <hr />
 <form action=debug.php method=post>
 <b>Log State Changes</b>: <select name=DEBUG_STATE>
@@ -44,7 +44,7 @@ else {
 	echo "<option value=1 >Yes</option>";
 	echo "<option value=0 selected>No</option>";
 }
-paramSave('Debug_CoreLocal',$CORE_LOCAL->get("Debug_CoreLocal"));
+InstallUtilities::paramSave('Debug_CoreLocal',$CORE_LOCAL->get("Debug_CoreLocal"));
 ?>
 </select><br />
 See optional logs above.
@@ -60,7 +60,7 @@ else {
 	echo "<option value=1 >Yes</option>";
 	echo "<option value=0 selected>No</option>";
 }
-paramSave('Debug_Redirects',$CORE_LOCAL->get("Debug_Redirects"));
+InstallUtilities::paramSave('Debug_Redirects',$CORE_LOCAL->get("Debug_Redirects"));
 ?>
 </select><br />
 This option changes HTTP redirects into manual, clickable links. A stack
