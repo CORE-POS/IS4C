@@ -25,14 +25,16 @@
   @class SuspendLib
   Functions related to suspend and resume transaction
 */
-class SuspendLib extends LibraryClass {
+class SuspendLib extends LibraryClass 
+{
 
 /**
   Suspends the current transaction
   If the remote server is available, it will be suspended
   there. Otherwise it is suspended locally.
 */
-static public function suspendorder() {
+static public function suspendorder() 
+{
 	global $CORE_LOCAL;
 
 	//testremote();
@@ -50,8 +52,7 @@ static public function suspendorder() {
 		$db_a->transfer($CORE_LOCAL->get("tDatabase"),"select {$cols} from localtemptrans",
 			$CORE_LOCAL->get("mDatabase"),"insert into suspended ($cols)");
 		$db_a->close($CORE_LOCAL->get("mDatabase"),True);
-	}
-	else { 
+	} else { 
 		$query = "insert into suspended select * from localtemptrans";
 		$result = $db_a->query($query);
 	}
@@ -72,7 +73,8 @@ static public function suspendorder() {
   This function ignores any transactions that
   are not from the current day.
 */
-static public function checksuspended() {
+static public function checksuspended() 
+{
 	global $CORE_LOCAL;
 
 	//Database::testremote();
@@ -90,10 +92,12 @@ static public function checksuspended() {
 
 	$num_rows = $db_a->num_rows($result);
 
-	if ($num_rows == 0) return 0;
-	else return 1;
+	if ($num_rows == 0) {
+        return 0;
+	} else {
+        return 1;
+    }
 }
 
 }
 
-?>

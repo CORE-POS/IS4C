@@ -10,12 +10,9 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
 
 		$here = getcwd();
 		chdir(dirname(__FILE__).'/../gui-modules/');
-		$rel = MiscLib::base_url();
+		$rel = MiscLib::baseURL();
 		$this->assertEquals('../',$rel);
 		chdir($here);
-
-		$this->assertEquals(5, MiscLib::int(5.1));
-		$this->assertEquals(10, MiscLib::int("10"));
 
 		$this->assertEquals(1, MiscLib::nullwrap(1));
 		$this->assertEquals(1.5, MiscLib::nullwrap(1.5));
