@@ -56,11 +56,12 @@ function check_writeable($filename, $optional=False, $template=False){
   PHP code. For example, a PHP string should include
   single or double quote delimiters in $value.
 */
-function confsave($key,$value,$prefer_local=False){
-
+function confsave($key,$value,$prefer_local=False)
+{
 	// do nothing if page isn't a form submit (i.e. user didn't press save)
-	if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] !== 'POST')
-		return NULL;
+	if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] !== 'POST') {
+		return null;
+    }
 
 	/*
 	Attempt to update settings in both ini.php and ini-local.php.
@@ -147,6 +148,43 @@ function confsave($key,$value,$prefer_local=False){
 	}
 
 	return False;	// didn't manage to write anywhere!
+}
+
+/**
+  Save value to the parameters table.
+*/
+function paramSave($key, $value) {
+    global $CORE_LOCAL;
+	$sql = db_test_connect($CORE_LOCAL->get('localhost'),
+			$CORE_LOCAL->get('DBMS'),
+			$CORE_LOCAL->get('pDatabase'),
+			$CORE_LOCAL->get('localUser'),
+			$CORE_LOCAL->get('localPass'));
+
+    $save_as_array = 0;
+    if (is_array($value)) {
+        $tmp = '';
+        foreach($value as $v) {
+            $tmp .= $v.',';
+        }
+        $value = substr($tmp, 0, strlen($tmp)-1);
+        $save_as_array = 1;
+    }
+
+	if ($sql !== false) {
+        $prep = $sql->prepare_statement('SELECT param_value FROM parameters
+                                    WHERE param_key=? AND lane_id=?');
+        $exists = $sql->exec_statement($prep, array($key, $CORE_LOCAL->get('laneno')));
+        if ($sql->num_rows($exists)) {
+            $prep = $sql->prepare_statement('UPDATE parameters SET param_value=?,
+                                    is_array=? WHERE param_key=? AND lane_id=?');
+            $sql->exec_statement($prep, array($value, $save_as_array, $key, $CORE_LOCAL->get('laneno')));
+        } else {
+            $prep = $sql->prepare_statement('INSERT INTO parameters (store_id, lane_id, param_key,
+                                    param_value, is_array) VALUES (0, ?, ?, ?, ?)');
+            $sql->exec_statement($prep, array($CORE_LOCAL->get('laneno'), $key, $value, $save_as_array));
+        }
+    }
 }
 
 /**

@@ -476,6 +476,8 @@ function create_op_dbs($db,$type){
 			$db->query('DROP TABLE lane_config', $name);
 	}
 	create_if_needed($db, $type, $name, 'lane_config', 'op', $errors);
+
+	create_if_needed($db, $type, $name, 'parameters', 'op', $errors);
 	
 	return $errors;
 }

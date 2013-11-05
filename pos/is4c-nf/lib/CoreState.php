@@ -48,6 +48,7 @@ static public function initiate_session()
 	Database::loadglobalvalues();
 	self::loadData();
 	self::customReceipt();
+    self::loadParams();
 }
 
 /**
@@ -737,6 +738,40 @@ static public function cashierLogin($transno=False, $age=0)
 	if($transno && is_numeric($transno)) {
 		$CORE_LOCAL->set('transno', $transno);
 	}
+}
+
+static public function loadParams(){
+    global $CORE_LOCAL;
+
+    $db = Database::pDataConnect();
+    
+    // load global settings first
+    $prep = $db->prepare_statement('SELECT param_key, param_value, is_array FROM parameters
+                            WHERE (lane_id=0 OR lane_id IS NULL) AND
+                            (store_id=0 OR store_id IS NULL)');
+    $globals = $db->exec_statement($prep);
+    while($row = $db->fetch_row($globals)) {
+        $key = $row['param_key'];
+        $value = $row['param_value'];
+        if ($row['is_array'] == 1) {
+            $value = explode(',', $value);
+        }
+        $CORE_LOCAL->set($key, $value);
+    }
+
+    // apply local settings next
+    // with any overrides that occur
+    $prep = $db->prepare_statement('SELECT param_key, param_value, is_array FROM parameters
+                            WHERE lane_id=?');
+    $locals = $db->exec_statement($prep, array($CORE_LOCAL->get('laneno')));
+    while($row = $db->fetch_row($locals)) {
+        $key = $row['param_key'];
+        $value = $row['param_value'];
+        if ($row['is_array'] == 1) {
+            $value = explode(',', $value);
+        }
+        $CORE_LOCAL->set($key, $value);
+    }
 }
 
 }

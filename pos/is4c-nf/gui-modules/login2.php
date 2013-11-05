@@ -23,13 +23,15 @@
 
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 AutoLoader::LoadMap();
+CoreState::loadParams();
 
-class login2 extends BasicPage {
+class login2 extends BasicPage 
+{
 
-	var $box_css_class;
-	var $msg;
+	private $box_css_class;
+	private $msg;
 
-	var $body_class = '';
+	public $body_class = '';
 
 	function preprocess(){
 		global $CORE_LOCAL;
@@ -156,7 +158,8 @@ class login2 extends BasicPage {
 
 }
 
-if (basename(__FILE__) == basename($_SERVER['PHP_SELF']))
+if (basename(__FILE__) == basename($_SERVER['PHP_SELF'])) {
 	new login2();
+}
 
 ?>
