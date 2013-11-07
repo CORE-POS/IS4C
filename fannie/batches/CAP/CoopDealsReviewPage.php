@@ -50,7 +50,7 @@ class CoopDealsReviewPage extends FanniePage {
 		$end = FormLib::get_form_value('end',date('Y-m-d'));
 		$b_start = FormLib::get_form_value('bstart',date('Y-m-d'));
 		$b_end = FormLib::get_form_value('bend',date('Y-m-d'));
-		$nameing = FormLib::get_form_value('naming','');
+		$naming = FormLib::get_form_value('naming','');
 		$upcs = FormLib::get_form_value('upc',array());
 		$prices = FormLib::get_form_value('price',array());
 		$names = FormLib::get_form_value('batch',array());
