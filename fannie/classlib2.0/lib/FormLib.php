@@ -43,6 +43,10 @@ class FormLib
         return self::getFormValue($name, $default);
     }
 
+    public static function get($name, $default='')
+    {
+        return self::getFormValue($name, $default);
+    }
     /**
       Get a fieldset to select certain date ranges
       Requires JQquery
