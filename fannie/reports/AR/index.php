@@ -3,7 +3,9 @@
 include('../../config.php');
 include($FANNIE_ROOT.'src/trans_connect.php');
 
-$memNum = isset($_REQUEST['memNum'])?(int)$_REQUEST['memNum']:0;
+$memNum = isset($_REQUEST['memNum'])?(int)$_REQUEST['memNum']:'';
+header('Location: ArReport.php?memNum='.$memNum);
+exit;
 
 $header = "A/R History for Member $memNum";
 $page_title = "Fannie :: A/R History";
@@ -13,7 +15,7 @@ $q = $dbc->prepare_statement("select charges,trans_num,payments,
 		year(tdate),month(tdate),day(tdate)
 		from ar_history AS s 
 		WHERE s.card_no=? ORDER BY tdate DESC");
-if ($memNum == 0){
+if ($memNum === ''){
 	echo "<i>Error: no member specified</i>";
 }
 else {
