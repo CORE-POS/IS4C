@@ -8,7 +8,7 @@ $query = "select c.CardNo, c.LastName, c.FirstName, m.street, m.city, m.state, m
 	  from custdata as c left join meminfo as m on c.cardno=m.card_no
 	  where c.personNum = 1 and c.memType in (1,3)
 	  AND c.Type='PC'
-	  and m.street <> ''
+	  AND LastName <> 'NEW MEMBER'
 	  order by ".$sql->convert('c.CardNo','INT');
 $NL = "<br />";
 if (!isset($_GET["excel"])){
