@@ -84,7 +84,7 @@ else if (isset($_POST['likecode'])){
 	echo "<b>Adding items</b><br />";
 	for ($i = 0; $i < count($likecodes); $i++){
 		$q = "insert into batchList (upc, batchID, salePrice, active, pricemethod, quantity) 
-			VALUES ('LC".$likecodes[$i]."',$batchID,".ltrim($prices[$i],'$').",1,0,0)";
+			VALUES ('LC".$likecodes[$i]."',$batchID,".ltrim($prices[$i],'$ ').",1,0,0)";
 		echo "Setting likecode #".$likecodes[$i]." on sale for $".$prices[$i]."<br />";
 		$sql->query($q);
 	}
