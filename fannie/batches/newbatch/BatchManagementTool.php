@@ -442,7 +442,7 @@ class BatchManagementTool extends FanniePage {
 				where u.likecode = ? order by p.upc desc");
 			$likeR = $dbc->exec_statement($likeQ,array($likecode));
 			while ($likeW = $dbc->fetch_row($likeR)){
-				$out .= "<td><a href={$FANNIE_URL}item/ItemEditorPage.php?upc=$likeW[0] target=_new$likeW[0]>$likeW[0]</a></td>";
+				$out .= "<td><a href={$FANNIE_URL}item/ItemEditorPage.php?searchupc=$likeW[0] target=_new$likeW[0]>$likeW[0]</a></td>";
 				$out .= "<td>$likeW[1]</td>";
 				$out .= "<td>$likeW[2]</td>";
 				$out .= "<td>$saleprice</td>";
@@ -1089,7 +1089,7 @@ class BatchManagementTool extends FanniePage {
 				$ret .= "<input type=hidden value=$row id=expandId$likecode name=expandId />";
 			}
 			else {
-				$ret .= "<td bgcolor=$colors[$c]><a href={$FANNIE_URL}item/ItemEditorPage.php?upc=$fetchW[0] target=_new$fetchW[0]>$fetchW[0]</a></td>";
+				$ret .= "<td bgcolor=$colors[$c]><a href={$FANNIE_URL}item/ItemEditorPage.php?searchupc=$fetchW[0] target=_new$fetchW[0]>$fetchW[0]</a></td>";
 			}
 			$ret .= "<td bgcolor=$colors[$c]>$fetchW[1]</td>";
 			$ret .= "<td bgcolor=$colors[$c]>$fetchW[2]</td>";
@@ -1195,7 +1195,7 @@ class BatchManagementTool extends FanniePage {
 				$ret .= "<input type=hidden value=$row id=expandId$likecode name=expandId />";
 			}
 			else {
-				$ret .= "<td bgcolor=$colors[$c]><a href={$FANNIE_URL}item/ItemEditorPage.php?upc=$fetchW[0] target=_new$fetchW[0]>$fetchW[0]</a></td>";
+				$ret .= "<td bgcolor=$colors[$c]><a href={$FANNIE_URL}item/ItemEditorPage.php?searchupc=$fetchW[0] target=_new$fetchW[0]>$fetchW[0]</a></td>";
 			}
 			$ret .= "<td bgcolor=$colors[$c]>$fetchW[1]</td>";
 			$ret .= "<td bgcolor=$colors[$c]><a href=\"\" onclick=\"moveDisc('$fetchW[0]'); return false;\"><img src=\"{$FANNIE_URL}src/img/buttons/arrow_down.gif\" alt=\"Make Discount Item\" /></a></td>";
@@ -1241,7 +1241,7 @@ class BatchManagementTool extends FanniePage {
 				$ret .= "<input type=hidden value=$row id=expandId$likecode name=expandId />";
 			}
 			else {
-				$ret .= "<td bgcolor=$colors[$c]><a href={$FANNIE_URL}item/ItemEditorPage.php?upc=$fetchW[0] target=_new$fetchW[0]>$fetchW[0]</a></td>";
+				$ret .= "<td bgcolor=$colors[$c]><a href={$FANNIE_URL}item/ItemEditorPage.php?searchupc=$fetchW[0] target=_new$fetchW[0]>$fetchW[0]</a></td>";
 			}
 			$ret .= "<td bgcolor=$colors[$c]>$fetchW[1]</td>";
 			$ret .= "<td bgcolor=$colors[$c]><a href=\"\" onclick=\"moveQual('$fetchW[0]'); return false;\"><img src=\"{$FANNIE_URL}src/img/buttons/arrow_up.gif\" alt=\"Make Qualifying Item\" /></a></td>";
