@@ -1042,11 +1042,12 @@ function getCustomerNonForm($orderID){
 
 	$callback = 1;
 	$user = 'Unknown';
+	$orderDate = '';
 	$q = $dbc->prepare_statement("SELECT datetime,numflag,mixMatch FROM 
-			{$TRANS}PendingSpecialOrder WHERE order_id=? AND trans_id=0");
+			{$TRANS}CompleteSpecialOrder WHERE order_id=? AND trans_id=0");
 	$r = $dbc->exec_statement($q, array($orderID));
 	if ($dbc->num_rows($r) > 0)
-		list($callback,$user) = $dbc->fetch_row($r);
+		list($orderDate,$callback,$user) = $dbc->fetch_row($r);
 
 	$ret = "";
 	$ret .= sprintf('<input type="hidden" id="orderID" value="%d" />',$orderID);
@@ -1062,6 +1063,7 @@ function getCustomerNonForm($orderID){
 		$ret .= '<br />';
 	}
 	$ret .= "<b>Taken by</b>: ".$user."<br />";
+	$ret .= "<b>On</b>: ".date("M j, Y g:ia",strtotime($orderDate))."<br />";
 	$ret .= '</td><td align="right" valign="top">';
 	$ret .= '<b>Call to Confirm</b>: ';
 	if ($callback == 1)
