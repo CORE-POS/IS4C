@@ -504,7 +504,18 @@ class FannieReportPage extends FanniePage
                 $row[$i] = sprintf('<a href="%sitem/itemMaint.php?upc=%s">%s</a>',
                     $FANNIE_URL,$row[$i],$row[$i]);
             }
-            $align = is_numeric($row[$i]) ? ' align="right" ' : '';
+            $align = '';
+            if (is_numeric($row[$i])) {
+                // number
+                $align = ' align="right" ';
+            } else if (strlen($row[$i]) > 1 && substr($row[$i], -1) == '%' && is_numeric(substr($row[$i],0,strlen($row[$i])-1))) {
+                // number followed by % sign
+                $align = ' align="right" ';
+            } else if (strlen($row[$i]) > 1 && substr($row[$i], 0, 1) == '$' && is_numeric(substr($row[$i],1))) {
+                // number preceded by $ sign
+                $align = ' align="right" ';
+            }
+
             $ret .= '<'.$tag.' '.$align.' colspan="'.$span.'">'.$row[$i].'</'.$tag.'>';
             $i += $span;
         }
