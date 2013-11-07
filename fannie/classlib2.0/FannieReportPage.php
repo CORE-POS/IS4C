@@ -504,7 +504,8 @@ class FannieReportPage extends FanniePage
                 $row[$i] = sprintf('<a href="%sitem/itemMaint.php?upc=%s">%s</a>',
                     $FANNIE_URL,$row[$i],$row[$i]);
             }
-            $ret .= '<'.$tag.' colspan="'.$span.'">'.$row[$i].'</'.$tag.'>';
+            $align = is_numeric($row[$i]) ? ' align="right" ' : '';
+            $ret .= '<'.$tag.' '.$align.' colspan="'.$span.'">'.$row[$i].'</'.$tag.'>';
             $i += $span;
         }
         $ret .= '</tr>';
