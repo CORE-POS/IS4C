@@ -24,7 +24,7 @@ echo "<form action=index.php method=get>
 
 echo "<h3>Integrated CC Report for $date</h3>";
 
-$seconds = strtotime($dateStr);
+$seconds = strtotime($date);
 $start = date('Y-m-d 00:00:00',$seconds);
 $end = date('Y-m-d 23:59:59',$seconds);
 $query = $dbc->prepare_statement("SELECT q.datetime,q.laneno,q.cashierno,q.transno,q.amount,
