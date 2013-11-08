@@ -714,7 +714,13 @@ class SQLManager
 	*/
 	public function field_name($result_object,$index,$which_connection='')
     {
-		return $this->fetchField($result_object, $index, $which_connection);
+		$field = $this->fetchField($result_object, $index, $which_connection);
+
+        if (is_object($field) && property_exists($field, 'name')) {
+            return $field->name;
+        } else {
+            return '';
+        }
 	}
 
 	/**
