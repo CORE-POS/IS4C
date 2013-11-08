@@ -131,7 +131,7 @@ class DTransactionsModel extends BasicModel
         $trans_num = array('trans_num'=>array('type'=>'VARCHAR(25)'));
         $this->columns = $tdate + $this->columns + $trans_num;
         $chk = parent::normalize($db_name, $mode, $doCreate);
-        if ($chk !==fFalse) {
+        if ($chk !== false) {
             $log_adds += $chk;
         }
 
