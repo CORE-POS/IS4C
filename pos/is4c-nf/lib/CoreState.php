@@ -744,6 +744,12 @@ static public function loadParams(){
     global $CORE_LOCAL;
 
     $db = Database::pDataConnect();
+
+    // newer & optional table. should not fail
+    // if it's missing
+    if (!$db->table_exists('parameters')) {
+        return;
+    }
     
     // load global settings first
     $prep = $db->prepare_statement('SELECT param_key, param_value, is_array FROM parameters
