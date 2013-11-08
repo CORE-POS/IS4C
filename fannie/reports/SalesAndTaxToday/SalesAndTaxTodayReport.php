@@ -95,7 +95,6 @@ class SalesAndTaxTodayReport extends FanniePage {
 
 	function body_content(){
 		global $dbc, $FANNIE_TRANS_DB, $FANNIE_COOP_ID;
-
 		$today = date("Y-m-d");
 		$table = 'dlog';	// i.e. dlog. dlog_15 if $today is before today.
 		$ddiff = 0;	// i.e. 0. -n if $today is before today.

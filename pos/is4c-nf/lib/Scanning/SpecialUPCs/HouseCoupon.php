@@ -35,6 +35,7 @@
 class HouseCoupon extends SpecialUPC 
 {
 
+
     public function isSpecial($upc)
     {
         if (substr($upc, 0, 8) == "00499999") {
