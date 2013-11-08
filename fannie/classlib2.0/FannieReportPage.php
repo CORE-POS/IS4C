@@ -78,7 +78,14 @@ class FannieReportPage extends FanniePage
     /**
       Option to enable/disable javascript sorting
     */
-    protected $sortable = True;
+    protected $sortable = true;
+
+    /**
+      Apply CSS to table but not sorting JS.
+      May become default behavior if it does
+      not mess up current unsorted reports
+    */
+    protected $no_sort_but_style = false;
 
     /**
       Which column to sort by default
@@ -194,7 +201,25 @@ class FannieReportPage extends FanniePage
             $output = $this->render_data($data,$this->report_headers,
                     $footers,$this->report_format);
         }
-        echo $output;
+
+        return $output;
+    }
+
+    /**
+      Displays both form_content and report_content
+      @return html string
+    */
+    public function both_content()
+    {
+        $ret = '';
+        if ($this->report_format == 'html') {
+            $ret .= $this->form_content();
+            $ret .= '<hr />';
+        }
+        
+        $ret .= $this->report_content();
+        
+        return $ret;
     }
 
     /**
@@ -309,7 +334,7 @@ class FannieReportPage extends FanniePage
     */
     public function fetch_report_data()
     {
-
+        return array();
     }
 
     /**
@@ -341,7 +366,11 @@ class FannieReportPage extends FanniePage
                     }
                 }
                 $class = 'mySortableTable';
-                if ($this->sortable) $class .= ' tablesorter';
+                if ($this->sortable) {
+                    $class .= ' tablesorter';
+                } else if ($this->no_sort_but_style) {
+                    $class .= ' tablesorter';
+                }
                 $ret .= '<table class="'.$class.'" cellspacing="0" 
                     cellpadding="4" border="1">';
                 break;
