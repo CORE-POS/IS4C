@@ -211,9 +211,7 @@ class undo extends NoInputPage {
 			PrehLib::setMember($card_no,1,$row);
 			$CORE_LOCAL->set("autoReprint",0);
 
-			/* restore the logged in cashier */
-			$CORE_LOCAL->set("CashierNo",$prevCashier);
-			$CORE_LOCAL->set("transno",Database::gettransno($prevCashier));
+			/* do NOT restore logged in cashier until this transaction is complete */
 			
 			$this->change_page($this->page_url."gui-modules/undo_confirm.php");
 			return False;
