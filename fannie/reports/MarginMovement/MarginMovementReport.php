@@ -24,14 +24,16 @@
 include('../../config.php');
 include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
-class HourlySalesReport extends FannieReportPage 
+class MarginMovementReport extends FannieReportPage 
 {
 
-    protected $title = "Fannie : Hourly Sales Report";
-    protected $header = "Hourly Sales";
+    protected $title = "Fannie : Margin Movement Report";
+    protected $header = "Margin Movement Report";
 
-    protected $sortable = false;
-    protected $no_sort_but_style = true;
+    protected $sort_column = 5;
+    protected $sort_direction = 1;
+
+    protected $report_headers = array('UPC', 'Desc', 'Dept#', 'Dept', 'Cost', 'Sales', 'Margin', 'Markup', 'Contrib');
 
 	public function preprocess()
     {
@@ -59,11 +61,11 @@ class HourlySalesReport extends FannieReportPage
         $date2 = FormLib::get('date2', date('Y-m-d'));
         $deptStart = FormLib::get('deptStart');
         $deptEnd = FormLib::get('deptEnd');
-        $weekday = FormLib::get('weekday', 0);
+        $include_sales = FormLib::get('includeSales', 0);
         $buyer = FormLib::get('buyer', '');
 	
         $ret = array();
-        $ret[] = 'Hourly Sales Report';
+        $ret[] = 'Margin Movement Report';
         $ret[] = 'From '.$date1.' to '.$date2;
         if ($buyer === '') {
             $ret[] = 'Department '.$deptStart.' to '.$deptEnd;
@@ -73,12 +75,12 @@ class HourlySalesReport extends FannieReportPage
             $ret[] = 'Super Department '.$buyer;
         }
 
-        if ($weekday == 1) {
-            $ret[] = 'Grouped by weekday';
+        if ($include_sales == 1) {
+            $ret[] = 'Includes sale items';
         }
 
         if ($this->report_format == 'html') {
-            $ret[] = sprintf('<a href="../HourlyTrans/HourlyTransReport.php?%s">Transaction Counts for Same Period</a>', 
+            $ret[] = sprintf('<a href="../HourlySales/HourlySalesReport.php?%s">Sales for Same Period</a>', 
                             $_SERVER['QUERY_STRING']);
         }
 
@@ -94,7 +96,7 @@ class HourlySalesReport extends FannieReportPage
         $date2 = FormLib::get('date2', date('Y-m-d'));
         $deptStart = FormLib::get('deptStart');
         $deptEnd = FormLib::get('deptEnd');
-        $weekday = FormLib::get('weekday', 0);
+        $include_sales = FormLib::get('includeSales', 0);
 	
         $buyer = FormLib::get('buyer', '');
 
@@ -108,107 +110,63 @@ class HourlySalesReport extends FannieReportPage
                 $args[] = $buyer;
             }
         } else {
-            $where = ' d.department BETWEEN ? AND ? ';
+            $where = ' t.department BETWEEN ? AND ? ';
             $args[] = $deptStart;
             $args[] = $deptEnd;
         }
 
-        $date_selector = 'year(tdate), month(tdate), day(tdate)';
-        $day_names = array();
-        if ($weekday == 1) {
-            $date_selector = $dbc->dayofweek('tdate');
-
-            $timestamp = strtotime('next Sunday');
-            for ($i = 1; $i <= 7; $i++) {
-                $day_names[$i] = strftime('%a', $timestamp);
-                $timestamp = strtotime('+1 day', $timestamp);
-            }
-        }
-        $hour = $dbc->hour('tdate');
-
         $dlog = DTransactionsModel::selectDlog($date1, $date2);
 
-        $query = "SELECT $date_selector, $hour as hour, 
-                    sum(d.total) AS ttl, avg(d.total) as avg
-                  FROM $dlog AS d ";
+        $query = "SELECT d.upc,p.description,d.department,t.dept_name,
+            sum(total) as total,sum(d.cost) as cost, sum(d.quantity) as qty
+            FROM $dlog AS d INNER JOIN products AS p
+            ON d.upc=p.upc LEFT JOIN departments AS t 
+            ON d.department=t.dept_no ";
         // join only needed with specific buyer
         if ($buyer !== '' && $buyer > -1) {
             $query .= 'LEFT JOIN superdepts AS s ON d.department=s.dept_ID ';
         }
-        $query .= "WHERE d.trans_type IN ('I','D')
-                    AND d.tdate BETWEEN ? AND ?
-                    AND $where
-                   GROUP BY $date_selector, $hour
-                   ORDER BY $date_selector, $hour";
+        $query .= "WHERE tdate BETWEEN ? AND ?
+            AND $where
+            AND d.cost <> 0 ";
+        if ($include_sales != 1) {
+            $query .= "AND d.discounttype=0 ";
+        }
+        $query .= "GROUP BY d.upc,p.description,d.department,t.dept_name
+            ORDER BY sum(total) DESC";
 
         $prep = $dbc->prepare_statement($query);
         $result = $dbc->exec_statement($query, $args);
 
-        $dataset = array();
-        $minhour = 24;
-        $maxhour = 0;
-        while($row = $dbc->fetch_row($result)) {
-            $hour = (int)$row['hour'];
-
-            $date = '';
-            if ($weekday == 1) {
-                $date = $day_names[$row[0]];
-            } else {
-                $date = sprintf('%d/%d/%d', $row[1], $row[2], $row[0]);
-            }
-            
-            if (!isset($dataset[$date])) {
-               $dataset[$date] = array(); 
-            }
-
-            $dataset[$date][$hour] = $row['ttl'];
-
-            if ($hour < $minhour) {
-                $minhour = $hour;
-            }
-            if ($hour > $maxhour) {
-                $maxhour = $hour;
-            }
-        }
-
-        /**
-          # of columns is dynamic depending on the
-          date range selected
-        */
-        $this->report_headers = array('Day');
-        foreach($dataset as $day => $info) {
-            $this->report_headers[] = $day; 
-        }
-        $this->report_headers[] = 'Total';
-
         $data = array();
-        /**
-          # of rows is dynamic depending when
-          the store was open
-        */
-        for($i=$minhour; $i<=$maxhour; $i++) {
-            $record = array();
-            $sum = 0;
+        $sum_total = 0.0;
+        $sum_cost = 0.0;
+        while($row = $dbc->fetch_row($result)) {
+            $margin = ($row['total'] - $row['cost']) / $row['total'] * 100;
+            $record = array(
+                $row['upc'],
+                $row['description'],
+                $row['department'],
+                $row['dept_name'],
+                sprintf('%.2f', $row['cost']),
+                sprintf('%.2f', $row['total']),
+                sprintf('%.2f', $margin),
+                sprintf('%.2f', ($row['total'] - $row['cost']) / $row['qty']),
+            );
 
-            if ($i < 12) {
-                $record[] = str_pad($i,2,'0',STR_PAD_LEFT).':00 AM';
-            } else if ($i == 12) {
-                $record[] = $i.':00 PM';
-            } else {
-                $record[] = str_pad(($i-12),2,'0',STR_PAD_LEFT).':00 PM';
-            }
+            $sum_total += $row['total'];
+            $sum_cost += $row['cost'];
 
-            // each day's sales for the given hour
-            foreach($dataset as $day => $info) {
-                $sales = isset($info[$i]) ? $info[$i] : 0;
-                $record[] = sprintf('%.2f', $sales);
-                $sum += $sales;
-            }
-
-            $record[] = $sum;
             $data[] = $record;
         }
-        
+
+        // go through and add a contribution to margin value
+        for ($i=0; $i<count($data); $i++) {
+            // (item_total - item_cost) / total sales
+            $contrib = ($data[$i][5] - $data[$i][4]) / $sum_total * 100;
+            $data[$i][] = sprintf('%.2f', $contrib);
+        }
+
         return $data;
 	}
 
@@ -218,22 +176,14 @@ class HourlySalesReport extends FannieReportPage
             return array();
         }
 
-        $ret = array('Totals');
-        for($i=1; $i<count($data[0]); $i++) {
-            $ret[] = 0.0;
-        }
-
+        $sum_cost = 0.0;
+        $sum_ttl = 0.0;
         foreach($data as $row) {
-            for($i=1; $i < count($row); $i++) {
-                $ret[$i] += $row[$i];
-            }
+            $sum_cost += $row[4];
+            $sum_ttl += $row[5];
         }
 
-        for($i=1; $i<count($ret); $i++) {
-            $ret[$i] = sprintf('%.2f', $ret[$i]); 
-        }
-
-        return $ret;
+        return array('Totals', null, null, null, sprintf('%.2f',$sum_cost), sprintf('%.2f',$sum_ttl), '', null, null);
     }
 
     public function form_content()
@@ -267,7 +217,7 @@ function swap(src,dst){
 }
 </script>
 <div id=main>	
-<form method = "get" action="HourlySalesReport.php">
+<form method = "get" action="MarginMovementReport.php">
 	<table border="0" cellspacing="0" cellpadding="5">
 		<tr>
 			<td><b>Select Buyer/Dept</b></td>
@@ -315,7 +265,7 @@ function swap(src,dst){
 
 		</tr>
 		<tr> 
-             <td colspan="2"><input type=checkbox name=weekday value=1>Group by weekday?</td>
+             <td colspan="2"><input type=checkbox name=includeSales value=1>Include Sale Items</td>
 			<td colspan="2" rowspan="2">
                 <?php echo FormLib::date_range_picker(); ?>
             </td>

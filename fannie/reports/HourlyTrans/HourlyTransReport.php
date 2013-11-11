@@ -24,11 +24,11 @@
 include('../../config.php');
 include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
-class HourlySalesReport extends FannieReportPage 
+class HourlyTransReport extends FannieReportPage 
 {
 
-    protected $title = "Fannie : Hourly Sales Report";
-    protected $header = "Hourly Sales";
+    protected $title = "Fannie : Hourly Transactions Report";
+    protected $header = "Hourly Transactions";
 
     protected $sortable = false;
     protected $no_sort_but_style = true;
@@ -63,7 +63,7 @@ class HourlySalesReport extends FannieReportPage
         $buyer = FormLib::get('buyer', '');
 	
         $ret = array();
-        $ret[] = 'Hourly Sales Report';
+        $ret[] = 'Hourly Transactions Report';
         $ret[] = 'From '.$date1.' to '.$date2;
         if ($buyer === '') {
             $ret[] = 'Department '.$deptStart.' to '.$deptEnd;
@@ -78,7 +78,7 @@ class HourlySalesReport extends FannieReportPage
         }
 
         if ($this->report_format == 'html') {
-            $ret[] = sprintf('<a href="../HourlyTrans/HourlyTransReport.php?%s">Transaction Counts for Same Period</a>', 
+            $ret[] = sprintf('<a href="../HourlySales/HourlySalesReport.php?%s">Sales for Same Period</a>', 
                             $_SERVER['QUERY_STRING']);
         }
 
@@ -129,7 +129,8 @@ class HourlySalesReport extends FannieReportPage
         $dlog = DTransactionsModel::selectDlog($date1, $date2);
 
         $query = "SELECT $date_selector, $hour as hour, 
-                    sum(d.total) AS ttl, avg(d.total) as avg
+                    count(distinct trans_num) as num_trans,
+                    sum(d.total) AS ttl
                   FROM $dlog AS d ";
         // join only needed with specific buyer
         if ($buyer !== '' && $buyer > -1) {
@@ -161,7 +162,7 @@ class HourlySalesReport extends FannieReportPage
                $dataset[$date] = array(); 
             }
 
-            $dataset[$date][$hour] = $row['ttl'];
+            $dataset[$date][$hour] = $row['num_trans'];
 
             if ($hour < $minhour) {
                 $minhour = $hour;
@@ -201,7 +202,7 @@ class HourlySalesReport extends FannieReportPage
             // each day's sales for the given hour
             foreach($dataset as $day => $info) {
                 $sales = isset($info[$i]) ? $info[$i] : 0;
-                $record[] = sprintf('%.2f', $sales);
+                $record[] = sprintf('%d', $sales);
                 $sum += $sales;
             }
 
@@ -230,7 +231,7 @@ class HourlySalesReport extends FannieReportPage
         }
 
         for($i=1; $i<count($ret); $i++) {
-            $ret[$i] = sprintf('%.2f', $ret[$i]); 
+            $ret[$i] = sprintf('%d', $ret[$i]); 
         }
 
         return $ret;
@@ -267,7 +268,7 @@ function swap(src,dst){
 }
 </script>
 <div id=main>	
-<form method = "get" action="HourlySalesReport.php">
+<form method = "get" action="HourlyTransReport.php">
 	<table border="0" cellspacing="0" cellpadding="5">
 		<tr>
 			<td><b>Select Buyer/Dept</b></td>

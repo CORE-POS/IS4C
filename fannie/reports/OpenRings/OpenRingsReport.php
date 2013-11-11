@@ -24,14 +24,13 @@
 include('../../config.php');
 include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
-class HourlySalesReport extends FannieReportPage 
+class OpenRingsReport extends FannieReportPage 
 {
 
-    protected $title = "Fannie : Hourly Sales Report";
-    protected $header = "Hourly Sales";
+    protected $title = "Fannie : Open Rings Report";
+    protected $header = "Open Rings Report";
 
-    protected $sortable = false;
-    protected $no_sort_but_style = true;
+    protected $report_headers = array('Date', 'Open Rings Sales', '# of Open Rings', 'Percentage');
 
 	public function preprocess()
     {
@@ -59,11 +58,10 @@ class HourlySalesReport extends FannieReportPage
         $date2 = FormLib::get('date2', date('Y-m-d'));
         $deptStart = FormLib::get('deptStart');
         $deptEnd = FormLib::get('deptEnd');
-        $weekday = FormLib::get('weekday', 0);
         $buyer = FormLib::get('buyer', '');
 	
         $ret = array();
-        $ret[] = 'Hourly Sales Report';
+        $ret[] = 'Open Rings Report';
         $ret[] = 'From '.$date1.' to '.$date2;
         if ($buyer === '') {
             $ret[] = 'Department '.$deptStart.' to '.$deptEnd;
@@ -71,15 +69,6 @@ class HourlySalesReport extends FannieReportPage
             $ret[] = 'All Super Departments';
         } else {
             $ret[] = 'Super Department '.$buyer;
-        }
-
-        if ($weekday == 1) {
-            $ret[] = 'Grouped by weekday';
-        }
-
-        if ($this->report_format == 'html') {
-            $ret[] = sprintf('<a href="../HourlyTrans/HourlyTransReport.php?%s">Transaction Counts for Same Period</a>', 
-                            $_SERVER['QUERY_STRING']);
         }
 
         return $ret;
@@ -94,7 +83,6 @@ class HourlySalesReport extends FannieReportPage
         $date2 = FormLib::get('date2', date('Y-m-d'));
         $deptStart = FormLib::get('deptStart');
         $deptEnd = FormLib::get('deptEnd');
-        $weekday = FormLib::get('weekday', 0);
 	
         $buyer = FormLib::get('buyer', '');
 
@@ -108,107 +96,44 @@ class HourlySalesReport extends FannieReportPage
                 $args[] = $buyer;
             }
         } else {
-            $where = ' d.department BETWEEN ? AND ? ';
+            $where = ' t.department BETWEEN ? AND ? ';
             $args[] = $deptStart;
             $args[] = $deptEnd;
         }
 
-        $date_selector = 'year(tdate), month(tdate), day(tdate)';
-        $day_names = array();
-        if ($weekday == 1) {
-            $date_selector = $dbc->dayofweek('tdate');
-
-            $timestamp = strtotime('next Sunday');
-            for ($i = 1; $i <= 7; $i++) {
-                $day_names[$i] = strftime('%a', $timestamp);
-                $timestamp = strtotime('+1 day', $timestamp);
-            }
-        }
-        $hour = $dbc->hour('tdate');
-
         $dlog = DTransactionsModel::selectDlog($date1, $date2);
 
-        $query = "SELECT $date_selector, $hour as hour, 
-                    sum(d.total) AS ttl, avg(d.total) as avg
-                  FROM $dlog AS d ";
+        $query = "SELECT year(tdate),month(tdate),day(tdate),
+          SUM(CASE WHEN trans_type='D' THEN total ELSE 0 END) as total,
+          SUM(CASE WHEN trans_type='D' THEN abs(quantity) ELSE 0 END) as qty,
+          SUM(CASE WHEN trans_type='D' THEN 1.0 ELSE 0.0 END) /
+          SUM(CASE WHEN trans_type IN ('I','D') THEN 1.0 ELSE 0.0 END) as percentage
+          FROM $dlog as d ";
         // join only needed with specific buyer
         if ($buyer !== '' && $buyer > -1) {
             $query .= 'LEFT JOIN superdepts AS s ON d.department=s.dept_ID ';
         }
-        $query .= "WHERE d.trans_type IN ('I','D')
-                    AND d.tdate BETWEEN ? AND ?
-                    AND $where
-                   GROUP BY $date_selector, $hour
-                   ORDER BY $date_selector, $hour";
+        $query .= "WHERE trans_type IN ('I','D')
+            AND tdate BETWEEN ? AND ?
+            AND $where
+            GROUP BY year(tdate),month(tdate),day(tdate)
+            ORDER BY year(tdate),month(tdate),day(tdate)";
 
         $prep = $dbc->prepare_statement($query);
         $result = $dbc->exec_statement($query, $args);
 
-        $dataset = array();
-        $minhour = 24;
-        $maxhour = 0;
-        while($row = $dbc->fetch_row($result)) {
-            $hour = (int)$row['hour'];
-
-            $date = '';
-            if ($weekday == 1) {
-                $date = $day_names[$row[0]];
-            } else {
-                $date = sprintf('%d/%d/%d', $row[1], $row[2], $row[0]);
-            }
-            
-            if (!isset($dataset[$date])) {
-               $dataset[$date] = array(); 
-            }
-
-            $dataset[$date][$hour] = $row['ttl'];
-
-            if ($hour < $minhour) {
-                $minhour = $hour;
-            }
-            if ($hour > $maxhour) {
-                $maxhour = $hour;
-            }
-        }
-
-        /**
-          # of columns is dynamic depending on the
-          date range selected
-        */
-        $this->report_headers = array('Day');
-        foreach($dataset as $day => $info) {
-            $this->report_headers[] = $day; 
-        }
-        $this->report_headers[] = 'Total';
-
         $data = array();
-        /**
-          # of rows is dynamic depending when
-          the store was open
-        */
-        for($i=$minhour; $i<=$maxhour; $i++) {
-            $record = array();
-            $sum = 0;
+        while($row = $dbc->fetch_row($result)) {
+            $record = array(
+                sprintf('%d/%d/%d', $row[1], $row[2], $row[0]),
+                sprintf('%.2f', $row['total']),
+                sprintf('%.2f', $row['qty']),
+                sprintf('%.2f%%', $row['percentage']*100),
+            );
 
-            if ($i < 12) {
-                $record[] = str_pad($i,2,'0',STR_PAD_LEFT).':00 AM';
-            } else if ($i == 12) {
-                $record[] = $i.':00 PM';
-            } else {
-                $record[] = str_pad(($i-12),2,'0',STR_PAD_LEFT).':00 PM';
-            }
-
-            // each day's sales for the given hour
-            foreach($dataset as $day => $info) {
-                $sales = isset($info[$i]) ? $info[$i] : 0;
-                $record[] = sprintf('%.2f', $sales);
-                $sum += $sales;
-            }
-
-            $record[] = $sum;
             $data[] = $record;
         }
-        
+
         return $data;
 	}
 
@@ -218,22 +143,18 @@ class HourlySalesReport extends FannieReportPage
             return array();
         }
 
-        $ret = array('Totals');
-        for($i=1; $i<count($data[0]); $i++) {
-            $ret[] = 0.0;
-        }
-
+        $sum_qty = 0.0;
+        $sum_ttl = 0.0;
+        $sum_percents = 0.0;
         foreach($data as $row) {
-            for($i=1; $i < count($row); $i++) {
-                $ret[$i] += $row[$i];
-            }
+            $sum_qty += $row[2];
+            $sum_ttl += $row[1];
+            $sum_percents += $row[3];
         }
 
-        for($i=1; $i<count($ret); $i++) {
-            $ret[$i] = sprintf('%.2f', $ret[$i]); 
-        }
+        $avg = $sum_percents / ((float)count($data));
 
-        return $ret;
+        return array('Totals', sprintf('%.2f',$sum_qty), sprintf('%.2f',$sum_ttl), sprintf('%.2f%%', $avg));
     }
 
     public function form_content()
@@ -267,7 +188,7 @@ function swap(src,dst){
 }
 </script>
 <div id=main>	
-<form method = "get" action="HourlySalesReport.php">
+<form method = "get" action="OpenRingsReport.php">
 	<table border="0" cellspacing="0" cellpadding="5">
 		<tr>
 			<td><b>Select Buyer/Dept</b></td>
@@ -315,7 +236,7 @@ function swap(src,dst){
 
 		</tr>
 		<tr> 
-             <td colspan="2"><input type=checkbox name=weekday value=1>Group by weekday?</td>
+             <td colspan="2"> </td>
 			<td colspan="2" rowspan="2">
                 <?php echo FormLib::date_range_picker(); ?>
             </td>
