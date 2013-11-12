@@ -768,6 +768,22 @@ class SQLManager
 	}
 
 	/**
+	  Get the week number from a datetime
+	  @param $field A datetime expression
+	  @param $which_connection see method close()
+	  @return The SQL expression
+	*/
+	public function week($field,$which_connection='')
+    {
+		if ($which_connection == '') {
+			$which_connection = $this->default_db;
+        }
+		$conn = $this->connections[$which_connection];
+
+		return $conn->SQLDate("W",$field);
+	}
+
+	/**
 	  Reformat a datetime to YYYY-MM-DD HH:MM:SS
 	  @param $str A datetime string
 	  @return The reformatted string

@@ -24,8 +24,7 @@
 include('../../config.php');
 include($FANNIE_ROOT.'src/mysql_connect.php');
 include($FANNIE_ROOT.'src/select_dlog.php');
-include($FANNIE_ROOT.'classlib2.0/FannieReportPage.php');
-include($FANNIE_ROOT.'classlib2.0/lib/FormLib.php');
+include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
 class ProductMovementModular extends FannieReportPage {
 
@@ -104,7 +103,20 @@ class ProductMovementModular extends FannieReportPage {
 				GROUP BY YEAR(datetime),MONTH(datetime),DAY(datetime)
 				ORDER BY YEAR(datetime),MONTH(datetime),DAY(datetime)";
 			
-		}
+		} else if (!is_numeric($upc)) {
+            $dlog = DTransactionsModel::selectDTrans($date1, $date2);
+
+			$query = "select MONTH(datetime),DAY(datetime),YEAR(datetime),
+				upc,description,
+				sum(CASE WHEN quantity=0 THEN 1 ELSE quantity END) as qty,
+				sum(t.total) from
+				$dlog as t
+				where upc = ?
+				AND datetime BETWEEN ? AND ?
+				and emp_no <> 9999 and register_no <> 99
+				and trans_status <> 'X'
+				GROUP BY YEAR(datetime),MONTH(datetime),DAY(datetime)";
+        }
 		$prep = $dbc->prepare_statement($query);
 		$result = $dbc->exec_statement($prep,$args);
 
