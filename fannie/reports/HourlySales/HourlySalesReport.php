@@ -45,6 +45,10 @@ class HourlySalesReport extends FannieReportPage
 				$this->report_format = 'xls';
 			} elseif (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'csv') {
 				$this->report_format = 'csv';
+            } else {
+                $this->add_script('../../src/d3.js/d3.v3.min.js');
+                $this->add_script('../../src/d3.js/charts/singleline/singleline.js');
+                $this->add_css_file('../../src/d3.js/charts/singleline/singleline.css');
             }
 		}
 		else 
@@ -83,6 +87,26 @@ class HourlySalesReport extends FannieReportPage
         }
 
         return $ret;
+    }
+
+    public function report_content() {
+        $default = parent::report_content();
+
+        if ($this->report_format == 'html') {
+            $default .= '<div id="chartArea" style="border: 1px solid black;padding: 2em;">';
+            $default .= 'Graph: <select onchange="showGraph(this.value);">';
+            for ($i=count($this->report_headers)-1; $i >= 1; $i--) {
+                $default .= sprintf('<option value="%d">%s</option>',
+                                $i, $this->report_headers[$i]);
+            }
+            $default .= '</select>';
+            $default .= '<div id="chartDiv"></div>';
+            $default .= '</div>';
+
+            $this->add_onload_command('showGraph('.(count($this->report_headers)-1).')');
+        }
+
+        return $default;
     }
 
     public function fetch_report_data()
@@ -234,6 +258,65 @@ class HourlySalesReport extends FannieReportPage
         }
 
         return $ret;
+    }
+
+    public function javascriptContent()
+    {
+        if ($this->report_format != 'html') {
+            return;
+        }
+
+        ob_start();
+        ?>
+function showGraph(i) {
+    $('#chartDiv').html('');
+
+    var ymin = 999999999;
+    var ymax = 0;
+    var xmin = 999999999;
+    var xmax = 0;
+
+    var ydata = Array();
+    $('td.reportColumn'+i).each(function(){
+        var y = Number($(this).html());
+        ydata.push(y);
+        if (y > ymax) {
+            ymax = y;
+        }
+        if (y < ymin) {
+            ymin = y;
+        }
+    });
+
+    var xdata = Array();
+    $('td.reportColumn0').each(function(){
+        var hour = $(this).html().substring(0,2);
+        if (hour.charAt(0) == '0') {
+            hour = hour.charAt(1);
+        }
+        hour = Number(hour);
+        if ($(this).html().indexOf('PM') != -1 && hour < 12) {
+            hour += 12;
+        }
+        xdata.push(hour);
+
+        if (hour > xmax) {
+            xmax = hour;
+        }
+        if (hour < xmin) {
+            xmin = hour;
+        }
+    });
+
+    var data = Array();
+    for (var i=0; i < xdata.length; i++) {
+        data.push(Array(xdata[i], ydata[i]));
+    }
+
+    singleline(data, Array(xmin, xmax), Array(ymin, ymax), '#chartDiv');
+}
+        <?php
+        return ob_get_clean();
     }
 
     public function form_content()

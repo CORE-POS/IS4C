@@ -564,7 +564,7 @@ class FannieReportPage extends FanniePage
                 $align = ' align="right" ';
             }
 
-            $class = 'class="';
+            $class = 'class="reportColumn'.$i;
             if (($meta & self::META_CHART_DATA) != 0) {
                 if ($i == $this->chart_label_column) {
                     $class .= ' d3Label ';
@@ -573,11 +573,7 @@ class FannieReportPage extends FanniePage
                     $class .= ' d3Data ';
                 }
             }
-            if ($class == 'class="') {
-                $class = '';
-            } else {
-                $class .= '"';
-            }
+            $class .= '"';
 
             $ret .= '<'.$tag.' '.$class.' '.$align.' colspan="'.$span.'">'.$row[$i].'</'.$tag.'>';
             $i += $span;
