@@ -1021,8 +1021,8 @@ function getCustomerNonForm($orderID){
 				state,zip,phone,email_1,email_2
 				FROM {$TRANS}SpecialOrderContact WHERE card_no=?");
 		$contactR = $dbc->exec_statement($contactQ, array($orderID));
-		if ($dbc->num_rows($r) > 0){
-			$contact_row = $dbc->fetch_row($r);
+		if ($dbc->num_rows($contactR) > 0){
+			$contact_row = $dbc->fetch_row($contactR);
 			$fn = $contact_row['first_name'];
 			$ln = $contact_row['last_name'];
 		}
