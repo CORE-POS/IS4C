@@ -200,8 +200,17 @@ class BasicModel
             }
         }
 
+        $table_def = $this->connection->table_definition($this->name);
+
         $sql = 'SELECT ';
         foreach($this->columns as $name => $definition) {
+            if (!isset($table_def[$name])) {
+                // underlying table is missing the column
+                // constraint only used for select columns
+                // if a uniqueness-constraint column is missing
+                // this method will and should fail
+                continue; 
+            }
             $sql .= $this->connection->identifier_escape($name).',';
         }
         $sql = substr($sql,0,strlen($sql)-1);
@@ -397,8 +406,13 @@ class BasicModel
         $cols = '(';
         $vals = '(';
         $args = array();
+        $table_def = $this->connection->table_definition($this->name);
         foreach($this->instance as $column => $value) {
             if (isset($this->columns[$column]['increment']) && $this->columns[$column]['increment']) {
+                // omit autoincrement column from insert
+                continue;
+            } else if (!isset($table_def[$column])) {
+                // underlying table is missing this column
                 continue;
             }
             $cols .= $this->connection->identifier_escape($column).',';
@@ -426,12 +440,16 @@ class BasicModel
         $where = '1=1';
         $set_args = array();
         $where_args = array();
+        $table_def = $this->connection->table_definition($this->name);
         foreach($this->instance as $column => $value) {
             if (in_array($column, $this->unique)) {
                 $where .= ' AND '.$this->connection->identifier_escape($column).' = ?';
                 $where_args[] = $value;
             } else {
                 if (isset($this->columns[$column]['increment']) && $this->columns[$column]['increment']) {
+                    continue;
+                } else if (!isset($table_def[$column])) {
+                    // underlying table is missing this column
                     continue;
                 }
                 $sets .= ' '.$this->connection->identifier_escape($column).' = ?,';
