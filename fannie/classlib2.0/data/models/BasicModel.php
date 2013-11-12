@@ -629,7 +629,12 @@ class BasicModel
                 if ($mode == BasicModel::NORMALIZE_MODE_CHECK) {
                     echo "\tSQL Details: $sql\n";
                 } else if ($mode == BasicModel::NORMALIZE_MODE_APPLY) {
-                    $this->connection->query($sql);
+                    $added = $this->connection->query($sql);
+                    // hook function for initiailization or migration queries
+                    if ($added && method_exists($this, 'hookAddColumn'.$our_columns[$i])) {
+                        $func = 'hookAddColumn'.$our_columns[$i];
+                        $this->$func();
+                    }
                 }
             }
 
