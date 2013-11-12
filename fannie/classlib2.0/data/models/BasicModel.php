@@ -266,8 +266,13 @@ class BasicModel
             $sort = array($sort);
         }
 
+        $table_def = $this->connection->table_definition($this->name);
+
         $sql = 'SELECT ';
         foreach($this->columns as $name => $definition) {
+            if (!isset($table_def[$name])) {
+                continue;
+            }
             $sql .= $this->connection->identifier_escape($name).',';
         }
         $sql = substr($sql,0,strlen($sql)-1);
