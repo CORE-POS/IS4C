@@ -67,7 +67,7 @@ static public function memberID($member_number)
 	global $CORE_LOCAL;
 
 	$query = "select CardNo,personNum,LastName,FirstName,CashBack,Balance,Discount,
-		MemDiscountLimit,ChargeOk,WriteChecks,StoreCoupons,Type,memType,staff,
+		ChargeOk,WriteChecks,StoreCoupons,Type,memType,staff,
 		SSI,Purchases,NumberOfChecks,memCoupons,blueLine,Shown,id from custdata 
 		where CardNo = '".$member_number."'";
 
@@ -121,7 +121,7 @@ static public function requestInfoCallback($info)
 	TransRecord::addcomment("CARD FOR #".$info);
 
 	$query = "select CardNo,personNum,LastName,FirstName,CashBack,Balance,Discount,
-		MemDiscountLimit,ChargeOk,WriteChecks,StoreCoupons,Type,memType,staff,
+		ChargeOk,WriteChecks,StoreCoupons,Type,memType,staff,
 		SSI,Purchases,NumberOfChecks,memCoupons,blueLine,Shown,id from custdata 
 		where CardNo = 5607";
 	$db = Database::pDataConnect();
