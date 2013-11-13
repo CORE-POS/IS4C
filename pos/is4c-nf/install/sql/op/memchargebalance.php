@@ -19,7 +19,7 @@ $CREATE['op.memchargebalance'] = "
 	CREATE view memchargebalance as
 		SELECT 
 		c.CardNo AS CardNo,
-		c.memDiscountLimit - c.Balance AS availBal,	
+		c.ChargeLimit - c.Balance AS availBal,	
 		c.Balance as balance
 		FROM custdata AS c WHERE personNum = 1
 ";

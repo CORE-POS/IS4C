@@ -126,23 +126,6 @@ class NewMemberTool extends FanniePage {
 		'ads_OK'=>1
 		);
 
-		$custdata = array(
-		'personNum'=>1,
-		'LastName'=>$dbc->escape($name),
-		'FirstName'=>"''",
-		'CashBack'=>999.99,
-		'Balance'=>0,
-		'MemDiscountLimit'=>0,
-		'ChargeOk'=>1,
-		'WriteChecks'=>1,
-		'StoreCoupons'=>1,
-		'Purchases'=>0,
-		'NumberOfChecks'=>999,
-		'memCoupons'=>0,
-		'blueLine'=>$dbc->escape($name),
-		'Shown'=>1
-		);
-
 		$defaultsQ = $dbc->prepare_statement("SELECT cd_type,discount,staff,SSI
 				FROM memdefaults WHERE memtype=?");
 		$defaultsR = $dbc->exec_statement($defaultsQ,array($mtype));

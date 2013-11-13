@@ -38,8 +38,8 @@ $names = qualified_names();
 $CREATE['trans.memChargeBalance'] = "
 	CREATE VIEW memChargeBalance as
 	SELECT   c.CardNo, 
-	(CASE when a.balance is NULL then c.memDiscountLimit
-		ELSE c.memDiscountLimit - a.balance END) as availBal,
+	(CASE when a.balance is NULL then c.ChargeLimit
+		ELSE c.ChargeLimit - a.balance END) as availBal,
 	(CASE when a.balance is NULL then 0 ELSE a.balance END) as balance,
 	CASE WHEN a.mark IS NULL THEN 0 ELSE a.mark END AS mark   
 	FROM {$names['op']}.custdata as c left join ar_live_balance as a ON c.CardNo = a.card_no

@@ -11,6 +11,7 @@ Columns:
 	Balance double
 	Discount smallint
 	MemDiscountLimit double
+	ChargeLimit double
 	ChargeOk tinyint
 	WriteChecks tinyint
 	StoreCoupons tinyint
@@ -63,6 +64,7 @@ e.g., make sure all staff members have the appropriate percent discount
 WFC Specific:
 - ChargeOk=1 if member may run a store charge balance; =0 may not.
 - MemDiscountLimit is their store charge account limit.
+- ChargeLimit is their store charge account limit.
 - Balance is a store charge balance as of the start of the day,
    if the person has one.
 	 Some records are for organizations, esp vendors,
@@ -108,6 +110,7 @@ $CREATE['op.custdata'] = "
 	  `Balance` double NOT NULL default '0',
 	  `Discount` smallint(6) default NULL,
 	  `MemDiscountLimit` double NOT NULL default '0',
+	  `ChargeLimit` double NOT NULL default '0',
 	  `ChargeOk` tinyint(4) NOT NULL default '1',
 	  `WriteChecks` tinyint(4) NOT NULL default '1',
 	  `StoreCoupons` tinyint(4) NOT NULL default '1',
@@ -140,6 +143,7 @@ if ($dbms == "MSSQL"){
 			[Balance] [money] NULL ,
 			[Discount] [smallint] NULL ,
 			[MemDiscountLimit] [money] NULL ,
+			[ChargeLimit] [money] NULL ,
 			[ChargeOk] [bit] NULL ,
 			[WriteChecks] [bit] NULL ,
 			[StoreCoupons] [bit] NULL ,
