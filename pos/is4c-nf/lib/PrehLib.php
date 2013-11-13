@@ -219,7 +219,7 @@ static public function setMember($member, $personNumber, $row)
 		$noop = "";
 	} elseif ( $CORE_LOCAL->get("member_subtotal") === true ) {
 		self::ttl();
-	} elseif ( $CORE_LOCAL->get("member_subtotal") == null ) {
+	} elseif ( $CORE_LOCAL->get("member_subtotal") == '' ) {
 		self::ttl();
 	}
 }
