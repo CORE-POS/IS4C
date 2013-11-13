@@ -457,6 +457,9 @@ function denom_overage($overage){
 tr.color {
 	background: #ffffcc;
 }
+div#display td, th, h3 {
+    color: #000000;
+}
 </style>
 </head>
 <body>
