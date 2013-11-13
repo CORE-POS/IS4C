@@ -457,7 +457,7 @@ class BatchManagementTool extends FanniePage {
 			$upc = FormLib::get_form_value('upc','');
 			$bid = FormLib::get_form_value('batchID','');
 			$uid = FormLib::get_form_value('uid','');
-			$q = $dbc->prepare_statement("INSERT INTO batchCutPaste VALUES (%d,%s,%d)");
+			$q = $dbc->prepare_statement("INSERT INTO batchCutPaste VALUES (?,?,?)");
 			$dbc->exec_statement($q,array($bid,$upc,$uid));
 			break;
 
@@ -465,8 +465,8 @@ class BatchManagementTool extends FanniePage {
 			$upc = FormLib::get_form_value('upc','');
 			$bid = FormLib::get_form_value('batchID','');
 			$uid = FormLib::get_form_value('uid','');
-			$q = $dbc->prepare_statement("DELETE FROM batchCutPaste WHERE upc=%s
-					AND batchID=%d AND uid=%d");
+			$q = $dbc->prepare_statement("DELETE FROM batchCutPaste WHERE upc=?
+					AND batchID=? AND uid=?");
 			$dbc->exec_statement($q,array($upc,$bid,$uid));
 			break;
 
