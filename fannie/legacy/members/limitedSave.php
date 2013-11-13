@@ -123,33 +123,33 @@ if (isset($_REQUEST['cardUPC']) && is_numeric($_REQUEST['cardUPC'])){
 
 // update top name
 $custdataQ = "Update custdata set lastname = $lName, firstname = $fname, blueline=$blueline where cardNo = $memNum and personnum = 1";
-$custdataR = $sql->query_all($custdataQ);
+$custdataR = $sql->query($custdataQ);
 
 for($i=0;$i<3;$i++){
 	if ($fnames[$i]=="''") $fnames[$i] = "";
 	if ($lnames[$i]=="''") $lnames[$i] = "";
 }
-for($i=0; $i<3; $i++){
-	$sql->query_all("DELETE FROM custdata WHERE cardno=$memNum and personnum=".($i+2));
-	//$sql->query("DELETE FROM memnames WHERE memNum=$memNum and personnum=".($i+2));
-	if (is_array($fnames) && isset($fnames[$i]) && 
-	    is_array($lnames) && isset($lnames[$i]) &&
-	    !empty($lnames[$i]) && !empty($fnames[$i])){
-		$custQ = sprintf("INSERT INTO custdata (CardNo,personNum,LastName,FirstName,CashBack,Balance,
-				Discount,MemDiscountLimit,ChargeOk,WriteChecks,StoreCoupons,Type,
-				memType,staff,SSI,Purchases,NumberOfChecks,memCoupons,blueLine,Shown)
-				SELECT cardno,%d,%s,%s,CashBack,Balance,
-				Discount,MemDiscountLimit,ChargeOk,WriteChecks,StoreCoupons,Type,
-				memType,staff,SSI,Purchases,NumberOfChecks,memCoupons,'%s',1 FROM
-				custdata WHERE CardNo=%d AND personNum=1",($i+2),$lnames[$i],$fnames[$i],
-				($memNum.' '.trim($lnames[$i],"'").$bladd),$memNum);
-		$memQ = sprintf("INSERT INTO memNames SELECT %s,%s,memNum,%d,checks,charge,
-				active,'%s' FROM memNames where memNum=%d and personnum=1",
-				$lnames[$i],$fnames[$i],
-				($i+2),($memNum.'.'.($i+2).'.1'),$memNum);
-		$sql->query_all($custQ);
-		//$sql->query($memQ);
-	}
+
+$count = 2;
+$cust = new CustdataModel($sql);
+$cust->CardNo($memNum);
+$cust->personNum(1);
+$cust->load();
+for($i=0; $i<count($lnames); $i++) {
+	if (empty($lnames[$i]) && empty($fnames[$i])) continue;
+
+	$cust->personNum($count);
+	$cust->FirstName($fnames[$i]);
+	$cust->LastName($lnames[$i]);
+	$cust->BlueLine( $cust->CardNo().' '.$cust->LastName() );
+	$cust->save(); // save next personNum
+
+	$count++;
+}
+// remove names that were blank on the form
+for($i=$count;$i<5;$i++){
+	$cust->personNum($i);
+	$cust->delete();
 }
 
 MeminfoModel::update($memNum, $MI_FIELDS);

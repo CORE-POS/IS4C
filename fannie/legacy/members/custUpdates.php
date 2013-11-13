@@ -3,16 +3,21 @@ include('../../config.php');
 
 include('../lanedefs.php');
 
+if (!class_exists('FannieAPI')) include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 if (!class_exists("SQLManager")) require_once($FANNIE_ROOT.'src/SQLManager.php');
 include('../db.php');
 
+/**
+  @deprecated
+  Using BasicModel::pushToLanes to re-add customer records
+*/
 function addCustomerAllLanes($cardno){
 	global $lanes,$numlanes,$dbs,$sql,$types;
 	for ($i = 0; $i < $numlanes; $i++){
 		if ($types[$i] == "MSSQL"){
 			$addQ = "insert $lanes[$i].$dbs[$i].dbo.custdata
 				SELECT CardNo,personNum,LastName,FirstName,
-                                CashBack,Balance,Discount,MemDiscountLimit,ChargeOK,
+                                CashBack,Balance,Discount,ChargeLimit,ChargeOK,
                                 WriteChecks,StoreCoupons,Type,memType,staff,SSI,Purchases,
                                 NumberOfChecks,memCoupons,blueLine,Shown 
 				from custdata where cardno='$cardno' AND Type<>'TERM'";
@@ -21,13 +26,13 @@ function addCustomerAllLanes($cardno){
 		else {
 			$sql->add_connection($lanes[$i],$types[$i],$dbs[$i],'root','is4c');
 			$selQ = "SELECT CardNo,personNum,LastName,FirstName,
-                                CashBack,Balance,Discount,MemDiscountLimit,ChargeOK,
+                                CashBack,Balance,Discount,ChargeLimit,ChargeOK,
                                 WriteChecks,StoreCoupons,Type,memType,staff,SSI,Purchases,
                                 NumberOfChecks,memCoupons,blueLine,Shown FROM custdata WHERE cardno='$cardno'";	
 			if ($lanes[$i] != "129.103.2.16")
 				$selQ .= " AND type <> 'TERM'";
 			$ins = "INSERT INTO custdata (CardNo,personNum,LastName,FirstName,
-                                CashBack,Balance,Discount,MemDiscountLimit,ChargeOK,
+                                CashBack,Balance,Discount,ChargeLimit,ChargeOK,
                                 WriteChecks,StoreCoupons,Type,memType,staff,SSI,Purchases,
 				NumberOfChecks,memCoupons,blueLine,Shown)";
 			$sql->transfer('is4c_op',$selQ,$dbs[$i],$ins);
@@ -82,8 +87,13 @@ function redoCard($cardno){
 }
 
 function updateCustomerAllLanes($cardno){
+    global $sql;
 	deleteCustomerAllLanes($cardno);
-	addCustomerAllLanes($cardno);
+    $model = new CustdataModel($sql);
+    $model->CardNo($cardno);
+    foreach($model->find('personNum') as $obj) {
+        $obj->pushToLanes();
+    }
 	redoCard($cardno);
 }
 

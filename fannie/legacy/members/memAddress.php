@@ -164,7 +164,7 @@ function addressList($memNum)
 		echo "</tr>";
 		echo "<tr>";
                         echo "<td bgcolor='FFFF33'>Charge Limit: </td>";
-                        echo "<td>" . $custW['MemDiscountLimit'] . "</td>";
+                        echo "<td>" . $custW['ChargeLimit'] . "</td>";
                         echo "<td bgcolor='FFFF33'>Current Balance: </td>";
                         echo "<td>" . $row3['balance'] . "</td>";
 		echo "</tr>";
@@ -371,7 +371,7 @@ function addressForm($memNum)
                 echo "</tr>";
                 echo "<tr>";
                         echo "<td bgcolor='FFFF33'>Charge Limit: </td>";
-                        echo "<td><input name=chargeLimit value='" . $typeRow['MemDiscountLimit'] . "'></td>";
+                        echo "<td><input name=chargeLimit value='" . $typeRow['ChargeLimit'] . "'></td>";
                         echo "<td bgcolor='FFFF33'>Current Balance: </td>";
                         echo "<td>" . $row3['balance'] . "</td>";
                 echo "</tr>";
@@ -461,7 +461,7 @@ function deactivate($memNum,$type,$reason,$reasonCode){
   //$auditR = $sql->query($auditQ);
 	
   if ($type == 'TERM'){
-    $query = "select memtype,type,MemDiscountLimit,discount from custdata where cardno=$memNum";
+    $query = "select memType,Type,ChargeLimit,Discount from custdata where CardNo=$memNum";
     $result = $sql->query($query);
     $row = $sql->fetch_array($result);
     $otherQ = "select ads_OK from meminfo where card_no=$memNum";
@@ -469,21 +469,25 @@ function deactivate($memNum,$type,$reason,$reasonCode){
     $mailflag = array_pop($sql->fetch_array($otherR));
     
     $now = date('Y-m-d h:i:s');
-    $query = "insert into suspensions values ($memNum,'T',$row[0],'$row[1]','$reason','$now',$mailflag,$row[3],$row[2],$reasonCode)";
+    $query = "insert into suspensions (cardno, type, memtype1, memtype2, reason, suspDate, mailflag,
+                discount, chargelimit, reasoncode) values ($memNum,'T',$row[0],'$row[1]','$reason',
+                '$now',$mailflag,$row[3],$row[2],$reasonCode)";
     //echo $query."<br />";
-    $result = $sql->query_all($query);
+    $result = $sql->query($query);
     
     $username = validateUserQuiet('editmembers');
     
-    $query = "insert into suspension_history values ('$username','$now','$reason','$memNum',$reasonCode)";
-    $result = $sql->query_all($query);
+    $query = "insert into suspension_history (username, postdate, post, cardno, reasoncode) 
+                values ('$username','$now','$reason','$memNum',$reasonCode)";
+    $result = $sql->query($query);
     
     $mQ = "update meminfo set ads_OK=0 where card_no = $memNum";
-    $cQ = "update custdata set memtype=0, type='TERM',chargeok=0,discount=0,memdiscountlimit=0 where cardno=$memNum";
-    $mR = $sql->query_all($mQ);
-    $cR = $sql->query_all($cQ);
+    $cQ = "update custdata set memType=0, Type='TERM',ChargeOk=0,Discount=0,MemDiscountLimit=0,ChargeLimit=0 
+            where CardNo=$memNum";
+    $mR = $sql->query($mQ);
+    $cR = $sql->query($cQ);
   }elseif($type=='INACT' || $type=='INACT2'){
-    $query = "select memtype,type,MemDiscountLimit,discount from custdata where cardno=$memNum";
+    $query = "select memType,Type,ChargeLimit,Discount from custdata where CardNo=$memNum";
     $result = $sql->query($query);
     $row = $sql->fetch_array($result);
     $otherQ = "select ads_OK from meminfo where card_no=$memNum";
@@ -491,19 +495,23 @@ function deactivate($memNum,$type,$reason,$reasonCode){
     $mailflag = array_pop($sql->fetch_array($otherR));
     
     $now = date('Y-m-d h:i:s');
-    $query = "insert into suspensions values ($memNum,'I',$row[0],'$row[1]','$reason','$now',$mailflag,$row[3],$row[2],$reasonCode)";
+    $query = "insert into suspensions (cardno, type, memtype1, memtype2, reason, suspDate, mailflag,
+                discount, chargelimit, reasoncode) values ($memNum,'I',$row[0],'$row[1]','$reason',
+                '$now',$mailflag,$row[3],$row[2],$reasonCode)";
     //echo $query."<br />";
-    $result = $sql->query_all($query);
+    $result = $sql->query($query);
 
     $username = validateUserQuiet('editmembers');
 
-    $query = "insert into suspension_history values ('$username','$now','$reason','$memNum',$reasonCode)";
-    $result = $sql->query_all($query);
+    $query = "insert into suspension_history (username, postdate, post, cardno, reasoncode) 
+                values ('$username','$now','$reason','$memNum',$reasonCode)";
+    $result = $sql->query($query);
 
     $mQ = "update meminfo set ads_OK=0 where card_no = $memNum";
-    $cQ = "update custdata set memtype=0, type='$type',chargeok=0,discount=0,MemDiscountLimit=0 where cardno=$memNum";
-    $mR = $sql->query_all($mQ);
-    $cR = $sql->query_all($cQ);
+    $cQ = "update custdata set memType=0, Type='$type',ChargeOk=0,Discount=0,MemDiscountLimit=0,ChargeLimit=0 
+            where CardNo=$memNum";
+    $mR = $sql->query($mQ);
+    $cR = $sql->query($cQ);
   }
 }
 
@@ -521,26 +529,29 @@ function activate($memNum){
   // type S shouldn't exist any more, in here to deal with historical rows
   if ($row[0] == 'I' || $row[0] == 'T' || $row[0] == 'S'){
     $mQ = "update meminfo set ads_OK=$row[5] where card_no=$memNum";
-    $cQ = "update custdata set memtype=$row[1], type='$row[2]',chargeok=1,discount=$row[3],MemDiscountLimit=$row[4] where cardno=$memNum";
-    $mR = $sql->query_all($mQ);
-    $cR = $sql->query_all($cQ);
+    $cQ = "update custdata set memType=$row[1], Type='$row[2]',ChargeOk=1,Discount=$row[3],MemDiscountLimit=$row[4],ChargeLimit=$row[4] 
+            where CardNo=$memNum";
+    $mR = $sql->query($mQ);
+    $cR = $sql->query($cQ);
   }
   else if ($row[0] == 'X'){
-    $cQ = "update custdata set discount=$row[3], type='$row[2]', chargeOk = 1,
-           memtype = $row[1], memdiscountlimit = $row[4], memcoupons = 1
+    $cQ = "update custdata set Discount=$row[3], Type='$row[2]', ChargeOk = 1,
+           memType = $row[1], MemDiscountLimit = $row[4], ChargeLimit=$row[4], 
+           memCoupons = 1
            where cardno=$memNum";
-    $cR = $sql->query_all($cQ);
+    $cR = $sql->query($cQ);
     $mQ = "update meminfo set ads_OK=$row[5] where card_no=$memNum";
-    $mR = $sql->query_all($mQ);
+    $mR = $sql->query($mQ);
   }
   $query = "delete from suspensions where cardno=$memNum";
-  $result = $sql->query_all($query);
+  $result = $sql->query($query);
   
   $username = validateUserQuiet('editmembers');
     
   $now = date("Y-m-d h:i:s");
-  $query = "insert into suspension_history values ('$username','$now','Account reactivated','$memNum',-1)";
-  $result = $sql->query_all($query);
+  $query = "insert into suspension_history (username, postdate, post, cardno, reasoncode)
+            values ('$username','$now','Account reactivated','$memNum',-1)";
+  $result = $sql->query($query);
 }
 
 function addressFormLimited($memNum)

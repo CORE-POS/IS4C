@@ -147,6 +147,7 @@ class PIMemberPage extends PIKillerPage {
 		if ($this->auth_mode == 'Full'){
 			$custdata->memType(FormLib::get_form_value('memType'));
 			$custdata->MemDiscountLimit(FormLib::get_form_value('chargelimit'));
+			$custdata->ChargeLimit(FormLib::get_form_value('chargelimit'));
 
 			$default = $this->get_model($dbc, 'MemdefaultsModel', array('memtype'=>$custdata->memType()));
 			$custdata->Type($default->cd_type());
@@ -325,7 +326,7 @@ class PIMemberPage extends PIKillerPage {
 
 		echo "<tr>";
 		echo "<td class=\"yellowbg\">Charge Limit: </td>";
-		echo '<td>'.$this->text_or_field('chargelimit',$this->__models['custdata'][0]->MemDiscountLimit(),
+		echo '<td>'.$this->text_or_field('chargelimit',$this->__models['custdata'][0]->ChargeLimit(),
 				array(),$limitedEdit).'</td>';
 		echo "<td class=\"yellowbg\">Current Balance: </td>";
 		echo '<td>'.sprintf('%.2f',$this->__models['ar']->balance()).'</td>';

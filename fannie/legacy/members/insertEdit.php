@@ -28,7 +28,7 @@ if(isset($_GET['memNum'])){
 $uid = getUID($username);
 $auditQ = "insert custUpdate select ".$sql->now().",$uid,1,
 	CardNo,personNum,LastName,FirstName,
-	CashBack,Balance,Discount,MemDiscountLimit,ChargeOK,
+	CashBack,Balance,Discount,ChargeLimit,ChargeOK,
 	WriteChecks,StoreCoupons,Type,memType,staff,SSI,Purchases,
 	NumberOfChecks,memCoupons,blueLine,Shown,id from custdata where cardno=$memID";
 //$auditR = $sql->query($auditQ);
@@ -103,6 +103,7 @@ $cust->CardNo($memNum);
 $cust->personNum(1);
 $cust->load(); // get all current values
 $cust->MemDiscountLimit($_POST['chargeLimit']);
+$cust->ChargeLimit($_POST['chargeLimit']);
 $cust->memType($_POST['discList']);
 $cust->Type('REG');
 $cust->Staff(0);

@@ -434,51 +434,6 @@ function query_to_drop($dropQ,$value,$label,$name,$line)
 
 
 
-/* add_household_member adds a new household member to an account, setting all variables to person 1, except for personnum, lastname, firstname, and chargeok */
-
-function add_household_member($cardNo,$person,$lastName,$firstName,$chargeOk){
-	global $sql;
-
-	$selCustQ = "SELECT * FROM custdata WHERE cardNo = '$cardNo' and personnum = '1'";
-	$selCustR = $sql->query($selCustQ,$db);
-
-	$selCustA = $sql->fetch_array($selCustR);
-	foreach ($selCustA AS $key => $value) {
-    		$$key = $value;
-	}
-	
-	$blueLine = $cardNo . " " . $lastName;
-
-	$insCustQ = "INSERT INTO custdata VALUES(
-			'$CardNo',
-			'$person',
-			'$lastName',
-			'$firstName',
-			CONVERT(money,$CashBack),
-			CONVERT(money,$Balance),
-			'$Discount',
-			CONVERT(money,$MemDiscountLimit),
-			'$chargeOk',
-			'$WriteChecks',
-			'$StoreCoupons',
-			'$Type',
-			'$memType',
-			'$staff',
-			'$SSI',
-			CONVERT(money,$Purchases),
-			'$NumberOfChecks',
-			'$memCoupons',
-			'$blueLine',
-			'$Shown')";
-	//echo $insCustQ;
-	$insCustR = $sql->query($insCustQ,$db);
-	
-	$dbPOS1 = $sql->connect('129.103.2.11','sa');
-	$sql->select_db('POSBDAT',$dbPOS1);
-	$insCustRp1 = $sql->query($insCustQ,$dbPOS1);
-
-}
-
 function update_household_member($cardNo,$person,$lname,$fname,$chargeOK)
 {
 	global $sql;
