@@ -9,7 +9,7 @@ function addressList($memNum)
 	$custR = $sql->query($custQ);
         $custN = $sql->num_rows($custR);
         $custW = $sql->fetch_row($custR);
-	$status = $custW[11];
+	$status = $custW['Type'];
 
 	if($status == 'PC') $status='ACTIVE';
 	elseif($status == 'REG') $status='NONMEM';
@@ -27,7 +27,7 @@ function addressList($memNum)
 		$cardUPC = array_pop($sql->fetch_row($cardsR));
 	}
 
-	$type = trim($custW[12]," ");
+	$type = trim($custW['memType']," ");
 	//echo "<br> Here is type: " .$type;
 	$query1 = "SELECT t.* FROM memTypeID as t WHERE t.memTypeID = $type";
 	//echo "<br>".$query1;
@@ -159,7 +159,7 @@ function addressList($memNum)
                         echo "<td bgcolor='FFFF33'>Mem Type: </td>";
                         echo "<td>" . $row1[1] . "</td>";
                         echo "<td bgcolor='ffff33'>Discount:</td>";
-                        echo "<td>".$custW[6]."</td>";
+                        echo "<td>".$custW['Discount']."</td>";
  
 		echo "</tr>";
 		echo "<tr>";
@@ -461,7 +461,7 @@ function deactivate($memNum,$type,$reason,$reasonCode){
   //$auditR = $sql->query($auditQ);
 	
   if ($type == 'TERM'){
-    $query = "select memtype,type,memDiscountLimit,discount from custdata where cardno=$memNum";
+    $query = "select memtype,type,MemDiscountLimit,discount from custdata where cardno=$memNum";
     $result = $sql->query($query);
     $row = $sql->fetch_array($result);
     $otherQ = "select ads_OK from meminfo where card_no=$memNum";
@@ -483,7 +483,7 @@ function deactivate($memNum,$type,$reason,$reasonCode){
     $mR = $sql->query_all($mQ);
     $cR = $sql->query_all($cQ);
   }elseif($type=='INACT' || $type=='INACT2'){
-    $query = "select memtype,type,memDiscountLimit,discount from custdata where cardno=$memNum";
+    $query = "select memtype,type,MemDiscountLimit,discount from custdata where cardno=$memNum";
     $result = $sql->query($query);
     $row = $sql->fetch_array($result);
     $otherQ = "select ads_OK from meminfo where card_no=$memNum";
@@ -501,7 +501,7 @@ function deactivate($memNum,$type,$reason,$reasonCode){
     $result = $sql->query_all($query);
 
     $mQ = "update meminfo set ads_OK=0 where card_no = $memNum";
-    $cQ = "update custdata set memtype=0, type='$type',chargeok=0,discount=0,memDiscountLimit=0 where cardno=$memNum";
+    $cQ = "update custdata set memtype=0, type='$type',chargeok=0,discount=0,MemDiscountLimit=0 where cardno=$memNum";
     $mR = $sql->query_all($mQ);
     $cR = $sql->query_all($cQ);
   }
@@ -521,7 +521,7 @@ function activate($memNum){
   // type S shouldn't exist any more, in here to deal with historical rows
   if ($row[0] == 'I' || $row[0] == 'T' || $row[0] == 'S'){
     $mQ = "update meminfo set ads_OK=$row[5] where card_no=$memNum";
-    $cQ = "update custdata set memtype=$row[1], type='$row[2]',chargeok=1,discount=$row[3],memDiscountLimit=$row[4] where cardno=$memNum";
+    $cQ = "update custdata set memtype=$row[1], type='$row[2]',chargeok=1,discount=$row[3],MemDiscountLimit=$row[4] where cardno=$memNum";
     $mR = $sql->query_all($mQ);
     $cR = $sql->query_all($cQ);
   }

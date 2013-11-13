@@ -33,7 +33,7 @@ else {
 if (isset($_GET['type'])){
 	$type = $_GET['type'];
 	
-	$memQ = "select c.cardno,c.memDiscountLimit from custdata as c
+	$memQ = "select c.cardno,c.MemDiscountLimit from custdata as c
 		 left outer join suspensions as s on c.cardno = s.cardno
 	         where c.memType=$type and c.personnum=1 and 
 		 c.lastname not like 'NEW %' and s.cardno is NULL 

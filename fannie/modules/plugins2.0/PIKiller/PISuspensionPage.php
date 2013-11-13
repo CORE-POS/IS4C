@@ -179,7 +179,7 @@ class PISuspensionPage extends PIKillerPage {
 			if (isset($this->__models['suspended'])){
 				$cdP = $dbc->prepare_statement('UPDATE custdata SET
 					Type=?, memType=?, ChargeOk=1, memCoupons=1,
-					Discount=?, memDiscountLimit=?
+					Discount=?, MemDiscountLimit=?
 					WHERE CardNo=?');
 				$cdR = $dbc->exec_statement($cdP,array(
 					$this->__models['suspended']->memtype2(),
