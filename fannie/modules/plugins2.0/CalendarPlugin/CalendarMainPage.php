@@ -21,7 +21,7 @@
 
 *********************************************************************************/
 
-include_once('../../../config.php');
+include_once(dirname(__FILE__).'/../../../config.php');
 if (!class_exists('FanniePage'))
 	include($FANNIE_ROOT.'classlib2.0/FanniePage.php');
 if (!class_exists('CalendarPlugin'))
@@ -30,7 +30,7 @@ if (!class_exists('FormLib'))
 	include($FANNIE_ROOT.'classlib2.0/lib/FormLib.php');
 if (!function_exists('getUID'))
 	include($FANNIE_ROOT.'auth/login.php');
-include('CalendarPluginDisplayLib.php');
+include_once(dirname(__FILE__).'/CalendarPluginDisplayLib.php');
 
 class CalendarMainPage extends FanniePage {
 

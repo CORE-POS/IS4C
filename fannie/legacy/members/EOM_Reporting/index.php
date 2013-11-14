@@ -121,7 +121,7 @@
 </tr>
 <tr>
 	<td valign=top><b>Shopper statistics</b><br />
-	<a href=demographics.php>Regular</a><br />
+	<a href="../../../modules/plugins2.0/CoreWarehouse/reports/CWDemographicsReport.php">Regular</a><br />
 	<a href=demographics.php?excel=yes>Excel</a>
 	</td>
 	<td>

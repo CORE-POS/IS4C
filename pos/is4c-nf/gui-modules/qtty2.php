@@ -31,7 +31,7 @@ class qtty2 extends BasicPage {
 	function preprocess(){
 		global $CORE_LOCAL;
 
-		$this->box_color="#004080";
+		$this->box_color="coloredArea";
 		$this->msg = _("quantity required");
 
 		if (!isset($_REQUEST['reginput'])) return True;
@@ -58,7 +58,7 @@ class qtty2 extends BasicPage {
 			return False;
 		}
 
-		$this->box_color="#800000";
+		$this->box_color="errorColoredArea";
 		$this->msg = _("invalid quantity");
 		return True;
 	}
@@ -67,10 +67,9 @@ class qtty2 extends BasicPage {
 		global $CORE_LOCAL;
 		$this->input_header();
 		echo DisplayLib::printheaderb();
-		$style = "style=\"background:{$this->box_color};\"";
 		?>
 		<div class="baseHeight">
-		<div class="colored centeredDisplay" <?php echo $style; ?>>
+		<div class="<?php echo $this->box_color; ?> centeredDisplay">
 		<span class="larger">
 		<?php echo $this->msg ?>
 		</span><br />
@@ -90,6 +89,7 @@ class qtty2 extends BasicPage {
 	} // END true_body() FUNCTION
 }
 
-new qtty2();
+if (basename(__FILE__) == basename($_SERVER['PHP_SELF']))
+	new qtty2();
 
 ?>

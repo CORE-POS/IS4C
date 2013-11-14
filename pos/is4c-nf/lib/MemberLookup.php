@@ -71,13 +71,15 @@ class MemberLookup {
 		$dbc = Database::pDataConnect();
 		$query = $dbc->prepare_statement('SELECT CardNo, personNum,
 			LastName, FirstName FROM custdata
-			WHERE CardNo=? ORDER BY personNum');
+			WHERE CardNo=? 
+			AND Type IN (\'PC\',\'REG\')
+			ORDER BY personNum');
 		$result = $dbc->exec_statement($query, array($num));
 
 		$ret = $this->default_value();
 		while($w = $dbc->fetch_row($result)){
 			$key = $w['CardNo'].'::'.$w['personNum'];
-			$val = $w['LastName'].', '.$w['FirstName'];
+			$val = $w['CardNo'].' '.$w['LastName'].', '.$w['FirstName'];
 			$ret['results'][$key] = $val;
 		}
 		return $ret;
@@ -92,12 +94,14 @@ class MemberLookup {
 		$dbc = Database::pDataConnect();
 		$query = $dbc->prepare_statement('SELECT CardNo, personNum,
 			LastName, FirstName FROM custdata
-			WHERE LastName LIKE ? ORDER BY LastName, FirstName');
+			WHERE LastName LIKE ? 
+			AND Type IN (\'PC\',\'REG\')
+			ORDER BY LastName, FirstName');
 		$result = $dbc->exec_statement($query, array($text.'%'));	
 		$ret = $this->default_value();
 		while($w = $dbc->fetch_row($result)){
 			$key = $w['CardNo'].'::'.$w['personNum'];
-			$val = $w['LastName'].', '.$w['FirstName'];
+			$val = $w['CardNo'].' '.$w['LastName'].', '.$w['FirstName'];
 			$ret['results'][$key] = $val;
 		}
 		return $ret;

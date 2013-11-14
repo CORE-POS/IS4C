@@ -21,7 +21,7 @@
 
 *********************************************************************************/
 include('../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
 class NewMemberTool extends FanniePage {
 
@@ -99,7 +99,7 @@ class NewMemberTool extends FanniePage {
 	}
 
 	function results_content(){
-		global $FANNIE_OP_DB;
+		global $FANNIE_OP_DB, $FANNIE_SERVER_DBMS;
 		$dbc = FannieDB::get($FANNIE_OP_DB);
 
 		$mtype = FormLib::get_form_value('memtype',0);

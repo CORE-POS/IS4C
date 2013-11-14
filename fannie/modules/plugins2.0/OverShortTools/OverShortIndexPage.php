@@ -21,8 +21,8 @@
 
 *********************************************************************************/
 
-include('../../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include(dirname(__FILE__).'/../../../config.php');
+include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
 class OverShortIndexPage extends FanniePage {
 
@@ -34,10 +34,43 @@ class OverShortIndexPage extends FanniePage {
 		ob_start();
 		?>
 		<ul>
-		<li><a href="OverShortCashierPage.php">Single Cashier O/S</a></li>
-		<li><a href="OverShortDayPage.php">Whole Day O/S</a></li> 
-		<li><a href="OverShortSafecountPage.php">Safe Count</a></li> 
-		<li><a href="OverShortDepositSlips.php">Deposit Slips</a></li> 
+		<li><a href="OverShortDayPage.php">Whole Day O/S</a>
+			<?php
+			echo FannieHelp::ToolTip('View POS tender totals for all cashiers
+						on a given day and enter actual counted totals.
+						The tool will calculate how much an individual
+						cashier is over or short for each tender
+						as well as how much the overall store is over
+						or short.');
+			?>
+		</li> 
+		<li><a href="OverShortCashierPage.php">Single Cashier O/S</a>
+			<?php
+			echo FannieHelp::ToolTip('View POS tender totals for cashiers
+						and enter actual counted totals. The difference
+						between this and the "Whole Day O/S" tool is this
+						accepts individual check amounts. If you do not need
+						all the individual checks (typically used for generating
+						bank deposit paperwork) then the "Whole Day O/S" tool
+						is likely more effective. The two tools work with the
+						same data so you can mix and match if needed.');
+			?>
+		</li>
+		<li><a href="OverShortSafecountPage.php">Safe Count</a>
+			<?php
+			echo FannieHelp::ToolTip('Enter information about cash on hand to calculate
+						what should be sent to the bank, how much change to order
+						in various denominations, and what should remain afterwards.
+						<b>Very WFC specific</b>');
+			?>
+		</li> 
+		<li><a href="OverShortDepositSlips.php">Deposit Slips</a>
+			<?php
+			echo FannieHelp::ToolTip('Uses information from the Safe Count tool to generate
+						paperwork that goes with the bank deposit. <b>Very WFC
+						specific</b>');
+			?>
+		</li> 
 		</ul>
 		<?php
 		return ob_get_clean();

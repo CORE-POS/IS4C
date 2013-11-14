@@ -4,14 +4,12 @@ include('../../config.php');
 include($FANNIE_ROOT.'src/SQLManager.php');
 include('../db.php');
 
-$query = "select c.cardno, c.lastname, c.firstname, m.street, m.city, m.state, m.zip
+$query = "select c.CardNo, c.LastName, c.FirstName, m.street, m.city, m.state, m.zip
 	  from custdata as c left join meminfo as m on c.cardno=m.card_no
-	  LEFT JOIN memDates AS d ON c.cardno=d.card_no
-	  where c.personnum = 1 and c.memtype in (1,3)
+	  where c.personNum = 1 and c.memType in (1,3)
 	  AND c.Type='PC'
-	  and (d.end_date > now() or d.end_date = '' or d.end_date is NULL)
-	  and m.street <> ''
-	  order by convert(int,c.cardno)";
+	  AND LastName <> 'NEW MEMBER'
+	  order by ".$sql->convert('c.CardNo','INT');
 $NL = "<br />";
 if (!isset($_GET["excel"])){
 	echo "<a href=fullMailingList.php?excel=yes>Save to Excel</a>".$NL;

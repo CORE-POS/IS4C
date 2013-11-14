@@ -27,41 +27,47 @@
   A class to add custom actions to
   certain departments
 */
-class SpecialDept {
-	
-	/**
-	  Utility function
-	  Add the class to a handler map
-	  @param $deptID the department number
-	  @param $arr a handler map (array)
-	  @return handler map (array)
-	*/
-	function register($deptID,$arr){
-		if (!is_array($arr)) $arr = array();
-		if (!isset($arr[$deptID]) || !is_array($arr[$deptID]))
-			$arr[$deptID] = array();
-		$inst = new ReflectionClass($this);
-		$arr[$deptID][] = $inst->name;
-		return $arr;
-	}
-	
-	/**
-	  Process an open ring
-	  @param $upc The department ID
-	  @param $amount the sale amount
-	  @param $json Keyed array
-	  See the Parser class for array format
-	  @return Keyed array
-	  See the Parser class for array format
+class SpecialDept 
+{
+    
+    /**
+      Utility function
+      Add the class to a handler map
+      @param $deptID the department number
+      @param $arr a handler map (array)
+      @return handler map (array)
+    */
+    public function register($deptID,$arr)
+    {
+        if (!is_array($arr)) {
+            $arr = array();
+        }
+        if (!isset($arr[$deptID]) || !is_array($arr[$deptID])) {
+            $arr[$deptID] = array();
+        }
+        $inst = new ReflectionClass($this);
+        $arr[$deptID][] = $inst->name;
 
-	  These modules supplement parsing to make
-	  open ring handling more customizable. The module
-	  will be invoked within a Parser object and
-	  hence uses the same return format.
-	*/
-	function handle($deptID,$amount,$json){
-		return $json;
-	}
+        return $arr;
+    }
+    
+    /**
+      Process an open ring
+      @param $upc The department ID
+      @param $amount the sale amount
+      @param $json Keyed array
+      See the Parser class for array format
+      @return Keyed array
+      See the Parser class for array format
+
+      These modules supplement parsing to make
+      open ring handling more customizable. The module
+      will be invoked within a Parser object and
+      hence uses the same return format.
+    */
+    public function handle($deptID,$amount,$json)
+    {
+        return $json;
+    }
 }
 
-?>

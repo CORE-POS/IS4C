@@ -90,6 +90,12 @@ using foodstamps
 
 scale indicates whether an item should be sold by weight
 
+scaleprice indicates what type of random-weight barcodes
+are used. Value zero means UPC-A where the last 4 digits
+contains price with max value $99.99. Value one means
+EAN-13 where the last 5 digits contain price with
+max value $999.99.
+
 mixmatchcode relates to pricing when pricemethod is
 greater than zero. Items with the same mixmatchcode
 are considred equivalent when determining whether the
@@ -118,6 +124,11 @@ receipt listings of quantity.
 qttyEnforced forces the cashier to enter an explicit
 quantity when ringing up the item
 
+idEnforced forces the cashier to enter the customer's
+date of birth. This flag should be set to the age
+required to purchase the product - e.g., 21 for 
+alcohol in the US.
+
 cost is the item's cost
 
 isUse indicates whether the item is currently
@@ -126,9 +137,13 @@ setting probably varies by front end implementation.
 
 local indicates whether the item is locally sourced.
 
+deposit is a PLU. The product record with this UPC will
+be added to the transaction automatically when the item
+is rung.
+
 Other columns:
-size, scaleprice, advertised, wicable, idEnforced,
-numflag, and deposit have no current meaning on the
+size, advertised, wicable, and numflag 
+have no current meaning on the
 front or back end. Or no current implementation.
 The meaning of idEnforced is pretty clear, but setting
 it won't *do* anything.

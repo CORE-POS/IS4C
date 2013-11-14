@@ -43,4 +43,8 @@ $CREATE['op.tenders'] = "
 		INDEX (TenderCode)
 	)
 ";
+if ($dbms == 'PDOLITE'){
+	$CREATE['op.tenders'] = str_replace('INDEX (TenderCode)','',$CREATE['op.tenders']);
+	$CREATE['op.tenders'] = str_replace('KEY (TenderID),','KEY (TenderID)',$CREATE['op.tenders']);
+}
 ?>

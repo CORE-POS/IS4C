@@ -21,11 +21,10 @@
 
 *********************************************************************************/
 
-include('../../../config.php');
+include(dirname(__FILE__).'/../../../config.php');
 if (!class_exists('FannieAPI'))
 	include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
-ini_set('display_errors',1);
 class PIMemberPage extends PIKillerPage {
 
 	private  $auth_mode = 'None';
@@ -118,7 +117,7 @@ class PIMemberPage extends PIKillerPage {
 			$card = $this->get_model($dbc, 'MemberCardsModel', array('card_no'=>$this->card_no));
 			$card->upc(str_pad($upc,13,'0',STR_PAD_LEFT));
 			$card->save();
-			$card->push_to_lanes();
+			$card->pushToLanes();
 		}
 
 		$meminfo = new MeminfoModel($dbc);
@@ -157,7 +156,7 @@ class PIMemberPage extends PIKillerPage {
 		}
 
 		$custdata->save();
-		$custdata->push_to_lanes();
+		$custdata->pushToLanes();
 
 		$personNum=2;
 		$names = array('first'=>FormLib::get_form_value('fn'),
@@ -176,7 +175,7 @@ class PIMemberPage extends PIKillerPage {
 			$custdata->LastName($set['last']);
 			$custdata->blueLine($this->card_no.' '.$custdata->LastName());
 			$custdata->save();
-			$custdata->push_to_lanes();
+			$custdata->pushToLanes();
 			$personNum++;
 		}
 
@@ -184,7 +183,7 @@ class PIMemberPage extends PIKillerPage {
 		// original form, delete the extras
 		for($i=$personNum; $i<=4; $i++){
 			$custdata->personNum($i);
-			$custdata->delete_from_lanes();
+			$custdata->deleteFromLanes();
 			$custdata->delete();
 		}
 

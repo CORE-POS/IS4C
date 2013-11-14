@@ -1,7 +1,31 @@
 html { overflow: hidden; }
+<<<<<<< HEAD
 body { font-family: arial; background-image: url('../graphics/is4c.gif');
        background-repeat: no-repeat; margin-top:20px;}
+=======
+body { font-family: arial; margin-top: 20px; }
+.mainBGimage {
+	background-image: url('../graphics/is4c.gif');
+	background-repeat: no-repeat;
+}
+>>>>>>> CORE-IS4C/master
 div#boundingBox { width: 675px; }
+/*********************************************
+* COLORS
+*********************************************/
+.coloredArea { background: #004080; color: #ffffff; }
+.colored { background: #004080; color: #ffffff; } /* compat */
+.errorColoredArea { background: #800000; color: #ffffff; }
+.errorColored { background: #800000; color: #ffffff; } /* compat */
+.lightestColorText { color: #808080; }
+.coloredText { color: #004080; }
+.errorColoredText { color: #800000; }
+.lightColorText { color: #408080; }
+.lightColorArea { color: #ffffff; background: #408080; }
+.totalLine { color: #000000; }
+.totalArea { background: #000000; color: #ffffff; }
+.fsLine { color: #800080; }
+.fsArea { background: #800080; color: #ffffff; }
 /*********************************************
  * main display
 *********************************************/
@@ -11,8 +35,6 @@ div.centerOffset { padding-top: 80px; }
 div.centeredDisplay { margin-left: auto; margin-right: auto; width: 40%;
 		      padding: 30px 0 10px 0; text-align: center; 
 		      top: 70px; position: relative; }
-div.colored { background: #004080; color: #ffffff; }
-div.errorColored { background: #800000; color: #ffffff; }
 span.larger { font-weight: bold; }
 span.smaller { font-size: 80%; }
 div.clear { clear: both; width: 100%; }
@@ -23,7 +45,7 @@ div#headerb .clear { clear: left; width: 100%; border-top: solid 1px #000000;
 		     margin-bottom: 5px;}
 div#headerb .bigger { font-size: 90%; font-weight: bold; }
 div#headerb .smaller { font-size: 75%; }
-div#plainmsg { text-align: center; color: #004080; font-weight: bold;
+div#plainmsg { text-align: center; font-weight: bold;
 		margin-left: auto; margin-right: auto; 
 		font-size: 120%; line-height: 1.7em; }
 div#footer { width: 100%; }
@@ -31,40 +53,30 @@ div#footer table { width: 100%;}
 div#footer tr.heading td {border-bottom: solid 1px #000000; font-size: 80%; 
 			  font-weight: bold; height: 30px; vertical-align: bottom;}
 div#footer tr.heading .first { text-align: center; }
-div#footer tr.heading .reg { color: #004080; width: 21%; text-align: center; }
-div#footer tr.heading .total { color: #ffffff; background: #000000; text-align: right; 
-			       width: 18%; }
-div#footer tr.heading .fs { color: #ffffff; background: #800080; text-align: right; 
-			       width: 18%; }
-div#footer tr.heading .due { color: #ffffff; background: #800000; text-align: right; 
-			       width: 18%; }
-div#footer tr.heading .change { color: #ffffff; background: #004080; text-align: right; 
-			       width: 18%; }
+div#footer tr.heading .reg { width: 21%; text-align: center; }
+div#footer tr.heading .total { text-align: right; width: 18%; }
 div#footer tr.values td { height: 50px; vertical-align: middle; text-align: center;}
-div#footer tr.values .first { font-weight: bold; font-size: 150%; color: #004080;}
-div#footer tr.values .reg { font-weight: bold; font-size: 110%; color: #808080;}
-div#footer tr.values .total { font-weight: bold; font-size: 150%; color: #000000;}
-div#footer tr.values .fs { font-weight: bold; font-size: 150%; color: #800080;}
-div#footer tr.values .due { font-weight: bold; font-size: 150%; color: #800000;}
-div#footer tr.values .change { font-weight: bold; font-size: 150%; color: #004080;}
+div#footer tr.values .first { font-weight: bold; font-size: 150%; }
+div#footer tr.values .reg { font-weight: bold; font-size: 110%; }
+div#footer tr.values .total { font-weight: bold; font-size: 150%; }
 div.item { width: 100%; font-size: 120%; text-align: left; }
 div.item div { float: left; }
-div.item .desc { width: 58%; color: #004080; }
-div.item .comments { width: 20%; text-align: right; color: #808080; }
-div.item .total { width: 14%; text-align: right; padding-right: 5px; color: #808080; }
-div.item .suffix { width: 4%; text-align: right; color: #808080; }
+div.item .desc { width: 58%; }
+div.item .comments { width: 20%; text-align: right; }
+div.item .total { width: 14%; text-align: right; padding-right: 5px; }
+div.item .suffix { width: 4%; text-align: right; }
 div#boxMsg { border: solid 1px black; padding: 0; background: #ffffff; min-height: 150px;}
-div#boxMsg .boxMsgAlert { color: #ffffff; background: #004080; font-weight: bold;
-			  border-bottom: solid 1px #000000; font-size: 120%; 
+div#boxMsg .boxMsgAlert { font-weight: bold; font-size: 120%;
+			  border-bottom: solid 1px #000000; 
 			  text-align: left; padding: 3px; }
 div#boxMsg .boxMsgBody { padding: 10px 0 0px 0; text-align: left;}
 div#boxMsg .boxMsgBody .msgicon { width: 16%; float: left;}
 div#boxMsg .boxMsgBody .msgtext { text-align: left; padding-left: 15px;
 				  float: left; width: 75%; }
 div .listbox {float: left; padding: 10px 10px 0 0; }
-div .listboxText {float: left; color: #004080; font-weight: bold; }
+div .listboxText {float: left; font-weight: bold; }
 div .farewellMsg {text-align: center; font-weight: bold; 
-		  font-size: 120%; color: #004080; line-height: 1.4em;}
+		  font-size: 120%; line-height: 1.4em;}
 /*********************************************
  * Initial login page 
 *********************************************/
@@ -74,10 +86,10 @@ div#loginTopBar .name { width: 16%; font-weight: bold; background: #ffcc00; heig
 			border-bottom: solid 1px #000000; vertical-align: middle;}
 div#loginTopBar .version { width: 80%; float: left; border-bottom: solid 1px #000000; 
 			   height: 20px; text-align: right; font-size: 70%; padding-top: 20px;}
-div#loginTopBar .welcome { clear: left; background: #004080; color: #ffffff; text-align: center;
+div#loginTopBar .welcome { clear: left; text-align: center;
 			   width: 16%; font-size: 90%; font-weight: bold; padding-bottom: 2px;}
 div#loginCenter { width: 100%; padding-top: 80px; text-align: center; }
-div#loginCenter .box { background: #004080; color: #ffffff; width: 40%; padding: 30px 0px 10px 0px;
+div#loginCenter .box { width: 40%; padding: 30px 0px 10px 0px;
 		       font-size: 105%; margin-left: auto; margin-right: auto;}
 div#loginExit { width: 90%; text-align:right; padding-top: 90px; font-size: 70%;}
 /*********************************************
@@ -86,15 +98,15 @@ div#loginExit { width: 90%; text-align:right; padding-top: 90px; font-size: 70%;
 div#inputArea { width: 100%; }
 div#inputAreaEnd { clear: left; height: 1px;}
 div#inputArea .inputform { float: left; width: 25%;}
-div#inputArea .notices {float: left; width: 70%; text-align: right; color: #004080; font-size: 80%;}
+div#inputArea .notices {float: left; width: 70%; text-align: right; font-size: 80%;}
 div#inputArea .notices .time {font-size: 115%; font-weight: bold; padding-left: 10px; color: #000000;}
 /*********************************************
  * Scale display 
 *********************************************/
 div#scalebox { position: absolute; left: 676px; top: 22px; }
 div#scaleClear { clear: right; height: 1px; }
-div#scaleTop { width: 118px; color: #ffffff; font-size: 80%; font-weight: bold; height: 18px;
-	       text-align: center; background: #004080;}
+div#scaleTop { width: 118px; font-size: 80%; font-weight: bold; height: 18px;
+	       text-align: center; }
 div#scaleBottom { width: 118px; color: #000000; background: #eeeeee; font-weight: bold;
 		  font-size: 120%; height: 44px; text-align: center; padding-top: 5px;}
 /*********************************************

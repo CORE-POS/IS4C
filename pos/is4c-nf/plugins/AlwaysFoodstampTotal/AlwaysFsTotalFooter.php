@@ -23,21 +23,20 @@
 
 class AlwaysFsTotalFooter extends FooterBox {
 
-	var $header_css = "color: #ffffff;";
-	var $display_css = "font-weight:bold;font-size:150%;";
+	public $display_css = "font-weight:bold;font-size:150%;";
 
 	function header_content(){
 		global $CORE_LOCAL;
 		if ( $CORE_LOCAL->get("ttlflag") == 1 and $CORE_LOCAL->get("End") != 1 ) {
-			$this->header_css .= "background:#800000;";
+			$this->header_css_class = 'errorColoredArea';
 			return _("Amount Due");
 		}
 		elseif ($CORE_LOCAL->get("ttlflag") == 1  and $CORE_LOCAL->get("End") == 1 ) {
-			$this->header_css .= "background:#004080;";
+			$this->header_css_class = 'coloredArea';
 			return _("Change");
 		}	
 		else {
-			$this->header_css .= "background:#000000;";
+			$this->header_css_class = 'totalArea';
 			return _("Total");
 		}
 	}
@@ -45,15 +44,15 @@ class AlwaysFsTotalFooter extends FooterBox {
 	function display_content(){
 		global $CORE_LOCAL;
 		if ( $CORE_LOCAL->get("ttlflag") == 1 and $CORE_LOCAL->get("End") != 1 ) {
-			$this->display_css .= "color:#800000;";
+			$this->display_css_class = 'errorColoredText';
 			return number_format($CORE_LOCAL->get("runningTotal"),2);
 		}
 		elseif ($CORE_LOCAL->get("ttlflag") == 1  and $CORE_LOCAL->get("End") == 1 ) {
-			$this->display_css .= "color:#004080;";
+			$this->display_css_class = 'coloredText';
 			return number_format($CORE_LOCAL->get("runningTotal"),2);
 		}	
 		else {
-			$this->display_css .= "color:#000000;";
+			$this->display_css_class = 'totalLine';
 			return number_format((double)$CORE_LOCAL->get("runningTotal"),2);
 		}
 	}

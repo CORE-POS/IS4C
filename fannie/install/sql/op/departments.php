@@ -10,6 +10,7 @@ Columns:
 	dept_limit dbms currency
 	dept_minimum dbms currency
 	dept_discount tinyint
+	dept_see_id tinyint
 	modified datetime
 	modifiedby int
 
@@ -28,7 +29,9 @@ dept_tax,dept_fs, and dept_discount indicate whether
 items in that department are taxable, foodstampable,
 and discountable (respectively). Mostly these affect
 open rings at the register, although WFC also uses
-them to speed up new item entry.
+them to speed up new item entry. dept_see_id is for
+departments where customers should show ID (e.g., alcohol).
+The value is the age required for purchase.
 
 dept_limit and dept_minimum are the highest and lowest
 sales allowed in the department. These also affect open
@@ -45,6 +48,7 @@ $CREATE['op.departments'] = "
 	  `dept_limit` double default NULL,
 	  `dept_minimum` double default NULL,
 	  `dept_discount` tinyint(4) default NULL,
+	  `dept_see_id` tinyint(4) default NULL,
 	  `modified` datetime default NULL,
 	  `modifiedby` int(11) default NULL,
 	  PRIMARY KEY (`dept_no`),
@@ -61,6 +65,7 @@ if ($dbms == "MSSQL"){
 			[dept_limit] [money] NULL ,
 			[dept_minimum] [money] NULL ,
 			[dept_discount] [smallint] NULL ,
+			[dept_see_id] [tinyint] NULL ,
 			[modified] [smalldatetime] NULL ,
 			[modifiedby] [int] NULL 
 		)";

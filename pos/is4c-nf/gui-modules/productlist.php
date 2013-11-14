@@ -64,8 +64,6 @@ class productlist extends NoInputPage {
 			return False;
 		}
 
-		$CORE_LOCAL->get("away",1);
-
 		if (is_numeric($entered)) {
 			// expand UPC-E to UPC-A
 			if (substr($entered, 0, 1) == 0 && strlen($entered) == 7) {
@@ -185,14 +183,12 @@ class productlist extends NoInputPage {
 			echo "</select>"
 				."</form>"
 				."</div>"
-				."<div class=\"listboxText centerOffset\">"
+				."<div class=\"listboxText coloredText centerOffset\">"
 				._("clear to cancel")."</div>"
 				."<div class=\"clear\"></div>";
 			echo "</div>";
 		}
 
-		$CORE_LOCAL->set("scan","noScan");
-		$CORE_LOCAL->set("beep","noBeep");
 		$this->add_onload_command("\$('#search').focus();\n");
 	} // END body_content() FUNCTION
 
@@ -215,6 +211,7 @@ class productlist extends NoInputPage {
 
 }
 
-new productlist();
+if (basename(__FILE__) == basename($_SERVER['PHP_SELF']))
+	new productlist();
 
 ?>

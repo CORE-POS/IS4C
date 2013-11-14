@@ -1,9 +1,34 @@
-Installing the software
-----------------------------------------
+QUICK START GUIDE
 
-See documentation/IS4C & documentation/Fannie
+For detailed explanations, see the documentation.
 
-Installing the database
-----------------------------------------
+Prequisites:
+* A webserver. Apache 2+ is recommended.
+* PHP 5.3 or greater
+* An SQL server. MySQL 5+ is recommended.
 
-Same as above
+Installing documentation:
+1. Include "documentation" folder somewhere on the webserver
+2. Browse documentation
+
+Install the front end POS:
+1. Include pos/is4c-nf somewhere on the webserver.
+2. Rename pos/is4c-nf/ini.php.dist to pos/is4c-nf/ini.php
+   If the ini.php.dist file is missing, just create a new
+   ini.php with opening and closing php tags.
+3. Browse to pos/is4c-nf/install/
+4. Follow instructions for making ini.php writable by the
+   webserver if needed.
+5. Enter database connection credentials and click save
+   to initialize the database.
+
+Install the back end tools & reporting:
+1. Include "fannie" folder somewhere on the webserver.
+2. Rename fannie/config.php.dist to fannie/config.php.
+   If the config.php.dist file is missing, just create a
+   new config.php with opening and closing php tags.
+3. Browse to fannie/install/
+4. Follow instructions for making config.php writable by the
+   webserver if needed.
+5. Enter database connection credentials and click save
+   to initialize the database.

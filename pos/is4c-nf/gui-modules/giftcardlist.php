@@ -85,9 +85,9 @@ class giftcardlist extends NoInputPage {
 		</div>
 		</div>
 		<?php
-		$CORE_LOCAL->set("scan","noScan");
 	} // END body_content() FUNCTION
 }
 
-new giftcardlist();
+if (basename(__FILE__) == basename($_SERVER['PHP_SELF']))
+	new giftcardlist();
 ?>

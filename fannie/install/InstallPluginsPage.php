@@ -113,30 +113,7 @@ if (!is_array($FANNIE_PLUGIN_LIST)) $FANNIE_PLUGIN_LIST = array();
 if (!isset($FANNIE_PLUGIN_SETTINGS)) $FANNIE_PLUGIN_SETTINGS = array();
 if (!is_array($FANNIE_PLUGIN_SETTINGS)) $FANNIE_PLUGIN_SETTINGS = array();
 
-//$mods = AutoLoader::ListModules('Plugin');
-//sort($mods);
-/** no autoloading functionality in Fannie yet
-    hardcoded lists will go away eventually
-17Jun13 plugins2.0/ contains directories:
-Brewventory  calendar  HouseCoupon  ShelfAudit  timesheet
-but Brewventory and HouseCoupon may not be live: ~/~Plugin.php doesn't exist for them.
-plugins2.0/preorder/ does not exist
-*/
-$mods = array(
-	'TimesheetPlugin'
-	,'CalendarPlugin'
-	,'ShelfAudit'
-	,'CoreWarehouse'
-	,'OverShortTools'
-);
-//,'PreorderPlugin'
-include('../modules/plugins2.0/TimesheetPlugin/TimesheetPlugin.php');
-include('../modules/plugins2.0/CalendarPlugin/CalendarPlugin.php');
-include('../modules/plugins2.0/ShelfAudit/ShelfAudit.php');
-include('../modules/plugins2.0/CoreWarehouse/CoreWarehouse.php');
-include('../modules/plugins2.0/OverShortTools/OverShortTools.php');
-// 17Jan13 Doesn't exist on github upstream.
-//include('../modules/plugins2.0/preorder/PreorderPlugin.php');
+$mods = FannieAPI::ListModules('FanniePlugin');
 
 if (isset($_REQUEST['PLUGINLIST']) || isset($_REQUEST['psubmit'])){
 	$oldset = $FANNIE_PLUGIN_LIST;
@@ -204,6 +181,7 @@ foreach($mods as $m){
 			// 17Jun13 EL Added <br /> for crampedness problem.
 			if (isset($info['description'])) 
 				echo '<br /><span class="noteTxt">'.$info['description'].'</span>';
+			echo '<br />';
 			//confset($field,"'".$CORE_LOCAL->get($field)."'");
 		}
 		echo '</td></tr>';

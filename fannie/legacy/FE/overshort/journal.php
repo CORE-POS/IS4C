@@ -35,7 +35,10 @@ $pCodes_lookup = array(
 	41645 => "GEN MERC/MAGAZINES",
 	41700 => "MEAT/POULTRY/SEAFOOD FR",
 	41705 => "MEAT/POULTRY/SEAFOOD FZ",
-	42225 => "Class"
+	42225 => "Class",
+	42231 => "Misc #1",
+	42232 => "Misc #2",
+	64410 => "Supplies"
 );
 
 $tender_pcode_lookup = array(
@@ -60,12 +63,14 @@ $double_lookup = array(
 	604 => array('Misc PO',''),
 	900 => array('Gift Cert sold',''),
 	990 => array('AR Payments',10710),
+	10710 => array('AR Payments', 10710),
 	991 => array('Class B Equity',31110),
 	992 => array('Class A Equity',31100),
 	700 => array('Totes',63320),
 	701 => array('Donations','31130'),
 	703 => array('Old Misc.',42230),
 	902 => array('Gift Card Sales',21205),
+	21205 => array('Gift Card Sales',21205),
 	800 => array('IT Corrections',''),
 	708 => array('Class',63350),
 	610 => array('RRR Department',''),
@@ -854,7 +859,8 @@ function fetch_data($date1,$date2){
 	$data['other']['axfees'] = array('63340',array());
 
 	$salesQ = "select YEAR(tdate),MONTH(tdate),DAY(tdate),
-		CASE WHEN department = 991 then '991' when department=992 then '992' else convert(s.salesCode,char) end as pcode,
+		CASE WHEN department = 991 then '991' when department=992 then '992' 
+			else convert(s.salesCode,char) end as pcode,
 		sum(total),trans_type
 		FROM $dlog as d left join is4c_op.departments as t on
 		d.department = t.dept_no LEFT JOIN
@@ -892,7 +898,7 @@ function fetch_data($date1,$date2){
 		if (!isset($data['other']['axfees'][1][$timestamp]))
 			$data['other']['axfees'][1][$timestamp] = 0;
 		$pcode = $salesW[3];	
-		if ($pcode == "422311"){
+		if ($pcode == "42231"){
 			if (!isset($data['other']['misc1'][1][$timestamp]))
 				$data['other']['misc1'][1][$timestamp] = 0;
 			$data['other']['misc1'][1][$timestamp] += $salesW[4];
@@ -902,7 +908,7 @@ function fetch_data($date1,$date2){
 				$data['other']['misc2'][1][$timestamp] = 0;
 			$data['other']['misc2'][1][$timestamp] += $salesW[4];
 		}
-		elseif ($pcode == "703"){
+		elseif ($pcode == "63350"){
 			if (!isset($data['other']['misc0'][1][$timestamp]))
 				$data['other']['misc0'][1][$timestamp] = 0;
 			$data['other']['misc0'][1][$timestamp] += $salesW[4];

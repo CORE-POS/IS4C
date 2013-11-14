@@ -67,13 +67,11 @@ class Steering extends Parser {
 			return True;
 		case "PV":
 			$CORE_LOCAL->set("pvsearch","$pvsearch");
-			$CORE_LOCAL->set("away",1);
 			$this->ret['main_frame'] = $my_url."gui-modules/productlist.php";
 			return True;
 		/*
 		case "PV2":
 			$CORE_LOCAL->set("pvsearch","");
-			$CORE_LOCAL->set("away",1);
 			$this->ret['main_frame'] = "/gui-modules/smartItemList.php";
 			return True;
 		*/
@@ -86,32 +84,19 @@ class Steering extends Parser {
 			if ($CORE_LOCAL->get("LastID") != "0")
 				$this->ret['output'] = DisplayLib::boxMsg("transaction in progress");
 			else {
-				$CORE_LOCAL->set("adminRequest",$my_url."gui-modules/undo.php");
-				$CORE_LOCAL->set("adminRequestLevel","30");
-				$CORE_LOCAL->set("adminLoginMsg",_("Login to void transactions"));
-				$CORE_LOCAL->set("away",1);
-				$this->ret['main_frame'] = $my_url."gui-modules/adminlogin.php";
+				$this->ret['main_frame'] = $my_url."gui-modules/adminlogin.php?class=UndoAdminLogin";
 			}
 			return True;
 		case "DDD":
-			$CORE_LOCAL->set("adminRequest",$my_url."ajax-callbacks/ddd.php");
-			$CORE_LOCAL->set("adminLoginMsg","DDD these items?");
-			$CORE_LOCAL->set("adminRequestLevel","10");
-			$CORE_LOCAL->set("away",1);
-			$this->ret['main_frame'] = $my_url."gui-modules/adminlogin.php";
+			$this->ret['main_frame'] = $my_url."gui-modules/adminlogin.php?class=DDDAdminLogin";
 			return True;
 		case 'MG':
 			if ($CORE_LOCAL->get("SecuritySR") > 20){
-				$CORE_LOCAL->set("adminRequest",$my_url."gui-modules/adminlist.php");
-				$CORE_LOCAL->set("adminRequestLevel",$CORE_LOCAL->get("SecuritySR"));
-				$CORE_LOCAL->set("adminLoginMsg",_("Login to suspend/resume transactions"));
-				$CORE_LOCAL->set("away",1);
-				$this->ret['main_frame'] = $my_url."gui-modules/adminlogin.php";
+				$this->ret['main_frame'] = $my_url."gui-modules/adminlogin.php?class=SusResAdminLogin";
 			}
 			else
 				$this->ret['main_frame'] = $my_url."gui-modules/adminlist.php";
 
-			$CORE_LOCAL->set("away",1);
 			return True;
 		case 'RP':
 			if ($CORE_LOCAL->get("LastID") != "0"){
@@ -140,8 +125,6 @@ class Steering extends Parser {
 			}				
 			return True;
 		case 'ID':
-			$CORE_LOCAL->set("away",1);
-			$CORE_LOCAL->set("search_or_list",1);
 			$this->ret['main_frame'] = $my_url."gui-modules/memlist.php";
 			return True;
 		case 'DDM':
@@ -156,21 +139,24 @@ class Steering extends Parser {
 			else {
 				Database::setglobalvalue("LoggedIn", 0);
 				$CORE_LOCAL->set("LoggedIn",0);
-				if ($str == 'SO'){
-					ReceiptLib::drawerKick();
-					ReceiptLib::freeDrawer(ReceiptLib::currentDrawer());
-				}
 				$CORE_LOCAL->set("training",0);
 				$CORE_LOCAL->set("gui-scale","no");
-				$CORE_LOCAL->set("away",1);
-				$this->ret['main_frame'] = $my_url."gui-modules/login2.php";
+				if ($str == 'SO'){
+					if (session_id() != '')
+						session_write_close();
+					$kicker_class = ($CORE_LOCAL->get("kickerModule")=="") ? 'Kicker' : $CORE_LOCAL->get('kickerModule');
+					$kicker_object = new $kicker_class();
+					if ($kicker_object->kickOnSignOut())
+						ReceiptLib::drawerKick();
+					ReceiptLib::freeDrawer(ReceiptLib::currentDrawer());
+				}
+				$this->ret['main_frame'] = $my_url."login.php";
 			}
 			return True;
 		case 'NS':
 			if ($CORE_LOCAL->get("LastID") != 0) 
 				$this->ret['output'] = DisplayLib::boxMsg(_("Transaction in Progress"));
 			else {
-				$CORE_LOCAL->set("away",1);
 				$this->ret['main_frame'] = $my_url."gui-modules/nslogin.php";
 			}
 			return True;
@@ -185,17 +171,20 @@ class Steering extends Parser {
 			return True;
 		*/
 		case "CN":
+			/* always prompt for a login. this older behavior can
+			   be brought back as an optional feature, but I'm not
+			   going to add yet-another-setting unless someone actually
+			   needs this. Andy 24Sep13
 			if ($CORE_LOCAL->get("runningTotal") == 0) {
-				$CORE_LOCAL->set("receiptType","cancelled");
-				$CORE_LOCAL->set("msg",2);
 				$this->ret['receipt'] = 'cancelled';
 				$this->ret['output'] = DisplayLib::printheaderb();
 				$this->ret['output'] .= DisplayLib::plainmsg(_("transaction cancelled"));
 			}
 			else {
-				$CORE_LOCAL->set("away",1);
 				$this->ret['main_frame'] = $my_url."gui-modules/mgrlogin.php";
 			}
+			*/
+			$this->ret['main_frame'] = $my_url."gui-modules/mgrlogin.php";
 			return True;
 		case "CC":
 			if ($CORE_LOCAL->get("ttlflag") != 1){
@@ -206,11 +195,7 @@ class Steering extends Parser {
 				$this->ret['main_frame'] = $my_url."cc-modules/gui/ProcessPage.php";
 			return True;
 		case "PO":
-			$CORE_LOCAL->set("adminRequest",$my_url."gui-modules/priceOverride.php");
-			$CORE_LOCAL->set("adminRequestLevel","30");
-			$CORE_LOCAL->set("adminLoginMsg",_("Login to alter price"));
-			$CORE_LOCAL->set("away",1);
-			$this->ret['main_frame'] = $my_url."gui-modules/adminlogin.php";
+			$this->ret['main_frame'] = $my_url."gui-modules/adminlogin.php?class=PriceOverrideAdminLogin";
 			return True;
 		case "HC":
 			$module = new HostedCheckout();

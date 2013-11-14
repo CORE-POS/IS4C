@@ -23,8 +23,8 @@
 
 class AlwaysFsEligibleFooter extends FooterBox {
 
-	var $header_css = '';
-	var $display_css = '';
+	public $header_css_class = 'fsLine';
+	public $display_css_class = 'fsLine';
 
 	function AlwaysFsEligibleFooter() {
 		global $CORE_LOCAL;
@@ -36,13 +36,11 @@ class AlwaysFsEligibleFooter extends FooterBox {
 
 	function header_content(){
 		global $CORE_LOCAL;
-		$this->header_css .= "color:#800080;";
 		return _("FS Eligible");
 	}
 
 	function display_content(){
 		global $CORE_LOCAL;
-		$this->display_css .= "color:#800080;";
 		if ($CORE_LOCAL->get('End') != 1)
 			return number_format((double)$CORE_LOCAL->get("fsEligible"),2);
 		else

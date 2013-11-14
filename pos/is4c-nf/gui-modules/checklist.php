@@ -95,7 +95,7 @@ class checklist extends NoInputPage {
 	*/
 	function body_content(){
 		global $CORE_LOCAL;
-		$db = pDataConnect();
+		$db = Database::pDataConnect();
 		$q = "SELECT TenderCode,TenderName FROM tenders WHERE TenderName LIKE '%check%' ORDER BY TenderName";
 		$r = $db->query($q);
 
@@ -116,13 +116,10 @@ class checklist extends NoInputPage {
 		echo "</select>"
 			."</form>"
 			."</div>"
-			."<div class=\"listboxText centerOffset\">"
+			."<div class=\"listboxText coloredText centerOffset\">"
 			."[Clear] to Cancel</div>"
 			."<div class=\"clear\"></div>";
 		echo "</div>";
-
-		$CORE_LOCAL->set("scan","noScan");
-		$CORE_LOCAL->set("beep","noBeep");
 
 		$this->add_onload_command("\$('#search').keypress(processkeypress);\n");
 		$this->add_onload_command("\$('#search').focus();\n");
@@ -130,6 +127,7 @@ class checklist extends NoInputPage {
 
 }
 
-new checklist();
+if (basename(__FILE__) == basename($_SERVER['PHP_SELF']))
+	new checklist();
 
 ?>

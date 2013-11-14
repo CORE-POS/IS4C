@@ -30,8 +30,6 @@
 
 */
 
-ini_set('display_errors','1');
-
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class memlist extends NoInputPage {
@@ -42,19 +40,20 @@ class memlist extends NoInputPage {
 	var $db;
 	var $temp_message;
 
+	private $results = array();
+	private $submitted = False;
+
 	function preprocess(){
 		global $CORE_LOCAL;
 
 		// set variable ahead of time
 		// so we know if lookup found no one
 		// vs. lookup didn't happen
-		$this->temp_num_rows = -1;
+		$this->submitted = False;
 
-		$CORE_LOCAL->set("away",1);
 		$entered = "";
-		if ($CORE_LOCAL->get("idSearch") && strlen($CORE_LOCAL->get("idSearch")) > 0) {
-			$entered = $CORE_LOCAL->get("idSearch");
-			$CORE_LOCAL->set("idSearch","");
+		if (isset($_REQUEST['idSearch']) && strlen($_REQUEST['idSearch']) > 0){
+			$entered = $_REQUEST['idSearch'];
 		}
 		elseif (isset($_REQUEST['search'])){
 			$entered = strtoupper(trim($_REQUEST["search"]));
@@ -64,68 +63,74 @@ class memlist extends NoInputPage {
 
 		if (substr($entered, -2) == "ID") $entered = substr($entered, 0, strlen($entered) - 2);
 
-		$personNum = 1;
-		$selected_name = False;
-		// Values of memlist items are "CardNo::personNum"
+		$personNum = False;
+		$memberID = False;
 		if (strstr($entered,"::") !== False){
-			$tmp = explode("::",$entered);
-			$entered = $tmp[0];
-			$personNum = $tmp[1];
-			$selected_name = True;
+			// Values of memlist items are "CardNo::personNum"
+			list($memberID,$personNum) = explode("::",$entered);
+			$this->submitted = True;
 		}
-
 		// No input available, stop
 		if (!$entered || strlen($entered) < 1 || $entered == "CL") {
-			$CORE_LOCAL->set("mirequested",0);
-			$CORE_LOCAL->set("scan","scan");
-			$CORE_LOCAL->set("reprintNameLookup",0);
 			$this->change_page($this->page_url."gui-modules/pos2.php");
 			return False;
 		}
-
-		$memberID = $entered;
-		$db_a = Database::pDataConnect();
-
-		$query = "select CardNo,personNum,LastName,FirstName,CashBack,Balance,Discount,
-			MemDiscountLimit,ChargeOk,WriteChecks,StoreCoupons,Type,memType,staff,
-			SSI,Purchases,NumberOfChecks,memCoupons,blueLine,Shown,id from custdata 
-			where CardNo = '".$entered."' order by personNum";
-		if (!is_numeric($entered)) {
-			$query = "select CardNo,personNum,LastName,FirstName from custdata 
-				where LastName like '".$entered."%' order by LastName, FirstName";
+		else if ($memberID === False && $personNum === False){
+			// find the member
+			$lookups = AutoLoader::ListModules('MemberLookup', True);
+			foreach($lookups as $class){
+				if (!class_exists($class)) continue;
+				$obj = new $class();
+				if(is_numeric($entered) && !$obj->handle_numbers())
+					continue;
+				elseif(!is_numeric($entered) && !$obj->handle_text())
+					continue;
+				elseif(is_numeric($entered)){
+					$chk = $obj->lookup_by_number($entered);
+					if ($chk['url'] !== False){
+						$this->change_page($chk['url']);
+						return False;		
+					}
+					foreach($chk['results'] as $key=>$val)
+						$this->results[$key] = $val;
+				}
+				elseif(!is_numeric($entered)){
+					$chk = $obj->lookup_by_text($entered);
+					if ($chk['url'] !== False){
+						$this->change_page($chk['url']);
+						return False;		
+					}
+					foreach($chk['results'] as $key=>$val)
+						$this->results[$key] = $val;
+				}
+			}
+			$this->submitted = True;
 		}
-		if ($selected_name && is_numeric($personNum)){
-			/**
-			  13Feb13 Andy
-			  Use personNum if provided so the lookup returns
-			  the correct record
-			*/
-			$query = "select CardNo,personNum,LastName,FirstName,CashBack,Balance,Discount,
-				MemDiscountLimit,ChargeOk,WriteChecks,StoreCoupons,Type,memType,staff,
-				SSI,Purchases,NumberOfChecks,memCoupons,blueLine,Shown,id from custdata 
-				where CardNo = '".$entered."' AND personNum=".$personNum;
-		}
-
-		$result = $db_a->query($query);
-		$num_rows = $db_a->num_rows($result);
 
 		// if theres only 1 match don't show the memlist
-		if ($num_rows == 1 && $CORE_LOCAL->get("verifyName")==0) {
-			$selected_name = True;
-			$personNum = 1;
+		// when it's the default non-member account OR
+		// when name verification is disabled
+		if (count($this->results) == 1 && 
+		    ($CORE_LOCAL->get("verifyName")==0 || $entered == $CORE_LOCAL->get('defaultNonMem'))) {
+			$key = array_pop(array_keys($this->results));
+			list($memberID, $personNum) = explode('::',$key);
 		}
 
-		// if there's one result and either
-		// a. it's the default nonmember account or
-		// b. it's been confirmed in the select box
-		// then set the member number
-		// proceed/return to the appropriate next page
-		if ( ($num_rows == 1 && $entered == $CORE_LOCAL->get("defaultNonMem"))
-				||
-		    (is_numeric($entered) && is_numeric($personNum) && $selected_name) ) {
-			$row = $db_a->fetch_array($result);
-			PrehLib::setMember($row["CardNo"], $personNum,$row);
-			$CORE_LOCAL->set("scan","scan");
+		// we have exactly one row and 
+		// don't need to confirm any further
+		if ($memberID !== False && $personNum !== False){
+			if ($memberID == $CORE_LOCAL->get('defaultNonMem'))
+				$personNum = 1;
+			$db_a = Database::pDataConnect();
+			$query = $db_a->prepare_statement('SELECT CardNo, personNum,
+				LastName, FirstName,CashBack,Balance,Discount,
+				MemDiscountLimit,ChargeOk,WriteChecks,StoreCoupons,Type,
+				memType,staff,SSI,Purchases,NumberOfChecks,memCoupons,
+				blueLine,Shown,id FROM custdata WHERE CardNo=?
+				AND personNum=?');
+			$result = $db_a->exec_statement($query,array($memberID, $personNum));
+			$row = $db_a->fetch_row($result);
+			PrehLib::setMember($row["CardNo"], $personNum, $row);
 
 			// WEFC_Toronto: If a Member Card # was entered when the choice from the list was made,
 			// add the memberCards record.
@@ -156,10 +161,6 @@ class memlist extends NoInputPage {
 				}
 				if ( $mmsg != "" ) {
 					// Prepare to display the error.
-					$this->temp_result = $result;
-					$this->temp_num_rows = $num_rows;
-					$this->entered = $entered;
-					$this->db = $db_a;
 					$this->temp_message = $mmsg;
 					return True;
 				}
@@ -180,10 +181,6 @@ class memlist extends NoInputPage {
 		}
 
 		// Prepare to display the memlist (list to choose from).
-		$this->temp_result = $result;
-		$this->temp_num_rows = $num_rows;
-		$this->entered = $entered;
-		$this->db = $db_a;
 		$this->temp_message = "";
 		return True;
 
@@ -191,7 +188,7 @@ class memlist extends NoInputPage {
 
 	function head_content(){
 		global $CORE_LOCAL;
-		if ($this->temp_num_rows > 0){
+		if (count($this->results) > 0){
 			$this->add_onload_command("\$('#search').keypress(processkeypress);\n");
 			$this->add_onload_command("\$('#search').focus();\n");
 		} else {
@@ -226,10 +223,6 @@ class memlist extends NoInputPage {
 
 	function body_content(){
 		global $CORE_LOCAL;
-		$num_rows = $this->temp_num_rows;
-		$result = $this->temp_result;
-		$entered = $this->entered;
-		$db = $this->db;
 		$message = $this->temp_message;
 
 		echo "<div class=\"baseHeight\">"
@@ -251,11 +244,11 @@ class memlist extends NoInputPage {
 		/* for no results, just throw up a re-do
 		 * otherwise, put results in a select box
 		 */
-		elseif ($num_rows < 1) {
+		elseif (count($this->results) < 1){
 			echo "
 			<div class=\"colored centeredDisplay\">
 				<span class=\"larger\">";
-			if ($num_rows == -1)
+			if (!$this->submitted)
 				echo _("member search")."<br />"._("enter member number or name");
 			else
 				echo _("no match found")."<br />"._("next search or member number");
@@ -272,25 +265,25 @@ class memlist extends NoInputPage {
 				."onblur=\"\$('#search').focus();\" ondblclick=\"document.forms['selectform'].submit();\" id=\"search\">";
 
 			$selectFlag = 0;
-			if (!is_numeric($entered) && $CORE_LOCAL->get("memlistNonMember") == 1) {
+			// I don't know what !$entered was supposed to do here, 
+			// but the variable isn't defined
+			if (False && $CORE_LOCAL->get("memlistNonMember") == 1) {
 				echo "<option value='3::1' selected> 3 "
 					."&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Customer";
 				$selectFlag = 1;
 			}
 
-			for ($i = 0; $i < $num_rows; $i++) {
-				$row = $db->fetch_array($result);
-				if( $i == 0 && $selectFlag == 0) {
-					$selected = "selected";
-				} else {
-					$selected = "";
+			foreach($this->results as $optval => $label){
+				echo '<option value="'.$optval.'"';
+				if ($selectFlag == 0){
+					echo ' selected';
+					$selectFlag = 1;
 				}
-				echo "<option value='".$row["CardNo"]."::".$row["personNum"]."' ".$selected.">"
-					.$row["CardNo"]." ".$row["LastName"].", ".$row["FirstName"]."\n";
+				echo '>'.$label.'</option>';
 			}
 			echo "</select></div><!-- /.listbox -->"
-				."<div class=\"listboxText centerOffset\">"
-				._("use arrow keys to navigate")."<p>"._("clear to cancel")."</div><!-- /.listboxText .centerOffset -->"
+				."<div class=\"listboxText coloredText centerOffset\">"
+				._("use arrow keys to navigate")."<p>"._("clear to cancel")."</div><!-- /.listboxText coloredText .centerOffset -->"
 				."<div class=\"clear\"></div>";
 
 			// A textbox for the Member Card number, to be added to the db for the selected member.
@@ -310,6 +303,7 @@ class memlist extends NoInputPage {
 // /class memlist
 }
 
-new memlist();
+if (basename(__FILE__) == basename($_SERVER['PHP_SELF']))
+	new memlist();
 
 ?>

@@ -25,9 +25,10 @@ include_once(dirname(__FILE__).'/../../../lib/AutoLoader.php');
 
 class paycardboxMsgVoid extends PaycardProcessPage {
 
+	protected $mask_input = True;
+
 	function preprocess(){
 		global $CORE_LOCAL;
-		$CORE_LOCAL->set("inputMasked",1);
 		// check for posts before drawing anything, so we can redirect
 		if( isset($_REQUEST['reginput'])) {
 			$input = strtoupper(trim($_REQUEST['reginput']));
@@ -37,9 +38,7 @@ class paycardboxMsgVoid extends PaycardProcessPage {
 				$CORE_LOCAL->set("msgrepeat",1);
 				$CORE_LOCAL->set("strRemembered",'TO');
 				$CORE_LOCAL->set("toggletax",0);
-				$CORE_LOCAL->set("endorseType","");
 				$CORE_LOCAL->set("togglefoodstamp",0);
-				$CORE_LOCAL->set("inputMasked",0);
 				$this->change_page($this->page_url."gui-modules/pos2.php");
 				return False;
 			}
@@ -47,9 +46,10 @@ class paycardboxMsgVoid extends PaycardProcessPage {
 			$continue = false;
 			// when voiding tenders, the input must be an FEC's passcode
 			if( $CORE_LOCAL->get("paycard_mode") == PaycardLib::PAYCARD_MODE_VOID && $input != "" && substr($input,-2) != "CL") {
-				$sql = "select emp_no, FirstName, LastName from employees" .
-					" where EmpActive=1 and frontendsecurity>=11 and AdminPassword=".(int)$input;
 				$db = Database::pDataConnect();
+				$passwd = $db->escape($input);
+				$sql = "select emp_no, FirstName, LastName from employees" .
+					" where EmpActive=1 and frontendsecurity>=11 and AdminPassword='$passwd'";
 				$result = $db->query($sql);
 				if( $db->num_rows($result) > 0) {
 					$CORE_LOCAL->set("adminP",$input);
@@ -62,7 +62,6 @@ class paycardboxMsgVoid extends PaycardProcessPage {
 			// go?
 			if( $continue) {
 				// send the request, then disable the form
-				$CORE_LOCAL->set("inputMasked",0);
 				$this->add_onload_command('paycard_submitWrapper();');
 				$this->action = "onsubmit=\"return false;\"";
 			}

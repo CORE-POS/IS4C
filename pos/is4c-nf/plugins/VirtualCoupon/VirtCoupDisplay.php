@@ -153,7 +153,7 @@ class VirtCoupDisplay extends NoInputPage {
 					.$row["description"]."\n";
 			}
 			echo "</select></div>"
-				."<div class=\"listboxText centerOffset\">"
+				."<div class=\"listboxText coloredText centerOffset\">"
 				._("use arrow keys to navigate")."<p>"._("clear to cancel")."</div>"
 				."<div class=\"clear\"></div>";
 		}

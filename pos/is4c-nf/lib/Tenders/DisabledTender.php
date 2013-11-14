@@ -28,11 +28,11 @@
   of course. This just displays an error message
   instead.
 */
-class DisabledTender extends TenderModule {
-
-	function ErrorCheck(){
-		return DisplayLib::xboxMsg($this->name_string." "._("tender disabled"));
-	}
+class DisabledTender extends TenderModule 
+{
+    public function errorCheck()
+    {
+        return DisplayLib::xboxMsg($this->name_string." "._("tender disabled"));
+    }
 }
 
-?>

@@ -1,6 +1,6 @@
 <?php
-require_once('../../../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+require_once(dirname(__FILE__).'/../../../../config.php');
+include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
 class TsAdminDelete extends FanniePage {
 	protected $header = 'Timesheet Management';

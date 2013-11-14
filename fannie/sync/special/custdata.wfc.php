@@ -30,7 +30,7 @@ foreach($FANNIE_LANES as $lane){
 			$lane['user'],$lane['pw']);
 	if ($dbc->connections[$lane['op']] !== False){
 
-		if ($lane['host'] != "129.103.2.26" && $lane['host'] != "129.103.2.21" ){
+		if ($lane['host'] != "129.103.2.26" && $lane['host'] != "129.103.2.21" && $lane['host'] != '129.103.2.25'){
 			$dbc->query("DELETE FROM custdata WHERE type NOT IN ('PC','REG')",$lane['op']);
 		}
 		else {

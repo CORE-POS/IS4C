@@ -29,132 +29,211 @@
   provides meta-information about the plugin like settings
   and enable/disable hooks
 */
-class FanniePlugin {
+class FanniePlugin 
+{
 
-	/**
-	  Desired settings. These are automatically exposed
-	  on the 'Plugins' area of the install page and
-	  written to ini.php
-	*/
-	public $plugin_settings = array(
-	'example1' => array('default'=>'','label'=>'Setting #1',
-			'description'=>'Text goes here'),
-	'example2' => array('default'=>1,
-			'options'=>array('Yes'=>1,'No'=>0)
-		)
-	);
+    /**
+      Desired settings. These are automatically exposed
+      on the 'Plugins' area of the install page and
+      written to ini.php
+    */
+    public $plugin_settings = array(
+    'example1' => array('default'=>'','label'=>'Setting #1',
+            'description'=>'Text goes here'),
+    'example2' => array('default'=>1,
+            'options'=>array('Yes'=>1,'No'=>0)
+        )
+    );
 
-	public $plugin_description = 'This author didn\'t provide anything. Shame!';
+    public $plugin_description = 'This author didn\'t provide anything. Shame!';
 
-	/**
-	  Callback. Triggered when plugin is enabled
-	*/
-	public function plugin_enable(){
+    /**
+      @deprecated
+      Temporary compat for function normalization
+    */
+    public function plugin_enable()
+    {
+        $this->pluginEnable();
+    }
 
-	}
+    /**
+      Callback. Triggered when plugin is enabled
+    */
+    public function pluginEnable()
+    {
 
-	/**
-	  Callback. Triggered when plugin is disabled
-	*/
-	public function plugin_disable(){
+    }
 
-	}
+    /**
+      @deprecated
+      Temporary compat for function normalization
+    */
+    public function plugin_disable()
+    {
+        $this->pluginDisable();
+    }
 
-	/**
-	  Callback. Triggered when a setting is modified
-	*/
-	public function setting_change(){
+    /**
+      Callback. Triggered when plugin is disabled
+    */
+    public function pluginDisable()
+    {
 
-	}
+    }
 
-	/**
-	  Get a URL for the plugin's directory	
-	*/
-	public function plugin_url(){
-		global $FANNIE_URL;
-		$info = new ReflectionClass($this);
-		return $FANNIE_URL.'modules/plugins2.0/'.basename(dirname($info->getFileName()));
-	}
+    /**
+      @deprecated
+      Temporary compat for function normalization
+    */
+    public function setting_change()
+    {
+        $this->settingChange();
+    }
 
-	/**
-	  Get filesystem path for the plugin's directory
-	*/
-	public function plugin_dir(){
-		$info = new ReflectionClass($this);
-		return dirname($info->getFileName());
-	}
+    /**
+      Callback. Triggered when a setting is modified
+    */
+    public function settingChange()
+    {
 
-	public function plugin_db_struct($db, $struct_name, $db_name=""){
-		if ($db->table_exists($struct_name)) return True;
+    }
 
-		$dir = $this->plugin_dir();
-		if (!file_exists($dir.'/sql/'.$struct_name.'.php'))
-			return 'No create file for: '.$struct_name;
-		include($dir.'/sql/'.$struct_name.'.php');
-		if (!isset($PLUGIN_CREATE) || !isset($PLUGIN_CREATE[$struct_name]))
-			return 'No definition for: '.$struct_name;
+    /**
+      @deprecated
+      Temporary compat for function normalization
+    */
+    public function plugin_url()
+    {
+        return $this->pluginUrl();
+    }
 
-		$result = $db->query($PLUGIN_CREATE[$struct_name], $db_name);
-		if ($result)
-			return True;
-		else
-			return $db->error($db_name);
-	}
-	
-	/**
-	  Find the plugin containing a given file
-	  @param $file string filename
-	  @return plugin name or boolean False
-	*/
-	public static function MemberOf($file){
-		$file = realpath($file);
-		$sep = '/';
-		if (strstr($file,'/'))
-			$sep = '/';
-		elseif (strstr($file,'\\'))
-			$sep = '\\';
-		else
-			return False;
+    /**
+      Get a URL for the plugin's directory    
+    */
+    public function pluginUrl()
+    {
+        global $FANNIE_URL;
+        $info = new ReflectionClass($this);
 
-		$dirs = explode($sep, $file);
-		for($i=0;$i<count($dirs);$i++){
-			if ($dirs[$i] == "plugins2.0" && isset($dirs[$i+1]))
-				return $dirs[$i+1];
-		}
+        return $FANNIE_URL.'modules/plugins2.0/'.basename(dirname($info->getFileName()));
+    }
 
-		return False;
-	}
+    /**
+      @deprecated
+      Temporary compat for function normalization
+    */
+    public function plugin_dir()
+    {
+        return $this->pluginDir();
+    }
 
-	/**
-	  Check whether a given plugin is enabled
-	  @param $plugin string plugin name
-	  @return True or False
-	*/
-	public static function IsEnabled($plugin){
-		global $FANNIE_PLUGIN_LIST;
-		if (!is_array($FANNIE_PLUGIN_LIST)) return False;
+    /**
+      Get filesystem path for the plugin's directory
+    */
+    public function pluginDir()
+    {
+        $info = new ReflectionClass($this);
 
-		return (in_array($plugin, $FANNIE_PLUGIN_LIST)) ? True : False;
-	}
+        return dirname($info->getFileName());
+    }
 
-	/**
-	  Find potential class files in a given directory
-	  @param $path starting directory
-	  @return array of class name => full file name
-	*/
-	public static function PluginMap($path="",$in=array()){
-		if($path=="") $path = realpath(dirname(__FILE__).'/../modules/plugins2.0');
-		$dh = opendir($path);
-		while( ($file = readdir($dh)) !== False){
-			if ($file[0] == ".") continue;
-			if (is_dir($path."/".$file))
-				$in = self::PluginMap(realpath($path.'/'.$file),$in);
-			if (substr($file,-4)==".php" && $file != "Plugin.php")
-				$in[substr($file,0,strlen($file)-4)] = realpath($path.'/'.$file);
-		}
-		closedir($dh);
-		return $in;
-	}
+    /**
+      @deprecated
+      Temporary compat for function normalization
+    */
+    public function plugin_db_struct($db, $struct_name, $db_name="")
+    {
+        return $this->pluginDbStruct($db, $struct_name, $db_name);
+    }
+
+    public function pluginDbStruct($db, $struct_name, $db_name="")
+    {
+        if ($db->table_exists($struct_name)) {
+            return true;
+        }
+
+        $dir = $this->plugin_dir();
+        if (!file_exists($dir.'/sql/'.$struct_name.'.php')) {
+            return 'No create file for: '.$struct_name;
+        }
+        include($dir.'/sql/'.$struct_name.'.php');
+        if (!isset($PLUGIN_CREATE) || !isset($PLUGIN_CREATE[$struct_name])) {
+            return 'No definition for: '.$struct_name;
+        }
+
+        $result = $db->query($PLUGIN_CREATE[$struct_name], $db_name);
+        if ($result) {
+            return true;
+        } else {
+            return $db->error($db_name);
+        }
+    }
+    
+    /**
+      Find the plugin containing a given file
+      @param $file string filename
+      @return plugin name or boolean False
+    */
+    public static function memberOf($file)
+    {
+        $file = realpath($file);
+        $sep = '/';
+        if (strstr($file,'/')) {
+            $sep = '/';
+        } elseif (strstr($file,'\\')) {
+            $sep = '\\';
+        } else {
+            return false;
+        }
+
+        $dirs = explode($sep, $file);
+        for($i=0;$i<count($dirs);$i++) {
+            if ($dirs[$i] == "plugins2.0" && isset($dirs[$i+1])) {
+                return $dirs[$i+1];
+            }
+        }
+
+        return false;
+    }
+
+    /**
+      Check whether a given plugin is enabled
+      @param $plugin string plugin name
+      @return True or False
+    */
+    public static function isEnabled($plugin)
+    {
+        global $FANNIE_PLUGIN_LIST;
+        if (!is_array($FANNIE_PLUGIN_LIST)) {
+            return false;
+        }
+
+        return (in_array($plugin, $FANNIE_PLUGIN_LIST)) ? true : false;
+    }
+
+    /**
+      Find potential class files in a given directory
+      @param $path starting directory
+      @return array of class name => full file name
+    */
+    public static function pluginMap($path="",$in=array())
+    {
+        if ($path=="") {
+            $path = realpath(dirname(__FILE__).'/../modules/plugins2.0');
+        }
+        $dh = opendir($path);
+        while ( ($file = readdir($dh)) !== False) {
+            if ($file[0] == ".") continue;
+            if (is_dir($path."/".$file)) {
+                $in = self::pluginMap(realpath($path.'/'.$file),$in);
+            }
+            if (substr($file,-4)==".php" && $file != "Plugin.php") {
+                $in[substr($file,0,strlen($file)-4)] = realpath($path.'/'.$file);
+            }
+        }
+        closedir($dh);
+
+        return $in;
+    }
 }
 
-?>

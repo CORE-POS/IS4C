@@ -57,23 +57,23 @@ to apply that tender more than once.
 $CREATE['trans.taxView'] = "
 	CREATE VIEW taxView AS
 		SELECT 
-		r.id,
-		r.description,
-		CONVERT(SUM(CASE 
+		r.id AS id,
+		r.description AS description,
+		CAST(SUM(CASE 
 			WHEN l.trans_type IN ('I','D') AND discountable=0 THEN total 
 			WHEN l.trans_type IN ('I','D') AND discountable<>0 THEN total * ((100-s.percentDiscount)/100)
 			ELSE 0 END
-		) * r.rate, DECIMAL(10,2)) as taxTotal,
-		CONVERT(SUM(CASE 
+		) * r.rate AS DECIMAL(10,2)) as taxTotal,
+		CAST(SUM(CASE 
 			WHEN l.trans_type IN ('I','D') AND discountable=0 AND foodstamp=1 THEN total 
 			WHEN l.trans_type IN ('I','D') AND discountable<>0 AND foodstamp=1 THEN total * ((100-s.percentDiscount)/100)
 			ELSE 0 END
-		), DECIMAL(10,2)) as fsTaxable,
-		CONVERT(SUM(CASE 
+		) AS DECIMAL(10,2)) as fsTaxable,
+		CAST(SUM(CASE 
 			WHEN l.trans_type IN ('I','D') AND discountable=0 AND foodstamp=1 THEN total 
 			WHEN l.trans_type IN ('I','D') AND discountable<>0 AND foodstamp=1 THEN total * ((100-s.percentDiscount)/100)
 			ELSE 0 END
-		) * r.rate, DECIMAL(10,2)) as fsTaxTotal,
+		) * r.rate AS DECIMAL(10,2)) as fsTaxTotal,
 		-1*MAX(fsTendered) as foodstampTender,
 		MAX(r.rate) as taxrate
 		FROM

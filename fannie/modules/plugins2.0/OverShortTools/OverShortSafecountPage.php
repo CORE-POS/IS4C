@@ -21,9 +21,9 @@
 
 *********************************************************************************/
 
-include('../../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
-require($FANNIE_ROOT."src/select_dlog.php");
+include(dirname(__FILE__).'/../../../config.php');
+include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+require_once($FANNIE_ROOT."src/select_dlog.php");
 $dbc = FannieDB::get($FANNIE_OP_DB);
 
 class OverShortSafecountPage extends FanniePage {

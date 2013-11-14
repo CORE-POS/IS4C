@@ -37,7 +37,7 @@ $CREATE['trans.memdiscountadd'] = "
 		max(foodstamp) as foodstamp, 
 		0 as discount, 
 		-1 * sum(memDiscount) as memDiscount, 
-		3 as discountable, 
+		MAX(discountable) as discountable, 
 		20 as discounttype, 
 		8 as voided,
 		MAX(percentDiscount) as percentDiscount,

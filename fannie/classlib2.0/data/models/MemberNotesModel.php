@@ -24,72 +24,81 @@
 /**
   @class MemberNotesModel
 */
-class MemberNotesModel extends BasicModel {
+class MemberNotesModel extends BasicModel 
+{
 
-	protected $name = "memberNotes";
+    protected $name = "memberNotes";
 
-	protected $preferred_db = 'op';
+    protected $preferred_db = 'op';
 
-	protected $columns = array(
-	'cardno' => array('type'=>'INT'),
-	'note' => array('type','TEXT'),
-	'stamp' => array('type','DATETIME'),
-	'username' => array('type','VARCHAR(50)')
-	);
+    protected $columns = array(
+    'cardno' => array('type'=>'INT'),
+    'note' => array('type','TEXT'),
+    'stamp' => array('type','DATETIME'),
+    'username' => array('type','VARCHAR(50)')
+    );
 
-	/* START ACCESSOR FUNCTIONS */
+    /* START ACCESSOR FUNCTIONS */
 
-	public function cardno(){
-		if(func_num_args() == 0){
-			if(isset($this->instance["cardno"]))
-				return $this->instance["cardno"];
-			elseif(isset($this->columns["cardno"]["default"]))
-				return $this->columns["cardno"]["default"];
-			else return null;
-		}
-		else{
-			$this->instance["cardno"] = func_get_arg(0);
-		}
-	}
+    public function cardno()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["cardno"])) {
+                return $this->instance["cardno"];
+            } elseif(isset($this->columns["cardno"]["default"])) {
+                return $this->columns["cardno"]["default"];
+            } else {
+                return null;
+            }
+        } else {
+            $this->instance["cardno"] = func_get_arg(0);
+        }
+    }
 
-	public function note(){
-		if(func_num_args() == 0){
-			if(isset($this->instance["note"]))
-				return $this->instance["note"];
-			elseif(isset($this->columns["note"]["default"]))
-				return $this->columns["note"]["default"];
-			else return null;
-		}
-		else{
-			$this->instance["note"] = func_get_arg(0);
-		}
-	}
+    public function note()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["note"])) {
+                return $this->instance["note"];
+            } elseif(isset($this->columns["note"]["default"])) {
+                return $this->columns["note"]["default"];
+            } else {
+                return null;
+            }
+        } else {
+            $this->instance["note"] = func_get_arg(0);
+        }
+    }
 
-	public function stamp(){
-		if(func_num_args() == 0){
-			if(isset($this->instance["stamp"]))
-				return $this->instance["stamp"];
-			elseif(isset($this->columns["stamp"]["default"]))
-				return $this->columns["stamp"]["default"];
-			else return null;
-		}
-		else{
-			$this->instance["stamp"] = func_get_arg(0);
-		}
-	}
+    public function stamp()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["stamp"])) {
+                return $this->instance["stamp"];
+            } elseif(isset($this->columns["stamp"]["default"])) {
+                return $this->columns["stamp"]["default"];
+            } else {
+                return null;
+            }
+        } else {
+            $this->instance["stamp"] = func_get_arg(0);
+        }
+    }
 
-	public function username(){
-		if(func_num_args() == 0){
-			if(isset($this->instance["username"]))
-				return $this->instance["username"];
-			elseif(isset($this->columns["username"]["default"]))
-				return $this->columns["username"]["default"];
-			else return null;
-		}
-		else{
-			$this->instance["username"] = func_get_arg(0);
-		}
-	}
-	/* END ACCESSOR FUNCTIONS */
+    public function username()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["username"])) {
+                return $this->instance["username"];
+            } elseif(isset($this->columns["username"]["default"])) {
+                return $this->columns["username"]["default"];
+            } else {
+                return null;
+            }
+        } else {
+            $this->instance["username"] = func_get_arg(0);
+        }
+    }
+    /* END ACCESSOR FUNCTIONS */
 }
-?>
+

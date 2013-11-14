@@ -122,7 +122,7 @@ class tenderlist extends NoInputPage {
 		echo "</select>"
 			."</form>"
 			."</div>"
-			."<div class=\"listboxText centerOffset\">";
+			."<div class=\"listboxText coloredText centerOffset\">";
 		if ($CORE_LOCAL->get("tenderTotal") >= 0)
 			echo _("tendering").' $';
 		else
@@ -133,15 +133,13 @@ class tenderlist extends NoInputPage {
 			."<div class=\"clear\"></div>";
 		echo "</div>";
 
-		$CORE_LOCAL->set("scan","noScan");
-		$CORE_LOCAL->set("beep","noBeep");
-
 		$this->add_onload_command("\$('#search').keypress(processkeypress);\n");
 		$this->add_onload_command("\$('#search').focus();\n");
 	} // END body_content() FUNCTION
 
 }
 
-new tenderlist();
+if (basename(__FILE__) == basename($_SERVER['PHP_SELF']))
+	new tenderlist();
 
 ?>

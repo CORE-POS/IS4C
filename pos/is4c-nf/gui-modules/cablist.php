@@ -138,17 +138,17 @@ class cablist extends NoInputPage {
 		</select>
 		</form>
 		</div>
-		<div class="listboxText centerOffset">
+		<div class="listboxText coloredText centerOffset">
 		use arrow keys to navigate<br />[enter] to reprint receipt<br />[clear] to cancel
 		</div>
 		<div class="clear"></div>
 		</div>
 
 		<?php
-		$CORE_LOCAL->set("scan","noScan");
 	} // END body_content() FUNCTION
 }
 
-new cablist();
+if (basename(__FILE__) == basename($_SERVER['PHP_SELF']))
+	new cablist();
 
 ?>

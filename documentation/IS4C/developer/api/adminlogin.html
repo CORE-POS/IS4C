@@ -1,0 +1,82 @@
+<html>
+<head>
+	<title>Authentication Prompt</title>
+</head>
+<body>
+<div style="text-align:center;">
+<h1>Prompting for a Password</h1>
+<!--
+13Aug13 AT Doc first written
+-->
+<br />as of: August 13, 2013
+</div>
+<p>
+Sometimes POS functionality is restricted to only
+supervisor/manager cashiers. The built in <i>adminlogin.php</i>
+gui-module lets you display a password prompt and then 
+continue on only if a valid password is entered.
+To use this functionality, pass the name of an 
+appropriate class to adminlogin.php as the URL parameter
+<i>class</i>. The class does not have to inherit from any
+particular base class; it merely has to provide the methods
+and properties that requestInfo.php needs (i.e., <i>duck typing</i>).
+This structure lets you attach an information request to another
+class.
+</p>
+<blockquote>
+static string <b>adminLoginMsg</b><br />
+static int <b>adminLoginLevel</b><br />
+static mixed <b>adminLoginCallback</b>(boolean $success)<br />
+</blockquote>
+<p>
+The proprty <b>adminLoginMsg</b> is the prompt displayed on the
+cashier's login screen. The property <b>adminLoginLevel</b> corresponds
+to the value of frontendsecurity in the employees table that is
+required to get past the prompt.
+</p>
+<p>
+The method <b>adminLoginCallback</b> is called after the prompt
+is done. If the cashier did not provide a valid password, $success
+will be False. In this case the method's return value does not matter.
+Control will always return to the main POS page after the callback
+method completes. If the cashier provided a valid password, $success
+will be True. In this case return a URL indicating which page POS should
+go to next. Returning boolean True is a synonym for the URL for
+the main POS page.
+</p>
+<p>
+<b>Example</b>: Allow member sales even if they normally
+would not apply to the current member.
+<pre>
+class ForceMemPricing extends Parser {
+	function check($str){
+		if ($str == 'MPO') return True;
+		else return False;
+	}
+
+	function parse($str){
+		$ret = $this->default_json();
+		// redirect to the prompt page
+		$ret['main_frame'] = MiscLib::base_url().'gui-modules/adminlogin.php?class=ForceMemPricing';
+		return $ret;
+	}
+
+	public static $adminLoginMsg = 'grant member pricing';
+
+	public static $adminLoginLevel = 30;
+
+	public static function adminLoginCallback($success){
+		global $CORE_LOCAL;
+		if ($success){
+			$CORE_LOCAL->set('isMember', 1);
+			PrehLib::ttl();
+			return True;
+		}
+		else
+			return False;
+	}
+}
+</pre>
+</p>
+</body>
+</html>

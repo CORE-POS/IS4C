@@ -27,7 +27,8 @@
   receipt records. Subclasses can
   override the format() method
 */
-class DefaultReceiptFormat {
+class DefaultReceiptFormat 
+{
 	
 	/*
 	  boolean. 
@@ -37,7 +38,8 @@ class DefaultReceiptFormat {
 	/**
 	  constructor. disables bolding by default
 	*/
-	function DefaultReceiptFormat(){
+	public function DefaultReceiptFormat()
+    {
 		$is_bold = False;
 	}
 
@@ -46,7 +48,9 @@ class DefaultReceiptFormat {
 	  @param $row a single receipt record
 	  @return a formatted string
 	*/
-	function format($row){
+	public function format($row)
+    {
 		return "";
 	}
 }
+

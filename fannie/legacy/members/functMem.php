@@ -3,7 +3,7 @@
 
 function trans_to_table($query,$border,$bgcolor)
 {
-	global $sql;
+	global $sql, $FANNIE_URL;
 	$results = $sql->query($query); 
 	$number_cols = $sql->num_fields($results);
 	//display query
@@ -28,7 +28,7 @@ function trans_to_table($query,$border,$bgcolor)
 				echo "NULL";
 			}else{
 				 ?>
-				 <a href="reprint.php?receipt=<? echo $row[5]; ?>&cardno=<? echo $row[4]; ?>&month=<? echo $row[0]; ?>&day=<? echo $row[1]; ?>&year=<? echo $row[2]; ?>">
+				 <a href="<?php echo $FANNIE_URL; ?>admin/LookupReceipt/RenderReceiptPage.php?receipt=<? echo $row[5]; ?>&cardno=<? echo $row[4]; ?>&month=<? echo $row[0]; ?>&day=<? echo $row[1]; ?>&year=<? echo $row[2]; ?>">
 				 <? echo $row[0] .'-'.$row[1].'-'.$row[2]; ?></a>
 			<? echo "</td>";
 			}

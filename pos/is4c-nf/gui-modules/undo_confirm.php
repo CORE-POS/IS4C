@@ -69,7 +69,6 @@ class undo_confirm extends BasicPage {
 					}
 				});\n");
 		$this->add_onload_command("undoInstructions();");
-		$CORE_LOCAL->set("beep","noScan");
 	}
 
 	function head_content(){
@@ -122,4 +121,5 @@ class undo_confirm extends BasicPage {
 	}
 }
 
-new undo_confirm();
+if (basename(__FILE__) == basename($_SERVER['PHP_SELF']))
+	new undo_confirm();

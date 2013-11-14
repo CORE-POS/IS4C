@@ -417,6 +417,7 @@ function addUPC($orderID,$memNum,$upc,$num_cases=1){
 		
 		// only calculate prices for items that exist in 
 		// vendorItems (i.e., have known case size)
+		$ins_array['discounttype'] = $pdW['discounttype'];
 		if ($dbc->num_rows($caseR) > 0 || true){ // test always do this
 			$ins_array['total'] = $pdW['normal_price']*$caseSize*$num_cases;
 			$ins_array['regPrice'] = $pdW['normal_price']*$caseSize*$num_cases;
@@ -430,12 +431,22 @@ function addUPC($orderID,$memNum,$upc,$num_cases=1){
 					$ins_array['total'] = $pdW['special_price']*$caseSize*$num_cases;
 					$ins_array['unitPrice'] = $pdW['special_price'];
 				}
-				elseif ($pdW['discount'] != 0)
+				elseif ($pdW['discounttype'] == 3){
+					$ins_array['unitPrice'] = $pdW['normal_price']*(1-$pdW['special_price']);
+					$ins_array['total'] = $ins_array['unitPrice']*$caseSize*$num_cases;
+				}
+				elseif ($pdW['discounttype'] == 5){
+					$ins_array['unitPrice'] = $pdW['normal_price']-$pdW['special_price'];
+					$ins_array['total'] = $ins_array['unitPrice']*$caseSize*$num_cases;
+				}
+				if($pdW['discount'] != 0 && ($pdW['normal_price']*$caseSize*$num_cases*0.85) < $ins_array['total']){
 					$ins_array['total'] = $pdW['normal_price']*$caseSize*$num_cases*0.85;
+					$ins_array['discounttype'] = 0;
+					$ins_array['unitPrice'] = $pdW['normal_price'];
+				}
 			}
 		}
 		$ins_array['description'] = "'".substr($pdW['description'],0,32)." SO'";
-		$ins_array['discounttype'] = $pdW['discounttype'];
 	}
 	elseif ($srp != 0){
 		// use vendor SRP if applicable
@@ -1031,11 +1042,12 @@ function getCustomerNonForm($orderID){
 
 	$callback = 1;
 	$user = 'Unknown';
+	$orderDate = '';
 	$q = $dbc->prepare_statement("SELECT datetime,numflag,mixMatch FROM 
-			{$TRANS}PendingSpecialOrder WHERE order_id=? AND trans_id=0");
+			{$TRANS}CompleteSpecialOrder WHERE order_id=? AND trans_id=0");
 	$r = $dbc->exec_statement($q, array($orderID));
 	if ($dbc->num_rows($r) > 0)
-		list($callback,$user) = $dbc->fetch_row($r);
+		list($orderDate,$callback,$user) = $dbc->fetch_row($r);
 
 	$ret = "";
 	$ret .= sprintf('<input type="hidden" id="orderID" value="%d" />',$orderID);
@@ -1051,6 +1063,7 @@ function getCustomerNonForm($orderID){
 		$ret .= '<br />';
 	}
 	$ret .= "<b>Taken by</b>: ".$user."<br />";
+	$ret .= "<b>On</b>: ".date("M j, Y g:ia",strtotime($orderDate))."<br />";
 	$ret .= '</td><td align="right" valign="top">';
 	$ret .= '<b>Call to Confirm</b>: ';
 	if ($callback == 1)

@@ -22,7 +22,7 @@
 *********************************************************************************/
 
 include("../../config.php");
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
 class CoopDealsReviewPage extends FanniePage {
 	protected $title = "Fannie - CAP sales";
@@ -50,7 +50,7 @@ class CoopDealsReviewPage extends FanniePage {
 		$end = FormLib::get_form_value('end',date('Y-m-d'));
 		$b_start = FormLib::get_form_value('bstart',date('Y-m-d'));
 		$b_end = FormLib::get_form_value('bend',date('Y-m-d'));
-		$nameing = FormLib::get_form_value('naming','');
+		$naming = FormLib::get_form_value('naming','');
 		$upcs = FormLib::get_form_value('upc',array());
 		$prices = FormLib::get_form_value('price',array());
 		$names = FormLib::get_form_value('batch',array());
@@ -61,6 +61,11 @@ class CoopDealsReviewPage extends FanniePage {
 				(?, ?, ?, 0, ?, ?)');
 		$listP = $dbc->prepare_statement('INSERT INTO batchList (upc, batchID, salePrice, active)
 				VALUES (?, ?, ?, 0)');
+		$list = new BatchListModel($dbc);
+		$list->active(0);
+		$list->pricemethod(0);
+		$list->quantity(0);
+
 		for($i=0;$i<count($upcs);$i++){
 			if(!isset($batchIDs[$names[$i]])){
 				$args = array($names[$i].' '.$naming,1,1);
@@ -82,12 +87,11 @@ class CoopDealsReviewPage extends FanniePage {
 				$batchIDs[$names[$i]] = $bID;
 			}
 			$id = $batchIDs[$names[$i]];
-			$args = array(
-				$upcs[$i],
-				$id,
-				sprintf("%.2f",$prices[$i])
-			);
-			$dbc->exec_statement($listP,$args);
+
+			$list->upc($upcs[$i]);
+			$list->batchID($id);
+			$list->salePrice(sprintf("%.2f",$prices[$i]));
+			$list->save();
 		}
 
 		$ret = "New sales batches have been created!<p />";
