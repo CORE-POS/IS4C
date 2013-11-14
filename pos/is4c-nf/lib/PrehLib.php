@@ -466,15 +466,11 @@ static public function classic_tender($right, $strl)
 	$tender_desc = $row["TenderName"];				
 	$unit_price = 0;
 
-<<<<<<< HEAD
-	if ($tender_code == "CP" && $strl > $row["MaxAmount"] && $CORE_LOCAL->get("msgrepeat") == 0){
-=======
 	if ($tender_code == "FS") {
 		$CORE_LOCAL->set("boxMsg",_("WFC no longer excepts paper foods stamps. Please choose a different tender type"));
 		$ret['main_frame'] = MiscLib::base_url().'gui-modules/boxMsg2.php';
 		return $ret;
 	} elseif ($tender_code == "CP" && $strl > $row["MaxAmount"] && $CORE_LOCAL->get("msgrepeat") == 0){
->>>>>>> CORE-IS4C/master
 		$CORE_LOCAL->set("boxMsg","$".$strl." "._("is greater than coupon limit")."<p>"
 		."<font size='-1'>"._("clear to cancel").", "._("enter to proceed")."</font>");
 		$ret['main_frame'] = MiscLib::base_url().'gui-modules/boxMsg2.php';

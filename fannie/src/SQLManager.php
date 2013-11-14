@@ -237,16 +237,6 @@ class SQLManager
 	  @param $which_connection see method close()
 	  @return Integer number or False if there's an error
 	*/
-<<<<<<< HEAD
-	function num_rows($result_object,$which_connection=''){
-		if ($which_connection == '')
-			$which_connection = $this->default_db;	
-			if ($result_object != null)
-				return $result_object->RecordCount();
-			else 
-				return 0;
-		}
-=======
 	public function numRows($result_object,$which_connection='')
     {
 		if ($which_connection == '') {
@@ -255,7 +245,6 @@ class SQLManager
 
 		return $result_object->RecordCount();
 	}
->>>>>>> CORE-IS4C/master
 
 	public function num_rows($result_object,$which_connection='')
     {
