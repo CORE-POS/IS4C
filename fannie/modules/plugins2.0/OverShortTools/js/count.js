@@ -331,3 +331,14 @@ function denom_overage(overage){
 
 	return ret;
 }
+
+function existingDates(dateStr)
+{
+    if (dateStr != '') {
+        var dates = dateStr.split(' ');
+        if (dates.length == 2) {
+            $('#startDate').val(dates[0]);
+            $('#endDate').val(dates[1]);
+        }
+    }
+}

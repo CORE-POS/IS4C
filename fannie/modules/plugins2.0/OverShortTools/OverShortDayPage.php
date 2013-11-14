@@ -100,8 +100,11 @@ class OverShortDayPage extends FanniePage {
 
 			$tender_info = array();
 			while($tW = $dbc->fetch_row($tR)){
-				if ($tW['trans_subtype'] == 'AX')
+				if ($tW['trans_subtype'] == 'AX') {
 					continue; // group AMEX w/ other credit
+                } else if (in_array($tW['trans_subtype'], OverShortTools::$EXCLUDE_TENDERS)) {
+                    continue;
+                }
 				$record = array(
 					'name' => $tW['TenderName'],
 					'posTtl' => 0.0,
@@ -134,6 +137,9 @@ class OverShortDayPage extends FanniePage {
 			$r = $dbc->exec_statement($p, $args);
 			$posttl = array();
 			while($w = $dbc->fetch_row($r)){
+                if (in_array($w['trans_subtype'], OverShortTools::$EXCLUDE_TENDERS)) {
+                    continue;
+                }
 				$tender_info[$w['trans_subtype']]['perEmp'][$w['emp_no']] = $w['total'];
 			}
 
@@ -535,6 +541,10 @@ function save(){
 
 a {
   color: blue;
+}
+
+body, table, td, th {
+  color: #000;
 }
 	<?php
 		return ob_get_clean();

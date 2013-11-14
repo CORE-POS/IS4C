@@ -1,5 +1,7 @@
 <?php
 include('../../../config.php');
+header('Location: '.$FANNIE_URL.'modules/plugins2.0/OverShortTools/OverShortDepositSlips.php');
+exit;
 
 require($FANNIE_ROOT.'src/SQLManager.php');
 include($FANNIE_ROOT.'src/fpdf/fpdf.php');

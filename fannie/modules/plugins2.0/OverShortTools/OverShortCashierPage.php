@@ -84,6 +84,9 @@ class OverShortCashierPage extends FanniePage {
 		$totalsP = $dbc->prepare_statement($totalsQ);
 		$totalsR = $dbc->exec_statement($totalsP, array($empno,$date.' 00:00:00',$date.' 23:59:59'));
 		while($totalsW = $dbc->fetch_row($totalsR)){
+            if (in_array($totalsW['trans_subtype'], OverShortTools::$EXCLUDE_TENDERS)) {
+                continue;
+            }
 			$totals[$totalsW[0]] = $totalsW[2];
 			$names[$totalsW[0]] = $totalsW[1];
 			$counts[$totalsW[0]] = 0.00;
@@ -280,6 +283,9 @@ class OverShortCashierPage extends FanniePage {
 			tr.color {
 				background: #ffffcc;
 			}
+            body, table, td, th {
+              color: #000;
+            }
 		';	
 	}
 

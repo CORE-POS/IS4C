@@ -1,6 +1,12 @@
 <?php
 include('../../config.php');
 
+$date = $_GET['date'];
+$emp_no = $_GET['emp_no'];
+
+header('Location: '.$FANNIE_URL.'modules/plugins2.0/OverShortTools/OverShortDayPage.php?action=date&arg='.$date.'&emp_no='.$emp_no);
+exit;
+
 require($FANNIE_ROOT.'auth/login.php');
 $user = validateUserQuiet('overshorts');
 
@@ -16,8 +22,6 @@ if (!$user && !isset($_POST['action'])){
 if (!class_exists("SQLManager")) require_once($FANNIE_ROOT."src/SQLManager.php");
 include('../db.php');
 
-$date = $_GET['date'];
-$emp_no = $_GET['emp_no'];
 require($FANNIE_ROOT.'src/select_dlog.php');
 $dlog = select_dlog($date);
 $dlog = "trans_archive.dlogBig";
