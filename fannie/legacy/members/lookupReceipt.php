@@ -1,3 +1,4 @@
 <?php
-header("Location: /git/fannie/admin/LookupReceipt/");
-?>
+include('../../config.php');
+header("Location: {$FANNIE_URL}admin/LookupReceipt/");
+

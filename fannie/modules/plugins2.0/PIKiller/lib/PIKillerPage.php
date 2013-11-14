@@ -28,6 +28,8 @@ if (!class_exists('FannieAPI'))
 class PIKillerPage extends FannieRESTfulPage {
 
 	protected $card_no = False;
+
+    protected $must_authenticate = true;
 	
 	function getHeader() 
     {
@@ -43,8 +45,7 @@ class PIKillerPage extends FannieRESTfulPage {
 			<body bgcolor="#66CC99" leftmargin="0" topmargin="0" marginwidth="0" marginheight="0">
 			<table width="660" height="111" border="0" cellpadding="0" cellspacing="0" bgcolor="#66cc99">
 			<tr>
-			<td colspan="2"><h1><img src="images/newLogo_small1.gif" /></h1></td>
-			<td colspan="9" valign="middle"><font size="+3" face="Papyrus, Verdana, Arial, Helvetica, sans-serif">PI Killer</font></td>
+			<td colspan="2"><img src="images/newLogo_small1.gif" /></td>
 			</tr>
 			<tr>
 			<td colspan="11" bgcolor="#006633">
@@ -83,6 +84,19 @@ class PIKillerPage extends FannieRESTfulPage {
 
 	function getFooter()
     {
-		return '</table></body></html>';
+        global $FANNIE_URL;
+		$ret = '</table>';
+        if (FannieAuth::checkLogin() !== false) {
+            $ret .= '<p><span id="logininfo" style="top:50px;">';
+            $ret .= 'Logged in as: '.FannieAuth::checkLogin();
+            $ret .= '&nbsp;&nbsp;&nbsp;[';
+            $ret .= ' <a href="'.$FANNIE_URL.'auth/ui/loginform.php?logout=yes">Logout</a> ]';
+            $ret .= '</span></p>';
+        } else {
+            $ret .= FannieAuth::checkLogin();
+        }
+        $ret .= '</body></html>';
+
+        return $ret;
 	}
 }

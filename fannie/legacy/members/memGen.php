@@ -68,15 +68,15 @@ if ($sql->num_rows($result) > 0){
   <tr>
     <td colspan="11" bgcolor="#006633"><!--<a href="memGen.php">-->
 	<img src="../images/general.gif" width="72" height="16" border="0" />
-		<a href="testDetails.php?memID=<? echo $memID; ?>">
+        <a href="<?php echo $FANNIE_URL; ?>modules/plugins2.0/PIKiller/PIEquityPage.php?id=<? echo $memID; ?>">
 	<img src="../images/equity.gif" width="72" height="16" border="0" /></a>
-		<a href="memARTrans.php?memID=<? echo $memID; ?>">
+        <a href="<?php echo $FANNIE_URL; ?>modules/plugins2.0/PIKiller/PIArPage.php?id=<? echo $memID; ?>">
 	<img src="../images/AR.gif" width="72" height="16" border="0" /></a>
 		<a href="memControl.php?memID=<?php echo $memID ?>">
 	<img src="../images/control.gif" width="72" height="16" border="0" /></a>
-		<a href="memTrans.php?memID=<? echo $memID; ?>">
+        <a href="<?php echo $FANNIE_URL; ?>modules/plugins2.0/PIKiller/PIPurchasesPage.php?id=<? echo $memID; ?>">
 	<img src="../images/detail.gif" width="72" height="16" border="0" /></a>
-		<a href="patronage.php?memID=<? echo $memID; ?>">
+        <a href="<?php echo $FANNIE_URL; ?>modules/plugins2.0/PIKiller/PIPatronagePage.php?id=<? echo $memID; ?>">
 	<img src="../images/patronage.gif" /></a>
     </td>
   </tr>
@@ -143,15 +143,19 @@ else{
   else{
     echo "There is more than one result <br>";
     //echo $numMemRows;
-    //$query_drop = "SELECT * FROM custdata where LastName like '$cliplName' AND FirstName LIKE '$clipfName' order by FirstName,CardNo";
-    //echo $query_drop;
     $value="CardNo";
     $label="FirstName";
     $mem="memName";
     echo "<form action=memGen.php method=GET>";
     echo "<table>";
     echo "<tr><td>";
-    query_to_drop($query_drop,$value,$label,$mem,$cliplName);
+    echo '<select name="memName">';
+    while($row = $sql->fetch_row($query_drop)){
+        var_dump($row);
+        printf('<option value="%d">%d %s, %s</option>',
+            $row['CardNo'], $row['CardNo'], $row['LastName'], $row['FirstName']);
+    }
+    echo '</select>';
     echo "</td><td><input type='submit' name='submit2' value='submit'></td>";
     echo "</tr></table>";
     echo "</form>";
@@ -209,101 +213,101 @@ function prefetch_result($memID,$lName,$fName,&$qd){
       $lName = str_replace("'","",$lName);
       $fName = str_replace("'","",$fName);
       
-      $query = "SELECT CardNo 
+      $query = $sql->prepare("SELECT CardNo 
                 FROM custdata 
                 WHERE 
-                LastName LIKE '$lName%'
-                AND FirstName LIKE '$fName%'
-                ORDER BY LastName,FirstName,CardNo";
-      $qd = "SELECT * 
+                LastName LIKE ?
+                AND FirstName LIKE ?
+                ORDER BY LastName,FirstName,CardNo");
+      $qd = $sql->prepare("SELECT * 
                 FROM custdata 
                 WHERE 
-                LastName LIKE '$lName%'
-                AND FirstName LIKE '$fName%'
-                ORDER BY LastName,FirstName,CardNo";
-      $result = $sql->query($query);
-      if ($sql->num_rows($result) > 0)
-	return $result;
+                LastName LIKE ?
+                AND FirstName LIKE ?
+                ORDER BY LastName,FirstName,CardNo");
 
-      $query = "SELECT CardNo
+      $result = $sql->execute($query, array($lName.'%', $fName.'%'));
+      if ($sql->num_rows($result) > 0){
+        $qd = $sql->execute($qd, array($lName.'%', $fName.'%'));
+        return $result;
+      }
+
+      $query = $sql->prepare("SELECT CardNo
                 FROM custdata
                 WHERE 
-                LastName LIKE '%$lName%'
-                AND FirstName LIKE '%$fName%'
-                ORDER BY LastName,FirstName,CardNo";
-      $qd = "SELECT *
+                LastName LIKE ?
+                AND FirstName LIKE ?
+                ORDER BY LastName,FirstName,CardNo");
+      $qd = $sql->prepare("SELECT *
                 FROM custdata
                 WHERE 
-                LastName LIKE '%$lName%'
-                AND FirstName LIKE '%$fName%'
-                ORDER BY LastName,FirstName,CardNo";
-      $result = $sql->query($query);
-      if ($sql->num_rows($result) > 0)
-	return $result;
+                LastName LIKE ?
+                AND FirstName LIKE ?
+                ORDER BY LastName,FirstName,CardNo");
+      $result = $sql->execute($query, array('%'.$lName.'%', '%'.$fName.'%'));
+      if ($sql->num_rows($result) > 0) {
+        $qd = $sql->execute($qd, array('%'.$lName.'%', '%'.$fName.'%'));
+        return $result;
+      }
 
       $cliplName = substr($lName,0,6) . '%';
       //echo $cliplName . "<br>";                                                                                                                      
       $clipfName = substr($fName,0,6) . '%';
       //echo $clipfName . "<br>";                                                                                                                    
       
-      $query = "SELECT CardNo
+      $query = $sql->prepare("SELECT CardNo
                 FROM custdata
                 WHERE 
-                LastName LIKE '$cliplName'
-                AND FirstName LIKE '$clipfName'
-                ORDER BY LastName,FirstName,CardNo";
-      $qd = "SELECT *
+                LastName LIKE ?
+                AND FirstName LIKE ?
+                ORDER BY LastName,FirstName,CardNo");
+      $qd = $sql->prepare("SELECT *
                 FROM custdata
                 WHERE 
-                LastName LIKE '$cliplName'
-                AND FirstName LIKE '$clipfName'
-                ORDER BY LastName,FirstName,CardNo";
-      $result = $sql->query($query);
-      if ($sql->num_rows($result) > 0)
-	return $result;
+                LastName LIKE ?
+                AND FirstName LIKE ?
+                ORDER BY LastName,FirstName,CardNo");
+      $result = $sql->execute($query, array($cliplName, $clipfName));
+      if ($sql->num_rows($result) > 0) {
+        $qd = $sql->execute($qd, array($cliplName, $clipfName));
+        return $result;
+      }
 
-      $query = "SELECT CardNo
+      $query = $sql->prepare("SELECT CardNo
                 FROM custdata
                 WHERE 
-                LastName LIKE '%$cliplName'
-                AND FirstName LIKE '%$clipfName'
-                ORDER BY LastName,FirstName,CardNo";
-      $qd = "SELECT *
+                LastName LIKE ?
+                AND FirstName LIKE ?
+                ORDER BY LastName,FirstName,CardNo");
+      $qd = $sql->prepare("SELECT *
                 FROM custdata
                 WHERE 
-                LastName LIKE '%$cliplName'
-                AND FirstName LIKE '%$clipfName'
-                ORDER BY LastName,FirstName,CardNo";
-      $result = $sql->query($query);
+                LastName LIKE ?
+                AND FirstName LIKE ?
+                ORDER BY LastName,FirstName,CardNo");
+      $result = $sql->execute($query, array('%'.$cliplName, '%'.$clipfName));
+      $qd = $sql->execute($qd, array('%'.$cliplName, '%'.$clipfName));
       return $result;
     }
-  }
-  else{
-    $query = sprintf("SELECT CardNo
-               FROM custdata
-               WHERE 
-               CardNo = %d 
-               AND PersonNum= 1",$memID);
+  } else{
+    $query = $sql->prepare("SELECT CardNo
+       FROM custdata
+       WHERE 
+       CardNo = ?
+       AND PersonNum= 1");
 
-    $result = $sql->query($query);
+    $result = $sql->execute($query, array($memID));
     if ($sql->num_rows($result) == 0){
-	// alternative: try number as ID card UPC
-        $query = sprintf("SELECT card_no AS CardNo FROM
-		memberCards WHERE upc=%s",
-		$sql->escape(str_pad($memID,13,'0',STR_PAD_LEFT))
-	);
-	$result = $sql->query($query);
-	if ($sql->num_rows($result)==0){
-		// alt alt: try removing check digit
-		$query = sprintf("SELECT card_no AS CardNo FROM
-			memberCards WHERE upc=%s",
-			$sql->escape(str_pad(
-				substr($memID,0,strlen($memID)-1),
-				13,'0',STR_PAD_LEFT))
-		);
-		$result = $sql->query($query);
-
-	}
+        // alternative: try number as ID card UPC
+        $query = $sql->prepare("SELECT card_no AS CardNo FROM
+            memberCards WHERE upc=?");
+        $result = $sql->execute($query, array(str_pad($memID,13,'0',STR_PAD_LEFT)));
+        if ($sql->num_rows($result)==0){
+            // alt alt: try removing check digit
+            $query = $sql->prepare("SELECT card_no AS CardNo FROM
+                memberCards WHERE upc=?");
+            $result = $sql->execute($query, array(str_pad(substr($memID,0,strlen($memID)-1),13,'0',STR_PAD_LEFT)));
+        }
     }
     return $result;
   }
