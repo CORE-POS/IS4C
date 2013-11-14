@@ -140,7 +140,7 @@ class DepartmentMovementReport extends FannieReportPage {
 		switch($groupby){
 		case 'PLU':
 			$query = "SELECT t.upc,p.description, 
-				  SUM(t.quantity) as qty,
+				  SUM(CASE WHEN unitPrice=0.01 THEN 1 ELSE t.quantity END) as qty,
 				  SUM(t.total) AS total,
 				  d.dept_no,d.dept_name,s.superID,x.distributor
 				  FROM $dlog as t LEFT JOIN $FANNIE_OP_DB.products as p on t.upc = p.upc

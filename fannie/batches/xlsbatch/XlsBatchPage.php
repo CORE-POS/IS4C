@@ -165,7 +165,8 @@ class XlsBatchPage extends FannieUploadPage {
 	/**
 	  overriding the basic form since I need several extra fields	
 	*/
-	function basic_form(){
+	protected function basicForm()
+    {
 		global $FANNIE_URL;
 		$batchtypes = $this->get_batch_types();
 		ob_start();

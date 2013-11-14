@@ -139,6 +139,7 @@ class tenderlist extends NoInputPage {
 
 }
 
-new tenderlist();
+if (basename(__FILE__) == basename($_SERVER['PHP_SELF']))
+	new tenderlist();
 
 ?>

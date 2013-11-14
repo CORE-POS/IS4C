@@ -101,6 +101,8 @@ class MemContactImportPage extends FannieUploadPage {
 	}
 	
 	function process_file($linedata){
+		global $FANNIE_OP_DB;
+		$dbc = FannieDB::get($FANNIE_OP_DB);
 		$mn_index = $this->get_column_index('memnum');
 		$st_index = $this->get_column_index('street');
 		$st2_index = $this->get_column_index('street2');
@@ -128,15 +130,17 @@ class MemContactImportPage extends FannieUploadPage {
 			// combine multi-line addresses
 			$full_street = !empty($street2) ? $street."\n".$street2 : $street;
 
-			$try = MeminfoModel::update($cardno,array(
-				'street' => $full_street,
-				'city' => $city,
-				'state' => $state,
-				'zip' => $zip,
-				'phone' => $ph1,
-				'email_1' => $email,
-				'email_2' => $ph2
-			));
+			$model = new MeminfoModel($dbc);
+			$model->card_no($cardno);
+			if (!empty($full_street)) $model->street($full_street);
+			if (!empty($city)) $model->city($city);
+			if (!empty($state)) $model->state($state);
+			if (!empty($zip)) $model->zip($zip);
+			if (!empty($ph1)) $model->phone($ph1);
+			if (!empty($email)) $model->email_1($email);
+			if (!empty($ph2)) $model->email_2($ph2);
+			$try = $model->save();
+
 			if ($try === False){
 				$this->details .= "<b>Error importing member $cardno</b><br />";
 			}

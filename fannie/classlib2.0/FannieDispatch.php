@@ -21,75 +21,91 @@
 
 *********************************************************************************/
 
-class FannieDispatch {
+class FannieDispatch 
+{
 
-	static private function nl(){
-		if (php_sapi_name() == 'cli') return "\n";
-		else return "<br />";
-	}
-	
-	static private function tab(){
-		if (php_sapi_name() == 'cli') return "\t";
-		else return "<li>";
-	}
+    static private function nl()
+    {
+        if (php_sapi_name() == 'cli') { 
+            return "\n";
+        } else {
+            return "<br />";
+        }
+    }
+    
+    static private function tab()
+    {
+        if (php_sapi_name() == 'cli') {
+            return "\t";
+        } else {
+            return "<li>";
+        }
+    }
 
-	static public function error_handler($errno, $errstr, $errfile='', $errline=0, $errcontext=array()){
-		echo $errstr.' Line '.$errline.', '.$errfile.self::nl();
-		self::print_stack(debug_backtrace());
-		return True;
-	}
+    static public function errorHandler($errno, $errstr, $errfile='', $errline=0, $errcontext=array())
+    {
+        echo $errstr.' Line '.$errline.', '.$errfile.self::nl();
+        self::printStack(debug_backtrace());
+        return true;
+    }
 
-	static public function exception_handler($exception){
-		echo $exception->getMessage()." Line ".$exception->getLine().", ".$exception->getFile().self::nl();
-		self::print_stack($exception->getTrace());
-	}
-	
-	static public function print_stack($stack){
-		echo "STACK:".self::nl();
-		$i = 1;
-		foreach($stack as $frame){
-			if (!isset($frame['line'])) $frame['line']=0;
-			if (!isset($frame['file'])) $frame['file']='File not given';
-			if (!isset($frame['args'])) $frame['args'] =array();
-			if (isset($frame['class'])) $frame['function'] = $frame['class'].'::'.$frame['function'];
-			echo "Frame $i".self::nl();
-			echo self::tab().$frame['function'].'(';
-			$args = '';
-			foreach($frame['args'] as $arg)
-				$args .= $arg.', ';
-			$args = rtrim($args);
-			$args = rtrim($args,',');
-			echo $args.')'.self::nl();
-			echo self::tab().'Line '.$frame['line'].', '.$frame['file'].self::nl();
-			$i++;
-		}
+    static public function exceptionHandler($exception)
+    {
+        echo $exception->getMessage()." Line ".$exception->getLine().", ".$exception->getFile().self::nl();
+        self::printStack($exception->getTrace());
+    }
+    
+    static public function printStack($stack)
+    {
+        echo "STACK:".self::nl();
+        $i = 1;
+        foreach($stack as $frame) {
+            if (!isset($frame['line'])) $frame['line']=0;
+            if (!isset($frame['file'])) $frame['file']='File not given';
+            if (!isset($frame['args'])) $frame['args'] =array();
+            if (isset($frame['class'])) $frame['function'] = $frame['class'].'::'.$frame['function'];
+            echo "Frame $i".self::nl();
+            echo self::tab().$frame['function'].'(';
+            $args = '';
+            foreach($frame['args'] as $arg) {
+                $args .= $arg.', ';
+            }
+            $args = rtrim($args);
+            $args = rtrim($args,',');
+            echo $args.')'.self::nl();
+            echo self::tab().'Line '.$frame['line'].', '.$frame['file'].self::nl();
+            $i++;
+        }
 
-	}
+    }
 
-	static public function catch_fatal(){
-		$error = error_get_last();
-		if ( $error["type"] == E_ERROR )
-			self::error_handler( $error["type"], $error["message"], $error["file"], $error["line"] );
-	}
+    static public function catchFatal()
+    {
+        $error = error_get_last();
+        if ($error["type"] == E_ERROR) {
+            self::errorHandler($error["type"], $error["message"], $error["file"], $error["line"]);
+        }
+    }
 
-	static public function go(){
-		$bt = debug_backtrace();
-		if (count($bt) == 1){
-	
-			set_error_handler(array('FannieDispatch','error_handler'));
-			set_exception_handler(array('FannieDispatch','exception_handler'));
-			register_shutdown_function(array('FannieDispatch','catch_fatal'));
+    static public function go()
+    {
+        $bt = debug_backtrace();
+        if (count($bt) == 1) {
+    
+            set_error_handler(array('FannieDispatch','errorHandler'));
+            set_exception_handler(array('FannieDispatch','exceptionHandler'));
+            register_shutdown_function(array('FannieDispatch','catchFatal'));
 
-			$page = basename($_SERVER['PHP_SELF']);
-			$class = substr($page,0,strlen($page)-4);
-			if (class_exists($class)){
-				$obj = new $class();
-				$obj->draw_page();
-			}
-			else {
-				trigger_error('Missing class '.$class, E_USER_NOTICE);
-			}
+            $page = basename($_SERVER['PHP_SELF']);
+            $class = substr($page,0,strlen($page)-4);
+            if (class_exists($class)) {
+                $obj = new $class();
+                $obj->draw_page();
+            } else {
+                trigger_error('Missing class '.$class, E_USER_NOTICE);
+            }
 
-		}
-	}
+        }
+    }
 }
+

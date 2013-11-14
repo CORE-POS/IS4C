@@ -26,35 +26,45 @@
   Module for print-formatting 
   total records. 
 */
-class TotalReceiptFormat extends DefaultReceiptFormat {
+class TotalReceiptFormat extends DefaultReceiptFormat 
+{
 
 	/**
 	  Formatting function
 	  @param $row a single receipt record
 	  @return a formatted string
 	*/
-	function format($row){
-		switch($row['upc']){
-		case 'TOTAL':
-			$this->is_bold = True;
-			return $this->align($row['upc'],$row['total']);	
-			break;
-		case 'SUBTOTAL':
-		case 'TAX':
-			return $this->align($row['upc'],$row['total']);	
-			break;
-		case 'DISCOUNT':
-			$text = sprintf("%d%% Discount Applied",$row['percentDiscount']);
-			return $this->align($text,$row['total']);
-			break;
+	public function format($row)
+    {
+		switch($row['upc']) {
+            case 'TOTAL':
+                $this->is_bold = true;
+                return $this->align($row['upc'],$row['total']);	
+                break;
+            case 'SUBTOTAL':
+            case 'TAX':
+                return $this->align($row['upc'],$row['total']);	
+                break;
+            case 'DISCOUNT':
+                $text = sprintf("** %d%% Discount Applied **",$row['percentDiscount']);
+                $text = str_pad($text, 44, ' ', STR_PAD_RIGHT);
+                $amount = str_pad(sprintf('%.2f',$row['total']), 
+                                8, 
+                                ' ',
+                                STR_PAD_LEFT);
+                return $text.$amount;
+                break;
 		}
 	}
 
-	function align($text,$amount){
+	private function align($text, $amount)
+    {
 		$amount = sprintf('%.2f',$amount);
 
 		$ret = str_pad($text,44,' ',STR_PAD_LEFT);
 		$ret .= str_pad($amount,8,' ',STR_PAD_LEFT);
+
 		return $ret;
 	}
 }
+

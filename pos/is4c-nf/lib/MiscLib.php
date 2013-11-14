@@ -25,7 +25,8 @@
   @clss MiscLib
   Generic functions
 */
-class MiscLib extends LibraryClass {
+class MiscLib extends LibraryClass 
+{
 
 /**
   Path detection. Find the relative URL for 
@@ -33,45 +34,25 @@ class MiscLib extends LibraryClass {
   @param $check_file file to search for
   @return A relative URL with trailing slash
 */
-static public function base_url($check_file="css/pos.css"){
+static public function baseURL($check_file="css/pos.css")
+{
 	$ret = "";
 	$cutoff = 0;
-	while($cutoff < 20 && !file_exists($ret.$check_file)){
+	while($cutoff < 20 && !file_exists($ret.$check_file)) {
 		$ret .= "../";
 		$cutoff++;
 	}
-	if ($cutoff >= 20) return False;
-	else return $ret;	
+	if ($cutoff >= 20) {
+        return false;
+	} else {
+        return $ret;	
+    }
 }
 
-// These functions have been translated from lib.asp by Brandon on 07.13.03.
-// The "/blah" notation in the function heading indicates the Type of argument that should be given.
-
-// ----------int($num /numeric)----------
-//
-// Given $num, detemine if it is numeric.
-// If so, int returns the integral part of $num.
-// Else generate a fatal error.
-
-/**
-  Cast value to integer
-  @param $num must be numeric
-  @return integer
-*/
-static public function int($num) {
-	if(is_numeric($num)) {
-		return (int) $num;
-	}
-	else {
-		die("FATAL ERROR: Argument, '".$num.",' given to int() is not numeric.");
-	} 
+static public function base_url($check_file="css/pos.css")
+{
+    return self::baseURL($check_file);
 }
-
-// -----------nullwrap($num /numeric)----------
-//
-// Given $num, if it is empty or of length less than one, nullwrap becomes "0".
-// If the argument is a non-numeric, generate a fatal error.
-// Else nullwrap becomes the number.
 
 /**
   Sanitizes values
@@ -82,37 +63,27 @@ static public function int($num) {
   In practice any argument that evaluates to False
   get translated to integer zero.
 */
-static public function nullwrap($num) {
-
+static public function nullwrap($num) 
+{
 
 	if ( !$num ) {
 		 return 0;
-	}
-	elseif (!is_numeric($num) && strlen($num) < 1) {
+	} elseif (!is_numeric($num) && strlen($num) < 1) {
 		return " ";
-	}
-	else {
+	} else {
 		return $num;
 	}
 }
-
-// ----------truncate2($num /numeric)----------
-//
-// Round $num to two (2) digits after the decimal and return it as a STRING.
 
 /**
   Convert number to string with two decimal digits
   @param $num a number
   @return formatted string
 */
-static public function truncate2($num) {
+static public function truncate2($num) 
+{
 	return number_format($num, 2);
 }
-
-// ----------pinghost($host /string)----------
-//
-// Given $host, pinghost() looks up that host name or IP address.
-// If it can connect function returned as true, else false.
 
 /**
   Ping a host
@@ -131,7 +102,7 @@ static public function pinghost($host)
 	$host = str_replace("[", "", $host);
 	$host = str_replace("]", "", $host);
 
-	if (strstr($host,"\\")){
+	if (strstr($host,"\\")) {
 		$tmp = explode("\\",$host);
 		$host = $tmp[0];
 	}
@@ -145,14 +116,14 @@ static public function pinghost($host)
 		$packetLoss = "1 received, 0% packet loss";
 	}
 
-	foreach($aPingReturn as $returnLine)
-
-	{	$pos = strpos($returnLine, $packetLoss);
-		if  ($pos) {
+	foreach($aPingReturn as $returnLine) {
+		$pos = strpos($returnLine, $packetLoss);
+		if ($pos) {
 			$intConnected = 1; 
 			break;
-			}
+        }
 	}
+
 	return $intConnected;
 }
 
@@ -168,15 +139,18 @@ static public function pinghost($host)
   ping or ping has odd output. It also verifies the
   database is running as well as the host is up.
 */
-static public function pingport($host,$dbms){
+static public function pingport($host, $dbms)
+{
 	$port = strstr($dbms,'mysql') ? 3306 : 1433;	
-	if (strstr($host,":"))
+	if (strstr($host,":")) {
 		list($host,$port) = explode(":",$host);
+    }
 	$sock = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
 	socket_set_option($sock, SOL_SOCKET, SO_SNDTIMEO, array('sec' => 1, 'usec' => 0)); 
 	socket_set_block($sock);
 	$test = socket_connect($sock,$host,$port);
 	socket_close($sock);
+
 	return ($test ? 1 : 0);
 }
 
@@ -186,9 +160,13 @@ static public function pingport($host,$dbms){
    1 - windows
    0 - not windows
 */
-static public function win32() {
+static public function win32() 
+{
 	$winos = 0;
-	if (substr(PHP_OS, 0, 3) == "WIN") $winos = 1;
+	if (substr(PHP_OS, 0, 3) == "WIN") {
+        $winos = 1;
+    }
+
 	return $winos;
 }
 
@@ -200,13 +178,15 @@ static public function win32() {
   in $CORE_LOCAL. If the object cannot be 
   found this returns zero
 */
-static public function scaleObject(){
+static public function scaleObject()
+{
 	global $CORE_LOCAL;
 	$scaleDriver = $CORE_LOCAL->get("scaleDriver");
 	$sd = 0;
 	if ($scaleDriver != ""){
 		$sd = new $scaleDriver();
 	}
+
 	return $sd;
 }
 
@@ -220,56 +200,65 @@ static public function scaleObject(){
 
   Signature capture support is very alpha.
 */
-static public function sigTermObject(){
+static public function sigTermObject()
+{
 	global $CORE_LOCAL;
 	$termDriver = $CORE_LOCAL->get("termDriver");
 	$st = 0;
-	if ($termDriver != ""){  
+	if ($termDriver != "") {
 		$st = new $termDriver();
 	}
+
 	return $st;
 }
 
 /**
   Send good beep message to the scale
 */
-static public function goodBeep() {
+static public function goodBeep() 
+{
 	global $CORE_LOCAL;
 	$sd = self::scaleObject();
-	if (is_object($sd))
+	if (is_object($sd)) {
 		$sd->WriteToScale("goodBeep");
+    }
 }
 
 /**
   Send re-poll message to the scale
 */
-static public function rePoll() {
+static public function rePoll() 
+{
 	global $CORE_LOCAL;
 	$sd = self::scaleObject();
-	if (is_object($sd))
+	if (is_object($sd)) {
 		$sd->WriteToScale("rePoll");
+    }
 }
 
 /**
   Send error beep message to the scale
 */
-static public function errorBeep() {
+static public function errorBeep() 
+{
 	global $CORE_LOCAL;
 	$sd = self::scaleObject();
-	if (is_object($sd))
+	if (is_object($sd)) {
 		$sd->WriteToScale("errorBeep");
+    }
 }
 
 /**
   Send two pairs beep message to the scale
 */
-static public function twoPairs() {
+static public function twoPairs() 
+{
 	global $CORE_LOCAL;
 	$sd = self::scaleObject();
-	if (is_object($sd))
+	if (is_object($sd)) {
 		$sd->WriteToScale("twoPairs");
+    }
 }
 
 } // end class MiscLib
 
-?>

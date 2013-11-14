@@ -26,35 +26,36 @@
   Opens drawer for cash, credit card over $25,
   credit card refunds, and stamp sales
 */
-class WFC_Kicker extends Kicker {
+class WFC_Kicker extends Kicker 
+{
 
-	function doKick(){
-		global $CORE_LOCAL;
-		$db = Database::tDataConnect();
+    public function doKick()
+    {
+        global $CORE_LOCAL;
+        $db = Database::tDataConnect();
 
-		$query = "select trans_id from localtemptrans where 
-			(trans_subtype = 'CA' and total <> 0) or 
-			(trans_subtype IN ('CC','AX') AND (total < -25 or total > 0)) or 
-			upc='0000000001065'";
+        $query = "select trans_id from localtemptrans where 
+            (trans_subtype = 'CA' and total <> 0) or 
+            (trans_subtype IN ('CC','AX') AND (total < -25 or total > 0)) or 
+            upc='0000000001065'";
 
-		$result = $db->query($query);
-		$num_rows = $db->num_rows($result);
+        $result = $db->query($query);
+        $num_rows = $db->num_rows($result);
 
-		$ret = ($num_rows > 0) ? True : False;
+        $ret = ($num_rows > 0) ? true : false;
 
-		// use session to override default behavior
-		// based on specific cashier actions rather
-		// than transaction state
-		$override = $CORE_LOCAL->get('kickOverride');
-		$CORE_LOCAL->set('kickOverride',False);
-		if ($override === True) $ret = True;
+        // use session to override default behavior
+        // based on specific cashier actions rather
+        // than transaction state
+        $override = $CORE_LOCAL->get('kickOverride');
+        $CORE_LOCAL->set('kickOverride',false);
+        if ($override === true) $ret = true;
 
-		return $ret;
-	}
+        return $ret;
+    }
 
-	function kickOnSignIn(){
-		return False;
-	}
+    public function kickOnSignIn() {
+        return false;
+    }
 }
 
-?>

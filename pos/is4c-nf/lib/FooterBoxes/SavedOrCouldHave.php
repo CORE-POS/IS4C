@@ -21,31 +21,34 @@
 
 *********************************************************************************/
 
-class SavedOrCouldHave extends FooterBox {
+class SavedOrCouldHave extends FooterBox 
+{
 
-	public $display_css = "font-weight:bold;font-size:150%;";
-	public $display_css_class = 'coloredText';
+    public $display_css = "font-weight:bold;font-size:150%;";
+    public $display_css_class = 'coloredText';
 
-	function header_content(){
-		global $CORE_LOCAL;
-		if ($CORE_LOCAL->get("isMember") == 1)
-			return _("You Saved");
-		else
-			return _("Could Have Saved");
-	}
+    public function header_content()
+    {
+        global $CORE_LOCAL;
+        if ($CORE_LOCAL->get("isMember") == 1) {
+            return _("You Saved");
+        } else {
+            return _("Could Have Saved");
+        }
+    }
 
-	function display_content(){
-		global $CORE_LOCAL;
-		$saleTTL = (is_numeric($CORE_LOCAL->get("discounttotal"))) ? number_format($CORE_LOCAL->get("discounttotal"),2) : "0.00";
-		$memSaleTTL = is_numeric($CORE_LOCAL->get("memSpecial")) ? number_format($CORE_LOCAL->get("memSpecial"),2) : "0.00";
+    public function display_content()
+    {
+        global $CORE_LOCAL;
+        $saleTTL = (is_numeric($CORE_LOCAL->get("discounttotal"))) ? number_format($CORE_LOCAL->get("discounttotal"),2) : "0.00";
+        $memSaleTTL = is_numeric($CORE_LOCAL->get("memSpecial")) ? number_format($CORE_LOCAL->get("memSpecial"),2) : "0.00";
 
-		if ($CORE_LOCAL->get("isMember") == 1){
-			return number_format($CORE_LOCAL->get("transDiscount") +
-				$saleTTL + $memSaleTTL, 2);	
-		}
-		else
-			return $memSaleTTL;
-	}
+        if ($CORE_LOCAL->get("isMember") == 1) {
+            return number_format($CORE_LOCAL->get("transDiscount") +
+                $saleTTL + $memSaleTTL, 2);    
+        } else {
+            return $memSaleTTL;
+        }
+    }
 }
 
-?>

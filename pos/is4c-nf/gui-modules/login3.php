@@ -21,8 +21,6 @@
 
 *********************************************************************************/
 
-ini_set('display_errors','1');
-
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class login3 extends BasicPage {
@@ -48,7 +46,7 @@ class login3 extends BasicPage {
 				UdpComm::udpSend('goodBeep');
 			}
 
-			if (Authenticate::check_password($passwd,4)){
+			if (Authenticate::checkPassword($passwd,4)){
 				$sd = MiscLib::scaleObject();
 				if (is_object($sd))
 					$sd->ReadReset();
@@ -93,6 +91,7 @@ class login3 extends BasicPage {
 
 }
 
-new login3();
+if (basename(__FILE__) == basename($_SERVER['PHP_SELF']))
+	new login3();
 
 ?>

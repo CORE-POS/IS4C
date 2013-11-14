@@ -38,10 +38,11 @@ class ManufacturerMovementReport extends FannieReportPage {
 			$this->content_function = "report_content";
 			$this->has_menus(False);
 		
-			if (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'xls')
+			if (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'xls') {
 				$this->report_format = 'xls';
-			elseif (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'csv')
+			} elseif (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'csv') {
 				$this->report_format = 'csv';
+            }
 		}
 		else 
 			$this->add_script("../../src/CalendarControl.js");

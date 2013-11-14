@@ -62,14 +62,14 @@ static public function tDataConnect()
 				      $CORE_LOCAL->get("localUser"),$CORE_LOCAL->get("localPass"),False);
 		self::$SQL_CONNECTION->db_types[$CORE_LOCAL->get('pDatabase')] = strtoupper($CORE_LOCAL->get('DBMS'));
 		self::$SQL_CONNECTION->connections[$CORE_LOCAL->get('pDatabase')] = self::$SQL_CONNECTION->connections[$CORE_LOCAL->get('tDatabase')];
-	}
-	else {
+	} else {
 		/**
 		  Switch connection object to the requested database
 		*/
 		self::$SQL_CONNECTION->query('use '.$CORE_LOCAL->get('tDatabase'));
 		self::$SQL_CONNECTION->default_db = $CORE_LOCAL->get('tDatabase');
 	}	
+
 	return self::$SQL_CONNECTION;
 }
 
@@ -89,14 +89,14 @@ static public function pDataConnect()
 				      $CORE_LOCAL->get("localUser"),$CORE_LOCAL->get("localPass"),False);
 		self::$SQL_CONNECTION->db_types[$CORE_LOCAL->get('tDatabase')] = strtoupper($CORE_LOCAL->get('DBMS'));
 		self::$SQL_CONNECTION->connections[$CORE_LOCAL->get('tDatabase')] = self::$SQL_CONNECTION->connections[$CORE_LOCAL->get('pDatabase')];
-	}
-	else {
+	} else {
 		/**
 		  Switch connection object to the requested database
 		*/
 		self::$SQL_CONNECTION->query('use '.$CORE_LOCAL->get('pDatabase'));
 		self::$SQL_CONNECTION->default_db = $CORE_LOCAL->get('pDatabase');
 	}	
+
 	return self::$SQL_CONNECTION;
 }
 
@@ -110,6 +110,7 @@ static public function mDataConnect()
 
 	$sql = new SQLManager($CORE_LOCAL->get("mServer"),$CORE_LOCAL->get("mDBMS"),$CORE_LOCAL->get("mDatabase"),
 			      $CORE_LOCAL->get("mUser"),$CORE_LOCAL->get("mPass"),False);
+
 	return $sql;
 }
 
@@ -121,7 +122,8 @@ static public function mDataConnect()
   Load values from subtotals view into $CORE_LOCAL.
   Essentially refreshes totals in the session.
 */
-static public function getsubtotals() {
+static public function getsubtotals() 
+{
 	global $CORE_LOCAL;
 
 	$query = "SELECT * FROM subtotals";
@@ -138,16 +140,18 @@ static public function getsubtotals() {
 
 	$CORE_LOCAL->set("LastID", (!$row || !isset($row['LastID'])) ? 0 : (double)$row["LastID"] );
 	$cn = (!$row || !isset($row['card_no'])) ? "0" : trim($row["card_no"]);
-	if ($cn != "0" || $CORE_LOCAL->get("memberID") == "") 
+	if ($cn != "0" || $CORE_LOCAL->get("memberID") == "") {
 		$CORE_LOCAL->set("memberID",$cn);
+    }
 	$CORE_LOCAL->set("runningTotal", (!$row || !isset($row['runningTotal'])) ? 0 : (double)$row["runningTotal"] );
 	$CORE_LOCAL->set("taxTotal", (!$row || !isset($row['taxTotal'])) ? 0 : (double)$row["taxTotal"] );
 	$CORE_LOCAL->set("discounttotal", (!$row || !isset($row['discountTTL'])) ? 0 : (double)$row["discountTTL"] );
 	$CORE_LOCAL->set("tenderTotal", (!$row || !isset($row['tenderTotal'])) ? 0 : (double)$row["tenderTotal"] );
 	$CORE_LOCAL->set("memSpecial", (!$row || !isset($row['memSpecial'])) ? 0 : (double)$row["memSpecial"] );
 	$CORE_LOCAL->set("staffSpecial", (!$row || !isset($row['staffSpecial'])) ? 0 : (double)$row["staffSpecial"] );
-	if ( $CORE_LOCAL->get("member_subtotal") !== False ) 
+	if ( $CORE_LOCAL->get("member_subtotal") !== False ) {
 		$CORE_LOCAL->set("percentDiscount", (!$row || !isset($row['percentDiscount'])) ? 0 : (double)$row["percentDiscount"] );
+    }
 	$CORE_LOCAL->set("transDiscount", (!$row || !isset($row['transDiscount'])) ? 0 : (double)$row["transDiscount"] );
 	$CORE_LOCAL->set("fsTaxExempt", (!$row || !isset($row['fsTaxExempt'])) ? 0 : (double)$row["fsTaxExempt"] );
 	$CORE_LOCAL->set("fsEligible", (!$row || !isset($row['fsEligible'])) ? 0 : (double)$row["fsEligible"] );
@@ -165,7 +169,7 @@ static public function getsubtotals() {
 	$handler_class = $CORE_LOCAL->get('DiscountModule');
 	if ($handler_class === '') $handler_class = 'DiscountModule';
 	elseif (!class_exists($handler_class)) $handler_class = 'DiscountModule';
-	if (class_exists($handler_class)){
+	if (class_exists($handler_class)) {
 		$module = new $handler_class();
 		$CORE_LOCAL->set('transDiscount', $module->calculate() );
 	}
@@ -184,7 +188,7 @@ static public function getsubtotals() {
 	$taxes = Database::LineItemTaxes();
 	$taxTTL = 0.00;
 	$exemptTTL = 0.00;
-	foreach($taxes as $tax){
+	foreach($taxes as $tax) {
 		$taxTTL += $tax['amount'];
 		$exemptTTL += $tax['exempt'];
 	}
@@ -217,14 +221,15 @@ static public function getsubtotals() {
     - exempt (taxes exempted because of foodstamps) 
   There will always be one record for each existing tax rate.
 */
-static public function LineItemTaxes(){
+static public function LineItemTaxes()
+{
 	$db = Database::tDataConnect();
 	$q = "SELECT id, description, taxTotal, fsTaxable, fsTaxTotal, foodstampTender, taxrate
 		FROM taxView ORDER BY taxrate DESC";
 	$r = $db->query($q);
 	$taxRows = array();
 	$fsTenderTTL = 0.00;
-	while ($w = $db->fetch_row($r)){
+	while ($w = $db->fetch_row($r)) {
 		$w['fsExempt'] = 0.00;
 		$taxRows[] = $w;
 		$fsTenderTTL = $w['foodstampTender'];
@@ -232,10 +237,12 @@ static public function LineItemTaxes(){
 
 	// loop through line items and deal with
 	// foodstamp tax exemptions
-	for($i=0;$i<count($taxRows);$i++){
-		if($fsTenderTTL <= 0.005) continue;
+	for($i=0;$i<count($taxRows);$i++) {
+		if($fsTenderTTL <= 0.005) {
+            continue;
+        }
 		
-		if (abs($fsTenderTTL - $taxRows[$i]['fsTaxable']) < 0.005){
+		if (abs($fsTenderTTL - $taxRows[$i]['fsTaxable']) < 0.005) {
 			// CASE 1:
 			//	Available foodstamp tender matches foodstamp taxable total
 			//	Decrement line item tax by foodstamp tax total
@@ -243,8 +250,7 @@ static public function LineItemTaxes(){
 			$taxRows[$i]['taxTotal'] = MiscLib::truncate2($taxRows[$i]['taxTotal'] - $taxRows[$i]['fsTaxTotal']);
 			$taxRows[$i]['fsExempt'] = $taxRows[$i]['fsTaxTotal'];
 			$fsTenderTTL = 0;
-		}
-		else if ($fsTenderTTL > $taxRows[$i]['fsTaxable']){
+		} else if ($fsTenderTTL > $taxRows[$i]['fsTaxable']){
 			// CASE 2:
 			//	Available foodstamp tender exeeds foodstamp taxable total
 			//	Decrement line item tax by foodstamp tax total
@@ -252,8 +258,7 @@ static public function LineItemTaxes(){
 			$taxRows[$i]['taxTotal'] = MiscLib::truncate2($taxRows[$i]['taxTotal'] - $taxRows[$i]['fsTaxTotal']);
 			$taxRows[$i]['fsExempt'] = $taxRows[$i]['fsTaxTotal'];
 			$fsTenderTTL = MiscLib::truncate2($fsTenderTTL - $taxRows[$i]['fsTaxable']);;
-		}
-		else {
+		} else {
 			// CASE 3:
 			//	Available foodstamp tender is less than foodstamp taxable total
 			//	Decrement line item tax proprotionally to foodstamp tender available
@@ -267,7 +272,7 @@ static public function LineItemTaxes(){
 	}
 	
 	$ret = array();
-	foreach($taxRows as $tr){
+	foreach($taxRows as $tr) {
 		$ret[] = array(
 			'rate_id' => $tr['id'],
 			'description' => $tr['description'],
@@ -278,36 +283,31 @@ static public function LineItemTaxes(){
 	return $ret;
 }
 
-// ----------gettransno($CashierNo /int)----------
-//
-// Given $CashierNo, gettransno() will look up the number of the most recent transaction.
-
 /**
  Get the next transaction number for a given cashier
  @param $CashierNo cashier number (emp_no in tables) 
  @return integer transaction number
 */
-static public function gettransno($CashierNo) {
+static public function gettransno($CashierNo) 
+{
 	global $CORE_LOCAL;
 
 	$database = $CORE_LOCAL->get("tDatabase");
 	$register_no = $CORE_LOCAL->get("laneno");
-	$query = "SELECT max(trans_no) as maxtransno from localtranstoday where emp_no = '"
-		.$CashierNo."' and register_no = '"
-		.$register_no."' GROUP by register_no, emp_no";
+	$query = "SELECT max(trans_no) as maxtransno from localtranstoday where emp_no = "
+		.((int)$CashierNo)." and register_no = "
+		.((int)$register_no);
 	$connection = self::tDataConnect();
 	$result = $connection->query($query);
 	$row = $connection->fetch_array($result);
 	if (!$row || !$row["maxtransno"]) {
 		$trans_no = 1;
-	}
-	else {
+	} else {
 		$trans_no = $row["maxtransno"] + 1;
 	}
+
 	return $trans_no;
 }
-
-// ------------------------------------------------------------------
 
 /**
   See if the remote database is available
@@ -317,7 +317,8 @@ static public function gettransno($CashierNo) {
    - 1 server available
    - 0 server down
 */
-static public function testremote() {
+static public function testremote() 
+{
 	global $CORE_LOCAL;
 
 
@@ -333,7 +334,6 @@ static public function testremote() {
 	return ($CORE_LOCAL->get("standalone") + 1) % 2;
 }
 
-// ------------------------------------------------------------------
 /**
   Copy tables from the lane to the remote server
   The following tables are copied:
@@ -377,7 +377,7 @@ static public function uploadtoServer()
 
 	if ($connect->transfer($CORE_LOCAL->get("tDatabase"),
 		"select {$dt_matches} from dtransactions",
-		$CORE_LOCAL->get("mDatabase"),"insert into dtransactions ({$dt_matches})")){
+		$CORE_LOCAL->get("mDatabase"),"insert into dtransactions ({$dt_matches})")) {
 	
 		// Moved up
 		$connect->query("truncate table dtransactions",
@@ -403,23 +403,18 @@ static public function uploadtoServer()
 			$CORE_LOCAL->get("mDatabase"),
 			"insert into suspended ({$su_matches})");
 
-		/* Move up
-		$connect->query("truncate table dtransactions",
-			$CORE_LOCAL->get("tDatabase"));
-		*/
-		if ($al_success){
+		if ($al_success) {
 			$connect->query("truncate table alog",
 				$CORE_LOCAL->get("tDatabase"));
 		}
-		if ($su_success){
+		if ($su_success) {
 			$connect->query("truncate table suspended",
 				$CORE_LOCAL->get("tDatabase"));
 		}
 
 		$uploaded = 1;
 		$CORE_LOCAL->set("standalone",0);
-	}
-	else {
+	} else {
 		$uploaded = 0;
 		$CORE_LOCAL->set("standalone",1);
 	}
@@ -441,24 +436,29 @@ static public function uploadtoServer()
     local.table_name against remote.table2
    @return an array of column names
 */
-static public function getMatchingColumns($connection,$table_name,$table2=""){
+static public function getMatchingColumns($connection,$table_name,$table2="")
+{
 	global $CORE_LOCAL;
 
 	$local_poll = $connection->table_definition($table_name,$CORE_LOCAL->get("tDatabase"));
 	$local_cols = array();
-	foreach($local_poll as $name=>$v)
-		$local_cols[$name] = True;
+	foreach($local_poll as $name=>$v) {
+		$local_cols[$name] = true;
+    }
 	$remote_poll = $connection->table_definition((!empty($table2)?$table2:$table_name),
 				$CORE_LOCAL->get("mDatabase"));
 	$matching_cols = array();
-	foreach($remote_poll as $name=>$v){
-		if (isset($local_cols[$name]))
+	foreach($remote_poll as $name=>$v) {
+		if (isset($local_cols[$name])) {
 			$matching_cols[] = $name;
+        }
 	}
 
 	$ret = "";
-	foreach($matching_cols as $col)
+	foreach($matching_cols as $col) {
 		$ret .= $col.",";
+    }
+
 	return rtrim($ret,",");
 }
 
@@ -469,21 +469,26 @@ static public function getMatchingColumns($connection,$table_name,$table2=""){
    @param $table2 a database table
    @return an array of column names common to both tables
  */
-static public function localMatchingColumns($connection,$table1,$table2){
+static public function localMatchingColumns($connection,$table1,$table2)
+{
 	$poll1 = $connection->table_definition($table1);
 	$cols1 = array();
-	foreach($poll1 as $name=>$v)
-		$cols1[$name] = True;
+	foreach($poll1 as $name=>$v) {
+		$cols1[$name] = true;
+    }
 	$poll2 = $connection->table_definition($table2);
 	$matching_cols = array();
-	foreach($poll2 as $name=>$v){
-		if (isset($cols1[$name]))
+	foreach($poll2 as $name=>$v) {
+		if (isset($cols1[$name])) {
 			$matching_cols[] = $name;
+        }
 	}
 
 	$ret = "";
-	foreach($matching_cols as $col)
+	foreach($matching_cols as $col) {
 		$ret .= $col.",";
+    }
+
 	return rtrim($ret,",");
 }
 
@@ -491,7 +496,8 @@ static public function localMatchingColumns($connection,$table1,$table2){
   Transfer credit card tables to the server.
   See uploadtoServer().
 */
-static public function uploadCCdata(){
+static public function uploadCCdata()
+{
 	global $CORE_LOCAL;
 
 	$sql = self::tDataConnect();
@@ -505,7 +511,7 @@ static public function uploadCCdata(){
 	$req_cols = self::getMatchingColumns($sql,"efsnetRequest");
 	if ($sql->transfer($CORE_LOCAL->get("tDatabase"),
 		"select {$req_cols} from efsnetRequest",
-		$CORE_LOCAL->get("mDatabase"),"insert into efsnetRequest ({$req_cols})")){
+		$CORE_LOCAL->get("mDatabase"),"insert into efsnetRequest ({$req_cols})")) {
 
 		$sql->query("truncate table efsnetRequest",
 			$CORE_LOCAL->get("tDatabase"));
@@ -515,7 +521,7 @@ static public function uploadCCdata(){
 			"select {$res_cols} from efsnetResponse",
 			$CORE_LOCAL->get("mDatabase"),
 			"insert into efsnetResponse ({$res_cols})");
-		if ($res_success){
+		if ($res_success) {
 			$sql->query("truncate table efsnetResponse",
 				$CORE_LOCAL->get("tDatabase"));
 		}
@@ -525,7 +531,7 @@ static public function uploadCCdata(){
 			"select {$mod_cols} from efsnetRequestMod",
 			$CORE_LOCAL->get("mDatabase"),
 			"insert into efsnetRequestMod ({$mod_cols})");
-		if ($mod_success){
+		if ($mod_success) {
 			$sql->query("truncate table efsnetRequestMod",
 				$CORE_LOCAL->get("tDatabase"));
 		}
@@ -535,7 +541,7 @@ static public function uploadCCdata(){
 			"select {$mod_cols} from efsnetTokens",
 			$CORE_LOCAL->get("mDatabase"),
 			"insert into efsnetTokens ({$mod_cols})");
-		if ($mod_success){
+		if ($mod_success) {
 			$sql->query("truncate table efsnetTokens",
 				$CORE_LOCAL->get("tDatabase"));
 		}
@@ -545,7 +551,8 @@ static public function uploadCCdata(){
 /**
   Read globalvalues settings into $CORE_LOCAL.
 */
-static public function loadglobalvalues() {
+static public function loadglobalvalues() 
+{
 	global $CORE_LOCAL;
 
 	$query = "select CashierNo,Cashier,LoggedIn,TransNo,TTLFlag,
@@ -568,30 +575,31 @@ static public function loadglobalvalues() {
   @param $param keycode
   @param $val new value
 */
-static public function loadglobalvalue($param,$val){
+static public function loadglobalvalue($param,$val)
+{
 	global $CORE_LOCAL;
-	switch(strtoupper($param)){
-	case 'CASHIERNO':
-		$CORE_LOCAL->set("CashierNo",$val);	
-		break;
-	case 'CASHIER':
-		$CORE_LOCAL->set("cashier",$val);
-		break;
-	case 'LOGGEDIN':
-		$CORE_LOCAL->set("LoggedIn",$val);
-		break;
-	case 'TRANSNO':
-		$CORE_LOCAL->set("transno",$val);
-		break;
-	case 'TTLFLAG':
-		$CORE_LOCAL->set("ttlflag",$val);
-		break;
-	case 'FNTLFLAG':
-		$CORE_LOCAL->set("fntlflag",$val);
-		break;
-	case 'TAXEXEMPT':
-		$CORE_LOCAL->set("TaxExempt",$val);
-		break;
+	switch(strtoupper($param)) {
+        case 'CASHIERNO':
+            $CORE_LOCAL->set("CashierNo",$val);	
+            break;
+        case 'CASHIER':
+            $CORE_LOCAL->set("cashier",$val);
+            break;
+        case 'LOGGEDIN':
+            $CORE_LOCAL->set("LoggedIn",$val);
+            break;
+        case 'TRANSNO':
+            $CORE_LOCAL->set("transno",$val);
+            break;
+        case 'TTLFLAG':
+            $CORE_LOCAL->set("ttlflag",$val);
+            break;
+        case 'FNTLFLAG':
+            $CORE_LOCAL->set("fntlflag",$val);
+            break;
+        case 'TAXEXEMPT':
+            $CORE_LOCAL->set("TaxExempt",$val);
+            break;
 	}
 }
 
@@ -600,7 +608,8 @@ static public function loadglobalvalue($param,$val){
   @param $param keycode
   @param $value new value
 */
-static public function setglobalvalue($param, $value) {
+static public function setglobalvalue($param, $value) 
+{
 	global $CORE_LOCAL;
 
 	$db = self::pDataConnect();
@@ -619,14 +628,16 @@ static public function setglobalvalue($param, $value) {
   and in $CORE_LOCAL
   @param $arr An array of keys and values
 */
-static public function setglobalvalues($arr){
+static public function setglobalvalues($arr)
+{
 	$setStr = "";
-	foreach($arr as $param => $value){
+	foreach($arr as $param => $value) {
 		$setStr .= $param." = ";
-		if (!is_numeric($value))
+		if (!is_numeric($value)) {
 			$setStr .= "'".$value."',";
-		else
+		} else {
 			$setStr .= $value.",";
+        }
 		self::loadglobalvalue($param,$value);
 	}
 	$setStr = rtrim($setStr,",");
@@ -640,7 +651,8 @@ static public function setglobalvalues($arr){
   Sets TTLFlag and FntlFlag in globalvalues table
   @param $value value for both fields.
 */
-static public function setglobalflags($value) {
+static public function setglobalflags($value) 
+{
 	$db = self::pDataConnect();
 
 	$db->query("update globalvalues set TTLFlag = ".$value.", FntlFlag = ".$value);
@@ -652,18 +664,19 @@ static public function setglobalflags($value) {
   @param $fromName The name of the tax changed from.
   @param $fromName The name of the tax changed to.
 */
-static public function changeLttTaxCode($fromName, $toName) {
+static public function changeLttTaxCode($fromName, $toName) 
+{
 
 	$msg = "";
 	$pfx = "changeLttTaxCode ";
 	$pfx = "";
 	if ( $fromName == "" ) {
 		$msg = "{$pfx}fromName is empty";
-		return msg;
+		return $msg;
 	} else {
 		if ( $toName == "" ) {
 			$msg = "{$pfx}toName is empty";
-			return msg;
+			return $msg;
 		}
 	}
 
@@ -701,11 +714,10 @@ static public function changeLttTaxCode($fromName, $toName) {
 		return "UPDATE false";
 	}
 
-	return True;
+	return true;
 
 // changeLttTaxCode
 }
 
 } // end Database class
 
-?>

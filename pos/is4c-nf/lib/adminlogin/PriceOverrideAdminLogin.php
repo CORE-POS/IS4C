@@ -21,18 +21,25 @@
 
 *********************************************************************************/
 
-class PriceOverrideAdminLogin {
+/**
+  @class PriceOverrideAdminLogin
+  adminlogin callback for adjusting
+  the price of an already-rung item
+*/
+class PriceOverrideAdminLogin 
+{
 
-	static public $adminLoginMsg = 'Login to alter price';
+    static public $adminLoginMsg = 'Login to alter price';
 
-	static public $adminLoginLevel = 30;
+    static public $adminLoginLevel = 30;
 
-	static public function adminLoginCallback($success){
-		if ($success)
-			return MiscLib::base_url().'gui-modules/priceOverride.php';
-		else
-			return False;
-	}
+    static public function adminLoginCallback($success)
+    {
+        if ($success) {
+            return MiscLib::base_url().'gui-modules/priceOverride.php';
+        } else {
+            return false;
+        }
+    }
 }
-
 

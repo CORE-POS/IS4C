@@ -21,17 +21,17 @@
 
 *********************************************************************************/
 
-ini_set('display_errors','1');
-
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 AutoLoader::LoadMap();
+CoreState::loadParams();
 
-class login2 extends BasicPage {
+class login2 extends BasicPage 
+{
 
-	var $box_css_class;
-	var $msg;
+	private $box_css_class;
+	private $msg;
 
-	var $body_class = '';
+	public $body_class = '';
 
 	function preprocess(){
 		global $CORE_LOCAL;
@@ -48,7 +48,7 @@ class login2 extends BasicPage {
 			elseif (isset($_REQUEST['userPassword']) && !empty($_REQUEST['userPassword']))
 				$passwd = $_REQUEST['userPassword'];
 
-			if (Authenticate::check_password($passwd)){
+			if (Authenticate::checkPassword($passwd)){
 				Database::testremote();
 				$sd = MiscLib::scaleObject();
 				if (is_object($sd))
@@ -158,6 +158,8 @@ class login2 extends BasicPage {
 
 }
 
-new login2();
+if (basename(__FILE__) == basename($_SERVER['PHP_SELF'])) {
+	new login2();
+}
 
 ?>

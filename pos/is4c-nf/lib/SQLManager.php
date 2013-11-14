@@ -793,14 +793,6 @@ class SQLManager {
 			}
                         if (count($return) == 0) return False;
                         else return $return;
-		case $this->TYPE_PDOSL:
-			$result = $this->query("PRAGMA table_info($table_name)", $which_connection);
-			$return = array();
-			while($row = $this->fetch_row($result,$which_connection)){
-				$return[$row['name']] = array($row['type'],False);
-			}
-                        if (count($return) == 0) return False;
-                        else return $return;
                 }
                 return -1;
         }

@@ -21,8 +21,6 @@
 
 *********************************************************************************/
 
-ini_set('display_errors','1');
-
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class fsTotalConfirm extends NoInputPage {
@@ -168,5 +166,6 @@ class fsTotalConfirm extends NoInputPage {
 	} // END body_content() FUNCTION
 }
 
-new fsTotalConfirm();
+if (basename(__FILE__) == basename($_SERVER['PHP_SELF']))
+	new fsTotalConfirm();
 ?>

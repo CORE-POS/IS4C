@@ -617,11 +617,11 @@ static public function printCCSigSlip($dateTimeStamp,$ref,$storeCopy=True,$rp=0)
 			.$CORE_LOCAL->get("CapturedSigFile");
 
 		$bmp = new Bitmap();
-		$bmp->Load($sig_file);
+		$bmp->load($sig_file);
 
-		$bmpData = $bmp->GetRawData();
-		$bmpWidth = $bmp->GetWidth();
-		$bmpHeight = $bmp->GetHeight();
+		$bmpData = $bmp->getRawData();
+		$bmpWidth = $bmp->getWidth();
+		$bmpHeight = $bmp->getHeight();
 		$bmpRawBytes = (int)(($bmpWidth + 7)/8);
 
 		$print_class = $CORE_LOCAL->get('ReceiptDriver');
@@ -684,7 +684,7 @@ static public function graphedLocalTTL(){
 			$row['localTTL'], 100*$percent);
 	$str .= "\n";
 
-	$str .= self::$PRINT_OBJ->RenderBitmap(Bitmap::BarGraph($percent), 'L');
+	$str .= self::$PRINT_OBJ->RenderBitmap(Bitmap::barGraph($percent), 'L');
 	return $str."\n";
 }
 
@@ -1296,7 +1296,7 @@ static public function printReceipt($arg1,$second=False,$email=False) {
 	/* --------------------------------------------------------------
 	  print store copy of charge slip regardless of receipt print setting - apbw 2/14/05 
 	  ---------------------------------------------------------------- */
-	if ($CORE_LOCAL->get("chargeTotal") != 0 && ($CORE_LOCAL->get("End") == 1 || $reprint)) {
+	if ($CORE_LOCAL->get("chargeTotal") != 0 && (($CORE_LOCAL->get("End") == 1 && !$second) || $reprint)) {
 		if (is_array($receipt))
 			$receipt['print'] .= self::printChargeFooterStore($dateTimeStamp, $ref);
 		else

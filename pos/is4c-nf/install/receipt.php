@@ -2,9 +2,9 @@
 <html>
 <?php
 include(realpath(dirname(__FILE__).'/../lib/AutoLoader.php'));
-AutoLoader::LoadMap();
+AutoLoader::loadMap();
 include(realpath(dirname(__FILE__).'/../ini.php'));
-include('util.php');
+include('InstallUtilities.php');
 ?>
 <head>
 <title>IT CORE Lane Installation: Receipt Configuration</title>
@@ -16,8 +16,8 @@ include('util.php');
 <div id="wrapper">	
 <h2>IT CORE Lane Installation: Receipt Configuration</h2>
 
-<div class="alert"><?php check_writeable('../ini.php', False, 'PHP'); ?></div>
-<div class="alert"><?php check_writeable('../ini-local.php', True, 'PHP'); ?></div>
+<div class="alert"><?php InstallUtilities::checkWritable('../ini.php', False, 'PHP'); ?></div>
+<div class="alert"><?php InstallUtilities::checkWritable('../ini-local.php', True, 'PHP'); ?></div>
 
 <form action=receipt.php method=post>
 <table id="install" border=0 cellspacing=0 cellpadding=4>
@@ -33,12 +33,12 @@ echo "<fieldset class='toggle'>\n<input type='checkbox' name='PRINT' id='printin
 if ($CORE_LOCAL->get("print") == 1) echo " checked";
 echo " />\n<label for='printing' onclick=''>Enable receipts: </label>\n
 	<span class='toggle-button'></span></fieldset>";
-confsave('print',$CORE_LOCAL->get("print"));
+InstallUtilities::paramSave('print',$CORE_LOCAL->get("print"));
 ?>
 </td></tr><tr><td>
 <b>Use new receipt</b>: </td><td><select name=NEWRECEIPT>
 <?php
-if (isset($_REQUEST['NEWRECEIPT'])) $CORE_LOCAL->set('newReceipt',$_REQUEST['NEWRECEIPT'],True);
+if (isset($_REQUEST['NEWRECEIPT'])) $CORE_LOCAL->set('newReceipt',$_REQUEST['NEWRECEIPT']);
 if ($CORE_LOCAL->get("newReceipt") == 2){
 	echo "<option value=2 selected>PHP (even newer)</option>";
 	echo "<option value=1>Yes</option>";
@@ -54,7 +54,7 @@ else {
 	echo "<option value=1 >Yes</option>";
 	echo "<option value=0 selected>No</option>";
 }
-confsave('newReceipt',$CORE_LOCAL->get("newReceipt"));
+InstallUtilities::paramSave('newReceipt',$CORE_LOCAL->get("newReceipt"));
 ?>
 </select>
 <span class='noteTxt'>The new receipt groups items by category; the old one just lists
@@ -64,15 +64,15 @@ them in order.</span></td></tr>
 	<td>
 	<select name="ReceiptDriver">
 <?php
-if (isset($_REQUEST['ReceiptDriver'])) $CORE_LOCAL->set('ReceiptDriver',$_REQUEST['ReceiptDriver'], True);
-elseif($CORE_LOCAL->get('ReceiptDriver') === '') $CORE_LOCAL->set('ReceiptDriver','ESCPOSPrintHandler',True);
-$mods = AutoLoader::ListModules('PrintHandler',True);
+if (isset($_REQUEST['ReceiptDriver'])) $CORE_LOCAL->set('ReceiptDriver',$_REQUEST['ReceiptDriver']);
+elseif($CORE_LOCAL->get('ReceiptDriver') === '') $CORE_LOCAL->set('ReceiptDriver','ESCPOSPrintHandler');
+$mods = AutoLoader::listModules('PrintHandler',True);
 foreach($mods as $m){
 	printf('<option %s>%s</option>',
 		($m==$CORE_LOCAL->get('ReceiptDriver')?'selected':''),
 		$m);
 }
-confsave('ReceiptDriver',"'".$CORE_LOCAL->get("ReceiptDriver")."'");
+InstallUtilities::paramSave('ReceiptDriver',$CORE_LOCAL->get("ReceiptDriver"));
 ?>
 	</select>
 	<span class="noteTxt"></span>
@@ -81,18 +81,18 @@ confsave('ReceiptDriver',"'".$CORE_LOCAL->get("ReceiptDriver")."'");
 <tr><td>
 <b>Email Receipt Sender</b>:</td><td>
 <?php
-if(isset($_REQUEST['emailReceiptFrom'])) $CORE_LOCAL->set('emailReceiptFrom',$_REQUEST['emailReceiptFrom'],True);
+if(isset($_REQUEST['emailReceiptFrom'])) $CORE_LOCAL->set('emailReceiptFrom',$_REQUEST['emailReceiptFrom']);
 printf("<input type=text name=emailReceiptFrom value=\"%s\" />",$CORE_LOCAL->get('emailReceiptFrom'));
-confsave('emailReceiptFrom',"'".$CORE_LOCAL->get('emailReceiptFrom')."'");
+InstallUtilities::paramSave('emailReceiptFrom',$CORE_LOCAL->get('emailReceiptFrom'));
 ?>
 </td></tr>
 <tr><td colspan="2"><h3>PHP Receipt Modules</h3></td></tr>
 <tr><td><b>Data Fetch Mod</b>:</td>
 <td><select name="RBFETCHDATA">
 <?php
-if(isset($_REQUEST['RBFETCHDATA'])) $CORE_LOCAL->set('RBFetchData',$_REQUEST['RBFETCHDATA'],True);
-if($CORE_LOCAL->get('RBFetchData')=='') $CORE_LOCAL->set('RBFetchData','DefaultReceiptDataFetch',True);
-$mods = AutoLoader::ListModules('DefaultReceiptDataFetch',True);
+if(isset($_REQUEST['RBFETCHDATA'])) $CORE_LOCAL->set('RBFetchData',$_REQUEST['RBFETCHDATA']);
+if($CORE_LOCAL->get('RBFetchData')=='') $CORE_LOCAL->set('RBFetchData','DefaultReceiptDataFetch');
+$mods = AutoLoader::listModules('DefaultReceiptDataFetch',True);
 sort($mods);
 foreach($mods as $mod){
 	printf('<option %s>%s</option>',
@@ -100,15 +100,15 @@ foreach($mods as $mod){
 		$mod
 	);
 }
-confsave('RBFetchData',"'".$CORE_LOCAL->get('RBFetchData')."'");
+InstallUtilities::paramSave('RBFetchData',$CORE_LOCAL->get('RBFetchData'));
 ?>
 </select></td></tr>
 <tr><td><b>Filtering Mod</b>:</td>
 <td><select name="RBFILTER">
 <?php
-if(isset($_REQUEST['RBFILTER'])) $CORE_LOCAL->set('RBFilter',$_REQUEST['RBFILTER'],True);
-if($CORE_LOCAL->get('RBFilter')=='') $CORE_LOCAL->set('RBFilter','DefaultReceiptFilter',True);
-$mods = AutoLoader::ListModules('DefaultReceiptFilter',True);
+if(isset($_REQUEST['RBFILTER'])) $CORE_LOCAL->set('RBFilter',$_REQUEST['RBFILTER']);
+if($CORE_LOCAL->get('RBFilter')=='') $CORE_LOCAL->set('RBFilter','DefaultReceiptFilter');
+$mods = AutoLoader::listModules('DefaultReceiptFilter',True);
 sort($mods);
 foreach($mods as $mod){
 	printf('<option %s>%s</option>',
@@ -116,15 +116,15 @@ foreach($mods as $mod){
 		$mod
 	);
 }
-confsave('RBFilter',"'".$CORE_LOCAL->get('RBFilter')."'");
+InstallUtilities::paramSave('RBFilter',$CORE_LOCAL->get('RBFilter'));
 ?>
 </select></td></tr>
 <tr><td><b>Sorting Mod</b>:</td>
 <td><select name="RBSORT">
 <?php
-if(isset($_REQUEST['RBSORT'])) $CORE_LOCAL->set('RBSort',$_REQUEST['RBSORT'],True);
-if($CORE_LOCAL->get('RBSort')=='') $CORE_LOCAL->set('RBSort','DefaultReceiptSort',True);
-$mods = AutoLoader::ListModules('DefaultReceiptSort',True);
+if(isset($_REQUEST['RBSORT'])) $CORE_LOCAL->set('RBSort',$_REQUEST['RBSORT']);
+if($CORE_LOCAL->get('RBSort')=='') $CORE_LOCAL->set('RBSort','DefaultReceiptSort');
+$mods = AutoLoader::listModules('DefaultReceiptSort',True);
 sort($mods);
 foreach($mods as $mod){
 	printf('<option %s>%s</option>',
@@ -132,15 +132,15 @@ foreach($mods as $mod){
 		$mod
 	);
 }
-confsave('RBSort',"'".$CORE_LOCAL->get('RBSort')."'");
+InstallUtilities::paramSave('RBSort',$CORE_LOCAL->get('RBSort'));
 ?>
 </select></td></tr>
 <tr><td><b>Tagging Mod</b>:</td>
 <td><select name="RBTAG">
 <?php
-if(isset($_REQUEST['RBTAG'])) $CORE_LOCAL->set('RBTag',$_REQUEST['RBTAG'],True);
-if($CORE_LOCAL->get('RBTag')=='') $CORE_LOCAL->set('RBTag','DefaultReceiptTag',True);
-$mods = AutoLoader::ListModules('DefaultReceiptTag',True);
+if(isset($_REQUEST['RBTAG'])) $CORE_LOCAL->set('RBTag',$_REQUEST['RBTAG']);
+if($CORE_LOCAL->get('RBTag')=='') $CORE_LOCAL->set('RBTag','DefaultReceiptTag');
+$mods = AutoLoader::listModules('DefaultReceiptTag',True);
 sort($mods);
 foreach($mods as $mod){
 	printf('<option %s>%s</option>',
@@ -148,7 +148,7 @@ foreach($mods as $mod){
 		$mod
 	);
 }
-confsave('RBTag',"'".$CORE_LOCAL->get('RBTag')."'");
+InstallUtilities::paramSave('RBTag',$CORE_LOCAL->get('RBTag'));
 ?>
 </select></td></tr>
 <tr><td colspan="2"><h3>Message Modules</h3></td></tr>
@@ -163,12 +163,12 @@ if (isset($_REQUEST['RM_MODS'])){
 	foreach($_REQUEST['RM_MODS'] as $m){
 		if ($m != '') $mods[] = $m;
 	}
-	$CORE_LOCAL->set('ReceiptMessageMods', $mods, True);
+	$CORE_LOCAL->set('ReceiptMessageMods', $mods);
 }
 if (!is_array($CORE_LOCAL->get('ReceiptMessageMods'))){
-	$CORE_LOCAL->set('ReceiptMessageMods', array(), True);
+	$CORE_LOCAL->set('ReceiptMessageMods', array());
 }
-$available = AutoLoader::ListModules('ReceiptMessage');
+$available = AutoLoader::listModules('ReceiptMessage');
 $current = $CORE_LOCAL->get('ReceiptMessageMods');
 for($i=0;$i<=count($current);$i++){
 	$c = isset($current[$i]) ? $current[$i] : '';
@@ -178,11 +178,7 @@ for($i=0;$i<=count($current);$i++){
 		printf('<option %s>%s</option>',($a==$c?'selected':''),$a);
 	echo '</select><br />';
 }
-$saveStr = 'array(';
-foreach($current as $c)
-	$saveStr .= "'".$c."',";
-$saveStr = rtrim($saveStr,",").")";
-confsave('ReceiptMessageMods',$saveStr);
+InstallUtilities::paramSave('ReceiptMessageMods',$CORE_LOCAL->get('ReceiptMessageMods'));
 ?>
 </td></tr>
 <tr><td colspan=2 class="submitBtn">

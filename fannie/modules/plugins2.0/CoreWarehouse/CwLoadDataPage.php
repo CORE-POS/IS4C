@@ -48,7 +48,7 @@ class CwLoadDataPage extends FanniePage {
 		return True;
 	}
 
-	public function get_models(){
+	public function getModels(){
 		$dh = opendir(dirname(__FILE__).'/models');
 		$ret = array();
 		while(($file=readdir($dh)) !== False){
@@ -68,7 +68,7 @@ class CwLoadDataPage extends FanniePage {
 		<p>
 		<b>Table</b>: <select name="model">
 		<?php 
-		foreach($this->get_modles() as $file){
+		foreach($this->getModels() as $file){
 			printf('<option>%s</option>',
 				substr($file,0,strlen($file)-10));
 		}
@@ -110,7 +110,7 @@ if (basename(__FILE__) == basename($_SERVER['PHP_SELF'])){
 		$day = array();
 		$file = False;
 		$all = False;
-		$models = $obj->get_models();
+		$models = $obj->getModels();
 		for ($i=1;$i<count($argv);$i++){
 			switch($argv[$i]){
 			case '-s':

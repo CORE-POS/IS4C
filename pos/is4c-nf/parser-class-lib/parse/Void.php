@@ -160,11 +160,10 @@ class Void extends Parser {
 
 		$discounttype = MiscLib::nullwrap($row["discounttype"]);
 
-		if ($CORE_LOCAL->get("tenderTotal") < 0 && $foodstamp = 1 && (-1 * $total) > $CORE_LOCAL->get("fsEligible")) {
-			return DisplayLib::boxMsg("Item already paid for");
-		}
-		elseif ($CORE_LOCAL->get("tenderTotal") < 0 && (-1 * $total) > $CORE_LOCAL->get("runningTotal") - $CORE_LOCAL->get("taxTotal")) {
-			return DisplayLib::boxMsg("Item already paid for");
+		if ($CORE_LOCAL->get("tenderTotal") < 0 && (-1 * $total) > $CORE_LOCAL->get("runningTotal") - $CORE_LOCAL->get("taxTotal")) {
+			$cash = $db->query("SELECT total FROM localtemptrans WHERE trans_subtype='CA' AND total <> 0");
+			if ($db->num_rows($cash) > 0)	
+				return DisplayLib::boxMsg("Item already paid for");
 		}
 
 		$update = "update localtemptrans set voided = 1 where trans_id = ".$item_num;
@@ -399,13 +398,10 @@ class Void extends Parser {
 		if ($discounttype == 3) 
 			$quantity = -1 * $ItemQtty;
 
-		if ($CORE_LOCAL->get("tenderTotal") < 0 && $foodstamp == 1 && 
-		   (-1 * $total) > $CORE_LOCAL->get("fsEligible")) {
-			return DisplayLib::boxMsg(_("Item already paid for"));
-		}
-		elseif ($CORE_LOCAL->get("tenderTotal") < 0 && (-1 * $total) > 
-			$CORE_LOCAL->get("runningTotal") - $CORE_LOCAL->get("taxTotal")) {
-			return DisplayLib::boxMsg(_("Item already paid for"));
+		if ($CORE_LOCAL->get("tenderTotal") < 0 && (-1 * $total) > $CORE_LOCAL->get("runningTotal") - $CORE_LOCAL->get("taxTotal")) {
+			$cash = $db->query("SELECT total FROM localtemptrans WHERE trans_subtype='CA' AND total <> 0");
+			if ($db->num_rows($cash) > 0)	
+                return DisplayLib::boxMsg(_("Item already paid for"));
 		}
 		elseif ($quantity != 0) {
 			$update = "update localtemptrans set voided = 1 where trans_id = ".$item_num;

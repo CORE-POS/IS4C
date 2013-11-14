@@ -12,7 +12,7 @@ class TsStaffMemReport extends FanniePage {
 		$this->title = "Timeclock - Staff Member Totals Report";
 		$this->header = "Timeclock - Staff Member Totals Report";
 		if (!$this->current_user && $_GET['login'] == 1 ){
-			$this->login_redirect();
+			$this->loginRedirect();
 			return False;
 		}
 		return True;

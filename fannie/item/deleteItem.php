@@ -74,7 +74,7 @@ if (isset($_REQUEST['upc']) && !isset($_REQUEST['deny'])){
 	}
 	else if (isset($_REQUEST['confirm'])){
 		$plu = substr($upc,3,4);
-		ProductsModel::static_delete($upc);
+		ProductsModel::staticDelete($upc);
 		$delxQ = $dbc->prepare_statement("DELETE FROM prodExtra WHERE upc=?");
 		$dbc->exec_statement($delxQ,array($upc));
 		if ($dbc->table_exists("scaleItems")){

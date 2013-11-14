@@ -21,8 +21,6 @@
 
 *********************************************************************************/
 
-ini_set('display_errors','1');
- 
 session_cache_limiter('nocache');
 
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
@@ -294,6 +292,7 @@ class pos2 extends BasicPage {
 	} // END body_content() FUNCTION
 }
 
-new pos2();
+if (basename(__FILE__) == basename($_SERVER['PHP_SELF']))
+	new pos2();
 
 ?>

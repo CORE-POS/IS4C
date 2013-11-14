@@ -1,8 +1,9 @@
 <?php
 include(realpath(dirname(__FILE__).'/../lib/AutoLoader.php'));
-AutoLoader::LoadMap();
+AutoLoader::loadMap();
 include(realpath(dirname(__FILE__).'/../ini.php'));
-include('util.php');
+CoreState::loadParams();
+include('InstallUtilities.php');
 ?>
 <html>
 <head>
@@ -21,8 +22,8 @@ body {
 <table id="install" border=0 cellspacing=0 cellpadding=4><tr><td>
 <b>Cancel Transaction</b>: </td><td><select name=PRIV_CANCEL>
 <?php
-if(isset($_REQUEST['PRIV_CANCEL'])) $CORE_LOCAL->set('SecurityCancel',$_REQUEST['PRIV_CANCEL'],True);
-if ($CORE_LOCAL->get("SecurityCancel")=="") $CORE_LOCAL->set("SecurityCancel",20,True);
+if(isset($_REQUEST['PRIV_CANCEL'])) $CORE_LOCAL->set('SecurityCancel',$_REQUEST['PRIV_CANCEL']);
+if ($CORE_LOCAL->get("SecurityCancel")=="") $CORE_LOCAL->set("SecurityCancel",20);
 if ($CORE_LOCAL->get("SecurityCancel") == 30){
 	echo "<option value=30 selected>Admin only</option>";
 	echo "<option value=20>All</option>";
@@ -31,13 +32,13 @@ else {
 	echo "<option value=30 >Admin only</option>";
 	echo "<option value=20 selected>All</option>";
 }
-confsave('SecurityCancel',$CORE_LOCAL->get("SecurityCancel"));
+InstallUtilities::paramSave('SecurityCancel',$CORE_LOCAL->get("SecurityCancel"));
 ?>
 </select></td></tr><tr><td>
 <b>Suspend/Resume</b>: </td><td><select name=PRIV_SR>
 <?php
-if(isset($_REQUEST['PRIV_SR'])) $CORE_LOCAL->set('SecuritySR',$_REQUEST['PRIV_SR'],True);
-if ($CORE_LOCAL->get("SecuritySR")=="") $CORE_LOCAL->set("SecuritySR",20,True);
+if(isset($_REQUEST['PRIV_SR'])) $CORE_LOCAL->set('SecuritySR',$_REQUEST['PRIV_SR']);
+if ($CORE_LOCAL->get("SecuritySR")=="") $CORE_LOCAL->set("SecuritySR",20);
 if ($CORE_LOCAL->get("SecuritySR") == 30){
 	echo "<option value=30 selected>Admin only</option>";
 	echo "<option value=20>All</option>";
@@ -46,14 +47,14 @@ else {
 	echo "<option value=30 >Admin only</option>";
 	echo "<option value=20 selected>All</option>";
 }
-confsave('SecuritySR',$CORE_LOCAL->get("SecuritySR"));
+InstallUtilities::paramSave('SecuritySR',$CORE_LOCAL->get("SecuritySR"));
 ?>
 </select></td></tr>
 <tr><td>
 <b>Refund Item</b>: </td><td><select name=PRIV_REFUND>
 <?php
-if(isset($_REQUEST['PRIV_REFUND'])) $CORE_LOCAL->set('SecurityRefund',$_REQUEST['PRIV_REFUND'],True);
-if ($CORE_LOCAL->get("SecurityRefund")=="") $CORE_LOCAL->set("SecurityRefund",20,True);
+if(isset($_REQUEST['PRIV_REFUND'])) $CORE_LOCAL->set('SecurityRefund',$_REQUEST['PRIV_REFUND']);
+if ($CORE_LOCAL->get("SecurityRefund")=="") $CORE_LOCAL->set("SecurityRefund",20);
 if ($CORE_LOCAL->get("SecurityRefund") == 30){
 	echo "<option value=30 selected>Admin only</option>";
 	echo "<option value=20>All</option>";
@@ -62,14 +63,14 @@ else {
 	echo "<option value=30 >Admin only</option>";
 	echo "<option value=20 selected>All</option>";
 }
-confsave('SecurityRefund',$CORE_LOCAL->get("SecurityRefund"));
+InstallUtilities::paramSave('SecurityRefund',$CORE_LOCAL->get("SecurityRefund"));
 ?>
 </select></td></tr>
 <tr><td>
 <b>Line Item Discount</b>: </td><td><select name=LI_DISCOUNT>
 <?php
-if(isset($_REQUEST['LI_DISCOUNT'])) $CORE_LOCAL->set('SecurityLineItemDiscount',$_REQUEST['LI_DISCOUNT'],True);
-if ($CORE_LOCAL->get("SecurityLineItemDiscount")=="") $CORE_LOCAL->set("SecurityLineItemDiscount",20,True);
+if(isset($_REQUEST['LI_DISCOUNT'])) $CORE_LOCAL->set('SecurityLineItemDiscount',$_REQUEST['LI_DISCOUNT']);
+if ($CORE_LOCAL->get("SecurityLineItemDiscount")=="") $CORE_LOCAL->set("SecurityLineItemDiscount",20);
 if ($CORE_LOCAL->get("SecurityLineItemDiscount") == 30){
 	echo "<option value=30 selected>Admin only</option>";
 	echo "<option value=20>All</option>";
@@ -78,16 +79,16 @@ else {
 	echo "<option value=30 >Admin only</option>";
 	echo "<option value=20 selected>All</option>";
 }
-confsave('SecurityLineItemDiscount',$CORE_LOCAL->get("SecurityLineItemDiscount"));
+InstallUtilities::paramSave('SecurityLineItemDiscount',$CORE_LOCAL->get("SecurityLineItemDiscount"));
 ?>
 </select></td></tr>
 <tr><td>
 <b>Void Limit</b>:</td><td>
 <?php
-if (isset($_REQUEST['VOIDLIMIT'])) $CORE_LOCAL->set('VoidLimit',$_REQUEST['VOIDLIMIT'],True);
-if ($CORE_LOCAL->get("VoidLimit")=="") $CORE_LOCAL->set("VoidLimit",0,True);
+if (isset($_REQUEST['VOIDLIMIT'])) $CORE_LOCAL->set('VoidLimit',$_REQUEST['VOIDLIMIT']);
+if ($CORE_LOCAL->get("VoidLimit")=="") $CORE_LOCAL->set("VoidLimit",0);
 printf("<input type=text name=VOIDLIMIT value=\"%s\" />",$CORE_LOCAL->get('VoidLimit'));
-confsave('VoidLimit',"'".$CORE_LOCAL->get('VoidLimit')."'");
+InstallUtilities::paramSave('VoidLimit',$CORE_LOCAL->get('VoidLimit'));
 ?> (in dollars, per transaction. Zero for unlimited).
 </td></tr><tr><td colspan=2>
 <hr />

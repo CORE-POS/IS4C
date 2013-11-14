@@ -21,33 +21,35 @@
 
 *********************************************************************************/
 
-class EquityEndorseDept extends SpecialDept {
+class EquityEndorseDept extends SpecialDept 
+{
 
-	function handle($deptID,$amount,$json){
-		global $CORE_LOCAL;
+    public function handle($deptID,$amount,$json)
+    {
+        global $CORE_LOCAL;
 
-		if ($CORE_LOCAL->get("memberID") == "0" || $CORE_LOCAL->get("memberID") == $CORE_LOCAL->get("defaultNonMem")){
-			$CORE_LOCAL->set('strEntered','');
-			$CORE_LOCAL->set('boxMsg','Equity requires member.<br />Apply member number first');
-			$json['main_frame'] = MiscLib::base_url().'gui-modules/boxMsg2.php';
-			return $json;
-		}
+        if ($CORE_LOCAL->get("memberID") == "0" || $CORE_LOCAL->get("memberID") == $CORE_LOCAL->get("defaultNonMem")) {
+            $CORE_LOCAL->set('strEntered','');
+            $CORE_LOCAL->set('boxMsg','Equity requires member.<br />Apply member number first');
+            $json['main_frame'] = MiscLib::base_url().'gui-modules/boxMsg2.php';
 
-		if ($CORE_LOCAL->get('msgrepeat') == 0){
-			$ref = trim($CORE_LOCAL->get("CashierNo"))."-"
-				.trim($CORE_LOCAL->get("laneno"))."-"
-				.trim($CORE_LOCAL->get("transno"));
-			if ($CORE_LOCAL->get("LastEquityReference") != $ref){
-				$CORE_LOCAL->set("equityAmt",$amount);
-				$CORE_LOCAL->set("boxMsg","<b>Equity Sale</b><br>Insert paperwork and press<br>
-						<font size=-1>[enter] to continue, [clear] to cancel</font>");
-				$json['main_frame'] = MiscLib::base_url().'gui-modules/boxMsg2.php?quiet=1&endorse=stock&endorseAmt='.$amount;
-			}
-		}
+            return $json;
+        }
 
-		return $json;
-	}
+        if ($CORE_LOCAL->get('msgrepeat') == 0) {
+            $ref = trim($CORE_LOCAL->get("CashierNo"))."-"
+                .trim($CORE_LOCAL->get("laneno"))."-"
+                .trim($CORE_LOCAL->get("transno"));
+            if ($CORE_LOCAL->get("LastEquityReference") != $ref) {
+                $CORE_LOCAL->set("equityAmt",$amount);
+                $CORE_LOCAL->set("boxMsg","<b>Equity Sale</b><br>Insert paperwork and press<br>
+                        <font size=-1>[enter] to continue, [clear] to cancel</font>");
+                $json['main_frame'] = MiscLib::base_url().'gui-modules/boxMsg2.php?quiet=1&endorse=stock&endorseAmt='.$amount;
+            }
+        }
+
+        return $json;
+    }
 
 }
 
-?>

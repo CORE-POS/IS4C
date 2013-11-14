@@ -29,7 +29,8 @@ class PIKillerPage extends FannieRESTfulPage {
 
 	protected $card_no = False;
 	
-	function get_header(){
+	function getHeader() 
+    {
 		global $FANNIE_URL;
 		$this->add_css_file('css/styles.css');
 		$this->add_script($FANNIE_URL.'src/jquery/jquery.js');
@@ -80,7 +81,8 @@ class PIKillerPage extends FannieRESTfulPage {
 			</tr>';
 	}
 
-	function get_footer(){
+	function getFooter()
+    {
 		return '</table></body></html>';
 	}
 }

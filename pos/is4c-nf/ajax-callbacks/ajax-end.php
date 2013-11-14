@@ -64,7 +64,7 @@ if (strlen($receiptType) > 0) {
 		$CORE_LOCAL->set("ccCustCopy",0);
 		$receiptContent[] = ReceiptLib::printReceipt($receiptType);
 	}
-	elseif ($receiptType == "ccSlip"){
+	elseif ($receiptType == "ccSlip" || $receiptType == 'gcSlip'){
 		// don't mess with reprints
 	}
 	elseif ($CORE_LOCAL->get("autoReprint") == 1){

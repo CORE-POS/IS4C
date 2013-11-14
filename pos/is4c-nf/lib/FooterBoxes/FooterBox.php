@@ -29,38 +29,41 @@
   can select a different module for each
   box.
 */
-class FooterBox {
+class FooterBox 
+{
 
-	/**
-	  CSS here will be applied (in-line) to the
-	  header content. If you define a different
-	  width alignment might go haywire.
-	*/
-	public $header_css = '';
-	public $header_css_class = '';
-	/**
-	  CSS here will be applied (in-line) to the
-	  display content. If you define a different
-	  width alignment might go haywire.
-	*/
-	public $display_css = '';
-	public $display_css_class = '';
+    /**
+      CSS here will be applied (in-line) to the
+      header content. If you define a different
+      width alignment might go haywire.
+    */
+    public $header_css = '';
+    public $header_css_class = '';
+    /**
+      CSS here will be applied (in-line) to the
+      display content. If you define a different
+      width alignment might go haywire.
+    */
+    public $display_css = '';
+    public $display_css_class = '';
 
-	/**
-	  Define the header for this box
-	  @return An HTML string
-	*/
-	function header_content(){
-		return "";
-	}
+    /**
+      Define the header for this box
+      @return An HTML string
+    */
+    public function header_content()
+    {
+        return "";
+    }
 
-	/**
-	  Define the content for this box
-	  @return An HTML string
-	*/
-	function display_content(){
-		return "";
-	}
+    /**
+      Define the content for this box
+      @return An HTML string
+    */
+    public function display_content()
+    {
+        return "";
+    }
 }
 
 /**
@@ -75,4 +78,3 @@ class FooterBox {
   store's most critical department.
 */
 
-?>

@@ -1,7 +1,17 @@
-IS4C - The POS, the backend, the movie, the book, reporting system
+CORE-POS is the point of sale oriented project under Co-operative
+Operational Retail Environment (CORE). The code is based heavily 
+on IS4C with a focus on greater modularity and collaboration.
 
-This is development branch is based off WFC's release. Up to date code can be found on github.
+In this directory you'll find:
 
-Whereas the FLOSS-POS project is a fork of this project, the reposity here should aim to complete the currently available code. The feature set may be more limited, but hopefully robust enough to have a clear upgrade path to any future versions of IS4C/FLOSS-POS/???
+documentation/
+  => Contains what you would expect
 
-See the INSTALL file for installation instructions.
+fannie/
+  => Backend tools and reporting for POS data
+
+pos/is4c-nf/
+  => The actual POS
+
+scripts/
+  => A catch-all for utilities that don't fit elsewhere 

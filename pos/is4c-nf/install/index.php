@@ -25,10 +25,10 @@
 ini_set('display_errors','1');
 
 include(realpath(dirname(__FILE__).'/../lib/AutoLoader.php'));
-AutoLoader::LoadMap();
+AutoLoader::loadMap();
 if(file_exists((dirname(__FILE__).'/../ini.php')))
 	include(realpath(dirname(__FILE__).'/../ini.php'));
-include('util.php');
+include('InstallUtilities.php');
 ?>
 <html>
 <head>
@@ -47,10 +47,10 @@ body {
 
 <form action=index.php method=post>
 
-<div class="alert"><?php check_writeable('../ini.php', False, 'PHP'); ?></div>
-<div class="alert"><?php check_writeable('../ini-local.php', True, 'PHP'); ?></div>
+<div class="alert"><?php InstallUtilities::checkWritable('../ini.php', False, 'PHP'); ?></div>
+<div class="alert"><?php InstallUtilities::checkWritable('../ini-local.php', True, 'PHP'); ?></div>
 
-PHP is running as: <?php echo whoami(); ?><br />
+PHP is running as: <?php echo InstallUtilities::whoami(); ?><br />
 <?php
 if (!function_exists("socket_create")){
 	echo '<b>Warning</b>: PHP socket extension is not enabled. NewMagellan will not work quite right';
@@ -70,7 +70,7 @@ else {
 	echo "<option value=win32>Windows</option>";
 	echo "<option value=other selected>*nix</option>";
 }
-confsave('OS',"'".$CORE_LOCAL->get('OS')."'");
+InstallUtilities::paramSave('OS',$CORE_LOCAL->get('OS'));
 ?>
 </select></td></tr>
 <tr><td>Lane number:</td><td>
@@ -78,7 +78,7 @@ confsave('OS',"'".$CORE_LOCAL->get('OS')."'");
 if (isset($_REQUEST['LANE_NO']) && is_numeric($_REQUEST['LANE_NO'])) $CORE_LOCAL->set('laneno',$_REQUEST['LANE_NO'],True);
 printf("<input type=text name=LANE_NO value=\"%d\" />",
 	$CORE_LOCAL->get('laneno'));
-confsave('laneno',$CORE_LOCAL->get('laneno'));
+InstallUtilities::confsave('laneno',$CORE_LOCAL->get('laneno'));
 ?>
 </td></tr><tr><td colspan=2 class="tblheader">
 <h3>Database set up</h3></td></tr>
@@ -88,7 +88,7 @@ Lane database host: </td><td>
 if (isset($_REQUEST['LANE_HOST'])) $CORE_LOCAL->set('localhost',$_REQUEST['LANE_HOST'],True);
 printf("<input type=text name=LANE_HOST value=\"%s\" />",
 	$CORE_LOCAL->get('localhost'));
-confsave('localhost',"'".$CORE_LOCAL->get('localhost')."'");
+InstallUtilities::confsave('localhost',"'".$CORE_LOCAL->get('localhost')."'");
 ?>
 </td></tr><tr><td>
 Lane database type:</td>
@@ -103,7 +103,7 @@ foreach($db_opts as $name=>$label){
 		($CORE_LOCAL->get('DBMS')==$name?'selected':''),
 		$name,$label);
 }
-confsave('DBMS',"'".$CORE_LOCAL->get('DBMS')."'");
+InstallUtilities::confsave('DBMS',"'".$CORE_LOCAL->get('DBMS')."'");
 ?>
 </select></td></tr>
 <tr><td>Lane user name:</td><td>
@@ -111,7 +111,7 @@ confsave('DBMS',"'".$CORE_LOCAL->get('DBMS')."'");
 if (isset($_REQUEST['LANE_USER'])) $CORE_LOCAL->set('localUser',$_REQUEST['LANE_USER'],True);
 printf("<input type=text name=LANE_USER value=\"%s\" />",
 	$CORE_LOCAL->get('localUser'));
-confsave('localUser',"'".$CORE_LOCAL->get('localUser')."'");
+InstallUtilities::confsave('localUser',"'".$CORE_LOCAL->get('localUser')."'");
 ?>
 </td></tr><tr><td>
 Lane password:</td><td>
@@ -119,7 +119,7 @@ Lane password:</td><td>
 if (isset($_REQUEST['LANE_PASS'])) $CORE_LOCAL->set('localPass',$_REQUEST['LANE_PASS'],True);
 printf("<input type=password name=LANE_PASS value=\"%s\" />",
 	$CORE_LOCAL->get('localPass'));
-confsave('localPass',"'".$CORE_LOCAL->get('localPass')."'");
+InstallUtilities::confsave('localPass',"'".$CORE_LOCAL->get('localPass')."'");
 ?>
 </td></tr><tr><td>
 Lane operational DB:</td><td>
@@ -127,7 +127,7 @@ Lane operational DB:</td><td>
 if (isset($_REQUEST['LANE_OP_DB'])) $CORE_LOCAL->set('pDatabase',$_REQUEST['LANE_OP_DB'],True);
 printf("<input type=text name=LANE_OP_DB value=\"%s\" />",
 	$CORE_LOCAL->get('pDatabase'));
-confsave('pDatabase',"'".$CORE_LOCAL->get('pDatabase')."'");
+InstallUtilities::confsave('pDatabase',"'".$CORE_LOCAL->get('pDatabase')."'");
 ?>
 </td></tr><tr><td colspan=2>
 <div class="noteTxt">
@@ -137,7 +137,7 @@ $gotDBs = 0;
 if ($CORE_LOCAL->get("DBMS") == "mysql")
 	$val = ini_set('mysql.connect_timeout',5);
 
-$sql = db_test_connect($CORE_LOCAL->get('localhost'),
+$sql = InstallUtilities::dbTestConnect($CORE_LOCAL->get('localhost'),
 		$CORE_LOCAL->get('DBMS'),
 		$CORE_LOCAL->get('pDatabase'),
 		$CORE_LOCAL->get('localUser'),
@@ -191,13 +191,13 @@ Lane transaction DB:</td><td>
 if (isset($_REQUEST['LANE_TRANS_DB'])) $CORE_LOCAL->set('tDatabase',$_REQUEST['LANE_TRANS_DB'],True);
 printf("<input type=text name=LANE_TRANS_DB value=\"%s\" />",
 	$CORE_LOCAL->get('tDatabase'));
-confsave('tDatabase',"'".$CORE_LOCAL->get('tDatabase')."'");
+InstallUtilities::confsave('tDatabase',"'".$CORE_LOCAL->get('tDatabase')."'");
 ?>
 </td></tr><tr><td colspan=2>
 <div class="noteTxt">
 Testing transactional DB connection:
 <?php
-$sql = db_test_connect($CORE_LOCAL->get('localhost'),
+$sql = InstallUtilities::dbTestConnect($CORE_LOCAL->get('localhost'),
 		$CORE_LOCAL->get('DBMS'),
 		$CORE_LOCAL->get('tDatabase'),
 		$CORE_LOCAL->get('localUser'),
@@ -265,10 +265,10 @@ else {
 </td></tr><tr><td>
 Server database host: </td><td>
 <?php
-if (isset($_REQUEST['SERVER_HOST'])) $CORE_LOCAL->set('mServer',$_REQUEST['SERVER_HOST'],True);
+if (isset($_REQUEST['SERVER_HOST'])) $CORE_LOCAL->set('mServer',$_REQUEST['SERVER_HOST']);
 printf("<input type=text name=SERVER_HOST value=\"%s\" />",
 	$CORE_LOCAL->get('mServer'));
-confsave('mServer',"'".$CORE_LOCAL->get('mServer')."'");
+InstallUtilities::paramSave('mServer',$CORE_LOCAL->get('mServer'));
 ?>
 </td></tr><tr><td>
 Server database type:</td><td>
@@ -276,43 +276,43 @@ Server database type:</td><td>
 <?php
 $db_opts = array('mysql'=>'MySQL','mssql'=>'SQL Server',
 	'pdomysql'=>'MySQL (PDO)','pdomssql'=>'SQL Server (PDO)');
-if (isset($_REQUEST['SERVER_TYPE'])) $CORE_LOCAL->set('mDBMS',$_REQUEST['SERVER_TYPE'],True);
+if (isset($_REQUEST['SERVER_TYPE'])) $CORE_LOCAL->set('mDBMS',$_REQUEST['SERVER_TYPE']);
 foreach($db_opts as $name=>$label){
 	printf('<option %s value="%s">%s</option>',
 		($CORE_LOCAL->get('mDBMS')==$name?'selected':''),
 		$name,$label);
 }
-confsave('mDBMS',"'".$CORE_LOCAL->get('mDBMS')."'");
+InstallUtilities::paramSave('mDBMS',$CORE_LOCAL->get('mDBMS'));
 ?>
 </select></td></tr><tr><td>
 Server user name:</td><td>
 <?php
-if (isset($_REQUEST['SERVER_USER'])) $CORE_LOCAL->set('mUser',$_REQUEST['SERVER_USER'],True);
+if (isset($_REQUEST['SERVER_USER'])) $CORE_LOCAL->set('mUser',$_REQUEST['SERVER_USER']);
 printf("<input type=text name=SERVER_USER value=\"%s\" />",
 	$CORE_LOCAL->get('mUser'));
-confsave('mUser',"'".$CORE_LOCAL->get('mUser')."'");
+InstallUtilities::paramSave('mUser',$CORE_LOCAL->get('mUser'));
 ?>
 </td></tr><tr><td>
 Server password:</td><td>
 <?php
-if (isset($_REQUEST['SERVER_PASS'])) $CORE_LOCAL->set('mPass',$_REQUEST['SERVER_PASS'],True);
+if (isset($_REQUEST['SERVER_PASS'])) $CORE_LOCAL->set('mPass',$_REQUEST['SERVER_PASS']);
 printf("<input type=password name=SERVER_PASS value=\"%s\" />",
 	$CORE_LOCAL->get('mPass'));
-confsave('mPass',"'".$CORE_LOCAL->get('mPass')."'");
+InstallUtilities::paramSave('mPass',$CORE_LOCAL->get('mPass'));
 ?>
 </td></tr><tr><td>
 Server database name:</td><td>
 <?php
-if (isset($_REQUEST['SERVER_DB'])) $CORE_LOCAL->set('mDatabase',$_REQUEST['SERVER_DB'],True);
+if (isset($_REQUEST['SERVER_DB'])) $CORE_LOCAL->set('mDatabase',$_REQUEST['SERVER_DB']);
 printf("<input type=text name=SERVER_DB value=\"%s\" />",
 	$CORE_LOCAL->get('mDatabase'));
-confsave('mDatabase',"'".$CORE_LOCAL->get('mDatabase')."'");
+InstallUtilities::paramSave('mDatabase',$CORE_LOCAL->get('mDatabase'));
 ?>
 </td></tr><tr><td colspan=2>
 <div class="noteTxt">
 Testing server connection:
 <?php
-$sql = db_test_connect($CORE_LOCAL->get('mServer'),
+$sql = InstallUtilities::dbTestConnect($CORE_LOCAL->get('mServer'),
 		$CORE_LOCAL->get('mDBMS'),
 		$CORE_LOCAL->get('mDatabase'),
 		$CORE_LOCAL->get('mUser'),
@@ -401,73 +401,73 @@ function create_op_dbs($db,$type){
 	$name = $CORE_LOCAL->get('pDatabase');
 	$errors = array();
 	
-	create_if_needed($db, $type, $name, 'couponcodes', 'op', $errors);
+	InstallUtilities::createIfNeeded($db, $type, $name, 'couponcodes', 'op', $errors);
 	$chk = $db->query('SELECT Code FROM couponcodes', $name);
 	if (!$db->fetch_row($chk)){
-		load_sample_data($db,'couponcodes');
+		InstallUtilities::loadSampleData($db,'couponcodes');
 	}
 	else {
 		$db->end_query($chk);
 	}
 
-	create_if_needed($db, $type, $name, 'custdata', 'op', $errors);
+	InstallUtilities::createIfNeeded($db, $type, $name, 'custdata', 'op', $errors);
 
-	create_if_needed($db, $type, $name, 'memberCards', 'op', $errors);
+	InstallUtilities::createIfNeeded($db, $type, $name, 'memberCards', 'op', $errors);
 
-	create_if_needed($db, $type, $name, 'custPreferences', 'op', $errors);
+	InstallUtilities::createIfNeeded($db, $type, $name, 'custPreferences', 'op', $errors);
 
 	$cardsViewQ = "CREATE VIEW memberCardsView AS 
 		SELECT ".$db->concat("'".$CORE_LOCAL->get('memberUpcPrefix')."'",'c.CardNo','')." as upc, 
 		c.CardNo as card_no FROM custdata c";
 	if (!$db->table_exists('memberCardsView',$name)){
-		db_structure_modify($db,'memberCardsView',$cardsViewQ,$errors);
+		InstallUtilities::dbStructureModify($db,'memberCardsView',$cardsViewQ,$errors);
 	}
 	
-	create_if_needed($db, $type, $name, 'departments', 'op', $errors);
+	InstallUtilities::createIfNeeded($db, $type, $name, 'departments', 'op', $errors);
 
-	create_if_needed($db, $type, $name, 'employees', 'op', $errors);
+	InstallUtilities::createIfNeeded($db, $type, $name, 'employees', 'op', $errors);
 
-	create_if_needed($db, $type, $name, 'globalvalues', 'op', $errors);
+	InstallUtilities::createIfNeeded($db, $type, $name, 'globalvalues', 'op', $errors);
 	$chk = $db->query('SELECT CashierNo FROM globalvalues', $name);
 	if ($db->num_rows($chk) != 1){
 		$db->query('TRUNCATE TABLE globalvalues');
-		load_sample_data($db,'globalvalues');
+		InstallUtilities::loadSampleData($db,'globalvalues');
 	}
 
-	create_if_needed($db, $type, $name, 'drawerowner', 'op', $errors);
+	InstallUtilities::createIfNeeded($db, $type, $name, 'drawerowner', 'op', $errors);
 	$chk = $db->query('SELECT drawer_no FROM drawerowner', $name);
 	if ($db->num_rows($chk) == 0){
 		$db->query('INSERT INTO drawerowner (drawer_no) VALUES (1)', $name);
 		$db->query('INSERT INTO drawerowner (drawer_no) VALUES (2)', $name);
 	}
 
-	create_if_needed($db, $type, $name, 'products', 'op', $errors);
+	InstallUtilities::createIfNeeded($db, $type, $name, 'products', 'op', $errors);
 
-	create_if_needed($db, $type, $name, 'dateRestrict', 'op', $errors);
+	InstallUtilities::createIfNeeded($db, $type, $name, 'dateRestrict', 'op', $errors);
 
-	create_if_needed($db, $type, $name, 'tenders', 'op', $errors);
+	InstallUtilities::createIfNeeded($db, $type, $name, 'tenders', 'op', $errors);
 	$chk = $db->query('SELECT TenderID FROM tenders', $name);
 	if ($db->num_rows($chk) == 0){
-		load_sample_data($db,'tenders');
+		InstallUtilities::loadSampleData($db,'tenders');
 	}
 
-	create_if_needed($db, $type, $name, 'subdepts', 'op', $errors);
+	InstallUtilities::createIfNeeded($db, $type, $name, 'subdepts', 'op', $errors);
 
-	create_if_needed($db, $type, $name, 'customReceipt', 'op', $errors);
+	InstallUtilities::createIfNeeded($db, $type, $name, 'customReceipt', 'op', $errors);
 
-	create_if_needed($db, $type, $name, 'custReceiptMessage', 'op', $errors);
+	InstallUtilities::createIfNeeded($db, $type, $name, 'custReceiptMessage', 'op', $errors);
 
-	create_if_needed($db, $type, $name, 'disableCoupon', 'op', $errors);
+	InstallUtilities::createIfNeeded($db, $type, $name, 'disableCoupon', 'op', $errors);
 
-	create_if_needed($db, $type, $name, 'houseCoupons', 'op', $errors);
+	InstallUtilities::createIfNeeded($db, $type, $name, 'houseCoupons', 'op', $errors);
 
-	create_if_needed($db, $type, $name, 'houseVirtualCoupons', 'op', $errors);
+	InstallUtilities::createIfNeeded($db, $type, $name, 'houseVirtualCoupons', 'op', $errors);
 
-	create_if_needed($db, $type, $name, 'houseCouponItems', 'op', $errors);
+	InstallUtilities::createIfNeeded($db, $type, $name, 'houseCouponItems', 'op', $errors);
 
-	create_if_needed($db, $type, $name, 'memchargebalance', 'op', $errors);
+	InstallUtilities::createIfNeeded($db, $type, $name, 'memchargebalance', 'op', $errors);
 
-	create_if_needed($db, $type, $name, 'unpaid_ar_today', 'op', $errors);
+	InstallUtilities::createIfNeeded($db, $type, $name, 'unpaid_ar_today', 'op', $errors);
 
 	// Update lane_config structure if needed
 	if ($db->table_exists('lane_config', $name)){
@@ -475,7 +475,9 @@ function create_op_dbs($db,$type){
 		if (!isset($def['keycode']) || !isset($def['value']))
 			$db->query('DROP TABLE lane_config', $name);
 	}
-	create_if_needed($db, $type, $name, 'lane_config', 'op', $errors);
+	InstallUtilities::createIfNeeded($db, $type, $name, 'lane_config', 'op', $errors);
+
+	InstallUtilities::createIfNeeded($db, $type, $name, 'parameters', 'op', $errors);
 	
 	return $errors;
 }
@@ -485,43 +487,43 @@ function create_trans_dbs($db,$type){
 	$name = $CORE_LOCAL->get('tDatabase');
 	$errors = array();
 
-	create_if_needed($db, $type, $name, 'activities', 'trans', $errors);
+	InstallUtilities::createIfNeeded($db, $type, $name, 'activities', 'trans', $errors);
 
-	create_if_needed($db, $type, $name, 'alog', 'trans', $errors);
+	InstallUtilities::createIfNeeded($db, $type, $name, 'alog', 'trans', $errors);
 
-	create_if_needed($db, $type, $name, 'activitylog', 'trans', $errors);
+	InstallUtilities::createIfNeeded($db, $type, $name, 'activitylog', 'trans', $errors);
 
-	create_if_needed($db, $type, $name, 'activitytemplog', 'trans', $errors);
+	InstallUtilities::createIfNeeded($db, $type, $name, 'activitytemplog', 'trans', $errors);
 
-	create_if_needed($db, $type, $name, 'dtransactions', 'trans', $errors);
+	InstallUtilities::createIfNeeded($db, $type, $name, 'dtransactions', 'trans', $errors);
 
-	create_if_needed($db, $type, $name, 'localtrans', 'trans', $errors);
+	InstallUtilities::createIfNeeded($db, $type, $name, 'localtrans', 'trans', $errors);
 
-	create_if_needed($db, $type, $name, 'localtransarchive', 'trans', $errors);
+	InstallUtilities::createIfNeeded($db, $type, $name, 'localtransarchive', 'trans', $errors);
 
-	create_if_needed($db, $type, $name, 'localtrans_today', 'trans', $errors);
+	InstallUtilities::createIfNeeded($db, $type, $name, 'localtrans_today', 'trans', $errors);
 
-	create_if_needed($db, $type, $name, 'suspended', 'trans', $errors);
+	InstallUtilities::createIfNeeded($db, $type, $name, 'suspended', 'trans', $errors);
 
-	create_if_needed($db, $type, $name, 'localtemptrans', 'trans', $errors);
+	InstallUtilities::createIfNeeded($db, $type, $name, 'localtemptrans', 'trans', $errors);
 
-	create_if_needed($db, $type, $name, 'taxrates', 'trans', $errors);
+	InstallUtilities::createIfNeeded($db, $type, $name, 'taxrates', 'trans', $errors);
 
-	create_if_needed($db, $type, $name, 'localtranstoday', 'trans', $errors);
+	InstallUtilities::createIfNeeded($db, $type, $name, 'localtranstoday', 'trans', $errors);
 
-	create_if_needed($db, $type, $name, 'memdiscountadd', 'trans', $errors);
+	InstallUtilities::createIfNeeded($db, $type, $name, 'memdiscountadd', 'trans', $errors);
 
-	create_if_needed($db, $type, $name, 'memdiscountremove', 'trans', $errors);
+	InstallUtilities::createIfNeeded($db, $type, $name, 'memdiscountremove', 'trans', $errors);
 
-	create_if_needed($db, $type, $name, 'screendisplay', 'trans', $errors);
+	InstallUtilities::createIfNeeded($db, $type, $name, 'screendisplay', 'trans', $errors);
 
-	create_if_needed($db, $type, $name, 'staffdiscountadd', 'trans', $errors);
+	InstallUtilities::createIfNeeded($db, $type, $name, 'staffdiscountadd', 'trans', $errors);
 
-	create_if_needed($db, $type, $name, 'staffdiscountremove', 'trans', $errors);
+	InstallUtilities::createIfNeeded($db, $type, $name, 'staffdiscountremove', 'trans', $errors);
 
-	create_if_needed($db, $type, $name, 'suspendedtoday', 'trans', $errors);
+	InstallUtilities::createIfNeeded($db, $type, $name, 'suspendedtoday', 'trans', $errors);
 
-	create_if_needed($db, $type, $name, 'couponApplied', 'trans', $errors);
+	InstallUtilities::createIfNeeded($db, $type, $name, 'couponApplied', 'trans', $errors);
 
 	/* lttsummary, lttsubtotals, and subtotals
 	 * always get rebuilt to account for tax rate
@@ -529,7 +531,7 @@ function create_trans_dbs($db,$type){
 	include('buildLTTViews.php');
 	$errors = buildLTTViews($db,$type,$errors);
 
-	create_if_needed($db, $type, $name, 'taxView', 'trans', $errors);
+	InstallUtilities::createIfNeeded($db, $type, $name, 'taxView', 'trans', $errors);
 
 	$lttR = "CREATE view ltt_receipt as 
 		select
@@ -571,9 +573,9 @@ function create_trans_dbs($db,$type){
 			when tax = 0 and foodstamp <> 0
 				then 'F'
 			WHEN (tax > 1 and foodstamp <> 0)
-				THEN ".$db->concat('SUBSTR(t.description,0,1)',"'F'",'')."
+				THEN ".$db->concat('SUBSTR(t.description,1,1)',"'F'",'')."
 			WHEN (tax > 1 and foodstamp = 0)
-				THEN SUBSTR(t.description,0,1)
+				THEN SUBSTR(t.description,1,1)
 			when tax = 0 and foodstamp = 0
 				then '' 
 		end
@@ -658,20 +660,20 @@ function create_trans_dbs($db,$type){
 			AND trans_type <> 'L'
 			order by trans_id";
 	}
-	db_structure_modify($db,'ltt_receipt','DROP VIEW ltt_receipt',$errors);
+	InstallUtilities::dbStructureModify($db,'ltt_receipt','DROP VIEW ltt_receipt',$errors);
 	if(!$db->table_exists('ltt_receipt',$name)){
-		db_structure_modify($db,'ltt_receipt',$lttR,$errors);
+		InstallUtilities::dbStructureModify($db,'ltt_receipt',$lttR,$errors);
 	}
 
 	$rV = "CREATE view receipt as
 		select
 		case 
 			when trans_type = 'T'
-				then 	".$db->concat( "SUBSTR(".$db->concat('UPPER(TRIM(description))','space(44)','').", 0, 44)" 
+				then 	".$db->concat( "SUBSTR(".$db->concat('UPPER(TRIM(description))','space(44)','').", 1, 44)" 
 					, "right(".$db->concat( 'space(8)', 'FORMAT(-1 * total, 2)','').", 8)" 
 					, "right(".$db->concat( 'space(4)', 'status','').", 4)",'')."
 			when voided = 3 
-				then 	".$db->concat("SUBSTR(".$db->concat('description', 'space(30)','').", 0, 30)"
+				then 	".$db->concat("SUBSTR(".$db->concat('description', 'space(30)','').", 1, 30)"
 					, 'space(9)'
 					, "'TOTAL'"
 					, 'right('.$db->concat( 'space(8)', 'FORMAT(unitPrice, 2)','').', 8)','')."
@@ -682,14 +684,14 @@ function create_trans_dbs($db,$type){
 			when voided = 6
 				then 	description
 			when voided = 7 or voided = 17
-				then 	".$db->concat("SUBSTR(".$db->concat('description', 'space(30)','').", 0, 30)"
+				then 	".$db->concat("SUBSTR(".$db->concat('description', 'space(30)','').", 1, 30)"
 					, 'space(14)'
 					, 'right('.$db->concat( 'space(8)', 'FORMAT(unitPrice, 2)','').', 8)'
 					, 'right('.$db->concat( 'space(4)', 'status','').', 4)','')."
 			else
-				".$db->concat("SUBSTR(".$db->concat('description', 'space(30)','').", 0, 30)"
+				".$db->concat("SUBSTR(".$db->concat('description', 'space(30)','').", 1, 30)"
 				, "' '" 
-				, "SUBSTR(".$db->concat('comment', 'space(13)','').", 0, 13)"
+				, "SUBSTR(".$db->concat('comment', 'space(13)','').", 1, 13)"
 				, 'right('.$db->concat('space(8)', 'FORMAT(total, 2)','').', 8)'
 				, 'right('.$db->concat('space(4)', 'status','').', 4)','')."
 		end
@@ -740,7 +742,7 @@ function create_trans_dbs($db,$type){
 	}
 
 	if(!$db->table_exists('receipt',$name)){
-		db_structure_modify($db,'receipt',$rV,$errors);
+		InstallUtilities::dbStructureModify($db,'receipt',$rV,$errors);
 	}
 
 	$rpheader = "CREATE VIEW rp_receipt_header AS
@@ -786,7 +788,7 @@ function create_trans_dbs($db,$type){
 		group by register_no, emp_no, trans_no, card_no";
 	}
 	if(!$db->table_exists('rp_receipt_header',$name)){
-		db_structure_modify($db,'rp_receipt_header',$rpheader,$errors);
+		InstallUtilities::dbStructureModify($db,'rp_receipt_header',$rpheader,$errors);
 	}
 
 	$rplttR = "CREATE view rp_ltt_receipt as 
@@ -830,9 +832,9 @@ function create_trans_dbs($db,$type){
 			WHEN (tax = 1 and foodstamp = 0)
 				THEN 'T' 
 			WHEN (tax > 1 and foodstamp <> 0)
-				THEN ".$db->concat('SUBSTR(t.description,0,1)',"'F'",'')."
+				THEN ".$db->concat('SUBSTR(t.description,1,1)',"'F'",'')."
 			WHEN (tax > 1 and foodstamp = 0)
-				THEN SUBSTR(t.description,0,1)
+				THEN SUBSTR(t.description,1,1)
 			when tax = 0 and foodstamp <> 0
 				then 'F'
 			when tax = 0 and foodstamp = 0
@@ -911,9 +913,9 @@ function create_trans_dbs($db,$type){
 			AND trans_type <> 'L'
 			order by emp_no, trans_no, trans_id";
 	}
-	db_structure_modify($db,'rp_ltt_receipt','DROP VIEW rp_ltt_receipt',$errors);
+	InstallUtilities::dbStructureModify($db,'rp_ltt_receipt','DROP VIEW rp_ltt_receipt',$errors);
 	if(!$db->table_exists('rp_ltt_receipt',$name)){
-		db_structure_modify($db,'rp_ltt_receipt',$rplttR,$errors);
+		InstallUtilities::dbStructureModify($db,'rp_ltt_receipt',$rplttR,$errors);
 	}
 
 	$rprV = "CREATE view rp_receipt  as
@@ -923,11 +925,11 @@ function create_trans_dbs($db,$type){
 		trans_no,
 		case 
 			when trans_type = 'T'
-				then 	".$db->concat( "SUBSTR(".$db->concat('UPPER(TRIM(description))','space(44)','').", 0, 44)" 
+				then 	".$db->concat( "SUBSTR(".$db->concat('UPPER(TRIM(description))','space(44)','').", 1, 44)" 
 					, "right(".$db->concat( 'space(8)', 'FORMAT(-1 * total, 2)','').", 8)" 
 					, "right(".$db->concat( 'space(4)', 'status','').", 4)",'')."
 			when voided = 3 
-				then 	".$db->concat("SUBSTR(".$db->concat('description', 'space(30)','').", 0, 30)"
+				then 	".$db->concat("SUBSTR(".$db->concat('description', 'space(30)','').", 1, 30)"
 					, 'space(9)'
 					, "'TOTAL'"
 					, 'right('.$db->concat( 'space(8)', 'FORMAT(unitPrice, 2)','').', 8)','')."
@@ -938,14 +940,14 @@ function create_trans_dbs($db,$type){
 			when voided = 6
 				then 	description
 			when voided = 7 or voided = 17
-				then 	".$db->concat("SUBSTR(".$db->concat('description', 'space(30)','').", 0, 30)"
+				then 	".$db->concat("SUBSTR(".$db->concat('description', 'space(30)','').", 1, 30)"
 					, 'space(14)'
 					, 'right('.$db->concat( 'space(8)', 'FORMAT(unitPrice, 2)','').', 8)'
 					, 'right('.$db->concat( 'space(4)', 'status','').', 4)','')."
 			else
-				".$db->concat("SUBSTR(".$db->concat('description', 'space(30)','').", 0, 30)"
+				".$db->concat("SUBSTR(".$db->concat('description', 'space(30)','').", 1, 30)"
 				, "' '" 
-				, "SUBSTR(".$db->concat('comment', 'space(13)','').", 0, 13)"
+				, "SUBSTR(".$db->concat('comment', 'space(13)','').", 1, 13)"
 				, 'right('.$db->concat('space(8)', 'FORMAT(total, 2)','').', 8)'
 				, 'right('.$db->concat('space(4)', 'status','').', 4)','')."
 		end
@@ -995,22 +997,22 @@ function create_trans_dbs($db,$type){
 		$rprV = str_replace('FORMAT(','ROUND(',$rprV);
 	}
 	if(!$db->table_exists('rp_receipt',$name)){
-		db_structure_modify($db,'rp_receipt',$rprV,$errors);
+		InstallUtilities::dbStructureModify($db,'rp_receipt',$rprV,$errors);
 	}
 
-	create_if_needed($db, $type, $name, 'efsnetRequest', 'trans', $errors);
+	InstallUtilities::createIfNeeded($db, $type, $name, 'efsnetRequest', 'trans', $errors);
 
-	create_if_needed($db, $type, $name, 'efsnetRequestMod', 'trans', $errors);
+	InstallUtilities::createIfNeeded($db, $type, $name, 'efsnetRequestMod', 'trans', $errors);
 
-	create_if_needed($db, $type, $name, 'efsnetResponse', 'trans', $errors);
+	InstallUtilities::createIfNeeded($db, $type, $name, 'efsnetResponse', 'trans', $errors);
 
-	create_if_needed($db, $type, $name, 'efsnetTokens', 'trans', $errors);
+	InstallUtilities::createIfNeeded($db, $type, $name, 'efsnetTokens', 'trans', $errors);
 
-	create_if_needed($db, $type, $name, 'valutecRequest', 'trans', $errors);
+	InstallUtilities::createIfNeeded($db, $type, $name, 'valutecRequest', 'trans', $errors);
 
-	create_if_needed($db, $type, $name, 'valutecRequestMod', 'trans', $errors);
+	InstallUtilities::createIfNeeded($db, $type, $name, 'valutecRequestMod', 'trans', $errors);
 
-	create_if_needed($db, $type, $name, 'valutecResponse', 'trans', $errors);
+	InstallUtilities::createIfNeeded($db, $type, $name, 'valutecResponse', 'trans', $errors);
 
 	$ccV = "CREATE view ccReceiptView 
 		AS 
@@ -1087,7 +1089,7 @@ function create_trans_dbs($db,$type){
 		  (m.xResponseCode=0 or m.xResultMessage like '%APPROVE%')
 		  and m.mode='void'";
 	if(!$db->table_exists('ccReceiptView',$name)){
-		db_structure_modify($db,'ccReceiptView',$ccV,$errors);
+		InstallUtilities::dbStructureModify($db,'ccReceiptView',$ccV,$errors);
 	}
 
 	$gcV = "CREATE VIEW gcReceiptView
@@ -1147,7 +1149,7 @@ function create_trans_dbs($db,$type){
 		where m.validResponse=1 and (m.xAuthorized='true' 
 		or m.xAuthorized='Appro') and m.mode='void'";
 	if(!$db->table_exists('gcReceiptView',$name)){
-		db_structure_modify($db,'gcReceiptView',$gcV,$errors);
+		InstallUtilities::dbStructureModify($db,'gcReceiptView',$gcV,$errors);
 	}
 
 	$sigCaptureTable = "CREATE TABLE CapturedSignature (
@@ -1162,7 +1164,7 @@ function create_trans_dbs($db,$type){
 		$sigCaptureTable = str_replace("blob","image",$sigCaptureTable);
 	}
 	if (!$db->table_exists("CapturedSignature")){
-		db_structure_modify($db,'CapturedSignature',$sigCaptureTable,$errors);
+		InstallUtilities::dbStructureModify($db,'CapturedSignature',$sigCaptureTable,$errors);
 	}
 
 	$lttG = "CREATE  view ltt_grouped as
@@ -1287,9 +1289,9 @@ function create_trans_dbs($db,$type){
 			case when trans_status='d' or scale=1 then trans_id else scale end
 		having convert(money,sum(quantity*regprice-quantity*unitprice))<>0";
 	}
-	db_structure_modify($db,'ltt_grouped','DROP VIEW ltt_grouped',$errors);
+	InstallUtilities::dbStructureModify($db,'ltt_grouped','DROP VIEW ltt_grouped',$errors);
 	if(!$db->table_exists('ltt_grouped',$name)){
-		db_structure_modify($db,'ltt_grouped',$lttG,$errors);
+		InstallUtilities::dbStructureModify($db,'ltt_grouped',$lttG,$errors);
 	}
 
 
@@ -1333,9 +1335,9 @@ function create_trans_dbs($db,$type){
 		when tax = 1 and foodstamp = 0
 			then 'T' 
 		WHEN (tax > 1 and foodstamp <> 0)
-			THEN ".$db->concat('SUBSTR(t.description,0,1)',"'F'",'')."
+			THEN ".$db->concat('SUBSTR(t.description,1,1)',"'F'",'')."
 		WHEN (tax > 1 and foodstamp = 0)
-			THEN SUBSTR(t.description,0,1)
+			THEN SUBSTR(t.description,1,1)
 		when tax = 0 and foodstamp <> 0
 			then 'F'
 		when tax = 0 and foodstamp = 0
@@ -1454,9 +1456,9 @@ function create_trans_dbs($db,$type){
 		'' as upc,
 		'' as trans_subtype";
 	}
-	db_structure_modify($db,'ltt_receipt_reorder_g','DROP VIEW ltt_receipt_reorder_g',$errors);
+	InstallUtilities::dbStructureModify($db,'ltt_receipt_reorder_g','DROP VIEW ltt_receipt_reorder_g',$errors);
 	if(!$db->table_exists('ltt_receipt_reorder_g',$name)){
-		db_structure_modify($db,'ltt_receipt_reorder_g',$lttreorderG,$errors);
+		InstallUtilities::dbStructureModify($db,'ltt_receipt_reorder_g',$lttreorderG,$errors);
 	}
 
 	$reorderG = "CREATE   view receipt_reorder_g as
@@ -1466,9 +1468,9 @@ function create_trans_dbs($db,$type){
 				then 	
 					case when trans_subtype = 'CP' and upc<>'0'
 					then	".$db->concat(
-						"SUBSTR(".$db->concat('description','space(30)','').",0,30)",
+						"SUBSTR(".$db->concat('description','space(30)','').",1,30)",
 						"' '",
-						"SUBSTR(".$db->concat('comment','space(12)','').",0,12)",
+						"SUBSTR(".$db->concat('comment','space(12)','').",1,12)",
 						"right(".$db->concat('space(8)','CAST(total AS char)','').",8)",
 						"right(".$db->concat('space(4)','status','').",4)",'')." 
 					else 	".$db->concat( 
@@ -1478,7 +1480,7 @@ function create_trans_dbs($db,$type){
 					end 
 			when voided = 3 
 				then 	".$db->concat( 
-					"SUBSTR(".$db->concat('description','space(30)','').",0,30)",
+					"SUBSTR(".$db->concat('description','space(30)','').",1,30)",
 					"space(9)", 
 					"'TOTAL'", 
 					"right(".$db->concat('space(8)','CAST(unitPrice AS char)','').",8)",'')."
@@ -1490,7 +1492,7 @@ function create_trans_dbs($db,$type){
 				then 	description
 			when voided = 7 or voided = 17
 				then 	".$db->concat(
-					"SUBSTR(".$db->concat('description','space(30)','').",0,30)",
+					"SUBSTR(".$db->concat('description','space(30)','').",1,30)",
 					"space(14)", 
 					"right(".$db->concat('space(8)','CAST(unitPrice AS char)','').",8)",
 					"right(".$db->concat('space(4)','status','').",4)",'')." 
@@ -1498,9 +1500,9 @@ function create_trans_dbs($db,$type){
 				then 	description
 			else
 				".$db->concat(
-					"SUBSTR(".$db->concat('description','space(30)','').",0,30)",
+					"SUBSTR(".$db->concat('description','space(30)','').",1,30)",
 					"' '",
-					"SUBSTR(".$db->concat('comment','space(12)','').",0,12)",
+					"SUBSTR(".$db->concat('comment','space(12)','').",1,12)",
 					"right(".$db->concat('space(8)','CAST(total AS char)','').",8)",
 					"right(".$db->concat('space(4)','status','').",4)",'')." 
 			end as linetoprint,
@@ -1571,7 +1573,7 @@ function create_trans_dbs($db,$type){
 		$reorderG = str_replace('right(','str_right(',$reorderG);
 	}
 	if(!$db->table_exists('receipt_reorder_g',$name)){
-		db_structure_modify($db,'receipt_reorder_g',$reorderG,$errors);
+		InstallUtilities::dbStructureModify($db,'receipt_reorder_g',$reorderG,$errors);
 	}
 
 
@@ -1593,7 +1595,7 @@ function create_trans_dbs($db,$type){
 
 	select
 	".$db->concat(
-	"SUBSTR(".$db->concat("'** '","trim(CAST(percentDiscount AS char))","'% Discount Applied **'",'space(30)','').",0,30)",
+	"SUBSTR(".$db->concat("'** '","trim(CAST(percentDiscount AS char))","'% Discount Applied **'",'space(30)','').",1,30)",
 	"' '", 
 	"space(13)",
 	"right(".$db->concat('space(8)',"CAST((-1*transDiscount) AS char)",'').",8)",
@@ -1738,9 +1740,9 @@ function create_trans_dbs($db,$type){
 	elseif($type == 'pdolite'){
 		$unionsG = str_replace('right(','str_right(',$unionsG);
 	}
-	db_structure_modify($db,'receipt_reorder_unions_g','DROP VIEW receipt_reorder_unions_g',$errors);
+	InstallUtilities::dbStructureModify($db,'receipt_reorder_unions_g','DROP VIEW receipt_reorder_unions_g',$errors);
 	if(!$db->table_exists('receipt_reorder_unions_g',$name)){
-		db_structure_modify($db,'receipt_reorder_unions_g',$unionsG,$errors);
+		InstallUtilities::dbStructureModify($db,'receipt_reorder_unions_g',$unionsG,$errors);
 	}
 
 	$rplttG = "CREATE     view rp_ltt_grouped as
@@ -1877,9 +1879,9 @@ function create_trans_dbs($db,$type){
 			case when trans_status='d' or scale=1 then trans_id else scale end
 		having convert(money,sum(quantity*regprice-quantity*unitprice))<>0";
 	}	
-	db_structure_modify($db,'rp_ltt_grouped','DROP VIEW rp_ltt_grouped',$errors);
+	InstallUtilities::dbStructureModify($db,'rp_ltt_grouped','DROP VIEW rp_ltt_grouped',$errors);
 	if(!$db->table_exists('rp_ltt_grouped',$name)){
-		db_structure_modify($db,'rp_ltt_grouped',$rplttG,$errors);
+		InstallUtilities::dbStructureModify($db,'rp_ltt_grouped',$rplttG,$errors);
 	}
 
 	$rpreorderG = "CREATE    view rp_ltt_receipt_reorder_g as
@@ -1921,9 +1923,9 @@ function create_trans_dbs($db,$type){
 			WHEN (tax = 1 and foodstamp = 0)
 				THEN 'T' 
 			WHEN (tax > 1 and foodstamp <> 0)
-				THEN ".$db->concat('SUBSTR(t.description,0,1)',"'F'",'')."
+				THEN ".$db->concat('SUBSTR(t.description,1,1)',"'F'",'')."
 			WHEN (tax > 1 and foodstamp = 0)
-				THEN SUBSTR(t.description,0,1)
+				THEN SUBSTR(t.description,1,1)
 			when tax = 0 and foodstamp <> 0
 				then 'F'
 			when tax = 0 and foodstamp = 0
@@ -2038,9 +2040,9 @@ function create_trans_dbs($db,$type){
 		'' as upc,
 		'' as trans_subtype";
 	}	
-	db_structure_modify($db,'rp_ltt_receipt_reorder_g','DROP VIEW rp_ltt_receipt_reorder_g',$errors);
+	InstallUtilities::dbStructureModify($db,'rp_ltt_receipt_reorder_g','DROP VIEW rp_ltt_receipt_reorder_g',$errors);
 	if(!$db->table_exists("rp_ltt_receipt_reorder_g",$name)){
-		db_structure_modify($db,'rp_ltt_receipt_reorder_g',$rpreorderG,$errors);
+		InstallUtilities::dbStructureModify($db,'rp_ltt_receipt_reorder_g',$rpreorderG,$errors);
 	}
 	
 	$rpG = "CREATE    view rp_receipt_reorder_g as
@@ -2051,9 +2053,9 @@ function create_trans_dbs($db,$type){
 				then 	
 					case when trans_subtype = 'CP' and upc<>'0'
 					then	".$db->concat(
-						"SUBSTR(".$db->concat('description','space(30)','').",0,30)",
+						"SUBSTR(".$db->concat('description','space(30)','').",1,30)",
 						"' '",
-						"SUBSTR(".$db->concat('comment','space(12)','').",0,12)",
+						"SUBSTR(".$db->concat('comment','space(12)','').",1,12)",
 						"right(".$db->concat('space(8)','CAST(total AS char)','').",8)",
 						"right(".$db->concat('space(4)','status','').",4)",'')." 
 					else 	".$db->concat( 
@@ -2063,7 +2065,7 @@ function create_trans_dbs($db,$type){
 					end 
 			when voided = 3 
 				then 	".$db->concat( 
-					"SUBSTR(".$db->concat('description','space(30)','').",0,30)",
+					"SUBSTR(".$db->concat('description','space(30)','').",1,30)",
 					"space(9)", 
 					"'TOTAL'", 
 					"right(".$db->concat('space(8)','CAST(unitPrice AS char)','').",8)",'')."
@@ -2075,7 +2077,7 @@ function create_trans_dbs($db,$type){
 				then 	description
 			when voided = 7 or voided = 17
 				then 	".$db->concat(
-					"SUBSTR(".$db->concat('description','space(30)','').",0,30)",
+					"SUBSTR(".$db->concat('description','space(30)','').",1,30)",
 					"space(14)", 
 					"right(".$db->concat('space(8)','CAST(unitPrice AS char)','').",8)",
 					"right(".$db->concat('space(4)','status','').",4)",'')." 
@@ -2083,9 +2085,9 @@ function create_trans_dbs($db,$type){
 				then 	description
 			else
 				".$db->concat(
-					"SUBSTR(".$db->concat('description','space(30)','').",0,30)",
+					"SUBSTR(".$db->concat('description','space(30)','').",1,30)",
 					"' '",
-					"SUBSTR(".$db->concat('comment','space(12)','').",0,12)",
+					"SUBSTR(".$db->concat('comment','space(12)','').",1,12)",
 					"right(".$db->concat('space(8)','CAST(total AS char)','').",8)",
 					"right(".$db->concat('space(4)','status','').",4)",'')." 
 		end
@@ -2166,7 +2168,7 @@ function create_trans_dbs($db,$type){
 		$rpG = str_replace('right(','str_right(',$rpG);
 	}
 	if(!$db->table_exists('rp_receipt_reorder_g',$name)){
-		db_structure_modify($db,'rp_receipt_reorder_g',$rpG,$errors);
+		InstallUtilities::dbStructureModify($db,'rp_receipt_reorder_g',$rpG,$errors);
 	}
 
 	$rpunionsG = "CREATE     view rp_receipt_reorder_unions_g as
@@ -2190,7 +2192,7 @@ function create_trans_dbs($db,$type){
 
 		select
 		".$db->concat(
-		"SUBSTR(".$db->concat("'** '","trim(CAST(percentDiscount AS char))","'% Discount Applied **'",'space(30)','').",0,30)",
+		"SUBSTR(".$db->concat("'** '","trim(CAST(percentDiscount AS char))","'% Discount Applied **'",'space(30)','').",1,30)",
 		"' '", 
 		"space(13)",
 		"right(".$db->concat('space(8)',"CAST((-1*transDiscount) AS char)",'').",8)",
@@ -2364,7 +2366,7 @@ function create_trans_dbs($db,$type){
 		$rpunionsG = str_replace('right(','str_right(',$rpunionsG);
 	}
 	if(!$db->table_exists('rp_receipt_reorder_unions_g',$name)){
-		db_structure_modify($db,'rp_receipt_reorder_unions_g',$rpunionsG,$errors);
+		InstallUtilities::dbStructureModify($db,'rp_receipt_reorder_unions_g',$rpunionsG,$errors);
 	}
 
 	return $errors;
@@ -2454,12 +2456,12 @@ function create_min_server($db,$type){
 	}
 	if (!$db->table_exists("dtransactions",$name)){
 		$db->query($dtransQ,$name);
-		db_structure_modify($db,'dtransactions',$dtransQ,$errors);
+		InstallUtilities::dbStructureModify($db,'dtransactions',$dtransQ,$errors);
 	}
 
 	$susQ = str_replace("dtransactions","suspended",$dtransQ);
 	if(!$db->table_exists("suspended",$name)){
-		db_structure_modify($db,'suspended',$susQ,$errors);
+		InstallUtilities::dbStructureModify($db,'suspended',$susQ,$errors);
 	}
 
 	$dlogQ = "CREATE VIEW dlog AS
@@ -2495,7 +2497,7 @@ function create_min_server($db,$type){
 		WHERE trans_status NOT IN ('D','X','Z')
 		AND emp_no <> 9999 and register_no <> 99";
 	if(!$db->table_exists("dlog",$name)){
-		$errors = db_structure_modify($db,'dlog',$dlogQ,$errors);
+		$errors = InstallUtilities::dbStructureModify($db,'dlog',$dlogQ,$errors);
 	}
 
 	
@@ -2512,14 +2514,14 @@ function create_min_server($db,$type){
 		$alogQ = str_replace("`","",$alogQ);
 	}
 	if(!$db->table_exists("alog",$name)){
-		db_structure_modify($db,'alog',$alogQ,$errors);
+		InstallUtilities::dbStructureModify($db,'alog',$alogQ,$errors);
 	}
 
 	$susToday = "CREATE VIEW suspendedtoday AS
 		SELECT * FROM suspended WHERE "
 		.$db->datediff($db->now(),'datetime')." = 0";
 	if (!$db->table_exists("suspendedtoday",$name)){
-		db_structure_modify($db,'suspendedtoday',$susToday,$errors);
+		InstallUtilities::dbStructureModify($db,'suspendedtoday',$susToday,$errors);
 	}
 
 	$efsrq = "CREATE TABLE efsnetRequest (
@@ -2543,7 +2545,7 @@ function create_min_server($db,$type){
 		sentTr2 tinyint 
 		)";
 	if(!$db->table_exists('efsnetRequest',$name)){
-		db_structure_modify($db,'efsnetRequest',$efsrq,$errors);
+		InstallUtilities::dbStructureModify($db,'efsnetRequest',$efsrq,$errors);
 	}
 
 	$efsrp = "CREATE TABLE efsnetResponse (
@@ -2565,7 +2567,7 @@ function create_min_server($db,$type){
 		xApprovalNumber varchar (20)
 		)";
 	if(!$db->table_exists('efsnetResponse',$name)){
-		db_structure_modify($db,'efsnetResponse',$efsrp,$errors);
+		InstallUtilities::dbStructureModify($db,'efsnetResponse',$efsrp,$errors);
 	}
 
 	$efsrqm = "CREATE TABLE efsnetRequestMod (
@@ -2589,7 +2591,7 @@ function create_min_server($db,$type){
 		xResultMessage varchar(100)
 		)";
 	if(!$db->table_exists('efsnetRequestMod',$name)){
-		db_structure_modify($db,'efsnetRequestMod',$efsrqm,$errors);
+		InstallUtilities::dbStructureModify($db,'efsnetRequestMod',$efsrqm,$errors);
 	}
 
 	$ttG = "CREATE view TenderTapeGeneric
@@ -2612,11 +2614,11 @@ function create_min_server($db,$type){
 		where datediff(tdate, curdate()) = 0
 		and trans_subtype not in ('0','')";
 	if (!$db->table_exists("TenderTapeGeneric",$name)){
-		db_structure_modify($db,'TenderTapeGeneric',$ttG,$errors);
+		InstallUtilities::dbStructureModify($db,'TenderTapeGeneric',$ttG,$errors);
 	}
 
 	// re-use definition to create lane_config on server
-	create_if_needed($db, $type, $name, 'lane_config', 'op', $errors);
+	InstallUtilities::createIfNeeded($db, $type, $name, 'lane_config', 'op', $errors);
 
 	return $errors;
 }

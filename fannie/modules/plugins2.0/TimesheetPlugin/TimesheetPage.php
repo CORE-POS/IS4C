@@ -24,7 +24,7 @@ class TimesheetPage extends FanniePage {
 		$max = ($_GET['max']) ? 10 : 10;  // Max number of entries.
 
 		if (!$this->current_user && $_GET['login'] == 1 ){
-			$this->login_redirect();
+			$this->loginRedirect();
 			return False;
 		}
 

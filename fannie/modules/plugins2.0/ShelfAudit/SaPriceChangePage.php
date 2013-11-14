@@ -69,7 +69,7 @@ class SaPriceChangePage extends FannieRESTfulPage {
 		$prod->upc(str_pad($this->upc,13,'0',STR_PAD_LEFT));
 		$prod->normal_price($this->price);
 		$prod->save();
-		$prod->push_to_lanes();
+		$prod->pushToLanes();
 
 		$this->id = $this->upc;
 		return $this->get_id_handler();
@@ -99,14 +99,14 @@ class SaPriceChangePage extends FannieRESTfulPage {
 		if ($dbc->table_exists('batchListTest')){
 			$pendQ = $dbc->prepare_statement('SELECT salePrice FROM batchListTest as l
 							LEFT JOIN batchTest AS b ON l.batchID=b.batchID WHERE
-							b.discounttype=0 AND l.upc=? ORDER BY l.batchID DESC');
+							b.discountType=0 AND l.upc=? ORDER BY l.batchID DESC');
 			$pendR = $dbc->exec_statement($pendQ, array($upc));
 		}
 
 		if ($pendR === 0 || $dbc->num_rows($pendR) == 0){
 			$pendQ = $dbc->prepare_statement('SELECT salePrice FROM batchList as l
 							LEFT JOIN batches AS b ON l.batchID=b.batchID WHERE
-							b.discounttype=0 AND l.upc=? ORDER BY l.batchID DESC');
+							b.discountType=0 AND l.upc=? ORDER BY l.batchID DESC');
 			$pendR = $dbc->exec_statement($pendQ, array($upc));
 		}
 

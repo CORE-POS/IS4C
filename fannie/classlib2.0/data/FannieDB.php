@@ -29,46 +29,51 @@
   instance of SQLManager.
 */
 
-class FannieDB {
+class FannieDB 
+{
 
-	private static $db = null;
+    private static $db = null;
 
-	private function __construct(){}
+    private function __construct(){}
 
-	/**
-	  Get a database connection
-	  @param $db_name the database name
-	  @return A connected SQLManager instance
-	*/
-	public static function get($db_name){
-		if (self::$db == null){
-			self::new_db($db_name);
-		}
-		elseif (!isset(self::$db->connections[$db_name]))
-			self::add_db($db_name);
+    /**
+      Get a database connection
+      @param $db_name the database name
+      @return A connected SQLManager instance
+    */
+    public static function get($db_name)
+    {
+        if (self::$db == null) {
+            self::newDB($db_name);
+        } elseif (!isset(self::$db->connections[$db_name])) {
+            self::addDB($db_name);
+        }
 
-		self::$db->default_db = $db_name;
-		self::$db->query('use '.$db_name);
-		return self::$db;
-	}
+        self::$db->default_db = $db_name;
+        self::$db->query('use '.$db_name);
+        return self::$db;
+    }
 
-	private static function new_db($db_name){
-		global $FANNIE_ROOT, $FANNIE_SERVER, $FANNIE_SERVER_DBMS,
-			$FANNIE_SERVER_USER, $FANNIE_SERVER_PW;
-		if (!class_exists('SQLManager'))
-			include($FANNIE_ROOT.'src/SQLManager.php');
-		self::$db = new SQLManager($FANNIE_SERVER,$FANNIE_SERVER_DBMS,
-			$db_name, $FANNIE_SERVER_USER, $FANNIE_SERVER_PW);
-	}
+    private static function newDB($db_name)
+    {
+        global $FANNIE_ROOT, $FANNIE_SERVER, $FANNIE_SERVER_DBMS,
+            $FANNIE_SERVER_USER, $FANNIE_SERVER_PW;
+        if (!class_exists('SQLManager')) {
+            include($FANNIE_ROOT.'src/SQLManager.php');
+        }
+        self::$db = new SQLManager($FANNIE_SERVER,$FANNIE_SERVER_DBMS,
+            $db_name, $FANNIE_SERVER_USER, $FANNIE_SERVER_PW);
+    }
 
-	private static function add_db($db_name){
-		global $FANNIE_ROOT, $FANNIE_SERVER, $FANNIE_SERVER_DBMS,
-			$FANNIE_SERVER_USER, $FANNIE_SERVER_PW;
-		if (!class_exists('SQLManager'))
-			include($FANNIE_ROOT.'src/SQLManager.php');
-		self::$db->add_connection($FANNIE_SERVER,$FANNIE_SERVER_DBMS,
-			$db_name, $FANNIE_SERVER_USER, $FANNIE_SERVER_PW);
-	}
+    private static function addDB($db_name)
+    {
+        global $FANNIE_ROOT, $FANNIE_SERVER, $FANNIE_SERVER_DBMS,
+            $FANNIE_SERVER_USER, $FANNIE_SERVER_PW;
+        if (!class_exists('SQLManager')) {
+            include($FANNIE_ROOT.'src/SQLManager.php');
+        }
+        self::$db->add_connection($FANNIE_SERVER,$FANNIE_SERVER_DBMS,
+            $db_name, $FANNIE_SERVER_USER, $FANNIE_SERVER_PW);
+    }
 }
 
-?>

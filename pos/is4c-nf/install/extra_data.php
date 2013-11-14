@@ -1,8 +1,8 @@
 <?php
 include(realpath(dirname(__FILE__).'/../lib/AutoLoader.php'));
-AutoLoader::LoadMap();
+AutoLoader::loadMap();
 include(realpath(dirname(__FILE__).'/../ini.php'));
-include('util.php');
+include('InstallUtilities.php');
 ?>
 <html>
 <head>
@@ -30,25 +30,25 @@ $db = new SQLManager($CORE_LOCAL->get('localhost'),
 if (isset($_REQUEST['employees'])){
 	echo "Loading employees";
 	$db->query("TRUNCATE TABLE employees");
-	load_sample_data($db,'employees');	
+	InstallUtilities::load_sample_data($db,'employees');	
 }
 elseif(isset($_REQUEST['custdata'])){
 	echo "Loading custdata";
 	$db->query("TRUNCATE TABLE custdata");
-	load_sample_data($db,'custdata');
+	InstallUtilities::load_sample_data($db,'custdata');
 }
 elseif(isset($_REQUEST['products'])){
 	echo "Loading products";
 	$db->query("TRUNCATE TABLE products");
-	load_sample_data($db,'products');
+	InstallUtilities::load_sample_data($db,'products');
 }
 elseif(isset($_REQUEST['depts'])){
 	echo "Loading departments";
 	$db->query("TRUNCATE TABLE departments");
-	load_sample_data($db,'departments');
+	InstallUtilities::load_sample_data($db,'departments');
 	echo "<br />Loading subdepts";
 	$db->query("TRUNCATE TABLE subdepts");
-	load_sample_data($db,'subdepts');
+	InstallUtilities::load_sample_data($db,'subdepts');
 }
 ?>
 </b></div>

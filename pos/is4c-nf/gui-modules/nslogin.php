@@ -48,7 +48,7 @@ class nslogin extends NoInputPage {
 				$this->change_page($this->page_url."gui-modules/pos2.php");
 				return False;
 			}
-			elseif (Authenticate::ns_check_password($passwd)){
+			elseif (Authenticate::nsCheckPassword($passwd)){
 				$this->change_page($this->page_url."gui-modules/pos2.php");
 				return False;
 			}
@@ -92,6 +92,7 @@ class nslogin extends NoInputPage {
 
 }
 
-new nslogin();
+if (basename(__FILE__) == basename($_SERVER['PHP_SELF']))
+	new nslogin();
 
 ?>

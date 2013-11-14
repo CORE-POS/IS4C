@@ -21,7 +21,9 @@
 
 *********************************************************************************/
 
-if (!class_exists("LocalStorage")) include_once(realpath(dirname(__FILE__).'/LocalStorage.php'));
+if (!class_exists("LocalStorage")) {
+    include_once(realpath(dirname(__FILE__).'/LocalStorage.php'));
+}
 
 /**
   @class SessionStorage
@@ -33,25 +35,39 @@ if (!class_exists("LocalStorage")) include_once(realpath(dirname(__FILE__).'/Loc
   needed but performance is better if
   session.auto_start is enabled in php.ini.
 */
-class SessionStorage extends LocalStorage {
-	function SessionStorage(){
-		if(ini_get('session.auto_start')==0 && !headers_sent())
-                        @session_start();
-	}
+class SessionStorage extends LocalStorage 
+{
+    public function SessionStorage(){
+        if(ini_get('session.auto_start')==0 && !headers_sent()) {
+            @session_start();
+        }
+    }
 
-	function get($key){
-		if ($this->is_immutable($key)) return $this->immutables[$key];
-		if (!isset($_SESSION["$key"])) return "";
-		return $_SESSION["$key"];
-	}
+    public function get($key)
+    {
+        if ($this->isImmutable($key)) {
+            return $this->immutables[$key];
+        }
+        if (!isset($_SESSION["$key"])) {
+            return "";
+        }
 
-	function set($key,$val,$immutable=False){
-		if ($immutable)
-			$this->immutable_set($key,$val);
-		else
-			$_SESSION["$key"] = $val;
-		$this->debug($key,$val);
-	}
+        return $_SESSION["$key"];
+    }
+
+    public function set($key,$val,$immutable=false)
+    {
+        if ($immutable) {
+            $this->immutableSet($key,$val);
+        } else {
+            // for consistency; same key should not
+            // be used simultaneously
+            if ($this->isImmutable($key)) {
+                unset($this->immutables[$key]);
+            }
+            $_SESSION["$key"] = $val;
+        }
+        $this->debug($key,$val);
+    }
 }
 
-?>

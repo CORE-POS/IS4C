@@ -24,112 +24,127 @@
 /**
   @class ProductUserModel
 */
-class ProductUserModel extends BasicModel {
+class ProductUserModel extends BasicModel 
+{
 
-	protected $name = "productUser";
+    protected $name = "productUser";
 
-	protected $columns = array(
-	'upc' => array('type'=>'VARCHAR(13)', 'primary_key'=>True),
-	'description' => array('type'=>'VARCHAR(255)'),
-	'brand' => array('type'=>'VARCHAR(255)'),
-	'sizing' => array('type'=>'VARCHAR(255)'),
-	'photo' => array('type'=>'VARCHAR(255)'),
-	'long_text' => array('type'=>'TEXT'),
-	'enableOnline' => array('type'=>'TINYINT')
-	);
+    protected $columns = array(
+    'upc' => array('type'=>'VARCHAR(13)', 'primary_key'=>True),
+    'description' => array('type'=>'VARCHAR(255)'),
+    'brand' => array('type'=>'VARCHAR(255)'),
+    'sizing' => array('type'=>'VARCHAR(255)'),
+    'photo' => array('type'=>'VARCHAR(255)'),
+    'long_text' => array('type'=>'TEXT'),
+    'enableOnline' => array('type'=>'TINYINT')
+    );
 
-	/* START ACCESSOR FUNCTIONS */
+    /* START ACCESSOR FUNCTIONS */
 
-	public function upc(){
-		if(func_num_args() == 0){
-			if(isset($this->instance["upc"]))
-				return $this->instance["upc"];
-			elseif(isset($this->columns["upc"]["default"]))
-				return $this->columns["upc"]["default"];
-			else return null;
-		}
-		else{
-			$this->instance["upc"] = func_get_arg(0);
-		}
-	}
+    public function upc()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["upc"])) {
+                return $this->instance["upc"];
+            } elseif(isset($this->columns["upc"]["default"])) {
+                return $this->columns["upc"]["default"];
+            } else {
+                return null;
+            }
+        } else {
+            $this->instance["upc"] = func_get_arg(0);
+        }
+    }
 
-	public function description(){
-		if(func_num_args() == 0){
-			if(isset($this->instance["description"]))
-				return $this->instance["description"];
-			elseif(isset($this->columns["description"]["default"]))
-				return $this->columns["description"]["default"];
-			else return null;
-		}
-		else{
-			$this->instance["description"] = func_get_arg(0);
-		}
-	}
+    public function description()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["description"])) {
+                return $this->instance["description"];
+            } elseif(isset($this->columns["description"]["default"])) {
+                return $this->columns["description"]["default"];
+            } else {
+                return null;
+            }
+        } else {
+            $this->instance["description"] = func_get_arg(0);
+        }
+    }
 
-	public function brand(){
-		if(func_num_args() == 0){
-			if(isset($this->instance["brand"]))
-				return $this->instance["brand"];
-			elseif(isset($this->columns["brand"]["default"]))
-				return $this->columns["brand"]["default"];
-			else return null;
-		}
-		else{
-			$this->instance["brand"] = func_get_arg(0);
-		}
-	}
+    public function brand()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["brand"])) {
+                return $this->instance["brand"];
+            } elseif(isset($this->columns["brand"]["default"])) {
+                return $this->columns["brand"]["default"];
+            } else {
+                return null;
+            }
+        } else {
+            $this->instance["brand"] = func_get_arg(0);
+        }
+    }
 
-	public function sizing(){
-		if(func_num_args() == 0){
-			if(isset($this->instance["sizing"]))
-				return $this->instance["sizing"];
-			elseif(isset($this->columns["sizing"]["default"]))
-				return $this->columns["sizing"]["default"];
-			else return null;
-		}
-		else{
-			$this->instance["sizing"] = func_get_arg(0);
-		}
-	}
+    public function sizing()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["sizing"])) {
+                return $this->instance["sizing"];
+            } elseif(isset($this->columns["sizing"]["default"])) {
+                return $this->columns["sizing"]["default"];
+            } else {
+                return null;
+            }
+        } else {
+            $this->instance["sizing"] = func_get_arg(0);
+        }
+    }
 
-	public function photo(){
-		if(func_num_args() == 0){
-			if(isset($this->instance["photo"]))
-				return $this->instance["photo"];
-			elseif(isset($this->columns["photo"]["default"]))
-				return $this->columns["photo"]["default"];
-			else return null;
-		}
-		else{
-			$this->instance["photo"] = func_get_arg(0);
-		}
-	}
+    public function photo()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["photo"])) {
+                return $this->instance["photo"];
+            } elseif(isset($this->columns["photo"]["default"])) {
+                return $this->columns["photo"]["default"];
+            } else {
+                return null;
+            }
+        } else {
+            $this->instance["photo"] = func_get_arg(0);
+        }
+    }
 
-	public function long_text(){
-		if(func_num_args() == 0){
-			if(isset($this->instance["long_text"]))
-				return $this->instance["long_text"];
-			elseif(isset($this->columns["long_text"]["default"]))
-				return $this->columns["long_text"]["default"];
-			else return null;
-		}
-		else{
-			$this->instance["long_text"] = func_get_arg(0);
-		}
-	}
+    public function long_text()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["long_text"])) {
+                return $this->instance["long_text"];
+            } elseif(isset($this->columns["long_text"]["default"])) {
+                return $this->columns["long_text"]["default"];
+            } else {
+                return null;
+            }
+        } else {
+            $this->instance["long_text"] = func_get_arg(0);
+        }
+    }
 
-	public function enableOnline(){
-		if(func_num_args() == 0){
-			if(isset($this->instance["enableOnline"]))
-				return $this->instance["enableOnline"];
-			elseif(isset($this->columns["enableOnline"]["default"]))
-				return $this->columns["enableOnline"]["default"];
-			else return null;
-		}
-		else{
-			$this->instance["enableOnline"] = func_get_arg(0);
-		}
-	}
-	/* END ACCESSOR FUNCTIONS */
+    public function enableOnline()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["enableOnline"])) {
+                return $this->instance["enableOnline"];
+            } elseif(isset($this->columns["enableOnline"]["default"])) {
+                return $this->columns["enableOnline"]["default"];
+            } else {
+                return null;
+            }
+        } else {
+            $this->instance["enableOnline"] = func_get_arg(0);
+        }
+    }
+    /* END ACCESSOR FUNCTIONS */
 }
-?>
+
