@@ -274,7 +274,7 @@ class BasicModel
       @param $sort array of columns to sort by
       @return an array of controller objects
     */
-    public function find($sort='')
+    public function find($sort='', $reverse=false)
     {
         if (!is_array($sort)) {
             $sort = array($sort);
@@ -301,8 +301,14 @@ class BasicModel
 
         $order_by = '';
         foreach($sort as $name) {
-            if (!isset($this->columns[$name])) continue;
-            $order_by .= $this->connection->identifier_escape($name).',';
+            if (!isset($this->columns[$name])) {
+                continue;
+            }
+            $order_by .= $this->connection->identifier_escape($name);
+            if ($reverse) {
+                $order_by .= ' DESC';
+            }
+            $order_by .= ',';
         }
         if ($order_by !== '') {
             $order_by = substr($order_by,0,strlen($order_by)-1);
