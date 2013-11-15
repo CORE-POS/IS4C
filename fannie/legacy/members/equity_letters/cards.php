@@ -6,13 +6,15 @@ if (!class_exists("SQLManager")) require_once($FANNIE_ROOT."src/SQLManager.php")
 include('../../db.php');
 
 $cards = "(";
+$args = array();
 foreach($_POST["cardno"] as $c){
-	$cards .= $c.",";
+	$cards .= "?,";
+    $args[] = $c;
 }
 $cards = rtrim($cards,",");
 $cards .= ")";
 
-$selAddQ = "SELECT m.card_no,c.firstname,c.lastname,
+$selAddQ = $sql->prepare("SELECT m.card_no,c.firstname,c.lastname,
 		m.street,'',m.city,m.state,
 		m.zip,c.personnum,d.end_date,n.payments
 		FROM meminfo AS m LEFT JOIN
@@ -22,8 +24,8 @@ $selAddQ = "SELECT m.card_no,c.firstname,c.lastname,
 		LEFT JOIN memDates AS d ON 
 		c.cardno=d.card_no
 		WHERE cardno IN $cards
-		ORDER BY m.card_no,c.personnum"; 
-$selAddR = $sql->query($selAddQ);
+		ORDER BY m.card_no,c.personnum"); 
+$selAddR = $sql->execute($selAddQ, $args);
 
 $today = date("F j, Y");
 
