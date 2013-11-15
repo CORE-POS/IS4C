@@ -35,7 +35,7 @@ class StoreCreditIssuedReceiptMessage extends ReceiptMessage{
 		if ($val <= 0) return '';
         
         $slip = '';
-        if ($reprint || $CORE_LOCAL->get('autoReprint') == 1) {
+        if ($reprint || $CORE_LOCAL->get('autoReprint') == 0) {
 
             $slip .= ReceiptLib::centerString("................................................")."\n\n";
             $slip .= ReceiptLib::centerString("( C U S T O M E R   C O P Y )")."\n";
