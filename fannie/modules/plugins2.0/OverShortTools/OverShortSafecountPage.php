@@ -151,7 +151,7 @@ class OverShortSafecountPage extends FanniePage {
 			if ($d == 'Checks' || $d == "100.00" || $d == "50.00" || $d == "20.00" || $d == "Junk") 
 				$ret .= "<td>&nbsp;</td>";
 			else{
-				$ret .= "<td><input size=4 type=text id=changeOrder$d value=".$holding['changeOrder'][$d];
+				$ret .= "<td><input size=4 type=text id=\"changeOrder$d\" value=".$holding['changeOrder'][$d];
 				$ret .= " onchange=\"updateChangeOrder('$d');\" /></td>";
 				$sum += $holding['changeOrder'][$d];
 			}
