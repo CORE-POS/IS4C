@@ -42,8 +42,8 @@ function mainDisplay($date,$checkForSave=True){
 	
 	$FROM_SAVED = False;
 	if ($checkForSave){
-		$checkQ = "select * from dailyJournal where datediff(dd,tdate,'$date') = 0";
-		$checkR = $sql->query($checkQ);
+		$checkQ = $sql->prepare("select * from dailyJournal where datediff(dd,tdate,?) = 0");
+		$checkR = $sql->execute($checkQ, array($date));
 		if ($sql->num_rows($checkR) > 0) $FROM_SAVED = True;
 	}
 
@@ -62,16 +62,17 @@ function mainDisplay($date,$checkForSave=True){
 	
 	$tenderQ = "select t.tenderName,-sum(d.total) as total 
 		from $dlog as d, Tenders as t
-		where datediff(dd,'$date',d.tDate) = 0
+		where datediff(dd,?,d.tDate) = 0
 		and d.trans_status <> 'X'
 		and d.trans_subtype = t.tenderCode
 		group by t.tenderName";
 	if ($FROM_SAVED){
 		$tenderQ = "select sub_type,value from dailyJournal
-			    where datediff(dd,tdate,'$date') = 0 and
+			    where datediff(dd,tdate,?) = 0 and
 			    type = 'T'";
 	}
-	$tenderR = $sql->query($tenderQ);
+    $tenderP = $sql->prepare($tenderQ);
+	$tenderR = $sql->execute($tenderP, array($date));
 	$cash = 0;
 	$check = 0;
 	$MAD = 0;
@@ -183,20 +184,21 @@ function mainDisplay($date,$checkForSave=True){
 
 	$salesQ = "select d.pCode,sum(l.total) as total from
 		$dlog as l join departments as d on l.department = d.dept_no
-		where datediff(dd,'$date',tDate) = 0
+		where datediff(dd,?,tDate) = 0
 		and l.department < 600 and l.department <> 0
 		and l.trans_type <> 'T'
 		group by d.pCode
 		order by d.pCode";
 	if ($FROM_SAVED){
 		$salesQ = "select sub_type,value from dailyJournal where
-			   datediff(dd,tdate,'$date') = 0 and type='P' order by sub_type";
+			   datediff(dd,tdate,?) = 0 and type='P' order by sub_type";
 	}
 	$pCodes = array(41201,41205,41300,41305,41310,41315,41400,41405,41407,41410,41415,41420,
 			41425,41430,41435,41440,41500,41505,41510,41515,41520,41525,41530,41600,
 			41605,41610,41640,41645,41700,41705);
 	$i = 0;
-	$salesR = $sql->query($salesQ);
+    $slaesP = $sql->prepare($salesQ);
+	$salesR = $sql->execute($salesP, array($date));
 	while ($w = $sql->fetch_row($salesR)){
 		if ($i >= count($pCodes)) break;
 		while ($w[0] > $pCodes[$i]){
@@ -227,11 +229,11 @@ function mainDisplay($date,$checkForSave=True){
 
 	$ret .= "<tr><td>column TOTAL</td><td id=totalPcode>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>";
 	
-	$totalQ = "select sum(l.total) as totalSales from $dlog as l
-		where datediff(dd,'$date',tDate) = 0
+	$totalQ = $sql->prepare("select sum(l.total) as totalSales from $dlog as l
+		where datediff(dd,?,tDate) = 0
 		and l.department < 600 and l.department <> 0
-		and l.trans_type <> 'T'";
-	$totalR = $sql->query($totalQ);
+		and l.trans_type <> 'T'");
+	$totalR = $sql->execute($totalQ, array($date));
 	$totalW = $sql->fetch_row($totalR);
 	$ret .= "<tr><td>Total Sales POS report</td><td id=totalPOS>$totalW[0]</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>";
 
@@ -240,14 +242,15 @@ function mainDisplay($date,$checkForSave=True){
 	$ret .= "<tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>";
 
 	$otherQ = "select d.department,sum(total) as total from $dlog as d
-		where datediff(dd,'$date',tDate) = 0
+		where datediff(dd,?,tDate) = 0
 		and d.department > 300 and d.department <> 0 and d.register_no <> 20
 		group by d.department order by d.department";
 	if ($FROM_SAVED){
 		$otherQ = "select sub_type,value from dailyJournal where
-			   datediff(dd,tdate,'$date') = 0 and type = 'O'";
+			   datediff(dd,tdate,?) = 0 and type = 'O'";
 	}	
-	$otherR = $sql->query($otherQ);
+    $otherP = $sql->prepare($otherQ);
+	$otherR = $sql->execute($otherP, array($date));
 	
 	$gcSales = 0;
 	$tcSales = 0;
@@ -323,14 +326,15 @@ function mainDisplay($date,$checkForSave=True){
 	$discountQ = "select m.memDesc, sum(d.total)*-1 as discount from
 		$dlog as d inner join custdata as c on c.cardno = d.card_no
 		inner join memtypeID as m on c.memType = m.memTypeID
-		where datediff(dd,'$date',d.tdate) = 0
+		where datediff(dd,?,d.tdate) = 0
 		and d.upc = 'DISCOUNT' and c.personnum = 1
 		group by m.memDesc,d.upc";
 	if ($FROM_SAVED){
 		$discountQ = "select sub_type,value from dailyJournal where
-			      datediff(dd,tdate,'$date') = 0 and type = 'D'";
+			      datediff(dd,tdate,?) = 0 and type = 'D'";
 	}
-	$discountR = $sql->query($discountQ);
+    $discountP = $sql->prepare($discountQ);
+	$discountR = $sql->execute($discountP, array($date));
 	$discMem = 0;
 	$discStaffMem = 0;
 	$discStaffNonMem = 0;
@@ -362,13 +366,14 @@ function mainDisplay($date,$checkForSave=True){
 	$ret .= "<tr><td>TOTAL Discounts</td><td id=totalDisc>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>";
 
 	$taxQ = "select sum(total) as tax_collected from $dlog as d
-		where datediff(dd,'$date',tdate) = 0
+		where datediff(dd,?,tdate) = 0
 		and d.upc = 'TAX' group by d.upc";
 	if ($FROM_SAVED){
 		$taxQ = "select value from dailyJournal where type = 'X'
-			 and datediff(dd,tdate,'$date') = 0";
+			 and datediff(dd,tdate,?) = 0";
 	}
-	$taxR = $sql->query($taxQ);
+    $taxP = $sql->prepare($taxQ);
+	$taxR = $sql->execute($taxP, array($date));
 	$taxW = $sql->fetch_row($taxR);
 
 	$ret .= "<tr><td>Sales Tax Collected</td><td>";
@@ -418,9 +423,9 @@ function mainDisplay($date,$checkForSave=True){
 
 	$miscCount = 0;
 	if ($FROM_SAVED){
-		$miscQ = "select sub_type,value from dailyJournal where
-			  datediff(dd,'$date',tdate) = 0 and type='M'";
-		$miscR = $sql->query($miscQ);
+		$miscQ = $sql->prepare("select sub_type,value from dailyJournal where
+			  datediff(dd,?,tdate) = 0 and type='M'");
+		$miscR = $sql->execute($miscQ, array($date));
 		while ($row = $sql->fetch_row($miscR)){
 			$ret .= "<tr><td>MiscReceipt</td>";
 			$ret .= "<td><input onchange=\"resumMisc();resumTotals();\" type=text size=8 value=$row[1] id=inputMisc$miscCount /></td>";
@@ -455,9 +460,9 @@ function mainDisplay($date,$checkForSave=True){
 function save($date,$type,$data){
 	global $sql;
 	if ($type == 'M'){
-		$delQ = "delete from dailyJournal where datediff(dd,tdate,'$date') = 0
-			and type = 'M'";
-		$sql->query($delQ);
+		$delQ = $sql->prepare("delete from dailyJournal where datediff(dd,tdate,?) = 0
+			and type = 'M'");
+		$sql->execute($delQ, array($date));
 	}
 	if ($data == "") return;
 	$data_pairs = explode(";",$data);
@@ -466,17 +471,17 @@ function save($date,$type,$data){
 		$val = rtrim($val);
 		if(empty($val)) $val = 0;	
 		
-		$checkQ = "select value from dailyJournal where datediff(dd,tdate,'$date') = 0
-			   and type='$type' and sub_type='$sub'";
-		$checkR = $sql->query($checkQ);
+		$checkQ = $sql->prepare("select value from dailyJournal where datediff(dd,tdate,?) = 0
+			   and type=? and sub_type=?");
+		$checkR = $sql->execute($checkQ, array($date, $type, $sub));
 		if ($type=="M" || $sql->num_rows($checkR) == 0){
-			$insQ = "insert dailyJournal values ('$date','$type','$sub',$val)";
-			$insR = $sql->query($insQ);
+			$insQ = $sql->prepare("insert dailyJournal values (?, ?, ?, ?)");
+			$insR = $sql->execute($insQ, array($date, $type, $sub, $val));
 		}
 		else {
-			$upQ = "update dailyJournal set value=$val where
-				datediff(dd,tdate,'$date') = 0 and type='$type' and sub_type='$sub'";
-			$upR = $sql->query($upQ);
+			$upQ = $sql->prepare("update dailyJournal set value=? where
+				datediff(dd,tdate,?) = 0 and type=? and sub_type=?");
+			$upR = $sql->execute($upQ, array($val, $date, $type, $sub));
 		}
 	}
 }

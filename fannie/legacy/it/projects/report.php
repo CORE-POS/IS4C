@@ -14,11 +14,11 @@ if (isset($_POST['name']) && !isset($_POST['proj0'])){
   $name = $_POST['name'];
   $date = $_POST['date'];
 
-  $q = "select projDesc,projID,status,priority,reqestDate,completeDate from projects where ITName = '$name' 
-        AND ((completeDate > '$date' AND status = 2) or status = 1) 
-        order by status,priority,completeDate desc,priority";
+  $q = $sql->prepare("select projDesc,projID,status,priority,reqestDate,completeDate from projects where ITName = ?
+        AND ((completeDate > ? AND status = 2) or status = 1) 
+        order by status,priority,completeDate desc,priority");
   //echo $q;
-  $r = $sql->query($q);
+  $r = $sql->execute($q, array($name, $date));
   echo "<form action={$_SERVER['PHP_SELF']} method=POST>";
   echo "<input type=hidden name=name value=$name />";
   $count = 0;
@@ -80,10 +80,12 @@ else if (isset($_POST['proj0'])){
   $date = $_POST['date'];
   echo "<h3>Project report for $name</h3>";
   echo "<hr />";
+  $q = $sql->prepare("select projDesc,reqestDate,status,priority,completeDate,notes from projects where projID = ? order by priority");
+    $notesQ = $sql->prepare("select ITName, stamp, notes from project_notes where projID = ?
+               AND stamp > ? order by stamp DESC");
   for ($i = 0; $i < count($projID); $i++){
     if ($include[$i]){
-      $q = "select projDesc,reqestDate,status,priority,completeDate,notes from projects where projID = $projID[$i] order by priority";
-      $r = $sql->query($q);
+      $r = $sql->execute($q, array($projID[$i]));
       $row = $sql->fetch_array($r);
       echo "Project: <a href=project.php?projID=$projID[$i]>{$row['projDesc']}</a><br />";
       echo "Request date: {$row['reqestDate']} Priority: {$row['priority']}<br />";
@@ -92,10 +94,8 @@ else if (isset($_POST['proj0'])){
       echo $row["notes"]."<br />";
       if (!$details[$i]){
         echo "Notes: <br />";
-        $notesQ = "select ITName, stamp, notes from project_notes where projID = $projID[$i]
-                   AND stamp > '$date' order by stamp DESC";
         //echo $notesQ;
-        $notesR = $sql->query($notesQ);
+        $notesR = $sql->execute($notesQ, array($projID[$i], $date));
         $num = $sql->num_rows($notesR);
         if ($num > 0){
           echo "<br /><u>Additional notes on this project:</u><br />";

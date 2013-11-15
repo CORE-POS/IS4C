@@ -21,19 +21,19 @@ if (isset($_POST["MAX_FILE_SIZE"])){
 	echo "<th>Likecode</th><th>Description</th><th>Current Price</th><th>New Price</th>";
 	echo "</tr>";
 	echo "<form action=likecode.php method=post>";
+    $q = $sql->prepare("select l.likeCodeDesc,min(p.normal_price) from products as p
+        left join upcLike as u on u.upc=p.upc 
+        left join likeCodes as l on l.likeCode=u.likeCode where
+        u.likeCode=? group by
+        u.likeCode, l.likeCodeDesc
+        order by count(*) desc");
 	while (!feof($fp)){
 		$line = fgets($fp);
 		$data = csv_parser($line);
 
 		if (!is_numeric($data[$LC_COL])) continue;
 
-		$q = "select l.likeCodeDesc,min(p.normal_price) from products as p
-			left join upcLike as u on u.upc=p.upc 
-			left join likeCodes as l on l.likeCode=u.likeCode where
-			u.likeCode=".$data[$LC_COL]." group by
-			u.likeCode, l.likeCodeDesc
-			order by count(*) desc";
-		$r = $sql->query($q);
+		$r = $sql->execute($q, array($data[$LC_COL]));
 		if ($sql->num_rows($r) == 0){
 			echo "<i>Error - unknown like code #".$data[$LC_COL]."</i><br />";
 			continue;
@@ -60,16 +60,16 @@ else if (isset($_POST['likecode'])){
 	$prices = $_POST['price'];
 	//$scales = $_POST['scale'];
 
+    $q = $sql->prepare("update products as p left join upcLike as u on p.upc=u.upc
+        SET normal_price=?, modified=".$sql->now()."
+        where u.likeCode=?");
+    $q2 = $sql->prepare("SELECT upc FROM upcLike WHERE likeCode=?");
 	echo "<b>Peforming updates</b><br />";
 	for ($i = 0; $i < count($likecodes); $i++){
-		$q = "update products as p left join upcLike as u on p.upc=u.upc
-			SET normal_price=".trim($prices[$i],' $').", modified=".$sql->now()."
-			where u.likeCode=".$likecodes[$i];	
 		echo "Setting likecode #".$likecodes[$i]." to $".$prices[$i]."<br />";
-		$sql->query($q);
+		$sql->execute($q, array(trim($prices[$i],' $'), $likecodes[$i]));
 
-		$q2 = "SELECT upc FROM upcLike WHERE likeCode=".$likecodes[$i];
-		$r2 = $sql->query($q2);
+		$r2 = $sql->execute($q2, array($likecodes[$i]));
 		while($w2 = $sql->fetch_row($r2))
 			updateProductAllLanes($w2['upc']);
 	}

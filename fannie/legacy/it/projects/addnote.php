@@ -11,34 +11,33 @@ if(isset($_POST['name'])){
   $notes = preg_replace('/\n/','<br />',$_POST['notes']);
   $date = date("y/m/d : H:i:s",time());
 
-  $q = "insert into project_notes values(
-        $projID,'$name','$notes','$date')";
-  $r = $sql->query($q);
+  $q $sql->prepare("insert into project_notes values(?, ?, ?, ?)");
+  $r = $sql->execute($q, array($projID, $name, $notes, $date));
 
   // get the project description
-  $nameQ = "select projDesc from projects where projID=$projID";
-  $nameR = $sql->query($nameQ);
+  $nameQ = $sql->prepare("select projDesc from projects where projID=?");
+  $nameR = $sql->execute($nameQ, array($projID));
   $row = $sql->fetch_array($nameR);
   $projDesc = $row['projDesc'];
 
-  $checkQ = "select * from projects left outer join project_parties
+  $checkQ = $sql->prepare("select * from projects left outer join project_parties
              on projects.ITName = project_parties.email
-             where LCASE(projects.ITName) = LCASE('$name') or
-             LCASE(project_parties.email) = LCASE('$name')
-             limit 1";
-  $checkR = $sql->query($checkQ);
+             where LCASE(projects.ITName) = LCASE(?) or
+             LCASE(project_parties.email) = LCASE(?)
+             limit 1");
+  $checkR = $sql->execute($checkQ, array($name, $name));
   // check #2 - see if this person is already 'in on' this project
-  $check2Q = "select * from project_parties where email='$name' and projID=$projID";
-  $check2R = $sql->query($check2Q);
+  $check2Q = $sql->prepare("select * from project_parties where email=? and projID=?");
+  $check2R = $sql->execute($check2Q, array($name, $projID));
   // not an IT person so add to interested parties
   if ($sql->num_rows($checkR) == 0 && $sql->num_rows($check2R) == 0){
-    $partyQ = "insert into project_parties values ($projID,'$name')";
-    $partyR = $sql->query($partyQ);
+    $partyQ = $sql->prepare("insert into project_parties values (?,?)");
+    $partyR = $sql->execute($partyQ, array($projID, $name));
   }
 
   // build email 'to' all interested parties
-  $q = "select email from project_parties where projID = $projID";
-  $r = $sql->query($q);
+  $q = $sql->prepare("select email from project_parties where projID = ?");
+  $r = $sql->execute($q, array($projID));
   $to_string = 'it@wholefoods.coop';
   if ($mail == 'all' && $sql->num_rows($r) > 0){
     while($row = $sql->fetch_array($r)){
