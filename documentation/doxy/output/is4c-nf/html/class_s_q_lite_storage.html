@@ -38,19 +38,12 @@
 <a href="class_s_q_lite_storage-members.html">List of all members.</a><table border="0" cellpadding="0" cellspacing="0">
 <tr><td></td></tr>
 <tr><td colspan="2"><br><h2>Public Member Functions</h2></td></tr>
-<tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="anchor" name="676933ed9fe238a901fe3852439880cd"></a><!-- doxytag: member="SQLiteStorage::SQLiteStorage" ref="676933ed9fe238a901fe3852439880cd" args="()" -->
+<tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="anchor" name="a45aa1f9d771f0325a9b4982da010901"></a><!-- doxytag: member="SQLiteStorage::SQLiteStorage" ref="a45aa1f9d771f0325a9b4982da010901" args="()" -->
 &nbsp;</td><td class="memItemRight" valign="bottom"><b>SQLiteStorage</b> ()</td></tr>
 
-<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_s_q_lite_storage.html#bfd7421a29d27c391c834725983503bd">get</a> ($key)</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_s_q_lite_storage.html#d0fbed3519e3bce36cb4c49ee9a8e474">get</a> ($key)</td></tr>
 
-<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_s_q_lite_storage.html#ab783c147c35ee6c3f333a234167dd9b">set</a> ($key, $val)</td></tr>
-
-<tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="anchor" name="55a793629084b092cd09a0c945c92f43"></a><!-- doxytag: member="SQLiteStorage::conn" ref="55a793629084b092cd09a0c945c92f43" args="()" -->
-&nbsp;</td><td class="memItemRight" valign="bottom"><b>conn</b> ()</td></tr>
-
-<tr><td colspan="2"><br><h2>Public Attributes</h2></td></tr>
-<tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="anchor" name="4d9f95d5513589f6bb1187a7fc2df231"></a><!-- doxytag: member="SQLiteStorage::$db" ref="4d9f95d5513589f6bb1187a7fc2df231" args="" -->
-&nbsp;</td><td class="memItemRight" valign="bottom"><b>$db</b></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_s_q_lite_storage.html#5d32adee5d76de78d2b76995af6b0d29">set</a> ($key, $val, $immutable=false)</td></tr>
 
 </table>
 <hr><a name="_details"></a><h2>Detailed Description</h2>
@@ -58,7 +51,7 @@ A <a class="el" href="class_local_storage.html">LocalStorage</a> implementation 
 Mostly a sample of what an alternative might look like. Performance is decidedly subpar. Not recommended for production use. 
 <p>
 <hr><h2>Member Function Documentation</h2>
-<a class="anchor" name="bfd7421a29d27c391c834725983503bd"></a><!-- doxytag: member="SQLiteStorage::get" ref="bfd7421a29d27c391c834725983503bd" args="($key)" -->
+<a class="anchor" name="d0fbed3519e3bce36cb4c49ee9a8e474"></a><!-- doxytag: member="SQLiteStorage::get" ref="d0fbed3519e3bce36cb4c49ee9a8e474" args="($key)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -84,10 +77,10 @@ Get the value stored with the given key <dl compact><dt><b>Parameters:</b></dt><
 The value can be any PHP type that the underlying mechanism can store.<p>
 If the key is not found, the return value will be an empty string. 
 <p>
-Reimplemented from <a class="el" href="class_local_storage.html#60995fdbd712f97b5215fb5c3daa8356">LocalStorage</a>.
+Reimplemented from <a class="el" href="class_local_storage.html#9bdc48723296219b0cb74d7e3cda0c03">LocalStorage</a>.
 </div>
 </div><p>
-<a class="anchor" name="ab783c147c35ee6c3f333a234167dd9b"></a><!-- doxytag: member="SQLiteStorage::set" ref="ab783c147c35ee6c3f333a234167dd9b" args="($key, $val)" -->
+<a class="anchor" name="5d32adee5d76de78d2b76995af6b0d29"></a><!-- doxytag: member="SQLiteStorage::set" ref="5d32adee5d76de78d2b76995af6b0d29" args="($key, $val, $immutable=false)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -101,7 +94,13 @@ Reimplemented from <a class="el" href="class_local_storage.html#60995fdbd712f97b
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">$&nbsp;</td>
-          <td class="paramname"> <em>val</em></td><td>&nbsp;</td>
+          <td class="paramname"> <em>val</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">$&nbsp;</td>
+          <td class="paramname"> <em>immutable</em> = <code>false</code></td><td>&nbsp;</td>
         </tr>
         <tr>
           <td></td>
@@ -116,17 +115,18 @@ Reimplemented from <a class="el" href="class_local_storage.html#60995fdbd712f97b
 Save the value with the given key <dl compact><dt><b>Parameters:</b></dt><dd>
   <table border="0" cellspacing="2" cellpadding="0">
     <tr><td valign="top"></td><td valign="top"><em>$key</em>&nbsp;</td><td>A unique key string </td></tr>
-    <tr><td valign="top"></td><td valign="top"><em>The</em>&nbsp;</td><td>value (mixed)</td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>$val</em>&nbsp;</td><td>The value (mixed) </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>$immutable</em>&nbsp;</td><td>the value is a constant</td></tr>
   </table>
 </dl>
 The value can be any PHP type that the underlying mechanism can store. 
 <p>
-Reimplemented from <a class="el" href="class_local_storage.html#cb48a5027abf7a1d05b4a12be85d72a7">LocalStorage</a>.
+Reimplemented from <a class="el" href="class_local_storage.html#2f1074679d720b22bb0daf0bc9705937">LocalStorage</a>.
 </div>
 </div><p>
 <hr>The documentation for this class was generated from the following file:<ul>
 <li>pos/is4c-nf/lib/LocalStorage/SQLiteStorage.php</ul>
-<hr size="1"><address style="align: right;"><small>Generated on Tue Oct 23 14:30:34 2012 for CORE POS - IS4C by&nbsp;
+<hr size="1"><address style="align: right;"><small>Generated on 18 Nov 2013 for CORE POS - IS4C by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img src="doxygen.png" alt="doxygen" align="middle" border="0"></a> 1.4.7 </small></address>
 </body>

@@ -30,17 +30,22 @@
     <li><a href="hierarchy.html"><span>Class&nbsp;Hierarchy</span></a></li>
     <li><a href="functions.html"><span>Class&nbsp;Members</span></a></li>
   </ul></div>
-<h1>DefaultReceiptFilter Class Reference</h1><!-- doxytag: class="DefaultReceiptFilter" --><a href="class_default_receipt_filter-members.html">List of all members.</a><table border="0" cellpadding="0" cellspacing="0">
+<h1>DefaultReceiptFilter Class Reference</h1><!-- doxytag: class="DefaultReceiptFilter" --><p>Inheritance diagram for DefaultReceiptFilter:
+<p><center><img src="class_default_receipt_filter.png" usemap="#DefaultReceiptFilter_map" border="0" alt=""></center>
+<map name="DefaultReceiptFilter_map">
+<area href="class_in_order_receipt_filter.html" alt="InOrderReceiptFilter" shape="rect" coords="0,56,127,80">
+</map>
+<a href="class_default_receipt_filter-members.html">List of all members.</a><table border="0" cellpadding="0" cellspacing="0">
 <tr><td></td></tr>
 <tr><td colspan="2"><br><h2>Public Member Functions</h2></td></tr>
-<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_default_receipt_filter.html#56fa27beb5262ef313987ade80991467">filter</a> ($rowset)</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_default_receipt_filter.html#5b12d23e615660781ac393fa2b9a4c9c">filter</a> ($data)</td></tr>
 
 </table>
 <hr><a name="_details"></a><h2>Detailed Description</h2>
-Module for adding and removing records from the set that will be printed. Subclasses may modify the <a class="el" href="class_default_receipt_filter.html#56fa27beb5262ef313987ade80991467">filter()</a> method to alter behavior 
+Module for adding and removing records from the set that will be printed. Subclasses may modify the <a class="el" href="class_default_receipt_filter.html#5b12d23e615660781ac393fa2b9a4c9c">filter()</a> method to alter behavior 
 <p>
 <hr><h2>Member Function Documentation</h2>
-<a class="anchor" name="56fa27beb5262ef313987ade80991467"></a><!-- doxytag: member="DefaultReceiptFilter::filter" ref="56fa27beb5262ef313987ade80991467" args="($rowset)" -->
+<a class="anchor" name="5b12d23e615660781ac393fa2b9a4c9c"></a><!-- doxytag: member="DefaultReceiptFilter::filter" ref="5b12d23e615660781ac393fa2b9a4c9c" args="($data)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -48,7 +53,7 @@ Module for adding and removing records from the set that will be printed. Subcla
           <td class="memname">DefaultReceiptFilter::filter           </td>
           <td>(</td>
           <td class="paramtype">$&nbsp;</td>
-          <td class="paramname"> <em>rowset</em>          </td>
+          <td class="paramname"> <em>data</em>          </td>
           <td>&nbsp;)&nbsp;</td>
           <td width="100%"></td>
         </tr>
@@ -59,16 +64,18 @@ Module for adding and removing records from the set that will be printed. Subcla
 <p>
 Filtering function <dl compact><dt><b>Parameters:</b></dt><dd>
   <table border="0" cellspacing="2" cellpadding="0">
-    <tr><td valign="top"></td><td valign="top"><em>$rowset</em>&nbsp;</td><td>an array of records </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>$data</em>&nbsp;</td><td>an SQL result object </td></tr>
   </table>
 </dl>
 <dl compact><dt><b>Returns:</b></dt><dd>an array of records </dd></dl>
 
+<p>
+Reimplemented in <a class="el" href="class_in_order_receipt_filter.html#7f76aa685941644c88ed3b9a088cf6e0">InOrderReceiptFilter</a>.
 </div>
 </div><p>
 <hr>The documentation for this class was generated from the following file:<ul>
 <li>pos/is4c-nf/lib/ReceiptBuilding/ReceiptFilter/DefaultReceiptFilter.php</ul>
-<hr size="1"><address style="align: right;"><small>Generated on Tue Oct 23 14:30:34 2012 for CORE POS - IS4C by&nbsp;
+<hr size="1"><address style="align: right;"><small>Generated on 18 Nov 2013 for CORE POS - IS4C by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img src="doxygen.png" alt="doxygen" align="middle" border="0"></a> 1.4.7 </small></address>
 </body>
