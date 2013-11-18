@@ -187,6 +187,10 @@ class AutoLoader extends LibraryClass
                 $path = realpath(dirname(__FILE__).'/PrintHandlers');
                 $map = Plugin::pluginMap($path,$map);
                 break;
+            case 'BasicModel':
+                $path = realpath(dirname(__FILE__).'/models');
+                $map = Plugin::pluginMap($path,$map);
+                break;
 		}
 
 		foreach($map as $name => $file) {

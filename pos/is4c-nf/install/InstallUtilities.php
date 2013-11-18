@@ -550,5 +550,17 @@ class InstallUtilities extends LibraryClass
         return $errors;
     }
 
+    public static function normalizeDbName($name)
+    {
+        global $CORE_LOCAL;
+        if ($name == 'op') {
+            return $CORE_LOCAL->get('pDatabase');
+        } else if ($name == 'trans') {
+            return $CORE_LOCAL->get('tDatabase');
+        } else {
+            return false;
+        }
+    }
+
 }
 

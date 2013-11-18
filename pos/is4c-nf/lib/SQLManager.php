@@ -1014,11 +1014,32 @@ class SQLManager {
 		return '.';
 	}
 
+	public function dbms_name($which_connection='')
+    {
+        if ($which_connection == '') {
+            $which_connection = $this->default_db;
+        }
+        switch($this->db_types[$which_connection]) {
+            case $this->TYPE_MYSQL:
+            case $this->TYPE_PDOMY:
+                return 'mysql';
+            case $this->TYPE_MSSQL:
+            case $this->TYPE_PDOMS:
+                return 'mssql';
+            case $this->TYPE_PGSQL:
+            case $this->TYPE_PDOPG:
+                return 'pgsql';
+            case $this->TYPE_PDOSL:
+                return 'sqlite';
+        }
+
+        return false;
+    }
 
 	function error($which_connection=''){
-                if ($which_connection == '')
-                        $which_connection = $this->default_db;
-                switch($this->db_types[$which_connection]){
+        if ($which_connection == '')
+                $which_connection = $this->default_db;
+        switch($this->db_types[$which_connection]){
 		case $this->TYPE_MYSQL:
 			return mysql_error();
 		case $this->TYPE_MSSQL:
