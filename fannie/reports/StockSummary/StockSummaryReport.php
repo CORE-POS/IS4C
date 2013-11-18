@@ -91,6 +91,9 @@ class StockSummaryReport extends FannieReportPage
     }
 }
 
-FannieDispatch::go();
+if (basename($_SERVER['PHP_SELF']) == basename(__FILE__)) {
+    //FannieDispatch::go();
+    $obj = new StockSummaryReport();
+    $obj->draw_page();
+}
 
-?>
