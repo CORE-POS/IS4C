@@ -1,7 +1,6 @@
 <?php
-include('../../../config.php');
 
-require($FANNIE_ROOT.'src/SQLManager.php');
+require('../../sql/SQLManager.php');
 include('../../db.php');
 
 $id = 0;
@@ -10,7 +9,15 @@ if (isset($_REQUEST["id"])){
 }
 
 if (isset($_POST["submit"])){
-	$queries = array();
+    $prep = $sql->prepare("UPDATE shelftags SET description=?,
+            normal_price=?,
+            brand=?,
+            sku=?,
+            size=?,
+            units=?,
+            vendor=?,
+            pricePerUnit=?
+            WHERE upc=? and id=?");
 	for ($i = 0; $i < count($_POST["upc"]); $i++){
 		$upc = $_POST["upc"][$i];
 		$desc = "";
@@ -30,18 +37,7 @@ if (isset($_POST["submit"])){
 		$ppo = '';
 		if (isset($_POST["ppo"][$i])) $ppo = $_POST["ppo"][$i];
 
-		$queries[$i] = "UPDATE shelftags SET description='$desc',
-				normal_price=$price,
-				brand='$brand',
-				sku='$sku',
-				size='$size',
-				units='$units',
-				vendor='$vendor',
-				pricePerUnit='$ppo'
-				WHERE upc='$upc' and id=$id";
-	}
-	foreach ($queries as $q){
-		$r = $sql->query($q);
+        $sql->execute($prep, array($desc, $price, $brand, $sku, $size, $units, $vendor, $ppo, $upc, $id));
 	}
 	header("Location: index.php");
 	return;
@@ -65,9 +61,9 @@ echo "<th>Size</th><th>Units</th><th>Vendor</th><th>PricePer</th></tr>";
 
 $class = array("one","two");
 $c = 1;
-$query = "select upc,description,normal_price,brand,sku,size,units,vendor,pricePerUnit from shelftags
-	where id=$id order by upc";
-$result = $sql->query($query);
+$query = $sql->prepare("select upc,description,normal_price,brand,sku,size,units,vendor,pricePerUnit from shelftags
+	where id=? order by upc");
+$result = $sql->execute($query, array($id));
 while ($row = $sql->fetch_row($result)){
 	echo "<tr class=$class[$c]>";
 	echo "<td>$row[0]</td><input type=hidden name=upc[] value=\"$row[0]\" />";

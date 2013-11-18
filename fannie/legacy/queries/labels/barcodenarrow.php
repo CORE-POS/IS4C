@@ -2,9 +2,7 @@
 include('../../../config.php');
 
 define('FPDF_FONTPATH','font/');
-   require($FANNIE_ROOT.'src/fpdf/fpdf.php');
-
-//   require('../prodFunction.php');
+require($FANNIE_ROOT.'src/fpdf/fpdf.php');
 
 /****Credit for the majority of what is below for barcode generation
  has to go to Olivier for posting the script on the FPDF.org scripts
@@ -104,69 +102,65 @@ class PDF extends FPDF
     }
 }
 
-if (!class_exists("SQLManager")) require_once($FANNIE_ROOT."src/SQLManager.php");
-include('../../db.php');
-$page = "newbarcodes";
-if (isset($_GET["page"]))
-	$page = $_GET["page"];
-$id = (isset($_GET['id']))?(int)$_GET['id']:0;
+include('../db.php');
+$id = isset($_GET['id'])?$_GET['id']:0;
 
-$query = "SELECT * FROM shelftags WHERE id=$id";
+$query = $sql->prepare("SELECT * FROM shelftags WHERE upc NOT LIKE '%40176450380%' AND id=? AND (upc like '000909%' or upc like '000907%' or upc like '000908%')");
 
-$result = $sql->query($query);
+$result = $sql->execute($query, array($id));
 
-$pdf=new PDF(); //start new instance of PDF
+$pdf=new PDF('P','mm','Letter'); //start new instance of PDF
 $pdf->Open(); //open new PDF Document
-$pdf->SetTopMargin(40);  //Set top margin of the page
+$pdf->SetTopMargin(37);  //Set top margin of the page
 $pdf->SetLeftMargin(4);  //Set left margin of the page
 $pdf->SetRightMargin(0);  //Set the right margin of the page
 $pdf->AddPage();  //Add a page
 
 //Set increment counters for rows 
-$i = 2;  //x location of barcode
-$j = 35; //y locaton of barcode
-$l = 34; //y location of size and price on label
-$k = 4; //x location of date and price on label
+$i = 9;  //x location of barcode
+$j = 33; //y locaton of barcode
+$l = 30; //y location of size and price on label
+$k = 7; //x location of date and price on label
 $m = 0;  //number of labels created
-$n = 22; //y location of description for label
-$r = 28; //y location of date for label
-$p = 2;  //x location fields on label
+$n = 20; //y location of description for label
+$r = 24; //y location of date for label
+$p = 7;  //x location fields on label
 $t = 32; //y location of SKU and vendor info
-$u = 20; //x locaiton of vendor info for label
-$down = 30.6;
+$u = 22; //x locaiton of vendor info for label
+$down = 31.0;
 
 //cycle through result array of query
 while($row = $sql->fetch_array($result)){
    //If $m == 32 add a new page and reset all counters..
    if($m == 32){
       $pdf->AddPage();
-      $i = 2;
-      $j = 35;
-      $l = 34;
-      $k = 4;
+      $i = 9;
+      $j = 33;
+      $l = 30;
+      $k = 7;
       $m = 0;
-      $n = 22;
-      $p = 2;  
+      $n = 20;
+      $p = 7;  
       $q = 24;
-      $r = 28;
+      $r = 24;
       $t = 32;
-      $u = 20;
+      $u = 22;
    }
 
    //If $i > 175, start a new line of labels
    if($i > 175){
-      $i = 2;
+      $i = 9;
       $j = $j + $down;
-      $k = 4;
+      $k = 7;
       $l = $l + $down;
       $n = $n + $down;
       $r = $r + $down;
-      $p = 2;
-      $u = 20;
+      $p = 7;
+      $u = 22;
       $t = $t + $down;
    }
    $price = $row['normal_price'];
-   $desc = strtoupper(substr($row['description'],0,27));
+   $desc = strtoupper(substr($row['description'],0,14));
    $brand = ucwords(strtolower(substr($row['brand'],0,13)));
    $pak = $row['units'];
    $size = $row['units'] . "-" . $row['size'];

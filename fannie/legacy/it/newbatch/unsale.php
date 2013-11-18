@@ -47,8 +47,6 @@ function unsale($batchID){
 		$sql->query($unsale2Q);
 	}
 
-	if (!function_exists("updateProductAllLanes")) include($FANNIE_ROOT.'legacy/queries/laneUpdates.php');
-
 	$q = "SELECT upc FROM batchList WHERE batchID=".$batchID;
 	$r = $sql->query($q);
 	while($w = $sql->fetch_row($r)){
@@ -62,7 +60,9 @@ function unsale($batchID){
 				$upcs[] = $w2['upc'];
 		}
 		foreach($upcs as $u){
-			updateProductAllLanes($u);
+            $model = new ProductsModel();
+            $model->upc($u);
+            $model->pushToLanes();
 		}
 	}
 }

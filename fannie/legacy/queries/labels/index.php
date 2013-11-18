@@ -9,7 +9,7 @@ if (!validateUserQuiet('barcodes')){
    <link href="../../styles.css" rel="stylesheet" type="text/css">
    </head>
    <body>
-   <div id=logo><img src='../../images/newLogo_small.gif'></div>
+   <div id=logo><img src='../../members/images/newLogo_small.gif'></div>
    <div id=main> <?php
    echo "Must be logged in to view barcode page...";
    echo "<a href={$FANNIE_URL}auth/ui/loginform.php?redirect={$FANNIE_URL}legacy/queries/labels/index.php>Click here</a> to login<p />";
@@ -32,7 +32,7 @@ function goToPage(the_url){
 </script>
 </head>
 <body>
-<div id=logo><img src='../../images/newLogo_small.gif'></div>
+<div id=logo><img src='../../members/images/newLogo_small.gif'></div>
 <div id=main>
 <div style="font-size:80%;margin-bottom:3px;">
 Offset: <input type=text id=offset value=0 size=2 />
@@ -64,10 +64,16 @@ Offset: <input type=text id=offset value=0 size=2 />
 <tr class=medium><td><a href="javascript:goToPage('barcodenew.php?id=1')">Bulk Barcodes</a></td><td>&nbsp;</td>
 <td><a class=small href=edit.php?id=1>Edit Bulk Barcodes</a></td><td>&nbsp;</td>
 <td><a class=small href=dumpBarcodes.php?id=1>Clear Bulk barcodes</a></td></tr>
+<tr class=medium><td><a href="javascript:goToPage('barcodenew.php?id=6')">Produce Barcodes</a></td><td>&nbsp;</td>
+<td><a class=small href=edit.php?id=6>Edit Produce Barcodes</a></td><td>&nbsp;</td>
+<td><a class=small href=dumpBarcodes.php?id=6>Clear Produce barcodes</a></td></tr>
 <tr><td colspan=3>&nbsp;</td></tr>
 <tr class=medium><td><a href="javascript:goToPage('barcodenew.php?id=0')">'New' Barcodes</a></td><td>&nbsp;</td>
 <td><a class=small href=edit.php?id=0>Edit 'New' Barcodes</a></td><td>&nbsp;</td>
 <td><a class=small href=dumpBarcodes.php?id=0>Clear 'New' barcodes</a></td></tr>
+<tr><td colspan=3>&nbsp;</td></tr>
+<tr class=medium><td><a href="sheetoftags.php">Sheet of Barcodes</a></td><td>&nbsp;</td>
+<td colspan="2">&nbsp;</td></tr>
 </table>
 </div>
 </body>

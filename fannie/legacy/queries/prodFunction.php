@@ -2,12 +2,11 @@
 require('prodAllLanes.php');
 require('barcode.php');
 
-if (!class_exists("SQLManager")) require_once($FANNIE_ROOT."src/SQLManager.php");
 include('../db.php');
 
 function itemParse($upc,$dupe='no',$description='',$prefix=false)
 {
-    global $sql,$FANNIE_URL;
+    global $sql;
     /* why am I only checking for being logged in here
      * instead of a specific permission?
      * 
@@ -22,29 +21,69 @@ function itemParse($upc,$dupe='no',$description='',$prefix=false)
 
     $savedUPC="";
     $queryItem = "";
+    $args = array();
     $numType = (isset($_REQUEST['ntype'])?$_REQUEST['ntype']:'UPC');
     if (is_numeric($upc)){
 	switch($numType){
 	case 'UPC':
 		$upc = str_pad($upc,13,0,STR_PAD_LEFT);
 		$savedUPC = $upc;
-		$queryItem = "SELECT p.*,x.distributor,x.manufacturer FROM products as p left join prodExtra as x on p.upc=x.upc WHERE p.upc = '$upc' or x.upc = '$upc'";
+		$queryItem = "SELECT p.*,x.distributor,x.manufacturer,
+				u.brand,u.description as udesc,u.sizing,u.photo,
+				u.long_text,u.enableOnline,e.expires
+				FROM products as p left join 
+				prodExtra as x on p.upc=x.upc 
+				LEFT JOIN productUser as u
+				ON p.upc=u.upc LEFT JOIN productExpires
+				AS e ON p.upc=e.upc
+				WHERE p.upc = ? or x.upc = ?";
+                $args = array($upc, $upc);
 		break;
 	case 'SKU':
-		$queryItem = "SELECT p.*,x.distributor,x.manufacturer FROM products as p inner join vendorItems as v ON p.upc=v.upc left join prodExtra as x on p.upc=x.upc WHERE v.sku='$upc'";
+		$queryItem = "SELECT p.*,x.distributor,x.manufacturer,
+				u.brand,u.description as udesc,u.sizing,u.photo,
+				u.long_text,u.enableOnline,e.expires
+				FROM products as p inner join 
+				vendorItems as v ON p.upc=v.upc 
+				left join prodExtra as x on p.upc=x.upc 
+				LEFT JOIN productUser as u
+				ON p.upc=u.upc LEFT JOIN productExpires
+				AS e ON p.upc=e.upc
+				WHERE v.sku=?";
+                $args = array($upc);
 		break;
 	case 'Brand Prefix':
-	      $queryItem = "SELECT p.*,x.distributor,x.manufacturer FROM products as p left join prodExtra as x on p.upc=x.upc WHERE p.upc like '%$upc%' order by p.upc";
+	      $queryItem = "SELECT p.*,x.distributor,x.manufacturer ,
+				u.brand,u.description as udesc,u.sizing,u.photo,
+				u.long_text,u.enableOnline,e.expires
+			FROM products as p 
+			left join prodExtra as x on p.upc=x.upc 
+			LEFT JOIN productUser as u
+			ON p.upc=u.upc LEFT JOIN productExpires
+			AS e ON p.upc=e.upc
+			WHERE p.upc like ? order by p.upc";
+            $args = array('%'.$upc.'%');
 		break;
 	}
     }
     else{
-        $queryItem = "SELECT p.*,x.distributor,x.manufacturer FROM products as p left join prodExtra as x on p.upc=x.upc WHERE description LIKE '%$upc%' ORDER BY description";
+        $queryItem = "SELECT p.*,x.distributor,x.manufacturer ,
+			u.brand,u.description as udesc,u.sizing,u.photo,
+				u.long_text,u.enableOnline,e.expires
+			FROM products as p left join 
+			prodExtra as x on p.upc=x.upc 
+			LEFT JOIN productUser as u
+			ON p.upc=u.upc LEFT JOIN productExpires
+			AS e ON p.upc=e.upc
+			WHERE p.description LIKE ? OR 
+			u.description LIKE ? ORDER BY p.description";
+        $args = array('%'.$upc.'%', '%'.$upc.'%');
     }
+	//echo $queryItem;
 
 	echo "<script type=\"text/javascript\">";
 	echo "function shelftag(u){";
-	echo "testwindow= window.open (\"addShelfTag.php?upc=\"+u, \"New Shelftag\",\"location=0,status=1,scrollbars=1,width=300,height=220\");";
+	echo "testwindow= window.open (\"../../item/addShelfTag.php?upc=\"+u, \"New Shelftag\",\"location=0,status=1,scrollbars=1,width=300,height=220\");";
 	echo "testwindow.moveTo(50,50);";
 	echo "}";
 	echo "</script>";
@@ -64,12 +103,13 @@ function itemParse($upc,$dupe='no',$description='',$prefix=false)
     echo "</script>";
 
     $num = 0;
-    $resultItem = $sql->query($queryItem);
+    $prepItem = $sql->prepare($queryItem);
+    $resultItem = $sql->execute($prepItem, $args);
     $num = $sql->num_rows($resultItem);
    
-    $likeCodeQ = "SELECT u.*,l.likeCodeDesc FROM upcLike as u, likeCodes as l 
-        WHERE u.likeCode = l.likeCode and u.upc = '$upc'";
-    $likeCodeR = $sql->query($likeCodeQ);
+    $likeCodeQ = $sql->prepare("SELECT u.*,l.likeCodeDesc FROM upcLike as u, likeCodes as l 
+        WHERE u.likeCode = l.likeCode and u.upc = ?");
+    $likeCodeR = $sql->execute($likeCodeQ, array($upc));
     $likeCodeRow= $sql->fetch_row($likeCodeR);
     $likeCodeNum = $sql->num_rows($likeCodeR);
 
@@ -103,18 +143,22 @@ function itemParse($upc,$dupe='no',$description='',$prefix=false)
 				ORDER BY superID, dept_no";
                 echo "<td>";
 			$upc_split = substr($upc,0,7);
-			$guessQ = "select department from products where upc like '$upc_split%'
+			$guessQ = $sql->prepare("select department from products where upc like ?
 				   group by department
-				   order by count(*) desc";
-			$guessR = $sql->query($guessQ);
+				   order by count(*) desc");
+			$guessR = $sql->execute($guessQ, array($upc_split.'%'));
 			$guess = 60;
 			if ($sql->num_rows($guessR) > 0)
-				$guess = array_pop($sql->fetch_array($guessR));
-                        $table = "departments";
-                        $value = "dept_no";
-                        $label = "dept_name";
-                        $deptList = "dept";
-                        query_to_drop($query2,$value,$label,$deptList,$guess);
+				$guessW = $sql->fetch_array($guessR);
+                $guess = $guessW['department'];
+                echo '<select name="dept">';
+                $result2 = $sql->query($query2);
+                while($row2 = $sql->fetch_row($result2)) {
+                    printf('<option %s value="%d">%d %s</option>',
+                            ($row2['dept_no'] == $guess ? 'selected' : ''),
+                            $row2['dept_no'], $row2['dept_no'], $row2['dept_name']);
+                }
+                echo '</select>';
                 echo " </td>";
                 echo "<td align=right>Reg";
                 echo "<input type=radio name=tax value=1><br>";
@@ -124,8 +168,9 @@ function itemParse($upc,$dupe='no',$description='',$prefix=false)
                 echo "></td><td align=center><input type=checkbox value=1 name=Scale";
                 echo "></td><td align=center><input type=checkbox value=1 name=ForcQty";
                 echo "></td><td align=center><input type=checkbox value=1 name=NoDisc";
-                echo "></td><td align=center><input type=checkbox value=1 name=Local";
-                echo "><input type=hidden value=1 name=inUse";
+                echo "></td><td align=center><select name=local><option value=0>No</option>
+		<option value=1>SC</option><option value=2>300mi</option></select>";
+                echo "<input type=hidden value=1 name=inUse";
                 echo "><td align=center>";
                 //echo "<input type=text align=right size=4 name=likeCode>";
 		echo "<select name=likeCode style=\"{width: 175px;}\">";
@@ -145,7 +190,7 @@ function itemParse($upc,$dupe='no',$description='',$prefix=false)
 	           	 echo "<tr><td><input type='submit' name='submit' value='submit'>";
 	           }
 	           else {
-	           	echo "<tr><td>Please <a href={$FANNIE_URL}auth/ui/loginform.php?redirect={$FANNIE_URL}legacy/queries/productTest.php?upc=$upc>";
+	           	echo "<tr><td>Please <a href=/auth/ui/loginform.php?redirect=/queries/productTest.php?upc=$upc>";
 	    			echo "login</a> to add items";
 	           }
                
@@ -213,28 +258,22 @@ function itemParse($upc,$dupe='no',$description='',$prefix=false)
 	echo "<input type=hidden name=pricemethod value=\"$rowItem[4]\">";
 	echo "<input type=text size=4 name=vol_qtty value=".($rowItem[5] != 0 ? $rowItem[5] : "\"\"")." />";
 	echo " for $<input type=text size=4 name=vol_price value=".($rowItem[4] != 0 ? $rowItem[4] : "\"\"")." /></td></tr>";
-        echo "<tr><td><b>Manufacturer</b></td><td><input type=text size=35 value=\"$rowItem[36]\" name=manufacturer /></td>";
-        echo "<td><b>Distributor</b></td><td>&nbsp;<input type=text value=\"$rowItem[35]\" name=distributor /></td></tr>";
+        echo "<tr><td><b>Manufacturer</b></td><td><input type=text size=35 value=\"{$rowItem['manufacturer']}\" name=manufacturer /></td>";
+        echo "<td><b>Distributor</b></td><td>&nbsp;<input type=text value=\"{$rowItem['distributor']}\" name=distributor /></td></tr>";
         echo "<a href=/git/fannie/reports/PriceHistory/?upc=$rowItem[0] target=blank>Click for Price History</a>";
-	$invCheck = "SELECT upc FROM InvCache WHERE upc='$rowItem[0]'";
-	$invCheck = $sql->query($invCheck);
-	if ($sql->num_rows($invCheck) > 0){
-		echo "&nbsp;&nbsp;&nbsp;&nbsp;";
-		echo "<a href=/git/fannie/inventory/item.php?upc=$rowItem[0] target=blank2>Click for Order History</a>";
-	}
         if($rowItem[6] <> 0){
            echo "<tr><td><font size=+1 color=green><b>Sale Price:</b></font></td><td><font size=+1 color=green>$rowItem[6]</font>";
            echo "<td colspan=2><font size=+1 color=green>End Date: $rowItem[11]</font></td><tr>";
-	   $findBatchQ = "select batchName from batches as b, batchList as l
-			  where b.batchID = l.batchID and l.upc like '$upc'
-			  AND now() BETWEEN b.startDate AND b.endDate";
-	   $findBatchR = $sql->query($findBatchQ);
+	   $findBatchQ = $sql->prepare("select batchName from batches as b, batchList as l
+			  where b.batchID = l.batchID and l.upc like ?
+			  and ".$sql->curdate()." BETWEEN b.startDate AND b.endDate");
+	   $findBatchR = $sql->execute($findBatchQ, array($upc));
 	   $batchName = ($sql->num_rows($findBatchR) == 0) ? "Unknown" :array_pop($sql->fetch_array($findBatchR));
 	   if ($batchName == "Unknown" && $likecode != ""){
-		$findBatchQ = "select batchName from batches as b, batchList as l
-				where b.batchID=l.batchID and l.upc = 'LC$likecode'
-				  AND now() BETWEEN b.startDate AND b.endDate";
-		$findBatchR = $sql->query($findBatchQ);
+		$findBatchQ = $sql->prepare("select batchName from batches as b, batchList as l
+				where b.batchID=l.batchID and l.upc = ?
+			  	and ".$sql->curdate()." BETWEEN b.startDate AND b.endDate");
+		$findBatchR = $sql->execute($findBatchQ, array('LC'.$likecode));
 		$batchName = ($sql->num_rows($findBatchR) == 0) ? "Unknown" :array_pop($sql->fetch_array($findBatchR));
 	   }
 	   echo "<tr><td colspan=4><b>Batch: $batchName</b> ";
@@ -252,17 +291,19 @@ function itemParse($upc,$dupe='no',$description='',$prefix=false)
 				MasterSuperDepts AS s WHERE s.dept_ID=d.dept_no AND dept_no NOT IN (60,225)
 				ORDER BY superID, dept_no";
                 echo "<td>";
-                        $query3 = "SELECT dept_no,superID FROM departments as d
+                        $query3 = $sql->prepare("SELECT dept_no,superID FROM departments as d
 				LEFT JOIN MasterSuperDepts AS s ON d.dept_no=s.dept_ID
-				WHERE dept_no = $rowItem[12]";
-                        $result3 = $sql->query($query3);
+				WHERE dept_no = ?");
+                        $result3 = $sql->execute($query3, $rowItem['department']);
                         $row3 = $sql->fetch_array($result3);
-                        $table = "departments";
-                        $value = "dept_no";
-                        $label = "dept_name";
-                        $deptList = "dept";
-                        $select = $rowItem[12];
-                        query_to_drop($query2,$value,$label,$deptList,$select);
+                echo '<select name="drop">';
+                $result2 = $sql->query($query2);
+                while($row2 = $sql->fetch_row($result2)) {
+                    printf('<option %s value="%d">%d %s</option>',
+                            ($row2['dept_no'] == $rowItem['department'] ? 'selected' : ''),
+                            $row2['dept_no'], $row2['dept_no'], $row2['dept_name']);
+                }
+                echo '</select>';
                 echo " </td>";
                 echo "<td align=right>Reg ";
                 echo "<input type=radio name=tax value=1";
@@ -294,11 +335,11 @@ function itemParse($upc,$dupe='no',$description='',$prefix=false)
                                 echo " checked";
                         }
                 echo ">"./*what".$rowItem[21].*/"</td><input type=hidden value=1 name=inUse";
-                echo "></td><td align=center><input type=checkbox value=1 name=local";
-                        if($rowItem['local']==1){
-                                echo " checked";
-                        }
-			echo "><td align=center>";
+                echo "></td><td align=center><select name=local>";
+			printf("<option value=0 %s>No</option>",($rowItem['local']==0?'selected':''));
+			printf("<option value=1 %s>SC</option>",($rowItem['local']==1?'selected':''));
+			printf("<option value=2 %s>300mi</option>",($rowItem['local']==2?'selected':''));
+			echo "</select><td align=center>";
 			//echo "<input type=text align=right size=4 value='$likecode' name=likeCode>";
 		echo "<select name=likeCode style=\"{width: 175px;}\">";
 		echo "<option value=-1>(none)</option>";
@@ -320,13 +361,13 @@ function itemParse($upc,$dupe='no',$description='',$prefix=false)
                 echo "</tr>";
         	echo "<tr><td align=right><font size=-1 color=purple><i><b>Last Modified: </b></i></font></td>";
         	echo "<td colspan=3><font size=-1 color=purple><i>$modDate</i></td>";
-		echo"<td colspan=5><a href=./testSales.php?upc=$upc target=blank>Click for History</a></td></tr>";
+		echo"<td colspan=5><a href=/git/fannie/reports/RecentSales/index.php?upc=$upc target=blank>Click for History</a></td></tr>";
 		echo "<tr><td colspan=4>";
 		// kick out a scale input for upcs starting with 002
 		// pass variables with prefix s_
 		if (preg_match("/^002/",$rowItem[0]) && $row3[1] == 3){
-		   $scaleQuery = "select * from scaleItems where plu='$rowItem[0]'";
-		   $scaleRes = $sql->query($scaleQuery);
+		   $scaleQuery = $sql->prepare("select * from scaleItems where plu=?'");
+		   $scaleRes = $sql->execute($scaleQuery, array($rowItem['upc']));
 		   $scaleRow = $sql->fetch_row($scaleRes);
 		   echo "<table border=1 cellspacing=0 cellpadding=7><tr>";
 		   echo "<td bgcolor=\"#FFFFCC\">";
@@ -400,19 +441,44 @@ function itemParse($upc,$dupe='no',$description='',$prefix=false)
 		echo "<br /></td></tr><tr><td>";
                 echo "Like Code Linked Items</td><td>&nbsp;</td><td><input type=checkbox name=update value='no'></td><td colspan=4>Check to not update like code items</td></tr><tr><td>";
                 if($likeCodeNum > 0){
-                        $selLikeQ = "SELECT p.upc,p.description,p.normal_price FROM products as p, upcLike as u WHERE u.upc = p.upc and u.likeCode = $likeCodeRow[1]";
-                        likedtotable($selLikeQ,0,'FFFFCC');
-			echo"<td valign=top colspan=3><a href=./testSales.php?likecode=$likeCodeRow[1] target=lc_hist>Click for Like Code History</a></td>";
+                        $selLikeQ = "SELECT p.upc,p.description,p.normal_price FROM products as p, upcLike as u WHERE u.upc = p.upc and u.likeCode = ?";
+                        likedtotable($selLikeQ,$likeCodeRow[0],0,'FFFFCC');
+			echo"<td valign=top colspan=3><a href=/git/fannie/reports/PriceHistory/?likecode=$likeCodeRow[1] target=lc_hist>Click for Like Code History</a></td>";
                 }
 	   if ($logged_in || (preg_match("/^002/",$rowItem[0]) && $row3[1] == 3)){
            	echo "</td></tr><tr><td colspan=4><input type='submit' name='submit' value='submit'> ";
-		echo " <a href=prodUpdateDel.php?upc=$upc>Delete this item</a> | ";
+		echo " <a href=../../item/deleteItem.php?upc=$upc>Delete this item</a> | ";
            }
            else {
-		echo "<tr><td>Please <a href={$FANNIE_URL}auth/ui/loginform.php?redirect={$FANNIE_URL}legacy/queries/productTest.php?upc=$upc>";
-			echo "login</a> to change prices";
+           	echo "</td></tr><tr><td colspan=4>Please <a href=/auth/ui/loginform.php?redirect=/queries/productTest.php?upc=$upc>";
+    			echo "login</a> to change prices";
            }
 	       echo " <a href=javascript:back()>Back</a></td></tr> "; 
+		echo "<tr><td colspan=5>";
+		echo '<a href="" onclick="$(\'#topSecret\').toggle();return false;">Extra</a>';
+		echo "<div id=\"topSecret\" style=\"display:none;\">";
+		echo "<div style=\"float:left;width:500px;\">";
+		echo "<b>Sane Brand &amp; Description</b>: ";
+		printf("<input name=\"u_brand\" value=\"%s\" /> 
+			<input name=\"u_desc\" value=\"%s\" /><br />",
+			$rowItem["brand"],$rowItem["udesc"]);
+		printf("<b>Size</b>: <input name=\"u_size\" value=\"%s\" />",
+			$rowItem["sizing"]);
+		printf('&nbsp;&nbsp;<input type="checkbox" name="u_enableOnline" %s />Sell online<br />',
+			($rowItem['enableOnline']==1 ? 'checked' : ''));
+		printf("<b>Expires</b>: <input name=\"u_expires\" value=\"%s\" />",
+			$rowItem["expires"]);
+		printf('<p><b>Page Text</b><br /><textarea rows=15 cols=80 name=u_long_text>%s</textarea></p>',str_replace("<br />","\n",$rowItem['long_text']));
+		echo "</div>";
+		if (!empty($rowItem["photo"])){
+			echo "<div style=\"float:left;\">";
+			printf("<a href=\"/git/fannie/item/images/done/%s\"><img src=\"/git/fannie/item/images/done/%s\" /></a>",
+				$rowItem["photo"],str_replace("png","thumb.png",$rowItem["photo"]));
+			echo "</div>";
+		}
+		echo "<div style=\"clear:left;\"></div>";
+		echo "</div>";
+		echo "</tr>";
 	       echo "<tr><td height=5>&nbsp;</td></tr><tr><td bgcolor=#ddffdd colspan=3>";
 	       allLanes($upc);
 	       echo "</td></tr>";
@@ -420,10 +486,11 @@ function itemParse($upc,$dupe='no',$description='',$prefix=false)
     return $num;
 }
 
-function likedtotable($query,$border,$bgcolor)
+function likedtotable($query,$args,$border,$bgcolor)
 {
 	global $sql;
-        $results = $sql->query($query); 
+        $prep = $sql->prepare($query);
+        $results = $sql->execute($prep, $args); 
         $number_cols = $sql->num_fields($results);
         //display query
         //echo "<b>query: $query</b>";
@@ -541,8 +608,8 @@ function upcCheckOld($upc)
  */
 function deptPrevNext($dept,$upc,&$prev,&$next){
 	global $sql;
-	$deptQ = "select upc from products where department = $dept order by upc";
-	$deptR = $sql->query($deptQ);	
+	$deptQ = $sql->prepare("select upc from products where department = ? order by upc");
+	$deptR = $sql->execute($deptQ, array($dept));	
 	$p = -1;
 	while ($row = $sql->fetch_array($deptR)){
 		if ($upc == $row[0]){

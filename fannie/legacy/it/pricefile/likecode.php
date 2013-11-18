@@ -1,12 +1,12 @@
 <?php
 
 include('../../../config.php');
+include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 require($FANNIE_ROOT.'src/SQLManager.php');
 include('../../db.php');
 
 require($FANNIE_ROOT.'src/csv_parser.php');
 require($FANNIE_ROOT.'src/tmp_dir.php');
-if (!function_exists("updateProductAllLanes")) include($FANNIE_ROOT.'legacy/queries/laneUpdates.php');
 
 $LC_COL=0;
 $PRICE_COL=1;
@@ -70,8 +70,11 @@ else if (isset($_POST['likecode'])){
 		$sql->execute($q, array(trim($prices[$i],' $'), $likecodes[$i]));
 
 		$r2 = $sql->execute($q2, array($likecodes[$i]));
-		while($w2 = $sql->fetch_row($r2))
-			updateProductAllLanes($w2['upc']);
+		while($w2 = $sql->fetch_row($r2)) {
+            $model = new ProductsModel($sql);
+            $model->upc($w2['upc']);
+            $model->pushToLanes();
+        }
 	}
 }
 else{
