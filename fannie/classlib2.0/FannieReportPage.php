@@ -176,6 +176,7 @@ class FannieReportPage extends FanniePage
             $data = unserialize(gzuncompress($cached));
             if ($data === false) {
                 $data = $this->fetch_report_data();
+                $this->freshenCache($data);
             }
         } else {
             $data = $this->fetch_report_data();
