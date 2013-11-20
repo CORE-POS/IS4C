@@ -36,6 +36,8 @@ class PurchaseOrderModel extends BasicModel
     'placed' => array('type'=>'TINYINT','default'=>0,'index'=>True),
     'placedDate' => array('type'=>'DATETIME'),
     'userID' => array('type'=>'INT'),
+    'vendorOrderID' => array('type'=>'VARCHAR(25)'),
+    'vendorInvoiceID' => array('type'=>'VARCHAR(25)'),
     'standingID' => array('type'=>'INT')
     );
 
