@@ -38,6 +38,7 @@
 /* */
 
 include('../config.php');
+include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 require_once('../src/mysql_connect.php');
 
 require_once('../auth/login.php');
@@ -50,7 +51,7 @@ $page_title = 'Fannie - Item Maintenance';
 $header = 'Item Maintenance';
 include('../src/header.html');
 
-$upc = str_pad($_REQUEST['upc'],'0',13,STR_PAD_LEFT);
+$upc = BarcodeLib::padUPC(FormLib::get('upc'));
 
 /* Establish values for all products fields
     formatted for writing to the database

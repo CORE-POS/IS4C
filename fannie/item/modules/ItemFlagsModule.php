@@ -28,7 +28,7 @@ include_once(dirname(__FILE__).'/../../classlib2.0/data/models/ProductsModel.php
 class ItemFlagsModule extends ItemModule {
 
 	function ShowEditForm($upc){
-		$upc = str_pad($upc,13,0,STR_PAD_LEFT);
+		$upc = BarcodeLib::padUPC($upc);
 
 		$ret = '<fieldset id="ItemFlagsFieldset">';
 		$ret .=  "<legend>Flags</legend>";

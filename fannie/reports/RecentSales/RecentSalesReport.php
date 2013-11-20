@@ -46,7 +46,7 @@ class RecentSalesReport extends FannieReportPage
     private $lc;
 
     public function preprocess() {
-        $this->upc = str_pad(FormLib::get('upc'),13,'0',STR_PAD_LEFT);
+        $this->upc = BarcodeLib::padUPC(FormLib::get('upc'));
         $this->lc = FormLib::get('likecode');
         if ($this->upc != '0000000000000' || $this->lc !== '') {
 			$this->content_function = "report_content";

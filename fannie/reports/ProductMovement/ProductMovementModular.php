@@ -84,7 +84,7 @@ class ProductMovementModular extends FannieReportPage {
 		$date2 = FormLib::get_form_value('date2',date('Y-m-d'));
 		$upc = FormLib::get_form_value('upc','0');
 		if (is_numeric($upc))
-			$upc = str_pad($upc,13,'0',STR_PAD_LEFT);
+			$upc = BarcodeLib::padUPC($upc);
 
 		$dlog = select_dlog($date1,$date2);
 		$sumTable = $FANNIE_ARCHIVE_DB.$dbc->sep()."sumUpcSalesByDay";

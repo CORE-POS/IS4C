@@ -24,8 +24,7 @@
 include('../../config.php');
 include($FANNIE_ROOT.'src/mysql_connect.php');
 include($FANNIE_ROOT.'src/select_dlog.php');
-include($FANNIE_ROOT.'classlib2.0/FannieReportPage.php');
-include($FANNIE_ROOT.'classlib2.0/lib/FormLib.php');
+include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
 class NonMovementReport extends FannieReportPage {
 
@@ -41,7 +40,7 @@ class NonMovementReport extends FannieReportPage {
 		if (isset($_REQUEST['deleteItem'])){
 			$upc = FormLib::get_form_value('deleteItem','');
 			if (is_numeric($upc))
-				$upc = str_pad($upc,13,'0',STR_PAD_LEFT);
+				$upc = BarcodeLib::padUPC($upc);
 
 			$query = "DELETE FROM products WHERE upc=?";
 			$queryP = $dbc->prepare_statement($query);

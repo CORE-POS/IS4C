@@ -76,7 +76,7 @@ if (!isset($_REQUEST['upc'])){
 	return;
 }
 
-$upc = str_pad($_REQUEST['upc'],13,'0',STR_PAD_LEFT);
+$upc = BarcodeLib::padUPC(FormLib::get('upc'));
 
 $descQ = $dbc->prepare_statement("SELECT description,discounttype,special_price,start_date,end_date
 	 FROM products WHERE upc=?");

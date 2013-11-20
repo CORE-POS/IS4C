@@ -32,7 +32,7 @@ class EndItemSale extends FannieRESTfulPage {
 	function post_id_handler(){
 		global $FANNIE_OP_DB;
 		$dbc = FannieDB::get($FANNIE_OP_DB);
-		$upc = str_pad($this->id, 13, '0', STR_PAD_LEFT);
+		$upc = BarcodeLib::padUPC($this->id);
 
 		$prodP = $dbc->prepare_statement('UPDATE products SET
 				discounttype=0, special_price=0
@@ -43,7 +43,7 @@ class EndItemSale extends FannieRESTfulPage {
 		$batchUPC = FormLib::get_form_value('batchUPC');
 		if ($batchID !== '' && $batchUPC !== ''){
 			if (substr($batchUPC,0,2) != 'LC')
-				$batchUPC = str_pad($batchUPC, 13, '0', STR_PAD_LEFT);
+				$batchUPC = BarcodeLib::padUPC($batchUPC);
 			$batchP = $dbc->prepare_statement('DELETE FROM batchList
 					WHERE upc=? AND batchID=?');
 			$batchR = $dbc->exec_statement($batchP, array($batchUPC, $batchID));
@@ -59,7 +59,7 @@ class EndItemSale extends FannieRESTfulPage {
 	function get_id_view(){
 		global $FANNIE_OP_DB;
 		$dbc = FannieDB::get($FANNIE_OP_DB);
-		$upc = str_pad($this->id, 13, '0', STR_PAD_LEFT);
+		$upc = BarcodeLib::padUPC($this->id);
 
 		$itemP = $dbc->prepare_statement('SELECT p.description,p.special_price,
 						CASE WHEN u.likeCode IS NULL THEN -1 ELSE u.likeCode END as lc

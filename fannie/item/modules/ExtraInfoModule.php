@@ -26,7 +26,7 @@ include_once(dirname(__FILE__).'/../../classlib2.0/FannieAPI.php');
 class ExtraInfoModule extends ItemModule {
 
 	function ShowEditForm($upc){
-		$upc = str_pad($upc,13,0,STR_PAD_LEFT);
+		$upc = BarcodeLib::padUPC($upc);
 
 		$ret = '<fieldset id="ExtraInfoFieldset">';
 		$ret .=  "<legend>Extra Info</legend>";
@@ -70,7 +70,7 @@ class ExtraInfoModule extends ItemModule {
 	}
 
 	function SaveFormData($upc){
-		$upc = str_pad($upc,13,0,STR_PAD_LEFT);
+		$upc = BarcodeLib::padUPC($upc);
 		$deposit = FormLib::get_form_value('deposit',0);
 		$cost = FormLib::get_form_value('cost',0.00);
 		$inUse = FormLib::get_form_value('inUse',0);

@@ -22,6 +22,7 @@
 *********************************************************************************/
 
 include('../../config.php');
+include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 include($FANNIE_ROOT.'src/mysql_connect.php');
 include($FANNIE_ROOT.'src/JsonLib.php');
 
@@ -80,7 +81,7 @@ function lookupItem($store,$sec,$subsec,$sh_set,$shelf,$loc){
 
 function saveItem($store,$sec,$subsec,$sh_set,$shelf,$loc,$upc){
 	global $dbc;
-	$upc = str_pad($upc,13,'0',STR_PAD_LEFT);
+	$upc = BarcodeLib::padUPC($upc);
 	$q = sprintf("DELETE FROM prodPhysicalLocation WHERE
 		store_id=? AND section=? AND subsection=?
 		AND shelf_set=? AND shelf=? AND location=?");

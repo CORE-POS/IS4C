@@ -24,8 +24,7 @@
 include('../../config.php');
 include($FANNIE_ROOT.'src/mysql_connect.php');
 include($FANNIE_ROOT.'src/select_dlog.php');
-include($FANNIE_ROOT.'classlib2.0/FannieReportPage.php');
-include($FANNIE_ROOT.'classlib2.0/lib/FormLib.php');
+include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
 class MonthOverMonthReport extends FannieReportPage {
 
@@ -96,7 +95,7 @@ class MonthOverMonthReport extends FannieReportPage {
 			$inClause = "(";
 			$vals = preg_split("/\D+/",FormLib::get_form_value('upcs',''));
 			foreach($vals as $v){
-				$qArgs[] = str_pad($v,13,'0',STR_PAD_LEFT);
+				$qArgs[] = BarcodeLib::padUPC($v);
 				$inClause .= "?,";
 			}
 			$inClause = rtrim($inClause,",").")";

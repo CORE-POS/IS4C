@@ -21,6 +21,7 @@
 
 *********************************************************************************/
 include('../config.php');
+include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 include($FANNIE_ROOT.'src/mysql_connect.php');
 include($FANNIE_ROOT.'src/tmp_dir.php');
 include($FANNIE_ROOT.'auth/login.php');
@@ -74,7 +75,7 @@ switch ($_REQUEST['action']) {
         echo getItemForm($_REQUEST['orderID']);
         break;
     case 'deleteUPC':
-        $upc = str_pad($_REQUEST['upc'],13,'0',STR_PAD_LEFT);
+        $upc = BarcodeLib::padUPC($_REQUEST['upc']);
         $delP = $dbc->prepare_statement("DELETE FROM {$TRANS}PendingSpecialOrder WHERE order_id=?
             AND upc=?");
         $delR = $dbc->exec_statement($delP, array($_REQUEST['orderID'],$_REQUEST['upc']));
@@ -350,7 +351,7 @@ function addUPC($orderID,$memNum,$upc,$num_cases=1)
 
 	$sku = str_pad($upc,6,'0',STR_PAD_LEFT);
 	if (is_numeric($upc)) {
-		$upc = str_pad($upc,13,'0',STR_PAD_LEFT);
+		$upc = BarcodeLib::padUPC($upc);
     }
 
 	$manualSKU = false;
@@ -363,7 +364,7 @@ function addUPC($orderID,$memNum,$upc,$num_cases=1)
 	$ins_array = genericRow($orderID);
 	$ins_array['upc'] = "'$upc'";
 	if ($manualSKU) {
-		$ins_array['upc'] = str_pad($sku,13,'0',STR_PAD_LEFT);
+		$ins_array['upc'] = BarcodeLib::padUPC($sku);
     }
 	$ins_array['card_no'] = "'$memNum'";
 	$ins_array['trans_type'] = "'I'";
@@ -702,7 +703,7 @@ function getCustomerForm($orderID,$memNum="0")
 	// detect member UPC entry
 	if ($memNum > 9999999) {
 		$p = $dbc->prepare_statement("SELECT card_no FROM memberCards WHERE upc=?");
-		$r = $dbc->exec_statement($p,array(str_pad($memNum,13,'0',STR_PAD_LEFT)));
+		$r = $dbc->exec_statement($p,array(BarcodeLib::padUPC($memNum)));
 		if ($dbc->num_rows($r) > 0) {
 			$memNum = array_pop($dbc->fetch_row($r));
 		} else {

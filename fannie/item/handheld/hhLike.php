@@ -22,10 +22,11 @@
 *********************************************************************************/
 
 include('../../config.php');
+include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 include($FANNIE_ROOT.'src/mysql_connect.php');
 
 if (isset($_REQUEST['submit2'])){
-	$upc = str_pad($_REQUEST['upc'],13,'0',STR_PAD_LEFT);
+    $upc = BarcodeLib::padUPC(FormLib::get('upc'));
 
 	$delQ = $dbc->prepare_statement("DELETE FROM upcLike WHERE upc=?");
 	$dbc->exec_statement($delQ,array($upc));
@@ -55,7 +56,7 @@ if (!isset($_REQUEST['upc'])){
 	return;
 }
 
-$upc = str_pad($_REQUEST['upc'],13,'0',STR_PAD_LEFT);
+$upc = BarcodeLib::padUPC(FormLib::get('upc'));
 
 $descQ = $dbc->prepare_statement("SELECT description FROM products WHERE upc=?");
 $descR = $dbc->exec_statement($descQ,array($upc));

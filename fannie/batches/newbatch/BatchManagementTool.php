@@ -190,6 +190,7 @@ class BatchManagementTool extends FanniePage {
 			$model = new BatchesModel($dbc);
 			$model->batchID($id);
 			$model->batchType($type);
+            $model->batchName($name);
 			$model->startDate($startdate);
 			$model->endDate($enddate);
 			$model->discounttype($discounttype);
@@ -225,7 +226,7 @@ class BatchManagementTool extends FanniePage {
 		case 'addItemUPC':
 			$id = FormLib::get_form_value('id',0);
 			$upc = FormLib::get_form_value('upc','');
-			$upc = str_pad(trim($upc),13,'0',STR_PAD_LEFT);
+            $upc = BarcodeLib::padUPC($upc);
 			$tag = FormLib::get_form_value('tag')=='true' ? True : False;
 			
 			$out .= $this->addItemPriceInput($upc,$tag);
@@ -238,7 +239,7 @@ class BatchManagementTool extends FanniePage {
 		case 'addItemPrice':
 			$id = FormLib::get_form_value('id',0);
 			$upc = FormLib::get_form_value('upc','');
-			$upc = str_pad($upc,13,'0',STR_PAD_LEFT);
+            $upc = BarcodeLib::padUPC($upc);
 			$price = FormLib::get_form_value('price','');
 			$qty = FormLib::get_form_value('limit',0);
 			

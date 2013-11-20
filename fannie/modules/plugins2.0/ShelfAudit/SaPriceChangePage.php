@@ -66,7 +66,7 @@ class SaPriceChangePage extends FannieRESTfulPage {
 		$dbc = FannieDB::get($FANNIE_OP_DB);
 
 		$prod = new ProductsModel($dbc);
-		$prod->upc(str_pad($this->upc,13,'0',STR_PAD_LEFT));
+		$prod->upc(BarcodeLib::padUPC($this->upc));
 		$prod->normal_price($this->price);
 		$prod->save();
 		$prod->pushToLanes();
@@ -81,7 +81,7 @@ class SaPriceChangePage extends FannieRESTfulPage {
 
 		$prodQ = $dbc->prepare_statement('SELECT upc, description, normal_price
 						FROM products WHERE upc=?');
-		$upc = str_pad($this->id, 13, '0', STR_PAD_LEFT);
+		$upc = BarcodeLib::padUPC($this->id);
 		$prodR = $dbc->exec_statement($prodQ, array($upc));
 
 		if ($dbc->num_rows($prodR) == 0){

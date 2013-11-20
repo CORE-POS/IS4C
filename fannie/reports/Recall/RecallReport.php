@@ -69,7 +69,7 @@ class RecallReport extends FannieReportPage
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
 
-        $upc = str_pad(FormLib::get('upc'),13,'0',STR_PAD_LEFT);
+        $upc = BarcodeLib::padUPC(FormLib::get('upc'));
 		$date1 = FormLib::get_form_value('date1',date('Y-m-d'));
 		$date2 = FormLib::get_form_value('date2',date('Y-m-d'));
 
@@ -87,7 +87,7 @@ class RecallReport extends FannieReportPage
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
 
-        $upc = str_pad(FormLib::get('upc'),13,'0',STR_PAD_LEFT);
+        $upc = BarcodeLib::padUPC(FormLib::get('upc'));
 		$date1 = FormLib::get_form_value('date1',date('Y-m-d'));
 		$date2 = FormLib::get_form_value('date2',date('Y-m-d'));
 

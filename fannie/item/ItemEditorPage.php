@@ -125,7 +125,7 @@ class ItemEditorPage extends FanniePage {
 				break;
 			case 'UPC':
 			default:
-				$upc = str_pad($upc,13,0,STR_PAD_LEFT);
+                $upc = BarcodeLib::padUPC($upc);
 				$query = "SELECT p.*,x.distributor,x.manufacturer 
 					FROM products as p left join 
 					prodExtra as x on p.upc=x.upc 
@@ -184,7 +184,7 @@ class ItemEditorPage extends FanniePage {
 		$actualUPC = '';
 		$new = False;
 		if ($num == 0){
-			$actualUPC = str_pad($upc,13,'0',STR_PAD_LEFT);
+            $actualUPC = BarcodeLib::padUPC($upc);
 			$new = True;
 		}
 		else {
