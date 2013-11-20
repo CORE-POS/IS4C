@@ -78,9 +78,6 @@ class suspendedlist extends NoInputPage {
 
 		$num_rows = $db_a->num_rows($result);
 		
-		// original code seems to do this either way
-		$CORE_LOCAL->set("scan","noScan");
-
 		/* if there are suspended transactions available, 
 		 * store the result and row count as class variables
 		 * so they can be retrieved in body_content()
@@ -124,11 +121,10 @@ class suspendedlist extends NoInputPage {
 		}
 
 		echo "</select>\n</form>\n</div>\n"
-			."<div class=\"listboxText centerOffset\">"
+			."<div class=\"listboxText coloredText centerOffset\">"
 			._("use arrow keys to navigate")."<br />"._("clear to cancel")."</div>\n"
 			."<div class=\"clear\"></div>";
 		echo "</div>";
-		$CORE_LOCAL->set("scan","noScan");
 		$this->add_onload_command("\$('#selectlist').focus();");
 		$this->add_onload_command("\$('#selectlist').keypress(processkeypress);");
 	} // END body_content() FUNCTION
@@ -140,32 +136,45 @@ class suspendedlist extends NoInputPage {
 			.$emp." and trans_no = ".$trans;
 
 		$db_a = Database::tDataConnect();
-		$query_a = "select trans_id from localtemptrans";
-		$result_a = $db_a->query($query_a);
-		$num_rows_a = $db_a->num_rows($result_a);
 
 		// use SQLManager's transfer method when not in stand alone mode
 		// to eliminate the cross server query - andy 8/31/07
-		if ($num_rows_a == 0) {
-			if ($CORE_LOCAL->get("standalone") == 0){
-				$db_a->add_connection($CORE_LOCAL->get("mServer"),$CORE_LOCAL->get("mDBMS"),
-					$CORE_LOCAL->get("mDatabase"),$CORE_LOCAL->get("mUser"),$CORE_LOCAL->get("mPass"));
-				$cols = Database::getMatchingColumns($db_a,"localtemptrans","suspendedtoday");
-				$remoteQ = "select {$cols} from suspendedtoday where register_no = $reg "
-					." and emp_no = ".$emp." and trans_no = ".$trans." order by trans_id";
-				$success = $db_a->transfer($CORE_LOCAL->get("mDatabase"),$remoteQ,
-					$CORE_LOCAL->get("tDatabase"),"insert into localtemptrans ({$cols})");
-				if ($success)
-					$db_a->query($query_del,$CORE_LOCAL->get("mDatabase"));
-				$db_a->close($CORE_LOCAL->get("mDatabase"),True);
+		if ($CORE_LOCAL->get("standalone") == 0){
+			$db_a->add_connection($CORE_LOCAL->get("mServer"),$CORE_LOCAL->get("mDBMS"),
+				$CORE_LOCAL->get("mDatabase"),$CORE_LOCAL->get("mUser"),$CORE_LOCAL->get("mPass"));
+
+			$cols = Database::getMatchingColumns($db_a,"localtemptrans","suspendedtoday");
+			// localtemptrans might not actually be empty; let trans_id
+			// populate via autoincrement rather than copying it from
+			// the suspended table
+			if(substr($cols,-9) == ',trans_id')
+				$cols = substr($cols, 0, strlen($cols)-9);
+
+			$remoteQ = "select {$cols} from suspendedtoday where register_no = $reg "
+				." and emp_no = ".$emp." and trans_no = ".$trans." order by trans_id";
+			$success = $db_a->transfer($CORE_LOCAL->get("mDatabase"),$remoteQ,
+				$CORE_LOCAL->get("tDatabase"),"insert into localtemptrans ({$cols})");
+			if ($success)
+				$db_a->query($query_del,$CORE_LOCAL->get("mDatabase"));
+			$db_a->close($CORE_LOCAL->get("mDatabase"),True);
+		}
+		else {	
+			// localtemptrans might not actually be empty; let trans_id
+			// populate via autoincrement rather than copying it from
+			// the suspended table
+			$def = $db_a->table_definition('localtemptrans');
+			$cols = '';
+			foreach($def as $name=>$info){
+				if ($name == 'trans_id') continue;
+				$cols .= $name.',';
 			}
-			else {	
-				$localQ = "select * from suspendedtoday where register_no = $reg "
-					." and emp_no = ".$emp." and trans_no = ".$trans." order by trans_id";
-				$success = $db_a->query("insert into localtemptrans ".$localQ);
-				if ($success)
-					$db_a->query($query_del);
-			}
+			$cols = substr($cols,0,strlen($cols)-1);
+
+			$localQ = "select {$cols} from suspendedtoday where register_no = $reg "
+				." and emp_no = ".$emp." and trans_no = ".$trans." order by trans_id";
+			$success = $db_a->query("insert into localtemptrans ({$cols}) ".$localQ);
+			if ($success)
+				$db_a->query($query_del);
 		}
 
 		$query_update = "update localtemptrans set register_no = ".$CORE_LOCAL->get("laneno").", emp_no = ".$CORE_LOCAL->get("CashierNo")
@@ -173,13 +182,10 @@ class suspendedlist extends NoInputPage {
 
 		$db_a->query($query_update);
 		Database::getsubtotals();
-		$CORE_LOCAL->set("unlock",1);
-		if ($CORE_LOCAL->get("chargeTotal") != 0) 
-			$CORE_LOCAL->set("chargetender",1);
-		$CORE_LOCAL->set("msg",0);
 	}
 }
 
-new suspendedlist();
+if (basename(__FILE__) == basename($_SERVER['PHP_SELF']))
+	new suspendedlist();
 
 ?>

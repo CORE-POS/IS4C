@@ -36,8 +36,8 @@ if (!$user){
 }
 
 include('../src/mysql_connect.php');
-$page_title = 'Fannie - Item Maintanence';
-$header = 'Item Maintanence';
+$page_title = 'Fannie - Item Maintenance';
+$header = 'Item Maintenance';
 include('../src/header.html');
 ?>
 <script type"text/javascript" src=ajax.js></script>
@@ -74,7 +74,7 @@ if (isset($_REQUEST['upc']) && !isset($_REQUEST['deny'])){
 	}
 	else if (isset($_REQUEST['confirm'])){
 		$plu = substr($upc,3,4);
-		ProductsModel::static_delete($upc);
+		ProductsModel::staticDelete($upc);
 		$delxQ = $dbc->prepare_statement("DELETE FROM prodExtra WHERE upc=?");
 		$dbc->exec_statement($delxQ,array($upc));
 		if ($dbc->table_exists("scaleItems")){

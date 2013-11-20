@@ -1,6 +1,5 @@
 <?php
 include('../../../config.php');
-include($FANNIE_ROOT.'legacy/queries/funct1Mem.php');
 
 if (!class_exists("SQLManager")) require_once($FANNIE_ROOT."src/SQLManager.php");
 include('../../db.php');
@@ -12,9 +11,9 @@ if (isset($_REQUEST['datechange']) && $_REQUEST['datechange'] == "Change Dates")
   $startdate = $_REQUEST['startdate'];
   $enddate = $_REQUEST['enddate'];
   
-  $dateQ = "update batchTest set startdate='$startdate',
-            enddate='$enddate' where batchID=$batchID";
-  $dateR = $sql->query($dateQ);
+  $dateP = $sql->prepare("update batchTest set startdate=?,
+            enddate=? where batchID=?");
+  $dateR = $sql->execute($dateP, array($startdate, $enddate, $batchID));
 }
 else if(isset($_REQUEST['submit']) && $_REQUEST['submit']=="submit"){
    foreach ($_REQUEST AS $key => $value) {
@@ -24,43 +23,43 @@ else if(isset($_REQUEST['submit']) && $_REQUEST['submit']=="submit"){
      if(substr($key,0,4) == 'sale'){
         $$key = $value;
         $upc1 = substr($key,4);
-	    $queryTest = "UPDATE batchListTest SET salePrice = $value WHERE upc = '$upc1' and batchID = $batchID";
+	    $queryTest = $sql->prepare("UPDATE batchListTest SET salePrice = ? WHERE upc = ? and batchID = ?");
         //echo $queryTest . "<br>";
-	    $resultTest = $sql->query($queryTest);
-        $updateBarQ = "UPDATE newbarcodes SET normal_price=$value WHERE upc = '$upc1'";
-        $updateBarR = $sql->query($updateBarQ);
+	    $resultTest = $sql->execute($queryTest, array($value, $upc1, $batchID));
+        $updateBarQ = $sql->prepare("UPDATE newbarcodes SET normal_price=? WHERE upc = ?");
+        $updateBarR = $sql->execute($updateBarQ, array($value, $upc1));
       }
 
      if(substr($key,0,3) == 'del'){
        $$key = $value;
        $upc1 = substr($key,3);
-       $infoQ = "select b.batchName,l.salePrice from batchListTest as l left join batchTest as b on b.batchID
-		= l.batchID where b.batchID = $batchID and l.upc = '$upc1'";
-       $infoR = $sql->query($infoQ);
+       $infoQ = $sql->prepare("select b.batchName,l.salePrice from batchListTest as l left join batchTest as b on b.batchID
+		= l.batchID where b.batchID = ? and l.upc = ?");
+       $infoR = $sql->execute($infoQ, array($batchID, $upc1));
        $infoW = $sql->fetch_array($infoR);
        $name = $infoW[0];
        preg_match("/priceUpdate(.*?)\d+/",$name,$matches);
        $name = $matches[1];
        $price = $infoW[1];
-       $delItmQ = "DELETE FROM batchListTest WHERE upc = '$upc1' and batchID = $batchID";
-       $delBarQ = "DELETE FROM shelftags WHERE upc='$upc1' and normal_price=$price";
+       $delItmQ = $sql->prepare("DELETE FROM batchListTest WHERE upc = ? and batchID = ?");
+       $delBarQ = $sql->prepare("DELETE FROM shelftags WHERE upc=? and normal_price=?");
        //echo $delBarQ."<br />";
-       $delItmR = $sql->query($delItmQ);
-       $delBarR = $sql->query($delBarQ);
+       $delItmR = $sql->execute($delItmQ, array($upc1, $batchID));
+       $delBarR = $sql->execute($delBarQ, array($upc1, $price));
      }
    }   
 }
 
-$batchInfoQ = "SELECT * FROM batchTest WHERE batchID = $batchID";
-$batchInfoR = $sql->query($batchInfoQ);
+$batchInfoQ = $sql->prepare("SELECT * FROM batchTest WHERE batchID = ?");
+$batchInfoR = $sql->execute($batchInfoQ, array($batchID));
 $batchInfoW = $sql->fetch_array($batchInfoR);
 
 
-$selBItemsQ = "SELECT b.*,p.*  from batchListTest as b LEFT JOIN 
-               products as p ON p.upc = b.upc WHERE batchID = $batchID 
-               ORDER BY b.listID DESC";
+$selBItemsQ = $sql->prepare("SELECT b.*,p.*  from batchListTest as b LEFT JOIN 
+               products as p ON p.upc = b.upc WHERE batchID = ?
+               ORDER BY b.listID DESC");
 //echo $selBItemsQ;
-$selBItemsR = $sql->query($selBItemsQ);
+$selBItemsR = $sql->execute($selBItemsQ, array($batchID));
 
 echo "<form action=batches.php method=post>";
 echo "<table border=1>";

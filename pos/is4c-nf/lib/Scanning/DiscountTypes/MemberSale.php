@@ -21,61 +21,67 @@
 
 *********************************************************************************/
 
-class MemberSale extends DiscountType {
+class MemberSale extends DiscountType 
+{
 
-	function priceInfo($row,$quantity=1){
-		global $CORE_LOCAL;
-		if (is_array($this->savedInfo))
-			return $this->savedInfo;
+    public function priceInfo($row,$quantity=1)
+    {
+        global $CORE_LOCAL;
+        if (is_array($this->savedInfo)) {
+            return $this->savedInfo;
+        }
 
-		$ret = array();
+        $ret = array();
 
-		$ret["regPrice"] = $row['normal_price'];
-		$ret["unitPrice"] = $row['normal_price'];
+        $ret["regPrice"] = $row['normal_price'];
+        $ret["unitPrice"] = $row['normal_price'];
 
-		$ret['discount'] = 0;
-		$ret['memDiscount'] = MiscLib::truncate2(($ret['regPrice'] - $row['special_price']) * $quantity);
+        $ret['discount'] = 0;
+        $ret['memDiscount'] = MiscLib::truncate2(($ret['regPrice'] - $row['special_price']) * $quantity);
 
-		if ($CORE_LOCAL->get("isMember") == 1 || $CORE_LOCAL->get("memberID") == $CORE_LOCAL->get("visitingMem"))
-			$ret["unitPrice"] = $row['special_price'];
+        if ($CORE_LOCAL->get("isMember") == 1 || $CORE_LOCAL->get("memberID") == $CORE_LOCAL->get("visitingMem")) {
+            $ret["unitPrice"] = $row['special_price'];
+        }
 
-		if ($CORE_LOCAL->get("itemPD") > 0){
-			$discount = $ret['unitPrice'] * (($CORE_LOCAL->get("itemPD")/100));
-			$ret["unitPrice"] -= $discount;
-			$ret["discount"] += ($discount * $quantity);
-		}
+        if ($CORE_LOCAL->get("itemPD") > 0) {
+            $discount = $ret['unitPrice'] * (($CORE_LOCAL->get("itemPD")/100));
+            $ret["unitPrice"] -= $discount;
+            $ret["discount"] += ($discount * $quantity);
+        }
 
-		$this->savedRow = $row;
-		$this->savedInfo = $ret;
-		return $ret;
-	}
+        $this->savedRow = $row;
+        $this->savedInfo = $ret;
 
-	function addDiscountLine(){
-		global $CORE_LOCAL;	
-		if ($CORE_LOCAL->get("isMember") == 1 || $CORE_LOCAL->get("memberID") == $CORE_LOCAL->get("visitingMem")){
-			$CORE_LOCAL->set("voided",2);
-			TransRecord::adddiscount($this->savedInfo['memDiscount'],
-				$this->savedRow['department']);
-		}
-		if ($this->savedInfo['discount'] != 0){
-			$CORE_LOCAL->set("voided",2);
-			TransRecord::adddiscount($this->savedInfo['discount'],
-					$this->savedRow['department']);
-		}
-	}
+        return $ret;
+    }
 
-	function isSale(){
-		return true;
-	}
+    public function addDiscountLine()
+    {
+        global $CORE_LOCAL;    
+        if ($CORE_LOCAL->get("isMember") == 1 || $CORE_LOCAL->get("memberID") == $CORE_LOCAL->get("visitingMem")) {
+            TransRecord::adddiscount($this->savedInfo['memDiscount'],
+                $this->savedRow['department']);
+        }
+        if ($this->savedInfo['discount'] != 0) {
+            TransRecord::adddiscount($this->savedInfo['discount'],
+                    $this->savedRow['department']);
+        }
+    }
 
-	function isMemberOnly(){
-		return true;
-	}
+    public function isSale()
+    {
+        return true;
+    }
 
-	function isStaffOnly(){
-		return false;
-	}
+    public function isMemberOnly()
+    {
+        return true;
+    }
+
+    public function isStaffOnly()
+    {
+        return false;
+    }
 
 }
 
-?>

@@ -21,8 +21,6 @@
 
 *********************************************************************************/
 
-ini_set('display_errors','1');
-
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class drawerPage extends NoInputPage {
@@ -54,7 +52,6 @@ class drawerPage extends NoInputPage {
 					$CORE_LOCAL->set("LoggedIn",0);
 					$CORE_LOCAL->set("training",0);
 					$CORE_LOCAL->set("gui-scale","no");
-					$CORE_LOCAL->set("away",1);
 					$this->change_page($this->page_url."gui-modules/login2.php");
 				}
 				else {
@@ -172,9 +169,9 @@ class drawerPage extends NoInputPage {
 		<?php
 		$this->add_onload_command("\$('#selectlist').focus();");
 		$this->add_onload_command("\$('#selectlist').keypress(processkeypress);");
-		$CORE_LOCAL->set("scan","noScan");
 	} // END body_content() FUNCTION
 }
 
-new drawerPage();
+if (basename(__FILE__) == basename($_SERVER['PHP_SELF']))
+	new drawerPage();
 ?>

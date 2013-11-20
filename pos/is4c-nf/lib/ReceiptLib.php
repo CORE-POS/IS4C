@@ -164,23 +164,6 @@ static public function printReceiptHeader($dateTimeStamp, $ref) {
 
 	for ($i=1; $i <= $CORE_LOCAL->get("receiptHeaderCount"); $i++){
 
-		// wfc nonsense. get rid of this soon
-		if ($i == 1 && $CORE_LOCAL->get("newReceipt")>=1 && $CORE_LOCAL->get("store") == "wfc"){
-			$img_file = MiscLib::base_url()."graphics/WFC_Logo.bmp";
-			if (isset($img_cache[basename($img_file)]) && !empty($img_cache[basename($img_file)]) && get_class(self::$PRINT_OBJ)=='ESCPOSPrintHandler'){
-				$receipt .= $img_cache[basename($img_file)]."\n";
-			}
-			else {
-				$img = self::$PRINT_OBJ->RenderBitmapFromFile($img_file);
-				$receipt .= $img."\n";
-				$img_cache[basename($img_file)] = $img;
-				$CORE_LOCAL->set('ImageCache',$img_cache);
-			}
-			$i=4;
-			$receipt .= "\n";
-			continue;
-		}
-
 		/**
 		  If the receipt header line is a .bmp file (and it exists),
 		  print it on the receipt. Otherwise just print the line of
@@ -192,7 +175,7 @@ static public function printReceiptHeader($dateTimeStamp, $ref) {
 			// save image bytes in cache so they're not recalculated
 			// on every receipt
 			$img_file = $graphics_path.'/'.$headerLine;
-			if (isset($img_cache[basename($img_file)]) && !empty($img_cache[basename($img_file)]) && get_class(self::$PRINT_OBJ)=='ESCPOSPrintHandler'){
+			if (isset($img_cache[basename($img_file)]) && !empty($img_cache[basename($img_file)]) && get_class(self::$PRINT_OBJ)!='EmailPrintHandler'){
 				$receipt .= $img_cache[basename($img_file)]."\n";
 			}
 			else {
@@ -238,7 +221,7 @@ static public function printChargeFooterCust($dateTimeStamp, $ref) {	// apbw 2/1
 		   .self::centerString("................................................")."\n"
 		   .self::centerString($CORE_LOCAL->get("chargeSlip1"))."\n\n"
 		   ."CUSTOMER CHARGE ACCOUNT\n"
-		   ."Name: ".trim($CORE_LOCAL->get("ChgName"))."\n"		// changed by apbw 2/14/05 SCR
+		   ."Name: ".trim($chgName)."\n"		// changed by apbw 2/14/05 SCR
 		   ."Member Number: ".trim($CORE_LOCAL->get("memberID"))."\n"
 		   ."Date: ".$date."\n"
 		   ."REFERENCE #: ".$ref."\n"
@@ -268,7 +251,7 @@ static public function printChargeFooterStore($dateTimeStamp, $ref) {	// apbw 2/
 		   .self::centerString("................................................")."\n"
 		   .self::centerString($CORE_LOCAL->get("chargeSlip1"))."\n\n"
 		   ."CUSTOMER CHARGE ACCOUNT\n"
-		   ."Name: ".trim($CORE_LOCAL->get("ChgName"))."\n"		// changed by apbw 2/14/05 SCR
+		   ."Name: ".trim($chgName)."\n"		// changed by apbw 2/14/05 SCR
 		   ."Member Number: ".trim($CORE_LOCAL->get("memberID"))."\n"
 		   ."Date: ".$date."\n"
 		   ."REFERENCE #: ".$ref."\n"
@@ -279,10 +262,8 @@ static public function printChargeFooterStore($dateTimeStamp, $ref) {	// apbw 2/
 		   ."X____________________________________________\n"
 		   .$CORE_LOCAL->get("fname")." ".$CORE_LOCAL->get("lname")."\n\n"
 		   .self::centerString(".................................................")."\n\n";
-	$CORE_LOCAL->set("chargetender",0);	// apbw 2/14/05 SCR (moved up a line for Reprint patch on 3/10/05)
 
-	return $receipt;
-
+	return self::chargeBalance($receipt);
 
 }
 
@@ -332,12 +313,12 @@ static public function printCabCoupon($dateTimeStamp, $ref){
 
 // -------------  frank.php incorporated into printlib on 3/24/05 apbw (from here to eof) -------
 
-static public function frank() {
+static public function frank($amount) {
 	global $CORE_LOCAL;
 
 	$date = strftime("%m/%d/%y %I:%M %p", time());
 	$ref = trim($CORE_LOCAL->get("memberID"))." ".trim($CORE_LOCAL->get("CashierNo"))." ".trim($CORE_LOCAL->get("laneno"))." ".trim($CORE_LOCAL->get("transno"));
-	$tender = "AMT: ".MiscLib::truncate2($CORE_LOCAL->get("tenderamt"))."  CHANGE: ".MiscLib::truncate2($CORE_LOCAL->get("change"));
+	$tender = "AMT: ".MiscLib::truncate2($amount)."  CHANGE: ".MiscLib::truncate2($CORE_LOCAL->get("change"));
 	$output = self::center_check($ref)."\n"
 		.self::center_check($date)."\n"
 		.self::center_check($CORE_LOCAL->get("ckEndorse1"))."\n"
@@ -353,7 +334,7 @@ static public function frank() {
 
 // -----------------------------------------------------
 
-static public function frankgiftcert() {
+static public function frankgiftcert($amount) {
 	global $CORE_LOCAL;
 
 	$ref = trim($CORE_LOCAL->get("CashierNo"))."-".trim($CORE_LOCAL->get("laneno"))."-".trim($CORE_LOCAL->get("transno"));
@@ -368,14 +349,14 @@ static public function frankgiftcert() {
 	$output .= str_repeat(" ", 12).$next_year;
 	$output .= str_repeat("\n", 3);
 	$output .= str_repeat(" ", 75);
-      $output .= "$".MiscLib::truncate2($CORE_LOCAL->get("tenderamt"));
+	$output .= "$".MiscLib::truncate2($amount);
 	self::endorse($output); 
 
 }
 
 // -----------------------------------------------------
 
-static public function frankstock() {
+static public function frankstock($amount) {
 	global $CORE_LOCAL;
 
 	$time_now = strftime("%m/%d/%y", time());		// apbw 3/10/05 "%D" didn't work - Franking patch
@@ -393,7 +374,7 @@ static public function frankstock() {
 		$CORE_LOCAL->set("LastEquityReference",$ref);
 	}
 	else {
-		$output .= "Stock Payment $".$CORE_LOCAL->get("tenderamt")." ref: ".$ref."   ".$time_now; // apbw 3/24/05 Wedge Printer Swap Patch
+		$output .= "Stock Payment $".$amount." ref: ".$ref."   ".$time_now; // apbw 3/24/05 Wedge Printer Swap Patch
 	}
 
 	self::endorse($output);
@@ -412,66 +393,6 @@ static public function frankclassreg() {
 	$output .= "Validated: ".$time_now."  ref: ".$ref; 	// apbw 3/24/05 Wedge Printer Swap Patch
 
 	self::endorse($output);	
-
-}
-
-//----------------------------------Credit Card footer----by CvR
-
-/**
-  @deprecated
-  Not called, ccTotal session var has been removed
-*/
-static public function printCCFooter($dateTimeStamp, $ref) {
-	global $CORE_LOCAL;
-
-	$date = self::build_time($dateTimeStamp);
-
-
-			
-	$receipt = "\n".self::centerString("C U S T O M E R   C O P Y")."\n"
-		   .self::centerString("................................................")."\n"
-               .self::centerString($CORE_LOCAL->get("chargeSlip1"))."\n\n"
-		   .self::centerString("Cardholder acknowledges receipt of goods/services")."\n"
-               .self::centerString("in the amount shown and agrees to pay for them")."\n"
-               .self::centerString("according to card issuer agreement.")."\n\n"
-		   ."CREDIT CARD CHARGE\n"
-		   ."Name: ".trim($CORE_LOCAL->get("ccName"))."\n"
-		   ."Member Number: ".trim($CORE_LOCAL->get("memberID"))."\n"
-		   ."Date: ".$date."\n"
-		   ."REFERENCE #: ".$ref."\n"
-               ."TROUTD: ".trim($CORE_LOCAL->get("troutd"))."\n"
-		   ."Charge Amount: $".number_format(-1*$CORE_LOCAL->get("ccTotal"), 2)."\n"  //changed 04/01/05 Tak & CvR
-		   .self::centerString("................................................")."\n"
-		   ."\n\n\n\n\n\n\n"
-		   .chr(27).chr(105)
-
-	// self::writeLine($receipt1.chr(27).chr(105));
-	// self::writeLine(chr(27).chr(105));
-
-	// $receipt2 =""
-
-		   .self::centerString($CORE_LOCAL->get("chargeSlip2"))."\n"
-		   .self::centerString("................................................")."\n"
-		   .self::centerString($CORE_LOCAL->get("chargeSlip1"))."\n\n"
-		   ."CREDIT CARD CHARGE\n"
-		   ."Name: ".trim($CORE_LOCAL->get("ccName"))."\n"
-		   ."Member Number: ".trim($CORE_LOCAL->get("memberID"))."\n"
-		   ."Date: ".$date."\n"
-		   ."REFERENCE #: ".$ref."\n"
-               ."TROUTD: ".trim($CORE_LOCAL->get("troutd"))."\n"
-		   ."Charge Amount: $".number_format(-1*$CORE_LOCAL->get("ccTotal"), 2)."\n\n" //changed 04/01/05  Tak and CvR
-		   .self::centerString("I agree to pay the above total amount")."\n"
-		   .self::centerString("according to card issuer agreement.")."\n\n"
-		   ."Purchaser Sign Below\n\n\n"
-		   ."X____________________________________________\n\n"
-		   .self::centerString(".................................................")."\n\n";
-		
-		
-
-
-	// self::writeLine(chr(27).chr(105));
-
-	return $receipt;
 
 }
 
@@ -513,12 +434,20 @@ static public function chargeBalance($receipt){
 	return $receipt;
 }
 
-static public function storeCreditIssued($second){
+static public function storeCreditIssued($second, $ref=''){
 	global $CORE_LOCAL;
 	if ($second) return "";
 
 	$db = Database::tDataConnect();
 	$checkQ = "select sum(total) from localtemptrans where trans_subtype='SC' and trans_type='T'";
+	if ($ref !== ''){
+		list($e, $r, $t) = explode('-',$ref);
+		$checkQ = "select sum(total) from localtranstoday where 
+			trans_subtype='SC' and trans_type='T'
+			AND emp_no=".((int)$e).'
+			AND register_no='.((int)$r).'
+			AND trans_no='.((int)$t);
+	}
 	$checkR = $db->query($checkQ);
 
 	$num_rows = $db->num_rows($checkR);
@@ -573,10 +502,10 @@ static public function getChgName() {
 
 	if ($num_rows > 0) {
 		$LastInit = substr($CORE_LOCAL->get("lname"), 0, 1).".";
-		$CORE_LOCAL->set("ChgName",trim($CORE_LOCAL->get("fname")) ." ". $LastInit);
+		return trim($CORE_LOCAL->get("fname")) ." ". $LastInit;
 	}
 	else{
-		$CORE_LOCAL->set("ChgName",$CORE_LOCAL->get("memMsg"));
+		return $CORE_LOCAL->get('memMsg');
 	}
 }
 
@@ -688,14 +617,17 @@ static public function printCCSigSlip($dateTimeStamp,$ref,$storeCopy=True,$rp=0)
 			.$CORE_LOCAL->get("CapturedSigFile");
 
 		$bmp = new Bitmap();
-		$bmp->Load($sig_file);
+		$bmp->load($sig_file);
 
-		$bmpData = $bmp->GetRawData();
-		$bmpWidth = $bmp->GetWidth();
-		$bmpHeight = $bmp->GetHeight();
+		$bmpData = $bmp->getRawData();
+		$bmpWidth = $bmp->getWidth();
+		$bmpHeight = $bmp->getHeight();
 		$bmpRawBytes = (int)(($bmpWidth + 7)/8);
 
-		$printer = new ESCPOSPrintHandler();
+		$print_class = $CORE_LOCAL->get('ReceiptDriver');
+		if ($print_class === '' || !class_exists($print_class))
+			$print_class = 'ESCPOSPrintHandler';
+		$printer = new $print_class();
 		$stripes = $printer->TransposeBitmapData($bmpData, $bmpWidth);
 		for($i=0; $i<count($stripes); $i++)
 			$stripes[$i] = $printer->InlineBitmap($stripes[$i], $bmpWidth);
@@ -752,7 +684,7 @@ static public function graphedLocalTTL(){
 			$row['localTTL'], 100*$percent);
 	$str .= "\n";
 
-	$str .= self::$PRINT_OBJ->RenderBitmap(Bitmap::BarGraph($percent), 'L');
+	$str .= self::$PRINT_OBJ->RenderBitmap(Bitmap::barGraph($percent), 'L');
 	return $str."\n";
 }
 
@@ -892,11 +824,12 @@ static public function receiptDetail($reprint=False,$trans_num='') { // put into
 				$detail .= "                                         TAX    0.00\n";
 			}
 			elseif ($row[1]==1 and $CORE_LOCAL->get("TaxExempt")==1){
-				$queryExempt="select 
-					right((space(44) + upper(rtrim('SUBTOTAL'))), 44) 
-					+ right((space(8) + convert(varchar,runningTotal-tenderTotal)), 8) 
-					+ right((space(4) + ''), 4) as linetoprint,1 as sequence,null as dept_name,3 as ordered,'' as upc
-					from lttSummary";
+				$queryExempt="select ".$db->concat(
+				"right(".$db->concat('space(44)',"'SUBTOTAL'",'').", 44)",
+				"right(".$db->concat('space(8)',$db->convert('runningTotal-tenderTotal','char'),'').", 8)", 
+				"space(4)",'')." as linetoprint,
+				1 as sequence,null as dept_name,3 as ordered,'' as upc
+				from lttsummary";
 				$resultExempt = $db->query($queryExempt);
 				$rowExempt = $db->fetch_array($resultExempt);
 				$detail .= $rowExempt[0]."\n";
@@ -1101,7 +1034,9 @@ static public function twoColumns($col1, $col2) {
 
 /**
   generates a receipt string
-  @param $arg1 string receipt type
+  @param $arg1 string receipt type 
+	or reprint receipt reference
+	<emp_no>-<register_no>-<trans_no>
   @param $second boolean indicating it's a second receipt
   @param $email generate email-style receipt
   @return string receipt content
@@ -1112,36 +1047,94 @@ static public function printReceipt($arg1,$second=False,$email=False) {
 	if($second) $email = False; // store copy always prints
 	if($arg1 != "full") $email = False;
 
-	self::$PRINT_OBJ = new ESCPOSPrintHandler();
-	$receipt = "";
-
-	/**
-	  Moved to ajax-end.php to avoid hanging on printer errors
-	$kicker_class = ($CORE_LOCAL->get("kickerModule")=="") ? 'Kicker' : $CORE_LOCAL->get('kickerModule');
-	$kicker_object = new $kicker_class();
-	if (!is_object($kicker_object)) $kicker_object = new Kicker();
-	$dokick = $kicker_object->doKick();
-
-	if ($arg1 == "full" && $dokick) {	// ---- apbw 03/29/05 Drawer Kick Patch
-		$kick_cmd = self::$PRINT_OBJ->DrawerKick(2,48*2,30*2);
-		self::$PRINT_OBJ->writeLine($kick_cmd);
-		//self:::writeLine(chr(27).chr(112).chr(0).chr(48)."0");
-	}
-	*/
-
-/* --------------------------------------------------------------
-  turn off staff charge receipt printing if toggled - apbw 2/1/05 
-  ---------------------------------------------------------------- */
-
-	$noreceipt = ($CORE_LOCAL->get("receiptToggle")==1 ? 0 : 1);
-	
-	$dateTimeStamp = time();		// moved by apbw 2/15/05 SCR
-
-// -- Our Reference number for the transaction.
-
+	$dateTimeStamp = time();
 	$ref = trim($CORE_LOCAL->get("CashierNo"))."-".trim($CORE_LOCAL->get("laneno"))."-".trim($CORE_LOCAL->get("transno"));
 
+	$reprint = False;
+	$rp_where = '';
+	/**
+	  Arg is requesting a reprint receipt
+	  Reprints always run as type "full"
+	  and always print to paper
+
+	  This block deprecates ReceiptLib::reprintReceipt()
+	*/
+	if (preg_match('/^\d+-\d+-\d+$/',$arg1) === 1 || preg_match('/^\d+::\d+::\d+$/',$arg1) === 1){
+		$emp=$reg=$trans=0;
+		if (strstr($arg1,'-') !== False)
+			list($emp, $reg, $trans) = explode('-',$arg1);
+		else if (strstr($arg1,'::') !== False)
+			list($reg, $emp, $trans) = explode('::',$arg1);
+		$arg1 = 'full';
+		$email = False;
+		$second = False;
+		$reprint = True;
+		$rp_where = 'emp_no='.((int)$emp). ' AND
+			register_no='.((int)$reg).' AND
+			trans_no='.((int)$trans);
+		$ref = sprintf('%d-%d-%d',$emp,$reg,$trans);
+
+		// lookup trans information
+		$queryHeader = "select * from rp_receipt_header where ".$rp_where;
+		$db = Database::tDataConnect();
+		$header = $db->query($queryHeader);
+		$row = $db->fetch_row($header);
+		$dateTimeStamp = $row["dateTimeStamp"];
+		$dateTimeStamp = strtotime($dateTimeStamp);
+		
+		// set session variables from trans information
+		$CORE_LOCAL->set("memberID",$row["memberID"]);
+		$CORE_LOCAL->set("memCouponTLL",$row["couponTotal"]);
+		$CORE_LOCAL->set("transDiscount",$row["transDiscount"]);
+		$CORE_LOCAL->set("chargeTotal",-1*$row["chargeTotal"]);
+		$CORE_LOCAL->set("discounttotal",$row["discountTTL"]);
+		$CORE_LOCAL->set("memSpecial",$row["memSpecial"]);
+
+		// lookup member info
+		$db = Database::pDataConnect();
+		$queryID = "select LastName,FirstName,Type,blueLine from custdata 
+			where CardNo = '".$CORE_LOCAL->get("memberID")."' and personNum=1";
+		$result = $db->query($queryID);
+		$row = $db->fetch_array($result);
+
+		// set session variables from member info
+		$CORE_LOCAL->set("lname",$row["LastName"]);
+		$CORE_LOCAL->set("fname",$row["FirstName"]);
+		$CORE_LOCAL->set('isMember', ($row['Type']=='PC' ? 1 : 0));
+		$CORE_LOCAL->set("memMsg",$row["blueLine"]);
+		if ($CORE_LOCAL->get("isMember") == 1) {
+			$CORE_LOCAL->set("yousaved",number_format( $CORE_LOCAL->get("transDiscount") 
+					+ $CORE_LOCAL->get("discounttotal") + $CORE_LOCAL->get("memSpecial"), 2));
+			$CORE_LOCAL->set("couldhavesaved",0);
+			$CORE_LOCAL->set("specials",number_format($CORE_LOCAL->get("discounttotal") 
+					+ $CORE_LOCAL->get("memSpecial"), 2));
+		}
+		else {
+			$CORE_LOCAL->set("yousaved",$CORE_LOCAL->get("discounttotal"));
+			$CORE_LOCAL->set("couldhavesaved",number_format($CORE_LOCAL->get("memSpecial"), 2));
+			$CORE_LOCAL->set("specials",$CORE_LOCAL->get("discounttotal"));
+		}
+	}
+
+	$print_class = $CORE_LOCAL->get('ReceiptDriver');
+	if ($print_class === '' || !class_exists($print_class))
+		$print_class = 'ESCPOSPrintHandler';
+	self::$PRINT_OBJ = new $print_class();
+	$receipt = "";
+
+	$noreceipt = ($CORE_LOCAL->get("receiptToggle")==1 ? 0 : 1);
 	$ignoreNR = array("ccSlip");
+
+	// find receipt types provided via modules
+	$message_mods = $CORE_LOCAL->get('ReceiptMessageMods');
+	if (!is_array($message_mods)) $message_mods = array();
+	$type_map = array();
+	foreach($message_mods as $class){
+		if (!class_exists($class)) continue;
+		$obj = new $class();
+		if ($obj->standalone_receipt_type != '')
+			$type_map[$obj->standalone_receipt_type] = $obj;
+	}
 
 	if ($noreceipt != 1 || in_array($arg1,$ignoreNR) || $email){
 		$receipt = self::printReceiptHeader($dateTimeStamp, $ref);
@@ -1150,16 +1143,20 @@ static public function printReceipt($arg1,$second=False,$email=False) {
 			$ins = self::$PRINT_OBJ->centerString("( S T O R E   C O P Y )")."\n";
 			$receipt = substr($receipt,0,3).$ins.substr($receipt,3);
 		}
+		else if ($reprint !== False){
+			$ins = self::$PRINT_OBJ->centerString("***   R E P R I N T   ***")."\n";
+			$receipt = substr($receipt,0,3).$ins.substr($receipt,3);
+		}
 
-		// The Nitty Gritty:
-		/***** jqh 09/29/05 changes made to following if statement so if the receipt is full, then print new receipt,
-		if not full, then print old style receipt *****/
 		if ($arg1 == "full") {
 			$receipt = array('any'=>'','print'=>'');
 			if ($email) self::$PRINT_OBJ = new EmailPrintHandler();
 			$receipt['any'] = self::printReceiptHeader($dateTimeStamp, $ref);
 
-			$receipt['any'] .= self::receiptDetail();
+			if ($reprint !== False)
+				$receipt['any'] .= self::receiptDetail(True, $ref);
+			else
+				$receipt['any'] .= self::receiptDetail();
 			$member = trim($CORE_LOCAL->get("memberID"));
 			$your_discount = $CORE_LOCAL->get("transDiscount");
 
@@ -1213,50 +1210,48 @@ static public function printReceipt($arg1,$second=False,$email=False) {
 			$receipt['any'] = self::chargeBalance($receipt['any']);
 			/**** CvR end ****/
 
-			// preemptive-check: avoid extra function calls if there aren't
-			// applicable records
+			// check if message mods have data
+			// and add them to the receipt
 			$db = Database::tDataConnect();
-			$q = "SELECT
-				SUM(CASE WHEN trans_subtype IN ('CC','AX','DC') THEN 1 ELSE 0 END) as CC,
-				SUM(CASE WHEN trans_subtype='GD' OR department=902 THEN 1 ELSE 0 END) as GD,
-				SUM(CASE WHEN trans_subtype='SC' THEN 1 ELSE 0 END) as SC,
-				SUM(CASE WHEN department=991 THEN 1 ELSE 0 END) as equity
-				FROM localtemptrans";
-			$r = $db->query($q);
-			$chk = array('CC'=>0,'GD'=>0,'SC'=>0,'equity'=>0);
-			if ($db->num_rows($r) > 0) $chk = $db->fetch_row($r);
-
-			// append customer copy to actual lane receipt
-			if ($chk['CC'] > 0 && $CORE_LOCAL->get('standalone') == 0)
-				$receipt['any'] .= self::printCCSigSlip($dateTimeStamp, $ref, false, 0);
-
-			if ($chk['GD'] > 0){
-				if ($CORE_LOCAL->get("autoReprint") == 1)
-					$receipt['any'] .= self::printGCSlip($dateTimeStamp, $ref, false, 1);
-				else
-					$receipt['any'] .= self::printGCSlip($dateTimeStamp, $ref, true, 1);
+			$q = "SELECT ";
+			$select_mods = array();
+			foreach($message_mods as $class){
+				if (!class_exists($class)) continue;
+				$obj = new $class();
+				$q .= $obj->select_condition().' AS '.$db->identifier_escape($class).',';
+				$select_mods[$class] = $obj;
+			}
+			$q = rtrim($q,',');
+			if (count($select_mods) > 0){
+				$q .= ' FROM localtemptrans';
+				if ($reprint !== False){
+					$q = str_replace('localtemptrans','localtranstoday',$q);
+					$q .= ' WHERE '.$rp_where;
+				}
+				$r = $db->query($q);
+				$row = array();
+				if ($db->num_rows($r) > 0) $row = $db->fetch_row($r);
+				foreach($select_mods as $class => $obj){
+					if (!isset($row[$class])) continue;	
+					if ($obj->paper_only)
+						$receipt['print'] .= $obj->message($row[$class], $ref, $reprint);
+					else
+						$receipt['any'] .= $obj->message($row[$class], $ref, $reprint);
+				}
 			}
 
-			if ($CORE_LOCAL->get("promoMsg") == 1) {
-				self::promoMsg();
-			}
-
-			$CORE_LOCAL->set("equityNoticeAmt",0);
-			if ($chk['equity'] > 0)
-				$receipt['any'] .= self::equityNotification();
 			if ($CORE_LOCAL->get('memberID') != $CORE_LOCAL->get('defaultNonMem'))
 				$receipt['any'] .= self::memReceiptMessages($CORE_LOCAL->get("memberID"));
 			$CORE_LOCAL->set("equityNoticeAmt",0);
-
-			// switch back to print output handler
-			self::$PRINT_OBJ = new ESCPOSPrintHandler();
-			if ($chk['SC'] > 0)
-				$receipt['print'] .= self::storeCreditIssued($second);
 
 			// knit pieces back together if not emailing
 			if (!$email) $receipt = ''.$receipt['any'].$receipt['print'];
 
 			$CORE_LOCAL->set("headerprinted",0);
+		}
+		else if (isset($type_map[$arg1])){
+			$obj = $type_map[$arg1];
+			$receipt = $obj->standalone_receipt($ref, $reprint);
 		}
 		else if ($arg1 == "cab"){
 			$ref = $CORE_LOCAL->get("cabReference");
@@ -1294,20 +1289,6 @@ static public function printReceipt($arg1,$second=False,$email=False) {
 				$receipt .= $dashes.self::centerString("*  T R A N S A C T I O N  S U S P E N D E D  *").$dashes
 					     .self::centerString($ref);
 			}
-			elseif ($arg1 == "ccSlip") {
-				$receipt = self::printCCSigSlip($dateTimeStamp,$ref,True);
-			}
-			else if ($arg1 == "gcSlip") { // --atf 10/8/07
-				if ($CORE_LOCAL->get("autoReprint") == 1){
-					$receipt = self::printGCSlip($dateTimeStamp,$ref,true);
-				}
-				else {
-					$receipt = self::printGCSlip($dateTimeStamp,$ref,false);
-				}
-			} 
-			else if ($arg1 == "gcBalSlip") { // --atf 10/8/07
-				$receipt = self::printGCBalSlip();
-			} 
 		
 		} /***** jqh end big if statement change *****/
 	}
@@ -1315,7 +1296,7 @@ static public function printReceipt($arg1,$second=False,$email=False) {
 	/* --------------------------------------------------------------
 	  print store copy of charge slip regardless of receipt print setting - apbw 2/14/05 
 	  ---------------------------------------------------------------- */
-	if ($CORE_LOCAL->get("chargetender") == 1 && $CORE_LOCAL->get("End") == 1) {
+	if ($CORE_LOCAL->get("chargeTotal") != 0 && (($CORE_LOCAL->get("End") == 1 && !$second) || $reprint)) {
 		if (is_array($receipt))
 			$receipt['print'] .= self::printChargeFooterStore($dateTimeStamp, $ref);
 		else
@@ -1323,6 +1304,11 @@ static public function printReceipt($arg1,$second=False,$email=False) {
 	}		
 			
 	if (is_array($receipt)){
+		if ($second){
+			// second always prints
+			$receipt['print'] = $receipt['any'].$receipt['print'];
+			$receipt['any'] = '';
+		}
 		if ($receipt['print'] !== ''){
 			$receipt['print'] = $receipt['print']."\n\n\n\n\n\n\n";
 			$receipt['print'] .= chr(27).chr(105);
@@ -1335,13 +1321,22 @@ static public function printReceipt($arg1,$second=False,$email=False) {
 	
 	if (!in_array($arg1,$ignoreNR))
 		$CORE_LOCAL->set("receiptToggle",1);
+	if ($reprint){
+		$CORE_LOCAL->set("memMsg","");
+		$CORE_LOCAL->set("memberID","0");
+		$CORE_LOCAL->set("percentDiscount",0);
+		$CORE_LOCAL->set('isMember', 0);
+	}
 	return $receipt;
 }
 
 static public function reprintReceipt($trans_num=""){
 	global $CORE_LOCAL;
 
-	self::$PRINT_OBJ = new ESCPOSPrintHandler();
+	$print_class = $CORE_LOCAL->get('ReceiptDriver');
+	if ($print_class === '' || !class_exists($print_class))
+		$print_class = 'ESCPOSPrintHandler';
+	self::$PRINT_OBJ = new $print_class();
 
 	if (strlen($trans_num) >= 1) {
 		$title = chr(27).chr(33).chr(5).self::centerString("***    R E P R I N T    ***")."\n\n\n";
@@ -1366,12 +1361,6 @@ static public function reprintReceipt($trans_num=""){
 		$CORE_LOCAL->set("memCouponTLL",$headerRow["couponTotal"]);
 		$CORE_LOCAL->set("transDiscount",$headerRow["transDiscount"]);
 		$CORE_LOCAL->set("chargeTotal",-1*$headerRow["chargeTotal"]);
-
-		if ($CORE_LOCAL->get("chargeTotal") != 0) { 
-			$CORE_LOCAL->set("chargetender",1);
-		} else {
-			$CORE_LOCAL->set("chargetender",0);
-		}
 
 		$CORE_LOCAL->set("discounttotal",$headerRow["discountTTL"]);
 		$CORE_LOCAL->set("memSpecial",$headerRow["memSpecial"]);
@@ -1458,7 +1447,7 @@ static public function reprintReceipt($trans_num=""){
 		}
 
 
-		if ($CORE_LOCAL->get("chargetender") != 0 ) {			// apbw 03/10/05 Reprint patch
+		if ($CORE_LOCAL->get("chargeTotal") != 0 ) {			// apbw 03/10/05 Reprint patch
 			$receipt = $receipt.self::printChargeFooterStore($dateTimeStamp, $ref);	// apbw 03/10/05 Reprint patch
 		}			// apbw 03/10/05 Reprint patch
 
@@ -1472,73 +1461,8 @@ static public function reprintReceipt($trans_num=""){
 		$CORE_LOCAL->set("memMsg","");
 		$CORE_LOCAL->set("memberID","0");
 		$CORE_LOCAL->set("percentDiscount",0);
+		$CORE_LOCAL->set('isMember', 0);
 	}
-}
-
-/**
-  Check whether drawer should open on this transaction
-  @return
-   - 1 open drawer
-   - 0 do not open
-  @deprecated use Kicker modules
-*/
-static public function setDrawerKick()
-
-{
-	global $CORE_LOCAL;
-
-//	this, the simplest version, kicks the drawer for every tender *except* staff charge & business charge (MI, CX)
-// 	apbw 05/03/05 KickFix added !=0 criteria
-
-	if ($CORE_LOCAL->get("chargeTotal") == $CORE_LOCAL->get("tenderTotal") && $CORE_LOCAL->get("chargeTotal") != 0 && $CORE_LOCAL->get("tenderTotal") != 0 ) {	
-		if (in_array($CORE_LOCAL->get("TenderType"),$CORE_LOCAL->get("DrawerKickMedia"))) {
-			return 1;
-		} else {
-			//$_SESSION["kick"] = 0; 						
-			return 0;
-		}
-	} else {						
-		//$_SESSION["kick"] = 1;	
-		return 1;
-	}							
-}
-
-/**
-  Variant check for when to open cash drawer
-  @return
-   - 1 open drawer
-   - 0 do not open
-
-  Opens on cash transactions, credit card
-  transactions > $25, and stamp sales.
-
-  @deprecated use Kicker modules
-*/
-static public function setDrawerKickLater()
-
-{
-
-// 	this more complex version can be modified to kick the drawer under whatever circumstances the FE Mgr sees fit
-//	it currently kicks the drawer *only* for cash in & out
-//	and credit card - andy
- 
-
-	$db = Database::tDataConnect();
-
-	$query = "select * from localtemptrans where (trans_subtype = 'CA' and total <> 0) or (trans_subtype = 'CC' AND (total < -25 or total > 0)) or upc='0000000001065'";
-
-	$result = $db->query($query);
-	$num_rows = $db->num_rows($result);
-	$row = $db->fetch_array($result);
-
-	if ($num_rows != 0) {
-	 //$_SESSION["kick"] = 1;
-	 return 1;
-	} else {
-	//$_SESSION["kick"] = 0;
-	 return 0;
-	}
-
 }
 
 static public function memReceiptMessages($card_no){

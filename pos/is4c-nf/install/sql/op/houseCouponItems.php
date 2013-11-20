@@ -26,4 +26,10 @@ $CREATE['op.houseCouponItems'] = "
 		INDEX (upc)
 	)
 ";
+
+if ($dbms == 'PDOLITE'){
+	$CREATE['op.houseCouponItems'] = str_replace('INDEX (coupID),','',$CREATE['op.houseCouponItems']);
+	$CREATE['op.houseCouponItems'] = str_replace('INDEX (upc)','',$CREATE['op.houseCouponItems']);
+	$CREATE['op.houseCouponItems'] = str_replace('KEY (coupID,upc),','KEY (coupID,upc)',$CREATE['op.houseCouponItems']);
+}
 ?>

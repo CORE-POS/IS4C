@@ -24,8 +24,6 @@
 ini_set('display_errors','Off');
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
-$CORE_LOCAL->set("away",1);
-
 /*
  * DDD is WFC lingo for unsaleable goods (dropped, dented, damaged, etc)
  * Functionally this works like canceling a transaction, but marks
@@ -36,14 +34,8 @@ $CORE_LOCAL->set("away",1);
 $db = Database::tDataConnect();
 $query = "UPDATE localtemptrans SET trans_status='Z'";
 $db->query($query);
-$query = "INSERT INTO dtransactions SELECT * from localtemptrans";
-$db->query($query);
-$query = "INSERT INTO localtrans SELECT * from localtemptrans";
-$db->query($query);
 
 $CORE_LOCAL->set("plainmsg","items marked ddd");
-$CORE_LOCAL->set("beep","rePoll");
-$CORE_LOCAL->set("msg",2);
 $CORE_LOCAL->set("End",2);
 
 $_REQUEST['receiptType'] = 'ddd';

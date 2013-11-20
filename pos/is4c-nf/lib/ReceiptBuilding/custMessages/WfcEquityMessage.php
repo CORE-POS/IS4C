@@ -1,6 +1,6 @@
 <?php
 
-class WfcEquityMessage {
+class WfcEquityMessage extends CustomerReceiptMessage {
 
 	function message($str){
 		global $CORE_LOCAL;

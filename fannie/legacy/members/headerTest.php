@@ -1,4 +1,6 @@
 <?php
+if (!isset($FANNIE_ROOT))
+    include('../../config.php');
 
 include('header.html');
 
@@ -52,15 +54,15 @@ if (empty($memID))
   <tr>
     <td colspan="11" bgcolor="#006633"><a href="memGen.php?memID=<? echo $memID ?>">
 	<img src="../images/general.gif" width="72" height="16" border="0" />
-		<a href="testDetails.php?memID=<? echo $memID ?>">
+        <a href="<?php echo $FANNIE_URL; ?>modules/plugins2.0/PIKiller/PIEquityPage.php?id=<? echo $memID; ?>">
 	<img src="../images/equity.gif" width="72" height="16" border="0" /></a>
-		<a href="memARTrans.php?memID=<? echo $memID ?>">
+        <a href="<?php echo $FANNIE_URL; ?>modules/plugins2.0/PIKiller/PIArPage.php?id=<? echo $memID; ?>">
 	<img src="../images/AR.gif" width="72" height="16" border="0" /></a>
 		<a href="memControl.php?memID=<?php echo $memID ?>">
 	<img src="../images/control.gif" width="72" height="16" border="0" /></a>
-		<a href="memTrans.php?memID=<? echo $memID; ?>">
+        <a href="<?php echo $FANNIE_URL; ?>modules/plugins2.0/PIKiller/PIPurchasesPage.php?id=<? echo $memID; ?>">
 	<img src="../images/detail.gif" width="72" height="16" border="0" /></a>
-                <a href="patronage.php?memID=<? echo $memID; ?>">
+                <a href="<?php echo $FANNIE_URL; ?>modules/plugins2.0/PIKiller/PIPatronagePage.php?id=<? echo $memID; ?>">
         <img src="../images/patronage.gif" width="72" height="16" border="0" /></a>
     </td>
   </tr>

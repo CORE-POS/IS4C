@@ -1,6 +1,0 @@
-Put IS4C in apache's root directory. Have PHP installed.
-Have a MySQL or SQL Server somewhere accessible.
-
-Navigate to this directory. Configuration is web-based.
-ini.php (in the above directory) must be writeable
-by apache to save your config.

@@ -80,6 +80,8 @@ class PriceCheckPage extends NoInputPage {
 				}
 				$this->pricing['description'] = $row['description'];
 				$this->pricing['department'] = $row['department'];
+
+				MiscLib::goodBeep();
 			}
 
 			// user hit enter and there is a valid UPC present
@@ -102,7 +104,6 @@ class PriceCheckPage extends NoInputPage {
 	function body_content(){
 		global $CORE_LOCAL;
 		$this->add_onload_command("\$('#reginput').focus();\n");
-		$style = "style=\"background:#004080;\"";
 		$info = _("price check");
 		$inst = array(
 			_("[scan] item"),
@@ -133,7 +134,7 @@ class PriceCheckPage extends NoInputPage {
 		}
 		?>
 		<div class="baseHeight">
-		<div class="colored centeredDisplay" <?php echo $style; ?>>
+		<div class="coloredArea centeredDisplay">
 		<span class="larger">
 		<?php echo $info ?>
 		</span><br />
@@ -149,12 +150,10 @@ class PriceCheckPage extends NoInputPage {
 		</div>
 		</div>
 		<?php
-		$CORE_LOCAL->set("beep","noScan");
 	} // END true_body() FUNCTION
 
 	function mgrauthenticate($password){
 		global $CORE_LOCAL;
-		$CORE_LOCAL->set("away",1);
 
 		$ret = array(
 			'cancelOrder'=>false,
@@ -171,17 +170,12 @@ class PriceCheckPage extends NoInputPage {
 			$ret['giveUp'] = true;
 			return $ret;
 		}
-		elseif (!is_numeric($password)) {
-			return $ret;
-		}
-		elseif ($password > 9999 || $password < 1) {
-			return $ret;
-		}
 
 		$db = Database::pDataConnect();
 		$priv = sprintf("%d",$CORE_LOCAL->get("SecurityCancel"));
+		$password = $db->escape($password);
 		$query = "select emp_no, FirstName, LastName from employees where EmpActive = 1 and frontendsecurity >= $priv "
-		."and (CashierPassword = ".$password." or AdminPassword = ".$password.")";
+		."and (CashierPassword = '".$password."' or AdminPassword = '".$password."')";
 		$result = $db->query($query);
 		$num_rows = $db->num_rows($result);
 

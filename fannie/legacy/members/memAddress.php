@@ -1,67 +1,67 @@
 <?php
-include('functMem.php');
 include_once($FANNIE_ROOT.'auth/login.php');
 
 function addressList($memNum)
 {
 	global $sql,$FANNIE_URL;
-	$custQ = "SELECT * FROM custdata where CardNo = $memNum and personnum= 1";
-	$custR = $sql->query($custQ);
+	$custQ = $sql->prepare("SELECT * FROM custdata where CardNo = ? and personnum= 1");
+	$custR = $sql->execute($custQ, array($memNum));
         $custN = $sql->num_rows($custR);
         $custW = $sql->fetch_row($custR);
-	$status = $custW[11];
+	$status = $custW['Type'];
 
 	if($status == 'PC') $status='ACTIVE';
 	elseif($status == 'REG') $status='NONMEM';
 	elseif($status == 'INACT2') $status='TERM (PENDING)';
 
-	$infoQ = "SELECT * FROM meminfo WHERE card_no=$memNum";
-	$infoR = $sql->query($infoQ);
+	$infoQ = $sql->prepare("SELECT * FROM meminfo WHERE card_no=?");
+	$infoR = $sql->execute($infoQ, array($memNum));
 	$infoW = $sql->fetch_row($infoR);
 	$getsMail = $infoW['ads_OK'];
 
-	$cardsQ = "SELECT upc FROM memberCards WHERE card_no=$memNum";
-	$cardsR = $sql->query($cardsQ);
+	$cardsQ = $sql->prepare("SELECT upc FROM memberCards WHERE card_no=?");
+	$cardsR = $sql->execute($cardsQ, array($memNum));
 	$cardUPC = "";
 	if ($sql->num_rows($cardsR) > 0){
-		$cardUPC = array_pop($sql->fetch_row($cardsR));
+        $cardsW = $sql->fetch_row($cardsR);
+        $cardUPC = $cardsW['upc'];
 	}
 
-	$type = trim($custW[12]," ");
+	$type = trim($custW['memType']," ");
 	//echo "<br> Here is type: " .$type;
-	$query1 = "SELECT t.* FROM memTypeID as t WHERE t.memTypeID = $type";
+	$query1 = $sql->prepare("SELECT t.* FROM memTypeID as t WHERE t.memTypeID = ?");
 	//echo "<br>".$query1;
-	$result1 = $sql->query($query1);
+	$result1 = $sql->execute($query1, array($type));
 	$row1 = $sql->fetch_row($result1);
 
-	$dateQ = "SELECT CASE WHEN start_date IS NULL or start_date='' OR start_date='1900-01-01' OR start_date=0
+	$dateQ = $sql->prepare("SELECT CASE WHEN start_date IS NULL or start_date='' OR start_date='1900-01-01' OR start_date=0
 		THEN '' ELSE DATE(start_date) END,
 		CASE WHEN end_date IS NULL OR end_date = '' OR end_date='1900-01-01' OR end_date=0
 		THEN '' ELSE 
 		DATE(end_date) END from memDates
-		WHERE card_no=$memNum";
-	$dateR = $sql->query($dateQ);
+		WHERE card_no=?");
+	$dateR = $sql->execute($dateQ, array($memNum));
 	$dateW = $sql->fetch_row($dateR);
 
 	//updated to new stock view based on stockpurchases table....CvR 02/27/06
-	$query2 = "SELECT payments FROM is4c_trans.newBalanceStockToday_test WHERE memnum = $memNum";
-	$stockResult = $sql->query($query2);
+	$query2 = $sql->prepare("SELECT payments FROM is4c_trans.newBalanceStockToday_test WHERE memnum = ?");
+	$stockResult = $sql->execute($query2, array($memNum));
 	$row2 = $sql->fetch_row($stockResult);
 		
 	//$query3 = "SELECT * FROM newBalanceToday WHERE memnum = $memNum";
-        $query3 = "SELECT * FROM is4c_trans.ar_live_balance WHERE card_no= $memNum";
-	$arResult = $sql->query($query3);
+    $query3 = $sql->prepare("SELECT * FROM is4c_trans.ar_live_balance WHERE card_no= ?");
+	$arResult = $sql->execute($query3, array($memNum));
 	$row3 = $sql->fetch_row($arResult);
 
-	$query4 = "select LastName,FirstName from custdata where CardNo=$memNum and PersonNum > 1 order by PersonNum";
-	$nameResult = $sql->query($query4);	
+	$query4 = $sql->prepare("select LastName,FirstName from custdata where CardNo=? and PersonNum > 1 order by PersonNum");
+	$nameResult = $sql->execute($query4, array($memNum));
 	$nameRows = $sql->num_rows($nameResult);
 
 
-	$suspensionQ = "select type,reason,textStr,s.reasoncode&16 from suspensions s 
+	$suspensionQ = $sql->prepare("select type,reason,textStr,s.reasoncode&16 from suspensions s 
 			left join reasoncodes r on s.reasoncode & r.mask <> 0
-			where cardno=$memNum";
-	$suspensionR = $sql->query($suspensionQ);
+			where cardno=?");
+	$suspensionR = $sql->execute($suspensionQ, array($memNum));
 	$suspensionW = $sql->fetch_array($suspensionR);
 	$suspended = $sql->num_rows($suspensionR);
 
@@ -159,12 +159,12 @@ function addressList($memNum)
                         echo "<td bgcolor='FFFF33'>Mem Type: </td>";
                         echo "<td>" . $row1[1] . "</td>";
                         echo "<td bgcolor='ffff33'>Discount:</td>";
-                        echo "<td>".$custW[6]."</td>";
+                        echo "<td>".$custW['Discount']."</td>";
  
 		echo "</tr>";
 		echo "<tr>";
                         echo "<td bgcolor='FFFF33'>Charge Limit: </td>";
-                        echo "<td>" . $custW['MemDiscountLimit'] . "</td>";
+                        echo "<td>" . $custW['ChargeLimit'] . "</td>";
                         echo "<td bgcolor='FFFF33'>Current Balance: </td>";
                         echo "<td>" . $row3['balance'] . "</td>";
 		echo "</tr>";
@@ -179,8 +179,8 @@ function addressList($memNum)
                         echo "<td></td>";
                         echo "<td bgcolor='FFFF33'>First Name</td>";
                         echo "<td bgcolor='FFFF33'>Last Name</td>";
-			$noteQ = "select note from memberNotes where cardno=$memNum order by stamp desc limit 1";
-			$noteR = $sql->query($noteQ);
+			$noteQ = $sql->prepare("select note from memberNotes where cardno=? order by stamp desc limit 1");
+			$noteR = $sql->execute($noteQ, array($memNum));
 			$notetext = "";
 			if ($sql->num_rows($noteR) == 1)
 				$notetext = stripslashes(array_pop($sql->fetch_array($noteR)));
@@ -201,58 +201,59 @@ function addressList($memNum)
 function addressForm($memNum)
 {
 	global $sql;
-  $typeQ = "select * from custdata where CardNo = $memNum and personNum = 1";
-  $typeR = $sql->query($typeQ);
-  $typeRow = $sql->fetch_array($typeR);
-        $type = trim($typeRow['memType']," ");
-        $status = trim($typeRow['Type']," ");
+	$custQ = $sql->prepare("SELECT * FROM custdata where CardNo = ? and personnum= 1");
+	$custR = $sql->execute($custQ, array($memNum));
+    $typeRow = $sql->fetch_array($custR);
+    $type = trim($typeRow['memType']," ");
+    $status = trim($typeRow['Type']," ");
 	$memcoupons = $typeRow['memCoupons'];
 	if ($status != "PC") $memcoupons = 0;
 	if($status == 'PC') $status = 'ACTIVE';
 	elseif($status == 'REG') $status='NONMEM';
 	elseif($status == 'INACT2') $status='TERM (PENDING)';
 
-	$infoQ = "SELECT * FROM meminfo WHERE card_no=$memNum";
-	$infoR = $sql->query($infoQ);
+	$infoQ = $sql->prepare("SELECT * FROM meminfo WHERE card_no=?");
+	$infoR = $sql->execute($infoQ, array($memNum));
 	$infoW = $sql->fetch_row($infoR);
 	$getsMail = $infoW['ads_OK'];
 
-	$cardsQ = "SELECT upc FROM memberCards WHERE card_no=$memNum";
-	$cardsR = $sql->query($cardsQ);
+	$cardsQ = $sql->prepare("SELECT upc FROM memberCards WHERE card_no=?");
+	$cardsR = $sql->execute($cardsQ, array($memNum));
 	$cardUPC = "";
 	if ($sql->num_rows($cardsR) > 0){
-		$cardUPC = array_pop($sql->fetch_row($cardsR));
+        $cardsW = $sql->fetch_row($cardsR);
+        $cardUPC = $cardsW['upc'];
 	}
 
-        $query1 = "SELECT t.* FROM memTypeID as t WHERE t.memTypeID = $type";
-        $result1 = $sql->query($query1);
-        $row1 = $sql->fetch_row($result1);
+	$query1 = $sql->prepare("SELECT t.* FROM memTypeID as t WHERE t.memTypeID = ?");
+	$result1 = $sql->execute($query1, array($type));
+    $row1 = $sql->fetch_row($result1);
 	$memIDQ = "SELECT * FROM memTypeID";
 
-        $query2 = "SELECT payments FROM is4c_trans.newBalanceStockToday_test WHERE memnum = $memNum";
-        $stockResult = $sql->query($query2);
-        $row2 = $sql->fetch_row($stockResult);
+	$query2 = $sql->prepare("SELECT payments FROM is4c_trans.newBalanceStockToday_test WHERE memnum = ?");
+	$stockResult = $sql->execute($query2, array($memNum));
+    $row2 = $sql->fetch_row($stockResult);
 
-        $query3 = "SELECT * FROM is4c_trans.ar_live_balance WHERE card_no = $memNum";
-        $arResult = $sql->query($query3);
-        $row3 = $sql->fetch_row($arResult);
+    $query3 = $sql->prepare("SELECT * FROM is4c_trans.ar_live_balance WHERE card_no= ?");
+	$arResult = $sql->execute($query3, array($memNum));
+    $row3 = $sql->fetch_row($arResult);
 
 	//$query4 = "SELECT * FROM memnames WHERE memnum = $memNum AND personnum > 1 AND active = 1";
-	$query4 = "SELECT LastName,FirstName FROM custdata where CardNo = $memNum AND PersonNum > 1 order by PersonNum";
-	$nameResult = $sql->query($query4);	
+	$query4 = $sql->prepare("select LastName,FirstName from custdata where CardNo=? and PersonNum > 1 order by PersonNum");
+	$nameResult = $sql->execute($query4, array($memNum));
 	$nameRows = $sql->num_rows($nameResult);
 
-	$dateQ = "SELECT CASE WHEN start_date IS NULL or start_date='' or start_date='1900-01-01'
+	$dateQ = $sql->prepare("SELECT CASE WHEN start_date IS NULL or start_date='' or start_date='1900-01-01'
 		THEN '' ELSE DATE(start_date) END,
 		CASE WHEN end_date IS NULL OR end_date = '' or end_date='1900-01-01'
 		THEN '' ELSE 
 		DATE(end_date) END from memDates
-		WHERE card_no=$memNum";
-	$dateR = $sql->query($dateQ);
+		WHERE card_no=?");
+	$dateR = $sql->execute($dateQ, array($memNum));
 	$dateW = $sql->fetch_row($dateR);
 
-	$suspensionQ = "select type,reason from suspensions where cardno=$memNum";
-	$suspensionR = $sql->query($suspensionQ);
+	$suspensionQ = $sql->prepare("select type,reason from suspensions where cardno=?");
+	$suspensionR = $sql->execute($suspensionQ, array($memNum));
 	$suspensionW = $sql->fetch_array($suspensionR);
 	$suspended = $sql->num_rows($suspensionR);
 
@@ -371,7 +372,7 @@ function addressForm($memNum)
                 echo "</tr>";
                 echo "<tr>";
                         echo "<td bgcolor='FFFF33'>Charge Limit: </td>";
-                        echo "<td><input name=chargeLimit value='" . $typeRow['MemDiscountLimit'] . "'></td>";
+                        echo "<td><input name=chargeLimit value='" . $typeRow['ChargeLimit'] . "'></td>";
                         echo "<td bgcolor='FFFF33'>Current Balance: </td>";
                         echo "<td>" . $row3['balance'] . "</td>";
                 echo "</tr>";
@@ -386,8 +387,8 @@ function addressForm($memNum)
 			echo "<td></td>";
 			echo "<td bgcolor='FFFF33'>First Name</td>";
 			echo "<td bgcolor='FFFF33'>Last Name</td>";
-			$noteQ = "select note from memberNotes where cardno=$memNum order by stamp desc limit 1";
-			$noteR = $sql->query($noteQ);
+			$noteQ = $sql->prepare("select note from memberNotes where cardno=? order by stamp desc limit 1");
+			$noteR = $sql->execute($noteQ, array($memNum));
 			$notetext = "";
 			if ($sql->num_rows($noteR) == 1){
 				$notetext = stripslashes(array_pop($sql->fetch_array($noteR)));
@@ -433,21 +434,25 @@ function alterReason($memNum,$reasonCode,$status=False){
 	$username = checkLogin();
 	$uid = getUID($username);
 
-	$upQ = "UPDATE suspensions SET reasoncode=$reasonCode WHERE cardno=$memNum";
-	$upR = $sql->query($upQ);
+	$upQ = $sql->prepare("UPDATE suspensions SET reasoncode=? WHERE cardno=?");
+	$upR = $sql->execute($upQ, array($reasonCode, $memNum));
 	if ($reasonCode == 0){
 		activate($memNum);
 	}
 	else {
 		$now = date("Y-m-d h:i:s");
-		$insQ = "INSERT INTO suspension_history VALUES ('$username','$now','','$memNum',$reasonCode)";
-		$insR = $sql->query_all($insQ);
+		$insQ = $sql->prepare("INSERT INTO suspension_history VALUES (?,?,'',?,?)");
+		$insR = $sql->execute($insQ, array($username, $now, $memNum, $reasonCode));
 		if ($status){
-			$sql->query_all("UPDATE custdata SET type='$status' WHERE cardno=$memNum");
-			if ($status == "TERM")
-				$sql->query_all("UPDATE suspensions SET type='T' WHERE cardno=$memNum");
-			else
-				$sql->query_all("UPDATE suspensions SET type='I' WHERE cardno=$memNum");
+			$prep = $sql->prepare("UPDATE custdata SET type=? WHERE cardno=?");
+            $sql->execute($prep, array($status, $memNum));
+			if ($status == "TERM") {
+                $custP = $sql->prepare("UPDATE suspensions SET type='T' WHERE cardno=?");
+				$sql->execute($custP, array($memNum));
+			} else {
+                $custP = $sql->prepare("UPDATE suspensions SET type='I' WHERE cardno=?");
+				$sql->execute($custP, array($memNum));
+            }
 		}
 	}
 }
@@ -461,49 +466,57 @@ function deactivate($memNum,$type,$reason,$reasonCode){
   //$auditR = $sql->query($auditQ);
 	
   if ($type == 'TERM'){
-    $query = "select memtype,type,memDiscountLimit,discount from custdata where cardno=$memNum";
-    $result = $sql->query($query);
+    $query = $sql->prepare("select memType,Type,ChargeLimit,Discount from custdata where CardNo=?");
+    $result = $sql->execute($query, array($memNum));
     $row = $sql->fetch_array($result);
-    $otherQ = "select ads_OK from meminfo where card_no=$memNum";
-    $otherR = $sql->query($otherQ);
-    $mailflag = array_pop($sql->fetch_array($otherR));
+    $otherQ = $sql->prepare("select ads_OK from meminfo where card_no=?");
+    $otherR = $sql->execute($otherQ, array($memNum));
+    $otherW = $sql->fetch_array($otherR);
+    $mailflag = $otherW['ads_OK'];
     
     $now = date('Y-m-d h:i:s');
-    $query = "insert into suspensions values ($memNum,'T',$row[0],'$row[1]','$reason','$now',$mailflag,$row[3],$row[2],$reasonCode)";
+    $query = $sql->prepare("insert into suspensions (cardno, type, memtype1, memtype2, reason, suspDate, mailflag,
+                discount, chargelimit, reasoncode) values (?,'T',?,?,?,?,?,?,?,?)");
     //echo $query."<br />";
-    $result = $sql->query_all($query);
+    $result = $sql->execute($query, array($memNum, $row['memType'], $row['Type'], $reason, $now, $mailflag, $row['Discount'], $row['ChargeLimit'], $reasonCode));
     
     $username = validateUserQuiet('editmembers');
     
-    $query = "insert into suspension_history values ('$username','$now','$reason','$memNum',$reasonCode)";
-    $result = $sql->query_all($query);
+    $query = $sql->prepare("insert into suspension_history (username, postdate, post, cardno, reasoncode) 
+                values (?, ?, ?, ?, ?)");
+    $result = $sql->execute($query, array($username, $now, $reason, $memNum, $reasonCode));
     
-    $mQ = "update meminfo set ads_OK=0 where card_no = $memNum";
-    $cQ = "update custdata set memtype=0, type='TERM',chargeok=0,discount=0,memdiscountlimit=0 where cardno=$memNum";
-    $mR = $sql->query_all($mQ);
-    $cR = $sql->query_all($cQ);
+    $mQ = $sql->prepare("update meminfo set ads_OK=0 where card_no = ?");
+    $cQ = $sql->prepare("update custdata set memType=0, Type='TERM',ChargeOk=0,Discount=0,MemDiscountLimit=0,ChargeLimit=0 
+            where CardNo=?");
+    $mR = $sql->execute($mQ, array($memNum));
+    $cR = $sql->execute($cQ, array($memNum));
   }elseif($type=='INACT' || $type=='INACT2'){
-    $query = "select memtype,type,memDiscountLimit,discount from custdata where cardno=$memNum";
-    $result = $sql->query($query);
+    $query = $sql->prepare("select memType,Type,ChargeLimit,Discount from custdata where CardNo=?");
+    $result = $sql->execute($query, array($memNum));
     $row = $sql->fetch_array($result);
-    $otherQ = "select ads_OK from meminfo where card_no=$memNum";
-    $otherR = $sql->query($otherQ);
-    $mailflag = array_pop($sql->fetch_array($otherR));
+    $otherQ = $sql->prepare("select ads_OK from meminfo where card_no=?");
+    $otherR = $sql->execute($otherQ, array($memNum));
+    $otherW = $sql->fetch_array($otherR);
+    $mailflag = $otherW['ads_OK'];
     
     $now = date('Y-m-d h:i:s');
-    $query = "insert into suspensions values ($memNum,'I',$row[0],'$row[1]','$reason','$now',$mailflag,$row[3],$row[2],$reasonCode)";
+    $query = $sql->prepare("insert into suspensions (cardno, type, memtype1, memtype2, reason, suspDate, mailflag,
+                discount, chargelimit, reasoncode) values (?,'I',?,?,?,?,?,?,?,?)");
     //echo $query."<br />";
-    $result = $sql->query_all($query);
+    $result = $sql->execute($query, array($memNum, $row['memType'], $row['Type'], $reason, $now, $mailflag, $row['Discount'], $row['ChargeLimit'], $reasonCode));
 
     $username = validateUserQuiet('editmembers');
 
-    $query = "insert into suspension_history values ('$username','$now','$reason','$memNum',$reasonCode)";
-    $result = $sql->query_all($query);
+    $query = $sql->prepare("insert into suspension_history (username, postdate, post, cardno, reasoncode) 
+                values (?, ?, ?, ?, ?)");
+    $result = $sql->execute($query, array($username, $now, $reason, $memNum, $reasonCode));
 
-    $mQ = "update meminfo set ads_OK=0 where card_no = $memNum";
-    $cQ = "update custdata set memtype=0, type='$type',chargeok=0,discount=0,memDiscountLimit=0 where cardno=$memNum";
-    $mR = $sql->query_all($mQ);
-    $cR = $sql->query_all($cQ);
+    $mQ = $sql->prepare("update meminfo set ads_OK=0 where card_no = ?");
+    $cQ = $sql->prepare("update custdata set memType=0, Type='TERM',ChargeOk=0,Discount=0,MemDiscountLimit=0,ChargeLimit=0 
+            where CardNo=?");
+    $mR = $sql->execute($mQ, array($memNum));
+    $cR = $sql->execute($cQ, array($memNum));
   }
 }
 
@@ -515,67 +528,67 @@ function activate($memNum){
   $auditQ = "insert custUpdate select now(),$uid,1,* from custdata where cardno=$memNum";
   //$auditR = $sql->query($auditQ);
 
-  $query = "select type,memtype1,memtype2,discount,chargelimit,mailflag from suspensions where cardno=$memNum";
-  $result = $sql->query($query);
+  $query = $sql->prepare("select type,memtype1,memtype2,discount,chargelimit,mailflag from suspensions where cardno=?");
+  $result = $sql->execute($query, array($memNum));
   $row = $sql->fetch_array($result);
   // type S shouldn't exist any more, in here to deal with historical rows
+  $mQ = $sql->prepare("update meminfo set ads_OK=? where card_no=?");
+  $cQ = $sql->prepare("update custdata set memType=?, Type=?,ChargeOk=1,Discount=?,MemDiscountLimit=?,ChargeLimit=?
+        where CardNo=?");
   if ($row[0] == 'I' || $row[0] == 'T' || $row[0] == 'S'){
-    $mQ = "update meminfo set ads_OK=$row[5] where card_no=$memNum";
-    $cQ = "update custdata set memtype=$row[1], type='$row[2]',chargeok=1,discount=$row[3],memDiscountLimit=$row[4] where cardno=$memNum";
-    $mR = $sql->query_all($mQ);
-    $cR = $sql->query_all($cQ);
+    $mR = $sql->execute($mQ, array($row['mailflag'], $memNum));
+    $cR = $sql->execute($cQ, array($row['memtype1'], $row['memtype2'], $row['discount'], $row['chargelimit'], $row['chargelimit'], $memNum));
   }
   else if ($row[0] == 'X'){
-    $cQ = "update custdata set discount=$row[3], type='$row[2]', chargeOk = 1,
-           memtype = $row[1], memdiscountlimit = $row[4], memcoupons = 1
-           where cardno=$memNum";
-    $cR = $sql->query_all($cQ);
-    $mQ = "update meminfo set ads_OK=$row[5] where card_no=$memNum";
-    $mR = $sql->query_all($mQ);
+    $mR = $sql->execute($mQ, array($row['mailflag'], $memNum));
+    $cR = $sql->execute($cQ, array($row['memtype1'], $row['memtype2'], $row['discount'], $row['chargelimit'], $row['chargelimit'], $memNum));
   }
-  $query = "delete from suspensions where cardno=$memNum";
-  $result = $sql->query_all($query);
+  $query = $sql->prepare("delete from suspensions where cardno=?");
+  $result = $sql->execute($query, array($memNum));
   
   $username = validateUserQuiet('editmembers');
     
   $now = date("Y-m-d h:i:s");
-  $query = "insert into suspension_history values ('$username','$now','Account reactivated','$memNum',-1)";
-  $result = $sql->query_all($query);
+  $query = $sql->prepare("insert into suspension_history (username, postdate, post, cardno, reasoncode)
+            values (?,?,'Account reactivated',?,-1)");
+  $result = $sql->execute($query, array($username, $now, $memNum));
 }
 
 function addressFormLimited($memNum)
 {
 	global $sql;
-  $typeQ = "select * from custdata where CardNo = $memNum and personNum = 1";
-  $typeR = $sql->query($typeQ);
-  $typeRow = $sql->fetch_array($typeR);
-        $type = trim($typeRow['memType']," ");
-        $status = trim($typeRow['Type']," ");
+	$custQ = $sql->prepare("SELECT * FROM custdata where CardNo = ? and personnum= 1");
+	$custR = $sql->execute($custQ, array($memNum));
+    $typeRow = $sql->fetch_array($custR);
+    $type = trim($typeRow['memType']," ");
+    $status = trim($typeRow['Type']," ");
 	$memcoupons = $typeRow['memCoupons'];
 	if ($status != "PC") $memcoupons = 0;
 	if($status == 'PC') $status = 'ACTIVE';
 	if($status == 'REG') $status = 'NONMEM';
-        //echo "<br> Here is type: " .$type;
-        $query1 = "SELECT t.* FROM memTypeID as t WHERE t.memTypeID = $type";
-        //echo "<br>".$query1;
-        $result1 = $sql->query($query1);
-        $row1 = $sql->fetch_row($result1);
+    //echo "<br> Here is type: " .$type;
+
+	$query1 = $sql->prepare("SELECT t.* FROM memTypeID as t WHERE t.memTypeID = ?");
+    //echo "<br>".$query1;
+	$result1 = $sql->execute($query1, array($type));
+    $row1 = $sql->fetch_row($result1);
 	$memIDQ = "SELECT * FROM memTypeID";
 
-	$infoQ = "SELECT * FROM meminfo WHERE card_no=$memNum";
-	$infoR = $sql->query($infoQ);
+	$infoQ = $sql->prepare("SELECT * FROM meminfo WHERE card_no=?");
+	$infoR = $sql->execute($infoQ, array($memNum));
 	$infoW = $sql->fetch_row($infoR);
 	$getsMail = $infoW['ads_OK'];
 
-	$cardsQ = "SELECT upc FROM memberCards WHERE card_no=$memNum";
-	$cardsR = $sql->query($cardsQ);
+	$cardsQ = $sql->prepare("SELECT upc FROM memberCards WHERE card_no=?");
+	$cardsR = $sql->execute($cardsQ, array($memNum));
 	$cardUPC = "";
 	if ($sql->num_rows($cardsR) > 0){
-		$cardUPC = array_pop($sql->fetch_row($cardsR));
+        $cardsW = $sql->fetch_row($cardsR);
+        $cardUPC = $cardsW['upc'];
 	}
 
-	$suspensionQ = "select type,reason from suspensions where cardno=$memNum";
-	$suspensionR = $sql->query($suspensionQ);
+	$suspensionQ = $sql->prepare("select type,reason from suspensions where cardno=?");
+	$suspensionR = $sql->execute($suspensionQ, array($memNum));
 	$suspensionW = $sql->fetch_array($suspensionR);
 	$suspended = $sql->num_rows($suspensionR);
 
@@ -661,8 +674,8 @@ function addressFormLimited($memNum)
 			echo "<td></td>";
 			echo "<td bgcolor='FFFF33'>First Name</td>";
 			echo "<td bgcolor='FFFF33'>Last Name</td>";
-			$noteQ = "select note from memberNotes where cardno=$memNum order by stamp desc limit 1";
-			$noteR = $sql->query($noteQ);
+			$noteQ = $sql->prepare("select note from memberNotes where cardno=? order by stamp desc limit 1");
+			$noteR = $sql->execute($noteQ, array($memNum));
 			$notetext = "";
 			if ($sql->num_rows($noteR) == 1){
 				$notetext = stripslashes(array_pop($sql->fetch_array($noteR)));
@@ -670,8 +683,8 @@ function addressFormLimited($memNum)
 			}
 			echo "<td rowspan=4 colspan=3><textarea name=notetext rows=7 cols=50>$notetext</textarea></td>";
 		echo "</tr>";
-		$nameQ = "SELECT firstName,LastName FROM custdata WHERE cardno=$memNum and personnum > 1 order by personnum";
-		$nameR = $sql->query($nameQ);
+		$nameQ = $sql->prepare("SELECT firstName,LastName FROM custdata WHERE cardno=? and personnum > 1 order by personnum");
+		$nameR = $sql->execute($nameQ, array($memNum));
 		$num = 1;
 		while($nameW = $sql->fetch_row($nameR)){
 			echo "<tr>";
@@ -696,4 +709,3 @@ function addressFormLimited($memNum)
 	echo "</form>";
 }
 
-?>

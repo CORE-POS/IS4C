@@ -18,8 +18,8 @@ lookup is faster if slightly stale data is acceptable.
 $CREATE['op.memchargebalance'] = "
 	CREATE view memchargebalance as
 		SELECT 
-		c.CardNo,
-		c.memDiscountLimit - c.Balance AS availBal,	
+		c.CardNo AS CardNo,
+		c.ChargeLimit - c.Balance AS availBal,	
 		c.Balance as balance
 		FROM custdata AS c WHERE personNum = 1
 ";

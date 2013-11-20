@@ -30,21 +30,30 @@ class nslogin extends NoInputPage {
 	var $msg;
 
 	function preprocess(){
-		$this->color ="#004080";
+		$this->color ="coloredArea";
 		$this->heading = _("enter manager password");
 		$this->msg = _("confirm no sales");
 
-		if (isset($_REQUEST['reginput'])){
-			if (strtoupper($_REQUEST['reginput']) == "CL"){
+		if (isset($_REQUEST['reginput']) || isset($_REQUEST['userPassword'])){
+
+			$passwd = '';
+			if (isset($_REQUEST['reginput']) && !empty($_REQUEST['reginput'])){
+				$passwd = $_REQUEST['reginput'];
+				UdpComm::udpSend('goodBeep');
+			}
+			elseif (isset($_REQUEST['userPassword']) && !empty($_REQUEST['userPassword']))
+				$passwd = $_REQUEST['userPassword'];
+
+			if (strtoupper($passwd) == "CL"){
 				$this->change_page($this->page_url."gui-modules/pos2.php");
 				return False;
 			}
-			elseif (Authenticate::ns_check_password($_REQUEST['reginput'])){
+			elseif (Authenticate::nsCheckPassword($passwd)){
 				$this->change_page($this->page_url."gui-modules/pos2.php");
 				return False;
 			}
 			else {
-				$this->color ="#800000";
+				$this->color ="errorColoredArea";
 				$this->heading = _("re-enter manager password");
 				$this->msg = _("invalid password");
 			}
@@ -55,21 +64,22 @@ class nslogin extends NoInputPage {
 
 	function head_content(){
 		$this->default_parsewrapper_js('reginput','nsform');
+		$this->scanner_scale_polling(True);
 	}
 
 	function body_content(){
 		global $CORE_LOCAL;
-		$style = "style=\"background:{$this->color};\"";
 		?>
 		<div class="baseHeight">
-		<div class="colored centeredDisplay" <?php echo $style; ?>>
+		<div class="<?php echo $this->color; ?> centeredDisplay">
 		<span class="larger">
 		<?php echo $this->heading ?>
 		</span><br />
 		<form name="form" id="nsform" method="post" autocomplete="off" 
 			action="<?php echo $_SERVER['PHP_SELF']; ?>">
-		<input type="password" name="reginput" tabindex="0" 
-			onblur="$('#reginput').focus();" id="reginput" />
+		<input type="password" name="userPassword" tabindex="0" 
+			onblur="$('#userPassword').focus();" id="userPassword" />
+		<input type="hidden" id="reginput" name="reginput" value="" />
 		</form>
 		<p>
 		<?php echo $this->msg ?>
@@ -77,12 +87,12 @@ class nslogin extends NoInputPage {
 		</div>
 		</div>
 		<?php
-		$CORE_LOCAL->set("scan","noScan");
-		$this->add_onload_command("\$('#reginput').focus();\n");
+		$this->add_onload_command("\$('#userPassword').focus();\n");
 	} // END true_body() FUNCTION
 
 }
 
-new nslogin();
+if (basename(__FILE__) == basename($_SERVER['PHP_SELF']))
+	new nslogin();
 
 ?>

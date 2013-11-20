@@ -21,9 +21,9 @@
 
 *********************************************************************************/
 
-include('../../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
-require($FANNIE_ROOT."src/select_dlog.php");
+include(dirname(__FILE__).'/../../../config.php');
+include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+require_once($FANNIE_ROOT."src/select_dlog.php");
 $dbc = FannieDB::get($FANNIE_OP_DB);
 
 class OverShortSafecountPage extends FanniePage {
@@ -151,7 +151,7 @@ class OverShortSafecountPage extends FanniePage {
 			if ($d == 'Checks' || $d == "100.00" || $d == "50.00" || $d == "20.00" || $d == "Junk") 
 				$ret .= "<td>&nbsp;</td>";
 			else{
-				$ret .= "<td><input size=4 type=text id=changeOrder$d value=".$holding['changeOrder'][$d];
+				$ret .= "<td><input size=4 type=text id=\"changeOrder$d\" value=".$holding['changeOrder'][$d];
 				$ret .= " onchange=\"updateChangeOrder('$d');\" /></td>";
 				$sum += $holding['changeOrder'][$d];
 			}
@@ -481,11 +481,15 @@ class OverShortSafecountPage extends FanniePage {
 			tr.color {
 				background: #ffffcc;
 			}
+            body, table, td, th {
+              color: #000;
+            }
 		';
 	}
 
 	function body_content(){
-		global $FANNIE_URL;
+		global $FANNIE_URL, $FANNIE_PLUGIN_SETTINGS;
+		$dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['OverShortDatabase']);
 		$this->add_script('js/count.js');
 		$this->add_script($FANNIE_URL.'src/CalendarControl.js');
 		$this->add_script($FANNIE_URL.'src/jquery/jquery.js');
@@ -505,6 +509,21 @@ class OverShortSafecountPage extends FanniePage {
 			<td>
 			<input type=submit Value=Load onclick="loader();" />
 			</td>
+            <td >
+            Recent Counts: <select onchange="existingDates(this.value);">
+            <option value=''>Select one...</option>
+            <?php
+            $res = $dbc->query('SELECT dateStr FROM dailyDeposit GROUP BY dateStr ORDER BY dateStr DESC');
+            $count = 0;
+            while($row = $dbc->fetch_row($res)) {
+                if ($count++ > 50) {
+                    break;
+                }
+                echo '<option>'.$row['dateStr'].'</option>';
+            }
+            ?>
+            </select>
+            </td>
 		</tr>
 		<tr>
 			<th>End Date</th><td><input type=text id=endDate onfocus="this.value='';showCalendarControl(this);" /></td>

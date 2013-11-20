@@ -36,6 +36,9 @@ if (!validateUser('admin')){
 if (isset($_POST['name'])){
   $name = $_POST['name'];
   showAuths($name);
+	echo "The authorizations listed above were granted directly to the user
+	and do not include those the User has from Group memberships.";
+	echo "<br />It is usually preferable to grant authorizations through a group.";
 }
 echo "<p />";
 echo "<form action=viewAuths.php method=post>";

@@ -52,8 +52,8 @@ if (!$user){
 
 include('prodFunction_WEFC_Toronto.php');
 include('../src/mysql_connect.php');
-$page_title = 'Fannie - Item Maintanence WEFC_Toronto';
-$header = 'Item Maintanence WEFC_Toronto';
+$page_title = 'Fannie - Item Maintenance WEFC_Toronto';
+$header = 'Item Maintenance WEFC_Toronto';
 include('../src/header.html');
 ?>
 <script type"text/javascript" src=ajax.js></script>

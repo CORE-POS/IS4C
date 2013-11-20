@@ -51,6 +51,14 @@ daily will yield better performance on some actions
 that reference the current day's info - for example,
 reprinting receipts.
 */
-$CREATE['trans.localtrans_today'] = duplicate_structure($dbms,'dtransactions','localtrans_today');
+$CREATE['trans.localtrans_today'] = InstallUtilities::duplicateStructure($dbms,'dtransactions','localtrans_today');
+
+if ($CREATE['trans.localtrans_today'] !== false) {
+    $CREATE['trans.localtrans_today'] = array(
+                                            $CREATE['trans.localtrans_today'],
+                                            'ALTER TABLE localtrans_today ADD INDEX (trans_no)',
+                                            'ALTER TABLE localtrans_today ADD INDEX (datetime)',
+                                            );
+}
 
 ?>

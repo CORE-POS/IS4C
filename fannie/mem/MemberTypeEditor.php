@@ -21,7 +21,7 @@
 
 *********************************************************************************/
 include('../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
 class MemberTypeEditor extends FanniePage {
 
@@ -72,7 +72,7 @@ class MemberTypeEditor extends FanniePage {
 			return False;
 		}
 		elseif (FormLib::get_form_value('saveType',False) !== False){
-			$q = $dbc->prepare_statement("UPDATE memdefaults SET memDesc=?
+			$q = $dbc->prepare_statement("UPDATE memtype SET memDesc=?
 				WHERE memtype=?");
 			$r = $dbc->exec_statement($q,array(
 				FormLib::get_form_value('saveType',0),

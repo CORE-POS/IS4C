@@ -21,8 +21,6 @@
 
 *********************************************************************************/
 
-ini_set('display_errors','1');
-
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class fsTotalConfirm extends NoInputPage {
@@ -165,9 +163,9 @@ class fsTotalConfirm extends NoInputPage {
 		}
 		else
 			$this->add_onload_command("\$('#tenderamt').focus();\n");
-		$CORE_LOCAL->set("scan","noScan");
 	} // END body_content() FUNCTION
 }
 
-new fsTotalConfirm();
+if (basename(__FILE__) == basename($_SERVER['PHP_SELF']))
+	new fsTotalConfirm();
 ?>

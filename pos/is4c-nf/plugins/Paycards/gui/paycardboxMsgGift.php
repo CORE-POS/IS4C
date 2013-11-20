@@ -34,7 +34,6 @@ class paycardboxMsgGift extends PaycardProcessPage {
 			if( $input == "CL") {
 				$CORE_LOCAL->set("msgrepeat",0);
 				$CORE_LOCAL->set("toggletax",0);
-				$CORE_LOCAL->set("endorseType","");
 				$CORE_LOCAL->set("togglefoodstamp",0);
 				PaycardLib::paycard_reset();
 				$this->change_page($this->page_url."gui-modules/pos2.php");

@@ -142,12 +142,18 @@ public class BitmapConverter {
 	public BitmapConverter(){} 
 
 	// for testing
-	/*
-	static public void Main(){
-		byte[] newbmp = BitmapConverter.To1bpp("1721f71e2a40be4fd58cb1292cc0f0cc.bmp");
-		System.IO.File.WriteAllBytes("out.bmp",newbmp);
-	}	
-	*/
+	static public void Main(string[] args){
+		if (args.Length < 1){
+			System.Console.WriteLine("File name required");
+		}
+		else if (!System.IO.File.Exists(args[0])){
+			System.Console.WriteLine("File does not exist: "+args[0]);
+		}
+		else {
+			byte[] newbmp = BitmapConverter.To1bpp(args[0]);
+			System.IO.File.WriteAllBytes("out.bmp",newbmp);
+		}
+	}
 }
 
 }

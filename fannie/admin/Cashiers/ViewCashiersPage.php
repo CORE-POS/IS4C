@@ -22,7 +22,7 @@
 *********************************************************************************/
 
 include('../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
 class ViewCashiersPage extends FanniePage {
 
@@ -101,7 +101,7 @@ function deleteEmp(emp_no,filter){
 		foreach($employees->find($orderby) as $emp){
 			$ret .= sprintf("<tr><td>%d</td><td>%s</td><td>%d</td><td>%s</td>",
 					$emp->emp_no(),
-					$emp->FirstName().' '.$emp->LastName,
+					$emp->FirstName().' '.$emp->LastName(),
 					$emp->CashierPassword(),
 					($emp->frontendsecurity()<=20?'Regular':'Manager'));
 			$ret .= sprintf("<td><a href=\"CashierEditor.php?emp_no=%d\"><img src=\"{$FANNIE_URL}src/img/buttons/b_edit.png\" 

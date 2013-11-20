@@ -21,37 +21,47 @@
 
 *********************************************************************************/
 
-class ItemModule {
+class ItemModule 
+{
 
-	function db(){
-		global $FANNIE_ROOT,$FANNIE_OP_DB;
-		if (!class_exists('FannieDB')) include_once($FANNIE_ROOT.'classlib2.0/data/FannieDB.php');
-		return FannieDB::get($FANNIE_OP_DB);
-	}
+    public function db()
+    {
+        global $FANNIE_ROOT,$FANNIE_OP_DB;
+        if (!class_exists('FannieDB')) {
+            include_once($FANNIE_ROOT.'classlib2.0/data/FannieDB.php');
+        }
 
-	function ShowEditForm($upc){
+        return FannieDB::get($FANNIE_OP_DB);
+    }
 
-	}
+    public function showEditForm($upc)
+    {
 
-	function SaveFormData($upc){
+    }
 
-	}
+    public function saveFormData($upc)
+    {
 
-	function HasSearch(){
-		return False;
-	}
+    }
 
-	function ShowSearchForm(){
+    public function hasSearch()
+    {
+        return false;
+    }
 
-	}
+    public function showSearchForm()
+    {
 
-	function GetSearchResults(){
+    }
 
-	}
-	
-	function RunCron(){
+    public function getSearchResults()
+    {
 
-	}
+    }
+    
+    public function runCron()
+    {
+
+    }
 }
 
-?>

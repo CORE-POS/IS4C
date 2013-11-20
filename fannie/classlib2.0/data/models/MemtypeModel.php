@@ -24,44 +24,49 @@
 /**
   @class MemtypeModel
 */
-class MemtypeModel extends BasicModel {
+class MemtypeModel extends BasicModel 
+{
 
-	protected $name = "memtype";
+    protected $name = "memtype";
 
-	protected $preferred_db = 'op';
+    protected $preferred_db = 'op';
 
-	protected $columns = array(
-	'memtype' => array('type'=>'TINYINT','primary_key'=>True,'default'=>0),
-	'memDesc' => array('type'=>'VARCHAR(20)')
-	);
+    protected $columns = array(
+    'memtype' => array('type'=>'TINYINT','primary_key'=>True,'default'=>0),
+    'memDesc' => array('type'=>'VARCHAR(20)')
+    );
 
-	/* START ACCESSOR FUNCTIONS */
+    /* START ACCESSOR FUNCTIONS */
 
-	public function memtype(){
-		if(func_num_args() == 0){
-			if(isset($this->instance["memtype"]))
-				return $this->instance["memtype"];
-			elseif(isset($this->columns["memtype"]["default"]))
-				return $this->columns["memtype"]["default"];
-			else return null;
-		}
-		else{
-			$this->instance["memtype"] = func_get_arg(0);
-		}
-	}
+    public function memtype()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["memtype"])) {
+                return $this->instance["memtype"];
+            } elseif(isset($this->columns["memtype"]["default"])) {
+                return $this->columns["memtype"]["default"];
+            } else {
+                return null;
+            }
+        } else {
+            $this->instance["memtype"] = func_get_arg(0);
+        }
+    }
 
-	public function memDesc(){
-		if(func_num_args() == 0){
-			if(isset($this->instance["memDesc"]))
-				return $this->instance["memDesc"];
-			elseif(isset($this->columns["memDesc"]["default"]))
-				return $this->columns["memDesc"]["default"];
-			else return null;
-		}
-		else{
-			$this->instance["memDesc"] = func_get_arg(0);
-		}
-	}
-	/* END ACCESSOR FUNCTIONS */
+    public function memDesc()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["memDesc"])) {
+                return $this->instance["memDesc"];
+            } elseif(isset($this->columns["memDesc"]["default"])) {
+                return $this->columns["memDesc"]["default"];
+            } else {
+                return null;
+            }
+        } else {
+            $this->instance["memDesc"] = func_get_arg(0);
+        }
+    }
+    /* END ACCESSOR FUNCTIONS */
 }
-?>
+

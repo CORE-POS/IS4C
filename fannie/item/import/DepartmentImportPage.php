@@ -25,7 +25,7 @@
 	 4Sep2012 Eric Lee Add some notes to the initial page.
 */
 include('../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
 class DepartmentImportPage extends FannieUploadPage {
 	protected $title = "Fannie :: Product Tools";

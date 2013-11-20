@@ -3,6 +3,8 @@ include('../../../config.php');
 
 if (!class_exists("SQLManager")) require_once($FANNIE_ROOT."src/SQLManager.php");
 include('../../db.php');
+if (!class_exists('FannieAPI'))
+    include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
 if (isset($_GET['action'])){
 	$out = $_GET['action']."`";
@@ -11,17 +13,17 @@ if (isset($_GET['action'])){
 		$upc = $_GET['upc'];
 		$price = $_GET['price'];
 
-		$upQ = "update products set normal_price = $price where upc='$upc'";
-		$upR = $sql->query($upQ);
-
-		require('../../queries/laneUpdates.php');
-		updateProductAllLanes($upc,$db);
+        $model = new ProductsModel($sql);
+        $model->upc($upc);
+        $model->normal_price($price);
+        $model->save();
+        $model->pushToLanes();
 
 		$out .= $upc."`";
 
-		$query = "SELECT u.*,p.cost FROM unfi_all as u left join prodExtra as p on u.upc=p.upc
-			WHERE u.upc = '$upc'";
-		$result = $sql->query($query);
+		$prep = $sql->prepare("SELECT u.*,p.cost FROM unfi_all as u left join prodExtra as p on u.upc=p.upc
+			WHERE u.upc = ?");
+		$result = $sql->execute($prep, array($upc));
 		$row = $sql->fetch_array($result);
 		
 		$pupc = $row[0];
@@ -50,14 +52,14 @@ if (isset($_GET['action'])){
 	case 'saveUnfiPrice':
 		$upc = $_GET['upc'];
 		$price = $_GET['price'];
-		$upQ = "update unfi_order set wfc_srp=$price where upcc='$upc'";
-		$upR = $sql->query($upQ);
+		$upQ = $sql->prepare("update unfi_order set wfc_srp=? where upcc=?");
+		$upR = $sql->execute($upQ, array($price, $upc));
 		break;
 	case 'toggleVariable':
 		$upc = $_GET['upc'];
 		$val = ($_GET['toggle'] == "true") ? 1 : 0;
-		$upQ = "update prodExtra set variable_pricing=$val where upc='$upc'";
-		$upR = $sql->query($upQ);
+		$upQ = $sql->prepare("update prodExtra set variable_pricing=? where upc=?");
+		$upR = $sql->execute($upQ, array($val, $upc));
 		break;
 	}
 	echo $out;
@@ -105,17 +107,48 @@ echo "<a href=price_compare.php?excel=1&buyer=$buyID&filter=$filter>Dump to Exce
 
 $mysql = new SQLManager('mysql.wfco-op.store','MYSQL','IS4C','is4c','is4c');
 
-if($buyID == 99){
-   $getCatQ = "SELECT unfi_cat FROM unfi_cat";
-}else{
-   $getCatQ = "SELECT unfi_cat FROM unfi_cat WHERE buyer = $buyID";
+$getCatQ = "SELECT unfi_cat FROM unfi_cat";
+$getCatArgs = array();
+if ($buyID != 99){
+   $getCatQ = "SELECT unfi_cat FROM unfi_cat WHERE buyer = ?";
+   $getCatArgs = array($buyID);
 }
 
 //echo $getCatQ;
 
-$getCatR = $mysql->query($getCatQ);
+$getCatP = $mysql->prepare($getCatQ);
+$getCatR = $mysql->execute($getCatP, $getCatArgs);
 
    $sort = isset($_GET['sort'])?$_GET['sort']:'';
+   // validate sort option
+   switch($sort) {
+       case 'cat':
+       case 'diff':
+       case 'variable_pricing':
+            if ($sort === 0 || $sort === True) {
+                $sort = 'cat';
+            }
+            $sort .= ' ASC';
+            if ($sort != 'cat') {
+                $sort .= ', cat';
+            }
+            break;
+       case 'cat1':
+       case 'diff1':
+       case 'variable_pricing1':
+            if ($sort === 0 || $sort === True) {
+                $sort = 'cat1';
+            }
+            $sort = rtrim($sort, '1');
+            $sort .= ' DESC';
+            if ($sort != 'cat') {
+                $sort .= ', cat';
+            }
+            break;
+       default:
+            $sort = 'cat ASC';
+            break;
+   }
 
    //create form page
    echo "<form action=price_update.php method=post>";
@@ -132,7 +165,7 @@ $getCatR = $mysql->query($getCatQ);
      echo "<a href=price_compare.php?sort=diff&buyer=$buyID&filter=$filter>Diff<a><th>";
    }
    if($sort=='variable_pricing'){
-     echo "<a href=price_compare.php?sort=variable_pricing&buyer=$buyID&filter=$filter>Var</a>";
+     echo "<a href=price_compare.php?sort=variable_pricing1&buyer=$buyID&filter=$filter>Var</a>";
    }
    else {
      echo "<a href=price_compare.php?sort=variable_pricing&buyer=$buyID&filter=$filter>Var</a>";
@@ -140,41 +173,21 @@ $getCatR = $mysql->query($getCatQ);
    $i = 1;
 
 $strCat = "(";
-
+$cat_args = array();
 while($getCatW = $mysql->fetch_array($getCatR)){
    $cat = $getCatW['unfi_cat'];
    //echo $cat . "<br>";
-   $strCat = $strCat.$cat.",";
+   $strCat .= "?,";
+   $cat_args[] = $cat;
 }
 
 $strCat = substr($strCat,0,-1);
 $strCat = $strCat . ")";
 //echo $strCat;
 
-   //If sort is set (header has been clicked, test to see if we need to reverse
-   //the sort of the last refresh.
-   $query = "";
-   if(isset($_GET['sort'])){
-      if(substr($sort,-1,1) == 1){
-         $sort = substr($sort,0,-1) . " DESC ";
-      }
-      //echo $sort;
-     if(substr($sort,0,3) == 'cat'){
-         $query = "SELECT u.*,p.cost,p.variable_pricing FROM $unfi_table as u left join prodExtra as p on u.upc=p.upc
-		    WHERE cat IN$strCat order by $sort,department,u.upc";
-     }
-     else if (strstr("variable_pricing",$sort)){
-	 $query = "SELECT u.*,p.cost,p.variable_pricing FROM $unfi_table as u left join prodExtra as p on u.upc=p.upc
-		    WHERE cat IN$strCat order by $sort,cat,department,u.upc";
-      }else{
-        $query = "SELECT u.*,p.cost,p.variable_pricing FROM $unfi_table as u left join prodExtra as p on u.upc=p.upc
-		  WHERE cat IN$strCat order by $sort,cat,department,u.upc";
-      }
-   }else{
-      $query = "SELECT u.*,p.cost,p.variable_pricing FROM $unfi_table as u left join prodExtra as p on u.upc=p.upc
-		 WHERE cat IN$strCat order by cat, department, u.upc";
-   }
-   $result = $sql->query($query);
+   $prep = $sql->prepare("SELECT u.*,p.cost,p.variable_pricing FROM $unfi_table as u left join prodExtra as p on u.upc=p.upc
+        WHERE cat IN$strCat order by $sort,department,u.upc");
+   $result = $sql->execute($prep, $cat_args);
 
    while($row = $sql->fetch_array($result)){
       $pupc = $row[0];

@@ -21,8 +21,6 @@
 
 *********************************************************************************/
 
-ini_set('display_errors','1');
- 
 session_cache_limiter('nocache');
 
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
@@ -88,6 +86,7 @@ class pos2 extends BasicPage {
 				$CORE_LOCAL->set("preparse_chain",PreParser::get_preparse_chain());
 
 			foreach ($CORE_LOCAL->get("preparse_chain") as $cn){
+				if (!class_exists($cn)) continue;
 				$p = new $cn();
 				if ($p->check($entered))
 					$entered = $p->parse($entered);
@@ -107,6 +106,7 @@ class pos2 extends BasicPage {
 
 				$result = False;
 				foreach ($CORE_LOCAL->get("parse_chain") as $cn){
+					if (!class_exists($cn)) continue;
 					$p = new $cn();
 					if ($p->check($entered)){
 						$result = $p->parse($entered);
@@ -163,14 +163,10 @@ class pos2 extends BasicPage {
 		function submitWrapper(){
 			var str = $('#reginput').val();
 			$('#reginput').val('');
-			//if (str.indexOf("tw") != -1 || str.indexOf("TW") != -1 || (str.search(/^[0-9]+$/) == 0 && str.length <= 13) || str=='TFS'
-			 //   || str == 'U' || str == 'D'){
-				clearTimeout(screenLockVar);
-				runParser(str,'<?php echo $this->page_url; ?>');
-				enableScreenLock();
-				return false;
-			//}
-			//return true;
+            clearTimeout(screenLockVar);
+            runParser(str,'<?php echo $this->page_url; ?>');
+            enableScreenLock();
+            return false;
 		}
 		function parseWrapper(str){
 			$('#reginput').val(str);
@@ -181,14 +177,7 @@ class pos2 extends BasicPage {
 			screenLockVar = setTimeout('lockScreen()', <?php echo $CORE_LOCAL->get("timeout") ?>);
 		}
 		function lockScreen(){
-			$.ajax({
-				'url': '<?php echo $this->page_url; ?>ajax-callbacks/ajax-lock.php',
-				'type': 'get',
-				'cache': false,
-				'success': function(){
-					location = '<?php echo $this->page_url; ?>gui-modules/login3.php';
-				}
-			});
+			location = '<?php echo $this->page_url; ?>gui-modules/login3.php';
 		}
 		function receiptFetch(r_type){
 			$.ajax({
@@ -209,6 +198,30 @@ class pos2 extends BasicPage {
 		function inputRetry(str){
 			parseWrapper(str);
 		}
+        /**
+          Replace instances of 'SCAL' with the scale's weight. The command
+          is triggered by the E keypress but that letter is never actually
+          added to the input.
+        */
+        function getScaleWeight()
+        {
+            var current_input = $('#reginput').val().toUpperCase();
+            if (current_input.indexOf('SCAL') != -1) {
+                var wgt = $.trim($('#scaleBottom').html());
+                wgt = parseFloat(wgt);
+                if (isNaN(wgt) || wgt == 0.00) {
+                    // weight not available
+                    return true;
+                } else {
+                    var new_input = current_input.replace('SCAL', wgt);
+                    $('#reginput').val(new_input);
+                    
+                    return false;
+                }
+            }
+
+            return true;
+        }
 		</script>
 		<?php
 	}
@@ -235,6 +248,9 @@ class pos2 extends BasicPage {
 					case 9:
 						parseWrapper('TFS');
 						return false;
+                    case 69:
+                    case 101:
+                        return getScaleWeight();
 					}
 				});\n");
 		/*
@@ -248,17 +264,10 @@ class pos2 extends BasicPage {
 		$CORE_LOCAL->set("quantity",0);
 		$CORE_LOCAL->set("multiple",0);
 		$CORE_LOCAL->set("casediscount",0);
-		$CORE_LOCAL->set("away",0);
 
 		// set memberID if not set already
 		if (!$CORE_LOCAL->get("memberID")) {
 			$CORE_LOCAL->set("memberID","0");
-		}
-
-		// handle messages
-		if ( $CORE_LOCAL->get("msg") == "0") {
-			$CORE_LOCAL->set("msg",99);
-			$CORE_LOCAL->set("unlock",0);
 		}
 
 		if ($CORE_LOCAL->get("plainmsg") && strlen($CORE_LOCAL->get("plainmsg")) > 0) {
@@ -266,7 +275,6 @@ class pos2 extends BasicPage {
 			echo "<div class=\"centerOffset\">";
 			echo DisplayLib::plainmsg($CORE_LOCAL->get("plainmsg"));
 			$CORE_LOCAL->set("plainmsg",0);
-			$CORE_LOCAL->set("msg",99);
 			echo "</div>";
 		}
 		elseif (!empty($this->display))
@@ -277,10 +285,7 @@ class pos2 extends BasicPage {
 		echo "</div>"; // end base height
 
 		echo "<div id=\"footer\">";
-		if ($CORE_LOCAL->get("away") == 1)
-			echo DisplayLib::printfooterb();
-		else
-			echo DisplayLib::printfooter();
+		echo DisplayLib::printfooter();
 		echo "</div>";
 
 		if ($CORE_LOCAL->get("touchscreen") === True){
@@ -307,11 +312,10 @@ class pos2 extends BasicPage {
 				onclick="parseWrapper(\'QK6\');" />
 			</div>';
 		}
-
-		$CORE_LOCAL->set("away",0);
 	} // END body_content() FUNCTION
 }
 
-new pos2();
+if (basename(__FILE__) == basename($_SERVER['PHP_SELF']))
+	new pos2();
 
 ?>

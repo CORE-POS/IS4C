@@ -21,15 +21,13 @@
 
 *********************************************************************************/
 
+header("Location: SalesTodayReport.php");
+exit;
+
 /* --FUNCTIONALITY- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
  Show total sales by hour for today from dlog.
  Offer dropdown of superdepartments and on-select display the same report for
   that superdept only.
-*/
-
-/* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
- 6Aug12 Fix obsolete value-getting in dbc.
-        In fact dbc doesn't need to be created here at all.
 */
 
 include('../../config.php');

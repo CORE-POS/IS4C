@@ -21,14 +21,14 @@
 
 *********************************************************************************/
 
-ini_set('display_errors','1');
-
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class mgrlogin extends NoInputPage {
 
 	function preprocess(){
 		if (isset($_REQUEST['input'])){
+			if (isset($_REQUEST['beep']) && $_REQUEST['beep'] == 'yes')
+				UdpComm::udpSend('goodBeep');
 			$arr = $this->mgrauthenticate($_REQUEST['input']);
 			echo JsonLib::array_to_json($arr);
 			return False;
@@ -41,9 +41,14 @@ class mgrlogin extends NoInputPage {
 		<script type="text/javascript">
 		function submitWrapper(){
 			var passwd = $('#reginput').val();
+			var beep = 'yes';
+			if (passwd == ''){
+				passwd = $('#userPassword').val();
+				beep = 'no';
+			}
 			$.ajax({
 				url: '<?php echo $_SERVER['PHP_SELF']; ?>',
-				data: 'input='+passwd,
+				data: 'input='+passwd+'&beep='+beep,
 				type: 'get',
 				cache: false,
 				dataType: 'json',
@@ -65,11 +70,12 @@ class mgrlogin extends NoInputPage {
 						location = '<?php echo $this->page_url; ?>gui-modules/pos2.php';
 					}
 					else {
-						$('div.colored').css('background',data.color);
+						$('div#cancelLoginBox').removeClass('coloredArea');
+						$('div#cancelLoginBox').addClass('errorColoredArea');
 						$('span.larger').html(data.heading);
 						$('span#localmsg').html(data.msg);
-						$('#reginput').val('');
-						$('#reginput').focus();
+						$('#userPassword').val('');
+						$('#userPassword').focus();
 					}
 				}
 			});
@@ -78,22 +84,23 @@ class mgrlogin extends NoInputPage {
 		</script>
 		<?php
 		$this->default_parsewrapper_js();
+		$this->scanner_scale_polling(True);
 	}
 
 	function body_content(){
 		global $CORE_LOCAL;
-		$this->add_onload_command("\$('#reginput').focus();\n");
-		$style = "style=\"background:#004080;\"";
+		$this->add_onload_command("\$('#userPassword').focus();\n");
 		?>
 		<div class="baseHeight">
-		<div class="colored centeredDisplay" <?php echo $style; ?>>
+		<div id="cancelLoginBox" class="coloredArea centeredDisplay">
 		<span class="larger">
 		<?php echo _("confirm cancellation"); ?>
 		</span><br />
 		<form name="form" id="formlocal" method="post" 
 			autocomplete="off" onsubmit="return submitWrapper();">
-		<input type="password" name="reginput" tabindex="0" 
-			onblur="$('#reginput').focus();" id="reginput" />
+		<input type="password" name="userPassword" tabindex="0" 
+			onblur="$('#userPassword').focus();" id="userPassword" />
+		<input type="hidden" name="reginput" id="reginput" value="" />
 		</form>
 		<p>
 		<span id="localmsg"><?php echo _("please enter manager password"); ?></span>
@@ -101,16 +108,13 @@ class mgrlogin extends NoInputPage {
 		</div>
 		</div>
 		<?php
-		$CORE_LOCAL->set("beep","noScan");
 	} // END true_body() FUNCTION
 
 	function mgrauthenticate($password){
 		global $CORE_LOCAL;
-		$CORE_LOCAL->set("away",1);
 
 		$ret = array(
 			'cancelOrder'=>false,
-			'color'=>'#800000',
 			'msg'=>_('password invalid'),
 			'heading'=>_('re-enter manager password'),
 			'giveUp'=>false
@@ -123,17 +127,12 @@ class mgrlogin extends NoInputPage {
 			$ret['giveUp'] = true;
 			return $ret;
 		}
-		elseif (!is_numeric($password)) {
-			return $ret;
-		}
-		elseif ($password > 9999 || $password < 1) {
-			return $ret;
-		}
 
 		$db = Database::pDataConnect();
+		$password = $db->escape($password);
 		$priv = sprintf("%d",$CORE_LOCAL->get("SecurityCancel"));
 		$query = "select emp_no, FirstName, LastName from employees where EmpActive = 1 and frontendsecurity >= $priv "
-		."and (CashierPassword = ".$password." or AdminPassword = ".$password.")";
+		."and (CashierPassword = '".$password."' or AdminPassword = '".$password."')";
 		$result = $db->query($query);
 		$num_rows = $db->num_rows($result);
 
@@ -148,14 +147,12 @@ class mgrlogin extends NoInputPage {
 	function cancelorder() {
 		global $CORE_LOCAL;
 
-		$CORE_LOCAL->set("msg",2);
 		$CORE_LOCAL->set("plainmsg",_("transaction cancelled"));
-		$CORE_LOCAL->set("beep","rePoll");
 		UdpComm::udpSend("rePoll");
 		$CORE_LOCAL->set("ccTermOut","reset");
-		$CORE_LOCAL->set("receiptType","cancelled");
 	}
 }
 
-new mgrlogin();
+if (basename(__FILE__) == basename($_SERVER['PHP_SELF']))
+	new mgrlogin();
 ?>

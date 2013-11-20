@@ -24,15 +24,13 @@
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class undo extends NoInputPage {
-	var $box_color;
 	var $msg;
 
 	function body_content(){
 		global $CORE_LOCAL;
-		$style = "style=\"background:{$this->box_color};\"";
 		?>
 		<div class="baseHeight">
-		<div class="colored centeredDisplay" <?php echo $style; ?>>
+		<div class="<?php echo $this->box_color; ?> centeredDisplay">
 		<span class="larger">
 		<?php echo $this->msg ?>
 		</span><br />
@@ -46,12 +44,11 @@ class undo extends NoInputPage {
 		</div>
 		<?php
 		$this->add_onload_command("\$('#reginput').focus();");
-		$CORE_LOCAL->set("beep","noScan");
 	}
 
 	function preprocess(){
 		global $CORE_LOCAL;
-		$this->box_color = "#004080";
+		$this->box_color = "coloredArea";
 		$this->msg = "Undo transaction";
 
 		if (isset($_REQUEST['reginput'])){
@@ -65,7 +62,7 @@ class undo extends NoInputPage {
 
 			// error: malformed transaction number
 			if (!strpos($trans_num,"-")){
-				$this->box_color="#800000";
+				$this->box_color="errorColoredArea";
 				$this->msg = "Transaction not found";
 				return True;
 			}
@@ -73,7 +70,7 @@ class undo extends NoInputPage {
 			$temp = explode("-",$trans_num);
 			// error: malformed transaction number (2)
 			if (count($temp) != 3){
-				$this->box_color="#800000";
+				$this->box_color="errorColoredArea";
 				$this->msg = "Transaction not found";
 				return True;
 			}
@@ -84,7 +81,7 @@ class undo extends NoInputPage {
 			// error: malformed transaction number (3)
 			if (!is_numeric($emp_no) || !is_numeric($register_no)
 			    || !is_numeric($old_trans_no)){
-				$this->box_color="#800000";
+				$this->box_color="errorColoredArea";
 				$this->msg = "Transaction not found";
 				return True;
 			}
@@ -108,7 +105,7 @@ class undo extends NoInputPage {
 			}
 			else if ($CORE_LOCAL->get("standalone") == 1){
 				// error: remote lookups won't work in standalone
-				$this->box_color="#800000";
+				$this->box_color="errorColoredArea";
 				$this->msg = "Transaction not found";
 				return True;
 			}
@@ -131,7 +128,7 @@ class undo extends NoInputPage {
 			$result = $db->query($query);
 			// transaction not found
 			if ($db->num_rows($result) < 1){
-				$this->box_color="#800000";
+				$this->box_color="errorColoredArea";
 				$this->msg = "Transaction not found";
 				return True;
 			}
@@ -178,8 +175,11 @@ class undo extends NoInputPage {
 					$temp = explode(" ",$row["description"]);
 					TransRecord::addTare($temp[3]*100);
 				}
-				elseif ($row["upc"] == "MAD Coupon")
-					TransRecord::addMadCoup();
+				elseif ($row["upc"] == "MAD Coupon"){
+					$madCoup = $row['total'];
+					TransRecord::addItem("MAD Coupon", "Member Appreciation Coupon", "I", "CP", "C", 0, 1, 
+						-1*$madCoup, -1*$madCoup, -1*$madCoup, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 17);
+				}
 				elseif ($row["upc"] == "DISCOUNT"){
 					//TransRecord::addTransDiscount();
 				}
@@ -203,7 +203,7 @@ class undo extends NoInputPage {
 
 			$op = Database::pDataConnect();
 			$query = "select CardNo,personNum,LastName,FirstName,CashBack,Balance,Discount,
-				MemDiscountLimit,ChargeOk,WriteChecks,StoreCoupons,Type,memType,staff,
+				ChargeOk,WriteChecks,StoreCoupons,Type,memType,staff,
 				SSI,Purchases,NumberOfChecks,memCoupons,blueLine,Shown,id from custdata 
 				where CardNo = '".$card_no."'";
 			$res = $op->query($query);
@@ -211,9 +211,7 @@ class undo extends NoInputPage {
 			PrehLib::setMember($card_no,1,$row);
 			$CORE_LOCAL->set("autoReprint",0);
 
-			/* restore the logged in cashier */
-			$CORE_LOCAL->set("CashierNo",$prevCashier);
-			$CORE_LOCAL->set("transno",Database::gettransno($prevCashier));
+			/* do NOT restore logged in cashier until this transaction is complete */
 			
 			$this->change_page($this->page_url."gui-modules/undo_confirm.php");
 			return False;
@@ -222,4 +220,5 @@ class undo extends NoInputPage {
 	}
 }
 
-new undo();
+if (basename(__FILE__) == basename($_SERVER['PHP_SELF']))
+	new undo();

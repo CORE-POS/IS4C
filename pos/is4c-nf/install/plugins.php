@@ -1,8 +1,8 @@
 <?php
 include(realpath(dirname(__FILE__).'/../lib/AutoLoader.php'));
-AutoLoader::LoadMap();
+AutoLoader::loadMap();
 include(realpath(dirname(__FILE__).'/../ini.php'));
-include('util.php');
+include('InstallUtilities.php');
 ?>
 <html>
 <head>
@@ -20,8 +20,8 @@ body {
 <div id="wrapper">
 <h2>IT CORE Lane Installation: Plugins</h2>
 
-<div class="alert"><?php check_writeable('../ini.php'); ?></div>
-<div class="alert"><?php check_writeable('../ini-local.php'); ?></div>
+<div class="alert"><?php InstallUtilities::checkWritable('../ini.php', False, 'PHP'); ?></div>
+<div class="alert"><?php InstallUtilities::checkWritable('../ini-local.php', True, 'PHP'); ?></div>
 
 <table id="install" border=0 cellspacing=0 cellpadding=4>
 
@@ -33,7 +33,7 @@ if (isset($_REQUEST['PLUGINLIST']) || isset($_REQUEST['psubmit'])){
 	if (!is_array($oldset)) $oldset = array();
 	$newset = isset($_REQUEST['PLUGINLIST']) ? $_REQUEST['PLUGINLIST'] : array();
 	foreach($newset as $plugin_class){
-		if (!Plugin::IsEnabled($plugin_class)){
+		if (!Plugin::isEnabled($plugin_class)){
 			$obj = new $plugin_class();
 			$obj->plugin_enable();
 		}
@@ -44,12 +44,12 @@ if (isset($_REQUEST['PLUGINLIST']) || isset($_REQUEST['psubmit'])){
 			$obj->plugin_disable();
 		}
 	}
-	$CORE_LOCAL->set('PluginList',$_REQUEST['PLUGINLIST'], True);
+	$CORE_LOCAL->set('PluginList',$_REQUEST['PLUGINLIST']);
 }
 $type_check = $CORE_LOCAL->get('PluginList');
-if (!is_array($type_check)) $CORE_LOCAL->set('PluginList',array(), True);
+if (!is_array($type_check)) $CORE_LOCAL->set('PluginList',array());
 
-$mods = AutoLoader::ListModules('Plugin');
+$mods = AutoLoader::listModules('Plugin');
 sort($mods);
 
 foreach($mods as $m){
@@ -80,9 +80,9 @@ foreach($mods as $m){
 			echo '<tr><td colspan="2" style="margin-bottom: 0px; height:auto;">';
 			$form_id = $m.'_'.$field;
 			if (isset($_REQUEST[$form_id])) 
-				$CORE_LOCAL->set($field,$_REQUEST[$form_id],True);
+				$CORE_LOCAL->set($field,$_REQUEST[$form_id]);
 			if ($CORE_LOCAL->get($field) === "") 
-				$CORE_LOCAL->set($field,isset($info['default'])?$info['default']:'',True);
+				$CORE_LOCAL->set($field,isset($info['default'])?$info['default']:'');
 			echo '<b>'.(isset($info['label'])?$info['label']:$field).'</b>: ';
 			if (isset($info['options']) && is_array($info['options'])){
 				printf('<select name="%s">',$form_id);
@@ -99,7 +99,7 @@ foreach($mods as $m){
 			}
 			if (isset($info['description'])) 
 				echo '<span class="noteTxt">'.$info['description'].'</span>';
-			confsave($field,"'".$CORE_LOCAL->get($field)."'");
+			InstallUtilities::paramSave($field,$CORE_LOCAL->get($field));
 		echo '</td></tr>';
 		}
 	}
@@ -107,12 +107,7 @@ foreach($mods as $m){
 }
 echo '</table>';
 
-$saveStr = "array(";
-foreach($CORE_LOCAL->get("PluginList") as $r){
-	$saveStr .= "'".$r."',";
-}
-$saveStr = rtrim($saveStr,",").")";
-confsave('PluginList',$saveStr);
+InstallUtilities::paramSave('PluginList',$CORE_LOCAL->get('PluginList'));
 ?>
 <hr />
 <input type=submit name=psubmit value="Save Changes" />

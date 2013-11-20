@@ -30,16 +30,19 @@
  across two servers that are useful for lane-server
  communication
 */
-if (!function_exists("ADONewConnection")) include(dirname(__FILE__).'/../adodb5/adodb.inc.php');
+if (!function_exists("ADONewConnection")) {
+    include(dirname(__FILE__).'/../adodb5/adodb.inc.php');
+}
 
-class SQLManager {
+class SQLManager 
+{
 
 	private $QUERY_LOG; 
 
 	/** Array of connections **/
-	var $connections;
+	public $connections;
 	/** Default database connection */
-	var $default_db;
+	public $default_db;
 
 	/** Constructor
 	    @param $server Database server host
@@ -51,11 +54,12 @@ class SQLManager {
 	    @param $password Database password
 	    @param $persistent Make persistent connection.
 	*/
-	function SQLManager($server,$type,$database,$username,$password='',$persistent=False){
+	public function SQLManager($server,$type,$database,$username,$password='',$persistent=false)
+    {
 		$this->QUERY_LOG = dirname(__FILE__)."/../logs/queries.log";
 		$this->connections=array();
 		$this->default_db = $database;
-		$this->add_connection($server,$type,$database,$username,$password,$persistent);
+		$this->addConnection($server,$type,$database,$username,$password,$persistent);
 	}
 
 	/** Add another connection
@@ -71,41 +75,47 @@ class SQLManager {
 	    When dealing with multiple connections, user the
 	    database name to distinguish which is to be used
 	*/
-	function add_connection($server,$type,$database,$username,$password='',$persistent=False){
+	public function addConnection($server,$type,$database,$username,$password='',$persistent=false)
+    {
 		$conn = ADONewConnection($type);
 		$conn->SetFetchMode(ADODB_FETCH_BOTH);
-		$ok = False;
-		if (isset($this->connections[$database])){
+		$ok = false;
+		if (isset($this->connections[$database])) {
 			$ok = $conn->NConnect($server,$username,$password,$database);
-		}
-		else {
-			if ($persistent)
+		} else {
+			if ($persistent) {
 				$ok = $conn->PConnect($server,$username,$password,$database);
-			else
+			} else {
 				$ok = $conn->Connect($server,$username,$password,$database);
+            }
 		}
 		$this->connections[$database] = $conn;
 
-		if (!$ok){
+		if (!$ok) {
 			$conn = ADONewConnection($type);
 			$conn->SetFetchMode(ADODB_FETCH_BOTH);
 			$ok = $conn->Connect($server,$username,$password);
-			if ($ok){
+			if ($ok) {
 				$stillok = $conn->Execute("CREATE DATABASE $database");
-				if (!$stillok){
-					$this->connections[$database] = False;
-					return False;
+				if (!$stillok) {
+					$this->connections[$database] = false;
+					return false;
 				}
 				$conn->Execute("USE $database");
 				$this->connections[$database] = $conn;
-			}
-			else {
-				$this->connections[$database] = False;
-				return False;
+			} else {
+				$this->connections[$database] = false;
+				return false;
 			}
 		}
-		return True;
+
+		return true;
 	}
+
+	public function add_connection($server,$type,$database,$username,$password='',$persistent=false)
+    {
+        return $this->addConnection($server, $type, $database, $username, $password, $persistent);
+    }
 
 	/**
 	  Close a database connection
@@ -113,9 +123,11 @@ class SQLManager {
 	  If there are multiple connections, this is
 	  the database name for the connection you want to close
 	*/
-	function close($which_connection=''){
-		if ($which_connection == '')
+	public function close($which_connection='')
+    {
+		if ($which_connection == '') {
 			$which_connection=$this->default_db;
+        }
 		$con = $this->connections[$which_connection];
 		unset($this->connections[$which_connection]);
 
@@ -128,27 +140,31 @@ class SQLManager {
 	  @param which_connection see method close
 	  @return A result object on success, False on failure
 	*/
-	function query($query_text,$which_connection='',$params=False){
+	public function query($query_text,$which_connection='',$params=false)
+    {
 		$ql = $this->QUERY_LOG;
-		if ($which_connection == '')
+		if ($which_connection == '') {
 			$which_connection=$this->default_db;
+        }
 		$con = $this->connections[$which_connection];
 
-		$ok = (!is_object($con)) ? False : $con->Execute($query_text,$params);
-		if (!$ok && is_writable($ql)){
+		$ok = (!is_object($con)) ? false : $con->Execute($query_text,$params);
+		if (!$ok && is_writable($ql)) {
 			$fp = fopen($ql,'a');
-			if (is_array($query_text))
+			if (is_array($query_text)) {
 				$query_text = $query_text[0];
+            }
 			fputs($fp,$_SERVER['PHP_SELF'].": ".date('r').': '.$query_text."\n");
 			fputs($fp,$this->error()."\n\n");
 			fclose($fp);
-		}
-		else if (!$ok){
-			if (is_array($query_text))
+		} else if (!$ok) {
+			if (is_array($query_text)) {
 				$query_text = $query_text[0];
+            }
 			echo "Bad query: {$_SERVER['PHP_SELF']}: $query_text<br />";
 			echo $this->error($which_connection)."<br />";
 		}
+
 		return $ok;
 	}
 
@@ -159,13 +175,20 @@ class SQLManager {
 	  will be result objects where queries succeeded
 	  and False where they failed
 	*/
-	function query_all($query_text){
+	public function queryAll($query_text)
+    {
 		$ret = array();
-		foreach($this->connections as $db_name => $con){
+		foreach($this->connections as $db_name => $con) {
 			$ret[$db_name] = $this->query($query_text,$db_name);
 		}
+
 		return $ret;
 	}
+
+	public function query_all($query_text)
+    {
+        return $this->queryAll($query_text);
+    }
 
 	/**
 	  Escape a string for SQL-safety
@@ -176,25 +199,37 @@ class SQLManager {
 	  Note that the return value will include start and
 	  end single quotes
 	*/
-	function escape($query_text,$which_connection=''){
-		if ($which_connection == '')
+	public function escape($query_text,$which_connection='')
+    {
+		if ($which_connection == '') {
 			$which_connection = $this->default_db;
+        }
+
 		return $this->connections[$which_connection]->qstr($query_text);
 	}
 
-	function identifier_escape($str,$which_connection=''){
-		if ($which_connection == '')
+	public function identifierEscape($str,$which_connection='')
+    {
+		if ($which_connection == '') {
 			$which_connection = $this->default_db;
-		switch($this->connections[$which_connection]->databaseType){
-		case 'mysql':
-		case 'mysqli':
-		case 'pdo':
-                        return '`'.$str.'`';
-		case 'mssql':
-                        return '['.$str.']';
-                }
-                return $str;
         }
+		switch($this->connections[$which_connection]->databaseType) {
+            case 'mysql':
+            case 'mysqli':
+            case 'pdo':
+                return '`'.$str.'`';
+            case 'mssql':
+                return '['.$str.']';
+        }
+
+        return $str;
+    }
+
+	public function identifier_escape($str,$which_connection='')
+    {
+        return $this->identifierEscape($str, $which_connection);
+    }
+
 	
 	/**
 	  Get number of rows in a result set
@@ -202,14 +237,19 @@ class SQLManager {
 	  @param $which_connection see method close()
 	  @return Integer number or False if there's an error
 	*/
-	function num_rows($result_object,$which_connection=''){
-		if ($which_connection == '')
-			$which_connection = $this->default_db;	
-			if ($result_object != null)
-				return $result_object->RecordCount();
-			else 
-				return 0;
-		}
+	public function numRows($result_object,$which_connection='')
+    {
+		if ($which_connection == '') {
+			$which_connection = $this->default_db;
+        }
+
+		return $result_object->RecordCount();
+	}
+
+	public function num_rows($result_object,$which_connection='')
+    {
+        return $this->numRows($result_object, $which_connection);
+    }
 
 	/**
 	  Move result cursor to specified record
@@ -218,23 +258,38 @@ class SQLManager {
 	  @param $which_connection see method close()
 	  @return True on success, False on failure
 	*/
-	function data_seek($result_object,$rownum,$which_connection=''){
-		if ($which_connection == '')
+	public function dataSeek($result_object,$rownum,$which_connection='')
+    {
+		if ($which_connection == '') {
 			$which_connection = $this->default_db;
+        }
+
 		return $result_object->Move((int)$rownum);
 	}
-	
+
+	public function data_seek($result_object,$rownum,$which_connection='')
+    {
+        return $this->dataSeek($result_object, $rownum, $which_connection);
+    }
 	/**
 	  Get number of fields in a result set
 	  @param $result_object A result set
 	  @param $which_connection see method close()
 	  @return Integer number or False if there's an error
 	*/
-	function num_fields($result_object,$which_connection=''){
-		if ($which_connection == '')
+	public function numFields($result_object,$which_connection='')
+    {
+		if ($which_connection == '') {
 			$which_connection = $this->default_db;
+        }
+
 		return $result_object->FieldCount();
 	}
+
+	public function num_fields($result_object,$which_connection='')
+    {
+        return $this->numFields($result_object, $which_connection);
+    }
 
 	/**
 	  Get next record from a result set
@@ -242,17 +297,26 @@ class SQLManager {
 	  @param $which_connection see method close()
 	  @return An array of values
 	*/
-	function fetch_array($result_object,$which_connection=''){
+	public function fetchArray($result_object,$which_connection='')
+    {
 		if (is_null($result_object)) return false;
 		if ($result_object === false) return false;
 
-		if ($which_connection == '')
+		if ($which_connection == '') {
 			$which_connection = $this->default_db;
+        }
 		$ret = $result_object->fields;
-		if ($result_object)
+		if ($result_object) {
 			$result_object->MoveNext();
+        }
+
 		return $ret;
 	}
+
+	public function fetch_array($result_object,$which_connection='')
+    {
+        return $this->fetchArray($result_object, $which_connection);
+    }
 
 	/**
 	  Get next record from a result set but as an object
@@ -260,15 +324,27 @@ class SQLManager {
 	  @param $which_connection see method close()
 	  @return An object with member containing values
 	*/
-	function fetch_object($result_object,$which_connection=''){
+	public function fetchObject($result_object,$which_connection='')
+    {
 		return $result_object->FetchNextObject(False);
 	}
+
+	public function fetch_object($result_object,$which_connection='')
+    {
+        return $this->fetchObject($result_object, $which_connection);
+    }
 	
 	/**
 	  An alias for the method fetch_array()
 	*/
-	function fetch_row($result_object,$which_connection=''){
-		return $this->fetch_array($result_object,$which_connection);
+	public function fetchRow($result_object,$which_connection='')
+    {
+		return $this->fetchArray($result_object,$which_connection);
+	}
+
+	public function fetch_row($result_object,$which_connection='')
+    {
+		return $this->fetchArray($result_object,$which_connection);
 	}
 
 	/**
@@ -279,10 +355,30 @@ class SQLManager {
 	  For example, with MySQL this will return the
 	  string 'NOW()'.
 	*/
-	function now($which_connection=''){
-		if ($which_connection == '')
+	public function now($which_connection='')
+    {
+		if ($which_connection == '') {
 			$which_connection = $this->default_db;
+        }
+
 		return $this->connections[$which_connection]->sysTimeStamp;
+	}
+
+	/**
+	  Get the database's function for current day
+	  @param $which_connection see method close()
+	  @return The appropriate function
+
+	  For example, with MySQL this will return the
+	  string 'CURDATE()'.
+	*/
+	public function curdate($which_connection='')
+    {
+		if ($which_connection == '') {
+			$which_connection = $this->default_db;
+        }
+
+		return $this->connections[$which_connection]->sysDate;
 	}
 
 	/**
@@ -297,16 +393,18 @@ class SQLManager {
 	  and $date2 is yesterday, this method returns
 	  a SQL function that evaluates to 1.
 	*/
-	function datediff($date1,$date2,$which_connection=''){
-		if ($which_connection == '')
+	public function datediff($date1,$date2,$which_connection='')
+    {
+		if ($which_connection == '') {
 			$which_connection = $this->default_db;
-		switch($this->connections[$which_connection]->databaseType){
-		case 'mysql':
-		case 'mysqli':
-		case 'pdo':
-			return "datediff($date1,$date2)";
-		case 'mssql':
-			return "datediff(dd,$date2,$date1)";
+        }
+		switch($this->connections[$which_connection]->databaseType) {
+            case 'mysql':
+            case 'mysqli':
+            case 'pdo':
+                return "datediff($date1,$date2)";
+            case 'mssql':
+                return "datediff(dd,$date2,$date1)";
 		}
 	}
 
@@ -323,17 +421,19 @@ class SQLManager {
 	  a SQL expression that evaluates to 1.
 	*/
 
-	function monthdiff($date1,$date2,$which_connection=''){
-		if ($which_connection == '')
+	public function monthdiff($date1,$date2,$which_connection='')
+    {
+		if ($which_connection == '') {
 			$which_connection = $this->default_db;
-		switch($this->connections[$which_connection]->databaseType){
-		case 'mysql':
-		case 'mysqli':
-		case 'pdo':
-			return "period_diff(date_format($date1, '%Y%m'), date_format($date2, '%Y%m'))";
-		case 'mssql':
-			return "datediff(mm,$date2,$date1)";
-		}	
+        }
+		switch($this->connections[$which_connection]->databaseType) {
+            case 'mysql':
+            case 'mysqli':
+            case 'pdo':
+                return "period_diff(date_format($date1, '%Y%m'), date_format($date2, '%Y%m'))";
+            case 'mssql':
+                return "datediff(mm,$date2,$date1)";
+		}
 	}
 
 	/**
@@ -345,17 +445,19 @@ class SQLManager {
 
 	  This method currently only suport MySQL and MSSQL
 	*/
-	function seconddiff($date1,$date2,$which_connection=''){
-		if ($which_connection == '')
+	public function seconddiff($date1,$date2,$which_connection='')
+    {
+		if ($which_connection == '') {
 			$which_connection = $this->default_db;
-		switch($this->connections[$which_connection]->databaseType){
-		case 'mysql':
-		case 'mysqli':
-		case 'pdo':
-			return "TIMESTAMPDIFF(SECOND,$date1,$date2)";
-		case 'mssql':
-			return "datediff(ss,$date2,$date1)";
-		}	
+        }
+		switch($this->connections[$which_connection]->databaseType) {
+            case 'mysql':
+            case 'mysqli':
+            case 'pdo':
+                return "TIMESTAMPDIFF(SECOND,$date1,$date2)";
+            case 'mssql':
+                return "datediff(ss,$date2,$date1)";
+		}
 	}
 
 	/**
@@ -366,16 +468,18 @@ class SQLManager {
 
 	  This method currently only supports MySQL and MSSQL
 	*/
-	function dateymd($date1,$which_connection=''){
-		if ($which_connection == '')
+	public function dateymd($date1,$which_connection='')
+    {
+		if ($which_connection == '') {
 			$which_connection = $this->default_db;
-		switch($this->connections[$which_connection]->databaseType){
-		case 'mysql':
-		case 'mysqli':
-		case 'pdo':
-			return "DATE_FORMAT($date1,'%Y%m%d')";
-		case 'mssql':
-			return "CONVERT(CHAR(11),$date1,112)";
+        }
+		switch($this->connections[$which_connection]->databaseType) {
+            case 'mysql':
+            case 'mysqli':
+            case 'pdo':
+                return "DATE_FORMAT($date1,'%Y%m%d')";
+            case 'mssql':
+                return "CONVERT(CHAR(11),$date1,112)";
 		}
 	}
 
@@ -389,19 +493,23 @@ class SQLManager {
 	  This method currently only supports MySQL and MSSQL
 
 	*/
-	function convert($expr,$type,$which_connection=''){
-		if ($which_connection == '')
+	public function convert($expr,$type,$which_connection='')
+    {
+		if ($which_connection == '') {
 			$which_connection = $this->default_db;
-		switch($this->connections[$which_connection]->databaseType){
-		case 'mysql':
-		case 'mysqli':
-		case 'pdo':
-			if(strtoupper($type)=='INT')
-				$type='SIGNED';
-			return "CONVERT($expr,$type)";
-		case 'mssql':
-			return "CONVERT($type,$expr)";
+        }
+		switch($this->connections[$which_connection]->databaseType) {
+            case 'mysql':
+            case 'mysqli':
+            case 'pdo':
+                if(strtoupper($type)=='INT') {
+                    $type='SIGNED';
+                }
+                return "CONVERT($expr,$type)";
+            case 'mssql':
+                return "CONVERT($type,$expr)";
 		}
+
 		return "";
 	}
 
@@ -414,17 +522,20 @@ class SQLManager {
 
 	  This method currently only supports MySQL and MSSQL
 	*/
-	function locate($substr,$str,$which_connection=''){
-		if ($which_connection == '')
+	public function locate($substr,$str,$which_connection='')
+    {
+		if ($which_connection == '') {
 			$which_connection = $this->default_db;
-		switch($this->connections[$which_connection]->databaseType){
-		case 'mysql':
-		case 'mysqli':
-		case 'pdo':
-			return "LOCATE($substr,$str)";
-		case 'mssql':
-			return "CHARINDEX($substr,$str)";
+        }
+		switch($this->connections[$which_connection]->databaseType) {
+            case 'mysql':
+            case 'mysqli':
+            case 'pdo':
+                return "LOCATE($substr,$str)";
+            case 'mssql':
+                return "CHARINDEX($substr,$str)";
 		}
+
 		return "";
 	}
 
@@ -441,27 +552,32 @@ class SQLManager {
 
 	  This method currently only supports MySQL and MSSQL
 	*/
-	function concat(){
+	public function concat()
+    {
 		$args = func_get_args();
 		$ret = "";
 		$which_connection = $args[count($args)-1];
-		if ($which_connection == '')
+		if ($which_connection == '') {
 			$which_connection = $this->default_db;
-		switch($this->connections[$which_connection]->databaseType){
-		case 'mysql':
-		case 'mysqli':
-		case 'pdo':
-			$ret .= "CONCAT(";
-			for($i=0;$i<count($args)-1;$i++)
-				$ret .= $args[$i].",";	
-			$ret = rtrim($ret,",").")";
+        }
+		switch($this->connections[$which_connection]->databaseType) {
+            case 'mysql':
+            case 'mysqli':
+            case 'pdo':
+                $ret .= "CONCAT(";
+                for($i=0;$i<count($args)-1;$i++) {
+                    $ret .= $args[$i].",";
+                }
+                $ret = rtrim($ret,",").")";
 			break;
-		case 'mssql':
-			for($i=0;$i<count($args)-1;$i++)
-				$ret .= $args[$i]."+";	
-			$ret = rtrim($ret,"+");
+            case 'mssql':
+                for($i=0;$i<count($args)-1;$i++) {
+                    $ret .= $args[$i]."+";
+                }
+                $ret = rtrim($ret,"+");
 			break;
 		}
+
 		return $ret;
 	}
 
@@ -474,17 +590,19 @@ class SQLManager {
 
 	  This method currently only supports MySQL and MSSQL
 	*/
-	function weekdiff($date1,$date2,$which_connection=''){
-		if ($which_connection == '')
+	public function weekdiff($date1,$date2,$which_connection='')
+    {
+		if ($which_connection == '') {
 			$which_connection = $this->default_db;
-		switch($this->connections[$which_connection]->databaseType){
-		case 'mysql':
-		case 'mysqli':
-		case 'pdo':
-			return "week($date1) - week($date2)";
-		case 'mssql':
-			return "datediff(wk,$date2,$date1)";
-		}	
+        }
+		switch($this->connections[$which_connection]->databaseType) {
+            case 'mysql':
+            case 'mysqli':
+            case 'pdo':
+                return "week($date1) - week($date2)";
+            case 'mssql':
+                return "datediff(wk,$date2,$date1)";
+		}
 	}
 
 	/**
@@ -494,11 +612,19 @@ class SQLManager {
 	  @param $which_connection see method close()
 	  @return The column name
 	*/
-	function fetch_field($result_object,$index,$which_connection=''){
-		if ($which_connection == '')
+	public function fetchField($result_object,$index,$which_connection='')
+    {
+		if ($which_connection == '') {
 			$which_connection = $this->default_db;
+        }
+
 		return $result_object->FetchField($index);
 	}
+
+	public function fetch_field($result_object,$index,$which_connection='')
+    {
+        return $this->fetchField($result_object, $index, $which_connection);
+    }
 
 	/** 
 	   Copy a table from one database to another, not necessarily on
@@ -511,9 +637,12 @@ class SQLManager {
 		data to the destination (specify everything before VALUES)
 	   @return False if any record cannot be transfered, True otherwise
 	*/
-	function transfer($source_db,$select_query,$dest_db,$insert_query){
+	public function transfer($source_db,$select_query,$dest_db,$insert_query)
+    {
 		$result = $this->query($select_query,$source_db);
-		if (!$result) return False;
+		if (!$result) {
+            return false;
+        }
 
 		$num_fields = $this->num_fields($result,$source_db);
 
@@ -524,30 +653,35 @@ class SQLManager {
 		$dates = array("datetime"=>1);
 		$queries = array();
 
-		while($row = $this->fetch_array($result,$source_db)){
+		while($row = $this->fetch_array($result,$source_db)) {
 			$full_query = $insert_query." VALUES (";
-			for ($i=0; $i<$num_fields; $i++){
-				$type = $this->field_type($result,$i,$source_db);
-				if ($row[$i] == "" && strstr(strtoupper($type),"INT"))
+			for ($i=0; $i<$num_fields; $i++) {
+				$type = $this->fieldType($result,$i,$source_db);
+				if ($row[$i] == "" && strstr(strtoupper($type),"INT")) {
 					$row[$i] = 0;	
-				elseif ($row[$i] == "" && isset($unquoted[$type]))
+				} elseif ($row[$i] == "" && isset($unquoted[$type])) {
 					$row[$i] = 0;
-				if (isset($dates[$type]))
+                }
+				if (isset($dates[$type])) {
 					$row[$i] = $this->cleanDateTime($row[$i]);
-				elseif (isset($strings[$type]))
+				} elseif (isset($strings[$type])) {
 					$row[$i] = str_replace("'","''",$row[$i]);
-				if (isset($unquoted[$type]))
+                }
+				if (isset($unquoted[$type])) {
 					$full_query .= $row[$i].",";
-				else
+				} else {
 					$full_query .= "'".$row[$i]."',";
+                }
 			}
 			$full_query = substr($full_query,0,strlen($full_query)-1).")";
 			array_push($queries,$full_query);
 		}
 
-		$ret = True;
-		foreach ($queries as $q){
-			if(!$this->query($q,$dest_db)) $ret = False;
+		$ret = true;
+		foreach ($queries as $q) {
+			if(!$this->query($q,$dest_db)) {
+                $ret = false;
+            }
 		}
 
 		return $ret;
@@ -560,21 +694,33 @@ class SQLManager {
 	  @param $which_connection see method close()
 	  @return The column type
 	*/
-	function field_type($result_object,$index,$which_connection=''){
-		if ($which_connection == '')
+	public function fieldType($result_object,$index,$which_connection='')
+    {
+		if ($which_connection == '') {
 			$which_connection = $this->default_db;
+        }
 		$fld = $result_object->FetchField($index);
+
 		return $fld->type;
 	}
 
+	public function field_type($result_object,$index,$which_connection='')
+    {
+        return $this->fieldType($result_object, $index, $which_connection);
+    }
+
 	/**
-	  Alias of method fetch_field()
+	  Alias of method fetchField()
 	*/
-	function field_name($result_object,$index,$which_connection=''){
-		if ($which_connection == '')
-			$which_connection = $this->default_db;
-		$fld = $result_object->FetchField($index);
-		return $fld->name;
+	public function field_name($result_object,$index,$which_connection='')
+    {
+		$field = $this->fetchField($result_object, $index, $which_connection);
+
+        if (is_object($field) && property_exists($field, 'name')) {
+            return $field->name;
+        } else {
+            return '';
+        }
 	}
 
 	/**
@@ -585,20 +731,23 @@ class SQLManager {
 
 	  This method currently only suport MySQL and MSSQL
 	*/
-	function dayofweek($field,$which_connection=''){
-		if ($which_connection == '')
+	public function dayofweek($field,$which_connection='')
+    {
+		if ($which_connection == '') {
 			$which_connection = $this->default_db;
+        }
 		// ado is inconsistent
 		//$conn = $this->connections[$which_connection];
 		//return $conn->SQLDate("w",$field);
-		switch($this->connections[$which_connection]->databaseType){
-		case 'mysql':
-		case 'mysqli':
-		case 'pdo':
-			return "DATE_FORMAT($field,'%w')+1";
-		case 'mssql':
-			return "DATEPART(dw,$field)";
-		}
+		switch($this->connections[$which_connection]->databaseType) {
+            case 'mysql':
+            case 'mysqli':
+            case 'pdo':
+                return "DATE_FORMAT($field,'%w')+1";
+            case 'mssql':
+                return "DATEPART(dw,$field)";
+        }
+
 		return false;
 	}
 
@@ -608,13 +757,31 @@ class SQLManager {
 	  @param $which_connection see method close()
 	  @return The SQL expression
 	*/
-	function hour($field,$which_connection=''){
-		if ($which_connection == '')
+	public function hour($field,$which_connection='')
+    {
+		if ($which_connection == '') {
 			$which_connection = $this->default_db;
+        }
 		$conn = $this->connections[$which_connection];
+
 		return $conn->SQLDate("H",$field);
 	}
 
+	/**
+	  Get the week number from a datetime
+	  @param $field A datetime expression
+	  @param $which_connection see method close()
+	  @return The SQL expression
+	*/
+	public function week($field,$which_connection='')
+    {
+		if ($which_connection == '') {
+			$which_connection = $this->default_db;
+        }
+		$conn = $this->connections[$which_connection];
+
+		return $conn->SQLDate("W",$field);
+	}
 
 	/**
 	  Reformat a datetime to YYYY-MM-DD HH:MM:SS
@@ -623,10 +790,12 @@ class SQLManager {
 
 	  This is a utility method to support transfer()
 	*/
-	function cleanDateTime($str){
+	public function cleanDateTime($str)
+    {
 		$stdFmt = "/(\d\d\d\d)-(\d\d)-(\d\d) (\d+?):(\d\d):(\d\d)/";
-		if (preg_match($stdFmt,$str,$group))
+		if (preg_match($stdFmt,$str,$group)) {
 			return $str;	
+        }
 
 		$msqlFmt = "/(\w\w\w) (\d\d) (\d\d\d\d) (\d+?):(\d\d)(\w)M/";
 
@@ -653,14 +822,15 @@ class SQLManager {
 			"min" => 0
 		);
 		
-		if (preg_match($msqlFmt,$str,$group)){
+		if (preg_match($msqlFmt,$str,$group)) {
 			$info["month"] = $months[strtolower($group[1])];
 			$info["day"] = $group[2];
 			$info["year"] = $group[3];
 			$info["hour"] = $group[4];
 			$info["min"] = $group[5];
-			if ($group[6] == "P")
+			if ($group[6] == "P") {
 				$info["hour"] = ($info["hour"] + 12) % 24;
+            }
 		}
 
 		$ret = $info["year"]."-";
@@ -668,6 +838,7 @@ class SQLManager {
 		$ret .= str_pad($info["day"],2,"0",STR_PAD_LEFT)." ";
 		$ret .= str_pad($info["hour"],2,"0",STR_PAD_LEFT).":";
 		$ret .= str_pad($info["min"],2,"0",STR_PAD_LEFT);
+
 		return $ret;
 	}
 
@@ -680,14 +851,22 @@ class SQLManager {
 	    - False The table doesn't exist
 	    - -1 Operation not supported for this database type
 	*/
-	function table_exists($table_name,$which_connection=''){
-		if ($which_connection == '')
+	public function tableExists($table_name,$which_connection='')
+    {
+		if ($which_connection == '') {
 			$which_connection=$this->default_db;
+        }
 		$conn = $this->connections[$which_connection];
 		$cols = $conn->MetaColumns($table_name);
-		if ($cols === False) return False;
-		return True;
+		if ($cols === false) return false;
+
+		return true;
 	}
+
+	public function table_exists($table_name,$which_connection='')
+    {
+        return $this->tableExists($table_name, $which_connection);
+    }
 
 	/**
 	   Get the table's definition
@@ -698,48 +877,68 @@ class SQLManager {
 	    - False No such table
 	    - -1 Operation not supported for this database type
 	*/
-	function table_definition($table_name,$which_connection=''){
-		if ($which_connection == '')
+	public function tableDefinition($table_name,$which_connection='')
+    {
+		if ($which_connection == '') {
 			$which_connection=$this->default_db;
+        }
 		$conn = $this->connections[$which_connection];
 		$cols = $conn->MetaColumns($table_name);
 
 		$return = array();
-		if (is_array($cols)){
-			foreach($cols as $c)
+		if (is_array($cols)) {
+			foreach($cols as $c) {
 				$return[$c->name] = $c->type;
+            }
 			return $return;
 		}
-		return False;
+
+		return false;
 	}
+
+	public function table_definition($table_name,$which_connection='')
+    {
+        return $this->tableDefinition($table_name, $which_connection);
+    }
 
 	/**
 	   Get list of tables/views
 	   @param which_connection see method close
 	*/
-	function get_tables($which_connection=''){
-		if ($which_connection == '')
+	public function getTables($which_connection='')
+    {
+		if ($which_connection == '') {
 			$which_connection=$this->default_db;
+        }
 		$conn = $this->connections[$which_connection];
+
 		return $conn->MetaTables();
 	}
+
+	public function get_tables($which_connection='')
+    {
+        return $this->getTables($which_connection);
+    }
 
 	/**
 	  Get database's currency type
 	  @param which_connection see method close
 	  @return The SQL type
 	*/
-	function currency($which_connection=''){
-		if ($which_connection == '')
+	public function currency($which_connection='')
+    {
+		if ($which_connection == '') {
 			$which_connection=$this->default_db;
-		switch($this->connections[$which_connection]->databaseType){
-		case 'mysql':
-		case 'mysqli':
-		case 'pdo':
-			return 'decimal(10,2)';
-		case 'mssql':
-			return 'money';
+        }
+		switch($this->connections[$which_connection]->databaseType) {
+            case 'mysql':
+            case 'mysqli':
+            case 'pdo':
+                return 'decimal(10,2)';
+            case 'mssql':
+                return 'money';
 		}
+
 		return 'decimal(10,2)';
 	}
 
@@ -751,35 +950,47 @@ class SQLManager {
 
 	  This method currently only suport MySQL and MSSQL
 	*/
-	function add_select_limit($query,$int_limit,$which_connection=''){
-		if ($which_connection == '')
+	public function addSelectLimit($query,$int_limit,$which_connection='')
+    {
+		if ($which_connection == '') {
 			$which_connection=$this->default_db;
-		switch($this->connections[$which_connection]->databaseType){
-		case 'mysql':
-		case 'mysqli':
-		case 'pdo':
-			return sprintf("%s LIMIT %d",$query,$int_limit);
-		case 'mssql':
-			return str_ireplace("SELECT ","SELECT TOP $int_limit ",$query);
+        }
+		switch($this->connections[$which_connection]->databaseType) {
+            case 'mysql':
+            case 'mysqli':
+            case 'pdo':
+                return sprintf("%s LIMIT %d",$query,$int_limit);
+            case 'mssql':
+                return str_ireplace("SELECT ","SELECT TOP $int_limit ",$query);
 		}
+
+        return $query;
 	}
+
+	public function add_select_limit($query,$int_limit,$which_connection='')
+    {
+        return $this->addSelectLimit($query, $int_limit, $which_connection);
+    }
 
 	/**
 	  Get database scope separator
 	  @param which_connection see method close
 	  @return String separator
 	*/
-	function sep($which_connection=''){
-		if ($which_connection == '')
+	public function sep($which_connection='')
+    {
+		if ($which_connection == '') {
 			$which_connection=$this->default_db;
-		switch($this->connections[$which_connection]->databaseType){
-		case 'mysql':
-		case 'mysqli':
-		case 'pdo':
-			return ".";
-		case 'mssql':
-			return ".dbo.";
+        }
+		switch($this->connections[$which_connection]->databaseType) {
+            case 'mysql':
+            case 'mysqli':
+            case 'pdo':
+                return ".";
+            case 'mssql':
+                return ".dbo.";
 		}
+
 		return ".";
 	}
 
@@ -788,21 +999,31 @@ class SQLManager {
 	  @param which_connection see method close
 	  @return String name
 	*/
-	function dbms_name($which_connection=''){
-		if ($which_connection == '')
+	public function dbmsName($which_connection='')
+    {
+		if ($which_connection == '') {
 			$which_connection=$this->default_db;
+        }
+
 		return $this->connections[$which_connection]->databaseType;
 	}
 
+	public function dbms_name($which_connection='')
+    {
+        return $this->dbmsName($which_connection);
+    }
 	/**
 	  Get last error message
 	  @param which_connection see method close
 	  @return The message
 	*/
-	function error($which_connection=''){
-		if ($which_connection == '')
+	public function error($which_connection='')
+    {
+		if ($which_connection == '') {
 			$which_connection=$this->default_db;
+        }
 		$con = $this->connections[$which_connection];
+
 		return $con->ErrorMsg();
 	}
 
@@ -811,24 +1032,40 @@ class SQLManager {
 	  @param which_connection see method close
 	  @return The new ID value
 	*/
-	function insert_id($which_connection=''){
-		if ($which_connection == '')
+	public function insertID($which_connection='')
+    {
+		if ($which_connection == '') {
 			$which_connection=$this->default_db;
+        }
 		$con = $this->connections[$which_connection];
+
 		return $con->Insert_ID();
 	}
+
+	public function insert_id($which_connection='')
+    {
+        return $this->insertID($which_connection);
+    }
 
 	/**
 	  Check how many rows the last query affected
 	  @param which_connection see method close
 	  @returns Number of rows
 	*/
-	function affected_rows($which_connection=''){
-		if ($which_connection == '')
+	public function affectedRows($which_connection='')
+    {
+		if ($which_connection == '') {
 			$which_connection=$this->default_db;
+        }
 		$con = $this->connections[$which_connection];
+
 		return $con->Affected_Rows();
 	}
+
+	public function affected_rows($which_connection='')
+    {
+        return $this->affectedRows($which_connection);
+    }
 
 	/** 
 	  Insert as much data as possible
@@ -840,29 +1077,35 @@ class SQLManager {
 	  This method polls the table to see which columns actually
 	  exist then inserts those values
 	 */
-	function smart_insert($table_name,$values,$which_connection=''){
-                if ($which_connection == '')
-                        $which_connection=$this->default_db;
+	public function smartInsert($table_name,$values,$which_connection='')
+    {
+        if ($which_connection == '') {
+            $which_connection=$this->default_db;
+        }
 
-		$exists = $this->table_exists($table_name,$which_connection);
+		$exists = $this->tableExists($table_name,$which_connection);
 
-		if (!$exists) return False;
-		if ($exists === -1) return -1;
+		if (!$exists) {
+            return false;
+        }
+		if ($exists === -1) {
+            return -1;
+        }
 
-		$t_def = $this->table_definition($table_name,$which_connection);
+		$t_def = $this->tableDefinition($table_name,$which_connection);
 
 		$cols = "(";
 		$vals = "(";
-		foreach($values as $k=>$v){
-			if (isset($t_def[$k])){
+		foreach($values as $k=>$v) {
+			if (isset($t_def[$k])) {
 				$vals .= $v.",";
 				$col_name = $k;
-				if($this->connections[$which_connection]->databaseType == 'mssql')
+				if($this->connections[$which_connection]->databaseType == 'mssql') {
 					$cols .= $col_name.",";
-				else
+				} else {
 					$cols .= "`".$col_name."`,";
-			}
-			else {
+                }
+			} else {
 				echo "No column - $k";
 				// implication: column isn't in the table
 			}
@@ -870,12 +1113,15 @@ class SQLManager {
 		$cols = substr($cols,0,strlen($cols)-1).")";
 		$vals = substr($vals,0,strlen($vals)-1).")";
 		$insertQ = "INSERT INTO $table_name $cols VALUES $vals";
-
-		//echo $insertQ;
 		$ret = $this->query($insertQ,$which_connection);
 
 		return $ret;
 	}
+
+	public function smart_insert($table_name,$values,$which_connection='')
+    {
+        return $this->smartInsert($table_name, $values, $which_connection);
+    }
 
 	/** 
 	  Update as much data as possible
@@ -895,28 +1141,34 @@ class SQLManager {
 	   - This only works with a single table. Updates involving joins
 	     are rare in the code base though.
 	 */
-	function smart_update($table_name,$values,$where_clause,$which_connection=''){
-                if ($which_connection == '')
-                        $which_connection=$this->default_db;
+	public function smartUpdate($table_name,$values,$where_clause,$which_connection='')
+    {
+        if ($which_connection == '') {
+            $which_connection=$this->default_db;
+        }
 
-		$exists = $this->table_exists($table_name,$which_connection);
+		$exists = $this->tableExists($table_name,$which_connection);
 
-		if (!$exists) return False;
-		if ($exists === -1) return -1;
+		if (!$exists) {
+            return false;
+        }
+		if ($exists === -1) {
+            return -1;
+        }
 
-		$t_def = $this->table_definition($table_name,$which_connection);
+		$t_def = $this->tableDefinition($table_name,$which_connection);
 
 		$sets = "";
-		foreach($values as $k=>$v){
-			if (isset($t_def[$k])){
+		foreach($values as $k=>$v) {
+			if (isset($t_def[$k])) {
 				$col_name = $k;
-				if($this->connections[$which_connection]->databaseType == 'mssql')
+				if($this->connections[$which_connection]->databaseType == 'mssql') {
 					$sets .= $col_name;
-				else
+				} else {
 					$sets .= "`".$col_name."`";
+                }
 				$sets .= "=".$v.",";
-			}
-			else {
+			} else {
 				echo "No column - $k";
 				// implication: column isn't in the table
 			}
@@ -928,6 +1180,11 @@ class SQLManager {
 
 		return $ret;
 	}
+
+	public function smart_update($table_name,$values,$where_clause,$which_connection='')
+    {
+        return $this->smartUpdate($table_name, $values, $where_clause, $which_connection);
+    }
 
 	/**
 	  Create a prepared statement
@@ -942,12 +1199,20 @@ class SQLManager {
 	  The return value of this function should be handed
 	  to SQLManager::exec_statement for execution
 	*/
-	function prepare_statement($sql,$which_connection=""){
-		if ($which_connection == '')
+	public function prepare($sql,$which_connection="")
+    {
+		if ($which_connection == '') {
 			$which_connection=$this->default_db;
+        }
 		$con = $this->connections[$which_connection];
+
 		return $con->Prepare($sql);
 	}
+
+	public function prepare_statement($sql,$which_connection="")
+    {
+        return $this->prepare($sql, $which_connection);
+    }
 
 	/**
 	  Execute a prepared statement with the given
@@ -961,12 +1226,22 @@ class SQLManager {
 	  parameter order on SQLManager::query so existing code
 	  works as expected
 	*/
-	function exec_statement($sql, $input_array=array(), $which_connection=''){
-		if ($which_connection == '')
+	public function execute($sql, $input_array=array(), $which_connection='')
+    {
+		if ($which_connection == '') {
 			$which_connection=$this->default_db;
-		if (!is_array($input_array)) $input_array = array($input_array);
+        }
+		if (!is_array($input_array)) {
+            $input_array = array($input_array);
+        }
+
 		return $this->query($sql,$which_connection,$input_array);
 	}
+
+	public function exec_statement($sql, $input_array=array(), $which_connection='')
+    {
+        return $this->execute($sql, $input_array, $which_connection);
+    }
 
 	/** 
 	  See if a datetime is on a given date using BETWEEN	
@@ -977,22 +1252,32 @@ class SQLManager {
 	  Which MySQL partitioning by date this is MUCH
 	  faster than using datediff($col,$dateStr)==0
 	*/
-	function date_equals($col,$dateStr){
+	public function dateEquals($col,$dateStr)
+    {
 		$dateStr = trim($dateStr,"'");
 		$seconds = strtotime($dateStr);
-		if ($seconds === False) $seconds = time();
+		if ($seconds === false) {
+            $seconds = time();
+        }
 		$base = date("Y-m-d",$seconds);
 	
 		return sprintf("(%s BETWEEN '%s 00:00:00' AND '%s 23:59:59')",
 			$col,$base,$base);
 	}
 
+	public function date_equals($col,$dateStr)
+    {
+        return $this->dateEquals($col, $dateStr);
+    }
+
 	/* compat layer; mimic functions of Brad's mysql class */
-	function get_result($host,$user,$pass,$data_base,$query){
+	public function get_result($host,$user,$pass,$data_base,$query)
+    {
 		return $this->query($query);
 	}
 
-	function aff_rows($result){
+	public function aff_rows($result)
+    {
 		return $this->affected_rows($result);
 	}
 
@@ -1001,16 +1286,16 @@ class SQLManager {
 	   @param $str The string
 	   @return A True on success, False on failure 
 	*/  
-	function logger($str){
+	public function logger($str)
+    {
 		$ql = $this->QUERY_LOG;
-		if (is_writable($ql)){
+		if (is_writable($ql)) {
 			$fp = fopen($ql,'a');
 			fputs($fp,$_SERVER['PHP_SELF'].": ".date('r').': '.$str."\n");
 			fclose($fp);
-			return True;
-		}
-		else {
-			return False;
+			return true;
+		} else {
+			return false;
 		}
 	}
 
@@ -1019,4 +1304,3 @@ class SQLManager {
 	/* end compat Brad's class */
 }
 
-?>

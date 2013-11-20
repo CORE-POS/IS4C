@@ -37,7 +37,8 @@ class ToggleReceipt extends Parser {
 		else
 			$CORE_LOCAL->set("receiptToggle",1);
 		$ret = $this->default_json();
-		$ret['output'] = DisplayLib::lastpage();
+		// redirect to main screen so receipt icon reloads
+		$ret['main_frame'] = MiscLib::base_url().'gui-modules/pos2.php';
 		return $ret;
 	}
 

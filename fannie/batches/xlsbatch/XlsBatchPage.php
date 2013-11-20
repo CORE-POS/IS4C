@@ -22,7 +22,7 @@
 *********************************************************************************/
 
 include('../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
 class XlsBatchPage extends FannieUploadPage {
 	protected $title = "Fannie -  Sales Batch";
@@ -83,8 +83,13 @@ class XlsBatchPage extends FannieUploadPage {
 		$id = $dbc->insert_id();
 
 		$upcChk = $dbc->prepare_statement("SELECT upc FROM products WHERE upc=?");
-		$listP = $dbc->prepare_statement("INSERT INTO batchList (upc,batchID,salePrice,active,pricemethod,quantity)
-			VALUES(?,?,?,0,0,0)");
+
+		$model = new BatchListModel($dbc);
+		$model->batchID($id);
+		$model->pricemethod(0);
+		$model->quantity(0);
+		$model->active(0);
+
 		$ret = '';
 		foreach($linedata as $line){
 			if (!isset($line[$upcCol])) continue;
@@ -113,7 +118,9 @@ class XlsBatchPage extends FannieUploadPage {
 				if ($dbc->num_rows($chkR) ==  0) continue;
 			}	
 
-			$dbc->exec_statement($listP,array($upc,$id,$price));
+			$model->upc($upc);
+			$model->salePrice($price);
+			$model->save();
 		}
 
 		$ret .= "Batch created";
@@ -158,7 +165,8 @@ class XlsBatchPage extends FannieUploadPage {
 	/**
 	  overriding the basic form since I need several extra fields	
 	*/
-	function basic_form(){
+	protected function basicForm()
+    {
 		global $FANNIE_URL;
 		$batchtypes = $this->get_batch_types();
 		ob_start();

@@ -1,6 +1,6 @@
 <?php
 include('../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
 class RenderReceiptPage extends FanniePage {
 
@@ -71,12 +71,55 @@ class RenderReceiptPage extends FanniePage {
 			$rp = $FANNIE_ARCHIVE_DB.$dbconn.'rp_dt_receipt_big';
 		}
 
-		$query1 = "SELECT description,comment,total,Status,
-			datetime,register_no,emp_no,trans_no,memberID FROM $rp WHERE "
-			.' datetime BETWEEN ? AND ? '
-			." and trans_num = ? "
-			." ORDER BY trans_id";
-		$args = array("$year-$month-$day 00:00:00", "$year-$month-$day 23:59:59", $trans);
+		// equivalent to rp_dt_receipt_* view
+		$table = DTransactionsModel::select_dtrans(date('Y-m-d',$totime));
+		$query1 = "SELECT 
+			description,
+			case 
+				when voided = 5 
+					then 'Discount'
+				when trans_status = 'M'
+					then 'Mbr special'
+				when scale <> 0 and quantity <> 0 
+					then concat(convert(quantity,char), ' @ ', convert(unitPrice,char))
+				when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity = 1
+					then concat(convert(volume,char), ' /', convert(unitPrice,char))
+				when abs(itemQtty) > 1 and abs(itemQtty) > abs(quantity) and discounttype <> 3 and quantity <> 1
+					then concat(convert(Quantity,char), ' @ ', convert(Volume,char), ' /', convert(unitPrice,char))
+				when abs(itemQtty) > 1 and discounttype = 3
+					then concat(convert(ItemQtty,char), ' /', convert(UnitPrice,char))
+				when abs(itemQtty) > 1
+					then concat(convert(quantity,char), ' @ ', convert(unitPrice,char))	
+				when matched > 0
+					then '1 w/ vol adj'
+				else ''
+					
+			end
+			as comment,
+			total,
+			case 
+				when trans_status = 'V' 
+					then 'VD'
+				when trans_status = 'R'
+					then 'RF'
+				when tax <> 0 and foodstamp <> 0
+					then 'TF'
+				when tax <> 0 and foodstamp = 0
+					then 'T' 
+				when tax = 0 and foodstamp <> 0
+					then 'F'
+				when tax = 0 and foodstamp = 0
+					then '' 
+			end
+			as Status,
+			datetime, register_no, emp_no, trans_no, card_no as memberID
+			FROM $table 
+			WHERE datetime BETWEEN ? AND ? 
+			AND register_no=? AND emp_no=? and trans_no=?
+			AND voided <> 5 and UPC <> 'TAX' and UPC <> 'DISCOUNT'
+			ORDER BY trans_id";
+		$args = array("$year-$month-$day 00:00:00", "$year-$month-$day 23:59:59", 
+				$reg_no, $emp_no, $trans_no);
 		return $this->receipt_to_table($query1,$args,0,'FFFFFF');
 	}
 
@@ -173,20 +216,46 @@ class RenderReceiptPage extends FanniePage {
 			{$FANNIE_TRANS_DB}{$dbconn}efsnetResponse AS r
 			ON q.refNum=r.refNum  WHERE q.date=? AND
 			q.cashierNo=? AND q.laneNo=? AND q.transNo=?
-			and commErr=0");
-		$result = $dbc->exec_statement($query,array($dateInt,$emp,$reg,$trans));
+			and commErr=0
+			UNION ALL 
+			SELECT m.mode, amount, PAN, 
+			CASE WHEN manual=1 THEN 'keyed' ELSE 'swiped' END AS entryMethod, 
+			issuer, r.xResultMessage, r.xApprovalNumber, r.xTransactionID, name,
+			q.refNum
+			from {$FANNIE_TRANS_DB}{$dbconn}efsnetRequestMod m
+			join {$FANNIE_TRANS_DB}{$dbconn}efsnetRequest q
+			  on q.date=m.date
+			  and q.cashierNo=m.cashierNo
+			  and q.laneNo=m.laneNo
+			  and q.transNo=m.transNo
+			  and q.transID=m.transID
+			join {$FANNIE_TRANS_DB}{$dbconn}efsnetResponse AS r
+			ON q.refNum=r.refNum  WHERE q.date=? AND
+			q.cashierNo=? AND q.laneNo=? AND q.transNo=?
+			and m.validResponse=1 and 
+			(m.xResponseCode=0 or m.xResultMessage like '%APPROVE%')
+			and m.commErr=0 AND r.commErr=0");
+		$result = $dbc->exec_statement($query,array(
+						$dateInt,$emp,$reg,$trans,
+						$dateInt,$emp,$reg,$trans
+						));
 		$ret = '';
 		$pRef = '';
 		while ($row = $dbc->fetch_row($result)){
-			if ($pRef == $row['refNum']) continue;
+			if ($pRef == $row['refNum'] && $row['mode'] != 'VOID') continue;
 			$ret .= "<hr />";
+			$ret .= 'Mode: '.$row['mode'].'<br />';
 			$ret .= "Card: ".$row['issuer'].' '.$row['PAN'].'<br />';
 			$ret .= "Name: ".$row['name'].'<br />';
 			$ret .= "Entry Method: ".$row['entryMethod'].'<br />';
 			$ret .= "Sequence Number: ".$row['xTransactionID'].'<br />';
 			$ret .= "Authorization: ".$row['xResultMessage'].'<br />';
 			$ret .= '<b>Amount</b>: '.sprintf('$%.2f',$row['amount']).'<br />';
-			$ret .= (strstr($row['mode'],'Credit') ? 'MERCURY' : 'FAPS') . '<br />';
+			if ($row['mode'] == 'VOID'){}
+			elseif(strstr($row['mode'],'Credit'))
+				$ret .= 'MERCURY<br />';
+			else
+				$ret .= 'FAPS<br />';
 			$pRef = $row['refNum'];
 		}
 		return $ret;

@@ -21,8 +21,6 @@
 
 *********************************************************************************/
 
-ini_set('display_errors','1');
-
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class login3 extends BasicPage {
@@ -31,12 +29,24 @@ class login3 extends BasicPage {
 	var $img;
 	var $msg;
 
+	protected $mask_input = True;
+
 	function preprocess(){
-		$this->color = "#004080";
+		$this->color = "coloredArea";
 		$this->img = $this->page_url."graphics/bluekey4.gif";
 		$this->msg = _("please enter password");
-		if (isset($_REQUEST['reginput'])){
-			if (Authenticate::check_password($_REQUEST['reginput'],4)){
+		if (isset($_REQUEST['reginput']) || isset($_REQUEST['scannerInput'])){
+
+			$passwd = '';
+			if (isset($_REQUEST['reginput']) && !empty($_REQUEST['reginput'])){
+				$passwd = $_REQUEST['reginput'];
+			}
+			elseif (isset($_REQUEST['scannerInput']) && !empty($_REQUEST['scannerInput'])){
+				$passwd = $_REQUEST['scannerInput'];
+				UdpComm::udpSend('goodBeep');
+			}
+
+			if (Authenticate::checkPassword($passwd,4)){
 				$sd = MiscLib::scaleObject();
 				if (is_object($sd))
 					$sd->ReadReset();
@@ -44,7 +54,7 @@ class login3 extends BasicPage {
 				return False;
 			}
 			else {
-				$this->color = "#800000";
+				$this->color = "errorColoredArea";
 				$this->img = $this->page_url."graphics/redkey4.gif";
 				$this->msg = _("password invalid, please re-enter");
 			}
@@ -53,17 +63,18 @@ class login3 extends BasicPage {
 	}
 
 	function head_content(){
-		$this->default_parsewrapper_js();
+		$this->default_parsewrapper_js('scannerInput');
+		$this->scanner_scale_polling(True);
 	}
 
 	function body_content(){
 		global $CORE_LOCAL;
-		$style = "style=\"background: {$this->color};\"";
 		$this->input_header();
 		echo DisplayLib::printheaderb();
 		?>
+		<input type="hidden" name="scannerInput" id="scannerInput" value="" />
 		<div class="baseHeight">
-			<div class="colored centeredDisplay" <?php echo $style;?>>
+			<div class="<?php echo $this->color; ?> centeredDisplay">
 			<img alt="key" src='<?php echo $this->img ?>' />
 			<p>
 			<?php echo $this->msg ?>
@@ -72,7 +83,6 @@ class login3 extends BasicPage {
 		</div>
 		<?php
 		TransRecord::addactivity(3);
-		$CORE_LOCAL->set("scan","noScan");
 		Database::getsubtotals();
 		echo "<div id=\"footer\">";
 		echo DisplayLib::printfooter();
@@ -81,6 +91,7 @@ class login3 extends BasicPage {
 
 }
 
-new login3();
+if (basename(__FILE__) == basename($_SERVER['PHP_SELF']))
+	new login3();
 
 ?>

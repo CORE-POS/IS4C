@@ -22,6 +22,17 @@
 *********************************************************************************/
 
 //ini_set('display_errors','1');
+if (!file_exists(dirname(__FILE__).'/../config.php')){
+	echo "Missing config file!<br />";
+	echo "Create a file named config.php in ".realpath(dirname(__FILE__).'/../').'<br />';
+	echo "and put this in it:<br />";
+	echo "<div style=\"border: 1px solid black;padding: 5em;\">";
+	echo '&lt;?php<br />';
+	echo '?&gt;';
+	echo '</div>';	
+	exit;	
+}
+
 require(dirname(__FILE__).'/../config.php'); 
 include(dirname(__FILE__).'/util.php');
 include(dirname(__FILE__).'/db.php');
@@ -918,6 +929,9 @@ class InstallIndexPage extends InstallPage {
 				'vendorItems','op');
 
 		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+				'vendorContact','op');
+
+		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 				'vendorSKUtoPLU','op');
 
 		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
@@ -1184,6 +1198,12 @@ class InstallIndexPage extends InstallPage {
 				'newBalanceStockToday_test','trans');
 
 		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+				'equity_history_sum','trans');
+
+		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+				'equity_live_balance','trans');
+
+		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
 				'memChargeBalance','trans');
 
 		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
@@ -1221,11 +1241,9 @@ class InstallIndexPage extends InstallPage {
 			$FANNIE_OP_DB,$FANNIE_SERVER_USER,
 			$FANNIE_SERVER_PW);
 
-		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-				'expingMems','op');
+        $ret[] = dropDeprecatedStructure($con, $FANNIE_OP_DB, 'expingMems', true);
 
-		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-				'expingMems_thisMonth','op');
+        $ret[] = dropDeprecatedStructure($con, $FANNIE_OP_DB, 'expingMems_thisMonth', true);
 
 		$con = db_test_connect($FANNIE_SERVER,$FANNIE_SERVER_DBMS,
 			$FANNIE_TRANS_DB,$FANNIE_SERVER_USER,
@@ -1402,51 +1420,52 @@ class InstallIndexPage extends InstallPage {
 			}
 		}
 
-		$dlogView = "select 
-			`$archive`.`datetime` AS `tdate`,
-			`$archive`.`register_no` AS `register_no`,
-			`$archive`.`emp_no` AS `emp_no`,
-			`$archive`.`trans_no` AS `trans_no`,
-			`$archive`.`upc` AS `upc`,
-			`$archive`.`trans_type` AS `trans_type`,
-			`$archive`.`trans_subtype` AS `trans_subtype`,
-			`$archive`.`trans_status` AS `trans_status`,
-			`$archive`.`department` AS `department`,
-			`$archive`.`quantity` AS `quantity`,
-			`$archive`.`unitPrice` AS `unitPrice`,
-			`$archive`.`total` AS `total`,
-			`$archive`.`tax` AS `tax`,
-			`$archive`.`foodstamp` AS `foodstamp`,
-			`$archive`.`ItemQtty` AS `itemQtty`,
-			`$archive`.`card_no` AS `card_no`,
-			`$archive`.`trans_id` AS `trans_id` 
-			from `$archive` 
-			where 
-			((`$archive`.`trans_status` <> 'D') 
-			and 
-			(`$archive`.`trans_status` <> 'X'))";
-		if ($FANNIE_SERVER_DBMS == 'MSSQL'){
-			$dlogView = "SELECT
-				datetime AS tdate,
-				register_no,
-				emp_no,
-				trans_no,
-				upc,
-				trans_type,
-				trans_subtype,
-				trans_status,
-				department,
-				quantity,
-				unitPrice,
-				total,
-				tax,
-				foodstamp,
-				ItemQtty,
-				card_no,
-				trans_id
-				FROM $archive
-				WHERE trans_status NOT IN ('D','X')";
-		}
+		$dlogView = "SELECT
+			datetime AS tdate,
+			register_no,
+			emp_no,
+			trans_no,
+			upc,
+			description,
+			CASE WHEN (trans_subtype IN ('CP','IC') OR upc like('%000000052')) then 'T' WHEN upc = 'DISCOUNT' then 'S' else trans_type end as trans_type,
+			CASE WHEN upc = 'MAD Coupon' THEN 'MA' 
+			   WHEN upc like('%00000000052') THEN 'RR' ELSE trans_subtype END as trans_subtype,
+			trans_status,
+			department,
+			quantity,
+			scale,
+			cost,
+			unitPrice,
+			total,
+			regPrice,
+			tax,
+			foodstamp,
+			discount,
+			memDiscount,
+			discountable,
+			discounttype,
+			voided,
+			percentDiscount,
+			ItemQtty,
+			volDiscType,
+			volume,
+			VolSpecial,
+			mixMatch,
+			matched,
+			memType,
+			staff,
+			numflag,
+			charflag,
+			card_no,
+			trans_id,
+			".$con->concat(
+				$con->convert('emp_no','char'),"'-'",
+				$con->convert('register_no','char'),"'-'",
+				$con->convert('trans_no','char'),'')
+			." as trans_num
+			FROM $archive
+			WHERE trans_status NOT IN ('D','X','Z')
+			AND emp_no <> 9999 and register_no <> 99";
 
 		$dlog_view = ($FANNIE_ARCHIVE_METHOD != "partitions") ? "dlog".$dstr : "dlogBig";
 		if (!$con->table_exists($dlog_view,$FANNIE_ARCHIVE_DB)){

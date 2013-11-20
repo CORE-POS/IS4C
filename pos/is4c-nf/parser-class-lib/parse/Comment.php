@@ -29,10 +29,15 @@ class Comment extends Parser {
 	}
 
 	function parse($str){
-		$comment = substr($str,2);
-		TransRecord::addcomment($comment);
 		$ret = $this->default_json();
-		$ret['output'] = DisplayLib::lastpage();
+		if (strlen($str) > 2){
+			$comment = substr($str,2);
+			TransRecord::addcomment($comment);
+			$ret['output'] = DisplayLib::lastpage();
+		}
+		else {
+			$ret['main_frame'] = MiscLib::base_url().'gui-modules/bigComment.php';
+		}
 		return $ret;
 	}
 

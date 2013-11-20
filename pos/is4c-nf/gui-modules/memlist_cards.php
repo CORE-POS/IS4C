@@ -34,8 +34,6 @@
 
 */
 
-ini_set('display_errors','1');
-
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class memlist_cards extends NoInputPage {
@@ -54,11 +52,9 @@ class memlist_cards extends NoInputPage {
 		// vs. lookup didn't happen
 		$this->temp_num_rows = -1;
 
-		$CORE_LOCAL->set("away",1);
 		$entered = "";
-		if ($CORE_LOCAL->get("idSearch") && strlen($CORE_LOCAL->get("idSearch")) > 0) {
-			$entered = $CORE_LOCAL->get("idSearch");
-			$CORE_LOCAL->set("idSearch","");
+		if (isset($_REQUEST['idSearch']) && strlen($_REQUEST['idSearch']) > 0){
+			$entered = $_REQUEST['idSearch'];
 		}
 		elseif (isset($_REQUEST['search'])){
 			$entered = strtoupper(trim($_REQUEST["search"]));
@@ -80,9 +76,6 @@ class memlist_cards extends NoInputPage {
 
 		// No input available, stop
 		if (!$entered || strlen($entered) < 1 || $entered == "CL") {
-			$CORE_LOCAL->set("mirequested",0);
-			$CORE_LOCAL->set("scan","scan");
-			$CORE_LOCAL->set("reprintNameLookup",0);
 			$this->change_page($this->page_url."gui-modules/memlist_cards.php");
 			return False;
 		}
@@ -96,7 +89,7 @@ class memlist_cards extends NoInputPage {
 		}
 		else {
 			$query = "select CardNo,personNum,LastName,FirstName,CashBack,Balance,Discount,
-				MemDiscountLimit,ChargeOk,WriteChecks,StoreCoupons,Type,memType,staff,
+				ChargeOk,WriteChecks,StoreCoupons,Type,memType,staff,
 				SSI,Purchases,NumberOfChecks,memCoupons,blueLine,Shown,id from custdata 
 				where CardNo = '".$entered."' order by personNum";
 		}
@@ -121,7 +114,6 @@ class memlist_cards extends NoInputPage {
 			$row = $db_a->fetch_array($result);
 			// Don't want to affect the current trans.  Will it still work?
 			// PrehLib::setMember($row["CardNo"], $personNum,$row);
-			$CORE_LOCAL->set("scan","scan");
 
 			// WEFC_Toronto: If a Member Card # was entered when the choice from the list was made,
 			// add the memberCards record.
@@ -327,8 +319,8 @@ class memlist_cards extends NoInputPage {
 					.$row["CardNo"]." ".$row["LastName"].", ".$row["FirstName"]."\n";
 			}
 			echo "</select></div><!-- /.listbox -->"
-				."<div class=\"listboxText centerOffset\">"
-				._("use arrow keys to navigate")."<p>"._("clear to cancel")."</div><!-- /.listboxText .centerOffset -->"
+				."<div class=\"listboxText coloredText centerOffset\">"
+				._("use arrow keys to navigate")."<p>"._("clear to cancel")."</div><!-- /.listboxText coloredText .centerOffset -->"
 				."<div class=\"clear\"></div>";
 
 			// A textbox for the Member Card number, to be added to the db for the selected member.
@@ -348,6 +340,7 @@ class memlist_cards extends NoInputPage {
 // /class memlist
 }
 
-new memlist_cards();
+if (basename(__FILE__) == basename($_SERVER['PHP_SELF']))
+	new memlist_cards();
 
 ?>

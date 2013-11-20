@@ -123,14 +123,9 @@ class InstallProductsPage extends InstallPage {
 		?>
 		<select multiple name="FANNIE_PRODUCT_MODULES[]" size="10">
 		<?php
-		$dh = opendir("../item/modules");
-		$tmp = array();
-		while(($file = readdir($dh)) !== False){
-			if (substr($file,-4) == ".php")
-				$tmp[] = substr($file,0,strlen($file)-4);	
-		}
-		sort($tmp);
-		foreach($tmp as $module){
+		$mods = FannieAPI::ListModules('ItemModule',True);
+		sort($mods);
+		foreach($mods as $module){
 			printf("<option %s>%s</option>",(in_array($module,$FANNIE_PRODUCT_MODULES)?'selected':''),$module);
 		}
 		?>

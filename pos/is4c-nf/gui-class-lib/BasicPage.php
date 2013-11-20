@@ -43,6 +43,8 @@ class BasicPage {
 	*/
 	var $page_url;
 
+	var $body_class='mainBGimage';
+
 	/**
 	  Constructor
 
@@ -129,7 +131,7 @@ class BasicPage {
 			src=\"{$my_url}/js/jquery.js\"></script>";
 		$this->head_content();
 		echo "</head>";
-		echo "<body>";
+		echo '<body class="'.$this->body_class.'">';
 		echo "<div id=\"boundingBox\">";
 		$this->body_content();	
 		echo "</div>";
@@ -160,6 +162,11 @@ class BasicPage {
 		$this->onload_commands .= $str."\n";
 	}
 
+	protected $mask_input = False;
+	function hide_input($bool){
+		$this->mask_input = $bool;
+	}
+
 	/**
 	  Display the standard header with input box
 	  @param $action What the form does
@@ -181,7 +188,7 @@ class BasicPage {
 		$this->add_onload_command("betterDate();\n\$('#reginput').focus();");
 		
 		$inputType = "text";
-		if ($CORE_LOCAL->get("inputMasked") != 0)
+		if ($this->mask_input)
 			$inputType = "password";
 		// this needs to be configurable; just fixing
 		// a giant PHP warning for the moment
@@ -223,7 +230,7 @@ class BasicPage {
 					type="<?php echo $inputType; ?>" id="reginput"  />
 				</form>
 			</div>
-			<div class="notices <?php echo ($CORE_LOCAL->get("training")==1?'training':''); ?>">
+			<div class="notices coloredText <?php echo ($CORE_LOCAL->get("training")==1?'training':''); ?>">
 			<?php
 			if ($CORE_LOCAL->get("training") == 1) {
 				echo "<span class=\"text\">"._("training")." </span>"
@@ -313,7 +320,7 @@ class BasicPage {
 			<div class="inputform">
 			&nbsp;
 			</div>
-			<div class="notices">
+			<div class="notices coloredText">
 			<?php	
 			if ($CORE_LOCAL->get("training") == 1) {
 				echo "<span class=\"text\">"._("training")." </span>"
@@ -356,7 +363,7 @@ class BasicPage {
 	function scale_box(){
 		?>
 		<div id="scalebox">
-			<div id="scaleTop"> 
+			<div id="scaleTop" class="coloredArea"> 
 			<?php echo _("weight"); ?>
 			</div>
 			<div id="scaleBottom">
@@ -413,7 +420,8 @@ class BasicPage {
 				echo '<ul><li>';
 				if(!empty($s['class'])) echo $s['class'].'::';
 				echo $s['function'].'()';
-				echo '<li>Line '.$s['line'].', '.$s['file'];
+				if (isset($s['line']))
+					echo '<li>Line '.$s['line'].', '.$s['file'];
 			}
 			foreach($stack as $s) echo '</ul>';
 		}

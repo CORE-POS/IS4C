@@ -75,7 +75,7 @@ array('label'=>'Item Maintenance','url'=>'item/ItemEditorPage.php','subheading'=
 ),
 array('label'=>'Sales Batches','url'=>'batches/','subheading'=>'Create automated sales & price changes',
 'submenu'=>array(
-	array('label'=>'Sales Batches','url'=>'batches/newbatch.oo/'),
+	array('label'=>'Sales Batches','url'=>'batches/newbatch/'),
 	array('label'=>'Upload Batch','url'=>'batches/xlsbatch/'),
 	array('label'=>'Manage Batch Types','url'=>'batches/BatchTypeEditor.php'),
 	array('label'=>'Co+op Deals Sales','url'=>'batches/CAP/'),
@@ -101,8 +101,8 @@ array('label'=>'Reports','url'=>'reports/','subheading'=>'Custom reporting tools
 			array('label'=>'General Sales Report','url'=>'reports/GeneralSales/'),
 			array('label'=>'General Cost Report','url'=>'reports/GeneralCost/'),
 			array('label'=>'Sales Today','url'=>'reports/SalesToday/'),
-			array('label'=>'Store Hourly Sales','url'=>'reports/HourlySales/'),
-			array('label'=>'Department Hourly Sales','url'=>'reports/HourlySales/hourlySalesDept.php')
+			array('label'=>'Hourly Sales','url'=>'reports/HourlySales/HourlySalesReport.php'),
+			array('label'=>'Hourly Transactions','url'=>'reports/HourlyTrans/HourlyTransReport.php')
 		)
 	),
 	array('label'=>'Product List and Tool','url'=>'item/ProductListPage.php'),

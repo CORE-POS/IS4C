@@ -1,5 +1,7 @@
 <?php
 include('../../../config.php');
+header('Location: '.$FANNIE_URL.'modules/plugins2.0/OverShortTools/OverShortSafecountPage.php');
+exit;
 
 require($FANNIE_ROOT.'src/SQLManager.php');
 include('../../db.php');
@@ -456,6 +458,9 @@ function denom_overage($overage){
 <style type=text/css>
 tr.color {
 	background: #ffffcc;
+}
+div#display td, th, h3 {
+    color: #000000;
 }
 </style>
 </head>

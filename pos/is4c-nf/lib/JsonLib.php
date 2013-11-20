@@ -32,28 +32,35 @@ class JsonLib extends LibraryClass {
   @param $arr an array of values
   @return A JSON string representing the array
 */
-static public function array_to_json($arr){
+static public function arrayToJson($arr)
+{
 	$ret = "[";
-	for($i=0;$i<count($arr);$i++){
-		if (isset($arr[$i]))
-			$ret .= self::encode_value_json($arr[$i]).",";
-		else {
+	for($i=0;$i<count($arr);$i++) {
+		if (isset($arr[$i])) {
+			$ret .= self::encodeValueJson($arr[$i]).",";
+		} else {
 			$ret = "";
 			break; // not a numeric indexed array
 		}
 	}
-	if (!empty($ret)){
+	if (!empty($ret)) {
 		$ret = substr($ret,0,strlen($ret)-1)."]";
 		return $ret;
 	}
 
 	$ret = "{";
-	foreach($arr as $k=>$v){
+	foreach($arr as $k=>$v) {
 		$ret .= '"'.$k.'":';
-		$ret .= self::encode_value_json($v).",";
+		$ret .= self::encodeValueJson($v).",";
 	}
 	$ret = substr($ret,0,strlen($ret)-1)."}";
+
 	return $ret;
+}
+
+static public function array_to_json($arr)
+{
+    return self::arrayToJson($arr);
 }
 
 /**
@@ -61,12 +68,22 @@ static public function array_to_json($arr){
   @param $val a single variable
   @return A JSON string representing the variable
 */
-static public function encode_value_json($val){
-	if (is_array($val)) return self::array_to_json($val);
-	if (is_numeric($val)) return ltrim($val,'0');
-	if ($val === true) return 'true';
-	if ($val === false) return 'false';
-	else return '"'.addcslashes($val,"\\\"\r\n\t").'"';
+static public function encodeValueJson($val)
+{
+	if (is_array($val)) {
+        return self::array_to_json($val);
+    }
+	if (is_numeric($val)) {
+        return ltrim($val,'0');
+    }
+	if ($val === true) {
+        return 'true';
+    }
+	if ($val === false) {
+        return 'false';
+    }
+
+	return '"'.addcslashes($val,"\\\"\r\n\t").'"';
 }
 
 /**
@@ -76,7 +93,8 @@ static public function encode_value_json($val){
   @str a string
   @return the modified string
 */
-static public function fixstring($str){
+static public function fixstring($str)
+{
 	$str = str_replace("\n","",$str);
 	$str = str_replace("\r","",$str);
 	$str = str_replace("\t","",$str);

@@ -21,55 +21,62 @@
 
 *********************************************************************************/
 
-if (!class_exists('JsonLib')) include(dirname(__FILE__).'/../src/JsonLib.php');
-
-class FannieWebService {
-	
-	public $type = 'json'; // json/plain by default
-
-	/**
-	  constructor will run the webservice automatically
-	*/
-	public function __construct(){
-		$info = new ReflectionClass($this);
-		if (basename($_SERVER['PHP_SELF']) == basename($info->getFileName())){
-			$output = $this->run();
-			$render_func = 'render_'.strtolower($this->type);
-			if (method_exists($this, $render_func))
-				echo $this->$render_func($output);
-			else
-				echo $this->render_plain($output);
-		}
-	}
-
-	/**
-	  Do whatever the service is supposed to do.
-	  Should override this.
-	  @return an array of data
-	*/
-	protected function run(){
-		return array();
-	}
-
-	/**
-	  Create JSON representation of array
-	  @param $arr an array
-	  @return JSON string
-	*/
-	protected function render_json($arr){
-		return JsonLib::array_to_json($arr);
-	}
-	
-	/**
-	  Simple render concatenate array to string
-	  @param $arr an array
-	  @return string
-	*/
-	protected function render_plain($arr){
-		$ret = '';
-		foreach($arr as $a) $ret .= $a;
-		return $ret;
-	}
+if (!class_exists('JsonLib')) {
+    include(dirname(__FILE__).'/../src/JsonLib.php');
 }
 
-?>
+class FannieWebService 
+{
+    
+    public $type = 'json'; // json/plain by default
+
+    /**
+      constructor will run the webservice automatically
+    */
+    public function __construct()
+    {
+        $info = new ReflectionClass($this);
+        if (basename($_SERVER['PHP_SELF']) == basename($info->getFileName())) {
+            $output = $this->run();
+            $render_func = 'render'.ucfirst(strtolower($this->type));
+            if (method_exists($this, $render_func)) {
+                echo $this->$render_func($output);
+            } else {
+                echo $this->renderPlain($output);
+            }
+        }
+    }
+
+    /**
+      Do whatever the service is supposed to do.
+      Should override this.
+      @return an array of data
+    */
+    protected function run()
+    {
+        return array();
+    }
+
+    /**
+      Create JSON representation of array
+      @param $arr an array
+      @return JSON string
+    */
+    protected function renderJson($arr)
+    {
+        return JsonLib::array_to_json($arr);
+    }
+    
+    /**
+      Simple render concatenate array to string
+      @param $arr an array
+      @return string
+    */
+    protected function renderPlain($arr)
+    {
+        $ret = '';
+        foreach($arr as $a) $ret .= $a;
+        return $ret;
+    }
+}
+

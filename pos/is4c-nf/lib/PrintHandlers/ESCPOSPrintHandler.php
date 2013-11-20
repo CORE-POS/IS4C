@@ -9,7 +9,7 @@ Notes
 	42 columns with standard 12x24 font, 56 columns with alternate 9x17 font
 */
 
-class ESCPOSPrintHandler {
+class ESCPOSPrintHandler extends PrintHandler {
 	
 	function Tab() {
 		// "\t"
@@ -741,16 +741,16 @@ class ESCPOSPrintHandler {
 		}
 		else if (file_exists($arg)){
 			$bmp = new Bitmap();
-			$bmp->Load($arg);
+			$bmp->load($arg);
 		}
 
 		// argument was invalid
 		if ($bmp === null)
 			return "";
 
-		$bmpData = $bmp->GetRawData();
-		$bmpWidth = $bmp->GetWidth();
-		$bmpHeight = $bmp->GetHeight();
+		$bmpData = $bmp->getRawData();
+		$bmpWidth = $bmp->getWidth();
+		$bmpHeight = $bmp->getHeight();
 		$bmpRawBytes = (int)(($bmpWidth + 7)/8);
 
 		$stripes = $this->TransposeBitmapData($bmpData, $bmpWidth);

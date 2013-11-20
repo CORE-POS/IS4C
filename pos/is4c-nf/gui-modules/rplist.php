@@ -26,9 +26,26 @@ include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 class rplist extends NoInputPage {
 
 	function preprocess(){
+		global $CORE_LOCAL;
 		if (isset($_REQUEST['selectlist'])){
-			if (!empty($_REQUEST['selectlist']))
-				ReceiptLib::reprintReceipt($_REQUEST['selectlist']);
+			if (!empty($_REQUEST['selectlist'])){
+				$print_class = $CORE_LOCAL->get('ReceiptDriver');
+				if ($print_class === '' || !class_exists($print_class))
+					$print_class = 'ESCPOSPrintHandler';
+				$PRINT_OBJ = new $print_class();
+				$receipt = ReceiptLib::printReceipt($_REQUEST['selectlist']);
+				if (session_id() != ''){
+					session_write_close();
+				}
+				if(is_array($receipt)){
+					if (!empty($receipt['any']))
+						$EMAIL_OBJ->writeLine($receipt['any']);
+					if (!empty($receipt['print']))
+						$PRINT_OBJ->writeLine($receipt['print']);
+				}
+				elseif(!empty($receipt))
+					$PRINT_OBJ->writeLine($receipt);
+			}
 			$this->change_page($this->page_url."gui-modules/pos2.php");
 			return False;
 		}
@@ -96,7 +113,7 @@ class rplist extends NoInputPage {
 		</select>
 		</form>
 		</div>
-		<div class="listboxText centerOffset">
+		<div class="listboxText coloredText centerOffset">
 		<?php echo _("use arrow keys to navigate"); ?><br />
 		<?php echo _("enter to reprint receipt"); ?><br />
 		<?php echo _("clear to cancel"); ?>
@@ -105,10 +122,10 @@ class rplist extends NoInputPage {
 		</div>
 
 		<?php
-		$CORE_LOCAL->set("scan","noScan");
 	} // END body_content() FUNCTION
 }
 
-new rplist();
+if (basename(__FILE__) == basename($_SERVER['PHP_SELF']))
+	new rplist();
 
 ?>

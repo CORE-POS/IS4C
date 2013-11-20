@@ -117,15 +117,12 @@ function showInstallTabsLane($current,$path='') {
 
 	/* Original
 	$installTabs = array(
->>>>>>> flathat/master
 		'Lane Necessities'=>'index.php',
 		'Additional Configuration' => 'extra_config.php',
 		'Scanning Options' => 'scanning.php',
 		'Security' => 'security.php',
 		'Text Strings' => 'text.php'
 		);
-<<<<<<< HEAD
-=======
 	*/
 
 	foreach($installTabs as $key => $loc) {
