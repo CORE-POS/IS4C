@@ -463,6 +463,7 @@ class InstallUtilities extends LibraryClass
 
     /* query to create another table with the same
         columns
+       @retrun string query or boolean false
     */
     static public function duplicateStructure($dbms,$table1,$table2)
     {
@@ -479,11 +480,11 @@ class InstallUtilities extends LibraryClass
                 include($path.'/trans/'.$table1.'.php');
                 return str_replace($table1, $table2, $CREATE['trans.'.$table1]);
             } else {
-                return 'No table found';
+                return false;
             }
         }
 
-        return '';
+        return false;
     }
 
     static public function createIfNeeded($con, $dbms, $db_name, $table_name, $stddb, &$errors=array())
@@ -516,27 +517,33 @@ class InstallUtilities extends LibraryClass
         return self::dbStructureModify($con, $table_name, $CREATE["$stddb.$table_name"], $errors);
     }
 
-    public static function dbStructureModify($sql, $struct_name, $query, &$errors=array())
+    public static function dbStructureModify($sql, $struct_name, $queries, &$errors=array())
     {
-        ob_start();
-        $try = @$sql->query($query);
-        ob_end_clean();
-        if ($try === false){
-            if (stristr($query, "DROP ") && stristr($query,"VIEW ")) {
-                /* suppress unimportant errors
-                $errors[] = array(
-                'struct' => $struct_name,
-                'query' => $query,
-                'important' => False
-                );
-                */
-            } else {
-                $errors[] = array(
-                'struct'=>$struct_name,
-                'query'=>$query,
-                'details'=>$sql->error(),
-                'important'=>True
-                );
+        if (!is_array($queries)) {
+            $queries = array($queries);
+        }
+
+        foreach($queries as $query) {
+            ob_start();
+            $try = @$sql->query($query);
+            ob_end_clean();
+            if ($try === false){
+                if (stristr($query, "DROP ") && stristr($query,"VIEW ")) {
+                    /* suppress unimportant errors
+                    $errors[] = array(
+                    'struct' => $struct_name,
+                    'query' => $query,
+                    'important' => False
+                    );
+                    */
+                } else {
+                    $errors[] = array(
+                    'struct'=>$struct_name,
+                    'query'=>$query,
+                    'details'=>$sql->error(),
+                    'important'=>True
+                    );
+                }
             }
         }
 

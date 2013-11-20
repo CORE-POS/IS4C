@@ -24,7 +24,8 @@
 include('../../config.php');
 include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
-class CashierRecordsReport extends FannieReportPage {
+class CashierRecordsReport extends FannieReportPage 
+{
 
     protected $report_headers = array('Emp#', 'Date', '$', '# of Trans');
     protected $sort_column = 3;

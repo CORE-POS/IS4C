@@ -560,7 +560,7 @@ static public function memberReset()
 	  @var availBal
 	  Current customer's available charge account
 	  balance. This is equivalent to 
-	  custdata.memDiscountLimit minus the balance
+	  custdata.ChargeLimit minus the balance
 	  setting above.
 	*/
 	$CORE_LOCAL->set("availBal",0);
@@ -636,7 +636,7 @@ static public function loadData()
 		$CORE_LOCAL->set("memType",0);
 	} else {
 		$query_member = "select CardNo,memType,Type,Discount,staff,SSI,
-				MemDiscountLimit,blueLine,FirstName,LastName
+				blueLine,FirstName,LastName
 				from custdata where CardNo = '".$CORE_LOCAL->get("memberID")."'";
 		$db_product = Database::pDataConnect();
 		$result = $db_product->query($query_member);
@@ -654,7 +654,6 @@ static public function loadData()
 
 			$CORE_LOCAL->set("isStaff",$row["staff"]);
 			$CORE_LOCAL->set("SSI",$row["SSI"]);
-			$CORE_LOCAL->set("discountcap",$row["MemDiscountLimit"]);
 
 			if ($CORE_LOCAL->get("SSI") == 1) {
 				$CORE_LOCAL->set("memMsg",$CORE_LOCAL->get("memMsg")." #");

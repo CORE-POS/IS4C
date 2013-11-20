@@ -46,6 +46,7 @@ class CustdataModel extends BasicModel
     'Balance' => array('type'=>'MONEY'),
     'Discount' => array('type'=>'SMALLINT'),
     'MemDiscountLimit' => array('type'=>'MONEY','default'=>0),
+    'ChargeLimit' => array('type'=>'MONEY','default'=>0),
     'ChargeOk' => array('type'=>'TINYINT','default'=>1),
     'WriteChecks' => array('type'=>'TINYINT','default'=>1),
     'StoreCoupons' => array('type'=>'TINYINT','default'=>1),
@@ -67,6 +68,8 @@ class CustdataModel extends BasicModel
       records
     */
     protected $unique = array('CardNo','personNum');
+
+    protected $normalize_lanes = true;
 
     /* START ACCESSOR FUNCTIONS */
 
@@ -187,6 +190,21 @@ class CustdataModel extends BasicModel
             }
         } else {
             $this->instance["MemDiscountLimit"] = func_get_arg(0);
+        }
+    }
+
+    public function ChargeLimit()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["ChargeLimit"])) {
+                return $this->instance["ChargeLimit"];
+            } elseif(isset($this->columns["ChargeLimit"]["default"])) {
+                return $this->columns["ChargeLimit"]["default"];
+            } else {
+                return null;
+            }
+        } else {
+            $this->instance["ChargeLimit"] = func_get_arg(0);
         }
     }
 
@@ -509,6 +527,45 @@ class CustdataModel extends BasicModel
         }
 
         return $ret;
+    }
+
+    protected function hookAddColumnChargeLimit()
+    {
+        global $FANNIE_OP_DB, $FANNIE_TRANS_DB;
+
+        $sql = 'UPDATE '.$this->connection->identifier_escape($this->name).' SET ChargeLimit=MemDiscountLimit';
+        $this->connection->query($sql);
+
+        // revise memChargeBalance view to use new column
+        if ($this->currently_normalizing_lane) {
+            $viewSQL = 'CREATE VIEW memchargebalance AS
+                SELECT 
+                c.CardNo AS CardNo,
+                c.ChargeLimit - c.Balance AS availBal,	
+                c.Balance AS balance
+                FROM custdata AS c WHERE personNum = 1';
+
+            $this->connection->query('DROP VIEW memChargeBalance');
+            $this->connection->query($viewSQL);
+
+        } else {
+            $this->connection->query('USE '.$this->connection->identifier_escape($FANNIE_TRANS_DB)); 
+
+            $viewSQL = 'CREATE VIEW memChargeBalance AS
+                SELECT c.CardNo, 
+                (CASE WHEN a.balance IS NULL THEN c.ChargeLimit
+                    ELSE c.ChargeLimit - a.balance END) AS availBal,
+                (CASE WHEN a.balance IS NULL THEN 0 ELSE a.balance END) AS balance,
+                CASE WHEN a.mark IS NULL THEN 0 ELSE a.mark END AS mark   
+                FROM '.$FANNIE_OP_DB.$this->connection->sep().'custdata AS c 
+                LEFT JOIN ar_live_balance AS a ON c.CardNo = a.card_no
+                WHERE c.personNum = 1';
+
+            $this->connection->query('DROP VIEW memChargeBalance');
+            $this->connection->query($viewSQL);
+
+            $this->connection->query('USE '.$this->connection->identifier_escape($FANNIE_OP_DB)); 
+        }
     }
 }
 

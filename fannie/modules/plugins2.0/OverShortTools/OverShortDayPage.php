@@ -100,8 +100,11 @@ class OverShortDayPage extends FanniePage {
 
 			$tender_info = array();
 			while($tW = $dbc->fetch_row($tR)){
-				if ($tW['trans_subtype'] == 'AX')
+				if ($tW['trans_subtype'] == 'AX') {
 					continue; // group AMEX w/ other credit
+                } else if (in_array($tW['trans_subtype'], OverShortTools::$EXCLUDE_TENDERS)) {
+                    continue;
+                }
 				$record = array(
 					'name' => $tW['TenderName'],
 					'posTtl' => 0.0,
@@ -134,6 +137,9 @@ class OverShortDayPage extends FanniePage {
 			$r = $dbc->exec_statement($p, $args);
 			$posttl = array();
 			while($w = $dbc->fetch_row($r)){
+                if (in_array($w['trans_subtype'], OverShortTools::$EXCLUDE_TENDERS)) {
+                    continue;
+                }
 				$tender_info[$w['trans_subtype']]['perEmp'][$w['emp_no']] = $w['total'];
 			}
 
@@ -238,7 +244,7 @@ class OverShortDayPage extends FanniePage {
 				$countCATotal = round($info['countTtl'],2);
 				$osCATotal = round($info['osTtl'],2);
 				$output .= "<tr><td><b>Totals</b></td><td>".$info['name']."</td><td id={$code}total>$caTotal</td>";
-				$output .= "<td id=count{$code}>$countCATotal</td>";
+				$output .= "<td id=count{$code}Total>$countCATotal</td>";
 				$output .= "<td id=os{$code}Total>$osCATotal</td></tr>";
 				$overallTotal += $caTotal;
 				$overallCountTotal += $countCATotal;
@@ -291,12 +297,10 @@ class OverShortDayPage extends FanniePage {
 			$cashier = $temp[0];
 			$tenders = explode(';',$temp[1]);
 			$model->emp_no($cashier);
-			echo $cashier."\n";
 			foreach($tenders as $t){
 				$temp = explode('|',$t);
 				$tender_type = $temp[0];
 				$amt = rtrim($temp[1]);
-				echo $tender_type." ".$amt."\n";
 				if ($amt != ''){
 					$model->tender_type($tender_type);
 					$model->amt($amt);
@@ -536,6 +540,10 @@ function save(){
 a {
   color: blue;
 }
+
+body, table, td, th {
+  color: #000;
+}
 	<?php
 		return ob_get_clean();
 	}
@@ -545,6 +553,7 @@ a {
 		$this->add_css_file($FANNIE_URL.'src/style.css');
 		$this->add_script($FANNIE_URL.'src/CalendarControl.js');
 		$this->add_script($FANNIE_URL.'src/jquery/jquery.js');
+        $user = FannieAuth::checkLogin();
 		ob_start();
 		?>
 		<html>

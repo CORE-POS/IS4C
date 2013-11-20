@@ -714,7 +714,13 @@ class SQLManager
 	*/
 	public function field_name($result_object,$index,$which_connection='')
     {
-		return $this->fetchField($result_object, $index, $which_connection);
+		$field = $this->fetchField($result_object, $index, $which_connection);
+
+        if (is_object($field) && property_exists($field, 'name')) {
+            return $field->name;
+        } else {
+            return '';
+        }
 	}
 
 	/**
@@ -759,6 +765,22 @@ class SQLManager
 		$conn = $this->connections[$which_connection];
 
 		return $conn->SQLDate("H",$field);
+	}
+
+	/**
+	  Get the week number from a datetime
+	  @param $field A datetime expression
+	  @param $which_connection see method close()
+	  @return The SQL expression
+	*/
+	public function week($field,$which_connection='')
+    {
+		if ($which_connection == '') {
+			$which_connection = $this->default_db;
+        }
+		$conn = $this->connections[$which_connection];
+
+		return $conn->SQLDate("W",$field);
 	}
 
 	/**

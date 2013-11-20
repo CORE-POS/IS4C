@@ -7,9 +7,11 @@ include('../../db.php');
 $TRANS = $FANNIE_TRANS_DB. ($FANNIE_SERVER_DBMS == "MSSQL" ? 'dbo.' : '.');
 
 $cards = "(";
+$args = array();
 if (isset($_POST["cardno"])){
 	foreach($_POST["cardno"] as $c){
-		$cards .= $c.",";
+		$cards .= "?,";
+        $args[] = $c;
 	}
 	$cards = rtrim($cards,",");
 	$cards .= ")";
@@ -18,7 +20,7 @@ if (isset($_POST["cardno"])){
 $cardsClause = " AND m.card_no IN $cards ";
 if ($cards == "(") $cardsClause = "";
 
-$selAddQ = "SELECT m.card_no, c.LastName,m.street, '',
+$selAddQ = $sql->prepare("SELECT m.card_no, c.LastName,m.street, '',
            m.city, m.state, m.zip,n.balance,
 	   c.FirstName
            FROM 
@@ -29,45 +31,50 @@ $selAddQ = "SELECT m.card_no, c.LastName,m.street, '',
 	   c.memType IN (2,0)
 	   and n.balance > 0
 	   $cardsClause 
-           ORDER BY m.card_no";
-$selAddR = $sql->query($selAddQ);
+           ORDER BY m.card_no");
+$selAddR = $sql->execute($selAddQ, $args);
 
-$selTransQ = "SELECT card_no, CASE WHEN trans_subtype='MI' THEN -total ELSE 0 END as charges,
+$selTransQ = $sql->prepare("SELECT card_no, CASE WHEN trans_subtype='MI' THEN -total ELSE 0 END as charges,
 	CASE WHEN department=990 then total ELSE 0 END as payments, tdate, trans_num,
 	'','',register_no,emp_no,trans_no FROM {$TRANS}dlog_90_view as m WHERE 1=1 $cardsClause
 	AND (department=990 OR trans_subtype='MI')
-	ORDER BY card_no, tdate, trans_num";
-$selTransR = $sql->query($selTransQ);
+	ORDER BY card_no, tdate, trans_num");
+$selTransR = $sql->execute($selTransQ, $args);
 $selTransN = $sql->num_rows($selTransR);
 
 $arRows = array();
 $trans_clause = "";
+$t_args = array();
 while($w = $sql->fetch_row($selTransR)){
 	if (!isset($arRows[$w['card_no']]))
 		$arRows[$w['card_no']] = array();
 	$arRows[$w['card_no']][] = $w;
 	$date = explode(' ',$w['tdate']);
-	$rn = $w['register_no'];
-	$tn = $w['trans_no'];
-	$en = $w['emp_no'];
-	$trans_clause .= " (datediff('$date[0]',datetime)=0 AND register_no=$rn AND emp_no=$en AND trans_no=$tn) OR ";
+    $date_id = date('Ymd', strtotime($date[0]));
+    $t_args[] = $date_id;
+	$t_args[] = $w['register_no'];
+	$t_args[] = $w['emp_no'];
+	$t_args[] = $w['trans_no'];
+	$trans_clause .= " (date_id=? AND register_no=? AND emp_no=? AND trans_no=?) OR ";
 }
 $trans_clause = substr($trans_clause,0,strlen($trans_clause)-3);
-$q = "SELECT card_no,description,department,emp_no,register_no,trans_no 
+$q = $sql->prepare("SELECT card_no,description,department,emp_no,register_no,trans_no 
 	FROM {$TRANS}transarchive
 	WHERE trans_type IN ('I','D') and emp_no <> 9999
 	AND register_no <> 99 AND trans_status <> 'X'
 	AND upc <> 'DISCOUNT'
-	AND ($trans_clause)";
+	AND ($trans_clause)");
 $details = array();
-$r = $sql->query($q);
-while($w = $sql->fetch_row($r)){
-	$tn = $w['emp_no']."-".$w['register_no']."-".$w['trans_no'];
-	if (!isset($details[$w['card_no']]))
-		$details[$w['card_no']] = array();
-	if (!isset($details[$w['card_no']][$tn]))
-		$details[$w['card_no']][$tn] = array();
-	$details[$w['card_no']][$tn][] = $w['description'];
+if ($trans_clause != '') {
+    $r = $sql->execute($q, $t_args);
+    while($w = $sql->fetch_row($r)){
+        $tn = $w['emp_no']."-".$w['register_no']."-".$w['trans_no'];
+        if (!isset($details[$w['card_no']]))
+            $details[$w['card_no']] = array();
+        if (!isset($details[$w['card_no']][$tn]))
+            $details[$w['card_no']][$tn] = array();
+        $details[$w['card_no']][$tn][] = $w['description'];
+    }
 }
 
 $today= date("d-F-Y");
@@ -168,11 +175,12 @@ while($selAddW = $sql->fetch_row($selAddR)){
    $pdf->Ln(20);
 */
 
-   $priorQ = "SELECT sum(charges) - sum(payments) FROM is4c_trans.ar_history
+   $priorQ = $sql->prepare("SELECT sum(charges) - sum(payments) FROM is4c_trans.ar_history
 		WHERE ".$sql->datediff('tdate',$sql->now())." < -90
-		AND card_no = $selAddW[0]";
-   $priorR = $sql->query($priorQ);
-   $priorBalance = array_pop($sql->fetch_row($priorR));
+		AND card_no = ?");
+   $priorR = $sql->execute($priorQ, array($selAddW[0]));
+   $priorW = $sql->fetch_row($priorR);
+   $priorBalance = $priorW[0];
 
    $pdf->Cell(20,8,'');
    $pdf->SetFillColor(200);

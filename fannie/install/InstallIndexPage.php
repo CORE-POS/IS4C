@@ -1198,6 +1198,12 @@ class InstallIndexPage extends InstallPage {
 				'newBalanceStockToday_test','trans');
 
 		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+				'equity_history_sum','trans');
+
+		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+				'equity_live_balance','trans');
+
+		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
 				'memChargeBalance','trans');
 
 		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
@@ -1235,11 +1241,9 @@ class InstallIndexPage extends InstallPage {
 			$FANNIE_OP_DB,$FANNIE_SERVER_USER,
 			$FANNIE_SERVER_PW);
 
-		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-				'expingMems','op');
+        $ret[] = dropDeprecatedStructure($con, $FANNIE_OP_DB, 'expingMems', true);
 
-		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-				'expingMems_thisMonth','op');
+        $ret[] = dropDeprecatedStructure($con, $FANNIE_OP_DB, 'expingMems_thisMonth', true);
 
 		$con = db_test_connect($FANNIE_SERVER,$FANNIE_SERVER_DBMS,
 			$FANNIE_TRANS_DB,$FANNIE_SERVER_USER,

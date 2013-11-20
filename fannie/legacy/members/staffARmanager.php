@@ -10,10 +10,10 @@ $sql->query("use is4c_trans");
  */
 if (isset($_POST['remove'])){
 	$cardno = $_POST['cardno'];
-	$delQ = "delete from staffID where cardno=$cardno";
-	$delR = $sql->query($delQ);
-	$delQ = "delete from staffAR where cardNo=$cardno";
-	$delQ = $sql->query($delQ);
+	$delQ = $sql->prepare("delete from staffID where cardno=?");
+	$delR = $sql->execute($delQ, array($cardno));
+	$delQ = $sql->prepare("delete from staffAR where cardNo=?");
+	$delQ = $sql->execute($delQ, array($cardno));
 	echo "Member #$cardno removed from staff AR<p />";
 }
 /* add an employee to staffAR
@@ -26,8 +26,8 @@ if (isset($_POST['remove'])){
 if (isset($_POST['add'])){
 	$cardno = $_POST['cardno'];
 	
-	$namesQ = "select FirstName,LastName from is4c_op.custdata where CardNo=$cardno and personNum=1";
-	$namesR = $sql->query($namesQ);
+	$namesQ = $sql->prepare("select FirstName,LastName from is4c_op.custdata where CardNo=? and personNum=1");
+	$namesR = $sql->execute($namesQ, array($cardno));
 	$namesW = $sql->fetch_array($namesR);
 	$fname = $namesW[0];
 	$lname = $namesW[1];
@@ -48,8 +48,8 @@ if (isset($_POST['add'])){
 	$adpID = $_POST['adpID'];
 	// the user provided an adp id
 	if ($adpID != 'None of these'){
-		$insQ = "insert into staffID values ($cardno,$adpID,1)";
-		$insR = $sql->query($insQ);
+		$insQ = $sql->prepare("insert into staffID values (?,?,1)");
+		$insR = $sql->execute($insQ, array($cardno, $adpID));
 		balance($cardno);
 		echo "Member #$cardno added to staff AR";
 	}
@@ -69,14 +69,14 @@ if (isset($_POST['add'])){
 // add the correct balance for the cardno to staffAR
 function balance($cardno){
 	global $sql;
-	$balanceQ = "INSERT INTO staffAR (cardNo, lastName, firstName, adjust)
+	$balanceQ = $sql->prepare("INSERT INTO staffAR (cardNo, lastName, firstName, adjust)
                  	SELECT
                  	CardNo,
                  	LastName,
                  	FirstName,
                  	Balance as Ending_Balance
-                 	from is4c_op.custdata where CardNo=$cardno and personNum=1";
-	$balanceR = $sql->query($balanceQ);
+                 	from is4c_op.custdata where CardNo=? and personNum=1");
+	$balanceR = $sql->execute($balanceQ, array($cardno));
 }
 
 // main insert / delete form follows

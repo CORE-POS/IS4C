@@ -55,10 +55,12 @@ $sql = new SQLManager($FANNIE_SERVER,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 
 $TRANS = $FANNIE_TRANS_DB . ($FANNIE_SERVER_DBMS=="MSSQL" ? 'dbo.' : '.');
 
+$custdata = $sql->table_definition('custdata');
+
 $susQ = "INSERT INTO suspensions
 	select m.card_no,'I',c.memType,c.Type,'',
 	".$sql->now().",m.ads_OK,c.Discount,
-	c.memDiscountLimit,1
+	c.ChargeLimit,1
 	from meminfo as m left join
 	custdata as c on c.CardNo=m.card_no and c.personNum=1
 	left join {$TRANS}ar_live_balance as n on m.card_no=n.card_no
@@ -69,6 +71,9 @@ $susQ = "INSERT INTO suspensions
 	and c.memtype in (1,3)
 	and NOT EXISTS(SELECT NULL FROM suspensions as s
 	WHERE s.cardno=m.card_no)";
+if (!isset($custdata['ChargeLimit'])) {
+    $susQ = str_replace('c.ChargeLimit', 'c.MemDiscountLimit', $susQ);
+}
 $sql->query($susQ);
 
 $histQ = "INSERT INTO suspension_history
@@ -88,8 +93,11 @@ $sql->query($histQ);
 
 $custQ = "UPDATE custdata AS c
 	LEFT JOIN suspensions AS s ON c.CardNo=s.cardno
-	SET c.type='INACT',memType=0,c.Discount=0,memDiscountLimit=0
+	SET c.type='INACT',memType=0,c.Discount=0,ChargeLimit=0,MemDiscountLimit=0
 	WHERE c.type='PC' AND s.cardno is not null";
+if (!isset($custdata['ChargeLimit'])) {
+    $custQ = str_replace('ChargeLimit=0,', '', $custQ);
+}
 $sql->query($custQ);
 
 $memQ = "UPDATE meminfo AS m

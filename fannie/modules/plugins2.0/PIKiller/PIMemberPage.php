@@ -146,7 +146,8 @@ class PIMemberPage extends PIKillerPage {
 
 		if ($this->auth_mode == 'Full'){
 			$custdata->memType(FormLib::get_form_value('memType'));
-			$custdata->memDiscountLimit(FormLib::get_form_value('chargelimit'));
+			$custdata->MemDiscountLimit(FormLib::get_form_value('chargelimit'));
+			$custdata->ChargeLimit(FormLib::get_form_value('chargelimit'));
 
 			$default = $this->get_model($dbc, 'MemdefaultsModel', array('memtype'=>$custdata->memType()));
 			$custdata->Type($default->cd_type());
@@ -244,7 +245,7 @@ class PIMemberPage extends PIKillerPage {
 		echo "<td colspan=2><a href=PISuspensionPage.php?id=".$this->card_no.">History</a>";
 		if ($this->auth_mode == 'Full')
 			echo '&nbsp;&nbsp;&nbsp;<a href="PISuspensionPage.php?edit=1&id='.$this->card_no.'">Change Status</a>';
-		else if ($this->auth_mode == 'Limited' && $this->__models['suspended']->reasoncode() == 16){
+		else if ($this->auth_mode == 'Limited' && isset($this->__models['suspended']) && $this->__models['suspended']->reasoncode() == 16){
 			echo '&nbsp;&nbsp;&nbsp;<a href="PISuspensionPage.php?fixaddress=1&id='.$this->card_no.'"
 				onclick="return confirm(\'Address is correct?\');">Address Corrected</a>';
 		}
@@ -325,7 +326,7 @@ class PIMemberPage extends PIKillerPage {
 
 		echo "<tr>";
 		echo "<td class=\"yellowbg\">Charge Limit: </td>";
-		echo '<td>'.$this->text_or_field('chargelimit',$this->__models['custdata'][0]->memDiscountLimit(),
+		echo '<td>'.$this->text_or_field('chargelimit',$this->__models['custdata'][0]->ChargeLimit(),
 				array(),$limitedEdit).'</td>';
 		echo "<td class=\"yellowbg\">Current Balance: </td>";
 		echo '<td>'.sprintf('%.2f',$this->__models['ar']->balance()).'</td>';
