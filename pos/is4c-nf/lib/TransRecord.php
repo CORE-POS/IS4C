@@ -531,10 +531,13 @@ static public function addCashDrop($amt)
   Add an activity record to activitytemplog
   @param $activity identifier
 
+  @deprecated
   No one really uses activity logging currently.
+  Use TransRecord::addLogRecord instead.
 */
 static public function addactivity($activity) 
 {
+    /*
 	global $CORE_LOCAL;
 
 	$timeNow = time();
@@ -568,6 +571,7 @@ static public function addactivity($activity)
 		'Interval'	=> MiscLib::nullwrap($interval)
 		);
 	$result = $db->smart_insert("activitytemplog",$values);
+    */
 }
 
 /**

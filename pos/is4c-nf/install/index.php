@@ -487,6 +487,9 @@ function create_trans_dbs($db,$type){
 	$name = $CORE_LOCAL->get('tDatabase');
 	$errors = array();
 
+    /**
+    alog and its variants are never used.
+    @deprecated
 	InstallUtilities::createIfNeeded($db, $type, $name, 'activities', 'trans', $errors);
 
 	InstallUtilities::createIfNeeded($db, $type, $name, 'alog', 'trans', $errors);
@@ -494,6 +497,7 @@ function create_trans_dbs($db,$type){
 	InstallUtilities::createIfNeeded($db, $type, $name, 'activitylog', 'trans', $errors);
 
 	InstallUtilities::createIfNeeded($db, $type, $name, 'activitytemplog', 'trans', $errors);
+    */
 
 	InstallUtilities::createIfNeeded($db, $type, $name, 'dtransactions', 'trans', $errors);
 
