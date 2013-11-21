@@ -89,7 +89,7 @@ function saveItem($store,$sec,$subsec,$sh_set,$shelf,$loc,$upc){
 	$r = $dbc->exec_statement($q,$args);
 	$q = $dbc->prepare_statement("INSERT INTO prodPhysicalLocation (upc,
 		store_id,section,subsection,shelf_set,shelf,
-		location) VALUES (%s,%d,%d,%d,%d,%d,%d)");
+		location) VALUES (?,?,?,?,?,?,?)");
 	$args = array($upc,$store,$sec,$subsec,$sh_set,
 		$shelf,$loc);
 	$r = $dbc->exec_statement($q,$args);

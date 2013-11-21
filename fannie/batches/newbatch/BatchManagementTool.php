@@ -923,7 +923,7 @@ class BatchManagementTool extends FanniePage {
 		$uid = ltrim($uid,'0');
 	
 		$orderby = '';
-		switch($orderby){
+		switch($order){
 		case 'natural':
 		default:
 			$orderby = 'ORDER BY b.listID DESC';
@@ -947,11 +947,17 @@ class BatchManagementTool extends FanniePage {
 			$orderby = 'ORDER BY p.normal_price DESC';
 			break;
 		case 'sale_a':
-			$orderby = 'ORDER BY p.sale_price ASC';
+			$orderby = 'ORDER BY b.salePrice ASC';
 			break;
 		case 'sale_d':
-			$orderby = 'ORDER BY p.sale_price DESC';
+			$orderby = 'ORDER BY b.salePrice DESC';
 			break;
+        case 'loc_a':
+            $orderby = 'ORDER BY m.super_name,y.subsection,y.shelf_set,y.shelf';
+            break;
+        case 'loc_d':
+            $orderby = 'ORDER BY m.super_name DESC,y.subsection DESC,y.shelf_set DESC,y.shelf DESC';
+            break;
 		}
 
 		$model = new BatchesModel($dbc);
@@ -1005,12 +1011,15 @@ class BatchManagementTool extends FanniePage {
 				else l.likeCodeDesc end as description,
 				p.normal_price,b.salePrice,
 				CASE WHEN c.upc IS NULL then 0 ELSE 1 END as isCut,
-				b.quantity,b.pricemethod
+				b.quantity,b.pricemethod,
+                m.super_name, y.subsection, y.shelf_set, y.shelf
 				from batchList as b left join products as p on
 				b.upc = p.upc left join likeCodes as l on
 				b.upc = concat('LC',convert(l.likeCode,char))
 				left join batchCutPaste as c ON
 				b.upc=c.upc AND b.batchID=c.batchID
+                left join prodPhysicalLocation as y on b.upc=y.upc
+                left join superDeptNames as m on y.section=m.superID
 				where b.batchID = ? $orderby";
 		if ($FANNIE_SERVER_DBMS == "MSSQL"){
 			$fetchQ = "select b.upc,
@@ -1072,6 +1081,10 @@ class BatchManagementTool extends FanniePage {
 		else
 			$ret .= "<th><a href=\"\" onclick=\"redisplayWithOrder($id,'sale_a'); return false;\">$saleHeader</a></th>";
 		$ret .= "<th colspan=\"3\">&nbsp;</th>";
+        if ($orderby != 'ORDER BY m.super_name,y.subsection,y.shelf_set,y.shelf')
+			$ret .= "<th><a href=\"\" onclick=\"redisplayWithOrder($id,'loc_a'); return false;\">Location</a></th>";
+		else
+			$ret .= "<th><a href=\"\" onclick=\"redisplayWithOrder($id,'loc_d'); return false;\">Location</a></th>";
 		$ret .= "</tr>";
 		
 		$colors = array('#ffffff','#ffffcc');
@@ -1103,6 +1116,16 @@ class BatchManagementTool extends FanniePage {
 				$ret .= "<td bgcolor=$colors[$c] id=cpLink$fetchW[0]><a href=\"\" onclick=\"unCut('$fetchW[0]',$id,$uid); return false;\">Undo</a></td>";
 			else
 				$ret .= "<td bgcolor=$colors[$c] id=cpLink$fetchW[0]><a href=\"\" onclick=\"doCut('$fetchW[0]',$id,$uid); return false;\">Cut</a></td>";
+
+            $loc = 'n/a';
+            if (!empty($fetchW['subsection'])) {
+                $loc = substr($fetchW['super_name'],0,4);
+                $loc .= $fetchW['subsection'].', ';
+                $loc .= 'Unit '.$fetchW['shelf_set'].', ';
+                $loc .= 'Shelf '.$fetchW['shelf'];
+            }
+            $ret .= "<td bgcolor=$colors[$c]>".$loc.'</td>';
+
 			$ret .= "</tr>";
 			$row++;
 		}
