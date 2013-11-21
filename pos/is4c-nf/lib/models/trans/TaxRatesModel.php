@@ -22,69 +22,65 @@
 *********************************************************************************/
 
 /**
-  @class MemChargeBalanceModel
+  @class TaxRatesModel
 */
-class MemChargeBalanceModel extends BasicModel
+class TaxRatesModel extends BasicModel
 {
 
-    protected $name = "memchargebalance";
-    protected $preferred_db = 'op';
+    protected $name = "taxrates";
+
+    protected $preferred_db = 'trans';
 
     protected $columns = array(
-    'CardNo' => array('type'=>'INT'),
-    'availBal' => array('type'=>'MONEY'),
-    'balance' => array('type'=>'MONEY'),
+    'id' => array('type'=>'INT', 'primary_key'=>true),
+    'rate' => array('type'=>'FLOAT'),
+    'description' => array('type'=>'VARCHAR(50)'),
 	);
-
-    /* disabled because it's a view */
-    public function create(){ return false; }
-    public function delete(){ return false; }
-    public function save(){ return false; }
 
     /* START ACCESSOR FUNCTIONS */
 
-    public function CardNo()
+    public function id()
     {
         if(func_num_args() == 0) {
-            if(isset($this->instance["CardNo"])) {
-                return $this->instance["CardNo"];
-            } elseif(isset($this->columns["CardNo"]["default"])) {
-                return $this->columns["CardNo"]["default"];
+            if(isset($this->instance["id"])) {
+                return $this->instance["id"];
+            } elseif(isset($this->columns["id"]["default"])) {
+                return $this->columns["id"]["default"];
             } else {
                 return null;
             }
         } else {
-            $this->instance["CardNo"] = func_get_arg(0);
+            $this->instance["id"] = func_get_arg(0);
         }
     }
 
-    public function availBal()
+    public function rate()
     {
         if(func_num_args() == 0) {
-            if(isset($this->instance["availBal"])) {
-                return $this->instance["availBal"];
-            } elseif(isset($this->columns["availBal"]["default"])) {
-                return $this->columns["availBal"]["default"];
+            if(isset($this->instance["rate"])) {
+                return $this->instance["rate"];
+            } elseif(isset($this->columns["rate"]["default"])) {
+                return $this->columns["rate"]["default"];
             } else {
                 return null;
             }
         } else {
-            $this->instance["availBal"] = func_get_arg(0);
+            $this->instance["rate"] = func_get_arg(0);
         }
     }
 
-    public function Balance()
+    public function description()
     {
         if(func_num_args() == 0) {
-            if(isset($this->instance["Balance"])) {
-                return $this->instance["Balance"];
-            } elseif(isset($this->columns["Balance"]["default"])) {
-                return $this->columns["Balance"]["default"];
+            if(isset($this->instance["description"])) {
+                return $this->instance["description"];
+            } elseif(isset($this->columns["description"]["default"])) {
+                return $this->columns["description"]["default"];
             } else {
                 return null;
             }
         } else {
-            $this->instance["Balance"] = func_get_arg(0);
+            $this->instance["description"] = func_get_arg(0);
         }
     }
     /* END ACCESSOR FUNCTIONS */
