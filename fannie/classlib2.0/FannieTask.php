@@ -28,6 +28,8 @@
 */
 class FannieTask 
 {
+    public $name = 'Fannie Task';
+
     public $description = 'Information about the task';    
 
     public $default_schedule = array(
@@ -68,6 +70,9 @@ if (php_sapi_name() === 'cli' && basename($_SERVER['PHP_SELF']) == basename(__FI
 
     include(dirname(__FILE__).'/../config.php');
     include(dirname(__FILE__).'/FannieAPI.php');
+
+    // prepopulate autoloader
+    $preload = FannieAPI::listModules('FannieTask');
 
     $class = $argv[1];
     if (!class_exists($class)) {
