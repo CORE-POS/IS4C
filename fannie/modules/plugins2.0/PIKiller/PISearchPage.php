@@ -24,6 +24,9 @@
 include(dirname(__FILE__).'/../../../config.php');
 if (!class_exists('FannieAPI'))
 	include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+if (!class_exists('PIKillerPage')) {
+    include('lib/PIKillerPage.php');
+}
 
 class PISearchPage extends PIKillerPage {
 
@@ -71,7 +74,7 @@ class PISearchPage extends PIKillerPage {
 				$this->__models['custdata'][] = $w;
 			}
 			if (count($this->__models['custdata'])==1){
-				header('Location: PIMemberPage.php?id='.$this->id);
+				header('Location: PIMemberPage.php?id='.$this->__models['custdata'][0]['CardNo']);
 				return False;
 			}
 		}
