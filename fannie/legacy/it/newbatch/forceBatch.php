@@ -179,7 +179,7 @@ function forceBatch($batchID){
 				$upcs[] = $w2['upc'];
 		}
 		foreach($upcs as $u){
-            $model = new ProductsModel();
+            $model = new ProductsModel($sql);
             $model->upc($u);
             $model->pushToLanes();
 		}
