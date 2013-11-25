@@ -20,9 +20,17 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
-include('../../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
-include('UIGLib.php');
+if (php_sapi_name() !== 'cli' || basename($_SERVER['PHP_SELF']) != basename(__FILE__)) {
+    return;
+}
+
+include(dirname(__FILE__).'/../../../config.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
+if (!class_exists('UIGLib.php')) {
+    include('UIGLib.php');
+}
 $dbc = FannieDB::get($FANNIE_OP_DB);
 
 $UNFI_USERNAME = 'your_username';
