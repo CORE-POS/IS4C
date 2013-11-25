@@ -20,6 +20,10 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
+include('../../../config.php');
+include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include('UIGLib.php');
+$dbc = FannieDB::get($FANNIE_OP_DB);
 
 $UNFI_USERNAME = 'your_username';
 $UNFI_PASSWORD = 'your_password';
@@ -118,9 +122,18 @@ for($i=0; $i<count($matches[1]); $i++) {
 
 $post_data .= 'ctl00$PlaceHolderMain$grp1=rdoCSV';
 
+$check = $dbc->prepare('SELECT orderID FROM PurchaseOrder WHERE vendorID=? and userID=0
+                    AND creationDate=? AND placedDate=?');
 foreach($dates as $date) {
+    $good_date = date('Y-m-d', strtotime($date));
+    $doCheck = $dbc->execute($check, array(1, $good_date, $good_date));
+    if ($dbc->num_rows($doCheck) > 0) {
+        echo "Skipping $date (already imported)\n";
+        continue;
+    }
+
     $this_post = $post_data.'&ctl00$PlaceHolderMain$ddlInvoiceDate='.urlencode($date);
-    echo "Getting $date...\n";
+    echo "Downloading $date...\n";
 
     $filename = str_replace('/','-',$date).'.zip';
     $fp = fopen($filename, 'w');
@@ -135,8 +148,20 @@ foreach($dates as $date) {
     $invoice_file = curl_exec($ch);
     curl_close($ch);
     fclose($fp);
+
+    echo "Importing invoices for $date\n";
+    if (UIGLib::import($filename) === true) {
+        unlink($filename);
+    } else {
+        echo "ERROR: IMPORT FAILED!\n";
+    }
     
+    // only download one day for now
+    // remove when done testing
     break; 
+
+    // politeness; pause between requests
+    sleep(15);
 }
 
 /**
