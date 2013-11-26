@@ -54,6 +54,7 @@ curl_setopt($ch, CURLOPT_COOKIEFILE, $cookies);
 curl_setopt($ch, CURLOPT_COOKIEJAR, $cookies);
 $login_page = curl_exec($ch);
 curl_close($ch);
+echo "Login (1/3)\n";
 
 /**
   POST the policy url to the sso url
@@ -68,6 +69,7 @@ curl_setopt($ch, CURLOPT_POST, true);
 curl_setopt($ch, CURLOPT_POSTFIELDS, 'client_data=SecurityDevice?post_url='.urlencode($POLICY_URL));
 $sso_page = curl_exec($ch);
 curl_close($ch);
+echo "Login (2/3)\n";
 
 /**
   add username and password
@@ -85,6 +87,7 @@ curl_setopt($ch, CURLOPT_POST, true);
 curl_setopt($ch, CURLOPT_POSTFIELDS, $post_data);
 $login_result = curl_exec($ch);
 curl_close($ch);
+echo "Login (3/3)\n";
 
 /**
   Get invoice download page
@@ -97,6 +100,7 @@ curl_setopt($ch, CURLOPT_COOKIEFILE, $cookies);
 curl_setopt($ch, CURLOPT_COOKIEJAR, $cookies);
 $invoice_page = curl_exec($ch);
 curl_close($ch);
+echo "Getting available dates\n";
 
 /**
   Extract available dates
