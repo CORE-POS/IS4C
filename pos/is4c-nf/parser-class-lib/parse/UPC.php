@@ -372,7 +372,7 @@ class UPC extends Parser {
            assigned cannot calculate a proper quantity.
 		*/
 		if (substr($upc,0,3) == "002") {
-			if ($DiscountObject->isSale() && $scale == 1) {
+			if ($DiscountObject->isSale() && $scale == 1 && $row['normal_price'] != 0) {
 				$quantity = MiscLib::truncate2($scaleprice / $row["normal_price"]);
             } else if ($scale == 1 && $row['normal_price'] != 0) {
 				$quantity = MiscLib::truncate2($scaleprice / $row["normal_price"]);
