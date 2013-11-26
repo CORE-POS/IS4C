@@ -33,8 +33,8 @@ if (!class_exists('UIGLib.php')) {
 }
 $dbc = FannieDB::get($FANNIE_OP_DB);
 
-$UNFI_USERNAME = 'your_username';
-$UNFI_PASSWORD = 'your_password';
+$UNFI_USERNAME = $FANNIE_PLUGIN_SETTINGS['UnfiInvoiceUser'];
+$UNFI_PASSWORD = $FANNIE_PLUGIN_SETTINGS['UnfiInvoicePass'];
 
 $SITE_URL = 'https://east.unfi.com';
 $SSO_URL = 'https://sso.unfi.com/';
