@@ -654,6 +654,18 @@ class FannieReportPage extends FanniePage
     }
 
     /**
+      Helper: check default export args
+    */
+    protected function formatCheck()
+    {
+        if (FormLib::get('excel') === 'xls') {
+            $this->report_format = 'xls';
+        } elseif (FormLib::get('excel') === 'csv') {
+            $this->report_format = 'csv';
+        }
+    }
+
+    /**
       Check for input and display the page
     */
     function drawPage()
