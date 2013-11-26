@@ -25,11 +25,7 @@
  * 22Jul13 EL Attempt to use dlog views must wait until they include cost.
 */
 include('../../config.php');
-include_once($FANNIE_ROOT.'src/mysql_connect.php');
-include_once($FANNIE_ROOT.'src/select_dlog.php');
 include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
-//include($FANNIE_ROOT.'classlib2.0/lib/FormLib.php');
-//include($FANNIE_ROOT.'classlib2.0/FannieReportPage2.php');
 
 class StoreSummaryReport extends FannieReportPage2 {
 
@@ -86,7 +82,8 @@ class StoreSummaryReport extends FannieReportPage2 {
 	}
 
 	function get_superdept_name($department_name){
-		global $dbc, $FANNIE_OP_DB;
+		global $FANNIE_OP_DB;
+        $dbc = FannieDB::get($FANNIE_OP_DB);
 		$ret = '';
 		if ( $department_name != "" ) {
 			$sel = "SELECT super_name
@@ -106,8 +103,10 @@ class StoreSummaryReport extends FannieReportPage2 {
 		return $ret;
 	}
 
-	function fetch_report_data(){
-		global $dbc, $FANNIE_ARCHIVE_DB, $FANNIE_OP_DB, $FANNIE_COOP_ID;
+	function fetch_report_data()
+    {
+		global $FANNIE_ARCHIVE_DB, $FANNIE_OP_DB, $FANNIE_COOP_ID;
+        $dbc = FannieDB::get($FANNIE_OP_DB);
 		$d1 = FormLib::get_form_value('date1',date('Y-m-d'));
 		$d2 = FormLib::get_form_value('date2',date('Y-m-d'));
 		$dept = $_REQUEST['dept'];
@@ -127,10 +126,10 @@ class StoreSummaryReport extends FannieReportPage2 {
 		$this->report_desc[] = "<p>Note: For items where cost is not recorded the margin in the deptMargin table is relied on.</p>";
 
 		if ( 1 ) {
-			$dlog = select_dtrans($d1,$d2);
+			$dlog = DTransactionsModel::select_dtrans($d1,$d2);
 			$datestamp = $dbc->identifier_escape('datetime');
 		} else {
-			$dlog = select_dlog($d1,$d2);
+			$dlog = DTransactionsModel::select_dlog($d1,$d2);
 			$datestamp = $dbc->identifier_escape('tdate');
 		}
 		//$this->report_desc[] = "dlog: $dlog   datestamp: $datestamp";

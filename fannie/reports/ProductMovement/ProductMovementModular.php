@@ -22,13 +22,13 @@
 *********************************************************************************/
 
 include('../../config.php');
-include($FANNIE_ROOT.'src/mysql_connect.php');
-include($FANNIE_ROOT.'src/select_dlog.php');
 include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
-class ProductMovementModular extends FannieReportPage {
+class ProductMovementModular extends FannieReportPage 
+{
 
-	function preprocess(){
+	function preprocess()
+    {
 		/**
 		  Set the page header and title, enable caching
 		*/
@@ -78,15 +78,17 @@ class ProductMovementModular extends FannieReportPage {
         return $default;
     }
 
-	function fetch_report_data(){
-		global $dbc, $FANNIE_ARCHIVE_DB;
+	function fetch_report_data()
+    {
+		global $FANNIE_OP_DB, $FANNIE_ARCHIVE_DB;
+        $dbc = FannieDB::get($FANNIE_OP_DB);
 		$date1 = FormLib::get_form_value('date1',date('Y-m-d'));
 		$date2 = FormLib::get_form_value('date2',date('Y-m-d'));
 		$upc = FormLib::get_form_value('upc','0');
 		if (is_numeric($upc))
 			$upc = BarcodeLib::padUPC($upc);
 
-		$dlog = select_dlog($date1,$date2);
+		$dlog = DTransactionsModel::select_dlog($date1,$date2);
 		$sumTable = $FANNIE_ARCHIVE_DB.$dbc->sep()."sumUpcSalesByDay";
 
 		$query = "select month(t.tdate),day(t.tdate),year(t.tdate),
