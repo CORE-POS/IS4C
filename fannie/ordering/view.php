@@ -33,7 +33,9 @@ if (!checkLogin()){
 	exit;
 }
 
-session_start();
+if (session_id() == '') {
+    session_start();
+}
 
 $page_title = "Special Order :: Create";
 $header = "Create Special Order";

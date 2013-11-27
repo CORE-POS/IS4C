@@ -2,7 +2,7 @@
 
 include('../../../../config.php');
 include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
-$dbc = FannieDB::get($FANNIE_OP_DB);
+$dbc = FannieDB::get($FANNIE_TRANS_DB);
 include('fetchLib.php');
 
 $date = isset($_REQUEST['date']) ? $_REQUEST['date'] : date("Y-m-d", time() - 86400);

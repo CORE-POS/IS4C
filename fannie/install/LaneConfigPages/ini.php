@@ -47,8 +47,8 @@ class cl_wrapper {
  *   change the value in the database.
 */
 function confsave($k,$v){
-	global $dbc;
 	global $FANNIE_TRANS_DB;
+    $dbc = FannieDB::get($FANNIE_TRANS_DB);
 	if (is_string($v))
 		$v = trim($v,"'");
 	$p = $dbc->prepare_statement("SELECT value FROM $FANNIE_TRANS_DB.lane_config WHERE keycode=?");

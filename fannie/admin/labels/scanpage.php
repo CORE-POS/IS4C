@@ -111,7 +111,8 @@ class WFC_New_PDF extends FPDF
 }
 
 function build_page($upcs){
-	global $dbc;
+	global $FANNIE_OP_DB;
+    $dbc = FannieDB::get($FANNIE_OP_DB);
 
 	$q = "SELECT CASE WHEN u.brand IS NULL THEN x.manufacturer ELSE u.brand END as fixedBrand,
 		CASE WHEN u.description IS NULL THEN p.description ELSE u.description END as fixedDesc,

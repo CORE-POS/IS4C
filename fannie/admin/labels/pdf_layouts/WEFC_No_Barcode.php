@@ -132,8 +132,9 @@ class WEFC_No_Barcode_PDF extends FPDF {
 */
 function WEFC_No_Barcode($data,$offset=0) {
 
-	global $dbc;
+	global $FANNIE_OP_DB;
 	global $FANNIE_COOP_ID;
+    $dbc = FannieDB::get($FANNIE_OP_DB);
 
 	$pdf=new WEFC_No_Barcode_PDF('P','mm','Letter'); //start new instance of PDF
 	$pdf->SetTitle("WEFC No Barcode Shelf Labels",1); // Title, UTF-8 EL+

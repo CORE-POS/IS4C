@@ -22,7 +22,6 @@
 *********************************************************************************/
 include('../../config.php');
 include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
-$dbc = FannieDB::get($FANNIE_OP_DB);
 include_once('../../classlib2.0/InstallPage.php');
 include('../util.php');
 
@@ -85,7 +84,8 @@ class LaneTextStringPage extends InstallPage {
 	*/
 
 	function body_content(){
-		global $dbc; //, $TRANSLATE;
+		global $FANNIE_OP_DB; //, $TRANSLATE;
+        $dbc = FannieDB::get($FANNIE_OP_DB);
 
 		// keys are customReceipt.type values.
 		$TRANSLATE = array(
