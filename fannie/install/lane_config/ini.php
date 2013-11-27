@@ -1,8 +1,11 @@
 <?php
 include('../../config.php');
+if (!class_exists('FannieAPI')) {
+        include(dirname(__FILE__).'/../classlib2.0/FannieAPI.php');
+}
 $CORE_PATH = realpath($FANNIE_ROOT.'../pos/is4c-nf/').'/';
 include($FANNIE_ROOT.'src/SQLManager.php');
-include($FANNIE_ROOT.'src/trans_connect.php');
+$dbc = FannieDB::get($FANNIE_OP_DB);
 
 /*
  This is not a real lane ini file

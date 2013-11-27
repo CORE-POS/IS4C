@@ -2,7 +2,6 @@
 include('../../../config.php');
 if (!class_exists("SQLManager")) require_once($FANNIE_ROOT."src/SQLManager.php");
 include('../../db.php');
-include($FANNIE_ROOT.'src/select_dlog.php');
 
 if (isset($_GET['excel'])){
 	header('Content-Type: application/ms-excel');
@@ -45,7 +44,7 @@ for($i=0;$i<4;$i++){
 
 $startDate = $lastYear."-".str_pad($lastMonth,2,"0",STR_PAD_LEFT)."-01";
 
-$dlog = select_dlog($startDate,$endDate);
+$dlog = DTransactionsModel::selectDlog($startDate,$endDate);
 
 $query = "select 
 	m.card_no,

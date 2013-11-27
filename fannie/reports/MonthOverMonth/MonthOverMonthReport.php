@@ -84,7 +84,7 @@ class MonthOverMonthReport extends FannieReportPage {
 
 		$date1 = date('Y-m-d',mktime(0,0,0,$month1,1,$year1));
 		$date2 = date('Y-m-t',mktime(0,0,0,$month2,1,$year2));
-		$dlog = DTransactionsModel::select_dlog($date1,$date2);
+		$dlog = DTransactionsModel::selectDlog($date1,$date2);
 		$date1 .= ' 00:00:00';
 		$date2 .= ' 00:00:00';
 

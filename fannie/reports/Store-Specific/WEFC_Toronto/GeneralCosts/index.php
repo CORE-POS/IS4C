@@ -24,6 +24,7 @@
 
 /* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+	* 27Nov13 Andy Theuninck revised to use FannieDB
 	* 17Mar13 Andy Theuninck removed variable name for datestamp filed
 	* + (not necessary, not compatible with all databases)
 	* 25Jan13 EL Add today, yesterday, this week, last week, this month, last month options.
@@ -39,8 +40,8 @@
 */
 
 include('../../config.php');
-include($FANNIE_ROOT.'src/mysql_connect.php');
-include($FANNIE_ROOT.'src/select_dlog.php');
+include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+$dbc = FannieDB::get($FANNIE_OP_DB);
 
 /* This program has two modes:
  * 1. Display the form for specifying the report.
@@ -83,7 +84,7 @@ if (isset($_REQUEST['submit'])){
 		}
 	}
 
-	$dlog = select_dtrans($d1,$d2);
+	$dlog = DTransactionsModel::selectDtrans($d1,$d2);
 
 	if (isset($_REQUEST['excel'])){
 		header("Content-Disposition: inline; filename=costs_{$d1}_{$d2}.xls");

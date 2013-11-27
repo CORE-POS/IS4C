@@ -39,12 +39,13 @@
 */
 
 include('../config.php');
+include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+$dbc = FannieDB::get($FANNIE_OP_DB);
 $Fannie_Item_Modules = array("Operations","ExtraInfo",
 "ThreeForDollar",
 "Cost","Sale","Margin", "LikeCode", "LaneStatus");
 include('prodFunction_WEFC_Toronto.php');
 // include's SQLManager.php which contains smart_*()
-include_once('../src/mysql_connect.php');
 
 include_once('../auth/login.php');
 $validatedUser = validateUserQuiet('pricechange');

@@ -94,7 +94,7 @@ class StoreSummaryReportAlt extends FannieReportPage {
 
 		$dbc = FannieDB::get($FANNIE_OP_DB);
 
-		$dtrans = DTransactionsModel::select_dtrans($d1,$d2);
+		$dtrans = DTransactionsModel::selectDtrans($d1,$d2);
 		$datestamp = $dbc->identifier_escape('datetime');
 
 		if ( isset($FANNIE_COOP_ID) && $FANNIE_COOP_ID == 'WEFC_Toronto' )

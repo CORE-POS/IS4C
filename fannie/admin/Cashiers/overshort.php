@@ -1,5 +1,7 @@
 <?php
 include('../../config.php');
+include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+$dbc = FannieDB::get($FANNIE_OP_DB);
 
 require($FANNIE_ROOT.'auth/login.php');
 $user = validateUserQuiet('overshorts');
@@ -13,7 +15,6 @@ if (!$user && !isset($_POST['action'])){
 	return;
 }
 
-include($FANNIE_ROOT.'src/mysql_connect.php');
 $sql = $dbc;
 
 /* actions via POST are AJAX requests */
@@ -43,8 +44,7 @@ if (isset($_POST['action'])){
 	break;
 	case 'date':
 		$date = $_POST['arg'];
-		require($FANNIE_ROOT."src/select_dlog.php");
-		$dlog = select_dlog($date);
+		$dlog = DTransactionsModel::selectDlog($date);
 		/* determine who worked that day (and their first names) */
 		$empsQ = $sql->prepare_statement("select e.firstname,d.emp_no,-1*sum(total) as total,trans_subtype,t.TenderName
 			from $dlog as d,employees as e, tenders as t where

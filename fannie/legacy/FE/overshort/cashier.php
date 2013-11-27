@@ -4,7 +4,6 @@ header('Location: '.$FANNIE_URL.'modules/plugins2.0/OverShortTools/OverShortCash
 exit;
 
 require($FANNIE_ROOT.'src/SQLManager.php');
-require($FANNIE_ROOT.'src/select_dlog.php');
 include('../../db.php');
 $sql->query("use is4c_trans");
 
@@ -33,7 +32,7 @@ if (isset($_GET["action"])){
 function displayCashier($date,$empno){
 	global $sql;
 
-	$dlog = select_dlog($date);
+	$dlog = DTransactionsModel::selectDlog($date);
 	$dlog = "trans_archive.dlogBig";
 
 	$tenders = array('CA','CK','CC','MI','GD','TC','EF','EC','CP','IC','SC','AX');

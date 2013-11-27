@@ -126,17 +126,17 @@ class StoreSummaryReport extends FannieReportPage2 {
 		$this->report_desc[] = "<p>Note: For items where cost is not recorded the margin in the deptMargin table is relied on.</p>";
 
 		if ( 1 ) {
-			$dlog = DTransactionsModel::select_dtrans($d1,$d2);
+			$dlog = DTransactionsModel::selectDtrans($d1,$d2);
 			$datestamp = $dbc->identifier_escape('datetime');
 		} else {
-			$dlog = DTransactionsModel::select_dlog($d1,$d2);
+			$dlog = DTransactionsModel::selectDlog($d1,$d2);
 			$datestamp = $dbc->identifier_escape('tdate');
 		}
 		//$this->report_desc[] = "dlog: $dlog   datestamp: $datestamp";
 		/* dlog is probably more efficient. But it doesn't work at this point.
 		 * 22Jul13 Needs t.cost, which is not in the dlog views now,
 		 *  but I think Andy has changed that recently.
-		 *$dlog = select_dlog($d1,$d2);
+		 *$dlog = selectDlog($d1,$d2);
 		 *$this->report_desc[] = "dlog: $dlog";
 		*/
 //		$dbc->logger("dlog: $dlog");

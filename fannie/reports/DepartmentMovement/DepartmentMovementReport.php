@@ -119,7 +119,7 @@ class DepartmentMovementReport extends FannieReportPage {
 		  summary is needed. For date/dept/weekday results the
 		  per-department summary is fine (and a smaller table)
 		*/
-		$dlog = DTransactionsModel::select_dlog($date1,$date2);
+		$dlog = DTransactionsModel::selectDlog($date1,$date2);
 		$sumTable = $FANNIE_ARCHIVE_DB.$dbc->sep()."sumRingSalesByDay";
 		if (substr($dlog,-4)=="dlog")
 			$sumTable = $FANNIE_ARCHIVE_DB.$dbc->sep()."vRingSalesToday";

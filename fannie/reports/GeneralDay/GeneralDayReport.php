@@ -63,7 +63,7 @@ class GeneralDayReport extends FannieReportPage
 		$dates = array($d1.' 00:00:00',$d1.' 23:59:59');
 		$data = array();
 
-		$dlog = DTransactionsModel::select_dlog($d1);
+		$dlog = DTransactionsModel::selectDlog($d1);
 		$tenderQ = $dbc->prepare_statement("SELECT 
 			TenderName,count(d.total),sum(d.total) as total
 			FROM $dlog as d , tenders as t 

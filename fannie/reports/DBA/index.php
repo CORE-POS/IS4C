@@ -1,8 +1,8 @@
 <?php
 
 include('../../config.php');
-include($FANNIE_ROOT.'src/mysql_connect.php');
-include($FANNIE_ROOT.'src/select_dlog.php');
+include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+$dbc = FannieDB::get($FANNIE_OP_DB);
 
 if (isset($_REQUEST['loadID'])){
 	$q = $dbc->prepare_statement("SELECT reportName,reportQuery FROM 
@@ -35,12 +35,12 @@ if ($errors == "" && $query != ""){
 	$dlog = "";
 	$dtrans = "";
 	if (!empty($_REQUEST['date1']) && !empty($_REQUEST['date2'])){
-		$dlog = select_dlog($_REQUEST['date1'],$_REQUEST['date2']);
-		$dtrans = select_dtrans($_REQUEST['date1'],$_REQUEST['date2']);
+		$dlog = DTransactionsModel::selectDlog($_REQUEST['date1'],$_REQUEST['date2']);
+		$dtrans = DTransactionsModel::selectDtrans($_REQUEST['date1'],$_REQUEST['date2']);
 	}
 	elseif (!empty($_REQUEST['date1'])){
-		$dlog = select_dlog($_REQUEST['date1']);
-		$dtrans = select_dtrans($_REQUEST['date1']);
+		$dlog = DTransactionsModel::selectDlog($_REQUEST['date1']);
+		$dtrans = DTransactionsModel::selectDtrans($_REQUEST['date1']);
 	}
 
 	if (!empty($dlog))

@@ -46,8 +46,7 @@ if (isset($_POST['action'])){
 	break;
   case 'date':
     $date = $_POST['arg'];
-    require($FANNIE_ROOT."src/select_dlog.php");
-    $dlog = select_dlog($date);
+    $dlog = DTransactionsModel::selectDlog($date);
     if ($dlog != "is4c_trans.dlog")
 	    $dlog = "trans_archive.dlogBig";
     /* determine who worked that day (and their first names) */

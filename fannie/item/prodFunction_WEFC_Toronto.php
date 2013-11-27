@@ -67,7 +67,11 @@
 	*
 */
 
-include_once('../src/mysql_connect.php');
+include('../config.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
+$dbc = FannieDB::get($FANNIE_OP_DB);
 include_once('../auth/login.php');
 include_once('ajax.php');
 //include_once(dirname(__FILE__).'/../classlib2.0/lib/FormLib.php');

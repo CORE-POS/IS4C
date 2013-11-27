@@ -69,7 +69,7 @@ class GeneralSalesReport extends FannieReportPage
 		$d2 = FormLib::get_form_value('date2',date('Y-m-d'));
 		$dept = $_REQUEST['dept'];
 
-		$dlog = DTransactionsModel::select_dlog($d1,$d2);
+		$dlog = DTransactionsModel::selectDlog($d1,$d2);
 
 		$sales = "SELECT d.Dept_name,sum(t.total),
 				sum(case when unitPrice=0.01 THEN 1 else t.quantity END),

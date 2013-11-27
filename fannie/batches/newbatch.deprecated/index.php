@@ -22,6 +22,8 @@
 *********************************************************************************/
 
 include('../../config.php');
+include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+$dbc = FannieDB::get($FANNIE_OP_DB);
 include('audit.php');
 include('../../auth/login.php');
 
@@ -32,7 +34,6 @@ if ($user) {
 	refreshSession();
 }
 
-include('../../src/mysql_connect.php');
 if (!function_exists("updateProductAllLanes")) include($FANNIE_ROOT.'item/laneUpdates.php');
 
 $batchtypes = array();

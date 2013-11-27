@@ -22,9 +22,9 @@
 *********************************************************************************/
 
 include('../../config.php');
-include($FANNIE_ROOT.'src/mysql_connect.php');
-include($FANNIE_ROOT.'src/select_dlog.php');
+include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 include($FANNIE_ROOT.'auth/login.php');
+$dbc = FannieDB::get($FANNIE_OP_DB);
 
 $dbconn = ($FANNIE_SERVER_DBMS=='MSSQL')?'.dbo.':'.';
 
@@ -36,7 +36,7 @@ if (isset($_GET['startDate'])){
 	$dept = $_GET['deptStart'];
 	$dept2 = $_GET['deptEnd'];
 
-	$dlog = select_dlog($startDate,$endDate);
+    $dlog = DTransactionsModel::selectDlog($startDate,$endDate);
 
         $hourlySalesQ = "SELECT min(".$dbc->dayofweek('d.tdate')."),".$dbc->hour('d.tdate').",sum(d.total),avg(d.total)
                          FROM $dlog as d left join 

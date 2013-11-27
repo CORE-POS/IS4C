@@ -1,6 +1,8 @@
 <?php
 
 require('../../config.php');
+include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+$dbc = FannieDB::get($FANNIE_OP_DB);
 $page_title = "Fannie : Scale Delete";
 $header = "Scale Delete";
 include($FANNIE_ROOT."src/header.html");
@@ -17,7 +19,6 @@ if (isset($_GET['plu'])){
 		$plu = substr($plu,3,4);
 	}
 
-	include($FANNIE_ROOT."src/mysql_connect.php");
 	$query = $dbc->prepare_statement("DELETE FROM scaleItems WHERE plu=?");
 	$result = $dbc->exec_statement($query,array('002'.$plu.'000000'));
 

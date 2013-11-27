@@ -2,7 +2,7 @@
 
 include('../../config.php');
 include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
-include($FANNIE_ROOT.'src/mysql_connect.php');
+$dbc = FannieDB::get($FANNIE_OP_DB);
 
 define('FPDF_FONTPATH','font/');
    require($FANNIE_ROOT.'src/fpdf/fpdf.php');

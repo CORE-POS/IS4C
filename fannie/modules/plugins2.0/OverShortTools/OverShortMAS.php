@@ -36,8 +36,8 @@ class OverShortMAS extends FannieRESTfulPage {
 
 	function get_data(){
 		global $FANNIE_OP_DB;
-		$dlog = DTransactionsModel::select_dlog($this->startDate, $this->endDate);
-		$dtrans = DTransactionsModel::select_dtrans($this->startDate, $this->endDate);
+		$dlog = DTransactionsModel::selectDlog($this->startDate, $this->endDate);
+		$dtrans = DTransactionsModel::selectDtrans($this->startDate, $this->endDate);
 
 		$records = array();
 		$dateID = date('ymd', strtotime($this->endDate));
