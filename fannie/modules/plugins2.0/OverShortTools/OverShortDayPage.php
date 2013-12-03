@@ -299,7 +299,7 @@ class OverShortDayPage extends FanniePage {
 			foreach($tenders as $t){
 				$temp = explode('|',$t);
 				$tender_type = $temp[0];
-				$amt = rtrim($temp[1]);
+				$amt = isset($temp[1]) ? rtrim($temp[1]) : '';
 				if ($amt != ''){
 					$model->tender_type($tender_type);
 					$model->amt($amt);
