@@ -3,7 +3,7 @@
 
     Copyright 2013 Whole Foods Co-op
 
-    This file is part of IT CORE.
+    This file is part of Fannie.
 
     IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -21,21 +21,34 @@
 
 *********************************************************************************/
 
-include(dirname(__FILE__).'/../../../config.php');
+/**
+  @class WfcHtZipCodesModel
+*/
+class WfcHtZipCodesModel extends BasicModel
+{
 
-class WfcHtLib {
+    protected $name = "zipcodes";
 
-    static public function hours_dbconnect()
+    protected $columns = array(
+    'zip' => array('type'=>'VARCHAR(50)', 'primary_key'=>true),
+	);
+
+    /* START ACCESSOR FUNCTIONS */
+
+    public function zip()
     {
-        global $FANNIE_ROOT, $FANNIE_PLUGIN_SETTINGS;
-        if (!class_exists("SQLManager")) {
-            require($FANNIE_ROOT.'src/SQLManager.php');
+        if(func_num_args() == 0) {
+            if(isset($this->instance["zip"])) {
+                return $this->instance["zip"];
+            } elseif(isset($this->columns["zip"]["default"])) {
+                return $this->columns["zip"]["default"];
+            } else {
+                return null;
+            }
+        } else {
+            $this->instance["zip"] = func_get_arg(0);
         }
-        if (!class_exists('FannieAPI')) {
-            include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
-        }
-
-        return FannieDB::get($FANNIE_PLUGIN_SETTINGS['WfcHtDatabase']);
     }
+    /* END ACCESSOR FUNCTIONS */
 }
 
