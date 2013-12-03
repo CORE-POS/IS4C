@@ -53,7 +53,7 @@ class PayrollARReport extends FannieReportPage {
 	function fetch_report_data(){
 		global $dbc, $FANNIE_TRANS_DB;
 
-		$query = $dbc->prepare_statement("SELECT c.CardNo,c.FirstName,c.LastName,c.memDiscountLimit,
+		$query = $dbc->prepare_statement("SELECT c.CardNo,c.FirstName,c.LastName,c.ChargeLimit,
 			CASE WHEN s.cardNo IS NULL THEN 'no' ELSE 'yes' END as autodeduct,
 			x.FirstName,x.LastName,
 			y.FirstName,y.LastName,

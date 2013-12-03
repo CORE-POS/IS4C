@@ -38,21 +38,19 @@
 <a href="class_authenticate-members.html">List of all members.</a><table border="0" cellpadding="0" cellspacing="0">
 <tr><td></td></tr>
 <tr><td colspan="2"><br><h2>Static Public Member Functions</h2></td></tr>
-<tr><td class="memItemLeft" nowrap align="right" valign="top">static&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_authenticate.html#171be9f0fb54a7233678c6fb131dd334">check_password</a> ($password, $activity=1)</td></tr>
-
-<tr><td class="memItemLeft" nowrap align="right" valign="top">static&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_authenticate.html#b621d559d750ee46c3e3c800c3f4d8cf">ns_check_password</a> ($password)</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">static&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_authenticate.html#0119069a3d127c9887420651b3e6f1e4">checkPassword</a> ($password, $activity=1)</td></tr>
 
 </table>
 <hr><a name="_details"></a><h2>Detailed Description</h2>
 Functions for user authentication 
 <p>
 <hr><h2>Member Function Documentation</h2>
-<a class="anchor" name="171be9f0fb54a7233678c6fb131dd334"></a><!-- doxytag: member="Authenticate::check_password" ref="171be9f0fb54a7233678c6fb131dd334" args="($password, $activity=1)" -->
+<a class="anchor" name="0119069a3d127c9887420651b3e6f1e4"></a><!-- doxytag: member="Authenticate::checkPassword" ref="0119069a3d127c9887420651b3e6f1e4" args="($password, $activity=1)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">static Authenticate::check_password           </td>
+          <td class="memname">static Authenticate::checkPassword           </td>
           <td>(</td>
           <td class="paramtype">$&nbsp;</td>
           <td class="paramname"> <em>password</em>, </td>
@@ -83,36 +81,9 @@ Functions for user authentication
 If no one is currently logged in, any valid password will be accepted. If someone is logged in, then only passwords for that user <em>or</em> a user with frontendsecurity &gt;= 30 in the employee table will be accepted. 
 </div>
 </div><p>
-<a class="anchor" name="b621d559d750ee46c3e3c800c3f4d8cf"></a><!-- doxytag: member="Authenticate::ns_check_password" ref="b621d559d750ee46c3e3c800c3f4d8cf" args="($password)" -->
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">static Authenticate::ns_check_password           </td>
-          <td>(</td>
-          <td class="paramtype">$&nbsp;</td>
-          <td class="paramname"> <em>password</em>          </td>
-          <td>&nbsp;)&nbsp;</td>
-          <td width="100%"><code> [static]</code></td>
-        </tr>
-      </table>
-</div>
-<div class="memdoc">
-
-<p>
-Authentication function for Wedge NoSale page <dl compact><dt><b>Parameters:</b></dt><dd>
-  <table border="0" cellspacing="2" cellpadding="0">
-    <tr><td valign="top"></td><td valign="top"><em>$password</em>&nbsp;</td><td>the password </td></tr>
-  </table>
-</dl>
-<dl compact><dt><b>Returns:</b></dt><dd>True or False </dd></dl>
-<dl compact><dt><b><a class="el" href="deprecated.html#_deprecated000001">Deprecated:</a></b></dt><dd></dd></dl>
-
-</div>
-</div><p>
 <hr>The documentation for this class was generated from the following file:<ul>
 <li>pos/is4c-nf/lib/Authenticate.php</ul>
-<hr size="1"><address style="align: right;"><small>Generated on Tue Oct 23 14:30:34 2012 for CORE POS - IS4C by&nbsp;
+<hr size="1"><address style="align: right;"><small>Generated on 18 Nov 2013 for CORE POS - IS4C by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img src="doxygen.png" alt="doxygen" align="middle" border="0"></a> 1.4.7 </small></address>
 </body>

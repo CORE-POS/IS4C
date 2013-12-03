@@ -42,6 +42,8 @@ $sql = new SQLManager($FANNIE_SERVER,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 
 $TRANS = $FANNIE_TRANS_DB . ($FANNIE_SERVER_DBMS=="MSSQL" ? 'dbo.' : '.');
 
+$custdata = $sql->table_definition('custdata');
+
 $meminfoQ = "UPDATE meminfo AS m LEFT JOIN
 	    custdata AS c ON m.card_no=c.CardNo
 	    LEFT JOIN {$TRANS}newBalanceStockToday_test AS s
@@ -55,10 +57,14 @@ $sql->query($meminfoQ);
 $custQ = "UPDATE custdata AS c LEFT JOIN {$TRANS}newBalanceStockToday_test AS s
 	    ON c.CardNo=s.memnum LEFT JOIN suspensions AS p
 	    ON c.CardNo=p.cardno
-	    SET c.Discount=p.discount,c.memDiscountLimit=p.chargelimit,
+	    SET c.Discount=p.discount,c.MemDiscountLimit=p.chargelimit,
+        c.ChargeLimit=p.chargelimit,
 	    c.memType=p.memtype1,c.Type=p.memtype2,chargeOk=1
 	    WHERE c.Type = 'INACT' and p.reasoncode IN (2,4,6)
 	    AND s.payments >= 100";
+if (!isset($custdata['ChargeLimit'])) {
+    $custQ = str_replace('c.ChargeLimit=p.chargelimit,', '', $custQ);
+}
 $sql->query($custQ);
 
 $histQ = "insert into suspension_history

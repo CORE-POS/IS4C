@@ -279,14 +279,33 @@ class OverShortDepositSlips extends FanniePage {
 	}
 
 	function body_content(){
-		global $FANNIE_URL;
+		global $FANNIE_URL, $FANNIE_PLUGIN_SETTINGS;
+		$dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['OverShortDatabase']);
 		$this->add_script($FANNIE_URL.'src/CalendarControl.js');
+        $this->add_script('js/count.js');
 		ob_start();
 		?>
 		<form action=OverShortDepositSlips.php method=get>
 		<table>
-		<tr><th>Start</th><td><input type=text name=startDate onfocus="this.value='';showCalendarControl(this);" /></td></tr>
-		<tr><th>End</th><td><input type=text name=endDate onfocus="this.value='';showCalendarControl(this);" /></td></tr>
+		<tr>
+            <th>Start</th><td><input type=text id=startDate name=startDate onfocus="this.value='';showCalendarControl(this);" /></td>
+            <td >
+            Recent Counts: <select onchange="existingDates(this.value);">
+            <option value=''>Select one...</option>
+            <?php
+            $res = $dbc->query('SELECT dateStr FROM dailyDeposit GROUP BY dateStr ORDER BY dateStr DESC');
+            $count = 0;
+            while($row = $dbc->fetch_row($res)) {
+                if ($count++ > 50) {
+                    break;
+                }
+                echo '<option>'.$row['dateStr'].'</option>';
+            }
+            ?>
+            </select>
+            </td>
+        </tr>
+		<tr><th>End</th><td><input type=text id=endDate name=endDate onfocus="this.value='';showCalendarControl(this);" /></td></tr>
 		</table>
 		<input type=submit value="Generate slips" />
 		</form>

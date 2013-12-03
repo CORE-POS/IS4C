@@ -10,8 +10,8 @@ if (!validateUser('admin')){
 
 $projID = $_GET['projID'];
 
-$q = "update projects set status=99 where projID=$projID";
-$r = $sql->query($q);
+$q = $sql->prepare("update projects set status=99 where projID=?");
+$r = $sql->execute($q, array($projID));
 
 header("Location: index.php");
 

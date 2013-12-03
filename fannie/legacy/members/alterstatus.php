@@ -1,6 +1,9 @@
 <?php
 include('../../config.php');
 
+if (!class_exists('FannieAPI'))
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+
 include($FANNIE_ROOT.'src/SQLManager.php');
 include('../db.php');
 
@@ -46,8 +49,15 @@ if (!isset($_POST['submit']) && !isset($_GET['fixedaddress'])){
 	echo "&nbsp;&nbsp;&nbsp;Reason for suspending membership $memNum<br />";
 	echo "<form action=alterstatus.php method=post>";
 	echo "<input type=hidden name=memNum value=$memID>";
-	$curReasonCode = array_pop($sql->fetch_row($sql->query("SELECT reasonCode from suspensions WHERE cardno=$memNum")));
-	$curType = array_pop($sql->fetch_row($sql->query("SELECT type FROM custdata WHERE cardno=$memNum AND personnum=1")));
+    $sus = new SuspensionsModel($sql);
+    $sus->cardno($memNum);
+    $sus->load();
+    $curReasonCode = $sus->reasonCode();
+    $cust = new CustdataModel($sql);
+    $cust->CardNo($memNum);
+    $cust->personNum(1);
+    $cust->load();
+    $curType = $cust->Type();
 	$stats = array('INACT'=>'Inactive','TERM'=>'Termed','INACT2'=>'Term pending');
 	echo "<select name=status>";
 	foreach ($stats as $k=>$v){

@@ -27,7 +27,8 @@
 include('../../config.php');
 include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
-class MemNameNumImportPage extends FannieUploadPage {
+class MemNameNumImportPage extends FannieUploadPage 
+{
 	protected $title = "Fannie :: Member Tools";
 	protected $header = "Import Member Names &amp; Numbers";
 
@@ -61,7 +62,8 @@ class MemNameNumImportPage extends FannieUploadPage {
 
 	private $details = '';
 	
-	function process_file($linedata){
+	function process_file($linedata)
+    {
 		global $FANNIE_OP_DB;
 		$dbc = FannieDB::get($FANNIE_OP_DB);
 
@@ -73,7 +75,7 @@ class MemNameNumImportPage extends FannieUploadPage {
 		$defaults_table = array();
 		$defQ = $dbc->prepare_statement("SELECT memtype,cd_type,discount,staff,SSI from memdefaults");
 		$defR = $dbc->exec_statement($defQ);
-		while($defW = $dbc->fetch_row($defR)){
+		while($defW = $dbc->fetch_row($defR)) {
 			$defaults_table[$defW['memtype']] = array(
 				'type' => $defW['cd_type'],
 				'discount' => $defW['discount'],
@@ -84,57 +86,78 @@ class MemNameNumImportPage extends FannieUploadPage {
 
 		// prepare statements
 		$perP = $dbc->prepare_statement("SELECT MAX(personNum) FROM custdata WHERE CardNo=?");
-		$insP = $dbc->prepare_statement("INSERT INTO custdata (CardNo,personNum,LastName,FirstName,CashBack,
-			Balance,Discount,MemDiscountLimit,ChargeOk,WriteChecks,StoreCoupons,Type,
-			memType,staff,SSI,Purchases,NumberOfChecks,memCoupons,blueLine,Shown)
-			VALUES (?,?,?,?,0,0,?,0,0,0,0,?,?,?,?,0,0,0,?,1)");
 		$dateP = $dbc->prepare_statement('INSERT INTO memDates (card_no) VALUES (?)');
-		foreach($linedata as $line){
+        $model = new CustdataModel($dbc);
+		foreach($linedata as $line) {
 			// get info from file and member-type default settings
 			// if applicable
 			$cardno = $line[$mn_index];
-			if (!is_numeric($cardno)) continue; // skip bad record
-			$ln = $line[$ln_index];
-			$fn = $line[$fn_index];	
-			$mtype = ($t_index !== False) ? $line[$t_index] : 0;
+			if (!is_numeric($cardno)) {
+                continue; // skip bad record
+            }
+
+            $model->reset();
+            $model->CardNo($cardno);
+
+			$model->LastName($line[$ln_index]);
+			$model->FirstName($line[$fn_index]);	
+            $model->blueLine($cardno.' '.$line[$ln_index]);
+			$model->memType(($t_index !== false) ? $line[$t_index] : 0);
 			$type = "PC";
 			$discount = 0;
 			$staff = 0;
 			$SSI = 0;
-			if ($t_index !== False){
-				if (isset($defaults_table[$mtype]['type']))
+			if ($t_index !== false) {
+				if (isset($defaults_table[$mtype]['type'])) {
 					$type = $defaults_table[$mtype]['type'];
-				if (isset($defaults_table[$mtype]['discount']))
+                }
+				if (isset($defaults_table[$mtype]['discount'])) {
 					$discount = $defaults_table[$mtype]['discount'];
-				if (isset($defaults_table[$mtype]['staff']))
+                }
+				if (isset($defaults_table[$mtype]['staff'])) {
 					$staff = $defaults_table[$mtype]['staff'];
-				if (isset($defaults_table[$mtype]['SSI']))
+                }
+				if (isset($defaults_table[$mtype]['SSI'])) {
 					$SSI = $defaults_table[$mtype]['SSI'];
+                }
 			}
+
+            $model->Type($type);
+            $model->Discount($discount);
+            $model->staff($staff);
+            $model->SSI($SSI);
 
 			// determine person number
 			$perR = $dbc->exec_statement($perP,array($cardno));
-			$result = array_pop($dbc->fetch_row($perR));
-			$pn = !empty($result) ? ($result+1) : 1;
+            $pn = 1;
+            if ($dbc->num_rows($perR) > 0) {
+                $row = $dbc->fetch_row($perR);
+                $pn = $row[0] + 1;
+            }
+            $model->personNum($pn);
+
+            $model->CashBack(0);
+            $model->Balance(0);
+            $model->memCoupons(0);
 		
-			$insR = $dbc->exec_statement($insP,array($cardno,$pn,$ln,$fn,
-				$discount,$type,$memtype,$staff,$SSI,$cardno.' '.$ln));
-			if ($insR === False){
+			$insR = $model->save();
+			if ($insR === false) {
 				$this->details .= "<b>Error importing member $cardno ($fn $ln)</b><br />";
-			}
-			else {
+			} else {
 				$this->details .= "Imported member $cardno ($fn $ln)<br />";
 			}
 
-			if ($pn == 1){
+			if ($pn == 1) {
 				MeminfoModel::update($cardno,array());
 				$dbc->exec_statement($dateP,array($cardno));
 			}
 		}
-		return True;
+
+		return true;
 	}
 	
-	function form_content(){
+	function form_content()
+    {
 		return '<fieldset><legend>Instructions</legend>
 		Upload a CSV or XLS file containing member numbers, first &amp; last names,
 		and optionally type IDs.
@@ -143,12 +166,14 @@ class MemNameNumImportPage extends FannieUploadPage {
 		</fieldset><br />';
 	}
 
-	function results_content(){
+	function results_content()
+    {
 		return $this->details .= 'Import completed successfully';
 	}
 }
-if (basename($_SERVER['PHP_SELF']) == basename(__FILE__)){
+
+if (basename($_SERVER['PHP_SELF']) == basename(__FILE__)) {
 	$obj = new MemNameNumImportPage();
 	$obj->draw_page();
 }
-?>
+

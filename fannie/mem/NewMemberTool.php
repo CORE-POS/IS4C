@@ -23,7 +23,8 @@
 include('../config.php');
 include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
-class NewMemberTool extends FanniePage {
+class NewMemberTool extends FanniePage 
+{
 
 	protected $title = "Fannie :: Create Members";
 	protected $header = "Create Members";
@@ -33,28 +34,34 @@ class NewMemberTool extends FanniePage {
 	private $errors;
 	private $mode = 'form';
 
-	function preprocess(){
-		if (FormLib::get_form_value('createMems',False) !== False){
-			if (!is_numeric(FormLib::get_form_value('memtype')))
+	function preprocess()
+    {
+		if (FormLib::get_form_value('createMems',False) !== false) {
+			if (!is_numeric(FormLib::get_form_value('memtype'))) {
 				$this->errors = "<i>Error: member type wasn't set correctly</i>";	
-			elseif (!is_numeric(FormLib::get_form_value('num')))
+			} elseif (!is_numeric(FormLib::get_form_value('num'))) {
 				$this->errors = "<i>'How Many' needs to be a number</i>";
-			elseif (FormLib::get_form_value('num') <= 0)
+			} elseif (FormLib::get_form_value('num') <= 0) {
 				$this->errors = "<i>'How Many' needs to be positive</i>";
-			else
+			} else {
 				$this->mode = 'results';
+            }
 		}
-		return True;
+
+		return true;
 	}
 
-	function body_content(){
-		if ($this->mode == 'form')
+	function body_content()
+    {
+		if ($this->mode == 'form') {
 			return $this->form_content();
-		elseif ($this->mode == 'results')
+		} elseif ($this->mode == 'results') {
 			return $this->results_content();
+        }
 	}
 
-	function form_content(){
+	function form_content()
+    {
 		global $FANNIE_OP_DB;
 		$dbc = FannieDB::get($FANNIE_OP_DB);
 		// inner join so that only types
@@ -66,13 +73,13 @@ class NewMemberTool extends FanniePage {
 			m.memtype");
 		$r = $dbc->exec_statement($q);
 		$opts = "";
-		while($w = $dbc->fetch_row($r)){
+		while($w = $dbc->fetch_row($r)) {
 			$opts .= sprintf("<option value=%d>%s</option>",
 				$w['memtype'],$w['memDesc']);
 		}
 
 		$ret = '';
-		if (!empty($this->errors)){
+		if (!empty($this->errors)) {
 			$ret .= '<blockquote style="border: solid 1px red; padding: 5px;
 					margin: 5px;">';
 			$ret .= $this->errors;
@@ -98,49 +105,35 @@ class NewMemberTool extends FanniePage {
 		return $ret;
 	}
 
-	function results_content(){
+	function results_content()
+    {
 		global $FANNIE_OP_DB, $FANNIE_SERVER_DBMS;
 		$dbc = FannieDB::get($FANNIE_OP_DB);
 
 		$mtype = FormLib::get_form_value('memtype',0);
 		$num = FormLib::get_form_value('num',0);
 		$name = FormLib::get_form_value('name','NEW MEMBER');
-		$manual_start = FormLib::get_form_value('start',False);
-		if (!is_numeric($manual_start)) $manual_start = False;
+		$manual_start = FormLib::get_form_value('start', false);
+		if (!is_numeric($manual_start)) {
+            $manual_start = false;
+        }
 
 		/* going to create memberships
 		   part of the insert arrays can
 		   be prepopulated */
 		$meminfo = array(
-		'last_name'=>"''",
-		'first_name'=>"''",
-		'othlast_name'=>"''",
-		'othfirst_name'=>"''",
-		'street'=>"''",
-		'city'=>"''",
-		'state'=>"''",
-		'zip'=>"''",
-		'phone'=>"''",
-		'email_1'=>"''",
-		'email_2'=>"''",
-		'ads_OK'=>1
-		);
-
-		$custdata = array(
-		'personNum'=>1,
-		'LastName'=>$dbc->escape($name),
-		'FirstName'=>"''",
-		'CashBack'=>999.99,
-		'Balance'=>0,
-		'MemDiscountLimit'=>0,
-		'ChargeOk'=>1,
-		'WriteChecks'=>1,
-		'StoreCoupons'=>1,
-		'Purchases'=>0,
-		'NumberOfChecks'=>999,
-		'memCoupons'=>0,
-		'blueLine'=>$dbc->escape($name),
-		'Shown'=>1
+            'last_name'=>"''",
+            'first_name'=>"''",
+            'othlast_name'=>"''",
+            'othfirst_name'=>"''",
+            'street'=>"''",
+            'city'=>"''",
+            'state'=>"''",
+            'zip'=>"''",
+            'phone'=>"''",
+            'email_1'=>"''",
+            'email_2'=>"''",
+            'ads_OK'=>1
 		);
 
 		$defaultsQ = $dbc->prepare_statement("SELECT cd_type,discount,staff,SSI
@@ -148,47 +141,60 @@ class NewMemberTool extends FanniePage {
 		$defaultsR = $dbc->exec_statement($defaultsQ,array($mtype));
 		$defaults = $dbc->fetch_row($defaultsR);
 
-		$args = array(0, $name, $defaults['discount'],
-			$defaults['cd_type'], $defaults['staff'],
-			$defaults['SSI'], $mtype, $name);
-
 		/* everything's set but the actual member #s */
 		$numQ = $dbc->prepare_statement("SELECT MAX(CardNo) FROM custdata");
-		if ($FANNIE_SERVER_DBMS == 'MSSQL')
+		if ($FANNIE_SERVER_DBMS == 'MSSQL') {
 			$numQ = $dbc->prepare_statement("SELECT MAX(CAST(CardNo AS int)) FROM custdata");
+        }
 		$numR = $dbc->exec_statement($numQ);
 		$start = 1;
-		if ($dbc->num_rows($numR) > 0){
+		if ($dbc->num_rows($numR) > 0) {
 			$numW = $dbc->fetch_row($numR);
-			if (!empty($numW[0])) $start = $numW[0]+1;
+			if (!empty($numW[0])) {
+                $start = $numW[0]+1;
+            }
 		}
 
-		if ($manual_start)
+		if ($manual_start) {
 			$start = (int)$manual_start;
+        }
 
 		$end = $start + $num - 1;
 
 		$ret = "<b>Starting number</b>: $start<br />";
 		$ret .= "<b>Ending number</b>: $end<br />";
-		$insP = $dbc->prepare_statement("INSERT INTO custdata (CardNo,personNum,LastName,
-				FirstName,CashBack,Balance,MemDiscountLimit,ChargeOk,WriteChecks,
-				StoreCoupons,Purchases,NumberOfChecks,memCoupons,Shown,Discount,
-				Type,staff,SSI,memType,blueLine) VALUES (?, 1, ?, '', 999.99, 0,
-				0, 1, 1, 1, 0, 999, 0, 1, ?, ?, ?, ?, ?, ?)");
+
+        $model = new CustdataModel($dbc);
+        $model->personNum(1);
+        $model->LastName($name);
+        $model->FirstName('');
+        $model->CashBack(999.99);
+        $model->Balance(0);
+        $model->memCoupons(0);
+        $model->Discount($defaults['discount']);
+        $model->Type($defaults['cd_type']);
+        $model->staff($defaults['staff']);
+        $model->SSI($defaults['SSI']);
+        $model->memType($mtype);
+
 		$chkP = $dbc->prepare_statement('SELECT CardNo FROM custdata WHERE CardNo=?');
 		$mdP = $dbc->prepare_statement("INSERT INTO memDates VALUES (?,NULL,NULL)");
 		$mcP = $dbc->prepare_statement("INSERT INTO memContact (card_no,pref) VALUES (?,1)");
-		for($i=$start; $i<=$end; $i++){
+		for($i=$start; $i<=$end; $i++) {
 			// skip if record already exists
 			$chkR = $dbc->exec_statement($chkP,array($i));
-			if ($dbc->num_rows($chkR) > 0) continue;
+			if ($dbc->num_rows($chkR) > 0) {
+                continue;
+            }
 
-			$args[0] = $i;
-			$dbc->exec_statement($insP,$args);
+            $model->CardNo($i);
+            $model->blueLine($i.' '.$name);
+            $model->save();
 			MeminfoModel::update($i, array());
 			$dbc->exec_statement($mdP, array($i));
 			$dbc->exec_statement($mcP, array($i));
 		}
+
 		return $ret;
 	}
 }
@@ -198,4 +204,3 @@ if (basename($_SERVER['PHP_SELF']) == basename(__FILE__)){
 	$obj->draw_page();
 }
 
-?>

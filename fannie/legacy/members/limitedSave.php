@@ -55,16 +55,16 @@ $auditQ = "insert custUpdate select now(),$uid,1,* from custdata where cardno=$m
   <tr>
     <td colspan="11" bgcolor="#006633"><!--<a href="memGen.php">-->
 	<img src="../images/general.gif" width="72" height="16" border="0" />
-	<a href="testDetails.php?memID=<?php echo $memID; ?>">
+    <a href="<?php echo $FANNIE_URL; ?>modules/plugins2.0/PIKiller/PIEquityPage.php?id=<? echo $memID; ?>">
 		<img src="../images/equity.gif" width="72" height="16" border="0" />
 	</a>
-	<a href="memARTrans.php?memID=<?php echo $memID; ?>">
+    <a href="<?php echo $FANNIE_URL; ?>modules/plugins2.0/PIKiller/PIArPage.php?id=<? echo $memID; ?>">
 		<img src="../images/AR.gif" width="72" height="16" border="0" />
 	</a>
 	<a href="memControl.php?memID=<?php echo $memID ?>">
 		<img src="../images/control.gif" width="72" height="16" border="0" />
 	</a>
-	<a href="memTrans.php?memID=<?php echo $memID; ?>">
+    <a href="<?php echo $FANNIE_URL; ?>modules/plugins2.0/PIKiller/PIPurchasesPage.php?id=<? echo $memID; ?>">
 		<img src="../images/detail.gif" width="72" height="16" border="0" />
 	</a>
    </td>
@@ -85,16 +85,13 @@ $MI_FIELDS = array();
 
 $memNum = $_POST['memNum'];
 $fname = str_replace("'","",$_POST['fName']);
-$fname = $sql->escape($fname);
 $lName = str_replace("'","",$_POST['lName']);
-$lName = $sql->escape($lName);
 $blueline = $memNum . " " . $_POST['lName'];
 $bladd = "";
 if ($_POST['status'] == "ACTIVE"){
 	$bladd = " Coup(".$_POST['memcoupons'].")";
 }
 $blueline .= $bladd;
-$blueline = $dbc->escape($blueline);
 $MI_FIELDS['street'] = $_POST['address1'] . (!empty($_POST['address2']) ? "\n".$_POST['address2'] : '');
 $MI_FIELDS['city'] = $_POST['city'];
 $MI_FIELDS['state'] = $_POST['state'];
@@ -107,49 +104,56 @@ $fnames = $_POST["hfname"];
 $lnames = $_POST["hlname"];
 for($i=0;$i<count($fnames);$i++){
 	$fnames[$i] = str_replace("'","",$fnames[$i]);
-	$fnames[$i] = $sql->escape($fnames[$i]);
 }
 for($i=0;$i<count($lnames);$i++){
 	$lnames[$i] = str_replace("'","",$lnames[$i]);
-	$lnames[$i] = $sql->escape($lnames[$i]);
 }
 
-add_second_server();
-$sql->query_all(sprintf("DELETE FROM memberCards WHERE card_no=%d",$memNum));
-if (isset($_REQUEST['cardUPC']) && is_numeric($_REQUEST['cardUPC'])){
-	$sql->query_all(sprintf("INSERT INTO memberCards VALUES (%d,'%s')",
-		$memNum,str_pad($_REQUEST['cardUPC'],13,'0',STR_PAD_LEFT)));
+$cards = new MemberCardsModel($sql);
+$cards->card_no($memNum);
+// delete existing records
+foreach($cards->find() as $obj) {
+    $obj->delete();
 }
+// add record with correct upc
+$cards->upc(str_pad($_REQUEST['cardUPC'], 13, '0', STR_PAD_LEFT));
+$cards->save();
 
 // update top name
-$custdataQ = "Update custdata set lastname = $lName, firstname = $fname, blueline=$blueline where cardNo = $memNum and personnum = 1";
-$custdataR = $sql->query_all($custdataQ);
+$cust = new CustdataModel($sql);
+$cust->CardNo($memNum);
+$cust->personNum(1);
+$cust->LastName($lName);
+$cust->FirstName($fname);
+$cust->blueLine($blueline);
+$cust->save();
 
 for($i=0;$i<3;$i++){
 	if ($fnames[$i]=="''") $fnames[$i] = "";
 	if ($lnames[$i]=="''") $lnames[$i] = "";
 }
-for($i=0; $i<3; $i++){
-	$sql->query_all("DELETE FROM custdata WHERE cardno=$memNum and personnum=".($i+2));
-	//$sql->query("DELETE FROM memnames WHERE memNum=$memNum and personnum=".($i+2));
-	if (is_array($fnames) && isset($fnames[$i]) && 
-	    is_array($lnames) && isset($lnames[$i]) &&
-	    !empty($lnames[$i]) && !empty($fnames[$i])){
-		$custQ = sprintf("INSERT INTO custdata (CardNo,personNum,LastName,FirstName,CashBack,Balance,
-				Discount,MemDiscountLimit,ChargeOk,WriteChecks,StoreCoupons,Type,
-				memType,staff,SSI,Purchases,NumberOfChecks,memCoupons,blueLine,Shown)
-				SELECT cardno,%d,%s,%s,CashBack,Balance,
-				Discount,MemDiscountLimit,ChargeOk,WriteChecks,StoreCoupons,Type,
-				memType,staff,SSI,Purchases,NumberOfChecks,memCoupons,'%s',1 FROM
-				custdata WHERE CardNo=%d AND personNum=1",($i+2),$lnames[$i],$fnames[$i],
-				($memNum.' '.trim($lnames[$i],"'").$bladd),$memNum);
-		$memQ = sprintf("INSERT INTO memNames SELECT %s,%s,memNum,%d,checks,charge,
-				active,'%s' FROM memNames where memNum=%d and personnum=1",
-				$lnames[$i],$fnames[$i],
-				($i+2),($memNum.'.'.($i+2).'.1'),$memNum);
-		$sql->query_all($custQ);
-		//$sql->query($memQ);
-	}
+
+$count = 2;
+// load settings for person 1, update just names on other records
+$cust->reset();
+$cust->CardNo($memNum);
+$cust->personNum(1);
+$cust->load();
+for($i=0; $i<count($lnames); $i++) {
+	if (empty($lnames[$i]) && empty($fnames[$i])) continue;
+
+	$cust->personNum($count);
+	$cust->FirstName($fnames[$i]);
+	$cust->LastName($lnames[$i]);
+	$cust->BlueLine( $cust->CardNo().' '.$cust->LastName() );
+	$cust->save(); // save next personNum
+
+	$count++;
+}
+// remove names that were blank on the form
+for($i=$count;$i<5;$i++){
+	$cust->personNum($i);
+	$cust->delete();
 }
 
 MeminfoModel::update($memNum, $MI_FIELDS);
@@ -158,11 +162,11 @@ MeminfoModel::update($memNum, $MI_FIELDS);
 $notetext = $_POST['notetext'];
 $notetext = preg_replace("/\n/","<br />",$notetext);
 $notetext = preg_replace("/\'/","''",$notetext);
-$checkQ = "select * from memberNotes where note='$notetext' and cardno=$memNum";
-$checkR = $sql->query($checkQ);
+$checkQ = $sql->prepare("select * from memberNotes where note=? and cardno=?");
+$checkR = $sql->execute($checkQ, array($notetext, $memNum));
 if ($sql->num_rows($checkR) == 0){
-	$noteQ = "insert into memberNotes values ($memNum,'$notetext',".$sql->now().",'$username')";
-	$noteR = $sql->query($noteQ);
+	$noteQ = $sql->prepare("insert into memberNotes (cardno, note, stamp, username) VALUES (?, ?, ".$sql->now().", ?)");
+	$noteR = $sql->execute($noteQ, array($memNum, $notetext, $username));
 }
 
 // FIRE ALL UPDATE

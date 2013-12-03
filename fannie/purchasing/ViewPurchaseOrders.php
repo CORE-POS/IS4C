@@ -30,17 +30,17 @@ class ViewPurchaseOrders extends FannieRESTfulPage {
 	protected $header = 'Purchase Orders';
 	protected $title = 'Purchase Orders';
 
-	protected $must_authenticate = True;
+	protected $must_authenticate = false;
 
-	private $show_all = False;
+	private $show_all = true;
 
 	function preprocess(){
 		$this->__routes[] = 'get<pending>';
 		$this->__routes[] = 'get<placed>';
 		$this->__routes[] = 'post<id><setPlaced>';
 		$this->__routes[] = 'get<id><export>';
-		if (FormLib::get_form_value('all') === '1')
-			$this->show_all = True;
+		if (FormLib::get_form_value('all') === '0')
+			$this->show_all = false;
 		return parent::preprocess();
 	}
 
@@ -132,7 +132,7 @@ class ViewPurchaseOrders extends FannieRESTfulPage {
 		$order->load();
 
 		$vendor = new VendorsModel($dbc);
-		$vendor->vendorID($order->orderID());
+		$vendor->vendorID($order->vendorID());
 		$vendor->load();
 
 		$ret = '<b>Vendor</b>: '.$vendor->vendorName();
@@ -159,6 +159,30 @@ class ViewPurchaseOrders extends FannieRESTfulPage {
 		}
 		$ret .= '</select>';
 		$ret .= '<input type="submit" value="Export" onclick="doExport('.$this->id.');return false;" />';
+
+        $codingQ = 'SELECT d.salesCode, SUM(o.receivedTotalCost) as rtc
+                    FROM PurchaseOrderItems AS o
+                    LEFT JOIN products AS p ON o.internalUPC=p.upc
+                    LEFT JOIN deptSalesCodes AS d ON p.department=d.dept_ID
+                    WHERE o.orderID=?
+                    GROUP BY d.salesCode';
+        $codingP = $dbc->prepare($codingQ);
+        $codingR = $dbc->execute($codingP, array($this->id));
+        $ret .= '<br />';
+        $ret .= '<table cellspacing="0" cellpadding="4" border="1"><tr><th colspan="2">Coding(s)</th>';
+        $ret .= '<td><b>PO#</b>: '.$order->vendorOrderID().'</td>';
+        $ret .= '<td><b>Invoice#</b>: '.$order->vendorInvoiceID().'</td>';
+        $ret .= '</tr>';
+        while($codingW = $dbc->fetch_row($codingR)) {
+            if ($codingW['rtc'] == 0 && empty($codingW['salesCode'])) {
+                continue;
+            } else if (empty($codingW['salesCode'])) {
+                $codingW['salesCode'] = 'n/a';
+            }
+            $ret .= sprintf('<tr><td>%s</td><td>%.2f</td><td colspan="2"></td></tr>',
+                        $codingW['salesCode'], $codingW['rtc']); 
+        }
+        $ret .= '</table><br />';
 
 		$model = new PurchaseOrderItemsModel($dbc);
 		$model->orderID($this->id);
@@ -193,10 +217,7 @@ class ViewPurchaseOrders extends FannieRESTfulPage {
 
 	function get_view(){
 		$ret = '<b>Status</b><select id="orderStatus" onchange="fetchOrders();">';
-		if (!isset($this->pending))
-			$ret .= '<option selected value="pending">Pending</option><option value="placed">Placed</option>';
-		else
-			$ret .= '<option value="pending">Pending</option><option selected value="placed">Placed</option>';
+        $ret .= '<option value="pending">Pending</option><option selected value="placed">Placed</option>';
 		$ret .= '</select>';
 
 		$ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';

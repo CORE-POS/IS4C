@@ -1,6 +1,7 @@
 <?php
 
 include('../../config.php');
+include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 include($FANNIE_ROOT.'src/mysql_connect.php');
 
 define('FPDF_FONTPATH','font/');
@@ -122,7 +123,7 @@ function build_page($upcs){
 	$args = array();
 	foreach($upcs as $u){
 		$q .= '?,';
-		$args[] = str_pad($u,13,'0',STR_PAD_LEFT);
+		$args[] = BarcodeLib::padUPC($u);
 	}
 	$q = rtrim($q,",").") ORDER BY fixedDesc";
 	$p = $dbc->prepare_statement($q);

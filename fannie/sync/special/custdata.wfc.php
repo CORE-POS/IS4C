@@ -25,17 +25,12 @@ include(dirname(__FILE__).'/../../config.php');
 require_once($FANNIE_ROOT.'sync/special/generic.mysql.php');
 
 // on each MySQL lane, load the CSV file
-foreach($FANNIE_LANES as $lane){
+foreach($FANNIE_LANES as $lane) {
 	$dbc = new SQLManager($lane['host'],$lane['type'],$lane['op'],
 			$lane['user'],$lane['pw']);
-	if ($dbc->connections[$lane['op']] !== False){
+	if ($dbc->connections[$lane['op']] !== false) {
 
-		if ($lane['host'] != "129.103.2.26" && $lane['host'] != "129.103.2.21" && $lane['host'] != '129.103.2.25'){
-			$dbc->query("DELETE FROM custdata WHERE type NOT IN ('PC','REG')",$lane['op']);
-		}
-		else {
-			$dbc->query("DELETE FROM custdata WHERE type IN ('TERM')",$lane['op']);
-		}
+        $dbc->query("DELETE FROM custdata WHERE type IN ('TERM')", $lane['op']);
 	}
 }
 

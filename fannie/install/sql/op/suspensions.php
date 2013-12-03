@@ -22,7 +22,7 @@ suspensions are a way of putting a membership on
 hold. When an account is suspended, it reverts
 to the lowest possible privileges and custdata's
 settings for Type, memType, Discount, and 
-MemDiscountLimit are stored here in memtype1, memtype2,
+ChargeLimit are stored here in memtype1, memtype2,
 discount, and chargelimit (respectively). When
 the account is restored, custdata's original settings
 are repopulated from these saved values.

@@ -24,6 +24,9 @@
 include(dirname(__FILE__).'/../../../config.php');
 if (!class_exists('FannieAPI'))
 	include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+if (!class_exists('PIKillerPage')) {
+    include('lib/PIKillerPage.php');
+}
 
 class PISuspensionPage extends PIKillerPage {
 
@@ -179,12 +182,13 @@ class PISuspensionPage extends PIKillerPage {
 			if (isset($this->__models['suspended'])){
 				$cdP = $dbc->prepare_statement('UPDATE custdata SET
 					Type=?, memType=?, ChargeOk=1, memCoupons=1,
-					Discount=?, memDiscountLimit=?
+					Discount=?, MemDiscountLimit=?, ChargeLimit=?
 					WHERE CardNo=?');
 				$cdR = $dbc->exec_statement($cdP,array(
 					$this->__models['suspended']->memtype2(),
 					$this->__models['suspended']->memtype1(),
 					$this->__models['suspended']->discount(),
+					$this->__models['suspended']->chargelimit(),
 					$this->__models['suspended']->chargelimit(),
 					$this->id));
 
@@ -240,7 +244,7 @@ class PISuspensionPage extends PIKillerPage {
 			$susp->reason('');
 			$susp->mailflag($mi->ads_OK());
 			$susp->discount($cd->Discount());
-			$susp->chargelimit($cd->MemDiscountLimit());
+			$susp->chargelimit($cd->ChargeLimit());
 			$susp->reasoncode($code);
 			$susp->save();
 
@@ -254,7 +258,7 @@ class PISuspensionPage extends PIKillerPage {
 			$mi->ads_OK(0);
 			$cdP = $dbc->prepare_statement('UPDATE custdata SET
 					memType=0,Type=?,ChargeOk=0,memCoupons=0,
-					Discount=0,MemDiscountLimit=0
+					Discount=0,MemDiscountLimit=0,ChargeLimit=0
 					WHERE CardNo=?');
 			$cdR = $dbc->exec_statement($cdP, array($status, $this->id));
 		}

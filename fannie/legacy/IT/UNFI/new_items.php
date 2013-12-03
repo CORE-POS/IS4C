@@ -4,19 +4,19 @@ include('../../../config.php');
 require($FANNIE_ROOT.'src/SQLManager.php');
 include('../../db.php');
 require($FANNIE_ROOT.'item/pricePerOunce.php');
-require('../../queries/laneUpdates.php');
+include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
 if (isset($_GET["action"])){
 	$out = $_GET["action"]."`";
 	switch($_GET["action"]){
 	case 'getBrands':
 		$cat = $_GET["catID"];
-		$q = "SELECT u.brand FROM vendorItems AS u
+		$q = $sql->prepare("SELECT u.brand FROM vendorItems AS u
 		      LEFT JOIN products AS p ON u.upc=p.upc
-		      WHERE p.upc IS NULL AND u.vendorDept = $cat
+		      WHERE p.upc IS NULL AND u.vendorDept = ?
 		      AND u.vendorID=1
-		      GROUP BY u.brand ORDER BY u.brand";
-		$r = $sql->query($q);
+		      GROUP BY u.brand ORDER BY u.brand");
+		$r = $sql->execute($q, array($cat));
 		$out .= "<option value=\"\">----------</option>";
 		while($w = $sql->fetch_row($r)){
 			$out .= "<option>".$w[0]."</option>";
@@ -30,17 +30,24 @@ if (isset($_GET["action"])){
 if (isset($_GET['cat'])){
 	$catID = $_GET["cat"];
 	$brand = "";
-	if (isset($_GET["brands"]) && $_GET["brands"] != "")
-		$brand = " AND v.brand='".$_GET["brands"]."' ";
+    $brandArgs = array();
+	if (isset($_GET["brands"]) && $_GET["brands"] != "") {
+		$brand = " AND v.brand=? ";
+        $brandArgs[] = $_GET['brands'];
+    }
 
 	$mysql = new SQLManager('mysql.wfco-op.store','mysql','IS4C','is4c','is4c');
 	$dsubs = " superID IN (";
-	$buyersR = $mysql->query("SELECT buyer FROM unfi_cat WHERE unfi_cat=$catID");
+    $dargs = array();
+	$buyersP = $mysql->prepare("SELECT buyer FROM unfi_cat WHERE unfi_cat=?");
+	$buyersR = $mysql->execute($buyersP, array($catID));
 	$buyers = array();
 	while($buyersW = $mysql->fetch_row($buyersR))
 		array_push($buyers,$buyersW[0]);
-	foreach($buyers as $b)
-		$dsubs .= $b.",";
+	foreach($buyers as $b) {
+		$dsubs .= "?,";
+        $dargs[] = $b;
+    }
 	$dsubs = substr($dsubs,0,strlen($dsubs)-1).")";
 
 	$SHELFTAG_PAGES = array(
@@ -53,9 +60,10 @@ if (isset($_GET['cat'])){
 		9 => "Gen Merch"
 	);
 
-	$deptR = $sql->query("SELECT dept_no,dept_name FROM departments AS d
+	$deptP = $sql->prepare("SELECT dept_no,dept_name FROM departments AS d
 		LEFT JOIN MasterSuperDepts AS m ON d.dept_no=m.dept_ID
 		WHERE $dsubs ORDER BY superID,dept_no");
+    $deptR = $sql->execute($deptP, $dargs);
 	$depts = "<select name=dept[]><option value=-1></option>";
 	while($deptW = $sql->fetch_row($deptR)){
 		$depts .= sprintf("<option value=%s>%s %s</option>",
@@ -63,14 +71,15 @@ if (isset($_GET['cat'])){
 	}
 	$depts .= "</select>";
 
-	$dataQ = "SELECT v.upc,brand,v.description,v.vendorDept,
+	$dataQ = $sql->prepare("SELECT v.upc,brand,v.description,v.vendorDept,
 		s.srp,v.cost, 
 		v.size,v.units,v.sku FROM vendorItems AS v 
 		LEFT JOIN products AS p ON v.upc = p.upc 
 		left join vendorSRPs as s ON v.upc=s.upc AND v.vendorID=s.vendorID
 		WHERE p.upc IS NULL and v.vendorID=1
-		AND v.vendorDept=$catID $brand order by v.vendorDept,v.brand,v.description";
-	$dataR = $sql->query($dataQ);
+		$brand AND v.vendorDept=? order by v.vendorDept,v.brand,v.description");
+    $brandArgs[] = $catID;
+	$dataR = $sql->execute($dataQ, $brandArgs);
 
 	echo "<form action=new_items.php method=post>";
 	echo "<b>Shelf tag page:</b> <select name=shelftagpage>";
@@ -117,13 +126,50 @@ else if (isset($_POST["upc"])){
 
 	$bID = $_POST["shelftagpage"];
 
-	for ($i=0; $i<count($depts); $i++){
+    $product = new ProductsModel($sql);
+    $product->pricemethod(0);
+    $product->groupprice(0);
+    $product->quantity(0);
+    $product->special_price(0);
+    $product->specialpricemethod(0);
+    $product->specialgroupprice(0);
+    $product->specialquantity(0);
+    $product->start_date('1900-01-01');
+    $product->end_date('1900-01-01');
+    $product->size(0);
+    $product->scale(0);
+    $product->mixmatchcode(0);
+    $product->advertised(1);
+    $product->tareweight(0);
+    $product->discount(1);
+    $product->discounttype(0);
+    $product->unitofmeasure('lb');
+    $product->wicable(0);
+    $product->qttyEnforced(0);
+    $product->inUse(1);
+    $product->numflag(0);
+    $product->subdept(0);
+    $product->deposit(0);
+    $product->local(0);
+    $product->idEnforced(0);
+    $product->scaleprice(0);
+    $product->cost(0);
+
+    $taxfsP = $sql->prepare("SELECT dept_tax,dept_fs FROM departments WHERE dept_no=?");
+    $upP = $sql->prepare("INSERT INTO prodUpdate (upc,description,price,dept,tax,fs,scale,likeCode,modified,"
+            .$sql->identifier_escape('user').",
+            forceQty,noDisc,inUse) VALUES (?,?,?,?,?,?,0,0,".$sql->now().",-2,0,1,1)");
+    $xtraP = $sql->prepare("INSERT INTO prodExtra (upc,distributor,manufacturer,cost,margin,variable_pricing,location)
+        VALUES (?,'UNFI',?,?,0,0,'')");
+    $barP = $sql->prepare("INSERT INTO shelftags (id,upc,description,normal_price,brand,sku,units,size,vendor,
+        pricePerUnit) VALUES (?,?,?,?,?,?,?,?,'UNFI',?)");
+for ($i=0; $i<count($depts); $i++){
 		if ($depts[$i] == -1) continue;
 		
 		printf("Adding item <a href={$FANNIE_URL}legacy/queries/productTest.php?upc=%s>%s</a> %s<br />",$upcs[$i],$upcs[$i],$descs[$i]);
 		flush();
 
-		$taxfsR = $sql->query("SELECT dept_tax,dept_fs FROM departments WHERE dept_no=$depts[$i]");
+		$taxfsR = $sql->execute($taxfsP, array($depts[$i]));
 		$tax = 0;
 		$fs = 0;
 		while($taxfsW = $sql->fetch_row($taxfsR)){
@@ -131,39 +177,25 @@ else if (isset($_POST["upc"])){
 			$fs = $taxfsW[1];
 		}		
 
-		$prodQ = "INSERT INTO products (upc,description,normal_price,pricemethod,groupprice,quantity,
-			special_price,specialpricemethod,specialgroupprice,specialquantity,start_date,end_date,
-			department,size,tax,foodstamp,scale,mixmatchcode,modified,advertised,tareweight,
-			discount,discounttype,unitofmeasure,wicable,qttyEnforced,inUse,numflag,subdept,
-			deposit,local,idEnforced,scaleprice,cost) VALUES (
-			'$upcs[$i]','$descs[$i]',$prices[$i],0,0,0,
-			0,0,0,0,'1900-01-01','1900-01-01',
-			$depts[$i],0,$tax,$fs,0,0,now(),1,0,
-			1,0,'lb',0,0,1,0,0,0.00,0,0,0,0.00)";
+        $product->upc($upcs[$i]);
+        $product->description($descs[$i]);
+        $product->normal_price($prices[$i]);
+        $product->department($depts[$i]);
+        $product->tax($tax);
+        $product->foodstamp($fs);
+        $product->cost($costs[$i]);
+        $product->save();
 
-		$upQ = "INSERT INTO prodUpdate (upc,description,price,dept,tax,fs,scale,likeCode,modified,[user],
-				forceQty,noDisc,inUse) VALUES ('$upcs[$i]','$descs[$i]',$prices[$i],$depts[$i],
-				$tax,$fs,0,0,now(),-2,0,1,1)";
-	
-		$xtraQ = "INSERT INTO prodExtra (upc,distributor,manufacturer,cost,margin,variable_pricing,location)
-			VALUES ('$upcs[$i]','UNFI','$brands[$i]',$costs[$i],0,0,'')";
+		$sql->execute($upP, array($upcs[$i], $descs[$i], $prices[$i], $depts[$i], $tax, $fs));
+		$sql->execute($xtraP, array($upcs[$i], $brands[$i], $costs[$i]));
 
 		$ppo = pricePerOunce($prices[$i],$sizes[$i]);
-		$barQ = "INSERT INTO shelftags (id,upc,description,normal_price,brand,sku,units,size,vendor,
-			pricePerUnit) VALUES ($bID,'$upcs[$i]','$descs[$i]',$prices[$i],'$brands[$i]','$skus[$i]','$sizes[$i]',
-			'$packs[$i]','UNFI','$ppo')";
+		$sql->execute($barP, array($bID, $upcs[$i], $descs[$i], $prices[$i], $brands[$i], $skus[$i], $sizes[$i], $packs[$i], $ppo));
 
-		$sql->query($prodQ);
-		$sql->query($upQ);
-		$sql->query($xtraQ);
-		$sql->query($barQ);
-
-		updateProductAllLanes($upcs[$i]);
+        $product->pushToLanes();
 	}
 	echo "Pushing products to the lanes<br />";
 	flush();
-	//syncProductsAllLanes();
-	//exec("php fork.php sync products");
 	echo "<script type=text/javascript>window.top.location='new_items.php';</script>";
 }
 else {

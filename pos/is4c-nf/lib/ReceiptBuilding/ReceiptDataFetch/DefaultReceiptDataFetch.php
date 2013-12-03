@@ -34,7 +34,7 @@ class DefaultReceiptDataFetch
 	  Implementation function
 	  @return SQL result object
 	*/
-	public function fetch($empNo=False,$laneNo=False,$transNo=False)
+	public function fetch($empNo=false,$laneNo=false,$transNo=false)
     {
 		global $CORE_LOCAL;
 		$op_db = $CORE_LOCAL->get('pDatabase');

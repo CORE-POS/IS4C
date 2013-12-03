@@ -53,6 +53,9 @@ input[type="submit"] {
 <hr />
 <input type="submit" value="Price Check"
 	onclick="location='SaPriceChangePage.php';return false;" />
+<hr />
+<input type="submit" value="Shelf Location"
+	onclick="location='../../../item/mapping/index.php';return false;" />
 </body>
 </html>
 		<?php

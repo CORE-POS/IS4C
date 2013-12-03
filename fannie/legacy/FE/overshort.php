@@ -1,5 +1,7 @@
 <?php
 include('../../config.php');
+header('Location: '.$FANNIE_URL.'modules/plugins2.0/OverShortTools/OverShortDayPage.php');
+exit;
 
 require($FANNIE_ROOT.'auth/login.php');
 $user = validateUserQuiet('overshorts');

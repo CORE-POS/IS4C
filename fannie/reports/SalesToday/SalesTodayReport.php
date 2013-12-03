@@ -30,17 +30,19 @@
 */
 
 include('../../config.php');
-include_once($FANNIE_ROOT.'src/mysql_connect.php');
 include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
-class SalesTodayReport extends FanniePage {
+class SalesTodayReport extends FanniePage 
+{
 
 	protected $selected;
 	protected $name = "";
 	protected $supers;
 
-	function preprocess(){
-		global $dbc;
+	public function preprocess()
+    {
+		global $FANNIE_OP_DB, $FANNIE_URL;
+        $dbc = FannieDB::get($FANNIE_OP_DB);
 		$this->selected = (isset($_GET['super']))?$_GET['super']:-1;
 
 		/* Populate an array of superdepartments from which to
@@ -52,24 +54,28 @@ class SalesTodayReport extends FanniePage {
 		$superR = $dbc->exec_statement($superP);
 		$this->supers = array();
 		$this->supers[-1] = "All";
-		while($row = $dbc->fetch_row($superR)){
+		while($row = $dbc->fetch_row($superR)) {
 			$this->supers[$row[0]] = $row[1];
-			if ($this->selected == $row[0])
+			if ($this->selected == $row[0]) {
 				$this->name = $row[1];
+            }
 		}
 
 		$this->title = "Fannie : Today's $this->name Sales";
 		$this->header = "Today's $this->name Sales";
 
 		$this->has_menus(True);
+        $this->add_script($FANNIE_URL.'src/d3.js/d3.v3.min.js');
 
 		return True;
 
 	// preprocess()
 	}
 
-	function body_content(){
-		global $dbc, $FANNIE_TRANS_DB;
+	public function body_content()
+    {
+		global $FANNIE_OP_DB, $FANNIE_TRANS_DB;
+        $dbc = FannieDB::get($FANNIE_OP_DB);
 
 		$today = date("Y-m-d");
 
@@ -83,7 +89,7 @@ class SalesTodayReport extends FanniePage {
 			GROUP BY ".$dbc->hour('tdate')."
 			ORDER BY ".$dbc->hour('tdate');
 		$args = array();
-		if ($this->selected != -1){
+		if ($this->selected != -1) {
 			$query1="SELECT ".$dbc->hour('tdate').", 
 					sum(total)as Sales,
 					sum(case when t.superID=? then total else 0 end) as prodSales
@@ -100,45 +106,185 @@ class SalesTodayReport extends FanniePage {
 		$prep = $dbc->prepare_statement($query1);
 		$result = $dbc->exec_statement($query1,$args);
 
+        ob_start();
 		echo "<div align=\"center\"><h1>Today's <span style=\"color:green;\">$this->name</span> Sales!</h1>";
 		echo "<table cellpadding=4 cellspacing=2 border=0>";
 		echo "<tr><td><b>Hour</b></td><td><b>Sales</b></td></tr>";
 		$sum = 0;
 		$sum2 = 0;
 		while($row=$dbc->fetch_row($result)){
-			printf("<tr><td>%d</td><td style='text-align:right;'>%.2f</td><td style='%s'>%.2f%%</td></tr>",
+			printf("<tr class=\"datarow\"><td class=\"x-data\">%d</td><td class=\"y-data\" style='text-align:right;'>%.2f</td><td style='%s'>%.2f%%</td></tr>",
 				$row[0],
 				($this->selected==-1)?$row[1]:$row[2],
 				($this->selected==-1)?'display:none;':'text-align:right;',	
 				($this->selected==-1)?0.00:$row[2]/$row[1]*100);
 			$sum += $row[1];
-			if($this->selected != -1) $sum2 += $row[2];
+			if($this->selected != -1) {
+                $sum2 += $row[2];
+            }
 		}
 		echo "<tr><th width=60px style='text-align:left;'>Total</th><td style='text-align:right;'>";
-		if ($this->selected != -1)
+		if ($this->selected != -1) {
 			echo number_format($sum2,2)."</td><td>".round($sum2/$sum*100,2)."%";
-		else
+		} else {
 			echo number_format($sum,2);
+        }
 		echo "</td></tr></table>";
 
 		echo "<p>Also available: <select onchange=\"top.location='SalesTodayReport.php?super='+this.value;\">";
-		foreach($this->supers as $k=>$v){
+		foreach($this->supers as $k=>$v) {
 			echo "<option value=$k";
-			if ($k == $this->selected)
+			if ($k == $this->selected) {
 				echo " selected";
+            }
 			echo ">$v</option>";
 		}
 		echo "</select></p></div>";
 
+        echo '<div id="chartDiv"></div>';
+
+        $this->add_onload_command('graphData();');
+
+        return ob_get_clean();
 	// body_content()
 	}
+
+    public function css_content()
+    {
+        ob_start();
+        ?>
+/* tell the SVG path to be a thin blue line without any area fill */
+path {
+    stroke: steelblue;
+    stroke-width: 2;
+    fill: none;
+}
+                                                                                        
+.axis {
+    shape-rendering: crispEdges;
+}
+
+.x.axis line {
+    stroke: lightgrey;
+}
+
+.x.axis .minor {
+    stroke-opacity: .5;
+}
+
+.x.axis path {
+    display: none;
+}
+
+.y.axis line, .y.axis path {
+    fill: none;
+    stroke: #000;
+    stroke-width: 1;
+}
+        <?php
+        return ob_get_clean();
+    }
+
+    public function javascript_content()
+    {
+        ob_start();
+        ?>
+function graphData()
+{
+    var data = Array();
+    var xmin = 24;
+    var xmax = 0;
+    var ymin = 999999999;
+    var ymax = 0;
+
+    $('.datarow').each(function(){
+        var x = Number($(this).find('.x-data').html());
+        var y = Number($(this).find('.y-data').html());
+        if (x < xmin) {
+            xmin = x;
+        }
+        if (x > xmax) {
+            xmax = x;
+        }
+        if (y < ymin) {
+            ymin = y;
+        }
+        if (y > ymax) {
+            ymax = y;
+        }
+        data.push(Array(x, y));
+    });
+
+    drawLineGraph(data, Array(xmin, xmax), Array(ymin, ymax));
+}
+
+function drawLineGraph(data, xrange, yrange) 
+{
+    /* implementation heavily influenced by http://bl.ocks.org/1166403 */
+                
+    // define dimensions of graph
+    var m = [80, 80, 80, 80]; // margins
+    var w = 650 - m[1] - m[3]; // width
+    var h = 400 - m[0] - m[2]; // height
+                                                        
+    // X scale will fit all values from data[] within pixels 0-w
+    var x = d3.scale.linear().domain(xrange).range([0, w]);
+    // Y scale will fit values from 0-10 within pixels h-0 (Note the inverted domain for the y-scale: bigger is up!)
+    var y = d3.scale.linear().domain(yrange).range([h, 0]);
+
+    // create a line function that can convert data[] into x and y points
+    var line = d3.svg.line()
+        .x(function(d,i) { 
+            // verbose logging to show what's actually being done
+            //console.log('Plotting X value for data point: ' + d + ' using index: ' + i + ' to be at: ' + x(d[0]) + ' using our xScale.');
+            // return the X coordinate where we want to plot this datapoint
+            return x(d[0]); 
+        })
+        .y(function(d) { 
+            // verbose logging to show what's actually being done
+            //console.log('Plotting Y value for data point: ' + d + ' to be at: ' + y(d) + " using our yScale.");
+            // return the Y coordinate where we want to plot this datapoint
+            return y(d[1]); 
+        })
+
+        // Add an SVG element with the desired dimensions and margin.
+        var graph = d3.select("#chartDiv").append("svg:svg")
+            .attr("width", w + m[1] + m[3])
+            .attr("height", h + m[0] + m[2])
+            .append("svg:g")
+            .attr("transform", "translate(" + m[3] + "," + m[0] + ")");
+
+        // create yAxis
+        var xAxis = d3.svg.axis().scale(x).tickSize(-h).tickSubdivide(true);
+        // Add the x-axis.
+        graph.append("svg:g")
+            .attr("class", "x axis")
+            .attr("transform", "translate(0," + h + ")")
+            .call(xAxis);
+
+        // create left yAxis
+        var yAxisLeft = d3.svg.axis().scale(y).ticks(4).orient("left");
+        // Add the y-axis to the left
+        graph.append("svg:g")
+            .attr("class", "y axis")
+            .attr("transform", "translate(-25,0)")
+            .call(yAxisLeft);
+
+        // Add the line by appending an svg:path element with the data line we created above
+        // do this AFTER the axes above so that the line is above the tick-lines
+        graph.append("svg:path").attr("d", line(data));
+}
+        <?php
+        return ob_get_clean();
+    }
 
 // SalesTodayReport
 }
 
 // This construct lets the rest of the file be included for extension.
-if (basename(__FILE__) == basename($_SERVER['PHP_SELF'])){
+if (basename(__FILE__) == basename($_SERVER['PHP_SELF'])) {
 	$obj = new SalesTodayReport();
 	$obj->draw_page();
 }
+
 ?>

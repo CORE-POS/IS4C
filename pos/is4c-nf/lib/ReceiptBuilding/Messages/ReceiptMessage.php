@@ -24,7 +24,8 @@
 /**
   @class ReceiptMessage
 */
-class ReceiptMessage {
+class ReceiptMessage 
+{
 
 	/**
 	  @return [string] SQL select statement
@@ -46,7 +47,8 @@ class ReceiptMessage {
 	  its own separate queries checking for data can negatively
 	  impact performance.
 	*/
-	public function select_condition(){
+	public function select_condition()
+    {
 		return '1';
 	}
 
@@ -57,14 +59,15 @@ class ReceiptMessage {
 	  @param $reprint boolean
 	  @return [string] message to print on receipt
 	*/
-	public function message($val, $ref, $reprint=False){
+	public function message($val, $ref, $reprint=false)
+    {
 		return '';
 	}
 
 	/**
 	  This message has to be printed on paper
 	*/
-	public $paper_only = False;
+	public $paper_only = false;
 
 	/**
 	  Message can be printed independently from a regular	
@@ -79,9 +82,9 @@ class ReceiptMessage {
 	  @param $reprint boolean
 	  @return [string] message to print 
 	*/
-	public function standalone_receipt($ref, $reprint=False){
+	public function standalone_receipt($ref, $reprint=false)
+    {
 		return '';
 	}
 }
 
-?>

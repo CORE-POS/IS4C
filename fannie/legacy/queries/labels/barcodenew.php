@@ -2,7 +2,7 @@
 include('../../../config.php');
 
 define('FPDF_FONTPATH','font/');
-   require($FANNIE_ROOT.'src/fpdf/fpdf.php');
+require($FANNIE_ROOT.'src/fpdf/fpdf.php');
 
 /****Credit for the majority of what is below for barcode generation
  has to go to Olivier for posting the script on the FPDF.org scripts
@@ -102,14 +102,51 @@ class PDF extends FPDF
     }
 }
 
-if (!class_exists("SQLManager")) require_once($FANNIE_ROOT."src/SQLManager.php");
-include('../../db.php');
+include('../db.php');
 
 $id = (isset($_GET['id']))?$_GET['id']:0;
 
-$query = "SELECT * FROM shelftags WHERE id=$id order by upc";
+if (!isset($_REQUEST['windows']) && !isset($_REQUEST['upc'])){
+	header("Location: /git/fannie/admin/labels/genLabels.php?layout=WFC%20New&offset={$_REQUEST['offset']}&id=".$_REQUEST['id']);
+	exit;
+}
 
-$result = $sql->query($query);
+$rows = array();
+
+if (isset($_REQUEST['upc'])){
+	$upc = str_pad($_REQUEST['upc'],13,'0',STR_PAD_LEFT);
+	$data = array();
+	include('../pricePerOunce.php');
+	if (isset($_REQUEST['vendorID'])){
+		$q = $sql->prepare("SELECT p.upc,p.description,p.normal_price,v.brand,
+			v.sku,v.size,v.units,n.vendorName as vendor
+			FROM products AS p LEFT JOIN vendorItems AS v
+			ON p.upc=v.upc LEFT JOIN vendors AS n
+			ON v.vendorID=n.vendorID
+			WHERE p.upc=? AND v.vendorID=?");
+		$r = $sql->execute($q, array($upc, $_REQUEST['vendorID']));
+		$data = $sql->fetch_row($r);
+		$data['pricePerUnit'] = pricePerOunce($data['normal_price'],$data['size']);
+	}
+	else {
+		$q = $sql->prepare("SELECT p.upc,p.description,p.normal_price,x.manufacturer as brand,
+			'' as sku,'' as size,1 as units,'DIRECT' as vendor
+			FROM products AS p LEFT JOIN prodExtra AS x
+			ON p.upc=x.upc
+			WHERE p.upc=?");
+		$r = $sql->execute($q, array($upc));
+		$data = $sql->fetch_row($r);
+		$data['pricePerUnit'] = '';
+	}
+	for($i=0;$i<32;$i++) $rows[] = $data;
+}
+else {
+	$query = $sql->prepare("SELECT * FROM shelftags WHERE id=? order by upc");
+
+	$result = $sql->execute($query, array($id));
+	while($row = $sql->fetch_row($result))
+		$rows[] = $row;
+}
 
 $pdf=new PDF('P','mm','Letter'); //start new instance of PDF
 $pdf->Open(); //open new PDF Document
@@ -174,7 +211,7 @@ for ($ocount=0;$ocount<$offset;$ocount++){
 }
 
 //cycle through result array of query
-while($row = $sql->fetch_array($result)){
+foreach($rows as $row){
    //If $m == 32 add a new page and reset all counters..
    if($m == 32){
       $pdf->AddPage();
@@ -225,6 +262,7 @@ while($row = $sql->fetch_array($result)){
    $pak = $row['units'];
    $size = $row['units'] . "-" . $row['size'];
    $sku = $row['sku'];
+   $sku = ltrim($sku,'0');
    $ppu = $row['pricePerUnit'];
    $upc = ltrim($row['upc'],0);
    $check = $pdf->GetCheckDigit($upc);
@@ -240,9 +278,9 @@ while($row = $sql->fetch_array($result)){
    $pdf->Cell(15,4,$ppu,0,0,'R'); // ppu right-aligned
    //$pdf->TEXT($k+7,$t,$ppu);
    $pdf->TEXT($i+24,$j+11,$tagdate);
-   $pdf->SetFont('Arial','',10);  //change font size
+   $pdf->SetFont('Arial','',9);  //change font size
    $pdf->TEXT($p,$t,$sku);  //add UNFI SKU
-   $pdf->TEXT($u-2,$t,$vendor);  //add vendor 
+   $pdf->TEXT($u+2,$t,$vendor);  //add vendor 
    $pdf->SetFont('Arial','B',24); //change font for price
    $pdf->TEXT($k,$l,$price);  //add price
 

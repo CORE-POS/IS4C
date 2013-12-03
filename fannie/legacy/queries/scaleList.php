@@ -1,10 +1,8 @@
 <?php
-include('../../config.php');
 // HTML niceties
 echo "<html><head><title>Deli Scale Items</title></head><body>";
 
 // connect to the database
-if (!class_exists("SQLManager")) require_once($IS4C_ROOT."src/SQLManager.php");
 include('../db.php');
 
 // records per page, not in use right now
@@ -39,7 +37,13 @@ if ($orderby == 'itemdesc' and $sort == 'Asc'){
 //$query = "select top $perpage plu, itemdesc from scaleItems order by $orderby $sort";
 $query = "select plu,itemdesc from 
 	scaleItems 
-	order by $orderby $sort";
+	order by ";
+if (isset($_GET['orderby']) && $_GET['orderby'] == 'itemdesc')
+    $query .= 'itemdesc';
+else
+    $query .= 'plu';
+if (isset($_GET['sort']) && $_GET['sort'] == 'Desc'))
+    $query .= ' DESC';
 $result = $sql->query($query);
 
 // table 'header'

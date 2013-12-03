@@ -42,10 +42,6 @@ if($getBatchIDW[0] < $batchID){
       $discounttype = 1;
    }
  
-   /*$insBatchQ = "INSERT INTO batches(startDate,endDate,batchName,batchType,discounttype) 
-                 VALUES('$startDate','$endDate','$batchName',$batchType,$discounttype)";
-   //echo $insBatchQ;
-   $insBatchR = $sql->query($insBatchQ);*/
 }
 
 ?>

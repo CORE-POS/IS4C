@@ -21,6 +21,7 @@
 
 *********************************************************************************/
 include('../config.php');
+include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
 include($FANNIE_ROOT.'auth/login.php');
 $name = checkLogin();
@@ -46,7 +47,7 @@ include('../src/header.html');
 echo "<h1 style=\"color:red;\">Delete Scale PLU Tool</h1>";
 
 if (isset($_REQUEST['upc']) && !isset($_REQUEST['deny'])){
-	$upc = str_pad($_REQUEST['upc'],13,'0',STR_PAD_LEFT);
+    $upc = BarcodeLib::padUPC(FormLib::get('upc'));
 	
 	if (isset($_REQUEST['submit'])){
 		$p = $dbc->prepare_statement("SELECT * FROM scaleItems WHERE plu=?");

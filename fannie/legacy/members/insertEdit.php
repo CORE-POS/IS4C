@@ -28,7 +28,7 @@ if(isset($_GET['memNum'])){
 $uid = getUID($username);
 $auditQ = "insert custUpdate select ".$sql->now().",$uid,1,
 	CardNo,personNum,LastName,FirstName,
-	CashBack,Balance,Discount,MemDiscountLimit,ChargeOK,
+	CashBack,Balance,Discount,ChargeLimit,ChargeOK,
 	WriteChecks,StoreCoupons,Type,memType,staff,SSI,Purchases,
 	NumberOfChecks,memCoupons,blueLine,Shown,id from custdata where cardno=$memID";
 //$auditR = $sql->query($auditQ);
@@ -64,16 +64,16 @@ $auditQ = "insert custUpdate select ".$sql->now().",$uid,1,
   <tr>
     <td colspan="11" bgcolor="#006633"><!--<a href="memGen.php">-->
 	<img src="../images/general.gif" width="72" height="16" border="0" />
-	<a href="testDetails.php?memID=<?php echo $memID; ?>">
+    <a href="<?php echo $FANNIE_URL; ?>modules/plugins2.0/PIKiller/PIEquityPage.php?id=<? echo $memID; ?>">
 		<img src="../images/equity.gif" width="72" height="16" border="0" />
 	</a>
-	<a href="memARTrans.php?memID=<?php echo $memID; ?>">
+    <a href="<?php echo $FANNIE_URL; ?>modules/plugins2.0/PIKiller/PIArPage.php?id=<? echo $memID; ?>">
 		<img src="../images/AR.gif" width="72" height="16" border="0" />
 	</a>
 	<a href="memControl.php?memID=<?php echo $memID ?>">
 		<img src="../images/control.gif" width="72" height="16" border="0" />
 	</a>
-	<a href="memTrans.php?memID=<?php echo $memID; ?>">
+    <a href="<?php echo $FANNIE_URL; ?>modules/plugins2.0/PIKiller/PIPurchasesPage.php?id=<? echo $memID; ?>">
 		<img src="../images/detail.gif" width="72" height="16" border="0" />
 	</a>
    </td>
@@ -103,6 +103,7 @@ $cust->CardNo($memNum);
 $cust->personNum(1);
 $cust->load(); // get all current values
 $cust->MemDiscountLimit($_POST['chargeLimit']);
+$cust->ChargeLimit($_POST['chargeLimit']);
 $cust->memType($_POST['discList']);
 $cust->Type('REG');
 $cust->Staff(0);
@@ -110,7 +111,8 @@ $cust->Discount(0);
 
 MemberCardsModel::update($memNum,$_REQUEST['cardUPC']);
 
-$sql->query_all("UPDATE memContact SET pref=".$MI_FIELDS['ads_OK']." WHERE card_no=$memNum");
+$mcP = $sql->prepare("UPDATE memContact SET pref=? WHERE card_no=?");
+$sql->execute($mcP, array($MI_FIELDS['ads_OK'], $memNum));
 
 if ($cust->memType() == 1 || $cust->memType() == 3){
 	$cust->Type('PC');
@@ -156,11 +158,11 @@ updateCustomerAllLanes($memNum);
 $notetext = $_POST['notetext'];
 $notetext = preg_replace("/\n/","<br />",$notetext);
 $notetext = preg_replace("/\'/","''",$notetext);
-$checkQ = "select * from memberNotes where note='$notetext' and cardno=$memNum";
-$checkR = $sql->query($checkQ);
+$checkQ = $sql->prepare("select * from memberNotes where note=? and cardno=?");
+$checkR = $sql->execute($checkQ, array($notetext, $memNum));
 if ($sql->num_rows($checkR) == 0){
-	$noteQ = "insert into memberNotes values ($memNum,'$notetext',".$sql->now().",'$username')";
-	$noteR = $sql->query($noteQ);
+	$noteQ = $sql->prepare("insert into memberNotes (cardno, note, stamp, username) VALUES (?, ?, ".$sql->now().", ?)");
+	$noteR = $sql->execute($noteQ, array($memNum, $notetext, $username));
 }
 
 addressList($memNum);

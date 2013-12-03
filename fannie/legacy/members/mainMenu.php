@@ -3,7 +3,6 @@ include('../../config.php');
 
 include($FANNIE_ROOT.'src/SQLManager.php');
 include('../db.php');
-include 'functMem.php';
 
 include($FANNIE_ROOT.'auth/login.php');
 if (!validateUserQuiet('editmembers') && !validateUserQuiet('editmembers_csc') && !validateUserQuiet('viewmembers')){

@@ -22,6 +22,7 @@
 *********************************************************************************/
 
 include('../../config.php');
+include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 include($FANNIE_ROOT.'src/mysql_connect.php');
 include($FANNIE_ROOT.'src/select_dlog.php');
 
@@ -49,7 +50,7 @@ if (isset($_GET['type'])){
 	case 'upc':
 		$date1 = $_GET["date1u"];
 		$date2 = $_GET["date2u"];
-		$upc = str_pad($_GET["upc"],13,'0',STR_PAD_LEFT);
+		$upc = BarcodeLib::padUPC($_GET['upc']);
 		break;
 	case 'likecode':
 		$date1 = $_GET["date1l"];

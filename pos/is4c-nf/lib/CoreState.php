@@ -560,7 +560,7 @@ static public function memberReset()
 	  @var availBal
 	  Current customer's available charge account
 	  balance. This is equivalent to 
-	  custdata.memDiscountLimit minus the balance
+	  custdata.ChargeLimit minus the balance
 	  setting above.
 	*/
 	$CORE_LOCAL->set("availBal",0);
@@ -581,25 +581,6 @@ static public function memberReset()
 	  an age-restricted item.
 	*/
 	$CORE_LOCAL->set("memAge",date('Ymd'));
-}
-
-/**
-  Get member information line for a given member
-  @param $row a record from custdata
-  @return string
-  @deprecated
-  Just define blueLine in custdata.
-*/
-static public function blueLine($row) 
-{
-	$status = array('Non-Owner', 'Shareholder', 'Subscriber', 'Inactive', 'Refund', 'On Hold', 'Sister Org.', 'Other Co-ops');
-	if ($row["blueLine"]) {			// custom blueLine as defined by db
-		return $row["blueLine"];
-	} elseif (isset($row["blueLine"])) {	// 0 - default blueLine with out name
-		return '#'.$row['CardNo'].' - '.$row['Discount'].'% - '.$status[$row['memType']];
-	} else {				// NULL - default blueLine including name
-		return '#'.$row['CardNo'].' - '.$status[$row['memType']].': '.$row['FirstName'].' '.$row['LastName'];
-	}
 }
 
 /**
@@ -636,7 +617,7 @@ static public function loadData()
 		$CORE_LOCAL->set("memType",0);
 	} else {
 		$query_member = "select CardNo,memType,Type,Discount,staff,SSI,
-				MemDiscountLimit,blueLine,FirstName,LastName
+				blueLine,FirstName,LastName
 				from custdata where CardNo = '".$CORE_LOCAL->get("memberID")."'";
 		$db_product = Database::pDataConnect();
 		$result = $db_product->query($query_member);
@@ -654,7 +635,6 @@ static public function loadData()
 
 			$CORE_LOCAL->set("isStaff",$row["staff"]);
 			$CORE_LOCAL->set("SSI",$row["SSI"]);
-			$CORE_LOCAL->set("discountcap",$row["MemDiscountLimit"]);
 
 			if ($CORE_LOCAL->get("SSI") == 1) {
 				$CORE_LOCAL->set("memMsg",$CORE_LOCAL->get("memMsg")." #");

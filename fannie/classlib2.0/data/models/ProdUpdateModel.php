@@ -24,6 +24,9 @@
 if (!class_exists('FannieDB')) {
     include(dirname(__FILE__).'/../FannieDB.php');
 }
+if (!class_exists('BarcodeLib')) {
+    include(dirname(__FILE__).'/../../lib/BarcodeLib.php');
+}
 if (!function_exists('checkLogin')) {
     include(dirname(__FILE__).'/../../../auth/login.php');
 }
@@ -38,7 +41,7 @@ class ProdUpdateModel {
         if (!is_int($upc) && !ctype_digit($upc))
             return False;
         $upc = substr($upc,0,13);
-        $upc = str_pad($upc,13,'0',STR_PAD_LEFT);
+        $upc = BarcodeLib::padUPC($upc);
 
         $args = array();
         $q = 'INSERT INTO prodUpdate (';

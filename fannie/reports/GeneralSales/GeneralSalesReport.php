@@ -22,22 +22,23 @@
 *********************************************************************************/
 
 include('../../config.php');
-include($FANNIE_ROOT.'src/mysql_connect.php');
-include($FANNIE_ROOT.'src/select_dlog.php');
-include($FANNIE_ROOT.'classlib2.0/lib/FormLib.php');
-include($FANNIE_ROOT.'classlib2.0/FannieReportPage.php');
+include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
-class GeneralSalesReport extends FannieReportPage {
+class GeneralSalesReport extends FannieReportPage 
+{
 
 	private $grandTTL;
 
-	function preprocess(){
+	public function preprocess()
+    {
 		$this->title = "Fannie : General Sales Report";
 		$this->header = "General Sales Report";
-		$this->report_cache = 'none';
+		$this->report_cache = 'day';
 		$this->grandTTL = 1;
-		$this->multi_report_mode = True;
-		$this->sortable = False;
+		$this->multi_report_mode = false;
+		$this->sortable = false;
+        $this->no_sort_but_style = true;
+        $this->chart_data_columns = array(1);
 
 		if (isset($_REQUEST['date1'])){
 			$this->content_function = "report_content";
@@ -51,6 +52,8 @@ class GeneralSalesReport extends FannieReportPage {
 				$this->report_format = 'xls';
 			elseif (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'csv')
 				$this->report_format = 'csv';
+            else
+                $this->add_script('../../src/d3.js/d3.v3.min.js');
 		}
 		else 
 			$this->add_script("../../src/CalendarControl.js");
@@ -58,13 +61,15 @@ class GeneralSalesReport extends FannieReportPage {
 		return True;
 	}
 
-	function fetch_report_data(){
-		global $dbc, $FANNIE_ARCHIVE_DB;
+	public function fetch_report_data()
+    {
+		global $FANNIE_OP_DB, $FANNIE_ARCHIVE_DB;
+        $dbc = FannieDB::get($FANNIE_OP_DB);
 		$d1 = FormLib::get_form_value('date1',date('Y-m-d'));
 		$d2 = FormLib::get_form_value('date2',date('Y-m-d'));
 		$dept = $_REQUEST['dept'];
 
-		$dlog = select_dlog($d1,$d2);
+		$dlog = DTransactionsModel::select_dlog($d1,$d2);
 
 		$sales = "SELECT d.Dept_name,sum(t.total),
 				sum(case when unitPrice=0.01 THEN 1 else t.quantity END),
@@ -122,11 +127,15 @@ class GeneralSalesReport extends FannieReportPage {
 		}
 
 		$data = array();
-		foreach($supers as $s){
-			if ($s['sales']==0) continue;
+        $i = 1;
+		foreach($supers as $s) {
+			if ($s['sales']==0) {
+                $i++;
+                continue;
+            }
+
 			$superSum = $s['sales'];
-			$report = array();
-			foreach($s['depts'] as $d){
+			foreach($s['depts'] as $d) {
 				$record = array(
 					$d['name'],
 					sprintf('%.2f',$d['sales']),
@@ -134,33 +143,123 @@ class GeneralSalesReport extends FannieReportPage {
 					sprintf('%.2f',($d['sales'] / $grandTotal) * 100),
 					sprintf('%.2f',($d['sales'] / $superSum) * 100)
 				);
-				$report[] = $record;
+				$data[] = $record;
 			}
 
-			$data[] = $report;
+            $record = array(
+                $s['name'],
+                sprintf('%.2f', $s['sales']),
+                sprintf('%.2f', $s['qty']),
+                '',
+                sprintf('%.2f%%', ($s['sales'] / $grandTotal) * 100),
+            );
+            $record['meta'] = FannieReportPage::META_BOLD | FannieReportPage::META_CHART_DATA;
 
-			/*
-			printf("<tr border = 1 align=right bgcolor=#ffff99><th>%s</th><th>\$%.2f</th><th>%.2f</th>
-				<th>%.2f %%</th><td>&nbsp;</td></tr>\n",
-				$s['name'],$s['sales'],$s['qty'],$s['sales']/$grandTotal * 100);
-			*/
+            $data[] = $record;
+
+			$data[] = array('meta'=>FannieReportPage::META_BLANK);
+
+            if ($i < count($supers)) {
+				$data[] = array('meta'=>FannieReportPage::META_REPEAT_HEADERS);
+            }
+            $i++;
 		}
 
 		$this->grandTTL = $grandTotal;
+
 		return $data;
 	}
 
-	function calculate_footers($data){
+	public function calculate_footers($data)
+    {
 		$sumQty = 0.0;
 		$sumSales = 0.0;
-		foreach($data as $row){
+		foreach($data as $row) {
+            if (isset($row['meta'])) {
+                continue;
+            }
 			$sumQty += $row[2];
 			$sumSales += $row[1];
 		}
-		return array(null,$sumSales,$sumQty,sprintf('%.2f',($sumSales/$this->grandTTL)*100),null);
+		return array('Total',$sumSales,$sumQty, '', );
 	}
 
-	function form_content(){
+    public function javascriptContent()
+    {
+        global $FANNIE_URL;
+        if ($this->report_format != 'html') {
+            return '';
+        }
+
+        ob_start();
+        ?>
+function drawPieChart()
+{
+    var w = 900,                        //width
+    h = 900,                            //height
+    r = 300,                            //radius
+    color = d3.scale.category20c();     //builtin range of colors
+
+    var total_sales = 0.00;
+    $('.d3Data').each(function(){
+        total_sales += Number($(this).html());
+    });
+
+    var data = new Array();
+    $('.d3ChartData').each(function(){
+        var percentage = (Number($(this).find('.d3Data').html()) / total_sales) * 100;
+        percentage = Math.round(percentage * 100) / 100;
+        var label = $(this).find('.d3Label').html()+"\n"+percentage+"%";
+        if (percentage < 5) label = '';
+        var row = {
+            'label' : label,
+            'value' : percentage
+        };
+        data.push(row);
+    });
+                                                     
+    var vis = d3.select("body")
+        .append("svg:svg")              //create the SVG element inside the <body>
+        .data([data])                   //associate our data with the document
+        .attr("width", w)           //set the width and height of our visualization (these will be attributes of the <svg> tag
+        .attr("height", h)
+        .append("svg:g")                //make a group to hold our pie chart
+        .attr("transform", "translate(" + r + "," + r + ")")    //move the center of the pie chart from 0, 0 to radius, radius
+
+    var arc = d3.svg.arc()              //this will create <path> elements for us using arc data
+        .outerRadius(r);
+
+    var pie = d3.layout.pie()           //this will create arc data for us given a list of values
+        .value(function(d) { return d.value; });    //we must tell it out to access the value of each element in our data array
+
+    var arcs = vis.selectAll("g.slice")     //this selects all <g> elements with class slice (there aren't any yet)
+        .data(pie)                          //associate the generated pie data (an array of arcs, each having startAngle, endAngle and value properties) 
+        .enter()                            //this will create <g> elements for every "extra" data element that should be associated with a selection. 
+                                            //The result is creating a <g> for every object in the data array
+        .append("svg:g")                //create a group to hold each slice (we will have a <path> and a <text> element associated with each slice)
+        .attr("class", "slice");    //allow us to style things in the slices (like text)
+
+    arcs.append("svg:path")
+        .attr("fill", function(d, i) { return color(i); } ) //set the color for each slice to be chosen from the color function defined above
+        .attr("d", arc);                                    //this creates the actual SVG path using the associated data (pie) with the arc drawing function
+
+    arcs.append("svg:text")               //add a label to each slice
+        .attr("transform", function(d) {      //set the label's origin to the center of the arc
+            //we have to make sure to set these before calling arc.centroid
+            d.innerRadius = 0;
+            d.outerRadius = r;
+            return "translate(" + arc.centroid(d) + ")";        //this gives us a pair of coordinates like [50, 50]
+        })
+        .attr("text-anchor", "middle")                          //center the text on it's origin
+        .text(function(d, i) { return data[i].label; });        //get the label from our original data array
+}
+        <?php
+        $this->add_onload_command('drawPieChart();');
+        return ob_get_clean();
+    }
+
+	public function form_content()
+    {
 		$lastMonday = "";
 		$lastSunday = "";
 
@@ -202,4 +301,5 @@ class GeneralSalesReport extends FannieReportPage {
 
 $obj = new GeneralSalesReport();
 $obj->draw_page();
+
 ?>

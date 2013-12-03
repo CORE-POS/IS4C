@@ -114,6 +114,7 @@ if (!isset($FANNIE_PLUGIN_SETTINGS)) $FANNIE_PLUGIN_SETTINGS = array();
 if (!is_array($FANNIE_PLUGIN_SETTINGS)) $FANNIE_PLUGIN_SETTINGS = array();
 
 $mods = FannieAPI::ListModules('FanniePlugin');
+sort($mods);
 
 if (isset($_REQUEST['PLUGINLIST']) || isset($_REQUEST['psubmit'])){
 	$oldset = $FANNIE_PLUGIN_LIST;

@@ -22,14 +22,13 @@
 *********************************************************************************/
 
 include('../../config.php');
-include($FANNIE_ROOT.'src/mysql_connect.php');
-include($FANNIE_ROOT.'src/select_dlog.php');
-include($FANNIE_ROOT.'classlib2.0/FannieReportPage.php');
-include($FANNIE_ROOT.'classlib2.0/lib/FormLib.php');
+include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
-class ProductMovementModular extends FannieReportPage {
+class ProductMovementModular extends FannieReportPage 
+{
 
-	function preprocess(){
+	function preprocess()
+    {
 		/**
 		  Set the page header and title, enable caching
 		*/
@@ -37,7 +36,7 @@ class ProductMovementModular extends FannieReportPage {
 		$this->header = "Product Movement Report";
 		$this->report_cache = 'none';
 
-		if (isset($_REQUEST['date1'])){
+		if (isset($_REQUEST['date1'])) {
 			/**
 			  Form submission occurred
 
@@ -51,26 +50,45 @@ class ProductMovementModular extends FannieReportPage {
 			/**
 			  Check if a non-html format has been requested
 			*/
-			if (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'xls')
+			if (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'xls') {
 				$this->report_format = 'xls';
-			elseif (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'csv')
+			} elseif (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'csv') {
 				$this->report_format = 'csv';
-		}
-		else 
+            } else {
+                $this->add_script('../../src/d3.js/d3.v3.min.js');
+                $this->add_script('../../src/d3.js/charts/singleline/singleline.js');
+                $this->add_css_file('../../src/d3.js/charts/singleline/singleline.css');
+            }
+		} else  {
 			$this->add_script("../../src/CalendarControl.js");
+        }
 
-		return True;
+		return true;
 	}
 
-	function fetch_report_data(){
-		global $dbc, $FANNIE_ARCHIVE_DB;
+    public function report_content() {
+        $default = parent::report_content();
+
+        if ($this->report_format == 'html') {
+            $default .= '<div id="chartDiv"></div>';
+
+            $this->add_onload_command('showGraph()');
+        }
+
+        return $default;
+    }
+
+	function fetch_report_data()
+    {
+		global $FANNIE_OP_DB, $FANNIE_ARCHIVE_DB;
+        $dbc = FannieDB::get($FANNIE_OP_DB);
 		$date1 = FormLib::get_form_value('date1',date('Y-m-d'));
 		$date2 = FormLib::get_form_value('date2',date('Y-m-d'));
 		$upc = FormLib::get_form_value('upc','0');
 		if (is_numeric($upc))
-			$upc = str_pad($upc,13,'0',STR_PAD_LEFT);
+			$upc = BarcodeLib::padUPC($upc);
 
-		$dlog = select_dlog($date1,$date2);
+		$dlog = DTransactionsModel::select_dlog($date1,$date2);
 		$sumTable = $FANNIE_ARCHIVE_DB.$dbc->sep()."sumUpcSalesByDay";
 
 		$query = "select month(t.tdate),day(t.tdate),year(t.tdate),
@@ -104,7 +122,20 @@ class ProductMovementModular extends FannieReportPage {
 				GROUP BY YEAR(datetime),MONTH(datetime),DAY(datetime)
 				ORDER BY YEAR(datetime),MONTH(datetime),DAY(datetime)";
 			
-		}
+		} else if (!is_numeric($upc)) {
+            $dlog = DTransactionsModel::selectDTrans($date1, $date2);
+
+			$query = "select MONTH(datetime),DAY(datetime),YEAR(datetime),
+				upc,description,
+				sum(CASE WHEN quantity=0 THEN 1 ELSE quantity END) as qty,
+				sum(t.total) from
+				$dlog as t
+				where upc = ?
+				AND datetime BETWEEN ? AND ?
+				and emp_no <> 9999 and register_no <> 99
+				and trans_status <> 'X'
+				GROUP BY YEAR(datetime),MONTH(datetime),DAY(datetime)";
+        }
 		$prep = $dbc->prepare_statement($query);
 		$result = $dbc->exec_statement($prep,$args);
 
@@ -138,6 +169,55 @@ class ProductMovementModular extends FannieReportPage {
 		}
 		return array('Total',null,null,$sumQty,$sumSales);
 	}
+
+    public function javascriptContent()
+    {
+        if ($this->report_format != 'html') {
+            return;
+        }
+
+        ob_start();
+        ?>
+function showGraph() {
+    var ymin = 999999999;
+    var ymax = 0;
+
+    var ydata = Array();
+    $('td.reportColumn4').each(function(){
+        var y = Number($(this).html());
+        ydata.push(y);
+        if (y > ymax) {
+            ymax = y;
+        }
+        if (y < ymin) {
+            ymin = y;
+        }
+    });
+
+    var xmin = new Date();
+    var xmax = new Date(1900, 01, 01); 
+    var xdata = Array();
+    $('td.reportColumn0').each(function(){
+        var x = new Date( Date.parse($(this).html()) );
+        xdata.push(x);
+        if (x > xmax) {
+            xmax = x;
+        }
+        if (x < xmin) {
+            xmin = x;
+        }
+    });
+
+    var data = Array();
+    for (var i=0; i < xdata.length; i++) {
+        data.push(Array(xdata[i], ydata[i]));
+    }
+
+    singleline(data, Array(xmin, xmax), Array(ymin, ymax), '#chartDiv');
+}
+        <?php
+        return ob_get_clean();
+    }
 
 	function form_content(){
 ?>

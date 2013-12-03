@@ -5,14 +5,13 @@ include('../../../db.php');
 include('../../../select_dlog.php');
 
 $dlog = select_dlog('2009-08-08');
-$register = 30;
 
 $query1 = "SELECT u.likecode,l.likecodedesc,sum(d.quantity),sum(d.total)
 	FROM $dlog as d LEFT JOIN upclikemoff as u
 	ON d.upc = u.upc LEFT JOIN likecodes as l
 	ON u.likecode=l.likecode
 	WHERE u.upc is not null
-	AND d.register_no=$register
+	AND d.register_no=30
 	AND d.trans_type in ('I','D')
 	GROUP BY u.likecode,l.likecodedesc
 	ORDER BY sum(d.total) desc";
@@ -22,7 +21,7 @@ $query2 = "SELECT d.upc,p.description,sum(d.quantity),sum(d.total)
 	ON p.upc=d.upc LEFT JOIN upclikemoff as u
 	ON d.upc=u.upc
 	WHERE u.upc IS NULL
-	AND d.register_no=$register
+	AND d.register_no=30
 	AND d.trans_type in ('I','D')
 	GROUP BY d.upc,p.description
 	ORDER BY sum(d.total) desc";

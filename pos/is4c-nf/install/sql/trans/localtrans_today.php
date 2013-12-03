@@ -53,4 +53,12 @@ reprinting receipts.
 */
 $CREATE['trans.localtrans_today'] = InstallUtilities::duplicateStructure($dbms,'dtransactions','localtrans_today');
 
+if ($CREATE['trans.localtrans_today'] !== false) {
+    $CREATE['trans.localtrans_today'] = array(
+                                            $CREATE['trans.localtrans_today'],
+                                            'ALTER TABLE localtrans_today ADD INDEX (trans_no)',
+                                            'ALTER TABLE localtrans_today ADD INDEX (datetime)',
+                                            );
+}
+
 ?>

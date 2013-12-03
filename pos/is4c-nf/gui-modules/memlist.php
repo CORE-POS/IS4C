@@ -124,7 +124,7 @@ class memlist extends NoInputPage {
 			$db_a = Database::pDataConnect();
 			$query = $db_a->prepare_statement('SELECT CardNo, personNum,
 				LastName, FirstName,CashBack,Balance,Discount,
-				MemDiscountLimit,ChargeOk,WriteChecks,StoreCoupons,Type,
+				ChargeOk,WriteChecks,StoreCoupons,Type,
 				memType,staff,SSI,Purchases,NumberOfChecks,memCoupons,
 				blueLine,Shown,id FROM custdata WHERE CardNo=?
 				AND personNum=?');

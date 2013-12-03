@@ -62,7 +62,7 @@ class BasicModel
     /**
       Database connection
     */
-    protected $connection = False;
+    protected $connection = false;
     public function db()
     { 
         return $this->connection;
@@ -72,6 +72,20 @@ class BasicModel
       List of column names => values
     */
     protected $instance = array();
+
+    /**
+      When updating server-side tables, apply
+      the same updates to lane-side tables.
+      Default is false.
+    */
+    protected $normalize_lanes = false;
+
+    /**
+      Status variable. Besides normalize() itself
+      some hook functions may need to know if the
+      current update is on the server vs on the lane.
+    */
+    protected $currently_normalizing_lane = false;
 
     /**
       Name of preferred database
@@ -200,8 +214,17 @@ class BasicModel
             }
         }
 
+        $table_def = $this->connection->table_definition($this->name);
+
         $sql = 'SELECT ';
         foreach($this->columns as $name => $definition) {
+            if (!isset($table_def[$name])) {
+                // underlying table is missing the column
+                // constraint only used for select columns
+                // if a uniqueness-constraint column is missing
+                // this method will and should fail
+                continue; 
+            }
             $sql .= $this->connection->identifier_escape($name).',';
         }
         $sql = substr($sql,0,strlen($sql)-1);
@@ -251,14 +274,19 @@ class BasicModel
       @param $sort array of columns to sort by
       @return an array of controller objects
     */
-    public function find($sort='')
+    public function find($sort='', $reverse=false)
     {
         if (!is_array($sort)) {
             $sort = array($sort);
         }
 
+        $table_def = $this->connection->table_definition($this->name);
+
         $sql = 'SELECT ';
         foreach($this->columns as $name => $definition) {
+            if (!isset($table_def[$name])) {
+                continue;
+            }
             $sql .= $this->connection->identifier_escape($name).',';
         }
         $sql = substr($sql,0,strlen($sql)-1);
@@ -273,8 +301,14 @@ class BasicModel
 
         $order_by = '';
         foreach($sort as $name) {
-            if (!isset($this->columns[$name])) continue;
-            $order_by .= $this->connection->identifier_escape($name).',';
+            if (!isset($this->columns[$name])) {
+                continue;
+            }
+            $order_by .= $this->connection->identifier_escape($name);
+            if ($reverse) {
+                $order_by .= ' DESC';
+            }
+            $order_by .= ',';
         }
         if ($order_by !== '') {
             $order_by = substr($order_by,0,strlen($order_by)-1);
@@ -397,8 +431,13 @@ class BasicModel
         $cols = '(';
         $vals = '(';
         $args = array();
+        $table_def = $this->connection->table_definition($this->name);
         foreach($this->instance as $column => $value) {
             if (isset($this->columns[$column]['increment']) && $this->columns[$column]['increment']) {
+                // omit autoincrement column from insert
+                continue;
+            } else if (!isset($table_def[$column])) {
+                // underlying table is missing this column
                 continue;
             }
             $cols .= $this->connection->identifier_escape($column).',';
@@ -426,12 +465,16 @@ class BasicModel
         $where = '1=1';
         $set_args = array();
         $where_args = array();
+        $table_def = $this->connection->table_definition($this->name);
         foreach($this->instance as $column => $value) {
             if (in_array($column, $this->unique)) {
                 $where .= ' AND '.$this->connection->identifier_escape($column).' = ?';
                 $where_args[] = $value;
             } else {
                 if (isset($this->columns[$column]['increment']) && $this->columns[$column]['increment']) {
+                    continue;
+                } else if (!isset($table_def[$column])) {
+                    // underlying table is missing this column
                     continue;
                 }
                 $sets .= ' '.$this->connection->identifier_escape($column).' = ?,';
@@ -499,6 +542,42 @@ class BasicModel
         return true;
     }
 
+    protected function normalizeLanes($db_name, $mode=BasicModel::NORMALIZE_MODE_CHECK, $doCreate=False)
+    {
+        global $FANNIE_LANES, $FANNIE_OP_DB, $FANNIE_TRANS_DB;
+
+        // map server db name to lane db name
+        $lane_db = false;
+        if ($db_name == $FANNIE_OP_DB) {
+            $lane_db = 'op';
+        } else if ($db_name == $FANNIE_TRANS_DB) {
+            $lane_db = 'trans';
+        }
+
+        if ($lane_db === false) {
+            return false;
+        }
+
+        $this->currently_normalizing_lane = true;
+
+        $current = $this->connection;
+        // call normalize() on each lane
+        foreach($FANNIE_LANES as $lane) {
+            $sql = new SQLManager($lane['host'],$lane['type'],$lane[$lane_db],
+                        $lane['user'],$lane['pw']);    
+            if (!is_object($sql) || $sql->connections[$lane[$lane_db]] === false) {
+                continue;
+            }
+            $this->connection = $sql;
+
+            $this->normalize($db_name, $mode, $doCreate);
+        }
+        $this->connection = $current;
+
+        $this->currently_normalizing_lane = false;
+
+        return true;
+    }
 
     /**
       Compare existing table to definition
@@ -521,7 +600,17 @@ class BasicModel
             "{$db_name}.{$this->name}"
         );
         echo "==========================================\n";
-        $this->connection = FannieDB::get($db_name);
+
+        /**
+          FannieDB only manages server connections.
+          If normalize is called in lane mode, the 
+          calling function is responsible for
+          initializing the connection.
+        */
+        if (!$this->currently_normalizing_lane) {
+            $this->connection = FannieDB::get($db_name);
+        }
+
         if (!$this->connection->table_exists($this->name)) {
             if ($mode == BasicModel::NORMALIZE_MODE_CHECK) {
                 echo "Table {$this->name} not found!\n";
@@ -534,6 +623,10 @@ class BasicModel
                 if ($doCreate) {
                     $cResult = $this->create(); 
                     printf("Update complete. Creation of table %s %s\n",$this->name, ($cResult)?"OK":"failed");
+                    // create succeeded, normalize_lanes enabled
+                    if ($cResult && $this->normalize_lanes && !$this->currently_normalizing_lane) {
+                        $this->normalizeLanes($db_name, $mode, $doCreate);
+                    }
                 } else {
                     printf("Update complete. Creation of table %s %s\n",$this->name, ($doCreate)?"OK":"not supported");
                 }
@@ -606,7 +699,12 @@ class BasicModel
                 if ($mode == BasicModel::NORMALIZE_MODE_CHECK) {
                     echo "\tSQL Details: $sql\n";
                 } else if ($mode == BasicModel::NORMALIZE_MODE_APPLY) {
-                    $this->connection->query($sql);
+                    $added = $this->connection->query($sql);
+                    // hook function for initiailization or migration queries
+                    if ($added && method_exists($this, 'hookAddColumn'.$our_columns[$i])) {
+                        $func = 'hookAddColumn'.$our_columns[$i];
+                        $this->$func();
+                    }
                 }
             }
 
@@ -637,6 +735,11 @@ class BasicModel
             count($new_indexes), (count($new_indexes)!=1)?"es":""
             );
         echo "==========================================\n\n";
+
+        // apply updates to lanes as well
+        if ($mode == BasicModel::NORMALIZE_MODE_APPLY && $this->normalize_lanes && !$this->currently_normalizing_lane && count($new_columns) > 0) {
+            $this->normalizeLanes($db_name, $mode, $doCreate);
+        }
 
         if (count($new_columns) > 0) {
             return count($new_columns);
@@ -713,7 +816,7 @@ class BasicModel
     // generate()
     }
 
-    protected function newModel($name)
+    public function newModel($name)
     {
         $fp = fopen($name.'.php','w');
         fwrite($fp, chr(60)."?php

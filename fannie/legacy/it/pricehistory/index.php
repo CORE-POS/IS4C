@@ -25,41 +25,48 @@ if (isset($_GET['dept1']) || isset($_GET['upc']) || isset($_GET['manufacturer'])
   }
 
   $q = "";
+  $args = array();
   if (!isset($_GET['type'])){
     $q = "select upc,description,price,modified from prodUpdate
-   	  where upc = '$upc'
+   	  where upc = ?
 	  order by upc,modified desc";
+      $args = array($upc);
   }
   else if ($_GET['type'] == 'upc'){
     $q = "select upc,description,price,modified from prodUpdate
-   	  where upc = '$upc' and modified between
-	  '$start_date' and '$end_date'
+   	  where upc = ? and modified between
+	  ? AND ?
 	  order by upc,modified";
+      $args = array($upc, $start_date, $end_date);
   }
   else if ($_GET['type'] == 'department'){
     $q = "select upc,description,price,modified from prodUpdate
-  	  where department between $dept1 and $dept2 and modified 
-	  between '$start_date' and '$end_date'
+  	  where department between ? and ? and modified 
+	  between ? AND ?
 	  order by upc, modified";
+      $args = array($dept1, $dept2, $start_date, $end_date);
     unset($_GET['upc']);
   }
   else {
     if ($mtype == 'upc'){
       $q = "select upc,description,price,modified from prodUpdate
-   	  where upc like '%$manu%' and modified
-	  between '$start_date' and '$end_date'
+   	  where upc like ? and modified
+	  between ? AND ?
 	  order by upc,modified";
+      $args = array('%'.$manu.'%', $start_date, $end_date);
     }
     else {
       $q = "select p.upc,p.description,p.price,p.modified
 	    from prodUpdate as p left join prodExtra as x
-	    on p.upc = x.upc where x.manufacturer='$manu' and
-	    modified between '$start_date' and '$end_date'
+	    on p.upc = x.upc where x.manufacturer=? and
+	    modified between ? AND ?
 	    order by p.upc,p.modified";
+      $args = array($manu, $start_date, $end_date);
     }
     unset($_GET['upc']);
   }
-  $r = $sql->query($q);
+  $p = $sql->prepare($q);
+  $r = $sql->execute($p, $args);
 
   echo "<table cellspacing=2 cellpadding=2 border=1>";
   echo "<tr><th>UPC</th><th>Description</th>";
@@ -73,6 +80,7 @@ if (isset($_GET['dept1']) || isset($_GET['upc']) || isset($_GET['manufacturer'])
   $prow = '';
   $currentPrice = '';
   $lastprice = '';
+  $currQ = $sql->prepare("select price from products where upc=?");
   while ($row = $sql->fetch_array($r)){
     if ($prevUPC != $row['upc']){
 	if ($prevUPC != ''){
@@ -81,8 +89,7 @@ if (isset($_GET['dept1']) || isset($_GET['upc']) || isset($_GET['manufacturer'])
 	  $prevPrice = '';
         }
 	if (!isset($_GET['upc'])){
-	  $currQ = "select price from products where upc='{$row['upc']}'";
-	  $currR = $sql->query($currQ);
+	  $currR = $sql->execute($currQ, array($row['upc']));
 	  $currW = $sql->fetch_array($currR);
 	  $currentPrice = $currW[0];
         }

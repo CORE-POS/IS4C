@@ -22,8 +22,6 @@
 *********************************************************************************/
 
 include('../../config.php');
-include_once($FANNIE_ROOT.'src/mysql_connect.php');
-include_once($FANNIE_ROOT.'src/select_dlog.php');
 include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 //include($FANNIE_ROOT.'classlib2.0/FannieReportPage.php');
 //include($FANNIE_ROOT.'classlib2.0/lib/FormLib.php');
@@ -86,7 +84,12 @@ class DepartmentMovementReport extends FannieReportPage {
 	  Lots of options on this report.
 	*/
 	function fetch_report_data(){
+<<<<<<< HEAD
 		global $dbc, $FANNIE_ARCHIVE_DB, $FANNIE_OP_DB;
+=======
+		global $FANNIE_OP_DB, $FANNIE_ARCHIVE_DB;
+        $dbc = FannieDB::get($FANNIE_OP_DB);
+>>>>>>> cc3dd663275ed3beef5e978ad31768d80abf6730
 		$date1 = FormLib::get_form_value('date1',date('Y-m-d'));
 		$date2 = FormLib::get_form_value('date2',date('Y-m-d'));
 		$deptStart = FormLib::get_form_value('deptStart','');
@@ -120,7 +123,7 @@ class DepartmentMovementReport extends FannieReportPage {
 		  summary is needed. For date/dept/weekday results the
 		  per-department summary is fine (and a smaller table)
 		*/
-		$dlog = select_dlog($date1,$date2);
+		$dlog = DTransactionsModel::select_dlog($date1,$date2);
 		$sumTable = $FANNIE_ARCHIVE_DB.$dbc->sep()."sumRingSalesByDay";
 		if (substr($dlog,-4)=="dlog")
 			$sumTable = $FANNIE_ARCHIVE_DB.$dbc->sep()."vRingSalesToday";
@@ -291,7 +294,8 @@ class DepartmentMovementReport extends FannieReportPage {
 	}
 
 	function form_content(){
-		global $dbc;
+		global $FANNIE_OP_DB;
+        $dbc = FannieDB::get($FANNIE_OP_DB);
 		$deptsQ = $dbc->prepare_statement("select dept_no,dept_name from departments order by dept_no");
 		$deptsR = $dbc->exec_statement($deptsQ);
 		$deptsList = "";

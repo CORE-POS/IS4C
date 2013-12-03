@@ -84,9 +84,13 @@ static public function checkPassword($password,$activity=1)
 
 			CoreState::cashierLogin($transno, $row_q['age']);
 
+            /**
+            alog and its variants are never used.
+            @deprecated
 			if ($transno == 1) {
                 TransRecord::addactivity($activity);
             }
+            */
 			
 		} elseif ($password == 9999) {
 			Database::loadglobalvalues();
@@ -133,50 +137,6 @@ static public function checkPassword($password,$activity=1)
 	}
 
 	return true;
-}
-
-/**
-  @deprecated
-  Function renamed
-*/
-static public function check_password($password,$activity=1)
-{
-    return self::checkPassword($password, $activity);
-}
-
-/**
-  Authentication function for Wedge NoSale page
-  @param $password the password
-  @return True or False
-  @deprecated
-*/
-static public function nsCheckPassword($password)
-{
-	global $CORE_LOCAL;
-
-	$password = strtoupper(trim($password));
-	if ($password == "TRAINING") {
-		$password = 9999;
-    }
-
-	if (empty($password)) {
-		return false;
-    }
-
-	$db = Database::pDataConnect();
-	$password = $db->escape($password);
-	$query2 = "select emp_no, FirstName, LastName from employees where EmpActive = 1 and "
-		."frontendsecurity >= 11 and (CashierPassword = '".$password."' 
-		or AdminPassword = '".$password."')";
-	$result2 = $db->query($query2);
-	$num_row2 = $db->num_rows($result2);
-
-	if ($num_row2 > 0) {
-		ReceiptLib::drawerKick();
-		return true;
-	}
-
-	return false;
 }
 
 } // end class Authenticate

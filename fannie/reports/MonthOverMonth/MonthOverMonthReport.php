@@ -22,16 +22,14 @@
 *********************************************************************************/
 
 include('../../config.php');
-include($FANNIE_ROOT.'src/mysql_connect.php');
-include($FANNIE_ROOT.'src/select_dlog.php');
-include($FANNIE_ROOT.'classlib2.0/FannieReportPage.php');
-include($FANNIE_ROOT.'classlib2.0/lib/FormLib.php');
+include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
 class MonthOverMonthReport extends FannieReportPage {
 
-	var $months;
+	private $months;
 	
-	function preprocess(){
+	function preprocess()
+    {
 		/**
 		  Set the page header and title, enable caching
 		*/
@@ -77,7 +75,8 @@ class MonthOverMonthReport extends FannieReportPage {
 	}
 
 	function fetch_report_data(){
-		global $dbc, $FANNIE_ARCHIVE_DB;
+		global $FANNIE_OP_DB, $FANNIE_ARCHIVE_DB;
+        $dbc = FannieDB::get($FANNIE_OP_DB);
 		$month1 = FormLib::get_form_value('month1',date('n'));
 		$month2 = FormLib::get_form_value('month2',date('n'));
 		$year1 = FormLib::get_form_value('year1',date('Y'));
@@ -85,7 +84,7 @@ class MonthOverMonthReport extends FannieReportPage {
 
 		$date1 = date('Y-m-d',mktime(0,0,0,$month1,1,$year1));
 		$date2 = date('Y-m-t',mktime(0,0,0,$month2,1,$year2));
-		$dlog = select_dlog($date1,$date2);
+		$dlog = DTransactionsModel::select_dlog($date1,$date2);
 		$date1 .= ' 00:00:00';
 		$date2 .= ' 00:00:00';
 
@@ -96,7 +95,7 @@ class MonthOverMonthReport extends FannieReportPage {
 			$inClause = "(";
 			$vals = preg_split("/\D+/",FormLib::get_form_value('upcs',''));
 			foreach($vals as $v){
-				$qArgs[] = str_pad($v,13,'0',STR_PAD_LEFT);
+				$qArgs[] = BarcodeLib::padUPC($v);
 				$inClause .= "?,";
 			}
 			$inClause = rtrim($inClause,",").")";
@@ -146,7 +145,8 @@ class MonthOverMonthReport extends FannieReportPage {
 	}
 	
 	function form_content(){
-		global $dbc;
+		global $FANNIE_OP_DB;
+        $dbc = FannieDB::get($FANNIE_OP_DB);
 		$depts = array();
 		$q = $dbc->prepare_statement("SELECT dept_no,dept_name FROM departments ORDER BY dept_no");
 		$r = $dbc->exec_statement($q);

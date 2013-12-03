@@ -1,48 +1,50 @@
 <?php
 include('../../../config.php');
-include('../../queries/funct1Mem.php');
+include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
 if (!class_exists("SQLManager")) require_once($FANNIE_ROOT."src/SQLManager.php");
 include('../../db.php');
 
+if (!isset($_GET['batchID'])) {
+    exit;
+}
+
 $batchID = $_GET['batchID'];
 
-$batchInfoQ = "SELECT * FROM batchTest WHERE batchID = $batchID";
-$batchInfoR = $sql->query($batchInfoQ);
+$batchInfoQ = $sql->prepare("SELECT * FROM batchTest WHERE batchID = ?");
+$batchInfoR = $sql->execute($batchInfoQ, array($batchID));
 
 $batchInfoW = $sql->fetch_array($batchInfoR);
 
-$forceQ = "UPDATE products AS p
+$forceQ = $sql->prepare("UPDATE products AS p
 		LEFT JOIN batchListTest as l
 		ON l.upc=p.upc
               SET normal_price = l.salePrice,
               modified = now()
-              WHERE l.batchID = $batchID";
+              WHERE l.batchID = ?");
 
 //echo $forceQ;
-$forceR = $sql->query($forceQ);
+$forceR = $sql->execute($forceQ, array($batchID));
 
-$upQ = "INSERT INTO prodUpdate
+$upQ = $sql->prepare("INSERT INTO prodUpdate
 	SELECT p.upc,description,normal_price,
 	department,tax,foodstamp,scale,0,
 	modified,0,qttyEnforced,discount,inUse
 	FROM products as p,
 	batchListTest as l
 	WHERE l.upc = p.upc
-	AND l.batchID = $batchID";
-$sql->query($upQ);
+	AND l.batchID = ?");
+$sql->execute($upQ, array($batchID));
 
-//$query1R = $sql->query($query1Q);
 
-//$batchUpQ = "EXEC productsUpdateAll";
-//$batchUpR = $sql->query($batchUpQ);
-
-//exec("php fork.php sync products");
-include($FANNIE_ROOT.'legacy/queries/laneUpdates.php');
-syncProductsAllLanes();
+$all = $sql->prepare('SELECT upc FROM batchListTest WHERE batchID=?');
+$all = $sql->execute($all, array($batchID));
+while($row = $sql->fetch_row($all)) {
+    $model = new ProductsModel($row['upc']);
+    $model->pushToLanes();
+}
 
 echo "Batch $batchID has been forced";
-
 
 ?>
 

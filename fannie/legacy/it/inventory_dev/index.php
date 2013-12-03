@@ -1,6 +1,9 @@
 <?php
 
 include('../../../config.php');
+header('Location: '.$FANNIE_URL.'modules/plugins2.0/DeliInventory/DeliInventoryPage.php');
+exit;
+
 if (!class_exists("SQLManager")) require_once($FANNIE_ROOT."src/SQLManager.php");
 include('../../db.php');
 
