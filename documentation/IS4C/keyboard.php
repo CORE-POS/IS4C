@@ -1,10 +1,13 @@
 <?php
 
 $CORE_PATH="../../pos/is4c-nf/";
-print_docs("../../pos/is4c-nf/parser-class-lib/preparse/");
-print_docs("../../pos/is4c-nf/parser-class-lib/parse/");
+print_docs("{$CORE_PATH}parser-class-lib/preparse/");
+print_docs("{$CORE_PATH}parser-class-lib/parse/");
 
 class Parser {
+}
+
+class PreParser { 
 }
 
 function print_docs($dir){
