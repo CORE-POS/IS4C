@@ -170,7 +170,7 @@ foreach($dates as $date) {
     
     // only download one day for now
     // remove when done testing
-    break; 
+    //break; 
 
     // politeness; pause between requests
     sleep(15);
