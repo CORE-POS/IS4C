@@ -98,24 +98,24 @@ static public function get(){
 	// $receipt.= ReceiptLib::centerString("------------------------------------------------------");
 	//     $receipt .= "\n";
 
-	trTotal('CA','CASH');
-	trTotal('CK','CHECK');
-	trTotal(array('CP','MC'),'VENDOR COUPON');
-	trTotal('CC','CREDIT CARD');
-	trTotal('DC','DEBIT CARD');
-	trTotal('FS','SNAP - FOOD');
-	trTotal('EC','SNAP - CASH');
-	trTotal('GC','GIFT CARD');
-	trTotal('MI','INSTORE CHARGE');
-	trTotal('IC','INSTORE COUPON');
-	trTotal('PT','PATRONAGE');
+    $receipt .=	trTotal('CA','CASH');
+    $receipt .=	trTotal('CK','CHECK');
+    $receipt .=	trTotal(array('CP','MC'),'VENDOR COUPON');
+    $receipt .=	trTotal('CC','CREDIT CARD');
+    $receipt .=	trTotal('DC','DEBIT CARD');
+    $receipt .=	trTotal('FS','SNAP - FOOD');
+    $receipt .=	trTotal('EC','SNAP - CASH');
+    $receipt .=	trTotal('GC','GIFT CARD');
+    $receipt .=	trTotal('MI','INSTORE CHARGE');
+    $receipt .=	trTotal('IC','INSTORE COUPON');
+    $receipt .=	trTotal('PT','PATRONAGE');
     $receipt .= "\n";
-	trTotal(array('CA','CK'),'CASH + CHECK');
-	trTotal(array('DC','CC','FS','EC'),'DEB/CRED/SNAP');
+    $receipt .=	trTotal(array('CA','CK'),'CASH + CHECK');
+    $receipt .=	trTotal(array('DC','CC','FS','EC'),'DEB/CRED/SNAP');
 	$receipt .= "House Charge?";
 	$receipt .= "House Coupon?";
-	trTotal(45,'RCVD. on ACCT.');
-	trTotal(37,'FRMRS MARKET SNAP');
+    $receipt .=	trTotal(45,'RCVD. on ACCT.');
+    $receipt .=	trTotal(37,'FRMRS MARKET SNAP');
 
 	$receipt.= ReceiptLib::centerString("------------------------------------------------------");
 
@@ -292,6 +292,7 @@ function trTotal($k, $label) {
 	}
 
 	if (is_array($k)) $k = "'" . implode("','", $k) . "'";
+    elseif (!is_numeric($k)) $k = "'".$k."'";
 	$q = (!is_numeric($k)) ? 'trans_subtype' : 'department';
 	
     $tenderQ = "SELECT -SUM(total) AS net, COUNT(total) FROM dlog 
