@@ -1,6 +1,8 @@
 <?php
 include('../../../config.php');
-
+header('Location: '.$FANNIE_URL.'modules/plugins2.0/WfcHoursTracking/reports/WfcHtReport.php');
+exit;
+/*
 require($FANNIE_ROOT.'auth/login.php');
 $ALL = validateUserQuiet('view_all_hours');
 if (!$ALL){
@@ -84,3 +86,4 @@ else {
 <?php
 }
 ?>
+*/

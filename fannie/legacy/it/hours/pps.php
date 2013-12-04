@@ -1,6 +1,8 @@
 <?php
 include('../../../config.php');
-
+header('Location: '.$FANNIE_URL.'modules/plugins2.0/WfcHoursTracking/WfcHtPayPeriodsPage.php');
+exit;
+/*
 require($FANNIE_ROOT.'auth/login.php');
 if (!validateUserQuiet('view_all_hours')){
 	header("Location: {$FANNIE_URL}auth/ui/loginform.php?redirect={$FANNIE_URL}legacy/it/hours/pps.php");
@@ -104,3 +106,4 @@ echo "</table>";
 echo "</body></html>";
 
 ?>
+*/
