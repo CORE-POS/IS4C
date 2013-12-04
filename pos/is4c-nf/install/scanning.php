@@ -58,7 +58,7 @@ InstallUtilities::paramSave('SpecialUpcClasses', $CORE_LOCAL->get('SpecialUpcCla
 if(isset($_REQUEST['HCPREFIX'])) $CORE_LOCAL->set('houseCouponPrefix',$_REQUEST['HCPREFIX'],True);
 else $CORE_LOCAL->set('houseCouponPrefix',00499999,True);
 printf("<input type=text name=HCPREFIX value=\"%s\" />",$CORE_LOCAL->get('houseCouponPrefix'));
-confsave('houseCouponPrefix',"'".$CORE_LOCAL->get('houseCouponPrefix')."'");
+InstallUtilities::paramSave('houseCouponPrefix',"'".$CORE_LOCAL->get('houseCouponPrefix')."'");
 ?>
 <span class='noteTxt'>Set the barcode prefix for houseCoupons.  Should be 8 digits starting with 004. Default is 00499999.</span>
 </td></tr>
