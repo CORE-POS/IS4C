@@ -21,7 +21,8 @@
 
 *********************************************************************************/
 include('../../config.php');
-include($FANNIE_ROOT.'src/mysql_connect.php');
+include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+$dbc = FannieDB::get($FANNIE_OP_DB);
 include($FANNIE_ROOT.'install/db.php');
 
 $page_title = "Fannie :: Patronage Tools";
@@ -43,8 +44,6 @@ if (isset($_REQUEST['FY'])){
 		SUM(CASE WHEN trans_type IN ('S') then total ELSE 0 END),
 		0,0,0,0,0,?
 		FROM %s%sdlog_patronage as d
-		LEFT JOIN MasterSuperDepts AS m
-		ON d.department=m.dept_ID WHERE m.superID is null or m.superID <> 0
 		GROUP BY card_no",$FANNIE_TRANS_DB,$dbc->sep());
 	$prep = $dbc->prepare_statement($insQ);
 	$dbc->exec_statement($prep,array($_REQUEST['FY']));
@@ -58,11 +57,11 @@ else {
 	echo '<form action="gross.php" method="get">';
 	echo '<b>Fiscal Year</b>: ';
 	echo '<select name="FY">';
-	$q = $dbc->prepare_statement("SELECT year(tdate) FROM $FANNIE_TRANS_DB".$dbc->sep()."dlog_patronage
-		GROUP BY year(tdate) ORDER BY year(tdate) DESC");
+	$q = $dbc->prepare_statement("SELECT min_year,max_year FROM $FANNIE_TRANS_DB".$dbc->sep()."dlog_patronage");
 	$r = $dbc->exec_statement($q);
-	while($w = $dbc->fetch_row($r))
-		printf('<option>%d</option>',$w[0]);
+	$w = $dbc->fetch_row($r);
+	printf('<option>%d</option>',$w[0]);
+	printf('<option>%d</option>',$w[1]);
 	echo '</select>';
 	echo '<br /><br />';
 	echo '<input type="submit" value="Calculate Purchases" />';

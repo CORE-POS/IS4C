@@ -29,17 +29,21 @@
   change on cash-back transactions should
   have a different one (tenders.TenderType) 
 */
-class RefundAndCashBackTender extends TenderModule {
+class RefundAndCashBackTender extends TenderModule 
+{
 
-	/**
-	  What type should be used for change records associated with this tender.
-	  @return string tender code
-	*/
-	function ChangeType(){
-		if ($this->amount == 0) return $this->tender_code;	
-		else return $this->change_type;
-	}
+    /**
+      What type should be used for change records associated with this tender.
+      @return string tender code
+    */
+    public function changeType()
+    {
+        if ($this->amount == 0) {
+            return $this->tender_code;    
+        } else {
+            return $this->change_type;
+        }
+    }
 
 }
 
-?>

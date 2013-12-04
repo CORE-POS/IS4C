@@ -34,8 +34,6 @@
 
 */
 
-ini_set('display_errors','1');
-
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class memlist_cards extends NoInputPage {
@@ -91,7 +89,7 @@ class memlist_cards extends NoInputPage {
 		}
 		else {
 			$query = "select CardNo,personNum,LastName,FirstName,CashBack,Balance,Discount,
-				MemDiscountLimit,ChargeOk,WriteChecks,StoreCoupons,Type,memType,staff,
+				ChargeOk,WriteChecks,StoreCoupons,Type,memType,staff,
 				SSI,Purchases,NumberOfChecks,memCoupons,blueLine,Shown,id from custdata 
 				where CardNo = '".$entered."' order by personNum";
 		}
@@ -342,6 +340,7 @@ class memlist_cards extends NoInputPage {
 // /class memlist
 }
 
-new memlist_cards();
+if (basename(__FILE__) == basename($_SERVER['PHP_SELF']))
+	new memlist_cards();
 
 ?>

@@ -32,37 +32,43 @@
   CouponCode is the most universal example.
 */
 
-class SpecialUPC {
+class SpecialUPC 
+{
 
-/**
-  Check function
-  @param $upc The UPC
-  @return
-   - True This module handles this UPC
-   - False This module doesn't handle this UPC
-*/
-function is_special($upc){
+    /**
+      Check function
+      @param $upc The UPC
+      @return
+       - True This module handles this UPC
+       - False This module doesn't handle this UPC
+    */
+    public function isSpecial($upc)
+    {
+        return false;
+    }
 
-	return false;
+    public function is_special($upc)
+    {
+        return $this->isSpecial($upc);
+    }
+
+    /**
+      Process the UPC
+      @param $upc The UPC
+      @param $json Keyed array
+      See the Parser class for array format
+      @return Keyed array
+      See the Parser class for array format
+
+      These modules supplement parsing to make
+      UPC handling more customizable. The module
+      will be invoked within a Paser object and
+      hence uses the same return format.
+    */
+    public function handle($upc,$json)
+    {
+
+    }
+
 }
 
-/**
-  Process the UPC
-  @param $upc The UPC
-  @param $json Keyed array
-  See the Parser class for array format
-  @return Keyed array
-  See the Parser class for array format
-
-  These modules supplement parsing to make
-  UPC handling more customizable. The module
-  will be invoked within a Paser object and
-  hence uses the same return format.
-*/
-function handle($upc,$json){
-
-}
-
-}
-
-?>

@@ -16,7 +16,24 @@ if (!$name){
 if (!isset($empID) || empty($empID)) $empID = getUID($name);
 
 if (!validateUserQuiet('view_all_hours')){
-	$empID = getUID($name);
+	/* see if logged in user has access to any
+	   department. if so, see if the selected employee
+	   is in that department
+	*/
+	$validated = false;
+	$depts = array(10,11,12,13,20,21,30,40,41,50,60,998);
+	$checkQ = "select department from employees where empID=".$empID;
+	$checkR = $sql->query($checkQ);
+	$checkW = $sql->fetch_row($checkR);
+	if (validateUserQuiet('view_all_hours',$checkW['department'])){
+		$validated = true;
+	}
+
+	/* no access permissions found, so only allow the
+	   logged in user to see themself
+	*/
+	if (!$validated)
+		$empID = getUID($name);
 }
 
 echo "<html><head><title>View</title>";

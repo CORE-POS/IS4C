@@ -38,23 +38,25 @@
 <a href="class_foodstamp_tender-members.html">List of all members.</a><table border="0" cellpadding="0" cellspacing="0">
 <tr><td></td></tr>
 <tr><td colspan="2"><br><h2>Public Member Functions</h2></td></tr>
-<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_foodstamp_tender.html#512e9a92114e0e62e51dfe3b934686d8">ErrorCheck</a> ()</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_foodstamp_tender.html#7e782ab83508c16a4e471deeeab18800">errorCheck</a> ()</td></tr>
 
-<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_foodstamp_tender.html#bae1e30aa997a52ee6d728a80aa7cb60">PreReqCheck</a> ()</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_foodstamp_tender.html#892f061950bc5753c2ae79f31fe5f064">preReqCheck</a> ()</td></tr>
 
-<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_foodstamp_tender.html#e3bf83a39d9e0990744c6f8a5bf0e60a">Add</a> ()</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_foodstamp_tender.html#b6fc85e922fe89f83352087261794905">add</a> ()</td></tr>
+
+<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_foodstamp_tender.html#a82ddeeaba9c44ccab91933e9f10ee13">allowDefault</a> ()</td></tr>
 
 </table>
 <hr><a name="_details"></a><h2>Detailed Description</h2>
 Tender module for EBT 
 <p>
 <hr><h2>Member Function Documentation</h2>
-<a class="anchor" name="e3bf83a39d9e0990744c6f8a5bf0e60a"></a><!-- doxytag: member="FoodstampTender::Add" ref="e3bf83a39d9e0990744c6f8a5bf0e60a" args="()" -->
+<a class="anchor" name="b6fc85e922fe89f83352087261794905"></a><!-- doxytag: member="FoodstampTender::add" ref="b6fc85e922fe89f83352087261794905" args="()" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">FoodstampTender::Add           </td>
+          <td class="memname">FoodstampTender::add           </td>
           <td>(</td>
           <td class="paramname">          </td>
           <td>&nbsp;)&nbsp;</td>
@@ -67,15 +69,37 @@ Tender module for EBT
 <p>
 Add tender to the transaction 
 <p>
-Reimplemented from <a class="el" href="class_tender_module.html#aa6bb7a7b0a792f04bf10756646940ef">TenderModule</a>.
+Reimplemented from <a class="el" href="class_tender_module.html#93fc35eeb2b4a023c930fa4c5316b8f3">TenderModule</a>.
 </div>
 </div><p>
-<a class="anchor" name="512e9a92114e0e62e51dfe3b934686d8"></a><!-- doxytag: member="FoodstampTender::ErrorCheck" ref="512e9a92114e0e62e51dfe3b934686d8" args="()" -->
+<a class="anchor" name="a82ddeeaba9c44ccab91933e9f10ee13"></a><!-- doxytag: member="FoodstampTender::allowDefault" ref="a82ddeeaba9c44ccab91933e9f10ee13" args="()" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">FoodstampTender::ErrorCheck           </td>
+          <td class="memname">FoodstampTender::allowDefault           </td>
+          <td>(</td>
+          <td class="paramname">          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Allow the tender to be used without specifying a total <dl compact><dt><b>Returns:</b></dt><dd>boolean </dd></dl>
+
+<p>
+Reimplemented from <a class="el" href="class_tender_module.html#524e53e15ce420ea8e0e36d26821c210">TenderModule</a>.
+</div>
+</div><p>
+<a class="anchor" name="7e782ab83508c16a4e471deeeab18800"></a><!-- doxytag: member="FoodstampTender::errorCheck" ref="7e782ab83508c16a4e471deeeab18800" args="()" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">FoodstampTender::errorCheck           </td>
           <td>(</td>
           <td class="paramname">          </td>
           <td>&nbsp;)&nbsp;</td>
@@ -89,15 +113,15 @@ Reimplemented from <a class="el" href="class_tender_module.html#aa6bb7a7b0a792f0
 Check for errors <dl compact><dt><b>Returns:</b></dt><dd>True or an error message string </dd></dl>
 
 <p>
-Reimplemented from <a class="el" href="class_tender_module.html#9a6ace25900941f577b8309f0a8bba16">TenderModule</a>.
+Reimplemented from <a class="el" href="class_tender_module.html#02b5ac7e402e81ef6355ab093de9942e">TenderModule</a>.
 </div>
 </div><p>
-<a class="anchor" name="bae1e30aa997a52ee6d728a80aa7cb60"></a><!-- doxytag: member="FoodstampTender::PreReqCheck" ref="bae1e30aa997a52ee6d728a80aa7cb60" args="()" -->
+<a class="anchor" name="892f061950bc5753c2ae79f31fe5f064"></a><!-- doxytag: member="FoodstampTender::preReqCheck" ref="892f061950bc5753c2ae79f31fe5f064" args="()" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">FoodstampTender::PreReqCheck           </td>
+          <td class="memname">FoodstampTender::preReqCheck           </td>
           <td>(</td>
           <td class="paramname">          </td>
           <td>&nbsp;)&nbsp;</td>
@@ -111,12 +135,12 @@ Reimplemented from <a class="el" href="class_tender_module.html#9a6ace25900941f5
 Set up state and redirect if needed <dl compact><dt><b>Returns:</b></dt><dd>True or a URL to redirect </dd></dl>
 
 <p>
-Reimplemented from <a class="el" href="class_tender_module.html#3bd8ec587684257a49ce4a24e6f4d0ff">TenderModule</a>.
+Reimplemented from <a class="el" href="class_tender_module.html#297858ad5cb308c1fe0f94f952667fb9">TenderModule</a>.
 </div>
 </div><p>
 <hr>The documentation for this class was generated from the following file:<ul>
 <li>pos/is4c-nf/lib/Tenders/FoodstampTender.php</ul>
-<hr size="1"><address style="align: right;"><small>Generated on Tue Oct 23 14:30:34 2012 for CORE POS - IS4C by&nbsp;
+<hr size="1"><address style="align: right;"><small>Generated on 18 Nov 2013 for CORE POS - IS4C by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img src="doxygen.png" alt="doxygen" align="middle" border="0"></a> 1.4.7 </small></address>
 </body>

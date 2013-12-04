@@ -25,93 +25,100 @@
   @class DiscountType
   Base module for computing sale prices
 */
-class DiscountType {
+class DiscountType 
+{
 
-	/**
-	  Convenience variable to save prieInfo() argument
-	  for later if needed
-	*/
-	var $savedRow;
-	/**
-	  Convenience variable to save prieInfo() return
-	  value for later if needed
-	*/
-	var $savedInfo;
+    /**
+      Convenience variable to save prieInfo() argument
+      for later if needed
+    */
+    protected $savedRow;
+    /**
+      Convenience variable to save prieInfo() return
+      value for later if needed
+    */
+    protected $savedInfo;
 
-	/**
-	  Calculate pricing
-	  @param $row A record from the products table
-	  @param $quantity Scanned quantity
-	  @return Keyed array
-	   - regPrice The normal price per item
-	   - unitPrice The actual price per unit
-	     If it's not on sale, unitPrice will
-	     match regPrice
-	   - discount The discount amount for everyone
-	   - memDiscount The discount amount for members
-	*/
-	function priceInfo($row,$quantity=1){
-		return array(
-			"regPrice"=>0,
-			"unitPrice"=>0,
-			"discount"=>0,
-			"memDiscount"=>0
-		);
-	}
+    /**
+      Calculate pricing
+      @param $row A record from the products table
+      @param $quantity Scanned quantity
+      @return Keyed array
+       - regPrice The normal price per item
+       - unitPrice The actual price per unit
+         If it's not on sale, unitPrice will
+         match regPrice
+       - discount The discount amount for everyone
+       - memDiscount The discount amount for members
+    */
+    public function priceInfo($row,$quantity=1)
+    {
+        return array(
+            "regPrice"=>0,
+            "unitPrice"=>0,
+            "discount"=>0,
+            "memDiscount"=>0
+        );
+    }
 
-	/**
-	  Add a discount notification
-	  @return None
+    /**
+      Add a discount notification
+      @return None
 
-	  Optionally add an informational record
-	  to the transaction so a savings message
-	  appears on screen.
-	*/
-	function addDiscountLine(){
+      Optionally add an informational record
+      to the transaction so a savings message
+      appears on screen.
+    */
+    public function addDiscountLine()
+    {
 
-	}
+    }
 
-	/**
-	  @return
-	   - True The item is on sale
-	   - False The item is not on sale
-	*/
-	function isSale(){
-		return false;
-	}
+    /**
+      @return
+       - True The item is on sale
+       - False The item is not on sale
+    */
+    public function isSale()
+    {
+        return false;
+    }
 
-	/**
-	  @return
-	   - True The sale is only for members
-	   - False The sale is for everyone
-	*/
-	function isMemberOnly(){
-		return false;
-	}
+    /**
+      @return
+       - True The sale is only for members
+       - False The sale is for everyone
+    */
+    public function isMemberOnly()
+    {
+        return false;
+    }
 
-	/**
-	  Alias for isMemberOnly()
-	*/
-	function isMemberSale(){
-		return $this->isMemberOnly();
-	}
+    /**
+      Alias for isMemberOnly()
+    */
+    public function isMemberSale()
+    {
+        return $this->isMemberOnly();
+    }
 
-	/**
-	  @return
-	   - True The sale is only for staff
-	   - False The sale is for everyone
-	*/
-	function isStaffOnly(){
-		return false;
-	}
+    /**
+      @return
+       - True The sale is only for staff
+       - False The sale is for everyone
+    */
+    public function isStaffOnly()
+    {
+        return false;
+    }
 
-	/**
-	  Alias for isStaffOnly()
-	*/
-	function isStaffSale(){
-		return $this->isStaffOnly();
-	}
+    /**
+      Alias for isStaffOnly()
+    */
+    public function isStaffSale()
+    {
+        return $this->isStaffOnly();
+    }
 
 }
 
-?>

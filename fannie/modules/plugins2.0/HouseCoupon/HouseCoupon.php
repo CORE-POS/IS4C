@@ -21,8 +21,8 @@
 
 *********************************************************************************/
 
-include('../../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include(dirname(__FILE__).'/../../../config.php');
+include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
 /**
   @class HouseCoupon
@@ -100,7 +100,7 @@ class HouseCoupon extends FanniePage {
 				/**
 				  Add (or update) a UPC
 				*/
-				$upc = str_pad(FormLib::get_form_value('new_upc'),13,'0',STR_PAD_LEFT);
+                $upc = BarcodeLib::padUPC(FormLib::get('new_upc'));
 				$type = FormLib::get_form_value('newtype','BOTH');
 				$checkP = $dbc->prepare_statement('SELECT upc FROM houseCouponItems WHERE upc=? and coupID=?');
 				$check = $dbc->exec_statement($checkP,array($upc,$this->coupon_id));

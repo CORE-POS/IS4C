@@ -21,8 +21,8 @@
 
 *********************************************************************************/
 
-include('../../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include(dirname(__FILE__).'/../../../config.php');
+include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
 /**
   @class SaHandheldPage
@@ -77,7 +77,7 @@ class SaHandheldPage extends FanniePage {
 		$upc = FormLib::get_form_value('upc_in','');
 		if ($upc !== ''){
 			$dbc = FannieDB::get($FANNIE_OP_DB);
-			$upc = str_pad($upc,13,'0',STR_PAD_LEFT);
+			$upc = BarcodeLib::padUPC($upc);
 			$this->current_item_data['upc'] = $upc;		
 			$q = 'SELECT p.description,v.brand,s.quantity,v.units FROM
 				products AS p LEFT JOIN vendorItems AS v ON p.upc=v.upc
@@ -253,11 +253,17 @@ ScannerDevice.registerListener(Device);
 <head><title>Scan Inventory</title></head>
 <body onload="$('<?php echo $elem; ?>').focus();">
 <form action="SaHandheldPage.php" method="get" id="upcScanForm">
+<div style="float: left;">
+<a href="SaMenuPage.php">Menu</a><br />
 <b>UPC</b>: <input type="number" size="10" name="upc_in" id="upc_in" 
 onfocus="paint_focus('upc_in');"
 <?php echo ($elem=='#upc_in')?'class="focused"':''; ?> 
 />
+</div>
+<div style="float: left;">
 <input type="submit" value="Go" class="addButton" id="goBtn" />
+</div>
+<div style="clear:left;"></div>
 </form>
 <hr />
 		<?php

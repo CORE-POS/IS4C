@@ -37,6 +37,18 @@ class Void extends Parser {
 	function parse($str){
 		global $CORE_LOCAL;
 		$ret = $this->default_json();
+	
+		if (is_numeric($CORE_LOCAL->get('VoidLimit')) && $CORE_LOCAL->get('VoidLimit') > 0){
+			Database::getsubtotals();
+			if ($CORE_LOCAL->get('voidTotal') > $CORE_LOCAL->get('VoidLimit') && $CORE_LOCAL->get('voidOverride') != 1){
+				$CORE_LOCAL->set('strRemembered', $CORE_LOCAL->get('strEntered'));
+				$CORE_LOCAL->set('voidOverride', 0);
+				$ret['main_frame'] = MiscLib::base_url().'gui-modules/adminlogin.php?class=Void';
+				return $ret;
+			}
+		}
+
+
 		if (strlen($str) > 2)
 			$ret['output'] = $this->voidupc(substr($str,2));
 		elseif ($CORE_LOCAL->get("currentid") == 0) 
@@ -148,11 +160,10 @@ class Void extends Parser {
 
 		$discounttype = MiscLib::nullwrap($row["discounttype"]);
 
-		if ($CORE_LOCAL->get("tenderTotal") < 0 && $foodstamp = 1 && (-1 * $total) > $CORE_LOCAL->get("fsEligible")) {
-			return DisplayLib::boxMsg("Item already paid for");
-		}
-		elseif ($CORE_LOCAL->get("tenderTotal") < 0 && (-1 * $total) > $CORE_LOCAL->get("runningTotal") - $CORE_LOCAL->get("taxTotal")) {
-			return DisplayLib::boxMsg("Item already paid for");
+		if ($CORE_LOCAL->get("tenderTotal") < 0 && (-1 * $total) > $CORE_LOCAL->get("runningTotal") - $CORE_LOCAL->get("taxTotal")) {
+			$cash = $db->query("SELECT total FROM localtemptrans WHERE trans_subtype='CA' AND total <> 0");
+			if ($db->num_rows($cash) > 0)	
+				return DisplayLib::boxMsg("Item already paid for");
 		}
 
 		$update = "update localtemptrans set voided = 1 where trans_id = ".$item_num;
@@ -387,13 +398,10 @@ class Void extends Parser {
 		if ($discounttype == 3) 
 			$quantity = -1 * $ItemQtty;
 
-		if ($CORE_LOCAL->get("tenderTotal") < 0 && $foodstamp == 1 && 
-		   (-1 * $total) > $CORE_LOCAL->get("fsEligible")) {
-			return DisplayLib::boxMsg(_("Item already paid for"));
-		}
-		elseif ($CORE_LOCAL->get("tenderTotal") < 0 && (-1 * $total) > 
-			$CORE_LOCAL->get("runningTotal") - $CORE_LOCAL->get("taxTotal")) {
-			return DisplayLib::boxMsg(_("Item already paid for"));
+		if ($CORE_LOCAL->get("tenderTotal") < 0 && (-1 * $total) > $CORE_LOCAL->get("runningTotal") - $CORE_LOCAL->get("taxTotal")) {
+			$cash = $db->query("SELECT total FROM localtemptrans WHERE trans_subtype='CA' AND total <> 0");
+			if ($db->num_rows($cash) > 0)	
+                return DisplayLib::boxMsg(_("Item already paid for"));
 		}
 		elseif ($quantity != 0) {
 			$update = "update localtemptrans set voided = 1 where trans_id = ".$item_num;
@@ -422,6 +430,23 @@ class Void extends Parser {
 			}
 		}
 		return "";
+	}
+
+	public static $adminLoginMsg = 'Void Limit Exceeded. Login to continue.';
+	
+	public static $adminLoginLevel = 30;
+
+	public static function adminLoginCallback($success){
+		global $CORE_LOCAL;
+		if ($success){
+			$CORE_LOCAL->set('voidOverride', 1);
+			$CORE_LOCAL->set('msgrepeat', 1);
+			return True;
+		}
+		else{
+			$CORE_LOCAL->set('voidOverride', 0);
+			return False;
+		}
 	}
 
 	function doc(){

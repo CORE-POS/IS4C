@@ -52,14 +52,11 @@ class OverShortTools extends FanniePlugin {
 		$dbc = FannieDB::get($db_name);
 		
 		$tables = array(
-			'SumDeptSalesByDay',
-			'SumDiscountsByDay',
-			'SumMemSalesByDay',
-			'SumMemTypeSalesByDay',
-			'SumRingSalesByDay',
-			'SumTendersByDay',
-			'SumUpcSalesByDay',
-			'TransactionSummary'
+			'DailyChecks',
+			'DailyCounts',
+			'DailyDeposit',
+			'DailyNotes',
+			'OverShortsLog'
 		);
 
 		foreach($tables as $t){
@@ -70,6 +67,8 @@ class OverShortTools extends FanniePlugin {
 			$instance->create();		
 		}
 	}
+
+    public static $EXCLUDE_TENDERS = array('MA', 'RR');
 }
 
 ?>

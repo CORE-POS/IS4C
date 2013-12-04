@@ -24,100 +24,10 @@
     </li>
   </ul></div>
 <h1><a class="anchor" name="deprecated">Deprecated List</a></h1><a class="anchor" name="_deprecated000001"></a> <dl>
-<dt>Member <a class="el" href="class_authenticate.html#b621d559d750ee46c3e3c800c3f4d8cf">Authenticate::ns_check_password</a> ($password) </dt>
-<dd></dd>
-</dl>
-<p>
-<a class="anchor" name="_deprecated000002"></a> <dl>
-<dt>Member <a class="el" href="class_core_state.html#1408a81f148d2363f9bd161003292f88">CoreState::blueLine</a> ($row) </dt>
-<dd>Just define blueLine in custdata. </dd>
-</dl>
-<p>
-<a class="anchor" name="_deprecated000003"></a> <dl>
-<dt>Member <a class="el" href="class_display_lib.html#35bf574150ecee082b07f3412eed91b9">DisplayLib::printfooterb</a> () </dt>
-<dd>Only used with the old VB scale driver </dd>
-</dl>
-<p>
-<a class="anchor" name="_deprecated000004"></a> <dl>
-<dt>Member <a class="el" href="class_misc_lib.html#c5a1f5ecf39c295b8881258593f1a182">MiscLib::pinghost</a> ($host) </dt>
-<dd>Doesn't work reliably in all environments. Use pingport(). </dd>
-</dl>
-<p>
-<a class="anchor" name="_deprecated000005"></a> <dl>
-<dt>Member <a class="el" href="class_preh_lib.html#54e7f8cbcf66cde9703b8a1fc1c42828">PrehLib::classic_tender</a> ($right, $strl) </dt>
-<dd>See <a class="el" href="class_preh_lib.html#43af74fe4611922d003416f9c9b2c2a6">PrehLib::modular_tender</a> </dd>
-</dl>
-<p>
-<a class="anchor" name="_deprecated000008"></a> <dl>
-<dt>Member <a class="el" href="class_preh_lib.html#38e5e5048e0c10f4b9100ce3d7cac42c">PrehLib::comment</a> ($comment) </dt>
-<dd>Use addcomment(). </dd>
-</dl>
-<p>
-<a class="anchor" name="_deprecated000010"></a> <dl>
-<dt>Member <a class="el" href="class_preh_lib.html#eed6ef107ad29d78c66931a8e907cbaf">PrehLib::endofShift</a> ($json) </dt>
-<dd></dd>
-</dl>
-<p>
-<a class="anchor" name="_deprecated000007"></a> <dl>
-<dt>Member <a class="el" href="class_preh_lib.html#80b21229fb668f3beae6053281d47fc9">PrehLib::madCoupon</a> () </dt>
-<dd></dd>
-</dl>
-<p>
-<a class="anchor" name="_deprecated000006"></a> <dl>
-<dt>Member <a class="el" href="class_preh_lib.html#2b8d7fba1978692806c06c59f4b94b99">PrehLib::percentDiscount</a> ($strl, $json=array()) </dt>
+<dt>Member <a class="el" href="class_preh_lib.html#1e6d503cd0df830c2603f089e06ec3f6">PrehLib::percentDiscount</a> ($strl, $json=array()) </dt>
 <dd>Use discountnotify() instead. This just adds hard-coded percentages and PLUs that likely aren't applicable anywhere but the Wedge. </dd>
 </dl>
-<p>
-<a class="anchor" name="_deprecated000009"></a> <dl>
-<dt>Member <a class="el" href="class_preh_lib.html#6441751a276bef274211571cae6692b2">PrehLib::staffCharge</a> ($arg, $json=array()) </dt>
-<dd></dd>
-</dl>
-<p>
-<a class="anchor" name="_deprecated000011"></a> <dl>
-<dt>Member <a class="el" href="class_preh_lib.html#8c31e2a3fbddfed9ccb405833b4dadfa">PrehLib::wmdiscount</a> () </dt>
-<dd>Do not use this. The memType structure in custdata is a far better solution. </dd>
-</dl>
-<p>
-<a class="anchor" name="_deprecated000012"></a> <dl>
-<dt>Member <a class="el" href="class_receipt_lib.html#976ade46d25fcd7a9b2e14b92e94df7c">ReceiptLib::printCCFooter</a> ($dateTimeStamp, $ref) </dt>
-<dd>Not called, ccTotal session var has been removed </dd>
-</dl>
-<p>
-<a class="anchor" name="_deprecated000013"></a> <dl>
-<dt>Member <a class="el" href="class_receipt_lib.html#c347e8b7a016d8dbc6331405ee75341e">ReceiptLib::setDrawerKick</a> () </dt>
-<dd>use <a class="el" href="class_kicker.html">Kicker</a> modules </dd>
-</dl>
-<p>
-<a class="anchor" name="_deprecated000014"></a> <dl>
-<dt>Member <a class="el" href="class_receipt_lib.html#daa9d38d19fe48b18f44bd2c145a66d4">ReceiptLib::setDrawerKickLater</a> () </dt>
-<dd>use <a class="el" href="class_kicker.html">Kicker</a> modules </dd>
-</dl>
-<p>
-<a class="anchor" name="_deprecated000019"></a> <dl>
-<dt>Member <a class="el" href="class_trans_record.html#b4691882c0265f16b82c76d259fa1dea">TransRecord::addDeposit</a> ($quantity, $deposit, $foodstamp) </dt>
-<dd>Use deposit column in products table </dd>
-</dl>
-<p>
-<a class="anchor" name="_deprecated000015"></a> <dl>
-<dt>Member <a class="el" href="class_trans_record.html#7e13af9f32eff242c9d50fed36c29b47">TransRecord::addEndofShift</a> () </dt>
-<dd></dd>
-</dl>
-<p>
-<a class="anchor" name="_deprecated000018"></a> <dl>
-<dt>Member <a class="el" href="class_trans_record.html#801745ec88b2f62f4053751d131ff294">TransRecord::addMadCoup</a> () </dt>
-<dd></dd>
-</dl>
-<p>
-<a class="anchor" name="_deprecated000016"></a> <dl>
-<dt>Member <a class="el" href="class_trans_record.html#57dbb53eae02b66a91ecab53cf3082cf">TransRecord::addscDiscount</a> () </dt>
-<dd></dd>
-</dl>
-<p>
-<a class="anchor" name="_deprecated000017"></a> <dl>
-<dt>Member <a class="el" href="class_trans_record.html#3aa5b2d111877954b08b20c2187e7fe8">TransRecord::addStaffCoffeeDiscount</a> () </dt>
-<dd></dd>
-</dl>
-<hr size="1"><address style="align: right;"><small>Generated on Tue Oct 23 14:30:34 2012 for CORE POS - IS4C by&nbsp;
+<hr size="1"><address style="align: right;"><small>Generated on 18 Nov 2013 for CORE POS - IS4C by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img src="doxygen.png" alt="doxygen" align="middle" border="0"></a> 1.4.7 </small></address>
 </body>

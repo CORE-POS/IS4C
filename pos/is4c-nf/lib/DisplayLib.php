@@ -35,13 +35,14 @@ class DisplayLib extends LibraryClass {
    different customer display
   @return A string of HTML
 */
-static public function printfooter($readOnly=False) {
+static public function printfooter($readOnly=False) 
+{
 	global $CORE_LOCAL;
 
 	$FOOTER_MODULES = $CORE_LOCAL->get("FooterModules");
 	// use defaults if modules haven't been configured
 	// properly
-	if (!is_array($FOOTER_MODULES) || count($FOOTER_MODULES) != 5){
+	if (!is_array($FOOTER_MODULES) || count($FOOTER_MODULES) != 5) {
 		$FOOTER_MODULES = array(
 		'SavedOrCouldHave',
 		'TransPercentDiscount',
@@ -52,7 +53,7 @@ static public function printfooter($readOnly=False) {
 	}
 	
 	$modchain = array();
-	foreach($FOOTER_MODULES as $MOD){
+	foreach($FOOTER_MODULES as $MOD) {
 		$modchain[] = new $MOD();
 	}
 
@@ -66,8 +67,7 @@ static public function printfooter($readOnly=False) {
 	
 	if ($CORE_LOCAL->get("scale") == 1) {
 		$weight = number_format($CORE_LOCAL->get("weight"), 2)."lb.";
-	}
-	else {
+	} else {
 		$weight = "_ _ _ _";
 	}
 
@@ -91,25 +91,31 @@ static public function printfooter($readOnly=False) {
 	$ret .= "</tr>";
 
 	$special = $CORE_LOCAL->get("memSpecial") + $CORE_LOCAL->get("staffSpecial");
-	$dbldiscounttotal = number_format($CORE_LOCAL->get("discounttotal"), 2);
+	$dbldiscounttotal = 0.00;
+	if (is_numeric($CORE_LOCAL->get('discounttotal'))) {
+		$dbldiscounttotal = number_format($CORE_LOCAL->get("discounttotal"), 2);
+    }
+
 	if ($CORE_LOCAL->get("isMember") == 1) {
 		$dblyousaved = number_format( $CORE_LOCAL->get("transDiscount") + $dbldiscounttotal + $special, 2);
-		if (!$readOnly){
+		if (!$readOnly) {
 			$CORE_LOCAL->set("yousaved",$dblyousaved);
 			$CORE_LOCAL->set("couldhavesaved",0);
 			$CORE_LOCAL->set("specials",number_format($dbldiscounttotal + $special, 2));
 		}
-	}
-	else {
-		$dblyousaved = number_format($CORE_LOCAL->get("memSpecial"),2);
-		if (!$readOnly){
+	} else {
+		$dblyousaved = 0.00;
+		if (is_numeric($CORE_LOCAL->get('memSpecial'))) {
+			$dblyousaved = number_format($CORE_LOCAL->get("memSpecial"), 2);
+        }
+		if (!$readOnly) {
 			$CORE_LOCAL->set("yousaved",$dbldiscounttotal + $CORE_LOCAL->get("staffSpecial"));
 			$CORE_LOCAL->set("couldhavesaved",$dblyousaved);
 			$CORE_LOCAL->set("specials",$dbldiscounttotal + $CORE_LOCAL->get("staffSpecial"));
 		}
 	}
 
-	if (!$readOnly){
+	if (!$readOnly) {
 		if ($CORE_LOCAL->get("End") == 1) {
 			MiscLib::rePoll();
 		}
@@ -137,7 +143,7 @@ static public function printfooter($readOnly=False) {
 	$ret .= "</tr>";
 	$ret .= "</table>";
 
-	if (!$readOnly){
+	if (!$readOnly) {
 		$ret .= "<form name='hidden'>\n";
 		$ret .= "<input type='hidden' id='ccTermOut' name='ccTermOut' value=\"".$CORE_LOCAL->get("ccTermOut")."\">\n";
 		$ret .= "</form>";
@@ -154,7 +160,8 @@ static public function printfooter($readOnly=False) {
    @param $strmsg the message
    @return An HTML string
 */
-static public function plainmsg($strmsg) {
+static public function plainmsg($strmsg) 
+{
 	return "<div id=\"plainmsg\" class=\"coloredText\">$strmsg</div>";
 }
 
@@ -171,7 +178,8 @@ static public function plainmsg($strmsg) {
   This function will include the header
   printheaderb(). 
 */
-static public function msgbox($strmsg, $icon,$noBeep=False) {
+static public function msgbox($strmsg, $icon,$noBeep=False) 
+{
 	global $CORE_LOCAL;
 
 	$ret = self::printheaderb();
@@ -186,8 +194,9 @@ static public function msgbox($strmsg, $icon,$noBeep=False) {
 	$ret .= "</div><div class=\"clear\"></div></div>";
 	$ret .= "</div>";
 
-	if (!$noBeep)
+	if (!$noBeep) {
 		MiscLib::errorBeep();
+    }
 
 	$CORE_LOCAL->set("strRemembered",$CORE_LOCAL->get("strEntered"));
 	$CORE_LOCAL->set("msgrepeat",1);
@@ -203,7 +212,8 @@ static public function msgbox($strmsg, $icon,$noBeep=False) {
 
   An alias for msgbox().
 */
-static public function xboxMsg($strmsg) {
+static public function xboxMsg($strmsg) 
+{
 	return self::msgbox($strmsg, MiscLib::base_url()."graphics/crossD.gif");
 }
 
@@ -216,7 +226,8 @@ static public function xboxMsg($strmsg) {
 
   An alias for msgbox().
 */
-static public function boxMsg($strmsg,$header="",$noBeep=False) {
+static public function boxMsg($strmsg,$header="",$noBeep=False) 
+{
 	return self::msgbox($strmsg, MiscLib::base_url()."graphics/exclaimC.gif",$noBeep);
 }
 
@@ -226,7 +237,8 @@ static public function boxMsg($strmsg,$header="",$noBeep=False) {
 
   An alias for msgbox().
 */
-static public function inputUnknown() {
+static public function inputUnknown() 
+{
 	return self::msgbox("<b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 			"._("input unknown")."</b>", MiscLib::base_url()."graphics/exclaimC.gif",True);
 }
@@ -238,16 +250,16 @@ static public function inputUnknown() {
   and MEMBER info
   @return An HTML string
 */
-static public function printheaderb() {
+static public function printheaderb() 
+{
 	global $CORE_LOCAL;
 
 	$strmemberID = "";
 	if ($CORE_LOCAL->get("memberID") == "0") {
 		$strmemberID = "";
-	}
-	else {
+	} else {
 		$strmemberID = $CORE_LOCAL->get("memMsg");
-		if ($CORE_LOCAL->get("isMember") == 0){
+		if ($CORE_LOCAL->get("isMember") == 0) {
 			$strmemberID = str_replace("(0)", "(n/a)", $strmemberID);
 		}
 	}
@@ -286,17 +298,17 @@ static public function printheaderb() {
    (or touchscreen).
   @return An HTML string
 */
-static public function printitem($field2, $field3, $total, $field5, $trans_id=-1) {
+static public function printItem($field2, $field3, $total, $field5, $trans_id=-1) 
+{
 	global $CORE_LOCAL;
 	
 	$onclick = "";
-	if ($trans_id != -1){
+	if ($trans_id != -1) {
 		$curID = $CORE_LOCAL->get("currentid");
 		$diff = $trans_id - $curID;
-		if ($diff > 0){
+		if ($diff > 0) {
 			$onclick="onclick=\"parseWrapper('D$diff');\"";
-		}
-		else if ($diff < 0){
+		} else if ($diff < 0) {
 			$diff *= -1;
 			$onclick="onclick=\"parseWrapper('U$diff');\"";
 		}
@@ -307,9 +319,15 @@ static public function printitem($field2, $field3, $total, $field5, $trans_id=-1
 	} else {
 		$total = "&nbsp;";
 	}
-	if ($field2 == "") $field2 = "&nbsp;";
-	if (trim($field3) == "") $field3 = "&nbsp;";
-	if ($field5 == "") $field5 = "&nbsp;";
+	if ($field2 == "") {
+        $field2 = "&nbsp;";
+    }
+	if (trim($field3) == "") {
+        $field3 = "&nbsp;";
+    }
+	if ($field5 == "") {
+        $field5 = "&nbsp;";
+    }
 
 	$ret = "<div class=\"item\">";
 	$ret .= "<div $onclick class=\"desc coloredText\">$field2</div>";
@@ -318,6 +336,7 @@ static public function printitem($field2, $field3, $total, $field5, $trans_id=-1
 	$ret .= "<div $onclick class=\"suffix lightestColorText\">$field5</div>";
 	$ret .= "</div>";
 	$ret .= "<div style=\"clear:left;\"></div>\n";
+
 	return $ret;
 }
 
@@ -346,17 +365,17 @@ static public function printitem($field2, $field3, $total, $field5, $trans_id=-1
   - 000000 => totalLine
   - 800080 => fsLine
 */
-static public function printitemcolor($color, $description, $comments, $total, $suffix,$trans_id=-1) {
+static public function printItemColor($color, $description, $comments, $total, $suffix,$trans_id=-1) 
+{
 	global $CORE_LOCAL;
 	
 	$onclick = "";
-	if ($trans_id != -1){
+	if ($trans_id != -1) {
 		$curID = $CORE_LOCAL->get("currentid");
 		$diff = $trans_id - $curID;
-		if ($diff > 0){
+		if ($diff > 0) {
 			$onclick="onclick=\"parseWrapper('D$diff');\"";
-		}
-		else if ($diff < 0){
+		} else if ($diff < 0){
 			$diff *= -1;
 			$onclick="onclick=\"parseWrapper('U$diff');\"";
 		}
@@ -367,23 +386,32 @@ static public function printitemcolor($color, $description, $comments, $total, $
 	} else {
 		$total = "&nbsp;";
 	}
-	if ($total == 0 && $color == "408080") $total = "&nbsp;";
-	if ($description == "") $description = "&nbsp;";
-	if (trim($comments) == "") $comments = "&nbsp;";
-	if ($suffix == "") $suffix = "&nbsp;";
+	if ($total == 0 && $color == "408080") {
+        $total = "&nbsp;";
+    }
+	if ($description == "") {
+        $description = "&nbsp;";
+    }
+	if (trim($comments) == "") {
+        $comments = "&nbsp;";
+    }
+	if ($suffix == "") {
+        $suffix = "&nbsp;";
+    }
 
 	$style = '';
 	$class = '';
-	if ($color == '004080')
+	if ($color == '004080') {
 		$class = 'coloredText';
-	else if ($color == '000000')
+	} else if ($color == '000000') {
 		$class = 'totalLine';
-	else if ($color == '800080')
+	} else if ($color == '800080') {
 		$class = 'fsLine';
-	else if ($color == '408080')
+	} else if ($color == '408080') {
 		$class = 'lightColorText';
-	else
+	} else {
 		$style = "style=\"color:#$color;\"";
+    }
 
 	$ret = "<div class=\"item\">";
 	$ret .= "<div $onclick class=\"desc $class\" $style>$description</div>";
@@ -392,6 +420,7 @@ static public function printitemcolor($color, $description, $comments, $total, $
 	$ret .= "<div $onclick class=\"suffix $class\" $style>$suffix</div>";
 	$ret .= "</div>";
 	$ret .= "<div style=\"clear:left;\"></div>\n";
+
 	return $ret;
 }
 
@@ -417,29 +446,39 @@ static public function printitemcolor($color, $description, $comments, $total, $
   - 000000 => totalArea
   - 800080 => fsArea
 */
-static public function printitemcolorhilite($color, $description, $comments, $total, $suffix) {
+static public function printItemColorHilite($color, $description, $comments, $total, $suffix) 
+{
 	if (strlen($total) > 0) {
 		$total = number_format($total, 2);
 	} else {
 		$total = "&nbsp;";
 	}
-	if ($total == 0 && $color == "408080") $total = "&nbsp;";
-	if ($description == "") $description="&nbsp;";
-	if (trim($comments) == "") $comments="&nbsp;";
-	if ($suffix == "") $suffix="&nbsp;";
+	if ($total == 0 && $color == "408080") {
+        $total = "&nbsp;";
+    }
+	if ($description == "") {
+        $description="&nbsp;";
+    }
+	if (trim($comments) == "") {
+        $comments="&nbsp;";
+    }
+	if ($suffix == "") {
+        $suffix="&nbsp;";
+    }
 
 	$style = '';
 	$class = '';
-	if ($color == '004080')
+	if ($color == '004080') {
 		$class = 'coloredArea';
-	else if ($color == '000000')
+	} else if ($color == '000000') {
 		$class = 'totalArea';
-	else if ($color == '800080')
+	} else if ($color == '800080') {
 		$class = 'fsArea';
-	else if ($color == '408080')
+	} else if ($color == '408080') {
 		$class = 'lightColorArea';
-	else
+	} else {
 		$style = "style=\"background:#$color;color:#ffffff;\"";
+    }
 
 	$ret = "<div class=\"item\">";
 	$ret .= "<div class=\"desc $class\" $style>$description</div>";
@@ -448,6 +487,7 @@ static public function printitemcolorhilite($color, $description, $comments, $to
 	$ret .= "<div class=\"suffix $class\" $style>$suffix</div>";
 	$ret .= "</div>";
 	$ret .= "<div style=\"clear:left;\"></div>\n";
+
 	return $ret;
 }
 
@@ -470,7 +510,8 @@ static public function printitemcolorhilite($color, $description, $comments, $to
    - S145 an error condition
    - S142 an error condition
 */
-static public function scaledisplaymsg($input=""){
+static public function scaledisplaymsg($input="")
+{
 	global $CORE_LOCAL;
 	$reginput = trim(strtoupper($input));
 
@@ -479,10 +520,11 @@ static public function scaledisplaymsg($input=""){
 	// return early; all other cases simplified
 	// by resetting session "weight"
 	if (strlen($reginput) == 0) {
-		if (is_numeric($CORE_LOCAL->get("weight")))
+		if (is_numeric($CORE_LOCAL->get("weight"))) {
 			return number_format($CORE_LOCAL->get("weight"), 2)." lb";
-		else
+		} else {
 			return $CORE_LOCAL->get("weight")." lb";
+        }
 	}
 
 	$display_weight = "";
@@ -496,41 +538,37 @@ static public function scaledisplaymsg($input=""){
 	else if (substr($reginput,0,4)=="S144")	
 		$prefix = "S144";
 
-	if (strpos($reginput, $prefix) === 0){
+	if (strpos($reginput, $prefix) === 0) {
 		$len = strlen($prefix);
 		if (!substr($reginput, $len) || 
 		    !is_numeric(substr($reginput, $len))) {
 			$display_weight = "_ _ _ _";
-		}
-		else {
+		} else {
 			$weight = number_format(substr($reginput, $len)/100, 2);
 			$CORE_LOCAL->set("weight",$weight);
 			$display_weight = $weight." lb";
 			$CORE_LOCAL->set("scale",1);
-			if ($CORE_LOCAL->get('SNR') != 0 && $weight != 0){
+			if ($CORE_LOCAL->get('SNR') != 0 && $weight != 0) {
 				$scans = $CORE_LOCAL->get('SNR');
 			}
 		}
-	}
-	elseif (substr($reginput, 0, 4) == "S143") {
+	} elseif (substr($reginput, 0, 4) == "S143") {
 		$display_weight = "0.00 lb";
 		$CORE_LOCAL->set("scale",1);
-	}
-	elseif (substr($reginput, 0, 4) == "S141") {
+	} elseif (substr($reginput, 0, 4) == "S141") {
 		$display_weight = "_ _ _ _";
-	}
-	elseif (substr($reginput, 0, 4) == "S145") {
+	} elseif (substr($reginput, 0, 4) == "S145") {
 		$display_weight = "err -0";
-	}
-	elseif (substr($reginput, 0, 4) == "S142") {
+	} elseif (substr($reginput, 0, 4) == "S142") {
 		$display_weight = "error";
-	}
-	else {
+	} else {
 		$display_weight = "? ? ? ?";
 	}
 
 	$ret = array('display'=>$display_weight);
-	if (!empty($scans)) $ret['upc'] = $scans;
+	if (!empty($scans)) {
+        $ret['upc'] = $scans;
+    }
 
 	return $ret;
 }
@@ -539,32 +577,35 @@ static public function scaledisplaymsg($input=""){
   Display CC terminal state
   @return HTML string
 */
-static public function termdisplaymsg(){
+static public function termdisplaymsg()
+{
 	global $CORE_LOCAL;
-	if (!in_array("Paycards",$CORE_LOCAL->get("PluginList")))
+	if (!in_array("Paycards",$CORE_LOCAL->get("PluginList"))) {
 		return '';
-	elseif($CORE_LOCAL->get("PaycardsCashierFacing")=="1")
+	} elseif($CORE_LOCAL->get("PaycardsCashierFacing")=="1") {
 		return '';
+    }
 	// style box to look like a little screen
 	$ret = '<div style="background:#ccc;border:solid 1px black;padding:7px;text-align:center;font-size:120%;">';
 	$rdy = '<div style="background:#0c0;border:solid 1px black;padding:7px;text-align:center;font-size:120%;">';
-	switch($CORE_LOCAL->get('ccTermState')){
-	case 'swipe':
-		return $ret.'Slide<br />Card</div>';
-		break;
-	case 'ready':
-		return $rdy.'Ready</div>';
-		break;
-	case 'pin':
-		return $ret.'Enter<br />PIN</div>';
-		break;
-	case 'type':
-		return $ret.'Card<br />Type</div>';
-		break;
-	case 'cashback':
-		return $ret.'Cash<br />Back</div>';
-		break;
+	switch($CORE_LOCAL->get('ccTermState')) {
+        case 'swipe':
+            return $ret.'Slide<br />Card</div>';
+            break;
+        case 'ready':
+            return $rdy.'Ready</div>';
+            break;
+        case 'pin':
+            return $ret.'Enter<br />PIN</div>';
+            break;
+        case 'type':
+            return $ret.'Card<br />Type</div>';
+            break;
+        case 'cashback':
+            return $ret.'Cash<br />Back</div>';
+            break;
 	}
+
 	return '';
 }
 
@@ -579,7 +620,8 @@ static public function termdisplaymsg(){
   If you just want to show the most recently
   scanned items, use lastpage().
 */
-static public function listitems($top_item, $highlight) {
+static public function listItems($top_item, $highlight) 
+{
 	global $CORE_LOCAL;
 
 	Database::getsubtotals();
@@ -610,7 +652,8 @@ static public function listitems($top_item, $highlight) {
 //------------------Boundary Bottom----------------
 
 	$CORE_LOCAL->set("currentid",$highlight);
-	return self::drawitems($top_item, 11, $highlight);
+
+	return self::drawItems($top_item, 11, $highlight);
 }
 
 
@@ -625,32 +668,36 @@ static public function listitems($top_item, $highlight) {
   Yes, this function should be renamed. It
   has nothing to do with receipts.
 */
-static public function printReceiptfooter($readOnly=False) {
+static public function printReceiptfooter($readOnly=False) 
+{
 	global $CORE_LOCAL;
 
-	if (!$readOnly)
+	if (!$readOnly) {
 		Database::getsubtotals();
+    }
 	$last_id = $CORE_LOCAL->get("LastID");
 
 	if (($last_id - 7) < 0) {
 		$top_id = 1;
-	}
-	else {
+	} else {
 		$top_id = $last_id - 7;
 	}
 
 	$ret = self::drawitems($top_id, 7, 0);
 
 	$ret .= "<div class=\"farewellMsg coloredText\">";
-	for($i=0;$i<=$CORE_LOCAL->get("farewellMsgCount");$i++){
+	for($i=0;$i<=$CORE_LOCAL->get("farewellMsgCount");$i++) {
 		$ret .= $CORE_LOCAL->get("farewellMsg".$i)."<br />";
 	}
 
 	$email = CoreState::getCustomerPref('email_receipt');
 	$doEmail = filter_var($email, FILTER_VALIDATE_EMAIL);
-	if($doEmail) $ret .= 'receipt emailed';
+	if($doEmail) {
+        $ret .= 'receipt emailed';
+    }
 
 	$ret .= "</div>";
+
 	return $ret;
 }
 
@@ -665,7 +712,8 @@ static public function printReceiptfooter($readOnly=False) {
   This function probably shouldn't be used directly.
   Call listitems() or lastpage() instead.
 */
-static public function drawitems($top_item, $rows, $highlight) {
+static public function drawItems($top_item, $rows, $highlight) 
+{
 	global $CORE_LOCAL;
 
 	$ret = self::printheaderb();
@@ -682,19 +730,17 @@ static public function drawitems($top_item, $rows, $highlight) {
 		$ret .= "<div class=\"centerOffset\">";
 		$msg_text = "";
 		if ($CORE_LOCAL->get("training") != 1) {
-			for($i=1; $i<=$CORE_LOCAL->get("welcomeMsgCount");$i++){
+			for($i=1; $i<=$CORE_LOCAL->get("welcomeMsgCount");$i++) {
 				$msg_text .= $CORE_LOCAL->get("welcomeMsg".$i)."<br />";
 			}	
-		}
-		else {
-			for($i=1; $i<=$CORE_LOCAL->get("trainingMsgCount");$i++){
+		} else {
+			for($i=1; $i<=$CORE_LOCAL->get("trainingMsgCount");$i++) {
 				$msg_text .= $CORE_LOCAL->get("trainingMsg".$i)."<br />";
 			}	
 		}
 		$ret .= self::plainmsg($msg_text);
 		$ret .= "</div>";
-	}
-	else {
+	} else {
 
 		$query_range = "select trans_id,description,total,comment,status,lineColor
 		       		from screendisplay where trans_id >= ".$top_item." and trans_id <= "
@@ -715,21 +761,18 @@ static public function drawitems($top_item, $rows, $highlight) {
 
 			
 			if ($trans_id == $highlight) {
-				$ret .= self::printitemcolorhilite($color, $description, $comment, $total, $tf);
-			}
-			else
-				{
+				$ret .= self::printItemColorHilite($color, $description, $comment, $total, $tf);
+			} else {
 				if ($color == "004080") {
-					$ret .= self::printitem($description, $comment, $total, $tf,$trans_id);
-				}
-				else {
-					$ret .= self::printitemcolor($color, $description, $comment, $total, $tf,$trans_id);
+					$ret .= self::printItem($description, $comment, $total, $tf,$trans_id);
+				} else {
+					$ret .= self::printItemColor($color, $description, $comment, $total, $tf,$trans_id);
 				}				
 			}
 
-			if (!strstr($description,'Subtotal')){
+			if (!strstr($description,'Subtotal')) {
 				$fixed_desc = str_replace(":"," ",$description);
-				if (strlen($fixed_desc) > 24){
+				if (strlen($fixed_desc) > 24) {
 					$fixed_desc = substr($fixed_desc,0,24);
 				}
 				$fixed_price = empty($total)?'':sprintf('%.2f',$total);
@@ -740,20 +783,21 @@ static public function drawitems($top_item, $rows, $highlight) {
 	}
 
 	$td = SigCapture::term_object();
-	if (is_object($td) && !empty($last_item)){
+	if (is_object($td) && !empty($last_item)) {
 		$due = sprintf('%.2f',$CORE_LOCAL->get("amtdue"));
 		$dueline = 'Subtotal'
 			.str_pad('',22-strlen($due),' ')
 			.$due;
 		$items = "";
 		$count = 0;
-		for($i=count($last_item)-1;$i>=0;$i--){
+		for($i=count($last_item)-1;$i>=0;$i--) {
 			$items = ":".$last_item[$i].$items;
 			$count++;
 			if ($count >= 3) break;
 		}
-		for($i=$count;$i<3;$i++)
+		for($i=$count;$i<3;$i++) {
 			$items = ": ".$items;
+        }
 		$td->WriteToScale("display:".$last_item.":".$dueline);
 	}
 
@@ -770,28 +814,27 @@ static public function drawitems($top_item, $rows, $highlight) {
   scanned items. If you want a specific subset,
   use listitems().
 */
-static public function lastpage($readOnly=False) {
+static public function lastpage($readOnly=False) 
+{
 	global $CORE_LOCAL;
 
-	if (!$readOnly){
+	if (!$readOnly) {
 		Database::getsubtotals();
 	}
 	$last_id = $CORE_LOCAL->get("LastID");
 
 	if (($last_id - 11) < 0) {
 		$top_id = 1;
-	}
-	else {
+	} else {
 		$top_id = $last_id - 11;
 	}
 	
-	if (!$readOnly){
+	if (!$readOnly) {
 		$CORE_LOCAL->set("currentid",$last_id);
 		$CORE_LOCAL->set("currenttopid",$top_id);
 	}
-	return self::drawitems($top_id, 11, $last_id);
+	return self::drawItems($top_id, 11, $last_id);
 }
 
 } // end class DisplayLib
 
-?>

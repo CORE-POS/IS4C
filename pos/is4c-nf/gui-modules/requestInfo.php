@@ -131,6 +131,7 @@ class requestInfo extends NoInputPage {
 
 }
 
-new requestInfo();
+if (basename(__FILE__) == basename($_SERVER['PHP_SELF']))
+	new requestInfo();
 
 ?>

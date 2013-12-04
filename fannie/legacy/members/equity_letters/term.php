@@ -9,22 +9,23 @@ $numbers = array("zero","one","two","three","four","five","six","seven",
 		"eight","nine","ten","eleven","twelve","thirteen","fourteen",
 		"fifteen","sixteen","seventeen","eighteen","nineteen","twenty");
 
-$cards = "(";
+$args = array();
 foreach($_REQUEST["cardno"] as $c){
-	$cards .= $c.",";
+	$cards .= "?,";
+    $args[] = $c;
 }
 $cards = rtrim($cards,",");
 $cards .= ")";
 
-$selAddQ = "SELECT m.card_no,c.firstname,c.lastname,
+$selAddQ = $sql->prepare("SELECT m.card_no,c.firstname,c.lastname,
 		m.street,'',m.city,m.state,
 		m.zip
 		FROM meminfo AS m LEFT JOIN
 		custdata AS c ON m.card_no=c.cardno
 		AND c.personnum=1
 		WHERE cardno IN $cards
-		ORDER BY m.card_no"; 
-$selAddR = $sql->query($selAddQ);
+		ORDER BY m.card_no");
+$selAddR = $sql->execute($selAddQ, $args);
 
 $today = date("F j, Y");
 

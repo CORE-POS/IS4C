@@ -33,35 +33,31 @@
 <h1>Parser Class Reference</h1><!-- doxytag: class="Parser" --><a href="class_parser-members.html">List of all members.</a><table border="0" cellpadding="0" cellspacing="0">
 <tr><td></td></tr>
 <tr><td colspan="2"><br><h2>Public Member Functions</h2></td></tr>
-<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_parser.html#87bc1711b76c25ecb6294fbacd9ec7b1">check</a> ($str)</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_parser.html#60676cdb6480984f56d6301150f49c3a">check</a> ($str)</td></tr>
 
-<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_parser.html#5447ff56b59081bd0f7fb084c97568ff">parse</a> ($str)</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_parser.html#70a383afd1dcac2569cd099d4edde14f">parse</a> ($str)</td></tr>
 
-<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_parser.html#60bba52f22c8c29cb559466699e2be9e">isLast</a> ()</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_parser.html#0076d421db25e8eb844d0ecc093688ad">default_json</a> ()</td></tr>
 
-<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_parser.html#e00f0d01e49c4770044ebf293b3fdaa9">isFirst</a> ()</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_parser.html#384df99c1182b74ef7c921bcca051295">isLast</a> ()</td></tr>
 
-<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_parser.html#ade38a4417a3f69cea58eb45b7d4766d">doc</a> ()</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_parser.html#62ec410423ebd9c878c3c8e349f7ee00">isFirst</a> ()</td></tr>
 
-<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_parser.html#a25abc3d3a5407d364ef11cf11baa04a">default_json</a> ()</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_parser.html#fc25b0cdd11426e7c303accdf8aebc81">doc</a> ()</td></tr>
 
 <tr><td colspan="2"><br><h2>Static Public Member Functions</h2></td></tr>
-<tr><td class="memItemLeft" nowrap align="right" valign="top">static&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_parser.html#8600b8b07c25e9530080e84ed3108d16">get_parse_chain</a> ()</td></tr>
-
-<tr><td class="memItemLeft" nowrap align="right" valign="top">static&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_parser.html#3b169d07b1559b6ec10af12f6fc469af">get_preparse_chain</a> ()</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">static&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_parser.html#d38221f246477d09fc5f03fa63d2bb77">get_parse_chain</a> ()</td></tr>
 
 </table>
 <hr><a name="_details"></a><h2>Detailed Description</h2>
 The base module for parsing input<p>
-<a class="el" href="class_parser.html">Parser</a> objects are divided into two varieties that behave slightly differently.<p>
-Modules in the preparse directory are all checked for every input. These modueles may modify the input string.<p>
-Modules in the parse are only checked until one matches the input. Input processing ceases and the matching module must decide what to do next. <dl compact><dt><b>Examples: </b></dt><dd>
+Enabled <a class="el" href="class_parser.html">Parser</a> modules are checked until one matches the input. Input processing ceases and the matching module must decide what to do next. <dl compact><dt><b>Examples: </b></dt><dd>
 
 <p>
 <a class="el" href="_h_w___parser_8php-example.html#_a11">HW_Parser.php</a>.</dl>
 <p>
 <hr><h2>Member Function Documentation</h2>
-<a class="anchor" name="87bc1711b76c25ecb6294fbacd9ec7b1"></a><!-- doxytag: member="Parser::check" ref="87bc1711b76c25ecb6294fbacd9ec7b1" args="($str)" -->
+<a class="anchor" name="60676cdb6480984f56d6301150f49c3a"></a><!-- doxytag: member="Parser::check" ref="60676cdb6480984f56d6301150f49c3a" args="($str)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -90,7 +86,7 @@ Check whether the module handles this input <dl compact><dt><b>Parameters:</b></
 <a class="el" href="_h_w___parser_8php-example.html#a12">HW_Parser.php</a>.</dl>
 </div>
 </div><p>
-<a class="anchor" name="a25abc3d3a5407d364ef11cf11baa04a"></a><!-- doxytag: member="Parser::default_json" ref="a25abc3d3a5407d364ef11cf11baa04a" args="()" -->
+<a class="anchor" name="0076d421db25e8eb844d0ecc093688ad"></a><!-- doxytag: member="Parser::default_json" ref="0076d421db25e8eb844d0ecc093688ad" args="()" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -106,12 +102,12 @@ Check whether the module handles this input <dl compact><dt><b>Parameters:</b></
 <div class="memdoc">
 
 <p>
-A return array for <a class="el" href="class_parser.html#5447ff56b59081bd0f7fb084c97568ff">parse()</a> with proper keys <dl compact><dt><b>Returns:</b></dt><dd>array</dd></dl>
-See <a class="el" href="class_parser.html#5447ff56b59081bd0f7fb084c97568ff">parse()</a> method <dl compact><dt><b>Examples: </b></dt><dd>
+A return array for <a class="el" href="class_parser.html#70a383afd1dcac2569cd099d4edde14f">parse()</a> with proper keys <dl compact><dt><b>Returns:</b></dt><dd>array</dd></dl>
+See <a class="el" href="class_parser.html#70a383afd1dcac2569cd099d4edde14f">parse()</a> method <dl compact><dt><b>Examples: </b></dt><dd>
 <a class="el" href="_h_w___parser_8php-example.html#a14">HW_Parser.php</a>.</dl>
 </div>
 </div><p>
-<a class="anchor" name="ade38a4417a3f69cea58eb45b7d4766d"></a><!-- doxytag: member="Parser::doc" ref="ade38a4417a3f69cea58eb45b7d4766d" args="()" -->
+<a class="anchor" name="fc25b0cdd11426e7c303accdf8aebc81"></a><!-- doxytag: member="Parser::doc" ref="fc25b0cdd11426e7c303accdf8aebc81" args="()" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -131,7 +127,7 @@ Display documentation <dl compact><dt><b>Returns:</b></dt><dd>A string describin
 Ideally you should note what your module it does and what the input format is. 
 </div>
 </div><p>
-<a class="anchor" name="8600b8b07c25e9530080e84ed3108d16"></a><!-- doxytag: member="Parser::get_parse_chain" ref="8600b8b07c25e9530080e84ed3108d16" args="()" -->
+<a class="anchor" name="d38221f246477d09fc5f03fa63d2bb77"></a><!-- doxytag: member="Parser::get_parse_chain" ref="d38221f246477d09fc5f03fa63d2bb77" args="()" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -151,27 +147,7 @@ Gather parse modules <dl compact><dt><b>Returns:</b></dt><dd>array of <a class="
 Scan the parse directory for module files. Return an array of available modules. 
 </div>
 </div><p>
-<a class="anchor" name="3b169d07b1559b6ec10af12f6fc469af"></a><!-- doxytag: member="Parser::get_preparse_chain" ref="3b169d07b1559b6ec10af12f6fc469af" args="()" -->
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">static Parser::get_preparse_chain           </td>
-          <td>(</td>
-          <td class="paramname">          </td>
-          <td>&nbsp;)&nbsp;</td>
-          <td width="100%"><code> [static]</code></td>
-        </tr>
-      </table>
-</div>
-<div class="memdoc">
-
-<p>
-Gather preparse modules <dl compact><dt><b>Returns:</b></dt><dd>array of <a class="el" href="class_parser.html">Parser</a> class names</dd></dl>
-Scan the preparse directory for module files. Return an array of available modules. 
-</div>
-</div><p>
-<a class="anchor" name="e00f0d01e49c4770044ebf293b3fdaa9"></a><!-- doxytag: member="Parser::isFirst" ref="e00f0d01e49c4770044ebf293b3fdaa9" args="()" -->
+<a class="anchor" name="62ec410423ebd9c878c3c8e349f7ee00"></a><!-- doxytag: member="Parser::isFirst" ref="62ec410423ebd9c878c3c8e349f7ee00" args="()" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -191,7 +167,7 @@ Make this module first <dl compact><dt><b>Returns:</b></dt><dd>True or False</dd
 Modules are not run in any guaranteed order. Return True will force this module to be first (or nearly first if multiple modules override this method) 
 </div>
 </div><p>
-<a class="anchor" name="60bba52f22c8c29cb559466699e2be9e"></a><!-- doxytag: member="Parser::isLast" ref="60bba52f22c8c29cb559466699e2be9e" args="()" -->
+<a class="anchor" name="384df99c1182b74ef7c921bcca051295"></a><!-- doxytag: member="Parser::isLast" ref="384df99c1182b74ef7c921bcca051295" args="()" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -212,7 +188,7 @@ Modules are not run in any guaranteed order. Return True will force this module 
 BE VERY VERY CAREFUL IF YOU OVERRIDE THIS. Quantity is the last preparse module and DefaultTender is the last parse module. Making your own module last will break one of these and probably make a mess. 
 </div>
 </div><p>
-<a class="anchor" name="5447ff56b59081bd0f7fb084c97568ff"></a><!-- doxytag: member="Parser::parse" ref="5447ff56b59081bd0f7fb084c97568ff" args="($str)" -->
+<a class="anchor" name="70a383afd1dcac2569cd099d4edde14f"></a><!-- doxytag: member="Parser::parse" ref="70a383afd1dcac2569cd099d4edde14f" args="($str)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -235,17 +211,16 @@ Deal with the input <dl compact><dt><b>Parameters:</b></dt><dd>
   </table>
 </dl>
 <dl compact><dt><b>Returns:</b></dt><dd>mixed</dd></dl>
-Preparse modules should return a string. This value will replace the input string for remaining parsing.<p>
 Parse modules a keyed array:<ul>
 <li>main_frame If set, change page to this URL</li><li>output HTML output to be displayed</li><li>target Javascript selector string describing which element should contain the output</li><li>redraw_footer True or False. Set to True if totals have changed.</li><li>receipt False or string type. Print a receipt with the given type.</li><li>scale Update the scale display and session variables</li><li>udpmsg False or string. Send a message to hardware device(s)</li><li>retry False or string. Try the input again shortly.</li></ul>
 <p>
-The utility method <a class="el" href="class_parser.html#a25abc3d3a5407d364ef11cf11baa04a">default_json()</a> provides an array with the proper keys and sane default values. <dl compact><dt><b>Examples: </b></dt><dd>
+The utility method <a class="el" href="class_parser.html#0076d421db25e8eb844d0ecc093688ad">default_json()</a> provides an array with the proper keys and sane default values. <dl compact><dt><b>Examples: </b></dt><dd>
 <a class="el" href="_h_w___parser_8php-example.html#a13">HW_Parser.php</a>.</dl>
 </div>
 </div><p>
 <hr>The documentation for this class was generated from the following file:<ul>
 <li>pos/is4c-nf/parser-class-lib/Parser.php</ul>
-<hr size="1"><address style="align: right;"><small>Generated on Tue Oct 23 14:30:34 2012 for CORE POS - IS4C by&nbsp;
+<hr size="1"><address style="align: right;"><small>Generated on 18 Nov 2013 for CORE POS - IS4C by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img src="doxygen.png" alt="doxygen" align="middle" border="0"></a> 1.4.7 </small></address>
 </body>

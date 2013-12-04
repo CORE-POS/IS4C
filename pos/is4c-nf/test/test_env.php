@@ -9,7 +9,7 @@ if (!class_exists('AutoLoader')) include(dirname(__FILE__).'/../lib/AutoLoader.p
 $CORE_LOCAL->set("parse_chain",'');
 $CORE_LOCAL->set("preparse_chain",'');
 
-AutoLoader::LoadMap();
+AutoLoader::loadMap();
 CoreState::initiate_session();
 
 ?>

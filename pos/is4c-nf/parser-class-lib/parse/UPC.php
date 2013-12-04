@@ -53,6 +53,10 @@ class UPC extends Parser {
 			$CORE_LOCAL->set("refundComment",$CORE_LOCAL->get("strEntered"));
 			return $ret;
 		}
+		if ($CORE_LOCAL->get('itemPD') > 0 && $CORE_LOCAL->get('SecurityLineItemDiscount') == 30 && $CORE_LOCAL->get('msgrepeat')==0){
+			$ret['main_frame'] = $my_url."gui-modules/adminlogin.php?class=LineItemDiscountAdminLogin";
+			return $ret;
+		}
 
 		$entered = str_replace(".", " ", $entered);
 
@@ -76,11 +80,13 @@ class UPC extends Parser {
 		else $upc = substr("0000000000000".$entered, -13);
 
 		/* extract scale-sticker prices */
-		$scaleprice = 0;
+		$scalepriceUPC = 0;
+		$scalepriceEAN = 0;
 		if (substr($upc, 0, 3) == "002") {
-			$scaleprice = MiscLib::truncate2(substr($upc, -4)/100);
+			$scalepriceUPC = MiscLib::truncate2(substr($upc, -4)/100);
+			$scalepriceEAN = MiscLib::truncate2(substr($upc, -5)/100);
 			$upc = substr($upc, 0, 8)."00000";
-			if ($upc == "0020006000000" || $upc == "0020010000000") $scaleprice *= -1;
+			if ($upc == "0020006000000" || $upc == "0020010000000") $scalepriceUPC *= -1;
 		}
 
 		$db = Database::pDataConnect();
@@ -88,7 +94,7 @@ class UPC extends Parser {
 			qttyEnforced,department,local,cost,tax,foodstamp,discount,
 			discounttype,specialpricemethod,special_price,groupprice,
 			pricemethod,quantity,specialgroupprice,specialquantity,
-			mixmatchcode,idEnforced,tareweight
+			mixmatchcode,idEnforced,tareweight,scaleprice
 		       	from products where upc = '".$upc."'";
 		$result = $db->query($query);
 		$num_rows = $db->num_rows($result);
@@ -98,7 +104,7 @@ class UPC extends Parser {
 			$objs = $CORE_LOCAL->get("SpecialUpcClasses");
 			foreach($objs as $class_name){
 				$instance = new $class_name();
-				if ($instance->is_special($upc)){
+				if ($instance->isSpecial($upc)){
 					return $instance->handle($upc,$ret);
 				}
 			}
@@ -138,7 +144,7 @@ class UPC extends Parser {
 		*/
 		$deptmods = $CORE_LOCAL->get('SpecialDeptMap');
 		if (is_array($deptmods) && isset($deptmods[$row['department']])){
-			foreach($deptmods[$index] as $mod){
+			foreach($deptmods[$row['department']] as $mod){
 				$obj = new $mod();
 				$ret = $obj->handle($row['department'],$row['normal_price'],$ret);
 				if ($ret['main_frame'])
@@ -211,6 +217,9 @@ class UPC extends Parser {
 			}
 		}
 
+		/**
+		  Apply automatic tare weight
+		*/
 		if ($row['tareweight'] > 0){
 			$peek = PrehLib::peekItem();
 			if (strstr($peek,"** Tare Weight") === False)
@@ -226,6 +235,8 @@ class UPC extends Parser {
 		}
 
 		$scale = ($row["scale"] == 0) ? 0 : 1;
+		/* get correct scale price */
+		$scaleprice = ($row['scaleprice'] == 0) ? $scalepriceUPC : $scalepriceEAN;
 
 		/* need a weight with this item
 		   retry the UPC in a few milliseconds and see
@@ -344,16 +355,34 @@ class UPC extends Parser {
 		$DiscountObject = new $DTClasses[$discounttype];
 
 		/* add in sticker price and calculate a quantity
-		   if the item is stickered, scaled, and on sale 
-		   if it's not scaled or on sale, there's no need
-		   to back-calculate weight and adjust so just use
-		   sticker price as normal_price
+		   if the item is stickered, scaled, and on sale. 
+
+           otherwise, if the item is sticked, scaled, and
+           not on sale but has a non-zero price attempt
+           to calculate a quantity. this makes the quantity
+           field more consistent for reporting purposes.
+           however, if the calculated quantity somehow
+           introduces a rounding error fall back to the
+           sticker's price. for non-sale items, the price
+           the customer pays needs to match the sticker
+           price exactly.
+
+           items that are not scaled do not need a fractional
+           quantity and items that do not have a normal_price
+           assigned cannot calculate a proper quantity.
 		*/
-		if (substr($upc,0,3) == "002"){
-			if ($DiscountObject->isSale() && $scale == 1)
+		if (substr($upc,0,3) == "002") {
+			if ($DiscountObject->isSale() && $scale == 1 && $row['normal_price'] != 0) {
 				$quantity = MiscLib::truncate2($scaleprice / $row["normal_price"]);
-			else
+            } else if ($scale == 1 && $row['normal_price'] != 0) {
+				$quantity = MiscLib::truncate2($scaleprice / $row["normal_price"]);
+                if (round($scaleprice, 2) != round($quantity * $row['normal_price'], 2)) {
+                    $quantity = 1.0;
+                    $row['normal_price'] = $scaleprice;
+                } 
+			} else {
 				$row['normal_price'] = $scaleprice;
+            }
 		}
 
 		/*
@@ -369,7 +398,12 @@ class UPC extends Parser {
 		// prefetch: otherwise object members 
 		// pass out of scope in addItem()
 		$prefetch = $DiscountObject->priceInfo($row,$quantity);
-		$PriceMethodObject->addItem($row, $quantity, $DiscountObject);
+		$added = $PriceMethodObject->addItem($row, $quantity, $DiscountObject);
+
+		if (!$added){
+			$ret['output'] = DisplayLib::boxMsg($PriceMethodObject->errorInfo());
+			return $ret;
+		}
 
 		/* add discount notifications lines, if applicable */
 		$DiscountObject->addDiscountLine();

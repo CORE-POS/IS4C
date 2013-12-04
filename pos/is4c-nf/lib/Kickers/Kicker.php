@@ -26,48 +26,58 @@
   Base class for opening cash drawer
 
 */
-class Kicker {
+class Kicker 
+{
 
-	/**
-	  Determine whether to open the drawer
-	  @return boolean
-	*/
-	function doKick(){
-		global $CORE_LOCAL;
-		if($CORE_LOCAL->get('training') == 1) return False;
-		$db = Database::tDataConnect();
+    /**
+      Determine whether to open the drawer
+      @return boolean
+    */
+    public function doKick()
+    {
+        global $CORE_LOCAL;
+        if($CORE_LOCAL->get('training') == 1) {
+            return false;
+        }
+        $db = Database::tDataConnect();
 
-		$query = "select trans_id from localtemptrans where 
-			(trans_subtype = 'CA' and total <> 0)";
+        $query = "select trans_id from localtemptrans where 
+            (trans_subtype = 'CA' and total <> 0)";
 
-		$result = $db->query($query);
-		$num_rows = $db->num_rows($result);
+        $result = $db->query($query);
+        $num_rows = $db->num_rows($result);
 
-		return ($num_rows > 0) ? True : False;
+        return ($num_rows > 0) ? true : false;
+    }
 
-	}
+    /**
+      Determine whether to open the drawer when
+      a cashier signs in
+      @return boolean
+    */
+    public function kickOnSignIn()
+    {
+        global $CORE_LOCAL;
+        if($CORE_LOCAL->get('training') == 1) {
+            return false;
+        }
 
-	/**
-	  Determine whether to open the drawer when
-	  a cashier signs in
-	  @return boolean
-	*/
-	function kickOnSignIn(){
-		global $CORE_LOCAL;
-		if($CORE_LOCAL->get('training') == 1) return False;
-		return True;
-	}
+        return true;
+    }
 
-	/**
-	  Determine whether to open the drawer when
-	  a cashier signs out
-	  @return boolean
-	*/
-	function kickOnSignOut(){
-		global $CORE_LOCAL;
-		if($CORE_LOCAL->get('training') == 1) return False;
-		return True;
-	}
+    /**
+      Determine whether to open the drawer when
+      a cashier signs out
+      @return boolean
+    */
+    public function kickOnSignOut()
+    {
+        global $CORE_LOCAL;
+        if($CORE_LOCAL->get('training') == 1) {
+            return false;
+        }
+
+        return true;
+    }
 }
 
-?>

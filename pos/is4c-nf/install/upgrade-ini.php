@@ -1,8 +1,8 @@
 <?php
 include(realpath(dirname(__FILE__).'/../lib/AutoLoader.php'));
-AutoLoader::LoadMap();
+AutoLoader::loadMap();
 include(realpath(dirname(__FILE__).'/../ini.php'));
-include('util.php');
+include('InstallUtilities.php');
 
 ini_set('display_errors','1');
 
@@ -49,13 +49,13 @@ if (!empty($upgrades)){
 			foreach($val as $v)
 				$str .= "'$v',";
 			$str = rtrim($str,",").")";	
-			confsave($key,$str);
+			InstallUtilities::confsave($key,$str);
 		}
 		else if (is_string($val) || is_bool($val)){
-			confsave($key,"'".$val."'");
+			InstallUtilities::confsave($key,"'".$val."'");
 		}
 		else
-			confsave($key,$val);
+			InstallUtilities::confsave($key,$val);
 	}
 	$db_local->query("UPDATE lane_config SET modified=".$db_local->now());
 	$msgs .= "Upgrades to ini.php complete!";

@@ -53,7 +53,8 @@ include('../config.php');
 $Fannie_Item_Modules = array("Operations","ExtraInfo",
 		"ThreeForDollar",
 	"Cost","Sale","Margin", "LikeCode", "LaneStatus");
-require_once('../src/mysql_connect.php');
+include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+$dbc = FannieDB::get($FANNIE_OP_DB);
 
 require_once('../auth/login.php');
 $validatedUser = validateUserQuiet('pricechange');
@@ -61,8 +62,8 @@ $auditedUser = validateUserQuiet('audited_pricechange');
 $logged_in = checkLogin();
 refreshSession();
 
-$page_title = 'Fannie - Item Maintanence WEFC_Toronto';
-$header = 'Item Maintanence WEFC_Toronto';
+$page_title = 'Fannie - Item Maintenance WEFC_Toronto';
+$header = 'Item Maintenance WEFC_Toronto';
 include('../src/header.html');
 
 include_once('prodFunction_WEFC_Toronto.php');
@@ -110,7 +111,7 @@ $up_array['tareweight'] = 0;
 $up_array['wicable'] = 0;
 $up_array['idEnforced'] = 0;
 // Item flags, bits
-$up_array['numflag'] = setProductFlags($_REQUEST['flags']);
+$up_array['numflag'] = (isset($_REQUEST['flags']))?setProductFlags($_REQUEST['flags']):0;
 // 3 for $1 from fieldset
 // Only use these if the fieldset they are in is displayed ...
 if ( array_search('ThreeForDollar',$Fannie_Item_Modules) !== False ) {

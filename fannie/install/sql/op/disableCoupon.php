@@ -23,6 +23,7 @@ feasible.
 $CREATE['op.disableCoupon'] = "
 	CREATE TABLE disableCoupon (
 		upc varchar(13),
+		threshold smallint default 0,
 		reason text,
 		PRIMARY KEY (upc)
 	)

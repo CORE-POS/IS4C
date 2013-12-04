@@ -21,11 +21,14 @@
 
 *********************************************************************************/
 
-class AutoReprintDept extends SpecialDept {
-	
-	function handle($deptID,$amount,$json){
-		global $CORE_LOCAL;
-		$CORE_LOCAL->set('autoReprint',1);
-		return $json;
-	}
+class AutoReprintDept extends SpecialDept 
+{
+    
+    public function handle($deptID,$amount,$json){
+        global $CORE_LOCAL;
+        $CORE_LOCAL->set('autoReprint',1);
+
+        return $json;
+    }
 }
+

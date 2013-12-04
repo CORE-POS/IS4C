@@ -1,8 +1,7 @@
 <?php
 include('../../../../config.php');
-
-include($FANNIE_ROOT.'src/mysql_connect.php');
-include($FANNIE_ROOT.'src/select_dlog.php');
+include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+$dbc = FannieDB::get($FANNIE_OP_DB);
 
 if (!isset($_GET['excel'])){
 ?>
@@ -73,7 +72,7 @@ else {
 	$ddiff = " (tdate BETWEEN '$date 00:00:00' AND '$date2 23:59:59') ";
 }
 	
-$dlog = select_dlog($date);
+$dlog = DTransactionsModel::selectDlog($date);
 $args = array($date.' 00:00:00',$date.' 23:59:59');
 
 $otherQ = "SELECT d.department,t.dept_name, sum(total) as total 

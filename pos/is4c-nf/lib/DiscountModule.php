@@ -31,7 +31,8 @@
   simply returns the value calculated by the 
   translog.subtotals view.
 */
-class DiscountModule {
+class DiscountModule 
+{
 
 	/**
 	  Calculate the discount based on current
@@ -41,11 +42,26 @@ class DiscountModule {
 	  Note return value should be positive unless
 	  you're doing something odd
 	*/
-	public function calculate(){
+	public function calculate()
+    {
 		global $CORE_LOCAL;
 		$subtotalsDiscount = $CORE_LOCAL->get('transDiscount');
-		if ($subtotalsDiscount === '')
+		if ($subtotalsDiscount === '') {
 			$subtotalsDiscount = 0.00;
+        }
+
 		return $subtotalsDiscount;
 	}
+
+	/**
+	  Decide what percent discount to apply to this
+	  transaction.
+	  @param $custdata_discount value in custdata.Discount
+	  @return int percentage (i.e., 5 == 5%)
+	*/
+	public function percentage($custdata_discount=0)
+    {
+		return $custdata_discount;
+	}
 }
+

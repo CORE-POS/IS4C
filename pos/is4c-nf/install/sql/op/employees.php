@@ -4,8 +4,8 @@ Table: employees
 
 Columns:
 	emp_no int	
-	CashierPassword int
-	AdminPassword int
+	CashierPassword varchar
+	AdminPassword varchar
 	FirstName varchar
 	LastName varchar
 	JobTitle varchar
@@ -31,8 +31,8 @@ based on security level.
 $CREATE['op.employees'] = "
 	CREATE TABLE employees (
 		emp_no smallint,
-		CashierPassword int,
-		AdminPassword int,
+		CashierPassword VARCHAR(50),
+		AdminPassword VARCHAR(50),
 		FirstName varchar(255),
 		LastName varchar(255),
 		JobTitle varchar(255),

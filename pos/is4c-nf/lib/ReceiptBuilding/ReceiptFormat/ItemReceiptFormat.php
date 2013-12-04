@@ -26,45 +26,41 @@
   Module for print-formatting 
   item records. 
 */
-class ItemReceiptFormat extends DefaultReceiptFormat {
+class ItemReceiptFormat extends DefaultReceiptFormat 
+{
 
 	/**
 	  Formatting function
 	  @param $row a single receipt record
 	  @return a formatted string
 	*/
-	function format($row){
-		if ($row['trans_type'] == 'D'){
+	public function format($row)
+    {
+		if ($row['trans_type'] == 'D') {
 			// department open ring; not much to format
 			return $this->align($row['description'],'',$row['total'],$this->flags($row));
-		}
-		else if ($row['trans_status'] == 'D'){
+		} else if ($row['trans_status'] == 'D') {
 			// a "YOU SAVED" line
 			$description = strtolower($row['description']);
 			$description = str_replace("**"," >",$description);
 			return $description;
-		}
-		else if ($row['trans_status'] == 'M'){
+		} else if ($row['trans_status'] == 'M') {
 			// member special line
 			$description = sprintf(' > you saved $%.2f Member Special <',$row['total']*-1);
 			return $description;
-		}
-		else {
+		} else {
 			// an item record
 
 			$comment = "";
-			if ($row['charflag']=='SO'){
+			if ($row['charflag']=='SO') {
 				// intentional. special orders can have weird
 				// quantity fields
 				$comment = "";
-			}
-			elseif ($row['scale'] != 0 && $row['quantity'] != 0){
+			} elseif ($row['scale'] != 0 && $row['quantity'] != 0) {
 				$comment = sprintf('%.2f @ %.2f',$row['quantity'],$row['unitPrice']);
-			}
-			else if (abs($row['ItemQtty']>1)){
+			} else if (abs($row['ItemQtty']>1)) {
 				$comment = sprintf('%d @ %.2f',$row['quantity'],$row['unitPrice']);
-			}
-			else if ($row['matched'] > 0){
+			} else if ($row['matched'] > 0) {
 				$comment = 'w/ vol adj';
 			}
 
@@ -77,15 +73,20 @@ class ItemReceiptFormat extends DefaultReceiptFormat {
 	/**
 	  Determine flags for a row
 	*/
-	function flags($row){
-		if($row['trans_status']=='V') return 'VD';
-		elseif($row['trans_status']=='R') return 'RF';
-		else {
+	private function flags($row)
+    {
+		if ($row['trans_status']=='V') {
+            return 'VD';
+		} elseif ($row['trans_status']=='R') {
+            return 'RF';
+		} else {
 			$flags = '';
-			if($row['tax'] != 0)
+			if($row['tax'] != 0) {
 				$flags .= 'T';
-			if($row['foodstamp'] != 0)
+            }
+			if($row['foodstamp'] != 0) {
 				$flags .= 'F';
+            }
 			return $flags;
 		}
 	}
@@ -93,7 +94,8 @@ class ItemReceiptFormat extends DefaultReceiptFormat {
 	/**
 	  Pad fields into a standard width and alignment
 	*/
-	function align($description, $comment, $amount, $flags=""){
+	private function align($description, $comment, $amount, $flags="")
+    {
 		$amount = sprintf('%.2f',$amount);
 		if ($amount=="0.00") $amount="";
 
@@ -105,3 +107,4 @@ class ItemReceiptFormat extends DefaultReceiptFormat {
 		return $ret;
 	}
 }
+

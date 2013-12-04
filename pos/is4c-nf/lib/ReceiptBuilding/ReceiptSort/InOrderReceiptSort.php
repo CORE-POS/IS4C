@@ -26,15 +26,36 @@
   Does nothing. Leave items in the order they
   were entered.
 */
-class InOrderReceiptSort extends DefaultReceiptSort {
+class InOrderReceiptSort extends DefaultReceiptSort 
+{
 
 	/**
 	  Sorting function
 	  @param $rowset an array of records
 	  @return an array of records
 	*/
-	function sort($rowset){
-		return $rowset;
+	public function sort($rowset)
+    {
+        $nontenders = array();
+        $tenders = array();
+        foreach($rowset as $row) {
+            if ($row['trans_type'] == 'T' && $row['department'] == 0) {
+                $tenders[] = $row;
+            } else {
+                $nontenders[] = $row;
+            }
+        }
+
+        $returnset = array();
+        foreach($nontenders as $row) {
+            $returnset[] = $row;
+        }
+        foreach($tenders as $row) {
+            $returnset[] = $row;
+        }
+
+		return $returnset;
 	}
 
 }	
+

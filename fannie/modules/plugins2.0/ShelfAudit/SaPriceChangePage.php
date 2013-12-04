@@ -21,8 +21,8 @@
 
 *********************************************************************************/
 
-include('../../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include(dirname(__FILE__).'/../../../config.php');
+include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
 /**
   @class SaPriceChangePage
@@ -66,10 +66,10 @@ class SaPriceChangePage extends FannieRESTfulPage {
 		$dbc = FannieDB::get($FANNIE_OP_DB);
 
 		$prod = new ProductsModel($dbc);
-		$prod->upc(str_pad($this->upc,13,'0',STR_PAD_LEFT));
+		$prod->upc(BarcodeLib::padUPC($this->upc));
 		$prod->normal_price($this->price);
 		$prod->save();
-		$prod->push_to_lanes();
+		$prod->pushToLanes();
 
 		$this->id = $this->upc;
 		return $this->get_id_handler();
@@ -81,7 +81,7 @@ class SaPriceChangePage extends FannieRESTfulPage {
 
 		$prodQ = $dbc->prepare_statement('SELECT upc, description, normal_price
 						FROM products WHERE upc=?');
-		$upc = str_pad($this->id, 13, '0', STR_PAD_LEFT);
+		$upc = BarcodeLib::padUPC($this->id);
 		$prodR = $dbc->exec_statement($prodQ, array($upc));
 
 		if ($dbc->num_rows($prodR) == 0){
@@ -99,14 +99,14 @@ class SaPriceChangePage extends FannieRESTfulPage {
 		if ($dbc->table_exists('batchListTest')){
 			$pendQ = $dbc->prepare_statement('SELECT salePrice FROM batchListTest as l
 							LEFT JOIN batchTest AS b ON l.batchID=b.batchID WHERE
-							b.discounttype=0 AND l.upc=? ORDER BY l.batchID DESC');
+							b.discountType=0 AND l.upc=? ORDER BY l.batchID DESC');
 			$pendR = $dbc->exec_statement($pendQ, array($upc));
 		}
 
 		if ($pendR === 0 || $dbc->num_rows($pendR) == 0){
 			$pendQ = $dbc->prepare_statement('SELECT salePrice FROM batchList as l
 							LEFT JOIN batches AS b ON l.batchID=b.batchID WHERE
-							b.discounttype=0 AND l.upc=? ORDER BY l.batchID DESC');
+							b.discountType=0 AND l.upc=? ORDER BY l.batchID DESC');
 			$pendR = $dbc->exec_statement($pendQ, array($upc));
 		}
 
@@ -215,9 +215,15 @@ function do_pricechange(upc, newprice){
 <head><title>Price Check</title></head>
 <body onload="$('<?php echo $elem; ?>').focus();">
 <form onsubmit="lookupItem(); return false;" method="get" id="upcScanForm">
+<div style="float: left;">
+<a href="SaMenuPage.php">Menu</a><br />
 <b>UPC</b>: <input type="number" size="10" name="upc_in" id="upc_in" 
 	class="focused" />
+</div>
+<div style="float: left;">
 <input type="submit" value="Go" class="addButton" id="goBtn" />
+</div>
+<div style="clear:left;"></div>
 </form>
 <hr />
 <div id="output_area"></div>

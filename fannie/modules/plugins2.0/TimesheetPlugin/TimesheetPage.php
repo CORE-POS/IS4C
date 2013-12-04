@@ -1,6 +1,6 @@
 <?php 
-require_once('../../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+require_once(dirname(__FILE__).'/../../../config.php');
+include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
 $ts_db = FannieDB::get($FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']);
 
@@ -24,7 +24,7 @@ class TimesheetPage extends FanniePage {
 		$max = ($_GET['max']) ? 10 : 10;  // Max number of entries.
 
 		if (!$this->current_user && $_GET['login'] == 1 ){
-			$this->login_redirect();
+			$this->loginRedirect();
 			return False;
 		}
 

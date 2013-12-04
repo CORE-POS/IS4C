@@ -20,26 +20,31 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
+/**
+  @class AgeApproveAdminLogin
+  adminlogin callback for permitting underage age
+  cashiers to sell age-restricted items
+*/
+class AgeApproveAdminLogin 
+{
 
-class AgeApproveAdminLogin {
+    public static $adminLoginMsg = 'Login to approve sale';
+    
+    public static $adminLoginLevel = 30;
 
-	public static $adminLoginMsg = 'Login to approve sale';
-	
-	public static $adminLoginLevel = 30;
-
-	public static function adminLoginCallback($success){
-		global $CORE_LOCAL;
-		if ($success){
-			$CORE_LOCAL->set('refundComment', $CORE_LOCAL->get('strEntered'));	
-			$CORE_LOCAL->set('strRemembered', $CORE_LOCAL->get('strEntered'));	
-			$CORE_LOCAL->set('msgrepeat', 1);
-			$CORE_LOCAL->set('cashierAgeOverride', 1);
-			return True;
-		}
-		else{
-			$CORE_LOCAL->set('cashierAgeOverride', 0);
-			return False;
-		}
-	}
+    public static function adminLoginCallback($success)
+    {
+        global $CORE_LOCAL;
+        if ($success) {
+            $CORE_LOCAL->set('refundComment', $CORE_LOCAL->get('strEntered'));    
+            $CORE_LOCAL->set('strRemembered', $CORE_LOCAL->get('strEntered'));    
+            $CORE_LOCAL->set('msgrepeat', 1);
+            $CORE_LOCAL->set('cashierAgeOverride', 1);
+            return true;
+        } else {
+            $CORE_LOCAL->set('cashierAgeOverride', 0);
+            return false;
+        }
+    }
 }
-?>
+

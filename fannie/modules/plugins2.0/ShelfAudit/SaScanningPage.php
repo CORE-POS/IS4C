@@ -22,8 +22,8 @@
 
 *********************************************************************************/
 
-include('../../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include(dirname(__FILE__).'/../../../config.php');
+include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
 /**
   @class SaScanningPage
@@ -67,9 +67,9 @@ class SaScanningPage extends FanniePage {
 		else if (FormLib::get_form_value('minput') !== ''){
 			$upc = FormLib::get_form_value('minput');
 			if (FormLib::get_form_value('isbnflag')=='1'){
-				$upc=str_pad(substr($_GET['minput'],0,12), 13, '0', STR_PAD_LEFT);
+				$upc=BarcodeLib::padUPC(substr($_GET['minput'],0,12));
 			} else {
-				$upc=str_pad(substr($_GET['minput'],0,11), 13, '0', STR_PAD_LEFT);
+				$upc=BarcodeLib::padUPC(substr($_GET['minput'],0,11));
 			}
 				
 			/* Short tag rules */

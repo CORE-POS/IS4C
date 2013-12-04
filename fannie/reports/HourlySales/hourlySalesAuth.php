@@ -22,9 +22,9 @@
 *********************************************************************************/
 
 include('../../config.php');
-include($FANNIE_ROOT.'src/mysql_connect.php');
+include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 include($FANNIE_ROOT.'auth/login.php');
-include($FANNIE_ROOT.'src/select_dlog.php');
+$dbc = FannieDB::get($FANNIE_OP_DB);
 
 $startDate = $_REQUEST['startDate'];
 $endDate = $_REQUEST['endDate'];
@@ -34,10 +34,24 @@ $buyer = $_REQUEST['buyer'];
 $dDiffStart = $startDate.' 00:00:00';
 $dDiffEnd = $endDate.' 23:59:59';
 
-echo "Hourly Sales Report<br>";
+echo "<span style='font-weight:bold;'>Hourly Sales Report</span><br>";
 echo "From $startDate to $endDate";
+echo "<br />Super Department: ";
+if($buyer == -1){
+	echo "All";
+} else {
+	$sdQ = "SELECT super_name FROM superDeptNames WHERE superID = ?";
+	$sdP = $dbc->prepare_statement($sdQ);
+	$sdR = $dbc->exec_statement($sdP,array($buyer));
+	$superDept = "";
+	while($row = $dbc->fetch_row($sdR)){
+		$superDept = $row['super_name'];
+		echo $superDept;
+		break;
+	}
+}
 
-$dlog = select_dlog($startDate,$endDate);
+$dlog = DTransactionsModel::selectDlog($startDate,$endDate);
 
 $dbconn = ($FANNIE_SERVER_DBMS=='MSSQL')?'.dbo.':'.';
 
@@ -101,10 +115,12 @@ if (isset($_REQUEST['excel'])){
 }
 else {
 	if(isset($_REQUEST['weekday'])){
+		 $weekday = $_REQUEST['weekday'];
 	   echo "<br><a href=hourlySalesAuth.php?endDate=$endDate&startDate=$startDate&buyer=$buyer&weekday=$weekday&excel=yes>Click here to dump to Excel File</a>";
 	}else{
 	   echo "<br><a href=hourlySalesAuth.php?endDate=$endDate&startDate=$startDate&buyer=$buyer&excel=yes>Click here to dump to Excel File</a>";
 	}
+	echo " <a href='javascript:history.back();'>Back</a>";
 }
 $sum = 0;
 $prep = $dbc->prepare_statement($hourlySalesQ);
@@ -132,10 +148,11 @@ else {
 		$hour = (int)$row[1];
 		$date = $days[$row[0]];
 		if (!isset($acc[$date])) $acc[$date] = array();
-		if (!isset($sums[$hour])) $sums[$date] = 0;
+		if (!isset($sums[$hour])) $sums[$date] = 0;	// Correct?
 		if ($hour < $minhour) $minhour = $hour;
 		if ($hour > $maxhour) $maxhour = $hour;
 		$acc[$date][$hour] = $row[2];
+		if (!isset($sums[$hour])) $sums[$hour]=0;
 		$sums[$hour] += $row[2];
 	}
 }
@@ -145,7 +162,7 @@ foreach($acc as $date=>$data){
 	echo $date;
 	echo "</th>";
 }
-echo "<td>Totals</td></tr>";
+echo "<td style='text-align:right; font-weight:bold;'>Totals</td></tr>";
 
 for($i=$minhour;$i<=$maxhour;$i++){
 	echo "<tr>";
@@ -156,25 +173,47 @@ for($i=$minhour;$i<=$maxhour;$i++){
 	echo "</td>";
 	foreach($acc as $date=>$data){
 		if (isset($data[$i])){
-			printf("<td>%.2f</td>",$data[$i]);
+			if (isset($_REQUEST['excel']))
+				printf("<td>%.2f</td>",$data[$i]);
+			else
+				echo "<td style='text-align:right;'>" . number_format($data[$i],2);
 			if (!isset($sums[$i])) $sums[$i] = 0;
+			if (!isset($sums[$date])) $sums[$date]=0;
 			$sums[$date] += $data[$i];
 		}
 		else
 			echo "<td>&nbsp;</td>";
 	}
-	printf("<td>%.2f</td>",$sums[$i]);
+	if (isset($_REQUEST['excel']))
+		printf("<td>%.2f</td>",$sums[$i]);
+	else {
+		$item = (isset($sums[$i])) ? number_format($sums[$i],2) : ' &nbsp; ';
+		echo "<td style='text-align:right;'>" . $item . "</td>";
+	}
 	echo "</tr>";
 }
 $sum=0;
 echo "<tr><td>Totals</td>";
 foreach($acc as $date=>$data){
-	printf("<td>%.2f</td>",$sums[$date]);
+	if (isset($_REQUEST['excel']))
+		printf("<td>%.2f</td>",$sums[$date]);
+	else
+		echo "<td style='text-align:right;'>" . number_format($sums[$date],2);
 	$sum += $sums[$date];
 }
-echo "<td>&nbsp;</td></tr>";
+// Grand total, in the table.
+if (isset($_REQUEST['excel']))
+	printf("<td>%.2f</td></tr>",$sum);
+else
+	echo "<td style='text-align:right;'>" . number_format($sum,2) . '</td></tr>';
+// Cell originally set to empty.  Why?
+//echo "<td>&nbsp;</td></tr>";
 
 echo "</table>";
 
-echo "<p />Total: $sum"
+// Grand total, below the table.
+if (isset($_REQUEST['excel']))
+	echo "<p />Total: $sum";
+else
+	echo "<p />Total: " . number_format($sum,2);
 ?>

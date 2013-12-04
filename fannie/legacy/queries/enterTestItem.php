@@ -1,6 +1,6 @@
 <?php
 include('../../config.php');
-
+include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 require($FANNIE_ROOT.'auth/login.php');
 $validatedUser = validateUserQuiet('pricechange');
 $auditedUser = validateUserQuiet('audited_pricechange');
@@ -29,7 +29,7 @@ refreshSession();
 //    testwindow.moveTo(50,50);
 //}
 function shelftag(upc){
-testwindow= window.open ("addShelfTag.php?upc="+upc, "New Shelftag","location=0,status=1,scrollbars=1,width=300,height=220");
+testwindow= window.open ("../../item/addShelfTag.php?upc="+upc, "New Shelftag","location=0,status=1,scrollbars=1,width=300,height=220");
 testwindow.moveTo(50,50);
 }
 
@@ -39,7 +39,6 @@ testwindow.moveTo(50,50);
 <BODY onLoad='putFocus(0,0);'>
 
 <?php
-if (!class_exists("SQLManager")) require_once($FANNIE_ROOT.'src/SQLManager.php');
 include('../db.php');
 
 extract($_POST);
@@ -74,20 +73,19 @@ if (!isset($local)){
    $local = 0;
 }
 
-$del99Q = "DELETE FROM products where upc = '$upc'";
-//$del99R = $sql->query($del99Q,$db1);
-$delISR = $sql->query($del99Q);
+$del99Q = $sql->prepare("DELETE FROM products where upc = ?");
+$delISR = $sql->execute($del99Q, array($upc));
 
 //echo '<br>' .$upc;
 //echo $descript;
 //echo $price;
 
 // set the tax and foodstamp according to values in departments
-$taxfsQ = "select dept_tax,dept_fs,superID,dept_discount 
+$taxfsQ = $sql->prepare("select dept_tax,dept_fs,superID,dept_discount 
 from departments as d left join
 MasterSuperDepts AS s ON d.dept_no=s.dept_ID
-where dept_no = $dept";
-$taxfsR = $sql->query($taxfsQ);
+where dept_no = ?");
+$taxfsR = $sql->execute($taxfsQ, array($dept));
 if ($sql->num_rows($taxfsR) == 1){
   $taxfsRow = $sql->fetch_array($taxfsR);
   $tax = $taxfsRow[0];
@@ -113,7 +111,7 @@ if ($validatedUser){
 elseif ($auditedUser){
   $auditedUID = getUID($auditedUser);
   $uid = $auditedUID;
-  require('audit.php');
+  require('../../item/audit.php');
   if (!empty($likeCode))
     audit($deptSub,$auditedUser,$upc,$descript,$price,$tax,$FS,$Scale,$NoDisc,$likeCode);
   else
@@ -121,39 +119,45 @@ elseif ($auditedUser){
 }
 if (!$validatedUser && !$auditedUser && substr($upc,0,3) != "002"){
 	echo "Please ";
-	echo "<a href={$FANNIE_URL}auth/ui/loginform.php?redirect={$FANNIE_URL}legacy/queries/productTest.php?upc=$upc>";
+	echo "<a href=/auth/ui/loginform.php?redirect=/queries/productTest.php?upc=$upc>";
 	echo "login</a> to add new items";
 	return;
 }
 
 $descript = str_replace("'","",$descript);
+$descript = str_replace("\"","",$descript);
 $descript = $sql->escape($descript);
 
+$stamp = date("Y-m-d H:i:s");
+
 $query1 = "INSERT INTO prodUpdate 
-        VALUES('$upc',$descript, 
-        $price,$dept,
-        $tax,$FS,        $Scale,
-        $likeCode,
-        getdate(),
-        $uid,
-        $QtyFrc,
-        $NoDisc,
-        $inUse)
+        VALUES(?, ?,
+        ?, ?,
+        ?, ?, ?,
+        ?,
+        ?,
+        ?,
+        ?,
+        ?,
+        ?)
         ";
 //echo $query1;
-$result1 = $sql->query($query1);
+$result1 = $sql->execute($query1, array($upc, $descript, $price, $dept, $tax, $FS, $Scale, $likeCode, $stamp, $uid, $QtyFrc, $NoDesc, $inUse));
 
 
-$query99 = "INSERT INTO products
-		VALUES('$upc',$descript,$price,0,0.00,0,0.00,0,0.00,0,'','',$dept,0,$tax,$FS,$Scale,0,0,getdate(),0,0,$NoDisc,0,0,0,0,0,0.00,1,
-		0,0,0.00,$local)";
+$query99 = $sql->prepare("INSERT INTO products (upc,description,normal_price,pricemethod,groupprice,quantity,
+	special_price,specialpricemethod,specialgroupprice,specialquantity,start_date,end_date,
+	department,size,tax,foodstamp,scale,scaleprice,mixmatchcode,modified,advertised,tareweight,discount,
+	discounttype,unitofmeasure,wicable,qttyEnforced,idEnforced,cost,inUse,numflag,subdept,
+	deposit,local)
+	VALUES(?,?,?,0,0.00,0,0.00,0,0.00,0,'','',?,0,?,?,?,0,0,?,0,0,?,0,0,0,0,0,0.00,1,
+	0,0,0.00,?)");
 //echo $query99;
-//$result = $sql->query($query99,$db1);
-$resultI = $sql->query($query99);
+$resultI = $sql->execute($query99, array($upc, $descript, $price, $dept, $tax, $FS, $Scale, $stamp, $NoDisc, $local));
 
-//$insertR = $sql->query('EXEC insertItemProc',$db);
-require('laneUpdates.php');
-addProductAllLanes($upc);
+$model = new ProductsModel($sql);
+$model->upc($upc);
+$model->pushToLanes();
 
 if (empty($manufacturer))
 	$manufacturer = '';
@@ -161,23 +165,22 @@ if (empty($distributor))
 	$distributor = '';
 $manufacturer = preg_replace("/\\\'/","",$manufacturer);
 $distributor = preg_replace("/\\\'/","",$distributor);
-$checkQ = "select * from prodExtra where upc='$upc'";
-$checkR = $sql->query($checkQ);
+$checkQ = $sql->prepare("select * from prodExtra where upc=?");
+$checkR = $sql->execute($checkQ, array($upc));
 if ($sql->num_rows($checkR) == 0){
-	$extraQ = "insert into prodExtra values ('$upc','$distributor','$manufacturer',0,0,0,'','',0,'')";
-	$extraR = $sql->query($extraQ);
+	$extraQ = $sql->prepare("insert into prodExtra values (?,?,?,0,0,0,'','',0,'')");
+	$extraR = $sql->execute($extraQ, array($upc, $distributor, $manufacturer));
 }
 
-//$result99 = $sql->query($query99,$db1);
 if(isset($likeCode) && $likeCode > 0){
-	$delLikeCode = "DELETE FROM upcLike WHERE upc = '$upc'";
-	$insLikeCode = "INSERT INTO upcLike VALUES('$upc','$likeCode')";
-	$delLikeCodeR = $sql->query($delLikeCode);
-	$insLikeCodeR = $sql->query($insLikeCode);
+	$delLikeCode = $sql->prepare("DELETE FROM upcLike WHERE upc = ?");
+	$insLikeCode = $sql->prepare("INSERT INTO upcLike VALUES(?,?)");
+	$delLikeCodeR = $sql->execute($delLikeCode, array($upc));
+	$insLikeCodeR = $sql->execute($insLikeCode, array($upc, $likeCode));
 }
 
-$query1 = "SELECT * FROM products WHERE upc = '$upc'";
-$result1 = $sql->query($query1);
+$query1 = $sql->prepare("SELECT * FROM products WHERE upc = ?");
+$result1 = $sql->execute($query1, array($upc));
 $row = $sql->fetch_array($result1);
 //echo '<br>'.$query1;
 
@@ -196,8 +199,8 @@ echo "<table>";
         echo "</tr>";
         echo "<tr>";
         //$dept=$row[12];
-        $query2 = "SELECT * FROM departments where dept_no = $dept";
-        $result2 = $sql->query($query2);
+        $query2 = $sql->prepare("SELECT * FROM departments where dept_no = ?");
+        $result2 = $sql->execute($query2, array($dept));
 	$num = $sql->num_rows($result2);
 	$row2 = $sql->fetch_array($result2);
 	echo "<td>";
@@ -231,9 +234,12 @@ echo "<table>";
         echo "<hr>";
         //echo "I am here.";
         echo "<form action=productTest.php method=post>";
-        echo "<input name=upc type=text id=upc> Enter UPC/PLU here<br>";
+        echo "<input name=upc type=text id=upc> Enter <select name=ntype>
+		<option>UPC</option>
+		<option>SKU</option>
+		<option>Brand Prefix</option>
+		</select> here<br>";
         echo "<input name=submit type=submit value=submit>";
-	echo " <input type=checkbox name=prefix> Manufacturer Prefix";
         echo "</form>";
 ?>
 

@@ -60,7 +60,6 @@ fetch_array(result_object, connection_identifer)
 **************************************************/
 
 define('DEBUG_MYSQL_QUERIES',realpath(dirname(__FILE__).'/../log/queries.log'));
-define('DEBUG_SMART_INSERTS',realpath(dirname(__FILE__).'/../log/smart_insert_errors.log'));
 
 $TYPE_MYSQL = 'MYSQL';
 $TYPE_MSSQL = 'MSSQL'; 
@@ -69,6 +68,7 @@ $TYPE_PGSQL = 'PGSQL';
 $TYPE_PDOMY = 'PDOMYSQL';
 $TYPE_PDOMS = 'PDOMSSQL';
 $TYPE_PDOPG = 'PDOPGSQL';
+$TYPE_PDOSL = 'PDOLITE';
 
 class SQLManager {
 
@@ -83,6 +83,7 @@ class SQLManager {
 	var $TYPE_PDOMY = 'PDOMYSQL';
 	var $TYPE_PDOMS = 'PDOMSSQL';
 	var $TYPE_PDOPG = 'PDOPGSQL';
+	var $TYPE_PDOSL = 'PDOLITE';
 
 	function SQLManager($server,$type,$database,$username,$password='',$persistent=False){
 		$this->connections=array();
@@ -104,6 +105,9 @@ class SQLManager {
 				strtoupper($type),$username,$password,
 				$persistent,True);		
 		}
+
+		if ($this->connections[$database] === False) return False;
+
 		$this->db_types[$database] = strtoupper($type);
 		$gotdb = $this->select_db($database,$database);
 		if (!$gotdb){
@@ -121,32 +125,42 @@ class SQLManager {
 	function connect($server,$type,$username,$password,$persistent=False,$newlink=False){
 		switch($type){
 		case $this->TYPE_MYSQL:
+			if (!function_exists('mysql_connect')) return False;
 			if ($persistent)
 				return mysql_pconnect($server,$username,$password,$newlink);
 			else
 				return mysql_connect($server,$username,$password,$newlink);
 		case $this->TYPE_MSSQL:
+			if (!function_exists('mssql_connect')) return False;
 			if ($persistent)
 				return mssql_pconnect($server,$username,$password);
 			else
 				return mssql_connect($server,$username,$password);
 		case $this->TYPE_PGSQL:
+			if (!function_exists('pg_connect')) return False;
 			$conStr = "host=".$server." user=".$username." password=".$password;
 			if ($persistent)
 				return pg_pconnect($conStr);
 			else
 				return pg_connect($conStr);
 		case $this->TYPE_PDOMY:
+			if (!class_exists('PDO')) return False;
 			$dsn = 'mysql:host='.$server;
 			return new PDO($dsn, $username, $password);
 		case $this->TYPE_PDOMS:
+			if (!class_exists('PDO')) return False;
 			$dsn = 'mssql:host='.$server;
 			return new PDO($dsn, $username, $password);
 		case $this->TYPE_PDOPG:
+			if (!class_exists('PDO')) return False;
 			$dsn = 'pgsql:host='.$server;
 			return new PDO($dsn, $username, $password);
+		case $this->TYPE_PDOSL:
+			if (!class_exists('PDO')) return False;
+			// delay opening 'connection' until select_db()
+			return null;
 		}
-		return -1;
+		return False;
 	}
 
 	function select_db($db_name,$which_connection=''){
@@ -163,11 +177,48 @@ class SQLManager {
 		case $this->TYPE_PDOMS:
 		case $this->TYPE_PDOPG:
 			return $this->query('use '.$db_name,$which_connection);
+		case $this->TYPE_PDOSL:
+			$path = dirname(__FILE__).'/sqlite/';
+			if (!is_dir($path)){
+				if (!mkdir($path, 0755))
+					return False;
+			}
+			$dsn = 'sqlite:'.realpath($path).'/'.$db_name.'.db';
+			try {
+				$handle = new PDO($dsn);
+				$this->connections[$db_name] = $handle;
+				$handle->sqliteCreateFunction('str_right', array('SQLManager','sqlite_right'), 2);
+				$handle->sqliteCreateFunction('space', array('SQLManager','sqlite_space'), 1);
+				$handle->sqliteCreateFunction('replace', array('SQLManager','sqlite_replace'), 3);
+				$handle->sqliteCreateFunction('trim', 'trim', 1);
+				return True;	
+			}
+			catch(Exception $ex){
+				return False;
+			}
 		}
 		return -1;
 	}
 
+	/**
+	  Supplementary functionality that SQLite doesn't have
+	  natively
+	*/
+	static public function sqlite_right($str, $num){
+		return substr($str, -1*$num);
+	}
+	static public function sqlite_space($num){
+		return str_pad('', $num);
+	}
+	static public function sqlite_replace($field, $original, $new){
+		return str_replace($original, $new, $field);
+	}
+
 	function query($query_text,$which_connection=''){
+        if (substr($query_text, 0, 4) != 'use ') {
+            // called when 
+            $this->test_mode = false;
+        }
 		if ($which_connection == '')
 			$which_connection=$this->default_db;
 		switch($this->db_types[$which_connection]){
@@ -190,10 +241,21 @@ class SQLManager {
 			return $result;
 		case $this->TYPE_PGSQL:
 			return pg_query($this->connections[$which_connection],$query_text);
+		case $this->TYPE_PDOSL:
+			$this->__sqlite_result_cache = False;
+			if (stristr($query_text, 'TRUNCATE')){
+				// not supported so replace TRUNCATE TABLE with DELETE FROM
+				$query_text = str_ireplace('TRUNCATE', 'DELETE', $query_text);
+				$query_text = str_ireplace('TABLE', 'FROM', $query_text);
+			}
+			else if (strtoupper(substr($query_text,0,4)) == "USE ")
+				return True;
+			// intentional.
 		case $this->TYPE_PDOMY:
 		case $this->TYPE_PDOMS:
 		case $this->TYPE_PDOPG:
 			$obj = $this->connections[$which_connection];
+			if (!is_object($obj)) return False;
 			$result = $obj->query($query_text);
 			if (!$result && DEBUG_MYSQL_QUERIES != "" && is_writable(DEBUG_MYSQL_QUERIES)){
 				$fp = fopen(DEBUG_MYSQL_QUERIES,"a");
@@ -203,6 +265,16 @@ class SQLManager {
 			return $result;
 		}	
 		return -1;
+	}
+
+	function end_query($result_object, $which_connection=''){
+		if ($which_connection == '')
+			$which_connection=$this->default_db;
+		switch($this->db_types[$which_connection]){
+		case $this->TYPE_PDOSL:
+			// can be required to unlock database file
+			$result_object->closeCursor();	
+		}
 	}
 
 	/**
@@ -219,6 +291,7 @@ class SQLManager {
 		case $this->TYPE_PDOMY:
 		case $this->TYPE_PDOMS:
 		case $this->TYPE_PDOPG:
+		case $this->TYPE_PDOSL:
 			$obj = $this->connections[$which_connection];
 			return $obj->prepare($query_text);
 		}
@@ -229,6 +302,8 @@ class SQLManager {
 	  execute statement: exec is emulated for non-PDO types
 	*/
 	function exec_statement($stmt,$args=array(),$which_connection=''){
+        $this->test_mode = false;
+
 		if ($which_connection == '')
 			$which_connection=$this->default_db;
 		switch($this->db_types[$which_connection]){
@@ -244,6 +319,9 @@ class SQLManager {
 				}
 			}
 			return $this->query($query,$which_connection);
+		case $this->TYPE_PDOSL:
+			$this->__sqlite_result_cache = False;
+			// intentional.
 		case $this->TYPE_PDOMY:
 		case $this->TYPE_PDOMS:
 		case $this->TYPE_PDOPG:
@@ -255,6 +333,16 @@ class SQLManager {
 		}
 		return False;
 	}
+
+	/**
+	  SQLite doesn't give a rowCount on SELECT queries, so
+	  num_rows() has to fetch all the results to count them. It
+	  also doesn't support moving the cursor back so we have to
+	  cache the result so subsequent fetch_row() calls work.
+	  Issuing a 2nd query before processing the result set
+	  will cause problems as the result cache gets overwritten.
+	*/
+	private $__sqlite_result_cache = False;
 	
 	function num_rows($result_object,$which_connection=''){
 		if ($which_connection == '')
@@ -269,7 +357,13 @@ class SQLManager {
 		case $this->TYPE_PDOMY:
 		case $this->TYPE_PDOMS:
 		case $this->TYPE_PDOPG:
+			if (!is_object($result_object)) return 0;
 			return $result_object->rowCount();
+		case $this->TYPE_PDOSL:
+			if (!is_object($result_object)) return 0;
+			$this->__sqlite_result_cache = $result_object->fetchAll();
+			$result_object->closeCursor();
+			return count($this->__sqlite_result_cache);
 		}
 		return -1;
 	}
@@ -287,12 +381,17 @@ class SQLManager {
 		case $this->TYPE_PDOMY:
 		case $this->TYPE_PDOMS:
 		case $this->TYPE_PDOPG:
+		case $this->TYPE_PDOSL:
 			return $result_object->columnCount();
 		}
 		return -1;
 	}
 
 	function fetch_array($result_object,$which_connection=''){
+        if ($this->test_mode) {
+            return $this->getTestDataRow();
+        }
+
 		if ($which_connection == '')
 			$which_connection = $this->default_db;
 		switch($this->db_types[$which_connection]){
@@ -306,6 +405,21 @@ class SQLManager {
 		case $this->TYPE_PDOMS:
 		case $this->TYPE_PDOPG:
 			return $result_object->fetch();
+		case $this->TYPE_PDOSL:
+			if (is_array($this->__sqlite_result_cache)){
+				if (count($this->__sqlite_result_cache) == 0){
+					$this->__sqlite_result_cache = False;
+					return False;
+				}
+				else {
+					return array_shift($this->__sqlite_result_cache);
+				}
+			}
+			else {
+				$row = $result_object->fetch();
+				if (!$row) $result_object->closeCursor();
+				return $row;
+			}
 		}
 		return False;
 	}
@@ -326,6 +440,7 @@ class SQLManager {
 		case $this->TYPE_PDOMY:
 		case $this->TYPE_PDOMS:
 		case $this->TYPE_PDOPG:
+		case $this->TYPE_PDOSL:
 			return $result_object->getColumnMeta($index);
 		}
 		return -1;
@@ -344,6 +459,7 @@ class SQLManager {
 		case $this->TYPE_PDOMY:
 		case $this->TYPE_PDOMS:
 		case $this->TYPE_PDOPG:
+		case $this->TYPE_PDOSL:
 			$info = $result_object->getColumnMeta($index);
 			if (!isset($info['native_type'])) return 'bit';	
 			else return strtolower($info['native_type']);
@@ -369,6 +485,7 @@ class SQLManager {
 		case $this->TYPE_PDOMY:
 		case $this->TYPE_PDOMS:
 		case $this->TYPE_PDOPG:
+		case $this->TYPE_PDOSL:
 			return True;
 		}
 		return -1;
@@ -399,6 +516,7 @@ class SQLManager {
 		case $this->TYPE_PDOMY:
 		case $this->TYPE_PDOMS:
 		case $this->TYPE_PDOPG:
+		case $this->TYPE_PDOSL:
 			$obj = $this->connections[$which_connection];	
 			return $obj->beginTransaction();
 		}
@@ -421,6 +539,7 @@ class SQLManager {
 		case $this->TYPE_PDOMY:
 		case $this->TYPE_PDOMS:
 		case $this->TYPE_PDOPG:
+		case $this->TYPE_PDOSL:
 			$obj = $this->connections[$which_connection];	
 			return $obj->commit();
 		}
@@ -443,6 +562,7 @@ class SQLManager {
 		case $this->TYPE_PDOMY:
 		case $this->TYPE_PDOMS:
 		case $this->TYPE_PDOPG:
+		case $this->TYPE_PDOSL:
 			$obj = $this->connections[$which_connection];	
 			return $obj->rollBack();
 		}
@@ -584,9 +704,9 @@ class SQLManager {
                 -1 => Operation not supported for this database type
         */
         function table_exists($table_name,$which_connection=''){
-                if ($which_connection == '')
-                        $which_connection=$this->default_db;
-                switch($this->db_types[$which_connection]){
+            if ($which_connection == '')
+                    $which_connection=$this->default_db;
+            switch($this->db_types[$which_connection]){
 		case $this->TYPE_PDOMY:
                 case $this->TYPE_MYSQL:
 			$result = $this->query("SHOW TABLES FROM $which_connection 
@@ -603,10 +723,19 @@ class SQLManager {
 		case $this->TYPE_PGSQL:
 		case $this->TYPE_PDOPG:
 			$result = $this->query("SELECT relname FROM pg_class
-					WHERE relname LIKE '$tablename'",
+					WHERE relname LIKE '$table_name'",
 					$which_connection);
                         if ($this->num_rows($result) > 0) return True;
                         else return False;
+		case $this->TYPE_PDOSL:
+			$result = $this->query("SELECT name FROM sqlite_master
+					WHERE type IN ('table','view') AND name='$table_name'",
+					$which_connection);
+			$ret = False;
+                        if ($this->fetch_row($result)) 
+				$ret = True;
+			$result->closeCursor();
+			return $ret;
                 }
                 return -1;
         }
@@ -615,7 +744,7 @@ class SQLManager {
            Return values:
 	   	array of values => table found
 			array format: $return['column_name'] =
-					array('column_type', is_auto_increment)
+					array('column_type', is_auto_increment, column_name)
                 False => no such table
                 -1 => Operation not supported for this database type
         */
@@ -662,7 +791,15 @@ class SQLManager {
 					LEFT JOIN pg_type AS t ON a.atttypid = t.oid	
 					WHERE c.relname='$table_name'", $which_connection);
 			while($row = $this->fetch_row($result,$which_connection)){
-				$return[$row[0]] = array($row[1],False);
+				$return[$row[0]] = array($row[1],False,$row[0]);
+			}
+                        if (count($return) == 0) return False;
+                        else return $return;
+		case $this->TYPE_PDOSL:
+			$result = $this->query("PRAGMA table_info($table_name)", $which_connection);
+			$return = array();
+			while($row = $this->fetch_row($result,$which_connection)){
+				$return[$row['name']] = array($row['type'],False,$row['name']);
 			}
                         if (count($return) == 0) return False;
                         else return $return;
@@ -677,10 +814,10 @@ class SQLManager {
 	 * written are noted
 	 */
 	function smart_insert($table_name,$values,$which_connection=''){
-		$OUTFILE = DEBUG_SMART_INSERTS;
+		$OUTFILE = DEBUG_MYSQL_QUERIES;
 
-                if ($which_connection == '')
-                        $which_connection=$this->default_db;
+        if ($which_connection == '')
+                $which_connection=$this->default_db;
 		$exists = $this->table_exists($table_name,$which_connection);
 		if (!$exists) return False;
 		if ($exists === -1) return -1;
@@ -706,10 +843,7 @@ class SQLManager {
 					else
 						$vals .= "'".$v."',";
 					$col_name = $t_def[$k][2];
-					if ($this->db_types[$which_connection] == $this->TYPE_MYSQL)
-						$cols .= "`".$col_name."`,";
-					else
-						$cols .= $col_name.",";
+					$cols .= $this->identifier_escape($col_name).',';
 				}
 				else {
 					if ($OUTFILE != "")
@@ -749,6 +883,8 @@ class SQLManager {
 		case $this->TYPE_PGSQL:
 		case $this->TYPE_PDOPG:
 			return "extract(day from ($date2 - $date1))";
+		case $this->TYPE_PDOSL:
+			return "CAST( (JULIANDAY($date1) - JULIANDAY($date2)) AS INT)";
                 }
         }
 
@@ -765,6 +901,8 @@ class SQLManager {
 		case $this->TYPE_PGSQL:
 		case $this->TYPE_PDOPG:
 			return "extract(year from age($date1,$date))";
+		case $this->TYPE_PDOSL:
+			return "CAST( ((JULIANDAY($date1) - JULIANDAY($date2)) / 365) AS INT)";
                 }
 	}
 
@@ -781,6 +919,8 @@ class SQLManager {
                 case $this->TYPE_PGSQL:
 		case $this->TYPE_PDOPG:
                         return "now()";
+		case $this->TYPE_PDOSL:
+			return "datetime('now')";
                 }
         }
 
@@ -797,6 +937,8 @@ class SQLManager {
                 case $this->TYPE_PGSQL:
 		case $this->TYPE_PDOPG:
 			return "extract(dow from $col";
+		case $this->TYPE_PDOSL:
+			return "(7 - ROUND(JULIANDAY(DATETIME('now','weekday 0')) - JULIANDAY($col))) % 7";
                 }
 	}
 
@@ -813,6 +955,8 @@ class SQLManager {
                 case $this->TYPE_PGSQL:
 		case $this->TYPE_PDOPG:
 			return "current_time";
+		case $this->TYPE_PDOSL:
+			return "time('now')";
                 }
 	}
 
@@ -827,6 +971,7 @@ class SQLManager {
 		case $this->TYPE_PDOMY:
 		case $this->TYPE_PDOMS:
 		case $this->TYPE_PDOPG:
+		case $this->TYPE_PDOSL:
 			$obj = $this->connections[$which_connection];
 			$quoted = $obj->quote($str);
 			return ($quoted == "''" ? '' : substr($quoted, 1, strlen($quoted)-2));
@@ -846,6 +991,7 @@ class SQLManager {
 			return '['.$str.']';
                 case $this->TYPE_PGSQL:
 		case $this->TYPE_PDOPG:
+		case $this->TYPE_PDOSL:
 			return '"'.$str.'"';
 		}
 		return $str;
@@ -859,6 +1005,7 @@ class SQLManager {
 		case $this->TYPE_PDOMY:
                 case $this->TYPE_PGSQL:
 		case $this->TYPE_PDOPG:
+		case $this->TYPE_PDOSL:
 			return '.';
 		case $this->TYPE_PDOMS:
 		case $this->TYPE_MSSQL:
@@ -867,11 +1014,32 @@ class SQLManager {
 		return '.';
 	}
 
+	public function dbms_name($which_connection='')
+    {
+        if ($which_connection == '') {
+            $which_connection = $this->default_db;
+        }
+        switch($this->db_types[$which_connection]) {
+            case $this->TYPE_MYSQL:
+            case $this->TYPE_PDOMY:
+                return 'mysql';
+            case $this->TYPE_MSSQL:
+            case $this->TYPE_PDOMS:
+                return 'mssql';
+            case $this->TYPE_PGSQL:
+            case $this->TYPE_PDOPG:
+                return 'pgsql';
+            case $this->TYPE_PDOSL:
+                return 'sqlite';
+        }
+
+        return false;
+    }
 
 	function error($which_connection=''){
-                if ($which_connection == '')
-                        $which_connection = $this->default_db;
-                switch($this->db_types[$which_connection]){
+        if ($which_connection == '')
+                $which_connection = $this->default_db;
+        switch($this->db_types[$which_connection]){
 		case $this->TYPE_MYSQL:
 			return mysql_error();
 		case $this->TYPE_MSSQL:
@@ -879,6 +1047,7 @@ class SQLManager {
 		case $this->TYPE_PDOMY:
 		case $this->TYPE_PDOMS:
 		case $this->TYPE_PDOPG:
+		case $this->TYPE_PDOSL:
 			$obj = $this->connections[$which_connection];
 			$info = $obj->errorInfo();
 			return ($info[2]==null ? '' : $info[2]);
@@ -921,6 +1090,7 @@ class SQLManager {
 			break;
 		case $this->TYPE_PGSQL:
 		case $this->TYPE_PDOPG:
+		case $this->TYPE_PDOSL:
 			for($i=0;$i<count($args)-1;$i++)
 				$ret .= $args[$i]."||";	
 			$ret = rtrim($ret,"||");
@@ -953,10 +1123,40 @@ class SQLManager {
 			return "CONVERT($type,$expr)";
 		case $this->TYPE_PGSQL:
 		case $this->TYPE_PDOPG:
+		case $this->TYPE_PDOSL:
 			return "CAST($expr AS $type)";
 		}
 		return "";
 	}
+
+    /**
+      Test data is for faking queries.
+      Setting the test data then running
+      a unit test means the test will get
+      predictable results.
+    */
+
+    private $test_data = array();
+    private $test_counter = 0;
+    private $test_mode = false;
+    function setTestData($records)
+    {
+        $this->test_data = $records;
+        $this->test_counter = 0;
+        $this->test_mode = true;
+    }
+
+    function getTestDataRow()
+    {
+        if (isset($this->test_data[$this->test_counter])) {
+            $next = $this->test_data[$this->test_counter];
+            $this->test_counter++;
+            return $next;
+        } else {
+            $this->test_mode = false; // no more test data
+            return false;
+        }
+    }
 }
 
 ?>

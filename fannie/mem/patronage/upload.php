@@ -1,8 +1,8 @@
 <?php
 include('../../config.php');
+include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+$dbc = FannieDB::get($FANNIE_OP_DB);
 
-require($FANNIE_ROOT.'src/csv_parser.php');
-require($FANNIE_ROOT.'src/mysql_connect.php');
 require($FANNIE_ROOT.'src/tmp_dir.php');
 
 include($FANNIE_ROOT.'src/header.html');
@@ -17,8 +17,7 @@ if (isset($_POST["MAX_FILE_SIZE"])){
 	$errors = False;
 	$argsSets = array();
 	while (!feof($fp)){
-		$line = fgets($fp);
-		$fields = csv_parser($line);
+		$fields = fgetcsv($fp);
 		if (count($fields) == 0) continue;
 		if (!is_numeric($fields[0])) continue;
 		if (count($fields) < 8){

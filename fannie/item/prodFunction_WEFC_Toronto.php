@@ -67,17 +67,21 @@
 	*
 */
 
-include_once('../src/mysql_connect.php');
+include('../config.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 include_once('../auth/login.php');
 include_once('ajax.php');
 //include_once(dirname(__FILE__).'/../classlib2.0/lib/FormLib.php');
 
 function itemParse($upc){
-	global $dbc,$FANNIE_URL;
+	global $FANNIE_OP_DB,$FANNIE_URL;
 	global $FANNIE_STORE_ID;
 	global $FANNIE_COOP_ID;
 	global $FANNIE_COMPOSE_PRODUCT_DESCRIPTION;
 	global $FANNIE_COMPOSE_LONG_PRODUCT_DESCRIPTION;
+    $dbc = FannieDB::get($FANNIE_OP_DB);
 	//global $FANNIE_ITEM_MODULES;
 	// This is both whether-or-not and sequence-on-page
 	//"ThreeForDollar",
@@ -1187,7 +1191,9 @@ function itemParse($upc){
 
 function likedtotable($query,$border,$bgcolor)
 {
-	global $dbc;
+	global $FANNIE_OP_DB;
+    $dbc = FannieDB::get($FANNIE_OP_DB);
+	//global $FANNIE_ITEM_MODULES;
         $results = $dbc->query($query) or
                 die("<li>errorno=".$dbc->errno()
                         ."<li>error=" .$dbc->error()
@@ -1247,6 +1253,23 @@ function oneItem($upc)
     echo "One item found for: " . $upc;
 }
 
+/* Return the number of decimal places to use in a price format spec: %.#f .
+ * Minimum is 2.
+*/
+function sig_decimals ($num) {
+	$dec = 2;
+	if ( preg_match('/\.\d{3}/',$num) )
+		$num = rtrim($num,'0');
+	for ($n=5 ; $n > $dec ; $n--) {
+		$pattern ='/\.\d{'.$n.'}$/';
+		if ( preg_match($pattern,$num) ) {
+			$dec = $n;
+			break;
+		}
+	}
+	return $dec;
+}
+
 /* Return numbers that are in named arrays formatted %.2f
  * If entered without decimals, add them.
  * Return non-numbers as $none
@@ -1258,7 +1281,8 @@ function saveAsMoney(&$arr,$index,$none="0") {
 		if ( strpos($arr["$index"],'.') === False )
 			$retVal = sprintf("%.2f", $arr["$index"]/100);
 		else
-			$retVal = sprintf("%.2f", $arr["$index"]);
+			$dec = sig_decimals($arr["$index"]);
+			$retVal = sprintf("%.{$dec}f", $arr["$index"]);
 	} else {
 		$retVal = $none;
 	}
@@ -1281,7 +1305,8 @@ function showAsMoney(&$arr,$index,$none="") {
 		if ( array_key_exists($index,$arr) && $arr[$index] == 0 ) {
 			$retVal = "0.00";
 		} elseif ( !empty($arr[$index]) && is_numeric($arr[$index]) ) {
-			$retVal = sprintf("%.2f", $arr[$index]);
+			$dec = sig_decimals($arr["$index"]);
+			$retVal = sprintf("%.{$dec}f", $arr["$index"]);
 		} else {
 			$retVal = $none;
 		}

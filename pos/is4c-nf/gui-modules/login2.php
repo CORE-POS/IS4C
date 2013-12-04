@@ -21,25 +21,34 @@
 
 *********************************************************************************/
 
-ini_set('display_errors','1');
-
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 AutoLoader::LoadMap();
+CoreState::loadParams();
 
-class login2 extends BasicPage {
+class login2 extends BasicPage 
+{
 
-	var $box_css_class;
-	var $msg;
+	private $box_css_class;
+	private $msg;
 
-	var $body_class = '';
+	public $body_class = '';
 
 	function preprocess(){
 		global $CORE_LOCAL;
 		$this->box_css_class = 'coloredArea';
 		$this->msg = _('please enter your password');
 
-		if (isset($_REQUEST['reginput'])){
-			if (Authenticate::check_password($_REQUEST['reginput'])){
+		if (isset($_REQUEST['reginput']) || isset($_REQUEST['userPassword'])){
+
+			$passwd = '';
+			if (isset($_REQUEST['reginput']) && !empty($_REQUEST['reginput'])){
+				$passwd = $_REQUEST['reginput'];
+				UdpComm::udpSend('goodBeep');
+			}
+			elseif (isset($_REQUEST['userPassword']) && !empty($_REQUEST['userPassword']))
+				$passwd = $_REQUEST['userPassword'];
+
+			if (Authenticate::checkPassword($passwd)){
 				Database::testremote();
 				$sd = MiscLib::scaleObject();
 				if (is_object($sd))
@@ -95,12 +104,13 @@ class login2 extends BasicPage {
 		</script>
 		<?php
 		$this->default_parsewrapper_js();
+		$this->scanner_scale_polling(True);
 	}
 
 	function body_content(){
 		global $CORE_LOCAL;
 		// 18Agu12 EL Add separately for readability of source.
-		$this->add_onload_command("\$('#reginput').focus();");
+		$this->add_onload_command("\$('#userPassword').focus();");
 		$this->add_onload_command("\$('#scalebox').css('display','none');");
 
 		?>
@@ -115,8 +125,9 @@ class login2 extends BasicPage {
 				<b><?php echo _("log in"); ?></b>
 				<form id="formlocal" name="form" method="post" autocomplete="off" 
 					action="<?php echo $_SERVER['PHP_SELF']; ?>">
-				<input type="password" name="reginput" size="20" tabindex="0" 
-					onblur="$('#reginput').focus();" id="reginput" >
+				<input type="password" name="userPassword" size="20" tabindex="0" 
+					onblur="$('#userPassword').focus();" id="userPassword" >
+				<input type="hidden" name="reginput" id="reginput" value="" />
 				<p>
 				<?php echo $this->msg ?>
 				</p>
@@ -147,6 +158,8 @@ class login2 extends BasicPage {
 
 }
 
-new login2();
+if (basename(__FILE__) == basename($_SERVER['PHP_SELF'])) {
+	new login2();
+}
 
 ?>

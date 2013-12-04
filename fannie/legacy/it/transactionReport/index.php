@@ -37,17 +37,17 @@ for ($datediff = -7 - $Dow; $datediff <= -1 - $DoW; $datediff++){
 		$dailySales[$m] = 0;
 	}
 
-	$transQ = "select q.trans_num,sum(q.quantity) as items,sum(q.total) as sales,q.transaction_type from
+	$transQ = $sql->prepare("select q.trans_num,sum(q.quantity) as items,sum(q.total) as sales,q.transaction_type from
 		(
 		select trans_num,card_no,quantity,total,
 		m.memdesc as transaction_type
 		from dlog_15 as d
 		left join custdata as c on d.card_no = c.cardno
 		left join memtypeid as m on c.memtype = m.memtypeid
-		where ".$sql->datediff('tdate',$sql->now())."=$datediff and trans_type='I'
+		where ".$sql->datediff('tdate',$sql->now())."=? and trans_type='I'
 		) as q 
-		group by q.trans_num,q.transaction_type";
-	$transR = $sql->query($transQ);
+		group by q.trans_num,q.transaction_type");
+	$transR = $sql->execute($transQ, array($datediff));
 	
 	while($transW = $sql->fetch_array($transR)){
 		$dailyTotals[$transW[3]] += 1;

@@ -22,12 +22,11 @@
 *********************************************************************************/
 
 require('../login.php');
-$path = guesspath();
-include($path."config.php");
+include("../../config.php");
 $page_title = 'Fannie : Auth : View Authorizations';
 $header = 'Fannie : Auth : View Authorizations';
 
-include($path."src/header.html");
+include($FANNIE_ROOT."src/header.html");
 
 if (!validateUser('admin')){
   return;
@@ -36,6 +35,9 @@ if (!validateUser('admin')){
 if (isset($_POST['name'])){
   $name = $_POST['name'];
   showAuths($name);
+	echo "The authorizations listed above were granted directly to the user
+	and do not include those the User has from Group memberships.";
+	echo "<br />It is usually preferable to grant authorizations through a group.";
 }
 echo "<p />";
 echo "<form action=viewAuths.php method=post>";
@@ -47,5 +49,5 @@ echo '&nbsp;&nbsp;&nbsp;<input type="submit" value="View" />';
 echo "</form>";
 echo "<a href=menu.php>Main menu</a>";
 
-include($path."src/footer.html");
+include($FANNIE_ROOT."src/footer.html");
 ?>

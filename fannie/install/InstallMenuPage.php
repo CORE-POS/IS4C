@@ -109,6 +109,58 @@ class InstallMenuPage extends InstallPage {
 				echo "PHP is (probably) running as: ".get_current_user()."<br />";
 		}
 		?>
+
+		<hr  />
+		<p class="ichunk">
+		Fannie Administration Menu at left or top.
+		<ul>
+		<li>Menu at left is traditional; on top may allows more horizontal space on the page for the report or tool.
+		<li>Under construction: The "top" option is only available for the configurable menu at this point.
+		</ul>
+		<b>Admin menu position</b>
+		<select name=FANNIE_NAV_POSITION>
+		<?php
+		if (!isset($FANNIE_NAV_POSITION)) $FANNIE_NAV_POSITION = 'left';
+		if (isset($_REQUEST['FANNIE_NAV_POSITION'])) $FANNIE_NAV_POSITION = $_REQUEST['FANNIE_NAV_POSITION'];
+		if ($FANNIE_NAV_POSITION == 'top'){
+			confset('FANNIE_NAV_POSITION',"'top'");
+			echo "<option value='left'>Left</option><option value='top' selected>Top</option>";
+		}
+		else{
+			confset('FANNIE_NAV_POSITION',"'left'");
+			echo "<option value='left' selected>Left</option><option value='top'>Top</option>";
+		}
+		echo "</select>";
+		?>
+		</p>
+
+		<hr  />
+		<p class="ichunk">
+		Whether to always show the Fannie Administration Menu.
+		<ul>
+		<li>Coops may prefer not to show the menu in order to maximize the space available on the page for the report or tool.
+		<li>Some pages may show or not show the Fannie Menu regardless of this setting,
+		but setting it to Yes will increase the number of pages on which the menu appears.
+		</ul>
+		<b>Show Admin menu</b>
+		<!-- "windowdressing" is the term used in Class Lib 2.0 for the heading and navigation menu.
+		     Use this to set the value of $window_dressing. -->
+		<select name=FANNIE_WINDOW_DRESSING>
+		<?php
+		if (!isset($FANNIE_WINDOW_DRESSING)) $FANNIE_WINDOW_DRESSING = False;
+		if (isset($_REQUEST['FANNIE_WINDOW_DRESSING'])) $FANNIE_WINDOW_DRESSING = $_REQUEST['FANNIE_WINDOW_DRESSING'];
+		if ($FANNIE_WINDOW_DRESSING === True || $FANNIE_WINDOW_DRESSING == 'Yes'){
+			confset('FANNIE_WINDOW_DRESSING','True');
+			echo "<option selected>Yes</option><option>No</option>";
+		}
+		else{
+			confset('FANNIE_WINDOW_DRESSING','False');
+			echo "<option>Yes</option><option selected>No</option>";
+		}
+		echo "</select>";
+		?>
+		</p>
+
 		<hr  />
 		<p class="ichunk">
 		Use this tool to customize Fannie's left hand menu. Usage:
@@ -229,7 +281,7 @@ class InstallMenuPage extends InstallPage {
 				printf('Sub:<input type="text" name="subheading%s[]" value="%s" /> ',
 					$parent,(isset($item['subheading'])?$item['subheading']:''));
 			}
-			printf('URL:<input type="text" name="url%s[]" value="%s" /> ',
+			printf('URL:<input type="text" size="50" name="url%s[]" value="%s" /> ',
 				$parent,$item['url']);
 			echo "\n";
 			if (!isset($item['submenu']) || !is_array($item['submenu'])){
@@ -250,7 +302,7 @@ class InstallMenuPage extends InstallPage {
 			$i++;
 		}	
 		printf('<li>New:<input type="text" name="label%s[]" value="" /> ',$parent);
-		printf('URL:<input type="text" name="url%s[]" value="" /></li>',$parent);
+		printf('URL:<input type="text" size="50" name="url%s[]" value="" /></li>',$parent);
 		echo '<br />';
 		echo '</ul>'."\n";
 	}

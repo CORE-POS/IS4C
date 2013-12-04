@@ -27,7 +27,7 @@ if (!class_exists('FannieAPI'))
 class VendorItemModule extends ItemModule {
 
 	function ShowEditForm($upc){
-		$upc = str_pad($upc,13,0,STR_PAD_LEFT);
+		$upc = BarcodeLib::padUPC($upc);
 
 		$ret = '<fieldset id="VendorItemsFieldset">';
 		$ret .=  "<legend>Vendor Items</legend>";
@@ -59,13 +59,23 @@ class VendorItemModule extends ItemModule {
 			$ret .= '<tr><th>SKU</th><td><input type="text" size="8" name="v_sku[]"
 					value="'.$row['sku'].'" /></td>';
 			$ret .= sprintf('<th>Unit Cost</th><td>$<input type="text" size="6"
-					name="v_cost[]" value="%.2f" /></td></tr>',$row['cost']);
+					name="v_cost[]" id="vcost%d" value="%.2f" onchange="vprice(%d);" /></td></tr>',
+					$id, $row['cost'], $id);
 			$ret .= '<tr><th>Units/Case</th><td><input type="text" size="4" name="v_units[]"
-					value="'.$row['units'].'" /></td>';
-			$ret .= sprintf('<th>Case Cost</th><td>$%.2f</td></tr>',($row['units']*$row['cost']));
+					id="vunits'.$id.'" value="'.$row['units'].'" 
+					onchange="vprice('.$id.');" /></td>';
+			$ret .= sprintf('<th>Case Cost</th><td id="vcc%d">$%.2f</td></tr>',
+					$id, ($row['units']*$row['cost']));
 			$ret .= '<input type="hidden" name="v_id[]" value="'.$id.'" />';
 			
 			$ret .= '</table>';
+			$ret .= "<script type=\"text/javascript\">
+				function vprice(id){
+					var cost = \$('#vcost'+id).val();
+					var units = \$('#vunits'+id).val();
+					\$('#vcc'+id).html('\$'+(cost*units));
+				}
+				</script>";
 
 			$style = 'display:none;';
 		}
@@ -75,7 +85,7 @@ class VendorItemModule extends ItemModule {
 	}
 
 	function SaveFormData($upc){
-		$upc = str_pad($upc,13,0,STR_PAD_LEFT);
+		$upc = BarcodeLib::padUPC($upc);
 		$ids = FormLib::get_form_value('v_id',array());
 		$skus = FormLib::get_form_value('v_sku',array());
 		$costs = FormLib::get_form_value('v_cost',array());

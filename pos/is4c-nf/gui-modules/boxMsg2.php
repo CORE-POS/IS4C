@@ -21,8 +21,6 @@
 
 *********************************************************************************/
 
-ini_set('display_errors','1');
-
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class boxMsg2 extends BasicPage {
@@ -62,6 +60,21 @@ class boxMsg2 extends BasicPage {
 		</script>
 		<?php
 	}
+
+	function preprocess(){
+		global $CORE_LOCAL;
+		/**
+		  Bounce through this page and back to pos2.php. This lets
+		  TenderModules use the msgrepeat feature during input parsing.
+		*/
+		if (isset($_REQUEST['autoconfirm'])){
+			$CORE_LOCAL->set('strRemembered', $CORE_LOCAL->get('strEntered'));
+			$CORE_LOCAL->set('msgrepeat', 1);
+			$this->change_page(MiscLib::base_url().'gui-modules/pos2.php');
+			return False;
+		}
+		return True;
+	}
 	
 	function body_content(){
 		global $CORE_LOCAL;
@@ -89,6 +102,7 @@ class boxMsg2 extends BasicPage {
 	} // END body_content() FUNCTION
 }
 
-new boxMsg2();
+if (basename(__FILE__) == basename($_SERVER['PHP_SELF']))
+	new boxMsg2();
 
 ?>

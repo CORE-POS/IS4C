@@ -48,7 +48,10 @@ if (strlen($receiptType) > 0) {
 	if (!is_object($kicker_object)) $kicker_object = new Kicker();
 	$dokick = $kicker_object->doKick();
 
-	$PRINT_OBJ = new ESCPOSPrintHandler();
+	$print_class = $CORE_LOCAL->get('ReceiptDriver');
+	if ($print_class === '' || !class_exists($print_class))
+		$print_class = 'ESCPOSPrintHandler';
+	$PRINT_OBJ = new $print_class();
 
 	$email = CoreState::getCustomerPref('email_receipt');
 	$customerEmail = filter_var($email, FILTER_VALIDATE_EMAIL);
@@ -61,7 +64,7 @@ if (strlen($receiptType) > 0) {
 		$CORE_LOCAL->set("ccCustCopy",0);
 		$receiptContent[] = ReceiptLib::printReceipt($receiptType);
 	}
-	elseif ($receiptType == "ccSlip"){
+	elseif ($receiptType == "ccSlip" || $receiptType == 'gcSlip'){
 		// don't mess with reprints
 	}
 	elseif ($CORE_LOCAL->get("autoReprint") == 1){
@@ -150,11 +153,13 @@ function cleartemptrans($type) {
 function truncateTempTables() {
 	$connection = Database::tDataConnect();
 	$query1 = "truncate table localtemptrans";
-	$query2 = "truncate table activitytemplog";
+    // @deprecated
+	//$query2 = "truncate table activitytemplog";
 	$query3 = "truncate table couponApplied";
 
 	$connection->query($query1);
-	$connection->query($query2);
+    // @deprecated
+	//$connection->query($query2);
 	$connection->query($query3);
 }
 
@@ -168,7 +173,11 @@ function moveTempData() {
 	$connection->query("insert into localtrans_today select * from localtemptrans");
 	$connection->query("insert into dtransactions select * from localtemptrans");
 
+    /** 
+    alog and its variants are never used.
+    @deprecated
 	$connection->query("insert into activitylog select * from activitytemplog");
 	$connection->query("insert into alog select * from activitytemplog");
+    */
 }
 ?>

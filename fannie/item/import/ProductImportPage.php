@@ -25,7 +25,7 @@
 	 4Sep2012 Eric Lee Add some notes to the initial page.
 */
 include('../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
 class ProductImportPage extends FannieUploadPage {
 	protected $title = "Fannie :: Product Tools";
@@ -105,7 +105,7 @@ class ProductImportPage extends FannieUploadPage {
 
 			if ($checks)
 				$upc = substr($upc,0,strlen($upc)-1);
-			$upc = str_pad($upc,13,'0',STR_PAD_LEFT);
+            $upc = BarcodeLib::padUPC($upc);
 
 			if (strlen($desc) > 35) $desc = substr($desc,0,35);		
 

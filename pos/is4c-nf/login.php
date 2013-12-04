@@ -26,7 +26,7 @@ if (!class_exists("AutoLoader")) include("lib/AutoLoader.php");
 $CORE_LOCAL->set("parse_chain",'');
 $CORE_LOCAL->set("preparse_chain",'');
 
-AutoLoader::LoadMap();
+AutoLoader::loadMap();
 
 CoreState::initiate_session();
 

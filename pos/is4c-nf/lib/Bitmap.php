@@ -10,54 +10,61 @@ References
 	http://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm#Optimization
 */
 
-class Bitmap {
+class Bitmap 
+{
 	
-	var $DIB1;
-	var $DIB2;
-	var $DIB3;
-	var $DIB4;
-	var $DIB5;
+	public $DIB1;
+	public $DIB2;
+	public $DIB3;
+	public $DIB4;
+	public $DIB5;
 	
-	var $error;
+	public $error;
 	
-	var $magic;
-	var $dibVersion;
-	var $width;
-	var $height;
-	var $bpp; // bits per pixel
-	var $hppm; // horiz. pixels per meter
-	var $vppm; // vert. pixels per meter
-	var $palSize;
-	var $palSizeImp;
-	var $palette;
-	var $image;
-	var $rowBytes;
+	public $magic;
+	public $dibVersion;
+	public $width;
+	public $height;
+	public $bpp; // bits per pixel
+	public $hppm; // horiz. pixels per meter
+	public $vppm; // vert. pixels per meter
+	public $palSize;
+	public $palSizeImp;
+	public $palette;
+	public $image;
+	public $rowBytes;
 	
 	
 	/*
 	* INTERNAL METHODS
 	*/
 	
-	function ReturnError($err=null, $ret=null) {
+	public function returnError($err=null, $ret=null) 
+    {
 		$this->error = is_string($err) ? $err : "Unknown error";
+
 		return $ret;
-	} // ReturnError()
+	} // returnError()
 	
-	function ParseInt($data, $left=0, $right=-1, $signed=false, $bigEndian=false) {
+	public function parseInt($data, $left=0, $right=-1, $signed=false, $bigEndian=false) 
+    {
 		if (is_string($data)) {
 			$isarray = false;
-			if ($right < 0)
+			if ($right < 0) {
 				$right = strlen($data) - 1;
+            }
 		} else if (is_array($data)) {
 			$isarray = true;
 			$data = array_values($data);
-			if ($right < 0)
+			if ($right < 0) {
 				$right = count($data) - 1;
+            }
 		} else {
 			return null;
 		}
-		if ($right < $left)
+		if ($right < $left) {
 			return null;
+        }
 		// set traversal range and direction
 		$start = $bigEndian ? $right : $left;
 		$end   = $bigEndian ? $left  : $right;
@@ -72,19 +79,22 @@ class Bitmap {
 			$factor <<= 8; // *= 256
 		}
 		// check sign bit
-		if ($signed && (($isarray ? (int)$data[$end] : ord($data[$end])) & 0x80))
+		if ($signed && (($isarray ? (int)$data[$end] : ord($data[$end])) & 0x80)) {
 			$val = -$factor + $val;
+        }
 		// done
 		return $val;
-	} // ParseInt()
+	} // parseInt()
 	
-	function RenderInt($val, $bytes, $signed=false, $bigEndian=false) {
+	public function renderInt($val, $bytes, $signed=false, $bigEndian=false) 
+    {
 		$val = (int)$val;
 		$bytes = (int)$bytes;
 		$range = pow(2, $bytes * 8);
 		$neg = false;
-		if ($signed && $val < 0)
+		if ($signed && $val < 0) {
 			$val = (~ (-$val)) + 1;
+        }
 		// set traversal range and direction
 		$start = $bigEndian ? ($bytes - 1) : 0;
 		$end   = $bigEndian ? 0            : ($bytes - 1);
@@ -96,126 +106,141 @@ class Bitmap {
 			$val >>= 8; // /= 256
 		}
 		// done
+
 		return $data;
-	} // RenderInt()
+	} // renderInt()
 	
 	
-	function LastError($reset=true) {
+	public function lastError($reset=true) 
+    {
 		$err = $this->error;
-		if ($reset)
+		if ($reset) {
 			$this->error = null;
+        }
 		return $err;
-	} // LastError()
+	} // lastError()
 	
-	function Load($filename, $filedata=null) {
+	public function load($filename, $filedata=null) 
+    {
 		$data = "";
 		if ($filename === true) {
 			$data = $filedata;
 		} else {
 			$data = file_get_contents($filename);
-			if (!$data)
-				return $this->ReturnError("Load(): failed reading file \"".$filename."\"");
+			if (!$data) {
+				return $this->returnError("load(): failed reading file \"".$filename."\"");
+            }
 		}
 		$datasize = strlen($data);
 		
 		// read the BMP header
 		
-		if ($datasize < 18)
-			return $this->ReturnError("Load(): incomplete BMP header (file is ".$datasize." bytes)");
+		if ($datasize < 18) {
+			return $this->returnError("load(): incomplete BMP header (file is ".$datasize." bytes)");
+        }
 		$magic = substr($data, 0, 2);
-		$fileSize = $this->ParseInt($data, 2, 5);
+		$fileSize = $this->parseInt($data, 2, 5);
 		// bytes 6-9 are unused (application specific)
-		$imageAt = $this->ParseInt($data, 10, 13);
+		$imageAt = $this->parseInt($data, 10, 13);
 		
 		// validate the BMP header
 		
 		switch ($magic) {
-		case "BM": // Windows 3.1x, 95, NT, ...
-		case "BA": // OS/2 Bitmap Array
-		case "CI": // OS/2 Color Icon
-		case "CP": // OS/2 Color Pointer
-		case "IC": // OS/2 Icon
-		case "PT": // OS/2 Pointer
-			break;
-		default:
-			return $this->ReturnError("Load(): unknown magic numbers \"".dechex(ord($magic[0]))." ".dechex(ord($magic[1]))."\"");
+            case "BM": // Windows 3.1x, 95, NT, ...
+            case "BA": // OS/2 Bitmap Array
+            case "CI": // OS/2 Color Icon
+            case "CP": // OS/2 Color Pointer
+            case "IC": // OS/2 Icon
+            case "PT": // OS/2 Pointer
+                break;
+            default:
+                return $this->returnError("load(): unknown magic numbers \"".dechex(ord($magic[0]))." ".dechex(ord($magic[1]))."\"");
 		}
-		if ($fileSize != $datasize)
-			return $this->ReturnError("Load(): incorrect file size (".$fileSize." reported, ".$datasize." actual)");
+		if ($fileSize != $datasize) {
+			return $this->returnError("load(): incorrect file size (".$fileSize." reported, ".$datasize." actual)");
+        }
 		
 		// read the DIB header
 		
-		$headerSize = $this->ParseInt($data, 14, 17);
-		if ($datasize < (14 + $headerSize))
-			return $this->ReturnError("Load(): incomplete DIB header (file is ".$datasize." bytes)");
+		$headerSize = $this->parseInt($data, 14, 17);
+		if ($datasize < (14 + $headerSize)) {
+			return $this->returnError("load(): incomplete DIB header (file is ".$datasize." bytes)");
+        }
 		switch ($headerSize) {
-		case $this->DIB1: // OS/2 V1 "BITMAPCOREHEADER" 12 bytes
-			$width = $this->ParseInt($data, 18, 19);
-			$height = $this->ParseInt($data, 20, 21);
-			$colorPlanes = $this->ParseInt($data, 22, 23);
-			$bpp = $this->ParseInt($data, 24, 25);
-			if ($bpp == 16 || $bpp == 32) // not supported in this header
-				return $this->ReturnError("Load(): ".$bpp." bits-per-pixel invalid in V1 header");
-			$compression = 0;
-			$imgDataSize = null;
-			$hppm = null;
-			$vppm = null;
-			$palSize = 0;
-			$palSizeImp = 0;
-			break;
+            case $this->DIB1: // OS/2 V1 "BITMAPCOREHEADER" 12 bytes
+                $width = $this->parseInt($data, 18, 19);
+                $height = $this->parseInt($data, 20, 21);
+                $colorPlanes = $this->parseInt($data, 22, 23);
+                $bpp = $this->parseInt($data, 24, 25);
+                if ($bpp == 16 || $bpp == 32) { // not supported in this header
+                    return $this->returnError("load(): ".$bpp." bits-per-pixel invalid in V1 header");
+                }
+                $compression = 0;
+                $imgDataSize = null;
+                $hppm = null;
+                $vppm = null;
+                $palSize = 0;
+                $palSizeImp = 0;
+                break;
 			
-		case $this->DIB3: // Windows V3 "BITMAPINFOHEADER" 40 bytes
-			$width = $this->ParseInt($data, 18, 21, true);
-			$height = $this->ParseInt($data, 22, 25, true);
-			$colorPlanes = $this->ParseInt($data, 26, 27);
-			$bpp = $this->ParseInt($data, 28, 29);
-			$compression = $this->ParseInt($data, 30, 33);
-			$imgDataSize = $this->ParseInt($data, 34, 37);
-			$hppm = $this->ParseInt($data, 38, 41, true);
-			$vppm = $this->ParseInt($data, 42, 45, true);
-			$palSize = $this->ParseInt($data, 46, 49);
-			$palSizeImp = $this->ParseInt($data, 50, 53);
-			break;
+            case $this->DIB3: // Windows V3 "BITMAPINFOHEADER" 40 bytes
+                $width = $this->parseInt($data, 18, 21, true);
+                $height = $this->parseInt($data, 22, 25, true);
+                $colorPlanes = $this->parseInt($data, 26, 27);
+                $bpp = $this->parseInt($data, 28, 29);
+                $compression = $this->parseInt($data, 30, 33);
+                $imgDataSize = $this->parseInt($data, 34, 37);
+                $hppm = $this->parseInt($data, 38, 41, true);
+                $vppm = $this->parseInt($data, 42, 45, true);
+                $palSize = $this->parseInt($data, 46, 49);
+                $palSizeImp = $this->parseInt($data, 50, 53);
+                break;
+                
+            // TODO: more header formats
 			
-		// TODO: more header formats
-			
-		default:
-			return $this->ReturnError("Load(): unknown DIB header size (".$headerSize." bytes)");
+            default:
+                return $this->returnError("load(): unknown DIB header size (".$headerSize." bytes)");
 		}
 		
 		// validate the DIB header
 		
-		if ($width < 1)
-			return $this->ReturnError("Load(): invalid image width ".$width);
-		if ($height == 0) // height can be negative, meaning data is top-to-bottom instead of bottom-to-top
-			return $this->ReturnError("Load(): invalid image height ".$height);
-		if ($colorPlanes != 1)
-			return $this->ReturnError("Load(): invalid color plane count ".$colorPlanes);
-		if ($bpp != 1 && $bpp != 4 && $bpp != 8 && $bpp != 16 && $bpp != 24 && $bpp != 32)
-			return $this->ReturnError("Load(): invalid bits-per-pixel ".$bpp);
+		if ($width < 1) {
+			return $this->returnError("load(): invalid image width ".$width);
+        }
+		if ($height == 0) {// height can be negative, meaning data is top-to-bottom instead of bottom-to-top
+			return $this->returnError("load(): invalid image height ".$height);
+        }
+		if ($colorPlanes != 1) {
+			return $this->returnError("load(): invalid color plane count ".$colorPlanes);
+        }
+		if ($bpp != 1 && $bpp != 4 && $bpp != 8 && $bpp != 16 && $bpp != 24 && $bpp != 32) {
+			return $this->returnError("load(): invalid bits-per-pixel ".$bpp);
+        }
+
 		switch ($compression) {
-		case 0: // BI_RGB (uncompressed)
-			break;
-		case 1: // BI_RLE8 (RLE; 8 bpp only)
-		case 2: // BI_RLE4 (RLE; 4 bpp only)
-		case 3: // BI_BITFIELDS (bitfield; 16 and 32 bpp only)
-		case 4: // BI_JPEG (JPEG)
-		case 5: // BI_PNG (PNG)
-			// TODO: support compression?
-			return $this->ReturnError("Load(): image data compression not supported");
-		default:
-			return $this->ReturnError("Load(): invalid compression code ".$compression);
+            case 0: // BI_RGB (uncompressed)
+                break;
+            case 1: // BI_RLE8 (RLE; 8 bpp only)
+            case 2: // BI_RLE4 (RLE; 4 bpp only)
+            case 3: // BI_BITFIELDS (bitfield; 16 and 32 bpp only)
+            case 4: // BI_JPEG (JPEG)
+            case 5: // BI_PNG (PNG)
+                // TODO: support compression?
+                return $this->returnError("load(): image data compression not supported");
+            default:
+                return $this->returnError("load(): invalid compression code ".$compression);
 		}
+
 		$rowDataSize = (int)((($width * $bpp) + 31) / 32) * 4;
-		if ($imgDataSize === null || $imgDataSize === 0)
+		if ($imgDataSize === null || $imgDataSize === 0) {
 			$imgDataSize = abs($height) * $rowDataSize;
-		else if ($imgDataSize != (abs($height) * $rowDataSize)){
+		} else if ($imgDataSize != (abs($height) * $rowDataSize)){
 			/** modification by Andy 09Aug13
 			    I think this makes more sense and it's incorrect
 			    to assume all zero bytes at the end of the
 			    image are padding **/
 			$padding = $imgDataSize % 4;
-			if ($padding > 0){
+			if ($padding > 0) {
 				$imgDataSize -= $padding;
 				$data = substr($data,0,strlen($data)-$padding);
 			}
@@ -225,23 +250,28 @@ class Bitmap {
 				$data = substr($data,0,strlen($data)-1);
 			}
 			*/
-			if($imgDataSize != (abs($height) * $rowDataSize))
-				return $this->ReturnError("Load(): incorrect image data size (".$imgDataSize." reported, ".(abs($height) * $rowDataSize)." expected)");
+			if($imgDataSize != (abs($height) * $rowDataSize)) {
+				return $this->returnError("load(): incorrect image data size (".$imgDataSize." reported, ".(abs($height) * $rowDataSize)." expected)");
+            }
 		}
-		if ($hppm !== null && $hppm <= 0)
-			return $this->ReturnError("Load(): invalid horizontal pixels-per-meter ".$hppm);
-		if ($vppm !== null && $vppm <= 0)
-			return $this->ReturnError("Load(): invalid vertical pixels-per-meter ".$hppm);
+		if ($hppm !== null && $hppm <= 0) {
+			return $this->returnError("load(): invalid horizontal pixels-per-meter ".$hppm);
+        }
+		if ($vppm !== null && $vppm <= 0) {
+			return $this->returnError("load(): invalid vertical pixels-per-meter ".$hppm);
+        }
 		
 		// read the palette
 		
-		if (!$palSize && $bpp < 16)
+		if (!$palSize && $bpp < 16) {
 			$palSize = pow(2, $bpp);
+        }
 		if ($palSize) {
 			$palColorSize = ($headerSize == $this->DIB1) ? 3 : 4;
 			$palDataSize = $palSize * $palColorSize;
-			if ($datasize < (14 + $headerSize + $palDataSize))
-				return $this->ReturnError("Load(): incomplete palette (file is ".$datasize." bytes)");
+			if ($datasize < (14 + $headerSize + $palDataSize)) {
+				return $this->returnError("load(): incomplete palette (file is ".$datasize." bytes)");
+            }
 			$palette = substr($data, 14 + $headerSize, $palDataSize);
 			if ($palColorSize < 4) {
 				// pad each palette color to 4 bytes for simpler lookup (remember "." doesn't match newline, hence "|\\n")
@@ -255,12 +285,14 @@ class Bitmap {
 		
 		// read the image
 		
-		if ($datasize < ($imageAt + $imgDataSize))
-			return $this->ReturnError("Load(): incomplete image (file is ".$datasize." bytes)");
+		if ($datasize < ($imageAt + $imgDataSize)) {
+			return $this->returnError("load(): incomplete image (file is ".$datasize." bytes)");
+        }
 		$image = substr($data, $imageAt, $imgDataSize);
 		$rowBytes = (int)((($width * $bpp) + 7) / 8);
-		if ($rowBytes > $rowDataSize)
-			return $this->ReturnError("Load(): consistency error (calculated byte width ".$rowBytes.", data width ".$rowDataSize.")");
+		if ($rowBytes > $rowDataSize) {
+			return $this->returnError("load(): consistency error (calculated byte width ".$rowBytes.", data width ".$rowDataSize.")");
+        }
 		if ($rowBytes < $rowDataSize) {
 			// strip off word-alignment padding (remember "." doesn't match newline, hence "|\\n")
 			$image = preg_replace('/((?:.|\\n){'.$rowBytes.'})((?:.|\\n){'.($rowDataSize-$rowBytes).'})/', '\\1', $image);
@@ -271,16 +303,18 @@ class Bitmap {
 			// flip image rows vertically (BMPs are stored upside-down by default)
 			$str_split = array();
 			$val = "";
-			for($i=0; $i<strlen($image); $i++){
-				if ($i % $rowBytes == 0){
-					if (strlen($val) > 0)
+			for($i=0; $i<strlen($image); $i++) {
+				if ($i % $rowBytes == 0) {
+					if (strlen($val) > 0) {
 						$str_split[] = $val;
+                    }
 					$val = "";
 				}
 				$val .= $image[$i];
 			}
-			if (strlen($val) > 0)
+			if (strlen($val) > 0) {
 				$str_split[] = $val;
+            }
 			$image = implode('', array_reverse($str_split));
 		}
 		
@@ -301,14 +335,15 @@ class Bitmap {
 		
 		// all done
 		return true;
-	} // Load()
+	} // load()
 	
 	
 	/*
 	* OBJECT METHODS
 	*/
 	
-	function Bitmap($width=1, $height=1, $bpp=1, $dpi=72) {
+	public function Bitmap($width=1, $height=1, $bpp=1, $dpi=72) 
+    {
 		$this->DIB1 = 12;
 		$this->DIB2 = 64;
 		$this->DIB3 = 40;
@@ -317,14 +352,18 @@ class Bitmap {
 
 		$this->error = null;
 		
-		if (!is_numeric($width) || (int)$width < 1)
+		if (!is_numeric($width) || (int)$width < 1) {
 			die('Bitmap width must be at least 1');
-		if (!is_numeric($height) || (int)$height < 1)
+        }
+		if (!is_numeric($height) || (int)$height < 1) {
 			die('Bitmap height must be at least 1');
-		if (!is_numeric($bpp) || (int)$bpp != 1)
+        }
+		if (!is_numeric($bpp) || (int)$bpp != 1) {
 			die('Color bitmaps not yet supported');
-		if (!is_numeric($dpi) || (int)$dpi < 1)
+        }
+		if (!is_numeric($dpi) || (int)$dpi < 1) {
 			die('Bitmap DPI must be at least 1');
+        }
 		$this->magic = "BM";
 		$this->dibVersion = $this->DIB3;
 		$this->width = (int)$width;
@@ -340,17 +379,19 @@ class Bitmap {
 		$this->image = str_repeat("\x00", $rowBytes * $this->height);
 	} // __construct()
 	
-	function Save($filename) {
+	public function save($filename) {
 		// prepare the image
 		$rowBytes = (int)((($this->width * $this->bpp) + 7) / 8);
 		$rowDataSize = (int)((($this->width * $this->bpp) + 31) / 32) * 4;
-		if ($rowBytes > $rowDataSize)
-			return $this->ReturnError("Save(): consistency error (calculated byte width ".$rowBytes.", data width ".$rowDataSize.")");
+		if ($rowBytes > $rowDataSize) {
+			return $this->returnError("save(): consistency error (calculated byte width ".$rowBytes.", data width ".$rowDataSize.")");
+        }
 		$pad = str_repeat("\x00", $rowDataSize - $rowBytes); // might be 0 -> "" pad, which is ok
 		$image = implode($pad, array_reverse(str_split($this->image, $rowBytes))) . $pad;
 		$imgDataSize = $this->height * $rowDataSize;
-		if ($imgDataSize != strlen($image))
-			return $this->ReturnError("Save(): consistency error (calculated image data size ".$imgDataSize.", prepared ".strlen($image).")");
+		if ($imgDataSize != strlen($image)) {
+			return $this->returnError("save(): consistency error (calculated image data size ".$imgDataSize.", prepared ".strlen($image).")");
+        }
 		
 		// prepare the palette
 		if ($this->palSize) {
@@ -364,180 +405,221 @@ class Bitmap {
 		// prepare the DIB header
 		$dibHead = "";
 		switch ($this->dibVersion) {
-		case $this->DIB1: // OS/2 V1 "BITMAPCOREHEADER" 12 bytes
-			return $this->ReturnError("Save(): only DIB3 is supported for writing");
+            case $this->DIB1: // OS/2 V1 "BITMAPCOREHEADER" 12 bytes
+                return $this->returnError("save(): only DIB3 is supported for writing");
 			
-		case $this->DIB3: // Windows V3 "BITMAPINFOHEADER" 40 bytes
-			$dibHead .= $this->RenderInt($this->DIB3, 4);
-			$dibHead .= $this->RenderInt($this->width, 4, true);
-			$dibHead .= $this->RenderInt($this->height, 4, true);
-			$dibHead .= $this->RenderInt(1, 2); // colorPlanes
-			$dibHead .= $this->RenderInt($this->bpp, 2);
-			$dibHead .= $this->RenderInt(0, 4); // compression
-			$dibHead .= $this->RenderInt($imgDataSize, 4);
-			$dibHead .= $this->RenderInt($this->hppm, 4, true);
-			$dibHead .= $this->RenderInt($this->vppm, 4, true);
-			$dibHead .= $this->RenderInt($this->palSize, 4);
-			$dibHead .= $this->RenderInt($this->palSizeImp, 4);
-			break;
+            case $this->DIB3: // Windows V3 "BITMAPINFOHEADER" 40 bytes
+                $dibHead .= $this->renderInt($this->DIB3, 4);
+                $dibHead .= $this->renderInt($this->width, 4, true);
+                $dibHead .= $this->renderInt($this->height, 4, true);
+                $dibHead .= $this->renderInt(1, 2); // colorPlanes
+                $dibHead .= $this->renderInt($this->bpp, 2);
+                $dibHead .= $this->renderInt(0, 4); // compression
+                $dibHead .= $this->renderInt($imgDataSize, 4);
+                $dibHead .= $this->renderInt($this->hppm, 4, true);
+                $dibHead .= $this->renderInt($this->vppm, 4, true);
+                $dibHead .= $this->renderInt($this->palSize, 4);
+                $dibHead .= $this->renderInt($this->palSizeImp, 4);
+                break;
 			
-		// TODO: more header formats
+            // TODO: more header formats
 			
-		default:
-			return $this->ReturnError("Save(): only DIB3 is supported for writing");
+            default:
+                return $this->returnError("save(): only DIB3 is supported for writing");
 		}
-		if (strlen($dibHead) != $this->dibVersion)
-			return $this->ReturnError("Save(): consistency error (calculated DIB size ".$this->dibVersion.", prepared ".strlen($dibHead).")");
+		if (strlen($dibHead) != $this->dibVersion) {
+			return $this->returnError("save(): consistency error (calculated DIB size ".$this->dibVersion.", prepared ".strlen($dibHead).")");
+        }
 		
 		// prepare the BMP header
 		$imageAt = 14 + $this->dibVersion + $palDataSize;
 		$fileSize = $imageAt + $imgDataSize;
 		$bmpHead = "";
 		$bmpHead .= $this->magic;
-		$bmpHead .= $this->RenderInt($fileSize, 4);
-		$bmpHead .= $this->RenderInt(0, 4); // bytes 6-9 are unused (application specific)
-		$bmpHead .= $this->RenderInt($imageAt, 4);
+		$bmpHead .= $this->renderInt($fileSize, 4);
+		$bmpHead .= $this->renderInt(0, 4); // bytes 6-9 are unused (application specific)
+		$bmpHead .= $this->renderInt($imageAt, 4);
 		
 		// write or return the file
 		$data = $bmpHead . $dibHead . $palette . $image;
-		if ($filename === true)
+		if ($filename === true) {
 			return $data;
+        }
 		$bytes = file_put_contents($filename, $data);
-		if ($bytes != strlen($data))
-			return $this->ReturnError("Save(): failed writing file \"".$filename."\" (".$bytes." of ".strlen($data)." bytes written)");
+		if ($bytes != strlen($data)) {
+			return $this->returnError("save(): failed writing file \"".$filename."\" (".$bytes." of ".strlen($data)." bytes written)");
+        }
+
 		return true;
-	} // Save()
+	} // save()
 	
-	function GetWidth() { return $this->width; }
+	public function getWidth() 
+    {
+        return $this->width;
+    }
 	
-	function GetHeight() { return $this->height; }
+	public function getHeight()
+    {
+        return $this->height;
+    }
 	
-	function GetColorDepth() { return $this->bpp; }
+	public function getColorDepth()
+    {
+        return $this->bpp;
+    }
 	
-	function GetHorizResolution($asDPI=false) { return $asDPI ? (int)(($this->hppm / 39.37) + 0.5) : $this->hppm; }
+	public function getHorizResolution($asDPI=false){
+        return $asDPI ? (int)(($this->hppm / 39.37) + 0.5) : $this->hppm;
+    }
 	
-	function GetVertResolution($asDPI=false) { return $asDPI ? (int)(($this->vppm / 39.37) + 0.5) : $this->vppm; }
+	public function getVertResolution($asDPI=false)
+    {
+        return $asDPI ? (int)(($this->vppm / 39.37) + 0.5) : $this->vppm;
+    }
 	
-	function GetPaletteSize() { return ($this->bpp < 16 && $this->palSize) ? $this->palSize : null; }
+	public function getPaletteSize()
+    {
+        return ($this->bpp < 16 && $this->palSize) ? $this->palSize : null;
+    }
 	
-	function GetPaletteColor($index, $channel=null) {
-		if (!$this->palSize || $this->palette === null || $index < 0 || $index >= $this->palSize)
+	public function getPaletteColor($index, $channel=null) 
+    {
+		if (!$this->palSize || $this->palette === null || $index < 0 || $index >= $this->palSize) {
 			return null;
+        }
 		$byte = $index << 2; // (int)($index * 4)
 		if ($channel !== null) {
-			if ($channel < 0 || $channel > 2)
+			if ($channel < 0 || $channel > 2) {
 				return null;
+            }
 			return ord($this->palette[$byte + $channel]);
 		}
-		return $this->ParseInt($this->palette, $byte, $byte + 2);
-	} // GetPaletteColor()
+
+		return $this->parseInt($this->palette, $byte, $byte + 2);
+	} // getPaletteColor()
 	
-	function GetPixelValue($x, $y) {
+	public function getPixelValue($x, $y) 
+    {
 		// validate coordinates
-		if ($x < 0)
+		if ($x < 0) {
 			$x += $this->width;
-		else if ($x >= $this->width)
+		} else if ($x >= $this->width) {
 			return null;
-		if ($y < 0)
+        }
+		if ($y < 0) {
 			$y += $this->height;
-		else if ($y >= $this->height)
+		} else if ($y >= $this->height) {
 			return null;
+        }
 		// fetch pixel
 		switch ($this->bpp) {
-		case 32:
-			$byte = ($y * $this->rowBytes) + ($x << 2); // (int)($x * 4)
-			return $this->ParseInt($this->image, $byte, $byte + 2); // BMPs don't actually have an alpha channel, so ignore the 4th byte
-		case 24:
-			$byte = ($y * $this->rowBytes) + ((int)($x * 3));
-			return $this->ParseInt($this->image, $byte, $byte + 2);
-		case 16:
-			$byte = ($y * $this->rowBytes) + ($x << 1); // (int)($x * 2)
-			return $this->ParseInt($this->image, $byte, $byte + 1);
-		case 8:
-			$byte = ($y * $this->rowBytes) + $x;
-			return ord($this->image[$byte]);
-		case 4:
-			$byte = ($y * $this->rowBytes) + ($x >> 1); // (int)($x / 2)
-			$shift = 1 - ($x % 2);
-			return ((ord($this->image[$byte]) >> $shift) & 0x0F);
-		case 1:
-			$byte = ($y * $this->rowBytes) + ($x >> 3); // (int)($x / 8)
-			$shift = 7 - ($x % 8);
-			return ((ord($this->image[$byte]) >> $shift) & 0x01);
+            case 32:
+                $byte = ($y * $this->rowBytes) + ($x << 2); // (int)($x * 4)
+                return $this->parseInt($this->image, $byte, $byte + 2); // BMPs don't actually have an alpha channel, so ignore the 4th byte
+            case 24:
+                $byte = ($y * $this->rowBytes) + ((int)($x * 3));
+                return $this->parseInt($this->image, $byte, $byte + 2);
+            case 16:
+                $byte = ($y * $this->rowBytes) + ($x << 1); // (int)($x * 2)
+                return $this->parseInt($this->image, $byte, $byte + 1);
+            case 8:
+                $byte = ($y * $this->rowBytes) + $x;
+                return ord($this->image[$byte]);
+            case 4:
+                $byte = ($y * $this->rowBytes) + ($x >> 1); // (int)($x / 2)
+                $shift = 1 - ($x % 2);
+                return ((ord($this->image[$byte]) >> $shift) & 0x0F);
+            case 1:
+                $byte = ($y * $this->rowBytes) + ($x >> 3); // (int)($x / 8)
+                $shift = 7 - ($x % 8);
+                return ((ord($this->image[$byte]) >> $shift) & 0x01);
 		}
+
 		return null;
-	} // GetPixelValue()
+	} // getPixelValue()
 	
-	function SetPixelValue($x, $y, $val) {
+	public function setPixelValue($x, $y, $val) 
+    {
 		// validate coordinates
-		if ($x < 0)
+		if ($x < 0) {
 			$x += $this->width;
-		else if ($x >= $this->width)
+		} else if ($x >= $this->width) {
 			return null;
-		if ($y < 0)
+        }
+		if ($y < 0) {
 			$y += $this->height;
-		else if ($y >= $this->height)
+		} else if ($y >= $this->height) {
 			return null;
+        }
 		// validate new pixel value
-		if ($val < 0 || $val >= pow(2, $this->bpp) || ($this->palSize && $val >= $this->palSize))
+		if ($val < 0 || $val >= pow(2, $this->bpp) || ($this->palSize && $val >= $this->palSize)) {
 			return null;
+        }
 		// set pixel
 		switch ($this->bpp) {
-		case 32:
-			$byte = ($y * $this->rowBytes) + ($x << 2); // (int)($x * 4)
-			$this->image = substr_replace($this->image, $this->RenderInt($val,3), $byte, 3); // BMPs don't actually have an alpha channel, so ignore the 4th byte
-			return true;
-		case 24:
-			$byte = ($y * $this->rowBytes) + ((int)($x * 3));
-			$this->image = substr_replace($this->image, $this->RenderInt($val,3), $byte, 3);
-			return true;
-		case 16:
-			$byte = ($y * $this->rowBytes) + ($x << 1); // (int)($x * 2)
-			$this->image = substr_replace($this->image, $this->RenderInt($val,2), $byte, 2);
-			return true;
-		case 8:
-			$byte = ($y * $this->rowBytes) + $x;
-			$this->image[$byte] = chr($val);
-			return true;
-		case 4:
-			$byte = ($y * $this->rowBytes) + ($x >> 1); // (int)($x / 2)
-			$shift = 1 - ($x % 2);
-			$mask = (0x0F << $shift);
-			$this->image[$byte] = chr( (ord($this->image[$byte]) & (~ $mask)) | ($val & $mask) );
-			return true;
-		case 1:
-			$byte = ($y * $this->rowBytes) + ($x >> 3); // (int)($x / 8)
-			$shift = 7 - ($x % 8);
-			if ($val)
-				$this->image[$byte] = chr( ord($this->image[$byte]) | (0x01 << $shift) );
-			else
-				$this->image[$byte] = chr( ord($this->image[$byte]) & (0xFF ^ (0x01 << $shift)) );
-			return true;
+            case 32:
+                $byte = ($y * $this->rowBytes) + ($x << 2); // (int)($x * 4)
+                $this->image = substr_replace($this->image, $this->renderInt($val,3), $byte, 3); // BMPs don't actually have an alpha channel, so ignore the 4th byte
+                return true;
+            case 24:
+                $byte = ($y * $this->rowBytes) + ((int)($x * 3));
+                $this->image = substr_replace($this->image, $this->renderInt($val,3), $byte, 3);
+                return true;
+            case 16:
+                $byte = ($y * $this->rowBytes) + ($x << 1); // (int)($x * 2)
+                $this->image = substr_replace($this->image, $this->renderInt($val,2), $byte, 2);
+                return true;
+            case 8:
+                $byte = ($y * $this->rowBytes) + $x;
+                $this->image[$byte] = chr($val);
+                return true;
+            case 4:
+                $byte = ($y * $this->rowBytes) + ($x >> 1); // (int)($x / 2)
+                $shift = 1 - ($x % 2);
+                $mask = (0x0F << $shift);
+                $this->image[$byte] = chr( (ord($this->image[$byte]) & (~ $mask)) | ($val & $mask) );
+                return true;
+            case 1:
+                $byte = ($y * $this->rowBytes) + ($x >> 3); // (int)($x / 8)
+                $shift = 7 - ($x % 8);
+                if ($val) {
+                    $this->image[$byte] = chr( ord($this->image[$byte]) | (0x01 << $shift) );
+                } else {
+                    $this->image[$byte] = chr( ord($this->image[$byte]) & (0xFF ^ (0x01 << $shift)) );
+                }
+                return true;
 		}
+
 		return null;
-	} // SetPixelValue()
+	} // setPixelValue()
 	
-	function DrawLine($x0, $y0, $x1, $y1, $val) {
+	public function drawLine($x0, $y0, $x1, $y1, $val) 
+    {
 		// validate coordinates
-		if ($x0 < 0)
+		if ($x0 < 0) {
 			$x0 += $this->width;
-		else if ($x0 >= $this->width)
+		} else if ($x0 >= $this->width) {
 			return null;
-		if ($y0 < 0)
+        }
+		if ($y0 < 0) {
 			$y0 += $this->height;
-		else if ($y0 >= $this->height)
+		} else if ($y0 >= $this->height) {
 			return null;
-		if ($x1 < 0)
+        }
+		if ($x1 < 0) {
 			$x1 += $this->width;
-		else if ($x1 >= $this->width)
+		} else if ($x1 >= $this->width) {
 			return null;
-		if ($y1 < 0)
+        }
+		if ($y1 < 0) {
 			$y1 += $this->height;
-		else if ($y1 >= $this->height)
+		} else if ($y1 >= $this->height) {
 			return null;
+        }
 		// validate new pixel(s) value
-		if ($val < 0 || $val >= pow(2, $this->bpp) || ($this->palSize && $val >= $this->palSize))
+		if ($val < 0 || $val >= pow(2, $this->bpp) || ($this->palSize && $val >= $this->palSize)) {
 			return null;
+        }
 		// draw!
 		// http://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm#Optimization
 		$steep = (abs($y1 - $y0) > abs($x1 - $x0));
@@ -554,10 +636,11 @@ class Bitmap {
 		$err = $dx >> 1;
 		$sy = ($y0 < $y1) ? 1 : -1;
 		while ($x0 <= $x1) {
-			if ($steep)
-				$this->SetPixelValue($y0, $x0, 1);
-			else
-				$this->SetPixelValue($x0, $y0, 1);
+			if ($steep) {
+				$this->setPixelValue($y0, $x0, 1);
+			} else {
+				$this->setPixelValue($x0, $y0, 1);
+            }
 			$err -= $dy;
 			if ($err < 0) {
 				$y0 += $sy;
@@ -565,27 +648,33 @@ class Bitmap {
 			}
 			$x0++;
 		}
+
 		return true;
 	} // DrawLine()
 	
-	function GetPixelColor($x, $y, $channel=null) {
-		$val = $this->GetPixelValue($x, $y);
-		if ($val !== null && $this->palette !== null)
-			return $this->GetPaletteColor($val, $channel);
+	public function getPixelColor($x, $y, $channel=null) 
+    {
+		$val = $this->getPixelValue($x, $y);
+		if ($val !== null && $this->palette !== null) {
+			return $this->getPaletteColor($val, $channel);
+        }
 		if ($this->bpp == 16) {
 			$val =
 				(((((($val >> 10) & 0x1F) / 0x1F) * 0xFF) + 0.5) << 16)
 				+ (((((($val >> 5) & 0x1F) / 0x1F) * 0xFF) + 0.5) << 8)
 				+ (int)(((($val & 0x1F) / 0x1F) * 0xFF) + 0.5);
 		}
+
 		return $val;
-	} // GetPixelColor()
+	} // getPixelColor()
 	
-	function GetRawData() {
+	public function getRawData() 
+    {
 		return $this->image;
 	} // GetRawData()
 	
-	function GetRawBytesPerRow() {
+	public function getRawBytesPerRow() 
+    {
 		return $this->rowBytes;
 	} // GetRawBytesPerRow()
 
@@ -596,19 +685,20 @@ class Bitmap {
 	  @param $height default 40
 	  @return Bitmap object
 	*/
-	public static function BarGraph($percent, $width=200, $height=40){
+	static public function barGraph($percent, $width=200, $height=40)
+    {
 		$graph = new Bitmap($width, $height, 1);
 		$black = 1;
 		$spacing = 5;
 
 		// border top
-		$graph->DrawLine(0, 0, $width-1, 0, $black);
+		$graph->drawLine(0, 0, $width-1, 0, $black);
 		// border bottom
-		$graph->DrawLine(0, $height-1, $width-1, $height-1, $black);
+		$graph->drawLine(0, $height-1, $width-1, $height-1, $black);
 		// border left
-		$graph->DrawLine(0, 1, 0, $height-2, $black);
+		$graph->drawLine(0, 1, 0, $height-2, $black);
 		// border right
-		$graph->DrawLine($width-1, 1, $width-1, $height-2, $black);
+		$graph->drawLine($width-1, 1, $width-1, $height-2, $black);
 
 		$full_bar_size = $width - ($spacing*2);
 		if ($percent > 1) $percent = (float)($percent / 100.00);
@@ -616,7 +706,7 @@ class Bitmap {
 		$bar_size = round($percent * $full_bar_size);
 
 		for($line=$spacing;$line<$height-$spacing;$line++){
-			$graph->DrawLine($spacing, $line, $spacing+$bar_size, $line, $black);	
+			$graph->drawLine($spacing, $line, $spacing+$bar_size, $line, $black);	
 		}
 
 		return $graph;
@@ -627,26 +717,27 @@ class Bitmap {
 	  @param $arg string filename OR Bitmap obj
 	  @return receipt-formatted string
 	*/
-	public static function RenderBitmap($arg){
+	static public function renderBitmap($arg)
+    {
 		global $PRINT_OBJ;
 		$slip = "";
 
 		$bmp = null;
-		if (is_object($arg) && is_a($arg, 'Bitmap')){
+		if (is_object($arg) && is_a($arg, 'Bitmap')) {
 			$bmp = $arg;
-		}
-		else if (file_exists($arg)){
+		} else if (file_exists($arg)) {
 			$bmp = new Bitmap();
-			$bmp->Load($arg);
+			$bmp->load($arg);
 		}
 
 		// argument was invalid
-		if ($bmp === null)
+		if ($bmp === null) {
 			return "";
+        }
 
-		$bmpData = $bmp->GetRawData();
-		$bmpWidth = $bmp->GetWidth();
-		$bmpHeight = $bmp->GetHeight();
+		$bmpData = $bmp->getRawData();
+		$bmpWidth = $bmp->getWidth();
+		$bmpHeight = $bmp->getHeight();
 		$bmpRawBytes = (int)(($bmpWidth + 7)/8);
 
 		$printer = $PRINT_OBJ;
@@ -655,16 +746,17 @@ class Bitmap {
 			$stripes[$i] = $printer->InlineBitmap($stripes[$i], $bmpWidth);
 
 		$slip .= $printer->AlignCenter();
-		if (count($stripes) > 1)
+		if (count($stripes) > 1) {
 			$slip .= $printer->LineSpacing(0);
+        }
 		$slip .= implode("\n",$stripes);
-		if (count($stripes) > 1)
+		if (count($stripes) > 1) {
 			$slip .= $printer->ResetLineSpacing()."\n";
+        }
 		$slip .= $printer->AlignLeft();
 
 		return $slip;
 	}
 	
 } // Bitmap
-
 

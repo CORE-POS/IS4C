@@ -24,86 +24,97 @@
 /**
   @class StockpurchasesModel
 */
-class StockpurchasesModel extends BasicModel {
+class StockpurchasesModel extends BasicModel 
+{
 
-	protected $name = "stockpurchases";
+    protected $name = "stockpurchases";
 
-	protected $preferred_db = 'trans';
+    protected $preferred_db = 'trans';
 
-	protected $columns = array(
-	'card_no' => array('type'=>'INT','index'=>True),
-	'stockPurchase' => array('type','MONEY'),
-	'tdate' => array('type','DATETIME'),
-	'trans_num' => array('type','VARCHAR(50)'),
-	'dept' => array('type','INT')
-	);
+    protected $columns = array(
+    'card_no' => array('type'=>'INT','index'=>True),
+    'stockPurchase' => array('type','MONEY'),
+    'tdate' => array('type','DATETIME'),
+    'trans_num' => array('type','VARCHAR(50)'),
+    'dept' => array('type','INT')
+    );
 
-	/* START ACCESSOR FUNCTIONS */
+    /* START ACCESSOR FUNCTIONS */
 
-	public function card_no(){
-		if(func_num_args() == 0){
-			if(isset($this->instance["card_no"]))
-				return $this->instance["card_no"];
-			elseif(isset($this->columns["card_no"]["default"]))
-				return $this->columns["card_no"]["default"];
-			else return null;
-		}
-		else{
-			$this->instance["card_no"] = func_get_arg(0);
-		}
-	}
+    public function card_no()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["card_no"])) {
+                return $this->instance["card_no"];
+            } elseif(isset($this->columns["card_no"]["default"])) {
+                return $this->columns["card_no"]["default"];
+            } else {
+                return null;
+            }
+        } else {
+            $this->instance["card_no"] = func_get_arg(0);
+        }
+    }
 
-	public function stockPurchase(){
-		if(func_num_args() == 0){
-			if(isset($this->instance["stockPurchase"]))
-				return $this->instance["stockPurchase"];
-			elseif(isset($this->columns["stockPurchase"]["default"]))
-				return $this->columns["stockPurchase"]["default"];
-			else return null;
-		}
-		else{
-			$this->instance["stockPurchase"] = func_get_arg(0);
-		}
-	}
+    public function stockPurchase()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["stockPurchase"])) {
+                return $this->instance["stockPurchase"];
+            } elseif(isset($this->columns["stockPurchase"]["default"])) {
+                return $this->columns["stockPurchase"]["default"];
+            } else {
+                return null;
+            }
+        } else {
+            $this->instance["stockPurchase"] = func_get_arg(0);
+        }
+    }
 
-	public function tdate(){
-		if(func_num_args() == 0){
-			if(isset($this->instance["tdate"]))
-				return $this->instance["tdate"];
-			elseif(isset($this->columns["tdate"]["default"]))
-				return $this->columns["tdate"]["default"];
-			else return null;
-		}
-		else{
-			$this->instance["tdate"] = func_get_arg(0);
-		}
-	}
+    public function tdate()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["tdate"])) {
+                return $this->instance["tdate"];
+            } elseif(isset($this->columns["tdate"]["default"])) {
+                return $this->columns["tdate"]["default"];
+            } else {
+                return null;
+            }
+        } else {
+            $this->instance["tdate"] = func_get_arg(0);
+        }
+    }
 
-	public function trans_num(){
-		if(func_num_args() == 0){
-			if(isset($this->instance["trans_num"]))
-				return $this->instance["trans_num"];
-			elseif(isset($this->columns["trans_num"]["default"]))
-				return $this->columns["trans_num"]["default"];
-			else return null;
-		}
-		else{
-			$this->instance["trans_num"] = func_get_arg(0);
-		}
-	}
+    public function trans_num()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["trans_num"])) {
+                return $this->instance["trans_num"];
+            } elseif(isset($this->columns["trans_num"]["default"])) {
+                return $this->columns["trans_num"]["default"];
+            } else {
+                return null;
+            }
+        } else {
+            $this->instance["trans_num"] = func_get_arg(0);
+        }
+    }
 
-	public function dept(){
-		if(func_num_args() == 0){
-			if(isset($this->instance["dept"]))
-				return $this->instance["dept"];
-			elseif(isset($this->columns["dept"]["default"]))
-				return $this->columns["dept"]["default"];
-			else return null;
-		}
-		else{
-			$this->instance["dept"] = func_get_arg(0);
-		}
-	}
-	/* END ACCESSOR FUNCTIONS */
+    public function dept()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["dept"])) {
+                return $this->instance["dept"];
+            } elseif(isset($this->columns["dept"]["default"])) {
+                return $this->columns["dept"]["default"];
+            } else {
+                return null;
+            }
+        } else {
+            $this->instance["dept"] = func_get_arg(0);
+        }
+    }
+    /* END ACCESSOR FUNCTIONS */
 }
-?>
+

@@ -34,11 +34,11 @@
 
 */
 
-$upc=str_pad($_GET['upc'],13,0,STR_PAD_LEFT);
-
 require('../config.php');
-require_once($FANNIE_ROOT.'src/mysql_connect.php');
-include($FANNIE_ROOT.'classlib2.0/lib/PriceLib.php');
+include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+$dbc = FannieDB::get($FANNIE_OP_DB);
+
+$upc = BarcodeLib::padUPC(FormLib::get('upc'));
 
 // EL 16Mar13 Get vendorItem and vendor data for the item being edited or that was just created.
 // This favours UNFI which traditionally has vendorID 1.
@@ -137,7 +137,8 @@ SKU: <input type='text' name='sku' size=8
 echo "value='".$sku."'";
 ?>
 >
-Price: <font color='green' size=+1><b><?php echo printf("%.2f",$price); ?><input type='hidden' name='price' size=8 value=<?php echo $price; ?> ></b></font>
+Price: <font color='green' size=+1><b><?php printf("%.2f",$price); ?>
+<input type='hidden' name='price' size=8 value=<?php echo $price; ?> ></b></font>
 <?php 
 
 echo "<input type='submit' value='New' name='submit'>";

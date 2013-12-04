@@ -37,6 +37,10 @@
 */
 
 include('../config.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
+$dbc = FannieDB::get($FANNIE_OP_DB);
 
 include($FANNIE_ROOT.'auth/login.php');
 $name = checkLogin();
@@ -51,9 +55,8 @@ if (!$user){
 }
 
 include('prodFunction_WEFC_Toronto.php');
-include('../src/mysql_connect.php');
-$page_title = 'Fannie - Item Maintanence WEFC_Toronto';
-$header = 'Item Maintanence WEFC_Toronto';
+$page_title = 'Fannie - Item Maintenance WEFC_Toronto';
+$header = 'Item Maintenance WEFC_Toronto';
 include('../src/header.html');
 ?>
 <script type"text/javascript" src=ajax.js></script>

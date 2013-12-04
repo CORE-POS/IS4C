@@ -22,13 +22,13 @@
 *********************************************************************************/
 
 include('../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
-include($FANNIE_ROOT.'src/JsonLib.php');
+include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include_once($FANNIE_ROOT.'src/JsonLib.php');
 require('laneUpdates.php');
 if (!function_exists('login'))
 	include($FANNIE_ROOT.'auth/login.php');
-include($FANNIE_ROOT.'src/ReportConvert/HtmlToArray.php');
-include($FANNIE_ROOT.'src/ReportConvert/ArrayToCsv.php');
+include_once($FANNIE_ROOT.'src/ReportConvert/HtmlToArray.php');
+include_once($FANNIE_ROOT.'src/ReportConvert/ArrayToCsv.php');
 
 class ProductListPage extends FanniePage {
 
@@ -232,7 +232,7 @@ class ProductListPage extends FanniePage {
 		switch(FormLib::get_form_value('ajax')){
 		case 'save':
 			$upc = FormLib::get_form_value('upc');
-			$upc = str_pad($upc,13,'0',STR_PAD_LEFT);
+            $upc = BarcodeLib::padUPC($upc);
 			$values = array();
 			$desc = FormLib::get_form_value('desc');
 			if ($desc !== '') $values['description'] = $desc;
@@ -261,7 +261,7 @@ class ProductListPage extends FanniePage {
 			break;	
 		case 'deleteCheck':
 			$upc = FormLib::get_form_value('upc');
-			$upc = str_pad($upc,13,'0',STR_PAD_LEFT);
+            $upc = BarcodeLib::padUPC($upc);
 			$encoded_desc = FormLib::get_form_value('desc');
 			$desc = base64_decode($encoded_desc);
 			$fetchP = $dbc->prepare_statement("select normal_price,
@@ -290,10 +290,10 @@ class ProductListPage extends FanniePage {
 			break;
 		case 'doDelete':
 			$upc = FormLib::get_form_value('upc');
-			$upc = str_pad($upc,13,'0',STR_PAD_LEFT);
+            $upc = BarcodeLib::padUPC($upc);
 			$desc = base64_decode(FormLib::get_form_value('desc'));
 
-			ProductsModel::static_delete($upc);
+			ProductsModel::staticDelete($upc);
 
 			$delP = $dbc->prepare_statement("delete from prodExtra where upc=?");
 			$delXR = $dbc->exec_statement($delP,array($upc));

@@ -1,8 +1,7 @@
 <?php
 include('../../../../config.php');
-
-include($FANNIE_ROOT.'src/mysql_connect.php');
-include($FANNIE_ROOT.'src/select_dlog.php');
+include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+$dbc = FannieDB::get($FANNIE_OP_DB);
 
 if (isset($_GET['excel'])){
 	header('Content-Type: application/ms-excel');
@@ -66,7 +65,7 @@ if (!isset($_GET['excel']))
 
 echo '<br>Report run ' . $today. ' for ' . $repDate."<br />";
 
-$dlog = select_dlog($dstr);
+$dlog = DTransactionsModel::selectDlog($dstr);
 $OP = $FANNIE_SERVER_DBMS=='MSSQL' ? $FANNIE_OP_DB.'.dbo.' : $FANNIE_OP_DB.'.';
 $TRANS = $FANNIE_SERVER_DBMS=='MSSQL' ? $FANNIE_TRANS_DB.'.dbo.' : $FANNIE_TRANS_DB.'.';
 
@@ -114,7 +113,10 @@ $creditQ = "SELECT 1 as num,
 		MAX(CASE WHEN q.mode IN ('retail_alone_credit','Credit_Return') THEN -amount ELSE amount END) as ttl,
 		CASE WHEN q.refNum LIKE '%-%' THEN 'FAPS' ELSE 'Mercury' END as proc
 	FROM is4c_trans.efsnetRequest AS q LEFT JOIN is4c_trans.efsnetResponse AS r ON q.refNum=r.refNum
-	WHERE q.date=? and r.httpCode=200 and 
+	LEFT JOIN is4c_trans.efsnetRequestMod AS m
+	ON q.date=m.date AND q.cashierNo=m.cashierNo AND q.laneNo=m.laneNo
+	AND q.transNo=m.transNo and q.transID=m.transID
+	WHERE q.date=? and r.httpCode=200 and m.date IS NULL AND
 	(r.xResultMessage LIKE '%approved%' OR r.xResultMessage LIKE '%PENDING%')
 	AND q.CashierNo <> 9999 AND q.laneNo <> 99
 	GROUP BY q.refNum";

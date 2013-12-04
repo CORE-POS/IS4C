@@ -17,7 +17,7 @@ if (isset($_POST["month"])){
 }
 else {
 	echo "<form action=salaryPTO.php method=post>";
-	$fetchQ = "select empID,name from employees where department=999 
+	$fetchQ = "select empID,name from employees where department IN (999 ,998)
 		and deleted=0 order by name";
 	$fetchR = $sql->query($fetchQ);
 	echo "<table cellpadding=4 cellspacing=0 border=1>";

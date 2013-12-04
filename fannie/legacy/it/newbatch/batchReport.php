@@ -3,7 +3,6 @@ include('../../../config.php');
 
 if (!class_exists("SQLManager")) require_once($FANNIE_ROOT."src/SQLManager.php");
 include('../../db.php');
-include($FANNIE_ROOT.'src/select_dlog.php');
 
 $batchID = 1;
 
@@ -53,7 +52,7 @@ while($batchInfoW = $sql->fetch_array($batchInfoR)){
    //echo "&nbsp;<a href=forLisa.php?batchID=$batchID>Reset dates</a></p>";
 }
 
-$dlog = select_dlog($bStart);
+$dlog = DTransactionsModel::selectDlog($bStart);
 //echo $dlog;
 
 

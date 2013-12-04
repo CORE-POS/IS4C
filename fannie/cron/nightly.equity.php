@@ -60,4 +60,11 @@ $query = "INSERT INTO stockpurchases
 	AND department IN $dlist";	
 $sql->query($query);
 
+// rebuild summary table
+$sql->query('TRUNCATE TABLE equity_history_sum');
+$sql->query('INSERT INTO equity_history_sum
+        SELECT card_no, SUM(stockPurchase), MIN(tdate)
+        FROM stockpurchases
+        GROUP BY card_no');
+
 ?>

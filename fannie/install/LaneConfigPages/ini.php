@@ -10,11 +10,8 @@ ini_set('display_errors','1');
 include('../../config.php');
 $CORE_PATH = realpath($FANNIE_ROOT.'../pos/is4c-nf/').'/';
 include($FANNIE_ROOT.'src/SQLManager.php');
-/* Assigns $dbc.
- * mysql_connect.php, called later by authentication utilities.php,
- *  also assigns $dbc but to a different db.
-*/
-include($FANNIE_ROOT.'src/trans_connect.php');
+include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+$dbc = FannieDB::get($FANNIE_TRANS_DB);
 
 /*
  This is not a real lane ini file.
@@ -50,15 +47,15 @@ class cl_wrapper {
  *   change the value in the database.
 */
 function confsave($k,$v){
-	global $dbc;
 	global $FANNIE_TRANS_DB;
+    $dbc = FannieDB::get($FANNIE_TRANS_DB);
 	if (is_string($v))
 		$v = trim($v,"'");
-	$p = $dbc->prepare_statement("SELECT value FROM ${FANNIE_TRANS_DB}.lane_config WHERE keycode=?");
+	$p = $dbc->prepare_statement("SELECT value FROM $FANNIE_TRANS_DB.lane_config WHERE keycode=?");
 	$r = $dbc->exec_statement($p,array($k));
 	if ($dbc->num_rows($r)==0){
-		$insP = $dbc->prepare_statement('INSERT INTO ${FANNIE_TRANS_DB}.lane_config (keycode, value,
-				modified) VALUES (?, ?, '.$dbc->now().')');
+		$insP = $dbc->prepare_statement("INSERT INTO $FANNIE_TRANS_DB.lane_config (keycode, value,
+				modified) VALUES (?, ?, '.$dbc->now().')");
 		$dbc->exec_statement($insP,array($k,serialize($v)));
 	}
 	else {

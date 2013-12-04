@@ -89,6 +89,7 @@ class qtty2 extends BasicPage {
 	} // END true_body() FUNCTION
 }
 
-new qtty2();
+if (basename(__FILE__) == basename($_SERVER['PHP_SELF']))
+	new qtty2();
 
 ?>

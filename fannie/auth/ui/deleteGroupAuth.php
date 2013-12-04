@@ -22,12 +22,11 @@
 *********************************************************************************/
 
 require('../login.php');
-$path = guesspath();
-include($path."config.php");
+include("../../config.php");
 $page_title = 'Fannie : Auth : Delete Group Authorization';
 $header = 'Fannie : Auth : Delete Group Authorization';
 
-include($path."src/header.html");
+include($FANNIE_ROOT."src/header.html");
 
 if (!validateUser('admin')){
   return;
@@ -62,16 +61,16 @@ else if (isset($_POST['warn'])){
   echo "</form></td></tr></table>";
 }
 else {
-  echo "WARNING: this will delete ALL authorizations for a group in a given authorization class. ";
+  echo "WARNING: this will delete ALL authorizations for a group in the selected authorization class. ";
   echo "If you need finer-grained control over a group with multiple authorizations in the ";
   echo "same class (e.g., multiple sub-class ranges) you should edit in SQL<p />";
   echo "<form method=post action=deleteGroupAuth.php>";
   echo "<table cellspacing=3 cellpadding=3>";
-echo "<tr><th>Group name</th><td><select name=name>";
+echo "<tr><th style='text-align:right;'>Group name</th><td><select name=name>";
 foreach(getGroupList() as $uid => $name)
 	echo "<option>".$name."</option>";
 echo "</select></td></tr>";
-echo "<tr><th>Group name</th><td><select name=class>";
+echo "<tr><th style='text-align:right;' title='Delete all authorizations in the selected class'>Authorization class</th><td><select name=class>";
 foreach(getAuthList() as $uid => $name)
 	echo "<option>".$name."</option>";
 echo "</select></td></tr>";
@@ -81,5 +80,5 @@ echo "</select></td></tr>";
   echo "<p /><a href=menu.php>Main menu</a>";
 }
 
-include($path."src/footer.html");
+include($FANNIE_ROOT."src/footer.html");
 ?>

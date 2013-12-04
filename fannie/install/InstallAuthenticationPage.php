@@ -87,6 +87,7 @@ class InstallAuthenticationPage extends InstallPage {
 	*/
 
 	function body_content(){
+		global $FANNIE_AUTH_ENABLED;
 		include('../config.php'); 
 
 		ob_start();

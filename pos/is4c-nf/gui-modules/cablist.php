@@ -148,6 +148,7 @@ class cablist extends NoInputPage {
 	} // END body_content() FUNCTION
 }
 
-new cablist();
+if (basename(__FILE__) == basename($_SERVER['PHP_SELF']))
+	new cablist();
 
 ?>

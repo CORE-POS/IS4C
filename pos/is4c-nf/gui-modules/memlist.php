@@ -30,8 +30,6 @@
 
 */
 
-ini_set('display_errors','1');
-
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class memlist extends NoInputPage {
@@ -77,7 +75,7 @@ class memlist extends NoInputPage {
 			$this->change_page($this->page_url."gui-modules/pos2.php");
 			return False;
 		}
-		else {
+		else if ($memberID === False && $personNum === False){
 			// find the member
 			$lookups = AutoLoader::ListModules('MemberLookup', True);
 			foreach($lookups as $class){
@@ -121,10 +119,12 @@ class memlist extends NoInputPage {
 		// we have exactly one row and 
 		// don't need to confirm any further
 		if ($memberID !== False && $personNum !== False){
+			if ($memberID == $CORE_LOCAL->get('defaultNonMem'))
+				$personNum = 1;
 			$db_a = Database::pDataConnect();
 			$query = $db_a->prepare_statement('SELECT CardNo, personNum,
 				LastName, FirstName,CashBack,Balance,Discount,
-				MemDiscountLimit,ChargeOk,WriteChecks,StoreCoupons,Type,
+				ChargeOk,WriteChecks,StoreCoupons,Type,
 				memType,staff,SSI,Purchases,NumberOfChecks,memCoupons,
 				blueLine,Shown,id FROM custdata WHERE CardNo=?
 				AND personNum=?');
@@ -303,6 +303,7 @@ class memlist extends NoInputPage {
 // /class memlist
 }
 
-new memlist();
+if (basename(__FILE__) == basename($_SERVER['PHP_SELF']))
+	new memlist();
 
 ?>

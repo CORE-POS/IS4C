@@ -33,12 +33,12 @@ else {
 if (isset($_GET['type'])){
 	$type = $_GET['type'];
 	
-	$memQ = "select c.cardno,c.memDiscountLimit from custdata as c
+	$memQ = $sql->prepare("select c.cardno,c.ChargeLimit from custdata as c
 		 left outer join suspensions as s on c.cardno = s.cardno
-	         where c.memType=$type and c.personnum=1 and 
+	         where c.memType=? and c.personnum=1 and 
 		 c.lastname not like 'NEW %' and s.cardno is NULL 
-		 order by c.cardno";
-	$memR = $sql->query($memQ);
+		 order by c.cardno");
+	$memR = $sql->execute($memQ, array($type));
 
 	echo "<table cellspacing=3 cellpadding=0 border=1>";
 	echo "<tr><th>Member #</th><th>Charge limit</th></tr>";

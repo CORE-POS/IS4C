@@ -21,23 +21,26 @@
 
 *********************************************************************************/
 
-class MemSales extends FooterBox {
+class MemSales extends FooterBox 
+{
 
-	public $header_css_class = 'coloredText';
-	public $display_css = "font-weight:bold;font-size:110%;";
-	public $display_css_class = 'lightestColorText';
+    public $header_css_class = 'coloredText';
+    public $display_css = "font-weight:bold;font-size:110%;";
+    public $display_css_class = 'lightestColorText';
 
-	function header_content(){
-		return _("Mbr Special");
-	}
+    public function header_content()
+    {
+        return _("Mbr Special");
+    }
 
-	function display_content(){
-		global $CORE_LOCAL;
-		if ($CORE_LOCAL->get("isMember") == 1)
-			return number_format($CORE_LOCAL->get("memSpecial"), 2);
-		else
-			return "n/a";
-	}
+    public function display_content()
+    {
+        global $CORE_LOCAL;
+        if ($CORE_LOCAL->get("isMember") == 1) {
+            return number_format($CORE_LOCAL->get("memSpecial"), 2);
+        } else {
+            return "n/a";
+        }
+    }
 }
 
-?>

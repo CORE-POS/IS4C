@@ -31,6 +31,7 @@
 */
 
 /* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+ * 4Jul13	Require admin priv.
  * Changes to the item edit suite:
  * + The changes were initially to support part of our ordering apparatus which
  *    involves:
@@ -75,9 +76,18 @@
  * + Extend lane updates to multiple lane-side tables.
 */
 
-include('prodFunction_WEFC_Toronto.php');
 include('../config.php');
-include('../src/mysql_connect.php');
+include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+$dbc = FannieDB::get($FANNIE_OP_DB);
+include('prodFunction_WEFC_Toronto.php');
+if ( !function_exists('validateUserQuiet') )
+	require($FANNIE_ROOT.'auth/login.php');
+
+if ( !validateUserQuiet('admin') ) {
+	$redirect = $_SERVER['REQUEST_URI'];
+	$url = $FANNIE_URL.'auth/ui/loginform.php';
+	header('Location: '.$url.'?redirect='.$redirect);
+}
 $page_title = 'Fannie - Item Maintanence WEFC_Toronto';
 $header = 'Item Maintanence WEFC_Toronto';
 include('../src/header.html');

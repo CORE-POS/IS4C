@@ -21,4 +21,8 @@ $CREATE['op.memberCards'] = "
 		INDEX(upc)
 	)
 ";
+if ($dbms == 'PDOLITE'){
+	$CREATE['op.memberCards'] = str_replace('INDEX(upc)','',$CREATE['op.memberCards']);
+	$CREATE['op.memberCards'] = str_replace('KEY(card_no),','KEY(card_no)',$CREATE['op.memberCards']);
+}
 ?>

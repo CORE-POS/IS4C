@@ -39,12 +39,13 @@
 */
 
 include('../config.php');
+include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+$dbc = FannieDB::get($FANNIE_OP_DB);
 $Fannie_Item_Modules = array("Operations","ExtraInfo",
 "ThreeForDollar",
 "Cost","Sale","Margin", "LikeCode", "LaneStatus");
 include('prodFunction_WEFC_Toronto.php');
 // include's SQLManager.php which contains smart_*()
-include_once('../src/mysql_connect.php');
 
 include_once('../auth/login.php');
 $validatedUser = validateUserQuiet('pricechange');
@@ -52,8 +53,8 @@ $auditedUser = validateUserQuiet('audited_pricechange');
 $logged_in = checkLogin();
 refreshSession();
 
-$page_title = 'Fannie - Item Maintanence WEFC_Toronto';
-$header = 'Item Maintanence WEFC_Toronto';
+$page_title = 'Fannie - Item Maintenance WEFC_Toronto';
+$header = 'Item Maintenance WEFC_Toronto';
 include('../src/header.html');
 
 $upc = str_pad($_REQUEST['upc'],'0',13,STR_PAD_LEFT);

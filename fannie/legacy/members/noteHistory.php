@@ -49,8 +49,8 @@ $memID = $memNum;
 <blockquote>
 <?php
 
-$q = "select username,note,stamp from memberNotes where cardno=$memNum order by stamp desc";
-$r = $sql->query($q);
+$q = $sql->prepare("select username,note,stamp from memberNotes where cardno=? order by stamp desc");
+$r = $sql->execute($q, array($memNum));
 while($w = $sql->fetch_array($r)){
 	$text = stripslashes($w[1]);
 	if (empty($text)) continue;

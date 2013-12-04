@@ -29,23 +29,23 @@
 
   Four methods are available for processing user input
   and are automatically called based on HTTP request type:
-  - get_handler
-  - post_handler
-  - put_handler
-  - delete_handler
+  - getHandler
+  - postHandler
+  - putHandler
+  - deleteHandler
   These methods behave like FanniePage::preprocess; there
   are just four options automatically
 
   Eight methods are available for displaying the page
   and are also automatically called based on request type:
-  - get_view
-  - get_id_view
-  - post_view
-  - post_id_view
-  - put_view
-  - put_id_view
-  - delete_view
-  - delete_id_view
+  - getView
+  - get_idView
+  - postView
+  - post_idView
+  - putView
+  - put_idView
+  - deleteView
+  - delete_idView
   These methods behave like FanniePage::body_content; again
   there are just more options.
 
@@ -57,177 +57,201 @@
 */
 class FannieRESTfulPage extends FanniePage {
 
-	protected $__method = '';
+    protected $__method = '';
 
-	protected $__models = array();
+    protected $__models = array();
 
-	/**
-	  Define available routes
-	  Syntax is request method followed by
-	  parameter names in angle brackets
+    /**
+      Define available routes
+      Syntax is request method followed by
+      parameter names in angle brackets
 
-	  method<one><two> should provide a controller
-	  function named method_one_two_handler(). It
-	  may optionally provide a view function
-	  named method_one_two_view().
+      method<one><two> should provide a controller
+      function named method_one_twoHandler(). It
+      may optionally provide a view function
+      named method_one_twoView().
 
-	  controller functions behave like FanniePage::preprocess
-	  and should return True or False.
+      controller functions behave like FanniePage::preprocess
+      and should return True or False.
 
-	  view functions behave like FanniePage::body_content
-	  and should return an HTML string
-	*/
-	protected $__routes = array(
-		'get',
-		'get<id>',
-		'post',
-		'post<id>',
-		'put',
-		'put<id>',
-		'delete',
-		'delete<id>'
-	);
+      view functions behave like FanniePage::body_content
+      and should return an HTML string
+    */
+    protected $__routes = array(
+        'get',
+        'get<id>',
+        'post',
+        'post<id>',
+        'put',
+        'put<id>',
+        'delete',
+        'delete<id>'
+    );
 
-	protected $__route_stem = 'unknown_request';
+    protected $__route_stem = 'unknownRequest';
 
-	/**
-	  Extract paramaters from route definition
-	  @param $route string route definition
-	  @return array of parameter names
-	*/
-	private function route_params($route){
-		$matches = array();
-		$try = preg_match_all('/<(.+?)>/',$route,$matches);
-		if ($try > 0) return $matches[1];
-		else return False;
-	}
+    /**
+      Extract paramaters from route definition
+      @param $route string route definition
+      @return array of parameter names
+    */
+    private function routeParams($route)
+    {
+        $matches = array();
+        $try = preg_match_all('/<(.+?)>/',$route,$matches);
+        if ($try > 0) {
+            return $matches[1];
+        } else {
+            return False;
+        }
+    }
 
-	/**
-	  Parse request info and determine which route to use
-	*/
-	public function read_routes(){
-		// routes begin with method
-		$this->__method = FormLib::get_form_value('_method');
-		if ($this->__method === ''){
-			$this->__method = $_SERVER['REQUEST_METHOD'];
-		}
-		$this->__method = strtolower($this->__method);
+    /**
+      Parse request info and determine which route to use
+    */
+    public function readRoutes()
+    {
+        // routes begin with method
+        $this->__method = FormLib::get_form_value('_method');
+        if ($this->__method === '') {
+            $this->__method = $_SERVER['REQUEST_METHOD'];
+        }
+        $this->__method = strtolower($this->__method);
 
-		// find all matching routes
-		$try_routes = array();
-		foreach($this->__routes as $route){
-			// correct request type
-			if(substr($route,0,strlen($this->__method)) == $this->__method){
-				$params = $this->route_params($route);	
-				if ($params === False || count($params) === 0){
-					// route with no params
-					if (!isset($try_routes[0])) $try_routes[0] = array();
-					$try_routes[0][] = $route;
-				}
-				else {
-					// make sure all params provided
-					$all = True;
-					foreach($params as $p){
-						if (FormLib::get_form_value($p,False) === False){
-							$all = False;
-							break;
-						}
-					}
-					if ($all){
-						if (!isset($try_routes[count($params)]))
-							$try_routes[count($params)] = array();
-						$try_routes[count($params)][] = $route;
-					}
-				}
-			}
-		}
-		
-		// use the route with the most parameters
-		// set class variables to parameters
-		$num_params = array_keys($try_routes);
-		rsort($num_params);
-		$this->__route_stem = 'unknown_request';
-		if (count($num_params) > 0){
-			$longest = $num_params[0];
-			$best_route = array_pop($try_routes[$longest]);
-			$this->__route_stem = $this->__method;
-			if ($longest > 0){
-				foreach($this->route_params($best_route) as $param){
-					$this->$param = FormLib::get_form_value($param);
-					$this->__route_stem .= '_'.$param;
-				}
-			}
-		}
-	}
+        // find all matching routes
+        $try_routes = array();
+        foreach($this->__routes as $route) {
+            // correct request type
+            if(substr($route,0,strlen($this->__method)) == $this->__method) {
+                $params = $this->routeParams($route);    
+                if ($params === false || count($params) === 0) {
+                    // route with no params
+                    if (!isset($try_routes[0])) {
+                        $try_routes[0] = array();
+                    }
+                    $try_routes[0][] = $route;
+                } else {
+                    // make sure all params provided
+                    $all = true;
+                    foreach($params as $p) {
+                        if (FormLib::get_form_value($p,false) === false) {
+                            $all = false;
+                            break;
+                        }
+                    }
+                    if ($all) {
+                        if (!isset($try_routes[count($params)])) {
+                            $try_routes[count($params)] = array();
+                        }
+                        $try_routes[count($params)][] = $route;
+                    }
+                }
+            }
+        }
+        
+        // use the route with the most parameters
+        // set class variables to parameters
+        $num_params = array_keys($try_routes);
+        rsort($num_params);
+        $this->__route_stem = 'unknownRequest';
+        if (count($num_params) > 0) {
+            $longest = $num_params[0];
+            $best_route = array_pop($try_routes[$longest]);
+            $this->__route_stem = $this->__method;
+            if ($longest > 0) {
+                foreach($this->routeParams($best_route) as $param) {
+                    $this->$param = FormLib::get_form_value($param);
+                    $this->__route_stem .= '_'.$param;
+                }
+            }
+        }
+    }
 
-	public function preprocess(){
-		$this->read_routes();
-		$handler = $this->__route_stem.'_handler';
-		$view = $this->__route_stem.'_view';	
-		if (method_exists($this, $handler))
-			return $this->$handler();
-		elseif (method_exists($this, $view))
-			return True;
-		else
-			return $this->unknown_request_handler();
-	}
+    public function preprocess(){
+        $this->readRoutes();
+        $handler = $this->__route_stem.'Handler';
+        $view = $this->__route_stem.'View';    
+        $old_handler = $this->__route_stem.'_handler';
+        $old_view = $this->__route_stem.'_view';    
+        if (method_exists($this, $handler)) {
+            return $this->$handler();
+        } elseif (method_exists($this, $old_handler)) {
+            return $this->$old_handler();
+        } elseif (method_exists($this, $view)) {
+            return true;
+        } elseif (method_exists($this, $old_view)) {
+            return true;
+        } else {
+            return $this->unknownRequestHandler();
+        }
+    }
 
-	/**
-	  Process unknown HTTP method request
-	  @return boolean
-	  Returning True draws the page
-	  Returning False does not
-	*/
-	protected function unknown_request_handler(){
-		echo '<html><head><title>HTTP 400 - Bad Request</title>
-			<body><h1>HTTP 400 - Bad Request</body></html>';
-		return False;
-	}
+    /**
+      Process unknown HTTP method request
+      @return boolean
+      Returning True draws the page
+      Returning False does not
+    */
+    protected function unknownRequestHandler(){
+        echo '<html><head><title>HTTP 400 - Bad Request</title>
+            <body><h1>HTTP 400 - Bad Request</body></html>';
+        return False;
+    }
 
-	public function body_content(){
-		$func = $this->__route_stem.'_view';
-		if (!method_exists($this, $func))
-			return $this->unknown_request_view();
-		else
-			return $this->$func();
-	}
+    public function bodyContent(){
+        $func = $this->__route_stem.'View';
+        $old_func = $this->__route_stem.'_view';
+        if (method_exists($this, $func)) {
+            return $this->$func();
+        } elseif (method_exists($this, $old_func)) {
+            return $this->$old_func();
+        } else {
+            return $this->unknownRequestView();
+        }
+    }
 
-	/**
-	  Draw default page for unknown HTTP method
-	  @return HTML string
-	*/
-	protected function unknown_request_view(){
-		return 'HTTP 400 - Bad Request';
-	}
+    /**
+      Draw default page for unknown HTTP method
+      @return HTML string
+    */
+    protected function unknownRquestView()
+    {
+        return 'HTTP 400 - Bad Request';
+    }
 
-	/**
-	  Load model(s)
-	  @param $database_connection SQLManager object
-	  @param $class string name of model class
-	  @param $params array of column names and values
-	  @param $find [optional] string sort column or False
-	  @return model object or array or model objects
-	
-	  If called without $find or $find=False returns a 
-	  single model object. Provided $params must be sufficient
-	  to uniquely identify a single record
+    /**
+      Load model(s)
+      @param $database_connection SQLManager object
+      @param $class string name of model class
+      @param $params array of column names and values
+      @param $find [optional] string sort column or False
+      @return model object or array or model objects
+    
+      If called without $find or $find=False returns a 
+      single model object. Provided $params must be sufficient
+      to uniquely identify a single record
 
-	  If called with $find then returns an array of model
-	  objects for all records that match $params and
-	  sorted by $find.
-	*/
-	protected function get_model($database_connection, $class, $params, $find=False){
-		$obj = new $class($database_connection);
-		foreach($params as $name => $value){
-			if (method_exists($obj, $name))
-				$obj->$name($value);
-		}
-		if ($find)
-			return $obj->find($find);
-		else{
-			$obj->load();
-			return $obj;
-		}	
-	}
+      If called with $find then returns an array of model
+      objects for all records that match $params and
+      sorted by $find.
+    */
+    protected function getModel($database_connection, $class, $params, $find=False)
+    {
+        $obj = new $class($database_connection);
+        foreach($params as $name => $value) {
+            if (method_exists($obj, $name))
+                $obj->$name($value);
+        }
+        if ($find) {
+            return $obj->find($find);
+        } else {
+            $obj->load();
+            return $obj;
+        }
+    }
 
+    protected function get_model($database_connection, $class, $params, $find=False)
+    {
+        return $this->getModel($database_connection, $class, $params, $find);
+    }
 }

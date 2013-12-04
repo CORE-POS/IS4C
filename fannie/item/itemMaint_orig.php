@@ -21,11 +21,12 @@
 
 *********************************************************************************/
 
-include('prodFunction.php');
 include('../config.php');
-include('../src/mysql_connect.php');
-$page_title = 'Fannie - Item Maintanence';
-$header = 'Item Maintanence';
+include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+$dbc = FannieDB::get($FANNIE_OP_DB);
+include('prodFunction.php');
+$page_title = 'Fannie - Item Maintenance';
+$header = 'Item Maintenance';
 include('../src/header.html');
 
 ?>

@@ -1,6 +1,6 @@
 <?php
 include('../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
 class RenderReceiptPage extends FanniePage {
 
@@ -72,7 +72,7 @@ class RenderReceiptPage extends FanniePage {
 		}
 
 		// equivalent to rp_dt_receipt_* view
-		$table = DTransactionsModel::select_dtrans(date('Y-m-d',$totime));
+		$table = DTransactionsModel::selectDtrans(date('Y-m-d',$totime));
 		$query1 = "SELECT 
 			description,
 			case 

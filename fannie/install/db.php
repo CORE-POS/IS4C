@@ -70,6 +70,31 @@ function duplicate_structure($dbms,$table1,$table2){
 	}
 }
 
+/**
+  Remove a deprecated table/view
+  @param $con SQLManager object
+  @param $db_name string database name
+  @param $table_name string table/view name
+  @param $is_view boolean default true
+  @return keyed array with any error info
+*/
+function dropDeprecatedStructure($con, $db_name, $table_name, $is_view=true)
+{
+	$ret = array('db'=>$db_name,'struct'=>$table_name,'error'=>0,'error_msg'=>'');
+
+    if ($con->table_exists($table_name, $db_name)) {
+        $dropQ = 'DROP '.($is_view ? 'VIEW' : 'TABLE').' '
+                .$con->identifier_escape($table_name, $db_name);
+        $result = $con->query($dropQ, $db_name);
+        if ($result === false) {
+            $ret['error_msg'] = $con->error($db_name);
+            $ret['error'] = 3;
+        }
+    }
+
+    return $ret;
+}
+
 function ar_departments(){
 	global $FANNIE_AR_DEPARTMENTS;
 	$ret = preg_match_all("/[0-9]+/",$FANNIE_AR_DEPARTMENTS,$depts);
@@ -114,7 +139,7 @@ function qualified_names(){
 }
 
 function loaddata($sql, $table){
-	global $FANNIE_ROOT;
+	global $FANNIE_ROOT, $FANNIE_SERVER;
 	if (file_exists("{$FANNIE_ROOT}install/sample_data/$table.sql")){
 		$fp = fopen("{$FANNIE_ROOT}install/sample_data/$table.sql","r");
 		while($line = fgets($fp)){
@@ -124,14 +149,37 @@ function loaddata($sql, $table){
 		fclose($fp);
 	}
 	else if (file_exists("{$FANNIE_ROOT}install/sample_data/$table.csv")){
-		$prep = $sql->prepare_statement("LOAD DATA LOCAL INFILE
+		$LOCAL = 'LOCAL';
+		if ($FANNIE_SERVER == '127.0.0.1' || $FANNIE_SERVER == 'localhost')
+			$LOCAL = '';
+		$prep = $sql->prepare_statement("LOAD DATA $LOCAL INFILE
 			'{$FANNIE_ROOT}install/sample_data/$table.csv'
 			INTO TABLE $table
 			FIELDS TERMINATED BY ','
 			ESCAPED BY '\\\\'
 			OPTIONALLY ENCLOSED BY '\"'
 			LINES TERMINATED BY '\\r\\n'");
-		$sql->exec_statement($prep);
+		$try = $sql->exec_statement($prep);
+		/** alternate implementation
+		    for non-mysql and/or LOAD DATA LOCAL
+		    not allowed */
+		if ($try === False){
+			$fp = fopen("{$FANNIE_ROOT}install/sample_data/$table.csv",'r');
+			$stmt = False;
+			while(!feof($fp)){
+				$line = fgetcsv($fp);
+				if (!is_array($line)) continue;
+				if ($stmt === False){
+					$query = 'INSERT INTO '.$table.' VALUES (';
+					foreach($line as $field)
+						$query .= '?,';
+					$query = substr($query,0,strlen($query)-1).')';
+					$stmt = $sql->prepare_statement($query);
+				}
+				$sql->exec_statement($stmt, $line);
+			}
+			fclose($fp);
+		}
 	}
 }
 
