@@ -112,8 +112,8 @@ static public function get(){
     $receipt .= "\n";
     $receipt .=	trTotal(array('CA','CK'),'CASH + CHECK');
     $receipt .=	trTotal(array('DC','CC','FS','EC'),'DEB/CRED/SNAP');
-	$receipt .= "House Charge?";
-	$receipt .= "House Coupon?";
+	$receipt .= "House Charge?\n";
+	$receipt .= "House Coupon?\n";
     $receipt .=	trTotal(45,'RCVD. on ACCT.');
     $receipt .=	trTotal(37,'FRMRS MARKET SNAP');
 
@@ -302,7 +302,7 @@ function trTotal($k, $label) {
 	$tenderR = $db_a->query($tenderQ);
 	$tender = $db_a->fetch_row($tenderR);
 
-	return "  ".substr($label." Total: 			".$blank.$blank,0,20).substr($blank.number_format(($tender[0]),2),-8).substr($blank.$tender[1],-8)."\n";
+	return "  ".substr($label.$blank.$blank,0,20).substr($blank.number_format(($tender[0]),2),-8).substr($blank.$tender[1],-8)."\n";
 	
 }
 
