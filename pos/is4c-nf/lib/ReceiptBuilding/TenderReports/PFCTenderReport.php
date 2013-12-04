@@ -282,12 +282,21 @@ function trTotal($k, $label) {
 	global $CORE_LOCAL;
 	$db_a = Database::mDataConnect();
 
+	$shiftCutoff = date('Y-m-d 00:00:00');
+	$lookup = $db->query("SELECT MAX(datetime) FROM dtransactions 
+		WHERE DATE(datetime) = CURDATE() AND upc='ENDOFSHIFT' AND 
+		register_no=".$CORE_LOCAL->get('laneno'));
+	if ($db->num_rows($lookup) > 0){
+		$row = $db->fetch_row($lookup);
+		if ($row[0] != '') $shiftCutoff = $row[0];
+	}
+
 	if (is_array($k)) $k = implode($k,",");
 	$q = (!is_numeric($k)) ? 'trans_subtype' : 'department';
 	
     $tenderQ = "SELECT -SUM(total) AS net, COUNT(total) FROM dlog 
     	WHERE register_no=".$CORE_LOCAL->get('laneno').
-		" AND $q IN($k) AND tdate >= '$shiftCutoff'$excl";
+		" AND $q IN($k) AND tdate >= '$shiftCutoff' AND emp_no <> 9999";
 	
 	$tenderR = $db_a->query($tenderQ);
 	$tender = $db_a->fetch_row($tenderR);
