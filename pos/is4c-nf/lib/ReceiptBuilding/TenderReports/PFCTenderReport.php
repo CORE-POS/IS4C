@@ -291,7 +291,7 @@ function trTotal($k, $label) {
 		if ($row[0] != '') $shiftCutoff = $row[0];
 	}
 
-	if (is_array($k)) $k = implode($k,",");
+	if (is_array($k)) $k = "'" . implode("','", $k) . "'";
 	$q = (!is_numeric($k)) ? 'trans_subtype' : 'department';
 	
     $tenderQ = "SELECT -SUM(total) AS net, COUNT(total) FROM dlog 
