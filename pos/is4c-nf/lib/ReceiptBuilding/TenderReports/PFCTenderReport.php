@@ -30,21 +30,20 @@ class PFCTenderReport extends TenderReport {
 static public function get(){
 	global $CORE_LOCAL;
 
-	$db = Database::mDataConnect();
+	$db_a = Database::mDataConnect();
 	$shiftCutoff = date('Y-m-d 00:00:00');
 	$excl = " AND emp_no <> 9999 ";
-	$lookup = $db->query("SELECT MAX(datetime) FROM dtransactions 
+	$lookup = $db_a->query("SELECT MAX(datetime) FROM dtransactions 
 		WHERE DATE(datetime) = CURDATE() AND upc='ENDOFSHIFT' AND 
 		register_no=".$CORE_LOCAL->get('laneno'));
-	if ($db->num_rows($lookup) > 0){
-		$row = $db->fetch_row($lookup);
+	if ($db_a->num_rows($lookup) > 0){
+		$row = $db_a->fetch_row($lookup);
 		if ($row[0] != '') $shiftCutoff = $row[0];
 	}
 	TransRecord::add_log_record(array('upc'=>'ENDOFSHIFT'));
 
 	$DESIRED_TENDERS = $CORE_LOCAL->get("TRDesiredTenders");
 
-	$db_a = Database::mDataConnect();
 	$receipt = "";
 	$blank = "             ";
 	$fieldNames = "  ".substr("Time".$blank, 0, 13)
