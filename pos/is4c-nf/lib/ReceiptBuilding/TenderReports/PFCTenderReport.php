@@ -281,6 +281,7 @@ function trTotal($k, $label) {
 	global $CORE_LOCAL;
 	$db_a = Database::mDataConnect();
 
+	$blank = "             ";
 	$shiftCutoff = date('Y-m-d 00:00:00');
 	$lookup = $db_a->query("SELECT MAX(datetime) FROM dtransactions 
 		WHERE DATE(datetime) = CURDATE() AND upc='ENDOFSHIFT' AND 
@@ -300,8 +301,7 @@ function trTotal($k, $label) {
 	$tenderR = $db_a->query($tenderQ);
 	$tender = $db_a->fetch_row($tenderR);
 
-	$receipt .= "  ".substr($label." Total: ".$blank.$blank,0,20);
-	$receipt .= substr($blank.number_format(($tender[0]),2),-8).substr($blank.$tender[1],-8)."\n";
+	return "  ".substr($label." Total: 			".$blank.$blank,0,20).substr($blank.number_format(($tender[0]),2),-8).substr($blank.$tender[1],-8)."\n";
 	
 }
 
