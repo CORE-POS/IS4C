@@ -46,7 +46,7 @@ static public function get(){
 
 	$receipt = "";
 	$blank = "             ";
-	$fieldNames = "  ".substr("Time".$blank, 0, 13)
+	$fieldNames = "  ".substr("Time".$blank, 0, 10)
 			.substr("Lane".$blank, 0, 8)
 			.substr("Trans #".$blank, 0, 8)
 			.substr("Emp #".$blank, 0, 10)
@@ -156,10 +156,10 @@ static public function get(){
 			$row = $db_a->fetch_array($result);
 			$timeStamp = self::timeStamp($row["tdate"]);
 			if ($itemize == 1 && $row["total"]) {
-				$receipt .= "  ".substr($timeStamp.$blank, 0, 13)
+				$receipt .= "  ".substr($timeStamp.$blank, 0, 10)
 				.substr($row["register_no"].$blank, 0, 9)
 				.substr($row["trans_no"].$blank, 0, 8)
-				.substr($blank.$row['emp_no'], -10)
+				.substr($blank.$row['emp_no'], -6)
 				.substr($blank.$row["card_no"],-6)
 				.substr($blank.number_format($row["total"], 2), -14)."\n";
 			}
@@ -316,7 +316,7 @@ static public function trTotal($k, $label,$i=False) {
 	$db_a = Database::mDataConnect();
 
 	$blank = "             ";
-	$fieldNames = "  ".substr("Time".$blank, 0, 13)
+	$fieldNames = "  ".substr("Time".$blank, 0, 10)
 			.substr("Lane".$blank, 0, 8)
 			.substr("Trans #".$blank, 0, 8)
 			.substr("Emp #".$blank, 0, 10)
@@ -353,14 +353,17 @@ static public function trTotal($k, $label,$i=False) {
 		$ret = "  ".substr($label.$blank.$blank,0,20).substr($blank.number_format(($tender[0]),2),-8).substr($blank.$tender[1],-8)."\n";
 	} else {
 		$sum = 0;
-		$titleStr = substr($label,0,strlen($label)-1);
-		$ret = ReceiptLib::centerString($titleStr)."\n";
+		$titleStr = "";
+		for ($i = 0; $i < strlen($label); $i++)
+			$titleStr .= $label." ";
+		$titleStr = substr($titleStr,0,strlen($titleStr)-1);
+		$receipt .= ReceiptLib::centerString($titleStr)."\n";
 		$ret .=	ReceiptLib::centerString("------------------------------------------------------");
 		$ret .= $fieldNames;
 		for ($i = 0; $i < $num_rows; $i++) {
 			$row = $db_a->fetch_array($tenderR);
-			$timeStamp = self::timeStamp($row["tdate"]);
-			$ret .= "  ".substr($timeStamp.$blank, 0, 13)
+			$timeStamp = TenderReport::timeStamp($row["tdate"]);
+			$ret .= "  ".substr($timeStamp.$blank, 0, 10)
 				.substr($row["register_no"].$blank, 0, 9)
 				.substr($row["trans_no"].$blank, 0, 8)
 				.substr($blank.$row['emp_no'], -8)
