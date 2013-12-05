@@ -311,7 +311,7 @@ static public function get(){
 // }
 
 
-function trTotal($k, $label,$i=False) {
+static public function trTotal($k, $label,$i=False) {
 	global $CORE_LOCAL;
 	$db_a = Database::mDataConnect();
 
@@ -358,7 +358,7 @@ function trTotal($k, $label,$i=False) {
 		$ret .=	ReceiptLib::centerString("------------------------------------------------------");
 		$ret .= $fieldNames;
 		for ($i = 0; $i < $num_rows; $i++) {
-			$row = $db_a->fetch_array($result);
+			$row = $db_a->fetch_array($tenderR);
 			$timeStamp = self::timeStamp($row["tdate"]);
 			$ret .= "  ".substr($timeStamp.$blank, 0, 13)
 				.substr($row["register_no"].$blank, 0, 9)
