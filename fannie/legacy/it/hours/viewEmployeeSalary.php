@@ -21,6 +21,7 @@ if (!validateUserQuiet('view_all_hours')){
 	   is in that department
 	*/
 	$validated = false;
+    $sql = hours_dbconnect();
 	$depts = array(10,11,12,13,20,21,30,40,41,50,60,998);
     $checkQ = $sql->prepare_statement("select department from employees where empID=?");
     $checkR = $sql->exec_statement($checkQ, array($empID));
@@ -105,6 +106,7 @@ echo "</head><body>";
 
 echo "<h3>Salary Employee PTO Status</h3>";
 
+$sql = hours_dbconnect();
 $infoQ = $sql->prepare_statement("select e.name,e.adpID,
     s.totalTaken as daysTaken
     from employees as e left join

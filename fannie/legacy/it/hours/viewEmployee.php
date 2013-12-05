@@ -19,6 +19,7 @@ if (!validateUserQuiet('view_all_hours')){
 	   department. if so, see if the selected employee
 	   is in that department
 	*/
+    $sql = hours_dbconnect();
 	$validated = false;
 	$depts = array(10,11,12,13,20,21,30,40,41,50,60,998);
     $checkQ = $sql->prepare_statement("select department from employees where empID=?");
@@ -35,6 +36,7 @@ if (!validateUserQuiet('view_all_hours')){
 		$empID = getUID($name);
 }
 
+$sql = hours_dbconnect();
 $deptQ = $sql->prepare_statement("select department from employees where empID=?");
 $deptR = $sql->exec_statement($deptQ, array($empID));
 $deptW = $sql->fetch_row($deptR);

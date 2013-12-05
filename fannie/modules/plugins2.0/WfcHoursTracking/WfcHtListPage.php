@@ -39,6 +39,7 @@ class WfcHtListPage extends FanniePage
     private $dept_args = array();
     private $selected_dept = "";
     private $dept_list = '';
+    private $list_args = array();
 
     public function preprocess()
     {
@@ -93,13 +94,13 @@ class WfcHtListPage extends FanniePage
             $valid_depts = array(10,11,12,13,20,21,30,40,50,60,998);
             $validated = false;
             $this->dept_list = "(";
-            $list_args = array();
+            $this->list_args = array();
             $good_restrict = false;
             foreach ($valid_depts as $d) {
                 if (FannieAuth::validateUserQuiet('view_all_hours',$d)) {
                     $validated = true;
                     $this->dept_list .= "?,";
-                    $list_args[] = $d;
+                    $this->list_args[] = $d;
                     if (FormLib::get('showdept') !== '' && $d == FormLib::get('showdept')) {
                         $good_restrict = true;
                     }
@@ -112,8 +113,9 @@ class WfcHtListPage extends FanniePage
                 $this->dept_list = substr($this->dept_list,0,strlen($this->dept_list)-1).")";
                 if (!$good_restrict) {
                     $this->dept_restrict = " WHERE deleted=0 AND department IN {$this->dept_list} ";
-                    $this->dept_args = $list_args;
+                    $this->dept_args = $this->list_args;
                 }
+                return true;
             }
         } else {
             return true;
@@ -215,6 +217,7 @@ class WfcHtListPage extends FanniePage
         ob_start();
 
         if (FannieAuth::validateUserQuiet('view_all_hours')) {
+            $sql = WfcHtLib::hours_dbconnect();
             $deptsQ = "select name,deptID from Departments order by name";
             $deptsR = $sql->query($deptsQ);
             echo "Show Department: ";
@@ -233,9 +236,10 @@ class WfcHtListPage extends FanniePage
                 echo "<option value=\"-1\">DELETED</option>";
             echo "</select>";
         } else if (strlen($this->dept_list) > 4){
+            $sql = WfcHtLib::hours_dbconnect();
             $deptsQ = "select name,deptID from Departments WHERE deptID IN {$this->dept_list} order by name";
             $deptsP = $sql->prepare_statement($deptsQ);
-            $deptsR = $sql->exec_statement($deptsP, $this->dept_args);
+            $deptsR = $sql->exec_statement($deptsP, $this->list_args);
             echo "Show Department: ";
             echo "<select onchange=\"top.location='{$_SERVER['PHP_SELF']}?showdept='+this.value;\">";
             echo "<option value=\"\">All</option>";
@@ -299,6 +303,7 @@ class WfcHtListPage extends FanniePage
             }
             echo "</tr>";
         }
+        echo '</table>';
 
         return ob_get_clean();
     }
