@@ -27,7 +27,12 @@ if (!class_exists('FannieAPI')) {
 
 class UIGLib 
 {
-    static public function import($zipfile)
+    /**
+      Create purchase orders from zipfile
+      @param $zipfile filename
+      @param $repeat this date has been previously imported
+    */
+    static public function import($zipfile, $repeat=false)
     {
         global $FANNIE_OP_DB;
         $za = new ZipArchive();
@@ -41,7 +46,10 @@ class UIGLib
         $create = $dbc->prepare('INSERT INTO PurchaseOrder (vendorID, creationDate, placed,
                             placedDate, userID, vendorOrderID, vendorInvoiceID) VALUES
                             (?, ?, 1, ?, 0, ?, ?)');
+        $find = $dbc->prepare('SELECT orderID FROM PurchaseOrder WHERE vendorID=? AND userID=0
+                            AND vendorInvoiceID=?');
         $plu = $dbc->prepare('SELECT upc FROM vendorSKUtoPLU WHERE vendorID=? AND sku LIKE ?');
+        $clear = $dbc->prepare('DELETE FROM PurchaseOrderItems WHERE orderID=?');
 
         for ($i=0; $i<$za->numFiles; $i++) {
             $info = $za->statIndex($i);
@@ -65,20 +73,44 @@ class UIGLib
             }
 
             if (count($item_info) > 0) {
-                $dbc->execute($create, array(1, $header_info['placedDate'], $header_info['placedDate'],
-                                $header_info['vendorOrderID'], $header_info['vendorInvoiceID']));
-                $id = $dbc->insert_id();
+                $id = false;
+                if ($repeat) {
+                    // date has been downloaded before; lookup orderID
+                    $idR = $dbc->execute($find, array(1, $header_info['vendorInvoiceID']));
+                    if ($dbc->num_rows($idR) > 0) {
+                        $idW = $dbc->fetch_row($idR);
+                        $id = $idW['orderID'];
+                        $dbc->execute($clear, array($id));
+                    }
+                }
+                if (!$id) {
+                    // date has not been downloaded before OR
+                    // date previously did not include this invoice
+                    $dbc->execute($create, array(1, $header_info['placedDate'], $header_info['placedDate'],
+                                    $header_info['vendorOrderID'], $header_info['vendorInvoiceID']));
+                    $id = $dbc->insert_id();
+                }
 
                 foreach($item_info as $item) {
                     $model = new PurchaseOrderItemsModel($dbc);
                     $model->orderID($id);
                     $model->sku($item['sku']);
+                    if ($model->load()) {
+                        // sometimes an invoice contains multiple
+                        // lines with the same product SKU
+                        // sum those so the single record in
+                        // PurchaseOrderItems is correct
+                        $item['quantity'] += $model->quantity();
+                        $item['receivedQty'] += $model->receivedQty();
+                        $item['receivedTotalCost'] += $model->receivedTotalCost();
+                    }
                     $model->quantity($item['quantity']);
+                    $model->receivedQty($item['receivedQty']);
+                    $model->receivedTotalCost($item['receivedTotalCost']);
+
                     $model->unitCost($item['unitCost']);
                     $model->caseSize($item['caseSize']);
                     $model->receivedDate($header_info['placedDate']);
-                    $model->receivedQty($item['receivedQty']);
-                    $model->receivedTotalCost($item['receivedTotalCost']);
                     $model->unitSize($item['unitSize']);
                     $model->brand($item['brand']);
                     $model->description($item['description']);

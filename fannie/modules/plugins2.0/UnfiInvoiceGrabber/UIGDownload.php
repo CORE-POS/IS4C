@@ -139,9 +139,14 @@ $check = $dbc->prepare('SELECT orderID FROM PurchaseOrder WHERE vendorID=? and u
 foreach($dates as $date) {
     $good_date = date('Y-m-d', strtotime($date));
     $doCheck = $dbc->execute($check, array(1, $good_date, $good_date));
-    if ($dbc->num_rows($doCheck) > 0) {
+    $diff = time() - strtotime($date);
+    $repeat = false;
+    if ($dbc->num_rows($doCheck) > 0 && $diff > (7 * 24 * 60 * 60)) {
         echo "Skipping $date (already imported)\n";
         continue;
+    } else if ($dbc->num_rows($doCheck) > 0) {
+        echo "Redownloading $date\n";
+        $repeat = true;
     }
 
     $this_post = $post_data.'&ctl00$PlaceHolderMain$ddlInvoiceDate='.urlencode($date);
@@ -162,7 +167,7 @@ foreach($dates as $date) {
     fclose($fp);
 
     echo "Importing invoices for $date\n";
-    if (UIGLib::import($filename) === true) {
+    if (UIGLib::import($filename, $repeat) === true) {
         unlink($filename);
     } else {
         echo "ERROR: IMPORT FAILED!\n";
