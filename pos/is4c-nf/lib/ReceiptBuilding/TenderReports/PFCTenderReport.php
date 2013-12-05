@@ -353,11 +353,11 @@ function trTotal($k, $label,$i=False) {
 		$ret = "  ".substr($label.$blank.$blank,0,20).substr($blank.number_format(($tender[0]),2),-8).substr($blank.$tender[1],-8)."\n";
 	} else {
 		$sum = 0;
-		$titleStr = "";
-		for ($i = 0; $i < strlen($label); $i++)
-			$titleStr .= $label." ";
-		$titleStr = substr($titleStr,0,strlen($titleStr)-1);
-		$receipt .= ReceiptLib::centerString($titleStr)."\n";
+		// $titleStr = "";
+		// for ($i = 0; $i < strlen($label); $i++)
+		// 	$titleStr .= $i." ";
+		// $titleStr = substr($titleStr,0,strlen($titleStr)-1);
+		$ret = ReceiptLib::centerString($label)."\n";
 		$ret .=	ReceiptLib::centerString("------------------------------------------------------");
 		$ret .= $fieldNames;
 		for ($i = 0; $i < $num_rows; $i++) {
