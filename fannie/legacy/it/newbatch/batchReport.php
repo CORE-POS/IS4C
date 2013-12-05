@@ -1,4 +1,6 @@
 <?php
+// not linked anywhere?
+/*
 include('../../../config.php');
 
 if (!class_exists("SQLManager")) require_once($FANNIE_ROOT."src/SQLManager.php");
@@ -98,3 +100,4 @@ while($salesBatchW = $sql->fetch_array($salesBatchR)){
 ?>
 </body>
 </html>
+*/
