@@ -47,9 +47,10 @@ static public function get(){
 	$receipt = "";
 	$blank = "             ";
 	$fieldNames = "  ".substr("Time".$blank, 0, 13)
-			.substr("Lane".$blank, 0, 9)
-			.substr("Trans #".$blank, 0, 12)
-			.substr("Emp #".$blank, 0, 14)
+			.substr("Lane".$blank, 0, 8)
+			.substr("Trans #".$blank, 0, 8)
+			.substr("Emp #".$blank, 0, 10)
+			.substr("Mem #".$blank, 0, 10)
 			.substr("Amount".$blank, 0, 14)."\n";
 	$ref = ReceiptLib::centerString(trim($CORE_LOCAL->get("CashierNo"))." ".trim($CORE_LOCAL->get("cashier"))." ".ReceiptLib::build_time(time()))."\n";
 
@@ -317,7 +318,7 @@ function trTotal($k, $label,$i=False) {
 	$blank = "             ";
 	$fieldNames = "  ".substr("Time".$blank, 0, 13)
 			.substr("Lane".$blank, 0, 8)
-			.substr("Trans #".$blank, 0, 10)
+			.substr("Trans #".$blank, 0, 8)
 			.substr("Emp #".$blank, 0, 10)
 			.substr("Mem #".$blank, 0, 10)
 			.substr("Amount".$blank, 0, 14)."\n";
@@ -352,8 +353,8 @@ function trTotal($k, $label,$i=False) {
 		$ret = "  ".substr($label.$blank.$blank,0,20).substr($blank.number_format(($tender[0]),2),-8).substr($blank.$tender[1],-8)."\n";
 	} else {
 		$sum = 0;
-		// $titleStr = chunk_split($label,1," ");
-		$ret = ReceiptLib::centerString($label)."\n";
+		$titleStr = substr($label,0,strlen($label)-1);
+		$ret = ReceiptLib::centerString($titleStr)."\n";
 		$ret .=	ReceiptLib::centerString("------------------------------------------------------");
 		$ret .= $fieldNames;
 		for ($i = 0; $i < $num_rows; $i++) {
