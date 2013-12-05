@@ -311,7 +311,7 @@ static public function get(){
 // }
 
 
-static public function trTotal($k, $label,$i=False) {
+function trTotal($k, $label,$i=False) {
 	global $CORE_LOCAL;
 	$db_a = Database::mDataConnect();
 
