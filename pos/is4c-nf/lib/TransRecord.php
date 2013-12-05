@@ -450,7 +450,13 @@ static public function addCoupon($strupc, $intdepartment, $dbltotal, $foodstamp=
 */
 static public function addhousecoupon($strupc, $intdepartment, $dbltotal) 
 {
-	self::addItem($strupc, " * Store Coupon", "I", "IC", "C", $intdepartment, 1, $dbltotal, $dbltotal, $dbltotal, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0);
+	global $CORE_LOCAL;
+	$sql = Database::pDataConnect();
+	$fetchQ = "select card_no, coupID, description from houseVirtualCoupon WHERE card_no=" . $CORE_LOCAL->get('memberID');
+	$fetchR = $sql->query($fetchQ);
+	$coupW = $sql->fetch_row($fetchR);
+	$desc = ($coupW) ? substr($coupW["description"],0,35) : " * Store Coupon";
+	self::addItem($strupc, $desc, "I", "IC", "C", $intdepartment, 1, $dbltotal, $dbltotal, $dbltotal, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0);
 }
 
 /**
