@@ -25,6 +25,8 @@
 
    nightly.table.snapshot.php
 
+   @deprecated. Use Table Snapshot Task
+
    Copies table contents to a backup table
    Currently applies to products & custdata.
 

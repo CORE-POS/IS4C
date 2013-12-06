@@ -1,6 +1,7 @@
 <?php
 include('../../config.php');
-
+include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include('../db.php');
 require($FANNIE_ROOT.'auth/login.php');
 $validatedUser = validateUserQuiet('pricechange');
 $auditedUser = validateUserQuiet('audited_pricechange');
@@ -31,13 +32,9 @@ refreshSession();
 <?php
 echo "<BODY onLoad='putFocus(0,0);'>";
 
-if (!class_exists("SQLManager")) require_once($FANNIE_ROOT."src/SQLManager.php");
-include('../db.php');
 //$descr = $_POST['descript'] ;
 //$price = $_POST['price'];
 
-//$db2=$sql->connect('129.103.2.11','sa');
-//$sql->select_db('POSBDAT',$db2);
 
 //$db3=$sql->connect('129.103.2.12','sa');
 //$sql->select_db('POSBDAT',$db3);
@@ -54,14 +51,14 @@ $FS = (isset($_POST["FS"])) ? 1 : 0;
 $NoDisc = (isset($_POST["NoDisc"])) ? 0 : 1;
 $inUse = (isset($_POST["inUse"])) ? 1 : 0;
 $QtyFrc = (isset($_POST["QtyFrc"])) ? 1 : 0;
-$local = (isset($_POST["local"])) ? 1 : 0;
+$local = (isset($_POST["local"])) ? (int)$_POST["local"] : 0;
 
 /* if the user isn't validated but is logged in, then
    they don't have permission to change prices on all
    items.  So get the sub department and check that.
 */
-$deptSubQ = "select superID from MasterSuperDepts where dept_ID = $dept";
-$deptSubR = $sql->query($deptSubQ);
+$deptSubQ = $sql->prepare("select superID from MasterSuperDepts where dept_ID = ?");
+$deptSubR = $sql->execute($deptSubQ, array($dept));
 $deptSubW = $sql->fetch_array($deptSubR);
 $deptSub = $deptSubW[0];
 if (!$validatedUser && !$auditedUser && $logged_in){
@@ -76,7 +73,7 @@ if ($validatedUser){
 elseif ($auditedUser){
   $auditedUID = getUID($auditedUser);
   $uid = $auditedUID;
-  include('audit.php');
+  include('../../item/audit.php');
   if (!empty($likeCode))
     audit($deptSub,$auditedUser,$upc,$descript,$price,$tax,$FS,$Scale,$NoDisc,$likeCode);
   else
@@ -85,7 +82,7 @@ elseif ($auditedUser){
 
 if (!$validatedUser && !$auditedUser && substr($upc,0,3) != "002"){
 	echo "Please ";
-	echo "<a href={$FANNIE_URL}auth/ui/loginform.php?redirect={$FANNIE_URL}legacy/queries/productTest.php?upc=$upc>";
+	echo "<a href=/auth/ui/loginform.php?redirect=/queries/productTest.php?upc=$upc>";
 	echo "login</a> to add new items";
 	return;
 }
@@ -109,43 +106,44 @@ if (empty($vol_qtty) || $vol_qtty == 0){
 	$vol_qtty = 0;
 }
 
+$descript = str_replace("'","",$descript);
+$descript = str_replace("\"","",$descript);
 $descript = $sql->escape($descript);
 
-$query = "UPDATE products 
-	SET description = $descript, 
-	normal_price=$price,
-	tax='$tax',
-	Scale='$Scale',
-	foodstamp='$FS',
-	department = '$dept',
-	inUse = '$inUse',
-	modified= getdate(),
-        qttyEnforced = '$QtyFrc',
-        discount='$NoDisc',
-	pricemethod='$price_method',
-	groupprice=$vol_price,
-	quantity='$vol_qtty',
-	local=$local
-	where upc ='$upc'";
-//echo $query;
+$stamp = date("Y-m-d H:i:s");
+$model = new ProductsModel($sql);
+$model->upc($upc);
+$model->description($descript);
+$model->normal_price($price);
+$model->tax($tax);
+$model->scale($Scale);
+$model->foodstamp($FS);
+$model->department($dept);
+$model->inUse($inUse);
+$model->modified($stamp);
+$model->qttyEnforced($QtyFrc);
+$model->discount($NoDisc);
+$model->pricemethod($price_method);
+$model->groupprice($vol_price);
+$model->quantity($vol_qtty);
+$model->local($local);
+$model->save();
 
+$nowish = date("Y-m-d h:i:s");
 $query1 = "INSERT INTO prodUpdate 
-        VALUES('$upc',$descript, 
+        VALUES('$upc','$descript', 
         $price,$dept,
         $tax,$FS,
         $Scale,
         $likeCode,
-	getdate(),
+	'$nowish',
 	$uid,
 	$QtyFrc,
         $NoDisc,
 	$inUse)
 	";
 //////////echo $query1;
-//$resultU = $sql->query($query1,$db);
-$result1 = $sql->query($query1);
-
-$result = $sql->query($query);
+$result1 = $sql->execute($query1, array($upc, $descript, $price, $dept, $tax, $FS, $Scale, $likeCode, $nowish, $uid, $QtyFrc, $NoDisc, $inUse));
 
 if (empty($manufacturer))
 	$manufacturer = '';
@@ -153,23 +151,22 @@ if (empty($distributor))
 	$distributor = '';
 $manufacturer = str_replace("'","",$manufacturer);
 $distributor = str_replace("'","",$distributor);
-$extraQ = "update prodExtra set manufacturer='$manufacturer',distributor='$distributor' where upc='$upc'";
-$extraR = $sql->query($extraQ);
+$checkP = $sql->prepare("SELECT upc FROM prodExtra WHERE upc=?");
+$checkR = $sql->execute($checkP, array($upc));
+if ($sql->num_rows($checkR) == 0){
+	$extraQ = $sql->prepare("insert into prodExtra values (?,?,?,0,0,0,'','',0,'')");
+	$extraR = $sql->execute($extraQ, array($upc, $distributor, $manufacturer));
+}
+else {
+	$extraQ = $sql->prepare("update prodExtra set manufacturer=?,distributor=? where upc=?");
+	$extraR = $sql->execute($extraQ, array($manufacturer, $distributor, $upc));
+}
 
-require('laneUpdates.php');
-updateProductAllLanes($upc);
+$model->pushToLanes();
 
-$query1 = "SELECT * FROM products WHERE upc = '$upc'";
-$result1 = $sql->query($query1);
+$query1 = $sql->prepare("SELECT * FROM products WHERE upc = ?");
+$result1 = $sql->execute($query1, array($upc));
 $row = $sql->fetch_array($result1);
-//echo '<br>'.$query1;
-//$modDateQ = "SELECT MAX(modified) FROM prodUpdate WHERE upc = '$upc'";
-//echo $modDateQ;
-//$modDateR = $sql->query($modDateQ);
-//$modDateW = $sql->fetch_row($modDateR);
-//$strMod = strtotime($modDateW[0]);
-//echo $strMod;
-//echo $row['modified'];
 $strMod = strtotime($row['modified']);
 //echo $strMod;
 //$modDate = date('Y-m-j h:i:s',$strMod);
@@ -187,7 +184,7 @@ if (!empty($s_plu)){
 	// (reducing necessary input AND chances of mismatches)
 	$s_itemdesc = $descript;
 	if ($s_longdesc != ""){
-	  $s_itemdesc = $dbc->escape($s_longdesc);
+	  $s_itemdesc = $s_longdesc;
 	}
 	$s_price = trim($price," ");
 
@@ -222,7 +219,7 @@ if (!empty($s_plu)){
 	    $shelflife = 0;
 	}
 
-	$s_label = 103;
+	$s_label = 63;
 	if ($s_label == "horizontal" && $s_type == "Random Weight")
 		$s_label = 133;
 	elseif ($s_label == "horizontal" && $s_type == "Fixed Weight")
@@ -243,8 +240,8 @@ if (!empty($s_plu)){
 	// for right now, check if the item is in the scaleItems
 	// table and add it if it isn't
 	// otherwise, update the row
-	$scaleQuery = "Select plu from scaleItems where plu='{$s_plu}'";
-	$scaleRes = $sql->query($scaleQuery);
+	$scaleQuery = $sql->prepare("select plu from scaleItems where plu=?");
+	$scaleRes = $sql->execute($scaleQuery, array($s_plu));
 	$nr = $sql->num_rows($scaleRes);
 
 	/* apostrophe filter */
@@ -254,30 +251,30 @@ if (!empty($s_plu)){
 	$s_text = str_replace("\"","",$s_text);
 
 	if ($nr == 0){
-	   $scaleQuery = "insert into scaleItems (plu,price,itemdesc,exceptionprice,
+	   $scaleQuery = $sql->prepare("insert into scaleItems (plu,price,itemdesc,exceptionprice,
 						 weight,bycount,tare,shelflife,text,label,graphics) 
 						 values
-						 ('$s_plu',$s_price,'$s_itemdesc',
-						 $s_exception,$wt,$bc,$tare,
-						 $shelflife,'$s_text',$s_label,$graphics)";
+						 (?, ?, ?,
+						 ?, ?, ?, ?,
+						 ?, ?, ?, ?)");
 	   //echo $scaleQuery;
-	   $scaleRes = $sql->query($scaleQuery);
+	   $scaleRes = $sql->execute($scaleQuery, array($s_plu, $s_price, $s_itemdesc, $s_exception, $wt, $bc, $tare, $shelflife, $s_text, $s_label, $graphics));
 	}
 	else {
-	   $scaleQuery = "update scaleItems set
-			 price = $s_price,
-			 itemdesc = '$s_itemdesc',
-			 exceptionprice = $s_exception,
-			 weight = $wt,
-			 bycount = $bc,
-			 tare = $tare,
-			 shelflife = $shelflife,
-			 text = '$s_text',
-			 label = $s_label,
-			 graphics = $graphics
-			 where plu = '$s_plu'";
+	   $scaleQuery = $sql->prepare("update scaleItems set
+			 price = ?,
+			 itemdesc = ?,
+			 exceptionprice = ?,
+			 weight = ?,
+			 bycount = ?,
+			 tare = ?,
+			 shelflife = ?,
+			 text = ?,
+			 label = ?,
+			 graphics = ?
+			 where plu = ?");
 	  //echo $scaleQuery;
-	  $scareRes = $sql->query($scaleQuery);
+	  $scareRes = $sql->execute($scaleQuery, array($s_price, $s_itemdesc, $s_exception, $wt, $bc, $tare, $shelflife, $s_text, $s_label, $graphics, $s_plu));
 	}
 
 	$datetime = date("m/d/Y h:i:s a");
@@ -302,56 +299,102 @@ if (!empty($s_plu)){
 		  $s_bycount,$s_type,$s_exception,$s_text,$s_label,$graphics);
 }
 
+$udesc = isset($_REQUEST['u_desc'])?$_REQUEST['u_desc']:'';
+$ubrand = isset($_REQUEST['u_brand'])?$_REQUEST['u_brand']:'';
+$usize = isset($_REQUEST['u_size'])?$_REQUEST['u_size']:'';
+$utext = isset($_REQUEST['u_long_text'])?$_REQUEST['u_long_text']:'';
+$utext = str_replace("\r","",$utext);
+$utext = str_replace("\n","<br />",$utext);
+$utext = preg_replace("/[^\x01-\x7F]/","", $utext); // strip non-ASCII (word copy/paste artifacts)
+$uonline = isset($_REQUEST['u_enableOnline'])?1:0;
+$uexpires = isset($_REQUEST['u_expires'])?$_REQUEST['u_expires']:'';
+if (!empty($udesc) || !empty($ubrand) || !empty($usize)){
+	include($FANNIE_ROOT.'src/Credentials/OutsideDB.is4c.php');
+	$dbs = array($sql);
+	$q = $sql->prepare("SELECT special_price,discounttype FROM products WHERE upc=?");
+	$r = $sql->execute($q, array($upc));
+	$w = $sql->fetch_row($r);
+	if ($uonline == 0){
+		$del = $dbc->prepare("DELETE FROM productUser WHERE upc=?");
+        $dbc->execute($del, array($upc));
+		$del = $dbc->prepare("DELETE FROM productExpires WHERE upc=?");
+        $dbc->execute($del, array($upc));
+	}
+	else{
+		$dbs[] = $dbc;
+		$del = $dbc->prepare("DELETE FROM products WHERE upc=?");
+        $dbc->execute($del, array($upc));
+		$query99 = $dbc->prepare("INSERT INTO products (upc,description,normal_price,pricemethod,groupprice,quantity,special_price,specialpricemethod,
+				specialgroupprice,specialquantity,start_date,end_date,department,size,tax,foodstamp,scale,scaleprice,mixmatchcode,
+				modified,advertised,tareweight,discount,discounttype,unitofmeasure,wicable,qttyEnforced,idEnforced,cost,inUse,numflag,
+				subdept,deposit,local)
+				VALUES(?,?,?,0,0.00,0,?,0,0.00,0,'','',?,0,?,?,?,0,0,now(),0,0,?,
+				?,0,0,0,0,0.00,1,
+				0,0,0.00,?)");
+		$dbc->execute($query99, array($upc, $descript, $price, $w['special_price'], $dept, $tax, $FS, $Scale, $NoDisc, $w['discounttype'], $local));
+	}
+
+	foreach($dbs as $con){
+		$char = strstr($utext,"start");
+        $pu_model = new ProductUserModel($con);
+        $pu_model->upc($upc);
+        $pu_model->brand($ubrand);
+        $pu_model->description($udesc);
+        $pu_model->sizing($usize);
+        $pu_model->long_text($utext);
+        $pu_model->enableOnline($uonline);
+        $pu_model->save();
+
+		$prep = $con->prepare("SELECT * FROM productExpires WHERE upc=?");
+        $chk = $con->execute($prep, array($upc));
+		if ($con->num_rows($chk) == 0){
+			$ins = $con->prepare("INSERT INTO productExpires (upc,expires) VALUES (?, ?)");
+            $con->execute($ins, array($upc, $uexpires));
+		}
+		else {
+			$up = $con->prepare("UPDATE productExpires SET expires=? WHERE upc=?");
+            $con->execute($up, array($uexpires, $upc));
+		}
+	}
+}
+
 
 if(!empty($likeCode)){
    if ($likeCode == -1){
-     $updateLikeQ = "delete from upcLike where upc='$upc'";
-     $updateLikeR = $sql->query($updateLikeQ);
+     $updateLikeQ = $sql->prepare("delete from upcLike where upc=?");
+     $updateLikeR = $sql->execute($updateLikeQ, array($upc));
    }
    else if(!isset($update)){
 	//Update all like coded items to $upc
-	$likeQuery = "UPDATE products SET normal_price = $price,department = '$dept',tax = '$tax',scale='$Scale',foodstamp='$FS',inUse='$inUse', modified = '$modDate' ,
-			pricemethod='$price_method',groupprice=$vol_price,quantity='$vol_qtty',local=$local
-                  FROM products as p, upcLike as u WHERE u.upc = p.upc and u.likeCode = '$likeCode'";
+	$likeQuery = $sql->prepare("UPDATE products SET normal_price = ?,department = ?,tax = ?,scale=?,foodstamp=?,inUse=?, modified = ?,
+			pricemethod=?,groupprice=?,quantity=?,local=?
+                  WHERE upc IN (SELECT u.upc FROM upcLike AS u WHERE u.likeCode = ?)");
 	
-	//echo $likeQuery;
-	$likeResult = $sql->query($likeQuery);
+	$likeResult = $sql->execute($likeQuery, array($price, $dept, $tax, $Scale, $FS, $inUse, $modDate, $price_method, $vol_price, $vol_qtty, $local, $likeCode));
 
     
 	    //INSERTED HERE TO INSERT UPDATE INTO prodUpdate for likecoded items. 
-	    // and push updates to the lanes
-	    $selectQ = "SELECT u.* FROM upcLike as u inner join products as p 
-			on u.upc=p.upc  WHERE likecode = $likeCode";
+	    $selectQ = $sql->prepare("SELECT * FROM upcLike WHERE likecode = ?");
 	    //echo $selectQ;
-	    $selectR = $sql->query($selectQ);
+	    $selectR = $sql->execute($selectQ, array($likeCode));
 	    while($selectW = $sql->fetch_array($selectR)){
 	       $upcL = $selectW['upc'];
 	       if($upcL != $upc){
-		  $insQ= "INSERT INTO prodUpdate SELECT upc, description,normal_price,department,tax,foodstamp,scale,$likeCode,getdate(),$uid,qttyEnforced,discount,1
-			      FROM products where upc = '$upcL'";
-		  $insR= $sql->query($insQ);
+		  $insQ= $sql->prepare("INSERT INTO prodUpdate SELECT upc, description,normal_price,department,tax,foodstamp,scale,?,?,?,qttyEnforced,discount,1
+			      FROM products where upc = ?");
+		  $insR= $sql->execute($insQ, array($likeCode, date('Y-m-d H:i:s'), $uid, $upcL));
 		  //echo $selectQ . "<br>";
-		  updateProductAllLanes($upcL);
+          $p_model = new ProductsModel($sql);
+          $p_model->upc($upcL);
+          $p_model->pushToLanes();
 	      }   
 	    }
     	
-	//check to see if $upc exists in upcLike, if not, then add it to upcLike
-	$checkLikeQ = "SELECT * FROM upcLike WHERE upc = '$upc'";
-	$checkLikeR = $sql->query($checkLikeQ);
-	$checkLikeN = $sql->num_rows($checkLikeR); //returns 0 if not in upcLike
+	$delQ = $sql->prepare("DELETE FROM upcLike WHERE upc = ?");
+	$delR = $sql->execute($delQ, array($upc));
+	$updateLikeQ = $sql->prepare("INSERT INTO upcLike VALUES(?,?)");
+	$updateLikeR = $sql->execute($updateLikeQ, array($upc, $likeCode));
 
-   	//echo $upc." ".$checkLikeN."<br>";
-	if($checkLikeN == 0){
-		$updateLikeQ = "INSERT INTO upcLike VALUES('$upc','$likeCode')";
-		$updateLikeR = $sql->query($updateLikeQ);
-	}
-	else {
-	  $updateLikeQ = "Update upcLike set likeCode=$likeCode where upc='$upc'";
-	  //echo $updateLikeQ;
-	  $updateLikeR = $sql->query($updateLikeQ);
-	}
-        // more than one item may have been changed. Push the whole table to the lanes
-	exec("touch /pos/sync/scheduled/products");
     }
 }
 
@@ -364,8 +407,8 @@ echo "<table>";
         echo "</tr>";
         echo "<tr>";
         $dept=$row[12];
-        $query2 = "SELECT * FROM departments where dept_no = $dept";
-        $result2 = $sql->query($query2);
+        $query2 = $sql->prepare("SELECT * FROM departments where dept_no = ?");
+        $result2 = $sql->execute($query2, array($dept));
 	$row2 = $sql->fetch_array($result2);
 	echo "<td>";
         echo $dept . ' ' . 

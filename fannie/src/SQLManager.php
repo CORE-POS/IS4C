@@ -53,13 +53,14 @@ class SQLManager
 	    @param $username Database username
 	    @param $password Database password
 	    @param $persistent Make persistent connection.
+        @param $new Force new connection
 	*/
-	public function SQLManager($server,$type,$database,$username,$password='',$persistent=false)
+	public function SQLManager($server,$type,$database,$username,$password='',$persistent=false, $new=false)
     {
 		$this->QUERY_LOG = dirname(__FILE__)."/../logs/queries.log";
 		$this->connections=array();
 		$this->default_db = $database;
-		$this->addConnection($server,$type,$database,$username,$password,$persistent);
+		$this->addConnection($server,$type,$database,$username,$password,$persistent,$new);
 	}
 
 	/** Add another connection
@@ -71,16 +72,17 @@ class SQLManager
 	    @param $username Database username
 	    @param $password Database password
 	    @param $persistent Make persistent connection.
+        @param $new Force new connection
 
 	    When dealing with multiple connections, user the
 	    database name to distinguish which is to be used
 	*/
-	public function addConnection($server,$type,$database,$username,$password='',$persistent=false)
+	public function addConnection($server,$type,$database,$username,$password='',$persistent=false,$new=false)
     {
 		$conn = ADONewConnection($type);
 		$conn->SetFetchMode(ADODB_FETCH_BOTH);
 		$ok = false;
-		if (isset($this->connections[$database])) {
+		if (isset($this->connections[$database]) || $new) {
 			$ok = $conn->NConnect($server,$username,$password,$database);
 		} else {
 			if ($persistent) {

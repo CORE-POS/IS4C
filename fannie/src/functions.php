@@ -216,9 +216,12 @@ function receipt_to_table($query,$args,$query2,$args2,$border,$bgcolor)
 
 /* pads upc with zeroes to make $upc into IT CORE compliant upc*/
 
-function str_pad_upc($upc){
-   $strUPC = str_pad($upc,13,"0",STR_PAD_LEFT);
-   return $strUPC;
+function str_pad_upc($upc)
+{
+    if (!class_exists('BarcodeLib')) {
+        include(dirname(__FILE__).'/../classlib2.0/lib/BarcodeLib.php');
+    }
+    return BarcodeLib::padUPC($upc);
 }
 
 function test_upc($upc){

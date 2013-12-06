@@ -72,7 +72,7 @@ class EditOnePurchaseOrder extends FannieRESTfulPage {
 		$upcQ = 'SELECT brand, description, size, units, cost, sku
 			FROM vendorItems WHERE upc = ? AND vendorID=?';
 		$upcP = $dbc->prepare_statement($upcQ);
-		$upcR = $dbc->exec_statement($upcP, array(str_pad($this->search,13,'0',STR_PAD_LEFT), $this->id));
+		$upcR = $dbc->exec_statement($upcP, array(BarcodeLib::padUPC($this->search)));
 		while($w = $dbc->fetch_row($upcR)){
 			$result = array(
 			'sku' => $w['sku'],

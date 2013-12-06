@@ -33,19 +33,30 @@
 <h1>LocalStorage Class Reference</h1><!-- doxytag: class="LocalStorage" --><p>Inheritance diagram for LocalStorage:
 <p><center><img src="class_local_storage.png" usemap="#LocalStorage_map" border="0" alt=""></center>
 <map name="LocalStorage_map">
-<area href="class_session_storage.html" alt="SessionStorage" shape="rect" coords="0,56,100,80">
-<area href="class_s_q_lite_storage.html" alt="SQLiteStorage" shape="rect" coords="110,56,210,80">
+<area href="class_memcache_storage.html" alt="MemcacheStorage" shape="rect" coords="0,56,118,80">
+<area href="class_session_storage.html" alt="SessionStorage" shape="rect" coords="128,56,246,80">
+<area href="class_s_q_lite_storage.html" alt="SQLiteStorage" shape="rect" coords="256,56,374,80">
+<area href="class_unit_test_storage.html" alt="UnitTestStorage" shape="rect" coords="384,56,502,80">
 </map>
 <a href="class_local_storage-members.html">List of all members.</a><table border="0" cellpadding="0" cellspacing="0">
 <tr><td></td></tr>
 <tr><td colspan="2"><br><h2>Public Member Functions</h2></td></tr>
-<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_local_storage.html#6cc49de43daa512083ed4cc919c7f060">localStorage</a> ()</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_local_storage.html#0b6c01b08888b91281605a865ea1af2f">LocalStorage</a> ()</td></tr>
 
-<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_local_storage.html#60995fdbd712f97b5215fb5c3daa8356">get</a> ($key)</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_local_storage.html#9bdc48723296219b0cb74d7e3cda0c03">get</a> ($key)</td></tr>
 
-<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_local_storage.html#cb48a5027abf7a1d05b4a12be85d72a7">set</a> ($key, $val)</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_local_storage.html#2f1074679d720b22bb0daf0bc9705937">set</a> ($key, $val, $immutable=false)</td></tr>
 
-<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_local_storage.html#01d4c2877114a245e4cda5123ec5a720">debug</a> ()</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_local_storage.html#dd13ba3c51954e6350a456057b299443">isImmutable</a> ($key)</td></tr>
+
+<tr><td colspan="2"><br><h2>Protected Member Functions</h2></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_local_storage.html#ebef1aabccb679b3f58a8b7e832bbada">immutableSet</a> ($key, $val)</td></tr>
+
+<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_local_storage.html#470f39d45b269b9bab8a3c73d91926f4">debug</a> ()</td></tr>
+
+<tr><td colspan="2"><br><h2>Protected Attributes</h2></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="anchor" name="d177d4e49228ca72d49d0320e0610a41"></a><!-- doxytag: member="LocalStorage::$immutables" ref="d177d4e49228ca72d49d0320e0610a41" args="" -->
+&nbsp;</td><td class="memItemRight" valign="bottom"><b>$immutables</b> = array()</td></tr>
 
 </table>
 <hr><a name="_details"></a><h2>Detailed Description</h2>
@@ -53,7 +64,7 @@ A module for storing persistent values This is handled via PHP sessions by defau
 Interface class. Must be subclassed to do anything. 
 <p>
 <hr><h2>Member Function Documentation</h2>
-<a class="anchor" name="01d4c2877114a245e4cda5123ec5a720"></a><!-- doxytag: member="LocalStorage::debug" ref="01d4c2877114a245e4cda5123ec5a720" args="()" -->
+<a class="anchor" name="470f39d45b269b9bab8a3c73d91926f4"></a><!-- doxytag: member="LocalStorage::debug" ref="470f39d45b269b9bab8a3c73d91926f4" args="()" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -62,7 +73,7 @@ Interface class. Must be subclassed to do anything.
           <td>(</td>
           <td class="paramname">          </td>
           <td>&nbsp;)&nbsp;</td>
-          <td width="100%"></td>
+          <td width="100%"><code> [protected]</code></td>
         </tr>
       </table>
 </div>
@@ -73,7 +84,7 @@ Log state changes if debugging is enabled<p>
 Call this from your set method 
 </div>
 </div><p>
-<a class="anchor" name="60995fdbd712f97b5215fb5c3daa8356"></a><!-- doxytag: member="LocalStorage::get" ref="60995fdbd712f97b5215fb5c3daa8356" args="($key)" -->
+<a class="anchor" name="9bdc48723296219b0cb74d7e3cda0c03"></a><!-- doxytag: member="LocalStorage::get" ref="9bdc48723296219b0cb74d7e3cda0c03" args="($key)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -99,15 +110,76 @@ Get the value stored with the given key <dl compact><dt><b>Parameters:</b></dt><
 The value can be any PHP type that the underlying mechanism can store.<p>
 If the key is not found, the return value will be an empty string. 
 <p>
-Reimplemented in <a class="el" href="class_session_storage.html#db2f01518e69a86973c332179ea84c57">SessionStorage</a>, and <a class="el" href="class_s_q_lite_storage.html#bfd7421a29d27c391c834725983503bd">SQLiteStorage</a>.
+Reimplemented in <a class="el" href="class_memcache_storage.html#4ef9d046d45edd97ab9268e950627a08">MemcacheStorage</a>, <a class="el" href="class_session_storage.html#b81a8a1556f5d9ea20f18848b8d4eba4">SessionStorage</a>, <a class="el" href="class_s_q_lite_storage.html#d0fbed3519e3bce36cb4c49ee9a8e474">SQLiteStorage</a>, and <a class="el" href="class_unit_test_storage.html#380ea95f3d53e622b4813d0d88591d0a">UnitTestStorage</a>.
 </div>
 </div><p>
-<a class="anchor" name="6cc49de43daa512083ed4cc919c7f060"></a><!-- doxytag: member="LocalStorage::localStorage" ref="6cc49de43daa512083ed4cc919c7f060" args="()" -->
+<a class="anchor" name="ebef1aabccb679b3f58a8b7e832bbada"></a><!-- doxytag: member="LocalStorage::immutableSet" ref="ebef1aabccb679b3f58a8b7e832bbada" args="($key, $val)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">LocalStorage::localStorage           </td>
+          <td class="memname">LocalStorage::immutableSet           </td>
+          <td>(</td>
+          <td class="paramtype">$&nbsp;</td>
+          <td class="paramname"> <em>key</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">$&nbsp;</td>
+          <td class="paramname"> <em>val</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td width="100%"><code> [protected]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Store an immutable value by key <dl compact><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>$key</em>&nbsp;</td><td>A unique key string </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>$val</em>&nbsp;</td><td>The value (mixed)</td></tr>
+  </table>
+</dl>
+Values are saved in LocalStorage::immutables 
+</div>
+</div><p>
+<a class="anchor" name="dd13ba3c51954e6350a456057b299443"></a><!-- doxytag: member="LocalStorage::isImmutable" ref="dd13ba3c51954e6350a456057b299443" args="($key)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">LocalStorage::isImmutable           </td>
+          <td>(</td>
+          <td class="paramtype">$&nbsp;</td>
+          <td class="paramname"> <em>key</em>          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Check if a key is present in immutables <dl compact><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>$key</em>&nbsp;</td><td>A unique key string </td></tr>
+  </table>
+</dl>
+<dl compact><dt><b>Returns:</b></dt><dd>bool </dd></dl>
+
+</div>
+</div><p>
+<a class="anchor" name="0b6c01b08888b91281605a865ea1af2f"></a><!-- doxytag: member="LocalStorage::LocalStorage" ref="0b6c01b08888b91281605a865ea1af2f" args="()" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">LocalStorage::LocalStorage           </td>
           <td>(</td>
           <td class="paramname">          </td>
           <td>&nbsp;)&nbsp;</td>
@@ -121,7 +193,7 @@ Reimplemented in <a class="el" href="class_session_storage.html#db2f01518e69a869
 Constructor 
 </div>
 </div><p>
-<a class="anchor" name="cb48a5027abf7a1d05b4a12be85d72a7"></a><!-- doxytag: member="LocalStorage::set" ref="cb48a5027abf7a1d05b4a12be85d72a7" args="($key, $val)" -->
+<a class="anchor" name="2f1074679d720b22bb0daf0bc9705937"></a><!-- doxytag: member="LocalStorage::set" ref="2f1074679d720b22bb0daf0bc9705937" args="($key, $val, $immutable=false)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -135,7 +207,13 @@ Constructor
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">$&nbsp;</td>
-          <td class="paramname"> <em>val</em></td><td>&nbsp;</td>
+          <td class="paramname"> <em>val</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">$&nbsp;</td>
+          <td class="paramname"> <em>immutable</em> = <code>false</code></td><td>&nbsp;</td>
         </tr>
         <tr>
           <td></td>
@@ -150,17 +228,18 @@ Constructor
 Save the value with the given key <dl compact><dt><b>Parameters:</b></dt><dd>
   <table border="0" cellspacing="2" cellpadding="0">
     <tr><td valign="top"></td><td valign="top"><em>$key</em>&nbsp;</td><td>A unique key string </td></tr>
-    <tr><td valign="top"></td><td valign="top"><em>The</em>&nbsp;</td><td>value (mixed)</td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>$val</em>&nbsp;</td><td>The value (mixed) </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>$immutable</em>&nbsp;</td><td>the value is a constant</td></tr>
   </table>
 </dl>
 The value can be any PHP type that the underlying mechanism can store. 
 <p>
-Reimplemented in <a class="el" href="class_session_storage.html#8329b7e6fe19c8183be70cc2efd70d8f">SessionStorage</a>, and <a class="el" href="class_s_q_lite_storage.html#ab783c147c35ee6c3f333a234167dd9b">SQLiteStorage</a>.
+Reimplemented in <a class="el" href="class_memcache_storage.html#40b8b9349cdbce4f29be21b05664ff0e">MemcacheStorage</a>, <a class="el" href="class_session_storage.html#1506505b343c5a63e9963f1bd10df32f">SessionStorage</a>, <a class="el" href="class_s_q_lite_storage.html#5d32adee5d76de78d2b76995af6b0d29">SQLiteStorage</a>, and <a class="el" href="class_unit_test_storage.html#e13d8ec16a9d847eac4ef3e8fd472057">UnitTestStorage</a>.
 </div>
 </div><p>
 <hr>The documentation for this class was generated from the following file:<ul>
 <li>pos/is4c-nf/lib/LocalStorage/LocalStorage.php</ul>
-<hr size="1"><address style="align: right;"><small>Generated on Tue Oct 23 14:30:34 2012 for CORE POS - IS4C by&nbsp;
+<hr size="1"><address style="align: right;"><small>Generated on 18 Nov 2013 for CORE POS - IS4C by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img src="doxygen.png" alt="doxygen" align="middle" border="0"></a> 1.4.7 </small></address>
 </body>

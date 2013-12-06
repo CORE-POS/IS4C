@@ -23,51 +23,53 @@
 
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
-class nslogin extends NoInputPage {
+class nslogin extends NoInputPage 
+{
 
-	var $color;
-	var $heading;
-	var $msg;
+	private $color;
+	private $heading;
+	private $msg;
 
-	function preprocess(){
+	function preprocess()
+    {
 		$this->color ="coloredArea";
 		$this->heading = _("enter manager password");
 		$this->msg = _("confirm no sales");
 
-		if (isset($_REQUEST['reginput']) || isset($_REQUEST['userPassword'])){
+		if (isset($_REQUEST['reginput']) || isset($_REQUEST['userPassword'])) {
 
 			$passwd = '';
-			if (isset($_REQUEST['reginput']) && !empty($_REQUEST['reginput'])){
+			if (isset($_REQUEST['reginput']) && !empty($_REQUEST['reginput'])) {
 				$passwd = $_REQUEST['reginput'];
 				UdpComm::udpSend('goodBeep');
-			}
-			elseif (isset($_REQUEST['userPassword']) && !empty($_REQUEST['userPassword']))
+			} elseif (isset($_REQUEST['userPassword']) && !empty($_REQUEST['userPassword'])) {
 				$passwd = $_REQUEST['userPassword'];
+            }
 
-			if (strtoupper($passwd) == "CL"){
+			if (strtoupper($passwd) == "CL") {
 				$this->change_page($this->page_url."gui-modules/pos2.php");
 				return False;
-			}
-			elseif (Authenticate::nsCheckPassword($passwd)){
+			} elseif (Authenticate::checkPassword($passwd)) {
 				$this->change_page($this->page_url."gui-modules/pos2.php");
-				return False;
-			}
-			else {
+				return false;
+			} else {
 				$this->color ="errorColoredArea";
 				$this->heading = _("re-enter manager password");
 				$this->msg = _("invalid password");
 			}
 		}
 
-		return True;
+		return true;
 	}
 
-	function head_content(){
+	function head_content()
+    {
 		$this->default_parsewrapper_js('reginput','nsform');
-		$this->scanner_scale_polling(True);
+		$this->scanner_scale_polling(true);
 	}
 
-	function body_content(){
+	function body_content()
+    {
 		global $CORE_LOCAL;
 		?>
 		<div class="baseHeight">
@@ -92,7 +94,8 @@ class nslogin extends NoInputPage {
 
 }
 
-if (basename(__FILE__) == basename($_SERVER['PHP_SELF']))
+if (basename(__FILE__) == basename($_SERVER['PHP_SELF'])) {
 	new nslogin();
+}
 
 ?>

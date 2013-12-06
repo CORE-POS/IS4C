@@ -13,10 +13,12 @@
 				<td><a href=/git/fannie/reports/DepartmentMovement/>Movement Report (a.k.a. Deli Query)</a><br />
 				<a href=/git/fannie/reports/ProductMovement/>Single Product Movement Report</a><br>
 				<a href=/git/fannie/reports/ManufacturerMovement/>Manufacturer Movement Report</a><br />
+				<a href=/git/fannie/reports/VendorMovement/>Vendor Movement Report</a><br />
 				<a href=/git/fannie/reports/NonMovement/>Non-Movement Report</a><br />
 				<a href=/git/fannie/reports/Correlated/>Correlated Movement</a><br />
 				<a href=/git/fannie/reports/MonthOverMonth/>Monthly Movement</a><br />
-				<a href=/git/fannie/reports/MovementPrice/>Movement by Price</a>
+				<a href=/git/fannie/reports/MovementPrice/>Movement by Price</a><br />
+				<a href=/git/fannie/reports/MarginMovement/>Margin Movement (non-sale items)</a>
 				</td>
 				<td>&nbsp;</td>
 				<td valign=top><a href="docs/movement.html">Creates a movement report for specified time period. Sales may be grouped by Date, Dept or UPC/PLU</a></td>
@@ -26,11 +28,12 @@
 				<a href=/git/fannie/batches/xlsbatch/>Excel Batch</a>
 				</td>
  				<td>&nbsp;</td>
-				<td><a href="docs/batches.html">Gateway to the IT CORE batch maintenance system</a></td>
+				<td><a href="docs/batches.html">Gateway to the IS4C batch maintenance system</a></td>
 			</tr>
 			<tr>
-				<td><a href=/git/fannie/item/productList.php>Product List (UPC Sort)</a></td>
+				<td><a href=/git/fannie/item/ProductListPage.php>Product List (UPC Sort)</a></td>
 				<td>&nbsp;</td>
+				<!--<td><a href=lisaCSV.html>Product List (Excel)</a></td>-->
 				<td><a href="docs/prodList.html">Creates a product list sorted by UPC/PLU, Department or Desciption for selected Departments, with a secondary sort by UPC.</a></td>
 			</tr>
 			<tr>
@@ -47,8 +50,16 @@
 				<td><a href="/git/fannie/reports/PriceHistory">Price History Report</a></td>
 				<td>&nbsp;</td>
 				<td>Creates a report of price changes within a given time period</td>
+			<!--<tr>
+				<td width=225><a href=penny.php>Total hours worked query</a>&nbsp;<img align=bottom src="../images/locked.gif"><br>
+                <a href=hours90.php>Rolling 90 day number of hours report</a>&nbsp;<img align=bottom src="../images/locked.gif"><br>
+				<a href=penavg.php>Average hours worked query</a>&nbsp;<img align=bottom src="../images/locked.gif"></td><td width=225>&nbsp;</td>
+				<td>Reports total or average hours worked by selected employee within defined dates</td>
+			</tr>-->
 			<tr>
 				<td><a href=productTest.php>Price Change page</a>
+				<br />
+				<a href="/git/fannie/legacy/IT/UNFI/new_items.php">Add new UNFI items</a>
 				<!--<br /><a href=moff/productTest.php>MFF Price Change Page</a>-->
 				</td>
 				<td>&nbsp;</td><td>Price maintenance page for IS4C</td>
@@ -69,9 +80,9 @@
 				<td>Create bulk item list for extending inventory</td>
 			</tr>
 			<tr>
-				<td><a href=/git/fannie/reports/GeneralSales/>Last Week's Sales Report</a> </td>
+				<td><a href=/git/fannie/reports/Store-Specific/WFC/LocalSales/>Local Sales by Department</a> </td>
 				<td>&nbsp;</td>
-				<td>Show last week's sales report broken out by department/buyer</td>
+				<td>Show local sales report broken out by department/buyer</td>
 			</tr>
 			<tr>	
 				<td><a href=/git/fannie/reports/GeneralSales/>General Sales Report</a></td>
@@ -82,6 +93,11 @@
 				<td><a href=/git/fannie/admin/LookupReceipt/>Reprint receipt</a></td>
 				<td>&nbsp;</td>
 				<td>Reprint receipt if you know the receipt number and the date of the receipt</td>
+			</tr>
+			<tr>
+				<td><a href=/git/fannie/ordering/>Special Orders</a></td>
+				<td>&nbsp;</td>
+				<td>Electronic Special Order Interface</td>
 			</tr>
 			<tr>
 			        <td><a href=/git/fannie/item/likecodes/>Manage Like Codes</a></td>
@@ -99,10 +115,27 @@
 				<td>Track daily item sales</td>
 			</tr>
 			<tr>
+				<td><a href=/git/fannie/reports/CustomerCount/>Customer Report</a></td>
+				<td>&nbsp;</td>
+				<td>Lists number of shoppers by date &amp; type.</td>
+			</tr>
+			<tr>
+				<td><a href=/links/inv.php>Vendor Invoices</a></td>
+				<td>&nbsp;</td>
+				<td>Download copies of vendor invoices</td>
+			</tr>
+			<tr>
+				<td><a href=/wiki/>WFC Wiki</a></td>
+				<td>&nbsp;</td>
+				<td>Mostly IT info/documentation</td>
+			</tr>
+			<!--
+			<tr>
 				<td valign=top><a href="http://192.168.1.10/manual.html">Printer Documentation (PDFs)</a></td>
 				<td>&nbsp;</td>
 				<td>&nbsp;</td>
 			</tr>
+			-->
 		</table>
     <img src=../images/locked.gif>: indicates password protected areas.<br />
 <?php

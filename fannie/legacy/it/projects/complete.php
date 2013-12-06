@@ -12,12 +12,12 @@ $projID = $_GET['projID'];
 
 $date = date("Y-m-d");
 
-$q = "update projects set status=2,completeDate='$date' where projID=$projID";
-$r = $sql->query($q);
+$q = $sql->prepare("update projects set status=2,completeDate=? where projID=?");
+$r = $sql->execute($q, array($date, $projID));
 
 // build email 'to' all interested parties
-$q = "select email from project_parties where projID = $projID";
-$r = $sql->query($q);
+$q = $sql->prepare("select email from project_parties where projID = ?");
+$r = $sql->execute($q, array($projID));
 $to_string = 'it@wholefoods.coop';
 if ($sql->num_rows($r) > 0){
   while($row = $sql->fetch_array($r)){
@@ -26,8 +26,8 @@ if ($sql->num_rows($r) > 0){
 }
 
 
-$descQ = "select projDesc from projects where projID='$projID'";
-$descR = $sql->query($descQ);
+$descQ = $sql->prepare("select projDesc from projects where projID=?");
+$descR = $sql->execute($descQ, array($projID));
 $descW = $sql->fetch_array($descR);
 $projDesc = $descW[0];
 

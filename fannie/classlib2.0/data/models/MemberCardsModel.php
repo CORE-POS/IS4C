@@ -29,6 +29,9 @@
 if (!class_exists('FannieDB')) {
     include(dirname(__FILE__).'/../FannieDB.php');
 }
+if (!class_exists('BarcodeLib')) {
+    include(dirname(__FILE__).'/../../lib/BarcodeLib.php');
+}
 
 class MemberCardsModel extends BasicModel 
 {
@@ -97,7 +100,7 @@ class MemberCardsModel extends BasicModel
 
         /** don't create entry w/o UPC */
         if ($upc != ''){
-            $upc = str_pad($upc,13,'0',STR_PAD_LEFT);
+            $upc = BarcodeLib::padUPC($upc);
             $insP = $dbc->prepare_statement("INSERT INTO memberCards (card_no, upc)
                     VALUES (?, ?)");
             $insR = $dbc->exec_statement($insP,array($card_no,$upc));

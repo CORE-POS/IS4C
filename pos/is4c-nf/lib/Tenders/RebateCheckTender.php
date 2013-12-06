@@ -60,7 +60,16 @@ class RebateCheckTender extends TenderModule
     public function add()
     {
         global $CORE_LOCAL;
-        if ($CORE_LOCAL->get('runningTotal') >= 50) {
+        $db = Database::tDataConnect();
+        $query = 'SELECT SUM(total) as ttl FROM localtemptrans
+                WHERE department IN (992, 991, 902)';
+        $result = $db->query($query);
+        $ignore = 0.00;
+        if ($db->num_rows($result) > 0) {
+            $row = $db->fetch_row($result);
+            $ignore = (float)$row['ttl'];
+        }
+        if ( ($CORE_LOCAL->get('runningTotal') - $ignore) >= 50) {
             TransRecord::addhousecoupon('PATREBDISC', 703, -5.00);
         }
 

@@ -8,6 +8,7 @@
         <li><a href="security.php">SECURITY</a></li>
         <li><a href="plugins.php">PLUGINS</a></li>
 		<li><a href="debug.php">DEBUG</a></li>
+        <li><a href="updates.php">DB UPDATES</a></li>
 		<li><a href="db-ini.php">SERVER INI</a></li>
 		<li><a href="extra_data.php">SAMPLE DATA</a></li>
     </ul>

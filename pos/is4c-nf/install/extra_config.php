@@ -379,20 +379,6 @@ InstallUtilities::paramSave('dollarOver',$CORE_LOCAL->get('dollarOver'));
 ?>
 </td></tr>
 <tr><td>
-<b>Modular Tenders</b>: </td><td><select name=MODTENDERS>
-<?php
-if(isset($_REQUEST['MODTENDERS'])) $CORE_LOCAL->set('ModularTenders',$_REQUEST['MODTENDERS']);
-if ($CORE_LOCAL->get('ModularTenders')){
-	echo "<option value=1 selected>Yes</option>";
-	echo "<option value=0 >No</option>";
-}
-else {
-	echo "<option value=1 >Yes</option>";
-	echo "<option value=0 selected>No</option>";
-}
-InstallUtilities::paramSave('ModularTenders',$CORE_LOCAL->get('ModularTenders'));
-?>
-</select></td></tr><tr><td>
 <b>Tender Report</b>:</td>
 <td><select name="TENDERREPORTMOD">
 <?php

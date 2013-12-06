@@ -418,15 +418,6 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
 
 		lttLib::clear();
 
-		TransRecord::addEndofShift(3);
-		$record = lttLib::genericRecord();
-		$record['upc'] = 'ENDOFSHIFT';
-		$record['description'] = 'End of Shift';
-		$record['trans_type'] = 'S';
-		lttLib::verifyRecord(1, $record, $this);
-
-		lttLib::clear();
-
 		TransRecord::adddiscount(5.45,25);
 		$record = lttLib::genericRecord();
 		$record['description'] = '** YOU SAVED $5.45 **';

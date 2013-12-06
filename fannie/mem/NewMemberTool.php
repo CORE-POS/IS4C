@@ -164,7 +164,7 @@ class NewMemberTool extends FanniePage
 		$ret = "<b>Starting number</b>: $start<br />";
 		$ret .= "<b>Ending number</b>: $end<br />";
 
-        $model = new CustdataModel();
+        $model = new CustdataModel($dbc);
         $model->personNum(1);
         $model->LastName($name);
         $model->FirstName('');

@@ -215,6 +215,10 @@ class SQLManager {
 	}
 
 	function query($query_text,$which_connection=''){
+        if (substr($query_text, 0, 4) != 'use ') {
+            // called when 
+            $this->test_mode = false;
+        }
 		if ($which_connection == '')
 			$which_connection=$this->default_db;
 		switch($this->db_types[$which_connection]){
@@ -298,6 +302,8 @@ class SQLManager {
 	  execute statement: exec is emulated for non-PDO types
 	*/
 	function exec_statement($stmt,$args=array(),$which_connection=''){
+        $this->test_mode = false;
+
 		if ($which_connection == '')
 			$which_connection=$this->default_db;
 		switch($this->db_types[$which_connection]){
@@ -382,6 +388,10 @@ class SQLManager {
 	}
 
 	function fetch_array($result_object,$which_connection=''){
+        if ($this->test_mode) {
+            return $this->getTestDataRow();
+        }
+
 		if ($which_connection == '')
 			$which_connection = $this->default_db;
 		switch($this->db_types[$which_connection]){
@@ -694,9 +704,9 @@ class SQLManager {
                 -1 => Operation not supported for this database type
         */
         function table_exists($table_name,$which_connection=''){
-                if ($which_connection == '')
-                        $which_connection=$this->default_db;
-                switch($this->db_types[$which_connection]){
+            if ($which_connection == '')
+                    $which_connection=$this->default_db;
+            switch($this->db_types[$which_connection]){
 		case $this->TYPE_PDOMY:
                 case $this->TYPE_MYSQL:
 			$result = $this->query("SHOW TABLES FROM $which_connection 
@@ -806,8 +816,8 @@ class SQLManager {
 	function smart_insert($table_name,$values,$which_connection=''){
 		$OUTFILE = DEBUG_MYSQL_QUERIES;
 
-                if ($which_connection == '')
-                        $which_connection=$this->default_db;
+        if ($which_connection == '')
+                $which_connection=$this->default_db;
 		$exists = $this->table_exists($table_name,$which_connection);
 		if (!$exists) return False;
 		if ($exists === -1) return -1;
@@ -1004,11 +1014,32 @@ class SQLManager {
 		return '.';
 	}
 
+	public function dbms_name($which_connection='')
+    {
+        if ($which_connection == '') {
+            $which_connection = $this->default_db;
+        }
+        switch($this->db_types[$which_connection]) {
+            case $this->TYPE_MYSQL:
+            case $this->TYPE_PDOMY:
+                return 'mysql';
+            case $this->TYPE_MSSQL:
+            case $this->TYPE_PDOMS:
+                return 'mssql';
+            case $this->TYPE_PGSQL:
+            case $this->TYPE_PDOPG:
+                return 'pgsql';
+            case $this->TYPE_PDOSL:
+                return 'sqlite';
+        }
+
+        return false;
+    }
 
 	function error($which_connection=''){
-                if ($which_connection == '')
-                        $which_connection = $this->default_db;
-                switch($this->db_types[$which_connection]){
+        if ($which_connection == '')
+                $which_connection = $this->default_db;
+        switch($this->db_types[$which_connection]){
 		case $this->TYPE_MYSQL:
 			return mysql_error();
 		case $this->TYPE_MSSQL:
@@ -1097,6 +1128,35 @@ class SQLManager {
 		}
 		return "";
 	}
+
+    /**
+      Test data is for faking queries.
+      Setting the test data then running
+      a unit test means the test will get
+      predictable results.
+    */
+
+    private $test_data = array();
+    private $test_counter = 0;
+    private $test_mode = false;
+    function setTestData($records)
+    {
+        $this->test_data = $records;
+        $this->test_counter = 0;
+        $this->test_mode = true;
+    }
+
+    function getTestDataRow()
+    {
+        if (isset($this->test_data[$this->test_counter])) {
+            $next = $this->test_data[$this->test_counter];
+            $this->test_counter++;
+            return $next;
+        } else {
+            $this->test_mode = false; // no more test data
+            return false;
+        }
+    }
 }
 
 ?>

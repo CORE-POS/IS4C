@@ -45,58 +45,75 @@ while ($deptW = $sql->fetch_row($deptR))
 	$depts["$deptW[0]"] = array(False,$deptW[1]);
 
 $orderby = "app_date";
-if (isset($_GET["orderby"])) $orderby = $_GET["orderby"];
 $search = "";
+$search_args = array();
 if (isset($_GET["simplesearch"]) && $_GET["simplesearch"] != ""){
 	$terms = explode(" ",$_GET["simplesearch"]);
 	$search = "WHERE ";
-	foreach($terms as $t)
-		$search .= "(a.first_name like '%$t%' or a.last_name like '%$t%') AND";
+	foreach($terms as $t) {
+		$search .= "(a.first_name like ? or a.last_name like ?) AND";
+        $search_args[] = '%'.$t.'%';
+        $search_args[] = '%'.$t.'%';
+    }
 	$search = substr($search,0,strlen($search)-3);
 }
 if (isset($_GET['advancedsearch'])){
 	$search = "WHERE ";
+    $search_args = array();
 	if (isset($_GET['lname'])){
 		$terms = explode(" ",$_GET["lname"]);
 		$search .= "(";
-		foreach($terms as $t)
-			$search .= "a.last_name like '%$t%' OR";
+		foreach($terms as $t) {
+			$search .= "a.last_name like ? OR";
+            $search_args[] = '%'.$t.'%';
+        }
 		$search = substr($search,0,strlen($search)-2);
 		$search .= ") AND ";
 	}
 	if (isset($_GET['fname'])){
 		$terms = explode(" ",$_GET["fname"]);
 		$search .= "(";
-		foreach($terms as $t)
-			$search .= "a.first_name like '%$t%' OR ";
+		foreach($terms as $t){
+			$search .= "a.first_name like ? OR ";
+            $search_args[] = '%'.$t.'%';
+        }
 		$search = substr($search,0,strlen($search)-3);
 		$search .= ") AND ";
 	}
 	if (isset($_GET["applied_for"])){
 		$search .= "(";
-		foreach($_GET['applied_for'] as $p)
-			$search .= "positions like '%,$p,%' OR positions like '$p,%' OR positions like '%,$p' OR positions = '$p' OR ";
+		foreach($_GET['applied_for'] as $p) {
+			$search .= "positions like ? OR positions like ? OR positions like ? OR positions = ? OR ";
+            $search_args[] = '%,'.$p.',%';
+            $search_args[] = $p.',%';
+            $search_args[] = '%,'.$p;
+            $search_args[] = $p;
+        }
 		$search = substr($search,0,strlen($search)-3);
 		$search .= ") AND ";	
 	}
 	if (isset($_GET["sent_to"])){
 		$search .= "(";
-		foreach($_GET['sent_to'] as $p)
-			$search .= "sent_to like '%,$p,%' OR sent_to like '$p,%' OR sent_to like '%,$p' OR sent_to = '$p' OR ";
+		foreach($_GET['sent_to'] as $p){
+			$search .= "sent_to like ? OR sent_to like ? OR sent_to like ? OR sent_to = ? OR ";
+            $search_args[] = '%,'.$p.',%';
+            $search_args[] = $p.',%';
+            $search_args[] = '%,'.$p;
+            $search_args[] = $p;
+        }
 		$search = substr($search,0,strlen($search)-3);
 		$search .= ") AND ";	
 	}
 	if ($search == "WHERE ") $search = "";
 	else $search = substr($search,0,strlen($search)-4);
 
-	$orderby = $_GET["orderby"];
 }
 
-$query = "SELECT * FROM applicants as a
+$query = $sql->prepare("SELECT * FROM applicants as a
 	  LEFT JOIN interview_status as i on a.appID=i.appID
 	  $search
-	  ORDER BY $orderby";
-$result = $sql->query($query);
+	  ORDER BY app_date");
+$result = $sql->execute($query, $search_args);
 
 echo "<form action=list.php method=get>";
 echo "<input type=text name=simplesearch /> <input type=submit value=Search />";

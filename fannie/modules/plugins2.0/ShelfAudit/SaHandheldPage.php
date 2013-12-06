@@ -77,7 +77,7 @@ class SaHandheldPage extends FanniePage {
 		$upc = FormLib::get_form_value('upc_in','');
 		if ($upc !== ''){
 			$dbc = FannieDB::get($FANNIE_OP_DB);
-			$upc = str_pad($upc,13,'0',STR_PAD_LEFT);
+			$upc = BarcodeLib::padUPC($upc);
 			$this->current_item_data['upc'] = $upc;		
 			$q = 'SELECT p.description,v.brand,s.quantity,v.units FROM
 				products AS p LEFT JOIN vendorItems AS v ON p.upc=v.upc

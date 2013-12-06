@@ -584,25 +584,6 @@ static public function memberReset()
 }
 
 /**
-  Get member information line for a given member
-  @param $row a record from custdata
-  @return string
-  @deprecated
-  Just define blueLine in custdata.
-*/
-static public function blueLine($row) 
-{
-	$status = array('Non-Owner', 'Shareholder', 'Subscriber', 'Inactive', 'Refund', 'On Hold', 'Sister Org.', 'Other Co-ops');
-	if ($row["blueLine"]) {			// custom blueLine as defined by db
-		return $row["blueLine"];
-	} elseif (isset($row["blueLine"])) {	// 0 - default blueLine with out name
-		return '#'.$row['CardNo'].' - '.$row['Discount'].'% - '.$status[$row['memType']];
-	} else {				// NULL - default blueLine including name
-		return '#'.$row['CardNo'].' - '.$status[$row['memType']].': '.$row['FirstName'].' '.$row['LastName'];
-	}
-}
-
-/**
   If there are records in localtemptrans, get the 
   member number and initialize $CORE_LOCAL member
   variables.

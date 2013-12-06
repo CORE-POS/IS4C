@@ -1,10 +1,10 @@
 <?php
 include('../../../config.php');
+include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
 include('audit.php');
 include('../../queries/barcode.php');
 
-include('laneUpdates.php');
 if (!class_exists("SQLManager")) require_once($FANNIE_ROOT."src/SQLManager.php");
 include('../../db.php');
 
@@ -247,7 +247,9 @@ if (isset($_GET['action'])){
 			}
 			$unsaleR = $sql->query($unsaleQ);
 			
-			updateProductAllLanes($upc);
+            $model = new ProductsModel($sql);
+            $model->upc($upc);
+            $model->pushToLanes();
 		}
 		else {
 			$lc = substr($upc,2);
@@ -263,7 +265,13 @@ if (isset($_GET['action'])){
 			}
 			$unsaleR = $sql->query($unsaleQ);
 
-			exec("touch /pos/sync/scheduled/products");
+            $prep = $sql->prepare('SELECT upc FROM upcLike WHERE likeCode=?');
+            $all = $sql->execute($prep, array($lc));
+            while($row = $sql->fetch_row($all)) {
+                $model = new ProductsModel($sql);
+                $model->upc($row['upc']);
+                $model->pushToLanes();
+            }
 		}
 		$audited = $_GET['audited'];
 		if ($audited == "1")

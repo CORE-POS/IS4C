@@ -22,14 +22,13 @@
 *********************************************************************************/
 
 include('../../config.php');
-include($FANNIE_ROOT.'src/mysql_connect.php');
-include($FANNIE_ROOT.'src/select_dlog.php');
-include($FANNIE_ROOT.'classlib2.0/FannieReportPage.php');
-include($FANNIE_ROOT.'classlib2.0/lib/FormLib.php');
+include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
-class BatchReport extends FannieReportPage {
+class BatchReport extends FannieReportPage 
+{
 
-	function preprocess(){
+	function preprocess()
+    {
 		/**
 		  Set the page header and title, enable caching
 		*/
@@ -65,7 +64,8 @@ class BatchReport extends FannieReportPage {
 	}
 
 	function fetch_report_data(){
-		global $dbc, $FANNIE_ARCHIVE_DB;
+		global $FANNIE_OP_DB, $FANNIE_ARCHIVE_DB;
+        $dbc = FannieDB::get($FANNIE_OP_DB);
 		$bStart = FormLib::get_form_value('start','');
 		$bEnd = FormLib::get_form_value('end','');
 
@@ -102,7 +102,7 @@ class BatchReport extends FannieReportPage {
 			}
 		}
 		
-		$dlog = select_dlog($bStart,$bEnd);
+		$dlog = DTransactionsModel::select_dlog($bStart,$bEnd);
 		$sumTable = $FANNIE_ARCHIVE_DB.$dbc->sep()."sumUpcSalesByDay";
 		$bStart .= ' 00:00:00';
 		$bEnd .= ' 23:59:59';
@@ -151,8 +151,10 @@ class BatchReport extends FannieReportPage {
 		return array('Total',null,$sumSales,$sumQty);
 	}
 
-	function form_content(){
-		global $dbc;
+	function form_content()
+    {
+		global $FANNIE_OP_DB;
+        $dbc = FannieDB::get($FANNIE_OP_DB);
 
 		$filter1 = FormLib::get_form_value('btype','');
 		$filter2 = FormLib::get_form_value('owner','');
@@ -227,8 +229,10 @@ class BatchReport extends FannieReportPage {
 		echo '</table></form>';
 	}
 
-	function report_description_content(){
-		global $dbc;
+	function report_description_content()
+    {
+		global $FANNIE_OP_DB;
+        $dbc = FannieDB::get($FANNIE_OP_DB);
 		$ret = array();
 		$bStart = FormLib::get_form_value('start','');
 		$bEnd = FormLib::get_form_value('end','');

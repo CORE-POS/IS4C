@@ -67,13 +67,13 @@ class OverShortSafecountPage extends FanniePage {
 	}
 
 	function save($dateStr,$changeOrder,$openSafeCount,$closeSafeCount,$buyAmount,$dropAmount,$depositAmount,$atmAmount){
-		saveInputs($dateStr,'changeOrder',$changeOrder);
-		saveInputs($dateStr,'openSafeCount',$openSafeCount);
-		saveInputs($dateStr,'closeSafeCount',$closeSafeCount);
-		saveInputs($dateStr,'buyAmount',$buyAmount);
-		saveInputs($dateStr,'dropAmount',$dropAmount);
-		saveInputs($dateStr,'depositAmount',$depositAmount);
-		saveInputs($dateStr,'atm',$atmAmount);
+		$this->saveInputs($dateStr,'changeOrder',$changeOrder);
+		$this->saveInputs($dateStr,'openSafeCount',$openSafeCount);
+		$this->saveInputs($dateStr,'closeSafeCount',$closeSafeCount);
+		$this->saveInputs($dateStr,'buyAmount',$buyAmount);
+		$this->saveInputs($dateStr,'dropAmount',$dropAmount);
+		$this->saveInputs($dateStr,'depositAmount',$depositAmount);
+		$this->saveInputs($dateStr,'atm',$atmAmount);
 	
 		return 'Saved';
 	}

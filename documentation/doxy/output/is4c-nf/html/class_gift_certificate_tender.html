@@ -38,21 +38,45 @@
 <a href="class_gift_certificate_tender-members.html">List of all members.</a><table border="0" cellpadding="0" cellspacing="0">
 <tr><td></td></tr>
 <tr><td colspan="2"><br><h2>Public Member Functions</h2></td></tr>
-<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_gift_certificate_tender.html#0b3f64a1e8d5a915cb23a9c6063f3144">ErrorCheck</a> ()</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_gift_certificate_tender.html#b0de0c6cb12c59cf87c845d87ebb7514">errorCheck</a> ()</td></tr>
 
-<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_gift_certificate_tender.html#2fb33b7a2818e92e46b6a6d940592622">PreReqCheck</a> ()</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_gift_certificate_tender.html#e12b49df406f32cf0e71c5b298be23e5">preReqCheck</a> ()</td></tr>
+
+<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_gift_certificate_tender.html#1b67cf973ab4f3d715030d8142f5d83c">defaultPrompt</a> ()</td></tr>
 
 </table>
 <hr><a name="_details"></a><h2>Detailed Description</h2>
 Tender module for gift certificates 
 <p>
 <hr><h2>Member Function Documentation</h2>
-<a class="anchor" name="0b3f64a1e8d5a915cb23a9c6063f3144"></a><!-- doxytag: member="GiftCertificateTender::ErrorCheck" ref="0b3f64a1e8d5a915cb23a9c6063f3144" args="()" -->
+<a class="anchor" name="1b67cf973ab4f3d715030d8142f5d83c"></a><!-- doxytag: member="GiftCertificateTender::defaultPrompt" ref="1b67cf973ab4f3d715030d8142f5d83c" args="()" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">GiftCertificateTender::ErrorCheck           </td>
+          <td class="memname">GiftCertificateTender::defaultPrompt           </td>
+          <td>(</td>
+          <td class="paramname">          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Prompt for the cashier when no total is provided <dl compact><dt><b>Returns:</b></dt><dd>string URL</dd></dl>
+Typically this sets up session variables and returns the URL for boxMsg2.php. 
+<p>
+Reimplemented from <a class="el" href="class_tender_module.html#e7effe3622508bb6fded9ef2f09c69e9">TenderModule</a>.
+</div>
+</div><p>
+<a class="anchor" name="b0de0c6cb12c59cf87c845d87ebb7514"></a><!-- doxytag: member="GiftCertificateTender::errorCheck" ref="b0de0c6cb12c59cf87c845d87ebb7514" args="()" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">GiftCertificateTender::errorCheck           </td>
           <td>(</td>
           <td class="paramname">          </td>
           <td>&nbsp;)&nbsp;</td>
@@ -66,15 +90,15 @@ Tender module for gift certificates
 Check for errors <dl compact><dt><b>Returns:</b></dt><dd>True or an error message string </dd></dl>
 
 <p>
-Reimplemented from <a class="el" href="class_tender_module.html#9a6ace25900941f577b8309f0a8bba16">TenderModule</a>.
+Reimplemented from <a class="el" href="class_tender_module.html#02b5ac7e402e81ef6355ab093de9942e">TenderModule</a>.
 </div>
 </div><p>
-<a class="anchor" name="2fb33b7a2818e92e46b6a6d940592622"></a><!-- doxytag: member="GiftCertificateTender::PreReqCheck" ref="2fb33b7a2818e92e46b6a6d940592622" args="()" -->
+<a class="anchor" name="e12b49df406f32cf0e71c5b298be23e5"></a><!-- doxytag: member="GiftCertificateTender::preReqCheck" ref="e12b49df406f32cf0e71c5b298be23e5" args="()" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">GiftCertificateTender::PreReqCheck           </td>
+          <td class="memname">GiftCertificateTender::preReqCheck           </td>
           <td>(</td>
           <td class="paramname">          </td>
           <td>&nbsp;)&nbsp;</td>
@@ -88,12 +112,12 @@ Reimplemented from <a class="el" href="class_tender_module.html#9a6ace25900941f5
 Set up state and redirect if needed <dl compact><dt><b>Returns:</b></dt><dd>True or a URL to redirect </dd></dl>
 
 <p>
-Reimplemented from <a class="el" href="class_tender_module.html#3bd8ec587684257a49ce4a24e6f4d0ff">TenderModule</a>.
+Reimplemented from <a class="el" href="class_tender_module.html#297858ad5cb308c1fe0f94f952667fb9">TenderModule</a>.
 </div>
 </div><p>
 <hr>The documentation for this class was generated from the following file:<ul>
 <li>pos/is4c-nf/lib/Tenders/GiftCertificateTender.php</ul>
-<hr size="1"><address style="align: right;"><small>Generated on Tue Oct 23 14:30:34 2012 for CORE POS - IS4C by&nbsp;
+<hr size="1"><address style="align: right;"><small>Generated on 18 Nov 2013 for CORE POS - IS4C by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img src="doxygen.png" alt="doxygen" align="middle" border="0"></a> 1.4.7 </small></address>
 </body>

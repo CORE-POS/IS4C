@@ -347,43 +347,6 @@ static public function addfsones($intfsones)
 }
 
 /**
-  Add end of shift record
-  @deprecated
-*/
-static public function addEndofShift() 
-{
-	self::addItem("ENDOFSHIFT", "End of Shift", "S", "", "", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
-}
-
-/**
-  Add Wedge deli discount
-  @deprecated
-*/
-static public function addscDiscount() 
-{
-	global $CORE_LOCAL;
-
-	if ($CORE_LOCAL->get("scDiscount") != 0) {
-		self::addItem("DISCOUNT", "** 10% Deli Discount **", "I", "", "", 0, 1, MiscLib::truncate2(-1 * $CORE_LOCAL->get("scDiscount")), MiscLib::truncate2(-1 * $CORE_LOCAL->get("scDiscount")), 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 2);
-	}
-//	addStaffCoffeeDiscount();
-
-}
-
-/**
-  Add Wedge coffee discount
-  @deprecated
-*/
-static public function addStaffCoffeeDiscount() 
-{
-	global $CORE_LOCAL;
-
-	if ($CORE_LOCAL->get("staffCoffeeDiscount") != 0) {
-		self::addItem("DISCOUNT", "** Coffee Discount **", "I", "", "", 0, 1, MiscLib::truncate2(-1 * $CORE_LOCAL->get("staffCoffeeDiscount")), MiscLib::truncate2(-1 * $CORE_LOCAL->get("staffCoffeeDiscount")), 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 2);
-	}
-}
-
-/**
   Add a "YOU SAVED" record to the transaction. This is just informational
   and will not alter totals.
   @param $dbldiscount discount amount
@@ -548,24 +511,6 @@ static public function addVirtualCoupon($id)
 }
 
 /**
-  Add a deposit
-  @deprecated
-  Use deposit column in products table
-*/
-static public function addDeposit($quantity, $deposit, $foodstamp) 
-{
-
-	$total = $quantity * $deposit;
-	$chardeposit = 100 * $deposit;
-	if($foodstamp == 1) {  //  ACG HARDCODED DEPARTMENTS....
-		$dept = 43;
-	} else {
-		$dept = 42;
-	}
-	self::addItem("DEPOSIT" * $chardeposit, "Deposit", "I", "", "", $dept, $quantity, $deposit, $total, $deposit, 0, 0, $foodstamp, 0, 0, 0, 0, $quantity, 0, 0, 0, 0, 0, 0);
-}
-
-/**
   Add transaction discount record
 */
 static public function addTransDiscount() 
@@ -586,10 +531,13 @@ static public function addCashDrop($amt)
   Add an activity record to activitytemplog
   @param $activity identifier
 
+  @deprecated
   No one really uses activity logging currently.
+  Use TransRecord::addLogRecord instead.
 */
 static public function addactivity($activity) 
 {
+    /*
 	global $CORE_LOCAL;
 
 	$timeNow = time();
@@ -623,6 +571,7 @@ static public function addactivity($activity)
 		'Interval'	=> MiscLib::nullwrap($interval)
 		);
 	$result = $db->smart_insert("activitytemplog",$values);
+    */
 }
 
 /**

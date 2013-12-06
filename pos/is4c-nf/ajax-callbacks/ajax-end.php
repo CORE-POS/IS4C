@@ -153,11 +153,13 @@ function cleartemptrans($type) {
 function truncateTempTables() {
 	$connection = Database::tDataConnect();
 	$query1 = "truncate table localtemptrans";
-	$query2 = "truncate table activitytemplog";
+    // @deprecated
+	//$query2 = "truncate table activitytemplog";
 	$query3 = "truncate table couponApplied";
 
 	$connection->query($query1);
-	$connection->query($query2);
+    // @deprecated
+	//$connection->query($query2);
 	$connection->query($query3);
 }
 
@@ -171,7 +173,11 @@ function moveTempData() {
 	$connection->query("insert into localtrans_today select * from localtemptrans");
 	$connection->query("insert into dtransactions select * from localtemptrans");
 
+    /** 
+    alog and its variants are never used.
+    @deprecated
 	$connection->query("insert into activitylog select * from activitytemplog");
 	$connection->query("insert into alog select * from activitytemplog");
+    */
 }
 ?>

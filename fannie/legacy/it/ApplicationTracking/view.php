@@ -40,8 +40,8 @@ $referral = "";
 $hired = 0;
 $ERRORS = "";
 
-$dataQ = "SELECT * FROM applicants WHERE appID=$appID";
-$dataR = $sql->query($dataQ);
+$dataQ = $sql->prepare("SELECT * FROM applicants WHERE appID=?");
+$dataR = $sql->execute($dataQ, array($appID));
 if ($sql->num_rows($dataR) == 0 && $appID != -1)
 	$ERRORS .= "Warning: No data found for applicant #$appID<br />";
 else if ($appID != -1){
@@ -123,9 +123,9 @@ a {
 <h3> Interview History &amp; Comments </h3>
 <?php
 
-$interviewQ = "select scheduled,username,sent_regret,took_place,interviewID
-		from interviews where appID=$appID order by scheduled";
-$interviewR = $sql->query($interviewQ);
+$interviewQ = $sql->prepare("select scheduled,username,sent_regret,took_place,interviewID
+		from interviews where appID=? order by scheduled");
+$interviewR = $sql->execute($interviewQ, array($appID));
 
 $interviews = array();
 while($interviewW = $sql->fetch_row($interviewR)){
@@ -135,9 +135,9 @@ while($interviewW = $sql->fetch_row($interviewR)){
 					$interviewW['took_place'],$interviewW['interviewID']));
 }
 
-$notesQ = "select noteID,appID,note_text,note_date,username from notes
-		where appID=$appID order by note_date";
-$notesR = $sql->query($notesQ);
+$notesQ = $sql->prepare("select noteID,appID,note_text,note_date,username from notes
+		where appID=? order by note_date");
+$notesR = $sql->execute($notesQ, array($appID));
 
 $notes = array();
 while($notesW = $sql->fetch_row($notesR)){

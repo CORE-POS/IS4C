@@ -36,6 +36,8 @@ class PurchaseOrderModel extends BasicModel
     'placed' => array('type'=>'TINYINT','default'=>0,'index'=>True),
     'placedDate' => array('type'=>'DATETIME'),
     'userID' => array('type'=>'INT'),
+    'vendorOrderID' => array('type'=>'VARCHAR(25)'),
+    'vendorInvoiceID' => array('type'=>'VARCHAR(25)'),
     'standingID' => array('type'=>'INT')
     );
 
@@ -162,6 +164,36 @@ class PurchaseOrderModel extends BasicModel
             }
         } else {
             $this->instance["userID"] = func_get_arg(0);
+        }
+    }
+
+    public function vendorOrderID()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["vendorOrderID"])) {
+                return $this->instance["vendorOrderID"];
+            } elseif(isset($this->columns["vendorOrderID"]["default"])) {
+                return $this->columns["vendorOrderID"]["default"];
+            } else {
+                return null;
+            }
+        } else {
+            $this->instance["vendorOrderID"] = func_get_arg(0);
+        }
+    }
+
+    public function vendorInvoiceID()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["vendorInvoiceID"])) {
+                return $this->instance["vendorInvoiceID"];
+            } elseif(isset($this->columns["vendorInvoiceID"]["default"])) {
+                return $this->columns["vendorInvoiceID"]["default"];
+            } else {
+                return null;
+            }
+        } else {
+            $this->instance["vendorInvoiceID"] = func_get_arg(0);
         }
     }
 
