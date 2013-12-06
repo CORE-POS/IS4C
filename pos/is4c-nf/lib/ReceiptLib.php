@@ -444,6 +444,7 @@ static public function storeCreditIssued($second, $ref=''){
 		list($e, $r, $t) = explode('-',$ref);
 		$checkQ = "select sum(total) from localtranstoday where 
 			trans_subtype='SC' and trans_type='T'
+            AND ".$db->datediff('datetime', $db->now())." = 0
 			AND emp_no=".((int)$e).'
 			AND register_no='.((int)$r).'
 			AND trans_no='.((int)$t);
@@ -1224,9 +1225,10 @@ static public function printReceipt($arg1,$second=False,$email=False) {
 			$q = rtrim($q,',');
 			if (count($select_mods) > 0){
 				$q .= ' FROM localtemptrans';
-				if ($reprint !== False){
+				if ($reprint !== false) {
 					$q = str_replace('localtemptrans','localtranstoday',$q);
-					$q .= ' WHERE '.$rp_where;
+					$q .= ' WHERE '.$rp_where
+                            .' AND '.$db->datediff('datetime', $db->now()).' = 0';
 				}
 				$r = $db->query($q);
 				$row = array();
@@ -1495,6 +1497,7 @@ static public function equityNotification($trans_num=''){
 		list($e,$r,$t) = explode('-',$trans_num);
 		$checkQ = sprintf("SELECT sum(total) FROM localtranstoday WHERE emp_no=%d AND
 				register_no=%d AND trans_no=%d AND department=991
+                 AND ".$db->datediff('datetime', $db->now())." = 0
 				group by department having sum(total) <> 0",$e,$r,$t);
 	}
 	$checkR = $db->query($checkQ);
