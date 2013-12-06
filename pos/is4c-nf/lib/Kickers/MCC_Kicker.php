@@ -26,7 +26,7 @@
   Base class for opening cash drawer
 
 */
-class Kicker 
+class MCC_Kicker extends Kicker 
 {
 
     /**
@@ -39,7 +39,14 @@ class Kicker
         if($CORE_LOCAL->get('training') == 1) {
             return false;
         }
-        return true;
+        $db = Database::tDataConnect();
+
+        $query = "select trans_id from localtemptrans where total <> 0";
+
+        $result = $db->query($query);
+        $num_rows = $db->num_rows($result);
+
+        return ($num_rows > 0) ? true : false;
     }
 
     /**
@@ -49,6 +56,11 @@ class Kicker
     */
     public function kickOnSignIn()
     {
+        global $CORE_LOCAL;
+        if($CORE_LOCAL->get('training') == 1) {
+            return false;
+        }
+
         return false;
     }
 
@@ -59,6 +71,11 @@ class Kicker
     */
     public function kickOnSignOut()
     {
+        global $CORE_LOCAL;
+        if($CORE_LOCAL->get('training') == 1) {
+            return false;
+        }
+
         return false;
     }
 }
