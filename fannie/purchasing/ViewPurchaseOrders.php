@@ -96,7 +96,7 @@ class ViewPurchaseOrders extends FannieRESTfulPage {
 			WHERE placed=? ';
 		if (!$this->show_all) $query .= 'AND userID=? ';
 		$query .= 'GROUP BY p.orderID, p.vendorID, v.vendorName
-			ORDER BY MIN(creationDate)';
+			ORDER BY MIN(creationDate) DESC';
 		$args = array($placed);
 		if (!$this->show_all) $args[] = FannieAuth::getUID($this->current_user);
 
