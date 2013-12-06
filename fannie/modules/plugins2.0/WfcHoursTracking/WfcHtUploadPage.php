@@ -85,13 +85,15 @@ class WfcHtUploadPage extends FanniePage
         $tmp = sys_get_temp_dir();
         move_uploaded_file($_FILES['upload']['tmp_name'],"$tmp/$filename");
 	
-        $pp = FormLib::get('pp');
+        $start = FormLib::get('start');
+        $end = FormLib::get('end');
 
         $fp = fopen("$tmp/$filename","r");
         $c = 1;
         $ret = "<form action=\"{$_SERVER['PHP_SELF']}\" method=post>";
-        $ret .= "<b>Pay Period</b>: $pp<br />";
-        $ret .= "<input type=hidden name=pp value=\"$pp\" />";
+        $ret .= "<b>Pay Period</b>: $start - $end<br />";
+        $ret .= "<input type=hidden name=start value=\"$start\" />";
+        $ret .= "<input type=hidden name=end value=\"$end\" />";
         $ret .= "<table cellpadding=4 cellspacing=0 border=1>";
         $ret .= "<tr class=one><th>ADP ID</th><th>Reg. Hours</th><th>OT Hours</th>";
         $ret .= "<th>PTO</th><th>UTO</th><th>Alt. Rate</th><th>Holiday</th></tr>";
@@ -104,7 +106,6 @@ class WfcHtUploadPage extends FanniePage
                 $HEADERS = false;
                 continue;
             }
-            $fields = csv_parser($line);
             if (count($fields) == 0) {
                 continue;
             }
@@ -177,7 +178,7 @@ class WfcHtUploadPage extends FanniePage
             $ret .= "<td>{$row['holiday']}</td>";
             $ret .= "</tr>";
 
-            printf("<input type=hidden name=data[] value=\"%d,%f,%f,%f,%f,%f,%f\" />",
+            $ret .= sprintf("<input type=hidden name=data[] value=\"%d,%f,%f,%f,%f,%f,%f\" />",
                 $adpID,$row['regular'],$row['overtime'],$row['pto'],
                 $row['uto'],$row['alt'],$row['holiday']
             );
@@ -198,19 +199,24 @@ class WfcHtUploadPage extends FanniePage
         $db = WfcHtLib::hours_dbconnect();
 
         $datalines = FormLib::get('data');
-        $pp = FormLib::get('pp');
+        $start = FormLib::get('start');
+        $end = FormLib::get('end');
+
+        $dateStr = date('n/j/Y', strtotime($start)).' - '.date('n/j/Y', strtotime($end));
+        $year = date('Y', strtotime($start));
 	
         $ppIDQ = "select max(periodID)+1 from PayPeriods";
         $ppIDR = $db->query($ppIDQ);
         $ppIDW = $db->fetch_row($ppIDR);
         $ppID = $ppIDW[0];
 
-        $ppQ = $db->prepare_statement("INSERT INTO PayPeriods VALUES (?,?,YEAR(CURDATE()))");
-        $ppR = $db->exec_statement($ppQ, array($ppID, $pp));
+        $ppQ = $db->prepare_statement("INSERT INTO PayPeriods (periodID, dateStr, year, startDate, endDate) 
+                                    VALUES (?,?,?,?,?)");
+        $ppR = $db->exec_statement($ppQ, array($ppID, $dateStr, $year, $start, $end));
 
         $eIDQ = $db->prepare_statement("select empID from employees where adpID=?");
         $insQ = $db->prepare_statement("INSERT INTO ImportedHoursData 
-                    VALUES (?,?,year(curdate()),?,?,?,0,?,?,?)");
+                    VALUES (?,?,?,?,?,?,0,?,?,?)");
         foreach ($datalines as $line) {
             $fields = explode(",",$line);
             $eIDR = $db->exec_statement($eIDQ, array($fields[0]));
@@ -220,7 +226,7 @@ class WfcHtUploadPage extends FanniePage
             $eIDW = $db->fetch_row($eIDR);
             $empID = $eIDW['empID'];
 
-            $insR = $db->exec_statement($insQ, array($empID, $ppID, $fields[1],
+            $insR = $db->exec_statement($insQ, array($empID, $ppID, $year, $fields[1],
                                 $fields[2], $fields[3],
                                 $fields[5], $fields[6],
                                 $fields[4]));
@@ -242,10 +248,13 @@ class WfcHtUploadPage extends FanniePage
 
     private function form_content()
     {
+        global $FANNIE_URL;
+        $this->add_script($FANNIE_URL.'src/CalendarControl.js');
         echo '
 <form enctype="multipart/form-data" action="'.$_SERVER['PHP_SELF'].'" method="post">
 <input type="hidden" name="MAX_FILE_SIZE" value="2097152" />
-Pay Period: <input type=text name=pp /><p />
+Pay Period: <input type=text name=start onfocus="showCalendarControl(this);" /> 
+<input type=text name=end onfocus="showCalendarControl(this);" /><p />
 Holiday Hours: <select name=asHoliday><option value=1>As Holiday</option><option value=0>As Hours Worked</option>
 </select><p />
 Filename: <input type="file" id="file" name="upload" />
