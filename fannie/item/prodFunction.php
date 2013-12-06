@@ -33,10 +33,10 @@
 
 */
 
-
 include_once('../src/mysql_connect.php');
 include_once('../auth/login.php');
 include_once('ajax.php');
+include(dirname(__FILE__).'/../classlib2.0/FannieAPI.php');
 
 function itemParse($upc){
     global $dbc,$FANNIE_URL;
@@ -50,7 +50,7 @@ function itemParse($upc){
     if(is_numeric($upc)){
 			switch($numType){
 				case 'UPC':
-					$upc = str_pad($upc,13,0,STR_PAD_LEFT);
+                    $upc = BarcodeLib::padUPC($upc);
 					$savedUPC = $upc;
 					$queryItem = "SELECT p.*,x.distributor,x.manufacturer 
 						FROM products as p left join 

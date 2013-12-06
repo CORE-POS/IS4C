@@ -15,23 +15,23 @@ if(isset($_POST['projDesc'])){
   $projID = $_POST['projID'];
   $emaillist = $_POST['emaillist'];
   $notes = preg_replace('/\n/','<br />',$_POST['notes']);
-  $q = "update projects set
-        projDesc = '$projDesc',
-        link = '$link',
-        priority = $priority,
-        notes = '$notes'
-        where projID=$projID";
-  $r = $sql->query($q);
+  $q = $sql->prepare("update projects set
+        projDesc = ?
+        link = ?
+        priority = ?
+        notes = ?
+        where projID=?");
+  $r = $sql->execute($q, array($projDesc, $link, $priority, $notes, $projID));
   
   $mails = explode(",",$emaillist);
-  $q = "delete from project_parties where projID=$projID";
-  $r = $sql->query($q);
+  $q = $sql->prepare("delete from project_parties where projID=?");
+  $r = $sql->execute($q, array($projID));
   
+  $q = $sql->prepare("insert into project_parties values (?,?)");
   foreach ($mails as $m){
   	$m = trim($m);
   	if ($m != ''){
-		$q = "insert into project_parties values ($projID,'$m')";
-		$r = $sql->query($q);
+		$r = $sql->execute($q, array($projID, $m));
   	}	
   }
   	
@@ -40,8 +40,8 @@ if(isset($_POST['projDesc'])){
 else {
   $projID = $_GET['projID'];
 
-  $q = "select projDesc, notes, link, priority from projects where projID=$projID";
-  $r = $sql->query($q);
+  $q = $sql->prepare("select projDesc, notes, link, priority from projects where projID=?");
+  $r = $sql->execute($q, array($projID));
 
   $row = $sql->fetch_array($r);
   $olddesc = $row['projDesc'];
@@ -49,8 +49,8 @@ else {
   $oldlink = $row['link'];
   $oldpriority = $row['priority'];
   
-  $emailQ = "select email from project_parties where projID=$projID order by email";
-  $emailR = $sql->query($emailQ);
+  $emailQ = $sql->prepare("select email from project_parties where projID=? order by email");
+  $emailR = $sql->execute($emailQ, array($projID));
   $emaillist = "";
   while ($emailW = $sql->fetch_array($emailR))
 	$emaillist .= $emailW[0].", ";

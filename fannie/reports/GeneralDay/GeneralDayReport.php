@@ -22,14 +22,13 @@
 *********************************************************************************/
 
 include('../../config.php');
-include($FANNIE_ROOT.'src/mysql_connect.php');
-include($FANNIE_ROOT.'src/select_dlog.php');
-include($FANNIE_ROOT.'classlib2.0/lib/FormLib.php');
-include($FANNIE_ROOT.'classlib2.0/FannieReportPage.php');
+include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
-class GeneralDayReport extends FannieReportPage {
+class GeneralDayReport extends FannieReportPage 
+{
 
-	function preprocess(){
+	function preprocess()
+    {
 		$this->title = "Fannie : General Day Report";
 		$this->header = "General Day Report";
 		$this->report_cache = 'none';
@@ -56,13 +55,15 @@ class GeneralDayReport extends FannieReportPage {
 		return True;
 	}
 
-	function fetch_report_data(){
-		global $dbc, $FANNIE_ARCHIVE_DB, $FANNIE_EQUITY_DEPARTMENTS;
+	function fetch_report_data()
+    {
+		global $FANNIE_OP_DB, $FANNIE_ARCHIVE_DB, $FANNIE_EQUITY_DEPARTMENTS;
+        $dbc = FannieDB::get($FANNIE_OP_DB);
 		$d1 = FormLib::get_form_value('date1',date('Y-m-d'));
 		$dates = array($d1.' 00:00:00',$d1.' 23:59:59');
 		$data = array();
 
-		$dlog = select_dlog($d1);
+		$dlog = DTransactionsModel::select_dlog($d1);
 		$tenderQ = $dbc->prepare_statement("SELECT 
 			TenderName,count(d.total),sum(d.total) as total
 			FROM $dlog as d , tenders as t 
@@ -194,7 +195,8 @@ class GeneralDayReport extends FannieReportPage {
 		return $data;
 	}
 
-	function calculate_footers($data){
+	function calculate_footers($data)
+    {
 		switch($this->multi_counter){
 		case 1:
 			$this->report_headers[0] = 'Tenders';
@@ -225,7 +227,8 @@ class GeneralDayReport extends FannieReportPage {
 		return array(null,$sumQty,$sumSales);
 	}
 
-	function form_content(){
+	function form_content()
+    {
 		$start = date('Y-m-d',strtotime('yesterday'));
 		?>
 		<form action=GeneralDayReport.php method=get>

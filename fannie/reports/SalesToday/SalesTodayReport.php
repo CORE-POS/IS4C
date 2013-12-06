@@ -30,7 +30,6 @@
 */
 
 include('../../config.php');
-include_once($FANNIE_ROOT.'src/mysql_connect.php');
 include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
 class SalesTodayReport extends FanniePage 
@@ -42,7 +41,8 @@ class SalesTodayReport extends FanniePage
 
 	public function preprocess()
     {
-		global $dbc, $FANNIE_URL;
+		global $FANNIE_OP_DB, $FANNIE_URL;
+        $dbc = FannieDB::get($FANNIE_OP_DB);
 		$this->selected = (isset($_GET['super']))?$_GET['super']:-1;
 
 		/* Populate an array of superdepartments from which to
@@ -74,7 +74,8 @@ class SalesTodayReport extends FanniePage
 
 	public function body_content()
     {
-		global $dbc, $FANNIE_TRANS_DB;
+		global $FANNIE_OP_DB, $FANNIE_TRANS_DB;
+        $dbc = FannieDB::get($FANNIE_OP_DB);
 
 		$today = date("Y-m-d");
 

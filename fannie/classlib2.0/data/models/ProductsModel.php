@@ -27,6 +27,9 @@ if (!class_exists('FannieDB')) {
 if (!class_exists('ProdUpdateModel')) {
     include(dirname(__FILE__).'/ProdUpdateModel.php');
 }
+if (!class_exists('BarcodeLib')) {
+    include(dirname(__FILE__).'/../../lib/BarcodeLib.php');
+}
 
 class ProductsModel extends BasicModel 
 {
@@ -94,7 +97,7 @@ class ProductsModel extends BasicModel
             return false;
         }
         $upc = substr($upc,0,13);
-        $upc = str_pad($upc,13,'0',STR_PAD_LEFT);
+        $upc = BarcodeLib::padUPC($upc);
 
         $chkP = $dbc->prepare_statement("SELECT upc FROM products WHERE upc=?");
         $chkR = $dbc->exec_statement($chkP, array($upc));
@@ -188,7 +191,7 @@ class ProductsModel extends BasicModel
             return False;
         }
         $upc = substr($upc,0,13);
-        $upc = str_pad($upc,13,'0',STR_PAD_LEFT);
+        $upc = BarcodeLib::padUPC($upc);
 
         $delP = $dbc->prepare_statement('DELETE FROM products WHERE upc=?');
         $delR = $dbc->exec_statement($delP,array($upc));
@@ -216,7 +219,7 @@ class ProductsModel extends BasicModel
             return false;
         }
         $upc = substr($upc,0,13);
-        $upc = str_pad($upc,13,'0',STR_PAD_LEFT);
+        $upc = BarcodeLib::padUPC($upc);
         
         $args = array();
         $q = 'INSERT INTO products ';

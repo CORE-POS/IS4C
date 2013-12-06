@@ -162,10 +162,6 @@ static public function getsubtotals()
 	$CORE_LOCAL->set("localTotal", (!$row || !isset($row['localTotal'])) ? 0 : (double)$row["localTotal"] );
 	$CORE_LOCAL->set("voidTotal", (!$row || !isset($row['voidTotal'])) ? 0 : (double)$row["voidTotal"] );
 
-	if ($CORE_LOCAL->get("memberID") == "0" && $CORE_LOCAL->get("runningTotal") > 0) {
-		if ($CORE_LOCAL->get("SSI") != 0 && ($CORE_LOCAL->get("isStaff") == 3 || $CORE_LOCAL->get("isStaff") == 6)) PrehLib::wmdiscount();
-	}
-
 	$handler_class = $CORE_LOCAL->get('DiscountModule');
 	if ($handler_class === '') $handler_class = 'DiscountModule';
 	elseif (!class_exists($handler_class)) $handler_class = 'DiscountModule';

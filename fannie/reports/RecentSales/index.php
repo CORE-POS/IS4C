@@ -29,6 +29,7 @@
 */
 
 require('../../config.php');
+include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 require($FANNIE_ROOT."src/SQLManager.php");
 
 $dbc = new SQLManager($FANNIE_SERVER,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
@@ -38,7 +39,7 @@ $where = '';
 $args = array();
 if (isset($_GET['upc'])){
 	$where = "WHERE upc=?";
-	$args = array(str_pad($_GET['upc'],13,'0',STR_PAD_LEFT));
+	$args = array(BarcodeLib::padUPC($_GET['upc']));
 }
 else if (isset($_GET['likecode'])){
 	$where = sprintf("LEFT JOIN %s%supcLike AS u ON d.upc=u.upc WHERE u.likecode=?",

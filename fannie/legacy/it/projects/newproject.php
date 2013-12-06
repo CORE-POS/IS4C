@@ -22,26 +22,26 @@ if (isset($_POST['projDesc'])){
   $projID = $row[0] + 1;
   $date = date("Y-m-d");
   if(isset($_POST['party'])){
+     $insPartyQ = $sql->prepare("INSERT INTO project_parties VALUES(?,?)");
      foreach($_POST['party'] as $key=>$value){
-        $insPartyQ = "INSERT INTO project_parties VALUES($projID,'$value')";
-        $insPartyR = $sql->query($insPartyQ);
+        $insPartyR = $sql->execute($insPartyQ, array($projID, $value));
      }
   }
-  $q = "insert into projects (projID,projDesc,reqestDate,status,notes,link,priority) 
-        values ($projID,'$projDesc','$date',$status,'$notes','$link',$priority)";
-  $r = $sql->query($q);
+  $q = $sql->prepare("insert into projects (projID,projDesc,reqestDate,status,notes,link,priority) 
+        values (?,?,?,?,?,?,?)");
+  $r = $sql->execute($q, array($projID, $projDesc, $date, $status, $notes, $link, $priority));
   
-  $checkQ = "select * from projects where LCASE(ITName) = LCASE('$user') limit 1";
-  $checkR = $sql->query($checkQ);
+  $checkQ = $sql->prepare("select * from projects where LCASE(ITName) = LCASE(?) limit 1");
+  $checkR = $sql->execute($checkQ, array($user));
   // not an IT person so add to interested parties
   if ($sql->num_rows($checkR) == 0){
-    $partyQ = "insert into project_parties values ($projID,'$user')";
-    $partyR = $sql->query($partyQ);
+    $partyQ = $sql->prepare("insert into project_parties values (?,?)");
+    $partyR = $sql->execute($partyQ, array($projID, $user));
   }
   
   // build email 'to' all interested parties
-  $q = "select email from project_parties where projID = $projID";
-  $r = $sql->query($q);
+  $q = $sql->prepare("select email from project_parties where projID = ?");
+  $r = $sql->execute($q, array($projID));
   $to_string = 'it@wholefoods.coop';
   if ($sql->num_rows($r) > 0){
     while($row = $sql->fetch_array($r)){

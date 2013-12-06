@@ -17,8 +17,8 @@
  function getPrice($upc){
  	$sql = productdb();
  	
- 	$q = "select normal_price from products where upc='$upc'";
- 	$r = $sql->query($q,$msdb);
+ 	$q = $sql->prepare("select normal_price from products where upc=?");
+ 	$r = $sql->execute($q,array($upc),$msdb);
  	
  	if ($sql->num_rows($r) == 0)
  		return false;
@@ -30,8 +30,8 @@
  function setPrice($upc,$price){
  	$sql = productdb();	
  
- 	$q = "update products set normal_price = $price where upc='$upc'";
- 	$r = $sql->query($q,$msdb);
+ 	$q = $sql->prepare("update products set normal_price = ? where upc=?");
+ 	$r = $sql->execute($q,array($price, $upc),$msdb);
  }
  	
  

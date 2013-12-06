@@ -1,23 +1,28 @@
 <?php
 function allLanes($upc){
-  global $FANNIE_ROOT;
-  if (!class_exists("SQLManager")) require_once($FANNIE_ROOT."src/SQLManager.php");
+  if (!class_exists("SQLManager")) require_once("../../src/SQLManager.php");
 
   include('../lanedefs.php');
 
   $queryItem = '';
+  $args = array();
   if(is_numeric($upc)){
     $upc = str_pad($upc,13,0,STR_PAD_LEFT);
-    $queryItem = "SELECT * FROM products WHERE upc = '$upc'";
+    $queryItem = "SELECT * FROM products WHERE upc = ?";
+    $args = array($upc);
   }else{
-    $queryItem = "SELECT * FROM products WHERE description LIKE '%$upc%' ORDER BY description";
+    $queryItem = "SELECT * FROM products WHERE description LIKE ? ORDER BY description";
+    $args = array('%'.$upc.'%');
   }
 
   for ($i = 0; $i < count($lanes); $i++){
     $currentLane = $lanes[$i];
+    if (substr($currentLane,0,3) == "POS")
+	$currentLane = "129.103.2.1".substr($currentLane,-1);
     $sql = new SQLManager($currentLane,$types[$i],$dbs[$i],$users[$i],$pws[$i]);
 	//continue;
-    $resultItem = $sql->query($queryItem);
+    $prep = $sql->prepare($queryItem);
+    $resultItem = $sql->execute($prep, $args);
     $num = $sql->num_rows($resultItem);
 
     if ($num == 0){

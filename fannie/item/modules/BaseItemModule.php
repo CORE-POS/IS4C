@@ -29,7 +29,7 @@ class BaseItemModule extends ItemModule {
 
 	function ShowEditForm($upc){
 		global $FANNIE_URL;
-		$upc = str_pad($upc,13,0,STR_PAD_LEFT);
+		$upc = BarcodeLib::padUPC($upc);
 
 		$ret = '<fieldset id="BaseItemFieldset">';
 		$ret .=  "<legend>Item</legend>";
@@ -309,7 +309,7 @@ class BaseItemModule extends ItemModule {
 	}
 
 	function SaveFormData($upc){
-		$upc = str_pad($upc,13,0,STR_PAD_LEFT);
+		$upc = BarcodeLib::padUPC($upc);
 		$dbc = $this->db();
 
 		$up_array = array();

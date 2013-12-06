@@ -66,7 +66,7 @@ class RestrictCouponPage extends FannieRESTfulPage {
 		global $FANNIE_OP_DB;
 		$dbc = FannieDB::get($FANNIE_OP_DB);
 
-		$upc = str_pad($this->id, 13, '0', STR_PAD_LEFT);
+		$upc = BarcodeLib::padUPC($this->id);
 		$model = new DisableCouponModel($dbc);
 		$model->upc($upc);
 		$model->load();
@@ -83,7 +83,7 @@ class RestrictCouponPage extends FannieRESTfulPage {
 		global $FANNIE_OP_DB;
 		$dbc = FannieDB::get($FANNIE_OP_DB);
 
-		$upc = str_pad($this->id, 13, '0', STR_PAD_LEFT);
+		$upc = BarcodeLib::padUPC($this->id);
 		$limit = FormLib::get_form_value('limit',0);
 		$reason = FormLib::get_form_value('reason','');
 
@@ -101,7 +101,7 @@ class RestrictCouponPage extends FannieRESTfulPage {
 		global $FANNIE_OP_DB;
 		$dbc = FannieDB::get($FANNIE_OP_DB);
 
-		$upc = str_pad($this->id, 13, '0', STR_PAD_LEFT);
+		$upc = BarcodeLib::padUPC($this->id);
 		$model = new DisableCouponModel($dbc);
 		$model->upc($upc);
 		$model->delete();

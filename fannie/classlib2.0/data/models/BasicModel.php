@@ -816,7 +816,7 @@ class BasicModel
     // generate()
     }
 
-    protected function newModel($name)
+    public function newModel($name)
     {
         $fp = fopen($name.'.php','w');
         fwrite($fp, chr(60)."?php

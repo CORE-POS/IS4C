@@ -166,8 +166,6 @@ function forceBatch($batchID){
 	$forceR = $sql->query($forceQ);
 	$forceLCR = $sql->query($forceLCQ);
 
-	if (!function_exists("updateProductAllLanes")) include($FANNIE_ROOT.'legacy/queries/laneUpdates.php');
-
 	$q = "SELECT upc FROM batchList WHERE batchID=".$batchID;
 	$r = $sql->query($q);
 	while($w = $sql->fetch_row($r)){
@@ -181,7 +179,9 @@ function forceBatch($batchID){
 				$upcs[] = $w2['upc'];
 		}
 		foreach($upcs as $u){
-			updateProductAllLanes($u);
+            $model = new ProductsModel($sql);
+            $model->upc($u);
+            $model->pushToLanes();
 		}
 	}
 }

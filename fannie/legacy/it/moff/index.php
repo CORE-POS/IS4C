@@ -23,27 +23,27 @@ if (isset($_GET['excel'])){
 	include('../../db.php');
 
 	$date = '2011-08-06';
-	$reg = "21,22";
+    $args = array($date, 21, 22);
 	require($FANNIE_ROOT.'src/select_dlog.php');
 	$dlog = select_dtrans($date);
 	//$dlog = str_replace("dlog","transarchive",$dlog);
 	//$dlog = "trans_archive.dbo.transArchive201008";
 
-	$query = "SELECT DISTINCT t.upc, min(t.description), SUM(t.quantity),SUM(t.total),d.dept_name,s.salesCode,u.likeCode
+	$query = $sql->prepare("SELECT DISTINCT t.upc, min(t.description), SUM(t.quantity),SUM(t.total),d.dept_name,s.salesCode,u.likeCode
 			  FROM $dlog as t 
 			  LEFT JOIN departments as d on d.dept_no = t.department
 			  LEFT JOIN deptSalesCodes as s on d.dept_no=s.dept_ID
 			  LEFT JOIN upcLike as u on t.upc=u.upc
 			  WHERE t.trans_type in ('I','D') and t.upc <> 'DISCOUNT' and
-			  datediff(dd,'$date',t.datetime) = 0 AND t.register_no
-                          in ( $reg )
+			  datediff(dd,?,t.datetime) = 0 AND t.register_no
+                          in ( ?, ? )
 			  and trans_Status <> 'X'
                           and emp_no <> 9999
 			  GROUP BY t.upc, d.dept_name,s.salesCode,u.likeCode
-			  ORDER BY t.upc";
+			  ORDER BY t.upc");
 
 	//echo $query;
-	$result = $sql->query($query);
+	$result = $sql->execute($query, $args);
 
 	echo "<table border=1>\n"; //create table
 	echo "<tr>";

@@ -16,8 +16,8 @@ if (isset($_POST["MAX_FILE_SIZE"])){
 
 	$fp = fopen($fn,"r");
 	echo "<b>Data to import</b><br />";
-	$typeQ = "select typeDesc,discType from batchType where batchTypeID=".$_POST["batchType"];
-	$typeR = $sql->query($typeQ);
+	$typeQ = $sql->prepare("select typeDesc,discType from batchType where batchTypeID=?");
+	$typeR = $sql->execute($typeQ, array($_POST['batchType']));
 	$typeW = $sql->fetch_row($typeR);
 	echo "<i>".$typeW[0]." batch running from ";
 	echo $_POST["startDate"]." to ".$_POST["endDate"]."<br />";
@@ -25,19 +25,19 @@ if (isset($_POST["MAX_FILE_SIZE"])){
 	echo "<th>Likecode</th><th>Description</th><th>Current Price</th><th>Sale Price</th>";
 	echo "</tr>";
 	echo "<form action=salesBatchLC.php method=post>";
+    $q = $sql->prepare("select l.likeCodeDesc,min(p.normal_price) from products as p
+        left join upcLike as u on u.upc=p.upc 
+        left join likeCodes as l on l.likeCode=u.likeCode where
+        u.likeCode=? group by
+        u.likeCode, l.likeCodeDesc
+        order by count(*) desc");
 	while (!feof($fp)){
 		$line = fgets($fp);
 		$data = csv_parser($line);
 
 		if (!is_numeric($data[$LC_COL])) continue;
 
-		$q = "select l.likeCodeDesc,min(p.normal_price) from products as p
-			left join upcLike as u on u.upc=p.upc 
-			left join likeCodes as l on l.likeCode=u.likeCode where
-			u.likeCode=".$data[$LC_COL]." group by
-			u.likeCode, l.likeCodeDesc
-			order by count(*) desc";
-		$r = $sql->query($q);
+		$r = $sql->execute($q, array($data[$LC_COL]));
 		if ($sql->num_rows($r) == 0){
 			echo "<i>Error - unknown like code #".$data[$LC_COL]."</i><br />";
 			continue;
@@ -73,20 +73,22 @@ else if (isset($_POST['likecode'])){
 	$discount = $_POST["discount"];
 
 	echo "<b>Creating batch</b><br />";
-	$createQ = "insert into batches (startDate, endDate, batchName, batchType, discountType, priority) 
-		values ('$startDate','$endDate','$batchName',$batchType,$discount,0)";
-	$sql->query($createQ);
+	$createQ = $sql->prepare("insert into batches (startDate, endDate, batchName, batchType, discountType, priority) 
+		values (?,?,?,?,?,0)");
+	$sql->execute($createQ, array($startDate, $endDate, $batchName, $batchType, $discount));
 	$batchID = $sql->insert_id();
 
-	$ownerQ = "insert into batchowner values ($batchID,'Produce')";
-	$sql->query($ownerQ);
+	$ownerQ = $sql->prepare("insert into batchowner values (?,'Produce')");
+	$sql->execute($ownerQ, array($batchID));
 
+    $q = $sql->prepare("insert into batchList (upc, batchID, salePrice, active, pricemethod, quantity) 
+        VALUES (?,?,?,1,0,0)");
 	echo "<b>Adding items</b><br />";
 	for ($i = 0; $i < count($likecodes); $i++){
 		$q = "insert into batchList (upc, batchID, salePrice, active, pricemethod, quantity) 
 			VALUES ('LC".$likecodes[$i]."',$batchID,".ltrim($prices[$i],'$ ').",1,0,0)";
 		echo "Setting likecode #".$likecodes[$i]." on sale for $".$prices[$i]."<br />";
-		$sql->query($q);
+		$sql->execute($q, array('LC'.$likecodes[$i], $batchID, ltrim($prices[$i], '$ ')));
 	}
 
 	echo "<a href=/it/newbatch>Go to batch page</a>";

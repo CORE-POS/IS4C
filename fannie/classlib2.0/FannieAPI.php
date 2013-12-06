@@ -131,6 +131,9 @@ class FannieAPI
             case 'MemberModule':
                 $directories[] = dirname(__FILE__).'/../mem/modules/';
                 break;
+            case 'FannieTask':
+                $directories[] = dirname(__FILE__).'/../cron/tasks/';
+                break;
         }
 
         // recursive search

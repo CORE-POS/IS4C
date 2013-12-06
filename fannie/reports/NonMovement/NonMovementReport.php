@@ -22,15 +22,14 @@
 *********************************************************************************/
 
 include('../../config.php');
-include($FANNIE_ROOT.'src/mysql_connect.php');
-include($FANNIE_ROOT.'src/select_dlog.php');
-include($FANNIE_ROOT.'classlib2.0/FannieReportPage.php');
-include($FANNIE_ROOT.'classlib2.0/lib/FormLib.php');
+include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
 class NonMovementReport extends FannieReportPage {
 
-	function preprocess(){
-		global $dbc;
+	function preprocess()
+    {
+		global $FANNIE_OP_DB;
+        $dbc = FannieDB::get($FANNIE_OP_DB);
 		/**
 		  Set the page header and title, enable caching
 		*/
@@ -41,7 +40,7 @@ class NonMovementReport extends FannieReportPage {
 		if (isset($_REQUEST['deleteItem'])){
 			$upc = FormLib::get_form_value('deleteItem','');
 			if (is_numeric($upc))
-				$upc = str_pad($upc,13,'0',STR_PAD_LEFT);
+				$upc = BarcodeLib::padUPC($upc);
 
 			$query = "DELETE FROM products WHERE upc=?";
 			$queryP = $dbc->prepare_statement($query);
@@ -90,15 +89,17 @@ class NonMovementReport extends FannieReportPage {
 		return True;
 	}
 
-	function fetch_report_data(){
-		global $dbc, $FANNIE_ARCHIVE_DB;
+	function fetch_report_data()
+    {
+		global $FANNIE_OP_DB, $FANNIE_ARCHIVE_DB;
+        $dbc = FannieDB::get($FANNIE_OP_DB);
 		$date1 = FormLib::get_form_value('date1',date('Y-m-d'));
 		$date2 = FormLib::get_form_value('date2',date('Y-m-d'));
 		$dept1 = FormLib::get_form_value('deptStart',0);
 		$dept2 = FormLib::get_form_value('deptEnd',0);
 
 		$tempName = "TempNoMove";
-		$dlog = select_dlog($date1,$date2);
+		$dlog = DTransactionsModel::select_dlog($date1,$date2);
 		$sumTable = $FANNIE_ARCHIVE_DB.$dbc->sep()."sumUpcSalesByDay";
 
 		$tempQ = $dbc->prepare_statement("CREATE TABLE $tempName (upc varchar(13))");
@@ -147,8 +148,10 @@ class NonMovementReport extends FannieReportPage {
 		return $ret;
 	}
 	
-	function form_content(){
-		global $dbc;
+	function form_content()
+    {
+		global $FANNIE_OP_DB;
+        $dbc = FannieDB::get($FANNIE_OP_DB);
 		$deptsQ = $dbc->prepare_statement("select dept_no,dept_name from departments order by dept_no");
 		$deptsR = $dbc->exec_statement($deptsQ);
 		$deptsList = "";

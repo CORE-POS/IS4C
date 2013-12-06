@@ -57,16 +57,16 @@ function getCategories(){
 // returns a list of recipes in category with id $id (as a string again)
 function getRecipes($id){
 	global $sql;
-	$q = "select name from categories where id=$id";
-	$r = $sql->query($q);
+	$q = $sql->prepare("select name from categories where id=?");
+	$r = $sql->execute($q, array($id));
 	$w = $sql->fetch_array($r);
 	$catName = $w[0];	
 
 	$ret = "<b>Category</b>: ".$catName."<br />";
 	$ret .= "<b>Recipes</b>:";
 	$ret .= "<ul>";
-	$q = "select name,id from recipes where categoryID = $id order by name";
-	$r = $sql->query($q);
+	$q = $sql->prepare("select name,id from recipes where categoryID = ? order by name");
+	$r = $sql->execute($q, array($id));
 	if ($sql->num_rows($r) != 0){
 		while ($w = $sql->fetch_array($r)){
 			$ret .= "<li><a href=\"\" onClick=\"displayRecipe(".$w[1]."); return false;\">";
@@ -82,9 +82,9 @@ function getRecipes($id){
 function displayRecipe($id){
 	global $sql;
 	$ret = "";
-	$q = "select r.name,r.upc,r.margin,r.price,r.servings,r.current_margin,i.info
-		  from recipes as r, info as i where r.id=i.recipeID and r.id=$id";
-	$r = $sql->query($q);
+	$q = $sql->prepare("select r.name,r.upc,r.margin,r.price,r.servings,r.current_margin,i.info
+		  from recipes as r, info as i where r.id=i.recipeID and r.id=?");
+	$r = $sql->execute($q, array($id));
 	$w = $sql->fetch_array($r);
 	
 	$name = $w['name'];
@@ -123,8 +123,8 @@ function displayRecipe($id){
 function getSteps($id){
 	global $sql;
 	$ret = "<table>";
-	$q = "select step from steps where recipeID = $id order by ord";
-	$r = $sql->query($q);
+	$q = $sql->prepare("select step from steps where recipeID = ? order by ord");
+	$r = $sql->execute($q, array($id));
 	$i = 1;
 	while ($w = $sql->fetch_array($r)){
 		if ($i % 2 != 0)
@@ -146,10 +146,10 @@ function getSteps($id){
 function getIngredients($id,$mult=1){
 	global $sql;
 	$ret = "<table>";
-	$q = "select i.name,l.measure,l.unit,l.prep from ingredientlist as l
+	$q = $sql->prepare("select i.name,l.measure,l.unit,l.prep from ingredientlist as l
 		  left join ingredients as i on i.id = l.ingredientID
-		  where recipeID = $id order by ord";
-	$r = $sql->query($q);
+		  where recipeID = ? order by ord");
+	$r = $sql->execute($q, array($id));
 	$i = 1;
 	$numbering = 1;
 	while ($w = $sql->fetch_array($r)){

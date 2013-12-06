@@ -38,23 +38,25 @@
 <a href="class_check_tender-members.html">List of all members.</a><table border="0" cellpadding="0" cellspacing="0">
 <tr><td></td></tr>
 <tr><td colspan="2"><br><h2>Public Member Functions</h2></td></tr>
-<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_check_tender.html#81def52e9370f01d21e95e4720bb3acf">ErrorCheck</a> ()</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_check_tender.html#f2af8167a488c835320a73db1c73e83a">errorCheck</a> ()</td></tr>
 
-<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_check_tender.html#851cd07afff9c29d32718d890f2a950b">PreReqCheck</a> ()</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_check_tender.html#22be6db41b52aa04c55d27e5908a0fa8">preReqCheck</a> ()</td></tr>
 
-<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_check_tender.html#7c7a580a9611f86dd0e26f570587faf2">Add</a> ()</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_check_tender.html#797fdcfbb359f1d8181472ea727b2efd">add</a> ()</td></tr>
+
+<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_check_tender.html#496e22dfd59adb62a3ec356e76686201">defaultPrompt</a> ()</td></tr>
 
 </table>
 <hr><a name="_details"></a><h2>Detailed Description</h2>
 Tender module for checks 
 <p>
 <hr><h2>Member Function Documentation</h2>
-<a class="anchor" name="7c7a580a9611f86dd0e26f570587faf2"></a><!-- doxytag: member="CheckTender::Add" ref="7c7a580a9611f86dd0e26f570587faf2" args="()" -->
+<a class="anchor" name="797fdcfbb359f1d8181472ea727b2efd"></a><!-- doxytag: member="CheckTender::add" ref="797fdcfbb359f1d8181472ea727b2efd" args="()" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">CheckTender::Add           </td>
+          <td class="memname">CheckTender::add           </td>
           <td>(</td>
           <td class="paramname">          </td>
           <td>&nbsp;)&nbsp;</td>
@@ -67,15 +69,37 @@ Tender module for checks
 <p>
 Add tender to the transaction 
 <p>
-Reimplemented from <a class="el" href="class_tender_module.html#aa6bb7a7b0a792f04bf10756646940ef">TenderModule</a>.
+Reimplemented from <a class="el" href="class_tender_module.html#93fc35eeb2b4a023c930fa4c5316b8f3">TenderModule</a>.
 </div>
 </div><p>
-<a class="anchor" name="81def52e9370f01d21e95e4720bb3acf"></a><!-- doxytag: member="CheckTender::ErrorCheck" ref="81def52e9370f01d21e95e4720bb3acf" args="()" -->
+<a class="anchor" name="496e22dfd59adb62a3ec356e76686201"></a><!-- doxytag: member="CheckTender::defaultPrompt" ref="496e22dfd59adb62a3ec356e76686201" args="()" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">CheckTender::ErrorCheck           </td>
+          <td class="memname">CheckTender::defaultPrompt           </td>
+          <td>(</td>
+          <td class="paramname">          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Prompt for the cashier when no total is provided <dl compact><dt><b>Returns:</b></dt><dd>string URL</dd></dl>
+Typically this sets up session variables and returns the URL for boxMsg2.php. 
+<p>
+Reimplemented from <a class="el" href="class_tender_module.html#e7effe3622508bb6fded9ef2f09c69e9">TenderModule</a>.
+</div>
+</div><p>
+<a class="anchor" name="f2af8167a488c835320a73db1c73e83a"></a><!-- doxytag: member="CheckTender::errorCheck" ref="f2af8167a488c835320a73db1c73e83a" args="()" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">CheckTender::errorCheck           </td>
           <td>(</td>
           <td class="paramname">          </td>
           <td>&nbsp;)&nbsp;</td>
@@ -89,15 +113,15 @@ Reimplemented from <a class="el" href="class_tender_module.html#aa6bb7a7b0a792f0
 Check for errors <dl compact><dt><b>Returns:</b></dt><dd>True or an error message string </dd></dl>
 
 <p>
-Reimplemented from <a class="el" href="class_tender_module.html#9a6ace25900941f577b8309f0a8bba16">TenderModule</a>.
+Reimplemented from <a class="el" href="class_tender_module.html#02b5ac7e402e81ef6355ab093de9942e">TenderModule</a>.
 </div>
 </div><p>
-<a class="anchor" name="851cd07afff9c29d32718d890f2a950b"></a><!-- doxytag: member="CheckTender::PreReqCheck" ref="851cd07afff9c29d32718d890f2a950b" args="()" -->
+<a class="anchor" name="22be6db41b52aa04c55d27e5908a0fa8"></a><!-- doxytag: member="CheckTender::preReqCheck" ref="22be6db41b52aa04c55d27e5908a0fa8" args="()" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">CheckTender::PreReqCheck           </td>
+          <td class="memname">CheckTender::preReqCheck           </td>
           <td>(</td>
           <td class="paramname">          </td>
           <td>&nbsp;)&nbsp;</td>
@@ -111,12 +135,12 @@ Reimplemented from <a class="el" href="class_tender_module.html#9a6ace25900941f5
 Set up state and redirect if needed <dl compact><dt><b>Returns:</b></dt><dd>True or a URL to redirect </dd></dl>
 
 <p>
-Reimplemented from <a class="el" href="class_tender_module.html#3bd8ec587684257a49ce4a24e6f4d0ff">TenderModule</a>.
+Reimplemented from <a class="el" href="class_tender_module.html#297858ad5cb308c1fe0f94f952667fb9">TenderModule</a>.
 </div>
 </div><p>
 <hr>The documentation for this class was generated from the following file:<ul>
 <li>pos/is4c-nf/lib/Tenders/CheckTender.php</ul>
-<hr size="1"><address style="align: right;"><small>Generated on Tue Oct 23 14:30:34 2012 for CORE POS - IS4C by&nbsp;
+<hr size="1"><address style="align: right;"><small>Generated on 18 Nov 2013 for CORE POS - IS4C by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img src="doxygen.png" alt="doxygen" align="middle" border="0"></a> 1.4.7 </small></address>
 </body>

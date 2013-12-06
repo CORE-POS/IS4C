@@ -33,19 +33,26 @@
 <h1>TenderReport Class Reference</h1><!-- doxytag: class="TenderReport" --><!-- doxytag: inherits="LibraryClass" --><p>Inheritance diagram for TenderReport:
 <p><center><img src="class_tender_report.png" usemap="#TenderReport_map" border="0" alt=""></center>
 <map name="TenderReport_map">
-<area href="class_library_class.html" alt="LibraryClass" shape="rect" coords="0,0,89,24">
+<area href="class_library_class.html" alt="LibraryClass" shape="rect" coords="69,0,198,24">
+<area href="class_default_tender_report.html" alt="DefaultTenderReport" shape="rect" coords="0,112,129,136">
+<area href="class_wfc_tender_report.html" alt="WfcTenderReport" shape="rect" coords="139,112,268,136">
 </map>
 <a href="class_tender_report-members.html">List of all members.</a><table border="0" cellpadding="0" cellspacing="0">
 <tr><td></td></tr>
 <tr><td colspan="2"><br><h2>Static Public Member Functions</h2></td></tr>
-<tr><td class="memItemLeft" nowrap align="right" valign="top">static&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_tender_report.html#54ee01dd27a2178a798e254b2a1ded82">get</a> ()</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">static&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_tender_report.html#b6882d92a94a281cdce629d61d555af5">printReport</a> ()</td></tr>
+
+<tr><td class="memItemLeft" nowrap align="right" valign="top">static&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_tender_report.html#baab86bdd8d6ac054773179febb7d095">get</a> ()</td></tr>
+
+<tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="anchor" name="a9ca73db5713c9256bc2a8c3c200cfcb"></a><!-- doxytag: member="TenderReport::timeStamp" ref="a9ca73db5713c9256bc2a8c3c200cfcb" args="($time)" -->
+static&nbsp;</td><td class="memItemRight" valign="bottom"><b>timeStamp</b> ($time)</td></tr>
 
 </table>
 <hr><a name="_details"></a><h2>Detailed Description</h2>
 Generate a tender report 
 <p>
 <hr><h2>Member Function Documentation</h2>
-<a class="anchor" name="54ee01dd27a2178a798e254b2a1ded82"></a><!-- doxytag: member="TenderReport::get" ref="54ee01dd27a2178a798e254b2a1ded82" args="()" -->
+<a class="anchor" name="baab86bdd8d6ac054773179febb7d095"></a><!-- doxytag: member="TenderReport::get" ref="baab86bdd8d6ac054773179febb7d095" args="()" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -61,13 +68,34 @@ Generate a tender report
 <div class="memdoc">
 
 <p>
-Print a tender report<p>
-This tender report is based on a single tender tape view rather than multiple views (e.g. ckTenders, ckTenderTotal, etc) adding a new tender is mostly just a matter of adding it to the $DESIRED_TENDERS array (exception being if you want special handling in the tender tape view (e.g., three tender types are actually compined under EBT) 
+Generate a tender report <dl compact><dt><b>Returns:</b></dt><dd>[string] receipt contents</dd></dl>
+This method can be overriden by subclasses to create alternate tender reports. When called, this function will use whichever module is listed in the configuration setting "TenderReportMod". If nothing has been selected, the "DefaultTenderReport" module is used. 
+<p>
+Reimplemented in <a class="el" href="class_default_tender_report.html#1e478ba7419e83479c659fe62f3dd82b">DefaultTenderReport</a>, and <a class="el" href="class_wfc_tender_report.html#a10db16c7df64b941367b751ed8e53ce">WfcTenderReport</a>.
+</div>
+</div><p>
+<a class="anchor" name="b6882d92a94a281cdce629d61d555af5"></a><!-- doxytag: member="TenderReport::printReport" ref="b6882d92a94a281cdce629d61d555af5" args="()" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">static TenderReport::printReport           </td>
+          <td>(</td>
+          <td class="paramname">          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"><code> [static]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Write tender report to the printer 
 </div>
 </div><p>
 <hr>The documentation for this class was generated from the following file:<ul>
-<li>pos/is4c-nf/lib/TenderReport.php</ul>
-<hr size="1"><address style="align: right;"><small>Generated on Tue Oct 23 14:30:34 2012 for CORE POS - IS4C by&nbsp;
+<li>pos/is4c-nf/lib/ReceiptBuilding/TenderReports/TenderReport.php</ul>
+<hr size="1"><address style="align: right;"><small>Generated on 18 Nov 2013 for CORE POS - IS4C by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img src="doxygen.png" alt="doxygen" align="middle" border="0"></a> 1.4.7 </small></address>
 </body>

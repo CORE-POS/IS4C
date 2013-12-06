@@ -9,17 +9,20 @@ if (isset($_POST['memnos'])){
 	header('Content-Disposition: attachment; filename="cardData.csv"');
 	
 	$include = "(";
-	foreach ($_POST['memnos'] as $p)
-		$include .= $p.",";
+    $args = array();
+	foreach ($_POST['memnos'] as $p) {
+		$include .= "?,";
+        $args[] = $p;
+    }
 	$include[strlen($include)-1] = ")";
 
-	$fetchQ = "select c.cardno,c.personnum,c.lastname,c.firstname,
+	$fetchQ = $sql->prepare("select c.cardno,c.personnum,c.lastname,c.firstname,
 		d.end_date,m.street,'',m.city,m.state,m.zip
 		from custdata as c left join meminfo as m on c.cardno=m.card_no
 		left join memDates as d ON c.cardno=d.card_no
 		where c.cardno in $include 
-		order by c.cardno,c.personnum";
-	$fetchR = $sql->query($fetchQ);
+		order by c.cardno,c.personnum");
+	$fetchR = $sql->execute($fetchQ, $args);
 	
 	echo "Memberno,First Name,Second Name,Address,City/State/Zip,Exp\n";
 	$curName1 = "";
@@ -52,8 +55,8 @@ else if (isset($_GET['range1'])){
 	}
 	echo "<form method=post action=index.php>";
 	echo "<select name=memnos[] size=15 multiple>";
-	$fetchQ = "select cardno from custdata where cardno between $range1 and $range2 group by cardno order by cardno";
-	$fetchR = $sql->query($fetchQ);
+	$fetchQ = $sql->prepare("select cardno from custdata where cardno between ? and ? group by cardno order by cardno");
+	$fetchR = $sql->execute($fetchQ, array($range1, $range2));
 	while ($fetchW = $sql->fetch_array($fetchR))
 		echo "<option selected>$fetchW[0]</option>";
 	echo "</select><br />";

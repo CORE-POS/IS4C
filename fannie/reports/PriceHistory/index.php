@@ -22,6 +22,7 @@
 *********************************************************************************/
 
 include('../../config.php');
+include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
 if (!class_exists("SQLManager")) require_once($FANNIE_ROOT."src/SQLManager.php");
 $sql = new SQLManager($FANNIE_SERVER,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
@@ -36,7 +37,7 @@ $sql = new SQLManager($FANNIE_SERVER,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 if (isset($_GET['dept1']) || isset($_GET['upc']) || isset($_GET['manufacturer'])){
   $dept1 = isset($_GET['dept1'])?$_GET['dept1']:'';
   $dept2 = isset($_GET['dept2'])?$_GET['dept2']:'';
-  $upc = isset($_GET['upc'])?str_pad($_GET['upc'],13,'0',STR_PAD_LEFT):'';
+  $upc = isset($_GET['upc']) ? BarcodeLib::padUPC($_GET['upc']) : '';
   $start_date = isset($_GET['date1'])?$_GET['date1']:'';
   $end_date = isset($_GET['date2'])?$_GET['date2']:'';
   $manu = isset($_GET['manufacturer'])?$_GET['manufacturer']:'';

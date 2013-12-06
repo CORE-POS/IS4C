@@ -11,8 +11,8 @@ if (!validateUser('admin')){
 $projID = $_POST['projID'];
 $ITName = $_POST['assign'];
 
-$q = "update projects set ITName='$ITName',status=1 where projID = $projID";
-$r = $sql->query($q);
+$q = $sql->prepare("update projects set ITName=?,status=1 where projID = ?");
+$r = $sql->execute($q, array($ITName, $projID));
 
 header("Location: index.php");
 

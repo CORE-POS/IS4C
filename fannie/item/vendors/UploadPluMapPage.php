@@ -91,7 +91,7 @@ class UploadPluMapPage extends FannieUploadPage {
 			// grab data from appropriate columns
 			$sku = $data[$SKU];
 			$plu = substr($data[$PLU],0,13);
-			$plu = str_pad($plu,13,'0',STR_PAD_LEFT);
+            $plu = BarcodeLib::padUPC($plu);
 			if (!is_numeric($plu)) continue;
 	
 			$chkR = $dbc->exec_statement($chkP, array($sku,$plu,$VENDOR_ID));
