@@ -232,7 +232,8 @@ class HouseCoupon extends FanniePage {
 			'FI'=>'Scaling Discount (Item)',
 			'FD'=>'Scaling Discount (Department)',
 			'F'=>'Flat Discount',
-			'%'=>'Percent Discount (Transaction)',
+			'%'=>'Percent Discount (End of transaction)',
+			'PD'=>'Percent Discount (Anytime)',
 			'AD'=>'All Discount (Department)'
 		);
 		$ret .= "<tr><th>Discount Type</th><td>
