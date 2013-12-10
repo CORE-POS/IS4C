@@ -171,7 +171,7 @@ class OverShortDayPage extends FanniePage {
 					$output .= $startcash;
 					$output .= "\" onchange=\"calcOS('Cash',$row[1]);\" /></td><td>n/a</td></tr>";
 					$perCashierCountTotal -= $startcash;
-					$tender_info['CA']['posTtl'] -= $startcash;
+					$tender_info['CA']['countTtl'] -= $startcash;
 				}
 
 				foreach($tender_info as $code => $info){
