@@ -30,7 +30,9 @@
 
 */
 
-require_once('mysql_connect.php');
+if (!class_exists('FannieAPI')) {
+    include(dirname(__FILE__).'/../classlib2.0/FannieAPI.php');
+}
 
 // -----------------------------------------------------------------
 
@@ -40,7 +42,8 @@ require_once('mysql_connect.php');
 
 function select_to_table($query,$args,$border,$bgcolor)
 {
-	global $dbc;
+	global $FANNIE_OP_DB;
+    $dbc = FannieDB::get($FANNIE_OP_DB);
 	$prep = $dbc->prepare_statement($query);
 	$results = $dbc->exec_statement($prep,$args); 
 	$number_cols = $dbc->num_fields($results);
@@ -84,7 +87,8 @@ function select_to_table($query,$args,$border,$bgcolor)
 
 function select_to_table2($query,$args,$border,$bgcolor,$width="120",$spacing="0",$padding="0",$headers=array(),$nostart=False)
 {
-	global $dbc;
+	global $FANNIE_OP_DB;
+    $dbc = FannieDB::get($FANNIE_OP_DB);
 	$prep = $dbc->prepare_statement($query);
 	$results = $dbc->exec_statement($prep,$args); 
 	$number_cols = $dbc->num_fields($results);
@@ -131,87 +135,6 @@ function select_to_table2($query,$args,$border,$bgcolor,$width="120",$spacing="0
 		$b = ($b+1)%2;
 	} } echo "</table>\n";
 	echo "</font>";
-}
-
-function receipt_to_table($query,$args,$query2,$args2,$border,$bgcolor)
-{
-	global $dbc, $FANNIE_COOP_ID;
-	$prep = $dbc->prepare_statement($query);
-	$results = $dbc->exec_statement($prep,$args);
-	$number_cols = $dbc->num_fields($results);
-	$rows = array();
-	while($row = $dbc->fetch_row($results))
-		$rows[] = $row;
-	$row2 = $rows[0];
-	$emp_no = $row2['emp_no'];	
-	$trans_num = $row2['emp_no']."-".$row2['register_no']."-".$row2['trans_no'];
-
-	/* 20Jan13 EL The way I would like to do this.
-	 * Or perhaps get from core_trans.lane_config
-	if ( $CORE_LOCAL->get("receiptHeaderCount") > 0 ) {
-		$receiptHeader = "";
-		$c = $CORE_LOCAL->get("receiptHeaderCount");
-		for ( $i=1; $i <= $c; $i++ ) {
-			$h = "receiptHeader$i";
-			$receiptHeader .= ("<tr><td align=center colspan=4>" . $CORE_LOCAL->get("$h") . "</td></tr>\n");
-		}
-	}
-	*/
-
-	$receiptHeader = "";
-
-	if ( isset($FANNIE_COOP_ID) ) {
-		switch ($FANNIE_COOP_ID) {
-
-		case "WEFC_Toronto":
-			$receiptHeader .= ("<tr><td align=center colspan=4>" . "W E S T &nbsp; E N D &nbsp; F O O D &nbsp; C O - O P" . "</td></tr>\n");
-			$receiptHeader .= ("<tr><td align=center colspan=4>" . "416-533-6363" . "</td></tr>\n");
-			$receiptHeader .= ("<tr><td align=center colspan=4>" . "Local food for local tastes" . "</td></tr>\n");
-			break;
-
-		case "WFC_Duluth":
-			$receiptHeader .= ("<tr><td align=center colspan=4>" . "W H O L E &nbsp; F O O D S &nbsp; C O - O P" . "</td></tr>\n");
-			$receiptHeader .= ("<tr><td align=center colspan=4>" . "218-728-0884" . "</td></tr>\n");
-			$receiptHeader .= ("<tr><td align=center colspan=4>" . "MEMBER OWNED SINCE 1970" . "</td></tr>\n");
-			break;
-
-		default:
-			$receiptHeader .= ("<tr><td align=center colspan=4>" . "FANNIE_COOP_ID >{$FANNIE_COOP_ID}<" . "</td></tr>\n");
-		}
-	}
-
-	echo "<table border = $border bgcolor=$bgcolor>\n";
-	echo "{$receiptHeader}\n";
-	echo "<tr><td align=center colspan=4>{$row2['datetime']} &nbsp; &nbsp; $trans_num</td></tr>";
-	echo "<tr><td align=center colspan=4>Cashier:&nbsp;$emp_no</td></tr>";
-	echo "<tr><td colspan=4>&nbsp;</td></tr>";
-	echo "<tr align left>\n";
-	/*for($i=0; $i<5; $i++)
-	{
-		echo "<th>" . $dbc->field_name($results,$i). "</th>\n";
-	}
-	echo "</tr>\n"; *///end table header
-	//layout table body
-	foreach($rows as $row){
-		echo "<tr><td align=left>";
-		echo $row["description"]; 
-		echo "</td>";
-		echo "<td align=right>";
-		echo $row["comment"];
-		echo "</td><td align=right>";
-		echo $row["total"];
-		echo "</td><td align=right>";
-		echo $row["Status"];
-		echo "</td></tr>";	
-	} 
-	
-	echo "<tr><td colspan=4>&nbsp;</td></tr>";
-	echo "<tr><td colspan=4 align=center>--------------------------------------------------------</td></tr>";
-	echo "<tr><td colspan=4 align=center>Reprinted Transaction</td></tr>";
-	echo "<tr><td colspan=4 align=center>--------------------------------------------------------</td></tr>";
-	echo "<tr><td colspan=4 align=center>Member #: {$row2['memberID']}</td</tr>";
-	echo "</table>\n";
-
 }
 
 /* pads upc with zeroes to make $upc into IT CORE compliant upc*/

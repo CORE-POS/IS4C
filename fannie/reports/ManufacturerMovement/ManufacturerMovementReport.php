@@ -59,7 +59,7 @@ class ManufacturerMovementReport extends FannieReportPage
 		$type = FormLib::get_form_value('type','');
 		$groupby = FormLib::get_form_value('groupby','upc');
 
-		$dlog = DTransactionsModel::select_dlog($date1,$date2);
+		$dlog = DTransactionsModel::selectDlog($date1,$date2);
 		$sumTable = $FANNIE_ARCHIVE_DB.$dbc->sep()."sumUpcSalesByDay";
 
 		$type_condition = "e.manufacturer like ?";

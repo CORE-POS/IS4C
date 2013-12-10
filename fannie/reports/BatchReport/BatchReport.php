@@ -102,7 +102,7 @@ class BatchReport extends FannieReportPage
 			}
 		}
 		
-		$dlog = DTransactionsModel::select_dlog($bStart,$bEnd);
+		$dlog = DTransactionsModel::selectDlog($bStart,$bEnd);
 		$sumTable = $FANNIE_ARCHIVE_DB.$dbc->sep()."sumUpcSalesByDay";
 		$bStart .= ' 00:00:00';
 		$bEnd .= ' 23:59:59';

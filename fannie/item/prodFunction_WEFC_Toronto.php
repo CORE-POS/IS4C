@@ -67,17 +67,21 @@
 	*
 */
 
-include_once('../src/mysql_connect.php');
+include('../config.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 include_once('../auth/login.php');
 include_once('ajax.php');
 //include_once(dirname(__FILE__).'/../classlib2.0/lib/FormLib.php');
 
 function itemParse($upc){
-	global $dbc,$FANNIE_URL;
+	global $FANNIE_OP_DB,$FANNIE_URL;
 	global $FANNIE_STORE_ID;
 	global $FANNIE_COOP_ID;
 	global $FANNIE_COMPOSE_PRODUCT_DESCRIPTION;
 	global $FANNIE_COMPOSE_LONG_PRODUCT_DESCRIPTION;
+    $dbc = FannieDB::get($FANNIE_OP_DB);
 	//global $FANNIE_ITEM_MODULES;
 	// This is both whether-or-not and sequence-on-page
 	//"ThreeForDollar",
@@ -1187,7 +1191,9 @@ function itemParse($upc){
 
 function likedtotable($query,$border,$bgcolor)
 {
-	global $dbc;
+	global $FANNIE_OP_DB;
+    $dbc = FannieDB::get($FANNIE_OP_DB);
+	//global $FANNIE_ITEM_MODULES;
         $results = $dbc->query($query) or
                 die("<li>errorno=".$dbc->errno()
                         ."<li>error=" .$dbc->error()

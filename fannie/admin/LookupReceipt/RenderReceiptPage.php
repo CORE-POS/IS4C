@@ -72,7 +72,7 @@ class RenderReceiptPage extends FanniePage {
 		}
 
 		// equivalent to rp_dt_receipt_* view
-		$table = DTransactionsModel::select_dtrans(date('Y-m-d',$totime));
+		$table = DTransactionsModel::selectDtrans(date('Y-m-d',$totime));
 		$query1 = "SELECT 
 			description,
 			case 

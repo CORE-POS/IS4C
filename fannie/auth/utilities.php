@@ -35,14 +35,14 @@ connect to the database
 having this as a separate function makes changing
 the database easier
 */
-function dbconnect(){
-	global $FANNIE_ROOT,$FANNIE_SERVER_PW;
-	$path = guesspath();
-	if (!class_exists("SQLManager")){
-		include($path."config.php");
-		include($path."src/SQLManager.php");
+function dbconnect()
+{
+    include(dirname(__FILE__).'/../config.php');
+	if (!class_exists("FannieAPI")){
+		include(dirname(__FILE__).'/../classlib2.0/FannieAPI.php');
 	}
-	include($path."src/mysql_connect.php");
+    $dbc = FannieDB::get($FANNIE_OP_DB);
+
 	return $dbc;
 }
 
@@ -67,8 +67,7 @@ function guesspath(){
 }
 
 function init_check(){
-	$path = guesspath();
-	return file_exists($path."auth/init.php");
+	return file_exists(dirname(__FILE__)."/init.php");
 }
 
 /*
@@ -127,8 +126,7 @@ function getNumAdmins(){
 
 function getGID($group){
 	// 11Nov12 EL Bring in config for SERVER_DBMS test.
-	$path = guesspath();
-	include($path."config.php");
+	include(dirname(__FILE__)."/../config.php");
 
   if (!isAlphaNumeric($group))
     return false;
@@ -235,8 +233,7 @@ function syncUserLDAP($name,$uid,$fullname){
 function auth_enabled(){
 	global $FANNIE_AUTH_ENABLED;
 	if (!isset($FANNIE_AUTH_ENABLED)){
-		$path = guesspath();
-		include($path."config.php");
+        include(dirname(__FILE__)."/../config.php");
 		return $FANNIE_AUTH_ENABLED;
 	}
 	else

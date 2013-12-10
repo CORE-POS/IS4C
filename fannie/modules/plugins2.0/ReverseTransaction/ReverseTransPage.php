@@ -42,7 +42,7 @@ class ReverseTransPage extends FannieRESTfulPage {
 	function get_date_trans_handler(){
 		global $FANNIE_OP_DB;
 		$dbc = FannieDB::get($FANNIE_OP_DB);
-		$dlog = DTransactionsModel::select_dlog($this->date);
+		$dlog = DTransactionsModel::selectDlog($this->date);
 
 		$query = "select d.upc,d.trans_type,d.trans_subtype,d.trans_status,
 			  d.total,d.card_no,p.description,t.TenderName 
@@ -115,7 +115,7 @@ class ReverseTransPage extends FannieRESTfulPage {
 	function post_date_trans_handler(){
 		global $FANNIE_OP_DB, $FANNIE_TRANS_DB, $FANNIE_PLUGIN_SETTINGS;
 		$dbc = FannieDB::get($FANNIE_OP_DB);
-		$dlog = DTransactionsModel::select_dtrans($this->date);
+		$dlog = DTransactionsModel::selectDtrans($this->date);
 
 		$emp_no = $FANNIE_PLUGIN_SETTINGS['ReversalEmployee'];
 		$register_no = $FANNIE_PLUGIN_SETTINGS['ReversalLane'];

@@ -357,7 +357,7 @@ function swap(src,dst){
 			<td><select id=buyer name=buyer>
 			   <option value=""></option>
 			   <?php echo $deptSubList; ?>
-			   <option value=-1 >All</option>
+			   <option value=-1 selected>All</option>
 			   </select>
  			</td>
 			<td><b>Send to Excel</b></td>

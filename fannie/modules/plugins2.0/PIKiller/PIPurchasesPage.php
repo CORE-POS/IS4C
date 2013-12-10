@@ -38,7 +38,7 @@ class PIPurchasesPage extends PIKillerPage {
 		$my = FormLib::get_form_value('my',date('Ym'));
 		$start = date("Y-m-d",mktime(0,0,0,substr($my,4),1,substr($my,0,4)));
 		$end = date("Y-m-t",mktime(0,0,0,substr($my,4),1,substr($my,0,4)));
-		$table = DTransactionsModel::select_dlog($start,$end);
+		$table = DTransactionsModel::selectDlog($start,$end);
 
 		$this->__models['start'] = $start;
 		$this->__models['end'] = $end;
@@ -48,7 +48,7 @@ class PIPurchasesPage extends PIKillerPage {
 
 	protected function get_id_view(){
 		global $FANNIE_TRANS_DB,$FANNIE_URL;
-		$table = DTransactionsModel::select_dlog($this->__models['start'],$this->__models['end']);
+		$table = DTransactionsModel::selectDlog($this->__models['start'],$this->__models['end']);
 		$my = date('Ym',strtotime($this->__models['start']));
 
 		$dbc = FannieDB::get($FANNIE_TRANS_DB);

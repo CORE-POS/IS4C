@@ -25,7 +25,6 @@ if (isset($_GET['salesCode1'])){
 
 	if (!class_exists("SQLManager")) require_once($FANNIE_ROOT."src/SQLManager.php");
 	include('../../db.php');
-	include($FANNIE_ROOT.'src/select_dlog.php');
 		
 	//printf($date1); //listed here for debugging purposes
 	//printf($deptEnd); // same as above
@@ -46,7 +45,7 @@ if (isset($_GET['salesCode1'])){
 	echo "</br>";
 	echo "<a href=movement.php?salesCode1=$salesCode1&salesCode2=$salesCode2&date1=$date1&date2=$date2&order=$order&dir=$dir&excel=yes>Save</a> to Excel<br />";
 	
-	$dlog = select_dlog($date1,$date2);
+	$dlog = DTransactionsModel::selectDlog($date1,$date2);
 
 	$date2a = $date2 . " 23:59:59";
 	$date1a = $date1 . " 00:00:00";

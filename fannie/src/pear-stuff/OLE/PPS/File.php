@@ -47,7 +47,8 @@ class OLE_PPS_File extends OLE_PPS
     */
     function OLE_PPS_File($name)
     {
-        $this->_tmp_dir = System::tmpdir();
+        $s = new System();
+        $this->_tmp_dir = $s->tmpdir();
         $this->OLE_PPS(
             null, 
             $name,

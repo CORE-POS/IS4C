@@ -123,7 +123,7 @@ class DepartmentMovementReport extends FannieReportPage {
 		  summary is needed. For date/dept/weekday results the
 		  per-department summary is fine (and a smaller table)
 		*/
-		$dlog = DTransactionsModel::select_dlog($date1,$date2);
+		$dlog = DTransactionsModel::selectDlog($date1,$date2);
 		$sumTable = $FANNIE_ARCHIVE_DB.$dbc->sep()."sumRingSalesByDay";
 		if (substr($dlog,-4)=="dlog")
 			$sumTable = $FANNIE_ARCHIVE_DB.$dbc->sep()."vRingSalesToday";
@@ -143,6 +143,7 @@ class DepartmentMovementReport extends FannieReportPage {
 		switch($groupby){
 		case 'PLU':
 			$query = "SELECT t.upc,p.description, 
+                  SUM(CASE WHEN trans_status='' THEN 1 WHEN trans_status='V' THEN -1 ELSE 0 END) as rings,
 				  SUM(CASE WHEN unitPrice=0.01 THEN 1 ELSE t.quantity END) as qty,
 				  SUM(t.total) AS total,
 				  d.dept_no,d.dept_name,s.superID,x.distributor
@@ -233,18 +234,20 @@ class DepartmentMovementReport extends FannieReportPage {
 		  how the data is grouped
 		*/
 		switch(count($data[0])){
-		case 8:
-			$this->report_headers = array('UPC','Description','Qty','$',
+		case 9:
+			$this->report_headers = array('UPC','Description','Rings','Qty','$',
 				'Dept#','Department','Subdept','Vendor');
-			$this->sort_column = 3;
+			$this->sort_column = 4;
 			$this->sort_direction = 1;
 			$sumQty = 0.0;
 			$sumSales = 0.0;
+            $sumRings = 0.0;
 			foreach($data as $row){
-				$sumQty += $row[2];
-				$sumSales += $row[3];
+				$sumRings += $row[2];
+				$sumQty += $row[3];
+				$sumSales += $row[4];
 			}
-			return array('Total',null,$sumQty,$sumSales,null,null,null,null);
+			return array('Total',null,$sumRings,$sumQty,$sumSales,'',null,null,null);
 			break;
 		case 4:
 			/**

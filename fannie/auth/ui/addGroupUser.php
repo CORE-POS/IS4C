@@ -22,12 +22,11 @@
 *********************************************************************************/
 
 require('../login.php');
-$path = guesspath();
-include($path."config.php");
+include("../../config.php");
 $page_title = 'Fannie : Auth : Add User to Group';
 $header = 'Fannie : Auth : Add User to Group';
 
-include($path."src/header.html");
+include($FANNIE_ROOT."src/header.html");
 
 if (!validateUser('admin')){
   return;
@@ -58,5 +57,5 @@ echo "</select></td></tr>";
 <p />
 <a href=menu.php>Main menu</a>
 <?php
-include($path."src/footer.html");
+include($FANNIE_ROOT."src/footer.html");
 ?>

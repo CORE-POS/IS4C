@@ -19,12 +19,12 @@ if (!validateUserQuiet('view_all_hours')){
 	   department. if so, see if the selected employee
 	   is in that department
 	*/
+    $sql = hours_dbconnect();
 	$validated = false;
 	$depts = array(10,11,12,13,20,21,30,40,41,50,60,998);
-	$checkQ = "select department from employees where empID=".$empID;
-	$checkR = $sql->query($checkQ);
+    $checkQ = $sql->prepare_statement("select department from employees where empID=?");
+    $checkR = $sql->exec_statement($checkQ, array($empID));
 	$checkW = $sql->fetch_row($checkR);
-	var_dump($empID);
 	if (validateUserQuiet('view_all_hours',$checkW['department'])){
 		$validated = true;
 	}
@@ -36,8 +36,9 @@ if (!validateUserQuiet('view_all_hours')){
 		$empID = getUID($name);
 }
 
-$deptQ = "select department from employees where empID=".$empID;
-$deptR = $sql->query($deptQ);
+$sql = hours_dbconnect();
+$deptQ = $sql->prepare_statement("select department from employees where empID=?");
+$deptR = $sql->exec_statement($deptQ, array($empID));
 $deptW = $sql->fetch_row($deptR);
 if ($deptW['department'] >= 998){
 	header("Location: {$FANNIE_URL}legacy/it/hours/viewEmployeeSalary.php?id=$empID");
@@ -113,16 +114,16 @@ echo "</head><body>";
 
 echo "<h3>Employee Total Hours Worked and PTO Status</h3>";
 
-$infoQ = "select e.name,e.PTOLevel,p.dateStr,
-	l.HoursWorked - h.totalHours as remaining,
-	o.PTOremaining,o.totalPTO,h.totalHours,u.hours
-	from employees as e left join PayPeriods as p on e.PTOCutoff = p.periodID
-	left join hoursalltime as h on e.empID=h.empID
-	left join PTOLevels as l on e.PTOLevel+1 = l.levelID
-	left join pto as o on e.empID=o.empID
-	left join uto as u on e.empID=u.empID
-	where e.empID=$empID";
-$infoR = $sql->query($infoQ);
+$infoQ = $sql->prepare_statement("select e.name,e.PTOLevel,p.dateStr,
+    l.HoursWorked - h.totalHours as remaining,
+    o.PTOremaining,o.totalPTO,h.totalHours,u.hours
+    from employees as e left join PayPeriods as p on e.PTOCutoff = p.periodID
+    left join hoursalltime as h on e.empID=h.empID
+    left join PTOLevels as l on e.PTOLevel+1 = l.levelID
+    left join pto as o on e.empID=o.empID
+    left join uto as u on e.empID=u.empID
+    where e.empID=?");
+$infoR = $sql->exec_statement($infoQ, array($empID));
 $infoW = $sql->fetch_row($infoR);
 
 $startdate = $infoW[2];
@@ -148,11 +149,11 @@ printf("<tr class=two><th>Hours to Next Level</th><td>%.2f</td></tr>",$infoW[3])
 echo "<tr class=one><th>UTO Hours Remaining</th><td>$infoW[7]</td></tr>";
 echo "</tr></table>";
 
-$periodsQ = "select min(p.dateStr),sum(i.hours),sum(i.OTHours),sum(i.PTOHours),
-	sum(i.UTOHours),sum(i.SecondRateHours),i.periodID
-	from ImportedHoursData as i left join PayPeriods as p on i.periodID=p.periodID
-	where i.empID=$empID group by i.periodID order by i.periodID desc";
-$periodsR = $sql->query($periodsQ);
+$periodsQ = $sql->prepare_statement("select min(p.dateStr),sum(i.hours),sum(i.OTHours),sum(i.PTOHours),
+    sum(i.UTOHours),sum(i.SecondRateHours),i.periodID
+    from ImportedHoursData as i left join PayPeriods as p on i.periodID=p.periodID
+    where i.empID=? group by i.periodID order by i.periodID desc");
+$periodsR = $sql->exec_statement($periodsQ, array($empID));
 $sums = array(0,0,0,0,0,0);
 $class = array("one","two");
 $prev_hours = 0;

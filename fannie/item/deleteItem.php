@@ -21,7 +21,10 @@
 
 *********************************************************************************/
 include('../config.php');
-require_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
+$dbc = FannieDB::get($FANNIE_OP_DB);
 
 include($FANNIE_ROOT.'auth/login.php');
 $name = checkLogin();
@@ -35,7 +38,6 @@ if (!$user){
 	exit;
 }
 
-include('../src/mysql_connect.php');
 $page_title = 'Fannie - Item Maintenance';
 $header = 'Item Maintenance';
 include('../src/header.html');

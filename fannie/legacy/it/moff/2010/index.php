@@ -25,8 +25,7 @@ if (isset($_GET['excel'])){
 	$date = '2010-08-07';
 	$reg = 40;
     $args = array($date, $reg);
-	require($FANNIE_ROOT.'src/select_dlog.php');
-	$dlog = select_dlog($date);
+	$dlog = DTransactionsModel::selectDlog($date);
 	$dlog = str_replace("dlog","transarchive",$dlog);
 	$dlog = "trans_archive.dbo.transArchive201008";
 

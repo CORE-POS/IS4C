@@ -1,7 +1,7 @@
 <?php
 include('../../config.php');
-include($FANNIE_ROOT.'src/trans_connect.php');
-include($FANNIE_ROOT.'src/select_dlog.php');
+include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+$dbc = FannieDB::get($FANNIE_TRANS_DB);
 
 $header = "Credit Card Report (supplemental)";
 $page_title = "Fannie : Integrated CC Report";

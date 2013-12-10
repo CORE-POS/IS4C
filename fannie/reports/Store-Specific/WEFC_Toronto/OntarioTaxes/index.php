@@ -23,6 +23,7 @@
 
 /* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+    * 27Nov13 Andy Theuninck revised to use FannieDB
 	* 27Jan13 Eric Lee Based on GeneralSales.
 	*         To exclude Cancelled transactions (X). What are D and Z?
   *						AND t.trans_status not in ('D','X','Z')
@@ -33,8 +34,8 @@
 */
 
 include('../../config.php');
-include($FANNIE_ROOT.'src/mysql_connect.php');
-include($FANNIE_ROOT.'src/select_dlog.php');
+include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+$dbc = FannieDB::get($FANNIE_OP_DB);
 
 if (isset($_REQUEST['submit'])){
 	$d1 = $_REQUEST['date1'];
@@ -70,7 +71,7 @@ if (isset($_REQUEST['submit'])){
 		}
 	}
 
-	$dlog = select_dlog($d1,$d2);
+	$dlog = DTransactionsModel::selectDlog($d1,$d2);
 
 	if (isset($_REQUEST['excel'])){
 		header("Content-Disposition: inline; filename=sales_{$d1}_{$d2}.xls");

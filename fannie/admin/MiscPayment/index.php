@@ -1,7 +1,6 @@
 <?php
 include('../../config.php');
 include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
-$dbc = FannieDB::get($FANNIE_OP_DB);
 $header = "Miscellaneous Payment";
 $page_title = "Fannie :: Misc Payment";
 include($FANNIE_ROOT.'src/header.html');
@@ -64,8 +63,10 @@ else {
 	regularDisplay();
 }
 
-function regularDisplay(){
-	global $dbc,$DEFAULT_DEPT;
+function regularDisplay()
+{
+	global $FANNIE_OP_DB,$DEFAULT_DEPT;
+    $dbc = FannieDB::get($FANNIE_OP_DB);
 	echo "<form action=index.php method=post>
 		<table><tr><td>
 		<b>Description</b></td><td>
@@ -122,7 +123,8 @@ function billingDisplay(){
 }
 
 function bill($amt,$desc,$dept,$tender){
-	global $dbc,$EMP_NO,$LANE_NO,$CARD_NO, $FANNIE_TRANS_DB;
+	global $FANNIE_OP_DB,$EMP_NO,$LANE_NO,$CARD_NO, $FANNIE_TRANS_DB;
+    $dbc = FannieDB::get($FANNIE_OP_DB);
 
 	$tnQ = $dbc->prepare_statement("SELECT TenderName FROM tenders WHERE TenderCode=?");
 	$tnR = $dbc->exec_statement($tnQ,array($tender));

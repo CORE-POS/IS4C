@@ -23,7 +23,6 @@
 
 include(dirname(__FILE__).'/../../../config.php');
 include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
-require_once($FANNIE_ROOT."src/select_dlog.php");
 $dbc = FannieDB::get($FANNIE_OP_DB);
 
 class OverShortDayPage extends FanniePage {
@@ -64,7 +63,7 @@ class OverShortDayPage extends FanniePage {
 
 		case 'date':
 			$date = FormLib::get_form_value('arg');
-			$dlog = select_dlog($date);
+			$dlog = DTransactionsModel::selectDlog($date);
 			
 			$empsR = null;
 			if (FormLib::get_form_value('emp_no') !== ''){
@@ -300,7 +299,7 @@ class OverShortDayPage extends FanniePage {
 			foreach($tenders as $t){
 				$temp = explode('|',$t);
 				$tender_type = $temp[0];
-				$amt = rtrim($temp[1]);
+				$amt = isset($temp[1]) ? rtrim($temp[1]) : '';
 				if ($amt != ''){
 					$model->tender_type($tender_type);
 					$model->amt($amt);

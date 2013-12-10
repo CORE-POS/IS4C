@@ -107,7 +107,8 @@ elseif(FormLib::get_form_value('newTender',False) !== False){
 }
 
 function getTenderTable(){
-	global $dbc;
+	global $FANNIE_OP_DB;
+    $dbc = FannieDB::get($FANNIE_OP_DB);
 	$model = new TendersModel($dbc);
 	
 	$ret = '<table cellpadding="4" cellspacing="0" border="1">

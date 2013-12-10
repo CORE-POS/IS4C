@@ -21,11 +21,13 @@
 
 *********************************************************************************/
 // A page to search the member base.
+include('../../config.php');
+include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+$dbc = FannieDB::get($FANNIE_OP_DB);
+
 $page_title='Fannie - Member Management Module';
 $header='Send Statements';
 include('../../src/header.html');
-
-require_once('../../src/mysql_connect.php');
 
 if (isset($_REQUEST['send_email']) || isset($_REQUEST['skip_email']) || isset($_REQUEST['cardno'])){
 	$cns = isset($_REQUEST['cardno'])?$_REQUEST['cardno']:array();;

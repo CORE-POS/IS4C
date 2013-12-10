@@ -2,7 +2,6 @@
 include('../../../config.php');
 
 require($FANNIE_ROOT.'src/SQLManager.php');
-require($FANNIE_ROOT.'src/select_dlog.php');
 
 include('../../db.php');
 $sql->query('use is4c_trans');
@@ -751,7 +750,7 @@ function fetch_data($date1,$date2){
 		'other'=>array()	
 	);
 	$ret = "";
-	$dlog = select_dlog($date1,$date2);
+	$dlog = DTransactionsModel::selectDlog($date1,$date2);
 	$dlog = "trans_archive.dlogBig";
 
     $default_args = array($date1.' '.$date2);

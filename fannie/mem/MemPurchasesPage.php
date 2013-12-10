@@ -49,7 +49,7 @@ class MemPurchasesPage extends FannieRESTfulPage
 	protected function get_id_view()
     {
 		global $FANNIE_TRANS_DB,$FANNIE_URL;
-		$table = DTransactionsModel::select_dlog($this->__models['start'],$this->__models['end']);
+		$table = DTransactionsModel::selectDlog($this->__models['start'],$this->__models['end']);
 		$my = date('Ym',strtotime($this->__models['start']));
 
 		$dbc = FannieDB::get($FANNIE_TRANS_DB);

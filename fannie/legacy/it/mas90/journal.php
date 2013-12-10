@@ -6,7 +6,6 @@ require($FANNIE_ROOT.'auth/login.php');
 if (!class_exists("SQLManager")) require_once($FANNIE_ROOT."src/SQLManager.php");
 
 include('../../db.php');
-require($FANNIE_ROOT.'src/select_dlog.php');
 
 if (isset($_GET['action'])){
 
@@ -58,7 +57,7 @@ function mainDisplay($date,$checkForSave=True){
 	$ret .= "<td style=\"width:7em; text-align: center;\"><i>Credit</i></td>";
 	$ret .= "<td style=\"width:7em; text-align: center;\"><i>Account</i></td></tr>";
 
-	$dlog = select_dlog($date);
+	$dlog = DTransactionsModel::selectDlog($date);
 	
 	$tenderQ = "select t.tenderName,-sum(d.total) as total 
 		from $dlog as d, Tenders as t

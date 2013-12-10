@@ -6,7 +6,6 @@ exit;
 require($FANNIE_ROOT.'src/SQLManager.php');
 include('../../db.php');
 $sql->query("use is4c_trans");
-require($FANNIE_ROOT.'src/select_dlog.php');
 
 if (isset($_GET["action"])){
 	$out = $_GET["action"]."`";
@@ -366,7 +365,7 @@ function displayUI($dateStr){
 	}
 	$ret .= "<td id=buyAmountTotal>".array_sum($buyAmounts)."</td></tr>";
 
-	$dlog = select_dlog($startDate,$endDate);
+	$dlog = DTransactionsModel::selectDlog($startDate,$endDate);
 	$dlog = "trans_archive.dlogBig";
 	$posTotalQ = "SELECT -1*sum(d.total) FROM $dlog as d WHERE ".str_replace(" date "," d.tdate ",$dateClause)." AND d.trans_subtype IN ('CA','CK')";
 	$posTotal = array_pop($sql->fetch_row($sql->query($posTotalQ)));

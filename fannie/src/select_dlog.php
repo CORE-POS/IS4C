@@ -44,6 +44,9 @@ if (!class_exists("SQLManager")) require_once("sql/SQLManager.php");
  This function differs from select_dtrans() by using
  a dlog style view. The returned table will omit testing
  and canceled transaction records.
+
+ @deprecated
+ Use DTransactionsModel::selectDlog instead
 */
 function select_dlog($date, $end_date="",$unions=True){
   global $dbc,$FANNIE_TRANS_DB,$FANNIE_SERVER_DBMS,$FANNIE_ARCHIVE_DB,$FANNIE_ARCHIVE_METHOD;
@@ -186,6 +189,9 @@ function fixup_dquery($query,$table){
  available transaction table containing that date range.
 
  Return value is fully qualified as db_name.table_name
+
+ @deprecated
+ Use DTransactionsModel::selectDtrans instead
 */
 function select_dtrans($date, $end_date=""){
   global $dbc,$FANNIE_TRANS_DB,$FANNIE_SERVER_DBMS,$FANNIE_ARCHIVE_DB,$FANNIE_ARCHIVE_METHOD;

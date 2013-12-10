@@ -1,7 +1,7 @@
 <?php
 /*******************************************************************************
 
-    Copyright 2012 Whole Foods Co-op
+    Copyright 2013 Peoples Food Co-op Portland, OR
 
     This file is part of IT CORE.
 

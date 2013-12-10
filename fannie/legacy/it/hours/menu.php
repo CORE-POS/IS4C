@@ -1,6 +1,10 @@
 <?php
 
 include('../../../config.php');
+header('Location: '.$FANNIE_URL.'modules/plugins2.0/WfcHoursTracking/WfcHtMenuPage.php');
+exit;
+
+/*
 require($FANNIE_ROOT.'auth/login.php');
 if (!validateUserQuiet('view_all_hours')){
 	header("Location: {$FANNIE_URL}auth/ui/loginform.php?redirect={$FANNIE_URL}legacy/it/hours/menu.php");
@@ -32,3 +36,4 @@ a { color: blue; }
 </ul>
 </body>
 </html>
+*/
