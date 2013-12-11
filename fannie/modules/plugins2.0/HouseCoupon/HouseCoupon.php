@@ -216,7 +216,7 @@ class HouseCoupon extends FanniePage {
 			onclick="showCalendarControl(this);" />
 			</td><th>Limit</th><td><input type=text name=limit size=3
 			value="%s" /></td></tr><tr><th>Member-only</th><td>
-			<input type=checkbox name=memberonly %s /></td><th>
+			<input type=checkbox name=memberonly value="1" %s /></td><th>
 			Department</th><td><select name=dept>',
 			$cid,"00499999".str_pad($cid,5,'0',STR_PAD_LEFT),
 			$expires,$limit,($mem==1?'checked':'') );
