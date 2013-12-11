@@ -99,7 +99,7 @@ class undo extends NoInputPage {
 					matched, card_no, trans_id
 					from localtranstoday where register_no = $register_no
 					and emp_no = $emp_no and trans_no = $old_trans_no
-					and ".$db->datediff($db->now(),'datetime')." = 0
+					and datetime >= " . $db->curdate() . "
 					and trans_status <> 'X'
 					order by trans_id";
 			}
@@ -120,7 +120,7 @@ class undo extends NoInputPage {
 					matched, card_no, trans_id
 					from dtransactions where register_no = $register_no
 					and emp_no = $emp_no and trans_no = $old_trans_no
-					and ".$db->datediff($db->now(),'datetime')." = 0
+					and datetime >= " . $db->curdate() . "
 					and trans_status <> 'X'
 					order by trans_id";
 			}

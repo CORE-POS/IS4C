@@ -226,7 +226,7 @@ class GoEMerchant extends BasicCCModule {
 		if( $num < 1) {
 			$sql = "SELECT * FROM localtranstoday WHERE trans_id=".$transID." and emp_no=".$cashier
 				." and register_no=".$lane." and trans_no=".$trans
-                ." AND ".$dbTrans->datediff('datetime', $dbTrans->now())." = 0 ";
+                ." AND datetime >= " . $dbTrans->curdate();
 			$search = PaycardLib::paycard_db_query($sql, $dbTrans);
 			$num = PaycardLib::paycard_db_num_rows($search);
 			if ($num != 1){

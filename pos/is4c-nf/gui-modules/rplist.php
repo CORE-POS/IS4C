@@ -90,12 +90,14 @@ class rplist extends NoInputPage
     function body_content()
     {
         global $CORE_LOCAL;
-        $query = "select register_no, emp_no, trans_no, sum((case when trans_type = 'T' then -1 * total else 0 end)) as total "
-        ."from localtranstoday where register_no = ".$CORE_LOCAL->get("laneno")." and emp_no = ".$CORE_LOCAL->get("CashierNo")
-        ." AND ".$db->datediff('datetime', $db->now())." = 0 "
-        ." group by register_no, emp_no, trans_no order by trans_no desc";
-    
         $db = Database::tDataConnect();
+        $query = "select register_no, emp_no, trans_no, "
+            ."sum((case when trans_type = 'T' then -1 * total else 0 end)) as total "
+            ."FROM localtranstoday WHERE register_no = " . $CORE_LOCAL->get("laneno")
+            ." AND emp_no = " . $CORE_LOCAL->get("CashierNo")
+            ." AND datetime >= " . $db->curdate()
+            ." GROUP BY register_no, emp_no, trans_no ORDER BY trans_no DESC";
+    
         $result = $db->query($query);
         $num_rows = $db->num_rows($result);
         ?>

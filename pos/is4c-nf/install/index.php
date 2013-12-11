@@ -772,7 +772,7 @@ function create_trans_dbs($db,$type){
         sum(case when trans_type = 'T' then -1 * total else 0 end) as tenderTotal
         from localtranstoday
         WHERE trans_type <> 'L'
-        AND DATEDIFF(datetime, NOW()) = 0
+        AND datetime >= CURRENT_DATE
         group by register_no, emp_no, trans_no, card_no";
     if($type == 'mssql'){
         $rpheader = "CREATE view rp_receipt_header as
@@ -794,7 +794,7 @@ function create_trans_dbs($db,$type){
         sum(case when trans_type = 'T' then -1 * total else 0 end) as tenderTotal
         from localtranstoday
         WHERE trans_type <> 'L'
-        AND DATEDIFF(dd, datetime, GETDATE()) = 0
+        AND datetime >= CURRENT_DATE
         group by register_no, emp_no, trans_no, card_no";
     }
     if(!$db->table_exists('rp_receipt_header',$name)){
@@ -860,7 +860,7 @@ function create_trans_dbs($db,$type){
         on l.tax = t.id
         where voided <> 5 and UPC <> 'TAX' and UPC <> 'DISCOUNT'
         AND trans_type <> 'L'
-        AND DATEDIFF(datetime, NOW()) = 0
+        AND datetime >= CURRENT_DATE
         order by emp_no, trans_no, trans_id";
     if($type == 'mssql'){
         $rplttR = "CREATE view rp_ltt_receipt as 
@@ -922,7 +922,7 @@ function create_trans_dbs($db,$type){
             on l.tax = t.id
             where voided <> 5 and UPC <> 'TAX' and UPC <> 'DISCOUNT'
             AND trans_type <> 'L'
-            AND DATEDIFF(dd, datetime, GETDATE()) = 0
+            AND datetime >= CURRENT_DATE
             order by emp_no, trans_no, trans_id";
     }
     InstallUtilities::dbStructureModify($db,'rp_ltt_receipt','DROP VIEW rp_ltt_receipt',$errors);
@@ -1771,7 +1771,7 @@ function create_trans_dbs($db,$type){
             case when trans_status='d' or scale=1 or trans_type='T' then trans_id else scale end as grouper
         from localtranstoday
         where description not like '** YOU SAVED %' and trans_status = 'M'
-        AND DATEDIFF(datetime, NOW()) = 0
+        AND datetime >= CURRENT_DATE
         group by register_no,emp_no,trans_no,card_no,
             upc,description,trans_type,trans_subtype,discounttype,volume,
             trans_status,
@@ -1791,7 +1791,7 @@ function create_trans_dbs($db,$type){
             case when trans_status='d' or scale=1 or trans_type='T' then trans_id else scale end as grouper
         from localtranstoday
         where description not like '** YOU SAVED %' and trans_status !='M'
-        AND DATEDIFF(datetime, NOW()) = 0
+        AND datetime >= CURRENT_DATE
         AND trans_type <> 'L'
         group by register_no,emp_no,trans_no,card_no,
             upc,description,trans_type,trans_subtype,discounttype,volume,
@@ -1819,7 +1819,7 @@ function create_trans_dbs($db,$type){
             case when trans_status='d' or scale=1 then trans_id else scale end as grouper
         from localtranstoday
         where description not like '** YOU SAVED %' and (discounttype=1 or discounttype=2)
-        AND DATEDIFF(datetime, NOW()) = 0
+        AND datetime >= CURRENT_DATE
         AND trans_type <> 'L'
         group by register_no,emp_no,trans_no,card_no,
             upc,description,trans_type,trans_subtype,discounttype,volume,
@@ -1841,7 +1841,7 @@ function create_trans_dbs($db,$type){
             case when trans_status='d' or scale=1 or trans_type='T' then trans_id else scale end as grouper
         from localtranstoday
         where description not like '** YOU SAVED %' and trans_status = 'M'
-        AND DATEDIFF(dd, datetime, GETDATE()) = 0
+        AND datetime >= CURRENT_DATE
         group by register_no,emp_no,trans_no,card_no,
             upc,description,trans_type,trans_subtype,discounttype,volume,
             trans_status,
@@ -1861,7 +1861,7 @@ function create_trans_dbs($db,$type){
             case when trans_status='d' or scale=1 or trans_type='T' then trans_id else scale end as grouper
         from localtranstoday
         where description not like '** YOU SAVED %' and trans_status !='M'
-        AND DATEDIFF(dd, datetime, GETDATE()) = 0
+        AND datetime >= CURRENT_DATE
         AND trans_type <> 'L'
         group by register_no,emp_no,trans_no,card_no,
             upc,description,trans_type,trans_subtype,discounttype,volume,
@@ -1889,7 +1889,7 @@ function create_trans_dbs($db,$type){
             case when trans_status='d' or scale=1 then trans_id else scale end as grouper
         from localtranstoday
         where description not like '** YOU SAVED %' and (discounttype=1 or discounttype=2)
-        AND DATEDIFF(dd, datetime, GETDATE()) = 0
+        AND datetime >= CURRENT_DATE
         AND trans_type <> 'L'
         group by register_no,emp_no,trans_no,card_no,
             upc,description,trans_type,trans_subtype,discounttype,volume,
@@ -2536,8 +2536,8 @@ function create_min_server($db,$type){
     }
 
     $susToday = "CREATE VIEW suspendedtoday AS
-        SELECT * FROM suspended WHERE "
-        .$db->datediff($db->now(),'datetime')." = 0";
+        SELECT * FROM suspended 
+        WHERE datetime >= " . $db->curdate();
     if (!$db->table_exists("suspendedtoday",$name)){
         InstallUtilities::dbStructureModify($db,'suspendedtoday',$susToday,$errors);
     }
@@ -2629,7 +2629,7 @@ function create_min_server($db,$type){
             -1 * total
         END AS tender
         from dlog
-        where datediff(tdate, curdate()) = 0
+        where tdate >= CURRENT_DATE
         and trans_subtype not in ('0','')";
     if (!$db->table_exists("TenderTapeGeneric",$name)){
         InstallUtilities::dbStructureModify($db,'TenderTapeGeneric',$ttG,$errors);

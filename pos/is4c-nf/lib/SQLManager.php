@@ -990,6 +990,24 @@ class SQLManager {
         }
     }
 
+    function curdate($which_connection='')
+    {
+        if ($which_connection == '')
+            $which_connection = $this->default_db;
+        switch($this->db_types[$which_connection]){
+        case $this->TYPE_PDOMY:
+        case $this->TYPE_MYSQL:
+        case $this->TYPE_MSSQL:
+        case $this->TYPE_PDOMS:
+        case $this->TYPE_PGSQL:
+        case $this->TYPE_PDOPG:
+        case $this->TYPE_PDOSL:
+            return "CURRENT_DATE";
+        }
+
+        return date("'Y-m-d'");
+    }
+
     function dayofweek($col,$which_connection=''){
         if ($which_connection == '')
             $which_connection = $this->default_db;

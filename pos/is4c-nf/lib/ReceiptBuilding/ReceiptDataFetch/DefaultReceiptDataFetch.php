@@ -62,7 +62,7 @@ class DefaultReceiptDataFetch
                 ON l.department=s.dept_ID
                 WHERE trans_type <> 'L' AND
                 emp_no=%d AND register_no=%d AND trans_no=%d
-                AND ".$sql->datediff('datetime', $sql->now())." = 0
+                AND datetime >= " . $sql->curdate() . "
                 ORDER BY trans_id DESC",$empNo,$laneNo,$transNo);
         }
         $result = $sql->query($query);

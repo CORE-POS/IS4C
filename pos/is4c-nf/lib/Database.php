@@ -293,7 +293,7 @@ static public function gettransno($CashierNo)
     $register_no = $CORE_LOCAL->get("laneno");
     $query = "SELECT max(trans_no) as maxtransno from localtranstoday where emp_no = "
         .((int)$CashierNo)." and register_no = "
-        .((int)$register_no).' AND '.$connection->datediff('datetime', $connection->now()).' = 0';
+        .((int)$register_no).' AND datetime >= ' . $connection->curdate();
     $result = $connection->query($query);
     $row = $connection->fetch_array($result);
     if (!$row || !$row["maxtransno"]) {
@@ -301,8 +301,7 @@ static public function gettransno($CashierNo)
         // automatically trim the relevant table
         // on some installs localtranstoday might be
         // a view pointed at localtrans_today
-        $cleanQ = 'DELETE FROM localtranstoday WHERE '
-                .$connection->datediff('datetime', $connection->now()).' <> 0';
+        $cleanQ = 'DELETE FROM localtranstoday WHERE datetime < ' . $connection->curdate();
         if ($connection->isView('localtranstoday')) {
             $cleanQ = str_replace('localtranstoday', 'localtrans_today', $cleanQ);
         }

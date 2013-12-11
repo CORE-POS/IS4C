@@ -19,7 +19,6 @@ transactions unwieldy.
 */
 $CREATE['trans.suspendedtoday'] = "
 	CREATE VIEW suspendedtoday AS
-	SELECT * FROM suspended WHERE "
-	.$con->datediff($con->now(),'datetime')." = 0
-";
-?>
+	SELECT * FROM suspended 
+    WHERE datetime >= " . $con->curdate();
+

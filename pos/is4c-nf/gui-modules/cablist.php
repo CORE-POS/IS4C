@@ -106,8 +106,9 @@ class cablist extends NoInputPage
             $db = Database::tDataConnect();
 
             $query = "select emp_no, register_no, trans_no, sum((case when trans_type = 'T' then -1 * total else 0 end)) as total "
-            ."from localtranstoday where register_no = ".$CORE_LOCAL->get("laneno")." and emp_no = ".$CORE_LOCAL->get("CashierNo")
-            ." AND ".$db->datediff('datetime', $db->now())." = 0 "
+            ."from localtranstoday where register_no = " . $CORE_LOCAL->get("laneno")
+            ." AND emp_no = " . $CORE_LOCAL->get("CashierNo")
+            ." AND datetime >= " . $db->curdate()
             ." group by register_no, emp_no, trans_no
             having sum((case when trans_type='T' THEN -1*total ELSE 0 end)) >= 30
             order by trans_no desc";
