@@ -56,7 +56,7 @@ InstallUtilities::paramSave('SpecialUpcClasses', $CORE_LOCAL->get('SpecialUpcCla
 <b>House Coupon Prefix</b></td><td>
 <?php
 if(isset($_REQUEST['HCPREFIX'])) $CORE_LOCAL->set('houseCouponPrefix',$_REQUEST['HCPREFIX'],True);
-else $CORE_LOCAL->set('houseCouponPrefix',00499999,True);
+else if ($CORE_LOCAL->get('houseCouponPrefix') === '') $CORE_LOCAL->set('houseCouponPrefix', '00499999', true);
 printf("<input type=text name=HCPREFIX value=\"%s\" />",$CORE_LOCAL->get('houseCouponPrefix'));
 InstallUtilities::paramSave('houseCouponPrefix',"'".$CORE_LOCAL->get('houseCouponPrefix')."'");
 ?>
@@ -83,6 +83,25 @@ InstallUtilities::paramSave('CouponsAreTaxable',$CORE_LOCAL->get('CouponsAreTaxa
 ?>
 <span class='noteTxt'>Apply sales tax based on item price before any coupons, or
 apply sales tax to item price inclusive of coupons.</span>
+</td></tr>
+<tr><td>
+<b>Donation Department</b></td><td>
+<?php
+if(isset($_REQUEST['DONATIONDEPT'])) $CORE_LOCAL->set('roundUpDept',$_REQUEST['DONATIONDEPT'], true);
+else if ($CORE_LOCAL->get('roundUpDept') === '') {
+    // try to find a sane default automatically
+    $CORE_LOCAL->set('roundUpDept', 701);
+    $db = Database::pDataConnect();
+    $lookup = $db->query("SELECT dept_no FROM departments WHERE dept_name LIKE '%DONAT%'");
+    if ($lookup && $db->num_rows($lookup) > 0) {
+        $row = $db->fetch_row($lookup);
+        $CORE_LOCAL->set('roundUpDept', $row['dept_no']);
+    }
+}
+printf("<input type=text name=DONATIONDEPT value=\"%s\" />",$CORE_LOCAL->get('roundUpDept'));
+InstallUtilities::paramSave('roundUpDept',"'".$CORE_LOCAL->get('roundUpDept')."'");
+?>
+<span class='noteTxt'>Set the department number for lines entered via the "round up" donation function.</span>
 </td></tr>
 <hr />
 <p>Discount type modules control how sale prices are calculated.</p></td></tr>
