@@ -61,7 +61,10 @@ $regularPushTables = array(
 	'memberCards',
 	'custReceiptMessage',
 	'employees',
-	'departments');
+	'departments',
+	'houseCoupons',
+	'houseVirtualCoupons'
+);
 foreach ($regularPushTables as $table) {
 	$result = SyncLanes::push_table("$table", 'op', SyncLanes::TRUNCATE_DESTINATION);
 	echo cron_msg($result['messages']);
