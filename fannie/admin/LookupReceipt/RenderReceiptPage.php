@@ -9,7 +9,7 @@ class RenderReceiptPage extends FanniePage {
 	function body_content(){
 		ob_start();
 		?>
-		<form action=reprint.php method=post>
+		<form action=RenderReceiptPage.php method=post>
 		Date: <input type=text name=date><br>
 		Receipt Num: <input type=text name=receipt><br>
 		<input type=submit name=submit>

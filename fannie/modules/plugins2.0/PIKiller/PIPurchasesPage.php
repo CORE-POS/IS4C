@@ -52,7 +52,7 @@ class PIPurchasesPage extends PIKillerPage {
 		$my = date('Ym',strtotime($this->__models['start']));
 
 		$dbc = FannieDB::get($FANNIE_TRANS_DB);
-		$query = "SELECT month(tdate),day(tdate),year(tdate),trans_num,
+		$query = "SELECT month(tdate) as mt,day(tdate) as dt,year(tdate) as yt,trans_num,
 			sum(case when trans_type='T' then -total else 0 end) as tenderTotal,
 			sum(case when department=990 then total else 0 end) as payment,
 			sum(case when trans_subtype='MI' then total else 0 end) as charges,
@@ -64,11 +64,27 @@ class PIPurchasesPage extends PIKillerPage {
 			WHERE card_no=?
 			AND tdate BETWEEN ? AND ?
 			GROUP BY year(tdate),month(tdate),day(tdate),trans_num
-			ORDER BY year(tdate) DESC, month(tdate) DESC,
-			day(tdate) DESC";
+			ORDER BY yt DESC, mt DESC,
+			dt DESC";
+	    $args = array($this->id, $this->__models['start'].' 00:00:00', $this->__models['end'].' 23:59:59');
+        if ($my == date('Ym')) {
+            // current month. tack on today's transactions
+            $today = "SELECT month(tdate) as mt,day(tdate) as dt,year(tdate) as yt,trans_num,
+                sum(case when trans_type='T' then -total else 0 end) as tenderTotal,
+                sum(case when department=990 then total else 0 end) as payment,
+                sum(case when trans_subtype='MI' then total else 0 end) as charges,
+                sum(case when department in (991,992) then total else 0 end) as stock,
+                sum(case when trans_subtype='MA' then total else 0 end) as madcoupon,
+                sum(case when upc='DISCOUNT' then total else 0 end) as discountTTL,
+                sum(case when upc like '00499999%' then total else 0 end) as wfcoupon
+                FROM dlog as t
+                WHERE card_no=?
+                GROUP BY year(tdate),month(tdate),day(tdate),trans_num ";
+            $query = $today . ' UNION ALL '.$query;
+            array_unshift($args, $this->id);
+        }
 		$prep = $dbc->prepare_statement($query);
-		$result = $dbc->exec_statement($prep, 
-			array($this->id, $this->__models['start'].' 00:00:00', $this->__models['end'].' 23:59:59'));
+		$result = $dbc->exec_statement($prep, $args);
 
 		ob_start();
 		echo '<tr><td>';
