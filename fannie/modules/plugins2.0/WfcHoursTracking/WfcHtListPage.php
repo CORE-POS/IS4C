@@ -34,6 +34,7 @@ class WfcHtListPage extends FanniePage
     protected $must_authenticate = true;
     protected $header = 'List';
     protected $title = 'List';
+    protected $window_dressing = false;
 
     private $dept_restrict = "WHERE deleted=0 ";
     private $dept_args = array();
