@@ -1,7 +1,7 @@
 <?php
 /*******************************************************************************
 
-    Copyright 2012 Whole Foods Co-op
+    CCopyright 2013 Franklin Community Co-op
 
     This file is part of IT CORE.
 
@@ -38,14 +38,12 @@ class PromptForTare extends Plugin
 	  written to ini.php
 	*/
 	public $plugin_settings = array(
-	'example1' => array('default'=>'','label'=>'Setting #1',
-			'description'=>'Text goes here'),
-	'example2' => array('default'=>1,
-			'options'=>array('Yes'=>1,'No'=>0)
-		)
+	'DefaultTare' => array('default'=>0.01,'label'=>'Default Tare',
+			'description'=>'For locations where there may be legal requirements to enter a default tare.'),
 	);
 
-	public $plugin_description = 'This author didn\'t provide anything. Shame!';
+	public $plugin_description = 'Prompts the user for tare weight on items. Only ask if there is no default
+	                                and if the user has not used the tare key to enter a value.';
 
 	/**
 	  Callback. Triggered when plugin is enabled
