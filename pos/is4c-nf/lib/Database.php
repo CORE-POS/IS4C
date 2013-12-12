@@ -499,6 +499,8 @@ static public function localMatchingColumns($connection,$table1,$table2)
 /**
   Transfer credit card tables to the server.
   See uploadtoServer().
+
+  @return boolean success / failure
 */
 static public function uploadCCdata()
 {
@@ -511,6 +513,9 @@ static public function uploadCCdata()
                 $CORE_LOCAL->get("mUser"),
                 $CORE_LOCAL->get("mPass"),
                 False);
+
+    // test for success
+    $ret = true;
 
     $req_cols = self::getMatchingColumns($sql,"efsnetRequest");
     if ($sql->transfer($CORE_LOCAL->get("tDatabase"),
@@ -528,6 +533,9 @@ static public function uploadCCdata()
         if ($res_success) {
             $sql->query("truncate table efsnetResponse",
                 $CORE_LOCAL->get("tDatabase"));
+        } else {
+            // transfer failure
+            $ret = false;
         }
 
         $mod_cols = self::getMatchingColumns($sql,"efsnetRequestMod");
@@ -538,6 +546,9 @@ static public function uploadCCdata()
         if ($mod_success) {
             $sql->query("truncate table efsnetRequestMod",
                 $CORE_LOCAL->get("tDatabase"));
+        } else {
+            // transfer failure
+            $ret = false;
         }
 
         $mod_cols = self::getMatchingColumns($sql,"efsnetTokens");
@@ -548,8 +559,21 @@ static public function uploadCCdata()
         if ($mod_success) {
             $sql->query("truncate table efsnetTokens",
                 $CORE_LOCAL->get("tDatabase"));
+        } else {
+            // transfer failure
+            $ret = false;
         }
+
+    } else if ($sql->table_exists('efsnetRequest')) {
+        // if for whatever reason the table does not exist,
+        // it's not necessary to treat this as a failure.
+        // if integrated card processing is not in use,
+        // this is not an important enough error to go
+        // to standalone. 
+        $ret = false;
     }
+
+    return $ret;
 }
 
 /**
