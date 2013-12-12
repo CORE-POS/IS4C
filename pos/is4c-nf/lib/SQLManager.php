@@ -596,42 +596,47 @@ class SQLManager {
             "float4"=>1,"float8"=>1,"bit"=>1,"decimal"=>1,
             "unknown"=>1,'double'=>1);
         $strings = array("varchar"=>1,"nvarchar"=>1,"string"=>1,
-                "char"=>1,'var_string');
+                "char"=>1,'var_string'=>1);
         $dates = array("datetime"=>1);
         $queries = array();
 
-        while($row = $this->fetch_array($result,$source_db)){
+        while($row = $this->fetch_array($result,$source_db)) {
             $full_query = $insert_query." VALUES (";
-            for ($i=0; $i<$num_fields; $i++){
+            for ($i=0; $i<$num_fields; $i++) {
                 $type = $this->field_type($result,$i,$source_db);
-                if ($row[$i] == "" && strstr(strtoupper($type),"INT"))
+                if ($row[$i] == "" && strstr(strtoupper($type),"INT")) {
                     $row[$i] = 0;    
-                elseif ($row[$i] == "" && isset($unquoted[$type]))
-                                        $row[$i] = 0;
-                                if (isset($dates[$type])){
-                    $clean = $this->cleanDateTime($row[$i]);
-                                        $row[$i] = ($clean!="")?$clean:$row[$i];
+                } else if ($row[$i] == "" && isset($unquoted[$type])) {
+                    $row[$i] = 0;
                 }
-                                elseif (isset($strings[$type]))
-                                        $row[$i] = str_replace("'","''",$row[$i]);
 
-                if (isset($unquoted[$type]))
+                if (isset($dates[$type])) {
+                    $clean = $this->cleanDateTime($row[$i]);
+                    $row[$i] = ($clean!="")?$clean:$row[$i];
+                } else if (isset($strings[$type])) {
+                    $row[$i] = str_replace("'","",$row[$i]);
+                    $row[$i] = str_replace("\\","",$row[$i]);
+                    $row[$i] = $this->escape($row[$i]);
+                }
+
+                if (isset($unquoted[$type])) {
                     $full_query .= $row[$i].",";
-                else
+                } else {
                     $full_query .= "'".$row[$i]."',";
+                }
             }
             $full_query = substr($full_query,0,strlen($full_query)-1).")";
             $queries[] = $full_query;
         }
 
-        $ret = True;
+        $ret = true;
 
         $this->start_transaction($dest_db);
 
-        foreach ($queries as $q){
-            if(!$this->query($q,$dest_db)){
-                $ret = False;
-                if (is_writable(DEBUG_MYSQL_QUERIES)){
+        foreach ($queries as $q) {
+            if(!$this->query($q,$dest_db)) {
+                $ret = false;
+                if (is_writable(DEBUG_MYSQL_QUERIES)) {
                     $fp = fopen(DEBUG_MYSQL_QUERIES,"a");
                     fwrite($fp,$q."\n\n");
                     fclose($fp);
@@ -639,10 +644,11 @@ class SQLManager {
             }
         }
 
-        if ($ret === True)
+        if ($ret === true) {
             $this->commit_transaction($dest_db);
-        else
+        } else {
             $this->rollback_transaction($dest_db);
+        }
 
         return $ret;
     }
