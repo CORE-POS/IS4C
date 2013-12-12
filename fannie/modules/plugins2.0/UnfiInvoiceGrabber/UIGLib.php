@@ -188,9 +188,11 @@ class UIGLib
                 }
             }
 
-            if (!is_numeric($caseSize)) {
-                $caseSize = 1;
-            }
+        } 
+
+        // never found a valid size
+        if (!is_numeric($caseSize)) {
+            $caseSize = 1;
         }
 
         return array(
