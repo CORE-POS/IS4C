@@ -36,6 +36,7 @@ class ReprintReceiptPage extends FanniePage {
 		global $FANNIE_OP_DB, $FANNIE_TRANS_DB, $FANNIE_SERVER_DBMS;
 		if (FormLib::get_form_value('submit',False) !== False){
 			$date = FormLib::get_form_value('date','');
+			$date2 = FormLib::get_form_value('date2','');
 			$trans_num = FormLib::get_form_value('trans_num','');
 			$card_no = FormLib::get_form_value('card_no','');
 			$emp_no = FormLib::get_form_value('emp_no','');
@@ -60,9 +61,10 @@ class ReprintReceiptPage extends FanniePage {
 			$query = "SELECT year(tdate),month(tdate),day(tdate),emp_no,register_no,trans_no FROM $dlog WHERE 1=1 ";
 			$args = array();
 			if ($date != ""){
+				$date2 = ($date2 != "") ? $date2 : $date;
 				$query .= ' AND tdate BETWEEN ? AND ? ';
 				$args[] = $date.' 00:00:00';
-				$args[] = $date.' 23:59:59';
+				$args[] = $date2.' 23:59:59';
 			}
 			if ($card_no != ""){
 				$query .= " AND card_no=? ";
@@ -173,7 +175,8 @@ class ReprintReceiptPage extends FanniePage {
 Receipt Search - Fill in any information available
 <table id=mytable cellspacing=4 cellpadding=0>
 <tr>
-	<th>Date*</th><td colspan=2><input type=text name=date size=10 onfocus="showCalendarControl(this);" /></td>
+	<th>Date*</th><td colspan=2><input type=text name=date size=10 onfocus="showCalendarControl(this);" />
+		<input type=text name=date2 size=10 onfocus="showCalendarControl(this);" /></td>
 	<th>Receipt #</th><td><input type=text name=trans_num size=6 /></td>
 </tr>
 <tr>
@@ -183,21 +186,15 @@ Receipt Search - Fill in any information available
 </tr>
 <tr>
 	<th>Tender type</th><td colspan=2><select name=trans_subtype>
-		<option value="">Select one...</option>
-		<option value=CA>Cash</option>
-		<option value=CC>Credit Card</option>
-		<option value=CK>Check</option>
-		<option value=MI>Store Charge</option>
-		<option value=EC>EBT Cash</option>
-		<option value=EF>EBT Foodstamps</option>
-		<option value=GD>Gift Card</option>
-		<option value=CP>Coupon</option>
-		<option value=IC>InStore Coupon</option>
-		<option value=TC>Gift Certificate</option>
-		<option value=MA>MAD Coupon</option>
-		<option value=RR>RRR Coupon</option>
-		<option value=SC>Store Credit</option>
-	</select></td>
+		<?php
+		$numsQ = $dbc->prepare_statement("SELECT TenderCode,TenderName FROM tenders 
+			ORDER BY TenderName");
+		$numsR = $dbc->exec_statement($numsQ);
+		while($numsW = $dbc->fetch_row($numsR)){
+			printf("<option value=%s>%s</option>",$numsW[0],$numsW[1]);	
+		}
+		?>
+		</select></td>
 	<th colspan=2>Tender amount</th><td><input type=text name=tenderTotal size=6 /></td>
 </tr>
 <tr>
