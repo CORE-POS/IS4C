@@ -30,25 +30,25 @@ $db = new SQLManager($CORE_LOCAL->get('localhost'),
 if (isset($_REQUEST['employees'])){
 	echo "Loading employees";
 	$db->query("TRUNCATE TABLE employees");
-	InstallUtilities::load_sample_data($db,'employees');	
+	InstallUtilities::loadSampleData($db,'employees');	
 }
 elseif(isset($_REQUEST['custdata'])){
 	echo "Loading custdata";
 	$db->query("TRUNCATE TABLE custdata");
-	InstallUtilities::load_sample_data($db,'custdata');
+	InstallUtilities::loadSampleData($db,'custdata');
 }
 elseif(isset($_REQUEST['products'])){
 	echo "Loading products";
 	$db->query("TRUNCATE TABLE products");
-	InstallUtilities::load_sample_data($db,'products');
+	InstallUtilities::loadSampleData($db,'products');
 }
 elseif(isset($_REQUEST['depts'])){
 	echo "Loading departments";
 	$db->query("TRUNCATE TABLE departments");
-	InstallUtilities::load_sample_data($db,'departments');
+	InstallUtilities::loadSampleData($db,'departments');
 	echo "<br />Loading subdepts";
 	$db->query("TRUNCATE TABLE subdepts");
-	InstallUtilities::load_sample_data($db,'subdepts');
+	InstallUtilities::loadSampleData($db,'subdepts');
 }
 ?>
 </b></div>
