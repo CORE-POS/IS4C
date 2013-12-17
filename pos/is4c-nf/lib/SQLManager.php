@@ -61,7 +61,6 @@ fetch_array(result_object, connection_identifer)
 
 define('DEBUG_MYSQL_QUERIES',realpath(dirname(__FILE__).'/../log/queries.log'));
 
-/*
 $TYPE_MYSQL = 'MYSQL';
 $TYPE_MSSQL = 'MSSQL'; 
 $TYPE_PGSQL = 'PGSQL';
@@ -70,244 +69,211 @@ $TYPE_PDOMY = 'PDOMYSQL';
 $TYPE_PDOMS = 'PDOMSSQL';
 $TYPE_PDOPG = 'PDOPGSQL';
 $TYPE_PDOSL = 'PDOLITE';
-*/
 
-class SQLManager 
-{
+class SQLManager {
 
-    public $connections;
-    public $db_types;
-    public $default_db;
+    var $connections;
+    var $db_types;
+    var $default_db;
 
-    private $TYPE_MYSQL = 'MYSQL';
-    private $TYPE_MSSQL = 'MSSQL'; 
-    private $TYPE_PGSQL = 'PGSQL';
+    var $TYPE_MYSQL = 'MYSQL';
+    var $TYPE_MSSQL = 'MSSQL'; 
+    var $TYPE_PGSQL = 'PGSQL';
 
-    private $TYPE_PDOMY = 'PDOMYSQL';
-    private $TYPE_PDOMS = 'PDOMSSQL';
-    private $TYPE_PDOPG = 'PDOPGSQL';
-    private $TYPE_PDOSL = 'PDOLITE';
+    var $TYPE_PDOMY = 'PDOMYSQL';
+    var $TYPE_PDOMS = 'PDOMSSQL';
+    var $TYPE_PDOPG = 'PDOPGSQL';
+    var $TYPE_PDOSL = 'PDOLITE';
 
-    public function __construct($server, $type, $database, $username, $password='', $persistent=false)
-    {
+    function SQLManager($server,$type,$database,$username,$password='',$persistent=False){
         $this->connections=array();
         $this->db_types=array();
         $this->default_db = $database;
-        $this->add_connection($server,
-            strtoupper($type),
-            $database,
-            $username,
-            $password,
-            $persistent);
+        $this->add_connection($server,strtoupper($type),
+                      $database,$username,$password,
+                      $persistent);
     }
 
-    public function add_connection($server, $type, $database, $username, $password='', $persistent=false)
-    {
-        if (isset($this->connections[$database])) {
+    function add_connection($server,$type,$database,$username,$password='',$persistent=False){
+        if (isset($this->connections[$database])){
             $this->connections[$database] = $this->connect($server,
-                                                strtoupper($type),
-                                                $username,
-                                                $password,
-                                                $persistent,
-                                                false);        
-        } else {
+                strtoupper($type),$username,$password,
+                $persistent,False);        
+        }
+        else {
             $this->connections[$database] = $this->connect($server,
-                                                    strtoupper($type),
-                                                    $username,
-                                                    $password,
-                                                    $persistent,
-                                                    true);        
+                strtoupper($type),$username,$password,
+                $persistent,True);        
         }
 
-        if ($this->connections[$database] === false) {
-            return false;
-        }
+        if ($this->connections[$database] === False) return False;
 
         $this->db_types[$database] = strtoupper($type);
         $gotdb = $this->select_db($database,$database);
-        if (!$gotdb) {
-            if ($this->query("CREATE DATABASE $database")){
-                $this->select_db($database, $database);
-            } else {
-                unset($this->db_types[$database]);
-                $this->connections[$database] = false;
+        if (!$gotdb){
+                        if ($this->query("CREATE DATABASE $database")){
+                                $this->select_db($database,$database);
+                        }
+                        else {
+                                unset($this->db_types[$database]);
+                                $this->connections[$database] = False;
+                        }
+                }
+
+    }
+
+    function connect($server,$type,$username,$password,$persistent=False,$newlink=False){
+        switch($type){
+        case $this->TYPE_MYSQL:
+            if (!function_exists('mysql_connect')) return False;
+            if ($persistent)
+                return mysql_pconnect($server,$username,$password,$newlink);
+            else
+                return mysql_connect($server,$username,$password,$newlink);
+        case $this->TYPE_MSSQL:
+            if (!function_exists('mssql_connect')) return False;
+            if ($persistent)
+                return mssql_pconnect($server,$username,$password);
+            else
+                return mssql_connect($server,$username,$password);
+        case $this->TYPE_PGSQL:
+            if (!function_exists('pg_connect')) return False;
+            $conStr = "host=".$server." user=".$username." password=".$password;
+            if ($persistent)
+                return pg_pconnect($conStr);
+            else
+                return pg_connect($conStr);
+        case $this->TYPE_PDOMY:
+            if (!class_exists('PDO')) return False;
+            $dsn = 'mysql:host='.$server;
+            return new PDO($dsn, $username, $password);
+        case $this->TYPE_PDOMS:
+            if (!class_exists('PDO')) return False;
+            $dsn = 'mssql:host='.$server;
+            return new PDO($dsn, $username, $password);
+        case $this->TYPE_PDOPG:
+            if (!class_exists('PDO')) return False;
+            $dsn = 'pgsql:host='.$server;
+            return new PDO($dsn, $username, $password);
+        case $this->TYPE_PDOSL:
+            if (!class_exists('PDO')) return False;
+            // delay opening 'connection' until select_db()
+            return null;
+        }
+        return False;
+    }
+
+    function select_db($db_name,$which_connection=''){
+        if ($which_connection == '')
+            $which_connection=$this->default_db;
+        switch($this->db_types[$which_connection]){    
+        case $this->TYPE_MYSQL:
+            return mysql_select_db($db_name,$this->connections[$which_connection]);    
+        case $this->TYPE_MSSQL:
+            return mssql_select_db($db_name,$this->connections[$which_connection]);
+        case $this->TYPE_PGSQL:
+            return True;
+        case $this->TYPE_PDOMY:
+        case $this->TYPE_PDOMS:
+        case $this->TYPE_PDOPG:
+            return $this->query('use '.$db_name,$which_connection);
+        case $this->TYPE_PDOSL:
+            $path = dirname(__FILE__).'/sqlite/';
+            if (!is_dir($path)){
+                if (!mkdir($path, 0755))
+                    return False;
+            }
+            $dsn = 'sqlite:'.realpath($path).'/'.$db_name.'.db';
+            try {
+                $handle = new PDO($dsn);
+                $this->connections[$db_name] = $handle;
+                $handle->sqliteCreateFunction('str_right', array('SQLManager','sqlite_right'), 2);
+                $handle->sqliteCreateFunction('space', array('SQLManager','sqlite_space'), 1);
+                $handle->sqliteCreateFunction('replace', array('SQLManager','sqlite_replace'), 3);
+                $handle->sqliteCreateFunction('trim', 'trim', 1);
+                return True;    
+            }
+            catch(Exception $ex){
+                return False;
             }
         }
-    }
-
-    public function connect($server, $type, $username, $password, $persistent=false, $newlink=false)
-    {
-        switch($type){
-            case $this->TYPE_MYSQL:
-                if (!function_exists('mysql_connect')) return false;
-                if ($persistent) {
-                    return mysql_pconnect($server, $username, $password, $newlink);
-                } else {
-                    return mysql_connect($server, $username, $password, $newlink);
-                }
-            case $this->TYPE_MSSQL:
-                if (!function_exists('mssql_connect')) return false;
-                if ($persistent) {
-                    return mssql_pconnect($server, $username, $password);
-                } else {
-                    return mssql_connect($server, $username, $password);
-                }
-            case $this->TYPE_PGSQL:
-                if (!function_exists('pg_connect')) return false;
-                $conStr = "host=".$server." user=".$username." password=".$password;
-                if ($persistent) {
-                    return pg_pconnect($conStr);
-                } else {
-                    return pg_connect($conStr);
-                }
-            case $this->TYPE_PDOMY:
-                if (!class_exists('PDO')) return false;
-                $dsn = 'mysql:host='.$server;
-		if (strstr($server, ':')) {
-			list($host,$port) = explode(':',$server);
-			$dsn = 'mysql:host='.$host.';port='.$port;
-		}
-                return new PDO($dsn, $username, $password);
-            case $this->TYPE_PDOMS:
-                if (!class_exists('PDO')) return false;
-                $dsn = 'mssql:host='.$server;
-                return new PDO($dsn, $username, $password);
-            case $this->TYPE_PDOPG:
-                if (!class_exists('PDO')) return false;
-                $dsn = 'pgsql:host='.$server;
-                return new PDO($dsn, $username, $password);
-            case $this->TYPE_PDOSL:
-                if (!class_exists('PDO')) return false;
-                // delay opening 'connection' until select_db()
-                return null;
-        }
-
-        return false;
-    }
-
-    public function select_db($db_name,$which_connection='')
-    {
-        if ($which_connection == '') {
-            $which_connection=$this->default_db;
-        }
-        switch($this->db_types[$which_connection]) {
-            case $this->TYPE_MYSQL:
-                return mysql_select_db($db_name, $this->connections[$which_connection]);    
-            case $this->TYPE_MSSQL:
-                return mssql_select_db($db_name, $this->connections[$which_connection]);
-            case $this->TYPE_PGSQL:
-                return true;
-            case $this->TYPE_PDOMY:
-            case $this->TYPE_PDOMS:
-            case $this->TYPE_PDOPG:
-                return $this->query('use ' . $db_name, $which_connection);
-            case $this->TYPE_PDOSL:
-                $path = dirname(__FILE__).'/sqlite/';
-                if (!is_dir($path)) {
-                    if (!mkdir($path, 0755)) {
-                        return false;
-                    }
-                }
-                $dsn = 'sqlite:'.realpath($path).'/'.$db_name.'.db';
-                try {
-                    $handle = new PDO($dsn);
-                    $this->connections[$db_name] = $handle;
-                    $handle->sqliteCreateFunction('str_right', array('SQLManager','sqlite_right'), 2);
-                    $handle->sqliteCreateFunction('space', array('SQLManager','sqlite_space'), 1);
-                    $handle->sqliteCreateFunction('replace', array('SQLManager','sqlite_replace'), 3);
-                    $handle->sqliteCreateFunction('trim', 'trim', 1);
-
-                    return true;    
-                }
-                catch(Exception $ex){
-                    return false;
-                }
-        }
-
-        return false;
+        return -1;
     }
 
     /**
       Supplementary functionality that SQLite doesn't have
       natively
     */
-    static public function sqlite_right($str, $num)
-    {
+    static public function sqlite_right($str, $num){
         return substr($str, -1*$num);
     }
-
-    static public function sqlite_space($num)
-    {
+    static public function sqlite_space($num){
         return str_pad('', $num);
     }
-
-    static public function sqlite_replace($field, $original, $new)
-    {
+    static public function sqlite_replace($field, $original, $new){
         return str_replace($original, $new, $field);
     }
 
-    public function query($query_text, $which_connection='')
-    {
+    function query($query_text,$which_connection=''){
         if (substr($query_text, 0, 4) != 'use ') {
             // called when 
             $this->test_mode = false;
         }
-
-        if ($which_connection == '') {
+        if ($which_connection == '')
             $which_connection=$this->default_db;
-        }
-        $result = false;
-        switch($this->db_types[$which_connection]) {
-            case $this->TYPE_MYSQL:
-                $result = mysql_query($query_text,$this->connections[$which_connection]);
-                break;
-            case $this->TYPE_MSSQL:
-                $result = mssql_query($query_text,$this->connections[$which_connection]);
-                break;
-            case $this->TYPE_PGSQL:
-                $result = pg_query($this->connections[$which_connection],$query_text);
-                break;
-            case $this->TYPE_PDOSL:
-                $this->__sqlite_result_cache = false;
-                if (stristr($query_text, 'TRUNCATE')) {
-                    // not supported so replace TRUNCATE TABLE with DELETE FROM
-                    $query_text = str_ireplace('TRUNCATE', 'DELETE', $query_text);
-                    $query_text = str_ireplace('TABLE', 'FROM', $query_text);
-                } else if (strtoupper(substr($query_text,0,4)) == "USE ") {
-                    return true;
-                }
-                // intentional.
-            case $this->TYPE_PDOMY:
-            case $this->TYPE_PDOMS:
-            case $this->TYPE_PDOPG:
-                $obj = $this->connections[$which_connection];
-                if (!is_object($obj)) {
-                    return false;
-                }
-                $result = $obj->query($query_text);
-                break;
-        } 
-
-        // unified logging for all types
-        if (!$result && DEBUG_MYSQL_QUERIES != "" && is_writable(DEBUG_MYSQL_QUERIES)) {
-            $fp = fopen(DEBUG_MYSQL_QUERIES,"a");
-            fwrite($fp,date('r').": ".$query_text."\n\n");
-            fclose($fp);
-        }
-
-        return $result;
+        switch($this->db_types[$which_connection]){
+        case $this->TYPE_MYSQL:
+            $result = mysql_query($query_text,$this->connections[$which_connection]);
+            if (!$result && DEBUG_MYSQL_QUERIES != "" && is_writable(DEBUG_MYSQL_QUERIES)){
+                $fp = fopen(DEBUG_MYSQL_QUERIES,"a");
+                fwrite($fp,date('r').": ".$query_text."\n\n");
+                fclose($fp);
+            }
+            else if (!$result) echo $query_text."<hr />";
+            return $result;
+        case $this->TYPE_MSSQL:
+            $result = mssql_query($query_text,$this->connections[$which_connection]);
+            if (!$result && DEBUG_MYSQL_QUERIES != "" && is_writable(DEBUG_MYSQL_QUERIES)){
+                $fp = fopen(DEBUG_MYSQL_QUERIES,"a");
+                fwrite($fp,date('r').": ".$query_text."\n\n");
+                fclose($fp);
+            }
+            return $result;
+        case $this->TYPE_PGSQL:
+            return pg_query($this->connections[$which_connection],$query_text);
+        case $this->TYPE_PDOSL:
+            $this->__sqlite_result_cache = False;
+            if (stristr($query_text, 'TRUNCATE')){
+                // not supported so replace TRUNCATE TABLE with DELETE FROM
+                $query_text = str_ireplace('TRUNCATE', 'DELETE', $query_text);
+                $query_text = str_ireplace('TABLE', 'FROM', $query_text);
+            }
+            else if (strtoupper(substr($query_text,0,4)) == "USE ")
+                return True;
+            // intentional.
+        case $this->TYPE_PDOMY:
+        case $this->TYPE_PDOMS:
+        case $this->TYPE_PDOPG:
+            $obj = $this->connections[$which_connection];
+            if (!is_object($obj)) return False;
+            $result = $obj->query($query_text);
+            if (!$result && DEBUG_MYSQL_QUERIES != "" && is_writable(DEBUG_MYSQL_QUERIES)){
+                $fp = fopen(DEBUG_MYSQL_QUERIES,"a");
+                fwrite($fp,date('r').": ".$query_text."\n\n");
+                fclose($fp);
+            }
+            return $result;
+        }    
+        return -1;
     }
 
-    public function end_query($result_object, $which_connection='')
-    {
-        if ($which_connection == '') {
+    function end_query($result_object, $which_connection=''){
+        if ($which_connection == '')
             $which_connection=$this->default_db;
-        }
-        switch($this->db_types[$which_connection]) {
-            case $this->TYPE_PDOSL:
-                // can be required to unlock database file
-                $result_object->closeCursor();    
-                break;
+        switch($this->db_types[$which_connection]){
+        case $this->TYPE_PDOSL:
+            // can be required to unlock database file
+            $result_object->closeCursor();    
         }
     }
 
@@ -315,63 +281,57 @@ class SQLManager
       Prepared statement: non-PDO types just return the query_text
       without modification
     */
-    public function prepare_statement($query_text, $which_connection='')
-    {
-        if ($which_connection == '') {
+    function prepare_statement($query_text,$which_connection=''){
+        if ($which_connection == '')
             $which_connection=$this->default_db;
+        switch($this->db_types[$which_connection]){
+        case $this->TYPE_MYSQL:
+        case $this->TYPE_MSSQL:
+            return $query_text;
+        case $this->TYPE_PDOMY:
+        case $this->TYPE_PDOMS:
+        case $this->TYPE_PDOPG:
+        case $this->TYPE_PDOSL:
+            $obj = $this->connections[$which_connection];
+            return $obj->prepare($query_text);
         }
-        switch($this->db_types[$which_connection]) {
-            case $this->TYPE_MYSQL:
-            case $this->TYPE_MSSQL:
-                return $query_text;
-            case $this->TYPE_PDOMY:
-            case $this->TYPE_PDOMS:
-            case $this->TYPE_PDOPG:
-            case $this->TYPE_PDOSL:
-                $obj = $this->connections[$which_connection];
-                return $obj->prepare($query_text);
-        }
-
-        return false;
+        return False;
     }
 
     /**
       execute statement: exec is emulated for non-PDO types
     */
-    public function exec_statement($stmt, $args=array(), $which_connection='')
-    {
+    function exec_statement($stmt,$args=array(),$which_connection=''){
         $this->test_mode = false;
 
-        if ($which_connection == '') {
+        if ($which_connection == '')
             $which_connection=$this->default_db;
-        }
-        switch($this->db_types[$which_connection]) {
-            case $this->TYPE_MYSQL:
-            case $this->TYPE_MSSQL:
-                $query = "";
-                $parts = explode('?',$stmt);
-                foreach($parts as $p) {
-                    $query .= $p;
-                    if (count($args) > 0) {
-                        $val = array_shift($args);
-                        $query .= is_numeric($val) ? $val : "'".$this->escape($val, $which_connection)."'";
-                    }
+        switch($this->db_types[$which_connection]){
+        case $this->TYPE_MYSQL:
+        case $this->TYPE_MSSQL:
+            $query = "";
+            $parts = explode('?',$stmt);
+            foreach($parts as $p){
+                $query .= $p;
+                if (count($args)>0){
+                    $val = array_shift($args);
+                    $query .= is_numeric($val) ? $val : "'".$this->escape($val,$which_connection)."'";
                 }
-                return $this->query($query, $which_connection);
-            case $this->TYPE_PDOSL:
-                $this->__sqlite_result_cache = false;
-                // intentional.
-                case $this->TYPE_PDOMY:
-                case $this->TYPE_PDOMS:
-                case $this->TYPE_PDOPG:
-                $success = false;
-                if (is_object($stmt)) {
-                    $success = $stmt->execute($args);
-                }
-                return $success ? $stmt : false;
+            }
+            return $this->query($query,$which_connection);
+        case $this->TYPE_PDOSL:
+            $this->__sqlite_result_cache = False;
+            // intentional.
+        case $this->TYPE_PDOMY:
+        case $this->TYPE_PDOMS:
+        case $this->TYPE_PDOPG:
+            $success = False;
+            if (is_object($stmt)){
+                $success = $stmt->execute($args);
+            }
+            return $success ? $stmt : False;
         }
-
-        return false;
+        return False;
     }
 
     /**
@@ -382,275 +342,239 @@ class SQLManager
       Issuing a 2nd query before processing the result set
       will cause problems as the result cache gets overwritten.
     */
-    private $__sqlite_result_cache = false;
+    private $__sqlite_result_cache = False;
     
-    public function num_rows($result_object, $which_connection='')
-    {
-        if ($which_connection == '') {
+    function num_rows($result_object,$which_connection=''){
+        if ($which_connection == '')
             $which_connection = $this->default_db;
+        switch($this->db_types[$which_connection]){
+        case $this->TYPE_MYSQL:
+            return mysql_num_rows($result_object);
+        case $this->TYPE_MSSQL:
+            return mssql_num_rows($result_object);
+        case $this->TYPE_PGSQL:
+            return pg_num_rows($result_object);
+        case $this->TYPE_PDOMY:
+        case $this->TYPE_PDOMS:
+        case $this->TYPE_PDOPG:
+            if (!is_object($result_object)) return 0;
+            return $result_object->rowCount();
+        case $this->TYPE_PDOSL:
+            if (!is_object($result_object)) return 0;
+            $this->__sqlite_result_cache = $result_object->fetchAll();
+            $result_object->closeCursor();
+            return count($this->__sqlite_result_cache);
         }
-        switch($this->db_types[$which_connection]) {
-            case $this->TYPE_MYSQL:
-                return mysql_num_rows($result_object);
-            case $this->TYPE_MSSQL:
-                return mssql_num_rows($result_object);
-            case $this->TYPE_PGSQL:
-                return pg_num_rows($result_object);
-            case $this->TYPE_PDOMY:
-            case $this->TYPE_PDOMS:
-            case $this->TYPE_PDOPG:
-                if (!is_object($result_object)) return 0;
-                return $result_object->rowCount();
-            case $this->TYPE_PDOSL:
-                if (!is_object($result_object)) return 0;
-                $this->__sqlite_result_cache = $result_object->fetchAll();
-                $result_object->closeCursor();
-                return count($this->__sqlite_result_cache);
-        }
-
-        return false;
+        return -1;
     }
     
-    public function num_fields($result_object, $which_connection='')
-    {
-        if ($which_connection == '') {
+    function num_fields($result_object,$which_connection=''){
+        if ($which_connection == '')
             $which_connection = $this->default_db;
+        switch($this->db_types[$which_connection]){
+        case $this->TYPE_MYSQL:
+            return mysql_num_fields($result_object);
+        case $this->TYPE_MSSQL:
+            return mssql_num_fields($result_object);
+        case $this->TYPE_PGSQL:
+            return pg_num_fields($result_object);
+        case $this->TYPE_PDOMY:
+        case $this->TYPE_PDOMS:
+        case $this->TYPE_PDOPG:
+        case $this->TYPE_PDOSL:
+            return $result_object->columnCount();
         }
-        switch($this->db_types[$which_connection]) {
-            case $this->TYPE_MYSQL:
-                return mysql_num_fields($result_object);
-            case $this->TYPE_MSSQL:
-                return mssql_num_fields($result_object);
-            case $this->TYPE_PGSQL:
-                return pg_num_fields($result_object);
-            case $this->TYPE_PDOMY:
-            case $this->TYPE_PDOMS:
-            case $this->TYPE_PDOPG:
-            case $this->TYPE_PDOSL:
-                return $result_object->columnCount();
-        }
-
-        return false;
+        return -1;
     }
 
-    public function fetch_array($result_object, $which_connection='')
-    {
+    function fetch_array($result_object,$which_connection=''){
         if ($this->test_mode) {
             return $this->getTestDataRow();
         }
 
-        if ($which_connection == '') {
+        if ($which_connection == '')
             $which_connection = $this->default_db;
-        }
-        switch($this->db_types[$which_connection]) {
-            case $this->TYPE_MYSQL:
-                return mysql_fetch_array($result_object);
-            case $this->TYPE_MSSQL:
-                return mssql_fetch_array($result_object);
-            case $this->TYPE_PGSQL:
-                return pg_fetch_array($result_object);
-            case $this->TYPE_PDOMY:
-            case $this->TYPE_PDOMS:
-            case $this->TYPE_PDOPG:
-                return $result_object->fetch();
-            case $this->TYPE_PDOSL:
-                if (is_array($this->__sqlite_result_cache)) {
-                    if (count($this->__sqlite_result_cache) == 0) {
-                        $this->__sqlite_result_cache = false;
-                        return false;
-                    } else {
-                        return array_shift($this->__sqlite_result_cache);
-                    }
-                } else {
-                    $row = $result_object->fetch();
-                    if (!$row) {
-                        $result_object->closeCursor();
-                    }
-                    return $row;
+        switch($this->db_types[$which_connection]){
+        case $this->TYPE_MYSQL:
+            return mysql_fetch_array($result_object);
+        case $this->TYPE_MSSQL:
+            return mssql_fetch_array($result_object);
+        case $this->TYPE_PGSQL:
+            return pg_fetch_array($result_object);
+        case $this->TYPE_PDOMY:
+        case $this->TYPE_PDOMS:
+        case $this->TYPE_PDOPG:
+            return $result_object->fetch();
+        case $this->TYPE_PDOSL:
+            if (is_array($this->__sqlite_result_cache)){
+                if (count($this->__sqlite_result_cache) == 0){
+                    $this->__sqlite_result_cache = False;
+                    return False;
                 }
+                else {
+                    return array_shift($this->__sqlite_result_cache);
+                }
+            }
+            else {
+                $row = $result_object->fetch();
+                if (!$row) $result_object->closeCursor();
+                return $row;
+            }
         }
-
-        return false;
+        return False;
     }
     
     /* compatibility */
-    public function fetch_row($result_object, $which_connection='')
-    {
+    function fetch_row($result_object,$which_connection=''){
         return $this->fetch_array($result_object,$which_connection);
     }
 
-    public function fetch_field($result_object, $index, $which_connection='') 
-    {
-        if ($which_connection == '') {
+    function fetch_field($result_object,$index,$which_connection=''){
+        if ($which_connection == '')
             $which_connection = $this->default_db;
+        switch($this->db_types[$which_connection]){
+        case $this->TYPE_MYSQL:
+            return mysql_fetch_field($result_object,$index);
+        case $this->TYPE_MSSQL:
+            return mssql_fetch_field($result_object,$index);
+        case $this->TYPE_PDOMY:
+        case $this->TYPE_PDOMS:
+        case $this->TYPE_PDOPG:
+        case $this->TYPE_PDOSL:
+            return $result_object->getColumnMeta($index);
         }
-        switch($this->db_types[$which_connection]) {
-            case $this->TYPE_MYSQL:
-                return mysql_fetch_field($result_object,$index);
-            case $this->TYPE_MSSQL:
-                return mssql_fetch_field($result_object,$index);
-            case $this->TYPE_PDOMY:
-            case $this->TYPE_PDOMS:
-            case $this->TYPE_PDOPG:
-            case $this->TYPE_PDOSL:
-                return $result_object->getColumnMeta($index);
-        }
-
-        return false;
+        return -1;
     }
 
-    public function field_type($result_object, $index, $which_connection='')
-    {
-        if ($which_connection == '') {
+    function field_type($result_object,$index,$which_connection=''){
+        if ($which_connection == '')
             $which_connection = $this->default_db;
+        switch($this->db_types[$which_connection]){
+        case $this->TYPE_MYSQL:
+            return mysql_field_type($result_object,$index);
+        case $this->TYPE_MSSQL:
+            return mssql_field_type($result_object,$index);
+        case $this->TYPE_PGSQL:
+            return pg_field_type($result_object,$index);
+        case $this->TYPE_PDOMY:
+        case $this->TYPE_PDOMS:
+        case $this->TYPE_PDOPG:
+        case $this->TYPE_PDOSL:
+            $info = $result_object->getColumnMeta($index);
+            if (!isset($info['native_type'])) return 'bit';    
+            else return strtolower($info['native_type']);
         }
-        switch($this->db_types[$which_connection]) {
-            case $this->TYPE_MYSQL:
-                return mysql_field_type($result_object,$index);
-            case $this->TYPE_MSSQL:
-                return mssql_field_type($result_object,$index);
-            case $this->TYPE_PGSQL:
-                return pg_field_type($result_object,$index);
-            case $this->TYPE_PDOMY:
-            case $this->TYPE_PDOMS:
-            case $this->TYPE_PDOPG:
-            case $this->TYPE_PDOSL:
-                $info = $result_object->getColumnMeta($index);
-                if (!isset($info['native_type'])) {
-                    return 'bit';
-                } else {
-                    return strtolower($info['native_type']);
-                }
-        }
-
-        return false;
+        return -1;
     }
 
     /**
       This is effectively disabled. Singleton behavior
       means it isn't really necessary
     */
-    public function close($which_connection='', $force=false)
-    {
-        if (!$force) {
-            return true;
-        }
-        if ($which_connection == '') {
+    function close($which_connection='',$force=False){
+        if (!$force) return True;
+        if ($which_connection == '')
             $which_connection = $this->default_db;
+        switch($this->db_types[$which_connection]){
+        case $this->TYPE_MYSQL:
+            return mysql_close($this->connections[$which_connection]);
+        case $this->TYPE_MSSQL:
+            return mssql_close($this->connections[$which_connection]);
+        case $this->TYPE_PGSQL:
+            return pg_close($this->connections[$which_connection]);
+        case $this->TYPE_PDOMY:
+        case $this->TYPE_PDOMS:
+        case $this->TYPE_PDOPG:
+        case $this->TYPE_PDOSL:
+            return True;
         }
-        switch($this->db_types[$which_connection]) {
-            case $this->TYPE_MYSQL:
-                return mysql_close($this->connections[$which_connection]);
-            case $this->TYPE_MSSQL:
-                return mssql_close($this->connections[$which_connection]);
-            case $this->TYPE_PGSQL:
-                return pg_close($this->connections[$which_connection]);
-            case $this->TYPE_PDOMY:
-            case $this->TYPE_PDOMS:
-            case $this->TYPE_PDOPG:
-            case $this->TYPE_PDOSL:
-                return true;
-        }
-
-        return false;
+        return -1;
     }
 
     /**
       Temporary compatibility solution. Will go away once
       db_close() calls are gone in all branches
     */
-    public function db_close($which_connection='', $force=false)
-    {
-        return $this->close($which_connection, $force);
+    function db_close($which_connection='',$force=False){
+        return $this->close($which_connection,$force);
     }
 
     /**
       Start a SQL transaction
       Nexted transactions not supported on MSSQL
     */
-    public function start_transaction($which_connection='')
-    {
-        if ($which_connection == '') {
+    function start_transaction($which_connection=''){
+        if ($which_connection == '')
             $which_connection = $this->default_db;
+        switch($this->db_types[$which_connection]){
+        case $this->TYPE_MYSQL:
+            return $this->query("START TRANSACTION",$which_connection);
+        case $this->TYPE_MSSQL:
+            return $this->query("BEGIN TRANSACTION tr1",$which_connection);
+        case $this->TYPE_PGSQL:
+            return $this->query("START TRANSACTION",$which_connection);
+        case $this->TYPE_PDOMY:
+        case $this->TYPE_PDOMS:
+        case $this->TYPE_PDOPG:
+        case $this->TYPE_PDOSL:
+            $obj = $this->connections[$which_connection];    
+            return $obj->beginTransaction();
         }
-        switch($this->db_types[$which_connection]) {
-            case $this->TYPE_MYSQL:
-                return $this->query("START TRANSACTION", $which_connection);
-            case $this->TYPE_MSSQL:
-                return $this->query("BEGIN TRANSACTION tr1", $which_connection);
-            case $this->TYPE_PGSQL:
-                return $this->query("START TRANSACTION", $which_connection);
-            case $this->TYPE_PDOMY:
-            case $this->TYPE_PDOMS:
-            case $this->TYPE_PDOPG:
-            case $this->TYPE_PDOSL:
-                $obj = $this->connections[$which_connection];    
-                return $obj->beginTransaction();
-        }
-
-        return false;
+        return -1;
     }
 
     /**
       Commit an SQL transaction
     */
-    public function commit_transaction($which_connection='')
-    {
-        if ($which_connection == '') {
+    function commit_transaction($which_connection=''){
+        if ($which_connection == '')
             $which_connection = $this->default_db;
+        switch($this->db_types[$which_connection]){
+        case $this->TYPE_MYSQL:
+            return $this->query("COMMIT",$which_connection);
+        case $this->TYPE_MSSQL:
+            return $this->query("COMMIT TRANSACTION tr1",$which_connection);
+        case $this->TYPE_PGSQL:
+            return $this->query("COMMIT",$which_connection);
+        case $this->TYPE_PDOMY:
+        case $this->TYPE_PDOMS:
+        case $this->TYPE_PDOPG:
+        case $this->TYPE_PDOSL:
+            $obj = $this->connections[$which_connection];    
+            return $obj->commit();
         }
-        switch($this->db_types[$which_connection]) {
-            case $this->TYPE_MYSQL:
-                return $this->query("COMMIT", $which_connection);
-            case $this->TYPE_MSSQL:
-                return $this->query("COMMIT TRANSACTION tr1", $which_connection);
-            case $this->TYPE_PGSQL:
-                return $this->query("COMMIT", $which_connection);
-            case $this->TYPE_PDOMY:
-            case $this->TYPE_PDOMS:
-            case $this->TYPE_PDOPG:
-            case $this->TYPE_PDOSL:
-                $obj = $this->connections[$which_connection];    
-                return $obj->commit();
-        }
-
-        return false;
+        return -1;
     }
 
     /**
       Rollback an SQL transaction
     */
-    public function rollback_transaction($which_connection='')
-    {
-        if ($which_connection == '') {
+    function rollback_transaction($which_connection=''){
+        if ($which_connection == '')
             $which_connection = $this->default_db;
+        switch($this->db_types[$which_connection]){
+        case $this->TYPE_MYSQL:
+            return $this->query("ROLLBACK",$which_connection);
+        case $this->TYPE_MSSQL:
+            return $this->query("ROLLBACK TRANSACTION tr1",$which_connection);
+        case $this->TYPE_PGSQL:
+            return $this->query("ROLLBACK",$which_connection);
+        case $this->TYPE_PDOMY:
+        case $this->TYPE_PDOMS:
+        case $this->TYPE_PDOPG:
+        case $this->TYPE_PDOSL:
+            $obj = $this->connections[$which_connection];    
+            return $obj->rollBack();
         }
-        switch($this->db_types[$which_connection]) {
-            case $this->TYPE_MYSQL:
-                return $this->query("ROLLBACK", $which_connection);
-            case $this->TYPE_MSSQL:
-                return $this->query("ROLLBACK TRANSACTION tr1", $which_connection);
-            case $this->TYPE_PGSQL:
-                return $this->query("ROLLBACK", $which_connection);
-            case $this->TYPE_PDOMY:
-            case $this->TYPE_PDOMS:
-            case $this->TYPE_PDOPG:
-            case $this->TYPE_PDOSL:
-                $obj = $this->connections[$which_connection];    
-                return $obj->rollBack();
-        }
-
-        return false;
+        return -1;
     }
 
-    public function test($which_connection='')
-    {
-        if ($which_connection=='') {
+    function test($which_connection=''){
+        if ($which_connection=='')
             $which_connection=$this->default_db;
-        }
 
-        if ($this->connections[$which_connection]) return true;
-        else return false;
+        if ($this->connections[$which_connection]) return True;
+        else return False;
     }
 
     /* copy a table from one database to another, not necessarily on
@@ -662,12 +586,9 @@ class SQLManager
        $insert_query is the beginning of the query that will add the
         data to the destination (specify everything up to VALUES)
     */
-    public function transfer($source_db,$select_query,$dest_db,$insert_query)
-    {
+    function transfer($source_db,$select_query,$dest_db,$insert_query){
         $result = $this->query($select_query,$source_db);
-        if (!$result) {
-            return false;
-        }
+        if (!$result) return False;
 
         $num_fields = $this->num_fields($result,$source_db);
 
@@ -732,209 +653,100 @@ class SQLManager
         return $ret;
     }
 
-    /* copy a table from one database to another, not necessarily on
-       the same server or format
-
-       @beta
-       Uses prepared statements for better error proofing when dealing
-       with odd values. Should eventually replace transfer() method.
-    
-       @param source_db is the database name of the source
-       @param select_query is the [string] query that will get the data
-       @param select_args [array] arguments to go with the select query
-       @param dest_db is the database name of the destination
-       @insert_query is the beginning of the query that will add the
-        data to the destination (specify everything up to VALUES)
-    */
-    public function safeTransfer($source_db, $select_query, $select_args, $dest_db, $insert_query)
-    {
-        $prep = $this->prepare_statement($select_query, $source_db);
-        $result = $this->exec_statement($prep, $select_args, $source_db);
-        if (!$result) {
-            return false;
-        }
-
-        $num_fields = $this->num_fields($result, $source_db);
-        $full_query = $insert_query . ' VALUES (';
-        for ($i=0; $i<$num_fields; $i++) {
-            $full_query .= '?,';
-        }
-        $full_query = substr($full_query, 0, strlen($full_query)-1).')';
-
-        $unquoted = array("money"=>1,"real"=>1,"numeric"=>1,
-            "float4"=>1,"float8"=>1,"bit"=>1,"decimal"=>1,
-            "unknown"=>1,'double'=>1);
-        $strings = array("varchar"=>1,"nvarchar"=>1,"string"=>1,
-                "char"=>1,'var_string'=>1);
-        $dates = array("datetime"=>1);
-        $arg_sets = array();
-
-        while($row = $this->fetch_array($result,$source_db)) {
-            $record_args = array();
-            // altering NULLs, dates, and strings
-            // is consistent with previous behavior.
-            // can be revisisted if there's a good reason
-            for ($i=0; $i<$num_fields; $i++) {
-                $type = $this->field_type($result, $i, $source_db);
-                if ($row[$i] == "" && strstr(strtoupper($type),"INT")) {
-                    $row[$i] = 0;    
-                } else if ($row[$i] == "" && isset($unquoted[$type])) {
-                    $row[$i] = 0;
-                }
-
-                if (isset($dates[$type])) {
-                    $clean = $this->cleanDateTime($row[$i]);
-                    $row[$i] = ($clean != "") ? $clean : $row[$i];
-                } else if (isset($strings[$type])) {
-                    $row[$i] = str_replace("'","",$row[$i]);
-                    $row[$i] = str_replace("\\","",$row[$i]);
-                }
-                $record_args[] = $row[$i];
-            }
-            $arg_sets[] = $record_args;
-        }
-
-        $ret = true;
-
-        $prep_insert = $this->prepare_statement($full_query, $dest_db);
-        $this->start_transaction($dest_db);
-
-        foreach ($arg_sets as $args) {
-            if(!$this->exec_statement($prep_insert, $args, $dest_db)) {
-                $ret = false;
-                if (is_writable(DEBUG_MYSQL_QUERIES)) {
-                    $fp = fopen(DEBUG_MYSQL_QUERIES, "a");
-                    fwrite($fp,$full_query."\n");
-                    fwrite($fp, 'ARGS: ');
-                    foreach($args as $a) {
-                        fwrite($fp, $a . ',');
-                    }
-                    fwrite($fp, "\n\n");
-                    fclose($fp);
-                }
-            }
-        }
-
-        if ($ret === true) {
-            $this->commit_transaction($dest_db);
-        } else {
-            $this->rollback_transaction($dest_db);
-        }
-
-        return $ret;
-    }
-
-    public function cleanDateTime($str)
-    {
+    function cleanDateTime($str){
         $stdFmt = "/(\d\d\d\d)-(\d\d)-(\d\d) (\d+?):(\d\d):(\d\d)/";
-        if (preg_match($stdFmt,$str,$group)) {
-            return $str;
-        }
+                if (preg_match($stdFmt,$str,$group))
+                        return $str;
 
-        $msqlFmt = "/(\w\w\w) (\d+) (\d\d\d\d) +(\d+?):(\d\d)(\w)M/";
+                $msqlFmt = "/(\w\w\w) (\d+) (\d\d\d\d) +(\d+?):(\d\d)(\w)M/";
 
-        $months = array(
-            "jan"=>"01",
-            "feb"=>"02",
-            "mar"=>"03",
-            "apr"=>"04",
-            "may"=>"05",
-            "jun"=>"06",
-            "jul"=>"07",
-            "aug"=>"08",
-            "sep"=>"09",
-            "oct"=>"10",
-            "nov"=>"11",
-            "dec"=>"12"
-        );
+                $months = array(
+                        "jan"=>"01",
+                        "feb"=>"02",
+                        "mar"=>"03",
+                        "apr"=>"04",
+                        "may"=>"05",
+                        "jun"=>"06",
+                        "jul"=>"07",
+                        "aug"=>"08",
+                        "sep"=>"09",
+                        "oct"=>"10",
+                        "nov"=>"11",
+                        "dec"=>"12"
+                );
 
-        $info = array(
-            "month" => 1,
-            "day" => 1,
-            "year" => 1900,
-            "hour" => 0,
-            "min" => 0
-        );
+                $info = array(
+                        "month" => 1,
+                        "day" => 1,
+                        "year" => 1900,
+                        "hour" => 0,
+                        "min" => 0
+                );
                 
-        if (preg_match($msqlFmt,$str,$group)) {
-            $info["month"] = $months[strtolower($group[1])];
-            $info["day"] = $group[2];
-            $info["year"] = $group[3];
-            $info["hour"] = $group[4];
-            $info["min"] = $group[5];
-            if ($group[6] == "P" && $info["hour"] != "12") {
-                $info["hour"] = ($info["hour"] + 12) % 24;
-            } else if($group[6] == "A" && $info["hour"] == "12") {
-                $info["hour"] = 0;
-            }
-        }
+                if (preg_match($msqlFmt,$str,$group)){
+                        $info["month"] = $months[strtolower($group[1])];
+                        $info["day"] = $group[2];
+                        $info["year"] = $group[3];
+                        $info["hour"] = $group[4];
+                        $info["min"] = $group[5];
+            if ($group[6] == "P" && $info["hour"] != "12")
+                                $info["hour"] = ($info["hour"] + 12) % 24;
+                        elseif($group[6] == "A" && $info["hour"] == "12")
+                                $info["hour"] = 0;
+                }
                 
-        $ret = $info["year"]."-";
-        $ret .= str_pad($info["month"],2,"0",STR_PAD_LEFT)."-";
-        $ret .= str_pad($info["day"],2,"0",STR_PAD_LEFT)." ";
-        $ret .= str_pad($info["hour"],2,"0",STR_PAD_LEFT).":";
-        $ret .= str_pad($info["min"],2,"0",STR_PAD_LEFT);
-
+                $ret = $info["year"]."-";
+                $ret .= str_pad($info["month"],2,"0",STR_PAD_LEFT)."-";
+                $ret .= str_pad($info["day"],2,"0",STR_PAD_LEFT)." ";
+                $ret .= str_pad($info["hour"],2,"0",STR_PAD_LEFT).":";
+                $ret .= str_pad($info["min"],2,"0",STR_PAD_LEFT);
         return $ret;
     }
 
     /* check whether the given table exists
-        Return values:
-        True => table exists
-        False => table doesn't exist
-        -1 => Operation not supported for this database type
-    */
-    public function table_exists($table_name, $which_connection='')
-    {
-        if ($which_connection == '') {
+           Return values:
+                True => table exists
+                False => table doesn't exist
+                -1 => Operation not supported for this database type
+        */
+    function table_exists($table_name,$which_connection=''){
+        if ($which_connection == '')
             $which_connection=$this->default_db;
-        }
-        switch($this->db_types[$which_connection]) {
-            case $this->TYPE_PDOMY:
-            case $this->TYPE_MYSQL:
-                $result = $this->query("SHOW TABLES FROM $which_connection 
-                            LIKE '$table_name'",$which_connection);
-                if ($this->num_rows($result) > 0) {
-                    return true;
-                } else {
-                    return false;
-                }
-            case $this->TYPE_MSSQL:
-            case $this->TYPE_PDOMS:
-                $result = $this->query("SELECT name FROM sysobjects 
-                            WHERE name LIKE '$table_name'",
-                            $which_connection);
-                if ($this->num_rows($result) > 0) {
-                    return true;
-                } else {
-                    return false;
-                }
-            case $this->TYPE_PGSQL:
-            case $this->TYPE_PDOPG:
-                $result = $this->query("SELECT relname FROM pg_class
-                        WHERE relname LIKE '$table_name'",
+        switch($this->db_types[$which_connection]){
+        case $this->TYPE_PDOMY:
+        case $this->TYPE_MYSQL:
+            $result = $this->query("SHOW TABLES FROM $which_connection 
+                        LIKE '$table_name'",$which_connection);
+            if ($this->num_rows($result) > 0) return True;
+            else return False;
+        case $this->TYPE_MSSQL:
+        case $this->TYPE_PDOMS:
+            $result = $this->query("SELECT name FROM sysobjects 
+                        WHERE name LIKE '$table_name'",
                         $which_connection);
-                if ($this->num_rows($result) > 0) {
-                    return true;
-                } else {
-                    return False;
-                }
-            case $this->TYPE_PDOSL:
-                $result = $this->query("SELECT name FROM sqlite_master
-                        WHERE type IN ('table','view') AND name='$table_name'",
-                        $which_connection);
-                $ret = false;
-                if ($this->fetch_row($result)) {
-                    $ret = true;
-                }
-                $result->closeCursor();
-                return $ret;
+            if ($this->num_rows($result) > 0) return True;
+            else return False;
+        case $this->TYPE_PGSQL:
+        case $this->TYPE_PDOPG:
+            $result = $this->query("SELECT relname FROM pg_class
+                    WHERE relname LIKE '$table_name'",
+                    $which_connection);
+            if ($this->num_rows($result) > 0) return True;
+            else return False;
+        case $this->TYPE_PDOSL:
+            $result = $this->query("SELECT name FROM sqlite_master
+                    WHERE type IN ('table','view') AND name='$table_name'",
+                    $which_connection);
+            $ret = False;
+            if ($this->fetch_row($result)) 
+                $ret = True;
+            $result->closeCursor();
+            return $ret;
         }
-
-        return false;
+        return -1;
     }
 
-    public function isView($table_name, $which_connection='')
+    function isView($table_name,$which_connection='')
     {
         if ($which_connection == '') {
             $which_connection=$this->default_db;
@@ -1001,90 +813,71 @@ class SQLManager
     }
 
     /* return the table's definition
-    Return values:
-    array of values => table found
-        array format: $return['column_name'] =
-        array('column_type', is_auto_increment, column_name)
-    False => no such table
-    -1 => Operation not supported for this database type
-    */
-    public function table_definition($table_name, $which_connection='')
-    {
-        if ($which_connection == '') {
-        $which_connection=$this->default_db;
+           Return values:
+           array of values => table found
+            array format: $return['column_name'] =
+                    array('column_type', is_auto_increment, column_name)
+                False => no such table
+                -1 => Operation not supported for this database type
+        */
+        function table_definition($table_name,$which_connection=''){
+                if ($which_connection == '')
+                        $which_connection=$this->default_db;
+                switch($this->db_types[$which_connection]){
+        case $this->TYPE_PDOMY:
+                case $this->TYPE_MYSQL:
+                        $return = array();
+                        $result = $this->query("SHOW COLUMNS FROM $table_name",$which_connection);
+                        while($row = $this->fetch_row($result,$which_connection)){
+                $auto = False;
+                if (strstr($row[5],"auto_increment"))
+                    $auto = True;
+                                $return[$row[0]] = array($row[1],$auto,$row[0]);
+            }
+                        if (count($return) == 0) return False;
+                        else return $return;
+                case $this->TYPE_MSSQL:
+        case $this->TYPE_PDOMS:
+                        $return = array();
+                        $result = $this->query("SELECT c.name,t.name,c.length,
+                        CASE WHEN c.autoval IS NULL
+                        THEN 0 ELSE 1 END AS auto
+                                                FROM syscolumns AS c
+                                                LEFT JOIN sysobjects AS o
+                                                ON c.id=o.id
+                                                LEFT JOIN systypes AS t
+                                                ON c.xtype=t.xtype
+                                                WHERE o.name='$table_name'",$which_connection);
+                        while($row = $this->fetch_row($result,$which_connection)){
+                $auto = False;
+                if ($row[3] == 1) $auto = True;
+                $return[$row[0]] = array($row[1]."(".$row[2].")",$auto,$row[0]);
+            }
+                        if (count($return) == 0) return False;
+                        else return $return;
+        case $this->TYPE_PDOPG:
+                case $this->TYPE_PGSQL:
+            $return = array();
+            $result = $this->query("SELECT a.attname,t.typname FROM pg_class AS c
+                    LEFT JOIN pg_attribute AS a ON a.attrelid = c.oid
+                    LEFT JOIN pg_type AS t ON a.atttypid = t.oid    
+                    WHERE c.relname='$table_name'", $which_connection);
+            while($row = $this->fetch_row($result,$which_connection)){
+                $return[$row[0]] = array($row[1],False,$row[0]);
+            }
+                        if (count($return) == 0) return False;
+                        else return $return;
+        case $this->TYPE_PDOSL:
+            $result = $this->query("PRAGMA table_info($table_name)", $which_connection);
+            $return = array();
+            while($row = $this->fetch_row($result,$which_connection)){
+                $return[$row['name']] = array($row['type'],False,$row['name']);
+            }
+                        if (count($return) == 0) return False;
+                        else return $return;
+                }
+                return -1;
         }
-        switch($this->db_types[$which_connection]) {
-            case $this->TYPE_PDOMY:
-            case $this->TYPE_MYSQL:
-                $return = array();
-                $result = $this->query("SHOW COLUMNS FROM $table_name", $which_connection);
-                while($row = $this->fetch_row($result, $which_connection)) {
-                    $auto = false;
-                    if (strstr($row[5],"auto_increment")) {
-                        $auto = true;
-                    }
-                    $return[$row[0]] = array($row[1],$auto,$row[0]);
-                }
-                if (count($return) == 0) {
-                    return false;
-                } else {
-                    return $return;
-                }
-            case $this->TYPE_MSSQL:
-            case $this->TYPE_PDOMS:
-                $return = array();
-                $result = $this->query("SELECT c.name,t.name,c.length,
-                                    CASE WHEN c.autoval IS NULL
-                                    THEN 0 ELSE 1 END AS auto
-                                    FROM syscolumns AS c
-                                    LEFT JOIN sysobjects AS o
-                                    ON c.id=o.id
-                                    LEFT JOIN systypes AS t
-                                    ON c.xtype=t.xtype
-                                    WHERE o.name='$table_name'",
-                                    $which_connection);
-                while($row = $this->fetch_row($result, $which_connection)) {
-                    $auto = false;
-                    if ($row[3] == 1) {
-                        $auto = true;
-                    }
-                    $return[$row[0]] = array($row[1]."(".$row[2].")",$auto,$row[0]);
-                }
-                if (count($return) == 0) {
-                    return false;
-                } else {
-                    return $return;
-                }
-            case $this->TYPE_PDOPG:
-            case $this->TYPE_PGSQL:
-                $return = array();
-                $result = $this->query("SELECT a.attname,t.typname FROM pg_class AS c
-                                    LEFT JOIN pg_attribute AS a ON a.attrelid = c.oid
-                                    LEFT JOIN pg_type AS t ON a.atttypid = t.oid    
-                                    WHERE c.relname='$table_name'", $which_connection);
-                while($row = $this->fetch_row($result, $which_connection)) {
-                    $return[$row[0]] = array($row[1],false,$row[0]);
-                }
-                if (count($return) == 0) {
-                    return false;
-                } else {
-                    return $return;
-                }
-            case $this->TYPE_PDOSL:
-                $result = $this->query("PRAGMA table_info($table_name)", $which_connection);
-                $return = array();
-                while($row = $this->fetch_row($result, $which_connection)) {
-                    $return[$row['name']] = array($row['type'],false,$row['name']);
-                }
-                if (count($return) == 0) {
-                    return false;
-                } else {
-                    return $return;
-                }
-        }
-
-        return -1;
-    }
 
     /* attempt to load an array of values
      * into the specified table
@@ -1092,254 +885,222 @@ class SQLManager
      * If debugging is enabled, columns that couldn't be
      * written are noted
      */
-    public function smart_insert($table_name, $values, $which_connection='')
-    {
+    function smart_insert($table_name,$values,$which_connection=''){
         $OUTFILE = DEBUG_MYSQL_QUERIES;
 
-        if ($which_connection == '') {
-            $which_connection=$this->default_db;
-        }
+        if ($which_connection == '')
+                $which_connection=$this->default_db;
         $exists = $this->table_exists($table_name,$which_connection);
-        if (!$exists) return false;
+        if (!$exists) return False;
         if ($exists === -1) return -1;
 
         $t_def = $this->table_definition($table_name,$which_connection);
 
         $fp = -1;
         $tstamp = date("r");
-        if ($OUTFILE != "" && is_writable($OUTFILE)) {
+        if ($OUTFILE != "" && is_writable($OUTFILE))
             $fp = fopen($OUTFILE,"a");
-        }
 
         $cols = "(";
         $vals = "(";
-        foreach($values as $k=>$v) {
+        foreach($values as $k=>$v){
             //$k = strtoupper($k);
-            if (isset($t_def[$k]) && is_array($t_def[$k])) {
-                if (!$t_def[$k][1]) {
+            if (isset($t_def[$k]) && is_array($t_def[$k])){
+                if (!$t_def[$k][1]){
                     if (stristr($t_def[$k][0],"money") ||
                         stristr($t_def[$k][0],'decimal') ||
                         stristr($t_def[$k][0],'float') ||
-                        stristr($t_def[$k][0],'double') ) {
+                        stristr($t_def[$k][0],'double') )
                         $vals .= $v.",";
-                    } else {
+                    else
                         $vals .= "'".$v."',";
-                    }
                     $col_name = $t_def[$k][2];
                     $cols .= $this->identifier_escape($col_name).',';
-                } else {
-                    if ($OUTFILE != "") {
+                }
+                else {
+                    if ($OUTFILE != "")
                         fwrite($fp,"$tstamp: Column $k in table $table_name
                             is auto_increment so your value
                             was omitted\n");
-                    }
                 }
-            } else {
-                if ($OUTFILE != '') {
+            }
+            else {
+                if ($OUTFILE != '')
                     fwrite($fp,"$tstamp: Column $k not in table $table_name\n");
-                }
             }
         }
         $cols = substr($cols,0,strlen($cols)-1).")";
         $vals = substr($vals,0,strlen($vals)-1).")";
         $insertQ = "INSERT INTO $table_name $cols VALUES $vals";
 
-        $ret = $this->query($insertQ, $which_connection);
-        if (!$ret && $OUTFILE != "") {
+        $ret = $this->query($insertQ,$which_connection);
+        if (!$ret && $OUTFILE != ""){
             fwrite($fp,"$tstamp: $insertQ\n");
         }
-        if ($OUTFILE != "" && is_writable($OUTFILE)) {
-            fclose($fp);
-        }
+        if ($OUTFILE != "" && is_writable($OUTFILE)) fclose($fp);
 
         return $ret;
     }
 
-    public function datediff($date1, $date2, $which_connection='')
-    {
-        if ($which_connection == '') {
-            $which_connection = $this->default_db;
+    function datediff($date1,$date2,$which_connection=''){
+                if ($which_connection == '')
+                        $which_connection = $this->default_db;
+                switch($this->db_types[$which_connection]){
+        case $this->TYPE_PDOMY:
+                case $this->TYPE_MYSQL:
+                        return "datediff($date1,$date2)";
+                case $this->TYPE_MSSQL:
+        case $this->TYPE_PDOMS:
+                        return "datediff(dd,$date2,$date1)";
+        case $this->TYPE_PGSQL:
+        case $this->TYPE_PDOPG:
+            return "extract(day from ($date2 - $date1))";
+        case $this->TYPE_PDOSL:
+            return "CAST( (JULIANDAY($date1) - JULIANDAY($date2)) AS INT)";
+                }
         }
-        switch($this->db_types[$which_connection]) {
-            case $this->TYPE_PDOMY:
-            case $this->TYPE_MYSQL:
-                return "datediff($date1,$date2)";
-            case $this->TYPE_MSSQL:
-            case $this->TYPE_PDOMS:
-                return "datediff(dd,$date2,$date1)";
-            case $this->TYPE_PGSQL:
-            case $this->TYPE_PDOPG:
-                return "extract(day from ($date2 - $date1))";
-            case $this->TYPE_PDOSL:
-                return "CAST( (JULIANDAY($date1) - JULIANDAY($date2)) AS INT)";
+
+    function yeardiff($date1,$date2,$which_connection=''){
+                if ($which_connection == '')
+                        $which_connection = $this->default_db;
+                switch($this->db_types[$which_connection]){
+        case $this->TYPE_PDOMY:
+                case $this->TYPE_MYSQL:
+                        return "DATE_FORMAT(FROM_DAYS(DATEDIFF($date1,$date2)), '%Y')+0";
+                case $this->TYPE_MSSQL:
+        case $this->TYPE_PDOMS:
+                        return "datediff(yy,$date2,$date1)";
+        case $this->TYPE_PGSQL:
+        case $this->TYPE_PDOPG:
+            return "extract(year from age($date1,$date))";
+        case $this->TYPE_PDOSL:
+            return "CAST( ((JULIANDAY($date1) - JULIANDAY($date2)) / 365) AS INT)";
+                }
+    }
+
+    function now($which_connection=''){
+        if ($which_connection == '')
+            $which_connection = $this->default_db;
+        switch($this->db_types[$which_connection]){
+        case $this->TYPE_PDOMY:
+        case $this->TYPE_MYSQL:
+            return "now()";
+        case $this->TYPE_MSSQL:
+        case $this->TYPE_PDOMS:
+            return "getdate()";
+        case $this->TYPE_PGSQL:
+        case $this->TYPE_PDOPG:
+            return "now()";
+        case $this->TYPE_PDOSL:
+            return "datetime('now')";
         }
     }
 
-    public function yeardiff($date1, $date2, $which_connection='')
+    function curdate($which_connection='')
     {
-        if ($which_connection == '') {
+        if ($which_connection == '')
             $which_connection = $this->default_db;
-        }
-        switch($this->db_types[$which_connection]) {
-            case $this->TYPE_PDOMY:
-            case $this->TYPE_MYSQL:
-                return "DATE_FORMAT(FROM_DAYS(DATEDIFF($date1,$date2)), '%Y')+0";
-            case $this->TYPE_MSSQL:
-            case $this->TYPE_PDOMS:
-                return "datediff(yy,$date2,$date1)";
-            case $this->TYPE_PGSQL:
-            case $this->TYPE_PDOPG:
-                return "extract(year from age($date1,$date))";
-            case $this->TYPE_PDOSL:
-                return "CAST( ((JULIANDAY($date1) - JULIANDAY($date2)) / 365) AS INT)";
-        }
-
-        return '0';
-    }
-
-    public function now($which_connection='')
-    {
-        if ($which_connection == '') {
-            $which_connection = $this->default_db;
-        }
-        switch($this->db_types[$which_connection]) {
-            case $this->TYPE_PDOMY:
-            case $this->TYPE_MYSQL:
-                return "now()";
-            case $this->TYPE_MSSQL:
-            case $this->TYPE_PDOMS:
-                return "getdate()";
-            case $this->TYPE_PGSQL:
-            case $this->TYPE_PDOPG:
-                return "now()";
-            case $this->TYPE_PDOSL:
-                return "datetime('now')";
-        }
-
-        return date("'Y-m-d H:i:s'");
-    }
-
-    public function curdate($which_connection='')
-    {
-        if ($which_connection == '') {
-            $which_connection = $this->default_db;
-        }
-        switch($this->db_types[$which_connection]) {
-            case $this->TYPE_PDOMY:
-            case $this->TYPE_MYSQL:
-            case $this->TYPE_MSSQL:
-            case $this->TYPE_PDOMS:
-            case $this->TYPE_PGSQL:
-            case $this->TYPE_PDOPG:
-            case $this->TYPE_PDOSL:
-                return "CURRENT_DATE";
+        switch($this->db_types[$which_connection]){
+        case $this->TYPE_PDOMY:
+        case $this->TYPE_MYSQL:
+        case $this->TYPE_MSSQL:
+        case $this->TYPE_PDOMS:
+        case $this->TYPE_PGSQL:
+        case $this->TYPE_PDOPG:
+        case $this->TYPE_PDOSL:
+            return "CURRENT_DATE";
         }
 
         return date("'Y-m-d'");
     }
 
-    public function dayofweek($col,$which_connection='')
-    {
-        if ($which_connection == '') {
+    function dayofweek($col,$which_connection=''){
+        if ($which_connection == '')
             $which_connection = $this->default_db;
-        }
-        switch($this->db_types[$which_connection]) {
-            case $this->TYPE_PDOMY:
-            case $this->TYPE_MYSQL:
-                return "dayofweek($col)";
-            case $this->TYPE_MSSQL:
-            case $this->TYPE_PDOMS:
+        switch($this->db_types[$which_connection]){
+        case $this->TYPE_PDOMY:
+        case $this->TYPE_MYSQL:
+            return "dayofweek($col)";
+        case $this->TYPE_MSSQL:
+        case $this->TYPE_PDOMS:
                 return "datepart(dw,$col)";
-            case $this->TYPE_PGSQL:
-            case $this->TYPE_PDOPG:
-                return "extract(dow from $col";
-            case $this->TYPE_PDOSL:
-                return "(7 - ROUND(JULIANDAY(DATETIME('now','weekday 0')) - JULIANDAY($col))) % 7";
-        }
-
-        return '0';
-    }
-
-    public function curtime($which_connection='')
-    {
-        if ($which_connection == '') {
-            $which_connection = $this->default_db;
-        }
-        switch($this->db_types[$which_connection]) {
-            case $this->TYPE_PDOMY:
-            case $this->TYPE_MYSQL:
-                return "curtime()";
-            case $this->TYPE_MSSQL:
-            case $this->TYPE_PDOMS:
-                return "getdate()";
-            case $this->TYPE_PGSQL:
-            case $this->TYPE_PDOPG:
-                return "current_time";
-            case $this->TYPE_PDOSL:
-                return "time('now')";
+        case $this->TYPE_PGSQL:
+        case $this->TYPE_PDOPG:
+            return "extract(dow from $col";
+        case $this->TYPE_PDOSL:
+            return "(7 - ROUND(JULIANDAY(DATETIME('now','weekday 0')) - JULIANDAY($col))) % 7";
         }
     }
 
-    public function escape($str, $which_connection='')
-    {
-        if ($which_connection == '') {
+    function curtime($which_connection=''){
+        if ($which_connection == '')
             $which_connection = $this->default_db;
-        }
-        switch($this->db_types[$which_connection]) {
-            case $this->TYPE_MYSQL:
-                return mysql_real_escape_string($str);
-            case $this->TYPE_MSSQL:
-                return str_replace("'","''",$str);
-            case $this->TYPE_PDOMY:
-            case $this->TYPE_PDOMS:
-            case $this->TYPE_PDOPG:
-            case $this->TYPE_PDOSL:
-                $obj = $this->connections[$which_connection];
-                $quoted = $obj->quote($str);
-                return ($quoted == "''" ? '' : substr($quoted, 1, strlen($quoted)-2));
-        }
+        switch($this->db_types[$which_connection]){
+        case $this->TYPE_PDOMY:
+                case $this->TYPE_MYSQL:
+                        return "curtime()";
+                case $this->TYPE_MSSQL:
+        case $this->TYPE_PDOMS:
+                        return "getdate()";
+                case $this->TYPE_PGSQL:
+        case $this->TYPE_PDOPG:
+            return "current_time";
+        case $this->TYPE_PDOSL:
+            return "time('now')";
+                }
+    }
 
+    function escape($str,$which_connection=''){
+        if ($which_connection == '')
+            $which_connection = $this->default_db;
+        switch($this->db_types[$which_connection]){
+        case $this->TYPE_MYSQL:
+            return mysql_real_escape_string($str);
+        case $this->TYPE_MSSQL:
+            return str_replace("'","''",$str);
+        case $this->TYPE_PDOMY:
+        case $this->TYPE_PDOMS:
+        case $this->TYPE_PDOPG:
+        case $this->TYPE_PDOSL:
+            $obj = $this->connections[$which_connection];
+            $quoted = $obj->quote($str);
+            return ($quoted == "''" ? '' : substr($quoted, 1, strlen($quoted)-2));
+        }
         return $str;
     }
 
-    public function identifier_escape($str, $which_connection='')
-    {
-        if ($which_connection == '') {
+    function identifier_escape($str,$which_connection=''){
+        if ($which_connection == '')
             $which_connection = $this->default_db;
+        switch($this->db_types[$which_connection]){
+        case $this->TYPE_MYSQL:
+        case $this->TYPE_PDOMY:
+            return '`'.$str.'`';
+        case $this->TYPE_PDOMS:
+        case $this->TYPE_MSSQL:
+            return '['.$str.']';
+                case $this->TYPE_PGSQL:
+        case $this->TYPE_PDOPG:
+        case $this->TYPE_PDOSL:
+            return '"'.$str.'"';
         }
-        switch($this->db_types[$which_connection]) {
-            case $this->TYPE_MYSQL:
-            case $this->TYPE_PDOMY:
-                return '`'.$str.'`';
-            case $this->TYPE_PDOMS:
-            case $this->TYPE_MSSQL:
-                return '['.$str.']';
-            case $this->TYPE_PGSQL:
-            case $this->TYPE_PDOPG:
-            case $this->TYPE_PDOSL:
-                return '"'.$str.'"';
-        }
-
         return $str;
     }
 
-    public function sep($which_connection='')
-    {
-        if ($which_connection == '') {
+    function sep($which_connection=''){
+        if ($which_connection == '')
             $which_connection = $this->default_db;
+        switch($this->db_types[$which_connection]){
+        case $this->TYPE_MYSQL:
+        case $this->TYPE_PDOMY:
+                case $this->TYPE_PGSQL:
+        case $this->TYPE_PDOPG:
+        case $this->TYPE_PDOSL:
+            return '.';
+        case $this->TYPE_PDOMS:
+        case $this->TYPE_MSSQL:
+            return '.dbo.';
         }
-        switch($this->db_types[$which_connection]) {
-            case $this->TYPE_MYSQL:
-            case $this->TYPE_PDOMY:
-            case $this->TYPE_PGSQL:
-            case $this->TYPE_PDOPG:
-            case $this->TYPE_PDOSL:
-                return '.';
-            case $this->TYPE_PDOMS:
-            case $this->TYPE_MSSQL:
-                return '.dbo.';
-        }
-
         return '.';
     }
 
@@ -1365,25 +1126,22 @@ class SQLManager
         return false;
     }
 
-    public function error($which_connection='')
-    {
-        if ($which_connection == '') {
+    function error($which_connection=''){
+        if ($which_connection == '')
                 $which_connection = $this->default_db;
+        switch($this->db_types[$which_connection]){
+        case $this->TYPE_MYSQL:
+            return mysql_error();
+        case $this->TYPE_MSSQL:
+            return mssql_get_last_message();
+        case $this->TYPE_PDOMY:
+        case $this->TYPE_PDOMS:
+        case $this->TYPE_PDOPG:
+        case $this->TYPE_PDOSL:
+            $obj = $this->connections[$which_connection];
+            $info = $obj->errorInfo();
+            return ($info[2]==null ? '' : $info[2]);
         }
-        switch($this->db_types[$which_connection]) {
-            case $this->TYPE_MYSQL:
-                return mysql_error();
-            case $this->TYPE_MSSQL:
-                return mssql_get_last_message();
-            case $this->TYPE_PDOMY:
-            case $this->TYPE_PDOMS:
-            case $this->TYPE_PDOPG:
-            case $this->TYPE_PDOSL:
-                $obj = $this->connections[$which_connection];
-                $info = $obj->errorInfo();
-                return ($info[2]==null ? '' : $info[2]);
-        }
-
         return 'unknown error';
     }
 
@@ -1400,40 +1158,34 @@ class SQLManager
 
       This method currently only supports MySQL and MSSQL
     */
-    public function concat()
-    {
+    function concat(){
         $args = func_get_args();
         $ret = "";
         $which_connection = $args[count($args)-1];
-        if ($which_connection == '') {
+        if ($which_connection == '')
             $which_connection = $this->default_db;
+        switch($this->db_types[$which_connection]){
+        case $this->TYPE_PDOMY:
+        case $this->TYPE_MYSQL:
+            $ret .= "CONCAT(";
+            for($i=0;$i<count($args)-1;$i++)
+                $ret .= $args[$i].",";    
+            $ret = rtrim($ret,",").")";
+            break;
+        case $this->TYPE_MSSQL:
+        case $this->TYPE_PDOMS:
+            for($i=0;$i<count($args)-1;$i++)
+                $ret .= $args[$i]."+";    
+            $ret = rtrim($ret,"+");
+            break;
+        case $this->TYPE_PGSQL:
+        case $this->TYPE_PDOPG:
+        case $this->TYPE_PDOSL:
+            for($i=0;$i<count($args)-1;$i++)
+                $ret .= $args[$i]."||";    
+            $ret = rtrim($ret,"||");
+            break;
         }
-        switch($this->db_types[$which_connection]) {
-            case $this->TYPE_PDOMY:
-            case $this->TYPE_MYSQL:
-                $ret .= "CONCAT(";
-                for($i=0;$i<count($args)-1;$i++) {
-                    $ret .= $args[$i].",";
-                }
-                $ret = rtrim($ret,",").")";
-                break;
-            case $this->TYPE_MSSQL:
-            case $this->TYPE_PDOMS:
-                for($i=0;$i<count($args)-1;$i++) {
-                    $ret .= $args[$i]."+";
-                }
-                $ret = rtrim($ret,"+");
-                break;
-            case $this->TYPE_PGSQL:
-            case $this->TYPE_PDOPG:
-            case $this->TYPE_PDOSL:
-                for($i=0;$i<count($args)-1;$i++) {
-                    $ret .= $args[$i]."||";
-                }
-                $ret = rtrim($ret,"||");
-                break;
-        }
-
         return $ret;
     }
 
@@ -1447,28 +1199,24 @@ class SQLManager
       This method currently only supports MySQL and MSSQL
 
     */
-    public function convert($expr, $type, $which_connection='')
-    {
-        if ($which_connection == '') {
+    function convert($expr,$type,$which_connection=''){
+        if ($which_connection == '')
             $which_connection = $this->default_db;
+        switch($this->db_types[$which_connection]){
+        case $this->TYPE_PDOMY:
+        case $this->TYPE_MYSQL:
+            if(strtoupper($type)=='INT')
+                $type='SIGNED';
+            return "CONVERT($expr,$type)";
+        case $this->TYPE_MSSQL:
+        case $this->TYPE_PDOMS:
+            return "CONVERT($type,$expr)";
+        case $this->TYPE_PGSQL:
+        case $this->TYPE_PDOPG:
+        case $this->TYPE_PDOSL:
+            return "CAST($expr AS $type)";
         }
-        switch($this->db_types[$which_connection]) {
-            case $this->TYPE_PDOMY:
-            case $this->TYPE_MYSQL:
-                if(strtoupper($type)=='INT') {
-                    $type='SIGNED';
-                }
-                return "CONVERT($expr,$type)";
-            case $this->TYPE_MSSQL:
-            case $this->TYPE_PDOMS:
-                return "CONVERT($type,$expr)";
-            case $this->TYPE_PGSQL:
-            case $this->TYPE_PDOPG:
-            case $this->TYPE_PDOSL:
-                return "CAST($expr AS $type)";
-        }
-
-        return '0';
+        return "";
     }
 
     /**
@@ -1481,14 +1229,14 @@ class SQLManager
     private $test_data = array();
     private $test_counter = 0;
     private $test_mode = false;
-    public function setTestData($records)
+    function setTestData($records)
     {
         $this->test_data = $records;
         $this->test_counter = 0;
         $this->test_mode = true;
     }
 
-    public function getTestDataRow()
+    function getTestDataRow()
     {
         if (isset($this->test_data[$this->test_counter])) {
             $next = $this->test_data[$this->test_counter];
@@ -1501,3 +1249,4 @@ class SQLManager
     }
 }
 
+?>

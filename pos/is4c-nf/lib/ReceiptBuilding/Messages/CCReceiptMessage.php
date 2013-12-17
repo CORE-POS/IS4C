@@ -58,7 +58,7 @@ class CCReceiptMessage extends ReceiptMessage {
 		$db = Database::tDataConnect();
 		if ($reprint)
 			$db = Database::mDataConnect();
-		if ($sigSlip){
+		if ($sigSlip && is_numeric($CORE_LOCAL->get('paycard_id'))) {
 			$idclause = ' AND transID='.$CORE_LOCAL->get('paycard_id');
 		}
 

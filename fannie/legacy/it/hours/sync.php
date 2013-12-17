@@ -1,6 +1,9 @@
 <?php
 
 include('../../../config.php');
+header('Location: '.$FANNIE_URL.'modules/plugins2.0/WfcHoursTracking/WfcHtSyncPage.php');
+exit;
+/*
 include('db.php');
 
 $USER_FILE = '/etc/passwd';
@@ -74,3 +77,4 @@ if (count($new_accounts) == 0){
 ?>
 <p />
 <a href="menu.php">Main Menu</a>
+*/

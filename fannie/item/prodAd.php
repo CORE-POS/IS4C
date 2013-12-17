@@ -21,7 +21,9 @@
 
 *********************************************************************************/
 
-include('../src/mysql_connect.php');
+include('../config.php');
+include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+$dbc = FannieDB::get($FANNIE_OP_DB);
 
 if (isset($_REQUEST['upc']) && isset($_REQUEST['ajax'])){
 	//save

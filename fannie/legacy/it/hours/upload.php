@@ -1,6 +1,8 @@
 <?php
 include('../../../config.php');
-
+header('Location: '.$FANNIE_URL.'modules/plugins2.0/WfcHoursTracking/WfcHtUploadPage.php');
+exit;
+/*
 require($FANNIE_ROOT.'auth/login.php');
 if (!validateUserQuiet('upload_hours_data')){
 	header("Location: {$FANNIE_URL}auth/ui/loginform.php?redirect={$FANNIE_URL}legacy/it/hours/upload.php");
@@ -190,3 +192,4 @@ Filename: <input type="file" id="file" name="upload" />
 
 </body>
 </html>
+*/

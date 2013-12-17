@@ -21,11 +21,13 @@
 
 *********************************************************************************/
 // A page to search the member base.
+include('../../config.php');
+include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+$dbc = FannieDB::get($FANNIE_OP_DB);
+
 $page_title='Fannie - Member Management Module';
 $header='Statement History';
 include('../../src/header.html');
-
-require_once('../../src/mysql_connect.php');
 
 $month = date('n');
 $year = date('Y');

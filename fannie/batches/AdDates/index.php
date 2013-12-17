@@ -23,11 +23,12 @@
 
 /* configuration for your module - Important */
 include("../../config.php");
+include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+$dbc = FannieDB::get($FANNIE_OP_DB);
 
 /* html header, including navbar */
 $page_title = "Fannie - Sale Dates";
 $header = "Advertised Sale Dates";
-include($FANNIE_ROOT.'src/mysql_connect.php');
 include($FANNIE_ROOT.'src/header.html');
 
 if (isset($_REQUEST['sn'])){

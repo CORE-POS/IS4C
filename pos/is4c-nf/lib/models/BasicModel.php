@@ -176,6 +176,7 @@ class BasicModel
         if ($inc && $dbms == 'mssql')
             $sql .= ' ON [PRIMARY]';
 
+        $sql = $this->connection->prepare_statement($sql);
         $result = $this->connection->exec_statement($sql);
 
         return ($result === false) ? false : true;

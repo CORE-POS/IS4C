@@ -2,9 +2,8 @@
 
 include('../../../sql/SQLManager.php');
 include('../../../db.php');
-include('../../../select_dlog.php');
 
-$dlog = select_dlog('2009-08-08');
+$dlog = DTransactionsModel::selectDlog('2009-08-08');
 
 $query1 = "SELECT u.likecode,l.likecodedesc,sum(d.quantity),sum(d.total)
 	FROM $dlog as d LEFT JOIN upclikemoff as u

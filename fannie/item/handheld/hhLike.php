@@ -23,7 +23,7 @@
 
 include('../../config.php');
 include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
-include($FANNIE_ROOT.'src/mysql_connect.php');
+$dbc = FannieDB::get($FANNIE_OP_DB);
 
 if (isset($_REQUEST['submit2'])){
     $upc = BarcodeLib::padUPC(FormLib::get('upc'));

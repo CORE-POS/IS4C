@@ -23,7 +23,6 @@
 
 include(dirname(__FILE__).'/../../../config.php');
 include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
-require_once($FANNIE_ROOT."src/select_dlog.php");
 $dbc = FannieDB::get($FANNIE_OP_DB);
 
 class OverShortSafecountPage extends FanniePage {
@@ -394,7 +393,7 @@ class OverShortSafecountPage extends FanniePage {
 		}
 		$ret .= "<td id=buyAmountTotal>".array_sum($buyAmounts)."</td></tr>";
 
-		$dlog = select_dlog($startDate,$endDate);
+		$dlog = DTransactionsModel::selectDlog($startDate,$endDate);
 		$posTotalQ = "SELECT -1*sum(d.total) FROM $dlog as d WHERE ".str_replace(" date "," d.tdate ",$dateClause)." AND d.trans_subtype IN ('CA','CK')";
 		$posTotalP = $dbc->prepare_statement($posTotalQ);	
 		$posTotalR = $dbc->exec_statement($posTotalP, $dateArgs);

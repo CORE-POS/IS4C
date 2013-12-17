@@ -1,8 +1,8 @@
 <?php
 
 include('../../config.php');
-
-include($FANNIE_ROOT.'src/mysql_connect.php');
+include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+$dbc = FannieDB::get($FANNIE_OP_DB);
 
 $where = "(c.CardNo < 5000 or c.CardNo > 5999)
 	and (c.CardNo < 9000 or c.CardNo > 9100)

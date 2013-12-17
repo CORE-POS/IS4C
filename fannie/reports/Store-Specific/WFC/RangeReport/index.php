@@ -1,8 +1,7 @@
 <?php
 include('../../../../config.php');
-
-include($FANNIE_ROOT.'src/mysql_connect.php');
-include($FANNIE_ROOT.'src/select_dlog.php');
+include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+$dbc = FannieDB::get($FANNIE_OP_DB);
 
 if (isset($_GET['excel'])){
 	header('Content-Type: application/ms-excel');
@@ -74,7 +73,7 @@ if (!isset($_GET['excel']))
 
 echo '<br>Report run ' . $today. ' for ' . $repDate." to ".$repDate2."<br />";
 
-$dlog = select_dlog($repDate,$repDate2);
+$dlog = DTransactionsModel::selectDlog($repDate,$repDate2);
 //var_dump($dlog);
 $dlog = "trans_archive.dlogBig";
 $ARCH = $FANNIE_SERVER_DBMS=='MSSQL' ? $FANNIE_ARCHIVE_DB.'.dbo.' : $FANNIE_ARCHIVE_DB.'.';

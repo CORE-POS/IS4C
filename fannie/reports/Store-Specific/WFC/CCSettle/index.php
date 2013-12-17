@@ -1,15 +1,15 @@
 <?php
 
 include('../../../../config.php');
-include($FANNIE_ROOT.'src/mysql_connect.php');
-include($FANNIE_ROOT.'src/select_dlog.php');
+include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+$dbc = FannieDB::get($FANNIE_TRANS_DB);
 include('fetchLib.php');
 
 $date = isset($_REQUEST['date']) ? $_REQUEST['date'] : date("Y-m-d", time() - 86400);
 
 $info = getProcessorInfo($date);
 
-$dlog = select_dlog($date);
+$dlog = DTransactionsModel::selectDlog($date);
 list($y,$m,$d) = explode("-",$date);
 
 $q = $dbc->prepare_statement("SELECT d.tdate,-d.total as total,d.trans_num,q.refNum,d.card_no

@@ -79,7 +79,7 @@ $subquery = "select p.order_id from PendingSpecialOrder as p
 	left join SpecialOrderStatus as s
 	on p.order_id=s.order_id
 	where p.trans_id=0 
-	and ".$sql->datediff($sql->now(),'datetime')." > 60";
+	and ".$sql->datediff($sql->now(),'datetime')." > 90";
 $allIDs = "(";
 $r = $sql->query($subquery);
 while($w = $sql->fetch_row($r)){

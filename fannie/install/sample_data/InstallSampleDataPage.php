@@ -184,6 +184,16 @@ elseif (isset($_REQUEST['origin'])){
 	echo "<br />Loading state/province info";
 	$db->query("TRUNCATE TABLE originStateProv");
 	loaddata($db,'originStateProv');
+} else if (isset($_REQUEST['authGroups'])) {
+	echo "Loading authentication groups";
+	$db->query("TRUNCATE TABLE userGroups");
+	loaddata($db,'userGroups');
+	$db->query("TRUNCATE TABLE userGroupPrivs");
+	loaddata($db,'userGroupPrivs');
+    // give "Administrators" group all permissions
+    $db->query("INSERT userGroupPrivs SELECT 
+            1, auth_class, 'all', 'all'
+            FROM userKnownPrivs");
 }
 ?>
 </i></blockquote>
@@ -194,7 +204,7 @@ elseif (isset($_REQUEST['origin'])){
 <p class="ichunk">
 Some sample data is available to get a test lane
 up and running quickly and to try Fannie functions.
-<br />Keep in mind this data overwrites whatever is currently in the table.
+<h3>Keep in mind this data overwrites whatever is currently in the table.</h3>
 <br />These utilities populate the server tables.
 Then use the <a href="../../sync/SyncIndexPage.php"
 target="_sync"
@@ -242,7 +252,10 @@ Load all the default tenders into the tenders table.<br />
 <hr />
 <h4 class="install">Authentication</h4>
 Load information about currently defined authorization classes<br />
-<input type=submit name=authentication value="Load auth info" />
+<input type=submit name=authentication value="Load auth classes" />
+<br /><br />
+Load default groups<br />
+<input type=submit name=authGroups value="Load auth groups" />
 <hr />
 <h4 class="install">Countries, States, and Provinces</h4>
 Load default place-of-origin information<br />

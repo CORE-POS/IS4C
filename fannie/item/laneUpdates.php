@@ -26,11 +26,9 @@ if (!isset($FANNIE_ROOT))
 if (!class_exists('SQLManager'))
 	require($FANNIE_ROOT.'src/SQLManager.php');
 
-$laneupdate_sql = new SQLManager($FANNIE_SERVER,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-				$FANNIE_SERVER_USER, $FANNIE_SERVER_PW);
-
 function addProductAllLanes($upc){
-	global $laneupdate_sql, $FANNIE_LANES, $FANNIE_OP_DB, $FANNIE_SERVER_DBMS;
+	global $FANNIE_LANES, $FANNIE_OP_DB, $FANNIE_SERVER_DBMS;
+    $laneupdate_sql = FannieDB::get($FANNIE_OP_DB);
 
 	$server_table_def = $laneupdate_sql->table_definition('products',$FANNIE_OP_DB);
 
@@ -67,7 +65,8 @@ function addProductAllLanes($upc){
 }
 
 function deleteProductAllLanes($upc){
-	global $laneupdate_sql, $FANNIE_OP_DB, $FANNIE_LANES;
+	global $FANNIE_OP_DB, $FANNIE_LANES;
+    $laneupdate_sql = FannieDB::get($FANNIE_OP_DB);
 
 	for ($i = 0; $i < count($FANNIE_LANES); $i++){
 		$tmp = new SQLManager($FANNIE_LANES[$i]['host'],$FANNIE_LANES[$i]['type'],

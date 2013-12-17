@@ -22,7 +22,8 @@
 *********************************************************************************/
 
 require('../../config.php');
-require($FANNIE_ROOT.'src/mysql_connect.php');
+include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+$dbc = FannieDB::get($FANNIE_OP_DB);
 
 $page_title = 'Fannie - Sale Signs';
 $header = 'Sale Signs';

@@ -75,10 +75,12 @@ class paycardboxMsgAuth extends PaycardProcessPage {
 		$amt = $CORE_LOCAL->get("paycard_amount");
 		$due = $CORE_LOCAL->get("amtdue");
 		$type = $CORE_LOCAL->get("CacheCardType");
+		$cb = $CORE_LOCAL->get('CacheCardCashBack');
 		if( !is_numeric($amt) || abs($amt) < 0.005) {
 		} else if( $amt > 0 && $due < 0) {
 		} else if( $amt < 0 && $due > 0) {
 		} else if ( ($amt-$due)>0.005 && $type != 'DEBIT' && $type != 'EBTCASH'){
+		} else if ( ($amt-$due-0.005)>$cb && ($type == 'DEBIT' || $type == 'EBTCASH')){
 		} else {
 			return True;
 		}
@@ -109,6 +111,9 @@ class paycardboxMsgAuth extends PaycardProcessPage {
 		} else if ( ($amt-$due)>0.005 && $type != 'DEBIT' && $type != 'EBTCASH'){
 			echo PaycardLib::paycard_msgBox($type,"Invalid Amount",
 				"Cannot exceed amount due","[clear] to cancel");
+		} else if ( ($amt-$due-0.005)>$cb && ($type == 'DEBIT' || $type == 'EBTCASH')){
+			echo PaycardLib::paycard_msgBox($type,"Invalid Amount",
+				"Cannot exceed amount due plus cashback","[clear] to cancel");
 		} else if( $amt > 0) {
 			$msg = "Tender ".PaycardLib::paycard_moneyFormat($amt);
 			if ($CORE_LOCAL->get("CacheCardType") != "")

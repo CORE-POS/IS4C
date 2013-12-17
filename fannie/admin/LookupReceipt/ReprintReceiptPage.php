@@ -24,7 +24,6 @@
 include('../../config.php');
 include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 $dbc = FannieDB::get($FANNIE_OP_DB);
-include_once($FANNIE_ROOT.'src/select_dlog.php');
 
 class ReprintReceiptPage extends FanniePage {
 
@@ -57,7 +56,7 @@ class ReprintReceiptPage extends FanniePage {
 			$dlog = $FANNIE_TRANS_DB.".dlog_15";
 			if ($FANNIE_SERVER_DBMS == 'MSSQL')
 				$dlog = $FANNIE_TRANS_DB.".dbo.dlog_15";
-			if ($date != "") $dlog = select_dlog($date);
+			if ($date != "") $dlog = DTransactionsModel::selectDlog($date);
 			$query = "SELECT year(tdate),month(tdate),day(tdate),emp_no,register_no,trans_no FROM $dlog WHERE 1=1 ";
 			$args = array();
 			if ($date != ""){

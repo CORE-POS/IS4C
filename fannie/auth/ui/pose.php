@@ -22,8 +22,7 @@
 *********************************************************************************/
 
 require('../login.php');
-$path = guesspath();
-include($path."config.php");
+include("../../config.php");
 $page_title = 'Fannie : Auth : Pose';
 $header = 'Fannie : Auth : Pose';
 
@@ -35,7 +34,7 @@ if (validateUserQuiet('admin')){
 		return;
 	}
 	else {
-		include($path."src/header.html");
+		include($FANNIE_ROOT."src/header.html");
 ?>
 <form method=post action=pose.php>
 <?php
@@ -47,12 +46,12 @@ echo '&nbsp;&nbsp;&nbsp;<input type="submit" value="Pose" />';
 ?>
 </form>
 <?php
-		include($path."src/footer.html");
+		include($FANNIE_ROOT."src/footer.html");
 	}
 }
 else {
-	include($path."src/header.html");
+	include($FANNIE_ROOT."src/header.html");
 	echo "You aren't authorized to use this feature";
-	include($path."src/footer.html");
+	include($FANNIE_ROOT."src/footer.html");
 }
 ?>

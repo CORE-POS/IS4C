@@ -77,10 +77,9 @@ if ($FANNIE_SERVER_DBMS == "MSSQL"){
 // of available coupons (in theory)
 $upQ = "UPDATE custdata AS c LEFT JOIN
 	houseVirtualCoupons AS h ON c.CardNo=h.card_no
-	c.memCoupons=SUM(CASE WHEN c.personNum=1 THEN 1 ELSE 0)
+	SET c.memCoupons=(CASE WHEN c.personNum=1 THEN 1 ELSE 0 END)
 	WHERE ".$sql->now()." >= h.start_date 
-	AND ".$sql->now()."<= h.end_date
-	GROUP BY c.CardNo";
+	AND ".$sql->now()." <= h.end_date";
 if ($FANNIE_SERVER_DBMS == "MSSQL"){
 	$upQ = "UPDATE custdata SET 
 		c.memCoupons=SUM(CASE WHEN c.personNum=1 THEN 1 ELSE 0)

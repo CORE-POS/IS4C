@@ -22,8 +22,8 @@
 *********************************************************************************/
 
 include('../../config.php');
-include('../../src/mysql_connect.php');
-include('../../src/select_dlog.php');
+include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+$dbc = FannieDB::get($FANNIE_OP_DB);
 
 $batchID = 1;
 if (isset($_GET['batchID']))
@@ -73,7 +73,7 @@ $bnStart = date('Y-m-d',$bnStart);
 $bnEnd = strtotime($bEnd);
 $bnEnd = date('Y-m-d',$bnEnd);
 
-$dlog = select_dlog($bnStart,$bnEnd);
+$dlog = DTransactionsModel::selectDlog($bnStart,$bnEnd);
 $sumTable = $FANNIE_ARCHIVE_DB.$dbc->sep().'sumUpcSalesByDay';
 
 if(!isset($_GET['excel'])){

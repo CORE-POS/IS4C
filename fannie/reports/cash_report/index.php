@@ -1,5 +1,7 @@
 <?php
 include('../../config.php');
+include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+$dbc = FannieDB::get($FANNIE_TRANS_DB);
 /*
 this page generates a set of graphs
 for cashier performance
@@ -47,7 +49,6 @@ Enter an employee number<br />
 /*
 first get the data from the database
 */
-include('../../src/trans_connect.php');
 
 $emp_no = $_GET['emp_no'];
 

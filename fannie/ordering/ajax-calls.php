@@ -22,10 +22,10 @@
 *********************************************************************************/
 include('../config.php');
 include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
-include($FANNIE_ROOT.'src/mysql_connect.php');
 include($FANNIE_ROOT.'src/tmp_dir.php');
 include($FANNIE_ROOT.'auth/login.php');
 
+$dbc = FannieDB::get($FANNIE_OP_DB);
 $TRANS = $FANNIE_TRANS_DB.$dbc->sep();
 
 $canEdit = false;
@@ -324,7 +324,8 @@ switch ($_REQUEST['action']) {
 
 function canSaveAddress($orderID)
 {
-	global $dbc,$TRANS;
+	global $FANNIE_OP_DB,$TRANS;
+    $dbc = FannieDB::get($FANNIE_OP_DB);
 
 	$chkP = $dbc->prepare_statement("SELECT card_no FROM {$TRANS}PendingSpecialOrder
 			WHERE order_id=?");
@@ -347,7 +348,8 @@ function canSaveAddress($orderID)
 
 function addUPC($orderID,$memNum,$upc,$num_cases=1)
 {
-	global $dbc, $TRANS;
+	global $FANNIE_OP_DB,$TRANS;
+    $dbc = FannieDB::get($FANNIE_OP_DB);
 
 	$sku = str_pad($upc,6,'0',STR_PAD_LEFT);
 	if (is_numeric($upc)) {
@@ -491,7 +493,8 @@ function addUPC($orderID,$memNum,$upc,$num_cases=1)
 
 function createContactRow($orderID)
 {
-	global $dbc,$TRANS;
+	global $FANNIE_OP_DB,$TRANS;
+    $dbc = FannieDB::get($FANNIE_OP_DB);
 
 	$testP = $dbc->prepare_statement("SELECT card_no FROM {$TRANS}SpecialOrderContact
 		WHERE card_no=?");
@@ -518,7 +521,8 @@ function createContactRow($orderID)
 
 function splitOrder($orderID,$transID)
 {
-	global $dbc, $TRANS;
+	global $FANNIE_OP_DB,$TRANS;
+    $dbc = FannieDB::get($FANNIE_OP_DB);
 	// copy entire order
 	$newID = duplicateOrder($orderID,'PendingSpecialOrder');	
 	
@@ -540,7 +544,8 @@ function splitOrder($orderID,$transID)
 
 function duplicateOrder($old_id,$from='CompleteSpecialOrder')
 {
-	global $dbc, $TRANS;
+	global $FANNIE_OP_DB,$TRANS;
+    $dbc = FannieDB::get($FANNIE_OP_DB);
 	$new_id = createEmptyOrder();
 	$delQ = $dbc->prepare_statement("DELETE FROM {$TRANS}PendingSpecialOrder 
 			WHERE order_id=?");
@@ -596,7 +601,8 @@ function duplicateOrder($old_id,$from='CompleteSpecialOrder')
 
 function createEmptyOrder()
 {
-	global $dbc,$TRANS,$FANNIE_SERVER_DBMS;
+	global $FANNIE_OP_DB,$TRANS,$FANNIE_SERVER_DBMS;
+    $dbc = FannieDB::get($FANNIE_OP_DB);
 	$user = checkLogin();
 	$orderID = 1;
 	$val = ($FANNIE_SERVER_DBMS != "MSSQL" ? "VALUES()" : "DEFAULT VALUES");
@@ -629,7 +635,8 @@ function createEmptyOrder()
 
 function genericRow($orderID)
 {
-	global $dbc;
+	global $FANNIE_OP_DB;
+    $dbc = FannieDB::get($FANNIE_OP_DB);
 	return array(
 	'order_id'=>$orderID,
 	'datetime'=>$dbc->now(),
@@ -673,7 +680,8 @@ function genericRow($orderID)
 
 function getCustomerForm($orderID,$memNum="0")
 {
-	global $dbc, $TRANS;
+	global $FANNIE_OP_DB, $TRANS;
+    $dbc = FannieDB::get($FANNIE_OP_DB);
 
 	if (empty($orderID)) $orderID = createEmptyOrder();
 
@@ -986,7 +994,8 @@ function getCustomerForm($orderID,$memNum="0")
 
 function getCustomerNonForm($orderID)
 {
-	global $dbc, $TRANS;
+	global $FANNIE_OP_DB, $TRANS;
+    $dbc = FannieDB::get($FANNIE_OP_DB);
 
 	$names = array();
 	$pn = 1;
@@ -1181,7 +1190,8 @@ function getCustomerNonForm($orderID)
 
 function getQtyForm($orderID,$default,$transID,$description)
 {
-	global $dbc;
+	global $FANNIE_OP_DB;
+    $dbc = FannieDB::get($FANNIE_OP_DB);
 	$ret = '<i>This item ('.$description.') requires a quantity</i><br />';
 	$ret .= "<form onsubmit=\"newQty($orderID,$transID);return false;\">";
 	$ret .= '<b>Qty</b>: <input type="text" id="newqty" value="'.$default.'" maxlength="3" size="4" />';
@@ -1194,7 +1204,8 @@ function getQtyForm($orderID,$default,$transID,$description)
 
 function getDeptForm($orderID,$transID,$description)
 {
-	global $dbc, $TRANS;
+	global $FANNIE_OP_DB, $TRANS;
+    $dbc = FannieDB::get($FANNIE_OP_DB);
 	$ret = '<i>This item ('.$description.') requires a department</i><br />';
 	$ret .= "<form onsubmit=\"newDept($orderID,$transID);return false;\">";
 	$ret .= '<select id="newdept">';
@@ -1219,7 +1230,8 @@ function getDeptForm($orderID,$transID,$description)
 
 function getItemForm($orderID)
 {
-	global $dbc,$canEdit;
+	global $FANNIE_OP_DB, $canEdit;
+    $dbc = FannieDB::get($FANNIE_OP_DB);
 	
 	$ret = "<form onsubmit=\"addUPC();return false;\">";
 	$ret .= '<b>UPC</b>: <input type="text" id="newupc" maxlength="35" />';
@@ -1265,7 +1277,8 @@ function getItemForm($orderID)
 
 function editableItemList($orderID)
 {
-	global $dbc,$TRANS;
+	global $FANNIE_OP_DB, $TRANS;
+    $dbc = FannieDB::get($FANNIE_OP_DB);
 
 	$dQ = $dbc->prepare_statement("SELECT dept_no,dept_name FROM departments order by dept_no");
 	$dR = $dbc->exec_statement($dQ);
@@ -1359,7 +1372,8 @@ function editableItemList($orderID)
 
 function itemList($orderID,$table="PendingSpecialOrder")
 {
-	global $dbc,$TRANS;
+	global $FANNIE_OP_DB, $TRANS;
+    $dbc = FannieDB::get($FANNIE_OP_DB);
 
 	$ret = '<table cellspacing="0" cellpadding="4" border="1">';
 	$ret .= '<tr><th>UPC</th><th>Description</th><th>Cases</th><th>Pricing</th><th>&nbsp;</th></tr>';
@@ -1401,7 +1415,8 @@ function itemList($orderID,$table="PendingSpecialOrder")
 
 function getItemNonForm($orderID)
 {
-	global $dbc,$TRANS;
+	global $FANNIE_OP_DB, $TRANS;
+    $dbc = FannieDB::get($FANNIE_OP_DB);
 
 	$dQ = $dbc->prepare_statement("SELECT dept_no,dept_name FROM departments order by dept_no");
 	$dR = $dbc->exec_statement($dQ);
@@ -1468,7 +1483,8 @@ function getItemNonForm($orderID)
 
 function reprice($oid,$tid,$reg=false)
 {
-	global $dbc,$TRANS;
+	global $FANNIE_OP_DB, $TRANS;
+    $dbc = FannieDB::get($FANNIE_OP_DB);
 
 	$query = $dbc->prepare_statement("SELECT o.unitPrice,o.itemQtty,o.quantity,o.discounttype,
 		c.type,c.memType,o.regPrice,o.total,o.discountable

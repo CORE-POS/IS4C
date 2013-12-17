@@ -143,8 +143,9 @@
 
 /* configuration for your module - Important */
 include("../../config.php");
+include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+$dbc = FannieDB::get($FANNIE_OP_DB);
 require($FANNIE_ROOT.'src/csv_parser.php');
-require($FANNIE_ROOT.'src/mysql_connect.php');
 require($FANNIE_ROOT.'src/tmp_dir.php');
 require($FANNIE_ROOT.'auth/login.php');
 

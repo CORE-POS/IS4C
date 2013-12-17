@@ -27,20 +27,21 @@ class NeedDiscountFooter extends TransPercentDiscount {
 		global $CORE_LOCAL;
 		$percent = $CORE_LOCAL->get('percentDiscount');
 		if ($CORE_LOCAL->get('NeedDiscountFlag')===1)
-			$percent += 5;
+			$percent += ($CORE_LOCAL->get('needDiscountPercent') * 100);
 		if ($percent == 0)
 			return _("% Discount");
-		else
+		else {
+            $CORE_LOCAL->set('percentDiscount', $percent);
 			return $percent._("% Discount");
+        }
 	}
-
-	function display_content(){
-		global $CORE_LOCAL;
-		if ($CORE_LOCAL->get("transDiscount") != 0 )
-			return number_format($CORE_LOCAL->get("transDiscount"), 2);
-		else
-			return "n/a";
-	}
+    function display_content() {
+        global $CORE_LOCAL;
+        if ($CORE_LOCAL->get("percentDiscount") != 0 )
+            return number_format($CORE_LOCAL->get("transDiscount"), 2);
+        else
+            return "n/a";
+    }
 }
 
 ?>

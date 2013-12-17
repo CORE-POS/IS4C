@@ -1,6 +1,8 @@
 <?php
 include('../../../config.php');
-
+header('Location: '.$FANNIE_URL.'modules/plugins2.0/WfcHoursTracking/WfcHtSalaryUploadPage.php');
+exit;
+/*
 include('db.php');
 $sql = hours_dbconnect();
 
@@ -42,3 +44,4 @@ else {
 	echo "</form>";
 }
 ?>
+*/

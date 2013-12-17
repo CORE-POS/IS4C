@@ -29,7 +29,8 @@
 */
 
 require('../config.php');
-require_once($FANNIE_ROOT.'src/mysql_connect.php');
+include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+$dbc = FannieDB::get($FANNIE_OP_DB);
 
 $id = 0;
 $upc = $_REQUEST['upc'];

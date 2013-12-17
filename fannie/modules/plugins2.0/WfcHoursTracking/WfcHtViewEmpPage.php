@@ -39,7 +39,6 @@ class WfcHtViewEmpPage extends FanniePage
     public function preprocess()
     {
         $this->empID = FormLib::get('id');
-        $sql = WfcHtLib::hours_dbconnect();
 
         if ($this->empID === '' || !is_numeric($this->empID)) {
             $this->empID = FannieAuth::getUID($this->current_user);
@@ -51,11 +50,12 @@ class WfcHtViewEmpPage extends FanniePage
                is in that department
             */
             $validated = false;
+            $sql = WfcHtLib::hours_dbconnect();
             $depts = array(10,11,12,13,20,21,30,40,41,50,60,998);
             $checkQ = $sql->prepare_statement("select department from employees where empID=?");
             $checkR = $sql->exec_statement($checkQ, array($this->empID));
             $checkW = $sql->fetch_row($checkR);
-            if (validateUserQuiet('view_all_hours', $checkW['department'])){
+            if (FannieAuth::validateUserQuiet('view_all_hours', $checkW['department'])){
                 $validated = true;
             }
 
@@ -67,6 +67,7 @@ class WfcHtViewEmpPage extends FanniePage
             }
         }
 
+        $sql = WfcHtLib::hours_dbconnect();
         $deptQ = $sql->prepare_statement("select department from employees where empID=?");
         $deptR = $sql->exec_statement($deptQ, array($this->empID));
         $deptW = $sql->fetch_row($deptR);

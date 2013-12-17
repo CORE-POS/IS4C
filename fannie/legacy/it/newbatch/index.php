@@ -36,49 +36,43 @@ if (isset($_GET['action'])){
 		$enddate = $_GET['enddate']." 00:00:00.00";
 		$owner = $_GET['owner'];
 		
-		$infoQ = "select discType from batchType where batchTypeID=$type";
-		$infoR = $sql->query($infoQ);
+		$infoQ = $sql->prepare("select discType from batchType where batchTypeID=?");
+		$infoR = $sql->execute($infoQ, array($type));
 		$discounttype = array_pop($sql->fetch_array($infoR));
 		
-		$insQ = "insert into batches (startDate, endDate, batchName, batchType, discountType,
-			priority) values ('$startdate','$enddate','$name',$type,$discounttype,0)";
-		$insR = $sql->query($insQ);
+		$insQ = $sql->prepare("insert into batches (startDate, endDate, batchName, batchType, discountType,
+			priority) values (?,?,?,?,?,0)");
+		$insR = $sql->execute($insQ, array($startdate, $enddate, $name, $type, $discounttype));
 		$id = $sql->insert_id();
 		
-		/*
-		$idQ = "select max(batchID) from batches";
-		$idR = $sql->query($idQ);
-		$id = array_pop($sql->fetch_array($idR));
-		*/
-		
-		$insQ = "insert batchowner values ($id,'$owner')";
-		$insR = $sql->query($insQ);
+		$insQ = $sql->prepare("insert batchowner values (?,?)");
+		$insR = $sql->execute($insQ, array($id, $owner));
 		
 		$out .= batchListDisplay();
 		break;
 	case 'deleteBatch':
 		$id = $_GET['id'];
 
-		$unsaleQ = "UPDATE products AS p LEFT JOIN batchList as b
+		$unsaleQ = $sql->prepare("UPDATE products AS p LEFT JOIN batchList as b
 			ON p.upc=b.upc
 			SET special_price=0,
 			specialpricemethod=0,specialquantity=0,
 			specialgroupprice=0,p.discounttype=0,
 			start_date='1900-01-01',end_date='1900-01-01'
 			WHERE b.upc NOT LIKE '%LC%'
-			AND b.batchID=$id";
+			AND b.batchID=?");
 		if ($FANNIE_SERVER_DBMS=="MSSQL"){
-			$unsaleQ = "UPDATE products SET special_price=0,
+			$unsaleQ = $sql->prepare("UPDATE products SET special_price=0,
 				specialpricemethod=0,specialquantity=0,
 				specialgroupprice=0,discounttype=0,
 				start_date='1900-01-01',end_date='1900-01-01'
 				FROM products AS p, batchList as b
 				WHERE p.upc=b.upc AND b.upc NOT LIKE '%LC%'
-				AND b.batchID=$id";
+				AND b.batchID=?");
 		}
-		$unsaleR = $sql->query($unsaleQ);
+		$unsaleR = $sql->execute($unsaleQ, array($id));
 
-		$unsaleLCQ = "UPDATE products AS p LEFT JOIN
+		$unsaleLCQ = $sql->prepare("UPDATE products AS p LEFT JOIN
 			likeCodeView AS v ON v.upc=p.upc LEFT JOIN
 			batchList AS l ON l.upc=concat('LC',convert(v.likeCode,char))
 			SET special_price=0,
@@ -86,9 +80,9 @@ if (isset($_GET['action'])){
 			specialgroupprice=0,p.discounttype=0,
 			start_date='1900-01-01',end_date='1900-01-01'
 			WHERE l.upc LIKE '%LC%'
-			AND l.batchID=$id";
+			AND l.batchID=?");
 		if ($FANNIE_SERVER_DBMS=="MSSQL"){
-			$unsaleLCQ = "UPDATE products
+			$unsaleLCQ = $sql->prepare("UPDATE products
 				SET special_price=0,
 				specialpricemethod=0,specialquantity=0,
 				specialgroupprice=0,discounttype=0,
@@ -97,15 +91,15 @@ if (isset($_GET['action'])){
 				likeCodeView AS v ON v.upc=p.upc LEFT JOIN
 				batchList AS l ON l.upc='LC'+convert(varchar,v.likeCode)
 				WHERE l.upc LIKE '%LC%'
-				AND l.batchID=$id";
+				AND l.batchID=?");
 		}
-		$unsaleLCR = $sql->query($unsaleLCQ);
+		$unsaleLCR = $sql->execute($unsaleLCQ, array($id));
 		
-		$delQ = "delete from batches where batchID=$id";
-		$delR = $sql->query($delQ);
+		$delQ = $sql->prepare("delete from batches where batchID=?");
+		$delR = $sql->execute($delQ, array($id));
 		
-		$delQ = "delete from batchList where batchID=$id";
-		$delR = $sql->query($delQ);
+		$delQ = $sql->prepare("delete from batchList where batchID=?");
+		$delR = $sql->execute($delQ, array($id));
 
 		exec("touch /pos/sync/scheduled/products");
 
@@ -119,22 +113,22 @@ if (isset($_GET['action'])){
 		$enddate = $_GET['enddate'];
 		$owner = $_GET['owner'];
 		
-		$infoQ = "select discType from batchType where batchTypeID=$type";
-		$infoR = $sql->query($infoQ);
+		$infoQ = $sql->prepare("select discType from batchType where batchTypeID=?");
+		$infoR = $sql->execute($infoQ, array($type));
 		$discounttype = array_pop($sql->fetch_array($infoR));
 		
-		$upQ = "update batches set batchname='$name',batchtype=$type,discounttype=$discounttype,startdate='$startdate',enddate='$enddate' where batchID=$id";
-		$upR = $sql->query($upQ);
+		$upQ = $sql->prepare("update batches set batchname=?,batchtype=?,discounttype=?,startdate=?,enddate=? where batchID=?");
+		$upR = $sql->execute($upQ, array($name, $type, $discounttype, $startdate, $enddate, $id));
 		
-		$checkQ = "select batchID from batchowner where batchID=$id";
-		$checkR = $sql->query($checkQ);
+		$checkQ = $sql->prepare("select batchID from batchowner where batchID=?");
+		$checkR = $sql->execute($checkQ, array($id));
 		if($sql->num_rows($checkR) == 0){
-			$insQ = "insert batchowner values ($id,'$owner')";
-			$insR = $sql->query($insQ);
+            $insQ = $sql->prepare("insert batchowner values (?,?)");
+            $insR = $sql->execute($insQ, array($id, $owner));
 		}
 		else{
-			$upQ = "update batchowner set owner='$owner' where batchID=$id";
-			$upR = $sql->query($upQ);
+			$upQ = $sql->prepare("update batchowner set owner=? where batchID=?");
+			$upR = $sql->execute($upQ, array($owner, $id));
 		}
 		
 		break;
@@ -162,8 +156,8 @@ if (isset($_GET['action'])){
 		$tag = false;
 		if ($_GET['tag'] == 'true')
 			$tag = true;
-		$testQ = "select * from products where upc='$newupc'";
-		$testR = $sql->query($testQ);
+		$testQ = $sql->prepare("select * from products where upc=?");
+		$testR = $sql->execute($testQ, array($newupc));
 		if ($sql->num_rows($testR) > 0) $upc = $newupc;
 		
 		$out .= addItemPriceInput($upc,$tag);
@@ -179,16 +173,16 @@ if (isset($_GET['action'])){
 		$price = $_GET['price'];
 		
 		if ($price != ""){
-			$checkQ = "select upc from batchList where upc='$upc' and batchID=$id";
-			$checkR = $sql->query($checkQ);
+			$checkQ = $sql->prepare("select upc from batchList where upc=? and batchID=?");
+			$checkR = $sql->execute($checkQ, array($upc, $id));
 			if ($sql->num_rows($checkR) == 0){
-				$insQ = "insert into batchList (upc,batchID,salePrice,active,pricemethod,quantity)
-					values ('$upc',$id,$price,1,0,0)";
-				$insR = $sql->query($insQ);
+				$insQ = $sql->prepare("insert into batchList (upc,batchID,salePrice,active,pricemethod,quantity)
+					values (?,?,?,1,0,0)");
+				$insR = $sql->execute($insQ, array($upc, $id, $price));
 			}
 			else {
-				$upQ = "update batchList set saleprice=$price where upc='$upc' and batchID=$id";
-				$upR = $sql->query($upQ);
+				$upQ = $sql->prepare("update batchList set saleprice=? where upc=? and batchID=?");
+				$upR = $sql->execute($upQ, array($price, $upc, $id));
 			}
 			$audited = $_GET['audited'];
 			if ($audited == 1)
@@ -204,17 +198,17 @@ if (isset($_GET['action'])){
 		$lc = $_GET['lc'];
 		$price = $_GET['price'];
 		
-		if ($price != ""){
-			$checkQ = "select upc from batchList where upc='LC$lc' and batchID='$id'";
-			$checkR = $sql->query($checkQ);
+		if ($price != "") {
+			$checkQ = $sql->prepare("select upc from batchList where upc=? and batchID=?");
+			$checkR = $sql->execute($checkQ, array('LC'.$lc, $id));
 			if ($sql->num_rows($checkR) == 0){
-				$insQ = "insert into batchList (upc,batchID,salePrice,active,pricemethod,quantity)
-					values ('LC$lc',$id,$price,1,0,0)";
-				$insR = $sql->query($insQ);
+				$insQ = $sql->prepare("insert into batchList (upc,batchID,salePrice,active,pricemethod,quantity)
+					values (?,?,?,1,0,0)");
+				$insR = $sql->execute($insQ, array('LC'.$lc, $id, $price));
 			}
 			else {
-				$upQ = "update batchList set saleprice=$price where upc='LC$lc' and batchID=$id";
-				$upR = $sql->query($upQ);
+				$upQ = $sql->prepare("update batchList set saleprice=? where upc=? and batchID=?");
+				$upR = $sql->execute($upQ, array($price, 'LC'.$lc, $id));
 			}
 			$audited = $_GET['audited'];
 			if ($audited == 1)
@@ -229,23 +223,23 @@ if (isset($_GET['action'])){
 		$id = $_GET['id'];
 		$upc = $_GET['upc'];
 		
-		$delQ = "delete from batchList where batchID=$id and upc='$upc'";
-		$delR = $sql->query($delQ);
+		$delQ = $sql->prepare("delete from batchList where batchID=? and upc=?");
+		$delR = $sql->execute($delQ, array($id, $upc));
 		
-		$delQ = "delete from batchBarcodes where upc='$upc' and batchID='$id'";
-		$delR = $sql->query($delQ);
+		$delQ = $sql->prepare("delete from batchBarcodes where upc=? and batchID=?");
+		$delR = $sql->execute($delQ, array($upc, $id));
 
 		if (substr($upc,0,2) != 'LC'){
 			// take the item off sale if this batch is currently on sale
-			$unsaleQ = "UPDATE products AS p LEFT JOIN batchList as b on p.upc=b.upc
+			$unsaleQ = $sql->prepare("UPDATE products AS p LEFT JOIN batchList as b on p.upc=b.upc
 					set p.discounttype=0,special_price=0,start_date=0,end_date=0 
-				    WHERE p.upc='$upc' and b.batchID=$id";
+				    WHERE p.upc=? and b.batchID=?");
 			if ($FANNIE_SERVER_DBMS == "MSSQL"){
-				$unsaleQ = "update products set discounttype=0,special_price=0,start_date=0,end_date=0 
+				$unsaleQ = $sql->prepare("update products set discounttype=0,special_price=0,start_date=0,end_date=0 
 					    from products as p, batches as b where
-					    p.upc='$upc' and b.batchID=$id and b.startdate=p.start_date and b.enddate=p.end_date";
+					    p.upc=? and b.batchID=? and b.startdate=p.start_date and b.enddate=p.end_date");
 			}
-			$unsaleR = $sql->query($unsaleQ);
+			$unsaleR = $sql->execute($unsaleQ, array($upc, $id));
 			
             $model = new ProductsModel($sql);
             $model->upc($upc);
@@ -253,17 +247,17 @@ if (isset($_GET['action'])){
 		}
 		else {
 			$lc = substr($upc,2);
-			$unsaleQ = "UPDATE products AS p LEFT JOIN upcLike as u on p.upc=u.upc
+			$unsaleQ = $sql->prepare("UPDATE products AS p LEFT JOIN upcLike as u on p.upc=u.upc
 					LEFT JOIN batchList as b ON b.upc=concat('LC',convert(u.likeCode,char))
 					set p.discounttype=0,special_price=0,start_date=0,end_date=0 
-				    WHERE u.likeCode='$lc' and b.batchID=$id";
+				    WHERE u.likeCode=? and b.batchID=?");
 			if ($FANNIE_SERVER_DBMS == "MSSQL"){
-				$unsaleQ = "update products set discounttype=0,special_price=0,start_date=0,end_date=0
+				$unsaleQ = $sql->prepare("update products set discounttype=0,special_price=0,start_date=0,end_date=0
 					from products as p, batches as b, upcLike as u
-					where u.likeCode=$lc and u.upc=p.upc and b.startdate=p.start_date and b.enddate=p.end_date
-					and b.batchID=$id";
+					where u.likeCode=? and u.upc=p.upc and b.startdate=p.start_date and b.enddate=p.end_date
+					and b.batchID=?");
 			}
-			$unsaleR = $sql->query($unsaleQ);
+			$unsaleR = $sql->execute($unsaleQ, array($lc, $id));
 
             $prep = $sql->prepare('SELECT upc FROM upcLike WHERE likeCode=?');
             $all = $sql->execute($prep, array($lc));
@@ -293,11 +287,11 @@ if (isset($_GET['action'])){
 		if (is_numeric($qty)) $method=2;
 		else $qty=0;
 		
-		$upQ = "update batchList set saleprice=$saleprice,pricemethod=$method,quantity=$qty where batchID=$id and upc='$upc'";
-		$upR = $sql->query($upQ);
+		$upQ = $sql->prepare("update batchList set saleprice=?,pricemethod=?,quantity=? where batchID=? and upc=?");
+		$upR = $sql->execute($upQ, array($saleprice, $method, $qty, $id, $upc));
 		
-		$upQ = "update batchBarcodes set normal_price=$saleprice where upc='$upc' and batchID=$id";
-		$upR = $sql->query($upQ);
+		$upQ = $sql->prepare("update batchBarcodes set normal_price=? where upc=? and batchID=?");
+		$upR = $sql->execute($upQ, array($saleprice, $upc, $id));
 
 		$audited = $_GET["audited"];
 		if ($audited == "1")
@@ -323,20 +317,20 @@ if (isset($_GET['action'])){
 		$sku = $_GET['sku'];
 		$vendor = $_GET['vendor'];
 		
-		$checkQ = "select upc from batchBarcodes where upc='$upc' and batchID = $id";
-		$checkR = $sql->query($checkQ);
+		$checkQ = $sql->prepare("select upc from batchBarcodes where upc=? and batchID = ?");
+		$checkR = $sql->execute($checkQ, array($upc, $id));
 		if ($sql->num_rows($checkR) == 0){
-			$insQ = "insert into batchBarcodes values ('$upc','$desc',$price,'$brand','$sku','$size','$units','$vendor',$id)";
-			$insR = $sql->query($insQ);
+			$insQ = $sql->prepare("insert into batchBarcodes values (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+			$insR = $sql->execute($insQ, array($upc, $desc, $price, $brand, $sku, $size, $units, $vendor, $id));
 		}
 		else {
-			$upQ = "update batchBarcodes set normal_price=$price where upc='$upc'";
-			$upR = $sql->query($upQ);
+			$upQ = $sql->prepare("update batchBarcodes set normal_price=? where upc=?");
+			$upR = $sql->execute($upQ, array($price, $upc));
 		}
 		
-		$insQ = "insert into batchList (upc,batchID,salePrice,active,pricemethod,quantity) 
-			values ('$upc',$id,$price,1,0,0)";
-		$insR = $sql->query($insQ);
+		$insQ = $sql->prepare("insert into batchList (upc,batchID,salePrice,active,pricemethod,quantity) 
+			values (?,?,?,1,0,0)");
+		$insR = $sql->execute($insQ, array($upc, $id, $price));
 		
 		$out .= addItemUPCInput('true');
 		$out .= '`';
@@ -375,15 +369,15 @@ if (isset($_GET['action'])){
 		for ($i = 0; $i < 6; $i++) $out .= "<td>&nbsp;</td>";
 		$out .= "`";
 		
-		$likeQ = "select p.upc,p.description,p.normal_price,$saleprice
+		$likeQ = $sql->prepare("select p.upc,p.description,p.normal_price
 			from products as p left join upcLike as u on p.upc=u.upc
-			where u.likeCode = $likecode order by p.upc desc";
-		$likeR = $sql->query($likeQ);
+			where u.likeCode = $likecode order by p.upc desc");
+		$likeR = $sql->execute($likeQ, array($likecode));
 		while ($likeW = $sql->fetch_row($likeR)){
 			$out .= "<td><a href=/queries/productTest.php?upc=$likeW[0] target=_new$likeW[0]>$likeW[0]</a></td>";
 			$out .= "<td>$likeW[1]</td>";
 			$out .= "<td>$likeW[2]</td>";
-			$out .= "<td>$likeW[3]</td>";
+			$out .= "<td>$saleprice</td>";
 			$out .= "<td>&nbsp;</td>";
 			$out .= "<td>&nbsp;</td>";
 			$out .= "`";
@@ -471,8 +465,8 @@ function addItemLCInput($newtags=false){
 
 function addItemPriceInput($upc,$newtags=false){
 	global $sql;
-	$fetchQ = "select description,normal_price from products where upc='$upc'";
-	$fetchR = $sql->query($fetchQ);
+	$fetchQ = $sql->prepare("select description,normal_price from products where upc=?");
+	$fetchR = $sql->execute($fetchQ, array($upc));
 	$fetchW = $sql->fetch_array($fetchR);
 	
 	$ret = "<form onsubmit=\"addItemFinish('$upc'); return false;\">";
@@ -490,20 +484,21 @@ function addItemPriceInput($upc,$newtags=false){
 
 function addItemPriceLCInput($lc){
 	global $sql;
-	$fetchQ = "select likeCodeDesc from likeCodes where likeCode=$lc";
-	$fetchR = $sql->query($fetchQ);
+	$fetchQ = $sql->prepare("select likeCodeDesc from likeCodes where likeCode=?");
+	$fetchR = $sql->execute($fetchQ, array($lc));
 	$desc = array_pop($sql->fetch_array($fetchR));
 	
 	/* get the most common price for items in a given
 	 * like code
 	 */
 	$fetchQ = "select p.normal_price from products as p
-			left join upcLike as u on p.upc=u.upc and u.likeCode=$lc
+			left join upcLike as u on p.upc=u.upc and u.likeCode=?
 			where u.upc is not null
 			group by p.normal_price
 			order by count(*) desc";
 	$fetchQ = $sql->add_select_limit($fetchQ,1);
-	$fetchR = $sql->query($fetchQ);
+    $fetchP = $sql->prepare($fetchQ);
+	$fetchR = $sql->execute($fetchP, array($lc));
 	$normal_price = array_pop($sql->fetch_array($fetchR));
 	
 	$ret = "<form onsubmit=\"addItemLCFinish('$lc'); return false;\">";
@@ -517,8 +512,8 @@ function addItemPriceLCInput($lc){
 
 function newTagInput($upc,$price,$id){
 	global $sql;
-	$unfiQ = "select distinct * from UNFI where upc = '$upc'";
-	$unfiR = $sql->query($unfiQ);
+	$unfiQ = $sql->prepare("select distinct * from UNFI where upc = ?");
+	$unfiR = $sql->execute($unfiQ, array($upc));
 	$unfiN = $sql->num_rows($unfiR);
 	
 	$size = '';
@@ -541,8 +536,8 @@ function newTagInput($upc,$price,$id){
 	}
 	// otherwise, snag at least the description from products
 	else {
-		$descQ = "select description from products where upc='$upc'";
-		$descR = $sql->query($descQ);
+		$descQ = $sql->prepare("select description from products where upc=?");
+		$descR = $sql->execute($descQ, array($upc));
 		$desc = strtoupper(array_pop($sql->fetch_array($descR)));
 	}
 	
@@ -627,12 +622,15 @@ function batchListDisplay($filter='',$mode='all'){
 		break;	
 	}
 	// use a filter - only works in 'all' mode
+    $args = array();
 	if ($filter != ''){
 		$fetchQ = "select b.batchName,b.batchType,b.startDate,b.endDate,b.batchID,
 			   o.owner from batches as b left outer join batchowner as o
-			   on b.batchID = o.batchID where o.owner='$filter' order by b.batchID desc";
+			   on b.batchID = o.batchID where o.owner=? order by b.batchID desc";
+        $args[] = $filter;
 	}
-	$fetchR = $sql->query($fetchQ);
+    $fetchP = $sql->prepare($fetchQ);
+	$fetchR = $sql->execute($fetchP, $args);
 	
 	$count = 0;
 	while($fetchW = $sql->fetch_array($fetchR)){
@@ -660,10 +658,10 @@ function batchListDisplay($filter='',$mode='all'){
 	return $ret;
 }
 
-function showBatchDisplay($id,$orderby=' ORDER BY b.listID DESC'){
+function showBatchDisplay($id,$orderby='ORDER BY b.listID DESC'){
 	global $sql;
-	$nameQ = "select batchName,batchType from batches where batchID=$id";
-	$nameR = $sql->query($nameQ);
+	$nameQ = $sql->prepare("select batchName,batchType from batches where batchID=?");
+	$nameR = $sql->execute($nameQ, array($id));
 	$nameW = $sql->fetch_row($nameR);
 	$name = $nameW[0];
 	$type = $nameW[1];
@@ -677,8 +675,41 @@ function showBatchDisplay($id,$orderby=' ORDER BY b.listID DESC'){
 	else if ($type == 4){
 		$saleHeader = "New Price";
 	}
+
+    // validate order by clause
+    $safe_order = '';
+    switch($orderby) {
+        case 'ORDER BY b.upc ASC';
+            $safe_order = 'ORDER BY b.upc ASC';
+            break;
+        case 'ORDER BY b.upc DESC';
+            $safe_order = 'ORDER BY b.upc DESC';
+            break;
+        case 'ORDER BY description ASC';
+            $safe_order = 'ORDER BY description ASC';
+            break;
+        case 'ORDER BY description DESC';
+            $safe_order = 'ORDER BY description DESC';
+            break;
+        case 'ORDER BY p.normal_price ASC';
+            $safe_order = 'ORDER BY p.normal_price ASC';
+            break;
+        case 'ORDER BY p.normal_price DESC';
+            $safe_order = 'ORDER BY p.normal_price DESC';
+            break;
+        case 'ORDER BY b.saleprice ASC';
+            $safe_order = 'ORDER BY b.saleprice ASC';
+            break;
+        case 'ORDER BY b.saleprice DESC';
+            $safe_order = 'ORDER BY b.saleprice DESC';
+            break;
+        case 'ORDER BY b.listID DESC';
+        default:
+            $safe_order = 'ORDER BY b.listID DESC';
+            break;
+    }
 	
-	$fetchQ = "select b.upc,
+	$fetchQ = $sql->prepare("select b.upc,
 			case when l.likeCode is null then p.description
 			else l.likeCodeDesc end as description,
 			p.normal_price,b.salePrice,
@@ -686,8 +717,8 @@ function showBatchDisplay($id,$orderby=' ORDER BY b.listID DESC'){
 			from batchList as b left outer join products as p on
 			b.upc = p.upc left outer join likeCodes as l on
 			b.upc = concat('LC',convert(l.likeCode,char))
-			where b.batchID = $id $orderby";
-	$fetchR = $sql->query($fetchQ);
+			where b.batchID = ? $safe_order");
+	$fetchR = $sql->execute($fetchQ, array($id));
 	
 	$ret = "<b>Batch name</b>: $name<br />";
 	$ret .= "<a href=\"\" onclick=\"backToList(); return false;\">Back to batch list</a> | ";

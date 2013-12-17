@@ -9,7 +9,7 @@ class RenderReceiptPage extends FanniePage {
 	function body_content(){
 		ob_start();
 		?>
-		<form action=reprint.php method=post>
+		<form action=RenderReceiptPage.php method=post>
 		Date: <input type=text name=date><br>
 		Receipt Num: <input type=text name=receipt><br>
 		<input type=submit name=submit>
@@ -72,7 +72,7 @@ class RenderReceiptPage extends FanniePage {
 		}
 
 		// equivalent to rp_dt_receipt_* view
-		$table = DTransactionsModel::select_dtrans(date('Y-m-d',$totime));
+		$table = DTransactionsModel::selectDtrans(date('Y-m-d',$totime));
 		$query1 = "SELECT 
 			description,
 			case 

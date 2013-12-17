@@ -69,7 +69,7 @@ class CustomerPurchasesReport extends FannieReportPage
 		$date2 = FormLib::get_form_value('date2',date('Y-m-d'));
 		$card_no = FormLib::get_form_value('card_no','0');
 
-		$dlog = DTransactionsModel::select_dlog($date1,$date2);
+		$dlog = DTransactionsModel::selectDlog($date1,$date2);
 		$query = "select month(t.tdate),day(t.tdate),year(t.tdate),
 			  t.upc,p.description,
 			  t.department,d.dept_name,m.super_name,

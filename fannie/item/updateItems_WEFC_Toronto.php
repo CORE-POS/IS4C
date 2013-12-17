@@ -53,7 +53,8 @@ include('../config.php');
 $Fannie_Item_Modules = array("Operations","ExtraInfo",
 		"ThreeForDollar",
 	"Cost","Sale","Margin", "LikeCode", "LaneStatus");
-require_once('../src/mysql_connect.php');
+include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+$dbc = FannieDB::get($FANNIE_OP_DB);
 
 require_once('../auth/login.php');
 $validatedUser = validateUserQuiet('pricechange');

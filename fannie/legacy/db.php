@@ -2,11 +2,10 @@
 if (!isset($FANNIE_SERVER)) {
     include(dirname(__FILE__).'/../config.php');
 }
-if (!class_exists('SQLManager')) {
-    include(dirname(__FILE__).'/../src/SQLManager.php');
+if (!class_exists('FannieAPI')) {
+    include(dirname(__FILE__).'/../classlib2.0/FannieAPI.php');
 }
-$dbc = new SQLManager($FANNIE_SERVER,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
-		$FANNIE_SERVER_USER,$FANNIE_SERVER_PW);
+$dbc = FannieDB::get($FANNIE_OP_DB);
 $sql = $dbc;
 
 if (!function_exists('add_second_server')){

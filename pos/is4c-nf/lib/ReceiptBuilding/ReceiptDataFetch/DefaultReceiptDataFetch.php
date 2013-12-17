@@ -29,45 +29,46 @@
 
 class DefaultReceiptDataFetch 
 {
-	
-	/**
-	  Implementation function
-	  @return SQL result object
-	*/
-	public function fetch($empNo=false,$laneNo=false,$transNo=false)
+    
+    /**
+      Implementation function
+      @return SQL result object
+    */
+    public function fetch($empNo=false,$laneNo=false,$transNo=false)
     {
-		global $CORE_LOCAL;
-		$op_db = $CORE_LOCAL->get('pDatabase');
-		$sql = Database::tDataConnect();
-		$query = 'SELECT l.upc,l.trans_type,l.description,
-			l.total,l.percentDiscount,l.trans_status,
-			l.charflag,l.scale,l.quantity,l.unitPrice,
-			l.ItemQtty,l.matched,l.numflag,l.tax,
-			l.foodstamp,l.trans_id,l.department,
-			s.subdept_name AS category 
-			FROM localtemptrans AS l LEFT JOIN '
-			.$op_db.$sql->sep().'subdepts AS s 
-			ON l.department=s.dept_ID
-			WHERE trans_type <> \'L\'
-			ORDER BY trans_id DESC';
-		if ($empNo && $laneNo && $transNo) {
-			$query = sprintf("SELECT l.upc,l.trans_type,l.description,
-				l.total,l.percentDiscount,l.trans_status,
-				l.charflag,l.scale,l.quantity,l.unitPrice,
-				l.ItemQtty,l.matched,l.numflag,l.tax,
-				l.foodstamp,l.trans_id,l.department,
-				s.subdept_name AS category 
-				FROM localtranstoday as l LEFT JOIN "
-				.$op_db.$sql->sep()."subdepts AS s
-				ON l.department=s.dept_ID
-				WHERE trans_type <> 'L' AND
-				emp_no=%d AND register_no=%d AND trans_no=%d
-				ORDER BY trans_id DESC",$empNo,$laneNo,$transNo);
-		}
-		$result = $sql->query($query);
+        global $CORE_LOCAL;
+        $op_db = $CORE_LOCAL->get('pDatabase');
+        $sql = Database::tDataConnect();
+        $query = 'SELECT l.upc,l.trans_type,l.description,
+            l.total,l.percentDiscount,l.trans_status,
+            l.charflag,l.scale,l.quantity,l.unitPrice,
+            l.ItemQtty,l.matched,l.numflag,l.tax,
+            l.foodstamp,l.trans_id,l.department,
+            s.subdept_name AS category 
+            FROM localtemptrans AS l LEFT JOIN '
+            .$op_db.$sql->sep().'subdepts AS s 
+            ON l.department=s.dept_ID
+            WHERE trans_type <> \'L\'
+            ORDER BY trans_id DESC';
+        if ($empNo && $laneNo && $transNo) {
+            $query = sprintf("SELECT l.upc,l.trans_type,l.description,
+                l.total,l.percentDiscount,l.trans_status,
+                l.charflag,l.scale,l.quantity,l.unitPrice,
+                l.ItemQtty,l.matched,l.numflag,l.tax,
+                l.foodstamp,l.trans_id,l.department,
+                s.subdept_name AS category 
+                FROM localtranstoday as l LEFT JOIN "
+                .$op_db.$sql->sep()."subdepts AS s
+                ON l.department=s.dept_ID
+                WHERE trans_type <> 'L' AND
+                emp_no=%d AND register_no=%d AND trans_no=%d
+                AND datetime >= " . $sql->curdate() . "
+                ORDER BY trans_id DESC",$empNo,$laneNo,$transNo);
+        }
+        $result = $sql->query($query);
 
-		return $result;
-	}
+        return $result;
+    }
 
 }
 

@@ -128,6 +128,7 @@ class UnfiUploadPage extends FannieUploadPage {
 
 			// grab data from appropriate columns
 			$sku = $data[$SKU];
+            $sku = str_pad($sku, 7, '0', STR_PAD_LEFT);
 			$brand = $data[$BRAND];
 			$description = $data[$DESCRIPTION];
 			$qty = $data[$QTY];

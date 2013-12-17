@@ -1,103 +1,79 @@
 <html>
+<head>
+	<title>Authentication</title>
+</head>
 <body>
-Crappy documentation via find/grep/sed!
-<br /><br />
-./cron/management/index.php: 'admin'<br />
-./auth/ui/pose.php: 'admin'<br />
-./batches/newbatch/index.php: 'batches'<br />
-./batches/newbatch/index.php: 'batches_audited'<br />
-./admin/labels/index.php: 'barcodes'<br />
-./admin/Cashiers/edit.php: 'editcashiers'<br />
-./admin/Cashiers/add.php: 'editcashiers'<br />
-./admin/Cashiers/index.php: 'editcashiers'<br />
-./admin/Cashiers/overshort.php: 'overshorts'<br />
-./admin/Cashiers/view.php: 'editcashiers'<br />
-./admin/Tenders/delete.php: 'tenders'<br />
-./admin/Tenders/index.php: 'tenders'<br />
-./item/updateItems.php: 'pricechange'<br />
-./item/updateItems.php: 'audited_pricechange'<br />
-./item/updateItems.php: 'pricechange'<br />
-./item/scaleDelete.php: 'delete_items'<br />
-./item/likecodes/index.php: 'manage_likecodes'<br />
-./item/deleteItem.php: 'delete_items'<br />
-./item/insertItem.php: 'pricechange'<br />
-./item/insertItem.php: 'audited_pricechange'<br />
-./item/insertItem.php: 'pricechange'<br />
-./item/productListCallback.php: 'delete_items'<br />
-./mem/new.php: 'memgen'<br />
-./mem/types.php: 'editmembers'<br />
-./ordering/ajax-calls.php: 'ordering_edit'<br />
-./legacy/queries/updateItemTest.php: 'pricechange'<br />
-./legacy/queries/updateItemTest.php: 'audited_pricechange'<br />
-./legacy/queries/updateItemTest.php: 'pricechange'<br />
-./legacy/queries/enterTestItem.php: 'pricechange'<br />
-./legacy/queries/enterTestItem.php: 'audited_pricechange'<br />
-./legacy/queries/enterTestItem.php: 'pricechange'<br />
-./legacy/queries/listDel.php: 'delete_items'<br />
-./legacy/queries/labels/index.php: 'barcodes'<br />
-./legacy/queries/prodFunction.php: 'pricechange'<br />
-./legacy/FE/overshortSingleEmp.php: 'overshorts'<br />
-./legacy/FE/overshort.php: 'overshorts'<br />
-./legacy/members/alterstatus.php: 'editmembers'<br />
-./legacy/members/alterstatus.php: 'editmembers_csc'<br />
-./legacy/members/memAddress.php: 'editmembers'<br />
-./legacy/members/memAddress.php: 'editmembers_csc'<br />
-./legacy/members/memAddress.php: 'editmembers'<br />
-./legacy/members/memAddress.php: 'editmembers'<br />
-./legacy/members/memAddress.php: 'editmembers'<br />
-./legacy/members/memAddress.php: 'editmembers'<br />
-./legacy/members/memGen.php: 'editmembers_csc'<br />
-./legacy/members/memGen.php: 'editmembers'<br />
-./legacy/members/staffAR.php: 'staffar'<br />
-./legacy/members/insertEdit.php: 'editmembers'<br />
-./legacy/members/index.php: 'memgen'<br />
-./legacy/members/limitedEdit.php: 'editmembers'<br />
-./legacy/members/limitedEdit.php: 'editmembers_csc'<br />
-./legacy/members/memDBHistory.php: 'editmembers'<br />
-./legacy/members/genNums.php: 'memgen'<br />
-./legacy/members/testEdit.php: 'editmembers'<br />
-./legacy/members/limitedSave.php: 'editmembers'<br />
-./legacy/members/limitedSave.php: 'editmembers_csc'<br />
-./legacy/it/hours/pps.php: 'view_all_hours'<br />
-./legacy/it/hours/menu.php: 'view_all_hours'<br />
-./legacy/it/hours/eval/list.php: 'evals'<br />
-./legacy/it/hours/eval/report.php: 'evals'<br />
-./legacy/it/hours/eval/index.php: 'evals'<br />
-./legacy/it/hours/eval/view.php: 'evals'<br />
-./legacy/it/hours/list.php: 'view_all_hours'<br />
-./legacy/it/hours/list.php: 'view_all_hours'<br />
-./legacy/it/hours/list.php: 'edit_employees'<br />
-./legacy/it/hours/upload.php: 'upload_hours_data'<br />
-./legacy/it/hours/viewEmployeeSalary.php: 'view_all_hours'<br />
-./legacy/it/hours/csvdump.php: 'view_all_hours'<br />
-./legacy/it/hours/csvdump.php: 'view_all_hours'<br />
-./legacy/it/hours/viewEmployee.php: 'view_all_hours'<br />
-./legacy/it/hours/viewEmployee.php: 'view_all_hours'<br />
-./legacy/it/hours/importUTO.php: 'upload_hours_data'<br />
-./legacy/it/hours/report.php: 'view_all_hours'<br />
-./legacy/it/hours/importWeekly.php: 'upload_hours_data'<br />
-./legacy/it/hours/editEmployee.php: 'edit_employees'<br />
-./legacy/it/hours/empWeekly.php: 'view_all_hours'<br />
-./legacy/it/hours/index.php: 'view_all_hours'<br />
-./legacy/it/hours/weeklyReport.php: 'view_all_hours'<br />
-./legacy/it/likecode_manager/edit.php: 'manage_likecodes'<br />
-./legacy/it/likecode_manager/delete.php: 'manage_likecodes'<br />
-./legacy/it/likecode_manager/index.php: 'manage_likecodes'<br />
-./legacy/it/mas90/journal.php: 'mas90_journal'<br />
-./legacy/it/ApplicationTracking/list.php: 'apptracking'<br />
-./legacy/it/ApplicationTracking/list.php: 'apptracking'<br />
-./legacy/it/ApplicationTracking/comment.php: 'apptracking'<br />
-./legacy/it/ApplicationTracking/set_interview.php: 'apptracking'<br />
-./legacy/it/ApplicationTracking/view.php: 'apptracking'<br />
-./legacy/it/newbatch/index.php: 'batches'<br />
-./legacy/it/newbatch/index.php: 'batches_audited'<br />
-./legacy/it/delimenu/index.php: 'delimenu'<br />
-./legacy/it/projects/project.php: 'admin'<br />
-./legacy/it/projects/project.php: 'projects'<br />
-./legacy/it/projects/addnote.php: 'projects'<br />
-./legacy/it/projects/index.php: 'projects'<br />
-./legacy/it/adjust/index.php: 'backvoids'<br />
-./logs/index.php: 'admin'<br />
-./reports/cash_report/index.php: 'cashierPerformance'<br />
+	<div style="text-align:center;margin-bottom:10px;font-size:80%;">
+	updated as of: December 5, 2013<br />
+	last author: Andy Theuninck
+	</div>
+<h1>User Authentication</h1>
+<p>
+Fannie includes an option for user authentication. When this is enabled,
+various tools with require a username and password. This is disabled by
+default. To enable it, go to the Authentication tab on Fannie's install/config
+page and set Authentication Enabled to Yes.
+</p>
+<p>
+If this is your first time using Fannie's user accounts, you will be to enter
+a password for the first user who is named <i>admin</i>. You must have at least
+one user with the <i>admin</i> permission to create additional accounts or 
+groups. Do not delete the account named <i>admin</i> unless you have granted
+that permission to another user or group.
+</p>
+<h2>Permissions</h2>
+<p>
+Fannie's user system is oriented around <i>permissions</i> or <i>authorization classes</i>.
+Rather than a tiered system where higher levels have access to a wider and wider set of
+features, a user is granted permission to access a specific tool or toolset. For example,
+one user may be allowed to edit items and another may be allowed to edit member accounts.
+Neither has a higher level of access; they just have access to different tools.
+</p>
+<h2>Groups</h2>
+<p>
+Users may be arranged into groups. Permissions can be assigned to a group rather than
+to each individual user. Be aware that a group must have at least one user; deleting
+all the users from a group will also delete the group itself. Fannie's sample data
+includes a set of default groups for common roles. The first user named <i>admin</i>
+is automatically a member of all these groups as a placeholder. Default groups are:
+<ul>
+    <li><i>Administrators</i> - simply given all available permissions.</li>
+    <li><i>Items</i> - this group has permission to create, edit, and delete items
+        as well as set up sales batches and manage shelftags. Buyers and/or
+        Scanning staff often belong in this group.</li>
+    <li><i>Membership</i> - this group has permission to create and edit member
+        accounts. Terminology and staff structure varies more here but every
+        co-op will have someone who belongs here.</li>
+    <li><i>FE Management</i> - Front End management has permission to create
+        and edit cashiers, use tools related to tenders and variances, and
+        view cashier performance reporting.</li>
+    <li><i>Limited Editors</i> - this group can adjust contact information
+        on memberships but not other settings. They can also edit items
+        and sales batches but when they do so notifications are dispatched
+        to whoever is normally responsible for those items. This role can
+        be useful for floor managers or equivalent staff to make small fixes
+        on weekends or odd hours when people in the <i>Items</i> or
+        <i>Membership</i> groups aren't present - e.g., adjusting a price to
+        match floor signage rather than continually open ringing the item.</li>
+</ul>
+</p>
+<h2>Advanced Options</h2>
+Fannie can authenticate against other sources to re-use existing user accounts.
+There are currently two options:
+<ul>
+    <li><i>Shadow Logins</i> is Linux authentication. If users have accounts on
+        the server that's hosting Fannie, this option will check their names
+        and passwords against the /etc/shadow file. There's an extra utility
+        required to provide the webserver limited access to that file. The 
+        authentication tab on the install/config page will provide instructions
+        as needed.
+    <li><i>LDAP Logins</i> is what it sounds like. The defaults are probably
+        correct for a typical openldap installation with user accounts in
+        an organization unit named <i>People</i>. Adjusting the domain name
+        part(s) and host/port should be all that's needed. If anybody ever
+        sets up authentication against an Active Directory server, this
+        documentation will be updated with details. It's likely possible
+        but you're currently on your own to figure it out.</li>
+</ul>
 </body>
 </html>

@@ -350,6 +350,7 @@ static public function checkstatus($num)
 
 /**
   Add a tender to the transaction
+
   @right tender amount in cents (100 = $1)
   @strl tender code from tenders table
   @return An array see Parser::default_json()

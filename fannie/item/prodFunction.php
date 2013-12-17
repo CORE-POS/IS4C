@@ -33,15 +33,19 @@
 
 */
 
-include_once('../src/mysql_connect.php');
+include('../config.php');
 include_once('../auth/login.php');
 include_once('ajax.php');
-include(dirname(__FILE__).'/../classlib2.0/FannieAPI.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
 
-function itemParse($upc){
-    global $dbc,$FANNIE_URL;
+function itemParse($upc)
+{
+    global $FANNIE_OP_DB,$FANNIE_URL;
     global $FANNIE_STORE_ID;
     global $FANNIE_COOP_ID;
+    $dbc = FannieDB::get($FANNIE_OP_DB);
 
     $logged_in = checkLogin();
 
@@ -688,7 +692,8 @@ function itemParse($upc){
 
 function likedtotable($query,$border,$bgcolor)
 {
-	global $dbc;
+    global $FANNIE_OP_DB;
+    $dbc = FannieDB::get($FANNIE_OP_DB);
         $results = $dbc->query($query) or
                 die("<li>errorno=".$dbc->errno()
                         ."<li>error=" .$dbc->error()

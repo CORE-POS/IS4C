@@ -29,7 +29,11 @@ $span = "'$start 00:00:00' AND '$end 23:59:59'";
 $args = array($start.' 00:00:00',$end.' 23:59:59');
 
 $output = get_cache("monthly");
-if (!$output){
+if (!$output || isset($_REQUEST['recache'])){
+    if (isset($_REQUEST['recache'])) {
+        $_SERVER['REQUEST_URI'] = $_SERVER['PHP_SELF']; // remove recache from URI
+        $_SERVER['REQUEST_URI'] = str_replace("index.php","",$_SERVER['REQUEST_URI']);
+    }
 	ob_start();
 
 	$date = substr($start,0,strpos($start,":")-3);
