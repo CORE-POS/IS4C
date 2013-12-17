@@ -86,7 +86,7 @@ class AuditLib
         return true;
     }
 
-    static public batchNotification($batchID, $upc, $type, $is_likecode=false)
+    static public function batchNotification($batchID, $upc, $type, $is_likecode=false)
     {
         global $FANNIE_OP_DB, $FANNIE_URL;
         $dbc = FannieDB::get($FANNIE_OP_DB);
