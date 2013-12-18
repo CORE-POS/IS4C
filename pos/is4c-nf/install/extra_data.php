@@ -46,9 +46,9 @@ elseif(isset($_REQUEST['depts'])){
 	echo "Loading departments";
 	$db->query("TRUNCATE TABLE departments");
 	InstallUtilities::loadSampleData($db,'departments');
-	echo "<br />Loading subdepts";
-	$db->query("TRUNCATE TABLE subdepts");
-	InstallUtilities::loadSampleData($db,'subdepts');
+	echo "<br />Loading super departments";
+	$db->query("TRUNCATE TABLE MasterSuperDepts");
+	InstallUtilities::loadSampleData($db,'MasterSuperDepts');
 }
 ?>
 </b></div>
@@ -72,8 +72,8 @@ of someone's customer table I think.</p>
 be the Wedge's or at least a snapshot of it.</p>
 <input type=submit name=products value="Load sample products" />
 <hr />
-<b>Departments</b> &amp; <b>Subdepts</b>
-<p>Products get categorized into departments &amp; subdepartments.
+<b>Departments</b> &amp; <b>Superdepts</b>
+<p>Products get categorized into departments &amp; super departments.
 You can also ring amounts directly to a department. Not needed,
 strictly speaking, for a basic lane (Ring up items, total, 
 accept tender, provide change).</p>

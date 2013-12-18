@@ -10,6 +10,7 @@ Columns:
 	dept_limit dbms currency
 	dept_minimum dbms currency
 	dept_discount tinyint
+    dept_see_id tinyint
 	modified datetime
 	modifiedby int
 
