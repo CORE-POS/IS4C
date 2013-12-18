@@ -71,6 +71,8 @@ class ReprintReceiptPage extends FanniePage
 				$args[] = $date.' 00:00:00';
 				$args[] = $date2.' 23:59:59';
                 $dlog = DTransactionsModel::selectDlog($date, $date2);
+                // update the table we're searching
+                $query = str_replace($FANNIE_TRANS_DB . $dbc->sep() . 'dlog_15', $dlog, $query);
 			}
 			if ($card_no != "") {
 				$query .= " AND card_no=? ";
