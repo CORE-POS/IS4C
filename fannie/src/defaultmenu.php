@@ -127,7 +127,7 @@ array('label'=>'Synchronize','url'=>'sync/','subheading'=>'Update cash registers
 	array('label'=>'Member Cards','url'=>'sync/TableSyncPage.php?tablename=memberCards'),
 	array('label'=>'Employees','url'=>'sync/TableSyncPage.php?tablename=employees'),
 	array('label'=>'Departments','url'=>'sync/TableSyncPage.php?tablename=departments'),
-	array('label'=>'Sub Departments','url'=>'sync/TableSyncPage.php?tablename=subdepts')
+	array('label'=>'Super Departments','url'=>'sync/TableSyncPage.php?tablename=MasterSuperDepts')
 	)
 ),
 array('label'=>'Admin','url'=>'admin/','subheading'=>'Administrative functions, etc.',
