@@ -453,6 +453,8 @@ function create_op_dbs($db,$type){
 
     InstallUtilities::createIfNeeded($db, $type, $name, 'subdepts', 'op', $errors);
 
+    InstallUtilities::createIfNeeded($db, $type, $name, 'MasterSuperDepts', 'op', $errors);
+
     InstallUtilities::createIfNeeded($db, $type, $name, 'customReceipt', 'op', $errors);
 
     InstallUtilities::createIfNeeded($db, $type, $name, 'custReceiptMessage', 'op', $errors);
@@ -1520,11 +1522,11 @@ function create_trans_dbs($db,$type){
             end as linetoprint,
         sequence,
         department,
-        subdept_name as dept_name,
+        super_name as dept_name,
         trans_type,
         upc
         from ltt_receipt_reorder_g r
-        left outer join ".$CORE_LOCAL->get('pDatabase').".subdepts d on r.department=d.dept_ID
+        left outer join ".$CORE_LOCAL->get('pDatabase').".MasterSuperDepts d on r.department=d.dept_ID
         where r.total<>0 or r.unitPrice=0
         order by sequence";
     
@@ -1576,7 +1578,7 @@ function create_trans_dbs($db,$type){
             trans_type,
             upc
             from ltt_receipt_reorder_g r
-            left outer join ".$CORE_LOCAL->get('pDatabase')."dbo.subdepts
+            left outer join ".$CORE_LOCAL->get('pDatabase')."dbo.MasterSuperDepts
                    d on r.department=d.dept_ID
             where r.total<>0 or r.unitprice=0
             order by sequence";
@@ -2112,7 +2114,7 @@ function create_trans_dbs($db,$type){
         as linetoprint,
         sequence,
         department,
-        subdept_name as dept_name,
+        super_name as dept_name,
         case when trans_subtype='CM' or voided in (10,17)
             then 'CM' else trans_type
         end
@@ -2120,7 +2122,7 @@ function create_trans_dbs($db,$type){
         upc
 
         from rp_ltt_receipt_reorder_g r
-        left outer join ".$CORE_LOCAL->get('pDatabase').".subdepts d 
+        left outer join ".$CORE_LOCAL->get('pDatabase').".MasterSuperDepts d 
         on r.department=d.dept_ID
         where r.total<>0 or r.unitPrice=0
         order by register_no,emp_no,trans_no,card_no,sequence";
@@ -2177,7 +2179,7 @@ function create_trans_dbs($db,$type){
         upc
 
         from rp_ltt_receipt_reorder_g r
-        left outer join ".$CORE_LOCAL->get('pDatabase').".dbo.subdepts d 
+        left outer join ".$CORE_LOCAL->get('pDatabase').".dbo.MasterSuperDepts d 
         on r.department=d.dept_ID
         where r.total<>0 or r.unitprice=0
         order by register_no,emp_no,trans_no,card_no,sequence";
