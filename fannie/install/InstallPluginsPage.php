@@ -167,8 +167,6 @@ foreach($mods as $m){
 		echo '<tr><td colspan="2"><i>No settings required</i></td></tr>';	
 	}
 	else if ($enabled){
-		if (isset($_REQUEST['psubmit']))
-			$instance->setting_change();
 		echo '<tr><td colspan="2" style="margin-bottom: 0px; height:auto;">';
 		foreach($instance->plugin_settings as $field => $info){
 			$form_id = $m.'_'.$field;
@@ -185,6 +183,9 @@ foreach($mods as $m){
 			echo '<br />';
 			//confset($field,"'".$CORE_LOCAL->get($field)."'");
 		}
+		if (isset($_REQUEST['psubmit'])) {
+			$instance->setting_change();
+        }
 		echo '</td></tr>';
 	}
 
