@@ -702,6 +702,23 @@ static public function ttl()
 		$CORE_LOCAL->set("ttlflag",1);
 		Database::setglobalvalue("TTLFlag", 1);
 
+		// Refresh totals after staff and member discounts.
+		Database::getsubtotals();
+
+        $ttlHooks = $CORE_LOCAL->get('TotalActions');
+        if (is_array($ttlHooks)) {
+            foreach($ttlHooks as $ttl_class) {
+                $mod = new $ttl_class();
+                $result = $mod->apply();
+                if ($result !== true && is_string($result) {
+                    return $result; // redirect URL
+                }
+            }
+        }
+
+		// Refresh totals after total actions
+		Database::getsubtotals();
+
 		if ($CORE_LOCAL->get("percentDiscount") > 0) {
 			if ($CORE_LOCAL->get("member_subtotal") === false) {
 				TransRecord::addItem("", "Subtotal", "", "", "D", 0, 0, MiscLib::truncate2($CORE_LOCAL->get("transDiscount") + $CORE_LOCAL->get("subtotal")), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7);
