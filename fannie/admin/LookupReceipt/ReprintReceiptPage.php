@@ -201,6 +201,7 @@ Receipt Search - Fill in any information available
 </tr>
 <tr>
 	<th>Tender type</th><td colspan=2><select name=trans_subtype>
+        <option value="">Select one...</option>
 		<?php
 		$numsQ = $dbc->prepare_statement("SELECT TenderCode,TenderName FROM tenders 
 			ORDER BY TenderName");
