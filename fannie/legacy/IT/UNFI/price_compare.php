@@ -212,7 +212,7 @@ $strCat = $strCat . ")";
          $sort = 0;
       }
       echo "<tr id=row$pupc>";
-      echo  "<td bgcolor=$bg><a href=\"../../queries/productTest.php?upc=$pupc\" target=\"__unfi_pc\">$pupc</td><td bgcolor=$bg>$pdesc</td><td bgcolor=$bg>$cost</td><td bgcolor=$bg id=pricefield$pupc><a href=\"\" onclick=\"editPrice('$pupc'); return false;\">$pprice</a></td>";
+      echo  "<td bgcolor=$bg><a href=\"/queries/productTest.php?upc=$pupc\" target=\"__unfi_pc\">$pupc</td><td bgcolor=$bg>$pdesc</td><td bgcolor=$bg>$cost</td><td bgcolor=$bg id=pricefield$pupc><a href=\"\" onclick=\"editPrice('$pupc'); return false;\">$pprice</a></td>";
       echo  "<td bgcolor=$bg>$ourMarg</td><td id=unfiprice$pupc bgcolor=$bg><a href=\"\" onclick=\"editUnfiPrice('$pupc'); return false;\">$uprice</a></td><td bgcolor=$bg>$unMarg</td><td bgcolor=$bg>$cat</td><td bgcolor=$bg>$sort</td>";
       echo "<td bgcolor=$bg><input type=checkbox id=var$pupc ";
       if ($var == 1)
