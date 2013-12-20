@@ -33,6 +33,12 @@ class LocalTransModel extends DTransactionsModel
 
     protected $name = "localtrans";
 
+    public function __construct()
+    {
+        // other tables do not need auto_inc column
+        unset($this->columns['pos_row_id']);
+    }
+
     /* START ACCESSOR FUNCTIONS */
     /* END ACCESSOR FUNCTIONS */
 }

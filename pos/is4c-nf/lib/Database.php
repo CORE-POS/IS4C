@@ -384,7 +384,8 @@ static public function uploadtoServer()
         $CORE_LOCAL->get("mDatabase"),"insert into dtransactions ({$dt_matches})")) {
     
         // Moved up
-        $connect->query("truncate table dtransactions",
+        // DO NOT TRUNCATE; that resets AUTO_INCREMENT
+        $connect->query("DELETE FROM dtransactions",
             $CORE_LOCAL->get("tDatabase"));
 
         $al_matches = self::getMatchingColumns($connect,"alog");

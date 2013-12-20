@@ -65,6 +65,7 @@ class DTransactionsModel extends BasicModel
     'charflag'    => array('type'=>'INT','default'=>''),
     'card_no'    => array('type'=>'INT','index'=>True),
     'trans_id'    => array('type'=>'TINYINT'),
+    'pos_row_id' => array('type'=>'BIGINT UNSIGNED', 'increment'=>true, 'primary_key'=>true),
     );
 
     /* START ACCESSOR FUNCTIONS */

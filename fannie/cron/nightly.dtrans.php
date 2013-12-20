@@ -270,10 +270,12 @@ foreach($dates as $date) {
     }
 } // for loop on dates in dtransactions
 
-/* drop dtransactions data */
+/* drop dtransactions data 
+   DO NOT TRUNCATE; that resets AUTO_INCREMENT column
+*/
 $sql = new SQLManager($FANNIE_SERVER,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
 		$FANNIE_SERVER_USER,$FANNIE_SERVER_PW);
-$chk = $sql->query("TRUNCATE TABLE dtransactions");
+$chk = $sql->query("DELETE FROM dtransactions");
 if ($chk === false)
 	echo cron_msg("Error truncating dtransactions");
 else
