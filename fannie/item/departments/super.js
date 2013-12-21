@@ -35,7 +35,7 @@ function superSelected(){
 	$.ajax({
 		url: 'SuperDeptEditor.php',
 		type: 'POST',
-		timeout: 1000,
+		timeout: 5000,
 		data: 'sid='+superID+'&action=deptsInSuper',
 		error: function(e1,e2){
 			alert('Error loading XML document');
@@ -48,7 +48,7 @@ function superSelected(){
 	$.ajax({
 		url: 'SuperDeptEditor.php',
 		type: 'POST',
-		timeout: 1000,
+		timeout: 5000,
 		data: 'sid='+superID+'&action=deptsNotInSuper',
 		error: function(){
 		alert('Error loading XML document');
@@ -87,7 +87,7 @@ function saveData(){
 	$.ajax({
 		url: 'SuperDeptEditor.php',
 		type: 'POST',
-		timeout: 1000,
+		timeout: 5000,
 		data: qs,
 		error: function(){
 		alert('Error loading XML document');
