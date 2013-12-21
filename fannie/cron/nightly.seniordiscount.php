@@ -34,6 +34,11 @@
    it should be run before lane syncing.
 */
 
+// ************************************
+// ***         SETTINGS             ***
+// ************************************
+// Discount value is the percent * 100, e.g. 10 = 10%
+$discount_value = 10;
 // NOTE: Simply uncomment your desired senior discount day.
 // $discount_day = "Sunday";
 // $discount_day = "Monday";
@@ -42,6 +47,8 @@ $discount_day = "Wednesday";
 // $discount_day = "Thursday";
 // $discount_day = "Friday";
 // $discount_day = "Saturday";
+// ************************************
+
 
 include('../config.php');
 include($FANNIE_ROOT.'src/SQLManager.php');
@@ -60,7 +67,7 @@ $sql = new SQLManager($FANNIE_SERVER,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 $toggle = ($today == $discount_day) ? "+" : "-";
 	
 if (($today == $discount_day) || ($today == $discount_day_after)) {
-	$sql->query("UPDATE custdata SET discount = (discount $toggle 10) WHERE SSI = 1");
+	$sql->query("UPDATE custdata SET discount = (discount $toggle $discount_value) WHERE SSI = 1");
 } else {
 	echo cron_msg("nightly.seniordiscount.php: Discount active on " . $discount_day . ".<br /> No discounts to apply");
 }
