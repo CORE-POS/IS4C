@@ -48,11 +48,11 @@ include($FANNIE_ROOT.'src/SQLManager.php');
 include($FANNIE_ROOT.'src/cron_msg.php');
 set_time_limit(0);
 
-$today = date_create(date('l'));
+$today = date('l');
 
 $dday = date_create($discount_day);
 date_add($dday, date_interval_create_from_date_string('1 days'));
-$discount_day_after = date_format($dday, 'l')
+$discount_day_after = date_format($dday, 'l');
 
 $sql = new SQLManager($FANNIE_SERVER,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 		$FANNIE_SERVER_USER,$FANNIE_SERVER_PW);
@@ -62,7 +62,7 @@ $toggle = ($today == $discount_day) ? "+" : "-";
 if (($today == $discount_day) || ($today == $discount_day_after)) {
 	$sql->query("UPDATE custdata SET discount = (discount $toggle 10) WHERE SSI = 1");
 } else {
-	echo "nightly.seniordiscount.php: Discount active on " . $discount_day . ".<br /> No discounts to apply";
+	echo cron_msg("nightly.seniordiscount.php: Discount active on " . $discount_day . ".<br /> No discounts to apply");
 }
 
 
