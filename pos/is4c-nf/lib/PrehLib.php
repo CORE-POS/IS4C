@@ -710,7 +710,7 @@ static public function ttl()
             foreach($ttlHooks as $ttl_class) {
                 $mod = new $ttl_class();
                 $result = $mod->apply();
-                if ($result !== true && is_string($result) {
+                if ($result !== true && is_string($result)) {
                     return $result; // redirect URL
                 }
             }
