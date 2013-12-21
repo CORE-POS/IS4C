@@ -318,6 +318,7 @@ class HouseCoupon extends SpecialUPC
          * should be valid
          */
         $value = 0;
+        $coupID = $id;
         switch($infoW["discountType"]) {
             case "Q": // quantity discount
                 // discount = coupon's discountValue
