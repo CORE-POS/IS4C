@@ -448,15 +448,17 @@ static public function addCoupon($strupc, $intdepartment, $dbltotal, $foodstamp=
   @param $intdepartment associated POS department
   @param $dbltotal coupon amount (should be negative)
 */
-static public function addhousecoupon($strupc, $intdepartment, $dbltotal) 
+static public function addhousecoupon($strupc, $intdepartment, $dbltotal, $description='') 
 {
 	global $CORE_LOCAL;
-	$sql = Database::pDataConnect();
-	$fetchQ = "select card_no, coupID, description from houseVirtualCoupons WHERE card_no=" . $CORE_LOCAL->get('memberID');
-	$fetchR = $sql->query($fetchQ);
-	$coupW = $sql->fetch_row($fetchR);
-	$desc = ($coupW) ? substr($coupW["description"],0,35) : " * Store Coupon";
-	self::addItem($strupc, $desc, "I", "IC", "C", $intdepartment, 1, $dbltotal, $dbltotal, $dbltotal, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0);
+    if (empty($description)) {
+        $sql = Database::pDataConnect();
+        $fetchQ = "select card_no, coupID, description from houseVirtualCoupons WHERE card_no=" . $CORE_LOCAL->get('memberID');
+        $fetchR = $sql->query($fetchQ);
+        $coupW = $sql->fetch_row($fetchR);
+        $description = ($coupW) ? substr($coupW["description"],0,35) : " * Store Coupon";
+    }
+	self::addItem($strupc, $description, "I", "IC", "C", $intdepartment, 1, $dbltotal, $dbltotal, $dbltotal, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0);
 }
 
 /**
