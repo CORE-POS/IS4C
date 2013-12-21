@@ -39,7 +39,7 @@ class AutoCoupon extends TotalAction
     {
         global $CORE_LOCAL;
         $db = Database::pDataConnect();
-        $coupons = $db->query('SELECT coupID FROM autoCoupons');
+        $coupons = $db->query('SELECT coupID, description FROM autoCoupons');
         $hc = new HouseCoupon();
         $prefix = $CORE_LOCAL->get('houseCouponPrefix');
         if ($prefix == '') {
@@ -76,7 +76,7 @@ class AutoCoupon extends TotalAction
                 continue;
             }
 
-            TransRecord::addhousecoupon($upc, $add['department'], -1 * $next_val);
+            TransRecord::addhousecoupon($upc, $add['department'], -1 * $next_val, $coupon['description']);
         }
 
         return true;
