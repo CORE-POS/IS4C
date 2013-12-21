@@ -1,5 +1,6 @@
 <?php
 include('../../config.php');
+include('classlib2.0/FannieAPI.php');
 
 $upc = $_GET['upc'];
 
@@ -20,23 +21,20 @@ if (!isset($_GET['yes'])){
   echo "</td></tr></table>";
 }
 else {
-  if (!class_exists("SQLManager")) require_once($FANNIE_ROOT."sql/SQLManager.php");
   include('../db.php');
   
   // find the discount type for the selected upc
-  $discountQ = "select discounttype from products where upc = '$upc'";
-  $discountR = $sql->query($discountQ);
-  $discountRow = $sql->fetch_array($discountR);
-  $discounttype = $discountRow['discounttype'];
+  $model = new ProductsModel($sql);
+  $model->upc($upc);
+  $model->load();
+  $discounttype = $model->discounttype();
   
   // find the batchID(s) of active batches
   // containing the upc
-  $batchIDQ = "select b.batchID from batches as b, batchList as l where
-               b.batchID = l.batchID and l.upc = '$upc' and b.discounttype = $discounttype
-               and datediff(dd,getdate(),b.startdate) < 1
-               and datediff(dd,getdate(),b.enddate) > 0";
-  echo $batchIDQ."<p />";;
-  $batchIDR = $sql->query($batchIDQ);
+  $batchIDQ = $sql->prepare("select b.batchID from batches as b, batchList as l where
+               b.batchID = l.batchID and l.upc = ? and b.discountType = ?
+	       AND ".$sql->now()." BETWEEN b.startDate and b.endDate");
+  $batchIDR = $sql->execute($batchIDQ, array($upc, $discounttype));
 
   // if there isn't a batch putting that item on sale, then
   // i don't know what's going on.  SO DON'T CHANGE ANYTHING
@@ -44,37 +42,31 @@ else {
     // now delete the upc from the batch list(s)
     while ($row = $sql->fetch_array($batchIDR)){
       $batchID = $row['batchID'];
-      $batchQ = "delete from batchList where
-               upc = '$upc' and batchID = $batchID";
+      $batchQ = $sql->prepare("delete from batchList where
+               upc = ? and batchID = ?");
       echo $batchQ."<p />";
-      $batchR = $sql->query($batchQ);
+      $batchR = $sql->execute($batchQ, array($upc, $batchID));
     }
     
     // take the item off sale in products
-    $unsaleQ = "update products set start_date = 0, end_date = 0,
-                discounttype = 0, special_price = 0
-                where upc = '$upc'";
-    echo $unsaleQ."<p />";
-    $unsaleR = $sql->query($unsaleQ);
+    $model->start_date(0); 
+    $model->end_date(0); 
+    $model->special_price(0); 
+    $model->discounttype(0); 
+    $model->save();
+    $model->pushToLanes();
   
-    // fire change to the lanes
-    require('laneUpdates.php');
-    updateProductAllLanes($upc);
-
     echo "Item <a href=productTest.php?upc=$upc>$upc</a> is no longer on sale "; 
   }
   else if (isset($_GET['force'])){
     // take the item off sale in products
-    $unsaleQ = "update products set start_date = 0, end_date = 0,
-                discounttype = 0, special_price = 0
-                where upc = '$upc'";
-    echo $unsaleQ."<p />";
-    $unsaleR = $sql->query($unsaleQ);
+    $model->start_date(0); 
+    $model->end_date(0); 
+    $model->special_price(0); 
+    $model->discounttype(0); 
+    $model->save();
+    $model->pushToLanes();
   
-    // fire change to the lanes
-    require('laneUpdates.php');
-    updateProductAllLanes($upc,$db);
-
     echo "Item <a href=productTest.php?upc=$upc>$upc</a> is no longer on sale "; 
   }
   else {

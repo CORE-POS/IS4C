@@ -16,10 +16,10 @@ function save(){
 	var date1 = $('#startDate').val();
 	var date2 = $('#endDate').val();
 
-	var depositAmount = saveRow('changeOrder');
+	var changeOrder = saveChangeOrder();
 	var openSafeCount = saveOpenSafeCount();
 	var closeSafeCount = saveCloseSafeCount();
-	var depositAmount = saveRow('buyAmount');
+	var buyAmount = saveRow('buyAmount');
 	var dropAmount = saveDropAmount();
 	var depositAmount = saveRow('depositAmount');
 	var atmAmount = saveAtmAmount();
@@ -61,6 +61,17 @@ function saveAtmAmount(){
 	return ret;
 }
 
+function saveChangeOrder(){
+	var ret = '';
+	$('.denom').each(function(){
+		var denom = $(this).val();
+        var elem = document.getElementById('changeOrder'+denom);
+		if (denom != 'Checks' && elem)
+			ret += denom + ":"+ elem.value+"|";
+	});
+	return ret;
+}
+
 function saveOpenSafeCount(){
 	var ret = '';
 	$('.denom').each(function(){
@@ -77,7 +88,7 @@ function saveDropAmount(){
 	$('.denom').each(function(){
 		var denom = $(this).val();
         var elem = document.getElementById('dropAmount'+denom);
-		if (denoms[i] == 'Checks' || denoms[i] == '1.00')
+		if (denom == 'Checks' || denom == '1.00')
 			ret += denom + ":"+ elem.innerHTML+"|";
 		else
 			ret += denom + ":"+ elem.value+"|";

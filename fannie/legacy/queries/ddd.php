@@ -1,13 +1,11 @@
 <?php
-include('../../config.php');
 
-require($FANNIE_ROOT.'src/SQLManager.php');
 include('../db.php');
 
 echo "<table cellspacing=0 cellpadding=4 border=1>";
 
 $q = "SELECT month,day,year,upc,description,dept_no,dept_name,quantity,total
-	FROM dddItems
+	FROM is4c_trans.dddItems
 	order by year desc, month desc, day desc, description";
 $r = $sql->query($q);
 echo "<tr><th>Date</th><th>UPC</th><th>Item</th><th>Dept#</th>

@@ -17,13 +17,13 @@ if (isset($_POST['submit'])){
 	$note_text = str_replace("'","\\'",$note_text);
 
 	if ($noteID == -1){
-		$insQ = "INSERT INTO notes (appID,note_date,note_text,username) VALUES
-			($appID,'$note_date','$note_text','$username')";
-		$sql->query($insQ);
+		$insQ = $sql->prepare("INSERT INTO notes (appID,note_date,note_text,username) VALUES
+			(?, ?, ?, ?)");
+		$sql->execute($insQ, array($appID, $note_date, $note_text, $username));
 	}
 	else {
-		$upQ = "UPDATE notes SET note_text='$note_text' WHERE noteID=$noteID";
-		$sql->query($upQ);
+		$upQ = $sql->prepare("UPDATE notes SET note_text=? WHERE noteID=?");
+		$sql->execute($upQ, array($note_text, $noteID));
 	}
 
 	header("Location: /it/ApplicationTracking/view.php?appID=$appID");
@@ -46,8 +46,8 @@ $note_text = "";
 $note_date = date("Y-m-d");
 
 if ($noteID != -1){
-	$dataQ = "SELECT note_text,note_date FROM notes WHERE noteID=$noteID";
-	$dataR = $sql->query($dataQ);
+	$dataQ = $sql->prepare("SELECT note_text,note_date FROM notes WHERE noteID=?");
+	$dataR = $sql->execute($dataQ, array($noteID));
 	$dataW = $sql->fetch_row($dataR);
 	
 	$note_date = $dataW[1];

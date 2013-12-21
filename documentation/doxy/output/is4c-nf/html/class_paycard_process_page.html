@@ -38,28 +38,28 @@
 <a href="class_paycard_process_page-members.html">List of all members.</a><table border="0" cellpadding="0" cellspacing="0">
 <tr><td></td></tr>
 <tr><td colspan="2"><br><h2>Public Member Functions</h2></td></tr>
-<tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="anchor" name="04a6920dd8f7db8226ea5fd98f022da5"></a><!-- doxytag: member="PaycardProcessPage::PaycardProcessPage" ref="04a6920dd8f7db8226ea5fd98f022da5" args="()" -->
+<tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="anchor" name="a94edfbca2b8b0be7c2785ac9ae7d41c"></a><!-- doxytag: member="PaycardProcessPage::PaycardProcessPage" ref="a94edfbca2b8b0be7c2785ac9ae7d41c" args="()" -->
 &nbsp;</td><td class="memItemRight" valign="bottom"><b>PaycardProcessPage</b> ()</td></tr>
 
-<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_paycard_process_page.html#842591b40e39db1365dcdc0d9568f195">paycard_jscript_functions</a> ()</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_paycard_process_page.html#930c685589cfbe87c5449a84ad761384">paycard_jscript_functions</a> ()</td></tr>
 
-<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_paycard_process_page.html#71f97c1db9d9621bdd67925cb6f34d24">print_page</a> ()</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_paycard_process_page.html#2c2d3bc9f7907621a30153b97eec255b">print_page</a> ()</td></tr>
 
 <tr><td colspan="2"><br><h2>Public Attributes</h2></td></tr>
-<tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="anchor" name="b941e73847f9810b687675c46c1b33bd"></a><!-- doxytag: member="PaycardProcessPage::$onload_commands" ref="b941e73847f9810b687675c46c1b33bd" args="" -->
+<tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="anchor" name="99eaf987d123b2dd545c62e84f2c6e8a"></a><!-- doxytag: member="PaycardProcessPage::$onload_commands" ref="99eaf987d123b2dd545c62e84f2c6e8a" args="" -->
 &nbsp;</td><td class="memItemRight" valign="bottom"><b>$onload_commands</b></td></tr>
 
-<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_paycard_process_page.html#0dbf28b7e53377a569007ece0fad7557">$action</a></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_paycard_process_page.html#c298d722f9349e992a0268e2302beb2d">$action</a></td></tr>
 
 </table>
 <hr><a name="_details"></a><h2>Detailed Description</h2>
 This class automatically includes the header and footer and also defines some useful javascript functions<p>
 Normally the submit process looks like this:<ul>
-<li>Cashier presses enter, POST-ing to the page</li><li>In <a class="el" href="class_basic_page.html#8d7c8a6f81fcf68d2886f937f1fd2ef0">preprocess()</a>, the included javascript function paycard_submitWrapper() is queued using <a class="el" href="class_basic_page.html">BasicPage</a>:<a class="el" href="class_basic_page.html#8e93b43fbcd2079eed207a0cedc13ae8">add_onload_command()</a></li><li>The $action property get set to something "safe" like onsubmit="return false;" so that repeatedly pressing enter won't cause multiple submits </li></ul>
+<li>Cashier presses enter, POST-ing to the page</li><li>In <a class="el" href="class_basic_page.html#15d7f8acc78232fe0685448f49254768">preprocess()</a>, the included javascript function paycard_submitWrapper() is queued using <a class="el" href="class_basic_page.html">BasicPage</a>:<a class="el" href="class_basic_page.html#daa9d7f0d373048279e9e143cca51f89">add_onload_command()</a></li><li>The $action property get set to something "safe" like onsubmit="return false;" so that repeatedly pressing enter won't cause multiple submits </li></ul>
 
 <p>
 <hr><h2>Member Function Documentation</h2>
-<a class="anchor" name="842591b40e39db1365dcdc0d9568f195"></a><!-- doxytag: member="PaycardProcessPage::paycard_jscript_functions" ref="842591b40e39db1365dcdc0d9568f195" args="()" -->
+<a class="anchor" name="930c685589cfbe87c5449a84ad761384"></a><!-- doxytag: member="PaycardProcessPage::paycard_jscript_functions" ref="930c685589cfbe87c5449a84ad761384" args="()" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -78,7 +78,7 @@ Normally the submit process looks like this:<ul>
 Include some paycard submission javascript functions. Automatically called during page print. 
 </div>
 </div><p>
-<a class="anchor" name="71f97c1db9d9621bdd67925cb6f34d24"></a><!-- doxytag: member="PaycardProcessPage::print_page" ref="71f97c1db9d9621bdd67925cb6f34d24" args="()" -->
+<a class="anchor" name="2c2d3bc9f7907621a30153b97eec255b"></a><!-- doxytag: member="PaycardProcessPage::print_page" ref="2c2d3bc9f7907621a30153b97eec255b" args="()" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -97,11 +97,11 @@ Include some paycard submission javascript functions. Automatically called durin
 Print HTML output <dl compact><dt><b>Returns:</b></dt><dd>None</dd></dl>
 Print the page. This version includes the scale weight display as well as the head and body content from those methods. Javascript commands that have been requested via add_onload_command are all run on page load. 
 <p>
-Reimplemented from <a class="el" href="class_basic_page.html#66a9d7400a222fc1fa2639a25bb4b429">BasicPage</a>.
+Reimplemented from <a class="el" href="class_basic_page.html#298c9c72a1892a7f0f93ef3f9d2bf4c5">BasicPage</a>.
 </div>
 </div><p>
 <hr><h2>Member Data Documentation</h2>
-<a class="anchor" name="0dbf28b7e53377a569007ece0fad7557"></a><!-- doxytag: member="PaycardProcessPage::$action" ref="0dbf28b7e53377a569007ece0fad7557" args="" -->
+<a class="anchor" name="c298d722f9349e992a0268e2302beb2d"></a><!-- doxytag: member="PaycardProcessPage::$action" ref="c298d722f9349e992a0268e2302beb2d" args="" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -113,12 +113,12 @@ Reimplemented from <a class="el" href="class_basic_page.html#66a9d7400a222fc1fa2
 <div class="memdoc">
 
 <p>
-The input form action. See <a class="el" href="class_basic_page.html#82d317303561000167f3a1aae3cb24d4">BasicPage::input_header()</a> for format information 
+The input form action. See <a class="el" href="class_basic_page.html#65805fa802c839342148c4578de9ac89">BasicPage::input_header()</a> for format information 
 </div>
 </div><p>
 <hr>The documentation for this class was generated from the following file:<ul>
-<li>pos/is4c-nf/gui-class-lib/PaycardProcessPage.php</ul>
-<hr size="1"><address style="align: right;"><small>Generated on Tue Oct 23 14:30:34 2012 for CORE POS - IS4C by&nbsp;
+<li>pos/is4c-nf/plugins/Paycards/lib/PaycardProcessPage.php</ul>
+<hr size="1"><address style="align: right;"><small>Generated on 18 Nov 2013 for CORE POS - IS4C by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img src="doxygen.png" alt="doxygen" align="middle" border="0"></a> 1.4.7 </small></address>
 </body>

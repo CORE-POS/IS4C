@@ -72,8 +72,9 @@ class PriceOverride extends NoInputPage {
 				if ($w['department'] == $CORE_LOCAL->get("BottleReturnDept"))
 					$ttl = $ttl * -1;
 					
-				$q = sprintf("UPDATE localtemptrans SET total=%.2f, charflag='PO'
-					WHERE trans_id=%d",$ttl,$line_id);
+				$q = sprintf("UPDATE localtemptrans SET unitPrice=%.2f, regPrice=%.2f,
+                    total = quantity*%.2f, charflag='PO'
+					WHERE trans_id=%d",$ttl,$ttl,$ttl,$line_id);
 				$r = $db->query($q);	
 
 				$this->change_page($this->page_url."gui-modules/pos2.php");

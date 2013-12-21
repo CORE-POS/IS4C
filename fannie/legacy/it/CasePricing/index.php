@@ -69,21 +69,28 @@ else if (isset($_POST['lc'])){
 		WHERE upc not in ('00000000899991','0000000089992','0000000089993')";
 	$sql->query($q);
 
+    $upcP = $ms->prepare("SELECT TOP 1 upc FROM upcLike WHERE likecode=? ORDER BY upc");
+    $localUpdate = $ms->prepare("UPDATE prodExtra SET location=?,
+            case_cost=?,
+            case_quantity=?,
+            case_info=?,
+            cost=?
+            FROM prodExtra as x INNER JOIN upcLike as u
+            on x.upc = u.upc
+            WHERE u.likeCode=?");
+    $remoteUpdate = $sql->prepare("UPDATE prodExtra SET location=?,
+            case_price=?,
+            case_qty=?,
+            case_info=?,
+            cost=?
+            WHERE upc=?");
 	for ($i=0;$i<count($lcs);$i++){
-		$upcR = $ms->query("SELECT TOP 1 upc FROM upcLike WHERE likecode=".$lcs[$i]." ORDER BY upc");
+        $upcR = $ms->execute($upcP, $lcs[$i]);
 		$upc = array_pop($ms->fetch_array($upcR));
 
 		$l = (strtolower($local[$i])=='y')?1:0;
 		$qty = $caseq1[$i]." ".$caseq2[$i];
 		$info = $status[$i].":".$dist[$i].":".$origins[$i];
-		$localUpdate = "UPDATE prodExtra SET location='$l',
-				case_cost=".$caseprices[$i].",
-				case_quantity='$qty',
-				case_info='$info',
-				cost=$prices[$i]
-				FROM prodExtra as x INNER JOIN upcLike as u
-				on x.upc = u.upc
-				WHERE u.likeCode=".$lcs[$i];
 		$remoteUpdate = "UPDATE prodExtra SET location='$l',
 				case_price=".$caseprices[$i].",
 				case_qty='$qty',
@@ -91,8 +98,8 @@ else if (isset($_POST['lc'])){
 				cost=$prices[$i]
 				WHERE upc='$upc'";
 
-		$ms->query($localUpdate);
-		$sql->query($remoteUpdate);
+		$ms->execute($localUpdate, array($l, $caseprices[$i], $qty, $info, $prices[$i], $lcs[$i]));
+		$sql->execute($remoteUpdate, array($l, $caseprices[$i], $qty, $info, $prices[$i], $lcs[$i]));
 	}
 	echo "Case pricing updated!";
 }
@@ -108,37 +115,40 @@ if (isset($_POST["update_extra"])){
 	$descs = $_POST["desc"];
 	$csizes = $_POST["csize"];
 	$cprices = $_POST["cprice"];
+    $msUp1 = $ms->prepare("UPDATE Products SET description='RESERVED' WHERE upc=?");
+    $msUp2 = $ms->preapre("UPDATE prodExtra SET case_quantity='',case_cost=0 WHERE upc=?");
+    $myUp1 = $sql->prepare("UPDATE Products SET description='RESERVED' WHERE upc=?");
+    $myUp2 = $sql->prepare("UPDATE prodExtra SET case_qty='',case_price=0 WHERE upc=?");
+    $msUp3 = $sql->prepare("UPDATE Products SET description=? WHERE upc=?");
+    $msUp4 = $sql->prepare("UPDATE prodExtra SET case_info=?,case_cost=?,location=?,case_quantity=?,cost=? WHERE upc=?");
+    $myUp3 = $sql->prepare("UPDATE Products SET description=? WHERE upc=?");
+    $myUp4 = $sql->prepare("UPDATE prodExtra SET case_info=?,case_price=?,location=?,case_qty=?,cost=? WHERE upc=?");
 	for ($i=0;$i<count($upcs);$i++){
 		if ($prices[$i] == ""){
-			$msUp1 = sprintf("UPDATE Products SET description='RESERVED' WHERE upc='%s'",$upcs[$i]);
-			$msUp2 = sprintf("UPDATE prodExtra SET case_quantity='',case_cost=0 WHERE upc='%s'",$upcs[$i]);
-			$myUp1 = sprintf("UPDATE Products SET description='RESERVED' WHERE upc='%s'",$upcs[$i]);
-			$myUp2 = sprintf("UPDATE prodExtra SET case_qty='',case_price=0 WHERE upc='%s'",$upcs[$i]);
-			$ms->query($msUp1);
-			$ms->query($msUp2);
-			$sql->query($myUp1);
-			$sql->query($myUp2);
+			$ms->execute($msUp1, array($upcs[$i]));
+			$ms->execute($msUp2, array($upcs[$i]));
+			$sql->execute($myUp1, array($upcs[$i]));
+			$sql->execute($myUp2, array($upcs[$i]));
 		}
 		else {
-			$msUp1 = sprintf("UPDATE Products SET description='%s' WHERE upc='%s'",$descs[$i],$upcs[$i]);
-			$msUp2 = sprintf("UPDATE prodExtra SET case_info='%s',case_cost=%s,location='%s',case_quantity='%s',cost=%s WHERE upc='%s'",
+			$ms->execute($msUp3, array($descs[$i], $upcs[$i]));
+			$ms->execute($msUp4, array(
 					$status[$i].":".$dists[$i].":".$origins[$i],$prices[$i],
-					(isset($_POST["local".$upcs[$i]]))?"1":"0",$csizes[$i],$cprices[$i],$upcs[$i]);
-			$myUp1 = sprintf("UPDATE Products SET description='%s' WHERE upc='%s'",$descs[$i],$upcs[$i]);
-			$myUp2 = sprintf("UPDATE prodExtra SET case_info='%s',case_price=%s,location='%s',case_qty='%s',cost=%s WHERE upc='%s'",
+					(isset($_POST["local".$upcs[$i]]))?"1":"0",$csizes[$i],$cprices[$i],$upcs[$i])
+            );
+			$sql->execute($myUp3, array($descs[$i], $upcs[$i]));
+			$sql->execute($myUp4, array(
 					$status[$i].":".$dists[$i].":".$origins[$i],$prices[$i],
-					(isset($_POST["local".$upcs[$i]]))?"1":"0",$csizes[$i],$cprices[$i],$upcs[$i]);
-			$ms->query($msUp1);
-			$ms->query($msUp2);
-			$sql->query($myUp1);
-			$sql->query($myUp2);
+					(isset($_POST["local".$upcs[$i]]))?"1":"0",$csizes[$i],$cprices[$i],$upcs[$i])
+            );
 		}
 	}
 }
 
 if (isset($_POST["update_msg"])){
 	$msg = str_replace("'","''",$_POST["msg"]);
-	$sql->query("UPDATE MotD SET msg='$msg' WHERE id='motd'");
+	$prep = $sql->prepare("UPDATE MotD SET msg=? WHERE id='motd'");
+    $sql->execute($prep, array($msg));
 }
 
 // current data gathering

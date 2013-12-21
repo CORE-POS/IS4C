@@ -1,0 +1,14 @@
+2,pricechange,all,all
+2,delete_items,all,all
+2,batches,all,all
+2,ordering_edit,all,all
+2,barcodes,all,all
+2,manage_likecodes,all,all
+3,editmembers,all,all
+3,memgen,all,all
+4,editcashiers,all,all
+4,cashierPerformance,all,all
+4,overshorts,all,all
+5,batches_auditied,all,all
+5,audited_pricechange,all,all
+5,editmembers_csc,all,all

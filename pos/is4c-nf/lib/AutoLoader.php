@@ -169,6 +169,10 @@ class AutoLoader extends LibraryClass
                 $path = realpath(dirname(__FILE__).'/ReceiptBuilding/Messages');
                 $map = Plugin::pluginMap($path,$map);
                 break;
+            case 'CustomerReceiptMessage':
+                $path = realpath(dirname(__FILE__).'/ReceiptBuilding/custMessages');
+                $map = Plugin::pluginMap($path,$map);
+                break;
             case 'ProductSearch':
                 $path = realpath(dirname(__FILE__).'/Search/Products');
                 $map = Plugin::pluginMap($path,$map);
@@ -181,6 +185,10 @@ class AutoLoader extends LibraryClass
                 break;
             case 'PrintHandler':
                 $path = realpath(dirname(__FILE__).'/PrintHandlers');
+                $map = Plugin::pluginMap($path,$map);
+                break;
+            case 'BasicModel':
+                $path = realpath(dirname(__FILE__).'/models');
                 $map = Plugin::pluginMap($path,$map);
                 break;
 		}

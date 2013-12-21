@@ -10,24 +10,23 @@ while(date("N",$now) != 1)
 
 if (isset($_POST['submit'])){
 	$queries = array();
+	$sql->query("TRUNCATE TABLE produceWeeklyData");
+    $query = $sql->prepare("INSERT INTO produceWeeklyData VALUES
+        (?,?,?,?,?,?,?)");
 	foreach($_POST as $key=>$value){
 		if ($key == "submit") continue;
 		list($sub,$id) = explode(":",$key,2);
 		if (!empty($queries[$id])) continue;
-		$query = sprintf("INSERT INTO produceWeeklyData VALUES
-			(%d,%f,%f,%f,%f,%f,%f)",$id,
+        $args = array($id,
 			(isset($_POST["M:$id"])?$_POST["M:$id"]:0),
 			(isset($_POST["T:$id"])?$_POST["T:$id"]:0),
 			(isset($_POST["W:$id"])?$_POST["W:$id"]:0),
 			(isset($_POST["Th:$id"])?$_POST["Th:$id"]:0),
 			(isset($_POST["F:$id"])?$_POST["F:$id"]:0),
 			(isset($_POST["Sa:$id"])?$_POST["Sa:$id"]:0)
-		);
-		$queries[$id] = $query;
+        );
+		$sql->execute($query, $args);
 	}
-	$sql->query("TRUNCATE TABLE produceWeeklyData");
-	foreach($queries as $q)
-		$sql->query($q);
 
 	if ($_POST['submit'] == "Archive"){
 		header('Content-Type: application/ms-excel');

@@ -65,15 +65,30 @@ if (isset($cols['date_id'])){
 	$sql->query("UPDATE dtransactions SET date_id=DATE_FORMAT(datetime,'%Y%m%d')");
 }
 
+/* Find date(s) in dtransactions */
+$datesR = $sql->query('SELECT YEAR(datetime) AS year, MONTH(datetime) as month, DAY(datetime) as day
+                    FROM dtransactions
+                    GROUP BY YEAR(datetime), MONTH(datetime), DAY(datetime)
+                    ORDER BY YEAR(datetime), MONTH(datetime), DAY(datetime)');
+$dates = array();
+while($datesW = $sql->fetch_row($datesR)) {
+    $dates[] = sprintf('%d-%02d-%02d', $datesW['year'], $datesW['month'], $datesW['day']);
+}
+
 /* Load dtransactions into the archive, trim to 90 days */
-$chk1 = $sql->query("INSERT INTO transarchive SELECT * FROM dtransactions");
+$chkP = $sql->prepare("INSERT INTO transarchive SELECT * FROM dtransactions WHERE ".$sql->datediff('datetime','?').'= 0');
+$chk1 = false;
+foreach($dates as $date) {
+    $chk1 = $sql->execute($chkP, array($date));
+}
 $chk2 = $sql->query("DELETE FROM transarchive WHERE ".$sql->datediff($sql->now(),'datetime')." > 92");
-if ($chk1 === false)
+if ($chk1 === false) {
 	echo cron_msg("Error loading data into transarchive");
-elseif ($chk2 === false)
+} elseif ($chk2 === false) {
 	echo cron_msg("Error trimming transarchive");
-else
+} else {
 	echo cron_msg("Data rotated into transarchive");
+}
 
 /* reload all the small snapshot */
 $chk1 = $sql->query("TRUNCATE TABLE dlog_15");
@@ -83,174 +98,177 @@ if ($chk1 === false || $chk2 === false)
 else
 	echo cron_msg("Success reloading dlog_15");
 
-/* figure out which monthly archive dtransactions data belongs in */
-$res = $sql->query("SELECT month(datetime),year(datetime) FROM dtransactions");
-$row = $sql->fetch_row($res);
-$dstr = $row[1].(str_pad($row[0],2,'0',STR_PAD_LEFT));
-$table = 'transArchive'.$dstr;
+$added_partition = false;
+foreach($dates as $date) {
+    /* figure out which monthly archive dtransactions data belongs in */
+    list($year, $month, $day) = explode('-', $date);
+    $table = 'transArchive'.$year.$month;
 
-/* store monthly archive locally or remotely as needed 
-   remote archiving is very beta
-*/
-if ($FANNIE_ARCHIVE_REMOTE){
-	$sql = new SQLManager($FANNIE_ARCHIVE_SERVER,$FANNIE_ARCHIVE_DBMS,
-		$FANNIE_ARCHIVE_DB,$FANNIE_ARCHIVE_USER,$FANNIE_ARCHIVE_PW);
-	if (!$sql->table_exists($table)){
-		createArchive($table,$sql);
-		createViews($dstr,$sql);
-	}
-	$sql->add_connection($FANNIE_SERVER,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
-		$FANNIE_SERVER_USER,$FANNIE_SERVER_PW);
-	$sql->transfer($FANNIE_TRANS_DB,"select * from dtransactions",
-		$FANNIE_ARCHIVE_DB,"insert into $table");
-}
-else {
-	$sql = new SQLManager($FANNIE_SERVER,$FANNIE_SERVER_DBMS,$FANNIE_ARCHIVE_DB,
-			$FANNIE_SERVER_USER,$FANNIE_SERVER_PW);
-	if ($FANNIE_ARCHIVE_METHOD == "partitions" && strstr($FANNIE_SERVER_DBMS, "MYSQL")){
-		// we're just partitioning
-		// make a new partition if it's a new month
-		if (date('j') == 1){
-			$p = "p".date("Ym"); 
-			$boundary = date("Y-m-d",mktime(0,0,0,date("n")+1,1,date("Y")));
-			// new partition named pYYYYMM
-			// ends on first day of next month
-			$newQ = sprintf("ALTER TABLE bigArchive ADD PARTITION 
-				(PARTITION %s 
-				VALUES LESS THAN (TO_DAYS('%s'))
-				)",$p,$boundary);
-			$newR = $sql->query($newQ);
-			if ($newR === false)
-				echo cron_msg("Error creating new partition $p");
-		}
+    /* store monthly archive locally or remotely as needed 
+       remote archiving is very beta
+    */
+    if ($FANNIE_ARCHIVE_REMOTE){
+        $sql = new SQLManager($FANNIE_ARCHIVE_SERVER,$FANNIE_ARCHIVE_DBMS,
+            $FANNIE_ARCHIVE_DB,$FANNIE_ARCHIVE_USER,$FANNIE_ARCHIVE_PW);
+        if (!$sql->table_exists($table)){
+            createArchive($table,$sql);
+            createViews($dstr,$sql);
+        }
+        $sql->add_connection($FANNIE_SERVER,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+            $FANNIE_SERVER_USER,$FANNIE_SERVER_PW);
+        $sql->transfer($FANNIE_TRANS_DB,
+            "select * from dtransactions WHERE ".$sql->datediff('datetime',"'$date'")."= 0",
+            $FANNIE_ARCHIVE_DB,"insert into $table");
+    } else {
+        $sql = new SQLManager($FANNIE_SERVER,$FANNIE_SERVER_DBMS,$FANNIE_ARCHIVE_DB,
+                $FANNIE_SERVER_USER,$FANNIE_SERVER_PW);
+        if ($FANNIE_ARCHIVE_METHOD == "partitions" && strstr($FANNIE_SERVER_DBMS, "MYSQL")) {
+            // we're just partitioning
+            // make a new partition if it's a new month
+            if (date('j') == 1 && !$added_partition){
+                $p = "p".date("Ym"); 
+                $boundary = date("Y-m-d",mktime(0,0,0,date("n")+1,1,date("Y")));
+                // new partition named pYYYYMM
+                // ends on first day of next month
+                $newQ = sprintf("ALTER TABLE bigArchive ADD PARTITION 
+                    (PARTITION %s 
+                    VALUES LESS THAN (TO_DAYS('%s'))
+                    )",$p,$boundary);
+                $newR = $sql->query($newQ);
+                if ($newR === false) {
+                    echo cron_msg("Error creating new partition $p");
+                } else {
+                    $added_partition = true;
+                }
+            }
 		
-		// now just copy rows into the partitioned table
-		$loadQ = "INSERT INTO bigArchive SELECT * FROM {$FANNIE_TRANS_DB}.dtransactions";
+            // now just copy rows into the partitioned table
+            $loadQ = "INSERT INTO bigArchive SELECT * FROM {$FANNIE_TRANS_DB}.dtransactions
+                        WHERE ".$sql->datediff('datetime', "'$date'")."= 0";
+            $loadR = $sql->query($loadQ);
+        } else if (!$sql->table_exists($table)){
+            // 20Nov12 EL Add "TABLE".
+            $query = "CREATE TABLE $table LIKE $FANNIE_TRANS_DB.dtransactions";
+            if ($FANNIE_SERVER_DBMS == 'MSSQL') {
+                $query = "SELECT * INTO $table FROM $FANNIE_TRANS_DB.dbo.dtransactions
+                            WHERE ".$sql->datediff('datetime', "'$date'")."= 0";
+            }
+            $chk1 = $sql->query($query,$FANNIE_ARCHIVE_DB);
+            $chk2 = true;
+            if (strstr($FANNIE_SERVER_DBMS,"MYSQL")) {
+                // mysql doesn't create & populate in one step
+                $chk2 = $sql->query("INSERT INTO $table SELECT * FROM $FANNIE_TRANS_DB.dtransactions
+                                    WHERE ".$sql->datediff('datetime', "'$date'")."= 0");
+            }
+            if ($chk1 === false || $chk2 === false) {
+                echo cron_msg("Error creating new archive $table");
+            } else {
+                echo cron_msg("Created new table $table and archived dtransactions");
+            }
+            createViews($dstr,$sql);
+        } else {
+            $query = "INSERT INTO $table SELECT * FROM $FANNIE_TRANS_DB.dtransactions
+                        WHERE ".$sql->datediff('datetime', "'$date'")."= 0";
+            if ($FANNIE_SERVER_DBMS == 'MSSQL') {
+                $query = "INSERT INTO $table SELECT * FROM $FANNIE_TRANS_DB.dbo.dtransactions
+                        WHERE ".$sql->datediff('datetime', "'$date'")."= 0";
+            }
+            $chk = $sql->query($query,$FANNIE_ARCHIVE_DB);
+            if ($chk === false) {
+                echo cron_msg("Error archiving dtransactions");
+            } else {
+                echo cron_msg("Success archiving dtransactions");
+            }
+        }
 
-		// data warehousing option; tag records with an ID
-		// referencing dedicated date table
-		/*
-		$columns = $sql->table_definition("bigArchive");
-		if (isset($columns['date_id']) && $sql->table_exists("warehouse_date")){
-			$loadQ = "INSERT INTO bigArchive 
-				SELECT t.*,d.date_id FROM 
-				{$FANNIE_TRANS_DB}.dtransactions AS t
-				LEFT JOIN warehouse_date AS d ON
-				YEAR(t.datetime)=d.year AND
-				MONTH(t.datetime)=d.month AND
-				DAY(t.datetime)=d.day";
-		}
-		*/
-		$loadR = $sql->query($loadQ);	
-	}
-	else if (!$sql->table_exists($table)){
-		// 20Nov12 EL Add "TABLE".
-		$query = "CREATE TABLE $table LIKE $FANNIE_TRANS_DB.dtransactions";
-		if ($FANNIE_SERVER_DBMS == 'MSSQL')
-			$query = "SELECT * INTO $table FROM $FANNIE_TRANS_DB.dbo.dtransactions";
-		$chk1 = $sql->query($query,$FANNIE_ARCHIVE_DB);
-		$chk2 = true;
-		if (strstr($FANNIE_SERVER_DBMS,"MYSQL")){
-			// mysql doesn't create & populate in one step
-			$chk2 = $sql->query("INSERT INTO $table SELECT * FROM $FANNIE_TRANS_DB.dtransactions");
-		}
-		if ($chk1 === false || $chk2 === false)
-			echo cron_msg("Error creating new archive $table");
-		else
-			echo cron_msg("Created new table $table and archived dtransactions");
-		createViews($dstr,$sql);
-	}
-	else {
-		$query = "INSERT INTO $table SELECT * FROM $FANNIE_TRANS_DB.dtransactions";
-		if ($FANNIE_SERVER_DBMS == 'MSSQL')
-			$query = "INSERT INTO $table SELECT * FROM $FANNIE_TRANS_DB.dbo.dtransactions";
-		$chk = $sql->query($query,$FANNIE_ARCHIVE_DB);
-		if ($chk === false)
-			echo cron_msg("Error archiving dtransactions");
-		else
-			echo cron_msg("Success archiving dtransactions");
-	}
+        /* summary table stuff */
 
-	/* summary table stuff */
-
-	if ($sql->table_exists("sumUpcSalesByDay") && strstr($FANNIE_SERVER_DBMS,"MYSQL")){
-		$sql->query("INSERT INTO sumUpcSalesByDay
-			SELECT DATE(MAX(tdate)) AS tdate, upc,
-			CONVERT(SUM(total),DECIMAL(10,2)) as total,
-			CONVERT(SUM(CASE WHEN trans_status='M' THEN itemQtty 
+        if ($sql->table_exists("sumUpcSalesByDay") && strstr($FANNIE_SERVER_DBMS,"MYSQL")){
+            $sql->query("INSERT INTO sumUpcSalesByDay
+                SELECT DATE(MAX(tdate)) AS tdate, upc,
+                CONVERT(SUM(total),DECIMAL(10,2)) as total,
+                CONVERT(SUM(CASE WHEN trans_status='M' THEN itemQtty 
 				WHEN unitPrice=0.01 THEN 1 ELSE quantity END),DECIMAL(10,2)) as qty
-			FROM $FANNIE_TRANS_DB.dlog WHERE
-			trans_type IN ('I') AND upc <> '0'
-			GROUP BY upc");
-	}
-	if ($sql->table_exists("sumRingSalesByDay") && strstr($FANNIE_SERVER_DBMS,"MYSQL")){	
-		$sql->query("INSERT INTO sumRingSalesByDay
-			SELECT DATE(MAX(tdate)) AS tdate, upc, department,
-			CONVERT(SUM(total),DECIMAL(10,2)) as total,
-			CONVERT(SUM(CASE WHEN trans_status='M' THEN itemQtty 
-				WHEN unitPrice=0.01 THEN 1 ELSE quantity END),DECIMAL(10,2)) as qty
-			FROM $FANNIE_TRANS_DB.dlog WHERE
-			trans_type IN ('I','D') AND upc <> '0'
-			GROUP BY upc, department");
-	}
-	if ($sql->table_exists("sumDeptSalesByDay") && strstr($FANNIE_SERVER_DBMS,"MYSQL")){
-		$sql->query("INSERT INTO sumDeptSalesByDay
-			SELECT DATE(MAX(tdate)) AS tdate, department,
-			CONVERT(SUM(total),DECIMAL(10,2)) as total,
-			CONVERT(SUM(CASE WHEN trans_status='M' THEN itemQtty 
-				WHEN unitPrice=0.01 THEN 1 ELSE quantity END),DECIMAL(10,2)) as qty
-			FROM $FANNIE_TRANS_DB.dlog WHERE
-			trans_type IN ('I','D') 
-			GROUP BY department");
-	}
-	if ($sql->table_exists("sumMemSalesByDay") && strstr($FANNIE_SERVER_DBMS,"MYSQL")){	
-		$sql->query("INSERT INTO sumMemSalesByDay
-			SELECT DATE(MAX(tdate)) AS tdate, card_no,
-			CONVERT(SUM(total),DECIMAL(10,2)) as total,
-			CONVERT(SUM(CASE WHEN trans_status='M' THEN itemQtty 
-				WHEN unitPrice=0.01 THEN 1 ELSE quantity END),DECIMAL(10,2)) as qty,
-			COUNT(DISTINCT trans_num) AS transCount
-			FROM $FANNIE_TRANS_DB.dlog WHERE
-			trans_type IN ('I','D')
-			GROUP BY card_no");
-	}
-	if ($sql->table_exists("sumMemTypeSalesByDay") && strstr($FANNIE_SERVER_DBMS,"MYSQL")){	
-		$sql->query("INSERT INTO sumMemTypeSalesByDay
-			SELECT DATE(MAX(tdate)) AS tdate, c.memType,
-			CONVERT(SUM(total),DECIMAL(10,2)) as total,
-			CONVERT(SUM(CASE WHEN trans_status='M' THEN itemQtty 
-				WHEN unitPrice=0.01 THEN 1 ELSE quantity END),DECIMAL(10,2)) as qty,
-			COUNT(DISTINCT trans_num) AS transCount
-			FROM $FANNIE_TRANS_DB.dlog AS d LEFT JOIN
-			$FANNIE_OP_DB.custdata AS c ON d.card_no=c.CardNo
-			AND c.personNum=1 WHERE
-			trans_type IN ('I','D')
-			AND upc <> 'RRR' AND card_no <> 0
-			GROUP BY c.memType");
-	}
-	if ($sql->table_exists("sumTendersByDay") && strstr($FANNIE_SERVER_DBMS,"MYSQL")){	
-		$sql->query("INSERT INTO sumTendersByDay
-			SELECT DATE(MAX(tdate)) AS tdate, trans_subtype,
-			CONVERT(SUM(total),DECIMAL(10,2)) as total,
-			COUNT(*) AS quantity
-			FROM $FANNIE_TRANS_DB.dlog WHERE
-			trans_type IN ('T')
-			AND total <> 0
-			GROUP BY trans_subtype");
-	}
-	if ($sql->table_exists("sumDiscountsByDay") && strstr($FANNIE_SERVER_DBMS,"MYSQL")){	
-		$sql->query("INSERT INTO sumDiscountsByDay
-			SELECT DATE(MAX(tdate)) AS tdate, c.memType,
-			CONVERT(SUM(total),DECIMAL(10,2)) as total,
-			COUNT(DISTINCT trans_num) AS transCount
-			FROM $FANNIE_TRANS_DB.dlog AS d LEFT JOIN
-			$FANNIE_OP_DB.custdata AS c ON d.card_no=c.CardNo
-			AND c.personNum=1 WHERE
-			trans_type IN ('S') AND total <> 0
-			AND upc = 'DISCOUNT' AND card_no <> 0
-			GROUP BY c.memType");
-	}
-}
+                FROM $FANNIE_TRANS_DB.dlog WHERE
+                trans_type IN ('I') AND upc <> '0'
+                AND ".$sql->datediff('tdate',"'$date'")."= 0
+                GROUP BY upc");
+        }
+        if ($sql->table_exists("sumRingSalesByDay") && strstr($FANNIE_SERVER_DBMS,"MYSQL")){	
+            $sql->query("INSERT INTO sumRingSalesByDay
+                SELECT DATE(MAX(tdate)) AS tdate, upc, department,
+                CONVERT(SUM(total),DECIMAL(10,2)) as total,
+                CONVERT(SUM(CASE WHEN trans_status='M' THEN itemQtty 
+                    WHEN unitPrice=0.01 THEN 1 ELSE quantity END),DECIMAL(10,2)) as qty
+                FROM $FANNIE_TRANS_DB.dlog WHERE
+                trans_type IN ('I','D') AND upc <> '0'
+                AND ".$sql->datediff('tdate',"'$date'")."= 0
+                GROUP BY upc, department");
+        }
+        if ($sql->table_exists("sumDeptSalesByDay") && strstr($FANNIE_SERVER_DBMS,"MYSQL")){
+            $sql->query("INSERT INTO sumDeptSalesByDay
+                SELECT DATE(MAX(tdate)) AS tdate, department,
+                CONVERT(SUM(total),DECIMAL(10,2)) as total,
+                CONVERT(SUM(CASE WHEN trans_status='M' THEN itemQtty 
+                    WHEN unitPrice=0.01 THEN 1 ELSE quantity END),DECIMAL(10,2)) as qty
+                FROM $FANNIE_TRANS_DB.dlog WHERE
+                trans_type IN ('I','D') 
+                AND ".$sql->datediff('tdate',"'$date'")."= 0
+                GROUP BY department");
+        }
+        if ($sql->table_exists("sumMemSalesByDay") && strstr($FANNIE_SERVER_DBMS,"MYSQL")){	
+            $sql->query("INSERT INTO sumMemSalesByDay
+                SELECT DATE(MAX(tdate)) AS tdate, card_no,
+                CONVERT(SUM(total),DECIMAL(10,2)) as total,
+                CONVERT(SUM(CASE WHEN trans_status='M' THEN itemQtty 
+                    WHEN unitPrice=0.01 THEN 1 ELSE quantity END),DECIMAL(10,2)) as qty,
+                COUNT(DISTINCT trans_num) AS transCount
+                FROM $FANNIE_TRANS_DB.dlog WHERE
+                trans_type IN ('I','D')
+                AND ".$sql->datediff('tdate',"'$date'")."= 0
+                GROUP BY card_no");
+        }
+        if ($sql->table_exists("sumMemTypeSalesByDay") && strstr($FANNIE_SERVER_DBMS,"MYSQL")){	
+            $sql->query("INSERT INTO sumMemTypeSalesByDay
+                SELECT DATE(MAX(tdate)) AS tdate, c.memType,
+                CONVERT(SUM(total),DECIMAL(10,2)) as total,
+                CONVERT(SUM(CASE WHEN trans_status='M' THEN itemQtty 
+                    WHEN unitPrice=0.01 THEN 1 ELSE quantity END),DECIMAL(10,2)) as qty,
+                COUNT(DISTINCT trans_num) AS transCount
+                FROM $FANNIE_TRANS_DB.dlog AS d LEFT JOIN
+                $FANNIE_OP_DB.custdata AS c ON d.card_no=c.CardNo
+                AND c.personNum=1 WHERE
+                trans_type IN ('I','D')
+                AND upc <> 'RRR' AND card_no <> 0
+                AND ".$sql->datediff('tdate',"'$date'")."= 0
+                GROUP BY c.memType");
+        }
+        if ($sql->table_exists("sumTendersByDay") && strstr($FANNIE_SERVER_DBMS,"MYSQL")){	
+            $sql->query("INSERT INTO sumTendersByDay
+                SELECT DATE(MAX(tdate)) AS tdate, trans_subtype,
+                CONVERT(SUM(total),DECIMAL(10,2)) as total,
+                COUNT(*) AS quantity
+                FROM $FANNIE_TRANS_DB.dlog WHERE
+                trans_type IN ('T')
+                AND total <> 0
+                AND ".$sql->datediff('tdate',"'$date'")."= 0
+                GROUP BY trans_subtype");
+        }
+        if ($sql->table_exists("sumDiscountsByDay") && strstr($FANNIE_SERVER_DBMS,"MYSQL")){	
+            $sql->query("INSERT INTO sumDiscountsByDay
+                SELECT DATE(MAX(tdate)) AS tdate, c.memType,
+                CONVERT(SUM(total),DECIMAL(10,2)) as total,
+                COUNT(DISTINCT trans_num) AS transCount
+                FROM $FANNIE_TRANS_DB.dlog AS d LEFT JOIN
+                $FANNIE_OP_DB.custdata AS c ON d.card_no=c.CardNo
+                AND c.personNum=1 WHERE
+                trans_type IN ('S') AND total <> 0
+                AND upc = 'DISCOUNT' AND card_no <> 0
+                AND ".$sql->datediff('tdate',"'$date'")."= 0
+                GROUP BY c.memType");
+        }
+    }
+} // for loop on dates in dtransactions
 
 /* drop dtransactions data */
 $sql = new SQLManager($FANNIE_SERVER,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,

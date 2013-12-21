@@ -3,7 +3,8 @@ require($FANNIE_ROOT.'src/Credentials/GoE.wfc.php');
 include('xmlData.php');
 
 function getProcessorInfo($dateStr){
-	global $dbc;
+	global $FANNIE_TRANS_DB;
+    $dbc = FannieDB::get($FANNIE_TRANS_DB);
 
 	$trans_stack = array();
 	$query = $dbc->prepare_statement("SELECT q.refNum,r.httpCode,q.PAN,q.issuer FROM efsnetRequest as q

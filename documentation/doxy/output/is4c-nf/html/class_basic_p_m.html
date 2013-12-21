@@ -38,7 +38,9 @@
 <a href="class_basic_p_m-members.html">List of all members.</a><table border="0" cellpadding="0" cellspacing="0">
 <tr><td></td></tr>
 <tr><td colspan="2"><br><h2>Public Member Functions</h2></td></tr>
-<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_basic_p_m.html#b7a6887d817cd6b77d255a6165d57302">addItem</a> ($row, $quantity, $priceObj)</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_basic_p_m.html#2837673886c07d799d551cfc9103c3fa">addItem</a> ($row, $quantity, $priceObj)</td></tr>
+
+<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_basic_p_m.html#3e9f7cac56a3b874303e0cb5b31b400a">errorInfo</a> ()</td></tr>
 
 </table>
 <hr><a name="_details"></a><h2>Detailed Description</h2>
@@ -46,7 +48,7 @@ This module just adds the item with the given quantity and price/discount inform
 Classically, this is pricemethod=0 
 <p>
 <hr><h2>Member Function Documentation</h2>
-<a class="anchor" name="b7a6887d817cd6b77d255a6165d57302"></a><!-- doxytag: member="BasicPM::addItem" ref="b7a6887d817cd6b77d255a6165d57302" args="($row, $quantity, $priceObj)" -->
+<a class="anchor" name="2837673886c07d799d551cfc9103c3fa"></a><!-- doxytag: member="BasicPM::addItem" ref="2837673886c07d799d551cfc9103c3fa" args="($row, $quantity, $priceObj)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -85,14 +87,37 @@ Add the item to the transaction <dl compact><dt><b>Parameters:</b></dt><dd>
     <tr><td valign="top"></td><td valign="top"><em>$priceObj</em>&nbsp;</td><td>A <a class="el" href="class_discount_type.html">DiscountType</a> object </td></tr>
   </table>
 </dl>
+<dl compact><dt><b>Returns:</b></dt><dd>boolean success/failure </dd></dl>
 
 <p>
-Reimplemented from <a class="el" href="class_price_method.html#84c87cb3f63b5119cccbc9c47b4e615c">PriceMethod</a>.
+Reimplemented from <a class="el" href="class_price_method.html#50cacc8fc2ddde54b4db2237c0b6985a">PriceMethod</a>.
+</div>
+</div><p>
+<a class="anchor" name="3e9f7cac56a3b874303e0cb5b31b400a"></a><!-- doxytag: member="BasicPM::errorInfo" ref="3e9f7cac56a3b874303e0cb5b31b400a" args="()" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">BasicPM::errorInfo           </td>
+          <td>(</td>
+          <td class="paramname">          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Information about error(s) adding the item to the transaction <dl compact><dt><b>Returns:</b></dt><dd>string message </dd></dl>
+
+<p>
+Reimplemented from <a class="el" href="class_price_method.html#38cc94d744fc9b5ad37fac0404fc93a4">PriceMethod</a>.
 </div>
 </div><p>
 <hr>The documentation for this class was generated from the following file:<ul>
 <li>pos/is4c-nf/lib/Scanning/PriceMethods/BasicPM.php</ul>
-<hr size="1"><address style="align: right;"><small>Generated on Tue Oct 23 14:30:34 2012 for CORE POS - IS4C by&nbsp;
+<hr size="1"><address style="align: right;"><small>Generated on 18 Nov 2013 for CORE POS - IS4C by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img src="doxygen.png" alt="doxygen" align="middle" border="0"></a> 1.4.7 </small></address>
 </body>

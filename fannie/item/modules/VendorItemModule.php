@@ -27,7 +27,7 @@ if (!class_exists('FannieAPI'))
 class VendorItemModule extends ItemModule {
 
 	function ShowEditForm($upc){
-		$upc = str_pad($upc,13,0,STR_PAD_LEFT);
+		$upc = BarcodeLib::padUPC($upc);
 
 		$ret = '<fieldset id="VendorItemsFieldset">';
 		$ret .=  "<legend>Vendor Items</legend>";
@@ -85,7 +85,7 @@ class VendorItemModule extends ItemModule {
 	}
 
 	function SaveFormData($upc){
-		$upc = str_pad($upc,13,0,STR_PAD_LEFT);
+		$upc = BarcodeLib::padUPC($upc);
 		$ids = FormLib::get_form_value('v_id',array());
 		$skus = FormLib::get_form_value('v_sku',array());
 		$costs = FormLib::get_form_value('v_cost',array());

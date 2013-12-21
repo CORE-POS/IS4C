@@ -55,7 +55,9 @@ class ContactInfo extends MemberModule {
 				value="%s" /></td>',$infoW['FirstName']);
 		$ret .= "<th>Last Name</th>";
 		$ret .= sprintf('<td colspan="2"><input name="ContactInfo_ln" maxlength="30"
-				value="%s" /></td></tr>',$infoW['LastName']);
+				value="%s" /></td>',$infoW['LastName']);
+        $ret .= sprintf('<td colspan="3"><a href="MemPurchasesPage.php?id=%d">View Receipts</a></td></tr>',
+                    $memNum);
 
 		$addrs = strstr($infoW['street'],"\n")?explode("\n",$infoW['street']):array($infoW['street'],'');
 		$ret .= "<tr><th>Address</th>";

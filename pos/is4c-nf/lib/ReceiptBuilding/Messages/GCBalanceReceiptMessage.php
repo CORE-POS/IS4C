@@ -53,6 +53,9 @@ class GCBalanceReceiptMessage extends ReceiptMessage {
 		// balance inquiries are not logged and have no meaning in a reprint,
 		// so we can assume that it just happened now and all data is still in session vars
 		$tempArr = $CORE_LOCAL->get("paycard_response");
+        if (!is_array($tempArr) || !isset($tempArr['Balance'])) {
+            return '';
+        }
 		$bal = "$".number_format($tempArr["Balance"],2);
 		$pan = $CORE_LOCAL->get("paycard_PAN"); // no need to mask gift card numbers
 		$slip = ReceiptLib::normalFont()

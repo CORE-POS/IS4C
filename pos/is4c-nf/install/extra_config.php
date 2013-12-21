@@ -370,7 +370,8 @@ else {
 }
 InstallUtilities::paramSave('cashOverLimit',$CORE_LOCAL->get('cashOverLimit'));
 ?>
-</select></td></tr><tr><td>
+</select></td></tr>
+<tr><td>
 <b>Check over limit</b>:</td><td>$
 <?php
 if(isset($_REQUEST['OVER_LIMIT'])) $CORE_LOCAL->set('dollarOver',$_REQUEST['OVER_LIMIT']);
@@ -379,20 +380,21 @@ InstallUtilities::paramSave('dollarOver',$CORE_LOCAL->get('dollarOver'));
 ?>
 </td></tr>
 <tr><td>
-<b>Modular Tenders</b>: </td><td><select name=MODTENDERS>
+<b>EBT Total Default</b>: </td><td><select name=FNTL_DEFAULT>
 <?php
-if(isset($_REQUEST['MODTENDERS'])) $CORE_LOCAL->set('ModularTenders',$_REQUEST['MODTENDERS']);
-if ($CORE_LOCAL->get('ModularTenders')){
-	echo "<option value=1 selected>Yes</option>";
-	echo "<option value=0 >No</option>";
+if(isset($_REQUEST['FNTL_DEFAULT'])) $CORE_LOCAL->set('fntlDefault',$_REQUEST['FNTL_DEFAULT']);
+if ($CORE_LOCAL->get('fntlDefault') === '') $CORE_LOCAL->set('fntlDefault', 1);
+if ($CORE_LOCAL->get("fntlDefault") == 1) {
+	echo "<option value=1 selected>Cash Side</option>";
+	echo "<option value=0 >Food Side</option>";
+} else {
+	echo "<option value=1 >Cash Side</option>";
+	echo "<option value=0 selected>Food Side</option>";
 }
-else {
-	echo "<option value=1 >Yes</option>";
-	echo "<option value=0 selected>No</option>";
-}
-InstallUtilities::paramSave('ModularTenders',$CORE_LOCAL->get('ModularTenders'));
+InstallUtilities::paramSave('fntlDefault', $CORE_LOCAL->get('fntlDefault'));
 ?>
-</select></td></tr><tr><td>
+</select></td></tr>
+<tr><td>
 <b>Tender Report</b>:</td>
 <td><select name="TENDERREPORTMOD">
 <?php

@@ -25,7 +25,8 @@
    header("Content-type: application/vnd.ms-excel; name='excel'");
 
 include('../config.php');
-include($FANNIE_ROOT.'src/mysql_connect.php');
+include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+$dbc = FannieDB::get($FANNIE_OP_DB);
 include($FANNIE_ROOT.'src/ReportConvert/HtmlToArray.php');
 include($FANNIE_ROOT.'src/ReportConvert/ArrayToXls.php');
 include($FANNIE_ROOT.'src/ReportConvert/ArrayToCsv.php');

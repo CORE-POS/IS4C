@@ -22,10 +22,7 @@
 *********************************************************************************/
 
 include('../../config.php');
-include($FANNIE_ROOT.'src/mysql_connect.php');
-include($FANNIE_ROOT.'src/select_dlog.php');
-include($FANNIE_ROOT.'classlib2.0/lib/FormLib.php');
-include($FANNIE_ROOT.'classlib2.0/FannieReportPage.php');
+include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
 class GeneralSalesReport extends FannieReportPage 
 {
@@ -66,12 +63,13 @@ class GeneralSalesReport extends FannieReportPage
 
 	public function fetch_report_data()
     {
-		global $dbc, $FANNIE_ARCHIVE_DB;
+		global $FANNIE_OP_DB, $FANNIE_ARCHIVE_DB;
+        $dbc = FannieDB::get($FANNIE_OP_DB);
 		$d1 = FormLib::get_form_value('date1',date('Y-m-d'));
 		$d2 = FormLib::get_form_value('date2',date('Y-m-d'));
 		$dept = $_REQUEST['dept'];
 
-		$dlog = select_dlog($d1,$d2);
+		$dlog = DTransactionsModel::selectDlog($d1,$d2);
 
 		$sales = "SELECT d.Dept_name,sum(t.total),
 				sum(case when unitPrice=0.01 THEN 1 else t.quantity END),

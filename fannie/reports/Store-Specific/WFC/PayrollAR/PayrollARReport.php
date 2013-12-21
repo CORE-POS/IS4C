@@ -22,8 +22,7 @@
 *********************************************************************************/
 
 include('../../../../config.php');
-include($FANNIE_ROOT.'src/mysql_connect.php');
-include($FANNIE_ROOT.'classlib2.0/FannieReportPage.php');
+include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
 class PayrollARReport extends FannieReportPage {
 
@@ -51,7 +50,8 @@ class PayrollARReport extends FannieReportPage {
 	}
 
 	function fetch_report_data(){
-		global $dbc, $FANNIE_TRANS_DB;
+		global $FANNIE_OP_DB, $FANNIE_TRANS_DB;
+        $dbc = FannieDB::get($FANNIE_OP_DB);
 
 		$query = $dbc->prepare_statement("SELECT c.CardNo,c.FirstName,c.LastName,c.ChargeLimit,
 			CASE WHEN s.cardNo IS NULL THEN 'no' ELSE 'yes' END as autodeduct,

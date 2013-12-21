@@ -4,7 +4,8 @@ include('../../../config.php');
 require($FANNIE_ROOT.'src/SQLManager.php');
 include('../../db.php');
 require($FANNIE_ROOT.'item/pricePerOunce.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+if (!class_exists('FannieAPI'))
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
 if (isset($_GET["action"])){
 	$out = $_GET["action"]."`";
@@ -77,7 +78,7 @@ if (isset($_GET['cat'])){
 		LEFT JOIN products AS p ON v.upc = p.upc 
 		left join vendorSRPs as s ON v.upc=s.upc AND v.vendorID=s.vendorID
 		WHERE p.upc IS NULL and v.vendorID=1
-		$brand AND v.vendorDept=$catID order by v.vendorDept,v.brand,v.description");
+		$brand AND v.vendorDept=? order by v.vendorDept,v.brand,v.description");
     $brandArgs[] = $catID;
 	$dataR = $sql->execute($dataQ, $brandArgs);
 

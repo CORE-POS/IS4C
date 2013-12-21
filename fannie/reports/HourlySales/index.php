@@ -22,10 +22,12 @@
 *********************************************************************************/
 
 include('../../config.php');
+include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+$dbc = FannieDB::get($FANNIE_OP_DB);
+
 $header = "Hourly Sales Report";
 $page_title = "Fannie : Hourly Sales";
 include($FANNIE_ROOT.'src/header.html');
-include($FANNIE_ROOT.'src/mysql_connect.php');
 $options = "<option value=-1 selected>All</option>";
 $prep = $dbc->prepare_statement("SELECT superID,super_name FROM superDeptNames 
 		WHERE superID > 0");
@@ -46,6 +48,10 @@ while($row = $dbc->fetch_row($res))
 </tr><tr>
      <td><input type=checkbox name=weekday value=1>Group by weekday?</td>
      <td><input type =submit name=submit value ="Get Report"></td></tr>
+</tr><tr>
+<td colspan="4">
+<a href="HourlySalesReport.php">New One with Charts</a>
+</td></tr>
 </table>
 <!-- <a href=hourlySalesDept.php>Per-department sales by hour</a> -->
 

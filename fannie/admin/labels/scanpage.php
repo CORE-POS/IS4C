@@ -1,7 +1,8 @@
 <?php
 
 include('../../config.php');
-include($FANNIE_ROOT.'src/mysql_connect.php');
+include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+$dbc = FannieDB::get($FANNIE_OP_DB);
 
 define('FPDF_FONTPATH','font/');
    require($FANNIE_ROOT.'src/fpdf/fpdf.php');
@@ -110,7 +111,8 @@ class WFC_New_PDF extends FPDF
 }
 
 function build_page($upcs){
-	global $dbc;
+	global $FANNIE_OP_DB;
+    $dbc = FannieDB::get($FANNIE_OP_DB);
 
 	$q = "SELECT CASE WHEN u.brand IS NULL THEN x.manufacturer ELSE u.brand END as fixedBrand,
 		CASE WHEN u.description IS NULL THEN p.description ELSE u.description END as fixedDesc,
@@ -122,7 +124,7 @@ function build_page($upcs){
 	$args = array();
 	foreach($upcs as $u){
 		$q .= '?,';
-		$args[] = str_pad($u,13,'0',STR_PAD_LEFT);
+		$args[] = BarcodeLib::padUPC($u);
 	}
 	$q = rtrim($q,",").") ORDER BY fixedDesc";
 	$p = $dbc->prepare_statement($q);

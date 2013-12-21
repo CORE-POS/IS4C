@@ -51,7 +51,7 @@ function deleteCustomerAllLanes($cardno)
 
 function redoCard($cardno)
 {
-	global $lanes,$numlanes,$dbs,$sql,$types;
+    global $FANNIE_LANES, $sql;
 
 	$upcQ = $sql->prepare("SELECT upc FROM memberCards WHERE card_no=?");
 	$upcR = $sql->execute($upcQ, array($cardno));

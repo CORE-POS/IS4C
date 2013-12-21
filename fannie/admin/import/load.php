@@ -22,8 +22,9 @@
 *********************************************************************************/
 
 include("../../config.php");
+include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+$dbc = FannieDB::get($FANNIE_OP_DB);
 
-require_once($FANNIE_ROOT.'src/mysql_connect.php');
 require($FANNIE_ROOT.'src/csv_parser.php');
 require($FANNIE_ROOT.'src/tmp_dir.php');
 

@@ -34,11 +34,9 @@ elseif (isset($_REQUEST['addEntry'])){
 	$score = sprintf("%.2f",$score);
 	$score = str_replace(".","",$score);	
 
-	$q = sprintf("INSERT INTO evalScores (empID,evalType,evalScore,month,year,pos)
-		VALUES (%d,%d,%d,%d,%d,'%s')",$empID,$type,
-		$score,
-		$month,$year,$pos);
-	$r = $db->query($q);
+	$q = $db->prepare("INSERT INTO evalScores (empID,evalType,evalScore,month,year,pos)
+		VALUES (?,?,?,?,?,?)");
+	$r = $db->execute($q, array($empID, $type, $score, $month, $year, $pos));
 
 	echo getHistory($empID);
 	exit;
@@ -49,27 +47,26 @@ elseif (isset($_REQUEST['addComment'])){
 	$user = $_REQUEST['user'];
 	$comment = $_REQUEST['comment'];
 
-	$q = sprintf("INSERT INTO evalComments(empID,comment,stamp,user,deleted) VALUES
-		(%d,'%s',now(),'%s',0)",$empID,mysql_real_escape_string($comment),
-		mysql_real_escape_string($user));
-	$r = $db->query($q);
+	$q = $db->prepare("INSERT INTO evalComments(empID,comment,stamp,user,deleted) VALUES
+		(?,?,now(),?,0)");
+	$r = $db->execute($q, array($empID, $comment, $user));
 
 	echo getComments($empID);
 	exit;
 }
 elseif (isset($_REQUEST['deleteComment'])){
 	$db = hours_dbconnect();
-	$q = sprintf("UPDATE evalComments SET deleted=1 WHERE id=%d",$_REQUEST['deleteComment']);
-	$r = $db->query($q);
+	$q = $db->prepare("UPDATE evalComments SET deleted=1 WHERE id=?");
+	$r = $db->execute($q, array($_REQUEST['deleteComment']));
 	echo getComments($_REQUEST['empID']);
 	exit;
 }
 elseif (isset($_REQUEST['delEntry'])){
 	$entryID = sprintf("%d",$_REQUEST['delEntry']);
 	$empID = sprintf("%d",$_REQUEST['empID']);
-	$q = "DELETE FROM evalScores WHERE id=$entryID AND empID=$empID";
+	$q = $db->prepare("DELETE FROM evalScores WHERE id=? AND empID=?");
 	$db = hours_dbconnect();
-	$db->query($q);
+	$db->execute($q, array($entryID, $empID));
 
 	echo getHistory($empID);
 	exit;
@@ -95,11 +92,10 @@ elseif (isset($_REQUEST['saveInfo'])){
 	$hire = !empty($hire)?"'".mysql_real_escape_string($hire)."'":"null";
 	$etype = $_REQUEST['etype'];
 	
-	$delQ = sprintf("DELETE FROM evalInfo WHERE empID=%d",$id);
-	$insQ = sprintf("INSERT evalInfo VALUES (%d,'%s',%s,%s,%d)",$id,
-			mysql_real_escape_string($pos),$date,$hire,$etype);
-	$db->query($delQ);
-	$db->query($insQ);
+	$delQ = $db->prepare("DELETE FROM evalInfo WHERE empID=?");
+	$insQ = $db->prepare("INSERT evalInfo VALUES (?,?,?,?,?)");
+	$db->execute($delQ, array($id));
+	$db->execute($insQ, array($id, $pos, $date, $hire, $etype));
 	echo "Info saved\nPositions: $pos\nNext Eval: ".trim($date,"'")."\nHire: ".trim($hire,"'");
 	exit;
 }
@@ -114,12 +110,12 @@ $empID = sprintf("%d",$_REQUEST['id']);
 function getHistory($id){
 	$db = hours_dbconnect();
 
-	$q = "SELECT e.month,e.year,t.title,e.evalScore,e.pos,e.id
+	$q = $db->prepare("SELECT e.month,e.year,t.title,e.evalScore,e.pos,e.id
 		FROM evalScores AS e LEFT JOIN EvalTypes AS t
 		ON e.evalType = t.id
-		WHERE e.empID=$id
-		ORDER BY e.year DESC, e.month DESC";
-	$r = $db->query($q);
+		WHERE e.empID=?
+		ORDER BY e.year DESC, e.month DESC");
+	$r = $db->execute($q, array($id));
 	$ret = "<table cellspacing=0 cellpadding=4 border=1>";
 	$ret .= "<tr><th>Date</th><th>Type</th><th>Score</th><th>Position</th></tr>";
 	while($w = $db->fetch_row($r)){
@@ -140,8 +136,8 @@ function getComments($id){
 	$ret = "";
 
 	$db = hours_dbconnect();
-	$q = "SELECT stamp,user,comment,id FROM evalComments WHERE empID=$id AND deleted=0 ORDER BY stamp DESC";
-	$r = $db->query($q);
+	$q = $db->prepare("SELECT stamp,user,comment,id FROM evalComments WHERE empID=? AND deleted=0 ORDER BY stamp DESC");
+	$r = $db->execute($q, array($id));
 	while($w = $db->fetch_row($r)){
 		$ret .= sprintf('<div class="cHeader">%s - %s
 				<a href="" onclick="deleteComment(%d);return false;">[delete]</a></div>
@@ -155,10 +151,10 @@ function getComments($id){
 function empInfo($id){
 	$db = hours_dbconnect();
 	$ret = "<table cellspacing=0 cellpadding=4 border=1>";
-	$q = "SELECT e.name,i.positions,i.nextEval,i.hireDate,i.nextTypeID FROM employees as e
+	$q = $db->prepare("SELECT e.name,i.positions,i.nextEval,i.hireDate,i.nextTypeID FROM employees as e
 		left join evalInfo as i on e.empID=i.empID
-		WHERE e.empID=$id";
-	$r = $db->query($q);
+		WHERE e.empID=?");
+	$r = $db->execute($q, array($id));
 	$w = $db->fetch_row($r);
 	$ret .= "<tr><th>Name</th><td colspan=2>$w[0]</td></tr>";
 	$ret .= "<tr><th>Position(s)</th><td colspan=2><input type=text id=\"empPositions\" value=\"$w[1]\" /></td></tr>";

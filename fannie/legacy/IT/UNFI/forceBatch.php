@@ -1,5 +1,6 @@
 <?php
 include('../../../config.php');
+include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
 if (!class_exists("SQLManager")) require_once($FANNIE_ROOT."src/SQLManager.php");
 include('../../db.php');
@@ -36,9 +37,12 @@ $upQ = $sql->prepare("INSERT INTO prodUpdate
 $sql->execute($upQ, array($batchID));
 
 
-//exec("php fork.php sync products");
-include($FANNIE_ROOT.'legacy/queries/laneUpdates.php');
-syncProductsAllLanes();
+$all = $sql->prepare('SELECT upc FROM batchListTest WHERE batchID=?');
+$all = $sql->execute($all, array($batchID));
+while($row = $sql->fetch_row($all)) {
+    $model = new ProductsModel($row['upc']);
+    $model->pushToLanes();
+}
 
 echo "Batch $batchID has been forced";
 

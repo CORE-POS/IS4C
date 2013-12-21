@@ -51,24 +51,23 @@ class FannieDB
 
         self::$db->default_db = $db_name;
         self::$db->query('use '.$db_name);
+        $info = debug_backtrace();
         return self::$db;
     }
 
     private static function newDB($db_name)
     {
-        global $FANNIE_ROOT, $FANNIE_SERVER, $FANNIE_SERVER_DBMS,
-            $FANNIE_SERVER_USER, $FANNIE_SERVER_PW;
+        include(dirname(__FILE__).'/../../config.php');
         if (!class_exists('SQLManager')) {
             include($FANNIE_ROOT.'src/SQLManager.php');
         }
         self::$db = new SQLManager($FANNIE_SERVER,$FANNIE_SERVER_DBMS,
-            $db_name, $FANNIE_SERVER_USER, $FANNIE_SERVER_PW);
+            $db_name, $FANNIE_SERVER_USER, $FANNIE_SERVER_PW, false, true);
     }
 
     private static function addDB($db_name)
     {
-        global $FANNIE_ROOT, $FANNIE_SERVER, $FANNIE_SERVER_DBMS,
-            $FANNIE_SERVER_USER, $FANNIE_SERVER_PW;
+        include(dirname(__FILE__).'/../../config.php');
         if (!class_exists('SQLManager')) {
             include($FANNIE_ROOT.'src/SQLManager.php');
         }

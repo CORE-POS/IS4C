@@ -953,6 +953,9 @@ class InstallIndexPage extends InstallPage {
 				'PurchaseOrderItems','op');
 
 		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+				'PurchaseOrderSummary','op');
+
+		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 				'emailLog','op');
 
 		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
@@ -1226,6 +1229,9 @@ class InstallIndexPage extends InstallPage {
 
 		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
 				'houseCouponThisMonth','trans');
+
+		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+				'skuMovementSummary','trans');
 
 		return $ret;
 

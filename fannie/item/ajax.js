@@ -14,7 +14,7 @@ function cscallback(){
 		url: 'ajax.php',
 		type: 'POST',
 		dataType: 'text/html',
-		timeout: 1000,
+		timeout: 5000,
 		data: d,
 		error: function(){
 		alert('Error loading XML document');
@@ -37,7 +37,7 @@ function updateLC(the_likecode){
 		url: 'ajax.php',
 		type: 'POST',
 		dataType: 'text/html',
-		timeout: 1000,
+		timeout: 5000,
 		data: d,
 		error: function(){
 		alert('Error loading XML document');

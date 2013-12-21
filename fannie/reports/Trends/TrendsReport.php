@@ -84,7 +84,7 @@ class TrendsReport extends FannieReportPage
                 break;
             case 'upc':
                 $where = 'd.upc = ?';
-                $args[] = str_pad(FormLib::get('upc'), 13, '0', STR_PAD_LEFT);
+                $args[] = BarcodeLib::padUPC(FormLib::get('upc'));
                 break;
             case 'likecode':
                 $joins = 'LEFT JOIN upcLike AS u ON d.upc=u.upc

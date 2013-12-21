@@ -1,7 +1,7 @@
 <?php
 include('../../config.php');
-include($FANNIE_ROOT.'src/mysql_connect.php');
-include($FANNIE_ROOT.'src/select_dlog.php');
+include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+$dbc = FannieDB::get($FANNIE_OP_DB);
 
 if (isset($_GET['excel'])){
 	header('Content-Type: application/ms-excel');
@@ -52,7 +52,7 @@ if (isset($_GET['startDate'])){
 		$mem11Str = " and d.card_no <> 11 ";
 
 
-	$dlog = select_dlog($startDate);
+	$dlog = DTransactionsModel::selectDlog($startDate);
 
 	$fetchQ = $dbc->prepare_statement("select d.card_no,sum(d.total),
 		case when m.zip='' then 'None Given' else m.zip end

@@ -22,12 +22,11 @@
 *********************************************************************************/
 
 require('../login.php');
-$path = guesspath();
-include($path."config.php");
+include("../../config.php");
 $page_title = 'Fannie : Auth : Add User';
 $header = 'Fannie : Auth : Add User';
 
-include($path."src/header.html");
+include($FANNIE_ROOT."src/header.html");
 
 if (!validateUser('admin')){
   return;
@@ -61,5 +60,5 @@ else {
   echo "</table</form>";
 }
 
-include($path."src/footer.html");
+include($FANNIE_ROOT."src/footer.html");
 ?>

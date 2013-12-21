@@ -9,6 +9,8 @@ Columns:
 	placed tinyint
 	placedDate datetime
 	userID int
+    vendorOrderID varchar
+    vendorInvoiceID varchar
 
 Depends on:
 	none
@@ -18,6 +20,11 @@ Stores general an order from a vendor.
 One or more records in purchaseOrderItems
 should go with this record to list the
 individual items to order.
+
+vendorOrderID and vendorInvoiceID are memo
+fields. If the vendor puts numbers or other
+identifiers on orders and/or invoices those
+values can be saved here for reference.
 */
 $CREATE['op.PurchaseOrder'] = "
 	create table PurchaseOrder (
@@ -27,6 +34,8 @@ $CREATE['op.PurchaseOrder'] = "
 		placed TINYINT DEFAULT 0,
 		placedDate DATETIME,
 		userID INT,
+        vendorOrderID VARCHAR(25),
+        vendorInvoiceID VARCHAR(25),
 		primary key (orderID),
 		INDEX(placed)
 	)

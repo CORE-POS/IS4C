@@ -53,7 +53,8 @@ class ProduceSign extends SignClass {
 	}
 
 	function edit_form(){
-		global $dbc, $FANNIE_URL;
+		global $FANNIE_OP_DB, $FANNIE_URL;
+        $dbc = FannieDB::get($FANNIE_OP_DB);
 		
 		$upc = str_pad($_REQUEST['search_desc'],13,'0',STR_PAD_LEFT);
 		$q = $dbc->prepare_statement("SELECT CASE WHEN u.brand IS NULL THEN '' ELSE u.brand END as origin,

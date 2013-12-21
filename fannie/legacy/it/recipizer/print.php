@@ -13,9 +13,9 @@ echo displayRecipe($id);
 function displayRecipe($id){
 	global $sql;
 	$ret = "";
-	$q = "select r.name,r.upc,r.margin,r.price,r.servings,r.current_margin,i.info
-		  from recipes as r, info as i where r.id=i.recipeID and r.id=$id";
-	$r = $sql->query($q);
+	$q = $sql->prepare("select r.name,r.upc,r.margin,r.price,r.servings,r.current_margin,i.info
+		  from recipes as r, info as i where r.id=i.recipeID and r.id=?");
+	$r = $sql->execute($q, array($id));
 	$w = $sql->fetch_array($r);
 	
 	$name = $w['name'];
@@ -50,8 +50,8 @@ function displayRecipe($id){
 function getSteps($id){
 	global $sql;
 	$ret = "<table cellspacing=0 cellpadding=3 border=1>";
-	$q = "select step from steps where recipeID = $id order by ord";
-	$r = $sql->query($q);
+	$q = $sql->prepare("select step from steps where recipeID = ? order by ord");
+	$r = $sql->execute($q, array($id));
 	$i = 1;
 	while ($w = $sql->fetch_array($r)){
 		$ret .= "<tr>";
@@ -70,10 +70,10 @@ function getSteps($id){
 function getIngredients($id,$mult=1){
 	global $sql;
 	$ret = "<table cellspacing=0 cellpadding=3 border=1>";
-	$q = "select i.name,l.measure,l.unit,l.prep from ingredientlist as l
+	$q = $sql->prepare("select i.name,l.measure,l.unit,l.prep from ingredientlist as l
 		  left join ingredients as i on i.id = l.ingredientID
-		  where recipeID = $id order by ord";
-	$r = $sql->query($q);
+		  where recipeID = ? order by ord");
+	$r = $sql->execute($q, array($id));
 	$i = 1;
 	$numbering = 1;
 	while ($w = $sql->fetch_array($r)){

@@ -1,6 +1,7 @@
 <?php
 include('../../config.php');
-include('../../src/mysql_connect.php');
+include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+$dbc = FannieDB::get($FANNIE_OP_DB);
 
 $p1 = $dbc->prepare_statement("SELECT upc FROM productUser where upc=?");
 $p2 = $dbc->prepare_statement("SELECT upc FROM products WHERE upc=?");

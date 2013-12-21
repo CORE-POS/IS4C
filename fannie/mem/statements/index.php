@@ -25,7 +25,6 @@ $page_title='Fannie - Member Management Module';
 $header='Send Statements';
 include('../../src/header.html');
 
-require_once('../../src/mysql_connect.php');
 ?>
 <ul>
 <li><a href=indvAR.php>AR (Member)</a></li>
