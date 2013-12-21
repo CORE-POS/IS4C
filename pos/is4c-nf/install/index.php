@@ -467,6 +467,8 @@ function create_op_dbs($db,$type){
 
     InstallUtilities::createIfNeeded($db, $type, $name, 'houseCouponItems', 'op', $errors);
 
+    InstallUtilities::createIfNeeded($db, $type, $name, 'autoCoupons', 'op', $errors);
+
     InstallUtilities::createIfNeeded($db, $type, $name, 'memchargebalance', 'op', $errors);
 
     InstallUtilities::createIfNeeded($db, $type, $name, 'unpaid_ar_today', 'op', $errors);
