@@ -30,7 +30,7 @@ function deptchange(){
 	$.ajax({
 		url: 'DepartmentEditor.php',
 		type: 'POST',
-		timeout: 1000,
+		timeout: 5000,
 		data: 'did='+dID+'&action=deptDisplay',
 		error: function(){
 		alert('Error loading XML document');
@@ -63,7 +63,7 @@ function deptSave(){
 	$.ajax({
 		url: 'DepartmentEditor.php',
 		type: 'POST',
-		timeout: 1000,
+		timeout: 5000,
 		data: qs,
 		error: function(){
 		alert('Error loading XML document');
