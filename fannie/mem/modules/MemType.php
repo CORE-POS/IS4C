@@ -68,7 +68,7 @@ class MemType extends MemberModule {
                         <td><input type="checkbox" name="MemType_ssi" id="MemType_ssi"
                         %s /><label for="MemType_ssi">Senior</label></td></tr>',
                         ($staff == 1 ? 'checked' : ''),
-                        ($ssi == 1 ? 'checked' : ''),
+                        ($ssi == 1 ? 'checked' : '')
                 );
 
 		$ret .= "</table></fieldset>";
