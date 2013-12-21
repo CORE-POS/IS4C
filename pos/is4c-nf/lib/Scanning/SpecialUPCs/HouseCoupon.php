@@ -136,7 +136,7 @@ class HouseCoupon extends SpecialUPC
                 $minQ = "select case when sum(ItemQtty) is null
                     then 0 else sum(ItemQtty) end
                         from localtemptrans
-                    as l left join opdata" . $transDB->sep() . "houseCouponItems 
+                    as l left join " . $CORE_LOCAL->get('pDatabase') . $transDB->sep() . "houseCouponItems 
                     as h on l.upc = h.upc
                     where h.coupID = " . $coupID ;
                 $minR = $transDB->query($minQ);
@@ -150,7 +150,7 @@ class HouseCoupon extends SpecialUPC
                 $minQ = "select case when sum(ItemQtty) is null
                     then 0 else sum(ItemQtty) end
                         from localtemptrans
-                    as l left join opdata" . $transDB->sep() . "houseCouponItems 
+                    as l left join " . $CORE_LOCAL->get('pDatabase') . $transDB->sep() . "houseCouponItems 
                     as h on l.upc = h.upc
                     where h.coupID = " . $coupID ;
                 $minR = $transDB->query($minQ);
@@ -164,7 +164,7 @@ class HouseCoupon extends SpecialUPC
                 $minQ = "select case when sum(total) is null
                     then 0 else sum(total) end
                     from localtemptrans
-                    as l left join opdata" . $transDB->sep() . "houseCouponItems
+                    as l left join " . $CORE_LOCAL->get('pDatabase') . $transDB->sep() . "houseCouponItems
                     as h on l.department = h.upc
                     where h.coupID = " . $coupID ;
                 $minR = $transDB->query($minQ);
@@ -178,7 +178,7 @@ class HouseCoupon extends SpecialUPC
                 $minQ = "select case when sum(total) is null
                     then 0 else sum(total) end
                     from localtemptrans
-                    as l left join opdata" . $transDB->sep() . "houseCouponItems
+                    as l left join " . $CORE_LOCAL->get('pDatabase') . $transDB->sep() . "houseCouponItems
                     as h on l.department = h.upc
                     where h.coupID = " . $coupID ;
                 $minR = $transDB->query($minQ);
@@ -193,7 +193,7 @@ class HouseCoupon extends SpecialUPC
                 $minQ = "select case when sum(ItemQtty) is null then 0 else
                     sum(ItemQtty) end
                     from localtemptrans
-                    as l left join opdata" . $transDB->sep() . "houseCouponItems
+                    as l left join " . $CORE_LOCAL->get('pDatabase') . $transDB->sep() . "houseCouponItems
                     as h on l.upc = h.upc
                     where h.coupID = $coupID
                     and h.type = 'QUALIFIER'" ;
@@ -204,7 +204,7 @@ class HouseCoupon extends SpecialUPC
                 $min2Q = "select case when sum(ItemQtty) is null then 0 else
                     sum(ItemQtty) end
                     from localtemptrans
-                    as l left join opdata" . $transDB->sep() . "houseCouponItems
+                    as l left join " . $CORE_LOCAL->get('pDatabase') . $transDB->sep() . "houseCouponItems
                     as h on l.upc = h.upc
                     where h.coupID = $coupID
                     and h.type = 'DISCOUNT'";
@@ -326,7 +326,7 @@ class HouseCoupon extends SpecialUPC
                 // discount = coupon's discountValue
                 // times the cheapeast coupon item
                 $valQ = "select unitPrice, department from localtemptrans
-                    as l left join opdata" . $transDB->sep() . "houseCouponItems
+                    as l left join " . $CORE_LOCAL->get('pDatabase') . $transDB->sep() . "houseCouponItems
                     as h on l.upc = h.upc
                     where h.coupID=" . $coupID . " 
                     and h.type in ('BOTH', 'DISCOUNT')
@@ -342,7 +342,7 @@ class HouseCoupon extends SpecialUPC
                 // take off
                 $value = $infoW["discountValue"];
                 $deptQ = "select department, (total/quantity) as value from localtemptrans
-                    as l left join opdata" . $transDB->sep() . "houseCouponItems
+                    as l left join " . $CORE_LOCAL->get('pDatabase') . $transDB->sep() . "houseCouponItems
                     as h on l.upc = h.upc
                     where h.coupID=" . $coupID . "
                     and h.type in ('BOTH', 'DISCOUNT')
@@ -357,7 +357,7 @@ class HouseCoupon extends SpecialUPC
                 // scales with quantity for by-weight items
                 $value = $infoW["discountValue"];
                 $valQ = "select department, quantity from localtemptrans
-                    as l left join opdata" . $transDB->sep() . "houseCouponItems
+                    as l left join " . $CORE_LOCAL->get('pDatabase') . $transDB->sep() . "houseCouponItems
                     as h on l.department = h.upc
                     where h.coupID = " . $coupID . "
                     and h.type in ('BOTH', 'DISCOUNT')
@@ -372,7 +372,7 @@ class HouseCoupon extends SpecialUPC
                 // whichever is less
                 $value = $infoW["discountValue"];
                 $valQ = "select department, l.total from localtemptrans
-                    as l left join opdata" . $transDB->sep() . "houseCouponItems
+                    as l left join " . $CORE_LOCAL->get('pDatabase') . $transDB->sep() . "houseCouponItems
                     as h on l.department = h.upc
                     where h.coupID = " . $coupID . "
                     and h.type in ('BOTH', 'DISCOUNT')
@@ -387,7 +387,7 @@ class HouseCoupon extends SpecialUPC
                 // scales with quantity for by-weight items
                 $value = $infoW["discountValue"];
                 $valQ = "select sum(quantity) from localtemptrans
-                    as l left join opdata" . $transDB->sep() . "houseCouponItems
+                    as l left join " . $CORE_LOCAL->get('pDatabase') . $transDB->sep() . "houseCouponItems
                     as h on l.department = h.upc
                     where h.coupID = " . $coupID . "
                     and h.type in ('BOTH', 'DISCOUNT')
@@ -402,7 +402,7 @@ class HouseCoupon extends SpecialUPC
                 // scales with quantity for by-weight items
                 $value = $infoW["discountValue"];
                 $valQ = "select l.upc, quantity from localtemptrans
-                    as l left join opdata" . $transDB->sep() . "houseCouponItems
+                    as l left join " . $CORE_LOCAL->get('pDatabase') . $transDB->sep() . "houseCouponItems
                     as h on l.upc = h.upc
                     where h.coupID = " . $coupID . "
                     and h.type in ('BOTH', 'DISCOUNT')
@@ -421,7 +421,7 @@ class HouseCoupon extends SpecialUPC
                 break;
             case "%D": // percent discount on all items in give department(s)
                 $valQ = "select sum(total) from localtemptrans
-                    as l left join opdata" . $transDB->sep() . "houseCouponItems
+                    as l left join " . $CORE_LOCAL->get('pDatabase') . $transDB->sep() . "houseCouponItems
                     as h on l.department = h.upc
                     where h.coupID = " . $coupID . "
                     and h.type in ('BOTH', 'DISCOUNT')";
