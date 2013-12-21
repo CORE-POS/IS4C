@@ -26,7 +26,7 @@ function showSubsForDept(did){
 	$.ajax({
 		url: 'SubDeptEditor.php',
 		type: 'POST',
-		timeout: 1000,
+		timeout: 5000,
 		data: d,
 		error: function(){
 		alert('Error loading XML document');
@@ -48,7 +48,7 @@ function addSub(){
 	$.ajax({
 		url: 'SubDeptEditor.php',
 		type: 'POST',
-		timeout: 1000,
+		timeout: 5000,
 		data: d,
 		error: function(){
 		alert('Error loading XML document');
@@ -69,7 +69,7 @@ function deleteSub(){
 	$.ajax({
 		url: 'SubDeptEditor.php',
 		type: 'POST',
-		timeout: 1000,
+		timeout: 5000,
 		data: d,
 		error: function(){
 		alert('Error loading XML document');

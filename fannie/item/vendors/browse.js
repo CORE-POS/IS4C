@@ -10,7 +10,7 @@ function catchange(){
 		$.ajax({
 			url: 'BrowseVendorItems.php',
 			type: 'post',
-			timeout: 1000,
+			timeout: 5000,
 			data: 'vid='+vid+'&deptID='+did+'&action=getCategoryBrands',
 			error: function(){
 			alert('Error loading XML document');
@@ -29,7 +29,7 @@ function addToPos(upc){
 	$.ajax({
 		url: 'BrowseVendorItems.php',
 		type: 'POST',
-		timeout: 1000,
+		timeout: 5000,
 		data: 'upc='+upc+'&vid='+vid+'&price='+price+'&dept='+dept+'&action=addPosItem',
 		error: function(){
 		alert('Error loading XML document');

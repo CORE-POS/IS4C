@@ -30,7 +30,7 @@ function saveScript(vID){
 	$.ajax({
 		url: 'ajax.php',
 		type: 'POST',
-		timeout: 1000,
+		timeout: 5000,
 		data: 'vid='+vID+'&script='+scriptName+'&action=saveScript',
 		error: function(){
 			alert('Error saving script name');
@@ -62,7 +62,7 @@ function vendorchange(){
 	$.ajax({
 		url: 'VendorIndexPage.php',
 		type: 'POST',
-		timeout: 1000,
+		timeout: 5000,
 		data: 'vid='+vID+'&action=vendorDisplay',
 		error: function(){
 		alert('Error loading XML document');
@@ -78,7 +78,7 @@ function newvendor(){
 	$.ajax({
 		url: 'VendorIndexPage.php',
 		type: 'POST',
-		timeout: 1000,
+		timeout: 5000,
 		data: 'name='+name+'&action=newVendor',
 		error: function(){
 		alert('Error loading XML document');
