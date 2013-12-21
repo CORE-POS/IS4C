@@ -28,8 +28,9 @@ class MemType extends MemberModule {
 
 		$dbc = $this->db();
 		
-		$infoQ = $dbc->prepare_statement("SELECT c.memType,n.memType,n.memDesc,c.discount
-				FROM custdata AS c, 
+		$infoQ = $dbc->prepare_statement("SELECT c.memType,n.memType,n.memDesc,c.Discount,
+                c.Staff, c.SSI
+				FROM custdata AS c,
 				memtype AS n 
 				WHERE c.CardNo=? AND c.personNum=1
 				ORDER BY n.memType");
@@ -42,12 +43,16 @@ class MemType extends MemberModule {
 		$ret .= "<tr><th>Type</th>";
 		$ret .= '<td><select name="MemType_type">';
 		$disc = 0;
+        $staff = 0;
+        $ssi = 0;
 		while($infoW = $dbc->fetch_row($infoR)){
 			$ret .= sprintf("<option value=%d %s>%s</option>",
 				$infoW[1],
 				($infoW[0]==$infoW[1]?'selected':''),
 				$infoW[2]);
 			$disc = $infoW[3];
+            $staff = $infoW['staff'];
+            $ssi = $infoW['SSI'];
 		}
 		$ret .= "</select></td>";
 		
@@ -57,6 +62,14 @@ class MemType extends MemberModule {
 				size="4" /></td></tr>',$disc);	
 		*/
 		$ret .= sprintf('<td>%d%%</td></tr>',$disc);
+
+        $ret .= sprintf('<tr><td><input type="checkbox" name="MemType_staff" id="MemType_staff"
+                        %s /><label for="MemType_staff">Staff</label></td>
+                        <td><input type="checkbox" name="MemType_ssi" id="MemType_ssi"
+                        %s /><label for="MemType_ssi">Senior</label></td></tr>',
+                        ($staff == 1 ? 'checked' : ''),
+                        ($ssi == 1 ? 'checked' : '')
+                );
 
 		$ret .= "</table></fieldset>";
 		return $ret;
@@ -90,6 +103,15 @@ class MemType extends MemberModule {
 			$CUST_FIELDS['Staff'] = $w['staff'];
 			$CUST_FIELDS['SSI'] = $w['SSI'];
 		}
+
+        $submitted_staff = FormLib::get('MemType_staff', '');
+        if ($submitted_staff !== '') {
+            $CUST_FIELDS['Staff'] = 1;
+        }
+        $submitted_ssi = FormLib::get('MemType_ssi', '');
+        if ($submitted_ssi !== '') {
+            $CUST_FIELDS['SSI'] = 1;
+        }
 
 		// Assign Member Type values to each custdata record for the Membership.
 		$cust = new CustdataModel($dbc);

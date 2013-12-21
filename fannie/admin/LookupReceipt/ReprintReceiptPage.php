@@ -62,7 +62,10 @@ class ReprintReceiptPage extends FanniePage {
 			if ($date != ""){
 				$query .= ' AND tdate BETWEEN ? AND ? ';
 				$args[] = $date.' 00:00:00';
-				$args[] = $date.' 23:59:59';
+				$args[] = $date2.' 23:59:59';
+                $dlog = DTransactionsModel::selectDlog($date, $date2);
+                // update the table we're searching
+                $query = str_replace($FANNIE_TRANS_DB . $dbc->sep() . 'dlog_15', $dlog, $query);
 			}
 			if ($card_no != ""){
 				$query .= " AND card_no=? ";
@@ -183,21 +186,16 @@ Receipt Search - Fill in any information available
 </tr>
 <tr>
 	<th>Tender type</th><td colspan=2><select name=trans_subtype>
-		<option value="">Select one...</option>
-		<option value=CA>Cash</option>
-		<option value=CC>Credit Card</option>
-		<option value=CK>Check</option>
-		<option value=MI>Store Charge</option>
-		<option value=EC>EBT Cash</option>
-		<option value=EF>EBT Foodstamps</option>
-		<option value=GD>Gift Card</option>
-		<option value=CP>Coupon</option>
-		<option value=IC>InStore Coupon</option>
-		<option value=TC>Gift Certificate</option>
-		<option value=MA>MAD Coupon</option>
-		<option value=RR>RRR Coupon</option>
-		<option value=SC>Store Credit</option>
-	</select></td>
+        <option value="">Select one...</option>
+		<?php
+		$numsQ = $dbc->prepare_statement("SELECT TenderCode,TenderName FROM tenders 
+			ORDER BY TenderName");
+		$numsR = $dbc->exec_statement($numsQ);
+		while($numsW = $dbc->fetch_row($numsR)) {
+			printf("<option value=%s>%s</option>",$numsW[0],$numsW[1]);	
+		}
+		?>
+		</select></td>
 	<th colspan=2>Tender amount</th><td><input type=text name=tenderTotal size=6 /></td>
 </tr>
 <tr>

@@ -21,23 +21,8 @@ $CREATE['op.subdepts'] = "
 	  subdept_no smallint(4) NOT NULL, 
 	  subdept_name varchar(30) default NULL,
 	  dept_ID smallint(4) default NULL,
-	  PRIMARY KEY (subdept_no),
-	  KEY (subdept_name)
+	  PRIMARY KEY (subdept_no, dept_ID)
 	) 
 ";
-
-if ($dbms == "MSSQL"){
-	$CREATE['op.subdepts'] = "
-		CREATE TABLE subdepts (
-		subdept_no smallint,
-		subdept_name varchar(30),
-		dept_ID smallint
-		)
-	";
-}
-elseif ($dbms == 'PDOLITE'){
-	$CREATE['op.subdepts'] = str_replace('KEY (subdept_name)','',$CREATE['op.subdepts']);
-	$CREATE['op.subdepts'] = str_replace('KEY (subdept_no),','KEY (subdept_no)',$CREATE['op.subdepts']);
-}
 
 ?>
