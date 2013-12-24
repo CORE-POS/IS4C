@@ -115,6 +115,15 @@ class DepartmentMovementReport extends FannieReportPage {
 		}
 
 		/**
+		 * Provide more WHERE conditions to filter irrelevant
+		 * transaction records, as a stop-gap until this is
+		 * handled more uniformly across the application.
+		 */
+		$filter_transactions = "t.trans_status NOT IN ('D','X','Z')
+			AND t.emp_no <> 9999
+			AND t.register_no <> 99";
+		
+		/**
 		  Select a summary table. For UPC results, per-unique-ring
 		  summary is needed. For date/dept/weekday results the
 		  per-department summary is fine (and a smaller table)
@@ -149,6 +158,7 @@ class DepartmentMovementReport extends FannieReportPage {
 				  LEFT JOIN prodExtra as x on t.upc = x.upc
 				  WHERE $filter_condition
 				  AND tdate BETWEEN ? AND ?
+				  AND $filter_transactions
 				  GROUP BY t.upc,p.description,
 				  d.dept_no,d.dept_name,s.superID,x.distributor ORDER BY SUM(t.total) DESC";
 			break;
@@ -158,6 +168,7 @@ class DepartmentMovementReport extends FannieReportPage {
 				LEFT JOIN $superTable AS s ON s.dept_ID = t.department 
 				WHERE $filter_condition
 				AND tdate BETWEEN ? AND ?
+				AND $filter_transactions
 				GROUP BY t.department,d.dept_name ORDER BY SUM(total) DESC";
 			break;
 		case 'Date':
@@ -166,6 +177,7 @@ class DepartmentMovementReport extends FannieReportPage {
 				LEFT JOIN $superTable AS s ON s.dept_ID = t.department
 				WHERE $filter_condition
 				AND tdate BETWEEN ? AND ?
+				AND $filter_transactions
 				GROUP BY year(tdate),month(tdate),day(tdate) 
 				ORDER BY year(tdate),month(tdate),day(tdate)";
 			break;
@@ -184,6 +196,7 @@ class DepartmentMovementReport extends FannieReportPage {
 				LEFT JOIN $superTable AS s ON s.dept_ID = t.department 
 				WHERE $filter_condition
 				AND tdate BETWEEN ? AND ?
+				AND $filter_transactions
 				GROUP BY $cols
 				ORDER BY ".$dbc->dayofweek('tdate');
 			break;
