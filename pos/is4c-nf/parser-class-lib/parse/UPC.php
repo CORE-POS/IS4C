@@ -552,7 +552,7 @@ class UPC extends Parser {
 	public static function requestTareCallback($tare, $in_item) {
         if (is_numeric($tare)) {
             TransRecord::addTare($tare);
-            $ret_url = '../../gui-modules/pos2.php?reginput=1669';
+            $ret_url = '../../gui-modules/pos2.php?reginput='.$in_item;
             return $ret_url;
         }
         return False;
