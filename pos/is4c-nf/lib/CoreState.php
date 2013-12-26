@@ -623,7 +623,7 @@ static public function loadData()
 		$result = $db_product->query($query_member);
 		if ($db_product->num_rows($result) > 0) {
 			$row = $db_product->fetch_array($result);
-			$CORE_LOCAL->set("memMsg",self::blueLine($row));
+			$CORE_LOCAL->set("memMsg",$row['blueLine']);
 			$CORE_LOCAL->set("memType",$row["memType"]);
 			$CORE_LOCAL->set("percentDiscount",$row["Discount"]);
 
