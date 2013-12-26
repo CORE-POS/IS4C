@@ -66,7 +66,7 @@ class DTransactionsModel extends BasicModel
     'card_no'    => array('type'=>'INT','index'=>True),
     'trans_id'    => array('type'=>'TINYINT'),
     'pos_row_id' => array('type'=>'BIGINT UNSIGNED', 'index'=>true),
-    'row_id' => array('type'=>'BIGINT UNSIGNED', 'increment'=>true, 'primary_key'=>true),
+    'store_row_id' => array('type'=>'BIGINT UNSIGNED', 'increment'=>true, 'primary_key'=>true),
     );
 
     /**
@@ -87,9 +87,9 @@ class DTransactionsModel extends BasicModel
         if ($chk !== false) {
             $trans_adds += $chk;
         }
-        $this->columns['row_id']['increment'] = false;
-        $this->columns['row_id']['primary_key'] = false;
-        $this->columns['row_id']['index'] = true;
+        $this->columns['store_row_id']['increment'] = false;
+        $this->columns['store_row_id']['primary_key'] = false;
+        $this->columns['store_row_id']['index'] = true;
         
         $this->name = 'transarchive';
         $chk = parent::normalize($db_name, $mode, $doCreate);
@@ -194,9 +194,9 @@ class DTransactionsModel extends BasicModel
         unset($this->columns['trans_num']);
         $datetime = array('datetime'=>array('type'=>'datetime','index'=>true));
         $this->columns = $datetime + $this->columns;
-        $this->columns['row_id']['increment'] = true;
-        $this->columns['row_id']['primary_key'] = true;
-        $this->columns['row_id']['index'] = false;
+        $this->columns['store_row_id']['increment'] = true;
+        $this->columns['store_row_id']['primary_key'] = true;
+        $this->columns['store_row_id']['index'] = false;
 
         return $log_adds + $trans_adds;
 
