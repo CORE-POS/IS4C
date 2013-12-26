@@ -4,7 +4,7 @@ function deleteCat(num,name){
 		$.ajax({
 			url: 'VendorDepartmentEditor.php',
 			type: 'POST',
-			timeout: 1000,
+			timeout: 5000,
 			data: 'deptID='+num+'&vid='+vid+'&action=deleteCat',
 			error: function(){
 			alert('Error loading XML document');
@@ -25,7 +25,7 @@ function newdept(){
 	$.ajax({
 		url: 'VendorDepartmentEditor.php',
 		type: 'POST',
-		timeout: 1000,
+		timeout: 5000,
 		data: 'deptID='+num+'&vid='+vid+'&name='+name+'&action=createCat',
 		error: function(){
 		alert('Error loading XML document');
@@ -70,7 +70,7 @@ function save(did){
 	$.ajax({
 		url: 'VendorDepartmentEditor.php',
 		type: 'POST',
-		timeout: 1000,
+		timeout: 5000,
 		data: 'deptID='+did+'&vid='+vid+'&name='+name+'&margin='+margin+'&action=updateCat',
 		error: function(){
 		alert('Error loading XML document');
