@@ -23,6 +23,8 @@
 
 /**
   @class DTrans
+  Helper class for generating useful bits of
+  transaction SQL
 */
 class DTrans 
 {
@@ -71,6 +73,16 @@ class DTrans
         'trans_id'=>0
     );
 
+    /**
+      Turn an key=>value array into useful SQL bits
+      @param $arr array of column_name => column_value
+      @param $datecol [optional] name of datetime column
+      @param $datefunc [optional] string database function for current datetime
+      @return keyed array
+        - columnString => comma separated list of columns
+        - valueString => comma separated list of ? placeholders
+        - arguments => array of query parameters
+    */
     public static function parameterize($arr, $datecol='', $datefunc='')
     {
         $columns = !empty($datecol) && !empty($datefunc) ? $datecol.',' : '';
@@ -95,5 +107,165 @@ class DTrans
         );
     }
 
+    /**
+      Get SQL condition to select testing transactions
+      @param $prefix [optional] table alias
+      @return string SQL snippet
+    */
+    public static function isTesting($prefix='')
+    {
+        if (!empty($prefix)) {
+            $prefix = $prefix . '.';
+        }
+
+        return ' (' . $prefix . 'register_no = 99 OR ' . $prefix . 'emp_no = 9999) ';
+    }
+
+    /**
+      Get SQL condition to select non-testing transactions
+      @param $prefix [optional] table alias
+      @return string SQL snippet
+    */
+    public static function isNotTesting($prefix='')
+    {
+        if (!empty($prefix)) {
+            $prefix = $prefix . '.';
+        }
+
+        return ' (' . $prefix . 'register_no <> 99 AND ' . $prefix . 'emp_no <> 9999)' ;
+    }
+
+    /**
+      Get SQL condition to select canceled transactions
+      @param $prefix [optional] table alias
+      @return string SQL snippet
+    */
+    public static function isCanceled($prefix='')
+    {
+        if (!empty($prefix)) {
+            $prefix = $prefix . '.';
+        }
+
+        return ' (' . $prefix . "trans_status IN ('X', 'Z')) ";
+    }
+
+    /**
+      Get SQL condition to select valid transactions
+      This is essentially the opposite of "isCanceled" but
+      excludes some additional informational rows that
+      provide commentary but do not impact numeric totals
+      @param $prefix [optional] table alias
+      @return string SQL snippet
+    */
+    public static function isValid($prefix='')
+    {
+        if (!empty($prefix)) {
+            $prefix = $prefix . '.';
+        }
+
+        return ' (' . $prefix . "trans_status NOT IN ('D', 'X', 'Z')) ";
+    }
+
+    /**
+      Get standard quantity sum. Member-discount line items
+      are excluded and quasi-scalabe items with a unitPrice
+      of a penny are counted as one instead of whatever value
+      is in the quantity field.  
+      @param $prefix [optional] table alias
+      @return string SQL snippet
+    */
+    public static function sumQuantity($prefix='')
+    {
+        if (!empty($prefix)) {
+            $prefix = $prefix . '.';
+        }
+
+        return ' SUM(CASE '
+                . 'WHEN ' . $prefix . "trans_status = 'M' THEN 0 "
+                . 'WHEN ' . $prefix . "unitPrice = 0.01 THEN 1 "
+                . 'ELSE ' . $prefix . 'quantity '
+                . 'END) ';
+    }
+
+    /**
+      Get join statement for products table
+      @param $dlog_alias [optional] alias for the transaction table (default 't')
+      @param $product_alias [optional] alias for the products table (default 'p')
+      @return string SQL snippet
+    */
+    public static function joinProducts($dlog_alias='t', $product_alias='p')
+    {
+        global $FANNIE_OP_DB, $FANNIE_SERVER_DBMS;
+        $table = 'products';
+        if (isset($FANNIE_OP_DB) && !empty($FANNIE_OP_DB)) {
+            $table = $FANNIE_OP_DB;
+            $table .= ($FANNIE_SERVER_DBMS == 'mssql') ? '.dbo.' : '.';
+            $table .= 'products';
+        }
+
+        return ' LEFT JOIN ' . $table . ' AS ' . $product_alias
+                . ' ON ' . $product_alias . '.upc = ' . $dlog_alias . '.upc ';
+    }
+
+    /**
+      Get join statement for departments table
+      @param $dlog_alias [optional] alias for the transaction table (default 't')
+      @param $dept_alias [optional] alias for the departments table (default 'd')
+      @return string SQL snippet
+    */
+    public static function joinDepartments($dlog_alias='t', $dept_alias='d')
+    {
+        global $FANNIE_OP_DB, $FANNIE_SERVER_DBMS;
+        $table = 'departments';
+        if (isset($FANNIE_OP_DB) && !empty($FANNIE_OP_DB)) {
+            $table = $FANNIE_OP_DB;
+            $table .= ($FANNIE_SERVER_DBMS == 'mssql') ? '.dbo.' : '.';
+            $table .= 'departments';
+        }
+
+        return ' LEFT JOIN ' . $table . ' AS ' . $dept_alias
+                . ' ON ' . $dept_alias . '.dept_no = ' . $dlog_alias . '.department ';
+    }
+
+    /**
+      Get join statement for custdata table
+      @param $dlog_alias [optional] alias for the transaction table (default 't')
+      @param $cust_alias [optional] alias for the custdata table (default 'c')
+      @return string SQL snippet
+    */
+    public static function joinCustdata($dlog_alias='t', $cust_alias='c')
+    {
+        global $FANNIE_OP_DB, $FANNIE_SERVER_DBMS;
+        $table = 'custdata';
+        if (isset($FANNIE_OP_DB) && !empty($FANNIE_OP_DB)) {
+            $table = $FANNIE_OP_DB;
+            $table .= ($FANNIE_SERVER_DBMS == 'mssql') ? '.dbo.' : '.';
+            $table .= 'custdata';
+        }
+
+        return ' LEFT JOIN ' . $table . ' AS ' . $cust_alias
+                . ' ON ' . $cust_alias . '.CardNo = ' . $dlog_alias . '.card_no '
+                . ' AND ' . $cust_alias . '.personNum = 1 ';
+    }
+
+    /**
+      Get join statement for tenders table
+      @param $dlog_alias [optional] alias for the transaction table (default 't')
+      @param $tender_alias [optional] alias for the tenders table (default 'n')
+      @return string SQL snippet
+    */
+    public static function joinTenders($dlog_alias='t', $tender_alias='n')
+    {
+        global $FANNIE_OP_DB, $FANNIE_SERVER_DBMS;
+        $table = 'tenders';
+        if (isset($FANNIE_OP_DB) && !empty($FANNIE_OP_DB)) {
+            $table = $FANNIE_OP_DB;
+            $table .= ($FANNIE_SERVER_DBMS == 'mssql') ? '.dbo.' : '.';
+            $table .= 'tenders';
+        }
+
+        return ' LEFT JOIN ' . $table . ' AS ' . $tender_alias
+                . ' ON ' . $tender_alias . '.TenderCode = ' . $dlog_alias . '.trans_subtype ';
+    }
 }
 

@@ -122,6 +122,7 @@ class DepartmentMovementReport extends FannieReportPage {
 		$filter_transactions = "t.trans_status NOT IN ('D','X','Z')
 			AND t.emp_no <> 9999
 			AND t.register_no <> 99";
+        $filter_transactions = DTrans::isValid() . ' AND ' . DTrans::isNotTesting();
 		
 		/**
 		  Select a summary table. For UPC results, per-unique-ring
@@ -148,13 +149,14 @@ class DepartmentMovementReport extends FannieReportPage {
 		switch($groupby){
 		case 'PLU':
 			$query = "SELECT t.upc,p.description, 
-                  SUM(CASE WHEN trans_status='' THEN 1 WHEN trans_status='V' THEN -1 ELSE 0 END) as rings,
-				  SUM(CASE WHEN unitPrice=0.01 THEN 1 ELSE t.quantity END) as qty,
+                  SUM(CASE WHEN trans_status='' THEN 1 WHEN trans_status='V' THEN -1 ELSE 0 END) as rings,"
+                  . DTrans::sumQuantity('t')." as qty,
 				  SUM(t.total) AS total,
 				  d.dept_no,d.dept_name,s.superID,x.distributor
-				  FROM $dlog as t LEFT JOIN products as p on t.upc = p.upc
-				  LEFT JOIN departments as d on d.dept_no = t.department
-				  LEFT JOIN $superTable AS s ON t.department = s.dept_ID
+				  FROM $dlog as t "
+                  . DTrans::joinProducts()
+                  . DTrans::joinDepartments()
+				  . "LEFT JOIN $superTable AS s ON t.department = s.dept_ID
 				  LEFT JOIN prodExtra as x on t.upc = x.upc
 				  WHERE $filter_condition
 				  AND tdate BETWEEN ? AND ?
@@ -163,18 +165,24 @@ class DepartmentMovementReport extends FannieReportPage {
 				  d.dept_no,d.dept_name,s.superID,x.distributor ORDER BY SUM(t.total) DESC";
 			break;
 		case 'Department':
-			$query =  "SELECT t.department,d.dept_name,SUM(t.quantity) as Qty, SUM(total) as Sales 
-				FROM $dlog as t LEFT JOIN departments as d on d.dept_no=t.department 
-				LEFT JOIN $superTable AS s ON s.dept_ID = t.department 
+			$query =  "SELECT t.department,d.dept_name,"
+                . DTrans::sumQuantity('t')." as qty,
+                SUM(total) as Sales 
+				FROM $dlog as t "
+                . DTrans::joinDepartments()
+				. "LEFT JOIN $superTable AS s ON s.dept_ID = t.department 
 				WHERE $filter_condition
 				AND tdate BETWEEN ? AND ?
 				AND $filter_transactions
 				GROUP BY t.department,d.dept_name ORDER BY SUM(total) DESC";
 			break;
 		case 'Date':
-			$query =  "SELECT year(tdate),month(tdate),day(tdate),SUM(t.quantity) as Qty, SUM(total) as Sales 
-				FROM $dlog as t LEFT JOIN departments as d on d.dept_no=t.department 
-				LEFT JOIN $superTable AS s ON s.dept_ID = t.department
+			$query =  "SELECT year(tdate),month(tdate),day(tdate),"
+                . DTrans::sumQuantity('t')." as qty,
+                SUM(total) as Sales 
+				FROM $dlog as t "
+                . DTrans::joinDepartments()
+				. "LEFT JOIN $superTable AS s ON s.dept_ID = t.department
 				WHERE $filter_condition
 				AND tdate BETWEEN ? AND ?
 				AND $filter_transactions
@@ -191,9 +199,12 @@ class DepartmentMovementReport extends FannieReportPage {
 				WHEN ".$dbc->dayofweek("tdate")."=6 THEN 'Fri'
 				WHEN ".$dbc->dayofweek("tdate")."=7 THEN 'Sat'
 				ELSE 'Err' END";
-			$query =  "SELECT $cols,SUM(t.quantity) as Qty, SUM(total) as Sales 
-				FROM $dlog as t LEFT JOIN departments as d on d.dept_no=t.department 
-				LEFT JOIN $superTable AS s ON s.dept_ID = t.department 
+			$query =  "SELECT $cols,"
+                . DTrans::sumQuantity('t') . " as qty,
+                SUM(total) as Sales 
+				FROM $dlog as t "
+                . DTrans::joinDepartments()
+				. "LEFT JOIN $superTable AS s ON s.dept_ID = t.department 
 				WHERE $filter_condition
 				AND tdate BETWEEN ? AND ?
 				AND $filter_transactions
