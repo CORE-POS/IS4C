@@ -241,7 +241,7 @@ foreach($dates as $date) {
                 trans_type IN ('I','D')
                 AND upc <> 'RRR' AND card_no <> 0
                 AND ".$sql->datediff('tdate',"'$date'")."= 0
-                GROUP BY c.memType");
+                GROUP BY d.memType");
         }
         if ($sql->table_exists("sumTendersByDay") && strstr($FANNIE_SERVER_DBMS,"MYSQL")){	
             $sql->query("INSERT INTO sumTendersByDay
@@ -265,7 +265,7 @@ foreach($dates as $date) {
                 trans_type IN ('S') AND total <> 0
                 AND upc = 'DISCOUNT' AND card_no <> 0
                 AND ".$sql->datediff('tdate',"'$date'")."= 0
-                GROUP BY c.memType");
+                GROUP BY d.memType");
         }
     }
 } // for loop on dates in dtransactions
