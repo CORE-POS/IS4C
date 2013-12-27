@@ -1000,6 +1000,79 @@ class SQLManager
         return false;
     }
 
+    /**
+      Get SQL definition of a view
+      @param $view_name string name
+      @param $which_connection [optional]
+      @return [string] SQL statement or [boolean] false
+    */
+    public function getViewDefinition($view_name, $which_connection='')
+    {
+        if ($which_connection == '') {
+            $which_connection=$this->default_db;
+        }
+
+        if (!$this->isView($view_name, $which_connection)) {
+            return false;
+        }
+
+        switch($this->db_types[$which_connection]) {
+            case $this->TYPE_PDOMY:
+            case $this->TYPE_MYSQL:
+                $result = $this->query("SHOW CREATE VIEW " . $this->identifier_escape($view_name, $which_connection), $which_connection);
+                if ($this->num_rows($result) > 0) {
+                    $row = $this->fetch_row($result);
+                    return $row[1];
+                } else {
+                    return false;
+                }
+                break;
+            case $this->TYPE_MSSQL:
+            case $this->TYPE_PDOMS:
+                $result = $this->query("SELECT OBJECT_DEFINITION(OBJECT_ID('$view_name'))", $which_connection);
+                if ($this->num_rows($result) > 0) {
+                    $row = $this->fetch_row($result);
+                    return $row[0];
+                } else {
+                    return false;
+                }
+                break;
+            case $this->TYPE_PGSQL:
+            case $this->TYPE_PDOPG:
+                $result = $this->query("SELECT oid FROM pg_class
+                        WHERE relname LIKE '$view_name'",
+                        $which_connection);
+                if ($this->num_rows($result) > 0) {
+                    $row = $this->fetch_row($result);
+                    $defQ = sprintf('SELECT pg_get_viewdef(%d)', $row['oid']);
+                    $defR = $this->query($defQ, $which_connection);
+                    if ($this->num_rows($defR) > 0) {
+                        $def = $this->fetch_row($defR);
+                        return $def[0];
+                    } else {
+                        return false;
+                    }
+                } else {
+                    return false;
+                }
+                break;
+            case $this->TYPE_PDOSL:
+                $result = $this->query("SELECT sql FROM sqlite_master
+                        WHERE type IN ('view') AND name='$table_name'",
+                        $which_connection);
+                $ret = false;
+                if ($this->num_rows($result) > 0) {
+                    $row = $this->fetch_row($result);
+                    $ret = $row['sql'];
+                }
+                $result->closeCursor();
+                return $ret;
+                break;
+        }
+
+        return false;
+    }
+
     /* return the table's definition
     Return values:
     array of values => table found
