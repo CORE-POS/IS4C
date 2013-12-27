@@ -71,6 +71,8 @@ class ReprintReceiptPage extends FanniePage
 				$args[] = $date.' 00:00:00';
 				$args[] = $date2.' 23:59:59';
                 $dlog = DTransactionsModel::selectDlog($date, $date2);
+                // update the table we're searching
+                $query = str_replace($FANNIE_TRANS_DB . $dbc->sep() . 'dlog_15', $dlog, $query);
 			}
 			if ($card_no != "") {
 				$query .= " AND card_no=? ";
@@ -188,7 +190,8 @@ class ReprintReceiptPage extends FanniePage
 Receipt Search - Fill in any information available
 <table id=mytable cellspacing=4 cellpadding=0>
 <tr>
-	<th>Date*</th><td colspan=2><input type=text name=date size=10 onfocus="showCalendarControl(this);" /></td>
+	<th>Date*</th><td colspan=2><input type=text name=date size=10 onfocus="showCalendarControl(this);" />
+		<input type=text name=date2 size=10 onfocus="showCalendarControl(this);" /></td>
 	<th>Receipt #</th><td><input type=text name=trans_num size=6 /></td>
 </tr>
 <tr>
