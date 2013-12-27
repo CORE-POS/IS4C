@@ -32,11 +32,15 @@ if (!$name){
   echo "You must be <a href=loginform.php>logged in</a> to use this</a>";
 }
 else {
-  $priv = checkAuth($name,'admin');
   $options = 'all';
+  $priv = checkGroupAuth($name,'admin');
   if (!$priv){
-    $options = 'limited';
+    $priv = checkAuth($name,'admin');
+    if (!$priv){
+      $options = 'limited';
+    }
   }
+
 
   /* password change only allowed if not using
      UNIX or LDAP passwords */
