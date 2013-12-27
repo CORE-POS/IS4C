@@ -27,11 +27,96 @@ if (!class_exists('FannieDB')) {
 if (!class_exists('BarcodeLib')) {
     include(dirname(__FILE__).'/../../lib/BarcodeLib.php');
 }
-if (!function_exists('checkLogin')) {
-    include(dirname(__FILE__).'/../../../auth/login.php');
-}
 
-class ProdUpdateModel {
+class ProdUpdateModel extends BasicModel
+{
+    protected $name = 'prodUpdate';
+
+    protected $preferred_db = 'op';
+
+    protected $columns = array(
+    'updateType' => array('type'=>'VARCHAR(20)'),
+    'upc' => array('type'=>'VARCHAR(13)', 'index'=>true),
+    'description' => array('type'=>'VARCHAR(50)'),
+    'price' => array('type'=>'MONEY'),
+    'salePrice' => array('type'=>'MONEY'),
+    'cost' => array('type'=>'MONEY'),
+    'dept' => array('type'=>'INT'),
+    'tax' => array('type'=>'TINYINT'),
+    'fs' => array('type'=>'TINYINT'),
+    'scale' => array('type'=>'TINYINT'),
+    'likeCode' => array('type'=>'INT'),
+    'modified' => array('type'=>'DATETIME'),
+    'user' => array('type'=>'INT'),
+    'forceQty' => array('type'=>'TINYINT'),
+    'noDisc' => array('type'=>'TINYINT'),
+    'inUse' => array('type'=>'TINYINT'),
+    );
+
+    const UPDATE_EDIT = 'EDIT';
+    const UPDATE_DELETE = 'DELETE';
+    const UPDATE_BATCH = 'SALE BATCH';
+    const UPDATE_PC_BATCH = 'PRICE BATCH';
+
+    public function normalize($db_name, $mode=BasicModel::NORMALIZE_MODE_CHECK, $doCreate=false)
+    {
+        $adds = 0;
+
+        $this->name = 'prodUpdate';
+        $chk = parent::normalize($db_name, $mode, $doCreate);
+        if ($chk !== false) {
+            $adds += $chk;
+        }
+
+        $this->name = 'prodUpdateArchive';
+        $chk = parent::normalize($db_name, $mode, $doCreate);
+        if ($chk !== false) {
+            $adds += $chk;
+        }
+
+        return $adds;
+    }
+
+    public function logUpdate($type='UNKNOWN', $user=false)
+    {
+        if (!$user) {
+            $user = FannieAuth::getUID(FannieAuth::checkLogin());
+        }
+
+        $product = new ProductsModel($this->connection);
+        $product->upc($this->upc());
+        $exists = $product->load();
+        if (!$exists) {
+            return false;
+        }
+
+        $this->updateType($type);
+        $this->description($product->description());
+        $this->price($product->normal_price());
+        $this->salePrice($product->special_price());
+        $this->cost($product->cost());
+        $this->dept($product->department());
+        $this->tax($product->tax());
+        $this->fs($product->foodstamp());
+        $this->scale($product->scale());
+        $this->modified($product->modified());
+        $this->forceQty($product->qttyEnforced());
+        $this->noDisc($product->discount());
+        $this->inUse($product->inUse());
+        $this->user($user);
+
+        $likecode = 0;
+        $upcQ = $this->connection->prepare('SELECT likeCode FROM upcLike WHERE upc=?');
+        $upcR = $this->connection->execute($upcQ, array($this->upc()));
+        if ($this->connection->num_rows($upcR) > 0) {
+            $upcW = $this->connection->fetch_row($upcR);
+            $this->likeCode($upcW['likeCode']);
+        }
+
+        $this->save();
+
+        return true;
+    }
 
     public static function add($upc,$fields){
         global $FANNIE_OP_DB;
@@ -93,8 +178,8 @@ class ProdUpdateModel {
             $args[] = $upc;
 
             $q .= 'user,';
-            $current_user = checkLogin();
-            $uid = getUID($current_user);
+            $current_user = FannieAuth::checkLogin();
+            $uid = FannieAuth::getUID($current_user);
             if ($current_user === False || $uid === False)
                 $args[] = 0;
             else
@@ -111,6 +196,248 @@ class ProdUpdateModel {
         return True;
     }
 
+    /* START ACCESSOR FUNCTIONS */
+
+    public function updateType()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["updateType"])) {
+                return $this->instance["updateType"];
+            } elseif(isset($this->columns["updateType"]["default"])) {
+                return $this->columns["updateType"]["default"];
+            } else {
+                return null;
+            }
+        } else {
+            $this->instance["updateType"] = func_get_arg(0);
+        }
+    }
+
+    public function upc()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["upc"])) {
+                return $this->instance["upc"];
+            } elseif(isset($this->columns["upc"]["default"])) {
+                return $this->columns["upc"]["default"];
+            } else {
+                return null;
+            }
+        } else {
+            $this->instance["upc"] = func_get_arg(0);
+        }
+    }
+
+    public function description()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["description"])) {
+                return $this->instance["description"];
+            } elseif(isset($this->columns["description"]["default"])) {
+                return $this->columns["description"]["default"];
+            } else {
+                return null;
+            }
+        } else {
+            $this->instance["description"] = func_get_arg(0);
+        }
+    }
+
+    public function price()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["price"])) {
+                return $this->instance["price"];
+            } elseif(isset($this->columns["price"]["default"])) {
+                return $this->columns["price"]["default"];
+            } else {
+                return null;
+            }
+        } else {
+            $this->instance["price"] = func_get_arg(0);
+        }
+    }
+
+    public function salePrice()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["salePrice"])) {
+                return $this->instance["salePrice"];
+            } elseif(isset($this->columns["salePrice"]["default"])) {
+                return $this->columns["salePrice"]["default"];
+            } else {
+                return null;
+            }
+        } else {
+            $this->instance["salePrice"] = func_get_arg(0);
+        }
+    }
+
+    public function cost()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["cost"])) {
+                return $this->instance["cost"];
+            } elseif(isset($this->columns["cost"]["default"])) {
+                return $this->columns["cost"]["default"];
+            } else {
+                return null;
+            }
+        } else {
+            $this->instance["cost"] = func_get_arg(0);
+        }
+    }
+
+    public function dept()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["dept"])) {
+                return $this->instance["dept"];
+            } elseif(isset($this->columns["dept"]["default"])) {
+                return $this->columns["dept"]["default"];
+            } else {
+                return null;
+            }
+        } else {
+            $this->instance["dept"] = func_get_arg(0);
+        }
+    }
+
+    public function tax()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["tax"])) {
+                return $this->instance["tax"];
+            } elseif(isset($this->columns["tax"]["default"])) {
+                return $this->columns["tax"]["default"];
+            } else {
+                return null;
+            }
+        } else {
+            $this->instance["tax"] = func_get_arg(0);
+        }
+    }
+
+    public function fs()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["fs"])) {
+                return $this->instance["fs"];
+            } elseif(isset($this->columns["fs"]["default"])) {
+                return $this->columns["fs"]["default"];
+            } else {
+                return null;
+            }
+        } else {
+            $this->instance["fs"] = func_get_arg(0);
+        }
+    }
+
+    public function scale()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["scale"])) {
+                return $this->instance["scale"];
+            } elseif(isset($this->columns["scale"]["default"])) {
+                return $this->columns["scale"]["default"];
+            } else {
+                return null;
+            }
+        } else {
+            $this->instance["scale"] = func_get_arg(0);
+        }
+    }
+
+    public function likeCode()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["likeCode"])) {
+                return $this->instance["likeCode"];
+            } elseif(isset($this->columns["likeCode"]["default"])) {
+                return $this->columns["likeCode"]["default"];
+            } else {
+                return null;
+            }
+        } else {
+            $this->instance["likeCode"] = func_get_arg(0);
+        }
+    }
+
+    public function modified()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["modified"])) {
+                return $this->instance["modified"];
+            } elseif(isset($this->columns["modified"]["default"])) {
+                return $this->columns["modified"]["default"];
+            } else {
+                return null;
+            }
+        } else {
+            $this->instance["modified"] = func_get_arg(0);
+        }
+    }
+
+    public function user()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["user"])) {
+                return $this->instance["user"];
+            } elseif(isset($this->columns["user"]["default"])) {
+                return $this->columns["user"]["default"];
+            } else {
+                return null;
+            }
+        } else {
+            $this->instance["user"] = func_get_arg(0);
+        }
+    }
+
+    public function forceQty()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["forceQty"])) {
+                return $this->instance["forceQty"];
+            } elseif(isset($this->columns["forceQty"]["default"])) {
+                return $this->columns["forceQty"]["default"];
+            } else {
+                return null;
+            }
+        } else {
+            $this->instance["forceQty"] = func_get_arg(0);
+        }
+    }
+
+    public function noDisc()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["noDisc"])) {
+                return $this->instance["noDisc"];
+            } elseif(isset($this->columns["noDisc"]["default"])) {
+                return $this->columns["noDisc"]["default"];
+            } else {
+                return null;
+            }
+        } else {
+            $this->instance["noDisc"] = func_get_arg(0);
+        }
+    }
+
+    public function inUse()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["inUse"])) {
+                return $this->instance["inUse"];
+            } elseif(isset($this->columns["inUse"]["default"])) {
+                return $this->columns["inUse"]["default"];
+            } else {
+                return null;
+            }
+        } else {
+            $this->instance["inUse"] = func_get_arg(0);
+        }
+    }
+    /* END ACCESSOR FUNCTIONS */
+
 }
 
-?>

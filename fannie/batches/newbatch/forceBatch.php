@@ -131,8 +131,7 @@ function forceBatch($batchID){
 				left join batches as b on b.batchID = l.batchID
 				where b.batchID=?";
 		}
-	}
-	else{
+	} else {
 		$forceQ = "UPDATE products AS p
 		      INNER JOIN batchList AS l
 		      ON l.upc=p.upc
@@ -178,16 +177,21 @@ function forceBatch($batchID){
 	$q = $dbc->prepare_statement("SELECT upc FROM batchList WHERE batchID=?");
 	$r = $dbc->exec_statement($q,array($batchID));
 	$likeP = $dbc->prepare_statement('SELECT upc FROM upcLike WHERE likeCode=?');
-	while($w = $dbc->fetch_row($r)){
+    $update = new ProdUpdateModel($dbc);
+    $updateType = ($batchInfoW['discountType'] == 0) ? ProdUpdateModel::UPDATE_PC_BATCH : ProdUpdateModel::UPDATE_BATCH;
+	while($w = $dbc->fetch_row($r)) {
 		$upcs = array($w['upc']);
-		if (substr($w['upc'],0,2)=='LC'){
+		if (substr($w['upc'],0,2)=='LC') {
 			$upcs = array();
 			$lc = substr($w['upc'],2);
 			$r2 = $dbc->exec_statement($likeP,array($lc));
 			while($w2 = $dbc->fetch_row($r2))
 				$upcs[] = $w2['upc'];
 		}
-		foreach($upcs as $u){
+		foreach($upcs as $u) {
+            $update->reset();
+            $update->upc($u);
+            $update->logUpdate($updateType);
 			updateProductAllLanes($u);
 		}
 	}

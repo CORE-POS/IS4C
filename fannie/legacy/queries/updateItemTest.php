@@ -129,22 +129,6 @@ $model->quantity($vol_qtty);
 $model->local($local);
 $model->save();
 
-$nowish = date("Y-m-d h:i:s");
-$query1 = "INSERT INTO prodUpdate 
-        VALUES('$upc','$descript', 
-        $price,$dept,
-        $tax,$FS,
-        $Scale,
-        $likeCode,
-	'$nowish',
-	$uid,
-	$QtyFrc,
-        $NoDisc,
-	$inUse)
-	";
-//////////echo $query1;
-$result1 = $sql->execute($query1, array($upc, $descript, $price, $dept, $tax, $FS, $Scale, $likeCode, $nowish, $uid, $QtyFrc, $NoDisc, $inUse));
-
 if (empty($manufacturer))
 	$manufacturer = '';
 if (empty($distributor))
@@ -377,16 +361,16 @@ if(!empty($likeCode)){
 	    $selectQ = $sql->prepare("SELECT * FROM upcLike WHERE likecode = ?");
 	    //echo $selectQ;
 	    $selectR = $sql->execute($selectQ, array($likeCode));
+        $prodUpdate = new ProdUpdateModel($sql);
 	    while($selectW = $sql->fetch_array($selectR)){
 	       $upcL = $selectW['upc'];
 	       if($upcL != $upc){
-		  $insQ= $sql->prepare("INSERT INTO prodUpdate SELECT upc, description,normal_price,department,tax,foodstamp,scale,?,?,?,qttyEnforced,discount,1
-			      FROM products where upc = ?");
-		  $insR= $sql->execute($insQ, array($likeCode, date('Y-m-d H:i:s'), $uid, $upcL));
-		  //echo $selectQ . "<br>";
-          $p_model = new ProductsModel($sql);
-          $p_model->upc($upcL);
-          $p_model->pushToLanes();
+                $prodUpdate->reset();
+                $prodUpdate->upc($upcL);
+                $prodUpdate->logUpdate(ProdUpdateModel::UPDATE_EDIT);
+                $p_model = new ProductsModel($sql);
+                $p_model->upc($upcL);
+                $p_model->pushToLanes();
 	      }   
 	    }
     	

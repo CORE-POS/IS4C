@@ -312,42 +312,39 @@ class BaseItemModule extends ItemModule {
 		$upc = BarcodeLib::padUPC($upc);
 		$dbc = $this->db();
 
-		$up_array = array();
-		$up_array['tax'] = FormLib::get_form_value('tax',0);
-		$up_array['foodstamp'] = FormLib::get_form_value('FS',0);
-		$up_array['scale'] = FormLib::get_form_value('Scale',0);
-		$up_array['qttyEnforced'] = FormLib::get_form_value('QtyFrc',0);
-		$up_array['discount'] = FormLib::get_form_value('NoDisc',1);
-		$up_array['normal_price'] = FormLib::get_form_value('price',0.00);
-		$up_array['description'] = FormLib::get_form_value('descript','');
-		$up_array['pricemethod'] = 0;
-		$up_array['groupprice'] = 0.00;
-		$up_array['quantity'] = 0;
-		$up_array['department'] = FormLib::get_form_value('department',0);
-		$up_array['size'] = FormLib::get_form_value('size','');
-		$up_array['scaleprice'] = 0.00;
-		$up_array['modified'] = $dbc->now();
-		$up_array['advertised'] = 1;
-		$up_array['tareweight'] = 0;
-		$up_array['unitofmeasure'] = FormLib::get_form_value('unitm','');
-		$up_array['wicable'] = 0;
-		$up_array['idEnforced'] = 0;
-		$up_array['subdept'] = FormLib::get_form_value('subdepartment',0);
-		$up_array['store_id'] = 0;
+        $model = new ProductsModel($dbc);
+        $model->upc($upc);
+		$model->tax(FormLib::get_form_value('tax',0));
+		$model->foodstamp(FormLib::get_form_value('FS',0));
+		$model->scale(FormLib::get_form_value('Scale',0));
+		$model->qttyEnforced(FormLib::get_form_value('QtyFrc',0));
+		$model->discount(FormLib::get_form_value('NoDisc',1));
+		$model->normal_price(FormLib::get_form_value('price',0.00));
+		$model->description(FormLib::get_form_value('descript',''));
+		$model->pricemethod(0);
+		$model->groupprice(0.00);
+		$model->quantity(0);
+		$model->department(FormLib::get_form_value('department',0));
+		$model->size(FormLib::get_form_value('size',''));
+		$model->modified(date('Y-m-d H:i:s'));
+		$model->unitofmeasure(FormLib::get_form_value('unitm',''));
+		$model->subdept(FormLib::get_form_value('subdepartment',0));
 
 		/* turn on volume pricing if specified, but don't
 		   alter pricemethod if it's already non-zero */
 		$doVol = FormLib::get_form_value('doVolume',False);
 		$vprice = FormLib::get_form_value('vol_price','');
 		$vqty = FormLib::get_form_value('vol_qtty','');
-		if ($doVol !== False && is_numeric($vprice) && is_numeric($vqty)){
-			$up_array['pricemethod'] = FormLib::get_form_value('pricemethod',0);
-			if ($up_array['pricemethod']==0) $up_array['pricemethod']=2;
-			$up_array['groupprice'] = $vprice;
-			$up_array['quantity'] = $vqty;
+		if ($doVol !== false && is_numeric($vprice) && is_numeric($vqty)) {
+			$model->pricemethod(FormLib::get_form_value('pricemethod',0));
+			if ($model->pricemethod() == 0) {
+                $model->pricemethod(2);
+            }
+			$model->groupprice($vprice);
+			$model->quantity($vqty);
 		}
 
-		ProductsModel::update($upc, $up_array);
+        $model->save();
 
 		if ($dbc->table_exists('prodExtra')){
 			$arr = array();

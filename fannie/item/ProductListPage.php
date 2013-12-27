@@ -235,23 +235,40 @@ class ProductListPage extends FanniePage {
             $upc = BarcodeLib::padUPC($upc);
 			$values = array();
 			$desc = FormLib::get_form_value('desc');
-			if ($desc !== '') $values['description'] = $desc;
+            $model = new ProductsModel($dbc);
+			if ($desc !== '') {
+                $model->description($desc);
+            }
 			$dept = FormLib::get_form_value('dept');
-			if ($dept !== '') $values['department'] = $dept;
+			if ($dept !== '') {
+                $model->department($dept);
+            }
 			$price = rtrim(FormLib::get_form_value('price'),' ');
-			if ($price !== '') $values['normal_price'] = $price;
+			if ($price !== '') {
+                $model->normal_price($price);
+            }
 			$tax = FormLib::get_form_value('tax');
-			if ($tax !== '') $values['tax'] = $tax;
+			if ($tax !== '') {
+                $model->tax($tax);
+            }
 			$fs = FormLib::get_form_value('fs');
-			if ($fs !== '') $values['foodstamp'] = ($fs==1) ? 1 : 0;
+			if ($fs !== '') {
+                $model->foodstamp($fs);
+            }
 			$disc = FormLib::get_form_value('disc');
-			if ($disc !== '') $values['discount'] = ($disc==1) ? 1 : 0;
+			if ($disc !== '') {
+                $model->discount($disc);
+            }
 			$wgt = FormLib::get_form_value('wgt');
-			if ($wgt !== '') $values['scale'] = ($wgt==1) ? 1 : 0;
+			if ($wgt !== '') {
+                $model-scale($wgt);
+            }
 			$loc = FormLib::get_form_value('local');
-			if ($loc !== '') $values['local'] = $loc;
+			if ($loc !== '') {
+                $model->local($loc);
+            }
 
-			ProductsModel::update($upc, $values);
+            $model->save();
 
 			$supplier = FormLib::get_form_value('supplier');
 			$extraP = $dbc->prepare_statement('UPDATE prodExtra SET distributor=? WHERE upc=?');
@@ -292,6 +309,10 @@ class ProductListPage extends FanniePage {
 			$upc = FormLib::get_form_value('upc');
             $upc = BarcodeLib::padUPC($upc);
 			$desc = base64_decode(FormLib::get_form_value('desc'));
+
+            $update = new ProdUpdateModel($dbc);
+            $update->upc($upc);
+            $update->logUpdate(ProdUpdateModel::UPDATE_DELETE);
 
 			ProductsModel::staticDelete($upc);
 

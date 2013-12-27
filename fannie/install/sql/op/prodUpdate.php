@@ -28,28 +28,35 @@ should though, ideally.
 */
 $CREATE['op.prodUpdate'] = "
 	CREATE TABLE `prodUpdate` (
+	  `updateType` varchar(20) default NULL,
 	  `upc` varchar(13) default NULL,
 	  `description` varchar(50) default NULL,
 	  `price` decimal(10,2) default NULL,
+	  `salePrice` decimal(10,2) default NULL,
+	  `cost` decimal(10,2) default NULL,
 	  `dept` int(6) default NULL,
-	  `tax` bit(1) default NULL,
-	  `fs` bit(1) default NULL,
+	  `tax` tinyint default NULL,
+	  `fs` tinyint default NULL,
 	  `scale` bit(1) default NULL,
 	  `likeCode` int(6) default NULL,
 	  `modified` date default NULL,
 	  `user` int(8) default NULL,
 	  `forceQty` bit(1) default NULL,
 	  `noDisc` bit(1) default NULL,
-	  `inUse` bit(1) default NULL
+	  `inUse` bit(1) default NULL,
+      INDEX(upc)
 	)
 ";
 
 if ($dbms == "MSSQL"){
 	$CREATE['op.prodUpdate'] = "
 		CREATE TABLE prodUpdate (
+			updateType varchar(20),
 			upc varchar(13),
 			description varchar(50),
 			price money,
+			salePrice money,
+			cost money,
 			dept int,
 			tax smallint,
 			fs smallint,

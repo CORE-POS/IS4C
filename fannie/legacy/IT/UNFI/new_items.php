@@ -157,9 +157,6 @@ else if (isset($_POST["upc"])){
     $product->cost(0);
 
     $taxfsP = $sql->prepare("SELECT dept_tax,dept_fs FROM departments WHERE dept_no=?");
-    $upP = $sql->prepare("INSERT INTO prodUpdate (upc,description,price,dept,tax,fs,scale,likeCode,modified,"
-            .$sql->identifier_escape('user').",
-            forceQty,noDisc,inUse) VALUES (?,?,?,?,?,?,0,0,".$sql->now().",-2,0,1,1)");
     $xtraP = $sql->prepare("INSERT INTO prodExtra (upc,distributor,manufacturer,cost,margin,variable_pricing,location)
         VALUES (?,'UNFI',?,?,0,0,'')");
     $barP = $sql->prepare("INSERT INTO shelftags (id,upc,description,normal_price,brand,sku,units,size,vendor,
@@ -187,7 +184,6 @@ for ($i=0; $i<count($depts); $i++){
         $product->cost($costs[$i]);
         $product->save();
 
-		$sql->execute($upP, array($upcs[$i], $descs[$i], $prices[$i], $depts[$i], $tax, $fs));
 		$sql->execute($xtraP, array($upcs[$i], $brands[$i], $costs[$i]));
 
 		$ppo = pricePerOunce($prices[$i],$sizes[$i]);

@@ -335,6 +335,19 @@ class ProductsModel extends BasicModel
         return true;
     }
 
+    public function save()
+    {
+        // call parent method to save the product record,
+        // then add a corresponding prodUpdate record
+        $try = parent::save();
+        if ($try) {
+            $update = new ProdUpdateModel($this->connection);
+            $update->logUpdate(ProdUpdate::UPDATE_EDIT);
+        }
+
+        return $try;
+    }
+
     /* START ACCESSOR FUNCTIONS */
 
     public function upc()

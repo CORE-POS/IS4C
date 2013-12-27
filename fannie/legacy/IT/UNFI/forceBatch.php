@@ -26,16 +26,14 @@ $forceQ = $sql->prepare("UPDATE products AS p
 //echo $forceQ;
 $forceR = $sql->execute($forceQ, array($batchID));
 
-$upQ = $sql->prepare("INSERT INTO prodUpdate
-	SELECT p.upc,description,normal_price,
-	department,tax,foodstamp,scale,0,
-	modified,0,qttyEnforced,discount,inUse
-	FROM products as p,
-	batchListTest as l
-	WHERE l.upc = p.upc
-	AND l.batchID = ?");
-$sql->execute($upQ, array($batchID));
-
+$upcQ = $sql->prepare('SELECT upc FROM batchListTest WHERE batchID=?');
+$upcR = $sql->execute($upcQ, array($batchID));
+$prodUpdate = new ProdUpdateModel($sql);
+while($upcW = $sql->fetch_row($upcR)) {
+    $prodUpdate->reset();
+    $prodUpdate->upc($upcW['upc']);
+    $prodUpdate->logUpdate(ProdUpdateModel::UPDATE_PC_BATCH);
+}
 
 $all = $sql->prepare('SELECT upc FROM batchListTest WHERE batchID=?');
 $all = $sql->execute($all, array($batchID));
