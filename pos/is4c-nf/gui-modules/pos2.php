@@ -228,19 +228,23 @@ class pos2 extends BasicPage {
 
 	function body_content(){
 		global $CORE_LOCAL;
+        $lines = $CORE_LOCAL->get('screenLines');
+        if (!$lines === '' || !is_numeric($lines)) {
+            $lines = 11;
+        }
 		$this->input_header('action="pos2.php" onsubmit="return submitWrapper();"');
 		if ($CORE_LOCAL->get("timeout") != "")
 			$this->add_onload_command("enableScreenLock();\n");
 		$this->add_onload_command("\$('#reginput').keydown(function(ev){
 					switch(ev.which){
 					case 33:
-						parseWrapper('U11');
+						parseWrapper('U$lines');
 						break;
 					case 38:
 						parseWrapper('U');
 						break;
 					case 34:
-						parseWrapper('D11');
+						parseWrapper('D$lines');
 						break;
 					case 40:
 						parseWrapper('D');
