@@ -62,9 +62,13 @@ class CronManagementPage extends FanniePage {
 
 	function preprocess(){
 		global $FANNIE_OP_DB;
-		if (is_array(FormLib::get_form_value('enabled'))){
+		if (FormLib::get_form_value('submit') == 'Save') {
 
 			$indexes = FormLib::get_form_value('enabled');
+            if (!is_array($indexes)) {
+                // no jobs selected
+                $indexes = array();
+            }
 			$min = FormLib::get_form_value('min',array());
 			$hour = FormLib::get_form_value('hour',array());
 			$day = FormLib::get_form_value('day',array());
@@ -102,7 +106,8 @@ class CronManagementPage extends FanniePage {
 				unlink($tmpfn);
 			}
 		}
-		return True;
+
+		return true;
 	}
 
 	function body_content(){
@@ -213,7 +218,7 @@ class CronManagementPage extends FanniePage {
 		}
 
 		$ret .= "</table><br />";
-		$ret .= '<input type="submit" value="Save" />';
+		$ret .= '<input type="submit" name="submit" value="Save" />';
 		$ret .= '</form>';
 
 		return $ret;

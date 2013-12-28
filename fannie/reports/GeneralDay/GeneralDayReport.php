@@ -100,7 +100,7 @@ class GeneralDayReport extends FannieReportPage
 				FROM $dlog d INNER JOIN
 			       custdata c ON d.card_no = c.CardNo AND c.personNum=1
 				INNER JOIN
-			      memTypeID m ON c.memType = m.memTypeID
+			      memtype m ON c.memType = m.memtype
 				WHERE d.tdate BETWEEN ? AND ?
 			       AND d.upc = 'DISCOUNT'
 				and total <> 0
@@ -129,10 +129,10 @@ class GeneralDayReport extends FannieReportPage
 		$transQ = $dbc->prepare_statement("select q.trans_num,sum(q.quantity) as items,transaction_type, sum(q.total) from
 			(
 			select trans_num,card_no,quantity,total,
-			m.memdesc as transaction_type
+			m.memDesc as transaction_type
 			from $dlog as d
 			left join custdata as c on d.card_no = c.cardno
-			left join memTypeID as m on c.memtype = m.memTypeID
+			left join memtype as m on c.memtype = m.memtype
 			WHERE d.tdate BETWEEN ? AND ?
 			AND trans_type in ('I','D')
 			and upc <> 'RRR'

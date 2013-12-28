@@ -32,13 +32,10 @@ if (!$name){
   echo "You must be <a href=loginform.php>logged in</a> to use this</a>";
 }
 else {
+  $priv = validateUserQuiet('admin');
   $options = 'all';
-  $priv = checkGroupAuth($name,'admin');
   if (!$priv){
-    $priv = checkAuth($name,'admin');
-    if (!$priv){
-      $options = 'limited';
-    }
+    $options = 'limited';
   }
 
 
