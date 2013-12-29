@@ -28,7 +28,6 @@ class MemArTransferTool extends FanniePage {
 
 	protected $title='Fannie - Member Management Module';
 	protected $header='Transfer A/R';
-	//was: protected $header='Transfer Member Equity';
 
 	private $errors = '';
 	private $mode = 'init';
@@ -46,8 +45,18 @@ class MemArTransferTool extends FanniePage {
 	private $name2;
 
 	function preprocess(){
-		global $FANNIE_AR_DEPARTMENTS;
-		global $FANNIE_OP_DB;
+		global $FANNIE_AR_DEPARTMENTS, $FANNIE_OP_DB;
+		global $FANNIE_CORRECTION_CASHIER, $FANNIE_CORRECTION_LANE, $FANNIE_CORRECTION_DEPT;
+
+		if (is_set($FANNIE_CORRECTION_CASHIER)) {
+			$this->CORRECTION_CASHIER = $FANNIE_CORRECTION_CASHIER;
+		}
+		if (is_set($FANNIE_CORRECTION_LANE)) {
+			$this->CORRECTION_LANE = $FANNIE_CORRECTION_LANE;
+		}
+		if (is_set($FANNIE_CORRECTION_DEPT)) {
+			$this->CORRECTION_DEPT = $FANNIE_CORRECTION_DEPT;
+		}
 
 		if (empty($FANNIE_AR_DEPARTMENTS)){
 			$this->errors .= "<em>Error: no AR departments found</em>";
