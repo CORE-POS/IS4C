@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+header("Location: AuthIndexPage.php");
+
 require('../login.php');
 include("../../config.php");
 $page_title = 'Fannie : Auth : Menu';
@@ -35,7 +37,7 @@ else {
   $priv = validateUserQuiet('admin');
   $options = 'all';
   if (!$priv){
-    $options = 'limited';
+		$options = 'limited';
   }
 
   /* password change only allowed if not using
