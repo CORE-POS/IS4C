@@ -187,7 +187,7 @@ foreach($TRANSLATE as $short=>$long){
 <p class="ichunk2 ichunk3">Existing lines of text of different types are displayed below and can be edited there.
 <br />All types may initially have no lines in which case the heading will not appear and no line boxes will appear.
 <br />To delete a line erase all the text from it.
-<br />The maximum length of a line is 20 characters.
+<br />The maximum length of a line is 55 characters.
 </p>
 <form method="post" action="LaneTextStringPage.php">
 <?php
@@ -201,7 +201,7 @@ while($w = $dbc->fetch_row($r)){
 		$header = $w['type'];	
 		$i=1;
 	}
-	printf('<p>%d:<input type="text" maxlength="20" name="old_content[]" value="%s" />
+	printf('<p>%d:<input type="text" maxlength="55" name="old_content[]" value="%s" />
 		<input type="hidden" name="old_type[]" value="%s" /></p>',
 		$i++,$w['text'],$w['type']);
 }
