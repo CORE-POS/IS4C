@@ -58,7 +58,7 @@ InstallUtilities::paramSave('SpecialUpcClasses', $CORE_LOCAL->get('SpecialUpcCla
 if(isset($_REQUEST['HCPREFIX'])) $CORE_LOCAL->set('houseCouponPrefix',$_REQUEST['HCPREFIX'],True);
 else if ($CORE_LOCAL->get('houseCouponPrefix') === '') $CORE_LOCAL->set('houseCouponPrefix', '00499999', true);
 printf("<input type=text name=HCPREFIX value=\"%s\" />",$CORE_LOCAL->get('houseCouponPrefix'));
-InstallUtilities::paramSave('houseCouponPrefix',"'".$CORE_LOCAL->get('houseCouponPrefix')."'");
+InstallUtilities::paramSave('houseCouponPrefix',$CORE_LOCAL->get('houseCouponPrefix'));
 ?>
 <span class='noteTxt'>Set the barcode prefix for houseCoupons.  Should be 8 digits starting with 004. Default is 00499999.</span>
 </td></tr>
@@ -99,7 +99,7 @@ else if ($CORE_LOCAL->get('roundUpDept') === '') {
     }
 }
 printf("<input type=text name=DONATIONDEPT value=\"%s\" />",$CORE_LOCAL->get('roundUpDept'));
-InstallUtilities::paramSave('roundUpDept',"'".$CORE_LOCAL->get('roundUpDept')."'");
+InstallUtilities::paramSave('roundUpDept',$CORE_LOCAL->get('roundUpDept'));
 ?>
 <span class='noteTxt'>Set the department number for lines entered via the "round up" donation function.</span>
 </td></tr>
