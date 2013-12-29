@@ -146,6 +146,10 @@ class SQLManager {
         case $this->TYPE_PDOMY:
             if (!class_exists('PDO')) return False;
             $dsn = 'mysql:host='.$server;
+            if (strstr($server, ':')) {
+                list($host,$port) = explode(':',$server);
+                $dsn = 'mysql:host='.$host.';port='.$port;
+            }
             return new PDO($dsn, $username, $password);
         case $this->TYPE_PDOMS:
             if (!class_exists('PDO')) return False;
