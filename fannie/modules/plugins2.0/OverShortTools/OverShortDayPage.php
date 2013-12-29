@@ -28,8 +28,20 @@ $dbc = FannieDB::get($FANNIE_OP_DB);
 
 class OverShortDayPage extends FanniePage {
 	
+	// 10Nov13 EL Added title and header
+	protected $title = 'Over/Short Whole Day';
+ 	protected $header = 'Over/Short Whole Day';
 	protected $window_dressing = False;
 	protected $auth_classes = array('overshorts');
+
+	// 10Nov13 EL Added constructor
+	public function __construct() {
+		global $FANNIE_WINDOW_DRESSING;
+		// To set authentication.
+		parent::__construct();
+		if (isset($FANNIE_WINDOW_DRESSING))
+			$this->has_menus($FANNIE_WINDOW_DRESSING);
+	}
 
 	function preprocess(){
 		$action = FormLib::get_form_value('action',False);
@@ -69,7 +81,7 @@ class OverShortDayPage extends FanniePage {
 			$empsR = null;
 			if (FormLib::get_form_value('emp_no') !== ''){
 				/* get info for single employee */
-				$empsQ = "SELECT e.firstname,e.emp_no FROM "
+				$empsQ = "SELECT e.firstname, e.emp_no FROM "
 					.$FANNIE_OP_DB.$dbc->sep()."employees AS e
 					WHERE emp_no=?";
 				$empsP = $dbc->prepare_statement($empsQ);
@@ -166,7 +178,7 @@ class OverShortDayPage extends FanniePage {
 					$output .= $startcash;
 					$output .= "\" onchange=\"calcOS('Cash',$row[1]);\" /></td><td>n/a</td></tr>";
 					$perCashierCountTotal -= $startcash;
-					$tender_info['CA']['posTtl'] -= $startcash;
+					$tender_info['CA']['countTtl'] -= $startcash;
 				}
 
 				foreach($tender_info as $code => $info){
@@ -534,7 +546,10 @@ function save(){
 }
 
 a {
-  color: blue;
+	<?php
+  if (!$this->window_dressing)
+		echo "color: blue;";
+	?>
 }
 	<?php
 		return ob_get_clean();
@@ -546,15 +561,17 @@ a {
 		$this->add_script($FANNIE_URL.'src/CalendarControl.js');
 		$this->add_script($FANNIE_URL.'src/jquery/jquery.js');
 		ob_start();
+		if (!$this->window_dressing) {
+			echo "<html>";
+			echo "<head><title>{$this->title}</title>";
+			echo "</head>";
+			echo "<body>";
+		}
 		?>
-		<html>
-		<head><title>Overshorts</title>
-		</head>
-		<body>
-		<form onsubmit="setdate(); return false;" >
+		<form style='margin-top:1.0em;' onsubmit="setdate(); return false;" >
 		<b>Date</b>:<input type=text id=date onfocus="showCalendarControl(this);" />
 		<input type=submit value="Set" />
-		<input type=hidden id=user value="<?php echo $user ?>" />
+		<input type=hidden id=user value="<?php if(isset($user)) echo $user ?>" />
 		</form>
 
 		<div id="forms">

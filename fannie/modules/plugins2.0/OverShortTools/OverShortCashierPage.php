@@ -28,8 +28,20 @@ $dbc = FannieDB::get($FANNIE_OP_DB);
 
 class OverShortCashierPage extends FanniePage {
 	
+	// 10Nov13 EL Added title and header
+	protected $title = 'Over/Short Single Cashier';
+ 	protected $header = 'Over/Short Single Cashier';
 	protected $window_dressing = False;
 	protected $auth_classes = array('overshorts');
+
+	// 10Nov13 EL Added constructor
+	public function __construct() {
+		global $FANNIE_WINDOW_DRESSING;
+		// To set authentication.
+		parent::__construct();
+		if (isset($FANNIE_WINDOW_DRESSING))
+			$this->has_menus($FANNIE_WINDOW_DRESSING);
+	}
 
 	function preprocess(){
 		$action = FormLib::get_form_value('action',False);
@@ -290,14 +302,15 @@ class OverShortCashierPage extends FanniePage {
 		$this->add_script($FANNIE_URL.'src/CalendarControl.js');
 		$this->add_script($FANNIE_URL.'src/jquery/jquery.js');
 		$this->add_css_file($FANNIE_URL.'src/style.css');
+		if (!$this->window_dressing) {
+			echo "<html>";
+			echo "<head><title>{$this->title}</title>";
+			echo "</head>";
+			echo "<body>";
+		}
 		?>
-		<html>
-		<head>
-			<title>Cashier</title>
-		</head>
-		<body>
 		<div id=input>
-		<form onsubmit="loadCashier(); return false;">
+		<form style='margin-top:1.0em;' onsubmit="loadCashier(); return false;">
 		<b>Date</b>:<input type=text  id=date size=10 onfocus="this.value='';showCalendarControl(this);" /> 
 		<b>Cashier</b>:<input type=text  id=empno size=5 /> 
 		<input type=submit value="Load Cashier" />
