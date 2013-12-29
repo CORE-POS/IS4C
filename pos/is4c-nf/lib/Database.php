@@ -388,6 +388,7 @@ static public function uploadtoServer()
         $connect->query("DELETE FROM dtransactions",
             $CORE_LOCAL->get("tDatabase"));
 
+        /* alog deprecated
         $al_matches = self::getMatchingColumns($connect,"alog");
         // interval is a mysql reserved word
         // so it needs to be escaped
@@ -401,6 +402,11 @@ static public function uploadtoServer()
             "select $local_columns FROM alog",
             $CORE_LOCAL->get("mDatabase"),
             "insert into alog ($server_columns)");
+        if ($al_success) {
+            $connect->query("truncate table alog",
+                $CORE_LOCAL->get("tDatabase"));
+        }
+        */
 
         $su_matches = self::getMatchingColumns($connect,"suspended");
         $su_success = $connect->transfer($CORE_LOCAL->get("tDatabase"),
@@ -408,10 +414,6 @@ static public function uploadtoServer()
             $CORE_LOCAL->get("mDatabase"),
             "insert into suspended ({$su_matches})");
 
-        if ($al_success) {
-            $connect->query("truncate table alog",
-                $CORE_LOCAL->get("tDatabase"));
-        }
         if ($su_success) {
             $connect->query("truncate table suspended",
                 $CORE_LOCAL->get("tDatabase"));
