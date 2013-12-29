@@ -310,11 +310,13 @@ class FannieReportPage extends FanniePage {
 				$ret .= sprintf('<html><head></head><body>
 					<a href="%s%sexcel=xls">Download Excel</a>
 					&nbsp;&nbsp;&nbsp;&nbsp;
-					<a href="%s%sexcel=csv">Download CSV</a>',
+					<a href="%s%sexcel=csv">Download CSV</a>
+					&nbsp;&nbsp;&nbsp;&nbsp;
+					<a href="javascript:history:back();">Back</a>',
 					$_SERVER['REQUEST_URI'],
-					(strstr($_SERVER['REQUEST_URI'],'?') ===False ? '?' : '&'),
+					(strstr($_SERVER['REQUEST_URI'],'?') === False ? '?' : '&'),
 					$_SERVER['REQUEST_URI'],
-					(strstr($_SERVER['REQUEST_URI'],'?') ===False ? '?' : '&')
+					(strstr($_SERVER['REQUEST_URI'],'?') === False ? '?' : '&')
 				);
 				foreach($this->report_description_content() as $line)
 					$ret .= '<br />'.$line;
