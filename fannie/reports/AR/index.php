@@ -20,13 +20,30 @@ else {
 	echo "<table cellpadding=\"4\" cellspacing=\"0\" border=\"1\">";
 	echo "<tr><th>Date</th><th>Receipt</th><th>Amount</th><th>Type</th></tr>";
 	$r = $dbc->exec_statement($q,array($memNum));
+	$items = 0;
+	$total = 0;
 	while($w = $dbc->fetch_row($r)){
 		printf('<tr><td>%d/%d/%d</td><td>
 			<a href="%sadmin/LookupReceipt/RenderReceiptPage.php?year=%d&month=%d&day=%d&receipt=%s">%s</a>
-			</td><td>%.2f</td><td>%s</td></tr>',
-			$w[4],$w[5],$w[3],$FANNIE_URL,$w[3],$w[4],$w[5],$w[1],$w[1],
-			($w[0]!=0?$w[0]:$w[2]),($w[0]!=0?'Charge':'Payment'));
+			</td>
+			<td style="text-align:right;">%.2f</td>
+			<td>%s</td></tr>',
+			$w[4],$w[5],$w[3],
+			$FANNIE_URL,$w[3],$w[4],$w[5],$w[1],$w[1],
+			($w['charges']!=0?$w['charges']:$w['payments']),
+			($w['charges']!=0?'Charge':'Payment'));
+		$items++;
+		$total += ($w['charges']!=0?$w['charges']:$w['payments']);
 	}
+	printf('<tr>
+		<td style="font-weight:bold; text-align:right;">%s</td>
+		<td style="text-align:right;">%d</td>
+		<td style="text-align:right;">%.2f</td>
+		<td>%s</td></tr>',
+		'Totals:',
+		$items,
+		$total,
+		' &nbsp; ');
 	echo "</table>";
 }
 
