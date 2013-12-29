@@ -67,18 +67,9 @@ $CORE_LOCAL->set("newReceipt",1, True);
 //$CORE_LOCAL->set("printerPort","/dev/lp0", True);
 $CORE_LOCAL->set("printerPort",'fakereceipt.txt', True);
 
-$CORE_LOCAL->set("receiptHeaderCount",0, True);
-$CORE_LOCAL->set("receiptFooterCount",0, True);
-$CORE_LOCAL->set("ckEndorseCount",0, True);
-$CORE_LOCAL->set("chargeSlipCount",0, True);
-
 /***********************************************************************************
 Screen Message Settings
 ************************************************************************************/
-
-$CORE_LOCAL->set("welcomeMsgCount",0, True);
-$CORE_LOCAL->set("trainingMsgCount",0, True);
-$CORE_LOCAL->set("farewellMsgCount",0, True);
 
 $CORE_LOCAL->set("alertBar",'New Pi - Alert', True);
 
