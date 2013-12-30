@@ -90,7 +90,7 @@ static public function get(){
     $receipt .= "  ".substr("NET Total: ".$blank.$blank,0,20);
     $receipt .= substr($blank.number_format(($net[0]),2),-8)."\n";
 
-
+    $receipt .= "\n";
     $receipt .=	trTotal('CA','CASH');
     $receipt .=	trTotal('CK','CHECK');
     $receipt .=	trTotal(array('CP','MC'),'VENDOR COUPON');
@@ -160,6 +160,7 @@ static public function get(){
 	}
 
 	$receipt .= trTotal(46,'M E M B E R  E Q U I T Y', True);
+	$receipt .= trTotal(7,'C O N S I G N M E N T', True);
 
 	return $receipt.chr(27).chr(105);
 }
