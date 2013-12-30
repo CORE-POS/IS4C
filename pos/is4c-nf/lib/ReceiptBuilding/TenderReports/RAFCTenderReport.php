@@ -55,10 +55,11 @@ static public function get(){
 	$DESIRED_TENDERS = $CORE_LOCAL->get("TRDesiredTenders");
 
 	$blank = "             ";
-	$fieldNames = "  ".substr("Time".$blank, 0, 13)
-			.substr("Lane".$blank, 0, 9)
-			.substr("Trans #".$blank, 0, 12)
-			.substr("Change".$blank, 0, 14)
+	$fieldNames = "  ".substr("Time".$blank, 0, 10)
+			.substr("Lane".$blank, 0, 8)
+			.substr("Trans #".$blank, 0, 8)
+			.substr("Emp #".$blank, 0, 10)
+			.substr("Mem #".$blank, 0, 10)
 			.substr("Amount".$blank, 0, 14)."\n";
 	$ref = ReceiptLib::centerString(trim($CORE_LOCAL->get("CashierNo"))." ".trim($CORE_LOCAL->get("cashier"))." ".ReceiptLib::build_time(time()))."\n\n";
 	$receipt = "";
@@ -101,10 +102,8 @@ static public function get(){
     $receipt .=	trTotal('MI','INSTORE CHARGE');
     $receipt .=	trTotal('IC','INSTORE COUPON');
     $receipt .= "\n";
-    $receipt .=	trTotal(array('DC','CC','FS','EC'),'DEB/CRED/SNAP');
-	$receipt .= "House Charge?\n";
-	$receipt .= "House Coupon?\n";
-    $receipt .=	trTotal(45,'RCVD. on ACCT.');
+    $receipt .=	trTotal(51,'CHARGE PAYMENTS');
+    $receipt .=	trTotal(49,'RCVD. on ACCT.');
 
 	$receipt.= ReceiptLib::centerString("------------------------------------------------------");
 
@@ -160,6 +159,8 @@ static public function get(){
 		$receipt .= str_repeat("\n", 3);
 //		$receipt .= chr(27).chr(105);
 	}
+
+	$receipt .= trTotal(46,'MEMBER EQUITY', True);
 
 	return $receipt.chr(27).chr(105);
 }
