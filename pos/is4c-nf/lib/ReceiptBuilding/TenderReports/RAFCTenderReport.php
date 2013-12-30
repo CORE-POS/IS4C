@@ -66,7 +66,7 @@ static public function get(){
 
 	$cashier_names = "";
     $cashierQ = "SELECT CONCAT(SUBSTR(e.FirstName,1,1),SUBSTR(e.Lastname,1,1)) as cashier
-		FROM dlog d, ".$CORE_LOCAL->get('pDatabase').".employees e
+		FROM dlog d, is4c_op.employees e
         WHERE d.emp_no = e.emp_no AND d.register_no = ". $CORE_LOCAL->get('laneno')." AND d.emp_no <> 9999 AND d.trans_type <> 'L' 
 		AND d.tdate >= '".$shiftCutoff."'
         GROUP BY d.emp_no ORDER BY d.tdate";
@@ -101,7 +101,6 @@ static public function get(){
     $receipt .=	trTotal('GD','GIFT CARD');
     $receipt .=	trTotal('MI','INSTORE CHARGE');
     $receipt .=	trTotal('IC','INSTORE COUPON');
-    $receipt .= "\n";
     $receipt .=	trTotal(51,'CHARGE PAYMENTS');
     $receipt .=	trTotal(49,'RCVD. on ACCT.');
 
@@ -160,7 +159,7 @@ static public function get(){
 //		$receipt .= chr(27).chr(105);
 	}
 
-	$receipt .= trTotal(46,'MEMBER EQUITY', True);
+	$receipt .= trTotal(46,'M E M B E R  E Q U I T Y', True);
 
 	return $receipt.chr(27).chr(105);
 }
