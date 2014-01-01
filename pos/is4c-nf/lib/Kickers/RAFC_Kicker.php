@@ -22,62 +22,39 @@
 *********************************************************************************/
 
 /**
-  @class Kicker
-  Base class for opening cash drawer
-
+  @class RAFC_Kicker
+  Opens drawer for cash, debit w/ cashback, check w/ cashback
 */
-class Kicker 
+class RAFC_Kicker extends Kicker 
 {
 
-    /**
-      Determine whether to open the drawer
-      @return boolean
-    */
     public function doKick()
     {
         global $CORE_LOCAL;
-        if($CORE_LOCAL->get('training') == 1) {
-            return false;
-        }
         $db = Database::tDataConnect();
 
         $query = "select trans_id from localtemptrans where 
-            (trans_subtype = 'CA' and total <> 0)";
+            (trans_subtype = 'CA' and total <> 0)
+			OR (trans_subtype = 'DC' and total <> 0)
+			OR (trans_subtype = 'CK' and total <> 0)";
 
         $result = $db->query($query);
         $num_rows = $db->num_rows($result);
 
-        return ($num_rows > 0) ? true : false;
+        $ret = ($num_rows > 0) ? true : false;
+
+        // use session to override default behavior
+        // based on specific cashier actions rather
+        // than transaction state
+        $override = $CORE_LOCAL->get('kickOverride');
+        $CORE_LOCAL->set('kickOverride',false);
+        if ($override === true) $ret = true;
+
+        return $ret;
     }
 
-    /**
-      Determine whether to open the drawer when
-      a cashier signs in
-      @return boolean
-    */
-    public function kickOnSignIn()
-    {
-        global $CORE_LOCAL;
-        if($CORE_LOCAL->get('training') == 1) {
-            return false;
-        }
-
-        return true;
-    }
-
-    /**
-      Determine whether to open the drawer when
-      a cashier signs out
-      @return boolean
-    */
-    public function kickOnSignOut()
-    {
-        global $CORE_LOCAL;
-        if($CORE_LOCAL->get('training') == 1) {
-            return false;
-        }
-
-        return true;
+    public function kickOnSignIn() {
+        return false;
     }
 }
 
