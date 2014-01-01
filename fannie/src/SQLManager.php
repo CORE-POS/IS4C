@@ -1208,6 +1208,8 @@ class SQLManager
         }
 		$con = $this->connections[$which_connection];
 
+        if (!is_object($con)) var_dump(debug_backtrace());
+
 		return $con->Prepare($sql);
 	}
 
