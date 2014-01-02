@@ -50,6 +50,7 @@ class nslogin extends NoInputPage
 				$this->change_page($this->page_url."gui-modules/pos2.php");
 				return False;
 			} elseif (Authenticate::checkPassword($passwd)) {
+                ReceiptLib::drawerKick();
 				$this->change_page($this->page_url."gui-modules/pos2.php");
 				return false;
 			} else {
