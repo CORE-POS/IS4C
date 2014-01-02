@@ -53,7 +53,12 @@ class RAFC_Kicker extends Kicker
         return $ret;
     }
 
-    public function kickOnSignIn() {
+    public function kickOnSignIn() 
+	{
+        return false;
+    }
+    public function kickOnSignOut()
+    {
         return false;
     }
 }
