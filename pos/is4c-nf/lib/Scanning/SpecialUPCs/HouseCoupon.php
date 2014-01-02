@@ -262,8 +262,14 @@ class HouseCoupon extends SpecialUPC
         if ($infoW === false) {
             return DisplayLib::boxMsg(_("coupon not found"));
         }
-
-        /* check the number of times this coupon
+		
+		$prefix = $CORE_LOCAL->get('houseCouponPrefix');
+		if ($prefix == '') {
+			$prefix = '00499999';
+		}
+		$upc = $prefix . str_pad($id, 5, '0', STR_PAD_LEFT);
+        
+		/* check the number of times this coupon
          * has been used in this transaction
          * against the limit */
         $transDB = Database::tDataConnect();
