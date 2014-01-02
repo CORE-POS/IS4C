@@ -251,6 +251,22 @@ if ($CORE_LOCAL->get("scaleDriver") != ""){
 
 <tr><td colspan=2 class="tblHeader">
 <h3>Display Settings</h3></td></tr><tr><td>
+<tr><td>
+<b>Screen Height</b>:</td><td>
+<?php
+if(isset($_REQUEST['VLINES'])) $CORE_LOCAL->set('screenLines',$_REQUEST['VLINES']);
+elseif ($CORE_LOCAL->get('screenLines')==='') $CORE_LOCAL->set('screenLines', 11);
+echo '<select name="VLINES">';
+for($i=9; $i<20; $i++) {
+    printf('<option %s value="%d">%d items</option>',
+        ($i == $CORE_LOCAL->get('screenLines') ? 'selected' : ''), $i, $i+1);
+}
+echo '</select>';
+InstallUtilities::paramSave('screenLines', $CORE_LOCAL->get('screenLines'));
+?>
+<span class='noteTxt'>Number of items to display at once</span>
+</td></tr>
+<tr><td>
 <b>Alert Bar</b>:</td><td>
 <?php
 if (isset($_REQUEST['ALERT'])) $CORE_LOCAL->set('alertBar',$_REQUEST['ALERT']);

@@ -34,7 +34,8 @@ else {
 }
 InstallUtilities::paramSave('SecurityCancel',$CORE_LOCAL->get("SecurityCancel"));
 ?>
-</select></td></tr><tr><td>
+</select></td></tr>
+<tr><td>
 <b>Suspend/Resume</b>: </td><td><select name=PRIV_SR>
 <?php
 if(isset($_REQUEST['PRIV_SR'])) $CORE_LOCAL->set('SecuritySR',$_REQUEST['PRIV_SR']);
@@ -48,6 +49,22 @@ else {
 	echo "<option value=20 selected>All</option>";
 }
 InstallUtilities::paramSave('SecuritySR',$CORE_LOCAL->get("SecuritySR"));
+?>
+</select></td></tr>
+<tr><td>
+<b>Print Tender Report</b>: </td><td><select name=PRIV_TR>
+<?php
+if(isset($_REQUEST['PRIV_TR'])) $CORE_LOCAL->set('SecurityTR',$_REQUEST['PRIV_TR']);
+if ($CORE_LOCAL->get("SecurityTR")=="") $CORE_LOCAL->set("SecurityTR",20);
+if ($CORE_LOCAL->get("SecurityTR") == 30){
+	echo "<option value=30 selected>Admin only</option>";
+	echo "<option value=20>All</option>";
+}
+else {
+	echo "<option value=30 >Admin only</option>";
+	echo "<option value=20 selected>All</option>";
+}
+InstallUtilities::paramSave('SecurityTR',$CORE_LOCAL->get("SecurityTR"));
 ?>
 </select></td></tr>
 <tr><td>
