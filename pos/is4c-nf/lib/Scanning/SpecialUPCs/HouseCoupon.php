@@ -255,7 +255,7 @@ class HouseCoupon extends SpecialUPC
       @param $id [int] coupon ID
       @return [boolean] true or [string] error message
     */
-    public function checkLimts($id)
+    public function checkLimits($id)
     {
         global $CORE_LOCAL;
         $infoW = $this->lookupCoupon($id);
