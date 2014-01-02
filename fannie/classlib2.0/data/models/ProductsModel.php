@@ -342,7 +342,7 @@ class ProductsModel extends BasicModel
         $try = parent::save();
         if ($try) {
             $update = new ProdUpdateModel($this->connection);
-            $update->logUpdate(ProdUpdate::UPDATE_EDIT);
+            $update->logUpdate(ProdUpdateModel::UPDATE_EDIT);
         }
 
         return $try;
