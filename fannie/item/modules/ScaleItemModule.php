@@ -115,7 +115,7 @@ class ScaleItemModule extends ItemModule {
 		$bycount = FormLib::get_form_value('s_bycount',0);
 		$graphics = FormLib::get_form_value('s_graphics',0);
 		$type = FormLib::get_form_value('s_type','Random Weight');
-		$weight = ($s_type == 'Random Weight') ? 0 : 1;
+		$weight = ($type == 'Random Weight') ? 0 : 1;
 		$text = FormLib::get_form_value('s_text','');
 		$label = FormLib::get_form_value('s_label','horizontal');
 
@@ -149,7 +149,7 @@ class ScaleItemModule extends ItemModule {
 			$action = "ChangeOneItem";
 		}
 
-		include(dirname(__FILE__).'/hobartcsv/parse.php');
+		include(dirname(__FILE__).'/../hobartcsv/parse.php');
 		parseitem($action,$upc,$desc,$tare,$shelf,$price,$bycount,$type,
 			0.00,$text,$label,($graphics==1?121:0));
 	}
