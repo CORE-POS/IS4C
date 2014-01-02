@@ -83,10 +83,10 @@ $sql->query($histQ);
 $custQ = "UPDATE custdata as c LEFT JOIN
 	    suspensions as s on c.CardNo=s.cardno
 	    SET c.type='INACT',memType=0,c.Discount=0,
-	    ChargeLimit=0,MemDiscountLimit=0
+	    c.ChargeLimit=0,MemDiscountLimit=0
 	    where c.type='PC' and s.cardno is not null";
 if (!isset($custdata['ChargeLimit'])) {
-    $custQ = str_replace('ChargeLimit=0,', '', $custQ);
+    $custQ = str_replace('c.ChargeLimit=0,', '', $custQ);
 }
 $sql->query($custQ);
 
