@@ -60,7 +60,7 @@ static public function get(){
 			.substr("Trans #".$blank, 0, 8)
 			.substr("Emp #".$blank, 0, 10)
 			.substr("Mem #".$blank, 0, 10)
-			.substr("Amount".$blank, 0, 14)."\n";
+			.substr("Amount".$blank, 0, 12)."\n";
 	$ref = ReceiptLib::centerString(trim($CORE_LOCAL->get("CashierNo"))." ".trim($CORE_LOCAL->get("cashier"))." ".ReceiptLib::build_time(time()))."\n\n";
 	$receipt = "";
 
@@ -101,8 +101,8 @@ static public function get(){
     $receipt .=	trTotal('GD','GIFT CARD');
     $receipt .=	trTotal('MI','INSTORE CHARGE');
     $receipt .=	trTotal('IC','INSTORE COUPON');
-    $receipt .=	trTotal(51,'CHARGE PAYMENTS');
-    $receipt .=	trTotal(49,'RCVD. on ACCT.');
+    $receipt .=	trTotal(51,'R/A DEPOSITS');
+    // $receipt .=	trTotal(49,'RCVD. on ACCT.');
 
 	$receipt.= ReceiptLib::centerString("------------------------------------------------------");
 
@@ -180,7 +180,7 @@ function trTotal($k, $label,$i=False) {
 			.substr("Trans #".$blank, 0, 8)
 			.substr("Emp #".$blank, 0, 10)
 			.substr("Mem #".$blank, 0, 10)
-			.substr("Amount".$blank, 0, 14)."\n";
+			.substr("Amount".$blank, 0, 12)."\n";
 	$shiftCutoff = date('Y-m-d 00:00:00');
 	$lookup = $db_a->query("SELECT MAX(datetime) FROM dtransactions 
 		WHERE DATE(datetime) = CURDATE() AND upc='ENDOFSHIFT' AND 
@@ -202,7 +202,6 @@ function trTotal($k, $label,$i=False) {
 		$tenderQ = "SELECT tdate,register_no,emp_no,trans_no,card_no,total FROM dlog 
 			WHERE register_no=".$CORE_LOCAL->get('laneno').
 			" and $q IN($k) AND tdate >= '$shiftCutoff' AND emp_no <> 9999 order by tdate";
-		
 	}
 	$tenderR = $db_a->query($tenderQ);
 	$tender = $db_a->fetch_array($tenderR);
