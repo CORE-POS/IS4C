@@ -988,6 +988,9 @@ class InstallIndexPage extends InstallPage {
 		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 				'custReceiptMessage','op');
 
+		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+				'usageStats','op');
+
 		return $ret;
 
 	// create_op_dbs()
