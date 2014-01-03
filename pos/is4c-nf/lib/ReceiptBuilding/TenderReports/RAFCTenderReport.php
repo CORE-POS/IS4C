@@ -160,6 +160,7 @@ static public function get(){
 	}
 
 	$receipt .= trTotal(46,'M E M B E R  E Q U I T Y', True);
+	$receipt .= trTotal(51,'R / A  +  D E P O S I T S', True);
 	$receipt .= trTotal(7,'C O N S I G N M E N T', True);
 
 	return $receipt.chr(27).chr(105);
