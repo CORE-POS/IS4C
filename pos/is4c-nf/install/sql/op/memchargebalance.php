@@ -11,6 +11,8 @@ Depends on:
 	custdata (Table)
 
 Use:
+DEPRECATED 4Jan14 no longer used
+
 View showing member charge balance. Authoritative,
 up-to-the-second data is on the server but a local
 lookup is faster if slightly stale data is acceptable.
