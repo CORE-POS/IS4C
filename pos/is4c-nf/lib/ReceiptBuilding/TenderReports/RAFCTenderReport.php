@@ -224,9 +224,9 @@ function trTotal($k, $label,$i=False) {
 			$ret .= "  ".substr($timeStamp.$blank, 0, 10)
 				.substr($row["register_no"].$blank, 0, 9)
 				.substr($row["trans_no"].$blank, 0, 8)
-				.substr($blank.$row['emp_no'], -8)
+				.substr($blank.$row['emp_no'], -5)
 				.substr($blank.$row["card_no"],-6)
-				.substr($blank.number_format($row["total"], 2), -14)."\n";
+				.substr($blank.number_format($row["total"], 2), -9)."\n";
 			$sum += $row["total"];
 		}
 		$ret .= ReceiptLib::centerString("------------------------------------------------------");
