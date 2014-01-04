@@ -64,10 +64,12 @@ $sql = new SQLManager($FANNIE_SERVER,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 	
 if ($today == $discount_day) {
 	$sql->query("INSERT INTO autoCoupons VALUES(999,'Supplement Discount')");
+	echo cron_msg("It's $discount_day. Supplement discount applied.")
 } elseif ($today == $discount_day_after) {
 	$sql->query("DELETE FROM autoCoupons WHERE coupID = 999");
+	echo cron_msg("It's $discount_day_after.  Supplement discount removed.")
 } else {
-	echo cron_msg("nightly.supplementdiscount.php: Discount active on " . $discount_day . ".<br /> No discounts to apply");
+	echo cron_msg("No discounts to apply.");
 }
 
 
