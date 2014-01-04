@@ -427,7 +427,7 @@ static public function chargeBalance($receipt){
 	$currBalance = $CORE_LOCAL->get("balance") - $currActivity;
 	
 	if(($num_rows > 0 || $currBalance != 0) && $CORE_LOCAL->get("memberID") != 11){
- 		$chargeString = "Current IOU Balance: $".sprintf("%.2f",$currBalance);
+ 		$chargeString = "Current Balance: $".sprintf("%.2f",$currBalance);
 		$receipt = $receipt."\n\n".self::biggerFont(self::centerBig($chargeString));
 	}
 	
