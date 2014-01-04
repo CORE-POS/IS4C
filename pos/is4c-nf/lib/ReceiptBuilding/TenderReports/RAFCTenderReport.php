@@ -202,7 +202,7 @@ function trTotal($k, $label,$i=False) {
 		if ($row[0] != '') $shiftCutoff = $row[0];
 	}
 
-	if (is_array($k)) $p = "'" . implode("','", $k) . "'";
+	if (is_array($k)) $k = "'" . implode("','", $k) . "'";
     elseif (!is_numeric($k)) { 
 		if ($k[0] == '#') {
 			$k = substr($k,1);
@@ -219,11 +219,11 @@ function trTotal($k, $label,$i=False) {
 	if($i===False) {
 	    $tenderQ = "SELECT -SUM(total) AS net, COUNT(total) FROM dlog 
 	    	WHERE register_no=".$CORE_LOCAL->get('laneno').
-			" AND $q IN($p) AND tdate >= '$shiftCutoff' AND emp_no <> 9999";
+			" AND $q IN($k) AND tdate >= '$shiftCutoff' AND emp_no <> 9999";
 	} else {
 		$tenderQ = "SELECT tdate,register_no,emp_no,trans_no,card_no,total FROM dlog 
 			WHERE register_no=".$CORE_LOCAL->get('laneno').
-			" and $q IN($p) AND tdate >= '$shiftCutoff' AND emp_no <> 9999 order by tdate";
+			" and $q IN($k) AND tdate >= '$shiftCutoff' AND emp_no <> 9999 order by tdate";
 	}
 	$tenderR = $db_a->query($tenderQ);
 	$tender = $db_a->fetch_array($tenderR);
