@@ -78,7 +78,7 @@ elseif (isset($_REQUEST['saveInfo'])){
 	$pos = $_REQUEST['pos'];
 	$date = "null";
 	if (!empty($month) && !empty($year)){
-		$date = "'".$year."-".str_pad($month,2,'0',STR_PAD_LEFT)."-01'";
+		$date = $year."-".str_pad($month,2,'0',STR_PAD_LEFT)."-01";
 	}
 	$db = hours_dbconnect();
 	$hire = isset($_REQUEST['hire'])?$_REQUEST['hire']:'';
@@ -89,7 +89,6 @@ elseif (isset($_REQUEST['saveInfo'])){
 		else
 			$hire = '';
 	}
-	$hire = !empty($hire)?"'".mysql_real_escape_string($hire)."'":"null";
 	$etype = $_REQUEST['etype'];
 	
 	$delQ = $db->prepare("DELETE FROM evalInfo WHERE empID=?");

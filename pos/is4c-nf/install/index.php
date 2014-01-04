@@ -469,7 +469,12 @@ function create_op_dbs($db,$type){
 
     InstallUtilities::createIfNeeded($db, $type, $name, 'autoCoupons', 'op', $errors);
 
-    InstallUtilities::createIfNeeded($db, $type, $name, 'memchargebalance', 'op', $errors);
+    /**
+      @deprecated 3Jan14
+      Only used in PrehLib::chargeOk()
+      Not really necessary to have a dedicated view
+    */
+    //InstallUtilities::createIfNeeded($db, $type, $name, 'memchargebalance', 'op', $errors);
 
     InstallUtilities::createIfNeeded($db, $type, $name, 'unpaid_ar_today', 'op', $errors);
 
