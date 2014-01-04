@@ -50,7 +50,7 @@ static public function get(){
 		$row = $db_a->fetch_row($lookup);
 		if ($row[0] != '') $shiftCutoff = $row[0];
 	}
-	// TransRecord::add_log_record(array('upc'=>'ENDOFSHIFT'));
+	TransRecord::add_log_record(array('upc'=>'ENDOFSHIFT'));
 
 	$DESIRED_TENDERS = $CORE_LOCAL->get("TRDesiredTenders");
 
