@@ -233,15 +233,12 @@ function trTotal($k, $label,$i=False) {
 		$ret = "  ".substr($label.$blank.$blank,0,20).substr($blank.number_format(($tender[0]),2),-8).substr($blank.$tender[1],-8)."\n";
 	} else {
 		$sum = 0;
-		// $titleStr = "";
-		// for ($i = 0; $i < strlen($label); $i++)
-		// 	$titleStr .= $i." ";
-		// $titleStr = substr($titleStr,0,strlen($titleStr)-1);
 		$ret = ReceiptLib::centerString($label)."\n";
 		$ret .=	ReceiptLib::centerString("------------------------------------------------------");
 		$ret .= $fieldNames;
-		for ($i = 0; $i <= $num_rows; $i++) {
-			$row = $db_a->fetch_array($tenderR);
+		// for ($i = 0; $i < $num_rows; $i++) {
+		while ($row = $db_a->fetch_array($tenderR)) {
+			// $row = $db_a->fetch_array($tenderR);
 			$timeStamp = TenderReport::timeStamp($row["tdate"]);
 			$ret .= "  ".substr($timeStamp.$blank, 0, 10)
 				.substr($row["register_no"].$blank, 0, 9)
