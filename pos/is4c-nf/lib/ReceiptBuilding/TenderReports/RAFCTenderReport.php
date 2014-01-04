@@ -84,25 +84,36 @@ static public function get(){
 	// NET TOTAL
 	$netQ = "SELECT -SUM(total) AS net, COUNT(total) FROM dlog 
 		WHERE register_no=".$CORE_LOCAL->get('laneno').
-		" AND trans_subtype IN('CA','CK','DC','CC','FS','EC') AND tdate >= '$shiftCutoff'$excl";
+		" AND (trans_subtype IN('CA','CK','DC','CC','FS','EC','GD') OR (trans_subtype = 'MI' AND staff <> 1))
+		AND tdate >= '$shiftCutoff'$excl";
 	$netR = $db_a->query($netQ);
 	$net = $db_a->fetch_row($netR);
-    $receipt .= "  ".substr("NET Total: ".$blank.$blank,0,20);
+    $receipt .= "  ".substr("GROSS Total: ".$blank.$blank,0,20);
     $receipt .= substr($blank.number_format(($net[0]),2),-8)."\n";
 
     $receipt .= "\n";
     $receipt .=	trTotal('CA','CASH');
     $receipt .=	trTotal('CK','CHECK');
-    $receipt .=	trTotal(array('CP','MC'),'VENDOR COUPON');
     $receipt .=	trTotal('CC','CREDIT CARD');
     $receipt .=	trTotal('DC','DEBIT CARD');
     $receipt .=	trTotal('FS','SNAP - FOOD');
     $receipt .=	trTotal('EC','SNAP - CASH');
-    $receipt .=	trTotal('GD','GIFT CARD');
-    $receipt .=	trTotal('MI','INSTORE CHARGE');
+    $receipt .=	trTotal('GD','GIFT CERT.');
+	$receipt .= "\n";
+    $receipt .=	trTotal(array('CP','MC'),'VENDOR COUPON');
+    $receipt .=	trTotal('MI','STORE CHARGE');
     $receipt .=	trTotal('IC','INSTORE COUPON');
-    $receipt .=	trTotal(51,'R/A DEPOSITS');
-    // $receipt .=	trTotal(49,'RCVD. on ACCT.');
+    $receipt .=	trTotal(51,'PREPAY DEPOSITS');
+	// REFUNDS
+	$rfQ = "SELECT -SUM(total) AS net, COUNT(total) FROM dlog 
+		WHERE register_no=".$CORE_LOCAL->get('laneno').
+		" AND trans_status = 'R' and card_no <> 9998
+		AND tdate >= '$shiftCutoff'$excl";
+	$rfR = $db_a->query($rfQ);
+	$rf = $db_a->fetch_row($rfR);
+    $receipt .= "  ".substr('REFUNDS'.$blank.$blank,0,20).substr($blank.number_format(($rf[0]),2),-8).substr($blank.$rf[1],-8)."\n";
+	
+
 
 	$receipt.= ReceiptLib::centerString("------------------------------------------------------");
 
@@ -159,8 +170,9 @@ static public function get(){
 //		$receipt .= chr(27).chr(105);
 	}
 
-	$receipt .= trTotal(46,'M E M B E R  E Q U I T Y', True);
-	$receipt .= trTotal(51,'R / A  +  D E P O S I T S', True);
+	$receipt .= trTotal(46,'M E M B E R   E Q U I T Y', True);
+	$receipt .= trTotal(51,'P R E P A Y   D E P O S I T S', True);
+	$receipt .= trTotal('#9998','V E N D O R   P A Y O U T S', True);
 	$receipt .= trTotal(7,'C O N S I G N M E N T', True);
 
 	return $receipt.chr(27).chr(105);
@@ -191,8 +203,18 @@ function trTotal($k, $label,$i=False) {
 	}
 
 	if (is_array($k)) $k = "'" . implode("','", $k) . "'";
-    elseif (!is_numeric($k)) $k = "'".$k."'";
-	$q = (!is_numeric($k)) ? 'trans_subtype' : 'department';
+    elseif (!is_numeric($k)) { 
+		if ($k[0] == '#') {
+			$k = substr($k,1);
+			$q = 'card_no';
+		} else {
+			$k = "'".$k."'";
+			$q = 'trans_subtype';
+		}
+	} else {
+		$q = 'department';
+	}
+	// $q = (!is_numeric($k)) ? 'trans_subtype' : 'department';
 	
 	if($i===False) {
 	    $tenderQ = "SELECT -SUM(total) AS net, COUNT(total) FROM dlog 
@@ -226,7 +248,7 @@ function trTotal($k, $label,$i=False) {
 				.substr($row["trans_no"].$blank, 0, 8)
 				.substr($blank.$row['emp_no'], -5)
 				.substr($blank.$row["card_no"],-6)
-				.substr($blank.number_format($row["total"], 2), -9)."\n";
+				.substr($blank.number_format($row["total"], 2), -12)."\n";
 			$sum += $row["total"];
 		}
 		$ret .= ReceiptLib::centerString("------------------------------------------------------");
