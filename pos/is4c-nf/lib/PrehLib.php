@@ -222,11 +222,9 @@ static public function setMember($member, $personNumber, $row)
 	// 16Sep12 Eric Lee Allow  not append Subtotal at this point.
 	if ( $CORE_LOCAL->get("member_subtotal") === false ) {
 		$noop = "";
-	} elseif ( $CORE_LOCAL->get("member_subtotal") === true ) {
+	} else {
 		self::ttl();
-	} elseif ( $CORE_LOCAL->get("member_subtotal") == '' ) {
-		self::ttl();
-	}
+	} 
 }
 
 /**
@@ -702,12 +700,17 @@ static public function ttl()
 		$CORE_LOCAL->set("ttlflag",1);
 		Database::setglobalvalue("TTLFlag", 1);
 
+        // if total is called before records have been added to the transaction,
+        // Database::getsubtotals will zero out the discount
+        $savePD = $CORE_LOCAL->get('percentDiscount');
+
 		// Refresh totals after staff and member discounts.
 		Database::getsubtotals();
 
         $ttlHooks = $CORE_LOCAL->get('TotalActions');
         if (is_array($ttlHooks)) {
             foreach($ttlHooks as $ttl_class) {
+                if (!class_exists($ttl_class)) continue;
                 $mod = new $ttl_class();
                 $result = $mod->apply();
                 if ($result !== true && is_string($result)) {
@@ -718,6 +721,8 @@ static public function ttl()
 
 		// Refresh totals after total actions
 		Database::getsubtotals();
+
+        $CORE_LOCAL->set('percentDiscount', $savePD);
 
 		if ($CORE_LOCAL->get("percentDiscount") > 0) {
 			if ($CORE_LOCAL->get("member_subtotal") === false) {
