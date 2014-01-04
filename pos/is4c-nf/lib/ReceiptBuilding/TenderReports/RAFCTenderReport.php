@@ -172,7 +172,7 @@ static public function get(){
 
 	$receipt .= trTotal(46,'M E M B E R   E Q U I T Y', True);
 	$receipt .= trTotal(51,'P R E P A Y   D E P O S I T S', True);
-	$receipt .= trTotal('#9998','V E N D O R   P A Y O U T S', True);
+	$receipt .= trTotal(49,'V E N D O R   P A Y O U T S', True);
 	$receipt .= trTotal(7,'C O N S I G N M E N T', True);
 
 	return $receipt.chr(27).chr(105);
@@ -240,7 +240,7 @@ function trTotal($k, $label,$i=False) {
 		$ret = ReceiptLib::centerString($label)."\n";
 		$ret .=	ReceiptLib::centerString("------------------------------------------------------");
 		$ret .= $fieldNames;
-		for ($i = 0; $i < $num_rows; $i++) {
+		for ($i = 0; $i <= $num_rows; $i++) {
 			$row = $db_a->fetch_array($tenderR);
 			$timeStamp = TenderReport::timeStamp($row["tdate"]);
 			$ret .= "  ".substr($timeStamp.$blank, 0, 10)
