@@ -1057,7 +1057,7 @@ static public function chargeOk()
 
 	$availBal = $row["availBal"] + $CORE_LOCAL->get("memChargeTotal");
 	
-	$CORE_LOCAL->set("Balance",$row["Balance"]);
+	$CORE_LOCAL->set("balance",$row["Balance"]);
 	$CORE_LOCAL->set("availBal",number_format($availBal,2,'.',''));	
 	
 	$chargeOk = 1;
