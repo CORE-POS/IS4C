@@ -89,7 +89,8 @@ class DTransactionsModel extends BasicModel
         }
         $this->columns['store_row_id']['increment'] = false;
         $this->columns['store_row_id']['primary_key'] = false;
-        $this->columns['store_row_id']['index'] = true;
+        $this->columns['store_row_id']['index'] = false;
+        $this->columns['pos_row_id']['index'] = false;
         
         $this->name = 'transarchive';
         $chk = parent::normalize($db_name, $mode, $doCreate);
@@ -197,6 +198,7 @@ class DTransactionsModel extends BasicModel
         $this->columns['store_row_id']['increment'] = true;
         $this->columns['store_row_id']['primary_key'] = true;
         $this->columns['store_row_id']['index'] = false;
+        $this->columns['pos_row_id']['index'] = true;
 
         return $log_adds + $trans_adds;
 
