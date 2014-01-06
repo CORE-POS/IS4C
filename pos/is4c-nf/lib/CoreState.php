@@ -764,9 +764,9 @@ static public function loadParams(){
                 }
                 $value = $tmp;
             }
-        } else if (strtoupper($value === 'TRUE')) {
+        } else if (strtoupper($value) === 'TRUE') {
             $value = true;
-        } else if (strtoupper($value === 'FALSE')) {
+        } else if (strtoupper($value) === 'FALSE') {
             $value = false;
         }
 
