@@ -75,10 +75,11 @@ class BaseItemModule extends ItemModule {
 			  fields for the new item
 			*/
 			$vendorP = "SELECT description,brand as manufacturer,cost,
-				vendorName as distributor,margin,i.vendorID
+				vendorName as distributor,margin,i.vendorID,srp
 				FROM vendorItems AS i LEFT JOIN vendors AS v ON i.vendorID=v.vendorID
 				LEFT JOIN vendorDepartments AS d ON i.vendorDept=d.deptID
-				WHERE upc=?";
+                LEFT JOIN vendorSRPs AS s ON s.upc=i.upc AND s.vendorID=i.vendorID
+				WHERE i.upc=?";
 			$args = array($upc);
 			$vID = FormLib::get_form_value('vid','');
 			if ($vID !== ''){
@@ -96,6 +97,7 @@ class BaseItemModule extends ItemModule {
 				$rowItem['manufacturer'] = $v['manufacturer'];
 				$rowItem['cost'] = $v['cost'];
 				$rowItem['distributor'] = $v['distributor'];
+                $rowItem['normal_price'] = $v['srp'];
 
 				while($v = $dbc->fetch_row($vendorR)){
 					printf('This product is also in <a href="?searchupc=%s&vid=%d">%s</a><br />',
