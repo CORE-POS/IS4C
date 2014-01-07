@@ -106,11 +106,14 @@ class BadScanTool extends FannieRESTfulPage
             $ret .= '<a href="BadScanTool.php?lastweek=1">View Last Week</a>';
         }
         $ret .= '<br /><b>Show</b>: ';
-        $ret .= '<input type="radio" name="rdo" onclick="showAll();" /> All';
+        $ret .= '<input type="radio" name="rdo" id="rdoa" onclick="showAll();" /> 
+                    <label for="rdoa">All</label>';
         $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
-        $ret .= '<input type="radio" name="rdo" onclick="showMultiple();" /> Repeats';
+        $ret .= '<input type="radio" name="rdo" id="rdom" onclick="showMultiple();" /> 
+                    <label for="rdom">Repeats</label>';
         $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
-        $ret .= '<input type="radio" name="rdo" onclick="showFixable();" checked /> Fixable';
+        $ret .= '<input type="radio" name="rdo" id="rdof" onclick="showFixable();" checked /> 
+                    <label for="rdof">Fixable</label>';
         $ret .= '<br />';
         $ret .= '<span style="color: green;">Green items have been entered in POS</span>. ';
         $ret .= '<span style="color: red;">Red items can be added from vendor catalogs</span>. ';
@@ -119,8 +122,8 @@ class BadScanTool extends FannieRESTfulPage
                 order case scanned by mistake or a bulk purchase in a barcoded container.</span> ';
         $ret .= 'Other items are not identifiable with available information';
         $ret .= '<table id="scantable" cellspacing="0" cellpadding="4" border=1">';
-        $ret .= '<tr><td>UPC</td><td># Scans</td><td>Oldest</td><td>Newest</td>
-                <td>In POS</td><td>In Vendor Catalog</td><td>SRP</td></tr>';
+        $ret .= '<tr id="tableheader"><th>UPC</th><th># Scans</th><th>Oldest</th><th>Newest</th>
+                <th>In POS</th><th>In Vendor Catalog</th><th>SRP</th></tr>';
         $scanCount = 0;
         foreach($data as $row) {
             if (count($row) == 1) {
@@ -176,6 +179,7 @@ function showFixable() {
     $('#scantable tr').each(function(){
         $(this).hide();
     });
+    $('tr#tableheader').show();
     $('tr.fixable').each(function(){
         $(this).show();
     });
