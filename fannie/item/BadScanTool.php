@@ -29,6 +29,21 @@ class BadScanTool extends FannieRESTfulPage
     protected $header = 'Bad Scans';
     protected $title = 'Bad Scans';
 
+    private $date_restrict = false;
+
+    function preprocess()
+    {
+        $this->__routes[] = 'get<lastweek>';
+        return parent::preprocess();
+    }
+
+    function get_lastweek_view()
+    {
+        $this->date_restrict = true;
+
+        return $this->get_view();
+    }
+
     function get_view()
     {
         global $FANNIE_OP_DB, $FANNIE_TRANS_DB;
@@ -58,8 +73,11 @@ class BadScanTool extends FannieRESTfulPage
                     AND t.upc NOT LIKE '% %'
                     AND t.upc NOT LIKE '00000000000%'
                     AND t.upc LIKE '0%'
-                    AND (t.upc NOT LIKE '00000000%' OR p.upc IS NOT NULL OR v.upc IS NOT NULL)
-                    GROUP BY t.upc, p.description
+                    AND (t.upc NOT LIKE '00000000%' OR p.upc IS NOT NULL OR v.upc IS NOT NULL)";
+            if ($this->date_restrict) {
+                $query .= ' AND datetime >= ' . date('\'Y-m-d 00:00:00\'', strtotime('-8 days'));
+            }
+            $query .= "GROUP BY t.upc, p.description
                     ORDER BY t.upc DESC";
             $result = $dbc->query($query);
             $data = array();
@@ -78,7 +96,16 @@ class BadScanTool extends FannieRESTfulPage
         }
 
         $ret = '';
-        $ret .= '<b>Show</b>: ';
+        if ($this->date_restrict) {
+            $ret .= '<a href="BadScanTool.php">View Last Quarter</a>';
+            $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
+            $ret .= 'Viewing Last Week';
+        } else {
+            $ret .= 'Viewing Last Quarter';
+            $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
+            $ret .= '<a href="BadScanTool.php?lastweek=1">View Last Week</a>';
+        }
+        $ret .= '<br /><b>Show</b>: ';
         $ret .= '<input type="radio" name="rdo" onclick="showAll();" /> All';
         $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
         $ret .= '<input type="radio" name="rdo" onclick="showMultiple();" /> Repeats';
@@ -90,7 +117,7 @@ class BadScanTool extends FannieRESTfulPage
         $ret .= '<span style="color: blue;">Blue items can also be added from vendor catalogs but
                 may not be needed. All scans are within a 5 minute window. May indicate a special
                 order case scanned by mistake or a bulk purchase in a barcoded container.</span> ';
-        $ret .= 'Other items are identifiable with available information';
+        $ret .= 'Other items are not identifiable with available information';
         $ret .= '<table id="scantable" cellspacing="0" cellpadding="4" border=1">';
         $ret .= '<tr><td>UPC</td><td># Scans</td><td>Oldest</td><td>Newest</td>
                 <td>In POS</td><td>In Vendor Catalog</td><td>SRP</td></tr>';
