@@ -48,7 +48,7 @@ class BadScanTool extends FannieRESTfulPage
                     MIN(datetime) as oldest,
                     MAX(datetime) as newest,
                     p.description as prod,
-                    v.description as vend, n.vendorName, s.srp
+                    MAX(v.description) as vend, MAX(n.vendorName) as vendorName, MAX(s.srp) as srp
                     FROM " . $FANNIE_TRANS_DB . $dbc->sep() . "transarchive AS t
                     LEFT JOIN products AS p ON p.upc=t.upc
                     LEFT JOIN vendorItems AS v ON t.upc=v.upc
@@ -59,39 +59,52 @@ class BadScanTool extends FannieRESTfulPage
                     AND t.upc NOT LIKE '00000000000%'
                     AND t.upc LIKE '0%'
                     AND (t.upc NOT LIKE '00000000%' OR p.upc IS NOT NULL OR v.upc IS NOT NULL)
-                    GROUP BY t.upc
+                    GROUP BY t.upc, p.description
                     ORDER BY t.upc DESC";
             $result = $dbc->query($query);
             $data = array();
             while($row = $dbc->fetch_row($result)) {
                 $data[] = $row;
             }
+
+            // stick a total in the cache along with SQL results
+            $dbc = FannieDB::get($FANNIE_TRANS_DB);
+            $query = "SELECT COUNT(*) FROM transarchive WHERE trans_type='I' AND upc <> '0'";
+            $result = $dbc->query($query);
+            $row = $dbc->fetch_row($result);
+            $data['itemTTL'] = $row[0];
+
             DataCache::freshen($data, 'day');
         }
 
         $ret = '';
         $ret .= '<b>Show</b>: ';
-        $ret .= '<input type="radio" name="rdo" onclick="showAll();" checked /> All';
+        $ret .= '<input type="radio" name="rdo" onclick="showAll();" /> All';
         $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
         $ret .= '<input type="radio" name="rdo" onclick="showMultiple();" /> Repeats';
         $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
-        $ret .= '<input type="radio" name="rdo" onclick="showFixable();" /> Fixable';
+        $ret .= '<input type="radio" name="rdo" onclick="showFixable();" checked /> Fixable';
         $ret .= '<br />';
         $ret .= '<span style="color: green;">Green items have been entered in POS</span>. ';
         $ret .= '<span style="color: red;">Red items can be added from vendor catalogs</span>. ';
         $ret .= '<span style="color: blue;">Blue items can also be added from vendor catalogs but
                 may not be needed. All scans are within a 5 minute window. May indicate a special
                 order case scanned by mistake or a bulk purchase in a barcoded container.</span> ';
-        $ret .= 'Other items are completely unknown.';
+        $ret .= 'Other items are identifiable with available information';
         $ret .= '<table id="scantable" cellspacing="0" cellpadding="4" border=1">';
         $ret .= '<tr><td>UPC</td><td># Scans</td><td>Oldest</td><td>Newest</td>
                 <td>In POS</td><td>In Vendor Catalog</td><td>SRP</td></tr>';
+        $scanCount = 0;
         foreach($data as $row) {
+            if (count($row) == 1) {
+                // cached item total
+                continue;
+            }
             $css = '';
             $fixButton = '';
             $span = strtotime($row['newest']) - strtotime($row['oldest']);
             if (!empty($row['prod'])) {
-                $css = 'class="fixed"';
+                $css = 'class="fixed" style="display:none;"';
             } else if (!empty($row['vend']) && !empty($row['srp'])) {
                 if ($span > 300) {
                     $css = 'class="fixable"';
@@ -100,7 +113,9 @@ class BadScanTool extends FannieRESTfulPage
                 }
                 $fixButton = ' <a href="ItemEditorPage.php?searchupc= ' . $row['upc'] . '" target="_new' . $row['upc'] . '">ADD</a>';
             } else if ($row['instances'] == 1) {
-                $css = 'class="loner"';
+                $css = 'class="loner" style="display:none;"';
+            } else {
+                $css = 'style="display:none;"';
             }
             $ret .= sprintf('<tr %s><td>%s</td><td>%d</td><td>%s</td><td>%s</td>
                             <td>%s</td><td>%s</td><td>%s</td></tr>',
@@ -110,8 +125,14 @@ class BadScanTool extends FannieRESTfulPage
                             (!empty($row['vend']) ? "Yes ({$row['vendorName']} {$row['vend']})" : 'No'),
                             (!empty($row['srp']) ? $row['srp'] . $fixButton : 'n/a')
             );
+            $scanCount += $row['instances'];
         }
         $ret .= '</table>';
+
+
+        $ret .= '<div id="ratio">';
+        $ret .= sprintf('Approx. bad scan rate: %.2f%%', ((float)$scanCount) / ((float)$data['itemTTL']) * 100);
+        $ret .= '</div>';
 
         return $ret;
     }
@@ -127,9 +148,6 @@ function showAll() {
 function showFixable() {
     $('#scantable tr').each(function(){
         $(this).hide();
-    });
-    $('tr.fixed').each(function(){
-        $(this).show();
     });
     $('tr.fixable').each(function(){
         $(this).show();
@@ -165,6 +183,10 @@ function showMultiple() {
             }
             tr.fixable a, tr.semiFixable a {
                 color: white;
+            }
+            div#ratio {
+                margin: 10px;
+                font-size: 125%;
             }
         ';
     }
