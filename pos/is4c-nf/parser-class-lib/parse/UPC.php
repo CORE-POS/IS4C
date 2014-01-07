@@ -58,7 +58,13 @@ class UPC extends Parser {
 			return $ret;
 		}
 
-		$entered = str_replace(".", " ", $entered);
+        // leading/trailing whitespace creates issues
+        $entered = trim($entered);
+
+        // 6Jan14 - I have no idea why this is here
+        // unless some else does, it's probably legacy
+        // cruft. spaces in UPCs are bad.
+		//$entered = str_replace(".", " ", $entered);
 
 		$quantity = $CORE_LOCAL->get("quantity");
 		if ($CORE_LOCAL->get("quantity") == 0 && $CORE_LOCAL->get("multiple") == 0) $quantity = 1;
