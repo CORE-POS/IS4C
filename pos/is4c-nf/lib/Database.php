@@ -441,7 +441,7 @@ static public function uploadtoServer()
    @param $table_name the table
    @param $table2 is provided, it match columns from
     local.table_name against remote.table2
-   @return an array of column names
+   @return [string] comma separated list of column names
 */
 static public function getMatchingColumns($connection,$table_name,$table2="")
 {
@@ -474,7 +474,7 @@ static public function getMatchingColumns($connection,$table_name,$table2="")
     already connected
    @param $table1 a database table
    @param $table2 a database table
-   @return an array of column names common to both tables
+   @return [string] comma separated list of column names
  */
 static public function localMatchingColumns($connection,$table1,$table2)
 {
