@@ -99,10 +99,16 @@ class DTransactionsModel extends BasicModel
         }
 
         $this->name = 'suspended';
+        $tmp1 = $this->columns['store_row_id'];
+        $tmp2 = $this->columns['pos_row_id'];
+        unset($this->columns['store_row_id']);
+        unset($this->columns['pos_row_id']);
         $chk = parent::normalize($db_name, $mode, $doCreate);
         if ($chk !== false) {
             $trans_adds += $chk;
         }
+        $this->columns['pos_row_id'] = $tmp2;
+        $this->columns['store_row_id'] = $tmp1;
 
         $this->connection = FannieDB::get($FANNIE_ARCHIVE_DB);
         if ($FANNIE_ARCHIVE_METHOD == 'partitions') {
