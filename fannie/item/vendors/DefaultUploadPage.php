@@ -44,13 +44,13 @@ class DefaultUploadPage extends FannieUploadPage {
 			'name' => 'srp',
 			'display_name' => 'SRP',
 			'default' => 1,
-			'required' => True
+			'required' => false
 		),
 		'brand' => array(
 			'name' => 'brand',
 			'display_name' => 'Brand',
 			'default' => 2,
-			'required' => True
+			'required' => false,
 		),
 		'desc' => array(
 			'name' => 'desc',
@@ -68,19 +68,19 @@ class DefaultUploadPage extends FannieUploadPage {
 			'name' => 'qty',
 			'display_name' => 'Case Qty',
 			'default' => 5,
-			'required' => True
+			'required' => true
 		),
 		'size' => array(
 			'name' => 'size',
 			'display_name' => 'Unit Size',
 			'default' => 6,
-			'required' => False
+			'required' => false
 		),
 		'cost' => array(
 			'name' => 'cost',
 			'display_name' => 'Case Cost',
 			'default' => 7,
-			'required' => True
+			'required' => true
 		)
 	);
 
@@ -125,21 +125,28 @@ class DefaultUploadPage extends FannieUploadPage {
 			if (!isset($data[$UPC])) continue;
 
 			// grab data from appropriate columns
-			$sku = $data[$SKU];
-			$brand = $data[$BRAND];
+			$sku = ($SKU === false) ? '' : $data[$SKU];
+			$brand = ($BRAND === false) ? '' : $data[$BRAND];
 			$description = $data[$DESCRIPTION];
 			$qty = $data[$QTY];
-			$size = $data[$SIZE1];
-			$upc = substr($data[$UPC],0,13);
+			$size = ($SIZE1 === false) ? '' : $data[$SIZE1];
+            $upc = $data[$UPC];
+            $upc = str_replace(' ', '', $upc);
+            $upc = str_replace('-', '', $upc);
+            if (strlen($upc) > 13) {
+                $upc = substr($upc, 0, 13);
+            } else {
+                $upc = str_pad($upc, 13, '0', STR_PAD_LEFT);
+            }
 			// zeroes isn't a real item, skip it
 			if ($upc == "0000000000000")
 				continue;
 			if ($_SESSION['vUploadCheckDigits'])
 				$upc = '0'.substr($upc,0,12);
-			$category = $data[$CATEGORY];
+			$category = ($CATEGORY === false) ? 0 : $data[$CATEGORY];
 			$reg = trim($data[$REG_COST]);
 			$net = trim($data[$NET_COST]);
-			$srp = trim($data[$SRP]);
+			$srp = ($SRP === false) ? '' : trim($data[$SRP]);
 			// can't process items w/o price (usually promos/samples anyway)
 			if (empty($reg) or empty($net) or empty($srp))
 				continue;
@@ -159,17 +166,19 @@ class DefaultUploadPage extends FannieUploadPage {
 			// this will catch the 'label' line in the first CSV split
 			// since the splits get returned in file system order,
 			// we can't be certain *when* that chunk will come up
-			if (!is_numeric($reg) or !is_numeric($net) or !is_numeric($srp))
+			if (!is_numeric($reg) or !is_numeric($net))
 				continue;
 
 			// need unit cost, not case cost
 			$reg_unit = $reg / $qty;
 
-			$args = array($brand,($sku===False?'':$sku),($size===False?'':$size),
+			$args = array($brand, $sku, $size,
 					$upc,$qty,$reg_unit,$description,$category,$VENDOR_ID);
 			$dbc->exec_statement($itemP,$args);
 
-			$dbc->exec_statement($srpP,array($VENDOR_ID,$upc,$srp));
+            if (is_numeric($srp)) {
+                $dbc->exec_statement($srpP,array($VENDOR_ID,$upc,$srp));
+            }
 		}
 
 		return True;
