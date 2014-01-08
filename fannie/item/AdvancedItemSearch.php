@@ -143,6 +143,30 @@ class AdvancedItemSearch extends FannieRESTfulPage
             }
         }
 
+        $tax = FormLib::get('tax');
+        if ($tax !== '') {
+            $where .= ' AND p.tax=? ';
+            $args[] = $tax;
+        }
+
+        $local = FormLib::get('local');
+        if ($local !== '') {
+            $where .= ' AND p.local=? ';
+            $args[] = $local;
+        }
+
+        $fs = FormLib::get('fs');
+        if ($fs !== '') {
+            $where .= ' AND p.foodstamp=? ';
+            $args[] = $fs;
+        }
+
+        $discount = FormLib::get('discountable');
+        if ($discount !== '') {
+            $where .= ' AND p.discount=? ';
+            $args[] = $discount;
+        }
+
         $dbc = FannieDB::get($FANNIE_OP_DB);
         $query = 'SELECT p.upc, p.description FROM ' . $from . ' WHERE ' . $where;
         $prep = $dbc->prepare($query);
@@ -230,7 +254,9 @@ class AdvancedItemSearch extends FannieRESTfulPage
     private function streamOutput($data) {
         $ret = '<table cellspacing="0" cellpadding="4" border="1">';
         foreach($data as $upc => $desc) {
-            $ret .= sprintf('<tr><td>%s</td><td>%s</td></tr>', $upc, $desc);
+            $ret .= sprintf('<tr><td><a href="ItemEditorPage.php?searchupc=%s" target="_advs%s">%s</a></td>
+                            <td>%s</td></tr>', 
+                            $upc, $upc, $upc, $desc);
         }
         $ret .= '</table>';
 
@@ -316,6 +342,29 @@ function getResults() {
 
         $ret .= '</tr><tr>';
 
+        $ret .= '<th>Tax</th><td><select name="tax"><option value="">Any</option><option value="0">NoTax</option>';
+        $taxes = $dbc->query('SELECT id, description FROM taxrates');
+        while($row = $dbc->fetch_row($taxes)) {
+            $ret .= sprintf('<option value="%d">%s</option>', $row['id'], $row['description']);
+        }
+        $ret .= '</select></td>';
+
+        $ret .= '<th>Local</th><td colspan="4"><select name="local"><option value="">Any</option><option value="0">No</option>';
+        $origins = $dbc->query('SELECT originID, shortName FROM originName WHERE local=1');
+        while($row = $dbc->fetch_row($origins)) {
+            $ret .= sprintf('<option value="%d">%s</option>', $row['originID'], $row['shortName']);
+        }
+        $ret .= '</select>';
+
+        $ret .= '&nbsp;&nbsp;&nbsp;';
+        $ret .= '<b>FS</b>: <select name="fs"><option value="">Any</option><option value="1">Yes</option><option value="0">No</option></select>';
+        $ret .= '&nbsp;&nbsp;&nbsp;';
+        $ret .= '<b>Discountable</b>: <select name="discountable"><option value="">Any</option><option value="1">Yes</option><option value="0">No</option></select>';
+
+        $ret .= '</td>'; // can fit another item here
+
+        $ret .= '</tr><tr>';
+
         $ret .= '<th>On Sale</th><td><select name="onsale"><option value="">Any</option>';
         $ret .= '<option value="1">Yes</option><option value="0">No</option>';
         $ret .= '</td>';
@@ -328,10 +377,10 @@ function getResults() {
         $ret .= '</select></td>';
 
         $ret .= '<td colspan="3">';
-        $ret .= '<input type="checkbox" name="sale_all" value="1" /> <label for="sale_all">All Sales</label> ';
-        $ret .= '<input type="checkbox" name="sale_past" value="1" /> <label for="sale_past">Past</label> ';
-        $ret .= '<input type="checkbox" name="sale_current" value="1" /> <label for="sale_current">Current</label> ';
-        $ret .= '<input type="checkbox" name="sale_upcoming" value="1" /> <label for="sale_upcoming">Upcoming</label> ';
+        $ret .= '<input type="checkbox" name="sale_all" id="sale_all" value="1" /> <label for="sale_all">All Sales</label> ';
+        $ret .= '<input type="checkbox" name="sale_past" id="sale_past" value="1" /> <label for="sale_past">Past</label> ';
+        $ret .= '<input type="checkbox" name="sale_current" id="sale_current" value="1" /> <label for="sale_current">Current</label> ';
+        $ret .= '<input type="checkbox" name="sale_upcoming" id="sale_upcoming" value="1" /> <label for="sale_upcoming">Upcoming</label> ';
         
         $ret .= '</tr>';
 
