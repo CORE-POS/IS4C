@@ -29,6 +29,8 @@ class AdvancedItemSearch extends FannieRESTfulPage
     protected $header = 'Advanced Search';
     protected $title = 'Advanced Search';
 
+    protected $window_dressing = false;
+
     function preprocess()
     {
         $this->__routes[] = 'get<search>';
@@ -44,7 +46,9 @@ class AdvancedItemSearch extends FannieRESTfulPage
           Get a preliminary item set by querying products table
         */
 
-        $from = 'products AS p';
+        $from = 'products AS p 
+                LEFT JOIN departments AS d ON p.department=d.dept_no
+                LEFT JOIN MasterSuperDepts AS m ON p.department=m.dept_ID';
         $where = '1=1';
         $args = array();
 
@@ -167,14 +171,22 @@ class AdvancedItemSearch extends FannieRESTfulPage
             $args[] = $discount;
         }
 
+        if ($where == '1=1') {
+            echo 'Too many results';
+            return false;
+        }
+
         $dbc = FannieDB::get($FANNIE_OP_DB);
-        $query = 'SELECT p.upc, p.description FROM ' . $from . ' WHERE ' . $where;
+        $query = 'SELECT p.upc, p.description, m.super_name, p.department, d.dept_name,
+                 p.normal_price, p.special_price,
+                 CASE WHEN p.discounttype > 0 THEN \'X\' ELSE \'-\' END as onSale
+                 FROM ' . $from . ' WHERE ' . $where;
         $prep = $dbc->prepare($query);
         $result = $dbc->execute($prep, $args);
 
         $items = array();
         while($row = $dbc->fetch_row($result)) {
-            $items[$row['upc']] = $row['description'];
+            $items[$row['upc']] = $row;
         }
 
         /**
@@ -210,7 +222,7 @@ class AdvancedItemSearch extends FannieRESTfulPage
                 } else if ($now == 1 && $next == 1) {
                     $where .= ' AND b.endDate >= ' . $dbc->curdate();
                 } else if ($now == 1) {
-                    $where .= ' AND b.endDate <= ' . $dbc->curdate();
+                    $where .= ' AND b.endDate >= ' . $dbc->curdate() . ' AND b.startDate <= ' . $dbc->curdate();
                 } else if ($next == 1) {
                     $where .= ' AND b.startDate > ' .$dbc->curdate();
                 }
@@ -253,10 +265,31 @@ class AdvancedItemSearch extends FannieRESTfulPage
 
     private function streamOutput($data) {
         $ret = '<table cellspacing="0" cellpadding="4" border="1">';
-        foreach($data as $upc => $desc) {
-            $ret .= sprintf('<tr><td><a href="ItemEditorPage.php?searchupc=%s" target="_advs%s">%s</a></td>
-                            <td>%s</td></tr>', 
-                            $upc, $upc, $upc, $desc);
+        $ret .= '<tr>
+                <th><input type="checkbox" onchange="toggleAll(this, \'.upcCheckBox\');" /></th>
+                <th>UPC</th><th>Desc</th><th>Super</th><th>Dept</th>
+                <th>Retail</th><th>On Sale</th><th>Sale</th>
+                </tr>';
+        foreach($data as $upc => $record) {
+            $ret .= sprintf('<tr>
+                            <td><input type="checkbox" name="u[]" class="upcCheckBox" value="%s" /></td>
+                            <td><a href="ItemEditorPage.php?searchupc=%s" target="_advs%s">%s</a></td>
+                            <td>%s</td>
+                            <td>%s</td>
+                            <td>%d %s</td>
+                            <td>$%.2f</td>
+                            <td>%s</td>
+                            <td>$%.2f</td>
+                            </tr>', 
+                            $upc,
+                            $upc, $upc, $upc,
+                            $record['description'],
+                            $record['super_name'],
+                            $record['department'], $record['dept_name'],
+                            $record['normal_price'],
+                            $record['onSale'],
+                            $record['special_price']
+            );
         }
         $ret .= '</table>';
 
@@ -279,6 +312,34 @@ function getResults() {
         }
     });
 }
+function toggleAll(elem, selector) {
+    if (elem.checked) {
+        $(selector).attr('checked', 'checked');
+    } else {
+        $(selector).removeAttr('checked');
+    }
+}
+// helper: add all selected upc values to hidden form
+// as hidden input tags. the idea is to submit UPCs
+// to the handling page via POST because the amount of
+// data might not fit in the query string. the hidden 
+// form also opens in a new tab/window so search
+// results are not lost
+function getItems() {
+    $('#actionForm').empty();
+    var ret = false;
+    $('.upcCheckBox:checked').each(function(){
+        $('#actionForm').append('<input type="hidden" name="u[]" value="' + $(this).val() + '" />');
+        ret = true;
+    });
+    return ret;
+}
+function goToBatch() {
+    if (getItems()) {
+        $('#actionForm').attr('action', '../batches/BatchFromSearch.php');
+        $('#actionForm').submit();
+    }
+}
         <?php
         return ob_get_clean();
     }
@@ -288,8 +349,12 @@ function getResults() {
         global $FANNIE_OP_DB, $FANNIE_URL;
         $dbc = FannieDB::get($FANNIE_OP_DB);
         $this->add_script($FANNIE_URL.'src/CalendarControl.js');
+        $this->add_script($FANNIE_URL.'src/jquery/jquery.js');
+        $this->add_css_file($FANNIE_URL.'src/style.css');
 
-        $ret = '<form method="post" id="searchform" onsubmit="getResults(); return false;">';
+        $ret = '<div style="float:left;">';
+
+        $ret .= '<form method="post" id="searchform" onsubmit="getResults(); return false;">';
         $ret .= '<table>';    
 
         $ret .= '<tr>';
@@ -365,11 +430,13 @@ function getResults() {
 
         $ret .= '</tr><tr>';
 
-        $ret .= '<th>On Sale</th><td><select name="onsale"><option value="">Any</option>';
+        $ret .= '<th>On Sale</th><td><select name="onsale"
+                    onchange="if(this.value===\'\') $(\'.saleField\').attr(\'disabled\',\'disabled\'); else $(\'.saleField\').removeAttr(\'disabled\');" >
+                    <option value="">Any</option>';
         $ret .= '<option value="1">Yes</option><option value="0">No</option>';
         $ret .= '</td>';
 
-        $ret .= '<th>Sale Type</th><td><select name="saletype"><option value="">Any</option>';
+        $ret .= '<th>Sale Type</th><td><select disabled class="saleField" name="saletype"><option value="">Any</option>';
         $vendors = $dbc->query('SELECT batchTypeID, typeDesc FROM batchType WHERE discType <> 0');
         while($row = $dbc->fetch_row($vendors)) {
             $ret .= sprintf('<option value="%d">%s</option>', $row['batchTypeID'], $row['typeDesc']);
@@ -377,16 +444,30 @@ function getResults() {
         $ret .= '</select></td>';
 
         $ret .= '<td colspan="3">';
-        $ret .= '<input type="checkbox" name="sale_all" id="sale_all" value="1" /> <label for="sale_all">All Sales</label> ';
-        $ret .= '<input type="checkbox" name="sale_past" id="sale_past" value="1" /> <label for="sale_past">Past</label> ';
-        $ret .= '<input type="checkbox" name="sale_current" id="sale_current" value="1" /> <label for="sale_current">Current</label> ';
-        $ret .= '<input type="checkbox" name="sale_upcoming" id="sale_upcoming" value="1" /> <label for="sale_upcoming">Upcoming</label> ';
+        $ret .= '<input type="checkbox" disabled class="saleField" name="sale_all" id="sale_all" value="1" /> 
+                <label for="sale_all">All Sales</label> ';
+        $ret .= '<input type="checkbox" disabled class="saleField" name="sale_past" id="sale_past" value="1" /> 
+                <label for="sale_past">Past</label> ';
+        $ret .= '<input type="checkbox" disabled class="saleField" name="sale_current" id="sale_current" value="1" /> 
+                <label for="sale_current">Current</label> ';
+        $ret .= '<input type="checkbox" disabled class="saleField" name="sale_upcoming" id="sale_upcoming" value="1" /> 
+                <label for="sale_upcoming">Upcoming</label> ';
         
         $ret .= '</tr>';
 
         $ret .= '</table>';
         $ret .= '<input type="submit" value="Find Items" />';
         $ret .= '</form>';
+
+        $ret .= '</div>';
+        $ret .= '<div style="float:left;">';
+        $ret .= '<fieldset><legend>Selected Items</legend>';
+        $ret .= '<input type="submit" value="Create Price or Sale Batch" onclick="goToBatch();" />';
+        $ret .= '</fieldset>';
+        $ret .= '<form method="post" id="actionForm" target="__advs_act"></form>';
+        $ret .= '</div>';
+        
+        $ret .= '<div style="clear:left;"></div>';
 
         $ret .= '<hr />';
 
