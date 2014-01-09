@@ -22,15 +22,20 @@
 *********************************************************************************/
 
 include('../../config.php');
+/*
 include($FANNIE_ROOT.'src/mysql_connect.php');
 include($FANNIE_ROOT.'src/select_dlog.php');
 include($FANNIE_ROOT.'classlib2.0/FannieReportPage.php');
 include($FANNIE_ROOT.'classlib2.0/lib/FormLib.php');
+*/
+include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+
 
 class NonMovementReport extends FannieReportPage {
 
 	function preprocess(){
-		global $dbc;
+		global $FANNIE_OP_DB, $FANNIE_WINDOW_DRESSING;
+		$dbc = FannieDB::get($FANNIE_OP_DB);
 		/**
 		  Set the page header and title, enable caching
 		*/
@@ -67,7 +72,10 @@ class NonMovementReport extends FannieReportPage {
 			  set up headers
 			*/
 			$this->content_function = "report_content";
-			$this->has_menus(False);
+			if ( isset($FANNIE_WINDOW_DRESSING) && $FANNIE_WINDOW_DRESSING == True )
+				$this->has_menus(True);
+			else
+				$this->has_menus(False);
 			$this->report_headers = array('UPC','Description','Dept#','Dept','');
 		
 			/**
@@ -91,14 +99,16 @@ class NonMovementReport extends FannieReportPage {
 	}
 
 	function fetch_report_data(){
-		global $dbc, $FANNIE_ARCHIVE_DB;
+		global $FANNIE_OP_DB, $FANNIE_ARCHIVE_DB;
+		$dbc = FannieDB::get($FANNIE_OP_DB);
 		$date1 = FormLib::get_form_value('date1',date('Y-m-d'));
 		$date2 = FormLib::get_form_value('date2',date('Y-m-d'));
 		$dept1 = FormLib::get_form_value('deptStart',0);
 		$dept2 = FormLib::get_form_value('deptEnd',0);
 
 		$tempName = "TempNoMove";
-		$dlog = select_dlog($date1,$date2);
+		$dlog = DTransactionsModel::select_dlog($date1,$date2);
+		//$dlog = select_dlog($date1,$date2);
 		$sumTable = $FANNIE_ARCHIVE_DB.$dbc->sep()."sumUpcSalesByDay";
 
 		$tempQ = $dbc->prepare_statement("CREATE TABLE $tempName (upc varchar(13))");
@@ -148,7 +158,8 @@ class NonMovementReport extends FannieReportPage {
 	}
 	
 	function form_content(){
-		global $dbc;
+		global $FANNIE_OP_DB;
+		$dbc = FannieDB::get($FANNIE_OP_DB);
 		$deptsQ = $dbc->prepare_statement("select dept_no,dept_name from departments order by dept_no");
 		$deptsR = $dbc->exec_statement($deptsQ);
 		$deptsList = "";

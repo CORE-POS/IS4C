@@ -22,16 +22,20 @@
 *********************************************************************************/
 
 include('../../config.php');
+/*
 include($FANNIE_ROOT.'src/mysql_connect.php');
 include($FANNIE_ROOT.'src/select_dlog.php');
 include($FANNIE_ROOT.'classlib2.0/FannieReportPage.php');
 include($FANNIE_ROOT.'classlib2.0/lib/FormLib.php');
+*/
+include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
 class MonthOverMonthReport extends FannieReportPage {
 
-	var $months;
+	private $months;
 	
 	function preprocess(){
+		global $FANNIE_WINDOW_DRESSING;
 		/**
 		  Set the page header and title, enable caching
 		*/
@@ -47,7 +51,10 @@ class MonthOverMonthReport extends FannieReportPage {
 			  set up headers
 			*/
 			$this->content_function = "report_content";
-			$this->has_menus(False);
+			if ( isset($FANNIE_WINDOW_DRESSING) && $FANNIE_WINDOW_DRESSING == True )
+				$this->has_menus(True);
+			else
+				$this->has_menus(False);
 			$this->report_headers = array('#','Description');
 			// build headers and keys off span of months
 			$this->months = array();
@@ -77,7 +84,8 @@ class MonthOverMonthReport extends FannieReportPage {
 	}
 
 	function fetch_report_data(){
-		global $dbc, $FANNIE_ARCHIVE_DB;
+		global $FANNIE_OP_DB, $FANNIE_ARCHIVE_DB;
+		$dbc = FannieDB::get($FANNIE_OP_DB);
 		$month1 = FormLib::get_form_value('month1',date('n'));
 		$month2 = FormLib::get_form_value('month2',date('n'));
 		$year1 = FormLib::get_form_value('year1',date('Y'));
@@ -85,7 +93,7 @@ class MonthOverMonthReport extends FannieReportPage {
 
 		$date1 = date('Y-m-d',mktime(0,0,0,$month1,1,$year1));
 		$date2 = date('Y-m-t',mktime(0,0,0,$month2,1,$year2));
-		$dlog = select_dlog($date1,$date2);
+		$dlog = DTransactionsModel::select_dlog($date1,$date2);
 		$date1 .= ' 00:00:00';
 		$date2 .= ' 00:00:00';
 
@@ -146,7 +154,8 @@ class MonthOverMonthReport extends FannieReportPage {
 	}
 	
 	function form_content(){
-		global $dbc;
+		global $FANNIE_OP_DB;
+		$dbc = FannieDB::get($FANNIE_OP_DB);
 		$depts = array();
 		$q = $dbc->prepare_statement("SELECT dept_no,dept_name FROM departments ORDER BY dept_no");
 		$r = $dbc->exec_statement($q);

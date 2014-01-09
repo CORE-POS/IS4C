@@ -31,6 +31,7 @@ include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 class DepartmentMovementReport extends FannieReportPage {
 
 	function preprocess(){
+		global $FANNIE_WINDOW_DRESSING;
 		/**
 		  Set the page header and title, enable caching
 		*/
@@ -46,8 +47,11 @@ class DepartmentMovementReport extends FannieReportPage {
 			  set up headers
 			*/
 			$this->content_function = "report_content";
-			$this->has_menus(False);
-		
+			if ( isset($FANNIE_WINDOW_DRESSING) && $FANNIE_WINDOW_DRESSING == True )
+				$this->has_menus(True);
+			else
+				$this->has_menus(False);
+
 			/**
 			  Check if a non-html format has been requested
 			*/
@@ -86,7 +90,9 @@ class DepartmentMovementReport extends FannieReportPage {
 	  Lots of options on this report.
 	*/
 	function fetch_report_data(){
-		global $dbc, $FANNIE_ARCHIVE_DB;
+		global $FANNIE_ARCHIVE_DB, $FANNIE_OP_DB, $FANNIE_TRANS_DB;
+		$dbc = FannieDB::get($FANNIE_OP_DB);
+
 		$date1 = FormLib::get_form_value('date1',date('Y-m-d'));
 		$date2 = FormLib::get_form_value('date2',date('Y-m-d'));
 		$deptStart = FormLib::get_form_value('deptStart','');
@@ -291,7 +297,9 @@ class DepartmentMovementReport extends FannieReportPage {
 	}
 
 	function form_content(){
-		global $dbc;
+		global $FANNIE_OP_DB;
+		$dbc = FannieDB::get($FANNIE_OP_DB);
+
 		$deptsQ = $dbc->prepare_statement("select dept_no,dept_name from departments order by dept_no");
 		$deptsR = $dbc->exec_statement($deptsQ);
 		$deptsList = "";
@@ -312,7 +320,7 @@ class DepartmentMovementReport extends FannieReportPage {
 <form method = "get" action="DepartmentMovementReport.php">
 	<table border="0" cellspacing="0" cellpadding="5">
 		<tr>
-			<td><b>Select Buyer/Dept</b></td>
+			<td><b>Select Buyer<br />(SuperDept)</b></td>
 			<td><select id=buyer name=buyer>
 			   <option value=0 >
 			   <?php echo $deptSubList; ?>
@@ -325,11 +333,11 @@ class DepartmentMovementReport extends FannieReportPage {
 		</tr>
 		<tr>
 			<td colspan=5><i>Selecting a Buyer/Dept overrides Department Start/Department End, but not Date Start/End.
-			To run reports for a specific department(s) leave Buyer/Dept or set it to 'blank'</i></td>
+			<br />To run reports for a specific department(s) leave Buyer/SuperDept empty or set it to 'blank'</i></td>
 		</tr>
 		<tr> 
 			<td> <p><b>Department Start</b></p>
-			<p><b>End</b></p></td>
+			<p><b>Department End</b></p></td>
 			<td> <p>
  			<select id=deptStartSel onchange="swap('deptStartSel','deptStart');">
 			<?php echo $deptsList ?>
@@ -345,7 +353,7 @@ class DepartmentMovementReport extends FannieReportPage {
 
 			 <td>
 			<p><b>Date Start</b> </p>
-		         <p><b>End</b></p>
+		         <p><b>Date End</b></p>
 		       </td>
 		            <td>
 		             <p>

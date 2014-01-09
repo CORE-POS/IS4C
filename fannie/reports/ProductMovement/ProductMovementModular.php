@@ -30,6 +30,7 @@ include($FANNIE_ROOT.'classlib2.0/lib/FormLib.php');
 class ProductMovementModular extends FannieReportPage {
 
 	function preprocess(){
+		global $FANNIE_WINDOW_DRESSING;
 		/**
 		  Set the page header and title, enable caching
 		*/
@@ -45,7 +46,10 @@ class ProductMovementModular extends FannieReportPage {
 			  set up headers
 			*/
 			$this->content_function = "report_content";
-			$this->has_menus(False);
+			if ( isset($FANNIE_WINDOW_DRESSING) && $FANNIE_WINDOW_DRESSING == True )
+				$this->has_menus(True);
+			else
+				$this->has_menus(False);
 			$this->report_headers = array('Date','UPC','Description','Qty','$');
 		
 			/**
@@ -63,7 +67,8 @@ class ProductMovementModular extends FannieReportPage {
 	}
 
 	function fetch_report_data(){
-		global $dbc, $FANNIE_ARCHIVE_DB;
+		global $FANNIE_OP_DB, $FANNIE_ARCHIVE_DB;
+		$dbc = FannieDB::get($FANNIE_OP_DB);
 		$date1 = FormLib::get_form_value('date1',date('Y-m-d'));
 		$date2 = FormLib::get_form_value('date2',date('Y-m-d'));
 		$upc = FormLib::get_form_value('upc','0');
@@ -164,7 +169,7 @@ class ProductMovementModular extends FannieReportPage {
 			</td>
 		</tr>
 		<tr>
-			<th>End</th>
+			<th>Date End</th>
 			<td>
 		                <input type=text size=14 id=date2 name=date2 onfocus="this.value='';showCalendarControl(this);">
 		       </td>
