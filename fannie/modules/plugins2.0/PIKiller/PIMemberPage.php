@@ -221,6 +221,10 @@ class PIMemberPage extends PIKillerPage {
 		echo "<tr>";
 		echo "<td class=\"greenbg yellowtxt\">Owner Num</td>";
 		echo "<td class=\"greenbg yellowtxt\">".$this->card_no."</td>";
+
+        if (!isset($this->__models['custdata'][0])) {
+            $this->__models['custdata'][0] = new CustdataModel($dbc);
+        }
 		
 		$status = $this->__models['custdata'][0]->Type();
 		if($status == 'PC') $status='ACTIVE';
@@ -371,7 +375,7 @@ class PIMemberPage extends PIKillerPage {
 		echo '</tr>';
 
 		echo '<tr>';
-		echo '<td>';
+		echo '<td colspan="3">';
 		if (FormLib::get_form_value('edit',False) === False){
 			if ($this->current_user){
 				echo '<input type="hidden" name="edit" />';
@@ -381,6 +385,10 @@ class PIMemberPage extends PIKillerPage {
 				echo '<input type="hidden" name="login" />';
 				echo '<input type="submit" value="Log In" />';
 			}
+            echo '&nbsp;&nbsp;';
+            echo '<a href="PIMemberPage.php?id=' . ($this->card_no - 1) . '">Prev Mem</a>';
+            echo '&nbsp;&nbsp;';
+            echo '<a href="PIMemberPage.php?id=' . ($this->card_no + 1) . '">Next Mem</a>';
 		}
 		else
 			echo '<input type="submit" value="Save Member" />';

@@ -64,8 +64,8 @@ elseif (isset($_REQUEST['deleteComment'])){
 elseif (isset($_REQUEST['delEntry'])){
 	$entryID = sprintf("%d",$_REQUEST['delEntry']);
 	$empID = sprintf("%d",$_REQUEST['empID']);
-	$q = $db->prepare("DELETE FROM evalScores WHERE id=? AND empID=?");
 	$db = hours_dbconnect();
+	$q = $db->prepare("DELETE FROM evalScores WHERE id=? AND empID=?");
 	$db->execute($q, array($entryID, $empID));
 
 	echo getHistory($empID);

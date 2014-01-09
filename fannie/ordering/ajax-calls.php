@@ -285,7 +285,7 @@ switch ($_REQUEST['action']) {
         $nid = duplicateOrder($oid);
         echo $nid;
         break;
-    case 'splitOrder':
+    case 'SplitOrder':
         $oid = sprintf("%d",$_REQUEST['orderID']);
         $tid = sprintf("%d",$_REQUEST['transID']);
         splitOrder($oid,$tid);
