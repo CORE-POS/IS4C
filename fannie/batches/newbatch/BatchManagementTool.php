@@ -1309,6 +1309,7 @@ class BatchManagementTool extends FanniePage
         global $FANNIE_URL;
         $this->add_script('index.js');
         $this->add_script($FANNIE_URL.'src/CalendarControl.js');
+        $this->add_script($FANNIE_URL.'src/jquery/jquery.js');
         $this->add_css_file('index.css');
         $this->add_css_file($FANNIE_URL.'src/style.css');
         ob_start();
@@ -1352,6 +1353,11 @@ class BatchManagementTool extends FanniePage
         $ret .= "<input type=hidden id=passtojsowners value=\"$ownerstr\" />";
         $ret .= "<input type=hidden id=buttonimgpath value=\"{$FANNIE_URL}src/img/buttons/\" />";
         $ret .= '</body></html>';
+
+        if (FormLib::get('startAt', 0 ) != 0) {
+            $showID = FormLib::get('startAt');
+            $this->add_onload_command("showBatch($showID, false);\n");
+        }
 
         return $ret;
     }
