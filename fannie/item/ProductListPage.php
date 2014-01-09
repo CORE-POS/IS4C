@@ -43,7 +43,7 @@ class ProductListPage extends FanniePage {
 	private $excel = False;
 
 	function preprocess(){
-		global $FANNIE_URL;
+		global $FANNIE_URL, $FANNIE_WINDOW_DRESSING;
 
 		$this->canDeleteItems = validateUserQuiet('delete_items');
 		$this->canEditItems = validateUserQuiet('pricechange');
@@ -57,7 +57,10 @@ class ProductListPage extends FanniePage {
 
 		if (FormLib::get_form_value('supertype') !== ''){
 			$this->mode = 'list';
-			$this->window_dressing = False;
+			if ( isset($FANNIE_WINDOW_DRESSING) && $FANNIE_WINDOW_DRESSING == True )
+				$this->has_menus(True);
+			else
+				$this->window_dressing = False;
 			if (!$this->excel)
 				$this->add_script($FANNIE_URL.'src/jquery/jquery.js');	
 		}
@@ -321,7 +324,7 @@ class ProductListPage extends FanniePage {
 		$order = 'dept_name';
 		if ($sort === 'UPC') $order = 'i.upc';	
 		elseif ($sort === 'Description') $order = 'i.description';
-		elseif ($sort === 'Supplier') $order = 'x.distributor';
+		elseif ($sort === 'Vendor') $order = 'x.distributor';
 		elseif ($sort === 'Price') $order = 'i.normal_price';
 
 		$ret = 'Report sorted by '.$sort.'<br />';
@@ -339,7 +342,7 @@ class ProductListPage extends FanniePage {
 		$page_url = sprintf('ProductListPage.php?supertype=%s&deptStart=%s&deptEnd=%s&deptSub=%s&manufacturer=%s&mtype=%s',
 				$supertype, $deptStart, $deptEnd, $super, $manufacturer, $mtype);
 		if (!$this->excel){
-			$ret .= sprintf('<a href="%s&sort=%s&excel=yes">Save to Excel</a><br />',
+			$ret .= sprintf('<a href="%s&sort=%s&excel=yes">Save to Excel</a> &nbsp; &nbsp; <a href="javascript:history:back();">Back</a><br />',
 				$page_url, $sort);
 		}
 
@@ -416,12 +419,12 @@ class ProductListPage extends FanniePage {
 			$ret .= sprintf('<tr><th><a href="%s&sort=UPC">UPC</a></th>
 					<th><a href="%s&sort=Description">Description</a></th>
 					<th><a href="%s&sort=Department">Department</a></th>
-					<th><a href="%s&sort=Supplier">Supplier</a></th>
+					<th><a href="%s&sort=Vendor">Vendor</a></th>
 					<th><a href="%s&sort=Price">Price</a></th>',
 					$page_url,$page_url,$page_url,$page_url,$page_url);
 		}
 		else
-			$ret .= "<th>UPC</th><th>Description</th><th>Dept</th><th>Supplier</th><th>Price</th>";
+			$ret .= "<th>UPC</th><th>Description</th><th>Dept</th><th>Vendor</th><th>Price</th>";
 		$ret .= "<th>Tax</th><th>FS</th><th>Disc</th><th>Wg'd</th><th>Local</th>";
 		if (!$this->excel && $this->canEditItems !== False)
 			$ret .= '<th>&nbsp;</th>';
@@ -498,7 +501,7 @@ class ProductListPage extends FanniePage {
 			<label for="supertypeM">Manufacturer</label>
 		<table border="0" cellspacing="0" cellpadding="5">
 		<tr class=dept id=dept1>
-			<td valign=top><p><b>Buyer</b></p></td>
+			<td valign=top><p><b>Buyer<br />(SuperDept)</b></p></td>
 			<td><p><select name=deptSub>
 			<option value=0></option>
 			<?php
@@ -506,13 +509,14 @@ class ProductListPage extends FanniePage {
 				printf('<option value="%d">%s</option>',$id,$name);	
 			?>
 			</select></p>
-			<i>Selecting a Buyer/Dept overrides Department Start/Department End.
-			To run reports for a specific department(s) leave Buyer/Dept or set it to 'blank'</i></td>
+			<i>Selecting a Buyer/SuperDept overrides Department Start/Department End.
+			<br />To run reports for a specific department(s) leave Buyer/SuperDept empty or set it to 'blank'</i></td>
 
 		</tr>
-		<tr class=dept id=dept2> 
-			<td> <p><b>Department Start</b></p>
-			<p><b>End</b></p></td>
+		<tr class=dept id=dept2 valign=top> 
+			<td > <p><b>Department Start</b></p>
+			<p style='margin-top:1.5em;'>
+			<b>Department End</b></p></td>
 			<td> <p>
 			<select id=deptStartSelect onchange="$('#deptStart').val(this.value);">
 			<?php
@@ -532,8 +536,8 @@ class ProductListPage extends FanniePage {
 			<input type=text size= 5 id=deptEnd name=deptEnd value=1>
 			</p></td>
 		</tr>
-		<tr class=manu id=manu style="display:none;">
-			<td><p><b>Manufacturer</b></p>
+		<tr class=manu id=manu style="display:none;" valign=top>
+			<td style="text-align:top;"><p><b>Manufacturer</b></p>
 			<p></p></td>
 			<td><p>
 			<input type=text name=manufacturer />
