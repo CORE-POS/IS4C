@@ -176,6 +176,7 @@ class FannieReportPage extends FanniePage
             $data = unserialize(gzuncompress($cached));
             if ($data === false) {
                 $data = $this->fetch_report_data();
+                $this->freshenCache($data);
             }
         } else {
             $data = $this->fetch_report_data();
@@ -650,6 +651,18 @@ class FannieReportPage extends FanniePage
         }
 
         return $fixup;
+    }
+
+    /**
+      Helper: check default export args
+    */
+    protected function formatCheck()
+    {
+        if (FormLib::get('excel') === 'xls') {
+            $this->report_format = 'xls';
+        } elseif (FormLib::get('excel') === 'csv') {
+            $this->report_format = 'csv';
+        }
     }
 
     /**

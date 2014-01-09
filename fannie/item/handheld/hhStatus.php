@@ -22,7 +22,8 @@
 *********************************************************************************/
 
 include('../../config.php');
-include($FANNIE_ROOT.'src/mysql_connect.php');
+include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+$dbc = FannieDB::get($FANNIE_OP_DB);
 
 ?>
 <html><head><title>Item Status</title>
@@ -120,7 +121,7 @@ if(isset($_REQUEST['upc']) && !empty($_REQUEST['upc'])){
 			case 'UPC':
 			default:
 				$query .= "WHERE p.upc=?";
-				$args[] = str_pad($_REQUEST['upc'],13,'0',STR_PAD_LEFT);
+                $args[] = BarcodeLib::padUPC(FormLib::get('upc'));
 				break;
 			}
 		}

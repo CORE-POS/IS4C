@@ -3,14 +3,13 @@
 include('../../config.php');
 include($FANNIE_ROOT.'src/SQLManager.php');
 include('../db.php');
-include($FANNIE_ROOT.'src/select_dlog.php');
 
 if (isset($_GET['excel'])){
 	header('Content-Type: application/ms-excel');
 	header('Content-Disposition: attachment; filename="salesReport.xls"');
 }
 
-$dlog = select_dlog('2006-07-01','2008-06-30');
+$dlog = DTransactionsModel::selectDlog('2006-07-01','2008-06-30');
 
 echo "<table cellspacing=0 cellpadding=4 border=1>";
 echo "<tr><th>Date</th><th>Bulk</th><th>Cool</th><th>Deli</th>

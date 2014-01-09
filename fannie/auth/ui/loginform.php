@@ -39,17 +39,16 @@ if (isset($_GET['logout'])){
 }
 
 
-$auth_path = guesspath();
-include($auth_path."config.php");
+include($FANNIE_ROOT."config.php");
 
 if ($current_user){
-  include($auth_path."src/header.html");
+  include($FANNIE_ROOT."src/header.html");
   echo "You are logged in as $current_user<p />";
   if (isset($_GET['redirect'])){
 	echo "<b style=\"font-size:1.5em;\">It looks like you don't have permission to access this page</b><p />";
   }
   echo "<a href=menu.php>Main menu</a>  |  <a href=loginform.php?logout=yes>Logout</a>?";
-  include($auth_path."src/footer.html");
+  include($FANNIE_ROOT."src/footer.html");
 }
 else {
   if (isset($_POST['name'])){
@@ -68,10 +67,10 @@ else {
       header("Location: $redirect");
     }
     else {
-      include($auth_path."src/header.html");
+      include($FANNIE_ROOT."src/header.html");
       echo "<html><body bgcolor=cabb1e>";
       echo "Login failed. <a href=loginform.php?redirect=$redirect>Try again</a>?";
-      include($auth_path."src/footer.html");
+      include($FANNIE_ROOT."src/footer.html");
     }
   }
   else {
@@ -79,7 +78,7 @@ else {
     if (isset($_GET['redirect'])){
        $redirect = $_GET['redirect'];
     }
-    include($auth_path."src/header.html");
+    include($FANNIE_ROOT."src/header.html");
     if (isset($_GET['logout']))
 	echo "<blockquote><i>You've logged out</i></blockquote>";
     echo "<form action=loginform.php method=post>";
@@ -95,7 +94,7 @@ else {
     echo "<script type=text/javascript>";
     echo "document.forms[0].name.focus();";
     echo "</script>";
-    include($auth_path."src/footer.html");
+    include($FANNIE_ROOT."src/footer.html");
   }
 }
 

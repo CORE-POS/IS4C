@@ -123,9 +123,9 @@ class BasicPage {
 		echo "<link rel=\"stylesheet\" type=\"text/css\"
 		    href=\"{$my_url}/css/pos.css\">";
 		// include store css file if it exists
-		if (file_exists(dirname(__FILE__).'/../store.css')){
+		if (file_exists(dirname(__FILE__).'/../css/store.css')){
 			echo "<link rel=\"stylesheet\" type=\"text/css\"
-			    href=\"{$my_url}/store.css\">";
+			    href=\"{$my_url}/css/store.css\">";
 		}
 		echo "<script type=\"text/javascript\"
 			src=\"{$my_url}/js/jquery.js\"></script>";

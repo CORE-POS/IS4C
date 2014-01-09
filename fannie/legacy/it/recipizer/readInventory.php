@@ -5,8 +5,8 @@ require('dbconnect.php');
 $mysql = dbconnect();
 
 $itemID = 1;
-$clearQ = "delete from ingredients where id >= $itemID";
-$clearR = $mysql->query($clearQ,$mydb);
+$clearQ = $mysql->prepare("delete from ingredients where id >= ?");
+$clearR = $mysql->execute($clearQ,array($itemID),$mydb);
 
 
 if (!class_exists("SQLManager")) require_once($FANNIE_ROOT."src/SQLManager.php");
@@ -65,14 +65,14 @@ while ($w = $mssql->fetch_array($r)){
 	
 	$name = trim($w[0]);
 	if ($unit == "lb" || $unit == "oz" || $unit == "each"){
-		$insQ = "insert into ingredients values ($itemID,'$name',$total,'$unit',0,'tsp',$w[3])";
+		$insQ = $mysql->prepare("insert into ingredients values (?,?,?,?,0,'tsp',?)");
 		echo $insQ."<br />";
-		$insR = $mysql->query($insQ,$mydb);
+		$insR = $mysql->execute($insQ,array($itemID, $name, $total, $unit, $w[3]),$mydb);
 	}
 	else {
-		$insQ = "insert into ingredients values ($itemID,'$name',0,'oz',$total,'$unit',$w[3])";
+		$insQ = $mysql->prepare("insert into ingredients values (?,?,?,?,0,'oz',?)");
 		echo $insQ."<br />";
-		$insR = $mysql->query($insQ,$mydb);
+		$insR = $mysql->execute($insQ,array($itemID, $name, $total, $unit, $w[3]),$mydb);
 	}
 	$itemID++;
 

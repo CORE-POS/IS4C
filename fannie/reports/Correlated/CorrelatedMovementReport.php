@@ -74,7 +74,7 @@ class CorrelatedMovementReport extends FannieReportPage
         $where = "d.department IN $dClause";
         $inv = "d.department NOT IN $dClause";
         if ($upc != "") {
-            $upc = str_pad($upc,13,"0",STR_PAD_LEFT);
+            $upc = BarcodeLib::padUPC($upc);
             $where = "d.upc = ?";
             $inv = "d.upc <> ?";
             $dArgs = array($upc);

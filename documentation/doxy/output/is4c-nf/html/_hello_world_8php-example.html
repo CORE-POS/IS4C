@@ -24,7 +24,7 @@
     </li>
   </ul></div>
 <h1>HelloWorld.php</h1>AutoLoader.php should be included in any top level scripts. If the URL in the browser address bar is your script, it's a top level script. No other includes are necessary. <a class="el" href="class_auto_loader.html">AutoLoader</a> will include other classes as needed.<p>
-body_content() draws the page. Methods from <a class="el" href="class_basic_page.html">BasicPage</a> provide the standard input box at the top and footer at the bottom. <a class="el" href="class_display_lib.html#98bfea5183c746e3cc3697b12abb13dd">DisplayLib::boxMsg()</a> is a utility function that puts the 'Hello World' message in a standard message box.<p>
+body_content() draws the page. Methods from <a class="el" href="class_basic_page.html">BasicPage</a> provide the standard input box at the top and footer at the bottom. <a class="el" href="class_display_lib.html#a4ca16f2c67a9cbbee6c9ab57c666cde">DisplayLib::boxMsg()</a> is a utility function that puts the 'Hello World' message in a standard message box.<p>
 preprocess() handles input. In this case any form input causes a redirect to the main display script.<p>
 Note the very last line creating an object. That's necessary to actually display anything.<p>
 <div class="fragment"><pre class="fragment"><a name="l00001"></a>00001 &lt;?php
@@ -33,18 +33,18 @@ Note the very last line creating an object. That's necessary to actually display
 <a name="l00004"></a>00004 
 <a name="l00005"></a>00005 <span class="keyword">class </span>HelloWorld <span class="keyword">extends</span> <a name="_a5"></a><a class="code" href="class_basic_page.html">BasicPage</a> {
 <a name="l00006"></a>00006 
-<a name="l00007"></a>00007         function <a name="a6"></a><a class="code" href="class_basic_page.html#5bdd1d772c73682b3c008e5740c40810">body_content</a>(){
-<a name="l00008"></a>00008                 $this-&gt;<a name="a7"></a><a class="code" href="class_basic_page.html#82d317303561000167f3a1aae3cb24d4">input_header</a>();
+<a name="l00007"></a>00007         function <a name="a6"></a><a class="code" href="class_basic_page.html#ee2a2ad1ee31315b1ec25ec350da566e">body_content</a>(){
+<a name="l00008"></a>00008                 $this-&gt;<a name="a7"></a><a class="code" href="class_basic_page.html#65805fa802c839342148c4578de9ac89">input_header</a>();
 <a name="l00009"></a>00009 
 <a name="l00010"></a>00010                 echo '&lt;div <span class="keyword">class</span>=<span class="stringliteral">"baseHeight"</span>&gt;';
-<a name="l00011"></a>00011                 echo <a name="a8"></a><a class="code" href="class_display_lib.html#98bfea5183c746e3cc3697b12abb13dd">DisplayLib::boxMsg</a>('&lt;b&gt;Hello World!&lt;/b&gt;&lt;br /&gt;
+<a name="l00011"></a>00011                 echo <a name="a8"></a><a class="code" href="class_display_lib.html#a4ca16f2c67a9cbbee6c9ab57c666cde">DisplayLib::boxMsg</a>('&lt;b&gt;Hello World!&lt;/b&gt;&lt;br /&gt;
 <a name="l00012"></a>00012                         Enter anything to <span class="keywordflow">continue</span>');
 <a name="l00013"></a>00013                 echo '&lt;/div&gt;';
 <a name="l00014"></a>00014 
-<a name="l00015"></a>00015                 $this-&gt;<a name="a9"></a><a class="code" href="class_basic_page.html#a0f017b08319a9d14e90b5838b167d4b">footer</a>();
+<a name="l00015"></a>00015                 $this-&gt;<a name="a9"></a><a class="code" href="class_basic_page.html#5e8404e15989c0707139dea6561ba43c">footer</a>();
 <a name="l00016"></a>00016         }
 <a name="l00017"></a>00017 
-<a name="l00018"></a>00018         function <a name="a10"></a><a class="code" href="class_basic_page.html#8d7c8a6f81fcf68d2886f937f1fd2ef0">preprocess</a>(){
+<a name="l00018"></a>00018         function <a name="a10"></a><a class="code" href="class_basic_page.html#15d7f8acc78232fe0685448f49254768">preprocess</a>(){
 <a name="l00019"></a>00019                 <span class="keywordflow">if</span> (isset($_REQUEST['reginput'])){
 <a name="l00020"></a>00020                         header(<span class="stringliteral">"Location: {$this-&gt;page_url}gui-modules/pos2.php"</span>);
 <a name="l00021"></a>00021                         <span class="keywordflow">return</span> False;
@@ -58,7 +58,7 @@ Note the very last line creating an object. That's necessary to actually display
 <a name="l00029"></a>00029 <span class="keyword">new</span> HelloWorld();
 <a name="l00030"></a>00030 
 <a name="l00031"></a>00031 ?&gt;
-</pre></div> <hr size="1"><address style="align: right;"><small>Generated on Tue Oct 23 14:30:33 2012 for CORE POS - IS4C by&nbsp;
+</pre></div> <hr size="1"><address style="align: right;"><small>Generated on 18 Nov 2013 for CORE POS - IS4C by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img src="doxygen.png" alt="doxygen" align="middle" border="0"></a> 1.4.7 </small></address>
 </body>

@@ -23,7 +23,6 @@
 
 include(dirname(__FILE__).'/../../../config.php');
 include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
-require_once($FANNIE_ROOT."src/select_dlog.php");
 $dbc = FannieDB::get($FANNIE_OP_DB);
 
 class OverShortCashierPage extends FanniePage {
@@ -62,7 +61,7 @@ class OverShortCashierPage extends FanniePage {
 		global $FANNIE_PLUGIN_SETTINGS, $FANNIE_OP_DB;
 		$dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['OverShortDatabase']);
 
-		$dlog = select_dlog($date);
+		$dlog = DTransactionsModel::selectDlog($date);
 
 		$totals = array();
 		$counts = array();

@@ -453,6 +453,10 @@ static public function transReset()
 	  is only capable of producing swipe-style data.
 	*/
 	$CORE_LOCAL->set("paycard_keyed",False);
+    
+    if (!is_array($CORE_LOCAL->get('PluginList'))) {
+        $CORE_LOCAL->set('PluginList', array());
+    }
 
 	foreach($CORE_LOCAL->get('PluginList') as $p){
 		if (!class_exists($p)) continue;
@@ -584,25 +588,6 @@ static public function memberReset()
 }
 
 /**
-  Get member information line for a given member
-  @param $row a record from custdata
-  @return string
-  @deprecated
-  Just define blueLine in custdata.
-*/
-static public function blueLine($row) 
-{
-	$status = array('Non-Owner', 'Shareholder', 'Subscriber', 'Inactive', 'Refund', 'On Hold', 'Sister Org.', 'Other Co-ops');
-	if ($row["blueLine"]) {			// custom blueLine as defined by db
-		return $row["blueLine"];
-	} elseif (isset($row["blueLine"])) {	// 0 - default blueLine with out name
-		return '#'.$row['CardNo'].' - '.$row['Discount'].'% - '.$status[$row['memType']];
-	} else {				// NULL - default blueLine including name
-		return '#'.$row['CardNo'].' - '.$status[$row['memType']].': '.$row['FirstName'].' '.$row['LastName'];
-	}
-}
-
-/**
   If there are records in localtemptrans, get the 
   member number and initialize $CORE_LOCAL member
   variables.
@@ -642,7 +627,7 @@ static public function loadData()
 		$result = $db_product->query($query_member);
 		if ($db_product->num_rows($result) > 0) {
 			$row = $db_product->fetch_array($result);
-			$CORE_LOCAL->set("memMsg",self::blueLine($row));
+			$CORE_LOCAL->set("memMsg",$row['blueLine']);
 			$CORE_LOCAL->set("memType",$row["memType"]);
 			$CORE_LOCAL->set("percentDiscount",$row["Discount"]);
 

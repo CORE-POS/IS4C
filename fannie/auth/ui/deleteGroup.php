@@ -22,12 +22,11 @@
 *********************************************************************************/
 
 require('../login.php');
-$path = guesspath();
-include($path."config.php");
+include("../../config.php");
 $page_title = 'Fannie : Auth : Delete Group';
 $header = 'Fannie : Auth : Delete Group';
 
-include($path."src/header.html");
+include($FANNIE_ROOT."src/header.html");
 
 if (!validateUser('admin')){
   return;
@@ -67,6 +66,6 @@ echo '&nbsp;&nbsp;&nbsp;<input type="submit" value="Delete" />';
   echo "<p /><a href=menu.php>Main menu</a>";
 }
 
-include($path."src/footer.html");
+include($FANNIE_ROOT."src/footer.html");
 ?>
 

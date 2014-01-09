@@ -1,8 +1,10 @@
 <?php
 include('../../config.php');
+if (!class_exists('FannieAPI')) {
+        include(dirname(__FILE__).'/../classlib2.0/FannieAPI.php');
+}
 $CORE_PATH = realpath($FANNIE_ROOT.'../pos/is4c-nf/').'/';
 include($FANNIE_ROOT.'src/SQLManager.php');
-include($FANNIE_ROOT.'src/trans_connect.php');
 
 /*
  This is not a real lane ini file
@@ -26,7 +28,8 @@ class cl_wrapper {
 }
 
 function confsave($k,$v){
-	global $dbc;
+    global $FANNIE_OP_DB;
+    $dbc = FannieDB::get($FANNIE_OP_DB);
 	if (is_string($v))
 		$v = trim($v,"'");
 	$p = $dbc->prepare_statement("SELECT value FROM lane_config WHERE keycode=?");

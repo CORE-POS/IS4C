@@ -21,7 +21,7 @@
 
 *********************************************************************************/
 include('../../config.php');
-include($FANNIE_ROOT.'src/mysql_connect.php');
+include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 include_once('../../classlib2.0/InstallPage.php');
 include('../util.php');
 
@@ -84,7 +84,8 @@ class LaneTextStringPage extends InstallPage {
 	*/
 
 	function body_content(){
-		global $dbc; //, $TRANSLATE;
+		global $FANNIE_OP_DB; //, $TRANSLATE;
+        $dbc = FannieDB::get($FANNIE_OP_DB);
 
 		// keys are customReceipt.type values.
 		$TRANSLATE = array(
@@ -160,7 +161,7 @@ receipts, the lane Welcome screen, and elsewhere.
 <p class="ichunk2 ichunk3">Select a type of text string, enter the line of text for it, and click "Add".
 <br />Existing lines of the type are displayed in the "Edit existing text string lines" form, below.
 <br />All types of text strings may initially have no lines, i.e. be empty.
-<br />The maximum length of a line is 20 characters.
+<br />The maximum length of a line is 55 characters.
 </p>
 <select name="new_type" size="5">
 <?php
@@ -177,7 +178,7 @@ foreach($TRANSLATE as $short=>$long){
 }
 ?>
 </select>
-<input type="text" name="new_content" maxlength="20" />
+<input type="text" name="new_content" size="55" maxlength="55" />
 <input type="submit" name="new_submit" value="Add a line of the selected type" />
 </form>
 <hr />
@@ -186,7 +187,7 @@ foreach($TRANSLATE as $short=>$long){
 <p class="ichunk2 ichunk3">Existing lines of text of different types are displayed below and can be edited there.
 <br />All types may initially have no lines in which case the heading will not appear and no line boxes will appear.
 <br />To delete a line erase all the text from it.
-<br />The maximum length of a line is 20 characters.
+<br />The maximum length of a line is 55 characters.
 </p>
 <form method="post" action="LaneTextStringPage.php">
 <?php
@@ -200,7 +201,7 @@ while($w = $dbc->fetch_row($r)){
 		$header = $w['type'];	
 		$i=1;
 	}
-	printf('<p>%d:<input type="text" maxlength="20" name="old_content[]" value="%s" />
+	printf('<p>%d:<input type="text" size="55" maxlength="55" name="old_content[]" value="%s" />
 		<input type="hidden" name="old_type[]" value="%s" /></p>',
 		$i++,$w['text'],$w['type']);
 }

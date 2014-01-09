@@ -28,7 +28,7 @@ class ItemLinksModule extends ItemModule {
 
 	function ShowEditForm($upc){
 		global $FANNIE_URL;
-		$upc = str_pad($upc,13,0,STR_PAD_LEFT);
+		$upc = BarcodeLib::padUPC($upc);
 
 		$dbc = $this->db();
 		$p = $dbc->prepare_statement('SELECT upc FROM products WHERE upc=?');
@@ -68,7 +68,7 @@ class ItemLinksModule extends ItemModule {
 	}
 
 	function SaveFormData($upc){
-		$upc = str_pad($upc,13,0,STR_PAD_LEFT);
+		$upc = BarcodeLib::padUPC($upc);
 		$ret = '';
 		if (FormLib::get_form_value('newshelftag','') != ''){
 			$ret .= "<script type=\"text/javascript\">";

@@ -90,7 +90,7 @@ class CoopDealsUploadPage extends FannieUploadPage {
 			$upc = str_replace(" ","",$upc);
 			if ($rm_checks)
 				$upc = substr($upc,0,strlen($upc)-1);
-			$upc = str_pad($upc,13,"0",STR_PAD_LEFT);
+			$upc = BarcodeLib::padUPC($upc);
 
 			$lookup = $dbc->exec_statement($upcP, array($upc));
 			if ($dbc->num_rows($lookup) == 0){

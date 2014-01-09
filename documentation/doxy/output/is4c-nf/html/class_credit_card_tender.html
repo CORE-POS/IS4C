@@ -38,21 +38,45 @@
 <a href="class_credit_card_tender-members.html">List of all members.</a><table border="0" cellpadding="0" cellspacing="0">
 <tr><td></td></tr>
 <tr><td colspan="2"><br><h2>Public Member Functions</h2></td></tr>
-<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_credit_card_tender.html#cf3601fe1b727c6a30c56b5ae056e5fa">ErrorCheck</a> ()</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_credit_card_tender.html#e11f35ebedb161a760e8c58e68f2a2e4">errorCheck</a> ()</td></tr>
 
-<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_credit_card_tender.html#144a1ec7a67f5d1893c2100291720b2a">PreReqCheck</a> ()</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_credit_card_tender.html#9b3d5e3d88b5a3a48badb795306cd576">preReqCheck</a> ()</td></tr>
+
+<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_credit_card_tender.html#76c316be075cc00b4429b87779492c76">allowDefault</a> ()</td></tr>
 
 </table>
 <hr><a name="_details"></a><h2>Detailed Description</h2>
 Tender module for credit cards 
 <p>
 <hr><h2>Member Function Documentation</h2>
-<a class="anchor" name="cf3601fe1b727c6a30c56b5ae056e5fa"></a><!-- doxytag: member="CreditCardTender::ErrorCheck" ref="cf3601fe1b727c6a30c56b5ae056e5fa" args="()" -->
+<a class="anchor" name="76c316be075cc00b4429b87779492c76"></a><!-- doxytag: member="CreditCardTender::allowDefault" ref="76c316be075cc00b4429b87779492c76" args="()" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">CreditCardTender::ErrorCheck           </td>
+          <td class="memname">CreditCardTender::allowDefault           </td>
+          <td>(</td>
+          <td class="paramname">          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Allow the tender to be used without specifying a total <dl compact><dt><b>Returns:</b></dt><dd>boolean </dd></dl>
+
+<p>
+Reimplemented from <a class="el" href="class_tender_module.html#524e53e15ce420ea8e0e36d26821c210">TenderModule</a>.
+</div>
+</div><p>
+<a class="anchor" name="e11f35ebedb161a760e8c58e68f2a2e4"></a><!-- doxytag: member="CreditCardTender::errorCheck" ref="e11f35ebedb161a760e8c58e68f2a2e4" args="()" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">CreditCardTender::errorCheck           </td>
           <td>(</td>
           <td class="paramname">          </td>
           <td>&nbsp;)&nbsp;</td>
@@ -66,15 +90,15 @@ Tender module for credit cards
 Check for errors <dl compact><dt><b>Returns:</b></dt><dd>True or an error message string </dd></dl>
 
 <p>
-Reimplemented from <a class="el" href="class_tender_module.html#9a6ace25900941f577b8309f0a8bba16">TenderModule</a>.
+Reimplemented from <a class="el" href="class_tender_module.html#02b5ac7e402e81ef6355ab093de9942e">TenderModule</a>.
 </div>
 </div><p>
-<a class="anchor" name="144a1ec7a67f5d1893c2100291720b2a"></a><!-- doxytag: member="CreditCardTender::PreReqCheck" ref="144a1ec7a67f5d1893c2100291720b2a" args="()" -->
+<a class="anchor" name="9b3d5e3d88b5a3a48badb795306cd576"></a><!-- doxytag: member="CreditCardTender::preReqCheck" ref="9b3d5e3d88b5a3a48badb795306cd576" args="()" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">CreditCardTender::PreReqCheck           </td>
+          <td class="memname">CreditCardTender::preReqCheck           </td>
           <td>(</td>
           <td class="paramname">          </td>
           <td>&nbsp;)&nbsp;</td>
@@ -88,12 +112,12 @@ Reimplemented from <a class="el" href="class_tender_module.html#9a6ace25900941f5
 Set up state and redirect if needed <dl compact><dt><b>Returns:</b></dt><dd>True or a URL to redirect </dd></dl>
 
 <p>
-Reimplemented from <a class="el" href="class_tender_module.html#3bd8ec587684257a49ce4a24e6f4d0ff">TenderModule</a>.
+Reimplemented from <a class="el" href="class_tender_module.html#297858ad5cb308c1fe0f94f952667fb9">TenderModule</a>.
 </div>
 </div><p>
 <hr>The documentation for this class was generated from the following file:<ul>
 <li>pos/is4c-nf/lib/Tenders/CreditCardTender.php</ul>
-<hr size="1"><address style="align: right;"><small>Generated on Tue Oct 23 14:30:34 2012 for CORE POS - IS4C by&nbsp;
+<hr size="1"><address style="align: right;"><small>Generated on 18 Nov 2013 for CORE POS - IS4C by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img src="doxygen.png" alt="doxygen" align="middle" border="0"></a> 1.4.7 </small></address>
 </body>

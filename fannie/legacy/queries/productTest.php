@@ -1,9 +1,7 @@
 <?php
 include('../../config.php');
-
-include($FANNIE_ROOT.'src/funct1Mem.php');
 include('prodFunction.php');
-require($FANNIE_ROOT.'auth/login.php');
+include($FANNIE_ROOT.'auth/login.php');
 refreshSession();
 ?>
 <html>
@@ -27,6 +25,9 @@ refreshSession();
 // tag determines the form's focus. Counting starts with '0'
 //  End -->
 </script>
+<script type="text/javascript"
+	src="/git/fannie/src/jquery/js/jquery-1.4.2.min.js">
+</script>
 <?php
 echo "<script language=JavaScript>";
 echo "function delete_popup(upc,description){";
@@ -43,7 +44,7 @@ echo "</script>";
 //    $db = mssql_connect("129.103.2.10","sa");
 //    mssql_select_db("WedgePOS",$db);
 echo "<BODY onLoad='putFocus(0,0);'>";
-echo "<div id=logo><img src='..//images/newLogo_small.gif'></div>";
+echo "<div id=logo><img src='../members/images/newLogo_small.gif'></div>";
 echo "<div id=products>";
 
 if(isset($_POST['submit'])){

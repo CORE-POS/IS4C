@@ -28,8 +28,11 @@ if (!isset($_GET['batchID'])){
 }
 else {
 	$batchIDList = '';
-	foreach($_GET['batchID'] as $x)
-		$batchIDList .= $x.',';
+    $args = array();
+	foreach($_GET['batchID'] as $x) {
+		$batchIDList .= '?,';
+        $args[] = $x;
+    }
 	$batchIDList = substr($batchIDList,0,strlen($batchIDList)-1);
 	$narrow = (isset($_GET['narrow']))?True:False;
 	
@@ -140,9 +143,9 @@ else {
 	    }
 	}
 	
-	$query = "SELECT upc,description,normal_price,brand,sku,size,units,vendor FROM batchBarcodes WHERE batchID in ($batchIDList) and description <> '' order by batchID"; 
+	$query = $sql->prepare("SELECT upc,description,normal_price,brand,sku,size,units,vendor FROM batchBarcodes WHERE batchID in ($batchIDList) and description <> '' order by batchID");
 
-	$result = $sql->query($query);
+	$result = $sql->execute($query, $args);
 	
 	if (!$narrow){
 		$pdf=new PDF('P','mm','Letter'); //start new instance of PDF

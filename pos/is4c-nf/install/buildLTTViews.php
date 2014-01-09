@@ -73,7 +73,7 @@ $errors = InstallUtilities::dbStructureModify($db,'lttsummary',$createStr,$error
 $rpQ = str_replace("select","select emp_no,register_no,trans_no,",$createStr);
 $rpQ = str_replace("localtemptrans","localtranstoday",$rpQ);
 $rpQ = str_replace("lttsummary","rp_lttsummary",$rpQ);
-$rpQ .= " GROUP BY emp_no,register_no,trans_no";
+$rpQ .= " AND datetime >= CURRENT_DATE GROUP BY emp_no,register_no,trans_no";
 $errors = InstallUtilities::dbStructureModify($db,'rp_lttsummary','DROP VIEW rp_lttsummary',$errors);
 $errors = InstallUtilities::dbStructureModify($db,'rp_lttsummary',$rpQ,$errors);
 //echo str_replace("\n","<br />",$createStr)."<br />";
@@ -258,7 +258,7 @@ $db->query($createStr);
 $rpQ = str_replace("select","select emp_no,register_no,trans_no,",$createStr);
 $rpQ = str_replace("localtemptrans","localtranstoday",$rpQ);
 $rpQ = str_replace("lttsummary","rp_lttsummary",$rpQ);
-$rpQ .= " GROUP BY emp_no,register_no,trans_no";
+$rpQ .= " AND datetime >= CURRENT_DATE GROUP BY emp_no,register_no,trans_no";
 $db->query("DROP VIEW rp_lttsummary");
 $db->query($rpQ);
 //echo $createStr."<br />";

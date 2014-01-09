@@ -233,6 +233,7 @@ class InstallUtilities extends LibraryClass
             $save_as_array = 1;
         }
 
+        /** temp
         if ($sql !== false) {
             $prep = $sql->prepare_statement('SELECT param_value FROM parameters
                                         WHERE param_key=? AND lane_id=?');
@@ -247,9 +248,10 @@ class InstallUtilities extends LibraryClass
                 $sql->exec_statement($prep, array($CORE_LOCAL->get('laneno'), $key, $value, $save_as_array));
             }
         }
+        */
 
         // maintain ini.php value too
-        if (self::confExists($key)) {
+        if (True || self::confExists($key)) {
             // tweak value for safe output to ini.php
             if ($save_as_array == 1) {
                 $saveStr = 'array(';
@@ -398,30 +400,61 @@ class InstallUtilities extends LibraryClass
         }
     }
 
-    static public function loadSampleData($sql, $table)
+static public function loadSampleData($sql, $table)
     {
+        $success = true; 
+        $loaded = 0;
+        echo "Loading `$table` ";
         if (file_exists("data/$table.sql")) {
+            echo "from data/$table.sql<br>\n";
             $fp = fopen("data/$table.sql","r");
             while($line = fgets($fp)) {
-                $sql->query("INSERT INTO $table VALUES $line");
+                $query = "INSERT INTO $table VALUES $line";
+                $try = $sql->query("INSERT INTO $table VALUES $line");
+                if ($try === false) {
+                    $error = $sql->error();
+                    $success = false;
+                    echo "<br><small style='color:red;'>"
+                        . (strlen($error)? $error : 'Unknown error')
+                        . " executing:<br><code>$query</code></small><br>\n";
+                } else {
+                    if(++$loaded % 50 === 0) {
+                        echo "<br>\n";
+                        flush();
+                    }
+                    echo ".";
+                }
             }
             fclose($fp);
+            echo ($success? ' success!' : "<br>\n'$table' load " . ($loaded? 'partial success;' : 'failed;'))
+                . " $loaded " . ($loaded == 1? 'record was' : 'records were') . " loaded.<br>\n";
         } else if (file_exists("data/$table.csv")) {
+            echo "from data/$table.csv ";
             $path = realpath("data/$table.csv");
-            $prep = $sql->prepare_statement("LOAD DATA LOCAL INFILE
-                '$path'
-                INTO TABLE $table
-                FIELDS TERMINATED BY ','
-                ESCAPED BY '\\\\'
-                OPTIONALLY ENCLOSED BY '\"'
-                LINES TERMINATED BY '\\r\\n'");
+            $query = "LOAD DATA LOCAL INFILE
+                    '$path'
+                    INTO TABLE $table
+                    FIELDS TERMINATED BY ','
+                    ESCAPED BY '\\\\'
+                    OPTIONALLY ENCLOSED BY '\"'
+                    LINES TERMINATED BY '\\r\\n'";
+            $prep = $sql->prepare_statement($query);
             $try = $sql->exec_statement($prep);
-            /** alternate implementation
-                for non-mysql and/or LOAD DATA LOCAL
-                not allowed */
             if ($try === false) {
+                $error = $sql->error();
+                echo "<br><span style='color:red;'>"
+                    . (strlen($error)? $error : 'Unknown error')
+                    . " executing:<br><code>$query</code><br></span><br>\n";
+            }
+            /** alternate implementation
+            for non-mysql and/or LOAD DATA LOCAL
+            not allowed */
+            if ($try !== false) {
+                echo "succeeded!<br>\n";
+            } else {
+                echo "line-by-line<br>\n";
                 $fp = fopen("data/$table.csv",'r');
-                $stmt = False;
+                $stmt = false;
                 while(!feof($fp)) {
                     $line = fgetcsv($fp);
                     if (!is_array($line)) continue;
@@ -432,11 +465,39 @@ class InstallUtilities extends LibraryClass
                         }
                         $query = substr($query,0,strlen($query)-1).')';
                         $stmt = $sql->prepare_statement($query);
+                        if ($stmt === false) {
+                            $error = $sql->error();
+                            $success = false;
+                            echo "<br><span style='color:red;'>"
+                                . (strlen($error)? $error : 'Unknown error')
+                                . " preparing:<br><code>$query</code></span><br>\n";
+                            break;
+                        }
                     }
-                    $sql->exec_statement($stmt, $line);
+                    $try = $sql->exec_statement($stmt, $line);
+                    if ($try === false) {
+                        $error = $sql->error();
+                        $success = false;
+                        echo "<br><span style='color:red;'>"
+                            . (strlen($error)? $error : 'Unknown error')
+                            . " executing:<br><code>$query</code><br>("
+                            . "'" . join("', '", $line) . "')"
+                            . ' [' . count($line) . ' operands]'
+                            . "</span><br>\n";
+                    } else {
+                        if(++$loaded % 100 === 0) {
+                            echo "<br>\n";
+                            flush();
+                        }
+                        echo ".";
+                    }
                 }
                 fclose($fp);
+                echo ($success? ' success!' : "<br>\n'$table' load " . ($loaded? 'partial success;' : 'failed;'))
+                    . " $loaded " . ($loaded == 1? 'record was' : 'records were') . " loaded.<br>\n";
             }
+        } else {
+            echo "<br><span style='color:red;'>Table data not found in either {$table}.sql or {$table}.csv</span><br>\n";
         }
     }
 
@@ -548,6 +609,18 @@ class InstallUtilities extends LibraryClass
         }
 
         return $errors;
+    }
+
+    public static function normalizeDbName($name)
+    {
+        global $CORE_LOCAL;
+        if ($name == 'op') {
+            return $CORE_LOCAL->get('pDatabase');
+        } else if ($name == 'trans') {
+            return $CORE_LOCAL->get('tDatabase');
+        } else {
+            return false;
+        }
     }
 
 }

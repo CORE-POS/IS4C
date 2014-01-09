@@ -25,6 +25,7 @@ function import_invoice(){
 	if (!class_exists("SQLManager")) require_once($FANNIE_ROOT."src/SQLManager.php");
 	include('../../db.php');
 
+    $upQ = $sql->prepare("update prodExtra set cost=? where upc=?");
 	while(!feof($fp)){
 		$line = fgets($fp);
 		if ($line_num > $SKIP_LINES){
@@ -39,8 +40,7 @@ function import_invoice(){
 				continue;
 			$wupc = UNFItoWFC($upc);
 			echo $wupc." ".$cost."<br />";
-			$upQ = "update prodExtra set cost=$cost where upc='$wupc'";
-			$upR = $sql->query($upQ);
+			$upR = $sql->execute($upQ, array($cost,$wupc));
 		}
 		$line_num++;
 	}

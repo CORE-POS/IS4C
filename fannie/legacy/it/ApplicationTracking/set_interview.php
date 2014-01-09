@@ -9,16 +9,20 @@ $sql = db_connect();
 // other pages
 if (isset($_GET['action'])){
 	$id = $_GET['id'];
-	$appID = array_pop($sql->fetch_row($sql->query("select appID from interviews where interviewID=$id")));
+	$prep = $sql->prepare("select appID from interviews where interviewID=?");
+	$appID = array_pop($sql->fetch_row($sql->execute($prep, array($id))));
 	switch($_GET['action']){
 	case 'fin':
-		$sql->query("UPDATE interviews SET took_place=1 WHERE interviewID=$id");
+		$prep = $sql->prepare("UPDATE interviews SET took_place=1 WHERE interviewID=?");
+        $sql->execute($prep, $id);
 		break;
 	case 'reg':
-		$sql->query("UPDATE interviews SET sent_regret=1 WHERE interviewID=$id");
+		$sql->prepare("UPDATE interviews SET sent_regret=1 WHERE interviewID=?");
+        $sql->execute($prep, $id);
 		break;
 	case 'del':
-		$sql->query("DELETE FROM interviews WHERE interviewID=$id");
+		$sql->prepare("DELETE FROM interviews WHERE interviewID=?");
+        $sql->execute($prep, $id);
 		break;
 	}
 	header("Location: {$FANNIE_URL}legacy/it/ApplicationTracking/view.php?appID=$appID");
@@ -31,9 +35,9 @@ if (isset($_POST['submit'])){
 	$username = $_POST['username'];
 	$date = $_POST['date'];
 	
-	$insQ = "INSERT INTO interviews (scheduled, appID, sent_regret, username,took_place) VALUES
-		('$date',$appID,0,'$username',0)";
-	$insR = $sql->query($insQ);
+	$insQ = $sql->prepare("INSERT INTO interviews (scheduled, appID, sent_regret, username,took_place) VALUES
+		(?,?,0,?,0)");
+	$insR = $sql->execute($insQ, array($date, $appID, $username));
 
 	header("Location: {$FANNIE_URL}legacy/it/ApplicationTracking/view.php?appID=$appID");
 	return;
@@ -42,8 +46,8 @@ if (isset($_POST['submit'])){
 else {
 
 $appID = $_GET['appID'];
-$nameQ = "select concat(first_name,' ',last_name) from applicants where appID=$appID";
-$name = array_pop($sql->fetch_row($sql->query($nameQ)));
+$nameQ = $sql->prepare("select concat(first_name,' ',last_name) from applicants where appID=?");
+$name = array_pop($sql->fetch_row($sql->execute($nameQ, array($appID))));
 $username = validateUserQuiet('apptracking',0);
 if (!$username){
 	header("Location: {$FANNIE_URL}auth/ui/loginform.php?redirect={$FANNIE_URL}legacy/it/ApplicationTracking/set_interview.php?appID=$appID");

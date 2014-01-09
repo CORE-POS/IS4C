@@ -71,6 +71,8 @@ function checkBase64Encoded($encodedString) {
 }
 
 include('../../config.php');
+include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+$preload = FannieAPI::listModules('FannieTask');
 
 $fn = isset($_REQUEST['fn'])?$_REQUEST['fn']:'';
 if ($fn == ''){
@@ -83,25 +85,33 @@ if ( checkBase64Encoded($fn) ) {
 } else {
 	$fn = $FANNIE_ROOT.'cron/'.urldecode($fn);
 }
-if ( ! file_exists($fn) ){
+
+if (!file_exists($fn) && !class_exists(basename($fn))){
 	echo "File: >${fn}< does not exist.";
 	exit;
 }
 
-// Read the file into a string.
-$data = file_get_contents($fn);
-/* Parse into an array ($tokens) of arrays($t), one for each token where:
- * $t[0] the kind of token, e.g. T_COMMENT
- * $t[1] the content of the token, e.g. the entire comment.
- * $t[2] the line number in the file
-*/
-$tokens = token_get_all($data);
-$doc = "";
-foreach($tokens as $t){
-	if ($t[0] == T_COMMENT){
-		if (strstr($t[1],"HELP"))
-			$doc .= $t[1]."\n";
-	}
+$doc = '';
+if (file_exists($fn)) {
+    // Read the file into a string.
+    $data = file_get_contents($fn);
+    /* Parse into an array ($tokens) of arrays($t), one for each token where:
+     * $t[0] the kind of token, e.g. T_COMMENT
+     * $t[1] the content of the token, e.g. the entire comment.
+     * $t[2] the line number in the file
+    */
+    $tokens = token_get_all($data);
+    $doc = "";
+    foreach($tokens as $t){
+        if ($t[0] == T_COMMENT){
+            if (strstr($t[1],"HELP"))
+                $doc .= $t[1]."\n";
+        }
+    }
+} else {
+    $class = basename($fn);
+    $obj = new $class();
+    $doc = $obj->description;
 }
 
 echo "<html><head><title>";

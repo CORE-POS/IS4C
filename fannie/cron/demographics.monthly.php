@@ -24,7 +24,6 @@
 include('../config.php');
 include($FANNIE_ROOT.'src/SQLManager.php');
 include($FANNIE_ROOT.'src/cron_msg.php');
-include($FANNIE_ROOT.'src/select_dlog.php');
 
 $dbc = new SQLManager($FANNIE_SERVER,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 		$FANNIE_SERVER_USER,$FANNIE_SERVER_PW);
@@ -34,7 +33,7 @@ $ts = mktime(0,0,0,date("n"),1,date("Y")-1);
 for($i=0;$i<12;$i++){
 	$start = date("Y-m-d",$ts);
 	$end = date("Y-m-t",$ts);
-	$dlog = select_dtrans($start,$end);
+	$dlog = DTransactionsModel::selectDtrans($start,$end);
 	$ts = mktime(0,0,0,date("n",$ts)+1,1,date("Y",$ts));
 	$query = "INSERT INTO YTD_Patronage_MiddleStep 
 		select d.card_no,MONTH(d.datetime) as month_no,

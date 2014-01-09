@@ -49,7 +49,7 @@ else
 		printf('<a href="%s">%s</a>',$entry['url'],$entry['label']);
 		if (isset($entry['submenu']) && is_array($entry['submenu']) && count($entry['submenu']) != 0){
 			echo '<div class="menuwrapper">';
-			printf('<div class="submenu level%d" style="width:155px;top:-28px;left:135px;">',$depth);
+			printf('<div class="submenu level%d" style="width:155px;top:-38px;left:135px;">',$depth);
 			echo '<ul style="">';
 			render_menu($entry['submenu'],$depth+1);
 			echo '</ul></div></div>';

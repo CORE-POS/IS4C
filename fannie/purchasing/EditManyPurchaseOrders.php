@@ -73,7 +73,7 @@ class EditManyPurchaseOrders extends FannieRESTfulPage {
 			FROM vendorItems AS i LEFT JOIN vendors AS v ON
 			i.vendorID = v.vendorID WHERE upc=?';
 		$upcP = $dbc->prepare_statement($upcQ);
-		$upcR = $dbc->exec_statement($upcP, array(str_pad($this->search,13,'0',STR_PAD_LEFT)));
+		$upcR = $dbc->exec_statement($upcP, array(BarcodeLib::padUPC($this->search)));
 		while($w = $dbc->fetch_row($upcR)){
 			$result = array(
 			'sku' => $w['sku'],

@@ -25,6 +25,7 @@
 
 /* --FUNCTIONALITY- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+    * 27Nov13 Andy Theuninck revised to use FannieDB
 	* 29Jan13 Eric Lee
 	* - Produce a table containing the same data for each upc as is
 	*    in the CSV data imported using
@@ -50,7 +51,8 @@
 
 include('../../../../config.php');
 //include($FANNIE_ROOT.'config.php');
-include($FANNIE_ROOT.'src/mysql_connect.php');
+include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+$dbc = FannieDB::get($FANNIE_OP_DB);
 //obs. include($FANNIE_ROOT.'src/select_dlog.php');
 include($FANNIE_ROOT.'src/functions.php');
 

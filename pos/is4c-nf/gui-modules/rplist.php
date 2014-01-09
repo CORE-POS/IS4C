@@ -23,109 +23,121 @@
 
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
-class rplist extends NoInputPage {
+class rplist extends NoInputPage 
+{
 
-	function preprocess(){
-		global $CORE_LOCAL;
-		if (isset($_REQUEST['selectlist'])){
-			if (!empty($_REQUEST['selectlist'])){
-				$print_class = $CORE_LOCAL->get('ReceiptDriver');
-				if ($print_class === '' || !class_exists($print_class))
-					$print_class = 'ESCPOSPrintHandler';
-				$PRINT_OBJ = new $print_class();
-				$receipt = ReceiptLib::printReceipt($_REQUEST['selectlist']);
-				if (session_id() != ''){
-					session_write_close();
-				}
-				if(is_array($receipt)){
-					if (!empty($receipt['any']))
-						$EMAIL_OBJ->writeLine($receipt['any']);
-					if (!empty($receipt['print']))
-						$PRINT_OBJ->writeLine($receipt['print']);
-				}
-				elseif(!empty($receipt))
-					$PRINT_OBJ->writeLine($receipt);
-			}
-			$this->change_page($this->page_url."gui-modules/pos2.php");
-			return False;
-		}
-		return True;
-	}
+    function preprocess()
+    {
+        global $CORE_LOCAL;
+        if (isset($_REQUEST['selectlist'])) {
+            if (!empty($_REQUEST['selectlist'])) {
+                $print_class = $CORE_LOCAL->get('ReceiptDriver');
+                if ($print_class === '' || !class_exists($print_class)) {
+                    $print_class = 'ESCPOSPrintHandler';
+                }
+                $PRINT_OBJ = new $print_class();
+                $receipt = ReceiptLib::printReceipt($_REQUEST['selectlist']);
+                if (session_id() != '') {
+                    session_write_close();
+                }
+                if(is_array($receipt)) {
+                    if (!empty($receipt['any'])) {
+                        $EMAIL_OBJ->writeLine($receipt['any']);
+                    }
+                    if (!empty($receipt['print'])) {
+                        $PRINT_OBJ->writeLine($receipt['print']);
+                    }
+                } elseif(!empty($receipt)) {
+                    $PRINT_OBJ->writeLine($receipt);
+                }
+            }
+            $this->change_page($this->page_url."gui-modules/pos2.php");
 
-	function head_content(){
-		?>
-		<script type="text/javascript" >
-		var prevKey = -1;
-		var prevPrevKey = -1;
-		function processkeypress(e) {
-			var jsKey;
-			if (e.keyCode) // IE
-				jsKey = e.keyCode;
-			else if(e.which) // Netscape/Firefox/Opera
-				jsKey = e.which;
-			if (jsKey==13) {
-				if ( (prevPrevKey == 99 || prevPrevKey == 67) &&
-				(prevKey == 108 || prevKey == 76) ){ //CL<enter>
-					$('#selectlist option:selected').val('');
-				}
-				$('#selectform').submit();
-			}
-			prevPrevKey = prevKey;
-			prevKey = jsKey;
-		}
-		</script> 
-		<?php
-		$this->add_onload_command("\$('#selectlist').keypress(processkeypress);\n");
-		$this->add_onload_command("\$('#selectlist').focus();\n");
-	}
-	
-	function body_content(){
-		global $CORE_LOCAL;
-		$query = "select register_no, emp_no, trans_no, sum((case when trans_type = 'T' then -1 * total else 0 end)) as total "
-		."from localtranstoday where register_no = ".$CORE_LOCAL->get("laneno")." and emp_no = ".$CORE_LOCAL->get("CashierNo")
-		." group by register_no, emp_no, trans_no order by trans_no desc";
-	
-		$db = Database::tDataConnect();
-		$result = $db->query($query);
-		$num_rows = $db->num_rows($result);
-		?>
+            return false;
+        }
 
-		<div class="baseHeight">
-		<div class="listbox">
-		<form name="selectform" method="post" id="selectform" 
-			action="<?php echo $_SERVER['PHP_SELF']; ?>" >
-		<select name="selectlist" size="10" id="selectlist"
-			onblur="$('#selectlist').focus()" >
+        return true;
+    }
 
-		<?php
-		$selected = "selected";
-		for ($i = 0; $i < $num_rows; $i++) {
-			$row = $db->fetch_array($result);
-			echo "<option value='".$row["register_no"]."::".$row["emp_no"]."::".$row["trans_no"]."'";
-			echo $selected;
-			echo ">lane ".substr(100 + $row["register_no"], -2)." Cashier ".substr(100 + $row["emp_no"], -2)
-				." #".$row["trans_no"]." -- $".
-				sprintf('%.2f',$row["total"]);
-			$selected = "";
-		}
-		?>
+    function head_content()
+    {
+        ?>
+        <script type="text/javascript" >
+        var prevKey = -1;
+        var prevPrevKey = -1;
+        function processkeypress(e) {
+            var jsKey;
+            if (e.keyCode) // IE
+                jsKey = e.keyCode;
+            else if(e.which) // Netscape/Firefox/Opera
+                jsKey = e.which;
+            if (jsKey==13) {
+                if ( (prevPrevKey == 99 || prevPrevKey == 67) &&
+                (prevKey == 108 || prevKey == 76) ){ //CL<enter>
+                    $('#selectlist option:selected').val('');
+                }
+                $('#selectform').submit();
+            }
+            prevPrevKey = prevKey;
+            prevKey = jsKey;
+        }
+        </script> 
+        <?php
+        $this->add_onload_command("\$('#selectlist').keypress(processkeypress);\n");
+        $this->add_onload_command("\$('#selectlist').focus();\n");
+    }
+    
+    function body_content()
+    {
+        global $CORE_LOCAL;
+        $db = Database::tDataConnect();
+        $query = "select register_no, emp_no, trans_no, "
+            ."sum((case when trans_type = 'T' then -1 * total else 0 end)) as total "
+            ."FROM localtranstoday WHERE register_no = " . $CORE_LOCAL->get("laneno")
+            ." AND emp_no = " . $CORE_LOCAL->get("CashierNo")
+            ." AND datetime >= " . $db->curdate()
+            ." GROUP BY register_no, emp_no, trans_no ORDER BY trans_no DESC";
+    
+        $result = $db->query($query);
+        $num_rows = $db->num_rows($result);
+        ?>
 
-		</select>
-		</form>
-		</div>
-		<div class="listboxText coloredText centerOffset">
-		<?php echo _("use arrow keys to navigate"); ?><br />
-		<?php echo _("enter to reprint receipt"); ?><br />
-		<?php echo _("clear to cancel"); ?>
-		</div>
-		<div class="clear"></div>
-		</div>
+        <div class="baseHeight">
+        <div class="listbox">
+        <form name="selectform" method="post" id="selectform" 
+            action="<?php echo $_SERVER['PHP_SELF']; ?>" >
+        <select name="selectlist" size="10" id="selectlist"
+            onblur="$('#selectlist').focus()" >
 
-		<?php
-	} // END body_content() FUNCTION
+        <?php
+        $selected = "selected";
+        for ($i = 0; $i < $num_rows; $i++) {
+            $row = $db->fetch_array($result);
+            echo "<option value='".$row["register_no"]."::".$row["emp_no"]."::".$row["trans_no"]."'";
+            echo $selected;
+            echo ">lane ".substr(100 + $row["register_no"], -2)." Cashier ".substr(100 + $row["emp_no"], -2)
+                ." #".$row["trans_no"]." -- $".
+                sprintf('%.2f',$row["total"]);
+            $selected = "";
+        }
+        ?>
+
+        </select>
+        </form>
+        </div>
+        <div class="listboxText coloredText centerOffset">
+        <?php echo _("use arrow keys to navigate"); ?><br />
+        <?php echo _("enter to reprint receipt"); ?><br />
+        <?php echo _("clear to cancel"); ?>
+        </div>
+        <div class="clear"></div>
+        </div>
+
+        <?php
+    } // END body_content() FUNCTION
 }
 
 if (basename(__FILE__) == basename($_SERVER['PHP_SELF']))
-	new rplist();
+    new rplist();
 
 ?>

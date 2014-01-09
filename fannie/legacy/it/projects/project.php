@@ -47,13 +47,13 @@ include('../../../config.php');
 if (!class_exists("SQLManager")) require_once($FANNIE_ROOT."src/SQLManager.php");
 include($FANNIE_ROOT.'src/Credentials/projects.wfc.php');
 
-$q = "select projDesc, ITName, reqestDate, status, notes, link, priority from projects where projID = $projID"; 
-$r = $sql->query($q);
+$q = $sql->prepare("select projDesc, ITName, reqestDate, status, notes, link, priority from projects where projID = ?");
+$r = $sql->execute($q, array($projID));
 
 $row = $sql->fetch_array($r);
 
-$emailQ = "select email from project_parties where projID=$projID order by email";
-$emailR = $sql->query($emailQ);
+$emailQ = $sql->prepare("select email from project_parties where projID=? order by email");
+$emailR = $sql->execute($emailQ, array($projID));
 $emaillist = "";
 while ($emailW = $sql->fetch_array($emailR))
 	$emaillist .= $emailW[0].", ";
@@ -129,23 +129,23 @@ else {
 echo "<a href=index.php>Projects main</a><p />";
 
 // notes
-$notesQ = "select ITName, stamp, notes from project_notes where projID = $projID
-           order by stamp DESC";
-$notesR = $sql->query($notesQ);
+$notesQ = $sql->prepare("select ITName, stamp, notes from project_notes where projID = ?
+           order by stamp DESC");
+$notesR = $sql->execute($notesQ, array($projID));
 $num = $sql->num_rows($notesR);
 echo "<h3>Additional notes on this project</h3>";
 if ($proj_user){
   echo "<a href=addnote.php?projID=$projID>Add a note</a> for this project<br />";
   
-  $checkQ = "select * from projects left outer join project_parties
+  $checkQ = $sql->prepare("select * from projects left outer join project_parties
              on projects.ITName = project_parties.email
-             where LCASE(projects.ITName) = LCASE('$proj_user') or
-             LCASE(project_parties.email) = LCASE('$proj_user')
-             limit 1";
-  $checkR = $sql->query($checkQ);
+             where LCASE(projects.ITName) = LCASE(?) or
+             LCASE(project_parties.email) = LCASE(?)
+             limit 1");
+  $checkR = $sql->execute($checkQ, array($proj_user, $proj_user));
   // check #2 - see if this person is already 'in on' this project
-  $check2Q = "select * from project_parties where email='$proj_user' and projID=$projID";
-  $check2R = $sql->query($check2Q);
+  $check2Q = $sql->prepare("select * from project_parties where email=? and projID=?");
+  $check2R = $sql->execute($check2Q, array($proj_user, $projID));
   /* not an IT person or an interested party */
   if ($sql->num_rows($checkR) == 0 && $sql->num_rows($check2R) == 0){
     echo "<div id=watchfield>";
@@ -174,15 +174,15 @@ for ($i = 0; $i < $num; $i++){
 if ($proj_user){
   echo "<a href=addnote.php?projID=$projID>Add a note</a> for this project<br />";
   
-  $checkQ = "select * from projects left outer join project_parties
+  $checkQ = $sql->prepare("select * from projects left outer join project_parties
              on projects.ITName = project_parties.email
-             where LCASE(projects.ITName) = LCASE('$proj_user') or
-             LCASE(project_parties.email) = LCASE('$proj_user')
-             limit 1";
-  $checkR = $sql->query($checkQ);
+             where LCASE(projects.ITName) = LCASE(?) or
+             LCASE(project_parties.email) = LCASE(?)
+             limit 1");
+  $checkR = $sql->execute($checkQ, array($proj_user, $proj_user));
   // check #2 - see if this person is already 'in on' this project
-  $check2Q = "select * from project_parties where email='$proj_user' and projID=$projID";
-  $check2R = $sql->query($check2Q);
+  $check2Q = $sql->prepare("select * from project_parties where email=? and projID=?");
+  $check2R = $sql->execute($check2Q, array($proj_user, $prodID));
   /* not an IT person or an interested party */
   if ($sql->num_rows($checkR) == 0 && $sql->num_rows($check2R) == 0){
     echo "<div id=watchfield>";

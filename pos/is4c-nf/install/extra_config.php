@@ -353,6 +353,52 @@ window always shows the item listing. Very alpha.</p>
 </td></tr>
 
 
+<tr><td colspan=2 class="tblHeader"><h3>Subtotal Settings</h3></td></tr>
+<!-- Normal/default Yes/True -->
+<tr><td><b>Member ID trigger subtotal</b>:</td><td>
+<?php
+// Get the value from the latest submit, if it existed, into the core_local array ...
+if (array_key_exists('MEMBER_SUBTOTAL', $_REQUEST)) {
+	$CORE_LOCAL->set('member_subtotal',($_REQUEST['MEMBER_SUBTOTAL']==1)?True:False);
+} else if ($CORE_LOCAL->get('member_subtotal') === '') {
+    $CORE_LOCAL->set('member_subtotal', true);
+}
+echo "<select name='MEMBER_SUBTOTAL'>";
+// Display current, or default, value.
+if ($CORE_LOCAL->get('member_subtotal')){
+	echo "<option value='1' selected>Yes</option>";
+	echo "<option value='0' >No</option>";
+	// Save current, or default, value.  After submit, this will be the new value.
+	InstallUtilities::paramSave('member_subtotal', 'True');
+} else {
+	echo "<option value='1' >Yes</option>";
+	echo "<option value='0' selected>No</option>";
+	// Save current, or default, value.  After submit, this will be the new value.
+	InstallUtilities::paramSave('member_subtotal', 'False');
+}
+?>
+</td></tr>
+<tr><td><b>Subtotal Actions</b></td>
+<td rowspan="2"><select name="TotalActions[]" size="10" multiple>
+<?php
+$mods = AutoLoader::listModules('TotalAction');
+$current = $CORE_LOCAL->get('TotalActions');
+if (isset($_REQUEST['TotalActions'])) {
+    $current = $_REQUEST['TotalActions'];
+}
+if (!is_array($current)) {
+    $current = array();
+}
+foreach($mods as $mod) {
+    printf('<option %s>%s</option>',
+        (in_array($mod, $current) ? 'selected' : ''),
+        $mod);
+}
+InstallUtilities::paramSave('TotalActions', $current);
+?>
+</select></td></tr>
+<tr><td>These are additional bits of functionality that
+will occur whenever a transaction is subtotalled.</td></tr>
 
 
 <tr><td colspan=2 class="tblHeader"><h3>Tender Settings</h3></td></tr>
@@ -370,7 +416,8 @@ else {
 }
 InstallUtilities::paramSave('cashOverLimit',$CORE_LOCAL->get('cashOverLimit'));
 ?>
-</select></td></tr><tr><td>
+</select></td></tr>
+<tr><td>
 <b>Check over limit</b>:</td><td>$
 <?php
 if(isset($_REQUEST['OVER_LIMIT'])) $CORE_LOCAL->set('dollarOver',$_REQUEST['OVER_LIMIT']);
@@ -379,20 +426,21 @@ InstallUtilities::paramSave('dollarOver',$CORE_LOCAL->get('dollarOver'));
 ?>
 </td></tr>
 <tr><td>
-<b>Modular Tenders</b>: </td><td><select name=MODTENDERS>
+<b>EBT Total Default</b>: </td><td><select name=FNTL_DEFAULT>
 <?php
-if(isset($_REQUEST['MODTENDERS'])) $CORE_LOCAL->set('ModularTenders',$_REQUEST['MODTENDERS']);
-if ($CORE_LOCAL->get('ModularTenders')){
-	echo "<option value=1 selected>Yes</option>";
-	echo "<option value=0 >No</option>";
+if(isset($_REQUEST['FNTL_DEFAULT'])) $CORE_LOCAL->set('fntlDefault',$_REQUEST['FNTL_DEFAULT']);
+if ($CORE_LOCAL->get('fntlDefault') === '') $CORE_LOCAL->set('fntlDefault', 1);
+if ($CORE_LOCAL->get("fntlDefault") == 1) {
+	echo "<option value=1 selected>Cash Side</option>";
+	echo "<option value=0 >Food Side</option>";
+} else {
+	echo "<option value=1 >Cash Side</option>";
+	echo "<option value=0 selected>Food Side</option>";
 }
-else {
-	echo "<option value=1 >Yes</option>";
-	echo "<option value=0 selected>No</option>";
-}
-InstallUtilities::paramSave('ModularTenders',$CORE_LOCAL->get('ModularTenders'));
+InstallUtilities::paramSave('fntlDefault', $CORE_LOCAL->get('fntlDefault'));
 ?>
-</select></td></tr><tr><td>
+</select></td></tr>
+<tr><td>
 <b>Tender Report</b>:</td>
 <td><select name="TENDERREPORTMOD">
 <?php
@@ -548,49 +596,13 @@ printf("<br /><input size=4 type=text name=SigCapture value=\"%s\" />",$CORE_LOC
 InstallUtilities::paramSave('SigCapture',$CORE_LOCAL->get('SigCapture'));
 ?>
 <i>(blank for none)</i></td></tr>
+<!--
 <tr><td colspan=2 class="tblHeader">
 <h3>Various</h3>
 <p>This group was started in order to handle variations as options rather than per-coop code variations.</p>
-<h4 style="margin: 0.25em 0.0em 0.25em 0.0em;">Related to transactions:</h4></td></tr><tr><td>
+<h4 style="margin: 0.25em 0.0em 0.25em 0.0em;">Related to transactions:</h4></td></tr>
+-->
 
-<!-- Normal/default Yes/True -->
-<b>Member ID trigger subtotal</b>:</td><td>
-<?php
-// Get the value from the latest submit, if it existed, into the core_local array ...
-if (array_key_exists('MEMBER_SUBTOTAL', $_REQUEST)){
-	$CORE_LOCAL->set('member_subtotal',($_REQUEST['MEMBER_SUBTOTAL']==1)?True:False);
-}
-// ... or from CORE_LOCAL if it is known ...
-elseif ( $CORE_LOCAL->get("member_subtotal") === False ) {
-		$noop = "";
-}
-elseif ( $CORE_LOCAL->get("member_subtotal") === True ) {
-		$noop = "";
-}
-// ... or set the default value ...
-elseif ( $CORE_LOCAL->get("member_subtotal") == NULL ) {
-		$CORE_LOCAL->set('member_subtotal', True, True);
-}
-// ... or complain (unexpected actual values such as 0 or 1). 
-else {
-	echo "<br />Current value of 'member_subtotal' unrecognized.";
-}
-echo "<select name='MEMBER_SUBTOTAL'>";
-// Display current, or default, value.
-if ($CORE_LOCAL->get('member_subtotal')){
-	echo "<option value='1' selected>Yes</option>";
-	echo "<option value='0' >No</option>";
-	// Save current, or default, value.  After submit, this will be the new value.
-	InstallUtilities::paramSave('member_subtotal', 'True');
-}
-else {
-	echo "<option value='1' >Yes</option>";
-	echo "<option value='0' selected>No</option>";
-	// Save current, or default, value.  After submit, this will be the new value.
-	InstallUtilities::paramSave('member_subtotal', 'False');
-}
-?>
-</td></tr>
 <tr><td colspan=2 class="submitBtn">
 <input type=submit name=esubmit value="Save Changes" />
 </td></tr>

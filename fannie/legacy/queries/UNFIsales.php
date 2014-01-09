@@ -1,11 +1,11 @@
 <?php
+
 include('../../config.php');
 
-include($FANNIE_ROOT.'sql/SQLManager.php');
 include('../db.php');
 
 define('FPDF_FONTPATH','font/');
-require($FANNIE_ROOT.'src/fpdf/fpdf.php');
+require('../../src/fpdf/fpdf.php');
 class PDF extends FPDF
 {
    function EAN13($x,$y,$barcode,$h=16,$w=.35)
@@ -121,6 +121,7 @@ if (isset($_REQUEST['upcs'])){
 	$pdf->AddPage();
 
 	$count = 0;
+    $prep = $sql->prepare("SELECT description FROM products WHERE upc='$upc'");
 	foreach($upcs as $upc){
 		if ($count == 13*5){
 			$pdf->AddPage();
@@ -135,8 +136,9 @@ if (isset($_REQUEST['upcs'])){
 			$pdf->SetXY($x,$y);
 		}
 		$pdf->SetFont('Arial','',8); //change font for price
-		$desc = $sql->query("SELECT description FROM products WHERE upc='$upc'");
-		$desc = array_pop($sql->fetch_row($desc));
+        $res = $sql->execute($prep, $upc);
+        $row = $sql->fetch_row($res);
+        $desc = $row['description'];
 		if (strlen($desc)>20)
 			$desc = substr($desc,0,20)."\n".substr($desc,20);
 
@@ -181,18 +183,18 @@ if ($sub != ""){
 	<table cellspacing=0 cellpadding=4 border=1>
 	<tr><th>UPC</th><th>Desc</th><th>Qty</th><th>Include</th></tr>";
 
-	$itemQ = "SELECT d.upc,p.description,sum(d.quantity)
-		FROM dlog_15 as d INNER JOIN products AS p
-		ON d.upc = p.upc INNER JOIN unfi AS u
-		ON p.upc = u.upc LEFT JOIN departments as t
+	$itemQ = $sql->prepare("SELECT d.upc,p.description,sum(d.quantity)
+		FROM is4c_trans.dlog_15 as d INNER JOIN products AS p
+		ON d.upc = p.upc INNER JOIN vendorItems AS u
+		ON p.upc = u.upc AND u.vendorID=1 LEFT JOIN departments as t
 		ON d.department = t.dept_no
 		LEFT JOIN superdepts AS s ON s.dept_ID=t.dept_no
-		WHERE s.superID = $sub AND
-		datediff(dd,getdate(),tdate)=-1
+		WHERE s.superID = ? AND
+		".$sql->datediff($sql->now(),'tdate')." = 1
 		AND trans_type='I' and trans_status <> 'M'
 		GROUP BY d.upc,p.description
-		ORDER BY SUM(d.quantity) DESC";
-	$itemsR = $sql->query($itemQ);
+		ORDER BY SUM(d.quantity) DESC");
+	$itemsR = $sql->execute($itemQ, array($sub));
 	while($itemsW = $sql->fetch_row($itemsR)){
 		printf("<tr><td>%s</td><td>%s</td><td>%.2f</td>
 			<td><input type=checkbox value=%s name=upcs[] /></td></tr>",

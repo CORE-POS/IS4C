@@ -1,7 +1,6 @@
 <?php
 include('../config.php');
-
-include($FANNIE_ROOT.'src/mysql_connect.php');
+include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
 if (isset($_REQUEST['action'])){
 	switch($_REQUEST['action']){
@@ -15,7 +14,8 @@ if (isset($_REQUEST['action'])){
 }
 
 function GetLikecodeItems($lc){
-	global $dbc;
+    global $FANNIE_OP_DB;
+    $dbc = FannieDB::get($FANNIE_OP_DB);
 	$ret = "<table border=0 bgcolor=\"#FFFFCC\">";
 	if (is_numeric($lc)){
 		$prep = $dbc->prepare_statement("SELECT p.upc,p.description FROM
@@ -34,7 +34,8 @@ function GetLikecodeItems($lc){
 }
 
 function MarginFS($upc,$cost,$dept){
-	global $dbc;
+    global $FANNIE_OP_DB;
+    $dbc = FannieDB::get($FANNIE_OP_DB);
 	$prep = $dbc->prepare_statement("SELECT normal_price FROM products WHERE upc=?");
 	$price = $dbc->exec_statement($prep,array($upc));
 	if ($dbc->num_rows($price) > 0)

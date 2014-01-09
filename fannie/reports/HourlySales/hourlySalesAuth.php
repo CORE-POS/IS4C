@@ -22,9 +22,9 @@
 *********************************************************************************/
 
 include('../../config.php');
-include($FANNIE_ROOT.'src/mysql_connect.php');
+include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 include($FANNIE_ROOT.'auth/login.php');
-include($FANNIE_ROOT.'src/select_dlog.php');
+$dbc = FannieDB::get($FANNIE_OP_DB);
 
 $startDate = $_REQUEST['startDate'];
 $endDate = $_REQUEST['endDate'];
@@ -51,7 +51,7 @@ if($buyer == -1){
 	}
 }
 
-$dlog = select_dlog($startDate,$endDate);
+$dlog = DTransactionsModel::selectDlog($startDate,$endDate);
 
 $dbconn = ($FANNIE_SERVER_DBMS=='MSSQL')?'.dbo.':'.';
 

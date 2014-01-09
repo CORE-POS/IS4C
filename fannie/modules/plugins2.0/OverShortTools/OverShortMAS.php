@@ -36,8 +36,8 @@ class OverShortMAS extends FannieRESTfulPage {
 
 	function get_data(){
 		global $FANNIE_OP_DB;
-		$dlog = DTransactionsModel::select_dlog($this->startDate, $this->endDate);
-		$dtrans = DTransactionsModel::select_dtrans($this->startDate, $this->endDate);
+		$dlog = DTransactionsModel::selectDlog($this->startDate, $this->endDate);
+		$dtrans = DTransactionsModel::selectDtrans($this->startDate, $this->endDate);
 
 		$records = array();
 		$dateID = date('ymd', strtotime($this->endDate));
@@ -98,6 +98,7 @@ class OverShortMAS extends FannieRESTfulPage {
 				tenders AS t ON d.trans_subtype=t.TenderCode
 				WHERE trans_type='T'
 				AND tdate BETWEEN ? AND ?
+                AND department <> 703
 				GROUP BY type HAVING SUM(total) <> 0 ORDER BY type";
 		$tenderP = $dbc->prepare_statement($tenderQ);
 		$tenderR = $dbc->exec_statement($tenderP, $args);
@@ -199,6 +200,7 @@ class OverShortMAS extends FannieRESTfulPage {
 
 		$miscQ = "SELECT total as amount, description as name,
 			trans_num, tdate FROM $dlog WHERE department=703
+            AND trans_subtype <> 'IC'
 			AND tdate BETWEEN ? AND ? ORDER BY tdate";
 		$miscP = $dbc->prepare_statement($miscQ);
 		$miscR = $dbc->exec_statement($miscP, $args);
@@ -229,6 +231,23 @@ class OverShortMAS extends FannieRESTfulPage {
 				$credit, $debit, $name);	
 			$records[] = $row;
 		}
+
+		$miscQ = "SELECT SUM(-total) as amount
+			FROM $dlog WHERE department=703
+            AND trans_subtype = 'IC'
+			AND tdate BETWEEN ? AND ? ORDER BY tdate";
+		$miscP = $dbc->prepare_statement($miscQ);
+		$miscR = $dbc->exec_statement($miscP, $args);
+        while($w = $dbc->fetch_row($miscR)) {
+            $record = array(
+                $dateID, $dateStr,
+				str_pad(66600,9,'0',STR_PAD_RIGHT),
+                sprintf('%.2f', $w['amount']),
+                0.00, 'PAT REBATE DISCOUNT',
+            );
+            $records[] = $record; 
+        }
+
 		return $records;
 	}
 

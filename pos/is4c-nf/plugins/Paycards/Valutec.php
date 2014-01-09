@@ -614,7 +614,7 @@ class Valutec extends BasicCCModule {
 			$CORE_LOCAL->set("paycard_amount",$amtUsed);
 			$amtFixQ = "UPDATE valutecRequest SET amount=$amtUsed WHERE 
 				identifier='$identifier' AND "
-				.$dbTrans->datediff($dbTrans->now(),'datetime')."=0";
+                ." AND datetime >= " . $dbTrans->curdate();
 			$dbTrans->query($amtFixQ);
 		}
 

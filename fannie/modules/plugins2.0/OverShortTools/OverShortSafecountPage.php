@@ -23,7 +23,6 @@
 
 include(dirname(__FILE__).'/../../../config.php');
 include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
-require_once($FANNIE_ROOT."src/select_dlog.php");
 $dbc = FannieDB::get($FANNIE_OP_DB);
 
 class OverShortSafecountPage extends FanniePage {
@@ -67,13 +66,13 @@ class OverShortSafecountPage extends FanniePage {
 	}
 
 	function save($dateStr,$changeOrder,$openSafeCount,$closeSafeCount,$buyAmount,$dropAmount,$depositAmount,$atmAmount){
-		saveInputs($dateStr,'changeOrder',$changeOrder);
-		saveInputs($dateStr,'openSafeCount',$openSafeCount);
-		saveInputs($dateStr,'closeSafeCount',$closeSafeCount);
-		saveInputs($dateStr,'buyAmount',$buyAmount);
-		saveInputs($dateStr,'dropAmount',$dropAmount);
-		saveInputs($dateStr,'depositAmount',$depositAmount);
-		saveInputs($dateStr,'atm',$atmAmount);
+		$this->saveInputs($dateStr,'changeOrder',$changeOrder);
+		$this->saveInputs($dateStr,'openSafeCount',$openSafeCount);
+		$this->saveInputs($dateStr,'closeSafeCount',$closeSafeCount);
+		$this->saveInputs($dateStr,'buyAmount',$buyAmount);
+		$this->saveInputs($dateStr,'dropAmount',$dropAmount);
+		$this->saveInputs($dateStr,'depositAmount',$depositAmount);
+		$this->saveInputs($dateStr,'atm',$atmAmount);
 	
 		return 'Saved';
 	}
@@ -394,7 +393,7 @@ class OverShortSafecountPage extends FanniePage {
 		}
 		$ret .= "<td id=buyAmountTotal>".array_sum($buyAmounts)."</td></tr>";
 
-		$dlog = select_dlog($startDate,$endDate);
+		$dlog = DTransactionsModel::selectDlog($startDate,$endDate);
 		$posTotalQ = "SELECT -1*sum(d.total) FROM $dlog as d WHERE ".str_replace(" date "," d.tdate ",$dateClause)." AND d.trans_subtype IN ('CA','CK')";
 		$posTotalP = $dbc->prepare_statement($posTotalQ);	
 		$posTotalR = $dbc->exec_statement($posTotalP, $dateArgs);

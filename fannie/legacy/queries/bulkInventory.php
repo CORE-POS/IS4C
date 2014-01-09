@@ -1,11 +1,9 @@
 <?php 
-include('../../config.php');
 
 header('Content-Type: application/ms-excel');
 header('Content-Disposition: attachment; filename="bulkList.xls"');
 
 echo "<body>";
-if (!class_exists("SQLManager")) require_once($FANNIE_ROOT'src/SQLManager.php');
 include('../db.php');
 
 $query = "SELECT p.upc,p.description,p.department,p.normal_price,d.superID,
@@ -15,7 +13,9 @@ LEFT JOIN prodExtra as x on p.upc = x.upc
 WHERE (d.superID = 1 or superID = 5 or superID = 9) AND scale = 1
 order by d.superID,p.department";
 
-$result = $sql->query($query,$db);
+//select_to_table($query,0,';#ffffff');
+
+$result = $sql->query($query);
 
 echo '<table>';
 echo '<tr><td>PLU</td><td>Desc</td><td>Dept</td><td>Price</td><td>Buyer</td><td>Distributor</td>

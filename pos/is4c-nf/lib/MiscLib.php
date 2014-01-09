@@ -86,48 +86,6 @@ static public function truncate2($num)
 }
 
 /**
-  Ping a host
-  @param $host the name or IP
-  @return 
-   - 1 on success
-   - 0 on failure
-  @deprecated
-  Doesn't work reliably in all environments.
-  Use pingport().
-*/
-static public function pinghost($host)
-{
-	global $CORE_LOCAL;
-
-	$host = str_replace("[", "", $host);
-	$host = str_replace("]", "", $host);
-
-	if (strstr($host,"\\")) {
-		$tmp = explode("\\",$host);
-		$host = $tmp[0];
-	}
-
-	$intConnected = 0;
-	if ($CORE_LOCAL->get("OS") == "win32") {
-		$pingReturn = exec("ping -n 1 $host", $aPingReturn);
-		$packetLoss = "(0% loss";
-	} else {
-		$pingReturn = exec("ping -c 1 $host", $aPingReturn);
-		$packetLoss = "1 received, 0% packet loss";
-	}
-
-	foreach($aPingReturn as $returnLine) {
-		$pos = strpos($returnLine, $packetLoss);
-		if ($pos) {
-			$intConnected = 1; 
-			break;
-        }
-	}
-
-	return $intConnected;
-}
-
-/**
   Connect to a host briefly
   @param $host name or IP
   @param $dbms database type (supported: mysql, mssql)

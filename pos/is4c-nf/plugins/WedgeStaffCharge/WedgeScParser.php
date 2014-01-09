@@ -21,23 +21,29 @@
 
 *********************************************************************************/
 
-class WedgeScParser extends Parser {
-	var $left;
+class WedgeScParser extends Parser 
+{
+	private $left;
 
-	function check($str){
-		if (substr($str,-2) == "SC"){
+	function check($str)
+    {
+		if (substr($str,-2) == "SC") {
 			$left = substr($str,0,strlen($str)-2);
 			$left = str_replace($left,"."," ");
 			$left = str_replace($left,","," ");
-			if (!is_numeric($left) || strlen($left != 6))
-				return False;
+			if (!is_numeric($left) || strlen($left != 6)) {
+				return false;
+            }
 			$this->left = $left;
-			return True;
+
+			return true;
 		}
-		return False;
+
+		return false;
 	}
 
-	function parse($str){
+	function parse($str)
+    {
 		global $CORE_LOCAL;
 		$json = $this->default_json();
 		$arg = $this->left;
@@ -55,14 +61,13 @@ class WedgeScParser extends Parser {
 			$json['output'] = DisplayLib::xboxMsg("unable to authenticate staff ".$staffID);
 			$CORE_LOCAL->set("isStaff",0);			// apbw 03/05/05 SCR
 			return $json;
-		}
-		else {
+		} else {
 			$CORE_LOCAL->set("isStaff",1);			// apbw 03/05/05 SCR
 			$CORE_LOCAL->set("memMsg",$row["blueLine"]);
 			$tQuery = "update localtemptrans set card_no = '".$staffID."', percentDiscount = 15";
 			$tConn = Database::tDataConnect();
 
-			TransRecord::addscDiscount();		
+			$this->addscDiscount();
 			TransRecord::discountnotify(15);
 			$tConn->query($tQuery);
 			Database::getsubtotals();
@@ -74,11 +79,29 @@ class WedgeScParser extends Parser {
 			}
 			$CORE_LOCAL->set("runningTotal",$CORE_LOCAL->get("amtdue"));
 			return self::tender("MI", $CORE_LOCAL->get("runningTotal") * 100);
-
 		}
 	}
 
-	function doc(){
+    private function addscDiscount() 
+    {
+        global $CORE_LOCAL;
+
+        if ($CORE_LOCAL->get("scDiscount") != 0) {
+            TransRecord::addItem("DISCOUNT", "** 10% Deli Discount **", "I", "", "", 0, 1, MiscLib::truncate2(-1 * $CORE_LOCAL->get("scDiscount")), MiscLib::truncate2(-1 * $CORE_LOCAL->get("scDiscount")), 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 2);
+        }
+    }
+
+    private function addStaffCoffeeDiscount() 
+    {
+        global $CORE_LOCAL;
+
+        if ($CORE_LOCAL->get("staffCoffeeDiscount") != 0) {
+            self::addItem("DISCOUNT", "** Coffee Discount **", "I", "", "", 0, 1, MiscLib::truncate2(-1 * $CORE_LOCAL->get("staffCoffeeDiscount")), MiscLib::truncate2(-1 * $CORE_LOCAL->get("staffCoffeeDiscount")), 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 2);
+        }
+    }
+
+	function doc()
+    {
 		return "<table cellspacing=0 cellpadding=3 border=1>
 			<tr>
 				<th>Input</th><th>Result</th>
@@ -92,4 +115,3 @@ class WedgeScParser extends Parser {
 	}
 }
 
-?>

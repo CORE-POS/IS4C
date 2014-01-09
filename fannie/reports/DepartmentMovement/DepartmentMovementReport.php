@@ -22,8 +22,6 @@
 *********************************************************************************/
 
 include('../../config.php');
-include_once($FANNIE_ROOT.'src/mysql_connect.php');
-include_once($FANNIE_ROOT.'src/select_dlog.php');
 include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 //include($FANNIE_ROOT.'classlib2.0/FannieReportPage.php');
 //include($FANNIE_ROOT.'classlib2.0/lib/FormLib.php');
@@ -86,7 +84,8 @@ class DepartmentMovementReport extends FannieReportPage {
 	  Lots of options on this report.
 	*/
 	function fetch_report_data(){
-		global $dbc, $FANNIE_ARCHIVE_DB;
+		global $FANNIE_OP_DB, $FANNIE_ARCHIVE_DB;
+        $dbc = FannieDB::get($FANNIE_OP_DB);
 		$date1 = FormLib::get_form_value('date1',date('Y-m-d'));
 		$date2 = FormLib::get_form_value('date2',date('Y-m-d'));
 		$deptStart = FormLib::get_form_value('deptStart','');
@@ -116,11 +115,20 @@ class DepartmentMovementReport extends FannieReportPage {
 		}
 
 		/**
+		 * Provide more WHERE conditions to filter irrelevant
+		 * transaction records, as a stop-gap until this is
+		 * handled more uniformly across the application.
+		 */
+		$filter_transactions = "t.trans_status NOT IN ('D','X','Z')
+			AND t.emp_no <> 9999
+			AND t.register_no <> 99";
+		
+		/**
 		  Select a summary table. For UPC results, per-unique-ring
 		  summary is needed. For date/dept/weekday results the
 		  per-department summary is fine (and a smaller table)
 		*/
-		$dlog = select_dlog($date1,$date2);
+		$dlog = DTransactionsModel::selectDlog($date1,$date2);
 		$sumTable = $FANNIE_ARCHIVE_DB.$dbc->sep()."sumRingSalesByDay";
 		if (substr($dlog,-4)=="dlog")
 			$sumTable = $FANNIE_ARCHIVE_DB.$dbc->sep()."vRingSalesToday";
@@ -140,6 +148,7 @@ class DepartmentMovementReport extends FannieReportPage {
 		switch($groupby){
 		case 'PLU':
 			$query = "SELECT t.upc,p.description, 
+                  SUM(CASE WHEN trans_status='' THEN 1 WHEN trans_status='V' THEN -1 ELSE 0 END) as rings,
 				  SUM(CASE WHEN unitPrice=0.01 THEN 1 ELSE t.quantity END) as qty,
 				  SUM(t.total) AS total,
 				  d.dept_no,d.dept_name,s.superID,x.distributor
@@ -149,27 +158,26 @@ class DepartmentMovementReport extends FannieReportPage {
 				  LEFT JOIN prodExtra as x on t.upc = x.upc
 				  WHERE $filter_condition
 				  AND tdate BETWEEN ? AND ?
+				  AND $filter_transactions
 				  GROUP BY t.upc,p.description,
 				  d.dept_no,d.dept_name,s.superID,x.distributor ORDER BY SUM(t.total) DESC";
 			break;
 		case 'Department':
-			$query =  "SELECT t.department,d.dept_name,
-				SUM(CASE WHEN unitPrice=0.01 THEN 1 ELSE t.quantity END) as qty,
-				SUM(total) as Sales 
+			$query =  "SELECT t.department,d.dept_name,SUM(t.quantity) as Qty, SUM(total) as Sales 
 				FROM $dlog as t LEFT JOIN departments as d on d.dept_no=t.department 
 				LEFT JOIN $superTable AS s ON s.dept_ID = t.department 
 				WHERE $filter_condition
 				AND tdate BETWEEN ? AND ?
+				AND $filter_transactions
 				GROUP BY t.department,d.dept_name ORDER BY SUM(total) DESC";
 			break;
 		case 'Date':
-			$query =  "SELECT year(tdate),month(tdate),day(tdate),
-				SUM(CASE WHEN unitPrice=0.01 THEN 1 ELSE t.quantity END) as qty,
-				SUM(total) as Sales 
+			$query =  "SELECT year(tdate),month(tdate),day(tdate),SUM(t.quantity) as Qty, SUM(total) as Sales 
 				FROM $dlog as t LEFT JOIN departments as d on d.dept_no=t.department 
 				LEFT JOIN $superTable AS s ON s.dept_ID = t.department
 				WHERE $filter_condition
 				AND tdate BETWEEN ? AND ?
+				AND $filter_transactions
 				GROUP BY year(tdate),month(tdate),day(tdate) 
 				ORDER BY year(tdate),month(tdate),day(tdate)";
 			break;
@@ -183,13 +191,12 @@ class DepartmentMovementReport extends FannieReportPage {
 				WHEN ".$dbc->dayofweek("tdate")."=6 THEN 'Fri'
 				WHEN ".$dbc->dayofweek("tdate")."=7 THEN 'Sat'
 				ELSE 'Err' END";
-			$query =  "SELECT $cols,
-				SUM(CASE WHEN unitPrice=0.01 THEN 1 ELSE t.quantity END) as qty,
-				SUM(total) as Sales 
+			$query =  "SELECT $cols,SUM(t.quantity) as Qty, SUM(total) as Sales 
 				FROM $dlog as t LEFT JOIN departments as d on d.dept_no=t.department 
 				LEFT JOIN $superTable AS s ON s.dept_ID = t.department 
 				WHERE $filter_condition
 				AND tdate BETWEEN ? AND ?
+				AND $filter_transactions
 				GROUP BY $cols
 				ORDER BY ".$dbc->dayofweek('tdate');
 			break;
@@ -236,18 +243,20 @@ class DepartmentMovementReport extends FannieReportPage {
 		  how the data is grouped
 		*/
 		switch(count($data[0])){
-		case 8:
-			$this->report_headers = array('UPC','Description','Qty','$',
+		case 9:
+			$this->report_headers = array('UPC','Description','Rings','Qty','$',
 				'Dept#','Department','Subdept','Vendor');
-			$this->sort_column = 3;
+			$this->sort_column = 4;
 			$this->sort_direction = 1;
 			$sumQty = 0.0;
 			$sumSales = 0.0;
+            $sumRings = 0.0;
 			foreach($data as $row){
-				$sumQty += $row[2];
-				$sumSales += $row[3];
+				$sumRings += $row[2];
+				$sumQty += $row[3];
+				$sumSales += $row[4];
 			}
-			return array('Total',null,$sumQty,$sumSales,null,null,null,null);
+			return array('Total',null,$sumRings,$sumQty,$sumSales,'',null,null,null);
 			break;
 		case 4:
 			/**
@@ -297,7 +306,8 @@ class DepartmentMovementReport extends FannieReportPage {
 	}
 
 	function form_content(){
-		global $dbc;
+		global $FANNIE_OP_DB;
+        $dbc = FannieDB::get($FANNIE_OP_DB);
 		$deptsQ = $dbc->prepare_statement("select dept_no,dept_name from departments order by dept_no");
 		$deptsR = $dbc->exec_statement($deptsQ);
 		$deptsList = "";

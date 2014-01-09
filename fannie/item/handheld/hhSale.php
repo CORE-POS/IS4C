@@ -22,7 +22,8 @@
 *********************************************************************************/
 
 include('../../config.php');
-include($FANNIE_ROOT.'src/mysql_connect.php');
+include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+$dbc = FannieDB::get($FANNIE_OP_DB);
 include('../laneUpdates.php');
 
 if (isset($_REQUEST['submitPC'])){
@@ -76,7 +77,7 @@ if (!isset($_REQUEST['upc'])){
 	return;
 }
 
-$upc = str_pad($_REQUEST['upc'],13,'0',STR_PAD_LEFT);
+$upc = BarcodeLib::padUPC(FormLib::get('upc'));
 
 $descQ = $dbc->prepare_statement("SELECT description,discounttype,special_price,start_date,end_date
 	 FROM products WHERE upc=?");

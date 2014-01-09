@@ -21,19 +21,38 @@
 
 *********************************************************************************/
 
-class EndOfShift extends Parser {
-	function check($str){
-		if ($str == "ES")
-			return True;
-		return False;
+class EndOfShift extends Parser 
+{
+	function check($str)
+    {
+		if ($str == "ES") {
+			return true;
+        }
+
+		return false;
 	}
 
-	function parse($str){
+	function parse($str)
+    {
+        global $CORE_LOCAL;
 		$json = $this->default_json();
-		return PrehLib::endofShift($json);
+
+        $CORE_LOCAL->set("memberID", $CORE_LOCAL->get('defaultNonMem'));
+        $CORE_LOCAL->set("memMsg","End of Shift");
+        TransRecord::addItem("ENDOFSHIFT", "End of Shift", "S", "", "", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+        Database::getsubtotals();
+        $chk = self::ttl();
+        if ($chk !== true) {
+            $json['main_frame'] = $chk;
+            return $json;
+        }
+        $CORE_LOCAL->set("runningtotal",$CORE_LOCAL->get("amtdue"));
+
+        return PrehLib::tender("CA", $CORE_LOCAL->get("runningtotal") * 100);
 	}
 
-	function doc(){
+	function doc()
+    {
 		return "<table cellspacing=0 cellpadding=3 border=1>
 			<tr>
 				<th>Input</th><th>Result</th>
@@ -48,4 +67,3 @@ class EndOfShift extends Parser {
 
 }
 
-?>

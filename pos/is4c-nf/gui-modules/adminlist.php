@@ -148,7 +148,9 @@ class adminlist extends NoInputPage {
 		<option value=''>
 		<option value='SUSPEND'>1. <?php echo _("Suspend Transaction"); ?>
 		<option value='RESUME'>2. <?php echo _("Resume Transaction"); ?>
-		<option value='TR'>3. <?php echo _("Tender Report"); ?>
+        <?php if ($CORE_LOCAL->get('SecurityTR') != 30 || $this->security >= 30) { ?>
+            <option value='TR'>3. <?php echo _("Tender Report"); ?>
+		<?php } ?>
 		<?php if ($this->security >= 30){ ?>
 			<option value='OTR'>4. <?php echo _("Any Tender Report"); ?>
 		<?php } ?>

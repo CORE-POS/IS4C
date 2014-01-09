@@ -24,8 +24,6 @@
 global $FANNIE_ROOT;
 if (!class_exists('CoreWarehouseModel'))
 	include_once(dirname(__FILE__).'/CoreWarehouseModel.php');
-if (!function_exists('select_dlog'))
-	include_once($FANNIE_ROOT.'src/select_dlog.php');
 
 class TransactionSummaryModel extends CoreWarehouseModel {
 
@@ -65,7 +63,7 @@ class TransactionSummaryModel extends CoreWarehouseModel {
 			$end_date = $start_date;
 		}
 
-		$target_table = select_dlog($start_date, $end_date);
+		$target_table = DTransactionsModel::selectDlog($start_date, $end_date);
 
 		/* clear old entries */
 		$sql = 'DELETE FROM '.$this->name.' WHERE date_id BETWEEN ? AND ?';

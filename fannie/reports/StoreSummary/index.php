@@ -53,8 +53,8 @@ header("Location: StoreSummaryReport.php");
 exit;
 
 include('../../config.php');
-include($FANNIE_ROOT.'src/mysql_connect.php');
-include($FANNIE_ROOT.'src/select_dlog.php');
+include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+$dbc = FannieDB::get($FANNIE_OP_DB);
 
 /* This program has two modes:
  * 1. Display the form for specifying the report.
@@ -97,7 +97,7 @@ if (isset($_REQUEST['submit'])){
 		}
 	}
 
-	$dlog = select_dtrans($d1,$d2);
+	$dlog = DTransactionsModel::selectDtrans($d1,$d2);
 	$datestamp = $dbc->identifier_escape('datetime');
 
 	if (isset($_REQUEST['excel'])){

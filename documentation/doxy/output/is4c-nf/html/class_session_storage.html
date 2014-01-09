@@ -38,12 +38,12 @@
 <a href="class_session_storage-members.html">List of all members.</a><table border="0" cellpadding="0" cellspacing="0">
 <tr><td></td></tr>
 <tr><td colspan="2"><br><h2>Public Member Functions</h2></td></tr>
-<tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="anchor" name="da4cbe327af225c4f0a32df52f36a598"></a><!-- doxytag: member="SessionStorage::SessionStorage" ref="da4cbe327af225c4f0a32df52f36a598" args="()" -->
+<tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="anchor" name="7add2f0b9ac04108409c2553c84a706b"></a><!-- doxytag: member="SessionStorage::SessionStorage" ref="7add2f0b9ac04108409c2553c84a706b" args="()" -->
 &nbsp;</td><td class="memItemRight" valign="bottom"><b>SessionStorage</b> ()</td></tr>
 
-<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_session_storage.html#db2f01518e69a86973c332179ea84c57">get</a> ($key)</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_session_storage.html#b81a8a1556f5d9ea20f18848b8d4eba4">get</a> ($key)</td></tr>
 
-<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_session_storage.html#8329b7e6fe19c8183be70cc2efd70d8f">set</a> ($key, $val)</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_session_storage.html#1506505b343c5a63e9963f1bd10df32f">set</a> ($key, $val, $immutable=false)</td></tr>
 
 </table>
 <hr><a name="_details"></a><h2>Detailed Description</h2>
@@ -51,7 +51,7 @@ A <a class="el" href="class_local_storage.html">LocalStorage</a> implementation 
 The module will try to start session as needed but performance is better if session.auto_start is enabled in php.ini. 
 <p>
 <hr><h2>Member Function Documentation</h2>
-<a class="anchor" name="db2f01518e69a86973c332179ea84c57"></a><!-- doxytag: member="SessionStorage::get" ref="db2f01518e69a86973c332179ea84c57" args="($key)" -->
+<a class="anchor" name="b81a8a1556f5d9ea20f18848b8d4eba4"></a><!-- doxytag: member="SessionStorage::get" ref="b81a8a1556f5d9ea20f18848b8d4eba4" args="($key)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -77,10 +77,10 @@ Get the value stored with the given key <dl compact><dt><b>Parameters:</b></dt><
 The value can be any PHP type that the underlying mechanism can store.<p>
 If the key is not found, the return value will be an empty string. 
 <p>
-Reimplemented from <a class="el" href="class_local_storage.html#60995fdbd712f97b5215fb5c3daa8356">LocalStorage</a>.
+Reimplemented from <a class="el" href="class_local_storage.html#9bdc48723296219b0cb74d7e3cda0c03">LocalStorage</a>.
 </div>
 </div><p>
-<a class="anchor" name="8329b7e6fe19c8183be70cc2efd70d8f"></a><!-- doxytag: member="SessionStorage::set" ref="8329b7e6fe19c8183be70cc2efd70d8f" args="($key, $val)" -->
+<a class="anchor" name="1506505b343c5a63e9963f1bd10df32f"></a><!-- doxytag: member="SessionStorage::set" ref="1506505b343c5a63e9963f1bd10df32f" args="($key, $val, $immutable=false)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -94,7 +94,13 @@ Reimplemented from <a class="el" href="class_local_storage.html#60995fdbd712f97b
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">$&nbsp;</td>
-          <td class="paramname"> <em>val</em></td><td>&nbsp;</td>
+          <td class="paramname"> <em>val</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">$&nbsp;</td>
+          <td class="paramname"> <em>immutable</em> = <code>false</code></td><td>&nbsp;</td>
         </tr>
         <tr>
           <td></td>
@@ -109,17 +115,18 @@ Reimplemented from <a class="el" href="class_local_storage.html#60995fdbd712f97b
 Save the value with the given key <dl compact><dt><b>Parameters:</b></dt><dd>
   <table border="0" cellspacing="2" cellpadding="0">
     <tr><td valign="top"></td><td valign="top"><em>$key</em>&nbsp;</td><td>A unique key string </td></tr>
-    <tr><td valign="top"></td><td valign="top"><em>The</em>&nbsp;</td><td>value (mixed)</td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>$val</em>&nbsp;</td><td>The value (mixed) </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>$immutable</em>&nbsp;</td><td>the value is a constant</td></tr>
   </table>
 </dl>
 The value can be any PHP type that the underlying mechanism can store. 
 <p>
-Reimplemented from <a class="el" href="class_local_storage.html#cb48a5027abf7a1d05b4a12be85d72a7">LocalStorage</a>.
+Reimplemented from <a class="el" href="class_local_storage.html#2f1074679d720b22bb0daf0bc9705937">LocalStorage</a>.
 </div>
 </div><p>
 <hr>The documentation for this class was generated from the following file:<ul>
 <li>pos/is4c-nf/lib/LocalStorage/SessionStorage.php</ul>
-<hr size="1"><address style="align: right;"><small>Generated on Tue Oct 23 14:30:34 2012 for CORE POS - IS4C by&nbsp;
+<hr size="1"><address style="align: right;"><small>Generated on 18 Nov 2013 for CORE POS - IS4C by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img src="doxygen.png" alt="doxygen" align="middle" border="0"></a> 1.4.7 </small></address>
 </body>

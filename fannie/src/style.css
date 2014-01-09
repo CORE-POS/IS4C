@@ -260,6 +260,10 @@ ul#css_menu_root li div.submenu {
 	z-index: 1;
 	margin-top: 10px;
 	position: absolute;
+    padding-top: 10px;
+    padding-bottom: 30px;
+    padding-right: 50px;
+    padding-left: 10px;
 	line-height: 1.8em;
 }
 
