@@ -265,12 +265,18 @@ class BatchFromSearch extends FannieRESTfulPage
 
         $ret .= '</form>';
 
+        // auto-detect likely owner & tag set by super department
         $tagPage = array_search(max($superDetect), $superDetect);
         if ($tagPage !== false) {
             $this->add_onload_command("\$('#tagset').val($tagPage);\n");
             $this->add_onload_command("\$('#batchOwner').val(\$('#tagset option:selected').text());\n");
         }
+        // show sale or price change tools as appropriate
         $this->add_onload_command('discountTypeFixup();');
+        // don't let enter key on these fields trigger form submission 
+        $this->add_onload_command("\$('#mdPercent').bind('keypress', noEnter);\n");
+        $this->add_onload_command("\$('#mdDollar').bind('keypress', noEnter);\n");
+        $this->add_onload_command("\$('#muPercent').bind('keypress', noEnter);\n");
 
         return $ret;
     }
@@ -324,6 +330,12 @@ function fixupPrice(val) {
 }
 function lastDigit(val) {
     return val - (10 * Math.floor(val/10));
+}
+function noEnter(e) {
+    if (e.keyCode == 13) {
+        $(this).trigger('change');
+        return false;
+    }
 }
         <?php
         return ob_get_clean();
