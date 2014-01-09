@@ -340,6 +340,12 @@ function goToBatch() {
         $('#actionForm').submit();
     }
 }
+function goToEdit() {
+    if (getItems()) {
+        $('#actionForm').attr('action', 'EditItemsFromSearch.php');
+        $('#actionForm').submit();
+    }
+}
         <?php
         return ob_get_clean();
     }
@@ -463,6 +469,8 @@ function goToBatch() {
         $ret .= '<div style="float:left;">';
         $ret .= '<fieldset><legend>Selected Items</legend>';
         $ret .= '<input type="submit" value="Create Price or Sale Batch" onclick="goToBatch();" />';
+        $ret .= '<br />';
+        $ret .= '<input style="margin-top:10px;" type="submit" value="Edit Items" onclick="goToEdit();" />';
         $ret .= '</fieldset>';
         $ret .= '<form method="post" id="actionForm" target="__advs_act"></form>';
         $ret .= '</div>';
