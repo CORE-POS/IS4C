@@ -26,28 +26,9 @@ include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
 class ManufacturerMovementReport extends FannieReportPage 
 {
-
-	function preprocess()
-    {
-		$this->report_cache = 'day';
-		$this->title = "Fannie : Manufacturer Movement";
-		$this->header = "Manufacturer Movement Report";
-
-		if (isset($_REQUEST['date1'])){
-			$this->content_function = "report_content";
-			$this->has_menus(False);
-		
-			if (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'xls') {
-				$this->report_format = 'xls';
-			} elseif (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'csv') {
-				$this->report_format = 'csv';
-            }
-		}
-		else 
-			$this->add_script("../../src/CalendarControl.js");
-
-		return True;
-	}
+    protected $title = "Fannie : Manufacturer Movement";
+    protected $header = "Manufacturer Movement Report";
+    protected $required_fields = array('date1', 'date2');
 
 	function fetch_report_data()
     {

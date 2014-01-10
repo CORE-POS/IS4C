@@ -28,27 +28,9 @@ class EquityAllReport extends FannieReportPage
 {
 
     protected $report_headers = array('Mem #', 'Last Name', 'First Name', 'Equity', 'Due Date');
-
-	public function preprocess()
-    {
-		$this->report_cache = 'none';
-		$this->title = "Fannie : All Equity Report";
-		$this->header = "All Equity Report";
-
-		if (isset($_REQUEST['submit'])){
-			$this->content_function = "report_content";
-			$this->has_menus(False);
-		
-			if (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'xls') {
-				$this->report_format = 'xls';
-			} elseif (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'csv') {
-				$this->report_format = 'csv';
-            }
-		}
-
-		return true;
-	}
-
+    protected $title = "Fannie : All Equity Report";
+    protected $header = "All Equity Report";
+    protected $required_fields = array('submit');
 
     public function fetch_report_data()
     {

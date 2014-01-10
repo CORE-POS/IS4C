@@ -46,23 +46,19 @@ class RecentSalesReport extends FannieReportPage
     private $lc;
 
     public function preprocess() {
+        // custom: one of the fields is required but not both
         $this->upc = BarcodeLib::padUPC(FormLib::get('upc'));
         $this->lc = FormLib::get('likecode');
         if ($this->upc != '0000000000000' || $this->lc !== '') {
-			$this->content_function = "report_content";
-			$this->has_menus(False);
-
             if ($this->lc !== '') {
                 $this->report_headers[0] = 'Like Code #'.$this->lc;
+                $this->required_fields = array('likecode');
             } else {
                 $this->report_headers[0] = $this->upc;
+                $this->required_fields = array('upc');
             }
-		
-			if (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'xls') {
-				$this->report_format = 'xls';
-			} elseif (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'csv') {
-				$this->report_format = 'csv';
-            }
+
+            parent::preprocess();
         }
 
         return true;

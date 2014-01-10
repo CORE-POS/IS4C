@@ -28,29 +28,9 @@ class DeptSettingsReport extends FannieReportPage
 {
 
     protected $report_headers = array('Dept #', 'Dept Name', 'Sales Code', 'Margin', 'Tax', 'FS');
-
-	public function preprocess()
-    {
-		$this->report_cache = 'none';
-		$this->title = "Fannie : Department Settings";
-		$this->header = "Department Settings";
-
-		if (FormLib::get('submit') !== '') {
-			$this->content_function = "report_content";
-			$this->has_menus(False);
-		
-			if (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'xls') {
-				$this->report_format = 'xls';
-			} elseif (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'csv') {
-				$this->report_format = 'csv';
-            }
-		}
-		else  {
-			$this->add_script("../../src/CalendarControl.js");
-        }
-
-		return true;
-	}
+    protected $title = "Fannie : Department Settings";
+    protected $header = "Department Settings";
+    protected $required_fields = array('submit');
 
     public function fetch_report_data()
     {

@@ -26,40 +26,10 @@ include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
 class CustomerPurchasesReport extends FannieReportPage 
 {
-
-	function preprocess()
-    {
-		/**
-		  Set the page header and title, enable caching
-		*/
-		$this->title = "Fannie : What Did I Buy?";
-		$this->header = "What Did I Buy? Report";
-		$this->report_cache = 'none';
-
-		if (isset($_REQUEST['date1'])){
-			/**
-			  Form submission occurred
-
-			  Change content function, turn off the menus,
-			  set up headers
-			*/
-			$this->content_function = "report_content";
-			$this->has_menus(False);
-			$this->report_headers = array('Date','UPC','Description','Dept','Cat','Qty','$');
-		
-			/**
-			  Check if a non-html format has been requested
-			*/
-			if (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'xls')
-				$this->report_format = 'xls';
-			elseif (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'csv')
-				$this->report_format = 'csv';
-		}
-		else 
-			$this->add_script("../../src/CalendarControl.js");
-
-		return True;
-	}
+    protected $title = "Fannie : What Did I Buy?";
+    protected $header = "What Did I Buy? Report";
+    protected $report_headers = array('Date','UPC','Description','Dept','Cat','Qty','$');
+    protected $required_fields = array('date1', 'date2');
 
 	function fetch_report_data()
     {

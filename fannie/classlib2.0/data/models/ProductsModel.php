@@ -346,7 +346,32 @@ class ProductsModel extends BasicModel
         $try = parent::save();
         if ($try) {
             $update = new ProdUpdateModel($this->connection);
+            $update->upc($this->upc());
             $update->logUpdate(ProdUpdateModel::UPDATE_EDIT);
+        }
+
+        return $try;
+    }
+
+    /**
+      Log deletes to prodUpdate
+      Delete corresponding records from other tables
+    */
+    public function delete()
+    {
+        $update = new ProdUpdateModel($this->connection);
+        $update->upc($this->upc());
+        $update->logUpdate(ProdUpdateModel::UPDATE_DELETE);
+
+        $try = parent::delete();
+        if ($try) {
+            $extra = new ProdExtraModel($this->connection);
+            $extra->upc($this->upc());
+            $extra->delete();
+
+            $user = new ProductUserModel($this->connection);
+            $user->upc($this->upc());
+            $user->delete();
         }
 
         return $try;

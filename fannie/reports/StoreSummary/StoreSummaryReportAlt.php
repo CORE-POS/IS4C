@@ -40,33 +40,24 @@ include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
 class StoreSummaryReportAlt extends FannieReportPage {
 
-	function preprocess(){
-		$this->title = "Fannie : Store Summary Report";
-		$this->header = "Store Summary Report";
-		$this->report_cache = 'none';
-		if (FormLib::get_form_value('sortable') !== '')
-			$this->sortable = True;
-		else
-			$this->sortable = False;
+    protected $title = "Fannie : Store Summary Report";
+    protected $header = "Store Summary Report";
+
+    protected $report_headers = array('','Qty','Costs','% Costs','DeptC%','Sales','% Sales','DeptS %',
+				'Margin %','GST','HST');
+    protected $required_fields = array('date1', 'date2');
+
+	function preprocess()
+    {
+        // custom: optional sorting
+		if (FormLib::get_form_value('sortable') !== '') {
+			$this->sortable = true;
+		} else {
+			$this->sortable = false;
+        }
 		$this->cellTextAlign = 'right';
 
-		if (FormLib::get_form_value('date1') !== ''){
-			$this->content_function = "report_content";
-			$this->has_menus(True); // 1Jul13 was False, normal for reports of this kind.
-			$this->report_headers = array('','Qty','Costs','% Costs','DeptC%','Sales','% Sales','DeptS %',
-				'Margin %','GST','HST');
-
-			/**
-			  Check if a non-html format has been requested
-			   from the links in the initial display, not the form.
-			*/
-			if (FormLib::get_form_value('excel') !== '')
-				$this->report_format = FormLib::get_form_value('excel');
-		}
-		else 
-			$this->add_script("../../src/CalendarControl.js");
-
-		return True;
+        return parent::preprocess();
 	}
 
 	function report_description_content(){

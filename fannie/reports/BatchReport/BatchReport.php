@@ -26,42 +26,11 @@ include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
 class BatchReport extends FannieReportPage 
 {
-
-	function preprocess()
-    {
-		/**
-		  Set the page header and title, enable caching
-		*/
-		$this->header = "Select batch(es)";
-		$this->title = "Fannie :: Batch Report";
-		$this->report_cache = 'day';
-
-		if (isset($_REQUEST['batchID'])){
-			/**
-			  Form submission occurred
-
-			  Change content function, turn off the menus,
-			  set up headers
-			*/
-			$this->content_function = "report_content";
-			$this->has_menus(False);
-			$this->report_headers = array('UPC','Description','$','Qty');
-
-			$this->header = "Batch Report"; // gets used as filename on xls/csv
-		
-			/**
-			  Check if a non-html format has been requested
-			*/
-			if (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'xls')
-				$this->report_format = 'xls';
-			elseif (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'csv')
-				$this->report_format = 'csv';
-		}
-		else 
-			$this->add_script("../../src/CalendarControl.js");
-
-		return True;
-	}
+    protected $header = "Select batch(es)";
+    protected $title = "Fannie :: Batch Report";
+    protected $report_cache = 'day';
+    protected $report_headers = array('UPC','Description','$','Qty');
+    protected $required_fields = array('batchID');
 
 	function fetch_report_data(){
 		global $FANNIE_OP_DB, $FANNIE_ARCHIVE_DB;
