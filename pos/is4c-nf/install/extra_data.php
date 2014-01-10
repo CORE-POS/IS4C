@@ -1,8 +1,8 @@
 <?php
 include(realpath(dirname(__FILE__).'/../lib/AutoLoader.php'));
-AutoLoader::LoadMap();
+AutoLoader::loadMap();
 include(realpath(dirname(__FILE__).'/../ini.php'));
-include('util.php');
+include('InstallUtilities.php');
 ?>
 <html>
 <head>
@@ -30,25 +30,25 @@ $db = new SQLManager($CORE_LOCAL->get('localhost'),
 if (isset($_REQUEST['employees'])){
 	echo "Loading employees";
 	$db->query("TRUNCATE TABLE employees");
-	load_sample_data($db,'employees');	
+	InstallUtilities::loadSampleData($db,'employees');	
 }
 elseif(isset($_REQUEST['custdata'])){
 	echo "Loading custdata";
 	$db->query("TRUNCATE TABLE custdata");
-	load_sample_data($db,'custdata');
+	InstallUtilities::loadSampleData($db,'custdata');
 }
 elseif(isset($_REQUEST['products'])){
 	echo "Loading products";
 	$db->query("TRUNCATE TABLE products");
-	load_sample_data($db,'products');
+	InstallUtilities::loadSampleData($db,'products');
 }
 elseif(isset($_REQUEST['depts'])){
 	echo "Loading departments";
 	$db->query("TRUNCATE TABLE departments");
-	load_sample_data($db,'departments');
-	echo "<br />Loading subdepts";
-	$db->query("TRUNCATE TABLE subdepts");
-	load_sample_data($db,'subdepts');
+	InstallUtilities::loadSampleData($db,'departments');
+	echo "<br />Loading super departments";
+	$db->query("TRUNCATE TABLE MasterSuperDepts");
+	InstallUtilities::loadSampleData($db,'MasterSuperDepts');
 }
 ?>
 </b></div>
@@ -72,8 +72,8 @@ of someone's customer table I think.</p>
 be the Wedge's or at least a snapshot of it.</p>
 <input type=submit name=products value="Load sample products" />
 <hr />
-<b>Departments</b> &amp; <b>Subdepts</b>
-<p>Products get categorized into departments &amp; subdepartments.
+<b>Departments</b> &amp; <b>Superdepts</b>
+<p>Products get categorized into departments &amp; super departments.
 You can also ring amounts directly to a department. Not needed,
 strictly speaking, for a basic lane (Ring up items, total, 
 accept tender, provide change).</p>

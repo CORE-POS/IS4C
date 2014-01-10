@@ -52,6 +52,8 @@ KILL=/bin/kill
 DHOME=/var/www/IS4C/pos/is4c-nf/scale-drivers/drivers/NewMagellan
 # Use '-v' for driver to log activity.
 VERBOSE=
+# upstream version with PFC_CORE
+#DHOME=/var/www/PFC_CORE/pos/is4c-nf/scale-drivers/drivers/NewMagellan
 
 # --FUNCTIONS - - - - - - - - - - - - - - - - - - - - - - - - -
 

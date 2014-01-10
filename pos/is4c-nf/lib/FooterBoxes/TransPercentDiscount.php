@@ -21,27 +21,31 @@
 
 *********************************************************************************/
 
-class TransPercentDiscount extends FooterBox {
+class TransPercentDiscount extends FooterBox 
+{
 
-	public $header_css_class = 'coloredText';
-	public $display_css = "font-weight:bold;font-size:110%;";
-	public $display_css_class = 'lightestText';
+    public $header_css_class = 'coloredText';
+    public $display_css = "font-weight:bold;font-size:110%;";
+    public $display_css_class = 'lightestText';
 
-	function header_content(){
-		global $CORE_LOCAL;
-		if ($CORE_LOCAL->get("percentDiscount") == 0)
-			return _("% Discount");
-		else
-			return $CORE_LOCAL->get("percentDiscount")._("% Discount");
-	}
+    public function header_content()
+    {
+        global $CORE_LOCAL;
+        if ($CORE_LOCAL->get("percentDiscount") == 0) {
+            return _("% Discount");
+        } else {
+            return $CORE_LOCAL->get("percentDiscount")._("% Discount");
+        }
+    }
 
-	function display_content(){
-		global $CORE_LOCAL;
-		if ($CORE_LOCAL->get("percentDiscount") != 0 )
-			return number_format($CORE_LOCAL->get("transDiscount"), 2);
-		else
-			return "n/a";
-	}
+    public function display_content()
+    {
+        global $CORE_LOCAL;
+        if ($CORE_LOCAL->get("percentDiscount") != 0 ) {
+            return number_format($CORE_LOCAL->get("transDiscount"), 2);
+        } else {
+            return "n/a";
+        }
+    }
 }
 
-?>

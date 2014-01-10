@@ -29,9 +29,15 @@ public class BitmapConverter {
 		// 1 bpp => done
 		// 4 bpp => unimplemented
 		if (bpp == 1) return data;
-		if (bpp == 4) return null;
+		if (bpp == 4) {
+            System.Console.WriteLine("bpp4 - abort");
+            return null;
+        }
 		// compression => unimplemented
-		if (comp != 0) return null;
+		if (comp != 0) {
+            System.Console.WriteLine("compressed - abort");
+            return null;
+        }
 
 		byte[,] pixels = new byte[width,height];
 
@@ -142,12 +148,19 @@ public class BitmapConverter {
 	public BitmapConverter(){} 
 
 	// for testing
-	/*
-	static public void Main(){
-		byte[] newbmp = BitmapConverter.To1bpp("1721f71e2a40be4fd58cb1292cc0f0cc.bmp");
-		System.IO.File.WriteAllBytes("out.bmp",newbmp);
-	}	
-	*/
+	static public void Main(string[] args){
+		if (args.Length < 1){
+			System.Console.WriteLine("File name required");
+		}
+		else if (!System.IO.File.Exists(args[0])){
+			System.Console.WriteLine("File does not exist: "+args[0]);
+		}
+		else {
+			byte[] newbmp = BitmapConverter.To1bpp(args[0]);
+            System.Console.WriteLine(newbmp);
+			System.IO.File.WriteAllBytes("out.bmp",newbmp);
+		}
+	}
 }
 
 }

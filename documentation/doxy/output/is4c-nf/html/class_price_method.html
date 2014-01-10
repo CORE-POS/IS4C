@@ -33,24 +33,27 @@
 <h1>PriceMethod Class Reference</h1><!-- doxytag: class="PriceMethod" --><p>Inheritance diagram for PriceMethod:
 <p><center><img src="class_price_method.png" usemap="#PriceMethod_map" border="0" alt=""></center>
 <map name="PriceMethod_map">
-<area href="class_a_b_group_p_m.html" alt="ABGroupPM" shape="rect" coords="0,56,141,80">
-<area href="class_basic_p_m.html" alt="BasicPM" shape="rect" coords="151,56,292,80">
-<area href="class_big_group_p_m.html" alt="BigGroupPM" shape="rect" coords="302,56,443,80">
-<area href="class_group_p_m.html" alt="GroupPM" shape="rect" coords="453,56,594,80">
-<area href="class_no_disc_on_sale_p_m.html" alt="NoDiscOnSalePM" shape="rect" coords="604,56,745,80">
-<area href="class_qtty_enforced_group_p_m.html" alt="QttyEnforcedGroupPM" shape="rect" coords="755,56,896,80">
-<area href="class_split_a_b_group_p_m.html" alt="SplitABGroupPM" shape="rect" coords="906,56,1047,80">
+<area href="class_a_b_group_p_m.html" alt="ABGroupPM" shape="rect" coords="151,56,292,80">
+<area href="class_basic_p_m.html" alt="BasicPM" shape="rect" coords="151,112,292,136">
+<area href="class_big_group_p_m.html" alt="BigGroupPM" shape="rect" coords="151,168,292,192">
+<area href="class_group_p_m.html" alt="GroupPM" shape="rect" coords="151,224,292,248">
+<area href="class_more_than_qtty_p_m.html" alt="MoreThanQttyPM" shape="rect" coords="151,280,292,304">
+<area href="class_no_disc_on_sale_p_m.html" alt="NoDiscOnSalePM" shape="rect" coords="151,336,292,360">
+<area href="class_qtty_enforced_group_p_m.html" alt="QttyEnforcedGroupPM" shape="rect" coords="151,392,292,416">
+<area href="class_split_a_b_group_p_m.html" alt="SplitABGroupPM" shape="rect" coords="151,448,292,472">
 </map>
 <a href="class_price_method-members.html">List of all members.</a><table border="0" cellpadding="0" cellspacing="0">
 <tr><td></td></tr>
 <tr><td colspan="2"><br><h2>Public Member Functions</h2></td></tr>
-<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_price_method.html#84c87cb3f63b5119cccbc9c47b4e615c">addItem</a> ($row, $quantity, $priceObj)</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_price_method.html#50cacc8fc2ddde54b4db2237c0b6985a">addItem</a> ($row, $quantity, $priceObj)</td></tr>
+
+<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_price_method.html#38cc94d744fc9b5ad37fac0404fc93a4">errorInfo</a> ()</td></tr>
 
 <tr><td colspan="2"><br><h2>Public Attributes</h2></td></tr>
-<tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="anchor" name="b07e8864ba71dbc602a2f4707498f50c"></a><!-- doxytag: member="PriceMethod::$savedRow" ref="b07e8864ba71dbc602a2f4707498f50c" args="" -->
+<tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="anchor" name="7582b00e70047014e90ae2cb30160d28"></a><!-- doxytag: member="PriceMethod::$savedRow" ref="7582b00e70047014e90ae2cb30160d28" args="" -->
 &nbsp;</td><td class="memItemRight" valign="bottom"><b>$savedRow</b></td></tr>
 
-<tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="anchor" name="fd33d21e667ee461d8960315ae5c7bc5"></a><!-- doxytag: member="PriceMethod::$savedInfo" ref="fd33d21e667ee461d8960315ae5c7bc5" args="" -->
+<tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="anchor" name="50918fb5760837e4f456654791c9aa09"></a><!-- doxytag: member="PriceMethod::$savedInfo" ref="50918fb5760837e4f456654791c9aa09" args="" -->
 &nbsp;</td><td class="memItemRight" valign="bottom"><b>$savedInfo</b></td></tr>
 
 </table>
@@ -61,7 +64,7 @@ The default case is to add an item with the specified price (<a class="el" href=
 Stores can also swap out modules as needed and rearrange them so products.pricemethod=X doesn't need to mean the same thing at every store. 
 <p>
 <hr><h2>Member Function Documentation</h2>
-<a class="anchor" name="84c87cb3f63b5119cccbc9c47b4e615c"></a><!-- doxytag: member="PriceMethod::addItem" ref="84c87cb3f63b5119cccbc9c47b4e615c" args="($row, $quantity, $priceObj)" -->
+<a class="anchor" name="50cacc8fc2ddde54b4db2237c0b6985a"></a><!-- doxytag: member="PriceMethod::addItem" ref="50cacc8fc2ddde54b4db2237c0b6985a" args="($row, $quantity, $priceObj)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -100,14 +103,37 @@ Add the item to the transaction <dl compact><dt><b>Parameters:</b></dt><dd>
     <tr><td valign="top"></td><td valign="top"><em>$priceObj</em>&nbsp;</td><td>A <a class="el" href="class_discount_type.html">DiscountType</a> object </td></tr>
   </table>
 </dl>
+<dl compact><dt><b>Returns:</b></dt><dd>boolean success/failure </dd></dl>
 
 <p>
-Reimplemented in <a class="el" href="class_a_b_group_p_m.html#86763f57d81c0643efcc8f21f60da8c3">ABGroupPM</a>, <a class="el" href="class_basic_p_m.html#b7a6887d817cd6b77d255a6165d57302">BasicPM</a>, <a class="el" href="class_big_group_p_m.html#3ef1e6e3f477b5709d35169f651dd238">BigGroupPM</a>, <a class="el" href="class_group_p_m.html#386e7ad5ed26dbe46f935a8e4948655e">GroupPM</a>, <a class="el" href="class_no_disc_on_sale_p_m.html#7b61048157166c7ba796724dd44cf021">NoDiscOnSalePM</a>, <a class="el" href="class_qtty_enforced_group_p_m.html#cdb2448c7bb752a013a2279e7b9fa0bf">QttyEnforcedGroupPM</a>, and <a class="el" href="class_split_a_b_group_p_m.html#58c2865a043fab53e215ab51e6ad4818">SplitABGroupPM</a>.
+Reimplemented in <a class="el" href="class_a_b_group_p_m.html#6a8e78c3388f38f52e26e1c17f337278">ABGroupPM</a>, <a class="el" href="class_basic_p_m.html#2837673886c07d799d551cfc9103c3fa">BasicPM</a>, <a class="el" href="class_big_group_p_m.html#c19d8974b7bd328f7bbfaada76ba3838">BigGroupPM</a>, <a class="el" href="class_group_p_m.html#912215bd966c6989c3abebdb4d51feed">GroupPM</a>, <a class="el" href="class_more_than_qtty_p_m.html#6e45cde266f106160df89568f0fd38ab">MoreThanQttyPM</a>, <a class="el" href="class_no_disc_on_sale_p_m.html#bbc7bf44c3eab2bb3e66177d09b66825">NoDiscOnSalePM</a>, <a class="el" href="class_qtty_enforced_group_p_m.html#88293321b6cdfb4de60b81e306b84b48">QttyEnforcedGroupPM</a>, and <a class="el" href="class_split_a_b_group_p_m.html#24d7cd4f8b8ad76bc2fe3b6a1ee24812">SplitABGroupPM</a>.
+</div>
+</div><p>
+<a class="anchor" name="38cc94d744fc9b5ad37fac0404fc93a4"></a><!-- doxytag: member="PriceMethod::errorInfo" ref="38cc94d744fc9b5ad37fac0404fc93a4" args="()" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">PriceMethod::errorInfo           </td>
+          <td>(</td>
+          <td class="paramname">          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Information about error(s) adding the item to the transaction <dl compact><dt><b>Returns:</b></dt><dd>string message </dd></dl>
+
+<p>
+Reimplemented in <a class="el" href="class_basic_p_m.html#3e9f7cac56a3b874303e0cb5b31b400a">BasicPM</a>.
 </div>
 </div><p>
 <hr>The documentation for this class was generated from the following file:<ul>
 <li>pos/is4c-nf/lib/Scanning/PriceMethod.php</ul>
-<hr size="1"><address style="align: right;"><small>Generated on Tue Oct 23 14:30:34 2012 for CORE POS - IS4C by&nbsp;
+<hr size="1"><address style="align: right;"><small>Generated on 18 Nov 2013 for CORE POS - IS4C by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img src="doxygen.png" alt="doxygen" align="middle" border="0"></a> 1.4.7 </small></address>
 </body>

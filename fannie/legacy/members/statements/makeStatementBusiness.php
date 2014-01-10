@@ -6,9 +6,11 @@ if (!class_exists("SQLManager")) require_once($FANNIE_ROOT."src/SQLManager.php")
 include('../../db.php');
 
 $cards = "(";
+$args = array();
 if (isset($_POST["cardno"])){
 	foreach($_POST["cardno"] as $c){
-		$cards .= $c.",";
+		$cards .= "?,";
+        $args[] = $c;
 	}
 	$cards = rtrim($cards,",");
 	$cards .= ")";
@@ -17,7 +19,7 @@ if (isset($_POST["cardno"])){
 $cardsClause = " AND m.card_no IN $cards ";
 if ($cards == "(") $cardsClause = "";
 
-$selAddQ = "SELECT m.card_no, a.memName,m.street, '',
+$selAddQ = $sql->prepare("SELECT m.card_no, a.memName,m.street, '',
            m.City, m.State, m.zip,
 	   a.TwoMonthBalance,a.LastMonthCharges,
 	   a.LastMonthPayments,a.LastMonthBalance
@@ -28,14 +30,14 @@ $selAddQ = "SELECT m.card_no, a.memName,m.street, '',
 	   c.memtype = 2
 	   $cardsClause 
 	   and (a.LastMonthBalance <> 0 or a.lastMonthCharges <> 0 or a.lastMonthPayments <> 0)
-           ORDER BY a.cardno";
-$selAddR = $sql->query($selAddQ);
+           ORDER BY a.cardno");
+$selAddR = $sql->execute($selAddQ, $args);
 
-$selTransQ = "SELECT card_no, charges, payments, 
-	convert(varchar(50),date,101), trans_num,description,dept_name  
-	FROM AR_statementHistory as m WHERE 1=1 $cardsClause
-	order by card_no,date desc,trans_num,description,dept_name";
-$selTransR = $sql->query($selTransQ);
+$selTransQ = $sql->prepare("SELECT card_no, charges, payments, 
+	date_format(date,'%Y-%m-%d'), trans_num,description,dept_name  
+	FROM is4c_trans.AR_statementHistory as m WHERE 1=1 $cardsClause
+	order by card_no,date desc,trans_num,description,dept_name");
+$selTransR = $sql->execute($selTransQ, $args);
 $selTransN = $sql->num_rows($selTransR);
 
 $today= date("d-F-Y");

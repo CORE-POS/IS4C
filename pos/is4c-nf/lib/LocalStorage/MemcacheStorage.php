@@ -21,7 +21,9 @@
 
 *********************************************************************************/
 
-if (!class_exists("LocalStorage")) include_once(realpath(dirname(__FILE__).'/LocalStorage.php'));
+if (!class_exists("LocalStorage")) {
+    include_once(realpath(dirname(__FILE__).'/LocalStorage.php'));
+}
 
 /**
   @class MemcacheStorage
@@ -31,32 +33,40 @@ if (!class_exists("LocalStorage")) include_once(realpath(dirname(__FILE__).'/Loc
 
   Requires memcached
 */
-class MemcacheStorage extends LocalStorage {
+class MemcacheStorage extends LocalStorage 
+{
 
-	var $con;
-	function MemcacheStorage(){
-		$this->con = new Memcache();
-		$this->con->connect('127.0.0.1',11211);
-	}
+    private $con;
 
-	function get($key){
-		if ($this->is_immutable($key)) return $this->immutables[$key];
-		$val = $this->con->get($key);
-		if ($val === False){
-			$exists = $this->con->replace($key,False);
-			if ($exists === False)
-				return "";
-		}
-		return $val;
-	}
+    public function MemcacheStorage(){
+        $this->con = new Memcache();
+        $this->con->connect('127.0.0.1',11211);
+    }
 
-	function set($key,$val,$immutable=False){
-		if ($immutable)
-			$this->immutable_set($key,$val);
-		else
-			$this->con->set($key,$val);
-		$this->debug($key,$val);
-	}
+    public function get($key)
+    {
+        if ($this->isImmutable($key)) {
+            return $this->immutables[$key];
+        }
+        $val = $this->con->get($key);
+        if ($val === false) {
+            $exists = $this->con->replace($key,false);
+            if ($exists === false) {
+                return "";
+            }
+        }
+
+        return $val;
+    }
+
+    public function set($key,$val,$immutable=false)
+    {
+        if ($immutable) {
+            $this->immutableSet($key,$val);
+        } else {
+            $this->con->set($key,$val);
+        }
+        $this->debug($key,$val);
+    }
 }
 
-?>

@@ -32,42 +32,42 @@
 
 class NoDiscOnSalePM extends PriceMethod {
 
-	function addItem($row,$quantity,$priceObj){
-		if ($quantity == 0) return false;
+    function addItem($row,$quantity,$priceObj){
+        if ($quantity == 0) return false;
 
-		$pricing = $priceObj->priceInfo($row,$quantity);
+        $pricing = $priceObj->priceInfo($row,$quantity);
 
-		TransRecord::addItem($row['upc'],
-			$row['description'],
-			'I',
-			' ',
-			' ',
-			$row['department'],
-			$quantity,
-			$pricing['unitPrice'],
-			MiscLib::truncate2($pricing['unitPrice'] * $quantity),
-			$pricing['regPrice'],
-			$row['scale'],
-			$row['tax'],
-			$row['foodstamp'],
-			$pricing['discount'],
-			$pricing['memDiscount'],
-			($row['discounttype']>0?0:$row['discount']),
-			$row['discounttype'],
-			$quantity,
-			$row['pricemethod'],
-			$row['quantity'],
-			$row['groupprice'],
-			$row['mixmatchcode'],
-			0,
-			0,
-			(isset($row['cost'])?$row['cost']*$quantity:0.00),
-			(isset($row['numflag'])?$row['numflag']:0),
-			(isset($row['charflag'])?$row['charflag']:'')
-		);
+        TransRecord::addItem($row['upc'],
+            $row['description'],
+            'I',
+            ' ',
+            ' ',
+            $row['department'],
+            $quantity,
+            $pricing['unitPrice'],
+            MiscLib::truncate2($pricing['unitPrice'] * $quantity),
+            $pricing['regPrice'],
+            $row['scale'],
+            $row['tax'],
+            $row['foodstamp'],
+            $pricing['discount'],
+            $pricing['memDiscount'],
+            ($row['discounttype']>0?0:$row['discount']),
+            $row['discounttype'],
+            $quantity,
+            $row['pricemethod'],
+            $row['quantity'],
+            $row['groupprice'],
+            $row['mixmatchcode'],
+            0,
+            0,
+            (isset($row['cost'])?$row['cost']*$quantity:0.00),
+            (isset($row['numflag'])?$row['numflag']:0),
+            (isset($row['charflag'])?$row['charflag']:'')
+        );
 
-		return True;
-	}
+        return True;
+    }
 }
 
 ?>

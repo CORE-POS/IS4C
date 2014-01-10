@@ -24,18 +24,17 @@
 header("Location: AuthIndexPage.php");
 
 require('../login.php');
-$path = guesspath();
-include($path."config.php");
+include("../../config.php");
 $page_title = 'Fannie : Auth : Menu';
 $header = 'Fannie : Auth : Menu';
-include($path."src/header.html");
+include($FANNIE_ROOT."src/header.html");
 
 $name = checkLogin();
 if (!$name){
   echo "You must be <a href=loginform.php>logged in</a> to use this</a>";
 }
 else {
-	$priv = validateUserQuiet('admin');
+  $priv = validateUserQuiet('admin');
   $options = 'all';
   if (!$priv){
 		$options = 'limited';
@@ -77,5 +76,5 @@ else {
   echo "</ul>";
 }  
 
-include($path."src/footer.html");
+include($FANNIE_ROOT."src/footer.html");
 ?>

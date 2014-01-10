@@ -36,6 +36,9 @@ class GCReceiptMessage extends ReceiptMessage {
 
 	protected function varied_message($ref, $reprint=False, $sigSlip=False){
 		global $CORE_LOCAL;
+        if ($CORE_LOCAL->get('autoReprint') == 1) {
+            $sigSlip = true;
+        }
 		$date = ReceiptLib::build_time(time());
 		list($emp, $reg, $trans) = explode('-',$ref);
 		$slip = '';
@@ -85,10 +88,13 @@ class GCReceiptMessage extends ReceiptMessage {
 			}
 			$slip .= ReceiptLib::centerString("................................................")."\n";
 
+            /* not correct behavior? print all slips regardless?
 			if ($sigSlip){
-				$slip .= "\n\n\n\n".chr(27).chr(105);
+				// Cut is added automatically by printing process
+				//$slip .= "\n\n\n\n".chr(27).chr(105);
 				break;
 			}
+            */
 		}
 
 		return $slip;

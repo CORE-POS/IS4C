@@ -61,8 +61,9 @@ class CreateTagsByManu extends FanniePage {
 			while($w = $dbc->fetch_row($r)){
 				$args = array($pageID,$w['upc'],
 					$w['description'],$w['normal_price'],
-					$w['manufacturer'],$w['distributor'],
+					$w['manufacturer'],
 					$w['sku'],$w['units'],$w['size'],
+                    $w['distributor'],
 					PriceLib::pricePerUnit($w['normal_price'],$w['size'])
 				);
 				$dbc->exec_statement($ins,$args);

@@ -23,7 +23,8 @@
 
 include(dirname(__FILE__).'/../../../config.php');
 include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
-include(dirname(__FILE__).'/FannieInventory.php');
+if (!class_exists('FannieInventory'))
+	include(dirname(__FILE__).'/FannieInventory.php');
 
 /**
   @class Brewventory

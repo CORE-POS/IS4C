@@ -5,8 +5,9 @@ if (!class_exists("SQLManager"))
 
 function hours_dbconnect(){
 	global $FANNIE_ROOT;
-	include($FANNIE_ROOT.'src/Credentials/HoursDB.wfc.php');
-	return $hoursdb;
+    if (!class_exists('FannieAPI'))
+        include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+	return FannieDB::get('HoursTracking');
 }
 
 

@@ -22,14 +22,13 @@
 *********************************************************************************/
 
 include('../../config.php');
-include($FANNIE_ROOT.'src/mysql_connect.php');
-include($FANNIE_ROOT.'src/select_dlog.php');
-include($FANNIE_ROOT.'classlib2.0/lib/FormLib.php');
-include($FANNIE_ROOT.'classlib2.0/FannieReportPage.php');
+include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
-class GeneralDayReport extends FannieReportPage {
+class GeneralDayReport extends FannieReportPage 
+{
 
-	function preprocess(){
+	function preprocess()
+    {
 		global $FANNIE_WINDOW_DRESSING;
 		$this->title = "Fannie : General Day Report";
 		$this->header = "General Day Report";
@@ -65,19 +64,21 @@ class GeneralDayReport extends FannieReportPage {
 		return(array('&nbsp;'));
 	}
 
-	function fetch_report_data(){
-		global $dbc, $FANNIE_ARCHIVE_DB, $FANNIE_EQUITY_DEPARTMENTS, $FANNIE_OP_DB,
+	function fetch_report_data()
+    {
+		global $FANNIE_OP_DB, $FANNIE_ARCHIVE_DB, $FANNIE_EQUITY_DEPARTMENTS,
 			$FANNIE_COOP_ID;
+        $dbc = FannieDB::get($FANNIE_OP_DB);
 		$d1 = FormLib::get_form_value('date1',date('Y-m-d'));
 		$dates = array($d1.' 00:00:00',$d1.' 23:59:59');
 		$data = array();
 
 		if ( isset($FANNIE_COOP_ID) && $FANNIE_COOP_ID == 'WEFC_Toronto' )
-			$shrinkageUsers = " AND d.card_no not between 99990 and 99998";
+			$shrinkageUsers = " AND d.card_no not between 99900 and 99998";
 		else
 			$shrinkageUsers = "";
 
-		$dlog = select_dlog($d1);
+		$dlog = DTransactionsModel::selectDlog($d1);
 		$tenderQ = $dbc->prepare_statement("SELECT 
 			TenderName,count(d.total),sum(d.total) as total
 			FROM $dlog as d,
@@ -113,9 +114,10 @@ class GeneralDayReport extends FannieReportPage {
 		$data[] = $report;
 
 		$discQ = $dbc->prepare_statement("SELECT m.memDesc, SUM(d.total) AS Discount,count(*)
-				FROM $dlog d
-				INNER JOIN {$FANNIE_OP_DB}.custdata c ON d.card_no = c.CardNo AND c.personNum=1
-				INNER JOIN {$FANNIE_OP_DB}.memtype m ON c.memType = m.memtype
+				FROM $dlog d INNER JOIN
+			       custdata c ON d.card_no = c.CardNo AND c.personNum=1
+				INNER JOIN
+			      memtype m ON c.memType = m.memtype
 				WHERE d.tdate BETWEEN ? AND ?
 			       AND d.upc = 'DISCOUNT'{$shrinkageUsers}
 				AND total <> 0
@@ -143,11 +145,11 @@ class GeneralDayReport extends FannieReportPage {
 
 		$transQ = $dbc->prepare_statement("select q.trans_num,sum(q.quantity) as items,transaction_type, sum(q.total) from
 			(
-			SELECT trans_num,card_no,quantity,total,
-			m.memdesc as transaction_type
-			FROM $dlog as d
-				LEFT JOIN {$FANNIE_OP_DB}.custdata as c on d.card_no = c.cardno
-				LEFT JOIN {$FANNIE_OP_DB}.memtype as m on c.memtype = m.memtype
+			select trans_num,card_no,quantity,total,
+			m.memDesc as transaction_type
+			from $dlog as d
+			left join custdata as c on d.card_no = c.cardno
+			left join memtype as m on c.memtype = m.memtype
 			WHERE d.tdate BETWEEN ? AND ?
 				AND trans_type in ('I','D')
 				AND upc <> 'RRR'{$shrinkageUsers}
@@ -211,7 +213,8 @@ class GeneralDayReport extends FannieReportPage {
 		return $data;
 	}
 
-	function calculate_footers($data){
+	function calculate_footers($data)
+    {
 		switch($this->multi_counter){
 		case 1:
 			$this->report_headers[0] = 'Tenders';
@@ -242,7 +245,8 @@ class GeneralDayReport extends FannieReportPage {
 		return array(null,$sumQty,$sumSales);
 	}
 
-	function form_content(){
+	function form_content()
+    {
 		$start = date('Y-m-d',strtotime('yesterday'));
 		?>
 		<form action=GeneralDayReport.php method=get>

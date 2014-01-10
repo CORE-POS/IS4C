@@ -21,8 +21,8 @@
 
 *********************************************************************************/
 include('../../config.php');
-include($FANNIE_ROOT.'src/trans_connect.php');
-include($FANNIE_ROOT.'src/select_dlog.php');
+include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+$dbc = FannieDB::get($FANNIE_TRANS_DB);
 include($FANNIE_ROOT.'install/db.php');
 
 $page_title = "Fannie :: Working Table";
@@ -39,7 +39,7 @@ if (isset($_REQUEST['date1'])){
 	}
 	$mtype = rtrim($mtype,",").")";
 
-	$dlog = select_dlog($_REQUEST['date1'],$_REQUEST['date2']);
+	$dlog = DTransactionsModel::selectDlog($_REQUEST['date1'],$_REQUEST['date2']);
 
 	if ($dbc->table_exists("dlog_patronage")){
 		$drop = $dbc->prepare_statement("DROP TABLE dlog_patronage");

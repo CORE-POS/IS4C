@@ -33,11 +33,17 @@ class ScrollItems extends Parser {
 
 	function parse($str){
 		global $CORE_LOCAL;
+
+        $lines = $CORE_LOCAL->get('screenLines');
+        if (!$lines === '' || !is_numeric($lines)) {
+            $lines = 11;
+        }
+
 		$ret = $this->default_json();
 		if ($str == "U")
-			$ret["output"] = DisplayLib::listitems($CORE_LOCAL->get("currenttopid"), $this->next_valid($CORE_LOCAL->get("currentid"),True));
+			$ret["output"] = DisplayLib::listItems($CORE_LOCAL->get("currenttopid"), $this->next_valid($CORE_LOCAL->get("currentid"),True));
 		elseif ($str == "D")
-			$ret["output"] = DisplayLib::listitems($CORE_LOCAL->get("currenttopid"), $this->next_valid($CORE_LOCAL->get("currentid"),False));
+			$ret["output"] = DisplayLib::listItems($CORE_LOCAL->get("currenttopid"), $this->next_valid($CORE_LOCAL->get("currentid"),False));
 		else {
 			$change = (int)substr($str,1);
 			$curID = $CORE_LOCAL->get("currenttopid");
@@ -46,10 +52,10 @@ class ScrollItems extends Parser {
 				$newID -= $change;
 			else
 				$newID += $change;
-			if ($newID == $curID || $newID == $curID+11)
+			if ($newID == $curID || $newID == $curID+$lines)
 				$curID = $newID-5;
 			if ($curID < 1) $curID = 1;
-			$ret["output"] = DisplayLib::listitems($curID, $newID);
+			$ret["output"] = DisplayLib::listItems($curID, $newID);
 		}
 		return $ret;
 	}

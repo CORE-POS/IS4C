@@ -23,43 +23,46 @@
 
 class FannieHelp {
 
-	/**
-	  Build a standardized tooltip
-	  @param $text the full help text
-	  @param $doc_link URL into CORE documentation [optional]
-	  @param $tag HTML tag type for text [default is span]
-	  @return an HTML string
-	*/
-	static public function ToolTip($text, $doc_link=False, $tag='span'){
-		global $FANNIE_URL;
-		$id = '_fhtt'.rand(0, 999999);
-		$img = $FANNIE_URL.'src/img/buttons/help16.png';
+    /**
+      Build a standardized tooltip
+      @param $text the full help text
+      @param $doc_link URL into CORE documentation [optional]
+      @param $tag HTML tag type for text [default is span]
+      @return an HTML string
+    */
+    static public function toolTip($text, $doc_link=False, $tag='span')
+    {
+        global $FANNIE_URL;
+        $id = '_fhtt'.rand(0, 999999);
+        $img = $FANNIE_URL.'src/img/buttons/help16.png';
 
-		$text = preg_replace('/\s\s+/',' ',$text);
+        $text = preg_replace('/\s\s+/',' ',$text);
 
-		$snippet = strlen($text) > 100 ? substr($text,0,100) : False;
-		if ($snippet || $doc_link) $snippet .= ' (Click for more)';
+        $snippet = strlen($text) > 100 ? substr($text,0,100) : False;
+        if ($snippet || $doc_link) {
+            $snippet .= ' (Click for more)';
+        }
 
-		if ($doc_link){
-			if (!$snippet) $snippet = $text;
-			$text .= sprintf(' (<a href="%s">CORE Documentation</a>)',$doc_link);
-		}
+        if ($doc_link) {
+            if (!$snippet) {
+                $snippet = $text;
+            }
+            $text .= sprintf(' (<a href="%s">CORE Documentation</a>)',$doc_link);
+        }
 
-		if ($snippet || $doc_link){
-			return sprintf('<a href="" 
-				onclick="$(\'#%s\').toggle();return false;"><img src="%s" title="%s" /></a>
-				<%s id="%s" style="display:none;">%s</%s>',
-				$id, $img, $snippet,
-				$tag, $id, $text, $tag
-			);
-		}
-		else {
-			return sprintf('<a href="" onclick="return false;"><img src="%s" title="%s" /></a>',
-					$img, $text
-			);
-		}
-	}
+        if ($snippet || $doc_link) {
+            return sprintf('<a href="" 
+                onclick="$(\'#%s\').toggle();return false;"><img src="%s" title="%s" /></a>
+                <%s id="%s" style="display:none;">%s</%s>',
+                $id, $img, $snippet,
+                $tag, $id, $text, $tag
+            );
+        } else {
+            return sprintf('<a href="" onclick="return false;"><img src="%s" title="%s" /></a>',
+                    $img, $text
+            );
+        }
+    }
 
 }
 
-?>

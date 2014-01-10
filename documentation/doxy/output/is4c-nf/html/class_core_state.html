@@ -38,60 +38,32 @@
 <a href="class_core_state-members.html">List of all members.</a><table border="0" cellpadding="0" cellspacing="0">
 <tr><td></td></tr>
 <tr><td colspan="2"><br><h2>Static Public Member Functions</h2></td></tr>
-<tr><td class="memItemLeft" nowrap align="right" valign="top">static&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_core_state.html#a06796f867e49a7d9ac8a9a70e6e231f">initiate_session</a> ()</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">static&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_core_state.html#88074c2c3d79fcb999e053fbb8e3ba19">initiate_session</a> ()</td></tr>
 
-<tr><td class="memItemLeft" nowrap align="right" valign="top">static&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_core_state.html#9e17bff0f475f4c53cc23dc82f86ea8f">system_init</a> ()</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">static&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_core_state.html#d740c711386441dcaccd6763e99c2c8c">loadData</a> ()</td></tr>
 
-<tr><td class="memItemLeft" nowrap align="right" valign="top">static&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_core_state.html#3cbe7822127840511e4c3a0a906c3ac3">transReset</a> ()</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">static&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_core_state.html#4ced3201af2765999fa9cd799a2483d9">customReceipt</a> ()</td></tr>
 
-<tr><td class="memItemLeft" nowrap align="right" valign="top">static&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_core_state.html#36ecd68f97dbb73c4815a5267607b9b0">printReset</a> ()</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="anchor" name="4e317ddf0f1d2baeed26a6a17716ef37"></a><!-- doxytag: member="CoreState::getCustomerPref" ref="4e317ddf0f1d2baeed26a6a17716ef37" args="($key)" -->
+static&nbsp;</td><td class="memItemRight" valign="bottom"><b>getCustomerPref</b> ($key)</td></tr>
 
-<tr><td class="memItemLeft" nowrap align="right" valign="top">static&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_core_state.html#5b8986c984dd7b90bf1771cfcdf96872">memberReset</a> ()</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="anchor" name="0b2c7eaa2243f1c95788e5c2385ea4af"></a><!-- doxytag: member="CoreState::cashierLogin" ref="0b2c7eaa2243f1c95788e5c2385ea4af" args="($transno=False, $age=0)" -->
+static&nbsp;</td><td class="memItemRight" valign="bottom"><b>cashierLogin</b> ($transno=False, $age=0)</td></tr>
 
-<tr><td class="memItemLeft" nowrap align="right" valign="top">static&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_core_state.html#1408a81f148d2363f9bd161003292f88">blueLine</a> ($row)</td></tr>
-
-<tr><td class="memItemLeft" nowrap align="right" valign="top">static&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_core_state.html#5075d3c2b0f054684aec1e12ee71984b">loaddata</a> ()</td></tr>
-
-<tr><td class="memItemLeft" nowrap align="right" valign="top">static&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_core_state.html#aca2ab33c55311b2c4367c630694f8da">customreceipt</a> ()</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="anchor" name="e20e8896c459418ae09d9bf78e18bdf9"></a><!-- doxytag: member="CoreState::loadParams" ref="e20e8896c459418ae09d9bf78e18bdf9" args="()" -->
+static&nbsp;</td><td class="memItemRight" valign="bottom"><b>loadParams</b> ()</td></tr>
 
 </table>
 <hr><a name="_details"></a><h2>Detailed Description</h2>
 Setup session variables 
 <p>
 <hr><h2>Member Function Documentation</h2>
-<a class="anchor" name="1408a81f148d2363f9bd161003292f88"></a><!-- doxytag: member="CoreState::blueLine" ref="1408a81f148d2363f9bd161003292f88" args="($row)" -->
+<a class="anchor" name="4ced3201af2765999fa9cd799a2483d9"></a><!-- doxytag: member="CoreState::customReceipt" ref="4ced3201af2765999fa9cd799a2483d9" args="()" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">static CoreState::blueLine           </td>
-          <td>(</td>
-          <td class="paramtype">$&nbsp;</td>
-          <td class="paramname"> <em>row</em>          </td>
-          <td>&nbsp;)&nbsp;</td>
-          <td width="100%"><code> [static]</code></td>
-        </tr>
-      </table>
-</div>
-<div class="memdoc">
-
-<p>
-Get member information line for a given member <dl compact><dt><b>Parameters:</b></dt><dd>
-  <table border="0" cellspacing="2" cellpadding="0">
-    <tr><td valign="top"></td><td valign="top"><em>$row</em>&nbsp;</td><td>a record from custdata </td></tr>
-  </table>
-</dl>
-<dl compact><dt><b>Returns:</b></dt><dd>string </dd></dl>
-<dl compact><dt><b><a class="el" href="deprecated.html#_deprecated000002">Deprecated:</a></b></dt><dd>Just define blueLine in custdata. </dd></dl>
-
-</div>
-</div><p>
-<a class="anchor" name="aca2ab33c55311b2c4367c630694f8da"></a><!-- doxytag: member="CoreState::customreceipt" ref="aca2ab33c55311b2c4367c630694f8da" args="()" -->
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">static CoreState::customreceipt           </td>
+          <td class="memname">static CoreState::customReceipt           </td>
           <td>(</td>
           <td class="paramname">          </td>
           <td>&nbsp;)&nbsp;</td>
@@ -105,7 +77,7 @@ Get member information line for a given member <dl compact><dt><b>Parameters:</b
 Fetch text fields from the customReceipt table These fields are used for various messages that invariably must be customized at every store. 
 </div>
 </div><p>
-<a class="anchor" name="a06796f867e49a7d9ac8a9a70e6e231f"></a><!-- doxytag: member="CoreState::initiate_session" ref="a06796f867e49a7d9ac8a9a70e6e231f" args="()" -->
+<a class="anchor" name="88074c2c3d79fcb999e053fbb8e3ba19"></a><!-- doxytag: member="CoreState::initiate_session" ref="88074c2c3d79fcb999e053fbb8e3ba19" args="()" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -124,12 +96,12 @@ Fetch text fields from the customReceipt table These fields are used for various
 Populates $CORE_LOCAL with default values. Short-hand for calling every other function in this file. Normally called once on startup. 
 </div>
 </div><p>
-<a class="anchor" name="5075d3c2b0f054684aec1e12ee71984b"></a><!-- doxytag: member="CoreState::loaddata" ref="5075d3c2b0f054684aec1e12ee71984b" args="()" -->
+<a class="anchor" name="d740c711386441dcaccd6763e99c2c8c"></a><!-- doxytag: member="CoreState::loadData" ref="d740c711386441dcaccd6763e99c2c8c" args="()" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">static CoreState::loaddata           </td>
+          <td class="memname">static CoreState::loadData           </td>
           <td>(</td>
           <td class="paramname">          </td>
           <td>&nbsp;)&nbsp;</td>
@@ -144,85 +116,9 @@ If there are records in localtemptrans, get the member number and initialize $CO
 The only time this function does anything is in crash recovery - if a browser is closed and re-opened or the computer is rebooted in the middle of a transaction. 
 </div>
 </div><p>
-<a class="anchor" name="5b8986c984dd7b90bf1771cfcdf96872"></a><!-- doxytag: member="CoreState::memberReset" ref="5b8986c984dd7b90bf1771cfcdf96872" args="()" -->
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">static CoreState::memberReset           </td>
-          <td>(</td>
-          <td class="paramname">          </td>
-          <td>&nbsp;)&nbsp;</td>
-          <td width="100%"><code> [static]</code></td>
-        </tr>
-      </table>
-</div>
-<div class="memdoc">
-
-<p>
-Initialize member related variables in $CORE_LOCAL. This function is called after the end of every transaction. 
-</div>
-</div><p>
-<a class="anchor" name="36ecd68f97dbb73c4815a5267607b9b0"></a><!-- doxytag: member="CoreState::printReset" ref="36ecd68f97dbb73c4815a5267607b9b0" args="()" -->
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">static CoreState::printReset           </td>
-          <td>(</td>
-          <td class="paramname">          </td>
-          <td>&nbsp;)&nbsp;</td>
-          <td width="100%"><code> [static]</code></td>
-        </tr>
-      </table>
-</div>
-<div class="memdoc">
-
-<p>
-Initialize print related variables in $CORE_LOCAL. This function is called after the end of every transaction. 
-</div>
-</div><p>
-<a class="anchor" name="9e17bff0f475f4c53cc23dc82f86ea8f"></a><!-- doxytag: member="CoreState::system_init" ref="9e17bff0f475f4c53cc23dc82f86ea8f" args="()" -->
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">static CoreState::system_init           </td>
-          <td>(</td>
-          <td class="paramname">          </td>
-          <td>&nbsp;)&nbsp;</td>
-          <td width="100%"><code> [static]</code></td>
-        </tr>
-      </table>
-</div>
-<div class="memdoc">
-
-<p>
-Initialize system default values in $CORE_LOCAL. Variables defined here should always exist but won't be reset to these values on a regular basis. 
-</div>
-</div><p>
-<a class="anchor" name="3cbe7822127840511e4c3a0a906c3ac3"></a><!-- doxytag: member="CoreState::transReset" ref="3cbe7822127840511e4c3a0a906c3ac3" args="()" -->
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">static CoreState::transReset           </td>
-          <td>(</td>
-          <td class="paramname">          </td>
-          <td>&nbsp;)&nbsp;</td>
-          <td width="100%"><code> [static]</code></td>
-        </tr>
-      </table>
-</div>
-<div class="memdoc">
-
-<p>
-Initialize transaction variable in $CORE_LOCAL. This function is called after the end of every transaction so these values will be the the defaults every time. 
-</div>
-</div><p>
 <hr>The documentation for this class was generated from the following file:<ul>
 <li>pos/is4c-nf/lib/CoreState.php</ul>
-<hr size="1"><address style="align: right;"><small>Generated on Tue Oct 23 14:30:34 2012 for CORE POS - IS4C by&nbsp;
+<hr size="1"><address style="align: right;"><small>Generated on 18 Nov 2013 for CORE POS - IS4C by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img src="doxygen.png" alt="doxygen" align="middle" border="0"></a> 1.4.7 </small></address>
 </body>

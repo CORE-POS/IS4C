@@ -125,7 +125,9 @@ open in a separate tab or window as a reference for Manufacturers and Vendors (D
 	<li><a href="SalesToday/">Today's Sales</a> shows current day totals by hour.</li>
 	<li><a href="SalesAndTaxToday/">Today's Sales and Tax</a> shows current day totals by hour
 		and tax totals for the day.</li>
-	<li><a href="HourlySales/">Store Hourly Sales</a> lists store-wide sales per hour
+	<li><a href="HourlySales/HourlySalesReport.php">Hourly Sales</a> lists sales per hour
+		over a given date range.</li>
+	<li><a href="HourlyTrans/HourlyTransReport.php">Hourly Transactions</a> lists transactions per hour
 		over a given date range.</li>
 	<li><a href="HourlySales/hourlySalesDept.php">Department Hourly Sales</a> lists
 		sales per hour over a given date range for a subset of departments.</li>

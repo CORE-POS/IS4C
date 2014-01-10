@@ -32,16 +32,15 @@
 */
 
 include('../../config.php');
-include($FANNIE_ROOT.'src/mysql_connect.php');
-include($FANNIE_ROOT.'src/select_dlog.php');
-include($FANNIE_ROOT.'classlib2.0/lib/FormLib.php');
+include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+$dbc = FannieDB::get($FANNIE_OP_DB);
 
 if (isset($_REQUEST['submit'])){
 	$d1 = $_REQUEST['date1'];
 	$d2 = $_REQUEST['date2'];
 	$dept = $_REQUEST['dept'];
 
-	$dlog = select_dlog($d1,$d2);
+	$dlog = DTransactionsModel::selectDlog($d1,$d2);
 
 	if (isset($_REQUEST['excel'])){
 		header("Content-Disposition: inline; filename=sales_{$d1}_{$d2}.xls");

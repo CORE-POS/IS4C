@@ -69,12 +69,12 @@ if(!validateUserQuiet('staffar')){
 
 <?php
    if(isset($_POST['submit'])){
+      $updateQ = $sql->prepare("UPDATE staffAR SET adjust=? WHERE cardno=?");
       foreach($_POST AS $key=>$value){
          //echo $key . ": ".$value."<br>";
         if($value !='Submit'){
-           $updateQ = "UPDATE staffAR SET adjust=$value WHERE cardno=$key";
            //echo $updateQ ."<br>";          
-           $updateR = $sql->query($updateQ);
+           $updateR = $sql->execute($updateQ, array($value, $key));
          }
       }
    }

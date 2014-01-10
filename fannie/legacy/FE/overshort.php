@@ -1,5 +1,7 @@
 <?php
 include('../../config.php');
+header('Location: '.$FANNIE_URL.'modules/plugins2.0/OverShortTools/OverShortDayPage.php');
+exit;
 
 require($FANNIE_ROOT.'auth/login.php');
 $user = validateUserQuiet('overshorts');
@@ -44,8 +46,7 @@ if (isset($_POST['action'])){
 	break;
   case 'date':
     $date = $_POST['arg'];
-    require($FANNIE_ROOT."src/select_dlog.php");
-    $dlog = select_dlog($date);
+    $dlog = DTransactionsModel::selectDlog($date);
     if ($dlog != "is4c_trans.dlog")
 	    $dlog = "trans_archive.dlogBig";
     /* determine who worked that day (and their first names) */

@@ -1,7 +1,10 @@
 <?php
 
 include('../../config.php');
-include($FANNIE_ROOT.'src/mysql_connect.php');
+if (!class_exists('FannieAPI')) {
+        include(dirname(__FILE__).'/../classlib2.0/FannieAPI.php');
+}
+$dbc = FannieDB::get($FANNIE_OP_DB);
 include($FANNIE_ROOT.'src/JsonLib.php');
 $ret = array();
 

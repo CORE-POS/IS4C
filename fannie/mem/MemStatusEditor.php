@@ -31,34 +31,38 @@ class MemStatusEditor extends FanniePage {
 
 	private $cardno;
 
-	function preprocess(){
+	function preprocess()
+    {
 		$this->cardno = FormLib::get_form_value('memID',False);
 
-
-		if (FormLib::get_form_value('savebtn',False) !== False){
+		if (FormLib::get_form_value('savebtn',False) !== False) {
 			$reason = 0;
 			$codes = FormLib::get_form_value('rcode',array());
 			$type = FormLib::get_form_value('type','INACT');
-			if (is_array($codes)){
+			if (is_array($codes)) {
 				foreach($codes as $r)
 					$reason = $reason | $r;
 			}
 
-			if ($reason == 0)
+			if ($reason == 0) {
 				$this->reactivate_account($this->cardno);
-			else
+			} else {
 				$this->deactivate_account($this->cardno, $reason, $type);
+            }
 		
 			header("Location: MemberEditor.php?memNum=".$this->cardno);
-			return False;
+
+			return false;
 		}
-		return True;
+
+		return true;
 	}
 
-	function body_content(){
+	function body_content()
+    {
 		global $FANNIE_OP_DB;
 
-		if ($this->cardno === False){
+		if ($this->cardno === false) {
 			return '<i>Error - no member specified</i>';
 		}
 
@@ -67,9 +71,11 @@ class MemStatusEditor extends FanniePage {
 		$ret .=  '<form action="MemStatusEditor.php" method="post">';
 		$ret .= sprintf('<input type="hidden" value="%d" name="memID" />',$this->cardno);
 
-		$statusQ = $dbc->prepare_statement("SELECT Type FROM custdata WHERE CardNo=?");
-		$statusR = $dbc->exec_statement($statusQ,array($this->cardno));
-		$status_string = array_pop($dbc->fetch_row($statusR));
+        $model = new CustdataModel($dbc);
+        $model->CardNo($this->cardno);
+        $model->personNum(1);
+        $model->load();
+		$status_string = $model->Type();
 
 		$reasonQ = $dbc->prepare_statement("SELECT textStr,mask,
 			CASE WHEN cardno IS NULL THEN 0 ELSE 1 END as checked
@@ -82,7 +88,7 @@ class MemStatusEditor extends FanniePage {
 		$ret .= '<option value="INACT">Inactive</option>';
 		$ret .= '<option value="TERM" '.($status_string=='TERM'?'selected':'').'>Terminated</option>';
 		$ret .= '</select></td></tr>';
-		while($reasonW = $dbc->fetch_row($reasonR)){
+		while($reasonW = $dbc->fetch_row($reasonR)) {
 			$ret .= sprintf('<tr><td><input type="checkbox" name="rcode[]" value="%d" %s</td>
 				<td>%s</td></tr>',
 				$reasonW['mask'],
@@ -96,7 +102,9 @@ class MemStatusEditor extends FanniePage {
 
 		return $ret;
 	}
-	function reactivate_account($cardno){
+
+	protected function reactivate_account($cardno)
+    {
 		global $FANNIE_OP_DB;
 		$dbc = FannieDB::get($FANNIE_OP_DB);
 
@@ -107,11 +115,16 @@ class MemStatusEditor extends FanniePage {
 		$valW = $dbc->fetch_row($valR);
 
 		// restore stored values
-		$fixQ = $dbc->prepare_statement("UPDATE custdata SET Type=?, memType=?,
-				Discount=?, memDiscountLimit=?
-				WHERE CardNo=?");
-		$fixR = $dbc->exec_statement($fixQ,array($valW['memtype2'],$valW['memtype1'],
-				$valW['discount'],$valW['chargelimit'],$cardno));
+        $model = new CustdataModel($dbc);
+        $model->CardNo($cardno);
+        foreach($model->find() as $obj) {
+            $obj->Type($valW['memtype2']);
+            $obj->memType($valW['memtype1']);
+            $obj->Discount($valW['discount']);
+            $obj->MemDiscountLimit($valW['chargelimit');
+            $obj->ChargeLimit($valW['chargelimit');
+            $obj->save();
+        }
 
 		$mailQ = $dbc->prepare_statement("UPDATE meminfo SET ads_OK=? WHERE card_no=?");
 		$mailR = $dbc->exec_statement($mailQ,array($valW['mailflag'],$cardno));
@@ -125,38 +138,44 @@ class MemStatusEditor extends FanniePage {
 		$histQ = $dbc->prepare_statement("INSERT INTO suspension_history (username, postdate,
 			post, cardno, reasoncode) VALUES (?,".$dbc->now().",'Account reactivated',?,-1)");
 		$histR = $dbc->exec_statement($histQ,array($username,$cardno));
-
 	}
 
-	function deactivate_account($cardno, $reason, $type){
+	protected function deactivate_account($cardno, $reason, $type)
+    {
 		global $FANNIE_OP_DB;
 		$dbc = FannieDB::get($FANNIE_OP_DB);
 
 		$chkQ = $dbc->prepare_statement("SELECT cardno FROM suspensions WHERE cardno=?");
 		$chkR = $dbc->exec_statement($chkQ,array($cardno));
-		if ($dbc->num_rows($chkR)>0){
+		if ($dbc->num_rows($chkR)>0) {
 			// if account is already suspended, just update the reason
 			$upQ = $dbc->prepare_statement("UPDATE suspensions SET reasoncode=?, type=?
 				WHERE cardno=?");
 			$upR = $dbc->exec_statement($upQ,array($reason,substr($type,0,1),$cardno));
-		}
-		else {
+		} else {
 			// new suspension
 			// get current values and save them in suspensions table
-			$cdQ = $dbc->prepare_statement("SELECT memType,Type,Discount,memDiscountLimit,
-				ads_OK FROM custdata AS c LEFT JOIN meminfo AS m
-				ON c.CardNo=m.card_no AND c.personNum=1
-				WHERE c.CardNo=?");
-			$cdR = $dbc->exec_statement($cdQ,array($cardno));
-			$cdW = $dbc->fetch_row($cdR);	
+
+            $model = new CustdataModel($dbc);
+            $model->CardNo($cardno);
+            $model->personNum(1);
+            $model->load();
+            $limit = $model->ChargeLimit();
+            if ($limit == 0) {
+                $limit = $model->MemDiscountLimit();
+            }
+
+            $meminfo = new MeminfoModel($dbc);
+            $meminfo->card_no($cardno);
+            $meminfo->load();
 
 			$now = date('Y-m-d H:i:s');
 			$insQ = $dbc->prepare_statement("INSERT INTO suspensions (cardno, type, memtype1,
 				memtype2, reason, suspDate, mailflag, discount, chargelimit,
 				reasoncode) VALUES (?,?,?,?,'',".$dbc->now().",?,?,?,?)");
 			$insR = $dbc->exec_statement($insQ,array($cardno, substr($type,0,1), 
-					$cdW['memType'],$cdW['Type'], $cdW['ads_OK'],
-					$cdW['Discount'],$cdW['memDiscountLimit'],$reason));
+					$model->memType(),$model->Type(), $meminfo->ads_OK(),
+					$model->Discount(),$limit,$reason));
 
 			// log action
 			$username = $this->current_user;
@@ -166,12 +185,21 @@ class MemStatusEditor extends FanniePage {
 		}
 
 		// remove account privileges in custdata
-		$deactivateQ = $dbc->prepare_statement("UPDATE custdata SET Type=?,memType=0,Discount=0,
-				memDiscountLimit=0 WHERE CardNo=?");
-		$deactivateR = $dbc->exec_statement($deactivateQ,array($type,$cardno));
+        $model = new CustdataModel($dbc);
+        $model->CardNo($cardno);
+        foreach($model->find() as $obj) {
+            $obj->Type($type);
+            $obj->memType(0);
+            $obj->Discount(0);
+            $obj->MemDiscountLimit(0);
+            $obj->ChargeLimit(0);
+            $obj->save();
+        }
 
-		$mailingQ = $dbc->prepare_statement("UPDATE meminfo SET ads_OK=0 WHERE card_no=?");
-		$mailingR = $dbc->exec_statement($mailingQ,array($cardno));
+        $model = new MeminfoModel($dbc);
+        $model->card_no($cardno);
+        $model->ads_OK(0);
+        $model->save();
 	}
 }
 

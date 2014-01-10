@@ -1,6 +1,7 @@
 <?php
 include('../../../../config.php');
-include($FANNIE_ROOT.'src/mysql_connect.php');
+include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+$dbc = FannieDB::get($FANNIE_OP_DB);
 
 $q = $dbc->prepare_statement("select year(tdate),month(tdate),day(tdate),count(*) From is4c_trans.dlog_90_view as d 
 	left join custdata as c ON d.card_no=c.CardNo and c.personNum=1 

@@ -33,53 +33,53 @@
 
 class GroupPM extends PriceMethod {
 
-	function addItem($row,$quantity,$priceObj){
-		if ($quantity == 0) return false;
+    function addItem($row,$quantity,$priceObj){
+        if ($quantity == 0) return false;
 
-		$pricing = $priceObj->priceInfo($row,$quantity);
+        $pricing = $priceObj->priceInfo($row,$quantity);
 
-		if ($priceObj->isSale()){
-			$disc = $pricing['unitPrice'] - ($row['specialgroupprice'] / $row['specialquantity']);
-			if ($priceObj->isMemberSale() || $priceObj->isStaffSale())
-				$pricing['memDiscount'] = MiscLib::truncate2($disc * $quantity);
-			else
-				$pricing['discount'] = MiscLib::truncate2($disc * $quantity);
-		}
-		else {
-			$pricing['unitPrice'] = $row['groupprice'] / $row['quantity'];
-		}
+        if ($priceObj->isSale()){
+            $disc = $pricing['unitPrice'] - ($row['specialgroupprice'] / $row['specialquantity']);
+            if ($priceObj->isMemberSale() || $priceObj->isStaffSale())
+                $pricing['memDiscount'] = MiscLib::truncate2($disc * $quantity);
+            else
+                $pricing['discount'] = MiscLib::truncate2($disc * $quantity);
+        }
+        else {
+            $pricing['unitPrice'] = $row['groupprice'] / $row['quantity'];
+        }
 
-		TransRecord::addItem($row['upc'],
-			$row['description'],
-			'I',
-			' ',
-			' ',
-			$row['department'],
-			$quantity,
-			$pricing['unitPrice'],
-			MiscLib::truncate2($pricing['unitPrice'] * $quantity),
-			$pricing['regPrice'],
-			$row['scale'],
-			$row['tax'],
-			$row['foodstamp'],
-			$pricing['discount'],
-			$pricing['memDiscount'],
-			$row['discount'],
-			$row['discounttype'],
-			$quantity,
-			($priceObj->isSale() ? $row['specialpricemethod'] : $row['pricemethod']),
-			($priceObj->isSale() ? $row['specialquantity'] : $row['quantity']),
-			($priceObj->isSale() ? $row['specialgroupprice'] : $row['groupprice']),
-			$row['mixmatchcode'],
-			0,
-			0,
-			(isset($row['cost'])?$row['cost']*$quantity:0.00),
-			(isset($row['numflag'])?$row['numflag']:0),
-			(isset($row['charflag'])?$row['charflag']:'')
-		);
-	
-		return True;
-	}
+        TransRecord::addItem($row['upc'],
+            $row['description'],
+            'I',
+            ' ',
+            ' ',
+            $row['department'],
+            $quantity,
+            $pricing['unitPrice'],
+            MiscLib::truncate2($pricing['unitPrice'] * $quantity),
+            $pricing['regPrice'],
+            $row['scale'],
+            $row['tax'],
+            $row['foodstamp'],
+            $pricing['discount'],
+            $pricing['memDiscount'],
+            $row['discount'],
+            $row['discounttype'],
+            $quantity,
+            ($priceObj->isSale() ? $row['specialpricemethod'] : $row['pricemethod']),
+            ($priceObj->isSale() ? $row['specialquantity'] : $row['quantity']),
+            ($priceObj->isSale() ? $row['specialgroupprice'] : $row['groupprice']),
+            $row['mixmatchcode'],
+            0,
+            0,
+            (isset($row['cost'])?$row['cost']*$quantity:0.00),
+            (isset($row['numflag'])?$row['numflag']:0),
+            (isset($row['charflag'])?$row['charflag']:'')
+        );
+    
+        return True;
+    }
 }
 
 ?>

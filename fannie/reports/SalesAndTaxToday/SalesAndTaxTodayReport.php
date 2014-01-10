@@ -62,10 +62,9 @@ class SalesAndTaxTodayReport extends FanniePage {
 	}
 
 	function preprocess()
-		{
+    {
 		global $FANNIE_OP_DB, $FANNIE_WINDOW_DRESSING;
-		$dbc = FannieDB::get($FANNIE_OP_DB);
-
+        $dbc = FannieDB::get($FANNIE_OP_DB);
 		// Should let fanadmin, cashier in but keep lydia out.
 		// But it doesn't.
 		//$this->auth_classes[] = 'salesbyhour';
@@ -99,10 +98,10 @@ class SalesAndTaxTodayReport extends FanniePage {
 	// preprocess()
 	}
 
-	function body_content(){
-		global $FANNIE_TRANS_DB, $FANNIE_COOP_ID, $FANNIE_OP_DB;
-		$dbc = FannieDB::get($FANNIE_OP_DB);
-
+	function body_content()
+    {
+		global $FANNIE_OP_DB, $FANNIE_TRANS_DB, $FANNIE_COOP_ID;
+        $dbc = FannieDB::get($FANNIE_OP_DB);
 		$today = date("Y-m-d");
 		$table = 'dlog';	// i.e. dlog. dlog_15 if $today is before today.
 		$ddiff = 0;	// i.e. 0. -n if $today is before today.

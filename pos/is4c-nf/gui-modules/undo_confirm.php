@@ -89,16 +89,60 @@ class undo_confirm extends BasicPage {
 		if (isset($_REQUEST['reginput'])){
 			switch(strtoupper($_REQUEST['reginput'])){
 			case 'CL':
-				// zero removes password check I think
-				$CORE_LOCAL->set("runningTotal",0);
+                // cancel the transaction instead
 				$CORE_LOCAL->set("msgrepeat",1);
 				$CORE_LOCAL->set("strRemembered","CN");
+
+                /**
+                  Unify emp_no & trans_no records in the
+                  database. Logging records from authentication
+                  may have different values. This step normalizes
+                  the transaction. In this case I'm restoring
+                  the logged in cashier's info immediately
+                  and assigning the entire transaction to that
+                  cashier. This is simpler than the case below
+                  and since it's canceled it doesn't matter if
+                  the tender records are assigned to the original
+                  cashier or the current cashier.
+                */
+                Database::loadglobalvalues();
+                $db = Database::tDataConnect();
+                $emp_no = $CORE_LOCAL->get('CashierNo');
+                $trans_no = $CORE_LOCAL->get('transno');
+                $db->query('UPDATE localtemptrans SET
+                            emp_no='.((int)$emp_no).',
+                            trans_no='.((int)$trans_no).'
+                            WHERE
+                            emp_no<>'.((int)$emp_no).' OR
+                            trans_no<>'.((int)$trans_no));
+
 				$this->change_page($this->page_url."gui-modules/pos2.php");
 				return False;
 				break;
 			case '':
+                // use zero cash to finish transaction
 				$CORE_LOCAL->set("msgrepeat",1);
 				$CORE_LOCAL->set("strRemembered","0CA");
+
+                /**
+                  Unify emp_no & trans_no records in the
+                  database. Logging records from authentication
+                  may have different values. This step
+                  normalizes the transaction. When ajax-end.php
+                  runs to close the transaction, the actual
+                  logged in cashier's values will be restored
+                  via Database::loadglobalvalues().
+                */
+                $db = Database::tDataConnect();
+                $emp_no = $CORE_LOCAL->get('CashierNo');
+                $trans_no = $CORE_LOCAL->get('transno');
+                $db->query('UPDATE localtemptrans SET
+                            emp_no='.((int)$emp_no).',
+                            trans_no='.((int)$trans_no).'
+                            WHERE
+                            emp_no<>'.((int)$emp_no).' OR
+                            trans_no<>'.((int)$trans_no));
+
 				$this->change_page($this->page_url."gui-modules/pos2.php");
 				return False;
 				break;
@@ -121,4 +165,5 @@ class undo_confirm extends BasicPage {
 	}
 }
 
-new undo_confirm();
+if (basename(__FILE__) == basename($_SERVER['PHP_SELF']))
+	new undo_confirm();

@@ -109,7 +109,7 @@ class XlsBatchPage extends FannieUploadPage {
 				continue;
 			}
 
-			$upc = ($ftype=='UPCs')?str_pad($upc,13,'0',STR_PAD_LEFT):'LC'.$upc;
+			$upc = ($ftype=='UPCs') ? BarcodeLib::padUPC($upc) : 'LC'.$upc;
 			if ($has_checks && $ftype=='UPCs')
 				$upc = '0'.substr($upc,0,12);
 
@@ -165,7 +165,8 @@ class XlsBatchPage extends FannieUploadPage {
 	/**
 	  overriding the basic form since I need several extra fields	
 	*/
-	function basic_form(){
+	protected function basicForm()
+    {
 		global $FANNIE_URL;
 		$batchtypes = $this->get_batch_types();
 		ob_start();

@@ -63,7 +63,7 @@ static public function array_to_json($arr){
 */
 static public function encode_value_json($val){
 	if (is_array($val)) return self::array_to_json($val);
-	if (is_numeric($val)) return $val;
+	if (is_numeric($val)) return '"'.$val.'"';
 	if ($val === true) return 'true';
 	if ($val === false) return 'false';
 	else return '"'.addcslashes($val,"\\\"\r\n\t").'"';

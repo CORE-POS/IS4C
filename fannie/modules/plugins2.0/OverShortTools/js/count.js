@@ -16,10 +16,10 @@ function save(){
 	var date1 = $('#startDate').val();
 	var date2 = $('#endDate').val();
 
-	var depositAmount = saveRow('changeOrder');
+	var changeOrder = saveChangeOrder();
 	var openSafeCount = saveOpenSafeCount();
 	var closeSafeCount = saveCloseSafeCount();
-	var depositAmount = saveRow('buyAmount');
+	var buyAmount = saveRow('buyAmount');
 	var dropAmount = saveDropAmount();
 	var depositAmount = saveRow('depositAmount');
 	var atmAmount = saveAtmAmount();
@@ -40,8 +40,10 @@ function saveRow(rowName){
 	var ret = '';
 	$('.denom').each(function(){
 		var denom = $(this).val();
-		if ($('#'+rowName+denom).length != 0)
-			ret += denom + ":"+ $('#'+rowName+denom).html()+"|";
+        var elem = document.getElementById(rowName+denom);
+		if (elem) {
+			ret += denom + ":"+ elem.innerHTML+"|";
+        }
 	});
 	return ret;
 }
@@ -59,12 +61,24 @@ function saveAtmAmount(){
 	return ret;
 }
 
+function saveChangeOrder(){
+	var ret = '';
+	$('.denom').each(function(){
+		var denom = $(this).val();
+        var elem = document.getElementById('changeOrder'+denom);
+		if (denom != 'Checks' && elem)
+			ret += denom + ":"+ elem.value+"|";
+	});
+	return ret;
+}
+
 function saveOpenSafeCount(){
 	var ret = '';
 	$('.denom').each(function(){
 		var denom = $(this).val();
-		if (denom != 'Checks' && $('#safeCount1'+denom).length != 0)
-			ret += denom + ":"+ $('#safeCount1'+denom).val()+"|";
+        var elem = document.getElementById('safeCount1'+denom);
+		if (denom != 'Checks' && elem)
+			ret += denom + ":"+ elem.value+"|";
 	});
 	return ret;
 }
@@ -73,10 +87,11 @@ function saveDropAmount(){
 	var ret = '';
 	$('.denom').each(function(){
 		var denom = $(this).val();
-		if (denoms[i] == 'Checks' || denoms[i] == '1.00')
-			ret += denom + ":"+ $('#dropAmount'+denom).html()+"|";
+        var elem = document.getElementById('dropAmount'+denom);
+		if (denom == 'Checks' || denom == '1.00')
+			ret += denom + ":"+ elem.innerHTML+"|";
 		else
-			ret += denom + ":"+ $('#dropAmount'+denom).val()+"|";
+			ret += denom + ":"+ elem.value+"|";
 	});
 	return ret;
 }
@@ -85,17 +100,18 @@ function saveCloseSafeCount(){
 	var ret = '';
 	$('.denom').each(function(){
 		var denom = $(this).val();
+        var elem = document.getElementById('safeCount2'+denom);
 		if (denom != 'Checks' && denom != 'Junk')
-			ret += denom + ":"+ $('#safeCount2'+denom).val()+"|";
+			ret += denom + ":"+ elem.value+"|";
 	});
 	return ret;
 }
 
 function updateChangeOrder(d){
-	var newval = Number($('#changeOrder'+d).val());
+	var newval = Number(document.getElementById('changeOrder'+d).value);
 	
-	var v = Number($('#safeCount1'+d).val()) + newval;
-	$('#cashInTills'+d).html(Math.round(v*100)/100);
+	var v = Number(document.getElementById('safeCount1'+d).value) + newval;
+	document.getElementById('cashInTills'+d).innerHTML = Math.round(v*100)/100;
 
 	resumInputs('changeOrder');
 	resumRow('cashInTills');
@@ -106,12 +122,13 @@ function updateChangeOrder(d){
 }
 
 function updateOpenSafeCount(d){
-	var newval = Number($('#safeCount1'+d).val());
+	var newval = Number(document.getElementById('safeCount1'+d).value);
 	
 	var v = newval;
-	if ($('#changeOrder'+d).length != 0)
-		v = Number($('#changeOrder'+d).val()) + newval;
-	$('#cashInTills'+d).html(Math.round(v*100)/100);
+    var elem = document.getElementById('changeOrder'+d);
+	if (elem)
+		v = Number(elem.value) + newval;
+	document.getElementById('cashInTills'+d).innerHTML = Math.round(v*100)/100;
 
 	resumInputs('safeCount1');
 	resumRow('cashInTills');
@@ -129,10 +146,10 @@ function updateDropAmount(d){
 		else if (denom == "Checks")
 			ones -= Number($('#dropAmountChecks').html());
 		else
-			ones -= Number($('#dropAmount'+denom).val());
+			ones -= Number(document.getElementById('dropAmount'+denom).value);
 	});
 
-	$('#dropAmount1.00').html(Math.round(ones*100)/100);
+	document.getElementById('dropAmount1.00').innerHTML = Math.round(ones*100)/100;
 
 	updateDepositAmount(d);
 }
@@ -152,7 +169,7 @@ function updateAAVariance(){
 }
 
 function updateCloseSafeCount(d){
-	var newval = Number($('#safeCount2'+d).val());
+	var newval = Number(document.getElementById('safeCount2'+d).value);
 
 	resumInputs('safeCount2');
 
@@ -161,11 +178,15 @@ function updateCloseSafeCount(d){
 
 function resumInputs(rowname){
 	var sum = 0;
+
 	$('.denom').each(function(){
 		denom = $(this).val();
-		if ($('#'+rowname+denom).length != 0)
-			sum += Number($('#'+rowname+denom).val());
+        var elem = document.getElementById(rowname+denom);
+		if (elem) {
+			sum += Number(elem.value);
+        }
 	});
+    
 	$('#'+rowname+'Total').html(Math.round(sum*100) / 100);
 }
 
@@ -173,10 +194,11 @@ function resumRow(rowname){
 	var sum = 0;
 	$('.denom').each(function(){
 		denom = $(this).val();
+        var elem = document.getElementById(rowname+denom);
 		if (rowname == "depositAmount" && denom == "Checks")
 			{} // would be "continue" in a loop
-		else if ($('#'+rowname+denom).length != 0)
-			sum += Number($('#'+rowname+denom).html());
+		else if (elem)
+			sum += Number(elem.innerHTML);
 	});
 	$('#'+rowname+'Total').html(Math.round(sum*100) / 100);
 }
@@ -185,53 +207,53 @@ function updateDepositAmount(d){
 	switch(d){
 	case '10.00':
 	case '5.00':
-		var val = Number($('#cashInTills'+d).html());
-		val += Number($('#dropAmount'+d).val());
-		val -= Number($('#fill'+d).html());
-		val -= Number($('#par'+d).html());
+		var val = Number(document.getElementById('cashInTills'+d).innerHTML);
+		val += Number(document.getElementById('dropAmount'+d).value);
+		val -= Number(document.getElementById('fill'+d).innerHTML);
+		val -= Number(document.getElementById('#par'+d).innerHTML);
 		if (val < 0) val = 0;
-		$('#depositAmount'+d).html(Math.round(val*100)/100);
+		document.getElementById('depositAmount'+d).innerHTML = Math.round(val*100)/100;
 		updateBuyAmount(d);
 		break;
 	case '1.00':
 		updateBuyAmount(d);
 		break;
 	case '20.00':
-		var val = Number($('#cashInTills'+d).html);
-		val += Number($('#dropAmount'+d).val());
+		var val = Number(document.getElementById('cashInTills'+d).innerHTML);
+		val += Number(document.getElementById('dropAmount'+d).value);
 		val += Number($('#atmReject').val());	
 		val -= Number($('#atmFill').val());
-		$('#depositAmount'+d).html(Math.round(val*100)/100);
+		document.getElementById('depositAmount'+d).innerHTML = Math.round(val*100)/100;
 		break;
 	case '50.00':
 	case '100.00':
 	case 'Junk':
-		var val = Number($('#cashInTills'+d).html());
-		val += Number($('#dropAmount'+d).val());
-		$('#depositAmount'+d).html(Math.round(val*100)/100);
+		var val = Number(document.getElementById('cashInTills'+d).innerHTML);
+		val += Number(document.getElementById('dropAmount'+d).value);
+		document.getElementById('depositAmount'+d).innerHTML = Math.round(val*100)/100;
 		break;
 	case '0.25':
-		var count = Math.floor(Number($('#dropAmount'+d).val()) / 10);
-		var val = Number($('#dropAmount'+d).val()) - (10*count);
-		$('#depositAmount'+d).html(Math.round(val*100)/100);
+		var count = Math.floor(Number(document.getElementById('dropAmount'+d).value) / 10);
+		var val = Number(document.getElementById('dropAmount'+d).value) - (10*count);
+		document.getElementById('depositAmount'+d).innerHTML = Math.round(val*100)/100;
 		updateBuyAmount(d);
 		break;
 	case '0.10':
-		var count = Math.floor(Number($('#dropAmount'+d).val()) / 5);
-		var val = Number($('#dropAmount'+d).val()) - (5*count);
-		$('#depositAmount'+d).html(Math.round(val*100)/100);
+		var count = Math.floor(Number(document.getElementById('dropAmount'+d).value) / 5);
+		var val = Number(document.getElementById('dropAmount'+d).value) - (5*count);
+		document.getElementById('depositAmount'+d).innerHTML = Math.round(val*100)/100;
 		updateBuyAmount(d);
 		break;
 	case '0.05':
-		var count = Math.floor(Number($('#dropAmount'+d).val()) / 2);
-		var val = Number($('#dropAmount'+d).val()) - (2*count);
-		$('#depositAmount'+d).html(Math.round(val*100)/100);
+		var count = Math.floor(Number(document.getElementById('dropAmount'+d).value) / 2);
+		var val = Number(document.getElementById('dropAmount'+d).value) - (2*count);
+		document.getElementById('depositAmount'+d).innerHTML = Math.round(val*100)/100;
 		updateBuyAmount(d);
 		break;
 	case '0.01':
-		var count = Math.floor(Number($('#dropAmount'+d).val()) / 0.50);
-		var val = Number($('#dropAmount'+d).val()) - (0.50*count);
-		$('#depositAmount'+d).html(Math.round(val*100)/100);
+		var count = Math.floor(Number(document.getElementById('dropAmount'+d).value) / 0.50);
+		var val = Number(document.getElementById('dropAmount'+d).value) - (0.50*count);
+		document.getElementById('depositAmount'+d).innerHTML = Math.round(val*100)/100;
 		updateBuyAmount(d);
 		break;
 	}
@@ -248,67 +270,67 @@ function updateBuyAmount(d){
 		if (denom == 'Checks' || denom == '100.00' || denom == '50.00' || denom == '20.00' || denom == 'Junk')
 			{} // simulated "continue"
 		else {
-			var val = Number($('#par'+denom).html());
+			var val = Number(document.getElementById('par'+denom).innerHTML);
 
-			val -= Number($('#cashInTills'+denom).html());
+			val -= Number(document.getElementById('cashInTills'+denom).innerHTML);
 			if (denom == '1.00')
-				val -= Number($('#dropAmount'+denom).html());
+				val -= Number(document.getElementById('dropAmount'+denom).innerHTML);
 			else
-				val -= Number($('#dropAmount'+denom).val());
-			val += Number($('#fill'+denom).html());
-			val += Number($('#depositAmount'+denom).html());
+				val -= Number(document.getElementById('dropAmount'+denom).value);
+			val += Number(document.getElementById('fill'+denom).innerHTML);
+			val += Number(document.getElementById('depositAmount'+denom).innerHTML);
 
 			if (val < 0) val = 0;
 			if (denom == '1.00') val = Math.round(val);
 
-			$('#buyAmount'+denom).html(Math.round(val*100)/100);
+			document.getElementById('buyAmount'+denom).innerHTML = Math.round(val*100)/100;
 		}
 	});
 	var overage = 0;
 
 	var i = 0;
-	var v = Number($('#buyAmount10.00').html());
+	var v = Number(document.getElementById('buyAmount10.00').innerHTML);
 	while (v % 50 != 0 && i < 5){
 		v = v - 10;
 		overage = overage + 10;
 		i = i+1;
 	}
-	$('#buyAmount10.00').html(v);
+	document.getElementById('buyAmount10.00').innerHTML = v;
 
 	var i = 0;
-	var v = Number($('#buyAmount5.00').html());
+	var v = Number(document.getElementById('buyAmount5.00').innerHTML);
 	while (v % 50 != 0 && i < 10){
 		v = v - 5;
 		overage = overage + 5;
 		i = i+1;
 	}
-	$('#buyAmount5.00').html(v);
+	document.getElementById('buyAmount5.00').innerHTML = v;
 
 	var i = 0;
-	var v = Number($('#buyAmount1.00').html());
+	var v = Number(document.getElementById('buyAmount1.00').innerHTML);
 	while (v % 50 != 0 && i < 50){
 		v = v - 1;
 		overage = overage + 1;
 		i = i+1;
 	}
-	$('#buyAmount1.00').html(v);
+	document.getElementById('buyAmount1.00').innerHTML = v;
 
 	var overs = denom_overage(overage);
 	if (overs[0] != 0){
-		var v = Number($('#buyAmount0.25').html());
-		$('#buyAmount0.25').html(v + overs[0]);
+		var v = Number(document.getElementById('buyAmount0.25').innerHTML);
+		document.getElementById('buyAmount0.25').innerHTML = v + overs[0];
 	}
 	if (overs[1] != 0){
-		var v = Number($('#buyAmount0.10').html());
-		$('#buyAmount0.10').html(v + overs[1]);
+		var v = Number(document.getElementById('buyAmount0.10').innerHTML);
+		document.getElementById('#buyAmount0.10').innerHTML = v + overs[1];
 	}
 	if (overs[2] != 0){
-		var v = Number($('#buyAmount0.05').html());
-		$('#buyAmount0.05').html(v + overs[2]);
+		var v = Number(document.getElementById('buyAmount0.05').innerHTML);
+		document.getElementById('buyAmount0.05').innerHTML = v + overs[2];
 	}
 	if (overs[3] != 0){
-		var v = Number($('#buyAmount0.01').html());
-		$('#buyAmount0.01').html(v + overs[3]);
+		var v = Number(document.getElementById('buyAmount0.01').innerHTML);
+		document.getElementById('buyAmount0.01').innerHTML = v + overs[3];
 	}
 
 	resumRow('buyAmount');
@@ -330,4 +352,15 @@ function denom_overage(overage){
 	ret[3] = Math.floor(overage / 0.50)*0.50;
 
 	return ret;
+}
+
+function existingDates(dateStr)
+{
+    if (dateStr != '') {
+        var dates = dateStr.split(' ');
+        if (dates.length == 2) {
+            $('#startDate').val(dates[0]);
+            $('#endDate').val(dates[1]);
+        }
+    }
 }

@@ -2,7 +2,6 @@
 include('../../../config.php');
 if (!class_exists("SQLManager")) require_once($FANNIE_ROOT."src/SQLManager.php");
 include('../../db.php');
-include($FANNIE_ROOT.'src/select_dlog.php');
 
 if (isset($_GET['excel'])){
 	header('Content-Type: application/ms-excel');
@@ -89,10 +88,10 @@ while($t_row = $sql->fetch_row($result)){
 			echo "</tr>";
 			$b = ($b+1)%2;
 
-			$checkQ = "select cardno,firstname,lastname from custdata where lastname like '%$row[2]%'
-				and (firstname like '%$row[1]%' or firstname like '".substr($row[1],0,1).
-				"%') and personnum = 1 and cardno <> $row[0]";
-			$checkR = $sql->query($checkQ);
+			$checkQ = $sql->prepare("select cardno,firstname,lastname from custdata where lastname like ?
+				and (firstname like ? or firstname like ?)
+				and personnum = 1 and cardno <> ?");
+			$checkR = $sql->execute($checkQ, array('%'.$row[2].'%','%'.$row[1].'%', substr($row[1],0,1).'%', $row[0]));
 			while($checkW = $sql->fetch_row($checkR)){
 				echo "<tr>";
 				echo "<td bgcolor=$backgrounds[$b]>&nbsp;</td>";
@@ -129,10 +128,10 @@ echo "<td width=120 bgcolor=$backgrounds[$b]>$stock</td>";
 echo "</tr>";
 $b = ($b+1)%2;
 
-$checkQ = "select cardno,firstname,lastname from custdata where lastname like '%$row[2]%'
-	and (firstname like '%$row[1]%' or firstname like '".substr($row[1],0,1).
-	"%') and personnum = 1 and cardno <> $row[0]";
-$checkR = $sql->query($checkQ);
+$checkQ = $sql->prepare("select cardno,firstname,lastname from custdata where lastname like ?
+    and (firstname like ? or firstname like ?)
+    and personnum = 1 and cardno <> ?");
+$checkR = $sql->execute($checkQ, array('%'.$row[2].'%','%'.$row[1].'%', substr($row[1],0,1).'%', $row[0]));
 while($checkW = $sql->fetch_row($checkR)){
 	echo "<tr>";
 	echo "<td bgcolor=$backgrounds[$b]>&nbsp;</td>";

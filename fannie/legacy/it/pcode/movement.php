@@ -25,7 +25,6 @@ if (isset($_GET['salesCode1'])){
 
 	if (!class_exists("SQLManager")) require_once($FANNIE_ROOT."src/SQLManager.php");
 	include('../../db.php');
-	include($FANNIE_ROOT.'src/select_dlog.php');
 		
 	//printf($date1); //listed here for debugging purposes
 	//printf($deptEnd); // same as above
@@ -46,7 +45,7 @@ if (isset($_GET['salesCode1'])){
 	echo "</br>";
 	echo "<a href=movement.php?salesCode1=$salesCode1&salesCode2=$salesCode2&date1=$date1&date2=$date2&order=$order&dir=$dir&excel=yes>Save</a> to Excel<br />";
 	
-	$dlog = select_dlog($date1,$date2);
+	$dlog = DTransactionsModel::selectDlog($date1,$date2);
 
 	$date2a = $date2 . " 23:59:59";
 	$date1a = $date1 . " 00:00:00";
@@ -55,14 +54,14 @@ if (isset($_GET['salesCode1'])){
 	$query1 = "description";
 	
 
-	$query = "SELECT DISTINCT t.upc,p.description, SUM(t.quantity),SUM(t.total),
+	$query = $sql->prepare("SELECT DISTINCT t.upc,p.description, SUM(t.quantity),SUM(t.total),
 				d.salesCode
 			  FROM $dlog as t LEFT JOIN Products as p on t.upc = p.upc
 			  LEFT JOIN deptSalesCodes as d on d.dept_ID = t.department WHERE 
-			  d.salesCode BETWEEN '$salesCode1' AND '$salesCode2' 
-			  AND tDate >= '$date1a' AND tDate <= '$date2a' GROUP BY t.upc,p.description,
-			  d.salesCode ORDER BY $order $dir";
-	$result = $sql->query($query,$db);
+			  d.salesCode BETWEEN ? AND ?
+			  AND tdate BETWEEN ? AND ?' GROUP BY t.upc,p.description,
+			  d.salesCode ORDER BY t.upc");
+	$result = $sql->execute($query, array($salesCode1, $salesCode2, $date1a, $date2a));
 	echo "<table border=1>\n"; //create table
 	echo "<tr>";
 	echo "<td><a href=movement.php?salesCode1=$salesCode1&salesCode2=$salesCode2&date1=$date1&date2=$date2&order=t.upc&dir=";

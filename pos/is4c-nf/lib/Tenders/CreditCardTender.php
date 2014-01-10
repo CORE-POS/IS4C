@@ -25,39 +25,44 @@
   @class CreditCardTender
   Tender module for credit cards
 */
-class CreditCardTender extends TenderModule {
+class CreditCardTender extends TenderModule 
+{
 
-	/**
-	  Check for errors
-	  @return True or an error message string
-	*/
-	function ErrorCheck(){
-		global $CORE_LOCAL;
-	
-		if (($this->amount > ($CORE_LOCAL->get("amtdue") + 0.005)) && $CORE_LOCAL->get("amtdue") >= 0){ 
-			return DisplayLib::xboxMsg(_("tender cannot exceed purchase amount"));
-		}
+    /**
+      Check for errors
+      @return True or an error message string
+    */
+    public function errorCheck()
+    {
+        global $CORE_LOCAL;
+    
+        if (($this->amount > ($CORE_LOCAL->get("amtdue") + 0.005)) && $CORE_LOCAL->get("amtdue") >= 0){ 
+            return DisplayLib::xboxMsg(_("tender cannot exceed purchase amount"));
+        }
 
-		return True;
-	}
-	
-	/**
-	  Set up state and redirect if needed
-	  @return True or a URL to redirect
-	*/
-	function PreReqCheck(){
-		global $CORE_LOCAL;
-		if ($this->tender_code == 'CC' && $CORE_LOCAL->get('store') == 'wfc')
-			$CORE_LOCAL->set('kickOverride',True);
-		return True;
-	}
+        return true;
+    }
+    
+    /**
+      Set up state and redirect if needed
+      @return True or a URL to redirect
+    */
+    public function preReqCheck()
+    {
+        global $CORE_LOCAL;
+        if ($this->tender_code == 'CC' && $CORE_LOCAL->get('store') == 'wfc')
+            $CORE_LOCAL->set('kickOverride',true);
 
-	function AllowDefault(){
-		if ($this->tender_code == 'CC' && $CORE_LOCAL->get('store') == 'wfc')
-			return True;
-		else
-			return False;
-	}
+        return true;
+    }
+
+    public function allowDefault()
+    {
+        if ($this->tender_code == 'CC' && $CORE_LOCAL->get('store') == 'wfc') {
+            return True;
+        } else {
+            return False;
+        }
+    }
 }
 
-?>

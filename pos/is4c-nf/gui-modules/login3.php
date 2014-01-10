@@ -21,8 +21,6 @@
 
 *********************************************************************************/
 
-ini_set('display_errors','1');
-
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
 class login3 extends BasicPage {
@@ -35,7 +33,7 @@ class login3 extends BasicPage {
 
 	function preprocess(){
 		$this->color = "coloredArea";
-		$this->img = $this->page_url."graphics/bluekey4.gif";
+		$this->img = $this->page_url."graphics/key-icon.png";
 		$this->msg = _("please enter password");
 		if (isset($_REQUEST['reginput']) || isset($_REQUEST['scannerInput'])){
 
@@ -48,7 +46,7 @@ class login3 extends BasicPage {
 				UdpComm::udpSend('goodBeep');
 			}
 
-			if (Authenticate::check_password($passwd,4)){
+			if (Authenticate::checkPassword($passwd,4)){
 				$sd = MiscLib::scaleObject();
 				if (is_object($sd))
 					$sd->ReadReset();
@@ -84,7 +82,11 @@ class login3 extends BasicPage {
 			</div>
 		</div>
 		<?php
+        /**
+        alog and its variants are never used.
+        @deprecated
 		TransRecord::addactivity(3);
+        */
 		Database::getsubtotals();
 		echo "<div id=\"footer\">";
 		echo DisplayLib::printfooter();
@@ -93,6 +95,7 @@ class login3 extends BasicPage {
 
 }
 
-new login3();
+if (basename(__FILE__) == basename($_SERVER['PHP_SELF']))
+	new login3();
 
 ?>

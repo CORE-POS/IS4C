@@ -23,7 +23,6 @@
 
 include(dirname(__FILE__).'/../../../config.php');
 include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
-require_once($FANNIE_ROOT."src/select_dlog.php");
 $dbc = FannieDB::get($FANNIE_OP_DB);
 
 class OverShortCashierPage extends FanniePage {
@@ -74,7 +73,7 @@ class OverShortCashierPage extends FanniePage {
 		global $FANNIE_PLUGIN_SETTINGS, $FANNIE_OP_DB;
 		$dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['OverShortDatabase']);
 
-		$dlog = select_dlog($date);
+		$dlog = DTransactionsModel::selectDlog($date);
 
 		$totals = array();
 		$counts = array();
@@ -96,6 +95,9 @@ class OverShortCashierPage extends FanniePage {
 		$totalsP = $dbc->prepare_statement($totalsQ);
 		$totalsR = $dbc->exec_statement($totalsP, array($empno,$date.' 00:00:00',$date.' 23:59:59'));
 		while($totalsW = $dbc->fetch_row($totalsR)){
+            if (in_array($totalsW['trans_subtype'], OverShortTools::$EXCLUDE_TENDERS)) {
+                continue;
+            }
 			$totals[$totalsW[0]] = $totalsW[2];
 			$names[$totalsW[0]] = $totalsW[1];
 			$counts[$totalsW[0]] = 0.00;
@@ -292,6 +294,9 @@ class OverShortCashierPage extends FanniePage {
 			tr.color {
 				background: #ffffcc;
 			}
+            body, table, td, th {
+              color: #000;
+            }
 		';	
 	}
 

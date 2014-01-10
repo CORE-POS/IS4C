@@ -16,8 +16,8 @@ if (!isset($_GET['memID'])){
 else if (isset($_GET['edit'])){
 	$memID = $_GET['memID'];
 	
-	$fetchQ = "select * from custdata where cardno=$memID order by personnum";
-	$fetchR = $sql->query($fetchQ);
+	$fetchQ = $sql->prepare("select * from custdata where cardno=? order by personnum");
+	$fetchR = $sql->execute($fetchQ, array($memID));
 
 	echo "<form action=memDBHistory.php method=get>";
 	echo "<input type=hidden name=doneEditing value=yes />";
@@ -69,7 +69,7 @@ else {
 
 	if (isset($_GET['stamp'])){
 		$stamp = $_GET['stamp'];
-		$revertQ = "update custdata set
+		$revertQ = $sql->prepare("update custdata set
 			    lastname=b.lastname,
 			    firstname=b.firstname,
 			    cashback=b.cashback,
@@ -85,60 +85,75 @@ else {
 			    numberofchecks=b.numberofchecks,
 			    shown=b.shown
 			    from custdata as c, custUpdate as b
-			    where c.cardno=b.cardno and c.cardno=$memID
+			    where c.cardno=b.cardno and c.cardno=?
 			    and c.personnum=b.personnum and
-			    datediff(mi,'$stamp',tdate) = 0";
+			    datediff(mi,?,tdate) = 0");
 		echo $revertQ."<br />";
 
 		$uid=getUID($username);
-		$auditQ = "insert custUpdate select now(),$uid,1,* from custdata where cardno=$memID";
+		$auditQ = $sql->prepare("insert custUpdate select now(),?,1,* from custdata where cardno=?");
 
-		$sql->query($auditQ);
-		$sql->query($revertQ);
+		$sql->execute($auditQ, array($uid, $memID));
+		$sql->execute($revertQ, array($memID, $stamp));
 		
-	}
-	else if (isset($_GET['doneEditing'])){
+	} else if (isset($_GET['doneEditing'])){
 		foreach(array_keys($_GET) as $key){
 			$_GET[$key] = rtrim($_GET[$key]);
 			if ($_GET[$key] == "")
 				$_GET[$key] = "NULL";
 		}
-		$upQs = array($_GET["maxpersonnum"]);
-		for ($i = 1; $i <= $_GET['maxpersonnum']; $i++){
-			$upQ = "update custdata set
-				lastname='".$_GET["lastname$i"]."',
-				firstname='".$_GET["firstname$i"]."',
-				cashback=".$_GET["cashback$i"].",
-				discount=".$_GET["discount$i"].",
-				memdiscountlimit=".$_GET["limit$i"].",
-				chargeok=".$_GET["charge$i"].",
-				writechecks=".$_GET["check$i"].",
-				storecoupons=".$_GET["storecp$i"].",
-				type='".$_GET["type$i"]."',
-				memtype=".$_GET["memtype$i"].",
-				staff=".$_GET["staff$i"].",
-				ssi=".$_GET["ssi$i"].",
-				numberofchecks=".$_GET["numchecks$i"].",
-				shown=".$_GET["shown$i"]."
-				where cardno=".$_GET["memID"]."
-				and personnum=$i";
-			$upQs[$i-1] = $upQ;
-		}
-
 
 		$uid=getUID($username);
-		$auditQ = "insert custUpdate select now(),$uid,1,* from custdata where cardno=$memID";
-		$sql->query($auditQ);
+		$auditQ = $sql->prepare("insert custUpdate select now(),?,1,* from custdata where cardno=?");
+		$sql->execute($auditQ, array($uid, $memID));
 
-		foreach($upQs as $q)
-			$sql->query($q);
+		$upQs = array($_GET["maxpersonnum"]);
+		for ($i = 1; $i <= $_GET['maxpersonnum']; $i++){
+			$upQ = $sql->prepare("update custdata set
+				lastname=?,
+				firstname=?,
+				cashback=?,
+				discount=?,
+				memdiscountlimit=?,
+				chargeok=?,
+				writechecks=?,
+				storecoupons=?,
+				type=?,
+				memtype=?,
+				staff=?,
+				ssi=?,
+				numberofchecks=?,
+				shown=?
+				where cardno=?
+				and personnum=?");
+            $sql->execute($upQ, 
+                    array(
+                        $_GET['lastname'.$i],
+                        $_GET['firstname'.$i],
+                        $_GET['cashback'.$i],
+                        $_GET['discount'.$i],
+                        $_GET['limit'.$i],
+                        $_GET['charge'.$i],
+                        $_GET['check'.$i],
+                        $_GET['storecp'.$i],
+                        $_GET['type'.$i],
+                        $_GET['memtype'.$i],
+                        $_GET['staff'.$i],
+                        $_GET['ssi'.$i],
+                        $_GET['numchecks'.$i],
+                        $_GET['shown'.$i],
+                        $_GET['memID'.$i],
+                        $i
+                    )
+                );
+		}
 
 	}
 
-	$fetchQ = "select now() as tdate,0,2 as optype,*,'current' from custdata where cardno=$memID 
+	$fetchQ = $sql->prepare("select now() as tdate,0,2 as optype,*,'current' from custdata where cardno=?
 		   union
-		   select c.*,u.name from custUpdate as c left join users as u on c.uid=u.uid where cardno=$memID order by tdate desc, personnum, optype desc";
-	$fetchR = $sql->query($fetchQ);
+		   select c.*,u.name from custUpdate as c left join users as u on c.uid=u.uid where cardno=? order by tdate desc, personnum, optype desc");
+	$fetchR = $sql->execute($fetchQ, array($memID, $memID));
 	
 	echo "<a href=memDBHistory.php?memID=$memID&edit=yes>Edit</a><br />";
 	echo "<table cellspacing=0 cellpadding=3 border=1>";

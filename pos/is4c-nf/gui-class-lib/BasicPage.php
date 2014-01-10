@@ -123,9 +123,9 @@ class BasicPage {
 		echo "<link rel=\"stylesheet\" type=\"text/css\"
 		    href=\"{$my_url}/css/pos.css\">";
 		// include store css file if it exists
-		if (file_exists(dirname(__FILE__).'/../store.css')){
+		if (file_exists(dirname(__FILE__).'/../css/store.css')){
 			echo "<link rel=\"stylesheet\" type=\"text/css\"
-			    href=\"{$my_url}/store.css\">";
+			    href=\"{$my_url}/css/store.css\">";
 		}
 		echo "<script type=\"text/javascript\"
 			src=\"{$my_url}/js/jquery.js\"></script>";
@@ -420,7 +420,8 @@ class BasicPage {
 				echo '<ul><li>';
 				if(!empty($s['class'])) echo $s['class'].'::';
 				echo $s['function'].'()';
-				echo '<li>Line '.$s['line'].', '.$s['file'];
+				if (isset($s['line']))
+					echo '<li>Line '.$s['line'].', '.$s['file'];
 			}
 			foreach($stack as $s) echo '</ul>';
 		}

@@ -21,9 +21,10 @@ if (!validateUserQuiet('view_all_hours')){
 	   is in that department
 	*/
 	$validated = false;
+    $sql = hours_dbconnect();
 	$depts = array(10,11,12,13,20,21,30,40,41,50,60,998);
-	$checkQ = "select department from employees where empID=".$empID;
-	$checkR = $sql->query($checkQ);
+    $checkQ = $sql->prepare_statement("select department from employees where empID=?");
+    $checkR = $sql->exec_statement($checkQ, array($empID));
 	$checkW = $sql->fetch_row($checkR);
 	if (validateUserQuiet('view_all_hours',$checkW['department'])){
 		$validated = true;
@@ -105,12 +106,13 @@ echo "</head><body>";
 
 echo "<h3>Salary Employee PTO Status</h3>";
 
-$infoQ = "select e.name,e.adpID,
-	s.totalTaken as daysTaken
-	from employees as e left join
-	salarypto_ytd as s on e.empID=s.empID
-	where e.empID=$empID";
-$infoR = $sql->query($infoQ);
+$sql = hours_dbconnect();
+$infoQ = $sql->prepare_statement("select e.name,e.adpID,
+    s.totalTaken as daysTaken
+    from employees as e left join
+    salarypto_ytd as s on e.empID=s.empID
+    where e.empID=?");
+$infoR = $sql->exec_statement($infoQ, array($empID));
 $infoW = $sql->fetch_row($infoR);
 
 echo "<h2>$infoW[0] [ <a href={$FANNIE_URL}auth/ui/loginform.php?logout=yes>Logout</a> ]</h2>";
@@ -120,8 +122,9 @@ echo "<tr class=two><th>PTO Taken, YTD</th><td>$infoW[2]</td></tr>";
 echo "<tr class=one><th>PTO Remaining</th><td>".($infoW[1]-$infoW[2])."</td></tr>";
 echo "</tr></table>";
 
-$periodsQ = "select daysUsed,month(dstamp),year(dstamp) from salaryHours where empID=$empID order by dstamp DESC";
-$periodsR = $sql->query($periodsQ);
+$periodsQ = $sql->prepare_statement("select daysUsed,month(dstamp),year(dstamp) 
+        from salaryHours where empID=? order by dstamp DESC");
+$periodsR = $sql->exec_statement($periodsQ, array($empID));
 $class = array("one","two");
 $c = 0;
 echo "<table id=payperiods cellspacing=0 cellpadding=4 border=1>";

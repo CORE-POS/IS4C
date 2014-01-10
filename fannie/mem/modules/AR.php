@@ -21,21 +21,34 @@
 
 *********************************************************************************/
 
-class AR extends MemberModule {
+class AR extends MemberModule 
+{
 
-	function ShowEditForm($memNum,$country="US"){
-		global $FANNIE_URL,$FANNIE_TRANS_DB;
+	function ShowEditForm($memNum,$country="US")
+    {
+		global $FANNIE_URL,$FANNIE_TRANS_DB, $FANNIE_ROOT;
 
 		$dbc = $this->db();
 		$trans = $FANNIE_TRANS_DB.$dbc->sep();
 		
-		$infoQ = $dbc->prepare_statement("SELECT c.memDiscountLimit,n.balance
-				FROM custdata AS c LEFT JOIN
-				{$trans}ar_live_balance AS n ON
-				c.CardNo=n.card_no
-				WHERE c.CardNo=? AND c.personNum=1");
+		$infoQ = $dbc->prepare_statement("SELECT n.balance
+				FROM {$trans}ar_live_balance AS n 
+				WHERE n.card_no=?");
 		$infoR = $dbc->exec_statement($infoQ,array($memNum));
 		$infoW = $dbc->fetch_row($infoR);
+
+		if (!class_exists("CustdataModel")) {
+			include($FANNIE_ROOT.'classlib2.0/data/models/CustdataModel.php');
+        }
+        $model = new CustdataModel($dbc);
+        $model->CardNo($memNum);
+        $model->personNum(1);
+        $model->load();
+        $limit = $model->ChargeLimit();
+        if ($limit == 0) {
+            $limit = $model->MemDiscountLimit();
+        }
+
 
 		$ret = "<fieldset><legend>A/R</legend>";
 		$ret .= "<table class=\"MemFormTable\" 
@@ -43,7 +56,7 @@ class AR extends MemberModule {
 
 		$ret .= "<tr><th>Limit</th>";
 		$ret .= sprintf('<td><input name="AR_limit" size="4" value="%d" />
-				</td>',$infoW['memDiscountLimit']);
+				</td>',$limit);
 		$ret .= "<th>Current Balance</th>";
 		$ret .= sprintf('<td>%.2f</td>',$infoW['balance']);	
 
@@ -55,21 +68,29 @@ class AR extends MemberModule {
 		return $ret;
 	}
 
-	function SaveFormData($memNum){
+	function SaveFormData($memNum)
+    {
 		global $FANNIE_ROOT;
 		$dbc = $this->db();
-		if (!class_exists("CustdataModel"))
+		if (!class_exists("CustdataModel")) {
 			include($FANNIE_ROOT.'classlib2.0/data/models/CustdataModel.php');
+        }
 
 		$limit = FormLib::get_form_value('AR_limit',0);
-		$test = CustdataModel::update($memNum,
-				array('MemDiscountLimit' => $limit));
+        $model = new CustdataModel($dbc);
+        $model->CardNo($memNum);
+        $test = false;
+        foreach($model->find() as $obj) {
+            $obj->MemDiscountLimit($limit);
+            $obj->ChargeLimit($limit);
+            $test = $obj->save();
+        }
 		
-		if ($test === False)
+		if ($test === false) {
 			return 'Error: Problme saving A/R limit<br />';
-		else
+		} else {
 			return '';
+        }
 	}
 }
 
-?>

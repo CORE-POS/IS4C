@@ -30,7 +30,7 @@ N.B. the HelloWorld display module is just an example; that file does not exist 
 <a name="l00002"></a>00002 
 <a name="l00003"></a>00003 <span class="keyword">class </span>HW_Parser <span class="keyword">extends</span> <a name="_a11"></a><a class="code" href="class_parser.html">Parser</a> {
 <a name="l00004"></a>00004 
-<a name="l00005"></a>00005         function <a name="a12"></a><a class="code" href="class_parser.html#87bc1711b76c25ecb6294fbacd9ec7b1">check</a>($str){
+<a name="l00005"></a>00005         function <a name="a12"></a><a class="code" href="class_parser.html#60676cdb6480984f56d6301150f49c3a">check</a>($str){
 <a name="l00006"></a>00006 
 <a name="l00007"></a>00007                 <span class="keywordflow">if</span> (strtoupper($str) == <span class="stringliteral">"HW"</span>)
 <a name="l00008"></a>00008                         <span class="keywordflow">return</span> True;
@@ -39,16 +39,16 @@ N.B. the HelloWorld display module is just an example; that file does not exist 
 <a name="l00011"></a>00011                 
 <a name="l00012"></a>00012         }
 <a name="l00013"></a>00013 
-<a name="l00014"></a>00014         function <a name="a13"></a><a class="code" href="class_parser.html#5447ff56b59081bd0f7fb084c97568ff">parse</a>($str){
+<a name="l00014"></a>00014         function <a name="a13"></a><a class="code" href="class_parser.html#70a383afd1dcac2569cd099d4edde14f">parse</a>($str){
 <a name="l00015"></a>00015                 global $CORE_LOCAL;
 <a name="l00016"></a>00016 
-<a name="l00017"></a>00017                 $return_value = $this-&gt;<a name="a14"></a><a class="code" href="class_parser.html#a25abc3d3a5407d364ef11cf11baa04a">default_json</a>();
+<a name="l00017"></a>00017                 $return_value = $this-&gt;<a name="a14"></a><a class="code" href="class_parser.html#0076d421db25e8eb844d0ecc093688ad">default_json</a>();
 <a name="l00018"></a>00018 
 <a name="l00019"></a>00019                 <span class="keywordflow">if</span> ($CORE_LOCAL-&gt;get(<span class="stringliteral">"LastID"</span>) != <span class="stringliteral">"0"</span>){
-<a name="l00020"></a>00020                         $return_value['output'] = <a name="a15"></a><a class="code" href="class_display_lib.html#98bfea5183c746e3cc3697b12abb13dd">DisplayLib::boxMsg</a>(<span class="stringliteral">"transaction in progress"</span>);
+<a name="l00020"></a>00020                         $return_value['output'] = <a name="a15"></a><a class="code" href="class_display_lib.html#a4ca16f2c67a9cbbee6c9ab57c666cde">DisplayLib::boxMsg</a>(<span class="stringliteral">"transaction in progress"</span>);
 <a name="l00021"></a>00021                 }
 <a name="l00022"></a>00022                 <span class="keywordflow">else</span> {
-<a name="l00023"></a>00023                         $return_value['main_frame'] = <a name="a16"></a><a class="code" href="class_misc_lib.html#fd1feb5ecb9964eb230e01b3eaf4c0ba">MiscLib::base_url</a>().'gui-modules/HelloWorld.php';
+<a name="l00023"></a>00023                         $return_value['main_frame'] = MiscLib::base_url().'gui-modules/HelloWorld.php';
 <a name="l00024"></a>00024                 }
 <a name="l00025"></a>00025 
 <a name="l00026"></a>00026                 <span class="keywordflow">return</span> $return_value;
@@ -57,7 +57,7 @@ N.B. the HelloWorld display module is just an example; that file does not exist 
 <a name="l00029"></a>00029 }
 <a name="l00030"></a>00030 
 <a name="l00031"></a>00031 ?&gt;
-</pre></div> <hr size="1"><address style="align: right;"><small>Generated on Tue Oct 23 14:30:33 2012 for CORE POS - IS4C by&nbsp;
+</pre></div> <hr size="1"><address style="align: right;"><small>Generated on 18 Nov 2013 for CORE POS - IS4C by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img src="doxygen.png" alt="doxygen" align="middle" border="0"></a> 1.4.7 </small></address>
 </body>

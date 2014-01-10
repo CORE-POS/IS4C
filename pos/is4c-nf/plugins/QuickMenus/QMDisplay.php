@@ -84,14 +84,14 @@ class QMDisplay extends NoInputPage {
 					// QM or qm
 					// sticky quick menu button?
 					// ignore the next enter key
-					form_disabled = 1;
+					form_disabled = -1;
 				}
 				else if (event.which==13 && form_disabled == 0){
 					// enter - submit form
 					form_disabled=1;
 					$('#qmform').submit();
 				}
-				else if (event.which==13 && form_disabled == 1){
+				else if (event.which==13 && form_disabled == -1){
 					// enter - ignore
 					// but re-enable form
 					form_disabled=0;

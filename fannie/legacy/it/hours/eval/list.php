@@ -17,22 +17,40 @@ else if ($perm === false){
 
 $db = hours_dbconnect();
 
-$order = isset($_REQUEST['o'])?mysql_real_escape_string($_REQUEST['o']):'name';
+$order = 'name';
+if (isset($_REQUEST['o'])) {
+    switch($_REQUEST['o']) {
+        case 'adpID':
+            $order = 'adpID';
+            break;
+        case 'hireDate':
+            $order = 'hireDate';
+            break;
+        case 'evalDate':
+            $order = 'evalDate';
+            break;
+        default:
+            $order = 'name';
+            break;
+    }
+}
 if ($order != 'name') $order .= ", name";
 
 $clause = "";
+$args = array();
 if (isset($_REQUEST['eM']) && is_numeric($_REQUEST['eM']) && is_numeric($_REQUEST['eY'])){
-	$clause = sprintf(" AND year(nextEval)=%d AND month(nextEval)=%d ",
-			$_REQUEST['eY'],$_REQUEST['eM']);
+    $clause = ' AND YEAR(nextEval) = ? AND MONTH(nextEval) = ? ';
+    $args[] = $_REQUEST['eY'];
+    $args[] = $_REQUEST['eM'];
 }
 
-$q = "SELECT e.empID,name,adpID,i.nextEval,
+$q = $db->prepare("SELECT e.empID,name,adpID,i.nextEval,
 	DATE_FORMAT(i.hireDate,'%m/%d/%Y') as hireDate,
 	t.title FROM employees as e
 	left join evalInfo as i on e.empID=i.empID 
 	left join EvalTypes as t ON i.nextTypeID=t.id
-	WHERE deleted=0 $clause order by $order";
-$r = $db->query($q);
+	WHERE deleted=0 $clause order by $order");
+$r = $db->execute($q, $args);
 echo '<style type="text/css">a{color:blue;}</style>';
 echo '<form action=list.php method=get>';
 echo 'Filter by next eval: <select name=eM>';

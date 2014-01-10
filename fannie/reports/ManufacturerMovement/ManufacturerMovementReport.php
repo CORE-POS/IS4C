@@ -22,18 +22,13 @@
 *********************************************************************************/
 
 include('../../config.php');
-/*
-include($FANNIE_ROOT.'src/mysql_connect.php');
-include($FANNIE_ROOT.'src/select_dlog.php');
-include($FANNIE_ROOT.'classlib2.0/FannieReportPage.php');
-include($FANNIE_ROOT.'classlib2.0/lib/FormLib.php');
-*/
-include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
+class ManufacturerMovementReport extends FannieReportPage 
+{
 
-class ManufacturerMovementReport extends FannieReportPage {
-
-	function preprocess(){
+	function preprocess()
+    {
 		global $FANNIE_WINDOW_DRESSING;
 		$this->report_cache = 'day';
 		$this->title = "Fannie : Manufacturer Movement";
@@ -46,10 +41,11 @@ class ManufacturerMovementReport extends FannieReportPage {
 			else
 				$this->has_menus(False);
 		
-			if (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'xls')
+			if (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'xls') {
 				$this->report_format = 'xls';
-			elseif (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'csv')
+			} elseif (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'csv') {
 				$this->report_format = 'csv';
+            }
 		}
 		else 
 			$this->add_script("../../src/CalendarControl.js");
@@ -57,18 +53,17 @@ class ManufacturerMovementReport extends FannieReportPage {
 		return True;
 	}
 
-	function fetch_report_data(){
-		global $FANNIE_OP_DB, $FANNIE_WINDOW_DRESSING, $FANNIE_ARCHIVE_DB;
-		$dbc = FannieDB::get($FANNIE_OP_DB);
-
+	function fetch_report_data()
+    {
+		global $FANNIE_OP_DB, $FANNIE_ARCHIVE_DB;
+        $dbc = FannieDB::get($FANNIE_OP_DB);
 		$date1 = FormLib::get_form_value('date1',date('Y-m-d'));
 		$date2 = FormLib::get_form_value('date2',date('Y-m-d'));
 		$manu = FormLib::get_form_value('manu','');
 		$type = FormLib::get_form_value('type','');
 		$groupby = FormLib::get_form_value('groupby','upc');
 
-		//$dlog = select_dlog($date1,$date2);
-		$dlog = DTransactionsModel::select_dlog($date1,$date2);
+		$dlog = DTransactionsModel::selectDlog($date1,$date2);
 		$sumTable = $FANNIE_ARCHIVE_DB.$dbc->sep()."sumUpcSalesByDay";
 
 		$type_condition = "e.manufacturer like ?";

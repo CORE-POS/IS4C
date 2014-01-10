@@ -6,15 +6,21 @@
 <div style="text-align:center;">
 <h1>DiscountModule</h1>
 <!--
+30Oct13 AT Doc new percent method
 19Jul13 AT Doc first written
 -->
-<br />as of: July 13, 2013
+<br />as of: October 30, 2013
 </div>
 <p>
 DiscountModules calculate transaction-level discounts. The default
 behavior is to multiply items with discountable=1 by the percentage
 in custdata's Discount column. Subclasses may provide an entirely
-different calculation if necessary.
+different calculation if necessary. The <b>percentage</b> function
+lets you apply a different value than custdata.Discount to the
+transaction. The <b>calculate</b> function allows for more involved
+changes such as apply different percentages to different items.
+In general, <b>percentage</b> is a safer choice in that it's less
+likely to result in odd edge cases.
 </p>
 <blockquote>
 double <b>calculate</b>()<br />
@@ -23,25 +29,26 @@ double <b>calculate</b>()<br />
 The return value should be the current discount based on the
 transaction's state. This value is normally positive.
 </p>
+<blockquote>
+double <b>percentage</b>(double $custdata_discount)<br />
+</blockquote>
+<p>
+The return value is the discount the customer should receive.
+The <b>$custdata_discount</b> argument is the value
+from custdata.Discount. Both the parameter and return value
+are expressed as percentages: i.e., 5.0 means a 5% discount.
+</p>
 <p>
 <b>Example</b>: give members an extra 5% discount on 
 Wednesdays
 <pre>
 class WednesdayDiscount extends DiscountModule {
-	function calculate(){
-		global $CORE_LOCAL;
+	function percentage($custdata_discount=0){
 		// Not a Wednesday or not a member
 		if (date('w') != 3 || $CORE_LOCAL->get('isMember') != 1)
-			return parent::calculate();
-
-		// get regular member discount
-		$custdataDiscount = $CORE_LOCAL->get('percentDiscount');
-		// get discountable total
-		$discountable = $CORE_LOCAL->get('discountableTotal');
-	
-		// increase discount by 5%
-		$discount = $discountable * ( ($custdataDiscount + 5.0) / 100.00 );
-		return MiscLib::truncate2($discount);
+			return $custdata_discount;
+		else
+			return $custdata_discount + 5;
 	}
 }
 </pre>

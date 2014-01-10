@@ -444,6 +444,7 @@ static public function storeCreditIssued($second, $ref=''){
 		list($e, $r, $t) = explode('-',$ref);
 		$checkQ = "select sum(total) from localtranstoday where 
 			trans_subtype='SC' and trans_type='T'
+            AND datetime >= " . $db->curdate() . "
 			AND emp_no=".((int)$e).'
 			AND register_no='.((int)$r).'
 			AND trans_no='.((int)$t);
@@ -617,11 +618,11 @@ static public function printCCSigSlip($dateTimeStamp,$ref,$storeCopy=True,$rp=0)
 			.$CORE_LOCAL->get("CapturedSigFile");
 
 		$bmp = new Bitmap();
-		$bmp->Load($sig_file);
+		$bmp->load($sig_file);
 
-		$bmpData = $bmp->GetRawData();
-		$bmpWidth = $bmp->GetWidth();
-		$bmpHeight = $bmp->GetHeight();
+		$bmpData = $bmp->getRawData();
+		$bmpWidth = $bmp->getWidth();
+		$bmpHeight = $bmp->getHeight();
 		$bmpRawBytes = (int)(($bmpWidth + 7)/8);
 
 		$print_class = $CORE_LOCAL->get('ReceiptDriver');
@@ -684,7 +685,7 @@ static public function graphedLocalTTL(){
 			$row['localTTL'], 100*$percent);
 	$str .= "\n";
 
-	$str .= self::$PRINT_OBJ->RenderBitmap(Bitmap::BarGraph($percent), 'L');
+	$str .= self::$PRINT_OBJ->RenderBitmap(Bitmap::barGraph($percent), 'L');
 	return $str."\n";
 }
 
@@ -1224,9 +1225,10 @@ static public function printReceipt($arg1,$second=False,$email=False) {
 			$q = rtrim($q,',');
 			if (count($select_mods) > 0){
 				$q .= ' FROM localtemptrans';
-				if ($reprint !== False){
+				if ($reprint !== false) {
 					$q = str_replace('localtemptrans','localtranstoday',$q);
-					$q .= ' WHERE '.$rp_where;
+					$q .= ' WHERE ' . $rp_where
+                            . ' AND datetime >= ' . $db->curdate();
 				}
 				$r = $db->query($q);
 				$row = array();
@@ -1296,7 +1298,7 @@ static public function printReceipt($arg1,$second=False,$email=False) {
 	/* --------------------------------------------------------------
 	  print store copy of charge slip regardless of receipt print setting - apbw 2/14/05 
 	  ---------------------------------------------------------------- */
-	if ($CORE_LOCAL->get("chargeTotal") != 0 && ($CORE_LOCAL->get("End") == 1 || $reprint)) {
+	if ($CORE_LOCAL->get("chargeTotal") != 0 && (($CORE_LOCAL->get("End") == 1 && !$second) || $reprint)) {
 		if (is_array($receipt))
 			$receipt['print'] .= self::printChargeFooterStore($dateTimeStamp, $ref);
 		else
@@ -1495,6 +1497,7 @@ static public function equityNotification($trans_num=''){
 		list($e,$r,$t) = explode('-',$trans_num);
 		$checkQ = sprintf("SELECT sum(total) FROM localtranstoday WHERE emp_no=%d AND
 				register_no=%d AND trans_no=%d AND department=991
+                 AND datetime >= " . $db->curdate() . "
 				group by department having sum(total) <> 0",$e,$r,$t);
 	}
 	$checkR = $db->query($checkQ);

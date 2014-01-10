@@ -22,12 +22,11 @@
 *********************************************************************************/
 
 require('../login.php');
-$path = guesspath();
-include($path."config.php");
+include("../../config.php");
 $page_title = 'Fannie : Auth : View Users';
 $header = 'Fannie : Auth : View Users';
 
-include($path."src/header.html");
+include($FANNIE_ROOT."src/header.html");
 
 if (!validateUser('admin')){
   return;
@@ -39,5 +38,5 @@ showClasses();
 <p />
 <a href=menu.php>Main menu</a>
 <?php
-include($path."src/footer.html");
+include($FANNIE_ROOT."src/footer.html");
 ?>

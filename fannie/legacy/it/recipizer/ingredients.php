@@ -24,9 +24,9 @@ if (isset($_GET['action'])){
 		$idW = $sql->fetch_array($idR);
 		$id = $idW[0]+1;
 		
-		$insQ = "insert into ingredients values ($id,'$name',$size,'$sizeUnit',$volume,'$volUnit',$cost)";
+		$insQ = $sql->prepare("insert into ingredients values (?, ?, ?, ?, ?, ?, ?)");
 		//echo $insQ;
-		$insR = $sql->query($insQ);
+		$insR = $sql->execute($insQ, array($id, $name, $size, $sizeUnit, $volume, $volUnit, $cost));
 	
 		$out .= getIngredients();
 		break;
@@ -36,8 +36,8 @@ if (isset($_GET['action'])){
 		break;
 	case 'editName':
 		$id = $_GET['id'];
-		$nameQ = "select name from ingredients where id=$id";
-		$nameR = $sql->query($nameQ);
+		$nameQ = $sql->prepare("select name from ingredients where id=?");
+		$nameR = $sql->execute($nameQ, array($id));
 		$nameW = $sql->fetch_array($nameR);
 		$name = $nameW[0];
 		
@@ -51,13 +51,13 @@ if (isset($_GET['action'])){
 		$id = $_GET['id'];
 		$name = $_GET['name'];
 		
-		$upQ = "update ingredients set name='$name' where id=$id";
-		$upR = $sql->query($upQ);
+		$upQ = $sql->prepare("update ingredients set name=? where id=?");
+		$upR = $sql->execute($upQ, array($name, $id));
 		break;
 	case 'editSize':
 		$id = $_GET['id'];
-		$sizeQ = "select size,sizeUnit from ingredients where id=$id";
-		$sizeR = $sql->query($sizeQ);
+		$sizeQ = $sql->prepare("select size,sizeUnit from ingredients where id=?");
+		$sizeR = $sql->execute($sizeQ, array($id));
 		$sizeW = $sql->fetch_array($sizeR);
 		$size = $sizeW[0];
 		$sizeUnit = $sizeW[1];
@@ -81,13 +81,13 @@ if (isset($_GET['action'])){
 		$id = $_GET['id'];
 		$size = $_GET['size'];
 		$sizeUnit = $_GET['sizeUnit'];
-		$upQ = "update ingredients set size=$size,sizeUnit='$sizeUnit' where id=$id";
-		$upR = $sql->query($upQ);
+		$upQ = $sql->prepare("update ingredients set size=?,sizeUnit=? where id=?");
+		$upR = $sql->execute($upQ, array($size, $sizeUnit, $id));
 		break;
 	case 'editVolume':
 		$id = $_GET['id'];
-		$volumeQ = "select volume,volumeUnit from ingredients where id=$id";
-		$volumeR = $sql->query($volumeQ);
+		$volumeQ = $sql->prepare("select volume,volumeUnit from ingredients where id=?");
+		$volumeR = $sql->execute($volumeQ, array($id));
 		$volumeW = $sql->fetch_array($volumeR);
 		$volume = $volumeW[0];
 		$volumeUnit = $volumeW[1];
@@ -112,13 +112,13 @@ if (isset($_GET['action'])){
 		$volume = $_GET['volume'];
 		$volumeUnit = $_GET['volumeUnit'];
 		
-		$upQ = "update ingredients set volume=$volume,volumeUnit='$volumeUnit' where id=$id";
-		$upR = $sql->query($upQ);
+		$upQ = $sql->prepare("update ingredients set volume=?,volumeUnit=? where id=?");
+		$upR = $sql->execute($upQ, array($volume, $volumeUnit, $id));
 		break;
 	case 'editCost':
 		$id = $_GET['id'];
-		$costQ = "select cost from ingredients where id=$id";
-		$costR = $sql->query($costQ);
+		$costQ = $sql->prepare("select cost from ingredients where id=?");
+		$costR = $sql->execute($costQ, array($id));
 		$costW = $sql->fetch_array($costR);
 		$cost = $costW[0];
 		
@@ -132,22 +132,22 @@ if (isset($_GET['action'])){
 		$id = $_GET['id'];
 		$cost = $_GET['cost'];
 		
-		$upQ = "update ingredients set cost=$cost where id=$id";
-		$upR = $sql->query($upQ);
+		$upQ = $sql->prepare("update ingredients set cost=? where id=?");
+		$upR = $sql->execute($upQ, array($cost, $id));
 		break;
 	case 'flipOn':
 		$id = $_GET['id'];
 		$class = $_GET['class'];
 		
-		$inQ = "insert into ingredientstatus values ($id,$class)";
-		$inR = $sql->query($inQ);
+		$inQ = $sql->prepare("insert into ingredientstatus values (?,?)");
+		$inR = $sql->execute($inQ, array($id, $class));
 		break;
 	case 'flipOff':
 		$id = $_GET['id'];
 		$class = $_GET['class'];
 		
-		$delQ = "delete from ingredientstatus where ingredientID=$id and classID=$class";
-		$delR = $sql->query($delQ);
+		$delQ = $sql->prepare("delete from ingredientstatus where ingredientID=? and classID=?");
+		$delR = $sql->execute($delQ, array($id, $class));
 		break;
 	}
 	echo $out;
@@ -174,8 +174,8 @@ function getIngredients(){
 
 function viewIngredient($id){
 	global $sql;
-	$fetchQ = "select name,size,sizeUnit,volume,volumeUnit,cost from ingredients where id=$id";
-	$fetchR = $sql->query($fetchQ);
+	$fetchQ = $sql->prepare("select name,size,sizeUnit,volume,volumeUnit,cost from ingredients where id=?");
+	$fetchR = $sql->execute($fetchQ, array($id));
 	$fetchW = $sql->fetch_array($fetchR);
 	
 	$ret = "<input type=hidden id=ingredientID value=$id />";
@@ -195,10 +195,10 @@ function viewIngredient($id){
 	
 	$ret .= "</table>";
 	
-	$statusQ = "select c.id,c.name,case when s.classID is NULL then 0 else 1 end as flag 
+	$statusQ = $sql->prepare("select c.id,c.name,case when s.classID is NULL then 0 else 1 end as flag 
 			   from ingredientclasses as c left outer join ingredientstatus as s
-			   on c.id = s.classID and s.ingredientID=$id";
-	$statusR = $sql->query($statusQ);
+			   on c.id = s.classID and s.ingredientID=?");
+	$statusR = $sql->execute($statusQ, array($id));
 	while ($statusW = $sql->fetch_array($statusR)){
 		$ret .= "<b>".$statusW['name']."</b>: ";
 		$ret .= "<input type=checkbox id=\"".$statusW['name'].$statusW['id']."\" ";

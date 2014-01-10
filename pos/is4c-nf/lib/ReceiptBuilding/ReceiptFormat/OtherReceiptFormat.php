@@ -26,24 +26,26 @@
   Module for print-formatting 
   miscelaneous records. 
 */
-class OtherReceiptFormat extends DefaultReceiptFormat {
+class OtherReceiptFormat extends DefaultReceiptFormat 
+{
 
 	/**
 	  Formatting function
 	  @param $row a single receipt record
 	  @return a formatted string
 	*/
-	function format($row){
-		if ($row['trans_type'] == '0'){
+	public function format($row)
+    {
+		if ($row['trans_type'] == '0') {
 			// tare
 			$description = strtolower($description);
 			$description = str_replace('**',' =',$description);
 			return $description;
-		}
-		else if ($row['trans_type'] == 'H' && $row['description'] != ''){
+		} else if ($row['trans_type'] == 'H' && $row['description'] != '') {
 			$this->is_bold = True;
 			return $row['description'];
 		}
 		return "";
 	}
 }
+

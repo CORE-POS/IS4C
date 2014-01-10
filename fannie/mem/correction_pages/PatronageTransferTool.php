@@ -24,8 +24,6 @@
 include('../../config.php');
 include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 $dbc = FannieDB::get($FANNIE_OP_DB);
-if (!function_exists('select_dlog'))
-	include($FANNIE_ROOT.'src/select_dlog.php');
 
 class PatronageTransferTool extends FanniePage {
 
@@ -81,7 +79,7 @@ class PatronageTransferTool extends FanniePage {
 			$row = $dbc->fetch_row($r);
 			$this->name2 = $row[0].' '.$row[1];
 
-			$dlog = select_dlog($this->date);
+			$dlog = DTransactionsModel::selectDlog($this->date);
 			$q = $dbc->prepare_statement("SELECT card_no FROM $dlog WHERE trans_num=? AND
 				tdate BETWEEN ? AND ?
 				ORDER BY card_no DESC");
@@ -245,7 +243,12 @@ class PatronageTransferTool extends FanniePage {
 		else {
 			$nameP = $dbc->prepare_statement("SELECT dept_name FROM {$OP}departments WHERE dept_no=?");
 			$nameR = $dbc->exec_statement($nameP,$department);
-			$defaults['description'] = array_pop($dbc->fetch_row($nameR));
+            if ($dbc->num_rows($nameR) == 0) {
+                $defaults['description'] = 'CORRECTIONS';
+            } else {
+                $nameW = $dbc->fetch_row($nameR);
+                $defaults['description'] = $nameW['dept_name'];
+            }
 		}
 
 		$q = $dbc->prepare_statement("SELECT memType,Staff FROM {$OP}custdata WHERE CardNo=?");

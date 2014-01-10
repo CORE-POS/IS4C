@@ -22,18 +22,13 @@
 *********************************************************************************/
 
 include('../../config.php');
-/*
-include($FANNIE_ROOT.'src/mysql_connect.php');
-include($FANNIE_ROOT.'src/select_dlog.php');
-include($FANNIE_ROOT.'classlib2.0/FannieReportPage.php');
-include($FANNIE_ROOT.'classlib2.0/lib/FormLib.php');
-*/
-include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
+class VendorMovementReport extends FannieReportPage 
+{
 
-class VendorMovementReport extends FannieReportPage {
-
-	function preprocess(){
+	function preprocess()
+    {
 		global $FANNIE_WINDOW_DRESSING;
 		$this->report_cache = 'none';
 		$this->title = "Fannie : Vendor Movement";
@@ -57,15 +52,16 @@ class VendorMovementReport extends FannieReportPage {
 		return True;
 	}
 
-	function fetch_report_data(){
+	function fetch_report_data()
+    {
 		global $FANNIE_OP_DB, $FANNIE_ARCHIVE_DB;
-		$dbc = FannieDB::get($FANNIE_OP_DB);
+        $dbc = FannieDB::get($FANNIE_OP_DB);
 		$date1 = FormLib::get_form_value('date1',date('Y-m-d'));
 		$date2 = FormLib::get_form_value('date2',date('Y-m-d'));
 		$vendor = FormLib::get_form_value('vendor','');
 		$groupby = FormLib::get_form_value('groupby','upc');
 
-		$dlog = DTransactionsModel::select_dlog($date1,$date2);
+		$dlog = DTransactionsModel::selectDlog($date1,$date2);
 		$sumTable = $FANNIE_ARCHIVE_DB.$dbc->sep()."sumUpcSalesByDay";
 
 		$query = "";
@@ -126,7 +122,8 @@ class VendorMovementReport extends FannieReportPage {
 		return $ret;
 	}
 	
-	function calculate_footers($data){
+	function calculate_footers($data)
+    {
 		if (empty($data))
 			return array();
 		switch(count($data[0])){
@@ -164,7 +161,8 @@ class VendorMovementReport extends FannieReportPage {
 		}
 	}
 
-	function form_content(){
+	function form_content()
+    {
 ?>
 <div id=main>	
 <form method = "get" action="<?php echo $_SERVER['PHP_SELF']; ?>">

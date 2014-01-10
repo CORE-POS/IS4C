@@ -24,96 +24,109 @@
 /**
   @class PriceLib
 */
-class PriceLib {
+class PriceLib 
+{
 
-	public static function pricePerUnit($price,$sizeStr){
-		global $FANNIE_COUNTRY;
-		$country = (isset($FANNIE_COUNTRY)&&!empty($FANNIE_COUNTRY))?$FANNIE_COUNTRY:'US';
+    public static function pricePerUnit($price,$sizeStr)
+    {
+        global $FANNIE_COUNTRY;
+        $country = (isset($FANNIE_COUNTRY)&&!empty($FANNIE_COUNTRY))?$FANNIE_COUNTRY:'US';
 
-		$num = "";
-		$unit = "";
-		$mult = 1;
-		$inNum = 1;
-		for ($i=0; $i < strlen($sizeStr); $i++){
-			if ($inNum == 1){
-				if (is_numeric($sizeStr[$i]) or $sizeStr[$i] == ".")
-					$num .= $sizeStr[$i];
-				else if ($sizeStr[$i] == "/" or $sizeStr[$i] == "-"){
-					$mult = $num;
-					$num = "";
-				}
-				else {
-					$inNum = 0;
-					$unit .= $sizeStr[$i];
-				}
-			}
-			else
-				$unit .= $sizeStr[$i];
-		}
+        $num = "";
+        $unit = "";
+        $mult = 1;
+        $inNum = 1;
+        for ($i=0; $i < strlen($sizeStr); $i++) {
+            if ($inNum == 1) {
+                if (is_numeric($sizeStr[$i]) or $sizeStr[$i] == ".") {
+                    $num .= $sizeStr[$i];
+                } else if ($sizeStr[$i] == "/" or $sizeStr[$i] == "-") {
+                    $mult = $num;
+                    $num = "";
+                } else {
+                    $inNum = 0;
+                    $unit .= $sizeStr[$i];
+                }
+            } else {
+                $unit .= $sizeStr[$i];
+            }
+        }
 
-		$unit = ltrim($unit);
-		$unit = strtoupper($unit);
-		if ( strpos($unit,"FL") !== False )
-			$unit = "FLOZ";
-		if ($num == "") $num = 1;
-		$num = (float)$num;
-		$num = $num*$mult;
+        $unit = ltrim($unit);
+        $unit = strtoupper($unit);
+        if (strpos($unit,"FL") !== False) {
+            $unit = "FLOZ";
+        }
+        if ($num == "") {
+            $num = 1;
+        }
+        $num = (float)$num;
+        $num = $num*$mult;
 
-		switch($unit){
-		case '#':
-		case 'LB':
-		case 'LBS':	
-			if ($country == "US")
-				return round($price/($num*16),3)."/OZ";
-			else
-				return round($price/($num*453.59),3)."/G";
-		case 'ML':
-			if ($country == "US")
-				return round($price/($num*0.034),3)."/OZ";
-			else
-				return round($price/$num,3)."/ML";
-		case 'FLOZ':
-			if ( $country == 'US' )
-				return round($price/$num,3)."/OZ";
-			else
-				return round($price/($num*29.5735),3)."/ML"; 
-		case 'OZ':
-		case 'Z':
-			if ( $country == 'US' )
-				return round($price/$num,3)."/OZ";
-			else
-				return round($price/($num*28.35),3)."/G"; 
-		case 'PINT':
-		case 'PINTS':
-			if ($country == "US")
-				return round($price/($num*16),3)."/OZ";
-			else
-				return round($price/($num*473.18),3)."/ML";
-		case 'GR':
-		case 'GRAM':
-		case 'GM':
-		case 'GRM':
-		case 'G':
-			if ($country == "US")
-				return round($price/($num*0.035),3)."/OZ";
-			else
-				return round($price/$num,3)."/G";
-		case 'LTR':
-		case 'L':
-			if ($country == "US")
-				return round($price/($num*33.814),3)."/OZ";
-			else
-				return round($price/1000,3)."/ML";
-		case 'GAL':
-			if ($country == "US")
-				return round($price/($num*128),3)."/OZ";
-			else
-				return round($price/($num*3785.41),3)."/ML";
-		default:
-			return round($price/$num,3)."/".$unit;
-		}
-		return "";
-	}
+        switch($unit) {
+            case '#':
+            case 'LB':
+            case 'LBS':    
+                if ($country == "US") {
+                    return round($price/($num*16),3)."/OZ";
+                } else {
+                    return round($price/($num*453.59),3)."/G";
+                }
+            case 'ML':
+                if ($country == "US") {
+                    return round($price/($num*0.034),3)."/OZ";
+                } else {
+                    return round($price/$num,3)."/ML";
+                }
+            case 'FLOZ':
+                if ( $country == 'US' ) {
+                    return round($price/$num,3)."/OZ";
+                } else {
+                    return round($price/($num*29.5735),3)."/ML"; 
+                }
+            case 'OZ':
+            case 'Z':
+                if ( $country == 'US' ) {
+                    return round($price/$num,3)."/OZ";
+                } else {
+                    return round($price/($num*28.35),3)."/G"; 
+                }
+            case 'PINT':
+            case 'PINTS':
+                if ($country == "US") {
+                    return round($price/($num*16),3)."/OZ";
+                } else {
+                    return round($price/($num*473.18),3)."/ML";
+                }
+            case 'GR':
+            case 'GRAM':
+            case 'GM':
+            case 'GRM':
+            case 'G':
+                if ($country == "US"){
+                    return round($price/($num*0.035),3)."/OZ";
+                } else {
+                    return round($price/$num,3)."/G";
+                }
+            case 'LTR':
+            case 'L':
+                if ($country == "US"){
+                    return round($price/($num*33.814),3)."/OZ";
+                } else {
+                    return round($price/1000,3)."/ML";
+                }
+            case 'GAL':
+                if ($country == "US") {
+                    return round($price/($num*128),3)."/OZ";
+                } else {
+                    return round($price/($num*3785.41),3)."/ML";
+                }
+            default:
+                return round($price/$num,3)."/".$unit;
+        }
+
+        return "";
+    }
 }
 
 ?>

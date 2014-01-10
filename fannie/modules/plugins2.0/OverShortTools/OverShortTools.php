@@ -73,6 +73,8 @@ class OverShortTools extends FanniePlugin {
 			$instance->create();		
 		}
 	}
+
+    public static $EXCLUDE_TENDERS = array('MA', 'RR');
 }
 
 ?>

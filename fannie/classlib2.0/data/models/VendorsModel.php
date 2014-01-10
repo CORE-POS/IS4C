@@ -24,42 +24,47 @@
 /**
   @class VendorsModel
 */
-class VendorsModel extends BasicModel {
+class VendorsModel extends BasicModel 
+{
 
-	protected $name = "vendors";
+    protected $name = "vendors";
 
-	protected $columns = array(
-	'vendorID' => array('type'=>'INT', 'primary_key'=>True),
-	'vendorName' => array('type'=>'VARCHAR(50)')
-	);
+    protected $columns = array(
+    'vendorID' => array('type'=>'INT', 'primary_key'=>True),
+    'vendorName' => array('type'=>'VARCHAR(50)')
+    );
 
-	/* START ACCESSOR FUNCTIONS */
+    /* START ACCESSOR FUNCTIONS */
 
-	public function vendorID(){
-		if(func_num_args() == 0){
-			if(isset($this->instance["vendorID"]))
-				return $this->instance["vendorID"];
-			elseif(isset($this->columns["vendorID"]["default"]))
-				return $this->columns["vendorID"]["default"];
-			else return null;
-		}
-		else{
-			$this->instance["vendorID"] = func_get_arg(0);
-		}
-	}
+    public function vendorID()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["vendorID"])) {
+                return $this->instance["vendorID"];
+            } elseif(isset($this->columns["vendorID"]["default"])) {
+                return $this->columns["vendorID"]["default"];
+            } else {
+                return null;
+            }
+        } else {
+            $this->instance["vendorID"] = func_get_arg(0);
+        }
+    }
 
-	public function vendorName(){
-		if(func_num_args() == 0){
-			if(isset($this->instance["vendorName"]))
-				return $this->instance["vendorName"];
-			elseif(isset($this->columns["vendorName"]["default"]))
-				return $this->columns["vendorName"]["default"];
-			else return null;
-		}
-		else{
-			$this->instance["vendorName"] = func_get_arg(0);
-		}
-	}
-	/* END ACCESSOR FUNCTIONS */
+    public function vendorName()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["vendorName"])) {
+                return $this->instance["vendorName"];
+            } elseif(isset($this->columns["vendorName"]["default"])) {
+                return $this->columns["vendorName"]["default"];
+            } else {
+                return null;
+            }
+        } else {
+            $this->instance["vendorName"] = func_get_arg(0);
+        }
+    }
+    /* END ACCESSOR FUNCTIONS */
 }
-?>
+

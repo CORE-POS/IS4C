@@ -1,8 +1,8 @@
 <?php
 include(realpath(dirname(__FILE__).'/../lib/AutoLoader.php'));
-AutoLoader::LoadMap();
+AutoLoader::loadMap();
 include(realpath(dirname(__FILE__).'/../ini.php'));
-include('util.php');
+include('InstallUtilities.php');
 ?>
 <html>
 <head>
@@ -20,15 +20,15 @@ body {
 
 <div class="alert success"><em>
 <?php if (isset($_POST['writeLocal'])){
-	write_conf_from_db();
+	InstallUtilities::writeConfFromDb();
 	echo 'Wrote to ini.php';
 }
 else if (isset($_POST['sendToServer'])){
-	send_conf_to_server();
+	InstallUtilities::sendConfToServer();
 	echo 'Shipped settings to server';
 }
 else if (isset($_POST['fetchFromServer'])){
-	get_conf_from_server();
+	InstallUtilities::getConfFromServer();
 	echo 'Got settings to server<br />';
 	echo 'Wrote to ini.php';
 }
@@ -41,7 +41,7 @@ else if (isset($_POST['fetchFromServer'])){
   determine available options
 */
 
-$local_db = db_test_connect($CORE_LOCAL->get('localhost'),
+$local_db = InstallUtilities::dbTestConnect($CORE_LOCAL->get('localhost'),
 		$CORE_LOCAL->get('DBMS'),
 		$CORE_LOCAL->get('pDatabase'),
 		$CORE_LOCAL->get('localUser'),
@@ -52,7 +52,7 @@ if ($local_db){
 	if ($test) $local_config = $local_db->num_rows($test);
 }
 
-$remote_db = db_test_connect($CORE_LOCAL->get('mServer'),
+$remote_db = InstallUtilities::dbTestConnect($CORE_LOCAL->get('mServer'),
 		$CORE_LOCAL->get('mDBMS'),
 		$CORE_LOCAL->get('mDatabase'),
 		$CORE_LOCAL->get('mUser'),

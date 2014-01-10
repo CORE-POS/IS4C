@@ -1,0 +1,5 @@
+.coloredArea { background: #6E2A8C; color: #ffffff; }
+
+div#loginTopBar .name { width: 16%; font-weight: bold; background: #FFE14F; height: 30px;
+                        font-size: 90%; text-align:center; float: left; padding-top: 10px;
+                        border-bottom: solid 1px #000000; vertical-align: middle;}

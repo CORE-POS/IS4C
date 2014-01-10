@@ -24,6 +24,7 @@ function superSelected(){
 	var superID = $('#superselect').val();
 	if (superID == -1){
 		$('#namespan').show();
+        $('#sd_email').val('');
 	}
 	else {
 		$('#namespan').hide();
@@ -35,7 +36,7 @@ function superSelected(){
 	$.ajax({
 		url: 'SuperDeptEditor.php',
 		type: 'POST',
-		timeout: 1000,
+		timeout: 5000,
 		data: 'sid='+superID+'&action=deptsInSuper',
 		error: function(e1,e2){
 			alert('Error loading XML document');
@@ -48,7 +49,7 @@ function superSelected(){
 	$.ajax({
 		url: 'SuperDeptEditor.php',
 		type: 'POST',
-		timeout: 1000,
+		timeout: 5000,
 		data: 'sid='+superID+'&action=deptsNotInSuper',
 		error: function(){
 		alert('Error loading XML document');
@@ -58,6 +59,14 @@ function superSelected(){
 		}
 	});
 
+    $.ajax({
+        url: 'SuperDeptEditor.php',
+        type: 'get',
+        data: 'sid='+superID+'&action=superDeptEmail',
+        success: function(resp) {
+            $('#sd_email').val(resp);
+        }
+    });
 }
 
 function addDepts(){
@@ -83,18 +92,21 @@ function saveData(){
 	}); 
 
 	var qs = "action=save&sid="+sID+"&name="+name+depts;
+    qs += '&email='+$('#sd_email').val();
 
 	$.ajax({
 		url: 'SuperDeptEditor.php',
 		type: 'POST',
-		timeout: 1000,
+		timeout: 5000,
 		data: qs,
 		error: function(){
 		alert('Error loading XML document');
 		},
 		success: function(resp){
 			alert(resp);
-			top.location = 'SuperDeptEditor.php';
+            if (sID == -1) {
+                top.location = 'SuperDeptEditor.php';
+            }
 			// reload the page so the form resets
 			// when a new super department is created
 		}

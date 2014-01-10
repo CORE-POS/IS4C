@@ -58,7 +58,13 @@ class UPC extends Parser {
 			return $ret;
 		}
 
-		$entered = str_replace(".", " ", $entered);
+        // leading/trailing whitespace creates issues
+        $entered = trim($entered);
+
+        // 6Jan14 - I have no idea why this is here
+        // unless some else does, it's probably legacy
+        // cruft. spaces in UPCs are bad.
+		//$entered = str_replace(".", " ", $entered);
 
 		$quantity = $CORE_LOCAL->get("quantity");
 		if ($CORE_LOCAL->get("quantity") == 0 && $CORE_LOCAL->get("multiple") == 0) $quantity = 1;
@@ -104,7 +110,7 @@ class UPC extends Parser {
 			$objs = $CORE_LOCAL->get("SpecialUpcClasses");
 			foreach($objs as $class_name){
 				$instance = new $class_name();
-				if ($instance->is_special($upc)){
+				if ($instance->isSpecial($upc)){
 					return $instance->handle($upc,$ret);
 				}
 			}
@@ -355,16 +361,34 @@ class UPC extends Parser {
 		$DiscountObject = new $DTClasses[$discounttype];
 
 		/* add in sticker price and calculate a quantity
-		   if the item is stickered, scaled, and on sale 
-		   if it's not scaled or on sale, there's no need
-		   to back-calculate weight and adjust so just use
-		   sticker price as normal_price
+		   if the item is stickered, scaled, and on sale. 
+
+           otherwise, if the item is sticked, scaled, and
+           not on sale but has a non-zero price attempt
+           to calculate a quantity. this makes the quantity
+           field more consistent for reporting purposes.
+           however, if the calculated quantity somehow
+           introduces a rounding error fall back to the
+           sticker's price. for non-sale items, the price
+           the customer pays needs to match the sticker
+           price exactly.
+
+           items that are not scaled do not need a fractional
+           quantity and items that do not have a normal_price
+           assigned cannot calculate a proper quantity.
 		*/
-		if (substr($upc,0,3) == "002"){
-			if ($DiscountObject->isSale() && $scale == 1)
+		if (substr($upc,0,3) == "002") {
+			if ($DiscountObject->isSale() && $scale == 1 && $row['normal_price'] != 0) {
 				$quantity = MiscLib::truncate2($scaleprice / $row["normal_price"]);
-			else
+            } else if ($scale == 1 && $row['normal_price'] != 0) {
+				$quantity = MiscLib::truncate2($scaleprice / $row["normal_price"]);
+                if (round($scaleprice, 2) != round($quantity * $row['normal_price'], 2)) {
+                    $quantity = 1.0;
+                    $row['normal_price'] = $scaleprice;
+                } 
+			} else {
 				$row['normal_price'] = $scaleprice;
+            }
 		}
 
 		/*

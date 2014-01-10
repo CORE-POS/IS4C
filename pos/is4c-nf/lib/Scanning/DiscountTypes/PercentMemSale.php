@@ -21,49 +21,56 @@
 
 *********************************************************************************/
 
-class PercentMemSale extends DiscountType {
+class PercentMemSale extends DiscountType 
+{
 
-	function priceInfo($row,$quantity=1){
-		global $CORE_LOCAL;
-		if (is_array($this->savedInfo))
-			return $this->savedInfo;
+    function priceInfo($row,$quantity=1)
+    {
+        global $CORE_LOCAL;
+        if (is_array($this->savedInfo)) {
+            return $this->savedInfo;
+        }
 
-		$ret = array();
+        $ret = array();
 
-		$ret["regPrice"] = $row['normal_price'];
-		$ret["unitPrice"] = $row['normal_price'];
+        $ret["regPrice"] = $row['normal_price'];
+        $ret["unitPrice"] = $row['normal_price'];
 
-		$ret['discount'] = 0;
-		$ret['memDiscount'] = MiscLib::truncate2(($ret['regPrice'] - ($ret['unitPrice'] * $row['special_price'])) * $quantity);
+        $ret['discount'] = 0;
+        $ret['memDiscount'] = MiscLib::truncate2(($ret['regPrice'] - ($ret['unitPrice'] * $row['special_price'])) * $quantity);
 
-		if ($CORE_LOCAL->get("isMember") == 1)
-			$ret['unitPrice'] = MiscLib::truncate2($ret['unitPrice'] * $row['special_price']);
+        if ($CORE_LOCAL->get("isMember") == 1) {
+            $ret['unitPrice'] = MiscLib::truncate2($ret['unitPrice'] * $row['special_price']);
+        }
 
-		$this->savedRow = $row;
-		$this->savedInfo = $ret;
-		return $ret;
-	}
+        $this->savedRow = $row;
+        $this->savedInfo = $ret;
+        return $ret;
+    }
 
-	function addDiscountLine(){
-		global $CORE_LOCAL;	
-		if ($CORE_LOCAL->get("isMember")){
-			TransRecord::adddiscount($this->savedInfo['memDiscount'],
-				$this->savedRow['department']);
-		}
-	}
+    public function addDiscountLine()
+    {
+        global $CORE_LOCAL;    
+        if ($CORE_LOCAL->get("isMember")) {
+            TransRecord::adddiscount($this->savedInfo['memDiscount'],
+                $this->savedRow['department']);
+        }
+    }
 
-	function isSale(){
-		return true;
-	}
+    public function isSale()
+    {
+        return true;
+    }
 
-	function isMemberOnly(){
-		return true;
-	}
+    public function isMemberOnly()
+    {
+        return true;
+    }
 
-	function isStaffOnly(){
-		return false;
-	}
+    public function isStaffOnly()
+    {
+        return false;
+    }
 
 }
 
-?>

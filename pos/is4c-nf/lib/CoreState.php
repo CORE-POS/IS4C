@@ -27,7 +27,8 @@ include_once(realpath(dirname(__FILE__)."/../ini.php"));
  @class CoreState
  Setup session variables
 */
-class CoreState extends LibraryClass {
+class CoreState extends LibraryClass 
+{
 
 /**
   Populates $CORE_LOCAL with default values.
@@ -35,8 +36,9 @@ class CoreState extends LibraryClass {
   in this file. Normally called once on
   startup.
 */
-static public function initiate_session() {
-	self::system_init();
+static public function initiate_session() 
+{
+	self::systemInit();
 	self::memberReset();
 	self::transReset();
 	self::printReset();
@@ -44,8 +46,9 @@ static public function initiate_session() {
 
 	Database::getsubtotals();
 	Database::loadglobalvalues();
-	self::loaddata();
-	self::customreceipt();
+	self::loadData();
+	self::customReceipt();
+    self::loadParams();
 }
 
 /**
@@ -54,7 +57,8 @@ static public function initiate_session() {
   should always exist but won't be reset
   to these values on a regular basis.
 */
-static public function system_init() {
+static public function systemInit() 
+{
 	global $CORE_LOCAL;
 
 	/**
@@ -135,7 +139,8 @@ static public function system_init() {
   transaction so these values will be the
   the defaults every time.
 */
-static public function transReset() {
+static public function transReset() 
+{
 	global $CORE_LOCAL;
 
 	/**
@@ -461,7 +466,8 @@ static public function transReset() {
   This function is called after the end of
   every transaction.
 */
-static public function printReset() {
+static public function printReset() 
+{
 	global $CORE_LOCAL;
 
 	/**
@@ -491,7 +497,8 @@ static public function printReset() {
   This function is called after the end of
   every transaction.
 */
-static public function memberReset() {
+static public function memberReset() 
+{
 	global $CORE_LOCAL;
 
 	/**
@@ -553,7 +560,7 @@ static public function memberReset() {
 	  @var availBal
 	  Current customer's available charge account
 	  balance. This is equivalent to 
-	  custdata.memDiscountLimit minus the balance
+	  custdata.ChargeLimit minus the balance
 	  setting above.
 	*/
 	$CORE_LOCAL->set("availBal",0);
@@ -577,24 +584,6 @@ static public function memberReset() {
 }
 
 /**
-  Get member information line for a given member
-  @param $row a record from custdata
-  @return string
-  @deprecated
-  Just define blueLine in custdata.
-*/
-static public function blueLine($row) {
-	$status = array('Non-Owner', 'Shareholder', 'Subscriber', 'Inactive', 'Refund', 'On Hold', 'Sister Org.', 'Other Co-ops');
-	if ($row["blueLine"]) {			// custom blueLine as defined by db
-		return $row["blueLine"];
-	} elseif (isset($row["blueLine"])) {	// 0 - default blueLine with out name
-		return '#'.$row['CardNo'].' - '.$row['Discount'].'% - '.$status[$row['memType']];
-	} else {				// NULL - default blueLine including name
-		return '#'.$row['CardNo'].' - '.$status[$row['memType']].': '.$row['FirstName'].' '.$row['LastName'];
-	}
-}
-
-/**
   If there are records in localtemptrans, get the 
   member number and initialize $CORE_LOCAL member
   variables.
@@ -604,7 +593,8 @@ static public function blueLine($row) {
   re-opened or the computer is rebooted in the
   middle of a transaction.
 */
-static public function loaddata() {
+static public function loadData() 
+{
 	global $CORE_LOCAL;
 	
 	$query_local = "select card_no from localtemptrans";
@@ -625,28 +615,30 @@ static public function loaddata() {
 		// not used - andy 4/12/07
 		$CORE_LOCAL->set("percentDiscount",0);
 		$CORE_LOCAL->set("memType",0);
-	}
-	else {
+	} else {
 		$query_member = "select CardNo,memType,Type,Discount,staff,SSI,
-				MemDiscountLimit,blueLine,FirstName,LastName
+				blueLine,FirstName,LastName
 				from custdata where CardNo = '".$CORE_LOCAL->get("memberID")."'";
 		$db_product = Database::pDataConnect();
 		$result = $db_product->query($query_member);
 		if ($db_product->num_rows($result) > 0) {
 			$row = $db_product->fetch_array($result);
-			$CORE_LOCAL->set("memMsg",self::blueLine($row));
+			$CORE_LOCAL->set("memMsg",$row['blueLine']);
 			$CORE_LOCAL->set("memType",$row["memType"]);
 			$CORE_LOCAL->set("percentDiscount",$row["Discount"]);
 
-			if ($row["Type"] == "PC") $CORE_LOCAL->set("isMember",1);
-			else $CORE_LOCAL->set("isMember",0);
+			if ($row["Type"] == "PC") {
+                $CORE_LOCAL->set("isMember",1);
+			} else {
+                $CORE_LOCAL->set("isMember",0);
+            }
 
 			$CORE_LOCAL->set("isStaff",$row["staff"]);
 			$CORE_LOCAL->set("SSI",$row["SSI"]);
-			$CORE_LOCAL->set("discountcap",$row["MemDiscountLimit"]);
 
-			if ($CORE_LOCAL->get("SSI") == 1) 
+			if ($CORE_LOCAL->get("SSI") == 1) {
 				$CORE_LOCAL->set("memMsg",$CORE_LOCAL->get("memMsg")." #");
+            }
 		}
 	}
 }
@@ -656,62 +648,131 @@ static public function loaddata() {
    These fields are used for various messages that
    invariably must be customized at every store.
  */
-static public function customreceipt(){
+static public function customReceipt()
+{
 	global $CORE_LOCAL;
 
 	$db = Database::pDataConnect(); 
 	$headerQ = "select text,type,seq from customReceipt order by seq";
 	$headerR = $db->query($headerQ);
 	$counts = array();
-	while($headerW = $db->fetch_row($headerR)){
+	while($headerW = $db->fetch_row($headerR)) {
 		$typeStr = $headerW['type'];
 		$numeral = $headerW['seq']+1;
 		$text = $headerW['text'];
 		
 		// translation for really old data
-		if (strtolower($typeStr)=="header")
+		if (strtolower($typeStr)=="header") {
 			$typeStr = "receiptHeader";
-		elseif(strtolower($typeStr)=="footer")
-			$typeStr = "receiptFooter";
+		} elseif(strtolower($typeStr)=="footer") {
+            $typeStr = "receiptFooter";
+        }
 
 		$CORE_LOCAL->set($typeStr.$numeral,$text);
 
-		if (!isset($counts[$typeStr]))
+		if (!isset($counts[$typeStr])) {
 			$counts[$typeStr] = 1;
-		else
+		} else {
 			$counts[$typeStr]++;
+        }
 	}
 	
-	foreach($counts as $key => $num){
+	foreach($counts as $key => $num) {
 		$CORE_LOCAL->set($key."Count",$num);
 	}
 }
 
-static public function getCustomerPref($key){
+static public function getCustomerPref($key)
+{
 	global $CORE_LOCAL;
-	if ($CORE_LOCAL->get('memberID') == 0) return '';
+	if ($CORE_LOCAL->get('memberID') == 0) {
+        return '';
+    }
+
 	$db = Database::pDataConnect();
 	$q = sprintf('SELECT pref_value FROM custPreferences WHERE
 		card_no=%d AND pref_key=\'%s\'',
 		$CORE_LOCAL->get('memberID'),$key);
 	$r = $db->query($q);
-	if ($r === False) return '';
-	if ($db->num_rows($r) == 0) return '';
-	return array_pop($db->fetch_row($r));
+	if ($r === False) {
+        return '';
+    }
+	if ($db->num_rows($r) == 0) {
+        return '';
+    }
+
+	$row = $db->fetch_row($r);
+    return $row['pref_value'];
 }
 
-static public function cashier_login($transno=False, $age=0){
+static public function cashierLogin($transno=False, $age=0)
+{
 	global $CORE_LOCAL;
-	if ($CORE_LOCAL->get('CashierNo')==9999){
+	if ($CORE_LOCAL->get('CashierNo')==9999) {
 		$CORE_LOCAL->set('training', 1);
 	}
-	if (!is_numeric($age)) $age = 0;
+	if (!is_numeric($age)) {
+        $age = 0;
+    }
 	$CORE_LOCAL->set('cashierAge', $age);
-	if($transno && is_numeric($transno)){
+	if($transno && is_numeric($transno)) {
 		$CORE_LOCAL->set('transno', $transno);
 	}
 }
 
+static public function loadParams(){
+    global $CORE_LOCAL;
+
+    $db = Database::pDataConnect();
+
+    // newer & optional table. should not fail
+    // if it's missing
+    if (!$db->table_exists('parameters')) {
+        return;
+    }
+    
+    // load global settings first
+    $prep = $db->prepare_statement('SELECT param_key, param_value, is_array FROM parameters
+                            WHERE (lane_id=0 OR lane_id IS NULL) AND
+                            (store_id=0 OR store_id IS NULL)');
+    $globals = $db->exec_statement($prep);
+    while($row = $db->fetch_row($globals)) {
+        $key = $row['param_key'];
+        $value = $row['param_value'];
+        if ($row['is_array'] == 1) {
+            $value = explode(',', $value);
+        }
+        $CORE_LOCAL->set($key, $value);
+    }
+
+    // apply local settings next
+    // with any overrides that occur
+    $prep = $db->prepare_statement('SELECT param_key, param_value, is_array FROM parameters
+                            WHERE lane_id=?');
+    $locals = $db->exec_statement($prep, array($CORE_LOCAL->get('laneno')));
+    while($row = $db->fetch_row($locals)) {
+        $key = $row['param_key'];
+        $value = $row['param_value'];
+        if ($row['is_array'] == 1) {
+            $value = explode(',', $value);
+            if (isset($value[0]) && strstr($value[0], '=>')) {
+                // keyed array
+                $tmp = array();
+                foreach($value as $entry) {
+                    list($k, $v) = explode('=>', $entry, 2);
+                    $tmp[$k] = $v;
+                }
+                $value = $tmp;
+            }
+        } else if (strtoupper($value) === 'TRUE') {
+            $value = true;
+        } else if (strtoupper($value) === 'FALSE') {
+            $value = false;
+        }
+
+        $CORE_LOCAL->set($key, $value);
+    }
 }
 
-?>
+}
+

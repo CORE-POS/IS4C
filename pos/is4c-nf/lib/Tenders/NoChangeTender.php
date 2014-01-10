@@ -21,18 +21,19 @@
 
 *********************************************************************************/
 
-class NoChangeTender extends TenderModule {
+class NoChangeTender extends TenderModule 
+{
 
-	function ErrorCheck(){
-		global $CORE_LOCAL;
+    public function errorCheck()
+    {
+        global $CORE_LOCAL;
 
-		if ($this->amount - $CORE_LOCAL->get('amtdue') > 0){
-			return DisplayLib::boxMsg(_('no change allowed').'<br />'
-					._('max tender is ').$CORE_LOCAL->get('amtdue'));
-		}
+        if ($this->amount - $CORE_LOCAL->get('amtdue') > 0) {
+            return DisplayLib::boxMsg(_('no change allowed').'<br />'
+                    ._('max tender is ').$CORE_LOCAL->get('amtdue'));
+        }
 
-		return True;
-	}
+        return true;
+    }
 }
 
-?>

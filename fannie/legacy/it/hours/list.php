@@ -1,7 +1,9 @@
 <?php
 
 include('../../../config.php');
-
+header('Location: '.$FANNIE_URL.'modules/plugins2.0/WfcHoursTracking/WfcHtListPage.php');
+exit;
+/*
 $dept_restrict = "WHERE deleted=0 ";
 $selected_dept = "";
 if (isset($_GET["showdept"])){
@@ -215,3 +217,4 @@ echo "</table>";
 echo "</body></html>";
 
 ?>
+*/

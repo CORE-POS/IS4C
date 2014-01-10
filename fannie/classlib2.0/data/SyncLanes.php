@@ -25,174 +25,181 @@
   @class SyncLanes
 */
 
-class SyncLanes {
+class SyncLanes 
+{
 
-	/**
-	  Do not truncate any tables
-	*/
-	const TRUNCATE_NONE 		= 0;
-	/**
-	  Truncate the source table AFTER
-	  copying it
-	*/
-	const TRUNCATE_SOURCE		= 1;
-	/**
-	  Truncate the destination table BEFORE
-	  inserting into it
-	*/
-	const TRUNCATE_DESTINATION	= 2;
-	
+    /**
+      Do not truncate any tables
+    */
+    const TRUNCATE_NONE         = 0;
+    /**
+      Truncate the source table AFTER
+      copying it
+    */
+    const TRUNCATE_SOURCE        = 1;
+    /**
+      Truncate the destination table BEFORE
+      inserting into it
+    */
+    const TRUNCATE_DESTINATION    = 2;
+    
 
-	/**
-	  Copy a table from the server to the lanes
-	  @param $table string table name
-	  @param $db string 'op' or 'trans'
-	    (default is 'op')
-	  @param $truncate integer
-	    (default is TRUNCATE_DESTINATION)
-	  @return array
-	    - sending => boolean attempted to copy table
-	    - messages => string result information
-	*/
-	static public function push_table($table,$db='op',$truncate=self::TRUNCATE_DESTINATION){
-		global $FANNIE_OP_DB, $FANNIE_TRANS_DB, $FANNIE_LANES;
+    /**
+      Copy a table from the server to the lanes
+      @param $table string table name
+      @param $db string 'op' or 'trans'
+        (default is 'op')
+      @param $truncate integer
+        (default is TRUNCATE_DESTINATION)
+      @return array
+        - sending => boolean attempted to copy table
+        - messages => string result information
+    */
+    static public function pushTable($table,$db='op',$truncate=self::TRUNCATE_DESTINATION)
+    {
+        global $FANNIE_OP_DB, $FANNIE_TRANS_DB, $FANNIE_LANES;
 
-		$ret = array('sending'=>True,'messages'=>'');
+        $ret = array('sending'=>True,'messages'=>'');
 
-		$db = strtolower($db);
-		if ($db != 'op' && $db != 'trans'){
-			$ret['sending'] = False;
-			$ret['messages'] = 'Invalid database: '.$db;
-			return $ret;
-		}
-		elseif(empty($table)){
-			$ret['sending'] = False;
-			$ret['messages'] = 'No table given';
-			return $ret;
-		}
-		elseif (ereg("[^A-Za-z0-9_]",$table)){
-			$ret['sending'] = False;
-			$ret['messages'] = 'Illegal table name: '.$table;
-			return $ret;
-		}
+        $db = strtolower($db);
+        if ($db != 'op' && $db != 'trans') {
+            $ret['sending'] = False;
+            $ret['messages'] = 'Invalid database: '.$db;
+            return $ret;
+        } elseif(empty($table)) {
+            $ret['sending'] = False;
+            $ret['messages'] = 'No table given';
+            return $ret;
+        } elseif (ereg("[^A-Za-z0-9_]",$table)) {
+            $ret['sending'] = False;
+            $ret['messages'] = 'Illegal table name: '.$table;
+            return $ret;
+        }
 
-		$special = dirname(__FILE__).'/../../sync/special/'.$table.'.php';
-		if (file_exists($special)){
-			/* Use special script to send table.
-			 * Usually with mysqldump.
-			 *  Much faster if both sides are mysql.
-			*/
-			ob_start();
-			$outputFormat = 'plain';
-			include($special);
-			$tmp = ob_get_clean();
-			$ret = array('sending'=>True,'messages'=>'');
-			$ret['messages'] = $tmp;
-			return $ret;
-		}
-		else {
-			/* use the transfer option in SQLManager
-			*   to copy records onto each lane
-			*/
-			$server_db = $db=='op' ? $FANNIE_OP_DB : $FANNIE_TRANS_DB;
-			$dbc = FannieDB::get( $server_db );
-			$laneNumber=1;
-			foreach($FANNIE_LANES as $lane){
-				$dbc->add_connection($lane['host'],$lane['type'],
-					$lane[$db],$lane['user'],$lane['pw']);
-				if ($dbc->connections[$lane[$db]]){
-					if ($truncate & self::TRUNCATE_DESTINATION){
-						$dbc->query("TRUNCATE TABLE $table",$lane[$db]);
-					}
-					$success = $dbc->transfer($server_db,
-						       "SELECT * FROM $table",
-						       $lane[$db],
-						       "INSERT INTO $table");
-					$dbc->close($lane[$db]);
-					if ($success){
-						$ret['messages'] .= "Lane $laneNumber ({$lane['host']}) $table completed successfully";
-					}
-					else {
-						$ret['messages'] .= "Lane $laneNumber ({$lane['host']}) $table completed but with some errors";
-					}
-				}
-				else {
-					$ret['messages'] .= "Couldn't connect to lane $laneNumber ({$lane['host']})";
-				}
-				$laneNumber++;
-			}
-			if ($truncate & self::TRUNCATE_SOURCE){
-				$dbc->query("TRUNCATE TABLE $table",$server_db);
-			}
-			return $ret;
-		}
-	}
+        $special = dirname(__FILE__).'/../../sync/special/'.$table.'.php';
+        if (file_exists($special)) {
+            /* Use special script to send table.
+             * Usually with mysqldump.
+             *  Much faster if both sides are mysql.
+            */
+            ob_start();
+            $outputFormat = 'plain';
+            include($special);
+            $tmp = ob_get_clean();
+            $ret = array('sending'=>True,'messages'=>'');
+            $ret['messages'] = $tmp;
+            return $ret;
+        } else {
+            /* use the transfer option in SQLManager
+            *   to copy records onto each lane
+            */
+            $server_db = $db=='op' ? $FANNIE_OP_DB : $FANNIE_TRANS_DB;
+            $dbc = FannieDB::get( $server_db );
+            $laneNumber=1;
+            foreach($FANNIE_LANES as $lane) {
+                $dbc->add_connection($lane['host'],$lane['type'],
+                    $lane[$db],$lane['user'],$lane['pw']);
+                if ($dbc->connections[$lane[$db]]) {
+                    if ($truncate & self::TRUNCATE_DESTINATION) {
+                        $dbc->query("TRUNCATE TABLE $table",$lane[$db]);
+                    }
+                    $success = $dbc->transfer($server_db,
+                               "SELECT * FROM $table",
+                               $lane[$db],
+                               "INSERT INTO $table");
+                    $dbc->close($lane[$db]);
+                    if ($success) {
+                        $ret['messages'] .= "Lane $laneNumber ({$lane['host']}) $table completed successfully";
+                    } else {
+                        $ret['messages'] .= "Lane $laneNumber ({$lane['host']}) $table completed but with some errors";
+                    }
+                } else {
+                    $ret['messages'] .= "Couldn't connect to lane $laneNumber ({$lane['host']})";
+                }
+                $laneNumber++;
+            }
+            if ($truncate & self::TRUNCATE_SOURCE) {
+                $dbc->query("TRUNCATE TABLE $table",$server_db);
+            }
 
-	/**
-	  Copy a table from the lanes to the server
-	  @param $table string table name
-	  @param $db string 'op' or 'trans'
-	    (default is 'trans')
-	  @param $truncate integer
-	    (default is TRUNCATE_SOURCE)
-	  @return array
-	    - sending => boolean attempted to copy table
-	    - messages => string result information
-	*/
-	static public function pull_table($table,$db='trans',$truncate=self::TRUNCATE_SOURCE){
-		global $FANNIE_OP_DB, $FANNIE_TRANS_DB, $FANNIE_LANES;
+            return $ret;
+        }
+    }
 
-		$ret = array('sending'=>True,'messages'=>'');
+    static public function push_table($table,$db='op',$truncate=self::TRUNCATE_DESTINATION)
+    {
+        return self::pushTable($table, $db, $truncate);
+    }
 
-		$db = strtolower($db);
-		if ($db != 'op' && $db != 'trans'){
-			$ret['sending'] = False;
-			$ret['messages'] = 'Invalid database: '.$db;
-			return $ret;
-		}
-		elseif(empty($table)){
-			$ret['sending'] = False;
-			$ret['messages'] = 'No table given';
-			return $ret;
-		}
-		elseif (ereg("[^A-Za-z0-9_]",$table)){
-			$ret['sending'] = False;
-			$ret['messages'] = 'Illegal table name: '.$table;
-			return $ret;
-		}
+    /**
+      Copy a table from the lanes to the server
+      @param $table string table name
+      @param $db string 'op' or 'trans'
+        (default is 'trans')
+      @param $truncate integer
+        (default is TRUNCATE_SOURCE)
+      @return array
+        - sending => boolean attempted to copy table
+        - messages => string result information
+    */
+    static public function pullTable($table,$db='trans',$truncate=self::TRUNCATE_SOURCE)
+    {
+        global $FANNIE_OP_DB, $FANNIE_TRANS_DB, $FANNIE_LANES;
 
-		// use the transfer option in SQLManager to copy
-		// records from each lane
-		$server_db = $db=='op' ? $FANNIE_OP_DB : $FANNIE_TRANS_DB;
-		$dbc = FannieDB::get( $server_db );
-		if ($truncate & self::TRUNCATE_DESTINATION){
-			$dbc->query("TRUNCATE TABLE $table",$server_db);
-		}
-		$laneNumber=1;
-		foreach($FANNIE_LANES as $lane){
-			$dbc->add_connection($lane['host'],$lane['type'],
-				$lane[$db],$lane['user'],$lane['pw']);
-			if ($dbc->connections[$lane[$db]]){
-				$success = $dbc->transfer($lane[$db],
-					       "SELECT * FROM $table",
-					       $server_db,
-					       "INSERT INTO $table");
-				if ($truncate & self::TRUNCATE_SOURCE){
-					$dbc->query("TRUNCATE TABLE $table",$lane[$db]);
-				}
-				$dbc->close($lane[$db]);
-				if ($success){
-					$ret['messages'] .= "Lane $laneNumber ({$lane['host']}) $table completed successfully";
-				}
-				else {
-					$ret['messages'] .= "Lane $laneNumber ({$lane['host']}) $table completed but with some errors";
-				}
-			}
-			else {
-				$ret['messages'] .= "Couldn't connect to lane $laneNumber ({$lane['host']})";
-			}
-			$laneNumber++;
-		}
-		return $ret;
-	}
+        $ret = array('sending'=>True,'messages'=>'');
+
+        $db = strtolower($db);
+        if ($db != 'op' && $db != 'trans') {
+            $ret['sending'] = False;
+            $ret['messages'] = 'Invalid database: '.$db;
+            return $ret;
+        } elseif(empty($table)) {
+            $ret['sending'] = False;
+            $ret['messages'] = 'No table given';
+            return $ret;
+        } elseif (ereg("[^A-Za-z0-9_]",$table)) {
+            $ret['sending'] = False;
+            $ret['messages'] = 'Illegal table name: '.$table;
+            return $ret;
+        }
+
+        // use the transfer option in SQLManager to copy
+        // records from each lane
+        $server_db = $db=='op' ? $FANNIE_OP_DB : $FANNIE_TRANS_DB;
+        $dbc = FannieDB::get( $server_db );
+        if ($truncate & self::TRUNCATE_DESTINATION) {
+            $dbc->query("TRUNCATE TABLE $table",$server_db);
+        }
+        $laneNumber=1;
+        foreach($FANNIE_LANES as $lane) {
+            $dbc->add_connection($lane['host'],$lane['type'],
+                $lane[$db],$lane['user'],$lane['pw']);
+            if ($dbc->connections[$lane[$db]]) {
+                $success = $dbc->transfer($lane[$db],
+                           "SELECT * FROM $table",
+                           $server_db,
+                           "INSERT INTO $table");
+                if ($truncate & self::TRUNCATE_SOURCE) {
+                    $dbc->query("TRUNCATE TABLE $table",$lane[$db]);
+                }
+                $dbc->close($lane[$db]);
+                if ($success) {
+                    $ret['messages'] .= "Lane $laneNumber ({$lane['host']}) $table completed successfully";
+                } else {
+                    $ret['messages'] .= "Lane $laneNumber ({$lane['host']}) $table completed but with some errors";
+                }
+            } else {
+                $ret['messages'] .= "Couldn't connect to lane $laneNumber ({$lane['host']})";
+            }
+            $laneNumber++;
+        }
+
+        return $ret;
+    }
+
+    static public function pull_table($table,$db='trans',$truncate=self::TRUNCATE_SOURCE)
+    {
+        return self::pullTable($table, $db, $truncate);
+    }
 }
+

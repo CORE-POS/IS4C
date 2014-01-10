@@ -15,7 +15,7 @@ class ViewsheetPage extends FanniePage {
 		global $ts_db, $FANNIE_PLUGIN_SETTINGS, $FANNIE_OP_DB;
 
 		if (!$this->current_user && $_GET['login'] == 1 ){
-			$this->login_redirect();
+			$this->loginRedirect();
 			return False;
 		}
 		// $loggedin = (isset($_COOKIE['verify'])) ? True : False;

@@ -27,7 +27,7 @@ class AllLanesItemModule extends ItemModule {
 
 	function ShowEditForm($upc){
 		global $FANNIE_LANES;
-		$upc = str_pad($upc,13,0,STR_PAD_LEFT);
+		$upc = BarcodeLib::padUPC($upc);
 		$queryItem = "SELECT * FROM products WHERE upc = ?";
 
 		$ret = '<fieldset id="AllLanesFieldset">';

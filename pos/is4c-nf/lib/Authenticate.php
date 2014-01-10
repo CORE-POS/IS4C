@@ -25,7 +25,8 @@
   @class Authenticate
   Functions for user authentication
 */
-class Authenticate extends LibraryClass {
+class Authenticate extends LibraryClass 
+{
  
 
 /**
@@ -40,7 +41,8 @@ class Authenticate extends LibraryClass {
   a user with frontendsecurity >= 30 in the
   employee table will be accepted.
 */
-static public function check_password($password,$activity=1){
+static public function checkPassword($password,$activity=1)
+{
 	global $CORE_LOCAL;
 
 	$password = strtoupper($password);
@@ -48,7 +50,9 @@ static public function check_password($password,$activity=1){
 	$password = str_replace(",", "", $password);
 	$paswword = str_replace("+", "", $password);
 
-	if ($password == "TRAINING") $password = 9999; // if password is training, change to '9999'
+	if ($password == "TRAINING") {
+        $password = 9999; // if password is training, change to '9999'
+    }
 
 	$query_g = "select LoggedIn,CashierNo from globalvalues";
 	$db_g = Database::pDataConnect();
@@ -78,9 +82,15 @@ static public function check_password($password,$activity=1){
 			);
 			Database::setglobalvalues($globals);
 
-			CoreState::cashier_login($transno, $row_q['age']);
+			CoreState::cashierLogin($transno, $row_q['age']);
 
-			if ($transno == 1) TransRecord::addactivity($activity);
+            /**
+            alog and its variants are never used.
+            @deprecated
+			if ($transno == 1) {
+                TransRecord::addactivity($activity);
+            }
+            */
 			
 		} elseif ($password == 9999) {
 			Database::loadglobalvalues();
@@ -94,11 +104,11 @@ static public function check_password($password,$activity=1){
 			);
 			Database::setglobalvalues($globals);
 
-			CoreState::cashier_login($transno, 0);
-		}
-		else return False;
-	}
-	else {
+			CoreState::cashierLogin($transno, 0);
+		} else {
+            return False;
+        }
+	} else {
 		// longer query but simpler. since someone is logged in already,
 		// only accept password from that person OR someone with a high
 		// frontendsecurity setting
@@ -117,49 +127,17 @@ static public function check_password($password,$activity=1){
 
 			Database::loadglobalvalues();
 			$row = $db_g->fetch_row($result_a);
-			CoreState::cashier_login(False, $row['age']);
-		}
-		elseif ($row_g["CashierNo"] == "9999" && $password == "9999"){
+			CoreState::cashierLogin(False, $row['age']);
+		} elseif ($row_g["CashierNo"] == "9999" && $password == "9999") {
 			Database::loadglobalvalues();
-			CoreState::cashier_login(False, 0);
-		}
-		else return False;
+			CoreState::cashierLogin(False, 0);
+		} else {
+            return false;
+        }
 	}
 
-	return True;
-}
-
-/**
-  Authentication function for Wedge NoSale page
-  @param $password the password
-  @return True or False
-  @deprecated
-*/
-static public function ns_check_password($password){
-	global $CORE_LOCAL;
-
-	$password = strtoupper(trim($password));
-	if ($password == "TRAINING") 
-		$password = 9999;
-
-	if (empty($password))
-		return False;
-
-	$db = Database::pDataConnect();
-	$password = $db->escape($password);
-	$query2 = "select emp_no, FirstName, LastName from employees where EmpActive = 1 and "
-		."frontendsecurity >= 11 and (CashierPassword = '".$password."' 
-		or AdminPassword = '".$password."')";
-	$result2 = $db->query($query2);
-	$num_row2 = $db->num_rows($result2);
-
-	if ($num_row2 > 0) {
-		ReceiptLib::drawerKick();
-		return True;
-	}
-	return False;
+	return true;
 }
 
 } // end class Authenticate
 
-?>

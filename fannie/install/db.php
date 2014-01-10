@@ -70,6 +70,31 @@ function duplicate_structure($dbms,$table1,$table2){
 	}
 }
 
+/**
+  Remove a deprecated table/view
+  @param $con SQLManager object
+  @param $db_name string database name
+  @param $table_name string table/view name
+  @param $is_view boolean default true
+  @return keyed array with any error info
+*/
+function dropDeprecatedStructure($con, $db_name, $table_name, $is_view=true)
+{
+	$ret = array('db'=>$db_name,'struct'=>$table_name,'error'=>0,'error_msg'=>'');
+
+    if ($con->table_exists($table_name, $db_name)) {
+        $dropQ = 'DROP '.($is_view ? 'VIEW' : 'TABLE').' '
+                .$con->identifier_escape($table_name, $db_name);
+        $result = $con->query($dropQ, $db_name);
+        if ($result === false) {
+            $ret['error_msg'] = $con->error($db_name);
+            $ret['error'] = 3;
+        }
+    }
+
+    return $ret;
+}
+
 function ar_departments(){
 	global $FANNIE_AR_DEPARTMENTS;
 	$ret = preg_match_all("/[0-9]+/",$FANNIE_AR_DEPARTMENTS,$depts);

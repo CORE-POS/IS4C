@@ -17,6 +17,6 @@ Use:
 Stores activity info during transaction.
 Rotates into alog and activitylog.
 */
-$CREATE['trans.activitytemplog'] = duplicate_structure($dbms,'alog','activitytemplog');
+$CREATE['trans.activitytemplog'] = InstallUtilities::duplicateStructure($dbms,'alog','activitytemplog');
 
 ?>

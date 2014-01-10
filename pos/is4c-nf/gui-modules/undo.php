@@ -99,7 +99,7 @@ class undo extends NoInputPage {
 					matched, card_no, trans_id
 					from localtranstoday where register_no = $register_no
 					and emp_no = $emp_no and trans_no = $old_trans_no
-					and ".$db->datediff($db->now(),'datetime')." = 0
+					and datetime >= " . $db->curdate() . "
 					and trans_status <> 'X'
 					order by trans_id";
 			}
@@ -120,7 +120,7 @@ class undo extends NoInputPage {
 					matched, card_no, trans_id
 					from dtransactions where register_no = $register_no
 					and emp_no = $emp_no and trans_no = $old_trans_no
-					and ".$db->datediff($db->now(),'datetime')." = 0
+					and datetime >= " . $db->curdate() . "
 					and trans_status <> 'X'
 					order by trans_id";
 			}
@@ -203,7 +203,7 @@ class undo extends NoInputPage {
 
 			$op = Database::pDataConnect();
 			$query = "select CardNo,personNum,LastName,FirstName,CashBack,Balance,Discount,
-				MemDiscountLimit,ChargeOk,WriteChecks,StoreCoupons,Type,memType,staff,
+				ChargeOk,WriteChecks,StoreCoupons,Type,memType,staff,
 				SSI,Purchases,NumberOfChecks,memCoupons,blueLine,Shown,id from custdata 
 				where CardNo = '".$card_no."'";
 			$res = $op->query($query);
@@ -211,9 +211,7 @@ class undo extends NoInputPage {
 			PrehLib::setMember($card_no,1,$row);
 			$CORE_LOCAL->set("autoReprint",0);
 
-			/* restore the logged in cashier */
-			$CORE_LOCAL->set("CashierNo",$prevCashier);
-			$CORE_LOCAL->set("transno",Database::gettransno($prevCashier));
+			/* do NOT restore logged in cashier until this transaction is complete */
 			
 			$this->change_page($this->page_url."gui-modules/undo_confirm.php");
 			return False;
@@ -222,4 +220,5 @@ class undo extends NoInputPage {
 	}
 }
 
-new undo();
+if (basename(__FILE__) == basename($_SERVER['PHP_SELF']))
+	new undo();

@@ -1,7 +1,8 @@
 <?php
 include('../../../../config.php');
-include($FANNIE_ROOT.'src/mysql_connect.php');
 include($FANNIE_ROOT.'cache/cache.php');
+include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+$dbc = FannieDB::get($FANNIE_OP_DB);
 
 if (isset($_GET['excel'])){
 	header('Content-Type: application/ms-excel');

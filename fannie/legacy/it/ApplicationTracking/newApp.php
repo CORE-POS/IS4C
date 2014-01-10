@@ -71,32 +71,31 @@ if (isset($_GET["appID"]) || isset($_POST["appID"])){
 
 		if ($appID == "-1"){
 			$insQ = "INSERT INTO applicants (first_name,last_name,app_date,postcard_date,internal,
-				best_practices,positions,openings,sent_to,referral,hired) VALUES ('$fname','$lname',
-				'$today',$pc_date,$internal,$bestpractices,'$applyStr','$openStr','$deptStr',
-				'$referral',$hired)";
-			$sql->query($insQ);
+				best_practices,positions,openings,sent_to,referral,hired) VALUES (?, ?,
+				?,?,?,?,?,?,?,?,?)");
+			$sql->execute($insQ, array($fname, $lname, $today, $pc_date, $internal, $bestpractices, $applyStr, $openStr, $deptStr, $referral, $hired));
 		}
 		else {
-			$upQ = "UPDATE applicants SET
-				first_name='$fname',
-				last_name='$lname',
-				app_date='$today',
-				postcard_date=$pc_date,
-				internal=$internal,
-				best_practices=$bestpractices,
-				positions='$applyStr',
-				openings='$openStr',
-				sent_to='$deptStr',
-				referral='$referral',
-				hired=$hired
-				WHERE appID=$appID";
+			$upQ = $sql->prepare("UPDATE applicants SET
+				first_name=?,
+				last_name=?,
+				app_date=?,
+				postcard_date=?,
+				internal=?,
+				best_practices=?,
+				positions=?,
+				openings=?,
+				sent_to=?,
+				referral=?,
+				hired=?
+				WHERE appID=?");
 			echo $upQ;
-			$sql->query($upQ);
+			$sql->execute($upQ, array($fname, $lname, $today, $pc_date, $internal, $bestpractices, $applyStr, $openStr, $deptStr, $referral, $hired, $appID));
 		}
 	}
 
-	$dataQ = "SELECT * FROM applicants WHERE appID=$appID";
-	$dataR = $sql->query($dataQ);
+	$dataQ = $sql->prepare("SELECT * FROM applicants WHERE appID=?");
+	$dataR = $sql->execute($dataQ, array($appID));
 	if ($sql->num_rows($dataR) == 0 && $appID != -1)
 		$ERRORS .= "Warning: No data found for applicant #$appID<br />";
 	else if ($appID != -1){

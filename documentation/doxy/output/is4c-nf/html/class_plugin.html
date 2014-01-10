@@ -33,21 +33,29 @@
 <h1>Plugin Class Reference</h1><!-- doxytag: class="Plugin" --><a href="class_plugin-members.html">List of all members.</a><table border="0" cellpadding="0" cellspacing="0">
 <tr><td></td></tr>
 <tr><td colspan="2"><br><h2>Public Member Functions</h2></td></tr>
-<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_plugin.html#2bf5c0ffb6cfa9ac934d28985fb7ac20">plugin_enable</a> ()</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_plugin.html#ffbf6707984e339579e1d9f7d574183c">plugin_enable</a> ()</td></tr>
 
-<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_plugin.html#a6da372631721bbc9851528e48f81c07">plugin_disable</a> ()</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_plugin.html#ec38272ad642638f62606a891dbe1260">plugin_disable</a> ()</td></tr>
 
-<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_plugin.html#1c19e2d92826969b9ef8164ff205cfce">plugin_url</a> ()</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_plugin.html#99142bce1c7908159ee700cb445a15ee">plugin_transaction_reset</a> ()</td></tr>
+
+<tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="anchor" name="14d43d372e36e9d700b5ee40ec3180b6"></a><!-- doxytag: member="Plugin::plugin_draw_icon" ref="14d43d372e36e9d700b5ee40ec3180b6" args="()" -->
+&nbsp;</td><td class="memItemRight" valign="bottom"><b>plugin_draw_icon</b> ()</td></tr>
+
+<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_plugin.html#451542a2dcb5cf3889a9b8aca29d4667">plugin_url</a> ()</td></tr>
 
 <tr><td colspan="2"><br><h2>Static Public Member Functions</h2></td></tr>
-<tr><td class="memItemLeft" nowrap align="right" valign="top">static&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_plugin.html#2e0cf25814732cb5968e236a9225bf81">MemberOf</a> ($file)</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">static&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_plugin.html#8ef3488474e25829f8dff238cdf57bc7">memberOf</a> ($file)</td></tr>
 
-<tr><td class="memItemLeft" nowrap align="right" valign="top">static&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_plugin.html#01e37e1bfd23706381af9730b00e10c4">IsEnabled</a> ($plugin)</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">static&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_plugin.html#81256568a6d5a9d151917610c80de88f">isEnabled</a> ($plugin)</td></tr>
 
-<tr><td class="memItemLeft" nowrap align="right" valign="top">static&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_plugin.html#ecda6dae7b12e60deb6be9bc9d71a3b1">PluginMap</a> ($path=&quot;&quot;, $in=array())</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">static&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_plugin.html#5714f42e0f6a5e064237af616f13a8b6">pluginMap</a> ($path=&quot;&quot;, $in=array())</td></tr>
 
 <tr><td colspan="2"><br><h2>Public Attributes</h2></td></tr>
-<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_plugin.html#05059e86574fa55bf04db0e501320b8e">$plugin_settings</a></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_plugin.html#441f4d157dc40b54d8e76f9ccf502565">$plugin_settings</a></td></tr>
+
+<tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="anchor" name="11ad23fc44d6cfb8e0863580a4a90bd4"></a><!-- doxytag: member="Plugin::$plugin_description" ref="11ad23fc44d6cfb8e0863580a4a90bd4" args="" -->
+&nbsp;</td><td class="memItemRight" valign="bottom"><b>$plugin_description</b> = 'This author didn\'t provide anything. Shame!'</td></tr>
 
 </table>
 <hr><a name="_details"></a><h2>Detailed Description</h2>
@@ -55,12 +63,12 @@
 Plugins are collections of modules. Each collection should contain one module that subclasses 'Plugin'. This module provides meta-information about the plugin like settings and enable/disable hooks 
 <p>
 <hr><h2>Member Function Documentation</h2>
-<a class="anchor" name="01e37e1bfd23706381af9730b00e10c4"></a><!-- doxytag: member="Plugin::IsEnabled" ref="01e37e1bfd23706381af9730b00e10c4" args="($plugin)" -->
+<a class="anchor" name="81256568a6d5a9d151917610c80de88f"></a><!-- doxytag: member="Plugin::isEnabled" ref="81256568a6d5a9d151917610c80de88f" args="($plugin)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">static Plugin::IsEnabled           </td>
+          <td class="memname">static Plugin::isEnabled           </td>
           <td>(</td>
           <td class="paramtype">$&nbsp;</td>
           <td class="paramname"> <em>plugin</em>          </td>
@@ -81,12 +89,12 @@ Check whether a given plugin is enabled <dl compact><dt><b>Parameters:</b></dt><
 
 </div>
 </div><p>
-<a class="anchor" name="2e0cf25814732cb5968e236a9225bf81"></a><!-- doxytag: member="Plugin::MemberOf" ref="2e0cf25814732cb5968e236a9225bf81" args="($file)" -->
+<a class="anchor" name="8ef3488474e25829f8dff238cdf57bc7"></a><!-- doxytag: member="Plugin::memberOf" ref="8ef3488474e25829f8dff238cdf57bc7" args="($file)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">static Plugin::MemberOf           </td>
+          <td class="memname">static Plugin::memberOf           </td>
           <td>(</td>
           <td class="paramtype">$&nbsp;</td>
           <td class="paramname"> <em>file</em>          </td>
@@ -107,7 +115,7 @@ Find the plugin containing a given file <dl compact><dt><b>Parameters:</b></dt><
 
 </div>
 </div><p>
-<a class="anchor" name="a6da372631721bbc9851528e48f81c07"></a><!-- doxytag: member="Plugin::plugin_disable" ref="a6da372631721bbc9851528e48f81c07" args="()" -->
+<a class="anchor" name="ec38272ad642638f62606a891dbe1260"></a><!-- doxytag: member="Plugin::plugin_disable" ref="ec38272ad642638f62606a891dbe1260" args="()" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -126,7 +134,7 @@ Find the plugin containing a given file <dl compact><dt><b>Parameters:</b></dt><
 Callback. Triggered when plugin is disabled 
 </div>
 </div><p>
-<a class="anchor" name="2bf5c0ffb6cfa9ac934d28985fb7ac20"></a><!-- doxytag: member="Plugin::plugin_enable" ref="2bf5c0ffb6cfa9ac934d28985fb7ac20" args="()" -->
+<a class="anchor" name="ffbf6707984e339579e1d9f7d574183c"></a><!-- doxytag: member="Plugin::plugin_enable" ref="ffbf6707984e339579e1d9f7d574183c" args="()" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -145,7 +153,26 @@ Callback. Triggered when plugin is disabled
 Callback. Triggered when plugin is enabled 
 </div>
 </div><p>
-<a class="anchor" name="1c19e2d92826969b9ef8164ff205cfce"></a><!-- doxytag: member="Plugin::plugin_url" ref="1c19e2d92826969b9ef8164ff205cfce" args="()" -->
+<a class="anchor" name="99142bce1c7908159ee700cb445a15ee"></a><!-- doxytag: member="Plugin::plugin_transaction_reset" ref="99142bce1c7908159ee700cb445a15ee" args="()" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">Plugin::plugin_transaction_reset           </td>
+          <td>(</td>
+          <td class="paramname">          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Callback. Triggered after every transaction. Use for reseting any session/state info. 
+</div>
+</div><p>
+<a class="anchor" name="451542a2dcb5cf3889a9b8aca29d4667"></a><!-- doxytag: member="Plugin::plugin_url" ref="451542a2dcb5cf3889a9b8aca29d4667" args="()" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -164,12 +191,12 @@ Callback. Triggered when plugin is enabled
 Get a URL for the plugin's directory 
 </div>
 </div><p>
-<a class="anchor" name="ecda6dae7b12e60deb6be9bc9d71a3b1"></a><!-- doxytag: member="Plugin::PluginMap" ref="ecda6dae7b12e60deb6be9bc9d71a3b1" args="($path=&quot;&quot;, $in=array())" -->
+<a class="anchor" name="5714f42e0f6a5e064237af616f13a8b6"></a><!-- doxytag: member="Plugin::pluginMap" ref="5714f42e0f6a5e064237af616f13a8b6" args="($path=&quot;&quot;, $in=array())" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">static Plugin::PluginMap           </td>
+          <td class="memname">static Plugin::pluginMap           </td>
           <td>(</td>
           <td class="paramtype">$&nbsp;</td>
           <td class="paramname"> <em>path</em> = <code>&quot;&quot;</code>, </td>
@@ -200,7 +227,7 @@ Find potential class files in a given directory <dl compact><dt><b>Parameters:</
 </div>
 </div><p>
 <hr><h2>Member Data Documentation</h2>
-<a class="anchor" name="05059e86574fa55bf04db0e501320b8e"></a><!-- doxytag: member="Plugin::$plugin_settings" ref="05059e86574fa55bf04db0e501320b8e" args="" -->
+<a class="anchor" name="441f4d157dc40b54d8e76f9ccf502565"></a><!-- doxytag: member="Plugin::$plugin_settings" ref="441f4d157dc40b54d8e76f9ccf502565" args="" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -224,7 +251,7 @@ Find potential class files in a given directory <dl compact><dt><b>Parameters:</
 </div><p>
 <hr>The documentation for this class was generated from the following file:<ul>
 <li>pos/is4c-nf/plugins/Plugin.php</ul>
-<hr size="1"><address style="align: right;"><small>Generated on Tue Oct 23 14:30:34 2012 for CORE POS - IS4C by&nbsp;
+<hr size="1"><address style="align: right;"><small>Generated on 18 Nov 2013 for CORE POS - IS4C by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img src="doxygen.png" alt="doxygen" align="middle" border="0"></a> 1.4.7 </small></address>
 </body>

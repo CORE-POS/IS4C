@@ -21,7 +21,10 @@
 
 *********************************************************************************/
 include('../config.php');
-require_once($FANNIE_ROOT.'classlib2.0/data/models/ProductsModel.php');
+if (!class_exists('FannieAPI')) {
+    include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+}
+$dbc = FannieDB::get($FANNIE_OP_DB);
 
 include($FANNIE_ROOT.'auth/login.php');
 $name = checkLogin();
@@ -35,7 +38,6 @@ if (!$user){
 	exit;
 }
 
-include('../src/mysql_connect.php');
 $page_title = 'Fannie - Item Maintenance';
 $header = 'Item Maintenance';
 include('../src/header.html');
@@ -47,7 +49,7 @@ include('../src/header.html');
 echo "<h1 style=\"color:red;\">Delete Product Tool</h1>";
 
 if (isset($_REQUEST['upc']) && !isset($_REQUEST['deny'])){
-	$upc = str_pad($_REQUEST['upc'],13,'0',STR_PAD_LEFT);
+    $upc = BarcodeLib::padUPC(FormLib::get('upc'));
 	
 	if (isset($_REQUEST['submit'])){
 		$p = $dbc->prepare_statement("SELECT * FROM products WHERE upc=?");
@@ -73,14 +75,19 @@ if (isset($_REQUEST['upc']) && !isset($_REQUEST['deny'])){
 		}
 	}
 	else if (isset($_REQUEST['confirm'])){
-		$plu = substr($upc,3,4);
-		ProductsModel::static_delete($upc);
+        $update = new ProdUpdateModel($dbc);
+        $update->upc($upc);
+        $update->logUpdate(ProdUpdateModel::UPDATE_DELETE);
+
+		ProductsModel::staticDelete($upc);
+
 		$delxQ = $dbc->prepare_statement("DELETE FROM prodExtra WHERE upc=?");
 		$dbc->exec_statement($delxQ,array($upc));
 		if ($dbc->table_exists("scaleItems")){
 			$scaleQ = $dbc->prepare_statement("DELETE FROM scaleItems WHERE plu=?");
 			$dbc->exec_statement($scaleQ,array($upc));
 			include('hobartcsv/parse.php');
+            $plu = substr($upc,3,4);
 			deleteitem($plu);
 		}
 

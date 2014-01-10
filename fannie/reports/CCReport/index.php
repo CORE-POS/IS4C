@@ -1,7 +1,7 @@
 <?php
 include('../../config.php');
-include($FANNIE_ROOT.'src/trans_connect.php');
-include($FANNIE_ROOT.'src/select_dlog.php');
+include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+$dbc = FannieDB::get($FANNIE_TRANS_DB);
 
 $header = "Credit Card Report (supplemental)";
 $page_title = "Fannie : Integrated CC Report";
@@ -24,7 +24,7 @@ echo "<form action=index.php method=get>
 
 echo "<h3>Integrated CC Report for $date</h3>";
 
-$seconds = strtotime($dateStr);
+$seconds = strtotime($date);
 $start = date('Y-m-d 00:00:00',$seconds);
 $end = date('Y-m-d 23:59:59',$seconds);
 $query = $dbc->prepare_statement("SELECT q.datetime,q.laneno,q.cashierno,q.transno,q.amount,

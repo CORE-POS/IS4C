@@ -105,7 +105,7 @@ class ProductImportPage extends FannieUploadPage {
 
 			if ($checks)
 				$upc = substr($upc,0,strlen($upc)-1);
-			$upc = str_pad($upc,13,'0',STR_PAD_LEFT);
+            $upc = BarcodeLib::padUPC($upc);
 
 			if (strlen($desc) > 35) $desc = substr($desc,0,35);		
 

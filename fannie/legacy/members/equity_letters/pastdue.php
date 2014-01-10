@@ -10,13 +10,15 @@ $numbers = array("zero","one","two","three","four","five","six","seven",
 		"fifteen","sixteen","seventeen","eighteen","nineteen","twenty");
 
 $cards = "(";
+$args = array();
 foreach($_POST["cardno"] as $c){
-	$cards .= $c.",";
+	$cards .= "?,";
+    $args[] = $c;
 }
 $cards = rtrim($cards,",");
 $cards .= ")";
 
-$selAddQ = "SELECT m.card_no,c.FirstName,c.LastName,
+$selAddQ = $sql->prepare("SELECT m.card_no,c.FirstName,c.LastName,
 		m.street,'',m.city,m.state,
 		m.zip,n.payments,
 		d.end_date
@@ -28,8 +30,8 @@ $selAddQ = "SELECT m.card_no,c.FirstName,c.LastName,
 		LEFT JOIN memDates AS d ON
 		m.card_no=d.card_no
 		WHERE CardNo IN $cards
-		ORDER BY m.card_no"; 
-$selAddR = $sql->query($selAddQ);
+		ORDER BY m.card_no");
+$selAddR = $sql->execute($selAddQ, $args);
 
 $today = date("F j, Y");
 
