@@ -294,8 +294,8 @@ class EditItemsFromSearch extends FannieRESTfulPage
                             $deptOpts,
                             $taxOpts,
                             $row['upc'], ($row['foodstamp'] == 1 ? 'checked' : ''),
-                            $row['upc'], ($row['discount'] == 1 ? 'checked' : ''),
                             $row['upc'], ($row['scale'] == 1 ? 'checked' : ''),
+                            $row['upc'], ($row['discount'] == 1 ? 'checked' : ''),
                             $localOpts
             );
         }
