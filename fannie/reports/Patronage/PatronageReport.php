@@ -109,6 +109,6 @@ class PatronageReport extends FannieReportPage
 
 }
 
-FannieDispatch::go();
+FannieDispatch::conditionalExec();
 
 ?>

@@ -240,6 +240,6 @@ class ViewPurchaseOrders extends FannieRESTfulPage {
 	}
 }
 
-FannieDispatch::go();
+FannieDispatch::conditionalExec();
 
 ?>

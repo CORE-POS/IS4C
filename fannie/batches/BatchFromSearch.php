@@ -355,4 +355,4 @@ function noEnter(e) {
 
 }
 
-FannieDispatch::go();
+FannieDispatch::conditionalExec();

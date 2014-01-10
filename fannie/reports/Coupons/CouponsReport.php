@@ -115,6 +115,6 @@ class CouponsReport extends FannieReportPage {
 
 }
 
-FannieDispatch::go();
+FannieDispatch::conditionalExec();
 
 ?>

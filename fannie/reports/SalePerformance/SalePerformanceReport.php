@@ -184,6 +184,6 @@ for ($i=1;$i<=12;$i++) {
 
 }
 
-FannieDispatch::go();
+FannieDispatch::conditionalExec();
 
 ?>

@@ -268,6 +268,6 @@ class PISuspensionPage extends PIKillerPage {
 	}
 }
 
-FannieDispatch::go();
+FannieDispatch::conditionalExec();
 
 ?>

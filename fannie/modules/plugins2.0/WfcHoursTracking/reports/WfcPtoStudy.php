@@ -131,5 +131,5 @@ class WfcPtoStudy extends FannieReportPage
     }
 }
 
-FannieDispatch::go();
+FannieDispatch::conditionalExec();
 

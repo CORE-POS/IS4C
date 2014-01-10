@@ -407,6 +407,6 @@ class StoreSummaryReportAlt extends FannieReportPage {
 // StoreSummaryReport
 }
 
-FannieDispatch::go();
+FannieDispatch::conditionalExec();
 
 ?>

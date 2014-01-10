@@ -108,6 +108,6 @@ class EquityAllReport extends FannieReportPage
 
 }
 
-FannieDispatch::go();
+FannieDispatch::conditionalExec();
 
 ?>

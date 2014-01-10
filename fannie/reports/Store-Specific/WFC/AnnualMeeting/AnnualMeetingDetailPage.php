@@ -229,6 +229,6 @@ else if (isset($_REQUEST['memnum'])){
 
 }
 
-FannieDispatch::go();
+FannieDispatch::conditionalExec();
 
 ?>

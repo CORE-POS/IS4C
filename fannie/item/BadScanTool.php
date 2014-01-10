@@ -223,5 +223,5 @@ function showMultiple() {
     }
 }
 
-FannieDispatch::go();
+FannieDispatch::conditionalExec();
 

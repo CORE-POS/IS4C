@@ -94,6 +94,6 @@ class EndItemSale extends FannieRESTfulPage {
 
 }
 
-FannieDispatch::go();
+FannieDispatch::conditionalExec();
 
 ?>

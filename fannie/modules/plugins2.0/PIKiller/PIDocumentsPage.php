@@ -53,6 +53,6 @@ class PIDocumentsPage extends PIKillerPage {
 	}
 }
 
-FannieDispatch::go();
+FannieDispatch::conditionalExec();
 
 ?>

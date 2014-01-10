@@ -270,6 +270,6 @@ function flipover(opt){
 
 }
 
-FannieDispatch::go();
+FannieDispatch::conditionalExec();
 
 ?>

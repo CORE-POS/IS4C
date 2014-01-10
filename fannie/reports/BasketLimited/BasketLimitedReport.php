@@ -133,6 +133,6 @@ class BasketLimitedReport extends FannieReportPage {
 	}
 }
 
-FannieDispatch::go();
+FannieDispatch::conditionalExec();
 
 ?>

@@ -131,6 +131,6 @@ class RecentSalesReport extends FannieReportPage
     }
 }
 
-FannieDispatch::go();
+FannieDispatch::conditionalExec();
 
 ?>

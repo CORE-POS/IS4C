@@ -84,5 +84,5 @@ class ArReport extends FannieReportPage
 
 }
 
-FannieDispatch::go();
+FannieDispatch::conditionalExec();
 

@@ -209,5 +209,5 @@ class WfcAbandonEquityImport extends FannieUploadPage
 	}
 }
 
-FannieDispatch::go();
+FannieDispatch::conditionalExec();
 

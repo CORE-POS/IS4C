@@ -47,6 +47,6 @@ class PurchasingIndexPage extends FannieRESTfulPage {
 	}
 }
 
-FannieDispatch::go();
+FannieDispatch::conditionalExec();
 
 ?>

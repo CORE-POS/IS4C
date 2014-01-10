@@ -79,6 +79,6 @@ class SuspensionHistoryReport extends FannieReportPage
     }
 }
 
-FannieDispatch::go();
+FannieDispatch::conditionalExec();
 
 ?>

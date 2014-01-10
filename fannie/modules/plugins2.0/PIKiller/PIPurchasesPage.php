@@ -139,6 +139,6 @@ class PIPurchasesPage extends PIKillerPage {
 
 }
 
-FannieDispatch::go();
+FannieDispatch::conditionalExec();
 
 ?>

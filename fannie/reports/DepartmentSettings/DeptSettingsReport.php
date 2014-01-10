@@ -129,6 +129,6 @@ class DeptSettingsReport extends FannieReportPage
 
 }
 
-FannieDispatch::go();
+FannieDispatch::conditionalExec();
 
 ?>

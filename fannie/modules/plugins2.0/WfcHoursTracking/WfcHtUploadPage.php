@@ -277,5 +277,5 @@ Filename: <input type="file" id="file" name="upload" />
     }
 }
 
-FannieDispatch::go();
+FannieDispatch::conditionalExec();
 

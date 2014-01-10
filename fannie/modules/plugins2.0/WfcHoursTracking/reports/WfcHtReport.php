@@ -118,5 +118,5 @@ class WfcHtReport extends FannieReportPage
     }
 }
 
-FannieDispatch::go();
+FannieDispatch::conditionalExec();
 

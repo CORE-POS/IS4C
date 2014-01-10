@@ -87,6 +87,6 @@ Get transactions per hour for what date (YYYY-MM-DD)?<br />
     }
 }
 
-FannieDispatch::go();
+FannieDispatch::conditionalExec();
 
 ?>

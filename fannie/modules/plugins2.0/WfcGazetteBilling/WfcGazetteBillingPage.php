@@ -296,5 +296,5 @@ class WfcGazetteBillingPage extends FannieUploadPage {
 	}
 }
 
-FannieDispatch::go();
+FannieDispatch::conditionalExec();
 ?>

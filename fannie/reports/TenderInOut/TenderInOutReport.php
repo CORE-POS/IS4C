@@ -150,6 +150,6 @@ class TenderInOutReport extends FannieReportPage
     }
 }
 
-FannieDispatch::go();
+FannieDispatch::conditionalExec();
 
 ?>

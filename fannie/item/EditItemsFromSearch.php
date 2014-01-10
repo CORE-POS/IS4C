@@ -339,5 +339,5 @@ function updateAll(val, selector) {
     }
 }
 
-FannieDispatch::go();
+FannieDispatch::conditionalExec();
 

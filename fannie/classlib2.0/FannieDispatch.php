@@ -49,6 +49,33 @@ class FannieDispatch
     }
 
     /**
+      Helper: tabs in html are implemented with <li> tags
+      but the first block of a given indentation level
+      needs a <ul> tag
+    */
+    static private function indent()
+    {
+        if (php_sapi_name() == 'cli') {
+            return "";
+        } else {
+            return "<ul>";
+        }
+    }
+
+    /**
+      Helper: reverse of indent()
+    */
+    static private function outdent()
+    {
+        if (php_sapi_name() == 'cli') {
+            return "";
+        } else {
+            return "</ul>";
+        }
+    }
+
+
+    /**
       Error handler function. Can register as PHP's error
       handling function and use Fannie's output format
     */
@@ -83,6 +110,7 @@ class FannieDispatch
             if (!isset($frame['file'])) $frame['file']='File not given';
             if (!isset($frame['args'])) $frame['args'] =array();
             if (isset($frame['class'])) $frame['function'] = $frame['class'].'::'.$frame['function'];
+            echo self::indent();
             echo "Frame $i".self::nl();
             echo self::tab().$frame['function'].'(';
             $args = '';
@@ -95,7 +123,9 @@ class FannieDispatch
             echo self::tab().'Line '.$frame['line'].', '.$frame['file'].self::nl();
             $i++;
         }
-
+        for ($j=0; $j < ($i-1); $j++) {
+            echo self::outdent();
+        }
     }
 
     /**
@@ -160,6 +190,38 @@ class FannieDispatch
             set_error_handler(array('FannieDispatch','errorHandler'));
             set_exception_handler(array('FannieDispatch','exceptionHandler'));
             register_shutdown_function(array('FannieDispatch','catchFatal'));
+
+            self::logUsage();
+
+            $page = basename($_SERVER['PHP_SELF']);
+            $class = substr($page,0,strlen($page)-4);
+            if (class_exists($class)) {
+                $obj = new $class();
+                $obj->draw_page();
+            } else {
+                trigger_error('Missing class '.$class, E_USER_NOTICE);
+            }
+        }
+    }
+
+    /**
+      Render the current page if appropriate
+      The page is only shown if it's accessed
+      directly rather than through an include().
+
+      @param $custom_errors [boolean] use built-in error handlers
+    */
+    static public function conditionalExec($custom_errors=true)
+    {
+        $bt = debug_backtrace();
+        // conditionalExec() is the only function on the stack
+        if (count($bt) == 1) {
+    
+            if ($custom_errors) {
+                set_error_handler(array('FannieDispatch','errorHandler'));
+                set_exception_handler(array('FannieDispatch','exceptionHandler'));
+                register_shutdown_function(array('FannieDispatch','catchFatal'));
+            }
 
             self::logUsage();
 

@@ -81,5 +81,5 @@ class WfcHtCsvDump extends FannieReportPage
     }
 }
 
-FannieDispatch::go();
+FannieDispatch::conditionalExec();
 

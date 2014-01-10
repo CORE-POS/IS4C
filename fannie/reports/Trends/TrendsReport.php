@@ -279,6 +279,6 @@ function doShow(){
     }
 }
 
-FannieDispatch::go();
+FannieDispatch::conditionalExec();
 
 ?>

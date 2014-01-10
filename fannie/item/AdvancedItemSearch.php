@@ -486,5 +486,5 @@ function goToEdit() {
 
 }
 
-FannieDispatch::go();
+FannieDispatch::conditionalExec();
 

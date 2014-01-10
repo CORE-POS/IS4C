@@ -328,6 +328,6 @@ class OverShortMAS extends FannieRESTfulPage {
 
 }
 
-FannieDispatch::go();
+FannieDispatch::conditionalExec();
 
 ?>
