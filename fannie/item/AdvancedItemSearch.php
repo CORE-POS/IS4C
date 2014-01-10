@@ -145,6 +145,10 @@ class AdvancedItemSearch extends FannieRESTfulPage
             if (!strstr($from, 'vendorItems')) {
                 $from .= ' LEFT JOIN vendorItems AS v ON p.upc=v.upc ';
             }
+
+            if (FormLib::get('vendorSale')) {
+                $where .= ' AND v.saleCost <> 0 ';
+            }
         }
 
         $tax = FormLib::get('tax');
@@ -303,6 +307,7 @@ class AdvancedItemSearch extends FannieRESTfulPage
 function getResults() {
     var dstr = $('#searchform').serialize();
     console.log(dstr);
+    $('#resultArea').html('Searching');
     $.ajax({
         url: 'AdvancedItemSearch.php',
         type: 'get',
@@ -404,7 +409,9 @@ function goToEdit() {
         }
         $ret .= '</select></td>';
         
-        $ret .= '<th>Vendor</th><td colspan="2"><select name="vendor"><option value="">Any</option>';
+        $ret .= '<th>Vendor</th><td colspan="2"><select name="vendor"
+                    onchange="if(this.value===\'\') $(\'#vendorSale\').attr(\'disabled\',\'disabled\'); else $(\'#vendorSale\').removeAttr(\'disabled\');" >
+                    <option value="">Any</option>';
         $vendors = $dbc->query('SELECT vendorID, vendorName FROM vendors');
         while($row = $dbc->fetch_row($vendors)) {
             $ret .= sprintf('<option value="%d">%s</option>', $row['vendorID'], $row['vendorName']);
@@ -420,7 +427,7 @@ function goToEdit() {
         }
         $ret .= '</select></td>';
 
-        $ret .= '<th>Local</th><td colspan="4"><select name="local"><option value="">Any</option><option value="0">No</option>';
+        $ret .= '<th>Local</th><td colspan="3"><select name="local"><option value="">Any</option><option value="0">No</option>';
         $origins = $dbc->query('SELECT originID, shortName FROM originName WHERE local=1');
         while($row = $dbc->fetch_row($origins)) {
             $ret .= sprintf('<option value="%d">%s</option>', $row['originID'], $row['shortName']);
@@ -432,11 +439,13 @@ function goToEdit() {
         $ret .= '&nbsp;&nbsp;&nbsp;';
         $ret .= '<b>Discountable</b>: <select name="discountable"><option value="">Any</option><option value="1">Yes</option><option value="0">No</option></select>';
 
-        $ret .= '</td>'; // can fit another item here
+        $ret .= '</td>'; 
+
+        $ret .= '<td><label for="vendorSale">On Vendor Special</label> <input type="checkbox" id="vendorSale" name="vendorSale" disabled /></td>';
 
         $ret .= '</tr><tr>';
 
-        $ret .= '<th>On Sale</th><td><select name="onsale"
+        $ret .= '<th>In Sale Batch</th><td><select name="onsale"
                     onchange="if(this.value===\'\') $(\'.saleField\').attr(\'disabled\',\'disabled\'); else $(\'.saleField\').removeAttr(\'disabled\');" >
                     <option value="">Any</option>';
         $ret .= '<option value="1">Yes</option><option value="0">No</option>';

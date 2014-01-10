@@ -74,9 +74,15 @@ class UnfiUploadPage extends FannieUploadPage {
 		),
 		'cost' => array(
 			'name' => 'cost',
-			'display_name' => 'Case Cost',
+			'display_name' => 'Case Cost (Reg)',
 			'default' => 8,
 			'required' => True
+		),
+		'saleCost' => array(
+			'name' => 'saleCost',
+			'display_name' => 'Case Cost (Sale)',
+			'default' => 12,
+			'required' => false
 		),
 		'cat' => array(
 			'name' => 'cat',
@@ -107,13 +113,19 @@ class UnfiUploadPage extends FannieUploadPage {
 		$UPC = $this->get_column_index('upc');
 		$CATEGORY = $this->get_column_index('cat');
 		$REG_COST = $this->get_column_index('cost');
-		$NET_COST = $this->get_column_index('cost');
+		$NET_COST = $this->get_column_index('saleCost');
 		$SRP = $this->get_column_index('srp');
 
 		$extraP = $dbc->prepare_statement("update prodExtra set cost=? where upc=?");
 		$itemP = $dbc->prepare_statement("INSERT INTO vendorItems 
 					(brand,sku,size,upc,units,cost,description,vendorDept,vendorID)
 					VALUES (?,?,?,?,?,?,?,?,?)");
+        $vi_def = $dbc->table_definition('vendorItems');
+        if (isset($vi_def['saleCost'])) {
+            $itemP = $dbc->prepare_statement("INSERT INTO vendorItems 
+                        (brand,sku,size,upc,units,cost,description,vendorDept,vendorID,saleCost)
+                        VALUES (?,?,?,?,?,?,?,?,?,?)");
+        }
 		$uuP = $dbc->prepare_statement("INSERT INTO unfi_order 
 					(unfi_sku,brand,item_desc,pack,pack_size,upcc,cat,wholesale,vd_cost,wfc_srp) 
 					VALUES (?,?,?,?,?,?,?,?,?,?)");
@@ -127,22 +139,26 @@ class UnfiUploadPage extends FannieUploadPage {
 			if (!isset($data[$UPC])) continue;
 
 			// grab data from appropriate columns
-			$sku = $data[$SKU];
+			$sku = ($SKU !== false) ? $data[$SKU] : '';
             $sku = str_pad($sku, 7, '0', STR_PAD_LEFT);
 			$brand = $data[$BRAND];
 			$description = $data[$DESCRIPTION];
 			$qty = $data[$QTY];
-			$size = $data[$SIZE1];
+			$size = ($SIZE1 !== false) ? $data[$SIZE1] : '';
 			$upc = substr($data[$UPC],0,13);
 			// zeroes isn't a real item, skip it
 			if ($upc == "0000000000000")
 				continue;
 			$category = $data[$CATEGORY];
 			$reg = trim($data[$REG_COST]);
-			$net = trim($data[$NET_COST]);
+			$net = ($NET_COST !== false) ? trim($data[$NET_COST]) : 0.00;
+            // blank spreadsheet cell
+            if (empty($net)) {
+                $net = 0;
+            }
 			$srp = trim($data[$SRP]);
 			// can't process items w/o price (usually promos/samples anyway)
-			if (empty($reg) or empty($net) or empty($srp))
+			if (empty($reg) or empty($srp))
 				continue;
 
 			// don't repeat items
@@ -156,19 +172,26 @@ class UnfiUploadPage extends FannieUploadPage {
 			$description = str_replace("'","",$description);
 			$reg = str_replace('$',"",$reg);
 			$reg = str_replace(",","",$reg);
-			$net = $reg;
+			$net = str_replace('$',"",$net);
+			$net = str_replace(",","",$net);
 			$srp = str_replace('$',"",$srp);
 			$srp = str_replace(",","",$srp);
+
+            // sale price isn't really a discount
+            if ($reg == $net) {
+                $net = 0;
+            }
 
 			// skip the item if prices aren't numeric
 			// this will catch the 'label' line in the first CSV split
 			// since the splits get returned in file system order,
 			// we can't be certain *when* that chunk will come up
-			if (!is_numeric($reg) or !is_numeric($net) or !is_numeric($srp))
+			if (!is_numeric($reg) or !is_numeric($srp))
 				continue;
 
 			// need unit cost, not case cost
 			$reg_unit = $reg / $qty;
+            $net_unit = $net / $qty;
 
 			// set cost in $PRICEFILE_COST_TABLE
 			$dbc->exec_statement($extraP, array($reg_unit,$upc));
@@ -177,6 +200,9 @@ class UnfiUploadPage extends FannieUploadPage {
 
 			$args = array($brand,($sku===False?'':$sku),($size===False?'':$size),
 					$upc,$qty,$reg_unit,$description,$category,$VENDOR_ID);
+            if (isset($vi_def['saleCost'])) {
+                $args[] = $net_unit;
+            }
 			$dbc->exec_statement($itemP,$args);
 
 			// unfi_order is what the UNFI price change page builds on,
@@ -184,7 +210,7 @@ class UnfiUploadPage extends FannieUploadPage {
 			// it's just a table containing all items in the current order
 			$args = array(($sku===False?'':$sku),$brand,$description,$qty,
 					($size===False?'':$size),$upc,$category,$reg,
-					$net,$srp);
+					$reg,$srp);
 			$dbc->exec_statement($uuP,$args);
 
 			$dbc->exec_statement($srpP,array($VENDOR_ID,$upc,$srp));
