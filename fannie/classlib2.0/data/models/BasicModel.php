@@ -41,6 +41,7 @@ class BasicModel
       - primary_key (optional, boolean)
       - index (optional, boolean)
       - increment (optional, boolean)
+      - ignore_updates (optional, boolean)
     */
     protected $columns = array();
 
@@ -67,6 +68,16 @@ class BasicModel
     { 
         return $this->connection;
     }
+
+    /**
+      boolean flag indicating at least one column
+      record has been updated and the instances
+      currently differs from the underlying database.
+      Columns flagged as ignore_upates will not
+      be considered a record change when their value
+      is altered.
+    */
+    protected $record_changed = false;
 
     /**
       List of column names => values
@@ -245,6 +256,8 @@ class BasicModel
                 if (!isset($row[$name])) continue;
                 $this->instance[$name] = $row[$name];
             }
+            $this->record_changed = false;
+
             return true;
         } else {
             return false;
@@ -451,6 +464,10 @@ class BasicModel
         $prep = $this->connection->prepare_statement($sql);
         $result = $this->connection->exec_statement($prep, $args);
 
+        if ($result) {
+            $this->record_changed = false;
+        }
+
         return $result;
     }
 
@@ -490,6 +507,10 @@ class BasicModel
         }
         $prep = $this->connection->prepare_statement($sql);
         $result = $this->connection->exec_statement($prep, $all_args);
+
+        if ($result) {
+            $this->record_changed = false;
+        }
 
         return $result;
     }
@@ -844,12 +865,17 @@ class BasicModel
             fwrite($fp,"        if(func_num_args() == 0) {\n");
             fwrite($fp,'            if(isset($this->instance["'.$name.'"])) {'."\n");
             fwrite($fp,'                return $this->instance["'.$name.'"];'."\n");
-            fwrite($fp,'            } elseif(isset($this->columns["'.$name.'"]["default"])) {'."\n");
+            fwrite($fp,'            } else if (isset($this->columns["'.$name.'"]["default"])) {'."\n");
             fwrite($fp,'                return $this->columns["'.$name.'"]["default"];'."\n");
             fwrite($fp,"            } else {\n");
             fwrite($fp,"                return null;\n");
             fwrite($fp,"            }\n");
             fwrite($fp,"        } else {\n");
+            fwrite($fp,'            if (!isset($this->instance["'.$name.'"]) || $this->instance["'.$name.'"] != func_get_args(0)) {'."\n");
+            fwrite($fp,'                if (!isset($this->columns["'.$name.'"]["ignore_updates"]) || $this->columns["'.$name.'"]["ignore_updates"] == false) {'."\n");
+            fwrite($fp,'                    $this->record_changed = true;'."\n");
+            fwrite($fp,"                }\n");
+            fwrite($fp,"            }\n");
             fwrite($fp,'            $this->instance["'.$name.'"] = func_get_arg(0);'."\n");
             fwrite($fp,"        }\n");
             fwrite($fp,"    }\n");
