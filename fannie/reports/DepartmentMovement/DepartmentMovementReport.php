@@ -28,40 +28,11 @@ if (!class_exists('FannieAPI')) {
 
 class DepartmentMovementReport extends FannieReportPage 
 {
+    protected $report_cache = 'none';
+    protected $title = "Fannie : Department Movement";
+    protected $header = "Department Movement";
 
-    function preprocess()
-    {
-        /**
-          Set the page header and title, enable caching
-        */
-        $this->report_cache = 'none';
-        $this->title = "Fannie : Department Movement";
-        $this->header = "Department Movement";
-
-        if (isset($_REQUEST['date1'])) {
-            /**
-              Form submission occurred
-
-              Change content function, turn off the menus,
-              set up headers
-            */
-            $this->content_function = "report_content";
-            $this->has_menus(False);
-        
-            /**
-              Check if a non-html format has been requested
-            */
-            if (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'xls') {
-                $this->report_format = 'xls';
-            } else if (isset($_REQUEST['excel']) && $_REQUEST['excel'] == 'csv') {
-                $this->report_format = 'csv';
-            }
-        } else  {
-            $this->add_script("../../src/CalendarControl.js");
-        }
-
-        return true;
-    }
+    protected $required_fields = array('date1', 'date2');
 
     /**
       Add a javascript function for the form

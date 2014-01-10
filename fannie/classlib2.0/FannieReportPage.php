@@ -53,6 +53,13 @@ class FannieReportPage extends FanniePage
     protected $content_function = "form_content";
 
     /**
+      If fields are present in the request, the
+      form has been submitted and report can be
+      displayed
+    */
+    protected $required_fields = array();
+
+    /**
       Define report headers. Headers are necessary if sorting is desired
     */
     protected $report_headers = array();
@@ -130,13 +137,45 @@ class FannieReportPage extends FanniePage
        - True if the page should be displayed
        - False to stop here
 
-      Typically in a report this checks for posted data
-      and decides between showing a data entry form
-      or the report results.  
+      The default version will check required_fields
+      to determine whether the form_content or
+      report_content method should be called. It
+      also the value of "excel" for the request and
+      sets necessary output options.
+
+      The CalendarControl javascript is automatically
+      included if the form_content method is selected.
+      This isn't strictly necessary if the form has
+      no date fields, but it will likely be useful
+      more often than not and cause no harm in other
+      cases.
     */
     public function preprocess()
     {
-        return True;
+        global $FANNIE_WINDOW_DRESSING, $FANNIE_URL;
+
+        $all_fields = true;
+        foreach($this->required_fields as $field) {
+            if (FormLib::get($field, '') === '') {
+                $all_fields = false;
+                break;
+            }
+        }
+
+        if ($all_fields) {
+            $this->content_function = 'report_content'; 
+            if (isset($FANNIE_WINDOW_DRESSING) && $FANNIE_WINDOW_DRESSING == true) {
+                $this->has_menus(true);
+            } else {
+                $this->has_menus(false);
+            }
+            $this->formatCheck();
+        } else {
+            $this->content_function = 'form_content'; 
+            $this->add_script($FANNIE_URL . 'src/CalendarControl.js');
+        }
+
+        return true;
     }
     
     /**
@@ -369,7 +408,9 @@ class FannieReportPage extends FanniePage
                     $ret .= sprintf('<html><head></head><body>
                         <a href="%s%sexcel=xls">Download Excel</a>
                         &nbsp;&nbsp;&nbsp;&nbsp;
-                        <a href="%s%sexcel=csv">Download CSV</a>',
+                        <a href="%s%sexcel=csv">Download CSV</a>
+                        &nbsp;&nbsp;&nbsp;&nbsp;
+                        <a href="javascript:history:back();">Back</a>',
                         $_SERVER['REQUEST_URI'],
                         (strstr($_SERVER['REQUEST_URI'],'?') ===False ? '?' : '&'),
                         $_SERVER['REQUEST_URI'],
@@ -660,8 +701,10 @@ class FannieReportPage extends FanniePage
     {
         if (FormLib::get('excel') === 'xls') {
             $this->report_format = 'xls';
+            $this->window_dressing = false;
         } elseif (FormLib::get('excel') === 'csv') {
             $this->report_format = 'csv';
+            $this->window_dressing = false;
         }
     }
 
