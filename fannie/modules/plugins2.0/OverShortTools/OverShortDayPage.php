@@ -574,7 +574,5 @@ body, table, td, th {
 
 }
 
-if (basename(__FILE__) == basename($_SERVER['PHP_SELF'])){
-	$obj = new OverShortDayPage();
-	$obj->draw_page();
-}
+FannieDispatch::conditionalExec(false);
+

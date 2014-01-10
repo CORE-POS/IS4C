@@ -242,8 +242,6 @@ class TsAdminAdd extends FanniePage {
 	}
 }
 
-if (basename($_SERVER['PHP_SELF']) == basename(__FILE__)){
-	$obj = new TsAdminAdd();
-	$obj->draw_page();
-}
+FannieDispatch::conditionalExec(false);
+
 ?>

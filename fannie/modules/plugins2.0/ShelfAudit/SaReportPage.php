@@ -403,7 +403,5 @@ table tr:hover {
 	}
 }
 
-if (basename($_SERVER['PHP_SELF']) == basename(__FILE__)){
-	$obj = new SaReportPage();
-	$obj->draw_page();
-}
+FannieDispatch::conditionalExec(false);
+

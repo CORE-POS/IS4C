@@ -274,8 +274,6 @@ Load default place-of-origin information<br />
 // InstallSampleDataPage
 }
 
-if (basename(__FILE__) == basename($_SERVER['PHP_SELF'])){
-	$obj = new InstallSampleDataPage();
-	$obj->draw_page();
-}
+FannieDispatch::conditionalExec(false);
+
 ?>

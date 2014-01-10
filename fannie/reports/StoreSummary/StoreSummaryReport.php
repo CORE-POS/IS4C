@@ -463,6 +463,6 @@ class StoreSummaryReport extends FannieReportPage2 {
 // StoreSummaryReport
 }
 
-$obj = new StoreSummaryReport();
-$obj->draw_page();
+FannieDispatch::conditionalExec(false);
+
 ?>

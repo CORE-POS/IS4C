@@ -107,8 +107,6 @@ class RecalculateVendorSRPs extends FanniePage {
 	}
 }
 
-if (basename($_SERVER['PHP_SELF']) == basename(__FILE__)){
-	$obj = new RecalculateVendorSRPs();
-	$obj->draw_page();
-}
+FannieDispatch::conditionalExec(false);
+
 ?>

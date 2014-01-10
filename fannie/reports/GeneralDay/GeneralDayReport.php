@@ -228,6 +228,6 @@ class GeneralDayReport extends FannieReportPage
 
 }
 
-$obj = new GeneralDayReport();
-$obj->draw_page();
+FannieDispatch::conditionalExec(false);
+
 ?>

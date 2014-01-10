@@ -186,6 +186,6 @@ class VendorMovementReport extends FannieReportPage
 	}
 }
 
-$obj = new VendorMovementReport();
-$obj->draw_page();
+FannieDispatch::conditionalExec(false);
+
 ?>

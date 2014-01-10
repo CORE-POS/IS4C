@@ -283,5 +283,5 @@ class UnfiUploadPage extends FannieUploadPage {
 	}
 }
 
-$obj = new UnfiUploadPage();
-$obj->draw_page();
+FannieDispatch::conditionalExec(false);
+

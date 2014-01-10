@@ -231,8 +231,6 @@ confset('FANNIE_PLUGIN_SETTINGS',$saveStr);
 // InstallPluginsPage
 }
 
-if (basename(__FILE__) == basename($_SERVER['PHP_SELF'])){
-	$obj = new InstallPluginsPage();
-	$obj->draw_page();
-}
+FannieDispatch::conditionalExec(false);
+
 ?>

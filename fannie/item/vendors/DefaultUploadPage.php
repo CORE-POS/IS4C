@@ -247,5 +247,5 @@ class DefaultUploadPage extends FannieUploadPage {
 	}
 }
 
-$obj = new DefaultUploadPage();
-$obj->draw_page();
+FannieDispatch::conditionalExec(false);
+

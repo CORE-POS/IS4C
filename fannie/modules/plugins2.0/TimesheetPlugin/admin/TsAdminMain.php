@@ -64,9 +64,7 @@ class TsAdminMain extends FanniePage {
 		return ob_get_clean();
 	}
 }
-if (basename($_SERVER['PHP_SELF']) == basename(__FILE__)){
-	$obj = new TsAdminMain();
-	$obj->draw_page();
-}
+
+FannieDispatch::conditionalExec(false);
 
 ?>

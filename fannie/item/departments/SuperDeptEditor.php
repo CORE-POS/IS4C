@@ -220,8 +220,6 @@ class SuperDeptEditor extends FanniePage {
 	}
 }
 
-if (basename($_SERVER['PHP_SELF']) == basename(__FILE__)){
-	$obj = new SuperDeptEditor();
-	$obj->draw_page();
-}
+FannieDispatch::conditionalExec(false);
+
 ?>

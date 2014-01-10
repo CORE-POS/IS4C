@@ -322,9 +322,5 @@ class MemArEquitySwapTool extends FanniePage {
 	}
 }
 
-if (basename($_SERVER['PHP_SELF']) == basename(__FILE__)){
-	$obj = new MemArEquitySwapTool();
-	$obj->draw_page();
-}
+FannieDispatch::conditionalExec(false);
 
-?>

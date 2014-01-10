@@ -229,9 +229,6 @@ class EditTimesheetDatePage extends FanniePage {
 	}
 }
 
-if (basename($_SERVER['PHP_SELF']) == basename(__FILE__)){
-	$obj = new EditTimesheetDatePage();
-	$obj->draw_page();
-}
+FannieDispatch::conditionalExec(false);
 
 ?>

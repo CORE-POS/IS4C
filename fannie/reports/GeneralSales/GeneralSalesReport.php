@@ -286,7 +286,6 @@ function drawPieChart()
 
 }
 
-$obj = new GeneralSalesReport();
-$obj->draw_page();
+FannieDispatch::conditionalExec(false);
 
 ?>

@@ -230,9 +230,6 @@ Receipt Search - Fill in any information available
 	}
 }
 
-if (basename($_SERVER['PHP_SELF']) == basename(__FILE__)) {
-	$obj = new ReprintReceiptPage();
-	$obj->draw_page();
-}
+FannieDispatch::conditionalExec(false);
 
 ?>

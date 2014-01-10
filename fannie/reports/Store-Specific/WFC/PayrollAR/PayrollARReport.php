@@ -93,6 +93,6 @@ class PayrollARReport extends FannieReportPage {
 	}
 }
 
-$obj = new PayrollARReport();
-$obj->draw_page();
+FannieDispatch::conditionalExec(false);
+
 ?>

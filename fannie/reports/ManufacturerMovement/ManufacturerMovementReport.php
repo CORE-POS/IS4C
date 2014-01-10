@@ -197,6 +197,6 @@ class ManufacturerMovementReport extends FannieReportPage
 	}
 }
 
-$obj = new ManufacturerMovementReport();
-$obj->draw_page();
+FannieDispatch::conditionalExec(false);
+
 ?>

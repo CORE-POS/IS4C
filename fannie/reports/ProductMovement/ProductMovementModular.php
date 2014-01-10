@@ -240,6 +240,6 @@ function showGraph() {
 	}
 }
 
-$obj = new ProductMovementModular();
-$obj->draw_page();
+FannieDispatch::conditionalExec(false);
+
 ?>

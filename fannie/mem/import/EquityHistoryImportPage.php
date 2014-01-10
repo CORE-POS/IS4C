@@ -115,8 +115,6 @@ class EquityHistoryImportPage extends FannieUploadPage {
 		return $this->details .= 'Import completed successfully';
 	}
 }
-if (basename($_SERVER['PHP_SELF']) == basename(__FILE__)){
-	$obj = new EquityHistoryImportPage();
-	$obj->draw_page();
-}
-?>
+
+FannieDispatch::conditionalExec(false);
+

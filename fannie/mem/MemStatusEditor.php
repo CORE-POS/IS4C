@@ -203,9 +203,6 @@ class MemStatusEditor extends FanniePage {
 	}
 }
 
-if (basename($_SERVER['PHP_SELF']) == basename(__FILE__)){
-	$obj = new MemStatusEditor();
-	$obj->draw_page();
-}
+FannieDispatch::conditionalExec(false);
 
 ?>

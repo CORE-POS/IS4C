@@ -48,8 +48,6 @@ Step 5 (optional): track down a dedicated professional to help<br />
 	}
 }
 
-if (basename($_SERVER['PHP_SELF']) == basename(__FILE__)){
-	$obj = new HowToVendorPricing();
-	$obj->draw_page();
-}
+FannieDispatch::conditionalExec(false);
+
 ?>

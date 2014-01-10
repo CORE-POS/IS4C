@@ -181,6 +181,6 @@ class MonthOverMonthReport extends FannieReportPage {
 	}
 }
 
-$obj = new MonthOverMonthReport();
-$obj->draw_page();
+FannieDispatch::conditionalExec(false);
+
 ?>

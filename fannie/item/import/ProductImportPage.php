@@ -144,9 +144,5 @@ class ProductImportPage extends FannieUploadPage {
 	}
 }
 
-if (basename($_SERVER['PHP_SELF']) == basename(__FILE__)){
-	$obj = new ProductImportPage();
-	$obj->draw_page();
-}
+FannieDispatch::conditionalExec(false);
 
-?>

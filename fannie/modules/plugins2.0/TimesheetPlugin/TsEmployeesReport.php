@@ -245,8 +245,6 @@ class TsEmployeesReport extends FanniePage {
 	}
 }
 
-if (basename($_SERVER['PHP_SELF']) == basename(__FILE__)){
-	$obj = new TsEmployeesReport();
-	$obj->draw_page();
-}
+FannieDispatch::conditionalExec(false);
+
 ?>

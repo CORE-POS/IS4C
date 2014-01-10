@@ -314,9 +314,6 @@ class OverShortDepositSlips extends FanniePage {
 	}
 }
 
-if (basename(__FILE__) == basename($_SERVER['PHP_SELF'])){
-	$obj = new OverShortDepositSlips();
-	$obj->draw_page();
-}
+FannieDispatch::conditionalExec(false);
 
 ?>

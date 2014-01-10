@@ -384,6 +384,6 @@ class DepartmentMovementReport extends FannieReportPage
     }
 }
 
-$obj = new DepartmentMovementReport();
-$obj->draw_page();
+FannieDispatch::conditionalExec(false);
+
 ?>

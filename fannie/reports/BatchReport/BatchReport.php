@@ -230,6 +230,6 @@ class BatchReport extends FannieReportPage
 	}
 }
 
-$obj = new BatchReport();
-$obj->draw_page();
+FannieDispatch::conditionalExec(false);
+
 ?>

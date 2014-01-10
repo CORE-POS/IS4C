@@ -142,6 +142,6 @@ class CustomerPurchasesReport extends FannieReportPage
 	}
 }
 
-$obj = new CustomerPurchasesReport();
-$obj->draw_page();
+FannieDispatch::conditionalExec(false);
+
 ?>

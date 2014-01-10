@@ -332,11 +332,5 @@ class HouseCouponEditor extends FanniePage
 	}
 }
 
-/**
-  More stopgap; load self if needed
-*/
-if (basename($_SERVER['PHP_SELF']) == 'HouseCouponEditor.php'){
-	$obj = new HouseCouponEditor();
-	$obj->draw_page();
-}
+FannieDispatch::conditionalExec(false);
 

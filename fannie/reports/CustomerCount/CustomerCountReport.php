@@ -160,6 +160,6 @@ class CustomerCountReport extends FannieReportPage {
 	}
 }
 
-$obj = new CustomerCountReport();
-$obj->draw_page();
+FannieDispatch::conditionalExec(false);
+
 ?>

@@ -195,6 +195,6 @@ class NonMovementReport extends FannieReportPage {
 	}
 }
 
-$obj = new NonMovementReport();
-$obj->draw_page();
+FannieDispatch::conditionalExec(false);
+
 ?>

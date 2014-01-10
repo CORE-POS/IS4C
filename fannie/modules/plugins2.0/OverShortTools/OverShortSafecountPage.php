@@ -539,9 +539,6 @@ class OverShortSafecountPage extends FanniePage {
 
 }
 
-if (basename(__FILE__) == basename($_SERVER['PHP_SELF'])){
-	$obj = new OverShortSafecountPage();
-	$obj->draw_page();
-}
+FannieDispatch::conditionalExec(false);
 
 ?>

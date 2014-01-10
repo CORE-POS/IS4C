@@ -121,8 +121,6 @@ class DepartmentImportPage extends FannieUploadPage {
 		return 'Import completed successfully';
 	}
 }
-if (basename($_SERVER['PHP_SELF']) == basename(__FILE__)){
-	$obj = new DepartmentImportPage();
-	$obj->draw_page();
-}
-?>
+
+FannieDispatch::conditionalExec(false);
+

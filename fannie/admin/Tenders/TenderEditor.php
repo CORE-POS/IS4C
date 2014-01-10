@@ -126,8 +126,6 @@ function addTender(){
 	}
 }
 
-if (basename($_SERVER['PHP_SELF']) == basename(__FILE__)){
-	$obj = new TenderEditor();
-	$obj->draw_page();
-}
+FannieDispatch::conditionalExec(false);
+
 ?>
