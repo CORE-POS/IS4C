@@ -22,8 +22,7 @@
 *********************************************************************************/
 
 include('../../config.php');
-include($FANNIE_ROOT.'classlib2.0/FanniePage.php');
-include($FANNIE_ROOT.'classlib2.0/lib/FormLib.php');
+include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 require($FANNIE_ROOT.'src/fpdf/fpdf.php');
 define('FPDF_FONTPATH',$FANNIE_ROOT.'src/fpdf/font/');
 

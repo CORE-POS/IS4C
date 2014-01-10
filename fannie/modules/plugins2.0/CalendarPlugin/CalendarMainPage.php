@@ -23,11 +23,9 @@
 
 include_once(dirname(__FILE__).'/../../../config.php');
 if (!class_exists('FanniePage'))
-	include($FANNIE_ROOT.'classlib2.0/FanniePage.php');
+	include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 if (!class_exists('CalendarPlugin'))
 	include(dirname(__FILE__).'/CalendarPlugin.php');
-if (!class_exists('FormLib'))
-	include($FANNIE_ROOT.'classlib2.0/lib/FormLib.php');
 if (!function_exists('getUID'))
 	include($FANNIE_ROOT.'auth/login.php');
 include_once(dirname(__FILE__).'/CalendarPluginDisplayLib.php');

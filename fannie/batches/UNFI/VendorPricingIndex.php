@@ -23,7 +23,7 @@
 
 /* configuration for your module - Important */
 include("../../config.php");
-include($FANNIE_ROOT.'classlib2.0/FanniePage.php');
+include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
 class VendorPricingIndex extends FanniePage {
 	/* html header, including navbar */
