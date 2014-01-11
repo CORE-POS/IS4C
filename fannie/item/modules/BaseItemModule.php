@@ -218,16 +218,16 @@ class BaseItemModule extends ItemModule {
 		$p = $dbc->prepare_statement('SELECT dept_no,dept_name,subdept_no,subdept_name,dept_ID 
 				FROM departments AS d
 				LEFT JOIN subdepts AS s ON d.dept_no=s.dept_ID
-				ORDER BY d.dept_no');
+				ORDER BY d.dept_no, s.subdept_name');
 		$r = $dbc->exec_statement($p);
 		while($w = $dbc->fetch_row($r)){
 			if (!isset($depts[$w['dept_no']])) $depts[$w['dept_no']] = $w['dept_name'];
 			if ($w['subdept_no'] == '') continue;
 			if (!isset($subs[$w['dept_ID']]))
 				$subs[$w['dept_ID']] = '';
-			$subs[$w['deptID']] = sprintf('<option %s value="%d">%s</option>',
+			$subs[$w['dept_ID']] .= sprintf('<option %s value="%d">%d %s</option>',
 					($w['subdept_no'] == $rowItem['subdept'] ? 'selected':''),
-					$w['subdept_no'],$w['subdept_name']);
+					$w['subdept_no'],$w['subdept_no'],$w['subdept_name']);
 		}
 
 		$json = count($subs) == 0 ? '{}' : JsonLib::array_to_json($subs);
