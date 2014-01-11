@@ -723,7 +723,7 @@ class BasicModel
                             $sql .= ' NOT NULL AUTO_INCREMENT';
                         }
                     }
-                    $sql .= ' BEFORE '.$this->connection->identifier_escape($their_col);
+                    $sql .= ' FIRST';
                     if (isset($this->columns[$our_columns[$i]]['increment']) && $this->columns[$our_columns[$i]]['increment']) {
                         // increment must be indexed
                         $index = 'INDEX';
