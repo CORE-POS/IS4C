@@ -191,7 +191,7 @@ class ProductListPage extends FanniePage {
 			var cmd = "<a href=\"\" onclick=\"edit('"+upc+"'); return false;\">"+lnk+"</a>";
 			$('tr#'+upc+' .td_cmd').html(cmd);
 
-			var dstr = 'ajax=save&upc='+upc+'&desc='+desc+'&dept='+dept+'&price='+price;
+			var dstr = 'ajax=save&upc='+upc+'&desc='+desc+'&dept='+dept+'&cost='+cost+'&price='+price;
 			dstr += '&tax='+tax[1]+'&fs='+fs+'&disc='+disc+'&wgt='+wgt+'&supplier='+supplier+'&local='+local[1];
 			$.ajax({
 			url: 'ProductListPage.php',
@@ -244,6 +244,8 @@ class ProductListPage extends FanniePage {
 			if ($dept !== '') $values['department'] = $dept;
 			$price = rtrim(FormLib::get_form_value('price'),' ');
 			if ($price !== '') $values['normal_price'] = $price;
+			$cost = rtrim(FormLib::get_form_value('cost'),' ');
+			if ($cost !== '') $values['cost'] = $cost;
 			$tax = FormLib::get_form_value('tax');
 			if ($tax !== '') $values['tax'] = $tax;
 			$fs = FormLib::get_form_value('fs');
