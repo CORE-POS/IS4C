@@ -115,6 +115,10 @@ class ProductListPage extends FanniePage {
 			var content = "<input type=text class=in_supplier value=\""+supplier+"\" />";	
 			$('tr#'+upc+' .td_supplier').html(content);
 
+			var supplier = $('tr#'+upc+' .td_cost').html();
+			var content = "<input type=text class=in_cost value=\""+cost+"\" />";	
+			$('tr#'+upc+' .td_supplier').html(content);
+			
 			var price = $('tr#'+upc+' .td_price').html();
 			var content = "<input type=text class=in_price size=4 value=\""+price+"\" />";	
 			$('tr#'+upc+' .td_price').html(content);
@@ -344,7 +348,7 @@ class ProductListPage extends FanniePage {
 		}
 
 		$query = "SELECT i.upc,i.description,d.dept_name as department,
-			i.normal_price,                      
+			i.normal_price, i.cost,                    
 			(CASE WHEN i.tax = 1 THEN 'X' WHEN i.tax=0 THEN '-' ELSE LEFT(t.description,1) END) as Tax,              
 	 	        (CASE WHEN i.foodstamp = 1 THEN 'X' ELSE '-' END) as FS,
                         (CASE WHEN i.discount = 0 THEN '-' ELSE 'X'END) as DISC,
@@ -361,7 +365,7 @@ class ProductListPage extends FanniePage {
 		$args = array($deptStart, $deptEnd);
 		if ($supertype == 'dept' && $super != 0){
 			$query = "SELECT i.upc,i.description,d.dept_name as department,
-				i.normal_price,                      
+				i.normal_price, i.cost,                     
 				(CASE WHEN i.tax = 1 THEN 'X' WHEN i.tax=0 THEN '-' ELSE LEFT(t.description,1) END) as Tax,              
 				(CASE WHEN i.foodstamp = 1 THEN 'X' ELSE '-' END) as FS,
 				(CASE WHEN i.discount = 0 THEN '-' ELSE 'X'END) as DISC,
@@ -380,7 +384,7 @@ class ProductListPage extends FanniePage {
 		}
 		else if ($supertype == 'manu'){
 			$query = "SELECT i.upc,i.description,d.dept_name as department,
-				i.normal_price,                      
+				i.normal_price, i.cost,                    
 				(CASE WHEN i.tax = 1 THEN 'X' WHEN i.tax=0 THEN '-' ELSE LEFT(t.description,1) END) as Tax,              
 				(CASE WHEN i.foodstamp = 1 THEN 'X' ELSE '-' END) as FS,
 				(CASE WHEN i.discount = 0 THEN '-' ELSE 'X'END) as DISC,
@@ -417,11 +421,12 @@ class ProductListPage extends FanniePage {
 					<th><a href="%s&sort=Description">Description</a></th>
 					<th><a href="%s&sort=Department">Department</a></th>
 					<th><a href="%s&sort=Supplier">Supplier</a></th>
+					<th><a href="%s&sort=Cost">Cost</a></th>
 					<th><a href="%s&sort=Price">Price</a></th>',
-					$page_url,$page_url,$page_url,$page_url,$page_url);
+					$page_url,$page_url,$page_url,$page_url,$page_url,$page_url);
 		}
 		else
-			$ret .= "<th>UPC</th><th>Description</th><th>Dept</th><th>Supplier</th><th>Price</th>";
+			$ret .= "<th>UPC</th><th>Description</th><th>Dept</th><th>Supplier</th><th>Cost</th><th>Price</th>";
 		$ret .= "<th>Tax</th><th>FS</th><th>Disc</th><th>Wg'd</th><th>Local</th>";
 		if (!$this->excel && $this->canEditItems !== False)
 			$ret .= '<th>&nbsp;</th>';
@@ -443,12 +448,13 @@ class ProductListPage extends FanniePage {
 			$ret .= "<td align=center class=td_desc>$row[1]</td>";
 			$ret .= "<td align=center class=td_dept>$row[2]</td>";
 			$ret .= "<td align=center class=td_supplier>$row[9]</td>";
+			$ret .= "<td align=center class=td_cost>$row[4]</td>";
 			$ret .= "<td align=center class=td_price>$row[3]</td>";
-			$ret .= "<td align=center class=td_tax>$row[4]</td>";
-			$ret .= "<td align=center class=td_fs>$row[5]</td>";
-			$ret .= "<td align=center class=td_disc>$row[6]</td>";
-			$ret .= "<td align=center class=td_wgt>$row[7]</td>";
-			$ret .= "<td align=center class=td_local>$row[8]</td>";
+			$ret .= "<td align=center class=td_tax>$row[5]</td>";
+			$ret .= "<td align=center class=td_fs>$row[6]</td>";
+			$ret .= "<td align=center class=td_disc>$row[7]</td>";
+			$ret .= "<td align=center class=td_wgt>$row[8]</td>";
+			$ret .= "<td align=center class=td_local>$row[9]</td>";
 			if (!$this->excel && $this->canEditItems !== False){
 				$ret .= "<td align=center class=td_cmd><a href=\"\" 
 					onclick=\"edit('$row[0]'); return false;\">
