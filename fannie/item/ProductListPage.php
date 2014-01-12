@@ -449,7 +449,7 @@ class ProductListPage extends FanniePage {
 				$ret .= "<td align=center>$row[0]</td>";
 			$ret .= "<td align=center class=td_desc>$row[1]</td>";
 			$ret .= "<td align=center class=td_dept>$row[2]</td>";
-			$ret .= "<td align=center class=td_supplier>$row[9]</td>";
+			$ret .= "<td align=center class=td_supplier>$row[10]</td>";
 			$ret .= "<td align=center class=td_cost>$row[4]</td>";
 			$ret .= "<td align=center class=td_price>$row[3]</td>";
 			$ret .= "<td align=center class=td_tax>$row[5]</td>";
