@@ -314,9 +314,9 @@ class EditItemsFromSearch extends FannieRESTfulPage
         ?>
 function toggleAll(elem, selector) {
     if (elem.checked) {
-        $(selector).attr('checked', 'checked');
+        $(selector).attr('checked', true);
     } else {
-        $(selector).removeAttr('checked');
+        $(selector).attr('checked', false);
     }
 }
 function updateAll(val, selector) {
