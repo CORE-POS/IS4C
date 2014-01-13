@@ -116,7 +116,7 @@ class ProductListPage extends FanniePage {
 			$('tr#'+upc+' .td_supplier').html(content);
 
 			var cost = $('tr#'+upc+' .td_cost').html();
-			var content = "<input type=text class=in_cost value=\""+cost+"\" />";	
+			var content = "<input type=text class=in_cost size=4 value=\""+cost+"\" />";	
 			$('tr#'+upc+' .td_cost').html(content);
 			
 			var price = $('tr#'+upc+' .td_price').html();
