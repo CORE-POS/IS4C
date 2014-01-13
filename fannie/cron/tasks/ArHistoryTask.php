@@ -101,7 +101,7 @@ Deprecates nightly.ar.php and arbalance.sanitycheck.php.';
             }
 
             // add to ar history
-            $try = $addR = $dbc->execute($addP, array($lookupW['card_no'], $lookupW['Charges'], $lookupW['Payments'],
+            $try = $addR = $dbc->execute($addP, array($lookupW['card_no'], $lookupW['charges'], $lookupW['payments'],
                                                 $lookupW['tdate'], $lookupW['trans_num']));
             if ($try === false) {
                 echo $this->cronMsg('Error adding AR entry '.$lookupW['tdate']. ' '.$lookupW['trans_num']);
