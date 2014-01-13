@@ -87,6 +87,7 @@ class EditItemsFromSearch extends FannieRESTfulPage
             } else {
                 $model->scale(0);
             }
+            $model->modified(date('Y-m-d H:i:s'));
 
             $try = $model->save();
             if ($try) {
