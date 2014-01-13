@@ -26,10 +26,6 @@
 
 */
 
-if (!class_exists('FannieDB')) {
-    include(dirname(__FILE__).'/../FannieDB.php');
-}
-
 class MemberCardsModel extends BasicModel 
 {
     
@@ -76,35 +72,6 @@ class MemberCardsModel extends BasicModel
         }
     }
     /* END ACCESSOR FUNCTIONS */
-
-    /**
-      5Jul13 static stuff is legacy functionality
-      that predates the BasicModel class.
-      Can be removed when no calls to these functions
-      remain in Fannie.
-    
-    /**
-      Update memberCards record for an account
-      @param $card_no the member number
-      @param $upc the barcode
-    */
-    public static function update($card_no,$upc){
-        global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
-    
-        $delP = $dbc->prepare_statement("DELETE FROM memberCards WHERE card_no=?");
-        $delR = $dbc->exec_statement($delP,array($card_no));
-
-        /** don't create entry w/o UPC */
-        if ($upc != ''){
-            $upc = str_pad($upc,13,'0',STR_PAD_LEFT);
-            $insP = $dbc->prepare_statement("INSERT INTO memberCards (card_no, upc)
-                    VALUES (?, ?)");
-            $insR = $dbc->exec_statement($insP,array($card_no,$upc));
-            return $insR;
-        }
-        else return $delR;
-    }
 
 }
 
