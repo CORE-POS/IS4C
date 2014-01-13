@@ -42,7 +42,7 @@ function addProductAllLanes($upc){
 			$FANNIE_LANES[$i]['op'],$FANNIE_LANES[$i]['user'],
 			$FANNIE_LANES[$i]['pw']);
         
-        if (!isset($laneupdate_sql->connections[$FANNIE_LANES[$i]['op']] || $laneupdate_sql->connections[$FANNIE_LANES[$i]['op'] === false)) {
+        if (!isset($laneupdate_sql->connections[$FANNIE_LANES[$i]['op']]) || $laneupdate_sql->connections[$FANNIE_LANES[$i]['op']] === false) {
             // connect failed
             continue;
         }
@@ -77,7 +77,7 @@ function deleteProductAllLanes($upc){
 		$tmp = new SQLManager($FANNIE_LANES[$i]['host'],$FANNIE_LANES[$i]['type'],
 			$FANNIE_LANES[$i]['op'],$FANNIE_LANES[$i]['user'],
 			$FANNIE_LANES[$i]['pw']);
-        if (!isset($tmp->connections[$FANNIE_LANES[$i]['op']] || $tmp->connections[$FANNIE_LANES[$i]['op'] === false)) {
+        if (!isset($tmp->connections[$FANNIE_LANES[$i]['op']]) || $tmp->connections[$FANNIE_LANES[$i]['op']] === false) {
             // connect failed
             continue;
         }
