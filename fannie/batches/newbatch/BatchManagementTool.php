@@ -1290,7 +1290,9 @@ class BatchManagementTool extends FanniePage {
 		<head><title>Batch Management</title>
 		</head>
 		<body>
-
+		<div id="backbutton">
+		<a href="<?php echo $FANNIE_URL; ?>">&larr; Back to Fannie</a>
+		</div>
 		<div id="inputarea">
 		<?php echo $this->newBatchInput(); ?>
 		</div>
