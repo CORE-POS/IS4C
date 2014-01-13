@@ -119,6 +119,25 @@ class SQLManager
         return $this->addConnection($server, $type, $database, $username, $password, $persistent);
     }
 
+    /**
+      Verify object is connected to the database
+      @param $which_connection [string] database name (optional)
+      @return [boolean] 
+    */
+    public function isConnected($which_connection='')
+    {
+		if ($which_connection == '') {
+			$which_connection=$this->default_db;
+        }
+        if (isset($this->connections[$which_connection]) && 
+            is_object($this->connections[$which_connection]) && 
+            is_a($this->connections[$which_connection], 'ADONewConnection')) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
 	/**
 	  Close a database connection
 	  @param $which_connection
