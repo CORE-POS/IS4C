@@ -51,8 +51,8 @@ class MemType extends MemberModule {
 				($infoW[0]==$infoW[1]?'selected':''),
 				$infoW[2]);
 			$disc = $infoW[3];
-            $staff = $infoW['staff'];
-            $ssi = $infoW['SSI'];
+            $staff = $infoW[4];
+            $ssi = $infoW[5];
 		}
 		$ret .= "</select></td>";
 		
