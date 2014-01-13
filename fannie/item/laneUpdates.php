@@ -72,8 +72,12 @@ function deleteProductAllLanes($upc){
 		$tmp = new SQLManager($FANNIE_LANES[$i]['host'],$FANNIE_LANES[$i]['type'],
 			$FANNIE_LANES[$i]['op'],$FANNIE_LANES[$i]['user'],
 			$FANNIE_LANES[$i]['pw']);
-		$delQ = $tmp->prepare_statement("DELETE FROM products WHERE upc=?");
-		$delR = $tmp->exec_statement($delQ,array($upc),$FANNIE_LANES[$i]['op']);
+		if(!$tmp) {
+			//TODO: log or warn about connection error?
+		} else {
+			$delQ = $tmp->prepare_statement("DELETE FROM products WHERE upc=?");
+			$delR = $tmp->exec_statement($delQ,array($upc),$FANNIE_LANES[$i]['op']);
+		}
 	}
 }
 
