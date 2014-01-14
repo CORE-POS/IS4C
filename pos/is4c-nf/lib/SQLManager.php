@@ -367,6 +367,11 @@ class SQLManager
                 $success = false;
                 if (is_object($stmt)) {
                     $success = $stmt->execute($args);
+                    if (!$success && DEBUG_MYSQL_QUERIES != "" && is_writable(DEBUG_MYSQL_QUERIES)) {
+                        $fp = fopen(DEBUG_MYSQL_QUERIES,"a");
+                        fwrite($fp,date('r').": ".$stmt->queryString."\n\n");
+                        fclose($fp);
+                    }
                 }
                 return $success ? $stmt : false;
         }
