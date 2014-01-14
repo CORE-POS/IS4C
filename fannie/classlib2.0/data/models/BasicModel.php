@@ -655,18 +655,49 @@ class BasicModel
                 return true;
             }
         }
+
+        // get lowercased versions of the class' column names
+        // and the current table's column names to check for
+        // case mismatches
         $current = $this->connection->table_definition($this->name);
+        $lowercase_current = array();
+        $casemap = array();
+        foreach($current as $col_name => $definition) {
+            $lowercase_current[] = strtolower($col_name);
+            $casemap[strtolower($col_name)] = $col_name;
+        }
+        $lowercase_this = array();
+        foreach($this->columns as $col_name => $definition) {
+            $lowercase_this[] = strtolower($col_name);
+        }
 
         $new_columns = array();
         $new_indexes = array();
         $unknown = array();
+        $recase_columns = array();
         foreach ($this->columns as $col_name => $defintion) {
-            if (!in_array($col_name,array_keys($current))) {
+            if (in_array(strtolower($col_name), $lowercase_current) && !in_array($col_name, array_keys($current))) {
+                printf("%s column %s as %s\n", 
+                        ($mode==BasicModel::NORMALIZE_MODE_CHECK)?"Need to rename":"Renaming", 
+                        $casemap[strtolower($col_name)], $col_name);
+                $recase_columns[] = $col_name;
+                $sql = 'ALTER TABLE ' . $this->connection->identifier_escape($this->name) . ' CHANGE COLUMN '
+                        . $this->connection->identifier_escape($casemap[strtolower($col_name)]) . ' '
+                        . $this->connection->identifier_escape($col_name) . ' '
+                        . $this->getMeta($this->columns[$col_name]['type'], $this->connection->dbms_name());
+                if (isset($this->columns[$col_name]['default'])) {
+                    $sql .= ' DEFAULT '.$this->columns[$col_name]['default'];
+                }
+                printf("\tSQL Details: %s\n", $sql);
+                if ($mode == BasicModel::NORMALIZE_MODE_APPLY) {
+                    $renamed = $this->connection->query($sql);
+                }
+            } else if (!in_array($col_name,array_keys($current))) {
                 $new_columns[] = $col_name;
             }
         }
         foreach($current as $col_name => $type) {
-            if (!in_array($col_name,array_keys($this->columns))) {
+            if (!in_array($col_name,array_keys($this->columns)) && !in_array(strtolower($col_name), $lowercase_this)) {
                 $unknown[] = $col_name;
                 echo "Ignoring unknown column: $col_name in current definition (delete manually if desired)\n";
             }
@@ -794,10 +825,11 @@ class BasicModel
                 }
             }
         }
+        $alters = count($new_columns) + count($recase_columns);
         echo "==========================================\n";
         printf("%s %d column%s  %d index%s.\n",
             ($mode==BasicModel::NORMALIZE_MODE_CHECK)?"Check complete. Need to add":"Update complete. Added",
-            count($new_columns), (count($new_columns)!=1)?"s":"",
+            $alters, ($alters!=1)?"s":"",
             count($new_indexes), (count($new_indexes)!=1)?"es":""
             );
         echo "==========================================\n\n";
@@ -807,8 +839,8 @@ class BasicModel
             $this->normalizeLanes($db_name, $mode, $doCreate);
         }
 
-        if (count($new_columns) > 0) {
-            return count($new_columns);
+        if ($alters > 0) {
+            return $alters;
         } else if (count($unknown) > 0) {
             return -1*count($unknown);
         }

@@ -82,7 +82,7 @@ Deprecates nightly.ar.php and arbalance.sanitycheck.php.';
 
         $checkP = $dbc->prepare('SELECT charges, payments FROM ar_history 
                     WHERE tdate=? AND trans_num=? AND card_no=?');
-        $addP = $dbc->prepare('INSERT INTO ar_history (card_no, Charges, Payments, tdate, trans_num)
+        $addP = $dbc->prepare('INSERT INTO ar_history (card_no, charges, payments, tdate, trans_num)
                             VALUES (?, ?, ?, ?, ?)');
         while($lookupW = $dbc->fetch_row($lookupR)) {
             // check whether transaction is already in ar_history
