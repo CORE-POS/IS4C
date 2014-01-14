@@ -223,7 +223,7 @@ class BaseItemModule extends ItemModule {
 			if ($w['subdept_no'] == '') continue;
 			if (!isset($subs[$w['dept_ID']]))
 				$subs[$w['dept_ID']] = '';
-			$subs[$w['dept_ID']] = sprintf('<option %s value="%d">%s</option>',
+			$subs[$w['dept_ID']] .= sprintf('<option %s value="%d">%s</option>',
 					($w['subdept_no'] == $rowItem['subdept'] ? 'selected':''),
 					$w['subdept_no'],$w['subdept_name']);
 		}
