@@ -610,6 +610,28 @@ static public function termdisplaymsg()
 }
 
 /**
+  Use the right side of the screen to show various
+  notifications
+*/
+static public function drawNotifications()
+{
+    global $CORE_LOCAL;
+    if (!is_array($CORE_LOCAL->get('notifiers'))) {
+        $CORE_LOCAL->set('notifiers', array());
+    }
+
+    $ret = '';
+    foreach($CORE_LOCAL->get('notifiers') as $class) {
+        if (!class_exists($class)) continue;
+
+        $obj = new $class();
+        $ret .= $obj->draw();
+    }
+
+    return $ret;
+}
+
+/**
   Get the items currently on screen
   @param $top_item is trans_id (localtemptrans)
    of the first item to display

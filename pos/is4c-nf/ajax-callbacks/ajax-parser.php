@@ -144,7 +144,7 @@ else {
 			$json['scale'] = $display['display'];
 		else
 			$json['scale'] = $display;
-		$term_display = DisplayLib::termdisplaymsg();
+		$term_display = DisplayLib::drawNotifications();
 		if (!empty($term_display))
 			$json['term'] = $term_display;
 	}

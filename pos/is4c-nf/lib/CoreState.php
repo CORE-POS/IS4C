@@ -454,11 +454,21 @@ static public function transReset()
 	*/
 	$CORE_LOCAL->set("paycard_keyed",False);
 
-	foreach($CORE_LOCAL->get('PluginList') as $p){
-		if (!class_exists($p)) continue;
-		$obj = new $p();
-		$obj->plugin_transaction_reset();
-	}
+    if (is_array($CORE_LOCAL->get('PluginList'))) {
+        foreach($CORE_LOCAL->get('PluginList') as $p) {
+            if (!class_exists($p)) continue;
+            $obj = new $p();
+            $obj->plugin_transaction_reset();
+        }
+    }
+
+    if (is_array($CORE_LOCAL->get('notifiers'))) {
+        foreach($CORE_LOCAL->get('notifiers') as $n) {
+            if (!class_exists($n)) continue;
+            $obj = new $n();
+            $obj->transactionReset();
+        }
+    }
 }
 
 /**

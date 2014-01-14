@@ -331,7 +331,30 @@ foreach($current_mods as $m)
 $saveStr = rtrim($saveStr,",").")";
 InstallUtilities::paramSave('FooterModules',$current_mods);
 ?>
-</td></tr><tr><td>
+</td></tr>
+<tr><td>
+<b>Notifier Modules</b>:</td><td>
+<?php
+// get current settings
+$current_mods = $CORE_LOCAL->get("notifiers");
+// replace w/ form post if needed
+// fill in defaults if missing
+if (isset($_REQUEST['NOTIFIERS'])) $current_mods = $_REQUEST['NOTIFIERS'];
+elseif(!is_array($current_mods)) {
+	$current_mods = array();
+}
+$notifiers = AutoLoader::listModules('Notifier');
+echo '<select name="NOTIFIERS[]" size="5" multiple>';
+foreach($notifiers as $nm){
+    printf('<option %s>%s</option>',
+        (in_array($nm, $current_mods)?'selected':''),$nm);
+}
+echo '</select><br />';
+InstallUtilities::paramSave('Notifiers',$current_mods);
+?>
+<span class='noteTxt'>Notifiers are displayed on the right below the scale weight</span>
+</td></tr>
+<tr><td>
 <b>Enable onscreen keys</b>:</td><td> <select name=SCREENKEYS>
 <?php
 if(isset($_REQUEST['SCREENKEYS'])){
