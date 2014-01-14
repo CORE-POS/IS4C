@@ -40,7 +40,7 @@ class ArOverpayAction  extends TotalAction
     public function apply()
     {
         global $CORE_LOCAL;
-		$temp = self::chargeOk();
+		$temp = PrehLib::chargeOk();
 		if ($CORE_LOCAL->get("balance") < $CORE_LOCAL->get("memChargeTotal") && $CORE_LOCAL->get("memChargeTotal") > 0) {
 			if ($CORE_LOCAL->get('msgrepeat') == 0) {
 				$CORE_LOCAL->set("boxMsg",sprintf("<b>A/R Imbalance</b><br />
