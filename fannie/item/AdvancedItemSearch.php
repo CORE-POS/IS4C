@@ -34,7 +34,27 @@ class AdvancedItemSearch extends FannieRESTfulPage
     function preprocess()
     {
         $this->__routes[] = 'get<search>';
+        $this->__routes[] = 'post<upc>';
         return parent::preprocess();
+    }
+
+    // failover on ajax call
+    // if javascript breaks somewhere and the form
+    // winds up submitted, at least display the results
+    private $post_results = '';
+    function post_upc_handler()
+    {
+        ob_start();
+        $this->get_search_handler();
+        $this->post_results = ob_get_clean();
+
+        return true;
+    }
+
+    // failover on ajax call
+    function post_upc_view()
+    {
+        return $this->get_view() . $this->post_results;
     }
 
     function get_search_handler()
