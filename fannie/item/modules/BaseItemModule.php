@@ -216,7 +216,7 @@ class BaseItemModule extends ItemModule {
 		$p = $dbc->prepare_statement('SELECT dept_no,dept_name,subdept_no,subdept_name,dept_ID 
 				FROM departments AS d
 				LEFT JOIN subdepts AS s ON d.dept_no=s.dept_ID
-				ORDER BY d.dept_no');
+				ORDER BY d.dept_no, s.subdep_name');
 		$r = $dbc->exec_statement($p);
 		while($w = $dbc->fetch_row($r)){
 			if (!isset($depts[$w['dept_no']])) $depts[$w['dept_no']] = $w['dept_name'];
