@@ -46,6 +46,7 @@ class paycardboxMsgAuth extends PaycardProcessPage {
 				$CORE_LOCAL->set("CachePinEncBlock","");
 				$CORE_LOCAL->set("CacheCardType","");
 				$CORE_LOCAL->set("CacheCardCashBack",0);
+                $CORE_LOCAL->set('ccTermState','swipe');
 				UdpComm::udpSend("termReset");
 				$this->change_page($this->page_url."gui-modules/pos2.php");
 				return False;

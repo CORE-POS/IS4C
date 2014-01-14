@@ -181,7 +181,6 @@ class MercuryGift extends BasicCCModule {
 			$CORE_LOCAL->set("boxMsg","<b>Success</b><font size=-1><p>New card balance: $".$resp["Balance"]);
 				// reminder to void everything on testgift2, so that it remains inactive to test activations
 			$CORE_LOCAL->set("boxMsg",$CORE_LOCAL->get("boxMsg")."<p>[enter] to continue<br>\"rp\" to reprint slip</font>");
-			$json['receipt'] = 'gcSlip';
 			break;
 		case PaycardLib::PAYCARD_MODE_AUTH:
 			$CORE_LOCAL->set("autoReprint",1);
@@ -193,7 +192,6 @@ class MercuryGift extends BasicCCModule {
 			if( !strcasecmp($CORE_LOCAL->get("paycard_PAN"),"7018525757980004481")) // == doesn't work because the string is numeric and very large, so PHP has trouble turning it into an (int) for comparison
 				$CORE_LOCAL->set("boxMsg",$CORE_LOCAL->get("boxMsg")."<br><b>REMEMBER TO VOID THIS</b><br>(ask IT for details)");
 			$CORE_LOCAL->set("boxMsg",$CORE_LOCAL->get("boxMsg")."<p>[enter] to continue<br>\"rp\" to reprint slip<br>[clear] to cancel and void</font>");
-			$json['receipt'] = 'gcSlip';
 			break;
 		case PaycardLib::PAYCARD_MODE_VOID:
 		case PaycardLib::PAYCARD_MODE_VOIDITEM:

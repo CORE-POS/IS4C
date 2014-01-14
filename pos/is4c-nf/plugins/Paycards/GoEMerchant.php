@@ -390,14 +390,17 @@ class GoEMerchant extends BasicCCModule {
 			case 2: // DECLINED
 				$CORE_LOCAL->set("ccTermOut","approval:denied");
 				$CORE_LOCAL->set("boxMsg",$resultMsg);
+				TransRecord::addcomment("");	
 				break;
 			case 0: // ERROR
 				$CORE_LOCAL->set("ccTermOut","resettotal");
 				$CORE_LOCAL->set("boxMsg","");
 				$texts = $xml->get_first("ERROR");
 				$CORE_LOCAL->set("boxMsg","Error: $texts");
+				TransRecord::addcomment("");	
 				break;
 			default:
+				TransRecord::addcomment("");	
 				$CORE_LOCAL->set("boxMsg","An unknown error occurred<br />at the gateway");
 		}
 		return PaycardLib::PAYCARD_ERR_PROC;
@@ -495,7 +498,10 @@ class GoEMerchant extends BasicCCModule {
 			// cast to string. tender function expects string input
 			// numeric input screws up parsing on negative values > $0.99
 			$amt = "".(-1*($CORE_LOCAL->get("paycard_amount")));
-			TransRecord::addtender("Credit Card", "CC", $amt);
+			$t_type = 'CC';
+			if ($CORE_LOCAL->get('paycard_issuer') == 'American Express')
+				$t_type = 'AX';
+			TransRecord::addtender("Credit Card", $t_type, $amt);
 			$CORE_LOCAL->set("boxMsg","<b>Approved</b><font size=-1><p>Please verify cardholder signature<p>[enter] to continue<br>\"rp\" to reprint slip<br>[void] to cancel and void</font>");
 			if ($CORE_LOCAL->get("paycard_amount") <= $CORE_LOCAL->get("CCSigLimit") && $CORE_LOCAL->get("paycard_amount") >= 0){
 				$CORE_LOCAL->set("boxMsg","<b>Approved</b><font size=-1><p>No signature required<p>[enter] to continue<br>[void] to cancel and void</font>");
