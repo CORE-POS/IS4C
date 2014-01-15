@@ -1470,6 +1470,8 @@ class InstallIndexPage extends InstallPage {
 			charflag,
 			card_no,
 			trans_id,
+            pos_row_id,
+            store_row_id,
 			".$con->concat(
 				$con->convert('emp_no','char'),"'-'",
 				$con->convert('register_no','char'),"'-'",

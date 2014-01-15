@@ -387,6 +387,8 @@ function createViews($dstr,$db){
 
 	$dbms = $FANNIE_ARCHIVE_REMOTE?$FANNIE_ARCHIVE_DBMS:$FANNIE_SERVER_DBMS;
 
+    $table_def = $db->table_definition('transArchive' . $str);
+
 	$dlogQ = "CREATE  view dlog$dstr as
 		select 
 		d.datetime as tdate, 
@@ -394,6 +396,7 @@ function createViews($dstr,$db){
 		d.emp_no, 
 		d.trans_no, 
 		d.upc, 
+        d.description,
 		CASE WHEN (d.trans_subtype IN ('CP','IC') OR d.upc like('%000000052')) then 'T' 
 			WHEN d.upc = 'DISCOUNT' then 'S' else d.trans_type end as trans_type, 
 		CASE WHEN d.upc = 'MAD Coupon' THEN 'MA' ELSe 
@@ -401,18 +404,38 @@ function createViews($dstr,$db){
 		d.trans_status, 
 		d.department, 
 		d.quantity, 
+        d.scale,
+        d.cost,
 		d.unitPrice, 
 		d.total, 
+        d.regPrice,
 		d.tax, 
 		d.foodstamp, 
+        d.discount,
+        d.memDiscount,
+        d.discountable,
+        d.discounttype,
+        d.voided,
+        d.percentDiscount,
 		d.itemQtty, 
 		d.memType,
+        d.volDiscType,
+        d.volume,
+        d.VolSpecial,
+        d.mixMatch,
+        d.matched,
 		d.staff,
 		d.numflag,
 		d.charflag,
 		d.card_no, 
-		d.trans_id,
-		concat(convert(d.emp_no,char), '-', convert(d.register_no,char), '-',
+		d.trans_id, ";
+    if (isset($table_def['pos_row_id'])) {
+        $dlogQ .= "d.pos_row_id,";
+    }
+    if (isset($table_def['store_row_id'])) {
+        $dlogQ .= "d.store_row_id,";
+    }
+    $dlogQ .= "concat(convert(d.emp_no,char), '-', convert(d.register_no,char), '-',
 		convert(d.trans_no,char)) as trans_num
 
 		from transArchive$dstr as d
@@ -426,6 +449,7 @@ function createViews($dstr,$db){
 			d.emp_no, 
 			d.trans_no, 
 			d.upc, 
+            d.description,
 			CASE WHEN (d.trans_subtype IN ('CP','IC') OR d.upc like('%000000052')) then 'T' 
 				WHEN d.upc = 'DISCOUNT' then 'S' else d.trans_type end as trans_type, 
 			CASE WHEN d.upc = 'MAD Coupon' THEN 'MA' ELSe 
@@ -433,18 +457,38 @@ function createViews($dstr,$db){
 			d.trans_status, 
 			d.department, 
 			d.quantity, 
+            c.scale,
+            d.cost,
 			d.unitPrice, 
 			d.total, 
+            d.regPrice,
 			d.tax, 
 			d.foodstamp, 
+            d.discount,
+            d.memDiscount,
+            d.discountable,
+            d.discounttype,
+            d.voided,
+            d.percentDiscount,
 			d.itemQtty, 
+            d.volDiscType,
+            d.volume,
+            d.VolSpecial,
+            d.mixMatch,
+            d.matched,
 			d.memType,
 			d.isStaff,
 			d.numflag,
 			d.charflag,
 			d.card_no, 
-			d.trans_id,
-			(convert(varchar,d.emp_no) +  '-' + convert(varchar,d.register_no) + '-' + 
+			d.trans_id,";
+            if (isset($table_def['pos_row_id'])) {
+                $dlogQ .= "d.pos_row_id,";
+            }
+            if (isset($table_def['store_row_id'])) {
+                $dlogQ .= "d.store_row_id,";
+            }
+			$dlogQ .= "(convert(varchar,d.emp_no) +  '-' + convert(varchar,d.register_no) + '-' + 
 			convert(varchar,d.trans_no)) as trans_num
 
 			from transArchive$dstr as d

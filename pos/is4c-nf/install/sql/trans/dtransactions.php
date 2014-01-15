@@ -39,6 +39,7 @@ Columns:
 	charflag varchar
 	card_no int
 	trans_id int
+    pos_row_id int
 
 Depends on:
 	none
@@ -231,7 +232,9 @@ $CREATE['trans.dtransactions'] = "
 	  `numflag` int(11) default 0 NULL,
 	  `charflag` varchar(2) default '' NULL,
 	  `card_no` int(11) default NULL,
-	  `trans_id` int(11) default NULL
+	  `trans_id` int(11) default NULL,
+      `pos_row_id` bigint unsigned not null auto_increment,
+      primary key (`pos_row_id`)
 	)
 ";
 
@@ -272,7 +275,8 @@ if ($dbms == "MSSQL"){
 			[numflag] [smallint] NULL ,
 			[charflag] [nvarchar] (2) COLLATE SQL_Latin1_General_CP1_CI_AS NULL ,
 			[card_no] [nvarchar] (6) COLLATE SQL_Latin1_General_CP1_CI_AS NULL ,
-			[trans_id] [int] NOT NULL 
+			[trans_id] [int] NOT NULL ,
+            [pos_row_id] [bigint] IDENTITY(1, 1) NOT NULL
 		)
 	";
 }
