@@ -32,7 +32,7 @@ class SuperDeptEmailsModel extends BasicModel
 
     protected $columns = array(
     'superID' => array('type'=>'INT', 'primary_key'=>true),
-    'email_address' => array('type'=>'VARCHAR(255)'),
+    'emailAddress' => array('type'=>'VARCHAR(255)', 'replaces'=>'email_address'),
 	);
 
     /* START ACCESSOR FUNCTIONS */
@@ -42,28 +42,58 @@ class SuperDeptEmailsModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["superID"])) {
                 return $this->instance["superID"];
-            } elseif(isset($this->columns["superID"]["default"])) {
+            } else if (isset($this->columns["superID"]["default"])) {
                 return $this->columns["superID"]["default"];
             } else {
                 return null;
             }
         } else {
+            if (!isset($this->instance["superID"]) || $this->instance["superID"] != func_get_args(0)) {
+                if (!isset($this->columns["superID"]["ignore_updates"]) || $this->columns["superID"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["superID"] = func_get_arg(0);
+        }
+    }
+
+    public function emailAddress()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["emailAddress"])) {
+                return $this->instance["emailAddress"];
+            } else if (isset($this->columns["emailAddress"]["default"])) {
+                return $this->columns["emailAddress"]["default"];
+            } else {
+                return null;
+            }
+        } else {
+            if (!isset($this->instance["emailAddress"]) || $this->instance["emailAddress"] != func_get_args(0)) {
+                if (!isset($this->columns["emailAddress"]["ignore_updates"]) || $this->columns["emailAddress"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
+            $this->instance["emailAddress"] = func_get_arg(0);
         }
     }
 
     public function email_address()
     {
         if(func_num_args() == 0) {
-            if(isset($this->instance["email_address"])) {
-                return $this->instance["email_address"];
-            } elseif(isset($this->columns["email_address"]["default"])) {
-                return $this->columns["email_address"]["default"];
+            if(isset($this->instance["emailAddress"])) {
+                return $this->instance["emailAddress"];
+            } else if (isset($this->columns["emailAddress"]["default"])) {
+                return $this->columns["emailAddress"]["default"];
             } else {
                 return null;
             }
         } else {
-            $this->instance["email_address"] = func_get_arg(0);
+            if (!isset($this->instance["emailAddress"]) || $this->instance["emailAddress"] != func_get_args(0)) {
+                if (!isset($this->columns["emailAddress"]["ignore_updates"]) || $this->columns["emailAddress"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
+            $this->instance["emailAddress"] = func_get_arg(0);
         }
     }
     /* END ACCESSOR FUNCTIONS */

@@ -191,19 +191,22 @@ class AuditLib
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
         
-        $query = 'SELECT email_address FROM superdepts AS s
-                INNER JOIN superDeptEmails AS e
-                ON s.superID=e.superID
-                WHERE e.dept_ID=?';
+        $query = 'SELECT superID from superdepts WHERE dept_ID=? GROUP BY superID';
         $prep = $dbc->prepare($query);
         $res = $dbc->execute($prep, array($dept));
         $emails = '';
         while($row = $dbc->fetch_row($res)) {
-            if (!strstr($emails, $row['email_address'])) {
+            $model = new SuperDeptEmailsModel($dbc);
+            $model->superID($row['superID']);
+            if (!$model->load()) {
+                continue;
+            }
+            $addr = $model->emailAddress();
+            if (!strstr($emails, $addr)) {
                 if ($emails !== '') {
                     $emails .= ', ';
                 }
-                $emails .= $row['email_address'];
+                $emails .= $addr;
             }
         }
 

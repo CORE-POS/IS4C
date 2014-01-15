@@ -42,6 +42,7 @@ class BasicModel
       - index (optional, boolean)
       - increment (optional, boolean)
       - ignore_updates (optional, boolean)
+      - replaces (optional, string previous column name)
     */
     protected $columns = array();
 
@@ -692,6 +693,26 @@ class BasicModel
                 if ($mode == BasicModel::NORMALIZE_MODE_APPLY) {
                     $renamed = $this->connection->query($sql);
                 }
+            } else if (!in_array($col_name, array_keys($current)) && isset($definition['replaces']) && in_array($definition['replaces'], array_keys($current))) {
+                printf("%s column %s as %s\n", 
+                        ($mode==BasicModel::NORMALIZE_MODE_CHECK)?"Need to rename":"Renaming", 
+                        $definition['replaces'], $col_name);
+                $recase_columns[] = $col_name;
+                $sql = 'ALTER TABLE ' . $this->connection->identifier_escape($this->name) . ' CHANGE COLUMN '
+                        . $this->connection->identifier_escape($definition['replaces']) . ' '
+                        . $this->connection->identifier_escape($col_name) . ' '
+                        . $this->getMeta($this->columns[$col_name]['type'], $this->connection->dbms_name());
+                if (isset($this->columns[$col_name]['default'])) {
+                    $sql .= ' DEFAULT '.$this->columns[$col_name]['default'];
+                }
+                printf("\tSQL Details: %s\n", $sql);
+                if ($mode == BasicModel::NORMALIZE_MODE_APPLY) {
+                    $renamed = $this->connection->query($sql);
+                    if ($renamed && method_exists($this, 'hookAddColumn'.$col_name)) {
+                        $func = 'hookAddColumn'.$col_name;
+                        $this->$func();
+                    }
+                }
             } else if (!in_array($col_name,array_keys($current))) {
                 $new_columns[] = $col_name;
             }
@@ -890,9 +911,18 @@ class BasicModel
 
         $fp = fopen($filename,'w');
         fwrite($fp,$before);
+        // use 'replaces' to build legacy accessor functions
+        // mapping old column names to current column names
+        $all_methods = array();
         foreach($this->columns as $name => $definition) {
+            $all_methods[$name] = $name;
+            if (isset($definition['replaces'])) {
+                $all_methods[$definition['replaces']] = $name;
+            }
+        }
+        foreach($all_methods as $method_name => $name) {
             fwrite($fp,"\n");
-            fwrite($fp,"    public function ".$name."()\n");
+            fwrite($fp,"    public function ".$method_name."()\n");
             fwrite($fp,"    {\n");
             fwrite($fp,"        if(func_num_args() == 0) {\n");
             fwrite($fp,'            if(isset($this->instance["'.$name.'"])) {'."\n");
