@@ -47,9 +47,6 @@ class login3 extends BasicPage {
 			}
 
 			if (Authenticate::checkPassword($passwd,4)){
-				$sd = MiscLib::scaleObject();
-				if (is_object($sd))
-					$sd->ReadReset();
 				$this->change_page($this->page_url."gui-modules/pos2.php");
 				return False;
 			}
@@ -64,7 +61,6 @@ class login3 extends BasicPage {
 
 	function head_content(){
 		$this->default_parsewrapper_js('scannerInput');
-		$this->scanner_scale_polling(True);
 	}
 
 	function body_content(){
