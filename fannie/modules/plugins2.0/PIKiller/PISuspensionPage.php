@@ -140,12 +140,14 @@ class PISuspensionPage extends PIKillerPage {
 		}
 		echo "</select>";
 		echo '<table>';
+        $i = 0;
 		foreach($this->__models['codes'] as $reason){
 			echo '<tr><td>';
-			echo '<input type="checkbox" name="reasoncodes[]" value="'.$reason->mask().'"';
+			echo '<input type="checkbox" id="pi_rc_'.$i.'" name="reasoncodes[]" value="'.$reason->mask().'"';
 			if (isset($this->__models['suspended']) && $this->__models['suspended']->reasoncode() & $reason->mask())
 				echo ' checked';
-			echo ' /></td><td>'.$reason->textStr().'</td></tr>';
+			echo ' /></td><td><label for="pi_rc_'.$i.'">'.$reason->textStr().'</label></td></tr>';
+            $i++;
 		}
 		echo "</table>";
 		echo "<input type=submit name=submit value=Update />";

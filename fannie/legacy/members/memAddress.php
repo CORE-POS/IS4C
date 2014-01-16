@@ -513,10 +513,10 @@ function deactivate($memNum,$type,$reason,$reasonCode){
     $result = $sql->execute($query, array($username, $now, $reason, $memNum, $reasonCode));
 
     $mQ = $sql->prepare("update meminfo set ads_OK=0 where card_no = ?");
-    $cQ = $sql->prepare("update custdata set memType=0, Type='TERM',ChargeOk=0,Discount=0,MemDiscountLimit=0,ChargeLimit=0 
+    $cQ = $sql->prepare("update custdata set memType=0, Type=?,ChargeOk=0,Discount=0,MemDiscountLimit=0,ChargeLimit=0 
             where CardNo=?");
     $mR = $sql->execute($mQ, array($memNum));
-    $cR = $sql->execute($cQ, array($memNum));
+    $cR = $sql->execute($cQ, array($type, $memNum));
   }
 }
 
