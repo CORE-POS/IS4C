@@ -616,12 +616,12 @@ static public function termdisplaymsg()
 static public function drawNotifications()
 {
     global $CORE_LOCAL;
-    if (!is_array($CORE_LOCAL->get('notifiers'))) {
-        $CORE_LOCAL->set('notifiers', array());
+    if (!is_array($CORE_LOCAL->get('Notifiers'))) {
+        $CORE_LOCAL->set('Notifiers', array());
     }
 
     $ret = '';
-    foreach($CORE_LOCAL->get('notifiers') as $class) {
+    foreach($CORE_LOCAL->get('Notifiers') as $class) {
         if (!class_exists($class)) continue;
 
         $obj = new $class();

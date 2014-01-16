@@ -370,7 +370,7 @@ class BasicPage {
 			<?php echo DisplayLib::scaledisplaymsg(); ?>	
 			</div>
 			<div id="scaleIconBox">
-			<?php echo DisplayLib::termdisplaymsg(); ?>
+			<?php echo DisplayLib::drawNotifications(); ?>
 			</div>
 		</div>
 		<?php
