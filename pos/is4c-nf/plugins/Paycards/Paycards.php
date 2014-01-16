@@ -43,7 +43,27 @@ class Paycards extends Plugin {
 			'Cashier' => 1,
 			'Customer' => 0
 			)
-		)
+		),
+		'PaycardsStateChange' => array(
+		'label' => 'Communication',
+		'description' => 'Should terminal switch screens 
+based on direct input or
+messages from POS?',
+		'default' => 0,
+		'options' => array(
+			'Direct Input' => 'direct',
+			'Messages' => 'coordinated' 
+			)
+		),
+		'PaycardsOfferCashBack' => array(
+		'label' => 'Offer Cashback',
+		'description' => 'Show cashback screen on terminal',
+		'default' => 1,
+		'options' => array(
+			'Yes' => 1,
+			'No' => 0
+			)
+		),
 	);
 
 	public function plugin_enable(){
