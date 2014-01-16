@@ -337,14 +337,23 @@ class ProductsModel extends BasicModel
 
     public function save()
     {
+        // using save() to update lane-side product records
+        // 1) always write the record
+        // 2) not create a prodUpdate entry
+        $stack = debug_backtrace();
+        $lane_push = false;
+        if (isset($stack[1]) && $stack[1]['function'] == 'pushToLanes') {
+            $lane_push = true;
+        }
+
         // writing DB is not necessary
-        if (!$this->record_changed) {
+        if (!$this->record_changed && !$lane_push) {
             return true;
         }
         // call parent method to save the product record,
         // then add a corresponding prodUpdate record
         $try = parent::save();
-        if ($try) {
+        if ($try && !$lane_push) {
             $update = new ProdUpdateModel($this->connection);
             $update->upc($this->upc());
             $update->logUpdate(ProdUpdateModel::UPDATE_EDIT);
