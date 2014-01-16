@@ -28,7 +28,6 @@ if (!file_exists(dirname(__FILE__).'/../config.php')){
 	echo "and put this in it:<br />";
 	echo "<div style=\"border: 1px solid black;padding: 5em;\">";
 	echo '&lt;?php<br />';
-	echo '?&gt;';
 	echo '</div>';	
 	exit;	
 }
