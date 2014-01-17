@@ -105,6 +105,7 @@ class MercuryGift extends BasicCCModule {
 		case PaycardLib::PAYCARD_MODE_AUTH:
 			$CORE_LOCAL->set("paycard_amount",$CORE_LOCAL->get("amtdue"));
 			$CORE_LOCAL->set("paycard_id",$CORE_LOCAL->get("LastID")+1); // kind of a hack to anticipate it this way..
+            $CORE_LOCAL->set('CacheCardType', 'GIFT');
 			$plugin_info = new Paycards();
 			$json['main_frame'] = $plugin_info->plugin_url().'/gui/paycardboxMsgAuth.php';
 			return $json;

@@ -58,6 +58,13 @@ class SigTermCommands extends Parser
 			$CORE_LOCAL->set('ccTermState','type');
             if ($CORE_LOCAL->get('PaycardsStateChange') == 'coordinated') {
                 UdpComm::udpSend('termGetType');
+            } else {
+                // check for out of order messages from terminal
+                if ($CORE_LOCAL->get('CacheCardType') != '' && $CORE_LOCAL->get('CacheCardType') == 'CREDIT') {
+                    $CORE_LOCAL->set('ccTermState', 'ready');
+                } else if ($CORE_LOCAL->get('CacheCardType') != '' && $CORE_LOCAL->get('CachePinEncBlock') != '') {
+                    $CORE_LOCAL->set('ccTermState', 'ready');
+                }
             }
 
 			return true;
@@ -137,6 +144,13 @@ class SigTermCommands extends Parser
                     }
                     break;
 			}
+
+            if ($CORE_LOCAL->get('PaycardsStateChange') == 'direct') {
+                // check for out of order messages from terminal
+                if ($CORE_LOCAL->get('CacheCardType') != '' && $CORE_LOCAL->get('CachePanEncBlock') != '' && $CORE_LOCAL->get('CachePinEncBlock') != '') {
+                    $CORE_LOCAL->set('ccTermState', 'ready');
+                }
+            }
 
 			return true;
 

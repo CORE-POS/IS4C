@@ -80,6 +80,7 @@ if (strlen($receiptType) > 0) {
         cleartemptrans($receiptType);
         $output = $yesSync;
         UdpComm::udpSend("termReset");
+        $CORE_LOCAL->set('ccTermState','swipe');
     }
 
     // close session so if printer hangs

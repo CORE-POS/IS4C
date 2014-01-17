@@ -36,7 +36,7 @@ class WFC_Kicker extends Kicker
 
         $query = "select trans_id from localtemptrans where 
             (trans_subtype = 'CA' and total <> 0) or 
-            (trans_subtype IN ('CC','AX') AND (total < -25 or total > 0)) or 
+            (trans_subtype IN ('CC','AX') AND (total < -25 or total > 0) AND description <> 'Debit Card') or 
             upc='0000000001065'";
 
         $result = $db->query($query);
