@@ -462,8 +462,8 @@ static public function transReset()
         }
     }
 
-    if (is_array($CORE_LOCAL->get('notifiers'))) {
-        foreach($CORE_LOCAL->get('notifiers') as $n) {
+    if (is_array($CORE_LOCAL->get('Notifiers'))) {
+        foreach($CORE_LOCAL->get('Notifiers') as $n) {
             if (!class_exists($n)) continue;
             $obj = new $n();
             $obj->transactionReset();
