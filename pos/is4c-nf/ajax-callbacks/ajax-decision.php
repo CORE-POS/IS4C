@@ -33,6 +33,7 @@ if ($decision == "CL") {
 	$CORE_LOCAL->set("msgrepeat",0);
 	$CORE_LOCAL->set("toggletax",0);
 	$CORE_LOCAL->set("togglefoodstamp",0);
+	$CORE_LOCAL->set("RepeatAgain", false);
 	$ret['cleared'] = True;
 }
 elseif (strlen($decision) > 0) {
