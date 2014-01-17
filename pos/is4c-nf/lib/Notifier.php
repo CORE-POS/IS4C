@@ -47,3 +47,36 @@ class Notifier extends LibraryClass
     }
 }
 
+/**
+  @example 
+
+  Show current member IOU balance
+
+class MemBalanceNotifier extends Notifier 
+{
+	public function draw(){
+        global $CORE_LOCAL;
+
+        if ($CORE_LOCAL->get('memberID') == 0 || $CORE_LOCAL->get('memberID') == $CORE_LOCAL->get('defaultNonMem')) {
+            return '';
+        }
+
+		$db = Database::pDataConnect();
+
+        $query = $db->prepare_statement('SELECT Balance FROM custdata WHERE CardNo=?');
+        $result = $db->exec_statement($query, array($CORE_LOCAL->get('memberID')));
+
+        // non-valid member number apparently
+        if ($db->num_rows($result) == 0) {
+            return '';
+        }
+
+        $row = $db->fetch_row($result);
+
+        return sprintf('<div style="border:1px solid black;">Balance $%.2f</div>',
+                        $row['Balance']);
+
+	}
+}
+*/
+
