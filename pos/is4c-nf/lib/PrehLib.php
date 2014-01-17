@@ -378,6 +378,15 @@ static public function tender($right, $strl)
 	$strl = (double)($dollars+round($cents,2));
 	$strl *= $mult;
 
+    if ($CORE_LOCAL->get('RepeatAgain')) {
+        // the default tender prompt utilizes boxMsg2.php to
+        // repeat the previous input, plus amount, on confirmation
+        // the tender's preReqCheck methods will need to pretend
+        // this is the first input rather than a repeat
+        $CORE_LOCAL->set('msgrepeat', 0);
+        $CORE_LOCAL->set('RepeatAgain', false);
+    }
+
 	/**
 	  First use base module to check for error
 	  conditions common to all tenders
