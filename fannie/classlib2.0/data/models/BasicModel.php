@@ -58,7 +58,8 @@ class BasicModel
       backends.
     */
     protected $meta_types = array(
-        'MONEY' => array('default'=>'DECIMAL(10,2)','mssql'=>'MONEY')
+        'MONEY' => array('default'=>'DECIMAL(10,2)','mssql'=>'MONEY'),
+        'BIGINT UNSIGNED' => array('default'=>'BIGINT UNSIGNED', 'mssql'=>'BIGINT'),
     );
 
     /**
