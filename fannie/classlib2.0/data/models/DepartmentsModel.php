@@ -31,6 +31,8 @@ class DepartmentsModel extends BasicModel
 
     protected $preferred_db = 'op';
 
+    protected $normalize_lanes = true;
+
     protected $columns = array(
     'dept_no' => array('type'=>'SMALLINT','primary_key'=>True),
     'dept_name' => array('type'=>'VARCHAR(30)','index'=>True),
@@ -39,10 +41,44 @@ class DepartmentsModel extends BasicModel
     'dept_limit' => array('type'=>'MONEY'),
     'dept_minimum' => array('type'=>'MONEY'),
     'dept_discount' => array('type'=>'TINYINT'),
-    'dept_see_id' => array('type'=>'TINYINT'),
+    'dept_see_id' => array('type'=>'TINYINT', 'default'=>0),
     'modified' => array('type'=>'DATETIME'),
-    'modifiedby' => array('type'=>'INT')
+    'modifiedby' => array('type'=>'INT'),
+    'margin' => array('type'=>'DOUBLE'),
+    'salesCode' => array('type'=>'INT'),
     );
+
+    protected function hookAddColumnmargin()
+    {
+        if ($this->connection->table_exists('deptMargin')) {
+            $dataR = $this->connection->query('SELECT dept_ID, margin FROM deptMargin');
+            $tempModel = new DepartmentsModel($this->connection);
+            while($dataW = $this->connection->fetch_row($dataR)) {
+                $tempModel->reset();
+                $tempModel->dept_no($dataW['dept_ID']);
+                if ($tempModel->load()) {
+                    $tempModel->margin($dataW['margin']);
+                    $tempModel->save();
+                }
+            }
+        }
+    }
+
+    protected function hookAddColumnsalesCode()
+    {
+        if ($this->connection->table_exists('deptSalesCodes')) {
+            $dataR = $this->connection->query('SELECT dept_ID, salesCode FROM deptSalesCodes');
+            $tempModel = new DepartmentsModel($this->connection);
+            while($dataW = $this->connection->fetch_row($dataR)) {
+                $tempModel->reset();
+                $tempModel->dept_no($dataW['dept_ID']);
+                if ($tempModel->load()) {
+                    $tempModel->salesCode($dataW['salesCode']);
+                    $tempModel->save();
+                }
+            }
+        }
+    }
 
     /* START ACCESSOR FUNCTIONS */
 
@@ -243,6 +279,46 @@ class DepartmentsModel extends BasicModel
                 }
             }
             $this->instance["modifiedby"] = func_get_arg(0);
+        }
+    }
+
+    public function margin()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["margin"])) {
+                return $this->instance["margin"];
+            } else if (isset($this->columns["margin"]["default"])) {
+                return $this->columns["margin"]["default"];
+            } else {
+                return null;
+            }
+        } else {
+            if (!isset($this->instance["margin"]) || $this->instance["margin"] != func_get_args(0)) {
+                if (!isset($this->columns["margin"]["ignore_updates"]) || $this->columns["margin"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
+            $this->instance["margin"] = func_get_arg(0);
+        }
+    }
+
+    public function salesCode()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["salesCode"])) {
+                return $this->instance["salesCode"];
+            } else if (isset($this->columns["salesCode"]["default"])) {
+                return $this->columns["salesCode"]["default"];
+            } else {
+                return null;
+            }
+        } else {
+            if (!isset($this->instance["salesCode"]) || $this->instance["salesCode"] != func_get_args(0)) {
+                if (!isset($this->columns["salesCode"]["ignore_updates"]) || $this->columns["salesCode"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
+            $this->instance["salesCode"] = func_get_arg(0);
         }
     }
     /* END ACCESSOR FUNCTIONS */

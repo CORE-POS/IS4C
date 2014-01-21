@@ -160,11 +160,16 @@ class ViewPurchaseOrders extends FannieRESTfulPage {
 		$ret .= '</select>';
 		$ret .= '<input type="submit" value="Export" onclick="doExport('.$this->id.');return false;" />';
 
+        $departments = $dbc->tableDefinition('departments');
         $codingQ = 'SELECT d.salesCode, SUM(o.receivedTotalCost) as rtc
                     FROM PurchaseOrderItems AS o
-                    LEFT JOIN products AS p ON o.internalUPC=p.upc
-                    LEFT JOIN deptSalesCodes AS d ON p.department=d.dept_ID
-                    WHERE o.orderID=?
+                    LEFT JOIN products AS p ON o.internalUPC=p.upc ';
+        if (isset($departments['salesCode'])) {
+            $codingQ .= ' LEFT JOIN departments AS d ON p.department=d.dept_no ';
+        } else if ($dbc->tableExists('deptSalesCodes')) {
+            $codingQ .= ' LEFT JOIN deptSalesCodes AS d ON p.department=d.dept_ID ';
+        }
+        $codingQ .= 'WHERE o.orderID=?
                     GROUP BY d.salesCode';
         $codingP = $dbc->prepare($codingQ);
         $codingR = $dbc->execute($codingP, array($this->id));

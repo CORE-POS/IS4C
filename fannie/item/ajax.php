@@ -33,24 +33,33 @@ function GetLikecodeItems($lc){
 	echo $ret;
 }
 
-function MarginFS($upc,$cost,$dept){
+function MarginFS($upc,$cost,$deptID)
+{
     global $FANNIE_OP_DB;
     $dbc = FannieDB::get($FANNIE_OP_DB);
-	$prep = $dbc->prepare_statement("SELECT normal_price FROM products WHERE upc=?");
-	$price = $dbc->exec_statement($prep,array($upc));
-	if ($dbc->num_rows($price) > 0)
-		$price = array_pop($dbc->fetch_row($price));
-	else
-		$price = "None";
 
-	$prep = $dbc->prepare_statement("SELECT margin FROM deptMargin WHERE dept_ID=?");
-	$dm = $dbc->exec_statement($prep,array($dept));
-	if ($dbc->num_rows($dm) > 0){
-		$dm = array_pop($dbc->fetch_row($dm));
-	}
-	else {
-		$dm = "Unknown";
-	}
+    $price = 'None';
+    $prod = new ProductsModel($dbc);
+    $prod->upc($upc);
+    if ($prod->load()) {
+        $price = $prod->normal_price();
+    }
+
+    $dm = 'Unknown';
+    $dept = new DepartmentsModel($dbc);
+    $dept->dept_no($deptID);
+    if ($dept->load()) {
+        $dm = $dept->margin();
+    }
+
+    if ((empty($dm) || $dm == 'Unknown') && $dbc->tableExists('deptMargin')) {
+        $prep = $dbc->prepare_statement("SELECT margin FROM deptMargin WHERE dept_ID=?");
+        $dm = $dbc->exec_statement($prep, array($deptID));
+        if ($dbc->num_rows($dm) > 0) {
+            $row = $dbc->fetch_row($dm);
+            $dm = $dm['margin'];
+        }
+    }
 
 	$ret = "Desired margin on this department is ";
 	if ($dm == "Unknown") $ret .= $dm;
@@ -63,11 +72,9 @@ function MarginFS($upc,$cost,$dept){
 	if (($actual > $dm && is_numeric($dm)) || !is_numeric($dm) ){
 		$ret .= sprintf("<span style=\"color:green;\">Current margin on this item is %.2f%%<br />",
 			$actual*100);
-	}
-	elseif (!is_numeric($price)){
+	} else if (!is_numeric($price)) {
 		$ret .= "<span style=\"color:green;\">No price has been saved for this item<br />";
-	}
-	else {
+	} else {
 		$ret .= sprintf("<span style=\"color:red;\">Current margin on this item is %.2f%%</span><br />",
 			$actual*100);
 		$srp = getSRP($cost,$dm);
