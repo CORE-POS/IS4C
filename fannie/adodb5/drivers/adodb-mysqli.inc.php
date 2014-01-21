@@ -31,7 +31,7 @@ class ADODB_mysqli extends ADOConnection {
 	var $dataProvider = 'native';
 	var $hasInsertID = true;
 	var $hasAffectedRows = true;	
-	var $metaTablesSQL = "SHOW TABLES";	
+	var $metaTablesSQL = "SHOW FULL TABLES";	
 	var $metaColumnsSQL = "SHOW COLUMNS FROM `%s`";
 	var $fmtTimeStamp = "'Y-m-d H:i:s'";
 	var $hasLimit = true;

@@ -889,6 +889,26 @@ class SQLManager
         return $this->tableExists($table_name, $which_connection);
     }
 
+    public function isView($table_name, $which_connection='')
+    {
+        if ($which_connection == '') {
+            $which_connection=$this->default_db;
+        }
+
+        if (!$this->tableExists($table_name, $which_connection)) {
+            return false;
+        }
+
+		$conn = $this->connections[$which_connection];
+        $views = $conn->MetaTables('VIEW');
+        if (in_array($table_name, $views)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+
 	/**
 	   Get the table's definition
 	   @param $table_name The table's name
