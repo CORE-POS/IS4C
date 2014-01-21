@@ -170,7 +170,7 @@ this and the older jobs - especially CompressProdUpdate/archive.php.';
                 $chkR = $dbc->execute($chkP, array($upc));
                 if ($dbc->num_rows($chkR) > 0) {
                     $chkW = $dbc->fetch_row($chkR);
-                    $prevPrice = $chk['price'];
+                    $prevPrice = $chkR['price'];
                 }
             }
             
