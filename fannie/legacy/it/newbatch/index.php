@@ -41,12 +41,14 @@ if (isset($_GET['action'])){
 		$discounttype = array_pop($sql->fetch_array($infoR));
 		
 		$insQ = $sql->prepare("insert into batches (startDate, endDate, batchName, batchType, discountType,
-			priority) values (?,?,?,?,?,0)");
-		$insR = $sql->execute($insQ, array($startdate, $enddate, $name, $type, $discounttype));
+			priority,owner) values (?,?,?,?,?,0,?)");
+		$insR = $sql->execute($insQ, array($startdate, $enddate, $name, $type, $discounttype, $owner));
 		$id = $sql->insert_id();
 		
-		$insQ = $sql->prepare("insert batchowner values (?,?)");
-		$insR = $sql->execute($insQ, array($id, $owner));
+        if ($sql->tableExists('batchowner')) {
+            $insQ = $sql->prepare("insert batchowner values (?,?)");
+            $insR = $sql->execute($insQ, array($id, $owner));
+        }
 		
 		$out .= batchListDisplay();
 		break;
@@ -117,19 +119,21 @@ if (isset($_GET['action'])){
 		$infoR = $sql->execute($infoQ, array($type));
 		$discounttype = array_pop($sql->fetch_array($infoR));
 		
-		$upQ = $sql->prepare("update batches set batchname=?,batchtype=?,discounttype=?,startdate=?,enddate=? where batchID=?");
-		$upR = $sql->execute($upQ, array($name, $type, $discounttype, $startdate, $enddate, $id));
+		$upQ = $sql->prepare("update batches set batchname=?,batchtype=?,discounttype=?,startdate=?,enddate=?,owner=? where batchID=?");
+		$upR = $sql->execute($upQ, array($name, $type, $discounttype, $startdate, $enddate, $owner, $id));
 		
-		$checkQ = $sql->prepare("select batchID from batchowner where batchID=?");
-		$checkR = $sql->execute($checkQ, array($id));
-		if($sql->num_rows($checkR) == 0){
-            $insQ = $sql->prepare("insert batchowner values (?,?)");
-            $insR = $sql->execute($insQ, array($id, $owner));
-		}
-		else{
-			$upQ = $sql->prepare("update batchowner set owner=? where batchID=?");
-			$upR = $sql->execute($upQ, array($owner, $id));
-		}
+        if ($sql->tableExists('batchowner')) {
+            $checkQ = $sql->prepare("select batchID from batchowner where batchID=?");
+            $checkR = $sql->execute($checkQ, array($id));
+            if($sql->num_rows($checkR) == 0){
+                $insQ = $sql->prepare("insert batchowner values (?,?)");
+                $insR = $sql->execute($insQ, array($id, $owner));
+            }
+            else{
+                $upQ = $sql->prepare("update batchowner set owner=? where batchID=?");
+                $upR = $sql->execute($upQ, array($owner, $id));
+            }
+        }
 		
 		break;
 	case 'showBatch':
@@ -592,31 +596,42 @@ function batchListDisplay($filter='',$mode='all'){
 	$ret .= "<th bgcolor=$colors[$c]>Start date</th>";
 	$ret .= "<th bgcolor=$colors[$c]>End date</th>";
 	$ret .= "<th bgcolor=$colors[$c]>Owner</th></tr>";
+
+    // owner column might be in different places
+    // depending if schema is up to date
+    $ownerclause = "'' as owner FROM batches AS b";
+    $batchesTable = $sql->tableDefinition('batches');
+    $owneralias = '';
+    if (isset($batchesTable['owner'])) {
+        $ownerclause = 'b.owner FROM batches AS b';
+        $owneralias = 'b';
+    } else if ($sql->tableExists('batchowner')) {
+        $ownerclause = 'o.owner FROM batches AS b LEFT JOIN
+                        batchowner AS o ON b.batchID=o.batchID';
+        $owneralias = 'o';
+    }
 	
 	// the 'all' query
 	$fetchQ = "select b.batchName,b.batchType,b.startDate,b.endDate,b.batchID,
-			   o.owner from batches as b left outer join batchowner as o
-			   on b.batchID = o.batchID order by b.batchID desc";
+               $ownerclause
+			   order by b.batchID desc";
 	switch($mode){
 	case 'pending':
 		$fetchQ = "select b.batchName,b.batchType,b.startDate,b.endDate,b.batchID,
-			   o.owner from batches as b left outer join batchowner as o
-			   on b.batchID = o.batchID
+               $ownerclause
 			   where ".$sql->datediff('b.startDate',$sql->now())." > 0
 			   order by b.batchID desc";
 		break;
 	case 'current':
 		$fetchQ = "select b.batchName,b.batchType,b.startDate,b.endDate,b.batchID,
-			   o.owner from batches as b left outer join batchowner as o
-			   on b.batchID = o.batchID
+               $ownerclause
 			   where ".$sql->datediff('b.startDate',$sql->now())." < 1
 			   and ".$sql->datediff('b.endDate',$sql->now())." > 0
 			   order by b.batchID desc";
 		break;
 	case 'historical':
 		$fetchQ = "select b.batchName,b.batchType,b.startDate,b.endDate,b.batchID,
-			   o.owner from batches as b left outer join batchowner as o
-			   on b.batchID = o.batchID
+               $ownerclause
 			   where ".$sql->datediff('b.endDate',$sql->now())." <= 0
 			   order by b.batchID desc";
 		break;	
@@ -625,8 +640,8 @@ function batchListDisplay($filter='',$mode='all'){
     $args = array();
 	if ($filter != ''){
 		$fetchQ = "select b.batchName,b.batchType,b.startDate,b.endDate,b.batchID,
-			   o.owner from batches as b left outer join batchowner as o
-			   on b.batchID = o.batchID where o.owner=? order by b.batchID desc";
+                   $ownerclause
+                   WHERE $owneralias.owner=? order by b.batchID desc";
         $args[] = $filter;
 	}
     $fetchP = $sql->prepare($fetchQ);
