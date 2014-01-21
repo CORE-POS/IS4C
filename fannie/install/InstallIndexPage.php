@@ -831,20 +831,35 @@ class InstallIndexPage extends InstallPage {
 				'batchMergeLC','op');
         */
 
+        /**
+          @deprecated 21Jan14
 		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 				'batchPriority30','op');
+        */
 
+        /**
+          @deprecated 21Jan14
 		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 				'batchPriority20','op');
+        */
 
+        /**
+          @deprecated 21Jan14
 		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 				'batchPriority10','op');
+        */
 
+        /**
+          @deprecated 21Jan14
 		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 				'batchPriority0','op');
+        */
 
+        /**
+          @deprecated 21Jan14
 		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 				'batchPriority','op');
+        */
 
 		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 				'unfi','op');
