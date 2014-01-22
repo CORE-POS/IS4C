@@ -91,7 +91,7 @@ if (strstr($FANNIE_SERVER_DBMS,"MYSQL")){
 		AND b.discounttype <> 0");
 
 	$sql->query("UPDATE products AS p LEFT JOIN
-		likeCodeView AS v ON v.upc=p.upc LEFT JOIN
+		upcLike AS v ON v.upc=p.upc LEFT JOIN
 		batchList AS l ON l.upc=concat('LC',convert(v.likeCode,char))
 		LEFT JOIN batches AS b ON l.batchID=b.batchID
 		SET p.special_price = l.salePrice,
@@ -148,7 +148,7 @@ else {
 			ELSE p.mixmatchcode 
 		END
 		FROM products AS p LEFT JOIN
-		likeCodeView AS v ON v.upc=p.upc LEFT JOIN
+		upcLike AS v ON v.upc=p.upc LEFT JOIN
 		batchList AS l ON l.upc='LC'+convert(varchar,v.likecode)
 		LEFT JOIN batches AS b ON l.batchID=b.batchID
 		WHERE l.upc LIKE 'LC%'

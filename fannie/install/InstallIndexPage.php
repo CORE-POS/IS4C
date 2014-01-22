@@ -833,8 +833,11 @@ class InstallIndexPage extends InstallPage {
 				'batchMergeProd','op');
         */
 
+        /**
+          @deprecated 22Jan14
 		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 				'likeCodeView','op');
+        */
 
         /**
           @deprecated 21Jan14

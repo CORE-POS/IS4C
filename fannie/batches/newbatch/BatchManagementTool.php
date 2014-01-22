@@ -153,7 +153,7 @@ class BatchManagementTool extends FanniePage
             $unsaleR = $dbc->exec_statement($prep,array($id));
 
             $unsaleLCQ = "UPDATE products AS p LEFT JOIN
-                likeCodeView AS v ON v.upc=p.upc LEFT JOIN
+                upcLike AS v ON v.upc=p.upc LEFT JOIN
                 batchList AS l ON l.upc=concat('LC',convert(v.likeCode,char))
                 SET special_price=0,
                 specialpricemethod=0,specialquantity=0,
@@ -168,7 +168,7 @@ class BatchManagementTool extends FanniePage
                     specialgroupprice=0,discounttype=0,
                     start_date='1900-01-01',end_date='1900-01-01'
                     FROM products AS p LEFT JOIN
-                    likeCodeView AS v ON v.upc=p.upc LEFT JOIN
+                    upcLike AS v ON v.upc=p.upc LEFT JOIN
                     batchList AS l ON l.upc=concat('LC',convert(v.likeCode,char))
                     WHERE l.upc LIKE '%LC%'
                     AND l.batchID=?";
