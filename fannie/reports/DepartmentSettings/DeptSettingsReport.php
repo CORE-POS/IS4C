@@ -32,6 +32,19 @@ class DeptSettingsReport extends FannieReportPage
     protected $header = "Department Settings";
     protected $required_fields = array('submit');
 
+    public function readinessCheck()
+    {
+        global $FANNIE_OP_DB;
+        // Check added 22Jan14
+        if (!$this->tableHasColumnReadinessCheck($FANNIE_OP_DB, 'departments', 'margin')) {
+            return false;
+        } else if (!$this->tableHasColumnReadinessCheck($FANNIE_OP_DB, 'departments', 'salesCode')) {
+            return false;
+        } 
+
+        return true;
+    }
+
     public function fetch_report_data()
     {
         global $FANNIE_OP_DB, $FANNIE_URL;
