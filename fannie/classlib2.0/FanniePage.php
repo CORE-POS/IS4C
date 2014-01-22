@@ -52,6 +52,8 @@ class FanniePage
     protected $scripts = array();
     protected $css_files = array();
 
+    protected $error_text;
+
     public function __construct()
     {
         global $FANNIE_AUTH_DEFAULT, $FANNIE_COOP_ID;
@@ -131,6 +133,11 @@ class FanniePage
     public function bodyContent()
     {
         return $this->body_content();
+    }
+
+    public function errorContent()
+    {
+        return $this->error_text;
     }
 
     /**
@@ -241,6 +248,16 @@ class FanniePage
     }
 
     /**
+      Check if there are any problems
+      that might prevent the page from working
+      properly.
+    */
+    public function readinessCheck()
+    {
+        return true;
+    }
+
+    /**
       Check for input and display the page
     */
     public function drawPage()
@@ -254,8 +271,12 @@ class FanniePage
             if ($this->window_dressing) {
                 echo $this->getHeader();
             }
-
-            echo $this->bodyContent();
+            
+            if ($this->readinessCheck() !== false) {
+                echo $this->bodyContent();
+            } else {
+                echo $this->errorContent();
+            }
 
             if ($this->window_dressing) {
                 $footer = $this->getFooter();
