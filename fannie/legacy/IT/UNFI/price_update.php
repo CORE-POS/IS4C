@@ -30,10 +30,11 @@ echo "<b>".$buyer."</b><br>";
 echo "<html><head><title>Check tag info</title></head><body bgcolor='ffffcc'>";
 echo "<table border=1 cellspacing=0 cellpadding=0><th>UPC<th><font color=blue>Description</font><th>SKU<th>Brand<th>Pack<th>Size<th>Price";
 echo "<form action=newBarBatch.php method=Post>";
-$getUNFIPriceQ = $sql->prepare("SELECT * FROM unfi_all where upc = ?");
+$getUNFIPriceQ = $sql->prepare('SELECT upc, src as wfc_srp FROM vendorSRPs WHERE vendorID=1 AND upc=?');
 $insBItemQ = $sql->prepare("INSERT INTO batchListTest(upc,batchID,salePrice)
             VALUES(?,?,?)");
-$getTagInfoQ = $sql->prepare("SELECT * FROM unfi_order WHERE upcc LIKE ?");
+$getTagInfoQ = $sql->prepare('SELECT description as item_desc, sku as unfi_sku, brand, units as pack, size as pack_size
+                            FROM vendorItems WHERE vendorID=1 AND upc LIKE ?');
 $barP = $sql->prepare("INSERT INTO shelftags (id,upc,description,normal_price,brand,sku,units,size,vendor,
     pricePerUnit) VALUES (?,?,?,?,?,?,?,?,'UNFI',?)");
 foreach ($_POST["pricechange"] as $value) {

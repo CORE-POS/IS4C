@@ -116,6 +116,15 @@ class UnfiUploadPage extends FannieUploadPage {
 		$NET_COST = $this->get_column_index('saleCost');
 		$SRP = $this->get_column_index('srp');
 
+        // PLU items have different internal UPCs
+        // map vendor SKUs to the internal PLUs
+        $SKU_TO_PLU_MAP = array();
+        $skusP = $dbc->prepare_statement('SELECT sku, upc FROM vendorSKUtoPLU WHERE vendorID=?');
+        $skusR = $dbc->execute($skusP, array($VENDOR_ID));
+        while($skusW = $dbc->fetch_row($skusR)) {
+            $SKU_TO_PLU_MAP[$skusW['sku']] = $skusW['upc'];
+        }
+
 		$extraP = $dbc->prepare_statement("update prodExtra set cost=? where upc=?");
 		$itemP = $dbc->prepare_statement("INSERT INTO vendorItems 
 					(brand,sku,size,upc,units,cost,description,vendorDept,vendorID)
@@ -126,12 +135,16 @@ class UnfiUploadPage extends FannieUploadPage {
                         (brand,sku,size,upc,units,cost,description,vendorDept,vendorID,saleCost)
                         VALUES (?,?,?,?,?,?,?,?,?,?)");
         }
+        /** deprecating unfi_* structures 22Jan14
 		$uuP = $dbc->prepare_statement("INSERT INTO unfi_order 
 					(unfi_sku,brand,item_desc,pack,pack_size,upcc,cat,wholesale,vd_cost,wfc_srp) 
 					VALUES (?,?,?,?,?,?,?,?,?,?)");
+        */
 		$srpP = $dbc->prepare_statement("INSERT INTO vendorSRPs (vendorID, upc, srp) VALUES (?,?,?)");
 
+        /** deprecating unfi_* structures 22Jan14
 		$dupeP = $dbc->prepare_statement("SELECT upcc FROM unfi_order WHERE upcc=?");
+        */
 
 		foreach($linedata as $data){
 			if (!is_array($data)) continue;
@@ -149,6 +162,9 @@ class UnfiUploadPage extends FannieUploadPage {
 			// zeroes isn't a real item, skip it
 			if ($upc == "0000000000000")
 				continue;
+            if (isset($SKU_TO_PLU_MAP[$sku])) {
+                $upc = $SKU_TO_PLU_MAP[$sku];
+            }
 			$category = $data[$CATEGORY];
 			$reg = trim($data[$REG_COST]);
 			$net = ($NET_COST !== false) ? trim($data[$NET_COST]) : 0.00;
@@ -161,9 +177,11 @@ class UnfiUploadPage extends FannieUploadPage {
 			if (empty($reg) or empty($srp))
 				continue;
 
+            /** deprecating unfi_* structures 22Jan14
 			// don't repeat items
 			$dupeR = $dbc->exec_statement($dupeP,array($upc));
 			if ($dbc->num_rows($dupeR) > 0) continue;
+            */
 
 			// syntax fixes. kill apostrophes in text fields,
 			// trim $ off amounts as well as commas for the
@@ -205,6 +223,7 @@ class UnfiUploadPage extends FannieUploadPage {
             }
 			$dbc->exec_statement($itemP,$args);
 
+            /** deprecating unfi_* structures 22Jan14
 			// unfi_order is what the UNFI price change page builds on,
 			// that's why it's being populated here
 			// it's just a table containing all items in the current order
@@ -212,6 +231,7 @@ class UnfiUploadPage extends FannieUploadPage {
 					($size===False?'':$size),$upc,$category,$reg,
 					$reg,$srp);
 			$dbc->exec_statement($uuP,$args);
+            */
 
 			$dbc->exec_statement($srpP,array($VENDOR_ID,$upc,$srp));
 		}
@@ -234,7 +254,9 @@ class UnfiUploadPage extends FannieUploadPage {
 
 		$viP = $dbc->prepare_statement("DELETE FROM vendorItems WHERE vendorID=?");
 		$vsP = $dbc->prepare_statement("DELETE FROM vendorSRPs WHERE vendorID=?");
+        /** deprecating unfi_* structures 22Jan14
 		$uoP = $dbc->prepare_statement("TRUNCATE TABLE unfi_order");
+        */
 		$dbc->exec_statement($viP,array($VENDOR_ID));
 		$dbc->exec_statement($vsP,array($VENDOR_ID));
 		$dbc->exec_statement($uoP);
@@ -251,10 +273,10 @@ class UnfiUploadPage extends FannieUploadPage {
 		$ret = "Price data import complete<p />";
 		$ret .= '<a href="'.$_SERVER['PHP_SELF'].'">Upload Another</a>';
 
-		// this stored procedure compensates for items ordered from
-		// UNFI under one UPC but sold in-store under a different UPC
-		// (mostly bulk items sold by PLU). All it does is update the
-		// upcc field in unfi_order for the affected items
+        /** Changed 22Jan14
+            PLU substitution by SKU happens during import
+            This is more consistent in updating all instances
+            of a given item UPC
 		if ($dbc->table_exists("vendorSKUtoPLU")){
 
 			$idP = $dbc->prepare_statement("SELECT vendorID FROM vendors WHERE vendorName='UNFI' ORDER BY vendorID");
@@ -304,6 +326,7 @@ class UnfiUploadPage extends FannieUploadPage {
 			$dbc->exec_statement($pluQ2,$args2);
 			$dbc->exec_statement($pluQ3,$args);
 		}
+        */
 
 		return $ret;
 	}

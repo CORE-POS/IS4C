@@ -6,6 +6,33 @@ include('../../db.php');
 if (!class_exists('FannieAPI'))
     include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
+$UNFI_ALL_QUERY = "
+    select p.upc,
+    v.upc as upcc, 
+    p.description,
+    v.description as item_desc,
+    v.cost * v.units as wholesale,
+    v.cost * v.units as vd_cost,
+    p.normal_price,
+    v.sku as unfi_sku,
+    s.srp as wfc_srp,
+    v.vendorDept as cat,
+    p.department,
+    CASE WHEN p.normal_price = 0 THEN 0 ELSE
+        CONVERT((p.normal_price - v.cost)/p.normal_price,decimal(10,2)) 
+    END as our_margin,
+    CONVERT((s.srp- v.cost)/ s.srp,decimal(10,2))
+    as unfi_margin,
+    case when s.srp > p.normal_price then 1 else 0 END as diff,
+    x.cost AS cost,
+    x.variable_pricing
+    from vendorItems AS v
+    INNER JOIN products as p ON v.upc=p.upc
+    LEFT JOIN prodExtra AS x ON p.upc=x.upc
+    LEFT JOIN vendorSRPs AS s ON v.vendorID=s.vendorID AND v.upc=s.upc
+    where 
+    v.vendorID=1";
+
 if (isset($_GET['action'])){
 	$out = $_GET['action']."`";
 	switch($_GET['action']){
@@ -21,8 +48,7 @@ if (isset($_GET['action'])){
 
 		$out .= $upc."`";
 
-		$prep = $sql->prepare("SELECT u.*,p.cost FROM unfi_all as u left join prodExtra as p on u.upc=p.upc
-			WHERE u.upc = ?");
+		$prep = $sql->prepare($UNFI_ALL_QUERY . ' AND p.upc = ?');
 		$result = $sql->execute($prep, array($upc));
 		$row = $sql->fetch_array($result);
 		
@@ -52,7 +78,7 @@ if (isset($_GET['action'])){
 	case 'saveUnfiPrice':
 		$upc = $_GET['upc'];
 		$price = $_GET['price'];
-		$upQ = $sql->prepare("update unfi_order set wfc_srp=? where upcc=?");
+		$upQ = $sql->prepare("update vendorSRPs set srp=? where vendorID=1 AND upc=?");
 		$upR = $sql->execute($upQ, array($price, $upc));
 		break;
 	case 'toggleVariable':
@@ -77,9 +103,11 @@ if(isset($_POST['buyer'])){
 
 $filter = isset($_REQUEST['filter'])?$_REQUEST['filter']:'';
 
+/** deprecating unfi_* tables
 $unfi_table = "unfi_diff";
 if ($filter == "Yes")
 	$unfi_table = "unfi_all";
+*/
 
 //echo $buyID . "<br>";
 //Test to see if we are dumping this to Excel. Apply Excel header if we are.
@@ -185,8 +213,13 @@ $strCat = substr($strCat,0,-1);
 $strCat = $strCat . ")";
 //echo $strCat;
 
+    /** deprecating unfi_* tables
    $prep = $sql->prepare("SELECT u.*,p.cost,p.variable_pricing FROM $unfi_table as u left join prodExtra as p on u.upc=p.upc
         WHERE cat IN$strCat order by $sort,department,u.upc");
+   */
+   if ($filter != 'Yes')
+       $UNFI_ALL_QUERY .= ' AND p.normal_price <> s.srp ';
+   $prep = $sql->prepare($UNFI_ALL_QUERY . " AND v.vendorDept IN $strCat ORDER BY $sort, p.department, p.upc");
    $result = $sql->execute($prep, $cat_args);
 
    while($row = $sql->fetch_array($result)){
