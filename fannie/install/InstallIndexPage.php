@@ -1260,8 +1260,11 @@ class InstallIndexPage extends InstallPage {
 		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
 				'stockpurchases','trans');
 
+        /**
+          @deprecated 22Jan14
 		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
 				'stockSum_purch','trans');
+        */
 
 		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
 				'stockSumToday','trans');
