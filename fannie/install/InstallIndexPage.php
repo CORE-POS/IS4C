@@ -887,8 +887,11 @@ class InstallIndexPage extends InstallPage {
 		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 				'unfi_all','op');
 
+        /**
+          @deprecated 22Jan14
 		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 				'unfiCategories','op');
+        */
 
 		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 				'shelftags','op');
