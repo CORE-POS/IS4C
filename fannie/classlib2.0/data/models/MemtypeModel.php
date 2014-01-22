@@ -32,9 +32,77 @@ class MemtypeModel extends BasicModel
     protected $preferred_db = 'op';
 
     protected $columns = array(
-    'memtype' => array('type'=>'TINYINT','primary_key'=>True,'default'=>0),
-    'memDesc' => array('type'=>'VARCHAR(20)')
+    'memtype' => array('type'=>'TINYINT','primary_key'=>true,'default'=>0),
+    'memDesc' => array('type'=>'VARCHAR(20)'),
+    'custdataType' => array('type'=>'VARCHAR(10)'),
+    'discount' => array('type'=>'SMALLINT'),
+    'staff' => array('type'=>'TINYINT'),
+    'ssi' => array('type'=>'TINYINT'),
     );
+
+    protected function hookAddColumnCustdataType()
+    {
+        if ($this->connection->table_exists('memdefaults')) {
+            $dataR = $this->connection->query('SELECT memtype, cd_type FROM memdefaults');
+            $tempModel = new MemtypeModel($this->connection);
+            while($dataW = $this->connection->fetch_row($dataR)) {
+                $tempModel->reset();
+                $tempModel->memtype($dataW['memtype']);
+                if ($tempModel->load()) {
+                    $tempModel->custdataType($dataW['cd_type']);
+                    $tempModel->save();
+                }
+            }
+        }
+    }
+
+    protected function hookAddColumnDiscount()
+    {
+        if ($this->connection->table_exists('memdefaults')) {
+            $dataR = $this->connection->query('SELECT memtype, discount FROM memdefaults');
+            $tempModel = new MemtypeModel($this->connection);
+            while($dataW = $this->connection->fetch_row($dataR)) {
+                $tempModel->reset();
+                $tempModel->memtype($dataW['memtype']);
+                if ($tempModel->load()) {
+                    $tempModel->discount($dataW['discount']);
+                    $tempModel->save();
+                }
+            }
+        }
+    }
+
+    protected function hookAddColumnStaff()
+    {
+        if ($this->connection->table_exists('memdefaults')) {
+            $dataR = $this->connection->query('SELECT memtype, staff FROM memdefaults');
+            $tempModel = new MemtypeModel($this->connection);
+            while($dataW = $this->connection->fetch_row($dataR)) {
+                $tempModel->reset();
+                $tempModel->memtype($dataW['memtype']);
+                if ($tempModel->load()) {
+                    $tempModel->staff($dataW['staff']);
+                    $tempModel->save();
+                }
+            }
+        }
+    }
+
+    protected function hookAddColumnSsi()
+    {
+        if ($this->connection->table_exists('memdefaults')) {
+            $dataR = $this->connection->query('SELECT memtype, SSI FROM memdefaults');
+            $tempModel = new MemtypeModel($this->connection);
+            while($dataW = $this->connection->fetch_row($dataR)) {
+                $tempModel->reset();
+                $tempModel->memtype($dataW['memtype']);
+                if ($tempModel->load()) {
+                    $tempModel->ssi($dataW['SSI']);
+                    $tempModel->save();
+                }
+            }
+        }
+    }
 
     /* START ACCESSOR FUNCTIONS */
 
@@ -43,12 +111,17 @@ class MemtypeModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["memtype"])) {
                 return $this->instance["memtype"];
-            } elseif(isset($this->columns["memtype"]["default"])) {
+            } else if (isset($this->columns["memtype"]["default"])) {
                 return $this->columns["memtype"]["default"];
             } else {
                 return null;
             }
         } else {
+            if (!isset($this->instance["memtype"]) || $this->instance["memtype"] != func_get_args(0)) {
+                if (!isset($this->columns["memtype"]["ignore_updates"]) || $this->columns["memtype"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["memtype"] = func_get_arg(0);
         }
     }
@@ -58,13 +131,98 @@ class MemtypeModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["memDesc"])) {
                 return $this->instance["memDesc"];
-            } elseif(isset($this->columns["memDesc"]["default"])) {
+            } else if (isset($this->columns["memDesc"]["default"])) {
                 return $this->columns["memDesc"]["default"];
             } else {
                 return null;
             }
         } else {
+            if (!isset($this->instance["memDesc"]) || $this->instance["memDesc"] != func_get_args(0)) {
+                if (!isset($this->columns["memDesc"]["ignore_updates"]) || $this->columns["memDesc"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["memDesc"] = func_get_arg(0);
+        }
+    }
+
+    public function custdataType()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["custdataType"])) {
+                return $this->instance["custdataType"];
+            } else if (isset($this->columns["custdataType"]["default"])) {
+                return $this->columns["custdataType"]["default"];
+            } else {
+                return null;
+            }
+        } else {
+            if (!isset($this->instance["custdataType"]) || $this->instance["custdataType"] != func_get_args(0)) {
+                if (!isset($this->columns["custdataType"]["ignore_updates"]) || $this->columns["custdataType"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
+            $this->instance["custdataType"] = func_get_arg(0);
+        }
+    }
+
+    public function discount()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["discount"])) {
+                return $this->instance["discount"];
+            } else if (isset($this->columns["discount"]["default"])) {
+                return $this->columns["discount"]["default"];
+            } else {
+                return null;
+            }
+        } else {
+            if (!isset($this->instance["discount"]) || $this->instance["discount"] != func_get_args(0)) {
+                if (!isset($this->columns["discount"]["ignore_updates"]) || $this->columns["discount"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
+            $this->instance["discount"] = func_get_arg(0);
+        }
+    }
+
+    public function staff()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["staff"])) {
+                return $this->instance["staff"];
+            } else if (isset($this->columns["staff"]["default"])) {
+                return $this->columns["staff"]["default"];
+            } else {
+                return null;
+            }
+        } else {
+            if (!isset($this->instance["staff"]) || $this->instance["staff"] != func_get_args(0)) {
+                if (!isset($this->columns["staff"]["ignore_updates"]) || $this->columns["staff"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
+            $this->instance["staff"] = func_get_arg(0);
+        }
+    }
+
+    public function ssi()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["ssi"])) {
+                return $this->instance["ssi"];
+            } else if (isset($this->columns["ssi"]["default"])) {
+                return $this->columns["ssi"]["default"];
+            } else {
+                return null;
+            }
+        } else {
+            if (!isset($this->instance["ssi"]) || $this->instance["ssi"] != func_get_args(0)) {
+                if (!isset($this->columns["ssi"]["ignore_updates"]) || $this->columns["ssi"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
+            $this->instance["ssi"] = func_get_arg(0);
         }
     }
     /* END ACCESSOR FUNCTIONS */

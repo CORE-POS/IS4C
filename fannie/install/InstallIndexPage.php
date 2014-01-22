@@ -911,6 +911,11 @@ class InstallIndexPage extends InstallPage {
 		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 				'memtype','op');
 
+        /**
+          @deprecated 22Jan14
+          memtype has sufficient columns now
+          table kept around until confirming it can be deleted
+        */
 		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 				'memdefaults','op');
 
