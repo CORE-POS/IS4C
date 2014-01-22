@@ -108,7 +108,7 @@ echo tablify($tenders,array(1,0,2,3),array("Account","Type","Amount","Count"),
 
 $pCodeQ = $dbc->prepare_statement("SELECT s.salesCode,-1*sum(l.total) as total,min(l.dept_ID) 
 FROM {$ARCH}sumDeptSalesByDay as l
-INNER JOIN {$OP}deptSalesCodes AS s ON l.dept_ID=s.dept_ID
+INNER JOIN {$OP}departments AS s ON l.dept_ID=s.dept_no
 WHERE l.tdate=?
 AND l.dept_ID < 600 AND l.dept_ID <> 0
 GROUP BY s.salesCode
@@ -162,8 +162,8 @@ echo "<br /><b><u>Total Sales</u></b><br />";
 echo sprintf("%.2f<br />",array_pop($dbc->fetch_row($saleSumR)));
 
 $returnsQ = $dbc->prepare_statement("SELECT s.salesCode,-1*sum(L.total)as returns
-FROM $dlog as L,deptSalesCodes as s
-WHERE s.dept_ID = L.department
+FROM $dlog as L,departments as s
+WHERE s.dept_no = L.department
 AND L.tdate BETWEEN ? AND ?
 AND(trans_status = 'R')
 GROUP BY s.salesCode");

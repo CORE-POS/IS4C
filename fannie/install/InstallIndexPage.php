@@ -726,11 +726,19 @@ class InstallIndexPage extends InstallPage {
 		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 				'departments','op');
 
+        /**
+          @deprecated 22Jan14
+          Somewhat deprecated. Others' code may rely on this
+          so it's still created
+        */
 		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 				'deptMargin','op');
 
+        /**
+          @deprecated 22Jan14
 		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 				'deptSalesCodes','op');
+        */
 
 		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 				'dateRestrict','op');

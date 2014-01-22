@@ -114,13 +114,12 @@ echo tablify($tenders,array(1,0,2,3),array("Account","Type","Amount","Count"),
 	     array($ALIGN_LEFT,$ALIGN_LEFT,$ALIGN_RIGHT|$TYPE_MONEY,$ALIGN_RIGHT),2);
 
 
-$pCodeQ = $dbc->prepare_statement("SELECT s.salesCode,-1*sum(l.total) as total,min(l.dept_ID) 
+$pCodeQ = $dbc->prepare_statement("SELECT d.salesCode,-1*sum(l.total) as total,min(l.dept_ID) 
 FROM {$ARCH}sumDeptSalesByDay as l join departments as d on l.dept_ID = d.dept_no
-LEFT JOIN deptSalesCodes AS s ON d.dept_no=s.dept_ID
 WHERE tdate BETWEEN ? AND ?
 AND l.dept_ID < 600 AND l.dept_ID <> 0
-GROUP BY s.salesCode
-order by s.salesCode");
+GROUP BY d.salesCode
+order by d.salesCode");
 $pCodeR = $dbc->exec_statement($pCodeQ,$dates);
 $pCodes = array("41201"=>array(0.0),
 		"41205"=>array(0.0),
