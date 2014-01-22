@@ -27,10 +27,13 @@ include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 class BatchReport extends FannieReportPage 
 {
 
+	protected $error_text = "";
+
 	function preprocess()
     {
+		global $FANNIE_WINDOW_DRESSING, $FANNIE_OP_DB, $FANNIE_ARCHIVE_DB;
 		/**
-		  Set the page header and title, enable caching
+		  Set the page header and title, set caching
 		*/
 		$this->header = "Select batch(es)";
 		$this->title = "Fannie :: Batch Report";
@@ -40,11 +43,35 @@ class BatchReport extends FannieReportPage
 			/**
 			  Form submission occurred
 
-			  Change content function, turn off the menus,
+			  Change content function, respecify the menus,
 			  set up headers
 			*/
+			if ( isset($FANNIE_WINDOW_DRESSING) && $FANNIE_WINDOW_DRESSING == True )
+				$this->has_menus(True);
+			else
+				$this->has_menus(False);
+
+			// Readiness check: does the necessary data exist?
+			$dbc = FannieDB::get($FANNIE_OP_DB);
+			$batchIDs = FormLib::get_form_value('batchID','0');
+			foreach ($batchIDs as $batchID) {
+				$batchMergeQ = "SELECT * FROM batchMergeTable WHERE batchID = ?";
+				$batchMergeP = $dbc->prepare_statement("$batchMergeQ");
+				$batchMergeR = $dbc->exec_statement("$batchMergeP", $batchID);
+				$batchItemCount = $dbc->num_rows($batchMergeR);
+				if ($batchItemCount == 0) {
+					$this->error_text .=
+						"<p>There is nothing in {$FANNIE_OP_DB}.batchMergeTable for batch {$batchID}.
+						<br />Therefore this report will be empty.
+						<br />Run the Scheduled Task 'nightly tablecache' every night to populate it.</p>";
+				}
+			}
+			if ($this->error_text != "") {
+				$this->content_function = "error_content";
+				return True;
+			}
+			
 			$this->content_function = "report_content";
-			$this->has_menus(False);
 			$this->report_headers = array('UPC','Description','$','Qty');
 
 			$this->header = "Batch Report"; // gets used as filename on xls/csv
@@ -149,6 +176,12 @@ class BatchReport extends FannieReportPage
 			$sumSales += $row[2];
 		}
 		return array('Total',null,$sumSales,$sumQty);
+	}
+
+	function error_content()
+	{
+		echo "<H2>Problem</H2>";
+		echo "<p>" . $this->error_text . "</p>";
 	}
 
 	function form_content()
