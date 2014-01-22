@@ -49,33 +49,8 @@ $sql = new SQLManager($FANNIE_SERVER,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 		$FANNIE_SERVER_USER,$FANNIE_SERVER_PW);
 $TRANS = $FANNIE_TRANS_DB.($FANNIE_SERVER_DBMS=="MSSQL" ? 'dbo.' : '.');
 
-// legacy, wfc table. probably go away eventually
-if ($sql->table_exists('mbrmaster')){
-	$mmQ = "update mbrmastr set mailflag=1,
-		startdate =
-			right('00'+convert(varchar,datepart(mm,s.startdate)),2)
-			+'/'+
-			right('00'+convert(varchar,datepart(dd,s.startdate)),2)
-			+'/'+
-			convert(varchar,datepart(yy,s.startdate)),
-		enddate =
-		case when s.payments >= 100 then '' else
-			right('00'+convert(varchar,datepart(mm,s.startdate)),2)
-			+'/'+
-			right('00'+convert(varchar,datepart(dd,s.startdate)),2)
-			+'/'+
-			convert(varchar,datepart(yy,s.startdate)+2) end
-		from newbalancestocktoday_test s
-		left join mbrmastr as m on m.memnum=s.memnum
-		left join custdata as c on c.cardno=s.memnum
-		and c.personnum=1
-		where m.startdate='' and s.payments > 0
-		and c.type='PC'";
-	$sql->query($mmQ);
-}
-
 $miQ = "UPDATE meminfo AS m 
-	INNER JOIN {$TRANS}newBalanceStockToday_test s
+	INNER JOIN {$TRANS}equity_live_balance s
 	ON m.card_no=s.memnum
 	INNER JOIN custdata AS c ON c.CardNo=s.memnum
 	LEFT JOIN memDates AS d ON d.card_no=s.memnum
@@ -85,7 +60,7 @@ $miQ = "UPDATE meminfo AS m
 	AND c.Type='PC'";
 if ($FANNIE_SERVER_DBMS == 'MSSQL'){
 	$miQ = "UPDATE meminfo SET ads_OK=1
-		FROM {$TRANS}newbalancestocktoday_test s
+		FROM {$TRANS}equity_live_balance s
 		left join meminfo m ON m.card_no=s.memnum
 		left join custdata as c on c.cardno=s.memnum
 		left join memDates as d on d.card_no=s.memnum
@@ -95,7 +70,7 @@ if ($FANNIE_SERVER_DBMS == 'MSSQL'){
 $sql->query($miQ);
 
 $mdQ = "UPDATE memDates AS d
-	INNER JOIN {$TRANS}newBalanceStockToday_test AS s
+	INNER JOIN {$TRANS}equity_live_balance AS s
 	ON d.card_no=s.memnum
 	INNER JOIN custdata AS c ON c.CardNo=s.memnum
 	SET d.start_date=s.startdate,
@@ -114,7 +89,7 @@ if ($FANNIE_SERVER_DBMS == 'MSSQL'){
 		end_date=CASE WHEN s.payments >=100 
 			THEN '1900-01-01 00:00:00'
 			ELSE dateadd(yy,1,s.startdate) END
-		FROM {$TRANS}newbalancestocktoday_test s
+		FROM {$TRANS}equity_live_balance s
 		left join custdata as c on c.cardno=s.memnum
 		left join memDates as d on d.card_no=s.memnum
 		where d.start_date is null and s.payments > 0
@@ -128,7 +103,7 @@ $msgQ = "INSERT custReceiptMessage
 	SELECT s.memnum,CONCAT('EQUITY OWED \$',100-s.payments,' == '
 		,'DUE DATE ',MONTH(d.end_date),'/',DAY(d.end_date),'/',YEAR(d.end_date)),
 		'WfcEquityMessage'
-	FROM {$TRANS}newBalanceStockToday_test AS s
+	FROM {$TRANS}equity_live_balance AS s
 	INNER JOIN memDates as d ON s.memnum=d.card_no
 	WHERE s.payments < 100
 	AND d.end_date >= CURDATE()";

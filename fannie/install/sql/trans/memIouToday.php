@@ -1,38 +1,27 @@
-<?php
-/*
-View: memIouToday
-
-Columns:
-	card_no int
-	charges (calculated)
-	payments (calculated)
-
-Depends on:
-	dlog (view)
-
-Use:
-This view lists charge account activity
-for the current day. It exists to 
-calculate balances in real time.
-
-The view's construction depends on Fannie's
-Store Charge Department configuration
-*/
-$dlist = ar_departments();
-
-$CREATE['trans.memIouToday'] = "
-	CREATE VIEW memIouToday AS
-		SELECT card_no,
-		SUM(CASE WHEN trans_subtype='MI' THEN total ELSE 0 END) as charges,
-		SUM(CASE WHEN department IN $dlist THEN total ELSE 0 END) as payments
-		FROM dlog WHERE ".$con->datediff($con->now(),'tdate')." = 0
-		AND (trans_subtype='MI' OR department IN $dlist)
-		GROUP BY card_no
-";
-
-if (empty($dlist)){
-	$CREATE['trans.memIouToday'] = "CREATE VIEW memIouToday AS 
-		SELECT 1 as card_no,0 as charges, 0 as payments";
-}
-
-?>
+Unstaged changes after reset:
+M	fannie/classlib2.0/data/models/vmodels/EquityLiveBalanceModel.php
+M	fannie/cron/Suspensions/deactivate.equity.php
+M	fannie/cron/Suspensions/reactivate.equity.php
+M	fannie/cron/memdates.fix.php
+M	fannie/install/InstallIndexPage.php
+M	fannie/install/InstallMembershipPage.php
+M	fannie/install/sql/trans/deprecated/memIouToday.php
+D	fannie/install/sql/trans/memIouToday.php
+M	fannie/install/sql/trans/unpaid_ar_today.php
+M	fannie/legacy/members/EOM_Reporting/equityDue1.php
+M	fannie/legacy/members/EOM_Reporting/equityDue2.php
+M	fannie/legacy/members/EOM_Reporting/inactivationsStock.php
+M	fannie/legacy/members/EOM_Reporting/inactiveStockYTD.php
+M	fannie/legacy/members/equity_letters/cards.php
+M	fannie/legacy/members/equity_letters/due.php
+M	fannie/legacy/members/equity_letters/index.php
+M	fannie/legacy/members/equity_letters/mcards.php
+M	fannie/legacy/members/equity_letters/newcards.php
+M	fannie/legacy/members/equity_letters/pastdue.php
+M	fannie/legacy/members/equity_letters/welcome.php
+M	fannie/legacy/members/memAddress.php
+M	fannie/legacy/members/stockOverdueReport.php
+M	fannie/mem/modules/Equity.php
+M	fannie/mem/statements/equity.php
+M	fannie/reports/EquityAll/EquityAllReport.php
+M	fannie/reports/Members/index.php

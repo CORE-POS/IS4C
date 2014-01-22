@@ -46,7 +46,7 @@ $custdata = $sql->table_definition('custdata');
 
 $meminfoQ = "UPDATE meminfo AS m LEFT JOIN
 	    custdata AS c ON m.card_no=c.CardNo
-	    LEFT JOIN {$TRANS}newBalanceStockToday_test AS s
+	    LEFT JOIN {$TRANS}equity_live_balance AS s
 	    ON c.cardno=s.memnum LEFT JOIN suspensions AS p
 	    ON c.cardno=p.cardno 
 	    SET m.ads_OK=p.mailflag
@@ -54,7 +54,7 @@ $meminfoQ = "UPDATE meminfo AS m LEFT JOIN
 	    AND s.payments >= 100";
 $sql->query($meminfoQ);
 
-$custQ = "UPDATE custdata AS c LEFT JOIN {$TRANS}newBalanceStockToday_test AS s
+$custQ = "UPDATE custdata AS c LEFT JOIN {$TRANS}equity_live_balance AS s
 	    ON c.CardNo=s.memnum LEFT JOIN suspensions AS p
 	    ON c.CardNo=p.cardno
 	    SET c.Discount=p.discount,c.MemDiscountLimit=p.chargelimit,

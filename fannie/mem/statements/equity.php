@@ -56,7 +56,7 @@ if (isset($_REQUEST['send_email']) || isset($_REQUEST['skip_email']) || isset($_
 			FROM meminfo AS m LEFT JOIN
 			custdata AS c ON m.card_no=c.cardno
 			AND c.personnum=1 LEFT JOIN
-			{$trans}.newBalanceStockToday_test AS n
+			{$trans}.equity_live_balance AS n
 			on m.card_no = n.memnum
 			LEFT JOIN memDates AS d ON m.card_no=d.card_no
 			WHERE cardno = ?");
@@ -109,7 +109,7 @@ elseif (!isset($_REQUEST['cardno'])){
 		datediff(mm,getdate(),m.end_date) as months_left from
 		memDates as m left join custdata as c
 		on m.card_no=c.cardno and c.personnum=1
-		left join {$trans}.newBalanceStockToday_test as n on
+		left join {$trans}.equity_live_balance as n on
 		m.card_no = n.memnum left join meminfo as i
 		on i.card_no=m.card_no
 		where ".$dbc->monthdiff($dbc->now(),'m.end_date')." BETWEEN 0 AND 2
