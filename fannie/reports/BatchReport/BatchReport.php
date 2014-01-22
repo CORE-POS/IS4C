@@ -162,7 +162,6 @@ class BatchReport extends FannieReportPage
 		echo '<hr />';
 
 		$batchQ = "SELECT b.batchID,batchName FROM batches as b
-			LEFT JOIN batchowner as o ON b.batchID=o.batchID
 			WHERE 1=1 ";
 		$args = array();
 		if ($filter1 !== ""){

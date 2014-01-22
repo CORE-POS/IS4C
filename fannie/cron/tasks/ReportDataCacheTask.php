@@ -76,9 +76,9 @@ Replaces nightly.tablecache.php';
             max(trans_num) as Trans_Num,
             min(tdate) as startTime,
             max(tdate) as endTime,
-            CASE WHEN ".$con->seconddiff('min(tdate)', 'max(tdate)')." =0 
+            CASE WHEN ".$sql->seconddiff('min(tdate)', 'max(tdate)')." =0 
                 then 1 else 
-                ".$con->seconddiff('min(tdate)', 'max(tdate)') ."
+                ".$sql->seconddiff('min(tdate)', 'max(tdate)') ."
             END as transInterval,
             sum(CASE WHEN abs(quantity) > 30 THEN 1 else abs(quantity) END) as items,
             Count(upc) as rings,
