@@ -12,9 +12,6 @@ Depends on:
 	core_op.custdata (table)
 	ar_live_balance (view of t.dtransactions -> .v.dlog)
 
-Depended on by:
-  newBalanceToday_cust
-
 Use:
 This view lists real-time store charge
  balances by membership.
