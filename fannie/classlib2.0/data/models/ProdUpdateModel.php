@@ -69,10 +69,13 @@ class ProdUpdateModel extends BasicModel
             $adds += $chk;
         }
 
-        $this->name = 'prodUpdateArchive';
-        $chk = parent::normalize($db_name, $mode, $doCreate);
-        if ($chk !== false) {
-            $adds += $chk;
+        $this->connection = FannieDB::get($db_name);
+        if ($this->connection->tableExists('prodUpdateArchive')) {
+            $this->name = 'prodUpdateArchive';
+            $chk = parent::normalize($db_name, $mode, false);
+            if ($chk !== false) {
+                $adds += $chk;
+            }
         }
 
         return $adds;
