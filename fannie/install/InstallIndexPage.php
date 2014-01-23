@@ -1204,6 +1204,9 @@ class InstallIndexPage extends InstallPage {
 				'suspended','trans');
 
 		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+				'SpecialOrders','trans');
+
+		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
 				'SpecialOrderID','trans');
 
 		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
