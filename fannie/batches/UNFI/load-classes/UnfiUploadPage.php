@@ -32,37 +32,37 @@ class UnfiUploadPage extends FannieUploadPage {
 	protected $preview_opts = array(
 		'upc' => array(
 			'name' => 'upc',
-			'display_name' => 'UPC',
+			'display_name' => 'UPC *',
 			'default' => 14,
 			'required' => True
 		),
 		'srp' => array(
 			'name' => 'srp',
-			'display_name' => 'SRP',
+			'display_name' => 'SRP *',
 			'default' => 16,
 			'required' => True
 		),
 		'brand' => array(
 			'name' => 'brand',
-			'display_name' => 'Brand',
+			'display_name' => 'Brand *',
 			'default' => 2,
 			'required' => True
 		),
 		'desc' => array(
 			'name' => 'desc',
-			'display_name' => 'Description',
+			'display_name' => 'Description *',
 			'default' => 6,
 			'required' => True
 		),
 		'sku' => array(
 			'name' => 'sku',
-			'display_name' => 'SKU',
+			'display_name' => 'SKU *',
 			'default' => 1,
-			'required' => False
+			'required' => true
 		),
 		'qty' => array(
 			'name' => 'qty',
-			'display_name' => 'Case Qty',
+			'display_name' => 'Case Qty *',
 			'default' => 3,
 			'required' => True
 		),
@@ -74,7 +74,7 @@ class UnfiUploadPage extends FannieUploadPage {
 		),
 		'cost' => array(
 			'name' => 'cost',
-			'display_name' => 'Case Cost (Reg)',
+			'display_name' => 'Case Cost (Reg) *',
 			'default' => 8,
 			'required' => True
 		),
@@ -86,7 +86,7 @@ class UnfiUploadPage extends FannieUploadPage {
 		),
 		'cat' => array(
 			'name' => 'cat',
-			'display_name' => 'UNFI Category #',
+			'display_name' => 'UNFI Category # *',
 			'default' => 5,
 			'required' => True
 		)
