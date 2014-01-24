@@ -167,7 +167,8 @@ class InstallIndexPage extends InstallPage {
 			echo "</blockquote>";
 			exit;
 		}
-		$defaultDbType = array_shift(array_keys($supportedTypes));
+        $db_keys = array_key($supportedTypes);
+		$defaultDbType = $db_keys[0];
 
 		?>
 		<h4 class="install">Main Server</h4>

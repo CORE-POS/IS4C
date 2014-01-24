@@ -79,6 +79,10 @@ class SQLManager
 	*/
 	public function addConnection($server,$type,$database,$username,$password='',$persistent=false,$new=false)
     {
+        if (empty($type)) {
+            return false;
+        }
+
 		$conn = ADONewConnection($type);
 		$conn->SetFetchMode(ADODB_FETCH_BOTH);
 		$ok = false;
@@ -1064,6 +1068,10 @@ class SQLManager
 			$which_connection=$this->default_db;
         }
 		$con = $this->connections[$which_connection];
+
+        if (!is_object($con)) {
+            return 'No database connection';
+        }
 
 		return $con->ErrorMsg();
 	}
