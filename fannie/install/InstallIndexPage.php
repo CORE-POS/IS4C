@@ -167,7 +167,7 @@ class InstallIndexPage extends InstallPage {
 			echo "</blockquote>";
 			exit;
 		}
-        $db_keys = array_key($supportedTypes);
+        $db_keys = array_keys($supportedTypes);
 		$defaultDbType = $db_keys[0];
 
 		?>
