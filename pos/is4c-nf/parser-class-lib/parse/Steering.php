@@ -70,7 +70,11 @@ class Steering extends Parser {
             $this->ret['main_frame'] = $my_url."gui-modules/productlist.php";
             return True;
         case "MSTG":
-			if ($CORE_LOCAL->get("SecuritySR") > 20){
+            if ($CORE_LOCAL->get('memType') == 1 || $CORE_LOCAL->get('memType') == 2) {
+                // could this be $CORE_LOCAL->get('isMember') == 1
+                // to avoid relying on specific memTypes?
+				$this->ret['output'] = DisplayLib::boxMsg("Cannot UNset a member status");
+			} else if ($CORE_LOCAL->get("SecuritySR") > 20){
             	$this->ret['main_frame'] = $my_url."gui-modules/adminlogin.php?class=MemStatusAdminLogin";
 			} else {
 				$this->ret['output'] = DisplayLib::boxMsg("You must be an admin to do this.");

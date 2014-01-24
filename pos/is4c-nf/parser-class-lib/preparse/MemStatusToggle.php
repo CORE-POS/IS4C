@@ -27,6 +27,8 @@ class MemStatusToggle extends PreParser {
 
 	function check($str){
 		global $CORE_LOCAL;
+        // Andy: theory is this shortcircuits steering
+        return false;
 		if (substr($str,0,4) == "MSTG"){
 			return True;
 		}

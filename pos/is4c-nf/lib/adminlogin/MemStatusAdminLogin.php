@@ -36,9 +36,12 @@ class MemStatusAdminLogin
     {
         global $CORE_LOCAL;
         if ($success) {
-            $CORE_LOCAL->set('strRemembered', $CORE_LOCAL->get('strEntered'));
-            $CORE_LOCAL->set('msgrepeat', 1);
-            return true;
+            $CORE_LOCAL->set('strRemembered', '');
+            $CORE_LOCAL->set("isMember", 1);
+            $CORE_LOCAL->set("memType", 1);
+            $CORE_LOCAL->set("boxMsg", "Member Status Toggled!");
+
+            return MiscLib::baseURL().'gui-modules/boxMsg2.php';
         } else {
             return false;
         }
