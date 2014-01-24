@@ -77,7 +77,7 @@ if (!$output){
 	echo "<b>Total by account</b>";
 	$totalQ = $dbc->prepare_statement("select l.card_no,sum(l.total),
 		(sum(l.total)-(sum(l.total*m.margin))) as cost
-		FROM $dlog as l left join deptMargin as m on l.department = m.dept_ID
+		FROM $dlog as l left join departments as m on l.department = m.dept_no
 		WHERE card_no IN $accountStr
 		and (l.department < 600 or l.department = 902)
 		and l.department <> 0 and l.trans_type <> 'T'
@@ -103,14 +103,13 @@ if (!$output){
 
 	echo "<br /><b>Total by pCode</b>";
 	$totalQ = $dbc->prepare_statement("select d.salesCode,sum(l.total),
-		(sum(l.total)-(sum(l.total)*m.margin)) as cost
-		FROM $dlog as l left join deptSalesCodes as d on l.department = d.dept_ID
-		left join deptMargin as m on l.department=m.dept_ID
+		(sum(l.total)-(sum(l.total)*d.margin)) as cost
+		FROM $dlog as l left join departments as d on l.department = d.dept_no
 		WHERE card_no IN $accountStr
 		and (l.department < 600 or l.department = 902)
 		and l.department <> 0 and l.trans_type <> 'T'
 		and tdate BETWEEN ? AND ?
-		GROUP BY d.salesCode,m.margin
+		GROUP BY d.salesCode,d.margin
 		ORDER BY d.salesCode");
 	$totalR = $dbc->exec_statement($totalQ,$args);
 	$data = array();
@@ -128,14 +127,13 @@ if (!$output){
 		2,array(1,2));
 
 	$totalQ = $dbc->prepare_statement("select d.salesCode,sum(l.total),
-		(sum(l.total)-(sum(l.total)*m.margin)) as cost
-		FROM $dlog as l left join deptSalesCodes as d on l.department = d.dept_ID
-		left join deptMargin as m on l.department=m.dept_ID
+		(sum(l.total)-(sum(l.total)*d.margin)) as cost
+		FROM $dlog as l left join departments as d on l.department = d.dept_no
 		WHERE card_no = ?
 		and (l.department < 600 or l.department = 902)
 		and l.department <> 0 and l.trans_type <> 'T'
 		and tdate BETWEEN ? AND ?
-		GROUP BY d.salesCode,m.margin
+		GROUP BY d.salesCode,d.margin
 		ORDER BY d.salesCode");
 	foreach ($accounts as $account){
 		echo "<br /><b>Total for $account</b>";

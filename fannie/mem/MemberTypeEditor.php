@@ -34,53 +34,69 @@ class MemberTypeEditor extends FanniePage {
 		global $FANNIE_OP_DB;
 		$dbc = FannieDB::get($FANNIE_OP_DB);
 
+        $mtModel = new MembertypeModel($dbc);
 		/* ajax callbacks to save changes */
-		if (FormLib::get_form_value('saveMem',False) !== False){
-			$q = $dbc->prepare_statement("UPDATE memdefaults SET cd_type=?
-				WHERE memtype=?");
-			$r = $dbc->exec_statement($q,array(
-				FormLib::get_form_value('saveMem','REG'),
-				FormLib::get_form_value('t_id',0)
-			));
-			return False;
-		}
-		elseif (FormLib::get_form_value('saveStaff',False) !== False){
-			$q = $dbc->prepare_statement("UPDATE memdefaults SET staff=?
-				WHERE memtype=?");
-			$r = $dbc->exec_statement($q,array(
-				FormLib::get_form_value('saveStaff',0),
-				FormLib::get_form_value('t_id',0)
-			));
-			return False;
-		}
-		elseif (FormLib::get_form_value('saveSSI',False) !== False){
-			$q = $dbc->prepare_statement("UPDATE memdefaults SET SSI=?
-				WHERE memtype=?");
-			$r = $dbc->exec_statement($q,array(
-				FormLib::get_form_value('saveSSI',0),
-				FormLib::get_form_value('t_id',0)
-			));
-			return False;
-		}
-		elseif (FormLib::get_form_value('saveDisc',False) !== False){
-			$q = $dbc->prepare_statement("UPDATE memdefaults SET discount=?
-				WHERE memtype=?");
-			$r = $dbc->exec_statement($q,array(
-				FormLib::get_form_value('saveDisc',0),
-				FormLib::get_form_value('t_id',0)
-			));
-			return False;
-		}
-		elseif (FormLib::get_form_value('saveType',False) !== False){
-			$q = $dbc->prepare_statement("UPDATE memtype SET memDesc=?
-				WHERE memtype=?");
-			$r = $dbc->exec_statement($q,array(
-				FormLib::get_form_value('saveType',0),
-				FormLib::get_form_value('t_id',0)
-			));
-			return False;
-		}
-		elseif (FormLib::get_form_value('newMemForm',False) !== False){
+		if (FormLib::get('saveMem', false) !== false) {
+            $type = FormLib::get('saveMem', 'REG');
+            $id = FormLib::get('t_id', 0);
+            $mtModel->memtype($id);
+            $mtModel->custdataType($type);
+            $mtModel->save();
+            if ($dbc->tableExists('memdefaults')) {
+                $q = $dbc->prepare_statement("UPDATE memdefaults SET cd_type=?
+                    WHERE memtype=?");
+                $r = $dbc->exec_statement($q,array($type, $id));
+            }
+
+			return false;
+		} else if (FormLib::get('saveStaff', false) !== false){
+            $staff = FormLib::get('saveStaff', 0);
+            $id = FormLib::get('t_id', 0);
+            $mtModel->memtype($id);
+            $mtModel->staff($staff);
+            $mtModel->save();
+            if ($dbc->tableExists('memdefaults')) {
+                $q = $dbc->prepare_statement("UPDATE memdefaults SET staff=?
+                    WHERE memtype=?");
+                $r = $dbc->exec_statement($q,array($staff, $id));
+            }
+
+			return false;
+		} else if (FormLib::get('saveSSI', false) !== false) {
+            $ssi = FormLib::get('saveSSI', 0);
+            $id = FormLib::get('t_id', 0);
+            $mtModel->memtype($id);
+            $mtModel->ssi($ssi);
+            $mtModel->save();
+            if ($dbc->tableExists('memdefaults')) {
+                $q = $dbc->prepare_statement("UPDATE memdefaults SET SSI=?
+                    WHERE memtype=?");
+                $r = $dbc->exec_statement($q,array($ssi, $id));
+            }
+
+			return false;
+		} else if (FormLib::get('saveDisc', false) !== false) {
+            $disc = FormLib::get('saveDisc', 0);
+            $id = FormLib::get('t_id', 0);
+            $mtModel->memtype($id);
+            $mtModel->discount($disc);
+            $mtModel->save();
+            if ($dbc->tableExists('memdefaults')) {
+                $q = $dbc->prepare_statement("UPDATE memdefaults SET discount=?
+                    WHERE memtype=?");
+                $r = $dbc->exec_statement($q,array($disc, $id));
+            }
+
+			return false;
+		} else if (FormLib::get('saveType', false) !== false) {
+            $name = FormLib::get('saveType', 0);
+            $id = FormLib::get('t_id', 0);
+            $mtModel->memtype($id);
+            $mtModel->memDesc($name);
+            $mtModel->save();
+
+			return false;
+		} else if (FormLib::get('newMemForm', false) !== false) {
 			$q = $dbc->prepare_statement("SELECT MAX(memtype) FROM memtype");
 			$r = $dbc->exec_statement($q);
 			$sug = 0;
@@ -98,44 +114,47 @@ class MemberTypeEditor extends FanniePage {
 			echo ' <input type="submit" value="Cancel"
 				onclick="cancelMemType();return false;" />';
 			return False;
-		}
-		elseif (FormLib::get_form_value('new_t_id',False) !== False){
+		} else if (FormLib::get('new_t_id', false) !== false) {
 			/* do some extra sanity checks
 			   on a new member type
 			*/
-			$id = FormLib::get_form_value('new_t_id');
+			$id = FormLib::get('new_t_id');
 			if (!is_numeric($id)){
 				echo 'ID '.$id.' is not a number';
 				echo '<br /><br />';
 				echo '<a href="" onclick="newMemType();return false;">Try Again</a>';
-			}
-			else {
-				$q = $dbc->prepare_statement("SELECT memtype FROM memtype WHERE
-					memtype=?");
-				$r = $dbc->exec_statement($q,array($id));
-				if ($dbc->num_rows($r) > 0){
+			} else {
+                $mtModel->reset();
+                $mtModel->memtype($id);
+				if ($mtModel->load()) {
 					echo 'ID is already in use';
 					echo '<br /><br />';
 					echo '<a href="" onclick="newMemType();return false;">Try Again</a>';
-				}
-				else {
-					$mtP = $dbc->prepare_statement("INSERT INTO memtype (memtype,memDesc) VALUES (?,'')");
-					$dbc->exec_statement($mtP, array($id));
-					$mdP = $dbc->prepare_statement("INSERT INTO memdefaults (memtype,cd_type,
-							discount,staff,SSI) VALUES (?, 'REG', 0, 0, 0)");
-					$dbc->exec_statement($mdP, array($id));
+				} else {
+                    $mtModel->memDesc('');
+                    $mtModel->custdataType('REG');
+                    $mtModel->discount(0);
+                    $mtModel->staff(0);
+                    $mtModel->ssi(0);
+                    $mtModel->save();
+                    if ($dbc->tableExists('memdefaults')) {
+                        $mdP = $dbc->prepare_statement("INSERT INTO memdefaults (memtype,cd_type,
+                                discount,staff,SSI) VALUES (?, 'REG', 0, 0, 0)");
+                        $dbc->exec_statement($mdP, array($id));
+                    }
 
 					echo $this->getTypeTable();
 				}
 			}
 			exit;
-		}
-		elseif (FormLib::get_form_value('goHome',False) !== False){
+
+		} else if (FormLib::get('goHome', false) !== false) {
 			echo $this->getTypeTable();
 			exit;
 		}
 		/* end ajax callbacks */
-		return True;
+
+		return true;
 	}
 
 	private function getTypeTable(){

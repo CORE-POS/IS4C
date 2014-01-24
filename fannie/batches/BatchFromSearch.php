@@ -68,14 +68,20 @@ class BatchFromSearch extends FannieRESTfulPage
             return false;
         }
 
-        $insQ = $dbc->prepare_statement("INSERT INTO batches (startDate,endDate,batchName,batchType,
-                discounttype,priority) VALUES (?,?,?,?,?,?)");
-        $insR = $dbc->exec_statement($insQ,array($startdate,$enddate,$name,$type,
-                    $discounttype,$priority));
-        $id = $dbc->insert_id();
+        $b = new BatchesModel($dbc);
+        $b->startDate($startdate);
+        $b->endDate($enddate);
+        $b->batchName($name);
+        $b->batchType($type);
+        $b->discounttype($type);
+        $b->priority($priority);
+        $b->owner($owner);
+        $id = $b->save();
 
-        $insQ = $dbc->prepare_statement("insert batchowner values (?,?)");
-        $insR = $dbc->exec_statement($insQ,array($id,$owner));
+        if ($dbc->tableExists('batchowner')) {
+            $insQ = $dbc->prepare_statement("insert batchowner values (?,?)");
+            $insR = $dbc->exec_statement($insQ,array($id,$owner));
+        }
 
         // add items to batch
         for($i=0; $i<count($upcs); $i++) {

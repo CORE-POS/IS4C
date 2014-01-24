@@ -36,8 +36,27 @@ class BatchesModel extends BasicModel
     'batchName' => array('type'=>'VARCHAR(80)'),
     'batchType' => array('type'=>'SMALLINT'),
     'discountType' => array('type'=>'SMALLINT'),
-    'priority' => array('type'=>'INT')
+    'priority' => array('type'=>'INT'),
+    'owner' => array('type'=>'VARCHAR(50)'),
     );
+
+    protected function hookAddColumnowner()
+    {
+        // copy existing values from batchowner.owner to
+        // new batches.owner column
+        if ($this->connection->table_exists('batchowner')) {
+            $dataR = $this->connection->query('SELECT batchID, owner FROM batchowner');
+            $tempModel = new BatchesModel($this->connection);
+            while($dataW = $this->connection->fetch_row($dataR)) {
+                $tempModel->reset();
+                $tempModel->batchID($dataW['batchID']);
+                if ($tempModel->load()) {
+                    $tempModel->owner($dataW['owner']);
+                    $tempModel->save();
+                }
+            }
+        }
+    }
 
     /* START ACCESSOR FUNCTIONS */
 
@@ -46,12 +65,17 @@ class BatchesModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["batchID"])) {
                 return $this->instance["batchID"];
-            } elseif(isset($this->columns["batchID"]["default"])) {
+            } else if (isset($this->columns["batchID"]["default"])) {
                 return $this->columns["batchID"]["default"];
             } else {
                 return null;
             }
         } else {
+            if (!isset($this->instance["batchID"]) || $this->instance["batchID"] != func_get_args(0)) {
+                if (!isset($this->columns["batchID"]["ignore_updates"]) || $this->columns["batchID"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["batchID"] = func_get_arg(0);
         }
     }
@@ -61,12 +85,17 @@ class BatchesModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["startDate"])) {
                 return $this->instance["startDate"];
-            } elseif(isset($this->columns["startDate"]["default"])) {
+            } else if (isset($this->columns["startDate"]["default"])) {
                 return $this->columns["startDate"]["default"];
             } else {
                 return null;
             }
         } else {
+            if (!isset($this->instance["startDate"]) || $this->instance["startDate"] != func_get_args(0)) {
+                if (!isset($this->columns["startDate"]["ignore_updates"]) || $this->columns["startDate"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["startDate"] = func_get_arg(0);
         }
     }
@@ -76,12 +105,17 @@ class BatchesModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["endDate"])) {
                 return $this->instance["endDate"];
-            } elseif(isset($this->columns["endDate"]["default"])) {
+            } else if (isset($this->columns["endDate"]["default"])) {
                 return $this->columns["endDate"]["default"];
             } else {
                 return null;
             }
         } else {
+            if (!isset($this->instance["endDate"]) || $this->instance["endDate"] != func_get_args(0)) {
+                if (!isset($this->columns["endDate"]["ignore_updates"]) || $this->columns["endDate"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["endDate"] = func_get_arg(0);
         }
     }
@@ -91,12 +125,17 @@ class BatchesModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["batchName"])) {
                 return $this->instance["batchName"];
-            } elseif(isset($this->columns["batchName"]["default"])) {
+            } else if (isset($this->columns["batchName"]["default"])) {
                 return $this->columns["batchName"]["default"];
             } else {
                 return null;
             }
         } else {
+            if (!isset($this->instance["batchName"]) || $this->instance["batchName"] != func_get_args(0)) {
+                if (!isset($this->columns["batchName"]["ignore_updates"]) || $this->columns["batchName"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["batchName"] = func_get_arg(0);
         }
     }
@@ -106,12 +145,17 @@ class BatchesModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["batchType"])) {
                 return $this->instance["batchType"];
-            } elseif(isset($this->columns["batchType"]["default"])) {
+            } else if (isset($this->columns["batchType"]["default"])) {
                 return $this->columns["batchType"]["default"];
             } else {
                 return null;
             }
         } else {
+            if (!isset($this->instance["batchType"]) || $this->instance["batchType"] != func_get_args(0)) {
+                if (!isset($this->columns["batchType"]["ignore_updates"]) || $this->columns["batchType"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["batchType"] = func_get_arg(0);
         }
     }
@@ -121,12 +165,17 @@ class BatchesModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["discountType"])) {
                 return $this->instance["discountType"];
-            } elseif(isset($this->columns["discountType"]["default"])) {
+            } else if (isset($this->columns["discountType"]["default"])) {
                 return $this->columns["discountType"]["default"];
             } else {
                 return null;
             }
         } else {
+            if (!isset($this->instance["discountType"]) || $this->instance["discountType"] != func_get_args(0)) {
+                if (!isset($this->columns["discountType"]["ignore_updates"]) || $this->columns["discountType"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["discountType"] = func_get_arg(0);
         }
     }
@@ -136,13 +185,38 @@ class BatchesModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["priority"])) {
                 return $this->instance["priority"];
-            } elseif(isset($this->columns["priority"]["default"])) {
+            } else if (isset($this->columns["priority"]["default"])) {
                 return $this->columns["priority"]["default"];
             } else {
                 return null;
             }
         } else {
+            if (!isset($this->instance["priority"]) || $this->instance["priority"] != func_get_args(0)) {
+                if (!isset($this->columns["priority"]["ignore_updates"]) || $this->columns["priority"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["priority"] = func_get_arg(0);
+        }
+    }
+
+    public function owner()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["owner"])) {
+                return $this->instance["owner"];
+            } else if (isset($this->columns["owner"]["default"])) {
+                return $this->columns["owner"]["default"];
+            } else {
+                return null;
+            }
+        } else {
+            if (!isset($this->instance["owner"]) || $this->instance["owner"] != func_get_args(0)) {
+                if (!isset($this->columns["owner"]["ignore_updates"]) || $this->columns["owner"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
+            $this->instance["owner"] = func_get_arg(0);
         }
     }
     /* END ACCESSOR FUNCTIONS */

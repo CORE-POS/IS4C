@@ -23,7 +23,7 @@ class ADODB_mysql extends ADOConnection {
 	var $dataProvider = 'mysql';
 	var $hasInsertID = true;
 	var $hasAffectedRows = true;	
-	var $metaTablesSQL = "SHOW TABLES";	
+	var $metaTablesSQL = "SHOW FULL TABLES";	
 	var $metaColumnsSQL = "SHOW COLUMNS FROM `%s`";
 	var $fmtTimeStamp = "'Y-m-d H:i:s'";
 	var $hasLimit = true;

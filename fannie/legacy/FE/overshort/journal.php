@@ -869,11 +869,10 @@ function fetch_data($date1,$date2){
 
 	$salesP = $sql->prepare("select YEAR(tdate),MONTH(tdate),DAY(tdate),
 		CASE WHEN department = 991 then '991' when department=992 then '992' 
-			else convert(s.salesCode,char) end as pcode,
+			else convert(t.salesCode,char) end as pcode,
 		sum(total),trans_type
 		FROM $dlog as d left join is4c_op.departments as t on
-		d.department = t.dept_no LEFT JOIN
-		is4c_op.deptSalesCodes AS s ON t.dept_no=s.dept_ID
+		d.department = t.dept_no 
 		WHERE tdate BETWEEN ? AND ?
 		AND trans_subtype NOT IN ('CP','IC')
 		and trans_type not in ('S','T')

@@ -36,9 +36,9 @@ class DefaultUploadPage extends FannieUploadPage {
 	protected $preview_opts = array(
 		'upc' => array(
 			'name' => 'upc',
-			'display_name' => 'UPC',
+			'display_name' => 'UPC *',
 			'default' => 0,
-			'required' => True
+			'required' => true
 		),
 		'srp' => array(
 			'name' => 'srp',
@@ -54,19 +54,19 @@ class DefaultUploadPage extends FannieUploadPage {
 		),
 		'desc' => array(
 			'name' => 'desc',
-			'display_name' => 'Description',
+			'display_name' => 'Description *',
 			'default' => 3,
-			'required' => True
+			'required' => true
 		),
 		'sku' => array(
 			'name' => 'sku',
-			'display_name' => 'SKU',
+			'display_name' => 'SKU *',
 			'default' => 4,
-			'required' => False
+			'required' => true
 		),
 		'qty' => array(
 			'name' => 'qty',
-			'display_name' => 'Case Qty',
+			'display_name' => 'Case Qty *',
 			'default' => 5,
 			'required' => true
 		),
@@ -78,16 +78,22 @@ class DefaultUploadPage extends FannieUploadPage {
 		),
 		'cost' => array(
 			'name' => 'cost',
-			'display_name' => 'Case Cost (Reg)',
+			'display_name' => 'Case Cost (Reg) *',
 			'default' => 7,
 			'required' => true
 		),
 		'saleCost' => array(
 			'name' => 'saleCost',
-			'display_name' => 'Case Cost (Reg)',
+			'display_name' => 'Case Cost (Sale)',
 			'default' => 8,
-			'required' => true
-		)
+			'required' => false
+		),
+		'vDept' => array(
+			'name' => 'vDept',
+			'display_name' => 'Vendor Department',
+			'default' => 9,
+			'required' => false
+		),
 	);
 
 	protected $use_splits = True;
@@ -115,7 +121,7 @@ class DefaultUploadPage extends FannieUploadPage {
 		$QTY = $this->get_column_index('qty');
 		$SIZE1 = $this->get_column_index('size');
 		$UPC = $this->get_column_index('upc');
-		$CATEGORY = $this->get_column_index('cat');
+		$CATEGORY = $this->get_column_index('vDept');
 		$REG_COST = $this->get_column_index('cost');
 		$NET_COST = $this->get_column_index('saleCost');
 		$SRP = $this->get_column_index('srp');
@@ -123,6 +129,7 @@ class DefaultUploadPage extends FannieUploadPage {
 		$itemP = $dbc->prepare_statement("INSERT INTO vendorItems 
 					(brand,sku,size,upc,units,cost,description,vendorDept,vendorID)
 					VALUES (?,?,?,?,?,?,?,?,?)");
+        $vi_def = $dbc->tableDefinition('vendorItems');
         if (isset($vi_def['saleCost'])) {
             $itemP = $dbc->prepare_statement("INSERT INTO vendorItems 
                         (brand,sku,size,upc,units,cost,description,vendorDept,vendorID,saleCost)
@@ -136,7 +143,7 @@ class DefaultUploadPage extends FannieUploadPage {
 			if (!isset($data[$UPC])) continue;
 
 			// grab data from appropriate columns
-			$sku = ($SKU === false) ? '' : $data[$SKU];
+			$sku = $data[$SKU];
 			$brand = ($BRAND === false) ? '' : $data[$BRAND];
 			$description = $data[$DESCRIPTION];
 			$qty = $data[$QTY];
@@ -161,10 +168,14 @@ class DefaultUploadPage extends FannieUploadPage {
             if (empty($net)) {
                 $net = 0.00;
             }
-			$srp = ($SRP === false) ? '' : trim($data[$SRP]);
+			$srp = ($SRP === false) ? 0.00 : trim($data[$SRP]);
 			// can't process items w/o price (usually promos/samples anyway)
-			if (empty($reg) or empty($net) or empty($srp))
+			if (empty($reg))
 				continue;
+
+            if ($net == $reg) {
+                $net = 0.00; // not really a sale
+            }
 
 			// syntax fixes. kill apostrophes in text fields,
 			// trim $ off amounts as well as commas for the
@@ -173,8 +184,8 @@ class DefaultUploadPage extends FannieUploadPage {
 			$description = str_replace("'","",$description);
 			$reg = str_replace('$',"",$reg);
 			$reg = str_replace(",","",$reg);
-			$net = str_replace('$',"",$reg);
-			$net = str_replace(",","",$reg);
+			$net = str_replace('$',"",$net);
+			$net = str_replace(",","",$net);
 			$srp = str_replace('$',"",$srp);
 			$srp = str_replace(",","",$srp);
 

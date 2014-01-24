@@ -223,9 +223,15 @@ else {
 		create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
 				'stockSumToday','trans');
 
-		$con->query("DROP VIEW newBalanceStockToday_test",$FANNIE_TRANS_DB);
-		create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
-				'newBalanceStockToday_test','trans');
+        $con->query("DROP VIEW equity_live_balance",$FANNIE_TRANS_DB);
+        create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+                'equity_live_balance','trans');
+
+        if ($con->tableExists('newBalanceStockToday_test')) {
+            $con->query("DROP VIEW newBalanceStockToday_test",$FANNIE_TRANS_DB);
+            create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+                    'newBalanceStockToday_test','trans');
+        }
 
 		$con->query("DROP VIEW dheader",$FANNIE_TRANS_DB);
 		create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,

@@ -10,6 +10,7 @@ Columns:
 	batchType int
 	discountType int
 	priority int
+    owner varchar
 
 Depends on:
 	batchType
@@ -31,6 +32,7 @@ $CREATE['op.batches'] = "
 	  `batchType` int(3) default NULL,
 	  `discountType` int(2) default NULL,
 	  `priority` int(2) default NULL,
+	  `owner` varchar(50) default NULL,
 	  PRIMARY KEY  (`batchID`)
 	)
 ";
@@ -45,6 +47,7 @@ if ($dbms == "MSSQL"){
 			[batchType] [int] NULL ,
 			[discountType] [int] NULL,
 			[priority] [smallint] NULL 
+			[owner] [varchar] (50) COLLATE SQL_Latin1_General_CP1_CI_AS NULL ,
 		) ON [PRIMARY]
 	";
 }

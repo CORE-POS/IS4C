@@ -73,13 +73,15 @@ else if (isset($_POST['likecode'])){
 	$discount = $_POST["discount"];
 
 	echo "<b>Creating batch</b><br />";
-	$createQ = $sql->prepare("insert into batches (startDate, endDate, batchName, batchType, discountType, priority) 
-		values (?,?,?,?,?,0)");
+	$createQ = $sql->prepare("insert into batches (startDate, endDate, batchName, batchType, discountType, priority, owner) 
+		values (?,?,?,?,?,0,'Produce')");
 	$sql->execute($createQ, array($startDate, $endDate, $batchName, $batchType, $discount));
 	$batchID = $sql->insert_id();
 
-	$ownerQ = $sql->prepare("insert into batchowner values (?,'Produce')");
-	$sql->execute($ownerQ, array($batchID));
+    if ($sql->tableExists('batchowner')) {
+        $ownerQ = $sql->prepare("insert into batchowner values (?,'Produce')");
+        $sql->execute($ownerQ, array($batchID));
+    }
 
     $q = $sql->prepare("insert into batchList (upc, batchID, salePrice, active, pricemethod, quantity) 
         VALUES (?,?,?,1,0,0)");

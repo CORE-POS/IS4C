@@ -5,6 +5,8 @@ Table: SpecialOrderID
 Columns:
 	id int (auto increment)
 
+DEPRECATED SOON: See SpecialOrders
+
 This table just exists as an accumulator
 so that IDs in PendingSpecialOrder and
 CompletedSpecialOrder never conflict

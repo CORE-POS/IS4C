@@ -69,7 +69,7 @@ WFC Specific:
    if the person has one.
 	 Some records are for organizations, esp vendors,
 	 that have charge accounts.
-	 Is updated from newBalanceToday_cust by cronjob arbalance.sanitycheck.php
+	 Is updated from ar_live_balance by cronjob arbalance.sanitycheck.php
 - memCoupons indicates how many virtual coupons (tender MA) are available.
 
 [Probably] Ignored:
@@ -85,7 +85,7 @@ Maintenance:
 - Single edit: fannie/mem/search.php
 - Single add: fannie/mem/new.php
 - Batch import: fannie/mem/import/*.php
-- custdata.Balance is updated from newBalanceToday_cust by cronjob arbalance.sanitycheck.php
+- custdata.Balance is updated from ar_live_balance by cronjob arbalance.sanitycheck.php
 
 */
 /*--COMMENTS - - - - - - - - - - - - - - - - - - - -

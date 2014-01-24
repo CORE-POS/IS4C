@@ -76,15 +76,13 @@ class DepartmentImportPage extends FannieUploadPage {
 		$fs_index = $this->get_column_index('fs');
 
 		// prepare statements
-		$insP = $dbc->prepare_statement("INSERT INTO departments (dept_no,dept_name,dept_tax,dept_fs,
-				dept_limit,dept_minimum,dept_discount,modified,modifiedby)
-				VALUES (?,?,?,?,50.00,0.01,1,".$dbc->now().",1)");
-
 		$marP = $dbc->prepare_statement("INSERT INTO deptMargin (dept_ID,margin) VALUES (?,?)");
 
 		$scP = $dbc->prepare_statement("INSERT INTO deptSalesCodes (dept_ID,salesCode) VALUES (?,?)");
 
-		foreach($linedata as $line){
+        $model = new DepartmentsModel($dbc);
+
+		foreach($linedata as $line) {
 			// get info from file and member-type default settings
 			// if applicable
 			$dept_no = $line[$dn_index];
@@ -98,11 +96,30 @@ class DepartmentImportPage extends FannieUploadPage {
 
 			if (strlen($desc) > 30) $desc = substr($desc,0,30);
 
+            $model->reset();
+            $model->dept_no($dept_no);
+            $model->dept_name($desc);
+            $model->dept_tax($tax);
+            $model->dept_fs($fs);
+            $model->dept_limit(50);
+            $model->dept_minimum(0.01);
+            $model->dept_discount(1);
+            $model->dept_see_id(0);
+            $model->modified(date('Y-m-d H:i:s'));
+            $model->modifiedby(1);
+            $model->margin($margin);
+            $model->salesCode($dept_no);
+            $model->save();
+
 			$insR = $dbc->exec_statement($insP,array($dept_no,$desc,$tax,$fs));
 
-			$insR = $dbc->exec_statement($marP,array($dept_no, $margin));
+            if ($dbc->tableExists('deptMargin')) {
+                $insR = $dbc->exec_statement($marP,array($dept_no, $margin));
+            }
 
-			$insR = $dbc->exec_statement($scP,array($dept_no, $dept_no));
+            if ($dbc->tableExists('deptSalesCodes')) {
+                $insR = $dbc->exec_statement($scP,array($dept_no, $dept_no));
+            }
 		}
 		return True;
 	}

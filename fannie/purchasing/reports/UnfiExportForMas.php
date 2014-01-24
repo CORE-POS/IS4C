@@ -72,14 +72,19 @@ class UnfiExportForMas extends FannieReportPage
 		$date2 = FormLib::get_form_value('date2',date('Y-m-d'));
 
         $dbc = FannieDB::get($FANNIE_OP_DB);
+        $departments = $dbc->tableDefinition('departments');
         $codingQ = 'SELECT o.orderID, d.salesCode, i.vendorInvoiceID, 
                     SUM(o.receivedTotalCost) as rtc,
                     MAX(o.receivedDate) AS rdate
                     FROM PurchaseOrderItems AS o
                     LEFT JOIN PurchaseOrder as i ON o.orderID=i.orderID
-                    LEFT JOIN products AS p ON o.internalUPC=p.upc
-                    LEFT JOIN deptSalesCodes AS d ON p.department=d.dept_ID
-                    WHERE i.vendorID=1 AND i.userID=0
+                    LEFT JOIN products AS p ON o.internalUPC=p.upc ';
+        if (isset($departments['salesCode'])) {
+            $codingQ .= ' LEFT JOIN departments AS d ON p.department=d.dept_no ';
+        } else if ($dbc->tableExists('deptSalesCodes')) {
+            $codingQ .= ' LEFT JOIN deptSalesCodes AS d ON p.department=d.dept_ID ';
+        }
+        $codingQ .= 'WHERE i.vendorID=1 AND i.userID=0
                     AND o.receivedDate BETWEEN ? AND ?
                     GROUP BY o.orderID, d.salesCode, i.vendorInvoiceID
                     ORDER BY rdate, i.vendorInvoiceID, d.salesCode';

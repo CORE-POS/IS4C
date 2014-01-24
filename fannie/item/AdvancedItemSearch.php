@@ -371,6 +371,12 @@ function goToEdit() {
         $('#actionForm').submit();
     }
 }
+function goToSigns() {
+    if (getItems()) {
+        $('#actionForm').attr('action', '../admin/signs/BuildSigns.php');
+        $('#actionForm').submit();
+    }
+}
         <?php
         return ob_get_clean();
     }
@@ -500,6 +506,8 @@ function goToEdit() {
         $ret .= '<input type="submit" value="Create Price or Sale Batch" onclick="goToBatch();" />';
         $ret .= '<br />';
         $ret .= '<input style="margin-top:10px;" type="submit" value="Edit Items" onclick="goToEdit();" />';
+        $ret .= '<br />';
+        $ret .= '<input style="margin-top:10px;" type="submit" value="Tags/Signs" onclick="goToSigns();" />';
         $ret .= '</fieldset>';
         $ret .= '<form method="post" id="actionForm" target="__advs_act"></form>';
         $ret .= '</div>';

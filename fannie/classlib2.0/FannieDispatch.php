@@ -227,7 +227,7 @@ class FannieDispatch
 
             $page = basename($_SERVER['PHP_SELF']);
             $class = substr($page,0,strlen($page)-4);
-            if (class_exists($class)) {
+            if ($class != 'index' && class_exists($class)) {
                 $obj = new $class();
                 $obj->draw_page();
             } else {
