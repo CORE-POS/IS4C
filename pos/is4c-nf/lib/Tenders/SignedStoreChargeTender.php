@@ -1,7 +1,7 @@
 <?php
 /*******************************************************************************
 
-    Copyright 2010 Whole Foods Co-op
+    Copyright 2012 Whole Foods Co-op
 
     This file is part of IT CORE.
 
@@ -21,31 +21,26 @@
 
 *********************************************************************************/
 
-ini_set('display_errors','Off');
-include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
+/**
+  @class StoreChargeTender
+  Tender module for charge accounts
+*/
+class SignedStoreChargeTender extends StoreChargeTender 
+{
 
-$decision = isset($_REQUEST['input'])?strtoupper(trim($_REQUEST["input"])):'CL';
+    /**
+      Set up state and redirect if needed
+      @return True or a URL to redirect
+    */
+    public function preReqCheck()
+    {
+        global $CORE_LOCAL;
+        if ($CORE_LOCAL->get('msgrepeat') == 0) {
+            $CORE_LOCAL->set('strRemembered', ($this->amount*100) . $this->tender_code);
+            return MiscLib::base_url().'gui-modules/SigCapturePage.php?type='.$this->name_string.'&amt='.$this->amount;
+        }
 
-$ret = array('dest_page'=>MiscLib::base_url().'gui-modules/pos2.php',
-		'endorse'=>False, 'cleared'=>False);
-
-if ($decision == "CL") {
-	$CORE_LOCAL->set("msgrepeat",0);
-	$CORE_LOCAL->set("toggletax",0);
-	$CORE_LOCAL->set("togglefoodstamp",0);
-	$CORE_LOCAL->set("RepeatAgain", false);
-	$ret['cleared'] = True;
-}
-elseif (strlen($decision) > 0) {
-
-	$CORE_LOCAL->set("msgrepeat",1);
-	$CORE_LOCAL->set("strRemembered",$CORE_LOCAL->get("strEntered"));
-}
-else {
-	$CORE_LOCAL->set("msgrepeat",1);
-	$CORE_LOCAL->set("strRemembered",$CORE_LOCAL->get("strEntered"));
+        return true;
+    }
 }
 
-echo JsonLib::array_to_json($ret);
-
-?>
