@@ -132,7 +132,7 @@ function upgradeDisplays($subtype){
 	
 	$query = "select n.memnum,c.LastName from
 		custdata as c
-		LEFT JOIN {$TRANS}newBalanceStockToday_test as n
+		LEFT JOIN {$TRANS}equity_live_balance as n
 		on c.CardNo = n.memnum LEFT JOIN
 		{$TRANS}memEquitySpan as e on e.card_no = c.CardNo
 		where n.payments >= 100 and
@@ -141,7 +141,7 @@ function upgradeDisplays($subtype){
 	if ($subtype == "1month"){
 		$query = "select n.memnum,c.LastName from
 			custdata as c
-			LEFT JOIN {$TRANS}newBalanceStockToday_test as n
+			LEFT JOIN {$TRANS}equity_live_balance as n
 			on c.CardNo = n.memnum LEFT JOIN
 			{$TRANS}memEquitySpan as e on e.card_no = c.CardNo
 			where n.payments >= 100 and
@@ -152,7 +152,7 @@ function upgradeDisplays($subtype){
 	elseif ($subtype == "0month"){
 		$query = "select n.memnum,c.LastName from
 			custdata as c
-			LEFT JOIN {$TRANS}newBalanceStockToday_test as n
+			LEFT JOIN {$TRANS}equity_live_balance as n
 			on c.CardNo = n.memnum LEFT JOIN
 			{$TRANS}memEquitySpan as e on e.card_no = c.CardNo
 			where n.payments >= 100 and
@@ -163,7 +163,7 @@ function upgradeDisplays($subtype){
 	elseif ($subtype == "2month"){
 		$query = "select n.memnum,c.LastName from
 			custdata as c
-			LEFT JOIN {$TRANS}newBalanceStockToday_test as n
+			LEFT JOIN {$TRANS}equity_live_balance as n
 			on c.CardNo = n.memnum LEFT JOIN
 			{$TRANS}memEquitySpan as e on e.card_no = c.CardNo
 			where n.payments >= 100 and
@@ -199,7 +199,7 @@ function paidInFullDisplays($subtype){
 	
 	$query = "select n.memnum,c.LastName from
 		custdata as c
-		LEFT JOIN {$TRANS}newBalanceStockToday_test as n
+		LEFT JOIN {$TRANS}equity_live_balance as n
 		on c.CardNo = n.memnum LEFT JOIN
 		{$TRANS}memEquitySpan as e on e.card_no = c.CardNo
 		where n.payments >= 100 
@@ -208,7 +208,7 @@ function paidInFullDisplays($subtype){
 	if ($subtype == "1month"){
 		$query = "select n.memnum,c.LastName from
 			custdata as c
-			LEFT JOIN {$TRANS}newBalanceStockToday_test as n
+			LEFT JOIN {$TRANS}equity_live_balance as n
 			on c.CardNo = n.memnum LEFT JOIN
 			{$TRANS}memEquitySpan as e on e.card_no = c.CardNo
 			where n.payments >= 100 
@@ -219,7 +219,7 @@ function paidInFullDisplays($subtype){
 	elseif ($subtype == "0month"){
 		$query = "select n.memnum,c.LastName from
 			custdata as c
-			LEFT JOIN {$TRANS}newBalanceStockToday_test as n
+			LEFT JOIN {$TRANS}equity_live_balance as n
 			on c.CardNo = n.memnum LEFT JOIN
 			{$TRANS}memEquitySpan as e on e.card_no = c.CardNo
 			where n.payments >= 100 
@@ -230,7 +230,7 @@ function paidInFullDisplays($subtype){
 	elseif ($subtype == "2month"){
 		$query = "select n.memnum,c.LastName from
 			custdata as c
-			LEFT JOIN {$TRANS}newBalanceStockToday_test as n
+			LEFT JOIN {$TRANS}equity_live_balance as n
 			on c.CardNo = n.memnum LEFT JOIN
 			{$TRANS}memEquitySpan as e on e.card_no = c.CardNo
 			where n.payments >= 100 
@@ -292,7 +292,7 @@ function dueDisplays($subtype){
 	$query = "select m.card_no,c.LastName from
 		memDates as m left join custdata as c
 		on m.card_no=c.CardNo and c.personNum=1
-		left join {$TRANS}newBalanceStockToday_test as n on
+		left join {$TRANS}equity_live_balance as n on
 		m.card_no = n.memnum
 		where ".$sql->monthdiff($sql->now(),'m.end_date')." <= 0
 		AND c.Type NOT IN ('REG','TERM','INACT2') and n.payments < 100 order by m.card_no";
@@ -300,7 +300,7 @@ function dueDisplays($subtype){
 		$query = "select m.card_no,c.LastName from
 			memDates as m left join custdata as c
 			on m.card_no=c.CardNo and c.personNum=1
-			left join {$TRANS}newBalanceStockToday_test as n on
+			left join {$TRANS}equity_live_balance as n on
 			m.card_no = n.memnum
 			where ".$sql->monthdiff($sql->now(),'m.end_date')." = 0
 			and c.Type NOT IN ('REG','TERM','INACT2') and n.payments < 100 order by m.card_no";
@@ -309,7 +309,7 @@ function dueDisplays($subtype){
 		$query = "select m.card_no,c.LastName from
 			memDates as m left join custdata as c
 			on m.card_no=c.CardNo and c.personNum=1
-			left join {$TRANS}newBalanceStockToday_test as n on
+			left join {$TRANS}equity_live_balance as n on
 			m.card_no = n.memnum
 			where ".$sql->monthdiff($sql->now(),'m.end_date')." = -1
 			and c.Type NOT IN ('REG','TERM','INACT2') and n.payments < 100 order by m.card_no";
@@ -318,7 +318,7 @@ function dueDisplays($subtype){
 		$query = "select m.card_no,c.LastName from
 			memDates as m left join custdata as c
 			on m.card_no=c.CardNo and c.personNum=1
-			left join {$TRANS}newBalanceStockToday_test as n on
+			left join {$TRANS}equity_live_balance as n on
 			m.card_no = n.memnum
 			where ".$sql->monthdiff($sql->now(),'m.end_date')." = -2
 			and c.Type NOT IN ('REG','TERM','INACT2') and n.payments < 100 order by m.card_no";
@@ -349,7 +349,7 @@ function pastDueDisplays($subtype){
 	$query = "select m.card_no,c.lastname from
 		memDates as m left join custdata as c
 		on m.card_no=c.cardno and c.personnum=1
-		left join newBalanceStockToday_test as n on
+		left join equity_live_balance as n on
 		m.card_no = n.memnum
 		where ".$sql->monthdiff($sql->now(),'m.end_date')." > 0
 		AND c.type <> 'TERM' and c.type <> 'INACT2'
@@ -358,7 +358,7 @@ function pastDueDisplays($subtype){
 		$query = "select m.card_no,c.LastName from
 			memDates as m left join custdata as c
 			on m.card_no=c.CardNo and c.personNum=1
-			left join {$TRANS}newBalanceStockToday_test as n on
+			left join {$TRANS}equity_live_balance as n on
 			m.card_no = n.memnum
 			where ".$sql->monthdiff($sql->now(),'m.end_date')." = 0
 			and (".$sql->datediff($sql->now(),'m.end_date')." > 0
@@ -370,7 +370,7 @@ function pastDueDisplays($subtype){
 		$query = "select m.card_no,c.LastName from
 			memDates as m left join custdata as c
 			on m.card_no=c.CardNo and c.personNum=1
-			left join {$TRANS}newBalanceStockToday_test as n on
+			left join {$TRANS}equity_live_balance as n on
 			m.card_no = n.memnum
 			where ".$sql->monthdiff($sql->now(),'m.end_date')." = 1
 			and (".$sql->datediff($sql->now(),'m.end_date')." > 0
@@ -382,7 +382,7 @@ function pastDueDisplays($subtype){
 		$query = "select m.card_no,c.LastName from
 			memDates as m left join custdata as c
 			on m.card_no=c.CardNo and c.personNum=1
-			left join {$TRANS}newBalanceStockToday_test as n on
+			left join {$TRANS}equity_live_balance as n on
 			m.card_no = n.memnum
 			where ".$sql->monthdiff($sql->now(),'m.end_date')." = 2
 			and (".$sql->datediff($sql->now(),'m.end_date')." > 0

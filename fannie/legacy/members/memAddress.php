@@ -44,7 +44,7 @@ function addressList($memNum)
 	$dateW = $sql->fetch_row($dateR);
 
 	//updated to new stock view based on stockpurchases table....CvR 02/27/06
-	$query2 = $sql->prepare("SELECT payments FROM is4c_trans.newBalanceStockToday_test WHERE memnum = ?");
+	$query2 = $sql->prepare("SELECT payments FROM is4c_trans.equity_live_balance WHERE memnum = ?");
 	$stockResult = $sql->execute($query2, array($memNum));
 	$row2 = $sql->fetch_row($stockResult);
 		
@@ -230,7 +230,7 @@ function addressForm($memNum)
     $row1 = $sql->fetch_row($result1);
 	$memIDQ = "SELECT * FROM memTypeID";
 
-	$query2 = $sql->prepare("SELECT payments FROM is4c_trans.newBalanceStockToday_test WHERE memnum = ?");
+	$query2 = $sql->prepare("SELECT payments FROM is4c_trans.equity_live_balance WHERE memnum = ?");
 	$stockResult = $sql->execute($query2, array($memNum));
     $row2 = $sql->fetch_row($stockResult);
 

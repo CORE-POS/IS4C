@@ -73,14 +73,19 @@ class MemNameNumImportPage extends FannieUploadPage
 		$t_index = $this->get_column_index('mtype');
 
 		$defaults_table = array();
-		$defQ = $dbc->prepare_statement("SELECT memtype,cd_type,discount,staff,SSI from memdefaults");
+        // get defaults directly from the memtype table if possible
+        $mt = $dbc->tableDefinition('memtype');
+		$defQ = $dbc->prepare_statement("SELECT memtype,custdataType,discount,staff,ssi from memtype");
+        if ($dbc->tableExists('memdefaults') && (!isset($mt['custdataType']) || !isset($mt['discount']) || !isset($mt['staff']) || !isset($mt['ssi']))) {
+            $defQ = $dbc->prepare_statement("SELECT memtype,cd_type as custdataType,discount,staff,SSI as ssi from memdefaults");
+        }
 		$defR = $dbc->exec_statement($defQ);
 		while($defW = $dbc->fetch_row($defR)) {
 			$defaults_table[$defW['memtype']] = array(
-				'type' => $defW['cd_type'],
+				'type' => $defW['custdataType'],
 				'discount' => $defW['discount'],
 				'staff' => $defW['staff'],
-				'SSI' => $defW['SSI']
+				'SSI' => $defW['ssi']
 			);
 		}
 

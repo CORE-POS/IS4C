@@ -67,10 +67,7 @@ class NewMemberTool extends FanniePage
 		// inner join so that only types
 		// with defaults set up are shown
 		$q = $dbc->prepare_statement("SELECT m.memtype,m.memDesc 
-			FROM memtype AS m
-			INNER JOIN memdefaults AS d ON 
-			m.memtype=d.memtype ORDER BY
-			m.memtype");
+			FROM memtype AS m ORDER BY m.memtype");
 		$r = $dbc->exec_statement($q);
 		$opts = "";
 		while($w = $dbc->fetch_row($r)) {
@@ -136,8 +133,12 @@ class NewMemberTool extends FanniePage
             'ads_OK'=>1
 		);
 
-		$defaultsQ = $dbc->prepare_statement("SELECT cd_type,discount,staff,SSI
-				FROM memdefaults WHERE memtype=?");
+        $mt = $dbc->tableDefinition('memtype');
+		$defaultsQ = $dbc->prepare_statement("SELECT custdataType,discount,staff,ssi from memtype WHERE memtype=?");
+        if ($dbc->tableExists('memdefaults') && (!isset($mt['custdataType']) || !isset($mt['discount']) || !isset($mt['staff']) || !isset($mt['ssi']))) {
+            $defaultsQ = $dbc->prepare_statement("SELECT cd_type as custdataType,discount,staff,SSI as ssi
+                    FROM memdefaults WHERE memtype=?");
+        }
 		$defaultsR = $dbc->exec_statement($defaultsQ,array($mtype));
 		$defaults = $dbc->fetch_row($defaultsR);
 
@@ -172,9 +173,9 @@ class NewMemberTool extends FanniePage
         $model->Balance(0);
         $model->memCoupons(0);
         $model->Discount($defaults['discount']);
-        $model->Type($defaults['cd_type']);
+        $model->Type($defaults['custdataType']);
         $model->staff($defaults['staff']);
-        $model->SSI($defaults['SSI']);
+        $model->SSI($defaults['ssi']);
         $model->memType($mtype);
 
 		$chkP = $dbc->prepare_statement('SELECT CardNo FROM custdata WHERE CardNo=?');

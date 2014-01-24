@@ -32,6 +32,12 @@ class EquityAllReport extends FannieReportPage
     protected $header = "All Equity Report";
     protected $required_fields = array('submit');
 
+    public function readinessCheck()
+    {
+        global $FANNIE_TRANS_DB;
+        return $this->tableExistsReadinessCheck($FANNIE_TRANS_DB, 'equity_live_balance');
+    }
+
     public function fetch_report_data()
     {
         global $FANNIE_OP_DB, $FANNIE_TRANS_DB, $FANNIE_URL;
@@ -57,9 +63,6 @@ class EquityAllReport extends FannieReportPage
             WHERE $type_restrict AND $equity_restrict
             ORDER BY n.memnum";
 
-        if (!$dbc->table_exists($FANNIE_TRANS_DB.$dbc->sep().'equity_live_balance')) {
-            $q = str_replace('equity_live_balance', 'newBalanceStockToday_test', $q);
-        }
         $p = $dbc->prepare_statement($q);
 
         $r = $dbc->exec_statement($p);

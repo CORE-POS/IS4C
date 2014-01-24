@@ -39,7 +39,7 @@ class WfcPtoStudy extends FannieReportPage
     protected $sortable = false;
     protected $no_sort_but_style = true;
 
-    protected $report_headers = array('Pay Period', 'Emp#', 'New PTO Level', 'Current Threshold', 'Current Award', 'Alt Award');
+    protected $report_headers = array('Pay Period', 'Emp#', 'Name', 'New PTO Level', 'Current Threshold', 'Current Award', 'Alt Award');
 
     public function preprocess()
     {
@@ -66,11 +66,12 @@ class WfcPtoStudy extends FannieReportPage
         }
 
         // get employees hours & levels before the study period
-        $start = 'SELECT empID, totalHours FROM studyPre';
+        $start = 'SELECT s.empID, totalHours, name FROM studyPre as s
+                left join employees AS e on s.empID=e.empID';
         $result =  $dbc->query($start);
         $employees = array();
         while($row = $dbc->fetch_row($result)) {
-            $employees[$row['empID']] = array('hours'=>$row['totalHours'],'level'=>0); 
+            $employees[$row['empID']] = array('hours'=>$row['totalHours'],'level'=>0, 'name'=>$row['name']); 
         }
         foreach($employees as $id => $info) {
             foreach($cutoffs as $level => $limit) {
@@ -81,15 +82,16 @@ class WfcPtoStudy extends FannieReportPage
         }
 
         // add zero entries for employees hired during the period
-        $extra = 'SELECT empID FROM ImportedHoursData 
-                WHERE periodID BETWEEN 117 AND 140
-                GROUP BY empID';
+        $extra = 'SELECT i.empID,name FROM ImportedHoursData 
+                AS i left join employees as e on i.empID=e.empID
+                WHERE periodID BETWEEN 121 AND 144
+                GROUP BY i.empID, name';
         $result = $dbc->query($extra);
         while($row = $dbc->fetch_row($result)) {
             if (isset($employees[$row['empID']])) {
                 continue;
             }
-            $employees[$row['empID']] = array('hours'=>0.0,'level'=>0); 
+            $employees[$row['empID']] = array('hours'=>0.0,'level'=>0,'name'=>$row['name']); 
         }
 
         $report = array();
@@ -97,7 +99,7 @@ class WfcPtoStudy extends FannieReportPage
                         SUM(hours+OTHours+SecondRateHours+EmergencyHours) as totalHours
                         FROM ImportedHoursData AS i LEFT JOIN PayPeriods AS p
                         ON i.periodID=p.periodID WHERE i.periodID=? GROUP BY empID');
-        for($i=117; $i<=140; $i++) {
+        for($i=121; $i<=144; $i++) {
             $result = $dbc->execute($prep, array($i));
             $dateStr = '';
             // add one payperiod to employees
@@ -115,6 +117,7 @@ class WfcPtoStudy extends FannieReportPage
                     $record = array(
                         $dateStr,
                         $id,
+                        $employees[$id]['name'],
                         $curLevel+1,
                         $cutoffs[$curLevel+1],
                         $awards[$curLevel+1],

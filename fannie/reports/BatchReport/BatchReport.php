@@ -32,6 +32,27 @@ class BatchReport extends FannieReportPage
     protected $report_headers = array('UPC','Description','$','Qty');
     protected $required_fields = array('batchID');
 
+    public function readinessCheck()
+    {
+        global $FANNIE_OP_DB, $FANNIE_URL;
+        
+        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $query = 'SELECT upc FROM batchMergeTable';
+        $query = $dbc->add_select_limit($query, 1);
+        $result = $dbc->query($query);
+        if ($result == false || $dbc->num_rows($result) == 0) {
+            $this->error_text = "<p>There is nothing in {$FANNIE_OP_DB}.batchMergeTable.
+                            <br />Therefore this report will be empty.
+                            <br />Run the Scheduled Task 'Cache Report Data' to populate it.
+                            and then set the task to run nightly to keep the table up to date.
+                            <br /><a href=\"{$FANNIE_URL}cron/management/\">View Scheduled Tasks</a>
+                            </p>";
+            return false;
+        }
+
+        return true;
+    }
+
 	function fetch_report_data(){
 		global $FANNIE_OP_DB, $FANNIE_ARCHIVE_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
@@ -162,7 +183,6 @@ class BatchReport extends FannieReportPage
 		echo '<hr />';
 
 		$batchQ = "SELECT b.batchID,batchName FROM batches as b
-			LEFT JOIN batchowner as o ON b.batchID=o.batchID
 			WHERE 1=1 ";
 		$args = array();
 		if ($filter1 !== ""){

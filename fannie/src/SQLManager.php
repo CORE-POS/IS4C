@@ -889,6 +889,26 @@ class SQLManager
         return $this->tableExists($table_name, $which_connection);
     }
 
+    public function isView($table_name, $which_connection='')
+    {
+        if ($which_connection == '') {
+            $which_connection=$this->default_db;
+        }
+
+        if (!$this->tableExists($table_name, $which_connection)) {
+            return false;
+        }
+
+		$conn = $this->connections[$which_connection];
+        $views = $conn->MetaTables('VIEW');
+        if (in_array($table_name, $views)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+
 	/**
 	   Get the table's definition
 	   @param $table_name The table's name
@@ -1319,6 +1339,31 @@ class SQLManager
 			return false;
 		}
 	}
+
+    /**
+      Get column names common to both tables
+      @param $table1 [string] table name
+      @param $table2 [string] table name
+      $which_connection [optiona] see close()
+      @return [array] of [string] column names
+    */
+    public function matchingColumns($table1, $table2, $which_connection='')
+    {
+		if ($which_connection == '') {
+			$which_connection=$this->default_db;
+        }
+        
+        $definition1 = $this->table_definition($table1, $which_connection);
+        $definition2 = $this->table_definition($table2, $which_connection);
+        $matches = array();
+        foreach($definition1 as $col_name => $info) {
+            if (isset($definition2[$col_name])) {
+                $matches[] = $col_name;
+            }
+        }
+
+        return $matches;
+    }
 
 	// skipping fetch_cell on purpose; generic-db way would be slow as heck
 

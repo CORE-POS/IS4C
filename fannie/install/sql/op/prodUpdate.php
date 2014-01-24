@@ -3,9 +3,13 @@
 Table: prodUpdate
 
 Columns:
+    prodUpdateID int
+    updateType varchar
 	upc int or varchar, dbms dependent
 	description varchar
 	price dbms currency
+    salePrice dbms currency
+    cost dbms currency
 	dept int
 	tax bit
 	fs bit
@@ -28,6 +32,7 @@ should though, ideally.
 */
 $CREATE['op.prodUpdate'] = "
 	CREATE TABLE `prodUpdate` (
+      `prodUpdateID` bigint unsigned not null auto_increment,
 	  `updateType` varchar(20) default NULL,
 	  `upc` varchar(13) default NULL,
 	  `description` varchar(50) default NULL,
@@ -44,6 +49,7 @@ $CREATE['op.prodUpdate'] = "
 	  `forceQty` bit(1) default NULL,
 	  `noDisc` bit(1) default NULL,
 	  `inUse` bit(1) default NULL,
+      PRIMARY KEY (prodUpdateID)
       INDEX(upc)
 	)
 ";
@@ -51,6 +57,7 @@ $CREATE['op.prodUpdate'] = "
 if ($dbms == "MSSQL"){
 	$CREATE['op.prodUpdate'] = "
 		CREATE TABLE prodUpdate (
+            prodUpdateID bigint IDENTITY (1, 1) NOT NULL ,
 			updateType varchar(20),
 			upc varchar(13),
 			description varchar(50),

@@ -66,23 +66,37 @@ class DepartmentEditor extends FanniePage {
 		$pcode="";
 
 		if ($id != -1){ // -1 means create new department
-			$prep = $dbc->prepare_statement("SELECT dept_name,dept_tax,dept_fs,dept_limit,
-					dept_minimum,dept_discount,margin,salesCode
-					FROM departments AS d LEFT JOIN
-					deptMargin AS m ON d.dept_no=m.dept_ID
-					LEFT JOIN deptSalesCodes as c
-					ON d.dept_no=c.dept_ID
-					WHERE dept_no=?");
-			$resp = $dbc->exec_statement($prep,array($id));
-			$row = $dbc->fetch_row($resp);
-			$name = $row[0];
-			$tax = $row[1];
-			$fs = $row[2];
-			$max = $row[3];
-			$min=$row[4];
-			$disc = $row[5];
-			$margin = $row[6];
-			$pcode = $row[7];
+            $dept = new DepartmentsModel($dbc);
+            $dept->dept_no($id);
+            $dept->load();
+			$name = $dept->dept_name();
+			$tax = $dept->dept_tax();
+			$fs = $dept->dept_fs();
+			$max = $dept->dept_limit();
+			$min = $dept->dept_minimum();
+			$disc = $dept->dept_discount();
+
+            /**
+              Use legacy tables for margin and sales code if needed
+            */
+			$margin = $dept->margin();
+            if (empty($margin) && $dbc->tableExists('deptMargin')) {
+                $prep = $dbc->prepare('SELECT margin FROM deptMargin WHERE dept_ID=?');
+                $res = $dbc->execute($prep, array($id));
+                if ($dbc->num_rows($res) > 0) {
+                    $row = $dbc->fetch_row($res);
+                    $margin = $row['margin'];
+                }
+            }
+			$pcode = $dept->salesCode();
+            if (empty($pcode) && $dbc->tableExists('deptSalesCodes')) {
+                $prep = $dbc->prepare('SELECT salesCode FROM deptSalesCodes WHERE dept_ID=?');
+                $res = $dbc->execute($prep, array($id));
+                if ($dbc->num_rows($res) > 0) {
+                    $row = $dbc->fetch_row($res);
+                    $pcode = $row['salesCode'];
+                }
+            }
 		}
 		$taxes = array();
 		$taxes[0] = "NoTax";
@@ -157,6 +171,8 @@ class DepartmentEditor extends FanniePage {
 		$model->dept_minimum($min);
 		$model->dept_limit($max);
 		$model->modified(date('Y-m-d H:i:s'));
+        $model->margin($margin);
+        $model->salesCode($pcode);
 		$saved = $model->save();
 
 		if ($new == 1){
@@ -175,27 +191,31 @@ class DepartmentEditor extends FanniePage {
 			}
 		}
 		
-		$chkM = $dbc->prepare_statement('SELECT dept_ID FROM deptMargin WHERE dept_ID=?');
-		$mR = $dbc->exec_statement($chkM, array($id));
-		if ($dbc->num_rows($mR) > 0){
-			$up = $dbc->prepare_statement('UPDATE deptMargin SET margin=? WHERE dept_ID=?');
-			$dbc->exec_statement($up, array($margin, $id));
-		}
-		else {
-			$ins = $dbc->prepare_statement('INSERT INTO deptMargin (dept_ID,margin) VALUES (?,?)');
-			$dbc->exec_statement($ins, array($id, $margin));
-		}
+        if ($dbc->tableExists('deptMargin')) {
+            $chkM = $dbc->prepare_statement('SELECT dept_ID FROM deptMargin WHERE dept_ID=?');
+            $mR = $dbc->exec_statement($chkM, array($id));
+            if ($dbc->num_rows($mR) > 0){
+                $up = $dbc->prepare_statement('UPDATE deptMargin SET margin=? WHERE dept_ID=?');
+                $dbc->exec_statement($up, array($margin, $id));
+            }
+            else {
+                $ins = $dbc->prepare_statement('INSERT INTO deptMargin (dept_ID,margin) VALUES (?,?)');
+                $dbc->exec_statement($ins, array($id, $margin));
+            }
+        }
 
-		$chkS = $dbc->prepare_statement('SELECT dept_ID FROM deptSalesCodes WHERE dept_ID=?');
-		$rS = $dbc->exec_statement($chkS, array($id));
-		if ($dbc->num_rows($rS) > 0){
-			$up = $dbc->prepare_statement('UPDATE deptSalesCodes SET salesCode=? WHERE dept_ID=?');
-			$dbc->exec_statement($up, array($pcode, $id));
-		}
-		else {
-			$ins = $dbc->prepare_statement('INSERT INTO deptSalesCodes (dept_ID,salesCode) VALUES (?,?)');
-			$dbc->exec_statement($ins, array($id, $pcode));
-		}
+        if ($dbc->tableExists('deptSalesCodes')) {
+            $chkS = $dbc->prepare_statement('SELECT dept_ID FROM deptSalesCodes WHERE dept_ID=?');
+            $rS = $dbc->exec_statement($chkS, array($id));
+            if ($dbc->num_rows($rS) > 0){
+                $up = $dbc->prepare_statement('UPDATE deptSalesCodes SET salesCode=? WHERE dept_ID=?');
+                $dbc->exec_statement($up, array($pcode, $id));
+            }
+            else {
+                $ins = $dbc->prepare_statement('INSERT INTO deptSalesCodes (dept_ID,salesCode) VALUES (?,?)');
+                $dbc->exec_statement($ins, array($id, $pcode));
+            }
+        }
 
 		echo 'Department '.$id.' - '.$name.' Saved';
 	}
