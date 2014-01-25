@@ -60,9 +60,17 @@ class suspendedlist extends NoInputPage {
 			if (!empty($_REQUEST['selectlist'])){
 				$tmp = explode("::",$_REQUEST['selectlist']);
 				$this->doResume($tmp[0],$tmp[1],$tmp[2]);
-			}
-			$this->change_page($this->page_url."gui-modules/pos2.php");
-			return False;
+                // if it is a member transaction, verify correct name
+                if ($CORE_LOCAL->get('memberID') != '0' && $CORE_LOCAL->get('memberID') != $CORE_LOCAL->get('defaultNonMem')) {
+                    $this->change_page($this->page_url.'gui-modules/memlist.php?idSearch='.$CORE_LOCAL->get('memberID'));
+                } else {
+                    $this->change_page($this->page_url."gui-modules/pos2.php");
+                }
+			} else { // pressed clear
+                $this->change_page($this->page_url."gui-modules/pos2.php");
+            }
+
+			return false;
 		}
 
 		$query_local = "select register_no, emp_no, trans_no, sum(total) as total from suspendedtoday "
