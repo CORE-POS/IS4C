@@ -49,7 +49,7 @@ $CREATE['op.prodUpdate'] = "
 	  `forceQty` bit(1) default NULL,
 	  `noDisc` bit(1) default NULL,
 	  `inUse` bit(1) default NULL,
-      PRIMARY KEY (prodUpdateID)
+      PRIMARY KEY (prodUpdateID),
       INDEX(upc)
 	)
 ";

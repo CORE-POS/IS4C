@@ -167,7 +167,8 @@ class InstallIndexPage extends InstallPage {
 			echo "</blockquote>";
 			exit;
 		}
-		$defaultDbType = array_shift(array_keys($supportedTypes));
+        $db_keys = array_keys($supportedTypes);
+		$defaultDbType = $db_keys[0];
 
 		?>
 		<h4 class="install">Main Server</h4>
@@ -716,7 +717,7 @@ class InstallIndexPage extends InstallPage {
 
 
 	function create_op_dbs($con){
-		global $FANNIE_OP_DB, $FANNIE_SERVER_DBMS;
+        require(dirname(__FILE__).'/../config.php'); 
 
 		$ret = array();
 
@@ -1060,7 +1061,7 @@ class InstallIndexPage extends InstallPage {
 	}
 
 	function create_trans_dbs($con){
-		global $FANNIE_TRANS_DB, $FANNIE_SERVER_DBMS, $FANNIE_OP_DB;
+        require(dirname(__FILE__).'/../config.php'); 
 
 		$ret = array();
 
@@ -1190,7 +1191,7 @@ class InstallIndexPage extends InstallPage {
 	}
 
 	function create_dlogs($con){
-		global $FANNIE_TRANS_DB, $FANNIE_SERVER_DBMS, $FANNIE_AR_DEPARTMENTS, $FANNIE_EQUITY_DEPARTMENTS, $FANNIE_OP_DB;
+        require(dirname(__FILE__).'/../config.php'); 
 
 		$ret = array();
 
@@ -1319,7 +1320,7 @@ class InstallIndexPage extends InstallPage {
 	}
 
 	function create_delayed_dbs(){
-		global $FANNIE_SERVER,$FANNIE_SERVER_DBMS,$FANNIE_SERVER_USER,$FANNIE_SERVER_PW,$FANNIE_OP_DB,$FANNIE_TRANS_DB;
+        require(dirname(__FILE__).'/../config.php'); 
 
 		$ret = array();
 
@@ -1470,7 +1471,7 @@ class InstallIndexPage extends InstallPage {
 	}
 
 	function create_archive_dbs($con) {
-		global $FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,$FANNIE_ARCHIVE_DB,$FANNIE_ARCHIVE_METHOD;
+        require(dirname(__FILE__).'/../config.php'); 
 
 		$ret = array();
 
@@ -1494,6 +1495,9 @@ class InstallIndexPage extends InstallPage {
 			$con->exec_statement($create,array(),$FANNIE_ARCHIVE_DB);
 			// create the first partition if needed
 			if ($FANNIE_ARCHIVE_METHOD == "partitions"){
+                $con->query('ALTER TABLE bigArchive CHANGE COLUMN store_row_id store_row_id BIGINT UNSIGNED');
+                $noPkQ = 'ALTER TABLE bigArchive DROP PRIMARY KEY';
+                $con->query($noPkQ, $FANNIE_ARCHIVE_DB);
 				$p = "p".date("Ym");
 				$limit = date("Y-m-d",mktime(0,0,0,date("n")+1,1,date("Y")));
 				$partQ = sprintf("ALTER TABLE `bigArchive` 
@@ -1501,7 +1505,7 @@ class InstallIndexPage extends InstallPage {
 					(PARTITION %s 
 						VALUES LESS THAN (TO_DAYS('%s'))
 					)",$p,$limit);
-				$prep = $dbc->prepare_statement($partQ);
+				$prep = $con->prepare_statement($partQ);
 				$con->exec_statement($prep);
 			}
 		}
