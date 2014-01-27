@@ -84,17 +84,18 @@ class HouseCouponEditor extends FanniePage
 			$dval = FormLib::get_form_value('dval',0);
 			$mtype = FormLib::get_form_value('mtype','Q');
 			$mval = FormLib::get_form_value('mval',0);
+			$descript = FormLib::get_form_value('description',0);
 
 			$query = "UPDATE houseCoupons SET endDate=?,
 				".$dbc->identifier_escape('limit')."=?
 				,memberOnly=?,discountType=?,
 				discountValue=?,minType=?,minValue=?,
-				department=? WHERE coupID=?";
+				department=?,description=? WHERE coupID=?";
 			$args = array($expires,$limit,$mem,$dtype,
-				$dval,$mtype,$mval,$dept,$this->coupon_id);
+				$dval,$mtype,$mval,$dept,$descript,$this->coupon_id);
 			$prep = $dbc->prepare_statement($query);
 			$dbc->exec_statement($prep,$args);
-			
+						
 			$this->display_function = 'edit_coupon';
 
 			if (FormLib::get_form_value('submit_add_upc') !== '' && FormLib::get_form_value('new_upc') !== ''){
@@ -164,12 +165,12 @@ class HouseCouponEditor extends FanniePage
 		$ret .= '</form>';
 		$ret .= '<table cellpadding="4" cellspacing="0" border="1" />';
 		$ret .= '<tr><th>ID</th><th>Value</th><th>Expires</th></tr>';
-		$q = $dbc->prepare_statement("SELECT coupID, discountValue, discountType, endDate FROM houseCoupons ORDER BY coupID");
+		$q = $dbc->prepare_statement("SELECT coupID, description, discountValue, discountType, endDate FROM houseCoupons ORDER BY coupID");
 		$r = $dbc->exec_statement($q);
 		while($w = $dbc->fetch_row($r)){
 			$ret .= sprintf('<tr><td>#%d <a href="HouseCouponEditor.php?edit_id=%d">Edit</a></td>
-					<td>%.2f%s</td><td>%s</td></tr>',
-					$w['coupID'],$w['coupID'],
+					<td>%s</td><td>%.2f%s</td><td>%s</td></tr>',
+					$w['coupID'],$w['coupID'],$w['description'],
 					$w['discountValue'],$w['discountType'],$w['endDate']);
 		}
 		$ret .= '</table>';
@@ -212,14 +213,15 @@ class HouseCouponEditor extends FanniePage
 
 		$ret .= sprintf('<table cellspacing=0 cellpadding=4><tr>
 			<th>Coupon ID#</th><td>%s</td><th>UPC</th>
-			<td>%s</td></tr><tr><th>Expires</th>
-			<td><input type=text name=expires value="%s" size=12 
+			<td>%s</td></tr><tr><tr><th>Label</th><td colspan=2>
+			<input type=text name=description value="%s" size=30 /></td></tr>
+			<th>Expires</th><td><input type=text name=expires value="%s" size=12 
 			onclick="showCalendarControl(this);" />
 			</td><th>Limit</th><td><input type=text name=limit size=3
 			value="%s" /></td></tr><tr><th>Member-only</th><td>
 			<input type=checkbox name=memberonly value="1" %s /></td><th>
 			Department</th><td><select name=dept>',
-			$cid,"00499999".str_pad($cid,5,'0',STR_PAD_LEFT),
+			$cid,"00499999".str_pad($cid,5,'0',STR_PAD_LEFT),$description,
 			$expires,$limit,($mem==1?'checked':'') );
 		foreach($depts as $k=>$v){
 			$ret .= "<option value=\"$k\"";
