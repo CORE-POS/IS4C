@@ -35,7 +35,6 @@
 class HouseCoupon extends SpecialUPC 
 {
 
-
     public function isSpecial($upc)
     {
         global $CORE_LOCAL;
@@ -72,7 +71,7 @@ class HouseCoupon extends SpecialUPC
 
         $add = $this->getValue($coupID);
         if ($add['value'] != 0) {
-            TransRecord::addhousecoupon($upc, $add['department'], -1 * $add['value']);
+            TransRecord::addhousecoupon($upc, $add['department'], -1 * $add['value'], $add['description']);
         }
         $json['output'] = DisplayLib::lastpage();
         $json['udpmsg'] = 'goodBeep';
@@ -87,6 +86,7 @@ class HouseCoupon extends SpecialUPC
     private function lookupCoupon($id)
     {
         $db = Database::pDataConnect();
+        $hctable = $db->table_definition('houseCoupons');
         $infoQ = "select endDate," . $db->identifier_escape('limit') .
             ",discountType, department,
             discountValue, minType, minValue, memberOnly, 
@@ -94,6 +94,9 @@ class HouseCoupon extends SpecialUPC
             ". $db->datediff('endDate', $db->now()) . " end as expired
             from
             houseCoupons WHERE coupID=" . ((int)$id);
+        if (isset($hctable['definition'])) {
+            $infoQ = str_replace('as expired', 'as expired, description', $infoQ);
+        }
         $infoR = $db->query($infoQ);
         if ($db->num_rows($infoR) == 0) {
             return false;
@@ -311,13 +314,14 @@ class HouseCoupon extends SpecialUPC
       @return array with keys:
         value => [float] coupon value
         department => [int] department number for the coupon
+        description => [string] description for coupon
     */
     public function getValue($id)
     {
         global $CORE_LOCAL;
         $infoW = $this->lookupCoupon($id);
         if ($infoW === false) {
-            return array('value' => 0, 'department' => 0);;
+            return array('value' => 0, 'department' => 0, 'description' => '');
         }
 
         $transDB = Database::tDataConnect();
@@ -326,6 +330,7 @@ class HouseCoupon extends SpecialUPC
          */
         $value = 0;
         $coupID = $id;
+        $description = isset($infoW['description']) ? $infoW['description'] : '';
         switch($infoW["discountType"]) {
             case "Q": // quantity discount
                 // discount = coupon's discountValue
@@ -466,11 +471,11 @@ class HouseCoupon extends SpecialUPC
                 // still need to add a line-item with the coupon UPC to the
                 // transaction to track usage
                 $value = 0;
+                $description = $ttlPD . ' % Discount Coupon';
                 break;
         }
 
-        return array('value' => $value, 'department' => $infoW['department']);
+        return array('value' => $value, 'department' => $infoW['department'], 'description' => $description);
     }
-
 }
 

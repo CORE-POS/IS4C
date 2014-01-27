@@ -32,6 +32,7 @@ class HouseCouponsModel extends BasicModel
 
     protected $columns = array(
     'coupID' => array('type'=>'INT', 'primary_key'=>true),
+    'description' => array('type'=>'VARCHAR(30)'),
     'endDate' => array('type'=>'DATETIME'),
     'limit' => array('type'=>'SMALLINT'),
     'memberOnly' => array('type'=>'SMALLINT'),
