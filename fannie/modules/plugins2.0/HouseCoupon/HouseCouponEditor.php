@@ -86,16 +86,19 @@ class HouseCouponEditor extends FanniePage
 			$mval = FormLib::get_form_value('mval',0);
 			$descript = FormLib::get_form_value('description',0);
 
-			$query = "UPDATE houseCoupons SET endDate=?,
-				".$dbc->identifier_escape('limit')."=?
-				,memberOnly=?,discountType=?,
-				discountValue=?,minType=?,minValue=?,
-				department=?,description=? WHERE coupID=?";
-			$args = array($expires,$limit,$mem,$dtype,
-				$dval,$mtype,$mval,$dept,$descript,$this->coupon_id);
-			$prep = $dbc->prepare_statement($query);
-			$dbc->exec_statement($prep,$args);
-						
+            $model = new HouseCouponsModel($dbc);
+            $model->coupID($this->coupon_id);
+            $model->endDate($expires);
+            $model->limit($limit);
+            $model->discountType($dtype);
+            $model->discountValue($dval);
+            $model->minType($mtype);
+            $model->minValue($mval);
+            $model->department($dept);
+            $model->description($descript);
+            $model->memberOnly($mem);
+            $model->save();
+
 			$this->display_function = 'edit_coupon';
 
 			if (FormLib::get_form_value('submit_add_upc') !== '' && FormLib::get_form_value('new_upc') !== ''){
@@ -165,13 +168,12 @@ class HouseCouponEditor extends FanniePage
 		$ret .= '</form>';
 		$ret .= '<table cellpadding="4" cellspacing="0" border="1" />';
 		$ret .= '<tr><th>ID</th><th>Value</th><th>Expires</th></tr>';
-		$q = $dbc->prepare_statement("SELECT coupID, description, discountValue, discountType, endDate FROM houseCoupons ORDER BY coupID");
-		$r = $dbc->exec_statement($q);
-		while($w = $dbc->fetch_row($r)){
+        $model = new HouseCouponsModel($dbc);
+        foreach($model->find('coupID') as $obj) {
 			$ret .= sprintf('<tr><td>#%d <a href="HouseCouponEditor.php?edit_id=%d">Edit</a></td>
 					<td>%s</td><td>%.2f%s</td><td>%s</td></tr>',
-					$w['coupID'],$w['coupID'],$w['description'],
-					$w['discountValue'],$w['discountType'],$w['endDate']);
+					$obj->coupID(),$obj->coupID(),$obj->description(),
+                    $obj->discountValue(), $obj->discountType(), $obj->endDate());
 		}
 		$ret .= '</table>';
 		
@@ -192,21 +194,21 @@ class HouseCouponEditor extends FanniePage
 		}
 
 		$cid = $this->coupon_id;
+        $model = new HouseCouponsModel($dbc);
+        $model->coupID($cid);
+        $model->load();
 
-		$q1 = $dbc->prepare_statement("SELECT * FROM houseCoupons WHERE coupID=?");
-		$r1 = $dbc->exec_statement($q1,array($cid));
-		$row = $dbc->fetch_row($r1);
-
-		$expires = $row['endDate'];
+		$expires = $model->endDate();
 		if (strstr($expires,' '))
 			$expires = array_shift(explode(' ',$expires));
-		$limit = $row['limit'];
-		$mem = $row['memberOnly'];
-		$dType = $row['discountType'];
-		$dVal = $row['discountValue'];
-		$mType = $row['minType'];
-		$mVal = $row['minValue'];
-		$dept = $row['department'];
+		$limit = $model->limit();
+		$mem = $model->memberOnly();
+		$dType = $model->discountType();
+		$dVal = $model->discountValue();
+		$mType = $model->minType();
+		$mVal = $model->minValue();
+		$dept = $model->department();
+        $description = $model->description();
 
 		$ret .= '<form action="HouseCouponEditor.php" method="post">';
 		$ret .= '<input type="hidden" name="cid" value="'.$cid.'" />';
