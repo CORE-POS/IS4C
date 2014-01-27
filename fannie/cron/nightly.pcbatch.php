@@ -136,7 +136,7 @@ while($batchW = $sql->fetch_row($batchR)) {
     foreach($upcs as $item) {
         $prodUpdate->reset();
         $prodUpdate->upc($item);
-        $logged = $prodUpdate->logUpdate(ProdUpdate::UPDATE_PC_BATCH, 1001);
+        $logged = $prodUpdate->logUpdate(ProdUpdateModel::UPDATE_PC_BATCH, 1001);
         if (!$logged) {
             $success = false;
         }
