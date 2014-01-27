@@ -196,7 +196,7 @@ for ($i=0; $i<count($depts); $i++){
 	echo "<script type=text/javascript>window.top.location='new_items.php';</script>";
 }
 else {
-	$dataR = $sql->query("SELECT categoryID,name FROM unfiCategories ORDER BY categoryID");
+	$dataR = $sql->query("SELECT deptID as categoryID,name FROM vendorDepartments WHERE vendorID=1 ORDER BY deptID");
 	echo "<html><head><title>Add UNFI items</title>";
 	echo "<script type=text/javascript src=new_items.js></script>";
 	echo "</head>";

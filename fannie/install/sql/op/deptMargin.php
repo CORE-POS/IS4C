@@ -12,6 +12,9 @@ Depends on:
 Use:
 This table has a desired margin for each
 department. 
+
+This table is deprecated. Please use
+the margin column in the departments table.
 */
 $CREATE['op.deptMargin'] = "
 	CREATE TABLE deptMargin (

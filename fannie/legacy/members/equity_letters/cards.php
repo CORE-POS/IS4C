@@ -19,7 +19,7 @@ $selAddQ = $sql->prepare("SELECT m.card_no,c.firstname,c.lastname,
 		m.zip,c.personnum,d.end_date,n.payments
 		FROM meminfo AS m LEFT JOIN
 		custdata AS c ON m.card_no=c.cardno
-		LEFT JOIN newBalanceStockToday_test as n
+		LEFT JOIN equity_live_balance as n
 		on m.card_no=n.memnum
 		LEFT JOIN memDates AS d ON 
 		c.cardno=d.card_no

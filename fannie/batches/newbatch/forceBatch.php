@@ -70,7 +70,7 @@ function forceBatch($batchID){
 		    and l.batchID = ?";
             
 		$forceLCQ = "UPDATE products AS p
-			INNER JOIN likeCodeView AS v 
+			INNER JOIN upcLike AS v 
 			ON v.upc=p.upc
 			INNER JOIN batchList as l 
 			ON l.upc=concat('LC',convert(v.likecode,char))
@@ -126,7 +126,7 @@ function forceBatch($batchID){
 					ELSE p.mixmatchcode 
 				END	
 				from products as p left join
-				likeCodeView as v on v.upc=p.upc left join
+				upcLike as v on v.upc=p.upc left join
 				batchList as l on l.upc='LC'+convert(varchar,v.likecode)
 				left join batches as b on b.batchID = l.batchID
 				where b.batchID=?";

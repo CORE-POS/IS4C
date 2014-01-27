@@ -35,6 +35,7 @@ class ProdUpdateModel extends BasicModel
     protected $preferred_db = 'op';
 
     protected $columns = array(
+    'prodUpdateID' => array('type'=>'BIGINT UNSIGNED', 'primary_key'=>true, 'increment'=>true),
     'updateType' => array('type'=>'VARCHAR(20)'),
     'upc' => array('type'=>'VARCHAR(13)', 'index'=>true),
     'description' => array('type'=>'VARCHAR(50)'),
@@ -68,10 +69,13 @@ class ProdUpdateModel extends BasicModel
             $adds += $chk;
         }
 
-        $this->name = 'prodUpdateArchive';
-        $chk = parent::normalize($db_name, $mode, $doCreate);
-        if ($chk !== false) {
-            $adds += $chk;
+        $this->connection = FannieDB::get($db_name);
+        if ($this->connection->tableExists('prodUpdateArchive')) {
+            $this->name = 'prodUpdateArchive';
+            $chk = parent::normalize($db_name, $mode, false);
+            if ($chk !== false) {
+                $adds += $chk;
+            }
         }
 
         return $adds;
@@ -198,17 +202,42 @@ class ProdUpdateModel extends BasicModel
 
     /* START ACCESSOR FUNCTIONS */
 
+    public function prodUpdateID()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["prodUpdateID"])) {
+                return $this->instance["prodUpdateID"];
+            } else if (isset($this->columns["prodUpdateID"]["default"])) {
+                return $this->columns["prodUpdateID"]["default"];
+            } else {
+                return null;
+            }
+        } else {
+            if (!isset($this->instance["prodUpdateID"]) || $this->instance["prodUpdateID"] != func_get_args(0)) {
+                if (!isset($this->columns["prodUpdateID"]["ignore_updates"]) || $this->columns["prodUpdateID"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
+            $this->instance["prodUpdateID"] = func_get_arg(0);
+        }
+    }
+
     public function updateType()
     {
         if(func_num_args() == 0) {
             if(isset($this->instance["updateType"])) {
                 return $this->instance["updateType"];
-            } elseif(isset($this->columns["updateType"]["default"])) {
+            } else if (isset($this->columns["updateType"]["default"])) {
                 return $this->columns["updateType"]["default"];
             } else {
                 return null;
             }
         } else {
+            if (!isset($this->instance["updateType"]) || $this->instance["updateType"] != func_get_args(0)) {
+                if (!isset($this->columns["updateType"]["ignore_updates"]) || $this->columns["updateType"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["updateType"] = func_get_arg(0);
         }
     }
@@ -218,12 +247,17 @@ class ProdUpdateModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["upc"])) {
                 return $this->instance["upc"];
-            } elseif(isset($this->columns["upc"]["default"])) {
+            } else if (isset($this->columns["upc"]["default"])) {
                 return $this->columns["upc"]["default"];
             } else {
                 return null;
             }
         } else {
+            if (!isset($this->instance["upc"]) || $this->instance["upc"] != func_get_args(0)) {
+                if (!isset($this->columns["upc"]["ignore_updates"]) || $this->columns["upc"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["upc"] = func_get_arg(0);
         }
     }
@@ -233,12 +267,17 @@ class ProdUpdateModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["description"])) {
                 return $this->instance["description"];
-            } elseif(isset($this->columns["description"]["default"])) {
+            } else if (isset($this->columns["description"]["default"])) {
                 return $this->columns["description"]["default"];
             } else {
                 return null;
             }
         } else {
+            if (!isset($this->instance["description"]) || $this->instance["description"] != func_get_args(0)) {
+                if (!isset($this->columns["description"]["ignore_updates"]) || $this->columns["description"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["description"] = func_get_arg(0);
         }
     }
@@ -248,12 +287,17 @@ class ProdUpdateModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["price"])) {
                 return $this->instance["price"];
-            } elseif(isset($this->columns["price"]["default"])) {
+            } else if (isset($this->columns["price"]["default"])) {
                 return $this->columns["price"]["default"];
             } else {
                 return null;
             }
         } else {
+            if (!isset($this->instance["price"]) || $this->instance["price"] != func_get_args(0)) {
+                if (!isset($this->columns["price"]["ignore_updates"]) || $this->columns["price"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["price"] = func_get_arg(0);
         }
     }
@@ -263,12 +307,17 @@ class ProdUpdateModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["salePrice"])) {
                 return $this->instance["salePrice"];
-            } elseif(isset($this->columns["salePrice"]["default"])) {
+            } else if (isset($this->columns["salePrice"]["default"])) {
                 return $this->columns["salePrice"]["default"];
             } else {
                 return null;
             }
         } else {
+            if (!isset($this->instance["salePrice"]) || $this->instance["salePrice"] != func_get_args(0)) {
+                if (!isset($this->columns["salePrice"]["ignore_updates"]) || $this->columns["salePrice"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["salePrice"] = func_get_arg(0);
         }
     }
@@ -278,12 +327,17 @@ class ProdUpdateModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["cost"])) {
                 return $this->instance["cost"];
-            } elseif(isset($this->columns["cost"]["default"])) {
+            } else if (isset($this->columns["cost"]["default"])) {
                 return $this->columns["cost"]["default"];
             } else {
                 return null;
             }
         } else {
+            if (!isset($this->instance["cost"]) || $this->instance["cost"] != func_get_args(0)) {
+                if (!isset($this->columns["cost"]["ignore_updates"]) || $this->columns["cost"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["cost"] = func_get_arg(0);
         }
     }
@@ -293,12 +347,17 @@ class ProdUpdateModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["dept"])) {
                 return $this->instance["dept"];
-            } elseif(isset($this->columns["dept"]["default"])) {
+            } else if (isset($this->columns["dept"]["default"])) {
                 return $this->columns["dept"]["default"];
             } else {
                 return null;
             }
         } else {
+            if (!isset($this->instance["dept"]) || $this->instance["dept"] != func_get_args(0)) {
+                if (!isset($this->columns["dept"]["ignore_updates"]) || $this->columns["dept"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["dept"] = func_get_arg(0);
         }
     }
@@ -308,12 +367,17 @@ class ProdUpdateModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["tax"])) {
                 return $this->instance["tax"];
-            } elseif(isset($this->columns["tax"]["default"])) {
+            } else if (isset($this->columns["tax"]["default"])) {
                 return $this->columns["tax"]["default"];
             } else {
                 return null;
             }
         } else {
+            if (!isset($this->instance["tax"]) || $this->instance["tax"] != func_get_args(0)) {
+                if (!isset($this->columns["tax"]["ignore_updates"]) || $this->columns["tax"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["tax"] = func_get_arg(0);
         }
     }
@@ -323,12 +387,17 @@ class ProdUpdateModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["fs"])) {
                 return $this->instance["fs"];
-            } elseif(isset($this->columns["fs"]["default"])) {
+            } else if (isset($this->columns["fs"]["default"])) {
                 return $this->columns["fs"]["default"];
             } else {
                 return null;
             }
         } else {
+            if (!isset($this->instance["fs"]) || $this->instance["fs"] != func_get_args(0)) {
+                if (!isset($this->columns["fs"]["ignore_updates"]) || $this->columns["fs"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["fs"] = func_get_arg(0);
         }
     }
@@ -338,12 +407,17 @@ class ProdUpdateModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["scale"])) {
                 return $this->instance["scale"];
-            } elseif(isset($this->columns["scale"]["default"])) {
+            } else if (isset($this->columns["scale"]["default"])) {
                 return $this->columns["scale"]["default"];
             } else {
                 return null;
             }
         } else {
+            if (!isset($this->instance["scale"]) || $this->instance["scale"] != func_get_args(0)) {
+                if (!isset($this->columns["scale"]["ignore_updates"]) || $this->columns["scale"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["scale"] = func_get_arg(0);
         }
     }
@@ -353,12 +427,17 @@ class ProdUpdateModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["likeCode"])) {
                 return $this->instance["likeCode"];
-            } elseif(isset($this->columns["likeCode"]["default"])) {
+            } else if (isset($this->columns["likeCode"]["default"])) {
                 return $this->columns["likeCode"]["default"];
             } else {
                 return null;
             }
         } else {
+            if (!isset($this->instance["likeCode"]) || $this->instance["likeCode"] != func_get_args(0)) {
+                if (!isset($this->columns["likeCode"]["ignore_updates"]) || $this->columns["likeCode"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["likeCode"] = func_get_arg(0);
         }
     }
@@ -368,12 +447,17 @@ class ProdUpdateModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["modified"])) {
                 return $this->instance["modified"];
-            } elseif(isset($this->columns["modified"]["default"])) {
+            } else if (isset($this->columns["modified"]["default"])) {
                 return $this->columns["modified"]["default"];
             } else {
                 return null;
             }
         } else {
+            if (!isset($this->instance["modified"]) || $this->instance["modified"] != func_get_args(0)) {
+                if (!isset($this->columns["modified"]["ignore_updates"]) || $this->columns["modified"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["modified"] = func_get_arg(0);
         }
     }
@@ -383,12 +467,17 @@ class ProdUpdateModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["user"])) {
                 return $this->instance["user"];
-            } elseif(isset($this->columns["user"]["default"])) {
+            } else if (isset($this->columns["user"]["default"])) {
                 return $this->columns["user"]["default"];
             } else {
                 return null;
             }
         } else {
+            if (!isset($this->instance["user"]) || $this->instance["user"] != func_get_args(0)) {
+                if (!isset($this->columns["user"]["ignore_updates"]) || $this->columns["user"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["user"] = func_get_arg(0);
         }
     }
@@ -398,12 +487,17 @@ class ProdUpdateModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["forceQty"])) {
                 return $this->instance["forceQty"];
-            } elseif(isset($this->columns["forceQty"]["default"])) {
+            } else if (isset($this->columns["forceQty"]["default"])) {
                 return $this->columns["forceQty"]["default"];
             } else {
                 return null;
             }
         } else {
+            if (!isset($this->instance["forceQty"]) || $this->instance["forceQty"] != func_get_args(0)) {
+                if (!isset($this->columns["forceQty"]["ignore_updates"]) || $this->columns["forceQty"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["forceQty"] = func_get_arg(0);
         }
     }
@@ -413,12 +507,17 @@ class ProdUpdateModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["noDisc"])) {
                 return $this->instance["noDisc"];
-            } elseif(isset($this->columns["noDisc"]["default"])) {
+            } else if (isset($this->columns["noDisc"]["default"])) {
                 return $this->columns["noDisc"]["default"];
             } else {
                 return null;
             }
         } else {
+            if (!isset($this->instance["noDisc"]) || $this->instance["noDisc"] != func_get_args(0)) {
+                if (!isset($this->columns["noDisc"]["ignore_updates"]) || $this->columns["noDisc"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["noDisc"] = func_get_arg(0);
         }
     }
@@ -428,12 +527,17 @@ class ProdUpdateModel extends BasicModel
         if(func_num_args() == 0) {
             if(isset($this->instance["inUse"])) {
                 return $this->instance["inUse"];
-            } elseif(isset($this->columns["inUse"]["default"])) {
+            } else if (isset($this->columns["inUse"]["default"])) {
                 return $this->columns["inUse"]["default"];
             } else {
                 return null;
             }
         } else {
+            if (!isset($this->instance["inUse"]) || $this->instance["inUse"] != func_get_args(0)) {
+                if (!isset($this->columns["inUse"]["ignore_updates"]) || $this->columns["inUse"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
             $this->instance["inUse"] = func_get_arg(0);
         }
     }

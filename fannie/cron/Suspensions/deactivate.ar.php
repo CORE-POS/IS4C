@@ -33,7 +33,7 @@ include($FANNIE_ROOT.'src/SQLManager.php');
 
    This script de-activates members with store-charge account (ar)
     in arrears, i.e.
-   AR_EOM_Summary.twoMonthBalance <= newBalanceToday_cust.balance
+   AR_EOM_Summary.twoMonthBalance <= ar_live_balance.balance
 
    When/how-often can/should it be run? Daily?
 

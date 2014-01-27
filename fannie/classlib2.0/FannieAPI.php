@@ -90,7 +90,9 @@ class FannieAPI
     */
     static private function findClass($name, $path)
     {
-        if (!is_dir($path)){
+        if (!is_dir($path)) {
+            return false;
+        } else if ($name == 'index') {
             return false;
         }
 

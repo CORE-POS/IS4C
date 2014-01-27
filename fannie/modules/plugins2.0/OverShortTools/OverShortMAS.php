@@ -134,8 +134,7 @@ class OverShortMAS extends FannieRESTfulPage {
 
 		$salesQ = "SELECT sum(total) as amount, salesCode,
 			MIN(dept_name) as name
-			FROM $dlog AS d LEFT JOIN 
-			deptSalesCodes AS s ON d.department=s.dept_ID
+			FROM $dlog AS d 
 			INNER JOIN departments as t
 			ON d.department = t.dept_no
 			INNER JOIN MasterSuperDepts AS m
@@ -172,8 +171,7 @@ class OverShortMAS extends FannieRESTfulPage {
 
 		$salesQ = "SELECT sum(total) as amount, salesCode,
 			MIN(dept_name) as name
-			FROM $dlog AS d LEFT JOIN 
-			deptSalesCodes AS s ON d.department=s.dept_ID
+			FROM $dlog AS d 
 			INNER JOIN departments as t
 			ON d.department = t.dept_no
 			INNER JOIN MasterSuperDepts AS m

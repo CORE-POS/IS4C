@@ -84,7 +84,7 @@ else {
 */
 if (strstr($FANNIE_SERVER_DBMS,"MYSQL")){
 	$chk_vital[] = $sql->query("UPDATE products AS p LEFT JOIN
-		likeCodeView AS v ON v.upc=p.upc LEFT JOIN
+		upcLike AS v ON v.upc=p.upc LEFT JOIN
 		batchList AS l ON l.upc=concat('LC',convert(v.likeCode,char))
 		LEFT JOIN batches AS b ON b.batchID = l.batchID
 		SET p.normal_price = l.salePrice
@@ -94,7 +94,7 @@ if (strstr($FANNIE_SERVER_DBMS,"MYSQL")){
 } else {
 	$chk_vital[] = $sql->query("UPDATE products SET normal_price = l.salePrice
 		FROM products AS p LEFT JOIN
-		likeCodeView AS v ON v.upc=p.upc LEFT JOIN
+		upcLike AS v ON v.upc=p.upc LEFT JOIN
 		batchList AS l ON l.upc='LC'+convert(varchar,v.likecode)
 		LEFT JOIN batches AS b ON b.batchID = l.batchID
 		WHERE l.upc LIKE 'LC%'

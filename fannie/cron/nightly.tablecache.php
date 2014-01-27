@@ -46,20 +46,59 @@ $sql = new SQLManager($FANNIE_SERVER,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
 $chk = $sql->query("TRUNCATE TABLE batchMergeTable");
 if ($chk === False)
 	echo cron_msg("Could not truncate batchMergeTable");
-$chk = $sql->query("INSERT INTO batchMergeTable SELECT * FROM batchMergeProd");
+$chk = $sql->query("INSERT INTO batchMergeTable
+                SELECT b.startDate,b.endDate,p.upc,p.description,b.batchID
+                FROM batches AS b LEFT JOIN batchList AS l
+                ON b.batchID=l.batchID INNER JOIN products AS p
+                ON p.upc = l.upc");
 if ($chk === False)
-	echo cron_msg("Could not load data from batchMergeProd");
-$chk = $sql->query("INSERT INTO batchMergeTable SELECT * FROM batchMergeLC");
+    echo cron_msg("Could not load batch reporting data for UPCs");
+$chk = $sql->query("INSERT INTO batchMergeTable 
+                SELECT b.startDate, b.endDate, p.upc, p.description, b.batchID
+                FROM batchList AS l LEFT JOIN batches AS b
+                ON b.batchID=l.batchID INNER JOIN upcLike AS u
+                ON l.upc = " . $sql->concat('LC', $sql->convert('u.likeCode', 'CHAR'), '')
+                . "INNER JOIN products AS p ON u.upc=p.upc
+                WHERE p.upc IS NOT NULL");
 if ($chk === False)
-	echo cron_msg("Could not load data from batchMergeLC");
+    echo cron_msg("Could not load batch reporting data for likecodes");
 
 $sql->query("use $FANNIE_TRANS_DB");
-$chk = $sql->query("TRUNCATE TABLE CashPerformDay_cache");
-if ($chk === False)
-	echo cron_msg("Could not truncate CashPerformDay_cache");
-$chk = $sql->query("INSERT INTO CashPerformDay_cache SELECT * FROM CashPerformDay");
-if ($chk === False)
-	echo cron_msg("Could not load data for CashPerformDay_cache");
+
+$cashierPerformanceSQL = "
+	SELECT
+	min(tdate) as proc_date,
+	max(emp_no) as emp_no,
+	max(trans_num) as Trans_Num,
+	min(tdate) as startTime,
+	max(tdate) as endTime,
+	CASE WHEN ".$sql->seconddiff('min(tdate)', 'max(tdate)')." =0 
+		then 1 else 
+		".$sql->seconddiff('min(tdate)', 'max(tdate)') ."
+	END as transInterval,
+	sum(CASE WHEN abs(quantity) > 30 THEN 1 else abs(quantity) END) as items,
+	Count(upc) as rings,
+	SUM(case when trans_status = 'V' then 1 ELSE 0 END) AS Cancels,
+	max(card_no) as card_no
+	from dlog_90_view 
+	where trans_type IN ('I','D','0','C')
+	group by year(tdate),month(tdate),day(tdate),trans_num";
+if (!$sql->isView('CashPerformDay')) {
+    $chk = $sql->query("TRUNCATE TABLE CashPerformDay");
+    if ($chk === False)
+        echo cron_msg("Could not truncate CashPerformDay");
+    $chk = $sql->query("INSERT INTO CashPerformDay " . $cashierPerformanceSQL);
+    if ($chk === False)
+        echo cron_msg("Could not load data for CashPerformDay");
+}
+if ($sql->tableExists('CashPerformDay_cache')) {
+    $chk = $sql->query("TRUNCATE TABLE CashPerformDay_cache");
+    if ($chk === False)
+        echo cron_msg("Could not truncate CashPerformDay_cache");
+    $chk = $sql->query("INSERT INTO CashPerformDay_cache " . $cashierPerformanceSQL);
+    if ($chk === False)
+        echo cron_msg("Could not load data for CashPerformDay_cache");
+}
 
 $sql->query("USE ".$FANNIE_ARCHIVE_DB);
 if ($sql->table_exists("reportDataCache")){

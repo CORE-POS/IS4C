@@ -20,6 +20,21 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
+
+/**
+  General change notice:
+  23Jan14 Andy
+
+  New table SpecialOrders added. This table currently
+  contains the same data as SpecialOrderID, SpecialOrderStatus,
+  SpecialOrderNotes, and SpecialOrderContact. Saved values
+  are currently mainted in both SpecialOrders and whichever
+  other table is appropriate. Once I verify information is
+  being correctly saved to both, SpecialOrders will become
+  the authoritative table for all data and the other four
+  tables will be deprecated.
+*/
+
 include('../config.php');
 include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 include($FANNIE_ROOT.'src/tmp_dir.php');
@@ -103,6 +118,16 @@ switch ($_REQUEST['action']) {
         } else if ($_REQUEST['val'] == 0) {
             $dbc->exec_statement($statusP,array(0,time(),$_REQUEST['orderID']));
         }
+
+        if ($dbc->tableExists($TRANS . 'SpecialOrders') && class_exists('SpecialOrdersModel')) {
+            $dbc = FannieDB::get($FANNIE_TRANS_DB);
+            $soModel = new SpecialOrdersModel($dbc);
+            $soModel->specialOrderID($_REQUEST['orderID']);
+            $soModel->statusFlag( ($_REQUEST['val'] == 1) ? 3 : 0 );
+            $soModel->subStatus(time());
+            $soModel->save();
+            $dbc = FannieDB::get($FANNIE_OP_DB);
+        }
         break;
     case 'savePrice':
         $upP = $dbc->prepare_statement("UPDATE {$TRANS}PendingSpecialOrder SET
@@ -174,6 +199,15 @@ switch ($_REQUEST['action']) {
             $p = $dbc->prepare_statement("UPDATE {$TRANS}SpecialOrderContact
                 SET street=? WHERE card_no=?");
             $dbc->exec_statement($p, array($addr,$orderID));
+
+            if ($dbc->tableExists($TRANS . 'SpecialOrders') && class_exists('SpecialOrdersModel')) {
+                $dbc = FannieDB::get($FANNIE_TRANS_DB);
+                $soModel = new SpecialOrdersModel($dbc);
+                $soModel->specialOrderID($orderID);
+                $soModel->street($addr);
+                $soModel->save();
+                $dbc = FannieDB::get($FANNIE_OP_DB);
+            }
         }
         break;
     case 'saveFN':
@@ -181,6 +215,15 @@ switch ($_REQUEST['action']) {
             $p = $dbc->prepare_statement("UPDATE {$TRANS}SpecialOrderContact
                 SET first_name=? WHERE card_no=?");
             $dbc->exec_statement($p, array($_REQUEST['fn'],$orderID));
+
+            if ($dbc->tableExists($TRANS . 'SpecialOrders') && class_exists('SpecialOrdersModel')) {
+                $dbc = FannieDB::get($FANNIE_TRANS_DB);
+                $soModel = new SpecialOrdersModel($dbc);
+                $soModel->specialOrderID($orderID);
+                $soModel->firstName($_REQUEST['fn']);
+                $soModel->save();
+                $dbc = FannieDB::get($FANNIE_OP_DB);
+            }
         }
         break;
     case 'saveLN':
@@ -188,6 +231,15 @@ switch ($_REQUEST['action']) {
             $p = $dbc->prepare_statement("UPDATE {$TRANS}SpecialOrderContact
                 SET last_name=? WHERE card_no=?");
             $dbc->exec_statement($p, array($_REQUEST['ln'],$orderID));
+
+            if ($dbc->tableExists($TRANS . 'SpecialOrders') && class_exists('SpecialOrdersModel')) {
+                $dbc = FannieDB::get($FANNIE_TRANS_DB);
+                $soModel = new SpecialOrdersModel($dbc);
+                $soModel->specialOrderID($orderID);
+                $soModel->lastName($_REQUEST['ln']);
+                $soModel->save();
+                $dbc = FannieDB::get($FANNIE_OP_DB);
+            }
         }
         break;
     case 'saveCity':
@@ -195,6 +247,15 @@ switch ($_REQUEST['action']) {
             $p = $dbc->prepare_statement("UPDATE {$TRANS}SpecialOrderContact
                 SET city=? WHERE card_no=?");
             $dbc->exec_statement($p, array($_REQUEST['city'],$orderID));
+
+            if ($dbc->tableExists($TRANS . 'SpecialOrders') && class_exists('SpecialOrdersModel')) {
+                $dbc = FannieDB::get($FANNIE_TRANS_DB);
+                $soModel = new SpecialOrdersModel($dbc);
+                $soModel->specialOrderID($orderID);
+                $soModel->city($_REQUEST['city']);
+                $soModel->save();
+                $dbc = FannieDB::get($FANNIE_OP_DB);
+            }
         }
         break;
     case 'saveState':
@@ -202,6 +263,15 @@ switch ($_REQUEST['action']) {
             $p = $dbc->prepare_statement("UPDATE {$TRANS}SpecialOrderContact
                 SET state=? WHERE card_no=?");
             $dbc->exec_statement($p, array($_REQUEST['state'],$orderID));
+
+            if ($dbc->tableExists($TRANS . 'SpecialOrders') && class_exists('SpecialOrdersModel')) {
+                $dbc = FannieDB::get($FANNIE_TRANS_DB);
+                $soModel = new SpecialOrdersModel($dbc);
+                $soModel->specialOrderID($orderID);
+                $soModel->state($_REQUEST['state']);
+                $soModel->save();
+                $dbc = FannieDB::get($FANNIE_OP_DB);
+            }
         }
         break;
     case 'saveZip':
@@ -209,6 +279,15 @@ switch ($_REQUEST['action']) {
             $p = $dbc->prepare_statement("UPDATE {$TRANS}SpecialOrderContact
                 SET zip=? WHERE card_no=?");
             $dbc->exec_statement($p, array($_REQUEST['zip'],$orderID));
+
+            if ($dbc->tableExists($TRANS . 'SpecialOrders') && class_exists('SpecialOrdersModel')) {
+                $dbc = FannieDB::get($FANNIE_TRANS_DB);
+                $soModel = new SpecialOrdersModel($dbc);
+                $soModel->specialOrderID($orderID);
+                $soModel->zip($_REQUEST['zip']);
+                $soModel->save();
+                $dbc = FannieDB::get($FANNIE_OP_DB);
+            }
         }
         break;
     case 'savePh':
@@ -216,6 +295,15 @@ switch ($_REQUEST['action']) {
             $p = $dbc->prepare_statement("UPDATE {$TRANS}SpecialOrderContact
                 SET phone=? WHERE card_no=?");
             $dbc->exec_statement($p, array($_REQUEST['ph'],$orderID));
+
+            if ($dbc->tableExists($TRANS . 'SpecialOrders') && class_exists('SpecialOrdersModel')) {
+                $dbc = FannieDB::get($FANNIE_TRANS_DB);
+                $soModel = new SpecialOrdersModel($dbc);
+                $soModel->specialOrderID($orderID);
+                $soModel->phone($_REQUEST['ph']);
+                $soModel->save();
+                $dbc = FannieDB::get($FANNIE_OP_DB);
+            }
         }
         break;
     case 'savePh2':
@@ -223,6 +311,15 @@ switch ($_REQUEST['action']) {
             $p = $dbc->prepare_statement("UPDATE {$TRANS}SpecialOrderContact
                 SET email_2=? WHERE card_no=?");
             $dbc->exec_statement($p, array($_REQUEST['ph2'],$orderID));
+
+            if ($dbc->tableExists($TRANS . 'SpecialOrders') && class_exists('SpecialOrdersModel')) {
+                $dbc = FannieDB::get($FANNIE_TRANS_DB);
+                $soModel = new SpecialOrdersModel($dbc);
+                $soModel->specialOrderID($orderID);
+                $soModel->altPhone($_REQUEST['ph2']);
+                $soModel->save();
+                $dbc = FannieDB::get($FANNIE_OP_DB);
+            }
         }
         break;
     case 'saveEmail':
@@ -230,6 +327,15 @@ switch ($_REQUEST['action']) {
             $p = $dbc->prepare_statement("UPDATE {$TRANS}SpecialOrderContact
                 SET email_1=? WHERE card_no=?");
             $dbc->exec_statement($p, array($_REQUEST['email'],$orderID));
+
+            if ($dbc->tableExists($TRANS . 'SpecialOrders') && class_exists('SpecialOrdersModel')) {
+                $dbc = FannieDB::get($FANNIE_TRANS_DB);
+                $soModel = new SpecialOrdersModel($dbc);
+                $soModel->specialOrderID($orderID);
+                $soModel->email($_REQUEST['email']);
+                $soModel->save();
+                $dbc = FannieDB::get($FANNIE_OP_DB);
+            }
         }
         break;
     case 'UpdateStatus':
@@ -237,16 +343,41 @@ switch ($_REQUEST['action']) {
             status_flag=?,sub_status=? WHERE order_id=?");
         $dbc->exec_statement($p, array($_REQUEST['val'],time(),$orderID));
         echo date("m/d/Y");
+        if ($dbc->tableExists($TRANS . 'SpecialOrders') && class_exists('SpecialOrdersModel')) {
+            $dbc = FannieDB::get($FANNIE_TRANS_DB);
+            $soModel = new SpecialOrdersModel($dbc);
+            $soModel->specialOrderID($orderID);
+            $soModel->statusFlag($_REQUEST['val']);
+            $soModel->subStatus(time());
+            $soModel->save();
+            $dbc = FannieDB::get($FANNIE_OP_DB);
+        }
         break;
     case 'saveNoteDept':
         $p = $dbc->prepare_statement("UPDATE {$TRANS}SpecialOrderNotes SET
             superID=? WHERE order_id=?");
         $dbc->exec_statement($p,array($_REQUEST['val'],$orderID));
+        if ($dbc->tableExists($TRANS . 'SpecialOrders') && class_exists('SpecialOrdersModel')) {
+            $dbc = FannieDB::get($FANNIE_TRANS_DB);
+            $soModel = new SpecialOrdersModel($dbc);
+            $soModel->specialOrderID($orderID);
+            $soModel->noteSuperID($_REQUEST['val']);
+            $soModel->save();
+            $dbc = FannieDB::get($FANNIE_OP_DB);
+        }
         break;
     case 'saveText':
         $p = $dbc->prepare_statement("UPDATE {$TRANS}SpecialOrderNotes SET
             notes=? WHERE order_id=?");
         $dbc->exec_statement($p,array($_REQUEST['val'],$orderID));
+        if ($dbc->tableExists($TRANS . 'SpecialOrders') && class_exists('SpecialOrdersModel')) {
+            $dbc = FannieDB::get($FANNIE_TRANS_DB);
+            $soModel = new SpecialOrdersModel($dbc);
+            $soModel->specialOrderID($orderID);
+            $soModel->notes($_REQUEST['val']);
+            $soModel->save();
+            $dbc = FannieDB::get($FANNIE_OP_DB);
+        }
         break;
     case 'confirmOrder':
         $p = $dbc->prepare_statement("INSERT INTO {$TRANS}SpecialOrderHistory VALUES
@@ -268,8 +399,8 @@ switch ($_REQUEST['action']) {
         break;
     case 'closeOrder':
         $p = $dbc->prepare_statement("UPDATE {$TRANS}SpecialOrderStatus SET
-            status_flag=? WHERE order_id=?");
-        $dbc->exec_statement($p, array($_REQUEST['status'],$_REQUEST['orderID']));
+            status_flag=?,subStatus=? WHERE order_id=?");
+        $dbc->exec_statement($p, array($_REQUEST['status'],time(),$_REQUEST['orderID']));
 
         $moveP = $dbc->prepare_statement("INSERT INTO {$TRANS}CompleteSpecialOrder
                 SELECT * FROM {$TRANS}PendingSpecialOrder
@@ -279,6 +410,16 @@ switch ($_REQUEST['action']) {
         $cleanP = $dbc->prepare_statement("DELETE FROM {$TRANS}PendingSpecialOrder
                 WHERE order_id=?");
         $dbc->exec_statement($cleanP, array($_REQUEST['orderID']));
+
+        if ($dbc->tableExists($TRANS . 'SpecialOrders') && class_exists('SpecialOrdersModel')) {
+            $dbc = FannieDB::get($FANNIE_TRANS_DB);
+            $soModel = new SpecialOrdersModel($dbc);
+            $soModel->specialOrderID($_REQUEST['orderID']);
+            $soModel->statusFlag($_REQUEST['status']);
+            $soModel->subStatus(time());
+            $soModel->save();
+            $dbc = FannieDB::get($FANNIE_OP_DB);
+        }
         break;
     case 'copyOrder':
         $oid = sprintf("%d",$_REQUEST['orderID']);
@@ -334,6 +475,14 @@ function canSaveAddress($orderID)
 		return false;
 	}
 	$row = $dbc->fetch_row($chk);
+    // A SpecialOrderContact row is *always* used now
+    // so this should not return false. in the past
+    // a meminfo row was used for members. turns out that
+    // isn't really desirable. loading the meminfo data
+    // into a SpecialOrderContact row allows the user
+    // to temporarily override a contact value for the order
+    // without altering the membership. more often than not
+    // this amounts to an alternative phone number.
 	if ($row['card_no'] != 0 && false) return false;
 
 	$chkP = $dbc->prepare_statement("SELECT card_no FROM {$TRANS}SpecialOrderContact
@@ -493,7 +642,7 @@ function addUPC($orderID,$memNum,$upc,$num_cases=1)
 
 function createContactRow($orderID)
 {
-	global $FANNIE_OP_DB,$TRANS;
+	global $FANNIE_OP_DB,$TRANS, $FANNIE_TRANS_DB;
     $dbc = FannieDB::get($FANNIE_OP_DB);
 
 	$testP = $dbc->prepare_statement("SELECT card_no FROM {$TRANS}SpecialOrderContact
@@ -517,6 +666,23 @@ function createContactRow($orderID)
 		'ads_OK'=>1
 	);
 	$dbc->smart_insert("{$TRANS}SpecialOrderContact",$vals);
+
+    if ($dbc->tableExists($TRANS . 'SpecialOrders') && class_exists('SpecialOrdersModel')) {
+        $dbc = FannieDB::get($FANNIE_TRANS_DB);
+        $so = new SpecialOrdersModel($dbc);
+        $so->specialOrderID($orderID);
+        $so->firstName('');
+        $so->lastName('');
+        $so->street('');
+        $so->city('');
+        $so->state('');
+        $so->zip('');
+        $so->phone('');
+        $so->altPhone('');
+        $so->email('');
+        $so->save();
+        $dbc = FannieDB::get($FANNIE_OP_DB); // switch back to previous
+    }
 }
 
 function splitOrder($orderID,$transID)
@@ -544,7 +710,7 @@ function splitOrder($orderID,$transID)
 
 function duplicateOrder($old_id,$from='CompleteSpecialOrder')
 {
-	global $FANNIE_OP_DB,$TRANS;
+	global $FANNIE_OP_DB,$TRANS, $FANNIE_TRANS_DB;
     $dbc = FannieDB::get($FANNIE_OP_DB);
 	$new_id = createEmptyOrder();
 	$delQ = $dbc->prepare_statement("DELETE FROM {$TRANS}PendingSpecialOrder 
@@ -587,7 +753,8 @@ function duplicateOrder($old_id,$from='CompleteSpecialOrder')
 	$statusQ = $dbc->prepare_statement("SELECT numflag FROM {$TRANS}PendingSpecialOrder
 		WHERE order_id=?");
 	$statusR = $dbc->exec_statement($statusQ,array($new_id));
-	$st = array_pop($dbc->fetch_row($statusR));
+	$statusW = $dbc->fetch_row($statusR);
+    $st = $statusW['numflag'];
 	$stP = $dbc->prepare_statement("UPDATE {$TRANS}SpecialOrderStatus SET status_flag=?,sub_status=?
 		WHERE order_id=?");
 	if ($st == 1) {
@@ -595,13 +762,48 @@ function duplicateOrder($old_id,$from='CompleteSpecialOrder')
 	} else if ($st == 0) {
 		$dbc->exec_statement($stP,array(0,time(),$new_id));
 	}
+
+    if ($dbc->tableExists($TRANS . 'SpecialOrders') && class_exists('SpecialOrdersModel')) {
+        $dbc = FannieDB::get($FANNIE_TRANS_DB);
+        $soModel = new SpecialOrdersModel($dbc);
+        $soModel->specialOrderID($new_id);
+        $soModel->statusFlag( ($st == 1) ? 3 : 0 );
+        $soModel->subStatus(time());
+
+        $notesP = $dbc->prepare('SELECT notes,superID FROM SpecialOrderNotes WHERE order_id=?');
+        $notesR = $dbc->execute($notesP, array($new_id));
+        if ($dbc->num_rows($notesR) > 0) {
+            $notesW = $dbc->fetch_row($notesR);
+            $soModel->notes($notesW['notes']);
+            $soModel->noteSuperID($notesW['superID']);
+        }
+
+        $contactP = $dbc->prepare('SELECT first_name,last_name,street,city,state,zip,phone,email_1,email_2 
+                                FROM SpecialOrderContact WHERE card_no=?');
+        $contactR = $dbc->execute($contactP, array($new_id));
+        if ($dbc->num_rows($contactR) > 0) {
+            $contactW = $dbc->fetch_row($contactR);
+            $soModel->firstName($contactW['first_name']);
+            $soModel->lastName($contactW['last_name']);
+            $soModel->street($contactW['street']);
+            $soModel->city($contactW['city']);
+            $soModel->state($contactW['state']);
+            $soModel->zip($contactW['zip']);
+            $soModel->phone($contactW['phone']);
+            $soModel->altPhone($contactW['email_2']);
+            $soModel->email($contactW['email_1']);
+        }
+
+        $soModel->save();
+        $dbc = FannieDB::get($FANNIE_OP_DB);
+    }
 	
 	return $new_id;
 }
 
 function createEmptyOrder()
 {
-	global $FANNIE_OP_DB,$TRANS,$FANNIE_SERVER_DBMS;
+	global $FANNIE_OP_DB,$TRANS,$FANNIE_SERVER_DBMS, $FANNIE_TRANS_DB;
     $dbc = FannieDB::get($FANNIE_OP_DB);
 	$user = checkLogin();
 	$orderID = 1;
@@ -609,24 +811,41 @@ function createEmptyOrder()
 	$dbc->query("INSERT {$TRANS}SpecialOrderID $val");
 	$orderID = $dbc->insert_id();
 
+    if ($dbc->tableExists($TRANS . 'SpecialOrders')) {
+        $soP = $dbc->prepare('INSERT INTO SpecialOrders (specialOrderID) VALUES (?)');
+        $soR = $dbc->execute($soP, array($orderID));
+    }
+
 	$ins_array = genericRow($orderID);
 	$ins_array['numflag'] = 2;
 	$ins_array['mixMatch'] = $dbc->escape($user);
 	$dbc->smart_insert("{$TRANS}PendingSpecialOrder",$ins_array);
 
-	$vals = array(
+	$note_vals = array(
 		'order_id'=>$orderID,
 		'notes'=>"''",
 		'superID'=>0
 	);
-	$dbc->smart_insert("{$TRANS}SpecialOrderNotes",$vals);
+	$dbc->smart_insert("{$TRANS}SpecialOrderNotes",$note_vals);
 
-	$vals = array(
+	$status_vals = array(
 		'order_id'=>$orderID,
 		'status_flag'=>3,
 		'sub_status'=>time()
 	);
-	$dbc->smart_insert("{$TRANS}SpecialOrderStatus",$vals);
+	$dbc->smart_insert("{$TRANS}SpecialOrderStatus",$status_vals);
+
+    if ($dbc->tableExists($TRANS . 'SpecialOrders') && class_exists('SpecialOrdersModel')) {
+        $dbc = FannieDB::get($FANNIE_TRANS_DB);
+        $so = new SpecialOrdersModel($dbc);
+        $so->specialOrderID($orderID);
+        $so->statusFlag($status_vals['status_flag']);
+        $so->subStatus($status_vals['sub_status']);
+        $so->notes(trim($note_vals['notes'],"'"));
+        $so->noteSuperID($note_vals['superID']);
+        $so->save();
+        $dbc = FannieDB::get($FANNIE_OP_DB); // switch back to previous
+    }
 
 	createContactRow($orderID);
 
@@ -680,7 +899,7 @@ function genericRow($orderID)
 
 function getCustomerForm($orderID,$memNum="0")
 {
-	global $FANNIE_OP_DB, $TRANS;
+	global $FANNIE_OP_DB, $TRANS, $FANNIE_TRANS_DB;
     $dbc = FannieDB::get($FANNIE_OP_DB);
 
 	if (empty($orderID)) $orderID = createEmptyOrder();
@@ -738,9 +957,21 @@ function getCustomerForm($orderID,$memNum="0")
 			WHERE order_id=?");
 		$r = $dbc->exec_statement($p,array($memNum,$orderID));
 
+        // clear contact fields if member number changed
+        // so that defaults are reloaded from meminfo
 		$p = $dbc->prepare_statement("UPDATE {$TRANS}SpecialOrderContact SET
 			street='',phone='' WHERE card_no=?");
 		$r = $dbc->exec_statement($p, array($orderID));
+
+        if ($dbc->tableExists($TRANS . 'SpecialOrders') && class_exists('SpecialOrdersModel')) {
+            $dbc = FannieDB::get($FANNIE_TRANS_DB);
+            $soModel = new SpecialOrdersModel($dbc);
+            $soModel->specialOrderID($orderID);
+            $soModel->street('');
+            $soModel->phone('');
+            $soModel->save();
+            $dbc = FannieDB::get($FANNIE_OP_DB);
+        }
 		
 		// look up personnum, correct if it hasn't been set
 		$pQ = $dbc->prepare_statement("SELECT voided FROM {$TRANS}PendingSpecialOrder
@@ -788,6 +1019,21 @@ function getCustomerForm($orderID,$memNum="0")
                     $contact_row['email_2'],
                     $orderID
                 ));
+
+                if ($dbc->tableExists($TRANS . 'SpecialOrders') && class_exists('SpecialOrdersModel')) {
+                    $dbc = FannieDB::get($FANNIE_TRANS_DB);
+                    $soModel = new SpecialOrdersModel($dbc);
+                    $soModel->specialOrderID($orderID);
+                    $soModel->street($contact_row['street']);
+                    $soModel->city($contact_row['city']);
+                    $soModel->state($contact_row['state']);
+                    $soModel->zip($contact_row['zip']);
+                    $soModel->phone($contact_row['phone']);
+                    $soModel->altPhone($contact_row['email_2']);
+                    $soModel->email($contact_row['email_1']);
+                    $soModel->save();
+                    $dbc = FannieDB::get($FANNIE_OP_DB);
+                }
             }
 		} else {
 			$contactQ = $dbc->prepare_statement("SELECT street,city,state,zip,phone,email_1,email_2

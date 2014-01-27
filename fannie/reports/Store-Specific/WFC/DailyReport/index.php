@@ -150,7 +150,7 @@ echo tablify($cTallies,array(0,1,2),array('Processor','Amount','Count'),
 
 $pCodeQ = $dbc->prepare_statement("SELECT s.salesCode,-1*sum(l.total) as total,min(l.department) 
 FROM $dlog as l 
-INNER JOIN {$OP}deptSalesCodes AS s ON l.department=s.dept_ID
+INNER JOIN {$OP}departments AS s ON l.department=s.dept_no
 WHERE l.tdate BETWEEN ? AND ?
 AND l.department < 600 AND l.department <> 0
 AND l.trans_type <>'T'
@@ -206,8 +206,8 @@ echo "<br /><b><u>Total Sales</u></b><br />";
 echo sprintf("%.2f<br />",array_pop($dbc->fetch_row($saleSumR)));
 
 $returnsQ = $dbc->prepare_statement("SELECT s.salesCode,-1*sum(L.total)as returns
-FROM $dlog as L,deptSalesCodes as s
-WHERE s.dept_ID = L.department
+FROM $dlog as L,departments as s
+WHERE s.dept_no = L.department
 AND L.tdate BETWEEN ? AND ?
 AND(trans_status = 'R')
 GROUP BY s.salesCode");

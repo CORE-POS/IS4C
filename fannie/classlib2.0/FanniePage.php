@@ -52,6 +52,8 @@ class FanniePage
     protected $scripts = array();
     protected $css_files = array();
 
+    protected $error_text;
+
     public function __construct()
     {
         global $FANNIE_AUTH_DEFAULT, $FANNIE_COOP_ID;
@@ -131,6 +133,11 @@ class FanniePage
     public function bodyContent()
     {
         return $this->body_content();
+    }
+
+    public function errorContent()
+    {
+        return $this->error_text;
     }
 
     /**
@@ -241,6 +248,67 @@ class FanniePage
     }
 
     /**
+      Check if there are any problems
+      that might prevent the page from working
+      properly.
+    */
+    public function readinessCheck()
+    {
+        return true;
+    }
+
+    /**
+      Helper method
+      Check if a given table exists. Sets an appropriate message
+      in $error_text if the table is not present.
+      @param $database [string] database name
+      @param $table [string] table name
+      @return [boolean]
+    */
+    public function tableExistsReadinessCheck($database, $table)
+    {
+        global $FANNIE_URL;
+        $dbc = FannieDB::get($database);
+        if (!$dbc->tableExists($table)) {
+            $this->error_text = "<p>Missing table {$database}.{$table}
+                            <br /><a href=\"{$FANNIE_URL}install/\">Click Here</a> to
+                            create necessary tables.</p>";
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+      Helper method
+      Check if a given table has a specific column. 
+      Sets an appropriate message
+      in $error_text if the column (or table) is not present.
+      @param $database [string] database name
+      @param $table [string] table name
+      @param $column [string] column name
+      @return [boolean]
+    */
+    public function tableHasColumnReadinessCheck($database, $table, $column)
+    {
+        global $FANNIE_URL;
+        if ($this->tableExistsReadinessCheck($database, $table) === false) {
+            return false;
+        }
+
+        $dbc = FannieDB::get($database);
+        $definition = $dbc->tableDefinition($table);
+        if (!isset($definition[$column])) {
+            $this->error_text = "<p>Table {$database}.{$table} needs to be updated.
+                            <br /><a href=\"{$FANNIE_URL}install/InstallUpdatesPage.php\">Click Here</a> to
+                            run updates.</p>";
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
       Check for input and display the page
     */
     public function drawPage()
@@ -254,8 +322,12 @@ class FanniePage
             if ($this->window_dressing) {
                 echo $this->getHeader();
             }
-
-            echo $this->bodyContent();
+            
+            if ($this->readinessCheck() !== false) {
+                echo $this->bodyContent();
+            } else {
+                echo $this->errorContent();
+            }
 
             if ($this->window_dressing) {
                 $footer = $this->getFooter();

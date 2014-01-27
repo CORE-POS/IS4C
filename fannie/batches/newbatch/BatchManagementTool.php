@@ -93,7 +93,7 @@ class BatchManagementTool extends FanniePage
      */
     function ajax_response($action)
     {
-        global $FANNIE_SERVER_DBMS;
+        global $FANNIE_SERVER_DBMS, $FANNIE_URL;
         $out = '';
         $dbc = $this->con;
         // prepend request name & backtick
@@ -112,14 +112,20 @@ class BatchManagementTool extends FanniePage
             $infoR = $dbc->exec_statement($infoQ,array($type));
             $discounttype = array_pop($dbc->fetch_array($infoR));
             
-            $insQ = $dbc->prepare_statement("INSERT INTO batches (startDate,endDate,batchName,batchType,
-                    discounttype,priority) VALUES (?,?,?,?,?,?)");
-            $insR = $dbc->exec_statement($insQ,array($startdate,$enddate,$name,$type,
-                        $discounttype,$priority));
-            $id = $dbc->insert_id();
+            $b = new BatchesModel($dbc);
+            $b->startDate($startdate);
+            $b->endDate($enddate);
+            $b->batchName($name);
+            $b->batchType($type);
+            $b->discounttype($type);
+            $b->priority($priority);
+            $b->owner($owner);
+            $id = $b->save();
             
-            $insQ = $dbc->prepare_statement("insert batchowner values (?,?)");
-            $insR = $dbc->exec_statement($insQ,array($id,$owner));
+            if ($dbc->tableExists('batchowner')) {
+                $insQ = $dbc->prepare_statement("insert batchowner values (?,?)");
+                $insR = $dbc->exec_statement($insQ,array($id,$owner));
+            }
             
             $out .= $this->batchListDisplay();
             break;
@@ -147,7 +153,7 @@ class BatchManagementTool extends FanniePage
             $unsaleR = $dbc->exec_statement($prep,array($id));
 
             $unsaleLCQ = "UPDATE products AS p LEFT JOIN
-                likeCodeView AS v ON v.upc=p.upc LEFT JOIN
+                upcLike AS v ON v.upc=p.upc LEFT JOIN
                 batchList AS l ON l.upc=concat('LC',convert(v.likeCode,char))
                 SET special_price=0,
                 specialpricemethod=0,specialquantity=0,
@@ -162,7 +168,7 @@ class BatchManagementTool extends FanniePage
                     specialgroupprice=0,discounttype=0,
                     start_date='1900-01-01',end_date='1900-01-01'
                     FROM products AS p LEFT JOIN
-                    likeCodeView AS v ON v.upc=p.upc LEFT JOIN
+                    upcLike AS v ON v.upc=p.upc LEFT JOIN
                     batchList AS l ON l.upc=concat('LC',convert(v.likeCode,char))
                     WHERE l.upc LIKE '%LC%'
                     AND l.batchID=?";
@@ -197,17 +203,19 @@ class BatchManagementTool extends FanniePage
             $model->startDate($startdate);
             $model->endDate($enddate);
             $model->discounttype($discounttype);
+            $model->owner($owner);
             $model->save();
             
-            $checkQ = $dbc->prepare_statement("select batchID from batchowner where batchID=?");
-            $checkR = $dbc->exec_statement($checkQ,array($id));
-            if($dbc->num_rows($checkR) == 0){
-                $insQ = $dbc->prepare_statement("insert batchowner values (?,?)");
-                $insR = $dbc->exec_statement($insQ,array($id,$owner));
-            }
-            else{
-                $upQ = $dbc->prepare_statement("update batchowner set owner=? where batchID=?");
-                $upR = $dbc->exec_statement($upQ,array($owner,$id));
+            if ($dbc->tableExists('batchowner')) {
+                $checkQ = $dbc->prepare_statement("select batchID from batchowner where batchID=?");
+                $checkR = $dbc->exec_statement($checkQ,array($id));
+                if($dbc->num_rows($checkR) == 0) {
+                    $insQ = $dbc->prepare_statement("insert batchowner values (?,?)");
+                    $insR = $dbc->exec_statement($insQ,array($id,$owner));
+                } else {
+                    $upQ = $dbc->prepare_statement("update batchowner set owner=? where batchID=?");
+                    $upR = $dbc->exec_statement($upQ,array($owner,$id));
+                }
             }
             
             break;
@@ -850,33 +858,44 @@ class BatchManagementTool extends FanniePage
         $ret .= "<th bgcolor=$colors[$c]>Owner/Super Dept.</th>";
         $ret .= "<th colspan=\"3\">&nbsp;</th></tr>";
         
+        // owner column might be in different places
+        // depending if schema is up to date
+        $ownerclause = "'' as owner FROM batches AS b";
+        $batchesTable = $dbc->tableDefinition('batches');
+        $owneralias = '';
+        if (isset($batchesTable['owner'])) {
+            $ownerclause = 'b.owner FROM batches AS b';
+            $owneralias = 'b';
+        } else if ($dbc->tableExists('batchowner')) {
+            $ownerclause = 'o.owner FROM batches AS b LEFT JOIN
+                            batchowner AS o ON b.batchID=o.batchID';
+            $owneralias = 'o';
+        }
+
         // the 'all' query
         // where clause is for str_ireplace below
         $fetchQ = "select b.batchName,b.batchType,b.startDate,b.endDate,b.batchID,
-                   o.owner from batches as b left outer join batchowner as o
-                   on b.batchID = o.batchID WHERE 1=1
+                   $ownerclause
+                   WHERE 1=1
                    order by b.batchID desc";
         $args = array();
         switch($mode) {
             case 'pending':
                 $fetchQ = "select b.batchName,b.batchType,b.startDate,b.endDate,b.batchID,
-                       o.owner from batches as b left outer join batchowner as o
-                       on b.batchID = o.batchID
+                       $ownerclause
                        WHERE ".$dbc->datediff("b.startDate",$dbc->now())." > 0
                        order by b.batchID desc";
                 break;
             case 'current':
                 $fetchQ = "select b.batchName,b.batchType,b.startDate,b.endDate,b.batchID,
-                       o.owner from batches as b left outer join batchowner as o
-                       on b.batchID = o.batchID
+                       $ownerclause
                        WHERE ".$dbc->datediff("b.startDate",$dbc->now())." <= 0
                        and ".$dbc->datediff("b.endDate",$dbc->now())." >= 0
                        order by b.batchID desc";
                 break;
             case 'historical':
                 $fetchQ = "select b.batchName,b.batchType,b.startDate,b.endDate,b.batchID,
-                       o.owner from batches as b left outer join batchowner as o
-                       on b.batchID = o.batchID
+                       $ownerclause
                        WHERE ".$dbc->datediff("b.endDate",$dbc->now())." <= 0
                        order by b.batchID desc";
                 break;    
@@ -884,8 +903,8 @@ class BatchManagementTool extends FanniePage
         // use a filter - only works in 'all' mode
         if ($filter != '') {
             $fetchQ = "select b.batchName,b.batchType,b.startDate,b.endDate,b.batchID,
-                   o.owner from batches as b left outer join batchowner as o
-                   on b.batchID = o.batchID WHERE o.owner=? order by b.batchID desc";
+                   $ownerclause
+                   WHERE $owneralias.owner=? order by b.batchID desc";
             $args[] = $filter;
         }
         $fetchQ = $dbc->add_select_limit($fetchQ,50);

@@ -58,7 +58,8 @@ class BasicModel
       backends.
     */
     protected $meta_types = array(
-        'MONEY' => array('default'=>'DECIMAL(10,2)','mssql'=>'MONEY')
+        'MONEY' => array('default'=>'DECIMAL(10,2)','mssql'=>'MONEY'),
+        'BIGINT UNSIGNED' => array('default'=>'BIGINT UNSIGNED', 'mssql'=>'BIGINT'),
     );
 
     /**
@@ -396,7 +397,18 @@ class BasicModel
     /**
       Save current record. If a uniqueness constraint
       is defined it will INSERT or UPDATE appropriately.
-      @return SQL result object or boolean false
+      @return 
+        [boolean] false on failure
+        [SQL result] object *or* [int] ID on success
+      
+      The only time save() will not return a result object
+      on success is on an insert into a table containing
+      an incrementing ID column. In most cases this is
+      more useful. Databases typically start counting from
+      1 rather than 0 so it should still work to write:
+        if ($model->save())
+      But it would be slightly safer to write:
+        if ($model->save() !== false)
     */
     public function save()
     {
@@ -467,6 +479,19 @@ class BasicModel
 
         if ($result) {
             $this->record_changed = false;
+
+            /** if the insert succeeded and the table contains an incrementing
+                id column, that value will most likely be more useful
+                than the result object */
+            foreach($this->columns as $name => $info) {
+                if (isset($info['increment']) && $info['increment'] == true) {
+                    $id = $this->connection->insert_id();
+                    if ($id !== false) {
+                        $result = $id;
+                        break;
+                    }
+                }
+            }
         }
 
         return $result;

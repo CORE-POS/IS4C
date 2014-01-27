@@ -32,6 +32,19 @@ class DeptSettingsReport extends FannieReportPage
     protected $header = "Department Settings";
     protected $required_fields = array('submit');
 
+    public function readinessCheck()
+    {
+        global $FANNIE_OP_DB;
+        // Check added 22Jan14
+        if (!$this->tableHasColumnReadinessCheck($FANNIE_OP_DB, 'departments', 'margin')) {
+            return false;
+        } else if (!$this->tableHasColumnReadinessCheck($FANNIE_OP_DB, 'departments', 'salesCode')) {
+            return false;
+        } 
+
+        return true;
+    }
+
     public function fetch_report_data()
     {
         global $FANNIE_OP_DB, $FANNIE_URL;
@@ -56,13 +69,12 @@ class DeptSettingsReport extends FannieReportPage
             $args = array($d1,$d2);
         }
 
-        $query = $dbc->prepare_statement("SELECT d.dept_no,d.dept_name,c.salesCode,m.margin,
+        $query = $dbc->prepare_statement("SELECT d.dept_no,d.dept_name,d.salesCode,d.margin,
             CASE WHEN d.dept_tax=0 THEN 'NoTax' ELSE t.description END as tax,
             CASE WHEN d.dept_fs=1 THEN 'Yes' ELSE 'No' END as fs
             FROM departments AS d LEFT JOIN taxrates AS t
-            ON d.dept_tax = t.id LEFT JOIN deptSalesCodes AS c
-            ON d.dept_no=c.dept_ID LEFT JOIN deptMargin AS m
-            ON d.dept_no=m.dept_ID $join
+            ON d.dept_tax = t.id 
+            $join
             WHERE $where
             ORDER BY d.dept_no");
         $result = $dbc->exec_statement($query,$args);

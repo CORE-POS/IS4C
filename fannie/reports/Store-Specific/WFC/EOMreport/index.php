@@ -42,20 +42,18 @@ if (!$output || isset($_REQUEST['recache'])){
 
 	$query1="select t.department,
 	s.superID,
-	c.salesCode,d.dept_name,
+	d.salesCode,d.dept_name,
 	SUM(t.total)
 	FROM $dlog as t LEFT JOIN
 	departments as d ON t.department = d.dept_no
 	LEFT JOIN MasterSuperDepts AS s
 	ON s.dept_ID = d.dept_no	
-	LEFT JOIN deptSalesCodes AS c
-	ON c.dept_ID = d.dept_no
 	WHERE tdate BETWEEN ? AND ?
 	AND t.Department < 600
 	AND t.department <> 0
 	AND t.trans_type <> 'T'
 	GROUP BY
-	s.superID,t.department,d.dept_name,c.salesCode
+	s.superID,t.department,d.dept_name,d.salesCode
 	order by s.superID,t.department";
 
 	$query15 = "SELECT s.superID,sum(l.total) as total 
@@ -84,8 +82,8 @@ if (!$output || isset($_REQUEST['recache'])){
 
 	$query3 = "SELECT c.salesCode,s.superID,sum(l.total) as total 
 	FROM $dlog as l left join MasterSuperDepts AS s ON
-	l.department = s.dept_ID LEFT JOIN deptSalesCodes AS c
-	ON l.department = c.dept_ID
+	l.department = s.dept_ID LEFT JOIN departments AS c
+	ON l.department = c.dept_no
 	WHERE l.tdate BETWEEN ? AND ?
 	AND l.department < 600 AND l.department <> 0
 	AND l.trans_type <> 'T'
@@ -147,8 +145,8 @@ if (!$output || isset($_REQUEST['recache'])){
 			AND (c.personnum= 1 or c.personnum is null)";
 
 	$query12 = "SELECT d.salesCode,sum(L.total)as returns
-	FROM $dlog as L,deptSalesCodes as d
-	WHERE d.dept_ID = L.department
+	FROM $dlog as L,departments as d
+	WHERE d.dept_no = L.department
 	 AND L.tdate BETWEEN ? AND ?
 	AND(trans_status = 'R' OR upc LIKE '%dp606')
 	GROUP BY d.salesCode";
@@ -189,25 +187,23 @@ if (!$output || isset($_REQUEST['recache'])){
 	GROUP BY d.upc";
 
 	$query23="SELECT d.salesCode,sum(l.total) as total,card_no, 
-	(sum(l.total)-(sum(l.total) * m.margin)) as cost
-	FROM $dlog as l left join deptSalesCodes as d on l.department = d.dept_ID
-	LEFT JOIN deptMargin AS m ON m.dept_ID = l.department
+	(sum(l.total)-(sum(l.total) * d.margin)) as cost
+	FROM $dlog as l left join departments as d on l.department = d.dept_no
 	WHERE l.tdate BETWEEN ? AND ?
 	AND (l.department < 600 or l.department = 902) AND l.department <> 0
 	AND l.trans_type <> 'T'
 	AND card_no BETWEEN 5500 AND 5950
-	GROUP BY d.salesCode,card_no,m.margin
+	GROUP BY d.salesCode,card_no,d.margin
 	order by card_no,d.salesCode";
 
 	$query22="SELECT d.salesCode,sum(l.total) as total,
-	(sum(l.total)-(sum(l.total)* m.margin)) as cost
-	FROM $dlog as l left join deptSalesCodes as d on l.department = d.dept_ID
-	LEFT JOIN deptMargin AS m ON m.dept_ID = l.department
+	(sum(l.total)-(sum(l.total)* d.margin)) as cost
+	FROM $dlog as l left join departments as d on l.department = d.dept_no
 	WHERE l.tdate BETWEEN ? AND ?
 	AND (l.department < 600 or l.department = 902) AND l.department <> 0
 	AND l.trans_type <> 'T'
 	AND card_no BETWEEN 5500 AND 5950
-	GROUP BY d.salesCode,m.margin
+	GROUP BY d.salesCode,d.margin
 	order by d.salesCode";
 
 	$queryRRR = "

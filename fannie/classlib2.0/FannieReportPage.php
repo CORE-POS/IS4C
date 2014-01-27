@@ -721,8 +721,12 @@ class FannieReportPage extends FanniePage
                 echo $this->getHeader();
             }
 
-            $fn = $this->content_function;
-            echo $this->$fn();
+            if ($this->readinessCheck() !== false) {
+                $fn = $this->content_function;
+                echo $this->$fn();
+            } else {
+                echo $this->errorContent();
+            }
 
             if ($this->window_dressing) {
                 echo $this->getFooter();

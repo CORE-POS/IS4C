@@ -926,7 +926,7 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
         while(File.Exists(MAGELLAN_OUTPUT_DIR+sep+"tmp"+sep+ticks+".bmp"))
             ticks++;
         File.WriteAllBytes(MAGELLAN_OUTPUT_DIR+sep+"tmp"+sep+ticks+".bmp", file);
-        PushOutput("TERMBMP"+ticks+".bmp");
+        PushOutput("SIGBMP:"+ticks+".bmp");
     }
 
     private void PushOutput(string s){

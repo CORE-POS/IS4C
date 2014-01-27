@@ -79,16 +79,19 @@ class MemType extends MemberModule {
 		$CUST_FIELDS['SSI'] = 0;
 
 		// Get any special values for this Member Type.
-		$q = $dbc->prepare_statement("SELECT discount,staff,SSI,cd_type
-			FROM memdefaults
-			WHERE memtype=?");
+        $mt = $dbc->tableDefinition('memtype');
+		$q = $dbc->prepare_statement("SELECT custdataType,discount,staff,ssi from memtype WHERE memtype=?");
+        if ($dbc->tableExists('memdefaults') && (!isset($mt['custdataType']) || !isset($mt['discount']) || !isset($mt['staff']) || !isset($mt['ssi']))) {
+            $q = $dbc->prepare_statement("SELECT cd_type as custdataType,discount,staff,SSI as ssi
+                    FROM memdefaults WHERE memtype=?");
+        }
 		$r = $dbc->exec_statement($q,array($mtype));
 		if ($dbc->num_rows($r) > 0){
 			$w = $dbc->fetch_row($r);
-			$CUST_FIELDS['Type'] = $w['cd_type'];
+			$CUST_FIELDS['Type'] = $w['custdataType'];
 			$CUST_FIELDS['Discount'] = $w['discount'];
 			$CUST_FIELDS['Staff'] = $w['staff'];
-			$CUST_FIELDS['SSI'] = $w['SSI'];
+			$CUST_FIELDS['SSI'] = $w['ssi'];
 		}
 
 		// Assign Member Type values to each custdata record for the Membership.
