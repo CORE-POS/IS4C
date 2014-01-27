@@ -73,11 +73,77 @@ class SigCapturePage extends BasicPage
 
         if (isset($_REQUEST['reginput'])) {
             if (strtoupper($_REQUEST['reginput']) == 'CL') {
+                if (isset($_REQUEST['bmpfile']) && file_exists($_REQUEST['bmpfile'])) {
+                    unlink($_REQUEST['bmpfile']);
+                }
                 $this->change_page($this->page_url.'gui-modules/pos2.php');
 
                 return false;
             } else if ($_REQUEST['reginput'] == '') {
                 if (isset($_REQUEST['bmpfile']) && file_exists($_REQUEST['bmpfile'])) {
+
+                    // this should have been set already, but if we have sufficient info
+                    // we can make sure it's correct.
+                    if (isset($_REQUEST['amt']) && !empty($_REQUEST['amt']) && isset($_REQUEST['code']) && !empty($_REQUEST['code'])) {
+                        $CORE_LOCAL->set('strRemembered', (100*$_REQUEST['amt']) . $_REQUEST['code']);
+                    }
+                    $CORE_LOCAL->set('msgrepeat', 1);
+
+                    $bmp = file_get_contents($_REQUEST['bmpfile']);
+                    $format = 'BMP';
+                    $img_content = $bmp;
+
+                    /**
+                      Idea: convert image to PNG if GD functions
+                      are available. It would reduce storage size
+                      but also make printing the image more complicated
+                      since it would need to be converted *back* to
+                      a bitmap. Undecided whether to use this.
+                      Maybe reformatting happens server-side for
+                      long term storage.
+
+                      Update: does not work with GD. That extension
+                      does not understand bitmaps. Same idea may
+                      work with a different library like ImageMagick.
+                    if (function_exists('imagecreatefromstring')) {
+                        $image = imagecreatefromstring($bmp);
+                        if ($image !== false) {
+                            ob_start();
+                            $success = imagepng($image);
+                            $png_content = ob_get_clean();
+                            if ($success) {
+                                $format = 'PNG';
+                                $img_content = $png_content;
+                            }
+                        }
+                    }
+                    */
+
+                    $dbc = Database::tDataConnect();
+                    $capQ = 'INSERT INTO CapturedSignature
+                                (tdate, emp_no, register_no, trans_no,
+                                 trans_id, filetype, filecontents)
+                             VALUES
+                                (?, ?, ?, ?,
+                                 ?, ?, ?)';
+                    $capP = $dbc->prepare_statement($capQ);
+                    Database::getsubtotals();
+                    $args = array(
+                        date('Y-m-d H:i:s'),
+                        $CORE_LOCAL->get('CashierNo'),
+                        $CORE_LOCAL->get('laneno'),
+                        $CORE_LOCAL->get('transno'),
+                        $CORE_LOCAL->get('LastID') + 1,
+                        $format,
+                        $img_content,
+                    );
+                    $capR = $dbc->exec_statement($capP, $args);
+
+                    unlink($_REQUEST['bmpfile']);
+
+                    $this->change_page($this->page_url.'gui-modules/pos2.php');
+
+                    return false;
 
                 } else {
                     UdpComm::udpSend('termSig');
@@ -93,6 +159,7 @@ class SigCapturePage extends BasicPage
 	function body_content(){
 		global $CORE_LOCAL;
 		$this->input_header();
+		echo DisplayLib::printheaderb();
 		?>
 		<div class="baseHeight">
 		<?php
@@ -109,7 +176,7 @@ class SigCapturePage extends BasicPage
         echo '$' . sprintf('%.2f', $_REQUEST['amt']) . ' as ' . $_REQUEST['type'];
         echo '<br />';
         echo '<span id="sigInstructions" style="font-size:90%;">';
-        echo '[enter] to get new signature, [clear] to cancel';
+        echo '[enter] to get re-request signature, [clear] to cancel';
         echo '</span>';
 		echo "</div>";
 
@@ -122,6 +189,7 @@ class SigCapturePage extends BasicPage
 
         $this->add_onload_command("addToForm('amt', '{$_REQUEST['amt']}');\n");
         $this->add_onload_command("addToForm('type', '{$_REQUEST['type']}');\n");
+        $this->add_onload_command("addToForm('code', '{$_REQUEST['code']}');\n");
 		
 		$CORE_LOCAL->set("boxMsg",'');
 		$CORE_LOCAL->set("msgrepeat",2);

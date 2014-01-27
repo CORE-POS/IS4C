@@ -37,7 +37,7 @@ class SignedStoreChargeTender extends StoreChargeTender
         global $CORE_LOCAL;
         if ($CORE_LOCAL->get('msgrepeat') == 0) {
             $CORE_LOCAL->set('strRemembered', ($this->amount*100) . $this->tender_code);
-            return MiscLib::base_url().'gui-modules/SigCapturePage.php?type='.$this->name_string.'&amt='.$this->amount;
+            return MiscLib::base_url().'gui-modules/SigCapturePage.php?type='.$this->name_string.'&amt='.$this->amount.'&code='.$this->tender_code;
         }
 
         return true;
