@@ -377,6 +377,12 @@ function goToSigns() {
         $('#actionForm').submit();
     }
 }
+function goToMargins() {
+    if (getItems()) {
+        $('#actionForm').attr('action', 'MarginToolFromSearch.php');
+        $('#actionForm').submit();
+    }
+}
         <?php
         return ob_get_clean();
     }
@@ -507,7 +513,8 @@ function goToSigns() {
         $ret .= '<br />';
         $ret .= '<input style="margin-top:10px;" type="submit" value="Edit Items" onclick="goToEdit();" />';
         $ret .= '<br />';
-        $ret .= '<input style="margin-top:10px;" type="submit" value="Tags/Signs" onclick="goToSigns();" />';
+        //$ret .= '<input style="margin-top:10px;" type="submit" value="Tags/Signs" onclick="goToSigns();" />';
+        $ret .= '<input style="margin-top:10px;" type="submit" value="Margins" onclick="goToMargins();" />';
         $ret .= '</fieldset>';
         $ret .= '<form method="post" id="actionForm" target="__advs_act"></form>';
         $ret .= '</div>';
