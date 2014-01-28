@@ -57,7 +57,7 @@ class suspendedlist extends NoInputPage {
 
 		/* form submitted */
 		if (isset($_REQUEST['selectlist'])){
-			if (!empty($_REQUEST['selectlist'])){
+            if (!empty($_REQUEST['selectlist'])){ // selected a transaction
 				$tmp = explode("::",$_REQUEST['selectlist']);
 				$this->doResume($tmp[0],$tmp[1],$tmp[2]);
                 // if it is a member transaction, verify correct name
