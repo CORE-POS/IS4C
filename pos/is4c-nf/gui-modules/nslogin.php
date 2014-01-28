@@ -59,6 +59,7 @@ class nslogin extends NoInputPage
 				$this->msg = _("invalid password");
 			}
 		}
+		UdpComm::udpSend('twoPairs');
 
 		return true;
 	}

@@ -37,6 +37,7 @@
   a discount value and adds the coupon to
   the transaction
 */
+<<<<<<< HEAD
 class CouponCode extends SpecialUPC 
 {
 
@@ -247,6 +248,5 @@ class CouponCode extends SpecialUPC
 
         return $json;
     }
-
 }
 

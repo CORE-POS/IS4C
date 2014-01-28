@@ -91,7 +91,6 @@ static public function checkPassword($password,$activity=1)
                 TransRecord::addactivity($activity);
             }
             */
-			
 		} elseif ($password == 9999) {
 			Database::loadglobalvalues();
 
@@ -139,5 +138,5 @@ static public function checkPassword($password,$activity=1)
 	return true;
 }
 
-} // end class Authenticate
+}
 

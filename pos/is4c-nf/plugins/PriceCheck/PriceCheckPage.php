@@ -54,8 +54,9 @@ class PriceCheckPage extends NoInputPage {
 				qttyEnforced,department,local,cost,tax,foodstamp,discount,
 				discounttype,specialpricemethod,special_price,groupprice,
 				pricemethod,quantity,specialgroupprice,specialquantity,
-				mixmatchcode,idEnforced,tareweight
-				from products where upc = '".$db->escape($this->upc)."'";
+				mixmatchcode,idEnforced,tareweight,d.dept_name
+				from products, departments d where department = d.dept_no
+				AND upc = '".$db->escape($this->upc)."'";
 			$result = $db->query($query);
 			$num_rows = $db->num_rows($result);
 
@@ -79,9 +80,8 @@ class PriceCheckPage extends NoInputPage {
 						($row['scale']>0?' /lb':''));
 				}
 				$this->pricing['description'] = $row['description'];
-				$this->pricing['department'] = $row['department'];
+				$this->pricing['department'] = $row['dept_name'];
 
-				MiscLib::goodBeep();
 			}
 
 			// user hit enter and there is a valid UPC present
@@ -92,7 +92,7 @@ class PriceCheckPage extends NoInputPage {
 				return False;
 			}
 		}
-
+		MiscLib::goodBeep();
 		return True;
 	}
 
@@ -117,9 +117,10 @@ class PriceCheckPage extends NoInputPage {
 					_("[clear] to cancel"),
 				);
 				$this->upc = "";
+				MiscLib::errorBeep();				
 			}
 			else {
-				$info = $this->pricing['description'].' :: '.$this->pricing['department'].'<br />';
+				$info = $this->pricing['description'].'<br />'.$this->pricing['department'].'<br />';
 				$info .= _("Price").": ".$this->pricing['price'];
 				if (!empty($this->pricing['memPrice'])){
 					$info .= "<br />("._("Member Price").": ".$this->pricing['memPrice'].")";

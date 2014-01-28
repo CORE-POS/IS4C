@@ -111,7 +111,7 @@ class adminlogin extends NoInputPage {
 						'charflag' => 'PW',
 						'num_flag' => $row['emp_no']
 					));
-
+					UdpComm::udpSend('goodBeep');
 					$result = $class::adminLoginCallback(True);
 					if ($result === True)
 						$this->change_page(MiscLib::base_url().'gui-modules/pos2.php');
@@ -131,6 +131,7 @@ class adminlogin extends NoInputPage {
 				}
 			}
 		}
+		UdpComm::udpSend('twoPairs');
 		return True;
 	}
 
