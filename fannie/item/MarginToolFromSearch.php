@@ -31,7 +31,7 @@ class MarginToolFromSearch extends FannieRESTfulPage
 
     protected $window_dressing = false;
 
-    private $upcs = array();
+    protected $upcs = array();
     private $save_results = array();
     private $depts = array();
     private $superdepts = array();
@@ -41,6 +41,8 @@ class MarginToolFromSearch extends FannieRESTfulPage
        $this->__routes[] = 'post<u>'; 
        $this->__routes[] = 'get<upc><deptID><newprice>';
        $this->__routes[] = 'get<upc><superID><newprice>';
+       $this->__routes[] = 'post<upcs><deptID><newprices>';
+       $this->__routes[] = 'post<upcs><superID><newprices>';
        return parent::preprocess();
     }
 
@@ -68,6 +70,50 @@ class MarginToolFromSearch extends FannieRESTfulPage
         return false;
     }
 
+    // ajax calllback: recalculate department margin
+    // this plural version takes JSON arrays of UPCs and 
+    // new prices. Recalculating the all applicable items 
+    // seems easier then keeping track of every edit
+    function post_upcs_deptID_newprices_handler()
+    {
+        global $FANNIE_OP_DB;
+        $this->upcs = json_decode($this->upcs);
+        $this->newprices = json_decode($this->newprices);
+        // validate input arrays
+        if (!is_array($this->upcs) || !is_array($this->newprices) || count($this->upcs) != count($this->newprices) || count($this->upcs) == 0) {
+            echo '0';
+            return false;
+        }
+
+        $priceCalc = "SUM(CASE";
+        $args = array();
+        for($i=0; $i<count($this->upcs); $i++) {
+            $priceCalc .= ' WHEN upc=? THEN ? ';
+            $args[] = $this->upcs[$i];
+            $args[] = $this->newprices[$i];
+        }
+        $priceCalc .= ' ELSE normal_price END)';
+
+        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $query = "SELECT SUM(p.cost) AS totalCost,
+                    {$priceCalc} as totalPrice
+                  FROM products AS p
+                  WHERE department=?
+                    AND cost <> 0";
+        $args[] = $this->deptID;
+        $prep = $dbc->prepare($query);
+        $result = $dbc->execute($prep, $args);
+        echo $dbc->error();
+        if ($dbc->num_rows($result) == 0) {
+            echo "0";
+        } else {
+            $row = $dbc->fetch_row($result);
+            echo sprintf('%.4f', ($row['totalPrice'] - $row['totalCost']) / $row['totalPrice'] * 100);
+        }
+
+        return false;
+    }
+
     // ajax callback: recalculate superdept margin
     // using new price for the given upc
     function get_upc_superID_newprice_handler()
@@ -82,6 +128,51 @@ class MarginToolFromSearch extends FannieRESTfulPage
                     AND cost <> 0";
         $prep = $dbc->prepare($query);
         $result = $dbc->execute($prep, array($this->upc, $this->newprice, $this->superID));
+        echo $dbc->error();
+        if ($dbc->num_rows($result) == 0) {
+            echo "0";
+        } else {
+            $row = $dbc->fetch_row($result);
+            echo sprintf('%.4f', ($row['totalPrice'] - $row['totalCost']) / $row['totalPrice'] * 100);
+        }
+
+        return false;
+    }
+
+    // ajax calllback: recalculate superdept margin
+    // this plural version takes JSON arrays of UPCs and 
+    // new prices. Recalculating the all applicable items 
+    // seems easier then keeping track of every edit
+    function post_upcs_superID_newprices_handler()
+    {
+        global $FANNIE_OP_DB;
+        $this->upcs = json_decode($this->upcs);
+        $this->newprices = json_decode($this->newprices);
+        // validate input arrays
+        if (!is_array($this->upcs) || !is_array($this->newprices) || count($this->upcs) != count($this->newprices) || count($this->upcs) == 0) {
+            echo '0';
+            return false;
+        }
+
+        $priceCalc = "SUM(CASE";
+        $args = array();
+        for($i=0; $i<count($this->upcs); $i++) {
+            $priceCalc .= ' WHEN upc=? THEN ? ';
+            $args[] = $this->upcs[$i];
+            $args[] = $this->newprices[$i];
+        }
+        $priceCalc .= ' ELSE normal_price END)';
+
+        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $query = "SELECT SUM(p.cost) AS totalCost,
+                    {$priceCalc} as totalPrice
+                  FROM products AS p
+                  INNER JOIN MasterSuperDepts AS m ON p.department=m.superID
+                  WHERE m.superID=?
+                    AND cost <> 0";
+        $args[] = $this->superID;
+        $prep = $dbc->prepare($query);
+        $result = $dbc->execute($prep, $args);
         echo $dbc->error();
         if ($dbc->num_rows($result) == 0) {
             echo "0";
@@ -209,8 +300,11 @@ class MarginToolFromSearch extends FannieRESTfulPage
                             <td>%.2f</td>
                             <td>%.2f</td>
                             <td id="margin%s">%.4f%%</td>
-                            <td><input type="text" size="5" name="price[]" class="dept%d super%d"
-                                value="%.2f" onchange="reCalc(\'%s\', this.value, %f, %d, %d);" /></td>
+                            <td class="dept%d super%d">
+                                <input type="text" size="5" name="price[]" class="newprice"
+                                value="%.2f" onchange="reCalc(\'%s\', this.value, %f, %d, %d);" />
+                                <input type="hidden" name="upc[]" class="itemupc" value="%s" />
+                            </td>
                             </tr>',
                             $row['upc'],
                             $row['description'],
@@ -218,7 +312,9 @@ class MarginToolFromSearch extends FannieRESTfulPage
                             $row['normal_price'],
                             $row['upc'], (($row['normal_price'] - $row['cost']) / $row['normal_price']) * 100,
                             $row['department'], $row['superID'],
-                            $row['normal_price'], $row['upc'], $row['cost'], $row['department'], $row['superID']);
+                            $row['normal_price'], $row['upc'], $row['cost'], $row['department'], $row['superID'],
+                            $row['upc']
+            );
         }
         $ret .= '</table>';
 
@@ -243,10 +339,21 @@ function reCalc(upc, price, cost, deptID, superID) {
     itemMargin = Math.round(itemMargin * 10000) / 10000;
     $('#margin'+upc).html(itemMargin+"%");
 
+    var pArray = Array();
+    var uArray = Array();
+    $('.dept'+deptID).each(function(){
+        pArray.push($(this).find('.newprice').val());
+        uArray.push($(this).find('.itemupc').val());
+    });
+    var prices = JSON.stringify(pArray);
+    var upcs = JSON.stringify(uArray);
+    console.log(prices);
+    console.log(upcs);
+
     $.ajax({
         url: 'MarginToolFromSearch.php',
-        type: 'get',
-        data: 'upc='+upc+'&deptID='+deptID+'&newprice='+price,
+        type: 'post',
+        data: 'upcs='+upcs+'&deptID='+deptID+'&newprices='+prices,
         success: function(resp) {
             $('#dmargin'+deptID).html(resp+"%");
         }
@@ -254,8 +361,8 @@ function reCalc(upc, price, cost, deptID, superID) {
 
     $.ajax({
         url: 'MarginToolFromSearch.php',
-        type: 'get',
-        data: 'upc='+upc+'&superID='+superID+'&newprice='+price,
+        type: 'post',
+        data: 'upcs='+upcs+'&superID='+superID+'&newprices='+prices,
         success: function(resp) {
             $('#smargin'+superID).html(resp+"%");
         }
