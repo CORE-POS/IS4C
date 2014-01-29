@@ -195,7 +195,7 @@ if (isset($_REQUEST['PPORT'])) {
     <?php if (!$otherpport && $CORE_LOCAL->get('printerPort')=="/dev/usb/lp0")
             echo "checked"; ?> /><label for="div-usb-lp0">/dev/usb/lp0 (*nix)</label><br />
 <input type="radio" name=PPORT value="LPT1:" id="lpt1-"
-    <?php if (!$otherpport && $CORE_LOCAL->get('printerPort')=="LPT:")
+    <?php if (!$otherpport && $CORE_LOCAL->get('printerPort')=="LPT1:")
                 echo "checked"; ?> /><label for="lpt1-">LPT1: (windows)</label><br />
 <input type="radio" name=PPORT value="fakereceipt.txt" id="fakercpt"
     <?php if (!$otherpport && $CORE_LOCAL->get('printerPort')=="fakereceipt.txt")
