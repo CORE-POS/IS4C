@@ -41,7 +41,6 @@ class nslogin extends NoInputPage
 			$passwd = '';
 			if (isset($_REQUEST['reginput']) && !empty($_REQUEST['reginput'])) {
 				$passwd = $_REQUEST['reginput'];
-				UdpComm::udpSend('goodBeep');
 			} elseif (isset($_REQUEST['userPassword']) && !empty($_REQUEST['userPassword'])) {
 				$passwd = $_REQUEST['userPassword'];
             }
@@ -51,17 +50,21 @@ class nslogin extends NoInputPage
 				return False;
 			} elseif (Authenticate::checkPassword($passwd)) {
                 ReceiptLib::drawerKick();
+                if ($CORE_LOCAL->get('LoudLogins') == 1) {
+                    UdpComm::udpSend('goodBeep');
+                }
 				$this->change_page($this->page_url."gui-modules/pos2.php");
 				return false;
 			} else {
 				$this->color ="errorColoredArea";
 				$this->heading = _("re-enter manager password");
 				$this->msg = _("invalid password");
+
+                if ($CORE_LOCAL->get('LoudLogins') == 1) {
+                    UdpComm::udpSend('twoPairs');
+                }
 			}
 		}
-        if (isset($todo_beepOnLoginSetting)) {
-            UdpComm::udpSend('twoPairs');
-        }
 
 		return true;
 	}
