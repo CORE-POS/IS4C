@@ -45,7 +45,7 @@ class CalendarPluginDisplayLib {
 
 		$sql = CalendarPluginDB::get();
 		$dataP = $sql->prepare_statement("
-			SELECT m.eventDate,m.eventText,m.uid,u.real_name,m.eventID
+			SELECT m.eventDate,m.eventText,m.uid,u.real_name,m.eventID,m.attendeeLimit
 			FROM monthview_events as m LEFT JOIN "
 			.$FANNIE_OP_DB.$sql->sep()."Users as u on m.uid=u.uid
 			WHERE calendarID=? AND
@@ -135,6 +135,11 @@ class CalendarPluginDisplayLib {
 					$datebox .= ">";
 					$datebox .= $dat['eventText'];
 					$datebox .= "</div>";
+                    if ($dat['attendeeLimit'] > 0) {
+                        $datebox .= '<div id="eventlink_' . $dat['attendeeLimit'] . '">';
+                        $datebox .= sprintf('<a href="CalendarAttendedEventPage.php?id=%d">View Event</a>', $dat['eventID']);
+                        $datebox .= '</div>';
+                    } 
 				}
 			}
             if (!$found && $EDIT) {
@@ -187,18 +192,12 @@ class CalendarPluginDisplayLib {
                             $datebox .= ">";
                             $datebox .= $dat['eventText'];
                             $datebox .= "</div>";
+                            if ($dat['attendeeLimit'] > 0) {
+                                $datebox .= '<div class="monthview_box" id="eventlink_' . $dat['attendeeLimit'] . '">';
+                                $datebox .= sprintf('&nbsp;&nbsp;<a onclick="" href="CalendarAttendedEventPage.php?id=%d">View Event</a>', $dat['eventID']);
+                                $datebox .= '</div>';
+                            } 
 						}
-                        /*
-						if (!$found && $EDIT){
-							$ret .= sprintf("<div class=\"%s\" ",$classes[$c]);
-							$c = ($c+1)%2;
-							$ret .= " onclick=\"edit_monthview('$datestring','$uid')\" ";
-							$ret .= " ondblclick=\"save_monthview()\" ";
-							$ret .= " id=\"".$datestring.$uid."\"";
-							$ret .= ">";
-							$ret .= "</div>";
-						}
-                        */
 					}
                     if (!$found && $EDIT) {
                         $datebox .= "<div class=\"monthview_box\" ";
@@ -250,6 +249,9 @@ class CalendarPluginDisplayLib {
 		$ret .= "<p class=\"index\" id=\"indexCreateNew\">";
 		$ret .= "<a href=\"\" onclick=\"newCalendar('$uid');return false;\">";
 		$ret .= "Create a new calendar</a></p>";
+		$ret .= "<p class=\"index\" id=\"indexAttendedEvent\">";
+		$ret .= "<a href=\"CalendarAttendedEventPage.php\">";
+		$ret .= "Create an attended event</a></p>";
 
 		$ret .= "<div class=indexTitle>Other Calendars</div>";
 		$ret .= "<div id=theirs>";

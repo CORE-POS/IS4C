@@ -56,6 +56,7 @@ class CalendarPlugin extends FanniePlugin {
 		$errors[] = $this->plugin_db_struct($dbc, 'calendars', $db_name);
 		$errors[] = $this->plugin_db_struct($dbc, 'monthview_events', $db_name);
 		$errors[] = $this->plugin_db_struct($dbc, 'permissions', $db_name);
+		$errors[] = $this->plugin_db_struct($dbc, 'attendees', $db_name);
 
 		if ($dbc->table_exists('account_classes')){
 			/* populate account classes */

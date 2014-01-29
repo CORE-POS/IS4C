@@ -35,6 +35,7 @@ class MonthviewEventsModel extends BasicModel
     'eventDate' => array('type'=>'DATETIME'),
     'eventText' => array('type'=>'TEXT'),
     'uid' => array('type'=>'INT'),
+    'attendeeLimit' => array('type'=>'SMALLINT', 'default'=>0),
 	);
 
     /* START ACCESSOR FUNCTIONS */
@@ -136,6 +137,26 @@ class MonthviewEventsModel extends BasicModel
                 }
             }
             $this->instance["uid"] = func_get_arg(0);
+        }
+    }
+
+    public function attendeeLimit()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["attendeeLimit"])) {
+                return $this->instance["attendeeLimit"];
+            } else if (isset($this->columns["attendeeLimit"]["default"])) {
+                return $this->columns["attendeeLimit"]["default"];
+            } else {
+                return null;
+            }
+        } else {
+            if (!isset($this->instance["attendeeLimit"]) || $this->instance["attendeeLimit"] != func_get_args(0)) {
+                if (!isset($this->columns["attendeeLimit"]["ignore_updates"]) || $this->columns["attendeeLimit"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
+            $this->instance["attendeeLimit"] = func_get_arg(0);
         }
     }
     /* END ACCESSOR FUNCTIONS */

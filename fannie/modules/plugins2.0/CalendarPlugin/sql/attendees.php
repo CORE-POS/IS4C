@@ -21,16 +21,18 @@
 
 *********************************************************************************/
 
-$PLUGIN_CREATE['monthview_events'] = "
-	CREATE TABLE monthview_events (
-    eventID INT NOT NULL AUTO_INCREMENT,
-	calendarID INT,
-	eventDate DATETIME,
-	eventText TEXT,
-	uid INT,
-    attendeeLimit SMALLINT DEFAULT 0,
-	PRIMARY KEY (eventID)
+/**
+  Attendees are users you are attending an 
+  event. Attendee limits are optional. Events
+  do not need to have attendees.
+*/
+
+$PLUGIN_CREATE['attendees'] = "
+	CREATE TABLE attendees (
+	attendeeID INT NOT NULL AUTO_INCREMENT,
+    uid INT,
+    eventID INT,
+	PRIMARY KEY (attendeeID)
 	)
 ";
 
-?>
