@@ -42,6 +42,7 @@ class CalendarMainPage extends FanniePage {
 		$this->header = "Calendars";
 		
 		$plugin = new CalendarPlugin(); 
+        $this->add_script($FANNIE_URL . 'src/jquery/jquery.js');
 		$this->add_script($plugin->plugin_url().'/javascript/calendar.js');
 		$this->add_script($plugin->plugin_url().'/javascript/ajax.js');
 
