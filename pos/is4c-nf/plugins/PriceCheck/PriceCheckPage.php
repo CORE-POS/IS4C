@@ -82,6 +82,7 @@ class PriceCheckPage extends NoInputPage {
 				$this->pricing['description'] = $row['description'];
 				$this->pricing['department'] = $row['dept_name'];
 
+				MiscLib::goodBeep();
 			}
 
 			// user hit enter and there is a valid UPC present
@@ -92,7 +93,7 @@ class PriceCheckPage extends NoInputPage {
 				return False;
 			}
 		}
-		MiscLib::goodBeep();
+
 		return True;
 	}
 

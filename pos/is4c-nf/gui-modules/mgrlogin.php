@@ -33,7 +33,9 @@ class mgrlogin extends NoInputPage {
 			echo JsonLib::array_to_json($arr);
 			return False;
 		}
-		UdpComm::udpSend('twoPairs');
+        if (isset($todo_beepOnLoginSetting)) {
+            UdpComm::udpSend('twoPairs');
+        }
 		return True;
 	}
 
