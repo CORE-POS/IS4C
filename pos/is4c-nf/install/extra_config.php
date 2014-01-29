@@ -150,8 +150,10 @@ InstallUtilities::paramSave('BottleReturnDept',$CORE_LOCAL->get('BottleReturnDep
 <tr><td colspan=2 class="tblHeader">
 <h3>Hardware Settings</h3></td></tr>
 
+<?php
 // 28Jan14 EL There's an inch or so of whitespace at the bottom of this row.
 // I don't know what causes it.
+?>
 <tr><td><b>Printer port</b>:
 </td><td><?php
 // If values entered on the form are being saved, set CORE_LOCAL
@@ -193,7 +195,7 @@ if (isset($_REQUEST['PPORT'])) {
     <?php if (!$otherpport && $CORE_LOCAL->get('printerPort')=="/dev/usb/lp0")
             echo "checked"; ?> /><label for="div-usb-lp0">/dev/usb/lp0 (*nix)</label><br />
 <input type="radio" name=PPORT value="LPT1:" id="lpt1-"
-	<?php if (!$otherpport && $CORE_LOCAL->get('printerPort')=="LPT:")
+    <?php if (!$otherpport && $CORE_LOCAL->get('printerPort')=="LPT:")
                 echo "checked"; ?> /><label for="lpt1-">LPT1: (windows)</label><br />
 <input type="radio" name=PPORT value="fakereceipt.txt" id="fakercpt"
     <?php if (!$otherpport && $CORE_LOCAL->get('printerPort')=="fakereceipt.txt")
