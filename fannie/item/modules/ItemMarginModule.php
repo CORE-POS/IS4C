@@ -69,7 +69,7 @@ class ItemMarginModule extends ItemModule {
             $dmR = $dbc->exec_statement($dmP,array($deptID));
             if ($dbc->num_rows($dmR) > 0){
                 $row = $dbc->fetch_row($dmR);
-                $dm = sprintf('%.2f',$dmR['margin']*100);
+                $dm = sprintf('%.2f',$row['margin']*100);
             }
         }
 
