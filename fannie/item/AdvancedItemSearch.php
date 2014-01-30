@@ -128,7 +128,7 @@ class AdvancedItemSearch extends FannieRESTfulPage
                 $dept2 = $dept1;
             }
             // swap order if needed
-            if ($dept2 > $dept1) {
+            if ($dept2 < $dept1) {
                 $tmp = $dept1;
                 $dept1 = $dept2;
                 $dept2 = $tmp;
@@ -435,7 +435,7 @@ function goToMargins() {
         $ret .= '<th>Description</th><td><input type="text" size="12" name="description" /></td>';
 
         $ret .= '<th>Dept End</th><td><select name="deptEnd"><option value="">Select...</option>';
-        $supers = $dbc->query('SELECT dept_no, dept_name FROM departments');
+        $supers = $dbc->query('SELECT dept_no, dept_name FROM departments order by dept_no');
         while($row = $dbc->fetch_row($supers)) {
             $ret .= sprintf('<option value="%d">%d %s</option>', $row['dept_no'], $row['dept_no'], $row['dept_name']);
         }
