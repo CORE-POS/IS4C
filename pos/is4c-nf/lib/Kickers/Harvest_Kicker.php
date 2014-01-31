@@ -1,7 +1,7 @@
 <?php
 /*******************************************************************************
 
-    Copyright 2010 Whole Foods Co-op
+    Copyright 2012 Whole Foods Co-op
 
     This file is part of IT CORE.
 
@@ -21,31 +21,38 @@
 
 *********************************************************************************/
 
-ini_set('display_errors','Off');
-include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
+class Harvest_Kicker extends Kicker {
 
-$decision = isset($_REQUEST['input'])?strtoupper(trim($_REQUEST["input"])):'CL';
+	function doKick(){
+		global $CORE_LOCAL;
+		if($CORE_LOCAL->get('training') == 1) return False;
 
-$ret = array('dest_page'=>MiscLib::base_url().'gui-modules/pos2.php',
-		'endorse'=>False, 'cleared'=>False);
+		$db = Database::tDataConnect();
 
-if ($decision == "CL") {
-	$CORE_LOCAL->set("msgrepeat",0);
-	$CORE_LOCAL->set("toggletax",0);
-	$CORE_LOCAL->set("togglefoodstamp",0);
-	$CORE_LOCAL->set("RepeatAgain", false);
-	$ret['cleared'] = True;
+		$query = "select trans_id from localtemptrans where 
+			(trans_subtype = 'CA' and total <> 0) 
+			OR (trans_subtype = 'XB' and total <> 0)
+			OR (trans_subtype = 'PE' and total <> 0)";
+
+		$result = $db->query($query);
+		$num_rows = $db->num_rows($result);
+		$db->close();
+
+		return ($num_rows > 0) ? True : False;
+
+	}
+
+	function kickOnSignIn(){
+		global $CORE_LOCAL;
+		if($CORE_LOCAL->get('training') == 1) return False;
+		return True;
+	}
+
+	function kickOnSignOut(){
+		global $CORE_LOCAL;
+		if($CORE_LOCAL->get('training') == 1) return False;
+		return True;
+	}
 }
-elseif (strlen($decision) > 0) {
-
-	$CORE_LOCAL->set("msgrepeat",1);
-	$CORE_LOCAL->set("strRemembered",$CORE_LOCAL->get("strEntered"));
-}
-else {
-	$CORE_LOCAL->set("msgrepeat",1);
-	$CORE_LOCAL->set("strRemembered",$CORE_LOCAL->get("strEntered"));
-}
-
-echo JsonLib::array_to_json($ret);
 
 ?>

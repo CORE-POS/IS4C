@@ -53,7 +53,7 @@ class login3 extends BasicPage {
 			else {
 				$this->color = "errorColoredArea";
 				$this->img = $this->page_url."graphics/redkey4.gif";
-				$this->msg = _("password invalid, please re-enter");
+				$this->msg = _("Password Invalid, Please Re-Enter");
 			}
 		}
 		return True;

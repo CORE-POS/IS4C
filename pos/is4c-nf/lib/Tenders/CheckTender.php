@@ -109,6 +109,8 @@ class CheckTender extends TenderModule
             return parent::defaultPrompt();
         }
 
+        $CORE_LOCAL->set('RepeatAgain', false);
+
         $ref = trim($CORE_LOCAL->get("CashierNo"))."-"
             .trim($CORE_LOCAL->get("laneno"))."-"
             .trim($CORE_LOCAL->get("transno"));
