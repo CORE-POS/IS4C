@@ -412,6 +412,15 @@ class BasicModel
     */
     public function save()
     {
+        if (!is_array($this->hooks) || empty($this->hooks)) {
+            $this->loadHooks();
+        }
+        foreach($this->hooks as $hook_obj) {
+            if (method_exists($hook_obj, 'onSave')) {
+                $hook_obj->onSave($this->table_name, $this);
+            }
+        }
+
         $new_record = false;
         // do we have values to look up?
         foreach($this->unique as $column)
@@ -894,6 +903,29 @@ class BasicModel
         return 0;
 
     // normalize()
+    }
+
+    /**
+      Array of hook objects associated with this table
+    */
+    protected $hooks = array();
+    /**
+      Search available classes to load applicable
+      hook objects into this instance
+    */
+    protected function loadHooks()
+    {
+       $this->hooks = array();
+       if (class_exists('FannieAPI')) {
+           $hook_classes = FannieAPI::listModules('BasicModelHook');
+           foreach($hook_classes as $class) {
+                if (!class_exists($class)) continue;
+                $hook_obj = new $class();
+                if ($obj->operatesOnTable($this->table_name)) {
+                    $this->hooks[] = $hook_obj;
+                }
+           }
+       }
     }
 
     /**
