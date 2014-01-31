@@ -88,7 +88,8 @@ else{
 </head>
 <body>
 Update local status by like code<br />
-File format: CSV, Likecode in column A, Anything in B if local, blank in B if not
+File format: CSV, Likecode in column A, one (1) in column B for Superior Compact,
+two (2) in column B for 300 mi radius, anything else for non-local.
 <p />
 <form enctype="multipart/form-data" action="local.php" method="post">
 <input type="hidden" name="MAX_FILE_SIZE" value="2097152" />
