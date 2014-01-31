@@ -45,7 +45,7 @@ class CalendarPluginDisplayLib {
 
 		$sql = CalendarPluginDB::get();
 		$dataP = $sql->prepare_statement("
-			SELECT m.eventDate,m.eventText,m.uid,u.real_name 
+			SELECT m.eventDate,m.eventText,m.uid,u.real_name,m.eventID,m.attendeeLimit
 			FROM monthview_events as m LEFT JOIN "
 			.$FANNIE_OP_DB.$sql->sep()."Users as u on m.uid=u.uid
 			WHERE calendarID=? AND
@@ -57,18 +57,14 @@ class CalendarPluginDisplayLib {
 			$dataW[0] = trim(preg_replace('/\d+:\d+:\d+/','',$dataW[0]));
 			if (!isset($db_data[$dataW[0]]))
 				$db_data[$dataW[0]] = array();
-			array_unshift($db_data[$dataW[0]],array($dataW[1],$dataW[2],$dataW[3]));
+            $db_data[$dataW[0]][] = $dataW;
+			//array_unshift($db_data[$dataW[0]],array($dataW[1],$dataW[2],$dataW[3]));
 		}
 
-		$name = array_pop(
-			$sql->fetch_row(
-				$sql->exec_statement(
-					$sql->prepare_statement('SELECT name FROM calendars
-								WHERE calendarID=?'),
-					array($id)
-				)
-			)
-		);
+        $calendarModel = new CalendarsModel($sql);
+        $calendarModel->calendarID($id);
+        $calendarModel->load();
+        $name = $calendarModel->name();
 
 		$startTS = mktime(0,0,0,$month,1,$year);
 
@@ -112,114 +108,117 @@ class CalendarPluginDisplayLib {
 			$ret .= "</td>\n";
 		}
 		$classes = array("monthview_box","monthview_box_alt");
-		while(date("w",$startTS) > 0){
+        // first week may not contain seven days
+		while(date("w",$startTS) > 0) {
 			$datestring = date("Y-m-d",$startTS);
-			$ret .= "<td class=\"monthview_body\"";
-			if ($EDIT){
-				$ret .= " onclick=\"edit_monthview('$datestring','$uid')\"";
-			}
-			$ret .= ">";
-			$ret .= "<div class=\"monthview_numeral\">\n";
-			$ret .= date("j",$startTS);
-			$ret .= "</div>\n";
+			$datebox = "<td class=\"monthview_body\">";
+			$datebox .= "<div class=\"monthview_numeral\">\n";
+			$datebox .= date("j",$startTS);
+			$datebox .= "</div>\n";
 			$c = 0;
-			$found = False;
-			if (isset($db_data[$datestring])){
-				foreach($db_data[$datestring] as $dat){
-					$ret .= sprintf("<div class=\"%s\" ",$classes[$c]);
+			$found = false;
+            $default_action = '';
+			if (isset($db_data[$datestring])) {
+				foreach($db_data[$datestring] as $dat) {
+					$datebox .= sprintf("<div class=\"%s\" ",$classes[$c]);
 					$c = ($c+1)%2;
-					if (($EDIT && $uid==$dat[1]) || $OWNER){
-						$ret .= " onclick=\"edit_monthview('$datestring','$dat[1]')\" ";
-						$ret .= " ondblclick=\"save_monthview()\" ";
+					if (($EDIT && $uid==$dat['uid']) || $OWNER){
+						$datebox .= " onclick=\"edit_event({$dat['eventID']})\" ";
+						$datebox .= " ondblclick=\"save_open_event()\" ";
 					}
-					if ($dat[1] == $uid) $found = True;
-					$ret .= " id=\"".$datestring.$dat[1]."\"";
-					$ret .= sprintf(" title=\"%s\"",($dat[2]==""?"Unknown":$dat[2]));
-					$ret .= ">";
-					$ret .= $dat[0];
-					$ret .= "</div>";
-				}
-				if (!$found && $EDIT){
-					$ret .= sprintf("<div class=\"%s\" ",$classes[$c]);
-					$c = ($c+1)%2;
-					$ret .= " onclick=\"edit_monthview('$datestring','$uid')\" ";
-					$ret .= " ondblclick=\"save_monthview()\" ";
-					$ret .= " id=\"".$datestring.$uid."\"";
-					$ret .= ">";
-					$ret .= "</div>";
+					if ($dat['uid'] == $uid) {
+                        $found = true;
+                        $default_action = "edit_event({$dat['eventID']})";
+                    }
+					$datebox .= " id=\"event_".$dat['eventID']."\"";
+					$datebox .= sprintf(" title=\"%s\"",($dat['real_name']==""?"Unknown":$dat['real_name']));
+					$datebox .= ">";
+					$datebox .= $dat['eventText'];
+					$datebox .= "</div>";
+                    if ($dat['attendeeLimit'] > 0) {
+                        $datebox .= '<div id="eventlink_' . $dat['attendeeLimit'] . '">';
+                        $datebox .= sprintf('<a href="CalendarAttendedEventPage.php?id=%d">View Event</a>', $dat['eventID']);
+                        $datebox .= '</div>';
+                    } 
 				}
 			}
-			else {
-				$ret .= "<div class=\"monthview_box\" ";
+            if (!$found && $EDIT) {
+				$datebox .= "<div class=\"monthview_box\" ";
 				if ($EDIT){
-					$ret .= " onclick=\"edit_monthview('$datestring','$uid')\" ";
-					$ret .= " ondblclick=\"save_monthview()\" ";
+					$datebox .= " onclick=\"add_event('$datestring','$uid')\" ";
+                    $datebox .= " ondblclick=\"save_open_event()\" ";
 				}
-				$ret .= " id=\"".$datestring.$uid."\"";
-				$ret .= ">";
-				$ret .= "</div>";
+                $datebox .= " id=\"event_".$datestring."_".$uid."\"";
+				$datebox .= ">";
+				$datebox .= "</div>";
+                $default_action = "add_event('{$datestring}','{$uid}')";
 			}
-			$ret .= "</td>\n";
-			$startTS += 60*60*24;
+			$datebox .= "</td>\n";
+            $startTS = mktime(0,0,0,date("n",$startTS),date("j",$startTS)+1,date("Y",$startTS));
+
+            $datebox = str_replace("<td", "<td onclick=\"{$default_action}\" ", $datebox);
+
+            $ret .= $datebox;
 		}
 		$ret .= "</tr>\n";
 
-		while(date("n",$startTS) == $month){
+        // now the remaining weeks
+		while(date("n",$startTS) == $month) {
 			$ret .= "<tr class=\"monthview_body\">\n";
 			for ($i=0;$i<7;$i++){
 				$datestring = date("Y-m-d",$startTS);
-				$ret .= "<td class=\"monthview_body\"";
-				if ($EDIT){
-					$ret .= " onclick=\"edit_monthview('$datestring','$uid')\"";
-				}
-				$ret .= ">";
-				if (date("n",$startTS) == $month){
-					$ret .= "<div class=\"monthview_numeral\">\n";
-					$ret .= date("j",$startTS);	
-					$ret .= "</div>\n";
+				$datebox = "<td class=\"monthview_body\">";
+				if (date("n",$startTS) == $month) {
+					$datebox .= "<div class=\"monthview_numeral\">\n";
+					$datebox .= date("j",$startTS);	
+					$datebox .= "</div>\n";
 					$c = 0;
-					$found = False;
-					if (isset($db_data[$datestring])){
-						foreach($db_data[$datestring] as $dat){
-							$ret .= sprintf("<div class=\"%s\" ",$classes[$c]);
+					$found = false;
+                    $default_action = '';
+					if (isset($db_data[$datestring])) {
+						foreach($db_data[$datestring] as $dat) {
+							$datebox .= sprintf("<div class=\"%s\" ",$classes[$c]);
 							$c = ($c+1)%2;
-							if (($EDIT && $uid==$dat[1]) || $OWNER){
-								$ret .= " onclick=\"edit_monthview('$datestring','$dat[1]')\" ";
-								$ret .= " ondblclick=\"save_monthview()\" ";
+                            if (($EDIT && $uid==$dat['uid']) || $OWNER){
+                                $datebox .= " onclick=\"edit_event({$dat['eventID']})\" ";
+                                $datebox .= " ondblclick=\"save_open_event()\" ";
 							}
-							$ret .= " id=\"".$datestring.$dat[1]."\"";
-							$ret .= sprintf(" title=\"%s\"",($dat[2]==""?"Unknown":$dat[2]));
-							$ret .= ">";
-							$ret .= $dat[0];
-							$ret .= "</div>";
-						}
-						if (!$found && $EDIT){
-							$ret .= sprintf("<div class=\"%s\" ",$classes[$c]);
-							$c = ($c+1)%2;
-							$ret .= " onclick=\"edit_monthview('$datestring','$uid')\" ";
-							$ret .= " ondblclick=\"save_monthview()\" ";
-							$ret .= " id=\"".$datestring.$uid."\"";
-							$ret .= ">";
-							$ret .= "</div>";
+                            if ($dat['uid'] == $uid) {
+                                $found = true;
+                                $default_action = "edit_event({$dat['eventID']})";
+                            }
+                            $datebox .= " id=\"event_".$dat['eventID']."\"";
+                            $datebox .= sprintf(" title=\"%s\"",($dat['real_name']==""?"Unknown":$dat['real_name']));
+                            $datebox .= ">";
+                            $datebox .= $dat['eventText'];
+                            $datebox .= "</div>";
+                            if ($dat['attendeeLimit'] > 0) {
+                                $datebox .= '<div class="monthview_box" id="eventlink_' . $dat['attendeeLimit'] . '">';
+                                $datebox .= sprintf('&nbsp;&nbsp;<a onclick="" href="CalendarAttendedEventPage.php?id=%d">View Event</a>', $dat['eventID']);
+                                $datebox .= '</div>';
+                            } 
 						}
 					}
-					else {
-						$ret .= "<div class=\"monthview_box\" ";
-						if ($EDIT){
-							$ret .= " onclick=\"edit_monthview('$datestring','$uid')\" ";
-							$ret .= " ondblclick=\"save_monthview()\" ";
-						}
-						$ret .= " id=\"".$datestring.$uid."\"";
-						$ret .= ">";
-						$ret .= "</div>";
-					}
+                    if (!$found && $EDIT) {
+                        $datebox .= "<div class=\"monthview_box\" ";
+                        if ($EDIT){
+                            $datebox .= " onclick=\"add_event('$datestring','$uid')\" ";
+                            $datebox .= " ondblclick=\"save_open_event()\" ";
+                        }
+                        $datebox .= " id=\"event_".$datestring."_".$uid."\"";
+                        $datebox .= ">";
+                        $datebox .= "</div>";
+                        $default_action = "add_event('{$datestring}','{$uid}')";
+                    }
+				} else {
+					$datebox .= "&nbsp;";
 				}
-				else {
-					$ret .= "&nbsp;";
-				}
-				$ret .= "</td>\n";
-				//$startTS += 60*60*24;
+				$datebox .= "</td>\n";
 				$startTS = mktime(0,0,0,date("n",$startTS),date("j",$startTS)+1,date("Y",$startTS));
+
+                $datebox = str_replace("<td", "<td onclick=\"{$default_action}\" ", $datebox);
+
+                $ret .= $datebox;
 			}
 			$ret .= "</tr>\n";
 		}
@@ -227,7 +226,7 @@ class CalendarPluginDisplayLib {
 
 		$ret .= "<div style=\"text-align:center;\">\n";
 		$ret .= "<a href=?view=index>Back to list of calendars</a>";
-		if ($OWNER){
+		if ($OWNER) {
 			$ret .= " || <a href=?view=prefs&calID=$id>Settings for this calendar</a>\n";
 		}
 		$ret .= "</div>\n";
@@ -250,6 +249,9 @@ class CalendarPluginDisplayLib {
 		$ret .= "<p class=\"index\" id=\"indexCreateNew\">";
 		$ret .= "<a href=\"\" onclick=\"newCalendar('$uid');return false;\">";
 		$ret .= "Create a new calendar</a></p>";
+		$ret .= "<p class=\"index\" id=\"indexAttendedEvent\">";
+		$ret .= "<a href=\"CalendarAttendedEventPage.php\">";
+		$ret .= "Create an attended event</a></p>";
 
 		$ret .= "<div class=indexTitle>Other Calendars</div>";
 		$ret .= "<div id=theirs>";

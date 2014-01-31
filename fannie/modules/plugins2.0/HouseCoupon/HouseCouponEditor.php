@@ -84,17 +84,21 @@ class HouseCouponEditor extends FanniePage
 			$dval = FormLib::get_form_value('dval',0);
 			$mtype = FormLib::get_form_value('mtype','Q');
 			$mval = FormLib::get_form_value('mval',0);
+			$descript = FormLib::get_form_value('description',0);
 
-			$query = "UPDATE houseCoupons SET endDate=?,
-				".$dbc->identifier_escape('limit')."=?
-				,memberOnly=?,discountType=?,
-				discountValue=?,minType=?,minValue=?,
-				department=? WHERE coupID=?";
-			$args = array($expires,$limit,$mem,$dtype,
-				$dval,$mtype,$mval,$dept,$this->coupon_id);
-			$prep = $dbc->prepare_statement($query);
-			$dbc->exec_statement($prep,$args);
-			
+            $model = new HouseCouponsModel($dbc);
+            $model->coupID($this->coupon_id);
+            $model->endDate($expires);
+            $model->limit($limit);
+            $model->discountType($dtype);
+            $model->discountValue($dval);
+            $model->minType($mtype);
+            $model->minValue($mval);
+            $model->department($dept);
+            $model->description($descript);
+            $model->memberOnly($mem);
+            $model->save();
+
 			$this->display_function = 'edit_coupon';
 
 			if (FormLib::get_form_value('submit_add_upc') !== '' && FormLib::get_form_value('new_upc') !== ''){
@@ -164,13 +168,12 @@ class HouseCouponEditor extends FanniePage
 		$ret .= '</form>';
 		$ret .= '<table cellpadding="4" cellspacing="0" border="1" />';
 		$ret .= '<tr><th>ID</th><th>Value</th><th>Expires</th></tr>';
-		$q = $dbc->prepare_statement("SELECT coupID, discountValue, discountType, endDate FROM houseCoupons ORDER BY coupID");
-		$r = $dbc->exec_statement($q);
-		while($w = $dbc->fetch_row($r)){
+        $model = new HouseCouponsModel($dbc);
+        foreach($model->find('coupID') as $obj) {
 			$ret .= sprintf('<tr><td>#%d <a href="HouseCouponEditor.php?edit_id=%d">Edit</a></td>
-					<td>%.2f%s</td><td>%s</td></tr>',
-					$w['coupID'],$w['coupID'],
-					$w['discountValue'],$w['discountType'],$w['endDate']);
+					<td>%s</td><td>%.2f%s</td><td>%s</td></tr>',
+					$obj->coupID(),$obj->coupID(),$obj->description(),
+                    $obj->discountValue(), $obj->discountType(), $obj->endDate());
 		}
 		$ret .= '</table>';
 		
@@ -191,35 +194,36 @@ class HouseCouponEditor extends FanniePage
 		}
 
 		$cid = $this->coupon_id;
+        $model = new HouseCouponsModel($dbc);
+        $model->coupID($cid);
+        $model->load();
 
-		$q1 = $dbc->prepare_statement("SELECT * FROM houseCoupons WHERE coupID=?");
-		$r1 = $dbc->exec_statement($q1,array($cid));
-		$row = $dbc->fetch_row($r1);
-
-		$expires = $row['endDate'];
+		$expires = $model->endDate();
 		if (strstr($expires,' '))
 			$expires = array_shift(explode(' ',$expires));
-		$limit = $row['limit'];
-		$mem = $row['memberOnly'];
-		$dType = $row['discountType'];
-		$dVal = $row['discountValue'];
-		$mType = $row['minType'];
-		$mVal = $row['minValue'];
-		$dept = $row['department'];
+		$limit = $model->limit();
+		$mem = $model->memberOnly();
+		$dType = $model->discountType();
+		$dVal = $model->discountValue();
+		$mType = $model->minType();
+		$mVal = $model->minValue();
+		$dept = $model->department();
+        $description = $model->description();
 
 		$ret .= '<form action="HouseCouponEditor.php" method="post">';
 		$ret .= '<input type="hidden" name="cid" value="'.$cid.'" />';
 
 		$ret .= sprintf('<table cellspacing=0 cellpadding=4><tr>
 			<th>Coupon ID#</th><td>%s</td><th>UPC</th>
-			<td>%s</td></tr><tr><th>Expires</th>
-			<td><input type=text name=expires value="%s" size=12 
+			<td>%s</td></tr><tr><tr><th>Label</th><td colspan=2>
+			<input type=text name=description value="%s" size=30 /></td></tr>
+			<th>Expires</th><td><input type=text name=expires value="%s" size=12 
 			onclick="showCalendarControl(this);" />
 			</td><th>Limit</th><td><input type=text name=limit size=3
 			value="%s" /></td></tr><tr><th>Member-only</th><td>
 			<input type=checkbox name=memberonly value="1" %s /></td><th>
 			Department</th><td><select name=dept>',
-			$cid,"00499999".str_pad($cid,5,'0',STR_PAD_LEFT),
+			$cid,"00499999".str_pad($cid,5,'0',STR_PAD_LEFT),$description,
 			$expires,$limit,($mem==1?'checked':'') );
 		foreach($depts as $k=>$v){
 			$ret .= "<option value=\"$k\"";

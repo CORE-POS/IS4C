@@ -21,14 +21,31 @@
 
 *********************************************************************************/
 
-$PLUGIN_CREATE['permissions'] = "
-	CREATE TABLE permissions (
-    permissionID INT NOT NULL AUTO_INCREMENT,
-	calendarID INT,
-	uid INT,
-	classID INT,
-    PRIMARY KEY (permissionID)
-	)
-";
+/**
+  @class MemStatusAdminLogin
+  adminlogin callback for approving member status toggle
+*/
+class MemStatusAdminLogin 
+{
 
-?>
+    public static $adminLoginMsg = 'Login to toggle member status';
+    
+    public static $adminLoginLevel = 30;
+
+    public static function adminLoginCallback($success)
+    {
+        global $CORE_LOCAL;
+        if ($success) {
+            $CORE_LOCAL->set('strRemembered', '');
+            $CORE_LOCAL->set("isMember", 1);
+            $CORE_LOCAL->set("memType", 1);
+            $CORE_LOCAL->set("boxMsg", "Member Status Toggled!");
+
+            return MiscLib::baseURL().'gui-modules/boxMsg2.php';
+        } else {
+            return false;
+        }
+    }
+
+}
+

@@ -128,7 +128,7 @@ class AdvancedItemSearch extends FannieRESTfulPage
                 $dept2 = $dept1;
             }
             // swap order if needed
-            if ($dept2 > $dept1) {
+            if ($dept2 < $dept1) {
                 $tmp = $dept1;
                 $dept1 = $dept2;
                 $dept2 = $tmp;
@@ -377,6 +377,12 @@ function goToSigns() {
         $('#actionForm').submit();
     }
 }
+function goToMargins() {
+    if (getItems()) {
+        $('#actionForm').attr('action', 'MarginToolFromSearch.php');
+        $('#actionForm').submit();
+    }
+}
         <?php
         return ob_get_clean();
     }
@@ -429,7 +435,7 @@ function goToSigns() {
         $ret .= '<th>Description</th><td><input type="text" size="12" name="description" /></td>';
 
         $ret .= '<th>Dept End</th><td><select name="deptEnd"><option value="">Select...</option>';
-        $supers = $dbc->query('SELECT dept_no, dept_name FROM departments');
+        $supers = $dbc->query('SELECT dept_no, dept_name FROM departments order by dept_no');
         while($row = $dbc->fetch_row($supers)) {
             $ret .= sprintf('<option value="%d">%d %s</option>', $row['dept_no'], $row['dept_no'], $row['dept_name']);
         }
@@ -507,7 +513,8 @@ function goToSigns() {
         $ret .= '<br />';
         $ret .= '<input style="margin-top:10px;" type="submit" value="Edit Items" onclick="goToEdit();" />';
         $ret .= '<br />';
-        $ret .= '<input style="margin-top:10px;" type="submit" value="Tags/Signs" onclick="goToSigns();" />';
+        //$ret .= '<input style="margin-top:10px;" type="submit" value="Tags/Signs" onclick="goToSigns();" />';
+        $ret .= '<input style="margin-top:10px;" type="submit" value="Margins" onclick="goToMargins();" />';
         $ret .= '</fieldset>';
         $ret .= '<form method="post" id="actionForm" target="__advs_act"></form>';
         $ret .= '</div>';
