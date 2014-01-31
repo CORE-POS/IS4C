@@ -966,6 +966,42 @@ class SQLManager
     }
 
 	/**
+	  Get current default database
+      for a given connection
+	  @param which_connection see method close
+	  @return [string] database name
+        or [boolean] false on failure
+	*/
+	public function defaultDatabase($which_connection='')
+    {
+		if ($which_connection == '') {
+			$which_connection=$this->default_db;
+        }
+        $query ='';
+		switch($this->connections[$which_connection]->databaseType) {
+            case 'mysql':
+            case 'mysqli':
+            case 'pdo':
+                $query = 'SELECT DATABASE() as dbname';
+                break;
+            case 'mssql':
+                $query = 'SELECT DB_NAME() as dbname';
+                break;
+            // postgres is SELECT CURRENT_DATABASE()
+            // should it ever come up
+		}
+
+        $ret = false;
+        $try = $this->query($query, $which_connection);
+        if ($try && $this->num_rows($try) > 0) {
+            $row = $this->fetch_row($try);
+            $ret = $row['dbname'];
+        }
+
+        return $ret;
+	}
+
+	/**
 	  Get database's currency type
 	  @param which_connection see method close
 	  @return The SQL type

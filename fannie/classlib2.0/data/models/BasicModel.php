@@ -34,6 +34,20 @@ class BasicModel
     protected $name;
 
     /**
+      Fully qualified table name
+      Typically database.table
+      Provided only if it can be detected
+      If found, this name is more reliable
+      since the connection is shared and outside
+      code may change its state including the
+      currently selected database.
+
+      If the database cannot be detected, 
+      $fq_name and $name will be identical.
+    */
+    protected $fq_name;
+
+    /**
       Definition of columns. Keyed by column name.
       Values should be arrays with keys for:
       - type (required)
@@ -127,6 +141,18 @@ class BasicModel
                     $this->unique[] = $name;
                 }
             }
+        }
+
+        // detect fully qualfied name
+        if (is_a($this->connection, 'SQLManager') && $this->connection->isConnected()) {
+            $db_name = $this->connection->defaultDatabase();
+            if ($this->connection->tableExists($db_name . $this->connection->sep() . $this->name)) {
+                $this->fq_name = $db_name . $this->connection->sep() . $this->name;
+            } else {
+                $this->fq_name = $this->name;
+            }
+        } else {
+            $this->fq_name = $this->name;
         }
     }
 
@@ -417,7 +443,7 @@ class BasicModel
         }
         foreach($this->hooks as $hook_obj) {
             if (method_exists($hook_obj, 'onSave')) {
-                $hook_obj->onSave($this->table_name, $this);
+                $hook_obj->onSave($this->name, $this);
             }
         }
 
@@ -617,6 +643,7 @@ class BasicModel
         $this->currently_normalizing_lane = true;
 
         $current = $this->connection;
+        $save_fq = $this->fq_name;
         // call normalize() on each lane
         foreach($FANNIE_LANES as $lane) {
             $sql = new SQLManager($lane['host'],$lane['type'],$lane[$lane_db],
@@ -625,10 +652,12 @@ class BasicModel
                 continue;
             }
             $this->connection = $sql;
-
+            
+            $this->fq_name = $lane[$lane_db] . $sql->sep() . $this->name;
             $this->normalize($db_name, $mode, $doCreate);
         }
         $this->connection = $current;
+        $this->fq_name = $save_fq;
 
         $this->currently_normalizing_lane = false;
 
@@ -921,7 +950,7 @@ class BasicModel
            foreach($hook_classes as $class) {
                 if (!class_exists($class)) continue;
                 $hook_obj = new $class();
-                if ($obj->operatesOnTable($this->table_name)) {
+                if ($obj->operatesOnTable($this->name)) {
                     $this->hooks[] = $hook_obj;
                 }
            }
