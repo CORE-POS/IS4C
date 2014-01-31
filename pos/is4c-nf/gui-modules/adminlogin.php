@@ -77,12 +77,11 @@ class adminlogin extends NoInputPage {
 		if (isset($_REQUEST['reginput']) || isset($_REQUEST['userPassword'])){
 
 			$passwd = '';
-			if (isset($_REQUEST['reginput']) && !empty($_REQUEST['reginput'])){
+			if (isset($_REQUEST['reginput']) && !empty($_REQUEST['reginput'])) {
 				$passwd = $_REQUEST['reginput'];
-				UdpComm::udpSend('goodBeep');
-			}
-			elseif (isset($_REQUEST['userPassword']) && !empty($_REQUEST['userPassword']))
+			} else if (isset($_REQUEST['userPassword']) && !empty($_REQUEST['userPassword'])) {
 				$passwd = $_REQUEST['userPassword'];
+            }
 
 			if (strtoupper($passwd) == "CL"){
 				$class::adminLoginCallback(False);
@@ -111,7 +110,9 @@ class adminlogin extends NoInputPage {
 						'charflag' => 'PW',
 						'num_flag' => $row['emp_no']
 					));
-
+                    if ($CORE_LOCAL->get('LoudLogins') == 1) {
+                        UdpComm::udpSend('goodBeep');
+                    }
 					$result = $class::adminLoginCallback(True);
 					if ($result === True)
 						$this->change_page(MiscLib::base_url().'gui-modules/pos2.php');
@@ -128,9 +129,14 @@ class adminlogin extends NoInputPage {
 						'description' => substr($class::$adminLoginMsg,0,30),
 						'charflag' => 'PW'
 					));
+
+                    if ($CORE_LOCAL->get('LoudLogins') == 1) {
+                        UdpComm::udpSend('twoPairs');
+                    }
 				}
 			}
 		}
+
 		return True;
 	}
 

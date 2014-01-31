@@ -75,10 +75,12 @@ class DefaultTender extends Parser {
 				return $ret;
 			}
 			elseif(is_object($tender_object) && $tender_object->AllowDefault()){
+                $CORE_LOCAL->set('RepeatAgain', true);
 				$ret['main_frame'] = $tender_object->DefaultPrompt();
 				return $ret;
 			}
 			else if ($base_object->AllowDefault()){
+                $CORE_LOCAL->set('RepeatAgain', true);
 				$ret['main_frame'] = $base_object->DefaultPrompt();
 				return $ret;
 			}

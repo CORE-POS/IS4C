@@ -53,7 +53,8 @@ class PaycardLib {
 	const PAYCARD_ERR_TIMEOUT   	=-3;
 	const PAYCARD_ERR_DATA      	=-4;
 	const PAYCARD_ERR_PROC      	=-5;
-	const PAYCARD_ERR_CONTINUE	=-6;
+	const PAYCARD_ERR_CONTINUE	    =-6;
+	const PAYCARD_ERR_NSF_RETRY	    =-7;
 
 // identify payment card type, issuer and acceptance based on card number
 // individual functions are based on this one
@@ -201,6 +202,7 @@ static public function paycard_reset() {
 	$CORE_LOCAL->set("paycard_response",array());
 	$CORE_LOCAL->set("paycard_trans",'');
 	$CORE_LOCAL->set("paycard_cvv2",'');
+    $CORE_LOCAL->set('PaycardRetryBalanceLimit', 0);
 } // paycard_reset()
 
 /**

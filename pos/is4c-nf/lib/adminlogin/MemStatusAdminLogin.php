@@ -1,7 +1,7 @@
 <?php
 /*******************************************************************************
 
-    Copyright 2010 Whole Foods Co-op
+    Copyright 2013 Whole Foods Co-op
 
     This file is part of IT CORE.
 
@@ -22,45 +22,30 @@
 *********************************************************************************/
 
 /**
-  @class MemberBarcode
-  WFC barcoded member ID implementation
-
-  Checks for UPC prefix specified
-  by memberUpcPrefix in $CORE_LOCAL.
-
-  Looks up member number via memberCards table
+  @class MemStatusAdminLogin
+  adminlogin callback for approving member status toggle
 */
-class MemberBarcode extends SpecialUPC 
+class MemStatusAdminLogin 
 {
 
-	public function isSpecial($upc)
+    public static $adminLoginMsg = 'Login to toggle member status';
+    
+    public static $adminLoginLevel = 30;
+
+    public static function adminLoginCallback($success)
     {
-		global $CORE_LOCAL;
-		$prefix = $CORE_LOCAL->get("memberUpcPrefix");
-		if (substr($upc,0,strlen($prefix)) == $prefix) {
-			return true;
+        global $CORE_LOCAL;
+        if ($success) {
+            $CORE_LOCAL->set('strRemembered', '');
+            $CORE_LOCAL->set("isMember", 1);
+            $CORE_LOCAL->set("memType", 1);
+            $CORE_LOCAL->set("boxMsg", "Member Status Toggled!");
+
+            return MiscLib::baseURL().'gui-modules/boxMsg2.php';
+        } else {
+            return false;
         }
+    }
 
-		return false;
-	}
-
-	public function handle($upc,$json)
-    {
-		global $CORE_LOCAL;
-
-		$db = Database::pDataConnect();
-		$query = "select card_no from memberCards where upc='$upc'";
-		$result = $db->query($query);
-
-		if ($db->num_rows($result) < 1) {
-			$json['output'] = DisplayLib::boxMsg(_("Card not assigned"));
-			return $json;
-		}
-
-		$row = $db->fetch_array($result);
-		$CORE_LOCAL->set("memberCardUsed",1);
-		$json = PrehLib::memberID($row[0]);
-		return $json;
-	}
 }
 

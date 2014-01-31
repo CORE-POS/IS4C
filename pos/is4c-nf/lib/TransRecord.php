@@ -155,6 +155,10 @@ static public function addItem($strupc, $strdescription, $strtransType, $strtran
 
 	$trans_id = $CORE_LOCAL->get("LastID");
 
+    if (strlen($strdescription) > 30) {
+        $strdescription = substr($strdescription, 0, 30);
+    }
+
 	$values = array(
 		'datetime'	=> $datetimestamp,
 		'register_no'	=> $intregisterno,
