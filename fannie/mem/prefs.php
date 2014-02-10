@@ -40,13 +40,17 @@ else {
 		$pk = isset($_REQUEST['pref_k']) ? $_REQUEST['pref_k'] : array();
 		$pv = isset($_REQUEST['pref_v']) ? $_REQUEST['pref_v'] : array();
 		if (is_array($pk) && is_array($pv) && count($pk)==count($pv)){
-			$delP = $dbc->prepare_statement("DELETE FROM custPreferences
-				WHERE card_no=? AND pref_key=?");
-			$insP = $dbc->prepare_statement("INSERT INTO custPreferences
-				(card_no, pref_key, pref_value) VALUES (?,?,?)");
-			for($i=0;$i<count($pk);$i++){
-				$dbc->exec_statement($delP,array($cardno,$pk[$i]));
-				$dbc->exec_statement($insP,array($cardno,$pk[$i],$pv[$i]));
+            $availModel = new CustAvailablePrefsModel($dbc);
+            $prefModel = new CustPreferencesModel($dbc);
+			for($i=0;$i<count($pk);$i++) {
+                $availModel->pref_key($pk[$i]);
+                $availModel->load();
+
+                $prefModel->pref_key($pk[$i]);
+                $prefModel->card_no($cardno);
+                $prefModel->custAvailablePrefID($availModel->custAvailablePrefID());
+                $prefModel->pref_value($pv[$i]);
+                $prefModel->save();
 			}
 			echo '<div align="center"><i>Settings Saved</i></div>';
 		}
