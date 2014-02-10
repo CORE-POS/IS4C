@@ -176,6 +176,16 @@ class FannieDispatch
         return $model->save();
     }
 
+    static public function i18n()
+    {
+        if (function_exists('bindtextdomain')) {
+            setlocale(LC_MESSAGES, "en_US");
+            bindtextdomain('messages', realpath(dirname(__FILE__).'/../locale'));
+            bind_textdomain_codeset('messages', 'UTF-8');
+            textdomain('messages');
+        }
+    }
+
     /**
       Render the current page if appropriate
       The page is only shown if it's accessed
@@ -223,6 +233,7 @@ class FannieDispatch
                 register_shutdown_function(array('FannieDispatch','catchFatal'));
             }
 
+            self::i18n();
             self::logUsage();
 
             $page = basename($_SERVER['PHP_SELF']);

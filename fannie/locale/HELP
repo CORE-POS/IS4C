@@ -1,0 +1,7 @@
+Working with gettext:
+
+Use xgettext to add strings to the messages.po file:
+$ xgettext -j messages.po <code file>
+
+Use msgfmt to create machine object files:
+$ msgfmt messages.po -o en_US/LC_MESSAGES/messages.mo

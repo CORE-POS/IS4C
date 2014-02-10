@@ -48,8 +48,8 @@ class ItemEditorPage extends FanniePage {
 
     function preprocess()
     {
-        $this->title = 'Fannie - Item Maintenance';
-        $this->header = 'Item Maintenance';
+        $this->title = _('Fannie') . ' - ' . _('Item Maintenance');
+        $this->header = _('Item Maintenance');
 
         if (FormLib::get_form_value('searchupc') !== '') {
             $this->mode = 'search_results';
@@ -84,16 +84,18 @@ class ItemEditorPage extends FanniePage {
             $ret .= '</blockquote>';
         }
         $ret .= '<form action="ItemEditorPage.php" method=get>';
-        $ret .= '<input name=searchupc type=text id=upc> Enter 
-        <select name="ntype">
-        <option>UPC</option>
-        <option>SKU</option>
-        <option>Brand Prefix</option>
-        </select> or product name here<br>';
+        $ret .= '<input name=searchupc type=text id=upc> 
+            ' . _('Enter') .' 
+            <select name="ntype">
+            <option>UPC</option>
+            <option>SKU</option>
+            <option>Brand Prefix</option>
+            </select> 
+            ' . _('or product name here') . '<br>';
 
         $ret .= '<input name=searchBtn type=submit value=Go> ';
         $ret .= '</form>';
-        $ret .= '<p><a href="AdvancedItemSearch.php">Advanced Search</a></p>';
+        $ret .= '<p><a href="AdvancedItemSearch.php">' . _('Advanced Search') . '</a></p>';
         
         $this->add_onload_command('$(\'#upc\').focus();');
 
@@ -154,7 +156,7 @@ class ItemEditorPage extends FanniePage {
           Query somehow failed. Unlikely. Show error and search box again.
         */
         if ($result === false) {
-            $this->msgs = '<span style="color:red;">Error searching for:</span> '.$upc;
+            $this->msgs = '<span style="color:red;">' . _('Error searching for') . ':</span> '.$upc;
             return $this->search_form();
         }
 
@@ -165,7 +167,7 @@ class ItemEditorPage extends FanniePage {
           so show error and search box again.
         */
         if ($num == 0 && !is_numeric($upc)) {
-            $this->msgs = '<span style="color:red;">Error searching for:</span> '.$upc;
+            $this->msgs = '<span style="color:red;">' . _('Error searching for') . ':</span> '.$upc;
             return $this->search_form();
         }
 
