@@ -106,7 +106,7 @@ class CustomerPurchasesReport extends FannieReportPage
 <form method = "get" action="CustomerPurchasesReport.php">
 	<table border="0" cellspacing="0" cellpadding="5">
 		<tr> 
-			<th>Owner#</th>
+			<th><?php echo _('Owner#'); ?></th>
 			<td>
 			<input type=text name=card_no size=14 id=card_no  />
 			</td>

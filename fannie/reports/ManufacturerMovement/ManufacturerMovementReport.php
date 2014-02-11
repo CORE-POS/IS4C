@@ -26,9 +26,14 @@ include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
 class ManufacturerMovementReport extends FannieReportPage 
 {
-    protected $title = "Fannie : Manufacturer Movement";
-    protected $header = "Manufacturer Movement Report";
     protected $required_fields = array('date1', 'date2');
+    function preprocess()
+    {
+        $this->title = _("Fannie") . " : " . _("Manufacturer Movement Report");
+        $this->header = _("Manufacturer Movement Report");
+
+        return true;
+    }
 
 	function fetch_report_data()
     {
@@ -151,7 +156,7 @@ class ManufacturerMovementReport extends FannieReportPage
 <form method = "get" action="ManufacturerMovementReport.php">
 	<table border="0" cellspacing="0" cellpadding="5">
 		<tr> 
-			<th>Manufacturer</th>
+			<th><?php echo _("Manufacturer"); ?></th>
 			<td>
 			<input type=text name=manu id=manu  />
 			</td>

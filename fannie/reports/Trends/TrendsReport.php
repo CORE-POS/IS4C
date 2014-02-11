@@ -213,7 +213,7 @@ function doShow(){
 
 <form method=get action=TrendsReport.php>
 <b>Type</b>: <input type=radio name=type id=rt1 checked value=dept onchange="doShow();" /><label for="rt1">Department</label>
-<input type=radio name=type id=rt2 value=manu onchange="doShow();" /><label for="rt2">Manufacturer</label>
+<input type=radio name=type id=rt2 value=manu onchange="doShow();" /><label for="rt2"><?php echo _('Manufacturer'); ?></label>
 <input type=radio name=type id=rt3 value=upc onchange="doShow();" /><label for="rt3">Single item </label>
 <input type=radio name=type id=rt4 value=likecode onchange="doShow();" /><label for="rt4">Like code</label><br />
 
@@ -226,7 +226,7 @@ function doShow(){
     <input type=text name=dept1 id=dept1 size=5 value=1 />
     </td>
 
-    <td class="manuField">Manufacturer:</td><td class="manuField">
+    <td class="manuField"><?php echo _('Manufacturer'); ?>:</td><td class="manuField">
     <input type=text name=manufacturer />
     </td>
 

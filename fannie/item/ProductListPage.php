@@ -353,7 +353,7 @@ class ProductListPage extends FanniePage {
 			$ret .= 'Sub department '.$super.'<br />';
 		}
 		else {
-			$ret .= 'Manufacturer '.$manufacturer.'<br />';
+			$ret .= _('Manufacturer') . ' ' . $manufacturer . '<br />';
 		}
 		$ret .= date("F j, Y, g:i a").'<br />'; 
 		
@@ -437,12 +437,12 @@ class ProductListPage extends FanniePage {
 			$ret .= sprintf('<tr><th><a href="%s&sort=UPC">UPC</a></th>
 					<th><a href="%s&sort=Description">Description</a></th>
 					<th><a href="%s&sort=Department">Department</a></th>
-					<th><a href="%s&sort=Supplier">Supplier</a></th>
+					<th><a href="%s&sort=Supplier">' . _('Supplier') . '</a></th>
 					<th><a href="%s&sort=Price">Price</a></th>',
 					$page_url,$page_url,$page_url,$page_url,$page_url);
 		}
 		else
-			$ret .= "<th>UPC</th><th>Description</th><th>Dept</th><th>Supplier</th><th>Price</th>";
+			$ret .= "<th>UPC</th><th>Description</th><th>Dept</th><th>" . _('Supplier') . "</th><th>Price</th>";
 		$ret .= "<th>Tax</th><th>FS</th><th>Disc</th><th>Wg'd</th><th>Local</th>";
 		if (!$this->excel && $this->canEditItems !== False)
 			$ret .= '<th>&nbsp;</th>';
@@ -516,7 +516,7 @@ class ProductListPage extends FanniePage {
 			<label for="supertypeD">Department</label>
 		<input type=radio name=supertype value=manu id="supertypeM"
 			onclick="$('#dept1').hide();$('#dept2').hide();$('#manu').show();" /> 
-			<label for="supertypeM">Manufacturer</label>
+			<label for="supertypeM"><?php echo _('Manufacturer'); ?></label>
 		<table border="0" cellspacing="0" cellpadding="5">
 		<tr class=dept id=dept1>
 			<td valign=top><p><b>Buyer</b></p></td>
@@ -554,14 +554,14 @@ class ProductListPage extends FanniePage {
 			</p></td>
 		</tr>
 		<tr class=manu id=manu style="display:none;">
-			<td><p><b>Manufacturer</b></p>
+			<td><p><b><?php echo _('Manufacturer'); ?></b></p>
 			<p></p></td>
 			<td><p>
 			<input type=text name=manufacturer />
 			</p>
 			<p>
 			<input type=radio name=mtype value=prefix checked />UPC prefix
-			<input type=radio name=mtype value=name />Manufacturer name
+			<input type=radio name=mtype value=name /><?php echo _('Manufacturer name'); ?>
 			</p></td>
 		</tr>
 		<tr> 
