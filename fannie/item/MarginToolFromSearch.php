@@ -36,6 +36,27 @@ class MarginToolFromSearch extends FannieRESTfulPage
     private $depts = array();
     private $superdepts = array();
 
+    public function readinessCheck()
+    {
+        global $FANNIE_ARCHIVE_DB, $FANNIE_URL;
+        $dbc = FannieDB::get($FANNIE_ARCHIVE_DB);
+        if (!$dbc->tableExists('productSummaryLastQuarter')) {
+            $this->error_text = _("You are missing an important table") . " ($FANNIE_ARCHIVE_DB.productSummaryLastQuarter). ";
+            $this->error_text .= " Visit the <a href=\"{$FANNIE_URL}install\">Install Page</a> to create it.";
+            return false;
+        } else {
+            $testQ = 'SELECT upc FROM productSummaryLastQuarter';
+            $testQ = $dbc->addSelectLimit($testQ, 1);
+            $testR = $dbc->query($testQ);
+            if ($dbc->num_rows($testR) == 0) {
+                $this->error_text = _('The product sales summary is missing. Run the Summarize Product Sales task.');
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     function preprocess()
     {
        $this->__routes[] = 'post<u>'; 
@@ -219,10 +240,12 @@ class MarginToolFromSearch extends FannieRESTfulPage
 
     function post_u_view()
     {
-        global $FANNIE_OP_DB, $FANNIE_URL;
+        global $FANNIE_OP_DB, $FANNIE_URL, $FANNIE_ARCHIVE_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
         $this->add_script($FANNIE_URL.'/src/jquery/jquery.js');
+        $this->add_script($FANNIE_URL.'src/jquery/jquery.tablesorter.js');
         $this->add_css_file($FANNIE_URL.'/src/style.css');
+        $this->add_css_file($FANNIE_URL.'src/jquery/themes/blue/style.css');
         $ret = '';
 
         // list super depts & starting margins
@@ -274,21 +297,27 @@ class MarginToolFromSearch extends FannieRESTfulPage
 
         // list the actual items
         $ret .= '<form onsubmit="return false;" method="post">';
-        $ret .= '<table cellpadding="4" cellspacing="0" border="1">';
+        $ret .= '<table id="maintable" class="tablesorter" style="width:80%;"><thead>';
         $ret .= '<tr>
                 <th>UPC</th>
                 <th>Description</th>
+                <th>% Store</th>
+                <th>% Super</th>
+                <th>% Dept</th>
                 <th>Cost</th>
                 <th>Current Price</th>
                 <th>Margin</th>
                 <th>New Price</th>
-                </tr>';
+                </tr></thead><tbody>';
 
         $info = $this->arrayToParams($this->upcs);
         $query = 'SELECT p.upc, p.description, p.department, p.cost,
-                    p.normal_price, m.superID
+                    p.normal_price, m.superID, q.percentageStoreSales,
+                    q.percentageSuperDeptSales, q.percentageDeptSales
                   FROM products AS p
                   LEFT JOIN MasterSuperDepts AS m ON p.department=m.dept_ID
+                  LEFT JOIN ' . $FANNIE_ARCHIVE_DB . $dbc->sep() . 'productSummaryLastQuarter AS q
+                    ON p.upc=q.upc
                   WHERE p.upc IN (' . $info['in'] . ')
                   ORDER BY p.upc';
         $prep = $dbc->prepare($query);
@@ -297,6 +326,9 @@ class MarginToolFromSearch extends FannieRESTfulPage
             $ret .= sprintf('<tr>
                             <td>%s</td>
                             <td>%s</td>
+                            <td>%.5f%%</td>
+                            <td>%.4f%%</td>
+                            <td>%.4f%%</td>
                             <td>%.2f</td>
                             <td>%.2f</td>
                             <td id="margin%s">%.4f%%</td>
@@ -308,6 +340,9 @@ class MarginToolFromSearch extends FannieRESTfulPage
                             </tr>',
                             $row['upc'],
                             $row['description'],
+                            $row['percentageStoreSales'] * 100,
+                            $row['percentageSuperDeptSales'] * 100,
+                            $row['percentageDeptSales'] * 100,
                             $row['cost'],
                             $row['normal_price'],
                             $row['upc'], (($row['normal_price'] - $row['cost']) / $row['normal_price']) * 100,
@@ -316,11 +351,13 @@ class MarginToolFromSearch extends FannieRESTfulPage
                             $row['upc']
             );
         }
-        $ret .= '</table>';
+        $ret .= '</tbody></table>';
 
         $ret .= '<br />';
         $ret .= '<input type="submit" name="save" value="Save Changes" />';
         $ret .= '</form>';
+
+        $this->add_onload_command("\$('#maintable').tablesorter({sortList: [[0,0]], widgets: ['zebra']});");
 
         return $ret;
     }

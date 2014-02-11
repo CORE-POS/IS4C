@@ -1763,6 +1763,14 @@ class InstallIndexPage extends InstallPage {
 				'sumDiscountsByDay','arch');
 		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_ARCHIVE_DB,
 				'reportDataCache','arch');
+
+		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_ARCHIVE_DB,
+				'weeksLastQuarter','arch');
+		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_ARCHIVE_DB,
+				'productWeeklyLastQuarter','arch');
+		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_ARCHIVE_DB,
+				'productSummaryLastQuarter','arch');
+
 		return $ret;
 
 	// create_archive_dbs()
