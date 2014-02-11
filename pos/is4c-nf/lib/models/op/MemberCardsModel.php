@@ -26,9 +26,11 @@
 
 */
 
+/** 11Jan14 EL Not needed on lane.
 if (!class_exists('FannieDB')) {
     include(dirname(__FILE__).'/../FannieDB.php');
 }
+*/
 
 class MemberCardsModel extends BasicModel 
 {
@@ -83,11 +85,10 @@ class MemberCardsModel extends BasicModel
       Can be removed when no calls to these functions
       remain in Fannie.
     
-    /**
+    /x*
       Update memberCards record for an account
       @param $card_no the member number
       @param $upc the barcode
-    */
     public static function update($card_no,$upc){
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
@@ -95,7 +96,7 @@ class MemberCardsModel extends BasicModel
         $delP = $dbc->prepare_statement("DELETE FROM memberCards WHERE card_no=?");
         $delR = $dbc->exec_statement($delP,array($card_no));
 
-        /** don't create entry w/o UPC */
+        // don't create entry w/o UPC
         if ($upc != ''){
             $upc = str_pad($upc,13,'0',STR_PAD_LEFT);
             $insP = $dbc->prepare_statement("INSERT INTO memberCards (card_no, upc)
@@ -105,6 +106,7 @@ class MemberCardsModel extends BasicModel
         }
         else return $delR;
     }
+    */
 
 }
 
