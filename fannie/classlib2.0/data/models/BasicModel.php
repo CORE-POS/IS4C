@@ -950,7 +950,7 @@ class BasicModel
            foreach($hook_classes as $class) {
                 if (!class_exists($class)) continue;
                 $hook_obj = new $class();
-                if ($obj->operatesOnTable($this->name)) {
+                if ($hook_obj->operatesOnTable($this->name)) {
                     $this->hooks[] = $hook_obj;
                 }
            }

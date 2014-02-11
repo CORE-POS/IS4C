@@ -123,8 +123,8 @@ class FannieAPI
     static public function listModules($base_class, $include_base=false)
     {
         $directiories = array();
+        if ($include_base === true) $directories[] = dirname(__FILE__);
         $directories[] = dirname(__FILE__).'/../modules/plugins2.0/';
-        $directories[] = dirname(__FILE__);
 
         switch($base_class) {
             case 'ItemModule':
