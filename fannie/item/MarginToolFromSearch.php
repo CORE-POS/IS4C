@@ -482,7 +482,7 @@ class MarginToolFromSearch extends FannieRESTfulPage
         $prep = $dbc->prepare($query);
         $result = $dbc->execute($prep, $info['args']);
         while($row = $dbc->fetch_row($result)) {
-            $ret .= sprintf('<tr class="itemrow">
+            $ret .= sprintf('<tr class="itemrow" id="row%s">
                             <td>%s</td>
                             <td>%s</td>
                             <td>%.5f%%</td>
@@ -498,6 +498,7 @@ class MarginToolFromSearch extends FannieRESTfulPage
                             </td>
                             </tr>',
                             $row['upc'],
+                            $row['upc'],
                             $row['description'],
                             $row['percentageStoreSales'] * 100,
                             $row['percentageSuperDeptSales'] * 100,
@@ -506,7 +507,7 @@ class MarginToolFromSearch extends FannieRESTfulPage
                             $row['normal_price'],
                             $row['upc'], (($row['normal_price'] - $row['cost']) / $row['normal_price']) * 100,
                             $row['department'], $row['superID'],
-                            $row['normal_price'], $row['upc'], $row['cost'], $row['department'], $row['superID'],
+                            $row['normal_price'], $row['upc'], $row['cost'], $row['department'], $row['superID'], 
                             $row['upc']
             );
         }
@@ -565,6 +566,19 @@ function reCalc(upc, price, cost, deptID, superID) {
     var newprice = Number(price);
     if (cost == 0 || isNaN(newprice)) {
         return false;
+    }
+
+    var curprice = Number($('#row'+upc).find('.currentprice').html());
+    if (curprice == newprice) {
+        $('#row'+upc).css('font-weight', 'normal');
+        $('#row'+upc+' td').each(function() {
+            $(this).css('background-color', '');
+        });
+    } else {
+        $('#row'+upc).css('font-weight', 'bold');
+        $('#row'+upc+' td').each(function() {
+            $(this).css('background-color', '#ffc');
+        });
     }
 
     var itemMargin = (price - cost) / price * 100;
