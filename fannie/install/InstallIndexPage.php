@@ -1075,7 +1075,8 @@ class InstallIndexPage extends InstallPage {
 	// create_op_dbs()
 	}
 
-	function create_trans_dbs($con){
+	function create_trans_dbs($con)
+    {
         require(dirname(__FILE__).'/../config.php'); 
 
 		$ret = array();
@@ -1199,6 +1200,9 @@ class InstallIndexPage extends InstallPage {
 
 		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
 				'lane_config','trans');
+
+		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+				'CapturedSignature','trans');
 
 		return $ret;
 
