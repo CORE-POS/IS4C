@@ -130,7 +130,7 @@ class FannieAPI
     */
     static public function listModules($base_class, $include_base=false)
     {
-        $directiories = array();
+        $directories = array();
         $directories[] = dirname(__FILE__).'/../modules/plugins2.0/';
 
         switch($base_class) {
