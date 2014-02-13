@@ -86,9 +86,9 @@ last thirteen weeks';
         $store_sales = 0.0;
         $super_sales = array();
         $dept_sales = array();
-        $upcs = array();
         $dbc->query('TRUNCATE TABLE productWeeklyLastQuarter');
         foreach($weeks as $weekID => $limits) {
+            $upcs = array();
             echo $this->cronMsg('Processing week #'.$weekID);
             $dlog = DTransactionsModel::selectDlog(date('Y-m-d', $limits[0]), date('Y-m-d', $limits[1]));
             $dataP = $dbc->prepare("SELECT d.upc, SUM(total) as ttl, "
