@@ -157,12 +157,28 @@ class BasicModel
     }
 
     /**
+      Manually set which database contains this table. Normally
+      this is autodetected by the constructor.
+      @param $db_name [string] database name
+      @return [boolean] success/failure
+    */
+    public function whichDB($db_name)
+    {
+        if ($this->connection->tableExists($db_name . $this->connection->sep() . $this->name)) {
+            $this->fq_name = $db_name . $this->connection->sep() . $this->name;
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
       Create the table
       @return boolean
     */
     public function create()
     {
-        if ($this->connection->table_exists($this->name)) {
+        if ($this->connection->table_exists($this->fq_name)) {
             return true;
         }
 
@@ -170,7 +186,7 @@ class BasicModel
         $pkey = array();
         $indexes = array();
         $inc = false;
-        $sql = 'CREATE TABLE '.$this->name.' (';
+        $sql = 'CREATE TABLE '.$this->fq_name.' (';
         foreach($this->columns as $cname => $definition) {
             if (!isset($definition['type'])) {
                 return false;
@@ -253,7 +269,7 @@ class BasicModel
             }
         }
 
-        $table_def = $this->connection->table_definition($this->name);
+        $table_def = $this->connection->table_definition($this->fq_name);
 
         $sql = 'SELECT ';
         foreach($this->columns as $name => $definition) {
@@ -268,7 +284,7 @@ class BasicModel
         }
         $sql = substr($sql,0,strlen($sql)-1);
         
-        $sql .= ' FROM '.$this->name.' WHERE 1=1';
+        $sql .= ' FROM '.$this->fq_name.' WHERE 1=1';
         $args = array();
         foreach($this->unique as $name) {
             $sql .= ' AND '.$this->connection->identifier_escape($name).' = ?';
@@ -310,6 +326,11 @@ class BasicModel
         return $this->name;
     }
 
+    public function getFullQualifiedName()
+    {
+        return $this->fq_name;
+    }
+
     /**
       Find records that match this instance
       @param $sort array of columns to sort by
@@ -321,7 +342,7 @@ class BasicModel
             $sort = array($sort);
         }
 
-        $table_def = $this->connection->table_definition($this->name);
+        $table_def = $this->connection->table_definition($this->fq_name);
 
         $sql = 'SELECT ';
         foreach($this->columns as $name => $definition) {
@@ -332,7 +353,7 @@ class BasicModel
         }
         $sql = substr($sql,0,strlen($sql)-1);
         
-        $sql .= ' FROM '.$this->name.' WHERE 1=1';
+        $sql .= ' FROM '.$this->fq_name.' WHERE 1=1';
         
         $args = array();
         foreach($this->instance as $name => $value) {
@@ -390,7 +411,7 @@ class BasicModel
             }
         }
 
-        $sql = 'DELETE FROM '.$this->name.' WHERE 1=1';
+        $sql = 'DELETE FROM '.$this->fq_name.' WHERE 1=1';
         $args = array();
         foreach($this->unique as $name) {
             $sql .= ' AND '.$this->connection->identifier_escape($name).' = ?';
@@ -461,7 +482,7 @@ class BasicModel
 
         if (!$new_record) {
             // see if matching record exists
-            $check = 'SELECT * FROM '.$this->connection->identifier_escape($this->name)
+            $check = 'SELECT * FROM '.$this->connection->identifier_escape($this->fq_name)
                 .' WHERE 1=1';
             $args = array();
             foreach($this->unique as $column) {
@@ -488,11 +509,11 @@ class BasicModel
     */
     protected function insertRecord()
     {
-        $sql = 'INSERT INTO '.$this->connection->identifier_escape($this->name);
+        $sql = 'INSERT INTO '.$this->connection->identifier_escape($this->fq_name);
         $cols = '(';
         $vals = '(';
         $args = array();
-        $table_def = $this->connection->table_definition($this->name);
+        $table_def = $this->connection->table_definition($this->fq_name);
         foreach($this->instance as $column => $value) {
             if (isset($this->columns[$column]['increment']) && $this->columns[$column]['increment']) {
                 // omit autoincrement column from insert
@@ -538,12 +559,12 @@ class BasicModel
     */
     protected function updateRecord()
     {
-        $sql = 'UPDATE '.$this->connection->identifier_escape($this->name);
+        $sql = 'UPDATE '.$this->connection->identifier_escape($this->fq_name);
         $sets = '';
         $where = '1=1';
         $set_args = array();
         $where_args = array();
-        $table_def = $this->connection->table_definition($this->name);
+        $table_def = $this->connection->table_definition($this->fq_name);
         foreach($this->instance as $column => $value) {
             if (in_array($column, $this->unique)) {
                 $where .= ' AND '.$this->connection->identifier_escape($column).' = ?';
