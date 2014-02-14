@@ -301,7 +301,7 @@ class AdvancedItemSearch extends FannieRESTfulPage
           Filter by movement
         */
         $movementFilter = FormLib::get('soldOp');
-        if ($soldop !== '') {
+        if ($movementFilter !== '') {
             $movementStart = date('Y-m-d', mktime(0, 0, 0, date('n'), date('j')-$soldop-1, date('Y')));
             $movementEnd = date('Y-m-d', strtotime('yesterday'));
             $dlog = DTransactionsModel::selectDlog($movementStart, $movementEnd);
