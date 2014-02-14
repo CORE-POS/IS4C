@@ -1,6 +1,6 @@
 <?php
 include('../config.php');
-include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
+include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
 if (isset($_REQUEST['action'])){
 	switch($_REQUEST['action']){
