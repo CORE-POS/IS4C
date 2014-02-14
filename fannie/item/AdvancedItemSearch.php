@@ -195,6 +195,21 @@ class AdvancedItemSearch extends FannieRESTfulPage
             $args[] = $discount;
         }
 
+        $lc = FormLib::get('likeCode');
+        if ($lc !== '') {
+            if (!strstr($from, 'upcLike')) {
+                $from .= ' LEFT JOIN upcLike AS u ON p.upc=u.upc ';
+            }
+            if ($lc == 'ANY') {
+                $where .= ' AND u.upc IS NOT NULL ';
+            } else if ($lc == 'NONE') {
+                $where .= ' AND u.upc IS NULL ';
+            } else {
+                $where .= ' AND u.likeCode=? ';
+                $args[] = $lc;
+            }
+        }
+
         if ($where == '1=1') {
             echo 'Too many results';
             return false;
@@ -280,6 +295,39 @@ class AdvancedItemSearch extends FannieRESTfulPage
                 }
                 $items = $valid;
             }
+        }
+
+        /**
+          Filter by movement
+        */
+        $movementFilter = FormLib::get('soldOp');
+        if ($soldop !== '') {
+            $movementStart = date('Y-m-d', mktime(0, 0, 0, date('n'), date('j')-$soldop-1, date('Y')));
+            $movementEnd = date('Y-m-d', strtotime('yesterday'));
+            $dlog = DTransactionsModel::selectDlog($movementStart, $movementEnd);
+
+            $args = array($movementStart.' 00:00:00', $movementEnd.' 23:59:59');
+            $in = '';
+            foreach($items as $upc => $info) {
+                $in .= '?,';
+                $args[] = $upc;
+            }
+            $in = substr($in, 0, strlen($in)-1);
+
+            $query = "SELECT t.upc
+                      FROM $dlog AS t
+                      WHERE tdate BETWEEN ? AND ?
+                        AND t.upc IN ($in)
+                      GROUP BY t.upc";
+            $prep = $dbc->prepare($query);
+            $result = $dbc->execute($prep, $args);
+            $valid = array();
+            while($row = $dbc->fetch_row($result)) {
+                if (isset($items[$row['upc']])) {
+                    $valid[$row['upc']] = $items[$row['upc']];
+                }
+            }
+            $items = $valid;
         }
 
         echo $this->streamOutput($items);
@@ -427,8 +475,8 @@ function goToMargins() {
         $ret .= '</select></td>';
 
         $ret .= '<th>Movement</th>';
-        $ret .= '<td><select name="soldOp"><option>On</option><option>Before</option><option>After</option></select>';
-        $ret .= '<td><input type="text" name="soldDate" onfocus="showCalendarControl(this);" size="10" /></td>';
+        $ret .= '<td colspan="2"><select name="soldOp"><option value="">n/a</option><option value="7">Last 7 days</option>
+                    <option value="30">Last 30 days</option><option value="90">Last 90 days</option></select></td>';
 
         $ret .= '</tr><tr>';
 
@@ -474,6 +522,22 @@ function goToMargins() {
         $ret .= '</td>'; 
 
         $ret .= '<td><label for="vendorSale">On Vendor Special</label> <input type="checkbox" id="vendorSale" name="vendorSale" disabled /></td>';
+
+        $ret .= '</tr><tr>';
+
+        $ret .= '<td colspan=2">&nbsp;</td>'; // placeholder; can add here
+    
+        $ret .= '<th>Likecode</th>';
+        $ret .= '<td colspan="3"><select name="likeCode"><option value="">n/a</option>
+                <option value="ANY">In Any Likecode</option>
+                <option value="NONE">Not in a Likecode</option>';
+        $lcs = $dbc->query('SELECT likeCode, likeCodeDesc FROM likeCodes ORDER BY likeCode');
+        while($row = $dbc->fetch_row($lcs)) {
+            $ret .= sprintf('<option value="%d">%d %s</option>', $row['likeCode'], $row['likeCode'], $row['likeCodeDesc']);
+        }
+        $ret .= '</select></td>';
+
+        // more empty space available here
 
         $ret .= '</tr><tr>';
 
