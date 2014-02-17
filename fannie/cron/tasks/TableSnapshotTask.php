@@ -27,7 +27,7 @@ class TableSnapshotTask extends FannieTask
     public $name = 'Table Snapshot';
 
     public $description = 'Copies table contents to a backup table
-    Currently applies to products & custdata.';
+    Currently applies to products & custdata. Deprecates nightly.tablecache.php.';
 
     public $default_schedule = array(
         'min' => 0,
