@@ -57,6 +57,24 @@ function confirmNewLoan()
 function updateEquityTotal(val)
 {
     val = parseInt(val);
-    $('#totalForShares').html(val * Number($('#shareSize').val()));
+    var ttl = val * Number($('#shareSize').val());
+    $('#totalForShares').html('$'+ttl.toFixed(2));
 }
+
+function goToNext()
+{
+    var id = $('#nextMem').val();
+    var cleanID = parseInt(id);
+    if (id !== '' && !isNaN(cleanID)) {
+        location = 'GumSearchPage.php?id='+cleanID;
+    }
+}
+
+$(document).ready(function() {
+    $('#nextMem').keydown(function (event) {
+        if (event.which == 13) {
+            goToNext();
+        }
+    });
+});
 

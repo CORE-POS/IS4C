@@ -134,7 +134,7 @@ class GumSchedulePage extends FannieRESTfulPage
         $ret .= '</tr>';
         $ret .= '<tr>';
         $ret .= '<td>State</td><td>' . $this->meminfo->state() . '</td>';
-        $ret .= '<td>Interest Rate</td><td>' . ($this->loan->interestRate() / 100) . '%</td>';
+        $ret .= '<td>Interest Rate</td><td>' . number_format($this->loan->interestRate() * 100, 2) . '%</td>';
         $ret .= '</tr>';
         $ret .= '<tr>';
         $ret .= '<td>Zip Code</td><td>' . $this->meminfo->zip() . '</td>';

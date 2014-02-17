@@ -136,15 +136,27 @@ class GumMainPage extends FannieRESTfulPage
         $settings->key('equityShareSize');
         $settings->load();
 
-        $model = new GumEquitySharesModel($dbc); 
-        $model->card_no($this->id);
-        if (strtolower($this->type) == 'payoff') {
-            $this->shares *= -1;
+        if ($this->shares != 0) {
+
+            $model = new GumEquitySharesModel($dbc); 
+            $model->card_no($this->id);
+
+            $bal = 0.0;
+            foreach($model->find() as $obj) {
+                $bal += $obj->value();
+            }
+
+            if (strtolower($this->type) == 'payoff') {
+                $this->shares *= -1;
+            }
+            $model->shares($this->shares);
+            $model->value($this->shares * $settings->value());
+            $model->tdate(date('Y-m-d H:i:s'));
+            // payoff cannot exceed balance
+            if ($model->value() < 0 && abs($model->value()) <= $bal) {
+                $model->save();
+            }
         }
-        $model->shares($this->shares);
-        $model->value($this->shares * $settings->value());
-        $model->tdate(date('Y-m-d H:i:s'));
-        $model->save();
 
         header('Location: GumMainPage.php?id=' . $this->id);
 
@@ -170,8 +182,10 @@ class GumMainPage extends FannieRESTfulPage
         $this->meminfo->load();
 
         $this->loans = new GumLoanAccountsModel($dbc);
+        $this->loans->card_no($this->id);
 
         $this->equity = new GumEquitySharesModel($dbc);
+        $this->equity->card_no($this->id);
 
         $this->terms = new GumLoanValidTermsModel($dbc);
 
@@ -183,6 +197,9 @@ class GumMainPage extends FannieRESTfulPage
     public function css_content()
     {
         return '
+            .redtext {
+                color: red;
+            }
             td.blackfield {
                 font-weight: bold;
                 background-color: black;
@@ -205,6 +222,7 @@ class GumMainPage extends FannieRESTfulPage
                 border-right: 0;
                 border-top: 0;
                 border-bottom: 0;
+                text-align: center;
             }
             table.bordered tr.bborder td {
                 border-bottom: solid 1px black;
@@ -217,9 +235,17 @@ class GumMainPage extends FannieRESTfulPage
                 border-left: 0;
                 border-top: 0;
                 border-bottom: 0;
+                text-align: center;
             }
             table.bordered td.nborder {
                 border: 0;
+                text-align: center;
+            }
+            table.bordered td.tborder {
+                border-top: solid 1px black;
+                border-left: 0;
+                border-right: 0;
+                border-bottom: 0;
             }
         ';
     }
@@ -238,7 +264,7 @@ class GumMainPage extends FannieRESTfulPage
         $ret .= '<td class="blackfield">### Owner Financing ###</td>';
         $ret .= '<td>First Name: <input type="text" name="fn" value="' . $this->custdata->FirstName() . '" /></td>';
         $ret .= '<td>City: <input type="text" name="city" value="' . $this->meminfo->city() . '" /></td>';
-        $ret .= '<td class="greenfield">Home</td>';
+        $ret .= '<td class="greenfield"><a href="GumSearchPage.php">Home</a></td>';
         $ret .= '</tr>';
         $ret .= '<tr>';
         $ret .= '<td>Primary Ph: <input type="text" name="ph1" value="' . $this->meminfo->phone() . '" /></td>';
@@ -255,14 +281,14 @@ class GumMainPage extends FannieRESTfulPage
         }
         $ret .= '<td>Address: <input type="text" name="addr1" value="' . $addr . '" /></td>';
         $ret .= '<td>Zip: <input type="text" name="zip" value="' . $this->meminfo->zip() . '" /></td>';
-        $ret .= '<td>&nbsp;</td>';
+        $ret .= '<td><input type="text" size="5" id="nextMem" placeholder="Mem#" /></td>';
         $ret .= '</tr>';
         $ret .= '<tr class="bborder">';
         $ret .= '<td>Email: <input type="text" name="email" value="' . $this->meminfo->email_1() . '" /></td>';
         $ret .= '<td>Address: <input type="text" name="addr2" value="' . $addr2 . '" /></td>';
         $ssn = 'xxx-xx-xxxx';
         $ret .= '<td>SSN: ' . $ssn . '</td>';
-        $ret .= '<td class="greenfield">Next</td>';
+        $ret .= '<td class="greenfield"><a href="" onclick="goToNext(); return false;">Next</a></td>';
         $ret .= '</tr>';
         $ret .= '</table>';
         $ret .= '</form>';
@@ -282,7 +308,7 @@ class GumMainPage extends FannieRESTfulPage
                             <td>%s</td>
                             <td>%.2f%%</td>
                             <td>%s</td>
-                            <td class="greenfield">Note</td>
+                            <td class="greenfield"><a href="GumPromissoryPage.php?id=%s">Note</td>
                             <td class="greenfield"><a href="GumSchedulePage.php?id=%s">Schedule</a></td>
                             <td class="greenfield">Payoff</td>
                             </tr>',
@@ -291,6 +317,7 @@ class GumMainPage extends FannieRESTfulPage
                             date('m/d/Y', $ld),
                             $obj->interestRate() * 100,
                             date('m/d/Y', $ed),
+                            $obj->accountNumber(),
                             $obj->accountNumber()
             );
         }
@@ -325,6 +352,10 @@ class GumMainPage extends FannieRESTfulPage
         $ret .= '<table class="bordered" cellspacing="0" cellpadding="4">';
         $bal_num = 0;
         $bal_amount = 0;
+        foreach($this->equity->find() as $obj) {
+            $bal_num += $obj->shares();
+            $bal_amount += $obj->value();
+        }
         $ret .= '<tr class="bborder"><td>Balance</td>';
         $ret .= '<td>' . $bal_num . '</td>';
         $ret .= '<td>' . number_format($bal_amount, 2) . '</td>';
@@ -356,6 +387,31 @@ class GumMainPage extends FannieRESTfulPage
         $ret .= '<td class="nborder">Shares</td>';
         $ret .= '<td class="rborder">Total</td>';
         $ret .= '</tr>';
+        $ret .= '<tr>';
+        $i=0;
+        foreach($this->equity->find('tdate') as $obj) {
+            $ret .= sprintf('<td class="lborder %s">%s</td>
+                            <td class="nborder %s">%d</td>
+                            <td class="%s %s">%s</td>',
+                            ($obj->shares() < 0 ? 'redtext' : ''), 
+                            date('m/d/Y', strtotime($obj->tdate())),
+                            ($obj->shares() < 0 ? 'redtext' : ''), 
+                            $obj->shares(),
+                            (($i+1)%3 == 0 ? 'rborder' : 'nborder'),
+                            ($obj->shares() < 0 ? 'redtext' : ''), 
+                            number_format($obj->value(), 2)
+            );
+            $i++;
+            if ($i % 3 == 0) {
+                $ret .= '</tr><tr>';
+            }
+        }
+        while($i % 3 != 0) {
+            $ret .= '<td class="lborder" colspan="2">&nbsp;</td><td class="'.($i+1%3==0?'rborder':'nborder').'">&nbsp;</td>';
+            $i++;
+        }
+        $ret .= '</tr>';
+        $ret .= '<tr><td colspan="9" class="tborder" style="border-right: 0;"></td></tr>';
         $ret .= '</table>';
         $ret .= '</form>';
 
