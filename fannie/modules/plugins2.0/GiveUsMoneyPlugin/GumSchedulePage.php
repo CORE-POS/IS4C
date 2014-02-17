@@ -61,6 +61,9 @@ class GumSchedulePage extends FannieRESTfulPage
         $this->meminfo->card_no($this->loan->card_no());
         $this->meminfo->load();
 
+        $this->taxid = new GumTaxIdentifiersModel($dbc);
+        $this->taxid->card_no($this->loan->card_no());
+
         $this->settings = new GumSettingsModel($dbc);
 
         return true;
@@ -116,7 +119,10 @@ class GumSchedulePage extends FannieRESTfulPage
         $ret .= '<table id="infoTable" cellspacing="0" cellpadding="4">';
         $ret .= '<tr>';
         $ret .= '<td class="right">First Name</td><td class="left">' . $this->custdata->FirstName() . '</td>';
-        $ssn = 'xxx-xx-xxxx';
+        $ssn = 'Unknown';
+        if ($this->taxid->load()) {
+            $ssn = 'xxx-xx-' . $this->taxid->maskedTaxIdentifier();
+        }
         $ret .= '<td class="right">Social Security Number</td><td class="left">' . $ssn . '</td>';
         $ret .= '</tr>';
         $ret .= '<tr>';

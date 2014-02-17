@@ -187,6 +187,9 @@ class GumMainPage extends FannieRESTfulPage
         $this->equity = new GumEquitySharesModel($dbc);
         $this->equity->card_no($this->id);
 
+        $this->taxid = new GumTaxIdentifiersModel($dbc);
+        $this->taxid->card_no($this->id);
+
         $this->terms = new GumLoanValidTermsModel($dbc);
 
         $this->settings = new GumSettingsModel($dbc);
@@ -199,6 +202,9 @@ class GumMainPage extends FannieRESTfulPage
         return '
             .redtext {
                 color: red;
+            }
+            a.redtext {
+                text-decoration: underline;
             }
             td.blackfield {
                 font-weight: bold;
@@ -286,8 +292,12 @@ class GumMainPage extends FannieRESTfulPage
         $ret .= '<tr class="bborder">';
         $ret .= '<td>Email: <input type="text" name="email" value="' . $this->meminfo->email_1() . '" /></td>';
         $ret .= '<td>Address: <input type="text" name="addr2" value="' . $addr2 . '" /></td>';
-        $ssn = 'xxx-xx-xxxx';
-        $ret .= '<td>SSN: ' . $ssn . '</td>';
+        $ssn = 'Unknown';
+        if ($this->taxid->load()) {
+            $ssn = 'Ends In ' . $this->taxid->maskedTaxIdentifier();
+        }
+        $ret .= sprintf('<td>SSN: %s (<a href="GumTaxIdPage.php?id=%d">View/Edit</a>)</td>',
+                        $ssn, $this->id);
         $ret .= '<td class="greenfield"><a href="" onclick="goToNext(); return false;">Next</a></td>';
         $ret .= '</tr>';
         $ret .= '</table>';
@@ -390,6 +400,11 @@ class GumMainPage extends FannieRESTfulPage
         $ret .= '<tr>';
         $i=0;
         foreach($this->equity->find('tdate') as $obj) {
+            $amount = number_format($obj->value(), 2);
+            if ($obj->shares() < 0) {
+                $amount = sprintf('<a class="redtext" href="GumEquityPayoffPage.php?id=%d">%s</a>',
+                                $obj->gumEquityShareID(), $amount);
+            }
             $ret .= sprintf('<td class="lborder %s">%s</td>
                             <td class="nborder %s">%d</td>
                             <td class="%s %s">%s</td>',
@@ -399,7 +414,7 @@ class GumMainPage extends FannieRESTfulPage
                             $obj->shares(),
                             (($i+1)%3 == 0 ? 'rborder' : 'nborder'),
                             ($obj->shares() < 0 ? 'redtext' : ''), 
-                            number_format($obj->value(), 2)
+                            $amount
             );
             $i++;
             if ($i % 3 == 0) {

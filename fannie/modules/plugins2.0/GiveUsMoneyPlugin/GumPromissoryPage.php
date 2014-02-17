@@ -61,6 +61,9 @@ class GumPromissoryPage extends FannieRESTfulPage
         $this->meminfo->card_no($this->loan->card_no());
         $this->meminfo->load();
 
+        $this->taxid = new GumTaxIdentifiersModel($dbc);
+        $this->taxid->card_no($this->loan->card_no());
+
         $this->settings = new GumSettingsModel($dbc);
 
         return true;
@@ -121,7 +124,10 @@ class GumPromissoryPage extends FannieRESTfulPage
         $ret .= '<td class="right">' . 'Duluth, MN 55805' .'</td>';
         $ret .= '</tr>';
         $ret .= '<tr>';
-        $ssn = 'xxx-xx-xxxx';
+        $ssn = 'Unknown';
+        if ($this->taxid->load()) {
+            $ssn = 'xxx-xx-' . $this->taxid->maskedTaxIdentifier();
+        }
         $ret .= '<td class="left right bottom">' . $ssn . '</td>';
         $tax_id = 'xx-xxxxxxx';
         $ret .= '<td class="right bottom">' . $tax_id . '</td>';

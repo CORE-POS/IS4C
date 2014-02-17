@@ -34,11 +34,30 @@ function doReplace()
         $('#replaceInfoLine').html('Error: Value Must Be XXX-XX-XXXX');
     } else {
         $.ajax({
+            url: 'GumTaxIdPage.php',
             type: 'post',
             data: 'id='+$('#hidden_id').val()+'&new1='+one+'&new2='+two,
-            success: function() {
-                location = 'GumTaxIdPage.php?id='+$('#hidden_id').val();
+            dataType: 'json',
+            success: function(resp) {
+                if (resp.errors.length > 0) {
+                    alert(resp.errors);
+                } else {
+                    location = 'GumTaxIdPage.php?id='+$('#hidden_id').val();
+                }
             }
         });
     }
+}
+
+function viewInfo()
+{
+    $.ajax({
+        url: 'GumTaxIdPage.php',
+        type: 'post',
+        data: 'id='+$('#hidden_id').val()+'&key='+encodeURIComponent($('#keyarea').val()),
+        success: function(resp) {
+            $('#tax_id_field').html(resp);
+            $('#keyarea').val('');
+        }
+    });
 }
