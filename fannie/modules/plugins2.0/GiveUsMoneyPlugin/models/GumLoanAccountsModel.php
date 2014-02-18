@@ -23,6 +23,16 @@
 
 /**
   @class GumLoanAccountsModel
+
+  This table stores member loans/bonds. The
+  fields are pretty straightforward. Note that
+  a given member may have multiple loan accounts
+  so card_no is not necessarily unique; gumLoanAccountID
+  and accountNumber are both unique.
+
+  When loans are paid back, an entry for that check
+  is created in GumPayoffs. That table can be joined 
+  to this table via GumLoanPayoffMap.
 */
 class GumLoanAccountsModel extends BasicModel
 {

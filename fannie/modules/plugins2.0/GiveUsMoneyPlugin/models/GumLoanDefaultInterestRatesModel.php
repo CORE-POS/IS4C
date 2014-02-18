@@ -23,6 +23,10 @@
 
 /**
   @class GumLoanDefaultInterestRatesModel
+
+  This table defines default interest rates for
+  loans with a principal amount between the upper
+  and lower bounds.
 */
 class GumLoanDefaultInterestRatesModel extends BasicModel
 {

@@ -23,6 +23,11 @@
 
 /**
   @class GumSettingsModel
+
+  Catch-all key-value storage for settings.
+  This plugin may wind up with a lot of settings
+  and keeping them separate from Fannie's
+  general settings may be a bit easier.
 */
 class GumSettingsModel extends BasicModel
 {

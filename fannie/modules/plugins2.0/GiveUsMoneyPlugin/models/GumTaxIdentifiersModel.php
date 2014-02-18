@@ -23,6 +23,18 @@
 
 /**
   @class GumTaxIdentifiersModel
+
+  This table stores tax IDs - e.g., social
+  security numbers. The encrypted field
+  should contain the full value but not
+  in plaintext (duh). The masked field contains
+  the last four digits. 
+
+  RSA is the default expectation using public
+  key to encrypt and private key to decrypt.
+  Ideally, the private key should not exist anywhere
+  on the server side. See README.PLUGIN for more
+  information on setting up encryption keys.
 */
 class GumTaxIdentifiersModel extends BasicModel
 {
@@ -32,7 +44,7 @@ class GumTaxIdentifiersModel extends BasicModel
     protected $columns = array(
     'gumTaxIdentifierID' => array('type'=>'INT', 'increment'=>true, 'index'=>true),
     'card_no' => array('type'=>'INT', 'primary_key'=>true),
-    'encryptedTaxIdentifier' => array('type'=>'VARCHAR(255)'),
+    'encryptedTaxIdentifier' => array('type'=>'BLOB'),
     'maskedTaxIdentifier' => array('type'=>'CHAR(4)'),
 	);
 

@@ -34,6 +34,7 @@ class GumEquityPayoffPage extends FannieRESTfulPage
     {
         $this->header = 'Class C Payoff';
         $this->title = 'Class C Payoff';
+        $this->__routes[] = 'get<id><pdf>';
 
         return parent::preprocess();
     }
@@ -71,6 +72,71 @@ class GumEquityPayoffPage extends FannieRESTfulPage
         return true;
     }
 
+    public function get_id_pdf_handler()
+    {
+        global $FANNIE_ROOT;
+        if (!class_exists('FPDF')) {
+            include($FANNIE_ROOT.'src/fpdf/fpdf.php');
+            define('FPDF_FONTPATH','font/');
+        }
+
+        $this->get_id_handler(); // load models
+
+        $pdf = new FPDF('P', 'mm', 'Letter');
+        $pdf->SetMargins(6.35, 6.35, 6.35); // quarter-inch margins
+        $pdf->SetAutoPageBreak(false);
+        $pdf->AddPage();
+
+        $pdf->SetXY(0, 0);
+        $pdf->Image('img/letterhead.png', null, null, 203); // scale to 8"
+
+        $pdf->SetFont('Arial', '', 10);
+        $line_height = 5;
+        $pdf->SetXY(6.35, 50);
+        $pdf->Write($line_height, 'Based on the terms of Wholefoods Community Coop Class C Stock you Payout Request has been received and approved by our Board of Directors. Please find attached a schedule of your most recent Class C activity as well as a check for the class C payout. Thank you for your continued support.');
+        $pdf->Ln();
+        $pdf->Ln();
+
+        $y = $pdf->GetY();
+        $col_width = 30;
+        $col1 = 60;
+        $col2 = $col1 + $col_width;
+        $col3 = $col2 + $col_width;
+
+        $pdf->SetXY($col1, $y);
+        $pdf->Cell($col_width * 3, $line_height, 'Class C Schedule', 0, 0, 'C');
+        $y += $line_height;
+
+        $pdf->SetXY($col1, $y);
+        $pdf->Cell($col_width, $line_height, 'Date', 0, 0, 'C');
+        $pdf->SetXY($col2, $y);
+        $pdf->Cell($col_width, $line_height, 'Shares', 0, 0, 'C');
+        $pdf->SetXY($col3, $y);
+        $pdf->Cell($col_width, $line_height, 'Total', 0, 0, 'C');
+        $y += $line_height;
+
+        foreach($this->all->find('tdate') as $obj) {
+            $pdf->SetXY($col1, $y);
+            $pdf->Cell($col_width, $line_height, date('m/d/Y', strtotime($obj->tdate())), 0, 0, 'C');
+            $pdf->SetXY($col2, $y);
+            $pdf->Cell($col_width, $line_height, $obj->shares(), 0, 0, 'C');
+            $pdf->SetXY($col3, $y);
+            $pdf->Cell($col_width, $line_height, $obj->value(), 0, 0, 'C');
+            $y += $line_height;
+
+            if ($obj->gumEquityShareID() == $this->id) {
+                break;
+            }
+        }
+
+        $check = new GumCheckTemplate($this->custdata, $this->meminfo, $this->payoff->value()*-1, 'Class C Payout', '123456');
+        $check->renderAsPDF($pdf);
+
+        $pdf->Output('EquityPayoff.pdf', 'I');
+
+        return false;
+    }
+
     public function css_content()
     {
         return '
@@ -92,6 +158,13 @@ class GumEquityPayoffPage extends FannieRESTfulPage
     {
         global $FANNIE_URL;
         $ret = '';
+
+        $ret .= '<input onclick="location=\'GumEquityPayoffPage.php?id='.$this->id.'&pdf=1\'; return false;"
+                    type="button" value="Print" /><br />';
+
+        if (file_exists('img/letterhead.png')) {
+            $ret .= '<img src="img/letterhead.png" style="width: 100%;" />';
+        }
 
         $ret .= '<p>
             Based on the terms of Wholefoods Community Coop Class C Stock you Payout Request has been received and approved by  our Board of Directors.  Please find attached a schedule of your most recent Class C activity as well as a check for the class C payout.  Thankyou for your continued support.  
@@ -116,6 +189,10 @@ class GumEquityPayoffPage extends FannieRESTfulPage
             }
         }
         $ret .= '</table>';
+
+        $ret .= '<hr />';
+        $check = new GumCheckTemplate($this->custdata, $this->meminfo, $this->payoff->value()*-1, 'Class C Payout', '123456');
+        $ret .= $check->renderAsHTML();
 
         return $ret;
     }

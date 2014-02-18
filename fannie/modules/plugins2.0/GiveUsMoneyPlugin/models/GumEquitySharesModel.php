@@ -23,6 +23,17 @@
 
 /**
   @class GumEquitySharesModel
+
+  This table stores class "C" equity transactions.
+  Positive numbers for shares/values represent the
+  member purchasing equity; negative shares/values
+  represent the co-op buying equity back from the
+  member.
+
+  Negative entries may (should?) have a corresponding
+  entry in GumPayoffs for the check that was issued.
+  That table can be joined to this table via
+  GumEquityPayoffMap.
 */
 class GumEquitySharesModel extends BasicModel
 {

@@ -23,6 +23,11 @@
 
 /**
   @class GumLoanLedgerModel
+
+  This table lists POS transactions related to
+  a given loan. Each loan account should typically
+  have two entries here: money coming in, money
+  going back out.
 */
 class GumLoanLedgerModel extends BasicModel
 {

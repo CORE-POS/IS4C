@@ -41,3 +41,15 @@ that scenario is:
 
 If this isn't sufficient for your use case, feel free to
 suggest changes.
+
+==============================================
+CUSTOM IMAGES
+==============================================
+The plugin will use the following images if
+present in the "img" directory. Do not commit
+these to git; everyone will have different
+images.
+
+1. sig.png (signature for checks)
+2. logo.png
+3. letterhead.png

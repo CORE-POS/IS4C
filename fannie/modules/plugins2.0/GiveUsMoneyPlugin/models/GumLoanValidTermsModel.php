@@ -23,6 +23,13 @@
 
 /**
   @class GumLoanValidTermsModel
+
+  This table maintains a list of loan terms (lengths)
+  that are available. Total principal limit is optional
+  and means the co-op would like to take no more than
+  $totalPrincipalLimit dollars in loans with that
+  term. This can be useful for spreading out loans so
+  they are not all coming due simultaneously.
 */
 class GumLoanValidTermsModel extends BasicModel
 {

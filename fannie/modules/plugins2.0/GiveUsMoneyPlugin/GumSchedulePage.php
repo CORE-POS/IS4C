@@ -157,60 +157,26 @@ class GumSchedulePage extends FannieRESTfulPage
         $ret .= '<td>Year Ending</td><td>Days</td><td>Interest</td><td>Balance</td>';
         $ret .= '</tr>';
 
-        $this->settings->key('FYendMonth');
-        $this->settings->load();
-        $fyM = $this->settings->value();
-        $this->settings->key('FYendDay');
-        $this->settings->load();
-        $fyD = $this->settings->value();
-
-        $loandate = $ld;
-        $startYear = date('Y', $ld);
-        if ($ld > mktime(0, 0, 0, $fyM, $fyD, date('Y', $ld))) {
-            $startYear++;
-        }
-
-        $enddate = $ed;
-
-        $fy = mktime(0, 0, 0, $fyM, $fyD, $startYear);
-
-        $prevDT = new DateTime(date('Y-m-d', $ld));
-        $fyDT = new DateTime(date('Y-m-d', $fy));
-        $limit = 0;
-        $last = false;
-        $loan_value = $this->loan->principal();
-        $rate = $this->loan->interestRate();
-        $sumInt = 0.0;
-        while($fy <= $ed) {
-            $ret .= '<tr>';
-            $ret .= '<td class="textfield">' . date('m/d/Y', $fy) . '</td>';
-            $days = $fyDT->diff($prevDT)->format('%a');
-            $ret .= '<td class="textfield">' . $days . '</td>';
-            $new_value = $loan_value * pow(1.0 + $rate, $days/365.25);
-            $interest = $new_value - $loan_value;
-            $loan_value = $new_value;
-            $sumInt += $interest;
-            $ret .= '<td class="moneyfield">' . number_format($interest, 2) .'</td>';
-            $ret .= '<td class="moneyfield">'. number_format($loan_value, 2) .'</td>';
-            $ret .= '</tr>';
-
-            $fy = mktime(0, 0, 0, $fyM, $fyD, date('Y', $fy)+1);
-            if ($fy > $ed && !$last) {
-                $fy = $ed;
-                $last = true;
-            } else if ($last) {
-                break;
-            }
-            $prevDT = $fyDT;
-            $fyDT = new DateTime(date('Y-m-d', $fy));
-            if ($limit++ > 50) break; // something weird is going on
+        $loan_info = GumLib::loanSchedule($this->loan);
+        foreach($loan_info['schedule'] as $period) {
+            $ret .= sprintf('<tr>
+                            <td class="textfield">%s</td>
+                            <td class="textfield">%s</td>
+                            <td class="moneyfield">%s</td>
+                            <td class="moneyfield">%s</td>
+                            </tr>',
+                            $period['end_date'],
+                            $period['days'],
+                            number_format($period['interest'], 2),
+                            number_format($period['balance'], 2)
+            );
         }
 
         $ret .= '<tr class="subheader">';
         $ret .= '<td>Balance</td>';
         $ret .= '<td>' . number_format($this->loan->principal(), 2) . '</td>';
-        $ret .= '<td class="moneyfield">' . number_format($sumInt, 2) . '</td>';
-        $ret .= '<td class="moneyfield">' . number_format($loan_value, 2) . '</td>';
+        $ret .= '<td class="moneyfield">' . number_format($loan_info['total_interest'], 2) . '</td>';
+        $ret .= '<td class="moneyfield">' . number_format($loan_info['balance'], 2) . '</td>';
         $ret .= '</tr>';
 
         $ret .= '</table>';

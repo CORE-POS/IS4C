@@ -320,13 +320,14 @@ class GumMainPage extends FannieRESTfulPage
                             <td>%s</td>
                             <td class="greenfield"><a href="GumPromissoryPage.php?id=%s">Note</td>
                             <td class="greenfield"><a href="GumSchedulePage.php?id=%s">Schedule</a></td>
-                            <td class="greenfield">Payoff</td>
+                            <td class="greenfield"><a href="GumLoanPayoffPage.php?id=%s">Payoff</a></td>
                             </tr>',
                             number_format($obj->principal(), 2),
                             $obj->termInMonths() / 12,
                             date('m/d/Y', $ld),
                             $obj->interestRate() * 100,
                             date('m/d/Y', $ed),
+                            $obj->accountNumber(),
                             $obj->accountNumber(),
                             $obj->accountNumber()
             );

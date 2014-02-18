@@ -54,6 +54,9 @@ class GiveUsMoneyPlugin extends FanniePlugin
             'GumLoanValidTerms',
             'GumSettings',
             'GumTaxIdentifiers',
+            'GumPayoffs',
+            'GumEquityPayoffMap',
+            'GumLoanPayoffMap',
         );
 
         foreach($tables as $t) {
@@ -112,6 +115,41 @@ class GiveUsMoneyPlugin extends FanniePlugin
         $settings->key('FYendDay');
         if (!$settings->load()) {
             $settings->value(30);
+            $settings->save();
+        }
+
+        $settings->reset();
+        $settings->key('storeFederalID');
+        if (!$settings->load()) {
+            $settings->value('12-1234567');
+            $settings->save();
+        }
+
+        $settings->reset();
+        $settings->key('storeStateID');
+        if (!$settings->load()) {
+            $settings->value('1234567');
+            $settings->save();
+        }
+
+        $settings->reset();
+        $settings->key('storeState');
+        if (!$settings->load()) {
+            $settings->value('XX');
+            $settings->save();
+        }
+
+        $settings->reset();
+        $settings->key('routingNo');
+        if (!$settings->load()) {
+            $settings->value('123456789');
+            $settings->save();
+        }
+
+        $settings->reset();
+        $settings->key('checkingNo');
+        if (!$settings->load()) {
+            $settings->value('987654321987');
             $settings->save();
         }
     }
