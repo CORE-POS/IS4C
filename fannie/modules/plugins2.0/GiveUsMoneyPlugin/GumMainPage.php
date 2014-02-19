@@ -88,7 +88,42 @@ class GumMainPage extends FannieRESTfulPage
         $model->principal($this->principal);
         $model->termInMonths($this->term);
         $model->interestRate($this->rate / 100.00);
-        $model->save();
+        $newid = $model->save();
+
+        $model->gumLoanAccountID($newid);
+        $model->accountNumber($new);
+        $model->load();
+        $emp = GumLib::getSetting('emp_no', 1001);
+        $reg = GumLib::getSetting('register_no', 30);
+        $dept = GumLib::getSetting('loanPosDept', 993);
+        $desc = GumLib::getSetting('loanDescription', 'Member Loan');
+        $offset = GumLib::getSetting('offsetPosDept', 800);
+        $bridge = GumLib::getSetting('posLayer', 'GumCoreLayer');
+        if (class_exists($bridge)) {
+            $line1 = array(
+                'department' => $dept,
+                'description' => $desc,
+                'amount' => $model->principal(),
+                'card_no' => $model->card_no(),
+            );
+            $line2 = array(
+                'department' => $offset,
+                'description' => 'OFFSET ' . $desc,
+                'amount' => -1 * $model->principal(),
+                'card_no' => $model->card_no(),
+            );
+            $trans_identifier = $bridge::writeTransaction($emp, $reg, array($line1, $line2));
+
+            if ($trans_identifier !== true && $trans_identifier !== false) {
+                $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['GiveUsMoneyDB']);
+                $ledger = new GumLoanLedgerModel($dbc);
+                $ledger->accountNumber($model->accountNumber());
+                $ledger->amount($model->principal());
+                $ledger->tdate(date('Y-m-d H:i:s'));
+                $ledger->trans_num($trans_identifier);
+                $ledger->save();
+            }
+        }
 
         header('Location: GumMainPage.php?id=' . $this->id);
 
@@ -153,8 +188,38 @@ class GumMainPage extends FannieRESTfulPage
             $model->value($this->shares * $settings->value());
             $model->tdate(date('Y-m-d H:i:s'));
             // payoff cannot exceed balance
-            if ($model->value() < 0 && abs($model->value()) <= $bal) {
-                $model->save();
+            if ($model->value() > 0 || ($model->value() < 0 && abs($model->value()) <= $bal)) {
+                $newid = $model->save();
+
+                $model->gumEquityShareID($newid);
+                $model->load();
+                $emp = GumLib::getSetting('emp_no', 1001);
+                $reg = GumLib::getSetting('register_no', 30);
+                $dept = GumLib::getSetting('equityPosDept', 993);
+                $desc = GumLib::getSetting('equityDescription', 'Class C Stock');
+                $offset = GumLib::getSetting('offsetPosDept', 800);
+                $bridge = GumLib::getSetting('posLayer', 'GumCoreLayer');
+                if (class_exists($bridge)) {
+                    $line1 = array(
+                        'department' => $dept,
+                        'description' => $desc,
+                        'amount' => $model->value(),
+                        'card_no' => $model->card_no(),
+                    );
+                    $line2 = array(
+                        'department' => $offset,
+                        'description' => 'OFFSET ' . $desc,
+                        'amount' => -1 * $model->value(),
+                        'card_no' => $model->card_no(),
+                    );
+                    $trans_identifier = $bridge::writeTransaction($emp, $reg, array($line1, $line2));
+
+                    if ($trans_identifier !== true && $trans_identifier !== false) {
+                        $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['GiveUsMoneyDB']);
+                        $model->trans_num($trans_identifier);
+                        $model->save();
+                    }
+                }
             }
         }
 

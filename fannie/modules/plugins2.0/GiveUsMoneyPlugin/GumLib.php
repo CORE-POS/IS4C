@@ -165,5 +165,24 @@ class GumLib
         }
     }
 
+    /**
+      Get value for a given setting
+      @param $key [string] setting key
+      @param $default [string] value to use if setting is missing
+      @return [string] setting value or $default
+    */
+    public static function getSetting($key, $default='')
+    {
+        global $FANNIE_PLUGIN_SETTINGS;
+        $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['GiveUsMoneyDB']);
+        $s = new GumSettingsModel($dbc);
+        $s->key($key);
+        if ($s->load()) {
+            return $s->value();
+        } else {
+            return $default;
+        }
+    }
+
 }
 

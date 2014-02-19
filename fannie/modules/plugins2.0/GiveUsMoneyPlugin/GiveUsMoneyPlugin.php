@@ -319,6 +319,16 @@ class GiveUsMoneyPlugin extends FanniePlugin
             $settings->value('6');
             $settings->save();
         }
+
+        /**
+          POS interaction interface
+        */
+        $settings->reset();
+        $settings->key('posLayer');
+        if (!$settings->load()) {
+            $settings->value('GumCoreLayer');
+            $settings->save();
+        }
     }
 }
 
