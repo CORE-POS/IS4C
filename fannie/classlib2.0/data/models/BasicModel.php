@@ -169,9 +169,12 @@ class BasicModel
     public function whichDB($db_name)
     {
         if ($this->connection->tableExists($db_name . $this->connection->sep() . $this->name)) {
+            /** doesn't work
             $this->fq_name = $this->connection->identifier_escape($db_name) 
                             . $this->connection->sep() 
                             . $this->connection->identifier_escape($this->name);
+            */
+            $this->fq_name = $db_name . $this->connection->sep() . $this->name;
             return true;
         } else {
             return false;
