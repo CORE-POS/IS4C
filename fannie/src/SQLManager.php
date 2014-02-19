@@ -134,8 +134,7 @@ class SQLManager
 			$which_connection=$this->default_db;
         }
         if (isset($this->connections[$which_connection]) && 
-            is_object($this->connections[$which_connection]) && 
-            is_a($this->connections[$which_connection], 'ADONewConnection')) {
+            is_object($this->connections[$which_connection])) {
             return true;
         } else {
             return false;

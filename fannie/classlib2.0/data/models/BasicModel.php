@@ -147,13 +147,17 @@ class BasicModel
         if (is_a($this->connection, 'SQLManager') && $this->connection->isConnected()) {
             $db_name = $this->connection->defaultDatabase();
             if ($this->connection->tableExists($db_name . $this->connection->sep() . $this->name)) {
-                $this->fq_name = $db_name . $this->connection->sep() . $this->name;
+                $this->fq_name = $this->connection->identifier_escape($db_name) 
+                                . $this->connection->sep() 
+                                . $this->connection->identifier_escape($this->name);
             } else {
-                $this->fq_name = $this->name;
+                $this->fq_name = $this->connection->identifier_escape($this->name);
             }
         } else {
             $this->fq_name = $this->name;
         }
+        // fq name not working right now...
+        $this->fq_name = $this->name;
     }
 
     /**
@@ -165,7 +169,9 @@ class BasicModel
     public function whichDB($db_name)
     {
         if ($this->connection->tableExists($db_name . $this->connection->sep() . $this->name)) {
-            $this->fq_name = $db_name . $this->connection->sep() . $this->name;
+            $this->fq_name = $this->connection->identifier_escape($db_name) 
+                            . $this->connection->sep() 
+                            . $this->connection->identifier_escape($this->name);
             return true;
         } else {
             return false;
@@ -482,7 +488,7 @@ class BasicModel
 
         if (!$new_record) {
             // see if matching record exists
-            $check = 'SELECT * FROM '.$this->connection->identifier_escape($this->fq_name)
+            $check = 'SELECT * FROM '.$this->fq_name
                 .' WHERE 1=1';
             $args = array();
             foreach($this->unique as $column) {
@@ -509,7 +515,7 @@ class BasicModel
     */
     protected function insertRecord()
     {
-        $sql = 'INSERT INTO '.$this->connection->identifier_escape($this->fq_name);
+        $sql = 'INSERT INTO '.$this->fq_name;
         $cols = '(';
         $vals = '(';
         $args = array();
@@ -559,7 +565,7 @@ class BasicModel
     */
     protected function updateRecord()
     {
-        $sql = 'UPDATE '.$this->connection->identifier_escape($this->fq_name);
+        $sql = 'UPDATE '.$this->fq_name;
         $sets = '';
         $where = '1=1';
         $set_args = array();
