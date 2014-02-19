@@ -89,5 +89,81 @@ class GumLib
         );
     }
 
+    /**
+      Create an entry in GumPayoffs representing a new check
+      @param $map_model a model for a mapping table (e.g., GumLoanPayoffMapModel)
+        where the new gumPayoffID can be saved
+      @return [int] gumPayoffID or [boolean] false on failure
+    */
+    public static function allocateCheck($map_model)
+    {
+        global $FANNIE_PLUGIN_SETTINGS;
+        $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['GiveUsMoneyDB']);
+        $settings = new GumSettingsModel($dbc);
+
+        $cn = 0;
+        $result = $dbc->query('SELECT MAX(checkNumber) as max_cn FROM GumPayoffs');
+        if ($dbc->num_rows($result) > 0) {
+            $row = $dbc->fetch_row($result);
+            if ($row['max_cn'] != '') {
+                $cn = $row['max_cn'];
+            }
+        }
+
+        if ($cn == 0) { // first ever check
+            $settings->key('firstCheckNumber');
+            if ($settings->load()) {
+                $cn = $settings->value();
+            } else {
+                $cn = 1;
+            }
+        } else { // go to next
+            $cn++;
+        }
+
+        /**
+          Create a new GumPayoffs entry
+          for the check then save its
+          ID in the provided map. If the
+          2nd step fails somehow, delete
+          the GumPayoffs record so the
+          check number is wasted.
+        */
+        $payoff = new GumPayoffsModel($dbc);
+        $payoff->checkNumber($cn);
+        $id = $payoff->save();
+        if ($id !== false) {
+            $map_model->gumPayoffID($id);
+            $finish = $map_model->save();
+            if ($finish === false) {
+                $payoff->gumPayoffID($id);
+                $payoff->delete();
+                return false;
+            } else {
+                return $id;
+            }
+        } else {
+            return false;
+        }
+    }
+
+    public static function getCheck($map_model)
+    {
+        global $FANNIE_PLUGIN_SETTINGS;
+        if ($map_model->gumPayoffID() == '') {
+            return false;
+        }
+
+        $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['GiveUsMoneyDB']);
+        $payoff = new GumPayoffsModel($dbc);
+        $payoff->gumPayoffID($map_model->gumPayoffID());
+
+        if ($payoff->load()) {
+            return $payoff;
+        } else {
+            return false;
+        }
+    }
+
 }
 

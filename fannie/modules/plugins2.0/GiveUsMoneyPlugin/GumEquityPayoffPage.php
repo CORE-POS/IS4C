@@ -67,6 +67,30 @@ class GumEquityPayoffPage extends FannieRESTfulPage
         $this->taxid = new GumTaxIdentifiersModel($dbc);
         $this->taxid->card_no($this->payoff->card_no());
 
+        $this->check_info = new GumPayoffsModel($dbc);
+        $map = new GumEquityPayoffMapModel($dbc);
+        $map->gumEquityShareID($this->id);
+        $payoff_id = false;
+        foreach($map->find('gumPayoffID', true) as $obj) {
+            // get highest matching ID
+            $payoff_id = $obj->gumPayoffID();
+            break;
+        }
+        // none found, allocate new check
+        if ($payoff_id === false) {
+            $payoff_id = GumLib::allocateCheck($map);
+            if ($payoff_id) {
+                $this->check_info->gumPayoffID($payoff_id);
+                $this->check_info->amount(-1*$this->payoff->value());
+                $this->check_info->issueDate(date('Y-m-d'));
+                $this->check_info->save();
+                $this->check_info->load();
+            }
+        } else {
+            $this->check_info->gumPayoffID($payoff_id);
+            $this->check_info->load();
+        }
+
         $this->settings = new GumSettingsModel($dbc);
 
         return true;
@@ -129,7 +153,7 @@ class GumEquityPayoffPage extends FannieRESTfulPage
             }
         }
 
-        $check = new GumCheckTemplate($this->custdata, $this->meminfo, $this->payoff->value()*-1, 'Class C Payout', '123456');
+        $check = new GumCheckTemplate($this->custdata, $this->meminfo, $this->payoff->value()*-1, 'Class C Payout', $this->check_info->checkNumber());
         $check->renderAsPDF($pdf);
 
         $pdf->Output('EquityPayoff.pdf', 'I');
@@ -191,7 +215,7 @@ class GumEquityPayoffPage extends FannieRESTfulPage
         $ret .= '</table>';
 
         $ret .= '<hr />';
-        $check = new GumCheckTemplate($this->custdata, $this->meminfo, $this->payoff->value()*-1, 'Class C Payout', '123456');
+        $check = new GumCheckTemplate($this->custdata, $this->meminfo, $this->payoff->value()*-1, 'Class C Payout', $this->check_info->checkNumber());
         $ret .= $check->renderAsHTML();
 
         return $ret;

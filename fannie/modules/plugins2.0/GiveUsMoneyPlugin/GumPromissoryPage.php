@@ -1,7 +1,7 @@
 <?php
 /*******************************************************************************
 
-    Copyright 2013 Whole Foods Co-op
+    Copyright 2014 Whole Foods Co-op
 
     This file is part of IT CORE.
 
@@ -42,6 +42,8 @@ class GumPromissoryPage extends FannieRESTfulPage
 
     );
 
+    private $my_address = array();
+
     public function preprocess()
     {
         $acct = FormLib::get('id');
@@ -78,6 +80,36 @@ class GumPromissoryPage extends FannieRESTfulPage
         $this->taxid->card_no($this->loan->card_no());
 
         $this->settings = new GumSettingsModel($dbc);
+
+        $this->my_address[0] = 'Name of Co-op';
+        $this->settings->key('storeName');
+        if ($this->settings->load()) {
+            $this->my_address[0] = $this->settings->value();
+        }
+        $this->my_address[1] = 'Street Address';
+        $this->settings->key('storeAddress');
+        if ($this->settings->load()) {
+            $this->my_address[1] = $this->settings->value();
+        }
+        $this->my_address[2] = '';
+        $this->settings->key('storeCity');
+        if ($this->settings->load()) {
+            $this->my_address[2] .= $this->settings->value() . ', ';
+        } else {
+            $this->my_address[2] .= 'City, ';
+        }
+        $this->settings->key('storeState');
+        if ($this->settings->load()) {
+            $this->my_address[2] .= $this->settings->value() . ' ';
+        } else {
+            $this->my_address[2] .= 'XX ';
+        }
+        $this->settings->key('storeZip');
+        if ($this->settings->load()) {
+            $this->my_address[2] .= $this->settings->value();
+        } else {
+            $this->my_address[2] .= '12345';
+        }
 
         return true;
     }
@@ -121,19 +153,19 @@ class GumPromissoryPage extends FannieRESTfulPage
         $pdf->SetXY($col1, $y);
         $pdf->Cell($col_width, $line_height, $this->custdata->FirstName() . ' ' . $this->custdata->LastName(), 0, 0, 'C');
         $pdf->SetXY($col2, $y);
-        $pdf->Cell($col_width, $line_height, 'Whole Foods Community Co-op, Inc.', 0, 0, 'C');
+        $pdf->Cell($col_width, $line_height, $this->my_address[0], 0, 0, 'C');
         $y += $line_height;
 
         $pdf->SetXY($col1, $y);
         $pdf->Cell($col_width, $line_height, $this->meminfo->street(), 0, 0, 'C');
         $pdf->SetXY($col2, $y);
-        $pdf->Cell($col_width, $line_height, '610 E 4th St', 0, 0, 'C');
+        $pdf->Cell($col_width, $line_height, $this->my_address[1], 0, 0, 'C');
         $y += $line_height;
 
         $pdf->SetXY($col1, $y);
         $pdf->Cell($col_width, $line_height, $this->meminfo->city() . ', ' . $this->meminfo->state() . ' ' . $this->meminfo->zip(), 0, 0, 'C');
         $pdf->SetXY($col2, $y);
-        $pdf->Cell($col_width, $line_height, 'Duluth, MN 55805', 0, 0, 'C');
+        $pdf->Cell($col_width, $line_height, $this->my_address[2], 0, 0, 'C');
         $y += $line_height;
 
         $pdf->SetXY($col1, $y);
@@ -264,15 +296,15 @@ class GumPromissoryPage extends FannieRESTfulPage
         $ret .= '</tr>';
         $ret .= '<tr>';
         $ret .= '<td class="left right">'. $this->custdata->FirstName() . ' ' . $this->custdata->LastName() . '</td>';
-        $ret .= '<td class="right">' . 'Whole Foods Community Co-op, Inc.' .'</td>';
+        $ret .= '<td class="right">' . $this->my_address[0] .'</td>';
         $ret .= '</tr>';
         $ret .= '<tr>';
         $ret .= '<td class="left right">'. $this->meminfo->street() . '</td>';
-        $ret .= '<td class="right">' . '610 E 4th St' .'</td>';
+        $ret .= '<td class="right">' . $this->my_address[1] .'</td>';
         $ret .= '</tr>';
         $ret .= '<tr>';
         $ret .= '<td class="left right">'. $this->meminfo->city() . ', ' . $this->meminfo->state() . ' ' . $this->meminfo->zip() . '</td>';
-        $ret .= '<td class="right">' . 'Duluth, MN 55805' .'</td>';
+        $ret .= '<td class="right">' . $this->my_address[2] .'</td>';
         $ret .= '</tr>';
         $ret .= '<tr>';
         $ssn = 'Unknown';

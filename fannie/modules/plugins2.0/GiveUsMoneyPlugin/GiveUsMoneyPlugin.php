@@ -70,12 +70,18 @@ class GiveUsMoneyPlugin extends FanniePlugin
 
         $settings = new GumSettingsModel($dbc);
 
+        /**
+          Employee # used for writing any POS transactions
+        */
         $settings->key('emp_no');
         if (!$settings->load()) {
             $settings->value(1001);
             $settings->save();
         }
 
+        /**
+          Register # used for writing any POS transactions
+        */
         $settings->reset();
         $settings->key('register_no');
         if (!$settings->load()) {
@@ -83,6 +89,9 @@ class GiveUsMoneyPlugin extends FanniePlugin
             $settings->save();
         }
 
+        /**
+          $ value of one equity share
+        */
         $settings->reset();
         $settings->key('equityShareSize');
         if (!$settings->load()) {
@@ -90,6 +99,9 @@ class GiveUsMoneyPlugin extends FanniePlugin
             $settings->save();
         }
 
+        /**
+          Department # for equity-related POS transactions
+        */
         $settings->reset();
         $settings->key('equityPosDept');
         if (!$settings->load()) {
@@ -97,6 +109,13 @@ class GiveUsMoneyPlugin extends FanniePlugin
             $settings->save();
         }
 
+        /**
+          Department description for equity-related POS transactions
+          (could probably be pulled from department table instead;
+           guaranteeing a description even if the department doesn't
+           exist may make debugging easier if the department # is
+           misconfigured).
+        */
         $settings->reset();
         $settings->key('equityDescription');
         if (!$settings->load()) {
@@ -104,6 +123,49 @@ class GiveUsMoneyPlugin extends FanniePlugin
             $settings->save();
         }
 
+        /**
+          Department # for equity-related POS transactions
+        */
+        $settings->reset();
+        $settings->key('loanPosDept');
+        if (!$settings->load()) {
+            $settings->value(998);
+            $settings->save();
+        }
+
+        /**
+          Department description for loan-related POS transactions
+          See equityDescription for justification.
+        */
+        $settings->reset();
+        $settings->key('loanDescription');
+        if (!$settings->load()) {
+            $settings->value('Member Loan');
+            $settings->save();
+        }
+
+        /**
+          Department # for balancing transactions
+          Transactions are written as:
+             $X.XX to loan/equity department
+            -$X.XX to offset department
+          This ensures transactions net to zero. It also
+          allows tender to occur at a different time/place
+          without leaving any transaction half-complete.
+          The tender transaction would (probably) be:
+             $X.XX to offset department
+            -$X.XX tender type
+        */
+        $settings->reset();
+        $settings->key('offsetPosDept');
+        if (!$settings->load()) {
+            $settings->value(800);
+            $settings->save();
+        }
+
+        /**
+          Month the fiscal year ends (typically 6 or 12)
+        */
         $settings->reset();
         $settings->key('FYendMonth');
         if (!$settings->load()) {
@@ -111,6 +173,9 @@ class GiveUsMoneyPlugin extends FanniePlugin
             $settings->save();
         }
 
+        /**
+          Day the fiscal year ends (typically 30 or 31)
+        */
         $settings->reset();
         $settings->key('FYendDay');
         if (!$settings->load()) {
@@ -118,6 +183,10 @@ class GiveUsMoneyPlugin extends FanniePlugin
             $settings->save();
         }
 
+        /**
+          The store's federal tax identification number.
+          Only needed for tax forms.
+        */
         $settings->reset();
         $settings->key('storeFederalID');
         if (!$settings->load()) {
@@ -125,6 +194,10 @@ class GiveUsMoneyPlugin extends FanniePlugin
             $settings->save();
         }
 
+        /**
+          The store's state tax identification number.
+          Only needed for tax forms.
+        */
         $settings->reset();
         $settings->key('storeStateID');
         if (!$settings->load()) {
@@ -132,6 +205,47 @@ class GiveUsMoneyPlugin extends FanniePlugin
             $settings->save();
         }
 
+        /**
+          The store's name (or DBA name)
+          Used for address blocks
+        */
+        $settings->reset();
+        $settings->key('storeName');
+        if (!$settings->load()) {
+            $settings->value('Name of Co-op / DBA');
+            $settings->save();
+        }
+
+        /**
+          The store's street address
+          Multi-line street address is not permitted
+          because vertical spacing is often tight. Some
+          tax forms also *require* a single line street
+          address. Use comma separation as needed.
+          Used for address blocks
+        */
+        $settings->reset();
+        $settings->key('storeAddress');
+        if (!$settings->load()) {
+            $settings->value('Street Address');
+            $settings->save();
+        }
+
+        /**
+          The store's city
+          Used for address blocks
+        */
+        $settings->reset();
+        $settings->key('storeCity');
+        if (!$settings->load()) {
+            $settings->value('Anytown');
+            $settings->save();
+        }
+
+        /**
+          The store's state (or equivalent)
+          Used for address blocks
+        */
         $settings->reset();
         $settings->key('storeState');
         if (!$settings->load()) {
@@ -139,6 +253,32 @@ class GiveUsMoneyPlugin extends FanniePlugin
             $settings->save();
         }
 
+        /**
+          The store's zip code (or equivalent)
+          Used for address blocks
+        */
+        $settings->reset();
+        $settings->key('storeZip');
+        if (!$settings->load()) {
+            $settings->value('12345');
+            $settings->save();
+        }
+
+        /**
+          The store's phone number
+          Used for [some] address blocks
+        */
+        $settings->reset();
+        $settings->key('storePhone');
+        if (!$settings->load()) {
+            $settings->value('555-867-5309');
+            $settings->save();
+        }
+
+        /**
+          The store's checking account routing #
+          Used for creating checks
+        */
         $settings->reset();
         $settings->key('routingNo');
         if (!$settings->load()) {
@@ -146,10 +286,37 @@ class GiveUsMoneyPlugin extends FanniePlugin
             $settings->save();
         }
 
+        /**
+          The store's checking account #
+          Used for creating checks
+        */
         $settings->reset();
         $settings->key('checkingNo');
         if (!$settings->load()) {
             $settings->value('987654321987');
+            $settings->save();
+        }
+
+        /**
+          The first check number to use when creating checks.
+          The plugin will use check numbers sequentially starting
+          from this value
+        */
+        $settings->reset();
+        $settings->key('firstCheckNumber');
+        if (!$settings->load()) {
+            $settings->value('1');
+            $settings->save();
+        }
+
+        /**
+          Zero-pad check numbers to this many digits.
+          Six is the default.
+        */
+        $settings->reset();
+        $settings->key('checkNumberPadding');
+        if (!$settings->load()) {
+            $settings->value('6');
             $settings->save();
         }
     }

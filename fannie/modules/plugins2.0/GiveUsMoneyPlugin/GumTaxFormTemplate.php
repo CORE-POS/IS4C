@@ -23,12 +23,7 @@
 
 class GumTaxFormTemplate 
 {
-    private $my_address = array(
-        'Whole Foods Community Co-op, Inc',
-        '610 E 4th Street',
-        'Duluth, MN 55805', 
-        '(218) 728-0884',
-    );
+    private $my_address = array();
     private $their_address = array();
 
     private $tax_id;
@@ -56,6 +51,41 @@ class GumTaxFormTemplate
         $settings->key('storeFederalID');
         if ($settings->load()) {
             $this->my_federal_id = $settings->value();
+        }
+
+        $this->my_address[0] = 'Name of Co-op';
+        $settings->key('storeName');
+        if ($settings->load()) {
+            $this->my_address[0] = $settings->value();
+        }
+        $this->my_address[1] = 'Street Address';
+        $settings->key('storeAddress');
+        if ($settings->load()) {
+            $this->my_address[1] = $settings->value();
+        }
+        $this->my_address[2] = '';
+        $settings->key('storeCity');
+        if ($settings->load()) {
+            $this->my_address[2] .= $settings->value() . ', ';
+        } else {
+            $this->my_address[2] .= 'City, ';
+        }
+        $settings->key('storeState');
+        if ($settings->load()) {
+            $this->my_address[2] .= $settings->value() . ' ';
+        } else {
+            $this->my_address[2] .= 'XX ';
+        }
+        $settings->key('storeZip');
+        if ($settings->load()) {
+            $this->my_address[2] .= $settings->value();
+        } else {
+            $this->my_address[2] .= '12345';
+        }
+        $this->my_address[3] = '555-867-5309';
+        $settings->key('storePhone');
+        if ($settings->load()) {
+            $this->my_address[3] = $settings->value();
         }
     }
 
