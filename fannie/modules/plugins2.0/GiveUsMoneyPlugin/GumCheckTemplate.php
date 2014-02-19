@@ -150,13 +150,15 @@ class GumCheckTemplate
 
         $pdf->SetXY($check_left_x, $check_top_y);
         $pdf->Cell(0, $line_height, $this->memo, 0, 1);
+        $pdf->Ln($line_height);
         $pdf->SetFont('Arial', '', 10);
+        $envelope_window_tab = 15;
         foreach($this->my_address as $line) {
-            $pdf->SetX($check_left_x);
+            $pdf->SetX($check_left_x + $envelope_window_tab);
             $pdf->Cell(0, $line_height, $line, 0, 1);
         }
 
-        $bank_offset = 75; 
+        $bank_offset = 90; 
         $pdf->SetXY($check_left_x + $bank_offset, $check_top_y);
         foreach($this->bank_address as $line) {
             $pdf->SetX($check_left_x + $bank_offset);
@@ -185,8 +187,9 @@ class GumCheckTemplate
         $pdf->SetFont('Arial', 'B', 10);
         $pdf->Cell(0, $line_height, $this->amount_as_words.'   ', 0, 1, 'R');
 
-        $pdf->SetXY($check_left_x, $check_top_y + (8*$line_height));
+        $pdf->SetXY($check_left_x + $envelope_window_tab, $check_top_y + (8*$line_height));
         foreach($this->their_address as $line) {
+            $pdf->SetX($check_left_x + $envelope_window_tab);
             $pdf->Cell(0, $line_height, $line, 0, 1);
         }
 
@@ -194,7 +197,7 @@ class GumCheckTemplate
         $pdf->SetXY($check_right_x - 63.5, $pdf->GetY()+$line_height);
         $pdf->Cell(63.5, $line_height, 'Authorized By Signature', 'T');
 
-        $pdf->SetXY($check_left_x + 37, $check_bottom_y + $line_height - 2);
+        $pdf->SetXY($check_left_x + 36, $check_bottom_y + $line_height - 1);
         $pdf->AddFont('GnuMICR', '', 'GnuMICR.php');
         $pdf->SetFont('GnuMICR', '', 12);
         // In the MICR font:

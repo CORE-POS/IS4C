@@ -92,7 +92,86 @@ class GumLoanPayoffPage extends FannieRESTfulPage
         $pdf->SetXY(0, 0);
         $pdf->Image('img/letterhead.png', null, null, 203); // scale to 8"
 
-        $fields = array(1 => $loan_info['balance']);
+        $pdf->SetFont('Arial', '', 8);
+        $line_height = 3.5;
+        $pdf->SetXY(6.35, 43);
+        $text = 'Pursuant to the terms of your Promissory Note with WFC, below please find a check for the principal and, as applicable, compound interest due.   A statement showing the terms of your loan and annual compounding of the interest thereon is provided. If your loan was for more than 0.00% interest, also below is an IRS form 1099-INT to be included with your ' . date('Y') . ' federal tax filing.  If you have questions regarding this payment, please contact Financial Manager Dale Maiers (dmaiers@wholefoods.coop).  Thank you very much for your support.';
+        $pdf->Write($line_height, $text);
+
+        $col_width = 40.64;
+        $col1 = 6.35 + $col_width;
+        $col2 = $col1 + $col_width;
+        $col3 = $col2 + $col_width;
+        $col4 = $col3 + $col_width;
+        $table_y = 60;
+        $pdf->SetFont('Arial', 'BU', 8);
+        $pdf->SetXY($col1, $table_y);
+        $pdf->Cell($col_width, $line_height, 'Ending Period', 0, 0, 'C');
+        $pdf->SetXY($col2, $table_y);
+        $pdf->Cell($col_width, $line_height, 'Days', 0, 0, 'C');
+        $pdf->SetXY($col3, $table_y);
+        $pdf->Cell($col_width, $line_height, 'Interest', 0, 0, 'R');
+        $pdf->SetXY($col4, $table_y);
+        $pdf->Cell($col_width, $line_height, 'Closing Balance', 0, 0, 'R');
+        $pdf->SetFont('Arial', '', 8);
+        $i=0;
+        for($i=0; $i<count($loan_info['schedule']); $i++) {
+            $line_y = $table_y + (($i+1) * $line_height);
+            $pdf->SetXY($col1, $line_y);
+            $pdf->Cell($col_width, $line_height, $loan_info['schedule'][$i]['end_date'], 0, 0, 'C');
+            $pdf->SetXY($col2, $line_y);
+            $pdf->Cell($col_width, $line_height, $loan_info['schedule'][$i]['days'], 0, 0, 'C');
+            $pdf->SetXY($col3, $line_y);
+            $pdf->Cell($col_width, $line_height, number_format($loan_info['schedule'][$i]['interest'], 2), 0, 0, 'R');
+            $pdf->SetXY($col4, $line_y);
+            $pdf->Cell($col_width, $line_height, number_format($loan_info['schedule'][$i]['balance'], 2), 0, 0, 'R');
+        }
+        $last_y = $table_y + (($i+1) * $line_height);
+        $pdf->SetFont('Arial', 'B', 8);
+        $pdf->SetXY($col1, $last_y);
+        $pdf->Cell($col_width, $line_height, 'Total', 0, 0, 'C');
+        $pdf->SetXY($col2, $last_y);
+        $pdf->Cell($col_width, $line_height, number_format($this->loan->principal(), 2), 0, 0, 'R');
+        $pdf->SetXY($col3, $last_y);
+        $pdf->Cell($col_width, $line_height, number_format($loan_info['total_interest'], 2), 0, 0, 'R');
+        $pdf->SetXY($col4, $last_y);
+        $pdf->Cell($col_width, $line_height, number_format($loan_info['balance'], 2), 0, 0, 'R');
+        $pdf->SetFont('Arial', '', 8);
+
+        $pdf->SetXY(6.35, $table_y);
+        $pdf->SetFont('Arial', 'B', 8);
+        $pdf->Cell($col_width, $line_height, 'Loan Amount', 0, 1, 'C');
+        $pdf->SetFont('Arial', '', 8);
+        $pdf->Cell($col_width, $line_height, number_format($this->loan->principal(), 2), 0, 1, 'C');
+        $pdf->SetFont('Arial', 'B', 8);
+        $pdf->Cell($col_width, $line_height, 'Term', 0, 1, 'C');
+        $pdf->SetFont('Arial', '', 8);
+        $pdf->Cell($col_width, $line_height, ($this->loan->termInMonths() / 12) . ' Years', 0, 1, 'C');
+        $pdf->SetFont('Arial', 'B', 8);
+        $pdf->Cell($col_width, $line_height, 'Loan Date', 0, 1, 'C');
+        $pdf->SetFont('Arial', '', 8);
+        $pdf->Cell($col_width, $line_height, date('m/d/Y', strtotime($this->loan->loanDate())), 0, 1, 'C');
+        $pdf->SetFont('Arial', 'B', 8);
+        $pdf->Cell($col_width, $line_height, 'Interest Rate', 0, 1, 'C');
+        $pdf->SetFont('Arial', '', 8);
+        $pdf->Cell($col_width, $line_height, (100 * $this->loan->interestRate).'%', 0, 1, 'C');
+        $pdf->SetFont('Arial', 'B', 8);
+        $pdf->Cell($col_width, $line_height, 'Maturity Date', 0, 1, 'C');
+        $pdf->SetFont('Arial', '', 8);
+        $ld = strtotime($this->loan->loanDate());
+        $ed = mktime(0, 0, 0, date('n', $ld)+$this->loan->termInMonths(), date('j', $ld), date('Y', $ld));
+        $pdf->Cell($col_width, $line_height, date('m/d/Y', $ed), 0, 1, 'C');
+
+        $pdf->SetDrawColor(0, 0, 0);
+        $pdf->Line(6.35, $table_y, 6.35 + $col_width, $table_y);
+        $pdf->Line(6.35, $table_y, 6.35, $table_y + 10*$line_height);
+        $pdf->Line(6.35 + $col_width, $table_y, 6.35 + $col_width, $table_y + 10*$line_height);
+        $pdf->Line(6.35, $table_y + 10*$line_height, 6.35 + $col_width, $table_y + 10*$line_height);
+        for($i=2; $i<=8; $i+= 2) {
+            $pdf->Line(6.35, $table_y + $i*$line_height, 6.35+$col_width, $table_y + $i*$line_height);
+        }
+
+        $fields = array(1 => $loan_info['total_interest']);
         $this->settings->key('storeStateID');
         if ($this->settings->load()) {
             $fields[12] = $this->settings->value();
@@ -107,7 +186,7 @@ class GumLoanPayoffPage extends FannieRESTfulPage
             $ssn = 'xxx-xx-' . $this->taxid->maskedTaxIdentifier();
         }
         $form =  new GumTaxFormTemplate($this->custdata, $this->meminfo, $ssn, date('Y'), $fields, $this->loan->accountNumber());
-        $ret .= $form->renderAsPDF($pdf, 50);
+        $ret .= $form->renderAsPDF($pdf, 105);
 
         $check = new GumCheckTemplate($this->custdata, $this->meminfo, $loan_info['balance'], 'Loan Repayment', '123456');
         $check->renderAsPDF($pdf);

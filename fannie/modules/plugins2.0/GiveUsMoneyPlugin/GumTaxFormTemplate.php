@@ -105,7 +105,7 @@ class GumTaxFormTemplate
         $ret .= '<td style="border: 1px solid black;" rowspan="5">';
         $ret .= '<div style="text-align:right;"><b>Copy B</b><br />For Recipient</div>';
         $ret .= '<i>This is important tax information related to interest income earned during ';
-        $ret .= $this->tax_year . 'that is being furnished to the Internal Revenue Service. IF
+        $ret .= $this->tax_year . ' that is being furnished to the Internal Revenue Service. If
                 you are required to file a return, a negligence penalty or other sanction may be
                 imposed on you if this income is taxable and the IRS determines that it has not
                 been reported.</i>';
@@ -245,6 +245,13 @@ class GumTaxFormTemplate
         $med_height = 5;
         $pdf->SetXY($top_left_x, $start_y);
         $pdf->Cell(88.9, $small_height, 'PAYER\'S name, street address, city, state, ZIP code, and telephone no');
+        $pdf->SetFont('Arial', '', 8);
+        for($i=0; $i<count($this->my_address); $i++) {
+            $pdf->SetXY($top_left_x + 3, $start_y + ($med_height * ($i+1)));
+            $pdf->Cell(88, $med_height, $this->my_address[$i]);
+        }
+        $pdf->SetFont('Arial', '', 6);
+
         $pdf->SetXY($top_left_x + 89, $start_y);
         $pdf->Cell((127.0-88.9), $small_height, 'Payer\'s RTIN (optional)');
 
@@ -376,6 +383,49 @@ class GumTaxFormTemplate
         $pdf->Cell((165.1-127), $med_height, $text);
         $pdf->SetFont('Arial', '', 6);
 
+        $pdf->SetXY($top_left_x, $start_y + 38.1);
+        $pdf->Cell(88.9, $small_height, 'RECIPIENT\'S NAME');
+        if (isset($this->their_address[0])) {
+            $pdf->SetXY($top_left_x, $start_y + 38.1 + $small_height);
+            $pdf->SetFont('Arial', '', 8);
+            $pdf->Cell(88.9, $med_height, $this->their_address[0], 0, 0, 'C');
+            $pdf->SetFont('Arial', '', 6);
+        }
+        $pdf->SetXY($top_left_x, $start_y + 38.1 + $small_height + $med_height);
+        $pdf->Cell(88.9, $small_height, 'Street address (including apt. no.)');
+        if (isset($this->their_address[1])) {
+            $pdf->SetXY($top_left_x, $start_y + 38.1 + 2*$small_height + $med_height);
+            $pdf->SetFont('Arial', '', 8);
+            $pdf->Cell(88.9, $med_height, $this->their_address[1], 0, 0, 'C');
+            $pdf->SetFont('Arial', '', 6);
+        }
+        $pdf->SetXY($top_left_x, $start_y + 38.1 + 2*$small_height + 2*$med_height);
+        $pdf->Cell(88.9, $small_height, 'City, state, and zip code');
+        if (isset($this->their_address[2])) {
+            $pdf->SetXY($top_left_x, $start_y + 38.1 + 3*$small_height + 2*$med_height);
+            $pdf->SetFont('Arial', '', 8);
+            $pdf->Cell(88.9, $med_height, $this->their_address[2], 0, 0, 'C');
+            $pdf->SetFont('Arial', '', 6);
+        }
+
+        $pdf->SetXY($top_left_x, $start_y + 65.0875);
+        $pdf->Cell(44.45, $small_height, 'Account number (optional)');
+        $pdf->SetXY($top_left_x, $start_y + 65.0875 + $small_height);
+        $pdf->SetFont('Arial', '', 8);
+        $pdf->Cell(44.45, $med_height, $this->account_number, 0, 0, 'C');
+        $pdf->SetFont('Arial', '', 6);
+
+        $pdf->SetXY($top_left_x + 44.45, $start_y + 65.0875);
+        $pdf->Cell((127-88.9), $small_height, '10. Tax exmpt CUSIP no.');
+        $pdf->SetXY($top_left_x + 44.45, $start_y + 65.0875 + $small_height);
+        $text = '';
+        if (isset($this->fields[10])) {
+            $text .= $this->fields[10];
+        }
+        $pdf->SetFont('Arial', '', 8);
+        $pdf->Cell(44.45, $med_height, $text, 0, 0, 'C');
+        $pdf->SetFont('Arial', '', 6);
+
         $pdf->SetXY($top_left_x + 89, $start_y + 65.0875);
         $pdf->Cell((127-88.9), $small_height, '11. State');
         $pdf->SetXY($top_left_x + 89, $start_y + 65.0875 + $small_height);
@@ -397,6 +447,30 @@ class GumTaxFormTemplate
         $pdf->SetFont('Arial', '', 8);
         $pdf->Cell((165.1-127), $med_height, $text, 0, 0, 'C');
         $pdf->SetFont('Arial', '', 6);
+
+        $pdf->SetXY($top_left_x + 165.1, $start_y + 65.0875);
+        $pdf->Cell(203.2-165.1, $small_height, '13. State income withheld');
+        $pdf->SetXY($top_left_x + 165.1, $start_y + 65.0875 + $small_height);
+        $text = '';
+        if (isset($this->fields[13])) {
+            $text .= $this->fields[13];
+        }
+        $pdf->SetFont('Arial', '', 8);
+        $pdf->Cell((203.2-165.1), $med_height, $text, 0, 0, 'C');
+        $pdf->SetFont('Arial', '', 6);
+
+        $pdf->SetXY($top_left_x + 165.1, $start_y + 19.05);
+        $pdf->SetFont('Arial', 'B', 8);
+        $pdf->Cell(203.2-165.1, $med_height, 'Copy B', 0, 0, 'R');
+        $pdf->SetXY($top_left_x + 165.1, $start_y + 19.05 + $med_height);
+        $pdf->SetFont('Arial', '', 8);
+        $pdf->Cell(203.2-165.1, $med_height, 'For Recipient', 0, 0, 'R');
+        $pdf->SetXY($top_left_x + 165.1, $start_y + 19.05 + 2*$med_height);
+        $pdf->SetFont('Arial', '', 6);
+        $box_height = 65.0875 - (19.05 + 2*$med_height);
+        $text = 'This is important tax information related to interest income earned during ';
+        $text .= $this->tax_year . ' that is being furnished to the Internal Revenue Service. If you are required to file a return, a negligence penalty or other sanction may be imposed on you if this income is taxable and the IRS determines that it has not been reported.';
+        $pdf->MultiCell(203.2-165.1, $small_height, $text);
 
         return true;
     }

@@ -30,11 +30,24 @@ if (!class_exists('FannieAPI')) {
 */
 class GumPromissoryPage extends FannieRESTfulPage 
 {
+    private $paragraphs = array(
+
+'For value received, the Borrower indicated above, a Minnesota cooperative corporation (hereinafter "Borrower") hereby promises to pay the lender indicated above (hereinafter "Lender"), a current owner of the Borrower, whose address is indicated above, or his or her successors, the principal sum indicated above together with interest thereon at the interest rate indicated above .  Interest shall be calculated and compounded annually.   Upon maturity of this Note on the date set forth above, interest and principal shall be paid in full.  There shall be no penalty for prepayment or early payment of this Note by the Borrower."',
+
+'All payments shall be made to the address of the Lender set forth above.  It is the responsibility of the Lender to inform the Borrower of any change in address.',
+
+'Lender understands that there are other loans made to the Borrower that have a security interest in the assets of the cooperative and that are superior to the Note of the Lender.  Lender understands that there are unsecured creditors and other lenders to the cooperative that have interests that may be superior to that of the Lender.',
+
+'Borrower shall be in default if it fails to make prompt payment of this Note and the compound interest thereon as of the above maturity date.  The Lender may proceed to enforce payment of the indebtedness and to exercise any or all rights afforded to the Lender under the law.',
+
+    );
+
     public function preprocess()
     {
         $acct = FormLib::get('id');
         $this->header = 'Promissory Note' . ' : ' . $acct;
         $this->title = 'Promissory Note' . ' : ' . $acct;
+        $this->__routes[] = 'get<id><pdf>';
 
         return parent::preprocess();
     }
@@ -67,6 +80,137 @@ class GumPromissoryPage extends FannieRESTfulPage
         $this->settings = new GumSettingsModel($dbc);
 
         return true;
+    }
+
+    public function get_id_pdf_handler()
+    {
+        global $FANNIE_ROOT;
+        if (!class_exists('FPDF')) {
+            include($FANNIE_ROOT.'src/fpdf/fpdf.php');
+            define('FPDF_FONTPATH','font/');
+        }
+
+        $this->get_id_handler(); // load models
+
+        $pdf = new FPDF('P', 'mm', 'Letter');
+        $pdf->SetMargins(6.35, 6.35, 6.35); // quarter-inch margins
+        $pdf->SetAutoPageBreak(false);
+        $pdf->AddPage();
+
+        $pdf->SetXY(0, 0);
+        $pdf->Image('img/letterhead.png', null, null, 203); // scale to 8"
+
+        $pdf->SetFont('Arial', '', 10);
+        $line_height = 5;
+        $start_y = 43;
+        $pdf->SetXY(6.35, $start_y);
+
+        $col_width = 101.6;
+        $col1 = 6.35;
+        $col2 = $col1 + $col_width;
+        $y = $start_y;
+
+        $pdf->SetFont('Arial', 'B', 10);
+        $pdf->SetXY($col1, $y);
+        $pdf->Cell($col_width, $line_height, 'Lender', 0, 0, 'C');
+        $pdf->SetXY($col2, $y);
+        $pdf->Cell($col_width, $line_height, 'Borrower', 0, 0, 'C');
+        $y += $line_height;
+        $pdf->SetFont('Arial', '', 10);
+
+        $pdf->SetXY($col1, $y);
+        $pdf->Cell($col_width, $line_height, $this->custdata->FirstName() . ' ' . $this->custdata->LastName(), 0, 0, 'C');
+        $pdf->SetXY($col2, $y);
+        $pdf->Cell($col_width, $line_height, 'Whole Foods Community Co-op, Inc.', 0, 0, 'C');
+        $y += $line_height;
+
+        $pdf->SetXY($col1, $y);
+        $pdf->Cell($col_width, $line_height, $this->meminfo->street(), 0, 0, 'C');
+        $pdf->SetXY($col2, $y);
+        $pdf->Cell($col_width, $line_height, '610 E 4th St', 0, 0, 'C');
+        $y += $line_height;
+
+        $pdf->SetXY($col1, $y);
+        $pdf->Cell($col_width, $line_height, $this->meminfo->city() . ', ' . $this->meminfo->state() . ' ' . $this->meminfo->zip(), 0, 0, 'C');
+        $pdf->SetXY($col2, $y);
+        $pdf->Cell($col_width, $line_height, 'Duluth, MN 55805', 0, 0, 'C');
+        $y += $line_height;
+
+        $pdf->SetXY($col1, $y);
+        $ssn = 'Unknown';
+        if ($this->taxid->load()) {
+            $ssn = 'xxx-xx-' . $this->taxid->maskedTaxIdentifier();
+        }
+        $pdf->Cell($col_width, $line_height, $ssn, 0, 0, 'C');
+        $pdf->SetXY($col2, $y);
+        $myid = 'xx-xxxxxxx';
+        $this->settings->key('storeFederalID');
+        if ($this->settings->load()) {
+            $myid = 'xx-xxx' . substr($this->settings->value(), -4);
+        }
+        $pdf->Cell($col_width, $line_height, $myid, 0, 0, 'C');
+        $y += $line_height;
+
+        $y += $line_height; // spacer
+
+        $pdf->SetXY($col1, $y);
+        $pdf->Cell($col_width, $line_height, 'Owner #: ' . $this->loan->card_no(), 0, 0, 'C');
+        $pdf->SetXY($col2, $y);
+        $pdf->Cell($col_width, $line_height, 'Account #: ' . $this->loan->accountNumber(), 0, 0, 'C');
+        $y += $line_height;
+
+        $pdf->SetXY($col1, $y);
+        $pdf->Cell($col_width, $line_height, 'Loan Date: ' . date('m/d/Y', strtotime($this->loan->loanDate())), 0, 0, 'C');
+        $pdf->SetXY($col2, $y);
+        $pdf->Cell($col_width, $line_height, 'Account #: ' . number_format($this->loan->interestRate()*100, 2), 0, 0, 'C');
+        $y += $line_height;
+
+        $pdf->SetXY($col1, $y);
+        $pdf->Cell($col_width, $line_height, 'Principal Sum: ' . number_format($this->loan->principal(), 2), 0, 0, 'C');
+        $pdf->SetXY($col2, $y);
+        $ld = strtotime($this->loan->loanDate());
+        $ed = mktime(0, 0, 0, date('n', $ld)+$this->loan->termInMonths(), date('j', $ld), date('Y', $ld));
+        $pdf->Cell($col_width, $line_height, 'Maturity Date: ' . date('m/d/Y', $ed), 0, 0, 'C');
+        $y += $line_height;
+
+        $y += $line_height; // spacer
+        $page_text = '';
+        foreach($this->paragraphs as $p) {
+            $page_text .= $p . "\n\n";
+        }
+        $pdf->SetXY($col1, $y);
+        $pdf->Write($line_height, $page_text);
+
+        $sig_y = 215.9;
+        $pdf->SetFont('Arial', 'B', 10);
+        $pdf->SetXY($col1, $sig_y);
+        $pdf->Cell($col_width, $line_height, 'Lender Signature', 0, 0, 'C');
+        $pdf->SetXY($col2, $sig_y);
+        $pdf->Cell($col_width, $line_height, 'Borrower Signature', 0, 0, 'C');
+        $pdf->Image('img/sig.png', $col2 + 19.05, $sig_y + 2*$line_height, 63.5);
+
+        $pdf->SetDrawColor(0, 0, 0);
+        $pdf->Line($col1, $start_y, 203.2, $start_y);
+        $pdf->Line($col1, $start_y, $col1, $start_y + 5*$line_height);
+        $pdf->Line($col2, $start_y, $col2, $start_y + 5*$line_height);
+        $pdf->Line(203.2, $start_y, 203.2, $start_y + 5*$line_height);
+        $pdf->Line($col1, $start_y + 5*$line_height, 203.2, $start_y + 5*$line_height);
+
+        $pdf->Line($col1, $start_y + 6*$line_height, 203.2, $start_y + 6*$line_height);
+        $pdf->Line($col1, $start_y + 9*$line_height, 203.2, $start_y + 9*$line_height);
+        $pdf->Line($col1, $start_y + 6*$line_height, $col1, $start_y + 9*$line_height);
+        $pdf->Line(203.2, $start_y + 6*$line_height, 203.2, $start_y + 9*$line_height);
+
+        $sig_h = 38.1;
+        $pdf->Line($col1, $sig_y, 203.2, $sig_y);
+        $pdf->Line($col1, $sig_y + $sig_h, 203.2, $sig_y + $sig_h);
+        $pdf->Line($col1, $sig_y, $col1, $sig_y + $sig_h);
+        $pdf->Line($col2, $sig_y, $col2, $sig_y + $sig_h);
+        $pdf->Line(203.2, $sig_y, 203.2, $sig_y + $sig_h);
+
+        $pdf->Output('PromissoryNote.pdf', 'I');
+
+        return false;
     }
 
     public function css_content()
@@ -106,6 +250,13 @@ class GumPromissoryPage extends FannieRESTfulPage
         global $FANNIE_URL;
         $ret = '';
 
+        $ret .= '<input onclick="location=\'GumPromissoryPage.php?id='.$this->id.'&pdf=1\'; return false;"
+                    type="button" value="Print" /><br />';
+
+        if (file_exists('img/letterhead.png')) {
+            $ret .= '<img src="img/letterhead.png" style="width: 100%;" />';
+        }
+
         $ret .= '<table id="infoTable" cellspacing="0" cellpadding="4">';
         $ret .= '<tr>';
         $ret .= '<td class="header top left right">Lender</td>';
@@ -134,8 +285,12 @@ class GumPromissoryPage extends FannieRESTfulPage
         $ret .= '</tr>';
         $ret .= '<tr><td class="noborder" colspan="2">&nbsp;</td></tr>';
         $ret .= '<tr>';
-        $ret .= '<td class="left top">Loan Date: ' . date('m/d/Y', strtotime($this->loan->loanDate())) . '</td>';
-        $ret .= '<td class="right top">Interest Rate: ' . number_format($this->loan->interestRate() * 100, 2) . '%</td>';
+        $ret .= '<td class="left top">Owner #: ' . $this->loan->card_no() . '</td>';
+        $ret .= '<td class="right top">Account #: ' . $this->loan->accountNumber() . '</td>';
+        $ret .= '</tr>';
+        $ret .= '<tr>';
+        $ret .= '<td class="left">Loan Date: ' . date('m/d/Y', strtotime($this->loan->loanDate())) . '</td>';
+        $ret .= '<td class="right">Interest Rate: ' . number_format($this->loan->interestRate() * 100, 2) . '%</td>';
         $ret .= '</tr>';
         $ret .= '<tr>';
         $ret .= '<td class="left bottom">Principal Sum: $' . number_format($this->loan->principal(), 2) . '</td>';
@@ -143,29 +298,9 @@ class GumPromissoryPage extends FannieRESTfulPage
         $ret .= '<td class="right bottom">Maturity Date: ' . date('m/d/Y', mktime(0, 0, 0, date('n', $ld)+$this->loan->termInMonths(), date('j', $ld), date('Y', $ld))) . '</td>';
         $ret .= '</tr>';
 
-        $ret .= '<tr>';
-        $ret .= '<td class="paragraph" colspan="2">
-        For value received, the Borrower indicated above, a Minnesota cooperative corporation (hereinafter “Borrower”) hereby promises to pay the lender indicated above (hereinafter “Lender”), a current owner of the Borrower, whose address is indicated above, or his or her successors, the principal sum indicated above together with interest thereon at the interest rate indicated above .  Interest shall be calculated and compounded annually.   Upon maturity of this Note on the date set forth above, interest and principal shall be paid in full.  There shall be no penalty for prepayment or early payment of this Note by the Borrower."
-            </td>';
-        $ret .= '</tr>';
-
-        $ret .= '<tr>';
-        $ret .= '<td class="paragraph" colspan="2">
-        All payments shall be made to the address of the Lender set forth above.  It is the responsibility of the Lender to inform the Borrower of any change in address.
-            </td>';
-        $ret .= '</tr>';
-
-        $ret .= '<tr>';
-        $ret .= '<td class="paragraph" colspan="2">
-            Lender understands that there are other loans made to the Borrower that have a security interest in the assets of the cooperative and that are superior to the Note of the Lender.  Lender understands that there are unsecured creditors and other lenders to the cooperative that have interests that may be superior to that of the Lender.
-            </td>';
-        $ret .= '</tr>';
-
-        $ret .= '<tr>';
-        $ret .= '<td class="paragraph" colspan="2">
-            Borrower shall be in default if it fails to make prompt payment of this Note and the compound interest thereon as of the above maturity date.  The Lender may proceed to enforce payment of the indebtedness and to exercise any or all rights afforded to the Lender under the law.
-            </td>';
-        $ret .= '</tr>';
+        foreach($this->paragraphs as $p) {
+            $ret .= '<tr><td class="paragraph" colspan="2">' . $p . '</td></tr>';
+        }
 
         $ret .= '<tr>';
         $ret .= '<td class="top left right header">Lender Signature</td>';
