@@ -80,5 +80,35 @@ class GumCoreLayer extends GumPosLayer
 
         return $emp_no . '-' . $register_no . '-' . $trans_no;
     }
+
+    public static function getCustdata($card_no)
+    {
+        global $FANNIE_OP_DB;
+        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $model = new CustdataModel($dbc);
+        $model->CardNo($card_no);
+        $model->personNum(1);
+
+        if ($model->load()) {
+            return $model;
+        } else {
+            return false;
+        }
+    }
+
+    public static function getMeminfo($card_no)
+    {
+        global $FANNIE_OP_DB;
+        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $model = new MeminfoModel($dbc);
+        $model->card_no($card_no);
+        $model->load();
+
+        if ($model->load()) {
+            return $model;
+        } else {
+            return false;
+        }
+    }
 }
 

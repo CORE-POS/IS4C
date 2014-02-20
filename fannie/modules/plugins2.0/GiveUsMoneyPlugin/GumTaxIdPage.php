@@ -105,11 +105,11 @@ class GumTaxIdPage extends FannieRESTfulPage
         $this->ssn_model = new GumTaxIdentifiersModel($dbc);
         $this->ssn_model->card_no($this->id);
 
-        $this->custdata = new CustdataModel($dbc);
-        $this->custdata->whichDB($FANNIE_OP_DB);
-        $this->custdata->CardNo($this->id);
-        $this->custdata->personNum(1);
-        $this->custdata->load();
+        $bridge = GumLib::getSetting('posLayer');
+        $this->custdata = $bridge::getCustdata($this->id);
+
+        // bridge may change selected database
+        $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['GiveUsMoneyDB']);
 
         $this->settings = new GumSettingsModel($dbc);
 

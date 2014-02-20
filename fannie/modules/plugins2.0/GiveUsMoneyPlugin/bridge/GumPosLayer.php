@@ -43,5 +43,25 @@ class GumPosLayer
     {
         return true;    
     }
+
+    /**
+      Get info about member
+      @param $card_no [int] member ID#
+      @return [object] CustdataModel or [boolean] false on failure
+    */
+    public static function getCustdata($card_no)
+    {
+        return new CustdataModel(null);
+    }
+
+    /**
+      Get member contact info
+      @param $card_no [int] member ID#
+      @return [object] MeminfoModel or [boolean] false on failure
+    */
+    public static function getMeminfo($card_no)
+    {
+        return new MeminfoModel(null);
+    }
 }
 

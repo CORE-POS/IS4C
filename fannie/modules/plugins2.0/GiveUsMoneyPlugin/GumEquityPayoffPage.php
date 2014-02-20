@@ -53,16 +53,12 @@ class GumEquityPayoffPage extends FannieRESTfulPage
         $this->all = new GumEquitySharesModel($dbc);
         $this->all->card_no($this->payoff->card_no());
 
-        $this->custdata = new CustdataModel($dbc);
-        $this->custdata->whichDB($FANNIE_OP_DB);
-        $this->custdata->CardNo($this->payoff->card_no());
-        $this->custdata->personNum(1);
-        $this->custdata->load();
+        $bridge = GumLib::getSetting('posLayer');
+        $this->custdata = $bridge::getCustdata($this->payoff->card_no());
+        $this->meminfo = $bridge::getMeminfo($this->payoff->card_no());
 
-        $this->meminfo = new MeminfoModel($dbc);
-        $this->meminfo->whichDB($FANNIE_OP_DB);
-        $this->meminfo->card_no($this->payoff->card_no());
-        $this->meminfo->load();
+        // bridge may change selected database
+        $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['GiveUsMoneyDB']);
 
         $this->taxid = new GumTaxIdentifiersModel($dbc);
         $this->taxid->card_no($this->payoff->card_no());

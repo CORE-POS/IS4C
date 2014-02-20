@@ -50,16 +50,12 @@ class GumLoanPayoffPage extends FannieRESTfulPage
             return false;
         }
 
-        $this->custdata = new CustdataModel($dbc);
-        $this->custdata->whichDB($FANNIE_OP_DB);
-        $this->custdata->CardNo($this->loan->card_no());
-        $this->custdata->personNum(1);
-        $this->custdata->load();
+        $bridge = GumLib::getSetting('posLayer');
+        $this->custdata = $bridge::getCustdata($this->loan->card_no());
+        $this->meminfo = $bridge::getMeminfo($this->loan->card_no());
 
-        $this->meminfo = new MeminfoModel($dbc);
-        $this->meminfo->whichDB($FANNIE_OP_DB);
-        $this->meminfo->card_no($this->loan->card_no());
-        $this->meminfo->load();
+        // bridge may change selected database
+        $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['GiveUsMoneyDB']);
 
         $this->taxid = new GumTaxIdentifiersModel($dbc);
         $this->taxid->card_no($this->loan->card_no());
@@ -176,7 +172,7 @@ class GumLoanPayoffPage extends FannieRESTfulPage
         $pdf->SetFont('Arial', 'B', 8);
         $pdf->Cell($col_width, $line_height, 'Interest Rate', 0, 1, 'C');
         $pdf->SetFont('Arial', '', 8);
-        $pdf->Cell($col_width, $line_height, (100 * $this->loan->interestRate).'%', 0, 1, 'C');
+        $pdf->Cell($col_width, $line_height, (100 * $this->loan->interestRate()).'%', 0, 1, 'C');
         $pdf->SetFont('Arial', 'B', 8);
         $pdf->Cell($col_width, $line_height, 'Maturity Date', 0, 1, 'C');
         $pdf->SetFont('Arial', '', 8);

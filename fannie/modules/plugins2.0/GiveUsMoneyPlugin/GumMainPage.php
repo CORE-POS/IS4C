@@ -231,20 +231,17 @@ class GumMainPage extends FannieRESTfulPage
     public function get_id_handler()
     {
         global $FANNIE_PLUGIN_SETTINGS, $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['GiveUsMoneyDB']);
-        $this->custdata = new CustdataModel($dbc);
-        $this->custdata->whichDB($FANNIE_OP_DB);
-        $this->custdata->CardNo($this->id);
-        $this->custdata->personNum(1);
-        if (!$this->custdata->load()) {
+        $bridge = GumLib::getSetting('posLayer');
+        $this->custdata = $bridge::getCustdata($this->id);
+        if ($this->custdata === false) {
             echo _('Error: member') . ' ' . $this->id . ' ' . _('does not exist');
             return false;
         }
 
-        $this->meminfo = new MeminfoModel($dbc);
-        $this->meminfo->whichDB($FANNIE_OP_DB);
-        $this->meminfo->card_no($this->id);
-        $this->meminfo->load();
+        $this->meminfo = $bridge::getMeminfo($this->id);
+
+        // bridge may change selected database
+        $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['GiveUsMoneyDB']);
 
         $this->loans = new GumLoanAccountsModel($dbc);
         $this->loans->card_no($this->id);
