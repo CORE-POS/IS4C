@@ -431,6 +431,12 @@ function goToMargins() {
         $('#actionForm').submit();
     }
 }
+function goToReport() {
+    if (getItems()) {
+        $('#actionForm').attr('action', $('#reportURL').val());
+        $('#actionForm').submit();
+    }
+}
         <?php
         return ob_get_clean();
     }
@@ -579,6 +585,13 @@ function goToMargins() {
         $ret .= '<br />';
         //$ret .= '<input style="margin-top:10px;" type="submit" value="Tags/Signs" onclick="goToSigns();" />';
         $ret .= '<input style="margin-top:10px;" type="submit" value="Margins" onclick="goToMargins();" />';
+        $ret .= '</fieldset>';
+        $ret .= '<fieldset><legend>Report on Items</legend>';
+        $ret .= '<select id="reportURL">';
+        $ret .= sprintf('<option value="%sreports/from-search/PercentageOfSales/PercentageOfSalesReport.php">
+                        %% of Sales</option>', $FANNIE_URL);
+        $ret .= '</select> ';
+        $ret .= '<input style="margin-top:10px;" type="submit" value="Get Report" onclick="goToReport();" />';
         $ret .= '</fieldset>';
         $ret .= '<form method="post" id="actionForm" target="__advs_act"></form>';
         $ret .= '</div>';
