@@ -85,7 +85,7 @@ class GiveUsMoneyPlugin extends FanniePlugin
         $settings->reset();
         $settings->key('register_no');
         if (!$settings->load()) {
-            $settings->value(30);
+            $settings->value(99);
             $settings->save();
         }
 
