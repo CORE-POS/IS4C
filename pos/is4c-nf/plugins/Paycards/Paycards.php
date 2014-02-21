@@ -35,6 +35,11 @@ class Paycards extends Plugin {
 			'No' => 0
 			)
 		),
+        'PaycardsTerminalID' => array(
+        'label' => 'Terminal ID',
+        'description' => 'Unique ID for MC regs (1-3 characters, alphanumeric)',
+        'default'=> '',
+        ),
 		'PaycardsCashierFacing' => array(
 		'label' => 'Mode',
 		'description' => 'Who is swiping the card?',
