@@ -47,7 +47,7 @@ class CustdataModel extends BasicModel
     'Discount' => array('type'=>'SMALLINT'),
     'MemDiscountLimit' => array('type'=>'MONEY','default'=>0),
     'ChargeLimit' => array('type'=>'MONEY','default'=>0),
-    'ChargeOk' => array('type'=>'TINYINT','default'=>1),
+    'ChargeOk' => array('type'=>'TINYINT','default'=>0),
     'WriteChecks' => array('type'=>'TINYINT','default'=>1),
     'StoreCoupons' => array('type'=>'TINYINT','default'=>1),
     'Type' => array('type'=>'VARCHAR(10)','default'=>"'PC'"),

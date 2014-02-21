@@ -27,7 +27,7 @@
 
    Copies AR transaction information:
    - trans_subtype='MI'
-   - department = 990
+   - department in $FANNIE_AR_DEPARTMENTS
    for the previous day from dlog_15 into ar_history.
 
    turnover view/cache base tables for WFC end-of-month reports
@@ -36,13 +36,10 @@
 
    Should be run after dtransaction rotation (nightly.dtrans.php)
    and after midnight.
-*/
-
-/* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-	 14Jun12 EL Comments partly updated from original comments which were just a
-	             copy of the ones in nightly.equity.php
-
+   See also: arbalance.sanitycheck
+   
+   Deprecated in favour of cron/tasks/ArHistoryTask.php
+   
 */
 
 include('../config.php');
