@@ -163,6 +163,21 @@ static public function setMember($member, $personNumber, $row)
 	$CORE_LOCAL->set("fname",$row["FirstName"]);
 	$CORE_LOCAL->set("Type",$row["Type"]);
 	$CORE_LOCAL->set("percentDiscount",$row["Discount"]);
+	$CORE_LOCAL->set("isStaff",$row["staff"]);
+	$CORE_LOCAL->set("SSI",$row["SSI"]);
+
+    if ($CORE_LOCAL->get('useMemtypeTable') == 1 && $conn->table_exists('memtype')) {
+        $prep = $conn->prepare('SELECT discount, staff, ssi 
+                                 FROM memtype
+                                 WHERE memtype=?');
+        $res = $conn->execute($prep, array((int)$CORE_LOCAL->get('memType')));
+        if ($conn->num_rows($res) > 0) {
+            $mt_row = $conn->fetch_row($res);
+            $CORE_LOCAL->set('percentDiscount', $mt_row['discount']);
+            $CORE_LOCAL->set('isStaff', $mt_row['staff']);
+            $CORE_LOCAL->set('SSI', $mt_row['ssi']);
+        }
+    }
 
 	/**
 	  Use discount module to calculate modified percentDiscount
@@ -180,9 +195,6 @@ static public function setMember($member, $personNumber, $row)
 	} else {
         $CORE_LOCAL->set("isMember",0);
 	}
-
-	$CORE_LOCAL->set("isStaff",$row["staff"]);
-	$CORE_LOCAL->set("SSI",$row["SSI"]);
 
 	if ($CORE_LOCAL->get("SSI") == 1) {
 		$CORE_LOCAL->set("memMsg",$CORE_LOCAL->get("memMsg")." #");

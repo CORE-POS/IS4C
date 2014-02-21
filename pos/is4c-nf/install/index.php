@@ -412,6 +412,8 @@ function create_op_dbs($db,$type){
 
     InstallUtilities::createIfNeeded($db, $type, $name, 'custdata', 'op', $errors);
 
+    InstallUtilities::createIfNeeded($db, $type, $name, 'memtype', 'op', $errors);
+
     InstallUtilities::createIfNeeded($db, $type, $name, 'memberCards', 'op', $errors);
 
     InstallUtilities::createIfNeeded($db, $type, $name, 'custPreferences', 'op', $errors);
