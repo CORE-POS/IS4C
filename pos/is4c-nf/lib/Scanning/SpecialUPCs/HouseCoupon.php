@@ -133,6 +133,7 @@ class HouseCoupon extends SpecialUPC
 
         /* verify the minimum purchase has been made */
         $transDB = Database::tDataConnect();
+        $coupID = $id;
         switch($infoW["minType"]) {
             case "Q": // must purchase at least X
                 $minQ = "select case when sum(ItemQtty) is null
