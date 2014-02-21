@@ -160,7 +160,7 @@ class MemEquityTransferTool extends FanniePage {
 		$ret = "<form action=\"MemEquityTransferTool.php\" method=\"post\">";
 		$ret .= "<b>Confirm transfer</b>";
 		$ret .= "<p style=\"font-size:120%\">";
-		$ret .= printf("\$%.2f %s will be moved from %d (%s) to %d (%s)",
+		$ret .= sprintf("\$%.2f %s will be moved from %d (%s) to %d (%s)",
 			$this->amount,$this->depts[$this->dept],
 			$this->cn1,$this->name1,$this->cn2,$this->name2);
 		$ret .= "</p><p>";
