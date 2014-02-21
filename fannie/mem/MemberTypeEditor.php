@@ -34,7 +34,7 @@ class MemberTypeEditor extends FanniePage {
 		global $FANNIE_OP_DB;
 		$dbc = FannieDB::get($FANNIE_OP_DB);
 
-        $mtModel = new MembertypeModel($dbc);
+        $mtModel = new MemtypeModel($dbc);
 		/* ajax callbacks to save changes */
 		if (FormLib::get('saveMem', false) !== false) {
             $type = FormLib::get('saveMem', 'REG');
