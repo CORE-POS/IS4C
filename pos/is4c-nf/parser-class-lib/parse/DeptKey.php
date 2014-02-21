@@ -70,7 +70,7 @@ class DeptKey extends Parser {
 		if (is_array($deptmods) && isset($deptmods[$index])){
 			foreach($deptmods[$index] as $mod){
 				$obj = new $mod();
-				$ret = $obj->handle($dept,$split[1]/100,$ret);
+				$ret = $obj->handle($dept,$amt/100,$ret);
 			}
 		}
 		
