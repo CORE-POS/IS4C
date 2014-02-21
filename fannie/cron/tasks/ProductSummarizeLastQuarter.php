@@ -155,13 +155,13 @@ last thirteen weeks';
                     totalLastQuarter, percentageStoreSales,
                     percentageSuperDeptSales, percentageDeptSales)
                    SELECT upc, 
-                   SUM (CASE WHEN weekLastQuarterID=0 THEN quantity ELSE 0 END) as qtyThisWeek,
-                   SUM (CASE WHEN weekLastQuarterID=0 THEN total ELSE 0 END) as totalThisWeek,
-                   SUM (CASE WHEN weekLastQuarterID<>0 THEN quantity ELSE 0 END) as qtyLastQuarter,
-                   SUM (CASE WHEN weekLastQuarterID<>0 THEN total ELSE 0 END) as totalLastQuarter,
-                   SUM(14-weekLastQuarterID * percentageStoreSales) / SUM(14-weekLastQuarterID),
-                   SUM(14-weekLastQuarterID * percentageSuperDeptSales) / SUM(14-weekLastQuarterID),
-                   SUM(14-weekLastQuarterID * percentageDeptSales) / SUM(14-weekLastQuarterID)
+                   SUM(CASE WHEN weekLastQuarterID=0 THEN quantity ELSE 0 END) as qtyThisWeek,
+                   SUM(CASE WHEN weekLastQuarterID=0 THEN total ELSE 0 END) as totalThisWeek,
+                   SUM(CASE WHEN weekLastQuarterID<>0 THEN quantity ELSE 0 END) as qtyLastQuarter,
+                   SUM(CASE WHEN weekLastQuarterID<>0 THEN total ELSE 0 END) as totalLastQuarter,
+                   SUM((14-weekLastQuarterID) * percentageStoreSales) / SUM(14-weekLastQuarterID),
+                   SUM((14-weekLastQuarterID) * percentageSuperDeptSales) / SUM(14-weekLastQuarterID),
+                   SUM((14-weekLastQuarterID) * percentageDeptSales) / SUM(14-weekLastQuarterID)
                    FROM productWeeklyLastQuarter
                    GROUP BY upc');
     }
