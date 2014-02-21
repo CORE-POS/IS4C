@@ -533,7 +533,7 @@ class InstallIndexPage extends InstallPage {
 		?>
 		<a href="LaneConfigPages/LaneNecessitiesPage.php">Edit Global Lane Configuration Page</a>
 		<hr />
-		<h4 class="install">Logs</h4>
+		<h4 class="install">Logs &amp; Debugging</h4>
 		Fannie writes to the following log files:
 		<ul>
 		<li><?php check_writeable('../logs/queries.log'); ?>
@@ -565,7 +565,22 @@ class InstallIndexPage extends InstallPage {
 		confset('FANNIE_LOG_COUNT',"$FANNIE_LOG_COUNT");
 		echo "<input type=text name=FANNIE_LOG_COUNT value=\"$FANNIE_LOG_COUNT\" size=3 />";
 		echo "<br />";
+
+		echo _('Verbose error messages');
+		if (!isset($FANNIE_CUSTOM_ERRORS)) $FANNIE_CUSTOM_ERRORS = 0;
+		if (isset($_REQUEST['FANNIE_CUSTOM_ERRORS'])) $FANNIE_CUSTOM_ERRORS = $_REQUEST['FANNIE_CUSTOM_ERRORS'];
+		confset('FANNIE_CUSTOM_ERRORS',"$FANNIE_CUSTOM_ERRORS");
+		echo '<select name="FANNIE_CUSTOM_ERRORS">';
+		if ($FANNIE_CUSTOM_ERRORS == 0) {
+			echo '<option value="1">' . _('Yes') . '</option>';
+			echo '<option value="0" selected>' . _('No') . '</option>';
+		} else {
+			echo '<option value="1" selected>' . _('Yes') . '</option>';
+			echo '<option value="0">' . _('No') . '</option>';
+		}
+		echo '</select>';
 		?>
+		<br />
 		<hr />
 		<h4 class="install">Scales</h4>
 		Number of scales
@@ -1060,7 +1075,8 @@ class InstallIndexPage extends InstallPage {
 	// create_op_dbs()
 	}
 
-	function create_trans_dbs($con){
+	function create_trans_dbs($con)
+    {
         require(dirname(__FILE__).'/../config.php'); 
 
 		$ret = array();
@@ -1184,6 +1200,9 @@ class InstallIndexPage extends InstallPage {
 
 		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
 				'lane_config','trans');
+
+		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_TRANS_DB,
+				'CapturedSignature','trans');
 
 		return $ret;
 
@@ -1748,6 +1767,14 @@ class InstallIndexPage extends InstallPage {
 				'sumDiscountsByDay','arch');
 		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_ARCHIVE_DB,
 				'reportDataCache','arch');
+
+		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_ARCHIVE_DB,
+				'weeksLastQuarter','arch');
+		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_ARCHIVE_DB,
+				'productWeeklyLastQuarter','arch');
+		$ret[] = create_if_needed($con,$FANNIE_SERVER_DBMS,$FANNIE_ARCHIVE_DB,
+				'productSummaryLastQuarter','arch');
+
 		return $ret;
 
 	// create_archive_dbs()
@@ -1756,6 +1783,6 @@ class InstallIndexPage extends InstallPage {
 // InstallIndexPage
 }
 
-FannieDispatch::conditionalExec(false);
+FannieDispatch::conditionalExec();
 
 ?>

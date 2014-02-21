@@ -167,7 +167,7 @@ $(document).ready(function(){
 <form method=get action=index.php>
 Type: <input type=radio id=radioU name=type value=upc onclick=showUPC() checked /> UPC 
 <input type=radio id=radioD name=type value=department onclick=showDept() /> Department 
-<input type=radio id=radioM name=type value=manufacturer onclick=showManu() /> Manufacturer
+<input type=radio id=radioM name=type value=manufacturer onclick=showManu() /> <?php echo _('Manufacturer'); ?>
 <br />
 
 <div id=upcfields>
@@ -182,9 +182,9 @@ Department End: <input type=text id=dept2 size=4 name=dept2 />
 </div>
 
 <div id=manufacturerfields>
-Manufacturer: <input type=text name=manufacturer /><br />
+<?php echo _('Manufacturer'); ?>: <input type=text name=manufacturer /><br />
 <input type=radio name=mtype value=upc checked /> UPC prefix 
-<input type=radio name=mtype value=name /> Manufacturer name<br />
+<input type=radio name=mtype value=name /> <?php echo _('Manufacturer name'); ?><br />
 </div>
 
 Start Date: <input type=text id=date1 name=date1 /><br />

@@ -220,7 +220,7 @@ class BatchReport extends FannieReportPage
 
 	function report_description_content()
     {
-		global $FANNIE_OP_DB;
+		global $FANNIE_OP_DB, $FANNIE_URL;
         $dbc = FannieDB::get($FANNIE_OP_DB);
 		$ret = array();
 		$bStart = FormLib::get_form_value('start','');
@@ -245,7 +245,22 @@ class BatchReport extends FannieReportPage
 				$bEnd = $batchInfoW['endDate'];
 		}
 		$ret[] = '<span style="font-size:150%;">'.$bName.'</span>';
-		$ret[] = "<span style=\"color:black\">From: $bStart to: $bEnd</span>";
+        if ($this->report_format == 'html') {
+            $this->add_script($FANNIE_URL.'src/CalendarControl.js');
+            $this->add_css_file($FANNIE_URL.'src/style.css');
+            $ret[] = '<form action="BatchReport.php" method="get">';
+            $ret[] = "<span style=\"color:black; display:inline;\">From: 
+                    <input type=\"text\" name=\"start\" size=\"10\" value=\"$bStart\" onfocus=\"showCalendarControl(this);\" /> 
+                    to: 
+                    <input type=\"text\" name=\"end\" size=\"10\" value=\"$bEnd\" onfocus=\"showCalendarControl(this);\" />
+                    </span><input type=\"submit\" value=\"Change Dates\" />";
+            foreach($batchID as $bID) {
+                $ret[] = sprintf('<input type="hidden" name="batchID[]" value="%d" />', $bID);
+            }
+            $ret[] = '</form>';
+        } else {
+            $ret[] = "<span style=\"color:black\">From: $bStart to: $bEnd</span>";
+        }
 		return $ret;
 	}
 }

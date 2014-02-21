@@ -25,13 +25,15 @@ include('../../config.php');
 include_once($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
 class CreateTagsByManu extends FanniePage {
-	protected $title = "Fannie : Manufacturer Shelf Tags";
-	protected $header = "Manufacturer Shelf Tags";
 
 	private $msgs = '';
 
 	function preprocess(){
 		global $FANNIE_OP_DB;
+
+        $this->title = _("Fannie") . ' : ' . _("Manufacturer Shelf Tags");
+        $this->header = _("Manufacturer Shelf Tags");
+
 		if (FormLib::get_form_value('manufacturer',False) !== False){
 			$manu = FormLib::get_form_value('manufacturer');
 			$pageID = FormLib::get_form_value('sID',0);

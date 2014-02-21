@@ -34,6 +34,20 @@ class BasicModel
     protected $name;
 
     /**
+      Fully qualified table name
+      Typically database.table
+      Provided only if it can be detected
+      If found, this name is more reliable
+      since the connection is shared and outside
+      code may change its state including the
+      currently selected database.
+
+      If the database cannot be detected, 
+      $fq_name and $name will be identical.
+    */
+    protected $fq_name;
+
+    /**
       Definition of columns. Keyed by column name.
       Values should be arrays with keys for:
       - type (required)
@@ -128,6 +142,43 @@ class BasicModel
                 }
             }
         }
+
+        // detect fully qualfied name
+        if (is_a($this->connection, 'SQLManager') && $this->connection->isConnected()) {
+            $db_name = $this->connection->defaultDatabase();
+            if ($this->connection->tableExists($db_name . $this->connection->sep() . $this->name)) {
+                $this->fq_name = $this->connection->identifier_escape($db_name) 
+                                . $this->connection->sep() 
+                                . $this->connection->identifier_escape($this->name);
+            } else {
+                $this->fq_name = $this->connection->identifier_escape($this->name);
+            }
+        } else {
+            $this->fq_name = $this->name;
+        }
+        // fq name not working right now...
+        $this->fq_name = $this->name;
+    }
+
+    /**
+      Manually set which database contains this table. Normally
+      this is autodetected by the constructor.
+      @param $db_name [string] database name
+      @return [boolean] success/failure
+    */
+    public function whichDB($db_name)
+    {
+        if ($this->connection->tableExists($db_name . $this->connection->sep() . $this->name)) {
+            /** doesn't work
+            $this->fq_name = $this->connection->identifier_escape($db_name) 
+                            . $this->connection->sep() 
+                            . $this->connection->identifier_escape($this->name);
+            */
+            $this->fq_name = $db_name . $this->connection->sep() . $this->name;
+            return true;
+        } else {
+            return false;
+        }
     }
 
     /**
@@ -136,7 +187,7 @@ class BasicModel
     */
     public function create()
     {
-        if ($this->connection->table_exists($this->name)) {
+        if ($this->connection->table_exists($this->fq_name)) {
             return true;
         }
 
@@ -144,7 +195,7 @@ class BasicModel
         $pkey = array();
         $indexes = array();
         $inc = false;
-        $sql = 'CREATE TABLE '.$this->name.' (';
+        $sql = 'CREATE TABLE '.$this->fq_name.' (';
         foreach($this->columns as $cname => $definition) {
             if (!isset($definition['type'])) {
                 return false;
@@ -227,7 +278,7 @@ class BasicModel
             }
         }
 
-        $table_def = $this->connection->table_definition($this->name);
+        $table_def = $this->connection->table_definition($this->fq_name);
 
         $sql = 'SELECT ';
         foreach($this->columns as $name => $definition) {
@@ -242,7 +293,7 @@ class BasicModel
         }
         $sql = substr($sql,0,strlen($sql)-1);
         
-        $sql .= ' FROM '.$this->name.' WHERE 1=1';
+        $sql .= ' FROM '.$this->fq_name.' WHERE 1=1';
         $args = array();
         foreach($this->unique as $name) {
             $sql .= ' AND '.$this->connection->identifier_escape($name).' = ?';
@@ -284,6 +335,11 @@ class BasicModel
         return $this->name;
     }
 
+    public function getFullQualifiedName()
+    {
+        return $this->fq_name;
+    }
+
     /**
       Find records that match this instance
       @param $sort array of columns to sort by
@@ -295,7 +351,7 @@ class BasicModel
             $sort = array($sort);
         }
 
-        $table_def = $this->connection->table_definition($this->name);
+        $table_def = $this->connection->table_definition($this->fq_name);
 
         $sql = 'SELECT ';
         foreach($this->columns as $name => $definition) {
@@ -306,7 +362,7 @@ class BasicModel
         }
         $sql = substr($sql,0,strlen($sql)-1);
         
-        $sql .= ' FROM '.$this->name.' WHERE 1=1';
+        $sql .= ' FROM '.$this->fq_name.' WHERE 1=1';
         
         $args = array();
         foreach($this->instance as $name => $value) {
@@ -364,7 +420,7 @@ class BasicModel
             }
         }
 
-        $sql = 'DELETE FROM '.$this->name.' WHERE 1=1';
+        $sql = 'DELETE FROM '.$this->fq_name.' WHERE 1=1';
         $args = array();
         foreach($this->unique as $name) {
             $sql .= ' AND '.$this->connection->identifier_escape($name).' = ?';
@@ -412,6 +468,15 @@ class BasicModel
     */
     public function save()
     {
+        if (!is_array($this->hooks) || empty($this->hooks)) {
+            $this->loadHooks();
+        }
+        foreach($this->hooks as $hook_obj) {
+            if (method_exists($hook_obj, 'onSave')) {
+                $hook_obj->onSave($this->name, $this);
+            }
+        }
+
         $new_record = false;
         // do we have values to look up?
         foreach($this->unique as $column)
@@ -426,7 +491,7 @@ class BasicModel
 
         if (!$new_record) {
             // see if matching record exists
-            $check = 'SELECT * FROM '.$this->connection->identifier_escape($this->name)
+            $check = 'SELECT * FROM '.$this->fq_name
                 .' WHERE 1=1';
             $args = array();
             foreach($this->unique as $column) {
@@ -453,11 +518,11 @@ class BasicModel
     */
     protected function insertRecord()
     {
-        $sql = 'INSERT INTO '.$this->connection->identifier_escape($this->name);
+        $sql = 'INSERT INTO '.$this->fq_name;
         $cols = '(';
         $vals = '(';
         $args = array();
-        $table_def = $this->connection->table_definition($this->name);
+        $table_def = $this->connection->table_definition($this->fq_name);
         foreach($this->instance as $column => $value) {
             if (isset($this->columns[$column]['increment']) && $this->columns[$column]['increment']) {
                 // omit autoincrement column from insert
@@ -503,12 +568,12 @@ class BasicModel
     */
     protected function updateRecord()
     {
-        $sql = 'UPDATE '.$this->connection->identifier_escape($this->name);
+        $sql = 'UPDATE '.$this->fq_name;
         $sets = '';
         $where = '1=1';
         $set_args = array();
         $where_args = array();
-        $table_def = $this->connection->table_definition($this->name);
+        $table_def = $this->connection->table_definition($this->fq_name);
         foreach($this->instance as $column => $value) {
             if (in_array($column, $this->unique)) {
                 $where .= ' AND '.$this->connection->identifier_escape($column).' = ?';
@@ -608,6 +673,7 @@ class BasicModel
         $this->currently_normalizing_lane = true;
 
         $current = $this->connection;
+        $save_fq = $this->fq_name;
         // call normalize() on each lane
         foreach($FANNIE_LANES as $lane) {
             $sql = new SQLManager($lane['host'],$lane['type'],$lane[$lane_db],
@@ -616,10 +682,12 @@ class BasicModel
                 continue;
             }
             $this->connection = $sql;
-
+            
+            $this->fq_name = $lane[$lane_db] . $sql->sep() . $this->name;
             $this->normalize($db_name, $mode, $doCreate);
         }
         $this->connection = $current;
+        $this->fq_name = $save_fq;
 
         $this->currently_normalizing_lane = false;
 
@@ -894,6 +962,29 @@ class BasicModel
         return 0;
 
     // normalize()
+    }
+
+    /**
+      Array of hook objects associated with this table
+    */
+    protected $hooks = array();
+    /**
+      Search available classes to load applicable
+      hook objects into this instance
+    */
+    protected function loadHooks()
+    {
+       $this->hooks = array();
+       if (class_exists('FannieAPI')) {
+           $hook_classes = FannieAPI::listModules('BasicModelHook');
+           foreach($hook_classes as $class) {
+                if (!class_exists($class)) continue;
+                $hook_obj = new $class();
+                if ($hook_obj->operatesOnTable($this->name)) {
+                    $this->hooks[] = $hook_obj;
+                }
+           }
+       }
     }
 
     /**

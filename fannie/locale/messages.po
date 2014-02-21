@@ -1,0 +1,100 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2014-02-11 10:32-0600\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: item/ItemEditorPage.php:51 ../item/ItemEditorPage.php:51
+#: admin/labels/CreateTagsByManu.php:28
+#: reports/ManufacturerMovement/ManufacturerMovementReport.php:29
+msgid "Fannie"
+msgstr "Fannie"
+
+#: item/ItemEditorPage.php:51 item/ItemEditorPage.php:52
+#: ../item/ItemEditorPage.php:51 ../item/ItemEditorPage.php:52
+msgid "Item Maintenance"
+msgstr "Item Maintenance"
+
+#: item/ItemEditorPage.php:88 ../item/ItemEditorPage.php:88
+msgid "Enter"
+msgstr "Enter"
+
+#: item/ItemEditorPage.php:94 ../item/ItemEditorPage.php:94
+msgid "or product name here"
+msgstr "or product name here"
+
+#: item/ItemEditorPage.php:98 ../item/ItemEditorPage.php:98
+msgid "Advanced Search"
+msgstr "Advanced Search"
+
+#: ../item/ItemEditorPage.php:159 ../item/ItemEditorPage.php:170
+msgid "Error searching for"
+msgstr "Error searching for"
+
+#: admin/labels/CreateTagsByManu.php:28 admin/labels/CreateTagsByManu.php:29
+msgid "Manufacturer Shelf Tags"
+msgstr "Brand Shelf Tags"
+
+#: item/ProductListPage.php:440 item/ProductListPage.php:445
+#, php-format
+msgid "Supplier"
+msgstr "Vendor"
+
+#: item/ProductListPage.php:519 item/ProductListPage.php:557
+#: item/ProductListPage.php:356
+#: reports/ManufacturerMovement/ManufacturerMovementReport.php:154
+#: reports/PriceHistory/index.php:170 reports/PriceHistory/index.php:185
+#: reports/Trends/TrendsReport.php:216 reports/Trends/TrendsReport.php:229
+msgid "Manufacturer"
+msgstr "Brand"
+
+#: item/ProductListPage.php:564 reports/PriceHistory/index.php:187
+msgid "Manufacturer name"
+msgstr "Brand name"
+
+#: reports/ManufacturerMovement/ManufacturerMovementReport.php:29
+#: reports/ManufacturerMovement/ManufacturerMovementReport.php:30
+msgid "Manufacturer Movement Report"
+msgstr "Brand Movement Report"
+
+#: reports/index.php:35 reports/index.php:36
+msgid ""
+"<li><a href=\"ManufacturerMovement/\">Manufacturer Movement</a> lists sales\n"
+"\t\tfor products from a specific manufacturer over a given date range.\n"
+"\t\tManufacturer is given either by name or as a UPC prefix.</li>"
+msgstr ""
+"<li><a href=\"ManufacturerMovement/\">Brand Movement</a> lists sales\n"
+"\t\tfor products from a specific brand over a given date range.\n"
+"\t\tBrand is given either by name or as a UPC prefix.</li>"
+
+#: src/defaultmenu.php:91 src/navbar.html:115
+msgid "Manufacturer Movement"
+msgstr "Brand Movement"
+
+#: reports/CustomerPurchases/CustomerPurchasesReport.php:109
+msgid "Owner#"
+msgstr "Member#"
+
+#: reports/EquityAll/EquityAllReport.php:94
+msgid "Active Owners"
+msgstr "Active Members"
+
+#: reports/EquityAll/EquityAllReport.php:95
+msgid "Non-termed Owners"
+msgstr "Non-termed Members"
+
+#: reports/EquityAll/EquityAllReport.php:96
+msgid "All Owners"
+msgstr "All Members"

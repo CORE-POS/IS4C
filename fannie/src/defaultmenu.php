@@ -88,7 +88,7 @@ array('label'=>'Reports','url'=>'reports/','subheading'=>'Custom reporting tools
 	array('label'=>'Movement >>','url'=>'reports/',
 		'submenu'=>array(
 			array('label'=>'Department Movement','url'=>'reports/DepartmentMovement/'),
-			array('label'=>'Manufacturer Movement','url'=>'reports/ManufacturerMovement/'),
+			array('label'=>_('Manufacturer Movement'),'url'=>'reports/ManufacturerMovement/'),
 			array('label'=>'Item Movement','url'=>'reports/ProductMovement/'),
 			array('label'=>'Correlated Movement','url'=>'reports/Correlated/'),
 			array('label'=>'Non Movement','url'=>'reports/NonMovement/'),

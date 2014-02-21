@@ -120,11 +120,18 @@ class FannieAPI
         return false;
     }
 
+    /**
+      Get a list of all available classes implementing a given
+      base class
+      @param $base_class [string] name of base class
+      @param $include_base [boolean] include base class name in the result set
+        [optional, default false]
+      @return [array] of [string] class names
+    */
     static public function listModules($base_class, $include_base=false)
     {
-        $directiories = array();
+        $directories = array();
         $directories[] = dirname(__FILE__).'/../modules/plugins2.0/';
-        $directories[] = dirname(__FILE__);
 
         switch($base_class) {
             case 'ItemModule':
@@ -135,6 +142,9 @@ class FannieAPI
                 break;
             case 'FannieTask':
                 $directories[] = dirname(__FILE__).'/../cron/tasks/';
+                break;
+            case 'BasicModelHook':
+                $directories[] = dirname(__FILE__).'/data/hooks/';
                 break;
         }
 

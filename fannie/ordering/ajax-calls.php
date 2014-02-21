@@ -399,7 +399,7 @@ switch ($_REQUEST['action']) {
         break;
     case 'closeOrder':
         $p = $dbc->prepare_statement("UPDATE {$TRANS}SpecialOrderStatus SET
-            status_flag=?,subStatus=? WHERE order_id=?");
+            status_flag=?,sub_status=? WHERE order_id=?");
         $dbc->exec_statement($p, array($_REQUEST['status'],time(),$_REQUEST['orderID']));
 
         $moveP = $dbc->prepare_statement("INSERT INTO {$TRANS}CompleteSpecialOrder

@@ -73,7 +73,7 @@ class BatchFromSearch extends FannieRESTfulPage
         $b->endDate($enddate);
         $b->batchName($name);
         $b->batchType($type);
-        $b->discounttype($type);
+        $b->discounttype($discounttype);
         $b->priority($priority);
         $b->owner($owner);
         $id = $b->save();

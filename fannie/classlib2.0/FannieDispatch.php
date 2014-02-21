@@ -176,6 +176,16 @@ class FannieDispatch
         return $model->save();
     }
 
+    static public function i18n()
+    {
+        if (function_exists('bindtextdomain')) {
+            setlocale(LC_MESSAGES, "en_US");
+            bindtextdomain('messages', realpath(dirname(__FILE__).'/../locale'));
+            bind_textdomain_codeset('messages', 'UTF-8');
+            textdomain('messages');
+        }
+    }
+
     /**
       Render the current page if appropriate
       The page is only shown if it's accessed
@@ -209,7 +219,12 @@ class FannieDispatch
       The page is only shown if it's accessed
       directly rather than through an include().
 
-      @param $custom_errors [boolean] use built-in error handlers
+      @param $custom_errors @deprecated
+        This behavior is controlled by config variable
+        FANNIE_CUSTOM_ERRORS. The optional parameter
+        remains for th sake of compatibility but does
+        not do anything. It will go away when all calls
+        to this method have been cleaned up.
     */
     static public function conditionalExec($custom_errors=true)
     {
@@ -217,12 +232,14 @@ class FannieDispatch
         // conditionalExec() is the only function on the stack
         if (count($bt) == 1) {
     
-            if ($custom_errors) {
+            include(dirname(__FILE__).'/../config.php');
+            if (isset($FANNIE_CUSTOM_ERRORS) && $FANNIE_CUSTOM_ERRORS) {
                 set_error_handler(array('FannieDispatch','errorHandler'));
                 set_exception_handler(array('FannieDispatch','exceptionHandler'));
                 register_shutdown_function(array('FannieDispatch','catchFatal'));
             }
 
+            self::i18n();
             self::logUsage();
 
             $page = basename($_SERVER['PHP_SELF']);

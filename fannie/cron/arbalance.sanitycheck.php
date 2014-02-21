@@ -26,6 +26,11 @@
    arbalance.sanitycheck.php
 
    Sync up custdata balance with live table
+   
+   Usually once a day is enough.
+   Run either after nightly.dtrans and nightly.ar, not between them,
+    and before [nightly.]lanesync.api or nightly.lanesync
+   Deprecated in favour of cron/tasks/ArHistoryTask.php
 
 */
 

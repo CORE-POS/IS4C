@@ -115,6 +115,10 @@ class ProductListPage extends FanniePage {
 			var content = "<input type=text class=in_supplier value=\""+supplier+"\" />";	
 			$('tr#'+upc+' .td_supplier').html(content);
 
+            var cost = $('tr#'+upc+' .td_cost').html();
+			var content = "<input type=text class=in_cost size=4 value=\""+cost+"\" />";	
+			$('tr#'+upc+' .td_cost').html(content);
+
 			var price = $('tr#'+upc+' .td_price').html();
 			var content = "<input type=text class=in_price size=4 value=\""+price+"\" />";	
 			$('tr#'+upc+' .td_price').html(content);
@@ -152,6 +156,16 @@ class ProductListPage extends FanniePage {
 
 			var lnk = "<img src=\"<?php echo $FANNIE_URL;?>src/img/buttons/b_save.png\" alt=\"Save\" border=0 />";
 			$('tr#'+upc+' .td_cmd').html("<a href=\"\" onclick=\"save('"+upc+"');return false;\">"+lnk+"</a>");
+
+            $('tr#'+upc+' input:text').keydown(function(event) {
+                if (event.which == 13) {
+                    save(upc);
+                }
+            });
+            $('tr#'+upc+' .clickable input:text').click(function(event){
+                // do nothing
+                event.stopPropagation();
+            });
 		}
 		function save(upc){
 			var desc = $('tr#'+upc+' .in_desc').val();
@@ -162,6 +176,9 @@ class ProductListPage extends FanniePage {
 
 			var supplier = $('tr#'+upc+' .in_supplier').val();
 			$('tr#'+upc+' .td_supplier').html(supplier);
+
+			var cost = $('tr#'+upc+' .in_cost').val();
+			$('tr#'+upc+' .td_cost').html(cost);
 
 			var price = $('tr#'+upc+' .in_price').val();
 			$('tr#'+upc+' .td_price').html(price);
@@ -187,7 +204,7 @@ class ProductListPage extends FanniePage {
 			var cmd = "<a href=\"\" onclick=\"edit('"+upc+"'); return false;\">"+lnk+"</a>";
 			$('tr#'+upc+' .td_cmd').html(cmd);
 
-			var dstr = 'ajax=save&upc='+upc+'&desc='+desc+'&dept='+dept+'&price='+price;
+			var dstr = 'ajax=save&upc='+upc+'&desc='+desc+'&dept='+dept+'&price='+price+'&cost='+cost;
 			dstr += '&tax='+tax[1]+'&fs='+fs+'&disc='+disc+'&wgt='+wgt+'&supplier='+supplier+'&local='+local[1];
 			$.ajax({
 			url: 'ProductListPage.php',
@@ -222,7 +239,20 @@ class ProductListPage extends FanniePage {
 			}
 			});
 		}
+        <?php if ($this->canEditItems) { ?>
+        $(document).ready(function(){
+            $('tr').each(function(){
+                if ($(this).find('.hidden_upc').length != 0) {
+                    var upc = $(this).find('.hidden_upc').val();
+                    $(this).find('.clickable').click(function() {
+                        edit(upc);
+                        $(this).find('input:text').select();
+                    });
+                }
+            });
+        });
 		<?php
+        }
 		return ob_get_clean();
 	}
 
@@ -234,8 +264,9 @@ class ProductListPage extends FanniePage {
 			$upc = FormLib::get_form_value('upc');
             $upc = BarcodeLib::padUPC($upc);
 			$values = array();
-			$desc = FormLib::get_form_value('desc');
             $model = new ProductsModel($dbc);
+            $model->upc($upc);
+			$desc = FormLib::get_form_value('desc');
 			if ($desc !== '') {
                 $model->description($desc);
             }
@@ -246,6 +277,10 @@ class ProductListPage extends FanniePage {
 			$price = rtrim(FormLib::get_form_value('price'),' ');
 			if ($price !== '') {
                 $model->normal_price($price);
+            }
+            $cost = rtrim(FormLib::get_form_value('cost'), ' ');
+            if ($cost !== '') {
+                $model->cost($cost);
             }
 			$tax = FormLib::get_form_value('tax');
 			if ($tax !== '') {
@@ -261,7 +296,7 @@ class ProductListPage extends FanniePage {
             }
 			$wgt = FormLib::get_form_value('wgt');
 			if ($wgt !== '') {
-                $model-scale($wgt);
+                $model->scale($wgt);
             }
 			$loc = FormLib::get_form_value('local');
 			if ($loc !== '') {
@@ -344,6 +379,7 @@ class ProductListPage extends FanniePage {
 		elseif ($sort === 'Description') $order = 'i.description';
 		elseif ($sort === 'Supplier') $order = 'x.distributor';
 		elseif ($sort === 'Price') $order = 'i.normal_price';
+		elseif ($sort === 'Cost') $order = 'i.cost';
 
 		$ret = 'Report sorted by '.$sort.'<br />';
 		if ($supertype == 'dept' && $super == 0){
@@ -353,7 +389,7 @@ class ProductListPage extends FanniePage {
 			$ret .= 'Sub department '.$super.'<br />';
 		}
 		else {
-			$ret .= 'Manufacturer '.$manufacturer.'<br />';
+			$ret .= _('Manufacturer') . ' ' . $manufacturer . '<br />';
 		}
 		$ret .= date("F j, Y, g:i a").'<br />'; 
 		
@@ -372,7 +408,7 @@ class ProductListPage extends FanniePage {
                         (CASE WHEN i.scale = 1 THEN 'X' ELSE '-' END) as WGHd,
 			(CASE WHEN i.local > 0 AND o.originID IS NULL THEN 'X' 
 			      WHEN i.local > 0 AND o.originID IS NOT NULL THEN LEFT(o.shortName,1) ELSE '-' END) as local,
-			x.distributor
+			x.distributor, i.cost
                         FROM products as i LEFT JOIN departments as d ON i.department = d.dept_no
 			LEFT JOIN taxrates AS t ON t.id = i.tax
 			LEFT JOIN prodExtra as x on i.upc = x.upc
@@ -389,7 +425,7 @@ class ProductListPage extends FanniePage {
 				(CASE WHEN i.scale = 1 THEN 'X' ELSE '-' END) as WGHd,
 				(CASE WHEN i.local > 0 AND o.originID IS NULL THEN 'X' 
 				      WHEN i.local > 0 AND o.originID IS NOT NULL THEN LEFT(o.shortName,1) ELSE '-' END) as local,
-				x.distributor
+				x.distributor, i.cost
 				FROM products as i LEFT JOIN superdepts as s ON i.department = s.dept_ID
 				LEFT JOIN taxrates AS t ON t.id = i.tax
 				LEFT JOIN departments as d on i.department = d.dept_no
@@ -408,7 +444,7 @@ class ProductListPage extends FanniePage {
 				(CASE WHEN i.scale = 1 THEN 'X' ELSE '-' END) as WGHd,
 				(CASE WHEN i.local > 0 AND o.originID IS NULL THEN 'X' 
 				      WHEN i.local > 0 AND o.originID IS NOT NULL THEN LEFT(o.shortName,1) ELSE '-' END) as local,
-				x.distributor
+				x.distributor, i.cost
 				FROM products as i LEFT JOIN departments as d ON i.department = d.dept_no
 				LEFT JOIN prodExtra as x on i.upc = x.upc
 				LEFT JOIN originName AS o ON i.local=o.originID
@@ -437,12 +473,13 @@ class ProductListPage extends FanniePage {
 			$ret .= sprintf('<tr><th><a href="%s&sort=UPC">UPC</a></th>
 					<th><a href="%s&sort=Description">Description</a></th>
 					<th><a href="%s&sort=Department">Department</a></th>
-					<th><a href="%s&sort=Supplier">Supplier</a></th>
+					<th><a href="%s&sort=Supplier">' . _('Supplier') . '</a></th>
+					<th><a href="%s&sort=Cost">Cost</a></th>
 					<th><a href="%s&sort=Price">Price</a></th>',
-					$page_url,$page_url,$page_url,$page_url,$page_url);
+					$page_url,$page_url,$page_url,$page_url,$page_url,$page_url);
 		}
 		else
-			$ret .= "<th>UPC</th><th>Description</th><th>Dept</th><th>Supplier</th><th>Price</th>";
+			$ret .= "<th>UPC</th><th>Description</th><th>Dept</th><th>" . _('Supplier') . "</th><th>Cost</th><th>Price</th>";
 		$ret .= "<th>Tax</th><th>FS</th><th>Disc</th><th>Wg'd</th><th>Local</th>";
 		if (!$this->excel && $this->canEditItems !== False)
 			$ret .= '<th>&nbsp;</th>';
@@ -458,13 +495,15 @@ class ProductListPage extends FanniePage {
 					$ret .= "<img src=\"{$FANNIE_URL}src/img/buttons/trash.png\" border=0 /></a>";
 				}
 				$ret .= '</td>';
+                $ret .= '<input type="hidden" class="hidden_upc" value="'.$row[0].'" />';
 			}
 			else
 				$ret .= "<td align=center>$row[0]</td>";
-			$ret .= "<td align=center class=td_desc>$row[1]</td>";
-			$ret .= "<td align=center class=td_dept>$row[2]</td>";
-			$ret .= "<td align=center class=td_supplier>$row[9]</td>";
-			$ret .= "<td align=center class=td_price>$row[3]</td>";
+			$ret .= "<td align=center class=\"td_desc clickable\">{$row['description']}</td>";
+			$ret .= "<td align=center class=\"td_dept clickable\">{$row['department']}</td>";
+			$ret .= "<td align=center class=\"td_supplier clickable\">{$row['distributor']}</td>";
+			$ret .= "<td align=center class=\"td_cost clickable\">".sprintf('%.2f',$row['cost'])."</td>";
+			$ret .= "<td align=center class=\"td_price clickable\">{$row['normal_price']}</td>";
 			$ret .= "<td align=center class=td_tax>$row[4]</td>";
 			$ret .= "<td align=center class=td_fs>$row[5]</td>";
 			$ret .= "<td align=center class=td_disc>$row[6]</td>";
@@ -516,7 +555,7 @@ class ProductListPage extends FanniePage {
 			<label for="supertypeD">Department</label>
 		<input type=radio name=supertype value=manu id="supertypeM"
 			onclick="$('#dept1').hide();$('#dept2').hide();$('#manu').show();" /> 
-			<label for="supertypeM">Manufacturer</label>
+			<label for="supertypeM"><?php echo _('Manufacturer'); ?></label>
 		<table border="0" cellspacing="0" cellpadding="5">
 		<tr class=dept id=dept1>
 			<td valign=top><p><b>Buyer</b></p></td>
@@ -554,14 +593,14 @@ class ProductListPage extends FanniePage {
 			</p></td>
 		</tr>
 		<tr class=manu id=manu style="display:none;">
-			<td><p><b>Manufacturer</b></p>
+			<td><p><b><?php echo _('Manufacturer'); ?></b></p>
 			<p></p></td>
 			<td><p>
 			<input type=text name=manufacturer />
 			</p>
 			<p>
 			<input type=radio name=mtype value=prefix checked />UPC prefix
-			<input type=radio name=mtype value=name />Manufacturer name
+			<input type=radio name=mtype value=name /><?php echo _('Manufacturer name'); ?>
 			</p></td>
 		</tr>
 		<tr> 
