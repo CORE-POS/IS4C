@@ -64,6 +64,22 @@ class RecentSalesReport extends FannieReportPage
         return true;
     }
 
+    public function report_description_content()
+    {
+        global $FANNIE_OP_DB;
+        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $prod = new ProductsModel($dbc);
+        $prod->upc(BarcodeLib::padUPC(FormLib::get('upc')));
+        $prod->load();
+        $ret = array('Recent Sales For ' . $prod->upc() . ' ' . $prod->description());
+        if ($this->report_format == 'html') {
+            $ret[] = sprintf('<a href="../ItemLastQuarter/ItemLastQuarterReport.php?upc=%s">Weekly Sales Details</a>', $prod->upc());
+            $ret[] = sprintf('<a href="../ItemOrderHistory/ItemOrderHistoryReport.php?upc=%s">Recent Order History</a>', $prod->upc());
+        }
+
+        return $ret;
+    }
+
     public function fetch_report_data()
     {
         global $FANNIE_OP_DB;

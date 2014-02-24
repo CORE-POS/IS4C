@@ -24,14 +24,15 @@
 include('../../config.php');
 include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 
-class ItemLastQuarterReport extends FannieReportPage 
+class ItemOrderHistoryReport extends FannieReportPage 
 {
 
-    protected $title = "Fannie : Item Last Quarter Report";
-    protected $header = "Item Last Quarter Report";
+    protected $title = "Fannie : Item Order History";
+    protected $header = "Item Order History";
 
-    protected $report_headers = array('Week', 'Qty', 'Ttl', '% All', '% Super', '% Dept');
+    protected $report_headers = array('Date', 'Vendor', 'Invoice#', 'SKU', '# Cases', 'Case Size', 'Unit Cost', 'Total');
     protected $required_fields = array('upc');
+    protected $sort_direction = 1;
 
     public function report_description_content()
     {
@@ -40,7 +41,20 @@ class ItemLastQuarterReport extends FannieReportPage
         $prod = new ProductsModel($dbc);
         $prod->upc(BarcodeLib::padUPC(FormLib::get('upc')));
         $prod->load();
-        return array('Weekly Sales For ' . $prod->upc() . ' ' . $prod->description());
+        $ret = array('Order History For ' . $prod->upc() . ' ' . $prod->description());
+        if (FormLib::get('all')) {
+            $ret[] = 'All [known] orders';
+            if ($this->report_format = 'html') {
+                $ret[] = sprintf('<a href="ItemOrderHistoryReport.php?upc=%s">Show Recent</a>', $prod->upc());
+            }
+        } else {
+            $ret[] = 'Since ' . date('F d, Y', strtotime('92 days ago'));
+            if ($this->report_format = 'html') {
+                $ret[] = sprintf('<a href="ItemOrderHistoryReport.php?upc=%s&all=1">Show All</a>', $prod->upc());
+            }
+        }
+
+        return $ret;
     }
 
     public function fetch_report_data()
@@ -51,30 +65,34 @@ class ItemLastQuarterReport extends FannieReportPage
         $upc = FormLib::get('upc');
         $upc = BarcodeLib::padUPC($upc);
 
-        $query = "SELECT 
-                    l.quantity, l.total,
-                    l.percentageStoreSales, l.percentageSuperDeptSales,
-                    l.percentageDeptSales, l.weekLastQuarterID as wID,
-                    w.weekStart, w.weekEnd
-                FROM products AS p
-                    LEFT JOIN " . $FANNIE_ARCHIVE_DB . $dbc->sep() . "productWeeklyLastQuarter AS l
-                        ON p.upc=l.upc
-                    LEFT JOIN " . $FANNIE_ARCHIVE_DB . $dbc->sep() . "weeksLastQuarter AS w
-                        ON l.weekLastQuarterID=w.weekLastQuarterID 
-                WHERE p.upc = ?
-                ORDER BY l.weekLastQuarterID";
+        $query = 'SELECT i.sku, i.quantity, i.unitCost, i.caseSize,
+                        i.quantity * i.unitCost * i.caseSize AS ttl,
+                        o.vendorInvoiceID, v.vendorName, o.placedDate
+                        FROM PurchaseOrderItems AS i
+                            LEFT JOIN PurchaseOrder AS o ON i.orderID=o.orderID
+                            LEFT JOIN vendors AS v ON o.vendorID=v.vendorID
+                        WHERE i.internalUPC = ?
+                            AND o.placedDate >= ?
+                        ORDER BY o.placedDate';
         $prep = $dbc->prepare($query);
-        $result = $dbc->execute($prep, array($upc));
-
+        $args = array($upc);
+        if (FormLib::get('all')) {
+            $args[] = '1900-01-01 00:00:00';
+        } else {
+            $args[] = date('Y-m-d', strtotime('92 days ago'));
+        }
+        $result = $dbc->execute($prep, $args);
         $data = array();
         while($row = $dbc->fetch_row($result)) {
             $record = array(
-                'Week ' . date('Y-m-d', strtotime($row['weekStart'])) . ' to ' . date('Y-m-d', strtotime($row['weekEnd'])),
-                sprintf('%.2f', $row['quantity']),
-                sprintf('%.2f', $row['total']),
-                sprintf('%.4f%%', $row['percentageStoreSales'] * 100),
-                sprintf('%.4f%%', $row['percentageSuperDeptSales'] * 100),
-                sprintf('%.4f%%', $row['percentageDeptSales'] * 100),
+                $row['placedDate'],
+                $row['vendorName'],
+                $row['vendorInvoiceID'],
+                $row['sku'],
+                $row['quantity'],
+                $row['caseSize'],
+                $row['unitCost'],
+                $row['ttl'],
             );
             $data[] = $record;
         }
@@ -98,18 +116,18 @@ class ItemLastQuarterReport extends FannieReportPage
 
     public function readinessCheck()
     {
-        global $FANNIE_ARCHIVE_DB, $FANNIE_URL;
-        $dbc = FannieDB::get($FANNIE_ARCHIVE_DB);
-        if (!$dbc->tableExists('productWeeklyLastQuarter')) {
-            $this->error_text = _("You are missing an important table") . " ($FANNIE_ARCHIVE_DB.productWeeklyLastQuarter). ";
+        global $FANNIE_OP_DB, $FANNIE_URL;
+        $dbc = FannieDB::get($FANNIE_OP_DB);
+        if (!$dbc->tableExists('PurchaseOrderItems')) {
+            $this->error_text = _("You are missing an important table") . " ($FANNIE_OP_DB.PurchaseOrderItems). ";
             $this->error_text .= " Visit the <a href=\"{$FANNIE_URL}install\">Install Page</a> to create it.";
             return false;
         } else {
-            $testQ = 'SELECT upc FROM productWeeklyLastQuarter';
+            $testQ = 'SELECT orderID FROM PurchaseOrderItems';
             $testQ = $dbc->addSelectLimit($testQ, 1);
             $testR = $dbc->query($testQ);
             if ($dbc->num_rows($testR) == 0) {
-                $this->error_text = _('The product sales summary is missing. Run the Summarize Product Sales task.');
+                $this->error_text = _('No purchase orders have been entered.');
                 return false;
             }
         }
