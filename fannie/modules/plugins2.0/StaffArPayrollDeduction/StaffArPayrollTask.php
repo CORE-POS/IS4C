@@ -41,6 +41,13 @@ StaffArPayrollDeduction plugin.';
         global $FANNIE_PLUGIN_SETTINGS, $FANNIE_AR_DEPARTMENTS, $FANNIE_TRANS_DB, $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['StaffArPayrollDB']);
 
+        $chkQ = 'SELECT staffArDateID FROM StaffArDates WHERE ' . $dbc->datediff($dbc->now(), 'tdate') . ' = 0 ';
+        $chkR = $dbc->query($chkQ);
+        if ($dbc->num_rows($chkR) == 0) {
+            // not scheduled for today
+            return true;
+        } 
+
         /**
           Update plugin's table from legacy table, if present.
           Can go away once WFC transistions away from legacy
