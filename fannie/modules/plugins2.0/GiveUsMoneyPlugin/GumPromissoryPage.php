@@ -30,6 +30,9 @@ if (!class_exists('FannieAPI')) {
 */
 class GumPromissoryPage extends FannieRESTfulPage 
 {
+    protected $must_authenticate = true;
+    protected $auth_classes = array('GiveUsMoney');
+
     private $paragraphs = array(
 
 'For value received, the Borrower indicated above, a Minnesota cooperative corporation (hereinafter "Borrower") hereby promises to pay the lender indicated above (hereinafter "Lender"), a current owner of the Borrower, whose address is indicated above, or his or her successors, the principal sum indicated above together with interest thereon at the interest rate indicated above .  Interest shall be calculated and compounded annually.   Upon maturity of this Note on the date set forth above, interest and principal shall be paid in full.  There shall be no penalty for prepayment or early payment of this Note by the Borrower."',
@@ -171,11 +174,7 @@ class GumPromissoryPage extends FannieRESTfulPage
         }
         $pdf->Cell($col_width, $line_height, $ssn, 0, 0, 'C');
         $pdf->SetXY($col2, $y);
-        $myid = 'xx-xxxxxxx';
-        $this->settings->key('storeFederalID');
-        if ($this->settings->load()) {
-            $myid = 'xx-xxx' . substr($this->settings->value(), -4);
-        }
+        $myid = GumLib::getSetting('storeFederalID', 'xx-xxxxxxx');
         $pdf->Cell($col_width, $line_height, $myid, 0, 0, 'C');
         $y += $line_height;
 
@@ -308,7 +307,7 @@ class GumPromissoryPage extends FannieRESTfulPage
             $ssn = 'xxx-xx-' . $this->taxid->maskedTaxIdentifier();
         }
         $ret .= '<td class="left right bottom">' . $ssn . '</td>';
-        $tax_id = 'xx-xxxxxxx';
+        $tax_id = GumLib::getSetting('storeFederalID', 'xx-xxxxxxx');
         $ret .= '<td class="right bottom">' . $tax_id . '</td>';
         $ret .= '</tr>';
         $ret .= '<tr><td class="noborder" colspan="2">&nbsp;</td></tr>';

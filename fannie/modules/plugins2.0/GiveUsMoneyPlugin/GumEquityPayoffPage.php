@@ -30,6 +30,9 @@ if (!class_exists('FannieAPI')) {
 */
 class GumEquityPayoffPage extends FannieRESTfulPage 
 {
+    protected $must_authenticate = true;
+    protected $auth_classes = array('GiveUsMoney');
+
     public function preprocess()
     {
         $this->header = 'Class C Payoff';

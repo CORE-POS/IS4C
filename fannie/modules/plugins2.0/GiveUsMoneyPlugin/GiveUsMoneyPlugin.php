@@ -330,5 +330,10 @@ class GiveUsMoneyPlugin extends FanniePlugin
             $settings->save();
         }
     }
+
+	public function plugin_enable()
+    {
+        FannieAuth::createClass('GiveUsMoney', 'Grants permission to use the GiveUsMoney plugin');
+    }
 }
 

@@ -144,8 +144,7 @@ class GumTaxFormTemplate
         $ret .= '</tr><tr>';
 
         $ret .= '<td style="border: 1px solid black;">PAYER\'s federal identification number<br />';
-        $myid = 'xx-xxx' . substr($this->my_federal_id, -4);
-        $ret .= $myid . '</td>';
+        $ret .= $this->my_federal_id . '</td>';
 
         $ret .= '<td style="border: 1px solid black;">RECIPIENT\'s federal identification number<br />';
         $ret .= $this->tax_id . '</td>';
@@ -226,7 +225,7 @@ class GumTaxFormTemplate
 
         $ret .= '<td style="border: 1px solid black;">12. State/Payer\'s state no.<br />';
         if (isset($this->fields[12])) {
-            $ret .= str_repeat('x', strlen($this->fields[12])-4) . substr($this->fields[12], -4);
+            $ret .= $this->fields[12];
         }
         $ret .= '</td>';
 
@@ -325,8 +324,7 @@ class GumTaxFormTemplate
         $pdf->Cell(44.45-$top_left_x, $small_height, 'PAYER\'S federal identification number');
         $pdf->SetXY($top_left_x, $start_y + 26.9875 + $med_height);
         $pdf->SetFont('Arial', '', 8);
-        $myid = 'xx-xxx' . substr($this->my_federal_id, -4);
-        $pdf->Cell(44.45-$top_left_x, $med_height, $myid, 0, 0, 'C');
+        $pdf->Cell(44.45-$top_left_x, $med_height, $this->my_federal_id, 0, 0, 'C');
         $pdf->SetFont('Arial', '', 6);
 
         $pdf->SetXY($top_left_x + 44.45, $start_y + 26.9875);
@@ -472,7 +470,7 @@ class GumTaxFormTemplate
         $pdf->SetXY($top_left_x + 127, $start_y + 65.0875 + $small_height);
         $text = '';
         if (isset($this->fields[12])) {
-            $text .= 'xxx' . substr($this->fields[12], -4);
+            $text .= $this->fields[12];
         }
         $pdf->SetFont('Arial', '', 8);
         $pdf->Cell((165.1-127), $med_height, $text, 0, 0, 'C');

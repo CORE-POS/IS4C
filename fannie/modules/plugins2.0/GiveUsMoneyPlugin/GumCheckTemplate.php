@@ -235,14 +235,11 @@ class GumCheckTemplate
         // B is the symbol for amount
         // C is the symbol for account ("on-us")
         // D is the symbol for dash
-        $ret .= 'A' . str_repeat('D', strlen($this->routing_no)-4) . substr($this->routing_no, -4) . 'A';
-        $ret .= '<span style="margin-left:100px;">&nbsp;</span>';
-        $ret .= 'C' . str_repeat('D', strlen($this->checking_no)-4) . substr($this->checking_no, -4) . 'C';
         $bottom_line = 'C' . $this->check_number . 'C';
         $bottom_line .= ' ';
-        $bottom_line .= 'A' . str_repeat('D', strlen($this->routing_no)-4) . substr($this->routing_no, -4) . 'A';
+        $bottom_line .= 'A' . $this->routing_no . 'A';
         $bottom_line .= ' ';
-        $bottom_line .= str_repeat('D', strlen($this->checking_no)-4) . substr($this->checking_no, -4) . 'C';
+        $bottom_line .= $this->checking_no . 'A';
         $pdf->Cell(0, $line_height, $bottom_line);
 
         return true;

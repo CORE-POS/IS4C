@@ -30,6 +30,9 @@ if (!class_exists('FannieAPI')) {
 */
 class GumDefaultRatesPage extends FannieRESTfulPage 
 {
+    protected $must_authenticate = true;
+    protected $auth_classes = array('GiveUsMoney');
+
     public function preprocess()
     {
         $this->header = 'Default Interest Rates';
