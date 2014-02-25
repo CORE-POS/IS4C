@@ -113,7 +113,7 @@ class BrowseVendorItems extends FanniePage {
 		$args = array($vid,$brand);
 		if ($did != 'All'){
 			$query .= ' AND vendorDept=? ';
-			$args[] = $dept;
+			$args[] = $did;
 		}
 		$query .= "ORDER BY v.upc";
 		
@@ -198,8 +198,13 @@ class BrowseVendorItems extends FanniePage {
 
 		$dbc = FannieDB::get($FANNIE_OP_DB);
 		$cats = "";
-		$p = $dbc->prepare_statement("SELECT deptID,name FROM vendorDepartments
-				WHERE vendorID=?");
+		$p = $dbc->prepare_statement("SELECT i.vendorDept, d.name 
+                                      FROM vendorItems AS i
+                                        LEFT JOIN vendorDepartments AS d
+                                        ON i.vendorID=d.vendorID AND i.vendorDept=d.deptID
+				                      WHERE i.vendorID=?
+                                      GROUP BY i.vendorDept, d.name
+                                      ORDER BY i.vendorDept");
 		$rp = $dbc->exec_statement($p,array($vid));
 		while($rw = $dbc->fetch_row($rp))
 			$cats .= "<option value=$rw[0]>$rw[0] $rw[1]</option>";
