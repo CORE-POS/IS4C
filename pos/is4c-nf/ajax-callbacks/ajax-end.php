@@ -133,8 +133,15 @@ function cleartemptrans($type)
         $db->query("update localtemptrans set trans_status = 'X'");
     }
 
+    /**
+     @deprecated 25Feb14 for Database class methods
     moveTempData();
     truncateTempTables();
+    */
+
+    if (Database::rotateTempData()) {
+        Database::clearTempTables();
+    }
 
     /**
       Moved to separate ajax call (ajax-transaction-sync.php)
@@ -157,7 +164,14 @@ function cleartemptrans($type)
     return 1;
 }
 
+/**
+  @deprecated 25Feb14
+  See Database::clearTempTables()
 
+  Replacement method has proper return value
+  and can be called from other scripts if
+  needed
+*/
 function truncateTempTables() 
 {
     $connection = Database::tDataConnect();
@@ -172,6 +186,14 @@ function truncateTempTables()
     $connection->query($query3);
 }
 
+/**
+  @deprecated 25Feb14
+  See Database::rotateTempData()
+
+  Replacement method has proper return value
+  and can be called from other scripts if
+  needed
+*/
 function moveTempData() 
 {
     $connection = Database::tDataConnect();
