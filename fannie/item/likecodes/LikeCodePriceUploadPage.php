@@ -42,6 +42,12 @@ class LikeCodePriceUploadPage extends FannieUploadPage
 			'default' => 1,
 			'required' => true
 		),
+		'cost' => array(
+			'name' => 'cost',
+			'display_name' => 'Cost (Unit)',
+			'default' => 2,
+			'required' => false
+		),
 	);
 
 	function process_file($linedata)
@@ -51,6 +57,7 @@ class LikeCodePriceUploadPage extends FannieUploadPage
 
 		$lc_index = $this->get_column_index('likecode');
 		$price_index = $this->get_column_index('price');
+        $cost_index = $this->get_column_index('cost');
 
 		$ret = true;
         $update = $dbc->prepare('UPDATE products AS p
@@ -60,13 +67,30 @@ class LikeCodePriceUploadPage extends FannieUploadPage
                                 ( SELECT u.upc 
                                   FROM upcLike AS u
                                   WHERE u.likeCode=? )');
+        $updateWithCost = $dbc->prepare('UPDATE products AS p
+                            SET p.normal_price = ?,
+                                p.cost = ?,
+                                p.modified = ' . $dbc->now() . '
+                            WHERE p.upc IN
+                                ( SELECT u.upc 
+                                  FROM upcLike AS u
+                                  WHERE u.likeCode=? )');
 		foreach($linedata as $line) {
 			$lc = trim($line[$lc_index]);
 			$price =  trim($line[$price_index], ' $');	
+            $cost = 0;
+            if ($cost_index !== false && isset($line[$cost_index])) {
+                $cost = trim($line[$cost_index], ' $');
+            }
             
 			if (!is_numeric($lc)) continue; // skip header(s) or blank rows
 
-            $try = $dbc->execute($update, array($price, $lc));
+            $try = false;
+            if ($cost == 0) {
+                $try = $dbc->execute($update, array($price, $lc));
+            } else {
+                $try = $dbc->execute($updateWithCost, array($price, $cost, $lc));
+            }
             if ($try === false) {
                 $ret = false;
                 $this->error_details .= ' Problem updating LC# ' . $lc . ';';
@@ -79,7 +103,8 @@ class LikeCodePriceUploadPage extends FannieUploadPage
 	function form_content()
     {
 		return '<fieldset><legend>Instructions</legend>
-		Upload a CSV or XLS file containing likecode #s and prices
+		Upload a CSV or XLS file containing likecode #s and prices. Cost 
+        may also optionally be included.
 		<br />A preview helps you to choose and map columns to the database.
 		<br />The uploaded file will be deleted after the load.
 		</fieldset><br />';
