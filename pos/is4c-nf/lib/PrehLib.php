@@ -187,7 +187,7 @@ static public function setMember($member, $personNumber, $row)
 	elseif (!class_exists($handler_class)) $handler_class = 'DiscountModule';
 	if (class_exists($handler_class)){
 		$module = new $handler_class();
-		$CORE_LOCAL->set('percentDiscount', $module->percentage($row['Discount']));
+		$CORE_LOCAL->set('percentDiscount', $module->percentage($CORE_LOCAL->get('percentDiscount')));
 	}
 
 	if ($CORE_LOCAL->get("Type") == "PC") {
