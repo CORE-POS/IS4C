@@ -304,7 +304,7 @@ class PISuspensionPage extends PIKillerPage {
             $cas_model->suspensionTypeID( $status == 'TERM' ? 2 : 1 );
             $cas_model->tdate(date('Y-m-d H:i:s'));
             $cas_model->username($this->current_user);
-            $cas_mode->reasonCode($code);
+            $cas_model->reasonCode($code);
             $cas_model->active(1);
             $current_id = $cas_model->save();
 
