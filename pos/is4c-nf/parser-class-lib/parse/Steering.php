@@ -176,6 +176,10 @@ class Steering extends Parser {
             $CORE_LOCAL->set("msgrepeat",0);
             $this->ret['main_frame'] = $my_url."gui-modules/giftcardlist.php";
             return True;
+        case 'IC':
+            $CORE_LOCAL->set("msgrepeat",0);
+            $this->ret['main_frame'] = $my_url."gui-modules/HouseCouponList.php";
+            return true;
         /*
         case 'CCM':
             $CORE_LOCAL->set("msgrepeat",0);
