@@ -78,11 +78,10 @@ class NewMemberEmailPipe
         
         if ($this->validateHeaders($info['headers'])) {
             $data = json_decode($info['body']);
-            var_dump($data);
         }
     }
 
-    private function validateHeaders($headers)
+    protected function validateHeaders($headers)
     {
         // maybe impose sender or originating SMTP server restrictions
         // maybe require key-value pairs to help authenticate
@@ -104,7 +103,7 @@ class NewMemberEmailPipe
     means my validation says it isn't a correctly 
     formatted header line.
     */
-    private function parseEmail($content)
+    protected function parseEmail($content)
     {
         $headers = array();
         $last_header = '';
@@ -116,13 +115,13 @@ class NewMemberEmailPipe
 
             $test_end = str_replace("\r", "", $line);
             $test_end = str_replace("\n", "", $test_end);
-            if ($test_end === '') {
+            if (!$reached_body && $test_end === '') {
                 $reached_body = true;
                 continue;
             }
 
             if ($reached_body) {
-                $body .= $line;
+                $body .= $line."\n";
             } else {
                 if ($this->rfcCompliant($line[0]) && preg_match('/^([^:]+):(.+)$/', $line, $matches) === 1) {
                     $field_name = rtrim($matches[1]);
@@ -152,7 +151,7 @@ class NewMemberEmailPipe
       @param $str [string] to check
       @return [boolean]
     */
-    private function rfcCompliant($str)
+    protected function rfcCompliant($str)
     {
         for($i=0; $i<strlen($str);$i++) {
             if (ord($str[$i]) < 33 || ord($str[$i]) > 126 || ord($str[$i]) == 58) {
@@ -168,6 +167,9 @@ if (php_sapi_name() === 'cli' && basename($_SERVER['PHP_SELF']) == basename(__FI
     $obj = new NewMemberEmailPipe();
     $message = file_get_contents("php://stdin");
     if (!empty($message)) {
+        $fp = fopen('/tmp/savemailtest', 'w');
+        fwrite($fp, $message);
+        fclose($fp);
         $obj->processMail($message);
     }
 } 
