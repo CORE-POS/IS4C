@@ -291,7 +291,8 @@ class SQLManager
         // unified logging for all types
         if (!$result && DEBUG_MYSQL_QUERIES != "" && is_writable(DEBUG_MYSQL_QUERIES)) {
             $fp = fopen(DEBUG_MYSQL_QUERIES,"a");
-            fwrite($fp,date('r').": ".$query_text."\n\n");
+            fwrite($fp,date('r').": ".$query_text."\n");
+            fwrite($fp,$this->error($which_connection)."\n\n");
             fclose($fp);
         }
 
@@ -681,6 +682,7 @@ class SQLManager
             "unknown"=>1,'double'=>1);
         $strings = array("varchar"=>1,"nvarchar"=>1,"string"=>1,
                 "char"=>1,'var_string'=>1);
+        $binaries = array('blob'=>1);
         $dates = array("datetime"=>1);
         $queries = array();
 
@@ -701,6 +703,8 @@ class SQLManager
                     $row[$i] = str_replace("'","",$row[$i]);
                     $row[$i] = str_replace("\\","",$row[$i]);
                     $row[$i] = $this->escape($row[$i]);
+                } else if (isset($binaries[$type])) {
+                    $row[$i] = $this->escape($row[$i]);
                 }
 
                 if (isset($unquoted[$type])) {
@@ -720,11 +724,13 @@ class SQLManager
         foreach ($queries as $q) {
             if(!$this->query($q,$dest_db)) {
                 $ret = false;
+                /** LOGGED BY query() method
                 if (is_writable(DEBUG_MYSQL_QUERIES)) {
                     $fp = fopen(DEBUG_MYSQL_QUERIES,"a");
                     fwrite($fp,$q."\n\n");
                     fclose($fp);
                 }
+                */
             }
         }
 
