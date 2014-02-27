@@ -322,6 +322,14 @@ static public function transReset()
 	*/
 	$CORE_LOCAL->set("msgrepeat",0);
 
+    /**
+      @var lastRepeat
+      [Optional] Reason for the last repeated message
+      Useful to set & check in situations where multiple
+      confirmations may be required.
+    */
+    $CORE_LOCAL->set('lastRepeat', '');
+
 	/**
 	  @var boxMsg
 	  Message string to display on the boxMsg2.php page

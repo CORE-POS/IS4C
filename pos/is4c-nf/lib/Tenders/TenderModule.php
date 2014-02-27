@@ -104,7 +104,12 @@ class TenderModule
             $CORE_LOCAL->set("boxMsg","$".$this->amount." "._("is greater than tender limit for")
             ." ".$this->name_string."<p>"
             ."<font size='-1'>"._("clear to cancel").", "._("enter to proceed")."</font>");
+            $CORE_LOCAL->set('lastRepeat', 'confirmTenderAmount');
+
             return MiscLib::base_url().'gui-modules/boxMsg2.php';
+        } else if ($CORE_LOCAL->get('msgrepeat') == 1 && $CORE_LOCAL->get('lastRepeat') == 'confirmTenderAmount') {
+            $CORE_LOCAL->set('msgrepeat', 0);
+            $CORE_LOCAL->set('lastRepeat', '');
         }
 
         if ($this->amount - $CORE_LOCAL->get("amtdue") > 0) {

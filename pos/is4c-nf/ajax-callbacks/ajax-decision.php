@@ -31,6 +31,7 @@ $ret = array('dest_page'=>MiscLib::base_url().'gui-modules/pos2.php',
 
 if ($decision == "CL") {
 	$CORE_LOCAL->set("msgrepeat",0);
+	$CORE_LOCAL->set("lastRepeat",'');
 	$CORE_LOCAL->set("toggletax",0);
 	$CORE_LOCAL->set("togglefoodstamp",0);
 	$CORE_LOCAL->set("RepeatAgain", false);
