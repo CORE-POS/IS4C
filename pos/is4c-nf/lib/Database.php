@@ -576,6 +576,18 @@ static public function uploadCCdata()
         $ret = false;
     }
 
+    if ($sql->table_exists('CapturedSignature')) {
+        $sig_cols = self::getMatchingColumns($sql, 'CapturedSignature');
+        $sig_success = $sql->transfer($CORE_LOCAL->get("tDatabase"),
+            "select {$sig_cols} from CapturedSignature",
+            $CORE_LOCAL->get("mDatabase"),
+            "insert into CapturedSignature ({$sig_cols})");
+        if ($sig_success) {
+            $sql->query("truncate table CapturedSignature",
+                $CORE_LOCAL->get("tDatabase"));
+        }
+    }
+
     return $ret;
 }
 
