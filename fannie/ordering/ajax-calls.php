@@ -812,7 +812,7 @@ function createEmptyOrder()
 	$orderID = $dbc->insert_id();
 
     if ($dbc->tableExists($TRANS . 'SpecialOrders')) {
-        $soP = $dbc->prepare('INSERT INTO SpecialOrders (specialOrderID) VALUES (?)');
+        $soP = $dbc->prepare('INSERT INTO ' . $TRANS . 'SpecialOrders (specialOrderID) VALUES (?)');
         $soR = $dbc->execute($soP, array($orderID));
     }
 
