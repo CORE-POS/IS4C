@@ -87,12 +87,13 @@ class FbeProcessQueuePage extends FannieRESTfulPage
     {
         $ret = '';
 
-        $base = dirname(__FILE__).'/noatuo/save-paths/';
+        $base = dirname(__FILE__).'/noauto/save-paths/';
         $ret .= '<form onsubmit="processFile(); return false;">';
         $ret .= '<b>File To</b>: <select id="savePath">';
         $dh = opendir($base);
         while( ($d = readdir($dh)) !== false) {
             if ($d[0] == '.') continue;
+            echo $d."\n";
             if (is_dir($base . $d)) {
                 $ret .= sprintf('<option value="%s">%s</option>',
                                 base64_encode($d), basename($d));
