@@ -35,6 +35,7 @@ class PurchasingIndexPage extends FannieRESTfulPage {
 
 		return '<ul>
 			<li><a href="ViewPurchaseOrders.php">View Orders</a>
+			<li><a href="PurchasingSearchPage.php">Search Orders</a>
 			</li>
 			<li>Create Order
 				<ul>
