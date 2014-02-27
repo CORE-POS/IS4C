@@ -253,10 +253,10 @@ class RenderReceiptPage extends FanniePage {
 			$ret .= "Authorization: ".$row['xResultMessage'].'<br />';
 			$ret .= '<b>Amount</b>: '.sprintf('$%.2f',$row['amount']).'<br />';
 			if ($row['mode'] == 'VOID'){}
-			elseif(strstr($row['mode'],'Credit'))
-				$ret .= 'MERCURY<br />';
-			else
+			elseif(strstr($row['mode'],'retail_'))
 				$ret .= 'FAPS<br />';
+			else
+				$ret .= 'MERCURY<br />';
 			$pRef = $row['refNum'];
 		}
 		return $ret;
