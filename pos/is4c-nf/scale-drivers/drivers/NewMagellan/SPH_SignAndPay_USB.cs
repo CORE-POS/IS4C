@@ -98,6 +98,16 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
     private int current_state;
     private int ack_counter;
 
+    /**
+      Does card type screen include foodstamp option
+
+      The idea here is if you are *not* using auto_state_change,
+      the commands coming from POS can can dictate which screens
+      are displayed without recompiling the driver all the
+      time.
+    */
+    private bool type_include_fs = true;
+
     private string usb_devicefile;
     private System.Object usb_lock;
 
@@ -234,7 +244,9 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
         SendReport(BuildCommand(LcdSetClipArea(0,0,1,1)));
         SendReport(BuildCommand(LcdCreateButton(BUTTON_CREDIT,"Credit",5,5,95,95)));
         SendReport(BuildCommand(LcdCreateButton(BUTTON_DEBIT,"Debit",224,5,314,95)));
-        SendReport(BuildCommand(LcdCreateButton(BUTTON_EBT,"EBT",5,144,95,234)));
+        if (this.type_include_fs) {
+            SendReport(BuildCommand(LcdCreateButton(BUTTON_EBT,"EBT",5,144,95,234)));
+        }
         //SendReport(BuildCommand(LcdCreateButton(BUTTON_GIFT,"Gift",224,144,314,234)));
         SendReport(BuildCommand(LcdStartCapture(4)));
 
@@ -773,6 +785,13 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
             break;
         case "termGetType":
             lock(usb_lock){
+                this.type_include_fs = false;
+                SetStateCardType();
+            }
+            break;
+        case "termGetTypeWithFS":
+            lock(usb_lock){
+                this.type_include_fs = true;
                 SetStateCardType();
             }
             break;

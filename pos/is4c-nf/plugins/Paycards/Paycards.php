@@ -69,6 +69,31 @@ messages from POS?',
 			'No' => 0
 			)
 		),
+        'PaycardsAllowEBT' => array(
+            'label' => 'Allow EBT',
+            'description' => 'Show EBT option on terminal 
+                              (only works with Communication type Messages)',
+            'default' => 1,
+            'options' => array(
+                'Yes' => 1,
+                'No' => 0
+                )
+        ),
+        'PaycardsBlockTenders' => array(
+            'label' => 'Block Other Tenders',
+            'description' => 'If customer card data is available, do not
+                              allow other tenders',
+            'default' => 0,
+            'options' => array(
+                'Yes' => 1,
+                'No' => 0
+                )
+        ),
+        'PaycardsBlockExceptions' => array(
+            'label' => 'Blocking Exceptions',
+            'description' => 'Still allow these tenders with Block Other Tenders enabled',
+            'default' => 'CP IC',
+        ),
 	);
 
 	public function plugin_enable(){

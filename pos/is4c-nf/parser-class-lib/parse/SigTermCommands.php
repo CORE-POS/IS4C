@@ -57,7 +57,11 @@ class SigTermCommands extends Parser
 			$CORE_LOCAL->set("CachePanEncBlock",substr($str,9));
 			$CORE_LOCAL->set('ccTermState','type');
             if ($CORE_LOCAL->get('PaycardsStateChange') == 'coordinated') {
-                UdpComm::udpSend('termGetType');
+                if ($CORE_LOCAL->get('PaycardsAllowEBT') == 1) {
+                    UdpComm::udpSend('termGetTypeWithFS');
+                } else {
+                    UdpComm::udpSend('termGetType');
+                }
             } else {
                 // check for out of order messages from terminal
                 if ($CORE_LOCAL->get('CacheCardType') != '' && $CORE_LOCAL->get('CacheCardType') == 'CREDIT') {
