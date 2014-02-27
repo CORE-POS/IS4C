@@ -52,10 +52,10 @@ class FileByEmailPipe extends AttachmentEmailPipe
                     echo "Skipping (based on type)\n";
                     continue;
                 }
-                $fp = fopen(dirname(__FILE__) . '/queue/' . $a['name'], 'w');
+                $fp = fopen(dirname(__FILE__) . '/noauto/queue/' . $a['name'], 'w');
                 fwrite($fp, $a['content']);
                 fclose($fp);
-                chmod(dirname(__FILE__) . '/queue/' . $a['name'], 0666);
+                chmod(dirname(__FILE__) . '/noauto/queue/' . $a['name'], 0666);
                 if (!empty($burst)) {
                     $this->burstPDF($a['name'], $burst);
                 }
@@ -72,7 +72,7 @@ class FileByEmailPipe extends AttachmentEmailPipe
         } else {
             return false;
         }
-        chdir(dirname(__FILE__).'/queue/');
+        chdir(dirname(__FILE__).'/noauto/queue/');
         if (!file_exists($filename)) {
             return false;
         }

@@ -43,14 +43,14 @@ The plugin has two settings.
 =======================
 3. Environment configuration
 =======================
-Accepted attachments will be saved in the "queue" directory. This directory
+Accepted attachments will be saved in the "noauto/queue" directory. This directory
 must be writable, at minimum, by the webserver user and the user
 postfix uses for piped messages (often "nobody"). Note that piped message
 commands may NOT have fully expanded permissions which can lead to
 problems. 777 is easiest, otherwise put the webserver user in the
 PRIMARY group of the piped message user.
 
-The "save-paths" directory provides options for where to save
+The "noauto/save-paths" directory provides options for where to save
 queued files. Add symlinks to whatever directory or directories where
 the files should ultimately be saved. These directories will need
 to be writable by the webserver user, too.
@@ -59,7 +59,7 @@ to be writable by the webserver user, too.
 4. Usage
 =======================
 Incoming attachments of the configured type are stored in the
-"queue" directory. The FbeProcessQueuePage displays one queued
+"noauto/queue" directory. The FbeProcessQueuePage displays one queued
 file at a time so the user can provide a proper filename and
 save-path. When saved, files are removed from the queue directory
 and saved to the specified path and name.

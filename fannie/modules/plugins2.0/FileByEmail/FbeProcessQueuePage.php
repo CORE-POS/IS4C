@@ -31,6 +31,10 @@ if (!class_exists('JsonLib')) {
 
 class FbeProcessQueuePage extends FannieRESTfulPage
 {
+
+    protected $title = 'File Queued Documents';
+    protected $header = 'File Queued Documents';
+
     public function preprocess()
     {
         $this->__routes[] = 'post<path><current><new>';
@@ -40,8 +44,8 @@ class FbeProcessQueuePage extends FannieRESTfulPage
 
     public function post_path_current_new_handler()
     {
-        $current = dirname(__FILE__) . '/queue/' . base64_decode($this->current);
-        $save_path = dirname(__FILE__) . '/save-paths/' . base64_decode($this->path);
+        $current = dirname(__FILE__) . '/noauto/queue/' . base64_decode($this->current);
+        $save_path = dirname(__FILE__) . '/noauto/save-paths/' . base64_decode($this->path);
         $new = $save_path . '/' . $this->new;
 
         $ret = array();
@@ -83,10 +87,11 @@ class FbeProcessQueuePage extends FannieRESTfulPage
     {
         $ret = '';
 
-        $base = dirname(__FILE__).'/save-paths/';
+        $base = dirname(__FILE__).'/noatuo/save-paths/';
         $ret .= '<form onsubmit="processFile(); return false;">';
         $ret .= '<b>File To</b>: <select id="savePath">';
-        foreach(scandir($base) as $d) {
+        $dh = opendir($base);
+        while( ($d = readdir($dh)) !== false) {
             if ($d[0] == '.') continue;
             if (is_dir($base . $d)) {
                 $ret .= sprintf('<option value="%s">%s</option>',
@@ -115,7 +120,7 @@ class FbeProcessQueuePage extends FannieRESTfulPage
 
     private function queueNext()
     {
-        $path = dirname(__FILE__).'/queue/';
+        $path = dirname(__FILE__).'/noauto/queue/';
         foreach(scandir($path) as $file) {
             if ($file[0] == '.') continue;
             if (is_dir($path . $file)) continue;
