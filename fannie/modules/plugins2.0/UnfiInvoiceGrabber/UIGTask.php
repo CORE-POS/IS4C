@@ -143,7 +143,7 @@ class UIGTask extends FannieTask
             $doCheck = $dbc->execute($check, array(1, $good_date, $good_date));
             $diff = time() - strtotime($date);
             $repeat = false;
-            if ($dbc->num_rows($doCheck) > 0 && $diff > (7 * 24 * 60 * 60)) {
+            if ($dbc->num_rows($doCheck) > 0 && $diff > (3 * 24 * 60 * 60)) {
                 echo $this->cronMsg("Skipping $date (already imported)");
                 continue;
             } else if ($dbc->num_rows($doCheck) > 0) {
