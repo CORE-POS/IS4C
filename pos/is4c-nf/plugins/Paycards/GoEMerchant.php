@@ -762,6 +762,15 @@ class GoEMerchant extends BasicCCModule {
 		$ref .= str_pad($transID,   3, "0", STR_PAD_LEFT);
 		return $ref;
 	}
+
+    function myRefNum($ref)
+    {
+        if (strlen($ref) == 25 && preg_match('/^[0-9]{12}-[0-9]{12}$/', $ref)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
 }
 
 ?>
