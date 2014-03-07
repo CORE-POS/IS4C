@@ -34,7 +34,7 @@ class PaycardTransLookupPage extends BasicPage
             $ref = $_REQUEST['id'];
             $local = $_REQUEST['local'];
             $mode = $_REQUEST['mode'];
-            
+
             $obj = null;
             $resp = array();
             foreach($CORE_LOCAL->get('RegisteredPaycardClasses') as $rpc) {
@@ -48,6 +48,10 @@ class PaycardTransLookupPage extends BasicPage
 
             if ($obj === null) {
                 $resp['output'] = DisplayLib::boxMsg('Invalid Transaction ID' . '<br />Local System Error', '', true);
+                $resp['confirm_dest'] = MiscLib::base_url() . 'gui-modules/pos2.php';
+                $resp['cancel_dest'] = MiscLib::base_url() . 'gui-modules/pos2.php';
+            } else if ($local == 0 && $mode == 'verify') {
+                $resp['output'] = DisplayLib::boxMsg('Cannot Verify - Already Complete' . '<br />Local System Error', '', true);
                 $resp['confirm_dest'] = MiscLib::base_url() . 'gui-modules/pos2.php';
                 $resp['cancel_dest'] = MiscLib::base_url() . 'gui-modules/pos2.php';
             } else {
