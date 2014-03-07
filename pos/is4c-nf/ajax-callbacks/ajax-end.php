@@ -38,8 +38,11 @@ $receiptType = isset($_REQUEST['receiptType'])?$_REQUEST['receiptType']:'';
 $yesSync = JsonLib::array_to_json(array('sync'=>true));
 $noSync = JsonLib::array_to_json(array('sync'=>false));
 $output = $noSync;
+ob_start();
 
 if (strlen($receiptType) > 0) {
+
+    register_shutdown_function(array('ReceiptLib', 'shutdownFunction'));
 
     $receiptContent = array();
 
@@ -114,6 +117,7 @@ if (is_object($td)) {
 }
 
 echo $output;
+ob_end_flush();
 
 function cleartemptrans($type) 
 {

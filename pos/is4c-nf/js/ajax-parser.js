@@ -70,6 +70,11 @@ function parserHandler(data,status_str,xml_ro){
 				if (data.sync){
 					ajaxTransactionSync(CORE_JS_PREFIX);
 				}
+                if (data.error) {
+                    var icon = $('#receipticon').attr('src');
+                    var newicon = icon.replace(/(.*graphics)\/.*/, "$1/deadreceipt.gif");
+                    $('#receipticon').attr('src', newicon);
+                }
 			}
 		});
 	}
