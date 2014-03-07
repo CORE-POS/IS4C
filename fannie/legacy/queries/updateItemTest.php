@@ -47,6 +47,9 @@ extract($_POST);
 //echo $today;
 
 $Scale = (isset($_POST["Scale"])) ? 1 : 0;
+if (isset($_POST['s_bycount']) && $_POST['s_bycount'] == 'On' && isset($_POST['s_type']) && $_POST['s_type'] == 'Fixed Weight') {
+    $Scale = 0;
+}
 $FS = (isset($_POST["FS"])) ? 1 : 0;
 $NoDisc = (isset($_POST["NoDisc"])) ? 0 : 1;
 $inUse = (isset($_POST["inUse"])) ? 1 : 0;
