@@ -55,7 +55,7 @@ StaffArPayrollDeduction plugin.';
         */
         $legacy_table = $FANNIE_TRANS_DB . $dbc->sep() . 'staffAR';
         if ($dbc->tableExists($legacy_table)) {
-            $query = 'SELECT cardNo, adjust FROM staffAR';
+            $query = 'SELECT cardNo, adjust FROM ' . $legacy_table;
             $result = $dbc->query($query);
             $cards = '';
             $args = array();
