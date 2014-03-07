@@ -39,6 +39,7 @@ class GumPayoffsModel extends BasicModel
     'amount' => array('type'=>'MONEY'),
     'issueDate' => array('type'=>'DATETIME'),
     'checkNumber' => array('type'=>'INT', 'index'=>true),
+    'checkIssued' => array('type'=>'TINYINT', 'default'=>0),
 	);
 
     /* START ACCESSOR FUNCTIONS */
@@ -120,6 +121,26 @@ class GumPayoffsModel extends BasicModel
                 }
             }
             $this->instance["checkNumber"] = func_get_arg(0);
+        }
+    }
+
+    public function checkIssued()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["checkIssued"])) {
+                return $this->instance["checkIssued"];
+            } else if (isset($this->columns["checkIssued"]["default"])) {
+                return $this->columns["checkIssued"]["default"];
+            } else {
+                return null;
+            }
+        } else {
+            if (!isset($this->instance["checkIssued"]) || $this->instance["checkIssued"] != func_get_args(0)) {
+                if (!isset($this->columns["checkIssued"]["ignore_updates"]) || $this->columns["checkIssued"]["ignore_updates"] == false) {
+                    $this->record_changed = true;
+                }
+            }
+            $this->instance["checkIssued"] = func_get_arg(0);
         }
     }
     /* END ACCESSOR FUNCTIONS */

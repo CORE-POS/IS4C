@@ -368,6 +368,8 @@ class GumMainPage extends FannieRESTfulPage
         $ret .= '</table>';
         $ret .= '</form>';
 
+        $ret .= sprintf('<a href="GumEmailPage.php?id=%d">View & Send Emails</a>', $this->id);
+
         $ret .= '<hr />';
 
         $ret .= '<form id="loanform" action="GumMainPage.php" method="post">';
@@ -412,7 +414,9 @@ class GumMainPage extends FannieRESTfulPage
         $ldate = date('Y-m-d');
         $ret .= '<td><input type="text" size="10" id="loandate" name="loandate" 
                         onfocus="showCalendarControl(this);" onchange="getEndDate();" value="'.$ldate.'" /></td>';
-        $ret .= '<td><input type="text" size="4" id="rate" name="rate" />%</td>';
+        $ret .= '<td><input type="text" size="4" id="rate" name="rate" onchange="validateRate();" />%
+                <input type="hidden" id="maxrate" value="0" />
+                </td>';
         $enddate = date('Y-m-d', mktime(0, 0, 0, date('n')+$default_term, date('j'), date('Y')));
         $ret .= '<td id="enddate">' . $enddate . '</td>';
         $ret .= '<input type="hidden" name="id" value="' . $this->id . '" />';

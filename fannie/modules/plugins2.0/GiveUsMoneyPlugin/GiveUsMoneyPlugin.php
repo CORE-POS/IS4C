@@ -57,6 +57,7 @@ class GiveUsMoneyPlugin extends FanniePlugin
             'GumPayoffs',
             'GumEquityPayoffMap',
             'GumLoanPayoffMap',
+            'GumEmailLog',
         );
 
         foreach($tables as $t) {

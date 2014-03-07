@@ -126,114 +126,218 @@ class GumPromissoryPage extends FannieRESTfulPage
         $pdf = new FPDF('P', 'mm', 'Letter');
         $pdf->SetMargins(6.35, 6.35, 6.35); // quarter-inch margins
         $pdf->SetAutoPageBreak(false);
+
+        for($i=0; $i<2; $i++) {
+            $pdf->AddPage();
+
+            $pdf->SetXY(0, 0);
+            $pdf->Image('img/letterhead.png', null, null, 203); // scale to 8"
+
+            $pdf->SetFont('Arial', '', 10);
+            $line_height = 5;
+            $start_y = 43;
+            $pdf->SetXY(6.35, $start_y);
+
+            $col_width = 101.6;
+            $col1 = 6.35;
+            $col2 = $col1 + $col_width;
+            $y = $start_y;
+
+            $pdf->SetFont('Arial', 'B', 10);
+            $pdf->SetXY($col1, $y);
+            $pdf->Cell($col_width, $line_height, 'Lender', 0, 0, 'C');
+            $pdf->SetXY($col2, $y);
+            $pdf->Cell($col_width, $line_height, 'Borrower', 0, 0, 'C');
+            $y += $line_height;
+            $pdf->SetFont('Arial', '', 10);
+
+            $pdf->SetXY($col1, $y);
+            $pdf->Cell($col_width, $line_height, $this->custdata->FirstName() . ' ' . $this->custdata->LastName(), 0, 0, 'C');
+            $pdf->SetXY($col2, $y);
+            $pdf->Cell($col_width, $line_height, $this->my_address[0], 0, 0, 'C');
+            $y += $line_height;
+
+            $pdf->SetXY($col1, $y);
+            $pdf->Cell($col_width, $line_height, $this->meminfo->street(), 0, 0, 'C');
+            $pdf->SetXY($col2, $y);
+            $pdf->Cell($col_width, $line_height, $this->my_address[1], 0, 0, 'C');
+            $y += $line_height;
+
+            $pdf->SetXY($col1, $y);
+            $pdf->Cell($col_width, $line_height, $this->meminfo->city() . ', ' . $this->meminfo->state() . ' ' . $this->meminfo->zip(), 0, 0, 'C');
+            $pdf->SetXY($col2, $y);
+            $pdf->Cell($col_width, $line_height, $this->my_address[2], 0, 0, 'C');
+            $y += $line_height;
+
+            $pdf->SetXY($col1, $y);
+            $ssn = 'Unknown';
+            if ($this->taxid->load()) {
+                $ssn = 'xxx-xx-' . $this->taxid->maskedTaxIdentifier();
+            }
+            $pdf->Cell($col_width, $line_height, $ssn, 0, 0, 'C');
+            $pdf->SetXY($col2, $y);
+            $myid = GumLib::getSetting('storeFederalID', 'xx-xxxxxxx');
+            $pdf->Cell($col_width, $line_height, $myid, 0, 0, 'C');
+            $y += $line_height;
+
+            $y += $line_height; // spacer
+
+            $pdf->SetXY($col1, $y);
+            $pdf->Cell($col_width, $line_height, 'Owner #: ' . $this->loan->card_no(), 0, 0, 'C');
+            $pdf->SetXY($col2, $y);
+            $pdf->Cell($col_width, $line_height, 'Account #: ' . $this->loan->accountNumber(), 0, 0, 'C');
+            $y += $line_height;
+
+            $pdf->SetXY($col1, $y);
+            $pdf->Cell($col_width, $line_height, 'Loan Date: ' . date('m/d/Y', strtotime($this->loan->loanDate())), 0, 0, 'C');
+            $pdf->SetXY($col2, $y);
+            $pdf->Cell($col_width, $line_height, 'Account #: ' . number_format($this->loan->interestRate()*100, 2), 0, 0, 'C');
+            $y += $line_height;
+
+            $pdf->SetXY($col1, $y);
+            $pdf->Cell($col_width, $line_height, 'Principal Sum: ' . number_format($this->loan->principal(), 2), 0, 0, 'C');
+            $pdf->SetXY($col2, $y);
+            $ld = strtotime($this->loan->loanDate());
+            $ed = mktime(0, 0, 0, date('n', $ld)+$this->loan->termInMonths(), date('j', $ld), date('Y', $ld));
+            $pdf->Cell($col_width, $line_height, 'Maturity Date: ' . date('m/d/Y', $ed), 0, 0, 'C');
+            $y += $line_height;
+
+            $y += $line_height; // spacer
+            $page_text = '';
+            foreach($this->paragraphs as $p) {
+                $page_text .= $p . "\n\n";
+            }
+            $pdf->SetXY($col1, $y);
+            $pdf->Write($line_height, $page_text);
+
+            $sig_y = 215.9;
+            $pdf->SetFont('Arial', 'B', 10);
+            $pdf->SetXY($col1, $sig_y);
+            $pdf->Cell($col_width, $line_height, 'Lender Signature', 0, 0, 'C');
+            $pdf->SetXY($col2, $sig_y);
+            $pdf->Cell($col_width, $line_height, 'Borrower Signature', 0, 0, 'C');
+
+            $pdf->SetDrawColor(0, 0, 0);
+            $pdf->Line($col1, $start_y, 203.2, $start_y);
+            $pdf->Line($col1, $start_y, $col1, $start_y + 5*$line_height);
+            $pdf->Line($col2, $start_y, $col2, $start_y + 5*$line_height);
+            $pdf->Line(203.2, $start_y, 203.2, $start_y + 5*$line_height);
+            $pdf->Line($col1, $start_y + 5*$line_height, 203.2, $start_y + 5*$line_height);
+
+            $pdf->Line($col1, $start_y + 6*$line_height, 203.2, $start_y + 6*$line_height);
+            $pdf->Line($col1, $start_y + 9*$line_height, 203.2, $start_y + 9*$line_height);
+            $pdf->Line($col1, $start_y + 6*$line_height, $col1, $start_y + 9*$line_height);
+            $pdf->Line(203.2, $start_y + 6*$line_height, 203.2, $start_y + 9*$line_height);
+
+            $sig_h = 38.1;
+            $pdf->Line($col1, $sig_y, 203.2, $sig_y);
+            $pdf->Line($col1, $sig_y + $sig_h, 203.2, $sig_y + $sig_h);
+            $pdf->Line($col1, $sig_y, $col1, $sig_y + $sig_h);
+            $pdf->Line($col2, $sig_y, $col2, $sig_y + $sig_h);
+            $pdf->Line(203.2, $sig_y, 203.2, $sig_y + $sig_h);
+        }
+
         $pdf->AddPage();
 
+        // Add loan schedule page
         $pdf->SetXY(0, 0);
         $pdf->Image('img/letterhead.png', null, null, 203); // scale to 8"
 
         $pdf->SetFont('Arial', '', 10);
         $line_height = 5;
         $start_y = 43;
-        $pdf->SetXY(6.35, $start_y);
 
         $col_width = 101.6;
         $col1 = 6.35;
         $col2 = $col1 + $col_width;
         $y = $start_y;
 
-        $pdf->SetFont('Arial', 'B', 10);
         $pdf->SetXY($col1, $y);
-        $pdf->Cell($col_width, $line_height, 'Lender', 0, 0, 'C');
+        $pdf->Cell($col_width, $line_height, 'First Name: ' . $this->custdata->FirstName(), 0, 0, 'C');
         $pdf->SetXY($col2, $y);
-        $pdf->Cell($col_width, $line_height, 'Borrower', 0, 0, 'C');
-        $y += $line_height;
-        $pdf->SetFont('Arial', '', 10);
-
-        $pdf->SetXY($col1, $y);
-        $pdf->Cell($col_width, $line_height, $this->custdata->FirstName() . ' ' . $this->custdata->LastName(), 0, 0, 'C');
-        $pdf->SetXY($col2, $y);
-        $pdf->Cell($col_width, $line_height, $this->my_address[0], 0, 0, 'C');
+        $pdf->Cell($col_width, $line_height, 'Social Security Number: xxx-xx-' . $this->taxid->maskedTaxIdentifier(), 0, 0, 'C');
         $y += $line_height;
 
         $pdf->SetXY($col1, $y);
-        $pdf->Cell($col_width, $line_height, $this->meminfo->street(), 0, 0, 'C');
+        $pdf->Cell($col_width, $line_height, 'Last Name: ' . $this->custdata->LastName(), 0, 0, 'C');
         $pdf->SetXY($col2, $y);
-        $pdf->Cell($col_width, $line_height, $this->my_address[1], 0, 0, 'C');
+        $pdf->Cell($col_width, $line_height, 'Loan Amount: ' . number_format($this->loan->principal(), 2), 0, 0, 'C');
         $y += $line_height;
 
         $pdf->SetXY($col1, $y);
-        $pdf->Cell($col_width, $line_height, $this->meminfo->city() . ', ' . $this->meminfo->state() . ' ' . $this->meminfo->zip(), 0, 0, 'C');
+        $pdf->Cell($col_width, $line_height, 'Address: ' . $this->meminfo->street(), 0, 0, 'C');
         $pdf->SetXY($col2, $y);
-        $pdf->Cell($col_width, $line_height, $this->my_address[2], 0, 0, 'C');
-        $y += $line_height;
-
-        $pdf->SetXY($col1, $y);
-        $ssn = 'Unknown';
-        if ($this->taxid->load()) {
-            $ssn = 'xxx-xx-' . $this->taxid->maskedTaxIdentifier();
-        }
-        $pdf->Cell($col_width, $line_height, $ssn, 0, 0, 'C');
-        $pdf->SetXY($col2, $y);
-        $myid = GumLib::getSetting('storeFederalID', 'xx-xxxxxxx');
-        $pdf->Cell($col_width, $line_height, $myid, 0, 0, 'C');
-        $y += $line_height;
-
-        $y += $line_height; // spacer
-
-        $pdf->SetXY($col1, $y);
-        $pdf->Cell($col_width, $line_height, 'Owner #: ' . $this->loan->card_no(), 0, 0, 'C');
-        $pdf->SetXY($col2, $y);
-        $pdf->Cell($col_width, $line_height, 'Account #: ' . $this->loan->accountNumber(), 0, 0, 'C');
-        $y += $line_height;
-
-        $pdf->SetXY($col1, $y);
         $pdf->Cell($col_width, $line_height, 'Loan Date: ' . date('m/d/Y', strtotime($this->loan->loanDate())), 0, 0, 'C');
-        $pdf->SetXY($col2, $y);
-        $pdf->Cell($col_width, $line_height, 'Account #: ' . number_format($this->loan->interestRate()*100, 2), 0, 0, 'C');
         $y += $line_height;
 
         $pdf->SetXY($col1, $y);
-        $pdf->Cell($col_width, $line_height, 'Principal Sum: ' . number_format($this->loan->principal(), 2), 0, 0, 'C');
+        $pdf->Cell($col_width, $line_height, 'City: ' . $this->meminfo->city(), 0, 0, 'C');
+        $pdf->SetXY($col2, $y);
+        $pdf->Cell($col_width, $line_height, 'Term: ' . ($this->loan->termInMonths() / 12), 0, 0, 'C');
+        $y += $line_height;
+
+        $pdf->SetXY($col1, $y);
+        $pdf->Cell($col_width, $line_height, 'State: ' . $this->meminfo->state(), 0, 0, 'C');
+        $pdf->SetXY($col2, $y);
+        $pdf->Cell($col_width, $line_height, 'Interest Rate: ' . number_format($this->loan->interestRate() * 100, 2).'%', 0, 0, 'C');
+        $y += $line_height;
+
+        $pdf->SetXY($col1, $y);
+        $pdf->Cell($col_width, $line_height, 'Zip Code: ' . $this->meminfo->zip(), 0, 0, 'C');
         $pdf->SetXY($col2, $y);
         $ld = strtotime($this->loan->loanDate());
         $ed = mktime(0, 0, 0, date('n', $ld)+$this->loan->termInMonths(), date('j', $ld), date('Y', $ld));
         $pdf->Cell($col_width, $line_height, 'Maturity Date: ' . date('m/d/Y', $ed), 0, 0, 'C');
         $y += $line_height;
 
-        $y += $line_height; // spacer
-        $page_text = '';
-        foreach($this->paragraphs as $p) {
-            $page_text .= $p . "\n\n";
-        }
+        $y += $line_height;
+        $col_width = $col_width / 2;
+        $col2 = $col1 + $col_width;
+        $col3 = $col2 + $col_width;
+        $col4 = $col3 + $col_width;
+
         $pdf->SetXY($col1, $y);
-        $pdf->Write($line_height, $page_text);
-
-        $sig_y = 215.9;
         $pdf->SetFont('Arial', 'B', 10);
-        $pdf->SetXY($col1, $sig_y);
-        $pdf->Cell($col_width, $line_height, 'Lender Signature', 0, 0, 'C');
-        $pdf->SetXY($col2, $sig_y);
-        $pdf->Cell($col_width, $line_height, 'Borrower Signature', 0, 0, 'C');
-        $pdf->Image('img/sig.png', $col2 + 19.05, $sig_y + 2*$line_height, 63.5);
+        $pdf->SetFillColor(0, 0, 0);
+        $pdf->SetTextColor(0xff, 0xff, 0xff);
+        $pdf->Cell($col_width*4, $line_height, 'Schedule', 1, 0, 'C', true);
+        $y += $line_height;
 
-        $pdf->SetDrawColor(0, 0, 0);
-        $pdf->Line($col1, $start_y, 203.2, $start_y);
-        $pdf->Line($col1, $start_y, $col1, $start_y + 5*$line_height);
-        $pdf->Line($col2, $start_y, $col2, $start_y + 5*$line_height);
-        $pdf->Line(203.2, $start_y, 203.2, $start_y + 5*$line_height);
-        $pdf->Line($col1, $start_y + 5*$line_height, 203.2, $start_y + 5*$line_height);
+        $pdf->SetTextColor(0, 0, 0);
+        $pdf->SetFillColor(0xcc, 0xcc, 0xcc);
+        $pdf->SetXY($col1, $y);
+        $pdf->Cell($col_width, $line_height, 'Year Ending', 0, 0, 'C', true);
+        $pdf->SetXY($col2, $y);
+        $pdf->Cell($col_width, $line_height, 'Days', 0, 0, 'C', true);
+        $pdf->SetXY($col3, $y);
+        $pdf->Cell($col_width, $line_height, 'Interest', 0, 0, 'C', true);
+        $pdf->SetXY($col4, $y);
+        $pdf->Cell($col_width, $line_height, 'Balance', 0, 0, 'C', true);
+        $y += $line_height;
 
-        $pdf->Line($col1, $start_y + 6*$line_height, 203.2, $start_y + 6*$line_height);
-        $pdf->Line($col1, $start_y + 9*$line_height, 203.2, $start_y + 9*$line_height);
-        $pdf->Line($col1, $start_y + 6*$line_height, $col1, $start_y + 9*$line_height);
-        $pdf->Line(203.2, $start_y + 6*$line_height, 203.2, $start_y + 9*$line_height);
-
-        $sig_h = 38.1;
-        $pdf->Line($col1, $sig_y, 203.2, $sig_y);
-        $pdf->Line($col1, $sig_y + $sig_h, 203.2, $sig_y + $sig_h);
-        $pdf->Line($col1, $sig_y, $col1, $sig_y + $sig_h);
-        $pdf->Line($col2, $sig_y, $col2, $sig_y + $sig_h);
-        $pdf->Line(203.2, $sig_y, 203.2, $sig_y + $sig_h);
+        $pdf->SetFont('Arial', '', 10);
+        $loan_info = GumLib::loanSchedule($this->loan);
+        foreach($loan_info['schedule'] as $period) {
+            $pdf->SetXY($col1, $y);
+            $pdf->Cell($col_width, $line_height, $period['end_date'], 0, 0, 'C');
+            $pdf->SetXY($col2, $y);
+            $pdf->Cell($col_width, $line_height, $period['days'], 0, 0, 'C');
+            $pdf->SetXY($col3, $y);
+            $pdf->Cell($col_width, $line_height, number_format($period['interest'], 2), 0, 0, 'R');
+            $pdf->SetXY($col4, $y);
+            $pdf->Cell($col_width, $line_height, number_format($period['balance'], 2), 0, 0, 'R');
+            $y += $line_height;
+        }
+        $pdf->SetFont('Arial', 'B', 10);
+        $pdf->SetXY($col1, $y);
+        $pdf->Cell($col_width, $line_height, 'Balance', 0, 0, 'C', true);
+        $pdf->SetXY($col2, $y);
+        $pdf->Cell($col_width, $line_height, number_format($this->loan->principal(), 2), 0, 0, 'C', true);
+        $pdf->SetXY($col3, $y);
+        $pdf->Cell($col_width, $line_height, number_format($loan_info['total_interest'], 2), 0, 0, 'R', true);
+        $pdf->SetXY($col4, $y);
+        $pdf->Cell($col_width, $line_height, number_format($loan_info['balance'], 2), 0, 0, 'R', true);
+        $y += $line_height;
 
         $pdf->Output('PromissoryNote.pdf', 'I');
 
