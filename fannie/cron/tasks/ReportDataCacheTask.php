@@ -46,7 +46,7 @@ Replaces nightly.tablecache.php';
 
         $chk = $sql->query("TRUNCATE TABLE batchMergeTable");
         if ($chk === false) {
-            echo $this->cron_msg("Could not truncate batchMergeTable");
+            echo $this->cronMsg("Could not truncate batchMergeTable");
         }
         $chk = $sql->query("INSERT INTO batchMergeTable
                         SELECT b.startDate,b.endDate,p.upc,p.description,b.batchID
@@ -54,17 +54,17 @@ Replaces nightly.tablecache.php';
                         ON b.batchID=l.batchID INNER JOIN products AS p
                         ON p.upc = l.upc");
         if ($chk === false) {
-            echo $this->cron_msg("Could not load batch reporting data for UPCs");
+            echo $this->cronMsg("Could not load batch reporting data for UPCs");
         }
         $chk = $sql->query("INSERT INTO batchMergeTable 
                         SELECT b.startDate, b.endDate, p.upc, p.description, b.batchID
                         FROM batchList AS l LEFT JOIN batches AS b
                         ON b.batchID=l.batchID INNER JOIN upcLike AS u
-                        ON l.upc = " . $sql->concat('LC', $sql->convert('u.likeCode', 'CHAR'), '')
-                        . "INNER JOIN products AS p ON u.upc=p.upc
+                        ON l.upc = " . $sql->concat("'LC'", $sql->convert('u.likeCode', 'CHAR'), '')
+                        . " INNER JOIN products AS p ON u.upc=p.upc
                         WHERE p.upc IS NOT NULL");
         if ($chk === false) {
-            echo $this->cron_msg("Could not load batch reporting data for likecodes");
+            echo $this->cronMsg("Could not load batch reporting data for likecodes");
         }
 
         $sql = FannieDB::get($FANNIE_TRANS_DB);
@@ -91,21 +91,21 @@ Replaces nightly.tablecache.php';
         if (!$sql->isView('CashPerformDay')) {
             $chk = $sql->query("TRUNCATE TABLE CashPerformDay");
             if ($chk === false) {
-                echo $this->cron_msg("Could not truncate CashPerformDay");
+                echo $this->cronMsg("Could not truncate CashPerformDay");
             }
             $chk = $sql->query("INSERT INTO CashPerformDay " . $cashierPerformanceSQL);
             if ($chk === false) {
-                echo $this->cron_msg("Could not load data for CashPerformDay");
+                echo $this->cronMsg("Could not load data for CashPerformDay");
             }
         }
         if ($sql->tableExists('CashPerformDay_cache')) {
             $chk = $sql->query("TRUNCATE TABLE CashPerformDay_cache");
             if ($chk === false) {
-                echo $this->cron_msg("Could not truncate CashPerformDay_cache");
+                echo $this->cronMsg("Could not truncate CashPerformDay_cache");
             }
             $chk = $sql->query("INSERT INTO CashPerformDay_cache " . $cashierPerformanceSQL);
             if ($chk === false) {
-                echo $this->cron_msg("Could not load data for CashPerformDay_cache");
+                echo $this->cronMsg("Could not load data for CashPerformDay_cache");
             }
         }
 
