@@ -47,6 +47,8 @@ static public function clearMember()
 	$db = Database::tDataConnect();
 	$db->query("UPDATE localtemptrans SET card_no=0,percentDiscount=NULL");
 	$CORE_LOCAL->set("ttlflag",0);	
+	$opts = array('upc'=>'DEL_MEMENTRY');
+	TransRecord::add_log_record($opts);
 }
 
 /**
@@ -98,10 +100,14 @@ static public function memberID($member_number)
 		$ret['main_frame'] = MiscLib::baseURL()."gui-modules/requestInfo.php?class=PrehLib";
 	}
 
+    /** This is a bad idea. If the search is
+        cancelled, these fields won't be refreshed
+        with new data
 	$CORE_LOCAL->set("memberID","0");
 	$CORE_LOCAL->set("memType",0);
 	$CORE_LOCAL->set("percentDiscount",0);
 	$CORE_LOCAL->set("memMsg","");
+    */
 
 	if (empty($ret['output']) && $ret['main_frame'] == false) {
 		$ret['main_frame'] = MiscLib::base_url()."gui-modules/memlist.php?idSearch=".$member_number;
