@@ -98,7 +98,11 @@ class GumEmailPage extends FannieRESTfulPage
         $log->uid($uid);
         $log->messageType('Welcome');
 
-        if (mail($to, $subject, $msg, $headers)) {
+        if (FormLib::get('sendAs') == 'print') {
+            echo '<pre>' . $msg . '</pre>';
+
+            return false;
+        } else if (mail($to, $subject, $msg, $headers)) {
             $log->save();
             header('Location: GumEmailPage.php?id=' . $this->id);
         } else {
@@ -205,7 +209,11 @@ class GumEmailPage extends FannieRESTfulPage
         $log->uid($uid);
         $log->messageType('Equity Receipt (' . $this->cid . ')');
 
-        if (mail($to, $subject, $msg, $headers)) {
+        if (FormLib::get('sendAs') == 'print') {
+            echo '<pre>' . $msg . '</pre>';
+
+            return false;
+        } else if (mail($to, $subject, $msg, $headers)) {
             $log->save();
             header('Location: GumEmailPage.php?id=' . $this->id);
         } else {
@@ -230,6 +238,12 @@ class GumEmailPage extends FannieRESTfulPage
         $ret .= '<br />';
         $ret .= 'Email: ' . $this->meminfo->email_1();
         $ret .= '<br />';
+        $ret .= 'Action: <select id="sendType">';
+        $ret .= '<option value="email">E-Mail</option>';
+        $ret .= sprintf('<option value="print" %s>Print</option>',
+                    ($this->meminfo->email_1() == '' ? 'selected' : ''));
+        $ret .= '</select>';
+        $ret .= '<br />';
         $ret .= '<br />';
 
         $ret .= '<fieldset><legend>Message History</legend>';
@@ -250,7 +264,7 @@ class GumEmailPage extends FannieRESTfulPage
         $ret .= '<table cellpadding="4" cellspacing="0" border="1">';
         $ret .= sprintf('<tr><td colspan="2">Welcome Message</td>
                 <td><input type="button" value="Send Welcome" 
-                    onclick="location=\'GumEmailPage.php?id=%d&welcome=1\';" />
+                    onclick="location=\'GumEmailPage.php?id=%d&welcome=1&sendAs=\'+$(\'#sendType\').val();" />
                     </td></tr>', $this->id);
         foreach($this->loans as $obj) {
             $ret .= sprintf('<tr>
@@ -275,7 +289,7 @@ class GumEmailPage extends FannieRESTfulPage
                 $ret .= '<td>(No messages available)</td>';
             } else {
                 $ret .= sprintf('<td><input type="button" value="Send Receipt"
-                                    onclick="location=\'GumEmailPage.php?id=%d&creceipt=1&cid=%d\';" />
+                                    onclick="location=\'GumEmailPage.php?id=%d&creceipt=1&cid=%d&sendAs=\'+$(\'#sendType\').val();" />
                                     </td>',
                                     $this->id,
                                     $obj->gumEquityShareID()

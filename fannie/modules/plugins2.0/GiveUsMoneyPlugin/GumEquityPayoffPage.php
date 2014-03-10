@@ -157,6 +157,12 @@ class GumEquityPayoffPage extends FannieRESTfulPage
 
         $pdf->Output('EquityPayoff.pdf', 'I');
 
+        if (FormLib::get('issued') == '1') {
+            $this->check_info->checkIssued(1);
+            $this->check_info->issueDate(date('Y-m-d H:i:s'));
+            $this->check_info->save();
+        }
+
         return false;
     }
 
@@ -183,7 +189,17 @@ class GumEquityPayoffPage extends FannieRESTfulPage
         $ret = '';
 
         $ret .= '<input onclick="location=\'GumEquityPayoffPage.php?id='.$this->id.'&pdf=1\'; return false;"
-                    type="button" value="Print" /><br />';
+                    type="button" value="Print" />';
+        $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
+        $ret .= sprintf('<label for="issueCheckbox">Check has been issued</label> 
+                        <input type="checkbox" onclick="return issueWarning();"
+                        onchange="issueCheck(\'%s\');" id="issueCheckbox" %s />
+                        <span id="issueDate">%s</span>',
+                        $this->id,
+                        ($this->check_info->checkIssued() ? 'checked disabled' : ''),
+                        ($this->check_info->checkIssued() ? $this->check_info->issueDate() : '')
+        );
+        $this->add_script('js/equity_payoff.js');
 
         if (file_exists('img/letterhead.png')) {
             $ret .= '<img src="img/letterhead.png" style="width: 100%;" />';

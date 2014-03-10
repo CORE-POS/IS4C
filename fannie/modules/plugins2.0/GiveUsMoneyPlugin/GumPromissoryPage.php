@@ -35,13 +35,17 @@ class GumPromissoryPage extends FannieRESTfulPage
 
     private $paragraphs = array(
 
-'For value received, the Borrower indicated above, a Minnesota cooperative corporation (hereinafter "Borrower") hereby promises to pay the lender indicated above (hereinafter "Lender"), a current owner of the Borrower, whose address is indicated above, or his or her successors, the principal sum indicated above together with interest thereon at the interest rate indicated above .  Interest shall be calculated and compounded annually.   Upon maturity of this Note on the date set forth above, interest and principal shall be paid in full.  There shall be no penalty for prepayment or early payment of this Note by the Borrower."',
+'For value received, the Borrower, a Minnesota cooperative corporation, hereby promises to pay the Lender, a current Owner of the Borrower, whose address is indicated above, or his or her successors, the principal sum indicated above together with interest thereon at the interest rate indicated above .  Interest shall be calculated and compounded annually.   Upon maturity of this Note on the date set forth above, interest and principal shall be paid in full.',
+
+'There shall be no penalty for prepayment or early payment of this Note by the Borrower. Lender may request that Borrower prepay this Note before the Maturity Date. If he/she does so, Borrower may, in its sole discretion, prepay the Note provided that, if the Borrower does so, it shall discount the amount to be paid by six (6) months of interest if the prepayment request is made at any time prior to twelve (12) months before the Maturity Date or, if the request is made within twelve (12) months of the Maturity Date, the discount shall be three (3) months of interest.',
 
 'All payments shall be made to the address of the Lender set forth above.  It is the responsibility of the Lender to inform the Borrower of any change in address.',
 
 'Lender understands that there are other loans made to the Borrower that have a security interest in the assets of the cooperative and that are superior to the Note of the Lender.  Lender understands that there are unsecured creditors and other lenders to the cooperative that have interests that may be superior to that of the Lender.',
 
 'Borrower shall be in default if it fails to make prompt payment of this Note and the compound interest thereon as of the above maturity date.  The Lender may proceed to enforce payment of the indebtedness and to exercise any or all rights afforded to the Lender under the law.',
+
+'Lender may at his/her discretion waive any of the terms and conditions of this Note, including the final Maturity Date of the Note without the Borrower completing an amendment to this Note. However, no waiver of one part of this Note shall operate as a waiver of any other term or condition of this Note or of the same part of this Note on a future occasion.',
 
     );
 
@@ -191,7 +195,7 @@ class GumPromissoryPage extends FannieRESTfulPage
             $pdf->SetXY($col1, $y);
             $pdf->Cell($col_width, $line_height, 'Loan Date: ' . date('m/d/Y', strtotime($this->loan->loanDate())), 0, 0, 'C');
             $pdf->SetXY($col2, $y);
-            $pdf->Cell($col_width, $line_height, 'Account #: ' . number_format($this->loan->interestRate()*100, 2), 0, 0, 'C');
+            $pdf->Cell($col_width, $line_height, 'Interest Rate: ' . number_format($this->loan->interestRate()*100, 2) . '%', 0, 0, 'C');
             $y += $line_height;
 
             $pdf->SetXY($col1, $y);
@@ -210,7 +214,7 @@ class GumPromissoryPage extends FannieRESTfulPage
             $pdf->SetXY($col1, $y);
             $pdf->Write($line_height, $page_text);
 
-            $sig_y = 215.9;
+            $sig_y = 225.9;
             $pdf->SetFont('Arial', 'B', 10);
             $pdf->SetXY($col1, $sig_y);
             $pdf->Cell($col_width, $line_height, 'Lender Signature', 0, 0, 'C');
@@ -229,7 +233,7 @@ class GumPromissoryPage extends FannieRESTfulPage
             $pdf->Line($col1, $start_y + 6*$line_height, $col1, $start_y + 9*$line_height);
             $pdf->Line(203.2, $start_y + 6*$line_height, 203.2, $start_y + 9*$line_height);
 
-            $sig_h = 38.1;
+            $sig_h = 28.1;
             $pdf->Line($col1, $sig_y, 203.2, $sig_y);
             $pdf->Line($col1, $sig_y + $sig_h, 203.2, $sig_y + $sig_h);
             $pdf->Line($col1, $sig_y, $col1, $sig_y + $sig_h);
