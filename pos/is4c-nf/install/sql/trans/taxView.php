@@ -1,6 +1,6 @@
 <?php
 /*
-View: suspendedtoday
+View: taxView
 
 Columns:
 	id int
