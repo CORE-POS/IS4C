@@ -110,6 +110,8 @@ class GumSearchPage extends FannieRESTfulPage
 		</tr>
         </table>
         </form>
+        <hr />
+        <a href="reports/GumReportIndex.php">Reporting</a>
 		<?php
 		$this->add_onload_command('$(\'#memNum_t\').focus();');
 		return ob_get_clean();

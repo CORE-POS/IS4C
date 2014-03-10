@@ -369,6 +369,8 @@ class GumMainPage extends FannieRESTfulPage
         $ret .= '</form>';
 
         $ret .= sprintf('<a href="GumEmailPage.php?id=%d">View & Send Emails</a>', $this->id);
+        $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
+        $ret .= '<a href="reports/GumReportIndex.php">Reporting</a>';
 
         $ret .= '<hr />';
 
