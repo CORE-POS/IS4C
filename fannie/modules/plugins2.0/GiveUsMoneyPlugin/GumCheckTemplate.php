@@ -223,7 +223,7 @@ class GumCheckTemplate
             $pdf->Cell(0, $line_height, $line, 0, 1);
         }
 
-        $pdf->Image('img/sig.png', $check_right_x - 63.5, $check_top_y + (8*$line_height), 63.5);
+        $pdf->Image('img/sig.png', $check_right_x - 63.5, $check_top_y + (9*$line_height), 63.5);
         $pdf->SetXY($check_right_x - 63.5, $pdf->GetY()+$line_height);
         $pdf->Cell(63.5, $line_height, 'Authorized By Signature', 'T');
 
