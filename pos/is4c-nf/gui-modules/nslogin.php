@@ -32,6 +32,7 @@ class nslogin extends NoInputPage
 
 	function preprocess()
     {
+        global $CORE_LOCAL;
 		$this->color ="coloredArea";
 		$this->heading = _("enter manager password");
 		$this->msg = _("confirm no sales");
