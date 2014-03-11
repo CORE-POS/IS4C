@@ -60,6 +60,15 @@ messages from POS?',
 			'Messages' => 'coordinated' 
 			)
 		),
+		'PaycardsSigCapture' => array(
+		'label' => 'Signature Mode',
+		'description' => '',
+		'default' => 0,
+		'options' => array(
+			'Sign on termial' => 1,
+			'Sign paper slip' => 0
+			)
+		),
 		'PaycardsOfferCashBack' => array(
 		'label' => 'Offer Cashback',
 		'description' => 'Show cashback screen on terminal',

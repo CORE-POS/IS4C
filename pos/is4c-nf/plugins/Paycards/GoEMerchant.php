@@ -503,9 +503,11 @@ class GoEMerchant extends BasicCCModule {
 				$t_type = 'AX';
 			TransRecord::addtender("Credit Card", $t_type, $amt);
 			$CORE_LOCAL->set("boxMsg","<b>Approved</b><font size=-1><p>Please verify cardholder signature<p>[enter] to continue<br>\"rp\" to reprint slip<br>[void] to cancel and void</font>");
-			if ($CORE_LOCAL->get("paycard_amount") <= $CORE_LOCAL->get("CCSigLimit") && $CORE_LOCAL->get("paycard_amount") >= 0){
+			if ($CORE_LOCAL->get("paycard_amount") <= $CORE_LOCAL->get("CCSigLimit") && $CORE_LOCAL->get("paycard_amount") >= 0) {
 				$CORE_LOCAL->set("boxMsg","<b>Approved</b><font size=-1><p>No signature required<p>[enter] to continue<br>[void] to cancel and void</font>");
-			}	
+            } else if ($CORE_LOCAL->get('PaycardsSigCapture') != 1) {
+                $json['receipt'] = 'ccSlip';
+            }
 			break;
 		case PaycardLib::PAYCARD_MODE_VOID:
 			$v = new Void();
@@ -514,8 +516,7 @@ class GoEMerchant extends BasicCCModule {
 			break;	
 		}
 		$CORE_LOCAL->set("ccCustCopy",0);
-		if ($CORE_LOCAL->get("paycard_amount") > $CORE_LOCAL->get("CCSigLimit") || $CORE_LOCAL->get("paycard_amount") < 0)
-			$json['receipt'] = "ccSlip";
+
 		return $json;
 	}
 

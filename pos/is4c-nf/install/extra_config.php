@@ -708,13 +708,7 @@ if ($CORE_LOCAL->get('CCSigLimit')=="") $CORE_LOCAL->set('CCSigLimit',0.00);
 printf(" \$<input size=4 type=text name=CCSigLimit value=\"%s\" />",$CORE_LOCAL->get('CCSigLimit'));
 InstallUtilities::paramSave('CCSigLimit',$CORE_LOCAL->get('CCSigLimit'));
 ?>
-</td></tr><tr><td><b>Signature Capture Device</b>:</td><td>
-<?php
-if (isset($_REQUEST['SigCapture'])) $CORE_LOCAL->set('SigCapture',$_REQUEST['SigCapture']);
-printf("<br /><input size=4 type=text name=SigCapture value=\"%s\" />",$CORE_LOCAL->get('SigCapture'));
-InstallUtilities::paramSave('SigCapture',$CORE_LOCAL->get('SigCapture'));
-?>
-<i>(blank for none)</i></td></tr>
+</td></tr>
 <!--
 <tr><td colspan=2 class="tblHeader">
 <h3>Various</h3>

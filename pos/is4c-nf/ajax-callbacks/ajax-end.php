@@ -111,11 +111,6 @@ if (strlen($receiptType) > 0) {
     }
 }
 
-$td = SigCapture::term_object();
-if (is_object($td)) {
-    $td->WriteToScale("reset");
-}
-
 echo $output;
 ob_end_flush();
 

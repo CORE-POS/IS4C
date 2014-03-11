@@ -170,7 +170,7 @@ class paycardSuccess extends BasicPage {
         //   c) Over limit threshold OR a return
         $isCredit = ($CORE_LOCAL->get('CacheCardType') == 'CREDIT' || $CORE_LOCAL->get('CacheCardType') == '') ? true : false;
         $needSig = ($CORE_LOCAL->get('paycard_amount') > $CORE_LOCAL->get('CCSigLimit') || $CORE_LOCAL->get('paycard_amount') < 0) ? true : false;
-		if ($CORE_LOCAL->get("SigCapture") == 1 && $isCredit && $needSig) {
+		if ($CORE_LOCAL->get("PaycardsSigCapture") == 1 && $isCredit && $needSig) {
             echo "<div id=\"boxMsg\" class=\"centeredDisplay\">";
 
             echo "<div class=\"boxMsgAlert coloredArea\">";
