@@ -126,7 +126,15 @@ class HouseCoupon extends SpecialUPC
 
         /* check for member-only, longer use tracking
            available with member coupons */
-        if ($infoW["memberOnly"] == 1 && ($CORE_LOCAL->get("memberID") == "0" || $CORE_LOCAL->get("isMember") != 1)) {
+        $is_mem = false;
+        if ($CORE_LOCAL->get('isMember') == 1) {
+            $is_mem = true;
+        } else if ($CORE_LOCAL->get('memberID') == $CORE_LOCAL->get('visitingMem')) {
+            $is_mem = true;
+        } else if ($CORE_LOCAL->get('memberID') == '0') {
+            $is_mem = false;
+        }
+        if ($infoW["memberOnly"] == 1 && !$is_mem) {
             return DisplayLib::boxMsg(_("Member only coupon") . "<br />" .
                         _("Apply member number first"));
         }
@@ -290,14 +298,14 @@ class HouseCoupon extends SpecialUPC
           For members, enforce limits against longer
           transaction history
         */
-        if ($infoW["memberOnly"] == 1 && $CORE_LOCAL->get("standalone")==0) {
+        if ($infoW["memberOnly"] == 1 && $CORE_LOCAL->get("standalone")==0 && $CORE_LOCAL->get('memberID') != $CORE_LOCAL->get('visitingMem')) {
             $mDB = Database::mDataConnect();
             $mR = $mDB->query("SELECT quantity FROM houseCouponThisMonth
                 WHERE card_no=" . $CORE_LOCAL->get("memberID") . " and
                 upc='$upc'");
             if ($mDB->num_rows($mR) > 0) {
                 $uses = array_pop($mDB->fetch_row($mR));
-                if ($infoW["limit"] >= $uses) {
+                if ($uses >= $infoW["limit"]) {
                     return DisplayLib::boxMsg(_("Coupon already used")
                                 ."<br />"
                                 ._("on this membership"));
