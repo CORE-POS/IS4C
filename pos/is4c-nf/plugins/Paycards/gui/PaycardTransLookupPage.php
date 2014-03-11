@@ -82,7 +82,7 @@ class PaycardTransLookupPage extends BasicPage
         if ($mode == 'verify') {
             $msg = 'Verifying transaction';
         }
-        echo PaycardLib::paycard_errBox(PaycardLib::PAYCARD_TYPE_CREDIT, $msg, 'Please wait', '');
+        echo DisplayLib::boxMsg($msg . '<br />Please wait', '', true);
 		echo '</div>'; // baseHeight
 
         printf('<input type="hidden" id="refNum" value="%s" />', $id);
