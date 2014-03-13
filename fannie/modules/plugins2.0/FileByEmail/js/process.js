@@ -17,12 +17,12 @@ function processFile()
             if (resp.error) {
                 alert(resp.error);
             } else if (resp.all_done) {
-                $('#preview').attr('src', '');
+                $('#preview').attr('data', '');
                 $('#curName').val('');
                 alert('No more files');
                 $('#saveFilename').val('');
             } else if (resp.next && resp.encoded) {
-                $('#preview').attr('src', 'queue/'+resp.next);
+                $('#preview').attr('data', 'noauto/queue/'+resp.next);
                 $('#curName').val(resp.encoded);
                 $('#saveFilename').val('');
                 $('#saveFilename').focus();

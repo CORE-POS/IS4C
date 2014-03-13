@@ -35,6 +35,8 @@ class FbeProcessQueuePage extends FannieRESTfulPage
     protected $title = 'File Queued Documents';
     protected $header = 'File Queued Documents';
 
+    protected $window_dressing = false;
+
     public function preprocess()
     {
         $this->__routes[] = 'post<path><current><new>';
@@ -85,6 +87,7 @@ class FbeProcessQueuePage extends FannieRESTfulPage
 
     public function get_view()
     {
+        global $FANNIE_URL;
         $ret = '';
 
         $base = dirname(__FILE__).'/noauto/save-paths/';
@@ -93,7 +96,6 @@ class FbeProcessQueuePage extends FannieRESTfulPage
         $dh = opendir($base);
         while( ($d = readdir($dh)) !== false) {
             if ($d[0] == '.') continue;
-            echo $d."\n";
             if (is_dir($base . $d)) {
                 $ret .= sprintf('<option value="%s">%s</option>',
                                 base64_encode($d), basename($d));
@@ -110,10 +112,16 @@ class FbeProcessQueuePage extends FannieRESTfulPage
         if ($next === false) {
             $ret .= 'No files in queue!';
         } else {
-            $ret .= '<iframe style="width:100%;min-height:500px;" id="preview" src="queue/' . $next . '"></iframe>'; 
+            $ret .= '<object style="width:100%;min-height:500px;" id="preview" 
+                    type="application/pdf" data="noauto/queue/' . $next . '#page=1&view=Fit&toolbar=0">
+                    <param name="page" value="1" />
+                    <param name="toolbar" value="0" />
+                    <param name="view" value="Fit" />
+                    </object>'; 
             $ret .= '<input type="hidden" id="curName" value="' . base64_encode($next) . '" />';
         }
 
+        $this->add_script($FANNIE_URL.'src/jquery/jquery.js');
         $this->add_script('js/process.js');
 
         return $ret;
