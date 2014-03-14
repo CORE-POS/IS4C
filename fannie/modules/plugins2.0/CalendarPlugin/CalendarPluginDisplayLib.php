@@ -243,6 +243,10 @@ class CalendarPluginDisplayLib {
         $calendarModel->load();
         $name = $calendarModel->name();
 
+        $uid = FannieAuth::getUID(FannieAuth::checkLogin());
+		$EDIT = CalendarPluginPermissions::can_write($uid,$id);
+		$OWNER = CalendarPluginPermissions::is_owner($uid,$id);
+
         $startTS = strtotime($year . '-W' . str_pad($week,2,'0',STR_PAD_LEFT) . '-1');
         $endTS = mktime(0, 0, 0, date('n', $startTS), date('j', $startTS)+6, date('Y', $startTS));
         $query = 'SELECT eventDate, eventText, eventID
@@ -287,20 +291,26 @@ class CalendarPluginDisplayLib {
             $ret .= '<td>' . date('h:i A', mktime($hour, 0)) . '</td>';
             for($i=0; $i<7; $i++) {
                 $entry_ts = mktime($hour, 0, 0, date('n', $startTS), date('j', $startTS)+$i, date('Y', $startTS));
-                $ret .= sprintf('<td id="weekEntry%d" class="weekEntry"
-                                onclick="weekClickCallback(%d);"
-                                ondblclick="saveCallback(%d);">
-                                <input type="hidden" class="weekEntryTS" value="%d" />
-                                <span class="weekEntryContent">%s</span>',
-                                $entry_ts,
-                                $entry_ts,
-                                $entry_ts,
-                                $entry_ts,
-                                (isset($cal_data[$entry_ts]) ? $cal_data[$entry_ts]['text'] : '')
-                );
-                if (isset($cal_data[$entry_ts])) {
-                    $ret .= sprintf('<input type="hidden" class="weekEntryEventID" value="%d" />',
-                                    $cal_data[$entry_ts]['id']);
+                if ($EDIT) {
+                    $ret .= sprintf('<td id="weekEntry%d" class="weekEntry"
+                                    onclick="weekClickCallback(%d);"
+                                    ondblclick="saveCallback(%d);">
+                                    <input type="hidden" class="weekEntryTS" value="%d" />
+                                    <span class="weekEntryContent">%s</span>',
+                                    $entry_ts,
+                                    $entry_ts,
+                                    $entry_ts,
+                                    $entry_ts,
+                                    (isset($cal_data[$entry_ts]) ? $cal_data[$entry_ts]['text'] : '')
+                    );
+                    if (isset($cal_data[$entry_ts])) {
+                        $ret .= sprintf('<input type="hidden" class="weekEntryEventID" value="%d" />',
+                                        $cal_data[$entry_ts]['id']);
+                    }
+                } else {
+                    $ret .= '<td class="weekEntry"><span class="weekEntryContent">';
+                    $ret .= isset($cal_data[$entry_ts]) ? $cal_data[$entry_ts]['text'] : '';
+                    $ret .= '</span>';
                 }
                 $ret .= '</td>';
             }
@@ -309,20 +319,26 @@ class CalendarPluginDisplayLib {
             $ret .= '<td>' . date('h:i A', mktime($hour, 30)) . '</td>';
             for($i=0; $i<7; $i++) {
                 $entry_ts = mktime($hour, 30, 0, date('n', $startTS), date('j', $startTS)+$i, date('Y', $startTS));
-                $ret .= sprintf('<td id="weekEntry%d" class="weekEntry"
-                                onclick="weekClickCallback(%d);"
-                                ondblclick="saveCallback(%d);">
-                                <input type="hidden" class="weekEntryTS" value="%d" />
-                                <span class="weekEntryContent">%s</span>',
-                                $entry_ts,
-                                $entry_ts,
-                                $entry_ts,
-                                $entry_ts,
-                                (isset($cal_data[$entry_ts]) ? $cal_data[$entry_ts]['text'] : '')
-                );
-                if (isset($cal_data[$entry_ts])) {
-                    $ret .= sprintf('<input type="hidden" class="weekEntryEventID" value="%d" />',
-                                    $cal_data[$entry_ts]['id']);
+                if ($EDIT) {
+                    $ret .= sprintf('<td id="weekEntry%d" class="weekEntry"
+                                    onclick="weekClickCallback(%d);"
+                                    ondblclick="saveCallback(%d);">
+                                    <input type="hidden" class="weekEntryTS" value="%d" />
+                                    <span class="weekEntryContent">%s</span>',
+                                    $entry_ts,
+                                    $entry_ts,
+                                    $entry_ts,
+                                    $entry_ts,
+                                    (isset($cal_data[$entry_ts]) ? $cal_data[$entry_ts]['text'] : '')
+                    );
+                    if (isset($cal_data[$entry_ts])) {
+                        $ret .= sprintf('<input type="hidden" class="weekEntryEventID" value="%d" />',
+                                        $cal_data[$entry_ts]['id']);
+                    }
+                } else {
+                    $ret .= '<td class="weekEntry"><span class="weekEntryContent">';
+                    $ret .= isset($cal_data[$entry_ts]) ? $cal_data[$entry_ts]['text'] : '';
+                    $ret .= '</span>';
                 }
                 $ret .= '</td>';
             }
