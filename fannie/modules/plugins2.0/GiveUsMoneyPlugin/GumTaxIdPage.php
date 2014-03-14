@@ -134,7 +134,7 @@ class GumTaxIdPage extends FannieRESTfulPage
         $ret .= '<tr>';
         $ret .= '<th>Mem#</th><td>' . $this->id . '</td>';
         $ret .= '</tr><tr>';
-        $ret .= '<th>Name/th><td>' . $this->custdata->FirstName() . ' ' . $this->custdata->LastName() . '</td>';
+        $ret .= '<th>Name</th><td>' . $this->custdata->FirstName() . ' ' . $this->custdata->LastName() . '</td>';
         $ret .= '</tr><tr>';
         $ret .= '<th>Current</th>';
         $ssn = 'No Value';
