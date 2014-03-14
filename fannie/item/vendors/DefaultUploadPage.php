@@ -96,9 +96,10 @@ class DefaultUploadPage extends FannieUploadPage {
 		),
 	);
 
-	protected $use_splits = True;
+	protected $use_splits = true;
 
-	function process_file($linedata){
+	function process_file($linedata)
+    {
 		global $FANNIE_OP_DB;
 		$dbc = FannieDB::get($FANNIE_OP_DB);
 
@@ -108,12 +109,14 @@ class DefaultUploadPage extends FannieUploadPage {
 		}
 		$VENDOR_ID = $_SESSION['vid'];
 
-		$p = $dbc->prepare_statement("SELECT vendorID FROM vendors WHERE vendorID=?");
+		$p = $dbc->prepare_statement("SELECT vendorID,vendorName FROM vendors WHERE vendorID=?");
 		$idR = $dbc->exec_statement($p,array($VENDOR_ID));
 		if ($dbc->num_rows($idR) == 0){
 			$this->error_details = 'Cannot find vendor';
 			return False;
 		}
+        $idW = $dbc->fetch_row($idR);
+        $vendorName = $idW['vendorName'];
 
 		$SKU = $this->get_column_index('sku');
 		$BRAND = $this->get_column_index('brand');
@@ -136,18 +139,19 @@ class DefaultUploadPage extends FannieUploadPage {
                         VALUES (?,?,?,?,?,?,?,?,?,?)");
         }
 		$srpP = $dbc->prepare_statement("INSERT INTO vendorSRPs (vendorID, upc, srp) VALUES (?,?,?)");
+        $pm = new ProductsModel($dbc);
 
-		foreach($linedata as $data){
+		foreach($linedata as $data) {
 			if (!is_array($data)) continue;
 
 			if (!isset($data[$UPC])) continue;
 
 			// grab data from appropriate columns
 			$sku = $data[$SKU];
-			$brand = ($BRAND === false) ? '' : $data[$BRAND];
-			$description = $data[$DESCRIPTION];
+			$brand = ($BRAND === false) ? $vendorName : substr($data[$BRAND], 0, 50);
+			$description = substr($data[$DESCRIPTION], 0, 50);
 			$qty = $data[$QTY];
-			$size = ($SIZE1 === false) ? '' : $data[$SIZE1];
+			$size = ($SIZE1 === false) ? '' : substr($data[$SIZE1], 0, 25);
             $upc = $data[$UPC];
             $upc = str_replace(' ', '', $upc);
             $upc = str_replace('-', '', $upc);
@@ -210,13 +214,23 @@ class DefaultUploadPage extends FannieUploadPage {
             if (is_numeric($srp)) {
                 $dbc->exec_statement($srpP,array($VENDOR_ID,$upc,$srp));
             }
+
+			if ($_SESSION['vUploadChangeCosts']) {
+                $pm->reset();
+                $pm->upc($upc);
+                if ($pm->load()) {
+                    $pm->cost($reg_unit);
+                    $pm->save();
+                }
+            }
 		}
 
 		return True;
 	}
 
 	/* clear tables before processing */
-	function split_start(){
+	function split_start()
+    {
 		global $FANNIE_OP_DB;
 		$dbc = FannieDB::get($FANNIE_OP_DB);
 
@@ -238,25 +252,36 @@ class DefaultUploadPage extends FannieUploadPage {
 		$p = $dbc->prepare_statement("DELETE FROM vendorSRPs WHERE vendorID=?");
 		$dbc->exec_statement($p,array($VENDOR_ID));
 
-		if (FormLib::get_form_value('rm_cds') !== '')
-			$_SESSION['vUploadCheckDigits'] = True;
-		else
-			$_SESSION['vUploadCheckDigits'] = False;
+		if (FormLib::get_form_value('rm_cds') !== '') {
+			$_SESSION['vUploadCheckDigits'] = true;
+		} else {
+			$_SESSION['vUploadCheckDigits'] = false;
+        }
+        if (FormLib::get('up_costs') !== '') {
+			$_SESSION['vUploadChangeCosts'] = true;
+        } else {
+			$_SESSION['vUploadChangeCosts'] = false;
+        }
 	}
 
-	function preview_content(){
-		return '<input type="checkbox" name="rm_cds" checked /> Remove check digits';
+	function preview_content()
+    {
+		return '<input type="checkbox" name="rm_cds" checked /> Remove check digits<br />
+                <input type="checkbox" name="up_costs" checked /> Update product costs';
 	}
 
-	function results_content(){
+	function results_content()
+    {
 		$ret = "Price data import complete<p />";
 		$ret .= '<a href="'.$_SERVER['PHP_SELF'].'">Upload Another</a>';
 		unset($_SESSION['vid']);
 		unset($_SESSION['vUploadCheckDigits']);
+		unset($_SESSION['vUploadChangeCosts']);
 		return $ret;
 	}
 
-	function form_content(){
+	function form_content()
+    {
 		global $FANNIE_OP_DB;
 		$vid = FormLib::get_form_value('vid');
 		if ($vid === ''){
