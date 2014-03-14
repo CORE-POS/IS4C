@@ -97,6 +97,9 @@ function addressList($memNum)
 				echo "</td>";
                         }
 			echo "<td><a href=\"{$FANNIE_URL}ordering/clearinghouse.php?card_no=$memNum\">Special Orders</a></td>";
+            if (validateUserQuiet('GiveUsMoney')) {
+                echo "<td><a href=\"{$FANNIE_URL}modules/plugins2.0/GiveUsMoneyPlugin/GumMainPage.php?id=".$memNum."\">Owner Loans</a></td>";
+            }
 		echo "</tr>";
 		echo "<tr>";
 			echo "<td bgcolor='FFFF33'>First Name: </td>";
