@@ -19,6 +19,7 @@ Columns:
 	xResultMessage varchar
 	xTransactionID varchar
 	xApprovalNumber varchar
+    efsnetRequestID int
 
 Depends on:
 	efsnetRequest (table)
@@ -63,7 +64,8 @@ $CREATE['trans.efsnetResponse'] = "
 		xResultCode varchar (8), 
 		xResultMessage varchar (100),
 		xTransactionID varchar (12),
-		xApprovalNumber varchar (20)
+		xApprovalNumber varchar (20),
+        efsnetRequestID INT
 	)
 ";
 ?>
