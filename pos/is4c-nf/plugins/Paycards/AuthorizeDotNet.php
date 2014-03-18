@@ -332,6 +332,12 @@ class AuthorizeDotNet extends BasicCCModule {
 		$sqlColumns .= ",validResponse";
 		$sqlValues .= sprintf(",%d",$validResponse);
 
+        $table_def = $dbTrans->table_definition('efsnetResponse');
+        if (isset($table_def['efsnetRequestID'])) {
+            $sqlColumns .= ', efsnetRequestID';
+            $sqlValues .= sprintf(', %d', $this->last_req_id);
+        }
+
 		$sql = "INSERT INTO efsnetResponse (" . $sqlColumns . ") VALUES (" . $sqlValues . ")";
 		PaycardLib::paycard_db_query($sql, $dbTrans);
 
@@ -578,9 +584,14 @@ class AuthorizeDotNet extends BasicCCModule {
 			sprintf("'%s','%s',%d,'%s',%s,",  $now, $refNum, $live, $mode, $amountText) .
 			sprintf("'%s','%s',%d,'%s'",           $cardPANmasked, $cardIssuer, $manual, $name);
 		$sql = "INSERT INTO efsnetRequest (" . $sqlCols . ") VALUES (" . $sqlVals . ")";
+        $table_def = $dbTrans->table_definition('efsnetRequest');
 
 		if( !PaycardLib::paycard_db_query($sql, $dbTrans) ) 
 			return $this->setErrorMsg(PaycardLib::PAYCARD_ERR_NOSEND); // internal error, nothing sent (ok to retry)
+
+        if (isset($table_def['efsnetRequestID'])) {
+            $this->last_req_id = $dbTrans->insert_id();
+        }
 
 		$postData = $this->array2post($postValues);
 		$this->GATEWAY = "https://test.authorize.net/gateway/transact.dll";

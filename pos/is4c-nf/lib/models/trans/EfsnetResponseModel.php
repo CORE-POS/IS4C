@@ -48,6 +48,7 @@ class EfsnetResponseModel extends BasicModel
     'xResultMessage' => array('type'=>'VARCHAR(100)'),
     'xTransactionID' => array('type'=>'VARCHAR(12)'),
     'xApprovalNumber' => array('type'=>'VARCHAR(20)'),
+    'efsnetRequestID' => array('type'=>'INT', 'index'=>true),
 	);
 
     /* START ACCESSOR FUNCTIONS */
@@ -289,6 +290,21 @@ class EfsnetResponseModel extends BasicModel
             }
         } else {
             $this->instance["xApprovalNumber"] = func_get_arg(0);
+        }
+    }
+
+    public function pairID()
+    {
+        if(func_num_args() == 0) {
+            if(isset($this->instance["pairID"])) {
+                return $this->instance["pairID"];
+            } elseif(isset($this->columns["pairID"]["default"])) {
+                return $this->columns["pairID"]["default"];
+            } else {
+                return null;
+            }
+        } else {
+            $this->instance["pairID"] = func_get_arg(0);
         }
     }
     /* END ACCESSOR FUNCTIONS */

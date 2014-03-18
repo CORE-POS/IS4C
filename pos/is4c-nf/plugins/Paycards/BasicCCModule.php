@@ -51,6 +51,7 @@ define("LOCAL_CERT_PATH",realpath(dirname(__FILE__)).'/cacert.pem');
 class BasicCCModule {
 
     public $last_ref_num = '';
+    public $last_req_id = 0;
 
 	/** 
 	  Constructor
