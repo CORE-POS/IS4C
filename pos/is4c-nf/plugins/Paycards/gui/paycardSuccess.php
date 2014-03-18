@@ -25,8 +25,12 @@ include_once(dirname(__FILE__).'/../../../lib/AutoLoader.php');
 
 class paycardSuccess extends BasicPage {
 
+    private $bmp_path;
+
 	function preprocess(){
 		global $CORE_LOCAL;
+
+        $this->bmp_path = $this->page_url . 'scale-drivers/drivers/NewMagellan/ss-output/tmp/';
 
 		// check for input
 		if(isset($_REQUEST["reginput"])) {
