@@ -313,6 +313,40 @@ class SQLManager
     }
 
     /**
+      Get last insert ID
+      @return [integer] last ID
+    */
+    public function insert_id($which_connection='')
+    {
+        if ($which_connection == '') {
+            $which_connection=$this->default_db;
+        }
+        switch($this->db_types[$which_connection]) {
+            case $this->TYPE_MYSQL:
+                return mysql_insert_id();
+                break;
+            case $this->TYPE_MSSQL:
+                $lookup = $this->query('SELECT SCOPE_IDENTITY() as id', $which_connection);
+                if ($this->num_rows($lookup, $which_connection)) {
+                    $row = $this->fetch_row($lookup, $which_connection);
+                    return $row['id'];
+                } else {
+                    return 0;
+                }
+                break;
+            case $this->TYPE_PDOMY:
+            case $this->TYPE_PDOMS:
+            case $this->TYPE_PDOPG:
+            case $this->TYPE_PDOSL:
+                $obj = $this->connections[$which_connection];
+                return $obj->lastInsertId();
+                break;
+        }
+
+        return 0;
+    }
+
+    /**
       Prepared statement: non-PDO types just return the query_text
       without modification
     */
