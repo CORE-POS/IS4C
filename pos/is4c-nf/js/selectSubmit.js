@@ -45,7 +45,11 @@ function selectSubmit(selector, myform) {
             console.log('submitting');
             console.log($(myform).length);
         }
-        prevPrevKey = prevKey;
-        prevKey = jsKey;
+
+        /* Ignore Shift (16) and CapsLock (20) */
+        if (jsKey > 31) {
+            prevPrevKey = prevKey;
+            prevKey = jsKey;
+        }
     });
 }
