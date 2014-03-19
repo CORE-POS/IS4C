@@ -527,7 +527,9 @@ static public function uploadCCdata()
         "select {$req_cols} from efsnetRequest",
         $CORE_LOCAL->get("mDatabase"),"insert into efsnetRequest ({$req_cols})")) {
 
-        $sql->query("truncate table efsnetRequest",
+        // table contains an autoincrementing column
+        // do not TRUNCATE; that would reset the counter
+        $sql->query("DELETE FROM efsnetRequest",
             $CORE_LOCAL->get("tDatabase"));
 
         $res_cols = self::getMatchingColumns($sql,"efsnetResponse");
