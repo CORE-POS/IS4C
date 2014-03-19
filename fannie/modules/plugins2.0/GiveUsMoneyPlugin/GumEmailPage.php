@@ -30,8 +30,9 @@ if (!class_exists('FannieAPI')) {
 */
 class GumEmailPage extends FannieRESTfulPage 
 {
-    protected $must_authenticate = true;
-    protected $auth_classes = array('GiveUsMoney');
+    // disabled so that other pages can call the email-sending request handlers
+    protected $must_authenticate = false;
+    //protected $auth_classes = array('GiveUsMoney');
 
     public function preprocess()
     {

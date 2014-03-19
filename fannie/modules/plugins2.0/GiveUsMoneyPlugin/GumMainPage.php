@@ -167,7 +167,11 @@ class GumMainPage extends FannieRESTfulPage
 
     public function post_id_shares_type_handler()
     {
-        global $FANNIE_PLUGIN_SETTINGS, $FANNIE_OP_DB;
+        global $FANNIE_PLUGIN_SETTINGS, $FANNIE_OP_DB, $FANNIE_URL;
+
+        $bridge = GumLib::getSetting('posLayer');
+        $meminfo = $bridge::getMeminfo($this->id);
+
         $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['GiveUsMoneyDB']);
 
         $settings = new GumSettingsModel($dbc);
@@ -193,6 +197,17 @@ class GumMainPage extends FannieRESTfulPage
             // payoff cannot exceed balance
             if ($model->value() > 0 || ($model->value() < 0 && abs($model->value()) <= $bal)) {
                 $newid = $model->save();
+                
+                // share purchase & email exists
+                // use curl to call email page's request handler
+                if ($this->shares > 0 && $meminfo->email_1() != '') {
+
+                    $url = 'http://localhost' . $FANNIE_URL . 'modules/plugins2.0/GiveUsMoneyPlugin/GumEmailPage.php?id=' . $this->id . '&creceipt=1&cid=' . $newid;
+                    $handle = curl_init($url);
+                    curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
+                    $res = curl_exec($handle);
+                    curl_close($handle);
+                }
 
                 $model->gumEquityShareID($newid);
                 $model->load();
@@ -371,6 +386,8 @@ class GumMainPage extends FannieRESTfulPage
         $ret .= sprintf('<a href="GumEmailPage.php?id=%d">View & Send Emails</a>', $this->id);
         $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
         $ret .= '<a href="reports/GumReportIndex.php">Reporting</a>';
+        $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
+        $ret .= '<a href="../CalendarPlugin/CalendarMainPage.php?calID=69&view=week">Weekly Schedule</a>';
 
         $ret .= '<hr />';
 
