@@ -148,7 +148,11 @@ class undo extends NoInputPage {
 					//TransRecord::addtax();
 				}
 				elseif ($row["trans_type"] ==  "T"){
-					if ($row["description"] == "Change")
+                    if ($row["upc"] == "MAD Coupon") {
+                        $madCoup = $row['total'];
+                        TransRecord::addItem("MAD Coupon", "Member Appreciation Coupon", "I", "CP", "C", 0, 1, 
+                            -1*$madCoup, -1*$madCoup, -1*$madCoup, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 17);
+					} else if ($row["description"] == "Change")
 						TransRecord::addchange(-1*$row["total"]);
 					elseif ($row["description"] == "FS Change")
 						TransRecord::addfsones(-1*$row["total"]);
@@ -174,11 +178,6 @@ class undo extends NoInputPage {
 				elseif (strstr($row["description"],"** Tare Weight")){
 					$temp = explode(" ",$row["description"]);
 					TransRecord::addTare($temp[3]*100);
-				}
-				elseif ($row["upc"] == "MAD Coupon"){
-					$madCoup = $row['total'];
-					TransRecord::addItem("MAD Coupon", "Member Appreciation Coupon", "I", "CP", "C", 0, 1, 
-						-1*$madCoup, -1*$madCoup, -1*$madCoup, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 17);
 				}
 				elseif ($row["upc"] == "DISCOUNT"){
 					//TransRecord::addTransDiscount();

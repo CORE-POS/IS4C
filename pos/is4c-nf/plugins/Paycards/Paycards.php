@@ -35,6 +35,11 @@ class Paycards extends Plugin {
 			'No' => 0
 			)
 		),
+        'PaycardsTerminalID' => array(
+        'label' => 'Terminal ID',
+        'description' => 'Unique ID for MC regs (1-3 characters, alphanumeric)',
+        'default'=> '',
+        ),
 		'PaycardsCashierFacing' => array(
 		'label' => 'Mode',
 		'description' => 'Who is swiping the card?',
@@ -55,6 +60,15 @@ messages from POS?',
 			'Messages' => 'coordinated' 
 			)
 		),
+		'PaycardsSigCapture' => array(
+		'label' => 'Signature Mode',
+		'description' => '',
+		'default' => 0,
+		'options' => array(
+			'Sign on termial' => 1,
+			'Sign paper slip' => 0
+			)
+		),
 		'PaycardsOfferCashBack' => array(
 		'label' => 'Offer Cashback',
 		'description' => 'Show cashback screen on terminal',
@@ -64,6 +78,31 @@ messages from POS?',
 			'No' => 0
 			)
 		),
+        'PaycardsAllowEBT' => array(
+            'label' => 'Allow EBT',
+            'description' => 'Show EBT option on terminal 
+                              (only works with Communication type Messages)',
+            'default' => 1,
+            'options' => array(
+                'Yes' => 1,
+                'No' => 0
+                )
+        ),
+        'PaycardsBlockTenders' => array(
+            'label' => 'Block Other Tenders',
+            'description' => 'If customer card data is available, do not
+                              allow other tenders',
+            'default' => 0,
+            'options' => array(
+                'Yes' => 1,
+                'No' => 0
+                )
+        ),
+        'PaycardsBlockExceptions' => array(
+            'label' => 'Blocking Exceptions',
+            'description' => 'Still allow these tenders with Block Other Tenders enabled',
+            'default' => 'CP IC',
+        ),
 	);
 
 	public function plugin_enable(){

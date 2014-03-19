@@ -1,7 +1,7 @@
 <?php
 /*******************************************************************************
 
-    Copyright 2012 Whole Foods Co-op
+    Copyright 2014 Whole Foods Co-op
 
     This file is part of IT CORE.
 
@@ -21,31 +21,23 @@
 
 *********************************************************************************/
 
-/**
-  @deprecated 11Mar14 Andy
+class ECheckPlugin extends Plugin 
+{
 
-  Related to Ingenico i6550 driver. Never finished.
-  No references to this class should remain elsewhere
-  in the codebase.
-*/
-class SigCapture {
+	public $plugin_description = 'Handle echecks and paper checks with one tender key';
 
-static public function term_object(){
-    return false;
-    /**
-	global $CORE_LOCAL;
-	$termDriver = $CORE_LOCAL->get("SigCapture");
-	$td = 0;
-	if ($termDriver != "" && !class_exists($termDriver)){
-		include(realpath(dirname(__FILE__).
-			'/../scale-drivers/php-wrappers/'.$termDriver.'.php'));
-		$td = new $termDriver();
-	}
-	if (is_object($td)) return $td;
-	return False;
-    */
-}
+	public $plugin_settings = array(
+        'EcpElectronicTender' => array(
+        'label' => 'ECheck Tender Code',
+        'description' => 'Underlying tender type for electronic checks',
+        'default'=> 'TK',
+        ),
+        'EcpPaperTender' => array(
+        'label' => 'Paper Check Tender Code',
+        'description' => 'Underlying tender type for paper checks',
+        'default'=> 'CK',
+        ),
+	);
 
 }
 
-?>

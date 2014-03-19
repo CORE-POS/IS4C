@@ -95,8 +95,20 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
     private const int DEFAULT_WAIT_TIMEOUT = 1000;
     private string last_message = "";
 
+    private string sig_message = "";
+
     private int current_state;
     private int ack_counter;
+
+    /**
+      Does card type screen include foodstamp option
+
+      The idea here is if you are *not* using auto_state_change,
+      the commands coming from POS can can dictate which screens
+      are displayed without recompiling the driver all the
+      time.
+    */
+    private bool type_include_fs = true;
 
     private string usb_devicefile;
     private System.Object usb_lock;
@@ -196,7 +208,9 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
     private void SetStateStart(){
         SendReport(BuildCommand(LcdStopCapture()));
         SendReport(BuildCommand(LcdClearSignature()));
-        SendReport(BuildCommand(LcdSetClipArea(0,0,1,1)));
+        //SendReport(BuildCommand(LcdSetClipArea(0,0,1,1)));
+        // 10Mar14 - undo bordered sig capture clip area
+        SendReport(BuildCommand(LcdSetClipArea(5,28,310,140, false, new byte[]{0,0,0})));
         SendReport(BuildCommand(PinpadCancelGetPIN()));
         SendReport(BuildCommand(LcdFillColor(0xff,0xff,0xff)));
         SendReport(BuildCommand(LcdFillRectangle(0,0,LCD_X_RES-1,LCD_Y_RES-1)));
@@ -234,7 +248,9 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
         SendReport(BuildCommand(LcdSetClipArea(0,0,1,1)));
         SendReport(BuildCommand(LcdCreateButton(BUTTON_CREDIT,"Credit",5,5,95,95)));
         SendReport(BuildCommand(LcdCreateButton(BUTTON_DEBIT,"Debit",224,5,314,95)));
-        SendReport(BuildCommand(LcdCreateButton(BUTTON_EBT,"EBT",5,144,95,234)));
+        if (this.type_include_fs) {
+            SendReport(BuildCommand(LcdCreateButton(BUTTON_EBT,"EBT",5,144,95,234)));
+        }
         //SendReport(BuildCommand(LcdCreateButton(BUTTON_GIFT,"Gift",224,144,314,234)));
         SendReport(BuildCommand(LcdStartCapture(4)));
 
@@ -315,10 +331,14 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
         SendReport(BuildCommand(LcdFillColor(0xff,0xff,0xff)));
         SendReport(BuildCommand(LcdFillRectangle(0,0,LCD_X_RES-1,LCD_Y_RES-1)));
 
-        SendReport(BuildCommand(LcdSetClipArea(5,5,310,140,true,new byte[]{0,0,0})));
-        SendReport(BuildCommand(LcdDrawText("please sign",105,150)));
-        SendReport(BuildCommand(LcdCreateButton(BUTTON_SIG_ACCEPT,"Done",5,190,115,215)));
-        SendReport(BuildCommand(LcdCreateButton(BUTTON_SIG_RESET,"Clear",204,190,314,215)));
+        SendReport(BuildCommand(LcdTextFont(3,12,14)));
+        SendReport(BuildCommand(LcdTextColor(0,0,0)));
+
+        SendReport(BuildCommand(LcdDrawText(sig_message, 1, 1)));
+        SendReport(BuildCommand(LcdSetClipArea(5,28,310,140,true,new byte[]{0,0,0})));
+        SendReport(BuildCommand(LcdDrawText("please sign",100,146)));
+        SendReport(BuildCommand(LcdCreateButton(BUTTON_SIG_RESET,"Clear",5,180,115,225)));
+        SendReport(BuildCommand(LcdCreateButton(BUTTON_SIG_ACCEPT,"Done",204,180,314,225)));
 
         SendReport(BuildCommand(LcdStartCapture(5)));
 
@@ -612,6 +632,7 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
             }
             else if (msg.Length > 1024){
                 BitmapOutput(msg);
+                sig_message = "";
                 SetStateStart();
             }
             break;
@@ -743,6 +764,14 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
     }
 
     public override void HandleMsg(string msg){ 
+
+        // optional predicate for "termSig" message
+        // predicate string is displayed on sig capture screen
+        if (msg.Length > 7 && msg.Substring(0, 7) == "termSig") {
+            sig_message = msg.Substring(7);
+            msg = "termSig";
+        }
+
         // 7May13 use locks
         last_message = msg;
         switch(msg){
@@ -773,6 +802,13 @@ public class SPH_SignAndPay_USB : SerialPortHandler {
             break;
         case "termGetType":
             lock(usb_lock){
+                this.type_include_fs = false;
+                SetStateCardType();
+            }
+            break;
+        case "termGetTypeWithFS":
+            lock(usb_lock){
+                this.type_include_fs = true;
                 SetStateCardType();
             }
             break;

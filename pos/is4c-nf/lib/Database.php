@@ -203,7 +203,9 @@ static public function getsubtotals()
      * values > 1000, so use floating point */
     $CORE_LOCAL->set("amtdue",(double)round($CORE_LOCAL->get("runningTotal") - $CORE_LOCAL->get("transDiscount") + $CORE_LOCAL->get("taxTotal"), 2));
 
-    if ( $CORE_LOCAL->get("fsEligible") > $CORE_LOCAL->get("subtotal") ) {
+    if ( $CORE_LOCAL->get("fsEligible") > $CORE_LOCAL->get("subtotal") && $CORE_LOCAL->get('subtotal') > 0) {
+        $CORE_LOCAL->set("fsEligible",$CORE_LOCAL->get("subtotal"));
+    } else if ( $CORE_LOCAL->get("fsEligible") < $CORE_LOCAL->get("subtotal") && $CORE_LOCAL->get('subtotal') < 0) {
         $CORE_LOCAL->set("fsEligible",$CORE_LOCAL->get("subtotal"));
     }
 }
@@ -525,7 +527,9 @@ static public function uploadCCdata()
         "select {$req_cols} from efsnetRequest",
         $CORE_LOCAL->get("mDatabase"),"insert into efsnetRequest ({$req_cols})")) {
 
-        $sql->query("truncate table efsnetRequest",
+        // table contains an autoincrementing column
+        // do not TRUNCATE; that would reset the counter
+        $sql->query("DELETE FROM efsnetRequest",
             $CORE_LOCAL->get("tDatabase"));
 
         $res_cols = self::getMatchingColumns($sql,"efsnetResponse");
@@ -574,6 +578,18 @@ static public function uploadCCdata()
         // this is not an important enough error to go
         // to standalone. 
         $ret = false;
+    }
+
+    if ($sql->table_exists('CapturedSignature')) {
+        $sig_cols = self::getMatchingColumns($sql, 'CapturedSignature');
+        $sig_success = $sql->transfer($CORE_LOCAL->get("tDatabase"),
+            "select {$sig_cols} from CapturedSignature",
+            $CORE_LOCAL->get("mDatabase"),
+            "insert into CapturedSignature ({$sig_cols})");
+        if ($sig_success) {
+            $sql->query("truncate table CapturedSignature",
+                $CORE_LOCAL->get("tDatabase"));
+        }
     }
 
     return $ret;
@@ -748,6 +764,71 @@ static public function changeLttTaxCode($fromName, $toName)
     return true;
 
 // changeLttTaxCode
+}
+
+/**
+  Rotate current transaction data
+  Current data in translog.localtemptrans is inserted into:
+  - translog.dtransactions
+  - translog.localtrans
+  - translog.localtranstoday (if not a view)
+  - translog.localtrans_today (if present)
+
+  @return [boolean] success or failure
+
+  Success or failure is based on whether or not
+  the insert into translog.dtransactions succeeds. That's
+  the most important query in terms of ensuring data
+  flows properly to the server.
+*/
+static public function rotateTempData()
+{
+    $connection = Database::tDataConnect();
+
+    // LEGACY.
+    // these records should be written correctly from the start
+    // could go away with verification of above.
+    $connection->query("update localtemptrans set trans_type = 'T' where trans_subtype IN ('CP','IC')");
+    $connection->query("update localtemptrans set upc = 'DISCOUNT', description = upc, department = 0, trans_type='S' where trans_status = 'S'");
+
+    $connection->query("insert into localtrans select * from localtemptrans");
+    // localtranstoday converted from view to table
+    if (!$connection->isView('localtranstoday')) {
+        $connection->query("insert into localtranstoday select * from localtemptrans");
+    }
+    // legacy table when localtranstoday is still a view
+    if ($connection->table_exists('localtrans_today')) {
+        $connection->query("insert into localtrans_today select * from localtemptrans");
+    }
+
+    $cols = Database::localMatchingColumns($connection, 'dtransactions', 'localtemptrans');
+    $ret = $connection->query("insert into dtransactions ($cols) select $cols from localtemptrans");
+
+    return ($ret) ? true : false;
+}
+
+/**
+  Truncate current transaction tables.
+  Clears data from:
+  - translog.localtemptrans
+  - translog.couponApplied
+  
+  @return [boolean] success or failure 
+
+  Success or failure is based on whether 
+  translog.localtemptrans is cleared correctly.
+*/
+static public function clearTempTables()
+{
+    $connection = Database::tDataConnect();
+
+    $query1 = "truncate table localtemptrans";
+    $ret = $connection->query($query1);
+
+    $query2 = "truncate table couponApplied";
+    $connection->query($query2);
+
+    return ($ret) ? true : false;
 }
 
 } // end Database class

@@ -809,7 +809,13 @@ static public function drawItems($top_item, $rows, $highlight)
 		}
 	}
 
-	$td = SigCapture::term_object();
+    /** 11Mar14 Andy
+        Ancient idea about displaying transaction line-items
+        on credit card terminal screen. Current terminal
+        does not even support this functionality.
+
+        I'm leaving the "get last relevant line" implementation
+        for reference.
 	if (is_object($td) && !empty($last_item)) {
 		$due = sprintf('%.2f',$CORE_LOCAL->get("amtdue"));
 		$dueline = 'Subtotal'
@@ -827,6 +833,7 @@ static public function drawItems($top_item, $rows, $highlight)
         }
 		$td->WriteToScale("display:".$last_item.":".$dueline);
 	}
+    */
 
 	return $ret;
 }

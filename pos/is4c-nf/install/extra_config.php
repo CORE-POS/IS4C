@@ -105,7 +105,8 @@ printf("<input type=text name=LD_NONMEM value=\"%f\" />",$CORE_LOCAL->get('LineI
 InstallUtilities::paramSave('LineItemDiscountNonMem',$CORE_LOCAL->get('LineItemDiscountNonMem'));
 ?>
 (percentage; 0.05 =&gt; 5%)
-</td></tr><tr><td>
+</td></tr>
+<tr><td>
 <b>Default Non-member #</b>: </td><td>
 <?php
 if(isset($_REQUEST['NONMEM'])) $CORE_LOCAL->set('defaultNonMem',$_REQUEST['NONMEM']);
@@ -114,7 +115,27 @@ InstallUtilities::paramSave('defaultNonMem',$CORE_LOCAL->get('defaultNonMem'));
 ?>
 <span class='noteTxt'>Normally a single account number is used for most if not all non-member
 transactions. Specify that account number here.</span>
-</td></tr><tr><td>
+</td></tr>
+<tr><td>
+<b>Default Non-member behavior</b>: </td><td>
+<?php
+if(isset($_REQUEST['NONMEMBEHAVIOR'])) $CORE_LOCAL->set('RestrictDefaultNonMem', $_REQUEST['NONMEMBEHAVIOR']);
+if ($CORE_LOCAL->get('RestrictDefaultNonMem') === '') $CORE_LOCAL->set('RestrictDefaultNonMem', 0);
+echo '<select name="NONMEMBEHAVIOR">';
+if ($CORE_LOCAL->get('RestrictDefaultNonMem') == 0) {
+    echo '<option value="0" selected>No different than other accounts</option>';
+    echo '<option value="1" >Cannot override other accounts</option>';
+} else {
+    echo '<option value="0" >No different than other accounts</option>';
+    echo '<option value="1" selected>Cannot override other accounts</option>';
+}
+echo '</selected>';
+InstallUtilities::paramSave('RestrictDefaultNonMem',$CORE_LOCAL->get('RestrictDefaultNonMem'));
+?>
+<span class='noteTxt'>Normally a single account number is used for most if not all non-member
+transactions. Specify that account number here.</span>
+</td></tr>
+<tr><td>
 <b>Visiting Member #</b>: </td><td>
 <?php
 if(isset($_REQUEST['VISMEM'])) $CORE_LOCAL->set('visitingMem',$_REQUEST['VISMEM']);
@@ -123,7 +144,8 @@ InstallUtilities::paramSave('visitingMem',$CORE_LOCAL->get('visitingMem'));
 ?>
 <span class='noteTxt'>This account provides members of other co-ops with member pricing
 but no other benefits. Leave blank to disable.</span>
-</td></tr><tr><td></td><td>
+</td></tr>
+<tr><td></td><td>
 <?php
 if (isset($_REQUEST['SHOW_NONMEM'])) $CORE_LOCAL->set('memlistNonMember',1);
 elseif (isset($_REQUEST['esubmit'])) $CORE_LOCAL->set('memlistNonMember',0);
@@ -136,7 +158,23 @@ echo " />\n<label for='shownonmem' onclick=''>Show non-member: </label>\n
 InstallUtilities::paramSave('memlistNonMember',$CORE_LOCAL->get('memlistNonMember'));
 ?>
 <span class='noteTxt'>Display non-member acct. in member searches?</span>
-</td></tr><tr><td>
+</td></tr>
+<tr><td></td><td>
+<?php
+if (isset($_REQUEST['NORMALIZE_MEM'])) $CORE_LOCAL->set('useMemTypeTable', 1);
+elseif (isset($_REQUEST['esubmit'])) $CORE_LOCAL->set('useMemTypeTable', 0);
+elseif ($CORE_LOCAL->get('useMemTypeTable')==='') $CORE_LOCAL->set('useMemTypeTable', 0);
+echo "<fieldset class='toggle'>\n<input type='checkbox' name='NORMALIZE_MEM' id='normalize_mem'";
+if ($CORE_LOCAL->get("useMemTypeTable") == 1) echo " value='1' checked";
+else echo " value='0'";
+echo " />\n<label for='normalize_mem' onclick=''>Use memtype table: </label>\n
+	<span class='toggle-button'></span></fieldset>";
+InstallUtilities::paramSave('useMemTypeTable',$CORE_LOCAL->get('useMemTypeTable'));
+?>
+<span class='noteTxt'>Use memtype table when applicable. This forces all memberships of a given
+type to have the same discount, among other things.</span>
+</td></tr>
+<tr><td>
 <b>Bottle Return Department number</b>: </td><td>
 <?php
 if(isset($_REQUEST['BOTTLE_RET'])) $CORE_LOCAL->set('BottleReturnDept',$_REQUEST['BOTTLE_RET']);
@@ -670,13 +708,7 @@ if ($CORE_LOCAL->get('CCSigLimit')=="") $CORE_LOCAL->set('CCSigLimit',0.00);
 printf(" \$<input size=4 type=text name=CCSigLimit value=\"%s\" />",$CORE_LOCAL->get('CCSigLimit'));
 InstallUtilities::paramSave('CCSigLimit',$CORE_LOCAL->get('CCSigLimit'));
 ?>
-</td></tr><tr><td><b>Signature Capture Device</b>:</td><td>
-<?php
-if (isset($_REQUEST['SigCapture'])) $CORE_LOCAL->set('SigCapture',$_REQUEST['SigCapture']);
-printf("<br /><input size=4 type=text name=SigCapture value=\"%s\" />",$CORE_LOCAL->get('SigCapture'));
-InstallUtilities::paramSave('SigCapture',$CORE_LOCAL->get('SigCapture'));
-?>
-<i>(blank for none)</i></td></tr>
+</td></tr>
 <!--
 <tr><td colspan=2 class="tblHeader">
 <h3>Various</h3>
