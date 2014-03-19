@@ -122,7 +122,16 @@ class paycardSuccess extends BasicPage {
 					cache: false,
 					type: 'post',
 					data: 'receiptType='+$('#rp_type').val(),
-					success: function(data){}
+					success: function(data) {
+                        // If a paper signature slip is requested during
+                        // electronic signature capture, abort capture
+                        // Paper slip will be used instead.
+                        if ($('input[name=doCapture]').length != 0) {
+                            $('input[name=doCapture]').val(0);    
+                            $('div.boxMsgAlert').html('Verify Signature');
+                            $('#sigInstructions').html('[enter] to approve, [void] to cancel and void<br />[reprint] to print slip');
+                        }
+                    }
 				});
 				$('#reginput').val('');
 				return false;
@@ -189,6 +198,8 @@ class paycardSuccess extends BasicPage {
             echo '<br />';
             echo '<span id="sigInstructions" style="font-size:90%;">';
             echo '[enter] to get re-request signature, [void] to cancel and void';
+            echo '<br />';
+            echo '[reprint] to print paper slip';
             echo '</span>';
             echo "</div>";
 
