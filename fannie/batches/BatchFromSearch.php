@@ -307,7 +307,7 @@ function discountTypeFixup() {
 function useSRPs() {
     $('tr.batchItem').each(function(){
         var srp = $(this).find('.itemSRP').val();
-        $(this).find('.itemPrice').val(srp);
+        $(this).find('.itemPrice').val(fixupPrice(srp));
     });
 }
 function discount(amt) {
@@ -329,9 +329,16 @@ function markUp(amt) {
     markDown(-1 * amt);
 }
 function fixupPrice(val) {
+    var bt_id = $('#batchType').val();
+    var dt_id = $('#discType'+bt_id).val();
     val = Math.round(val*100);
-    while(lastDigit(val) != 5 && lastDigit(val) != 9)
-        val++;
+    if (dt_id == 0) {
+        while(lastDigit(val) != 5 && lastDigit(val) != 9)
+            val++;
+    } else {
+        while(lastDigit(val) != 9)
+            val++;
+    }
     return val / 100;
 }
 function lastDigit(val) {
