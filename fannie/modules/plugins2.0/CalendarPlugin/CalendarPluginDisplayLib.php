@@ -359,7 +359,7 @@ class CalendarPluginDisplayLib {
 		$ret .= "<div class=indexTitle>Your Calendars</div>";
 		$ret .= "<div id=yours>";
 		foreach($yours as $k=>$v){
-			$ret .= "<p class=\"index\"><a href=\"?calID=$k&view=month\">$v</a></p>";
+			$ret .= "<p class=\"index\"><a href=\"?calID=$k&view=week\">$v</a></p>";
 		}
 		$ret .= "</div>";
 		$ret .= "<p class=\"index\" id=\"indexCreateNew\">";
@@ -372,7 +372,7 @@ class CalendarPluginDisplayLib {
 		$ret .= "<div class=indexTitle>Other Calendars</div>";
 		$ret .= "<div id=theirs>";
 		foreach($theirs as $k=>$v){
-			$ret .= "<p class=\"index\"><a href=\"?calID=$k&view=month\">$v</a></p>";
+			$ret .= "<p class=\"index\"><a href=\"?calID=$k&view=week\">$v</a></p>";
 		}
 		$ret .= "</div>";
 

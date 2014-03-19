@@ -75,8 +75,12 @@ class CalendarMainPage extends FanniePage {
             $week = FormLib::get_form_value('week', date('W'));
 			$calID = FormLib::get_form_value('calID',0);
             
-            echo CalendarPluginDisplayLib::weekView($calID, $year, $week);
-            $this->add_onload_command('weekBootstrap();');
+            if ($calID == 0) {
+                echo CalendarPluginDisplayLib::indexView($this->uid);
+            } else {
+                echo CalendarPluginDisplayLib::weekView($calID, $year, $week);
+                $this->add_onload_command('weekBootstrap();');
+            }
             break;
 		case 'prefs':
 			$calID = FormLib::get_form_value('calID','');
