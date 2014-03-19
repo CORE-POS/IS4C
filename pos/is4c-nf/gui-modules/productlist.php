@@ -143,6 +143,7 @@ class productlist extends NoInputPage {
 			prevKey = jsKey;
 		}
 		</script> 
+        <script type="text/javascript" src="../js/selectSubmit.js"></script>
 		<?php
 		}
 	} // END head() FUNCTION
@@ -156,7 +157,8 @@ class productlist extends NoInputPage {
 			$this->productsearchbox(_("no match found")."<br />"._("next search or enter upc"));
 		}
 		else {
-			$this->add_onload_command("\$('#search').keypress(processkeypress);\n");
+			//$this->add_onload_command("\$('#search').keypress(processkeypress);\n");
+			$this->add_onload_command("selectSubmit('#search', '#selectform')\n");
 
 			echo "<div class=\"baseHeight\">"
 				."<div class=\"listbox\">"

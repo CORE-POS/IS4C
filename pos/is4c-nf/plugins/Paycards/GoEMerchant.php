@@ -370,6 +370,12 @@ class GoEMerchant extends BasicCCModule {
 		$sqlColumns .= ",validResponse";
 		$sqlValues .= sprintf(",%d",$validResponse);
 
+        $table_def = $dbTrans->table_definition('efsnetResponse');
+        if (isset($table_def['efsnetRequestID'])) {
+            $sqlColumns .= ', efsnetRequestID';
+            $sqlValues .= sprintf(', %d', $this->last_req_id);
+        }
+
 		$sql = "INSERT INTO efsnetResponse (" . $sqlColumns . ") VALUES (" . $sqlValues . ")";
 		PaycardLib::paycard_db_query($sql, $dbTrans);
 
@@ -503,9 +509,11 @@ class GoEMerchant extends BasicCCModule {
 				$t_type = 'AX';
 			TransRecord::addtender("Credit Card", $t_type, $amt);
 			$CORE_LOCAL->set("boxMsg","<b>Approved</b><font size=-1><p>Please verify cardholder signature<p>[enter] to continue<br>\"rp\" to reprint slip<br>[void] to cancel and void</font>");
-			if ($CORE_LOCAL->get("paycard_amount") <= $CORE_LOCAL->get("CCSigLimit") && $CORE_LOCAL->get("paycard_amount") >= 0){
+			if ($CORE_LOCAL->get("paycard_amount") <= $CORE_LOCAL->get("CCSigLimit") && $CORE_LOCAL->get("paycard_amount") >= 0) {
 				$CORE_LOCAL->set("boxMsg","<b>Approved</b><font size=-1><p>No signature required<p>[enter] to continue<br>[void] to cancel and void</font>");
-			}	
+            } else if ($CORE_LOCAL->get('PaycardsSigCapture') != 1) {
+                $json['receipt'] = 'ccSlip';
+            }
 			break;
 		case PaycardLib::PAYCARD_MODE_VOID:
 			$v = new Void();
@@ -514,8 +522,7 @@ class GoEMerchant extends BasicCCModule {
 			break;	
 		}
 		$CORE_LOCAL->set("ccCustCopy",0);
-		if ($CORE_LOCAL->get("paycard_amount") > $CORE_LOCAL->get("CCSigLimit") || $CORE_LOCAL->get("paycard_amount") < 0)
-			$json['receipt'] = "ccSlip";
+
 		return $json;
 	}
 
@@ -621,11 +628,16 @@ class GoEMerchant extends BasicCCModule {
 			sprintf("'%s','%s',%d,'%s',%s,",  $now, $refNum, $live, $mode, $amountText) .
 			sprintf("'%s','%s',%d,'%s'",           $cardPANmasked, $cardIssuer, $manual,$fixedName);
 		$sql = "INSERT INTO efsnetRequest (" . $sqlCols . ") VALUES (" . $sqlVals . ")";
+        $table_def = $dbTrans->table_definition('efsnetRequest');
 
 		if( !PaycardLib::paycard_db_query($sql, $dbTrans) ) {
 			PaycardLib::paycard_reset();
 			return $this->setErrorMsg(PaycardLib::PAYCARD_ERR_NOSEND); // internal error, nothing sent (ok to retry)
 		}
+
+        if (isset($table_def['efsnetRequestID'])) {
+            $this->last_req_id = $dbTrans->insert_id();
+        }
 
 		$xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
 		$xml .= "<TRANSACTION>";
@@ -762,6 +774,160 @@ class GoEMerchant extends BasicCCModule {
 		$ref .= str_pad($transID,   3, "0", STR_PAD_LEFT);
 		return $ref;
 	}
+
+    function myRefNum($ref)
+    {
+        if (strlen($ref) == 25 && preg_match('/^[0-9]{12}-[0-9]{12}$/', $ref)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    function lookupTransaction($ref, $local, $mode)
+    {
+        global $CORE_LOCAL;
+
+        $merchantID = GOEMERCH_ID;
+        $password = GOEMERCH_PASSWD;
+        $gatewayID = GOEMERCH_GATEWAY_ID;
+        if (substr($ref, 13, 4) == "9999") {
+            $merchantID = "1264";
+            $password = "password";
+            $gatewayID = "a91c38c3-7d7f-4d29-acc7-927b4dca0dbe";
+        }
+        $dateStr = date('Y-m-d');
+
+        $xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
+        $xml .= "<TRANSACTION>";
+        $xml .= "<FIELDS>";
+        $xml .= "<FIELD KEY=\"merchant\">$merchantID</FIELD>";
+        if( $password != "" ) {
+            $xml .= "<FIELD KEY=\"password\">$password</FIELD>";
+        }
+        $xml .= "<FIELD KEY=\"gateway_id\">$gatewayID</FIELD>";
+        $xml .= "<FIELD KEY=\"operation_type\">query</FIELD>";
+        $xml .= "<FIELD KEY=\"trans_type\">SALE</FIELD>";
+        $xml .= "<FIELD KEY=\"begin_date\">$dateStr</FIELD>";
+        $xml .= "<FIELD KEY=\"begin_time\">0001AM</FIELD>";
+        $xml .= "<FIELD KEY=\"end_date\">$dateStr</FIELD>";
+        $xml .= "<FIELD KEY=\"end_time\">1159PM</FIELD>";
+        $xml .= "<FIELD KEY=\"order_id\">$ref</FIELD>";
+        $xml .= "</FIELDS>";
+        $xml .= "</TRANSACTION>";
+
+		$this->GATEWAY = "https://secure.goemerchant.com/secure/gateway/xmlgateway.aspx";
+		$curl_result = $this->curlSend($xml, 'POST', true, array(), false);
+        if ($curl_result['curlErr'] != CURLE_OK || $curl_result['curlHTTP'] != 200) {
+            return array(
+                'output' => DisplayLib::boxMsg('No response from processor', '', true),
+                'confirm_dest' => MiscLib::base_url() . 'gui-modules/pos2.php',
+                'cancel_dest' => MiscLib::base_url() . 'gui-modules/pos2.php',
+            );
+        }
+
+        $directions = 'Press [enter] or [clear] to continue';
+        $resp = array(
+            'confirm_dest' => MiscLib::base_url() . 'gui-modules/pos2.php',
+            'cancel_dest' => MiscLib::base_url() . 'gui-modules/pos2.php',
+        );
+        $info = new Paycards();
+        $url_stem = $info->plugin_url();
+
+        $xml_resp = new xmlData($curl_result['response']);
+        $status = 'UNKNOWN';
+        if ($xml_resp->get_first('RECORDS_FOUND') == 0) {
+            $status = 'NOTFOUND';
+            $directions = 'Press [enter] to try again, [clear] to stop';
+            $query_string = 'id=' . ($local ? '_l' : '') . $ref . '&mode=' . $mode;
+            $resp['confirm_dest'] = $url_stem . '/gui/PaycardLookupPage.php?id=' . $query_string;
+        } else {
+            $responseCode = $xml_resp->get_first('TRANS_STATUS1');;
+            $resultCode = $responseCode;
+            $xTransID = $xml_resp->get_first('REFERENCE_NUMBER1');
+            $rMsg = '';
+            if ($responseCode == 1) {
+                $status = 'APPROVED';
+                $rMsg = 'APPROVED';
+            } else if ($responseCode == 2) {
+                $status == 'DECLINED';
+                $rMsg = 'DECLINED';
+            } else if ($responseCode == 0) {
+                $status == 'ERROR';
+                $eMsg = $xml_resp->get_first('ERROR1');
+                if ($eMsg) {
+                    $rMsg = substr($eMsg, 0, 100);
+                } else {
+                    $rMsg = 'ERROR';
+                }
+            } else {
+                $responseCode = -3;
+                $status = 'UNKNOWN';
+            }
+
+            $apprNumber = ''; // not returned by query op
+
+            if ($local == 1 && $mode == 'verify') {
+                // Update efsnetResponse record to contain
+                // actual processor result and finish
+                // the transaction correctly
+                $db = Database::tDataConnect(); 
+                $upQ = sprintf("UPDATE efsnetResponse SET
+                                xResponseCode=%d,
+                                xResultCode=%d, 
+                                xResultMessage='%s',
+                                xTransactionID='%s',
+                                xApprovalNumber='%s',
+                                commErr=0,
+                                httpCode=200
+                                WHERE refNum='%s'
+                                AND trans_id=%d",
+                                $responseCode,
+                                $resultCode,
+                                $db->escape($rMsg),
+                                $db->escape($xTransID),
+                                $db->escape($apprNumber),
+                                $db->escape($ref),
+                                $CORE_LOCAL->get('paycard_id'));
+                $upR = $db->query($upQ);
+
+                if ($status == 'Approved') {
+                    PaycardLib::paycard_wipe_pan();
+                    $this->cleanup(array());
+                    $resp['confirm_dest'] = $url_stem . '/gui/paycardSuccess.php';
+                    $resp['cancel_dest'] = $url_stem . '/gui/paycardSuccess.php';
+                    $directions = 'Press [enter] to continue';
+                } else {
+                    PaycardLib::paycard_reset();
+                }
+            } // end verification record update
+        } // end found result
+
+        switch(strtoupper($status)) {
+            case 'APPROVED':
+                $line1 = $status;
+                $line2 = 'Amount: ' . sprintf('%.2f', $xml->get_first('AMOUNT1'));
+                $line3 = 'Type: CREDIT';
+                $voided = $xml->get_first('CREDIT_VOID1');
+                $line4 = 'Voided: ' . (strtoupper($voided) == 'VOID' ? 'Yes' : 'No');
+                $resp['output'] = DisplayLib::boxMsg($line1.'<br />'.$line2.'<br />'.$line3.'<br />'.$line4.'<br />'.$directions, '', true);
+                break;
+            case 'DECLINED':
+                $resp['output'] = DisplayLib::boxMsg('The original transaction was declined<br />'.$directions, '', true);
+                break;
+            case 'ERROR':
+                $resp['output'] = DisplayLib::boxMsg('The original transaction resulted in an error<br />'.$directions, '', true);
+                break;
+            case 'NOTFOUND':
+                $resp['output'] = DisplayLib::boxMsg('Processor has no record of the transaction<br />'.$directions, '', true);
+                break;
+            case 'UNKNOWN':
+                $resp['output'] = DisplayLib::boxMsg('Processor responded but made no sense<br />'.$directions, '', true);
+                break;
+        }
+
+        return $resp;
+    }
 }
 
 ?>

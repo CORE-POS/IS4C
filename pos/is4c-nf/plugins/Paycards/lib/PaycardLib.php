@@ -55,6 +55,7 @@ class PaycardLib {
 	const PAYCARD_ERR_PROC      	=-5;
 	const PAYCARD_ERR_CONTINUE	    =-6;
 	const PAYCARD_ERR_NSF_RETRY	    =-7;
+	const PAYCARD_ERR_TRY_VERIFY    =-8;
 
 // identify payment card type, issuer and acceptance based on card number
 // individual functions are based on this one

@@ -73,7 +73,12 @@ class StoreChargeTender extends TenderModule
         if ($pref == 'yes') {
             if ($CORE_LOCAL->get('msgrepeat') == 0) {
                 $CORE_LOCAL->set("boxMsg","<BR>please verify member ID</B><BR>press [enter] to continue<P><FONT size='-1'>[clear] to cancel</FONT>");
+                $CORE_LOCAL->set('lastRepeat', 'storeChargeSeeID');
+
                 return MiscLib::base_url().'gui-modules/boxMsg2.php?quiet=1';
+            } else if ($CORE_LOCAL->get('msgrepeat') == 1 && $CORE_LOCAL->get('lastRepeat') == 'storeChargeSeeID') {
+                $CORE_LOCAL->set('msgrepeat', 0);
+                $CORE_LOCAL->set('lastRepeat', '');
             }
         }
 

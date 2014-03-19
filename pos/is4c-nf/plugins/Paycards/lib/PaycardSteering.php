@@ -1,7 +1,7 @@
 <?php
 /*******************************************************************************
 
-    Copyright 2012 Whole Foods Co-op
+    Copyright 2014 Whole Foods Co-op
 
     This file is part of IT CORE.
 
@@ -21,31 +21,29 @@
 
 *********************************************************************************/
 
-/**
-  @deprecated 11Mar14 Andy
+class PaycardSteering extends Parser {
 
-  Related to Ingenico i6550 driver. Never finished.
-  No references to this class should remain elsewhere
-  in the codebase.
-*/
-class SigCapture {
+    function check($str)
+    {
+        if ($str == 'PCLOOKUP') {
+            return true;
+        }
 
-static public function term_object(){
-    return false;
-    /**
-	global $CORE_LOCAL;
-	$termDriver = $CORE_LOCAL->get("SigCapture");
-	$td = 0;
-	if ($termDriver != "" && !class_exists($termDriver)){
-		include(realpath(dirname(__FILE__).
-			'/../scale-drivers/php-wrappers/'.$termDriver.'.php'));
-		$td = new $termDriver();
-	}
-	if (is_object($td)) return $td;
-	return False;
-    */
-}
+        return false;
+    }
 
+    function parse($str) {
+        global $CORE_LOCAL;
+        $ret = $this->default_json();
+
+        if ($str == 'PCLOOKUP') {
+            $info = new Paycards();
+            $ret['main_frame'] = $info->plugin_url() . '/gui/PaycardTransListPage.php';
+            $CORE_LOCAL->set('strEntered', '');
+        }
+
+        return $ret;
+    }
 }
 
 ?>

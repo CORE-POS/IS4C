@@ -1523,6 +1523,17 @@ static public function equityNotification($trans_num=''){
 	return $slip;
 }
 
+static public function shutdownFunction()
+{
+    $error = error_get_last(); 
+    if ($error !== null && $error['type'] == 1) {
+        // fatal error occurred
+        ob_end_clean();
+
+        echo '{ "error" : "Printer is not responding" }';
+    }
+}
+
 }
 
 ?>

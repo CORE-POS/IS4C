@@ -126,13 +126,22 @@ class HouseCoupon extends SpecialUPC
 
         /* check for member-only, longer use tracking
            available with member coupons */
-        if ($infoW["memberOnly"] == 1 && ($CORE_LOCAL->get("memberID") == "0" || $CORE_LOCAL->get("isMember") != 1)) {
+        $is_mem = false;
+        if ($CORE_LOCAL->get('isMember') == 1) {
+            $is_mem = true;
+        } else if ($CORE_LOCAL->get('memberID') == $CORE_LOCAL->get('visitingMem')) {
+            $is_mem = true;
+        } else if ($CORE_LOCAL->get('memberID') == '0') {
+            $is_mem = false;
+        }
+        if ($infoW["memberOnly"] == 1 && !$is_mem) {
             return DisplayLib::boxMsg(_("Member only coupon") . "<br />" .
                         _("Apply member number first"));
         }
 
         /* verify the minimum purchase has been made */
         $transDB = Database::tDataConnect();
+        $coupID = $id;
         switch($infoW["minType"]) {
             case "Q": // must purchase at least X
                 $minQ = "select case when sum(ItemQtty) is null
@@ -289,14 +298,14 @@ class HouseCoupon extends SpecialUPC
           For members, enforce limits against longer
           transaction history
         */
-        if ($infoW["memberOnly"] == 1 && $CORE_LOCAL->get("standalone")==0) {
+        if ($infoW["memberOnly"] == 1 && $CORE_LOCAL->get("standalone")==0 && $CORE_LOCAL->get('memberID') != $CORE_LOCAL->get('visitingMem')) {
             $mDB = Database::mDataConnect();
             $mR = $mDB->query("SELECT quantity FROM houseCouponThisMonth
                 WHERE card_no=" . $CORE_LOCAL->get("memberID") . " and
                 upc='$upc'");
             if ($mDB->num_rows($mR) > 0) {
                 $uses = array_pop($mDB->fetch_row($mR));
-                if ($infoW["limit"] >= $uses) {
+                if ($uses >= $infoW["limit"]) {
                     return DisplayLib::boxMsg(_("Coupon already used")
                                 ."<br />"
                                 ._("on this membership"));
@@ -425,6 +434,22 @@ class HouseCoupon extends SpecialUPC
             case "F": // completely flat; no scaling for weight
                 $value = $infoW["discountValue"];
                 break;
+            case "%C": // capped percent discount
+                /**
+                  This is a little messy to cram two different values
+                  into one number. The decimal portion is the discount
+                  percentage; the integer portion is the maximum 
+                  discountable total. The latter is the discount cap
+                  expressed in a way that will be an integer more often.
+
+                  Example:
+                  A 5 percent discount capped at $2.50 => 50.05
+                */
+                Database::getsubtotals();
+                $max = floor($infoW['discountValue']);
+                $percentage = $infoW['discountValue'] - $max;
+                $amount = $CORE_LOCAL->get('discountableTotal') > $max ? $max : $CORE_LOCAL->get('discountableTotal');
+                $value = $percentage * $amount;
             case "%": // percent discount on all items
                 Database::getsubtotals();
                 $value = $infoW["discountValue"] * $CORE_LOCAL->get("discountableTotal");

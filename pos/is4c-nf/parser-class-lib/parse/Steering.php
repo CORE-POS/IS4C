@@ -146,13 +146,22 @@ class Steering extends Parser {
         case 'SO':
             // sign off and suspend shift are identical except for
             // drawer behavior
-            if ($CORE_LOCAL->get("LastID") != 0) 
+            if ($CORE_LOCAL->get("LastID") != 0) {
                 $this->ret['output'] = DisplayLib::boxMsg(_("Transaction in Progress"));
-            else {
+            } else {
                 Database::setglobalvalue("LoggedIn", 0);
                 $CORE_LOCAL->set("LoggedIn",0);
                 $CORE_LOCAL->set("training",0);
                 $CORE_LOCAL->set("gui-scale","no");
+                /**
+                  An empty transaction may still contain
+                  invisible, logging records. Rotate those
+                  out of localtemptrans to ensure sequential
+                  trans_id values
+                */
+                if (Database::rotateTempData()) {
+                    Database::clearTempTables();
+                }
                 if ($str == 'SO'){
                     if (session_id() != '')
                         session_write_close();
@@ -176,6 +185,10 @@ class Steering extends Parser {
             $CORE_LOCAL->set("msgrepeat",0);
             $this->ret['main_frame'] = $my_url."gui-modules/giftcardlist.php";
             return True;
+        case 'IC':
+            $CORE_LOCAL->set("msgrepeat",0);
+            $this->ret['main_frame'] = $my_url."gui-modules/HouseCouponList.php";
+            return true;
         /*
         case 'CCM':
             $CORE_LOCAL->set("msgrepeat",0);

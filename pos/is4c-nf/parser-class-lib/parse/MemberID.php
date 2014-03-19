@@ -21,15 +21,22 @@
 
 *********************************************************************************/
 
-class MemberID extends Parser {
-	function check($str){
-		if (substr($str,-2) == "ID")
-			return True;
-		return False;
+class MemberID extends Parser 
+{
+	function check($str)
+    {
+		if (substr($str,-2) == "ID") {
+			return true;
+        }
+
+		return false;
 	}
 
-	function parse($str){
-		if ($str == "0ID"){
+	function parse($str)
+    {
+        global $CORE_LOCAL;
+		if ($str == "0ID") {
+            // Member zero clears member info from the transaction
 			PrehLib::clearMember();
 			$ret = array("main_frame"=>false,
 				"output"=>DisplayLib::lastpage(),
@@ -37,14 +44,26 @@ class MemberID extends Parser {
 				"redraw_footer"=>true
 			);
 			return $ret;
-		}
-		else{
+		} else if ($CORE_LOCAL->get('RestrictDefaultNonMem') == 1 && $str == ($CORE_LOCAL->get('defaultNonMem') . 'ID')) {
+            // PrehLib::ttl will automatically prompt for member if it
+            // has not been entered; otherwise just total
+            $ret = $this->default_json();
+            $try = PrehLib::ttl();
+            if ($try !== true) {
+                $ret['main_frame'] = $try.'?idSearch='.$CORE_LOCAL->get('defaultNonMem');
+            } else {
+                $ret['output'] = DisplayLib::lastpage();
+            }
+            return $ret;
+		} else {
+            // always re-apply other member numbers
 			$ret = PrehLib::memberID(substr($str,0,strlen($str)-2));
 			return $ret;
 		}
 	}
 
-	function doc(){
+	function doc()
+    {
 		return "<table cellspacing=0 cellpadding=3 border=1>
 			<tr>
 				<th>Input</th><th>Result</th>
@@ -57,4 +76,3 @@ class MemberID extends Parser {
 	}
 }
 
-?>

@@ -412,6 +412,8 @@ function create_op_dbs($db,$type){
 
     InstallUtilities::createIfNeeded($db, $type, $name, 'custdata', 'op', $errors);
 
+    InstallUtilities::createIfNeeded($db, $type, $name, 'memtype', 'op', $errors);
+
     InstallUtilities::createIfNeeded($db, $type, $name, 'memberCards', 'op', $errors);
 
     InstallUtilities::createIfNeeded($db, $type, $name, 'custPreferences', 'op', $errors);
@@ -538,7 +540,11 @@ function create_trans_dbs($db,$type){
 
     InstallUtilities::createIfNeeded($db, $type, $name, 'staffdiscountremove', 'trans', $errors);
 
+    /**
+     @deprecated 10Mar14 by Andy
+     View layer isn't necessary; can query suspended table directly
     InstallUtilities::createIfNeeded($db, $type, $name, 'suspendedtoday', 'trans', $errors);
+    */
 
     InstallUtilities::createIfNeeded($db, $type, $name, 'couponApplied', 'trans', $errors);
 
@@ -2527,8 +2533,6 @@ function create_min_server($db,$type){
         $errors = InstallUtilities::dbStructureModify($db,'dlog',$dlogQ,$errors);
     }
 
-    
-
     $alogQ = "CREATE TABLE alog (
         `datetime` datetime,
         LaneNo smallint,
@@ -2542,13 +2546,6 @@ function create_min_server($db,$type){
     }
     if(!$db->table_exists("alog",$name)){
         InstallUtilities::dbStructureModify($db,'alog',$alogQ,$errors);
-    }
-
-    $susToday = "CREATE VIEW suspendedtoday AS
-        SELECT * FROM suspended 
-        WHERE datetime >= " . $db->curdate();
-    if (!$db->table_exists("suspendedtoday",$name)){
-        InstallUtilities::dbStructureModify($db,'suspendedtoday',$susToday,$errors);
     }
 
     $efsrq = "CREATE TABLE efsnetRequest (

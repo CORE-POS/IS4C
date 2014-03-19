@@ -71,12 +71,20 @@ class SigCapturePage extends BasicPage
 
         $this->bmp_path = $this->page_url . 'scale-drivers/drivers/NewMagellan/ss-output/tmp/';
 
+        $terminal_msg = 'termSig';
+        if (isset($_REQUEST['amt']) && isset($_REQUEST['type'])) {
+            $terminal_msg .= $_REQUEST['type'] . sprintf(': $%.2f', $_REQUEST['amt']);
+        } else if (isset($_REQUEST['amt'])) {
+            $terminal_msg .= sprintf('Amount: $.%2f', $_REQUEST['amt']);
+        }
+
         if (isset($_REQUEST['reginput'])) {
             if (strtoupper($_REQUEST['reginput']) == 'CL') {
                 if (isset($_REQUEST['bmpfile']) && file_exists($_REQUEST['bmpfile'])) {
                     unlink($_REQUEST['bmpfile']);
                 }
                 $this->change_page($this->page_url.'gui-modules/pos2.php');
+                UdpComm::udpSend('termReset');
 
                 return false;
             } else if ($_REQUEST['reginput'] == '') {
@@ -146,11 +154,11 @@ class SigCapturePage extends BasicPage
                     return false;
 
                 } else {
-                    UdpComm::udpSend('termSig');
+                    UdpComm::udpSend($terminal_msg);
                 }
             }
         } else {
-            UdpComm::udpSend('termSig');
+            UdpComm::udpSend($terminal_msg);
         }
 
 		return true;

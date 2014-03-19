@@ -227,7 +227,7 @@ class Void extends Parser {
 			."max(volDiscType) as volDiscType from localtemptrans where upc = '".$upc
 			."' and unitPrice = ".$scaleprice." and discounttype <> 3 group by upc";
 		if ($this->discounttype == 3) {
-			$query = "select sum(quantity) as voidable, max(scale), as scale, "
+			$query = "select sum(quantity) as voidable, max(scale) as scale, "
 				."max(volDiscType) as volDiscType from localtemptrans where "
 				."upc = '".$upc."' and discounttype = 3 and unitPrice = "
 				.$this->caseprice." group by upc";
