@@ -258,6 +258,9 @@ class PIMemberPage extends PIKillerPage {
 		}
 		echo '</td>';
 		echo "<td><a href=\"{$FANNIE_URL}ordering/clearinghouse.php?card_no=".$this->card_no."\">Special Orders</a></td>";
+        if (FannieAuth::validateUserQuiet('GiveUsMoney')) {
+            echo "<td><a href=\"{$FANNIE_URL}modules/plugins2.0/GiveUsMoneyPlugin/GumMainPage.php?id=".$this->card_no."\">Owner Loans</a></td>";
+        }
 		echo "</tr>";
 
 		echo "<tr>";

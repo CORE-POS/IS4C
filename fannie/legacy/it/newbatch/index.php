@@ -226,12 +226,6 @@ if (isset($_GET['action'])){
 	case 'deleteItem':
 		$id = $_GET['id'];
 		$upc = $_GET['upc'];
-		
-		$delQ = $sql->prepare("delete from batchList where batchID=? and upc=?");
-		$delR = $sql->execute($delQ, array($id, $upc));
-		
-		$delQ = $sql->prepare("delete from batchBarcodes where upc=? and batchID=?");
-		$delR = $sql->execute($delQ, array($upc, $id));
 
 		if (substr($upc,0,2) != 'LC'){
 			// take the item off sale if this batch is currently on sale
@@ -271,6 +265,13 @@ if (isset($_GET['action'])){
                 $model->pushToLanes();
             }
 		}
+
+		$delQ = $sql->prepare("delete from batchList where batchID=? and upc=?");
+		$delR = $sql->execute($delQ, array($id, $upc));
+		
+		$delQ = $sql->prepare("delete from batchBarcodes where upc=? and batchID=?");
+		$delR = $sql->execute($delQ, array($upc, $id));
+
 		$audited = $_GET['audited'];
 		if ($audited == "1")
 			auditDelete($sql,$_GET['uid'],$upc,$id);	

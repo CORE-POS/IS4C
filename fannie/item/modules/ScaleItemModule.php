@@ -129,6 +129,22 @@ class ScaleItemModule extends ItemModule {
 			$label = 23;
 
 		$dbc = $this->db();
+        
+        /**
+          Safety check:
+          A fixed-weight item sticked by the each flagged
+          as scalable will interact with the register's
+          quantity * upc functionality incorrectly
+        */
+        if ($weight == 1 && $bycount == 1) {
+            $p = new ProductsModel($dbc);
+            $p->upc($upc);
+            if($p->load()) {
+                $p->Scale(0);
+                $p->save();
+            }
+        }
+
 		$chkP = $dbc->prepare_statement('SELECT * FROM scaleItems WHERE plu=?');
 		$chkR = $dbc->exec_statement($chkP,array($upc));
 		$action = 'ChangeOneItem';

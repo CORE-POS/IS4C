@@ -30,6 +30,9 @@ if (!class_exists('FannieAPI')) {
 */
 class GumSchedulePage extends FannieRESTfulPage 
 {
+    protected $must_authenticate = true;
+    protected $auth_classes = array('GiveUsMoney');
+
     public function preprocess()
     {
         $acct = FormLib::get('id');
@@ -141,7 +144,7 @@ class GumSchedulePage extends FannieRESTfulPage
         $ret .= '<tr>';
         $ret .= '<td>Zip Code</td><td>' . $this->meminfo->zip() . '</td>';
         $ed = mktime(0, 0, 0, date('n', $ld)+$this->loan->termInMonths(), date('j', $ld), date('Y', $ld));
-        $ret .= '<td>Loan Date</td><td>' . date('m/d/Y', $ed) . '</td>';
+        $ret .= '<td>Maturity Date</td><td>' . date('m/d/Y', $ed) . '</td>';
         $ret .= '</tr>';
         $ret .= '</table>';
 

@@ -43,6 +43,7 @@ class NonMovementReport extends FannieReportPage {
             }
             $dbc = FannieDB::get($FANNIE_OP_DB);
             $model = new ProductsModel($dbc);
+            $model->upc($upc);
             $model->delete();
 
 			echo 'Deleted';

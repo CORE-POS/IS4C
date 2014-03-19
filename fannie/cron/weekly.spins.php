@@ -97,7 +97,7 @@ if (strstr($FANNIE_SERVER_DBMS,"MYSQL")){
    so week is offset by one in the filename
    this may change back next year
 */
-$filename = "spins_wfc_wk".str_pad($week+1,2,"0",STR_PAD_LEFT).".csv";
+$filename = date('mdY.csv', $tstamp);
 $outfile = sys_get_temp_dir()."/".$filename;
 $fp = fopen($outfile,"w");
 

@@ -26,7 +26,10 @@ if (!class_exists('FannieAPI')) {
 	include($FANNIE_ROOT.'classlib2.0/FannieAPI.php');
 }
 
-class GumSearchPage extends FannieRESTfulPage {
+class GumSearchPage extends FannieRESTfulPage 
+{
+    protected $must_authenticate = true;
+    protected $auth_classes = array('GiveUsMoney');
 
 	function preprocess(){
 		$this->__routes[] = 'get<id><first><last>';
@@ -107,6 +110,8 @@ class GumSearchPage extends FannieRESTfulPage {
 		</tr>
         </table>
         </form>
+        <hr />
+        <a href="reports/GumReportIndex.php">Reporting</a>
 		<?php
 		$this->add_onload_command('$(\'#memNum_t\').focus();');
 		return ob_get_clean();

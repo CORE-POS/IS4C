@@ -36,6 +36,7 @@ class CalendarAjax extends FannieWebService {
 	}	
 
 	function run(){
+        global $FANNIE_URL;
 		$data = array();
 		$action = FormLib::get_form_value('action');
 		if ($action !== ''){
@@ -139,6 +140,39 @@ class CalendarAjax extends FannieWebService {
 					}
 				}
 				break;
+            case 'weekview_save':
+				$timestamp = FormLib::get_form_value('ts');
+                $date = date('Y-m-d H:i:00', $timestamp);
+				$calID = FormLib::get_form_value('id',0);
+				$text = trim(FormLib::get_form_value('text'));
+                $eID = FormLib::get('eventID', false);
+				$uid = FannieAuth::getUID(FannieAuth::checkLogin());
+
+                $pat = '/#(\d+)/';
+                $rep = '<a href="' . $FANNIE_URL . 'modules/plugins2.0/PIKiller/PIMemberPage.php?id=${1}" onclick="noBubble(event);">#${1}</a>';
+                $text = preg_replace($pat, $rep, $text);
+
+				$db = CalendarPluginDB::get();
+                $model = new MonthviewEventsModel($db);
+                if ($eID) {
+                    $model->eventID($eID);
+                }
+                if (empty($text) && $eID) {
+                    // delete empty event
+                    // no eID implies event doesn't exist
+                    // just opened/closed w/o content
+                    $model->delete();
+                } else if (!empty($text)) {
+                    $model->uid($uid);
+                    $model->eventDate($date);
+                    $model->eventText($text);
+                    $model->calendarID($calID);
+                    $newID = $model->save();
+                    if (!$eID) {
+                        $data[] = $newID;
+                    }
+                }
+                break;
 			}
 		}
 		return $data;

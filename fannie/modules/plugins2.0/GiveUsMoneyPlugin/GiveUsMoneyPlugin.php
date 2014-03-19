@@ -57,6 +57,7 @@ class GiveUsMoneyPlugin extends FanniePlugin
             'GumPayoffs',
             'GumEquityPayoffMap',
             'GumLoanPayoffMap',
+            'GumEmailLog',
         );
 
         foreach($tables as $t) {
@@ -329,6 +330,11 @@ class GiveUsMoneyPlugin extends FanniePlugin
             $settings->value('GumCoreLayer');
             $settings->save();
         }
+    }
+
+	public function plugin_enable()
+    {
+        FannieAuth::createClass('GiveUsMoney', 'Grants permission to use the GiveUsMoney plugin');
     }
 }
 

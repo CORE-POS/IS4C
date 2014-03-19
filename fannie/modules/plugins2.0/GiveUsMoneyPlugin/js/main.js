@@ -22,8 +22,22 @@ function getDefaultRate(amount) {
         data: 'rateForAmount='+amount,
         success: function(resp) {
             $('#rate').val(resp);
+            $('#maxrate').val(resp);
         }
     });
+}
+
+function validateRate() {
+    var entry = Number($('#rate').val());
+    var max = Number($('#maxrate').val());
+    console.log(entry);
+    console.log(max);
+
+    if (entry < 0) {
+        $('#rate').val(0);
+    } else if (entry > max) {
+        $('#rate').val(max);
+    }
 }
 
 function confirmNewLoan()

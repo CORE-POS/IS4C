@@ -55,7 +55,13 @@ $susQ = "INSERT INTO suspensions
 	left join {$TRANS}equity_live_balance as n on m.card_no=n.memnum
 	left join memDates AS d ON m.card_no=d.card_no
 	WHERE 
-	DATE_ADD(d.start_date, INTERVAL 2 YEAR) < '$dStr'
+	( 
+        (DATE_ADD(d.start_date, INTERVAL 2 YEAR) < '$dStr'
+         AND YEAR(d.start_date) < 2013) 
+        OR
+        (DATE_ADD(d.start_date, INTERVAL 1 YEAR) < '$dStr'
+         AND YEAR(d.start_date) >= 2013) 
+    )
 	and c.Type='PC' and n.payments < 100
 	and c.memType in (1,3)
 	and NOT EXISTS(SELECT NULL FROM suspensions as s
@@ -73,7 +79,13 @@ $histQ = "INSERT INTO suspension_history
 	    left join {$TRANS}equity_live_balance as n on m.card_no=n.memnum
 	    left join memDates AS d ON m.card_no=d.card_no
 	    WHERE
-	    DATE_ADD(d.start_date, INTERVAL 2 YEAR) < '$dStr'
+        ( 
+            (DATE_ADD(d.start_date, INTERVAL 2 YEAR) < '$dStr'
+             AND YEAR(d.start_date) < 2013) 
+            OR
+            (DATE_ADD(d.start_date, INTERVAL 1 YEAR) < '$dStr'
+             AND YEAR(d.start_date) >= 2013) 
+        )
 	    and c.Type='PC' and n.payments < 100
 	    and c.memType in (1,3)
 	    and NOT EXISTS(SELECT NULL FROM suspensions as s

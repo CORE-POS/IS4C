@@ -99,6 +99,7 @@ class FannieAPI
         $dh = opendir($path);
         while($dh && ($file=readdir($dh)) !== false) {
             if ($file[0] == ".") continue;
+            if ($file == 'noauto') continue;
             $fullname = realpath($path.'/'.$file);
             if (is_dir($fullname)) {
                 // recurse looking for file
@@ -157,6 +158,7 @@ class FannieAPI
                 $ret = array();
                 while( ($file=readdir($dh)) !== false) {
                     if ($file == '.' || $file == '..') continue;
+                    if ($file == 'noauto') continue;
                     $ret = array_merge($ret, $search($path.'/'.$file));
                 }
                 return $ret;

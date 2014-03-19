@@ -205,6 +205,43 @@ class FannieAuth
     }
 
     /**
+      Create/update authorization class
+      @param $auth_class [string] class name
+      @param $description [string] description of authorization class
+      @return [boolean] success / failure
+    */
+    static public function createClass($auth_class, $description)
+    {
+        global $FANNIE_OP_DB;
+        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $notes = str_replace("\n","<br />",$description);
+        $chkP = $dbc->prepare('SELECT auth_class
+                               FROM userKnownPrivs
+                               WHERE auth_class = ?');
+        $chkR = $dbc->execute($chkP, array($auth_class));
+        $success = true;
+        if ($dbc->num_rows($chkR) == 0) {
+            $ins = $dbc->prepare('INSERT INTO userKnownPrivs
+                                  (auth_class, notes)
+                                  VALUES (?, ?)');
+            $try = $dbc->execute($ins, array($auth_class, $notes));
+            if ($try === false) {
+                $success = false;
+            }
+        } else {
+            $up = $dbc->prepare('UPDATE userKnownPrivs
+                                 SET notes = ?
+                                 WHERE auth_class = ?');
+            $try = $dbc->execute($up, array($notes, $auth_class));
+            if ($try === false) {
+                $success = false;
+            }
+        }
+
+        return $success;
+    }
+
+    /**
       Check if authentication is enabled in
       Fannie's configuration
       @return boolean

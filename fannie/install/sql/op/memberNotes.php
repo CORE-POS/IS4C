@@ -19,10 +19,14 @@ it.
 */
 $CREATE['op.memberNotes'] = "
 	CREATE TABLE memberNotes (
+        memberNoteID INT NOT NULL AUTO_INCREMENT,
 		cardno int,
 		note text,
 		stamp datetime,
-		username varchar(50)
+		username varchar(50),
+        PRIMARY KEY (memberNoteID)
 	)
 ";
-?>
+if ($dbms == "MSSQL") {
+    $CREATE['op.memberNotes'] = str_replace('AUTO_INCREMENT', 'IDENTITY(1, 1)', $CREATE['op.memberNotes']);
+}

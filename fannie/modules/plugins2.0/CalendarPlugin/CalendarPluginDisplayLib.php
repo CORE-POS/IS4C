@@ -50,7 +50,8 @@ class CalendarPluginDisplayLib {
 			.$FANNIE_OP_DB.$sql->sep()."Users as u on m.uid=u.uid
 			WHERE calendarID=? AND
 			month(eventDate)=? AND
-			year(eventDate)=?");
+			year(eventDate)=?
+            AND hour(eventDate)=0");
 		$dataR = $sql->exec_statement($dataP,array($id,$month,$year));
 		$db_data = array();
 		while($dataW = $sql->fetch_row($dataR)){
@@ -234,6 +235,121 @@ class CalendarPluginDisplayLib {
 		return $ret;
 	}
 
+    public static function weekView($id, $year, $week)
+    {
+		$sql = CalendarPluginDB::get();
+        $calendarModel = new CalendarsModel($sql);
+        $calendarModel->calendarID($id);
+        $calendarModel->load();
+        $name = $calendarModel->name();
+
+        $uid = FannieAuth::getUID(FannieAuth::checkLogin());
+		$EDIT = CalendarPluginPermissions::can_write($uid,$id);
+		$OWNER = CalendarPluginPermissions::is_owner($uid,$id);
+
+        $startTS = strtotime($year . '-W' . str_pad($week,2,'0',STR_PAD_LEFT) . '-1');
+        $endTS = mktime(0, 0, 0, date('n', $startTS), date('j', $startTS)+6, date('Y', $startTS));
+        $query = 'SELECT eventDate, eventText, eventID
+                  FROM monthview_events
+                  WHERE calendarID=?
+                    AND eventDate BETWEEN ? AND ?';
+        $prep = $sql->prepare($query);
+        $args = array($id, date('Y-m-d 00:00:00', $startTS), date('Y-m-d 23:59:59', $endTS));
+        $result = $sql->execute($prep, $args);
+        $cal_data = array();
+        while($row = $sql->fetch_row($result)) {
+            $cal_ts = strtotime($row['eventDate']);
+            $cal_data[$cal_ts] = array('id'=>$row['eventID'], 'text'=>$row['eventText']);
+        }
+        $startT = 7;
+        $endT = 21;
+
+        $prevWeek = mktime(0, 0, 0, date('n', $startTS), date('j', $startTS)-7, date('Y', $startTS));
+        $nextWeek = mktime(0, 0, 0, date('n', $startTS), date('j', $startTS)+7, date('Y', $startTS));
+
+        $ret .= '<table cellpadding="4" cellspacing="0" border="1">';
+
+        // paging
+        $ret .= '<tr>';
+        $ret .= sprintf('<td colspan="3" align="left">
+                        <a href="?view=week&calID=%d&week=%d&year=%d">Prev</a></td>',
+                        $id, date('W', $prevWeek), date('Y', $prevWeek));
+        $ret .= '<td align="center">' . date('Y', $startTS) . '</td>';
+        $ret .= sprintf('<td colspan="4" align="right">
+                        <a href="?view=week&calID=%d&week=%d&year=%d">Next</a></td>',
+                        $id, date('W', $nextWeek), date('Y', $nextWeek));
+        $ret .= '</tr>';
+
+        $ret .= '<tr><th>' . $name . '</th>';
+        for($i=0; $i<7; $i++) {
+            $ts = mktime(0, 0, 0, date('n', $startTS), date('j', $startTS) + $i, date('Y', $startTS));
+            $ret .= '<th>' . date('M j', $ts) . '<br />' . date('l', $ts) . '</th>';
+        }
+        $ret .= '</tr>';
+        for ($hour = $startT; $hour < $endT; $hour++) {
+            $ret .= '<tr>';
+            $ret .= '<td>' . date('h:i A', mktime($hour, 0)) . '</td>';
+            for($i=0; $i<7; $i++) {
+                $entry_ts = mktime($hour, 0, 0, date('n', $startTS), date('j', $startTS)+$i, date('Y', $startTS));
+                if ($EDIT) {
+                    $ret .= sprintf('<td id="weekEntry%d" class="weekEntry"
+                                    onclick="weekClickCallback(%d);"
+                                    ondblclick="saveCallback(%d);">
+                                    <input type="hidden" class="weekEntryTS" value="%d" />
+                                    <span class="weekEntryContent">%s</span>',
+                                    $entry_ts,
+                                    $entry_ts,
+                                    $entry_ts,
+                                    $entry_ts,
+                                    (isset($cal_data[$entry_ts]) ? $cal_data[$entry_ts]['text'] : '')
+                    );
+                    if (isset($cal_data[$entry_ts])) {
+                        $ret .= sprintf('<input type="hidden" class="weekEntryEventID" value="%d" />',
+                                        $cal_data[$entry_ts]['id']);
+                    }
+                } else {
+                    $ret .= '<td class="weekEntry"><span class="weekEntryContent">';
+                    $ret .= isset($cal_data[$entry_ts]) ? $cal_data[$entry_ts]['text'] : '';
+                    $ret .= '</span>';
+                }
+                $ret .= '</td>';
+            }
+            $ret .= '</tr>';
+            $ret .= '<tr>';
+            $ret .= '<td>' . date('h:i A', mktime($hour, 30)) . '</td>';
+            for($i=0; $i<7; $i++) {
+                $entry_ts = mktime($hour, 30, 0, date('n', $startTS), date('j', $startTS)+$i, date('Y', $startTS));
+                if ($EDIT) {
+                    $ret .= sprintf('<td id="weekEntry%d" class="weekEntry"
+                                    onclick="weekClickCallback(%d);"
+                                    ondblclick="saveCallback(%d);">
+                                    <input type="hidden" class="weekEntryTS" value="%d" />
+                                    <span class="weekEntryContent">%s</span>',
+                                    $entry_ts,
+                                    $entry_ts,
+                                    $entry_ts,
+                                    $entry_ts,
+                                    (isset($cal_data[$entry_ts]) ? $cal_data[$entry_ts]['text'] : '')
+                    );
+                    if (isset($cal_data[$entry_ts])) {
+                        $ret .= sprintf('<input type="hidden" class="weekEntryEventID" value="%d" />',
+                                        $cal_data[$entry_ts]['id']);
+                    }
+                } else {
+                    $ret .= '<td class="weekEntry"><span class="weekEntryContent">';
+                    $ret .= isset($cal_data[$entry_ts]) ? $cal_data[$entry_ts]['text'] : '';
+                    $ret .= '</span>';
+                }
+                $ret .= '</td>';
+            }
+            $ret .= '</tr>';
+        }
+        $ret .= '</table>';
+        $ret .= '<input type="hidden" id="calendarID" value="' . $id . '" />';
+
+        return $ret;
+    }
+
 	public static function indexView($uid){
 		global $FANNIE_URL;
 		$yours = CalendarPluginPermissions::get_own_calendars($uid);
@@ -243,7 +359,7 @@ class CalendarPluginDisplayLib {
 		$ret .= "<div class=indexTitle>Your Calendars</div>";
 		$ret .= "<div id=yours>";
 		foreach($yours as $k=>$v){
-			$ret .= "<p class=\"index\"><a href=\"?calID=$k&view=month\">$v</a></p>";
+			$ret .= "<p class=\"index\"><a href=\"?calID=$k&view=week\">$v</a></p>";
 		}
 		$ret .= "</div>";
 		$ret .= "<p class=\"index\" id=\"indexCreateNew\">";
@@ -256,7 +372,7 @@ class CalendarPluginDisplayLib {
 		$ret .= "<div class=indexTitle>Other Calendars</div>";
 		$ret .= "<div id=theirs>";
 		foreach($theirs as $k=>$v){
-			$ret .= "<p class=\"index\"><a href=\"?calID=$k&view=month\">$v</a></p>";
+			$ret .= "<p class=\"index\"><a href=\"?calID=$k&view=week\">$v</a></p>";
 		}
 		$ret .= "</div>";
 
