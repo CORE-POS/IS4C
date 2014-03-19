@@ -39,7 +39,11 @@ $yesSync = JsonLib::array_to_json(array('sync'=>true));
 $noSync = JsonLib::array_to_json(array('sync'=>false));
 $output = $noSync;
 
+ob_start();
+
 if (strlen($receiptType) > 0) {
+
+    register_shutdown_function(array('ReceiptLib', 'shutdownFunction'));
 
     $receiptContent = array();
 
@@ -118,6 +122,7 @@ if (is_object($td)) {
 }
 
 echo $output;
+ob_end_flush();
 
 function cleartemptrans($type) 
 {
@@ -137,8 +142,15 @@ function cleartemptrans($type)
         $db->query("update localtemptrans set trans_status = 'X'");
     }
 
+    /**
+     @deprecated 25Feb14 for Database class methods
     moveTempData();
     truncateTempTables();
+    */
+
+    if (Database::rotateTempData()) {
+        Database::clearTempTables();
+    }
 
     /**
       Moved to separate ajax call (ajax-transaction-sync.php)
@@ -162,6 +174,14 @@ function cleartemptrans($type)
 }
 
 
+/**
+  @deprecated 25Feb14
+  See Database::clearTempTables()
+
+  Replacement method has proper return value
+  and can be called from other scripts if
+  needed
+*/
 function truncateTempTables() 
 {
     $connection = Database::tDataConnect();
@@ -176,6 +196,14 @@ function truncateTempTables()
     $connection->query($query3);
 }
 
+/**
+  @deprecated 25Feb14
+  See Database::rotateTempData()
+
+  Replacement method has proper return value
+  and can be called from other scripts if
+  needed
+*/
 function moveTempData() 
 {
     $connection = Database::tDataConnect();
