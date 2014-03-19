@@ -105,7 +105,6 @@ $msgQ = "INSERT custReceiptMessage
 		'WfcEquityMessage'
 	FROM {$TRANS}equity_live_balance AS s
 	INNER JOIN memDates as d ON s.memnum=d.card_no
-	WHERE s.payments < 100
-	AND d.end_date >= CURDATE()";
+	WHERE s.payments < 100";
 $msgR = $sql->query($msgQ);
 
