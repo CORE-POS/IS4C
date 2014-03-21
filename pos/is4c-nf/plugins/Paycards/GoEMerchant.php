@@ -800,7 +800,7 @@ class GoEMerchant extends BasicCCModule {
             $password = "password";
             $gatewayID = "a91c38c3-7d7f-4d29-acc7-927b4dca0dbe";
         }
-        $dateStr = date('Y-m-d');
+        $dateStr = date('mdy');
 
         $xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
         $xml .= "<TRANSACTION>";
@@ -844,7 +844,7 @@ class GoEMerchant extends BasicCCModule {
             $status = 'NOTFOUND';
             $directions = 'Press [enter] to try again, [clear] to stop';
             $query_string = 'id=' . ($local ? '_l' : '') . $ref . '&mode=' . $mode;
-            $resp['confirm_dest'] = $url_stem . '/gui/PaycardLookupPage.php?id=' . $query_string;
+            $resp['confirm_dest'] = $url_stem . '/gui/PaycardTransLookupPage.php?' . $query_string;
         } else {
             $responseCode = $xml_resp->get_first('TRANS_STATUS1');;
             $resultCode = $responseCode;
@@ -910,9 +910,9 @@ class GoEMerchant extends BasicCCModule {
         switch(strtoupper($status)) {
             case 'APPROVED':
                 $line1 = $status;
-                $line2 = 'Amount: ' . sprintf('%.2f', $xml->get_first('AMOUNT1'));
+                $line2 = 'Amount: ' . sprintf('%.2f', $xml_resp->get_first('AMOUNT1'));
                 $line3 = 'Type: CREDIT';
-                $voided = $xml->get_first('CREDIT_VOID1');
+                $voided = $xml_resp->get_first('CREDIT_VOID1');
                 $line4 = 'Voided: ' . (strtoupper($voided) == 'VOID' ? 'Yes' : 'No');
                 $resp['output'] = DisplayLib::boxMsg($line1.'<br />'.$line2.'<br />'.$line3.'<br />'.$line4.'<br />'.$directions, '', true);
                 break;
