@@ -154,6 +154,7 @@ class suspendedlist extends NoInputPage {
 			.$emp." AND trans_no = ".$trans;
 
 		$db_a = Database::tDataConnect();
+        $success = false;
 
 		// use SQLManager's transfer method when not in stand alone mode
 		// to eliminate the cross server query - andy 8/31/07
@@ -213,6 +214,24 @@ class suspendedlist extends NoInputPage {
 			.", trans_no = ".$CORE_LOCAL->get("transno");
 
 		$db_a->query($query_update);
+
+        /**
+          Add a log record after succesfully
+          resuming a suspended transaction.
+          Log record added after resume so records
+          preceeding the log record were part of
+          the original transaction and records
+          following the log record were part of
+          the resumed transaction
+        */
+        if ($success) {
+            TransRecord::addLogRecord(array(
+                'upc' => 'RESUME',
+                'description' => $emp . '-' . $reg . '-' . $trans,
+                'charflag' => 'SR',
+            ));
+        }
+
 		Database::getsubtotals();
 	}
 }
