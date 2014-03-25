@@ -575,6 +575,7 @@ class GoEMerchant extends BasicCCModule {
 		$cardTr3 = $CORE_LOCAL->get("paycard_tr3");
 		$cardName = $CORE_LOCAL->get("paycard_name");
 		$refNum = $this->refnum($transID);
+        $this->last_ref_num = $refNum;
 		$live = 1;
 		$cvv2 = $CORE_LOCAL->get("paycard_cvv2");
 
@@ -885,7 +886,7 @@ class GoEMerchant extends BasicCCModule {
                                 commErr=0,
                                 httpCode=200
                                 WHERE refNum='%s'
-                                AND trans_id=%d",
+                                AND transID=%d",
                                 $responseCode,
                                 $resultCode,
                                 $db->escape($rMsg),
@@ -895,7 +896,7 @@ class GoEMerchant extends BasicCCModule {
                                 $CORE_LOCAL->get('paycard_id'));
                 $upR = $db->query($upQ);
 
-                if ($status == 'Approved') {
+                if ($status == 'APPROVED') {
                     PaycardLib::paycard_wipe_pan();
                     $this->cleanup(array());
                     $resp['confirm_dest'] = $url_stem . '/gui/paycardSuccess.php';

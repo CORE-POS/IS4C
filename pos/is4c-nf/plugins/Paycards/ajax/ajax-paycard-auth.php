@@ -59,7 +59,7 @@ if ($result === PaycardLib::PAYCARD_ERR_OK){
 } else if ($result === PaycardLib::PAYCARD_ERR_TRY_VERIFY) {
     // communication error. query processor about
     // transaction status.
-    $json['main_frame'] = $plugin_info->plugin_url().'/gui/PaycardTransLookupPage.php?mode=verify&id=_l'.$my_obj->last_ref_num;
+    $json['main_frame'] = $plugin_info->plugin_url().'/gui/PaycardTransLookupPage.php?mode=verify&id=_l'.$myObj->last_ref_num;
 } else {
 	PaycardLib::paycard_reset();
 	$CORE_LOCAL->set("msgrepeat",0);
