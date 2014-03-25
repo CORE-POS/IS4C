@@ -94,7 +94,7 @@ class HouseCoupon extends SpecialUPC
             ". $db->datediff('endDate', $db->now()) . " end as expired
             from
             houseCoupons WHERE coupID=" . ((int)$id);
-        if (isset($hctable['definition'])) {
+        if (isset($hctable['description'])) {
             $infoQ = str_replace('as expired', 'as expired, description', $infoQ);
         }
         $infoR = $db->query($infoQ);
