@@ -40,17 +40,6 @@ class BatchManagementTool extends FanniePage
     private $batchtypes = array();
     private $owners = array();
 
-    // This replaces the __construct() in the parent.
-    public function __construct() {
-        global $FANNIE_WINDOW_DRESSING;
-        // To set authentication.
-        parent::__construct();
-        if ( isset($FANNIE_WINDOW_DRESSING) ) {
-            $this->window_dressing = $FANNIE_WINDOW_DRESSING;
-        }
-    // __construct()
-    }
-
     function preprocess()
     {
         global $FANNIE_OP_DB;

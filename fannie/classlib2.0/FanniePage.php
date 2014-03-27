@@ -313,11 +313,20 @@ class FanniePage
     */
     public function drawPage()
     {
+        global $FANNIE_WINDOW_DRESSING;
 
         if (!$this->checkAuth() && $this->must_authenticate) {
             $this->loginRedirect();
             exit;
         } elseif ($this->preprocess()) {
+
+            /**
+              Global setting overrides default behavior
+              to force the menu to appear.
+            */
+            if (isset($FANNIE_WINDOW_DRESSING) && $FANNIE_WINDOW_DRESSING) {
+                $this->window_dressing = true;
+            }
             
             if ($this->window_dressing) {
                 echo $this->getHeader();

@@ -713,9 +713,21 @@ class FannieReportPage extends FanniePage
     */
     function drawPage()
     {
+        global $FANNIE_WINDOW_DRESSING;
+
         if (!$this->checkAuth() && $this->must_authenticate) {
             $this->loginRedirect();
         } elseif ($this->preprocess()) {
+
+            /**
+              Global setting overrides default behavior
+              to force the menu to appear.
+              Unlike normal pages, the override is only applied
+              when the output format is HTML.
+            */
+            if (isset($FANNIE_WINDOW_DRESSING) && $FANNIE_WINDOW_DRESSING && $this->report_format == 'html') {
+                $this->window_dressing = true;
+            }
             
             if ($this->window_dressing) {
                 echo $this->getHeader();
@@ -729,7 +741,10 @@ class FannieReportPage extends FanniePage
             }
 
             if ($this->window_dressing) {
-                echo $this->getFooter();
+                $footer = $this->getFooter();
+                $footer = str_ireplace('</html>','',$footer);
+                $footer = str_ireplace('</body>','',$footer);
+                echo $footer;
             }
 
             foreach($this->scripts as $s_url => $s_type) {
@@ -767,7 +782,7 @@ class FannieReportPage extends FanniePage
             }
         }
 
-    // draw_page()
+    // drawPage()
     }
 }
 
