@@ -81,6 +81,7 @@ GROUP BY CASE WHEN d.trans_subtype IN ('CC','AX') then 'Credit Card' ELSE t.Tend
 $tenderR = $dbc->exec_statement($tenderQ,$dates);
 $tenders = array("Cash"=>array(10120,0.0,0),
 		"Check"=>array(10120,0.0,0),
+		"Electronic Check"=>array(10120,0.0,0),
 		"Credit Card"=>array(10120,0.0,0),
 		"EBT CASH."=>array(10120,0.0,0),
 		"EBT FS"=>array(10120,0.0,0),
