@@ -173,6 +173,10 @@ class DepartmentEditor extends FanniePage {
 		$model->modified(date('Y-m-d H:i:s'));
         $model->margin($margin);
         $model->salesCode($pcode);
+        if ($new == 1) {
+            $model->modifiedby(1);
+            $model->dept_see_id(0);
+        }
 		$saved = $model->save();
 
 		if ($new == 1){
