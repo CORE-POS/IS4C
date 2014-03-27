@@ -284,6 +284,23 @@ class PcDailyReport extends FannieReportPage
                 $proc[$cardType]['Non'][$transType]['num'] += $row['num'];
             }
         }
+        foreach($proc as $type => $info) {
+            $non = $info['Non'];
+            if ($non['Sales']['amt'] == 0 && $non['Returns']['amt'] == 0) {
+                continue;
+            }
+            $record = array('NON-INTEGRATED', 
+                            $type,
+                            $non['Sales']['num'],
+                            sprintf('%.2f', $non['Sales']['amt']),
+                            $non['Returns']['num'],
+                            sprintf('%.2f', $non['Returns']['amt']),
+                            $non['Sales']['num'] + $non['Returns']['num'],
+                            sprintf('%.2f', $non['Sales']['amt'] + $non['Returns']['amt']),
+            );
+            $record['meta'] = FannieReportPage::META_BOLD;
+            $dataset[] = $record;
+        }
 
         $dataset[] = array('meta'=>FannieReportPage::META_BLANK);
 
@@ -323,7 +340,39 @@ class PcDailyReport extends FannieReportPage
             $dataset[] = $record;
         }
 
+        $dataset[] = array('meta'=>FannieReportPage::META_BLANK);
+
         return $dataset;
+    }
+
+    public function calculate_footers($data) {
+        $pN = 0;
+        $pS = 0.0;
+        $tN = 0;
+        $tS = 0.0;
+        foreach($data as $row) {
+            if (!isset($row['meta']) || $row['meta'] != FannieReportPage::META_BOLD) {
+                continue;
+            }
+            if ($row[0] == 'POS Total') {
+                $pN += $row[6];
+                $pS += $row[7];
+            } else {
+                $tN += $row[6];
+                $tS += $row[7];
+            }
+        }
+
+        return array(
+            '',
+            'Submitted Total',
+            $pN,
+            sprintf('%.2f', $pS),
+            '',
+            'Tendered Total',
+            $tN,
+            sprintf('%.2f', $tS),
+        );
     }
 
     public function form_content()
