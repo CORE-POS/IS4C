@@ -98,8 +98,9 @@ class Steering extends Parser {
                 $this->ret['main_frame'] = $my_url."gui-modules/adminlogin.php?class=UndoAdminLogin";
             }
             return True;
+        case 'SK':
         case "DDD":
-            $this->ret['main_frame'] = $my_url."gui-modules/adminlogin.php?class=DDDAdminLogin";
+            $this->ret['main_frame'] = $my_url."gui-modules/DDDReason.php";
             return True;
         case 'MG':
             if ($CORE_LOCAL->get("SecuritySR") > 20){
@@ -292,6 +293,12 @@ class Steering extends Parser {
             <tr>
                 <td>CN</td>
                 <td>Cancel transaction</td>
+            </tr>
+            <tr>
+                <td>SK or DDD</td>
+                <td>Similar to cancelling a transaction, but marks all
+                the items as unsellable (shrink), for the
+                user-provided reason.</td>
             </tr>
             </table>";
     }
