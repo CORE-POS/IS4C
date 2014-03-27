@@ -44,10 +44,21 @@ class CouponCode extends SpecialUPC
 
     public function isSpecial($upc)
     {
-        $this->ean = false;    
-        if (substr($upc,0,3) == "005") {
+        global $CORE_LOCAL;
+
+        $upcPrefix = '005';
+        if ($CORE_LOCAL->get('UpcIncludeCheckDigits') == 1) {
+            $upcPrefix = '05';
+        }
+        $eanPrefix = '099';
+        if ($CORE_LOCAL->get('EanIncludeCheckDigits') == 1) {
+            $eanPrefix = '99';
+        }
+
+        $this->ean = false;
+        if (substr($upc,0,strlen($upcPrefix)) == $upcPrefix) {
             return true;
-        } elseif (substr($upc,0,3) == "099") {
+        } else if (substr($upc,0,strlen($eanPrefix)) == $eanPrefix) {
             $this->ean = true;
             return true;
         }
@@ -59,9 +70,25 @@ class CouponCode extends SpecialUPC
     {
         global $CORE_LOCAL;
 
-        $man_id = substr($upc, 3, 5);
-        $fam = substr($upc, 8, 3);
-        $val = substr($upc, -2);
+        /**
+          Adjust string index of pieces
+          based on whether check digits
+          have been included
+        */
+        $man_id_start = 3;
+        $fam_start = 8;
+        $val_start = 11;
+        if ( ($this->ean && $CORE_LOCAL->get('EanIncludeCheckDigits') == 1) ||
+             (!$this->ean && $CORE_LOCAL->get('UpcIncludeCheckDigits') == 1)
+           ) {
+            $man_id_start = 2;
+            $fam_start = 9;
+            $val_start = 10;
+        }
+
+        $man_id = substr($upc, $man_id_start, 5);
+        $fam = substr($upc, $fam_start, 3);
+        $val = substr($upc, $val_start, 2);
 
         $db = Database::pDataConnect();
         $query = "select Value,Qty from couponcodes where Code = '".$val."'";
@@ -112,9 +139,12 @@ class CouponCode extends SpecialUPC
 
             $dept = 0;
             $db = Database::tDataConnect();
-            $query = "select department from localtemptrans WHERE
-                substring(upc,4,5)='$man_id' group by department
-                order by count(*) desc";
+            // SQL strings are indexed starting w/ one instead of zero
+            // hence $man_id_start+1
+            $query = "select department from localtemptrans 
+                WHERE substring(upc," . ($man_id_start+1) . ",5)='$man_id' 
+                GROUP BY department
+                ORDER BY count(*) desc";
             $result = $db->query($query);
             if ($db->num_rows($result) > 0) {
                 $row = $db->fetch_row($result);
@@ -134,6 +164,9 @@ class CouponCode extends SpecialUPC
         /* the idea here is to track exactly which
            items in the transaction a coupon was 
            previously applied to
+
+           SQL strings are indexed starting w/ one instead of zero
+           hence $man_id_start+1
         */
         $query = "select max(t.unitPrice) as unitPrice,
             max(t.department) as department,
@@ -147,12 +180,12 @@ class CouponCode extends SpecialUPC
             localtemptrans as t left join couponApplied as c
             on t.emp_no=c.emp_no and t.trans_no=c.trans_no
             and t.trans_id=c.trans_id
-            where (substring(t.upc,4,5)='$man_id'";
+            where (substring(t.upc," . ($man_id_start+1) . ",5)='$man_id'";
         /* not right per the standard, but organic valley doesn't
          * provide consistent manufacturer ids in the same goddamn
          * coupon book */
         if ($this->ean) {
-            $query .= " or substring(t.upc,3,5)='$man_id'";
+            $query .= " or substring(t.upc," . $man_id_start . ",5)='$man_id'";
         }
         $query .= ") and t.trans_status <> 'C'
             group by t.trans_id
