@@ -241,7 +241,8 @@ class HouseCouponEditor extends FanniePage
 			'%'=>'Percent Discount (End of transaction)',
 			'%D'=>'Percent Discount (Department)',
 			'PD'=>'Percent Discount (Anytime)',
-			'AD'=>'All Discount (Department)'
+            '%C'=>'Percent Discount (Capped)',
+			'AD'=>'All Discount (Department)',
 		);
 		$ret .= "<tr><th>Discount Type</th><td>
 			<select name=dtype>";
