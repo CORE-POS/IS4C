@@ -35,6 +35,14 @@ class SpinsSubmitTask extends FannieTask
     public $description = 'Submits weekly sales data to SPINS. SPINS plugin must be configured
     with proper FTP credentials';
 
+    public $default_schedule = array(
+        'min' => 0,
+        'hour' => 4,
+        'day' => '*',
+        'month' => '*',
+        'weekday' => '2',
+    );
+
     public function run()
     {
         global $argv, $FANNIE_OP_DB, $FANNIE_PLUGIN_SETTINGS;
