@@ -250,12 +250,15 @@ ScannerDevice.registerListener(Device);
 		if (isset($this->current_item_data['upc']) && isset($this->current_item_data['desc'])) $elem = '#cur_qty';
 		?>
 <html>
-<head><title>Scan Inventory</title></head>
+<head>
+    <title>Scan Inventory</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
 <body onload="$('<?php echo $elem; ?>').focus();">
 <form action="SaHandheldPage.php" method="get" id="upcScanForm">
 <div style="float: left;">
 <a href="SaMenuPage.php">Menu</a><br />
-<b>UPC</b>: <input type="number" size="10" name="upc_in" id="upc_in" 
+<b>UPC</b>: <input type="number" size="3" name="upc_in" id="upc_in" 
 onfocus="paint_focus('upc_in');"
 <?php echo ($elem=='#upc_in')?'class="focused"':''; ?> 
 />
