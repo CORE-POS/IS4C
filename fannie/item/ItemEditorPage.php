@@ -372,7 +372,9 @@ class ItemEditorPage extends FanniePage {
         $result = $dbc->exec_statement($verify,array($upc));
         $row = $dbc->fetch_array($result);
         $ret = "<table border=0>";
-        $ret .= "<tr><td align=right><b>UPC</b></td><td><font color='red'>".$row['upc']."</font><input type=hidden value='{$row['upc']}' name=upc></td>";
+        $ret .= "<tr><td align=right><b>UPC</b></td><td><font color='red'>
+                    <a href=\"ItemEditorPage.php?searchupc=".$row['upc']."\">".$row['upc']."</a>
+                    </font><input type=hidden value='{$row['upc']}' name=upc></td>";
         $js = "window.open('addShelfTag.php?upc=$upc', 'New Shelftag','location=0,status=1,scrollbars=1,width=300,height=220');";
         $ret .= "<td colspan=2 align=right><a href=\"\" onclick=\"{$js}return false;\">Shelf Tag</a></td>";
         $ret .= "</tr><tr><td><b>Description</b></td><td>{$row['description']}</td>";
