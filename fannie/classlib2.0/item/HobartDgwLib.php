@@ -238,6 +238,171 @@ class HobartDgwLib
         }
     }
 
+    /**
+      Import Hobart Data into scaleItems table
+      This one is for "item" data
+      @param $filename [string] scale-exported data CSV
+      @return [int] number of items imported
+    */
+    static public function readItemsFromFile($filename)
+    {
+        global $FANNIE_OP_DB;
+        $dbc = FannieDB::get($FANNIE_OP_DB);
+
+        $product = new ProductsModel($dbc);
+        $scaleItem = new ScaleItemsModel($dbc);
+        
+        $fp = fopen($filename, 'r');
+        // detect column indexes via header line
+        $column_index = array(
+            'PLU Number' => -1,
+            'Price' => -1,
+            'Item Description' => -1,
+            'Item Type' => -1,
+            'By Count' => -1,
+            'Tare 01' => -1,
+            'Shelf Life' => -1,
+            'Net Weight' => -1,
+            'Label Type 01' => -1,
+            'Graphics Number' => -1,
+        );
+        $headers = fgetcsv($fp);
+        for ($i=0;$i<count($headers);$i++) {
+            $header = $headers[$i];
+            if (isset($column_index[$header])) {
+                $column_index[$header] = $i;
+            }
+        }
+
+        $item_count = 0;
+        while(!feof($fp)) {
+            $line = fgetcsv($fp);
+            if (!isset($line[$column_index['PLU Number']])) {
+                // can't import item w/o PLU
+                continue;
+            }
+
+            $plu = $line[$column_index['PLU Number']];
+            $upc = $this->scalePluToUpc($plu);
+
+            $product->reset();
+            $product->upc($upc);
+            if (!$product->load()) {
+                // no entry in products table
+                // should one be created?
+                continue;
+            }
+
+            $scaleItem->reset();
+            $scaleItem->plu($upc);
+            if ($column_index['Price'] != -1) {
+                $scaleItem->price($line[$column_index['Price']]);
+            }
+            if ($column_index['Item Description'] != -1) {
+                $scaleItem->itemdesc($line[$column_index['Item Description']]);
+            }
+            if ($column_index['Item Type'] != -1) {
+                $scale_type = $line[$column_index['Item Description']];
+                $scaleItem->weight( $scale_type == 'Fixed Weight' ? 1 : 0 );
+            }
+            if ($column_index['By Count'] != -1) {
+                $scaleItem->bycount($line[$column_index['By Count']]);
+            }
+            if ($column_index['Tare 01'] != -1) {
+                $scaleItem->tare($line[$column_index['Tare 01']]);
+            }
+            if ($column_index['Shelf Life'] != -1) {
+                $scaleItem->shelflife($line[$column_index['Shelf Life']]);
+            }
+            if ($column_index['Net Weight'] != -1) {
+                $scaleItem->netWeight($line[$column_index['Net Weight']]);
+            }
+            if ($column_index['Label Type 01'] != -1) {
+                $scaleItem->weight($line[$column_index['Label Type 01']]);
+            }
+            if ($column_index['Graphics Number'] != -1) {
+                $scaleItem->graphics($line[$column_index['Graphics Number']]);
+            }
+            $scaleItem->save();
+            $item_count++;
+        }
+
+        fclose($fp);
+
+        return $item_count;
+    }
+
+    /**
+      Import Hobart Data into scaleItems table
+      This one is for "expanded text" data
+      @param $filename [string] scale-exported data CSV
+      @return [int] number of items imported
+    */
+    static public function readTextsFromFile($filename)
+    {
+        global $FANNIE_OP_DB;
+        $dbc = FannieDB::get($FANNIE_OP_DB);
+
+        $product = new ProductsModel($dbc);
+        $scaleItem = new ScaleItems($dbc);
+
+        $number_index = -1;
+        $text_index = -1;
+
+        $fp = fopen($filename, 'r');
+        $headers = fgetcsv($fp);
+        for ($i=0;$i<count($headers);$i++) {
+            $header = $headers[$i];
+            if ($header == 'Expanded Text Number') {
+                $number_index = $i;
+            } else if ($header == 'Expanded Text') {
+                $text_index = $i;
+            }
+        }
+
+        if ($text_index == -1 || $number_index == -1) {
+            // no valid data
+            return 0;
+        }
+
+        $item_count = 0;
+        while(!feof($fp)) {
+            $line = fgetcsv($fp);
+            $plu = $line[$number_index];
+            $upc = $this->scalePluToUpc($plu);
+
+            $product->reset();
+            $product->upc($upc);
+            if (!$product->load()) {
+                // no entry in products table
+                // should one be created?
+                continue;
+            }
+
+            $scaleItem->reset();
+            $scaleItem->plu($upc);
+            $scaleItem->text($line[$text_index]);
+            $scaleItem->save();
+            $item_count++;
+        }
+
+        fclose($fp);
+
+        return $item_count;
+    }
+
+    static private function scalePluToUpc($plu)
+    {
+        // convert PLU to UPC
+        // includes WFC oddities with zero alignment
+        // on short PLUs (less than 4 digits)
+        $upc = str_pad($plu, 3, '0', STR_PAD_LEFT);
+        $upc = str_pad($upc, 4, '0', STR_PAD_LEFT);
+        $upc = '002' . $upc . '000000';
+
+        return $upc;
+    }
+
     static private function sessionKey()
     {
         $session_key = '';
