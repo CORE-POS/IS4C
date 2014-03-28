@@ -229,7 +229,7 @@ function itemParse($upc,$dupe='no',$description='',$prefix=false)
 	$upc = $rowItem['upc'];
 
 	
-	$currentDepartment = $rowItem[12];
+	$currentDepartment = $rowItem['department'];
 	$prev = $next = 0;
 	$modified = $rowItem['modified'];
 	deptPrevNext($currentDepartment,$upc,$prev,$next);
@@ -296,7 +296,7 @@ function itemParse($upc,$dupe='no',$description='',$prefix=false)
 				WHERE dept_no = ?");
                         $result3 = $sql->execute($query3, $rowItem['department']);
                         $row3 = $sql->fetch_array($result3);
-                echo '<select name="drop">';
+                echo '<select name="dept">';
                 $result2 = $sql->query($query2);
                 while($row2 = $sql->fetch_row($result2)) {
                     printf('<option %s value="%d">%d %s</option>',
@@ -366,8 +366,8 @@ function itemParse($upc,$dupe='no',$description='',$prefix=false)
 		// kick out a scale input for upcs starting with 002
 		// pass variables with prefix s_
 		if (preg_match("/^002/",$rowItem[0]) && $row3[1] == 3){
-		   $scaleQuery = $sql->prepare("select * from scaleItems where plu=?'");
-		   $scaleRes = $sql->execute($scaleQuery, array($rowItem['upc']));
+		   $scaleQuery = $sql->prepare("select * from scaleItems where plu=?");
+		   $scaleRes = $sql->execute($scaleQuery, array($upc));
 		   $scaleRow = $sql->fetch_row($scaleRes);
 		   echo "<table border=1 cellspacing=0 cellpadding=7><tr>";
 		   echo "<td bgcolor=\"#FFFFCC\">";
@@ -387,7 +387,7 @@ function itemParse($upc,$dupe='no',$description='',$prefix=false)
 		   //   Unnecessary to users but expected by csv package
 		   echo "<input type=hidden name=s_exception value=0.00>";
 		   echo "<table border=1 cellspacing=0 cellpadding=7><tr>";
-		   echo "<th>Weight</th><th>By Count</th><th>Tare</th><th>Shelf Life</th><th>Label</th><th>Safehandling</th>";
+		   echo "<th>Weight</th><th>By Count</th><th>Tare</th><th>Shelf Life</th><th>Net Wt (oz)</th><th>Label</th><th>Safehandling</th>";
 		   echo "</tr><tr><td>";
 		   echo "<input type=radio name=s_type value=\"Random Weight\"";
 		   if ($scaleRow[4] == 0){
@@ -405,36 +405,38 @@ function itemParse($upc,$dupe='no',$description='',$prefix=false)
 		   }
 		   echo "</td><td align=center>";
 		   echo "<input type=checkbox name=s_bycount";
-		   if ($scaleRow[5] == 1){
+		   if ($scaleRow['bycount'] == 1){
 		      echo " checked>";
 		   }
 		   else {
 		      echo ">";
 		   }
 		   echo "</td><td>";
-		   echo "<input type=text name=s_tare size=5 value={$scaleRow[6]}>";
+		   echo "<input type=text name=s_tare size=5 value={$scaleRow['tare']}>";
 		   echo "</td><td>";
-		   echo "<input type=text name=s_shelflife size=5 value={$scaleRow[7]}>";
+		   echo "<input type=text name=s_shelflife size=5 value={$scaleRow['shelflife']}>";
+		   echo "</td><td>";
+		   echo "<input type=text name=s_netwt size=5 value={$scaleRow['netWeight']}>";
 		   echo "</td><td>";
 		   echo "<select name=s_label size=2>";
-		   if ($scaleRow[10] == 133 || $scaleRow[10] == 63)
+		   if ($scaleRow['label'] == 133 || $scaleRow['label'] == 63)
 		   		echo "<option value=horizontal selected>Horizontal</option>";
 		   else
 		   		echo "<option value=horizontal>Horizontal</option>";
-		   if ($scaleRow[10] == 103 || $scaleRow[10] == 53 || $scaleRow[10] == 23)
+		   if ($scaleRow['label'] == 103 || $scaleRow['label'] == 53 || $scaleRow['label'] == 23)
 		   		echo "<option value=vertical selected>Vertical</option>";
 		   else
 		   		echo "<option value=vertical>Vertical</option>";
 		   echo "</select>";
 		   echo "</td><td align=center>";
-		   if ($scaleRow[11] == 0)
+		   if ($scaleRow['graphics'] == 0)
 		     echo "<input type=checkbox name=s_graphics />";
 		   else
 		     echo "<input type=checkbox name=s_graphics checked />";
 		   echo "</td>";
 		   echo "</td></tr></table><br />";
 		   echo "<p />Expanded text:<br /><textarea name=s_text rows=4
-		   cols=40>{$scaleRow[8]}</textarea>";
+		   cols=40>{$scaleRow['text']}</textarea>";
 
 		   echo "<p /></td></tr></table>";
 		}

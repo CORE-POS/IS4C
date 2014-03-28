@@ -36,7 +36,7 @@ class ScaleItemModule extends ItemModule {
 		$p = $dbc->prepare_statement('SELECT * FROM scaleItems WHERE plu=?');
 		$r = $dbc->exec_statement($p,array($upc));
 		$scale = array('itemdesc'=>'','weight'=>0,'bycount'=>0,'tare'=>0,
-			'shelflife'=>0,'label'=>133,'graphics'=>0,'text'=>'');
+			'shelflife'=>0,'label'=>133,'graphics'=>0,'text'=>'', 'netWeight'=>0);
 		if ($dbc->num_rows($r) > 0)
 			$scale = $dbc->fetch_row($r);
 
@@ -48,13 +48,13 @@ class ScaleItemModule extends ItemModule {
 
 		$ret .= sprintf('<input type="hidden" name="s_plu" value="%s" />',$upc);
 		$ret .= "<table style=\"background:#ffffcc;\" cellpadding=5 cellspacing=0 border=1>";
-		$ret .= sprintf("<tr><th colspan=2>Longer description</th><td colspan=4><input size=35 
+		$ret .= sprintf("<tr><th colspan=2>Longer description</th><td colspan=5><input size=35 
 				type=text name=s_longdesc maxlength=100 value=\"%s\" /></td></tr>",
 				($reg_description == $scale['itemdesc'] ? '': $scale['itemdesc']));
-		$ret .= "<tr><td colspan=6 style=\"font-size:1px;\">&nbsp;</td></tr>";
+		$ret .= "<tr><td colspan=7 style=\"font-size:1px;\">&nbsp;</td></tr>";
 
 		$ret .= "<tr><th>Weight</th><th>By Count</th><th>Tare</th><th>Shelf Life</th>";
-		$ret .= "<th>Label</th><th>Safehandling</th></tr>";			
+		$ret .= "<th>Net Wt (oz)</th><th>Label</th><th>Safehandling</th></tr>";			
 
 		$ret .= '<tr><td>';
 		if ($scale['weight']==0){
@@ -76,6 +76,9 @@ class ScaleItemModule extends ItemModule {
 		$ret .= sprintf("<td align=center><input type=text size=5 name=s_shelflife value=\"%s\" /></td>",
 				$scale['shelflife']);
 
+		$ret .= sprintf("<td align=center><input type=text size=5 name=s_netwt value=\"%s\" /></td>",
+				$scale['netWeight']);
+
 		$ret .= "<td><select name=s_label size=2>";
 		if ($scale['label']==133 || $scale['label']==63){
 			$ret .= "<option value=horizontal selected>Horizontal</option>";
@@ -91,9 +94,9 @@ class ScaleItemModule extends ItemModule {
 				($scale['graphics']==1?'checked':''));
 		$ret .= '</tr>';	
 
-		$ret .= "<tr><td colspan=6 style=\"font-size:1px;\">&nbsp;</td></tr>";
+		$ret .= "<tr><td colspan=7 style=\"font-size:1px;\">&nbsp;</td></tr>";
 
-		$ret .= "<tr><td colspan=6>";
+		$ret .= "<tr><td colspan=7>";
 		$ret .= "<b>Expanded text:<br /><textarea name=s_text rows=4 cols=50>";
 		$ret .= $scale['text'];
 		$ret .= "</textarea></td></tr>";
@@ -102,22 +105,24 @@ class ScaleItemModule extends ItemModule {
 		return $ret;
 	}
 
-	function SaveFormData($upc){
+	function SaveFormData($upc)
+    {
 		/* check if data was submitted */
-		if (FormLib::get_form_value('s_plu') === '') return False;
+		if (FormLib::get('s_plu') === '') return False;
 
-		$desc = FormLib::get_form_value('description','');
-		$longdesc = FormLib::get_form_value('s_longdesc','');
+		$desc = FormLib::get('description','');
+		$longdesc = FormLib::get('s_longdesc','');
 		if ($longdesc !== '') $desc = $longdesc;
-		$price = FormLib::get_form_value('price',0);
-		$tare = FormLib::get_form_value('s_tare',0);
-		$shelf = FormLib::get_form_value('s_shelflife',0);
-		$bycount = FormLib::get_form_value('s_bycount',0);
-		$graphics = FormLib::get_form_value('s_graphics',0);
-		$type = FormLib::get_form_value('s_type','Random Weight');
+		$price = FormLib::get('price',0);
+		$tare = FormLib::get('s_tare',0);
+		$shelf = FormLib::get('s_shelflife',0);
+		$bycount = FormLib::get('s_bycount',0);
+		$graphics = FormLib::get('s_graphics',0);
+		$type = FormLib::get('s_type','Random Weight');
 		$weight = ($type == 'Random Weight') ? 0 : 1;
-		$text = FormLib::get_form_value('s_text','');
-		$label = FormLib::get_form_value('s_label','horizontal');
+		$text = FormLib::get('s_text','');
+		$label = FormLib::get('s_label','horizontal');
+        $netWeight = FormLib::get('s_netwt', 0);
 
 		if ($label == "horizontal" && $type == "Random Weight")
 			$label = 133;
@@ -129,6 +134,14 @@ class ScaleItemModule extends ItemModule {
 			$label = 23;
 
 		$dbc = $this->db();
+
+        // apostrophes might make a mess
+        // double quotes definitely will
+        // DGW quotes text fields w/o any escaping
+        $desc = str_replace("'","",$desc);
+        $text = str_replace("'","",$text);
+        $desc = str_replace("\"","",$desc);
+        $text = str_replace("\"","",$text);
         
         /**
           Safety check:
@@ -145,29 +158,66 @@ class ScaleItemModule extends ItemModule {
             }
         }
 
-		$chkP = $dbc->prepare_statement('SELECT * FROM scaleItems WHERE plu=?');
-		$chkR = $dbc->exec_statement($chkP,array($upc));
+        $scaleItem = new ScaleItemsModel($dbc);
+        $scaleItem->plu($upc);
 		$action = 'ChangeOneItem';
-		if ($dbc->num_rows($chkR) == 0){
-			$insP = $dbc->prepare_statement("INSERT INTO scaleItems (plu, price, itemdesc,
-					exceptionprice, weight, bycount, tare, shelflife, text, class,
-					label, graphics) VALUES (?, ?, ?, 0.00, ?, ?, ?, ?, '', ?, ?)");
-			$insR = $dbc->exec_statement($insP,array($upc, $price, $desc, $weight, $bycount,
-								$tare, $shelf, $text, $label, $graphics));
+        if (!$scaleItem->load()) {
+            // new record
 			$action = "WriteOneItem";
-		}
-		else {
-			$upP = $dbc->prepare_statement('UPDATE scaleItems SET price=?, itemdesc=?, weight=?,
-						bycount=?, tare=?, shelflife=?, text=?, label=?, graphics=?
-						WHERE plu=?');
-			$upR = $dbc->exec_statement($upP,array($price, $desc, $weight, $bycount, $tare,
-								$shelf, $text, $label, $graphics, $upc));
-			$action = "ChangeOneItem";
-		}
+        }
+        $scaleItem->price($price);
+        $scaleItem->itemdesc($desc);
+        $scaleItem->weight( ($type == 'Fixed Weight') ? 1 : 0 );
+        $scaleItem->bycount($bycount);
+        $scaleItem->tare($tare);
+        $scaleItem->shelflife($shelf);
+        $scaleItem->text($text);
+        $scaleItem->label($label);
+        $scaleItem->graphics( ($graphics) ? 121 : 0 );
+        $scaleItem->netWeight($netWeight);
+        $scaleItem->save();
 
+        /**
+          Legacy way of sending scale info
+          @deprecated 28Mar14
 		include(dirname(__FILE__).'/../hobartcsv/parse.php');
 		parseitem($action,$upc,$desc,$tare,$shelf,$price,$bycount,$type,
 			0.00,$text,$label,($graphics==1?121:0));
+        */
+
+        // extract scale PLU
+        preg_match("/002(\d\d\d\d)0/",$upc,$matches);
+        $s_plu = $matches[1];
+
+        $item_info = array(
+            'RecordType' => $action,
+            'PLU' => $s_plu,
+            'Description' => $desc,
+            'Tare' => $tare,
+            'ShelfLife' => $shelf,
+            'Price' => $price,
+            'Label' => $label,
+            'ExpandedText' => $text,
+            'ByCount' => $bycount,
+        );
+        if ($netWeight != 0) {
+            $item_info['NetWeight'] = $netWeight;
+        }
+        if ($graphics) {
+            $item_info['Graphics'] = 121;
+        }
+        // normalize type + bycount; they need to match
+        if ($item_info['ByCount'] && $type == 'Random Weight') {
+            $item_info['Type'] = 'By Count';
+        } else if ($type == 'Fixed Weight') {
+            $item_info['Type'] = 'Fixed Weight';
+            $item_info['ByCount'] = 1;
+        } else {
+            $item_info['Type'] = 'Random Weight';
+            $item_info['ByCount'] = 0;
+        }
+
+        HobartDgwLib::writeItemsToScales($item_info);
 	}
 }
 
