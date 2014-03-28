@@ -591,8 +591,8 @@ class FannieReportPage extends FanniePage
                 $row[$i] = '&nbsp;';
             } elseif (is_numeric($row[$i]) && strlen($row[$i]) == 13) {
                 // auto-link UPCs to edit tool
-                $row[$i] = sprintf('<a href="%sitem/itemMaint.php?upc=%s">%s</a>',
-                    $FANNIE_URL,$row[$i],$row[$i]);
+                $row[$i] = sprintf('<a target="_new%s" href="%sitem/itemMaint.php?upc=%s">%s</a>',
+                    $row[$i],$FANNIE_URL,$row[$i],$row[$i]);
             }
             $align = '';
             if (is_numeric($row[$i])) {
