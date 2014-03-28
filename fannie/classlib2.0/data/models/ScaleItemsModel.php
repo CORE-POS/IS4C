@@ -47,6 +47,44 @@ class ScaleItemsModel extends BasicModel
 
     protected $preferred_db = 'op';
 
+    /**
+      Custom normalization:
+      The original version of scaleItems contained a column named "class".
+      "class" is not a valid PHP function name, so the model is unable
+      to have a method corresponding to the column.
+
+      This will rename the legacy "class" column to "reportingClass" if
+      needed. Otherwise, it just calls BasicModel::normalize().
+    */
+    public function normalize($db_name, $mode=BasicModel::NORMALIZE_MODE_CHECK, $doCreate=False)
+    {
+        $this->connection = FannieDB::get($db_name);
+        if (!$this->connection->table_exists($this->name)) {
+            return parent::normalize($db_name, $mode, $doCreate);
+        }
+
+        $current_definition = $this->connection->tableDefinition($this->name);
+        if (isset($current_definition['class']) && !isset($current_definition['reportingClass'])) {
+            $alter = 'ALTER TABLE ' . $this->connection->identifier_escape($this->name) . '
+                      CHANGE COLUMN ' . $this->connection->identifier_escape('class') . ' ' .
+                      $this->connection->identifier_escape('reportingClass') . ' '  .
+                      $this->getMeta($this->columns['reportingClass']['type']);
+
+            printf("%s column class as reportingClass\n", 
+                    ($mode==BasicModel::NORMALIZE_MODE_CHECK)?"Need to rename":"Renaming"
+            );
+            printf("\tSQL Details: %s\n", $alter);
+            if ($mode == BasicModel::NORMALIZE_MODE_APPLY) {
+                $renamed = $this->connection->query($alter);
+                return 0;
+            } else {
+                return 1;
+            }
+        } else {
+            return parent::normalize($db_name, $mode, $doCreate);
+        }
+    }
+
     /* START ACCESSOR FUNCTIONS */
 
     public function plu()
