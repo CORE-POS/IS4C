@@ -158,12 +158,12 @@ static public function setMember($member, $personNumber, $row)
     }
 	$CORE_LOCAL->set("memMsg",$memMsg);
 
+	$CORE_LOCAL->set("memberID",$member);
 	$chargeOk = self::chargeOk();
 	if ($CORE_LOCAL->get("balance") != 0 && $member != $CORE_LOCAL->get("defaultNonMem")) {
 	      $CORE_LOCAL->set("memMsg",$CORE_LOCAL->get("memMsg")." AR");
     }
       
-	$CORE_LOCAL->set("memberID",$member);
 	$CORE_LOCAL->set("memType",$row["memType"]);
 	$CORE_LOCAL->set("lname",$row["LastName"]);
 	$CORE_LOCAL->set("fname",$row["FirstName"]);
