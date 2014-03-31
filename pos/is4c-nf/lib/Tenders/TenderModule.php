@@ -80,6 +80,10 @@ class TenderModule
     {
         global $CORE_LOCAL;
 
+        //force negative entered value when the total is negative.
+        if ($CORE_LOCAL->get("amtdue") <0 && $this->amount >= 0)
+            $this->amount = -1 * $this->amount;
+
         if ($CORE_LOCAL->get("LastID") == 0) {
             return DisplayLib::boxMsg(_("no transaction in progress"));
         } elseif ($this->amount > 9999.99) {
@@ -88,6 +92,13 @@ class TenderModule
             return DisplayLib::boxMsg(_("transaction must be totaled before tender can be accepted"));
         } else if ($this->name_string === "") {
             return DisplayLib::inputUnknown();
+        } elseif ((($this->amount < ($CORE_LOCAL->get("amtdue") - 0.005)) || ($this->amount > ($CORE_LOCAL->get("amtdue") + 0.005)))
+                     && $CORE_LOCAL->get("amtdue") < 0 
+                     && $this->amount !=0){
+            // the return tender needs to be exact because the transaction state can get weird.
+            return DisplayLib::xboxMsg(_("return tender must be exact"));
+        } elseif($CORE_LOCAL->get("amtdue")>0 && $this->amount < 0) { 
+            return DisplayLib::xboxMsg(_("Why are you useing a negative number for a positve sale?"));
         }
 
         return true;
