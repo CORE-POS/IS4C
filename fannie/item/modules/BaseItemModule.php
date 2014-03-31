@@ -35,8 +35,29 @@ class BaseItemModule extends ItemModule {
 		$ret .=  "<legend>Item</legend>";
 
 		$dbc = $this->db();
-		$p = $dbc->prepare_statement('SELECT p.*,x.*,u.description as ldesc FROM products AS p LEFT JOIN prodExtra
-				AS x ON p.upc=x.upc LEFT JOIN productUser AS u ON p.upc=u.upc WHERE p.upc=?');
+		$p = $dbc->prepare_statement('SELECT
+                                        p.description,
+                                        p.pricemethod,
+                                        p.normal_price,
+                                        p.size,
+                                        p.unitofmeasure,
+                                        p.modified,
+                                        p.special_price,
+                                        p.end_date,
+                                        p.subdept,
+                                        p.department,
+                                        p.tax,
+                                        p.foodstamp,
+                                        p.scale,
+                                        p.qttyEnforced,
+                                        p.discount,
+                                        x.manufacturer,
+                                        x.distributor,
+                                        u.description as ldesc 
+                                      FROM products AS p 
+                                        LEFT JOIN prodExtra AS x ON p.upc=x.upc 
+                                        LEFT JOIN productUser AS u ON p.upc=u.upc 
+                                      WHERE p.upc=?');
 		$r = $dbc->exec_statement($p,array($upc));
 		$rowItem = array();
 		$prevUPC = False;
@@ -132,7 +153,7 @@ class BaseItemModule extends ItemModule {
 			}
 		}
 
-        	$ret .= "<table border=1 cellpadding=5 cellspacing=0>";
+        $ret .= "<table border=1 cellpadding=5 cellspacing=0>";
 
 		$ret .= '<tr><td align=right><b>UPC</b></td><td style="color:red;">'.$upc;
 		$ret .= '<input type=hidden value="'.$upc.'" id=upc name=upc />';
@@ -197,9 +218,9 @@ class BaseItemModule extends ItemModule {
 				$batch = array_pop($dbc->fetch_row($batchR));
 
 			$ret .= '<tr>';
-			$ret .= "<td style=\"color:green;\"><b>Sale Price:</b></td><td style=\"color:green;\">$rowItem[6] (<em>Batch: $batch</em>)</td>";
-			list($date,$time) = explode(' ',$rowItem[11]);
-           		$ret .= "<td style=\"color:green;\">End Date:</td>
+			$ret .= "<td style=\"color:green;\"><b>Sale Price:</b></td><td style=\"color:green;\">{$rowItem['special_price']} (<em>Batch: $batch</em>)</td>";
+			list($date,$time) = explode(' ',$rowItem['end_date']);
+            $ret .= "<td style=\"color:green;\">End Date:</td>
 				<td style=\"color:green;\">$date 
 				(<a href=\"EndItemSale.php?id=$upc\">Unsale Now</a>)</td>";
 			$ret .= '</tr>';
