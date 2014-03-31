@@ -21,14 +21,6 @@
 
 *********************************************************************************/
 
-/* --COMMENTS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-	13Feb2013 Andy Theuninck visitingMem support for memdiscountadd
-	13Jan2013 Eric Lee New omtr_ttl() based on ttl() for Ontario Meal Tax Rebate.
-	18Sep2012 Eric Lee In setMember support for not displaying subtotal.
-
-*/
-
 /**
   @class PrehLib
   A horrible, horrible catch-all clutter of functions
@@ -158,12 +150,12 @@ static public function setMember($member, $personNumber, $row)
     }
 	$CORE_LOCAL->set("memMsg",$memMsg);
 
+	$CORE_LOCAL->set("memberID",$member);
 	$chargeOk = self::chargeOk();
 	if ($CORE_LOCAL->get("balance") != 0 && $member != $CORE_LOCAL->get("defaultNonMem")) {
-	      $CORE_LOCAL->set("memMsg",$CORE_LOCAL->get("memMsg")." AR");
+	      $CORE_LOCAL->set("memMsg",$CORE_LOCAL->get("memMsg") . _(" AR"));
     }
       
-	$CORE_LOCAL->set("memberID",$member);
 	$CORE_LOCAL->set("memType",$row["memType"]);
 	$CORE_LOCAL->set("lname",$row["LastName"]);
 	$CORE_LOCAL->set("fname",$row["FirstName"]);
