@@ -82,9 +82,12 @@ class TenderModule
 
         if ($CORE_LOCAL->get("LastID") == 0) {
             return DisplayLib::boxMsg(_("no transaction in progress"));
-        } elseif ($this->amount > 9999.99) {
-            return DisplayLib::boxMsg(_("tender amount of")." ".$this->amount."<br />"._("exceeds allowable limit"));
-        } elseif ($CORE_LOCAL->get("ttlflag") == 0) {
+        } else if ($this->amount > 9999.99) {
+            return DisplayLib::boxMsg(
+                      _("tender amount of") . " " . $this->amount . "<br />"
+                    . _("exceeds allowable limit")
+            );
+        } else if ($CORE_LOCAL->get("ttlflag") == 0) {
             return DisplayLib::boxMsg(_("transaction must be totaled before tender can be accepted"));
         } else if ($this->name_string === "") {
             return DisplayLib::inputUnknown();
@@ -101,9 +104,11 @@ class TenderModule
     {
         global $CORE_LOCAL;
         if ($this->amount > $this->max_limit && $CORE_LOCAL->get("msgrepeat") == 0) {
-            $CORE_LOCAL->set("boxMsg","$".$this->amount." "._("is greater than tender limit for")
-            ." ".$this->name_string."<p>"
-            ."<font size='-1'>"._("clear to cancel").", "._("enter to proceed")."</font>");
+            $CORE_LOCAL->set("boxMsg",
+                "$" . $this->amount . " " . _("is greater than tender limit for") . " " . $this->name_string
+              . "<p>"
+              . "<font size='-1'>" . _("clear to cancel") . ", " . _("enter to proceed") . "</font>"
+            );
             $CORE_LOCAL->set('lastRepeat', 'confirmTenderAmount');
 
             return MiscLib::base_url().'gui-modules/boxMsg2.php';
@@ -170,9 +175,11 @@ class TenderModule
     {
         global $CORE_LOCAL;
         $amt = $this->DefaultTotal();
-        $CORE_LOCAL->set('boxMsg', '<br />tender $'.sprintf('%.2f',$amt).' as '.$this->name_string
-                .'<br />press [enter] to continue<br />
-                <font size="-1">[clear] to cancel</font>');
+        $CORE_LOCAL->set('boxMsg',
+            '<br />'
+          . 'tender $' . sprintf('%.2f',$amt) . ' as ' . $this->name_string . '<br />'
+          . 'press [enter] to continue<br />'
+          . '<font size="-1">[clear] to cancel</font>');
         $CORE_LOCAL->set('strEntered', (100*$amt).$this->tender_code);
 
         return MiscLib::base_url().'gui-modules/boxMsg2.php?quiet=1';
