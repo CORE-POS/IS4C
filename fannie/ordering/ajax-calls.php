@@ -535,7 +535,13 @@ function addUPC($orderID,$memNum,$upc,$num_cases=1)
 		ORDER BY i.vendorID");
 	$caseR = $dbc->exec_statement($caseP, array($upc,$upc,$sku,'0'.$sku));
 	if ($dbc->num_rows($caseR) > 0) {
-		list($caseSize,$vendor,$vendor_desc,$srp,$vendor_upc,$skuMatch) = $dbc->fetch_row($caseR);
+        $row = $dbc->fetch_row($caseR);
+        $caseSize = $row['units'];
+        $vendor = $row['vendorName'];
+        $vendor_desc = $row['description'];
+        $srp = $row['srp'];
+        $vendor_upc = $row['upc'];
+        $skuMatch = $row['skuMatch'];
     }
 	if (!empty($vendor_upc)) $ins_array['upc'] = "'$vendor_upc'";
 	if ($skuMatch == 1) {
