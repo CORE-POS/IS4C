@@ -327,6 +327,7 @@ class ItemEditorPage extends FanniePage {
         if ($upc === '' || !is_numeric($upc)) {
             return '<span style="color:red;">Error: bad UPC:</span> '.$upc;
         }
+        $upc = BarcodeLib::padUPC($upc);
 
         $audited = false;
         if (FannieAuth::validateUserQuiet('pricechange')) { 

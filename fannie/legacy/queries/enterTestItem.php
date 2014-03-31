@@ -43,6 +43,8 @@ include('../db.php');
 
 extract($_POST);
 
+$upc = str_pad($upc, 13, '0', STR_PAD_LEFT);
+
 $price = trim($price);
 if (!is_numeric($price))
 	$price = 0;
